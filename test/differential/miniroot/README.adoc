@@ -1,0 +1,3 @@
+= Mini readme
+
+Standalone corpus file for harness self-checks.
