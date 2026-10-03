@@ -647,9 +647,9 @@ void main() {
     test(
       'copies default stylesheet to target directory if linkcss is specified',
       skip:
-          'WAVE-GATED: needs the syntax-highlighter wave (no SourceLexer '
-          'backends exist, so no source block is ever highlighted and the '
-          'coderay stylesheet is never required).',
+          'WAVE-GATED: needs the real-lexers wave (CodeRayAdapter.highlight '
+          'throws without a SourceLexer backend, so requiresStylesheet is '
+          'never set and the stylesheet is never copied).',
       () {
         final tempDir = Directory.systemTemp.createTempSync(
           'asciidoctor-invoker-',
