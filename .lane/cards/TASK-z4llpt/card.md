@@ -1,7 +1,7 @@
 ---
 id: TASK-z4llpt
 title: "Distribution tooling: CI e2e-on-Dart, native-exe builds, pubspec readiness (NO publishing)"
-status: doing
+status: done
 type: task
 priority: 2
 labels:
@@ -9,8 +9,9 @@ labels:
 - release
 parent: EPIC-ckgkd2
 created: "2026-10-03T06:08:56.698029Z"
-updated: "2026-10-03T11:01:42.821520Z"
+updated: "2026-10-03T11:06:23.346867Z"
 ---
+
 
 
 
