@@ -13,6 +13,7 @@ export 'src/composite.dart';
 export 'src/constants.dart';
 export 'src/converter.dart';
 export 'src/core_ext.dart';
+export 'src/docbook5.dart';
 export 'src/document.dart';
 export 'src/extensions.dart';
 export 'src/helpers.dart';
