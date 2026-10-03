@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Subject-under-test shim for the Dart CLI (D6 gate: same e2e suite runs
+# against Ruby via asciidoctor-ruby and Dart via this file).
+# Resolves the repo root from this file's location so tests can run from any cwd.
+# NOTE `dart run <abs-path>` resolves the package config from the *file's*
+# location, so the caller's cwd is preserved for relative input paths.
+set -e
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+exec dart run "$ROOT/dart/bin/asciidoctor.dart" "$@"
