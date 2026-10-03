@@ -18,7 +18,9 @@ import 'dart:isolate';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/cli/invoker.dart';
 import 'package:asciidoctor/src/cli/options.dart';
+import 'package:asciidoctor/src/composite.dart';
 import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/template.dart';
 import 'package:asciidoctor/src/version.dart';
 import 'package:test/test.dart';
 
@@ -994,19 +996,71 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
 
     test(
       'locates custom templates based on template dir, engine and backend',
-      skip:
-          'WAVE-GATED: No Tilt/Haml template-engine analog exists in Dart; '
-          'deferred to the template-converter phase.',
-      () {},
+      () {
+        // Port of test/invoker_test.rb: 'should locate custom templates
+        // based on template dir, template engine and backend' (adapted:
+        // `-E mustache` — `-E haml` errors in the Dart port, see
+        // template_loader_test.dart).
+        final dir = Directory.systemTemp.createTempSync(
+          'invoker-template-test',
+        );
+        addTearDown(() => dir.deleteSync(recursive: true));
+        File('${dir.path}/paragraph.mustache')
+            .writeAsStringSync('<p>{{content}}</p>');
+        final invoker = invokeCliToBuffer([
+          '-E',
+          'mustache',
+          '-T',
+          dir.path,
+          '-o',
+          '-',
+        ]);
+        expect(invoker.code, equals(0));
+        final doc = invoker.document!;
+        expect(doc.converter, isA<CompositeConverter>());
+        final selected = (doc.converter as CompositeConverter).findConverter(
+          'paragraph',
+        );
+        expect(selected, isA<TemplateConverter>());
+        expect(
+          (selected as TemplateConverter).templates['paragraph'],
+          equals('<p>{{content}}</p>'),
+        );
+      },
     );
 
-    test(
-      'loads custom templates from multiple template directories',
-      skip:
-          'WAVE-GATED: No Tilt/Haml template-engine analog exists in Dart; '
-          'deferred to the template-converter phase.',
-      () {},
-    );
+    test('loads custom templates from multiple template directories', () {
+      // Port of test/invoker_test.rb: 'should load custom templates from
+      // multiple template directories' (adapted: Mustache files; the last
+      // `-T` wins per template and the built-in wrapper is gone).
+      Directory makeDir(String name, String source) {
+        final dir = Directory.systemTemp.createTempSync(
+          'invoker-template-test',
+        );
+        addTearDown(() => dir.deleteSync(recursive: true));
+        File('${dir.path}/$name').writeAsStringSync(source);
+        return dir;
+      }
+
+      final dir1 = makeDir(
+        'paragraph.mustache',
+        '<p class="one">{{content}}</p>',
+      );
+      final dir2 = makeDir(
+        'paragraph.mustache',
+        '<p class="two">{{content}}</p>',
+      );
+      final invoker = invokeCliToBuffer(
+        ['-T', dir1.path, '-T', dir2.path, '-o', '-', '-e'],
+        '-',
+        () => 'content',
+      );
+      expect(invoker.code, equals(0));
+      final output = invoker.readOutput();
+      expect(output, contains('<p class="two">content</p>'));
+      expect(output, isNot(contains('class="one"')));
+      expect(output, isNot(contains('class="paragraph"')));
+    });
 
     test('sets attribute with value', () {
       final invoker = invokeCliToBuffer([

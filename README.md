@@ -48,6 +48,27 @@ dart compile exe bin/asciidoctor.dart -o build/asciidoctor
 ./build/asciidoctor --version
 ```
 
+## Custom converter templates
+
+Two override paths (Tilt templates cannot run on Dart; see
+[ADR-0002](../adr/0002-template-converter-strategy.md) and the
+[cookbook](doc/templates.md)):
+
+- **Mustache files:** `-T templates` loads `paragraph.mustache`-style
+  overrides on top of the built-in converter (last `-T` wins per
+  transform; `-E` accepts `mustache` and `dart`).
+- **Dart functions:** register per-transform handlers in code; they win
+  over Mustache files per transform.
+
+For a compiled-in custom binary (XMonad-style):
+
+```sh
+asciidoctor init-config my-config
+cd my-config
+dart pub get
+dart compile exe bin/main.dart -o my-asciidoctor
+```
+
 ## Lint
 
 ```sh

@@ -1719,7 +1719,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Returns `null` when no converter can be resolved (the caller raises).
   /// Ported backends resolve through [Converter.create]; anything else
   /// resolves only through the `converter` option (a [NodeConverter]) or
-  /// `template_dirs` (a trait-carrying stub until the template wave lands).
+  /// `template_dirs` (a template chain, bare when the backend is unknown).
   NodeConverter? _createConverter(String backend, String? delegateBackend) {
     // Port of `Document#create_converter`
     // (lib/asciidoctor/document.rb:1153-1167).
