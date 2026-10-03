@@ -23,11 +23,12 @@
 library;
 
 import 'dart:convert' show base64Encode, utf8;
-import 'dart:io' show File, FileSystemException, stderr;
+import 'dart:io' show File, FileSystemException;
 
 import 'abstract_block.dart';
 import 'callouts.dart';
 import 'helpers.dart';
+import 'logging.dart';
 import 'path_resolver.dart';
 import 'substitutors.dart' as substitutors;
 
@@ -81,34 +82,43 @@ abstract interface class NodeLogger {
   void fatal(Object? message);
 }
 
-/// Default [NodeLogger], writing to stderr.
+/// Default [NodeLogger], forwarding to the shared manager logger.
 ///
-/// Mirrors `Asciidoctor::Logger` with the default level (`WARN`, so debug and
-/// info messages are dropped) and `BasicFormatter` severity labels (`WARNING`
-/// for warn, `FAILED` for fatal).
+/// In Ruby every node logs through `LoggerManager.logger` (via the `Logging`
+/// mixin), so CLI level selection (`--log-level`, `-v`, `-q`), formatting,
+/// and `maxSeverity` (for `--failure-level`) apply uniformly. This forwarder
+/// preserves that single-logger behavior; the lookup is dynamic so invoker
+/// swaps (e.g. [NullLogger] for `-q`) and `logger:` option replacements take
+/// effect. Tests keep replacing [AbstractNode.currentLogger] wholesale.
+/// With the default level (`WARN`) debug and info messages are dropped, and
+/// records render identically to before via `BasicFormatter`.
 final class _StderrNodeLogger implements NodeLogger {
   /// Creates the default stderr logger.
   const _StderrNodeLogger();
 
   @override
-  void debug(Object? message) {}
+  void debug(Object? message) {
+    LoggerManager.logger.debug(message);
+  }
 
   @override
-  void info(Object? message) {}
+  void info(Object? message) {
+    LoggerManager.logger.info(message);
+  }
 
   @override
   void warn(Object? message) {
-    stderr.writeln('asciidoctor: WARNING: $message');
+    LoggerManager.logger.warn(message);
   }
 
   @override
   void error(Object? message) {
-    stderr.writeln('asciidoctor: ERROR: $message');
+    LoggerManager.logger.error(message);
   }
 
   @override
   void fatal(Object? message) {
-    stderr.writeln('asciidoctor: FAILED: $message');
+    LoggerManager.logger.fatal(message);
   }
 }
 

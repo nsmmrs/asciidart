@@ -9,6 +9,7 @@ import 'core_ext.dart';
 import 'document.dart';
 import 'inline.dart';
 import 'parser.dart';
+import 'reader.dart';
 import 'substitutors.dart';
 
 /// Scans for a leading, non-escaped anchor (id + optional reference text).
@@ -387,9 +388,8 @@ class Cell extends AbstractBlock {
   /// The default is a shared empty map, which is safe because Ruby never
   /// mutates the default (the empty-attributes branch performs no writes).
   ///
-  /// AsciiDoc-style cells cannot be built yet: their construction needs the
-  /// preprocessor reader and nested-document support owned by the
-  /// reader/parser ports, so it throws [UnimplementedError].
+  /// AsciiDoc-style cells build a nested document eagerly (see the
+  /// `asciidoc` branch below), mirroring Ruby.
   Cell(
     Column? column,
     String? cellText, [
@@ -437,6 +437,7 @@ class Cell extends AbstractBlock {
     var asciidoc = false;
     var literal = false;
     var normalPsv = false;
+    Object? innerDocumentCursor;
     // NOTE when attributes is defined, this is a PSV cell, which implies
     // the text needs to be stripped.
     if (attrs != null) {
@@ -455,6 +456,7 @@ class Cell extends AbstractBlock {
       }
       if (cellStyle == 'asciidoc') {
         asciidoc = true;
+        innerDocumentCursor = opts?['cursor'];
         var text = cellText!.rstrip();
         if (text.startsWith(lf)) {
           var linesAdvanced = 1;
@@ -486,14 +488,59 @@ class Cell extends AbstractBlock {
       rowspan = null;
       if (cellStyle == 'asciidoc') {
         asciidoc = true;
+        innerDocumentCursor = opts?['cursor'];
       }
     }
     // NOTE only true for non-header rows.
     if (asciidoc) {
-      // Requires PreprocessorReader + Document (reader/parser ports).
-      throw UnimplementedError(
-        'Table::Cell with asciidoc style requires the reader and document ports',
-      );
+      // NodeDocument/Document unification pending: the document is always
+      // a Document here (same cast as `catalogInlineAnchor`).
+      final parentDoc = document as Document;
+      // FIXME hide doctitle from nested document; temporary workaround to
+      // fix nested document seeing doctitle and assuming it has its own
+      // document title.
+      final parentDoctitle = parentDoc.attributes.remove('doctitle');
+      // NOTE we need to process the first line of content as it may not
+      // have been processed. The included content cannot expect to match
+      // conditional terminators in the remaining lines of table cell
+      // content; it must be self-contained logic.
+      // Dart's `split` keeps trailing empty segments like Ruby's
+      // `split LF, -1`, except that `''.split` yields `['']` where Ruby
+      // yields `[]`.
+      final cellSource = cellText;
+      final innerDocumentLines = cellSource == null || cellSource.isEmpty
+          ? <String>[]
+          : cellSource.split(lf);
+      if (innerDocumentLines.isNotEmpty) {
+        final unprocessedLine1 = innerDocumentLines[0];
+        // QUESTION is it faster to check for `::` before splitting?
+        if (unprocessedLine1.contains('::')) {
+          final preprocessedLines = PreprocessorReader(
+            parentDoc.asReaderDocument(),
+            [unprocessedLine1],
+            innerDocumentCursor,
+          ).readlines().whereType<String>().toList();
+          if (!(preprocessedLines.isNotEmpty &&
+              unprocessedLine1 == preprocessedLines[0] &&
+              preprocessedLines.length < 2)) {
+            innerDocumentLines.removeAt(0);
+            if (preprocessedLines.isNotEmpty) {
+              innerDocumentLines.insertAll(0, preprocessedLines);
+            }
+          }
+        }
+      }
+      innerDocument = Document(innerDocumentLines, {
+        'standalone': false,
+        'parent': parentDoc,
+        'cursor': innerDocumentCursor,
+      });
+      if (parentDoctitle != null) {
+        parentDoc.attributes['doctitle'] = parentDoctitle;
+      }
+      // Ruby assigns `@subs = nil` (a nil subs list applies nothing);
+      // `subs` is non-nullable here, so the empty list plays that role.
+      subs = <String>[];
     } else if (literal) {
       contentModel = 'verbatim';
       subs = basicSubs;
