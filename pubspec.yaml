@@ -16,6 +16,7 @@ environment:
 
 dependencies:
   args: ^2.4.0
+  mustache_template: ^2.0.6
 
 dev_dependencies:
   lints: ^5.0.0

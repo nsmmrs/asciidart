@@ -40,6 +40,8 @@ export 'src/section.dart';
 export 'src/stylesheets.dart';
 export 'src/substitutors.dart';
 export 'src/table.dart';
+export 'src/template.dart';
+export 'src/template_context.dart';
 export 'src/timings.dart';
 export 'src/version.dart';
 export 'src/writer.dart';
