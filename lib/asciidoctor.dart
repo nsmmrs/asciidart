@@ -12,6 +12,7 @@ export 'src/core_ext.dart';
 export 'src/helpers.dart';
 export 'src/inline.dart';
 export 'src/path_resolver.dart';
+export 'src/reader.dart';
 export 'src/rx.dart';
 export 'src/stylesheets.dart';
 export 'src/version.dart';

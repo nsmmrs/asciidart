@@ -14,6 +14,7 @@ library;
 import 'dart:convert' show Encoding;
 import 'dart:io' show Directory, File, FileSystemEntity, Platform, Process;
 
+import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/attribute_list.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/path_resolver.dart';

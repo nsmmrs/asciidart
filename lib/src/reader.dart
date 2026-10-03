@@ -20,6 +20,7 @@ library;
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
 import 'dart:io' show File, FileSystemEntity, stderr;
 
+import 'abstract_node.dart';
 import 'core_ext.dart';
 import 'helpers.dart';
 import 'path_resolver.dart';
@@ -89,21 +90,6 @@ const String complianceAttributeMissing = 'skip';
 
 /// Safe mode levels. Port of `Asciidoctor::SafeMode`. TEMPORARY: moves to the
 /// constants port when it lands.
-abstract final class SafeMode {
-  /// Disables any security enforcement.
-  static const int unsafe = 0;
-
-  /// Prevents access to files outside the parent directory of the source
-  /// file.
-  static const int safe = 1;
-
-  /// Forbids the document from setting attributes that affect conversion.
-  static const int server = 10;
-
-  /// Forbids reading files from the file system (disables includes).
-  static const int secure = 20;
-}
-
 /// Severity of a log message.
 ///
 /// TEMPORARY: a minimal stand-in for the `logging.dart` severity set; unified
