@@ -10,8 +10,10 @@ labels:
 parent: EPIC-ckgkd2
 deps:
 - TASK-ffdnc8
+- TASK-y8y4t3
 created: "2026-10-03T06:08:56.125938Z"
-updated: "2026-10-03T06:08:56.125938Z"
+updated: "2026-10-03T07:43:51.244247Z"
 ---
+
 
 Port rx.rb (728 lines), helpers, core_ext, path_resolver, attribute_list, callouts. Embed data/locale (37 files) + stylesheets as resources. Quarantine Ruby-regexp-vs-Dart-RegExp gaps here. Gate: foundation behavior tests green.
