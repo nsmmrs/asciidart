@@ -14,3 +14,6 @@
 dart/.dart_tool/
 dart/build/
 dart/pubspec.lock
+
+# Release executables (tool/build-exes.sh output; never committed)
+/dist/

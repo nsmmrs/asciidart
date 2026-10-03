@@ -3,6 +3,13 @@ description: Dart port of Asciidoctor, the fast text processor for converting As
 version: 0.1.0
 homepage: https://asciidoctor.org
 repository: https://github.com/asciidoctor/asciidoctor
+issue_tracker: https://github.com/asciidoctor/asciidoctor/issues
+publish_to: none
+topics:
+  - asciidoc
+  - documentation
+  - converter
+  - markup
 
 environment:
   sdk: ^3.13.0
