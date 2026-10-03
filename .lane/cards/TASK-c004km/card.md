@@ -1,7 +1,7 @@
 ---
 id: TASK-c004km
 title: "Port CLI invoker (invoker.rb; options done)"
-status: doing
+status: done
 type: task
 priority: 2
 labels:
@@ -11,8 +11,9 @@ parent: EPIC-ckgkd2
 deps:
 - TASK-qrphvp
 created: "2026-10-03T06:08:56.555203Z"
-updated: "2026-10-03T10:47:21.592987Z"
+updated: "2026-10-03T11:00:27.490950Z"
 ---
+
 
 
 
