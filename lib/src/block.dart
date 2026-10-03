@@ -132,7 +132,9 @@ class Block extends AbstractBlock {
   String? content() {
     switch (contentModel) {
       case 'compound':
-        return super.content();
+        // The base implementation always joins converted children into a
+        // string; the cast only narrows the widened (polymorphic) override.
+        return super.content() as String?;
       case 'simple':
         return applySubs(lines.join(lf), subs) as String;
       case 'verbatim':
