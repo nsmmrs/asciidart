@@ -7,9 +7,9 @@
 /// allows it, and Ruby's `invoke_cli` / `invoke_cli_to_buffer` / global
 /// `$stdout` swapping collapses into [invokeCli], which always buffers and
 /// installs a temporary logger on the error buffer (cf. Ruby's
-/// `redirect_streams`). Tests that need real conversion are `skip()`ped for
-/// card TASK-0ypc0b (the `port/load` merge) with their ported bodies intact;
-/// tests with no Dart analog record that in the skip reason instead.
+/// `redirect_streams`). Tests with no Dart analog are `skip()`ped with a
+/// `PERMANENT:` reason; tests awaiting a later wave keep a `WAVE-GATED:`
+/// reason with their ported bodies intact.
 library;
 
 import 'dart:io';
@@ -48,11 +48,6 @@ String fixturePath(String name) => '$repoRoot/test/fixtures/$name';
 
 /// An existing oracle fixture used as the default input file.
 String get sampleFile => fixturePath('sample.adoc');
-
-/// Skip reason for tests that need real conversion (card TASK-0ypc0b).
-const String needsLoad =
-    'TASK-0ypc0b: needs the port/load merge (real convert/convertFile); '
-    'the TEMP-SHIM throws UnimplementedError.';
 
 /// Invokes the CLI like Ruby's `invoke_cli` / `invoke_cli_to_buffer`.
 ///
@@ -106,6 +101,20 @@ Invoker invokeCliWithFilenames(List<String> argv, List<String> filenames) {
       (name) => File(name).isAbsolute ? name : fixturePath(name),
     ),
   ], null);
+}
+
+/// Writes `pipe content` to the fifo at `args[0]`, then signals `args[1]`.
+///
+/// Top-level entry point for the writer isolate in the named-pipe test.
+/// Opens [FileMode.writeOnly] (`O_WRONLY`): the default write mode opens
+/// `O_RDWR`, which succeeds instantly on a fifo without rendezvous, so a
+/// writer that wins the race would come and go before the reader opens and
+/// leave the reader blocked forever.
+void _writePipe(List<Object> args) {
+  final raf = File(args[0] as String).openSync(mode: FileMode.writeOnly);
+  raf.writeStringSync('pipe content');
+  raf.closeSync();
+  (args[1] as SendPort).send(null);
 }
 
 /// Runs the real CLI binary in a subprocess, like Ruby's `run_command`.
@@ -323,27 +332,23 @@ void main() {
   });
 
   group('conversion', () {
-    test(
-      'parses source and converts to html5 article by default',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCli(['-o', '-']);
-        final doc = invoker.document!;
-        expect(doc.doctitle(), equals('Document Title'));
-        expect(doc.attr('author'), equals('Doc Writer'));
-        expect(doc.attr('backend'), equals('html5'));
-        expect(doc.attr('outfilesuffix'), equals('.html'));
-        expect(doc.attr('doctype'), equals('article'));
-        expect(doc.hasBlocks, isTrue);
-        expect(doc.blocks.first.context, equals('preamble'));
-        final output = invoker.readOutput();
-        expect(output, isNotEmpty);
-        expect(output, contains('<html'));
-        expect(output, contains('<title>Document Title</title>'));
-      },
-    );
+    test('parses source and converts to html5 article by default', () {
+      final invoker = invokeCli(['-o', '-']);
+      final doc = invoker.document!;
+      expect(doc.doctitle(), equals('Document Title'));
+      expect(doc.attr('author'), equals('Doc Writer'));
+      expect(doc.attr('backend'), equals('html5'));
+      expect(doc.attr('outfilesuffix'), equals('.html'));
+      expect(doc.attr('doctype'), equals('article'));
+      expect(doc.hasBlocks, isTrue);
+      expect(doc.blocks.first.context, equals('preamble'));
+      final output = invoker.readOutput();
+      expect(output, isNotEmpty);
+      expect(output, contains('<html'));
+      expect(output, contains('<title>Document Title</title>'));
+    });
 
-    test('sets implicit doc info attributes', skip: needsLoad, () {
+    test('sets implicit doc info attributes', () {
       final invoker = invokeCliToBuffer([
         '-o',
         '/dev/null',
@@ -359,7 +364,7 @@ void main() {
       expect(invoker.readOutput(), isEmpty);
     });
 
-    test('allows docdate and doctime to be overridden', skip: needsLoad, () {
+    test('allows docdate and doctime to be overridden', () {
       final invoker = invokeCliToBuffer([
         '-o',
         '/dev/null',
@@ -375,11 +380,35 @@ void main() {
       expect(doc.hasAttr('docdatetime', '2015-01-01 10:00:00-0700'), isTrue);
     });
 
-    test(
-      'accepts document from stdin and writes to stdout',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCliToBuffer(['-e'], '-', () => 'content');
+    test('accepts document from stdin and writes to stdout', () {
+      final invoker = invokeCliToBuffer(['-e'], '-', () => 'content');
+      final doc = invoker.document!;
+      expect(doc.hasAttr('docname'), isFalse);
+      expect(doc.hasAttr('docfile'), isFalse);
+      expect(doc.attr('docdir'), equals(Directory.current.path));
+      expect(doc.attr('docdate'), equals(doc.attr('localdate')));
+      expect(doc.attr('docyear'), equals(doc.attr('localyear')));
+      expect(doc.attr('doctime'), equals(doc.attr('localtime')));
+      expect(doc.attr('docdatetime'), equals(doc.attr('localdatetime')));
+      expect(doc.hasAttr('outfile'), isFalse);
+      expect(invoker.readOutput(), contains('<p>content</p>'));
+    });
+
+    test('does not fail to rewind input when reading document from stdin', () {
+      // No Dart analog for swapping `$stdin`; the stdin callback covers
+      // string input.
+      final invoker = invokeCliToBuffer(['-e'], '-', () => 'paragraph');
+      expect(invoker.code, equals(0));
+      expect(invoker.document!.blocks.length, equals(1));
+    });
+
+    test('accepts document from stdin and writes to output file', () {
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        final outPath = '${tempDir.path}/sample-output.html';
+        final invoker = invokeCli(['-e', '-o', outPath], '-', () => 'content');
         final doc = invoker.document!;
         expect(doc.hasAttr('docname'), isFalse);
         expect(doc.hasAttr('docfile'), isFalse);
@@ -388,124 +417,69 @@ void main() {
         expect(doc.attr('docyear'), equals(doc.attr('localyear')));
         expect(doc.attr('doctime'), equals(doc.attr('localtime')));
         expect(doc.attr('docdatetime'), equals(doc.attr('localdatetime')));
-        expect(doc.hasAttr('outfile'), isFalse);
-        expect(invoker.readOutput(), contains('<p>content</p>'));
-      },
-    );
+        expect(doc.hasAttr('outfile'), isTrue);
+        expect(doc.attr('outfile'), equals(outPath));
+        expect(File(outPath).existsSync(), isTrue);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test(
-      'does not fail to rewind input when reading document from stdin',
-      skip: '$needsLoad (Dart reads stdin to a string; no rewind step exists.)',
-      () {
-        // No Dart analog for swapping `$stdin`; the stdin callback covers
-        // string input.
-        final invoker = invokeCliToBuffer(['-e'], '-', () => 'paragraph');
-        expect(invoker.code, equals(0));
-        expect(invoker.document!.blocks.length, equals(1));
-      },
-    );
+    test('fails if input file matches resolved output file', () {
+      final invoker = invokeCliToBuffer([
+        '-a',
+        'outfilesuffix=.adoc',
+      ], 'sample.adoc');
+      expect(
+        invoker.readError(),
+        contains('input file and output file cannot be the same'),
+      );
+    });
 
-    test(
-      'accepts document from stdin and writes to output file',
-      skip: needsLoad,
-      () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
-        try {
-          final outPath = '${tempDir.path}/sample-output.html';
-          final invoker = invokeCli(
-            ['-e', '-o', outPath],
-            '-',
-            () => 'content',
-          );
-          final doc = invoker.document!;
-          expect(doc.hasAttr('docname'), isFalse);
-          expect(doc.hasAttr('docfile'), isFalse);
-          expect(doc.attr('docdir'), equals(Directory.current.path));
-          expect(doc.attr('docdate'), equals(doc.attr('localdate')));
-          expect(doc.attr('docyear'), equals(doc.attr('localyear')));
-          expect(doc.attr('doctime'), equals(doc.attr('localtime')));
-          expect(doc.attr('docdatetime'), equals(doc.attr('localdatetime')));
-          expect(doc.hasAttr('outfile'), isTrue);
-          expect(doc.attr('outfile'), equals(outPath));
-          expect(File(outPath).existsSync(), isTrue);
-        } finally {
-          tempDir.deleteSync(recursive: true);
-        }
-      },
-    );
+    test('fails if input file matches specified output file', () {
+      final invoker = invokeCliToBuffer(['-o', sampleFile], 'sample.adoc');
+      expect(
+        invoker.readError(),
+        contains('input file and output file cannot be the same'),
+      );
+    });
 
-    test(
-      'fails if input file matches resolved output file',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCliToBuffer([
-          '-a',
-          'outfilesuffix=.adoc',
-        ], 'sample.adoc');
-        expect(
-          invoker.readError(),
-          contains('input file and output file cannot be the same'),
-        );
-      },
-    );
+    test('accepts input from named pipe and outputs to stdout', () async {
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        final pipePath = '${tempDir.path}/sample-pipe.adoc';
+        final mkfifo = Process.runSync('mkfifo', [pipePath]);
+        expect(mkfifo.exitCode, equals(0));
+        // Ruby uses a writer thread; Dart uses a writer isolate (a
+        // top-level entry point: closures cannot cross isolates).
+        final writerDone = ReceivePort();
+        await Isolate.spawn(_writePipe, [pipePath, writerDone.sendPort]);
+        final invoker = invokeCliToBuffer(['-a', 'stylesheet!'], pipePath);
+        expect(invoker.readOutput(), contains('pipe content'));
+        await writerDone.first;
+        writerDone.close();
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test(
-      'fails if input file matches specified output file',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCliToBuffer(['-o', sampleFile], 'sample.adoc');
-        expect(
-          invoker.readError(),
-          contains('input file and output file cannot be the same'),
-        );
-      },
-    );
+    test('allows docdir to be specified when input is a string', () {
+      // Ruby passes a root-relative `--base-dir`; the Dart suite runs
+      // from `dart/`, so the path is absolute here.
+      final expectedDocdir = '$repoRoot/test/fixtures';
+      final invoker = invokeCliToBuffer(
+        ['-e', '--base-dir', expectedDocdir, '-o', '/dev/null'],
+        '-',
+        () => 'content',
+      );
+      final doc = invoker.document!;
+      expect(doc.attr('docdir'), equals(expectedDocdir));
+      expect(doc.baseDir, equals(expectedDocdir));
+    });
 
-    test(
-      'accepts input from named pipe and outputs to stdout',
-      skip: needsLoad,
-      () async {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
-        try {
-          final pipePath = '${tempDir.path}/sample-pipe.adoc';
-          final mkfifo = Process.runSync('mkfifo', [pipePath]);
-          expect(mkfifo.exitCode, equals(0));
-          // Ruby uses a writer thread; Dart uses a writer isolate.
-          final writer = Isolate.run(
-            () => File(pipePath).writeAsStringSync('pipe content'),
-          );
-          final invoker = invokeCliToBuffer(['-a', 'stylesheet!'], pipePath);
-          expect(invoker.readOutput(), contains('pipe content'));
-          await writer;
-        } finally {
-          tempDir.deleteSync(recursive: true);
-        }
-      },
-    );
-
-    test(
-      'allows docdir to be specified when input is a string',
-      skip: needsLoad,
-      () {
-        // Ruby passes a root-relative `--base-dir`; the Dart suite runs
-        // from `dart/`, so the path is absolute here.
-        final expectedDocdir = '$repoRoot/test/fixtures';
-        final invoker = invokeCliToBuffer(
-          ['-e', '--base-dir', expectedDocdir, '-o', '/dev/null'],
-          '-',
-          () => 'content',
-        );
-        final doc = invoker.document!;
-        expect(doc.attr('docdir'), equals(expectedDocdir));
-        expect(doc.baseDir, equals(expectedDocdir));
-      },
-    );
-
-    test('prints warnings to stderr by default', skip: needsLoad, () {
+    test('prints warnings to stderr by default', () {
       final invoker = invokeCliToBuffer(
         ['-o', '/dev/null'],
         '-',
@@ -514,63 +488,54 @@ void main() {
       expect(invoker.readError(), contains('WARNING'));
     });
 
-    test('emits no unexpected warnings', skip: needsLoad, () async {
+    test('emits no unexpected warnings', () async {
       final result = await runCli(['-o', '/dev/null', '-w', sampleFile]);
       expect(result.stdout as String, isEmpty);
       expect(result.stderr as String, isEmpty);
     });
 
-    test(
-      'changes level on logger when --log-level is specified',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCli(
-          ['--log-level', 'info'],
-          '-',
-          () => 'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
-        );
-        expect(
-          invoker.readError(),
-          equals('asciidoctor: INFO: possible invalid reference: install\n'),
-        );
-      },
-    );
+    test('changes level on logger when --log-level is specified', () {
+      final invoker = invokeCli(
+        ['--log-level', 'info'],
+        '-',
+        () =>
+            'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
+      );
+      expect(
+        invoker.readError(),
+        equals('asciidoctor: INFO: possible invalid reference: install\n'),
+      );
+    });
 
-    test(
-      'does not log when --log-level and -q are both specified',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCli(
-          ['--log-level', 'info', '-q'],
-          '-',
-          () => 'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
-        );
-        expect(invoker.readError(), isEmpty);
-      },
-    );
+    test('does not log when --log-level and -q are both specified', () {
+      final invoker = invokeCli(
+        ['--log-level', 'info', '-q'],
+        '-',
+        () =>
+            'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
+      );
+      expect(invoker.readError(), isEmpty);
+    });
 
-    test(
-      'uses specified log level when --log-level and -v are both specified',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCli(
-          ['--log-level', 'warn', '-v'],
-          '-',
-          () => 'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
-        );
-        expect(invoker.readError(), isEmpty);
-      },
-    );
+    test('uses specified log level when --log-level and -v are both specified', () {
+      final invoker = invokeCli(
+        ['--log-level', 'warn', '-v'],
+        '-',
+        () =>
+            'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
+      );
+      expect(invoker.readError(), isEmpty);
+    });
 
     test(
       'enables script warnings if -w flag is specified',
       skip:
-          'No Dart equivalent of \$VERBOSE-backed script warnings '
+          'PERMANENT: No Dart equivalent of \$VERBOSE-backed script warnings '
           '(Ruby-only behavior); -w parsing is covered in options_test.dart.',
       () {},
     );
 
-    test('silences warnings if -q flag is specified', skip: needsLoad, () {
+    test('silences warnings if -q flag is specified', () {
       final invoker = invokeCliToBuffer(
         ['-q', '-o', '/dev/null'],
         '-',
@@ -579,34 +544,43 @@ void main() {
       expect(invoker.readError(), isEmpty);
     });
 
-    test(
-      'does not fail to check log level when -q flag is specified',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCli(
-          ['-q'],
-          '-',
-          () => 'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
-        );
-        expect(invoker.code, equals(0));
-      },
-    );
+    test('shows debug messages if -v flag is specified', () {
+      // verbose 2 sets the logger level to DEBUG around conversion
+      // (`lib/asciidoctor/cli/invoker.rb`); the debug message is the one
+      // from blocks_test.rb 'should log debug message if block style is
+      // unknown and debug level is enabled'.
+      const input = '[foo]\n--\nbar\n--\n';
+      final invoker = invokeCli(['-v', '-o', '/dev/null'], '-', () => input);
+      expect(invoker.readError(), contains('DEBUG'));
+      expect(
+        invoker.readError(),
+        contains('unknown style for open block: foo'),
+      );
+      final quiet = invokeCli(['-o', '/dev/null'], '-', () => input);
+      expect(quiet.readError(), isNot(contains('unknown style')));
+    });
 
-    test(
-      'returns non-zero exit code if failure level is reached',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCli(
-          ['-q', '--failure-level=WARN', '-o', '/dev/null'],
-          '-',
-          () => '1. first\n3. third\n',
-        );
-        expect(invoker.code, equals(1));
-        expect(invoker.readError(), isEmpty);
-      },
-    );
+    test('does not fail to check log level when -q flag is specified', () {
+      final invoker = invokeCli(
+        ['-q'],
+        '-',
+        () =>
+            'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
+      );
+      expect(invoker.code, equals(0));
+    });
 
-    test('outputs to file name based on input file name', skip: needsLoad, () {
+    test('returns non-zero exit code if failure level is reached', () {
+      final invoker = invokeCli(
+        ['-q', '--failure-level=WARN', '-o', '/dev/null'],
+        '-',
+        () => '1. first\n3. third\n',
+      );
+      expect(invoker.code, equals(1));
+      expect(invoker.readError(), isEmpty);
+    });
+
+    test('outputs to file name based on input file name', () {
       final tempDir = Directory.systemTemp.createTempSync(
         'asciidoctor-invoker-',
       );
@@ -624,50 +598,39 @@ void main() {
       }
     });
 
-    test(
-      'outputs to file in destination directory if set',
-      skip: needsLoad,
-      () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
-        try {
-          final expectedOut = '${tempDir.path}/sample.html';
-          final invoker = invokeCli(['-D', tempDir.path]);
-          expect(invoker.document!.attr('outfile'), equals(expectedOut));
-          expect(File(expectedOut).existsSync(), isTrue);
-        } finally {
-          tempDir.deleteSync(recursive: true);
-        }
-      },
-    );
+    test('outputs to file in destination directory if set', () {
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        final expectedOut = '${tempDir.path}/sample.html';
+        final invoker = invokeCli(['-D', tempDir.path]);
+        expect(invoker.document!.attr('outfile'), equals(expectedOut));
+        expect(File(expectedOut).existsSync(), isTrue);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test(
-      'preserves directory structure in destination directory if source directory is set',
-      skip: needsLoad,
-      () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
-        try {
-          invokeCli([
-            '-D',
-            tempDir.path,
-            '-R',
-            '$repoRoot/test/fixtures',
-          ], 'subdir/index.adoc');
-          expect(Directory('${tempDir.path}/subdir').existsSync(), isTrue);
-          expect(
-            File('${tempDir.path}/subdir/index.html').existsSync(),
-            isTrue,
-          );
-        } finally {
-          tempDir.deleteSync(recursive: true);
-        }
-      },
-    );
+    test('preserves directory structure in destination directory if source directory is set', () {
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        invokeCli([
+          '-D',
+          tempDir.path,
+          '-R',
+          '$repoRoot/test/fixtures',
+        ], 'subdir/index.adoc');
+        expect(Directory('${tempDir.path}/subdir').existsSync(), isTrue);
+        expect(File('${tempDir.path}/subdir/index.html').existsSync(), isTrue);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test('outputs to file specified', skip: needsLoad, () {
+    test('outputs to file specified', () {
       final tempDir = Directory.systemTemp.createTempSync(
         'asciidoctor-invoker-',
       );
@@ -683,7 +646,10 @@ void main() {
 
     test(
       'copies default stylesheet to target directory if linkcss is specified',
-      skip: needsLoad,
+      skip:
+          'WAVE-GATED: needs the syntax-highlighter wave (no SourceLexer '
+          'backends exist, so no source block is ever highlighted and the '
+          'coderay stylesheet is never required).',
       () {
         final tempDir = Directory.systemTemp.createTempSync(
           'asciidoctor-invoker-',
@@ -718,7 +684,6 @@ void main() {
 
     test(
       'does not copy coderay stylesheet when no source blocks were highlighted',
-      skip: needsLoad,
       () {
         final tempDir = Directory.systemTemp.createTempSync(
           'asciidoctor-invoker-',
@@ -747,7 +712,6 @@ void main() {
 
     test(
       'does not copy default stylesheet if linkcss is set and copycss is unset',
-      skip: needsLoad,
       () {
         final tempDir = Directory.systemTemp.createTempSync(
           'asciidoctor-invoker-',
@@ -765,7 +729,6 @@ void main() {
 
     test(
       'copies custom stylesheet if stylesheet and linkcss are specified',
-      skip: needsLoad,
       () {
         final tempDir = Directory.systemTemp.createTempSync(
           'asciidoctor-invoker-',
@@ -795,66 +758,55 @@ void main() {
       },
     );
 
-    test(
-      'does not copy custom stylesheet if copycss is unset',
-      skip: needsLoad,
-      () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
-        try {
-          final outPath = '${tempDir.path}/sample-output.html';
-          invokeCli([
-            '-o',
-            outPath,
-            '-a',
-            'linkcss',
-            '-a',
-            'stylesdir=./styles',
-            '-a',
-            'stylesheet=custom.css',
-            '-a',
-            'copycss!',
-          ]);
-          expect(File(outPath).existsSync(), isTrue);
-          expect(
-            File('${tempDir.path}/styles/custom.css').existsSync(),
-            isFalse,
-          );
-        } finally {
-          tempDir.deleteSync(recursive: true);
-        }
-      },
-    );
+    test('does not copy custom stylesheet if copycss is unset', () {
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        final outPath = '${tempDir.path}/sample-output.html';
+        invokeCli([
+          '-o',
+          outPath,
+          '-a',
+          'linkcss',
+          '-a',
+          'stylesdir=./styles',
+          '-a',
+          'stylesheet=custom.css',
+          '-a',
+          'copycss!',
+        ]);
+        expect(File(outPath).existsSync(), isTrue);
+        expect(File('${tempDir.path}/styles/custom.css').existsSync(), isFalse);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test(
-      'does not copy custom stylesheet if stylesdir is a URI',
-      skip: needsLoad,
-      () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
-        try {
-          final outPath = '${tempDir.path}/sample-output.html';
-          invokeCli([
-            '-o',
-            outPath,
-            '-a',
-            'linkcss',
-            '-a',
-            'stylesdir=http://example.org/styles',
-            '-a',
-            'stylesheet=custom.css',
-          ]);
-          expect(File(outPath).existsSync(), isTrue);
-          expect(Directory('${tempDir.path}/http:').existsSync(), isFalse);
-        } finally {
-          tempDir.deleteSync(recursive: true);
-        }
-      },
-    );
+    test('does not copy custom stylesheet if stylesdir is a URI', () {
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        final outPath = '${tempDir.path}/sample-output.html';
+        invokeCli([
+          '-o',
+          outPath,
+          '-a',
+          'linkcss',
+          '-a',
+          'stylesdir=http://example.org/styles',
+          '-a',
+          'stylesheet=custom.css',
+        ]);
+        expect(File(outPath).existsSync(), isTrue);
+        expect(Directory('${tempDir.path}/http:').existsSync(), isFalse);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test('converts all passed files', skip: needsLoad, () {
+    test('converts all passed files', () {
       final tempDir = Directory.systemTemp.createTempSync(
         'asciidoctor-invoker-',
       );
@@ -869,27 +821,23 @@ void main() {
       }
     });
 
-    test(
-      'does not modify options when processing multiple files',
-      skip: needsLoad,
-      () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
+    test('does not modify options when processing multiple files', () {
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        invokeCliWithFilenames(
+          ['-D', tempDir.path, '-a', 'outfilesuffix=.htm'],
+          ['basic.adoc', 'sample.adoc'],
         );
-        try {
-          invokeCliWithFilenames(
-            ['-D', tempDir.path, '-a', 'outfilesuffix=.htm'],
-            ['basic.adoc', 'sample.adoc'],
-          );
-          expect(File('${tempDir.path}/basic.htm').existsSync(), isTrue);
-          expect(File('${tempDir.path}/sample.htm').existsSync(), isTrue);
-        } finally {
-          tempDir.deleteSync(recursive: true);
-        }
-      },
-    );
+        expect(File('${tempDir.path}/basic.htm').existsSync(), isTrue);
+        expect(File('${tempDir.path}/sample.htm').existsSync(), isTrue);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test('converts all files matching a glob expression', skip: needsLoad, () {
+    test('converts all files matching a glob expression', () {
       final tempDir = Directory.systemTemp.createTempSync(
         'asciidoctor-invoker-',
       );
@@ -902,26 +850,22 @@ void main() {
       }
     });
 
-    test(
-      'converts all files matching an absolute path glob expression',
-      skip: needsLoad,
-      () {
-        // Ruby additionally tries a backslash-style pattern on Windows;
-        // tempDir.path already uses native separators there.
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
-        try {
-          copyFixtureTo('basic.adoc', tempDir);
-          invokeCliToBuffer(['${tempDir.path}/ba*.adoc'], null);
-          expect(File('${tempDir.path}/basic.html').existsSync(), isTrue);
-        } finally {
-          tempDir.deleteSync(recursive: true);
-        }
-      },
-    );
+    test('converts all files matching an absolute path glob expression', () {
+      // Ruby additionally tries a backslash-style pattern on Windows;
+      // tempDir.path already uses native separators there.
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        copyFixtureTo('basic.adoc', tempDir);
+        invokeCliToBuffer(['${tempDir.path}/ba*.adoc'], null);
+        expect(File('${tempDir.path}/basic.html').existsSync(), isTrue);
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test('suppresses header footer if specified', skip: needsLoad, () {
+    test('suppresses header footer if specified', () {
       // NOTE the second flag set verifies the legacy alias -s.
       for (final flags in [
         ['-e', '-o', '-'],
@@ -934,7 +878,7 @@ void main() {
       }
     });
 
-    test('writes page for each alternate manname', skip: needsLoad, () {
+    test('writes page for each alternate manname', () {
       const input = '''
 = eve(1)
 Andrew Stanton
@@ -966,12 +910,12 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       }
     });
 
-    test('outputs a trailing newline to stdout', skip: needsLoad, () {
+    test('outputs a trailing newline to stdout', () {
       final invoker = invokeCli(['-o', '-']);
       expect(invoker.readOutput().endsWith('\n'), isTrue);
     });
 
-    test('sets backend to html5 if specified', skip: needsLoad, () {
+    test('sets backend to html5 if specified', () {
       final invoker = invokeCliToBuffer(['-b', 'html5', '-o', '-']);
       final doc = invoker.document!;
       expect(doc.attr('backend'), equals('html5'));
@@ -979,7 +923,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       expect(invoker.readOutput(), contains('<html'));
     });
 
-    test('sets backend to docbook5 if specified', skip: needsLoad, () {
+    test('sets backend to docbook5 if specified', () {
       final invoker = invokeCliToBuffer([
         '-b',
         'docbook5',
@@ -994,32 +938,27 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       expect(invoker.readOutput(), contains('<article'));
     });
 
-    test('sets doctype to article if specified', skip: needsLoad, () {
+    test('sets doctype to article if specified', () {
       final invoker = invokeCliToBuffer(['-d', 'article', '-o', '-']);
       expect(invoker.document!.attr('doctype'), equals('article'));
       expect(invoker.readOutput(), contains('class="article"'));
     });
 
-    test('sets doctype to book if specified', skip: needsLoad, () {
+    test('sets doctype to book if specified', () {
       final invoker = invokeCliToBuffer(['-d', 'book', '-o', '-']);
       expect(invoker.document!.attr('doctype'), equals('book'));
       expect(invoker.readOutput(), contains('class="book"'));
     });
 
-    test(
-      'warns if doctype is inline and the first block is not an inline candidate',
-      skip: needsLoad,
-      () {
-        for (final input in ['== Section Title', 'image::tiger.png[]']) {
-          final invoker = invokeCliToBuffer(['-d', 'inline'], '-', () => input);
-          expect(invoker.readError(), contains('no inline candidate'));
-        }
-      },
-    );
+    test('warns if doctype is inline and the first block is not an inline candidate', () {
+      for (final input in ['== Section Title', 'image::tiger.png[]']) {
+        final invoker = invokeCliToBuffer(['-d', 'inline'], '-', () => input);
+        expect(invoker.readError(), contains('no inline candidate'));
+      }
+    });
 
     test(
       'does not warn if doctype is inline and the document has no blocks',
-      skip: needsLoad,
       () {
         final invoker = invokeCliToBuffer(
           ['-d', 'inline'],
@@ -1032,7 +971,6 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
 
     test(
       'does not warn if doctype is inline and the document has multiple blocks',
-      skip: needsLoad,
       () {
         final invoker = invokeCliToBuffer(
           ['-d', 'inline'],
@@ -1045,7 +983,6 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
 
     test(
       'adds source location to blocks when sourcemap option is specified',
-      skip: needsLoad,
       () {
         final invoker = invokeCliToBuffer(['--sourcemap', '-o', '-']);
         final doc = invoker.document!;
@@ -1062,7 +999,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
     test(
       'locates custom templates based on template dir, engine and backend',
       skip:
-          '$needsLoad No Tilt/Haml template-engine analog exists in Dart; '
+          'WAVE-GATED: No Tilt/Haml template-engine analog exists in Dart; '
           'deferred to the template-converter phase.',
       () {},
     );
@@ -1070,12 +1007,12 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
     test(
       'loads custom templates from multiple template directories',
       skip:
-          '$needsLoad No Tilt/Haml template-engine analog exists in Dart; '
+          'WAVE-GATED: No Tilt/Haml template-engine analog exists in Dart; '
           'deferred to the template-converter phase.',
       () {},
     );
 
-    test('sets attribute with value', skip: needsLoad, () {
+    test('sets attribute with value', () {
       final invoker = invokeCliToBuffer([
         '--trace',
         '-a',
@@ -1088,83 +1025,71 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       expect(invoker.readOutput(), contains('id="idsection_a"'));
     });
 
-    test(
-      'sets attribute with value containing equal sign',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCliToBuffer([
-          '--trace',
-          '-a',
-          'toc',
-          '-a',
-          'toc-title=t=o=c',
-          '-o',
-          '-',
-        ]);
-        expect(invoker.document!.attr('toc-title'), equals('t=o=c'));
-        expect(invoker.readOutput(), contains('>t=o=c<'));
-      },
-    );
+    test('sets attribute with value containing equal sign', () {
+      final invoker = invokeCliToBuffer([
+        '--trace',
+        '-a',
+        'toc',
+        '-a',
+        'toc-title=t=o=c',
+        '-o',
+        '-',
+      ]);
+      expect(invoker.document!.attr('toc-title'), equals('t=o=c'));
+      expect(invoker.readOutput(), contains('>t=o=c<'));
+    });
 
-    test(
-      'sets attribute with quoted value containing a space',
-      skip: needsLoad,
-      () {
-        // Emulates: --trace -a toc -a note-caption="Note to self:" -o -
-        final invoker = invokeCliToBuffer([
-          '--trace',
-          '-a',
-          'toc',
-          '-a',
-          'note-caption=Note to self:',
-          '-o',
-          '-',
-        ]);
-        expect(invoker.document!.attr('note-caption'), equals('Note to self:'));
-        expect(invoker.readOutput(), contains('>Note to self:<'));
-      },
-    );
+    test('sets attribute with quoted value containing a space', () {
+      // Emulates: --trace -a toc -a note-caption="Note to self:" -o -
+      final invoker = invokeCliToBuffer([
+        '--trace',
+        '-a',
+        'toc',
+        '-a',
+        'note-caption=Note to self:',
+        '-o',
+        '-',
+      ]);
+      expect(invoker.document!.attr('note-caption'), equals('Note to self:'));
+      expect(invoker.readOutput(), contains('>Note to self:<'));
+    });
 
-    test(
-      'does not set attribute ending in @ if defined in document',
-      skip: needsLoad,
-      () {
-        final invoker = invokeCliToBuffer([
-          '--trace',
-          '-a',
-          'idprefix=id@',
-          '-e',
-          '-o',
-          '-',
-        ]);
-        expect(invoker.document!.attr('idprefix'), equals('id_'));
-        expect(invoker.readOutput(), contains('id="id_section_a"'));
-      },
-    );
+    test('does not set attribute ending in @ if defined in document', () {
+      final invoker = invokeCliToBuffer([
+        '--trace',
+        '-a',
+        'idprefix=id@',
+        '-e',
+        '-o',
+        '-',
+      ]);
+      expect(invoker.document!.attr('idprefix'), equals('id_'));
+      expect(invoker.readOutput(), contains('id="id_section_a"'));
+    });
 
-    test('sets attribute with no value', skip: needsLoad, () {
+    test('sets attribute with no value', () {
       final invoker = invokeCliToBuffer(['-a', 'icons', '-e', '-o', '-']);
       expect(invoker.document!.attr('icons'), equals(''));
       expect(invoker.readOutput(), contains('alt="Note"'));
     });
 
-    test('unsets attribute ending in bang', skip: needsLoad, () {
+    test('unsets attribute ending in bang', () {
       final invoker = invokeCliToBuffer(['-a', 'sectids!', '-e', '-o', '-']);
       expect(invoker.document!.hasAttr('sectids'), isFalse);
       expect(invoker.readOutput(), contains('<h2>'));
     });
 
-    test('defaults to unsafe safe mode for cli', skip: needsLoad, () {
+    test('defaults to unsafe safe mode for cli', () {
       final invoker = invokeCliToBuffer(['-o', '/dev/null']);
       expect(invoker.document!.safe, equals(SafeMode.unsafe));
     });
 
-    test('sets safe mode if specified', skip: needsLoad, () {
+    test('sets safe mode if specified', () {
       final invoker = invokeCliToBuffer(['--safe', '-o', '/dev/null']);
       expect(invoker.document!.safe, equals(SafeMode.safe));
     });
 
-    test('sets safe mode to specified level', skip: needsLoad, () {
+    test('sets safe mode to specified level', () {
       const levels = {
         'unsafe': SafeMode.unsafe,
         'safe': SafeMode.safe,
@@ -1177,7 +1102,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       });
     });
 
-    test('sets eRuby impl if specified', skip: needsLoad, () {
+    test('sets eRuby impl if specified', () {
       final invoker = invokeCliToBuffer([
         '--eruby',
         'erubi',
@@ -1190,7 +1115,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
     test(
       'forces default external encoding to UTF-8',
       skip:
-          'No Dart analog: Dart strings are always UTF-16 and the invoker '
+          'PERMANENT: No Dart analog: Dart strings are Unicode and the invoker '
           'forces UTF-8 stdio; Ruby`s Encoding.default_external does not exist.',
       () {},
     );
@@ -1198,22 +1123,21 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
     test(
       'forces stdio encoding to UTF-8',
       skip:
-          'No Dart analog: Dart strings are always UTF-16 and the invoker '
+          'PERMANENT: No Dart analog: Dart strings are Unicode and the invoker '
           'forces UTF-8 stdio; Ruby IO encodings do not exist.',
       () {},
     );
 
-    test(
-      'does not fail to load if call to Dir.home fails',
-      skip:
-          '$needsLoad (The Dir.home-failure injection itself has no Dart analog.)',
-      () {
-        final invoker = invokeCli(['-e', '-o', '-']);
-        expect(invoker.readOutput(), contains('Body content'));
-      },
-    );
+    test('does not fail to load if call to Dir.home fails', () {
+      // Ruby injects a Dir.home failure via `-r undef-dir-home.rb`; Dart
+      // has no home-directory lookup on the load path (and `-r` only
+      // accepts known libraries), so the port just verifies plain
+      // conversion of the same fixture.
+      final invoker = invokeCli(['-e', '-o', '-'], 'basic.adoc');
+      expect(invoker.readOutput(), contains('Body content'));
+    });
 
-    test('prints timings when -t flag is specified', skip: needsLoad, () {
+    test('prints timings when -t flag is specified', () {
       final invoker = invokeCli(
         ['-t', '-o', '/dev/null'],
         '-',
@@ -1222,79 +1146,120 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       expect(invoker.readError(), contains('Total time'));
     });
 
-    test(
-      'shows timezone as UTC if system TZ is set to UTC',
-      skip: needsLoad,
-      () async {
-        final environment = Map<String, String>.of(Platform.environment)
-          ..['TZ'] = 'UTC'
-          ..remove('SOURCE_DATE_EPOCH')
-          ..remove('IGNORE_SOURCE_DATE_EPOCH');
-        final result = await runCli([
-          '-d',
-          'inline',
-          '-o',
-          '-',
-          '-e',
-          fixturePath('doctime-localtime.adoc'),
-        ], environment: environment);
-        final lines = (result.stdout as String).split('\n');
-        final lastTwo = lines.sublist(lines.length - 3, lines.length - 1);
-        for (final line in lastTwo) {
-          expect(line, endsWith(' UTC'));
-        }
-      },
-    );
+    test('shows timezone as UTC if system TZ is set to UTC', () async {
+      final environment = Map<String, String>.of(Platform.environment)
+        ..['TZ'] = 'UTC'
+        ..remove('SOURCE_DATE_EPOCH')
+        ..remove('IGNORE_SOURCE_DATE_EPOCH');
+      final result = await runCli([
+        '-d',
+        'inline',
+        '-o',
+        '-',
+        '-e',
+        fixturePath('doctime-localtime.adoc'),
+      ], environment: environment);
+      final lines = (result.stdout as String).split('\n');
+      final lastTwo = lines.sublist(lines.length - 3, lines.length - 1);
+      for (final line in lastTwo) {
+        expect(line, endsWith(' UTC'));
+      }
+    });
 
-    test(
-      'shows timezone as offset if system TZ is not set to UTC',
-      skip: needsLoad,
-      () async {
-        final environment = Map<String, String>.of(Platform.environment)
-          ..['TZ'] = 'EST+5'
-          ..remove('SOURCE_DATE_EPOCH')
-          ..remove('IGNORE_SOURCE_DATE_EPOCH');
-        final result = await runCli([
-          '-d',
-          'inline',
-          '-o',
-          '-',
-          '-e',
-          fixturePath('doctime-localtime.adoc'),
-        ], environment: environment);
-        final lines = (result.stdout as String).split('\n');
-        final lastTwo = lines.sublist(lines.length - 3, lines.length - 1);
-        for (final line in lastTwo) {
-          expect(line, endsWith(' -0500'));
-        }
-      },
-    );
+    test('shows timezone as offset if system TZ is not set to UTC', () async {
+      final environment = Map<String, String>.of(Platform.environment)
+        ..['TZ'] = 'EST+5'
+        ..remove('SOURCE_DATE_EPOCH')
+        ..remove('IGNORE_SOURCE_DATE_EPOCH');
+      final result = await runCli([
+        '-d',
+        'inline',
+        '-o',
+        '-',
+        '-e',
+        fixturePath('doctime-localtime.adoc'),
+      ], environment: environment);
+      final lines = (result.stdout as String).split('\n');
+      final lastTwo = lines.sublist(lines.length - 3, lines.length - 1);
+      for (final line in lastTwo) {
+        expect(line, endsWith(' -0500'));
+      }
+    });
 
     test(
       'uses SOURCE_DATE_EPOCH as modified time of input file and local time',
-      skip:
-          '$needsLoad The process environment is read-only in Dart '
-          '(Platform.environment), so in-process ENV manipulation needs a '
-          'subprocess-based port.',
-      () {},
+      () async {
+        // Port of invoker_test.rb 'should use SOURCE_DATE_EPOCH as modified
+        // time of input file and local time'. The process environment is
+        // read-only in-process, so the CLI runs in a subprocess (cf. the
+        // timezone tests above) and the datetime attributes are asserted
+        // through attribute references in the converted output.
+        final tempDir = Directory.systemTemp.createTempSync(
+          'asciidoctor-invoker-',
+        );
+        try {
+          final inputPath = '${tempDir.path}/epoch.adoc';
+          File(inputPath).writeAsStringSync(
+            '{docdate} {docyear} {docdatetime} {localdate} {localyear} '
+            '{localdatetime}\n',
+          );
+          final environment = Map<String, String>.of(Platform.environment)
+            ..['SOURCE_DATE_EPOCH'] = '1234123412';
+          final result = await runCli([
+            '-o',
+            '-',
+            inputPath,
+          ], environment: environment);
+          expect(result.exitCode, equals(0));
+          final output = result.stdout as String;
+          expect(output, contains('2009-02-08'));
+          expect(output, contains('2009-02-08 20:03:32 UTC'));
+        } finally {
+          tempDir.deleteSync(recursive: true);
+        }
+      },
     );
 
-    test(
-      'ignores SOURCE_DATE_EPOCH if value is empty',
-      skip:
-          '$needsLoad The process environment is read-only in Dart '
-          '(Platform.environment), so in-process ENV manipulation needs a '
-          'subprocess-based port.',
-      () {},
-    );
+    test('ignores SOURCE_DATE_EPOCH if value is empty', () async {
+      // Port of invoker_test.rb 'should ignore SOURCE_DATE_EPOCH is value
+      // is empty', via a subprocess (see the test above).
+      final tempDir = Directory.systemTemp.createTempSync(
+        'asciidoctor-invoker-',
+      );
+      try {
+        final inputPath = '${tempDir.path}/epoch.adoc';
+        File(inputPath).writeAsStringSync('{localyear}\n');
+        final environment = Map<String, String>.of(Platform.environment)
+          ..['SOURCE_DATE_EPOCH'] = '';
+        final result = await runCli([
+          '-o',
+          '-',
+          inputPath,
+        ], environment: environment);
+        expect(result.exitCode, equals(0));
+        final match = RegExp(r'<p>(\d{4})</p>')
+            .firstMatch(result.stdout as String);
+        expect(match, isNotNull);
+        expect(
+          int.parse(match![1]!),
+          greaterThanOrEqualTo(DateTime.now().year - 1),
+        );
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
 
-    test(
-      'fails if SOURCE_DATE_EPOCH is malformed',
-      skip:
-          '$needsLoad The process environment is read-only in Dart '
-          '(Platform.environment), so in-process ENV manipulation needs a '
-          'subprocess-based port.',
-      () {},
-    );
+    test('fails if SOURCE_DATE_EPOCH is malformed', () async {
+      // Port of invoker_test.rb 'should fail if SOURCE_DATE_EPOCH is
+      // malformed', via a subprocess (see the tests above).
+      final environment = Map<String, String>.of(Platform.environment)
+        ..['SOURCE_DATE_EPOCH'] = 'aaaaaaaa';
+      final result = await runCli([
+        '-o',
+        '/dev/null',
+        sampleFile,
+      ], environment: environment);
+      expect(result.exitCode, equals(1));
+    });
   });
 }

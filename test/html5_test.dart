@@ -9,8 +9,9 @@
 /// Substitution-dependent paths are covered with stub nodes ([StubBlock],
 /// [StubSection], [StubListItem], [StubCell], [StubDocument]) that return
 /// fixed content/titles/text, using plain-text inputs for which the real
-/// substitutions are the identity. Cases that need real substitution
-/// output, the parser, or nested documents are skipped with a reason.
+/// substitutions are the identity. The tests that need real substitution
+/// output parse small sources via [parseDoc] instead (the parser and
+/// substitutors waves are merged).
 library;
 
 import 'dart:io';
@@ -24,17 +25,10 @@ import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/html5.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/list.dart';
+import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/table.dart';
 import 'package:test/test.dart';
-
-/// Skip reason for tests requiring real substitution output.
-const String needsSubstitutors =
-    'needs substitutors wave (TASK-2h31dk): real substitution output';
-
-/// Skip reason for tests requiring nested documents (the nested-document
-/// constructor eagerly parses, so this needs the parser wave too).
-const String needsNestedDoc = 'needs nested Document (parser wave)';
 
 /// Records log messages for assertions.
 class FakeLogger implements NodeLogger {
@@ -310,6 +304,41 @@ Document makeDoc({
 /// The [Html5Converter] installed on [doc].
 Html5Converter convOf(Document doc) => doc.converter as Html5Converter;
 
+/// Parses [src] into an embedded HTML5 document (port of the
+/// `document_from_string` test helper), for the tests that need real
+/// substitution output now that the parser and substitutors waves are
+/// merged.
+Document parseDoc(String src, [Map<String, Object?>? options]) {
+  final opts = <String, Object?>{
+    'backend': 'html5',
+    'standalone': false,
+    ...?options,
+  };
+  return Document(src, opts).parse();
+}
+
+/// Converts [src] to embedded HTML5 (port of `convert_string_to_embedded`).
+String convertEmbedded(String src, [Map<String, Object?>? options]) =>
+    parseDoc(src, options).convert() as String;
+
+/// Finds the enclosing repository checkout directory.
+String _findRepoRoot() {
+  var dir = Directory.current;
+  while (true) {
+    if (File('${dir.path}/dart/pubspec.yaml').existsSync() &&
+        Directory('${dir.path}/test/fixtures').existsSync()) {
+      return dir.path;
+    }
+    final parent = dir.parent;
+    if (parent.path == dir.path) {
+      throw StateError(
+        'repository checkout not found above ${Directory.current.path}',
+      );
+    }
+    dir = parent;
+  }
+}
+
 /// Assigns a header with [title] to [doc].
 void setDocHeader(Document doc, String title) {
   final header = StubSection(parent: doc, level: 0, stubTitle: title)
@@ -466,11 +495,17 @@ void main() {
       );
     });
 
-    test(
-      'paragraph with substitutions in content',
-      () {},
-      skip: needsSubstitutors,
-    );
+    test('paragraph with substitutions in content', () {
+      // Exercises the converter through real `apply_subs` output
+      // (`lib/asciidoctor/substitutors.rb`); oracle from Ruby
+      // `Asciidoctor.convert '*bold* and _italic_', standalone: false`.
+      expect(
+        convertEmbedded('*bold* and _italic_'),
+        '<div class="paragraph">\n'
+        '<p><strong>bold</strong> and <em>italic</em></p>\n'
+        '</div>',
+      );
+    });
   });
 
   group('convertSection', () {
@@ -1642,11 +1677,15 @@ void main() {
       );
     });
 
-    test(
-      'image with substitutions in alt text',
-      () {},
-      skip: needsSubstitutors,
-    );
+    test('image with substitutions in alt text', () {
+      // Port of blocks_test.rb 'should apply specialcharacters and
+      // replacement substitutions to alt text'.
+      const input = 'A tiger\'s "roar" is < a bear\'s "growl"';
+      const expected =
+          'A tiger&#8217;s &quot;roar&quot; is &lt; a bear&#8217;s &quot;growl&quot;';
+      final result = convertEmbedded('image::images/tiger-roar.png[$input]');
+      expect(result, contains('alt="$expected"'));
+    });
   });
 
   group('readSvgContents', () {
@@ -2344,19 +2383,28 @@ void main() {
       });
     });
 
-    test(
-      'xref with xrefstyle against captioned block',
-      () {},
-      skip: needsSubstitutors,
-    );
+    test('xref with xrefstyle against captioned block', () {
+      // Oracle from Ruby `Asciidoctor.convert` of the same input with
+      // `:xrefstyle: full` (cf. `AbstractNode#xreftext` in
+      // `lib/asciidoctor/abstract_node.rb`).
+      const input =
+          ':xrefstyle: full\n\nSee <<tiger>>.\n\n[#tiger]\n.Tiger\nimage::tiger.png[Tiger]\n';
+      expect(
+        convertEmbedded(input),
+        contains(
+          '<p>See <a href="#tiger">Figure 1, &#8220;Tiger&#8221;</a>.</p>',
+        ),
+      );
+    });
 
-    test(
-      'recursive xref guard',
-      () {},
-      skip:
-          'placeholder (empty body): needs reentrant conversion through '
-          'substitutions (TASK-2h31dk)',
-    );
+    test('recursive xref guard', () {
+      // Port of links_test.rb 'should break circular xref reference in
+      // section title'.
+      const input = '[#a]\n== A <<b>>\n\n[#b]\n== B <<a>>\n';
+      final output = convertEmbedded(input);
+      expect(output, contains('<h2 id="a">A <a href="#b">B [a]</a></h2>'));
+      expect(output, contains('<h2 id="b">B <a href="#a">[a]</a></h2>'));
+    });
   });
 
   group('convertInlineBreak', () {
@@ -3095,23 +3143,55 @@ void main() {
       );
     });
 
-    test(
-      'author email rendering',
-      () {},
-      skip:
-          'placeholder (empty body): needs substitutors wave '
-          '(TASK-2h31dk; sub_macros TEMP-SHIM)',
-    );
+    test('author email rendering', () {
+      // Oracle from Ruby `Asciidoctor.convert` of the same input
+      // (standalone); exercises the author/email header template in
+      // `lib/asciidoctor/converter/html5.rb`.
+      const input =
+          '= Document Title\nAuthor Name <author@example.org>\n\ncontent\n';
+      final output =
+          parseDoc(input, const {'standalone': true}).convert() as String;
+      expect(output, contains('<meta name="author" content="Author Name">'));
+      expect(
+        output,
+        contains(
+          '<span id="email" class="email">'
+          '<a href="mailto:author@example.org">author@example.org</a>'
+          '</span>',
+        ),
+      );
+    });
 
-    test('docinfo files are included', () {}, skip: needsSubstitutors);
+    test('docinfo files are included', () {
+      // Slice of document_test.rb 'should include docinfo files for html
+      // backend' (the `'docinfo'` case): private head, header and footer
+      // files from `test/fixtures` are spliced into the standalone page.
+      final output = convertFile(
+        '${_findRepoRoot()}/test/fixtures/basic.adoc',
+        const {
+          'to_file': false,
+          'standalone': true,
+          'safe': SafeMode.server,
+          'attributes': 'linkcss copycss! docinfo',
+        },
+      ) as String;
+      expect(output, contains('<script src="modernizr.js"></script>'));
+      expect(output, contains('<nav class="navbar">'));
+      expect(output, contains('plusone.js'));
+    });
 
-    test(
-      'full document from source',
-      () {},
-      skip:
-          'placeholder (empty body): needs converter + substitutors waves '
-          'for full-document conversion',
-    );
+    test('full document from source', () {
+      // Oracle from Ruby `Asciidoctor.convert` of the same input
+      // (standalone); exercises the full document template in
+      // `lib/asciidoctor/converter/html5.rb`.
+      const input = '= Doc Title\n\nHello, *world*!\n';
+      final output =
+          parseDoc(input, const {'standalone': true}).convert() as String;
+      expect(output, contains('<!DOCTYPE html>'));
+      expect(output, contains('<title>Doc Title</title>'));
+      expect(output, contains('<h1>Doc Title</h1>'));
+      expect(output, contains('<p>Hello, <strong>world</strong>!</p>'));
+    });
   });
 
   group('convertEmbedded', () {

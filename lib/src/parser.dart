@@ -14,11 +14,11 @@
 /// deleted (routing the call to the real API) when that wave lands:
 ///
 /// * The substitutors wave replaces [_subSpecialchars], [_subAttributes],
-///   [_applyHeaderSubs], [_applyAttributeValueSubs], [_setDocumentAttribute],
-///   [_parseAttributes], [_resolveSubs], [_commitSubs] and [_titleText].
-///   Substitution coverage in these seams is limited to the
-///   `specialcharacters` and `attributes` substitutions; quotes, macros,
-///   replacements and post-replacements are applied by the real wave.
+///   [_applyHeaderSubs], [_parseAttributes], [_resolveSubs], [_commitSubs]
+///   and [_titleText]. Substitution coverage in these seams is limited to
+///   the `specialcharacters` and `attributes` substitutions; quotes,
+///   macros, replacements and post-replacements are applied by the real
+///   wave.
 /// * The extensions wave restores the block/block-macro extension branches
 ///   in [nextBlock] and [buildBlock] (`document.extensions` is always `null`
 ///   until then, so the omitted branches are unreachable).
@@ -648,52 +648,15 @@ abstract final class Parser {
   static String _applyHeaderSubs(Document document, String text) =>
       _subAttributes(document, _subSpecialchars(text));
 
-  /// TEMP-SEAM (parser): port of `Document#apply_attribute_value_subs`.
+  /// Assigns the attribute entry [name] to [value] on [document].
   ///
-  /// A pass macro without an explicit subs list is stored verbatim
-  /// (exact); an explicit subs list applies `specialcharacters` and
-  /// `attributes` only (partial: quotes, macros and friends need the
-  /// substitutors wave). The byte-size limit is enforced by the document
-  /// wave's real setter once this seam is deleted.
-  static String _applyAttributeValueSubs(Document document, String value) {
-    final match = attributeEntryPassMacroRx.firstMatch(value);
-    if (match == null) return _applyHeaderSubs(document, value);
-    var result = match.group(2) ?? '';
-    final subs = match.group(1);
-    if (subs != null) {
-      final resolved = _resolveSubs(subs, 'inline', null, null);
-      if (resolved != null) {
-        if (resolved.contains('specialcharacters')) {
-          result = _subSpecialchars(result);
-        }
-        if (resolved.contains('attributes')) {
-          result = _subAttributes(document, result);
-        }
-      }
-    }
-    return result;
-  }
-
-  /// TEMP-SEAM (parser): assignment half of `Document#set_attribute`.
-  ///
-  /// `setAttribute` throws for every non-empty value until the
-  /// substitutors wave lands, so this replicates its lock check and
-  /// assignment with seam-applied value subs. Assignments to `backend`
-  /// and `doctype` only store the value; the backend/doctype attribute
-  /// updates need the document wave's private methods (delete this seam
-  /// and call `setAttribute` once the waves land).
+  /// Routes to the real [Document.setAttribute] (both the document and
+  /// substitutors waves are merged).
   static String? _setDocumentAttribute(
     Document document,
     String name,
     String value,
-  ) {
-    if (document.attributeLocked(name)) return null;
-    final resolved = value.isEmpty
-        ? value
-        : _applyAttributeValueSubs(document, value);
-    document.attributes[name] = resolved;
-    return resolved;
-  }
+  ) => document.setAttribute(name, value);
 
   /// TEMP-SEAM (parser): port of `Substitutors#parse_attributes` for the
   /// options the parser uses (`sub_input`, `sub_result`, `into`).
@@ -4213,8 +4176,6 @@ abstract final class Parser {
         }
         // QUESTION should we set value to locked value if set_attribute
         // returns false?
-        // TEMP-SEAM (parser): setAttribute throws for non-empty values
-        // until the substitutors wave lands; the seam replicates it.
         final resolved = _setDocumentAttribute(doc, resolvedName, stringValue);
         if (resolved != null) {
           resolvedValue = resolved;

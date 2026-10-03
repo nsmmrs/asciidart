@@ -499,7 +499,7 @@ void main() {
     test(
       'File.dirname preserves UNC path root on Windows',
       skip:
-          'asserts Ruby-stdlib File.dirname behavior, which has no Dart '
+          'PERMANENT: asserts Ruby-stdlib File.dirname behavior, which has no Dart '
           'equivalent; UNC resolution is covered by the PathResolver tests '
           'below',
       () {},
@@ -508,7 +508,7 @@ void main() {
     test(
       'File.dirname preserves posix-style UNC path root on Windows',
       skip:
-          'asserts Ruby-stdlib File.dirname behavior, which has no Dart '
+          'PERMANENT: asserts Ruby-stdlib File.dirname behavior, which has no Dart '
           'equivalent; UNC resolution is covered by the PathResolver tests '
           'below',
       () {},
@@ -542,7 +542,7 @@ void main() {
     test(
       'resolves classloader path if start is classloader path and target is relative',
       skip:
-          'JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
+          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
           'is not a root',
       () {},
     );
@@ -550,7 +550,7 @@ void main() {
     test(
       'resolves classloader path if start is root-relative classloader path and target is relative',
       skip:
-          'JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
+          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
           'is not a root',
       () {},
     );
@@ -558,7 +558,7 @@ void main() {
     test(
       'preserves classloader path if start is absolute path and target is classloader path',
       skip:
-          'JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
+          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
           'is not a root',
       () {},
     );

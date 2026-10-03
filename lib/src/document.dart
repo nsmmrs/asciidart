@@ -19,9 +19,8 @@
 ///   constructor-level behavior is byte-identical; calling `convert` on the
 ///   stub throws [UnimplementedError]. [Document.convert] calls the
 ///   single-argument `NodeConverter.convert`.
-/// * The substitutors wave fills in the private `_applyHeaderSubs`,
-///   `_applyPassMacroSubs` and `_resolveDocinfoSubs` stubs (all throwing
-///   [UnimplementedError] until then).
+/// * The substitutors wave fills in the `_resolveDocinfoSubs` stub
+///   (throwing [UnimplementedError] until then).
 /// * The extensions and syntax-highlighter waves fill in [Document.extensions]
 ///   and [Document.syntaxHighlighter] (both `null` until then). Passing the
 ///   `extensions` or `extension_registry` options, or a `converter_factory`
@@ -1262,7 +1261,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// backend-related attributes while the header is being parsed.
   String? setAttribute(String name, [String value = '']) {
     if (attributeLocked(name)) return null;
-    final resolved = value.isEmpty ? value : _applyAttributeValueSubs(value);
+    final resolved = value.isEmpty ? value : applyAttributeValueSubs(value);
     // NOTE if _headerAttributes is set, we're beyond the document header.
     if (_headerAttributes != null) {
       attributes[name] = resolved;
@@ -1545,32 +1544,38 @@ class Document extends AbstractBlock implements NodeDocument {
   /// defined in it (or is left unmodified when none are specified);
   /// otherwise header substitutions are applied. The result is truncated
   /// to [_maxAttributeValueSize] bytes when a limit is configured.
-  String _applyAttributeValueSubs(String value) {
+  String applyAttributeValueSubs(String value) {
     final match = attributeEntryPassMacroRx.firstMatch(value);
     final String result;
     if (match != null) {
       result = _applyPassMacroSubs(match.group(2) ?? '', match.group(1));
     } else {
-      result = _applyHeaderSubs(value);
+      result = applyHeaderSubs(value);
     }
     final maxSize = _maxAttributeValueSize;
     return maxSize != null ? _limitBytesize(result, maxSize) : result;
   }
 
-  /// Applies the passthrough-macro [subs] to [value].
-  ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  String _applyPassMacroSubs(String value, String? subs) =>
-      throw UnimplementedError(
-        'Substitutors wave: attribute pass-macro subs are not yet ported.',
-      );
-
   /// Applies header substitutions to [value].
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  String _applyHeaderSubs(String value) => throw UnimplementedError(
-    'Substitutors wave: Document.applyHeaderSubs is not yet ported.',
-  );
+  /// Port of `Substitutors#apply_header_subs` (via
+  /// `Document#apply_attribute_value_subs` in `lib/asciidoctor/document.rb`).
+  String applyHeaderSubs(String value) =>
+      substitutors.applyHeaderSubs(this, value) as String;
+
+  /// Applies the passthrough-macro [subs] to [value].
+  ///
+  /// Port of the pass-macro branch of `Document#apply_attribute_value_subs`
+  /// (`lib/asciidoctor/document.rb`): a `null` subs list stores the value
+  /// verbatim, otherwise the resolved pass subs are applied.
+  String _applyPassMacroSubs(String value, String? subs) {
+    if (subs == null) return value;
+    return substitutors.applySubs(
+      this,
+      value,
+      substitutors.resolvePassSubs(this, subs),
+    ) as String;
+  }
 
   /// Safely truncates [str] to [max] bytes.
   ///

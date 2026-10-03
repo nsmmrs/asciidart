@@ -591,27 +591,21 @@ void main() {
       },
     );
 
-    test(
-      'removes formatting before partitioning author defined using author attribute',
-      () {
-        const input =
-            ':author: pass:n[http://example.org/community/team.html[Ze_**Project** team]]';
-        final doc = emptyDocument();
-        parseHeaderMetadata(input, doc);
-        expect(doc.attributes['authorcount'], equals(1));
-        expect(
-          doc.attributes['authors'],
-          equals(
-            '<a href="http://example.org/community/team.html">Ze <strong>Project</strong> team</a>',
-          ),
-        );
-        expect(doc.attributes['firstname'], equals('Ze Project'));
-        expect(doc.attributes['lastname'], equals('team'));
-      },
-      skip:
-          'needs substitutors wave (TASK-2h31dk): pass-macro subs with quotes '
-          'and link macros (Parser._applyAttributeValueSubs is a partial TEMP-SEAM)',
-    );
+    test('removes formatting before partitioning author defined using author attribute', () {
+      const input =
+          ':author: pass:n[http://example.org/community/team.html[Ze_**Project** team]]';
+      final doc = emptyDocument();
+      parseHeaderMetadata(input, doc);
+      expect(doc.attributes['authorcount'], equals(1));
+      expect(
+        doc.attributes['authors'],
+        equals(
+          '<a href="http://example.org/community/team.html">Ze <strong>Project</strong> team</a>',
+        ),
+      );
+      expect(doc.attributes['firstname'], equals('Ze Project'));
+      expect(doc.attributes['lastname'], equals('team'));
+    });
 
     test('parse rev number date remark', () {
       const input =

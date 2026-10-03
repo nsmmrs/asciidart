@@ -352,6 +352,37 @@ class Column extends AbstractNode {
   bool get isInline => false;
 }
 
+/// Adapts a [Cursor] to [NodeSourceLocation] (mirrors the private adapters
+/// in `parser.dart` and `document.dart`).
+class _CursorSourceLocation implements NodeSourceLocation {
+  /// Creates a source location from [cursor].
+  _CursorSourceLocation(this._cursor);
+
+  final Cursor _cursor;
+
+  @override
+  String? get file {
+    final file = _cursor.file;
+    return file is String ? file : file?.toString();
+  }
+
+  @override
+  int? get lineno => _cursor.lineno;
+}
+
+/// An immutable [NodeSourceLocation] snapshot (copy semantics for location
+/// values passed directly, e.g. test doubles).
+class _SnapshotSourceLocation implements NodeSourceLocation {
+  /// Creates a snapshot of [file]:[lineno].
+  _SnapshotSourceLocation(this.file, this.lineno);
+
+  @override
+  final String? file;
+
+  @override
+  final int? lineno;
+}
+
 /// Methods for managing a cell in an AsciiDoc table.
 ///
 /// Port of `Asciidoctor::Table::Cell`.
@@ -399,11 +430,19 @@ class Cell extends AbstractBlock {
        super(column?.table, 'table_cell') {
     final Map<String, Object?>? attrs = attributes;
     if (document!.sourcemap) {
+      // Port of `@source_location = opts[:cursor].dup if @document.sourcemap`
+      // (`lib/asciidoctor/table.rb`); `nil.dup` is `nil` in Ruby. The copy
+      // matters: the original cursor may advance afterwards (asciidoc
+      // cells), which must not move the stored location.
       final cursor = opts?['cursor'];
-      // Ruby calls `dup` on the cursor (`nil.dup` is `nil`).
-      sourceLocation = cursor == null
-          ? null
-          : ((cursor as dynamic).dup() as NodeSourceLocation?);
+      sourceLocation = switch (cursor) {
+        Cursor() => _CursorSourceLocation(cursor.dup()),
+        NodeSourceLocation() => _SnapshotSourceLocation(
+          cursor.file,
+          cursor.lineno,
+        ),
+        _ => null,
+      };
     }
     String? cellStyle;
     Object? inHeaderRow;

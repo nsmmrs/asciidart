@@ -1,8 +1,8 @@
 /// Tests for the CLI options port (`lib/src/cli/options.dart`).
 ///
 /// Port of `test/options_test.rb`, plus the option-parsing halves of the
-/// `test/invoker_test.rb` cases (invocation halves are `skip()`ped for the
-/// invoker card) and extra parity tests for flags the Ruby suite never
+/// `test/invoker_test.rb` cases (invocation halves live in
+/// `invoker_test.dart`) and extra parity tests for flags the Ruby suite never
 /// exercises directly (`-B`, `-R`, `-D`, `-o`, `--trace`, `--safe`, long
 /// abbreviations, short clusters, ...). Every expectation was verified
 /// against `lib/asciidoctor/cli/options.rb` via `ruby -Ilib` probes and a
@@ -725,14 +725,10 @@ void main() {
       });
     });
 
-    test(
-      'force-encodes mislabeled attribute strings to UTF-8',
-      skip: 'Ruby string encodings do not exist in Dart; strings are Unicode.',
-      () {
-        // Port of options_test 'should gracefully force encoding to UTF-8 if
-        // encoding on string is mislabeled'.
-      },
-    );
+    test('force-encodes mislabeled attribute strings to UTF-8', skip: 'PERMANENT: Ruby string encodings do not exist in Dart; strings are Unicode.', () {
+      // Port of options_test 'should gracefully force encoding to UTF-8 if
+      // encoding on string is mislabeled'.
+    });
   });
 
   group('backend, doctype and safe mode', () {
@@ -1016,13 +1012,9 @@ void main() {
       expect(result.options.loadPaths, equals(['foobar', 'foobaz']));
     });
 
-    test(
-      '-I option appends paths to the load path',
-      skip: 'Dart has no \$LOAD_PATH; values are recorded in loadPaths only.',
-      () {
-        // The `\$:` assertions of the options_test -I tests.
-      },
-    );
+    test('-I option appends paths to the load path', skip: 'PERMANENT: Dart has no \$LOAD_PATH; values are recorded in loadPaths only.', () {
+      // The `\$:` assertions of the options_test -I tests.
+    });
   });
 
   group('input files', () {
@@ -1337,66 +1329,42 @@ void main() {
     });
   });
 
+  // NOTE (unskip-3c): the invocation halves once placeholdered here now
+  // live in `invoker_test.dart`, which owns CLI invocation behavior:
+  // verbosity mapping ('silences warnings if -q flag is specified',
+  // 'shows debug messages if -v flag is specified'), the failure-level
+  // exit code ('returns non-zero exit code if failure level is reached'),
+  // `--log-level` ('changes level on logger when --log-level is
+  // specified', plus the `-q`/`-v` interplay tests), attribute unsets
+  // and soft sets ('unsets attribute ending in bang', 'does not set
+  // attribute ending in @ if defined in document'), and the invoker
+  // constructor forms (the 'Invoker constructor' group). The 'handles
+  // compat files' placeholder was deleted outright: no compat-file
+  // handling exists in `options.rb` or `invoker.rb`, so there is nothing
+  // to port or cover.
   group('deferred to later phases', () {
     test(
-      'maps verbosity onto the logger',
-      skip: 'Needs the invoker card (verbose 0 installs NullLogger, 2 sets DEBUG).',
-      () {},
-    );
-
-    test(
-      'yields a non-zero exit code when the failure level is reached',
-      skip: 'Needs the invoker card (compares logger max severity after conversion).',
-      () {},
-    );
-
-    test(
-      'applies --log-level to the logger',
-      skip: 'Needs the invoker card (sets the logger level around conversion).',
-      () {},
-    );
-
-    test(
-      'applies attribute unsets and soft sets from the command line',
-      skip:
-          'Needs the document wave (name! unsets and name@/value@ soft sets).',
-      () {},
-    );
-
-    test(
       'fails when template directories need a missing engine',
-      skip: "Deferred to the template-converter phase (Ruby requires the 'tilt' gem).",
+      skip: "WAVE-GATED: deferred to the template-converter phase (Ruby requires the 'tilt' gem).",
       () {},
     );
 
     test(
       'enables Ruby script warnings for -w',
-      skip: 'No Dart equivalent of \$VERBOSE-backed script warnings.',
-      () {},
-    );
-
-    test(
-      'handles compat files',
-      skip: 'No compat-file handling exists in options.rb or invoker.rb; nothing to port.',
-      () {},
-    );
-
-    test(
-      'constructs the invoker from options, hashes and argument lists',
-      skip: 'Needs the invoker card (Invoker.new constructor forms).',
+      skip:
+          'PERMANENT: No Dart equivalent of \$VERBOSE-backed script warnings.',
       () {},
     );
 
     test(
       'falls back to man -w for the man page',
-      skip:
-          'The man database cannot be controlled hermetically in a unit test.',
+      skip: 'PERMANENT: The man database cannot be controlled hermetically in a unit test.',
       () {},
     );
 
     test(
       'reports a missing syntax page',
-      skip: 'data/reference/syntax.adoc always ships in the checkout; Ruby offers no override to simulate absence.',
+      skip: 'PERMANENT: data/reference/syntax.adoc always ships in the checkout; Ruby offers no override to simulate absence.',
       () {},
     );
   });
