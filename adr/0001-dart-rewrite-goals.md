@@ -38,6 +38,8 @@ extensions framework, all 6 syntax-highlighter adapters (each with an
 implemented strategy), and the Tilt-template spike resolved by building
 an adapter or port — not a gap note. Out of scope: PDF/EPUB3 converters
 and AsciidoctorJ/JS-class counterparts (separate repos/gems, unchanged).
+These are downstream consumer projects, not parts of this repo; the port
+covers every converter this repo ships (html5, docbook5, manpage).
 
 ### D4. Compatibility stance — SETTLED (1)
 
