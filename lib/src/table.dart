@@ -1108,5 +1108,3 @@ class TableParserContext {
     _linenum += 1;
   }
 }
-
-
