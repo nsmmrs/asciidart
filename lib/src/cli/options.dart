@@ -283,6 +283,9 @@ enum _CliOption {
   /// `-t/--timings`.
   timings,
 
+  /// `-j/--jobs N` (Dart-only extension; no Ruby analog).
+  jobs,
+
   /// `-h/--help [TOPIC]`.
   help,
 
@@ -371,6 +374,7 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.verbose, 'v', 'verbose', _Arity.none),
   _Spec(_CliOption.warnings, 'w', 'warnings', _Arity.none),
   _Spec(_CliOption.timings, 't', 'timings', _Arity.none),
+  _Spec(_CliOption.jobs, 'j', 'jobs', _Arity.required),
   _Spec(_CliOption.help, 'h', 'help', _Arity.optional),
   _Spec(_CliOption.version, 'V', 'version', _Arity.none),
 ];
@@ -419,6 +423,7 @@ final class CliOptions {
     this.destinationDir,
     Object? logLevel,
     this.sourcemap,
+    this.jobs = 1,
   }) : attributes = attributes ?? <String, String>{},
        safe = safe ?? SafeMode.unsafe,
        templateDirs = _normalizeTemplateDirs(templateDirs),
@@ -490,6 +495,15 @@ final class CliOptions {
 
   /// Whether a timings report is printed (`-t/--timings`).
   bool timings = false;
+
+  /// Worker count from `-j/--jobs N` (default 1: sequential conversion).
+  ///
+  /// A Dart-only extension with no Ruby analog (hence absent from
+  /// [usageText], which stays byte-identical to Ruby's help): with N > 1 the
+  /// invoker converts multiple input files on a pool of worker isolates (see
+  /// `Invoker.invokeAsync`). Values below 1 behave like 1; [parse] rejects
+  /// them (and non-integers) with a make-style usage error instead.
+  int jobs;
 
   /// Normalizes a [CliOptions.templateDirs] seed. See the constructor docs.
   static List<String>? _normalizeTemplateDirs(Object? value) {
@@ -1008,6 +1022,8 @@ final class CliOptions {
         warnings = true;
       case _CliOption.timings:
         timings = true;
+      case _CliOption.jobs:
+        jobs = _parseJobsValue(value!);
       case _CliOption.help:
         return _showHelp(value, outSink, errSink, env);
       case _CliOption.version:
@@ -1103,6 +1119,23 @@ int _safeModeValue(String name) {
       return SafeMode.secure;
   }
   throw StateError('unreachable: completed safe mode "$name"');
+}
+
+/// Parses a `-j/--jobs` value to a worker count.
+///
+/// Throws [_InvalidCliArgument] with GNU make's message (verified against
+/// make 4.4.1: `make: the '-j' option requires a positive integer argument`)
+/// for zero, negative and non-integer values; the usual invalid-argument
+/// machinery then reports it with the usage text and exit code 1. The
+/// message names `-j` regardless of the spelling used, exactly like make.
+int _parseJobsValue(String value) {
+  final jobs = int.tryParse(value);
+  if (jobs == null || jobs < 1) {
+    throw const _InvalidCliArgument(
+      "the '-j' option requires a positive integer argument",
+    );
+  }
+  return jobs;
 }
 
 /// Maps a completed `--log-level`/`--failure-level` value to its severity.

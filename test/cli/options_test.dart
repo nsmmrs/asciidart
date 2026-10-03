@@ -364,9 +364,11 @@ void main() {
     });
 
     test('invalid short in a cluster reports the remainder', () {
-      final result = parseCli(['-qjunk', sampleFile]);
+      // NOTE `-j` is the Dart-only jobs flag, so the cluster uses `-z`
+      // (still invalid) to exercise the remainder reporting.
+      final result = parseCli(['-qzunk', sampleFile]);
       expect(result.exitCode, equals(1));
-      expect(result.err.trim(), equals('asciidoctor: invalid option: -junk'));
+      expect(result.err.trim(), equals('asciidoctor: invalid option: -zunk'));
     });
 
     test('unknown short option fails', () {

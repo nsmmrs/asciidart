@@ -46,13 +46,16 @@ library;
 
 import 'dart:convert' show utf8;
 import 'dart:io';
+import 'dart:math' show min;
 
 import '../abstract_node.dart';
 import '../document.dart';
+import '../job_pool.dart';
 import '../load.dart';
 import '../logging.dart';
 import '../timings.dart';
 import 'options.dart';
+import 'parallel.dart';
 
 /// Runs the Asciidoctor processor from parsed command-line options.
 ///
@@ -116,6 +119,11 @@ final class Invoker with Logging {
   CliOptions? get options => _options;
 
   /// The converted documents, in input order.
+  ///
+  /// Only populated by the sequential path ([invoke] and [invokeAsync]
+  /// without fan-out). The parallel path leaves this empty: documents are
+  /// live, non-transferable objects, and re-parsing them on the main isolate
+  /// would erase the parallel speedup.
   final List<Document> documents = [];
 
   /// The process exit code for this invocation.
@@ -133,6 +141,9 @@ final class Invoker with Logging {
   /// read fully as UTF-8. Processor failures set [code] to 1 (or rethrow
   /// when `--trace` was given) and report to the error stream; a logger
   /// severity at or above the failure level also yields exit code 1.
+  ///
+  /// Always converts sequentially on the current isolate, even when
+  /// [CliOptions.jobs] exceeds 1; use [invokeAsync] for parallel fan-out.
   void invoke({String Function()? stdinSource}) {
     final options = _options;
     if (options == null) return;
@@ -241,6 +252,203 @@ final class Invoker with Logging {
             documents.add(convertFile(infile, inputOpts) as Document);
           }
         }
+      }
+      final maxSeverity = logger.maxSeverity;
+      if (maxSeverity != null &&
+          maxSeverity.value >= options.failureLevel.value) {
+        _code = 1;
+      }
+    } catch (e) {
+      _code = 1;
+      if (options.trace) rethrow;
+      err.writeln(e.toString());
+      err.writeln('  Use --trace to show backtrace');
+    } finally {
+      if (savedLogger != null) {
+        LoggerManager.logger = savedLogger;
+      } else if (savedLevel != null) {
+        LoggerManager.logger.level = savedLevel;
+      }
+    }
+  }
+
+  /// Converts the input files, fanning out to worker isolates when `-j` asks.
+  ///
+  /// Dart-only extension (no Ruby analog): when [CliOptions.jobs] exceeds 1
+  /// and several input files are given, each file converts on a pooled
+  /// worker isolate and the per-file results are replayed in input order,
+  /// so converted output, diagnostics and the exit [code] match the
+  /// sequential run (see [_invokeParallel]). Otherwise — single input file,
+  /// stdin conversion, an explicit shared `-o` target (whose concurrent
+  /// writes could not stay ordered), or `jobs <= 1` — this simply runs the
+  /// sequential [invoke] on the current isolate.
+  Future<void> invokeAsync({String Function()? stdinSource}) async {
+    final options = _options;
+    if (options == null) return;
+    final infiles = options.inputFiles ?? <String>[];
+    final multiFile = infiles.length > 1;
+    final stdinInput = infiles.length == 1 && infiles[0] == '-';
+    final outfile = options.outputFile;
+    final sharedOutfile = outfile != null && outfile != '-' && multiFile;
+    if (options.jobs > 1 && multiFile && !stdinInput && !sharedOutfile) {
+      await _invokeParallel();
+    } else {
+      invoke(stdinSource: stdinSource);
+    }
+  }
+
+  /// Converts several input files on a pool of worker isolates.
+  ///
+  /// The option setup mirrors [invoke] (keep the two in sync); only the
+  /// conversion loop differs. One job per input file runs on a fixed pool of
+  /// `min(jobs, fileCount)` long-lived isolates spawned once for this call.
+  /// Each worker converts with the same options, attributes, safe mode and
+  /// failure level as the sequential path, captures its log records and
+  /// phase timings, and (in `-o -` mode) its converted text; the main
+  /// isolate then replays logs, STDOUT text and per-file timing reports in
+  /// input order and derives [code] from the replayed worst severity
+  /// exactly like [invoke].
+  ///
+  /// Two deliberate divergences from a sequential run: with `-t`, one
+  /// aggregate (summed per-file times plus wall clock) follows the per-file
+  /// reports (see `cli/parallel.dart`); and when a file fails hard, files
+  /// already dispatched to other workers may still be converted on disk
+  /// (their logs, output and timings are dropped, and the error report and
+  /// exit code match the sequential stop-at-first-failure exactly).
+  Future<void> _invokeParallel() async {
+    final options = _options!;
+    final err = _err ?? stderr;
+    final opts = <String, Object?>{};
+    final infiles = options.inputFiles ?? <String>[];
+    final outfile = options.outputFile;
+    final sourceDir = options.sourceDir;
+    final absSrcdirPosix = sourceDir == null ? null : _expandPath(sourceDir);
+    final destinationDir = options.destinationDir;
+    if (destinationDir != null) opts['to_dir'] = destinationDir;
+    final attributes = options.attributes;
+    if (attributes != null) opts['attributes'] = attributes;
+    final showTimings = options.timings;
+    LoggerBase? savedLogger;
+    Severity? savedLevel;
+    if (options.verbose == 0) {
+      savedLogger = LoggerManager.logger;
+      LoggerManager.logger = NullLogger();
+    } else if (options.verbose == 2) {
+      savedLevel = LoggerManager.logger.level;
+      LoggerManager.logger.level = Severity.debug;
+    }
+    // Every other option passes through unless null (Ruby's `else` branch).
+    opts['safe'] = options.safe;
+    opts['standalone'] = options.standalone;
+    opts['warnings'] = options.warnings;
+    opts['failure_level'] = options.failureLevel;
+    _putIfPresent(opts, 'template_dirs', options.templateDirs);
+    _putIfPresent(opts, 'template_engine', options.templateEngine);
+    _putIfPresent(opts, 'eruby', options.eruby);
+    _putIfPresent(opts, 'base_dir', options.baseDir);
+    _putIfPresent(opts, 'sourcemap', options.sourcemap);
+    _putIfPresent(opts, 'log_level', options.logLevel);
+    _putIfPresent(opts, 'load_paths', options.loadPaths);
+    _putIfPresent(opts, 'requires', options.requires);
+
+    final logLevel = opts.remove('log_level') as Severity?;
+    if (logLevel != null && savedLogger == null) {
+      savedLevel ??= LoggerManager.logger.level;
+      LoggerManager.logger.level = logLevel;
+    }
+
+    try {
+      // The caller excluded stdin input and shared explicit `-o` targets, so
+      // `tofile` is either the STDOUT sink or per-input derived outputs.
+      final toStdout = outfile == '-';
+      Object? tofile;
+      if (toStdout) {
+        final out = _out;
+        if (out == null) {
+          stdout.encoding = utf8;
+          tofile = stdout;
+        } else {
+          tofile = out;
+        }
+      } else {
+        opts['mkdirs'] = true;
+        tofile = null;
+      }
+
+      final requests = <Map<String, Object?>>[];
+      for (final infile in infiles) {
+        // Fresh merge per file so the `to_dir` adjustment below never
+        // accumulates across files (same computation as [invoke]).
+        final inputOpts = Map<String, Object?>.of(opts)..['to_file'] = tofile;
+        final srcdir = absSrcdirPosix;
+        if (srcdir != null && inputOpts.containsKey('to_dir')) {
+          final absIndir = _dirname(_expandPath(infile));
+          if (absIndir.startsWith('$srcdir/')) {
+            inputOpts['to_dir'] =
+                '${inputOpts['to_dir']}${absIndir.substring(srcdir.length)}';
+          }
+        }
+        requests.add(
+          buildConversionRequest(
+            infile: infile,
+            processorOptions: inputOpts,
+            toStdout: toStdout,
+            showTimings: showTimings,
+          ),
+        );
+      }
+
+      final workerCount = min(options.jobs, infiles.length);
+      final pool = await IsolateJobPool.spawn(
+        size: workerCount,
+        entryPoint: conversionWorkerMain,
+      );
+      final wallClock = Stopwatch()..start();
+      List<Map<String, Object?>> responses;
+      try {
+        responses = await pool.runOrdered(requests);
+      } finally {
+        wallClock.stop();
+        await pool.close();
+      }
+
+      // Replay in input order. The first hard failure stops the replay like
+      // the sequential loop's exception (later jobs' logs, output and
+      // timings are dropped).
+      String? workerError;
+      var summedSeconds = 0.0;
+      for (var i = 0; i < responses.length; i++) {
+        final response = responses[i];
+        replayRecords(logger, response['records']);
+        if (response['ok'] != true) {
+          workerError = response['error'] as String?;
+          break;
+        }
+        if (toStdout) (tofile as StringSink).write(response['output']);
+        if (showTimings) {
+          final workerTimings = Timings()
+            ..log.addAll((response['timings'] as Map).cast<String, double>());
+          workerTimings.printReport(err, infiles[i]);
+          summedSeconds += workerTimings.readParseConvert ?? 0;
+        }
+      }
+      if (workerError != null) {
+        _code = 1;
+        if (options.trace) throw WorkerFailure(workerError);
+        err.writeln(workerError);
+        err.writeln('  Use --trace to show backtrace');
+        return;
+      }
+      if (showTimings) {
+        err.writeln(
+          'Total time (all files, summed): ${summedSeconds.toStringAsFixed(5)}',
+        );
+        final wallSeconds =
+            wallClock.elapsedMicroseconds / Duration.microsecondsPerSecond;
+        err.writeln(
+          'Total wall clock time ($workerCount workers): '
+          '${wallSeconds.toStringAsFixed(5)}',
+        );
       }
       final maxSeverity = logger.maxSeverity;
       if (maxSeverity != null &&
