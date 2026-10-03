@@ -166,6 +166,10 @@ jobs:
     - name: Run Dart tests
       working-directory: dart
       run: dart test
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
     - name: Install bats
       run: npm i -g bats
     - name: Run e2e CLI tests (Ruby shim)
