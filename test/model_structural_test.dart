@@ -1090,6 +1090,13 @@ void main() {
       doc.attributes.remove('idseparator');
       expect(Section.generateId('A B', doc), equals('_a_b'));
     });
+
+    test('non-ASCII word characters are kept (parity gate)', () {
+      // Ruby `\p{Word}` keeps letters like `ü` (`lib/asciidoctor/rx.rb:263`);
+      // Dart `\w` is ASCII-only, so the shared `ccWord` regex is required.
+      final doc = FakeDocument();
+      expect(Section.generateId('Überschrift', doc), equals('_überschrift'));
+    });
   });
 
   group('List', () {

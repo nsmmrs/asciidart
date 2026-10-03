@@ -5,18 +5,7 @@ library;
 
 import 'abstract_block.dart';
 import 'core_ext.dart';
-
-/// Matches characters that are invalid in a generated section ID: HTML tags,
-/// character entities, and runs of anything but a space, word character,
-/// hyphen or dot.
-///
-/// Port of `Asciidoctor::InvalidSectionIdCharsRx`. Per `PORTING-REGEXP.md`
-/// rules B1/R1/R2, `CC_WORD` (`\p{Word}`) becomes `\w` with `unicode: true`;
-/// the pattern needs no `multiLine` (no anchors).
-final RegExp _invalidSectionIdCharsRx = RegExp(
-  r"<[^>]+>|&(?:[a-z][a-z]+\d{0,2}|#\d\d\d{0,4}|#x[\da-f][\da-f][\da-f]{0,3});|[^ \w\-.]+?",
-  unicode: true,
-);
+import 'rx.dart' show invalidSectionIdCharsRx;
 
 /// First index used when generating a unique ID suffix.
 ///
@@ -194,8 +183,12 @@ class Section extends AbstractBlock implements NodeSection {
       sep = '_';
       sepSub = ' _.-';
     }
+    // Shared table regex: Ruby `CC_WORD` (`\p{Word}`) keeps non-ASCII letters
+    // such as `ü` (`lib/asciidoctor/rx.rb:263`, `lib/asciidoctor/section.rb:208`);
+    // Dart `\w` stays ASCII-only even with `unicode: true`, so the `ccWord`
+    // spelling in `rx.dart` is required here.
     var genId =
-        '$pre${title.toLowerCase().replaceAll(_invalidSectionIdCharsRx, '')}';
+        '$pre${title.toLowerCase().replaceAll(invalidSectionIdCharsRx, '')}';
     if (noSep) {
       genId = genId.replaceAll(' ', '');
     } else {

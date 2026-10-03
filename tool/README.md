@@ -41,7 +41,7 @@ dart run tool/differential.dart \
 | `--backend-a`, `--backend-b` | `--backend` | Per-exe backend override. |
 | `--root` | auto-detect | Repo root. |
 | `--corpus-dir` | `test/fixtures` | Corpus dir, relative to `--root` unless absolute (scanned recursively). |
-| `--extra-file` | `README.adoc` | Extra corpus file(s), repeatable, relative to `--root` unless absolute. |
+| `--extra-file` | `README.adoc`, `data/reference/syntax.adoc` | Extra corpus file(s), repeatable, relative to `--root` unless absolute. |
 | `--extensions` | `adoc,asciidoc` | Comma-separated corpus extensions. |
 | `--context` | `3` | Unified-diff context lines. |
 | `--max-diff-lines` | `200` | Max diff lines printed per file (rest truncated). |
