@@ -1,7 +1,7 @@
 ---
 id: TASK-jl5glk
 title: "Port misc infra: timings/logging/writer"
-status: doing
+status: done
 type: task
 priority: 2
 labels:
@@ -9,8 +9,9 @@ labels:
 - misc
 parent: EPIC-ckgkd2
 created: "2026-10-03T09:23:37.386505Z"
-updated: "2026-10-03T09:23:41.429373Z"
+updated: "2026-10-03T09:36:21.559355Z"
 ---
+
 
 
 Standalone (verified zero Document/Parser refs). logging.rb: faithful port + unification plan for temp seams (no unification yet). Port logger_test (27); behavioral tests for timings/writer. No barrel edits.
