@@ -80,7 +80,7 @@ class Inline extends AbstractNode {
   String? get reftext {
     final value = text;
     if (value == null) return null;
-    return applyReftextSubs(value);
+    return applyReftextSubs(value) as String?;
   }
 
   /// Generates cross reference text that can refer to this inline node.

@@ -18,9 +18,8 @@
 ///
 /// Main-module constants consumed here ([intrinsicAttributes], [quoteSubs],
 /// [replacements], [hardLineBreak], [stemTypeAliases], [asciidocExtensions],
-/// the compliance flags) canonically belong to a future constants module;
-/// they live here until that module lands. All regular expressions reused
-/// from `rx.dart` are imported, never redefined.
+/// the compliance flags) live in `constants.dart`. All regular expressions
+/// reused from `rx.dart` are imported, never redefined.
 ///
 /// TEMP-SEAMs (missing collaborator APIs worked around privately; each is
 /// marked at the use site and listed for the merger):
@@ -61,7 +60,6 @@ import 'core_ext.dart';
 import 'document.dart';
 import 'helpers.dart';
 import 'inline.dart';
-import 'reader.dart';
 import 'rx.dart';
 
 /// Matches XML special characters. Port of `SpecialCharsRx`.
@@ -194,306 +192,6 @@ const String escRSb = '\\]';
 
 /// A plus sign. Port of `PLUS`.
 const String plus = '+';
-
-/// The hard line break suffix (`' +'`). Port of `HARD_LINE_BREAK` in
-/// `lib/asciidoctor.rb` (canonical home: future constants module).
-const String hardLineBreak = ' +';
-
-/// Whether the id/role shorthand syntax applies to quoted text.
-/// Port of `Compliance.shorthand_property_syntax` (canonical home: future
-/// constants module).
-const bool complianceShorthandPropertySyntax = true;
-
-/// Whether cross references resolve against reference text.
-/// Port of `Compliance.natural_xrefs` (canonical home: future constants
-/// module).
-const bool complianceNaturalXrefs = true;
-
-/// Compliance value for undefined attributes.
-/// Port of `Compliance.attribute_undefined` (canonical home: future
-/// constants module). Mirrors [complianceAttributeUndefined] in
-/// `document.dart`.
-const String complianceAttributeUndefinedValue = 'drop-line';
-
-/// Aliases for the `stem` attribute value. Port of `STEM_TYPE_ALIASES` in
-/// `lib/asciidoctor.rb` (canonical home: future constants module). A missing
-/// key resolves to `'asciimath'` (the Ruby default).
-const Map<String, String> stemTypeAliases = <String, String>{
-  'latexmath': 'latexmath',
-  'latex': 'latexmath',
-  'tex': 'latexmath',
-};
-
-/// File extensions recognized as AsciiDoc documents. Port of
-/// `ASCIIDOC_EXTENSIONS` in `lib/asciidoctor.rb` (canonical home: future
-/// constants module).
-const Map<String, bool> asciidocExtensions = <String, bool>{
-  '.adoc': true,
-  '.asciidoc': true,
-  '.asc': true,
-  '.ad': true,
-  '.txt': true,
-};
-
-/// Intrinsic attributes always available for reference. Port of
-/// `INTRINSIC_ATTRIBUTES` in `lib/asciidoctor.rb` (canonical home: future
-/// constants module).
-const Map<String, String> intrinsicAttributes = <String, String>{
-  'startsb': '[',
-  'endsb': ']',
-  'vbar': '|',
-  'caret': '^',
-  'asterisk': '*',
-  'tilde': '~',
-  'plus': '&#43;',
-  'backslash': '\\',
-  'backtick': '`',
-  'blank': '',
-  'empty': '',
-  'sp': ' ',
-  'two-colons': '::',
-  'two-semicolons': ';;',
-  'nbsp': '&#160;',
-  'deg': '&#176;',
-  'zwsp': '&#8203;',
-  'quot': '&#34;',
-  'apos': '&#39;',
-  'lsquo': '&#8216;',
-  'rsquo': '&#8217;',
-  'ldquo': '&#8220;',
-  'rdquo': '&#8221;',
-  'wj': '&#8288;',
-  'brvbar': '&#166;',
-  'pp': '&#43;&#43;',
-  'cpp': 'C&#43;&#43;',
-  'cxx': 'C&#43;&#43;',
-  'amp': '&',
-  'lt': '<',
-  'gt': '>',
-};
-
-/// One quoted-text substitution: a [type] (`'strong'`, `'emphasis'`, ...),
-/// a [scope] (`'constrained'` or `'unconstrained'`) and its [pattern].
-final class QuoteSub {
-  /// Creates a quoted-text substitution entry.
-  QuoteSub(this.type, this.scope, this.pattern);
-
-  /// The quoting type.
-  final String type;
-
-  /// The quoting scope.
-  final String scope;
-
-  /// The match pattern.
-  final RegExp pattern;
-}
-
-/// Quoted-text substitutions keyed by compat mode. Port of `QUOTE_SUBS` in
-/// `lib/asciidoctor.rb` (canonical home: future constants module).
-///
-/// Character-class fragments come from `rx.dart`; patterns containing `^`
-/// or `$` carry `multiLine: true` (Ruby `^`/`$` are line anchors) and
-/// patterns using `\p` classes carry `unicode: true`, per
-/// `dart/PORTING-REGEXP.md`.
-final Map<bool, List<QuoteSub>> quoteSubs = _buildQuoteSubs();
-
-Map<bool, List<QuoteSub>> _buildQuoteSubs() {
-  // (group 1: boundary, group 2: attrlist, group 3: content)
-  String constrained(String open, String close, {String? boundaryExcludes}) {
-    final excludes = boundaryExcludes ?? ';:}';
-    return '(^|[^$ccWord$excludes])(?:$quoteAttributeListRxt)?$open'
-        r'(\S|\S[\s\S]*?\S)'
-        '$close(?!$cgWord)';
-  }
-
-  // (group 1: attrlist, group 2: content)
-  String unconstrained(String mark) =>
-      r'\\?(?:\[([^\[\]]+)\])?'
-      '$mark'
-      r'([\s\S]+?)'
-      '$mark';
-
-  final normal = <QuoteSub>[
-    // **strong**
-    QuoteSub('strong', 'unconstrained', RegExp(unconstrained(r'\*\*'))),
-    // *strong*
-    QuoteSub(
-      'strong',
-      'constrained',
-      RegExp(constrained(r'\*', r'\*'), multiLine: true, unicode: true),
-    ),
-    // "`double-quoted`"
-    QuoteSub(
-      'double',
-      'constrained',
-      RegExp(constrained(r'"`', r'`"'), multiLine: true, unicode: true),
-    ),
-    // '`single-quoted`'
-    QuoteSub(
-      'single',
-      'constrained',
-      RegExp(
-        constrained("'`", "`'", boundaryExcludes: ';:`}'),
-        multiLine: true,
-        unicode: true,
-      ),
-    ),
-    // ``monospaced``
-    QuoteSub('monospaced', 'unconstrained', RegExp(unconstrained('``'))),
-    // `monospaced`
-    QuoteSub(
-      'monospaced',
-      'constrained',
-      RegExp(
-        '(^|[^$ccWord'
-        ';->"\'`}])'
-        '(?:$quoteAttributeListRxt)?`(\\S|\\S[\\s\\S]*?\\S)`(?![$ccWord"\'`])',
-        multiLine: true,
-        unicode: true,
-      ),
-    ),
-    // __emphasis__
-    QuoteSub('emphasis', 'unconstrained', RegExp(unconstrained('__'))),
-    // _emphasis_
-    QuoteSub(
-      'emphasis',
-      'constrained',
-      RegExp(constrained('_', '_'), multiLine: true, unicode: true),
-    ),
-    // ##mark## (referred to in AsciiDoc.py as unquoted)
-    QuoteSub('mark', 'unconstrained', RegExp(unconstrained('##'))),
-    // #mark# (referred to in AsciiDoc.py as unquoted)
-    QuoteSub(
-      'mark',
-      'constrained',
-      RegExp(
-        constrained('#', '#', boundaryExcludes: '&;:}'),
-        multiLine: true,
-        unicode: true,
-      ),
-    ),
-    // ^superscript^
-    QuoteSub(
-      'superscript',
-      'unconstrained',
-      RegExp(r'\\?(?:\[([^\[\]]+)\])?\^(\S+?)\^'),
-    ),
-    // ~subscript~
-    QuoteSub(
-      'subscript',
-      'unconstrained',
-      RegExp(r'\\?(?:\[([^\[\]]+)\])?~(\S+?)~'),
-    ),
-  ];
-
-  final compat = List<QuoteSub>.of(normal);
-  // ``quoted''
-  compat[2] = QuoteSub(
-    'double',
-    'constrained',
-    RegExp(constrained("``", "''"), multiLine: true, unicode: true),
-  );
-  // `quoted'
-  compat[3] = QuoteSub(
-    'single',
-    'constrained',
-    RegExp(constrained('`', "'"), multiLine: true, unicode: true),
-  );
-  // ++monospaced++
-  compat[4] = QuoteSub(
-    'monospaced',
-    'unconstrained',
-    RegExp(unconstrained(r'\+\+')),
-  );
-  // +monospaced+
-  compat[5] = QuoteSub(
-    'monospaced',
-    'constrained',
-    RegExp(constrained(r'\+', r'\+'), multiLine: true, unicode: true),
-  );
-  // #unquoted#
-  //compat[8] = [:unquoted, *compat[8][1..-1]]
-  // ##unquoted##
-  //compat[9] = [:unquoted, *compat[9][1..-1]]
-  // 'emphasis'
-  compat.insert(
-    3,
-    QuoteSub(
-      'emphasis',
-      'constrained',
-      RegExp(constrained("'", "'"), multiLine: true, unicode: true),
-    ),
-  );
-  return <bool, List<QuoteSub>>{false: normal, true: compat};
-}
-
-/// One textual replacement: a [pattern], its [replacement] and how
-/// surrounding captures are restored ([restore]: `'none'`, `'leading'` or
-/// `'bounding'`).
-final class Replacement {
-  /// Creates a replacement entry.
-  Replacement(this.pattern, this.replacement, this.restore);
-
-  /// The match pattern.
-  final RegExp pattern;
-
-  /// The replacement text.
-  final String replacement;
-
-  /// How surrounding captures are restored.
-  final String restore;
-}
-
-/// Textual replacements, in application order. Port of `REPLACEMENTS` in
-/// `lib/asciidoctor.rb` (canonical home: future constants module).
-final List<Replacement> replacements = <Replacement>[
-  // (C)
-  Replacement(RegExp(r'\\?\(C\)'), '&#169;', 'none'),
-  // (R)
-  Replacement(RegExp(r'\\?\(R\)'), '&#174;', 'none'),
-  // (TM)
-  Replacement(RegExp(r'\\?\(TM\)'), '&#8482;', 'none'),
-  // foo -- bar (where either space character can be a newline)
-  // NOTE this necessarily drops the newline if replacement appears at end
-  // of line
-  Replacement(
-    RegExp('(?: |\\n|^|\\\\)--(?: |\\n|\$)', multiLine: true),
-    '&#8201;&#8212;&#8201;',
-    'none',
-  ),
-  // foo--bar
-  Replacement(
-    RegExp('($cgWord)\\\\?--(?=$cgWord)', unicode: true),
-    '&#8212;&#8203;',
-    'leading',
-  ),
-  // ellipsis
-  Replacement(RegExp(r'\\?\.\.\.'), '&#8230;&#8203;', 'none'),
-  // right single quote
-  Replacement(RegExp(r"\\?`'"), '&#8217;', 'none'),
-  // apostrophe (inside a word)
-  Replacement(
-    RegExp("($cgAlnum)\\\\?'(?=$cgAlpha)", unicode: true),
-    '&#8217;',
-    'leading',
-  ),
-  // right arrow ->
-  Replacement(RegExp(r'\\?-&gt;'), '&#8594;', 'none'),
-  // right double arrow =>
-  Replacement(RegExp(r'\\?=&gt;'), '&#8658;', 'none'),
-  // left arrow <-
-  Replacement(RegExp(r'\\?&lt;-'), '&#8592;', 'none'),
-  // left double arrow <=
-  Replacement(RegExp(r'\\?&lt;='), '&#8656;', 'none'),
-  // restore entities
-  Replacement(
-    RegExp(
-      r'\\?(&)amp;((?:[a-zA-Z][a-zA-Z]+\d{0,2}|#\d\d\d{0,4}|#x[\da-fA-F][\da-fA-F][\da-fA-F]{0,3});)',
-    ),
-    '',
-    'bounding',
-  ),
-];
 
 /// Tracks the passthrough lock per node.
 ///
@@ -875,7 +573,7 @@ String subAttributes(
               (attributeUndefined ??= _firstTruthy(
                     docAttrs['attribute-undefined'],
                     null,
-                    complianceAttributeUndefinedValue,
+                    Compliance.attributeUndefined,
                   )) !=
                   'drop-line') {
             drop = true;
@@ -1054,7 +752,7 @@ String subReplacements(String text) {
       (match) => doReplacement(
         match as RegExpMatch,
         replacement.replacement,
-        replacement.restore,
+        replacement.scope,
       ),
     );
   }
@@ -1984,7 +1682,7 @@ String _convertXrefMacro(
       }
     }
     // handles: id (in compat mode or when natural xrefs are disabled)
-  } else if (compat || !complianceNaturalXrefs) {
+  } else if (compat || !Compliance.naturalXrefs) {
     refid = fragment;
     target = '#$fragment';
     _logPossibleInvalidReference(node, doc, refid!);
@@ -2929,7 +2627,7 @@ Map<String, Object?> parseQuotedTextAttributes(AbstractNode node, String str) {
   if (text.isEmpty) {
     return <String, Object?>{};
   } else if ((text.startsWith('.') || text.startsWith('#')) &&
-      complianceShorthandPropertySyntax) {
+      Compliance.shorthandPropertySyntax) {
     final hashIdx = text.indexOf('#');
     final before = hashIdx == -1 ? text : text.substring(0, hashIdx);
     final after = hashIdx == -1 ? '' : text.substring(hashIdx + 1);

@@ -528,8 +528,8 @@ void main() {
       expect(block.nodeName, equals('sidebar'));
     });
 
-    test('title accessors; converted title needs substitutors', () {
-      final doc = FakeDocument();
+    test('title accessors convert a set title', () {
+      final doc = Document(<String>[]);
       final block = Block(doc, 'paragraph');
       expect(block.title, isNull);
       expect(block.hasTitle, isFalse);
@@ -538,7 +538,7 @@ void main() {
       expect(block.hasTitle, isTrue);
       expect(block.sourceTitle, equals('Hello'));
       // Converting a set title performs real substitutions.
-      expect(() => block.title, throwsUnimplementedError);
+      expect(block.title, equals('Hello'));
       block.title = 'Other';
       expect(block.sourceTitle, equals('Other'));
     });
@@ -836,33 +836,23 @@ void main() {
       expect(block.attributes.containsKey('subs'), isFalse);
     });
 
-    test('specified subs resolve eagerly via commitSubs (stub seam)', () {
-      final doc = FakeDocument();
-      // 'default' honors the subs attribute, then defaultSubs — but the
-      // resolution itself needs substitutors.dart.
+    test('specified subs resolve eagerly via commitSubs', () {
+      final doc = Document(<String>[]);
+      // 'default' honors the subs attribute, then defaultSubs.
       expect(
-        () => Block(doc, 'paragraph', subs: 'default', defaultSubs: ['quotes']),
-        throwsUnimplementedError,
+        Block(doc, 'paragraph', subs: 'default', defaultSubs: ['quotes']).subs,
+        equals(['quotes']),
       );
       expect(
-        () => Block(
+        Block(
           doc,
           'paragraph',
           attributes: {'subs': 'quotes'},
           subs: ['quotes'],
-        ),
-        throwsUnimplementedError,
+        ).subs,
+        equals(['quotes']),
       );
-      expect(
-        () => Block(doc, 'paragraph', subs: 'normal'),
-        throwsUnimplementedError,
-      );
-      // The eager paths still record their inputs first.
-      try {
-        Block(doc, 'paragraph', subs: 'normal');
-      } on UnimplementedError {
-        // Expected.
-      }
+      expect(Block(doc, 'paragraph', subs: 'normal').subs, equals(normalSubs));
     });
 
     test('blockname aliases context; toString shape', () {
@@ -931,7 +921,7 @@ void main() {
     });
 
     test('reftext nodes: text is the reftext', () {
-      final doc = FakeDocument();
+      final doc = Document(<String>[]);
       final para = Block(doc, 'paragraph');
       final ref = Inline(para, 'anchor', text: 'Name', type: 'ref');
       final bib = Inline(para, 'anchor', text: '[1]', type: 'bibref');
@@ -942,8 +932,8 @@ void main() {
       expect(other.hasReftext, isFalse);
       expect(empty.hasReftext, isFalse);
       expect(empty.reftext, isNull);
-      expect(() => ref.xreftext(), throwsUnimplementedError);
-      expect(() => ref.reftext, throwsUnimplementedError);
+      expect(ref.xreftext(), equals('Name'));
+      expect(ref.reftext, equals('Name'));
     });
   });
 
@@ -1165,15 +1155,15 @@ void main() {
     });
 
     test('hasText and text', () {
-      final doc = FakeDocument();
+      final doc = Document(<String>[]);
       final list = ListBlock(doc, 'ulist');
       expect(ListItem(list).hasText, isFalse);
       expect(ListItem(list, '').hasText, isFalse);
       final item = ListItem(list, 'a');
       expect(item.hasText, isTrue);
       expect(ListItem(list).text, isNull);
-      // Default subs perform real work (stub seam)...
-      expect(() => item.text, throwsUnimplementedError);
+      // Default subs perform real work...
+      expect(item.text, equals('a'));
       // ...but with vacuous subs the raw text comes back.
       item.subs = [];
       expect(item.text, equals('a'));
@@ -1678,11 +1668,11 @@ void main() {
       expect(plain.content(), equals(['x']));
     });
 
-    test('cell text needs substitutors unless subs are vacuous', () {
-      final doc = FakeDocument();
+    test('cell text applies subs; vacuous subs pass through', () {
+      final doc = Document(<String>[]);
       final col = makeTable(doc).columns.single;
       final cell = Cell(col, 'a', {});
-      expect(() => cell.text, throwsUnimplementedError);
+      expect(cell.text, equals('a'));
       cell.subs = [];
       expect(cell.text, equals('a'));
       cell.text = 'b';
@@ -2013,21 +2003,18 @@ void main() {
   });
 
   group('substitution seams', () {
-    test('converting titles and texts needs substitutors.dart', () {
-      final doc = FakeDocument();
+    test('converting titles and texts applies substitutions', () {
+      final doc = Document(<String>[]);
       final block = Block(doc, 'paragraph')..title = 'T';
-      expect(() => block.title, throwsUnimplementedError);
-      expect(
-        () => ListItem(ListBlock(doc, 'ulist'), 'x').text,
-        throwsUnimplementedError,
-      );
+      expect(block.title, equals('T'));
+      expect(ListItem(ListBlock(doc, 'ulist'), 'x').text, equals('x'));
       final col = Column(Table(doc, <String, Object?>{}), 0);
-      expect(() => Cell(col, 'x', {}).text, throwsUnimplementedError);
+      expect(Cell(col, 'x', {}).text, equals('x'));
       final withRef = Block(doc, 'paragraph', attributes: {'reftext': 'R'});
-      expect(() => withRef.reftext, throwsUnimplementedError);
+      expect(withRef.reftext, equals('R'));
       final withAlt = Block(doc, 'image', attributes: {'alt': 'A'});
-      expect(() => withAlt.alt, throwsUnimplementedError);
-      expect(() => block.xreftext('full'), throwsUnimplementedError);
+      expect(withAlt.alt, equals('A'));
+      expect(block.xreftext('full'), equals('T'));
     });
 
     test('anchor cataloging uses parser.dart', () {

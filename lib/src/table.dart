@@ -8,7 +8,6 @@ import 'abstract_node.dart';
 import 'core_ext.dart';
 import 'document.dart';
 import 'inline.dart';
-import 'list.dart';
 import 'parser.dart';
 import 'substitutors.dart';
 
@@ -568,7 +567,9 @@ class Cell extends AbstractBlock {
   /// Used for head-row cells as well as text-only cells in the foot row and
   /// body; not for AsciiDoc-style cells. (The writer mirrors
   /// `attr_writer :text`.)
-  String? get text => applySubs(_text, subs) as String?;
+  // NOTE `this.` is load-bearing (see list.dart: same import-scope
+  // shadowing quirk for substitutor members).
+  String? get text => this.applySubs(_text, subs) as String?;
 
   set text(String? value) {
     _text = value;

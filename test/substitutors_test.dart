@@ -1205,6 +1205,14 @@ void main() {
         );
       });
 
+      test('constrained monospaced honors : boundary, allows >', () {
+        final para = blockFromString('x');
+        // Ruby boundary `[^CC_WORD;:"...]`: ':' blocks the quote, '>' does
+        // not. Regression test: the merged port once had '>' here.
+        expect(subQuotes(para, ':`x`'), equals(':`x`'));
+        expect(subQuotes(para, '>`x`'), equals('><code>x</code>'));
+      });
+
       // NOTE must use apply_subs because constrained monospaced is handled
       // as a passthrough
       test('single-line constrained monospaced string with role', () {

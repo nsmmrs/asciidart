@@ -42,7 +42,6 @@ import 'list.dart';
 import 'rx.dart';
 import 'section.dart';
 import 'stylesheets.dart';
-import 'substitutors.dart';
 import 'table.dart';
 
 /// Renders [value] the way Ruby string interpolation does: `toString`,

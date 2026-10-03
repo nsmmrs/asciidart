@@ -450,7 +450,7 @@ abstract class AbstractNode {
   String? get reftext {
     final value = attributes['reftext'];
     if (value == null || value == false) return null;
-    return applyReftextSubs(value as String);
+    return applyReftextSubs(value as String) as String?;
   }
 
   /// Whether the `reftext` attribute is defined on this node.
@@ -869,14 +869,12 @@ abstract class AbstractNode {
   /// Replaces XML special characters in [text].
   ///
   /// Delegates to `substitutors.subSpecialchars` (pure function).
-  String subSpecialchars(String text) =>
-      substitutors.subSpecialchars(text);
+  String subSpecialchars(String text) => substitutors.subSpecialchars(text);
 
   /// Applies replacements (e.g. `(C)`, `--`, `...`) to [text].
   ///
   /// Delegates to `substitutors.subReplacements` (pure function).
-  String subReplacements(String text) =>
-      substitutors.subReplacements(text);
+  String subReplacements(String text) => substitutors.subReplacements(text);
 
   /// Applies quote substitutions to [text].
   ///
@@ -900,6 +898,5 @@ abstract class AbstractNode {
   /// Only meaningful on blocks (mirrors `Substitutors#commit_subs`, which
   /// reads the block's content model). Delegates to
   /// `substitutors.commitSubs`.
-  List<String>? commitSubs() =>
-      substitutors.commitSubs(this as AbstractBlock);
+  List<String>? commitSubs() => substitutors.commitSubs(this as AbstractBlock);
 }

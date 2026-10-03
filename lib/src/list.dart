@@ -7,19 +7,7 @@ import 'abstract_block.dart';
 import 'abstract_node.dart';
 import 'block.dart';
 import 'core_ext.dart';
-
-/// Substitutions applied to normal content by default.
-///
-/// Port of `Asciidoctor::NORMAL_SUBS` (`lib/asciidoctor/substitutors.rb`).
-/// It lives here temporarily until substitutors.dart lands.
-const List<String> normalSubs = <String>[
-  'specialcharacters',
-  'quotes',
-  'attributes',
-  'replacements',
-  'macros',
-  'post_replacements',
-];
+import 'substitutors.dart';
 
 /// Methods for managing AsciiDoc lists (ordered, unordered and description
 /// lists).
@@ -137,7 +125,10 @@ class ListItem extends AbstractBlock {
   /// changes them. (The writer mirrors `attr_writer :text`.)
   String? get text {
     final t = _text;
-    return t == null ? null : applySubs(t, subs) as String?;
+    // NOTE `this.` is load-bearing: without it the call binds the
+    // top-level `substitutors.applySubs` (import scope wins over the
+    // inherited member here) and fails to compile.
+    return t == null ? null : this.applySubs(t, subs) as String?;
   }
 
   set text(String? value) {

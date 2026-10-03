@@ -11,13 +11,14 @@
 /// * The parser wave replaces the [Parser] stub (`parser.dart`) and un-skips
 ///   the parse-dependent tests. Until then [Document.parse] (and everything
 ///   that parses, such as [Document.convert]) throws [UnimplementedError].
-/// * The converter wave provides real converters. Until then [Document]
-///   carries a minimal internal stub ([_BuiltinConverterStub]) that reports
-///   the built-in backend traits (basebackend, filetype, outfilesuffix,
-///   htmlsyntax) so constructor-level behavior is byte-identical; calling
-///   `convert` on the stub throws [UnimplementedError]. [Document.convert]
-///   calls the single-argument `NodeConverter.convert`; the converter wave
-///   wires the `document`/`embedded` transform through.
+/// * Ported backend converters (html5, docbook5; manpage follows) register
+///   with [Converter] and [Document] resolves them through
+///   [Converter.create]. Until a backend lands, [Document] carries a minimal
+///   internal stub ([_BuiltinConverterStub]) that reports the built-in
+///   backend traits (basebackend, filetype, outfilesuffix, htmlsyntax) so
+///   constructor-level behavior is byte-identical; calling `convert` on the
+///   stub throws [UnimplementedError]. [Document.convert] calls the
+///   single-argument `NodeConverter.convert`.
 /// * The substitutors wave fills in the private `_applyHeaderSubs`,
 ///   `_applyPassMacroSubs` and `_resolveDocinfoSubs` stubs (all throwing
 ///   [UnimplementedError] until then).
@@ -37,8 +38,11 @@ import 'abstract_block.dart';
 import 'abstract_node.dart';
 import 'callouts.dart';
 import 'constants.dart';
+import 'converter.dart';
 import 'core_ext.dart';
+import 'docbook5.dart';
 import 'helpers.dart';
+import 'html5.dart';
 import 'timings.dart';
 import 'inline.dart';
 import 'parser.dart';
@@ -366,10 +370,9 @@ class _ReaderDocumentAdapter implements ReaderDocument {
   Map<Object, String?> parseAttributes(
     String? attrlist, {
     bool subInput = false,
-  }) =>
-      substitutors
-          .parseAttributes(_document, attrlist, subInput: subInput)
-          .cast<Object, String?>();
+  }) => substitutors
+      .parseAttributes(_document, attrlist, subInput: subInput)
+      .cast<Object, String?>();
 
   @override
   String? readUri(Uri uri, Encoding encoding) =>
@@ -1594,9 +1597,9 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Creates and initializes the converter for [backend].
   ///
   /// Returns `null` when no converter can be resolved (the caller raises).
-  /// Until the converter wave lands, built-in backends get a trait-carrying
-  /// stub; anything else resolves only through the `converter` option (a
-  /// [NodeConverter]) or `template_dirs` (derived traits).
+  /// Ported backends resolve through [Converter.create]; anything else
+  /// resolves only through the `converter` option (a [NodeConverter]) or
+  /// `template_dirs` (a trait-carrying stub until the template wave lands).
   NodeConverter? _createConverter(String backend, String? delegateBackend) {
     if (isTruthy(options['converter_factory'])) {
       throw UnimplementedError(
@@ -1614,6 +1617,18 @@ class Document extends AbstractBlock implements NodeDocument {
       }
       return custom;
     }
+    // Ensure the ported backends are registered (idempotent), then resolve
+    // through the factory, mirroring Ruby's `create_converter`
+    // (`converter_opts = { document:, htmlsyntax: }`). Template keys join
+    // the options when the template wave lands (manpage registers here too
+    // once it merges).
+    Html5Converter.registerFor();
+    Docbook5Converter.registerFor();
+    final created = Converter.create(backend, <String, Object?>{
+      'document': this,
+      'htmlsyntax': attributes['htmlsyntax'],
+    });
+    if (created != null) return created;
     final builtin = _builtinTraits(backend, attributes['htmlsyntax']);
     if (builtin != null) return _BuiltinConverterStub(backend, builtin);
     final templateDirs = options['template_dirs'] ?? options['template_dir'];

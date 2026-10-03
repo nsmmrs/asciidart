@@ -12,6 +12,7 @@ library;
 import 'abstract_node.dart';
 import 'core_ext.dart';
 import 'helpers.dart';
+import 'rx.dart';
 
 /// Maps ordered-list styles to their HTML marker keywords.
 ///
@@ -450,11 +451,9 @@ abstract class AbstractBlock extends AbstractNode {
   }
 
   /// Whether [text] contains text that replacement substitutions would
-  /// rewrite (rx wave: mirrors the `ReplaceableTextRx` check).
-  static bool _hasReplaceableText(String text) => throw UnimplementedError(
-    'rx wave: the ReplaceableTextRx check in AbstractBlock.alt '
-    'is not yet ported.',
-  );
+  /// rewrite (mirrors the `ReplaceableTextRx` check).
+  static bool _hasReplaceableText(String text) =>
+      replaceableTextRx.hasMatch(text);
 
   /// The caption of this block.
   ///

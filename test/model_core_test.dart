@@ -20,9 +20,11 @@ import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/block.dart';
 import 'package:asciidoctor/src/callouts.dart';
+import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
+import 'package:asciidoctor/src/substitutors.dart';
 import 'package:test/test.dart';
 
 /// Records conversions for assertions.
@@ -485,13 +487,13 @@ void main() {
       expect(Block(makeDoc(), 'paragraph').reftext, isNull);
     });
 
-    test('reftext with text awaits the substitutors wave', () {
+    test('reftext with text applies reftext substitutions', () {
       final block = Block(
-        makeDoc(),
+        Document(<String>[]),
         'paragraph',
         attributes: {'reftext': 'R *x*'},
       );
-      expect(() => block.reftext, throwsUnimplementedError);
+      expect(block.reftext, equals('R <strong>x</strong>'));
     });
   });
 
@@ -601,11 +603,10 @@ void main() {
       expect(block.hasTitle, isFalse);
     });
 
-    test('set title awaits the substitutors wave', () {
-      final block = Block(makeDoc(), 'example')..title = 'T *em*';
+    test('set title applies title substitutions', () {
+      final block = Block(Document(<String>[]), 'example')..title = 'T *em*';
       expect(block.hasTitle, isTrue);
-      // Ruby returns 'T <strong>em</strong>' here.
-      expect(() => block.title, throwsUnimplementedError);
+      expect(block.title, equals('T <strong>em</strong>'));
       block.title = null;
       expect(block.hasTitle, isFalse);
       expect(block.title, isNull);
@@ -631,10 +632,13 @@ void main() {
       expect(Block(makeDoc(), 'image').alt, equals(''));
     });
 
-    test('block alt with text awaits the substitutors wave', () {
-      final block = Block(makeDoc(), 'image', attributes: {'alt': 'A & B'});
-      // Ruby returns 'A &amp; B' here.
-      expect(() => block.alt, throwsUnimplementedError);
+    test('block alt with text encodes special characters', () {
+      final block = Block(
+        Document(<String>[]),
+        'image',
+        attributes: {'alt': 'A & B'},
+      );
+      expect(block.alt, equals('A &amp; B'));
     });
   });
 
@@ -839,28 +843,26 @@ void main() {
     });
 
     test('basic style and plain call read the title', () {
-      final block = Block(makeDoc(), 'example')..title = 'NoCap';
-      // Ruby returns the converted title ('NoCap' here); the title
-      // substitutions are still awaiting their wave.
-      expect(() => block.xreftext('weird'), throwsUnimplementedError);
-      expect(() => block.xreftext(), throwsUnimplementedError);
+      final block = Block(Document(<String>[]), 'example')..title = 'NoCap';
+      expect(block.xreftext('weird'), equals('NoCap'));
+      expect(block.xreftext(), equals('NoCap'));
     });
 
-    test('full style awaits the substitutors wave', () {
-      final block = Block(makeDoc(), 'example')
+    test('full style combines caption and title', () {
+      final block = Block(Document(<String>[]), 'example')
         ..title = 'T'
         ..caption = 'Example 1. ';
-      expect(() => block.xreftext('full'), throwsUnimplementedError);
+      // Ruby: `%(#{caption.chomp '. '}, #{quoted_title})`.
+      expect(block.xreftext('full'), equals('Example 1, &#8220;T&#8221;'));
     });
 
-    test('explicit reftext awaits the substitutors wave', () {
+    test('explicit reftext wins over the title', () {
       final block = Block(
-        makeDoc(),
+        Document(<String>[]),
         'paragraph',
         attributes: {'reftext': 'R *em*'},
       );
-      // Ruby returns 'R <strong>em</strong>' here.
-      expect(() => block.xreftext(), throwsUnimplementedError);
+      expect(block.xreftext(), equals('R <strong>em</strong>'));
     });
   });
 
@@ -1061,30 +1063,23 @@ void main() {
     });
 
     test('given subs resolve eagerly via commitSubs', () {
-      // Ruby resolves [:quotes] eagerly; commitSubs awaits its wave.
+      final doc = Document(<String>[]);
       expect(
-        () => Block(makeDoc(), 'paragraph', subs: const ['quotes']),
-        throwsUnimplementedError,
+        Block(doc, 'paragraph', subs: const ['quotes']).subs,
+        equals(['quotes']),
       );
-      expect(
-        () => Block(makeDoc(), 'paragraph', subs: 'default'),
-        throwsUnimplementedError,
-      );
-      expect(
-        () => Block(makeDoc(), 'paragraph', subs: 'normal'),
-        throwsUnimplementedError,
-      );
+      expect(Block(doc, 'paragraph', subs: 'default').subs, equals(normalSubs));
+      expect(Block(doc, 'paragraph', subs: 'normal').subs, equals(normalSubs));
     });
 
-    test('simple and verbatim content with vacuous subs need no wave', () {
+    test('simple and verbatim content apply subs on read', () {
+      final doc = Document(<String>[]);
       // Deferred (empty) subs are vacuous in Ruby: the source passes
       // through, with blank edge lines stripped for verbatim blocks.
-      expect(Block(makeDoc(), 'paragraph', source: 'a').content(), equals('a'));
-      expect(Block(makeDoc(), 'listing', source: 'a').content(), equals('a'));
-      // Real substitutions still await the substitutors wave.
-      final quoted = Block(makeDoc(), 'paragraph', source: 'a')
-        ..subs = ['quotes'];
-      expect(quoted.content, throwsUnimplementedError);
+      expect(Block(doc, 'paragraph', source: 'a').content(), equals('a'));
+      expect(Block(doc, 'listing', source: 'a').content(), equals('a'));
+      final quoted = Block(doc, 'paragraph', source: 'a')..subs = ['quotes'];
+      expect(quoted.content(), equals('a'));
     });
   });
 
@@ -1134,10 +1129,14 @@ void main() {
     });
 
     test('reference nodes carry reftext in text', () {
-      final ref = Inline(makeDoc(), 'anchor', text: 'T', type: 'ref');
+      final ref = Inline(
+        Document(<String>[]),
+        'anchor',
+        text: 'T',
+        type: 'ref',
+      );
       expect(ref.hasReftext, isTrue);
-      // Ruby returns 'T' (substitutions applied) here.
-      expect(() => ref.reftext, throwsUnimplementedError);
+      expect(ref.reftext, equals('T'));
       expect(
         Inline(makeDoc(), 'anchor', text: 'T', type: 'bibref').hasReftext,
         isTrue,
