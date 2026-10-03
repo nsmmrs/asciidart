@@ -8,6 +8,8 @@ export 'src/abstract_node.dart';
 export 'src/attribute_list.dart';
 export 'src/block.dart';
 export 'src/callouts.dart';
+export 'src/composite.dart';
+export 'src/converter.dart';
 export 'src/core_ext.dart';
 export 'src/helpers.dart';
 export 'src/inline.dart';
