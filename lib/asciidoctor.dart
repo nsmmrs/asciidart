@@ -28,6 +28,7 @@ export 'src/highlight/syntax_highlighter.dart';
 export 'src/html5.dart';
 export 'src/inline.dart';
 export 'src/list.dart';
+export 'src/load.dart';
 export 'src/logging.dart';
 export 'src/manpage.dart';
 export 'src/parser.dart';
