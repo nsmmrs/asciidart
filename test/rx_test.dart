@@ -1285,6 +1285,21 @@ void main() {
         null,
         null,
       ]);
+      // Group-2-unset + trailing entity, no &lt; opener: (?!\2) fails under
+      // JS semantics exactly where MRI's \2 fails under Onigmo, so both
+      // engines take the generic branch and keep the entity. Expectation
+      // observed against the MRI oracle (Asciidoctor::InlineLinkRx).
+      expect(groupsOf(inlineLinkRx, 'see https://a&gt; now'), [
+        ' https://a&gt;',
+        ' ',
+        null,
+        'https://',
+        null,
+        null,
+        null,
+        'a&gt;',
+        ';',
+      ]);
       expect(groupsOf(inlineLinkRx, r'"https://x.io[]"'), [
         r'"https://x.io[]',
         '"',
