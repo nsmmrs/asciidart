@@ -16,6 +16,7 @@ import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/html5.dart';
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/template.dart';
 import 'package:asciidoctor/src/template_loader.dart';
 import 'package:test/test.dart';
 

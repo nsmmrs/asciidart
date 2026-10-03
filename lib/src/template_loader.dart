@@ -61,7 +61,6 @@
 /// `--trace`, exactly like Ruby.
 library;
 
-import 'dart:async' show FutureOr;
 import 'dart:io' show Directory, File, FileSystemEntity, FileSystemException;
 
 import 'path_resolver.dart';
