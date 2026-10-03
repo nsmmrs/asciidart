@@ -16,19 +16,19 @@ void main() {
   });
 
   test('CLI --version exits 0 and prints version', () async {
-    final result = await Process.run(
-      Platform.resolvedExecutable,
-      [_cliScript, '--version'],
-    );
+    final result = await Process.run(Platform.resolvedExecutable, [
+      _cliScript,
+      '--version',
+    ]);
     expect(result.exitCode, equals(0));
     expect(result.stdout as String, contains(Asciidoctor.version));
   });
 
   test('CLI --help exits 0', () async {
-    final result = await Process.run(
-      Platform.resolvedExecutable,
-      [_cliScript, '--help'],
-    );
+    final result = await Process.run(Platform.resolvedExecutable, [
+      _cliScript,
+      '--help',
+    ]);
     expect(result.exitCode, equals(0));
     expect(result.stdout as String, contains('Usage:'));
   });
