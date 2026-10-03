@@ -6,10 +6,10 @@ import 'dart:io';
 
 import 'package:asciidoctor/src/cli/invoker.dart';
 
-void main(List<String> args) {
+Future<void> main(List<String> args) async {
   try {
     final invoker = Invoker.fromArgs(args);
-    invoker.invoke();
+    await invoker.invokeAsync();
     exitCode = invoker.code;
   } catch (e, stackTrace) {
     // Mirror Ruby's uncaught-exception behavior (`bin/asciidoctor` has no
