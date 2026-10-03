@@ -34,6 +34,7 @@ import '../core_ext.dart';
 import '../document.dart';
 import '../html5.dart';
 import 'coderay.dart';
+import 'coderay_lexer.dart';
 import 'highlight.dart';
 import 'highlightjs.dart';
 import 'html_pipeline.dart';
@@ -277,9 +278,13 @@ abstract final class SyntaxHighlighter {
       }
     }
 
+    // CodeRay ships a real default backend; rouge and pygments resolve
+    // theirs from `opts['lexer']` only (no Dart ports of those lexing
+    // libraries exist yet), so they stay seam-gated until one is wired.
     add(
-      (Map<String, Object?> opts) =>
-          CodeRayHighlighter(lexer: _lexerFromOpts(opts)),
+      (Map<String, Object?> opts) => CodeRayHighlighter(
+        lexer: _lexerFromOpts(opts) ?? const CodeRaySourceLexer(),
+      ),
       CodeRayAdapter.registeredNames,
     );
     add(

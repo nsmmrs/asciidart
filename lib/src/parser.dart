@@ -44,6 +44,7 @@ import 'core_ext.dart';
 import 'document.dart';
 import 'extensions.dart';
 import 'helpers.dart';
+import 'highlight/syntax_highlighter.dart';
 import 'inline.dart';
 import 'list.dart';
 import 'logging.dart';
@@ -822,9 +823,8 @@ abstract final class Parser {
 
   /// TEMP-SEAM (parser): port of `Substitutors#commit_subs`.
   ///
-  /// The `highlight` swap for source blocks is omitted (it needs the
-  /// syntax-highlighter wave and is unreachable while
-  /// `document.syntaxHighlighter` is `null`).
+  /// Mirrors the real [commitSubs], including the `highlight` swap for
+  /// source blocks once a highlighting-capable syntax highlighter is set.
   static void _commitSubs(AbstractBlock block) {
     final defaultSubs = block is Block ? block.defaultSubs : null;
     late final List<String> defaults;
@@ -860,6 +860,16 @@ abstract final class Parser {
           <String>[];
     } else {
       block.subs = defaults;
+    }
+    // Mirror of the `Substitutors#commit_subs` highlight swap: source
+    // blocks highlight through the document highlighter when it can.
+    final syntaxHl = _docOf(block).syntaxHighlighter;
+    if (block.context == 'listing' &&
+        block.style == 'source' &&
+        syntaxHl is SyntaxHighlighterBase &&
+        syntaxHl.canHighlight) {
+      final idx = block.subs.indexOf('specialcharacters');
+      if (idx != -1) block.subs[idx] = 'highlight';
     }
   }
 

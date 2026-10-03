@@ -1,0 +1,52 @@
+= CodeRay Ruby showcase
+:source-highlighter: coderay
+
+A greeting.
+
+[source,ruby]
+----
+puts 'Hello, World!' # greet
+----
+
+Keywords, constants and numbers.
+
+[source,ruby]
+----
+class Greeter < Base
+  DEFAULT = 'hi'
+  def greet(name)
+    if name.nil? then DEFAULT else "hi, #{name}" end
+  end
+end
+
+count = 42
+ratio = 3.14
+mask = 0xff
+----
+
+Strings, symbols, regexps and heredocs.
+
+[source,ruby]
+----
+re = /\A[a-z]+\z/i
+doc = <<EOS
+body #{re}
+EOS
+opts = %w[a b c]
+key: :value, 'quoted key': 1
+shell(`echo hi`)
+----
+
+A plain-text fallback for unknown languages.
+
+[source,zztop]
+----
+puts 'not highlighted'
+----
+
+A source block without a language.
+
+[source]
+----
+just text & <markup>
+----

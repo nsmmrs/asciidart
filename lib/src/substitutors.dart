@@ -59,6 +59,8 @@ import 'core_ext.dart';
 import 'document.dart';
 import 'extensions.dart';
 import 'helpers.dart';
+import 'highlight/highlight.dart';
+import 'highlight/syntax_highlighter.dart';
 import 'inline.dart';
 import 'rx.dart';
 
@@ -2006,22 +2008,66 @@ String subCallouts(AbstractNode node, String text) {
 /// When [processCallouts] is set, callout marks are extracted before
 /// highlighting and restored after, so they don't confuse the highlighter.
 ///
-/// TEMP-SEAM: real highlighting arrives with the syntax-highlighter wave
-/// (the `highlight/` adapters show the seam pattern). While
-/// `Document.syntaxHighlighter` is `null` (always on main) this falls back
-/// to [subSource]; a non-null highlighter throws [UnimplementedError].
-///
 /// Port of `Substitutors#highlight_source`.
 String highlightSource(AbstractNode node, String source, bool processCallouts) {
   final doc = _documentOf(node);
+  final syntaxHl = doc.syntaxHighlighter;
   // NOTE the call to highlight? is a defensive check since, normally, we
   // wouldn't arrive here unless it returns true
-  if (doc.syntaxHighlighter == null) {
+  if (syntaxHl is! SyntaxHighlighterBase || !syntaxHl.canHighlight) {
     return subSource(node, source, processCallouts);
   }
-  throw UnimplementedError(
-    'Substitutors: source highlighting is not yet ported.',
+  final docAttrs = doc.attributes;
+  Map<int, List<PendingCallout>>? calloutMarks;
+  if (processCallouts) {
+    final extracted = extractCallouts(node, source);
+    source = extracted.source;
+    calloutMarks = extracted.calloutMarks;
+  }
+  // NOTE (coderay parity gap): the shared CssMode/LineNumbersMode mapping is
+  // lenient (unknown values map to inline), which matches pygments, but
+  // CodeRay itself rejects unknown :css / :line_numbers values with an
+  // error. Plumbing the raw strings through the typed adapter seam so the
+  // CodeRay backend can validate them is framework-wave work.
+  LineNumbersMode? linenumsMode;
+  int? startLineNumber;
+  if (node.hasOption('linenums')) {
+    linenumsMode = LineNumbersMode.fromAttribute(
+      docAttrs['${syntaxHl.name}-linenums-mode']?.toString(),
+      linenums: true,
+    );
+    startLineNumber = rubyToInteger(node.attr('start', 1));
+    if (startLineNumber < 1) startLineNumber = 1;
+  }
+  final highlightLines = node.hasAttr('highlight')
+      ? resolveLinesToHighlight(source, node.attr('highlight'), startLineNumber)
+      : const <int>[];
+  final result = syntaxHl.highlight(
+    node as AbstractBlock,
+    source,
+    node.attr('language')?.toString(),
+    // The framework only reads the null/emptiness of this map (to derive
+    // `hasCallouts`); the marks themselves travel separately below.
+    callouts: (calloutMarks == null || calloutMarks.isEmpty)
+        ? null
+        : <int, String>{for (final lineno in calloutMarks.keys) lineno: ''},
+    cssMode: CssMode.fromAttribute(
+      docAttrs['${syntaxHl.name}-css']?.toString(),
+    ),
+    highlightLines: highlightLines,
+    numberLines: linenumsMode,
+    startLineNumber: startLineNumber,
+    style: docAttrs['${syntaxHl.name}-style']?.toString(),
   );
+  var highlighted = result.html;
+  if (node.passthroughs.isNotEmpty) {
+    highlighted = highlighted.replaceAllMapped(
+      highlightedPassSlotRx,
+      (match) => '$passStart${match[1]}$passEnd',
+    );
+  }
+  if (calloutMarks == null || calloutMarks.isEmpty) return highlighted;
+  return restoreCallouts(node, highlighted, calloutMarks, result.sourceOffset);
 }
 
 /// Resolves the line numbers in [source] to highlight from [spec].
@@ -2621,15 +2667,13 @@ List<String>? commitSubs(AbstractBlock node) {
 
   // QUESTION delegate this logic to a method?
   final doc = node.document;
+  final syntaxHl = doc is Document ? doc.syntaxHighlighter : null;
   if (node.context == 'listing' &&
       node.style == 'source' &&
-      doc is Document &&
-      doc.syntaxHighlighter != null) {
-    // TEMP-SEAM: the `highlight?` check and `:highlight` rewrite arrive
-    // with the syntax-highlighter wave.
-    throw UnimplementedError(
-      'Substitutors: source highlighting is not yet ported.',
-    );
+      syntaxHl is SyntaxHighlighterBase &&
+      syntaxHl.canHighlight) {
+    final idx = node.subs.indexOf('specialcharacters');
+    if (idx != -1) node.subs[idx] = 'highlight';
   }
 
   return null;

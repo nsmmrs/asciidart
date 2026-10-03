@@ -13,13 +13,14 @@
 ///
 /// ## The lexer seam
 ///
-/// Real lexing libraries do not exist in Dart yet. The server-side adapters
-/// ([CodeRayAdapter], [PygmentsAdapter], [RougeAdapter]) therefore accept an
-/// optional [SourceLexer]. Constructed without one, they report
-/// `canHighlight == false` and throw [UnimplementedError] from `highlight`.
-/// Stylesheet queries degrade exactly like the Ruby adapters do when their
-/// library is unavailable (fallback comment / default style). Real lexer
-/// implementations are a later wave; tests inject fakes (see
+/// The server-side adapters ([CodeRayAdapter], [PygmentsAdapter],
+/// [RougeAdapter]) accept an optional [SourceLexer]. Constructed without
+/// one, they report `canHighlight == false` and throw [UnimplementedError]
+/// from `highlight`. Stylesheet queries degrade exactly like the Ruby
+/// adapters do when their library is unavailable (fallback comment /
+/// default style). CodeRay ships a real backend (`CodeRaySourceLexer`,
+/// wired as the factory default); rouge and pygments lexers are a later
+/// wave, so those adapters stay seam-gated. Tests inject fakes (see
 /// `dart/test/highlight/`).
 library;
 
