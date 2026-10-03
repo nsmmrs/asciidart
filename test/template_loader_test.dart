@@ -11,6 +11,7 @@ import 'dart:io';
 
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/cli/invoker.dart';
+import 'package:asciidoctor/src/composite.dart';
 import 'package:asciidoctor/src/converter.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/html5.dart';
@@ -338,10 +339,10 @@ void main() {
       }
     });
 
-    test('factory validates the engine before the template wave gap', () {
-      // Unknown engines fail with the missing-engine diagnostic even
-      // while TemplateConverter itself is still unported (no
-      // UnimplementedError); known engines reach the wave gap.
+    test('factory validates the engine before engaging templates', () {
+      // Unknown engines fail with the missing-engine diagnostic; known
+      // engines build a real template chain (template wave C). A missing
+      // directory simply contributes no templates.
       Html5Converter.registerFor();
       expect(
         () => Converter.create('html5', {
@@ -351,11 +352,11 @@ void main() {
         throwsArgumentError,
       );
       expect(
-        () => Converter.create('html5', {
+        Converter.create('html5', {
           'template_dirs': ['dir'],
           'template_engine': 'mustache',
         }),
-        throwsUnimplementedError,
+        isA<CompositeConverter>(),
       );
       // Without template_dirs the engine stays inert (Ruby parity).
       expect(Converter.create('html5', {'template_engine': 'haml'}), isNotNull);

@@ -27,6 +27,7 @@
 /// | `attr` | Section lambda for attributes with arguments: `{{#attr}}name{{/attr}}`, with an optional `=default` suffix (`{{#attr}}lang=en{{/attr}}`). Falls back to the document attributes, mirroring Ruby's inheriting `attr` default in Tilt templates. |
 /// | `document` | Shallow document map (`title`, `attributes`); `null` while the node is detached. Never nested recursively. |
 /// | `items` | List items, each pre-flattened with [buildTemplateContext] (description-list pairs become `{'terms': [...], 'description': ...}`); `null` on non-list nodes. |
+/// | `sections` | Child sections of a document or section node, each pre-flattened with [buildTemplateContext] (so `{{#sections}}{{title}}{{/sections}}` lists them and nesting recurses); `null` on other nodes. This is what a custom `outline` template iterates. |
 ///
 /// [opts] (the per-call options map, mirroring the Tilt locals in Ruby's
 /// `TemplateConverter#convert`) and [helpers] (path-(a) lambdas per ADR-0002
@@ -72,6 +73,7 @@ Map<String, Object?> buildTemplateContext(
     'attr': _attrLambda(node),
     'document': _documentOf(node),
     'items': _itemsOf(node),
+    'sections': _sectionsOf(node),
   };
   for (final entry in helpers.entries) {
     context[entry.key] = entry.value(node);
@@ -145,6 +147,21 @@ Object? _itemsOf(AbstractNode node) {
   return <Object?>[
     for (final item in node.items)
       item is AbstractNode ? buildTemplateContext(item) : item.toString(),
+  ];
+}
+
+/// Pre-flattened child sections, or `null` on non-sectioned nodes.
+///
+/// Only document and section nodes carry sections; each child section
+/// flattens to its own render context (recursing into subsections), so a
+/// custom `outline` template iterates them with `{{#sections}}`. The
+/// recursion always terminates: section nesting is finite and the
+/// flattened children never re-enter their own ancestors.
+Object? _sectionsOf(AbstractNode node) {
+  if (node is! AbstractBlock) return null;
+  if (node.context != 'document' && node.context != 'section') return null;
+  return <Object?>[
+    for (final section in node.sections) buildTemplateContext(section),
   ];
 }
 

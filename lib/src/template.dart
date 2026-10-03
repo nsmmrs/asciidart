@@ -98,6 +98,12 @@ class MustacheTemplate {
 /// Re-registering a name replaces the previous entry (last-wins); when both
 /// a function and a Mustache template are registered for one transform, the
 /// function wins (code-first path (a) overrides file path (b)).
+///
+/// The process-wide [TemplateRegistry.global] carries the compiled-in
+/// path-(a) overrides of an XMonad-style custom binary (ADR-0002 T6): the
+/// converter factory merges them into every template chain it builds, so a
+/// `main.dart` that registers functions and then calls `runCli` needs no
+/// `-T` directory for its overrides to engage.
 class TemplateRegistry {
   /// Compiled Mustache templates by transform name.
   final Map<String, MustacheTemplate> _templates = <String, MustacheTemplate>{};
@@ -107,6 +113,34 @@ class TemplateRegistry {
 
   /// Helper lambdas by context key.
   final Map<String, TemplateHelper> _helpers = <String, TemplateHelper>{};
+
+  /// Process-wide registry for compiled-in path-(a) overrides (ADR-0002
+  /// T6).
+  ///
+  /// A custom binary registers its Dart functions (and helpers) here
+  /// before converting; the converter factory merges them into every
+  /// template chain (see [buildTemplateChain]) and engages a template
+  /// chain even without `template_dirs` while any are registered. Starts
+  /// empty, so programs that never touch it behave exactly as before.
+  static final TemplateRegistry global = TemplateRegistry();
+
+  /// Whether [global] holds any registration (function, template or
+  /// helper), i.e. whether a template chain engages without
+  /// `template_dirs`.
+  static bool get globalHasOverrides =>
+      global._functions.isNotEmpty ||
+      global._templates.isNotEmpty ||
+      global._helpers.isNotEmpty;
+
+  /// Clears every registration on [global].
+  ///
+  /// Intended for tests (which must not leak registrations into each
+  /// other) and for binaries that re-initialize their transforms.
+  static void resetGlobal() {
+    global._templates.clear();
+    global._functions.clear();
+    global._helpers.clear();
+  }
 
   /// Default `lenient` flag for templates registered on this registry.
   final bool lenient;
@@ -183,6 +217,22 @@ class TemplateRegistry {
   /// A copy of the registered helpers by context key.
   Map<String, TemplateHelper> get helpers =>
       Map<String, TemplateHelper>.of(_helpers);
+
+  /// Copies every registration from [other] into this registry.
+  ///
+  /// Last-wins per name: [other]'s entries replace same-named ones. Used
+  /// by [buildTemplateChain] to merge [TemplateRegistry.global] over the
+  /// scanned file templates (explicit in-process registrations beat
+  /// files).
+  void absorb(TemplateRegistry other) {
+    _templates.addAll(other._templates);
+    _functions.addAll(other._functions);
+    _helpers.addAll(other._helpers);
+  }
+
+  /// Whether this registry holds no registration at all.
+  bool get isEmpty =>
+      _templates.isEmpty && _functions.isEmpty && _helpers.isEmpty;
 }
 
 /// Converts nodes through registered Mustache templates and Dart functions.
@@ -269,4 +319,26 @@ class TemplateConverter extends ConverterBase {
     [this, fallback],
     backendTraitsSource: fallback,
   );
+}
+
+/// Builds the template side of a converter-factory `create` call.
+///
+/// Port of the `TemplateConverter.new backend, template_dirs, opts` half
+/// of Ruby's `Factory.create`: compiles [sources] (the loader's
+/// node-name-to-Mustache-source map) into a fresh registry, merges
+/// [TemplateRegistry.global] over them (explicit in-process registrations
+/// beat files; functions beat templates per transform as usual), and
+/// chains the resulting [TemplateConverter] ahead of [fallback] (or
+/// returns it bare when [fallback] is `null`, the unknown-backend case).
+/// [opts] become the template converter's constructor options.
+Converter buildTemplateChain(
+  String backend,
+  Map<String, Object?> opts,
+  Converter? fallback, {
+  required Map<String, String> sources,
+}) {
+  final registry = TemplateRegistry(templates: sources)
+    ..absorb(TemplateRegistry.global);
+  final template = TemplateConverter(backend, opts, registry);
+  return fallback == null ? template : template.withFallback(fallback);
 }

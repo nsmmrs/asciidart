@@ -47,7 +47,8 @@ import 'abstract_block.dart';
 import 'abstract_node.dart';
 import 'constants.dart';
 import 'inline.dart';
-import 'template_loader.dart' show validateTemplateEngine;
+import 'template.dart' show TemplateRegistry, buildTemplateChain;
+import 'template_loader.dart' show VmTemplateLoader, validateTemplateEngine;
 
 /// Trailing digits stripped from a backend name to derive its base backend.
 ///
@@ -90,39 +91,92 @@ Converter _resolveRegistration(
 /// [forBackend], instantiates factory registrations, and returns `null`
 /// when nothing is registered (or an explicit `null` is registered).
 ///
-/// Any truthy `template_dirs` option throws [UnimplementedError] until the
-/// template wave ports `TemplateConverter` (`converter/template.rb`). An
-/// unknown `template_engine` fails first via [validateTemplateEngine] with
-/// the port's missing-engine diagnostic (template wave B).
+/// Port of the `Factory.create` template branches: a truthy
+/// `template_dirs` option engages a template chain (unknown
+/// `template_engine` names fail first via [validateTemplateEngine] with
+/// the port's missing-engine diagnostic). A registered converter that
+/// [Converter.supportsTemplates] is wrapped in a composite with the
+/// template converter ahead; one that does not is returned as-is
+/// (templates ignored). With no registration, `delegate_backend` names
+/// the fallback converter, else a bare template converter is returned
+/// (its backend traits derive from [backend]). A `delegate_backend`
+/// without `template_dirs` stays inert (Ruby parity: both branches miss
+/// and `create` returns `null`).
+///
+/// Dart-only addition (ADR-0002 T6): compiled-in [TemplateRegistry.global]
+/// overrides engage a template chain even without `template_dirs`, so an
+/// XMonad-style custom binary needs no `-T` directory.
 Converter? _createFrom(
   Object? Function(String backend) forBackend,
   String backend,
   Map<String, Object?> opts,
 ) {
-  if (_isSet(opts['template_dirs'])) {
+  final templateDirsOpt = opts['template_dirs'];
+  if (_isSet(templateDirsOpt)) {
     // Unknown engines fail here — before any TemplateConverter work — so
-    // `-E bogus -T dir` reports Ruby's missing-engine failure even while
-    // the template converter itself is still unported.
+    // `-E bogus -T dir` reports Ruby's missing-engine failure.
     validateTemplateEngine(opts['template_engine']);
   }
+  // Templates engage through `template_dirs` (Ruby) or through compiled-in
+  // global overrides (Dart-only path (a)).
+  final templatesEngaged =
+      _isSet(templateDirsOpt) || TemplateRegistry.globalHasOverrides;
   final found = forBackend(backend);
   if (found != null) {
     final converter = _resolveRegistration(found, backend, opts);
-    if (_isSet(opts['template_dirs']) && converter.supportsTemplates) {
-      throw UnimplementedError(
-        'TemplateConverter is not ported yet (template wave); cannot '
-        'honor template_dirs for backend "$backend".',
-      );
+    if (templatesEngaged && converter.supportsTemplates) {
+      return _templateChain(backend, opts, converter);
     }
     return converter;
   }
-  if (_isSet(opts['template_dirs']) || _isSet(opts['delegate_backend'])) {
-    throw UnimplementedError(
-      'TemplateConverter is not ported yet (template wave); cannot '
-      'honor template_dirs for backend "$backend".',
-    );
+  if (_isSet(templateDirsOpt)) {
+    final delegateBackend = opts['delegate_backend'];
+    if (_isSet(delegateBackend)) {
+      final delegate = forBackend(delegateBackend.toString());
+      if (delegate != null) {
+        return _templateChain(
+          backend,
+          opts,
+          _resolveRegistration(delegate, delegateBackend.toString(), opts),
+        );
+      }
+    }
+    return _templateChain(backend, opts, null);
+  }
+  if (TemplateRegistry.globalHasOverrides) {
+    return _templateChain(backend, opts, null);
   }
   return null;
+}
+
+/// Builds the template chain for ([backend], [opts]) with [fallback].
+///
+/// Loads `*.mustache` sources through [VmTemplateLoader] (last-wins
+/// across `template_dirs`, honoring `template_cache`); the `dart` engine
+/// selects code-registered transforms only and scans no files. A lone
+/// `template_dirs` string coerces to a one-element list (Ruby's
+/// `[*template_dirs]`). See [buildTemplateChain] for the assembly.
+Converter _templateChain(
+  String backend,
+  Map<String, Object?> opts,
+  Converter? fallback,
+) {
+  final templateDirsOpt = opts['template_dirs'];
+  final Map<String, String> sources;
+  if (opts['template_engine'] == 'dart' || !_isSet(templateDirsOpt)) {
+    sources = const <String, String>{};
+  } else {
+    final dirs = templateDirsOpt is Iterable
+        ? templateDirsOpt.map((dir) => dir.toString()).toList()
+        : <String>[templateDirsOpt.toString()];
+    sources = VmTemplateLoader(
+      templateDirs: dirs,
+      templateCache: opts.containsKey('template_cache')
+          ? opts['template_cache']
+          : true,
+    ).load();
+  }
+  return buildTemplateChain(backend, opts, fallback, sources: sources);
 }
 
 /// Guards [Converter.register] and the factory seed maps. The registry only
@@ -353,8 +407,9 @@ abstract class Converter implements NodeConverter {
   /// Port of `Converter.create`. Returns a registered instance as-is,
   /// invokes a registered factory with ([backend], [opts]), and returns
   /// `null` when nothing (or an explicit `null`) is registered. A truthy
-  /// `template_dirs` option throws [UnimplementedError] until the
-  /// template wave lands.
+  /// `template_dirs` option (or compiled-in [TemplateRegistry.global]
+  /// overrides) engages a template chain ahead of the resolved converter
+  /// (see [_createFrom]).
   static Converter? create(
     String backend, [
     Map<String, Object?> opts = const <String, Object?>{},
