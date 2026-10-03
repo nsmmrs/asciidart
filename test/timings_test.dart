@@ -118,5 +118,26 @@ void main() {
         ),
       );
     });
+
+    test('printReport does not lose precision', () {
+      final timings = Timings();
+      timings.log['read'] = 0.00001;
+      timings.log['parse'] = 0.00003;
+      timings.log['convert'] = 0.00005;
+      final buffer = StringBuffer();
+      timings.printReport(buffer);
+      const expected = ['0.00004', '0.00005', '0.00009'];
+      // Port of `l.sub(/.*:\s*([\d.]+)/, '\1')`.
+      final result = buffer
+          .toString()
+          .trim()
+          .split('\n')
+          .map(
+            (line) =>
+                RegExp(r'.*:\s*([\d.]+)').firstMatch(line)?.group(1) ?? line,
+          )
+          .toList();
+      expect(result, orderedEquals(expected));
+    });
   });
 }

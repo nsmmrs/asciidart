@@ -24,6 +24,12 @@ class Timings {
   final Map<String, double> _log = {};
   final Map<String, double> _timers = {};
 
+  /// Recorded phase durations in seconds, keyed by phase name.
+  ///
+  /// Exposed so tests can seed exact values (the Dart equivalent of Ruby's
+  /// test-suite `@log` access); production code must use [start]/[record].
+  Map<String, double> get log => _log;
+
   double get _now =>
       _stopwatch.elapsedMicroseconds / Duration.microsecondsPerSecond;
 

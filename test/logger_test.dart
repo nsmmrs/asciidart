@@ -250,27 +250,27 @@ void main() {
     () {
       test(
         'load API assigns the given logger',
-        skip: 'requires document wave: Asciidoctor.load(logger:) (see load.rb)',
+        skip: 'requires load.rb port: Asciidoctor.load(logger:) (see load.rb)',
         () {},
       );
       test(
         'load_file API assigns the given logger',
-        skip: 'requires document wave: Asciidoctor.load_file(logger:)',
+        skip: 'requires load.rb port: Asciidoctor.load_file(logger:)',
         () {},
       );
       test(
         'convert API assigns the given logger',
-        skip: 'requires document wave: Asciidoctor.convert(logger:)',
+        skip: 'requires load.rb port: Asciidoctor.convert(logger:)',
         () {},
       );
       test(
         'convert_file API assigns the given logger',
-        skip: 'requires document wave: Asciidoctor.convert_file(logger:)',
+        skip: 'requires load.rb port: Asciidoctor.convert_file(logger:)',
         () {},
       );
       test(
         'falsy logger option installs a NullLogger',
-        skip: 'requires document wave: `logger || NullLogger.new` lives in load.rb',
+        skip: 'requires load.rb port: `logger || NullLogger.new` lives in load.rb',
         () {},
       );
     },

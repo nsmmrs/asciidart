@@ -3120,46 +3120,6 @@ void main() {
       });
     });
 
-    group('Timing report', () {
-      test('print_report does not lose precision', () {
-        final timings = Timings();
-        timings.log['read'] = 0.00001;
-        timings.log['parse'] = 0.00003;
-        timings.log['convert'] = 0.00005;
-        final sink = StringBuffer();
-        timings.printReport(sink);
-        const expected = ['0.00004', '0.00005', '0.00009'];
-        // Port of `l.sub(/.*:\s*([\d.]+)/, '\1')`.
-        final result = sink
-            .toString()
-            .trim()
-            .split('\n')
-            .map(
-              (line) =>
-                  RegExp(r'.*:\s*([\d.]+)').firstMatch(line)?.group(1) ?? line,
-            )
-            .toList();
-        expect(result, orderedEquals(expected));
-      });
-
-      test('print_report should print 0 for untimed phases', () {
-        final sink = StringBuffer();
-        Timings().printReport(sink);
-        final expected = List<String>.filled(3, '0.00000');
-        // Port of `l.sub(/.*:\s*([\d.]+)/, '\1')`.
-        final result = sink
-            .toString()
-            .trim()
-            .split('\n')
-            .map(
-              (line) =>
-                  RegExp(r'.*:\s*([\d.]+)').firstMatch(line)?.group(1) ?? line,
-            )
-            .toList();
-        expect(result, orderedEquals(expected));
-      });
-    });
-
     group('Date time attributes', () {
       test(
         'should compute docyear and docdatetime from docdate and doctime',

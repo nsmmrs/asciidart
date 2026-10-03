@@ -23,4 +23,17 @@ abstract final class Parser {
       throw UnimplementedError(
         'Parser.adjustIndentation (parser wave replaces stub)',
       );
+
+  /// Stores attribute [name]=[value] on [doc]/[attrs], processing `!`
+  /// unset markers and `numbered`/`hardbreaks` aliases. Mirrors
+  /// `Parser.store_attribute` (parser.rb:2145); returns the (name, value)
+  /// pair. Needed by `sub_attributes`, which lands before the parser wave.
+  static (String, String?) storeAttribute(
+    String name,
+    String value, [
+    Object? doc,
+    Map<String, Object?>? attrs,
+  ]) => throw UnimplementedError(
+    'Parser.storeAttribute (parser wave replaces stub)',
+  );
 }

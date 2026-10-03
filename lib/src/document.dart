@@ -26,18 +26,20 @@
 ///   `extensions` or `extension_registry` options, or a `converter_factory`
 ///   option, throws [UnimplementedError].
 ///
-/// [Timings] is a minimal port of `lib/asciidoctor/timings.rb`, kept here
-/// because [Document] consumes it directly.
+/// [Timings] (from `timings.dart`) records the read/parse/convert/write
+/// phase durations surfaced via the `timings` option and `--timings`.
 library;
 
 import 'dart:convert' show Encoding, utf8;
-import 'dart:io' show Directory, File, IOSink, Platform, stdout;
+import 'dart:io' show Directory, File, IOSink, Platform;
 
 import 'abstract_block.dart';
 import 'abstract_node.dart';
 import 'callouts.dart';
+import 'converter.dart';
 import 'core_ext.dart';
 import 'helpers.dart';
+import 'timings.dart';
 import 'inline.dart';
 import 'parser.dart';
 import 'path_resolver.dart';
@@ -65,14 +67,9 @@ const Map<String, int> defaultPageWidths = <String, int>{'docbook': 425};
 
 /// Default file extensions (outfilesuffix) per base backend.
 /// Port of `DEFAULT_EXTENSIONS`.
-const Map<String, String> defaultExtensions = <String, String>{
-  'html': '.html',
-  'docbook': '.xml',
-  'pdf': '.pdf',
-  'epub': '.epub',
-  'manpage': '.man',
-  'asciidoc': '.adoc',
-};
+/// Default file extensions (outfilesuffix) per base backend lives in
+/// `converter.dart` until `constants.dart` (in flight) becomes the canonical
+/// home for all main-module constants and this import is rewired.
 
 /// Default document attributes. Port of `DEFAULT_ATTRIBUTES`.
 const Map<String, String> defaultAttributes = <String, String>{
@@ -299,87 +296,6 @@ class Footnote {
 
   /// The footnote text.
   final Object? text;
-}
-
-/// Measures the time spent in each processing phase.
-///
-/// Minimal port of `Asciidoctor::Timings` (phase keys are strings per the
-/// symbols-become-strings convention).
-class Timings {
-  /// Creates empty timings.
-  Timings();
-
-  /// Recorded phase durations in seconds, keyed by phase name.
-  ///
-  /// Written by [record]; exposed (like Ruby's `@log` ivar) so tests can
-  /// seed exact values.
-  final Map<String, double> log = <String, double>{};
-
-  final Map<String, double> _timers = <String, double>{};
-
-  static double _now() => DateTime.now().microsecondsSinceEpoch / 1000000.0;
-
-  /// Starts the timer for [key].
-  void start(String key) {
-    _timers[key] = _now();
-  }
-
-  /// Records the elapsed time for [key] since [start] was called.
-  void record(String key) {
-    log[key] = _now() - _timers.remove(key)!;
-  }
-
-  /// The total recorded time for [keys], or `null` when not positive.
-  double? time(List<String> keys) {
-    var total = 0.0;
-    for (final key in keys) {
-      total += log[key] ?? 0;
-    }
-    return total > 0 ? total : null;
-  }
-
-  /// Time spent reading the source.
-  double? get read => time(const <String>['read']);
-
-  /// Time spent parsing the source.
-  double? get parse => time(const <String>['parse']);
-
-  /// Time spent reading and parsing the source.
-  double? get readParse => time(const <String>['read', 'parse']);
-
-  /// Time spent converting the document.
-  double? get convert => time(const <String>['convert']);
-
-  /// Time spent reading, parsing and converting.
-  double? get readParseConvert =>
-      time(const <String>['read', 'parse', 'convert']);
-
-  /// Time spent writing the output.
-  double? get write => time(const <String>['write']);
-
-  /// Total time spent in all phases.
-  double? get total =>
-      time(const <String>['read', 'parse', 'convert', 'write']);
-
-  /// Prints the timing report to [to] (default stdout).
-  ///
-  /// Mirrors Ruby's `sprintf '%05.5f'` formatting; the width never applies
-  /// (five decimals always exceed it), so [double.toStringAsFixed] matches.
-  void printReport([StringSink? to, String? subject]) {
-    final sink = to ?? stdout;
-    if (subject != null) sink.writeln('Input file: $subject');
-    sink.writeln(
-      '  Time to read and parse source: '
-      '${(readParse ?? 0).toStringAsFixed(5)}',
-    );
-    sink.writeln(
-      '  Time to convert document: ${(convert ?? 0).toStringAsFixed(5)}',
-    );
-    sink.writeln(
-      '  Total time (read, parse and convert): '
-      '${(readParseConvert ?? 0).toStringAsFixed(5)}',
-    );
-  }
 }
 
 /// Backend traits: the basebackend, filetype, outfilesuffix and (for HTML)
