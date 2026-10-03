@@ -720,12 +720,15 @@ void main() {
     });
 
     test('returns converted string when to_file is false', () {
-      final output = convert('', {
+      // Ruby: stream output leaves standalone unset, so the transform is
+      // embedded (`convert "text", to_file: false` => paragraph divs).
+      final output = convert('text', {
         'to_file': false,
         'converter': html5Converter(),
       }) as String;
       expect(output, isNotEmpty);
-      expect(output, contains('<html'));
+      expect(output, contains('<p>text</p>'));
+      expect(output, isNot(contains('<html>')));
     });
 
     test('ignores parse option', () {
@@ -755,7 +758,8 @@ void main() {
         'converter': html5Converter(),
       }) as Document;
       expect(doc.options.containsKey('standalone'), isFalse);
-      expect(buffer.toString(), isNotEmpty);
+      // Ruby: an empty document converts to the empty embedded string.
+      expect(buffer.toString(), isEmpty);
 
       final buffer2 = StringBuffer();
       final doc2 = convert('', {
@@ -1020,7 +1024,8 @@ void main() {
         expect(identical(options, doc.options), isFalse);
         expect(options.keys, containsAll(['safe', 'to_file', 'converter']));
         expect(options, hasLength(3));
-        expect(output.toString(), isNotEmpty);
+        // Ruby: an empty document converts to the empty embedded string.
+        expect(output.toString(), isEmpty);
       });
     });
 

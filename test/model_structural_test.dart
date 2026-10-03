@@ -1694,14 +1694,26 @@ void main() {
       // Ruby raises NoMethodError here (verified); the port throws too.
       expect(() => Cell(null, 't'), throwsA(anything));
       expect(() => Cell(null, 't', null), throwsA(anything));
-      expect(
-        () => Cell(col, 't', {'style': 'asciidoc'}),
-        throwsUnimplementedError,
-      );
+      // AsciiDoc cells build a nested document, which needs a real
+      // Document; with the FakeDocument test double the cast fails.
+      // (Real-document coverage: the `asciidoc cell` test below.)
+      expect(() => Cell(col, 't', {'style': 'asciidoc'}), throwsA(anything));
       final asciidocCol = Column(table, 1, {'style': 'asciidoc'});
-      expect(() => Cell(asciidocCol, 't', null), throwsUnimplementedError);
+      expect(() => Cell(asciidocCol, 't', null), throwsA(anything));
       // A null-attributes cell on a plain column is a normal cell.
       expect(Cell(col, 't', null).contentModel, equals('simple'));
+    });
+
+    test('asciidoc cell builds a nested document', () {
+      // Unit-level cover for e2e #115 (xref from asciidoc table cell):
+      // Ruby parses the cell text into an inner document eagerly.
+      final doc = load('|===\na|See *this*\n|===\n');
+      final table = doc.blocks.single as Table;
+      final cell = table.rows.body.single.single;
+      expect(cell.style, equals('asciidoc'));
+      expect(cell.innerDocument, isA<Document>());
+      expect((cell.innerDocument as Document).blocks, hasLength(1));
+      expect(cell.content() as String, contains('<strong>this</strong>'));
     });
 
     test('toString carries text, spans and attributes', () {

@@ -797,6 +797,13 @@ class Document extends AbstractBlock implements NodeDocument {
   /// The reader associated with this document.
   late Reader reader;
 
+  /// Adapts this document to the [ReaderDocument] interface.
+  ///
+  /// Readers (e.g. the first-line preprocessing of AsciiDoc table cells)
+  /// need a [ReaderDocument]; a separate adapter is required for the same
+  /// reason as [_ReaderDocumentAdapter] (see its docs).
+  ReaderDocument asReaderDocument() => _ReaderDocumentAdapter(this);
+
   /// The path resolver used to resolve paths in this document.
   @override
   late final PathResolver pathResolver;
@@ -1343,7 +1350,6 @@ class Document extends AbstractBlock implements NodeDocument {
         }
       }
     } else {
-      // ignore: unused_local_variable, reason: consumed by the converter wave.
       final String transform;
       if (opts.containsKey('standalone')) {
         transform = isTruthy(opts['standalone']) ? 'document' : 'embedded';
@@ -1352,9 +1358,13 @@ class Document extends AbstractBlock implements NodeDocument {
       } else {
         transform = isTruthy(options['standalone']) ? 'document' : 'embedded';
       }
-      // Converter wave: `transform` selects the document/embedded template.
-      // Until then the single-argument convert entry point is used.
-      output = converter.convert(this);
+      // `NodeConverter` only exposes the single-argument entry point; the
+      // full `Converter` API takes the transform (Ruby: `convert self,
+      // transform`). Stubs for unported backends keep throwing below.
+      final nodeConverter = converter;
+      output = nodeConverter is Converter
+          ? nodeConverter.convert(this, transform)
+          : nodeConverter.convert(this);
     }
 
     // Extensions wave: postprocessor extensions run here.
@@ -1389,7 +1399,8 @@ class Document extends AbstractBlock implements NodeDocument {
         target.writeln();
       }
     } else if (target is String) {
-      File(target).writeAsStringSync(output as String);
+      // Ruby's `File.write target, output` coerces nil to empty.
+      File(target).writeAsStringSync(output as String? ?? '');
     } else {
       throw ArgumentError.value(
         target,
@@ -1397,7 +1408,17 @@ class Document extends AbstractBlock implements NodeDocument {
         'must be a StringSink, IOSink, or file path',
       );
     }
-    // Converter wave: manpage alternate pages are written here.
+    // Ruby: only when the converter class responds to write_alternate_pages
+    // (i.e. the manpage converter itself, not a template/composite chain).
+    if (backend == 'manpage' &&
+        target is String &&
+        converter is ManpageConverter) {
+      ManpageConverter.writeAlternatePages(
+        attributes['mannames'] as List<Object?>?,
+        attributes['manvolnum'],
+        target,
+      );
+    }
     _timings?.record('write');
   }
 

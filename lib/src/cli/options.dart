@@ -75,6 +75,7 @@ import 'dart:io'
 import '../abstract_node.dart';
 import '../logging.dart';
 import '../version.dart';
+import 'help_topics.g.dart';
 
 /// The CLI usage text, byte-identical to Ruby's `OptionParser#to_s` output
 /// for this option set (captured from the `options.rb` oracle; the safe
@@ -714,11 +715,9 @@ final class CliOptions {
         if (syntaxPath != null) {
           _putsFile(outSink, syntaxPath);
         } else {
-          errSink.writeln(
-            'asciidoctor: FAILED: syntax page not found; '
-            'visit https://asciidoctor.org/docs',
-          );
-          return 1;
+          // A standalone executable run outside the checkout has no files
+          // to read; serve the embedded copy (byte-identical).
+          _putsContent(outSink, HelpTopics.syntax);
         }
       default:
         outSink.write(usageText);
@@ -745,6 +744,11 @@ final class CliOptions {
       }
     } else if (_findCheckoutFile(['man', 'asciidoctor.1']) case final path?) {
       _putsManpage(outSink, path);
+    } else if (HelpTopics.manpage.isNotEmpty) {
+      // A standalone executable run outside the checkout has no files to
+      // read; serve the embedded copy (byte-identical).
+      _putsContent(outSink, HelpTopics.manpage);
+      return 0;
     } else {
       var resolved = '';
       try {
@@ -1127,6 +1131,13 @@ bool _isFile(String path) {
 /// newline), read as UTF-8.
 void _putsFile(StringSink sink, String path) {
   final content = File(path).readAsStringSync();
+  sink.write(content);
+  if (!content.endsWith('\n')) sink.writeln();
+}
+
+/// Writes [content] to [sink] with `puts` semantics (exactly one trailing
+/// newline). The in-memory counterpart of [_putsFile] for embedded data.
+void _putsContent(StringSink sink, String content) {
   sink.write(content);
   if (!content.endsWith('\n')) sink.writeln();
 }
