@@ -10,6 +10,7 @@ import 'document.dart';
 import 'inline.dart';
 import 'list.dart';
 import 'parser.dart';
+import 'substitutors.dart';
 
 /// Scans for a leading, non-escaped anchor (id + optional reference text).
 ///

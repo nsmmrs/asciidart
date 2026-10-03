@@ -47,6 +47,7 @@ import 'logging.dart';
 import 'reader.dart';
 import 'rx.dart';
 import 'section.dart';
+import 'substitutors.dart';
 import 'table.dart';
 
 const String _del = '\u007f';

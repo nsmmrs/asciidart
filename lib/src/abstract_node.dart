@@ -17,9 +17,9 @@
 /// * [NodeLogger] — the logger API. The logging wave provides the concrete
 ///   `Logger`, `MemoryLogger` and `NullLogger` implementations.
 ///
-/// The substitution methods ([applySubs], [subQuotes] and friends) are ported
-/// as stubs that throw [UnimplementedError] until the substitutors wave
-/// replaces their bodies.
+/// The substitution methods ([applySubs], [subQuotes] and friends) delegate
+/// to the top-level functions in `substitutors.dart`, preserving Ruby's
+/// mixin shape (every node answers the `Substitutors` methods).
 library;
 
 import 'dart:convert' show base64Encode, utf8;
@@ -29,6 +29,7 @@ import 'abstract_block.dart';
 import 'callouts.dart';
 import 'helpers.dart';
 import 'path_resolver.dart';
+import 'substitutors.dart' as substitutors;
 
 /// Line feed. Port of the `LF` constant in `lib/asciidoctor.rb`.
 const String lf = '\n';
@@ -846,90 +847,59 @@ abstract class AbstractNode {
   /// Applies the substitutions [subs] to [source].
   ///
   /// [source] is a [String] or a [List] of lines (mirroring Ruby, where the
-  /// verbatim path passes the lines array and gets an array back). Two
-  /// vacuous cases are implemented faithfully, matching Ruby's
-  /// `return text if text.empty? || !subs` guard and the no-op loop over an
-  /// empty [subs] list: empty text is returned as is, a `null` [subs]
-  /// returns the text unchanged, and an empty [subs] list returns strings
-  /// unchanged while arrays go through the join/split round-trip (a fresh
-  /// array, never the input). Anything else throws [UnimplementedError]
-  /// until the substitutors wave lands.
-  Object? applySubs(Object? source, [List<String>? subs]) {
-    final text = source;
-    if (text == null) {
-      // Ruby raises NoMethodError on `nil.empty?`.
-      throw StateError('applySubs: text must not be null');
-    }
-    if (text is String && text.isEmpty) return text;
-    if (text is List<Object?> && text.isEmpty) return text;
-    if (text is! String && text is! List<Object?>) {
-      throw StateError('applySubs: text must be a String or a List');
-    }
-    if (subs == null) return text;
-    if (subs.isEmpty) {
-      if (text is List<Object?>) return text.join(lf).split(lf);
-      return text;
-    }
-    throw UnimplementedError(
-      'Substitutors wave: AbstractNode.applySubs with non-empty subs '
-      'is not yet ported.',
-    );
-  }
+  /// verbatim path passes the lines array and gets an array back).
+  /// Delegates to `substitutors.applySubs` with this node.
+  Object? applySubs(Object? source, [List<String>? subs]) =>
+      substitutors.applySubs(this, source, subs);
 
   /// Applies title substitutions to [text].
   ///
   /// Ruby aliases this to `apply_subs` (defaulting to the normal
   /// substitutions, which always perform real work on non-empty text).
-  /// Empty text is returned as is; anything else throws
-  /// [UnimplementedError] until the substitutors wave lands.
-  Object? applyTitleSubs(Object? text) {
-    if (text is String && text.isEmpty) return text;
-    throw UnimplementedError(
-      'Substitutors wave: AbstractNode.applyTitleSubs is not yet ported.',
-    );
-  }
+  /// Delegates to `substitutors.applyTitleSubs` with this node.
+  Object? applyTitleSubs(Object? text) =>
+      substitutors.applyTitleSubs(this, text);
 
   /// Applies reference-text substitutions to [text].
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  String applyReftextSubs(String text) => throw UnimplementedError(
-    'Substitutors wave: AbstractNode.applyReftextSubs is not yet ported.',
-  );
+  /// Delegates to `substitutors.applyReftextSubs` with this node.
+  Object? applyReftextSubs(String text) =>
+      substitutors.applyReftextSubs(this, text);
 
   /// Replaces XML special characters in [text].
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  String subSpecialchars(String text) => throw UnimplementedError(
-    'Substitutors wave: AbstractNode.subSpecialchars is not yet ported.',
-  );
+  /// Delegates to `substitutors.subSpecialchars` (pure function).
+  String subSpecialchars(String text) =>
+      substitutors.subSpecialchars(text);
 
   /// Applies replacements (e.g. `(C)`, `--`, `...`) to [text].
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  String subReplacements(String text) => throw UnimplementedError(
-    'Substitutors wave: AbstractNode.subReplacements is not yet ported.',
-  );
+  /// Delegates to `substitutors.subReplacements` (pure function).
+  String subReplacements(String text) =>
+      substitutors.subReplacements(text);
 
   /// Applies quote substitutions to [text].
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  String subQuotes(String text) => throw UnimplementedError(
-    'Substitutors wave: AbstractNode.subQuotes is not yet ported.',
-  );
+  /// Delegates to `substitutors.subQuotes` with this node.
+  String subQuotes(String text) => substitutors.subQuotes(this, text);
+
+  /// Applies macro substitutions to [text].
+  ///
+  /// Delegates to `substitutors.subMacros` with this node.
+  String subMacros(String text) => substitutors.subMacros(this, text);
 
   /// Substitutes [value] into the `%s` placeholder of [format].
   ///
-  /// Ruby aliases this to `sprintf`. Substitutors wave: stub throwing
-  /// [UnimplementedError] (that wave may generalize the signature).
+  /// Ruby aliases this to `sprintf`. Delegates to
+  /// `substitutors.subPlaceholder` (pure function).
   String subPlaceholder(String format, Object? value) =>
-      throw UnimplementedError(
-        'Substitutors wave: AbstractNode.subPlaceholder is not yet ported.',
-      );
+      substitutors.subPlaceholder(format, value);
 
   /// Resolves and assigns the substitutions for this block.
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  void commitSubs() => throw UnimplementedError(
-    'Substitutors wave: AbstractNode.commitSubs is not yet ported.',
-  );
+  /// Only meaningful on blocks (mirrors `Substitutors#commit_subs`, which
+  /// reads the block's content model). Delegates to
+  /// `substitutors.commitSubs`.
+  List<String>? commitSubs() =>
+      substitutors.commitSubs(this as AbstractBlock);
 }

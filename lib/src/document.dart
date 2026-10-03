@@ -46,6 +46,7 @@ import 'path_resolver.dart';
 import 'reader.dart';
 import 'rx.dart';
 import 'section.dart';
+import 'substitutors.dart' as substitutors;
 import 'version.dart';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.
@@ -302,8 +303,8 @@ class _BuiltinConverterStub implements NodeConverter {
 /// required because [AbstractNode.normalizeSystemPath] takes `start` as a
 /// named parameter while [ReaderDocument.normalizeSystemPath] takes it
 /// positionally, so the two signatures cannot be satisfied by one method.
-/// The substitutor entry points ([subAttributes], [parseAttributes]) throw
-/// [UnimplementedError] until the substitutors wave lands.
+/// The substitutor entry points ([subAttributes], [parseAttributes])
+/// delegate to the top-level `substitutors.dart` functions.
 class _ReaderDocumentAdapter implements ReaderDocument {
   /// Creates an adapter delegating to [document].
   _ReaderDocumentAdapter(this._document);
@@ -354,17 +355,21 @@ class _ReaderDocumentAdapter implements ReaderDocument {
     String text, {
     String? attributeMissing,
     String dropLineSeverity = 'info',
-  }) => throw UnimplementedError(
-    'Substitutors wave: Document.subAttributes is not yet ported.',
+  }) => substitutors.subAttributes(
+    _document,
+    text,
+    attributeMissing: attributeMissing,
+    dropLineSeverity: dropLineSeverity,
   );
 
   @override
   Map<Object, String?> parseAttributes(
     String? attrlist, {
     bool subInput = false,
-  }) => throw UnimplementedError(
-    'Substitutors wave: Document.parseAttributes is not yet ported.',
-  );
+  }) =>
+      substitutors
+          .parseAttributes(_document, attrlist, subInput: subInput)
+          .cast<Object, String?>();
 
   @override
   String? readUri(Uri uri, Encoding encoding) =>

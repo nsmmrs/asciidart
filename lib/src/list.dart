@@ -8,12 +8,6 @@ import 'abstract_node.dart';
 import 'block.dart';
 import 'core_ext.dart';
 
-/// Substitutions applied to a verbatim block by default.
-///
-/// Port of `Asciidoctor::BASIC_SUBS` (`lib/asciidoctor/substitutors.rb`).
-/// It lives here temporarily until substitutors.dart lands.
-const List<String> basicSubs = <String>['specialcharacters'];
-
 /// Substitutions applied to normal content by default.
 ///
 /// Port of `Asciidoctor::NORMAL_SUBS` (`lib/asciidoctor/substitutors.rb`).
