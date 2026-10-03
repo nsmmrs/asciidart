@@ -1,48 +1,24 @@
+// Command-line entry point for the Dart port of Asciidoctor.
+//
+// Port of `bin/asciidoctor`: parses arguments via `Invoker`, runs the
+// processor, and exits with the invoker's exit code.
 import 'dart:io';
 
-import 'package:args/args.dart';
-import 'package:asciidoctor/asciidoctor.dart';
+import 'package:asciidoctor/src/cli/invoker.dart';
 
-void main(List<String> arguments) {
-  final parser = ArgParser()
-    ..addFlag(
-      'version',
-      abbr: 'V',
-      negatable: false,
-      help: 'Print the version and exit.',
-    )
-    ..addFlag(
-      'help',
-      abbr: 'h',
-      negatable: false,
-      help: 'Print this usage message.',
-    );
-
-  late final ArgResults results;
+void main(List<String> args) {
   try {
-    results = parser.parse(arguments);
-  } on FormatException catch (e) {
-    stderr.writeln(e.message);
-    stderr.writeln();
-    stderr.writeln('Usage: asciidoctor [options] [files]');
-    stderr.writeln(parser.usage);
-    exitCode = 64; // EX_USAGE
-    return;
+    final invoker = Invoker.fromArgs(args);
+    invoker.invoke();
+    exitCode = invoker.code;
+  } catch (e, stackTrace) {
+    // Mirror Ruby's uncaught-exception behavior (`bin/asciidoctor` has no
+    // rescue): the message plus backtrace go to STDERR and the process
+    // exits 1. Reached for `--trace` re-raises and for the errors
+    // `Options.parse!` lets propagate (ambiguous option, needless
+    // argument, unloadable `--require` under `--trace`).
+    stderr.writeln(e);
+    stderr.writeln(stackTrace);
+    exitCode = 1;
   }
-
-  if (results.flag('version')) {
-    stdout.writeln('Asciidoctor ${Asciidoctor.version} (Dart port)');
-    return;
-  }
-
-  if (results.flag('help') || results.rest.isEmpty) {
-    stdout.writeln('Usage: asciidoctor [options] [files]');
-    stdout.writeln();
-    stdout.writeln(parser.usage);
-    return;
-  }
-
-  // Skeleton: conversion is not implemented yet (later phases).
-  stderr.writeln('asciidoctor: conversion is not implemented yet.');
-  exitCode = 69; // EX_UNAVAILABLE
 }
