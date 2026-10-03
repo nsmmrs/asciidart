@@ -6,19 +6,7 @@ library;
 import 'dart:io' show Directory, Platform, stderr;
 
 import 'core_ext.dart';
-
-/// Detects strings that resemble URIs (e.g. `http://domain`, `data:info`).
-///
-/// Port of `Asciidoctor::UriSniffRx` (defined in `lib/asciidoctor/rx.rb`).
-/// It lives here temporarily until the `rx.dart` port lands; the pattern is
-/// `\A\p{Alpha}[\p{Alnum}.+-]+:/{0,2}`, where `\p{Alnum}` is emulated as
-/// `[\p{Alpha}\p{Nd}]` because Dart's `RegExp` does not know `Alnum`.
-/// Single-character schemes (including Windows paths such as `c:/x`) never
-/// match, exactly as in Ruby.
-final RegExp uriSniffRx = RegExp(
-  r'^\p{Alpha}[\p{Alpha}\p{Nd}.+-]+:/{0,2}',
-  unicode: true,
-);
+import 'rx.dart';
 
 /// Internal helper functions. Except where noted, everything here is internal.
 abstract final class Helpers {

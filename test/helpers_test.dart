@@ -2,6 +2,7 @@
 library;
 
 import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/rx.dart';
 import 'package:test/test.dart';
 
 /// Stand-in for a namespaced application class (cf. `Asciidoctor::Document`).
