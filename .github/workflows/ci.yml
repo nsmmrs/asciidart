@@ -40,7 +40,7 @@ jobs:
     - name: Install asciidoctor gem (e2e oracle)
       run: gem install asciidoctor coderay pygments.rb --no-document
     - name: Install bats
-      run: npm i -g bats
+      run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart)
       env:
         ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-dart
@@ -61,7 +61,7 @@ jobs:
     - name: Build Dart executable
       run: ./tool/build-exes.sh
     - name: Install bats
-      run: npm i -g bats
+      run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
       run: |
         EXE="$(pwd)/$(ls dist | grep '^asciidoctor-linux-')"
