@@ -13,3 +13,4 @@
 # Dart port package
 dart/.dart_tool/
 dart/build/
+dart/pubspec.lock
