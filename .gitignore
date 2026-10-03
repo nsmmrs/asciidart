@@ -1,19 +1,11 @@
-/Gemfile.lock
-/.bundle/
-/*.gem
-/*.html
-/.idea/
-/.ruby-gemset
-/.ruby-version
-/.yardoc/
-/pkg/
-/rdoc/
-/vendor/
-
-# Dart port package
-dart/.dart_tool/
-dart/build/
-dart/pubspec.lock
-
+# Dart build output (never committed)
+.dart_tool/
+build/
+# Pub lockfile for a library package (applications keep their own)
+pubspec.lock
 # Release executables (tool/build-exes.sh output; never committed)
 /dist/
+# Editor and OS noise
+.idea/
+*.iml
+.DS_Store

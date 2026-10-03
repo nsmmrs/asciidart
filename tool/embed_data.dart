@@ -24,8 +24,8 @@ const Map<String, String> _embeddedDirs = {
 
 void main() {
   final scriptFile = File(Platform.script.toFilePath());
-  // tool/embed_data.dart -> tool/ -> dart/ -> repo root
-  final repoRoot = scriptFile.parent.parent.parent;
+  // tool/embed_data.dart -> tool/ -> repo root
+  final repoRoot = scriptFile.parent.parent;
   final dataDir = Directory('${repoRoot.path}/data');
   if (!dataDir.existsSync()) {
     stderr.writeln('embed_data: data/ directory not found: ${dataDir.path}');
@@ -105,7 +105,7 @@ void main() {
     )
     ..writeln('}');
 
-  final target = File('${repoRoot.path}/dart/lib/src/data.g.dart');
+  final target = File('${repoRoot.path}/lib/src/data.g.dart');
   target.writeAsStringSync(out.toString());
   // ignore: avoid_print
   print('embed_data: wrote ${target.path} (${entries.length} files)');

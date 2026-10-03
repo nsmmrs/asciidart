@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Subject-under-test shim for the in-repo Ruby CLI.
-# Resolves the repo root from this file's location so tests can run from any cwd.
+# Oracle shim: the reference Ruby CLI, resolved from PATH.
+# Requires a released asciidoctor gem (`gem install asciidoctor`); the
+# in-repo Ruby sources left with the repo split (see adr/).
 set -e
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-exec ruby "$ROOT/bin/asciidoctor" "$@"
+if ! command -v asciidoctor >/dev/null 2>&1; then
+  echo "asciidoctor-ruby: no asciidoctor gem on PATH (run: gem install asciidoctor)" >&2
+  exit 127
+fi
+exec asciidoctor "$@"

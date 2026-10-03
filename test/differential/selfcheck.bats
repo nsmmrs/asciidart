@@ -10,13 +10,13 @@
 setup_file() {
   local root
   root="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
-  cd "$root/dart" && dart pub get >&2
+  cd "$root" && dart pub get >&2
 }
 
 setup() {
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
   RUBY_EXE="ruby -I$REPO_ROOT/lib $REPO_ROOT/bin/asciidoctor"
-  cd "$REPO_ROOT/dart"
+  cd "$REPO_ROOT"
 }
 
 @test "selfcheck: repo Ruby CLI vs itself is byte-identical (exit 0)" {

@@ -6,4 +6,4 @@
 # location, so the caller's cwd is preserved for relative input paths.
 set -e
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-exec dart run "$ROOT/dart/bin/asciidoctor.dart" "$@"
+exec dart run "$ROOT/bin/asciidoctor.dart" "$@"

@@ -259,7 +259,7 @@ void main() {
       test('load_file API assigns the given logger', () {
         withManagerLogger(() {
           final newLogger = TestLogger(stdout);
-          loadFile('../test/fixtures/basic.adoc', {'logger': newLogger});
+          loadFile('test/fixtures/basic.adoc', {'logger': newLogger});
           expect(LoggerManager.logger, same(newLogger));
         });
       });
@@ -273,7 +273,7 @@ void main() {
       test('convert_file API assigns the given logger', () {
         withManagerLogger(() {
           final newLogger = TestLogger(stdout);
-          convertFile('../test/fixtures/basic.adoc', {
+          convertFile('test/fixtures/basic.adoc', {
             'to_file': false,
             'logger': newLogger,
           });

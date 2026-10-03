@@ -214,7 +214,7 @@ Document documentFromString(String src, [Map<String, Object?>? options]) {
 }
 
 /// Resolves a fixture path (port of `fixture_path`).
-String fixturePath(String name) => '../test/fixtures/$name';
+String fixturePath(String name) => 'test/fixtures/$name';
 
 /// Converts [src] to an embedded document (port of
 /// `convert_string_to_embedded`).

@@ -16,7 +16,7 @@ import 'package:test/test.dart';
 ///
 /// Tests run with the package root (`dart/`) as the working directory.
 List<int> readDataFile(String relativePath) =>
-    File('${Directory.current.path}/../data/$relativePath').readAsBytesSync();
+    File('${Directory.current.path}/data/$relativePath').readAsBytesSync();
 
 /// Mirrors Ruby's `String#rstrip` for building expectations independently of
 /// the helper under test.

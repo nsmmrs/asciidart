@@ -325,7 +325,7 @@ String convertEmbedded(String src, [Map<String, Object?>? options]) =>
 String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
-    if (File('${dir.path}/dart/pubspec.yaml').existsSync() &&
+    if (File('${dir.path}/pubspec.yaml').existsSync() &&
         Directory('${dir.path}/test/fixtures').existsSync()) {
       return dir.path;
     }

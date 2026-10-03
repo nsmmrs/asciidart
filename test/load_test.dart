@@ -55,7 +55,7 @@ const String needsSyncHttp =
 
 /// Joins a fixture [name] to the Ruby fixtures directory (port of
 /// `fixture_path`; tests run with `dart/` as the working directory).
-String fixturePath(String name) => '../test/fixtures/$name';
+String fixturePath(String name) => 'test/fixtures/$name';
 
 /// Runs [fn] with a fresh temporary directory, deleted afterwards.
 void withTempDir(void Function(Directory dir) fn) {

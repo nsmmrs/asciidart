@@ -28,7 +28,7 @@ import 'package:test/test.dart';
 String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
-    if (File('${dir.path}/dart/pubspec.yaml').existsSync() &&
+    if (File('${dir.path}/pubspec.yaml').existsSync() &&
         Directory('${dir.path}/test/fixtures').existsSync()) {
       return dir.path;
     }
@@ -127,7 +127,7 @@ Future<ProcessResult> runCli(
   return Process.run(
     Platform.resolvedExecutable,
     ['bin/asciidoctor.dart', ...args],
-    workingDirectory: '$repoRoot/dart',
+    workingDirectory: repoRoot,
     environment: environment,
   );
 }

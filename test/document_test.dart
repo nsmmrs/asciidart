@@ -1522,14 +1522,14 @@ String decodeChar(int number) => String.fromCharCode(number);
 
 /// Joins a fixture [name] to the fixtures directory (port of
 /// `fixture_path`).
-String fixturePath(String name) => '../test/fixtures/$name';
+String fixturePath(String name) => 'test/fixtures/$name';
 
 /// The Ruby test directory (port of `testdir`).
 ///
 /// Canonical absolute path, like Ruby's `ASCIIDOCTOR_TEST_DIR`: include
 /// resolution uses it as the jail, which must be absolute in both ports,
 /// and jail recovery misfires on `..` segments.
-String get testdir => Directory('../test').resolveSymbolicLinksSync();
+String get testdir => Directory('test').resolveSymbolicLinksSync();
 
 void main() {
   group('Document', () {

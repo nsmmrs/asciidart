@@ -81,7 +81,7 @@ echo "==> dart pub get"
 dart pub get --directory=dart
 
 echo "==> dart compile exe -> $OUT"
-dart compile exe dart/bin/asciidoctor.dart -o "$OUT"
+dart compile exe bin/asciidoctor.dart -o "$OUT"
 
 echo "==> sha256sum"
 (cd "$OUTPUT_DIR" && sha256sum asciidoctor-* > SHA256SUMS)
