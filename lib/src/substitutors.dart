@@ -36,11 +36,10 @@
 ///   ([_storeAttribute]) and the value-substitution half of
 ///   `Document#set_attribute` (which routes through `Document`'s private
 ///   substitutor stubs that this wave cannot fill from here).
-/// * Custom inline macros (extensions wave) and syntax highlighting
-///   (syntax-highlighter wave) are loud seams: a non-null
-///   `Document.extensions` / `Document.syntaxHighlighter` throws
-///   [UnimplementedError]. Both are always `null` on main, so the fallback
-///   paths are byte-identical today.
+/// * Custom inline macros consult `Document.extensions` (ported); syntax
+///   highlighting (syntax-highlighter wave) is a loud seam: a non-null
+///   `Document.syntaxHighlighter` throws [UnimplementedError] in the
+///   highlight path.
 /// * [NodeDocument]/[NodeLogger] expose no severity gate, so the Ruby
 ///   `logger.info?` guards are not replicated ([_logPossibleInvalidReference]
 ///   always logs on a missed reference). The default logger drops info
@@ -58,6 +57,7 @@ import 'block.dart';
 import 'constants.dart';
 import 'core_ext.dart';
 import 'document.dart';
+import 'extensions.dart';
 import 'helpers.dart';
 import 'inline.dart';
 import 'rx.dart';
@@ -782,6 +782,24 @@ String doReplacement(RegExpMatch match, String replacement, String restore) {
   }
 }
 
+/// Whether [regexp] declares any named capture groups (`(?<name>...)`,
+/// excluding the `(?<=` / `(?<!` lookbehinds).
+///
+/// Dart exposes no group-name list (unlike Ruby's `MatchData#names`), so
+/// the pattern source is inspected instead.
+bool _hasNamedGroups(RegExp regexp) =>
+    RegExp(r'\(\?<[A-Za-z_]').hasMatch(regexp.pattern);
+
+/// Returns the `name`d group of [match], or `null` when the pattern does
+/// not declare it (port of `$~[name] rescue nil`).
+String? _namedGroupOrNull(Match match, String name) {
+  try {
+    return (match as RegExpMatch).namedGroup(name);
+  } on ArgumentError {
+    return null;
+  }
+}
+
 /// Substitutes inline macros (e.g., links, images, etc.) in [text], which
 /// may span multiple lines.
 ///
@@ -802,11 +820,91 @@ String subMacros(AbstractNode node, String text) {
   // TODO allow position of substitution to be controlled (before or after
   // other macros)
   // TODO this handling needs some cleanup
-  // TEMP-SEAM: custom inline macros arrive with the extensions wave.
-  if (doc.extensions != null) {
-    throw UnimplementedError(
-      'Substitutors: custom inline macros are not yet ported.',
-    );
+  // Port of `Substitutors#sub_macros` (lib/asciidoctor/substitutors.rb:308-349).
+  final Registry? macroExtensions = doc.extensions;
+  if (macroExtensions != null && macroExtensions.hasInlineMacros) {
+    for (final extension in macroExtensions.inlineMacros) {
+      final instance = extension.instance as InlineMacroProcessor;
+      final extConfig = extension.config;
+      final regexp = instance.regexp;
+      final hasNamedGroups = _hasNamedGroups(regexp);
+      result = result.replaceAllMapped(regexp, (match) {
+        final fullMatch = match.group(0)!;
+        // Honor the escape.
+        if (fullMatch.startsWith(rs)) return fullMatch.substring(1);
+        String? target;
+        String? content;
+        if (hasNamedGroups) {
+          target = _namedGroupOrNull(match, 'target');
+          content = _namedGroupOrNull(match, 'content');
+        } else {
+          target = match.groupCount >= 1 ? match.group(1) : null;
+          content = match.groupCount >= 2 ? match.group(2) : null;
+        }
+        final defaultAttrs = extConfig['default_attrs'];
+        final attributes = <Object, Object?>{
+          if (defaultAttrs is Map) ...defaultAttrs.cast<Object, Object?>(),
+        };
+        if (content != null) {
+          if (content.isEmpty) {
+            if (extConfig['content_model'] != 'attributes') {
+              attributes['text'] = content;
+            }
+          } else {
+            final normalized = normalizeText(content, true, true);
+            // QUESTION should we store the unparsed attrlist in the
+            // attrlist key?
+            if (extConfig['content_model'] == 'attributes') {
+              final posattrs =
+                  extConfig['positional_attrs'] ?? extConfig['pos_attrs'];
+              parseAttributes(
+                node,
+                normalized,
+                posattrs: posattrs is List
+                    ? posattrs.map((e) => e?.toString()).toList()
+                    : const <String?>[],
+                into: attributes,
+              );
+            } else {
+              attributes['text'] = normalized;
+            }
+            content = normalized;
+          }
+          // NOTE for convenience, map content (unparsed attrlist) to
+          // target when format is short.
+          target ??= extConfig['format'] == 'short' ? content : target;
+        }
+        // NOTE `target` is null only for custom patterns without a
+        // target capture; like the rest of this port, the process method
+        // requires a non-null target (see `MacroProcessor.process`).
+        final replacement =
+            (extension.processMethod
+                as Object? Function(
+                  AbstractBlock,
+                  String,
+                  Map<Object, Object?>,
+                ))(block, target!, attributes);
+        if (replacement is Inline) {
+          final inlineSubsRaw = replacement.attributes.remove('subs');
+          final inlineSubs = isTruthy(inlineSubsRaw)
+              ? expandSubs(node, inlineSubsRaw, 'custom inline macro')
+              : null;
+          if (inlineSubs != null) {
+            replacement.text =
+                applySubs(node, replacement.text, inlineSubs) as String?;
+          }
+          return _str(replacement.convert());
+        } else if (replacement != null) {
+          node.logger.info(
+            'expected substitution value for custom inline macro to be of '
+            'type Inline; got ${replacement.runtimeType}: $fullMatch',
+          );
+          return replacement.toString();
+        } else {
+          return '';
+        }
+      });
+    }
   }
 
   if (docAttrs.containsKey('experimental')) {
@@ -2456,8 +2554,12 @@ List<String>? resolvePassSubs(
 /// Port of `Substitutors#expand_subs`.
 List<String>? expandSubs(AbstractNode node, Object? subs, [String? subject]) {
   if (subs is String) {
+    // Port of `Substitutors#expand_subs` (lib/asciidoctor/substitutors.rb:
+    // 1257-1276): strings resolve through `resolve_subs` (which splits
+    // comma-delimited lists and expands groups); only the symbol-like
+    // `'none'` short-circuits to `null`.
     if (subs == 'none') return null;
-    return subGroups[subs] ?? [subs];
+    return resolveSubs(node, subs, 'inline', null, subject);
   } else if (subs is List<Object?>) {
     final expandedSubs = <String>[];
     for (final key in subs) {

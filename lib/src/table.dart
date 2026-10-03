@@ -400,10 +400,16 @@ class Cell extends AbstractBlock {
     final Map<String, Object?>? attrs = attributes;
     if (document!.sourcemap) {
       final cursor = opts?['cursor'];
-      // Ruby calls `dup` on the cursor (`nil.dup` is `nil`).
-      sourceLocation = cursor == null
-          ? null
-          : ((cursor as dynamic).dup() as NodeSourceLocation?);
+      // Ruby dups the cursor (`nil.dup` is `nil`). Real cursors are exposed
+      // through the wave-local adapter since `Cursor` does not implement
+      // `NodeSourceLocation` itself; doubles implementing the interface
+      // (e.g. `FakeCursor`) are duped directly.
+      sourceLocation = switch (cursor) {
+        null => null,
+        Cursor c => _CursorSourceLocation(c.dup()),
+        NodeSourceLocation loc => (loc as dynamic).dup() as NodeSourceLocation,
+        _ => null,
+      };
     }
     String? cellStyle;
     Object? inHeaderRow;
@@ -1064,4 +1070,24 @@ class TableParserContext {
   void _advance() {
     _linenum += 1;
   }
+}
+
+/// Adapts a reader [Cursor] to a [NodeSourceLocation].
+///
+/// Mirrors the private adapters each wave keeps locally (the reader wave
+/// does not make [Cursor] implement the interface).
+class _CursorSourceLocation implements NodeSourceLocation {
+  /// Creates a source location from [cursor].
+  _CursorSourceLocation(this._cursor);
+
+  final Cursor _cursor;
+
+  @override
+  String? get file {
+    final file = _cursor.file;
+    return file is String ? file : file?.toString();
+  }
+
+  @override
+  int? get lineno => _cursor.lineno;
 }

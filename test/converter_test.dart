@@ -4,11 +4,13 @@
 /// `composite.dart` (port of `lib/asciidoctor/converter/composite.rb`).
 ///
 /// Each `Port of` comment cites the originating test in
-/// `test/converter_test.rb`. Ported tests use fake converters and
-/// directly-constructed fake nodes (no parsing); tests that need parsing,
-/// a `Document`, the template converter, or a backend converter are
-/// skipped as empty placeholders with [needsTemplateConverter] or
-/// [needsBackendConverter] until those waves land.
+/// `test/converter_test.rb`. Most ported tests use fake converters and
+/// directly-constructed fake nodes (no parsing); the `converter` /
+/// `converter_factory` / `read_svg_contents` tests parse and convert for
+/// real. Template-converter tests stay skipped as empty placeholders with
+/// [needsTemplateConverter] until the template wave (TASK-9mfkvk) lands;
+/// Ruby-metaprogramming tests with no Dart counterpart stay skipped with
+/// [noDartCounterpart].
 ///
 /// Global-registry tests clean up with `addTearDown(Converter.unregisterAll)`
 /// and use unique backend names per test: `provided` registrations survive
@@ -20,18 +22,26 @@ import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/block.dart';
 import 'package:asciidoctor/src/composite.dart';
 import 'package:asciidoctor/src/converter.dart';
+import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/html5.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:test/test.dart';
 
-/// Reason for placeholder tests that need the template-converter wave
-/// (template engines and template caching have no Dart port yet).
+/// Reason for placeholder tests blocked on the template wave
+/// (TASK-9mfkvk): Tilt/ERB/Haml/Slim template converters have no Dart port.
+/// These stay skipped until that wave lands; do not attempt them here.
 const String needsTemplateConverter =
-    'placeholder (empty body): needs template-converter wave';
+    'template-wave-blocked (TASK-9mfkvk): needs Tilt/ERB/Haml/Slim '
+    'template-converter port';
 
-/// Reason for placeholder tests that need a backend converter or
-/// `Document`-level converter integration.
-const String needsBackendConverter =
-    'placeholder (empty body): needs backend-converter wave';
+/// Reason for permanently-skipped tests with no Dart counterpart.
+///
+/// Ruby's converter tests lean on metaprogramming (`Module#included`
+/// hooks, `method_missing` delegation with `respond_to?` probes) that
+/// Dart cannot express; the behaviors themselves (handler dispatch,
+/// missing-handler warnings) are covered by the ported tests around them.
+const String noDartCounterpart =
+    'permanent skip: Ruby metaprogramming with no Dart counterpart';
 
 /// A minimal [Converter] returning [result] for every node.
 class FakeConverter extends Converter {
@@ -139,6 +149,57 @@ void useLogger(FakeLogger logger) {
 void cleanGlobalRegistry() {
   addTearDown(Converter.unregisterAll);
 }
+
+/// A custom HTML converter returning `'document'` for every node (port of
+/// `CustomHtmlConverterA`).
+class CustomHtmlConverterA extends Converter {
+  /// Creates the converter for [backend] with [opts].
+  CustomHtmlConverterA(super.backend, [super.opts]);
+
+  @override
+  Object? convert(
+    AbstractNode node, [
+    String? transform,
+    Map<String, Object?>? opts,
+  ]) => 'document';
+}
+
+/// A custom text converter returning `'document'` for every node (port of
+/// `CustomTextConverterA`).
+class CustomTextConverterA extends Converter {
+  /// Creates the converter for [backend] with [opts].
+  CustomTextConverterA(super.backend, [super.opts]);
+
+  @override
+  Object? convert(
+    AbstractNode node, [
+    String? transform,
+    Map<String, Object?>? opts,
+  ]) => 'document';
+}
+
+/// A custom converter handling only the `document` transform (port of the
+/// anonymous `Converter::Base` subclass in the factory test).
+class CustomDocumentConverter extends ConverterBase {
+  /// Creates the converter for [backend] with [opts].
+  CustomDocumentConverter(super.backend, [super.opts]) {
+    handle('document', (node, [opts]) => 'document');
+  }
+}
+
+/// Creates a document from [src] (port of `document_from_string`).
+///
+/// Defaults to `standalone: true` and `parse: true`, like the Ruby helper.
+Document documentFromString(String src, [Map<String, Object?>? options]) {
+  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
+  opts.putIfAbsent('standalone', () => true);
+  final parse = opts.remove('parse') ?? true;
+  final doc = Document(src, opts);
+  return (parse == true) ? doc.parse() : doc;
+}
+
+/// Resolves a fixture path (port of `fixture_path`).
+String fixturePath(String name) => '../test/fixtures/$name';
 
 void main() {
   group('Converter', () {
@@ -284,9 +345,9 @@ void main() {
     group('Custom converters', () {
       test(
         'should not expose included method on Converter class',
-        skip:
-            'Ruby metaprogramming (Module#included hook privacy); '
-            'no Dart equivalent',
+        // Permanent: Ruby `Module#included` hook privacy has no Dart
+        // counterpart.
+        skip: noDartCounterpart,
         () {},
       );
 
@@ -333,16 +394,31 @@ void main() {
         );
       });
 
-      test(
-        'should use specified converter for current backend',
-        skip: needsBackendConverter,
-        () {},
-      );
-      test(
-        'should use specified converter for specified backend',
-        skip: needsBackendConverter,
-        () {},
-      );
+      test('should use specified converter for current backend', () {
+        // Port of test/converter_test.rb: 'should use specified converter
+        // for current backend'. Adapted: Dart passes a factory where Ruby
+        // passes the class.
+        const input = '= Document Title\n\npreamble\n\n== Section\n\ncontent\n';
+        final doc = documentFromString(input, {
+          'converter': CustomHtmlConverterA.new,
+        });
+        expect(doc.converter, isA<CustomHtmlConverterA>());
+        expect(doc.attributes['filetype'], equals('html'));
+        expect(doc.convert(), equals('document'));
+      });
+      test('should use specified converter for specified backend', () {
+        // Port of test/converter_test.rb: 'should use specified converter
+        // for specified backend'. Adapted: Dart passes a factory where
+        // Ruby passes the class.
+        const input = '= Document Title\n\npreamble\n\n== Section\n\ncontent\n';
+        final doc = documentFromString(input, {
+          'backend': 'text',
+          'converter': CustomTextConverterA.new,
+        });
+        expect(doc.converter, isA<CustomTextConverterA>());
+        expect(doc.attributes['filetype'], equals('text'));
+        expect(doc.convert(), equals('document'));
+      });
 
       test('should warn when convert method for node is missing', () {
         // Port of test/converter_test.rb: 'should warn when convert method
@@ -375,15 +451,38 @@ void main() {
         );
       });
 
-      test(
-        'should get converter from specified converter factory',
-        skip: needsBackendConverter,
-        () {},
-      );
+      test('should get converter from specified converter factory', () {
+        // Port of test/converter_test.rb: 'should get converter from
+        // specified converter factory'. Adapted: Dart passes a factory
+        // where Ruby passes the anonymous class.
+        const input = '= Document Title\n\npreamble\n\n== Section\n\ncontent\n';
+        final converterFactory = CustomFactory({
+          'html5': CustomDocumentConverter.new,
+        });
+        final doc = documentFromString(input, {
+          'converter_factory': converterFactory,
+        });
+        expect(doc.converter, isA<CustomDocumentConverter>());
+        expect(doc.attributes['filetype'], equals('html'));
+        expect(doc.convert(), equals('document'));
+      });
       test(
         'should allow converter to set htmlsyntax when basebackend is html',
-        skip: needsBackendConverter,
-        () {},
+        () {
+          // Port of test/converter_test.rb: 'should allow converter to set
+          // htmlsyntax when basebackend is html'.
+          Html5Converter.registerFor();
+          addTearDown(Converter.unregisterAll);
+          const input = 'image::sunset.jpg[]';
+          final converter = Converter.create('html5', const {
+            'htmlsyntax': 'xml',
+          })!;
+          final doc = documentFromString(input, {'converter': converter});
+          expect(doc.converter, same(converter));
+          expect(doc.attr('htmlsyntax'), equals('xml'));
+          final output = doc.convert(const {'standalone': false}) as String;
+          expect(output, contains('<img src="sunset.jpg" alt="sunset"/>'));
+        },
       );
 
       test('should use converter registered for backend', () {
@@ -627,21 +726,32 @@ void main() {
       test(
         'should delegate to method on HTML 5 converter with convert_ prefix '
         'if called without prefix',
-        skip: needsBackendConverter,
+        // Permanent: Ruby's `method_missing`/`respond_to?` delegation has
+        // no Dart counterpart; handler dispatch is covered by the
+        // ConverterBase tests in this file.
+        skip: noDartCounterpart,
         () {},
       );
       test(
         'should not delegate unprefixed method on HTML 5 converter if '
         'converter does not handle transform',
-        skip: needsBackendConverter,
+        // Permanent: see the test above.
+        skip: noDartCounterpart,
         () {},
       );
-      test(
-        'can call read_svg_contents on built-in HTML5 converter; should '
-        'remove markup prior the root svg element',
-        skip: needsBackendConverter,
-        () {},
-      );
+      test('can call read_svg_contents on built-in HTML5 converter; should '
+          'remove markup prior the root svg element', () {
+        // Port of test/converter_test.rb: 'can call read_svg_contents on
+        // built-in HTML5 converter; should remove markup prior the root
+        // svg element'.
+        final doc = documentFromString('image::circle.svg[]', {
+          'base_dir': fixturePath(''),
+        });
+        final converter = doc.converter as Html5Converter;
+        final result = converter.readSvgContents(doc.blocks[0], 'circle.svg');
+        expect(result, isNotNull);
+        expect(result!.startsWith('<svg'), isTrue);
+      });
     });
 
     group('Framework seams', () {

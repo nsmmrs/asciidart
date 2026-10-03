@@ -2,11 +2,12 @@
 /// (registration, factory selection including the unknown-highlighter
 /// fallback, `Document` integration and docinfo aggregation).
 ///
-/// Tests that parse or convert are skipped with [needsParser] until the
-/// parser wave lands; the parser wave must un-skip them. Adapter behavior
-/// itself is covered by the per-adapter suites in this directory — here the
-/// adapters appear only behind [FakeSourceLexer] to prove the framework
-/// plumbing (option routing, node/document attribute reads).
+/// All tests run, including the `Document` integration group (parse and
+/// convert). Adapter behavior itself is covered by the per-adapter suites
+/// in this directory — here the adapters appear only behind
+/// [FakeSourceLexer] to prove the framework plumbing (option routing,
+/// node/document attribute reads). Converted-output assertions route
+/// through the test-only `_assertCss` matcher below.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -18,9 +19,6 @@ import 'package:asciidoctor/src/html5.dart';
 import 'package:test/test.dart';
 
 import 'fake_source_lexer.dart';
-
-/// Skip reason for tests requiring the parser wave.
-const String needsParser = 'needs Parser.parse (parser wave)';
 
 /// The CDN root the converter passes to docinfo in these tests.
 const String cdnBaseUrl = 'https://cdnjs.cloudflare.com/ajax/libs';
@@ -78,8 +76,6 @@ Document _docWithAttributes(
 });
 
 /// Creates a document from [src] (port of `document_from_string`).
-///
-/// All callers are skipped until the parser wave lands.
 Document _documentFromString(String src, [Map<String, Object?>? options]) {
   final Map<String, Object?> opts = Map<String, Object?>.of(
     options ?? const <String, Object?>{},
@@ -90,17 +86,285 @@ Document _documentFromString(String src, [Map<String, Object?>? options]) {
 }
 
 /// Converts [src] to a standalone document (port of `convert_string`).
-///
-/// All callers are skipped until the parser wave lands.
 String _convertString(String src, [Map<String, Object?>? options]) =>
     _documentFromString(src, options).convert() as String;
 
 /// Asserts [content] matches [css] [count] times (port of `assert_css`).
-///
-/// XML-match wave: stub throwing [UnimplementedError]; all callers are
-/// skipped.
-void _assertCss(String css, String? content, int count) =>
-    throw UnimplementedError('XML-match wave: assertCss is not yet ported.');
+void _assertCss(String css, String? content, int count) {
+  final matches = _queryCss(_parseFragment(content ?? ''), css);
+  expect(
+    matches.length,
+    equals(count),
+    reason:
+        'CSS $css yielded ${matches.length} elements rather than '
+        '$count for:\n$content',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Minimal HTML fragment matching (test-only port of the Nokogiri-backed
+// `assert_css` helper in `test/test_helper.rb`; mirrors the fuller engine in
+// `test/extensions_test.dart`, restricted to the shapes this suite uses:
+// tag, `.class`, `[attr="value"]`, descendant and child combinators).
+// ---------------------------------------------------------------------------
+
+/// HTML void elements (never have children or an end tag).
+const _voidElements = <String>{
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+};
+
+/// A parsed element: [tag], [attributes], child [children] and direct
+/// [texts] segments.
+class _XmlElement {
+  /// Creates an element with [tag] and [attributes].
+  _XmlElement(this.tag, [Map<String, String>? attributes])
+    : attributes = attributes ?? <String, String>{};
+
+  /// The lower-cased tag name (`'#root'` for the synthetic fragment root).
+  final String tag;
+
+  /// The element attributes (entity-decoded values).
+  final Map<String, String> attributes;
+
+  /// The child elements in document order.
+  final List<_XmlElement> children = <_XmlElement>[];
+
+  /// The parent element, if any.
+  _XmlElement? parent;
+
+  /// All descendants in document order.
+  Iterable<_XmlElement> get descendants sync* {
+    for (final child in children) {
+      yield child;
+      yield* child.descendants;
+    }
+  }
+}
+
+/// Decodes XML/HTML entities in [text].
+String _decodeEntities(String text) {
+  return text.replaceAllMapped(RegExp('&(#x[0-9a-fA-F]+|#[0-9]+|[a-zA-Z]+);'), (
+    match,
+  ) {
+    final entity = match.group(1)!;
+    switch (entity) {
+      case 'amp':
+        return '&';
+      case 'lt':
+        return '<';
+      case 'gt':
+        return '>';
+      case 'quot':
+        return '"';
+      case 'apos':
+        return "'";
+      default:
+        if (entity.startsWith('#x')) {
+          final code = int.tryParse(entity.substring(2), radix: 16);
+          if (code != null) return String.fromCharCode(code);
+        } else if (entity.startsWith('#')) {
+          final code = int.tryParse(entity.substring(1));
+          if (code != null) return String.fromCharCode(code);
+        }
+        return match.group(0)!;
+    }
+  });
+}
+
+/// Parses [content] as a lenient HTML fragment under a synthetic root.
+_XmlElement _parseFragment(String content) {
+  final root = _XmlElement('#root');
+  final stack = <_XmlElement>[root];
+  final tagRx = RegExp(
+    '<!--.*?(?:-->|\$)|<![^>]*>|</\\s*([A-Za-z][^\\s>]*)[^>]*>|<([A-Za-z][^\\s>/]*)([^>]*)>',
+    dotAll: true,
+  );
+  final attrRx = RegExp(
+    '([^\\s=/>]+)(?:\\s*=\\s*("[^"]*"|\'[^\']*\'|[^\\s>]*))?',
+  );
+  for (final match in tagRx.allMatches(content)) {
+    final endTag = match.group(1);
+    if (endTag != null) {
+      final name = endTag.toLowerCase();
+      for (var i = stack.length - 1; i > 0; i--) {
+        if (stack[i].tag == name) {
+          stack.removeRange(i, stack.length);
+          break;
+        }
+      }
+      continue;
+    }
+    final startTag = match.group(2);
+    if (startTag == null) continue; // Comment or declaration.
+    final name = startTag.toLowerCase();
+    final attributes = <String, String>{};
+    for (final attr in attrRx.allMatches(match.group(3)!)) {
+      var value = attr.group(2) ?? '';
+      if (value.length >= 2 &&
+          ((value.startsWith('"') && value.endsWith('"')) ||
+              (value.startsWith("'") && value.endsWith("'")))) {
+        value = value.substring(1, value.length - 1);
+      }
+      attributes[attr.group(1)!.toLowerCase()] = _decodeEntities(value);
+    }
+    final element = _XmlElement(name, attributes);
+    element.parent = stack.last;
+    stack.last.children.add(element);
+    final raw = match.group(0)!;
+    if (!raw.endsWith('/>') && !_voidElements.contains(name)) {
+      stack.add(element);
+    }
+  }
+  return root;
+}
+
+/// A parsed CSS compound selector.
+class _CssCompound {
+  /// Creates a compound matching [tag], [classes] and [attrs].
+  _CssCompound(this.tag, this.classes, this.attrs);
+
+  /// The tag name, `'*'`, or `null` (any tag).
+  final String? tag;
+
+  /// The required class names.
+  final List<String> classes;
+
+  /// The required attribute equalities.
+  final Map<String, String> attrs;
+
+  /// Whether [element] matches this compound.
+  bool matches(_XmlElement element) {
+    if (tag != null && tag != '*' && element.tag != tag) return false;
+    if (classes.isNotEmpty) {
+      final elementClasses =
+          element.attributes['class']
+              ?.split(RegExp(r'\s+'))
+              .where((name) => name.isNotEmpty)
+              .toSet() ??
+          <String>{};
+      for (final required in classes) {
+        if (!elementClasses.contains(required)) return false;
+      }
+    }
+    for (final entry in attrs.entries) {
+      if (element.attributes[entry.key] != entry.value) return false;
+    }
+    return true;
+  }
+}
+
+/// Parses a CSS compound selector such as `code.language-ruby[data-lang]`.
+_CssCompound _parseCssCompound(String source) {
+  final attrRx = RegExp(
+    '\\[([^\\]=]+)(?:="([^"]*)"|\'([^\']*)\'|=([^\\]]*))?\\]',
+  );
+  final attrs = <String, String>{};
+  var rest = source;
+  for (final match in attrRx.allMatches(source)) {
+    attrs[match.group(1)!.toLowerCase()] =
+        match.group(2) ?? match.group(3) ?? match.group(4) ?? '';
+    rest = rest.replaceFirst(match.group(0)!, '');
+  }
+  final parts = rest.split('.');
+  final tag = parts.first.isEmpty ? null : parts.first.toLowerCase();
+  final classes = parts.skip(1).where((name) => name.isNotEmpty).toList();
+  return _CssCompound(tag, classes, attrs);
+}
+
+/// Tokenizes a CSS selector into compounds and combinators (`' '`/`'>'`).
+List<Object> _tokenizeCss(String selector) {
+  final tokens = <Object>[];
+  final buffer = StringBuffer();
+  var bracketDepth = 0;
+  var quote = '';
+  void flush() {
+    if (buffer.isNotEmpty) {
+      tokens.add(buffer.toString());
+      buffer.clear();
+    }
+  }
+
+  for (var i = 0; i < selector.length; i++) {
+    final char = selector[i];
+    if (quote.isNotEmpty) {
+      buffer.write(char);
+      if (char == quote) quote = '';
+    } else if (char == '"' || char == "'") {
+      quote = char;
+      buffer.write(char);
+    } else if (char == '[') {
+      bracketDepth++;
+      buffer.write(char);
+    } else if (char == ']') {
+      bracketDepth--;
+      buffer.write(char);
+    } else if (bracketDepth == 0 && char == '>') {
+      flush();
+      tokens.add('>');
+    } else if (bracketDepth == 0 &&
+        (char == ' ' || char == '\t' || char == '\n')) {
+      flush();
+    } else {
+      buffer.write(char);
+    }
+  }
+  flush();
+  // Adjacent compounds imply the descendant combinator.
+  final result = <Object>[];
+  for (final token in tokens) {
+    if (result.isNotEmpty && token != '>' && result.last != '>') {
+      result.add(' ');
+    }
+    result.add(token);
+  }
+  return result;
+}
+
+/// Returns the elements of [root] matching the CSS [selector].
+List<_XmlElement> _queryCss(_XmlElement root, String selector) {
+  final tokens = _tokenizeCss(selector);
+  final compounds = <_CssCompound>[];
+  final combinators = <String>[];
+  for (final token in tokens) {
+    if (token == '>' || token == ' ') {
+      combinators.add(token as String);
+    } else {
+      compounds.add(_parseCssCompound(token as String));
+    }
+  }
+  bool matchesChain(_XmlElement element, int index) {
+    if (!compounds[index].matches(element)) return false;
+    if (index == 0) return true;
+    final combinator = combinators[index - 1];
+    if (combinator == '>') {
+      final parent = element.parent;
+      return parent != null && matchesChain(parent, index - 1);
+    }
+    var ancestor = element.parent;
+    while (ancestor != null && ancestor.tag != '#root') {
+      if (matchesChain(ancestor, index - 1)) return true;
+      ancestor = ancestor.parent;
+    }
+    return false;
+  }
+
+  return root.descendants
+      .where((element) => matchesChain(element, compounds.length - 1))
+      .toList();
+}
 
 void main() {
   group('registration', () {
@@ -831,10 +1095,9 @@ void main() {
     });
   });
 
-  group('Ruby suite ports requiring the parser', () {
+  group('Ruby suite ports: parse and convert integration', () {
     test(
       'sets syntax_highlighter on the document when source-highlighter is set',
-      skip: needsParser,
       () {
         const String input =
             ':source-highlighter: coderay\n'
@@ -855,7 +1118,6 @@ void main() {
 
     test(
       'leaves syntax_highlighter unset when the base backend is not html',
-      skip: needsParser,
       () {
         const String input =
             ':source-highlighter: coderay\n'
@@ -876,7 +1138,6 @@ void main() {
 
     test(
       'leaves syntax_highlighter unset when source-highlighter is not set',
-      skip: needsParser,
       () {
         const String input =
             '[source, ruby]\n'
@@ -891,84 +1152,67 @@ void main() {
       },
     );
 
-    test(
-      'leaves syntax_highlighter unset when the highlighter is unknown',
-      skip: needsParser,
-      () {
-        const String input =
-            ':source-highlighter: unknown\n'
-            '\n'
-            '[source, ruby]\n'
-            '----\n'
-            "puts 'Hello, World!'\n"
-            '----\n';
-        final Document doc = _documentFromString(input, <String, Object?>{
-          'safe': 'safe',
-          'parse': true,
-        });
-        expect(doc.syntaxHighlighter, isNull);
-      },
-    );
+    test('leaves syntax_highlighter unset when the highlighter is unknown', () {
+      const String input =
+          ':source-highlighter: unknown\n'
+          '\n'
+          '[source, ruby]\n'
+          '----\n'
+          "puts 'Hello, World!'\n"
+          '----\n';
+      final Document doc = _documentFromString(input, <String, Object?>{
+        'safe': 'safe',
+        'parse': true,
+      });
+      expect(doc.syntaxHighlighter, isNull);
+    });
 
-    test(
-      'does not allow the document to enable the highlighter in server safe mode',
-      skip: needsParser,
-      () {
-        const String input = ':source-highlighter: coderay';
-        final Document doc = _documentFromString(input, <String, Object?>{
-          'safe': 'server',
-          'parse': true,
-        });
-        expect(doc.attributes['source-highlighter'], isNull);
-        expect(doc.syntaxHighlighter, isNull);
-      },
-    );
+    test('does not allow the document to enable the highlighter in server safe mode', () {
+      const String input = ':source-highlighter: coderay';
+      final Document doc = _documentFromString(input, <String, Object?>{
+        'safe': 'server',
+        'parse': true,
+      });
+      expect(doc.attributes['source-highlighter'], isNull);
+      expect(doc.syntaxHighlighter, isNull);
+    });
 
-    test(
-      'does not invoke highlight when canHighlight is false',
-      skip: needsParser,
-      () {
-        SyntaxHighlighter.register(_UnavailableHighlighter(), <String>[
-          'unavailable',
-        ]);
-        const String input =
-            '[source,ruby]\n'
-            '----\n'
-            "puts 'Hello, World!'\n"
-            '----\n';
-        final Document doc = _documentFromString(input, <String, Object?>{
-          'attributes': <String, Object?>{'source-highlighter': 'unavailable'},
-        });
-        final String output = doc.convert() as String;
-        _assertCss('pre.highlight > code.language-ruby', output, 1);
-      },
-    );
+    test('does not invoke highlight when canHighlight is false', () {
+      SyntaxHighlighter.register(_UnavailableHighlighter(), <String>[
+        'unavailable',
+      ]);
+      const String input =
+          '[source,ruby]\n'
+          '----\n'
+          "puts 'Hello, World!'\n"
+          '----\n';
+      final Document doc = _documentFromString(input, <String, Object?>{
+        'attributes': <String, Object?>{'source-highlighter': 'unavailable'},
+      });
+      final String output = doc.convert() as String;
+      _assertCss('pre.highlight > code.language-ruby', output, 1);
+    });
 
-    test(
-      'sets the language on source output when no highlighter is set',
-      skip: needsParser,
-      () {
-        const String input =
-            '[source, ruby]\n'
-            '----\n'
-            "puts 'Hello, World!'\n"
-            '----\n';
-        final String output = _convertString(input, <String, Object?>{
-          'safe': 'safe',
-        });
-        _assertCss('pre.highlight', output, 1);
-        _assertCss('pre.highlight > code.language-ruby', output, 1);
-        _assertCss(
-          'pre.highlight > code.language-ruby[data-lang="ruby"]',
-          output,
-          1,
-        );
-      },
-    );
+    test('sets the language on source output when no highlighter is set', () {
+      const String input =
+          '[source, ruby]\n'
+          '----\n'
+          "puts 'Hello, World!'\n"
+          '----\n';
+      final String output = _convertString(input, <String, Object?>{
+        'safe': 'safe',
+      });
+      _assertCss('pre.highlight', output, 1);
+      _assertCss('pre.highlight > code.language-ruby', output, 1);
+      _assertCss(
+        'pre.highlight > code.language-ruby[data-lang="ruby"]',
+        output,
+        1,
+      );
+    });
 
     test(
       'sets the language on source output when the highlighter is unknown',
-      skip: needsParser,
       () {
         const String input =
             ':source-highlighter: unknown\n'

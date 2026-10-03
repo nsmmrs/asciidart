@@ -14,15 +14,16 @@
 /// deleted (routing the call to the real API) when that wave lands:
 ///
 /// * The substitutors wave replaces [_subSpecialchars], [_subAttributes],
-///   [_applyHeaderSubs], [_parseAttributes], [_resolveSubs], [_commitSubs]
-///   and [_titleText]. Substitution coverage in these seams is limited to
-///   the `specialcharacters` and `attributes` substitutions; quotes,
-///   macros, replacements and post-replacements are applied by the real
-///   wave. (The former attribute-assignment seam now routes to
-///   `Document.setAttribute`.)
-/// * The extensions wave restores the block/block-macro extension branches
-///   in [nextBlock] and [buildBlock] (`document.extensions` is always `null`
-///   until then, so the omitted branches are unreachable).
+///   [_applyHeaderSubs], [_applyAttributeValueSubs],
+///   [_parseAttributes], [_resolveSubs], [_commitSubs] and [_titleText].
+///   Substitution coverage in these seams is limited to the
+///   `specialcharacters` and `attributes` substitutions; quotes, macros,
+///   replacements and post-replacements are applied by the real wave.
+///   ([_setDocumentAttribute] already delegates to [Document.setAttribute].)
+/// * Extension integration is ported: the block/block-macro extension
+///   branches in [nextBlock] and [buildBlock] consult
+///   `document.extensions`, and attribute entries route through
+///   [Document.setAttribute] (whose backend/doctype refresh this needs).
 /// * The syntax-highlighter wave restores the `highlight` subs swap in
 ///   [_commitSubs] (`document.syntaxHighlighter` is always `null`).
 /// * The constants wave unifies the `CONST-PENDING` tables below with the
@@ -41,6 +42,7 @@ import 'callouts.dart';
 import 'constants.dart';
 import 'core_ext.dart';
 import 'document.dart';
+import 'extensions.dart';
 import 'helpers.dart';
 import 'inline.dart';
 import 'list.dart';
@@ -649,6 +651,42 @@ abstract final class Parser {
   static String _applyHeaderSubs(Document document, String text) =>
       _subAttributes(document, _subSpecialchars(text));
 
+  /// TEMP-SEAM (parser): port of `Document#apply_attribute_value_subs`.
+  ///
+  /// Kept for the substitutors wave's final seam sweep (no remaining
+  /// callers: attribute entries route through [Document.setAttribute]).
+  // ignore: unused_element
+  static String _applyAttributeValueSubs(Document document, String value) {
+    final match = attributeEntryPassMacroRx.firstMatch(value);
+    if (match == null) return _applyHeaderSubs(document, value);
+    var result = match.group(2) ?? '';
+    final subs = match.group(1);
+    if (subs != null) {
+      final resolved = _resolveSubs(subs, 'inline', null, null);
+      if (resolved != null) {
+        if (resolved.contains('specialcharacters')) {
+          result = _subSpecialchars(result);
+        }
+        if (resolved.contains('attributes')) {
+          result = _subAttributes(document, result);
+        }
+      }
+    }
+    return result;
+  }
+
+  /// Assigns the document attribute [name] to [value].
+  ///
+  /// Delegates to [Document.setAttribute] (port of `Document#set_attribute`,
+  /// lib/asciidoctor/document.rb:870-887), which applies attribute value
+  /// substitutions and refreshes the backend/doctype derived attributes
+  /// while the header is being parsed.
+  static String? _setDocumentAttribute(
+    Document document,
+    String name,
+    String value,
+  ) => document.setAttribute(name, value);
+
   /// TEMP-SEAM (parser): port of `Substitutors#parse_attributes` for the
   /// options the parser uses (`sub_input`, `sub_result`, `into`).
   ///
@@ -845,6 +883,14 @@ abstract final class Parser {
   /// TEMP-SEAM (parser): port of `AttributeList.rekey` for parser working
   /// maps, which hold `Object?` values (attribute entry lists) that
   /// [AttributeList.rekeyAttributes] (`Map<Object, String?>`) rejects.
+  /// Positional attribute names from an extension [config] (port of
+  /// `ext_config[:positional_attrs] || ext_config[:pos_attrs] || []`).
+  static List<String?> _posAttrsOf(Map<String, Object?> config) {
+    final value = config['positional_attrs'] ?? config['pos_attrs'];
+    if (value is List) return value.map((e) => e?.toString()).toList();
+    return <String?>[];
+  }
+
   static void _rekey(Map<Object, Object?> attributes, List<String?> posattrs) {
     for (var index = 0; index < posattrs.length; index++) {
       final key = posattrs[index];
@@ -1740,9 +1786,10 @@ abstract final class Parser {
       }
     }
 
-    // TEMP-SEAM (parser): block and block-macro extensions need the
-    // extensions wave (`document.extensions` is always null until then);
-    // the extension branches below are omitted as unreachable.
+    // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:528-530).
+    final Registry? extensions = document.extensions;
+    final blockExtensions = extensions?.hasBlocks ?? false;
+    final blockMacroExtensions = extensions?.hasBlockMacros ?? false;
 
     // QUESTION should we introduce a parsing context object?
     reader.mark();
@@ -1765,9 +1812,10 @@ abstract final class Parser {
           } else if (delimitedBlock.masq.contains('admonition') &&
               _admonitionStyles.contains(style)) {
             blockContext = 'admonition';
+          } else if (blockExtensions &&
+              extensions!.registeredForBlock(style, blockContext) != null) {
+            blockContext = style;
           } else {
-            // TEMP-SEAM (parser): the `registered_for_block?` branch needs
-            // the extensions wave; without extensions it never matches.
             if (_logger.isDebugEnabled) {
               _logger.debug(
                 _msg(
@@ -1942,17 +1990,93 @@ abstract final class Parser {
               }
               break;
             }
-            // TEMP-SEAM (parser): custom block macros need the extensions
-            // wave; only the unknown-macro debug probe remains.
-            if (_logger.isDebugEnabled) {
-              final macroMatch = customBlockMacroRx.firstMatch(thisLine);
-              if (macroMatch != null) {
-                _logger.debug(
-                  _msg(
-                    'unknown name for block macro: ${macroMatch.group(1)}',
-                    reader.cursorAtMark(),
-                  ),
+            // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:648-679):
+            // custom block macros, including the unknown-macro debug probe.
+            final macroMatch = customBlockMacroRx.firstMatch(thisLine);
+            ProcessorExtension? macroExtension;
+            var reportUnknownBlockMacro = false;
+            if (macroMatch != null) {
+              if (blockMacroExtensions) {
+                macroExtension = extensions!.registeredForBlockMacro(
+                  macroMatch.group(1)!,
                 );
+                if (macroExtension == null) {
+                  reportUnknownBlockMacro = _logger.isDebugEnabled;
+                }
+              } else {
+                reportUnknownBlockMacro = _logger.isDebugEnabled;
+              }
+            }
+            if (reportUnknownBlockMacro) {
+              _logger.debug(
+                _msg(
+                  'unknown name for block macro: ${macroMatch!.group(1)}',
+                  reader.cursorAtMark(),
+                ),
+              );
+            } else if (macroExtension != null) {
+              final content = macroMatch!.group(3);
+              var target = macroMatch.group(2)!;
+              if (target.contains(attrRefHead)) {
+                final expandedTarget = _subAttributes(document, target);
+                if (expandedTarget.isEmpty &&
+                    (docAttrs['attribute-missing'] as String? ??
+                            _attributeMissing) ==
+                        'drop-line' &&
+                    _subAttributes(
+                      document,
+                      '$target ',
+                      attributeMissing: 'drop-line',
+                      dropLineSeverity: 'ignore',
+                    ).isEmpty) {
+                  attrs.clear();
+                  return null;
+                } else {
+                  target = expandedTarget;
+                }
+              }
+              final extConfig = macroExtension.config;
+              if (extConfig['content_model'] == 'attributes') {
+                if (content != null) {
+                  _parseAttributes(
+                    document,
+                    content,
+                    _posAttrsOf(extConfig),
+                    subInput: true,
+                    into: attrs,
+                  );
+                }
+              } else {
+                attrs['text'] = content ?? '';
+              }
+              final defaultAttrs = extConfig['default_attrs'];
+              if (defaultAttrs is Map) {
+                for (final entry in defaultAttrs.entries) {
+                  final defaultKey = entry.key as Object;
+                  if (!attrs.containsKey(defaultKey)) {
+                    attrs[defaultKey] = entry.value;
+                  }
+                }
+              }
+              final macroBlock =
+                  (macroExtension.processMethod
+                      as Object? Function(
+                        AbstractBlock,
+                        String,
+                        Map<Object, Object?>,
+                      ))(parent, target, attrs);
+              if (macroBlock is AbstractBlock &&
+                  !identical(macroBlock, parent)) {
+                // `attributes.replace block.attributes`: the extension
+                // result owns the attribute set from here on.
+                attrs
+                  ..clear()
+                  ..addAll(macroBlock.attributes);
+                block = macroBlock;
+                break;
+              } else {
+                attrs.clear();
+                return null;
               }
             }
           }
@@ -2046,8 +2170,14 @@ abstract final class Parser {
           reader.unshiftLine(thisLine);
           // Advance to block parsing.
           break;
-          // TEMP-SEAM (parser): the `registered_for_block?` branch needs
-          // the extensions wave; without extensions it never matches.
+          // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:737-741).
+        } else if (blockExtensions &&
+            extensions!.registeredForBlock(style, 'paragraph') != null) {
+          blockContext = style;
+          cloakedContext = 'paragraph';
+          reader.unshiftLine(thisLine);
+          // Advance to block parsing.
+          break;
         } else {
           if (_logger.isDebugEnabled) {
             _logger.debug(
@@ -2381,9 +2511,50 @@ abstract final class Parser {
         attrs.clear();
         return null;
       } else {
-        // TEMP-SEAM (parser): custom block contexts need the extensions
-        // wave; without extensions this only happens on misconfiguration.
-        throw StateError('Unsupported block type $bc at ${reader.cursor()}');
+        // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:905-923):
+        // custom block contexts handled by a registered extension.
+        ProcessorExtension? blockExtension;
+        if (blockExtensions) {
+          blockExtension = extensions!.registeredForBlock(bc, cloakedContext!);
+        }
+        if (blockExtension == null) {
+          // This should only happen if there's a misconfiguration.
+          throw StateError('Unsupported block type $bc at ${reader.cursor()}');
+        }
+        final extConfig = blockExtension.config;
+        final contentModel = extConfig['content_model'] as String?;
+        if (contentModel != 'skip') {
+          final positionalAttrs = _posAttrsOf(extConfig);
+          if (positionalAttrs.isNotEmpty) {
+            _rekey(attrs, [null, ...positionalAttrs]);
+          }
+          final defaultAttrs = extConfig['default_attrs'];
+          if (defaultAttrs is Map) {
+            for (final entry in defaultAttrs.entries) {
+              final defaultKey = entry.key as Object;
+              if (!isTruthy(attrs[defaultKey])) {
+                attrs[defaultKey] = entry.value;
+              }
+            }
+          }
+          // QUESTION should we clone the extension for each cloaked
+          // context and set in config?
+          attrs['cloaked-context'] = cloakedContext;
+        }
+        final customBlock = buildBlock(
+          bc,
+          contentModel ?? 'compound',
+          terminator,
+          parent,
+          reader,
+          attrs,
+          extension: blockExtension,
+        );
+        if (customBlock == null) {
+          attrs.clear();
+          return null;
+        }
+        block = customBlock;
       }
     }
 
@@ -2553,15 +2724,18 @@ abstract final class Parser {
   ///
   /// Port of `Parser.build_block`. [terminator] is the delimiter line, or
   /// `null` for a styled paragraph, or `false` when [reader] is already
-  /// prepared. Returns the block, or `null` for the `skip` model.
-  static Block? buildBlock(
+  /// prepared. When [extension] is given, its process method builds the
+  /// block instead. Returns the block, or `null` for the `skip` model (or
+  /// when the extension returns `null` or the parent).
+  static AbstractBlock? buildBlock(
     String blockContext,
     String contentModel,
     Object? terminator,
     AbstractBlock parent,
     Reader reader,
-    Map<Object, Object?> attributes,
-  ) {
+    Map<Object, Object?> attributes, {
+    ProcessorExtension? extension,
+  }) {
     final bool skipProcessing;
     final String parseAsContentModel;
     if (contentModel == 'skip') {
@@ -2637,14 +2811,46 @@ abstract final class Parser {
       return null;
     }
 
-    // TEMP-SEAM (parser): block extensions need the extensions wave.
-    final block = Block(
-      parent,
-      blockContext,
-      contentModel: model,
-      source: lines,
-      attributes: _strKeys(attributes),
-    );
+    // Port of `Parser.build_block` (lib/asciidoctor/parser.rb:1039-1054).
+    final AbstractBlock block;
+    if (extension != null) {
+      // QUESTION do we want to delete the style?
+      attributes.remove('style');
+      final processAttrs = <String, Object?>{
+        for (final entry in attributes.entries)
+          if (entry.key is String) entry.key as String: entry.value,
+      };
+      final extBlock =
+          (extension.processMethod
+              as Object? Function(AbstractBlock, Reader, Map<String, Object?>))(
+            parent,
+            blockReader ?? Reader(lines!),
+            processAttrs,
+          );
+      if (extBlock == null || identical(extBlock, parent)) return null;
+      block = extBlock as AbstractBlock;
+      attributes
+        ..clear()
+        ..addAll(block.attributes);
+      // NOTE an extension can change the content model from simple to
+      // compound. It's up to the extension to decide which one to use. The
+      // extension can consult the cloaked-context attribute to determine
+      // if the input is a paragraph or delimited block.
+      if (block.contentModel == 'compound' &&
+          block is Block &&
+          block.lines.isNotEmpty) {
+        model = 'compound';
+        blockReader = Reader(block.lines);
+      }
+    } else {
+      block = Block(
+        parent,
+        blockContext,
+        contentModel: model,
+        source: lines,
+        attributes: _strKeys(attributes),
+      );
+    }
 
     // Reader is confined within boundaries of a delimited block, so look
     // for blocks until there are no more lines.

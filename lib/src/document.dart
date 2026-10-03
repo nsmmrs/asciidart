@@ -19,9 +19,16 @@
 ///   constructor-level behavior is byte-identical; calling `convert` on the
 ///   stub throws [UnimplementedError]. [Document.convert] calls the
 ///   single-argument `NodeConverter.convert`.
-/// * The extensions wave fills in [Document.extensions] (`null` until then).
-///   Passing the `extensions` or `extension_registry` options, or a
-///   `converter_factory` option, throws [UnimplementedError].
+/// * The substitutors wave fills in the private `_resolveDocinfoSubs`
+///   stub (throwing [UnimplementedError] until then); `_applyHeaderSubs`
+///   and `_applyPassMacroSubs` are ported.
+/// * Extension integration is ported: the `extensions` and
+///   `extension_registry` options activate a [Registry] into
+///   [Document.extensions], pre/tree/postprocessors and docinfo processors
+///   run, and the `converter`/`converter_factory` options resolve through
+///   [CustomFactory]/[ConverterFactory].
+/// * [Document.syntaxHighlighter] resolves from the `source-highlighter`
+///   attribute when the header is saved.
 ///
 /// [Timings] (from `timings.dart`) records the read/parse/convert/write
 /// phase durations surfaced via the `timings` option and `--timings`.
@@ -37,6 +44,7 @@ import 'constants.dart';
 import 'converter.dart';
 import 'core_ext.dart';
 import 'docbook5.dart';
+import 'extensions.dart';
 import 'helpers.dart';
 import 'highlight/syntax_highlighter.dart';
 import 'html5.dart';
@@ -339,7 +347,17 @@ class _ReaderDocumentAdapter implements ReaderDocument {
       _document.catalog['includes'] as Map<String, bool?>;
 
   @override
-  List<ReaderIncludeProcessor>? get includeProcessors => null;
+  List<ReaderIncludeProcessor>? get includeProcessors {
+    // Port of the `Document` half of the include-processor lookup
+    // (`PreprocessorReader#preprocess_include_directive` consults the
+    // registry through the document): registered include processors
+    // handle targets before the file system is tried.
+    final exts = _document.extensions;
+    if (exts == null || !exts.hasIncludeProcessors) return null;
+    return exts.includeProcessors
+        .map((ext) => ext.instance as ReaderIncludeProcessor)
+        .toList();
+  }
 
   @override
   String normalizeSystemPath(
@@ -721,11 +739,22 @@ class Document extends AbstractBlock implements NodeDocument {
 
       _fillDatetimeAttributes(attrs, inputMtime);
 
-      if (isTruthy(opts['extension_registry']) ||
-          isTruthy(opts['extensions'])) {
-        throw UnimplementedError(
-          'Extensions wave: extension options are not yet supported.',
-        );
+      // Port of `Document#initialize` (lib/asciidoctor/document.rb:492-504):
+      // activate the extensions registry. `Extensions` is always defined
+      // in Dart, so extension initialization always runs for top-level
+      // documents (nested documents inherit the parent registry above).
+      final extRegistry = opts['extension_registry'];
+      if (extRegistry is Registry) {
+        extensions = extRegistry.activate(this);
+      } else if (!opts.containsKey('extensions') ||
+          opts['extensions'] == null) {
+        if (Extensions.groups.isNotEmpty) {
+          extensions = Registry().activate(this);
+        }
+      } else if (opts['extensions'] is void Function(Registry)) {
+        extensions = Extensions.create(
+          build: opts['extensions'] as void Function(Registry),
+        ).activate(this);
       }
 
       reader = PreprocessorReader(
@@ -813,13 +842,16 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// The syntax highlighter associated with this document.
   ///
-  /// Always `null` until the syntax-highlighter wave lands.
+  /// Resolved from the `source-highlighter` attribute when the header is
+  /// saved; `null` unless the base backend is HTML and the named
+  /// highlighter is registered.
   Object? syntaxHighlighter;
 
   /// The activated extensions registry associated with this document.
   ///
-  /// Always `null` until the extensions wave lands.
-  Object? extensions;
+  /// `null` when no extension groups are registered and neither the
+  /// `extension_registry` nor the `extensions` option was passed.
+  Registry? extensions;
 
   Map<String, Object?> _attributeOverrides = <String, Object?>{};
   int? _maxAttributeValueSize;
@@ -840,6 +872,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// is a stub).
   Document parse([Object? data]) {
     if (_parsed) return this;
+    var doc = this;
     // Create the reader if data is provided (used when data is not known
     // at the time the Document object is created).
     if (isTruthy(data)) {
@@ -852,7 +885,20 @@ class Document extends AbstractBlock implements NodeDocument {
       if (sourcemap) sourceLocation = _CursorSourceLocation(reader.cursor());
     }
 
-    // Extensions wave: preprocessor extensions run here.
+    // Port of `Document#parse` (lib/asciidoctor/document.rb:533-537):
+    // preprocessor extensions run before parsing (never for nested
+    // documents).
+    final exts = parentDocument == null ? extensions : null;
+    if (exts != null && exts.hasPreprocessors) {
+      for (final ext in exts.preprocessors) {
+        final result =
+            (ext.processMethod as Object? Function(Document, Reader))(
+              doc,
+              reader,
+            );
+        if (result is Reader) reader = result;
+      }
+    }
 
     // Now parse the lines in the reader into blocks.
     Parser.parse(
@@ -863,10 +909,18 @@ class Document extends AbstractBlock implements NodeDocument {
 
     restoreAttributes();
 
-    // Extensions wave: tree processor extensions run here.
+    // Port of `Document#parse` (lib/asciidoctor/document.rb:543-549): tree
+    // processor extensions run after parsing; a tree processor may replace
+    // the document by returning a different Document.
+    if (exts != null && exts.hasTreeProcessors) {
+      for (final ext in exts.treeProcessors) {
+        final result = (ext.processMethod as Object? Function(Document))(doc);
+        if (result is Document && !identical(result, doc)) doc = result;
+      }
+    }
 
     _parsed = true;
-    return this;
+    return doc;
   }
 
   /// Whether the source lines of the document have been parsed.
@@ -1052,6 +1106,8 @@ class Document extends AbstractBlock implements NodeDocument {
   bool get embedded => attributes.containsKey('embedded');
 
   /// Whether extensions are activated for this document.
+  ///
+  /// Port of `Document#extensions?` (lib/asciidoctor/document.rb:676-678).
   bool get hasExtensions => extensions != null;
 
   /// The raw source for the document.
@@ -1364,7 +1420,17 @@ class Document extends AbstractBlock implements NodeDocument {
           : nodeConverter.convert(this);
     }
 
-    // Extensions wave: postprocessor extensions run here.
+    // Port of `Document#convert` (lib/asciidoctor/document.rb:971-976):
+    // postprocessor extensions run after conversion (never for nested
+    // documents).
+    if (parentDocument == null) {
+      final exts = extensions;
+      if (exts != null && exts.hasPostprocessors) {
+        for (final ext in exts.postprocessors) {
+          output = Function.apply(ext.processMethod, [this, output]);
+        }
+      }
+    }
 
     _timings?.record('convert');
     return output;
@@ -1498,20 +1564,41 @@ class Document extends AbstractBlock implements NodeDocument {
       }
     }
 
-    // Extensions wave: docinfo processor extensions contribute here.
-    if (content != null) return content.join(lf);
-    return '';
+    // Port of `Document#docinfo` (lib/asciidoctor/document.rb:1077-1085):
+    // docinfo processor extensions contribute content for the location.
+    if (extensions != null && docinfoProcessors(location)) {
+      final extContent = content ?? <String>[];
+      for (final ext
+          in _docinfoProcessorExtensions[location]
+              as List<ProcessorExtension>) {
+        final result = (ext.processMethod as Object? Function(Document))(this);
+        if (result != null) extContent.add(result.toString());
+      }
+      return extContent.join(lf);
+    } else if (content != null) {
+      return content.join(lf);
+    } else {
+      return '';
+    }
   }
 
   /// Whether docinfo processor extensions are registered for [location].
+  ///
+  /// Port of `Document#docinfo_processors?`
+  /// (lib/asciidoctor/document.rb:1087-1095).
   bool docinfoProcessors([String location = 'head']) {
     if (_docinfoProcessorExtensions.containsKey(location)) {
       // false means a lookup already ran and found nothing.
       return _docinfoProcessorExtensions[location] != false;
     }
-    // Extensions wave: query the registry for docinfo processors.
-    _docinfoProcessorExtensions[location] = false;
-    return false;
+    final exts = extensions;
+    if (exts != null && exts.hasDocinfoProcessors(location)) {
+      _docinfoProcessorExtensions[location] = exts.docinfoProcessors(location);
+      return true;
+    } else {
+      _docinfoProcessorExtensions[location] = false;
+      return false;
+    }
   }
 
   /// Reads the include target [uri] decoded with [encoding].
@@ -1556,28 +1643,24 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// Applies the passthrough-macro [subs] to [value].
   ///
-  /// Port of the `AttributeEntryPassMacroRx` branch of
-  /// `apply_attribute_value_subs` (document.rb:1114): no subs list means
-  /// the value is stored verbatim; otherwise the inline-resolved list is
-  /// applied (`resolve_pass_subs`, substitutors.rb:1247).
+  /// Port of the pass-macro branch of
+  /// `Document#apply_attribute_value_subs`
+  /// (lib/asciidoctor/document.rb:1114-1122).
   String _applyPassMacroSubs(String value, String? subs) {
     if (subs == null) return value;
-    final resolved = substitutors.resolveSubs(
+    return substitutors.applySubs(
       this,
-      subs,
-      'inline',
-      null,
-      'passthrough macro',
-    );
-    return substitutors.applySubs(this, value, resolved ?? <String>[])
-        as String;
+      value,
+      substitutors.resolvePassSubs(this, subs) ?? <String>[],
+    ) as String;
   }
 
   /// Applies header substitutions to [value].
   ///
-  /// Port of `Substitutors#apply_header_subs` (substitutors.rb:142).
+  /// Port of `Substitutors#apply_header_subs`
+  /// (lib/asciidoctor/substitutors.rb:142-144).
   String _applyHeaderSubs(String value) =>
-      applySubs(value, substitutors.headerSubs) as String;
+      substitutors.applySubs(this, value, substitutors.headerSubs) as String;
 
   /// Safely truncates [str] to [max] bytes.
   ///
@@ -1638,33 +1721,28 @@ class Document extends AbstractBlock implements NodeDocument {
   /// resolves only through the `converter` option (a [NodeConverter]) or
   /// `template_dirs` (a trait-carrying stub until the template wave lands).
   NodeConverter? _createConverter(String backend, String? delegateBackend) {
-    if (isTruthy(options['converter_factory'])) {
-      throw UnimplementedError(
-        'Converter wave: the converter_factory option is not yet supported.',
-      );
-    }
+    // Port of `Document#create_converter`
+    // (lib/asciidoctor/document.rb:1153-1167). Template keys join the
+    // options when the template wave lands.
+    final converterOpts = <String, Object?>{
+      'document': this,
+      'htmlsyntax': attributes['htmlsyntax'],
+    };
     final custom = options['converter'];
     if (custom != null) {
-      if (custom is! NodeConverter) {
-        throw ArgumentError.value(
-          custom,
-          'converter',
-          'must be a NodeConverter',
-        );
-      }
-      return custom;
+      return CustomFactory(<String, Object?>{backend: custom})
+          .create(backend, converterOpts);
+    }
+    final factoryOpt = options['converter_factory'];
+    if (factoryOpt is ConverterFactory) {
+      return factoryOpt.create(backend, converterOpts);
     }
     // Ensure the ported backends are registered (idempotent), then resolve
-    // through the factory, mirroring Ruby's `create_converter`
-    // (`converter_opts = { document:, htmlsyntax: }`). Template keys join
-    // the options when the template wave lands.
+    // through the global factory.
     Html5Converter.registerFor();
     Docbook5Converter.registerFor();
     ManpageConverter.registerFor();
-    final created = Converter.create(backend, <String, Object?>{
-      'document': this,
-      'htmlsyntax': attributes['htmlsyntax'],
-    });
+    final created = Converter.create(backend, converterOpts);
     if (created != null) return created;
     final builtin = _builtinTraits(backend, attributes['htmlsyntax']);
     if (builtin != null) return _BuiltinConverterStub(backend, builtin);
@@ -1824,9 +1902,10 @@ class Document extends AbstractBlock implements NodeDocument {
         final syntaxHlName = attrs['source-highlighter'];
         if (isTruthy(syntaxHlName) &&
             !isTruthy(attrs['$syntaxHlName-unavailable'])) {
-          // Port of document.rb `save_attributes` (the `@options`
-          // `:syntax_highlighter_factory` / `:syntax_highlighters`
-          // branches); `resolveForDocument` re-checks the same conditions.
+          // Port of `Document#save_attributes`
+          // (lib/asciidoctor/document.rb:1233-1242): resolve the syntax
+          // highlighter, honoring the `syntax_highlighter_factory` and
+          // `syntax_highlighters` options.
           syntaxHighlighter = SyntaxHighlighter.resolveForDocument(this);
         }
         // Enable toc and sectnums (i.e., numbered) by default in DocBook
@@ -2018,6 +2097,22 @@ class Document extends AbstractBlock implements NodeDocument {
     if (resolvedConverter is _BuiltinConverterStub &&
         resolvedConverter.hasTraits) {
       traits = resolvedConverter.traits!;
+      final htmlsyntax = traits.htmlsyntax;
+      if (htmlsyntax != null) attrs['htmlsyntax'] = htmlsyntax;
+      _assignOutfilesuffix(attrs, traits.outfilesuffix, init);
+    } else if (resolvedConverter is Converter) {
+      // Port of the `Converter::BackendTraits === converter` branch of
+      // `update_backend_attributes` (lib/asciidoctor/document.rb:1203-1212):
+      // a resolved converter carries its own traits (in particular, it may
+      // override `htmlsyntax`, as `Converter.create 'html5', htmlsyntax:
+      // 'xml'` does).
+      final converterTraits = resolvedConverter.backendTraits();
+      traits = _BackendTraits(
+        basebackend: converterTraits['basebackend'] as String,
+        filetype: converterTraits['filetype'] as String,
+        outfilesuffix: converterTraits['outfilesuffix'] as String,
+        htmlsyntax: converterTraits['htmlsyntax'] as String?,
+      );
       final htmlsyntax = traits.htmlsyntax;
       if (htmlsyntax != null) attrs['htmlsyntax'] = htmlsyntax;
       _assignOutfilesuffix(attrs, traits.outfilesuffix, init);

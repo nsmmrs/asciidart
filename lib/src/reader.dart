@@ -192,6 +192,9 @@ class Cursor {
     lineno += num;
   }
 
+  /// Returns a copy of this cursor (port of `Cursor#dup`).
+  Cursor dup() => Cursor(file, dir, path, lineno);
+
   /// `path: line N` summary of this cursor.
   String get lineInfo => '$path: line $lineno';
 
