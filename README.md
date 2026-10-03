@@ -1,10 +1,17 @@
 # Asciidoctor (Dart port)
 
-Dart port of [Asciidoctor](https://asciidoctor.org), the fast text processor
-for converting AsciiDoc to HTML and more.
+Dart port of [Asciidoctor](https://asciidoctor.org), the text processor
+for converting AsciiDoc to HTML 5, DocBook 5, and Unix man pages.
 
-> Status: skeleton (v0.1.0). The package layout, CLI entry point, and smoke
-> tests are in place. Converter modules arrive in later phases.
+> Status: working CLI (v0.1.0). All three backends, the option parser, and
+> the extension framework are ported; the bats e2e suite passes 131/131
+> against this CLI and the differential corpus is byte-identical to Ruby
+> (see `../benchmark/PARITY.md`).
+>
+> Performance (measured 2026-10-03, see `../benchmark/BASELINE.md`): the
+> AOT-compiled binary converts the benchmark corpus **3.5–8.8x faster**
+> than the Ruby CLI end to end. `dart run` (JIT dev mode) is not a
+> performance target and runs ~13–15x slower than Ruby per spawn.
 
 ## Prerequisites
 
