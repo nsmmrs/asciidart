@@ -1,6 +1,7 @@
 # ADR-0002: Custom Converter Templates Strategy
 
-**Status:** Proposed — needs user accept before the template wave starts.
+**Status:** Final — accepted by user 2026-10-03 (T5: web viable; XMonad-style
+scaffold in scope; no recompile helper).
 
 ## Context
 
@@ -69,19 +70,29 @@ loading: custom helpers are Dart lambdas registered through path (a) and
 injected into the render context. Documented as the one intentional gap vs
 Ruby `-T`, forced by the platform.
 
-### T5. Platform split — OPEN, needs user input (Q2)
+### T5. Platform split — DECIDED: web stays viable (three-way loader seam)
 
-The spike's decision-driving question is unanswered: ADR-0001 says nothing
-about web/Flutter targets, and D2 requires an npm JS build downstream.
+- Dart VM / AOT: `dart:io` directory scan (the `-T` CLI path).
+- JS on Node: Node `fs` via JS interop, selected by runtime detection
+  (`typeof process?.versions?.node`), so one npm bundle serves both
+  environments. Same last-wins semantics as the VM scanner.
+- JS in browser: runtime template registration only
+  (`registerTemplate(name, source)` / template map in options); directory
+  enumeration is impossible and `-T` is VM/CLI-only.
 
-- If web compilation stays in scope: runtime `-T` directory scanning is
-  impossible on web; path (a) + bundled-template assets become the primary
-  story there, and the `dart:io` scanner must live behind a platform seam.
-- If VM/CLI-only: the scanner can use `dart:io` directly.
+No build-time template injection for the JS build (rejected by user).
+The renderer + pre-flattened context (T2) are shared, platform-free code;
+only source loading sits behind the seam.
 
-**Recommendation:** keep web compilation viable (isolate the scanner behind
-a seam from day one). Blocking question for the user at template-wave
-kickoff, not before — no template code is scheduled until converters land.
+### T6. XMonad-style build-time config — DECIDED: scaffold in scope
+
+Path (a) ships with a first-class custom-binary story: the CLI entrypoint
+is a reusable library function (`runCli(args)`), and an `init-config`
+scaffold generates a user project (pubspec + `transforms.dart` stub +
+`main.dart`) that registers Dart functions and compiles with
+`dart compile exe`. The cookbook documents this as the graduation path
+from Mustache files. No `--rebuild`-style recompile helper (deferred
+until requested; users run `dart compile exe` themselves).
 
 ## Consequences
 
