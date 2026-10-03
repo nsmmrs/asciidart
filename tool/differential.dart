@@ -97,7 +97,7 @@ ArgParser buildParser() {
     )
     ..addMultiOption(
       'extra-file',
-      defaultsTo: ['README.adoc'],
+      defaultsTo: ['README.adoc', 'data/reference/syntax.adoc'],
       help: 'Extra corpus file(s), relative to --root unless absolute.',
     )
     ..addOption(
