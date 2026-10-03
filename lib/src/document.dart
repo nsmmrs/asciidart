@@ -522,7 +522,7 @@ class Document extends AbstractBlock implements NodeDocument {
     final attrs = attributes;
     if (parentDoc == null) {
       attrs['attribute-undefined'] = Compliance.attributeUndefined;
-      attrs['attribute-missing'] = complianceAttributeMissing;
+      attrs['attribute-missing'] = Compliance.attributeMissing;
       attrs.addAll(defaultAttributes);
     }
 
