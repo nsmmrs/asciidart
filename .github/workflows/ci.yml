@@ -150,3 +150,31 @@ jobs:
       env:
         GITHUB_API_TOKEN: ${{ secrets._GITHUB_API_TOKEN }}
       run: bundle exec rake build:dependents
+  dart:
+    needs: activate
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get --directory=dart
+    - name: Analyze Dart code
+      working-directory: dart
+      run: dart analyze --fatal-infos .
+    - name: Run Dart tests
+      working-directory: dart
+      run: dart test
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+    - name: Install bats
+      run: npm i -g bats
+    - name: Run e2e CLI tests (Ruby shim)
+      env:
+        ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-ruby
+      run: bats test/e2e/
+    - name: Run differential selfcheck
+      run: bats test/differential/
