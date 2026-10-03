@@ -47,6 +47,7 @@ import 'abstract_block.dart';
 import 'abstract_node.dart';
 import 'constants.dart';
 import 'inline.dart';
+import 'template_loader.dart' show validateTemplateEngine;
 
 /// Trailing digits stripped from a backend name to derive its base backend.
 ///
@@ -90,12 +91,20 @@ Converter _resolveRegistration(
 /// when nothing is registered (or an explicit `null` is registered).
 ///
 /// Any truthy `template_dirs` option throws [UnimplementedError] until the
-/// template wave ports `TemplateConverter` (`converter/template.rb`).
+/// template wave ports `TemplateConverter` (`converter/template.rb`). An
+/// unknown `template_engine` fails first via [validateTemplateEngine] with
+/// the port's missing-engine diagnostic (template wave B).
 Converter? _createFrom(
   Object? Function(String backend) forBackend,
   String backend,
   Map<String, Object?> opts,
 ) {
+  if (_isSet(opts['template_dirs'])) {
+    // Unknown engines fail here — before any TemplateConverter work — so
+    // `-E bogus -T dir` reports Ruby's missing-engine failure even while
+    // the template converter itself is still unported.
+    validateTemplateEngine(opts['template_engine']);
+  }
   final found = forBackend(backend);
   if (found != null) {
     final converter = _resolveRegistration(found, backend, opts);

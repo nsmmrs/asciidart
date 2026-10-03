@@ -31,9 +31,11 @@
 ///   at runtime. With `--trace`, Ruby re-raises the `LoadError`; the Dart
 ///   port throws [UnsupportedError] instead.
 /// - `-T/--template-dir` is accepted and recorded without requiring the
-///   `tilt` gem (Ruby-only). The template-converter solution is a later phase
-///   (see ADR-0001 D3); the missing-engine failure path has no Dart analog
-///   yet.
+///   `tilt` gem (Ruby-only). `-E/--template-engine` records any name
+///   untouched (Ruby parity); the name is validated when templates engage
+///   during conversion (only `mustache` + `dart` exist, per ADR-0002 T1),
+///   and an unknown engine fails like Ruby's missing-engine error (see
+///   `template_loader.dart`). Mustache rendering itself is template wave A.
 /// - The `manpage`/`syntax` help topics resolve `ROOT_DIR`-relative files by
 ///   searching upward from the current working directory for a checkout
 ///   containing them (Ruby joins the compile-time `ROOT_DIR`). The
@@ -651,8 +653,9 @@ final class CliOptions {
 
     if (attributes != null && attributes!.isEmpty) attributes = null;
 
-    // Ruby requires the `tilt` gem here when template directories are set;
-    // Dart has no tilt (see the library docs), so there is nothing to load.
+    // Ruby requires the `tilt` gem here when template directories are set.
+    // Dart has no tilt; the engine name is validated when templates engage
+    // during conversion instead (see the library docs).
 
     if (loadPaths != null) {
       // Ruby unshifts the expanded paths onto $LOAD_PATH; Dart records them.

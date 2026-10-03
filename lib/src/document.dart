@@ -1722,12 +1722,31 @@ class Document extends AbstractBlock implements NodeDocument {
   /// `template_dirs` (a trait-carrying stub until the template wave lands).
   NodeConverter? _createConverter(String backend, String? delegateBackend) {
     // Port of `Document#create_converter`
-    // (lib/asciidoctor/document.rb:1153-1167). Template keys join the
-    // options when the template wave lands.
+    // (lib/asciidoctor/document.rb:1153-1167).
     final converterOpts = <String, Object?>{
       'document': this,
       'htmlsyntax': attributes['htmlsyntax'],
     };
+    final templateDirs = options['template_dirs'] ?? options['template_dir'];
+    if (isTruthy(templateDirs)) {
+      // Ruby's `[*template_dirs]` coerces a lone String to a one-element
+      // Array; `template_cache` defaults to true only when the key is
+      // absent (an explicit nil/false disables the cache).
+      converterOpts['template_dirs'] = templateDirs is Iterable
+          ? templateDirs.map((dir) => dir.toString()).toList()
+          : [templateDirs.toString()];
+      converterOpts['template_cache'] = options.containsKey('template_cache')
+          ? options['template_cache']
+          : true;
+      converterOpts['template_engine'] = options['template_engine'];
+      converterOpts['template_engine_options'] =
+          options['template_engine_options'];
+      converterOpts['eruby'] = options['eruby'];
+      converterOpts['safe'] = safe;
+      if (delegateBackend != null) {
+        converterOpts['delegate_backend'] = delegateBackend;
+      }
+    }
     final custom = options['converter'];
     if (custom != null) {
       return CustomFactory(<String, Object?>{backend: custom})
@@ -1746,7 +1765,6 @@ class Document extends AbstractBlock implements NodeDocument {
     if (created != null) return created;
     final builtin = _builtinTraits(backend, attributes['htmlsyntax']);
     if (builtin != null) return _BuiltinConverterStub(backend, builtin);
-    final templateDirs = options['template_dirs'] ?? options['template_dir'];
     if (isTruthy(templateDirs)) {
       // A template chain: traits come from the delegate backend when it is
       // built in, else they are derived from the backend name.
