@@ -1,54 +1,18 @@
 /// Port of `test/document_test.rb` (156 tests).
 ///
-/// Tests that parse or convert (directly or through the `documentFromString`
-/// default of `parse: true`) run now that the parser wave has landed; tests
-/// blocked on other waves stay skipped with [needsConverter],
-/// [needsSubstitutors], [needsApiWave], [needsFixtureWave], or
-/// [needsTableWave]. XML/CSS assertions in skipped bodies route through
-/// [assertXpath]/[assertCss] stubs that throw until an XML-matching helper
-/// is ported.
+/// All tests run: `convertFile`/`asciidoctorLoad`/`exampleDocument` are
+/// implemented over `load.dart`, and XML/CSS assertions route through the
+/// [XmlMatcher] mini-matcher ([assertXpath]/[assertCss]/[xmlnodesAtXpath]).
 library;
 
-import 'dart:io' show Directory;
+import 'dart:io' show Directory, File;
 
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/load.dart' as api;
 import 'package:asciidoctor/src/section.dart';
 import 'package:test/test.dart';
-
-/// Skip reason for tests blocked on the converter wave: no html5/docbook
-/// backend converter is ported yet (`Document.convert` throws via
-/// `_BuiltinConverterStub`).
-const String needsConverter =
-    'needs converter wave: no backend converter ported (Document.convert throws)';
-
-/// Skip reason for tests blocked on the substitutors wave (TASK-2h31dk):
-/// `Document`/`AbstractNode` sub methods still throw `UnimplementedError`.
-const String needsSubstitutors =
-    'needs substitutors wave (TASK-2h31dk): sub method stub throws UnimplementedError';
-
-/// Skip reason for tests blocked on the API wave: `convertFile` and
-/// `asciidoctorLoad` helpers are unported stubs.
-const String needsApiWave =
-    'needs API wave: convertFile/asciidoctorLoad helpers not yet ported';
-
-/// Skip reason for tests blocked on the fixture wave: `exampleDocument`
-/// is an unported stub.
-const String needsFixtureWave =
-    'needs fixture wave: exampleDocument helper not yet ported';
-
-/// Skip reason for tests blocked on the table wave: asciidoc-style
-/// table cells cannot nest documents yet.
-const String needsTableWave =
-    'needs table wave: Table::Cell asciidoc nested-document parsing not yet ported';
-
-/// Skip reason for tests whose body asserts via the XML-match helpers
-/// ([assertXpath]/[assertCss]/[xmlnodesAtXpath]), which still throw
-/// `UnimplementedError`. The substitution behavior in these bodies is
-/// covered by probes; only the XML assertions are blocked.
-const String needsXmlMatchWave =
-    'needs XML-match wave: assertXpath/assertCss stubs throw UnimplementedError';
 
 /// Built-in converter element names (port of `BUILT_IN_ELEMENTS`).
 const List<String> builtInElements = <String>[
@@ -195,7 +159,10 @@ String convertStringToEmbedded(String src, [Map<String, Object?>? options]) {
 
 /// Converts the file at [path] (port of `Asciidoctor.convert_file`).
 ///
-/// API wave: stub throwing [UnimplementedError]; all callers are skipped.
+/// Thin wrapper over [api.convertFile]. A `'_attr_string_'` entry in
+/// [attributes] carries a raw Ruby-style attribute string (e.g.
+/// `'linkcss copycss! ...'`), which is forwarded as the `'attributes'`
+/// option verbatim (`load.dart` already coerces attribute strings).
 String convertFile(
   String path, {
   Object? toFile,
@@ -203,47 +170,1352 @@ String convertFile(
   String? backend,
   Object? safe,
   Map<String, Object?>? attributes,
-}) => throw UnimplementedError('API wave: convertFile is not yet ported.');
+}) {
+  final options = <String, Object?>{
+    if (toFile != null) 'to_file': toFile,
+    'standalone': standalone,
+    if (backend != null) 'backend': backend,
+    if (safe != null) 'safe': safe,
+  };
+  if (attributes != null) {
+    if (attributes.containsKey('_attr_string_')) {
+      options['attributes'] = attributes['_attr_string_'] as String;
+    } else {
+      options['attributes'] = attributes;
+    }
+  }
+  return api.convertFile(path, options) as String;
+}
 
 /// Loads [input] into a parsed document (port of `Asciidoctor.load`).
-///
-/// API wave: stub throwing [UnimplementedError]; all callers are skipped.
 Document asciidoctorLoad(
   String input, {
   Object? backend,
   bool standalone = false,
-}) => throw UnimplementedError('API wave: asciidoctorLoad is not yet ported.');
+}) => api.load(input, {
+  if (backend != null) 'backend': backend,
+  'standalone': standalone,
+});
 
 /// Loads a sample document (port of `example_document`).
 ///
-/// Fixture wave: stub throwing [UnimplementedError]; all callers are skipped.
-Document exampleDocument(String name) => throw UnimplementedError(
-  'Fixture wave: exampleDocument is not yet ported.',
-);
+/// Reads `test/fixtures/<name>.<ext>` for the first matching `ext` in
+/// `adoc`/`asciidoc`/`txt` (port of `sample_doc_path`), then parses it via
+/// [documentFromString] with [options].
+Document exampleDocument(String name, [Map<String, Object?>? options]) {
+  for (final ext in const ['adoc', 'asciidoc', 'txt']) {
+    final path = fixturePath('$name.$ext');
+    if (File(path).existsSync()) {
+      return documentFromString(File(path).readAsStringSync(), options);
+    }
+  }
+  throw ArgumentError('no sample document found for name: $name');
+}
 
 /// Asserts [content] matches [xpath] [count] times (port of `assert_xpath`).
-///
-/// XML-match wave: stub throwing [UnimplementedError]; all callers are
-/// skipped.
-void assertXpath(String xpath, String? content, int count) =>
-    throw UnimplementedError('XML-match wave: assertXpath is not yet ported.');
+void assertXpath(String xpath, String? content, int count) {
+  final nodes = XmlMatcher.parse(content ?? '').xpath(xpath);
+  expect(
+    nodes.length,
+    equals(count),
+    reason:
+        'xpath $xpath matched ${nodes.length}, expected $count in:\n$content',
+  );
+}
 
 /// Asserts [content] matches [css] [count] times (port of `assert_css`).
-///
-/// XML-match wave: stub throwing [UnimplementedError]; all callers are
-/// skipped.
-void assertCss(String css, String? content, int count) =>
-    throw UnimplementedError('XML-match wave: assertCss is not yet ported.');
+void assertCss(String css, String? content, int count) {
+  final nodes = XmlMatcher.parse(content ?? '').css(css);
+  expect(
+    nodes.length,
+    equals(count),
+    reason: 'css $css matched ${nodes.length}, expected $count in:\n$content',
+  );
+}
 
 /// Returns the nodes matching [xpath] in [content] (port of
 /// `xmlnodes_at_xpath`).
 ///
-/// XML-match wave: stub throwing [UnimplementedError]; all callers are
-/// skipped.
-dynamic xmlnodesAtXpath(String xpath, String? content, [int? count]) =>
-    throw UnimplementedError(
-      'XML-match wave: xmlnodesAtXpath is not yet ported.',
+/// Like Ruby (`count == 1 ? results.first : results`), returns the first
+/// [XmlNode] when [count] is 1, else the [XmlNodeSet].
+dynamic xmlnodesAtXpath(String xpath, String? content, [int? count]) {
+  final nodes = XmlMatcher.parse(content ?? '').xpath(xpath);
+  return count == 1 ? nodes.first : nodes;
+}
+
+/// Fails unless [result] is well-formed XML (port of the
+/// `Nokogiri::XML::Document.parse(result) { STRICT | NONET }` assertion).
+void assertWellFormedXml(String result) {
+  try {
+    _checkWellFormedXml(result);
+  } on FormatException catch (e) {
+    fail(
+      'xhtml5 backend did not generate well-formed XML: '
+      '${e.message}\n$result',
     );
+  }
+}
+
+/// Throws [FormatException] unless [source] is well-formed XML.
+///
+/// Checks tag balance and nesting, quoted attributes, exactly one root
+/// element, no markup-looking text (`<` outside tags, undefined entities),
+/// and no content outside the root besides the prolog, doctype, comments,
+/// processing instructions, and whitespace.
+void _checkWellFormedXml(String source) {
+  void failAt(String message, int offset) {
+    final line = '\n'.allMatches(source.substring(0, offset)).length + 1;
+    throw FormatException('$message (line $line)');
+  }
+
+  final nameRx = RegExp(r'[A-Za-z_][\w:.-]*');
+  final stack = <String>[];
+  var offset = 0;
+  var rootCount = 0;
+
+  void skipWhitespace() {
+    while (offset < source.length &&
+        const {' ', '\t', '\r', '\n'}.contains(source[offset])) {
+      offset++;
+    }
+  }
+
+  // Skips one prolog/doctype/comment/PI/cdata token at [offset]; returns
+  // whether a token was consumed.
+  bool skipTrivia() {
+    if (source.startsWith('<!--', offset)) {
+      final end = source.indexOf('-->', offset + 4);
+      if (end < 0) failAt('unterminated comment', offset);
+      offset = end + 3;
+      return true;
+    }
+    if (source.startsWith('<![CDATA[', offset)) {
+      final end = source.indexOf(']]>', offset + 9);
+      if (end < 0) failAt('unterminated CDATA section', offset);
+      offset = end + 3;
+      return true;
+    }
+    if (source.startsWith('<?', offset)) {
+      final end = source.indexOf('?>', offset + 2);
+      if (end < 0) failAt('unterminated processing instruction', offset);
+      offset = end + 2;
+      return true;
+    }
+    if (source.startsWith('<!DOCTYPE', offset) &&
+        (offset + 9 >= source.length ||
+            RegExp(r'[\s>]').hasMatch(source[offset + 9]))) {
+      var pos = offset + 9;
+      var depth = 0;
+      while (pos < source.length) {
+        if (source[pos] == '[') depth++;
+        if (source[pos] == ']') depth--;
+        if (source[pos] == '>' && depth == 0) break;
+        pos++;
+      }
+      if (pos >= source.length) failAt('unterminated doctype', offset);
+      offset = pos + 1;
+      return true;
+    }
+    return false;
+  }
+
+  void checkText(String text, int start) {
+    if (text.contains(']]>')) failAt(']]> in text', start);
+    for (final match in RegExp(r'&').allMatches(text)) {
+      final rest = text.substring(match.start);
+      if (!RegExp(r'^&#(?:[0-9]+|x[0-9A-Fa-f]+);|^&(amp|lt|gt|quot|apos);')
+          .hasMatch(rest)) {
+        failAt('invalid entity reference', start + match.start);
+      }
+    }
+  }
+
+  while (true) {
+    skipWhitespace();
+    if (offset >= source.length) break;
+    if (skipTrivia()) continue;
+    if (source[offset] != '<') {
+      final start = offset;
+      final end = source.indexOf('<', offset);
+      final text = source.substring(start, end < 0 ? source.length : end);
+      if (stack.isEmpty && text.trim().isNotEmpty) {
+        failAt('content outside root element', start);
+      }
+      checkText(text, start);
+      offset = end < 0 ? source.length : end;
+      continue;
+    }
+    if (source.startsWith('</', offset)) {
+      final match = nameRx.matchAsPrefix(source, offset + 2);
+      if (match == null) failAt('invalid close tag', offset);
+      final name = match!.group(0)!;
+      var pos = match.end;
+      while (pos < source.length && source[pos].trim().isEmpty) {
+        pos++;
+      }
+      if (pos >= source.length || source[pos] != '>') {
+        failAt('invalid close tag', offset);
+      }
+      offset = pos + 1;
+      if (stack.isEmpty) {
+        failAt('stray close tag $name', offset);
+      }
+      if (stack.removeLast() != name) {
+        failAt('mismatched close tag $name', offset);
+      }
+      continue;
+    }
+    final match = nameRx.matchAsPrefix(source, offset + 1);
+    if (match == null) failAt('invalid open tag', offset);
+    final name = match!.group(0)!;
+    var pos = match.end;
+    final attrs = <String>{};
+    while (true) {
+      while (pos < source.length && source[pos].trim().isEmpty) {
+        pos++;
+      }
+      if (pos >= source.length) failAt('unterminated open tag $name', offset);
+      if (source[pos] == '>') {
+        pos++;
+        stack.add(name);
+        if (stack.length == 1) rootCount++;
+        break;
+      }
+      if (source[pos] == '/' &&
+          pos + 1 < source.length &&
+          source[pos + 1] == '>') {
+        pos += 2;
+        if (stack.isEmpty) rootCount++;
+        break;
+      }
+      final attr = nameRx.matchAsPrefix(source, pos);
+      if (attr == null) failAt('invalid attribute in $name', pos);
+      final attrName = attr!.group(0)!;
+      if (!attrs.add(attrName)) failAt('duplicate attribute $attrName', pos);
+      pos = attr.end;
+      while (pos < source.length && source[pos].trim().isEmpty) {
+        pos++;
+      }
+      if (pos >= source.length || source[pos] != '=') {
+        failAt('unquoted attribute $attrName', pos);
+      }
+      pos++;
+      while (pos < source.length && source[pos].trim().isEmpty) {
+        pos++;
+      }
+      if (pos >= source.length || (source[pos] != '"' && source[pos] != "'")) {
+        failAt('unquoted attribute $attrName', pos);
+      }
+      final quote = source[pos];
+      final end = source.indexOf(quote, pos + 1);
+      if (end < 0) failAt('unterminated attribute $attrName', pos);
+      checkText(source.substring(pos + 1, end), pos + 1);
+      if (source.substring(pos + 1, end).contains('<')) {
+        failAt('bare < in attribute $attrName', pos);
+      }
+      pos = end + 1;
+    }
+    offset = pos;
+  }
+  if (stack.isNotEmpty) failAt('unclosed tag ${stack.last}', offset);
+  if (rootCount != 1) failAt('expected one root element, found $rootCount', 0);
+}
+
+/// A parsed XML/HTML element or text node for the assert helpers.
+///
+/// Element names and attribute names keep their literal spelling; namespace
+/// prefixes are preserved so [namespaces] and `xml:id`-style lookups work.
+/// Text nodes have [isText] set and carry their (entity-decoded) content in
+/// [text].
+class XmlNode {
+  /// Creates an element node.
+  XmlNode.element(
+    this.name, {
+    Map<String, String>? attributes,
+    List<XmlNode>? children,
+    this.parent,
+  }) : attributes = attributes ?? <String, String>{},
+       children = children ?? <XmlNode>[],
+       isText = false,
+       _text = null;
+
+  /// Creates a text node with decoded content [text].
+  XmlNode.text(String text, {this.parent})
+    : name = '#text',
+      attributes = <String, String>{},
+      children = <XmlNode>[],
+      isText = true,
+      _text = text;
+
+  /// Element name as written (with prefix, if any); `#text` for text nodes.
+  final String name;
+
+  /// Decoded attribute values by literal attribute name.
+  final Map<String, String> attributes;
+
+  /// Child nodes (elements and text nodes, in document order).
+  final List<XmlNode> children;
+
+  /// Parent element, or `null` for top-level nodes.
+  final XmlNode? parent;
+
+  /// Sibling context for top-level nodes (set by the parser so
+  /// `following-sibling` and `+` work across fragment roots).
+  List<XmlNode>? _rootSiblings;
+
+  /// Whether this is a text node.
+  final bool isText;
+
+  final String? _text;
+
+  /// Local element name (prefix stripped); `#text` for text nodes.
+  String get localName {
+    final idx = name.indexOf(':');
+    return idx < 0 ? name : name.substring(idx + 1);
+  }
+
+  /// Concatenated descendant text (element) or content (text node).
+  String get text {
+    if (isText) return _text ?? '';
+    final buffer = StringBuffer();
+    void collect(XmlNode node) {
+      for (final child in node.children) {
+        if (child.isText) {
+          buffer.write(child._text);
+        } else {
+          collect(child);
+        }
+      }
+    }
+
+    collect(this);
+    return buffer.toString();
+  }
+
+  /// Direct child text nodes, in document order.
+  List<XmlNode> get textChildren =>
+      children.where((child) => child.isText).toList();
+
+  /// Child elements, in document order.
+  List<XmlNode> get elementChildren =>
+      children.where((child) => !child.isText).toList();
+
+  /// In-scope namespace declarations (`'xmlns'` for the default namespace,
+  /// `'xmlns:prefix'` otherwise), nearest wins (port of Nokogiri
+  /// `Node#namespaces`).
+  Map<String, String> get namespaces {
+    final result = <String, String>{};
+    final chain = <XmlNode>[];
+    XmlNode? node = this;
+    while (node != null) {
+      chain.add(node);
+      node = node.parent;
+    }
+    for (final ancestor in chain.reversed) {
+      ancestor.attributes.forEach((key, value) {
+        if (key == 'xmlns' || key.startsWith('xmlns:')) {
+          result[key] = value;
+        }
+      });
+    }
+    return result;
+  }
+
+  /// The default namespace in scope (`''` when none is declared).
+  String get namespaceUri => namespaces['xmlns'] ?? '';
+
+  /// Returns the value of attribute [name], or `null` when absent.
+  String? attr(String name) => attributes[name];
+
+  /// Sibling elements (fragment roots for top-level nodes).
+  List<XmlNode> get _siblings =>
+      parent?.elementChildren ??
+      _rootSiblings!.where((node) => !node.isText).toList();
+
+  /// Previous sibling element, or `null` when first.
+  XmlNode? get previousSiblingElement {
+    final siblings = _siblings;
+    final idx = siblings.indexOf(this);
+    return idx > 0 ? siblings[idx - 1] : null;
+  }
+
+  /// Following sibling elements, in document order.
+  List<XmlNode> followingSiblings() {
+    final siblings = _siblings;
+    return siblings.sublist(siblings.indexOf(this) + 1);
+  }
+
+  /// All descendant elements, in document order.
+  List<XmlNode> descendants() {
+    final result = <XmlNode>[];
+    void collect(XmlNode node) {
+      for (final child in node.elementChildren) {
+        result.add(child);
+        collect(child);
+      }
+    }
+
+    collect(this);
+    return result;
+  }
+}
+
+/// A list of matched [XmlNode]s (port of Nokogiri's `NodeSet`).
+class XmlNodeSet {
+  /// Creates a node set wrapping [nodes].
+  XmlNodeSet([List<XmlNode>? nodes]) : nodes = nodes ?? <XmlNode>[];
+
+  /// Matched nodes, in document order.
+  final List<XmlNode> nodes;
+
+  /// Number of matched nodes.
+  int get length => nodes.length;
+
+  /// Whether no nodes matched.
+  bool get isEmpty => nodes.isEmpty;
+
+  /// First matched node.
+  XmlNode get first => nodes.first;
+
+  /// Concatenated [XmlNode.text] of all matched nodes.
+  String get text => nodes.map((node) => node.text).join();
+}
+
+/// A parsed document fragment (lenient HTML/XML parser) with XPath and CSS
+/// matching for exactly the constructs this file's assertions use.
+///
+/// XPath subset: `/` and `//` steps, `(path)[n]` groups, `child`,
+/// `following-sibling` and `self` axes, `tag`/`prefix:tag`/`*`/`text()`
+/// node tests, and `[@attr="v"]`, `[text()="v"]`,
+/// `[normalize-space(text())="v"]`, `[not(namespace-uri()="u")]`, and `[n]`
+/// predicates. Prefixes are ignored (local-name matching), mirroring how
+/// Ruby's helper binds `xmlns` to the document's default namespace.
+///
+/// CSS subset: type, `#id`, `.class`, `[attr]`, `[attr="v"]` (quoted or
+/// bare, `prefix|name` for namespaced attributes), descendant/`>`/`+`
+/// combinators, `*`, `:root`, and `:not(...)`.
+class XmlMatcher {
+  /// Creates a matcher over top-level [roots].
+  XmlMatcher(this.roots);
+
+  /// Top-level nodes (fragments may have several roots).
+  final List<XmlNode> roots;
+
+  /// Parses [content] into a matcher.
+  factory XmlMatcher.parse(String content) =>
+      XmlMatcher(_XmlParser(content).parse());
+
+  /// All elements in the fragment, in document order.
+  List<XmlNode> get _allElements {
+    final result = <XmlNode>[];
+    for (final root in roots) {
+      if (!root.isText) {
+        result.add(root);
+        result.addAll(root.descendants());
+      }
+    }
+    return result;
+  }
+
+  /// Evaluates [xpath] against the fragment.
+  XmlNodeSet xpath(String xpath) => XmlNodeSet(_xpath(xpath).toList());
+
+  /// Evaluates CSS [selector] against the fragment.
+  XmlNodeSet css(String selector) {
+    final chain = _CssParser(selector).parse();
+    final matches = _allElements.where(
+      (element) => _matchesCssChain(element, chain, chain.length - 1),
+    );
+    return XmlNodeSet(matches.toList());
+  }
+
+  bool _matchesCssChain(XmlNode element, List<_CssStep> chain, int index) {
+    final step = chain[index];
+    if (!_matchesCompound(element, step.compound)) return false;
+    if (index == 0) return true;
+    final combinator = step.combinator;
+    if (combinator == '>') {
+      final parent = element.parent;
+      return parent != null && _matchesCssChain(parent, chain, index - 1);
+    }
+    if (combinator == '+') {
+      final previous = element.previousSiblingElement;
+      return previous != null && _matchesCssChain(previous, chain, index - 1);
+    }
+    var ancestor = element.parent;
+    while (ancestor != null) {
+      if (_matchesCssChain(ancestor, chain, index - 1)) return true;
+      ancestor = ancestor.parent;
+    }
+    return false;
+  }
+
+  bool _matchesCompound(XmlNode element, _CssCompound compound) {
+    if (compound.type != null && compound.type != '*') {
+      if (element.localName != compound.type) return false;
+    }
+    for (final id in compound.ids) {
+      if (element.attr('id') != id) return false;
+    }
+    final classes = (element.attr('class') ?? '').split(RegExp(r'\s+'));
+    for (final cls in compound.classes) {
+      if (!classes.contains(cls)) return false;
+    }
+    for (final attr in compound.attrs) {
+      final actual = element.attr(attr.name);
+      if (attr.value == null) {
+        if (actual == null) return false;
+      } else if (actual != attr.value) {
+        return false;
+      }
+    }
+    for (final pseudo in compound.pseudos) {
+      if (pseudo == 'root') {
+        if (element.parent != null) return false;
+      } else if (pseudo.startsWith('not(')) {
+        final inner = _CssParser(pseudo.substring(4, pseudo.length - 1))
+            .parseSingle();
+        if (_matchesCompound(element, inner)) return false;
+      } else {
+        throw ArgumentError('unsupported CSS pseudo-class: $pseudo');
+      }
+    }
+    return true;
+  }
+
+  Iterable<XmlNode> _xpath(String xpath) {
+    final parser = _XPathParser(xpath);
+    final absolute = parser.consumeAbsolute();
+    final elementRoots = roots.where((node) => !node.isText).toList();
+    List<XmlNode> current;
+    if (parser.atGroupStart) {
+      current = parser.parseGroup(elementRoots);
+    } else if (absolute == null) {
+      throw ArgumentError('relative xpath not supported: $xpath');
+    } else if (absolute) {
+      current = _applyStepDocument(elementRoots, parser);
+    } else {
+      // Leading `//`: every element in the fragment, filtered by the step.
+      final step = parser.parseStep();
+      current = _filterStep(
+        _allElements.where((e) => _matchesNodeTest(e, step)).toList(),
+        step,
+      );
+    }
+    while (!parser.atEnd) {
+      final descendant = parser.consumeSeparator();
+      if (parser.atEnd) break;
+      current = _applyStep(current, parser.parseStep(), descendant: descendant);
+    }
+    return current;
+  }
+
+  /// Applies the first step of an absolute path to the fragment roots.
+  List<XmlNode> _applyStepDocument(
+    List<XmlNode> elementRoots,
+    _XPathParser parser,
+  ) {
+    final step = parser.parseStep();
+    return _filterStep(
+      elementRoots.where((root) => _matchesNodeTest(root, step)).toList(),
+      step,
+    );
+  }
+
+  List<XmlNode> _applyStep(
+    List<XmlNode> context,
+    _XPathStep step, {
+    required bool descendant,
+  }) {
+    final result = <XmlNode>[];
+    for (final node in context) {
+      final candidates = descendant ? node.descendants() : _axis(node, step);
+      final matched = candidates.where(
+        (candidate) => _matchesNodeTest(candidate, step),
+      );
+      result.addAll(descendant ? _filterStep(matched.toList(), step) : matched);
+    }
+    return descendant ? result : _filterStep(result, step);
+  }
+
+  List<XmlNode> _axis(XmlNode node, _XPathStep step) {
+    switch (step.axis) {
+      case 'self':
+        return [node];
+      case 'following-sibling':
+        return node.followingSiblings();
+      default:
+        return node.children;
+    }
+  }
+
+  bool _matchesNodeTest(XmlNode node, _XPathStep step) {
+    if (step.textNode) return node.isText;
+    if (node.isText) return false;
+    if (step.name == '*') return true;
+    return node.localName == step.name;
+  }
+
+  List<XmlNode> _filterStep(List<XmlNode> nodes, _XPathStep step) {
+    var current = nodes;
+    for (final predicate in step.predicates) {
+      current = predicate.apply(current);
+    }
+    return current;
+  }
+}
+
+/// An XPath predicate in the supported subset.
+abstract class _XPathPredicate {
+  /// Filters [nodes] (positional predicates are 1-based).
+  List<XmlNode> apply(List<XmlNode> nodes);
+
+  /// Parses the predicate starting just after `[`.
+  static _XPathPredicate parse(_XPathParser parser) {
+    if (parser.consumeNumber() case final position?) {
+      parser.expect(']');
+      return _PositionPredicate(position);
+    }
+    if (parser.consumeTextTest()) {
+      parser.expect('=');
+      final value = parser.parseString();
+      parser.expect(']');
+      return _TextEqualsPredicate(value);
+    }
+    if (parser.consumeIdentifier() case final name?) {
+      if (name == 'not') {
+        parser.expect('(');
+        final inner = parser.consumeIdentifier();
+        parser.expect('(');
+        parser.expect(')');
+        parser.expect('=');
+        final value = parser.parseString();
+        parser.expect(')');
+        parser.expect(']');
+        if (inner != 'namespace-uri') {
+          throw ArgumentError('unsupported not() predicate: $inner');
+        }
+        return _NotNamespacePredicate(value);
+      }
+      if (name == 'normalize-space') {
+        parser.expect('(');
+        if (!parser.consumeTextTest()) {
+          throw ArgumentError('expected text() in normalize-space()');
+        }
+        parser.expect(')');
+        parser.expect('=');
+        final value = parser.parseString();
+        parser.expect(']');
+        return _NormalizeSpacePredicate(value);
+      }
+      throw ArgumentError('unsupported predicate function: $name');
+    }
+    if (parser.consume('@')) {
+      final attrName = parser.parseAttrName();
+      parser.expect('=');
+      final value = parser.parseString();
+      parser.expect(']');
+      return _AttrEqualsPredicate(attrName, value);
+    }
+    throw ArgumentError('unsupported predicate in: ${parser.source}');
+  }
+}
+
+/// Positional predicate (`[n]`, 1-based).
+class _PositionPredicate extends _XPathPredicate {
+  /// Creates a positional predicate for 1-based [position].
+  _PositionPredicate(this.position);
+
+  /// 1-based position to keep.
+  final int position;
+
+  @override
+  List<XmlNode> apply(List<XmlNode> nodes) =>
+      position >= 1 && position <= nodes.length
+      ? [nodes[position - 1]]
+      : <XmlNode>[];
+}
+
+/// Attribute-equality predicate (`[@name="value"]`).
+class _AttrEqualsPredicate extends _XPathPredicate {
+  /// Creates an attribute-equality predicate.
+  _AttrEqualsPredicate(this.name, this.value);
+
+  /// Attribute name (prefix kept literally, e.g. `xml:id`).
+  final String name;
+
+  /// Expected decoded value.
+  final String value;
+
+  @override
+  List<XmlNode> apply(List<XmlNode> nodes) =>
+      nodes.where((node) => node.attr(name) == value).toList();
+}
+
+/// Text-equality predicate (`[text()="value"]`, any direct text child).
+class _TextEqualsPredicate extends _XPathPredicate {
+  /// Creates a text-equality predicate.
+  _TextEqualsPredicate(this.value);
+
+  /// Expected decoded text.
+  final String value;
+
+  @override
+  List<XmlNode> apply(List<XmlNode> nodes) => nodes
+      .where((node) => node.textChildren.any((child) => child.text == value))
+      .toList();
+}
+
+/// Whitespace-normalized text predicate
+/// (`[normalize-space(text())="value"]`).
+class _NormalizeSpacePredicate extends _XPathPredicate {
+  /// Creates a normalized-text predicate.
+  _NormalizeSpacePredicate(this.value);
+
+  /// Expected normalized text.
+  final String value;
+
+  @override
+  List<XmlNode> apply(List<XmlNode> nodes) => nodes.where((node) {
+    final first = node.textChildren.isEmpty ? '' : node.textChildren.first.text;
+    final normalized = first.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return normalized == value;
+  }).toList();
+}
+
+/// Namespace-exclusion predicate (`[not(namespace-uri()="uri")]`).
+class _NotNamespacePredicate extends _XPathPredicate {
+  /// Creates a namespace-exclusion predicate.
+  _NotNamespacePredicate(this.uri);
+
+  /// Excluded namespace URI.
+  final String uri;
+
+  @override
+  List<XmlNode> apply(List<XmlNode> nodes) =>
+      nodes.where((node) => node.namespaceUri != uri).toList();
+}
+
+/// An XPath location step in the supported subset.
+class _XPathStep {
+  /// Creates a step with [axis], node-test [name], and [predicates].
+  _XPathStep(this.axis, this.name, this.predicates, {this.textNode = false});
+
+  /// Axis: `child` (default), `following-sibling`, or `self`.
+  final String axis;
+
+  /// Local node-test name, or `*`.
+  final String name;
+
+  /// Predicates to apply in order.
+  final List<_XPathPredicate> predicates;
+
+  /// Whether the node test is `text()`.
+  final bool textNode;
+}
+
+/// Recursive-descent parser for the XPath subset.
+class _XPathParser {
+  /// Creates a parser over [source].
+  _XPathParser(this.source);
+
+  /// The expression being parsed.
+  final String source;
+
+  /// Current offset.
+  int offset = 0;
+
+  /// Whether the parser consumed all input.
+  bool get atEnd => offset >= source.length;
+
+  /// Whether the next token opens a group.
+  bool get atGroupStart => !atEnd && source[offset] == '(';
+
+  /// Consumes a leading `/` (absolute) or `//` (descendant) marker.
+  ///
+  /// Returns `true` for `/`, `false` for `//`, `null` when relative.
+  bool? consumeAbsolute() {
+    if (source.startsWith('//', offset)) {
+      offset += 2;
+      return false;
+    }
+    if (offset < source.length && source[offset] == '/') {
+      offset += 1;
+      return true;
+    }
+    return null;
+  }
+
+  /// Consumes a `/` or `//` separator; returns whether it was `//`.
+  bool consumeSeparator() {
+    if (source.startsWith('//', offset)) {
+      offset += 2;
+      return true;
+    }
+    expect('/');
+    return false;
+  }
+
+  /// Parses `(path)[n]` (with optional further predicates).
+  List<XmlNode> parseGroup(List<XmlNode> roots) {
+    expect('(');
+    final start = offset;
+    var depth = 1;
+    while (depth > 0) {
+      if (atEnd) throw ArgumentError('unterminated group in: $source');
+      if (source[offset] == '(') depth++;
+      if (source[offset] == ')') depth--;
+      offset++;
+    }
+    final inner = source.substring(start, offset - 1);
+    final evaluated = XmlMatcher(roots).xpath(inner).nodes;
+    var current = evaluated;
+    while (!atEnd && source[offset] == '[') {
+      offset++;
+      current = _XPathPredicate.parse(this).apply(current);
+    }
+    return current;
+  }
+
+  /// Parses one location step.
+  _XPathStep parseStep() {
+    var axis = 'child';
+    final axisMatch = RegExp(r'([A-Za-z_][\w.-]*)::')
+        .matchAsPrefix(source, offset);
+    if (axisMatch != null) {
+      axis = axisMatch.group(1)!;
+      offset = axisMatch.end;
+      if (axis != 'following-sibling' && axis != 'self') {
+        throw ArgumentError('unsupported axis: $axis in: $source');
+      }
+    }
+    var textNode = false;
+    var name = '*';
+    if (consumeTextTest()) {
+      textNode = true;
+    } else if (!atEnd && source[offset] == '*') {
+      offset++;
+    } else {
+      name = parseName();
+      final colon = name.indexOf(':');
+      if (colon >= 0) name = name.substring(colon + 1);
+    }
+    final predicates = <_XPathPredicate>[];
+    while (!atEnd && source[offset] == '[') {
+      offset++;
+      predicates.add(_XPathPredicate.parse(this));
+    }
+    return _XPathStep(axis, name, predicates, textNode: textNode);
+  }
+
+  /// Consumes `text()`, returning whether it matched.
+  bool consumeTextTest() {
+    if (source.startsWith('text()', offset)) {
+      offset += 6;
+      return true;
+    }
+    return false;
+  }
+
+  /// Consumes an identifier, returning `null` when absent.
+  String? consumeIdentifier() {
+    final match = RegExp(r'[A-Za-z_][\w.-]*').matchAsPrefix(source, offset);
+    if (match == null) return null;
+    offset = match.end;
+    return match.group(0);
+  }
+
+  /// Consumes a 1-based position, returning `null` when absent.
+  int? consumeNumber() {
+    final match = RegExp(r'[0-9]+').matchAsPrefix(source, offset);
+    if (match == null) return null;
+    offset = match.end;
+    return int.parse(match.group(0)!);
+  }
+
+  /// Consumes the literal [token], throwing when absent.
+  void expect(String token) {
+    if (!consume(token)) {
+      throw ArgumentError('expected $token in: $source');
+    }
+  }
+
+  /// Consumes the literal [token], returning whether it matched.
+  bool consume(String token) {
+    if (source.startsWith(token, offset)) {
+      offset += token.length;
+      return true;
+    }
+    return false;
+  }
+
+  /// Parses a quoted string (single or double quotes).
+  String parseString() {
+    if (atEnd || (source[offset] != '"' && source[offset] != "'")) {
+      throw ArgumentError('expected string in: $source');
+    }
+    final quote = source[offset];
+    final end = source.indexOf(quote, offset + 1);
+    if (end < 0) throw ArgumentError('unterminated string in: $source');
+    final value = source.substring(offset + 1, end);
+    offset = end + 1;
+    return value;
+  }
+
+  /// Parses an element or attribute name (prefix kept).
+  String parseName() {
+    final match = RegExp(r'[A-Za-z_][\w.:-]*').matchAsPrefix(source, offset);
+    if (match == null) throw ArgumentError('expected name in: $source');
+    offset = match.end;
+    return match.group(0)!;
+  }
+
+  /// Parses an attribute name (`prefix:name` kept literally).
+  String parseAttrName() => parseName();
+}
+
+/// A CSS compound selector in the supported subset.
+class _CssCompound {
+  /// Creates a compound selector.
+  _CssCompound({
+    this.type,
+    List<String>? ids,
+    List<String>? classes,
+    List<_CssAttr>? attrs,
+    List<String>? pseudos,
+  }) : ids = ids ?? <String>[],
+       classes = classes ?? <String>[],
+       attrs = attrs ?? <_CssAttr>[],
+       pseudos = pseudos ?? <String>[];
+
+  /// Type selector (`*` for universal), or `null` when absent.
+  final String? type;
+
+  /// Required id values.
+  final List<String> ids;
+
+  /// Required class values.
+  final List<String> classes;
+
+  /// Required attribute matchers.
+  final List<_CssAttr> attrs;
+
+  /// Pseudo-classes (`root`, `not(...)`).
+  final List<String> pseudos;
+}
+
+/// A CSS attribute matcher.
+class _CssAttr {
+  /// Creates an attribute matcher ([value] `null` means presence only).
+  _CssAttr(this.name, this.value);
+
+  /// Literal attribute name (`prefix|local` becomes `prefix:local`).
+  final String name;
+
+  /// Expected value, or `null` for presence.
+  final String? value;
+}
+
+/// One compound selector plus the combinator joining it to its predecessor.
+class _CssStep {
+  /// Creates a chain step.
+  _CssStep(this.compound, this.combinator);
+
+  /// Compound selector for this step.
+  final _CssCompound compound;
+
+  /// Combinator to the previous step (`' '`, `'>'`, or `'+'`).
+  final String combinator;
+}
+
+/// Recursive-descent parser for the CSS subset.
+class _CssParser {
+  /// Creates a parser over [source].
+  _CssParser(this.source);
+
+  /// The selector being parsed.
+  final String source;
+
+  /// Current offset.
+  int offset = 0;
+
+  /// Parses a full selector chain.
+  List<_CssStep> parse() {
+    final steps = [_CssStep(parseSingle(), ' ')];
+    while (true) {
+      _skipWhitespace();
+      if (offset >= source.length) return steps;
+      var combinator = ' ';
+      if (source[offset] == '>' || source[offset] == '+') {
+        combinator = source[offset];
+        offset++;
+        _skipWhitespace();
+      }
+      steps.add(_CssStep(parseSingle(), combinator));
+    }
+  }
+
+  /// Parses one compound selector.
+  _CssCompound parseSingle() {
+    String? type;
+    final ids = <String>[];
+    final classes = <String>[];
+    final attrs = <_CssAttr>[];
+    final pseudos = <String>[];
+    if (offset < source.length &&
+        (source[offset] == '*' || _isNameStart(source[offset]))) {
+      if (source[offset] == '*') {
+        type = '*';
+        offset++;
+      } else {
+        type = _parseName();
+      }
+    }
+    while (offset < source.length) {
+      final char = source[offset];
+      if (char == '#') {
+        offset++;
+        ids.add(_parseName());
+      } else if (char == '.') {
+        offset++;
+        classes.add(_parseName());
+      } else if (char == '[') {
+        offset++;
+        attrs.add(_parseAttr());
+      } else if (char == ':') {
+        offset++;
+        final name = _parseName();
+        if (name == 'not') {
+          _expect('(');
+          final start = offset;
+          var depth = 1;
+          while (depth > 0) {
+            if (offset >= source.length) {
+              throw ArgumentError('unterminated :not() in: $source');
+            }
+            if (source[offset] == '(') depth++;
+            if (source[offset] == ')') depth--;
+            offset++;
+          }
+          pseudos.add('not(${source.substring(start, offset - 1)})');
+        } else {
+          pseudos.add(name);
+        }
+      } else {
+        break;
+      }
+    }
+    return _CssCompound(
+      type: type,
+      ids: ids,
+      classes: classes,
+      attrs: attrs,
+      pseudos: pseudos,
+    );
+  }
+
+  _CssAttr _parseAttr() {
+    _skipWhitespace();
+    var name = _parseName();
+    _skipWhitespace();
+    if (offset < source.length && source[offset] == '|') {
+      offset++;
+      name = '$name:${_parseName()}';
+      _skipWhitespace();
+    }
+    String? value;
+    if (offset < source.length && source[offset] == '=') {
+      offset++;
+      _skipWhitespace();
+      value = _parseAttrValue();
+      _skipWhitespace();
+    }
+    _expect(']');
+    return _CssAttr(name, value);
+  }
+
+  String _parseAttrValue() {
+    if (offset < source.length &&
+        (source[offset] == '"' || source[offset] == "'")) {
+      final quote = source[offset];
+      final end = source.indexOf(quote, offset + 1);
+      if (end < 0) throw ArgumentError('unterminated value in: $source');
+      final value = source.substring(offset + 1, end);
+      offset = end + 1;
+      return value;
+    }
+    final match = RegExp(r'[^\s\]]+').matchAsPrefix(source, offset);
+    if (match == null) throw ArgumentError('expected value in: $source');
+    offset = match.end;
+    return match.group(0)!;
+  }
+
+  String _parseName() {
+    final match = RegExp(r'-?[A-Za-z_][\w-]*').matchAsPrefix(source, offset);
+    if (match == null) throw ArgumentError('expected name in: $source');
+    offset = match.end;
+    return match.group(0)!;
+  }
+
+  void _expect(String token) {
+    if (offset >= source.length || source[offset] != token) {
+      throw ArgumentError('expected $token in: $source');
+    }
+    offset++;
+  }
+
+  void _skipWhitespace() {
+    while (offset < source.length && source[offset].trim().isEmpty) {
+      offset++;
+    }
+  }
+
+  bool _isNameStart(String char) => RegExp(r'[A-Za-z_-]').hasMatch(char);
+}
+
+/// Lenient HTML/XML parser producing [XmlNode] trees.
+///
+/// Skips doctype declarations, processing instructions, and comments,
+/// treats known void elements as self-closing, tolerates missing or
+/// mismatched close tags, and preserves all top-level nodes so embedded
+/// fragments keep their roots. Text and attribute values are
+/// entity-decoded.
+class _XmlParser {
+  /// Creates a parser over [source].
+  _XmlParser(this.source);
+
+  /// The markup being parsed.
+  final String source;
+
+  /// Current offset.
+  int offset = 0;
+
+  /// HTML void elements (never have children or close tags).
+  static const Set<String> _voidElements = {
+    'area',
+    'base',
+    'br',
+    'col',
+    'embed',
+    'hr',
+    'img',
+    'input',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr',
+  };
+
+  /// Named character references decoded in text and attribute values.
+  static const Map<String, String> _entities = {
+    'amp': '&',
+    'lt': '<',
+    'gt': '>',
+    'quot': '"',
+    'apos': "'",
+    'nbsp': ' ',
+    'copy': '©',
+    'reg': '®',
+    'trade': '™',
+    'hellip': '…',
+    'mdash': '—',
+    'ndash': '–',
+    'lsquo': '‘',
+    'rsquo': '’',
+    'ldquo': '“',
+    'rdquo': '”',
+    'laquo': '«',
+    'raquo': '»',
+    'dagger': '†',
+    'Dagger': '‡',
+    'bull': '•',
+    'middot': '·',
+    'sect': '§',
+    'para': '¶',
+    'oelig': 'œ',
+    'OElig': 'Œ',
+  };
+
+  /// Parses the markup into top-level nodes.
+  List<XmlNode> parse() {
+    final roots = <XmlNode>[];
+    final stack = <XmlNode>[];
+    final text = StringBuffer();
+    void flushText() {
+      if (text.isEmpty) return;
+      final node = XmlNode.text(
+        _decodeEntities(text.toString()),
+        parent: stack.isEmpty ? null : stack.last,
+      );
+      if (stack.isEmpty) {
+        roots.add(node);
+      } else {
+        stack.last.children.add(node);
+      }
+      text.clear();
+    }
+
+    while (offset < source.length) {
+      if (source[offset] == '<') {
+        if (source.startsWith('<!--', offset)) {
+          flushText();
+          final end = source.indexOf('-->', offset + 4);
+          offset = end < 0 ? source.length : end + 3;
+        } else if (source.startsWith('<![CDATA[', offset)) {
+          flushText();
+          final end = source.indexOf(']]>', offset + 9);
+          final cdata = source.substring(
+            offset + 9,
+            end < 0 ? source.length : end,
+          );
+          text.write(cdata);
+          flushText();
+          offset = end < 0 ? source.length : end + 3;
+        } else if (source.startsWith('<!', offset) ||
+            source.startsWith('<?', offset)) {
+          flushText();
+          final end = source.indexOf('>', offset + 2);
+          offset = end < 0 ? source.length : end + 1;
+        } else if (source.startsWith('</', offset)) {
+          flushText();
+          final end = source.indexOf('>', offset + 2);
+          final name =
+              (end < 0
+                      ? source.substring(offset + 2)
+                      : source.substring(offset + 2, end))
+                  .trim()
+                  .split(RegExp(r'\s'))
+                  .first;
+          offset = end < 0 ? source.length : end + 1;
+          for (var i = stack.length - 1; i >= 0; i--) {
+            if (stack[i].name == name) {
+              stack.removeRange(i, stack.length);
+              break;
+            }
+          }
+        } else {
+          final tag = _parseTag();
+          if (tag == null) {
+            text.write(source[offset]);
+            offset++;
+          } else {
+            flushText();
+            final node = XmlNode.element(
+              tag.name,
+              attributes: tag.attributes,
+              parent: stack.isEmpty ? null : stack.last,
+            );
+            if (stack.isEmpty) {
+              roots.add(node);
+            } else {
+              stack.last.children.add(node);
+            }
+            if (!tag.selfClosing &&
+                !_voidElements.contains(tag.name.toLowerCase())) {
+              stack.add(node);
+            }
+          }
+        }
+      } else {
+        text.write(source[offset]);
+        offset++;
+      }
+    }
+    flushText();
+    for (final root in roots) {
+      root._rootSiblings = roots;
+    }
+    return roots;
+  }
+
+  _XmlTag? _parseTag() {
+    final match = RegExp(r'<([A-Za-z_][\w:.-]*)').matchAsPrefix(source, offset);
+    if (match == null) return null;
+    final name = match.group(1)!;
+    var pos = match.end;
+    final attributes = <String, String>{};
+    while (pos < source.length) {
+      while (pos < source.length && source[pos].trim().isEmpty) {
+        pos++;
+      }
+      if (pos >= source.length) return null;
+      if (source[pos] == '>') {
+        offset = pos + 1;
+        return _XmlTag(name, attributes, false);
+      }
+      if (source[pos] == '/' &&
+          pos + 1 < source.length &&
+          source[pos + 1] == '>') {
+        offset = pos + 2;
+        return _XmlTag(name, attributes, true);
+      }
+      final attrMatch = RegExp(r'([A-Za-z_][\w:.-]*)')
+          .matchAsPrefix(source, pos);
+      if (attrMatch == null) return null;
+      final attrName = attrMatch.group(1)!;
+      pos = attrMatch.end;
+      while (pos < source.length && source[pos].trim().isEmpty) {
+        pos++;
+      }
+      var value = '';
+      if (pos < source.length && source[pos] == '=') {
+        pos++;
+        while (pos < source.length && source[pos].trim().isEmpty) {
+          pos++;
+        }
+        if (pos < source.length && (source[pos] == '"' || source[pos] == "'")) {
+          final quote = source[pos];
+          final end = source.indexOf(quote, pos + 1);
+          if (end < 0) return null;
+          value = _decodeEntities(source.substring(pos + 1, end));
+          pos = end + 1;
+        } else {
+          final valueMatch = RegExp(r'[^\s>]+').matchAsPrefix(source, pos);
+          if (valueMatch == null) return null;
+          value = _decodeEntities(valueMatch.group(0)!);
+          pos = valueMatch.end;
+        }
+      }
+      attributes[attrName] = value;
+    }
+    return null;
+  }
+
+  /// Decodes numeric and known named character references in [value].
+  static String _decodeEntities(String value) => value.replaceAllMapped(
+    RegExp(r'&#(x?[0-9A-Fa-f]+);|&([A-Za-z][\w]*);'),
+    (match) {
+      if (match.group(1) != null) {
+        final digits = match.group(1)!;
+        final code = digits.startsWith('x') || digits.startsWith('X')
+            ? int.tryParse(digits.substring(1), radix: 16)
+            : int.tryParse(digits);
+        if (code != null) return String.fromCharCode(code);
+      } else {
+        final entity = _entities[match.group(2)!];
+        if (entity != null) return entity;
+      }
+      return match.group(0)!;
+    },
+  );
+}
+
+/// A parsed open tag.
+class _XmlTag {
+  /// Creates a tag with [name], [attributes], and [selfClosing].
+  _XmlTag(this.name, this.attributes, this.selfClosing);
+
+  /// Tag name as written.
+  final String name;
+
+  /// Decoded attribute values.
+  final Map<String, String> attributes;
+
+  /// Whether the tag is self-closing (`/>`).
+  final bool selfClosing;
+}
 
 /// Decodes a numeric character reference (port of `decode_char`).
 String decodeChar(int number) => String.fromCharCode(number);
@@ -253,12 +1525,16 @@ String decodeChar(int number) => String.fromCharCode(number);
 String fixturePath(String name) => '../test/fixtures/$name';
 
 /// The Ruby test directory (port of `testdir`).
-String get testdir => '../test';
+///
+/// Canonical absolute path, like Ruby's `ASCIIDOCTOR_TEST_DIR`: include
+/// resolution uses it as the jail, which must be absolute in both ports,
+/// and jail recovery misfires on `..` segments.
+String get testdir => Directory('../test').resolveSymbolicLinksSync();
 
 void main() {
   group('Document', () {
     group('Example document', () {
-      test('document title', skip: needsFixtureWave, () {
+      test('document title', () {
         final doc = exampleDocument('asciidoc_index');
         expect(doc.doctitle(), equals('AsciiDoc Home Page'));
         expect(doc.name(), equals('AsciiDoc Home Page'));
@@ -331,7 +1607,6 @@ void main() {
 
       test(
         'toc and sectnums should be enabled by default in DocBook backend',
-        skip: needsConverter,
         () {
           final doc = documentFromString('content', {'backend': 'docbook'});
           expect(doc.hasAttr('toc'), isTrue);
@@ -342,22 +1617,18 @@ void main() {
         },
       );
 
-      test(
-        'maxdepth attribute should be set on asciidoc-toc and '
-        'asciidoc-numbered processing instructions in DocBook backend',
-        skip: needsConverter,
-        () {
-          final doc = documentFromString('content', {
-            'backend': 'docbook',
-            'attributes': {'toclevels': '1', 'sectnumlevels': '1'},
-          });
-          expect(doc.hasAttr('toc'), isTrue);
-          expect(doc.hasAttr('sectnums'), isTrue);
-          final result = doc.convert() as String;
-          expect(result, contains('<?asciidoc-toc maxdepth="1"?>'));
-          expect(result, contains('<?asciidoc-numbered maxdepth="1"?>'));
-        },
-      );
+      test('maxdepth attribute should be set on asciidoc-toc and '
+          'asciidoc-numbered processing instructions in DocBook backend', () {
+        final doc = documentFromString('content', {
+          'backend': 'docbook',
+          'attributes': {'toclevels': '1', 'sectnumlevels': '1'},
+        });
+        expect(doc.hasAttr('toc'), isTrue);
+        expect(doc.hasAttr('sectnums'), isTrue);
+        final result = doc.convert() as String;
+        expect(result, contains('<?asciidoc-toc maxdepth="1"?>'));
+        expect(result, contains('<?asciidoc-numbered maxdepth="1"?>'));
+      });
 
       test('should be able to disable toc and sectnums in document header '
           'in DocBook backend', () {
@@ -367,17 +1638,13 @@ void main() {
         expect(doc.hasAttr('sectnums'), isFalse);
       });
 
-      test(
-        'noheader attribute should suppress info element when converting '
-        'to DocBook',
-        skip: needsConverter,
-        () {
-          const input = '= Document Title\n:noheader:\n\ncontent\n';
-          final result = convertString(input, {'backend': 'docbook'});
-          assertXpath('/article', result, 1);
-          assertXpath('/article/info', result, 0);
-        },
-      );
+      test('noheader attribute should suppress info element when converting '
+          'to DocBook', () {
+        const input = '= Document Title\n:noheader:\n\ncontent\n';
+        final result = convertString(input, {'backend': 'docbook'});
+        assertXpath('/article', result, 1);
+        assertXpath('/article/info', result, 0);
+      });
 
       test('should be able to disable section numbering using numbered '
           'attribute in document header in DocBook backend', () {
@@ -388,138 +1655,130 @@ void main() {
     });
 
     group('Docinfo files', () {
-      test(
-        'should include docinfo files for html backend',
-        skip: needsApiWave,
-        () {
-          final sampleInputPath = fixturePath('basic.adoc');
+      test('should include docinfo files for html backend', () {
+        final sampleInputPath = fixturePath('basic.adoc');
 
-          final cases = <String, Map<String, int>>{
-            'docinfo': {
-              'head_script': 1,
-              'meta': 0,
-              'top_link': 0,
-              'footer_script': 1,
-              'navbar': 1,
-            },
-            'docinfo=private': {
-              'head_script': 1,
-              'meta': 0,
-              'top_link': 0,
-              'footer_script': 1,
-              'navbar': 1,
-            },
-            'docinfo1': {
-              'head_script': 0,
-              'meta': 1,
-              'top_link': 1,
-              'footer_script': 0,
-              'navbar': 0,
-            },
-            'docinfo=shared': {
-              'head_script': 0,
-              'meta': 1,
-              'top_link': 1,
-              'footer_script': 0,
-              'navbar': 0,
-            },
-            'docinfo2': {
-              'head_script': 1,
-              'meta': 1,
-              'top_link': 1,
-              'footer_script': 1,
-              'navbar': 1,
-            },
-            'docinfo docinfo2': {
-              'head_script': 1,
-              'meta': 1,
-              'top_link': 1,
-              'footer_script': 1,
-              'navbar': 1,
-            },
-            'docinfo=private,shared': {
-              'head_script': 1,
-              'meta': 1,
-              'top_link': 1,
-              'footer_script': 1,
-              'navbar': 1,
-            },
-            'docinfo=private-head': {
-              'head_script': 1,
-              'meta': 0,
-              'top_link': 0,
-              'footer_script': 0,
-              'navbar': 0,
-            },
-            'docinfo=private-header': {
-              'head_script': 0,
-              'meta': 0,
-              'top_link': 0,
-              'footer_script': 0,
-              'navbar': 1,
-            },
-            'docinfo=shared-head': {
-              'head_script': 0,
-              'meta': 1,
-              'top_link': 0,
-              'footer_script': 0,
-              'navbar': 0,
-            },
-            'docinfo=private-footer': {
-              'head_script': 0,
-              'meta': 0,
-              'top_link': 0,
-              'footer_script': 1,
-              'navbar': 0,
-            },
-            'docinfo=shared-footer': {
-              'head_script': 0,
-              'meta': 0,
-              'top_link': 1,
-              'footer_script': 0,
-              'navbar': 0,
-            },
-            r'docinfo=private-head\ ,\ shared-footer': {
-              'head_script': 1,
-              'meta': 0,
-              'top_link': 1,
-              'footer_script': 0,
-              'navbar': 0,
-            },
-          };
+        final cases = <String, Map<String, int>>{
+          'docinfo': {
+            'head_script': 1,
+            'meta': 0,
+            'top_link': 0,
+            'footer_script': 1,
+            'navbar': 1,
+          },
+          'docinfo=private': {
+            'head_script': 1,
+            'meta': 0,
+            'top_link': 0,
+            'footer_script': 1,
+            'navbar': 1,
+          },
+          'docinfo1': {
+            'head_script': 0,
+            'meta': 1,
+            'top_link': 1,
+            'footer_script': 0,
+            'navbar': 0,
+          },
+          'docinfo=shared': {
+            'head_script': 0,
+            'meta': 1,
+            'top_link': 1,
+            'footer_script': 0,
+            'navbar': 0,
+          },
+          'docinfo2': {
+            'head_script': 1,
+            'meta': 1,
+            'top_link': 1,
+            'footer_script': 1,
+            'navbar': 1,
+          },
+          'docinfo docinfo2': {
+            'head_script': 1,
+            'meta': 1,
+            'top_link': 1,
+            'footer_script': 1,
+            'navbar': 1,
+          },
+          'docinfo=private,shared': {
+            'head_script': 1,
+            'meta': 1,
+            'top_link': 1,
+            'footer_script': 1,
+            'navbar': 1,
+          },
+          'docinfo=private-head': {
+            'head_script': 1,
+            'meta': 0,
+            'top_link': 0,
+            'footer_script': 0,
+            'navbar': 0,
+          },
+          'docinfo=private-header': {
+            'head_script': 0,
+            'meta': 0,
+            'top_link': 0,
+            'footer_script': 0,
+            'navbar': 1,
+          },
+          'docinfo=shared-head': {
+            'head_script': 0,
+            'meta': 1,
+            'top_link': 0,
+            'footer_script': 0,
+            'navbar': 0,
+          },
+          'docinfo=private-footer': {
+            'head_script': 0,
+            'meta': 0,
+            'top_link': 0,
+            'footer_script': 1,
+            'navbar': 0,
+          },
+          'docinfo=shared-footer': {
+            'head_script': 0,
+            'meta': 0,
+            'top_link': 1,
+            'footer_script': 0,
+            'navbar': 0,
+          },
+          r'docinfo=private-head\ ,\ shared-footer': {
+            'head_script': 1,
+            'meta': 0,
+            'top_link': 1,
+            'footer_script': 0,
+            'navbar': 0,
+          },
+        };
 
-          // NOTE the Ruby test passes the attribute overrides as a string;
-          // Document takes a map, so the API wave owns that translation.
-          cases.forEach((attrVal, markup) {
-            final output = convertFile(
-              sampleInputPath,
-              toFile: false,
-              standalone: true,
-              safe: SafeMode.server,
-              attributes: {'_attr_string_': 'linkcss copycss! $attrVal'},
-            );
-            expect(output, isNotEmpty);
-            assertCss(
-              'script[src="modernizr.js"]',
-              output,
-              markup['head_script']!,
-            );
-            assertCss(
-              'meta[http-equiv="imagetoolbar"]',
-              output,
-              markup['meta']!,
-            );
-            assertCss('body > a#top', output, markup['top_link']!);
-            assertCss('body > script', output, markup['footer_script']!);
-            assertCss('body > nav.navbar', output, markup['navbar']!);
-            assertCss('body > nav.navbar + #header', output, markup['navbar']!);
-          });
-        },
-      );
+        // NOTE the Ruby test passes the attribute overrides as a string;
+        // `convertFile` forwards the '_attr_string_' entry verbatim since
+        // `load.dart` already coerces attribute strings.
+        cases.forEach((attrVal, markup) {
+          final output = convertFile(
+            sampleInputPath,
+            toFile: false,
+            standalone: true,
+            safe: SafeMode.server,
+            attributes: {'_attr_string_': 'linkcss copycss! $attrVal'},
+          );
+          expect(output, isNotEmpty);
+          assertCss(
+            'script[src="modernizr.js"]',
+            output,
+            markup['head_script']!,
+          );
+          assertCss('meta[http-equiv="imagetoolbar"]', output, markup['meta']!);
+          assertCss('body > a#top', output, markup['top_link']!);
+          assertCss('body > script', output, markup['footer_script']!);
+          assertCss('body > nav.navbar', output, markup['navbar']!);
+          assertCss('body > nav.navbar + #header', output, markup['navbar']!);
+        });
+      });
 
       test(
         'should include docinfo header even if noheader attribute is set',
-        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
           final output = convertFile(
@@ -537,7 +1796,6 @@ void main() {
 
       test(
         'should include docinfo footer even if nofooter attribute is set',
-        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
           final output = convertFile(
@@ -552,38 +1810,33 @@ void main() {
         },
       );
 
-      test(
-        'should include user docinfo after built-in docinfo',
-        skip: needsApiWave,
-        () {
-          final sampleInputPath = fixturePath('basic.adoc');
-          final attrs = <String, Object?>{
-            'docinfo': 'shared',
-            'source-highlighter': 'highlight.js',
-            'linkcss': '',
-            'copycss': null,
-          };
-          final output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            safe: 'safe',
-            attributes: attrs,
-          );
-          assertCss(
-            'link[rel=stylesheet] + meta[http-equiv=imagetoolbar]',
-            output,
-            1,
-          );
-          assertCss('meta[http-equiv=imagetoolbar] + *', output, 0);
-          assertCss('script + a#top', output, 1);
-          assertCss('a#top + *', output, 0);
-        },
-      );
+      test('should include user docinfo after built-in docinfo', () {
+        final sampleInputPath = fixturePath('basic.adoc');
+        final attrs = <String, Object?>{
+          'docinfo': 'shared',
+          'source-highlighter': 'highlight.js',
+          'linkcss': '',
+          'copycss': null,
+        };
+        final output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          safe: 'safe',
+          attributes: attrs,
+        );
+        assertCss(
+          'link[rel=stylesheet] + meta[http-equiv=imagetoolbar]',
+          output,
+          1,
+        );
+        assertCss('meta[http-equiv=imagetoolbar] + *', output, 0);
+        assertCss('script + a#top', output, 1);
+        assertCss('a#top + *', output, 0);
+      });
 
       test(
         'should include docinfo files for html backend with custom docinfodir',
-        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -636,232 +1889,207 @@ void main() {
         },
       );
 
-      test(
-        'should include docinfo files in docbook backend',
-        skip: needsApiWave,
-        () {
-          final sampleInputPath = fixturePath('basic.adoc');
+      test('should include docinfo files in docbook backend', () {
+        final sampleInputPath = fixturePath('basic.adoc');
 
-          var output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-            attributes: {'docinfo': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('productname', output, 0);
-          assertCss('copyright', output, 1);
+        var output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('productname', output, 0);
+        assertCss('copyright', output, 1);
 
-          output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-            attributes: {'docinfo1': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('productname', output, 1);
-          assertXpath('//xmlns:productname[text()="Asciidoctor™"]', output, 1);
-          assertCss('edition', output, 1);
-          // Verifies substitutions are performed.
-          assertXpath('//xmlns:edition[text()="1.0"]', output, 1);
-          assertCss('copyright', output, 0);
+        output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo1': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('productname', output, 1);
+        assertXpath('//xmlns:productname[text()="Asciidoctor™"]', output, 1);
+        assertCss('edition', output, 1);
+        // Verifies substitutions are performed.
+        assertXpath('//xmlns:edition[text()="1.0"]', output, 1);
+        assertCss('copyright', output, 0);
 
-          output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-            attributes: {'docinfo2': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('productname', output, 1);
-          assertXpath('//xmlns:productname[text()="Asciidoctor™"]', output, 1);
-          assertCss('edition', output, 1);
-          // Verifies substitutions are performed.
-          assertXpath('//xmlns:edition[text()="1.0"]', output, 1);
-          assertCss('copyright', output, 1);
-        },
-      );
+        output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo2': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('productname', output, 1);
+        assertXpath('//xmlns:productname[text()="Asciidoctor™"]', output, 1);
+        assertCss('edition', output, 1);
+        // Verifies substitutions are performed.
+        assertXpath('//xmlns:edition[text()="1.0"]', output, 1);
+        assertCss('copyright', output, 1);
+      });
 
-      test(
-        'should use header docinfo in place of default header',
-        skip: needsApiWave,
-        () {
-          final output = convertFile(
-            fixturePath('sample.adoc'),
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-            attributes: {'docinfo': 'private-header', 'noheader': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('article > info', output, 1);
-          assertCss('article > info > title', output, 1);
-          assertCss('article > info > revhistory', output, 1);
-          assertCss('article > info > revhistory > revision', output, 2);
-        },
-      );
+      test('should use header docinfo in place of default header', () {
+        final output = convertFile(
+          fixturePath('sample.adoc'),
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo': 'private-header', 'noheader': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('article > info', output, 1);
+        assertCss('article > info > title', output, 1);
+        assertCss('article > info > revhistory', output, 1);
+        assertCss('article > info > revhistory > revision', output, 2);
+      });
 
-      test(
-        'should include docinfo footer files for html backend',
-        skip: needsApiWave,
-        () {
-          final sampleInputPath = fixturePath('basic.adoc');
+      test('should include docinfo footer files for html backend', () {
+        final sampleInputPath = fixturePath('basic.adoc');
 
-          var output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            safe: SafeMode.server,
-            attributes: {'docinfo': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('body script', output, 1);
-          assertCss('a#top', output, 0);
+        var output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          safe: SafeMode.server,
+          attributes: {'docinfo': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('body script', output, 1);
+        assertCss('a#top', output, 0);
 
-          output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            safe: SafeMode.server,
-            attributes: {'docinfo1': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('body script', output, 0);
-          assertCss('a#top', output, 1);
+        output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          safe: SafeMode.server,
+          attributes: {'docinfo1': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('body script', output, 0);
+        assertCss('a#top', output, 1);
 
-          output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            safe: SafeMode.server,
-            attributes: {'docinfo2': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('body script', output, 1);
-          assertCss('a#top', output, 1);
-        },
-      );
+        output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          safe: SafeMode.server,
+          attributes: {'docinfo2': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('body script', output, 1);
+        assertCss('a#top', output, 1);
+      });
 
-      test(
-        'should include docinfo footer files in DocBook backend',
-        skip: needsApiWave,
-        () {
-          final sampleInputPath = fixturePath('basic.adoc');
+      test('should include docinfo footer files in DocBook backend', () {
+        final sampleInputPath = fixturePath('basic.adoc');
 
-          var output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-            attributes: {'docinfo': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('article > revhistory', output, 1);
-          // Verifies substitutions are performed.
-          assertXpath(
-            '/xmlns:article/xmlns:revhistory/xmlns:revision/xmlns:revnumber[text()="1.0"]',
-            output,
-            1,
-          );
-          assertCss('glossary', output, 0);
+        var output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('article > revhistory', output, 1);
+        // Verifies substitutions are performed.
+        assertXpath(
+          '/xmlns:article/xmlns:revhistory/xmlns:revision/xmlns:revnumber[text()="1.0"]',
+          output,
+          1,
+        );
+        assertCss('glossary', output, 0);
 
-          output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-            attributes: {'docinfo1': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('article > revhistory', output, 0);
-          assertCss('glossary[xml|id="_glossary"]', output, 1);
+        output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo1': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('article > revhistory', output, 0);
+        assertCss('glossary[xml|id="_glossary"]', output, 1);
 
-          output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-            attributes: {'docinfo2': ''},
-          );
-          expect(output, isNotEmpty);
-          assertCss('article > revhistory', output, 1);
-          // Verifies substitutions are performed.
-          assertXpath(
-            '/xmlns:article/xmlns:revhistory/xmlns:revision/xmlns:revnumber[text()="1.0"]',
-            output,
-            1,
-          );
-          assertCss('glossary[xml|id="_glossary"]', output, 1);
-        },
-      );
+        output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo2': ''},
+        );
+        expect(output, isNotEmpty);
+        assertCss('article > revhistory', output, 1);
+        // Verifies substitutions are performed.
+        assertXpath(
+          '/xmlns:article/xmlns:revhistory/xmlns:revision/xmlns:revnumber[text()="1.0"]',
+          output,
+          1,
+        );
+        assertCss('glossary[xml|id="_glossary"]', output, 1);
+      });
 
-      test(
-        'should force encoding of docinfo files to UTF-8',
-        skip: needsApiWave,
-        () {
-          // Dart strings are always UTF-8; there are no default external
-          // or internal encodings to manipulate.
-          final sampleInputPath = fixturePath('basic.adoc');
-          final output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-            attributes: {'docinfo': 'private,shared'},
-          );
-          expect(output, isNotEmpty);
-          assertCss('productname', output, 1);
-          expect(output, contains('<productname>Asciidoctor™</productname>'));
-          assertCss('edition', output, 1);
-          // Verifies substitutions are performed.
-          assertXpath('//xmlns:edition[text()="1.0"]', output, 1);
-          assertCss('copyright', output, 1);
-        },
-      );
+      test('should force encoding of docinfo files to UTF-8', () {
+        // Dart strings are always UTF-8; there are no default external
+        // or internal encodings to manipulate.
+        final sampleInputPath = fixturePath('basic.adoc');
+        final output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo': 'private,shared'},
+        );
+        expect(output, isNotEmpty);
+        assertCss('productname', output, 1);
+        expect(output, contains('<productname>Asciidoctor™</productname>'));
+        assertCss('edition', output, 1);
+        // Verifies substitutions are performed.
+        assertXpath('//xmlns:edition[text()="1.0"]', output, 1);
+        assertCss('copyright', output, 1);
+      });
 
-      test(
-        'should not include docinfo files by default',
-        skip: needsApiWave,
-        () {
-          final sampleInputPath = fixturePath('basic.adoc');
+      test('should not include docinfo files by default', () {
+        final sampleInputPath = fixturePath('basic.adoc');
 
-          var output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            safe: SafeMode.server,
-          );
-          expect(output, isNotEmpty);
-          assertCss('script[src="modernizr.js"]', output, 0);
-          assertCss('meta[http-equiv="imagetoolbar"]', output, 0);
+        var output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          safe: SafeMode.server,
+        );
+        expect(output, isNotEmpty);
+        assertCss('script[src="modernizr.js"]', output, 0);
+        assertCss('meta[http-equiv="imagetoolbar"]', output, 0);
 
-          output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            backend: 'docbook',
-            safe: SafeMode.server,
-          );
-          expect(output, isNotEmpty);
-          assertCss('productname', output, 0);
-          assertCss('copyright', output, 0);
-        },
-      );
+        output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+        );
+        expect(output, isNotEmpty);
+        assertCss('productname', output, 0);
+        assertCss('copyright', output, 0);
+      });
 
       test(
         'should not include docinfo files if safe mode is SECURE or greater',
-        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -888,47 +2116,9 @@ void main() {
         },
       );
 
-      test(
-        'should substitute attributes in docinfo files by default',
-        skip: needsApiWave,
-        () {
-          final sampleInputPath = fixturePath('subs.adoc');
-          usingMemoryLogger((logger) {
-            final output = convertFile(
-              sampleInputPath,
-              toFile: false,
-              standalone: true,
-              safe: 'server',
-              attributes: {
-                'docinfo': '',
-                'bootstrap-version': null,
-                'linkcss': '',
-                'attribute-missing': 'drop-line',
-              },
-            );
-            expect(output, isNotEmpty);
-            assertCss('script', output, 0);
-            assertXpath(
-              '//meta[@name="copyright"][@content="(C) OpenDevise"]',
-              output,
-              1,
-            );
-            expect(
-              logger.infos,
-              contains(
-                'dropping line containing reference to missing attribute: '
-                'bootstrap-version',
-              ),
-            );
-          });
-        },
-      );
-
-      test(
-        'should apply explicit substitutions to docinfo files',
-        skip: needsApiWave,
-        () {
-          final sampleInputPath = fixturePath('subs.adoc');
+      test('should substitute attributes in docinfo files by default', () {
+        final sampleInputPath = fixturePath('subs.adoc');
+        usingMemoryLogger((logger) {
           final output = convertFile(
             sampleInputPath,
             toFile: false,
@@ -936,25 +2126,54 @@ void main() {
             safe: 'server',
             attributes: {
               'docinfo': '',
-              'docinfosubs': 'attributes,replacements',
+              'bootstrap-version': null,
               'linkcss': '',
+              'attribute-missing': 'drop-line',
             },
           );
           expect(output, isNotEmpty);
-          assertCss('script[src="bootstrap.3.2.0.min.js"]', output, 1);
+          assertCss('script', output, 0);
           assertXpath(
-            '//meta[@name="copyright"][@content="${decodeChar(169)} OpenDevise"]',
+            '//meta[@name="copyright"][@content="(C) OpenDevise"]',
             output,
             1,
           );
-        },
-      );
+          expect(
+            logger.infos,
+            contains(
+              'dropping line containing reference to missing attribute: '
+              'bootstrap-version',
+            ),
+          );
+        });
+      });
+
+      test('should apply explicit substitutions to docinfo files', () {
+        final sampleInputPath = fixturePath('subs.adoc');
+        final output = convertFile(
+          sampleInputPath,
+          toFile: false,
+          standalone: true,
+          safe: 'server',
+          attributes: {
+            'docinfo': '',
+            'docinfosubs': 'attributes,replacements',
+            'linkcss': '',
+          },
+        );
+        expect(output, isNotEmpty);
+        assertCss('script[src="bootstrap.3.2.0.min.js"]', output, 1);
+        assertXpath(
+          '//meta[@name="copyright"][@content="${decodeChar(169)} OpenDevise"]',
+          output,
+          1,
+        );
+      });
     });
 
     group('MathJax', () {
       test(
         'should add MathJax script to HTML head if stem attribute is set',
-        skip: needsConverter,
         () {
           final output = convertString('', {
             'attributes': {'stem': ''},
@@ -997,25 +2216,21 @@ void main() {
         // to convert_<element> for every builtInElements entry.
       });
 
-      test(
-        'should add favicon if favicon attribute is set',
-        skip: needsConverter,
-        () {
-          final cases = <String, List<String>>{
-            '': ['favicon.ico', 'image/x-icon'],
-            '/favicon.ico': ['/favicon.ico', 'image/x-icon'],
-            '/img/favicon.png': ['/img/favicon.png', 'image/png'],
-          };
-          cases.forEach((val, hrefAndType) {
-            final result = convertString('= Untitled', {
-              'attributes': {'favicon': val},
-            });
-            assertCss('link[rel="icon"]', result, 1);
-            assertCss('link[rel="icon"][href="${hrefAndType[0]}"]', result, 1);
-            assertCss('link[rel="icon"][type="${hrefAndType[1]}"]', result, 1);
+      test('should add favicon if favicon attribute is set', () {
+        final cases = <String, List<String>>{
+          '': ['favicon.ico', 'image/x-icon'],
+          '/favicon.ico': ['/favicon.ico', 'image/x-icon'],
+          '/img/favicon.png': ['/img/favicon.png', 'image/png'],
+        };
+        cases.forEach((val, hrefAndType) {
+          final result = convertString('= Untitled', {
+            'attributes': {'favicon': val},
           });
-        },
-      );
+          assertCss('link[rel="icon"]', result, 1);
+          assertCss('link[rel="icon"][href="${hrefAndType[0]}"]', result, 1);
+          assertCss('link[rel="icon"][type="${hrefAndType[1]}"]', result, 1);
+        });
+      });
     });
 
     group('Structure', () {
@@ -1027,63 +2242,47 @@ void main() {
         expect(doc.header, isNull);
       });
 
-      test(
-        'should enable compat mode for document with legacy doctitle',
-        skip: needsConverter,
-        () {
-          const input = 'Document Title\n==============\n\n+content+\n';
-          final doc = documentFromString(input);
-          expect(doc.hasAttr('compat-mode'), isTrue);
-          final result = doc.convert() as String;
-          assertXpath('//code[text()="content"]', result, 1);
-        },
-      );
+      test('should enable compat mode for document with legacy doctitle', () {
+        const input = 'Document Title\n==============\n\n+content+\n';
+        final doc = documentFromString(input);
+        expect(doc.hasAttr('compat-mode'), isTrue);
+        final result = doc.convert() as String;
+        assertXpath('//code[text()="content"]', result, 1);
+      });
 
-      test(
-        'should not enable compat mode for document with legacy doctitle '
-        'if compat mode disable by header',
-        skip: needsConverter,
-        () {
-          const input =
-              'Document Title\n==============\n:compat-mode!:\n\n+content+\n';
-          final doc = documentFromString(input);
-          expect(doc.attr('compat-mode'), isNull);
-          final result = doc.convert() as String;
-          assertXpath('//code[text()="content"]', result, 0);
-        },
-      );
+      test('should not enable compat mode for document with legacy doctitle '
+          'if compat mode disable by header', () {
+        const input =
+            'Document Title\n==============\n:compat-mode!:\n\n+content+\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('compat-mode'), isNull);
+        final result = doc.convert() as String;
+        assertXpath('//code[text()="content"]', result, 0);
+      });
 
-      test(
-        'should not enable compat mode for document with legacy doctitle '
-        'if compat mode is locked by API',
-        skip: needsConverter,
-        () {
-          const input = 'Document Title\n==============\n\n+content+\n';
-          final doc = documentFromString(input, {
-            'attributes': <String, Object?>{'compat-mode': null},
-          });
-          expect(doc.attributeLocked('compat-mode'), isTrue);
-          expect(doc.attr('compat-mode'), isNull);
-          final result = doc.convert() as String;
-          assertXpath('//code[text()="content"]', result, 0);
-        },
-      );
+      test('should not enable compat mode for document with legacy doctitle '
+          'if compat mode is locked by API', () {
+        const input = 'Document Title\n==============\n\n+content+\n';
+        final doc = documentFromString(input, {
+          'attributes': <String, Object?>{'compat-mode': null},
+        });
+        expect(doc.attributeLocked('compat-mode'), isTrue);
+        expect(doc.attr('compat-mode'), isNull);
+        final result = doc.convert() as String;
+        assertXpath('//code[text()="content"]', result, 0);
+      });
 
-      test(
-        'should apply max-width to each top-level container',
-        skip: needsConverter,
-        () {
-          const input = '= Document Title\n\ncontentfootnote:[placeholder]\n';
-          final output = convertString(input, {
-            'attributes': {'max-width': '70em'},
-          });
-          assertCss('body[style]', output, 0);
-          assertCss('#header[style="max-width: 70em;"]', output, 1);
-          assertCss('#content[style="max-width: 70em;"]', output, 1);
-          assertCss('#footnotes[style="max-width: 70em;"]', output, 1);
-          assertCss('#footer[style="max-width: 70em;"]', output, 1);
-        },
-      );
+      test('should apply max-width to each top-level container', () {
+        const input = '= Document Title\n\ncontentfootnote:[placeholder]\n';
+        final output = convertString(input, {
+          'attributes': {'max-width': '70em'},
+        });
+        assertCss('body[style]', output, 0);
+        assertCss('#header[style="max-width: 70em;"]', output, 1);
+        assertCss('#content[style="max-width: 70em;"]', output, 1);
+        assertCss('#footnotes[style="max-width: 70em;"]', output, 1);
+        assertCss('#footer[style="max-width: 70em;"]', output, 1);
+      });
 
       test('title partition API with default separator', () {
         final title = DocumentTitle('Main Title: And More: Subtitle');
@@ -1160,90 +2359,70 @@ void main() {
         expect(doc.blocks[0].title, equals('Block title'));
       });
 
-      test(
-        'document with title attribute entry overrides doctitle',
-        skip: needsXmlMatchWave,
-        () {
-          const input =
-              '= Document Title\n:title: Override\n\n{doctitle}\n\n== First Section\n';
-          final doc = documentFromString(input);
-          expect(doc.doctitle(), equals('Override'));
-          expect(doc.title, equals('Override'));
-          expect(doc.hasHeader, isTrue);
-          expect(doc.header!.title, equals('Document Title'));
-          expect(doc.firstSection!.title, equals('Document Title'));
-          assertXpath(
-            '//*[@id="preamble"]//p[text()="Document Title"]',
-            doc.convert() as String,
-            1,
-          );
-        },
-      );
+      test('document with title attribute entry overrides doctitle', () {
+        const input =
+            '= Document Title\n:title: Override\n\n{doctitle}\n\n== First Section\n';
+        final doc = documentFromString(input);
+        expect(doc.doctitle(), equals('Override'));
+        expect(doc.title, equals('Override'));
+        expect(doc.hasHeader, isTrue);
+        expect(doc.header!.title, equals('Document Title'));
+        expect(doc.firstSection!.title, equals('Document Title'));
+        assertXpath(
+          '//*[@id="preamble"]//p[text()="Document Title"]',
+          doc.convert() as String,
+          1,
+        );
+      });
 
-      test(
-        'document with blank title attribute entry overrides doctitle',
-        skip: needsXmlMatchWave,
-        () {
-          const input =
-              '= Document Title\n:title:\n\n{doctitle}\n\n== First Section\n';
-          final doc = documentFromString(input);
-          expect(doc.doctitle(), equals(''));
-          expect(doc.title, equals(''));
-          expect(doc.hasHeader, isTrue);
-          expect(doc.header!.title, equals('Document Title'));
-          expect(doc.firstSection!.title, equals('Document Title'));
-          assertXpath(
-            '//*[@id="preamble"]//p[text()="Document Title"]',
-            doc.convert() as String,
-            1,
-          );
-        },
-      );
+      test('document with blank title attribute entry overrides doctitle', () {
+        const input =
+            '= Document Title\n:title:\n\n{doctitle}\n\n== First Section\n';
+        final doc = documentFromString(input);
+        expect(doc.doctitle(), equals(''));
+        expect(doc.title, equals(''));
+        expect(doc.hasHeader, isTrue);
+        expect(doc.header!.title, equals('Document Title'));
+        expect(doc.firstSection!.title, equals('Document Title'));
+        assertXpath(
+          '//*[@id="preamble"]//p[text()="Document Title"]',
+          doc.convert() as String,
+          1,
+        );
+      });
 
-      test(
-        'document header can reference intrinsic doctitle attribute',
-        skip: needsConverter,
-        () {
-          const input =
-              '= ACME Documentation\n:intro: Welcome to the {doctitle}!\n\n{intro}\n';
-          final doc = documentFromString(input);
-          expect(
-            doc.attr('intro'),
-            equals('Welcome to the ACME Documentation!'),
-          );
-          assertXpath(
-            '//p[text()="Welcome to the ACME Documentation!"]',
-            doc.convert() as String,
-            1,
-          );
-        },
-      );
+      test('document header can reference intrinsic doctitle attribute', () {
+        const input =
+            '= ACME Documentation\n:intro: Welcome to the {doctitle}!\n\n{intro}\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('intro'), equals('Welcome to the ACME Documentation!'));
+        assertXpath(
+          '//p[text()="Welcome to the ACME Documentation!"]',
+          doc.convert() as String,
+          1,
+        );
+      });
 
-      test(
-        'document with title attribute entry overrides doctitle attribute '
-        'entry',
-        skip: needsXmlMatchWave,
-        () {
-          const input =
-              '= Document Title\n:snapshot: {doctitle}\n:doctitle: doctitle\n:title: Override\n\n'
-              '{snapshot}, {doctitle}\n\n== First Section\n';
-          final doc = documentFromString(input);
-          expect(doc.doctitle(), equals('Override'));
-          expect(doc.title, equals('Override'));
-          expect(doc.hasHeader, isTrue);
-          expect(doc.header!.title, equals('doctitle'));
-          expect(doc.firstSection!.title, equals('doctitle'));
-          assertXpath(
-            '//*[@id="preamble"]//p[text()="Document Title, doctitle"]',
-            doc.convert() as String,
-            1,
-          );
-        },
-      );
+      test('document with title attribute entry overrides doctitle attribute '
+          'entry', () {
+        const input =
+            '= Document Title\n:snapshot: {doctitle}\n:doctitle: doctitle\n:title: Override\n\n'
+            '{snapshot}, {doctitle}\n\n== First Section\n';
+        final doc = documentFromString(input);
+        expect(doc.doctitle(), equals('Override'));
+        expect(doc.title, equals('Override'));
+        expect(doc.hasHeader, isTrue);
+        expect(doc.header!.title, equals('doctitle'));
+        expect(doc.firstSection!.title, equals('doctitle'));
+        assertXpath(
+          '//*[@id="preamble"]//p[text()="Document Title, doctitle"]',
+          doc.convert() as String,
+          1,
+        );
+      });
 
       test(
         'document with doctitle attribute entry overrides implicit doctitle',
-        skip: needsXmlMatchWave,
         () {
           const input =
               '= Document Title\n:snapshot: {doctitle}\n:doctitle: Override\n\n'
@@ -1262,25 +2441,21 @@ void main() {
         },
       );
 
-      test(
-        'doctitle attribute entry above header overrides implicit doctitle',
-        skip: needsXmlMatchWave,
-        () {
-          const input =
-              ':doctitle: Override\n= Document Title\n\n{doctitle}\n\n== First Section\n';
-          final doc = documentFromString(input);
-          expect(doc.doctitle(), equals('Override'));
-          expect(doc.attributes['title'], isNull);
-          expect(doc.hasHeader, isTrue);
-          expect(doc.header!.title, equals('Override'));
-          expect(doc.firstSection!.title, equals('Override'));
-          assertXpath(
-            '//*[@id="preamble"]//p[text()="Override"]',
-            doc.convert() as String,
-            1,
-          );
-        },
-      );
+      test('doctitle attribute entry above header overrides implicit doctitle', () {
+        const input =
+            ':doctitle: Override\n= Document Title\n\n{doctitle}\n\n== First Section\n';
+        final doc = documentFromString(input);
+        expect(doc.doctitle(), equals('Override'));
+        expect(doc.attributes['title'], isNull);
+        expect(doc.hasHeader, isTrue);
+        expect(doc.header!.title, equals('Override'));
+        expect(doc.firstSection!.title, equals('Override'));
+        assertXpath(
+          '//*[@id="preamble"]//p[text()="Override"]',
+          doc.convert() as String,
+          1,
+        );
+      });
 
       test('should apply header substitutions to value of the doctitle '
           'attribute assigned from implicit doctitle', () {
@@ -1294,114 +2469,86 @@ void main() {
         );
       });
 
-      test(
-        'should substitute attribute reference in implicit document title '
-        'for attribute defined earlier in header',
-        skip: needsXmlMatchWave,
-        () {
-          usingMemoryLogger((logger) {
-            const input =
-                ':project-name: ACME\n= {project-name} Docs\n\n{doctitle}\n';
-            final doc = documentFromString(input, {
-              'attributes': {'attribute-missing': 'warn'},
-            });
-            expect(logger.messages, isEmpty);
-            expect(doc.attr('doctitle'), equals('ACME Docs'));
-            expect(doc.doctitle(), equals('ACME Docs'));
-            assertXpath('//p[text()="ACME Docs"]', doc.convert() as String, 1);
-          });
-        },
-      );
-
-      test(
-        'should not warn if implicit document title contains attribute '
-        'reference for attribute defined later in header',
-        skip: needsXmlMatchWave,
-        () {
-          usingMemoryLogger((logger) {
-            const input =
-                '= {project-name} Docs\n:project-name: ACME\n\n{doctitle}\n';
-            final doc = documentFromString(input, {
-              'attributes': {'attribute-missing': 'warn'},
-            });
-            expect(logger.messages, isEmpty);
-            expect(doc.attr('doctitle'), equals('{project-name} Docs'));
-            expect(doc.doctitle(), equals('ACME Docs'));
-            assertXpath(
-              '//p[text()="{project-name} Docs"]',
-              doc.convert() as String,
-              1,
-            );
-          });
-        },
-      );
-
-      test(
-        'should recognize document title when preceded by blank lines',
-        skip: needsConverter,
-        () {
-          const input = '\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
-          final output = convertString(input, {'safe': SafeMode.safe});
-          assertCss('#header h1', output, 1);
-          assertCss('#content h1', output, 0);
-        },
-      );
-
-      test(
-        'should recognize document title when preceded by blank lines '
-        'introduced by a preprocessor conditional',
-        skip: needsConverter,
-        () {
+      test('should substitute attribute reference in implicit document title '
+          'for attribute defined earlier in header', () {
+        usingMemoryLogger((logger) {
           const input =
-              'ifdef::sectids[]\n\n:foo: bar\nendif::[]\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
-          final output = convertString(input, {'safe': SafeMode.safe});
-          assertCss('#header h1', output, 1);
-          assertCss('#content h1', output, 0);
-        },
-      );
-
-      test(
-        'should recognize document title when preceded by blank lines '
-        'after an attribute entry',
-        skip: needsConverter,
-        () {
-          const input =
-              ':doctype: book\n\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
-          final output = convertString(input, {'safe': SafeMode.safe});
-          assertCss('#header h1', output, 1);
-          assertCss('#content h1', output, 0);
-        },
-      );
-
-      test(
-        'should recognize document title in include file when preceded by '
-        'blank lines',
-        skip: needsXmlMatchWave,
-        () {
-          const input =
-              'include::fixtures/include-with-leading-blank-line.adoc[]\n';
-          final output = convertString(input, {
-            'safe': SafeMode.safe,
-            'attributes': {'docdir': testdir},
+              ':project-name: ACME\n= {project-name} Docs\n\n{doctitle}\n';
+          final doc = documentFromString(input, {
+            'attributes': {'attribute-missing': 'warn'},
           });
-          assertXpath('//h1[text()="Document Title"]', output, 1);
-          assertCss('#toc', output, 1);
-        },
-      );
+          expect(logger.messages, isEmpty);
+          expect(doc.attr('doctitle'), equals('ACME Docs'));
+          expect(doc.doctitle(), equals('ACME Docs'));
+          assertXpath('//p[text()="ACME Docs"]', doc.convert() as String, 1);
+        });
+      });
 
-      test(
-        'should include specified lines even when leading lines are skipped',
-        skip: needsXmlMatchWave,
-        () {
+      test('should not warn if implicit document title contains attribute '
+          'reference for attribute defined later in header', () {
+        usingMemoryLogger((logger) {
           const input =
-              'include::fixtures/include-with-leading-blank-line.adoc[lines=6]\n';
-          final output = convertString(input, {
-            'safe': SafeMode.safe,
-            'attributes': {'docdir': testdir},
+              '= {project-name} Docs\n:project-name: ACME\n\n{doctitle}\n';
+          final doc = documentFromString(input, {
+            'attributes': {'attribute-missing': 'warn'},
           });
-          assertXpath('//h2[text()="Section"]', output, 1);
-        },
-      );
+          expect(logger.messages, isEmpty);
+          expect(doc.attr('doctitle'), equals('{project-name} Docs'));
+          expect(doc.doctitle(), equals('ACME Docs'));
+          assertXpath(
+            '//p[text()="{project-name} Docs"]',
+            doc.convert() as String,
+            1,
+          );
+        });
+      });
+
+      test('should recognize document title when preceded by blank lines', () {
+        const input = '\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
+        final output = convertString(input, {'safe': SafeMode.safe});
+        assertCss('#header h1', output, 1);
+        assertCss('#content h1', output, 0);
+      });
+
+      test('should recognize document title when preceded by blank lines '
+          'introduced by a preprocessor conditional', () {
+        const input =
+            'ifdef::sectids[]\n\n:foo: bar\nendif::[]\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
+        final output = convertString(input, {'safe': SafeMode.safe});
+        assertCss('#header h1', output, 1);
+        assertCss('#content h1', output, 0);
+      });
+
+      test('should recognize document title when preceded by blank lines '
+          'after an attribute entry', () {
+        const input =
+            ':doctype: book\n\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
+        final output = convertString(input, {'safe': SafeMode.safe});
+        assertCss('#header h1', output, 1);
+        assertCss('#content h1', output, 0);
+      });
+
+      test('should recognize document title in include file when preceded by '
+          'blank lines', () {
+        const input =
+            'include::fixtures/include-with-leading-blank-line.adoc[]\n';
+        final output = convertString(input, {
+          'safe': SafeMode.safe,
+          'attributes': {'docdir': testdir},
+        });
+        assertXpath('//h1[text()="Document Title"]', output, 1);
+        assertCss('#toc', output, 1);
+      });
+
+      test('should include specified lines even when leading lines are skipped', () {
+        const input =
+            'include::fixtures/include-with-leading-blank-line.adoc[lines=6]\n';
+        final output = convertString(input, {
+          'safe': SafeMode.safe,
+          'attributes': {'docdir': testdir},
+        });
+        assertXpath('//h2[text()="Section"]', output, 1);
+      });
 
       test('document with multiline attribute entry but only one line should '
           'not crash', () {
@@ -1411,7 +2558,7 @@ void main() {
         expect(doc.attributes['foo'], equals('bar'));
       });
 
-      test('should sanitize contents of HTML title element', skip: needsConverter, () {
+      test('should sanitize contents of HTML title element', () {
         const input =
             '= *Document* image:logo.png[] _Title_ image:another-logo.png[another logo]\n\ncontent\n';
         final output = convertString(input);
@@ -1443,7 +2590,7 @@ void main() {
         expect(doc.header, isNull);
       });
 
-      test('with metadata', skip: needsConverter, () {
+      test('with metadata', () {
         const input =
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\nv8.6.8, 2012-07-12: See changelog.\n'
             ':description: AsciiDoc user guide\n:keywords: asciidoc,documentation\n:copyright: Stuart Rackham\n'
@@ -1505,49 +2652,37 @@ void main() {
         expect(doc.attributes['revremark'], equals('remark'));
       });
 
-      test(
-        'should include revision history in DocBook output if revdate and '
-        'revnumber is set',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\nAuthor Name\n:revdate: 2011-11-11\n:revnumber: 1.0\n\ncontent\n';
-          final output = convertString(input, {'backend': 'docbook'});
-          assertCss('revhistory', output, 1);
-          assertCss('revhistory > revision', output, 1);
-          assertCss('revhistory > revision > date', output, 1);
-          assertCss('revhistory > revision > revnumber', output, 1);
-        },
-      );
+      test('should include revision history in DocBook output if revdate and '
+          'revnumber is set', () {
+        const input =
+            '= Document Title\nAuthor Name\n:revdate: 2011-11-11\n:revnumber: 1.0\n\ncontent\n';
+        final output = convertString(input, {'backend': 'docbook'});
+        assertCss('revhistory', output, 1);
+        assertCss('revhistory > revision', output, 1);
+        assertCss('revhistory > revision > date', output, 1);
+        assertCss('revhistory > revision > revnumber', output, 1);
+      });
 
-      test(
-        'should include revision history in DocBook output if revdate and '
-        'revremark is set',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\nAuthor Name\n:revdate: 2011-11-11\n:revremark: features!\n\ncontent\n';
-          final output = convertString(input, {'backend': 'docbook'});
-          assertCss('revhistory', output, 1);
-          assertCss('revhistory > revision', output, 1);
-          assertCss('revhistory > revision > date', output, 1);
-          assertCss('revhistory > revision > revremark', output, 1);
-        },
-      );
+      test('should include revision history in DocBook output if revdate and '
+          'revremark is set', () {
+        const input =
+            '= Document Title\nAuthor Name\n:revdate: 2011-11-11\n:revremark: features!\n\ncontent\n';
+        final output = convertString(input, {'backend': 'docbook'});
+        assertCss('revhistory', output, 1);
+        assertCss('revhistory > revision', output, 1);
+        assertCss('revhistory > revision > date', output, 1);
+        assertCss('revhistory > revision > revremark', output, 1);
+      });
 
-      test(
-        'should not include revision history in DocBook output if revdate '
-        'is not set',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\nAuthor Name\n:revnumber: 1.0\n\ncontent\n';
-          final output = convertString(input, {'backend': 'docbook'});
-          assertCss('revhistory', output, 0);
-        },
-      );
+      test('should not include revision history in DocBook output if revdate '
+          'is not set', () {
+        const input =
+            '= Document Title\nAuthor Name\n:revnumber: 1.0\n\ncontent\n';
+        final output = convertString(input, {'backend': 'docbook'});
+        assertCss('revhistory', output, 0);
+      });
 
-      test('with metadata to DocBook 5', skip: needsConverter, () {
+      test('with metadata to DocBook 5', () {
         const input =
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n\n== Version 8.6.8\n\nmore info...\n';
         final output = convertString(input, {'backend': 'docbook5'});
@@ -1573,7 +2708,7 @@ void main() {
         assertCss('article:root[xml|lang="en"]', output, 1);
       });
 
-      test('with document ID to Docbook 5', skip: needsConverter, () {
+      test('with document ID to Docbook 5', () {
         const input = '[[document-id]]\n= Document Title\n\nmore info...\n';
         final output = convertString(input, {
           'backend': 'docbook',
@@ -1582,95 +2717,75 @@ void main() {
         assertCss('article:root[xml|id="document-id"]', output, 1);
       });
 
-      test(
-        'with author defined using attribute entry to DocBook',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\n:author: Doc Writer\n:email: thedoctor@asciidoc.org\n\ncontent\n';
-          final output = convertString(input, {'backend': 'docbook'});
-          assertXpath('/article/info/author', output, 1);
-          assertXpath(
-            '/article/info/author/personname/firstname[text()="Doc"]',
-            output,
-            1,
-          );
-          assertXpath(
-            '/article/info/author/personname/surname[text()="Writer"]',
-            output,
-            1,
-          );
-          assertXpath(
-            '/article/info/author/email[text()="thedoctor@asciidoc.org"]',
-            output,
-            1,
-          );
-          assertXpath('/article/info/authorinitials[text()="DW"]', output, 1);
-        },
-      );
+      test('with author defined using attribute entry to DocBook', () {
+        const input =
+            '= Document Title\n:author: Doc Writer\n:email: thedoctor@asciidoc.org\n\ncontent\n';
+        final output = convertString(input, {'backend': 'docbook'});
+        assertXpath('/article/info/author', output, 1);
+        assertXpath(
+          '/article/info/author/personname/firstname[text()="Doc"]',
+          output,
+          1,
+        );
+        assertXpath(
+          '/article/info/author/personname/surname[text()="Writer"]',
+          output,
+          1,
+        );
+        assertXpath(
+          '/article/info/author/email[text()="thedoctor@asciidoc.org"]',
+          output,
+          1,
+        );
+        assertXpath('/article/info/authorinitials[text()="DW"]', output, 1);
+      });
 
-      test(
-        'should substitute replacements in author names in HTML output',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\nStephen O\'Grady <founder@redmonk.com>\n\ncontent\n';
-          final output = convertString(input);
-          assertXpath(
-            '//meta[@name="author"][@content="Stephen O${decodeChar(8217)}Grady"]',
-            output,
-            1,
-          );
-          assertXpath(
-            '//span[@id="author"][text()="Stephen O${decodeChar(8217)}Grady"]',
-            output,
-            1,
-          );
-        },
-      );
+      test('should substitute replacements in author names in HTML output', () {
+        const input =
+            '= Document Title\nStephen O\'Grady <founder@redmonk.com>\n\ncontent\n';
+        final output = convertString(input);
+        assertXpath(
+          '//meta[@name="author"][@content="Stephen O${decodeChar(8217)}Grady"]',
+          output,
+          1,
+        );
+        assertXpath(
+          '//span[@id="author"][text()="Stephen O${decodeChar(8217)}Grady"]',
+          output,
+          1,
+        );
+      });
 
-      test(
-        'should substitute replacements in author names in DocBook output',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\nStephen O\'Grady <founder@redmonk.com>\n\ncontent\n';
-          final output = convertString(input, {'backend': 'docbook'});
-          assertXpath('//author', output, 1);
-          assertXpath(
-            '//author/personname/surname[text()="O${decodeChar(8217)}Grady"]',
-            output,
-            1,
-          );
-        },
-      );
+      test('should substitute replacements in author names in DocBook output', () {
+        const input =
+            '= Document Title\nStephen O\'Grady <founder@redmonk.com>\n\ncontent\n';
+        final output = convertString(input, {'backend': 'docbook'});
+        assertXpath('//author', output, 1);
+        assertXpath(
+          '//author/personname/surname[text()="O${decodeChar(8217)}Grady"]',
+          output,
+          1,
+        );
+      });
 
-      test(
-        'should sanitize content of HTML meta authors tag',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\n:author: pass:n[http://example.org/community/team.html[Ze *Product* team]]\n\ncontent\n';
-          final output = convertString(input);
-          assertXpath(
-            '//meta[@name="author"][@content="Ze Product team"]',
-            output,
-            1,
-          );
-        },
-      );
+      test('should sanitize content of HTML meta authors tag', () {
+        const input =
+            '= Document Title\n:author: pass:n[http://example.org/community/team.html[Ze *Product* team]]\n\ncontent\n';
+        final output = convertString(input);
+        assertXpath(
+          '//meta[@name="author"][@content="Ze Product team"]',
+          output,
+          1,
+        );
+      });
 
-      test(
-        'should not double escape ampersand in author attribute',
-        skip: needsConverter,
-        () {
-          const input = '= Document Title\nR&D Lab\n\n{author}\n';
-          final output = convertString(input);
-          expect(output, contains('R&amp;D Lab'));
-        },
-      );
+      test('should not double escape ampersand in author attribute', () {
+        const input = '= Document Title\nR&D Lab\n\n{author}\n';
+        final output = convertString(input);
+        expect(output, contains('R&amp;D Lab'));
+      });
 
-      test('should include multiple authors in HTML output', skip: needsConverter, () {
+      test('should include multiple authors in HTML output', () {
         const input =
             '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
         final output = convertString(input);
@@ -1694,109 +2809,89 @@ void main() {
         );
       });
 
-      test(
-        'should create authorgroup in DocBook when multiple authors',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
-          final output = convertString(input, {'backend': 'docbook'});
-          assertXpath('/article/info/author', output, 0);
-          assertXpath('/article/info/authorgroup', output, 1);
-          assertXpath('/article/info/authorgroup/author', output, 2);
-          assertXpath(
-            '(/article/info/authorgroup/author)[1]/personname/firstname[text()="Doc"]',
-            output,
-            1,
-          );
-          assertXpath(
-            '(/article/info/authorgroup/author)[2]/personname/firstname[text()="Junior"]',
-            output,
-            1,
-          );
-        },
-      );
+      test('should create authorgroup in DocBook when multiple authors', () {
+        const input =
+            '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
+        final output = convertString(input, {'backend': 'docbook'});
+        assertXpath('/article/info/author', output, 0);
+        assertXpath('/article/info/authorgroup', output, 1);
+        assertXpath('/article/info/authorgroup/author', output, 2);
+        assertXpath(
+          '(/article/info/authorgroup/author)[1]/personname/firstname[text()="Doc"]',
+          output,
+          1,
+        );
+        assertXpath(
+          '(/article/info/authorgroup/author)[2]/personname/firstname[text()="Junior"]',
+          output,
+          1,
+        );
+      });
 
-      test(
-        'should process author defined by attribute when implicit doctitle '
-        'is absent',
-        skip: needsConverter,
-        () {
-          const input =
-              ':author: Doc Writer\n\n{lastname}, {firstname} ({authorinitials})\n';
-          final doc = documentFromString(input, {'standalone': false});
-          expect(doc.attr('author'), equals('Doc Writer'));
-          expect(doc.attr('author_1'), isNull);
-          expect(doc.attr('lastname'), equals('Writer'));
-          expect(doc.attr('firstname'), equals('Doc'));
-          expect(doc.attr('authorinitials'), equals('DW'));
-          expect(doc.attr('authorcount'), equals(1));
-          final output = doc.convert() as String;
-          assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
-        },
-      );
+      test('should process author defined by attribute when implicit doctitle '
+          'is absent', () {
+        const input =
+            ':author: Doc Writer\n\n{lastname}, {firstname} ({authorinitials})\n';
+        final doc = documentFromString(input, {'standalone': false});
+        expect(doc.attr('author'), equals('Doc Writer'));
+        expect(doc.attr('author_1'), isNull);
+        expect(doc.attr('lastname'), equals('Writer'));
+        expect(doc.attr('firstname'), equals('Doc'));
+        expect(doc.attr('authorinitials'), equals('DW'));
+        expect(doc.attr('authorcount'), equals(1));
+        final output = doc.convert() as String;
+        assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
+      });
 
-      test(
-        'should process author and authorinitials defined by attribute '
-        'when implicit doctitle is absent',
-        skip: needsConverter,
-        () {
-          const input =
-              ':authorinitials: DOC\n:author: Doc Writer\n\n{lastname}, {firstname} ({authorinitials})\n';
-          final doc = documentFromString(input, {'standalone': false});
-          expect(doc.attr('author'), equals('Doc Writer'));
-          expect(doc.attr('authorinitials'), equals('DOC'));
-          expect(doc.attr('authorcount'), equals(1));
-          final output = doc.convert() as String;
-          assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
-        },
-      );
+      test('should process author and authorinitials defined by attribute '
+          'when implicit doctitle is absent', () {
+        const input =
+            ':authorinitials: DOC\n:author: Doc Writer\n\n{lastname}, {firstname} ({authorinitials})\n';
+        final doc = documentFromString(input, {'standalone': false});
+        expect(doc.attr('author'), equals('Doc Writer'));
+        expect(doc.attr('authorinitials'), equals('DOC'));
+        expect(doc.attr('authorcount'), equals(1));
+        final output = doc.convert() as String;
+        assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
+      });
 
-      test(
-        'should process authors defined by attribute when implicit '
-        'doctitle is absent',
-        skip: needsConverter,
-        () {
-          const input =
-              ':authors: Doc Writer; Other Author\n\n{lastname}, {firstname} ({authorinitials})\n';
-          final doc = documentFromString(input, {'standalone': false});
-          expect(doc.attr('author'), equals('Doc Writer'));
-          expect(doc.attr('authors'), equals('Doc Writer, Other Author'));
-          expect(doc.attr('author_1'), equals('Doc Writer'));
-          expect(doc.attr('lastname'), equals('Writer'));
-          expect(doc.attr('lastname_1'), equals('Writer'));
-          expect(doc.attr('firstname'), equals('Doc'));
-          expect(doc.attr('firstname_1'), equals('Doc'));
-          expect(doc.attr('authorinitials'), equals('DW'));
-          expect(doc.attr('authorinitials_1'), equals('DW'));
-          expect(doc.attr('author_2'), equals('Other Author'));
-          expect(doc.attr('authorinitials_2'), equals('OA'));
-          expect(doc.attr('authorcount'), equals(2));
-          final output = doc.convert() as String;
-          assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
-        },
-      );
+      test('should process authors defined by attribute when implicit '
+          'doctitle is absent', () {
+        const input =
+            ':authors: Doc Writer; Other Author\n\n{lastname}, {firstname} ({authorinitials})\n';
+        final doc = documentFromString(input, {'standalone': false});
+        expect(doc.attr('author'), equals('Doc Writer'));
+        expect(doc.attr('authors'), equals('Doc Writer, Other Author'));
+        expect(doc.attr('author_1'), equals('Doc Writer'));
+        expect(doc.attr('lastname'), equals('Writer'));
+        expect(doc.attr('lastname_1'), equals('Writer'));
+        expect(doc.attr('firstname'), equals('Doc'));
+        expect(doc.attr('firstname_1'), equals('Doc'));
+        expect(doc.attr('authorinitials'), equals('DW'));
+        expect(doc.attr('authorinitials_1'), equals('DW'));
+        expect(doc.attr('author_2'), equals('Other Author'));
+        expect(doc.attr('authorinitials_2'), equals('OA'));
+        expect(doc.attr('authorcount'), equals(2));
+        final output = doc.convert() as String;
+        assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
+      });
 
-      test(
-        'should process authors and authorinitials defined by attribute '
-        'when implicit doctitle is absent',
-        skip: needsConverter,
-        () {
-          const input =
-              ':authorinitials: DOC\n:authors: Doc Writer; Other Author\n\n{lastname}, {firstname} ({authorinitials})\n';
-          final doc = documentFromString(input, {'standalone': false});
-          expect(doc.attr('author'), equals('Doc Writer'));
-          expect(doc.attr('author_1'), equals('Doc Writer'));
-          // FIXME this should be supported, but isn't yet
-          //expect(doc.attr('authorinitials'), equals('DOC'));
-          expect(doc.attr('authorinitials'), equals('DW'));
-          expect(doc.attr('author_2'), equals('Other Author'));
-          expect(doc.attr('authorcount'), equals(2));
-          final output = doc.convert() as String;
-          //assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
-          assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
-        },
-      );
+      test('should process authors and authorinitials defined by attribute '
+          'when implicit doctitle is absent', () {
+        const input =
+            ':authorinitials: DOC\n:authors: Doc Writer; Other Author\n\n{lastname}, {firstname} ({authorinitials})\n';
+        final doc = documentFromString(input, {'standalone': false});
+        expect(doc.attr('author'), equals('Doc Writer'));
+        expect(doc.attr('author_1'), equals('Doc Writer'));
+        // FIXME this should be supported, but isn't yet
+        //expect(doc.attr('authorinitials'), equals('DOC'));
+        expect(doc.attr('authorinitials'), equals('DW'));
+        expect(doc.attr('author_2'), equals('Other Author'));
+        expect(doc.attr('authorcount'), equals(2));
+        final output = doc.convert() as String;
+        //assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
+        assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
+      });
 
       test('should set authorcount to 0 if document has no header', () {
         final doc = documentFromString('content');
@@ -1825,100 +2920,84 @@ void main() {
         expect(doc.attr('author_1'), equals('Doc Writer'));
       });
 
-      test(
-        'with authors defined using attribute entry to DocBook',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\n:authors: Doc Writer; Junior Writer\n:email_1: thedoctor@asciidoc.org\n'
-              ':email_2: junior@asciidoc.org\n\ncontent\n';
-          final output = convertString(input, {'backend': 'docbook'});
-          assertXpath('/article/info/author', output, 0);
-          assertXpath('/article/info/authorgroup', output, 1);
-          assertXpath('/article/info/authorgroup/author', output, 2);
-          assertXpath(
-            '(/article/info/authorgroup/author)[1]/personname/firstname[text()="Doc"]',
-            output,
-            1,
-          );
-          assertXpath(
-            '(/article/info/authorgroup/author)[1]/email[text()="thedoctor@asciidoc.org"]',
-            output,
-            1,
-          );
-          assertXpath(
-            '(/article/info/authorgroup/author)[2]/personname/firstname[text()="Junior"]',
-            output,
-            1,
-          );
-          assertXpath(
-            '(/article/info/authorgroup/author)[2]/email[text()="junior@asciidoc.org"]',
-            output,
-            1,
-          );
-        },
-      );
+      test('with authors defined using attribute entry to DocBook', () {
+        const input =
+            '= Document Title\n:authors: Doc Writer; Junior Writer\n:email_1: thedoctor@asciidoc.org\n'
+            ':email_2: junior@asciidoc.org\n\ncontent\n';
+        final output = convertString(input, {'backend': 'docbook'});
+        assertXpath('/article/info/author', output, 0);
+        assertXpath('/article/info/authorgroup', output, 1);
+        assertXpath('/article/info/authorgroup/author', output, 2);
+        assertXpath(
+          '(/article/info/authorgroup/author)[1]/personname/firstname[text()="Doc"]',
+          output,
+          1,
+        );
+        assertXpath(
+          '(/article/info/authorgroup/author)[1]/email[text()="thedoctor@asciidoc.org"]',
+          output,
+          1,
+        );
+        assertXpath(
+          '(/article/info/authorgroup/author)[2]/personname/firstname[text()="Junior"]',
+          output,
+          1,
+        );
+        assertXpath(
+          '(/article/info/authorgroup/author)[2]/email[text()="junior@asciidoc.org"]',
+          output,
+          1,
+        );
+      });
 
-      test(
-        'should populate copyright element in DocBook output if copyright '
-        'attribute is defined',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Jet Bike\n:copyright: ACME, Inc.\n\nEssential for catching road runners.\n';
-          final output = convertString(input, {'backend': 'docbook5'});
-          assertXpath('/article/info/copyright', output, 1);
-          assertXpath(
-            '/article/info/copyright/holder[text()="ACME, Inc."]',
-            output,
-            1,
-          );
-        },
-      );
+      test('should populate copyright element in DocBook output if copyright '
+          'attribute is defined', () {
+        const input =
+            '= Jet Bike\n:copyright: ACME, Inc.\n\nEssential for catching road runners.\n';
+        final output = convertString(input, {'backend': 'docbook5'});
+        assertXpath('/article/info/copyright', output, 1);
+        assertXpath(
+          '/article/info/copyright/holder[text()="ACME, Inc."]',
+          output,
+          1,
+        );
+      });
 
-      test(
-        'should populate copyright element in DocBook output if copyright '
-        'attribute is defined with year',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Jet Bike\n:copyright: ACME, Inc. 1956\n\nEssential for catching road runners.\n';
-          final output = convertString(input, {'backend': 'docbook5'});
-          assertXpath('/article/info/copyright', output, 1);
-          assertXpath(
-            '/article/info/copyright/holder[text()="ACME, Inc."]',
-            output,
-            1,
-          );
-          assertXpath('/article/info/copyright/year', output, 1);
-          assertXpath('/article/info/copyright/year[text()="1956"]', output, 1);
-        },
-      );
+      test('should populate copyright element in DocBook output if copyright '
+          'attribute is defined with year', () {
+        const input =
+            '= Jet Bike\n:copyright: ACME, Inc. 1956\n\nEssential for catching road runners.\n';
+        final output = convertString(input, {'backend': 'docbook5'});
+        assertXpath('/article/info/copyright', output, 1);
+        assertXpath(
+          '/article/info/copyright/holder[text()="ACME, Inc."]',
+          output,
+          1,
+        );
+        assertXpath('/article/info/copyright/year', output, 1);
+        assertXpath('/article/info/copyright/year[text()="1956"]', output, 1);
+      });
 
-      test(
-        'should populate copyright element in DocBook output if copyright '
-        'attribute is defined with year range',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Jet Bike\n:copyright: ACME, Inc. 1956-2018\n\nEssential for catching road runners.\n';
-          final output = convertString(input, {'backend': 'docbook5'});
-          assertXpath('/article/info/copyright', output, 1);
-          assertXpath(
-            '/article/info/copyright/holder[text()="ACME, Inc."]',
-            output,
-            1,
-          );
-          assertXpath('/article/info/copyright/year', output, 1);
-          assertXpath(
-            '/article/info/copyright/year[text()="1956-2018"]',
-            output,
-            1,
-          );
-        },
-      );
+      test('should populate copyright element in DocBook output if copyright '
+          'attribute is defined with year range', () {
+        const input =
+            '= Jet Bike\n:copyright: ACME, Inc. 1956-2018\n\nEssential for catching road runners.\n';
+        final output = convertString(input, {'backend': 'docbook5'});
+        assertXpath('/article/info/copyright', output, 1);
+        assertXpath(
+          '/article/info/copyright/holder[text()="ACME, Inc."]',
+          output,
+          1,
+        );
+        assertXpath('/article/info/copyright/year', output, 1);
+        assertXpath(
+          '/article/info/copyright/year[text()="1956-2018"]',
+          output,
+          1,
+        );
+      });
 
-      test('with header footer', skip: needsConverter, () {
+      test('with header footer', () {
         final doc = documentFromString('= Title\n\nparagraph');
         expect(doc.hasAttr('embedded'), isFalse);
         final result = doc.convert() as String;
@@ -1929,17 +3008,13 @@ void main() {
         assertXpath('//*[@id="content"]', result, 1);
       });
 
-      test(
-        'does not output footer if nofooter is set',
-        skip: needsConverter,
-        () {
-          const input = ':nofooter:\n\ncontent\n';
-          final result = convertString(input);
-          assertXpath('//*[@id="footer"]', result, 0);
-        },
-      );
+      test('does not output footer if nofooter is set', () {
+        const input = ':nofooter:\n\ncontent\n';
+        final result = convertString(input);
+        assertXpath('//*[@id="footer"]', result, 0);
+      });
 
-      test('can disable last updated in footer', skip: needsConverter, () {
+      test('can disable last updated in footer', () {
         final doc = documentFromString('= Document Title\n\npreamble', {
           'attributes': {'last-update-label!': ''},
         });
@@ -1952,81 +3027,64 @@ void main() {
         );
       });
 
-      test(
-        'should create embedded document if standalone option passed to '
-        'constructor is false',
-        skip: needsConverter,
-        () {
-          final doc = Document('= Document Title\n\ncontent', {
-            'standalone': false,
-          }).parse();
-          expect(doc.hasAttr('embedded'), isTrue);
-          final result = doc.convert() as String;
-          assertXpath('/html', result, 0);
-          assertXpath('/h1', result, 0);
-          assertXpath('/*[@id="header"]', result, 0);
-          assertXpath('/*[@id="footer"]', result, 0);
-          assertXpath('/*[@class="paragraph"]', result, 1);
-        },
-      );
+      test('should create embedded document if standalone option passed to '
+          'constructor is false', () {
+        final doc = Document('= Document Title\n\ncontent', {
+          'standalone': false,
+        }).parse();
+        expect(doc.hasAttr('embedded'), isTrue);
+        final result = doc.convert() as String;
+        assertXpath('/html', result, 0);
+        assertXpath('/h1', result, 0);
+        assertXpath('/*[@id="header"]', result, 0);
+        assertXpath('/*[@id="footer"]', result, 0);
+        assertXpath('/*[@class="paragraph"]', result, 1);
+      });
 
-      test(
-        'should create embedded document if standalone option passed to '
-        'convert method is false',
-        skip: needsConverter,
-        () {
-          final doc = Document('= Document Title\n\ncontent', {
-            'standalone': true,
-          }).parse();
-          expect(doc.hasAttr('embedded'), isFalse);
-          final result = doc.convert({'standalone': false}) as String;
-          assertXpath('/html', result, 0);
-          assertXpath('/h1', result, 1);
-          assertXpath('/*[@id="header"]', result, 0);
-          assertXpath('/*[@id="footer"]', result, 0);
-          assertXpath('/*[@class="paragraph"]', result, 1);
-        },
-      );
+      test('should create embedded document if standalone option passed to '
+          'convert method is false', () {
+        final doc = Document('= Document Title\n\ncontent', {
+          'standalone': true,
+        }).parse();
+        expect(doc.hasAttr('embedded'), isFalse);
+        final result = doc.convert({'standalone': false}) as String;
+        assertXpath('/html', result, 0);
+        assertXpath('/h1', result, 1);
+        assertXpath('/*[@id="header"]', result, 0);
+        assertXpath('/*[@id="footer"]', result, 0);
+        assertXpath('/*[@class="paragraph"]', result, 1);
+      });
 
-      test(
-        'should create embedded document if deprecated header_footer '
-        'option is false',
-        skip: needsConverter,
-        () {
-          final doc = Document('= Document Title\n\ncontent', {
-            'header_footer': false,
-          }).parse();
-          expect(doc.hasAttr('embedded'), isTrue);
-          final result = doc.convert() as String;
-          assertXpath('/html', result, 0);
-          assertXpath('/h1', result, 0);
-          assertXpath('/*[@id="header"]', result, 0);
-          assertXpath('/*[@id="footer"]', result, 0);
-          assertXpath('/*[@class="paragraph"]', result, 1);
-        },
-      );
+      test('should create embedded document if deprecated header_footer '
+          'option is false', () {
+        final doc = Document('= Document Title\n\ncontent', {
+          'header_footer': false,
+        }).parse();
+        expect(doc.hasAttr('embedded'), isTrue);
+        final result = doc.convert() as String;
+        assertXpath('/html', result, 0);
+        assertXpath('/h1', result, 0);
+        assertXpath('/*[@id="header"]', result, 0);
+        assertXpath('/*[@id="footer"]', result, 0);
+        assertXpath('/*[@class="paragraph"]', result, 1);
+      });
 
-      test(
-        'should create embedded document if header_footer option passed '
-        'to convert method is false',
-        skip: needsConverter,
-        () {
-          final doc = Document('= Document Title\n\ncontent', {
-            'header_footer': true,
-          }).parse();
-          expect(doc.hasAttr('embedded'), isFalse);
-          final result = doc.convert({'header_footer': false}) as String;
-          assertXpath('/html', result, 0);
-          assertXpath('/h1', result, 1);
-          assertXpath('/*[@id="header"]', result, 0);
-          assertXpath('/*[@id="footer"]', result, 0);
-          assertXpath('/*[@class="paragraph"]', result, 1);
-        },
-      );
+      test('should create embedded document if header_footer option passed '
+          'to convert method is false', () {
+        final doc = Document('= Document Title\n\ncontent', {
+          'header_footer': true,
+        }).parse();
+        expect(doc.hasAttr('embedded'), isFalse);
+        final result = doc.convert({'header_footer': false}) as String;
+        assertXpath('/html', result, 0);
+        assertXpath('/h1', result, 1);
+        assertXpath('/*[@id="header"]', result, 0);
+        assertXpath('/*[@id="footer"]', result, 0);
+        assertXpath('/*[@class="paragraph"]', result, 1);
+      });
 
       test(
         'enable title in embedded document by unassigning notitle attribute',
-        skip: needsConverter,
         () {
           const input = '= Document Title\n\ncontent\n';
           final result = convertStringToEmbedded(input, {
@@ -2042,144 +3100,136 @@ void main() {
         },
       );
 
-      test(
-        'should be able to enable doctitle for embedded document',
-        skip: needsConverter,
-        () {
-          final cases = <List<Object?>>[
-            [
-              {'notitle': null},
-              null,
-            ],
-            [
-              {'notitle': null},
-              [':!showtitle:'],
-            ],
-            [
-              {'notitle': false},
-              null,
-            ],
-            [
-              {'notitle': '@'},
-              [':!notitle:'],
-            ],
-            [
-              {'notitle': '@'},
-              [':showtitle:'],
-            ],
-            [
-              {'showtitle': ''},
-              [':notitle:'],
-            ],
-            [
-              {'showtitle': '@'},
-              null,
-            ],
-            [
-              {'showtitle': false},
-              [':!notitle:'],
-            ],
-            [
-              <String, Object?>{},
-              [':!notitle:'],
-            ],
-            [
-              <String, Object?>{},
-              [':notitle:', ':showtitle:'],
-            ],
-            [
-              <String, Object?>{},
-              [':showtitle:'],
-            ],
-            [
-              <String, Object?>{},
-              [':!showtitle:', ':!notitle:'],
-            ],
-          ];
-          for (final entry in cases) {
-            final apiAttrs = entry[0] as Map<String, Object?>;
-            final attrEntries = entry[1] as List<String>?;
-            final input =
-                '= Document Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
-                '\n\nifdef::showtitle[showtitle: set]\n'
-                'ifndef::showtitle[showtitle: not set]\n'
-                'ifdef::notitle[notitle: set]\n'
-                'ifndef::notitle[notitle: not set]\n';
-            final result = convertStringToEmbedded(input, {
-              'attributes': apiAttrs,
-            });
-            assertXpath('/html', result, 0);
-            assertXpath('/h1', result, 1);
-            assertXpath('(/*)[1]/self::h1', result, 1);
-            assertXpath('(/*)[2]/self::*[@class="paragraph"]', result, 1);
-            // NOTE showtitle may not match notitle if never used
-            expect(result, contains('notitle: not set'));
-          }
-        },
-      );
+      test('should be able to enable doctitle for embedded document', () {
+        final cases = <List<Object?>>[
+          [
+            {'notitle': null},
+            null,
+          ],
+          [
+            {'notitle': null},
+            [':!showtitle:'],
+          ],
+          [
+            {'notitle': false},
+            null,
+          ],
+          [
+            {'notitle': '@'},
+            [':!notitle:'],
+          ],
+          [
+            {'notitle': '@'},
+            [':showtitle:'],
+          ],
+          [
+            {'showtitle': ''},
+            [':notitle:'],
+          ],
+          [
+            {'showtitle': '@'},
+            null,
+          ],
+          [
+            {'showtitle': false},
+            [':!notitle:'],
+          ],
+          [
+            <String, Object?>{},
+            [':!notitle:'],
+          ],
+          [
+            <String, Object?>{},
+            [':notitle:', ':showtitle:'],
+          ],
+          [
+            <String, Object?>{},
+            [':showtitle:'],
+          ],
+          [
+            <String, Object?>{},
+            [':!showtitle:', ':!notitle:'],
+          ],
+        ];
+        for (final entry in cases) {
+          final apiAttrs = entry[0] as Map<String, Object?>;
+          final attrEntries = entry[1] as List<String>?;
+          final input =
+              '= Document Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
+              '\n\nifdef::showtitle[showtitle: set]\n'
+              'ifndef::showtitle[showtitle: not set]\n'
+              'ifdef::notitle[notitle: set]\n'
+              'ifndef::notitle[notitle: not set]\n';
+          final result = convertStringToEmbedded(input, {
+            'attributes': apiAttrs,
+          });
+          assertXpath('/html', result, 0);
+          assertXpath('/h1', result, 1);
+          assertXpath('(/*)[1]/self::h1', result, 1);
+          assertXpath('(/*)[2]/self::*[@class="paragraph"]', result, 1);
+          // NOTE showtitle may not match notitle if never used
+          expect(result, contains('notitle: not set'));
+        }
+      });
 
-      test(
-        'should be able to explicitly disable doctitle for embedded document',
-        skip: needsConverter,
-        () {
-          final cases = <List<Object?>>[
-            [
-              {'notitle': ''},
-              null,
-            ],
-            [
-              {'notitle': '@'},
-              null,
-            ],
-            [
-              {'notitle': '@'},
-              [':!showtitle:'],
-            ],
-            [
-              {'showtitle': null},
-              null,
-            ],
-            [
-              {'showtitle': false},
-              null,
-            ],
-            [
-              {'showtitle': '@'},
-              [':notitle:'],
-            ],
-            [
-              <String, Object?>{},
-              [':notitle:'],
-            ],
-            [
-              <String, Object?>{},
-              [':!showtitle:'],
-            ],
-            [
-              <String, Object?>{},
-              [':!showtitle:', ':notitle:'],
-            ],
-          ];
-          for (final entry in cases) {
-            final apiAttrs = entry[0] as Map<String, Object?>;
-            final attrEntries = entry[1] as List<String>?;
-            final input =
-                '= Document Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
-                '\n\nifdef::showtitle[showtitle: set]\n'
-                'ifndef::showtitle[showtitle: not set]\n'
-                'ifdef::notitle[notitle: set]\n'
-                'ifndef::notitle[notitle: not set]\n';
-            final result = convertStringToEmbedded(input, {
-              'attributes': apiAttrs,
-            });
-            assertXpath('/html', result, 0);
-            assertXpath('/h1', result, 0);
-            assertXpath('/*[@class="paragraph"]', result, 1);
-            // NOTE showtitle may not match notitle if never used
-            expect(result, contains('notitle: set'));
-          }
-        },
-      );
+      test('should be able to explicitly disable doctitle for embedded document', () {
+        final cases = <List<Object?>>[
+          [
+            {'notitle': ''},
+            null,
+          ],
+          [
+            {'notitle': '@'},
+            null,
+          ],
+          [
+            {'notitle': '@'},
+            [':!showtitle:'],
+          ],
+          [
+            {'showtitle': null},
+            null,
+          ],
+          [
+            {'showtitle': false},
+            null,
+          ],
+          [
+            {'showtitle': '@'},
+            [':notitle:'],
+          ],
+          [
+            <String, Object?>{},
+            [':notitle:'],
+          ],
+          [
+            <String, Object?>{},
+            [':!showtitle:'],
+          ],
+          [
+            <String, Object?>{},
+            [':!showtitle:', ':notitle:'],
+          ],
+        ];
+        for (final entry in cases) {
+          final apiAttrs = entry[0] as Map<String, Object?>;
+          final attrEntries = entry[1] as List<String>?;
+          final input =
+              '= Document Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
+              '\n\nifdef::showtitle[showtitle: set]\n'
+              'ifndef::showtitle[showtitle: not set]\n'
+              'ifdef::notitle[notitle: set]\n'
+              'ifndef::notitle[notitle: not set]\n';
+          final result = convertStringToEmbedded(input, {
+            'attributes': apiAttrs,
+          });
+          assertXpath('/html', result, 0);
+          assertXpath('/h1', result, 0);
+          assertXpath('/*[@class="paragraph"]', result, 1);
+          // NOTE showtitle may not match notitle if never used
+          expect(result, contains('notitle: set'));
+        }
+      });
 
       test('parse header only', () {
         const input = '= Document Title\nAuthor Name\n:foo: bar\n\npreamble\n';
@@ -2220,7 +3270,7 @@ void main() {
         });
       });
 
-      test('outputs footnotes in footer', skip: needsConverter, () {
+      test('outputs footnotes in footer', () {
         const input =
             'A footnote footnote:[An example footnote.];\n'
             'a second footnote with a reference ID footnote:note2[Second footnote.];\n'
@@ -2258,45 +3308,37 @@ void main() {
         );
       });
 
-      test(
-        'outputs footnotes block in embedded document by default',
-        skip: needsConverter,
-        () {
-          const input =
-              'Text that has supporting information{empty}footnote:[An example footnote.].';
-          final output = convertStringToEmbedded(input);
-          assertCss('#footnotes', output, 1);
-          assertCss('#footnotes .footnote', output, 1);
-          assertCss('#footnotes .footnote#_footnotedef_1', output, 1);
-          assertXpath(
-            '/div[@id="footnotes"]/div[@id="_footnotedef_1"]/a[@href="#_footnoteref_1"][text()="1"]',
-            output,
-            1,
-          );
-          final text = xmlnodesAtXpath(
-            '/div[@id="footnotes"]/div[@id="_footnotedef_1"]/text()',
-            output,
-          );
-          expect(
-            (text as dynamic).text.toString().trim(),
-            equals('. An example footnote.'),
-          );
-        },
-      );
+      test('outputs footnotes block in embedded document by default', () {
+        const input =
+            'Text that has supporting information{empty}footnote:[An example footnote.].';
+        final output = convertStringToEmbedded(input);
+        assertCss('#footnotes', output, 1);
+        assertCss('#footnotes .footnote', output, 1);
+        assertCss('#footnotes .footnote#_footnotedef_1', output, 1);
+        assertXpath(
+          '/div[@id="footnotes"]/div[@id="_footnotedef_1"]/a[@href="#_footnoteref_1"][text()="1"]',
+          output,
+          1,
+        );
+        final text = xmlnodesAtXpath(
+          '/div[@id="footnotes"]/div[@id="_footnotedef_1"]/text()',
+          output,
+        );
+        expect(
+          (text as dynamic).text.toString().trim(),
+          equals('. An example footnote.'),
+        );
+      });
 
-      test(
-        'does not output footnotes block in embedded document if '
-        'nofootnotes attribute is set',
-        skip: needsConverter,
-        () {
-          const input =
-              'Text that has supporting information{empty}footnote:[An example footnote.].';
-          final output = convertStringToEmbedded(input, {
-            'attributes': {'nofootnotes': ''},
-          });
-          assertCss('#footnotes', output, 0);
-        },
-      );
+      test('does not output footnotes block in embedded document if '
+          'nofootnotes attribute is set', () {
+        const input =
+            'Text that has supporting information{empty}footnote:[An example footnote.].';
+        final output = convertStringToEmbedded(input, {
+          'attributes': {'nofootnotes': ''},
+        });
+        assertCss('#footnotes', output, 0);
+      });
     });
 
     group('Catalog', () {
@@ -2372,26 +3414,22 @@ void main() {
         expect(images[0].imagesdir, equals('img'));
       });
 
-      test(
-        'should catalog assets inside nested document',
-        skip: needsTableWave,
-        () {
-          const input =
-              'image::outer.png[]\n\n|===\na|\nimage::inner.png[]\n|===\n';
-          final doc = documentFromString(input, {'catalog_assets': true});
-          final images = doc.catalog['images'] as List<ImageReference>;
-          expect(images, isNotEmpty);
-          expect(images.length, equals(2));
-          expect(
-            images.map((image) => image.target).toList(),
-            orderedEquals(['outer.png', 'inner.png']),
-          );
-        },
-      );
+      test('should catalog assets inside nested document', () {
+        const input =
+            'image::outer.png[]\n\n|===\na|\nimage::inner.png[]\n|===\n';
+        final doc = documentFromString(input, {'catalog_assets': true});
+        final images = doc.catalog['images'] as List<ImageReference>;
+        expect(images, isNotEmpty);
+        expect(images.length, equals(2));
+        expect(
+          images.map((image) => image.target).toList(),
+          orderedEquals(['outer.png', 'inner.png']),
+        );
+      });
     });
 
     group('Backends and Doctypes', () {
-      test('html5 backend doctype article', skip: needsConverter, () {
+      test('html5 backend doctype article', () {
         final result = convertString('= Title\n\nparagraph', {
           'attributes': {'backend': 'html5'},
         });
@@ -2405,7 +3443,7 @@ void main() {
         );
       });
 
-      test('html5 backend doctype book', skip: needsConverter, () {
+      test('html5 backend doctype book', () {
         final result = convertString('= Title\n\nparagraph', {
           'attributes': {'backend': 'html5', 'doctype': 'book'},
         });
@@ -2439,368 +3477,305 @@ void main() {
         expect(doc.attr('htmlsyntax'), equals('xml'));
       });
 
-      test(
-        'honor htmlsyntax attribute passed via API if backend is html',
-        skip: needsConverter,
-        () {
-          const input = '---';
-          final doc = documentFromString(input, {
-            'safe': 'safe',
-            'attributes': {'htmlsyntax': 'xml'},
-          });
-          expect(doc.backend, equals('html5'));
-          expect(doc.attr('htmlsyntax'), equals('xml'));
-          final result = doc.convert({'standalone': false}) as String;
-          expect(result, equals('<hr/>'));
-        },
-      );
+      test('honor htmlsyntax attribute passed via API if backend is html', () {
+        const input = '---';
+        final doc = documentFromString(input, {
+          'safe': 'safe',
+          'attributes': {'htmlsyntax': 'xml'},
+        });
+        expect(doc.backend, equals('html5'));
+        expect(doc.attr('htmlsyntax'), equals('xml'));
+        final result = doc.convert({'standalone': false}) as String;
+        expect(result, equals('<hr/>'));
+      });
 
-      test(
-        'honor htmlsyntax attribute in document header if followed by '
-        'backend attribute',
-        skip: needsConverter,
-        () {
-          const input = ':htmlsyntax: xml\n:backend: html5\n\n---\n';
-          final doc = documentFromString(input, {'safe': 'safe'});
-          expect(doc.backend, equals('html5'));
-          expect(doc.attr('htmlsyntax'), equals('xml'));
-          final result = doc.convert({'standalone': false}) as String;
-          expect(result, equals('<hr/>'));
-        },
-      );
+      test('honor htmlsyntax attribute in document header if followed by '
+          'backend attribute', () {
+        const input = ':htmlsyntax: xml\n:backend: html5\n\n---\n';
+        final doc = documentFromString(input, {'safe': 'safe'});
+        expect(doc.backend, equals('html5'));
+        expect(doc.attr('htmlsyntax'), equals('xml'));
+        final result = doc.convert({'standalone': false}) as String;
+        expect(result, equals('<hr/>'));
+      });
 
-      test(
-        'does not honor htmlsyntax attribute in document header if not '
-        'followed by backend attribute',
-        skip: needsConverter,
-        () {
-          const input = ':backend: html5\n:htmlsyntax: xml\n\n---\n';
-          final result = convertStringToEmbedded(input, {'safe': 'safe'});
-          expect(result, equals('<hr>'));
-        },
-      );
+      test('does not honor htmlsyntax attribute in document header if not '
+          'followed by backend attribute', () {
+        const input = ':backend: html5\n:htmlsyntax: xml\n\n---\n';
+        final result = convertStringToEmbedded(input, {'safe': 'safe'});
+        expect(result, equals('<hr>'));
+      });
 
-      test(
-        'should close all short tags when htmlsyntax is xml',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Document Title\nAuthor Name\nv1.0, 2001-01-01\n:icons:\n:favicon:\n\n'
-              'image:tiger.png[]\n\nimage::tiger.png[]\n\n* [x] one\n* [ ] two\n\n'
-              '|===\n|A |B\n|===\n\n[horizontal, labelwidth="25%", itemwidth="75%"]\n'
-              'term:: description\n\nNOTE: note\n\n[quote,Author,Source]\n____\nQuote me.\n____\n\n'
-              '[verse,Author,Source]\n____\nA tall tale.\n____\n\n[options="autoplay,loop"]\n'
-              'video::screencast.ogg[]\n\nvideo::12345[vimeo]\n\n[options="autoplay,loop"]\n'
-              'audio::podcast.ogg[]\n\none +\ntwo\n\n\'\'\'\n';
-          final result = convertString(input, {
-            'safe': 'safe',
-            'backend': 'xhtml',
-          });
-          // XML-match wave: parse result as strict XML; flunk with the
-          // parser message and result when not well-formed.
-          expect(result, isNotEmpty);
-        },
-      );
+      test('should close all short tags when htmlsyntax is xml', () {
+        const input =
+            '= Document Title\nAuthor Name\nv1.0, 2001-01-01\n:icons:\n:favicon:\n\n'
+            'image:tiger.png[]\n\nimage::tiger.png[]\n\n* [x] one\n* [ ] two\n\n'
+            '|===\n|A |B\n|===\n\n[horizontal, labelwidth="25%", itemwidth="75%"]\n'
+            'term:: description\n\nNOTE: note\n\n[quote,Author,Source]\n____\nQuote me.\n____\n\n'
+            '[verse,Author,Source]\n____\nA tall tale.\n____\n\n[options="autoplay,loop"]\n'
+            'video::screencast.ogg[]\n\nvideo::12345[vimeo]\n\n[options="autoplay,loop"]\n'
+            'audio::podcast.ogg[]\n\none +\ntwo\n\n\'\'\'\n';
+        final result = convertString(input, {
+          'safe': 'safe',
+          'backend': 'xhtml',
+        });
+        assertWellFormedXml(result);
+      });
 
-      test(
-        'xhtml backend should emit elements in proper namespace',
-        skip: needsConverter,
-        () {
-          const input = 'content';
-          final result = convertString(input, {
-            'safe': 'safe',
-            'backend': 'xhtml',
-            'keep_namespaces': true,
-          });
-          assertXpath(
-            '//*[not(namespace-uri()="http://www.w3.org/1999/xhtml")]',
-            result,
-            0,
-          );
-        },
-      );
+      test('xhtml backend should emit elements in proper namespace', () {
+        const input = 'content';
+        final result = convertString(input, {
+          'safe': 'safe',
+          'backend': 'xhtml',
+          'keep_namespaces': true,
+        });
+        assertXpath(
+          '//*[not(namespace-uri()="http://www.w3.org/1999/xhtml")]',
+          result,
+          0,
+        );
+      });
 
-      test(
-        'should parse out subtitle when backend is DocBook',
-        skip: needsConverter,
-        () {
-          const input = '= Document Title: Subtitle\n:doctype: book\n\ntext\n';
-          final result = convertString(input, {'backend': 'docbook5'});
-          assertXpath('/book', result, 1);
-          assertXpath('/book/info/title[text()="Document Title"]', result, 1);
-          assertXpath('/book/info/subtitle[text()="Subtitle"]', result, 1);
-        },
-      );
+      test('should parse out subtitle when backend is DocBook', () {
+        const input = '= Document Title: Subtitle\n:doctype: book\n\ntext\n';
+        final result = convertString(input, {'backend': 'docbook5'});
+        assertXpath('/book', result, 1);
+        assertXpath('/book/info/title[text()="Document Title"]', result, 1);
+        assertXpath('/book/info/subtitle[text()="Subtitle"]', result, 1);
+      });
 
-      test(
-        'should be able to set doctype to article when converting to DocBook',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Title\nAuthor Name\n\npreamble\n\n== First Section\n\nsection body\n';
-          final result = convertString(input, {
-            'keep_namespaces': true,
-            'attributes': {'backend': 'docbook5'},
-          });
-          assertXpath('/xmlns:article', result, 1);
-          final doc = xmlnodesAtXpath('/xmlns:article', result, 1);
-          expect(
-            (doc as dynamic).namespaces['xmlns'],
-            equals('http://docbook.org/ns/docbook'),
-          );
-          expect(
-            (doc as dynamic).namespaces['xmlns:xl'],
-            equals('http://www.w3.org/1999/xlink'),
-          );
-          assertXpath('/xmlns:article[@version="5.0"]', result, 1);
-          assertXpath(
-            '/xmlns:article/xmlns:info/xmlns:title[text()="Title"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:simpara[text()="preamble"]',
-            result,
-            1,
-          );
-          assertXpath('/xmlns:article/xmlns:section', result, 1);
-          assertCss(
-            'article:root > section[xml|id="_first_section"]',
-            result,
-            1,
-          );
-        },
-      );
+      test('should be able to set doctype to article when converting to DocBook', () {
+        const input =
+            '= Title\nAuthor Name\n\npreamble\n\n== First Section\n\nsection body\n';
+        final result = convertString(input, {
+          'keep_namespaces': true,
+          'attributes': {'backend': 'docbook5'},
+        });
+        assertXpath('/xmlns:article', result, 1);
+        final doc = xmlnodesAtXpath('/xmlns:article', result, 1);
+        expect(
+          (doc as dynamic).namespaces['xmlns'],
+          equals('http://docbook.org/ns/docbook'),
+        );
+        expect(
+          (doc as dynamic).namespaces['xmlns:xl'],
+          equals('http://www.w3.org/1999/xlink'),
+        );
+        assertXpath('/xmlns:article[@version="5.0"]', result, 1);
+        assertXpath(
+          '/xmlns:article/xmlns:info/xmlns:title[text()="Title"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:simpara[text()="preamble"]',
+          result,
+          1,
+        );
+        assertXpath('/xmlns:article/xmlns:section', result, 1);
+        assertCss('article:root > section[xml|id="_first_section"]', result, 1);
+      });
 
-      test(
-        'should set doctype to article by default for document with no '
-        'title when converting to DocBook',
-        skip: needsConverter,
-        () {
-          final result = convertString('text', {
-            'attributes': {'backend': 'docbook'},
-          });
-          assertXpath('/article', result, 1);
-          assertXpath('/article/info/title', result, 1);
-          assertXpath('/article/info/title[text()="Untitled"]', result, 1);
-          assertXpath('/article/info/date', result, 1);
-        },
-      );
+      test('should set doctype to article by default for document with no '
+          'title when converting to DocBook', () {
+        final result = convertString('text', {
+          'attributes': {'backend': 'docbook'},
+        });
+        assertXpath('/article', result, 1);
+        assertXpath('/article/info/title', result, 1);
+        assertXpath('/article/info/title[text()="Untitled"]', result, 1);
+        assertXpath('/article/info/date', result, 1);
+      });
 
-      test(
-        'should be able to convert DocBook manpage output when backend is '
-        'DocBook and doctype is manpage',
-        skip: needsConverter,
-        () {
-          const input =
-              '= asciidoctor(1)\n:mansource: Asciidoctor\n:manmanual: Asciidoctor Manual\n\n'
-              '== NAME\n\nasciidoctor - Process text\n\n== SYNOPSIS\n\nsome text\n\n'
-              '== First Section\n\nsection body\n';
-          final result = convertString(input, {
-            'keep_namespaces': true,
-            'attributes': {'backend': 'docbook5', 'doctype': 'manpage'},
-          });
-          assertXpath('/xmlns:article', result, 1);
-          assertXpath('/xmlns:article/xmlns:refentry', result, 1);
-          final doc = xmlnodesAtXpath('/xmlns:article', result, 1);
-          expect(
-            (doc as dynamic).namespaces['xmlns'],
-            equals('http://docbook.org/ns/docbook'),
-          );
-          expect(
-            (doc as dynamic).namespaces['xmlns:xl'],
-            equals('http://www.w3.org/1999/xlink'),
-          );
-          expect((doc as dynamic).attr('version'), equals('5.0'));
-          assertXpath(
-            '/xmlns:article/xmlns:info/xmlns:title[text()="asciidoctor(1)"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refentrytitle[text()="asciidoctor"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:manvolnum[text()="1"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="source"][text()="Asciidoctor"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="manual"][text()="Asciidoctor Manual"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refnamediv/xmlns:refname[text()="asciidoctor"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refnamediv/xmlns:refpurpose[text()="Process text"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refsynopsisdiv',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refsynopsisdiv/xmlns:simpara[text()="some text"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refsection',
-            result,
-            1,
-          );
-          assertCss(
-            'article:root > refentry > refsection[xml|id="_first_section"]',
-            result,
-            1,
-          );
-        },
-      );
+      test('should be able to convert DocBook manpage output when backend is '
+          'DocBook and doctype is manpage', () {
+        const input =
+            '= asciidoctor(1)\n:mansource: Asciidoctor\n:manmanual: Asciidoctor Manual\n\n'
+            '== NAME\n\nasciidoctor - Process text\n\n== SYNOPSIS\n\nsome text\n\n'
+            '== First Section\n\nsection body\n';
+        final result = convertString(input, {
+          'keep_namespaces': true,
+          'attributes': {'backend': 'docbook5', 'doctype': 'manpage'},
+        });
+        assertXpath('/xmlns:article', result, 1);
+        assertXpath('/xmlns:article/xmlns:refentry', result, 1);
+        final doc = xmlnodesAtXpath('/xmlns:article', result, 1);
+        expect(
+          (doc as dynamic).namespaces['xmlns'],
+          equals('http://docbook.org/ns/docbook'),
+        );
+        expect(
+          (doc as dynamic).namespaces['xmlns:xl'],
+          equals('http://www.w3.org/1999/xlink'),
+        );
+        expect((doc as dynamic).attr('version'), equals('5.0'));
+        assertXpath(
+          '/xmlns:article/xmlns:info/xmlns:title[text()="asciidoctor(1)"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refentrytitle[text()="asciidoctor"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:manvolnum[text()="1"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="source"][text()="Asciidoctor"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="manual"][text()="Asciidoctor Manual"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refnamediv/xmlns:refname[text()="asciidoctor"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refnamediv/xmlns:refpurpose[text()="Process text"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refsynopsisdiv',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refsynopsisdiv/xmlns:simpara[text()="some text"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refsection',
+          result,
+          1,
+        );
+        assertCss(
+          'article:root > refentry > refsection[xml|id="_first_section"]',
+          result,
+          1,
+        );
+      });
 
-      test(
-        'should output non-breaking space for source and manual in docbook '
-        'manpage output if absent from source',
-        skip: needsConverter,
-        () {
-          const input =
-              '= asciidoctor(1)\n\n== NAME\n\nasciidoctor - Process text\n\n== SYNOPSIS\n\nsome text\n';
-          final result = convertString(input, {
-            'keep_namespaces': true,
-            'attributes': {'backend': 'docbook5', 'doctype': 'manpage'},
-          });
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="source"][text()="${decodeChar(160)}"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="manual"][text()="${decodeChar(160)}"]',
-            result,
-            1,
-          );
-        },
-      );
+      test('should output non-breaking space for source and manual in docbook '
+          'manpage output if absent from source', () {
+        const input =
+            '= asciidoctor(1)\n\n== NAME\n\nasciidoctor - Process text\n\n== SYNOPSIS\n\nsome text\n';
+        final result = convertString(input, {
+          'keep_namespaces': true,
+          'attributes': {'backend': 'docbook5', 'doctype': 'manpage'},
+        });
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="source"][text()="${decodeChar(160)}"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="manual"][text()="${decodeChar(160)}"]',
+          result,
+          1,
+        );
+      });
 
-      test(
-        'should apply replacements substitution to value of mantitle '
-        'attribute used in DocBook output',
-        skip: needsApiWave,
-        () {
-          const input =
-              '= foo\\--bar(1)\nAuthor Name\n:doctype: manpage\n:man manual: Foo Bar Manual\n'
-              ':man source: Foo Bar 1.0\n\n== NAME\n\nfoo--bar - puts the foo in your bar\n';
-          final doc = asciidoctorLoad(
-            input,
-            backend: 'docbook',
-            standalone: true,
-          );
-          expect(doc.attr('mantitle'), equals('foo\\--bar'));
-          final result = doc.convert() as String;
-          assertXpath(
-            '/xmlns:article/xmlns:info/xmlns:title[text()="foo--bar(1)"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refentrytitle[text()="foo--bar"]',
-            result,
-            1,
-          );
-        },
-      );
+      test('should apply replacements substitution to value of mantitle '
+          'attribute used in DocBook output', () {
+        const input =
+            '= foo\\--bar(1)\nAuthor Name\n:doctype: manpage\n:man manual: Foo Bar Manual\n'
+            ':man source: Foo Bar 1.0\n\n== NAME\n\nfoo--bar - puts the foo in your bar\n';
+        final doc = asciidoctorLoad(
+          input,
+          backend: 'docbook',
+          standalone: true,
+        );
+        expect(doc.attr('mantitle'), equals('foo\\--bar'));
+        final result = doc.convert() as String;
+        assertXpath(
+          '/xmlns:article/xmlns:info/xmlns:title[text()="foo--bar(1)"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refentrytitle[text()="foo--bar"]',
+          result,
+          1,
+        );
+      });
 
-      test(
-        'should be able to set doctype to book when converting to DocBook',
-        skip: needsConverter,
-        () {
-          const input =
-              '= Title\nAuthor Name\n\npreamble\n\n== First Chapter\n\nchapter body\n';
-          final result = convertString(input, {
-            'keep_namespaces': true,
-            'attributes': {'backend': 'docbook5', 'doctype': 'book'},
-          });
-          assertXpath('/xmlns:book', result, 1);
-          final doc = xmlnodesAtXpath('/xmlns:book', result, 1);
-          expect(
-            (doc as dynamic).namespaces['xmlns'],
-            equals('http://docbook.org/ns/docbook'),
-          );
-          expect(
-            (doc as dynamic).namespaces['xmlns:xl'],
-            equals('http://www.w3.org/1999/xlink'),
-          );
-          assertXpath('/xmlns:book[@version="5.0"]', result, 1);
-          assertXpath(
-            '/xmlns:book/xmlns:info/xmlns:title[text()="Title"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '/xmlns:book/xmlns:preface/xmlns:simpara[text()="preamble"]',
-            result,
-            1,
-          );
-          assertXpath('/xmlns:book/xmlns:chapter', result, 1);
-          assertCss('book:root > chapter[xml|id="_first_chapter"]', result, 1);
-        },
-      );
+      test('should be able to set doctype to book when converting to DocBook', () {
+        const input =
+            '= Title\nAuthor Name\n\npreamble\n\n== First Chapter\n\nchapter body\n';
+        final result = convertString(input, {
+          'keep_namespaces': true,
+          'attributes': {'backend': 'docbook5', 'doctype': 'book'},
+        });
+        assertXpath('/xmlns:book', result, 1);
+        final doc = xmlnodesAtXpath('/xmlns:book', result, 1);
+        expect(
+          (doc as dynamic).namespaces['xmlns'],
+          equals('http://docbook.org/ns/docbook'),
+        );
+        expect(
+          (doc as dynamic).namespaces['xmlns:xl'],
+          equals('http://www.w3.org/1999/xlink'),
+        );
+        assertXpath('/xmlns:book[@version="5.0"]', result, 1);
+        assertXpath(
+          '/xmlns:book/xmlns:info/xmlns:title[text()="Title"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '/xmlns:book/xmlns:preface/xmlns:simpara[text()="preamble"]',
+          result,
+          1,
+        );
+        assertXpath('/xmlns:book/xmlns:chapter', result, 1);
+        assertCss('book:root > chapter[xml|id="_first_chapter"]', result, 1);
+      });
 
-      test(
-        'should be able to set doctype to book for document with no title '
-        'when converting to DocBook',
-        skip: needsConverter,
-        () {
-          final result = convertString('text', {
-            'attributes': {'backend': 'docbook5', 'doctype': 'book'},
-          });
-          assertXpath('/book', result, 1);
-          assertXpath('/book/info/date', result, 1);
-          // NOTE simpara cannot be a direct child of book, so content must
-          // be treated as a preface.
-          assertXpath('/book/preface/simpara[text()="text"]', result, 1);
-        },
-      );
+      test('should be able to set doctype to book for document with no title '
+          'when converting to DocBook', () {
+        final result = convertString('text', {
+          'attributes': {'backend': 'docbook5', 'doctype': 'book'},
+        });
+        assertXpath('/book', result, 1);
+        assertXpath('/book/info/date', result, 1);
+        // NOTE simpara cannot be a direct child of book, so content must
+        // be treated as a preface.
+        assertXpath('/book/preface/simpara[text()="text"]', result, 1);
+      });
 
-      test(
-        'adds refname to DocBook output for each name defined in NAME '
-        'section of manpage',
-        skip: needsConverter,
-        () {
-          const input =
-              '= eve(1)\nAndrew Stanton\nv1.0.0\n:doctype: manpage\n:manmanual: EVE\n:mansource: EVE\n\n'
-              '== NAME\n\neve, islifeform - analyzes an image to determine if it\'s a picture of a life form\n\n'
-              '== SYNOPSIS\n\n*eve* [\'OPTION\']... \'FILE\'...\n';
-          final result = convertString(input, {'backend': 'docbook5'});
-          assertXpath('/article/refentry/refnamediv/refname', result, 2);
-          assertXpath(
-            '(/article/refentry/refnamediv/refname)[1][text()="eve"]',
-            result,
-            1,
-          );
-          assertXpath(
-            '(/article/refentry/refnamediv/refname)[2][text()="islifeform"]',
-            result,
-            1,
-          );
-        },
-      );
+      test('adds refname to DocBook output for each name defined in NAME '
+          'section of manpage', () {
+        const input =
+            '= eve(1)\nAndrew Stanton\nv1.0.0\n:doctype: manpage\n:manmanual: EVE\n:mansource: EVE\n\n'
+            '== NAME\n\neve, islifeform - analyzes an image to determine if it\'s a picture of a life form\n\n'
+            '== SYNOPSIS\n\n*eve* [\'OPTION\']... \'FILE\'...\n';
+        final result = convertString(input, {'backend': 'docbook5'});
+        assertXpath('/article/refentry/refnamediv/refname', result, 2);
+        assertXpath(
+          '(/article/refentry/refnamediv/refname)[1][text()="eve"]',
+          result,
+          1,
+        );
+        assertXpath(
+          '(/article/refentry/refnamediv/refname)[2][text()="islifeform"]',
+          result,
+          1,
+        );
+      });
 
       test(
         'adds a front and back cover image to DocBook 5 when doctype is book',
-        skip: needsConverter,
         () {
           const input =
               '= Title\n:doctype: book\n:imagesdir: images\n'
@@ -2851,7 +3826,7 @@ void main() {
         expect(doc.attributes['doctype'], equals('book'));
       });
 
-      test('do not override explicit author initials', skip: needsConverter, () {
+      test('do not override explicit author initials', () {
         const input =
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n:Author Initials: SJR\n\nmore info...\n';
         final output = convertString(input, {
@@ -2930,7 +3905,6 @@ void main() {
 
       test(
         'should output special header block in HTML for manpage doctype',
-        skip: needsConverter,
         () {
           const input =
               '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
@@ -2966,47 +3940,39 @@ void main() {
         },
       );
 
-      test(
-        'should output special header block in embeddable HTML for manpage '
-        'doctype',
-        skip: needsConverter,
-        () {
-          const input =
-              '= asciidoctor(1)\n:doctype: manpage\n:showtitle:\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
-              '== SYNOPSIS\n\n*asciidoctor* [\'OPTION\']... \'FILE\'..\n';
-          final output = convertStringToEmbedded(input);
-          assertXpath('/h1[text()="asciidoctor(1) Manual Page"]', output, 1);
-          assertXpath('/h1/following-sibling::h2[text()="NAME"]', output, 1);
-          assertXpath('//h2[@id="_name"][text()="NAME"]', output, 1);
-          assertXpath(
-            '//h2[text()="NAME"]/following-sibling::*[@class="sectionbody"]',
-            output,
-            1,
-          );
-          assertXpath(
-            '//h2[text()="NAME"]/following-sibling::*[@class="sectionbody"]/p[text()="asciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats"]',
-            output,
-            1,
-          );
-        },
-      );
+      test('should output special header block in embeddable HTML for manpage '
+          'doctype', () {
+        const input =
+            '= asciidoctor(1)\n:doctype: manpage\n:showtitle:\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
+            '== SYNOPSIS\n\n*asciidoctor* [\'OPTION\']... \'FILE\'..\n';
+        final output = convertStringToEmbedded(input);
+        assertXpath('/h1[text()="asciidoctor(1) Manual Page"]', output, 1);
+        assertXpath('/h1/following-sibling::h2[text()="NAME"]', output, 1);
+        assertXpath('//h2[@id="_name"][text()="NAME"]', output, 1);
+        assertXpath(
+          '//h2[text()="NAME"]/following-sibling::*[@class="sectionbody"]',
+          output,
+          1,
+        );
+        assertXpath(
+          '//h2[text()="NAME"]/following-sibling::*[@class="sectionbody"]/p[text()="asciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats"]',
+          output,
+          1,
+        );
+      });
 
-      test(
-        'should output all mannames in name section in man page output',
-        skip: needsConverter,
-        () {
-          const input =
-              '= eve(1)\n:doctype: manpage\n\n== NAME\n\neve, probe - analyzes an image to determine if it is a picture of a life form\n\n'
-              '== SYNOPSIS\n\n*eve* [OPTION]... FILE...\n';
-          final output = convertString(input);
-          assertCss('body.manpage', output, 1);
-          assertXpath(
-            '//h2[text()="NAME"]/following-sibling::*[@class="sectionbody"]/p[text()="eve, probe - analyzes an image to determine if it is a picture of a life form"]',
-            output,
-            1,
-          );
-        },
-      );
+      test('should output all mannames in name section in man page output', () {
+        const input =
+            '= eve(1)\n:doctype: manpage\n\n== NAME\n\neve, probe - analyzes an image to determine if it is a picture of a life form\n\n'
+            '== SYNOPSIS\n\n*eve* [OPTION]... FILE...\n';
+        final output = convertString(input);
+        assertCss('body.manpage', output, 1);
+        assertXpath(
+          '//h2[text()="NAME"]/following-sibling::*[@class="sectionbody"]/p[text()="eve, probe - analyzes an image to determine if it is a picture of a life form"]',
+          output,
+          1,
+        );
+      });
     });
 
     group('Secure Asset Path', () {

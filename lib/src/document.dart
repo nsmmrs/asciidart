@@ -19,13 +19,9 @@
 ///   constructor-level behavior is byte-identical; calling `convert` on the
 ///   stub throws [UnimplementedError]. [Document.convert] calls the
 ///   single-argument `NodeConverter.convert`.
-/// * The substitutors wave fills in the private `_applyHeaderSubs`,
-///   `_applyPassMacroSubs` and `_resolveDocinfoSubs` stubs (all throwing
-///   [UnimplementedError] until then).
-/// * The extensions and syntax-highlighter waves fill in [Document.extensions]
-///   and [Document.syntaxHighlighter] (both `null` until then). Passing the
-///   `extensions` or `extension_registry` options, or a `converter_factory`
-///   option, throws [UnimplementedError].
+/// * The extensions wave fills in [Document.extensions] (`null` until then).
+///   Passing the `extensions` or `extension_registry` options, or a
+///   `converter_factory` option, throws [UnimplementedError].
 ///
 /// [Timings] (from `timings.dart`) records the read/parse/convert/write
 /// phase durations surfaced via the `timings` option and `--timings`.
@@ -42,6 +38,7 @@ import 'converter.dart';
 import 'core_ext.dart';
 import 'docbook5.dart';
 import 'helpers.dart';
+import 'highlight/syntax_highlighter.dart';
 import 'html5.dart';
 import 'timings.dart';
 import 'inline.dart';
@@ -1559,18 +1556,28 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// Applies the passthrough-macro [subs] to [value].
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  String _applyPassMacroSubs(String value, String? subs) =>
-      throw UnimplementedError(
-        'Substitutors wave: attribute pass-macro subs are not yet ported.',
-      );
+  /// Port of the `AttributeEntryPassMacroRx` branch of
+  /// `apply_attribute_value_subs` (document.rb:1114): no subs list means
+  /// the value is stored verbatim; otherwise the inline-resolved list is
+  /// applied (`resolve_pass_subs`, substitutors.rb:1247).
+  String _applyPassMacroSubs(String value, String? subs) {
+    if (subs == null) return value;
+    final resolved = substitutors.resolveSubs(
+      this,
+      subs,
+      'inline',
+      null,
+      'passthrough macro',
+    );
+    return substitutors.applySubs(this, value, resolved ?? <String>[])
+        as String;
+  }
 
   /// Applies header substitutions to [value].
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  String _applyHeaderSubs(String value) => throw UnimplementedError(
-    'Substitutors wave: Document.applyHeaderSubs is not yet ported.',
-  );
+  /// Port of `Substitutors#apply_header_subs` (substitutors.rb:142).
+  String _applyHeaderSubs(String value) =>
+      applySubs(value, substitutors.headerSubs) as String;
 
   /// Safely truncates [str] to [max] bytes.
   ///
@@ -1606,12 +1613,20 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// Resolves the substitutions to apply to docinfo files.
   ///
-  /// From the `docinfosubs` attribute when set, else `['attributes']`.
+  /// From the `docinfosubs` attribute when set, else `['attributes']`
+  /// (port of `resolve_docinfo_subs`; document.rb:1146; an empty value
+  /// resolves to no subs, matching Ruby's `nil` short-circuit in
+  /// `apply_subs`).
   List<String> _resolveDocinfoSubs() {
     if (attributes.containsKey('docinfosubs')) {
-      throw UnimplementedError(
-        'Substitutors wave: Document.resolveSubs is not yet ported.',
-      );
+      return substitutors.resolveSubs(
+            this,
+            attributes['docinfosubs'] as String?,
+            'block',
+            null,
+            'docinfo',
+          ) ??
+          <String>[];
     }
     return <String>['attributes'];
   }
@@ -1809,7 +1824,10 @@ class Document extends AbstractBlock implements NodeDocument {
         final syntaxHlName = attrs['source-highlighter'];
         if (isTruthy(syntaxHlName) &&
             !isTruthy(attrs['$syntaxHlName-unavailable'])) {
-          // Syntax-highlighter wave: create the syntax highlighter here.
+          // Port of document.rb `save_attributes` (the `@options`
+          // `:syntax_highlighter_factory` / `:syntax_highlighters`
+          // branches); `resolveForDocument` re-checks the same conditions.
+          syntaxHighlighter = SyntaxHighlighter.resolveForDocument(this);
         }
         // Enable toc and sectnums (i.e., numbered) by default in DocBook
         // backend.
