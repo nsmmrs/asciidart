@@ -21,6 +21,7 @@ import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/block.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/substitutors.dart';
@@ -4560,14 +4561,22 @@ void main() {
       });
 
       test('should resolve specialcharacters sub as highlight for source block when source highlighter is coderay', () {
-        markTestSkipped(
-          'source-highlight resolution throws UnimplementedError until the highlight wave merges (TEMP-SEAM in commitSubs)',
-        );
+        final doc = makeDoc(attributes: {'source-highlighter': 'coderay'});
+        // PORT: bare Document construction skips save_attributes, so
+        // resolve the highlighter explicitly (Ruby's `parse: true` does
+        // this via the parse path).
+        doc.syntaxHighlighter = SyntaxHighlighter.resolveForDocument(doc);
+        final block = Block(doc, 'listing', contentModel: 'verbatim');
+        block.style = 'source';
+        block.attributes['subs'] = 'specialcharacters';
+        block.attributes['language'] = 'ruby';
+        commitSubs(block);
+        expect(block.subs, ['highlight']);
       });
 
       test('should resolve specialcharacters sub as highlight for source block when source highlighter is pygments', () {
         markTestSkipped(
-          'requires pygments and the unmerged highlight wave (TEMP-SEAM in commitSubs)',
+          'requires a pygments backend (mirrors the Ruby test gate `if: ENV[\'PYGMENTS_VERSION\']`); with no backend canHighlight is false',
         );
       });
 
@@ -4668,6 +4677,37 @@ void main() {
           'macros',
           'post_replacements',
         ]);
+      });
+    });
+
+    group('Resolve lines to highlight', () {
+      // Expected values verified against the Ruby oracle
+      // (`Block#resolve_lines_to_highlight` on a 5-line source).
+      const source = 'a\nb\nc\nd\ne\n';
+
+      test('single line without start', () {
+        expect(resolveLinesToHighlight(source, '2'), [2]);
+      });
+
+      test('line list without start', () {
+        expect(resolveLinesToHighlight(source, '1,3'), [1, 3]);
+      });
+
+      test('line range without start', () {
+        expect(resolveLinesToHighlight(source, '2..4'), [2, 3, 4]);
+      });
+
+      test('open-ended range without start', () {
+        expect(resolveLinesToHighlight(source, '2..-1'), [2, 3, 4, 5, 6]);
+      });
+
+      test('start shifts resolved lines down by start - 1', () {
+        expect(resolveLinesToHighlight(source, '6', 5), [2]);
+      });
+
+      test('start shifts ranges down by start - 1', () {
+        expect(resolveLinesToHighlight(source, '2..4', 5), [-2, -1, 0]);
+        expect(resolveLinesToHighlight(source, '2..-1', 5), [-2, -1, 0, 1, 2]);
       });
     });
   });

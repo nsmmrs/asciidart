@@ -1,0 +1,32 @@
+= CodeRay options showcase
+:source-highlighter: coderay
+
+Table line numbers with callouts.
+
+[source,ruby,linenums]
+----
+puts 'one' # <1>
+puts 'two'
+----
+<1> First line.
+
+Inline line numbers starting at five with a highlighted line.
+
+:coderay-linenums-mode: inline
+
+[source,ruby,linenums,start=5,highlight=6]
+----
+puts 'five'
+puts 'six'
+puts 'seven'
+----
+
+:coderay-linenums-mode: table
+:coderay-css: style
+
+Inline styles instead of classes.
+
+[source,ruby]
+----
+puts 'styled'
+----
