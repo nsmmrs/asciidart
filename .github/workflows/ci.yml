@@ -64,6 +64,6 @@ jobs:
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
       run: |
-        EXE="$(pwd)/$(ls dist | grep '^asciidoctor-linux-')"
+        EXE="$(pwd)/dist/$(ls dist | grep '^asciidoctor-linux-')"
         echo "ASCIIDOCTOR_EXE=$EXE"
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
