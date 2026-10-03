@@ -2650,9 +2650,7 @@ void main() {
                         parent,
                         '*$target*',
                         attributes: {
-                          // Adapted: stored as a string; the substitutors
-                          // wave parses it back into a list.
-                          'subs': 'specialchars,quotes',
+                          'subs': ['specialchars', 'quotes'],
                         },
                       );
                     };
