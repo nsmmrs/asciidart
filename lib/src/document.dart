@@ -11,7 +11,7 @@
 /// * The parser wave replaces the [Parser] stub (`parser.dart`) and un-skips
 ///   the parse-dependent tests. Until then [Document.parse] (and everything
 ///   that parses, such as [Document.convert]) throws [UnimplementedError].
-/// * Ported backend converters (html5, docbook5; manpage follows) register
+/// * Ported backend converters (html5, docbook5, manpage) register
 ///   with [Converter] and [Document] resolves them through
 ///   [Converter.create]. Until a backend lands, [Document] carries a minimal
 ///   internal stub ([_BuiltinConverterStub]) that reports the built-in
@@ -45,6 +45,7 @@ import 'helpers.dart';
 import 'html5.dart';
 import 'timings.dart';
 import 'inline.dart';
+import 'manpage.dart';
 import 'parser.dart';
 import 'path_resolver.dart';
 import 'reader.dart';
@@ -1620,10 +1621,10 @@ class Document extends AbstractBlock implements NodeDocument {
     // Ensure the ported backends are registered (idempotent), then resolve
     // through the factory, mirroring Ruby's `create_converter`
     // (`converter_opts = { document:, htmlsyntax: }`). Template keys join
-    // the options when the template wave lands (manpage registers here too
-    // once it merges).
+    // the options when the template wave lands.
     Html5Converter.registerFor();
     Docbook5Converter.registerFor();
+    ManpageConverter.registerFor();
     final created = Converter.create(backend, <String, Object?>{
       'document': this,
       'htmlsyntax': attributes['htmlsyntax'],
