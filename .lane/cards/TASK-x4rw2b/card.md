@@ -1,7 +1,7 @@
 ---
 id: TASK-x4rw2b
 title: "Parity gate + benchmark verdict (Ruby vs Dart VM vs AOT vs JS)"
-status: doing
+status: done
 type: task
 priority: 1
 labels:
@@ -9,8 +9,9 @@ labels:
 - gate
 parent: EPIC-ckgkd2
 created: "2026-10-03T06:08:56.772580Z"
-updated: "2026-10-03T11:28:16.290491Z"
+updated: "2026-10-03T11:57:53.281844Z"
 ---
+
 
 
 
