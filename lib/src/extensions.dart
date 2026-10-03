@@ -50,9 +50,11 @@ import 'document.dart';
 import 'helpers.dart';
 import 'inline.dart';
 import 'list.dart';
+import 'parser.dart';
 import 'reader.dart';
 import 'rx.dart';
 import 'section.dart';
+import 'substitutors.dart' as substitutors;
 
 /// Sentinel distinguishing a missing `numbered` argument from an explicit
 /// value in [Processor.createSection] (mirrors `Hash#fetch` with a default).
@@ -333,18 +335,20 @@ class Processor {
   /// [content] is a [Reader] or the source as a string or list of lines;
   /// [attributes] are passed through to the parser. Returns [parent].
   ///
-  /// Throws [UnimplementedError] until the parser wave ports
-  /// `Parser.parse_blocks`.
+  /// Port of `Extensions::Processor#parse_content`
+  /// (lib/asciidoctor/extensions.rb:227-231).
   AbstractBlock parseContent(
     AbstractBlock parent,
     Object? content, [
     Map<String, Object?>? attributes,
   ]) {
-    // TEMP-SEAM (extensions): Parser.parseBlocks arrives with the parser
-    // wave; until then this method cannot parse child content.
-    throw UnimplementedError(
-      'Extensions.parseContent needs Parser.parseBlocks (parser wave)',
+    final reader = content is Reader ? content : Reader(content);
+    Parser.parseBlocks(
+      reader,
+      parent,
+      attributes == null ? null : Map<Object, Object?>.of(attributes),
     );
+    return parent;
   }
 
   /// Parses the attrlist [attrlist] into a map of attributes.
@@ -358,15 +362,13 @@ class Processor {
     bool subAttributes = false,
   }) {
     if (attrlist == null || attrlist.isEmpty) return <Object, String?>{};
-    if (subAttributes && attrlist.contains(attrRefHead)) {
-      // TEMP-SEAM (extensions): AbstractBlock.subAttributes arrives with the
-      // substitutors wave.
-      throw UnimplementedError(
-        'Extensions.parseAttributes with subAttributes needs '
-        'AbstractBlock.subAttributes (substitutors wave)',
-      );
+    // Port of `Extensions::Processor#parse_attributes`
+    // (lib/asciidoctor/extensions.rb:242-246).
+    var source = attrlist;
+    if (subAttributes && source.contains(attrRefHead)) {
+      source = substitutors.subAttributes(block, source);
     }
-    return AttributeList(attrlist).parse(positionalAttributes);
+    return AttributeList(source).parse(positionalAttributes);
   }
 
   /// Creates a paragraph block (delegate of [createBlock]).
