@@ -6,9 +6,11 @@
 /// `ruby -Ilib` probes (see the commit message for the observed outputs).
 ///
 /// Substitution-dependent paths (`title` with text, `alt` with text,
-/// `reftext` with text, styled `xreftext`, simple/verbatim `content`)
+/// `reftext` with text, styled `xreftext`, `content` with non-empty subs)
 /// throw [UnimplementedError] until the substitutors wave lands; those
-/// tests pin the seam so the wave knows what to unlock.
+/// tests pin the seam so the wave knows what to unlock. Vacuous
+/// substitutions (empty text, `null`/empty subs) already pass through, as
+/// in Ruby.
 library;
 
 import 'dart:convert' show utf8;
@@ -17,6 +19,7 @@ import 'dart:io' show Directory, File;
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/block.dart';
+import 'package:asciidoctor/src/callouts.dart';
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
@@ -99,6 +102,20 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
 
   @override
   final FakeConverter converter = FakeConverter();
+
+  @override
+  final Map<String, Object?> catalog = <String, Object?>{
+    'refs': <String, Object?>{},
+  };
+
+  @override
+  final Callouts callouts = Callouts();
+
+  @override
+  bool nested() => false;
+
+  @override
+  bool sourcemap = false;
 
   /// Counters by name (mirrors `Document#counter` storage).
   final Map<String, Object?> counters = <String, Object?>{};
@@ -1059,15 +1076,15 @@ void main() {
       );
     });
 
-    test('simple and verbatim content await the substitutors wave', () {
-      expect(
-        Block(makeDoc(), 'paragraph', source: 'a').content,
-        throwsUnimplementedError,
-      );
-      expect(
-        Block(makeDoc(), 'listing', source: 'a').content,
-        throwsUnimplementedError,
-      );
+    test('simple and verbatim content with vacuous subs need no wave', () {
+      // Deferred (empty) subs are vacuous in Ruby: the source passes
+      // through, with blank edge lines stripped for verbatim blocks.
+      expect(Block(makeDoc(), 'paragraph', source: 'a').content(), equals('a'));
+      expect(Block(makeDoc(), 'listing', source: 'a').content(), equals('a'));
+      // Real substitutions still await the substitutors wave.
+      final quoted = Block(makeDoc(), 'paragraph', source: 'a')
+        ..subs = ['quotes'];
+      expect(quoted.content, throwsUnimplementedError);
     });
   });
 

@@ -167,7 +167,11 @@ abstract class AbstractBlock extends AbstractNode {
   Object? render() => convert();
 
   /// Returns the converted result of the child blocks.
-  String? content() => blocks.map((child) => child.convert() ?? '').join(lf);
+  ///
+  /// The return type is [Object] because subclasses narrow it: `List`
+  /// returns its items and table cells return paragraph arrays, mirroring
+  /// Ruby's `alias content blocks` and `Table::Cell#content`.
+  Object? content() => blocks.map((child) => child.convert() ?? '').join(lf);
 
   /// Appends [child] to this block's list of blocks.
   ///
@@ -392,8 +396,11 @@ abstract class AbstractBlock extends AbstractNode {
   /// Returns the next adjacent block in document order.
   ///
   /// When this block is the last item of its parent, the search continues
-  /// with the following sibling of the parent, and so on.
-  AbstractBlock? nextAdjacentBlock() {
+  /// with the following sibling of the parent, and so on. The return type
+  /// is [Object] because description-list items advance to the next
+  /// `[terms, description]` pair (a [List]), exactly as in Ruby; otherwise
+  /// the result is an [AbstractBlock], or `null` at the end of the document.
+  Object? nextAdjacentBlock() {
     if (context == 'document') return null;
     final p = parent;
     if (p == null) {
@@ -411,12 +418,13 @@ abstract class AbstractBlock extends AbstractNode {
     return next < siblings.length ? siblings[next] : p.nextAdjacentBlock();
   }
 
-  /// Returns the block following dlist item [item] within this list.
+  /// Returns the pair following dlist item [item] within this list.
   ///
   /// List wave: `List` overrides this to walk its term/description pairs
-  /// (returning `null` for the last one so the search continues past the
-  /// list). The default implementation throws [UnimplementedError].
-  AbstractBlock? nextAdjacentDlistBlock(AbstractBlock item) =>
+  /// (returning the next `[terms, description]` pair, or `null` for the
+  /// last one so the search continues past the list). The default
+  /// implementation throws [UnimplementedError].
+  Object? nextAdjacentDlistBlock(AbstractBlock item) =>
       throw UnimplementedError(
         'List wave: AbstractBlock.nextAdjacentDlistBlock is not yet ported.',
       );
@@ -481,6 +489,13 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// Whether this block has a title.
   bool get hasTitle => _title != null;
+
+  /// The raw source title of this block, if set ([title] returns the
+  /// converted title).
+  ///
+  /// Internal (no reader in Ruby); `Section` renders it from another
+  /// library. Ruby reads the `@title` field directly for the same purpose.
+  String? get sourceTitle => _title;
 
   /// Sets the block title, clearing the memoized converted title.
   set title(String? value) {
@@ -566,7 +581,15 @@ abstract class AbstractBlock extends AbstractNode {
     }
     // NOTE Ruby leaves the falsy assigned value in @caption here; keeping
     // null is equivalent (both are falsy, so assignment stays re-runnable).
-    final attrName = captionAttributeNames[targetContext];
+    //
+    // Ruby keys 'figure' as a String while contexts are Symbols, so only an
+    // explicitly passed 'figure' caption context hits; the parser passes it
+    // for titled images (parser.rb), while a block whose context merely is
+    // 'figure' misses. The port's all-string contexts collapse that
+    // distinction, so the explicit path is routed here.
+    final attrName = targetContext == 'figure' && captionContext != null
+        ? 'figure-caption'
+        : captionAttributeNames[targetContext];
     final prefix = attrName == null ? null : document!.attributes[attrName];
     if (attrName != null && prefix != null && prefix != false) {
       numeral = document!.incrementAndStoreCounter(
@@ -605,6 +628,12 @@ abstract class AbstractBlock extends AbstractNode {
       _nextSectionOrdinal += 1;
     }
   }
+
+  /// The next 0-based section index within this block.
+  ///
+  /// Internal (no reader in Ruby); `Section` reads it from another library
+  /// for `hasSections`. Only meaningful on document/section nodes.
+  int get nextSectionIndex => _nextSectionIndex;
 
   /// Reassigns section indexes by walking the descendants in document order.
   ///

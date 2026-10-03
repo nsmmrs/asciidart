@@ -26,6 +26,7 @@ import 'dart:convert' show base64Encode, utf8;
 import 'dart:io' show File, FileSystemException, stderr;
 
 import 'abstract_block.dart';
+import 'callouts.dart';
 import 'helpers.dart';
 import 'path_resolver.dart';
 
@@ -134,6 +135,27 @@ abstract interface class NodeDocument {
   /// Whether the document runs in AsciiDoc compatibility mode.
   bool get compatMode;
 
+  /// The document catalog (`'refs'`, `'callouts'`, ...).
+  ///
+  /// Mirrors `Document#catalog` (whose Ruby keys are symbols; the port uses
+  /// their string names).
+  Map<String, Object?> get catalog;
+
+  /// The document callouts catalog.
+  ///
+  /// Mirrors `Document#callouts` (which reads the catalog entry).
+  Callouts get callouts;
+
+  /// Whether this document is nested inside another one.
+  ///
+  /// Mirrors `Document#nested?`.
+  bool nested();
+
+  /// Whether source locations are tracked for blocks.
+  ///
+  /// Mirrors `Document#sourcemap`.
+  bool get sourcemap;
+
   /// Returns the value of document attribute [name], or [defaultValue].
   ///
   /// Mirrors `AbstractNode#attr` as inherited by `Document`.
@@ -189,10 +211,12 @@ abstract class AbstractNode {
   /// Creates a node with [parent] and [context].
   ///
   /// When [context] is `'document'`, the node refers to itself as its
-  /// document (and must implement [NodeDocument]); otherwise the document
-  /// is taken from [parent] (which may be `null`, leaving [document] unset
-  /// until the node is attached with [parent] or `<<`). [attributes] is
-  /// copied; [nodeName] overrides the default node name, which is [context].
+  /// document (and must implement [NodeDocument]), ignoring [parent] (which
+  /// stays `null`, as in Ruby, where a document never assigns `@parent`);
+  /// otherwise the document is taken from [parent] (which may be `null`,
+  /// leaving [document] unset until the node is attached with [parent] or
+  /// `<<`). [attributes] is copied; [nodeName] overrides the default node
+  /// name, which is [context].
   AbstractNode(
     AbstractBlock? parent,
     String context, {
@@ -210,6 +234,7 @@ abstract class AbstractNode {
           'A node with context "document" must implement NodeDocument.',
         );
       }
+      _parent = null;
       _document = this as NodeDocument;
     } else if (parent != null) {
       _document = parent.document;
@@ -820,17 +845,49 @@ abstract class AbstractNode {
 
   /// Applies the substitutions [subs] to [source].
   ///
-  /// Substitutors wave: stub throwing [UnimplementedError].
-  Object? applySubs(Object? source, [List<String>? subs]) =>
-      throw UnimplementedError(
-        'Substitutors wave: AbstractNode.applySubs is not yet ported.',
-      );
+  /// [source] is a [String] or a [List] of lines (mirroring Ruby, where the
+  /// verbatim path passes the lines array and gets an array back). Two
+  /// vacuous cases are implemented faithfully, matching Ruby's
+  /// `return text if text.empty? || !subs` guard and the no-op loop over an
+  /// empty [subs] list: empty text is returned as is, a `null` [subs]
+  /// returns the text unchanged, and an empty [subs] list returns strings
+  /// unchanged while arrays go through the join/split round-trip (a fresh
+  /// array, never the input). Anything else throws [UnimplementedError]
+  /// until the substitutors wave lands.
+  Object? applySubs(Object? source, [List<String>? subs]) {
+    final text = source;
+    if (text == null) {
+      // Ruby raises NoMethodError on `nil.empty?`.
+      throw StateError('applySubs: text must not be null');
+    }
+    if (text is String && text.isEmpty) return text;
+    if (text is List<Object?> && text.isEmpty) return text;
+    if (text is! String && text is! List<Object?>) {
+      throw StateError('applySubs: text must be a String or a List');
+    }
+    if (subs == null) return text;
+    if (subs.isEmpty) {
+      if (text is List<Object?>) return text.join(lf).split(lf);
+      return text;
+    }
+    throw UnimplementedError(
+      'Substitutors wave: AbstractNode.applySubs with non-empty subs '
+      'is not yet ported.',
+    );
+  }
 
   /// Applies title substitutions to [text].
   ///
-  /// Ruby aliases this to `apply_subs`. Substitutors wave: stub throwing
-  /// [UnimplementedError].
-  Object? applyTitleSubs(Object? text) => applySubs(text);
+  /// Ruby aliases this to `apply_subs` (defaulting to the normal
+  /// substitutions, which always perform real work on non-empty text).
+  /// Empty text is returned as is; anything else throws
+  /// [UnimplementedError] until the substitutors wave lands.
+  Object? applyTitleSubs(Object? text) {
+    if (text is String && text.isEmpty) return text;
+    throw UnimplementedError(
+      'Substitutors wave: AbstractNode.applyTitleSubs is not yet ported.',
+    );
+  }
 
   /// Applies reference-text substitutions to [text].
   ///
