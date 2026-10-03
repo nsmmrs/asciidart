@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Subject-under-test shim for the in-repo Ruby CLI.
+# Resolves the repo root from this file's location so tests can run from any cwd.
+set -e
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+exec ruby "$ROOT/bin/asciidoctor" "$@"
