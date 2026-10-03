@@ -7,7 +7,8 @@
 /// `test/converter_test.rb`. Ported tests use fake converters and
 /// directly-constructed fake nodes (no parsing); tests that need parsing,
 /// a `Document`, the template converter, or a backend converter are
-/// skipped with reason 'needs Parser (parser wave)'.
+/// skipped as empty placeholders with [needsTemplateConverter] or
+/// [needsBackendConverter] until those waves land.
 ///
 /// Global-registry tests clean up with `addTearDown(Converter.unregisterAll)`
 /// and use unique backend names per test: `provided` registrations survive
@@ -22,8 +23,15 @@ import 'package:asciidoctor/src/converter.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:test/test.dart';
 
-/// Reason for tests that need parsing, a Document, templates, or backends.
-const String needsParser = 'needs Parser (parser wave)';
+/// Reason for placeholder tests that need the template-converter wave
+/// (template engines and template caching have no Dart port yet).
+const String needsTemplateConverter =
+    'placeholder (empty body): needs template-converter wave';
+
+/// Reason for placeholder tests that need a backend converter or
+/// `Document`-level converter integration.
+const String needsBackendConverter =
+    'placeholder (empty body): needs backend-converter wave';
 
 /// A minimal [Converter] returning [result] for every node.
 class FakeConverter extends Converter {
@@ -137,48 +145,48 @@ void main() {
     group('View options', () {
       test(
         'should set Haml format to html5 for html5 backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should set Haml format to xhtml for docbook backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should configure Slim to resolve includes in specified template dirs',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should coerce template_dirs option to an Array',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should set Slim format to html for html5 backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should set Slim format to nil for docbook backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should set safe mode of Slim AsciiDoc engine to match document safe '
         'mode when Slim >= 3',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should support custom template engine options for known engine',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should support custom template engine options',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
     });
@@ -186,89 +194,89 @@ void main() {
     group('Custom backends', () {
       test(
         'should load Haml templates for default backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should set outfilesuffix according to backend info',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should not override outfilesuffix attribute if locked',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should load Haml templates for docbook5 backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should use Haml templates in place of built-in templates',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should allow custom backend to emulate a known backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should create template converter even when a converter is not '
         'registered for the specified backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should use built-in global cache to cache templates',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should use custom cache to cache templates',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should be able to disable template cache',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should load ERB templates using ERBTemplate if eruby is not set',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should load ERB templates using ErubiTemplate if eruby is set to '
         'erubi',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should load Slim templates for default backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should load Slim templates for docbook5 backend',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should use Slim templates in place of built-in templates',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should be able to override the outline using a custom template',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'resolves templates from classloader when using JRuby',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
     });
@@ -327,12 +335,12 @@ void main() {
 
       test(
         'should use specified converter for current backend',
-        skip: needsParser,
+        skip: needsBackendConverter,
         () {},
       );
       test(
         'should use specified converter for specified backend',
-        skip: needsParser,
+        skip: needsBackendConverter,
         () {},
       );
 
@@ -369,12 +377,12 @@ void main() {
 
       test(
         'should get converter from specified converter factory',
-        skip: needsParser,
+        skip: needsBackendConverter,
         () {},
       );
       test(
         'should allow converter to set htmlsyntax when basebackend is html',
-        skip: needsParser,
+        skip: needsBackendConverter,
         () {},
       );
 
@@ -470,13 +478,13 @@ void main() {
 
       test(
         'should not configure converter to support templates by default',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
       test(
         'should wrap converter in composite converter with template converter '
         'if it declares that it supports templates',
-        skip: needsParser,
+        skip: needsTemplateConverter,
         () {},
       );
 
@@ -619,19 +627,19 @@ void main() {
       test(
         'should delegate to method on HTML 5 converter with convert_ prefix '
         'if called without prefix',
-        skip: needsParser,
+        skip: needsBackendConverter,
         () {},
       );
       test(
         'should not delegate unprefixed method on HTML 5 converter if '
         'converter does not handle transform',
-        skip: needsParser,
+        skip: needsBackendConverter,
         () {},
       );
       test(
         'can call read_svg_contents on built-in HTML5 converter; should '
         'remove markup prior the root svg element',
-        skip: needsParser,
+        skip: needsBackendConverter,
         () {},
       );
     });
