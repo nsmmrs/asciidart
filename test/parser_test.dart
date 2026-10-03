@@ -608,7 +608,9 @@ void main() {
         expect(doc.attributes['firstname'], equals('Ze Project'));
         expect(doc.attributes['lastname'], equals('team'));
       },
-      skip: 'needs the substitutors wave: pass-macro subs with quotes and link macros (Parser._applyAttributeValueSubs is a partial TEMP-SEAM)',
+      skip:
+          'needs substitutors wave (TASK-2h31dk): pass-macro subs with quotes '
+          'and link macros (Parser._applyAttributeValueSubs is a partial TEMP-SEAM)',
     );
 
     test('parse rev number date remark', () {

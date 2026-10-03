@@ -28,11 +28,9 @@ import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/table.dart';
 import 'package:test/test.dart';
 
-/// Skip reason for tests requiring the parser wave.
-const String needsParser = 'needs Parser.parse (parser wave)';
-
 /// Skip reason for tests requiring real substitution output.
-const String needsSubstitutors = 'needs substitutors wave';
+const String needsSubstitutors =
+    'needs substitutors wave (TASK-2h31dk): real substitution output';
 
 /// Skip reason for tests requiring nested documents (the nested-document
 /// constructor eagerly parses, so this needs the parser wave too).
@@ -2355,7 +2353,9 @@ void main() {
     test(
       'recursive xref guard',
       () {},
-      skip: 'needs reentrant conversion through substitutions',
+      skip:
+          'placeholder (empty body): needs reentrant conversion through '
+          'substitutions (TASK-2h31dk)',
     );
   });
 
@@ -3098,12 +3098,20 @@ void main() {
     test(
       'author email rendering',
       () {},
-      skip: 'needs substitutors wave (sub_macros TEMP-SHIM)',
+      skip:
+          'placeholder (empty body): needs substitutors wave '
+          '(TASK-2h31dk; sub_macros TEMP-SHIM)',
     );
 
     test('docinfo files are included', () {}, skip: needsSubstitutors);
 
-    test('full document from source', () {}, skip: needsParser);
+    test(
+      'full document from source',
+      () {},
+      skip:
+          'placeholder (empty body): needs converter + substitutors waves '
+          'for full-document conversion',
+    );
   });
 
   group('convertEmbedded', () {

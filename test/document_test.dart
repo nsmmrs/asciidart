@@ -1,10 +1,12 @@
 /// Port of `test/document_test.rb` (156 tests).
 ///
 /// Tests that parse or convert (directly or through the `documentFromString`
-/// default of `parse: true`) are skipped with [needsParser] until the parser
-/// wave lands; the parser wave must un-skip them. XML/CSS assertions in
-/// skipped bodies route through [assertXpath]/[assertCss] stubs that throw
-/// until an XML-matching helper is ported. Non-parse tests pass now.
+/// default of `parse: true`) run now that the parser wave has landed; tests
+/// blocked on other waves stay skipped with [needsConverter],
+/// [needsSubstitutors], [needsApiWave], [needsFixtureWave], or
+/// [needsTableWave]. XML/CSS assertions in skipped bodies route through
+/// [assertXpath]/[assertCss] stubs that throw until an XML-matching helper
+/// is ported.
 library;
 
 import 'dart:io' show Directory;
@@ -15,8 +17,31 @@ import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:test/test.dart';
 
-/// Skip reason for tests requiring the parser wave.
-const String needsParser = 'needs Parser.parse (parser wave)';
+/// Skip reason for tests blocked on the converter wave: no html5/docbook
+/// backend converter is ported yet (`Document.convert` throws via
+/// `_BuiltinConverterStub`).
+const String needsConverter =
+    'needs converter wave: no backend converter ported (Document.convert throws)';
+
+/// Skip reason for tests blocked on the substitutors wave (TASK-2h31dk):
+/// `Document`/`AbstractNode` sub methods still throw `UnimplementedError`.
+const String needsSubstitutors =
+    'needs substitutors wave (TASK-2h31dk): sub method stub throws UnimplementedError';
+
+/// Skip reason for tests blocked on the API wave: `convertFile` and
+/// `asciidoctorLoad` helpers are unported stubs.
+const String needsApiWave =
+    'needs API wave: convertFile/asciidoctorLoad helpers not yet ported';
+
+/// Skip reason for tests blocked on the fixture wave: `exampleDocument`
+/// is an unported stub.
+const String needsFixtureWave =
+    'needs fixture wave: exampleDocument helper not yet ported';
+
+/// Skip reason for tests blocked on the table wave: asciidoc-style
+/// table cells cannot nest documents yet.
+const String needsTableWave =
+    'needs table wave: Table::Cell asciidoc nested-document parsing not yet ported';
 
 /// Built-in converter element names (port of `BUILT_IN_ELEMENTS`).
 const List<String> builtInElements = <String>[
@@ -226,7 +251,7 @@ String get testdir => '../test';
 void main() {
   group('Document', () {
     group('Example document', () {
-      test('document title', skip: needsParser, () {
+      test('document title', skip: needsFixtureWave, () {
         final doc = exampleDocument('asciidoc_index');
         expect(doc.doctitle(), equals('AsciiDoc Home Page'));
         expect(doc.name(), equals('AsciiDoc Home Page'));
@@ -299,7 +324,7 @@ void main() {
 
       test(
         'toc and sectnums should be enabled by default in DocBook backend',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final doc = documentFromString('content', {'backend': 'docbook'});
           expect(doc.hasAttr('toc'), isTrue);
@@ -313,7 +338,7 @@ void main() {
       test(
         'maxdepth attribute should be set on asciidoc-toc and '
         'asciidoc-numbered processing instructions in DocBook backend',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final doc = documentFromString('content', {
             'backend': 'docbook',
@@ -327,22 +352,18 @@ void main() {
         },
       );
 
-      test(
-        'should be able to disable toc and sectnums in document header '
-        'in DocBook backend',
-        skip: needsParser,
-        () {
-          const input = '= Document Title\n:toc!:\n:sectnums!:\n';
-          final doc = documentFromString(input, {'backend': 'docbook'});
-          expect(doc.hasAttr('toc'), isFalse);
-          expect(doc.hasAttr('sectnums'), isFalse);
-        },
-      );
+      test('should be able to disable toc and sectnums in document header '
+          'in DocBook backend', () {
+        const input = '= Document Title\n:toc!:\n:sectnums!:\n';
+        final doc = documentFromString(input, {'backend': 'docbook'});
+        expect(doc.hasAttr('toc'), isFalse);
+        expect(doc.hasAttr('sectnums'), isFalse);
+      });
 
       test(
         'noheader attribute should suppress info element when converting '
         'to DocBook',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = '= Document Title\n:noheader:\n\ncontent\n';
           final result = convertString(input, {'backend': 'docbook'});
@@ -351,22 +372,18 @@ void main() {
         },
       );
 
-      test(
-        'should be able to disable section numbering using numbered '
-        'attribute in document header in DocBook backend',
-        skip: needsParser,
-        () {
-          const input = '= Document Title\n:numbered!:\n';
-          final doc = documentFromString(input, {'backend': 'docbook'});
-          expect(doc.hasAttr('sectnums'), isFalse);
-        },
-      );
+      test('should be able to disable section numbering using numbered '
+          'attribute in document header in DocBook backend', () {
+        const input = '= Document Title\n:numbered!:\n';
+        final doc = documentFromString(input, {'backend': 'docbook'});
+        expect(doc.hasAttr('sectnums'), isFalse);
+      });
     });
 
     group('Docinfo files', () {
       test(
         'should include docinfo files for html backend',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -495,7 +512,7 @@ void main() {
 
       test(
         'should include docinfo header even if noheader attribute is set',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
           final output = convertFile(
@@ -513,7 +530,7 @@ void main() {
 
       test(
         'should include docinfo footer even if nofooter attribute is set',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
           final output = convertFile(
@@ -530,7 +547,7 @@ void main() {
 
       test(
         'should include user docinfo after built-in docinfo',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
           final attrs = <String, Object?>{
@@ -559,7 +576,7 @@ void main() {
 
       test(
         'should include docinfo files for html backend with custom docinfodir',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -614,7 +631,7 @@ void main() {
 
       test(
         'should include docinfo files in docbook backend',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -666,7 +683,7 @@ void main() {
 
       test(
         'should use header docinfo in place of default header',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final output = convertFile(
             fixturePath('sample.adoc'),
@@ -686,7 +703,7 @@ void main() {
 
       test(
         'should include docinfo footer files for html backend',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -727,7 +744,7 @@ void main() {
 
       test(
         'should include docinfo footer files in DocBook backend',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -783,7 +800,7 @@ void main() {
 
       test(
         'should force encoding of docinfo files to UTF-8',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           // Dart strings are always UTF-8; there are no default external
           // or internal encodings to manipulate.
@@ -808,7 +825,7 @@ void main() {
 
       test(
         'should not include docinfo files by default',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -837,7 +854,7 @@ void main() {
 
       test(
         'should not include docinfo files if safe mode is SECURE or greater',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('basic.adoc');
 
@@ -866,7 +883,7 @@ void main() {
 
       test(
         'should substitute attributes in docinfo files by default',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('subs.adoc');
           usingMemoryLogger((logger) {
@@ -902,7 +919,7 @@ void main() {
 
       test(
         'should apply explicit substitutions to docinfo files',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           final sampleInputPath = fixturePath('subs.adoc');
           final output = convertFile(
@@ -930,7 +947,7 @@ void main() {
     group('MathJax', () {
       test(
         'should add MathJax script to HTML head if stem attribute is set',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final output = convertString('', {
             'attributes': {'stem': ''},
@@ -975,7 +992,7 @@ void main() {
 
       test(
         'should add favicon if favicon attribute is set',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final cases = <String, List<String>>{
             '': ['favicon.ico', 'image/x-icon'],
@@ -995,7 +1012,7 @@ void main() {
     });
 
     group('Structure', () {
-      test('document with no doctitle', skip: needsParser, () {
+      test('document with no doctitle', () {
         final doc = documentFromString('Snorf');
         expect(doc.doctitle(), isNull);
         expect(doc.name(), isNull);
@@ -1005,7 +1022,7 @@ void main() {
 
       test(
         'should enable compat mode for document with legacy doctitle',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = 'Document Title\n==============\n\n+content+\n';
           final doc = documentFromString(input);
@@ -1018,7 +1035,7 @@ void main() {
       test(
         'should not enable compat mode for document with legacy doctitle '
         'if compat mode disable by header',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               'Document Title\n==============\n:compat-mode!:\n\n+content+\n';
@@ -1032,11 +1049,11 @@ void main() {
       test(
         'should not enable compat mode for document with legacy doctitle '
         'if compat mode is locked by API',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = 'Document Title\n==============\n\n+content+\n';
           final doc = documentFromString(input, {
-            'attributes': {'compat-mode': null},
+            'attributes': <String, Object?>{'compat-mode': null},
           });
           expect(doc.attributeLocked('compat-mode'), isTrue);
           expect(doc.attr('compat-mode'), isNull);
@@ -1047,7 +1064,7 @@ void main() {
 
       test(
         'should apply max-width to each top-level container',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = '= Document Title\n\ncontentfootnote:[placeholder]\n';
           final output = convertString(input, {
@@ -1076,7 +1093,7 @@ void main() {
         expect(title.subtitle, equals('Subtitle'));
       });
 
-      test('document with subtitle', skip: needsParser, () {
+      test('document with subtitle', skip: needsSubstitutors, () {
         const input = '= Main Title: *Subtitle*\nAuthor Name\n\ncontent\n';
         final doc = documentFromString(input);
         final title =
@@ -1087,7 +1104,7 @@ void main() {
         expect(title.subtitle, equals('Subtitle'));
       });
 
-      test('document with subtitle and custom separator', skip: needsParser, () {
+      test('document with subtitle and custom separator', skip: needsSubstitutors, () {
         const input =
             '[separator=::]\n= Main Title:: *Subtitle*\nAuthor Name\n\ncontent\n';
         final doc = documentFromString(input);
@@ -1102,7 +1119,7 @@ void main() {
       test(
         'should not honor custom separator for doctitle if attribute is '
         'locked by API',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               '[separator=::]\n= Main Title - *Subtitle*\nAuthor Name\n\ncontent\n';
@@ -1120,7 +1137,7 @@ void main() {
 
       test(
         'document with doctitle defined as attribute entry',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               ':doctitle: Document Title\n\npreamble\n\n== First Section\n';
@@ -1135,7 +1152,7 @@ void main() {
       test(
         'document with doctitle defined as attribute entry followed by '
         'block with title',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               ':doctitle: Document Title\n\n.Block title\nBlock content\n';
@@ -1150,7 +1167,7 @@ void main() {
 
       test(
         'document with title attribute entry overrides doctitle',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               '= Document Title\n:title: Override\n\n{doctitle}\n\n== First Section\n';
@@ -1170,7 +1187,7 @@ void main() {
 
       test(
         'document with blank title attribute entry overrides doctitle',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               '= Document Title\n:title:\n\n{doctitle}\n\n== First Section\n';
@@ -1190,7 +1207,7 @@ void main() {
 
       test(
         'document header can reference intrinsic doctitle attribute',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= ACME Documentation\n:intro: Welcome to the {doctitle}!\n\n{intro}\n';
@@ -1210,7 +1227,7 @@ void main() {
       test(
         'document with title attribute entry overrides doctitle attribute '
         'entry',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               '= Document Title\n:snapshot: {doctitle}\n:doctitle: doctitle\n:title: Override\n\n'
@@ -1231,7 +1248,7 @@ void main() {
 
       test(
         'document with doctitle attribute entry overrides implicit doctitle',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               '= Document Title\n:snapshot: {doctitle}\n:doctitle: Override\n\n'
@@ -1252,7 +1269,7 @@ void main() {
 
       test(
         'doctitle attribute entry above header overrides implicit doctitle',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               ':doctitle: Override\n= Document Title\n\n{doctitle}\n\n== First Section\n';
@@ -1273,7 +1290,7 @@ void main() {
       test(
         'should apply header substitutions to value of the doctitle '
         'attribute assigned from implicit doctitle',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               '= <Foo> {plus} <Bar>\n\nThe name of the game is {doctitle}.\n';
@@ -1289,7 +1306,7 @@ void main() {
       test(
         'should substitute attribute reference in implicit document title '
         'for attribute defined earlier in header',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           usingMemoryLogger((logger) {
             const input =
@@ -1308,7 +1325,7 @@ void main() {
       test(
         'should not warn if implicit document title contains attribute '
         'reference for attribute defined later in header',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           usingMemoryLogger((logger) {
             const input =
@@ -1330,7 +1347,7 @@ void main() {
 
       test(
         'should recognize document title when preceded by blank lines',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = '\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
           final output = convertString(input, {'safe': SafeMode.safe});
@@ -1342,7 +1359,7 @@ void main() {
       test(
         'should recognize document title when preceded by blank lines '
         'introduced by a preprocessor conditional',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               'ifdef::sectids[]\n\n:foo: bar\nendif::[]\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
@@ -1355,7 +1372,7 @@ void main() {
       test(
         'should recognize document title when preceded by blank lines '
         'after an attribute entry',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               ':doctype: book\n\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
@@ -1368,7 +1385,7 @@ void main() {
       test(
         'should recognize document title in include file when preceded by '
         'blank lines',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               'include::fixtures/include-with-leading-blank-line.adoc[]\n';
@@ -1383,7 +1400,7 @@ void main() {
 
       test(
         'should include specified lines even when leading lines are skipped',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               'include::fixtures/include-with-leading-blank-line.adoc[lines=6]\n';
@@ -1395,19 +1412,15 @@ void main() {
         },
       );
 
-      test(
-        'document with multiline attribute entry but only one line should '
-        'not crash',
-        skip: needsParser,
-        () {
-          // Port of Asciidoctor::LINE_CONTINUATION (' \\').
-          final input = ':foo: bar \\';
-          final doc = documentFromString(input);
-          expect(doc.attributes['foo'], equals('bar'));
-        },
-      );
+      test('document with multiline attribute entry but only one line should '
+          'not crash', () {
+        // Port of Asciidoctor::LINE_CONTINUATION (' \\').
+        final input = ':foo: bar \\';
+        final doc = documentFromString(input);
+        expect(doc.attributes['foo'], equals('bar'));
+      });
 
-      test('should sanitize contents of HTML title element', skip: needsParser, () {
+      test('should sanitize contents of HTML title element', skip: needsConverter, () {
         const input =
             '= *Document* image:logo.png[] _Title_ image:another-logo.png[another logo]\n\ncontent\n';
         final output = convertString(input);
@@ -1439,7 +1452,7 @@ void main() {
         expect(doc.header, isNull);
       });
 
-      test('with metadata', skip: needsParser, () {
+      test('with metadata', skip: needsConverter, () {
         const input =
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\nv8.6.8, 2012-07-12: See changelog.\n'
             ':description: AsciiDoc user guide\n:keywords: asciidoc,documentation\n:copyright: Stuart Rackham\n'
@@ -1492,23 +1505,19 @@ void main() {
         );
       });
 
-      test(
-        'should parse revision line if date is empty',
-        skip: needsParser,
-        () {
-          const input =
-              '= Document Title\nAuthor Name\nv1.0.0,:remark\n\ncontent\n';
-          final doc = documentFromString(input);
-          expect(doc.attributes['revnumber'], equals('1.0.0'));
-          expect(doc.attributes['revdate'], isNull);
-          expect(doc.attributes['revremark'], equals('remark'));
-        },
-      );
+      test('should parse revision line if date is empty', () {
+        const input =
+            '= Document Title\nAuthor Name\nv1.0.0,:remark\n\ncontent\n';
+        final doc = documentFromString(input);
+        expect(doc.attributes['revnumber'], equals('1.0.0'));
+        expect(doc.attributes['revdate'], isNull);
+        expect(doc.attributes['revremark'], equals('remark'));
+      });
 
       test(
         'should include revision history in DocBook output if revdate and '
         'revnumber is set',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\nAuthor Name\n:revdate: 2011-11-11\n:revnumber: 1.0\n\ncontent\n';
@@ -1523,7 +1532,7 @@ void main() {
       test(
         'should include revision history in DocBook output if revdate and '
         'revremark is set',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\nAuthor Name\n:revdate: 2011-11-11\n:revremark: features!\n\ncontent\n';
@@ -1538,7 +1547,7 @@ void main() {
       test(
         'should not include revision history in DocBook output if revdate '
         'is not set',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\nAuthor Name\n:revnumber: 1.0\n\ncontent\n';
@@ -1547,7 +1556,7 @@ void main() {
         },
       );
 
-      test('with metadata to DocBook 5', skip: needsParser, () {
+      test('with metadata to DocBook 5', skip: needsConverter, () {
         const input =
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n\n== Version 8.6.8\n\nmore info...\n';
         final output = convertString(input, {'backend': 'docbook5'});
@@ -1573,7 +1582,7 @@ void main() {
         assertCss('article:root[xml|lang="en"]', output, 1);
       });
 
-      test('with document ID to Docbook 5', skip: needsParser, () {
+      test('with document ID to Docbook 5', skip: needsConverter, () {
         const input = '[[document-id]]\n= Document Title\n\nmore info...\n';
         final output = convertString(input, {
           'backend': 'docbook',
@@ -1584,7 +1593,7 @@ void main() {
 
       test(
         'with author defined using attribute entry to DocBook',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\n:author: Doc Writer\n:email: thedoctor@asciidoc.org\n\ncontent\n';
@@ -1611,7 +1620,7 @@ void main() {
 
       test(
         'should substitute replacements in author names in HTML output',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\nStephen O\'Grady <founder@redmonk.com>\n\ncontent\n';
@@ -1631,7 +1640,7 @@ void main() {
 
       test(
         'should substitute replacements in author names in DocBook output',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\nStephen O\'Grady <founder@redmonk.com>\n\ncontent\n';
@@ -1645,20 +1654,24 @@ void main() {
         },
       );
 
-      test('should sanitize content of HTML meta authors tag', skip: needsParser, () {
-        const input =
-            '= Document Title\n:author: pass:n[http://example.org/community/team.html[Ze *Product* team]]\n\ncontent\n';
-        final output = convertString(input);
-        assertXpath(
-          '//meta[@name="author"][@content="Ze Product team"]',
-          output,
-          1,
-        );
-      });
+      test(
+        'should sanitize content of HTML meta authors tag',
+        skip: needsConverter,
+        () {
+          const input =
+              '= Document Title\n:author: pass:n[http://example.org/community/team.html[Ze *Product* team]]\n\ncontent\n';
+          final output = convertString(input);
+          assertXpath(
+            '//meta[@name="author"][@content="Ze Product team"]',
+            output,
+            1,
+          );
+        },
+      );
 
       test(
         'should not double escape ampersand in author attribute',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = '= Document Title\nR&D Lab\n\n{author}\n';
           final output = convertString(input);
@@ -1666,7 +1679,7 @@ void main() {
         },
       );
 
-      test('should include multiple authors in HTML output', skip: needsParser, () {
+      test('should include multiple authors in HTML output', skip: needsConverter, () {
         const input =
             '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
         final output = convertString(input);
@@ -1692,7 +1705,7 @@ void main() {
 
       test(
         'should create authorgroup in DocBook when multiple authors',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
@@ -1716,7 +1729,7 @@ void main() {
       test(
         'should process author defined by attribute when implicit doctitle '
         'is absent',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               ':author: Doc Writer\n\n{lastname}, {firstname} ({authorinitials})\n';
@@ -1735,7 +1748,7 @@ void main() {
       test(
         'should process author and authorinitials defined by attribute '
         'when implicit doctitle is absent',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               ':authorinitials: DOC\n:author: Doc Writer\n\n{lastname}, {firstname} ({authorinitials})\n';
@@ -1751,7 +1764,7 @@ void main() {
       test(
         'should process authors defined by attribute when implicit '
         'doctitle is absent',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               ':authors: Doc Writer; Other Author\n\n{lastname}, {firstname} ({authorinitials})\n';
@@ -1776,7 +1789,7 @@ void main() {
       test(
         'should process authors and authorinitials defined by attribute '
         'when implicit doctitle is absent',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               ':authorinitials: DOC\n:authors: Doc Writer; Other Author\n\n{lastname}, {firstname} ({authorinitials})\n';
@@ -1794,52 +1807,36 @@ void main() {
         },
       );
 
-      test(
-        'should set authorcount to 0 if document has no header',
-        skip: needsParser,
-        () {
-          final doc = documentFromString('content');
-          expect(doc.attr('authorcount'), equals(0));
-        },
-      );
+      test('should set authorcount to 0 if document has no header', () {
+        final doc = documentFromString('content');
+        expect(doc.attr('authorcount'), equals(0));
+      });
 
-      test(
-        'should set authorcount to 0 if author not set by attribute and '
-        'implicit doctitle is missing',
-        skip: needsParser,
-        () {
-          const input = ':idprefix:\n\n== Section Title\n\ncontent\n';
-          final doc = documentFromString(input);
-          expect(doc.attr('authorcount'), equals(0));
-        },
-      );
+      test('should set authorcount to 0 if author not set by attribute and '
+          'implicit doctitle is missing', () {
+        const input = ':idprefix:\n\n== Section Title\n\ncontent\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('authorcount'), equals(0));
+      });
 
-      test(
-        'should set authorcount to 0 if author not set by attribute and '
-        'document starts with level-0 section with style',
-        skip: needsParser,
-        () {
-          const input =
-              ':doctype: book\n\n[preface]\n= Preface\n\ncontent\n\n= Part\n\n== Chapter\n\ncontent\n';
-          final doc = documentFromString(input);
-          expect(doc.attr('authorcount'), equals(0));
-        },
-      );
+      test('should set authorcount to 0 if author not set by attribute and '
+          'document starts with level-0 section with style', () {
+        const input =
+            ':doctype: book\n\n[preface]\n= Preface\n\ncontent\n\n= Part\n\n== Chapter\n\ncontent\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('authorcount'), equals(0));
+      });
 
-      test(
-        'with author defined by indexed attribute name',
-        skip: needsParser,
-        () {
-          const input = '= Document Title\n:author_1: Doc Writer\n\n{author}\n';
-          final doc = documentFromString(input);
-          expect(doc.attr('author'), equals('Doc Writer'));
-          expect(doc.attr('author_1'), equals('Doc Writer'));
-        },
-      );
+      test('with author defined by indexed attribute name', () {
+        const input = '= Document Title\n:author_1: Doc Writer\n\n{author}\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('author'), equals('Doc Writer'));
+        expect(doc.attr('author_1'), equals('Doc Writer'));
+      });
 
       test(
         'with authors defined using attribute entry to DocBook',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\n:authors: Doc Writer; Junior Writer\n:email_1: thedoctor@asciidoc.org\n'
@@ -1874,7 +1871,7 @@ void main() {
       test(
         'should populate copyright element in DocBook output if copyright '
         'attribute is defined',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Jet Bike\n:copyright: ACME, Inc.\n\nEssential for catching road runners.\n';
@@ -1891,7 +1888,7 @@ void main() {
       test(
         'should populate copyright element in DocBook output if copyright '
         'attribute is defined with year',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Jet Bike\n:copyright: ACME, Inc. 1956\n\nEssential for catching road runners.\n';
@@ -1910,7 +1907,7 @@ void main() {
       test(
         'should populate copyright element in DocBook output if copyright '
         'attribute is defined with year range',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Jet Bike\n:copyright: ACME, Inc. 1956-2018\n\nEssential for catching road runners.\n';
@@ -1930,7 +1927,7 @@ void main() {
         },
       );
 
-      test('with header footer', skip: needsParser, () {
+      test('with header footer', skip: needsConverter, () {
         final doc = documentFromString('= Title\n\nparagraph');
         expect(doc.hasAttr('embedded'), isFalse);
         final result = doc.convert() as String;
@@ -1941,13 +1938,17 @@ void main() {
         assertXpath('//*[@id="content"]', result, 1);
       });
 
-      test('does not output footer if nofooter is set', skip: needsParser, () {
-        const input = ':nofooter:\n\ncontent\n';
-        final result = convertString(input);
-        assertXpath('//*[@id="footer"]', result, 0);
-      });
+      test(
+        'does not output footer if nofooter is set',
+        skip: needsConverter,
+        () {
+          const input = ':nofooter:\n\ncontent\n';
+          final result = convertString(input);
+          assertXpath('//*[@id="footer"]', result, 0);
+        },
+      );
 
-      test('can disable last updated in footer', skip: needsParser, () {
+      test('can disable last updated in footer', skip: needsConverter, () {
         final doc = documentFromString('= Document Title\n\npreamble', {
           'attributes': {'last-update-label!': ''},
         });
@@ -1963,7 +1964,7 @@ void main() {
       test(
         'should create embedded document if standalone option passed to '
         'constructor is false',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final doc = Document('= Document Title\n\ncontent', {
             'standalone': false,
@@ -1981,7 +1982,7 @@ void main() {
       test(
         'should create embedded document if standalone option passed to '
         'convert method is false',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final doc = Document('= Document Title\n\ncontent', {
             'standalone': true,
@@ -1999,7 +2000,7 @@ void main() {
       test(
         'should create embedded document if deprecated header_footer '
         'option is false',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final doc = Document('= Document Title\n\ncontent', {
             'header_footer': false,
@@ -2017,7 +2018,7 @@ void main() {
       test(
         'should create embedded document if header_footer option passed '
         'to convert method is false',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final doc = Document('= Document Title\n\ncontent', {
             'header_footer': true,
@@ -2034,7 +2035,7 @@ void main() {
 
       test(
         'enable title in embedded document by unassigning notitle attribute',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = '= Document Title\n\ncontent\n';
           final result = convertStringToEmbedded(input, {
@@ -2052,7 +2053,7 @@ void main() {
 
       test(
         'should be able to enable doctitle for embedded document',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final cases = <List<Object?>>[
             [
@@ -2128,7 +2129,7 @@ void main() {
 
       test(
         'should be able to explicitly disable doctitle for embedded document',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final cases = <List<Object?>>[
             [
@@ -2189,7 +2190,7 @@ void main() {
         },
       );
 
-      test('parse header only', skip: needsParser, () {
+      test('parse header only', skip: needsSubstitutors, () {
         const input = '= Document Title\nAuthor Name\n:foo: bar\n\npreamble\n';
         final doc = documentFromString(input, {'parse_header_only': true});
         expect(doc.doctitle(), equals('Document Title'));
@@ -2199,23 +2200,27 @@ void main() {
         expect(doc.blocks.length, equals(0));
       });
 
-      test('should parse header only when docytpe is manpage', skip: needsParser, () {
-        const input =
-            '= cmd(1)\nAuthor Name\n:doctype: manpage\n\n== Name\n\ncmd - does stuff\n';
-        final doc = documentFromString(input, {'parse_header_only': true});
-        expect(doc.doctitle(), equals('cmd(1)'));
-        expect(doc.author, equals('Author Name'));
-        expect(doc.attributes['mantitle'], equals('cmd'));
-        expect(doc.attributes['manvolnum'], equals('1'));
-        expect(doc.attributes['manname'], isNull);
-        expect(doc.attributes['manpurpose'], isNull);
-        expect(doc.blocks.length, equals(0));
-      });
+      test(
+        'should parse header only when docytpe is manpage',
+        skip: needsSubstitutors,
+        () {
+          const input =
+              '= cmd(1)\nAuthor Name\n:doctype: manpage\n\n== Name\n\ncmd - does stuff\n';
+          final doc = documentFromString(input, {'parse_header_only': true});
+          expect(doc.doctitle(), equals('cmd(1)'));
+          expect(doc.author, equals('Author Name'));
+          expect(doc.attributes['mantitle'], equals('cmd'));
+          expect(doc.attributes['manvolnum'], equals('1'));
+          expect(doc.attributes['manname'], isNull);
+          expect(doc.attributes['manpurpose'], isNull);
+          expect(doc.blocks.length, equals(0));
+        },
+      );
 
       test(
         'should not warn when parsing header only when docytpe is manpage '
         'and body is empty',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input = '= cmd(1)\nAuthor Name\n:doctype: manpage\n';
           usingMemoryLogger((logger) {
@@ -2232,7 +2237,7 @@ void main() {
         },
       );
 
-      test('outputs footnotes in footer', skip: needsParser, () {
+      test('outputs footnotes in footer', skip: needsConverter, () {
         const input =
             'A footnote footnote:[An example footnote.];\n'
             'a second footnote with a reference ID footnote:note2[Second footnote.];\n'
@@ -2272,7 +2277,7 @@ void main() {
 
       test(
         'outputs footnotes block in embedded document by default',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               'Text that has supporting information{empty}footnote:[An example footnote.].';
@@ -2299,7 +2304,7 @@ void main() {
       test(
         'does not output footnotes block in embedded document if '
         'nofootnotes attribute is set',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               'Text that has supporting information{empty}footnote:[An example footnote.].';
@@ -2314,7 +2319,7 @@ void main() {
     group('Catalog', () {
       test(
         'should alias document catalog as document references',
-        skip: needsParser,
+        skip: needsSubstitutors,
         () {
           const input =
               '= Document Title\n\n== Section A\n\nContent\n\n== Section B\n\nContent.footnote:[commentary]\n';
@@ -2349,7 +2354,7 @@ void main() {
       test(
         'should register entry in :refs table with reftext when request is '
         'made to register entry in :ids table',
-        skip: 'needs Substitutors.apply_reftext_subs (substitutors wave)',
+        skip: needsSubstitutors,
         () {
           final doc = emptyDocument();
           doc.register('ids', ['foobar', 'Foo Bar']);
@@ -2394,7 +2399,7 @@ void main() {
 
       test(
         'should catalog assets inside nested document',
-        skip: needsParser,
+        skip: needsTableWave,
         () {
           const input =
               'image::outer.png[]\n\n|===\na|\nimage::inner.png[]\n|===\n';
@@ -2411,7 +2416,7 @@ void main() {
     });
 
     group('Backends and Doctypes', () {
-      test('html5 backend doctype article', skip: needsParser, () {
+      test('html5 backend doctype article', skip: needsConverter, () {
         final result = convertString('= Title\n\nparagraph', {
           'attributes': {'backend': 'html5'},
         });
@@ -2425,7 +2430,7 @@ void main() {
         );
       });
 
-      test('html5 backend doctype book', skip: needsParser, () {
+      test('html5 backend doctype book', skip: needsConverter, () {
         final result = convertString('= Title\n\nparagraph', {
           'attributes': {'backend': 'html5', 'doctype': 'book'},
         });
@@ -2461,7 +2466,7 @@ void main() {
 
       test(
         'honor htmlsyntax attribute passed via API if backend is html',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = '---';
           final doc = documentFromString(input, {
@@ -2478,7 +2483,7 @@ void main() {
       test(
         'honor htmlsyntax attribute in document header if followed by '
         'backend attribute',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = ':htmlsyntax: xml\n:backend: html5\n\n---\n';
           final doc = documentFromString(input, {'safe': 'safe'});
@@ -2492,7 +2497,7 @@ void main() {
       test(
         'does not honor htmlsyntax attribute in document header if not '
         'followed by backend attribute',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = ':backend: html5\n:htmlsyntax: xml\n\n---\n';
           final result = convertStringToEmbedded(input, {'safe': 'safe'});
@@ -2502,7 +2507,7 @@ void main() {
 
       test(
         'should close all short tags when htmlsyntax is xml',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Document Title\nAuthor Name\nv1.0, 2001-01-01\n:icons:\n:favicon:\n\n'
@@ -2524,7 +2529,7 @@ void main() {
 
       test(
         'xhtml backend should emit elements in proper namespace',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = 'content';
           final result = convertString(input, {
@@ -2542,7 +2547,7 @@ void main() {
 
       test(
         'should parse out subtitle when backend is DocBook',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input = '= Document Title: Subtitle\n:doctype: book\n\ntext\n';
           final result = convertString(input, {'backend': 'docbook5'});
@@ -2554,7 +2559,7 @@ void main() {
 
       test(
         'should be able to set doctype to article when converting to DocBook',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Title\nAuthor Name\n\npreamble\n\n== First Section\n\nsection body\n';
@@ -2595,7 +2600,7 @@ void main() {
       test(
         'should set doctype to article by default for document with no '
         'title when converting to DocBook',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final result = convertString('text', {
             'attributes': {'backend': 'docbook'},
@@ -2610,7 +2615,7 @@ void main() {
       test(
         'should be able to convert DocBook manpage output when backend is '
         'DocBook and doctype is manpage',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= asciidoctor(1)\n:mansource: Asciidoctor\n:manmanual: Asciidoctor Manual\n\n'
@@ -2693,7 +2698,7 @@ void main() {
       test(
         'should output non-breaking space for source and manual in docbook '
         'manpage output if absent from source',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= asciidoctor(1)\n\n== NAME\n\nasciidoctor - Process text\n\n== SYNOPSIS\n\nsome text\n';
@@ -2717,7 +2722,7 @@ void main() {
       test(
         'should apply replacements substitution to value of mantitle '
         'attribute used in DocBook output',
-        skip: needsParser,
+        skip: needsApiWave,
         () {
           const input =
               '= foo\\--bar(1)\nAuthor Name\n:doctype: manpage\n:man manual: Foo Bar Manual\n'
@@ -2744,7 +2749,7 @@ void main() {
 
       test(
         'should be able to set doctype to book when converting to DocBook',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Title\nAuthor Name\n\npreamble\n\n== First Chapter\n\nchapter body\n';
@@ -2781,7 +2786,7 @@ void main() {
       test(
         'should be able to set doctype to book for document with no title '
         'when converting to DocBook',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           final result = convertString('text', {
             'attributes': {'backend': 'docbook5', 'doctype': 'book'},
@@ -2797,7 +2802,7 @@ void main() {
       test(
         'adds refname to DocBook output for each name defined in NAME '
         'section of manpage',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= eve(1)\nAndrew Stanton\nv1.0.0\n:doctype: manpage\n:manmanual: EVE\n:mansource: EVE\n\n'
@@ -2820,7 +2825,7 @@ void main() {
 
       test(
         'adds a front and back cover image to DocBook 5 when doctype is book',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= Title\n:doctype: book\n:imagesdir: images\n'
@@ -2871,7 +2876,7 @@ void main() {
         expect(doc.attributes['doctype'], equals('book'));
       });
 
-      test('do not override explicit author initials', skip: needsParser, () {
+      test('do not override explicit author initials', skip: needsConverter, () {
         const input =
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n:Author Initials: SJR\n\nmore info...\n';
         final output = convertString(input, {
@@ -2880,105 +2885,77 @@ void main() {
         assertXpath('/article/info/authorinitials[text()="SJR"]', output, 1);
       });
 
-      test(
-        'attribute entry can appear immediately after document title',
-        skip: needsParser,
-        () {
-          const input = 'Reference Guide\n===============\n:toc:\n\npreamble\n';
-          final doc = documentFromString(input);
-          expect(doc.hasAttr('toc'), isTrue);
-          expect(doc.attr('toc'), equals(''));
-        },
-      );
+      test('attribute entry can appear immediately after document title', () {
+        const input = 'Reference Guide\n===============\n:toc:\n\npreamble\n';
+        final doc = documentFromString(input);
+        expect(doc.hasAttr('toc'), isTrue);
+        expect(doc.attr('toc'), equals(''));
+      });
 
-      test(
-        'attribute entry can appear before author line under document title',
-        skip: needsParser,
-        () {
-          const input =
-              'Reference Guide\n===============\n:toc:\nDan Allen\n\npreamble\n';
-          final doc = documentFromString(input);
-          expect(doc.hasAttr('toc'), isTrue);
-          expect(doc.attr('toc'), equals(''));
-          expect(doc.attr('author'), equals('Dan Allen'));
-        },
-      );
+      test('attribute entry can appear before author line under document title', () {
+        const input =
+            'Reference Guide\n===============\n:toc:\nDan Allen\n\npreamble\n';
+        final doc = documentFromString(input);
+        expect(doc.hasAttr('toc'), isTrue);
+        expect(doc.attr('toc'), equals(''));
+        expect(doc.attr('author'), equals('Dan Allen'));
+      });
 
-      test(
-        'should parse mantitle and manvolnum from document title for '
-        'manpage doctype',
-        skip: needsParser,
-        () {
-          const input =
-              '= asciidoctor ( 1 )\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
-          final doc = documentFromString(input);
-          expect(doc.attr('mantitle'), equals('asciidoctor'));
-          expect(doc.attr('manvolnum'), equals('1'));
-        },
-      );
+      test('should parse mantitle and manvolnum from document title for '
+          'manpage doctype', () {
+        const input =
+            '= asciidoctor ( 1 )\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('mantitle'), equals('asciidoctor'));
+        expect(doc.attr('manvolnum'), equals('1'));
+      });
 
-      test(
-        'should perform attribute substitution on mantitle in manpage doctype',
-        skip: needsParser,
-        () {
-          const input =
-              '= {app}(1)\n:doctype: manpage\n:app: Asciidoctor\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
-          final doc = documentFromString(input);
-          expect(doc.attr('mantitle'), equals('asciidoctor'));
-        },
-      );
+      test('should perform attribute substitution on mantitle in manpage doctype', () {
+        const input =
+            '= {app}(1)\n:doctype: manpage\n:app: Asciidoctor\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('mantitle'), equals('asciidoctor'));
+      });
 
-      test(
-        'should consume name section as manname and manpurpose for manpage '
-        'doctype',
-        skip: needsParser,
-        () {
-          const input =
-              '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
-          final doc = documentFromString(input);
-          expect(doc.attr('manname'), equals('asciidoctor'));
-          expect(
-            doc.attr('manpurpose'),
-            equals(
-              'converts AsciiDoc source files to HTML, DocBook and other formats',
-            ),
-          );
-          expect(doc.attr('manname-id'), equals('_name'));
-          expect(doc.blocks.length, equals(0));
-        },
-      );
+      test('should consume name section as manname and manpurpose for manpage '
+          'doctype', () {
+        const input =
+            '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('manname'), equals('asciidoctor'));
+        expect(
+          doc.attr('manpurpose'),
+          equals(
+            'converts AsciiDoc source files to HTML, DocBook and other formats',
+          ),
+        );
+        expect(doc.attr('manname-id'), equals('_name'));
+        expect(doc.blocks.length, equals(0));
+      });
 
-      test(
-        'should set docname and outfilesuffix from manname and manvolnum '
-        'for manpage backend and doctype',
-        skip: needsParser,
-        () {
-          const input =
-              '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
-          final doc = documentFromString(input, {'backend': 'manpage'});
-          expect(doc.attributes['docname'], equals('asciidoctor'));
-          expect(doc.attributes['outfilesuffix'], equals('.1'));
-        },
-      );
+      test('should set docname and outfilesuffix from manname and manvolnum '
+          'for manpage backend and doctype', () {
+        const input =
+            '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
+        final doc = documentFromString(input, {'backend': 'manpage'});
+        expect(doc.attributes['docname'], equals('asciidoctor'));
+        expect(doc.attributes['outfilesuffix'], equals('.1'));
+      });
 
-      test(
-        'should mark synopsis as special section in manpage doctype',
-        skip: needsParser,
-        () {
-          const input =
-              '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
-              '== SYNOPSIS\n\n*asciidoctor* [\'OPTION\']... \'FILE\'..\n';
-          final doc = documentFromString(input);
-          final synopsisSection = doc.blocks.first as Section;
-          expect(synopsisSection.context, equals('section'));
-          expect(synopsisSection.special, isTrue);
-          expect(synopsisSection.sectname, equals('synopsis'));
-        },
-      );
+      test('should mark synopsis as special section in manpage doctype', () {
+        const input =
+            '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
+            '== SYNOPSIS\n\n*asciidoctor* [\'OPTION\']... \'FILE\'..\n';
+        final doc = documentFromString(input);
+        final synopsisSection = doc.blocks.first as Section;
+        expect(synopsisSection.context, equals('section'));
+        expect(synopsisSection.special, isTrue);
+        expect(synopsisSection.sectname, equals('synopsis'));
+      });
 
       test(
         'should output special header block in HTML for manpage doctype',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
@@ -3017,7 +2994,7 @@ void main() {
       test(
         'should output special header block in embeddable HTML for manpage '
         'doctype',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= asciidoctor(1)\n:doctype: manpage\n:showtitle:\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
@@ -3041,7 +3018,7 @@ void main() {
 
       test(
         'should output all mannames in name section in man page output',
-        skip: needsParser,
+        skip: needsConverter,
         () {
           const input =
               '= eve(1)\n:doctype: manpage\n\n== NAME\n\neve, probe - analyzes an image to determine if it is a picture of a life form\n\n'

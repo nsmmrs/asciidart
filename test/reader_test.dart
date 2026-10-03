@@ -1843,7 +1843,9 @@ void main() {
 
       test(
         'should support tag filtering for remote includes',
-        skip: 'needs Parser.adjustIndentation (parser wave)',
+        skip:
+            'placeholder (empty body, do not implement here): needs reader '
+            'wave to call Parser.adjustIndentation',
         () {},
       );
 
@@ -2006,7 +2008,9 @@ void main() {
 
       test(
         'include directive supports selecting lines by tag in language that uses circumfix comments',
-        skip: 'needs Parser.adjustIndentation (parser wave)',
+        skip:
+            'placeholder (empty body, do not implement here): needs reader '
+            'wave to call Parser.adjustIndentation',
         () {},
       );
 
@@ -2701,7 +2705,9 @@ void main() {
 
       test(
         'indent of included file can be reset to size of indent attribute',
-        skip: 'needs Parser.adjustIndentation (parser wave)',
+        skip:
+            'placeholder (empty body, do not implement here): needs reader '
+            'wave to call Parser.adjustIndentation',
         () {},
       );
 

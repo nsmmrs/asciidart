@@ -1,12 +1,11 @@
 /// Port of `test/extensions_test.rb`.
 ///
-/// Tests that parse or convert are skipped with [needsParser] until the
-/// parser wave lands; tests that rely on `Document` extension integration
-/// (`extension_registry`/`extensions` options, automatic activation) are
-/// skipped with [needsDocumentIntegration] until the document wave wires
-/// `Document` to [Registry]. XML/CSS assertions in skipped bodies route
-/// through [assertXpath]/[assertCss] stubs that throw until an XML-matching
-/// helper is ported.
+/// Tests that parse now that the parser wave has landed; tests blocked on
+/// other waves stay skipped with [needsExtensionsWave], [needsConverter],
+/// [needsSubstitutors], [needsDocumentIntegration], [needsFixtureWave],
+/// [needsTableWave], or [needsApiWave]. XML/CSS assertions in skipped
+/// bodies route through [assertXpath]/[assertCss] stubs that throw until
+/// an XML-matching helper is ported.
 ///
 /// Tests that only need [Registry], [Document] construction (which never
 /// parses eagerly) and the processor DSL run now; several Ruby integration
@@ -28,8 +27,41 @@ import 'package:asciidoctor/src/reader.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:test/test.dart';
 
-/// Skip reason for tests requiring the parser wave.
-const String needsParser = 'needs Parser.parse_blocks (parser wave)';
+/// Skip reason for tests blocked on the extensions wave: `Document.parse`
+/// and the parser do not invoke registered processors (preprocessors, tree
+/// processors, postprocessors, custom blocks and block macros); see the
+/// `Extensions wave` seams in `document.dart` and the `TEMP-SEAM (parser)`
+/// extension branches in `parser.dart`. Converted-output assertions in these
+/// bodies will additionally need the converter and substitutors waves.
+const String needsExtensionsWave =
+    'needs extensions wave: registered processors are not invoked during parse/convert';
+
+/// Skip reason for tests blocked on the converter wave: no html5 backend
+/// converter is ported yet (`Document.convert` throws via
+/// `_BuiltinConverterStub`). These bodies additionally need the extensions
+/// wave (processor invocation during parse).
+const String needsConverter =
+    'needs converter wave: no backend converter ported (Document.convert throws)';
+
+/// Skip reason for tests blocked on the substitutors wave (TASK-2h31dk):
+/// sub methods still throw `UnimplementedError`.
+const String needsSubstitutors =
+    'needs substitutors wave (TASK-2h31dk): sub method stub throws UnimplementedError';
+
+/// Skip reason for tests blocked on the fixture wave: `fixturePath` is an
+/// unported stub.
+const String needsFixtureWave =
+    'needs fixture wave: fixturePath helper not yet ported';
+
+/// Skip reason for tests blocked on the table wave: asciidoc-style table
+/// cells cannot nest documents yet.
+const String needsTableWave =
+    'needs table wave: Table::Cell asciidoc nested-document parsing not yet ported';
+
+/// Skip reason for tests blocked on the API wave: `asciidoctorConvert` is
+/// an unported stub.
+const String needsApiWave =
+    'needs API wave: asciidoctorConvert helper not yet ported';
 
 /// Skip reason for tests requiring Document/extension integration.
 const String needsDocumentIntegration =
@@ -1167,7 +1199,7 @@ void main() {
 
     test(
       'should invoke preprocessors before parsing document',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         const input = 'junk line\n\n= Document Title\n\nsample content\n';
 
@@ -1187,7 +1219,7 @@ void main() {
 
     test(
       'should invoke include processor to process include directive',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'before\n\ninclude::lorem-ipsum.txt[]\n\nafter\n';
 
@@ -1351,7 +1383,7 @@ void main() {
 
     test(
       'should invoke tree processors after parsing document',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         const input = '= Document Title\nDoc Writer\n\ncontent\n';
 
@@ -1368,7 +1400,7 @@ void main() {
 
     test(
       'should set source_location on document before invoking tree processors',
-      skip: needsParser,
+      skip: needsFixtureWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -1397,22 +1429,26 @@ void main() {
       },
     );
 
-    test('should allow tree processor to replace tree', skip: needsParser, () {
-      const input = '= Original Document\nDoc Writer\n\ncontent\n';
+    test(
+      'should allow tree processor to replace tree',
+      skip: needsSubstitutors,
+      () {
+        const input = '= Original Document\nDoc Writer\n\ncontent\n';
 
-      Extensions.register(
-        build: (registry) {
-          registry.treeProcessor(processor: ReplaceTreeTreeProcessor.new);
-        },
-      );
+        Extensions.register(
+          build: (registry) {
+            registry.treeProcessor(processor: ReplaceTreeTreeProcessor.new);
+          },
+        );
 
-      final doc = documentFromString(input);
-      expect(doc.doctitle(), equals('Replacement Document'));
-    });
+        final doc = documentFromString(input);
+        expect(doc.doctitle(), equals('Replacement Document'));
+      },
+    );
 
     test(
       'should honor block title assigned in tree processor',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         const input =
             '= Document Title\n'
@@ -1515,7 +1551,7 @@ void main() {
 
     test(
       'should invoke postprocessors after converting document',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = '* one\n* two\n* three\n';
 
@@ -1532,7 +1568,7 @@ void main() {
 
     test(
       'should yield to document processor block if block has non-zero arity',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'hi!\n';
 
@@ -1562,7 +1598,7 @@ void main() {
       },
     );
 
-    test('should invoke processor for custom block', skip: needsParser, () {
+    test('should invoke processor for custom block', skip: needsConverter, () {
       const input = '[yell]\nHi there!\n\n[yell,chars=aeiou]\nHi there!\n';
 
       Extensions.register(
@@ -1579,7 +1615,7 @@ void main() {
 
     test(
       'should invoke processor for custom block in an AsciiDoc table cell',
-      skip: needsParser,
+      skip: needsTableWave,
       () {
         const input = '|===\na|\n[yell]\nHi there!\n|===\n';
 
@@ -1597,7 +1633,7 @@ void main() {
 
     test(
       'should yield to syntax processor block if block has non-zero arity',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = "[eval]\n....\n'yolo' * 5\n....\n";
 
@@ -1637,7 +1673,7 @@ void main() {
     test(
       'should pass cloaked context in attributes passed to process method '
       'of custom block',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = '[custom]\n****\nsidebar\n****\n';
 
@@ -1669,7 +1705,7 @@ void main() {
 
     test(
       'should allow extension to promote paragraph to compound block',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = '[ex]\nexample\n';
         Extensions.register(
@@ -1703,7 +1739,7 @@ void main() {
 
     test(
       'should invoke processor for custom block macro',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'snippet::12345[mode=edit]';
 
@@ -1726,7 +1762,7 @@ void main() {
     test(
       'should not parse attributes on custom block macro when resolve '
       'attributes is false',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'log::[hello, world!]';
 
@@ -1761,7 +1797,7 @@ void main() {
     test(
       'should not parse attributes on custom block macro when content model '
       'is text',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'log::[hello, world!]';
 
@@ -1795,7 +1831,7 @@ void main() {
 
     test(
       'should substitute attributes in target of custom block macro',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'snippet::{gist-id}[mode=edit]';
 
@@ -1819,7 +1855,7 @@ void main() {
 
     test(
       'should log debug message if custom block macro is unknown',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'unknown::[]';
         usingMemoryLogger((logger) {
@@ -1837,7 +1873,7 @@ void main() {
     test(
       'should log debug message if custom block macro is unknown when '
       'custom block macros are registered',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'unknown::[]';
         Extensions.register(
@@ -1863,7 +1899,7 @@ void main() {
     test(
       'should not log debug message if line is not a custom block macro '
       'and block macros are registered',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = '* xref:component::page.adoc[link text]';
         Extensions.register(
@@ -1885,7 +1921,7 @@ void main() {
     test(
       'should drop block macro line if target references missing attribute '
       'and attribute-missing is drop-line',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         const input =
             '[.rolename]\n'
@@ -1922,7 +1958,7 @@ void main() {
     test(
       'should invoke processor for custom block macro in an AsciiDoc table '
       'cell',
-      skip: needsParser,
+      skip: needsTableWave,
       () {
         const input = '|===\na|message::hi[]\n|===\n';
 
@@ -1953,7 +1989,7 @@ void main() {
       },
     );
 
-    test('should match short form of block macro', skip: needsParser, () {
+    test('should match short form of block macro', skip: needsConverter, () {
       const input = 'custom-toc::[]';
 
       String? resolvedTarget;
@@ -2019,7 +2055,7 @@ void main() {
 
     test(
       'should honor legacy pos_attrs option set via static method',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         Extensions.register(
           build: (registry) {
@@ -2037,7 +2073,7 @@ void main() {
 
     test(
       'should honor legacy pos_attrs option set via DSL',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         Extensions.register(
           build: (registry) {
@@ -2067,7 +2103,7 @@ void main() {
 
     test(
       'should be able to set header attribute in block macro processor',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -2118,7 +2154,7 @@ void main() {
 
     test(
       'should invoke processor for custom inline macro',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         Extensions.register(
           build: (registry) {
@@ -2147,7 +2183,7 @@ void main() {
     test(
       'should not parse attributes on custom inline macro when resolve '
       'attributes is false',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'Line is del:[good]great.';
 
@@ -2185,7 +2221,7 @@ void main() {
     test(
       'should not parse attributes on custom inline macro when content '
       'model is text',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         const input = 'Line is del:[good]great.';
 
@@ -2222,7 +2258,7 @@ void main() {
 
     test(
       'should resolve regexp for inline macro lazily',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         Extensions.register(
           build: (registry) {
@@ -2254,7 +2290,7 @@ void main() {
 
     test(
       'should map unparsed attrlist to target when format is short',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         Extensions.register(
           build: (registry) {
@@ -2285,7 +2321,7 @@ void main() {
 
     test(
       'should parse text in square brackets as attrlist by default',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2342,7 +2378,7 @@ void main() {
 
     test(
       'should assign captures correctly for inline macros',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         Object? capture(
           InlineMacroProcessor processor,
@@ -2461,7 +2497,7 @@ void main() {
 
     test(
       'should invoke convert on return value if value is an inline node',
-      skip: needsParser,
+      skip: needsConverter,
       () {
         Extensions.register(
           build: (registry) {
@@ -2499,7 +2535,7 @@ void main() {
 
     test(
       'should allow return value of inline macro to be nil',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2529,7 +2565,7 @@ void main() {
 
     test(
       'should warn if return value of inline macro is a string',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2564,7 +2600,7 @@ void main() {
     test(
       'should not apply subs to inline node returned by process method '
       'by default',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2599,7 +2635,7 @@ void main() {
     test(
       'should apply subs specified as symbol to inline node returned by '
       'process method',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2633,7 +2669,7 @@ void main() {
     test(
       'should apply subs specified as array to inline node returned by '
       'process method',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2669,7 +2705,7 @@ void main() {
     test(
       'should apply subs specified as string to inline node returned by '
       'process method',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2703,7 +2739,7 @@ void main() {
     test(
       'should prefer attributes parsed from inline macro over default '
       'attributes',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2741,7 +2777,7 @@ void main() {
 
     test(
       'should coerce names of positional attributes to strings',
-      skip: needsParser,
+      skip: needsSubstitutors,
       () {
         Extensions.register(
           build: (registry) {
@@ -2776,7 +2812,7 @@ void main() {
 
     test(
       'should not carry over attributes if block processor returns nil',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -2811,7 +2847,7 @@ void main() {
     test(
       'should not invoke process method or carry over attributes if block '
       'processor declares skip content model',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         var processMethodCalled = false;
         Extensions.register(
@@ -2851,7 +2887,7 @@ void main() {
 
     test(
       'should pass attributes by value to block processor',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -2888,7 +2924,7 @@ void main() {
 
     test(
       'should allow extension to replace custom block with a list',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -2925,7 +2961,7 @@ void main() {
 
     test(
       'should allow extension to replace custom block with a section',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -2971,7 +3007,7 @@ void main() {
 
     test(
       'can use parse_content to append blocks to current parent',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -3007,7 +3043,7 @@ void main() {
 
     test(
       'should ignore return value of custom block if value is parent',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -3040,7 +3076,7 @@ void main() {
 
     test(
       'should ignore return value of custom block macro if value is parent',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -3068,64 +3104,12 @@ void main() {
       },
     );
 
-    test(
-      'parse_content should not share attributes between parsed blocks',
-      skip: needsParser,
-      () {
-        Extensions.register(
-          build: (registry) {
-            registry.block(
-              build: (processor) {
-                processor.named('wrap');
-                processor.onContext('open');
-                processor.onProcess =
-                    (
-                      AbstractBlock parent,
-                      Reader reader,
-                      Map<String, Object?> attrs,
-                    ) {
-                      final wrap = processor.createOpenBlock(
-                        parent,
-                        null,
-                        attrs,
-                      );
-                      processor.parseContent(wrap, reader.readLines());
-                      return wrap;
-                    };
-              },
-            );
-          },
-        );
-        const input =
-            '[wrap]\n'
-            '--\n'
-            '[foo=bar]\n'
-            '====\n'
-            'content\n'
-            '====\n'
-            '\n'
-            '[baz=qux]\n'
-            '====\n'
-            'content\n'
-            '====\n'
-            '--\n';
-        final doc = documentFromString(input);
-        expect(doc.blocks.length, equals(1));
-        final wrap = doc.blocks[0];
-        expect(wrap.blocks.length, equals(2));
-        expect(wrap.blocks[0].attributes.length, equals(2));
-        expect(wrap.blocks[1].attributes.length, equals(2));
-        expect(wrap.blocks[1].attributes['foo'], isNull);
-      },
-    );
-
-    test('can use parse_attributes to parse attrlist', skip: needsParser, () {
-      Map<Object, String?>? parsedAttrs;
+    test('parse_content should not share attributes between parsed blocks', () {
       Extensions.register(
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('attrs');
+              processor.named('wrap');
               processor.onContext('open');
               processor.onProcess =
                   (
@@ -3133,35 +3117,83 @@ void main() {
                     Reader reader,
                     Map<String, Object?> attrs,
                   ) {
-                    parsedAttrs = processor.parseAttributes(
-                      parent,
-                      reader.readLine(),
-                      positionalAttributes: ['a', 'b'],
-                    );
-                    parsedAttrs!.addAll(
-                      processor.parseAttributes(
-                        parent,
-                        'foo={foo}',
-                        subAttributes: true,
-                      ),
-                    );
-                    return null;
+                    final wrap = processor.createOpenBlock(parent, null, attrs);
+                    processor.parseContent(wrap, reader.readLines());
+                    return wrap;
                   };
             },
           );
         },
       );
-      const input = ':foo: bar\n\n[attrs]\n--\na,b,c,key=val\n--\n';
-      convertStringToEmbedded(input);
-      expect(parsedAttrs!['a'], equals('a'));
-      expect(parsedAttrs!['b'], equals('b'));
-      expect(parsedAttrs!['key'], equals('val'));
-      expect(parsedAttrs!['foo'], equals('bar'));
+      const input =
+          '[wrap]\n'
+          '--\n'
+          '[foo=bar]\n'
+          '====\n'
+          'content\n'
+          '====\n'
+          '\n'
+          '[baz=qux]\n'
+          '====\n'
+          'content\n'
+          '====\n'
+          '--\n';
+      final doc = documentFromString(input);
+      expect(doc.blocks.length, equals(1));
+      final wrap = doc.blocks[0];
+      expect(wrap.blocks.length, equals(2));
+      expect(wrap.blocks[0].attributes.length, equals(2));
+      expect(wrap.blocks[1].attributes.length, equals(2));
+      expect(wrap.blocks[1].attributes['foo'], isNull);
     });
 
     test(
+      'can use parse_attributes to parse attrlist',
+      skip: needsConverter,
+      () {
+        Map<Object, String?>? parsedAttrs;
+        Extensions.register(
+          build: (registry) {
+            registry.block(
+              build: (processor) {
+                processor.named('attrs');
+                processor.onContext('open');
+                processor.onProcess =
+                    (
+                      AbstractBlock parent,
+                      Reader reader,
+                      Map<String, Object?> attrs,
+                    ) {
+                      parsedAttrs = processor.parseAttributes(
+                        parent,
+                        reader.readLine(),
+                        positionalAttributes: ['a', 'b'],
+                      );
+                      parsedAttrs!.addAll(
+                        processor.parseAttributes(
+                          parent,
+                          'foo={foo}',
+                          subAttributes: true,
+                        ),
+                      );
+                      return null;
+                    };
+              },
+            );
+          },
+        );
+        const input = ':foo: bar\n\n[attrs]\n--\na,b,c,key=val\n--\n';
+        convertStringToEmbedded(input);
+        expect(parsedAttrs!['a'], equals('a'));
+        expect(parsedAttrs!['b'], equals('b'));
+        expect(parsedAttrs!['key'], equals('val'));
+        expect(parsedAttrs!['foo'], equals('bar'));
+      },
+    );
+
+    test(
       'create_section should set up all section properties',
-      skip: needsParser,
+      skip: needsExtensionsWave,
       () {
         Section? sect;
         Extensions.register(
@@ -3312,7 +3344,7 @@ void main() {
       },
     );
 
-    test('should append docinfo to document', skip: needsParser, () {
+    test('should append docinfo to document', skip: needsFixtureWave, () {
       Extensions.register(
         build: (registry) {
           registry.docinfoProcessor(processor: MetaRobotsDocinfoProcessor.new);
@@ -3455,7 +3487,7 @@ void main() {
 
     test(
       'should assign alt attribute to image block if alt is not provided',
-      skip: needsParser,
+      skip: needsDocumentIntegration,
       () {
         const input = 'cat_in_sink::25[]';
         final doc = documentFromString(input, {
@@ -3477,7 +3509,7 @@ void main() {
 
     test(
       'should create an image block if mandatory attributes are provided',
-      skip: needsParser,
+      skip: needsDocumentIntegration,
       () {
         const input = 'cat_in_sink::30[cat in sink (yes)]';
         final doc = documentFromString(input, {
@@ -3500,7 +3532,7 @@ void main() {
     test(
       'should not assign caption on image block if title is not set on '
       'custom block macro',
-      skip: needsParser,
+      skip: needsDocumentIntegration,
       () {
         const input = 'cat_in_sink::30[]';
         final doc = documentFromString(input, {
@@ -3515,7 +3547,7 @@ void main() {
     test(
       'should assign caption on image block if title is set on custom '
       'block macro',
-      skip: needsParser,
+      skip: needsDocumentIntegration,
       () {
         const input = '.Cat in Sink?\ncat_in_sink::30[]\n';
         final doc = documentFromString(input, {
@@ -3534,7 +3566,7 @@ void main() {
 
     test(
       'should not fail if alt attribute is not set on block image node',
-      skip: needsParser,
+      skip: needsApiWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -3563,7 +3595,7 @@ void main() {
 
     test(
       'should not fail if alt attribute is not set on inline image node',
-      skip: needsParser,
+      skip: needsApiWave,
       () {
         Extensions.register(
           build: (registry) {
@@ -3599,7 +3631,7 @@ void main() {
 
     test(
       'should assign id and role on list items unordered',
-      skip: needsParser,
+      skip: needsDocumentIntegration,
       () {
         const input = 'santa_list::ulist[]';
         final doc = documentFromString(input, {
@@ -3646,7 +3678,7 @@ void main() {
 
     test(
       'should assign id and role on list items ordered',
-      skip: needsParser,
+      skip: needsDocumentIntegration,
       () {
         const input = 'santa_list::olist[]';
         final doc = documentFromString(input, {
