@@ -43,6 +43,13 @@ const String needsFixtureWave =
 const String needsTableWave =
     'needs table wave: Table::Cell asciidoc nested-document parsing not yet ported';
 
+/// Skip reason for tests whose body asserts via the XML-match helpers
+/// ([assertXpath]/[assertCss]/[xmlnodesAtXpath]), which still throw
+/// `UnimplementedError`. The substitution behavior in these bodies is
+/// covered by probes; only the XML assertions are blocked.
+const String needsXmlMatchWave =
+    'needs XML-match wave: assertXpath/assertCss stubs throw UnimplementedError';
+
 /// Built-in converter element names (port of `BUILT_IN_ELEMENTS`).
 const List<String> builtInElements = <String>[
   'admonition',
@@ -1093,7 +1100,7 @@ void main() {
         expect(title.subtitle, equals('Subtitle'));
       });
 
-      test('document with subtitle', skip: needsSubstitutors, () {
+      test('document with subtitle', () {
         const input = '= Main Title: *Subtitle*\nAuthor Name\n\ncontent\n';
         final doc = documentFromString(input);
         final title =
@@ -1104,7 +1111,7 @@ void main() {
         expect(title.subtitle, equals('Subtitle'));
       });
 
-      test('document with subtitle and custom separator', skip: needsSubstitutors, () {
+      test('document with subtitle and custom separator', () {
         const input =
             '[separator=::]\n= Main Title:: *Subtitle*\nAuthor Name\n\ncontent\n';
         final doc = documentFromString(input);
@@ -1116,58 +1123,46 @@ void main() {
         expect(title.subtitle, equals('Subtitle'));
       });
 
-      test(
-        'should not honor custom separator for doctitle if attribute is '
-        'locked by API',
-        skip: needsSubstitutors,
-        () {
-          const input =
-              '[separator=::]\n= Main Title - *Subtitle*\nAuthor Name\n\ncontent\n';
-          final doc = documentFromString(input, {
-            'attributes': {'title-separator': ' -'},
-          });
-          final title =
-              doc.doctitle(partition: true, sanitize: true) as DocumentTitle;
-          expect(title.hasSubtitle, isTrue);
-          expect(title.sanitized, isTrue);
-          expect(title.main, equals('Main Title'));
-          expect(title.subtitle, equals('Subtitle'));
-        },
-      );
+      test('should not honor custom separator for doctitle if attribute is '
+          'locked by API', () {
+        const input =
+            '[separator=::]\n= Main Title - *Subtitle*\nAuthor Name\n\ncontent\n';
+        final doc = documentFromString(input, {
+          'attributes': {'title-separator': ' -'},
+        });
+        final title =
+            doc.doctitle(partition: true, sanitize: true) as DocumentTitle;
+        expect(title.hasSubtitle, isTrue);
+        expect(title.sanitized, isTrue);
+        expect(title.main, equals('Main Title'));
+        expect(title.subtitle, equals('Subtitle'));
+      });
 
-      test(
-        'document with doctitle defined as attribute entry',
-        skip: needsSubstitutors,
-        () {
-          const input =
-              ':doctitle: Document Title\n\npreamble\n\n== First Section\n';
-          final doc = documentFromString(input);
-          expect(doc.doctitle(), equals('Document Title'));
-          expect(doc.hasHeader, isTrue);
-          expect(doc.header!.title, equals('Document Title'));
-          expect(doc.firstSection!.title, equals('Document Title'));
-        },
-      );
+      test('document with doctitle defined as attribute entry', () {
+        const input =
+            ':doctitle: Document Title\n\npreamble\n\n== First Section\n';
+        final doc = documentFromString(input);
+        expect(doc.doctitle(), equals('Document Title'));
+        expect(doc.hasHeader, isTrue);
+        expect(doc.header!.title, equals('Document Title'));
+        expect(doc.firstSection!.title, equals('Document Title'));
+      });
 
-      test(
-        'document with doctitle defined as attribute entry followed by '
-        'block with title',
-        skip: needsSubstitutors,
-        () {
-          const input =
-              ':doctitle: Document Title\n\n.Block title\nBlock content\n';
-          final doc = documentFromString(input);
-          expect(doc.doctitle(), equals('Document Title'));
-          expect(doc.hasHeader, isTrue);
-          expect(doc.blocks.length, equals(1));
-          expect(doc.blocks[0].context, equals('paragraph'));
-          expect(doc.blocks[0].title, equals('Block title'));
-        },
-      );
+      test('document with doctitle defined as attribute entry followed by '
+          'block with title', () {
+        const input =
+            ':doctitle: Document Title\n\n.Block title\nBlock content\n';
+        final doc = documentFromString(input);
+        expect(doc.doctitle(), equals('Document Title'));
+        expect(doc.hasHeader, isTrue);
+        expect(doc.blocks.length, equals(1));
+        expect(doc.blocks[0].context, equals('paragraph'));
+        expect(doc.blocks[0].title, equals('Block title'));
+      });
 
       test(
         'document with title attribute entry overrides doctitle',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           const input =
               '= Document Title\n:title: Override\n\n{doctitle}\n\n== First Section\n';
@@ -1187,7 +1182,7 @@ void main() {
 
       test(
         'document with blank title attribute entry overrides doctitle',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           const input =
               '= Document Title\n:title:\n\n{doctitle}\n\n== First Section\n';
@@ -1227,7 +1222,7 @@ void main() {
       test(
         'document with title attribute entry overrides doctitle attribute '
         'entry',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           const input =
               '= Document Title\n:snapshot: {doctitle}\n:doctitle: doctitle\n:title: Override\n\n'
@@ -1248,7 +1243,7 @@ void main() {
 
       test(
         'document with doctitle attribute entry overrides implicit doctitle',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           const input =
               '= Document Title\n:snapshot: {doctitle}\n:doctitle: Override\n\n'
@@ -1269,7 +1264,7 @@ void main() {
 
       test(
         'doctitle attribute entry above header overrides implicit doctitle',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           const input =
               ':doctitle: Override\n= Document Title\n\n{doctitle}\n\n== First Section\n';
@@ -1287,26 +1282,22 @@ void main() {
         },
       );
 
-      test(
-        'should apply header substitutions to value of the doctitle '
-        'attribute assigned from implicit doctitle',
-        skip: needsSubstitutors,
-        () {
-          const input =
-              '= <Foo> {plus} <Bar>\n\nThe name of the game is {doctitle}.\n';
-          final doc = documentFromString(input);
-          expect(doc.attr('doctitle'), equals('&lt;Foo&gt; &#43; &lt;Bar&gt;'));
-          expect(
-            doc.blocks[0].content() as String,
-            contains('&lt;Foo&gt; &#43; &lt;Bar&gt;'),
-          );
-        },
-      );
+      test('should apply header substitutions to value of the doctitle '
+          'attribute assigned from implicit doctitle', () {
+        const input =
+            '= <Foo> {plus} <Bar>\n\nThe name of the game is {doctitle}.\n';
+        final doc = documentFromString(input);
+        expect(doc.attr('doctitle'), equals('&lt;Foo&gt; &#43; &lt;Bar&gt;'));
+        expect(
+          doc.blocks[0].content() as String,
+          contains('&lt;Foo&gt; &#43; &lt;Bar&gt;'),
+        );
+      });
 
       test(
         'should substitute attribute reference in implicit document title '
         'for attribute defined earlier in header',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           usingMemoryLogger((logger) {
             const input =
@@ -1325,7 +1316,7 @@ void main() {
       test(
         'should not warn if implicit document title contains attribute '
         'reference for attribute defined later in header',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           usingMemoryLogger((logger) {
             const input =
@@ -1385,7 +1376,7 @@ void main() {
       test(
         'should recognize document title in include file when preceded by '
         'blank lines',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           const input =
               'include::fixtures/include-with-leading-blank-line.adoc[]\n';
@@ -1400,7 +1391,7 @@ void main() {
 
       test(
         'should include specified lines even when leading lines are skipped',
-        skip: needsSubstitutors,
+        skip: needsXmlMatchWave,
         () {
           const input =
               'include::fixtures/include-with-leading-blank-line.adoc[lines=6]\n';
@@ -2190,7 +2181,7 @@ void main() {
         },
       );
 
-      test('parse header only', skip: needsSubstitutors, () {
+      test('parse header only', () {
         const input = '= Document Title\nAuthor Name\n:foo: bar\n\npreamble\n';
         final doc = documentFromString(input, {'parse_header_only': true});
         expect(doc.doctitle(), equals('Document Title'));
@@ -2200,13 +2191,25 @@ void main() {
         expect(doc.blocks.length, equals(0));
       });
 
-      test(
-        'should parse header only when docytpe is manpage',
-        skip: needsSubstitutors,
-        () {
-          const input =
-              '= cmd(1)\nAuthor Name\n:doctype: manpage\n\n== Name\n\ncmd - does stuff\n';
+      test('should parse header only when docytpe is manpage', () {
+        const input =
+            '= cmd(1)\nAuthor Name\n:doctype: manpage\n\n== Name\n\ncmd - does stuff\n';
+        final doc = documentFromString(input, {'parse_header_only': true});
+        expect(doc.doctitle(), equals('cmd(1)'));
+        expect(doc.author, equals('Author Name'));
+        expect(doc.attributes['mantitle'], equals('cmd'));
+        expect(doc.attributes['manvolnum'], equals('1'));
+        expect(doc.attributes['manname'], isNull);
+        expect(doc.attributes['manpurpose'], isNull);
+        expect(doc.blocks.length, equals(0));
+      });
+
+      test('should not warn when parsing header only when docytpe is manpage '
+          'and body is empty', () {
+        const input = '= cmd(1)\nAuthor Name\n:doctype: manpage\n';
+        usingMemoryLogger((logger) {
           final doc = documentFromString(input, {'parse_header_only': true});
+          expect(logger.messages, isEmpty);
           expect(doc.doctitle(), equals('cmd(1)'));
           expect(doc.author, equals('Author Name'));
           expect(doc.attributes['mantitle'], equals('cmd'));
@@ -2214,28 +2217,8 @@ void main() {
           expect(doc.attributes['manname'], isNull);
           expect(doc.attributes['manpurpose'], isNull);
           expect(doc.blocks.length, equals(0));
-        },
-      );
-
-      test(
-        'should not warn when parsing header only when docytpe is manpage '
-        'and body is empty',
-        skip: needsSubstitutors,
-        () {
-          const input = '= cmd(1)\nAuthor Name\n:doctype: manpage\n';
-          usingMemoryLogger((logger) {
-            final doc = documentFromString(input, {'parse_header_only': true});
-            expect(logger.messages, isEmpty);
-            expect(doc.doctitle(), equals('cmd(1)'));
-            expect(doc.author, equals('Author Name'));
-            expect(doc.attributes['mantitle'], equals('cmd'));
-            expect(doc.attributes['manvolnum'], equals('1'));
-            expect(doc.attributes['manname'], isNull);
-            expect(doc.attributes['manpurpose'], isNull);
-            expect(doc.blocks.length, equals(0));
-          });
-        },
-      );
+        });
+      });
 
       test('outputs footnotes in footer', skip: needsConverter, () {
         const input =
@@ -2317,32 +2300,28 @@ void main() {
     });
 
     group('Catalog', () {
-      test(
-        'should alias document catalog as document references',
-        skip: needsSubstitutors,
-        () {
-          const input =
-              '= Document Title\n\n== Section A\n\nContent\n\n== Section B\n\nContent.footnote:[commentary]\n';
-          final doc = documentFromString(input);
-          expect(doc.catalog, isNotNull);
-          expect(
-            (doc.catalog.keys.toList()..sort()),
-            orderedEquals([
-              'callouts',
-              'footnotes',
-              'ids',
-              'images',
-              'includes',
-              'links',
-              'refs',
-            ]),
-          );
-          expect(doc.catalog, same(doc.references));
-          expect(doc.catalog['footnotes'], same(doc.references['footnotes']));
-          expect(doc.catalog['refs'], same(doc.references['refs']));
-          expect(doc.resolveId('Section A'), equals('_section_a'));
-        },
-      );
+      test('should alias document catalog as document references', () {
+        const input =
+            '= Document Title\n\n== Section A\n\nContent\n\n== Section B\n\nContent.footnote:[commentary]\n';
+        final doc = documentFromString(input);
+        expect(doc.catalog, isNotNull);
+        expect(
+          (doc.catalog.keys.toList()..sort()),
+          orderedEquals([
+            'callouts',
+            'footnotes',
+            'ids',
+            'images',
+            'includes',
+            'links',
+            'refs',
+          ]),
+        );
+        expect(doc.catalog, same(doc.references));
+        expect(doc.catalog['footnotes'], same(doc.references['footnotes']));
+        expect(doc.catalog['refs'], same(doc.references['refs']));
+        expect(doc.resolveId('Section A'), equals('_section_a'));
+      });
 
       test('should return empty :ids table', () {
         final doc = emptyDocument();
@@ -2351,21 +2330,17 @@ void main() {
         expect((doc.catalog['ids'] as Map<String, Object?>)['foobar'], isNull);
       });
 
-      test(
-        'should register entry in :refs table with reftext when request is '
-        'made to register entry in :ids table',
-        skip: needsSubstitutors,
-        () {
-          final doc = emptyDocument();
-          doc.register('ids', ['foobar', 'Foo Bar']);
-          expect(doc.catalog['ids'] as Map, isEmpty);
-          expect(doc.catalog['refs'] as Map, isNotEmpty);
-          final ref =
-              (doc.catalog['refs'] as Map<String, Object?>)['foobar'] as Inline;
-          expect(ref.reftext, equals('Foo Bar'));
-          expect(doc.resolveId('Foo Bar'), equals('foobar'));
-        },
-      );
+      test('should register entry in :refs table with reftext when request is '
+          'made to register entry in :ids table', () {
+        final doc = emptyDocument();
+        doc.register('ids', ['foobar', 'Foo Bar']);
+        expect(doc.catalog['ids'] as Map, isEmpty);
+        expect(doc.catalog['refs'] as Map, isNotEmpty);
+        final ref =
+            (doc.catalog['refs'] as Map<String, Object?>)['foobar'] as Inline;
+        expect(ref.reftext, equals('Foo Bar'));
+        expect(doc.resolveId('Foo Bar'), equals('foobar'));
+      });
 
       test('should return nil if there is already an entry for ID in the '
           ':refs table', () {

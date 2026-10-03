@@ -1431,7 +1431,9 @@ void main() {
 
     test(
       'should allow tree processor to replace tree',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so the registered tree processor never runs.
+      skip: needsDocumentIntegration,
       () {
         const input = '= Original Document\nDoc Writer\n\ncontent\n';
 
@@ -2321,7 +2323,9 @@ void main() {
 
     test(
       'should parse text in square brackets as attrlist by default',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
@@ -2535,7 +2539,9 @@ void main() {
 
     test(
       'should allow return value of inline macro to be nil',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
@@ -2565,7 +2571,9 @@ void main() {
 
     test(
       'should warn if return value of inline macro is a string',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
@@ -2600,7 +2608,9 @@ void main() {
     test(
       'should not apply subs to inline node returned by process method '
       'by default',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
@@ -2635,7 +2645,9 @@ void main() {
     test(
       'should apply subs specified as symbol to inline node returned by '
       'process method',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
@@ -2669,7 +2681,9 @@ void main() {
     test(
       'should apply subs specified as array to inline node returned by '
       'process method',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
@@ -2705,7 +2719,9 @@ void main() {
     test(
       'should apply subs specified as string to inline node returned by '
       'process method',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
@@ -2739,7 +2755,9 @@ void main() {
     test(
       'should prefer attributes parsed from inline macro over default '
       'attributes',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
@@ -2777,7 +2795,9 @@ void main() {
 
     test(
       'should coerce names of positional attributes to strings',
-      skip: needsSubstitutors,
+      // NOTE needsSubstitutors was stale: Document.extensions is always
+      // null (document.dart), so registered inline macros never fire.
+      skip: needsDocumentIntegration,
       () {
         Extensions.register(
           build: (registry) {
