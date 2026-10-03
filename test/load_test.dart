@@ -5,16 +5,16 @@
 /// `test/logger_test.rb`.
 ///
 /// Adaptation policy: each in-scope Ruby test appears exactly once, under its
-/// Ruby name. Tests whose assertions all run today pass; tests that need
-/// conversion output, doctitle/section-title computation, or real
-/// substitutions are `skip()`ped with a precise reason. A few passing tests
-/// are marked ADAPTED where only the input fixture was weakened (empty
-/// document instead of `sample.adoc`) while keeping the same kind of
-/// assertions; the dropped content assertions are covered by the skipped
-/// 1:1 ports. Focused `load.dart`-behavior tests (descriptive names) cover
-/// entry-point branches the 1:1 ports cannot reach yet (file-attribute
-/// assignment, `/dev/null`, stream output, standalone defaulting,
-/// stylesheet copying, error types).
+/// Ruby name. All ported tests pass except the three remote-stylesheet tests
+/// under [needsSyncHttp], which are permanently skipped (synchronous
+/// `convert` cannot fetch `http(s)` URIs in Dart). A few passing tests are
+/// marked ADAPTED where only the input fixture or output location was
+/// changed (empty document instead of `sample.adoc`; jailed scratch dir
+/// instead of `fixtures/output`, since the Dart test jail is `dart/` while
+/// Ruby's repo-root jail contains its fixtures dir). Focused
+/// `load.dart`-behavior tests (descriptive names) cover entry-point branches
+/// (file-attribute assignment, `/dev/null`, stream output, standalone
+/// defaulting, stylesheet copying, error types).
 ///
 /// Test seam: [Document] does not consult the converter factory yet (it
 /// carries `_BuiltinConverterStub`; see `document.dart`), and substitutions
@@ -41,21 +41,17 @@ import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/timings.dart';
 import 'package:test/test.dart';
 
-/// Skip reason for tests needing doctitle/section-title substitution.
-const String needsDoctitle =
-    'needs TASK-2h31dk (substitutors: doctitle applies title subs)';
-
-/// Skip reason for tests needing a working `Document.convert` through the
-/// entry points: the document still carries a converter stub, and real
-/// conversion needs substitutions.
-const String needsConvert =
-    'needs Document converter-factory wiring (no card; document.dart '
-    'still returns _BuiltinConverterStub) + TASK-2h31dk (substitutors)';
-
-/// Skip reason for tests needing synchronous URI fetching.
-const String needsUriFetch =
-    'needs sync URI-fetch support (AbstractNode.fetchUri throws '
-    'UnimplementedError; no card)';
+/// Permanent skip reason for the remote-stylesheet tests.
+///
+/// `dart:io` offers no synchronous HTTP client, so the synchronous
+/// `convert` flow cannot fetch `http(s)` stylesheets the way Ruby's
+/// `open-uri` does (`AbstractNode.fetchUri` throws `UnimplementedError` by
+/// design). These bodies spin up a real loopback `HttpServer` and stay
+/// skipped until a (future) async convert flow can reach it; the
+/// allow-uri-read warning paths are covered by passing tests elsewhere.
+const String needsSyncHttp =
+    'PERMANENT SKIP: sync convert cannot fetch http(s) stylesheets in Dart '
+    '(dart:io has no sync HTTP client; AbstractNode.fetchUri throws by design)';
 
 /// Joins a fixture [name] to the Ruby fixtures directory (port of
 /// `fixture_path`; tests run with `dart/` as the working directory).
@@ -64,6 +60,22 @@ String fixturePath(String name) => '../test/fixtures/$name';
 /// Runs [fn] with a fresh temporary directory, deleted afterwards.
 void withTempDir(void Function(Directory dir) fn) {
   final dir = Directory.systemTemp.createTempSync('asciidoctor-load-test-');
+  try {
+    fn(dir);
+  } finally {
+    dir.deleteSync(recursive: true);
+  }
+}
+
+/// Runs [fn] with a fresh temporary directory under the working directory.
+///
+/// Mirrors Ruby's `fixture_path 'output'` scratch dir: with safe mode at or
+/// above `SafeMode.safe`, `to_dir`/`to_file` targets must stay inside the
+/// jail (the working directory; see `lib/asciidoctor/convert.rb`), so tests
+/// that write output files cannot use [withTempDir] (`/tmp` is outside the
+/// jail). Deleted afterwards.
+void withJailedTempDir(void Function(Directory dir) fn) {
+  final dir = Directory.current.createTempSync('asciidoctor-load-test-');
   try {
     fn(dir);
   } finally {
@@ -113,7 +125,7 @@ void main() {
       });
     });
 
-    test('should load input file', skip: needsDoctitle, () {
+    test('should load input file', () {
       final sampleInputPath = fixturePath('sample.adoc');
       final file = File(sampleInputPath);
       final doc = load(file, {'safe': SafeMode.safe});
@@ -130,7 +142,7 @@ void main() {
       expect(doc.attr('docdir'), equals(doc.baseDir));
     });
 
-    test('should load input string', skip: needsDoctitle, () {
+    test('should load input string', () {
       const input = 'Document Title\n==============\n\npreamble\n';
       final doc = load(input, {'safe': SafeMode.safe});
       expect(doc.doctitle(), equals('Document Title'));
@@ -146,7 +158,7 @@ void main() {
       expect(doc.blocks, isNotEmpty);
     });
 
-    test('should load input string array', skip: needsDoctitle, () {
+    test('should load input string array', () {
       const input = 'Document Title\n==============\n\npreamble\n';
       final doc = load(linesOf(input), {'safe': SafeMode.safe});
       expect(doc.doctitle(), equals('Document Title'));
@@ -170,7 +182,7 @@ void main() {
       });
     });
 
-    test('should load input IO', skip: needsDoctitle, () {
+    test('should load input IO', () {
       withTempDir((dir) {
         final path = '${dir.path}/input.adoc';
         File(path)
@@ -204,7 +216,6 @@ void main() {
 
     test(
       'should ignore :to_file option if value is truthy but not a string',
-      skip: needsConvert,
       () {
         final sampleInputPath = fixturePath('sample.adoc');
         final doc = loadFile(sampleInputPath, {
@@ -232,20 +243,16 @@ void main() {
       expect(doc.attr('outfilesuffix'), equals('.htm'));
     });
 
-    test(
-      'should set outfilesuffix attribute to file extension of value of '
-      ':to_file option if value is a string',
-      skip: needsDoctitle,
-      () {
-        final doc = loadFile(fixturePath('sample.adoc'), {
-          'safe': 'safe',
-          'to_file': 'out.htm',
-        });
-        expect(doc, isNotNull);
-        expect(doc.doctitle(), equals('Document Title'));
-        expect(doc.attr('outfilesuffix'), equals('.htm'));
-      },
-    );
+    test('should set outfilesuffix attribute to file extension of value of '
+        ':to_file option if value is a string', () {
+      final doc = loadFile(fixturePath('sample.adoc'), {
+        'safe': 'safe',
+        'to_file': 'out.htm',
+      });
+      expect(doc, isNotNull);
+      expect(doc.doctitle(), equals('Document Title'));
+      expect(doc.attr('outfilesuffix'), equals('.htm'));
+    });
 
     test('should accept attributes as array', () {
       final doc = load('text', {
@@ -447,23 +454,18 @@ void main() {
       );
     });
 
-    test(
-      'converts block to output format when convert is called',
-      skip: needsConvert,
-      () {
-        final doc = load('paragraph text');
-        expect(doc.blocks, hasLength(1));
-        expect(doc.blocks[0].context, equals('paragraph'));
-        expect(
-          doc.blocks[0].convert(),
-          equals('<div class="paragraph">\n<p>paragraph text</p>\n</div>'),
-        );
-      },
-    );
+    test('converts block to output format when convert is called', () {
+      final doc = load('paragraph text');
+      expect(doc.blocks, hasLength(1));
+      expect(doc.blocks[0].context, equals('paragraph'));
+      expect(
+        doc.blocks[0].convert(),
+        equals('<div class="paragraph">\n<p>paragraph text</p>\n</div>'),
+      );
+    });
 
     test(
       'should be able to restore header attributes after call to convert',
-      skip: needsConvert,
       () {
         const input =
             '= Document Title\n:foo: bar\n\ncontent\n\n:foo: baz\n\ncontent\n';
@@ -476,7 +478,7 @@ void main() {
       },
     );
 
-    test('should output timestamps by default', skip: needsConvert, () {
+    test('should output timestamps by default', () {
       final doc = load('text', {
         'backend': 'html5',
         'standalone': true,
@@ -491,7 +493,6 @@ void main() {
 
     test(
       'should not output timestamps if reproducible attribute is set in HTML 5',
-      skip: needsConvert,
       () {
         final doc = load('text', {
           'backend': 'html5',
@@ -505,55 +506,43 @@ void main() {
       },
     );
 
-    test(
-      'should not output meta generator tag in HTML 5 if reproducible '
-      'attribute is set',
-      skip: needsConvert,
-      () {
-        final doc = load('text', {
-          'backend': 'html5',
-          'standalone': true,
-          'attributes': {'linkcss': '', 'reproducible': ''},
-        });
-        final result = doc.convert() as String;
-        expect(doc.hasAttr('reproducible'), isTrue);
-        expect(result, isNot(contains('<meta name="generator"')));
-      },
-    );
+    test('should not output meta generator tag in HTML 5 if reproducible '
+        'attribute is set', () {
+      final doc = load('text', {
+        'backend': 'html5',
+        'standalone': true,
+        'attributes': {'linkcss': '', 'reproducible': ''},
+      });
+      final result = doc.convert() as String;
+      expect(doc.hasAttr('reproducible'), isTrue);
+      expect(result, isNot(contains('<meta name="generator"')));
+    });
 
-    test(
-      'should not output timestamps if reproducible attribute is set in '
-      'DocBook',
-      skip: needsConvert,
-      () {
-        final doc = load('text', {
-          'backend': 'docbook',
-          'standalone': true,
-          'attributes': {'reproducible': ''},
-        });
-        final result = doc.convert() as String;
-        expect(doc.hasAttr('docdate'), isTrue);
-        expect(doc.hasAttr('reproducible'), isTrue);
-        expect(result, isNot(contains('<date>')));
-      },
-    );
+    test('should not output timestamps if reproducible attribute is set in '
+        'DocBook', () {
+      final doc = load('text', {
+        'backend': 'docbook',
+        'standalone': true,
+        'attributes': {'reproducible': ''},
+      });
+      final result = doc.convert() as String;
+      expect(doc.hasAttr('docdate'), isTrue);
+      expect(doc.hasAttr('reproducible'), isTrue);
+      expect(result, isNot(contains('<date>')));
+    });
 
-    test(
-      'timings are recorded for each step when load and convert are called '
-      'separately',
-      skip: needsConvert,
-      () {
-        final timings = Timings();
-        loadFile(fixturePath('asciidoc_index.txt'), {
-          'timings': timings,
-        }).convert();
-        expect(timings.readParse?.toStringAsFixed(5), isNot(equals('0.00000')));
-        expect(timings.convert?.toStringAsFixed(5), isNot(equals('0.00000')));
-        expect(timings.total, isNot(equals(timings.readParse)));
-      },
-    );
+    test('timings are recorded for each step when load and convert are called '
+        'separately', () {
+      final timings = Timings();
+      loadFile(fixturePath('asciidoc_index.txt'), {
+        'timings': timings,
+      }).convert();
+      expect(timings.readParse?.toStringAsFixed(5), isNot(equals('0.00000')));
+      expect(timings.convert?.toStringAsFixed(5), isNot(equals('0.00000')));
+      expect(timings.total, isNot(equals(timings.readParse)));
+    });
 
-    test('should coerce encoding of file to UTF-8', skip: needsConvert, () {
+    test('should coerce encoding of file to UTF-8', () {
       final output = convertFile(fixturePath('encoding.adoc'), {
         'to_file': false,
         'safe': 'safe',
@@ -564,7 +553,6 @@ void main() {
     test(
       'should convert filename that contains non-ASCII characters independent '
       'of default encodings',
-      skip: needsConvert,
       () {
         withTempDir((dir) {
           final inputPath = '${dir.path}/test-ＵＴＦ８-.adoc';
@@ -596,7 +584,7 @@ void main() {
       expect(doc.attr('docfilesuffix'), equals('.adoc'));
     });
 
-    test('should load input file from filename', skip: needsDoctitle, () {
+    test('should load input file from filename', () {
       final sampleInputPath = fixturePath('sample.adoc');
       final doc = loadFile(sampleInputPath, {'safe': SafeMode.safe});
       expect(doc.doctitle(), equals('Document Title'));
@@ -619,7 +607,7 @@ void main() {
       }
     });
 
-    test('should load input file from pathname', skip: needsDoctitle, () {
+    test('should load input file from pathname', () {
       final doc = loadFile(Uri.file(fixturePath('sample.adoc')), {
         'safe': 'safe',
       });
@@ -641,18 +629,14 @@ void main() {
       });
     });
 
-    test(
-      'should load input file with alternate file extension',
-      skip: needsDoctitle,
-      () {
-        final sampleInputPath = fixturePath('sample-alt-extension.asciidoc');
-        final doc = loadFile(sampleInputPath, {'safe': 'safe'});
-        expect(doc.doctitle(), equals('Document Title'));
-        expect(doc.attr('docfile'), endsWith('sample-alt-extension.asciidoc'));
-        expect(doc.attr('docdir'), endsWith('/test/fixtures'));
-        expect(doc.attr('docfilesuffix'), equals('.asciidoc'));
-      },
-    );
+    test('should load input file with alternate file extension', () {
+      final sampleInputPath = fixturePath('sample-alt-extension.asciidoc');
+      final doc = loadFile(sampleInputPath, {'safe': 'safe'});
+      expect(doc.doctitle(), equals('Document Title'));
+      expect(doc.attr('docfile'), endsWith('sample-alt-extension.asciidoc'));
+      expect(doc.attr('docdir'), endsWith('/test/fixtures'));
+      expect(doc.attr('docfilesuffix'), equals('.asciidoc'));
+    });
 
     test('raises FileSystemException for missing file', () {
       expect(
@@ -728,7 +712,7 @@ void main() {
       }) as String;
       expect(output, isNotEmpty);
       expect(output, contains('<p>text</p>'));
-      expect(output, isNot(contains('<html>')));
+      expect(output, isNot(contains('<html')));
     });
 
     test('ignores parse option', () {
@@ -1247,7 +1231,6 @@ void main() {
     test(
       'should convert source document to embedded document when header_footer '
       'is false',
-      skip: needsConvert,
       () {
         final sampleInputPath = fixturePath('sample.adoc');
         final sampleOutputPath = fixturePath('sample.html');
@@ -1256,7 +1239,7 @@ void main() {
           expect(File(sampleOutputPath).existsSync(), isTrue);
           final output = File(sampleOutputPath).readAsStringSync();
           expect(output, isNotEmpty);
-          expect(output, isNot(contains('<html>')));
+          expect(output, isNot(contains('<html')));
           expect(output, contains('id="preamble"'));
         } finally {
           File(sampleOutputPath).deleteSync();
@@ -1264,39 +1247,30 @@ void main() {
       },
     );
 
-    test(
-      'should convert source document to standalone document string when '
-      'to_file is false and standalone is true',
-      skip: needsConvert,
-      () {
-        final output = convertFile(fixturePath('sample.adoc'), {
-          'standalone': true,
-          'to_file': false,
-        }) as String;
-        expect(output, isNotEmpty);
-        expect(output, contains('<html>'));
-        expect(output, contains('<title>Document Title</title>'));
-      },
-    );
+    test('should convert source document to standalone document string when '
+        'to_file is false and standalone is true', () {
+      final output = convertFile(fixturePath('sample.adoc'), {
+        'standalone': true,
+        'to_file': false,
+      }) as String;
+      expect(output, isNotEmpty);
+      expect(output, contains('<html lang="en">'));
+      expect(output, contains('<title>Document Title</title>'));
+    });
 
-    test(
-      'should convert source document to standalone document string when '
-      'to_file is false and header_footer is true',
-      skip: needsConvert,
-      () {
-        final output = convertFile(fixturePath('sample.adoc'), {
-          'header_footer': true,
-          'to_file': false,
-        }) as String;
-        expect(output, isNotEmpty);
-        expect(output, contains('<html>'));
-        expect(output, contains('<title>Document Title</title>'));
-      },
-    );
+    test('should convert source document to standalone document string when '
+        'to_file is false and header_footer is true', () {
+      final output = convertFile(fixturePath('sample.adoc'), {
+        'header_footer': true,
+        'to_file': false,
+      }) as String;
+      expect(output, isNotEmpty);
+      expect(output, contains('<html lang="en">'));
+      expect(output, contains('<title>Document Title</title>'));
+    });
 
     test(
       'lines in output should be separated by line feed (universal newline)',
-      skip: needsConvert,
       () {
         final output = convertFile(fixturePath('sample.adoc'), {
           'standalone': true,
@@ -1307,7 +1281,7 @@ void main() {
       },
     );
 
-    test('should accept attributes as array', skip: needsConvert, () {
+    test('should accept attributes as array', () {
       final output = convertFile(fixturePath('sample.adoc'), {
         'attributes': ['sectnums', 'idprefix', 'idseparator=-'],
         'to_file': false,
@@ -1315,7 +1289,7 @@ void main() {
       expect(output, contains('id="section-a"'));
     });
 
-    test('should accept attributes as string', skip: needsConvert, () {
+    test('should accept attributes as string', () {
       final output = convertFile(fixturePath('sample.adoc'), {
         'attributes': 'sectnums idprefix idseparator=-',
         'to_file': false,
@@ -1326,7 +1300,6 @@ void main() {
     test(
       'should link to default stylesheet by default when safe mode is SECURE '
       'or greater',
-      skip: needsConvert,
       () {
         final output = convertFile(fixturePath('basic.adoc'), {
           'standalone': true,
@@ -1336,25 +1309,21 @@ void main() {
       },
     );
 
-    test(
-      'should embed default stylesheet by default if SafeMode is less than '
-      'SECURE',
-      skip: needsConvert,
-      () {
-        const input = '= Document Title\n\ntext\n';
-        final output = convert(input, {
-          'safe': SafeMode.server,
-          'standalone': true,
-        }) as String;
-        expect(output, isNot(contains('href="./asciidoctor.css"')));
-        expect(output, contains('<style>'));
-      },
-    );
+    test('should embed default stylesheet by default if SafeMode is less than '
+        'SECURE', () {
+      const input = '= Document Title\n\ntext\n';
+      final output = convert(input, {
+        'safe': SafeMode.server,
+        'standalone': true,
+      }) as String;
+      expect(output, isNot(contains('href="./asciidoctor.css"')));
+      expect(output, contains('<style>'));
+    });
 
     test(
       'should embed remote stylesheet by default if SafeMode is less than '
       'SECURE and allow-uri-read is set',
-      skip: '$needsConvert; $needsUriFetch',
+      skip: needsSyncHttp,
       () async {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         try {
@@ -1383,7 +1352,6 @@ void main() {
     test(
       'should not allow linkcss be unset from document if SafeMode is SECURE '
       'or greater',
-      skip: needsConvert,
       () {
         const input = '= Document Title\n:linkcss!:\n\ntext\n';
         final output = convert(input, {'standalone': true}) as String;
@@ -1391,58 +1359,43 @@ void main() {
       },
     );
 
-    test(
-      'should embed default stylesheet if linkcss is unset from API and '
-      'SafeMode is SECURE or greater',
-      skip: needsConvert,
-      () {
-        const input = '= Document Title\n\ntext\n';
-        for (final attrs in [
-          {'linkcss!': ''},
-          {'linkcss': null},
-          {'linkcss': false},
-        ]) {
-          final output = convert(input, {
-            'standalone': true,
-            'attributes': attrs,
-          }) as String;
-          expect(output, isNot(contains('href="./asciidoctor.css"')));
-          expect(output, contains('<style>'));
-        }
-      },
-    );
-
-    test(
-      'should embed default stylesheet if safe mode is less than SECURE and '
-      'linkcss is unset from API',
-      skip: needsConvert,
-      () {
-        final output = convertFile(fixturePath('basic.adoc'), {
-          'standalone': true,
-          'to_file': false,
-          'safe': SafeMode.safe,
-          'attributes': {'linkcss!': ''},
-        }) as String;
+    test('should embed default stylesheet if linkcss is unset from API and '
+        'SafeMode is SECURE or greater', () {
+      const input = '= Document Title\n\ntext\n';
+      for (final attrs in [
+        {'linkcss!': ''},
+        {'linkcss': null},
+        {'linkcss': false},
+      ]) {
+        final output =
+            convert(input, {'standalone': true, 'attributes': attrs}) as String;
+        expect(output, isNot(contains('href="./asciidoctor.css"')));
         expect(output, contains('<style>'));
-      },
-    );
+      }
+    });
 
-    test(
-      'should not link to stylesheet if stylesheet is unset',
-      skip: needsConvert,
-      () {
-        const input = '= Document Title\n\ntext\n';
-        final output = convert(input, {
-          'standalone': true,
-          'attributes': {'stylesheet!': ''},
-        }) as String;
-        expect(output, isNot(contains('rel="stylesheet"')));
-      },
-    );
+    test('should embed default stylesheet if safe mode is less than SECURE and '
+        'linkcss is unset from API', () {
+      final output = convertFile(fixturePath('basic.adoc'), {
+        'standalone': true,
+        'to_file': false,
+        'safe': SafeMode.safe,
+        'attributes': {'linkcss!': ''},
+      }) as String;
+      expect(output, contains('<style>'));
+    });
+
+    test('should not link to stylesheet if stylesheet is unset', () {
+      const input = '= Document Title\n\ntext\n';
+      final output = convert(input, {
+        'standalone': true,
+        'attributes': {'stylesheet!': ''},
+      }) as String;
+      expect(output, isNot(contains('rel="stylesheet"')));
+    });
 
     test(
       'should link to custom stylesheet if specified in stylesheet attribute',
-      skip: needsConvert,
       () {
         const input = '= Document Title\n\ntext\n';
         final output = convert(input, {
@@ -1453,44 +1406,36 @@ void main() {
       },
     );
 
-    test(
-      'should resolve custom stylesheet relative to stylesdir',
-      skip: needsConvert,
-      () {
-        const input = '= Document Title\n\ntext\n';
-        final output = convert(input, {
-          'standalone': true,
-          'attributes': {
-            'stylesheet': 'custom.css',
-            'stylesdir': './stylesheets',
-          },
-        }) as String;
-        expect(output, contains('href="./stylesheets/custom.css"'));
-      },
-    );
+    test('should resolve custom stylesheet relative to stylesdir', () {
+      const input = '= Document Title\n\ntext\n';
+      final output = convert(input, {
+        'standalone': true,
+        'attributes': {
+          'stylesheet': 'custom.css',
+          'stylesdir': './stylesheets',
+        },
+      }) as String;
+      expect(output, contains('href="./stylesheets/custom.css"'));
+    });
 
-    test(
-      'should resolve custom stylesheet to embed relative to stylesdir',
-      skip: needsConvert,
-      () {
-        final output = convertFile(fixturePath('basic.adoc'), {
-          'standalone': true,
-          'safe': SafeMode.safe,
-          'to_file': false,
-          'attributes': {
-            'stylesheet': 'custom.css',
-            'stylesdir': './stylesheets',
-            'linkcss!': '',
-          },
-        }) as String;
-        expect(output, contains('<style>'));
-      },
-    );
+    test('should resolve custom stylesheet to embed relative to stylesdir', () {
+      final output = convertFile(fixturePath('basic.adoc'), {
+        'standalone': true,
+        'safe': SafeMode.safe,
+        'to_file': false,
+        'attributes': {
+          'stylesheet': 'custom.css',
+          'stylesdir': './stylesheets',
+          'linkcss!': '',
+        },
+      }) as String;
+      expect(output, contains('<style>'));
+    });
 
     test(
       'should embed custom remote stylesheet if SafeMode is less than SECURE '
       'and allow-uri-read is set',
-      skip: '$needsConvert; $needsUriFetch',
+      skip: needsSyncHttp,
       () async {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         try {
@@ -1519,7 +1464,7 @@ void main() {
     test(
       'should embed custom stylesheet in remote stylesdir if SafeMode is less '
       'than SECURE and allow-uri-read is set',
-      skip: '$needsConvert; $needsUriFetch',
+      skip: needsSyncHttp,
       () async {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         try {
@@ -1549,9 +1494,8 @@ void main() {
     test(
       'should copy custom stylesheet in folder to same folder in destination '
       'dir if copycss is set',
-      skip: needsConvert,
       () {
-        withTempDir((dir) {
+        withJailedTempDir((dir) {
           final sampleInputPath = fixturePath('sample.adoc');
           final sampleOutputPath = '${dir.path}/sample.html';
           convertFile(sampleInputPath, {
@@ -1575,9 +1519,8 @@ void main() {
 
     test(
       'should copy custom stylesheet to destination dir if copycss is true',
-      skip: needsConvert,
       () {
-        withTempDir((dir) {
+        withJailedTempDir((dir) {
           convertFile(fixturePath('sample.adoc'), {
             'safe': 'safe',
             'to_dir': dir.path,
@@ -1597,9 +1540,8 @@ void main() {
     test(
       'should copy custom stylesheet to destination dir if copycss is a path '
       'string',
-      skip: needsConvert,
       () {
-        withTempDir((dir) {
+        withJailedTempDir((dir) {
           convertFile(fixturePath('sample.adoc'), {
             'safe': 'safe',
             'to_dir': dir.path,
@@ -1616,31 +1558,28 @@ void main() {
       },
     );
 
-    test(
-      'should copy custom stylesheet to destination dir if copycss is a '
-      'Pathname object',
-      skip: needsConvert,
-      () {
-        withTempDir((dir) {
-          convertFile(fixturePath('sample.adoc'), {
-            'safe': 'safe',
-            'to_dir': dir.path,
-            'mkdirs': true,
-            'attributes': {
-              'stylesheet': 'styles.css',
-              'linkcss': true,
-              'copycss': Uri.file(fixturePath('custom.css')),
-            },
-          });
-          expect(File('${dir.path}/sample.html').existsSync(), isTrue);
-          expect(File('${dir.path}/styles.css').existsSync(), isTrue);
+    test('should copy custom stylesheet to destination dir if copycss is a '
+        'Pathname object', () {
+      withJailedTempDir((dir) {
+        convertFile(fixturePath('sample.adoc'), {
+          'safe': 'safe',
+          'to_dir': dir.path,
+          'mkdirs': true,
+          'attributes': {
+            'stylesheet': 'styles.css',
+            'linkcss': true,
+            // Absolute URI: Ruby's fixture_path is absolute, and a relative
+            // copycss source would resolve against base_dir, not the cwd.
+            'copycss': File(fixturePath('custom.css')).absolute.uri,
+          },
         });
-      },
-    );
+        expect(File('${dir.path}/sample.html').existsSync(), isTrue);
+        expect(File('${dir.path}/styles.css').existsSync(), isTrue);
+      });
+    });
 
     test(
       'should convert source file and write result to adjacent file by default',
-      skip: needsConvert,
       () {
         final sampleInputPath = fixturePath('sample.adoc');
         final sampleOutputPath = fixturePath('sample.html');
@@ -1649,7 +1588,7 @@ void main() {
           expect(File(sampleOutputPath).existsSync(), isTrue);
           final output = File(sampleOutputPath).readAsStringSync();
           expect(output, isNotEmpty);
-          expect(output, contains('<html>'));
+          expect(output, contains('<html lang="en">'));
           expect(output, contains('<title>Document Title</title>'));
         } finally {
           File(sampleOutputPath).deleteSync();
@@ -1657,49 +1596,40 @@ void main() {
       },
     );
 
-    test(
-      'should convert source file specified by pathname and write result to '
-      'adjacent file by default',
-      skip: needsConvert,
-      () {
-        final sampleInputPath = Uri.file(fixturePath('sample.adoc'));
-        final sampleOutputPath = fixturePath('sample.html');
-        try {
-          final doc =
-              convertFile(sampleInputPath, {'safe': 'safe'}) as Document;
-          expect(doc.attr('outfile'), endsWith('/test/fixtures/sample.html'));
-          expect(File(sampleOutputPath).existsSync(), isTrue);
-          final output = File(sampleOutputPath).readAsStringSync();
-          expect(output, isNotEmpty);
-          expect(output, contains('<html>'));
-        } finally {
-          File(sampleOutputPath).deleteSync();
-        }
-      },
-    );
+    test('should convert source file specified by pathname and write result to '
+        'adjacent file by default', () {
+      final sampleInputPath = Uri.file(fixturePath('sample.adoc'));
+      final sampleOutputPath = fixturePath('sample.html');
+      try {
+        final doc = convertFile(sampleInputPath, {'safe': 'safe'}) as Document;
+        expect(doc.attr('outfile'), endsWith('/test/fixtures/sample.html'));
+        expect(File(sampleOutputPath).existsSync(), isTrue);
+        final output = File(sampleOutputPath).readAsStringSync();
+        expect(output, isNotEmpty);
+        expect(output, contains('<html lang="en">'));
+      } finally {
+        File(sampleOutputPath).deleteSync();
+      }
+    });
 
-    test(
-      'should convert source file and write to specified file',
-      skip: needsConvert,
-      () {
-        final sampleInputPath = fixturePath('sample.adoc');
-        final sampleOutputPath = fixturePath('result.html');
-        try {
-          convertFile(sampleInputPath, {'to_file': sampleOutputPath});
-          expect(File(sampleOutputPath).existsSync(), isTrue);
-          final output = File(sampleOutputPath).readAsStringSync();
-          expect(output, isNotEmpty);
-          expect(output, contains('<html>'));
-          expect(output, contains('<title>Document Title</title>'));
-        } finally {
-          File(sampleOutputPath).deleteSync();
-        }
-      },
-    );
+    test('should convert source file and write to specified file', () {
+      // ADAPTED: output goes to a jailed scratch dir instead of
+      // fixtures/result.html (Ruby's cwd-rooted jail contains its fixtures
+      // dir; Dart's dart/-rooted jail does not).
+      final sampleInputPath = fixturePath('sample.adoc');
+      withJailedTempDir((dir) {
+        final sampleOutputPath = '${dir.path}/result.html';
+        convertFile(sampleInputPath, {'to_file': sampleOutputPath});
+        expect(File(sampleOutputPath).existsSync(), isTrue);
+        final output = File(sampleOutputPath).readAsStringSync();
+        expect(output, isNotEmpty);
+        expect(output, contains('<html lang="en">'));
+        expect(output, contains('<title>Document Title</title>'));
+      });
+    });
 
     test(
       'should convert source file and write to specified file in base_dir',
-      skip: needsConvert,
       () {
         final sampleInputPath = fixturePath('sample.adoc');
         final sampleOutputPath = fixturePath('result.html');
@@ -1711,7 +1641,7 @@ void main() {
           expect(File(sampleOutputPath).existsSync(), isTrue);
           final output = File(sampleOutputPath).readAsStringSync();
           expect(output, isNotEmpty);
-          expect(output, contains('<html>'));
+          expect(output, contains('<html lang="en">'));
         } finally {
           if (File(sampleOutputPath).existsSync()) {
             File(sampleOutputPath).deleteSync();
@@ -1720,44 +1650,36 @@ void main() {
       },
     );
 
-    test(
-      'should write file in bin mode and thus not convert line feeds to '
-      'system-dependent newline',
-      skip: needsConvert,
-      () {
-        final sampleInputPath = fixturePath('sample.adoc');
-        final sampleOutputPath = fixturePath('sample.html');
-        try {
-          convertFile(sampleInputPath);
-          expect(File(sampleOutputPath).existsSync(), isTrue);
-          final output = File(sampleOutputPath).readAsStringSync();
-          expect(output, isNotEmpty);
-          expect(output, contains('\n'));
-          expect(output, isNot(contains('\r')));
-          expect(output, contains('</body>\n</html>'));
-          expect(output.endsWith('\n'), isFalse);
-        } finally {
-          File(sampleOutputPath).deleteSync();
-        }
-      },
-    );
+    test('should write file in bin mode and thus not convert line feeds to '
+        'system-dependent newline', () {
+      final sampleInputPath = fixturePath('sample.adoc');
+      final sampleOutputPath = fixturePath('sample.html');
+      try {
+        convertFile(sampleInputPath);
+        expect(File(sampleOutputPath).existsSync(), isTrue);
+        final output = File(sampleOutputPath).readAsStringSync();
+        expect(output, isNotEmpty);
+        expect(output, contains('\n'));
+        expect(output, isNot(contains('\r')));
+        expect(output, contains('</body>\n</html>'));
+        expect(output.endsWith('\n'), isFalse);
+      } finally {
+        File(sampleOutputPath).deleteSync();
+      }
+    });
 
-    test(
-      'should set outfilesuffix to match file extension of target file',
-      skip: needsConvert,
-      () {
-        withTempDir((dir) {
-          final sampleOutputPath = '${dir.path}/result.htm';
-          convert('{outfilesuffix}', {'to_file': sampleOutputPath});
-          expect(File(sampleOutputPath).existsSync(), isTrue);
-          final output = File(sampleOutputPath).readAsStringSync();
-          expect(output, isNotEmpty);
-          expect(output, contains('<p>.htm</p>'));
-        });
-      },
-    );
+    test('should set outfilesuffix to match file extension of target file', () {
+      withJailedTempDir((dir) {
+        final sampleOutputPath = '${dir.path}/result.htm';
+        convert('{outfilesuffix}', {'to_file': sampleOutputPath});
+        expect(File(sampleOutputPath).existsSync(), isTrue);
+        final output = File(sampleOutputPath).readAsStringSync();
+        expect(output, isNotEmpty);
+        expect(output, contains('<p>.htm</p>'));
+      });
+    });
 
-    test('timings are recorded for each step', skip: needsConvert, () {
+    test('timings are recorded for each step', () {
       final timings = Timings();
       convertFile(fixturePath('asciidoc_index.txt'), {
         'timings': timings,

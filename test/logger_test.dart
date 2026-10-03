@@ -17,6 +17,7 @@ library;
 
 import 'dart:io';
 
+import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/reader.dart' as reader;
 import 'package:test/test.dart';
@@ -248,31 +249,45 @@ void main() {
   group(
     'logger option (document wave)',
     () {
-      test(
-        'load API assigns the given logger',
-        skip: 'requires load.rb port: Asciidoctor.load(logger:) (see load.rb)',
-        () {},
-      );
-      test(
-        'load_file API assigns the given logger',
-        skip: 'requires load.rb port: Asciidoctor.load_file(logger:)',
-        () {},
-      );
-      test(
-        'convert API assigns the given logger',
-        skip: 'requires load.rb port: Asciidoctor.convert(logger:)',
-        () {},
-      );
-      test(
-        'convert_file API assigns the given logger',
-        skip: 'requires load.rb port: Asciidoctor.convert_file(logger:)',
-        () {},
-      );
-      test(
-        'falsy logger option installs a NullLogger',
-        skip: 'requires load.rb port: `logger || NullLogger.new` lives in load.rb',
-        () {},
-      );
+      test('load API assigns the given logger', () {
+        withManagerLogger(() {
+          final newLogger = TestLogger(stdout);
+          load('contents', {'logger': newLogger});
+          expect(LoggerManager.logger, same(newLogger));
+        });
+      });
+      test('load_file API assigns the given logger', () {
+        withManagerLogger(() {
+          final newLogger = TestLogger(stdout);
+          loadFile('../test/fixtures/basic.adoc', {'logger': newLogger});
+          expect(LoggerManager.logger, same(newLogger));
+        });
+      });
+      test('convert API assigns the given logger', () {
+        withManagerLogger(() {
+          final newLogger = TestLogger(stdout);
+          convert('contents', {'logger': newLogger});
+          expect(LoggerManager.logger, same(newLogger));
+        });
+      });
+      test('convert_file API assigns the given logger', () {
+        withManagerLogger(() {
+          final newLogger = TestLogger(stdout);
+          convertFile('../test/fixtures/basic.adoc', {
+            'to_file': false,
+            'logger': newLogger,
+          });
+          expect(LoggerManager.logger, same(newLogger));
+        });
+      });
+      test('falsy logger option installs a NullLogger', () {
+        for (final falsyValue in [null, false]) {
+          withManagerLogger(() {
+            load('contents', {'logger': falsyValue});
+            expect(LoggerManager.logger, isA<NullLogger>());
+          });
+        }
+      });
     },
     // Ruby group name is ':logger API option'.
   );
