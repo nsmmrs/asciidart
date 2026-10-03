@@ -24,39 +24,7 @@ import 'abstract_node.dart';
 import 'core_ext.dart';
 import 'helpers.dart';
 import 'path_resolver.dart';
-
-// Matches a conditional preprocessor directive (e.g., ifdef, ifndef, ifeval
-// and endif). Port of `Asciidoctor::ConditionalDirectiveRx` (defined in
-// `lib/asciidoctor/rx.rb`). TEMPORARY: moves to `rx.dart` when that port
-// lands. Groups: 1 = escape, 2 = name, 3 = target, 4 = delimiter, 5 = text.
-final RegExp conditionalDirectiveRx = RegExp(
-  r'^(\\)?(ifdef|ifndef|ifeval|endif)::(\S*?(?:([,+])\S*?)?)\[(.+)?\]$',
-);
-
-// Matches a restricted (read as safe) eval expression. Port of
-// `Asciidoctor::EvalExpressionRx`. TEMPORARY: moves to `rx.dart` when that
-// port lands. Groups: 1 = lhs, 2 = operator, 3 = rhs.
-final RegExp evalExpressionRx = RegExp(r'^(.+?) *([=!><]=|[><]) *(.+)$');
-
-// Matches an include preprocessor directive. Port of
-// `Asciidoctor::IncludeDirectiveRx`. TEMPORARY: moves to `rx.dart` when that
-// port lands. Groups: 1 = escape, 2 = target, 3 = attrlist.
-final RegExp includeDirectiveRx = RegExp(
-  r'^(\\)?include::([^\s\[](?:[^\[]*[^\s\[])?)\[(.+)?\]$',
-);
-
-// Matches a tag directive in an include file. Port of
-// `Asciidoctor::TagDirectiveRx`. TEMPORARY: moves to `rx.dart` when that
-// port lands. Groups: 1 = end marker, 2 = tag name.
-//
-// Ruby applies this to raw (newline-terminated) lines, where `$` also matches
-// before the trailing newline. This port applies it to chomped lines, where
-// `$` matches at the end instead, which accepts exactly the same lines.
-final RegExp tagDirectiveRx = RegExp(r'\b(?:tag|(e)nd)::(\S+?)\[\](?=$|[ \r])');
-
-/// Line feed. Port of `Asciidoctor::LF`. TEMPORARY: moves to the constants
-/// port when it lands.
-const String lf = '\n';
+import 'rx.dart';
 
 /// List continuation marker. Port of `Asciidoctor::LIST_CONTINUATION`.
 /// TEMPORARY: moves to the constants port when it lands.
