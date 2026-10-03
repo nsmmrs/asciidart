@@ -1539,7 +1539,7 @@ void main() {
   });
 
   group('Cell', () {
-    Table makeTable(FakeDocument doc) {
+    Table makeTable(AbstractBlock doc) {
       final table = Table(doc, <String, Object?>{});
       table.createColumns([
         {'width': 1},
@@ -1597,18 +1597,21 @@ void main() {
     });
 
     test('header cells defer anchor cataloging until reinitialized', () {
-      final doc = FakeDocument();
+      final doc = Document(<String>[]);
       final table = makeTable(doc);
       table.hasHeaderOption = true;
-      // Would throw (parser seam) if cataloged eagerly.
+      // Would catalog (parser) if done eagerly; header cells defer it.
       final cell = Cell(table.columns.single, '[[hx]] H', {}, {
         'cursor': FakeCursor('t.adoc', 1),
       });
+      final refs = doc.catalog['refs'] as Map<String, Object?>;
+      expect(refs, isNot(contains('hx')));
       // Plain cells reinitialize to themselves.
       final plain = Cell(table.columns.single, 'H', {});
       expect(plain.reinitialize(true), same(plain));
-      // The anchored cell catalogs on reinitialization (parser seam).
-      expect(() => cell.reinitialize(true), throwsUnimplementedError);
+      // The anchored cell catalogs on reinitialization.
+      cell.reinitialize(true);
+      expect(refs, contains('hx'));
     });
 
     test('implicit header with literal style rebuilds on reinitialize', () {
@@ -2027,14 +2030,15 @@ void main() {
       expect(() => block.xreftext('full'), throwsUnimplementedError);
     });
 
-    test('anchor cataloging needs parser.dart', () {
-      final doc = FakeDocument();
-      final col = Column(Table(doc, <String, Object?>{}), 0);
-      expect(() => Cell(col, '[[id]] text', {}), throwsUnimplementedError);
-      expect(
-        () => Parser.catalogInlineAnchor('id', null, col, null, doc),
-        throwsUnimplementedError,
-      );
+    test('anchor cataloging uses parser.dart', () {
+      final doc = Document(<String>[]);
+      final table = Table(doc, <String, Object?>{});
+      final col = Column(table, 0);
+      Cell(col, '[[id]] text', {});
+      Parser.catalogInlineAnchor('id2', null, table, null, doc);
+      final refs = doc.catalog['refs'] as Map<String, Object?>;
+      expect(refs, contains('id'));
+      expect(refs, contains('id2'));
     });
   });
 }

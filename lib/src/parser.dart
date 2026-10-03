@@ -37,6 +37,7 @@ import 'abstract_node.dart';
 import 'attribute_list.dart';
 import 'block.dart';
 import 'callouts.dart';
+import 'constants.dart';
 import 'core_ext.dart';
 import 'document.dart';
 import 'helpers.dart';
@@ -46,7 +47,7 @@ import 'logging.dart';
 import 'reader.dart';
 import 'rx.dart';
 import 'section.dart';
-import 'table.dart' hide Parser;
+import 'table.dart';
 
 const String _del = '\u007f';
 const String _can = '\u0018';
@@ -563,7 +564,7 @@ abstract final class Parser {
             if (stored.$2 != null ||
                 (attributeUndefined ??=
                         docAttrs['attribute-undefined'] as String? ??
-                        complianceAttributeUndefined) !=
+                        Compliance.attributeUndefined) !=
                     'drop-line') {
               drop = true;
               dropEmptyLine = true;

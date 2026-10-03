@@ -28,6 +28,7 @@ export 'src/html5.dart';
 export 'src/inline.dart';
 export 'src/list.dart';
 export 'src/logging.dart';
+export 'src/parser.dart';
 export 'src/path_resolver.dart';
 export 'src/reader.dart';
 export 'src/rx.dart';

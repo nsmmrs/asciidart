@@ -6,8 +6,10 @@ library;
 import 'abstract_block.dart';
 import 'abstract_node.dart';
 import 'core_ext.dart';
+import 'document.dart';
 import 'inline.dart';
 import 'list.dart';
+import 'parser.dart';
 
 /// Scans for a leading, non-escaped anchor (id + optional reference text).
 ///
@@ -34,21 +36,6 @@ double _roundAtPrecision(num value, int precision) {
     factor *= 10;
   }
   return (value.toDouble() * factor).round() / factor;
-}
-
-/// Minimal forward stub for `Asciidoctor::Parser.catalog_inline_anchor`
-/// (parser.dart not yet ported).
-abstract final class Parser {
-  /// Catalogs a matched inline anchor (stub throws).
-  static void catalogInlineAnchor(
-    String id,
-    String? reftext,
-    AbstractNode node,
-    Object? location,
-    dynamic doc,
-  ) {
-    throw UnimplementedError('Parser.catalogInlineAnchor requires parser.dart');
-  }
 }
 
 /// Minimal forward stub for `Asciidoctor::Reader::Cursor` (reader.dart not
@@ -569,7 +556,9 @@ class Cell extends AbstractBlock {
       match.group(2),
       this,
       c,
-      document,
+      // NodeDocument/Document unification pending: the document is always
+      // a Document here (same cast as Parser._docOf).
+      document as Document?,
     );
   }
 
