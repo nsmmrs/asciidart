@@ -1,24 +1,21 @@
 /// Behavioral tests for the structural document model port.
 ///
-/// Covers `section.dart`, `list.dart`, `table.dart` and the minimal
-/// model-core surface (`abstract_node.dart`, `abstract_block.dart`,
-/// `block.dart`, `inline.dart`) with direct construction + assertion tests.
+/// Covers `section.dart`, `list.dart`, `table.dart` against the merged
+/// model-core (`abstract_node.dart`, `abstract_block.dart`, `block.dart`,
+/// `inline.dart`) with direct construction + assertion tests.
 /// Every expectation was verified against the real Ruby classes with
 /// `ruby -Ilib` probes (see the subagent report for the probe log).
 ///
-/// `FakeDocument` stands in for `Document` (owned by the sibling model-core
-/// port): it extends [AbstractBlock] with the `'document'` context and
-/// implements the document surface the structural classes call
-/// (`attributes`, `catalog`, `counter`, `callouts`, `converter`,
-/// `playbackAttributes`, `incrementAndStoreCounter`, `nested`,
-/// `sourcemap`, `compatMode`). Its `counter`/`incrementAndStoreCounter`
-/// only implement the fresh-counter path; see the class docs.
+/// `FakeDocument` stands in for `Document` (not yet ported): it extends
+/// [AbstractBlock] with the `'document'` context and implements the
+/// document surface the structural classes call (`attributes`, `catalog`,
+/// `counter`, `callouts`, `converter`, `playbackAttributes`,
+/// `incrementAndStoreCounter`, `nested`, `sourcemap`, `compatMode`).
+/// Its `counter`/`incrementAndStoreCounter` only implement the
+/// fresh-counter path; see the class docs.
 library;
 
 import 'package:asciidoctor/asciidoctor.dart';
-import 'package:asciidoctor/src/list.dart';
-import 'package:asciidoctor/src/section.dart';
-import 'package:asciidoctor/src/table.dart';
 import 'package:test/test.dart';
 
 /// Records conversions instead of performing them.

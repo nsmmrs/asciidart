@@ -5,10 +5,18 @@ import 'package:asciidoctor/asciidoctor.dart';
 
 void main(List<String> arguments) {
   final parser = ArgParser()
-    ..addFlag('version',
-        abbr: 'V', negatable: false, help: 'Print the version and exit.')
-    ..addFlag('help',
-        abbr: 'h', negatable: false, help: 'Print this usage message.');
+    ..addFlag(
+      'version',
+      abbr: 'V',
+      negatable: false,
+      help: 'Print the version and exit.',
+    )
+    ..addFlag(
+      'help',
+      abbr: 'h',
+      negatable: false,
+      help: 'Print this usage message.',
+    );
 
   late final ArgResults results;
   try {
