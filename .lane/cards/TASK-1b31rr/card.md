@@ -1,7 +1,7 @@
 ---
 id: TASK-1b31rr
 title: "Port foundation: rx, helpers, core_ext, paths, locales, stylesheets"
-status: backlog
+status: doing
 type: task
 priority: 1
 labels:
@@ -12,8 +12,9 @@ deps:
 - TASK-ffdnc8
 - TASK-y8y4t3
 created: "2026-10-03T06:08:56.125938Z"
-updated: "2026-10-03T07:43:51.244247Z"
+updated: "2026-10-03T07:55:00.744072Z"
 ---
+
 
 
 Port rx.rb (728 lines), helpers, core_ext, path_resolver, attribute_list, callouts. Embed data/locale (37 files) + stylesheets as resources. Quarantine Ruby-regexp-vs-Dart-RegExp gaps here. Gate: foundation behavior tests green.
