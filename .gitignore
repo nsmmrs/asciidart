@@ -9,3 +9,7 @@
 /pkg/
 /rdoc/
 /vendor/
+
+# Dart port package
+dart/.dart_tool/
+dart/build/
