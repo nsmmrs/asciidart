@@ -25,6 +25,7 @@ import 'constants.dart';
 import 'core_ext.dart';
 import 'helpers.dart';
 import 'logging.dart';
+import 'parser.dart';
 import 'path_resolver.dart';
 import 'rx.dart';
 
@@ -192,7 +193,8 @@ class Cursor {
     lineno += num;
   }
 
-  /// Returns a copy of this cursor (port of `Cursor#dup`).
+  /// Returns a copy of this cursor (port of Ruby's `Cursor#dup`, used for
+  /// source locations in `lib/asciidoctor/table.rb` and `lib/asciidoctor/parser.rb`).
   Cursor dup() => Cursor(file, dir, path, lineno);
 
   /// `path: line N` summary of this cursor.
@@ -1108,11 +1110,19 @@ class PreprocessorReader extends Reader {
 
     if (include) {
       if (indent != null) {
-        // TODO(parser-wave): implement Parser.adjustIndentation and call it
-        // here: Parser.adjustIndentation(result, _toInt(indent),
-        // _toInt(_document.attr('tabsize'))). (Ruby: Parser.adjust_indentation!
-        // in lib/asciidoctor/parser.rb.) Tests covering `indent` on an
-        // include directive are skipped until then.
+        // Port of the `Parser.adjust_indentation!` call in
+        // `PreprocessorReader#prepare_lines` (lib/asciidoctor/reader.rb:803).
+        // The include path always normalizes to non-null strings, so the
+        // `?? ''` fallback never fires in practice.
+        final lines = List<String>.of(result.map((line) => line ?? ''));
+        Parser.adjustIndentation(
+          lines,
+          _toInt(indent),
+          _toInt(_document.attr('tabsize')),
+        );
+        for (var i = 0; i < lines.length; i++) {
+          result[i] = lines[i];
+        }
       }
     } else {
       while (result.isNotEmpty && (result.last?.isEmpty ?? false)) {

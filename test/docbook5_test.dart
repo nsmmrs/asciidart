@@ -11,9 +11,12 @@
 /// [StubSection], [StubListItem], [StubListBlock], [StubCell], [StubTable],
 /// [StubInline], [StubDocument]) that return fixed content/titles/text,
 /// using plain-text inputs for which the real substitutions are the
-/// identity. Cases that need real substitution output, the parser, or
-/// nested documents are skipped with a reason.
+/// identity. The tests that need real substitution output parse small
+/// sources via [parseDoc] instead (the parser and substitutors waves are
+/// merged).
 library;
+
+import 'dart:io';
 
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
@@ -23,19 +26,10 @@ import 'package:asciidoctor/src/docbook5.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/list.dart';
+import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/table.dart';
 import 'package:test/test.dart';
-
-/// Skip reason for tests requiring the parser wave.
-const String needsParser = 'needs Parser.parse (parser wave)';
-
-/// Skip reason for tests requiring real substitution output.
-const String needsSubstitutors = 'needs substitutors wave (TASK-2h31dk)';
-
-/// Skip reason for tests requiring nested documents (the nested-document
-/// constructor eagerly parses, so this needs the parser wave too).
-const String needsNestedDoc = 'needs nested Document (parser wave)';
 
 /// Records log messages for assertions.
 class FakeLogger implements NodeLogger {
@@ -292,6 +286,37 @@ Document makeDoc({
 
 /// The [Docbook5Converter] installed on [doc].
 Docbook5Converter convOf(Document doc) => doc.converter as Docbook5Converter;
+
+/// Parses [src] into a standalone DocBook document (port of the
+/// `document_from_string` test helper), for the tests that need real
+/// substitution output now that the parser and substitutors waves are
+/// merged.
+Document parseDoc(String src, [Map<String, Object?>? options]) {
+  final opts = <String, Object?>{
+    'backend': 'docbook5',
+    'standalone': true,
+    ...?options,
+  };
+  return Document(src, opts).parse();
+}
+
+/// Finds the enclosing repository checkout directory.
+String _findRepoRoot() {
+  var dir = Directory.current;
+  while (true) {
+    if (File('${dir.path}/dart/pubspec.yaml').existsSync() &&
+        Directory('${dir.path}/test/fixtures').existsSync()) {
+      return dir.path;
+    }
+    final parent = dir.parent;
+    if (parent.path == dir.path) {
+      throw StateError(
+        'repository checkout not found above ${Directory.current.path}',
+      );
+    }
+    dir = parent;
+  }
+}
 
 /// Assigns a header with [title] to [doc].
 void setDocHeader(Document doc, String title) {
@@ -730,7 +755,25 @@ void main() {
       expect(output, isNot(contains('<refpurpose>')));
     });
 
-    test('manpage title with markup', () {}, skip: needsSubstitutors);
+    test('manpage title with markup', () {
+      // Port of document_test.rb 'should apply replacements substitution
+      // to value of mantitle attribute used in DocBook output'.
+      const input =
+          '= foo\\--bar(1)\n'
+          'Author Name\n'
+          ':doctype: manpage\n'
+          ':man manual: Foo Bar Manual\n'
+          ':man source: Foo Bar 1.0\n'
+          '\n'
+          '== NAME\n'
+          '\n'
+          'foo--bar - puts the foo in your bar\n';
+      final doc = parseDoc(input);
+      expect(doc.attr('mantitle'), equals('foo\\--bar'));
+      final result = doc.convert() as String;
+      expect(result, contains('<title>foo--bar(1)</title>'));
+      expect(result, contains('<refentrytitle>foo--bar</refentrytitle>'));
+    });
 
     test('root abstract moves to info tag', () {
       final doc = makeDoc(
@@ -802,9 +845,57 @@ void main() {
       );
     });
 
-    test('docinfo files are included', () {}, skip: needsSubstitutors);
+    test('docinfo files are included', () {
+      // Slice of document_test.rb 'should include docinfo files in docbook
+      // backend': the private `basic-docinfo.xml` lands in the header and
+      // the shared `docinfo.xml` (with `{revnumber}` substituted) under
+      // `docinfo1`.
+      final output = convertFile(
+        '${_findRepoRoot()}/test/fixtures/basic.adoc',
+        const {
+          'to_file': false,
+          'standalone': true,
+          'backend': 'docbook',
+          'safe': SafeMode.server,
+          'attributes': {'docinfo': ''},
+        },
+      ) as String;
+      expect(output, isNotEmpty);
+      expect(output, contains('<copyright>'));
+      expect(output, isNot(contains('<productname>')));
 
-    test('full document from source', () {}, skip: needsParser);
+      final sharedOutput = convertFile(
+        '${_findRepoRoot()}/test/fixtures/basic.adoc',
+        const {
+          'to_file': false,
+          'standalone': true,
+          'backend': 'docbook',
+          'safe': SafeMode.server,
+          'attributes': {'docinfo1': ''},
+        },
+      ) as String;
+      expect(sharedOutput, isNotEmpty);
+      expect(sharedOutput, contains('<productname>Asciidoctor™</productname>'));
+      expect(sharedOutput, contains('<edition>1.0</edition>'));
+      expect(sharedOutput, isNot(contains('<copyright>')));
+    });
+
+    test('full document from source', () {
+      // Oracle from Ruby `Asciidoctor.convert` of the same input with
+      // `backend: 'docbook'`; exercises the full document template in
+      // `lib/asciidoctor/converter/docbook5.rb`.
+      const input = '= Doc Title\nAuthor Name\n\nHello, *world*!\n';
+      final output = parseDoc(input).convert() as String;
+      expect(output, contains('<?xml version="1.0" encoding="UTF-8"?>'));
+      expect(output, contains('<article'));
+      expect(output, contains('<title>Doc Title</title>'));
+      expect(
+        output,
+        contains(
+          '<simpara>Hello, <emphasis role="strong">world</emphasis>!</simpara>',
+        ),
+      );
+    });
   });
 
   group('convertEmbedded', () {

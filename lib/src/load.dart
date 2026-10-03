@@ -29,7 +29,14 @@ library;
 
 import 'dart:convert' show utf8;
 import 'dart:io'
-    show Directory, File, FileMode, FileSystemException, RandomAccessFile;
+    show
+        Directory,
+        File,
+        FileMode,
+        FileSystemEntity,
+        FileSystemEntityType,
+        FileSystemException,
+        RandomAccessFile;
 
 import 'abstract_node.dart' show SafeMode;
 import 'constants.dart' show defaultStylesheetKeys, nullChar;
@@ -124,7 +131,7 @@ Document load(Object? input, [Map<String, Object?>? options]) {
 /// propagate unwrapped, as Ruby's `File.open` block does.
 Document loadFile(Object? filename, [Map<String, Object?>? options]) {
   final file = File(_filenameToPath(filename));
-  file.openSync(mode: FileMode.read).closeSync();
+  _probeReadable(file);
   return load(file, options);
 }
 
@@ -399,8 +406,26 @@ Object? convert(Object? input, [Map<String, Object?>? options]) {
 /// converted [String]. See [convert] for details.
 Object? convertFile(Object? filename, [Map<String, Object?>? options]) {
   final file = File(_filenameToPath(filename));
-  file.openSync(mode: FileMode.read).closeSync();
+  _probeReadable(file);
   return convert(file, options);
+}
+
+/// Opens [file] eagerly so that open errors (missing file, directory,
+/// permissions) propagate unwrapped, as Ruby's `File.open` block does
+/// (`lib/asciidoctor/convert.rb`, `convert_file`).
+///
+/// Named pipes are exempt: Ruby opens the handle once and reads from it,
+/// while an eager probe here would consume the writer rendezvous and leave
+/// the real read in [load] blocked forever.
+void _probeReadable(File file) {
+  try {
+    if (FileSystemEntity.typeSync(file.path) == FileSystemEntityType.pipe) {
+      return;
+    }
+  } catch (_) {
+    // Fall through to the probe, which raises the InvalidPath error.
+  }
+  file.openSync(mode: FileMode.read).closeSync();
 }
 
 /// Converts [input] to the specified backend format.

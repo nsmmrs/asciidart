@@ -651,7 +651,7 @@ abstract final class Parser {
   static String _applyHeaderSubs(Document document, String text) =>
       _subAttributes(document, _subSpecialchars(text));
 
-  /// TEMP-SEAM (parser): port of `Document#apply_attribute_value_subs`.
+  /// Assigns the attribute entry [name] to [value] on [document].
   ///
   /// Kept for the substitutors wave's final seam sweep (no remaining
   /// callers: attribute entries route through [Document.setAttribute]).

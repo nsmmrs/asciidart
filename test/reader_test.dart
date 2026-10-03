@@ -483,32 +483,32 @@ void main() {
       test(
         'should encode UTF-16LE string to UTF-8 when BOM is found',
         skip:
-            'Ruby encoding coercion has no Dart equivalent (strings are '
-            'always Unicode)',
+            'PERMANENT: Ruby encoding coercion has no Dart equivalent '
+            '(strings are always Unicode)',
         () {},
       );
 
       test(
         'should encode UTF-16LE string array to UTF-8 when BOM is found',
         skip:
-            'Ruby encoding coercion has no Dart equivalent (strings are '
-            'always Unicode)',
+            'PERMANENT: Ruby encoding coercion has no Dart equivalent '
+            '(strings are always Unicode)',
         () {},
       );
 
       test(
         'should encode UTF-16BE string to UTF-8 when BOM is found',
         skip:
-            'Ruby encoding coercion has no Dart equivalent (strings are '
-            'always Unicode)',
+            'PERMANENT: Ruby encoding coercion has no Dart equivalent '
+            '(strings are always Unicode)',
         () {},
       );
 
       test(
         'should encode UTF-16BE string array to UTF-8 when BOM is found',
         skip:
-            'Ruby encoding coercion has no Dart equivalent (strings are '
-            'always Unicode)',
+            'PERMANENT: Ruby encoding coercion has no Dart equivalent '
+            '(strings are always Unicode)',
         () {},
       );
     });
@@ -1345,7 +1345,7 @@ void main() {
 
       test(
         'should include content from a file on the classloader',
-        skip: 'JRuby-only (classloader: URI)',
+        skip: 'PERMANENT: JRuby-only (classloader: URI)',
         () {},
       );
 
@@ -1843,10 +1843,22 @@ void main() {
 
       test(
         'should support tag filtering for remote includes',
-        skip:
-            'placeholder (empty body, do not implement here): needs reader '
-            'wave to call Parser.adjustIndentation',
-        () {},
+        // READER-LEVEL: asserts expanded lines instead of converted
+        // output; URI transport is the FakeDocument test double.
+        () {
+          const url = 'http://localhost:9876/fixtures/tagged-class.rb';
+          final input =
+              '[source,ruby]\n----\ninclude::$url[tag=init,indent=0]\n----\n';
+          final doc = FakeDocument(
+            safe: SafeMode.safe,
+            attributes: {'allow-uri-read': ''},
+          );
+          final reader = PreprocessorReader(doc, input, null, true);
+          expect(
+            reader.readLines().join('\n'),
+            contains('def initialize breed\n  @breed = breed\nend'),
+          );
+        },
       );
 
       test(
@@ -2008,10 +2020,19 @@ void main() {
 
       test(
         'include directive supports selecting lines by tag in language that uses circumfix comments',
-        skip:
-            'placeholder (empty body, do not implement here): needs reader '
-            'wave to call Parser.adjustIndentation',
-        () {},
+        // READER-LEVEL: asserts expanded lines instead of converted output.
+        () {
+          const cases = {
+            'include-file.xml': '<snippet>content</snippet>',
+            'include-file.ml': 'let s = SS.empty;;',
+            'include-file.jsx': '<p>Welcome to the club.</p>',
+          };
+          cases.forEach((filename, expected) {
+            final input =
+                '[source,xml]\n----\ninclude::fixtures/$filename[tag=snippet,indent=0]\n----\n';
+            expect(_delimitedLines(input), contains(expected));
+          });
+        },
       );
 
       test(
@@ -2705,10 +2726,15 @@ void main() {
 
       test(
         'indent of included file can be reset to size of indent attribute',
-        skip:
-            'placeholder (empty body, do not implement here): needs reader '
-            'wave to call Parser.adjustIndentation',
-        () {},
+        // READER-LEVEL: asserts expanded lines instead of converted output.
+        () {
+          const input =
+              '[source, xml]\n----\ninclude::fixtures/basic-docinfo.xml[lines=2..3, indent=0]\n----\n';
+          expect(
+            _delimitedLines(input).join('\n'),
+            contains('<year>2013</year>\n<holder>Acme™, Inc.</holder>'),
+          );
+        },
       );
 
       test(

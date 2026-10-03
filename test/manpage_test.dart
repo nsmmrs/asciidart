@@ -9,9 +9,9 @@
 /// Substitution-dependent paths are covered with stub nodes ([StubBlock],
 /// [StubSection], [StubListItem], [StubCell], [StubTable]) that return
 /// fixed content/titles/text, using plain-text inputs for which the real
-/// substitutions are the identity. Cases that need real substitution
-/// output are skipped with a reason citing TASK-2h31dk (the substitutors
-/// wave rewires them on merge).
+/// substitutions are the identity. Tests that need real substitution
+/// output parse small sources instead (the parser and substitutors waves
+/// are merged).
 library;
 
 import 'dart:io';
@@ -27,9 +27,6 @@ import 'package:asciidoctor/src/manpage.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/table.dart';
 import 'package:test/test.dart';
-
-/// Skip reason for tests requiring real substitution output.
-const String needsSubstitutors = 'needs substitutors wave (TASK-2h31dk)';
 
 /// The troff leader marker (mirrors the private `_esc` in `manpage.dart`).
 final String esc = String.fromCharCode(27);
@@ -1653,37 +1650,43 @@ void main() {
       });
     });
 
-    test(
-      'resolves styled xref text',
-      // Ruby parity for styled xrefs is end-to-end (test/manpage_test.rb
-      // 'should reference image with title usign styled xref' expects
-      // `Figure 1, \(lqMagic 8\-Ball\(rq`); the StubBlock unit context
-      // bypasses title subs, so it yields ESC placeholders and an
-      // unescaped hyphen instead. Engine output verified correct e2e.
-      skip: 'needs e2e Ruby-parity form: stub bypasses title subs',
-      () {
-        final doc = manDoc();
-        doc.attributes['xrefstyle'] = 'full';
-        final image = StubBlock(
-          doc,
-          'image',
-          stubbedContent: '',
-          stubTitle: 'Magic 8-Ball',
-        )..caption = 'Figure 1. ';
-        registerRef(doc, 'magic-8-ball', image);
-        final node = Inline(
-          para(doc, ''),
-          'anchor',
-          type: 'xref',
-          target: '#magic-8-ball',
-          attributes: {'refid': 'magic-8-ball'},
-        );
-        expect(
-          convOf(doc).convertInlineAnchor(node),
-          'Figure 1, "Magic 8-Ball"',
-        );
-      },
-    );
+    test('resolves styled xref text', () {
+      // Port of manpage_test.rb 'should reference image with title usign
+      // styled xref', in end-to-end form: the StubBlock unit context
+      // bypasses title subs, so only a parsed document yields the
+      // quote-escaped man output.
+      const input =
+          '= command (1)\n'
+          'Author Name\n'
+          ':doctype: manpage\n'
+          ':man manual: Command Manual\n'
+          ':man source: Command 1.2.3\n'
+          '\n'
+          '== NAME\n'
+          '\n'
+          'command - does stuff\n'
+          '\n'
+          '== SYNOPSIS\n'
+          '\n'
+          'To get your fortune, see <<magic-8-ball>>.\n'
+          '\n'
+          '.Magic 8-Ball\n'
+          '[#magic-8-ball]\n'
+          'image::signs-point-to-yes.jpg[]\n';
+      final doc = Document(input, {
+        'backend': 'manpage',
+        'standalone': true,
+        'attributes': {'xrefstyle': 'full'},
+      }).parse();
+      final lines = (doc.convert() as String).split('\n');
+      expect(
+        lines,
+        contains(
+          'To get your fortune, see Figure 1, \\(lqMagic 8\\-Ball\\(rq.',
+        ),
+      );
+      expect(lines, contains('.B Figure 1. Magic 8\\-Ball'));
+    });
   });
 
   group('other inlines', () {
