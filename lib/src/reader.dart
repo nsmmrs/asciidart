@@ -18,11 +18,12 @@
 library;
 
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
-import 'dart:io' show File, FileSystemEntity, stderr;
+import 'dart:io' show File, FileSystemEntity;
 
 import 'abstract_node.dart';
 import 'core_ext.dart';
 import 'helpers.dart';
+import 'logging.dart';
 import 'path_resolver.dart';
 import 'rx.dart';
 
@@ -56,26 +57,6 @@ const Map<String, bool> asciidocExtensions = {
 /// compliance port when it lands.
 const String complianceAttributeMissing = 'skip';
 
-/// Safe mode levels. Port of `Asciidoctor::SafeMode`. TEMPORARY: moves to the
-/// constants port when it lands.
-/// Severity of a log message.
-///
-/// TEMPORARY: a minimal stand-in for the `logging.dart` severity set; unified
-/// with that port when it lands.
-enum LogSeverity {
-  /// Debugging detail.
-  debug,
-
-  /// Informational message.
-  info,
-
-  /// Recoverable problem.
-  warn,
-
-  /// Failure that still allows processing to continue.
-  error,
-}
-
 /// A log message carrying source context.
 ///
 /// TEMPORARY: a minimal stand-in for the `logging.dart`
@@ -98,59 +79,6 @@ class LogMessage {
     final location = sourceLocation;
     return location == null ? text : '$location: $text';
   }
-}
-
-/// Minimal logger surface consumed by the reader.
-///
-/// TEMPORARY: unified with `logging.dart` when that port lands. The default
-/// implementation writes to stderr; tests install a memory logger.
-abstract class ReaderLogger {
-  /// Logs [message] at info severity.
-  void info(Object? message);
-
-  /// Logs [message] at warn severity.
-  void warn(Object? message);
-
-  /// Logs [message] at error severity.
-  void error(Object? message);
-}
-
-/// Global logger registry.
-///
-/// TEMPORARY: unified with `logging.dart` when that port lands.
-abstract final class LoggerManager {
-  /// The current global logger (tests install a memory logger here).
-  static ReaderLogger logger = _StderrLogger();
-}
-
-/// Default logger writing `asciidoctor: SEVERITY: message` lines to stderr.
-///
-/// Mirrors Ruby's default logger (level warn, `WARNING` label for warn).
-class _StderrLogger implements ReaderLogger {
-  /// Minimum severity emitted; messages below it are dropped.
-  LogSeverity level = LogSeverity.warn;
-
-  static String _label(LogSeverity severity) => switch (severity) {
-    LogSeverity.debug => 'DEBUG',
-    LogSeverity.info => 'INFO',
-    LogSeverity.warn => 'WARNING',
-    LogSeverity.error => 'ERROR',
-  };
-
-  void _emit(LogSeverity severity, Object? message) {
-    if (severity.index < level.index) return;
-    final resolved = message is Object? Function() ? message() : message;
-    stderr.writeln('asciidoctor: ${_label(severity)}: $resolved');
-  }
-
-  @override
-  void info(Object? message) => _emit(LogSeverity.info, message);
-
-  @override
-  void warn(Object? message) => _emit(LogSeverity.warn, message);
-
-  @override
-  void error(Object? message) => _emit(LogSeverity.error, message);
 }
 
 /// Builds a [LogMessage]. Temporary stand-in for `Logging#message_with_context`

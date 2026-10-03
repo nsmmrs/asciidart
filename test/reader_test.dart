@@ -17,6 +17,7 @@ import 'dart:io' show Directory, File, FileSystemEntity, Platform, Process;
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/attribute_list.dart';
 import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/reader.dart';
 import 'package:asciidoctor/src/version.dart';
@@ -50,46 +51,12 @@ final String repoTestDir = '$repoRoot/test';
 /// Oracle fixtures shared with the Ruby suite.
 final String fixtureDir = '$repoTestDir/fixtures';
 
-/// A recorded log entry (severity plus message).
-class LogRecord {
-  LogRecord(this.severity, this.message);
-
-  final LogSeverity severity;
-  final Object? message;
-}
-
-/// In-memory logger for assertions. Mirrors `Asciidoctor::MemoryLogger`,
-/// which records every message regardless of level.
-class MemoryLogger implements ReaderLogger {
-  final List<LogRecord> messages = [];
-
-  bool get isEmpty => messages.isEmpty;
-  bool get isNotEmpty => messages.isNotEmpty;
-
-  void clear() => messages.clear();
-
-  Object? _resolve(Object? message) =>
-      message is Function ? message() : message;
-
-  @override
-  void info(Object? message) =>
-      messages.add(LogRecord(LogSeverity.info, _resolve(message)));
-
-  @override
-  void warn(Object? message) =>
-      messages.add(LogRecord(LogSeverity.warn, _resolve(message)));
-
-  @override
-  void error(Object? message) =>
-      messages.add(LogRecord(LogSeverity.error, _resolve(message)));
-}
-
 /// Runs [body] with a [MemoryLogger] installed as the global logger.
 /// [level] is accepted for parity with Ruby's helper and ignored, exactly
 /// as `MemoryLogger` ignores it there.
 T usingMemoryLogger<T>(
   T Function(MemoryLogger logger) body, [
-  LogSeverity? level,
+  Severity? level,
 ]) {
   final oldLogger = LoggerManager.logger;
   final memoryLogger = MemoryLogger();
@@ -107,7 +74,7 @@ T usingMemoryLogger<T>(
 /// source location (Ruby's `Hash` kind).
 void assertMessage(
   MemoryLogger logger,
-  LogSeverity severity,
+  Severity severity,
   String expectedMessage, {
   bool contextual = false,
   int? index,
@@ -135,7 +102,7 @@ void assertMessage(
 /// Asserts the full recorded message list. Mirrors `assert_messages`.
 void assertMessages(
   MemoryLogger logger,
-  List<(LogSeverity, String, bool)> expected,
+  List<(Severity, String, bool)> expected,
 ) {
   expect(logger.messages, hasLength(expected.length));
   for (var i = 0; i < expected.length; i++) {
@@ -946,7 +913,7 @@ void main() {
           expect(reader.unterminated, isTrue);
           assertMessage(
             logger,
-            LogSeverity.warn,
+            Severity.warn,
             '<stdin>: line 1: unterminated **** block',
             contextual: true,
           );
@@ -1249,7 +1216,7 @@ void main() {
           );
           assertMessage(
             logger,
-            LogSeverity.warn,
+            Severity.warn,
             '<stdin>: line 1: cannot include contents of URI: https://example.org/dist/info.adoc (allow-uri-read attribute not enabled)',
             contextual: true,
           );
@@ -1270,7 +1237,7 @@ void main() {
           );
           assertMessage(
             logger,
-            LogSeverity.warn,
+            Severity.warn,
             '<stdin>: line 1: cannot include contents of URI: https://example.org/dist/info.adoc (allow-uri-read attribute not enabled)',
             contextual: true,
           );
@@ -1289,7 +1256,7 @@ void main() {
           );
           assertMessage(
             logger,
-            LogSeverity.warn,
+            Severity.warn,
             '<stdin>: line 1: cannot include contents of URI: https://example.org/no such file.adoc (allow-uri-read attribute not enabled)',
             contextual: true,
           );
@@ -1309,7 +1276,7 @@ void main() {
           );
           assertMessage(
             logger,
-            LogSeverity.warn,
+            Severity.warn,
             '<stdin>: line 1: cannot include contents of URI: https://example.org/dist/info.adoc (allow-uri-read attribute not enabled)',
             contextual: true,
           );
@@ -1326,7 +1293,7 @@ void main() {
           );
           assertMessage(
             logger,
-            LogSeverity.warn,
+            Severity.warn,
             '<stdin>: line 1: cannot include contents of URI: http://example.org/team.adoc (allow-uri-read attribute not enabled)',
             contextual: true,
           );
@@ -1477,7 +1444,7 @@ void main() {
             );
             assertMessage(
               logger,
-              LogSeverity.error,
+              Severity.error,
               '<stdin>: line 4: include file not found: $fixtureDir/not-a-file.adoc +\nhttp://example.org/team.adoc',
               contextual: true,
             );
@@ -1652,7 +1619,7 @@ void main() {
             expect(reader.readLines(), equals(['', 'trailing content']));
             assertMessage(
               logger,
-              LogSeverity.info,
+              Severity.info,
               '~<stdin>: line 1: optional include dropped because include file not found',
               contextual: true,
             );
@@ -1672,7 +1639,7 @@ void main() {
             expect(reader.readLines(), equals(['', 'trailing content']));
             assertMessage(
               logger,
-              LogSeverity.info,
+              Severity.info,
               '~<stdin>: line 1: optional include dropped because include file not found',
               contextual: true,
             );
@@ -1699,7 +1666,7 @@ void main() {
             );
             assertMessage(
               logger,
-              LogSeverity.error,
+              Severity.error,
               '~<stdin>: line 1: include file not found',
               contextual: true,
             );
@@ -1736,7 +1703,7 @@ void main() {
               );
               assertMessage(
                 logger,
-                LogSeverity.error,
+                Severity.error,
                 '~<stdin>: line 1: include file not readable',
                 contextual: true,
               );
@@ -1865,7 +1832,7 @@ void main() {
             );
             assertMessage(
               logger,
-              LogSeverity.error,
+              Severity.error,
               '$includeUrl: line 1: include uri not readable: http://localhost:9876/fixtures/$nestedIncludeUrl',
               contextual: true,
             );
@@ -1901,7 +1868,7 @@ void main() {
             );
             assertMessage(
               logger,
-              LogSeverity.error,
+              Severity.error,
               '<stdin>: line 2: include uri not readable: $url',
               contextual: true,
             );
@@ -2559,7 +2526,7 @@ void main() {
             _includeLines(input);
             assertMessage(
               logger,
-              LogSeverity.warn,
+              Severity.warn,
               "~<stdin>: line 1: tag 'no-such-tag' not found in include file",
               contextual: true,
             );
@@ -2606,7 +2573,7 @@ void main() {
             const expectedTags = 'no-such-tag-b, no-such-tag-a';
             assertMessage(
               logger,
-              LogSeverity.warn,
+              Severity.warn,
               "~<stdin>: line 2: tags '$expectedTags' not found in include file",
               contextual: true,
             );
@@ -2652,7 +2619,7 @@ void main() {
             expect(_delimitedLines(input), equals(['a']));
             assertMessage(
               logger,
-              LogSeverity.warn,
+              Severity.warn,
               "~<stdin>: line 2: detected unclosed tag 'a' starting at line 2 of include file",
               contextual: true,
             );
@@ -2673,7 +2640,7 @@ void main() {
             expect(_delimitedLines(input).join('\n'), equals('a\nb'));
             assertMessage(
               logger,
-              LogSeverity.warn,
+              Severity.warn,
               "<stdin>: line 2: mismatched end tag (expected 'b' but found 'a') at line 5 of include file: $incPath",
               contextual: true,
             );
@@ -2694,7 +2661,7 @@ void main() {
             expect(_delimitedLines(input), equals(['a']));
             assertMessage(
               logger,
-              LogSeverity.warn,
+              Severity.warn,
               "<stdin>: line 2: unexpected end tag 'a' at line 4 of include file: $incPath",
               contextual: true,
             );
@@ -2822,7 +2789,7 @@ void main() {
           );
           assertMessage(
             logger,
-            LogSeverity.warn,
+            Severity.warn,
             '<stdin>: line 1: include dropped because resolved target is blank: include::{blank}[]',
             contextual: true,
           );
@@ -2841,17 +2808,17 @@ void main() {
           expect(reader.readLine(), isNull);
           assertMessages(logger, [
             (
-              LogSeverity.info,
+              Severity.info,
               'dropping line containing reference to missing attribute: foodir',
               false,
             ),
             (
-              LogSeverity.info,
+              Severity.info,
               '<stdin>: line 1: include dropped due to missing attribute: include::{foodir}/include-file.adoc[]',
               true,
             ),
           ]);
-        }, LogSeverity.info);
+        }, Severity.info);
       });
 
       test('line following dropped include is not dropped', () {
@@ -2872,12 +2839,12 @@ void main() {
           expect(reader.readLine(), equals('yo'));
           assertMessages(logger, [
             (
-              LogSeverity.info,
+              Severity.info,
               'dropping line containing reference to missing attribute: foodir',
               false,
             ),
             (
-              LogSeverity.warn,
+              Severity.warn,
               '<stdin>: line 1: include dropped due to missing attribute: include::{foodir}/include-file.adoc[]',
               true,
             ),
@@ -2965,7 +2932,7 @@ void main() {
           expect(lines, contains('include::grandchild-include.adoc[]'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             'fixtures/child-include.adoc: line 3: maximum include depth of 1 exceeded',
             contextual: true,
           );
@@ -2989,7 +2956,7 @@ void main() {
           expect(lines, contains('include::grandchild-include.adoc[]'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             'fixtures/child-include.adoc: line 3: maximum include depth of 0 exceeded',
             contextual: true,
           );
@@ -3459,7 +3426,7 @@ void main() {
           expect(result, equals('Our quest is complete!'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             '~<stdin>: line 2: unmatched preprocessor directive: endif::on-quest[]',
             contextual: true,
           );
@@ -3481,12 +3448,12 @@ void main() {
           expect(result, equals('Our quest is complete!'));
           assertMessages(logger, [
             (
-              LogSeverity.error,
+              Severity.error,
               '~<stdin>: line 3: mismatched preprocessor directive: endif::on-journey[]',
               true,
             ),
             (
-              LogSeverity.error,
+              Severity.error,
               '~<stdin>: line 1: detected unterminated preprocessor conditional directive: ifdef::on-quest[]',
               true,
             ),
@@ -3510,12 +3477,12 @@ void main() {
           expect(result, equals('Our quest is complete!\nfin'));
           assertMessages(logger, [
             (
-              LogSeverity.error,
+              Severity.error,
               '~<stdin>: line 3: malformed preprocessor directive - text not permitted: endif::on-quest[complete!]',
               true,
             ),
             (
-              LogSeverity.error,
+              Severity.error,
               '~<stdin>: line 1: detected unterminated preprocessor conditional directive: ifdef::on-quest[]',
               true,
             ),
@@ -3655,7 +3622,7 @@ void main() {
           expect(lines.join('\n'), equals('content'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             '~<stdin>: line 1: malformed preprocessor directive - target not permitted: ifeval::target[1 == 1]',
             contextual: true,
           );
@@ -3670,7 +3637,7 @@ void main() {
           expect(lines.join('\n'), equals('content'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             '~<stdin>: line 1: malformed preprocessor directive - invalid expression: ifeval::[1 | 2]',
             contextual: true,
           );
@@ -3685,7 +3652,7 @@ void main() {
           expect(lines.join('\n'), equals('content'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             '~<stdin>: line 1: malformed preprocessor directive - missing expression: ifeval::[]',
             contextual: true,
           );
@@ -3700,7 +3667,7 @@ void main() {
           expect(lines.join('\n'), equals('content'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             '~<stdin>: line 1: malformed preprocessor directive - missing target: ifdef::[]',
             contextual: true,
           );
@@ -3751,7 +3718,7 @@ void main() {
           expect(lines.join('\n'), equals('before'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             '~<stdin>: line 6: detected unterminated preprocessor conditional directive: ifdef::not-set[]',
             contextual: true,
           );
@@ -3772,7 +3739,7 @@ void main() {
           expect(lines.join('\n'), equals('before'));
           assertMessage(
             logger,
-            LogSeverity.error,
+            Severity.error,
             '~<stdin>: line 2: detected unterminated preprocessor conditional directive: ifdef::not-set[]',
             contextual: true,
           );
@@ -3795,12 +3762,12 @@ void main() {
           expect(lines.join('\n'), equals('before'));
           assertMessages(logger, [
             (
-              LogSeverity.error,
+              Severity.error,
               '~<stdin>: line 2: detected unterminated preprocessor conditional directive: ifdef::not-set[]',
               true,
             ),
             (
-              LogSeverity.error,
+              Severity.error,
               '~<stdin>: line 6: detected unterminated preprocessor conditional directive: ifeval::[1 == 2]',
               true,
             ),
