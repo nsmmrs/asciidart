@@ -16,6 +16,7 @@ import 'dart:io' show Directory, File, FileSystemEntity, Platform, Process;
 
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/attribute_list.dart';
+import 'package:asciidoctor/src/constants.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
@@ -338,7 +339,7 @@ class FakeDocument implements ReaderDocument {
     if (override != null) return override;
     final configured = attributes['attribute-missing'];
     if (configured == null || configured == false) {
-      return complianceAttributeMissing;
+      return Compliance.attributeMissing;
     }
     return configured.toString();
   }

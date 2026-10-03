@@ -21,41 +21,12 @@ import 'dart:convert' show Encoding, ascii, latin1, utf8;
 import 'dart:io' show File, FileSystemEntity;
 
 import 'abstract_node.dart';
+import 'constants.dart';
 import 'core_ext.dart';
 import 'helpers.dart';
 import 'logging.dart';
 import 'path_resolver.dart';
 import 'rx.dart';
-
-/// List continuation marker. Port of `Asciidoctor::LIST_CONTINUATION`.
-/// TEMPORARY: moves to the constants port when it lands.
-const String listContinuation = '+';
-
-/// Head of an attribute reference (`{name}`). Port of
-/// `Asciidoctor::ATTR_REF_HEAD`. TEMPORARY: moves to the constants port when
-/// it lands.
-const String attrRefHead = '{';
-
-/// Largest loop bound, used when peeking all lines. Port of
-/// `Asciidoctor::MAX_INT`. TEMPORARY: moves to the constants port when it
-/// lands.
-const int maxInt = 9007199254740991;
-
-/// File extensions recognized as AsciiDoc documents. Port of
-/// `Asciidoctor::ASCIIDOC_EXTENSIONS`. TEMPORARY: moves to the constants
-/// port when it lands.
-const Map<String, bool> asciidocExtensions = {
-  '.adoc': true,
-  '.asciidoc': true,
-  '.asc': true,
-  '.ad': true,
-  '.txt': true,
-};
-
-/// Default `attribute-missing` compliance value. Port of
-/// `Asciidoctor::Compliance.attribute_missing`. TEMPORARY: moves to the
-/// compliance port when it lands.
-const String complianceAttributeMissing = 'skip';
 
 /// A log message carrying source context.
 ///
@@ -1459,7 +1430,7 @@ class PreprocessorReader extends Reader {
     var expandedTarget = target;
     final attrMissingValue = doc.attributes['attribute-missing'];
     final attrMissing = attrMissingValue == null || attrMissingValue == false
-        ? complianceAttributeMissing
+        ? Compliance.attributeMissing
         : attrMissingValue.toString();
     if (target.contains(attrRefHead) &&
         (expandedTarget = doc.subAttributes(

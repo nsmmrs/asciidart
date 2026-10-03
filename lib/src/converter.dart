@@ -45,21 +45,8 @@ library;
 
 import 'abstract_block.dart';
 import 'abstract_node.dart';
+import 'constants.dart';
 import 'inline.dart';
-
-/// Default file extensions by base backend.
-///
-/// Port of `DEFAULT_EXTENSIONS` in `lib/asciidoctor.rb`. Lives here (rather
-/// than a core library) because the converter framework is its only
-/// consumer so far; the document wave may relocate it.
-const Map<String, String> defaultExtensions = <String, String>{
-  'html': '.html',
-  'docbook': '.xml',
-  'pdf': '.pdf',
-  'epub': '.epub',
-  'manpage': '.man',
-  'asciidoc': '.adoc',
-};
 
 /// Trailing digits stripped from a backend name to derive its base backend.
 ///

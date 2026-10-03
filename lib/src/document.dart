@@ -36,7 +36,7 @@ import 'dart:io' show Directory, File, IOSink, Platform;
 import 'abstract_block.dart';
 import 'abstract_node.dart';
 import 'callouts.dart';
-import 'converter.dart';
+import 'constants.dart';
 import 'core_ext.dart';
 import 'helpers.dart';
 import 'timings.dart';
@@ -47,61 +47,6 @@ import 'reader.dart';
 import 'rx.dart';
 import 'section.dart';
 import 'version.dart';
-
-/// The default document type. Port of `DEFAULT_DOCTYPE`.
-const String defaultDoctype = 'article';
-
-/// The backend used when none is specified. Port of `DEFAULT_BACKEND`.
-const String defaultBackend = 'html5';
-
-/// Maps alias backend names to their canonical backend.
-/// Port of `BACKEND_ALIASES`.
-const Map<String, String> backendAliases = <String, String>{
-  'html': 'html5',
-  'docbook': 'docbook5',
-};
-
-/// Default page widths for calculating absolute widths, by base backend.
-/// Port of `DEFAULT_PAGE_WIDTHS`.
-const Map<String, int> defaultPageWidths = <String, int>{'docbook': 425};
-
-/// Default file extensions (outfilesuffix) per base backend.
-/// Port of `DEFAULT_EXTENSIONS`.
-/// Default file extensions (outfilesuffix) per base backend lives in
-/// `converter.dart` until `constants.dart` (in flight) becomes the canonical
-/// home for all main-module constants and this import is rewired.
-
-/// Default document attributes. Port of `DEFAULT_ATTRIBUTES`.
-const Map<String, String> defaultAttributes = <String, String>{
-  'appendix-caption': 'Appendix',
-  'appendix-refsig': 'Appendix',
-  'caution-caption': 'Caution',
-  'chapter-refsig': 'Chapter',
-  'example-caption': 'Example',
-  'figure-caption': 'Figure',
-  'important-caption': 'Important',
-  'last-update-label': 'Last updated',
-  'note-caption': 'Note',
-  'part-refsig': 'Part',
-  'prewrap': '',
-  'sectids': '',
-  'section-refsig': 'Section',
-  'table-caption': 'Table',
-  'tip-caption': 'Tip',
-  'toc-placement': 'auto',
-  'toc-title': 'Table of Contents',
-  'untitled-label': 'Untitled',
-  'version-label': 'Version',
-  'warning-caption': 'Warning',
-};
-
-/// Attributes that may change throughout the flow of the document.
-/// Port of `FLEXIBLE_ATTRIBUTES`.
-const List<String> flexibleAttributes = <String>['sectnums'];
-
-/// Compliance value for undefined attributes.
-/// Port of `Compliance.attribute_undefined`.
-const String complianceAttributeUndefined = 'drop-line';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.
 ///
@@ -576,7 +521,7 @@ class Document extends AbstractBlock implements NodeDocument {
 
     final attrs = attributes;
     if (parentDoc == null) {
-      attrs['attribute-undefined'] = complianceAttributeUndefined;
+      attrs['attribute-undefined'] = Compliance.attributeUndefined;
       attrs['attribute-missing'] = complianceAttributeMissing;
       attrs.addAll(defaultAttributes);
     }

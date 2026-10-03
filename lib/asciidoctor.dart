@@ -9,6 +9,7 @@ export 'src/attribute_list.dart';
 export 'src/block.dart';
 export 'src/callouts.dart';
 export 'src/composite.dart';
+export 'src/constants.dart';
 export 'src/converter.dart';
 export 'src/core_ext.dart';
 export 'src/document.dart';
