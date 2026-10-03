@@ -100,6 +100,7 @@ EOF
 }
 
 @test "log level info reveals info messages" {
+  require_log_level_flag
   cat > input.adoc <<'EOF'
 skip to <<install>>
 
@@ -113,6 +114,7 @@ EOF
 }
 
 @test "log level warn hides info messages" {
+  require_log_level_flag
   cat > input.adoc <<'EOF'
 skip to <<install>>
 
@@ -126,6 +128,7 @@ EOF
 }
 
 @test "log level error hides warnings" {
+  require_log_level_flag
   printf '1. first\n3. third\n' > input.adoc
   run --separate-stderr -- "$EXE" --log-level ERROR -o out.html input.adoc
   [ "$status" -eq 0 ]

@@ -9,8 +9,8 @@
 # and the AOT binary are timed identically.
 #
 # Usage (from repo root):
-#   ruby benchmark/bench-exe.rb --exe 'ruby -Ilib bin/asciidoctor' [--iterations N] [--warmup N]
-#   ruby benchmark/bench-exe.rb --exe 'dart run dart/bin/asciidoctor.dart' [--iterations N] [--warmup N]
+#   ruby benchmark/bench-exe.rb --exe 'asciidoctor' [--iterations N] [--warmup N]
+#   ruby benchmark/bench-exe.rb --exe 'dart run bin/asciidoctor.dart' [--iterations N] [--warmup N]
 #   ruby benchmark/bench-exe.rb --exe /tmp/dist/asciidoctor-linux-x64 [--iterations N] [--warmup N]
 #
 # Each cell runs `<exe> -b <backend> -o <tmp> <doc>` N times (after W

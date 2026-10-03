@@ -15,7 +15,7 @@ the D2 comparison is CLI-to-CLI, so startup-inclusive timing is correct.
 - RAM: 14 GB (6 GB available at run time)
 - OS: Linux lapmaxxer 7.2.5-3-omarchy x86_64
 - Ruby: `ruby 4.0.7 (2026-09-15 revision 229531a6cf) +PRISM [x86_64-linux]`
-- Asciidoctor: 2.1.0.alpha.0 (repo HEAD `5a6568f`, `ruby -Ilib`)
+- Asciidoctor: 2.1.0.alpha.0 (measured pre-split at repo HEAD `5a6568f` via in-repo Ruby; reproduce now with the gem exe)
 
 ## Corpus (fixed)
 
@@ -35,7 +35,7 @@ From the repo root, 3 warmup + 21 timed iterations per doc/backend cell:
 ruby benchmark/baseline.rb --iterations 21 --warmup 3
 ```
 
-Each iteration shells `ruby -Ilib bin/asciidoctor -b <backend> -o <tmpfile> <doc>`
+Each iteration shells `asciidoctor -b <backend> -o <tmpfile> <doc>`
 and records wall-clock time (`CLOCK_MONOTONIC`); the reported value is the
 median of the 21 samples.
 
@@ -79,13 +79,13 @@ Same corpus × backend matrix, same method (3 warmup + 21 timed CLI
 end-to-end iterations per cell, median reported), timed back-to-back via
 `benchmark/bench-exe.rb --exe ...` so Ruby, Dart VM, and AOT share one
 harness. Ruby re-run fresh in the same session (matches the baseline
-band above); Dart VM = `dart run dart/bin/asciidoctor.dart` (JIT,
+band above); Dart VM = `dart run bin/asciidoctor.dart` (JIT,
 per-spawn startup); AOT = `tool/build-exes.sh` output
 (`asciidoctor-linux-x64`, Dart SDK 3.13.5).
 
 ```sh
-ruby benchmark/bench-exe.rb --exe 'ruby -Ilib bin/asciidoctor'
-ruby benchmark/bench-exe.rb --exe 'dart run dart/bin/asciidoctor.dart'
+ruby benchmark/bench-exe.rb --exe 'asciidoctor'
+ruby benchmark/bench-exe.rb --exe 'dart run bin/asciidoctor.dart'
 ruby benchmark/bench-exe.rb --exe /tmp/dist/asciidoctor-linux-x64
 ```
 
@@ -111,7 +111,7 @@ startup dominates; it is a dev-mode runner, not a D2 candidate.
 
 ## JS target: not run
 
-`dart compile js bin/asciidoctor.dart` fails: `dart/lib/src/document.dart`
+`dart compile js bin/asciidoctor.dart` fails: `lib/src/document.dart`
 declares `static const int _maxInt63 = 9223372036854775807`, which
 "can't be represented exactly in JavaScript". Changing the saturation
 constant would alter VM integer semantics (a parity risk), so per the

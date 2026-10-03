@@ -80,3 +80,12 @@ assert_stderr_contains() {
     return 1
   fi
 }
+
+# Skip the calling test unless the subject supports --log-level. That flag
+# is new in 2.1; no published gem has it yet (latest is 2.0.x), so runs
+# against the gem oracle skip while Dart (which implements it) runs them.
+require_log_level_flag() {
+  if ! "$EXE" --help 2>/dev/null | grep -q -- '--log-level'; then
+    skip 'subject lacks --log-level (needs asciidoctor 2.1+)'
+  fi
+}

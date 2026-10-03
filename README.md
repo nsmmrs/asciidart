@@ -20,21 +20,18 @@ for converting AsciiDoc to HTML 5, DocBook 5, and Unix man pages.
 ## Setup
 
 ```sh
-cd dart
 dart pub get
 ```
 
 ## Run the tests
 
 ```sh
-cd dart
 dart test
 ```
 
 ## Run the CLI
 
 ```sh
-cd dart
 dart run bin/asciidoctor.dart --version
 dart run bin/asciidoctor.dart --help
 ```
@@ -42,7 +39,6 @@ dart run bin/asciidoctor.dart --help
 ## Build a native executable
 
 ```sh
-cd dart
 mkdir -p build
 dart compile exe bin/asciidoctor.dart -o build/asciidoctor
 ./build/asciidoctor --version
@@ -72,7 +68,6 @@ dart compile exe bin/main.dart -o my-asciidoctor
 ## Lint
 
 ```sh
-cd dart
 dart analyze
 ```
 
@@ -81,10 +76,9 @@ dart analyze
 `lib/src/data.g.dart` embeds `data/locale/*.adoc` and `data/stylesheets/*`
 as compile-time string constants so the package never reads them from disk
 at runtime. It is generated — do not edit it by hand. After changing any
-file under the repository `data/` directory, regenerate it from `dart/`:
+file under the repository `data/` directory, regenerate it:
 
 ```sh
-cd dart
 dart run tool/embed_data.dart
 dart format lib/src/data.g.dart
 dart test test/stylesheets_test.dart

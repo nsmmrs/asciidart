@@ -2,8 +2,8 @@ name: asciidoctor
 description: Dart port of Asciidoctor, the fast text processor for converting AsciiDoc to HTML and more.
 version: 0.1.0
 homepage: https://asciidoctor.org
-repository: https://github.com/asciidoctor/asciidoctor
-issue_tracker: https://github.com/asciidoctor/asciidoctor/issues
+repository: https://github.com/nsmmrs/asciidoctor-dart
+issue_tracker: https://github.com/nsmmrs/asciidoctor-dart/issues
 publish_to: none
 topics:
   - asciidoc

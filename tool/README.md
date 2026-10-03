@@ -1,18 +1,18 @@
 # Differential harness (`tool/differential.dart`)
 
 Byte-identical parity gate (ADR-0001, D4). Runs **two** asciidoctor
-executables over the fixture corpus plus `README.adoc`, normalizes version
+executables over the fixture corpus plus
+`data/reference/syntax.adoc`, normalizes version
 stamps and timestamps, and reports per-file unified diffs. Exits nonzero on
 any mismatch.
 
 ## Quick start
 
 ```sh
-cd dart
 dart pub get
 
 # Repo Ruby CLI vs itself: must be 100% identical (exit 0).
-RUBY="ruby -Ilib bin/asciidoctor"
+RUBY="asciidoctor"  # gem oracle on PATH
 dart run tool/differential.dart --exe-a "$RUBY" --exe-b "$RUBY"
 
 # Injected-diff check: html5 vs docbook5 must fail with per-file diffs.
@@ -22,13 +22,13 @@ dart run tool/differential.dart --exe-a "$RUBY" --exe-b "$RUBY" \
 
 Both commands run from `dart/`; the repo root is auto-detected. Exe child
 processes run with the repo root as their working directory, so use
-root-relative (`ruby -Ilib bin/asciidoctor`) or absolute exe paths.
+gem exe (`asciidoctor`) or absolute exe paths.
 
 Later this same harness compares the gem exe against the Dart exe:
 
 ```sh
 dart run tool/differential.dart \
-  --exe-a "ruby -Ilib bin/asciidoctor" \
+  --exe-a "asciidoctor" \
   --exe-b "build/asciidoctor"
 ```
 
@@ -36,12 +36,12 @@ dart run tool/differential.dart \
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `--exe-a`, `--exe-b` | (required) | Exe path or full command line (POSIX-style quoting, e.g. `"ruby -Ilib bin/asciidoctor"`). |
+| `--exe-a`, `--exe-b` | (required) | Exe path or full command line (POSIX-style quoting, e.g. `"asciidoctor"`). |
 | `--backend` | `html5` | Backend for both exes. |
 | `--backend-a`, `--backend-b` | `--backend` | Per-exe backend override. |
 | `--root` | auto-detect | Repo root. |
 | `--corpus-dir` | `test/fixtures` | Corpus dir, relative to `--root` unless absolute (scanned recursively). |
-| `--extra-file` | `README.adoc`, `data/reference/syntax.adoc` | Extra corpus file(s), repeatable, relative to `--root` unless absolute. |
+| `--extra-file` | `data/reference/syntax.adoc` | Extra corpus file(s), repeatable, relative to `--root` unless absolute. |
 | `--extensions` | `adoc,asciidoc` | Comma-separated corpus extensions. |
 | `--context` | `3` | Unified-diff context lines. |
 | `--max-diff-lines` | `200` | Max diff lines printed per file (rest truncated). |

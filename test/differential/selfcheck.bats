@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 # Self-check for the corpus differential harness (ADR-0001 byte-identical
 # parity gate). Validates the harness itself with no Dart port involved:
-# the repo Ruby CLI must compare identical to itself, while an injected
+# the reference Ruby CLI (gem) must compare identical to itself, while an injected
 # backend difference must be detected.
 #
 # Run from the repo root:
@@ -15,11 +15,11 @@ setup_file() {
 
 setup() {
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
-  RUBY_EXE="ruby -I$REPO_ROOT/lib $REPO_ROOT/bin/asciidoctor"
+  RUBY_EXE="asciidoctor"  # gem oracle on PATH
   cd "$REPO_ROOT"
 }
 
-@test "selfcheck: repo Ruby CLI vs itself is byte-identical (exit 0)" {
+@test "selfcheck: gem Ruby CLI vs itself is byte-identical (exit 0)" {
   run dart run tool/differential.dart --root "$REPO_ROOT" \
     --exe-a "$RUBY_EXE" --exe-b "$RUBY_EXE"
   echo "$output"
@@ -39,7 +39,7 @@ setup() {
 
 @test "selfcheck: small injected diff renders a unified hunk" {
   local mini="$REPO_ROOT/test/differential/miniroot"
-  run dart run tool/differential.dart --root "$mini" \
+  run dart run tool/differential.dart --root "$mini" --extra-file '' \
     --exe-a "sh $REPO_ROOT/test/differential/bin/exe-a.sh" \
     --exe-b "sh $REPO_ROOT/test/differential/bin/exe-b.sh"
   echo "$output"
@@ -51,7 +51,7 @@ setup() {
 
 @test "selfcheck: version-stamp-only differences normalize away (exit 0)" {
   local mini="$REPO_ROOT/test/differential/miniroot"
-  run dart run tool/differential.dart --root "$mini" \
+  run dart run tool/differential.dart --root "$mini" --extra-file '' \
     --exe-a "sh $REPO_ROOT/test/differential/bin/exe-ver-a.sh" \
     --exe-b "sh $REPO_ROOT/test/differential/bin/exe-ver-b.sh"
   echo "$output"

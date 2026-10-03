@@ -3,13 +3,13 @@
 #
 # Ruby baseline benchmark for ADR-0001 D2 (AOT binary must beat Ruby).
 #
-# Times the repo Ruby CLI end to end (process spawn + convert) over a fixed
+# Times the reference Ruby CLI (installed gem) end to end (process spawn + convert) over a fixed
 # corpus x backend matrix and reports wall-clock medians.
 #
 # Usage (from repo root):
 #   ruby benchmark/baseline.rb [--iterations N] [--warmup N]
 #
-# Each cell runs `ruby -Ilib bin/asciidoctor -b <backend> -o <tmp> <doc>`
+# Each cell runs `asciidoctor -b <backend> -o <tmp> <doc>` (gem exe on PATH)
 # N times (after W warmup runs) and prints every sample plus the median.
 
 require 'optparse'
@@ -36,7 +36,7 @@ end
 
 def run_once(doc, backend, out)
   start = Process.clock_gettime Process::CLOCK_MONOTONIC
-  ok = system 'ruby', '-Ilib', 'bin/asciidoctor', '-b', backend, '-o', out, doc,
+  ok = system 'asciidoctor', '-b', backend, '-o', out, doc,
     out: File::NULL, err: File::NULL
   elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
   raise %(conversion failed: #{doc} #{backend}) unless ok

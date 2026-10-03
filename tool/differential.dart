@@ -1,10 +1,11 @@
 /* Corpus differential harness: byte-identical parity gate (ADR-0001, D4).
  *
  * Runs two asciidoctor executables over the fixture corpus plus
- * `README.adoc`, normalizes version stamps and timestamps, and reports
+ * `data/reference/syntax.adoc`, normalizes version stamps and timestamps,
+ * and reports
  * per-file unified diffs.
  *
- * Run from the `dart/` directory:
+ * Run from the repo root:
  *
  * ```sh
  * dart run tool/differential.dart --exe-a <command> --exe-b <command>
@@ -97,7 +98,7 @@ ArgParser buildParser() {
     )
     ..addMultiOption(
       'extra-file',
-      defaultsTo: ['README.adoc', 'data/reference/syntax.adoc'],
+      defaultsTo: ['data/reference/syntax.adoc'],
       help: 'Extra corpus file(s), relative to --root unless absolute.',
     )
     ..addOption(
@@ -893,14 +894,14 @@ String? _scriptRoot() {
   final script = Platform.script;
   if (!script.isScheme('file')) return null;
   final candidate = _normalizePath(
-    _joinPath(File.fromUri(script).parent.path, '../..'),
+    _joinPath(File.fromUri(script).parent.path, '..'),
   );
   return _looksLikeRoot(candidate) ? candidate : null;
 }
 
 bool _looksLikeRoot(String dir) =>
     Directory(_joinPath(dir, 'test/fixtures')).existsSync() &&
-    File(_joinPath(dir, 'README.adoc')).existsSync();
+    File(_joinPath(dir, 'pubspec.yaml')).existsSync();
 
 String _joinPath(String a, String b) {
   if (_isAbsolutePath(b)) return b;

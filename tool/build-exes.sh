@@ -78,7 +78,7 @@ OUT="$OUTPUT_DIR/asciidoctor-$OS-$ARCH$EXT"
 command -v dart >/dev/null || { echo "error: 'dart' is not on PATH" >&2; exit 1; }
 
 echo "==> dart pub get"
-dart pub get --directory=dart
+dart pub get
 
 echo "==> dart compile exe -> $OUT"
 dart compile exe bin/asciidoctor.dart -o "$OUT"
