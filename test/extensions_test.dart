@@ -4225,14 +4225,6 @@ void main() {
         ),
       );
     });
-
-    test('macroNameRx validates processor names', () {
-      expect(macroNameRx.hasMatch('shout'), isTrue);
-      expect(macroNameRx.hasMatch('custom-toc'), isTrue);
-      expect(macroNameRx.hasMatch('full-attributes'), isTrue);
-      expect(macroNameRx.hasMatch('illegal name'), isFalse);
-      expect(macroNameRx.hasMatch(''), isFalse);
-    });
   });
 
   group('RegistryBehavior', () {

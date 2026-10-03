@@ -44,6 +44,7 @@ library;
 import 'abstract_block.dart';
 import 'attribute_list.dart';
 import 'block.dart';
+import 'constants.dart';
 import 'core_ext.dart';
 import 'document.dart';
 import 'helpers.dart';
@@ -52,16 +53,6 @@ import 'list.dart';
 import 'reader.dart';
 import 'rx.dart';
 import 'section.dart';
-
-/// Matches a valid processor (macro) name: a word character followed by word
-/// characters or hyphens.
-///
-/// Port of `Asciidoctor::MacroNameRx`.
-final RegExp macroNameRx = RegExp(
-  '^$cgWord[$ccWord-]*\$',
-  multiLine: true,
-  unicode: true,
-);
 
 /// Sentinel distinguishing a missing `numbered` argument from an explicit
 /// value in [Processor.createSection] (mirrors `Hash#fetch` with a default).

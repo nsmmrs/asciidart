@@ -13,6 +13,7 @@ export 'src/constants.dart';
 export 'src/converter.dart';
 export 'src/core_ext.dart';
 export 'src/document.dart';
+export 'src/extensions.dart';
 export 'src/helpers.dart';
 export 'src/highlight/coderay.dart';
 export 'src/highlight/highlight.dart';
