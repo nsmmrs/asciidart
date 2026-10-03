@@ -23,6 +23,7 @@ export 'src/highlight/html_pipeline.dart';
 export 'src/highlight/prettify.dart';
 export 'src/highlight/pygments.dart';
 export 'src/highlight/rouge.dart';
+export 'src/highlight/syntax_highlighter.dart';
 export 'src/html5.dart';
 export 'src/inline.dart';
 export 'src/list.dart';

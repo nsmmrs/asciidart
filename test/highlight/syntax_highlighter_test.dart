@@ -262,17 +262,19 @@ void main() {
     });
 
     test('falls back to the global registry for unseeded names', () {
-      final DefaultFactoryProxy proxy = DefaultFactoryProxy(<String, Object>{
-        'hlfw-seed': _UnavailableHighlighter(),
-      });
+      final SyntaxHighlighterDefaultFactoryProxy proxy =
+          SyntaxHighlighterDefaultFactoryProxy(<String, Object>{
+            'hlfw-seed': _UnavailableHighlighter(),
+          });
       expect(proxy.create('hlfw-seed'), isA<_UnavailableHighlighter>());
       expect(proxy.create('rouge'), isA<RougeHighlighter>());
     });
 
     test('prefers the seed registry over the globals', () {
-      final DefaultFactoryProxy proxy = DefaultFactoryProxy(<String, Object>{
-        'rouge': _UnavailableHighlighter(),
-      });
+      final SyntaxHighlighterDefaultFactoryProxy proxy =
+          SyntaxHighlighterDefaultFactoryProxy(<String, Object>{
+            'rouge': _UnavailableHighlighter(),
+          });
       expect(proxy.create('rouge'), isA<_UnavailableHighlighter>());
       // The global registration is untouched.
       expect(SyntaxHighlighter.create('rouge'), isA<RougeHighlighter>());

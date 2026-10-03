@@ -2,7 +2,7 @@
 ///
 /// Dart port of `lib/asciidoctor/syntax_highlighter.rb` (the
 /// `SyntaxHighlighter` module, `Factory`, `CustomFactory`, `DefaultFactory`,
-/// `DefaultFactoryProxy` and `Base`).
+/// `SyntaxHighlighterDefaultFactoryProxy` and `Base`).
 ///
 /// The six language adapters in this directory (`coderay.dart`,
 /// `highlightjs.dart`, `html_pipeline.dart`, `prettify.dart`, `pygments.dart`,
@@ -16,7 +16,7 @@
 ///   parameters. The merged adapter files are never modified.
 /// * [SyntaxHighlighter] is the global registry and factory (port of the
 ///   `DefaultFactory` statics), [SyntaxHighlighterFactory] an isolated
-///   registry (port of `CustomFactory`) and [DefaultFactoryProxy] a seeded
+///   registry (port of `CustomFactory`) and [SyntaxHighlighterDefaultFactoryProxy] a seeded
 ///   registry with global fallback.
 /// * [SyntaxHighlighter.resolveForDocument] ports the
 ///   `Document#save_attributes` hook: it resolves the `source-highlighter`
@@ -253,7 +253,7 @@ abstract final class SyntaxHighlighter {
     final Object? resolvedHighlighters =
         highlighters ?? doc.options['syntax_highlighters'];
     if (resolvedHighlighters != null) {
-      return DefaultFactoryProxy(
+      return SyntaxHighlighterDefaultFactoryProxy(
         (resolvedHighlighters as Map<Object?, Object?>).cast<String, Object>(),
       ).create(name, backend, opts);
     }
@@ -310,7 +310,7 @@ abstract final class SyntaxHighlighter {
 /// Isolated highlighter registry (port of `CustomFactory`).
 ///
 /// Starts empty (or seeded with [seedRegistry]) and never sees the global
-/// registrations; use [DefaultFactoryProxy] for a seeded registry that falls
+/// registrations; use [SyntaxHighlighterDefaultFactoryProxy] for a seeded registry that falls
 /// back to the globals.
 class SyntaxHighlighterFactory {
   /// Creates an isolated factory, optionally seeded with [seedRegistry].
@@ -343,14 +343,16 @@ class SyntaxHighlighterFactory {
   }
 }
 
-/// Seeded registry with global fallback (port of `DefaultFactoryProxy`).
+/// Seeded registry with global fallback (port of Ruby's
+/// `SyntaxHighlighter::DefaultFactoryProxy`; prefixed because Dart has no
+/// namespacing and `Converter` already owns `DefaultFactoryProxy`).
 ///
 /// Looks up the seed registry first, then the global [SyntaxHighlighter]
 /// registry — the Dart shape of Ruby's `@options[:syntax_highlighters]`
 /// hash.
-class DefaultFactoryProxy extends SyntaxHighlighterFactory {
+class SyntaxHighlighterDefaultFactoryProxy extends SyntaxHighlighterFactory {
   /// Creates a proxy seeded with [seedRegistry].
-  DefaultFactoryProxy([super.seedRegistry]);
+  SyntaxHighlighterDefaultFactoryProxy([super.seedRegistry]);
 
   @override
   Object? for_(String name) => _registry[name] ?? SyntaxHighlighter.for_(name);
