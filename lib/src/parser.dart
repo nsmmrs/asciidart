@@ -4373,7 +4373,7 @@ abstract final class Parser {
         }
         // QUESTION should we set value to locked value if set_attribute
         // returns false?
-        final resolved = doc.setAttribute(resolvedName, stringValue);
+        final resolved = _setDocumentAttribute(doc, resolvedName, stringValue);
         if (resolved != null) {
           resolvedValue = resolved;
           if (attrs != null) {
