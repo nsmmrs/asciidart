@@ -40,8 +40,7 @@ void main() {
 
     test('embedded bytes equal the data files byte-for-byte', () {
       expect(EmbeddedData.files, isNotEmpty);
-      for (final MapEntry(key: key, value: content)
-          in EmbeddedData.files.entries) {
+      for (final MapEntry(:key, value: content) in EmbeddedData.files.entries) {
         expect(
           utf8.encode(content),
           orderedEquals(readDataFile(key)),

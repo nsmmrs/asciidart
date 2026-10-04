@@ -77,7 +77,7 @@ void main() {
     ..writeln('  /// All embedded files by path relative to `data/`.')
     ..writeln('  static const Map<String, String> files = {');
 
-  for (final MapEntry(key: key, value: bytes) in entries.entries) {
+  for (final MapEntry(:key, value: bytes) in entries.entries) {
     out.writeln("    '$key':");
     final chunks = _encode(utf8.decode(bytes)).toList();
     if (chunks.isEmpty) {

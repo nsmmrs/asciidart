@@ -583,7 +583,7 @@ class PathResolver {
       final joined = startPath.endsWith(slash)
           ? '$startPath$targetPath'
           : '$startPath/$targetPath';
-      final (stripped: stripped, prefix: prefix) = _extractUriPrefix(joined);
+      final (:stripped, :prefix) = _extractUriPrefix(joined);
       targetPath = stripped;
       uriPrefix = prefix;
     }

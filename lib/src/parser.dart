@@ -1505,7 +1505,7 @@ abstract final class Parser {
     final book = doctype == 'book';
     final sourceLocation = document.sourcemap ? reader.cursor() : null;
     final sectStyle = attrs[1] as String?;
-    var (id: sectId, reftext: reftext, title: sectTitle, :level, :atx) =
+    var (id: sectId, :reftext, title: sectTitle, :level, :atx) =
         parseSectionTitle(reader, document, attrs['id'] as String?);
 
     String? sectName;
