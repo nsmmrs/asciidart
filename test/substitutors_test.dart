@@ -1392,7 +1392,7 @@ void main() {
         );
       });
 
-      // TODO this is not the same result as AsciiDoc, though I don't
+      // TODOthis is not the same result as AsciiDoc, though I don't
       // understand why AsciiDoc gets what it gets
       test('escaped unconstrained strong chars with role', () {
         final para = blockFromString('Git$bs[blue]**Hub**');

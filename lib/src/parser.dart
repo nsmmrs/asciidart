@@ -837,7 +837,7 @@ abstract final class Parser {
               ? List<String>.of(normalSubs)
               : List<String>.of(_verbatimSubs);
         case 'raw':
-          // TODO make pass subs a compliance setting; AsciiDoc.py performs
+          // TODOmake pass subs a compliance setting; AsciiDoc.py performs
           // :attributes and :macros on a pass block.
           defaults = block.context == 'stem'
               ? List<String>.of(basicSubs)
@@ -2295,7 +2295,7 @@ abstract final class Parser {
           }
           attrs['style'] = 'quote';
           // NOTE will only detect discrete (aka free-floating) headings
-          // TODO could assume a discrete heading when inside a block context
+          // TODOcould assume a discrete heading when inside a block context
           // FIXME Reader needs to be created w/ line info
           block = buildBlock(
             'quote',
@@ -2581,7 +2581,7 @@ abstract final class Parser {
         result.assignCaption(attrs.remove('caption'));
       }
     }
-    // TODO eventually remove the style attribute from the attributes hash
+    // TODOeventually remove the style attribute from the attributes hash
     //block.style = attributes.delete 'style'
     result.style = attrs['style'] as String?;
     final blockId = result.id ?? (result.id = attrs['id'] as String?);
@@ -2770,7 +2770,7 @@ abstract final class Parser {
         );
       } else {
         if (model == 'compound') model = 'simple';
-        // TODO we could also skip processing if we're able to detect
+        // TODOwe could also skip processing if we're able to detect
         // reader is a BlockReader.
         lines = readParagraphLines(
           reader,
@@ -3575,7 +3575,7 @@ abstract final class Parser {
           // it has text for an item; has_text is always true for all other
           // lists. In this block, we have to see whether we stay in the
           // list.
-          // TODO any way to combine this with the check after skipping
+          // TODOany way to combine this with the check after skipping
           // blank lines?
           if (isSiblingListItem(current, listType, siblingTrait)) {
             pendingLine = current;
@@ -4022,7 +4022,7 @@ abstract final class Parser {
       if (record.isEmpty) {
         specs.add(<String, Object?>{'width': 1});
       } else {
-        // TODO might want to use scan rather than this mega-regexp.
+        // TODOmight want to use scan rather than this mega-regexp.
         final m = columnSpecRx.firstMatch(record);
         if (m != null) {
           final spec = <String, Object?>{};
@@ -4231,7 +4231,7 @@ abstract final class Parser {
       if (titleMatch != null) {
         // NOTE title doesn't apply to section, but we need to stash it for
         // the first block.
-        // TODO should issue an error if this is found above the document
+        // TODOshould issue an error if this is found above the document
         // title.
         attributes['title'] = titleMatch.group(1);
         return true;
@@ -4337,7 +4337,7 @@ abstract final class Parser {
     Document? doc,
     Map<Object, Object?>? attrs,
   ]) {
-    // TODO move processing of attribute value to utility method.
+    // TODOmove processing of attribute value to utility method.
     var resolvedName = name;
     Object? resolvedValue = value;
     if (resolvedName.endsWith('!')) {

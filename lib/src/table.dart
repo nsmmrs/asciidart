@@ -466,7 +466,7 @@ class Cell extends AbstractBlock {
       } else {
         colspan = attrs.remove('colspan');
         rowspan = attrs.remove('rowspan');
-        // TODO delete style attribute from @attributes if set.
+        // TODOdelete style attribute from @attributes if set.
         if (!isTruthy(inHeaderRow)) {
           final attrStyle = attrs['style'];
           if (isTruthy(attrStyle)) cellStyle = attrStyle as String;
@@ -1010,7 +1010,7 @@ class TableParserContext {
     }
 
     for (var i = 1; i <= repeat; i++) {
-      // TODO make column resolving an operation.
+      // TODOmake column resolving an operation.
       late final Column? column;
       if (_colcount == -1) {
         final t = table!;

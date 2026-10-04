@@ -789,7 +789,7 @@ abstract class AbstractNode {
   /// [warnIfEmpty] warns when the contents are empty.
   ///
   /// Returns the contents, or `null` when the target cannot be read.
-  // TODO refactor other methods in this class to use this method were possible (repurposing if necessary)
+  // TODOrefactor other methods in this class to use this method were possible (repurposing if necessary)
   String? readContents(
     String target, {
     String? label,

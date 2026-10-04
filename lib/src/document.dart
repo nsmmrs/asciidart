@@ -1871,7 +1871,7 @@ class Document extends AbstractBlock implements NodeDocument {
       final toc = tocVal as String;
       if (!(toc.isEmpty && _isNilOrEmpty(tocPositionVal))) {
         const defaultTocPosition = 'left';
-        // TODO rename toc2 to aside-toc
+        // TODOrename toc2 to aside-toc
         String? defaultTocClass = 'toc2';
         final Object? position = _isNilOrEmpty(tocPositionVal)
             ? (toc.isEmpty ? defaultTocPosition : toc)

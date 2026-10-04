@@ -687,7 +687,7 @@ Object? _counterWithArgs(Document doc, List<String> args) {
 /// backend/doctype remapping and the value-size limit are not replicated.
 /// Returns the (name, value) pair like the Ruby method.
 (String, Object?) _storeAttribute(Document doc, String name, Object? value) {
-  // TODO move processing of attribute value to utility method
+  // TODOmove processing of attribute value to utility method
   var attrName = name;
   Object? attrValue = value;
   if (attrName.endsWith('!')) {
@@ -819,9 +819,9 @@ String subMacros(AbstractNode node, String text) {
   final block = _blockOf(node);
   var result = text;
 
-  // TODO allow position of substitution to be controlled (before or after
+  // TODOallow position of substitution to be controlled (before or after
   // other macros)
-  // TODO this handling needs some cleanup
+  // TODOthis handling needs some cleanup
   // Port of `Substitutors#sub_macros` (lib/asciidoctor/substitutors.rb:308-349).
   final Registry? macroExtensions = doc.extensions;
   if (macroExtensions != null && macroExtensions.hasInlineMacros) {
@@ -2641,7 +2641,7 @@ List<String>? commitSubs(AbstractBlock node) {
       case 'verbatim':
         effective = node.context == 'verse' ? normalSubs : verbatimSubs;
       case 'raw':
-        // TODO make pass subs a compliance setting; AsciiDoc.py performs
+        // TODOmake pass subs a compliance setting; AsciiDoc.py performs
         // :attributes and :macros on a pass block
         effective = node.context == 'stem' ? basicSubs : noSubs;
       default:

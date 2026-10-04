@@ -239,7 +239,7 @@ class ManpageConverter extends ConverterBase {
       '.\\"  Language: English\n'
       r'.\"',
     );
-    // TODO add document-level setting to disable capitalization of manname
+    // TODOadd document-level setting to disable capitalization of manname
     result.add(
       '.TH "${_manify((manname as String).toUpperCase())}" "${_s(manvolnum)}" "${_s(docdate)}" '
       '"${isTruthy(mansource) ? _manify(mansource as String) : r'\ \&'}" '
@@ -378,7 +378,7 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] description list.
   ///
-  /// TODO implement horizontal (if it makes sense)
+  // TODOimplement horizontal (if it makes sense)
   String convertDlist(ListBlock node) {
     final result = <String>[];
     if (node.hasTitle) {
