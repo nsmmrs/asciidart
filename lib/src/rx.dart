@@ -144,10 +144,7 @@ final RegExp attributeEntryRx = RegExp(
 );
 
 /// Matches invalid characters in an attribute name.
-final RegExp invalidAttributeNameCharsRx = RegExp(
-  '[^' + ccWord + '-]',
-  unicode: true,
-);
+final RegExp invalidAttributeNameCharsRx = RegExp('[^$ccWord-]', unicode: true);
 
 /// Matches a pass inline macro surrounding the value of an attribute
 /// entry once it has been parsed (opal variant: `^`/`$` without
@@ -789,7 +786,7 @@ final RegExp trailingDigitsRx = RegExp(r'\d+$', multiLine: true);
 /// Detects strings that resemble URIs (opal variant: `^` without
 /// multiLine emulates the Ruby `\A` string anchor).
 final RegExp uriSniffRx = RegExp(
-  '^' + cgAlpha + '[' + ccAlnum + '.+-]+:/{0,2}',
+  '^$cgAlpha[$ccAlnum.+-]+:/{0,2}',
   unicode: true,
 );
 
