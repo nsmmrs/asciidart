@@ -2,7 +2,11 @@
 ///
 /// rewrite rules applied here come from `PORTING-REGEXP.md`:
 /// - `CC_ALL` -> `[\s\S]`, `CC_ANY` -> `[^\n]`, `CC_EOL` -> `$`,
-///   `CG_BLANK` -> `[ \t]` (exact).
+///   `CG_BLANK` -> [cgBlank] (tab and the Unicode space separators, as
+///   Ruby's `\p{Blank}`).
+/// - Ruby's ASCII-only `\s` and `\S` are spelled out as `[ \t\n\v\f\r]`
+///   and `[^ \t\n\v\f\r]`: Dart's would also match Unicode spaces (W5,
+///   R16).
 /// - `\p{Alpha}` -> `\p{Alphabetic}`, `\p{Alnum}` -> split fragments,
 ///   `\p{Word}` -> `\w`, all with `unicode: true` (B1, R1, R2).
 /// - Any pattern containing `^` or `$` gets `multiLine: true` (B9, R3),
@@ -36,8 +40,9 @@ const String ccAlnum = r'\p{Alphabetic}\p{Decimal_Number}';
 /// Alphanumeric character, standalone (`CG_ALNUM`).
 const String cgAlnum = r'(?:\p{Alphabetic}|\p{Decimal_Number})';
 
-/// Blank (space or tab), standalone (`CG_BLANK`).
-const String cgBlank = r'[ \t]';
+/// Blank, standalone (`CG_BLANK`, Ruby's `\p{Blank}`): tab and the Unicode
+/// space separators (`Zs`), listed so that no `unicode` flag is needed.
+const String cgBlank = '[\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]';
 
 /// Word characters, for use inside a character class (`CC_WORD`).
 /// (Dart `\w` stays ASCII-only even with `unicode: true`, so the UTS#18
@@ -101,7 +106,7 @@ final RegExp manpageNamePurposeRx = RegExp(
 /// Matches a conditional preprocessor directive
 /// (e.g., ifdef, ifndef, ifeval and endif).
 final RegExp conditionalDirectiveRx = RegExp(
-  r'^(\\)?(ifdef|ifndef|ifeval|endif)::(\S*?(?:([,+])\S*?)?)\[('
+  r'^(\\)?(ifdef|ifndef|ifeval|endif)::([^ \t\n\v\f\r]*?(?:([,+])[^ \t\n\v\f\r]*?)?)\[('
   '$ccAny'
   r'+)?\]$',
   multiLine: true,
@@ -115,7 +120,7 @@ final RegExp evalExpressionRx = RegExp(
 
 /// Matches an include preprocessor directive.
 final RegExp includeDirectiveRx = RegExp(
-  r'^(\\)?include::([^\s\[](?:[^\[]*[^\s\[])?)\[('
+  r'^(\\)?include::([^ \t\n\v\f\r\[](?:[^\[]*[^ \t\n\v\f\r\[])?)\[('
   '$ccAny'
   r'+)?\]$',
   multiLine: true,
@@ -123,7 +128,7 @@ final RegExp includeDirectiveRx = RegExp(
 
 /// Matches a trailing tag directive in an include file.
 final RegExp tagDirectiveRx = RegExp(
-  r'\b(?:tag|(e)nd)::(\S+?)\[\](?=$|[ \r])',
+  r'\b(?:tag|(e)nd)::([^ \t\n\v\f\r]+?)\[\](?=$|[ \r])',
   multiLine: true,
 );
 
@@ -454,9 +459,9 @@ final RegExp cellSpecEndRx = RegExp(
 /// Matches the custom block macro pattern.
 final RegExp customBlockMacroRx = RegExp(
   '^($cgWord[$ccWord'
-  r'-]*)::(|\S|\S'
+  r'-]*)::(|[^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
   '$ccAny'
-  r'*?\S)\[('
+  r'*?[^ \t\n\v\f\r])\[('
   '$ccAny'
   r'+)?\]$',
   multiLine: true,
@@ -465,9 +470,9 @@ final RegExp customBlockMacroRx = RegExp(
 
 /// Matches an image, video or audio block macro.
 final RegExp blockMediaMacroRx = RegExp(
-  r'^(image|video|audio)::(\S|\S'
+  r'^(image|video|audio)::([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
   '$ccAny'
-  r'*?\S)\[('
+  r'*?[^ \t\n\v\f\r])\[('
   '$ccAny'
   r'+)?\]$',
   multiLine: true,
@@ -559,7 +564,7 @@ final RegExp inlineFootnoteMacroRx = RegExp(
 
 /// Matches an image or icon inline macro.
 final RegExp inlineImageMacroRx = RegExp(
-  r'\\?i(?:mage|con):([^:\s\[](?:[^\n\[]*[^\s\[])?)\[(|'
+  r'\\?i(?:mage|con):([^: \t\n\v\f\r\[](?:[^\n\[]*[^ \t\n\v\f\r\[])?)\[(|'
   '$ccAll'
   r'*?[^\\])\]',
 );
@@ -590,15 +595,15 @@ final RegExp inlineKbdBtnMacroRx = RegExp(
 /// keeps `\s` at its narrowest.
 final RegExp inlineLinkRx = RegExp(
   '(^|link:|$cgBlank'
-  r'|\\?&lt;(?=\\?(?:https?|file|ftp|irc)(:))|[>\(\)\[\];"\x27])(\\?(?:https?|file|ftp|irc)://)(?:([^\s\[\]]+)\[(|'
+  r'|\\?&lt;(?=\\?(?:https?|file|ftp|irc)(:))|[>\(\)\[\];"\x27])(\\?(?:https?|file|ftp|irc)://)(?:([^ \t\n\v\f\r\[\]]+)\[(|'
   '$ccAll'
-  r'*?[^\\])\]|(?!\2)([^\s]+?)&gt;|([^\s\[\]<]*([^\s,.?!\[\]<\)])))',
+  r'*?[^\\])\]|(?!\2)([^ \t\n\v\f\r]+?)&gt;|([^ \t\n\v\f\r\[\]<]*([^ \t\n\v\f\r,.?!\[\]<\)])))',
   multiLine: true,
 );
 
 /// Matches a link or e-mail inline macro.
 final RegExp inlineLinkMacroRx = RegExp(
-  r'\\?(?:link|(mailto)):(|[^:\s\[][^\s\[]*)\[(|'
+  r'\\?(?:link|(mailto)):(|[^: \t\n\v\f\r\[][^ \t\n\v\f\r\[]*)\[(|'
   '$ccAll'
   r'*?[^\\])\]',
 );
@@ -622,7 +627,7 @@ final RegExp inlineStemMacroRx = RegExp(
 final RegExp inlineMenuMacroRx = RegExp(
   r'\\?menu:('
   '$cgWord|[$ccWord'
-  r'&][^\n\[]*[^\s\[])\[ *(?:|('
+  r'&][^\n\[]*[^ \t\n\v\f\r\[])\[ *(?:|('
   '$ccAll'
   r'*?[^\\]))\]',
   unicode: true,
@@ -654,9 +659,9 @@ final Map<bool, InlinePassEntry> inlinePassRx = {
       r';:\\])(?=(\[)|\+)|\\(?=\[)|(?=\\\+))(?:\2(x-|[^\]]+ x-)\]|(?:'
       '$quoteAttributeListRxt'
       r')?(?=(\\)?\+))(\5?(\+|`)'
-      r'(\S|\S'
+      r'([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
-      r'*?\S)\7)(?!'
+      r'*?[^ \t\n\v\f\r])\7)(?!'
       '$cgWord)',
       multiLine: true,
       unicode: true,
@@ -669,9 +674,9 @@ final Map<bool, InlinePassEntry> inlinePassRx = {
       '(^|[^`$ccWord'
       r'}])(?:((?=\n?(?![\s\S])))()|'
       '$quoteAttributeListRxt'
-      r'(?=(\\)?))?(\5?(`)([^`\s]|[^`\s]'
+      r'(?=(\\)?))?(\5?(`)([^` \t\n\v\f\r]|[^` \t\n\v\f\r]'
       '$ccAll'
-      r'*?\S)\7)(?![`'
+      r'*?[^ \t\n\v\f\r])\7)(?![`'
       '$ccWord}])',
       multiLine: true,
       unicode: true,

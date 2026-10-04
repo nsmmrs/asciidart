@@ -1,0 +1,46 @@
+= Corpus findings
+:stem:
+
+An empty column list takes the columns from the first row.
+
+[cols=""]
+|===
+|one |two
+|1 |2 |a |b
+|===
+
+Autowidth with an explicit table width leaves the columns unsized.
+
+[%autowidth,width=75%]
+|===
+|A |B |C
+|a |b |c
+|===
+
+A nested description list item with an attached block.
+
+category::
+
+term 1:::
++
+--
+def 1
+--
+
+[asciimath]
+++++
+f: bbb"N" -> bbb"N" \
+\
+f: x |-> x + 1
+++++
+
+== Das große Ganze: Ωμέγα ΑΣ
+
+A link before a no-break space and colon: https://ruby-lang.org[Ruby] :
+text with an ideographic space at the end of a line　
+and more text.
+
+Spaces that are not ASCII do not delimit text: a *b* c, x _y_ z, and
+a *b*　c.
+
+Pass-through spacing: `code` and stem:[x + 1].

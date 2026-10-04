@@ -13,6 +13,8 @@ library;
 
 import 'package:asciidoctor/src/highlight/highlight.dart';
 import 'package:asciidoctor/src/io.dart' as io;
+import 'package:asciidoctor/src/logging.dart';
+import 'package:meta/meta.dart';
 
 /// Syntax-highlighter adapter for Rouge.
 ///
@@ -58,7 +60,27 @@ class RougeAdapter {
   /// Whether server-side highlighting can run (`highlight?`).
   ///
   /// True exactly when a [lexer] backend was provided.
-  bool get canHighlight => lexer != null;
+  bool get canHighlight => _available;
+
+  static bool _warned = false;
+
+  /// Lets the next check warn again (tests start from a fresh process).
+  @visibleForTesting
+  static void resetUnavailableWarning() => _warned = false;
+
+  /// Whether a backend is available. The first time one is not, warns once
+  /// for the process, as Asciidoctor does when the library is missing.
+  bool get _available {
+    if (lexer != null) return true;
+    if (!_warned) {
+      _warned = true;
+      LoggerManager.logger.warn(
+        'Rouge syntax highlighting is not available. '
+        'Functionality disabled.',
+      );
+    }
+    return false;
+  }
 
   /// Whether any highlighted output so far requires the adapter stylesheet.
   ///
@@ -229,13 +251,15 @@ class RougeAdapter {
 
   /// The inline `<pre>` style for [style] (`base_style`), or `null` when the
   /// style contributes none or no backend is available.
-  String? baseStyle(String style) => lexer?.baseStyle(style);
+  String? baseStyle(String style) =>
+      _available ? lexer?.baseStyle(style) : null;
 
   /// The rendered stylesheet for [style] (`read_stylesheet`).
   ///
   /// Falls back to [unavailableStylesheet] when no backend is available.
   String readStylesheet(String? style) =>
-      lexer?.stylesheet(style ?? defaultStyle) ?? unavailableStylesheet;
+      (_available ? lexer!.stylesheet(style ?? defaultStyle) : null) ??
+      unavailableStylesheet;
 
   /// The stylesheet file name for [style] (`stylesheet_basename`).
   String stylesheetBasename(String? style) =>

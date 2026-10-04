@@ -24,6 +24,7 @@ import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;
+import 'package:asciidoctor/src/text_case.dart';
 import 'package:meta/meta.dart';
 
 export 'package:asciidoctor/src/cursor.dart' show Cursor;
@@ -51,13 +52,25 @@ class Reader {
   /// [cursor] gives the file, directory, path and line number of the first
   /// line (default: standard input at line 1). When [normalize] is set,
   /// lines are stripped of trailing whitespace.
-  new(List<String> lines, {Cursor? cursor, bool normalize = false}) {
+  ///
+  /// [continuationPlaceholders] are the indexes in [lines] of empty lines
+  /// that stand for a list continuation (see
+  /// [nextLineIsContinuationPlaceholder]).
+  new(
+    List<String> lines, {
+    Cursor? cursor,
+    bool normalize = false,
+    Set<int> continuationPlaceholders = const {},
+  }) {
     _initCursor(cursor);
     _sourceLines = _prepareLines(
       lines: lines,
       normalize: normalize ? _LineNormalization.full : _LineNormalization.none,
     );
     _lines = _sourceLines.reversed.toList();
+    _placeholderLinenos = {
+      for (final index in continuationPlaceholders) _lineno + index,
+    };
   }
 
   /// Initializes the reader with the AsciiDoc [source] text (an empty
@@ -104,6 +117,18 @@ class Reader {
   late List<String> _sourceLines;
   Cursor? _mark;
   int _lookAhead = 0;
+
+  /// The line numbers of the continuation placeholders (a line keeps its
+  /// number when it is read and restored).
+  Set<int> _placeholderLinenos = const {};
+
+  /// Whether the next line is an empty line standing for a list
+  /// continuation: the lines of a list item keep the continuations that
+  /// attach blocks to a nested item this way (Asciidoctor marks those lines
+  /// by identity).
+  @internal
+  bool get nextLineIsContinuationPlaceholder =>
+      _placeholderLinenos.contains(_lineno);
 
   /// Whether lines are processed using [processLine] on first visit.
   bool processLines = true;
@@ -1110,7 +1135,7 @@ class PreprocessorReader extends Reader {
     var directiveTarget = target;
     // attributes are case insensitive
     final noTarget = directiveTarget.isEmpty;
-    if (!noTarget) directiveTarget = directiveTarget.toLowerCase();
+    if (!noTarget) directiveTarget = downcase(directiveTarget);
 
     if (name == 'endif') {
       if (text != null) {
@@ -1141,7 +1166,7 @@ class PreprocessorReader extends Reader {
       if (name == 'ifeval') {
         if (!(noTarget &&
             text != null &&
-            evalExpressionRx.hasMatch(text.trim()))) {
+            evalExpressionRx.hasMatch(text.trimAscii()))) {
           return true;
         }
       } else if (noTarget) {
@@ -1204,7 +1229,7 @@ class PreprocessorReader extends Reader {
             // the text in brackets must match a conditional expression
             final exprMatch = text == null
                 ? null
-                : evalExpressionRx.firstMatch(text.trim());
+                : evalExpressionRx.firstMatch(text.trimAscii());
             if (exprMatch != null) {
               // NOTE assignments must happen before call to resolveExprVal
               final lhs = exprMatch.group(1)!;
@@ -2168,7 +2193,7 @@ final RegExp _intPrefixRx = RegExp(r'^[+-]?\d[\d_]*');
 /// 0); `null` yields 0.
 int _toInt(String? value) {
   if (value == null) return 0;
-  final match = _intPrefixRx.firstMatch(value.trimLeft());
+  final match = _intPrefixRx.firstMatch(trimLeftAscii(value));
   if (match == null) return 0;
   return int.tryParse(match.group(0)!.replaceAll('_', '')) ?? 0;
 }
@@ -2181,7 +2206,7 @@ final RegExp _floatPrefixRx = RegExp(
 /// whitespace is skipped, then the leading numeric (or inf/nan) prefix is
 /// parsed, else 0.0.
 double _parseFloatPrefix(String value) {
-  final text = value.trimLeft();
+  final text = trimLeftAscii(value);
   if (text.isEmpty) return 0;
   final lower = text.toLowerCase();
   final signedInf = RegExp('^[+-]?inf');

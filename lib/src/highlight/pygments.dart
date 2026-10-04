@@ -12,6 +12,8 @@ library;
 
 import 'package:asciidoctor/src/highlight/highlight.dart';
 import 'package:asciidoctor/src/io.dart' as io;
+import 'package:asciidoctor/src/logging.dart';
+import 'package:meta/meta.dart';
 
 /// Syntax-highlighter adapter for Pygments.
 ///
@@ -107,7 +109,27 @@ class PygmentsAdapter {
   /// Whether server-side highlighting can run (`highlight?`).
   ///
   /// True exactly when a [lexer] backend was provided.
-  bool get canHighlight => lexer != null;
+  bool get canHighlight => _available;
+
+  static bool _warned = false;
+
+  /// Lets the next check warn again (tests start from a fresh process).
+  @visibleForTesting
+  static void resetUnavailableWarning() => _warned = false;
+
+  /// Whether a backend is available. The first time one is not, warns once
+  /// for the process, as Asciidoctor does when the library is missing.
+  bool get _available {
+    if (lexer != null) return true;
+    if (!_warned) {
+      _warned = true;
+      LoggerManager.logger.warn(
+        'Pygments syntax highlighting is not available. '
+        'Functionality disabled.',
+      );
+    }
+    return false;
+  }
 
   /// Whether any highlighted output so far requires the adapter stylesheet.
   ///
@@ -299,7 +321,8 @@ class PygmentsAdapter {
 
   /// The `pre.pygments { ... }` rule body for [style] (`base_style`), or
   /// `null` when the style contributes none or no backend is available.
-  String? baseStyle(String style) => lexer?.baseStyle(style);
+  String? baseStyle(String style) =>
+      _available ? lexer?.baseStyle(style) : null;
 
   /// The rendered stylesheet for [style] (`read_stylesheet`).
   ///
@@ -307,7 +330,7 @@ class PygmentsAdapter {
   /// and to [unavailableStylesheet] when no backend is available.
   String readStylesheet(String? style) {
     final backend = lexer;
-    if (backend == null) return unavailableStylesheet;
+    if (!_available || backend == null) return unavailableStylesheet;
     return backend.stylesheet(style ?? defaultStyle) ?? failedStylesheet;
   }
 

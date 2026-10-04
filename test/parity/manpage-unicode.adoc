@@ -1,0 +1,21 @@
+= unicode-test(1)
+:doctype: manpage
+:manmanual: Test
+:mansource: Test
+
+== NAME
+
+unicode-test - check Unicode handling
+
+== Das große Ganze
+
+Use https://ruby-lang.org[Ruby] : here.
+
+objects at the edge commits　
+of a line.
+
+[cols=""]
+|===
+|one |two
+|1 |2
+|===

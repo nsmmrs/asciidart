@@ -7,6 +7,7 @@ import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart' show NodeDocument;
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/rx.dart' show invalidSectionIdCharsRx;
+import 'package:asciidoctor/src/text_case.dart';
 
 /// First index used when generating a unique ID suffix.
 ///
@@ -186,7 +187,7 @@ class Section extends AbstractBlock implements NodeSection {
     // `ü`. Dart `\w` stays ASCII-only even with `unicode: true`, so the
     // `ccWord` spelling in `rx.dart` is required here.
     var genId =
-        '$pre${title.toLowerCase().replaceAll(invalidSectionIdCharsRx, '')}';
+        '$pre${downcase(title).replaceAll(invalidSectionIdCharsRx, '')}';
     if (noSep) {
       genId = genId.replaceAll(' ', '');
     } else {

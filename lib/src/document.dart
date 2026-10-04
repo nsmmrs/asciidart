@@ -43,6 +43,7 @@ import 'package:asciidoctor/src/remote.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;
+import 'package:asciidoctor/src/text_case.dart';
 import 'package:asciidoctor/src/timings.dart';
 import 'package:asciidoctor/src/version.dart';
 import 'package:meta/meta.dart';
@@ -119,7 +120,7 @@ class DocumentTitle {
     _sanitized = sanitize;
     var text = val;
     if (sanitize && text.contains('<')) {
-      text = collapseRuns(text.replaceAll(xmlSanitizeRx, ''), ' ').trim();
+      text = collapseRuns(text.replaceAll(xmlSanitizeRx, ''), ' ').trimAscii();
     }
     var sep = separator ?? ':';
     if (sep.isEmpty || !text.contains(sep = '$sep ')) {
@@ -448,7 +449,7 @@ class Document extends AbstractBlock implements NodeDocument {
         } else {
           override = value == null ? const _Unset() : _SetValue(value);
         }
-        attrOverrides[name.toLowerCase()] = override;
+        attrOverrides[downcase(name)] = override;
       });
       final toFile = options.toFile;
       if (toFile != null) {
@@ -1019,7 +1020,7 @@ class Document extends AbstractBlock implements NodeDocument {
       if (val == null) return null;
     }
     if (sanitize && val.contains('<')) {
-      return collapseRuns(val.replaceAll(xmlSanitizeRx, ''), ' ').trim();
+      return collapseRuns(val.replaceAll(xmlSanitizeRx, ''), ' ').trimAscii();
     }
     return val;
   }
@@ -1354,7 +1355,7 @@ class Document extends AbstractBlock implements NodeDocument {
       } else {
         docinfo = docinfoAttr
             .split(',')
-            .map((keyword) => keyword.trim())
+            .map((keyword) => keyword.trimAscii())
             .toList();
       }
 
@@ -2006,10 +2007,10 @@ class Document extends AbstractBlock implements NodeDocument {
   static BigInt? _parseLeadingInt(String value) {
     final match = _leadingIntRx.firstMatch(value);
     if (match == null) return null;
-    return BigInt.parse(match.group(0)!.trim());
+    return BigInt.parse(match.group(0)!.trimAscii());
   }
 
-  static final RegExp _leadingIntRx = RegExp(r'^\s*[+-]?\d+');
+  static final RegExp _leadingIntRx = RegExp(r'^[ \t\n\v\f\r]*[+-]?\d+');
 
   /// Converts [value] to an integer by its leading integer (else 0).
   ///
@@ -2018,7 +2019,7 @@ class Document extends AbstractBlock implements NodeDocument {
   static int _toIntSaturating(String value) {
     final match = _leadingIntRx.firstMatch(value);
     if (match == null) return 0;
-    final parsed = BigInt.parse(match.group(0)!.trim());
+    final parsed = BigInt.parse(match.group(0)!.trimAscii());
     if (parsed.isValidInt) return parsed.toInt();
     return parsed.isNegative ? -_maxInt : _maxInt;
   }

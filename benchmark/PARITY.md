@@ -43,6 +43,34 @@ too (the harness passes `-q`). The e2e suite (`test/e2e/`, 134 tests) passes
 with no skips against the Dart CLI, the Node.js CLI and the gem. The Node.js
 CLI gives the same 126/126.
 
+## Corpus check (2026-10-04): 17,896 of 17,900 conversions identical
+
+Beyond the gate above, `tool/corpus_parity.dart` compares stdout, warnings
+and exit codes over a large corpus of real documents: the Asciidoctor
+repository at `v2.0.26` (fixtures, docs, and 1,451 snippets extracted from
+its Ruby tests), the AsciiDoc language docs, Asciidoctor.js, the PDF, EPUB3,
+Diagram and Maven plugin docs, Antora, git's `Documentation/`, and the
+Quarkus, Hibernate and Spring Boot reference docs: 4,475 files, each
+converted as html5, embedded html5, docbook5 and manpage.
+
+```sh
+tool/corpus/fetch.sh /tmp/corpus           # pinned in tool/corpus/sources.txt
+dart run tool/corpus_parity.dart --exe-a asciidoctor \
+  --exe-b dist/asciidoctor-linux-x64 --out /tmp/corpus-results /tmp/corpus
+```
+
+The reference is the 2.0.26 gem with CodeRay as its only optional gem, the
+one optional library the port implements (with Rouge or Pygments installed,
+the gem highlights where the port cannot). The check found and drove fixes
+for: `cols=""`, `%autowidth` with a width, nested description list items
+with attached blocks, line breaks in AsciiMath blocks, Ruby's ASCII-only
+`\s` and `strip` against Unicode spaces, `\p{Blank}`, full case mapping
+(`ß` → `SS`), a dropped table cell's line number, an empty block anchor
+crash, and the missing "not available" warnings. `test/parity/` keeps
+reproducers of each.
+
+The 4 remaining differences are CodeRay highlighting of Java (see below).
+
 ## Known intentional differences
 
 - Fatal errors are reported as one `asciidoctor: FAILED: <message>` line in
@@ -70,3 +98,14 @@ CLI gives the same 126/126.
   extensions are compiled into a custom binary instead (see
   `asciidoctor init-config`). `-q` silences log messages only, since there
   are no script warnings.
+- Features the port does not implement warn in its own words, once, where
+  the gem names a missing gem: `Rouge syntax highlighting is not available.
+  Functionality disabled.` (likewise Pygments), and `AsciiMath to MathML
+  conversion is not available. Functionality disabled.` for DocBook. The
+  output is the gem's output without those gems.
+- The `missing convert handler` warning names the converter by its Dart
+  class (`ManpageConverter`) instead of the Ruby one
+  (`Asciidoctor::Converter::ManPageConverter`).
+- CodeRay highlights only Ruby and plain text: its other scanners are not
+  ported, and a source block in another language with
+  `source-highlighter=coderay` fails the conversion (the gem highlights it).

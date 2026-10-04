@@ -29,6 +29,7 @@ import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/stylesheets.dart';
 import 'package:asciidoctor/src/table.dart';
+import 'package:asciidoctor/src/text_case.dart';
 
 /// Renders [value] for interpolation into output: `null` renders as the
 /// empty string.
@@ -53,20 +54,23 @@ final RegExp _dropAnchorRx = RegExp(r'<(?:a\b[^>]*|/a)>');
 final RegExp _leadingAnchorsRx = RegExp('^(?:<a id="[^"]+"></a>)+');
 
 /// Matches stem line breaks (port of `StemBreakRx`).
-final RegExp _stemBreakRx = RegExp(r' *\\\n(?:\\\?\n)*|\n\n+');
+final RegExp _stemBreakRx = RegExp(r' *\\\n(?:\\?\n)*|\n\n+');
 
 /// Matches everything before the `<svg` start tag (port of
 /// `SvgPreambleRx`; `^` without `multiLine` anchors at the start of the
 /// input).
-final RegExp _svgPreambleRx = RegExp(r'^.*?(?=<svg[\s>])', dotAll: true);
+final RegExp _svgPreambleRx = RegExp(
+  r'^.*?(?=<svg[ \t\n\v\f\r>])',
+  dotAll: true,
+);
 
 /// Matches the `<svg` start tag (port of `SvgStartTagRx`).
-final RegExp _svgStartTagRx = RegExp(r'^<svg(?:\s[^>]*)?>');
+final RegExp _svgStartTagRx = RegExp(r'^<svg(?:[ \t\n\v\f\r][^>]*)?>');
 
 /// Matches `width`/`height`/`style` attributes on the `<svg` start tag
 /// (port of `DimensionAttributeRx`; `CC_ANY` is `.`).
 final RegExp _dimensionAttributeRx = RegExp(
-  r'''\s(?:width|height|style)=(["']).*?\1''',
+  r'''[ \t\n\v\f\r](?:width|height|style)=(["']).*?\1''',
 );
 
 /// Block math delimiters by stem style (port of `BLOCK_MATH_DELIMITERS`).
@@ -474,7 +478,7 @@ class Html5Converter extends ConverterBase {
           }
           if (node.hasAttr('revnumber')) {
             details.add(
-              '<span id="revnumber">${(node.attr('version-label') ?? '').toLowerCase()} ${_s(node.attr('revnumber'))}${node.hasAttr('revdate') ? ',' : ''}</span>',
+              '<span id="revnumber">${downcase(node.attr('version-label') ?? '')} ${_s(node.attr('revnumber'))}${node.hasAttr('revdate') ? ',' : ''}</span>',
             );
           }
           if (node.hasAttr('revdate')) {
@@ -1484,9 +1488,10 @@ class Html5Converter extends ConverterBase {
       classes.add('stripes-${_s(stripes)}');
     }
     var styleAttribute = '';
-    final autowidth = node.hasOption('autowidth') && !node.hasAttr('width');
+    // An explicit width keeps the table width but not the column widths.
+    final autowidth = node.hasOption('autowidth');
     final tablewidth = node.attr('tablepcwidth');
-    if (autowidth) {
+    if (autowidth && !node.hasAttr('width')) {
       classes.add('fit-content');
     } else if (tablewidth == '100') {
       classes.add('stretch');
@@ -2249,8 +2254,8 @@ class Html5Converter extends ConverterBase {
         ? firstSection.title
         : null;
     if (nextSectionTitle != null &&
-        nextSectionTitle == nextSectionTitle.toUpperCase()) {
-      mannameTitle = mannameTitle.toUpperCase();
+        nextSectionTitle == upcase(nextSectionTitle)) {
+      mannameTitle = upcase(mannameTitle);
     }
     final mannameId = node.attr('manname-id');
     final mannameIdAttr = mannameId != null ? ' id="$mannameId"' : '';

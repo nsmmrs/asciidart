@@ -41,6 +41,7 @@ import 'package:asciidoctor/src/reader.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;
+import 'package:asciidoctor/src/text_case.dart';
 import 'package:meta/meta.dart';
 
 /// The configuration of a processor.
@@ -169,7 +170,7 @@ abstract class Processor {
       sectname = sectLevel == 0
           ? 'part'
           : (sectLevel > 1 ? 'section' : 'chapter');
-    } else if (doctype == 'manpage' && title.toLowerCase() == 'synopsis') {
+    } else if (doctype == 'manpage' && downcase(title) == 'synopsis') {
       sectname = 'synopsis';
       special = true;
     } else {
@@ -956,7 +957,7 @@ class InlineMacroProcessor extends MacroProcessor {
     return _rxCache.putIfAbsent(
       '$name\x00${format ?? ''}',
       () => RegExp(
-        '\\\\?$name:${format == 'short' ? '(){0}' : r'(\S+?)'}\\[(|$ccAny*?[^\\\\])\\]',
+        '\\\\?$name:${format == 'short' ? '(){0}' : r'([^ \t\n\v\f\r]+?)'}\\[(|$ccAny*?[^\\\\])\\]',
       ),
     );
   }

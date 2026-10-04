@@ -165,7 +165,7 @@ const String _simpleEscape = '[abefnrstv]|[0-7]{1,3}|x[0-9A-Fa-f]{1,2}|.';
 const String _controlMetaEscape =
     '(?:M-|C-|c)(?:\\\\(?:M-|C-|c))*(?:[^\\\\]|\\\\(?:$_simpleEscape))?';
 const String _escape = '(?:$_controlMetaEscape|$_simpleEscape)';
-const String _character = '\\?(?:[^\\s\\\\]|\\\\(?:$_escape))';
+const String _character = '\\?(?:[^ \\t\\n\\v\\f\\r\\\\]|\\\\(?:$_escape))';
 
 /// Port of `HEREDOC_OPEN` (groups: 1 = `-`/`~`, 2 = bare delimiter,
 /// 3 = quote, 4 = quoted delimiter).
@@ -182,7 +182,7 @@ const String _endOfStringOrBeforeTrailingNewline = '(?=\\n?$_absoluteEnd)';
 
 /// Port of `RUBYDOC`, `DATA` and `RUBYDOC_OR_DATA`.
 const String _rubydoc =
-    '=begin(?!\\S).*?(?:$_endOfStringOrBeforeTrailingNewline|^=end(?!\\S)[^\\n]*)';
+    '=begin(?![^ \\t\\n\\v\\f\\r]).*?(?:$_endOfStringOrBeforeTrailingNewline|^=end(?![^ \\t\\n\\v\\f\\r])[^\\n]*)';
 const String _dataContent =
     '__END__'
     r'$'
@@ -192,7 +192,7 @@ const String _rubydocOrData = '(?:$_rubydoc|$_dataContent)';
 /// Port of `VALUE_FOLLOWS` (atomicity proven equivalent to greedy; see the
 /// library documentation).
 const String _valueFollows =
-    '[ \\t\\f\\v]+(?:[%/][^\\s=]|<<-?\\S|[-+]\\d|$_character)';
+    '[ \\t\\f\\v]+(?:[%/][^ \\t\\n\\v\\f\\r=]|<<-?[^ \\t\\n\\v\\f\\r]|[-+]\\d|$_character)';
 
 /// Port of `FANCY_STRING_START` (groups: 1 = kind letter or empty,
 /// 2 = delimiter).

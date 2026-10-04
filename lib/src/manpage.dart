@@ -30,6 +30,7 @@ import 'package:asciidoctor/src/list.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/table.dart';
+import 'package:asciidoctor/src/text_case.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
 /// `null` renders as the empty string instead of `'null'`.
@@ -164,7 +165,7 @@ final RegExp _leadingPeriodRx = RegExp(r'^\.', multiLine: true);
 /// `CC_ANY` is [ccAny]).
 final RegExp _escapedMacroRx = RegExp(
   '^(?:$_esc\\\\c\n)?$_esc\\.((?:URL|MTO) "$ccAny*?" "$ccAny*?" )'
-  '( |[^\\s]*)($ccAny*?)(?: *$_esc\\\\c)?\$',
+  '( |[^ \\t\\n\\v\\f\\r]*)($ccAny*?)(?: *$_esc\\\\c)?\$',
   multiLine: true,
 );
 
@@ -358,7 +359,7 @@ class ManpageConverter extends ConverterBase {
         r'.\"',
       )
       ..add(
-        '.TH "${_manify(manname.toUpperCase())}" '
+        '.TH "${_manify(upcase(manname))}" '
         '"${_s(manvolnum)}" "${_s(docdate)}" '
         '"${mansource != null ? _manify(mansource) : r'\ \&'}" '
         '"${manmanual != null ? _manify(manmanual) : r'\ \&'}"',
@@ -390,7 +391,7 @@ class ManpageConverter extends ConverterBase {
         final mannames = node.mannames ?? <String>[manname];
         result.add(
           '.SH '
-          '"${node.attr('manname-title', 'NAME')!.toUpperCase()}"\n'
+          '"${upcase(node.attr('manname-title', 'NAME')!)}"\n'
           '${mannames.map((n) => _manify(n).replaceAll(r'\-', '-')).join(', ')} \\- ${_manify(node.attr('manpurpose')!, whitespace: _WhitespaceMode.normalize)}',
         );
       }
@@ -1165,10 +1166,10 @@ class ManpageConverter extends ConverterBase {
 
   /// Uppercases the PCDATA in [string], leaving markup untouched.
   String _uppercasePcdata(String string) {
-    if (!_xmlMarkupRx.hasMatch(string)) return string.toUpperCase();
+    if (!_xmlMarkupRx.hasMatch(string)) return upcase(string);
     return string.replaceAllMapped(_pcdataFilterRx, (match) {
       final pcdata = match.group(2);
-      return pcdata != null ? pcdata.toUpperCase() : match.group(1)!;
+      return pcdata != null ? upcase(pcdata) : match.group(1)!;
     });
   }
 

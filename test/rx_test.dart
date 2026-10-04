@@ -1866,7 +1866,7 @@ void main() {
       expect(cgAlpha, r'\p{Alphabetic}');
       expect(ccAlnum, r'\p{Alphabetic}\p{Decimal_Number}');
       expect(cgAlnum, r'(?:\p{Alphabetic}|\p{Decimal_Number})');
-      expect(cgBlank, r'[ \t]');
+      expect(cgBlank, '[\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]');
       expect(
         ccWord,
         r'\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}',

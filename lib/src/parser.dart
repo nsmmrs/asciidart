@@ -31,6 +31,7 @@ import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/substitutors.dart';
 import 'package:asciidoctor/src/table.dart';
+import 'package:asciidoctor/src/text_case.dart';
 
 /// Match data for a delimited block boundary line.
 ///
@@ -376,7 +377,7 @@ abstract final class Parser {
   static LoggerBase get _logger => LoggerManager.logger;
 
   /// Matches a whitespace run (for [_splitWhitespace]).
-  static final RegExp _whitespaceRx = RegExp(r'\s+');
+  static final RegExp _whitespaceRx = RegExp(r'[ \t\n\v\f\r]+');
 
   /// Matches a leading integer (for [_toInt]).
   static final RegExp _leadingIntRx = RegExp(r'^[+-]?\d+');
@@ -416,7 +417,7 @@ abstract final class Parser {
   /// Splits on whitespace runs: leading whitespace is dropped and trailing
   /// empty fields never appear.
   static List<String> _splitWhitespace(String value, [int? limit]) {
-    final rest = value.trimLeft();
+    final rest = trimLeftAscii(value);
     if (rest.isEmpty) return <String>[];
     final max = limit ?? 0;
     if (max < 2) return rest.split(_whitespaceRx);
@@ -442,7 +443,7 @@ abstract final class Parser {
   /// skipped and a leading `[+-]?\d+` run is parsed.
   static int _toInt(String? value) {
     if (value == null) return 0;
-    final match = _leadingIntRx.firstMatch(value.trimLeft());
+    final match = _leadingIntRx.firstMatch(trimLeftAscii(value));
     return match == null ? 0 : int.parse(match.group(0)!);
   }
 
@@ -669,11 +670,11 @@ abstract final class Parser {
     if (volnumMatch != null) {
       docAttrs['manvolnum'] = manvolnum = volnumMatch.group(2)!;
       final mantitle = volnumMatch.group(1)!;
-      docAttrs['mantitle'] =
-          (mantitle.contains(attrRefHead)
-                  ? subAttributes(document, mantitle)
-                  : mantitle)
-              .toLowerCase();
+      docAttrs['mantitle'] = downcase(
+        mantitle.contains(attrRefHead)
+            ? subAttributes(document, mantitle)
+            : mantitle,
+      );
     } else {
       _logger.error('non-conforming manpage title', at: reader.cursorAtLine(1));
       // Provide sensible fallbacks.
@@ -713,7 +714,7 @@ abstract final class Parser {
           );
           final nameSectionBuffer = reader
               .readLinesUntil(breakOnBlankLines: true, skipLineComments: true)
-              .map((l) => l.trimLeft())
+              .map(trimLeftAscii)
               .join(' ');
           final purposeMatch = manpageNamePurposeRx.firstMatch(
             nameSectionBuffer,
@@ -729,7 +730,7 @@ abstract final class Parser {
               mannames = splitDropTrailingEmpty(
                 manname,
                 ',',
-              ).map((n) => n.trimLeft()).toList();
+              ).map(trimLeftAscii).toList();
               resolvedManname = mannames.isEmpty ? null : mannames[0];
             } else {
               mannames = [manname];
@@ -1090,7 +1091,7 @@ abstract final class Parser {
       }
     } else if (book) {
       sectName = level == 0 ? 'part' : (level > 1 ? 'section' : 'chapter');
-    } else if (doctype == 'manpage' && sectTitle.toLowerCase() == 'synopsis') {
+    } else if (doctype == 'manpage' && downcase(sectTitle) == 'synopsis') {
       sectName = 'synopsis';
       sectSpecial = true;
     } else {
@@ -1424,7 +1425,7 @@ abstract final class Parser {
           indented = true;
           ch0 = ' ';
           // QUESTION should we test line length?
-          final lstripped = thisLine.trimLeft();
+          final lstripped = trimLeftAscii(thisLine);
           if (_markdownSyntax &&
               _markdownThematicBreakChars.keys.any(lstripped.startsWith) &&
               //!thisLine.startsWith('    ') &&
@@ -1792,7 +1793,7 @@ abstract final class Parser {
         } else if (admonitionMatch != null) {
           lines[0] = thisLine.substring(admonitionMatch.end);
           final admonitionStyle = attrs['style'] = admonitionMatch.group(1)!;
-          final admonitionName = admonitionStyle.toLowerCase();
+          final admonitionName = downcase(admonitionStyle);
           attrs['name'] = admonitionName;
           final caption = attrs.remove('caption');
           _setOrRemove(
@@ -1945,13 +1946,13 @@ abstract final class Parser {
           final commaIdx = info.indexOf(',');
           if (commaIdx >= 0) {
             if (commaIdx > 0) {
-              language = info.substring(0, commaIdx).trim();
+              language = info.substring(0, commaIdx).trimAscii();
               if (commaIdx < ll - 4) attrs['linenums'] = '';
             } else if (ll > 4) {
               attrs['linenums'] = '';
             }
           } else {
-            language = info.trimLeft();
+            language = trimLeftAscii(info);
           }
         }
         if (language == null || language.isEmpty) {
@@ -2000,7 +2001,7 @@ abstract final class Parser {
       } else if (bc == 'sidebar') {
         block = buildBlock(bc, 'compound', terminator, parent, reader, attrs);
       } else if (bc == 'admonition') {
-        final admonitionName = style!.toLowerCase();
+        final admonitionName = downcase(style!);
         attrs['name'] = admonitionName;
         final caption = attrs.remove('caption');
         _setOrRemove(
@@ -2679,7 +2680,8 @@ abstract final class Parser {
       if (termAnchor != null) {
         catalogInlineAnchor(
           termAnchor.group(1)!,
-          termAnchor.group(2) ?? termText.substring(termAnchor.end).trimLeft(),
+          termAnchor.group(2) ??
+              trimLeftAscii(termText.substring(termAnchor.end)),
           listTerm,
           reader.cursor(),
         );
@@ -2790,13 +2792,15 @@ abstract final class Parser {
     // the reader by nextBlock).
     reader.shift();
     final blockCursor = reader.cursor();
+    final itemLines = readLinesForListItem(
+      reader,
+      listType,
+      siblingTrait: trait,
+      hasText: hasText,
+    );
     final listItemReader = Reader(
-      readLinesForListItem(
-        reader,
-        listType,
-        siblingTrait: trait,
-        hasText: hasText,
-      ),
+      itemLines.lines,
+      continuationPlaceholders: itemLines.placeholders,
       cursor: blockCursor,
     );
     if (listItemReader.hasMoreLines()) {
@@ -2856,10 +2860,12 @@ abstract final class Parser {
     return (term: null, item: listItem);
   }
 
-  /// Collects the lines belonging to the current list item.
+  /// Collects the lines belonging to the current list item, with the
+  /// indexes of the empty lines that stand for a consumed list continuation
+  /// (for [Reader.nextLineIsContinuationPlaceholder]).
   ///
   /// Port of `Parser.read_lines_for_list_item`.
-  static List<String> readLinesForListItem(
+  static ({List<String> lines, Set<int> placeholders}) readLinesForListItem(
     Reader reader,
     String listType, {
     Pattern? siblingTrait,
@@ -2886,6 +2892,7 @@ abstract final class Parser {
 
     String? pendingLine;
     while (reader.hasMoreLines()) {
+      final placeholder = reader.nextLineIsContinuationPlaceholder;
       final rawLine = reader.readLine();
       if (rawLine == null) break;
       pendingLine = rawLine;
@@ -2896,9 +2903,14 @@ abstract final class Parser {
       // of the list.
       if (isSiblingListItem(rawLine, listType, siblingTrait)) break;
 
-      final thisLine = rawLine == listContinuation
-          ? _ListContinuation.active
-          : _TextLine(rawLine);
+      final _ItemLine thisLine;
+      if (rawLine == listContinuation) {
+        thisLine = _ListContinuation.active;
+      } else if (placeholder && rawLine.isEmpty) {
+        thisLine = _ListContinuation.placeholder;
+      } else {
+        thisLine = _TextLine(rawLine);
+      }
       final prevLine = buffer.isEmpty ? null : buffer.last;
 
       if (prevLine is _ListContinuation) {
@@ -3161,7 +3173,13 @@ abstract final class Parser {
       }
     }
 
-    return [for (final line in buffer) line.text];
+    return (
+      lines: [for (final line in buffer) line.text],
+      placeholders: {
+        for (var i = 0; i < buffer.length; i++)
+          if (identical(buffer[i], _ListContinuation.placeholder)) i,
+      },
+    );
   }
 
   /// Finds the first list context in [contexts] matching [line].
@@ -3460,6 +3478,8 @@ abstract final class Parser {
     }
 
     final specs = <ColumnSpec>[];
+    // An empty list (`cols=""`) has no records, so the first row decides.
+    if (input.isEmpty) return specs;
     // NOTE Dart split keeps trailing empty records, like split with -1.
     final parts = input.contains(',') ? input.split(',') : input.split(';');
     for (final record in parts) {
@@ -3528,8 +3548,8 @@ abstract final class Parser {
     if (m == null) return (const CellSpec(), line);
     // NOTE return the line stripped of trailing whitespace if no cellspec
     // is found in this case.
-    if (m.group(0)!.trimLeft().isEmpty) {
-      return (const CellSpec(), line.trimRight());
+    if (trimLeftAscii(m.group(0)!).isEmpty) {
+      return (const CellSpec(), line.trimRightAscii());
     }
     return (_cellspecFromMatch(m), line.substring(0, m.start));
   }
@@ -3746,17 +3766,19 @@ abstract final class Parser {
     } else if (rawValue.endsWith(_lineContinuation) ||
         rawValue.endsWith(_lineContinuationLegacy)) {
       final con = rawValue.substring(rawValue.length - 2);
-      final first = rawValue.substring(0, rawValue.length - 2).trimRight();
+      final first = rawValue.substring(0, rawValue.length - 2).trimRightAscii();
       final joined = StringBuffer(first);
       // The accumulator always ends with the last appended line, so the
       // ends-with-break check tracks just that line.
       var endsWithBreak = first.endsWith(_hardLineBreak);
       while (reader.advance()) {
-        var nextLine = (reader.peekLine() ?? '').trimLeft();
+        var nextLine = trimLeftAscii(reader.peekLine() ?? '');
         if (nextLine.isEmpty) break;
         final keepOpen = nextLine.endsWith(con);
         if (keepOpen) {
-          nextLine = nextLine.substring(0, nextLine.length - 2).trimRight();
+          nextLine = nextLine
+              .substring(0, nextLine.length - 2)
+              .trimRightAscii();
         }
         joined
           ..write(endsWithBreak ? lf : ' ')
@@ -3958,9 +3980,9 @@ abstract final class Parser {
         if (revMatch != null) {
           revMetadata = <String, String>{};
           if (revMatch.group(1) != null) {
-            revMetadata['revnumber'] = revMatch.group(1)!.trimRight();
+            revMetadata['revnumber'] = revMatch.group(1)!.trimRightAscii();
           }
-          final component = revMatch.group(2)!.trim();
+          final component = revMatch.group(2)!.trimAscii();
           if (component.isNotEmpty) {
             // Version must begin with 'v' if date is absent.
             if (revMatch.group(1) == null && component.startsWith('v')) {
@@ -3970,7 +3992,7 @@ abstract final class Parser {
             }
           }
           if (revMatch.group(3) != null) {
-            revMetadata['revremark'] = revMatch.group(3)!.trimRight();
+            revMetadata['revremark'] = revMatch.group(3)!.trimRightAscii();
           }
           if (document != null && docAttrs != null && revMetadata.isNotEmpty) {
             // Apply header subs and assign to document.
@@ -4181,7 +4203,7 @@ abstract final class Parser {
           authorMetadata[keyMap['email']!] = seg3;
         }
       } else {
-        final fname = collapseRuns(authorEntry, ' ').trim();
+        final fname = collapseRuns(authorEntry, ' ').trimAscii();
         authorMetadata[keyMap['author']!] =
             authorMetadata[keyMap['firstname']!] = fname;
         authorMetadata[keyMap['authorinitials']!] = _firstChar(fname);
@@ -4323,7 +4345,7 @@ abstract final class Parser {
   ///
   /// Port of `Parser.sanitize_attribute_name`.
   static String sanitizeAttributeName(String name) =>
-      name.replaceAll(invalidAttributeNameCharsRx, '').toLowerCase();
+      downcase(name.replaceAll(invalidAttributeNameCharsRx, ''));
 }
 
 /// The attributes collected from the shorthand syntax of a first positional

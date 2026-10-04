@@ -19,3 +19,5 @@ tool/parity.sh build/asciidoctor
 | `manpage-lists.adoc` | manpage list and table cell spacing (#4182, #4482) |
 | `olist-markers.adoc` | ordered list marker validation warnings and implicit styles |
 | `substitutions.adoc` | full substitutions in titles that feed generated IDs, quote credits (paragraph and Markdown), single-quoted attribute values, reftext and the author line (BUG-fwc380) |
+| `corpus-findings.adoc` | differences found by the corpus parity check (`tool/corpus_parity.dart`): `cols=""`, `%autowidth` with a width, a nested description list item with an attached block, line breaks in AsciiMath blocks, special case mappings in generated ids (`ß`, `Σ`), no-break and ideographic spaces |
+| `manpage-unicode.adoc` | the same in a man page: upper-cased headings (`ß` → `SS`), a link followed by a no-break space, a trailing ideographic space, `cols=""` |

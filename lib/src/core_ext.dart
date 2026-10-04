@@ -57,6 +57,10 @@ extension AsciiTrim on String {
     return end == length ? this : substring(0, end);
   }
 
+  /// Copy of this string with leading and trailing whitespace removed, as
+  /// [trimRightAscii] and [trimLeftAscii] do (Ruby's `String#strip`).
+  String trimAscii() => trimLeftAscii(trimRightAscii());
+
   /// Copy of this string with one trailing line terminator removed: a
   /// single `\r\n`, `\n` or `\r`, if present.
   String withoutTrailingNewline() {
@@ -85,9 +89,9 @@ extension DoubleTruncatePrecision on double {
   }
 }
 
-final RegExp _leadingInteger = RegExp(r'^\s*[+-]?\d+');
+final RegExp _leadingInteger = RegExp(r'^[ \t\n\v\f\r]*[+-]?\d+');
 final RegExp _leadingFloat = RegExp(
-  r'^\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?',
+  r'^[ \t\n\v\f\r]*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?',
 );
 
 /// Parses the leading integer of [value].
@@ -183,7 +187,7 @@ String transliterateSqueeze(String s, String from, String to) {
   return buf.toString();
 }
 
-final RegExp _whitespaceRun = RegExp(r'\s+');
+final RegExp _whitespaceRun = RegExp(r'[ \t\n\v\f\r]+');
 
 /// Splits [value] on whitespace runs, ignoring leading and trailing
 /// whitespace.

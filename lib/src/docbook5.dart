@@ -50,7 +50,7 @@ final RegExp _copyrightRx = RegExp(
 /// Matches an image-macro reference in a cover-image attribute (port of
 /// `ImageMacroRx`; `CC_ANY` is [ccAny], `multiLine` per B9).
 final RegExp _imageMacroRx = RegExp(
-  '^image::?(\\S|\\S$ccAny*?\\S)\\[($ccAny+)?\\]\$',
+  '^image::?([^ \\t\\n\\v\\f\\r]|[^ \\t\\n\\v\\f\\r]$ccAny*?[^ \\t\\n\\v\\f\\r])\\[($ccAny+)?\\]\$',
   multiLine: true,
 );
 
@@ -558,6 +558,7 @@ class Docbook5Converter extends ConverterBase {
       // NOTE fop requires jeuclid to process mathml markup. There is no
       // AsciiMath-to-MathML converter here, so this always produces what
       // Asciidoctor emits without its optional asciimath gem.
+      _warnAsciimathUnavailable();
       equationData = '<mathphrase><![CDATA[$equation]]></mathphrase>';
     } else {
       // Unhandled math; pass source to alt and required mathphrase element;
@@ -1004,6 +1005,19 @@ class Docbook5Converter extends ConverterBase {
     return '<menuchoice><guimenu>$menu</guimenu> <guisubmenu>${submenus.join('</guisubmenu> <guisubmenu>')}</guisubmenu> <guimenuitem>${_s(node.attr('menuitem'))}</guimenuitem></menuchoice>';
   }
 
+  bool _asciimathWarned = false;
+
+  /// Warns, once per converter (so once per document), that AsciiMath is
+  /// left as text, as Asciidoctor does when it cannot convert AsciiMath.
+  void _warnAsciimathUnavailable() {
+    if (_asciimathWarned) return;
+    _asciimathWarned = true;
+    logger.warn(
+      'AsciiMath to MathML conversion is not available. '
+      'Functionality disabled.',
+    );
+  }
+
   /// Converts the [node] inline quoted text.
   String convertInlineQuoted(Inline node) {
     final type = node.type;
@@ -1011,6 +1025,7 @@ class Docbook5Converter extends ConverterBase {
       // NOTE fop requires jeuclid to process mathml markup. There is no
       // AsciiMath-to-MathML converter here, so this always produces what
       // Asciidoctor emits without its optional asciimath gem.
+      _warnAsciimathUnavailable();
       return '<inlineequation><mathphrase><![CDATA[${_s(node.text)}]]></mathphrase></inlineequation>';
     } else if (type == 'latexmath') {
       // Unhandled math; pass source to alt and required mathphrase element;
@@ -1057,7 +1072,7 @@ class Docbook5Converter extends ConverterBase {
       if (label.contains('<')) {
         label = label.replaceAll(xmlSanitizeRx, '');
         if (label.contains(' ')) {
-          label = collapseRuns(label, ' ').trim();
+          label = collapseRuns(label, ' ').trimAscii();
         }
       }
       if (label.contains('"')) {

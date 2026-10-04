@@ -20,7 +20,8 @@
 /// use the `rx.dart` character-class fragments per `PORTING-REGEXP.md`, so
 /// pattern expectations are the Ruby sources with those documented rewrites
 /// applied (`.`, → `[\s\S]`, `\p{Word}` → the UTS#18 union, `\p{Alnum}` →
-/// the split fragments, `\p{Alpha}` → `\p{Alphabetic}`).
+/// the split fragments, `\p{Alpha}` → `\p{Alphabetic}`, and Ruby's ASCII
+/// `\s`/`\S` spelled out, see [asciiSpace]).
 @TestOn('vm')
 library;
 
@@ -28,6 +29,14 @@ import 'dart:io';
 
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
+
+/// [pattern] with Ruby's ASCII-only `\S` spelled out as the port writes it
+/// (`[^ \t\n\v\f\r]`; Dart's `\S` would exclude Unicode spaces too).
+/// `[\s\S]` (any character) is unchanged.
+String asciiSpace(String pattern) => pattern
+    .replaceAll(r'[\s\S]', '\u0000')
+    .replaceAll(r'\S', r'[^ \t\n\v\f\r]')
+    .replaceAll('\u0000', r'[\s\S]');
 
 void main() {
   group('characters and integers', () {
@@ -621,32 +630,34 @@ void main() {
       final patterns = quoteSubs[false]!.map((q) => q.pattern.pattern);
       expect(
         patterns,
-        equals(<String>[
-          // Ruby: \\?(?:\[([^\]]+)\])?\*\*(.+?)\*\*
-          '\\\\?(?:$quoteAttributeListRxt)?\\*\\*($ccAll+?)\\*\\*',
-          // Ruby: (^|[^\p{Word};:}])(?:\[...\\])?\*(\S|\S.*?\S)\*(?!\p{Word})
-          '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?\\*(\\S|\\S$ccAll*?\\S)\\*(?!$cgWord)',
-          // Ruby: (^|[^\p{Word};:}])(?:\[...\])?"`(\S|\S.*?\S)`"(?!\p{Word})
-          '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?"`(\\S|\\S$ccAll*?\\S)`"(?!$cgWord)',
-          // Ruby: (^|[^\p{Word};:`}])(?:\[...\])?'`(\S|\S.*?\S)`'(?!\p{Word})
-          "(^|[^$ccWord;:`}])(?:$quoteAttributeListRxt)?'`(\\S|\\S$ccAll*?\\S)`'(?!$cgWord)",
-          // Ruby: \\?(?:\[([^\]]+)\])?``(.+?)``
-          '\\\\?(?:$quoteAttributeListRxt)?``($ccAll+?)``',
-          // Ruby: (^|[^\p{Word};:"'`}])(?:\[...\])?`(\S|\S.*?\S)`(?![\p{Word}"'`])
-          "(^|[^$ccWord;:\"'`}])(?:$quoteAttributeListRxt)?`(\\S|\\S$ccAll*?\\S)`(?![$ccWord\"'`])",
-          // Ruby: \\?(?:\[([^\]]+)\])?__(.+?)__
-          '\\\\?(?:$quoteAttributeListRxt)?__($ccAll+?)__',
-          // Ruby: (^|[^\p{Word};:}])(?:\[...\])?_(\S|\S.*?\S)_(?!\p{Word})
-          '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?_(\\S|\\S$ccAll*?\\S)_(?!$cgWord)',
-          // Ruby: \\?(?:\[([^\]]+)\])?##(.+?)##
-          '\\\\?(?:$quoteAttributeListRxt)?##($ccAll+?)##',
-          // Ruby: (^|[^\p{Word}&;:}])(?:\[...\])?#(\S|\S.*?\S)#(?!\p{Word})
-          '(^|[^$ccWord&;:}])(?:$quoteAttributeListRxt)?#(\\S|\\S$ccAll*?\\S)#(?!$cgWord)',
-          // Ruby: \\?(?:\[([^\]]+)\])?\^(\S+?)\^
-          '\\\\?(?:$quoteAttributeListRxt)?\\^(\\S+?)\\^',
-          // Ruby: \\?(?:\[([^\]]+)\])?~(\S+?)~
-          '\\\\?(?:$quoteAttributeListRxt)?~(\\S+?)~',
-        ]),
+        equals(
+          <String>[
+            // Ruby: \\?(?:\[([^\]]+)\])?\*\*(.+?)\*\*
+            '\\\\?(?:$quoteAttributeListRxt)?\\*\\*($ccAll+?)\\*\\*',
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\\])?\*(\S|\S.*?\S)\*(?!\p{Word})
+            '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?\\*(\\S|\\S$ccAll*?\\S)\\*(?!$cgWord)',
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?"`(\S|\S.*?\S)`"(?!\p{Word})
+            '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?"`(\\S|\\S$ccAll*?\\S)`"(?!$cgWord)',
+            // Ruby: (^|[^\p{Word};:`}])(?:\[...\])?'`(\S|\S.*?\S)`'(?!\p{Word})
+            "(^|[^$ccWord;:`}])(?:$quoteAttributeListRxt)?'`(\\S|\\S$ccAll*?\\S)`'(?!$cgWord)",
+            // Ruby: \\?(?:\[([^\]]+)\])?``(.+?)``
+            '\\\\?(?:$quoteAttributeListRxt)?``($ccAll+?)``',
+            // Ruby: (^|[^\p{Word};:"'`}])(?:\[...\])?`(\S|\S.*?\S)`(?![\p{Word}"'`])
+            "(^|[^$ccWord;:\"'`}])(?:$quoteAttributeListRxt)?`(\\S|\\S$ccAll*?\\S)`(?![$ccWord\"'`])",
+            // Ruby: \\?(?:\[([^\]]+)\])?__(.+?)__
+            '\\\\?(?:$quoteAttributeListRxt)?__($ccAll+?)__',
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?_(\S|\S.*?\S)_(?!\p{Word})
+            '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?_(\\S|\\S$ccAll*?\\S)_(?!$cgWord)',
+            // Ruby: \\?(?:\[([^\]]+)\])?##(.+?)##
+            '\\\\?(?:$quoteAttributeListRxt)?##($ccAll+?)##',
+            // Ruby: (^|[^\p{Word}&;:}])(?:\[...\])?#(\S|\S.*?\S)#(?!\p{Word})
+            '(^|[^$ccWord&;:}])(?:$quoteAttributeListRxt)?#(\\S|\\S$ccAll*?\\S)#(?!$cgWord)',
+            // Ruby: \\?(?:\[([^\]]+)\])?\^(\S+?)\^
+            '\\\\?(?:$quoteAttributeListRxt)?\\^(\\S+?)\\^',
+            // Ruby: \\?(?:\[([^\]]+)\])?~(\S+?)~
+            '\\\\?(?:$quoteAttributeListRxt)?~(\\S+?)~',
+          ].map(asciiSpace),
+        ),
       );
     });
 
@@ -662,18 +673,20 @@ void main() {
       );
       expect(
         patterns.sublist(2, 7),
-        equals(<String>[
-          // Ruby: (^|[^\p{Word};:}])(?:\[...\])?``(\S|\S.*?\S)''(?!\p{Word})
-          "(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?``(\\S|\\S$ccAll*?\\S)''(?!$cgWord)",
-          // Ruby: (^|[^\p{Word};:}])(?:\[...\])?'(\S|\S.*?\S)'(?!\p{Word})
-          "(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?'(\\S|\\S$ccAll*?\\S)'(?!$cgWord)",
-          // Ruby: (^|[^\p{Word};:}])(?:\[...\])?`(\S|\S.*?\S)'(?!\p{Word})
-          "(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?`(\\S|\\S$ccAll*?\\S)'(?!$cgWord)",
-          // Ruby: \\?(?:\[([^\]]+)\])?\+\+(.+?)\+\+
-          '\\\\?(?:$quoteAttributeListRxt)?\\+\\+($ccAll+?)\\+\\+',
-          // Ruby: (^|[^\p{Word};:}])(?:\[...\])?\+(\S|\S.*?\S)\+(?!\p{Word})
-          '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?\\+(\\S|\\S$ccAll*?\\S)\\+(?!$cgWord)',
-        ]),
+        equals(
+          <String>[
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?``(\S|\S.*?\S)''(?!\p{Word})
+            "(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?``(\\S|\\S$ccAll*?\\S)''(?!$cgWord)",
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?'(\S|\S.*?\S)'(?!\p{Word})
+            "(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?'(\\S|\\S$ccAll*?\\S)'(?!$cgWord)",
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?`(\S|\S.*?\S)'(?!\p{Word})
+            "(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?`(\\S|\\S$ccAll*?\\S)'(?!$cgWord)",
+            // Ruby: \\?(?:\[([^\]]+)\])?\+\+(.+?)\+\+
+            '\\\\?(?:$quoteAttributeListRxt)?\\+\\+($ccAll+?)\\+\\+',
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?\+(\S|\S.*?\S)\+(?!\p{Word})
+            '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?\\+(\\S|\\S$ccAll*?\\S)\\+(?!$cgWord)',
+          ].map(asciiSpace),
+        ),
       );
     });
 
@@ -687,13 +700,17 @@ void main() {
       expect(
         quoteSubs[false]![1].pattern.pattern,
         equals(
-          r'(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\]]+)\])?\*(\S|\S[\s\S]*?\S)\*(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))',
+          asciiSpace(
+            r'(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\]]+)\])?\*(\S|\S[\s\S]*?\S)\*(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))',
+          ),
         ),
       );
       expect(
         quoteSubs[true]![3].pattern.pattern,
         equals(
-          r"(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\]]+)\])?'(\S|\S[\s\S]*?\S)'(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))",
+          asciiSpace(
+            r"(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\]]+)\])?'(\S|\S[\s\S]*?\S)'(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))",
+          ),
         ),
       );
     });

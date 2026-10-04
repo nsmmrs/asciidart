@@ -542,7 +542,7 @@ class Cell extends AbstractBlock {
       } else {
         normalPsv = true;
         // NOTE AsciidoctorJ uses a null cell_text to create an empty cell.
-        cellContent = cellContent != null ? cellContent.trim() : '';
+        cellContent = cellContent != null ? cellContent.trimAscii() : '';
       }
     } else {
       colspan = null;
@@ -909,7 +909,9 @@ class TableParserContext {
   ///
   /// Port of `Asciidoctor::Table::ParserContext#buffer_has_unclosed_quotes?`.
   bool bufferHasUnclosedQuotes([String? append, String q = '"']) {
-    final record = append != null ? (buffer + append).trim() : buffer.trim();
+    final record = append != null
+        ? (buffer + append).trimAscii()
+        : buffer.trimAscii();
     if (record == q) return true;
     if (record.startsWith(q)) {
       final qq = q + q;
@@ -984,7 +986,7 @@ class TableParserContext {
         repeat = 1;
       }
     } else {
-      var text = buffer.trim();
+      var text = buffer.trimAscii();
       buffer = '';
       cellspec = null;
       repeat = 1;
@@ -994,7 +996,10 @@ class TableParserContext {
           // Unquote.
           if (text.length > 1) {
             // Trim whitespace and collapse escaped quotes.
-            text = collapseRuns(text.substring(1, text.length - 1).trim(), '"');
+            text = collapseRuns(
+              text.substring(1, text.length - 1).trimAscii(),
+              '"',
+            );
           } else {
             logger.error(
               'unclosed quote in CSV data; setting cell to empty',

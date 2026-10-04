@@ -44,6 +44,7 @@ import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/highlight/highlight.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/text_case.dart';
 import 'package:meta/meta.dart';
 
 /// Matches XML special characters. Port of `SpecialCharsRx`.
@@ -587,12 +588,12 @@ String subAttributes(
         default: // 'counter'
           return _counterWithArgs(doc, args);
       }
-    } else if (docAttrs.containsKey(match.group(2)!.toLowerCase())) {
-      return docAttrs[match.group(2)!.toLowerCase()]!;
-    } else if (intrinsicAttributes.containsKey(match.group(2)!.toLowerCase())) {
-      return intrinsicAttributes[match.group(2)!.toLowerCase()]!;
+    } else if (docAttrs.containsKey(downcase(match.group(2)!))) {
+      return docAttrs[downcase(match.group(2)!)]!;
+    } else if (intrinsicAttributes.containsKey(downcase(match.group(2)!))) {
+      return intrinsicAttributes[downcase(match.group(2)!)]!;
     } else {
-      final key = match.group(2)!.toLowerCase();
+      final key = downcase(match.group(2)!);
       switch (resolveMissing()) {
         case 'drop':
           drop = true;
@@ -681,7 +682,7 @@ String _counterWithArgs(Document doc, List<String> args) {
     attrValue = null;
   }
 
-  attrName = attrName.replaceAll(invalidAttributeNameCharsRx, '').toLowerCase();
+  attrName = downcase(attrName.replaceAll(invalidAttributeNameCharsRx, ''));
   if (attrName == 'numbered') {
     attrName = 'sectnums';
   } else if (attrName == 'hardbreaks') {
@@ -871,7 +872,7 @@ String subMacros(AbstractNode node, String text) {
         if (match.group(1) != null) {
           return match.group(0)!.substring(1);
         } else if (match.group(2) == 'kbd') {
-          var keys = match.group(3)!.trim();
+          var keys = match.group(3)!.trimAscii();
           if (keys.contains(rSb)) {
             keys = keys.replaceAll(escRSb, rSb);
           }
@@ -895,11 +896,14 @@ String subMacros(AbstractNode node, String text) {
                 keyList = keys
                     .substring(0, keys.length - 1)
                     .split(delim)
-                    .map((key) => key.trim())
+                    .map((key) => key.trimAscii())
                     .toList();
                 keyList[keyList.length - 1] += delim;
               } else {
-                keyList = keys.split(delim).map((key) => key.trim()).toList();
+                keyList = keys
+                    .split(delim)
+                    .map((key) => key.trimAscii())
+                    .toList();
               }
             } else {
               keyList = [keys];
@@ -951,7 +955,7 @@ String subMacros(AbstractNode node, String text) {
             final parts = splitDropTrailingEmpty(
               items,
               delim,
-            ).map((item) => item.trim()).toList();
+            ).map((item) => item.trimAscii()).toList();
             menuitem = parts.removeLast();
             submenus = parts;
           } else {
@@ -982,7 +986,7 @@ String subMacros(AbstractNode node, String text) {
         final parts = splitDropTrailingEmpty(
           match.group(1)!,
           '&gt;',
-        ).map((item) => item.trim()).toList();
+        ).map((item) => item.trimAscii()).toList();
         final menu = parts.removeAt(0);
         final menuitem = parts.removeLast();
         return Inline(
@@ -1745,8 +1749,7 @@ String _convertXrefMacro(
     // do reverse lookup on fragment if not a known ID and resembles
     // reftext (contains a space or uppercase char)
   } else {
-    final resolved =
-        (fragment!.contains(' ') || fragment.toLowerCase() != fragment)
+    final resolved = (fragment!.contains(' ') || downcase(fragment) != fragment)
         ? doc.resolveId(fragment)
         : null;
     if (resolved != null) {
@@ -2732,7 +2735,7 @@ Map<String, String> parseQuotedTextAttributes(AbstractNode node, String str) {
   // for compliance, only consider first positional attribute (very
   // unlikely)
   if (text.contains(',')) text = text.substring(0, text.indexOf(','));
-  text = text.trim();
+  text = text.trimAscii();
   if (text.isEmpty) {
     return <String, String>{};
   } else if ((text.startsWith('.') || text.startsWith('#')) &&
@@ -2743,7 +2746,7 @@ Map<String, String> parseQuotedTextAttributes(AbstractNode node, String str) {
     final attrs = <String, String>{};
     if (after.isEmpty) {
       if (before.length > 1) {
-        attrs['role'] = before.replaceAll('.', ' ').trimLeft();
+        attrs['role'] = trimLeftAscii(before.replaceAll('.', ' '));
       }
     } else {
       final dotIdx = after.indexOf('.');
@@ -2752,10 +2755,10 @@ Map<String, String> parseQuotedTextAttributes(AbstractNode node, String str) {
       if (id.isNotEmpty) attrs['id'] = id;
       if (roles.isEmpty) {
         if (before.length > 1) {
-          attrs['role'] = before.replaceAll('.', ' ').trimLeft();
+          attrs['role'] = trimLeftAscii(before.replaceAll('.', ' '));
         }
       } else if (before.length > 1) {
-        attrs['role'] = '$before.$roles'.replaceAll('.', ' ').trimLeft();
+        attrs['role'] = trimLeftAscii('$before.$roles'.replaceAll('.', ' '));
       } else {
         attrs['role'] = roles.replaceAll('.', ' ');
       }
@@ -2781,7 +2784,7 @@ String normalizeText(
   var result = text;
   if (result.isNotEmpty) {
     if (normalizeWhitespace) {
-      result = result.trim().replaceAll(lf, ' ');
+      result = result.trimAscii().replaceAll(lf, ' ');
     }
     if (unescapeClosingSquareBrackets && result.contains(rSb)) {
       result = result.replaceAll(escRSb, rSb);
@@ -2805,7 +2808,7 @@ List<String> splitSimpleCsv(String str) {
         if (quoteOpen) {
           accum.write(c);
         } else {
-          values.add(accum.toString().trim());
+          values.add(accum.toString().trimAscii());
           accum = StringBuffer();
         }
       } else if (c == '"') {
@@ -2814,9 +2817,12 @@ List<String> splitSimpleCsv(String str) {
         accum.write(c);
       }
     }
-    values.add(accum.toString().trim());
+    values.add(accum.toString().trimAscii());
     return values;
   } else {
-    return splitDropTrailingEmpty(str, ',').map((item) => item.trim()).toList();
+    return splitDropTrailingEmpty(
+      str,
+      ',',
+    ).map((item) => item.trimAscii()).toList();
   }
 }
