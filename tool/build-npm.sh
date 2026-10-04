@@ -38,5 +38,9 @@ cp -R "$root/npm/." "$out/"
 rm "$out/preamble.js"
 cat "$root/npm/preamble.js" "$tmp/core.js" > "$out/asciidoctor-dart.js"
 cp "$root/LICENSE" "$out/LICENSE"
+# CommonJS copies of the type declarations, for require().
+for decl in "$out"/types/*.d.ts; do
+  sed "s#'\./\([a-z]*\)\.js'#'./\1.cjs'#g" "$decl" > "${decl%.d.ts}.d.cts"
+done
 chmod +x "$out/bin/asciidoctor-dart.js"
 echo "build-npm: built asciidoctor-dart $version in $out"

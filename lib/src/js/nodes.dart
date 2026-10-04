@@ -22,8 +22,10 @@ import 'package:asciidoctor/src/block.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/js/convert.dart';
+import 'package:asciidoctor/src/js/extensions.dart' show wrapRegistry;
 import 'package:asciidoctor/src/list.dart';
 import 'package:asciidoctor/src/section.dart';
+import 'package:asciidoctor/src/substitutors.dart' as subs_lib;
 import 'package:asciidoctor/src/table.dart';
 
 final Expando<JSObject> _wrappers = Expando<JSObject>('NodeBridge');
@@ -50,7 +52,7 @@ AbstractNode? unwrapNode(JSAny? value) {
 }
 
 JSArray<JSObject> _nodes(Iterable<AbstractNode> nodes) =>
-    [for (final node in nodes) wrapNode(node)!].toJS;
+    [for (final node in nodes) wrapNode(node)!].toJSArray;
 
 /// The JavaScript view of one node.
 @JSExport()
@@ -132,6 +134,58 @@ final class NodeBridge {
   bool addRole(String name) => node.addRole(name);
 
   bool removeRole(String name) => node.removeRole(name);
+
+  /// Applies [subs] to [text] (a string or an array of lines): the normal
+  /// substitutions when [subs] is `undefined`, none when it is `null`, or
+  /// the names in an array or a comma-separated spec.
+  JSAny applySubs(JSAny? text, JSAny? subs, bool normal) {
+    final names = normal ? subs_lib.normalSubs : _subsOf(subs);
+    if (text != null && isArray(text)) {
+      return jsStrings(
+        subs_lib.applySubsToLines(node, stringList(text), names),
+      );
+    }
+    return subs_lib.applySubs(node, stringOrNull(text) ?? '', names).toJS;
+  }
+
+  List<String>? _subsOf(JSAny? subs) {
+    if (subs == null) return null;
+    if (isArray(subs)) return stringList(subs);
+    return subs_lib.expandSubs(node, stringOrNull(subs) ?? '');
+  }
+
+  /// Applies the one substitution [name] to [text].
+  String substitute(String name, String text) => switch (name) {
+    'specialcharacters' => subs_lib.subSpecialchars(text),
+    'quotes' => subs_lib.subQuotes(node, text),
+    'attributes' => subs_lib.subAttributes(node, text),
+    'replacements' => subs_lib.subReplacements(text),
+    'macros' => subs_lib.subMacros(node, text),
+    'post_replacements' => subs_lib.subPostReplacements(node, text),
+    'callouts' => subs_lib.subCallouts(node, text),
+    'header' => subs_lib.applyHeaderSubs(node, text),
+    'title' => subs_lib.applyTitleSubs(node, text),
+    'reftext' => subs_lib.applyReftextSubs(node, text),
+    _ => throw ArgumentError.value(name, 'name', 'unknown substitution'),
+  };
+
+  /// Resolves the substitution spec [subs] for [type] (`block` or
+  /// `inline`), or `null` when it names none.
+  JSArray<JSString>? resolveSubs(
+    String? subs,
+    String type,
+    JSAny? defaults,
+    String? subject,
+  ) => switch (subs_lib.resolveSubs(
+    node,
+    subs,
+    type,
+    defaults == null ? null : stringList(defaults),
+    subject,
+  )) {
+    final names? => jsStrings(names),
+    null => null,
+  };
 
   String? getReftext() => node.reftext;
 
@@ -255,7 +309,7 @@ final class NodeBridge {
     JSFunction? filter,
   ) {
     final block = _block;
-    if (block == null) return <JSObject>[].toJS;
+    if (block == null) return <JSObject>[].toJSArray;
     return _nodes(
       block.findBy(
         context: context,
@@ -387,12 +441,12 @@ final class NodeBridge {
       if (list.context == 'dlist') {
         return [
           for (final entry in list.entries)
-            [_nodes(entry.terms), wrapNode(entry.description)].toJS,
-        ].toJS;
+            [_nodes(entry.terms), wrapNode(entry.description)].toJSArray,
+        ].toJSArray;
       }
       return _nodes(list.items);
     }
-    return <JSAny>[].toJS;
+    return <JSAny>[].toJSArray;
   }
 
   bool hasItems() => switch (node) {
@@ -404,6 +458,32 @@ final class NodeBridge {
     final ListItem item => item.hasText,
     _ => false,
   };
+
+  bool isOutline() => switch (node) {
+    final ListBlock list => list.isOutline,
+    _ => false,
+  };
+
+  bool isSimple() => switch (node) {
+    final ListItem item => item.isSimple,
+    _ => false,
+  };
+
+  bool isCompound() => switch (node) {
+    final ListItem item => item.isCompound,
+    _ => false,
+  };
+
+  JSObject? getExtensions() => switch (node) {
+    final Document doc when doc.extensions != null => wrapRegistry(
+      doc.extensions!,
+    ),
+    _ => null,
+  };
+
+  void commitSubs() {
+    if (node is AbstractBlock) node.commitSubs();
+  }
 
   String? getMarker() => switch (node) {
     final ListItem item => item.marker,
@@ -417,7 +497,7 @@ final class NodeBridge {
   // Table
 
   JSArray<JSArray<JSObject>> _rows(List<List<Cell>> rows) =>
-      [for (final row in rows) _nodes(row)].toJS;
+      [for (final row in rows) _nodes(row)].toJSArray;
 
   JSObject getRows() {
     final object = JSObject();
@@ -432,7 +512,7 @@ final class NodeBridge {
 
   JSArray<JSObject> getColumns() => switch (node) {
     final Table table => _nodes(table.columns),
-    _ => <JSObject>[].toJS,
+    _ => <JSObject>[].toJSArray,
   };
 
   JSObject? getColumn() => switch (node) {
@@ -491,7 +571,7 @@ final class NodeBridge {
         ..setProperty('lastname'.toJS, author.lastname?.toJS)
         ..setProperty('initials'.toJS, author.initials?.toJS)
         ..setProperty('email'.toJS, author.email?.toJS)),
-  ].toJS;
+  ].toJSArray;
 
   JSObject? getHeader() => wrapNode(_doc?.header);
 
@@ -525,14 +605,14 @@ final class NodeBridge {
         ..setProperty('index'.toJS, footnote.index.toJS)
         ..setProperty('id'.toJS, footnote.id?.toJS)
         ..setProperty('text'.toJS, footnote.text.toJS)),
-  ].toJS;
+  ].toJSArray;
 
   JSArray<JSObject> getImages() => [
     for (final image in _doc?.catalog.images ?? const <ImageReference>[])
       (JSObject()
         ..setProperty('target'.toJS, image.target.toJS)
         ..setProperty('imagesdir'.toJS, image.imagesdir?.toJS)),
-  ].toJS;
+  ].toJSArray;
 
   JSArray<JSString> getLinks() => jsStrings(_doc?.catalog.links ?? const []);
 

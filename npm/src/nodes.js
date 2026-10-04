@@ -2,6 +2,8 @@
 // the Dart nodes (`lib/src/js/nodes.dart`), with the Asciidoctor.js method
 // and property names.
 
+import { bridge } from './bridge.js'
+import { Registry } from './extensions.js'
 import { getContextLogger, LoggerManager } from './logging.js'
 
 // One facade object per Dart node.
@@ -30,6 +32,73 @@ export function wrap(view) {
 export function unwrap(node) {
   return node?.$bridge ?? node ?? null
 }
+
+// The depth of calls from the core into JavaScript (converters and
+// extensions), which run synchronously.
+let coreCallbacks = 0
+
+/**
+ * Returns `fn` marked as called by the core: while it runs, the node methods
+ * that return promises return their values directly.
+ * @internal
+ */
+export function fromCore(fn) {
+  return function (...args) {
+    coreCallbacks++
+    try {
+      return fn.apply(this, args)
+    } catch (error) {
+      throw carrier(error)
+    } finally {
+      coreCallbacks--
+    }
+  }
+}
+
+// The property of the error that carries one thrown by JavaScript code
+// through the core: dart2js turns some errors (TypeError, RangeError) into
+// its own when the core catches them, but leaves a plain Error alone.
+const CARRIED = Symbol.for('asciidoctor-dart.carried')
+
+function carrier(error) {
+  if (error?.[CARRIED] !== undefined) return error
+  const message = error instanceof Error ? error.message : String(error)
+  return Object.assign(new Error(message), { [CARRIED]: error })
+}
+
+/**
+ * The error thrown by JavaScript code that `error` carries through the
+ * core, else `error` itself.
+ * @internal
+ */
+export function uncarry(error) {
+  return error?.[CARRIED] ?? error
+}
+
+/**
+ * The result of `body`: a promise, except during a call from the core,
+ * which cannot wait for one.
+ */
+function settle(body) {
+  if (coreCallbacks > 0) return body()
+  try {
+    return Promise.resolve(body())
+  } catch (error) {
+    return Promise.reject(uncarry(error))
+  }
+}
+
+/**
+ * Stores the core's view of a facade object. The property is hidden from
+ * enumeration, so that util.inspect and deep equality do not walk the
+ * compiled core's heap behind it.
+ * @internal
+ */
+export function hold(target, view) {
+  Object.defineProperty(target, '$bridge', { value: view })
+}
+
+const inspect = Symbol.for('nodejs.util.inspect.custom')
 
 const wrapAll = (views) => Array.from(views ?? [], wrap)
 const orUndefined = (value) => (value === null ? undefined : value)
@@ -237,8 +306,12 @@ export class ImageReference {
 /** The base class of all nodes. */
 export class AbstractNode {
   constructor(view) {
-    /** @internal */
-    this.$bridge = view
+    hold(this, view)
+  }
+
+  [inspect]() {
+    const id = this.$bridge.getId()
+    return `${this.constructor.name} <${this.context}${id ? `#${id}` : ''}>`
   }
 
   get context() {
@@ -271,6 +344,10 @@ export class AbstractNode {
 
   get role() {
     return orUndefined(this.$bridge.getRole())
+  }
+
+  set role(value) {
+    this.setRole(value)
   }
 
   get roles() {
@@ -402,6 +479,84 @@ export class AbstractNode {
     return this.$bridge.removeRole(String(name))
   }
 
+  /**
+   * Applies `subs` to `text` (a string or an array of lines): the normal
+   * substitutions by default, none for `null`, or the names in an array or
+   * a comma-separated spec.
+   */
+  applySubs(text, subs = undefined) {
+    const source = Array.isArray(text) ? text.map(String) : String(text ?? '')
+    const names = Array.isArray(subs) ? subs.map(String) : subs == null ? null : String(subs)
+    return this.$bridge.applySubs(source, names, subs === undefined)
+  }
+
+  applyNormalSubs(text) {
+    return this.applySubs(text)
+  }
+
+  applyHeaderSubs(text) {
+    return this.$bridge.substitute('header', String(text))
+  }
+
+  applyTitleSubs(text) {
+    return this.$bridge.substitute('title', String(text))
+  }
+
+  applyReftextSubs(text) {
+    return this.$bridge.substitute('reftext', String(text))
+  }
+
+  subSpecialchars(text) {
+    return this.$bridge.substitute('specialcharacters', String(text))
+  }
+
+  subSpecialcharacters(text) {
+    return this.subSpecialchars(text)
+  }
+
+  subQuotes(text) {
+    return this.$bridge.substitute('quotes', String(text))
+  }
+
+  subAttributes(text) {
+    return this.$bridge.substitute('attributes', String(text))
+  }
+
+  subReplacements(text) {
+    return this.$bridge.substitute('replacements', String(text))
+  }
+
+  subMacros(text) {
+    return this.$bridge.substitute('macros', String(text))
+  }
+
+  subPostReplacements(text) {
+    return this.$bridge.substitute('post_replacements', String(text))
+  }
+
+  subCallouts(text) {
+    return this.$bridge.substitute('callouts', String(text))
+  }
+
+  /** The substitutions the spec `subs` resolves to for `type`, or undefined. */
+  resolveSubs(subs, type = 'block', defaults = null, subject = null) {
+    const names = this.$bridge.resolveSubs(str(subs), String(type), defaults, str(subject))
+    return names == null ? undefined : Array.from(names)
+  }
+
+  resolveBlockSubs(subs, defaults = null, subject = null) {
+    return this.resolveSubs(subs, 'block', defaults, subject)
+  }
+
+  resolvePassSubs(subs) {
+    return this.resolveSubs(subs, 'inline', null, 'passthrough macro')
+  }
+
+  expandSubs(subs, subject = null) {
+    if (Array.isArray(subs)) return subs.map(String)
+    return subs === 'none' ? undefined : this.resolveSubs(subs, 'inline', null, subject)
+  }
+
   getReftext() {
     return orUndefined(this.reftext)
   }
@@ -414,18 +569,20 @@ export class AbstractNode {
     return this.hasReftext()
   }
 
-  async precomputeReftext() {}
+  precomputeReftext() {
+    return settle(() => undefined)
+  }
 
-  async iconUri(name) {
-    return this.$bridge.getIconUri(String(name))
+  iconUri(name) {
+    return settle(() => this.$bridge.getIconUri(String(name)))
   }
 
   getIconUri(name) {
     return this.iconUri(name)
   }
 
-  async imageUri(targetImage, assetDirKey = 'imagesdir') {
-    return this.$bridge.getImageUri(String(targetImage), assetDirKey)
+  imageUri(targetImage, assetDirKey = 'imagesdir') {
+    return settle(() => this.$bridge.getImageUri(String(targetImage), assetDirKey))
   }
 
   getImageUri(targetImage, assetDirKey = 'imagesdir') {
@@ -448,8 +605,8 @@ export class AbstractNode {
     return this.$bridge.normalizeSystemPath(String(target), str(start), str(jail))
   }
 
-  async readAsset(path, opts = {}) {
-    return this.$bridge.readAsset(String(path), Boolean(opts.warn_on_failure)) ?? null
+  readAsset(path, opts = {}) {
+    return settle(() => this.$bridge.readAsset(String(path), Boolean(opts.warn_on_failure)) ?? null)
   }
 
   isUri(value) {
@@ -545,26 +702,32 @@ export class AbstractBlock extends AbstractNode {
     return Array.from(this.$bridge.getSubstitutions())
   }
 
-  async precomputeTitle() {}
+  precomputeTitle() {
+    return settle(() => undefined)
+  }
+
+  commitSubs() {
+    this.$bridge.commitSubs()
+  }
 
   hasTitle() {
     return this.$bridge.hasTitle()
   }
 
-  async convert() {
-    return this.$bridge.convert() ?? ''
+  convert() {
+    return settle(() => this.$bridge.convert() ?? '')
   }
 
-  async render() {
-    return this.convert()
+  render() {
+    return settle(() => this.convert())
   }
 
-  async content() {
-    return this.$bridge.getContent()
+  content() {
+    return settle(() => this.$bridge.getContent())
   }
 
-  async getContent() {
-    return this.content()
+  getContent() {
+    return settle(() => this.content())
   }
 
   append(block) {
@@ -604,8 +767,8 @@ export class AbstractBlock extends AbstractNode {
     this.$bridge.removeSubstitution(String(name))
   }
 
-  async xreftext(xrefstyle = null) {
-    return this.$bridge.getXrefText(str(xrefstyle))
+  xreftext(xrefstyle = null) {
+    return settle(() => this.$bridge.getXrefText(str(xrefstyle)))
   }
 
   assignCaption(value = null, captionContext = undefined) {
@@ -736,6 +899,23 @@ export class AbstractBlock extends AbstractNode {
 
 /** A block: a paragraph, listing, image, admonition, and so on. */
 export class Block extends AbstractBlock {
+  /**
+   * Creates a block: `opts.source` (a string or lines), `opts.attributes`
+   * and `opts.content_model`.
+   */
+  static create(parent, context, opts = {}) {
+    const source = opts.source ?? opts.lines ?? null
+    return wrap(
+      bridge().factories.createBlock(
+        unwrap(parent),
+        String(context),
+        Array.isArray(source) ? source.map(String) : source,
+        opts.attributes ?? {},
+        opts.content_model ?? null
+      )
+    )
+  }
+
   get blockname() {
     return this.context
   }
@@ -846,20 +1026,20 @@ export class Inline extends AbstractNode {
     return this.$bridge.getTarget()
   }
 
-  async convert() {
-    return this.$bridge.convert() ?? ''
+  convert() {
+    return settle(() => this.$bridge.convert() ?? '')
   }
 
-  async render() {
-    return this.convert()
+  render() {
+    return settle(() => this.convert())
   }
 
   alt() {
     return this.$bridge.getAlt() ?? ''
   }
 
-  async xreftext(xrefstyle = null) {
-    return this.$bridge.getXrefText(str(xrefstyle))
+  xreftext(xrefstyle = null) {
+    return settle(() => this.$bridge.getXrefText(str(xrefstyle)))
   }
 
   getText() {
@@ -902,6 +1082,19 @@ export class List extends AbstractBlock {
   getItems() {
     return this.items
   }
+
+  outline() {
+    return this.$bridge.isOutline()
+  }
+
+  isOutline() {
+    return this.outline()
+  }
+
+  /** The items, as in Asciidoctor (a list has no converted content). */
+  content() {
+    return settle(() => this.items)
+  }
 }
 
 /** An item of a list. */
@@ -924,6 +1117,22 @@ export class ListItem extends AbstractBlock {
 
   get list() {
     return this.parent
+  }
+
+  simple() {
+    return this.$bridge.isSimple()
+  }
+
+  isSimple() {
+    return this.simple()
+  }
+
+  compound() {
+    return this.$bridge.isCompound()
+  }
+
+  isCompound() {
+    return this.compound()
   }
 
   hasText() {
@@ -1134,9 +1343,11 @@ export class Document extends AbstractBlock {
     return this.$bridge.isParsed()
   }
 
-  async parse() {
-    this.$bridge.parse()
-    return this
+  parse() {
+    return settle(() => {
+      this.$bridge.parse()
+      return this
+    })
   }
 
   counter(name, seed = null) {
@@ -1226,17 +1437,19 @@ export class Document extends AbstractBlock {
   }
 
   /** Converts the document; `standalone` (or `header_footer`) overrides the load option. */
-  async convert(opts = {}) {
-    const standalone = opts.standalone ?? opts.header_footer
-    return this.$bridge.convertDocument(standalone ?? null)
+  convert(opts = {}) {
+    return settle(() => {
+      const standalone = opts.standalone ?? opts.header_footer
+      return this.$bridge.convertDocument(standalone ?? null)
+    })
   }
 
-  async render(opts = {}) {
-    return this.convert(opts)
+  render(opts = {}) {
+    return settle(() => this.convert(opts))
   }
 
-  async docinfo(location = 'head', suffix = null) {
-    return this.$bridge.getDocinfo(location, suffix)
+  docinfo(location = 'head', suffix = null) {
+    return settle(() => this.$bridge.getDocinfo(location, suffix))
   }
 
   getDocinfo(location = 'head', suffix = null) {
@@ -1256,6 +1469,16 @@ export class Document extends AbstractBlock {
     )
     if (title == null) return undefined
     return opts.partition ? new DocumentTitle(title) : title
+  }
+
+  doctitle(opts = {}) {
+    return this.getDoctitle(opts)
+  }
+
+  /** The extension registry of this document, if it uses extensions. */
+  getExtensions() {
+    const view = this.$bridge.getExtensions()
+    return view == null ? undefined : Registry.wrap(view)
   }
 
   getDocumentTitle(opts = {}) {

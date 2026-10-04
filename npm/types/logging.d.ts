@@ -1,0 +1,386 @@
+// Adapted from Asciidoctor.js 4.1.0 (packages/core/types/logging.d.ts).
+// Copyright (C) 2014-present Dan Allen, Guillaume Grossetie, Anthonny
+// Quérouil and the Asciidoctor Project. MIT License (see LICENSE).
+
+
+/**
+ * Run fn() within an async-local logger context so that all log calls via
+ * `this.logger` (from applyLogging) automatically route to the provided logger
+ * for the duration of the async execution chain.
+ *
+ * Falls back to global mutation in environments without node:async_hooks (e.g. browsers).
+ *
+ * @param {Logger|MemoryLogger|NullLogger} logger - The logger to activate.
+ * @param {() => any} fn - The function to execute within the logger context.
+ * @returns {Promise<any>}
+ */
+export function withLogger(logger: Logger | MemoryLogger | NullLogger, fn: () => any): Promise<any>;
+/**
+ * Apply the Logging mixin to a class prototype.
+ *
+ * Installs the following on proto:
+ * - `logger` getter — returns `LoggerManager.logger`
+ * - `getLogger()` — method alias for the logger getter
+ * - `messageWithContext(text, context)` — builds an auto-formatting message object
+ * - `createLogMessage(text, context)` — alias for messageWithContext (used in extensions)
+ *
+ * @param {Object} proto - The prototype object (e.g. MyClass.prototype) to augment.
+ */
+export function applyLogging(proto: any): void;
+export namespace Severity {
+    let DEBUG: number;
+    let INFO: number;
+    let WARN: number;
+    let ERROR: number;
+    let FATAL: number;
+    let UNKNOWN: number;
+}
+/**
+ * A logger-compatible object: any of the built-in Logger implementations, or the
+ * global `console` (used as a fallback when no document/logger is available).
+ * @typedef {Logger|MemoryLogger|NullLogger|Console} LoggerLike
+ */
+/** Standard logger that writes formatted messages to stderr or a custom pipe. */
+export class Logger {
+    /**
+     * @param {Object} [opts]
+     * @param {string} [opts.progname]
+     * @param {number} [opts.level]
+     * @param {{call: Function}} [opts.formatter]
+     * @param {{write: (line: string) => void}|((line: string, severity: number) => void)|null} [opts.pipe] -
+     *   Destination for formatted output lines, mirroring Ruby's `Logger.new(logdev)`.
+     *   Accepts anything with a `write(line)` method (e.g. a Node stream), or a plain
+     *   function called as `(line, severity)` — the numeric severity lets a function-style
+     *   pipe route by level (e.g. console.error for ERROR+, console.warn for WARN) without
+     *   overriding add(). Defaults to `process.stderr`/`console.error` when omitted.
+     */
+    constructor(opts?: {
+        progname?: string;
+        level?: number;
+        formatter?: {
+            call: Function;
+        };
+        pipe?: {
+            write: (line: string) => void;
+        } | ((line: string, severity: number) => void) | null;
+    });
+    progname: string;
+    level: number;
+    set formatter(f: {
+        call: Function;
+    });
+    /** getter/setter so custom logger impls can access this.formatter */
+    get formatter(): {
+        call: Function;
+    };
+    /**
+     * @returns {number|null} The highest severity level logged so far.
+     */
+    get maxSeverity(): number | null;
+    getLevel(): number;
+    setLevel(n: any): void;
+    getFormatter(): {
+        call: Function;
+    };
+    setFormatter(f: any): void;
+    getProgramName(): string;
+    setProgramName(n: any): void;
+    getMaxSeverity(): number;
+    /**
+     * @returns {boolean} Whether DEBUG-level messages will be logged.
+     */
+    isDebugEnabled(): boolean;
+    /**
+     * @returns {boolean} Whether INFO-level messages will be logged.
+     */
+    isInfoEnabled(): boolean;
+    /**
+     * @returns {boolean} Whether WARN-level messages will be logged.
+     */
+    isWarnEnabled(): boolean;
+    /**
+     * @returns {boolean} Whether ERROR-level messages will be logged.
+     */
+    isErrorEnabled(): boolean;
+    /**
+     * @returns {boolean} Whether FATAL-level messages will be logged.
+     */
+    isFatalEnabled(): boolean;
+    isDebug(): boolean;
+    isInfo(): boolean;
+    /**
+     * Log a message at the given severity level.
+     * @param {number|string} severity - Severity level (numeric constant or string name).
+     * @param {string|{inspect?(): string}|null} [message=null] - The message to log.
+     * @param {string|Function|null} [progname=null] - Program name or message supplier function.
+     * @returns {boolean}
+     */
+    add(severity: number | string, message?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+    /**
+     * Alias for {@link add} (Ruby Logger API).
+     * @param {number|string} severity
+     * @param {string|{inspect?(): string}|null} [message=null]
+     * @param {string|Function|null} [progname=null]
+     * @returns {boolean}
+     */
+    log(severity: number | string, message?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [progname=null]
+     * @returns {boolean}
+     */
+    debug(msg?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [progname=null]
+     * @returns {boolean}
+     */
+    info(msg?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [progname=null]
+     * @returns {boolean}
+     */
+    warn(msg?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [progname=null]
+     * @returns {boolean}
+     */
+    error(msg?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [progname=null]
+     * @returns {boolean}
+     */
+    fatal(msg?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [progname=null]
+     * @returns {boolean}
+     */
+    unknown(msg?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+}
+export namespace Logger {
+    export { BasicFormatter };
+    export namespace AutoFormattingMessage {
+        /**
+         * Attach auto-formatting to any plain object carrying
+         * { text, source_location, include_location }.
+         *
+         * The location(s) are rendered only by inspect()/toString() (used when a
+         * stderr Logger formats the line); the structured `source_location` /
+         * `include_location` remain on the object so a MemoryLogger can record them
+         * on the resulting LogMessage without duplicating them inside `text`.
+         * @param {{text: string, source_location?: any, include_location?: any}} obj
+         * @returns {typeof obj} The same object with inspect() and toString() added.
+         */
+        function attach(obj: {
+            text: string;
+            source_location?: any;
+            include_location?: any;
+        }): typeof obj;
+    }
+}
+/** Wrapper stored by MemoryLogger; provides getSeverity/getText/getSourceLocation. */
+export class LogMessage {
+    /**
+     * @param {string} severity - Severity label, e.g. 'ERROR'.
+     * @param {string|{text: string, source_location?: import('./index.js').Cursor}|null} message
+     */
+    constructor(severity: string, message: string | {
+        text: string;
+        source_location?: import('./index.js').Cursor;
+    } | null);
+    message: string | {
+        text: string;
+        source_location?: import('./index.js').Cursor;
+    };
+    /** @type {string} */
+    severity: string;
+    /** @type {string} */
+    text: string;
+    /** @type {import('./index.js').Cursor|null} */
+    sourceLocation: import('./index.js').Cursor | null;
+    /**
+     * @returns {string} The severity label, e.g. 'ERROR'.
+     */
+    getSeverity(): string;
+    /**
+     * @returns {string} The message text.
+     */
+    getText(): string;
+    /**
+     * @returns {import('./index.js').Cursor|undefined} The source location, if any.
+     */
+    getSourceLocation(): import('./index.js').Cursor | undefined;
+}
+/** In-memory logger that stores all log messages for later inspection. */
+export class MemoryLogger {
+    static create(): MemoryLogger;
+    level: number;
+    /** @type {LogMessage[]} */
+    messages: LogMessage[];
+    /**
+     * @returns {LogMessage[]} The log messages recorded so far, in order.
+     */
+    getMessages(): LogMessage[];
+    getMaxSeverity(): number;
+    add(severity: any, message?: any, progname?: any): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [pn=null]
+     * @returns {boolean}
+     */
+    debug(msg?: string | {
+        inspect?(): string;
+    } | null, pn?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [pn=null]
+     * @returns {boolean}
+     */
+    info(msg?: string | {
+        inspect?(): string;
+    } | null, pn?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [pn=null]
+     * @returns {boolean}
+     */
+    warn(msg?: string | {
+        inspect?(): string;
+    } | null, pn?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [pn=null]
+     * @returns {boolean}
+     */
+    error(msg?: string | {
+        inspect?(): string;
+    } | null, pn?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [pn=null]
+     * @returns {boolean}
+     */
+    fatal(msg?: string | {
+        inspect?(): string;
+    } | null, pn?: string | Function | null): boolean;
+    /**
+     * @param {string|{inspect?(): string}|null} [msg=null]
+     * @param {string|Function|null} [pn=null]
+     * @returns {boolean}
+     */
+    unknown(msg?: string | {
+        inspect?(): string;
+    } | null, pn?: string | Function | null): boolean;
+    /**
+     * @param {number|string} severity
+     * @param {string|{inspect?(): string}|null} [message=null]
+     * @param {string|Function|null} [progname=null]
+     * @returns {boolean}
+     */
+    log(severity: number | string, message?: string | {
+        inspect?(): string;
+    } | null, progname?: string | Function | null): boolean;
+    isDebug(): boolean;
+    isInfo(): boolean;
+    /**
+     * Write a string at INFO level (trailing newline stripped).
+     * Allows MemoryLogger to be used with Timings.printReport().
+     * @param {string} s
+     * @returns {boolean}
+     */
+    write(s: string): boolean;
+    clear(): void;
+    empty(): boolean;
+}
+/** Logger that discards all messages but still tracks the maximum severity. */
+export class NullLogger extends Logger {
+    static create(): NullLogger;
+    constructor();
+    add(severity: any): boolean;
+    log(severity: any): boolean;
+    debug(): boolean;
+    info(): boolean;
+    warn(): boolean;
+    error(): boolean;
+    fatal(): boolean;
+    unknown(): boolean;
+}
+export namespace LoggerManager {
+    let loggerClass: typeof Logger;
+    let logger: any;
+    function getLogger(): any;
+    function setLogger(newLogger: any): void;
+    /**
+     * Create a new formatter whose call() delegates to the provided impl.
+     * @param {string} _name
+     * @param {{call: Function}} impl
+     * @returns {{call: Function}}
+     */
+    function newFormatter(_name: string, impl: {
+        call: Function;
+    }): {
+        call: Function;
+    };
+    /**
+     * Create a new Logger instance with custom behaviour supplied via impl.
+     * @param {string} _name
+     * @param {{add?: (severity: number, message: any, progname: any) => boolean, postConstruct?: (this: Logger) => void}} impl
+     *   - `add(severity, message, progname)` — overrides the default add method; severity is always numeric.
+     *   - `postConstruct()` — called once after the instance is created (`this` is the logger instance).
+     * @returns {Logger}
+     */
+    function newLogger(_name: string, impl: {
+        add?: (severity: number, message: any, progname: any) => boolean;
+        postConstruct?: (this: Logger) => void;
+    }): Logger;
+}
+/**
+ * Plain object implementing the Logging mixin interface, for use in non-class contexts
+ * (e.g. top-level module functions).
+ */
+export namespace Logging {
+    const logger_1: any;
+    export { logger_1 as logger };
+    export function getLogger(): any;
+    export function messageWithContext(text: any, context?: {}): any;
+    export function createLogMessage(text: any, context?: {}): any;
+}
+/**
+ * A logger-compatible object: any of the built-in Logger implementations, or the
+ * global `console` (used as a fallback when no document/logger is available).
+ */
+export type LoggerLike = Logger | MemoryLogger | NullLogger | Console;
+declare class BasicFormatter {
+    /**
+     * Format a log entry as "progname: SEVERITY: message\n".
+     * @param {number|string} severity
+     * @param {null} _time
+     * @param {string} progname
+     * @param {string|{inspect?(): string}} msg
+     * @returns {string}
+     */
+    call(severity: number | string, _time: null, progname: string, msg: string | {
+        inspect?(): string;
+    }): string;
+}
+export {};

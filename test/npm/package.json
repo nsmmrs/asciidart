@@ -4,13 +4,18 @@
   "type": "module",
   "description": "Tests of the npm package built by tool/build-npm.sh (build/npm).",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "types": "tsc -p types",
+    "lint": "publint ../../build/npm && attw --pack ../../build/npm"
   },
   "dependencies": {
     "asciidoctor-dart": "file:../../build/npm"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
     "esbuild": "0.28.2",
-    "playwright-core": "1.63.0"
+    "playwright-core": "1.63.0",
+    "publint": "0.3.25",
+    "typescript": "7.0.2"
   }
 }

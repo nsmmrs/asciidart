@@ -19,15 +19,23 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
-      "browser": "./browser.js",
-      "import": "./node.js",
-      "require": "./node.cjs"
+      "browser": {
+        "types": "./types/index.d.ts",
+        "default": "./browser.js"
+      },
+      "import": {
+        "types": "./types/index.d.ts",
+        "default": "./node.js"
+      },
+      "require": {
+        "types": "./types/index.d.cts",
+        "default": "./node.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
   "main": "./node.cjs",
-  "types": "./types/index.d.ts",
+  "types": "./types/index.d.cts",
   "bin": {
     "asciidoctor-dart": "bin/asciidoctor-dart.js"
   },

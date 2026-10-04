@@ -53,7 +53,7 @@ List<String> stringList(JSAny? value) {
 
 /// A JavaScript array of the strings in [values].
 JSArray<JSString> jsStrings(Iterable<String> values) =>
-    [for (final value in values) value.toJS].toJS;
+    [for (final value in values) value.toJS].toJSArray;
 
 /// A JavaScript object with the entries of [map].
 JSObject jsStringMap(Map<String, String> map) {
@@ -133,3 +133,33 @@ Map<String, String?> _entries(Iterable<String> entries) => {
           ? entry.substring(entry.indexOf('=') + 1).replaceAll(r'\ ', ' ')
           : '',
 };
+
+/// Reads [object] as a cursor, when it has a `lineno`.
+Cursor? cursorOf(JSAny? object) {
+  if (object == null || !object.isA<JSObject>()) return null;
+  final cursor = object as JSObject;
+  final lineno = intOrNull(prop(cursor, 'lineno'));
+  if (lineno == null) return null;
+  return Cursor(
+    stringOrNull(prop(cursor, 'file')),
+    stringOrNull(prop(cursor, 'dir')),
+    stringOrNull(prop(cursor, 'path')),
+    lineno,
+  );
+}
+
+/// Copies a list into a new JavaScript array.
+///
+/// A Dart list's `toJS` is the list itself, which under dart2js carries the
+/// list's runtime type as a symbol-keyed property; deep comparisons in
+/// JavaScript (`assert.deepStrictEqual`) walk that type graph.
+extension JSArrayCopy<T extends JSAny?> on List<T> {
+  /// A new JavaScript array with this list's elements.
+  JSArray<T> get toJSArray {
+    final array = JSArray<T>.withLength(length);
+    for (var i = 0; i < length; i++) {
+      array[i] = this[i];
+    }
+    return array;
+  }
+}

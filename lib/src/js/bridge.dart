@@ -7,14 +7,20 @@ import 'dart:convert';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
+import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/cli/diagnostics.dart';
 import 'package:asciidoctor/src/cli/run.dart';
-import 'package:asciidoctor/src/cursor.dart';
+import 'package:asciidoctor/src/converter.dart';
+import 'package:asciidoctor/src/docbook5.dart';
 import 'package:asciidoctor/src/errors.dart';
+import 'package:asciidoctor/src/extensions.dart';
+import 'package:asciidoctor/src/html5.dart';
 import 'package:asciidoctor/src/js/convert.dart';
+import 'package:asciidoctor/src/js/extensions.dart' as ext;
 import 'package:asciidoctor/src/js/nodes.dart';
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/manpage.dart';
 import 'package:asciidoctor/src/options.dart';
 import 'package:asciidoctor/src/version.dart';
 
@@ -30,6 +36,15 @@ JSPromise<T> _promise<T extends JSAny?>(Future<T> Function() body) =>
           Future<T>.sync(body).then(
             (value) => resolve.callAsFunction(null, value),
             onError: (Object error, StackTrace stack) {
+              // An error thrown by JavaScript code (a converter or an
+              // extension) reaches the caller unchanged. This library only
+              // compiles with dart2js, which leaves JavaScript errors as
+              // they are.
+              // ignore: invalid_runtime_check_with_js_interop_types
+              if (error is JSObject) {
+                reject.callAsFunction(null, error);
+                return;
+              }
               final jsError = _errorConstructor.callAsConstructor<JSObject>(
                 describe(error).toJS,
               );
@@ -131,6 +146,132 @@ final class ApiBridge {
   void resetLogHandler() {
     LoggerManager.logger = null;
   }
+
+  /// Registers a global extension group running [build] with a registry
+  /// view; returns the group's name.
+  String registerExtensionGroup(String? name, JSFunction build) =>
+      ext.registerExtensionGroup(name, build);
+
+  /// Unregisters the global extension groups named [names], or all of them
+  /// when [names] is `null`.
+  void unregisterExtensions(JSArray<JSString>? names) {
+    if (names == null) {
+      Extensions.unregisterAll();
+    } else {
+      Extensions.unregister([for (final name in names.toDart) name.toDart]);
+    }
+  }
+
+  /// The names of the global extension groups.
+  JSArray<JSString> extensionGroupNames() => jsStrings(Extensions.groups.keys);
+
+  /// A standalone registry view whose group runs [build] (when given).
+  JSObject createRegistry(String? name, JSFunction? build) =>
+      ext.createRegistry(name, build);
+
+  /// The node factories of processors.
+  JSObject get factories => _factories ??= ext.createFactoryBridge();
+  JSObject? _factories;
+
+  /// Registers converters for [backends] made by [create], which is called
+  /// with the backend name and returns a converter object (see
+  /// [JsConverter]).
+  void registerConverter(JSFunction create, JSArray<JSString> backends) {
+    Converter.register(
+      (backend, opts) => JsConverter(
+        backend,
+        create.callAsFunction(null, backend.toJS)! as JSObject,
+      ),
+      [for (final backend in backends.toDart) backend.toDart],
+    );
+  }
+
+  /// Unregisters the converters registered from JavaScript.
+  void unregisterConverters() => Converter.unregisterAll();
+
+  /// Converts the node view [node] with the built-in converter for
+  /// [backend] (`html5`, `docbook5` or `manpage`).
+  String? convertBuiltIn(String backend, JSAny? node, String? transform) {
+    final dart = unwrapNode(node);
+    if (dart == null) {
+      throw const AsciidoctorException('convert expects a node');
+    }
+    return _builtIn(backend).convert(dart, transform);
+  }
+
+  /// Whether the built-in converter for [backend] handles [transform].
+  bool builtInHandles(String backend, String transform) =>
+      _builtIn(backend).handles(transform);
+
+  final Map<String, Converter> _builtIns = {};
+
+  Converter _builtIn(String backend) =>
+      _builtIns[backend] ??= switch (backend) {
+        'html5' => Html5Converter(backend),
+        'docbook5' => Docbook5Converter(backend),
+        'manpage' => ManpageConverter(backend),
+        _ => throw AsciidoctorException('no built-in converter for $backend'),
+      };
+
+  /// The traits of [backend] (on top of [basebackend], when given).
+  JSObject deriveBackendTraits(String backend, String? basebackend) {
+    final traits = BackendTraits.derive(backend, basebackend);
+    return jsStringMap({
+      'basebackend': traits.basebackend,
+      'filetype': traits.filetype,
+      'outfilesuffix': traits.outfilesuffix,
+      'htmlsyntax': ?traits.htmlsyntax,
+    });
+  }
+}
+
+/// A converter written in JavaScript: an object with a
+/// `convert(nodeView, transform)` method, and optionally `handles` and the
+/// backend traits `basebackend`, `filetype`, `outfilesuffix` and
+/// `htmlsyntax`.
+final class JsConverter extends Converter {
+  /// Creates the converter for [backend] calling [delegate].
+  new(super.backend, this.delegate) {
+    final basebackend = stringOrNull(prop(delegate, 'basebackend'));
+    final outfilesuffix = stringOrNull(prop(delegate, 'outfilesuffix'));
+    if (basebackend != null || outfilesuffix != null) {
+      final derived = BackendTraits.derive(backend, basebackend);
+      backendTraits = BackendTraits(
+        basebackend: derived.basebackend,
+        filetype: stringOrNull(prop(delegate, 'filetype')) ?? derived.filetype,
+        outfilesuffix: outfilesuffix ?? derived.outfilesuffix,
+        htmlsyntax:
+            stringOrNull(prop(delegate, 'htmlsyntax')) ?? derived.htmlsyntax,
+      );
+    }
+  }
+
+  /// The JavaScript converter.
+  final JSObject delegate;
+
+  @override
+  String? convert(
+    AbstractNode node, [
+    String? transform,
+    ConvertOptions? opts,
+  ]) {
+    final result = delegate.callMethod<JSAny?>(
+      'convert'.toJS,
+      wrapNode(node),
+      (transform ?? node.nodeName).toJS,
+    );
+    return stringOrNull(result);
+  }
+
+  @override
+  bool handles(String transform) {
+    final handles = prop(delegate, 'handles');
+    if (handles == null || !handles.isA<JSFunction>()) return true;
+    return boolOr(
+      delegate.callMethod<JSAny?>('handles'.toJS, transform.toJS),
+      orElse: false,
+    );
+  }
 }
 
 /// The source text of a facade input.
@@ -179,6 +320,17 @@ final class _Settings {
       ],
       templateEngine: stringOrNull(prop(object, 'template_engine')),
       templateCache: boolOr(prop(object, 'template_cache'), orElse: true),
+      extensionRegistry: ext.unwrapHandle<Registry>(
+        prop(object, 'extension_registry'),
+      ),
+      converter: switch (prop(object, 'converter')) {
+        final JSObject converter? when prop(converter, 'convert') != null =>
+          JsConverter(
+            stringOrNull(prop(object, 'backend')) ?? 'html5',
+            converter,
+          ),
+        _ => null,
+      },
     );
     return _Settings(
       options,
@@ -233,17 +385,3 @@ final class _ForwardingLogger extends LoggerBase {
 
 /// Creates the facade's view of the bridge.
 JSObject createApiBridge() => createJSInteropWrapper<ApiBridge>(ApiBridge());
-
-/// Reads [object] as a cursor, when it has a `lineno`.
-Cursor? cursorOf(JSAny? object) {
-  if (object == null || !object.isA<JSObject>()) return null;
-  final cursor = object as JSObject;
-  final lineno = intOrNull(prop(cursor, 'lineno'));
-  if (lineno == null) return null;
-  return Cursor(
-    stringOrNull(prop(cursor, 'file')),
-    stringOrNull(prop(cursor, 'dir')),
-    stringOrNull(prop(cursor, 'path')),
-    lineno,
-  );
-}
