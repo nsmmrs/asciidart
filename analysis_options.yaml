@@ -1,6 +1,12 @@
-include: package:lints/recommended.yaml
+include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
+  exclude:
+    # Generated files (see tool/embed_data.dart and the CLI help-topics
+    # generator); their style is the generator's business, and their
+    # correctness is covered by round-trip tests, not lints.
+    - lib/src/data.g.dart
+    - lib/src/cli/help_topics.g.dart
   language:
     strict-casts: true
     strict-inference: true
