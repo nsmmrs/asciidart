@@ -29,9 +29,11 @@ library;
 import 'dart:convert' show base64Encode, utf8;
 import 'dart:io' show File, FileSystemException;
 
+import 'package:asciidoctor/asciidoctor.dart' show Inline;
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/callouts.dart';
 import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/inline.dart' show Inline;
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;

@@ -5,7 +5,7 @@
 /// converted output is written to disk.
 library;
 
-import 'dart:io' show File;
+import 'dart:io' show File, IOSink;
 
 /// Mixes the [write] method into a converter implementation.
 ///

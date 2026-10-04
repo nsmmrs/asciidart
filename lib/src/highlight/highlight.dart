@@ -27,6 +27,11 @@
 /// `dart/test/highlight/`).
 library;
 
+import 'package:asciidoctor/asciidoctor.dart'
+    show CodeRayAdapter, PygmentsAdapter, RougeAdapter;
+import 'package:asciidoctor/src/highlight/coderay.dart' show CodeRayAdapter;
+import 'package:asciidoctor/src/highlight/pygments.dart' show PygmentsAdapter;
+import 'package:asciidoctor/src/highlight/rouge.dart' show RougeAdapter;
 import 'package:asciidoctor/src/path_resolver.dart';
 
 /// Selects whether highlighted HTML references stylesheet classes or carries
