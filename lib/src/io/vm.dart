@@ -106,7 +106,11 @@ final class _FileSink implements ClosableSink {
 }
 
 /// The current working directory.
-String get currentDirectory => io.Directory.current.path;
+String get currentDirectory {
+  // Forward slashes on Windows too, as Asciidoctor reports paths there.
+  final path = io.Directory.current.path;
+  return io.Platform.isWindows ? path.replaceAll(r'\', '/') : path;
+}
 
 /// The environment variables of the process.
 Map<String, String> get environment => io.Platform.environment;
