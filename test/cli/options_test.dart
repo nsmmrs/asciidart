@@ -1102,9 +1102,9 @@ void main() {
       expect(
         result.err,
         equals(
-          "asciidoctor: WARNING: extra arguments detected "
+          'asciidoctor: WARNING: extra arguments detected '
           "(unparsed arguments: '-', '-') or incorrect usage of stdin\n"
-          "asciidoctor: WARNING: extra arguments detected "
+          'asciidoctor: WARNING: extra arguments detected '
           "(unparsed arguments: '-', '-') or incorrect usage of stdin\n",
         ),
       );

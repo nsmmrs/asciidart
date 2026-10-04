@@ -15,7 +15,7 @@ void main() {
         adapter.format(content: content, language: 'ruby'),
         '<pre class="highlightjs highlight">'
         '<code class="language-ruby hljs" data-lang="ruby">'
-        "$content</code></pre>",
+        '$content</code></pre>',
       );
     });
 
