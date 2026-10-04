@@ -1,53 +1,47 @@
 /// Port of `test/extensions_test.rb`.
 ///
-/// All tests run: extension integration (activation through the
-/// `extension_registry`/`extensions` options and global groups,
-/// preprocessor/tree/postprocessor/docinfo invocation, custom blocks,
-/// block macros and inline macros) is ported, and converted-output
-/// assertions route through the test-only [assertXpath]/[assertCss]
-/// matchers below.
+/// Extension integration (activation through the `extensionRegistry` and
+/// `extensions` options and global groups, preprocessor, tree processor,
+/// postprocessor and docinfo invocation, custom blocks, block macros and
+/// inline macros) is ported, and converted-output assertions route
+/// through the test-only [assertXpath]/[assertCss] matchers below.
 ///
-/// Several Ruby tests are adapted to the Dart port (manual registry
-/// activation where Ruby leans on global state, factories where Ruby
-/// passes classes, an explicit arity where Ruby blocks tolerate an unused
-/// argument); each adaptation is marked on the test. The Ruby test
-/// covering unregistration with uninitialized extension groups has no Dart
-/// counterpart (Dart statics are always initialized) and is dropped; its
-/// essence (unregistering an unknown group never fails) is covered by the
-/// neighboring test.
+/// Several Ruby tests are adapted to the typed Dart API: processors are
+/// registered as instances or configured through `build` callbacks that
+/// assign `onProcess`, where Ruby passes classes, class names or blocks;
+/// each adaptation is marked on the test. Ruby tests that rely on class
+/// name lookup or on duck-typed registration arguments have no Dart
+/// counterpart and are not ported.
 library;
 
-import 'dart:convert' show Encoding;
-
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/attribute_list.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/extensions.dart';
-import 'package:asciidoctor/src/list.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:asciidoctor/src/load.dart' as api;
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/path_resolver.dart';
-import 'package:asciidoctor/src/reader.dart';
-import 'package:asciidoctor/src/section.dart';
 import 'package:test/test.dart';
+
+import 'support/doc_helpers.dart';
 
 // ---------------------------------------------------------------------------
 // Test doubles.
 // ---------------------------------------------------------------------------
 
-/// Records log messages for assertions.
-class FakeLogger implements NodeLogger {
-  /// Messages by severity.
-  final List<Object?> debugs = <Object?>[];
-  final List<Object?> infos = <Object?>[];
-  final List<Object?> warns = <Object?>[];
-  final List<Object?> errors = <Object?>[];
-  final List<Object?> fatals = <Object?>[];
+/// Records log messages for assertions (port of Ruby's `MemoryLogger`).
+///
+/// Records everything regardless of [level]; the level only drives the
+/// `is*Enabled` predicates consulted by level-gated call sites such as the
+/// parser's debug probes.
+class FakeLogger extends LoggerBase {
+  /// Creates a recording logger at [level].
+  new([super.level = Severity.unknown]);
+
+  /// Messages by severity, in logging order.
+  final List<String> debugs = <String>[];
+  final List<String> infos = <String>[];
+  final List<String> warns = <String>[];
+  final List<String> errors = <String>[];
+  final List<String> fatals = <String>[];
 
   /// All recorded messages.
-  List<Object?> get messages => <Object?>[
+  List<String> get messages => <String>[
     ...debugs,
     ...infos,
     ...warns,
@@ -55,71 +49,27 @@ class FakeLogger implements NodeLogger {
     ...fatals,
   ];
 
-  @override
-  void debug(Object? message) {
-    debugs.add(message);
-  }
-
-  @override
-  void info(Object? message) {
-    infos.add(message);
-  }
-
-  @override
-  void warn(Object? message) {
-    warns.add(message);
-  }
-
-  @override
-  void error(Object? message) {
-    errors.add(message);
-  }
-
-  @override
-  void fatal(Object? message) {
-    fatals.add(message);
-  }
-}
-
-/// A [LoggerBase] forwarding every record into a [FakeLogger].
-///
-/// Mirrors Ruby's `MemoryLogger`: records everything regardless of level
-/// (the level only drives the `is*Enabled` predicates consulted by
-/// level-gated call sites such as the parser's debug probes).
-class ManagerLoggerAdapter extends LoggerBase {
-  /// Creates an adapter recording into [fake].
-  new(this.fake) : super(Severity.unknown);
-
-  /// The backing fake logger.
-  final FakeLogger fake;
-
-  @override
-  Severity? get maxSeverity => _maxSeverity;
   Severity? _maxSeverity;
 
   @override
-  bool add(Severity? severity, [Object? message, Object? progname]) {
-    var text = message;
-    if (text is Object? Function()) text = text();
-    text ??= progname;
-    final resolved = severity ?? Severity.unknown;
-    if (_maxSeverity == null || resolved.value > _maxSeverity!.value) {
-      _maxSeverity = resolved;
-    }
-    switch (resolved) {
+  Severity? get maxSeverity => _maxSeverity;
+
+  @override
+  void add(Severity severity, LogMessage message) {
+    final max = _maxSeverity;
+    if (max == null || severity.value > max.value) _maxSeverity = severity;
+    switch (severity) {
       case Severity.debug:
-        fake.debug(text);
+        debugs.add('$message');
       case Severity.info:
-        fake.info(text);
+        infos.add('$message');
       case Severity.warn:
-        fake.warn(text);
+        warns.add('$message');
       case Severity.error:
-        fake.error(text);
-      case Severity.fatal:
-      case Severity.unknown:
-        fake.fatal(text);
+        errors.add('$message');
+      case Severity.fatal || Severity.unknown:
+        fatals.add('$message');
     }
-    return true;
   }
 
   @override
@@ -127,185 +77,63 @@ class ManagerLoggerAdapter extends LoggerBase {
 }
 
 /// Runs [body] with a memory logger installed (port of
-/// `using_memory_logger`).
-///
-/// Installs the [FakeLogger] for node-level logging and bridges the
-/// global [LoggerManager] logger into it so parser-level records are
-/// captured too. [severity] sets the manager level (default `UNKNOWN`,
-/// recording everything while keeping debug-gated call sites quiet).
+/// `using_memory_logger`); [level] sets the logger level (default
+/// [Severity.unknown], recording everything while keeping debug-gated call
+/// sites quiet).
 void usingMemoryLogger(
   void Function(FakeLogger logger) body, [
-  String? severity,
+  Severity level = Severity.unknown,
 ]) {
-  final saved = AbstractNode.currentLogger;
-  final savedManager = LoggerManager.logger;
-  final logger = FakeLogger();
-  final manager = ManagerLoggerAdapter(logger);
-  if (severity != null) manager.level = severity;
-  AbstractNode.currentLogger = logger;
-  LoggerManager.logger = manager;
+  final saved = LoggerManager.logger;
+  final logger = FakeLogger(level);
+  LoggerManager.logger = logger;
   try {
     body(logger);
   } finally {
-    AbstractNode.currentLogger = saved;
-    LoggerManager.logger = savedManager;
+    LoggerManager.logger = saved;
   }
 }
 
 /// Asserts [logger] recorded [message] at [severity] (port of
 /// `assert_message`).
-void assertMessage(FakeLogger logger, String severity, String message) {
-  final List<Object?> candidates;
-  switch (severity) {
-    case 'DEBUG':
-      candidates = logger.debugs;
-    case 'INFO':
-      candidates = logger.infos;
-    case 'WARN':
-      candidates = logger.warns;
-    case 'ERROR':
-      candidates = logger.errors;
-    case 'FATAL':
-      candidates = logger.fatals;
-    default:
-      throw ArgumentError('Unknown severity: $severity');
-  }
-  expect(
-    candidates.map((candidate) => candidate.toString()),
-    contains(message),
-  );
+void assertMessage(FakeLogger logger, Severity severity, String message) {
+  final candidates = switch (severity) {
+    Severity.debug => logger.debugs,
+    Severity.info => logger.infos,
+    Severity.warn => logger.warns,
+    Severity.error => logger.errors,
+    Severity.fatal || Severity.unknown => logger.fatals,
+  };
+  expect(candidates, contains(message));
 }
 
-/// A [ReaderDocument] delegating to a real [Document], for driving a
-/// [PreprocessorReader] with registry include processors headlessly.
-class FakeReaderDocument implements ReaderDocument {
-  /// Creates a fake backed by [document] with [includeProcessors].
-  new(this.document, [this.includeProcessors]);
-
-  /// The backing document.
-  final Document document;
-
-  @override
-  final List<ReaderIncludeProcessor>? includeProcessors;
-
-  @override
-  Map<String, Object?> get attributes => document.attributes;
-
-  @override
-  Object? attr(String name) => document.attr(name);
-
-  @override
-  bool attrSet(String name) => document.hasAttr(name);
-
-  @override
-  bool get sourcemap => document.sourcemap;
-
-  @override
-  int get safe => document.safe;
-
-  @override
-  String get baseDir => document.baseDir;
-
-  @override
-  PathResolver get pathResolver => document.pathResolver;
-
-  @override
-  Map<String, bool?> get catalogIncludes =>
-      document.catalog['includes']! as Map<String, bool?>;
-
-  @override
-  String normalizeSystemPath(
-    String target,
-    String? start, {
-    String? targetName,
-  }) => document.normalizeSystemPath(
-    target,
-    start: start,
-    targetName: targetName ?? 'path',
-  );
-
-  @override
-  String subAttributes(
-    String text, {
-    String? attributeMissing,
-    String dropLineSeverity = 'info',
-  }) => throw UnimplementedError(
-    'Substitutors wave: FakeReaderDocument.subAttributes is not supported.',
-  );
-
-  @override
-  Map<Object, String?> parseAttributes(
-    String? attrlist, {
-    bool subInput = false,
-  }) => AttributeList(attrlist ?? '').parse();
-
-  @override
-  String? readUri(Uri uri, Encoding encoding) =>
-      document.readUri(uri, encoding);
-}
-
-/// Creates an empty document (port of `empty_document`; never parses).
-Document emptyDocument([Map<String, Object?>? options]) {
-  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
-    ..remove('parse');
-  return Document(<String>[], opts);
-}
-
-/// Creates a document from [src] (port of `document_from_string`).
-///
-/// Defaults to `standalone: true` and `parse: true`, like the Ruby helper.
-Document documentFromString(String src, [Map<String, Object?>? options]) {
-  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
-    ..putIfAbsent('standalone', () => true);
-  final parse = opts.remove('parse') ?? true;
-  if (opts['standalone'] == true) {
-    final attrs =
-        (opts['attributes'] as Map<String, Object?>?) ?? <String, Object?>{};
-    attrs['linkcss'] = '';
-    opts['attributes'] = attrs;
-  }
-  final doc = Document(src, opts);
-  return (parse == true) ? doc.parse() : doc;
-}
-
-/// Converts [src] to a standalone document (port of `convert_string`).
-String convertString(String src, [Map<String, Object?>? options]) {
-  return documentFromString(src, options).convert()! as String;
-}
-
-/// Converts [src] to an embedded document (port of
-/// `convert_string_to_embedded`).
-String convertStringToEmbedded(String src, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts['standalone'] = false;
-  return documentFromString(src, opts).convert()! as String;
-}
-
-/// Converts the file at [path] (port of `Asciidoctor.convert_file`).
+/// Converts the file at [path] to a string (port of
+/// `Asciidoctor.convert_file` with `to_file: false`).
 String convertFile(
   String path, {
-  Object? toFile,
   bool standalone = false,
-  Object? safe,
-  Map<String, Object?>? attributes,
-}) =>
-    api.convertFile(path, <String, Object?>{
-          'to_file': toFile,
-          'standalone': standalone,
-          'safe': ?safe,
-          'attributes': ?attributes,
-        })!
-        as String;
+  int safe = SafeMode.secure,
+  Map<String, String?> attributes = const <String, String?>{},
+}) => api
+    .loadFile(
+      path,
+      options: AsciidoctorOptions(
+        standalone: standalone,
+        safe: safe,
+        attributes: attributes,
+      ),
+    )
+    .convert();
 
 /// Loads the file at [path] (port of `Asciidoctor.load_file`).
 Document loadFile(String path, {bool sourcemap = false}) =>
-    api.loadFile(path, <String, Object?>{'sourcemap': sourcemap});
+    api.loadFile(path, options: AsciidoctorOptions(sourcemap: sourcemap));
 
 /// Loads [input] into a parsed document (port of `Asciidoctor.load`).
 Document asciidoctorLoad(String input) => api.load(input);
 
 /// Converts [input] (port of `Asciidoctor.convert`).
-String asciidoctorConvert(String input) => api.convert(input)! as String;
+String asciidoctorConvert(String input) => api.convert(input);
 
 /// Asserts [content] matches [xpath] [count] times (port of `assert_xpath`).
 void assertXpath(String xpath, String? content, int count) {
@@ -762,11 +590,10 @@ class SamplePreprocessor extends Preprocessor {
   new([super.config]);
 
   @override
-  Object? process(Document document, Reader reader) => null;
+  Reader? process(Document document, Reader reader) => null;
 }
 
 /// Sample include processor (port of `SampleIncludeProcessor`).
-///
 class SampleIncludeProcessor extends IncludeProcessor {
   /// Creates a sample include processor with [config].
   new([super.config]);
@@ -784,7 +611,7 @@ class SampleTreeProcessor extends TreeProcessor {
   new([super.config]);
 
   @override
-  Object? process(Document document) => null;
+  Document? process(Document document) => null;
 }
 
 /// Sample postprocessor (port of `SamplePostprocessor`).
@@ -818,11 +645,11 @@ class ScrubHeaderPreprocessor extends Preprocessor {
   new([super.config]);
 
   @override
-  Object? process(Document document, Reader reader) {
+  Reader? process(Document document, Reader reader) {
     final lines = reader.lines;
     final skipped = <String>[];
-    while (lines.isNotEmpty && !lines.first!.startsWith('=')) {
-      skipped.add(lines.removeAt(0)!);
+    while (lines.isNotEmpty && !lines.first.startsWith('=')) {
+      skipped.add(lines.removeAt(0));
       reader.advance();
     }
     document.setAttr('skipped', skipped.join('\n'));
@@ -840,17 +667,21 @@ class BoilerplateTextIncludeProcessor extends IncludeProcessor {
   bool handles(String target) => target.endsWith('.txt');
 
   @override
-  Object? process(
-    ReaderDocument document,
+  void process(
+    Document document,
     PreprocessorReader reader,
     String target,
-    Map<Object, String?> attributes,
+    Map<String, String> attributes,
   ) {
     if (target == 'lorem-ipsum.txt') {
-      const content = ['Lorem ipsum dolor sit amet...\n'];
-      reader.pushInclude(content, target, target, 1, attributes);
+      reader.pushInclude(
+        'Lorem ipsum dolor sit amet...\n',
+        target,
+        target,
+        1,
+        attributes,
+      );
     }
-    return null;
   }
 }
 
@@ -860,7 +691,7 @@ class ReplaceAuthorTreeProcessor extends TreeProcessor {
   new([super.config]);
 
   @override
-  Object? process(Document document) {
+  Document? process(Document document) {
     document.attributes['firstname'] = 'Ghost';
     document.attributes['author'] = 'Ghost Writer';
     return document;
@@ -873,7 +704,7 @@ class ReplaceTreeTreeProcessor extends TreeProcessor {
   new([super.config]);
 
   @override
-  Object? process(Document document) {
+  Document? process(Document document) {
     if (document.doctitle() == 'Original Document') {
       return asciidoctorLoad(
         '== Replacement Document\nReplacement Author\n\ncontent',
@@ -890,14 +721,8 @@ class SelfSigningTreeProcessor extends TreeProcessor {
   new([super.config]);
 
   @override
-  Object? process(Document document) {
-    document.append(
-      createParagraph(
-        document,
-        'SelfSigningTreeProcessor',
-        <String, Object?>{},
-      ),
-    );
+  Document? process(Document document) {
+    document.append(createParagraph(document, 'SelfSigningTreeProcessor', {}));
     return null;
   }
 }
@@ -908,50 +733,50 @@ class StripAttributesPostprocessor extends Postprocessor {
   new([super.config]);
 
   @override
-  Object? process(Document document, String output) {
-    return output.replaceAllMapped(
-      RegExp(r'<(\w+).*?>', multiLine: true, dotAll: true),
-      (match) => '<${match.group(1)}>',
-    );
-  }
+  String process(Document document, String output) => output.replaceAllMapped(
+    RegExp(r'<(\w+).*?>', multiLine: true, dotAll: true),
+    (match) => '<${match.group(1)}>',
+  );
 }
 
 /// Uppercase block (port of `UppercaseBlock`).
 ///
 /// Ruby's class-level DSL (`named`, `on_context`,
 /// `name_positional_attributes`, `parse_content_as`) becomes constructor
-/// defaults (see the `extensions.dart` library docs).
+/// defaults.
 class UppercaseBlock extends BlockProcessor {
   /// Creates the block processor with [name] and [config].
-  new([String? name, Map<String, Object?>? config])
-    : super(name, {
-        'name': 'yell',
-        'contexts': {'paragraph'},
-        'positional_attrs': ['chars'],
-        'content_model': 'simple',
-        ...?config,
-      });
+  new([String? name, ProcessorConfig? config])
+    : super(
+        name ?? 'yell',
+        config ??
+            ProcessorConfig(
+              contexts: {'paragraph'},
+              positionalAttrs: ['chars'],
+              contentModel: 'simple',
+            ),
+      );
 
   @override
-  Object? process(
+  AbstractBlock? process(
     AbstractBlock parent,
     Reader reader,
-    Map<String, Object?> attributes,
+    Map<String, String> attributes,
   ) {
-    final chars = attributes['chars'] as String?;
+    final chars = attributes['chars'];
     if (chars != null) {
       final upcaseChars = chars.toUpperCase();
       final lines = reader.lines.map((line) {
-        return line!.toLowerCase().split('').map((char) {
+        return line.toLowerCase().split('').map((char) {
           final index = chars.indexOf(char);
           return index == -1 ? char : upcaseChars[index];
         }).join();
-      }).toList();
-      return createParagraph(parent, lines, attributes);
+      });
+      return createParagraph(parent, lines.join('\n'), attributes);
     }
     return createParagraph(
       parent,
-      reader.lines.map((line) => line!.toUpperCase()).toList(),
+      reader.lines.map((line) => line.toUpperCase()).join('\n'),
       attributes,
     );
   }
@@ -963,40 +788,36 @@ class SnippetMacro extends BlockMacroProcessor {
   new([super.name, super.config]);
 
   @override
-  Object? process(
+  AbstractBlock? process(
     AbstractBlock parent,
     String target,
-    Map<Object, Object?> attributes,
-  ) {
-    return createPassBlock(
-      parent,
-      '<script src="http://example.com/$target.js?_mode=${attributes['mode']}"></script>',
-      <String, Object?>{},
-      contentModel: 'raw',
-    );
-  }
+    Map<String, String> attributes,
+  ) => createPassBlock(
+    parent,
+    '<script src="http://example.com/$target.js?_mode=${attributes['mode']}"></script>',
+    {},
+    contentModel: 'raw',
+  );
 }
 
-/// Block macro using the legacy `:pos_attrs` option (port of
-/// `LegacyPosAttrsBlockMacro`).
+/// Block macro naming its positional attributes in its configuration (port
+/// of `LegacyPosAttrsBlockMacro`).
 class LegacyPosAttrsBlockMacro extends BlockMacroProcessor {
   /// Creates the macro processor with [name] and [config].
-  new([String? name, Map<String, Object?>? config])
-    : super(name, {
-        'pos_attrs': ['target', 'format'],
-        ...?config,
-      });
+  new([String? name, ProcessorConfig? config])
+    : super(
+        name,
+        config ?? ProcessorConfig(positionalAttrs: ['target', 'format']),
+      );
 
   @override
-  Object? process(
+  AbstractBlock? process(
     AbstractBlock parent,
     String target,
-    Map<Object, Object?> attributes,
-  ) {
-    return createImageBlock(parent, {
-      'target': "${attributes['target']}.${attributes['format']}",
-    });
-  }
+    Map<String, String> attributes,
+  ) => createImageBlock(parent, {
+    'target': '${attributes['target']}.${attributes['format']}',
+  });
 }
 
 /// Temperature inline macro (port of `TemperatureMacro`).
@@ -1008,16 +829,15 @@ class TemperatureMacro extends InlineMacroProcessor {
   }
 
   @override
-  Object? process(
+  Inline? process(
     AbstractBlock parent,
     String target,
-    Map<Object, Object?> attributes,
+    Map<String, String> attributes,
   ) {
     final document = parent.document! as Document;
     final units =
-        attributes['units'] as String? ??
-        document.attr('temperature-unit', 'C')! as String;
-    final precision = int.parse(attributes['precision'].toString());
+        attributes['units'] ?? document.attr('temperature-unit', 'C')!;
+    final precision = int.parse(attributes['precision']!);
     final c = double.parse(target);
     switch (units) {
       case 'C':
@@ -1046,7 +866,7 @@ class MetaRobotsDocinfoProcessor extends DocinfoProcessor {
   new([super.config]);
 
   @override
-  Object? process(Document document) =>
+  String? process(Document document) =>
       '<meta name="robots" content="index,follow">';
 }
 
@@ -1054,24 +874,24 @@ class MetaRobotsDocinfoProcessor extends DocinfoProcessor {
 class MetaAppDocinfoProcessor extends DocinfoProcessor {
   /// Creates the processor with [config].
   new([super.config]) {
-    atLocation('head');
+    config.location = 'head';
   }
 
   @override
-  Object? process(Document document) =>
+  String? process(Document document) =>
       '<meta name="application-name" content="Asciidoctor App">';
 }
 
 /// Sample extension group (port of `SampleExtensionGroup`).
 class SampleExtensionGroup extends ExtensionGroup {
   /// Self-registers this group under [name] (port of `Group.register`).
-  static Object? register([String? name]) =>
-      Extensions.register(name: name, group: SampleExtensionGroup.new);
+  static String register([String? name]) =>
+      Extensions.register(name: name, group: SampleExtensionGroup());
 
   @override
   void activate(Registry registry) {
     registry.document!.attributes['activate-method-called'] = '';
-    registry.preprocessor(processor: SamplePreprocessor.new);
+    registry.preprocessor(processor: SamplePreprocessor());
   }
 }
 
@@ -1082,18 +902,19 @@ Registry createCatInSinkBlockMacro() {
     build: (registry) {
       registry.blockMacro(
         build: (processor) {
-          processor.name = 'cat_in_sink';
-          processor.onProcess = (parent, target, attrs) {
-            final imageAttrs = <String, Object?>{};
-            if (target.isNotEmpty) {
-              imageAttrs['target'] = 'cat-in-sink-day-$target.png';
-            }
-            final title = attrs.remove('title');
-            if (title != null) imageAttrs['title'] = title;
-            final alt = attrs.remove(1);
-            if (alt != null) imageAttrs['alt'] = alt;
-            return processor.createImageBlock(parent, imageAttrs);
-          };
+          processor
+            ..name = 'cat_in_sink'
+            ..onProcess = (parent, target, attrs) {
+              final imageAttrs = <String, String>{};
+              if (target.isNotEmpty) {
+                imageAttrs['target'] = 'cat-in-sink-day-$target.png';
+              }
+              final title = attrs.remove('title');
+              if (title != null) imageAttrs['title'] = title;
+              final alt = attrs.remove('1');
+              if (alt != null) imageAttrs['alt'] = alt;
+              return processor.createImageBlock(parent, imageAttrs);
+            };
         },
       );
     },
@@ -1139,17 +960,6 @@ Registry createSantaListBlockMacro() {
 }
 
 void main() {
-  // String class-name registrations resolve through these factories (the
-  // Dart counterpart of Ruby constant lookup).
-  Extensions.registerGroupFactory(
-    'SampleExtensionGroup',
-    SampleExtensionGroup.new,
-  );
-  Extensions.registerProcessorFactory(
-    'SamplePreprocessor',
-    SamplePreprocessor.new,
-  );
-
   // Explicit global-state reset between tests (mirrors Ruby's
   // `unregister_all` teardown, including groups).
   tearDown(Extensions.unregisterAll);
@@ -1166,8 +976,8 @@ void main() {
     );
 
     test('should register extension group factory', () {
-      // Adapted: Dart passes a factory where Ruby passes the class.
-      Extensions.register(name: 'sample', group: SampleExtensionGroup.new);
+      // Adapted: Dart passes an instance where Ruby passes the class.
+      Extensions.register(name: 'sample', group: SampleExtensionGroup());
       expect(Extensions.groups, isNotNull);
       expect(Extensions.groups.length, equals(1));
       expect(Extensions.groups['sample'], isA<Function>());
@@ -1180,18 +990,11 @@ void main() {
       expect(Extensions.groups['sample'], isA<Function>());
     });
 
-    test('should register extension group from class name', () {
-      Extensions.register(name: 'sample', group: 'SampleExtensionGroup');
-      expect(Extensions.groups, isNotNull);
-      expect(Extensions.groups.length, equals(1));
-      expect(Extensions.groups['sample'], isA<Function>());
-    });
-
     test('should register extension group from instance', () {
       Extensions.register(name: 'sample', group: SampleExtensionGroup());
       expect(Extensions.groups, isNotNull);
       expect(Extensions.groups.length, equals(1));
-      expect(Extensions.groups['sample'], isA<SampleExtensionGroup>());
+      expect(Extensions.groups['sample'], isA<Function>());
     });
 
     test('should register extension block', () {
@@ -1208,7 +1011,7 @@ void main() {
 
     test('should keep group name as string when registering', () {
       // Adapted: Dart group names are always strings (no symbol coercion).
-      Extensions.register(name: 'sample', group: SampleExtensionGroup.new);
+      Extensions.register(name: 'sample', group: SampleExtensionGroup());
       expect(Extensions.groups, isNotNull);
       expect(Extensions.groups.length, equals(1));
       expect(Extensions.groups.keys.single, equals('sample'));
@@ -1217,7 +1020,7 @@ void main() {
     test('should unregister extension group by name', () {
       // Merged: Ruby's symbol-name and string-name variants are one form
       // in Dart.
-      Extensions.register(name: 'sample', group: SampleExtensionGroup.new);
+      Extensions.register(name: 'sample', group: SampleExtensionGroup());
       expect(Extensions.groups, isNotNull);
       expect(Extensions.groups.length, equals(1));
       Extensions.unregister(['sample']);
@@ -1225,8 +1028,8 @@ void main() {
     });
 
     test('should unregister multiple extension groups by name', () {
-      Extensions.register(name: 'sample1', group: SampleExtensionGroup.new);
-      Extensions.register(name: 'sample2', group: SampleExtensionGroup.new);
+      Extensions.register(name: 'sample1', group: SampleExtensionGroup());
+      Extensions.register(name: 'sample2', group: SampleExtensionGroup());
       expect(Extensions.groups, isNotNull);
       expect(Extensions.groups.length, equals(2));
       Extensions.unregister(['sample1', 'sample2']);
@@ -1244,27 +1047,6 @@ void main() {
     // if extension groups are not initialized' is dropped: Ruby removes the
     // @groups ivar, which cannot occur in Dart (statics are always
     // initialized); the neighboring test covers the scenario's essence.
-    test('should raise ArgumentError if extension class cannot be resolved '
-        'from string', () {
-      // Adapted: the registry is activated manually; Dart raises
-      // ArgumentError carrying Ruby's message.
-      Extensions.register(
-        build: (registry) {
-          registry.block(processor: 'foobar');
-        },
-      );
-      expect(
-        () => Registry().activate(emptyDocument()),
-        throwsA(
-          isArgumentError.having(
-            (error) => error.message,
-            'message',
-            'Could not resolve class for name: foobar',
-          ),
-        ),
-      );
-    });
-
     test(
       'should allow standalone registry to be created but not registered',
       () {
@@ -1276,11 +1058,11 @@ void main() {
                 processor
                   ..name = 'whisper'
                   ..onContext('paragraph')
-                  ..parseContentAs('simple');
+                  ..config.contentModel = 'simple';
                 processor.onProcess = (parent, reader, attributes) {
                   return processor.createParagraph(
                     parent,
-                    reader.lines.map((line) => line!.toLowerCase()).toList(),
+                    reader.lines.map((line) => line.toLowerCase()).join('\n'),
                     attributes,
                   );
                 };
@@ -1313,7 +1095,7 @@ void main() {
           isArgumentError.having(
             (error) => error.message,
             'message',
-            'Extension group to register not specified',
+            'Pass either an extension group or a build callback',
           ),
         ),
       );
@@ -1322,16 +1104,16 @@ void main() {
 
   group('Activate', () {
     test('should call activate on extension group factory', () {
-      // Adapted: Dart passes a factory where Ruby passes the class.
+      // Adapted: Dart passes an instance where Ruby passes the class.
       final doc = emptyDocument();
-      Extensions.register(name: 'sample', group: SampleExtensionGroup.new);
+      Extensions.register(name: 'sample', group: SampleExtensionGroup());
       final registry = (Registry())..activate(doc);
       expect(doc.hasAttr('activate-method-called'), isTrue);
       expect(registry.hasPreprocessors, isTrue);
     });
 
     test('should reset registry if activate is called again', () {
-      Extensions.register(name: 'sample', group: SampleExtensionGroup.new);
+      Extensions.register(name: 'sample', group: SampleExtensionGroup());
       var doc = emptyDocument();
       final registry = (Registry())..activate(doc);
       expect(doc.hasAttr('activate-method-called'), isTrue);
@@ -1351,7 +1133,7 @@ void main() {
       Extensions.register(
         build: (registry) {
           registry.document!.attributes['block-called'] = '';
-          registry.preprocessor(processor: SamplePreprocessor.new);
+          registry.preprocessor(processor: SamplePreprocessor());
         },
       );
       final registry = (Registry())..activate(doc);
@@ -1370,19 +1152,18 @@ void main() {
   group('Instantiate', () {
     test('should instantiate preprocessors', () {
       final registry = (Registry())
-        ..preprocessor(processor: SamplePreprocessor.new)
+        ..preprocessor(processor: SamplePreprocessor())
         ..activate(emptyDocument());
       expect(registry.hasPreprocessors, isTrue);
       final extensions = registry.preprocessors;
       expect(extensions.length, equals(1));
       expect(extensions.first, isA<ProcessorExtension>());
       expect(extensions.first.instance, isA<SamplePreprocessor>());
-      expect(extensions.first.processMethod, isA<Function>());
     });
 
     test('should instantiate include processors', () {
       final registry = (Registry())
-        ..includeProcessor(processor: SampleIncludeProcessor.new)
+        ..includeProcessor(processor: SampleIncludeProcessor())
         ..activate(emptyDocument());
       expect(registry.hasIncludeProcessors, isTrue);
       final extensions = registry.includeProcessors;
@@ -1392,12 +1173,11 @@ void main() {
       final instance = extensions.first.instance as SampleIncludeProcessor;
       expect(instance.onHandles, isNull);
       expect(instance.handles('include.adoc'), isTrue);
-      expect(extensions.first.processMethod, isA<Function>());
     });
 
     test('should instantiate docinfo processors', () {
       final registry = (Registry())
-        ..docinfoProcessor(processor: SampleDocinfoProcessor.new)
+        ..docinfoProcessor(processor: SampleDocinfoProcessor())
         ..activate(emptyDocument());
       expect(registry.hasDocinfoProcessors(), isTrue);
       expect(registry.hasDocinfoProcessors('head'), isTrue);
@@ -1405,36 +1185,33 @@ void main() {
       expect(extensions.length, equals(1));
       expect(extensions.first, isA<ProcessorExtension>());
       expect(extensions.first.instance, isA<SampleDocinfoProcessor>());
-      expect(extensions.first.processMethod, isA<Function>());
     });
 
     test('should instantiate tree processors', () {
       final registry = (Registry())
-        ..treeProcessor(processor: SampleTreeProcessor.new)
+        ..treeProcessor(processor: SampleTreeProcessor())
         ..activate(emptyDocument());
       expect(registry.hasTreeProcessors, isTrue);
       final extensions = registry.treeProcessors;
       expect(extensions.length, equals(1));
       expect(extensions.first, isA<ProcessorExtension>());
       expect(extensions.first.instance, isA<SampleTreeProcessor>());
-      expect(extensions.first.processMethod, isA<Function>());
     });
 
     test('should instantiate postprocessors', () {
       final registry = (Registry())
-        ..postprocessor(processor: SamplePostprocessor.new)
+        ..postprocessor(processor: SamplePostprocessor())
         ..activate(emptyDocument());
       expect(registry.hasPostprocessors, isTrue);
       final extensions = registry.postprocessors;
       expect(extensions.length, equals(1));
       expect(extensions.first, isA<ProcessorExtension>());
       expect(extensions.first.instance, isA<SamplePostprocessor>());
-      expect(extensions.first.processMethod, isA<Function>());
     });
 
     test('should instantiate block processor', () {
       final registry = (Registry())
-        ..block(processor: SampleBlock.new, name: 'sample')
+        ..block(processor: SampleBlock(), name: 'sample')
         ..activate(emptyDocument());
       expect(registry.hasBlocks, isTrue);
       expect(
@@ -1444,19 +1221,18 @@ void main() {
       final extension = registry.findBlockExtension('sample');
       expect(extension, isA<ProcessorExtension>());
       expect(extension!.instance, isA<SampleBlock>());
-      expect(extension.processMethod, isA<Function>());
     });
 
     test('should not match block processor for unsupported context', () {
       final registry = (Registry())
-        ..block(processor: SampleBlock.new, name: 'sample')
+        ..block(processor: SampleBlock(), name: 'sample')
         ..activate(emptyDocument());
       expect(registry.registeredForBlock('sample', 'sidebar'), isNull);
     });
 
     test('should instantiate block macro processor', () {
       final registry = (Registry())
-        ..blockMacro(processor: SampleBlockMacro.new, name: 'sample')
+        ..blockMacro(processor: SampleBlockMacro(), name: 'sample')
         ..activate(emptyDocument());
       expect(registry.hasBlockMacros, isTrue);
       expect(
@@ -1466,12 +1242,11 @@ void main() {
       final extension = registry.findBlockMacroExtension('sample');
       expect(extension, isA<ProcessorExtension>());
       expect(extension!.instance, isA<SampleBlockMacro>());
-      expect(extension.processMethod, isA<Function>());
     });
 
     test('should instantiate inline macro processor', () {
       final registry = (Registry())
-        ..inlineMacro(processor: SampleInlineMacro.new, name: 'sample')
+        ..inlineMacro(processor: SampleInlineMacro(), name: 'sample')
         ..activate(emptyDocument());
       expect(registry.hasInlineMacros, isTrue);
       expect(
@@ -1481,17 +1256,6 @@ void main() {
       final extension = registry.findInlineMacroExtension('sample');
       expect(extension, isA<ProcessorExtension>());
       expect(extension!.instance, isA<SampleInlineMacro>());
-      expect(extension.processMethod, isA<Function>());
-    });
-
-    test('should allow processors to be registered by a string name', () {
-      final registry = (Registry())
-        ..preprocessor(processor: 'SamplePreprocessor')
-        ..activate(emptyDocument());
-      expect(registry.hasPreprocessors, isTrue);
-      final extensions = registry.preprocessors;
-      expect(extensions.length, equals(1));
-      expect(extensions.first, isA<ProcessorExtension>());
     });
   });
 
@@ -1517,13 +1281,14 @@ void main() {
     test('can provide extension registry as an option', () {
       final registry = Extensions.create(
         build: (r) {
-          r.treeProcessor(processor: SampleTreeProcessor.new);
+          r.treeProcessor(processor: SampleTreeProcessor());
         },
       );
 
-      final doc = documentFromString('= Document Title\n\ncontent', {
-        'extension_registry': registry,
-      });
+      final doc = documentFromString(
+        '= Document Title\n\ncontent',
+        AsciidoctorOptions(extensionRegistry: registry),
+      );
       expect(doc.extensions, isNotNull);
       final exts = doc.extensions!;
       expect(exts.groups.length, equals(1));
@@ -1536,11 +1301,12 @@ void main() {
       'can provide extension registry created without any groups as option',
       () {
         final registry = (Extensions.create())
-          ..treeProcessor(processor: SampleTreeProcessor.new);
+          ..treeProcessor(processor: SampleTreeProcessor());
 
-        final doc = documentFromString('= Document Title\n\ncontent', {
-          'extension_registry': registry,
-        });
+        final doc = documentFromString(
+          '= Document Title\n\ncontent',
+          AsciidoctorOptions(extensionRegistry: registry),
+        );
         expect(doc.extensions, isNotNull);
         final exts = doc.extensions!;
         expect(exts.groups.length, equals(0));
@@ -1552,12 +1318,13 @@ void main() {
 
     test('can provide extensions proc as option', () {
       void extensions(Registry r) {
-        r.treeProcessor(processor: SampleTreeProcessor.new);
+        r.treeProcessor(processor: SampleTreeProcessor());
       }
 
-      final doc = documentFromString('= Document Title\n\ncontent', {
-        'extensions': extensions,
-      });
+      final doc = documentFromString(
+        '= Document Title\n\ncontent',
+        AsciidoctorOptions(extensions: extensions),
+      );
       expect(doc.extensions, isNotNull);
       final exts = doc.extensions!;
       expect(exts.groups.length, equals(1));
@@ -1566,34 +1333,18 @@ void main() {
       expect(Extensions.groups.length, equals(0));
     });
 
-    test(
-      'should not activate global registry if extensions option is false',
-      () {
-        Extensions.register(
-          name: 'sample',
-          build: (registry) {
-            // this space intentionally left blank
-          },
-        );
-        expect(Extensions.groups, isNotNull);
-        expect(Extensions.groups.length, equals(1));
-        final doc = emptyDocument({'extensions': false});
-        expect(doc.extensions, isNull);
-      },
-    );
-
     test('should invoke preprocessors before parsing document', () {
       const input = 'junk line\n\n= Document Title\n\nsample content\n';
 
       Extensions.register(
         build: (registry) {
-          registry.preprocessor(processor: ScrubHeaderPreprocessor.new);
+          registry.preprocessor(processor: ScrubHeaderPreprocessor());
         },
       );
 
       final doc = documentFromString(input);
       expect(doc.hasAttr('skipped'), isTrue);
-      expect((doc.attr('skipped')! as String).trim(), equals('junk line'));
+      expect((doc.attr('skipped')!).trim(), equals('junk line'));
       expect(doc.hasHeader, isTrue);
       expect(doc.doctitle(), equals('Document Title'));
     });
@@ -1604,13 +1355,13 @@ void main() {
       Extensions.register(
         build: (registry) {
           registry.includeProcessor(
-            processor: BoilerplateTextIncludeProcessor.new,
+            processor: BoilerplateTextIncludeProcessor(),
           );
         },
       );
 
       // a custom include processor is not affected by the safe mode
-      final result = convertString(input, {'safe': 'secure'});
+      final result = convertString(input);
       assertCss('.paragraph > p', result, 3);
       expect(result, contains('before'));
       expect(result, contains('Lorem ipsum'));
@@ -1619,10 +1370,8 @@ void main() {
 
     test('should invoke include processor through the preprocessor reader', () {
       // Adapted headless port of 'should invoke include processor if it
-      // requests to handle include directive': the reader is driven with a
-      // delegating document fake because the real document adapter exposes
-      // no include processors yet. The file-fixture tail of the Ruby test
-      // (grandchild include) is dropped until the fixture wave.
+      // requests to handle include directive': the reader is driven
+      // directly over a document carrying the registry.
       const input =
           'include::skip-me.adoc[]\n'
           'line after skip\n'
@@ -1639,7 +1388,7 @@ void main() {
                 // test onHandles assigned as callback
                 processor
                   ..onHandles = ((target) => target == 'skip-me.adoc')
-                  ..onProcess = (doc, reader, target, attributes) => null;
+                  ..onProcess = (doc, reader, target, attributes) {};
               },
             )
             ..includeProcessor(
@@ -1654,34 +1403,38 @@ void main() {
                       '\r\n',
                       'middle line\r\n',
                     ];
-                    reader.pushInclude(content, target, target, 1, attributes);
-                    return null;
+                    reader.pushIncludeLines(
+                      content,
+                      target,
+                      target,
+                      1,
+                      attributes,
+                    );
                   };
               },
             );
         },
       );
-      final document = emptyDocument({'safe': 'safe'});
-      registry.activate(document);
-      final fake = FakeReaderDocument(
-        document,
-        registry.includeProcessors
-            .map((ext) => ext.instance as IncludeProcessor)
-            .toList(),
+      final document = emptyDocument(
+        AsciidoctorOptions(safe: SafeMode.safe, extensionRegistry: registry),
       );
-      final reader = PreprocessorReader(fake, input, normalize: true);
-      final lines = (<String?>[])..add(reader.readLine());
+      final reader = PreprocessorReader.fromString(
+        document,
+        input,
+        normalize: true,
+      );
+      final lines = (<String>[])..add(reader.readLine()!);
       expect(lines.last, equals('line after skip'));
       lines
-        ..add(reader.readLine())
-        ..add(reader.readLine());
+        ..add(reader.readLine()!)
+        ..add(reader.readLine()!);
       expect(
         lines.last,
         equals("found include target 'include-file.adoc' at line 4"),
       );
       expect(reader.lineInfo, equals('include-file.adoc: line 2'));
       while (reader.hasMoreLines()) {
-        lines.add(reader.readLine());
+        lines.add(reader.readLine()!);
       }
       final source = lines.join('\n');
       expect(
@@ -1719,24 +1472,22 @@ void main() {
                     () => 'contents of include-file.adoc',
                   );
                   reader.pushInclude(content, target, target, 1, attributes);
-                  return null;
                 };
             },
           );
         },
       );
-      final document = emptyDocument({'safe': 'safe'});
-      registry.activate(document);
-      final fake = FakeReaderDocument(
-        document,
-        registry.includeProcessors
-            .map((ext) => ext.instance as IncludeProcessor)
-            .toList(),
+      final document = emptyDocument(
+        AsciidoctorOptions(safe: SafeMode.safe, extensionRegistry: registry),
       );
-      final reader = PreprocessorReader(fake, input, normalize: true);
-      final lines = (<String?>[])
-        ..add(reader.readLine())
-        ..add(reader.readLine());
+      final reader = PreprocessorReader.fromString(
+        document,
+        input,
+        normalize: true,
+      );
+      final lines = (<String>[])
+        ..add(reader.readLine()!)
+        ..add(reader.readLine()!);
       expect(lines.last, equals('contents of include-file.adoc'));
       expect(contentCache.length, equals(1));
       expect(contentCache['include-file.adoc'], equals(lines.last));
@@ -1747,7 +1498,7 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.treeProcessor(processor: ReplaceAuthorTreeProcessor.new);
+          registry.treeProcessor(processor: ReplaceAuthorTreeProcessor());
         },
       );
 
@@ -1766,7 +1517,7 @@ void main() {
                   final para = processor.createParagraph(
                     doc.blocks.last.parent!,
                     'file: ${doc.file}, lineno: ${doc.lineno}',
-                    <String, Object?>{},
+                    <String, String>{},
                   );
                   doc.append(para);
                   return null;
@@ -1778,10 +1529,7 @@ void main() {
 
         final sampleDoc = fixturePath('sample.adoc');
         final doc = loadFile(sampleDoc, sourcemap: true);
-        expect(
-          doc.convert()! as String,
-          contains('file: sample.adoc, lineno: 1'),
-        );
+        expect(doc.convert(), contains('file: sample.adoc, lineno: 1'));
       },
     );
 
@@ -1790,7 +1538,7 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.treeProcessor(processor: ReplaceTreeTreeProcessor.new);
+          registry.treeProcessor(processor: ReplaceTreeTreeProcessor());
         },
       );
 
@@ -1837,59 +1585,43 @@ void main() {
       // methods are invoked in registry order (no parse/convert).
       Extensions.register(
         build: (registry) {
+          TreeProcessorCallback append(TreeProcessor processor, String text) =>
+              (doc) {
+                doc.append(processor.createParagraph(doc, text, {}));
+                return null;
+              };
           registry
             ..treeProcessor(
-              build: (processor) {
-                processor.onProcess = (doc) {
-                  doc.append(
-                    processor.createParagraph(doc, 'd', <String, Object?>{}),
-                  );
-                  return null;
-                };
-              },
+              build: (processor) =>
+                  processor.onProcess = append(processor, 'd'),
             )
             ..treeProcessor(
-              build: (processor) {
-                processor.prefer();
-                processor.onProcess = (doc) {
-                  doc.append(
-                    processor.createParagraph(doc, 'c', <String, Object?>{}),
-                  );
-                  return null;
-                };
-              },
-            )
-            ..prefer(
-              'tree_processor',
-              build: (TreeProcessor processor) {
-                processor.onProcess = (doc) {
-                  doc.append(
-                    processor.createParagraph(doc, 'b', <String, Object?>{}),
-                  );
-                  return null;
-                };
-              },
+              build: (processor) => processor
+                ..prefer()
+                ..onProcess = append(processor, 'c'),
             )
             ..prefer(
               registry.treeProcessor(
-                build: (processor) {
-                  processor.onProcess = (doc) {
-                    doc.append(
-                      processor.createParagraph(doc, 'a', <String, Object?>{}),
-                    );
-                    return null;
-                  };
-                },
+                build: (processor) =>
+                    processor.onProcess = append(processor, 'b'),
               ),
             )
-            ..prefer('tree_processor', processor: SelfSigningTreeProcessor.new);
+            ..prefer(
+              registry.treeProcessor(
+                build: (processor) =>
+                    processor.onProcess = append(processor, 'a'),
+              ),
+            )
+            ..prefer(
+              registry.treeProcessor(processor: SelfSigningTreeProcessor()),
+            );
         },
       );
 
       final doc = emptyDocument();
       final registry = (Registry())..activate(doc);
       for (final ext in registry.treeProcessors) {
-        (ext.processMethod as Object? Function(Document))(doc);
+        ext.instance.process(doc);
       }
       expect(
         doc.blocks.map((block) => (block as Block).lines.first).toList(),
@@ -1902,7 +1634,7 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.postprocessor(processor: StripAttributesPostprocessor.new);
+          registry.postprocessor(processor: StripAttributesPostprocessor());
         },
       );
 
@@ -1922,7 +1654,7 @@ void main() {
               build: (processor) {
                 processor.onProcess = (doc) {
                   doc.append(
-                    processor.createParagraph(doc, 'bye!', <String, Object?>{}),
+                    processor.createParagraph(doc, 'bye!', <String, String>{}),
                   );
                   return null;
                 };
@@ -1943,7 +1675,7 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.block(processor: UppercaseBlock.new);
+          registry.block(processor: UppercaseBlock());
         },
       );
 
@@ -1960,7 +1692,7 @@ void main() {
 
         Extensions.register(
           build: (registry) {
-            registry.block(processor: UppercaseBlock.new);
+            registry.block(processor: UppercaseBlock());
           },
         );
 
@@ -1983,14 +1715,14 @@ void main() {
                 processor.onContext('literal');
                 processor.onProcess = (parent, reader, attrs) {
                   // Adapted: Dart has no eval; emulate the intent.
-                  final source = reader.readLines()[0]!;
+                  final source = reader.readLines()[0];
                   final expanded = source.contains('*')
                       ? List.filled(5, 'yolo').join()
                       : source;
                   return processor.createParagraph(
                     parent,
                     expanded,
-                    <String, Object?>{},
+                    <String, String>{},
                   );
                 };
               },
@@ -2016,7 +1748,7 @@ void main() {
               processor
                 ..onContext('sidebar')
                 ..onProcess = (parent, reader, attrs) {
-                  cloakedContext = attrs['cloaked-context'] as String?;
+                  cloakedContext = attrs['cloaked-context'];
                   return null;
                 };
             },
@@ -2039,8 +1771,8 @@ void main() {
               processor.onProcess = (parent, reader, attrs) {
                 return processor.createExampleBlock(
                   parent,
-                  reader.readLines(),
-                  <String, Object?>{},
+                  reader.readLines().join('\n'),
+                  <String, String>{},
                   contentModel: 'compound',
                 );
               };
@@ -2058,7 +1790,7 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.blockMacro(processor: SnippetMacro.new, name: 'snippet');
+          registry.blockMacro(processor: SnippetMacro(), name: 'snippet');
         },
       );
 
@@ -2081,9 +1813,9 @@ void main() {
             name: 'log',
             build: (processor) {
               processor
-                ..resolveAttributes(false)
+                ..passAttributesAsText()
                 ..onProcess = (parent, target, attrs) {
-                  parent.logger.info(attrs['text']);
+                  parent.logger.info(attrs['text']!);
                   return null;
                 };
             },
@@ -2094,7 +1826,7 @@ void main() {
       usingMemoryLogger((logger) {
         final output = convertStringToEmbedded(input);
         expect(output, isEmpty);
-        assertMessage(logger, 'INFO', 'hello, world!');
+        assertMessage(logger, Severity.info, 'hello, world!');
       });
     });
 
@@ -2108,9 +1840,9 @@ void main() {
             name: 'log',
             build: (processor) {
               processor
-                ..contentModel('text')
+                ..config.contentModel = 'text'
                 ..onProcess = (parent, target, attrs) {
-                  parent.logger.info(attrs['text']);
+                  parent.logger.info(attrs['text']!);
                   return null;
                 };
             },
@@ -2121,7 +1853,7 @@ void main() {
       usingMemoryLogger((logger) {
         final output = convertStringToEmbedded(input);
         expect(output, isEmpty);
-        assertMessage(logger, 'INFO', 'hello, world!');
+        assertMessage(logger, Severity.info, 'hello, world!');
       });
     });
 
@@ -2130,13 +1862,14 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.blockMacro(processor: SnippetMacro.new, name: 'snippet');
+          registry.blockMacro(processor: SnippetMacro(), name: 'snippet');
         },
       );
 
-      final output = convertStringToEmbedded(input, {
-        'attributes': {'gist-id': '12345'},
-      });
+      final output = convertStringToEmbedded(
+        input,
+        const AsciidoctorOptions(attributes: {'gist-id': '12345'}),
+      );
       expect(
         output,
         contains(
@@ -2151,11 +1884,11 @@ void main() {
         final result = convertStringToEmbedded(input);
         assertMessage(
           logger,
-          'DEBUG',
+          Severity.debug,
           '<stdin>: line 1: unknown name for block macro: unknown',
         );
         assertXpath('/*[@class="paragraph"]/p[text()="$input"]', result, 1);
-      }, 'DEBUG');
+      }, Severity.debug);
     });
 
     test('should log debug message if custom block macro is unknown when '
@@ -2163,18 +1896,18 @@ void main() {
       const input = 'unknown::[]';
       Extensions.register(
         build: (registry) {
-          registry.blockMacro(processor: SampleBlockMacro.new, name: 'sample');
+          registry.blockMacro(processor: SampleBlockMacro(), name: 'sample');
         },
       );
       usingMemoryLogger((logger) {
         final result = convertStringToEmbedded(input);
         assertMessage(
           logger,
-          'DEBUG',
+          Severity.debug,
           '<stdin>: line 1: unknown name for block macro: unknown',
         );
         assertXpath('/*[@class="paragraph"]/p[text()="$input"]', result, 1);
-      }, 'DEBUG');
+      }, Severity.debug);
     });
 
     test('should not log debug message if line is not a custom block macro '
@@ -2182,14 +1915,14 @@ void main() {
       const input = '* xref:component::page.adoc[link text]';
       Extensions.register(
         build: (registry) {
-          registry.blockMacro(processor: SampleBlockMacro.new, name: 'sample');
+          registry.blockMacro(processor: SampleBlockMacro(), name: 'sample');
         },
       );
       usingMemoryLogger((logger) {
         final result = convertStringToEmbedded(input);
         expect(logger.messages, isEmpty);
         assertCss('ul li a[href="component::page.html"]', result, 1);
-      }, 'DEBUG');
+      }, Severity.debug);
     });
 
     test('should drop block macro line if target references missing attribute '
@@ -2202,22 +1935,25 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.blockMacro(processor: SnippetMacro.new, name: 'snippet');
+          registry.blockMacro(processor: SnippetMacro(), name: 'snippet');
         },
       );
 
       late final Document doc;
       late final String output;
       usingMemoryLogger((logger) {
-        doc = documentFromString(input, {
-          'attributes': {'attribute-missing': 'drop-line'},
-        });
+        doc = documentFromString(
+          input,
+          const AsciidoctorOptions(
+            attributes: {'attribute-missing': 'drop-line'},
+          ),
+        );
         expect(doc.blocks.length, equals(1));
         expect(doc.blocks[0].context, equals('paragraph'));
-        output = doc.convert()! as String;
+        output = doc.convert();
         assertMessage(
           logger,
-          'INFO',
+          Severity.info,
           'dropping line containing reference to missing attribute: gist-ns',
         );
       });
@@ -2238,7 +1974,7 @@ void main() {
                 return processor.createParagraph(
                   parent,
                   target.toUpperCase(),
-                  <String, Object?>{},
+                  <String, String>{},
                 );
               };
             },
@@ -2265,7 +2001,7 @@ void main() {
                 return processor.createPassBlock(
                   parent,
                   '<!-- custom toc goes here -->',
-                  <String, Object?>{},
+                  <String, String>{},
                   contentModel: 'raw',
                 );
               };
@@ -2310,7 +2046,7 @@ void main() {
       Extensions.register(
         build: (registry) {
           registry.blockMacro(
-            processor: LegacyPosAttrsBlockMacro.new,
+            processor: LegacyPosAttrsBlockMacro(),
             name: 'diag',
           );
         },
@@ -2326,7 +2062,7 @@ void main() {
           registry.blockMacro(
             name: 'diag',
             build: (processor) {
-              processor.option('pos_attrs', ['target', 'format']);
+              processor.positionalAttributes(['target', 'format']);
               processor.onProcess = (parent, target, attrs) {
                 return processor.createImageBlock(parent, {
                   'target': "${attrs['target']}.${attrs['format']}",
@@ -2349,11 +2085,11 @@ void main() {
               build: (processor) {
                 processor
                   ..name = 'attribute'
-                  ..resolveAttributes('1:value')
+                  ..resolveAttributes(['1:value'])
                   ..onProcess = (parent, target, attrs) {
                     (parent.document! as Document).setAttr(
                       target,
-                      attrs['value'],
+                      attrs['value']!,
                     );
                     return null;
                   };
@@ -2363,11 +2099,11 @@ void main() {
               build: (processor) {
                 processor
                   ..name = 'header_attribute'
-                  ..resolveAttributes('1:value')
+                  ..resolveAttributes(['1:value'])
                   ..onProcess = (parent, target, attrs) {
                     (parent.document! as Document).setHeaderAttribute(
                       target,
-                      attrs['value'],
+                      attrs['value']!,
                     );
                     return null;
                   };
@@ -2384,21 +2120,20 @@ void main() {
     test('should invoke processor for custom inline macro', () {
       Extensions.register(
         build: (registry) {
-          registry.inlineMacro(processor: TemperatureMacro.new, name: 'deg');
+          registry.inlineMacro(processor: TemperatureMacro(), name: 'deg');
         },
       );
 
       var output = convertStringToEmbedded(
         'Room temperature is deg:25[C,precision=0].',
-        {
-          'attributes': {'temperature-unit': 'F'},
-        },
+        const AsciidoctorOptions(attributes: {'temperature-unit': 'F'}),
       );
       expect(output, contains('Room temperature is 25 &#176;C.'));
 
-      output = convertStringToEmbedded('Normal body temperature is deg:37[].', {
-        'attributes': {'temperature-unit': 'F'},
-      });
+      output = convertStringToEmbedded(
+        'Normal body temperature is deg:37[].',
+        const AsciidoctorOptions(attributes: {'temperature-unit': 'F'}),
+      );
       expect(output, contains('Normal body temperature is 98.6 &#176;F.'));
     });
 
@@ -2412,13 +2147,13 @@ void main() {
             name: 'del',
             build: (processor) {
               processor
-                ..matchFormat('short')
-                ..resolveAttributes(false);
+                ..config.format = 'short'
+                ..passAttributesAsText();
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInline(
                   parent,
                   'quoted',
-                  attrs['text'] as String?,
+                  attrs['text'],
                   type: 'unquoted',
                   attributes: {'role': 'line-through'},
                 );
@@ -2442,13 +2177,13 @@ void main() {
             name: 'del',
             build: (processor) {
               processor
-                ..matchFormat('short')
-                ..contentModel('text');
+                ..config.format = 'short'
+                ..config.contentModel = 'text';
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInline(
                   parent,
                   'quoted',
-                  attrs['text'] as String?,
+                  attrs['text'],
                   type: 'unquoted',
                   attributes: {'role': 'line-through'},
                 );
@@ -2469,8 +2204,8 @@ void main() {
             build: (processor) {
               processor
                 ..name = 'label'
-                ..matchFormat('short')
-                ..parseContentAs('text')
+                ..config.format = 'short'
+                ..config.contentModel = 'text'
                 ..onProcess = (parent, target, attrs) {
                   return processor.createInlinePass(
                     parent,
@@ -2493,7 +2228,7 @@ void main() {
             build: (processor) {
               processor
                 ..name = 'label'
-                ..matchFormat('short');
+                ..config.format = 'short';
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInlinePass(
                   parent,
@@ -2517,7 +2252,7 @@ void main() {
               build: (processor) {
                 processor
                   ..name = 'json'
-                  ..matchFormat('short');
+                  ..config.format = 'short';
                 processor.onProcess = (parent, target, attrs) {
                   final pairs = attrs.entries
                       .map((entry) => '"${entry.key}": "${entry.value}"')
@@ -2543,32 +2278,33 @@ void main() {
         },
       );
 
-      var output = convertStringToEmbedded('json:[a=A,b=B,c=C]', {
-        'doctype': 'inline',
-      });
+      var output = convertStringToEmbedded(
+        'json:[a=A,b=B,c=C]',
+        const AsciidoctorOptions(doctype: 'inline'),
+      );
       expect(output, equals('{ "a": "A", "b": "B", "c": "C" }'));
-      output = convertStringToEmbedded('data:json[a=A,b=B,c=C]', {
-        'doctype': 'inline',
-      });
+      output = convertStringToEmbedded(
+        'data:json[a=A,b=B,c=C]',
+        const AsciidoctorOptions(doctype: 'inline'),
+      );
       expect(output, equals('{ "a": "A", "b": "B", "c": "C" }'));
     });
 
     test('should assign captures correctly for inline macros', () {
-      Object? capture(
+      Inline capture(
         InlineMacroProcessor processor,
         AbstractBlock parent,
-        String? target,
-        Map<Object, Object?> attrs,
+        String target,
+        Map<String, String> attrs,
       ) {
         final sorted = attrs.entries.toList()
-          ..sort((a, b) => a.key.toString().compareTo(b.key.toString()));
+          ..sort((a, b) => a.key.compareTo(b.key));
+        final rendered = sorted
+            .map((entry) => '"${entry.key}"=>"${entry.value}"')
+            .join(', ');
         return processor.createInlinePass(
           parent,
-          'target=${target == null ? 'nil' : '"$target"'}, '
-          'attributes={${sorted.map((entry) {
-            final key = entry.key is String ? '"${entry.key}"' : entry.key;
-            return '$key=>"${entry.value}"';
-          }).join(', ')}}',
+          'target="$target", attributes={$rendered}',
         );
       }
 
@@ -2579,8 +2315,8 @@ void main() {
               build: (processor) {
                 processor
                   ..name = 'short_attributes'
-                  ..matchFormat('short')
-                  ..resolveAttributes('1:name');
+                  ..config.format = 'short'
+                  ..resolveAttributes(['1:name']);
                 processor.onProcess = (parent, target, attrs) =>
                     capture(processor, parent, target, attrs);
               },
@@ -2589,8 +2325,8 @@ void main() {
               build: (processor) {
                 processor
                   ..name = 'short_text'
-                  ..matchFormat('short')
-                  ..resolveAttributes(false);
+                  ..config.format = 'short'
+                  ..passAttributesAsText();
                 processor.onProcess = (parent, target, attrs) =>
                     capture(processor, parent, target, attrs);
               },
@@ -2599,7 +2335,7 @@ void main() {
               build: (processor) {
                 processor
                   ..name = 'full-attributes'
-                  ..resolveAttributes({'1:name': null});
+                  ..resolveAttributes(['1:name']);
                 processor.onProcess = (parent, target, attrs) =>
                     capture(processor, parent, target, attrs);
               },
@@ -2608,7 +2344,7 @@ void main() {
               build: (processor) {
                 processor
                   ..name = 'full-text'
-                  ..resolveAttributes(false);
+                  ..passAttributesAsText();
                 processor.onProcess = (parent, target, attrs) =>
                     capture(processor, parent, target, attrs);
               },
@@ -2617,8 +2353,8 @@ void main() {
               build: (processor) {
                 processor
                   ..name = '@short_match'
-                  ..match(RegExp(r'@(\w+)'))
-                  ..resolveAttributes(false);
+                  ..config.regexp = RegExp(r'@(\w+)')
+                  ..passAttributesAsText();
                 processor.onProcess = (parent, target, attrs) =>
                     capture(processor, parent, target, attrs);
               },
@@ -2639,7 +2375,7 @@ void main() {
           'full-text:target[[text\\]]\n'
           '@target\n'
           '++++\n';
-      const fullAttributes = '{1=>"value","key"=>"val","name"=>"value"}';
+      const fullAttributes = '{"1"=>"value","key"=>"val","name"=>"value"}';
       const expected =
           'target="",attributes={}\n'
           'target="value,key=val",attributes=$fullAttributes\n'
@@ -2665,9 +2401,9 @@ void main() {
               build: (processor) {
                 processor
                   ..name = 'mention'
-                  ..resolveAttributes(false);
+                  ..passAttributesAsText();
                 processor.onProcess = (parent, target, attrs) {
-                  var text = attrs['text']! as String;
+                  var text = attrs['text']!;
                   if (text.isEmpty) text = '@$target';
                   return processor.createAnchor(
                     parent,
@@ -2696,7 +2432,7 @@ void main() {
             build: (processor) {
               processor
                 ..name = 'skipme'
-                ..matchFormat('short')
+                ..config.format = 'short'
                 ..onProcess = (parent, target, attrs) => null;
             },
           );
@@ -2704,38 +2440,12 @@ void main() {
       );
 
       usingMemoryLogger((logger) {
-        final output = convertStringToEmbedded('-skipme:[]-', {
-          'doctype': 'inline',
-        });
+        final output = convertStringToEmbedded(
+          '-skipme:[]-',
+          const AsciidoctorOptions(doctype: 'inline'),
+        );
         expect(output, equals('--'));
         expect(logger.messages, isEmpty);
-      });
-    });
-
-    test('should warn if return value of inline macro is a string', () {
-      Extensions.register(
-        build: (registry) {
-          registry.inlineMacro(
-            build: (processor) {
-              processor
-                ..name = 'say'
-                ..onProcess = (parent, target, attrs) => target;
-            },
-          );
-        },
-      );
-
-      usingMemoryLogger((logger) {
-        final output = convertStringToEmbedded('say:yo[]', {
-          'doctype': 'inline',
-        });
-        expect(output, equals('yo'));
-        assertMessage(
-          logger,
-          'INFO',
-          'expected substitution value for custom inline macro to be of '
-              'type Inline; got String: say:yo[]',
-        );
       });
     });
 
@@ -2759,7 +2469,10 @@ void main() {
         },
       );
 
-      final output = convertStringToEmbedded('say:yo[]', {'doctype': 'inline'});
+      final output = convertStringToEmbedded(
+        'say:yo[]',
+        const AsciidoctorOptions(doctype: 'inline'),
+      );
       expect(output, equals('<em>*yo*</em>'));
     });
 
@@ -2782,35 +2495,11 @@ void main() {
         },
       );
 
-      final output = convertStringToEmbedded('say:yo[]', {'doctype': 'inline'});
-      expect(output, equals('<strong>yo</strong>'));
-    });
-
-    test('should apply subs specified as array to inline node returned by '
-        'process method', () {
-      Extensions.register(
-        build: (registry) {
-          registry.inlineMacro(
-            build: (processor) {
-              processor.name = 'say';
-              processor.onProcess = (parent, target, attrs) {
-                return processor.createInlinePass(
-                  parent,
-                  '*$target*',
-                  attributes: {
-                    'subs': ['specialchars', 'quotes'],
-                  },
-                );
-              };
-            },
-          );
-        },
+      final output = convertStringToEmbedded(
+        'say:yo[]',
+        const AsciidoctorOptions(doctype: 'inline'),
       );
-
-      final output = convertStringToEmbedded('say:{lt}message{gt}[]', {
-        'doctype': 'inline',
-      });
-      expect(output, equals('<strong>&lt;message&gt;</strong>'));
+      expect(output, equals('<strong>yo</strong>'));
     });
 
     test('should apply subs specified as string to inline node returned by '
@@ -2832,9 +2521,10 @@ void main() {
         },
       );
 
-      final output = convertStringToEmbedded('say:{lt}message{gt}[]', {
-        'doctype': 'inline',
-      });
+      final output = convertStringToEmbedded(
+        'say:{lt}message{gt}[]',
+        const AsciidoctorOptions(doctype: 'inline'),
+      );
       expect(output, equals('<strong>&lt;message&gt;</strong>'));
     });
 
@@ -2846,13 +2536,13 @@ void main() {
             name: 'attrs',
             build: (processor) {
               processor
-                ..matchFormat('short')
-                ..defaultAttributes({1: 'a', 2: 'b', 'foo': 'baz'})
+                ..config.format = 'short'
+                ..defaultAttributes({'1': 'a', '2': 'b', 'foo': 'baz'})
                 ..positionalAttributes(['a', 'b'])
                 ..onProcess = (parent, target, attrs) {
                   return processor.createInlinePass(
                     parent,
-                    "a=${attrs['a']},2=${attrs[2]},"
+                    "a=${attrs['a']},2=${attrs['2']},"
                     "b=${attrs['b'] ?? 'nil'},foo=${attrs['foo']}",
                   );
                 };
@@ -2861,9 +2551,10 @@ void main() {
         },
       );
 
-      final output = convertStringToEmbedded('attrs:[A,foo=bar]', {
-        'doctype': 'inline',
-      });
+      final output = convertStringToEmbedded(
+        'attrs:[A,foo=bar]',
+        const AsciidoctorOptions(doctype: 'inline'),
+      );
       // NOTE default attributes aren't considered when mapping positional
       // attributes
       expect(output, equals('a=A,2=b,b=nil,foo=bar'));
@@ -2877,7 +2568,7 @@ void main() {
             build: (processor) {
               // Adapted: names are strings in Dart (no symbols).
               processor
-                ..matchFormat('short')
+                ..config.format = 'short'
                 ..positionalAttributes(['a', 'b'])
                 ..onProcess = (parent, target, attrs) {
                   return processor.createInlinePass(
@@ -2890,9 +2581,10 @@ void main() {
         },
       );
 
-      final output = convertStringToEmbedded('attrs:[A,B]', {
-        'doctype': 'inline',
-      });
+      final output = convertStringToEmbedded(
+        'attrs:[A,B]',
+        const AsciidoctorOptions(doctype: 'inline'),
+      );
       expect(output, equals('a=A,b=B'));
     });
 
@@ -2904,7 +2596,7 @@ void main() {
               processor
                 ..name = 'skip-me'
                 ..onContext('paragraph')
-                ..parseContentAs('raw')
+                ..config.contentModel = 'raw'
                 ..onProcess = (parent, reader, attrs) => null;
             },
           );
@@ -2933,7 +2625,7 @@ void main() {
               processor
                 ..name = 'ignore'
                 ..onContext('paragraph')
-                ..parseContentAs('skip')
+                ..config.contentModel = 'skip'
                 ..onProcess = (parent, reader, attrs) {
                   processMethodCalled = true;
                   return null;
@@ -2964,14 +2656,15 @@ void main() {
               processor
                 ..name = 'foo'
                 ..onContext('paragraph')
-                ..parseContentAs('raw')
+                ..config.contentModel = 'raw'
                 ..onProcess = (parent, reader, attrs) {
-                  final originalAttrs = Map<String, Object?>.of(attrs);
+                  final originalAttrs = Map<String, String>.of(attrs);
                   attrs.remove('title');
-                  return processor.createParagraph(parent, reader.readLines(), {
-                    ...originalAttrs,
-                    'id': 'value',
-                  });
+                  return processor.createParagraph(
+                    parent,
+                    reader.readLines().join('\n'),
+                    {...originalAttrs, 'id': 'value'},
+                  );
                 };
             },
           );
@@ -3009,8 +2702,8 @@ void main() {
       final list = doc.blocks[1] as ListBlock;
       expect(list.context, equals('ulist'));
       expect(list.items.length, equals(3));
-      expect((list.items[0]! as ListItem).text, equals('a'));
-      assertCss('li', doc.convert()! as String, 3);
+      expect(list.items[0].text, equals('a'));
+      assertCss('li', doc.convert(), 3);
     });
 
     test('should allow extension to replace custom block with a section', () {
@@ -3024,8 +2717,8 @@ void main() {
               processor.onProcess = (parent, reader, attrs) {
                 return processor.createSection(
                   parent,
-                  attrs['title']! as String,
-                  <String, Object?>{},
+                  attrs['title']!,
+                  <String, String>{},
                 );
               };
             },
@@ -3048,7 +2741,7 @@ void main() {
       expect(sect.blocks.length, equals(2));
       expect(sect.blocks[0].context, equals('paragraph'));
       expect(sect.blocks[1].context, equals('paragraph'));
-      assertCss('p', doc.convert()! as String, 2);
+      assertCss('p', doc.convert(), 2);
     });
 
     test('can use parse_content to append blocks to current parent', () {
@@ -3060,11 +2753,10 @@ void main() {
                 ..name = 'csv'
                 ..onContext('literal');
               processor.onProcess = (parent, reader, attrs) {
-                processor.parseContent(parent, [
-                  ',===',
-                  ...reader.readLines().whereType<String>(),
-                  ',===',
-                ]);
+                processor.parseContent(
+                  parent,
+                  Reader([',===', ...reader.readLines(), ',===']),
+                );
                 return null;
               };
             },
@@ -3076,7 +2768,7 @@ void main() {
       expect(doc.blocks.length, equals(3));
       final table = doc.blocks[1];
       expect(table.context, equals('table'));
-      assertCss('td', doc.convert()! as String, 3);
+      assertCss('td', doc.convert(), 3);
     });
 
     test('should ignore return value of custom block if value is parent', () {
@@ -3088,7 +2780,10 @@ void main() {
                 ..name = 'unwrap'
                 ..onContext('open');
               processor.onProcess = (parent, reader, attrs) {
-                return processor.parseContent(parent, reader.readLines());
+                return processor.parseContent(
+                  parent,
+                  Reader(reader.readLines()),
+                );
               };
             },
           );
@@ -3101,7 +2796,7 @@ void main() {
         expect(block.context, equals('paragraph'));
       }
       expect((doc.blocks[0] as Block).source(), equals('a'));
-      assertCss('p', doc.convert()! as String, 3);
+      assertCss('p', doc.convert(), 3);
     });
 
     test(
@@ -3113,7 +2808,7 @@ void main() {
               name: 'para',
               build: (processor) {
                 processor.onProcess = (parent, target, attrs) {
-                  return processor.parseContent(parent, target);
+                  return processor.parseSource(parent, target);
                 };
               },
             );
@@ -3124,7 +2819,7 @@ void main() {
         expect(doc.blocks.length, equals(1));
         expect(doc.blocks[0].context, equals('paragraph'));
         expect((doc.blocks[0] as Block).source(), equals('text'));
-        assertCss('p', doc.convert()! as String, 1);
+        assertCss('p', doc.convert(), 1);
       },
     );
 
@@ -3138,7 +2833,7 @@ void main() {
                 ..onContext('open');
               processor.onProcess = (parent, reader, attrs) {
                 final wrap = processor.createOpenBlock(parent, null, attrs);
-                processor.parseContent(wrap, reader.readLines());
+                processor.parseContent(wrap, Reader(reader.readLines()));
                 return wrap;
               };
             },
@@ -3211,25 +2906,19 @@ void main() {
             build: (processor) {
               processor.name = 'sect';
               processor.onProcess = (parent, target, attrs) {
-                final stringAttrs = <String, Object?>{
-                  for (final entry in attrs.entries)
-                    entry.key.toString(): entry.value,
-                };
-                final levelValue = stringAttrs.remove('level');
-                var current = parent;
-                if (current.context == 'preamble') {
-                  current = current.parent!;
-                }
-                if (stringAttrs['id'] == 'false') {
-                  stringAttrs['id'] = false;
-                }
+                final sectAttrs = Map<String, String>.of(attrs);
+                final level = sectAttrs.remove('level');
+                final noId = sectAttrs['id'] == 'false';
+                if (noId) sectAttrs.remove('id');
+                final current = parent.context == 'preamble'
+                    ? parent.parent!
+                    : parent;
                 sect = processor.createSection(
                   current,
                   'Section Title',
-                  stringAttrs,
-                  level: levelValue == null
-                      ? null
-                      : int.parse(levelValue.toString()),
+                  sectAttrs,
+                  level: level == null ? null : int.parse(level),
+                  generateId: !noId,
                 );
                 return null;
               };
@@ -3245,43 +2934,93 @@ void main() {
           '\n'
           'sect::[$attrlist]\n';
 
-      (<String, List<Object?>>{
-        '': ['chapter', 1, false, true, '_section_title'],
-        'level=0': ['part', 0, false, false, '_section_title'],
-        'level=0,alt': [
-          'part',
-          0,
-          false,
-          true,
-          '_section_title',
-          {'partnums': ''},
-        ],
-        'level=0,style=appendix': ['appendix', 1, true, true, '_section_title'],
-        'style=appendix': ['appendix', 1, true, true, '_section_title'],
-        'style=glossary': ['glossary', 1, true, false, '_section_title'],
-        'style=glossary,alt': [
-          'glossary',
-          1,
-          true,
-          'chapter',
-          '_section_title',
-          {'sectnums': 'all'},
-        ],
-        'style=abstract': ['chapter', 1, false, true, '_section_title'],
-        'id=section-title': ['chapter', 1, false, true, 'section-title'],
-        'id=false': ['chapter', 1, false, true, null],
-      }).forEach((attrlist, expected) {
-        final input = inputFor(attrlist);
-        documentFromString(input, {
-          'safe': 'server',
-          if (expected.length > 5)
-            'attributes': expected[5]! as Map<String, Object?>,
-        });
-        expect(sect!.sectname, equals(expected[0]));
-        expect(sect!.level, equals(expected[1]));
-        expect(sect!.special, equals(expected[2]));
-        expect(sect!.numbered, equals(expected[3]));
-        expect(sect!.id, equals(expected[4]));
+      // sectname, level, special, numbered, chapter numbering, id, extra
+      // document attributes.
+      const cases =
+          <
+            String,
+            (String, int, bool, bool, bool, String?, Map<String, String>)
+          >{
+            '': ('chapter', 1, false, true, false, '_section_title', {}),
+            'level=0': ('part', 0, false, false, false, '_section_title', {}),
+            'level=0,alt': (
+              'part',
+              0,
+              false,
+              true,
+              false,
+              '_section_title',
+              {'partnums': ''},
+            ),
+            'level=0,style=appendix': (
+              'appendix',
+              1,
+              true,
+              true,
+              false,
+              '_section_title',
+              {},
+            ),
+            'style=appendix': (
+              'appendix',
+              1,
+              true,
+              true,
+              false,
+              '_section_title',
+              {},
+            ),
+            'style=glossary': (
+              'glossary',
+              1,
+              true,
+              false,
+              false,
+              '_section_title',
+              {},
+            ),
+            'style=glossary,alt': (
+              'glossary',
+              1,
+              true,
+              true,
+              true,
+              '_section_title',
+              {'sectnums': 'all'},
+            ),
+            'style=abstract': (
+              'chapter',
+              1,
+              false,
+              true,
+              false,
+              '_section_title',
+              {},
+            ),
+            'id=section-title': (
+              'chapter',
+              1,
+              false,
+              true,
+              false,
+              'section-title',
+              {},
+            ),
+            'id=false': ('chapter', 1, false, true, false, null, {}),
+          };
+      cases.forEach((attrlist, expected) {
+        final (sectname, level, special, numbered, chapters, id, attrs) =
+            expected;
+        documentFromString(
+          inputFor(attrlist),
+          AsciidoctorOptions(safe: SafeMode.server, attributes: attrs),
+        );
+        expect(sect!.sectname, equals(sectname), reason: attrlist);
+        expect(sect!.level, equals(level), reason: attrlist);
+        expect(sect!.special, equals(special), reason: attrlist);
+        expect(sect!.numbered, equals(numbered), reason: attrlist);
+        expect(sect!.chapterNumbering, equals(chapters), reason: attrlist);
+        expect(sect!.id, equals(id), reason: attrlist);
       });
     });
 
@@ -3290,7 +3029,7 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.docinfoProcessor(processor: MetaRobotsDocinfoProcessor.new);
+          registry.docinfoProcessor(processor: MetaRobotsDocinfoProcessor());
         },
       );
 
@@ -3308,15 +3047,16 @@ void main() {
       Extensions.register(
         build: (registry) {
           registry
-            ..docinfoProcessor(processor: MetaAppDocinfoProcessor.new)
+            ..docinfoProcessor(processor: MetaAppDocinfoProcessor())
             ..docinfoProcessor(
-              processor: MetaRobotsDocinfoProcessor.new,
-              config: {'position': '>>'},
+              processor: MetaRobotsDocinfoProcessor(
+                ProcessorConfig(preferred: true),
+              ),
             )
             ..docinfoProcessor(
               build: (processor) {
                 processor
-                  ..atLocation('footer')
+                  ..config.location = 'footer'
                   ..onProcess = (doc) =>
                       '<script><!-- analytics code --></script>';
               },
@@ -3324,7 +3064,10 @@ void main() {
         },
       );
 
-      final doc = documentFromString(input, {'safe': 'server'});
+      final doc = documentFromString(
+        input,
+        const AsciidoctorOptions(safe: SafeMode.server),
+      );
       expect(
         doc.docinfo(),
         equals(
@@ -3341,14 +3084,13 @@ void main() {
     test('should append docinfo to document', () {
       Extensions.register(
         build: (registry) {
-          registry.docinfoProcessor(processor: MetaRobotsDocinfoProcessor.new);
+          registry.docinfoProcessor(processor: MetaRobotsDocinfoProcessor());
         },
       );
       final sampleInputPath = fixturePath('basic.adoc');
 
       final output = convertFile(
         sampleInputPath,
-        toFile: false,
         standalone: true,
         safe: SafeMode.server,
         attributes: {'docinfo': ''},
@@ -3365,15 +3107,15 @@ void main() {
       Extensions.register(
         build: (registry) {
           exts
-            ..add(registry.preprocessor(processor: SamplePreprocessor.new))
+            ..add(registry.preprocessor(processor: SamplePreprocessor()))
             ..add(
-              registry.includeProcessor(processor: SampleIncludeProcessor.new),
+              registry.includeProcessor(processor: SampleIncludeProcessor()),
             )
-            ..add(registry.treeProcessor(processor: SampleTreeProcessor.new))
+            ..add(registry.treeProcessor(processor: SampleTreeProcessor()))
             ..add(
-              registry.docinfoProcessor(processor: SampleDocinfoProcessor.new),
+              registry.docinfoProcessor(processor: SampleDocinfoProcessor()),
             )
-            ..add(registry.postprocessor(processor: SamplePostprocessor.new));
+            ..add(registry.postprocessor(processor: SamplePostprocessor()));
         },
       );
       Registry().activate(emptyDocument());
@@ -3398,7 +3140,9 @@ void main() {
           isStateError.having(
             (error) => error.message,
             'message',
-            contains('No block specified to process tree processor extension'),
+            contains(
+              'No process callback assigned for tree processor extension',
+            ),
           ),
         ),
       );
@@ -3418,7 +3162,7 @@ void main() {
           isStateError.having(
             (error) => error.message,
             'message',
-            contains('No block specified to process block macro extension'),
+            contains('No process callback assigned for block macro extension'),
           ),
         ),
       );
@@ -3458,13 +3202,7 @@ void main() {
       registry.activate(doc);
       final ext = registry.findBlockMacroExtension('cat_in_sink')!;
       expect(
-        () =>
-            (ext.processMethod
-                as Object? Function(
-                  AbstractBlock,
-                  String,
-                  Map<Object, Object?>,
-                ))(doc, '', <Object, Object?>{}),
+        () => ext.instance.process(doc, '', <String, String>{}),
         throwsA(
           isArgumentError.having(
             (error) => error.message,
@@ -3479,14 +3217,17 @@ void main() {
       'should assign alt attribute to image block if alt is not provided',
       () {
         const input = 'cat_in_sink::25[]';
-        final doc = documentFromString(input, {
-          'standalone': false,
-          'extension_registry': createCatInSinkBlockMacro(),
-        });
+        final doc = documentFromString(
+          input,
+          AsciidoctorOptions(
+            standalone: false,
+            extensionRegistry: createCatInSinkBlockMacro(),
+          ),
+        );
         final image = doc.blocks[0];
         expect(image.attr('alt'), equals('cat in sink day 25'));
         expect(image.attr('default-alt'), equals('cat in sink day 25'));
-        final output = doc.convert()! as String;
+        final output = doc.convert();
         expect(
           output,
           contains(
@@ -3500,14 +3241,17 @@ void main() {
       'should create an image block if mandatory attributes are provided',
       () {
         const input = 'cat_in_sink::30[cat in sink (yes)]';
-        final doc = documentFromString(input, {
-          'standalone': false,
-          'extension_registry': createCatInSinkBlockMacro(),
-        });
+        final doc = documentFromString(
+          input,
+          AsciidoctorOptions(
+            standalone: false,
+            extensionRegistry: createCatInSinkBlockMacro(),
+          ),
+        );
         final image = doc.blocks[0];
         expect(image.attr('alt'), equals('cat in sink (yes)'));
         expect(image.hasAttr('default-alt'), isFalse);
-        final output = doc.convert()! as String;
+        final output = doc.convert();
         expect(
           output,
           contains(
@@ -3520,22 +3264,28 @@ void main() {
     test('should not assign caption on image block if title is not set on '
         'custom block macro', () {
       const input = 'cat_in_sink::30[]';
-      final doc = documentFromString(input, {
-        'standalone': false,
-        'extension_registry': createCatInSinkBlockMacro(),
-      });
-      final output = doc.convert()! as String;
+      final doc = documentFromString(
+        input,
+        AsciidoctorOptions(
+          standalone: false,
+          extensionRegistry: createCatInSinkBlockMacro(),
+        ),
+      );
+      final output = doc.convert();
       assertXpath('/*[@class="imageblock"]/*[@class="title"]', output, 0);
     });
 
     test('should assign caption on image block if title is set on custom '
         'block macro', () {
       const input = '.Cat in Sink?\ncat_in_sink::30[]\n';
-      final doc = documentFromString(input, {
-        'standalone': false,
-        'extension_registry': createCatInSinkBlockMacro(),
-      });
-      final output = doc.convert()! as String;
+      final doc = documentFromString(
+        input,
+        AsciidoctorOptions(
+          standalone: false,
+          extensionRegistry: createCatInSinkBlockMacro(),
+        ),
+      );
+      final output = doc.convert();
       assertXpath(
         '/*[@class="imageblock"]/*[@class="title"]'
         '[text()="Figure 1. Cat in Sink?"]',
@@ -3572,7 +3322,7 @@ void main() {
             registry.inlineMacro(
               name: 'no_alt',
               build: (processor) {
-                processor.matchFormat('short');
+                processor.config.format = 'short';
                 processor.onProcess = (parent, target, attrs) {
                   return processor.createInline(
                     parent,
@@ -3596,11 +3346,14 @@ void main() {
 
     test('should assign id and role on list items unordered', () {
       const input = 'santa_list::ulist[]';
-      final doc = documentFromString(input, {
-        'standalone': false,
-        'extension_registry': createSantaListBlockMacro(),
-      });
-      final output = doc.convert()! as String;
+      final doc = documentFromString(
+        input,
+        AsciidoctorOptions(
+          standalone: false,
+          extensionRegistry: createSantaListBlockMacro(),
+        ),
+      );
+      final output = doc.convert();
       assertXpath(
         '/div[@class="ulist"]/ul/li[@class="friendly"]'
         '[@id="santa-list-guillaume"]',
@@ -3639,11 +3392,14 @@ void main() {
 
     test('should assign id and role on list items ordered', () {
       const input = 'santa_list::olist[]';
-      final doc = documentFromString(input, {
-        'standalone': false,
-        'extension_registry': createSantaListBlockMacro(),
-      });
-      final output = doc.convert()! as String;
+      final doc = documentFromString(
+        input,
+        AsciidoctorOptions(
+          standalone: false,
+          extensionRegistry: createSantaListBlockMacro(),
+        ),
+      );
+      final output = doc.convert();
       assertXpath(
         '/div[@class="olist"]/ol/li[@class="friendly"]'
         '[@id="santa-list-guillaume"]',
@@ -3685,105 +3441,23 @@ void main() {
     // Headless unit tests for the Processor factory methods (no parse or
     // convert involved).
 
-    test('createSection sets up all section properties', () {
-      // Headless port of the parser-driven 'create_section should set up
-      // all section properties' matrix: attribute maps are built directly
-      // instead of going through a block macro.
-      final processor = SampleBlock();
-      // (attrs, extra document attributes, expected sectname/level/special/
-      // numbered/id). Mirrors the Ruby matrix, including its trailing
-      // attribute maps.
-      final cases =
-          <(Map<String, Object?>, Map<String, Object?>, List<Object?>)>[
-            ({}, {}, ['chapter', 1, false, true, '_section_title']),
-            ({'level': 0}, {}, ['part', 0, false, false, '_section_title']),
-            (
-              {'level': 0},
-              {'partnums': ''},
-              ['part', 0, false, true, '_section_title'],
-            ),
-            (
-              {'level': 0, 'style': 'appendix'},
-              {},
-              ['appendix', 1, true, true, '_section_title'],
-            ),
-            (
-              {'style': 'appendix'},
-              {},
-              ['appendix', 1, true, true, '_section_title'],
-            ),
-            (
-              {'style': 'glossary'},
-              {},
-              ['glossary', 1, true, false, '_section_title'],
-            ),
-            (
-              {'style': 'glossary'},
-              {'sectnums': 'all'},
-              ['glossary', 1, true, 'chapter', '_section_title'],
-            ),
-            (
-              {'style': 'abstract'},
-              {},
-              ['chapter', 1, false, true, '_section_title'],
-            ),
-            (
-              {'id': 'section-title'},
-              {},
-              ['chapter', 1, false, true, 'section-title'],
-            ),
-            ({'id': false}, {}, ['chapter', 1, false, true, null]),
-          ];
-      var index = 0;
-      for (final (attrs, extra, expected) in cases) {
-        final doc = Document([], {
-          'attributes': {'doctype': 'book', 'sectnums': '', ...extra},
-        });
-        final sectionAttrs = Map<String, Object?>.of(attrs);
-        final level = sectionAttrs.remove('level') as int?;
-        final sect = processor.createSection(
-          doc,
-          'Section Title',
-          sectionAttrs,
-          level: level,
-        );
-        expect(
-          sect.sectname,
-          equals(expected[0]),
-          reason: 'case $index sectname',
-        );
-        expect(sect.level, equals(expected[1]), reason: 'case $index level');
-        expect(
-          sect.special,
-          equals(expected[2]),
-          reason: 'case $index special',
-        );
-        expect(
-          sect.numbered,
-          equals(expected[3]),
-          reason: 'case $index numbered',
-        );
-        expect(sect.id, equals(expected[4]), reason: 'case $index id');
-        index++;
-      }
-    });
-
     test('createSection honors an explicit numbered flag', () {
       final processor = SampleBlock();
-      final doc = Document([], {
-        'attributes': {'doctype': 'book'},
-      });
+      final doc = Document(
+        null,
+        const AsciidoctorOptions(attributes: {'doctype': 'book'}),
+      );
       final sect = processor.createSection(
         doc,
         'Section Title',
-        <String, Object?>{},
+        <String, String>{},
         numbered: false,
       );
       expect(sect.numbered, equals(false));
       final numbered = processor.createSection(
         doc,
         'Section Title',
-        <String, Object?>{},
+        <String, String>{},
         numbered: true,
       );
       expect(numbered.numbered, equals(true));
@@ -3791,14 +3465,11 @@ void main() {
 
     test('createSection detects a manpage synopsis section', () {
       final processor = SampleBlock();
-      final doc = Document([], {
-        'attributes': {'doctype': 'manpage'},
-      });
-      final sect = processor.createSection(
-        doc,
-        'Synopsis',
-        <String, Object?>{},
+      final doc = Document(
+        null,
+        const AsciidoctorOptions(attributes: {'doctype': 'manpage'}),
       );
+      final sect = processor.createSection(doc, 'Synopsis', <String, String>{});
       expect(sect.sectname, equals('synopsis'));
       expect(sect.special, isTrue);
     });
@@ -3807,7 +3478,7 @@ void main() {
       final processor = SampleBlock();
       final orphan = Block(null, 'open');
       expect(
-        () => processor.createSection(orphan, 'Title', <String, Object?>{}),
+        () => processor.createSection(orphan, 'Title', <String, String>{}),
         throwsStateError,
       );
     });
@@ -3819,7 +3490,7 @@ void main() {
         doc,
         'paragraph',
         'hello',
-        <String, Object?>{},
+        <String, String>{},
       );
       expect(block, isA<Block>());
       expect(block.context, equals('paragraph'));
@@ -3848,7 +3519,7 @@ void main() {
     test('createImageBlock requires the target attribute', () {
       final processor = SampleBlockMacro();
       expect(
-        () => processor.createImageBlock(emptyDocument(), <String, Object?>{}),
+        () => processor.createImageBlock(emptyDocument(), <String, String>{}),
         throwsA(
           isArgumentError.having(
             (error) => error.message,
@@ -3883,14 +3554,14 @@ void main() {
     test('createImageBlock promotes a title to a caption', () {
       final processor = SampleBlockMacro();
       final doc = emptyDocument();
-      final attrs = <String, Object?>{
+      final attrs = <String, String>{
         'target': 'cat-in-sink-day-30.png',
         'title': 'Cat in Sink?',
       };
       final block = processor.createImageBlock(doc, attrs);
       expect(block.sourceTitle, equals('Cat in Sink?'));
       expect(block.caption, equals('Figure 1. '));
-      expect(block.numeral, equals(1));
+      expect(block.numeral, equals('1'));
       expect(attrs.containsKey('title'), isFalse);
     });
 
@@ -3921,7 +3592,7 @@ void main() {
     test('create delegates build the right node types', () {
       final processor = SampleBlock();
       final doc = emptyDocument();
-      final attrs = <String, Object?>{};
+      final attrs = <String, String>{};
       expect(
         processor.createParagraph(doc, 'x', attrs).context,
         equals('paragraph'),
@@ -3971,9 +3642,9 @@ void main() {
 
     test('parseAttributes with subAttributes resolves attributes', () {
       final processor = SampleBlock();
-      final doc = emptyDocument({
-        'attributes': {'foo': 'bar'},
-      });
+      final doc = emptyDocument(
+        const AsciidoctorOptions(attributes: {'foo': 'bar'}),
+      );
       final attrs = processor.parseAttributes(
         doc,
         'foo={foo}',
@@ -3982,10 +3653,10 @@ void main() {
       expect(attrs['foo'], equals('bar'));
     });
 
-    test('parseContent parses blocks into the parent', () {
+    test('parseSource parses blocks into the parent', () {
       final processor = SampleBlock();
       final doc = emptyDocument();
-      final parent = processor.parseContent(doc, 'content');
+      final parent = processor.parseSource(doc, 'content');
       expect(parent, same(doc));
       expect(doc.blocks.length, equals(1));
       expect(doc.blocks[0].context, equals('paragraph'));
@@ -3996,146 +3667,93 @@ void main() {
     test('named and content model helpers set config', () {
       final processor = (SampleBlock())..name = 'shout';
       expect(processor.name, equals('shout'));
-      processor.contentModel('simple');
-      expect(processor.config['content_model'], equals('simple'));
-      processor.parseContentAs('raw');
-      expect(processor.config['content_model'], equals('raw'));
+      processor.config.contentModel = 'simple';
+      expect(processor.config.contentModel, equals('simple'));
     });
 
     test('positional and default attribute helpers set config', () {
       final processor = (SampleInlineMacro())..positionalAttributes(['a', 'b']);
-      expect(processor.config['positional_attrs'], equals(['a', 'b']));
-      processor.positionalAttributes('chars');
-      expect(processor.config['positional_attrs'], equals(['chars']));
-      processor.namePositionAttributes(['x']);
-      expect(processor.config['positional_attrs'], equals(['x']));
-      processor.defaultAttributes({1: 'a', 'foo': 'baz'});
-      expect(processor.config['default_attrs'], equals({1: 'a', 'foo': 'baz'}));
+      expect(processor.config.positionalAttrs, equals(['a', 'b']));
+      processor.namePositionalAttributes(['x']);
+      expect(processor.config.positionalAttrs, equals(['x']));
+      processor.defaultAttributes({'1': 'a', 'foo': 'baz'});
+      expect(processor.config.defaultAttrs, equals({'1': 'a', 'foo': 'baz'}));
     });
 
     test('resolveAttributes handles list specifications', () {
       final processor = (SampleInlineMacro())
         ..resolveAttributes(['1:units', 'precision=1']);
-      expect(processor.config['positional_attrs'], equals(['units']));
-      expect(processor.config['default_attrs'], equals({'precision': '1'}));
-      expect(processor.config['content_model'], equals('attributes'));
+      expect(processor.config.positionalAttrs, equals(['units']));
+      expect(processor.config.defaultAttrs, equals({'precision': '1'}));
+      expect(processor.config.contentModel, equals('attributes'));
     });
 
-    test('resolveAttributes handles a single string', () {
-      final processor = (SampleBlockMacro())..resolveAttributes('1:value');
-      expect(processor.config['positional_attrs'], equals(['value']));
-      expect(processor.config['default_attrs'], equals({}));
-    });
-
-    test('resolveAttributes with false selects the text content model', () {
-      final processor = (SampleBlockMacro())..resolveAttributes(false);
-      expect(processor.config['content_model'], equals('text'));
+    test('passAttributesAsText selects the text content model', () {
+      final processor = (SampleBlockMacro())..passAttributesAsText();
+      expect(processor.config.contentModel, equals('text'));
     });
 
     test('resolveAttributes with no arguments resets both lists', () {
       final processor = (SampleBlockMacro())
         ..resolveAttributes(['1:value'])
         ..resolveAttributes();
-      expect(processor.config['positional_attrs'], equals([]));
-      expect(processor.config['default_attrs'], equals({}));
-      expect(processor.config['content_model'], equals('attributes'));
-    });
-
-    test('resolveAttributes handles map specifications', () {
-      final processor = (SampleInlineMacro())
-        ..resolveAttributes({'1:name': null});
-      expect(processor.config['positional_attrs'], equals(['name']));
-      expect(processor.config['default_attrs'], equals({}));
+      expect(processor.config.positionalAttrs, isEmpty);
+      expect(processor.config.defaultAttrs, isEmpty);
+      expect(processor.config.contentModel, equals('attributes'));
     });
 
     test('resolveAttributes handles @ indices and offset slots', () {
       final processor = (SampleInlineMacro())
         ..resolveAttributes(['@:first', '2:third']);
-      expect(processor.config['positional_attrs'], equals(['first', 'third']));
-    });
-
-    test('resolveAttributes rejects unsupported specifications', () {
-      final processor = SampleBlock();
-      expect(
-        () => processor.resolveAttributes(42),
-        throwsA(
-          isArgumentError.having(
-            (error) => error.message,
-            'message',
-            contains('unsupported attributes specification for macro'),
-          ),
-        ),
-      );
+      expect(processor.config.positionalAttrs, equals(['first', 'third']));
     });
 
     test('block contexts normalize and bind', () {
       final implied = SampleBlock();
-      expect(implied.config['contexts'], equals({'open', 'paragraph'}));
-      expect(implied.config['content_model'], equals('compound'));
-      final single = SampleBlock('x', {'contexts': 'paragraph'});
-      expect(single.config['contexts'], equals({'paragraph'}));
-      final listed = SampleBlock('x', {
-        'contexts': ['paragraph', 'sidebar'],
-      });
-      expect(listed.config['contexts'], equals({'paragraph', 'sidebar'}));
+      expect(implied.config.contexts, equals({'open', 'paragraph'}));
+      expect(implied.config.contentModel, equals('compound'));
+      final single = SampleBlock('x', ProcessorConfig(contexts: {'paragraph'}));
+      expect(single.config.contexts, equals({'paragraph'}));
       final bound = (SampleBlock())..onContext('literal');
-      expect(bound.config['contexts'], equals({'literal'}));
+      expect(bound.config.contexts, equals({'literal'}));
       bound.onContexts(['sidebar', 'open']);
-      expect(bound.config['contexts'], equals({'sidebar', 'open'}));
-      bound.bindTo('paragraph');
-      expect(bound.config['contexts'], equals({'paragraph'}));
+      expect(bound.config.contexts, equals({'sidebar', 'open'}));
+      bound.bindTo(['paragraph']);
+      expect(bound.config.contexts, equals({'paragraph'}));
       bound.contexts(['open']);
-      expect(bound.config['contexts'], equals({'open'}));
+      expect(bound.config.contexts, equals({'open'}));
     });
 
     test('macro processors default to the attributes content model', () {
-      expect(SampleBlockMacro().config['content_model'], equals('attributes'));
-      expect(SampleInlineMacro().config['content_model'], equals('attributes'));
+      expect(SampleBlockMacro().config.contentModel, equals('attributes'));
+      expect(SampleInlineMacro().config.contentModel, equals('attributes'));
     });
 
-    test('prefer marks the processor position', () {
+    test('prefer marks the processor as preferred', () {
+      expect(SampleTreeProcessor().config.preferred, isFalse);
       final processor = (SampleTreeProcessor())..prefer();
-      expect(processor.config['position'], equals('>>'));
+      expect(processor.config.preferred, isTrue);
     });
 
-    test('docinfo location helpers set config', () {
+    test('docinfo location defaults to head', () {
       final processor = SampleDocinfoProcessor();
-      expect(processor.config['location'], equals('head'));
-      processor.atLocation('footer');
-      expect(processor.config['location'], equals('footer'));
+      expect(processor.config.location, equals('head'));
+      processor.config.location = 'footer';
+      expect(processor.config.location, equals('footer'));
     });
 
-    test('inline macro format and match helpers set config', () {
-      final processor = (SampleInlineMacro())..format('short');
-      expect(processor.config['format'], equals('short'));
-      processor.matchFormat('full');
-      expect(processor.config['format'], equals('full'));
-      final pattern = RegExp(r'@(\w+)');
-      processor.match(pattern);
-      expect(processor.config['regexp'], same(pattern));
-    });
-
-    test('option and updateConfig mutate config', () {
-      final processor = SamplePreprocessor({'a': '1'});
-      expect(processor.config['a'], equals('1'));
-      processor.option('b', '2');
-      expect(processor.config['b'], equals('2'));
-      processor.updateConfig({'a': '3'});
-      expect(processor.config['a'], equals('3'));
-    });
-
-    test('subclass constructors merge class-wide defaults', () {
+    test('subclass constructors supply class-wide defaults', () {
       final upper = UppercaseBlock();
       expect(upper.name, equals('yell'));
-      expect(upper.config['contexts'], equals({'paragraph'}));
-      expect(upper.config['positional_attrs'], equals(['chars']));
-      expect(upper.config['content_model'], equals('simple'));
+      expect(upper.config.contexts, equals({'paragraph'}));
+      expect(upper.config.positionalAttrs, equals(['chars']));
+      expect(upper.config.contentModel, equals('simple'));
       final temperature = TemperatureMacro();
       expect(temperature.name, equals('degrees'));
-      expect(temperature.config['positional_attrs'], equals(['units']));
-      expect(temperature.config['default_attrs'], equals({'precision': '1'}));
+      expect(temperature.config.positionalAttrs, equals(['units']));
+      expect(temperature.config.defaultAttrs, equals({'precision': '1'}));
       final legacy = LegacyPosAttrsBlockMacro();
-      expect(legacy.config['pos_attrs'], equals(['target', 'format']));
+      expect(legacy.config.positionalAttrs, equals(['target', 'format']));
     });
   });
 
@@ -4152,7 +3770,7 @@ void main() {
     });
 
     test('short format matches without a target', () {
-      final processor = (SampleInlineMacro('label'))..matchFormat('short');
+      final processor = (SampleInlineMacro('label'))..config.format = 'short';
       final pattern = processor.regexp;
       final match = pattern.firstMatch('label:[Checkbox]')!;
       // Matches Ruby: the short-format target capture is nil.
@@ -4164,14 +3782,14 @@ void main() {
       final processor = SampleInlineMacro('say');
       final first = processor.regexp;
       expect(processor.regexp, same(first));
-      expect(processor.config['regexp'], same(first));
+      expect(processor.config.regexp, same(first));
       expect(InlineMacroProcessor.resolveRegexp('say', null), same(first));
     });
 
     test('explicit match pattern wins over resolution', () {
       final processor = SampleInlineMacro('@short_match');
       final pattern = RegExp(r'@(\w+)');
-      processor.match(pattern);
+      processor.config.regexp = pattern;
       expect(processor.regexp, same(pattern));
     });
 
@@ -4209,47 +3827,23 @@ void main() {
       expect(registry.treeProcessors, equals([second, first]));
     });
 
-    test('prefer registers through a kind name', () {
-      final registry = (Registry())
-        ..treeProcessor(
-          build: (processor) {
-            processor.onProcess = (doc) => null;
-          },
-        );
-      final preferred = registry.prefer(
-        'tree_processor',
-        build: (TreeProcessor processor) {
-          processor.onProcess = (doc) => null;
-        },
-      );
-      expect(registry.treeProcessors.first, same(preferred));
-      final viaFactory = registry.prefer(
-        'tree_processor',
-        processor: SelfSigningTreeProcessor.new,
-      );
-      expect(registry.treeProcessors.first, same(viaFactory));
-    });
-
-    test('prefer rejects unknown kinds and foreign extensions', () {
+    test('prefer rejects foreign and syntax extensions', () {
       final registry = Registry();
-      expect(() => registry.prefer('treeprocessor'), throwsArgumentError);
-      expect(() => registry.prefer(42), throwsArgumentError);
       final foreign = ProcessorExtension(
         'tree_processor',
         SampleTreeProcessor(),
       );
       expect(() => registry.prefer(foreign), throwsStateError);
-      registry.block(processor: SampleBlock.new, name: 'sample');
+      registry.block(processor: SampleBlock(), name: 'sample');
       final syntax = registry.findBlockExtension('sample')!;
       expect(() => registry.prefer(syntax), throwsStateError);
     });
 
-    test('position config inserts at the front', () {
+    test('preferred config inserts at the front', () {
       final registry = (Registry())
-        ..preprocessor(processor: SamplePreprocessor.new);
+        ..preprocessor(processor: SamplePreprocessor());
       final preferred = registry.preprocessor(
-        processor: SamplePreprocessor.new,
-        config: {'position': '>>'},
+        processor: SamplePreprocessor(ProcessorConfig(preferred: true)),
       );
       expect(registry.preprocessors.first, same(preferred));
     });
@@ -4259,11 +3853,11 @@ void main() {
       expect(registry.hasDocinfoProcessors(), isFalse);
       expect(registry.docinfoProcessors(), isEmpty);
       registry
-        ..docinfoProcessor(processor: MetaAppDocinfoProcessor.new)
+        ..docinfoProcessor(processor: MetaAppDocinfoProcessor())
         ..docinfoProcessor(
           build: (processor) {
             processor
-              ..atLocation('footer')
+              ..config.location = 'footer'
               ..onProcess = (doc) => 'footer';
           },
         );
@@ -4277,14 +3871,14 @@ void main() {
 
     test('extension config is the instance config', () {
       final registry = Registry();
-      final instance = SamplePreprocessor({'key': 'value'});
+      final instance = SamplePreprocessor(ProcessorConfig());
       final ext = registry.preprocessor(processor: instance);
       expect(ext.kind, equals('preprocessor'));
       expect(ext.instance, same(instance));
       expect(ext.config, same(instance.config));
     });
 
-    test('processMethod invokes the family process methods', () {
+    test('instances run the family process callbacks', () {
       final registry = Registry();
       final doc = emptyDocument();
 
@@ -4292,13 +3886,13 @@ void main() {
         build: (processor) {
           processor.onProcess = (document) {
             document.append(
-              processor.createParagraph(document, 'hi', <String, Object?>{}),
+              processor.createParagraph(document, 'hi', <String, String>{}),
             );
             return null;
           };
         },
       );
-      (tree.processMethod as Object? Function(Document))(doc);
+      tree.instance.process(doc);
       expect(doc.blocks.length, equals(1));
 
       final post = registry.postprocessor(
@@ -4306,21 +3900,15 @@ void main() {
           processor.onProcess = (document, output) => '$output!';
         },
       );
-      expect(
-        (post.processMethod as Object? Function(Document, String))(doc, 'hi'),
-        equals('hi!'),
-      );
+      expect(post.instance.process(doc, 'hi'), equals('hi!'));
 
       final pre = registry.preprocessor(
         build: (processor) {
           processor.onProcess = (document, reader) => reader;
         },
       );
-      final reader = Reader('hi');
-      expect(
-        (pre.processMethod as Object? Function(Document, Reader))(doc, reader),
-        same(reader),
-      );
+      final reader = Reader.fromString('hi');
+      expect(pre.instance.process(doc, reader), same(reader));
 
       final block = registry.block(
         name: 'shout',
@@ -4328,20 +3916,14 @@ void main() {
           processor.onProcess = (parent, reader, attrs) {
             return processor.createParagraph(
               parent,
-              reader.lines.map((line) => line!.toUpperCase()).toList(),
+              reader.lines.map((line) => line.toUpperCase()).join('\n'),
               attrs,
             );
           };
         },
       );
       final created =
-          (block.processMethod
-                  as Object? Function(
-                    AbstractBlock,
-                    Reader,
-                    Map<String, Object?>,
-                  ))(doc, Reader('hi'), <String, Object?>{})!
-              as Block;
+          block.instance.process(doc, Reader.fromString('hi'), {})! as Block;
       expect(created.lines, equals(['HI']));
     });
 
@@ -4356,80 +3938,24 @@ void main() {
         throwsUnimplementedError,
       );
       expect(
-        () => SampleBlock().process(doc, Reader(null), <String, Object?>{}),
+        () => SampleBlock().process(doc, Reader(const []), <String, String>{}),
         throwsUnimplementedError,
       );
       expect(
-        () => SampleBlockMacro().process(doc, 't', <Object, Object?>{}),
+        () => SampleBlockMacro().process(doc, 't', <String, String>{}),
         throwsUnimplementedError,
       );
       expect(
-        () => SampleInlineMacro().process(doc, 't', <Object, Object?>{}),
+        () => SampleInlineMacro().process(doc, 't', <String, String>{}),
         throwsUnimplementedError,
       );
     });
 
-    test('registration rejects invalid arguments', () {
-      final registry = Registry();
-      expect(
-        () => registry.preprocessor(processor: 42),
-        throwsA(
-          isArgumentError.having(
-            (error) => error.message,
-            'message',
-            contains('Invalid arguments specified for registering'),
-          ),
-        ),
-      );
-      expect(
-        () => registry.block(processor: 42),
-        throwsA(
-          isArgumentError.having(
-            (error) => error.message,
-            'message',
-            contains('Invalid arguments specified for registering'),
-          ),
-        ),
-      );
-    });
-
-    test('registration rejects factories of the wrong family', () {
-      final registry = Registry();
-      expect(
-        () => registry.preprocessor(processor: (config) => SampleBlock()),
-        throwsA(
-          isArgumentError.having(
-            (error) => error.message,
-            'message',
-            contains('Invalid type for preprocessor extension'),
-          ),
-        ),
-      );
-      expect(
-        () => registry.block(processor: SamplePreprocessor.new),
-        throwsA(
-          isArgumentError.having(
-            (error) => error.message,
-            'message',
-            contains(
-              'Class specified for block extension does not inherit from '
-              'BlockProcessor',
-            ),
-          ),
-        ),
-      );
-    });
-
-    test('instance registration merges config and honors name overrides', () {
+    test('instance registration honors name overrides', () {
       final registry = Registry();
       final instance = SampleBlock('original');
-      final ext = registry.block(
-        processor: instance,
-        name: 'override',
-        config: {'content_model': 'simple'},
-      );
+      final ext = registry.block(processor: instance, name: 'override');
       expect(instance.name, equals('override'));
-      expect(instance.config['content_model'], equals('simple'));
       expect(registry.findBlockExtension('override'), same(ext));
       expect(registry.findBlockExtension('original'), isNull);
     });
@@ -4437,59 +3963,23 @@ void main() {
     test('later syntax registrations win for the same name', () {
       final registry = Registry();
       final first = registry.blockMacro(
-        processor: SampleBlockMacro.new,
+        processor: SampleBlockMacro(),
         name: 'sample',
       );
       final second = registry.blockMacro(
-        processor: SampleBlockMacro.new,
+        processor: SampleBlockMacro(),
         name: 'sample',
       );
       expect(registry.findBlockMacroExtension('sample'), same(second));
       expect(registry.findBlockMacroExtension('sample'), isNot(same(first)));
     });
 
-    test('build form accepts a leading config map', () {
-      final registry = Registry();
-      final ext = registry.preprocessor(
-        processor: const {'key': 'value'},
-        build: (processor) {
-          processor.onProcess = (document, reader) => null;
-        },
-      );
-      expect(ext.config['key'], equals('value'));
-    });
-
-    test('activate runs zero-argument group callbacks', () {
-      var called = false;
-      final registry = (Registry({
-        'empty': () {
-          called = true;
-        },
-      }))..activate(emptyDocument());
-      expect(called, isTrue);
-      expect(registry.hasPreprocessors, isFalse);
-    });
-
-    test('activate rejects invalid groups', () {
-      final registry = Registry({'bogus': 42});
-      expect(
-        () => registry.activate(emptyDocument()),
-        throwsA(
-          isArgumentError.having(
-            (error) => error.message,
-            'message',
-            contains('Invalid extension group'),
-          ),
-        ),
-      );
-    });
-
     test('registry groups stay independent from global groups', () {
-      Extensions.register(name: 'global', group: SampleExtensionGroup.new);
+      Extensions.register(name: 'global', group: SampleExtensionGroup());
       final registry = Extensions.create(
         name: 'local',
         build: (r) {
-          r.preprocessor(processor: SamplePreprocessor.new);
+          r.preprocessor(processor: SamplePreprocessor());
         },
       );
       expect(registry.groups.length, equals(1));

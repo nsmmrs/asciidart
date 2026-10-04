@@ -16,53 +16,45 @@ library;
 
 import 'dart:io' show Directory, File;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/rx.dart';
-import 'package:asciidoctor/src/substitutors.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// A single backslash, mirroring the `BACKSLASH` constant in the Ruby suite.
 const String bs = r'\';
 
 /// Records log messages for assertions.
-class FakeLogger implements NodeLogger {
-  /// Messages by severity.
-  final List<Object?> debugs = <Object?>[];
-  final List<Object?> infos = <Object?>[];
-  final List<Object?> warns = <Object?>[];
-  final List<Object?> errors = <Object?>[];
-  final List<Object?> fatals = <Object?>[];
+class FakeLogger extends LoggerBase {
+  /// Creates a recording logger.
+  new() : super(Severity.debug);
+
+  /// Messages by severity, in logging order.
+  final List<String> debugs = <String>[];
+  final List<String> infos = <String>[];
+  final List<String> warns = <String>[];
+  final List<String> errors = <String>[];
+  final List<String> fatals = <String>[];
 
   @override
-  void debug(Object? message) {
-    debugs.add(message);
+  Severity? get maxSeverity => null;
+
+  @override
+  void add(Severity severity, LogMessage message) {
+    switch (severity) {
+      case Severity.debug:
+        debugs.add('$message');
+      case Severity.info:
+        infos.add('$message');
+      case Severity.warn:
+        warns.add('$message');
+      case Severity.error:
+        errors.add('$message');
+      case Severity.fatal || Severity.unknown:
+        fatals.add('$message');
+    }
   }
 
   @override
-  void info(Object? message) {
-    infos.add(message);
-  }
-
-  @override
-  void warn(Object? message) {
-    warns.add(message);
-  }
-
-  @override
-  void error(Object? message) {
-    errors.add(message);
-  }
-
-  @override
-  void fatal(Object? message) {
-    fatals.add(message);
-  }
+  Future<void> close() async {}
 
   /// Whether no messages were recorded at any severity.
   bool get isEmpty =>
@@ -73,14 +65,14 @@ class FakeLogger implements NodeLogger {
       fatals.isEmpty;
 }
 
-/// Runs [body] with [logger] installed as the shared node logger.
+/// Runs [body] with [logger] installed as the shared logger.
 T withFakeLogger<T>(FakeLogger logger, T Function() body) {
-  final prev = AbstractNode.currentLogger;
-  AbstractNode.currentLogger = logger;
+  final prev = LoggerManager.logger;
+  LoggerManager.logger = logger;
   try {
     return body();
   } finally {
-    AbstractNode.currentLogger = prev;
+    LoggerManager.logger = prev;
   }
 }
 
@@ -91,7 +83,7 @@ T withFakeLogger<T>(FakeLogger logger, T Function() body) {
 /// has the asciimath gem available.
 class FakeInlineConverter implements NodeConverter {
   @override
-  Object? convert(AbstractNode node) {
+  String? convert(AbstractNode node) {
     final doc = node.document! as Document;
     final docbook = doc.attributes['basebackend'] == 'docbook';
     final inline = node as Inline;
@@ -217,11 +209,11 @@ String _docbookQuoted(Inline node) {
 }
 
 /// Mirrors `common_attributes` in `converter/docbook5.rb`.
-String _commonAttributes(String? id, Object? role, String? reftext) {
+String _commonAttributes(String? id, String? role, String? reftext) {
   var attrs = '';
   if (id != null) {
-    attrs = ' xml:id="$id"${isTruthy(role) ? ' role="$role"' : ''}';
-  } else if (isTruthy(role)) {
+    attrs = ' xml:id="$id"${role != null ? ' role="$role"' : ''}';
+  } else if (role != null) {
     attrs = ' role="$role"';
   }
   if (reftext != null) {
@@ -239,14 +231,14 @@ String _commonAttributes(String? id, Object? role, String? reftext) {
 /// Reference text of [node] with reftext substitutions applied.
 String? _inlineReftext(Inline node) {
   final value = node.text;
-  return value == null ? null : applyReftextSubs(node, value)! as String;
+  return value == null ? null : applyReftextSubs(node, value);
 }
 
 String? _htmlAnchor(Inline node, Document doc) {
   switch (node.type) {
     case 'xref':
       final path = node.attributes['path'];
-      if (isTruthy(path)) {
+      if (path != null) {
         final attrs = _appendLinkConstraintAttrs(
           node,
           node.hasRole() ? [' class="${node.role}"'] : <String>[],
@@ -273,8 +265,8 @@ String? _htmlAnchor(Inline node, Document doc) {
 
 /// Resolves display text for an xref without explicit link text.
 String _resolveXrefText(Inline node, Document doc) {
-  final refs = doc.catalog['refs']! as Map<String, Object?>;
-  final refid = node.attributes['refid'] as String?;
+  final refs = doc.catalog.refs;
+  final refid = node.attributes['refid'];
   final ref = refid == null ? null : refs[refid];
   String? text;
   if (ref is AbstractBlock) {
@@ -295,10 +287,10 @@ String? _docbookAnchor(Inline node, Document doc) {
       return '<anchor${_commonAttributes(id, null, _inlineReftext(node) ?? '[$id]')}/>';
     case 'xref':
       final path = node.attributes['path'];
-      if (isTruthy(path)) {
+      if (path != null) {
         return '<link xl:href="${node.target}">${node.text ?? path}</link>';
       }
-      var linkend = node.attributes['refid'] as String?;
+      var linkend = node.attributes['refid'];
       if (linkend == null || linkend.isEmpty) {
         // Q: should we warn instead of generating a document ID on demand?
         linkend = doc.id ??= '__${doc.doctype}-root__';
@@ -324,7 +316,7 @@ String? _docbookAnchor(Inline node, Document doc) {
 List<String> _appendLinkConstraintAttrs(Inline node, List<String> attrs) {
   final rel = node.hasOption('nofollow') ? 'nofollow' : null;
   final window = node.attributes['window'];
-  if (isTruthy(window)) {
+  if (window != null) {
     attrs.add(' target="$window"');
     if (window == '_blank' || node.hasOption('noopener')) {
       attrs.add(rel != null ? ' rel="$rel noopener"' : ' rel="noopener"');
@@ -342,8 +334,8 @@ String _encodeAttrValue(String val) =>
 /// Converted alt text of [node], mirroring `AbstractBlock#alt`.
 String _inlineAlt(Inline node) {
   final text = node.attributes['alt'];
-  if (!isTruthy(text)) return '';
-  final source = text.toString();
+  if (text == null) return '';
+  final source = text;
   if (source == node.attributes['default-alt']) {
     return subSpecialchars(source);
   }
@@ -371,7 +363,7 @@ String _docbookCallout(Inline node) =>
 
 String? _htmlFootnote(Inline node) {
   final index = node.attr('index');
-  if (isTruthy(index)) {
+  if (index != null) {
     if (node.type == 'xref') {
       return '<sup class="footnoteref">[<a class="footnote" href="#_footnotedef_$index" title="View footnote.">$index</a>]</sup>';
     } else {
@@ -411,7 +403,7 @@ String _htmlImage(Inline node, Document doc) {
           ? ' title="${node.attr('title')}"'
           : '';
       img = '<i class="$iClass"$attrs></i>';
-    } else if (isTruthy(icons)) {
+    } else if (icons != null) {
       var attrs = node.hasAttr('width') ? ' width="${node.attr('width')}"' : '';
       if (node.hasAttr('height')) {
         attrs = '$attrs height="${node.attr('height')}"';
@@ -581,12 +573,12 @@ String _imageSizeAttributes(Map<String, Object?> attributes) {
 String _docbookIndexterm(Inline node, Document doc) {
   final see = node.attr('see');
   final String rel;
-  if (isTruthy(see)) {
+  if (see != null) {
     rel = '\n<see>$see</see>';
   } else {
-    final seeAlsoList = node.attr('see-also');
-    if (isTruthy(seeAlsoList)) {
-      rel = (seeAlsoList! as List)
+    final seeAlsoList = node.seeAlso;
+    if (seeAlsoList != null) {
+      rel = seeAlsoList
           .map((seeAlso) => '\n<seealso>$seeAlso</seealso>')
           .join();
     } else {
@@ -596,7 +588,7 @@ String _docbookIndexterm(Inline node, Document doc) {
   if (node.type == 'visible') {
     return '<indexterm>\n<primary>${node.text}</primary>$rel\n</indexterm>${node.text}';
   }
-  final terms = (node.attributes['terms']! as List).cast<String>();
+  final terms = node.terms!;
   final numterms = terms.length;
   if (numterms > 2) {
     final promotion = doc.hasOption('indexterm-promotion')
@@ -614,7 +606,7 @@ String _docbookIndexterm(Inline node, Document doc) {
 }
 
 String _htmlKbd(Inline node) {
-  final keys = (node.attr('keys')! as List).cast<String>();
+  final keys = node.keys!;
   if (keys.length == 1) {
     return '<kbd>${keys[0]}</kbd>';
   } else {
@@ -623,7 +615,7 @@ String _htmlKbd(Inline node) {
 }
 
 String _docbookKbd(Inline node) {
-  final keys = (node.attr('keys')! as List).cast<String>();
+  final keys = node.keys!;
   if (keys.length == 1) {
     return '<keycap>${keys[0]}</keycap>';
   } else {
@@ -637,10 +629,10 @@ String _htmlMenu(Inline node, Document doc) {
       : '&#160;<b class="caret">&#8250;</b> ';
   final submenuJoiner = '</b>$caret<b class="submenu">';
   final menu = node.attr('menu');
-  final submenus = (node.attr('submenus')! as List).cast<String>();
+  final submenus = node.submenus!;
   if (submenus.isEmpty) {
     final menuitem = node.attr('menuitem');
-    if (isTruthy(menuitem)) {
+    if (menuitem != null) {
       return '<span class="menuseq"><b class="menu">$menu</b>$caret<b class="menuitem">$menuitem</b></span>';
     } else {
       return '<b class="menuref">$menu</b>';
@@ -652,10 +644,10 @@ String _htmlMenu(Inline node, Document doc) {
 
 String _docbookMenu(Inline node) {
   final menu = node.attr('menu');
-  final submenus = (node.attr('submenus')! as List).cast<String>();
+  final submenus = node.submenus!;
   if (submenus.isEmpty) {
     final menuitem = node.attr('menuitem');
-    if (isTruthy(menuitem)) {
+    if (menuitem != null) {
       return '<menuchoice><guimenu>$menu</guimenu> <guimenuitem>$menuitem</guimenuitem></menuchoice>';
     } else {
       return '<guimenu>$menu</guimenu>';
@@ -667,37 +659,36 @@ String _docbookMenu(Inline node) {
 
 /// Creates a document like `document_from_string` (without parsing).
 Document makeDoc({
-  Map<String, Object?> attributes = const {},
+  Map<String, String> attributes = const {},
   String backend = 'html5',
-  Object? safe,
+  int? safe,
   String? doctype,
   bool catalogAssets = false,
-}) {
-  final opts = <String, Object?>{
-    'attributes': Map<String, Object?>.of(attributes),
-    'standalone': false,
-  };
-  if (backend != 'html5') opts['backend'] = backend;
-  if (safe != null) opts['safe'] = safe;
-  if (doctype != null) opts['doctype'] = doctype;
-  if (catalogAssets) opts['catalog_assets'] = true;
-  final doc = (Document([], opts))..converter = FakeInlineConverter();
-  return doc;
-}
+}) => Document(
+  null,
+  AsciidoctorOptions(
+    attributes: attributes,
+    standalone: false,
+    backend: backend == 'html5' ? null : backend,
+    safe: safe ?? SafeMode.secure,
+    doctype: doctype,
+    catalogAssets: catalogAssets,
+  ),
+)..converter = FakeInlineConverter();
 
 /// Creates a paragraph block like `block_from_string` (without parsing).
 Block blockFromString(
   String src, {
-  Map<String, Object?> attributes = const {},
+  Map<String, String> attributes = const {},
   String backend = 'html5',
-  Object? safe,
+  int? safe,
   String? doctype,
   bool catalogAssets = false,
 }) {
   final doc = makeDoc(
     attributes: attributes,
     backend: backend,
-    safe: safe,
+    safe: safe ?? SafeMode.secure,
     doctype: doctype,
     catalogAssets: catalogAssets,
   );
@@ -710,8 +701,7 @@ Block blockFromString(
 }
 
 /// Converted content of a simple block (mirrors `Block#content`).
-String contentOf(Block block) =>
-    applySubs(block, block.source(), block.subs)! as String;
+String contentOf(Block block) => applySubs(block, block.source(), block.subs);
 
 /// Collapses inter-tag whitespace like the Ruby `gsub(/>\s+</, '><')`.
 String squeezeTags(String value) => value.replaceAll(RegExp(r'>\s+<'), '><');
@@ -768,7 +758,7 @@ void main() {
           para.lines.add('');
           para.lines.add('');
           para.document!.attributes['program'] = 'Asciidoctor';
-          var result = applySubs(para, para.lines);
+          final result = applySubsToLines(para, para.lines);
           expect(result, [
             'this<br>',
             'is<br>',
@@ -776,17 +766,17 @@ void main() {
             '<br>',
             '',
           ]);
-          result = applySubs(para, para.lines.join('\n'));
-          expect(result, 'this<br>\nis<br>\n&#8594; Asciidoctor<br>\n<br>\n');
+          final joined = applySubs(para, para.lines.join('\n'));
+          expect(joined, 'this<br>\nis<br>\n&#8594; Asciidoctor<br>\n<br>\n');
         },
       );
 
       test('should expand subs passed to expand_subs', () {
         final para = blockFromString('{program}\n*bold*\n2 > 1');
         para.document!.attributes['program'] = 'Asciidoctor';
-        expect(expandSubs(para, ['specialchars']), ['specialcharacters']);
-        expect(expandSubs(para, ['none']), isNull);
-        expect(expandSubs(para, ['normal']), [
+        expect(expandSubs(para, 'specialchars'), ['specialcharacters']);
+        expect(expandSubs(para, 'none'), isNull);
+        expect(expandSubs(para, 'normal'), [
           'specialcharacters',
           'quotes',
           'attributes',
@@ -2442,14 +2432,14 @@ void main() {
               'iconsdir': 'fixtures',
               'docdir': findTestDir(),
             },
-            safe: 'server',
+            safe: SafeMode.server,
             catalogAssets: true,
           );
           contentOf(para);
           final doc = para.document! as Document;
-          final images = doc.catalog['images']! as List;
+          final images = doc.catalog.images;
           expect(images.length, 1);
-          final image = images.single! as ImageReference;
+          final image = images.single;
           expect(image.toString(), 'fixtures/dot.gif');
           expect(image.imagesdir, isNull);
           expect(logger.isEmpty, isTrue);
@@ -2580,7 +2570,7 @@ void main() {
         final doc = para.document! as Document;
         expect(doc.footnotes.length, 1);
         final footnote = doc.footnotes.first;
-        expect(footnote.index, 1);
+        expect(footnote.index, '1');
         expect(footnote.id, isNull);
         expect(footnote.text, 'An example footnote.');
       });
@@ -2597,7 +2587,7 @@ void main() {
         final doc = para.document! as Document;
         expect(doc.footnotes.length, 1);
         final footnote = doc.footnotes.first;
-        expect(footnote.index, 1);
+        expect(footnote.index, '1');
         expect(footnote.id, isNull);
         expect(footnote.text, 'An example footnote with wrapped text.');
       });
@@ -2723,7 +2713,7 @@ void main() {
           'text footnote:[&lt;&lt;_install,install&gt;&gt;]',
         );
         final doc = para.document! as Document;
-        doc.register('refs', [
+        doc.registerRef(
           '_install',
           Inline(
             doc,
@@ -2732,8 +2722,7 @@ void main() {
             type: 'ref',
             target: '_install',
           ),
-          'Install',
-        ]);
+        );
         expect(
           subMacros(para, para.source()),
           'text <sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup>',
@@ -2745,7 +2734,7 @@ void main() {
       test('a footnote macro may contain an xref macro', () {
         final para = blockFromString('text footnote:[xref:_install[install]]');
         final doc = para.document! as Document;
-        doc.register('refs', [
+        doc.registerRef(
           '_install',
           Inline(
             doc,
@@ -2754,8 +2743,7 @@ void main() {
             type: 'ref',
             target: '_install',
           ),
-          'Install',
-        ]);
+        );
         expect(
           subMacros(para, para.source()),
           'text <sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup>',
@@ -2799,10 +2787,10 @@ void main() {
         );
         final footnotes = (para.document! as Document).footnotes;
         expect(footnotes.length, 2);
-        expect(footnotes[0].index, 1);
+        expect(footnotes[0].index, '1');
         expect(footnotes[0].id, isNull);
         expect(footnotes[0].text, 'An example footnote.');
-        expect(footnotes[1].index, 2);
+        expect(footnotes[1].index, '2');
         expect(footnotes[1].id, isNull);
         expect(footnotes[1].text, 'Another footnote.');
       });
@@ -2819,7 +2807,7 @@ void main() {
         );
         final footnotes = (para.document! as Document).footnotes;
         expect(footnotes.length, 1);
-        expect(footnotes.first.index, 1);
+        expect(footnotes.first.index, '1');
         expect(footnotes.first.id, 'ex1');
         expect(footnotes.first.text, 'An example footnote.');
       });
@@ -2837,7 +2825,7 @@ void main() {
         );
         final footnotes = (para.document! as Document).footnotes;
         expect(footnotes.length, 1);
-        expect(footnotes.first.index, 1);
+        expect(footnotes.first.index, '1');
         expect(footnotes.first.id, 'ex1');
         expect(footnotes.first.text, 'An example footnote with wrapped text.');
       });
@@ -2856,7 +2844,7 @@ void main() {
           );
           final footnotes = (para.document! as Document).footnotes;
           expect(footnotes.length, 1);
-          expect(footnotes.first.index, 1);
+          expect(footnotes.first.index, '1');
           expect(footnotes.first.id, 'ex1');
           expect(footnotes.first.text, 'An example footnote.');
         },
@@ -3810,7 +3798,7 @@ void main() {
       test('collect inline triple plus passthroughs', () {
         final para = blockFromString('+++<code>inline code</code>+++');
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(
           result,
           '$passStart'
@@ -3818,14 +3806,14 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], '<code>inline code</code>');
-        expect(passthroughs[0]['subs']! as List, isEmpty);
+        expect(passthroughs[0].text, '<code>inline code</code>');
+        expect(passthroughs[0].subs, isEmpty);
       });
 
       test('collect multi-line inline triple plus passthroughs', () {
         final para = blockFromString('+++<code>inline\ncode</code>+++');
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(
           result,
           '$passStart'
@@ -3833,14 +3821,14 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], '<code>inline\ncode</code>');
-        expect(passthroughs[0]['subs']! as List, isEmpty);
+        expect(passthroughs[0].text, '<code>inline\ncode</code>');
+        expect(passthroughs[0].subs, isEmpty);
       });
 
       test('collect inline double dollar passthroughs', () {
         final para = blockFromString(r'$$<code>{code}</code>$$');
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(
           result,
           '$passStart'
@@ -3848,14 +3836,14 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], '<code>{code}</code>');
-        expect(passthroughs[0]['subs'], ['specialcharacters']);
+        expect(passthroughs[0].text, '<code>{code}</code>');
+        expect(passthroughs[0].subs, ['specialcharacters']);
       });
 
       test('collect inline double plus passthroughs', () {
         final para = blockFromString('++<code>{code}</code>++');
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(
           result,
           '$passStart'
@@ -3863,8 +3851,8 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], '<code>{code}</code>');
-        expect(passthroughs[0]['subs'], ['specialcharacters']);
+        expect(passthroughs[0].text, '<code>{code}</code>');
+        expect(passthroughs[0].subs, ['specialcharacters']);
       });
 
       test('should not crash if role on passthrough is enclosed in quotes', () {
@@ -3897,7 +3885,7 @@ void main() {
       test('collect multi-line inline double dollar passthroughs', () {
         final para = blockFromString('\$\$<code>\n{code}\n</code>\$\$');
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(
           result,
           '$passStart'
@@ -3905,14 +3893,14 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], '<code>\n{code}\n</code>');
-        expect(passthroughs[0]['subs'], ['specialcharacters']);
+        expect(passthroughs[0].text, '<code>\n{code}\n</code>');
+        expect(passthroughs[0].subs, ['specialcharacters']);
       });
 
       test('collect multi-line inline double plus passthroughs', () {
         final para = blockFromString('++<code>\n{code}\n</code>++');
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(
           result,
           '$passStart'
@@ -3920,8 +3908,8 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], '<code>\n{code}\n</code>');
-        expect(passthroughs[0]['subs'], ['specialcharacters']);
+        expect(passthroughs[0].text, '<code>\n{code}\n</code>');
+        expect(passthroughs[0].subs, ['specialcharacters']);
       });
 
       test('collect passthroughs from inline pass macro', () {
@@ -3929,7 +3917,7 @@ void main() {
           "pass:specialcharacters,quotes[<code>['code'$bs]</code>]",
         );
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(
           result,
           '$passStart'
@@ -3937,8 +3925,8 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], "<code>['code']</code>");
-        expect(passthroughs[0]['subs'], ['specialcharacters', 'quotes']);
+        expect(passthroughs[0].text, "<code>['code']</code>");
+        expect(passthroughs[0].subs, ['specialcharacters', 'quotes']);
       });
 
       test('collect multi-line passthroughs from inline pass macro', () {
@@ -3946,7 +3934,7 @@ void main() {
           "pass:specialcharacters,quotes[<code>['more\ncode'$bs]</code>]",
         );
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(
           result,
           '$passStart'
@@ -3954,8 +3942,8 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], "<code>['more\ncode']</code>");
-        expect(passthroughs[0]['subs'], ['specialcharacters', 'quotes']);
+        expect(passthroughs[0].text, "<code>['more\ncode']</code>");
+        expect(passthroughs[0].subs, ['specialcharacters', 'quotes']);
       });
 
       test('should find and replace placeholder duplicated by '
@@ -3974,16 +3962,16 @@ void main() {
       test('resolves sub shorthands on inline pass macro', () {
         final para = blockFromString('pass:q,a[*<{backend}>*]');
         final result = extractPassthroughs(para, para.source());
-        final passthroughs = para.passthroughs;
+        final passthroughs = passthroughsOf(para);
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['subs'], ['quotes', 'attributes']);
+        expect(passthroughs[0].subs, ['quotes', 'attributes']);
         expect(restorePassthroughs(para, result), '<strong><html5></strong>');
       });
 
       test('inline pass macro supports incremental subs', () {
         final para = blockFromString('pass:n,-a[<{backend}>]');
         final result = extractPassthroughs(para, para.source());
-        expect(para.passthroughs.length, 1);
+        expect(passthroughsOf(para).length, 1);
         expect(restorePassthroughs(para, result), '&lt;{backend}&gt;');
       });
 
@@ -4018,17 +4006,16 @@ void main() {
       test('should allow content of inline pass macro to be empty', () {
         final para = blockFromString('pass:[]');
         final result = extractPassthroughs(para, para.source());
-        expect(para.passthroughs.length, 1);
+        expect(passthroughsOf(para).length, 1);
         expect(restorePassthroughs(para, result), '');
       });
 
       test('restore inline passthroughs without subs', () {
         final para = blockFromString('some ${passStart}0$passEnd to study');
         extractPassthroughs(para, '');
-        para.passthroughs.add({
-          'text': '<code>inline code</code>',
-          'subs': <String>[],
-        });
+        passthroughsOf(
+          para,
+        ).add(const Passthrough('<code>inline code</code>', subs: <String>[]));
         expect(
           restorePassthroughs(para, para.source()),
           'some <code>inline code</code> to study',
@@ -4041,14 +4028,11 @@ void main() {
           '${passStart}1$passEnd programming language',
         );
         extractPassthroughs(para, '');
-        para.passthroughs.add({
-          'text': '<code>{code}</code>',
-          'subs': ['specialcharacters'],
-        });
-        para.passthroughs.add({
-          'text': '{language}',
-          'subs': ['specialcharacters'],
-        });
+        passthroughsOf(para).add(
+          const Passthrough('<code>{code}</code>', subs: ['specialcharacters']),
+        );
+        passthroughsOf(para)
+            .add(const Passthrough('{language}', subs: ['specialcharacters']));
         expect(
           restorePassthroughs(para, para.source()),
           'some &lt;code&gt;{code}&lt;/code&gt; to study in the {language} programming language',
@@ -4092,17 +4076,17 @@ void main() {
             "[(] <'basic form'> <'logical operator'> <'basic form'> [)]";
         var para = blockFromString('\$\$$textToEscape\$\$');
         extractPassthroughs(para, para.source());
-        var passthroughs = para.passthroughs;
+        var passthroughs = passthroughsOf(para);
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], textToEscape);
+        expect(passthroughs[0].text, textToEscape);
 
         const escaped =
             r"[(\] <'basic form'> <'logical operator'> <'basic form'> [)\]";
         para = blockFromString('pass:specialcharacters[$escaped]');
         extractPassthroughs(para, para.source());
-        passthroughs = para.passthroughs;
+        passthroughs = passthroughsOf(para);
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], textToEscape);
+        expect(passthroughs[0].text, textToEscape);
       });
 
       test('inline pass macro with a composite sub', () {
@@ -4565,9 +4549,11 @@ void main() {
     group('Post replacements', () {
       test('line break inserted after line with line break character', () {
         final para = blockFromString('First line +\nSecond line');
-        final result =
-            applySubs(para, para.lines, expandSubs(para, 'post_replacements'))!
-                as List;
+        final result = applySubsToLines(
+          para,
+          para.lines,
+          expandSubs(para, 'post_replacements'),
+        );
         expect(result.first, 'First line<br>');
       });
 
@@ -4576,9 +4562,11 @@ void main() {
           'First line\nSecond line',
           attributes: {'hardbreaks': ''},
         );
-        final result =
-            applySubs(para, para.lines, expandSubs(para, 'post_replacements'))!
-                as List;
+        final result = applySubsToLines(
+          para,
+          para.lines,
+          expandSubs(para, 'post_replacements'),
+        );
         expect(result.first, 'First line<br>');
       });
 
@@ -4588,9 +4576,11 @@ void main() {
           'First line +\nSecond line',
           attributes: {'hardbreaks': ''},
         );
-        final result =
-            applySubs(para, para.lines, expandSubs(para, 'post_replacements'))!
-                as List;
+        final result = applySubsToLines(
+          para,
+          para.lines,
+          expandSubs(para, 'post_replacements'),
+        );
         expect(result.first, 'First line<br>');
       });
 
@@ -4601,13 +4591,11 @@ void main() {
             'First line',
             attributes: {'hardbreaks': ''},
           );
-          final result =
-              applySubs(
-                    para,
-                    para.lines,
-                    expandSubs(para, 'post_replacements'),
-                  )!
-                  as List;
+          final result = applySubsToLines(
+            para,
+            para.lines,
+            expandSubs(para, 'post_replacements'),
+          );
           expect(result.first, 'First line');
         },
       );

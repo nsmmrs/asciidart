@@ -25,8 +25,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/constants.dart';
-import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 void main() {

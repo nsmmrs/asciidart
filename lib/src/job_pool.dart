@@ -45,16 +45,19 @@ final class _ReplyFrame<Res> {
 
 /// Serves jobs for a pool on a worker isolate: handshakes with [mainPort],
 /// then answers each request with [handle].
-void serveJobs<Req, Res>(SendPort mainPort, Res Function(Req request) handle) {
+void serveJobs<Req, Res>(
+  SendPort mainPort,
+  FutureOr<Res> Function(Req request) handle,
+) {
   final workerPort = ReceivePort();
   mainPort.send(workerPort.sendPort);
-  workerPort.listen((message) {
+  workerPort.listen((message) async {
     if (message case _JobFrame<Req>(
       :final index,
       :final request,
       :final replyTo,
     )) {
-      replyTo.send(_ReplyFrame<Res>(index, handle(request)));
+      replyTo.send(_ReplyFrame<Res>(index, await handle(request)));
     }
   });
 }

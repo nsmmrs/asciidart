@@ -529,14 +529,13 @@ Future<_RunResult> _runExe(
     environment: {'TZ': 'UTC', 'SOURCE_DATE_EPOCH': fixedSourceDateEpoch},
   );
   try {
-    final resolved = await Future.wait<dynamic>([
+    final (chunks, _, exitCode) = await (
       process.stdout.toList(),
-      process.stderr.drain<dynamic>(),
+      process.stderr.drain<void>(),
       process.exitCode,
-    ]).timeout(timeout);
-    final chunks = resolved[0] as List<List<int>>;
+    ).wait.timeout(timeout);
     return _RunResult(
-      exitCode: resolved[2] as int,
+      exitCode: exitCode,
       stdout: chunks.expand((chunk) => chunk).toList(),
       timedOut: false,
     );

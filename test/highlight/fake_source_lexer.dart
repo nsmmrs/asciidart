@@ -7,7 +7,7 @@
 /// pygments.rb 5.0.0); see the cross-check log in the port report.
 library;
 
-import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidoctor/src/internal.dart';
 
 /// A configurable fake lexing backend.
 class FakeSourceLexer implements SourceLexer {

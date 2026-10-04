@@ -1,7 +1,7 @@
 /// Port of `test/attribute_list_test.rb`.
 library;
 
-import 'package:asciidoctor/src/attribute_list.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Block double whose [applySubs] must never be invoked.
@@ -12,46 +12,46 @@ class _ThrowingBlock implements SubsApplier {
 }
 
 void main() {
-  Map<Object, String?> parseInto(
+  Map<String, String> parseInto(
     String line, [
     SubsApplier? block,
     List<String?> positionalAttrs = const [],
   ]) {
-    final attributes = <Object, String?>{};
+    final attributes = <String, String>{};
     AttributeList(line, block).parseInto(attributes, positionalAttrs);
     return attributes;
   }
 
   group('AttributeList', () {
     test('collect unnamed attribute', () {
-      expect(parseInto('quote'), equals({1: 'quote'}));
+      expect(parseInto('quote'), equals({'1': 'quote'}));
     });
 
     test('collect unnamed attribute double-quoted', () {
-      expect(parseInto('"quote"'), equals({1: 'quote'}));
+      expect(parseInto('"quote"'), equals({'1': 'quote'}));
     });
 
     test('collect empty unnamed attribute double-quoted', () {
-      expect(parseInto('""'), equals({1: ''}));
+      expect(parseInto('""'), equals({'1': ''}));
     });
 
     test(
       'collect unnamed attribute double-quoted containing escaped quote',
       () {
-        expect(parseInto(r'"ba\"zaar"'), equals({1: 'ba"zaar'}));
+        expect(parseInto(r'"ba\"zaar"'), equals({'1': 'ba"zaar'}));
       },
     );
 
     test('collect unnamed attribute single-quoted', () {
-      expect(parseInto("'quote'"), equals({1: 'quote'}));
+      expect(parseInto("'quote'"), equals({'1': 'quote'}));
     });
 
     test('collect empty unnamed attribute single-quoted', () {
-      expect(parseInto("''"), equals({1: ''}));
+      expect(parseInto("''"), equals({'1': ''}));
     });
 
     test('collect isolated single quote positional attribute', () {
-      expect(parseInto("'", _ThrowingBlock()), equals({1: "'"}));
+      expect(parseInto("'", _ThrowingBlock()), equals({'1': "'"}));
     });
 
     test('collect isolated single quote attribute value', () {
@@ -71,37 +71,34 @@ void main() {
     test(
       'collect unnamed attribute single-quoted containing escaped quote',
       () {
-        expect(parseInto(r"'ba\'zaar'"), equals({1: "ba'zaar"}));
+        expect(parseInto(r"'ba\'zaar'"), equals({'1': "ba'zaar"}));
       },
     );
 
     test('collect unnamed attribute with dangling delimiter', () {
-      expect(parseInto('quote , '), equals({1: 'quote', 2: null}));
+      expect(parseInto('quote , '), equals({'1': 'quote'}));
     });
 
     test(
       'collect unnamed attribute in second position after empty attribute',
       () {
-        expect(parseInto(', John Smith'), equals({1: null, 2: 'John Smith'}));
+        expect(parseInto(', John Smith'), equals({'2': 'John Smith'}));
       },
     );
 
     test('collect unnamed attributes', () {
       expect(
         parseInto('first, second one, third'),
-        equals({1: 'first', 2: 'second one', 3: 'third'}),
+        equals({'1': 'first', '2': 'second one', '3': 'third'}),
       );
     });
 
     test('collect blank unnamed attributes', () {
-      expect(
-        parseInto('first,,third,'),
-        equals({1: 'first', 2: null, 3: 'third', 4: null}),
-      );
+      expect(parseInto('first,,third,'), equals({'1': 'first', '3': 'third'}));
     });
 
     test('collect unnamed attribute enclosed in equal signs', () {
-      expect(parseInto('=foo='), equals({1: '=foo='}));
+      expect(parseInto('=foo='), equals({'1': '=foo='}));
     });
 
     test('collect named attribute', () {
@@ -167,10 +164,10 @@ void main() {
       expect(
         parseInto('first, second="value two", third=three, Sherlock Holmes'),
         equals({
-          1: 'first',
+          '1': 'first',
           'second': 'value two',
           'third': 'three',
-          4: 'Sherlock Holmes',
+          '4': 'Sherlock Holmes',
         }),
       );
     });
@@ -178,7 +175,7 @@ void main() {
     test('collect mixed empty named and blank unnamed attributes', () {
       expect(
         parseInto('first,,third=,,fifth=five'),
-        equals({1: 'first', 2: null, 'third': '', 4: null, 'fifth': 'five'}),
+        equals({'1': 'first', 'third': '', 'fifth': 'five'}),
       );
     });
 
@@ -186,7 +183,7 @@ void main() {
       expect(
         parseInto("quote, options='opt1,,opt2 , opt3'"),
         equals({
-          1: 'quote',
+          '1': 'quote',
           'opt1-option': '',
           'opt2-option': '',
           'opt3-option': '',
@@ -198,7 +195,7 @@ void main() {
       expect(
         parseInto("quote, opts='opt1,,opt2 , opt3'"),
         equals({
-          1: 'quote',
+          '1': 'quote',
           'opt1-option': '',
           'opt2-option': '',
           'opt3-option': '',
@@ -207,17 +204,17 @@ void main() {
     });
 
     test('should ignore options attribute if empty', () {
-      expect(parseInto('quote, opts='), equals({1: 'quote'}));
+      expect(parseInto('quote, opts='), equals({'1': 'quote'}));
     });
 
     test('collect and rekey unnamed attributes', () {
       expect(
         parseInto('first, second one, third, fourth', null, ['a', 'b', 'c']),
         equals({
-          1: 'first',
-          2: 'second one',
-          3: 'third',
-          4: 'fourth',
+          '1': 'first',
+          '2': 'second one',
+          '3': 'third',
+          '4': 'fourth',
           'a': 'first',
           'b': 'second one',
           'c': 'third',
@@ -230,9 +227,8 @@ void main() {
       expect(
         parseInto('alt text,,100', null, ['alt', 'width', 'height']),
         equals({
-          1: 'alt text',
-          2: null,
-          3: '100',
+          '1': 'alt text',
+          '3': '100',
           'alt': 'alt text',
           'height': '100',
         }),
@@ -240,7 +236,7 @@ void main() {
     });
 
     test('rekey positional attributes', () {
-      final attributes = <Object, String?>{1: 'source', 2: 'java'};
+      final attributes = <String, String>{'1': 'source', '2': 'java'};
       AttributeList.rekeyAttributes(attributes, [
         'style',
         'language',
@@ -248,7 +244,12 @@ void main() {
       ]);
       expect(
         attributes,
-        equals({1: 'source', 2: 'java', 'style': 'source', 'language': 'java'}),
+        equals({
+          '1': 'source',
+          '2': 'java',
+          'style': 'source',
+          'language': 'java',
+        }),
       );
     });
   });

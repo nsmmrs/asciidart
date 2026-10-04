@@ -9,7 +9,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/path_resolver.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Collects warning messages passed to [PathResolver.onWarn].

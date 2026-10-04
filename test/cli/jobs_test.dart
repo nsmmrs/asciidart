@@ -8,11 +8,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/cli/invoker.dart';
-import 'package:asciidoctor/src/cli/options.dart';
-import 'package:asciidoctor/src/cli/parallel.dart';
-import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// GNU make's `-j` validation message (verified against make 4.4.1), with the
@@ -59,7 +55,7 @@ Future<({Invoker invoker, String out, String err})> invokeJobs(
     environment: <String, String>{},
   ))..redirectStreams(out, err);
   final savedLogger = LoggerManager.logger;
-  LoggerManager.logger = Logger(logdev: err)..level = savedLogger.level;
+  LoggerManager.logger = Logger(sink: err)..level = savedLogger.level;
   try {
     await invoker.invokeAsync(stdinSource: stdinSource);
   } finally {
@@ -238,46 +234,31 @@ void main() {
     });
   });
 
-  group('conversion worker codec', () {
-    test('buildConversionRequest drops the sink in stdout mode', () {
-      final request = buildConversionRequest(
-        infile: 'a.adoc',
-        processorOptions: {
-          'safe': SafeMode.unsafe,
-          'standalone': true,
-          'warnings': false,
-          'failure_level': Severity.fatal,
-          'to_file': StringBuffer(),
-        },
-        toStdout: true,
-        showTimings: false,
-      );
-      expect(request['to_file'], isNull);
-      expect(request['to_stdout'], isTrue);
-    });
+  group('conversion worker', () {
+    ConversionRequest request(
+      String infile, {
+      String? toDir,
+      bool toStdout = false,
+    }) => ConversionRequest(
+      infile: infile,
+      options: AsciidoctorOptions(
+        safe: SafeMode.unsafe,
+        standalone: true,
+        toDir: toDir,
+        mkdirs: toDir != null,
+      ),
+      toStdout: toStdout,
+      showTimings: false,
+    );
 
     test('runConversionJob converts a file', () {
       final src = writeParityFixtures();
       final dest = makeTempDir('jobs_codec_');
       final response = runConversionJob(
-        buildConversionRequest(
-          infile: '${src.path}/a.adoc',
-          processorOptions: {
-            'attributes': <String, String>{},
-            'safe': SafeMode.unsafe,
-            'standalone': true,
-            'warnings': false,
-            'failure_level': Severity.fatal,
-            'to_dir': dest.path,
-            'mkdirs': true,
-          },
-          toStdout: false,
-          showTimings: false,
-        ),
+        request('${src.path}/a.adoc', toDir: dest.path),
       );
-      expect(response['ok'], isTrue);
-      expect(response['records'], isEmpty);
-      expect(response['max_severity'], isNull);
+      expect(response.ok, isTrue);
+      expect(response.records, isEmpty);
       expect(
         File('${dest.path}/a.html').readAsStringSync(),
         contains('Hello A.'),
@@ -288,88 +269,39 @@ void main() {
       final src = writeParityFixtures();
       final dest = makeTempDir('jobs_codec_warn_');
       final response = runConversionJob(
-        buildConversionRequest(
-          infile: '${src.path}/b.adoc',
-          processorOptions: {
-            'safe': SafeMode.unsafe,
-            'standalone': true,
-            'warnings': false,
-            'failure_level': Severity.fatal,
-            'to_dir': dest.path,
-            'mkdirs': true,
-          },
-          toStdout: false,
-          showTimings: false,
-        ),
+        request('${src.path}/b.adoc', toDir: dest.path),
       );
-      expect(response['ok'], isTrue);
-      final records = response['records']! as List;
-      expect(records, hasLength(1));
-      final [severity, message, ...] = records.single! as List;
-      expect(severity, equals(Severity.warn.value));
-      expect(message, contains('section title out of sequence'));
-      expect(response['max_severity'], equals(Severity.warn.value));
+      expect(response.ok, isTrue);
+      final record = response.records.single;
+      expect(record.severity, equals(Severity.warn));
+      expect(record.message, contains('section title out of sequence'));
     });
 
     test('runConversionJob captures converted text in stdout mode', () {
       final src = writeParityFixtures();
       final response = runConversionJob(
-        buildConversionRequest(
-          infile: '${src.path}/a.adoc',
-          processorOptions: {
-            'safe': SafeMode.unsafe,
-            'standalone': true,
-            'warnings': false,
-            'failure_level': Severity.fatal,
-          },
-          toStdout: true,
-          showTimings: false,
-        ),
+        request('${src.path}/a.adoc', toStdout: true),
       );
-      expect(response['ok'], isTrue);
-      expect(response['output'], contains('Hello A.'));
+      expect(response.ok, isTrue);
+      expect(response.output, contains('Hello A.'));
       // Nothing is written to disk in stdout mode.
       expect(src.listSync().whereType<File>(), hasLength(4));
     });
 
-    test('runConversionJob reports failures as ok:false', () {
+    test('runConversionJob reports failures as unsuccessful', () {
       final src = writeParityFixtures();
       final response = runConversionJob(
-        buildConversionRequest(
-          infile: '${src.path}/no-such-file.adoc',
-          processorOptions: {
-            'safe': SafeMode.unsafe,
-            'standalone': true,
-            'warnings': false,
-            'failure_level': Severity.fatal,
-          },
-          toStdout: false,
-          showTimings: false,
-        ),
+        request('${src.path}/no-such-file.adoc'),
       );
-      expect(response['ok'], isFalse);
-      expect(response['error'], contains('no-such-file.adoc'));
+      expect(response.ok, isFalse);
+      expect(response.error, contains('no-such-file.adoc'));
     });
 
     test('runConversionJob restores the logger', () {
       final before = LoggerManager.logger;
       final src = writeParityFixtures();
       final dest = makeTempDir('jobs_codec_log_');
-      runConversionJob(
-        buildConversionRequest(
-          infile: '${src.path}/a.adoc',
-          processorOptions: {
-            'safe': SafeMode.unsafe,
-            'standalone': true,
-            'warnings': false,
-            'failure_level': Severity.fatal,
-            'to_dir': dest.path,
-            'mkdirs': true,
-          },
-          toStdout: false,
-          showTimings: false,
-        ),
-      );
+      runConversionJob(request('${src.path}/a.adoc', toDir: dest.path));
       expect(identical(LoggerManager.logger, before), isTrue);
     });
   });
@@ -661,7 +593,7 @@ void main() {
         environment: <String, String>{},
       )..redirectStreams(out, err);
       final savedLogger = LoggerManager.logger;
-      LoggerManager.logger = Logger(logdev: err)..level = savedLogger.level;
+      LoggerManager.logger = Logger(sink: err)..level = savedLogger.level;
       try {
         invoker.invoke();
       } finally {

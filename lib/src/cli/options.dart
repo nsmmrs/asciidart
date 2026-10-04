@@ -97,7 +97,7 @@ Example: asciidoctor input.adoc
     -R, --source-dir DIR             source root directory (used for calculating path in destination directory)
     -D, --destination-dir DIR        destination output directory (default: directory of source file)
         --failure-level LEVEL        set minimum log level that yields a non-zero exit code: [INFO, WARN, ERROR, FATAL] (default: FATAL)
-    -q, --quiet                      silence application log messages and script warnings (default: false)
+    -q, --quiet                      silence application log messages (default: false)
         --trace                      include backtrace information when reporting errors (default: false)
     -v, --verbose                    directs application messages logged at DEBUG or INFO level to STDERR (default: false)
     -t, --timings                    print timings report (default: false)

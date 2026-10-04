@@ -1,55 +1,49 @@
 /// Tests for the isolate worker pool (`lib/src/job_pool.dart`).
 ///
 /// Drives [IsolateJobPool] with a fake delay worker: jobs carry a
-/// `delay_ms` so completions land out of order while results must come back
+/// `delayMs` so completions land out of order while results must come back
 /// in input order.
 library;
 
-import 'dart:async';
 import 'dart:isolate';
 
-import 'package:asciidoctor/src/job_pool.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
-/// Fake worker: waits `delay_ms`, then echoes the request id and doubled n.
-void _delayWorker(SendPort mainPort) {
-  final workerPort = ReceivePort();
-  mainPort.send(workerPort.sendPort);
-  workerPort.listen((message) async {
-    final frame = message as List;
-    final index = frame[0] as int;
-    final request = (frame[1] as Map).cast<String, Object?>();
-    final replyTo = frame[2] as SendPort;
-    final delayMs = request['delay_ms']! as int;
-    if (delayMs > 0) {
-      await Future<void>.delayed(Duration(milliseconds: delayMs));
-    }
-    replyTo.send([
-      index,
-      {'id': request['id'], 'double': (request['n']! as int) * 2},
-    ]);
-  });
-}
+/// A fake job: an `id`, a value `n` to double and a delay before replying.
+typedef _Request = ({String id, int n, int delayMs});
+
+/// A fake job's reply: the request `id` and the doubled value.
+typedef _Response = ({String id, int doubled});
+
+/// Fake worker: waits `delayMs`, then echoes the request id and doubled n.
+void _delayWorker(SendPort mainPort) =>
+    serveJobs<_Request, _Response>(mainPort, (request) async {
+      if (request.delayMs > 0) {
+        await Future<void>.delayed(Duration(milliseconds: request.delayMs));
+      }
+      return (id: request.id, doubled: request.n * 2);
+    });
 
 /// Builds a fake request with the given [id], value [n] and [delayMs].
-Map<String, Object?> _request(String id, int n, int delayMs) {
-  return <String, Object?>{'id': id, 'n': n, 'delay_ms': delayMs};
-}
+_Request _request(String id, int n, int delayMs) =>
+    (id: id, n: n, delayMs: delayMs);
+
+/// Spawns a pool of [size] fake workers.
+Future<IsolateJobPool<_Request, _Response>> _spawn(int size) =>
+    IsolateJobPool.spawn<_Request, _Response>(
+      size: size,
+      entryPoint: _delayWorker,
+    );
 
 void main() {
   group('IsolateJobPool.spawn', () {
     test('rejects size less than 1', () {
-      expect(
-        IsolateJobPool.spawn(size: 0, entryPoint: _delayWorker),
-        throwsArgumentError,
-      );
+      expect(_spawn(0), throwsArgumentError);
     });
 
     test('reports its size', () async {
-      final pool = await IsolateJobPool.spawn(
-        size: 2,
-        entryPoint: _delayWorker,
-      );
+      final pool = await _spawn(2);
       try {
         expect(pool.size, equals(2));
       } finally {
@@ -60,27 +54,21 @@ void main() {
 
   group('IsolateJobPool.runOrdered', () {
     test('empty request list returns empty', () async {
-      final pool = await IsolateJobPool.spawn(
-        size: 2,
-        entryPoint: _delayWorker,
-      );
+      final pool = await _spawn(2);
       try {
-        expect(await pool.runOrdered([]), isEmpty);
+        expect(await pool.runOrdered(const []), isEmpty);
       } finally {
         await pool.close();
       }
     });
 
     test('single job round-trips its response', () async {
-      final pool = await IsolateJobPool.spawn(
-        size: 1,
-        entryPoint: _delayWorker,
-      );
+      final pool = await _spawn(1);
       try {
         final results = await pool.runOrdered([_request('a', 21, 0)]);
         expect(results, hasLength(1));
-        expect(results[0]['id'], equals('a'));
-        expect(results[0]['double'], equals(42));
+        expect(results[0].id, equals('a'));
+        expect(results[0].doubled, equals(42));
       } finally {
         await pool.close();
       }
@@ -89,10 +77,7 @@ void main() {
     test(
       'results return in input order despite out-of-order completion',
       () async {
-        final pool = await IsolateJobPool.spawn(
-          size: 3,
-          entryPoint: _delayWorker,
-        );
+        final pool = await _spawn(3);
         try {
           // Descending delays on three workers: job 2 finishes first, then
           // job 1, then job 0 (60-80ms gaps).
@@ -105,9 +90,9 @@ void main() {
           final results = await pool.runOrdered(requests);
           wallClock.stop();
           expect([
-            for (final r in results) r['id'],
+            for (final r in results) r.id,
           ], equals(['first', 'second', 'third']));
-          expect([for (final r in results) r['double']], equals([2, 4, 6]));
+          expect([for (final r in results) r.doubled], equals([2, 4, 6]));
           // Overlap proof: sequential in-order execution would take 380ms;
           // parallel execution takes ~200ms plus scheduling jitter.
           expect(wallClock.elapsedMilliseconds, lessThan(320));
@@ -118,10 +103,7 @@ void main() {
     );
 
     test('stays ordered with more jobs than workers', () async {
-      final pool = await IsolateJobPool.spawn(
-        size: 2,
-        entryPoint: _delayWorker,
-      );
+      final pool = await _spawn(2);
       try {
         final delays = [10, 90, 30, 70, 20, 80, 40];
         final requests = [
@@ -130,10 +112,10 @@ void main() {
         ];
         final results = await pool.runOrdered(requests);
         expect([
-          for (final r in results) r['id'],
+          for (final r in results) r.id,
         ], equals([for (var i = 0; i < delays.length; i++) 'job$i']));
         expect([
-          for (final r in results) r['double'],
+          for (final r in results) r.doubled,
         ], equals([for (var i = 0; i < delays.length; i++) i * 2]));
       } finally {
         await pool.close();
@@ -141,28 +123,22 @@ void main() {
     });
 
     test('pool is reusable across runs', () async {
-      final pool = await IsolateJobPool.spawn(
-        size: 2,
-        entryPoint: _delayWorker,
-      );
+      final pool = await _spawn(2);
       try {
         final first = await pool.runOrdered([_request('a', 1, 10)]);
         final second = await pool.runOrdered([
           _request('b', 2, 10),
           _request('c', 3, 10),
         ]);
-        expect(first.single['id'], equals('a'));
-        expect([for (final r in second) r['id']], equals(['b', 'c']));
+        expect(first.single.id, equals('a'));
+        expect([for (final r in second) r.id], equals(['b', 'c']));
       } finally {
         await pool.close();
       }
     });
 
     test('runOrdered after close throws StateError', () async {
-      final pool = await IsolateJobPool.spawn(
-        size: 1,
-        entryPoint: _delayWorker,
-      );
+      final pool = await _spawn(1);
       await pool.close();
       expect(pool.runOrdered([_request('a', 1, 0)]), throwsStateError);
     });
@@ -170,10 +146,7 @@ void main() {
 
   group('IsolateJobPool.close', () {
     test('close is idempotent', () async {
-      final pool = await IsolateJobPool.spawn(
-        size: 1,
-        entryPoint: _delayWorker,
-      );
+      final pool = await _spawn(1);
       await pool.close();
       await pool.close();
     });

@@ -16,16 +16,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/converter.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/list.dart';
-import 'package:asciidoctor/src/manpage.dart';
-import 'package:asciidoctor/src/section.dart';
-import 'package:asciidoctor/src/table.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// The troff leader marker (mirrors the private `_esc` in `manpage.dart`).
@@ -38,40 +29,38 @@ final String escBs = '$esc\\';
 final String escFs = '$esc.';
 
 /// Records log messages for assertions.
-class FakeLogger implements NodeLogger {
-  /// Messages by severity.
-  final List<Object?> warns = <Object?>[];
-  final List<Object?> errors = <Object?>[];
+class FakeLogger extends LoggerBase {
+  /// Creates a recording logger.
+  new() : super(Severity.warn);
+
+  /// Warning messages, in logging order.
+  final List<String> warns = <String>[];
+
+  /// Error messages, in logging order.
+  final List<String> errors = <String>[];
 
   @override
-  void debug(Object? message) {}
+  Severity? get maxSeverity => null;
 
   @override
-  void info(Object? message) {}
-
-  @override
-  void warn(Object? message) {
-    warns.add(message);
+  void add(Severity severity, LogMessage message) {
+    if (severity == Severity.warn) warns.add('$message');
+    if (severity == Severity.error) errors.add('$message');
   }
 
   @override
-  void error(Object? message) {
-    errors.add(message);
-  }
-
-  @override
-  void fatal(Object? message) {}
+  Future<void> close() async {}
 }
 
 /// Runs [body] with a recording logger installed.
 void usingMemoryLogger(void Function(FakeLogger logger) body) {
-  final saved = AbstractNode.currentLogger;
+  final saved = LoggerManager.logger;
   final logger = FakeLogger();
-  AbstractNode.currentLogger = logger;
+  LoggerManager.logger = logger;
   try {
     body(logger);
   } finally {
-    AbstractNode.currentLogger = saved;
+    LoggerManager.logger = saved;
   }
 }
 
@@ -116,10 +105,13 @@ class StubSection extends Section {
   new({
     AbstractBlock? parent,
     int? level,
-    Object? numbered = false,
-    Map<String, Object?>? attributes,
+    bool numbered = false,
+    Map<String, String>? attributes,
     this.stubTitle,
-  }) : super(parent, level, numbered, attributes);
+  }) : super(parent, level) {
+    this.numbered = numbered;
+    if (attributes != null) updateAttributes(attributes);
+  }
 
   /// The value [title] returns (`null` means [hasTitle] is false).
   final String? stubTitle;
@@ -149,23 +141,29 @@ class StubCell extends Cell {
   new(
     Column? column,
     String? cellText, {
-    Map<String, Object?>? attributes = const <String, Object?>{},
-    Map<String, Object?>? opts,
+    CellSpec? spec = const CellSpec(),
     this.stubText,
-    this.stubContent,
-  }) : super(column, cellText, attributes, opts);
+    this.stubParagraphs = const <String>[],
+    this.stubContent = '',
+  }) : super(column, cellText, spec);
 
   /// The value [text] returns.
   final String? stubText;
 
+  /// The value [paragraphs] returns.
+  final List<String> stubParagraphs;
+
   /// The value [content] returns.
-  final Object? stubContent;
+  final String stubContent;
 
   @override
-  String? get text => stubText;
+  String get text => stubText ?? '';
 
   @override
-  Object? content() => stubContent;
+  List<String> get paragraphs => stubParagraphs;
+
+  @override
+  String content() => stubContent;
 }
 
 /// A list returning a fixed title (avoids the substitutors wave).
@@ -202,11 +200,10 @@ class StubTable extends Table {
 ///
 /// [attributes] are assigned directly; [options] go to the constructor.
 Document makeDoc({
-  Map<String, Object?> attributes = const <String, Object?>{},
-  Map<String, Object?> options = const <String, Object?>{},
+  Map<String, String> attributes = const <String, String>{},
+  AsciidoctorOptions options = const AsciidoctorOptions(),
 }) {
-  final opts = <String, Object?>{'backend': 'manpage', ...options};
-  final doc = (Document(<String>[], opts))
+  final doc = (Document.lines(<String>[], options.copyWith(backend: 'manpage')))
     ..converter = ManpageConverter('manpage');
   doc.attributes.addAll(attributes);
   return doc;
@@ -214,8 +211,8 @@ Document makeDoc({
 
 /// Creates a document with the standard manpage attributes installed.
 Document manDoc({
-  Map<String, Object?> attributes = const <String, Object?>{},
-  Map<String, Object?> options = const <String, Object?>{},
+  Map<String, String> attributes = const <String, String>{},
+  AsciidoctorOptions options = const AsciidoctorOptions(),
 }) => makeDoc(
   attributes: {
     'mantitle': 'command',
@@ -240,20 +237,20 @@ ManpageConverter convOf(Document doc) => doc.converter as ManpageConverter;
 StubBlock para(
   Document doc,
   String text, {
-  Map<String, Object?> attributes = const <String, Object?>{},
+  Map<String, String> attributes = const <String, String>{},
   String? title,
 }) => StubBlock(
   doc,
   'paragraph',
-  attributes: Map<String, Object?>.of(attributes),
+  attributes: Map<String, String>.of(attributes),
   stubbedContent: text,
   stubTitle: title,
 );
 
 /// Creates a table with one column per entry in [widths] under [doc].
 Table makeTable(Document doc, List<int> widths) {
-  final table = (Table(doc, <String, Object?>{}))
-    ..createColumns(widths.map((w) => <String, Object?>{'width': w}).toList());
+  final table = (Table(doc, <String, String>{}))
+    ..createColumns(widths.map((w) => ColumnSpec(width: w)).toList());
   return table;
 }
 
@@ -262,30 +259,28 @@ StubCell textCell(
   Table table,
   int col,
   String text, {
-  Map<String, Object?> attributes = const <String, Object?>{},
+  CellSpec spec = const CellSpec(),
 }) => StubCell(
   table.columns[col],
   text,
-  attributes: Map<String, Object?>.of(attributes),
+  spec: spec,
   stubText: text,
-  stubContent: <String>[text],
+  stubParagraphs: <String>[text],
 );
 
 /// Appends a `[terms, description]` pair to the dlist [node].
 void addDlistPair(ListBlock node, List<ListItem> terms, ListItem? dd) {
-  node.items.add(<Object?>[terms, dd]);
+  node.entries.add(DlistEntry(terms, dd));
 }
 
 /// Registers [ref] under [id] in the refs catalog of [doc].
-void registerRef(Document doc, String id, Object? ref) {
-  (doc.catalog['refs']! as Map<String, Object?>)[id] = ref;
+void registerRef(Document doc, String id, AbstractNode ref) {
+  doc.catalog.refs[id] = ref;
 }
 
 /// Registers a footnote with [index] and [text] on [doc].
-void addFootnote(Document doc, Object? index, String text) {
-  (doc.catalog['footnotes']! as List<Footnote>).add(
-    Footnote(index, 'fn$index', text),
-  );
+void addFootnote(Document doc, int index, String text) {
+  doc.catalog.footnotes.add(Footnote('$index', 'fn$index', text));
 }
 
 /// Converts a bare link with [target] (and optional [text]) through [conv].
@@ -312,10 +307,10 @@ void main() {
 
     test('backend traits mirror init_backend_traits', () {
       final conv = ManpageConverter('manpage');
-      expect(conv.baseBackend, 'manpage');
-      expect(conv.fileType, 'man');
-      expect(conv.outfileSuffix, '.man');
-      expect(conv.supportsTemplates, isTrue);
+      expect(conv.backendTraits.basebackend, 'manpage');
+      expect(conv.backendTraits.filetype, 'man');
+      expect(conv.backendTraits.outfilesuffix, '.man');
+      expect(conv.backendTraits.supportsTemplates, isTrue);
     });
 
     test('convert dispatches on the node name', () {
@@ -436,12 +431,8 @@ void main() {
     });
 
     test('does not escape hyphens in mannames in the NAME section', () {
-      final doc = manDoc(
-        attributes: {
-          'manname': 'git-describe',
-          'mannames': ['git-describe'],
-        },
-      );
+      final doc = manDoc(attributes: {'manname': 'git-describe'})
+        ..mannames = ['git-describe'];
       expect(
         convOf(doc).convertDocument(doc),
         contains('\n.SH "NAME"\ngit-describe \\- does stuff\n'),
@@ -449,11 +440,7 @@ void main() {
     });
 
     test('outputs multiple mannames in the NAME section', () {
-      final doc = manDoc(
-        attributes: {
-          'mannames': ['command', 'alt_command'],
-        },
-      );
+      final doc = manDoc()..mannames = ['command', 'alt_command'];
       expect(
         convOf(doc).convertDocument(doc),
         contains('command, alt_command \\- does stuff\n'),
@@ -487,7 +474,7 @@ void main() {
 
     test('emits an AUTHORS section for multiple authors', () {
       final doc = manDoc(
-        attributes: {'authorcount': 2, 'author_2': 'Second Author'},
+        attributes: {'authorcount': '2', 'author_2': 'Second Author'},
       );
       final output = convOf(doc).convertDocument(doc);
       expect(
@@ -1286,7 +1273,7 @@ void main() {
 
     test('creates header, body and footer rows in order', () {
       final doc = manDoc();
-      final table = (makeTable(doc, [100]))..hasHeaderOption = true;
+      final table = (makeTable(doc, [100]))..header = TableHeader.explicit;
       table.rows.head.add([textCell(table, 0, 'Header')]);
       table.rows.body.add([textCell(table, 0, 'Body 1')]);
       table.rows.body.add([textCell(table, 0, 'Body 2')]);
@@ -1318,12 +1305,10 @@ void main() {
     test('manifies table titles', () {
       final doc = manDoc();
       final table =
-          StubTable(doc, <String, Object?>{}, stubTitle: 'Table of options')
+          StubTable(doc, <String, String>{}, stubTitle: 'Table of options')
             ..caption = 'Table 1. '
-            ..createColumns(
-              List.generate(3, (_) => <String, Object?>{'width': 1}),
-            )
-            ..hasHeaderOption = true;
+            ..createColumns(List.generate(3, (_) => const ColumnSpec()))
+            ..header = TableHeader.explicit;
       table.rows.head.add([
         textCell(table, 0, 'Name'),
         textCell(table, 1, 'Description'),
@@ -1373,7 +1358,7 @@ void main() {
         table.columns[0],
         'x',
         stubText: 'x',
-        stubContent: <String>['first paragraph', 'second paragraph'],
+        stubParagraphs: <String>['first paragraph', 'second paragraph'],
       );
       table.rows.body.add([cell]);
       expect(
@@ -1388,7 +1373,7 @@ void main() {
       final literal = StubCell(
         table.columns[1],
         'b\nc    _d_\n.',
-        attributes: {'style': 'literal'},
+        spec: const CellSpec(style: 'literal'),
         stubText: 'b\nc    _d_\n.',
       );
       table.rows.body.add([textCell(table, 0, 'a'), literal]);
@@ -1429,9 +1414,9 @@ void main() {
 
     test('marks colspan cells with st', () {
       final doc = manDoc();
-      final table = (makeTable(doc, [1, 1, 1]))..hasHeaderOption = true;
+      final table = (makeTable(doc, [1, 1, 1]))..header = TableHeader.explicit;
       table.rows.head.add([
-        textCell(table, 0, 'wide cell', attributes: {'colspan': 3}),
+        textCell(table, 0, 'wide cell', spec: const CellSpec(colspan: 3)),
       ]);
       table.rows.body.add([
         textCell(table, 0, 'a'),
@@ -1446,7 +1431,7 @@ void main() {
       final doc = manDoc();
       final table = makeTable(doc, [50, 50]);
       table.rows.body.add([
-        textCell(table, 0, 'a', attributes: {'rowspan': 2}),
+        textCell(table, 0, 'a', spec: const CellSpec(rowspan: 2)),
         textCell(table, 1, 'b'),
       ]);
       table.rows.body.add([textCell(table, 1, 'c')]);
@@ -1643,12 +1628,15 @@ void main() {
           '.Magic 8-Ball\n'
           '[#magic-8-ball]\n'
           'image::signs-point-to-yes.jpg[]\n';
-      final doc = Document(input, {
-        'backend': 'manpage',
-        'standalone': true,
-        'attributes': {'xrefstyle': 'full'},
-      }).parse();
-      final lines = (doc.convert()! as String).split('\n');
+      final doc = Document(
+        input,
+        const AsciidoctorOptions(
+          backend: 'manpage',
+          standalone: true,
+          attributes: {'xrefstyle': 'full'},
+        ),
+      ).parse();
+      final lines = doc.convert().split('\n');
       expect(
         lines,
         contains(r'To get your fortune, see Figure 1, \(lqMagic 8\-Ball\(rq.'),
@@ -1684,7 +1672,11 @@ void main() {
 
     test('converts footnotes by index', () {
       final doc = manDoc();
-      final node = Inline(para(doc, ''), 'footnote', attributes: {'index': 1});
+      final node = Inline(
+        para(doc, ''),
+        'footnote',
+        attributes: {'index': '1'},
+      );
       expect(convOf(doc).convertInlineFootnote(node), '[1]');
     });
 
@@ -1750,13 +1742,7 @@ void main() {
 
     test('converts a single key', () {
       final doc = manDoc();
-      final node = Inline(
-        para(doc, ''),
-        'kbd',
-        attributes: {
-          'keys': ['Enter'],
-        },
-      );
+      final node = Inline(para(doc, ''), 'kbd', keys: ['Enter']);
       expect(
         convOf(doc).convertInlineKbd(node),
         '<${escBs}f(CR>Enter</${escBs}fP>',
@@ -1765,13 +1751,7 @@ void main() {
 
     test('joins key sequences with plus', () {
       final doc = manDoc();
-      final node = Inline(
-        para(doc, ''),
-        'kbd',
-        attributes: {
-          'keys': ['Ctrl', 's'],
-        },
-      );
+      final node = Inline(para(doc, ''), 'kbd', keys: ['Ctrl', 's']);
       expect(
         convOf(doc).convertInlineKbd(node),
         '<${escBs}f(CR>Ctrl${escBs}0+${escBs}0s</${escBs}fP>',
@@ -1783,7 +1763,8 @@ void main() {
       final node = Inline(
         para(doc, ''),
         'menu',
-        attributes: {'menu': 'File', 'submenus': <String>[]},
+        attributes: {'menu': 'File'},
+        submenus: <String>[],
       );
       expect(
         convOf(doc).convertInlineMenu(node),
@@ -1796,11 +1777,8 @@ void main() {
       final node = Inline(
         para(doc, ''),
         'menu',
-        attributes: {
-          'menu': 'File',
-          'submenus': <String>[],
-          'menuitem': 'New Tab',
-        },
+        attributes: {'menu': 'File', 'menuitem': 'New Tab'},
+        submenus: <String>[],
       );
       final caret = '${escBs}0$escBs(fc${escBs}0';
       expect(
@@ -1814,11 +1792,8 @@ void main() {
       final node = Inline(
         para(doc, ''),
         'menu',
-        attributes: {
-          'menu': 'View',
-          'submenus': ['Zoom'],
-          'menuitem': 'Zoom In',
-        },
+        attributes: {'menu': 'View', 'menuitem': 'Zoom In'},
+        submenus: ['Zoom'],
       );
       final caret = '${escBs}0$escBs(fc${escBs}0';
       expect(
@@ -1988,23 +1963,14 @@ void main() {
       final parent = para(doc, '');
       final btn = conv.convertInlineButton(Inline(parent, 'button', text: 'S'));
       final kbd = conv.convertInlineKbd(
-        Inline(
-          parent,
-          'kbd',
-          attributes: {
-            'keys': ['Ctrl', 's'],
-          },
-        ),
+        Inline(parent, 'kbd', keys: ['Ctrl', 's']),
       );
       final menu = conv.convertInlineMenu(
         Inline(
           parent,
           'menu',
-          attributes: {
-            'menu': 'File',
-            'submenus': <String>[],
-            'menuitem': 'New',
-          },
+          attributes: {'menu': 'File', 'menuitem': 'New'},
+          submenus: <String>[],
         ),
       );
       expect(

@@ -12,10 +12,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/cli/options.dart';
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/version.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Finds the enclosing repository checkout directory.
@@ -77,11 +74,7 @@ void main() {
       expect(options.standalone, isTrue);
       expect(options.templateDirs, isNull);
       expect(options.templateEngine, isNull);
-      expect(options.eruby, isNull);
       expect(options.verbose, equals(1));
-      expect(options.warnings, isFalse);
-      expect(options.loadPaths, isNull);
-      expect(options.requires, isNull);
       expect(options.baseDir, isNull);
       expect(options.sourceDir, isNull);
       expect(options.destinationDir, isNull);
@@ -90,17 +83,9 @@ void main() {
       expect(options.timings, isFalse);
     });
 
-    test('seeds attributes, doctype, backend and eruby', () {
-      // Option-parsing half of invoker_test 'should allow options Hash to be
-      // passed as first argument of constructor' (the Invoker.new half needs
-      // the invoker card).
-      final options = CliOptions(
-        attributes: {'toc': ''},
-        doctype: 'book',
-        eruby: 'erubis',
-      );
+    test('seeds attributes, doctype and backend', () {
+      final options = CliOptions(attributes: {'toc': ''}, doctype: 'book');
       expect(options.attributes, equals({'toc': '', 'doctype': 'book'}));
-      expect(options.eruby, equals('erubis'));
 
       final backend = CliOptions(backend: 'docbook5');
       expect(backend.attributes, equals({'backend': 'docbook5'}));
@@ -110,15 +95,6 @@ void main() {
       final seed = {'toc': ''};
       final options = CliOptions(attributes: seed);
       expect(identical(options.attributes, seed), isTrue);
-    });
-
-    test('accepts a bare string or list for templateDirs', () {
-      expect(CliOptions(templateDirs: 'dir').templateDirs, equals(['dir']));
-      expect(
-        CliOptions(templateDirs: ['a', 'b']).templateDirs,
-        equals(['a', 'b']),
-      );
-      expect(() => CliOptions(templateDirs: 42), throwsArgumentError);
     });
 
     test('ignores seeds for trace, timings and failure level', () {
@@ -432,18 +408,18 @@ void main() {
     });
 
     test('ambiguous enumerated values fail', () {
-      var result = parseCli(['--eruby', 'er', sampleFile]);
+      var result = parseCli(['--safe-mode', 's', sampleFile]);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: ambiguous argument: --eruby er'),
+        equals('asciidoctor: ambiguous argument: --safe-mode s'),
       );
 
-      result = parseCli(['--eruby=er', sampleFile]);
+      result = parseCli(['--safe-mode=s', sampleFile]);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: ambiguous argument: --eruby=er'),
+        equals('asciidoctor: ambiguous argument: --safe-mode=s'),
       );
 
       result = parseCli(['--safe-mode', 's', sampleFile]);
@@ -558,13 +534,30 @@ void main() {
     });
   });
 
+  group('Ruby-specific options', () {
+    for (final args in [
+      ['-r', 'foobar'],
+      ['--require', 'foobar'],
+      ['-I', 'lib'],
+      ['--load-path', 'lib'],
+      ['--eruby', 'erb'],
+      ['-w'],
+      ['--warnings'],
+    ]) {
+      test('rejects ${args[0]}', () {
+        final result = parseCli([...args, sampleFile]);
+        expect(result.exitCode, equals(1));
+        expect(result.err, startsWith('asciidoctor: invalid option: '));
+      });
+    }
+  });
+
   group('basic parsing', () {
     test('basic argument assignment', () {
-      final result = parseCli(['-w', '-v', '-e', '-d', 'book', sampleFile]);
+      final result = parseCli(['-v', '-e', '-d', 'book', sampleFile]);
       expect(result.exitCode, isNull);
       final options = result.options;
       expect(options.verbose, equals(2));
-      expect(options.warnings, isTrue);
       expect(options.standalone, isFalse);
       expect(options.attributes!['doctype'], equals('book'));
       expect(options.inputFiles, equals([sampleFile]));
@@ -641,14 +634,6 @@ void main() {
       final result = parseCli(['-E', 'haml', sampleFile]);
       expect(result.exitCode, isNull);
       expect(result.options.templateEngine, equals('haml'));
-    });
-
-    test('sets eRuby implementation', () {
-      // Option-parsing half of invoker_test 'should set eRuby impl if
-      // specified'.
-      final result = parseCli(['--eruby', 'erubi', sampleFile]);
-      expect(result.exitCode, isNull);
-      expect(result.options.eruby, equals('erubi'));
     });
   });
 
@@ -872,12 +857,6 @@ void main() {
       expect(result.options.verbose, equals(0));
     });
 
-    test('enables warnings when -w flag is specified', () {
-      final result = parseCli(['-w', sampleFile]);
-      expect(result.exitCode, isNull);
-      expect(result.options.warnings, isTrue);
-    });
-
     test('enables timings when -t flag is specified', () {
       final result = parseCli(['-t', sampleFile]);
       expect(result.exitCode, isNull);
@@ -920,84 +899,6 @@ void main() {
         equals(['custom-backend', 'custom-backend-hacks']),
       );
     });
-
-    test('multiple -r flags fail for unloadable libraries', () {
-      // Dart cannot load libraries at runtime, so every require fails
-      // exactly as an unloadable library does in Ruby.
-      final options = CliOptions();
-      final out = StringBuffer();
-      final err = StringBuffer();
-      final exitCode = options.parse(
-        ['-r', 'foobar', '-r', 'foobaz', sampleFile],
-        out: out,
-        err: err,
-        environment: <String, String>{},
-      );
-      expect(exitCode, equals(1));
-      expect(
-        err.toString(),
-        contains("asciidoctor: FAILED: 'foobar' could not be loaded"),
-      );
-      expect(options.requires, equals(['foobar', 'foobaz']));
-    });
-
-    test('-r flag with multiple values requires specified libraries', () {
-      final result = parseCli(['-r', 'foobar,foobaz', sampleFile]);
-      expect(result.exitCode, equals(1));
-      expect(
-        result.err,
-        contains("asciidoctor: FAILED: 'foobar' could not be loaded"),
-      );
-      expect(result.options.requires, equals(['foobar', 'foobaz']));
-    });
-
-    test('suggests --trace when a require fails', () {
-      // Option-parsing half of invoker_test 'should suggest --trace option
-      // if not present when program raises error'.
-      final result = parseCli(['-r', 'no-such-module', sampleFile]);
-      expect(result.exitCode, equals(1));
-      expect(
-        result.err,
-        contains(
-          "'no-such-module' could not be loaded\n  Use --trace to show "
-          'backtrace',
-        ),
-      );
-    });
-
-    test('raises when --trace is specified and a require fails', () {
-      // Option-parsing half of invoker_test 'should raise error when --trace
-      // option is specified and program raises error'. Ruby re-raises the
-      // LoadError; Dart throws UnsupportedError (dynamic loading is
-      // unsupported).
-      expect(
-        () => parseCli(['--trace', '-r', 'no-such-module', sampleFile]),
-        throwsUnsupportedError,
-      );
-    });
-
-    test('-I option records load paths', () {
-      final result = parseCli(['-I', 'foobar', '-I', 'foobaz', sampleFile]);
-      expect(result.exitCode, isNull);
-      expect(result.options.loadPaths, equals(['foobar', 'foobaz']));
-    });
-
-    test('-I option splits path lists on the platform separator', () {
-      final separator = Platform.isWindows ? ';' : ':';
-      final result = parseCli(['-I', 'foobar${separator}foobaz', sampleFile]);
-      expect(result.exitCode, isNull);
-      expect(result.options.loadPaths, equals(['foobar', 'foobaz']));
-    });
-
-    test(
-      '-I option appends paths to the load path',
-      skip:
-          'PERMANENT: Dart '
-          r'has no $LOAD_PATH; values are recorded in loadPaths only.',
-      () {
-        // The `\$:` assertions of the options_test -I tests.
-      },
-    );
   });
 
   group('input files', () {
@@ -1239,9 +1140,9 @@ void main() {
       expect(result.options.outputFile, equals('-'));
 
       // A leading `=` is kept, not stripped.
-      result = parseCli(['-I=foo', sampleFile]);
+      result = parseCli(['-o=foo', sampleFile]);
       expect(result.exitCode, isNull);
-      expect(result.options.loadPaths, equals(['=foo']));
+      expect(result.options.outputFile, equals('=foo'));
 
       result = parseCli(['-a=x', sampleFile]);
       expect(result.exitCode, isNull);
@@ -1280,9 +1181,9 @@ void main() {
       expect(result.exitCode, isNull);
       expect(result.options.attributes!['backend'], equals('-e'));
 
-      result = parseCli(['-I', '-foo', sampleFile]);
+      result = parseCli(['-D', '-foo', sampleFile]);
       expect(result.exitCode, isNull);
-      expect(result.options.loadPaths, equals(['-foo']));
+      expect(result.options.destinationDir, equals('-foo'));
 
       result = parseCli(['-o', '--', sampleFile]);
       expect(result.exitCode, isNull);
@@ -1331,13 +1232,6 @@ void main() {
       skip:
           'WAVE-GATED: deferred to the template-converter phase '
           "(Ruby requires the 'tilt' gem).",
-      () {},
-    );
-
-    test(
-      'enables Ruby script warnings for -w',
-      skip:
-          r'PERMANENT: No Dart equivalent of $VERBOSE-backed script warnings.',
       () {},
     );
 

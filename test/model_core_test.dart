@@ -16,15 +16,7 @@ library;
 import 'dart:convert' show utf8;
 import 'dart:io' show Directory, File;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/callouts.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/path_resolver.dart';
-import 'package:asciidoctor/src/substitutors.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Records conversions for assertions.
@@ -33,51 +25,51 @@ class FakeConverter implements NodeConverter {
   final List<AbstractNode> converted = <AbstractNode>[];
 
   /// Computes the conversion result (default emits a `<nodeName>` marker).
-  Object? Function(AbstractNode node)? handler;
+  String? Function(AbstractNode node)? handler;
 
   @override
-  Object? convert(AbstractNode node) {
+  String? convert(AbstractNode node) {
     converted.add(node);
     return handler?.call(node) ?? '<${node.nodeName}>';
   }
 }
 
 /// Records log messages for assertions.
-class FakeLogger implements NodeLogger {
-  /// Messages by severity.
-  final List<Object?> debugs = <Object?>[];
-  final List<Object?> infos = <Object?>[];
-  final List<Object?> warns = <Object?>[];
-  final List<Object?> errors = <Object?>[];
-  final List<Object?> fatals = <Object?>[];
+class FakeLogger extends LoggerBase {
+  /// Creates a recording logger.
+  new() : super(Severity.debug);
+
+  /// Messages by severity, in logging order.
+  final List<String> debugs = <String>[];
+  final List<String> infos = <String>[];
+  final List<String> warns = <String>[];
+  final List<String> errors = <String>[];
+  final List<String> fatals = <String>[];
 
   @override
-  void debug(Object? message) {
-    debugs.add(message);
+  Severity? get maxSeverity => null;
+
+  @override
+  void add(Severity severity, LogMessage message) {
+    switch (severity) {
+      case Severity.debug:
+        debugs.add('$message');
+      case Severity.info:
+        infos.add('$message');
+      case Severity.warn:
+        warns.add('$message');
+      case Severity.error:
+        errors.add('$message');
+      case Severity.fatal || Severity.unknown:
+        fatals.add('$message');
+    }
   }
 
   @override
-  void info(Object? message) {
-    infos.add(message);
-  }
-
-  @override
-  void warn(Object? message) {
-    warns.add(message);
-  }
-
-  @override
-  void error(Object? message) {
-    errors.add(message);
-  }
-
-  @override
-  void fatal(Object? message) {
-    fatals.add(message);
-  }
+  Future<void> close() async {}
 }
 
-/// Stands in for `Document` (document wave) in these tests.
+/// Stands in for `Document` in these tests.
 class FakeDocument extends AbstractBlock implements NodeDocument {
   new({
     super.attributes,
@@ -105,9 +97,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
   final FakeConverter converter = FakeConverter();
 
   @override
-  final Map<String, Object?> catalog = <String, Object?>{
-    'refs': <String, Object?>{},
-  };
+  final Catalog catalog = Catalog();
 
   @override
   final Callouts callouts = Callouts();
@@ -119,55 +109,54 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
   bool sourcemap = false;
 
   /// Counters by name (mirrors `Document#counter` storage).
-  final Map<String, Object?> counters = <String, Object?>{};
+  final Map<String, String> counters = <String, String>{};
 
   /// Counter stores as `(name, value, block)` records.
   ///
   /// Mirrors `increment_and_store_counter`, which stashes an attribute
-  /// entry for later playback rather than a plain block attribute (Ruby
-  /// leaves `block.attributes['example-number']` unset).
-  final List<({String name, Object? value, AbstractBlock block})>
-  storedCounters = <({String name, Object? value, AbstractBlock block})>[];
+  /// entry for later playback rather than a plain block attribute (the
+  /// block's `example-number` attribute stays unset).
+  final List<({String name, String value, AbstractBlock block})>
+  storedCounters = <({String name, String value, AbstractBlock block})>[];
 
-  /// Attribute maps passed to [playbackAttributes], in order.
-  final List<Map<String, Object?>> playedBack = <Map<String, Object?>>[];
+  /// Blocks passed to [playbackAttributes], in order.
+  final List<AbstractBlock> playedBack = <AbstractBlock>[];
 
   @override
-  Object? counter(String name, [Object? seed]) {
-    final Object? next;
-    if (counters.containsKey(name)) {
-      next = Helpers.nextVal(counters[name]!);
-    } else if (seed != null) {
-      next = seed is String && int.tryParse(seed) != null
-          ? int.parse(seed)
-          : seed;
+  String counter(String name, [String? seed]) {
+    final current = counters[name];
+    final String next;
+    if (current != null) {
+      final number = int.tryParse(current);
+      next = number != null
+          ? '${number + 1}'
+          : String.fromCharCode(current.codeUnitAt(0) + 1);
     } else {
-      next = 1;
+      next = seed ?? '1';
     }
-    counters[name] = next;
-    attributes[name] = next;
-    return next;
+    return counters[name] = attributes[name] = next;
   }
 
   @override
-  Object? incrementAndStoreCounter(String counterName, AbstractBlock block) {
+  String incrementAndStoreCounter(String counterName, AbstractBlock block) {
     final value = counter(counterName);
     storedCounters.add((name: counterName, value: value, block: block));
     return value;
   }
 
   @override
-  void playbackAttributes(Map<String, Object?> blockAttributes) {
-    playedBack.add(blockAttributes);
+  void playbackAttributes(AbstractBlock block) {
+    playedBack.add(block);
   }
 }
 
-/// Stands in for `Section` (section wave) in these tests.
+/// Stands in for `Section` in these tests.
 class FakeSection extends AbstractBlock implements NodeSection {
   new(
     AbstractBlock? parent, {
     super.attributes,
     this.numbered = false,
+    this.chapterNumbering = false,
     this.sectname,
   }) : super(parent, 'section');
 
@@ -175,21 +164,13 @@ class FakeSection extends AbstractBlock implements NodeSection {
   int index = 0;
 
   @override
-  Object? numbered;
+  bool numbered;
+
+  @override
+  bool chapterNumbering;
 
   @override
   String? sectname;
-}
-
-/// Stands in for the reader cursor (reader wave) in these tests.
-class FakeSourceLocation implements NodeSourceLocation {
-  new(this.file, this.lineno);
-
-  @override
-  final String? file;
-
-  @override
-  final int? lineno;
 }
 
 /// A block with canned URI responses for [AbstractNode.fetchUri].
@@ -222,13 +203,13 @@ class UriBlock extends Block {
 
 void main() {
   late FakeLogger testLogger;
-  late NodeLogger savedLogger;
+  late LoggerBase savedLogger;
   late Directory fixtureDir;
 
   setUp(() {
-    savedLogger = AbstractNode.currentLogger;
+    savedLogger = LoggerManager.logger;
     testLogger = FakeLogger();
-    AbstractNode.currentLogger = testLogger;
+    LoggerManager.logger = testLogger;
     fixtureDir = Directory.systemTemp.createTempSync('model_core');
     Directory('${fixtureDir.path}/img').createSync();
     File('${fixtureDir.path}/img/a.png')
@@ -238,12 +219,12 @@ void main() {
   });
 
   tearDown(() {
-    AbstractNode.currentLogger = savedLogger;
+    LoggerManager.logger = savedLogger;
     fixtureDir.deleteSync(recursive: true);
   });
 
   FakeDocument makeDoc({
-    Map<String, Object?>? attributes,
+    Map<String, String>? attributes,
     int safe = SafeMode.safe,
   }) => FakeDocument(
     attributes: attributes,
@@ -289,7 +270,7 @@ void main() {
     });
 
     test('attributes map is copied, not aliased', () {
-      final source = <String, Object?>{'a': '1'};
+      final source = <String, String>{'a': '1'};
       final block = Block(makeDoc(), 'paragraph', attributes: source);
       expect(block.attributes, equals({'a': '1'}));
       expect(block.attributes, isNot(same(source)));
@@ -325,25 +306,20 @@ void main() {
       doc = makeDoc();
       doc.attributes['x'] = 'doc-x';
       doc.attributes['y'] = 'doc-y';
-      block = Block(doc, 'paragraph', attributes: {'x': 'node-x', 'f': false});
+      block = Block(doc, 'paragraph', attributes: {'x': 'node-x'});
     });
 
     test('reads node attribute, default, and fallbacks', () {
       expect(block.attr('x'), equals('node-x'));
       expect(block.attr('missing', 'dflt'), equals('dflt'));
-      expect(block.attr('missing', 'dflt', true), equals('dflt'));
+      expect(block.attr('missing', 'dflt', 'missing'), equals('dflt'));
       expect(block.attr('missing', 'dflt', 'y'), equals('doc-y'));
-    });
-
-    test('false values count as missing', () {
-      expect(block.attr('f', 'dflt'), equals('dflt'));
-      expect(block.attr('f', 'dflt', true), equals('dflt'));
     });
 
     test('hasAttr finds node, document, and compared values', () {
       expect(block.hasAttr('x'), isTrue);
       expect(block.hasAttr('missing'), isFalse);
-      expect(block.hasAttr('missing', null, true), isFalse);
+      expect(block.hasAttr('missing', null, 'missing'), isFalse);
       expect(block.hasAttr('missing', null, 'y'), isTrue);
       expect(block.hasAttr('x', 'node-x'), isTrue);
       expect(block.hasAttr('x', 'nope'), isFalse);
@@ -351,14 +327,9 @@ void main() {
       expect(block.hasAttr('missing', 'nope', 'y'), isFalse);
     });
 
-    test('hasAttr without expected value sees false-valued keys', () {
-      expect(block.hasAttr('f'), isTrue);
-      expect(block.hasAttr('f', false), isTrue);
-    });
-
     test('document node never falls back', () {
-      expect(doc.attr('missing', 'dflt', true), equals('dflt'));
-      expect(doc.hasAttr('missing', null, true), isFalse);
+      expect(doc.attr('missing', 'dflt', 'y'), equals('dflt'));
+      expect(doc.hasAttr('missing', null, 'y'), isFalse);
     });
 
     test('setAttr reports overwrite refusals', () {
@@ -375,9 +346,9 @@ void main() {
     });
 
     test('updateAttributes returns the node attributes', () {
-      final updated = block.updateAttributes({'u': 1});
+      final updated = block.updateAttributes({'u': '1'});
       expect(updated, same(block.attributes));
-      expect(block.attr('u'), equals(1));
+      expect(block.attr('u'), equals('1'));
     });
   });
 
@@ -408,8 +379,6 @@ void main() {
       expect(block.roles, equals(['a']));
       block.attributes['role'] = 'a\tb\nc';
       expect(block.roles, equals(['a', 'b', 'c']));
-      block.attributes['role'] = false;
-      expect(block.roles, isEmpty);
     });
 
     test('hasRole checks presence and equality', () {
@@ -418,10 +387,6 @@ void main() {
       expect(block.hasRole('a b'), isTrue);
       expect(block.hasRole('a'), isFalse);
       expect(Block(makeDoc(), 'paragraph').hasRole(), isFalse);
-      expect(
-        Block(makeDoc(), 'paragraph', attributes: {'role': false}).hasRole(),
-        isTrue,
-      );
     });
 
     test('includesRole matches whole names only', () {
@@ -435,17 +400,13 @@ void main() {
       expect(Block(makeDoc(), 'paragraph').includesRole('x'), isFalse);
     });
 
-    test('role setter joins lists like Ruby', () {
+    test('role setter assigns and removes the role', () {
       final block = (Block(makeDoc(), 'paragraph'))..role = 'solo';
       expect(block.role, equals('solo'));
-      block.role = ['a', 'b'];
-      expect(block.role, equals('a b'));
-      block.role = [
-        'a',
-        ['b', null],
-        'c',
-      ];
-      expect(block.role, equals('a b  c'));
+      block.role = 'a b';
+      expect(block.roles, equals(['a', 'b']));
+      block.role = null;
+      expect(block.attributes.containsKey('role'), isFalse);
     });
 
     test('addRole and removeRole report changes', () {
@@ -484,7 +445,7 @@ void main() {
 
     test('reftext with text applies reftext substitutions', () {
       final block = Block(
-        Document(<String>[]),
+        Document(),
         'paragraph',
         attributes: {'reftext': 'R *x*'},
       );
@@ -499,7 +460,7 @@ void main() {
       final result = block.convert();
       expect(result, equals('<paragraph>'));
       expect(doc.converter.converted, equals([block]));
-      expect(doc.playedBack, equals([block.attributes]));
+      expect(doc.playedBack, equals([block]));
     });
 
     test('compound content joins converted children', () {
@@ -520,7 +481,7 @@ void main() {
       final block = Block(makeDoc(), 'image')..contentModel = 'bogus';
       expect(block.content(), isNull);
       expect(testLogger.warns, hasLength(1));
-      final message = testLogger.warns.single.toString();
+      final message = testLogger.warns.single;
       expect(
         message,
         equals(
@@ -580,7 +541,7 @@ void main() {
       final block = Block(makeDoc(), 'paragraph');
       expect(block.file, isNull);
       expect(block.lineno, isNull);
-      block.sourceLocation = FakeSourceLocation('doc.adoc', 12);
+      block.sourceLocation = Cursor('doc.adoc', null, 'doc.adoc', 12);
       expect(block.file, equals('doc.adoc'));
       expect(block.lineno, equals(12));
     });
@@ -594,7 +555,7 @@ void main() {
     });
 
     test('set title applies title substitutions', () {
-      final block = Block(Document(<String>[]), 'example')..title = 'T *em*';
+      final block = Block(Document(), 'example')..title = 'T *em*';
       expect(block.hasTitle, isTrue);
       expect(block.title, equals('T <strong>em</strong>'));
       block.title = null;
@@ -623,11 +584,7 @@ void main() {
     });
 
     test('block alt with text encodes special characters', () {
-      final block = Block(
-        Document(<String>[]),
-        'image',
-        attributes: {'alt': 'A & B'},
-      );
+      final block = Block(Document(), 'image', attributes: {'alt': 'A & B'});
       expect(block.alt, equals('A &amp; B'));
     });
   });
@@ -695,7 +652,7 @@ void main() {
         context: 'paragraph',
         filter: (node) {
           visits.add(node.context);
-          return true;
+          return FindByVerdict.accept;
         },
       );
       expect(visits, equals(['paragraph', 'paragraph']));
@@ -703,20 +660,22 @@ void main() {
 
     test('prune, reject, and stop verdicts', () {
       final pruned = doc.findBy(
-        filter: (node) =>
-            node.context == 'section' ? FindByVerdict.prune : true,
+        filter: (node) => node.context == 'section'
+            ? FindByVerdict.prune
+            : FindByVerdict.accept,
       );
       expect(pruned.map((n) => n.context), equals(['document', 'section']));
       final rejected = doc.findBy(
-        filter: (node) =>
-            node.context == 'section' ? FindByVerdict.reject : true,
+        filter: (node) => node.context == 'section'
+            ? FindByVerdict.reject
+            : FindByVerdict.accept,
       );
       expect(rejected.map((n) => n.context), equals(['document']));
       var visits = 0;
       final stopped = doc.findBy(
         filter: (node) {
           visits += 1;
-          return visits > 2 ? FindByVerdict.stop : true;
+          return visits > 2 ? FindByVerdict.stop : FindByVerdict.accept;
         },
       );
       expect(stopped, hasLength(2));
@@ -724,13 +683,17 @@ void main() {
     });
 
     test('false filter with id stops immediately', () {
-      expect(doc.findBy(id: 'fig1', filter: (_) => false), isEmpty);
+      expect(
+        doc.findBy(id: 'fig1', filter: (_) => FindByVerdict.skip),
+        isEmpty,
+      );
     });
 
     test('false filter still visits children', () {
       final found = doc.findBy(
         context: 'paragraph',
-        filter: (node) => node != first,
+        filter: (node) =>
+            node != first ? FindByVerdict.accept : FindByVerdict.skip,
       );
       expect(found, equals([second]));
     });
@@ -749,7 +712,7 @@ void main() {
         context: 'section',
         filter: (_) {
           visits += 1;
-          return true;
+          return FindByVerdict.accept;
         },
       );
       // The nested section hides inside a non-section block, so Ruby's
@@ -800,18 +763,18 @@ void main() {
       final block = Block(doc, 'example')
         ..title = 'T'
         ..caption = 'Example 1. '
-        ..numeral = 1;
+        ..numeral = '1';
       expect(block.xreftext('short'), equals('Example 1'));
     });
 
     test('basic style and plain call read the title', () {
-      final block = Block(Document(<String>[]), 'example')..title = 'NoCap';
+      final block = Block(Document(), 'example')..title = 'NoCap';
       expect(block.xreftext('weird'), equals('NoCap'));
       expect(block.xreftext(), equals('NoCap'));
     });
 
     test('full style combines caption and title', () {
-      final block = Block(Document(<String>[]), 'example')
+      final block = Block(Document(), 'example')
         ..title = 'T'
         ..caption = 'Example 1. ';
       // Ruby: `%(#{caption.chomp '. '}, #{quoted_title})`.
@@ -820,7 +783,7 @@ void main() {
 
     test('explicit reftext wins over the title', () {
       final block = Block(
-        Document(<String>[]),
+        Document(),
         'paragraph',
         attributes: {'reftext': 'R *em*'},
       );
@@ -857,11 +820,11 @@ void main() {
         ..title = 'T *em*'
         ..assignCaption(null);
       expect(block.caption, equals('Example 1. '));
-      expect(block.numeral, equals(1));
+      expect(block.numeral, equals('1'));
       expect(block.attributes.containsKey('example-number'), isFalse);
       expect(doc.storedCounters, hasLength(1));
       expect(doc.storedCounters.single.name, equals('example-number'));
-      expect(doc.storedCounters.single.value, equals(1));
+      expect(doc.storedCounters.single.value, equals('1'));
     });
 
     test('figure context never auto captions', () {
@@ -973,10 +936,10 @@ void main() {
       final doc = makeDoc();
       expect(Block(doc, 'paragraph').lines, isEmpty);
       expect(Block(doc, 'paragraph', source: '').lines, isEmpty);
-      expect(Block(doc, 'paragraph', source: <String>[]).lines, isEmpty);
+      expect(Block(doc, 'paragraph', lines: <String>[]).lines, isEmpty);
       expect(Block(doc, 'paragraph', source: 'a\nb').lines, equals(['a', 'b']));
       final input = ['x'];
-      final fromList = Block(doc, 'paragraph', source: input);
+      final fromList = Block(doc, 'paragraph', lines: input);
       expect(fromList.lines, equals(['x']));
       expect(fromList.lines, isNot(same(input)));
     });
@@ -994,7 +957,7 @@ void main() {
     });
 
     test('toString summarizes the block', () {
-      final text = Block(makeDoc(), 'paragraph', source: ['a', 'b']).toString();
+      final text = Block(makeDoc(), 'paragraph', lines: ['a', 'b']).toString();
       expect(
         text,
         equals(
@@ -1016,29 +979,35 @@ void main() {
       expect(block.subs, isEmpty);
     });
 
-    test('null subs prevents resolution', () {
+    test('no subs prevents resolution', () {
       final block = Block(
         makeDoc(),
         'paragraph',
         attributes: {'subs': 'quotes'},
-        subs: null,
+        subs: const BlockSubs.none(),
       );
       expect(block.defaultSubs, equals(<String>[]));
       expect(block.attributes.containsKey('subs'), isFalse);
     });
 
     test('given subs resolve eagerly via commitSubs', () {
-      final doc = Document(<String>[]);
+      final doc = Document();
       expect(
-        Block(doc, 'paragraph', subs: const ['quotes']).subs,
+        Block(doc, 'paragraph', subs: const BlockSubs.fixed(['quotes'])).subs,
         equals(['quotes']),
       );
-      expect(Block(doc, 'paragraph', subs: 'default').subs, equals(normalSubs));
-      expect(Block(doc, 'paragraph', subs: 'normal').subs, equals(normalSubs));
+      expect(
+        Block(doc, 'paragraph', subs: const BlockSubs.defaults()).subs,
+        equals(normalSubs),
+      );
+      expect(
+        Block(doc, 'paragraph', subs: const BlockSubs.spec('normal')).subs,
+        equals(normalSubs),
+      );
     });
 
     test('simple and verbatim content apply subs on read', () {
-      final doc = Document(<String>[]);
+      final doc = Document();
       // Deferred (empty) subs are vacuous in Ruby: the source passes
       // through, with blank edge lines stripped for verbatim blocks.
       expect(Block(doc, 'paragraph', source: 'a').content(), equals('a'));
@@ -1087,12 +1056,7 @@ void main() {
     });
 
     test('reference nodes carry reftext in text', () {
-      final ref = Inline(
-        Document(<String>[]),
-        'anchor',
-        text: 'T',
-        type: 'ref',
-      );
+      final ref = Inline(Document(), 'anchor', text: 'T', type: 'ref');
       expect(ref.hasReftext, isTrue);
       expect(ref.reftext, equals('T'));
       expect(
@@ -1396,7 +1360,7 @@ void main() {
     test('logger is shared and replaceable', () {
       final block = Block(makeDoc(), 'paragraph');
       expect(block.logger, same(testLogger));
-      expect(AbstractNode.currentLogger, same(testLogger));
+      expect(LoggerManager.logger, same(testLogger));
     });
 
     test('safe mode levels match Ruby', () {

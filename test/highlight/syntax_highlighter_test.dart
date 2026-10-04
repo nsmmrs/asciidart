@@ -10,12 +10,7 @@
 /// through the test-only `_assertCss` matcher below.
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
-import 'package:asciidoctor/src/html5.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'fake_source_lexer.dart';
@@ -30,11 +25,7 @@ class _UnavailableHighlighter extends SyntaxHighlighterBase {
   String get name => 'unavailable';
 
   @override
-  String format(
-    AbstractBlock node,
-    String? language,
-    Map<String, Object?> opts,
-  ) =>
+  String format(AbstractBlock node, String? language, FormatOptions opts) =>
       '<pre class="highlight">'
       '<code class="language-$language" data-lang="$language">'
       '${node.content()}</code></pre>';
@@ -53,8 +44,8 @@ class _StubBlock extends Block {
   new(
     AbstractBlock? parent,
     this.stubbedContent, [
-    Map<String, Object?>? attributes,
-  ]) : super(parent, 'listing', attributes: attributes ?? <String, Object?>{});
+    Map<String, String>? attributes,
+  ]) : super(parent, 'listing', attributes: attributes ?? <String, String>{});
 
   /// The value [content] returns.
   final String stubbedContent;
@@ -66,26 +57,29 @@ class _StubBlock extends Block {
 /// Creates an unparsed document with [attributes] (no parser needed: the
 /// constructor applies attribute overrides and backend traits eagerly).
 Document _docWithAttributes(
-  Map<String, Object?> attributes, {
+  Map<String, String?> attributes, {
   String backend = 'html5',
-  Map<String, Object?>? options,
-}) => Document(<String>[], <String, Object?>{
-  'backend': backend,
-  'attributes': attributes,
-  ...?options,
-});
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+}) => Document.lines(
+  <String>[],
+  options.copyWith(backend: backend, attributes: attributes),
+);
 
 /// Creates a document from [src] (port of `document_from_string`).
-Document _documentFromString(String src, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  final parse = opts.remove('parse') ?? true;
-  final doc = Document(src, opts);
-  return parse == true ? doc.parse() : doc;
+Document _documentFromString(
+  String src, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+  bool parse = true,
+]) {
+  final doc = Document(src, options);
+  return parse ? doc.parse() : doc;
 }
 
 /// Converts [src] to a standalone document (port of `convert_string`).
-String _convertString(String src, [Map<String, Object?>? options]) =>
-    _documentFromString(src, options).convert()! as String;
+String _convertString(
+  String src, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+]) => _documentFromString(src, options).convert();
 
 /// Asserts [content] matches [css] [count] times (port of `assert_css`).
 void _assertCss(String css, String? content, int count) {
@@ -369,21 +363,24 @@ void main() {
       SyntaxHighlighterBase makeUnavailable(
         String name,
         String backend,
-        Map<String, Object?> opts,
+        HighlighterOptions opts,
       ) => _UnavailableHighlighter();
       final factory = makeUnavailable;
       SyntaxHighlighter.register(factory, <String>['hlfw-foobar']);
-      expect(identical(SyntaxHighlighter.for_('hlfw-foobar'), factory), isTrue);
+      expect(
+        identical(SyntaxHighlighter.forName('hlfw-foobar'), factory),
+        isTrue,
+      );
     });
 
     test('registers one highlighter under several names', () {
       final instance = _UnavailableHighlighter();
-      SyntaxHighlighter.register(instance, <String>[
+      SyntaxHighlighter.registerInstance(instance, <String>[
         'hlfw-multi',
         'hlfw.multi',
       ]);
-      expect(identical(SyntaxHighlighter.for_('hlfw-multi'), instance), isTrue);
-      expect(identical(SyntaxHighlighter.for_('hlfw.multi'), instance), isTrue);
+      expect(SyntaxHighlighter.create('hlfw-multi'), same(instance));
+      expect(SyntaxHighlighter.create('hlfw.multi'), same(instance));
     });
 
     test('registers the six built-in adapters', () {
@@ -396,12 +393,12 @@ void main() {
         'pygments',
         'rouge',
       ]) {
-        expect(SyntaxHighlighter.for_(name), isNotNull, reason: name);
+        expect(SyntaxHighlighter.forName(name), isNotNull, reason: name);
       }
     });
 
     test('returns null for unknown names', () {
-      expect(SyntaxHighlighter.for_('hlfw-no-such-highlighter'), isNull);
+      expect(SyntaxHighlighter.forName('hlfw-no-such-highlighter'), isNull);
       expect(SyntaxHighlighter.create('hlfw-no-such-highlighter'), isNull);
     });
   });
@@ -436,30 +433,25 @@ void main() {
 
     test('passes the backend and options to the factory', () {
       String? seenBackend;
-      Map<String, Object?>? seenOpts;
-      SyntaxHighlighter.register((
-        String name,
-        String backend,
-        Map<String, Object?> opts,
-      ) {
+      HighlighterOptions? seenOpts;
+      SyntaxHighlighter.register((name, backend, opts) {
         seenBackend = backend;
         seenOpts = opts;
         return _UnavailableHighlighter();
       }, <String>['hlfw-capture']);
-      SyntaxHighlighter.create('hlfw-capture', 'docbook5', <String, Object?>{
-        'key': 'value',
-      });
+      final lexer = FakeSourceLexer();
+      SyntaxHighlighter.create(
+        'hlfw-capture',
+        'docbook5',
+        HighlighterOptions(lexer: lexer),
+      );
       expect(seenBackend, 'docbook5');
-      expect(seenOpts, <String, Object?>{'key': 'value'});
+      expect(seenOpts!.lexer, same(lexer));
     });
 
     test('defaults the backend to html5', () {
       String? seenBackend;
-      SyntaxHighlighter.register((
-        String name,
-        String backend,
-        Map<String, Object?> opts,
-      ) {
+      SyntaxHighlighter.register((name, backend, opts) {
         seenBackend = backend;
         return _UnavailableHighlighter();
       }, <String>['hlfw-backend-default']);
@@ -469,7 +461,7 @@ void main() {
 
     test('returns a registered instance as-is', () {
       final instance = _UnavailableHighlighter();
-      SyntaxHighlighter.register(instance, <String>['hlfw-instance']);
+      SyntaxHighlighter.registerInstance(instance, <String>['hlfw-instance']);
       expect(
         identical(SyntaxHighlighter.create('hlfw-instance'), instance),
         isTrue,
@@ -477,7 +469,7 @@ void main() {
     });
 
     test('rejects instances without a name', () {
-      SyntaxHighlighter.register(_NamelessHighlighter(), <String>[
+      SyntaxHighlighter.registerInstance(_NamelessHighlighter(), <String>[
         'hlfw-nameless',
       ]);
       expect(() => SyntaxHighlighter.create('hlfw-nameless'), throwsStateError);
@@ -488,7 +480,7 @@ void main() {
       final created = SyntaxHighlighter.create(
         'rouge',
         'html5',
-        <String, Object?>{'lexer': lexer},
+        HighlighterOptions(lexer: lexer),
       );
       expect(created, isA<RougeHighlighter>());
       expect((created! as RougeHighlighter).adapter.lexer, same(lexer));
@@ -497,42 +489,42 @@ void main() {
 
     test('isolates custom factory registries', () {
       final factory = SyntaxHighlighterFactory();
-      expect(factory.for_('rouge'), isNull);
+      expect(factory.forName('rouge'), isNull);
       expect(factory.create('rouge'), isNull);
       SyntaxHighlighterBase makeCustom(
         String name,
         String backend,
-        Map<String, Object?> opts,
+        HighlighterOptions opts,
       ) => _UnavailableHighlighter();
       final custom = makeCustom;
       factory.register(custom, <String>['hlfw-custom-only']);
-      expect(identical(factory.for_('hlfw-custom-only'), custom), isTrue);
+      expect(identical(factory.forName('hlfw-custom-only'), custom), isTrue);
       expect(
         factory.create('hlfw-custom-only'),
         isA<_UnavailableHighlighter>(),
       );
-      expect(SyntaxHighlighter.for_('hlfw-custom-only'), isNull);
+      expect(SyntaxHighlighter.forName('hlfw-custom-only'), isNull);
     });
 
     test('seeds a custom factory from a registry map', () {
       final instance = _UnavailableHighlighter();
-      final factory = SyntaxHighlighterFactory(<String, Object>{
-        'hlfw-seeded': instance,
+      final factory = SyntaxHighlighterFactory({
+        'hlfw-seeded': (name, backend, opts) => instance,
       });
       expect(identical(factory.create('hlfw-seeded'), instance), isTrue);
     });
 
     test('falls back to the global registry for unseeded names', () {
-      final proxy = SyntaxHighlighterDefaultFactoryProxy(<String, Object>{
-        'hlfw-seed': _UnavailableHighlighter(),
+      final proxy = SyntaxHighlighterDefaultFactoryProxy({
+        'hlfw-seed': (name, backend, opts) => _UnavailableHighlighter(),
       });
       expect(proxy.create('hlfw-seed'), isA<_UnavailableHighlighter>());
       expect(proxy.create('rouge'), isA<RougeHighlighter>());
     });
 
     test('prefers the seed registry over the globals', () {
-      final proxy = SyntaxHighlighterDefaultFactoryProxy(<String, Object>{
-        'rouge': _UnavailableHighlighter(),
+      final proxy = SyntaxHighlighterDefaultFactoryProxy({
+        'rouge': (name, backend, opts) => _UnavailableHighlighter(),
       });
       expect(proxy.create('rouge'), isA<_UnavailableHighlighter>());
       // The global registration is untouched.
@@ -542,19 +534,17 @@ void main() {
 
   group('Document integration', () {
     test('resolves the highlighter when source-highlighter is set', () {
-      final doc = _docWithAttributes(<String, Object?>{
+      final doc = _docWithAttributes(<String, String?>{
         'source-highlighter': 'coderay',
       });
       final resolved = SyntaxHighlighter.resolveForDocument(doc);
       expect(resolved, isA<CodeRayHighlighter>());
       doc.syntaxHighlighter = resolved;
       expect(doc.syntaxHighlighter, same(resolved));
-      // The merged converter casts to this interface; the cast must hold.
-      expect(doc.syntaxHighlighter, isA<NodeSyntaxHighlighter>());
     });
 
     test('returns null when the base backend is not html', () {
-      final doc = _docWithAttributes(<String, Object?>{
+      final doc = _docWithAttributes(<String, String?>{
         'source-highlighter': 'coderay',
       }, backend: 'docbook');
       expect(doc.basebackend('html'), isFalse);
@@ -564,7 +554,7 @@ void main() {
     test('returns null when source-highlighter is not set', () {
       expect(
         SyntaxHighlighter.resolveForDocument(
-          _docWithAttributes(<String, Object?>{}),
+          _docWithAttributes(<String, String?>{}),
         ),
         isNull,
       );
@@ -573,7 +563,7 @@ void main() {
     test('returns null when the highlighter name is unknown', () {
       expect(
         SyntaxHighlighter.resolveForDocument(
-          _docWithAttributes(<String, Object?>{
+          _docWithAttributes(<String, String?>{
             'source-highlighter': 'unknown',
           }),
         ),
@@ -584,7 +574,7 @@ void main() {
     test('returns null when the highlighter is marked unavailable', () {
       expect(
         SyntaxHighlighter.resolveForDocument(
-          _docWithAttributes(<String, Object?>{
+          _docWithAttributes(<String, String?>{
             'source-highlighter': 'coderay',
             'coderay-unavailable': '',
           }),
@@ -595,11 +585,10 @@ void main() {
 
     test('honors the syntax_highlighter_factory document option', () {
       final factory = (SyntaxHighlighterFactory())
-        ..register(_UnavailableHighlighter(), <String>['unavailable']);
-      final doc = _docWithAttributes(
-        <String, Object?>{'source-highlighter': 'unavailable'},
-        options: <String, Object?>{'syntax_highlighter_factory': factory},
-      );
+        ..registerInstance(_UnavailableHighlighter(), <String>['unavailable']);
+      final doc = _docWithAttributes(<String, String?>{
+        'source-highlighter': 'unavailable',
+      }, options: AsciidoctorOptions(syntaxHighlighterFactory: factory));
       expect(
         SyntaxHighlighter.resolveForDocument(doc),
         isA<_UnavailableHighlighter>(),
@@ -608,22 +597,22 @@ void main() {
 
     test('does not fall back to the globals with a custom factory', () {
       final doc = _docWithAttributes(
-        <String, Object?>{'source-highlighter': 'rouge'},
-        options: <String, Object?>{
-          'syntax_highlighter_factory': SyntaxHighlighterFactory(),
-        },
+        <String, String?>{'source-highlighter': 'rouge'},
+        options: AsciidoctorOptions(
+          syntaxHighlighterFactory: SyntaxHighlighterFactory(),
+        ),
       );
       expect(SyntaxHighlighter.resolveForDocument(doc), isNull);
     });
 
     test('honors the syntax_highlighters document option', () {
       final doc = _docWithAttributes(
-        <String, Object?>{'source-highlighter': 'coderay'},
-        options: <String, Object?>{
-          'syntax_highlighters': <String, Object>{
-            'coderay': _UnavailableHighlighter(),
+        <String, String?>{'source-highlighter': 'coderay'},
+        options: AsciidoctorOptions(
+          syntaxHighlighters: {
+            'coderay': (name, backend, opts) => _UnavailableHighlighter(),
           },
-        },
+        ),
       );
       expect(
         SyntaxHighlighter.resolveForDocument(doc),
@@ -633,12 +622,12 @@ void main() {
 
     test('falls back to the globals for names missing from the option map', () {
       final doc = _docWithAttributes(
-        <String, Object?>{'source-highlighter': 'rouge'},
-        options: <String, Object?>{
-          'syntax_highlighters': <String, Object>{
-            'coderay': _UnavailableHighlighter(),
+        <String, String?>{'source-highlighter': 'rouge'},
+        options: AsciidoctorOptions(
+          syntaxHighlighters: {
+            'coderay': (name, backend, opts) => _UnavailableHighlighter(),
           },
-        },
+        ),
       );
       expect(
         SyntaxHighlighter.resolveForDocument(doc),
@@ -651,7 +640,7 @@ void main() {
     test('does not highlight when canHighlight is false', () {
       final highlighter = _UnavailableHighlighter();
       expect(highlighter.canHighlight, isFalse);
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'puts 1');
       expect(
         () => highlighter.highlight(block, 'puts 1', 'ruby'),
@@ -667,7 +656,7 @@ void main() {
 
     test('throws from docinfo when unimplemented', () {
       final highlighter = HtmlPipelineHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       expect(
         () => highlighter.docinfo(
           'head',
@@ -682,7 +671,7 @@ void main() {
 
     test('reports no stylesheet file by default', () {
       final highlighter = HighlightJsHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       expect(highlighter.wantsStylesheetFile(doc), isFalse);
       expect(
         () => highlighter.writeStylesheet(doc, '.'),
@@ -692,10 +681,10 @@ void main() {
 
     test('wraps content in the base pre/code envelope', () {
       final highlighter = CodeRayHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'puts 1');
       expect(
-        highlighter.format(block, 'ruby', <String, Object?>{'nowrap': false}),
+        highlighter.format(block, 'ruby', const FormatOptions()),
         '<pre class="CodeRay highlight">'
         '<code data-lang="ruby">puts 1</code></pre>',
       );
@@ -703,15 +692,17 @@ void main() {
 
     test('appends nowrap and runs the transform with data-lang last', () {
       final highlighter = CodeRayHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x');
       expect(
-        highlighter.format(block, 'ruby', <String, Object?>{
-          'nowrap': true,
-          'transform': (Map<String, String> pre, Map<String, String> code) {
-            code['class'] = 'language-ruby hljs';
-          },
-        }),
+        highlighter.format(
+          block,
+          'ruby',
+          FormatOptions(
+            nowrap: true,
+            transform: (pre, code) => code['class'] = 'language-ruby hljs',
+          ),
+        ),
         '<pre class="CodeRay highlight nowrap">'
         '<code class="language-ruby hljs" data-lang="ruby">x</code></pre>',
       );
@@ -721,10 +712,10 @@ void main() {
   group('format wiring', () {
     test('marks highlight.js blocks for client-side highlighting', () {
       final highlighter = HighlightJsHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'puts 1');
       expect(
-        highlighter.format(block, 'ruby', <String, Object?>{'nowrap': false}),
+        highlighter.format(block, 'ruby', const FormatOptions()),
         '<pre class="highlightjs highlight">'
         '<code class="language-ruby hljs" data-lang="ruby">puts 1</code></pre>',
       );
@@ -732,10 +723,10 @@ void main() {
 
     test('uses language-none when the language is absent', () {
       final highlighter = HighlightJsHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x');
       expect(
-        highlighter.format(block, null, <String, Object?>{'nowrap': false}),
+        highlighter.format(block, null, const FormatOptions()),
         '<pre class="highlightjs highlight">'
         '<code class="language-none hljs">x</code></pre>',
       );
@@ -743,12 +734,12 @@ void main() {
 
     test('numbers prettify lines from the start attribute', () {
       final highlighter = PrettifyHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x')
         ..setAttr('linenums', '')
         ..setAttr('start', '7');
       expect(
-        highlighter.format(block, 'ruby', <String, Object?>{'nowrap': false}),
+        highlighter.format(block, 'ruby', const FormatOptions()),
         '<pre class="prettyprint highlight linenums:7">'
         '<code data-lang="ruby">x</code></pre>',
       );
@@ -756,10 +747,10 @@ void main() {
 
     test('numbers prettify lines without a start value', () {
       final highlighter = PrettifyHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x')..setAttr('linenums', '');
       expect(
-        highlighter.format(block, 'ruby', <String, Object?>{'nowrap': false}),
+        highlighter.format(block, 'ruby', const FormatOptions()),
         '<pre class="prettyprint highlight linenums">'
         '<code data-lang="ruby">x</code></pre>',
       );
@@ -767,10 +758,10 @@ void main() {
 
     test('emits html-pipeline pre hooks', () {
       final highlighter = HtmlPipelineHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'puts 1');
       expect(
-        highlighter.format(block, 'ruby', <String, Object?>{'nowrap': true}),
+        highlighter.format(block, 'ruby', const FormatOptions(nowrap: true)),
         '<pre lang="ruby"><code>puts 1</code></pre>',
       );
     });
@@ -781,14 +772,14 @@ void main() {
         onBaseStyle: (style) => 'color: #f8f8f2;background-color: #49483e',
       );
       final highlighter = RougeHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'puts 1');
       expect(
-        highlighter.format(block, 'ruby', <String, Object?>{
-          'nowrap': false,
-          'css_mode': 'style',
-          'style': 'monokai',
-        }),
+        highlighter.format(
+          block,
+          'ruby',
+          const FormatOptions(cssMode: CssMode.inline, style: 'monokai'),
+        ),
         '<pre class="rouge highlight" '
         'style="color: #f8f8f2;background-color: #49483e">'
         '<code data-lang="ruby">puts 1</code></pre>',
@@ -801,10 +792,10 @@ void main() {
         onBaseStyle: (style) => 'color: #000;',
       );
       final highlighter = PygmentsHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x');
       expect(
-        highlighter.format(block, 'ruby', <String, Object?>{'nowrap': false}),
+        highlighter.format(block, 'ruby', const FormatOptions()),
         '<pre class="pygments highlight">'
         '<code data-lang="ruby">x</code></pre>',
       );
@@ -819,7 +810,7 @@ void main() {
       );
       final highlighter = RougeHighlighter(lexer: lexer);
       expect(highlighter.canHighlight, isTrue);
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'puts 1')..setOption('mixed');
       final result = highlighter.highlight(
         block,
@@ -845,7 +836,7 @@ void main() {
         onStyleAvailable: (style) => true,
       );
       final highlighter = PygmentsHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'puts 1');
       final result = highlighter.highlight(
         block,
@@ -865,7 +856,7 @@ void main() {
           '<table><tr><td class="code"><pre>x</pre></td></tr></table>';
       final lexer = FakeSourceLexer(onHighlight: (request) => backendHtml);
       final highlighter = CodeRayHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x');
       final withCallouts = highlighter.highlight(
         block,
@@ -891,7 +882,7 @@ void main() {
     });
 
     test('throws when highlighting without a lexer backend', () {
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x');
       expect(CodeRayHighlighter().canHighlight, isFalse);
       expect(
@@ -923,7 +914,7 @@ void main() {
     });
 
     test('links the highlight.js theme in the head', () {
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       expect(
         HighlightJsHighlighter().docinfo(
           'head',
@@ -938,7 +929,7 @@ void main() {
     });
 
     test('loads highlight.js languages in the footer', () {
-      final doc = _docWithAttributes(<String, Object?>{
+      final doc = _docWithAttributes(<String, String?>{
         'highlightjs-languages': 'ruby, python',
       });
       expect(
@@ -967,7 +958,7 @@ void main() {
     });
 
     test('links the prettify theme in the head', () {
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       expect(
         PrettifyHighlighter().docinfo(
           'head',
@@ -982,7 +973,7 @@ void main() {
     });
 
     test('passes absolute prettify themes through verbatim', () {
-      final doc = _docWithAttributes(<String, Object?>{
+      final doc = _docWithAttributes(<String, String?>{
         'prettify-theme': 'https://example.com/custom.min.css',
       });
       expect(
@@ -999,7 +990,7 @@ void main() {
     });
 
     test('loads the prettify runner in the footer', () {
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       expect(
         PrettifyHighlighter().docinfo(
           'footer',
@@ -1017,7 +1008,7 @@ void main() {
       final lexer = FakeSourceLexer(onHighlight: (request) => 'x');
       final highlighter = CodeRayHighlighter(lexer: lexer);
       expect(highlighter.hasDocinfo('head'), isFalse);
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       highlighter.highlight(_StubBlock(doc, 'x'), 'x', 'ruby');
       expect(highlighter.hasDocinfo('head'), isTrue);
       expect(highlighter.hasDocinfo('footer'), isFalse);
@@ -1027,7 +1018,7 @@ void main() {
     test('links the coderay stylesheet when linkcss is set', () {
       final lexer = FakeSourceLexer(onHighlight: (request) => 'x');
       final highlighter = CodeRayHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, Object?>{'stylesdir': 'css'});
+      final doc = _docWithAttributes(<String, String?>{'stylesdir': 'css'});
       highlighter.highlight(_StubBlock(doc, 'x'), 'x', 'ruby');
       expect(
         highlighter.docinfo(
@@ -1047,7 +1038,7 @@ void main() {
         onStylesheet: (style) => '/* $style */',
       );
       final highlighter = RougeHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, Object?>{});
+      final doc = _docWithAttributes(<String, String?>{});
       highlighter.highlight(
         _StubBlock(doc, 'x'),
         'x',
@@ -1079,10 +1070,10 @@ void main() {
             '----\n'
             "puts 'Hello, World!'\n"
             '----\n';
-        final doc = _documentFromString(input, <String, Object?>{
-          'safe': 'safe',
-          'parse': true,
-        });
+        final doc = _documentFromString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         expect(doc.basebackend('html'), isTrue);
         expect(doc.syntaxHighlighter, isNotNull);
         expect(doc.syntaxHighlighter, isA<SyntaxHighlighterBase>());
@@ -1099,11 +1090,10 @@ void main() {
             '----\n'
             "puts 'Hello, World!'\n"
             '----\n';
-        final doc = _documentFromString(input, <String, Object?>{
-          'safe': 'safe',
-          'backend': 'docbook',
-          'parse': true,
-        });
+        final doc = _documentFromString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe, backend: 'docbook'),
+        );
         expect(doc.basebackend('html'), isFalse);
         expect(doc.syntaxHighlighter, isNull);
       },
@@ -1117,10 +1107,10 @@ void main() {
             '----\n'
             "puts 'Hello, World!'\n"
             '----\n';
-        final doc = _documentFromString(input, <String, Object?>{
-          'safe': 'safe',
-          'parse': true,
-        });
+        final doc = _documentFromString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         expect(doc.syntaxHighlighter, isNull);
       },
     );
@@ -1133,26 +1123,26 @@ void main() {
           '----\n'
           "puts 'Hello, World!'\n"
           '----\n';
-      final doc = _documentFromString(input, <String, Object?>{
-        'safe': 'safe',
-        'parse': true,
-      });
+      final doc = _documentFromString(
+        input,
+        const AsciidoctorOptions(safe: SafeMode.safe),
+      );
       expect(doc.syntaxHighlighter, isNull);
     });
 
     test('does not allow the document to enable the highlighter in '
         'server safe mode', () {
       const input = ':source-highlighter: coderay';
-      final doc = _documentFromString(input, <String, Object?>{
-        'safe': 'server',
-        'parse': true,
-      });
+      final doc = _documentFromString(
+        input,
+        const AsciidoctorOptions(safe: SafeMode.server),
+      );
       expect(doc.attributes['source-highlighter'], isNull);
       expect(doc.syntaxHighlighter, isNull);
     });
 
     test('does not invoke highlight when canHighlight is false', () {
-      SyntaxHighlighter.register(_UnavailableHighlighter(), <String>[
+      SyntaxHighlighter.registerInstance(_UnavailableHighlighter(), <String>[
         'unavailable',
       ]);
       const input =
@@ -1160,10 +1150,13 @@ void main() {
           '----\n'
           "puts 'Hello, World!'\n"
           '----\n';
-      final doc = _documentFromString(input, <String, Object?>{
-        'attributes': <String, Object?>{'source-highlighter': 'unavailable'},
-      });
-      final output = doc.convert()! as String;
+      final doc = _documentFromString(
+        input,
+        const AsciidoctorOptions(
+          attributes: <String, String?>{'source-highlighter': 'unavailable'},
+        ),
+      );
+      final output = doc.convert();
       _assertCss('pre.highlight > code.language-ruby', output, 1);
     });
 
@@ -1173,7 +1166,10 @@ void main() {
           '----\n'
           "puts 'Hello, World!'\n"
           '----\n';
-      final output = _convertString(input, <String, Object?>{'safe': 'safe'});
+      final output = _convertString(
+        input,
+        const AsciidoctorOptions(safe: SafeMode.safe),
+      );
       _assertCss('pre.highlight', output, 1);
       _assertCss('pre.highlight > code.language-ruby', output, 1);
       _assertCss(
@@ -1193,7 +1189,10 @@ void main() {
             '----\n'
             "puts 'Hello, World!'\n"
             '----\n';
-        final output = _convertString(input, <String, Object?>{'safe': 'safe'});
+        final output = _convertString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         _assertCss('pre.highlight', output, 1);
         _assertCss('pre.highlight > code.language-ruby', output, 1);
         _assertCss(

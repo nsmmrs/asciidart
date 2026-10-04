@@ -6,7 +6,7 @@
 /// Every expectation was verified against the real Ruby classes with
 /// `ruby -Ilib` probes (see the subagent report for the probe log).
 ///
-/// `FakeDocument` stands in for `Document` (not yet ported): it extends
+/// `FakeDocument` stands in for `Document`: it extends
 /// [AbstractBlock] with the `'document'` context and implements the
 /// document surface the structural classes call (`attributes`, `catalog`,
 /// `counter`, `callouts`, `converter`, `playbackAttributes`,
@@ -32,43 +32,44 @@ class FakeConverter implements NodeConverter {
   }
 }
 
-/// Matches a [ContextMessage] whose text satisfies [text].
-Matcher isContextMessage(Matcher text) =>
-    isA<ContextMessage>().having((message) => message.text, 'text', text);
+/// Matches a contextual [LogMessage] whose text satisfies [text].
+Matcher isContextMessage(Matcher text) => isA<LogMessage>()
+    .having((message) => message.sourceLocation, 'sourceLocation', isNotNull)
+    .having((message) => message.text, 'text', text);
 
 /// Records log messages for assertions.
-class FakeLogger implements NodeLogger {
-  /// Messages by severity.
-  final List<Object?> debugs = <Object?>[];
-  final List<Object?> infos = <Object?>[];
-  final List<Object?> warns = <Object?>[];
-  final List<Object?> errors = <Object?>[];
-  final List<Object?> fatals = <Object?>[];
+class FakeLogger extends LoggerBase {
+  /// Creates a recording logger.
+  new() : super(Severity.debug);
+
+  /// Messages by severity, in logging order.
+  final List<LogMessage> debugs = <LogMessage>[];
+  final List<LogMessage> infos = <LogMessage>[];
+  final List<LogMessage> warns = <LogMessage>[];
+  final List<LogMessage> errors = <LogMessage>[];
+  final List<LogMessage> fatals = <LogMessage>[];
 
   @override
-  void debug(Object? message) {
-    debugs.add(message);
+  Severity? get maxSeverity => null;
+
+  @override
+  void add(Severity severity, LogMessage message) {
+    switch (severity) {
+      case Severity.debug:
+        debugs.add(message);
+      case Severity.info:
+        infos.add(message);
+      case Severity.warn:
+        warns.add(message);
+      case Severity.error:
+        errors.add(message);
+      case Severity.fatal || Severity.unknown:
+        fatals.add(message);
+    }
   }
 
   @override
-  void info(Object? message) {
-    infos.add(message);
-  }
-
-  @override
-  void warn(Object? message) {
-    warns.add(message);
-  }
-
-  @override
-  void error(Object? message) {
-    errors.add(message);
-  }
-
-  @override
-  void fatal(Object? message) {
-    fatals.add(message);
-  }
+  Future<void> close() async {}
 }
 
 /// Minimal stand-in for `Document`.
@@ -85,11 +86,10 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
 
   /// The document catalog (only `refs` is used here).
   @override
-  final Map<String, Map<String, Object?>> catalog =
-      <String, Map<String, Object?>>{'refs': <String, Object?>{}};
+  final Catalog catalog = Catalog();
 
   /// Counter storage backing [counter].
-  final Map<String, Object?> documentCounters = <String, Object?>{};
+  final Map<String, String> documentCounters = <String, String>{};
 
   /// The document callouts catalog (the real ported implementation).
   @override
@@ -126,46 +126,41 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
   @override
   bool nested() => isNested;
 
-  /// Attribute maps passed to [playbackAttributes], in order.
-  final List<Map<String, Object?>> playbacked = <Map<String, Object?>>[];
+  /// Blocks passed to [playbackAttributes], in order.
+  final List<AbstractBlock> playbacked = <AbstractBlock>[];
 
-  /// Records [blockAttributes] (mirrors `Document#playback_attributes`).
+  /// Records [block] (mirrors `Document#playback_attributes`).
   @override
-  void playbackAttributes(Map<String, Object?> blockAttributes) {
-    playbacked.add(blockAttributes);
+  void playbackAttributes(AbstractBlock block) {
+    playbacked.add(block);
   }
 
   /// Returns the next value of the counter [name], seeding it with [seed].
   ///
   /// Mirrors the fresh-counter path of `Document#counter`.
   @override
-  dynamic counter(String name, [Object? seed]) {
-    if (documentCounters.containsKey(name)) {
-      final next = Helpers.nextVal(documentCounters[name]!);
-      documentCounters[name] = next;
-      attributes[name] = next;
-      return next;
+  String counter(String name, [String? seed]) {
+    final current = documentCounters[name];
+    final String next;
+    if (current != null) {
+      final number = int.tryParse(current);
+      next = number != null
+          ? '${number + 1}'
+          : String.fromCharCode(current.codeUnitAt(0) + 1);
+    } else {
+      next = seed ?? '1';
     }
-    if (seed != null) {
-      final asInt = parseLeadingInt(seed);
-      final value = seed == asInt.toString() ? asInt : seed;
-      documentCounters[name] = value;
-      attributes[name] = value;
-      return value;
-    }
-    documentCounters[name] = 1;
-    attributes[name] = 1;
-    return 1;
+    return documentCounters[name] = attributes[name] = next;
   }
 
   /// Increments the counter [counterName], stores it on [block], and
   /// returns it.
   ///
   /// Simplified mirror of `Document#increment_and_store_counter` (which
-  /// routes through `AttributeEntry`; only the stored value and return
+  /// routes through an attribute entry; only the stored value and return
   /// value matter here).
   @override
-  dynamic incrementAndStoreCounter(String counterName, AbstractBlock block) {
+  String incrementAndStoreCounter(String counterName, AbstractBlock block) {
     final value = counter(counterName);
     block.attributes[counterName] = value;
     return value;
@@ -185,7 +180,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
 /// context.
 class FakeReader extends Reader {
   /// Creates an empty reader.
-  new() : super(null);
+  new() : super(const <String>[]);
 
   /// How often [mark] was called.
   int marks = 0;
@@ -197,69 +192,31 @@ class FakeReader extends Reader {
   }
 }
 
-/// Minimal source location with `file`/`lineno` and `dup`.
-class FakeCursor implements NodeSourceLocation {
-  /// Creates a cursor for [file]:[lineno].
-  new(this.file, this.lineno);
-
-  /// The source file.
-  @override
-  final String? file;
-
-  /// The source line number.
-  @override
-  final int? lineno;
-
-  /// Copies this cursor.
-  FakeCursor dup() => FakeCursor(file, lineno);
-
-  /// Advances the line number (recorded for assertions).
-  int advancedBy = 0;
-
-  /// Advances by [lines].
-  void advance(int lines) {
-    advancedBy += lines;
-  }
-}
-
 void main() {
   late FakeLogger testLogger;
-  late NodeLogger savedLogger;
+  late LoggerBase savedLogger;
 
   setUp(() {
-    savedLogger = AbstractNode.currentLogger;
+    savedLogger = LoggerManager.logger;
     testLogger = FakeLogger();
-    AbstractNode.currentLogger = testLogger;
+    LoggerManager.logger = testLogger;
   });
 
   tearDown(() {
-    AbstractNode.currentLogger = savedLogger;
+    LoggerManager.logger = savedLogger;
   });
 
   group('string helpers', () {
-    test('isTruthy matches Ruby truthiness', () {
-      expect(isTruthy(null), isFalse);
-      expect(isTruthy(false), isFalse);
-      expect(isTruthy(true), isTrue);
-      expect(isTruthy(0), isTrue);
-      expect(isTruthy(''), isTrue);
-      expect(isTruthy(<int>[]), isTrue);
-    });
-
     test('parseLeadingInt matches to_i', () {
-      expect(parseLeadingInt(12), equals(12));
-      expect(parseLeadingInt(12.9), equals(12));
       expect(parseLeadingInt('12abc'), equals(12));
       expect(parseLeadingInt('  -12x'), equals(-12));
       expect(parseLeadingInt('+12'), equals(12));
       expect(parseLeadingInt('abc'), equals(0));
       expect(parseLeadingInt(''), equals(0));
       expect(parseLeadingInt(null), equals(0));
-      expect(() => parseLeadingInt(true), throwsStateError);
     });
 
     test('parseLeadingDouble matches to_f', () {
-      expect(parseLeadingDouble(800), equals(800.0));
       expect(parseLeadingDouble('12.9x'), equals(12.9));
       expect(parseLeadingDouble('abc'), equals(0.0));
       expect(parseLeadingDouble(null), equals(0.0));
@@ -320,7 +277,7 @@ void main() {
   group('AbstractNode attributes', () {
     test('constructor links document and copies attributes', () {
       final doc = FakeDocument();
-      final passed = <String, Object?>{'a': '1'};
+      final passed = <String, String>{'a': '1'};
       final block = Block(doc, 'paragraph', attributes: passed);
       expect(block.document, same(doc));
       expect(block.parent, same(doc));
@@ -358,7 +315,7 @@ void main() {
     test('attr falls back to document attributes', () {
       final doc = FakeDocument(attributes: {'x': 'dx', 'b': 'db'});
       final block = Block(doc, 'paragraph');
-      expect(block.attr('x', 'dflt', true), equals('dx'));
+      expect(block.attr('x', 'dflt', 'x'), equals('dx'));
       expect(block.attr('a', 'dflt', 'b'), equals('db'));
       expect(block.attr('a', 'dflt', 'missing'), equals('dflt'));
       // No fallback without a fallback name.
@@ -368,7 +325,7 @@ void main() {
 
     test('attr fallback is skipped for parentless nodes', () {
       final block = Block(null, 'paragraph');
-      expect(block.attr('x', 'dflt', true), equals('dflt'));
+      expect(block.attr('x', 'dflt', 'x'), equals('dflt'));
     });
 
     test('hasAttr checks presence, value and fallback', () {
@@ -378,9 +335,9 @@ void main() {
       expect(block.hasAttr('missing'), isFalse);
       expect(block.hasAttr('a', '1'), isTrue);
       expect(block.hasAttr('a', '2'), isFalse);
-      expect(block.hasAttr('x', null, true), isTrue);
-      expect(block.hasAttr('x', 'dx', true), isTrue);
-      expect(block.hasAttr('x', 'other', true), isFalse);
+      expect(block.hasAttr('x', null, 'x'), isTrue);
+      expect(block.hasAttr('x', 'dx', 'x'), isTrue);
+      expect(block.hasAttr('x', 'other', 'x'), isFalse);
       expect(block.hasAttr('x'), isFalse);
     });
 
@@ -426,12 +383,10 @@ void main() {
       expect(empty.roles, equals([]));
     });
 
-    test('role setter joins lists like Array#join', () {
+    test('role setter assigns the role', () {
       final doc = FakeDocument();
-      final block = (Block(doc, 'paragraph'))..role = ['a', 'b'];
+      final block = (Block(doc, 'paragraph'))..role = 'a b';
       expect(block.attributes['role'], equals('a b'));
-      block.role = ['a', null];
-      expect(block.attributes['role'], equals('a '));
       block.role = 'x y';
       expect(block.attributes['role'], equals('x y'));
     });
@@ -527,7 +482,7 @@ void main() {
     });
 
     test('title accessors convert a set title', () {
-      final doc = Document(<String>[]);
+      final doc = Document();
       final block = Block(doc, 'paragraph');
       expect(block.title, isNull);
       expect(block.hasTitle, isFalse);
@@ -567,7 +522,7 @@ void main() {
       final block = Block(doc, 'paragraph', attributes: {'a': '1'});
       final result = block.convert();
       expect(result, equals('<paragraph>'));
-      expect(doc.playbacked, equals([block.attributes]));
+      expect(doc.playbacked, equals([block]));
       expect(doc.converter.converted, equals([block]));
     });
 
@@ -602,7 +557,7 @@ void main() {
       final block = Block(doc, 'paragraph');
       expect(block.file, isNull);
       expect(block.lineno, isNull);
-      block.sourceLocation = FakeCursor('doc.adoc', 7);
+      block.sourceLocation = Cursor('doc.adoc', null, 'doc.adoc', 7);
       expect(block.file, equals('doc.adoc'));
       expect(block.lineno, equals(7));
     });
@@ -632,20 +587,14 @@ void main() {
       final desc = ListItem(list, 'def');
       final terms2 = ListItem(list, 'term2');
       final desc2 = ListItem(list, 'def2');
-      list.items.addAll([
-        <Object?>[
-          [terms],
-          desc,
-        ],
-        <Object?>[
-          [terms2],
-          desc2,
-        ],
+      list.entries.addAll([
+        DlistEntry([terms], desc),
+        DlistEntry([terms2], desc2),
       ]);
       expect(list.nextAdjacentBlock(), same(para));
-      // Description-list items advance to the next pair.
-      expect(desc.nextAdjacentBlock(), same(list.items[1]));
-      expect(terms.nextAdjacentBlock(), same(list.items[1]));
+      // Description-list items advance to the first term of the next pair.
+      expect(desc.nextAdjacentBlock(), same(terms2));
+      expect(terms.nextAdjacentBlock(), same(terms2));
       // Last pair members advance past the list.
       expect(desc2.nextAdjacentBlock(), same(para));
       // Trailing blocks yield null.
@@ -656,10 +605,10 @@ void main() {
 
     test('assignNumeral numbers plain, chapter and appendix sections', () {
       final doc = FakeDocument(attributes: {'appendix-caption': 'Appendix'});
-      final s1 = Section(doc, 1, true)..sectname = 'section';
-      final ch = Section(doc, 1, true)..sectname = 'chapter';
-      final app = Section(doc, 1, true)..sectname = 'appendix';
-      final part = Section(doc, 1, true)..sectname = 'part';
+      final s1 = (Section(doc, 1)..numbered = true)..sectname = 'section';
+      final ch = (Section(doc, 1)..numbered = true)..sectname = 'chapter';
+      final app = (Section(doc, 1)..numbered = true)..sectname = 'appendix';
+      final part = (Section(doc, 1)..numbered = true)..sectname = 'part';
       final plain = Section(doc, 1)..sectname = 'section';
       doc
         ..assignNumeral(s1)
@@ -667,18 +616,18 @@ void main() {
         ..assignNumeral(app)
         ..assignNumeral(part)
         ..assignNumeral(plain);
-      expect([s1.index, s1.numeral], equals([0, '1']));
-      expect([ch.index, ch.numeral], equals([1, '1']));
-      expect([
+      expect((s1.index, s1.numeral), equals((0, '1')));
+      expect((ch.index, ch.numeral), equals((1, '1')));
+      expect((
         app.index,
         app.numeral,
         app.caption,
-      ], equals([2, 'A', 'Appendix A: ']));
+      ), equals((2, 'A', 'Appendix A: ')));
       // The ordinal is shared: s1 consumed 1, so the part is II (verified).
-      expect([part.index, part.numeral], equals([3, 'II']));
-      expect([plain.index, plain.numeral], equals([4, null]));
+      expect((part.index, part.numeral), equals((3, 'II')));
+      expect((plain.index, plain.numeral), equals((4, null)));
       // A second chapter continues the chapter counter.
-      final ch2 = Section(doc, 1, true)..sectname = 'chapter';
+      final ch2 = (Section(doc, 1)..numbered = true)..sectname = 'chapter';
       doc.assignNumeral(ch2);
       expect(ch2.numeral, equals('2'));
       // Unnumbered sections still consume indexes.
@@ -687,7 +636,7 @@ void main() {
 
     test('assignNumeral without appendix caption falls back', () {
       final doc = FakeDocument();
-      final app = Section(doc, 1, true)..sectname = 'appendix';
+      final app = (Section(doc, 1)..numbered = true)..sectname = 'appendix';
       doc.assignNumeral(app);
       expect(app.numeral, equals('A'));
       expect(app.caption, equals('A. '));
@@ -695,9 +644,9 @@ void main() {
 
     test('reindexSections renumbers after removal', () {
       final doc = FakeDocument();
-      final a = Section(doc, 1, true)..title = 'A';
-      final b = Section(doc, 1, true)..title = 'B';
-      final c = Section(doc, 1, true)..title = 'C';
+      final a = (Section(doc, 1)..numbered = true)..title = 'A';
+      final b = (Section(doc, 1)..numbered = true)..title = 'B';
+      final c = (Section(doc, 1)..numbered = true)..title = 'C';
       doc
         ..append(a)
         ..append(b)
@@ -706,12 +655,9 @@ void main() {
       doc.reindexSections();
       expect(
         doc.sections.map(
-          (s) => [(s as Section).sourceTitle, s.index, s.numeral],
+          (s) => ((s as Section).sourceTitle, s.index, s.numeral),
         ),
-        equals([
-          ['B', 0, '1'],
-          ['C', 1, '2'],
-        ]),
+        equals([('B', 0, '1'), ('C', 1, '2')]),
       );
     });
 
@@ -721,7 +667,7 @@ void main() {
         ..title = 'Tiger'
         ..assignCaption(null, 'figure');
       expect(img.caption, equals('Figure 1. '));
-      expect(img.numeral, equals(1));
+      expect(img.numeral, equals('1'));
       // A second captioned figure continues the counter.
       final img2 = Block(doc, 'image')
         ..title = 'Lion'
@@ -757,13 +703,13 @@ void main() {
       );
     });
 
-    test('source string is prepared into lines; lists are copied', () {
+    test('source string is prepared into lines; line lists are copied', () {
       final doc = FakeDocument();
       final block = Block(doc, 'paragraph', source: 'a  \nb\t\n');
       expect(block.lines, equals(['a', 'b']));
       expect(block.source(), equals('a\nb'));
       final input = ['x', 'y'];
-      final listed = Block(doc, 'paragraph', source: input);
+      final listed = Block(doc, 'paragraph', lines: input);
       expect(listed.lines, equals(['x', 'y']));
       input.add('mutated');
       expect(listed.lines, equals(['x', 'y']));
@@ -802,18 +748,18 @@ void main() {
       final weird = Block(doc, 'paragraph', contentModel: 'bogus');
       expect(weird.content(), isNull);
       expect(
-        testLogger.warns.single,
+        testLogger.warns.single.text,
         contains("unknown content model 'bogus'"),
       );
     });
 
-    test('explicit null subs disables resolution', () {
+    test('explicit no subs disables resolution', () {
       final doc = FakeDocument();
       final block = Block(
         doc,
         'paragraph',
         attributes: {'subs': 'quotes'},
-        subs: null,
+        subs: const BlockSubs.none(),
       );
       expect(block.defaultSubs, equals([]));
       expect(block.subs, equals([]));
@@ -821,10 +767,14 @@ void main() {
     });
 
     test('specified subs resolve eagerly via commitSubs', () {
-      final doc = Document(<String>[]);
+      final doc = Document();
       // 'default' honors the subs attribute, then defaultSubs.
       expect(
-        Block(doc, 'paragraph', subs: 'default', defaultSubs: ['quotes']).subs,
+        Block(
+          doc,
+          'paragraph',
+          subs: const BlockSubs.defaults(['quotes']),
+        ).subs,
         equals(['quotes']),
       );
       expect(
@@ -832,11 +782,14 @@ void main() {
           doc,
           'paragraph',
           attributes: {'subs': 'quotes'},
-          subs: ['quotes'],
+          subs: const BlockSubs.fixed(['quotes']),
         ).subs,
         equals(['quotes']),
       );
-      expect(Block(doc, 'paragraph', subs: 'normal').subs, equals(normalSubs));
+      expect(
+        Block(doc, 'paragraph', subs: const BlockSubs.spec('normal')).subs,
+        equals(normalSubs),
+      );
     });
 
     test('blockname aliases context; toString shape', () {
@@ -901,7 +854,7 @@ void main() {
     });
 
     test('reftext nodes: text is the reftext', () {
-      final doc = Document(<String>[]);
+      final doc = Document();
       final para = Block(doc, 'paragraph');
       final ref = Inline(para, 'anchor', text: 'Name', type: 'ref');
       final bib = Inline(para, 'anchor', text: '[1]', type: 'bibref');
@@ -928,7 +881,7 @@ void main() {
       ], equals([1, false, false, 0]));
       expect(bare.context, equals('section'));
       final doc = FakeDocument();
-      final top = Section(doc, 1, true);
+      final top = (Section(doc, 1)..numbered = true);
       expect([
         top.level,
         top.special,
@@ -974,16 +927,16 @@ void main() {
 
     test('sectnum chains numerals with delimiters', () {
       final doc = FakeDocument();
-      final a = Section(doc, 1, true)..sectname = 'section';
-      final b = Section(a, 2, true)..sectname = 'section';
-      final c = Section(doc, 1, true)..sectname = 'section';
+      final a = (Section(doc, 1)..numbered = true)..sectname = 'section';
+      final b = (Section(a, 2)..numbered = true)..sectname = 'section';
+      final c = (Section(doc, 1)..numbered = true)..sectname = 'section';
       doc.append(a);
       a.append(b);
       doc.append(c);
-      expect([a.numeral, a.sectnum()], equals(['1', '1.']));
-      expect([b.numeral, b.sectnum()], equals(['1', '1.1.']));
-      expect([c.numeral, c.sectnum()], equals(['2', '2.']));
-      expect(b.sectnum(',', false), equals('1,1'));
+      expect((a.numeral, a.sectnum()), equals(('1', '1.')));
+      expect((b.numeral, b.sectnum()), equals(('1', '1.1.')));
+      expect((c.numeral, c.sectnum()), equals(('2', '2.')));
+      expect(b.sectnum(',', ''), equals('1,1'));
       expect(a.sectnum('.', ''), equals('1'));
     });
 
@@ -997,7 +950,7 @@ void main() {
 
     test('toString shape with and without title', () {
       final doc = FakeDocument();
-      final section = Section(doc, 1, true)
+      final section = (Section(doc, 1)..numbered = true)
         ..title = 'A'
         ..numeral = '1';
       section.append(Block(section, 'paragraph'));
@@ -1059,9 +1012,9 @@ void main() {
 
     test('taken IDs gain a numeric suffix from index 2', () {
       final doc = FakeDocument();
-      doc.catalog['refs']!['_foo'] = Object();
+      doc.catalog.refs['_foo'] = Block(doc, 'paragraph');
       expect(Section.generateId('Foo', doc), equals('_foo_2'));
-      doc.catalog['refs']!['_foo_2'] = Object();
+      doc.catalog.refs['_foo_2'] = Block(doc, 'paragraph');
       expect(Section.generateId('Foo', doc), equals('_foo_3'));
     });
 
@@ -1090,8 +1043,7 @@ void main() {
       expect(ListBlock(doc, 'colist').isOutline, isFalse);
       final item = ListItem(ulist, 'x');
       ulist.append(item);
-      expect(ulist.items, same(ulist.blocks));
-      expect(ulist.content(), same(ulist.blocks));
+      expect(ulist.items, equals(ulist.blocks));
       expect(ulist.hasItems, isTrue);
       expect(ListBlock(doc, 'ulist').hasItems, isFalse);
     });
@@ -1140,7 +1092,7 @@ void main() {
     });
 
     test('hasText and text', () {
-      final doc = Document(<String>[]);
+      final doc = Document();
       final list = ListBlock(doc, 'ulist');
       expect(ListItem(list).hasText, isFalse);
       expect(ListItem(list, '').hasText, isFalse);
@@ -1201,12 +1153,12 @@ void main() {
   group('Table', () {
     test('constructor resolves table widths', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
+      final table = Table(doc, <String, String>{});
       expect(table.context, equals('table'));
-      expect(table.attributes['tablepcwidth'], equals(100));
+      expect(table.pcwidth, equals(100));
       expect(table.rows.body, isEmpty);
       expect(table.columns, isEmpty);
-      expect(table.hasHeaderOption, equals(false));
+      expect(table.header, equals(TableHeader.none));
       (<String, int>{
         'abc': 100,
         '0%': 0,
@@ -1218,30 +1170,21 @@ void main() {
         '-5': 100,
       }).forEach((width, expected) {
         expect(
-          Table(doc, {'width': width}).attributes['tablepcwidth'],
+          Table(doc, {'width': width}).pcwidth,
           equals(expected),
           reason: 'width $width',
         );
       });
-      expect(Table(doc, {'width': 50}).attributes['tablepcwidth'], equals(50));
     });
 
     test('absolute widths follow the pagewidth attribute', () {
-      final doc = FakeDocument(attributes: {'pagewidth': 800});
+      final doc = FakeDocument(attributes: {'pagewidth': '800'});
       final table = Table(doc, {'width': '50%'});
-      expect(table.attributes['tableabswidth'], equals(400));
-      table.createColumns([
-        {'width': 1},
-        {'width': 1},
-      ]);
+      expect(table.abswidth, equals(400));
+      table.createColumns([const ColumnSpec(), const ColumnSpec()]);
       expect(
-        table.columns.map(
-          (c) => [c.attributes['colpcwidth'], c.attributes['colabswidth']],
-        ),
-        equals([
-          [50, 200],
-          [50, 200],
-        ]),
+        table.columns.map((c) => (c.pcwidth, c.abswidth)),
+        equals([(50, 200), (50, 200)]),
       );
     });
 
@@ -1252,113 +1195,88 @@ void main() {
         Table(doc, {'rotate-option': ''}).attributes['orientation'],
         equals('landscape'),
       );
-      expect(Table(doc, <String, Object>{}).attributes['orientation'], isNull);
+      expect(Table(doc, <String, String>{}).attributes['orientation'], isNull);
     });
 
     test('headerRow gates on body emptiness', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{})
-        ..createColumns([
-          {'width': 1},
-        ]);
-      expect(table.headerRow, equals(false));
-      table.hasHeaderOption = true;
-      expect(table.headerRow, equals(true));
-      table.rows.body.add([Cell(table.columns[0], 'a', {})]);
-      expect(table.headerRow, equals(false));
+      final table = Table(doc, <String, String>{})
+        ..createColumns([const ColumnSpec()]);
+      expect(table.headerRow, equals(TableHeader.none));
+      table.header = TableHeader.explicit;
+      expect(table.headerRow, equals(TableHeader.explicit));
+      table.rows.body.add([Cell(table.columns[0], 'a')]);
+      expect(table.headerRow, equals(TableHeader.none));
       table.rows.body.clear();
-      table.hasHeaderOption = 'implicit';
-      expect(table.headerRow, equals('implicit'));
+      table.header = TableHeader.implicit;
+      expect(table.headerRow, equals(TableHeader.implicit));
     });
 
     test('createColumns assigns relative widths', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
+      final table = Table(doc, <String, String>{});
       final colspecs = [
-        <String, Object?>{'width': 1},
-        <String, Object?>{'width': 2},
-        <String, Object?>{'width': 1},
+        const ColumnSpec(),
+        const ColumnSpec(width: 2),
+        const ColumnSpec(),
       ];
       table.createColumns(colspecs);
-      expect(table.attributes['colcount'], equals(3));
-      expect(
-        table.columns.map((c) => c.attributes['colpcwidth']),
-        equals([25, 50, 25]),
-      );
-      // Column numbers resolve into the caller specs (as in Ruby).
-      expect(colspecs[0]['colnumber'], equals(1));
-      expect(colspecs[2]['colnumber'], equals(3));
+      expect(table.attributes['colcount'], equals('3'));
+      expect(table.columns.map((c) => c.pcwidth), equals([25, 50, 25]));
+      expect(table.columns[0].colnumber, equals(1));
+      expect(table.columns[2].colnumber, equals(3));
     });
 
     test('autowidth columns split the remainder; balance to final', () {
       final doc = FakeDocument();
-      final table = (Table(doc, <String, Object?>{}))
+      final table = (Table(doc, <String, String>{}))
         ..createColumns([
-          {'width': -1},
-          {'width': -1},
-          {'width': -1},
+          const ColumnSpec(width: -1),
+          const ColumnSpec(width: -1),
+          const ColumnSpec(width: -1),
         ]);
       expect(
-        table.columns.map(
-          (c) => [c.attributes['width'], c.attributes['colpcwidth']],
-        ),
-        equals([
-          [33.3333, 33.3333],
-          [33.3333, 33.3333],
-          [33.3333, 33.3334],
-        ]),
+        table.columns.map((c) => (c.width, c.pcwidth)),
+        equals([(33.3333, 33.3333), (33.3333, 33.3333), (33.3333, 33.3334)]),
       );
     });
 
     test('autowidth over 100 warns and zeroes autowidth columns', () {
       final doc = FakeDocument();
-      final table = (Table(doc, <String, Object?>{}))
+      final table = (Table(doc, <String, String>{}))
         ..createColumns([
-          {'width': 60},
-          {'width': 60},
-          {'width': -1},
+          const ColumnSpec(width: 60),
+          const ColumnSpec(width: 60),
+          const ColumnSpec(width: -1),
         ]);
       expect(
-        table.columns.map(
-          (c) => [c.attributes['width'], c.attributes['colpcwidth']],
-        ),
-        equals([
-          [60, 50],
-          [60, 50],
-          [0, 0],
-        ]),
+        table.columns.map((c) => (c.width, c.pcwidth)),
+        equals([(60, 50), (60, 50), (0, 0)]),
       );
       expect(
-        testLogger.warns.single,
+        testLogger.warns.single.text,
         contains('total column width must not exceed 100%'),
       );
     });
 
     test('zero widths fall back to an equal split', () {
       final doc = FakeDocument();
-      final table = (Table(doc, <String, Object?>{}))
+      final table = (Table(doc, <String, String>{}))
         ..createColumns([
-          {'width': 0},
-          {'width': 0},
+          const ColumnSpec(width: 0),
+          const ColumnSpec(width: 0),
         ]);
-      expect(
-        table.columns.map((c) => c.attributes['colpcwidth']),
-        equals([50, 50]),
-      );
-      final single = (Table(doc, <String, Object?>{}))
-        ..createColumns([
-          {'width': 1},
-        ]);
-      expect(single.columns.single.attributes['colpcwidth'], equals(100));
+      expect(table.columns.map((c) => c.pcwidth), equals([50, 50]));
+      final single = (Table(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec()]);
+      expect(single.columns.single.pcwidth, equals(100));
     });
 
     test('partitionHeaderFooter splits head, body and foot', () {
       FakeDocument makeDoc() => FakeDocument();
       Table makeTable(FakeDocument doc, int cols) {
-        final table = (Table(doc, <String, Object?>{}))
-          ..createColumns(
-            List.generate(cols, (_) => <String, Object?>{'width': 1}),
-          );
+        final table = (Table(doc, <String, String>{}))
+          ..createColumns(List.generate(cols, (_) => const ColumnSpec()));
         return table;
       }
 
@@ -1367,14 +1285,14 @@ void main() {
       for (final text in ['h1|h2', 'a|b', 'c|d']) {
         final parts = text.split('|');
         table.rows.body.add([
-          Cell(table.columns[0], parts[0], {}),
-          Cell(table.columns[1], parts[1], {}),
+          Cell(table.columns[0], parts[0]),
+          Cell(table.columns[1], parts[1]),
         ]);
       }
       table
-        ..hasHeaderOption = true
-        ..partitionHeaderFooter({});
-      expect(table.attributes['rowcount'], equals(3));
+        ..header = TableHeader.explicit
+        ..partitionHeaderFooter(footer: false);
+      expect(table.rowcount, equals(3));
       expect(table.rows.head, hasLength(1));
       expect(table.rows.body, hasLength(2));
       expect(table.rows.foot, isEmpty);
@@ -1388,13 +1306,13 @@ void main() {
       for (final text in ['h1|h2', 'a|b', 'f1|f2']) {
         final parts = text.split('|');
         withFoot.rows.body.add([
-          Cell(withFoot.columns[0], parts[0], {}),
-          Cell(withFoot.columns[1], parts[1], {}),
+          Cell(withFoot.columns[0], parts[0]),
+          Cell(withFoot.columns[1], parts[1]),
         ]);
       }
       withFoot
-        ..hasHeaderOption = true
-        ..partitionHeaderFooter({'footer-option': ''});
+        ..header = TableHeader.explicit
+        ..partitionHeaderFooter(footer: true);
       expect(withFoot.rows.head, hasLength(1));
       expect(withFoot.rows.body, hasLength(1));
       expect(
@@ -1406,21 +1324,21 @@ void main() {
     test('partitionHeaderFooter with nil header option reinitializes', () {
       final doc = FakeDocument();
       // Cells built while the header is implicit defer literal handling.
-      final table = (Table(doc, <String, Object?>{}))
-        ..createColumns([
-          {'width': 1},
-        ])
-        ..hasHeaderOption = 'implicit';
-      final cell = Cell(table.columns.single, '  x  \n\n', {
-        'style': 'literal',
-      });
+      final table = (Table(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec()])
+        ..header = TableHeader.implicit;
+      final cell = Cell(
+        table.columns.single,
+        '  x  \n\n',
+        const CellSpec(style: 'literal'),
+      );
       expect(cell.contentModel, equals('simple'));
       table.rows.body.add([cell]);
       table
-        ..hasHeaderOption = null
-        ..partitionHeaderFooter({});
-      expect(table.hasHeaderOption, equals(false));
-      expect(table.attributes['rowcount'], equals(1));
+        ..header = TableHeader.undecided
+        ..partitionHeaderFooter(footer: false);
+      expect(table.header, equals(TableHeader.none));
+      expect(table.rowcount, equals(1));
       // The row stays in the body, rebuilt as a literal cell.
       final rebuilt = table.rows.body.single.single;
       expect(rebuilt, isNot(same(cell)));
@@ -1433,13 +1351,11 @@ void main() {
   group('TableRows', () {
     TableRows makeRows() {
       final doc = FakeDocument();
-      final table = (Table(doc, <String, Object?>{}))
-        ..createColumns([
-          {'width': 1},
-        ]);
+      final table = (Table(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec()]);
       final rows = TableRows();
-      rows.head.add([Cell(table.columns.single, 'h', {})]);
-      rows.body.add([Cell(table.columns.single, 'b', {})]);
+      rows.head.add([Cell(table.columns.single, 'h')]);
+      rows.body.add([Cell(table.columns.single, 'b')]);
       return rows;
     }
 
@@ -1459,64 +1375,61 @@ void main() {
   group('Column', () {
     test('constructor resolves defaults into caller attributes', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
+      final table = Table(doc, <String, String>{});
       final column = Column(table, 0);
       expect(column.table, same(table));
       expect(column.context, equals('table_column'));
       expect(column.style, isNull);
       expect(
         column.attributes,
-        equals({'colnumber': 1, 'width': 1, 'halign': 'left', 'valign': 'top'}),
+        equals({
+          'colnumber': '1',
+          'width': '1',
+          'halign': 'left',
+          'valign': 'top',
+        }),
       );
       expect(column.isBlock, isFalse);
       expect(column.isInline, isFalse);
-      // Explicit values survive; the caller map gains the colnumber.
-      final attrs = <String, Object?>{
-        'style': 'strong',
-        'width': 2,
-        'halign': 'center',
-      };
-      final styled = Column(table, 1, attrs);
+      // Explicit values survive.
+      final styled = Column(
+        table,
+        1,
+        const ColumnSpec(style: 'strong', width: 2, halign: 'center'),
+      );
       expect(styled.style, equals('strong'));
-      expect(styled.attributes['width'], equals(2));
+      expect(styled.colnumber, equals(2));
+      expect(styled.width, equals(2));
+      expect(styled.attributes['width'], equals('2'));
       expect(styled.attributes['halign'], equals('center'));
       expect(styled.attributes['valign'], equals('top'));
-      expect(attrs['colnumber'], equals(2));
     });
 
     test('assignWidth resolves percentage and absolute widths', () {
       final doc = FakeDocument();
-      final table = (Table(doc, <String, Object?>{}))
-        ..createColumns([
-          {'width': 1},
-          {'width': 3},
-        ]);
-      expect(
-        table.columns.map((c) => c.attributes['colpcwidth']),
-        equals([25, 75]),
-      );
+      final table = (Table(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec(), const ColumnSpec(width: 3)]);
+      expect(table.columns.map((c) => c.pcwidth), equals([25, 75]));
       // Whole values become ints; fractional values stay doubles.
-      final thirds = (Table(doc, <String, Object?>{}))
+      final thirds = (Table(doc, <String, String>{}))
         ..createColumns([
-          {'width': 1},
-          {'width': 1},
-          {'width': 1},
+          const ColumnSpec(),
+          const ColumnSpec(),
+          const ColumnSpec(),
         ]);
       expect(
-        thirds.columns.map((c) => c.attributes['colpcwidth']),
+        thirds.columns.map((c) => c.pcwidth),
         equals([33.3333, 33.3333, 33.3334]),
       );
-      expect(thirds.columns[0].attributes['colpcwidth'], isA<double>());
-      expect(table.columns[0].attributes['colpcwidth'], isA<int>());
+      expect(thirds.columns[0].pcwidth, isA<double>());
+      expect(table.columns[0].pcwidth, isA<int>());
     });
   });
 
   group('Cell', () {
     Table makeTable(AbstractBlock doc) {
-      final table = (Table(doc, <String, Object?>{}))
-        ..createColumns([
-          {'width': 1},
-        ]);
+      final table = (Table(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec()]);
       return table;
     }
 
@@ -1524,32 +1437,31 @@ void main() {
       final doc = FakeDocument();
       final table = makeTable(doc);
       final col = table.columns.single;
-      final attrs = <String, Object?>{
-        'colspan': 2,
-        'rowspan': 3,
-        'halign': 'center',
-      };
-      final cell = Cell(col, ' x\ny\n\nz ', attrs);
+      final cell = Cell(
+        col,
+        ' x\ny\n\nz ',
+        const CellSpec(colspan: 2, rowspan: 3, halign: 'center'),
+      );
       expect(cell.source(), equals('x\ny\n\nz'));
       expect(cell.colspan, equals(2));
       expect(cell.rowspan, equals(3));
       expect(cell.contentModel, equals('simple'));
       expect(cell.subs, same(normalSubs));
       expect(cell.column, same(col));
-      // Spans are removed from the attributes; the rest merge in.
-      expect(attrs.containsKey('colspan'), isFalse);
-      expect(attrs.containsKey('rowspan'), isFalse);
+      // Spans stay out of the attributes; the rest merge in.
+      expect(cell.attributes.containsKey('colspan'), isFalse);
+      expect(cell.attributes.containsKey('rowspan'), isFalse);
       expect(cell.attributes['halign'], equals('center'));
       // Column attributes are inherited, then overridden.
-      expect(cell.attributes['colnumber'], equals(1));
+      expect(cell.attributes['colnumber'], equals('1'));
       // Null text becomes the empty string (AsciidoctorJ convention).
-      expect(Cell(col, null, {}).source(), equals(''));
+      expect(Cell(col, null).source(), equals(''));
     });
 
     test('empty attributes leave spans unset', () {
       final doc = FakeDocument();
       final col = makeTable(doc).columns.single;
-      final cell = Cell(col, 'a', {});
+      final cell = Cell(col, 'a');
       expect(cell.colspan, isNull);
       expect(cell.rowspan, isNull);
       expect(cell.style, isNull);
@@ -1557,29 +1469,33 @@ void main() {
 
     test('styles resolve from column, then cell attributes', () {
       final doc = FakeDocument();
-      final table = (Table(doc, <String, Object?>{}))
-        ..createColumns([
-          {'width': 1, 'style': 'strong'},
-        ]);
+      final table = (Table(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec(style: 'strong')]);
       final col = table.columns.single;
-      expect(Cell(col, 'a', {}).style, equals('strong'));
-      expect(Cell(col, 'a', {'style': 'emphasis'}).style, equals('emphasis'));
+      expect(Cell(col, 'a').style, equals('strong'));
+      expect(
+        Cell(col, 'a', const CellSpec(style: 'emphasis')).style,
+        equals('emphasis'),
+      );
       // In the header row the cell style is ignored.
-      table.hasHeaderOption = true;
-      expect(Cell(col, 'a', {'style': 'emphasis'}).style, isNull);
+      table.header = TableHeader.explicit;
+      expect(Cell(col, 'a', const CellSpec(style: 'emphasis')).style, isNull);
     });
 
     test('header cells defer anchor cataloging until reinitialized', () {
-      final doc = Document(<String>[]);
-      final table = (makeTable(doc))..hasHeaderOption = true;
+      final doc = Document();
+      final table = (makeTable(doc))..header = TableHeader.explicit;
       // Would catalog (parser) if done eagerly; header cells defer it.
-      final cell = Cell(table.columns.single, '[[hx]] H', {}, {
-        'cursor': FakeCursor('t.adoc', 1),
-      });
-      final refs = doc.catalog['refs']! as Map<String, Object?>;
+      final cell = Cell(
+        table.columns.single,
+        '[[hx]] H',
+        const CellSpec(),
+        Cursor('t.adoc', null, 't.adoc'),
+      );
+      final refs = doc.catalog.refs;
       expect(refs, isNot(contains('hx')));
       // Plain cells reinitialize to themselves.
-      final plain = Cell(table.columns.single, 'H', {});
+      final plain = Cell(table.columns.single, 'H');
       expect(plain.reinitialize(hasHeader: true), same(plain));
       // The anchored cell catalogs on reinitialization.
       cell.reinitialize(hasHeader: true);
@@ -1588,67 +1504,80 @@ void main() {
 
     test('implicit header with literal style rebuilds on reinitialize', () {
       final doc = FakeDocument();
-      final table = (makeTable(doc))..hasHeaderOption = 'implicit';
-      final cell = Cell(table.columns.single, '  lit  \n\n', {
-        'style': 'literal',
-      });
+      final table = (makeTable(doc))..header = TableHeader.implicit;
+      final cell = Cell(
+        table.columns.single,
+        '  lit  \n\n',
+        const CellSpec(style: 'literal'),
+      );
       expect(cell.contentModel, equals('simple'));
-      table.hasHeaderOption = false;
+      table.header = TableHeader.none;
       final rebuilt = cell.reinitialize(hasHeader: false);
       expect(rebuilt, isNot(same(cell)));
       expect(rebuilt.contentModel, equals('verbatim'));
       expect(rebuilt.source(), equals('  lit'));
       expect(rebuilt.subs, same(basicSubs));
       // Explicit header rows just clear the deferred arguments.
-      table.hasHeaderOption = 'implicit';
-      final cell2 = Cell(table.columns.single, 'x', {'style': 'literal'});
+      table.header = TableHeader.implicit;
+      final cell2 = Cell(
+        table.columns.single,
+        'x',
+        const CellSpec(style: 'literal'),
+      );
       expect(cell2.reinitialize(hasHeader: true), same(cell2));
     });
 
     test('literal cells rstrip and drop leading blank lines', () {
       final doc = FakeDocument();
       final col = makeTable(doc).columns.single;
-      final cell = Cell(col, '  lit\n  lines  \n\n', {'style': 'literal'});
+      final cell = Cell(
+        col,
+        '  lit\n  lines  \n\n',
+        const CellSpec(style: 'literal'),
+      );
       expect(cell.source(), equals('  lit\n  lines'));
       expect(cell.contentModel, equals('verbatim'));
       expect(cell.subs, same(basicSubs));
-      final blanky = Cell(col, '\n\nlit', {'style': 'literal'});
+      final blanky = Cell(col, '\n\nlit', const CellSpec(style: 'literal'));
       expect(blanky.source(), equals('lit'));
     });
 
     test('lines splits without trailing empties', () {
       final doc = FakeDocument();
       final col = makeTable(doc).columns.single;
-      expect(Cell(col, 'a', {}).lines(), equals(['a']));
-      expect(Cell(col, 'a\nb\n', {}).lines(), equals(['a', 'b']));
+      expect(Cell(col, 'a').lines(), equals(['a']));
+      expect(Cell(col, 'a\nb\n').lines(), equals(['a', 'b']));
     });
 
-    test('content of an empty cell is an empty list', () {
+    test('paragraphs of an empty cell are empty', () {
       final doc = FakeDocument();
       final col = makeTable(doc).columns.single;
-      expect(Cell(col, '', {}).content(), equals([]));
+      expect(Cell(col, '').paragraphs, isEmpty);
     });
 
-    test('content styles paragraphs through the converter', () {
+    test('paragraphs are styled through the converter', () {
       final doc = FakeDocument();
       final col = makeTable(doc).columns.single;
-      final multi = (Cell(col, 'p1\n\np2', {'style': 'strong'}))..subs = [];
+      final multi = (Cell(col, 'p1\n\np2', const CellSpec(style: 'strong')))
+        ..subs = [];
       expect(
-        multi.content(),
+        multi.paragraphs,
         equals(['<inline_quoted:strong=p1>', '<inline_quoted:strong=p2>']),
       );
-      final single = (Cell(col, 'x', {'style': 'strong'}))..subs = [];
-      expect(single.content(), equals(['<inline_quoted:strong=x>']));
-      final header = (Cell(col, 'x', {'style': 'header'}))..subs = [];
-      expect(header.content(), equals(['x']));
-      final plain = (Cell(col, 'x', {}))..subs = [];
-      expect(plain.content(), equals(['x']));
+      final single = (Cell(col, 'x', const CellSpec(style: 'strong')))
+        ..subs = [];
+      expect(single.paragraphs, equals(['<inline_quoted:strong=x>']));
+      final header = (Cell(col, 'x', const CellSpec(style: 'header')))
+        ..subs = [];
+      expect(header.paragraphs, equals(['x']));
+      final plain = (Cell(col, 'x'))..subs = [];
+      expect(plain.paragraphs, equals(['x']));
     });
 
     test('cell text applies subs; vacuous subs pass through', () {
-      final doc = Document(<String>[]);
+      final doc = Document();
       final col = makeTable(doc).columns.single;
-      final cell = Cell(col, 'a', {});
+      final cell = Cell(col, 'a');
       expect(cell.text, equals('a'));
       cell.subs = [];
       expect(cell.text, equals('a'));
@@ -1659,7 +1588,12 @@ void main() {
     test('source locations are captured when the sourcemap is on', () {
       final doc = FakeDocument()..sourcemap = true;
       final col = makeTable(doc).columns.single;
-      final cell = Cell(col, 'a', {}, {'cursor': FakeCursor('t.adoc', 3)});
+      final cell = Cell(
+        col,
+        'a',
+        const CellSpec(),
+        Cursor('t.adoc', null, 't.adoc', 3),
+      );
       expect(cell.file, equals('t.adoc'));
       expect(cell.lineno, equals(3));
     });
@@ -1674,8 +1608,11 @@ void main() {
       // AsciiDoc cells build a nested document, which needs a real
       // Document; with the FakeDocument test double the cast fails.
       // (Real-document coverage: the `asciidoc cell` test below.)
-      expect(() => Cell(col, 't', {'style': 'asciidoc'}), throwsA(anything));
-      final asciidocCol = Column(table, 1, {'style': 'asciidoc'});
+      expect(
+        () => Cell(col, 't', const CellSpec(style: 'asciidoc')),
+        throwsA(anything),
+      );
+      final asciidocCol = Column(table, 1, const ColumnSpec(style: 'asciidoc'));
       expect(() => Cell(asciidocCol, 't', null), throwsA(anything));
       // A null-attributes cell on a plain column is a normal cell.
       expect(Cell(col, 't', null).contentModel, equals('simple'));
@@ -1690,13 +1627,13 @@ void main() {
       expect(cell.style, equals('asciidoc'));
       expect(cell.innerDocument, isA<Document>());
       expect(cell.innerDocument!.blocks, hasLength(1));
-      expect(cell.content()! as String, contains('<strong>this</strong>'));
+      expect(cell.content(), contains('<strong>this</strong>'));
     });
 
     test('toString carries text, spans and attributes', () {
       final doc = FakeDocument();
       final col = makeTable(doc).columns.single;
-      final cell = Cell(col, 'a', {});
+      final cell = Cell(col, 'a');
       final rendered = cell.toString();
       expect(rendered, startsWith('Cell(text: "a", colspan: 1, rowspan: 1,'));
       expect(rendered, contains('colnumber: 1'));
@@ -1706,11 +1643,9 @@ void main() {
   group('TableParserContext', () {
     (FakeDocument, Table, FakeReader) makeParts({int cols = 0}) {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
+      final table = Table(doc, <String, String>{});
       if (cols > 0) {
-        table.createColumns(
-          List.generate(cols, (_) => <String, Object?>{'width': 1}),
-        );
+        table.createColumns(List.generate(cols, (_) => const ColumnSpec()));
       }
       return (doc, table, FakeReader());
     }
@@ -1746,7 +1681,7 @@ void main() {
       expect(tsv.format, equals('csv'));
       expect(tsv.delimiter, equals('\t'));
       final nestedDoc = FakeDocument()..isNested = true;
-      final nestedTable = Table(nestedDoc, <String, Object?>{});
+      final nestedTable = Table(nestedDoc, <String, String>{});
       final nested = TableParserContext(FakeReader(), nestedTable, {
         'format': 'psv',
       });
@@ -1833,13 +1768,13 @@ void main() {
     test('cellspec stack is FIFO with empty default', () {
       final (_, table, reader) = makeParts();
       final pc = TableParserContext(reader, table);
-      expect(pc.takeCellspect(), isNull);
+      expect(pc.takeCellspec(), isNull);
       pc
-        ..pushCellspect({'a': 1})
-        ..pushCellspect();
-      expect(pc.takeCellspect(), equals({'a': 1}));
-      expect(pc.takeCellspect(), equals({}));
-      expect(pc.takeCellspect(), isNull);
+        ..pushCellspec(const CellSpec(colspan: 1))
+        ..pushCellspec();
+      expect(pc.takeCellspec(), equals(const CellSpec(colspan: 1)));
+      expect(pc.takeCellspec(), equals(const CellSpec()));
+      expect(pc.takeCellspec(), isNull);
     });
 
     test('cell open state and closeOpenCell', () {
@@ -1853,12 +1788,12 @@ void main() {
       expect(pc.isCellClosed, isTrue);
       // closeOpenCell closes an open cell and advances the line number.
       pc
-        ..pushCellspect({})
+        ..pushCellspec()
         ..buffer = 'x'
         ..keepCellOpen()
-        ..closeOpenCell({'b': 2});
+        ..closeOpenCell(const CellSpec(rowspan: 2));
       expect(pc.isCellClosed, isTrue);
-      expect(pc.takeCellspect(), equals({'b': 2}));
+      expect(pc.takeCellspec(), equals(const CellSpec(rowspan: 2)));
       expect(table.rows.body.single.single.source(), equals('x'));
     });
 
@@ -1867,12 +1802,12 @@ void main() {
       final pc = TableParserContext(reader, table);
       expect(pc.colcount, equals(2));
       pc
-        ..pushCellspect({})
+        ..pushCellspec()
         ..buffer = 'a'
         ..closeCell();
       expect(table.rows.body, isEmpty);
       pc
-        ..pushCellspect({})
+        ..pushCellspec()
         ..buffer = 'b'
         ..closeCell();
       expect(table.rows.body, hasLength(1));
@@ -1885,13 +1820,13 @@ void main() {
       // end-of-line (or once a second line has been seen).
       final (_, table, reader) = makeParts();
       final pc = (TableParserContext(reader, table))
-        ..pushCellspect({})
+        ..pushCellspec()
         ..buffer = 'a'
         ..closeCell();
       expect(table.rows.body, isEmpty);
       expect(table.columns, hasLength(1));
       pc
-        ..pushCellspect({})
+        ..pushCellspec()
         ..buffer = 'b'
         ..closeCell(eol: true);
       expect(table.rows.body.single.map((c) => c.source()), equals(['a', 'b']));
@@ -1912,7 +1847,7 @@ void main() {
     test('closeCell honors repeatcol and colspan', () {
       final (_, table, reader) = makeParts();
       (TableParserContext(reader, table))
-        ..pushCellspect({'repeatcol': 2})
+        ..pushCellspec(const CellSpec(repeat: 2))
         ..buffer = 'x'
         ..closeCell(eol: true);
       expect(table.rows.body.single, hasLength(2));
@@ -1920,7 +1855,7 @@ void main() {
 
       final (_, table2, reader2) = makeParts();
       (TableParserContext(reader2, table2))
-        ..pushCellspect({'colspan': 2})
+        ..pushCellspec(const CellSpec(colspan: 2))
         ..buffer = 'y'
         ..closeCell(eol: true);
       expect(table2.columns, hasLength(2));
@@ -1954,16 +1889,16 @@ void main() {
     test('rowspans count towards later rows', () {
       final (_, table, _) = makeParts(cols: 2);
       final pc = (TableParserContext(FakeReader(), table))
-        ..pushCellspect({'rowspan': 2})
+        ..pushCellspec(const CellSpec(rowspan: 2))
         ..buffer = 'a'
         ..closeCell()
-        ..pushCellspect({})
+        ..pushCellspec()
         ..buffer = 'b'
         ..closeCell();
       expect(table.rows.body, hasLength(1));
       // The second row needs a single cell: the rowspan fills the gap.
       pc
-        ..pushCellspect({})
+        ..pushCellspec()
         ..buffer = 'c'
         ..closeCell();
       expect(table.rows.body, hasLength(2));
@@ -1973,7 +1908,7 @@ void main() {
     test('overrunning cells are dropped with an error', () {
       final (_, table, _) = makeParts(cols: 1);
       (TableParserContext(FakeReader(), table))
-        ..pushCellspect({'colspan': 2})
+        ..pushCellspec(const CellSpec(colspan: 2))
         ..buffer = 'wide'
         ..closeCell();
       expect(table.rows.body, isEmpty);
@@ -2017,7 +1952,7 @@ void main() {
       expect(testLogger.errors, isEmpty);
       final (_, table2, _) = makeParts();
       (TableParserContext(FakeReader(), table2))
-        ..pushCellspect({})
+        ..pushCellspec()
         ..buffer = 'a'
         ..closeCell()
         ..closeTable();
@@ -2030,12 +1965,12 @@ void main() {
 
   group('substitution seams', () {
     test('converting titles and texts applies substitutions', () {
-      final doc = Document(<String>[]);
+      final doc = Document();
       final block = Block(doc, 'paragraph')..title = 'T';
       expect(block.title, equals('T'));
       expect(ListItem(ListBlock(doc, 'ulist'), 'x').text, equals('x'));
-      final col = Column(Table(doc, <String, Object?>{}), 0);
-      expect(Cell(col, 'x', {}).text, equals('x'));
+      final col = Column(Table(doc, <String, String>{}), 0);
+      expect(Cell(col, 'x').text, equals('x'));
       final withRef = Block(doc, 'paragraph', attributes: {'reftext': 'R'});
       expect(withRef.reftext, equals('R'));
       final withAlt = Block(doc, 'image', attributes: {'alt': 'A'});
@@ -2044,12 +1979,12 @@ void main() {
     });
 
     test('anchor cataloging uses parser.dart', () {
-      final doc = Document(<String>[]);
-      final table = Table(doc, <String, Object?>{});
+      final doc = Document();
+      final table = Table(doc, <String, String>{});
       final col = Column(table, 0);
-      Cell(col, '[[id]] text', {});
+      Cell(col, '[[id]] text');
       Parser.catalogInlineAnchor('id2', null, table, null, doc);
-      final refs = doc.catalog['refs']! as Map<String, Object?>;
+      final refs = doc.catalog.refs;
       expect(refs, contains('id'));
       expect(refs, contains('id2'));
     });

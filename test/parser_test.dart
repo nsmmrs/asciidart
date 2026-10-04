@@ -1,25 +1,22 @@
 /// Port of `test/parser_test.rb` (complete).
 ///
-/// Ruby symbols (`:attribute_entries`, ...) become strings; parser working
-/// attribute maps use `int` positional keys exactly like the Ruby hashes.
+/// Parser working attribute maps are [BlockAttributes], with positional
+/// attributes under `'1'`, `'2'`, ... and the attribute entries alongside.
 library;
 
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/list.dart';
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/parser.dart';
-import 'package:asciidoctor/src/reader.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Creates an unparsed document (port of `empty_document`).
-Document emptyDocument([Map<String, Object?> options = const {}]) =>
-    Document(<String>[], Map<String, Object?>.of(options));
+Document emptyDocument([
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+]) => Document.lines(<String>[], options);
 
 /// Parses [src] into a document (port of `document_from_string`).
 Document documentFromString([
   String src = '',
-  Map<String, Object?> options = const {},
-]) => Document(src, Map<String, Object?>.of(options)).parse();
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+]) => Document(src, options).parse();
 
 /// Splits [source] into lines with Ruby `split` semantics (trailing empty
 /// fields are dropped).
@@ -106,7 +103,7 @@ void main() {
       // which throws until the substitutors wave lands; observably
       // identical for a plain value.
       doc.attributes['foo'] = 'baz';
-      final attrs = <Object, Object?>{};
+      final attrs = BlockAttributes();
       final (attrName, attrValue) = Parser.storeAttribute(
         'foo',
         'bar',
@@ -116,9 +113,8 @@ void main() {
       expect(attrName, equals('foo'));
       expect(attrValue, equals('bar'));
       expect(doc.attr('foo'), equals('bar'));
-      expect(attrs.containsKey('attribute_entries'), isTrue);
-      final entries =
-          attrs['attribute_entries']! as List<DocumentAttributeEntry>;
+      expect(attrs.attributeEntries, isNotNull);
+      final entries = attrs.attributeEntries!;
       expect(entries, hasLength(1));
       expect(entries[0].name, equals('foo'));
       expect(entries[0].value, equals('bar'));
@@ -132,7 +128,7 @@ void main() {
       // plain values.
       doc.attributes['foo'] = 'baz';
       doc.attributes['release'] = 'ultramega';
-      final attrs = <Object, Object?>{};
+      final attrs = BlockAttributes();
       final (attrName, attrValue) = Parser.storeAttribute(
         'foo',
         '{release}',
@@ -142,19 +138,18 @@ void main() {
       expect(attrName, equals('foo'));
       expect(attrValue, equals('ultramega'));
       expect(doc.attr('foo'), equals('ultramega'));
-      expect(attrs.containsKey('attribute_entries'), isTrue);
-      final entries =
-          attrs['attribute_entries']! as List<DocumentAttributeEntry>;
+      expect(attrs.attributeEntries, isNotNull);
+      final entries = attrs.attributeEntries!;
       expect(entries, hasLength(1));
       expect(entries[0].name, equals('foo'));
       expect(entries[0].value, equals('ultramega'));
     });
 
     test('store inaccessible attribute on document with value', () {
-      final doc = emptyDocument({
-        'attributes': {'foo': 'baz'},
-      });
-      final attrs = <Object, Object?>{};
+      final doc = emptyDocument(
+        const AsciidoctorOptions(attributes: {'foo': 'baz'}),
+      );
+      final attrs = BlockAttributes();
       final (attrName, attrValue) = Parser.storeAttribute(
         'foo',
         'bar',
@@ -164,7 +159,7 @@ void main() {
       expect(attrName, equals('foo'));
       expect(attrValue, equals('bar'));
       expect(doc.attr('foo'), equals('baz'));
-      expect(attrs.containsKey('attribute_entries'), isFalse);
+      expect(attrs.attributeEntries, isNull);
     });
 
     test('store accessible attribute on document with negated value', () {
@@ -174,7 +169,7 @@ void main() {
         // until the substitutors wave lands; observably identical for a
         // plain value.
         doc.attributes['foo'] = 'baz';
-        final attrs = <Object, Object?>{};
+        final attrs = BlockAttributes();
         final (attrName, attrValue) = Parser.storeAttribute(
           entry.key,
           entry.value,
@@ -183,9 +178,8 @@ void main() {
         );
         expect(attrName, equals(entry.key.replaceAll('!', '')));
         expect(attrValue, isNull);
-        expect(attrs.containsKey('attribute_entries'), isTrue);
-        final entries =
-            attrs['attribute_entries']! as List<DocumentAttributeEntry>;
+        expect(attrs.attributeEntries, isNotNull);
+        final entries = attrs.attributeEntries!;
         expect(entries, hasLength(1));
         expect(entries[0].name, equals('foo'));
         expect(entries[0].value, isNull);
@@ -194,10 +188,10 @@ void main() {
 
     test('store inaccessible attribute on document with negated value', () {
       for (final entry in {'foo!': null, '!foo': null, 'foo': null}.entries) {
-        final doc = emptyDocument({
-          'attributes': {'foo': 'baz'},
-        });
-        final attrs = <Object, Object?>{};
+        final doc = emptyDocument(
+          const AsciidoctorOptions(attributes: {'foo': 'baz'}),
+        );
+        final attrs = BlockAttributes();
         final (attrName, attrValue) = Parser.storeAttribute(
           entry.key,
           entry.value,
@@ -206,85 +200,88 @@ void main() {
         );
         expect(attrName, equals(entry.key.replaceAll('!', '')));
         expect(attrValue, isNull);
-        expect(attrs.containsKey('attribute_entries'), isFalse);
+        expect(attrs.attributeEntries, isNull);
       }
     });
 
     test('parse style attribute with id and role', () {
-      final attributes = <Object, Object?>{1: 'style#id.role'};
+      final attributes = <String, String>{'1': 'style#id.role'};
       final style = Parser.parseStyleAttribute(attributes);
       expect(style, equals('style'));
       expect(attributes['style'], equals('style'));
       expect(attributes['id'], equals('id'));
       expect(attributes['role'], equals('role'));
-      expect(attributes[1], equals('style#id.role'));
+      expect(attributes['1'], equals('style#id.role'));
     });
 
     test('parse style attribute with style, role, id and option', () {
-      final attributes = <Object, Object?>{1: 'style.role#id%fragment'};
+      final attributes = <String, String>{'1': 'style.role#id%fragment'};
       final style = Parser.parseStyleAttribute(attributes);
       expect(style, equals('style'));
       expect(attributes['style'], equals('style'));
       expect(attributes['id'], equals('id'));
       expect(attributes['role'], equals('role'));
       expect(attributes['fragment-option'], equals(''));
-      expect(attributes[1], equals('style.role#id%fragment'));
+      expect(attributes['1'], equals('style.role#id%fragment'));
       expect(attributes.containsKey('options'), isFalse);
     });
 
     test('parse style attribute with style, id and multiple roles', () {
-      final attributes = <Object, Object?>{1: 'style#id.role1.role2'};
+      final attributes = <String, String>{'1': 'style#id.role1.role2'};
       final style = Parser.parseStyleAttribute(attributes);
       expect(style, equals('style'));
       expect(attributes['style'], equals('style'));
       expect(attributes['id'], equals('id'));
       expect(attributes['role'], equals('role1 role2'));
-      expect(attributes[1], equals('style#id.role1.role2'));
+      expect(attributes['1'], equals('style#id.role1.role2'));
     });
 
     test('parse style attribute with style, multiple roles and id', () {
-      final attributes = <Object, Object?>{1: 'style.role1.role2#id'};
+      final attributes = <String, String>{'1': 'style.role1.role2#id'};
       final style = Parser.parseStyleAttribute(attributes);
       expect(style, equals('style'));
       expect(attributes['style'], equals('style'));
       expect(attributes['id'], equals('id'));
       expect(attributes['role'], equals('role1 role2'));
-      expect(attributes[1], equals('style.role1.role2#id'));
+      expect(attributes['1'], equals('style.role1.role2#id'));
     });
 
     test('parse style attribute with positional and original style', () {
-      final attributes = <Object, Object?>{
-        1: 'new_style',
+      final attributes = <String, String>{
+        '1': 'new_style',
         'style': 'original_style',
       };
       final style = Parser.parseStyleAttribute(attributes);
       expect(style, equals('new_style'));
       expect(attributes['style'], equals('new_style'));
-      expect(attributes[1], equals('new_style'));
+      expect(attributes['1'], equals('new_style'));
     });
 
     test('parse style attribute with id and role only', () {
-      final attributes = <Object, Object?>{1: '#id.role'};
+      final attributes = <String, String>{'1': '#id.role'};
       final style = Parser.parseStyleAttribute(attributes);
       expect(style, isNull);
       expect(attributes['id'], equals('id'));
       expect(attributes['role'], equals('role'));
-      expect(attributes[1], equals('#id.role'));
+      expect(attributes['1'], equals('#id.role'));
     });
 
     test('parse empty style attribute', () {
-      final attributes = <Object, Object?>{1: null};
+      final attributes = <String, String>{};
       final style = Parser.parseStyleAttribute(attributes);
       expect(style, isNull);
       expect(attributes['id'], isNull);
       expect(attributes['role'], isNull);
-      expect(attributes[1], isNull);
+      expect(attributes['1'], isNull);
     });
 
     test(
       'parse style attribute with option should preserve existing options',
       () {
-        final attributes = <Object, Object?>{1: '%header', 'footer-option': ''};
+        final attributes = <String, String>{
+          '1': '%header',
+          'footer-option': '',
+        };
         final style = Parser.parseStyleAttribute(attributes);
         expect(style, isNull);
         expect(attributes['header-option'], equals(''));
@@ -295,7 +292,7 @@ void main() {
     test('parse author first', () {
       final metadata = parseHeaderMetadata('Stuart');
       expect(metadata.length, equals(5));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Stuart'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Stuart'));
@@ -305,7 +302,7 @@ void main() {
     test('parse author first last', () {
       final metadata = parseHeaderMetadata('Yukihiro Matsumoto');
       expect(metadata.length, equals(6));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Yukihiro Matsumoto'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Yukihiro'));
@@ -316,7 +313,7 @@ void main() {
     test('parse author first middle last', () {
       final metadata = parseHeaderMetadata('David Heinemeier Hansson');
       expect(metadata.length, equals(7));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('David Heinemeier Hansson'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('David'));
@@ -330,7 +327,7 @@ void main() {
         'David Heinemeier Hansson <rails@ruby-lang.org>',
       );
       expect(metadata.length, equals(8));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('David Heinemeier Hansson'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('David'));
@@ -343,7 +340,7 @@ void main() {
     test('parse author first email', () {
       final metadata = parseHeaderMetadata('Stuart <founder@asciidoc.org>');
       expect(metadata.length, equals(6));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Stuart'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Stuart'));
@@ -356,7 +353,7 @@ void main() {
         'Stuart Rackham <founder@asciidoc.org>',
       );
       expect(metadata.length, equals(7));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Stuart Rackham'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Stuart'));
@@ -368,7 +365,7 @@ void main() {
     test('parse author with hyphen', () {
       final metadata = parseHeaderMetadata('Tim Berners-Lee <founder@www.org>');
       expect(metadata.length, equals(7));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Tim Berners-Lee'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Tim'));
@@ -382,7 +379,7 @@ void main() {
         "Stephen O'Grady <founder@redmonk.com>",
       );
       expect(metadata.length, equals(7));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals("Stephen O'Grady"));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Stephen'));
@@ -394,7 +391,7 @@ void main() {
     test('parse author with dotted initial', () {
       final metadata = parseHeaderMetadata('Heiko W. Rupp <hwr@example.de>');
       expect(metadata.length, equals(8));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Heiko W. Rupp'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Heiko'));
@@ -407,7 +404,7 @@ void main() {
     test('parse author with underscore', () {
       final metadata = parseHeaderMetadata('Tim_E Fella');
       expect(metadata.length, equals(6));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Tim E Fella'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Tim E'));
@@ -418,7 +415,7 @@ void main() {
     test('parse author name with letters outside basic latin', () {
       final metadata = parseHeaderMetadata('Stéphane Brontë');
       expect(metadata.length, equals(6));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Stéphane Brontë'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Stéphane'));
@@ -429,7 +426,7 @@ void main() {
     test('parse ideographic author names', () {
       final metadata = parseHeaderMetadata('李 四 <si.li@example.com>');
       expect(metadata.length, equals(7));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('李 四'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('李'));
@@ -443,7 +440,7 @@ void main() {
         'Stuart       Rackham     <founder@asciidoc.org>',
       );
       expect(metadata.length, equals(7));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Stuart Rackham'));
       expect(metadata['authors'], equals(metadata['author']));
       expect(metadata['firstname'], equals('Stuart'));
@@ -457,7 +454,7 @@ void main() {
         '   Stuart       Rackham, founder of AsciiDoc   <founder@asciidoc.org>',
       );
       expect(metadata.length, equals(5));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(
         metadata['author'],
         equals('Stuart Rackham, founder of AsciiDoc <founder@asciidoc.org>'),
@@ -475,7 +472,7 @@ void main() {
         'Doc Writer <doc.writer@asciidoc.org>; John Smith '
         '<john.smith@asciidoc.org>',
       );
-      expect(metadata['authorcount'], equals(2));
+      expect(metadata['authorcount'], equals('2'));
       expect(metadata['authors'], equals('Doc Writer, John Smith'));
       expect(metadata['author'], equals('Doc Writer'));
       expect(metadata['author_1'], equals('Doc Writer'));
@@ -485,14 +482,14 @@ void main() {
     test('should not parse multiple authors if semi-colon is not '
         'followed by space', () {
       final metadata = parseHeaderMetadata('Joe Doe;Smith Johnson');
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
     });
 
     test('skips blank author entries in implicit author line', () {
       final metadata = parseHeaderMetadata(
         'Doc Writer; ; John Smith <john.smith@asciidoc.org>;',
       );
-      expect(metadata['authorcount'], equals(2));
+      expect(metadata['authorcount'], equals('2'));
       expect(metadata['author_1'], equals('Doc Writer'));
       expect(metadata['author_2'], equals('John Smith'));
     });
@@ -556,8 +553,8 @@ void main() {
           ':authors: Stuart Rackham; Dan Allen; Sarah White\n';
       final doc = emptyDocument();
       final metadata = parseHeaderMetadata(input, doc);
-      expect(metadata['authorcount'], equals(3));
-      expect(doc.attributes['authorcount'], equals(3));
+      expect(metadata['authorcount'], equals('3'));
+      expect(doc.attributes['authorcount'], equals('3'));
       expect(
         doc.attributes['authors'],
         equals('Stuart Rackham, Dan Allen, Sarah White'),
@@ -571,8 +568,8 @@ void main() {
       const input = '';
       final doc = emptyDocument();
       final metadata = parseHeaderMetadata(input, doc);
-      expect(doc.attributes['authorcount'], equals(0));
-      expect(metadata['authorcount'], equals(0));
+      expect(doc.attributes['authorcount'], equals('0'));
+      expect(metadata['authorcount'], equals('0'));
     });
 
     test('returns empty hash if document has no authors and invoked '
@@ -585,7 +582,7 @@ void main() {
       const input = 'Kismet Chameleon; Lazarus het_Draeke';
       final doc = emptyDocument();
       parseHeaderMetadata(input, doc);
-      expect(doc.attributes['authorcount'], equals(2));
+      expect(doc.attributes['authorcount'], equals('2'));
       expect(
         doc.attributes['authors'],
         equals('Kismet Chameleon, Lazarus het Draeke'),
@@ -603,7 +600,7 @@ void main() {
             ':author_2: Danger Mouse\n';
         final doc = emptyDocument();
         parseHeaderMetadata(input, doc);
-        expect(doc.attributes['authorcount'], equals(3));
+        expect(doc.attributes['authorcount'], equals('3'));
         expect(
           doc.attributes['authors'],
           equals('Kismet Chameleon, Danger Mouse, Lazarus het Draeke'),
@@ -621,7 +618,7 @@ void main() {
           ':author: pass:n[http://example.org/community/team.html[Ze_**Project** team]]';
       final doc = emptyDocument();
       parseHeaderMetadata(input, doc);
-      expect(doc.attributes['authorcount'], equals(1));
+      expect(doc.attributes['authorcount'], equals('1'));
       expect(
         doc.attributes['authors'],
         equals(
@@ -664,13 +661,16 @@ void main() {
             '= Document Title\n'
             'Author Name\n'
             '{project-version}, {release-date}: {release-summary}\n';
-        final doc = documentFromString(input, {
-          'attributes': {
-            'project-version': '1.0.1',
-            'release-date': '2018-05-15',
-            'release-summary': 'The one you can count on!',
-          },
-        });
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(
+            attributes: {
+              'project-version': '1.0.1',
+              'release-date': '2018-05-15',
+              'release-summary': 'The one you can count on!',
+            },
+          ),
+        );
         expect(doc.attr('revnumber'), equals('1.0.1'));
         expect(doc.attr('revdate'), equals('2018-05-15'));
         expect(doc.attr('revremark'), equals('The one you can count on!'));
@@ -743,7 +743,7 @@ void main() {
       const input = '// Asciidoctor\n// release artist\nRyan Waldron\n';
       final metadata = parseHeaderMetadata(input);
       expect(metadata.length, equals(6));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Ryan Waldron'));
       expect(metadata['firstname'], equals('Ryan'));
       expect(metadata['lastname'], equals('Waldron'));
@@ -754,7 +754,7 @@ void main() {
       const input = '////\nAsciidoctor\nrelease artist\n////\nRyan Waldron\n';
       final metadata = parseHeaderMetadata(input);
       expect(metadata.length, equals(6));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Ryan Waldron'));
       expect(metadata['firstname'], equals('Ryan'));
       expect(metadata['lastname'], equals('Waldron'));
@@ -771,7 +771,7 @@ void main() {
           'v0.0.7, 2013-12-18\n';
       final metadata = parseHeaderMetadata(input);
       expect(metadata.length, equals(8));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Ryan Waldron'));
       expect(metadata['revnumber'], equals('0.0.7'));
       expect(metadata['revdate'], equals('2013-12-18'));
@@ -781,7 +781,7 @@ void main() {
       const input = 'Joe Cool\nv1.0\n///\nstuff\n';
       final metadata = parseHeaderMetadata(input);
       expect(metadata.length, equals(7));
-      expect(metadata['authorcount'], equals(1));
+      expect(metadata['authorcount'], equals('1'));
       expect(metadata['author'], equals('Joe Cool'));
       expect(metadata['revnumber'], equals('1.0'));
     });
@@ -912,7 +912,7 @@ void main() {
               as ListBlock;
       expect(explicit.listMarkerKeyword(), equals('a'));
       final nested = documentFromString('. one\n.. two').blocks[0] as ListBlock;
-      final inner = (nested.items[0]! as ListItem).blocks[0] as ListBlock;
+      final inner = nested.items[0].blocks[0] as ListBlock;
       expect(inner.style, equals('loweralpha'));
       expect(inner.listMarkerKeyword(), equals('a'));
     });

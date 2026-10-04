@@ -183,19 +183,19 @@ void main() {
     );
 
     test('returns 1 and reports uncaught errors', () async {
-      // `--require` under `--trace` rethrows (an unloadable library),
-      // exercising the uncaught-exception path: message plus backtrace
-      // on the error sink, exit 1.
+      // A conversion failure under `--trace` rethrows, exercising the
+      // uncaught-exception path: message plus backtrace on the error sink,
+      // exit 1.
       final dir = makeTempDir('init-config-test');
       final input = File('${dir.path}/input.adoc')..writeAsStringSync('hi\n');
       final err = StringBuffer();
       final code = await runCliCode(
-        ['--trace', '--require', 'definitely-not-a-library', input.path],
+        ['--trace', '-E', 'bogus', '-T', dir.path, input.path],
         out: StringBuffer(),
         err: err,
       );
       expect(code, equals(1));
-      expect(err.toString(), contains('definitely-not-a-library'));
+      expect(err.toString(), contains("required template engine 'bogus'"));
     });
   });
 

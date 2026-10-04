@@ -1,8 +1,7 @@
 /// Tests for the highlight.js adapter.
 library;
 
-import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/highlight/highlightjs.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 void main() {

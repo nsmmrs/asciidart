@@ -9,8 +9,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidoctor/src/cli/help_topics.g.dart';
-import 'package:asciidoctor/src/cli/options.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Finds the repository checkout by walking up to the `man` directory.

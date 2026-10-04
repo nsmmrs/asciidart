@@ -84,10 +84,6 @@ This option may be specified more than once.
   Output an embeddable document, which excludes the header, the footer, and everything outside the body of the document.
   This option is useful for producing documents that can be inserted into an external template.
 
-*-I, --load-path*=_DIRECTORY_::
-  Accepted for compatibility; has no effect, because this build cannot load libraries at runtime.
-  This option may be specified more than once.
-
 *-n, --section-numbers*::
   Auto-number section titles.
   Synonym for *--attribute sectnums*.
@@ -104,11 +100,6 @@ This option may be specified more than once.
   Currently only used if the destination directory is also specified.
   Used to preserve the directory structure of files converted within this directory in the destination directory.
   If specified, the directory is resolved relative to the working directory.
-
-*-r, --require*=_LIBRARY_::
-  Accepted for compatibility; because this build cannot load libraries at runtime, any library fails to load and processing stops.
-  Compile extensions into a custom binary instead (see *asciidoctor init-config*).
-  This option may be specified more than once.
 
 *-s, --no-header-footer*::
   Output an embeddable document, which excludes the header, the footer, and everything outside the body of the document.
@@ -131,16 +122,13 @@ Matching templates found in subsequent directories override ones previously disc
   If this option is not set, the program exits with a zero exit code even if warnings or errors have been logged.
 
 *-q, --quiet*::
-  Silence application log messages and script warnings.
+  Silence application log messages.
 
 *--trace*::
   Include backtrace information when reporting errors.
 
 *-v, --verbose*::
   Sets log level to DEBUG so application messages logged at INFO or DEBUG level are printed to stderr.
-
-*-w, --warnings*::
-  Turn on script warnings (applies to executed code).
 
 *-t, --timings*::
   Print timings report to stderr (time to read, parse, and convert).

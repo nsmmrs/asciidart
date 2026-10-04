@@ -15,13 +15,7 @@ library;
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/cli/invoker.dart';
-import 'package:asciidoctor/src/cli/options.dart';
-import 'package:asciidoctor/src/composite.dart';
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/template.dart';
-import 'package:asciidoctor/src/version.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Finds the enclosing repository checkout directory.
@@ -76,7 +70,7 @@ Invoker invokeCli(
     environment: <String, String>{},
   )..redirectStreams(out, err);
   final savedLogger = LoggerManager.logger;
-  LoggerManager.logger = Logger(logdev: err)..level = savedLogger.level;
+  LoggerManager.logger = Logger(sink: err)..level = savedLogger.level;
   try {
     invoker.invoke(stdinSource: stdin);
   } finally {
@@ -141,30 +135,10 @@ String copyFixtureTo(String name, Directory dir) {
 void main() {
   group('Invoker constructor', () {
     test('allows CliOptions to be passed as first argument of constructor', () {
-      final opts = CliOptions(
-        attributes: {'toc': ''},
-        doctype: 'book',
-        eruby: 'erubis',
-      );
+      final opts = CliOptions(attributes: {'toc': ''}, doctype: 'book');
       final invoker = Invoker.fromOptions(opts);
       expect(identical(invoker.options, opts), isTrue);
     });
-
-    test(
-      'allows options map to be passed as first argument of constructor',
-      () {
-        final map = <String, Object?>{
-          'attributes': {'toc': ''},
-          'doctype': 'book',
-          'eruby': 'erubis',
-        };
-        final invoker = Invoker.fromMap(map);
-        final resolvedOpts = invoker.options!;
-        expect(resolvedOpts.attributes!['toc'], equals(''));
-        expect(resolvedOpts.attributes!['doctype'], equals('book'));
-        expect(resolvedOpts.eruby, equals('erubis'));
-      },
-    );
 
     test(
       'parses options from list passed as first argument of constructor',
@@ -229,16 +203,16 @@ void main() {
     });
   });
 
-  group('require failures', () {
+  group('conversion failures', () {
     test(
       'suggests --trace option if not present when program raises error',
       () {
-        final invoker = invokeCli(['-r', 'no-such-module']);
+        final invoker = invokeCli(['-E', 'bogus', '-T', 'templates']);
         expect(
           invoker.readError(),
           contains(
-            "'no-such-module' could not be loaded\n  Use --trace to "
-            'show backtrace',
+            "required template engine 'bogus' is not available. Processing "
+            'aborted.\n  Use --trace to show backtrace',
           ),
         );
         expect(invoker.code, equals(1));
@@ -248,17 +222,13 @@ void main() {
     test(
       'raises error when --trace option is specified and program raises error',
       () {
-        // Ruby re-raises LoadError; Dart cannot load libraries at runtime, so
-        // options.dart throws UnsupportedError instead (see its docs).
-        expect(
-          () => Invoker.fromArgs(
-            ['--trace', '-r', 'no-such-module', sampleFile],
-            out: StringBuffer(),
-            err: StringBuffer(),
-            environment: <String, String>{},
-          ),
-          throwsA(isA<UnsupportedError>()),
+        final invoker = Invoker.fromArgs(
+          ['--trace', '-E', 'bogus', '-T', 'templates', sampleFile],
+          out: StringBuffer(),
+          err: StringBuffer(),
+          environment: <String, String>{},
         );
+        expect(invoker.invoke, throwsArgumentError);
       },
     );
   });
@@ -322,14 +292,16 @@ void main() {
     test('shows backtrace when --trace option is specified and program '
         'raises error', () async {
       final result = await runCli([
-        '-r',
-        'no-such-module',
+        '-E',
+        'bogus',
+        '-T',
+        'templates',
         '--trace',
         sampleFile,
       ]);
       expect(result.exitCode, equals(1));
       final err = result.stderr as String;
-      expect(err, contains("'no-such-module' could not be loaded"));
+      expect(err, contains("required template engine 'bogus'"));
       expect(err, contains('#0 '));
     });
   });
@@ -489,18 +461,10 @@ void main() {
     });
 
     test('emits no unexpected warnings', () async {
-      final result = await runCli(['-o', '/dev/null', '-w', sampleFile]);
+      final result = await runCli(['-o', '/dev/null', sampleFile]);
       expect(result.stdout as String, isEmpty);
       expect(result.stderr as String, isEmpty);
     });
-
-    test(
-      'enables script warnings if -w flag is specified',
-      skip:
-          r'PERMANENT: No Dart equivalent of $VERBOSE-backed script warnings '
-          '(Ruby-only behavior); -w parsing is covered in options_test.dart.',
-      () {},
-    );
 
     test('silences warnings if -q flag is specified', () {
       final invoker = invokeCliToBuffer(
@@ -1102,16 +1066,6 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
         final invoker = invokeCliToBuffer(['-S', name, '-o', '/dev/null']);
         expect(invoker.document!.safe, equals(level));
       });
-    });
-
-    test('sets eRuby impl if specified', () {
-      final invoker = invokeCliToBuffer([
-        '--eruby',
-        'erubi',
-        '-o',
-        '/dev/null',
-      ]);
-      expect(invoker.document!.options['eruby'], equals('erubi'));
     });
 
     test(

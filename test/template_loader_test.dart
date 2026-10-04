@@ -8,16 +8,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/cli/invoker.dart';
-import 'package:asciidoctor/src/composite.dart';
-import 'package:asciidoctor/src/converter.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/html5.dart';
-import 'package:asciidoctor/src/load.dart';
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/template.dart';
-import 'package:asciidoctor/src/template_loader.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Finds the enclosing repository checkout directory.
@@ -43,17 +34,14 @@ String get sampleFile => '${_findRepoRoot()}/test/fixtures/sample.adoc';
 
 /// A minimal [Converter] capturing the options it was created with.
 class _CapturingConverter extends Converter {
-  /// Creates a converter recording [opts] into [seen].
-  new(super.backend, Map<String, Object?> opts) : seen = Map.of(opts);
-
-  /// The options the factory received.
-  final Map<String, Object?> seen;
+  /// Creates a converter for [backend] with [opts].
+  new(super.backend, super.opts);
 
   @override
-  Object? convert(
+  String convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) => 'captured';
 }
 
@@ -68,7 +56,7 @@ Invoker _invoke(List<String> argv) {
     environment: <String, String>{},
   )..redirectStreams(out, err);
   final savedLogger = LoggerManager.logger;
-  LoggerManager.logger = Logger(logdev: err)..level = savedLogger.level;
+  LoggerManager.logger = Logger(sink: err)..level = savedLogger.level;
   try {
     invoker.invoke();
   } finally {
@@ -206,24 +194,12 @@ void main() {
       expect(TemplateCache.shared.scans, isEmpty);
     });
 
-    test('templateCache null disables the cache (Ruby parity)', () {
-      final dir = _makeTemplateDir({'paragraph.mustache': 'v1'});
-      final loader = VmTemplateLoader(
-        templateDirs: [dir.path],
-        templateCache: null,
-      );
-      expect(loader.load(), equals({'paragraph': 'v1'}));
-      File('${dir.path}/paragraph.mustache').writeAsStringSync('v2');
-      expect(loader.load(), equals({'paragraph': 'v2'}));
-      expect(TemplateCache.shared.scans, isEmpty);
-    });
-
     test('a custom TemplateCache store is populated and shared', () {
       final dir = _makeTemplateDir({'paragraph.mustache': 'v1'});
       final custom = TemplateCache();
       final loader = VmTemplateLoader(
         templateDirs: [dir.path],
-        templateCache: custom,
+        templateCacheStore: custom,
       );
       expect(loader.load(), equals({'paragraph': 'v1'}));
       expect(custom.scans.keys, hasLength(1));
@@ -233,7 +209,7 @@ void main() {
       expect(
         VmTemplateLoader(
           templateDirs: [dir.path],
-          templateCache: custom,
+          templateCacheStore: custom,
         ).load(),
         equals({'paragraph': 'v1'}),
       );
@@ -246,16 +222,6 @@ void main() {
       File('${dir.path}/paragraph.mustache').writeAsStringSync('v2');
       TemplateCache.clearCaches();
       expect(loader.load(), equals({'paragraph': 'v2'}));
-    });
-
-    test('resolveTemplateCache maps the option to a store', () {
-      final custom = TemplateCache();
-      expect(resolveTemplateCache(true), same(TemplateCache.shared));
-      expect(resolveTemplateCache(custom), same(custom));
-      expect(resolveTemplateCache(false), isNull);
-      expect(resolveTemplateCache(null), isNull);
-      expect(resolveTemplateCache('yes'), isNull);
-      expect(resolveTemplateCache(42), isNull);
     });
 
     test('relative spellings of one directory share a cache entry', () {
@@ -311,13 +277,12 @@ void main() {
 
     test('validateTemplateEngine accepts missing and known engines', () {
       expect(() => validateTemplateEngine(null), returnsNormally);
-      expect(() => validateTemplateEngine(false), returnsNormally);
       expect(() => validateTemplateEngine('mustache'), returnsNormally);
       expect(() => validateTemplateEngine('dart'), returnsNormally);
     });
 
     test('validateTemplateEngine rejects unknown engines like Ruby', () {
-      for (final engine in ['haml', 'slim', 'erb', '', 42, true]) {
+      for (final engine in ['haml', 'slim', 'erb', '']) {
         expect(
           () => validateTemplateEngine(engine),
           throwsA(
@@ -326,7 +291,7 @@ void main() {
               'message',
               allOf(
                 contains('asciidoctor: FAILED'),
-                contains('$engine'),
+                contains(engine),
                 contains('Processing aborted.'),
               ),
             ),
@@ -342,77 +307,88 @@ void main() {
       // directory simply contributes no templates.
       Html5Converter.registerFor();
       expect(
-        () => Converter.create('html5', {
-          'template_dirs': ['dir'],
-          'template_engine': 'haml',
-        }),
+        () => Converter.create(
+          'html5',
+          const ConverterOptions(templateDirs: ['dir'], templateEngine: 'haml'),
+        ),
         throwsArgumentError,
       );
       expect(
-        Converter.create('html5', {
-          'template_dirs': ['dir'],
-          'template_engine': 'mustache',
-        }),
+        Converter.create(
+          'html5',
+          const ConverterOptions(
+            templateDirs: ['dir'],
+            templateEngine: 'mustache',
+          ),
+        ),
         isA<CompositeConverter>(),
       );
-      // Without template_dirs the engine stays inert (Ruby parity).
-      expect(Converter.create('html5', {'template_engine': 'haml'}), isNotNull);
+      // Without template directories the engine stays inert.
+      expect(
+        Converter.create(
+          'html5',
+          const ConverterOptions(templateEngine: 'haml'),
+        ),
+        isNotNull,
+      );
     });
 
-    test('document coerces template dirs and defaults template_cache', () {
-      Map<String, Object?>? seen;
+    test('document passes template dirs and the default template cache', () {
+      ConverterOptions? seen;
       final factory = (ConverterFactory(proxyDefault: false))
-        ..register((String backend, Map<String, Object?> opts) {
-          seen = Map.of(opts);
+        ..register((backend, opts) {
+          seen = opts;
           return _CapturingConverter(backend, opts);
         }, ['capture-backend']);
-      final doc = Document('hi', {
-        'backend': 'capture-backend',
-        'converter_factory': factory,
-        'template_dirs': 'just-a-dir',
-      });
+      final doc = Document(
+        'hi',
+        AsciidoctorOptions(
+          backend: 'capture-backend',
+          converterFactory: factory,
+          templateDirs: ['just-a-dir'],
+        ),
+      );
       expect(seen, isNotNull);
-      expect(seen!['template_dirs'], equals(['just-a-dir']));
-      expect(seen!['template_cache'], isTrue);
-      expect(seen!['document'], same(doc));
-      expect(seen!['safe'], equals(doc.safe));
+      expect(seen!.templateDirs, equals(['just-a-dir']));
+      expect(seen!.templateCache, isTrue);
+      expect(seen!.document, same(doc));
+      expect(seen!.safe, equals(doc.safe));
     });
 
     test('document passes explicit template options through', () {
-      Map<String, Object?>? seen;
+      ConverterOptions? seen;
       final factory = (ConverterFactory(proxyDefault: false))
-        ..register((String backend, Map<String, Object?> opts) {
-          seen = Map.of(opts);
+        ..register((backend, opts) {
+          seen = opts;
           return _CapturingConverter(backend, opts);
         }, ['capture-backend']);
-      const engineOptions = {
-        'mustache': {'escape': false},
-      };
-      Document('hi', {
-        'backend': 'capture-backend',
-        'converter_factory': factory,
-        'template_dir': ['d1', 'd2'],
-        'template_cache': false,
-        'template_engine': 'mustache',
-        'template_engine_options': engineOptions,
-        'eruby': 'erubi',
-        'safe': SafeMode.safe,
-      });
+      Document(
+        'hi',
+        AsciidoctorOptions(
+          backend: 'capture-backend',
+          converterFactory: factory,
+          templateDirs: const ['d1', 'd2'],
+          templateCache: false,
+          templateEngine: 'mustache',
+          safe: SafeMode.safe,
+        ),
+      );
       expect(seen, isNotNull);
-      expect(seen!['template_dirs'], equals(['d1', 'd2']));
-      expect(seen!['template_cache'], isFalse);
-      expect(seen!['template_engine'], equals('mustache'));
-      expect(seen!['template_engine_options'], equals(engineOptions));
-      expect(seen!['eruby'], equals('erubi'));
-      expect(seen!['safe'], equals(SafeMode.safe));
+      expect(seen!.templateDirs, equals(['d1', 'd2']));
+      expect(seen!.templateCache, isFalse);
+      expect(seen!.templateEngine, equals('mustache'));
+      expect(seen!.safe, equals(SafeMode.safe));
     });
 
     test('convert surfaces the missing-engine error', () {
       expect(
-        () => convert('hi', {
-          'template_dirs': ['dir'],
-          'template_engine': 'slim',
-        }),
+        () => convert(
+          'hi',
+          const AsciidoctorOptions(
+            templateDirs: ['dir'],
+            templateEngine: 'slim',
+          ),
+        ),
         throwsA(
           isA<ArgumentError>().having(
             (e) => e.message,

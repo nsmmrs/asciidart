@@ -35,7 +35,7 @@ is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
 | Corpus | html5 | docbook5 | manpage |
 | --- | --: | --: | --: |
 | fixtures | 32/32 | 32/32 | 32/32 |
-| parity | 9/9 | 9/9 | 9/9 |
+| parity | 10/10 | 10/10 | 10/10 |
 
 Warnings on stderr were compared by hand over the parity corpus and match
 too (the harness passes `-q`). The e2e suite (`test/e2e/`, 128 tests) passes
@@ -48,6 +48,10 @@ with no skips against both the Dart CLI and the gem.
   top of `lib/src/cli/options.dart`).
 - Dart-only features (Mustache templates, `init-config`, `-j/--jobs`) have
   no Ruby counterpart.
-- `--help` and `-h manpage` describe `-T`, `-E`, `-I` and `-r` as they work
-  in this build (Mustache templates; libraries cannot be loaded at runtime)
-  instead of mentioning tilt, gems, `$LOAD_PATH` and Ruby's `require`.
+- `--help` and `-h manpage` describe `-T` and `-E` as they work in this
+  build (Mustache templates) instead of mentioning tilt and gems.
+- The Ruby-only options `-r/--require`, `-I/--load-path`, `--eruby` and
+  `-w/--warnings` do not exist here and are rejected as unknown options;
+  extensions are compiled into a custom binary instead (see
+  `asciidoctor init-config`). `-q` silences log messages only, since there
+  are no script warnings.

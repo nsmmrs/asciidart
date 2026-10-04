@@ -44,12 +44,12 @@ void main(List<String> args) {
   final warmup = int.parse(options['warmup'] as String);
   stdout.writeln('corpus: ${corpus.length} chars');
   for (final backend in options['backend'] as List<String>) {
-    final convertOptions = <String, Object?>{
-      'safe': 'safe',
-      'backend': backend,
-      'doctype': 'book',
-      'standalone': true,
-    };
+    final convertOptions = asciidoctor.AsciidoctorOptions(
+      safe: asciidoctor.SafeMode.safe,
+      backend: backend,
+      doctype: 'book',
+      standalone: true,
+    );
     for (var i = 0; i < warmup; i++) {
       asciidoctor.convert(corpus, convertOptions);
     }
@@ -57,7 +57,7 @@ void main(List<String> args) {
     final totals = <int>[];
     for (var i = 0; i < iterations; i++) {
       final watch = Stopwatch()..start();
-      final doc = asciidoctor.load(corpus, convertOptions);
+      final doc = asciidoctor.load(corpus, options: convertOptions);
       loads.add(watch.elapsedMicroseconds);
       doc.convert();
       totals.add(watch.elapsedMicroseconds);

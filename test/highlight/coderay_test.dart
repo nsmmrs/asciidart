@@ -3,9 +3,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/highlight/coderay.dart';
-import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/stylesheets.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'fake_source_lexer.dart';

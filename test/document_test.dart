@@ -7,12 +7,11 @@ library;
 
 import 'dart:io' show Directory, File;
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:asciidoctor/src/load.dart' as api;
-import 'package:asciidoctor/src/section.dart';
 import 'package:test/test.dart';
+
+import 'support/doc_helpers.dart';
 
 /// Built-in converter element names (port of `BUILT_IN_ELEMENTS`).
 const List<String> builtInElements = <String>[
@@ -56,16 +55,19 @@ const List<String> builtInElements = <String>[
 ];
 
 /// Records log messages for assertions.
-class FakeLogger implements NodeLogger {
-  /// Messages by severity.
-  final List<Object?> debugs = <Object?>[];
-  final List<Object?> infos = <Object?>[];
-  final List<Object?> warns = <Object?>[];
-  final List<Object?> errors = <Object?>[];
-  final List<Object?> fatals = <Object?>[];
+class FakeLogger extends LoggerBase {
+  /// Creates a recording logger.
+  new() : super(Severity.debug);
+
+  /// Messages by severity, in logging order.
+  final List<String> debugs = <String>[];
+  final List<String> infos = <String>[];
+  final List<String> warns = <String>[];
+  final List<String> errors = <String>[];
+  final List<String> fatals = <String>[];
 
   /// All recorded messages.
-  List<Object?> get messages => <Object?>[
+  List<String> get messages => <String>[
     ...debugs,
     ...infos,
     ...warns,
@@ -74,132 +76,80 @@ class FakeLogger implements NodeLogger {
   ];
 
   @override
-  void debug(Object? message) {
-    debugs.add(message);
+  Severity? get maxSeverity => null;
+
+  @override
+  void add(Severity severity, LogMessage message) {
+    switch (severity) {
+      case Severity.debug:
+        debugs.add('$message');
+      case Severity.info:
+        infos.add('$message');
+      case Severity.warn:
+        warns.add('$message');
+      case Severity.error:
+        errors.add('$message');
+      case Severity.fatal || Severity.unknown:
+        fatals.add('$message');
+    }
   }
 
   @override
-  void info(Object? message) {
-    infos.add(message);
-  }
-
-  @override
-  void warn(Object? message) {
-    warns.add(message);
-  }
-
-  @override
-  void error(Object? message) {
-    errors.add(message);
-  }
-
-  @override
-  void fatal(Object? message) {
-    fatals.add(message);
-  }
+  Future<void> close() async {}
 }
 
 /// Runs [body] with a memory logger installed (port of
 /// `using_memory_logger`).
 void usingMemoryLogger(void Function(FakeLogger logger) body) {
-  final saved = AbstractNode.currentLogger;
+  final saved = LoggerManager.logger;
   final logger = FakeLogger();
-  AbstractNode.currentLogger = logger;
+  LoggerManager.logger = logger;
   try {
     body(logger);
   } finally {
-    AbstractNode.currentLogger = saved;
+    LoggerManager.logger = saved;
   }
 }
 
-/// Creates an empty document (port of `empty_document`; never parses unless
-/// `options['parse']` is `true`).
-Document emptyDocument([Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  final parse = opts.remove('parse') == true;
-  final doc = Document(<String>[], opts);
-  return parse ? doc.parse() : doc;
-}
-
-/// Creates a document from [src] (port of `document_from_string`).
-///
-/// Defaults to `standalone: true` and `parse: true`, like the Ruby helper.
-Document documentFromString(String src, [Map<String, Object?>? options]) {
-  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
-    ..putIfAbsent('standalone', () => true);
-  final parse = opts.remove('parse') ?? true;
-  if (opts['standalone'] == true) {
-    final attrs =
-        (opts['attributes'] as Map<String, Object?>?) ?? <String, Object?>{};
-    attrs['linkcss'] = '';
-    opts['attributes'] = attrs;
-  }
-  const templateDir = String.fromEnvironment('TEMPLATE_DIR');
-  if (templateDir.isNotEmpty) {
-    opts.putIfAbsent('template_dir', () => templateDir);
-  }
-  final doc = Document(src, opts);
-  return (parse == true) ? doc.parse() : doc;
-}
-
-/// Converts [src] to a standalone document (port of `convert_string`).
-String convertString(String src, [Map<String, Object?>? options]) {
-  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
-    ..remove('keep_namespaces');
-  return documentFromString(src, opts).convert()! as String;
-}
-
-/// Converts [src] to an embedded document (port of
-/// `convert_string_to_embedded`).
-String convertStringToEmbedded(String src, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts['standalone'] = false;
-  return documentFromString(src, opts).convert()! as String;
-}
-
-/// Converts the file at [path] (port of `Asciidoctor.convert_file`).
-///
-/// Thin wrapper over [api.convertFile]. A `'_attr_string_'` entry in
-/// [attributes] carries a raw Ruby-style attribute string (e.g.
-/// `'linkcss copycss! ...'`), which is forwarded as the `'attributes'`
-/// option verbatim (`load.dart` already coerces attribute strings).
+/// Converts the file at [path] to a string (port of
+/// `Asciidoctor.convert_file` with `to_file: false`).
 String convertFile(
   String path, {
-  Object? toFile,
   bool standalone = false,
   String? backend,
-  Object? safe,
-  Map<String, Object?>? attributes,
-}) {
-  final options = <String, Object?>{
-    'to_file': ?toFile,
-    'standalone': standalone,
-    'backend': ?backend,
-    'safe': ?safe,
-  };
-  if (attributes != null) {
-    if (attributes.containsKey('_attr_string_')) {
-      options['attributes'] = attributes['_attr_string_']! as String;
-    } else {
-      options['attributes'] = attributes;
-    }
-  }
-  return api.convertFile(path, options)! as String;
-}
+  int safe = SafeMode.secure,
+  Map<String, String?> attributes = const <String, String?>{},
+}) => api
+    .loadFile(
+      path,
+      options: AsciidoctorOptions(
+        standalone: standalone,
+        backend: backend,
+        safe: safe,
+        attributes: attributes,
+      ),
+    )
+    .convert();
 
 /// Loads [input] into a parsed document (port of `Asciidoctor.load`).
 Document asciidoctorLoad(
   String input, {
-  Object? backend,
+  String? backend,
   bool standalone = false,
-}) => api.load(input, {'backend': ?backend, 'standalone': standalone});
+}) => api.load(
+  input,
+  options: AsciidoctorOptions(backend: backend, standalone: standalone),
+);
 
 /// Loads a sample document (port of `example_document`).
 ///
 /// Reads `test/fixtures/<name>.<ext>` for the first matching `ext` in
 /// `adoc`/`asciidoc`/`txt` (port of `sample_doc_path`), then parses it via
 /// [documentFromString] with [options].
-Document exampleDocument(String name, [Map<String, Object?>? options]) {
+Document exampleDocument(
+  String name, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+]) {
   for (final ext in const ['adoc', 'asciidoc', 'txt']) {
     final path = fixturePath('$name.$ext');
     if (File(path).existsSync()) {
@@ -1536,7 +1486,7 @@ void main() {
       test('document title', () {
         final doc = exampleDocument('asciidoc_index');
         expect(doc.doctitle(), equals('AsciiDoc Home Page'));
-        expect(doc.name(), equals('AsciiDoc Home Page'));
+        expect(doc.doctitle(), equals('AsciiDoc Home Page'));
         expect(doc.header, isNotNull);
         expect(doc.header!.context, equals('section'));
         expect(doc.header!.sectname, equals('header'));
@@ -1546,7 +1496,7 @@ void main() {
 
         // Verify compat-mode is set when atx-style doctitle is used.
         final result = doc.blocks[0].convert();
-        assertXpath('//em[text()="Stuart Rackham"]', result as String?, 1);
+        assertXpath('//em[text()="Stuart Rackham"]', result, 1);
       });
     });
 
@@ -1556,34 +1506,19 @@ void main() {
         expect(doc.safe, equals(SafeMode.secure));
       });
 
-      test('safe mode level set using string', () {
-        var doc = emptyDocument({'safe': 'server'});
-        expect(doc.safe, equals(SafeMode.server));
-
-        doc = emptyDocument({'safe': 'foo'});
-        expect(doc.safe, equals(SafeMode.secure));
-      });
-
-      test('safe mode level set using symbol', () {
-        // Dart has no symbols; option values are strings instead.
-        var doc = emptyDocument({'safe': 'server'});
-        expect(doc.safe, equals(SafeMode.server));
-
-        doc = emptyDocument({'safe': 'foo'});
-        expect(doc.safe, equals(SafeMode.secure));
-      });
-
       test('safe mode level set using integer', () {
-        var doc = emptyDocument({'safe': 10});
+        var doc = emptyDocument(
+          const AsciidoctorOptions(safe: SafeMode.server),
+        );
         expect(doc.safe, equals(SafeMode.server));
 
-        doc = emptyDocument({'safe': 100});
+        doc = emptyDocument(const AsciidoctorOptions(safe: 100));
         expect(doc.safe, equals(100));
       });
 
       test('safe mode attributes are set on document', () {
         final doc = emptyDocument();
-        expect(doc.attr('safe-mode-level'), equals(SafeMode.secure));
+        expect(doc.attr('safe-mode-level'), equals('${SafeMode.secure}'));
         expect(doc.attr('safe-mode-name'), equals('secure'));
         expect(doc.hasAttr('safe-mode-secure'), isTrue);
         expect(doc.hasAttr('safe-mode-unsafe'), isFalse);
@@ -1592,7 +1527,10 @@ void main() {
       });
 
       test('safe mode level can be set in the constructor', () {
-        final doc = Document(<String>[], {'safe': SafeMode.safe});
+        final doc = Document(
+          null,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         expect(doc.safe, equals(SafeMode.safe));
       });
 
@@ -1607,10 +1545,13 @@ void main() {
       test(
         'toc and sectnums should be enabled by default in DocBook backend',
         () {
-          final doc = documentFromString('content', {'backend': 'docbook'});
+          final doc = documentFromString(
+            'content',
+            const AsciidoctorOptions(backend: 'docbook'),
+          );
           expect(doc.hasAttr('toc'), isTrue);
           expect(doc.hasAttr('sectnums'), isTrue);
-          final result = doc.convert()! as String;
+          final result = doc.convert();
           expect(result, contains('<?asciidoc-toc?>'));
           expect(result, contains('<?asciidoc-numbered?>'));
         },
@@ -1618,13 +1559,16 @@ void main() {
 
       test('maxdepth attribute should be set on asciidoc-toc and '
           'asciidoc-numbered processing instructions in DocBook backend', () {
-        final doc = documentFromString('content', {
-          'backend': 'docbook',
-          'attributes': {'toclevels': '1', 'sectnumlevels': '1'},
-        });
+        final doc = documentFromString(
+          'content',
+          const AsciidoctorOptions(
+            backend: 'docbook',
+            attributes: {'toclevels': '1', 'sectnumlevels': '1'},
+          ),
+        );
         expect(doc.hasAttr('toc'), isTrue);
         expect(doc.hasAttr('sectnums'), isTrue);
-        final result = doc.convert()! as String;
+        final result = doc.convert();
         expect(result, contains('<?asciidoc-toc maxdepth="1"?>'));
         expect(result, contains('<?asciidoc-numbered maxdepth="1"?>'));
       });
@@ -1632,7 +1576,10 @@ void main() {
       test('should be able to disable toc and sectnums in document header '
           'in DocBook backend', () {
         const input = '= Document Title\n:toc!:\n:sectnums!:\n';
-        final doc = documentFromString(input, {'backend': 'docbook'});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         expect(doc.hasAttr('toc'), isFalse);
         expect(doc.hasAttr('sectnums'), isFalse);
       });
@@ -1640,7 +1587,10 @@ void main() {
       test('noheader attribute should suppress info element when converting '
           'to DocBook', () {
         const input = '= Document Title\n:noheader:\n\ncontent\n';
-        final result = convertString(input, {'backend': 'docbook'});
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertXpath('/article', result, 1);
         assertXpath('/article/info', result, 0);
       });
@@ -1648,7 +1598,10 @@ void main() {
       test('should be able to disable section numbering using numbered '
           'attribute in document header in DocBook backend', () {
         const input = '= Document Title\n:numbered!:\n';
-        final doc = documentFromString(input, {'backend': 'docbook'});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         expect(doc.hasAttr('sectnums'), isFalse);
       });
     });
@@ -1755,10 +1708,9 @@ void main() {
         }).forEach((attrVal, markup) {
           final output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             safe: SafeMode.server,
-            attributes: {'_attr_string_': 'linkcss copycss! $attrVal'},
+            attributes: attributeString('linkcss copycss! $attrVal'),
           );
           expect(output, isNotEmpty);
           assertCss(
@@ -1780,7 +1732,6 @@ void main() {
           final sampleInputPath = fixturePath('basic.adoc');
           final output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             safe: SafeMode.server,
             attributes: {'docinfo': 'private-header', 'noheader': ''},
@@ -1797,7 +1748,6 @@ void main() {
           final sampleInputPath = fixturePath('basic.adoc');
           final output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             safe: SafeMode.server,
             attributes: {'docinfo1': '', 'nofooter': ''},
@@ -1809,7 +1759,7 @@ void main() {
 
       test('should include user docinfo after built-in docinfo', () {
         final sampleInputPath = fixturePath('basic.adoc');
-        final attrs = <String, Object?>{
+        final attrs = <String, String?>{
           'docinfo': 'shared',
           'source-highlighter': 'highlight.js',
           'linkcss': '',
@@ -1817,9 +1767,8 @@ void main() {
         };
         final output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
-          safe: 'safe',
+          safe: SafeMode.safe,
           attributes: attrs,
         );
         assertCss(
@@ -1839,7 +1788,6 @@ void main() {
 
           var output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             safe: SafeMode.server,
             attributes: {'docinfo': '', 'docinfodir': 'custom-docinfodir'},
@@ -1850,7 +1798,6 @@ void main() {
 
           output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             safe: SafeMode.server,
             attributes: {'docinfo1': '', 'docinfodir': 'custom-docinfodir'},
@@ -1861,7 +1808,6 @@ void main() {
 
           output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             safe: SafeMode.server,
             attributes: {'docinfo2': '', 'docinfodir': './custom-docinfodir'},
@@ -1872,7 +1818,6 @@ void main() {
 
           output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             safe: SafeMode.server,
             attributes: {
@@ -1891,7 +1836,6 @@ void main() {
 
         var output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -1903,7 +1847,6 @@ void main() {
 
         output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -1919,7 +1862,6 @@ void main() {
 
         output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -1937,7 +1879,6 @@ void main() {
       test('should use header docinfo in place of default header', () {
         final output = convertFile(
           fixturePath('sample.adoc'),
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -1955,7 +1896,6 @@ void main() {
 
         var output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           safe: SafeMode.server,
           attributes: {'docinfo': ''},
@@ -1966,7 +1906,6 @@ void main() {
 
         output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           safe: SafeMode.server,
           attributes: {'docinfo1': ''},
@@ -1977,7 +1916,6 @@ void main() {
 
         output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           safe: SafeMode.server,
           attributes: {'docinfo2': ''},
@@ -1992,7 +1930,6 @@ void main() {
 
         var output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -2010,7 +1947,6 @@ void main() {
 
         output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -2022,7 +1958,6 @@ void main() {
 
         output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -2045,7 +1980,6 @@ void main() {
         final sampleInputPath = fixturePath('basic.adoc');
         final output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -2065,7 +1999,6 @@ void main() {
 
         var output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           safe: SafeMode.server,
         );
@@ -2075,7 +2008,6 @@ void main() {
 
         output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
           backend: 'docbook',
           safe: SafeMode.server,
@@ -2092,7 +2024,6 @@ void main() {
 
           var output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             attributes: {'docinfo2': ''},
           );
@@ -2102,7 +2033,6 @@ void main() {
 
           output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
             backend: 'docbook',
             attributes: {'docinfo2': ''},
@@ -2118,9 +2048,8 @@ void main() {
         usingMemoryLogger((logger) {
           final output = convertFile(
             sampleInputPath,
-            toFile: false,
             standalone: true,
-            safe: 'server',
+            safe: SafeMode.server,
             attributes: {
               'docinfo': '',
               'bootstrap-version': null,
@@ -2149,9 +2078,8 @@ void main() {
         final sampleInputPath = fixturePath('subs.adoc');
         final output = convertFile(
           sampleInputPath,
-          toFile: false,
           standalone: true,
-          safe: 'server',
+          safe: SafeMode.server,
           attributes: {
             'docinfo': '',
             'docinfosubs': 'attributes,replacements',
@@ -2172,9 +2100,10 @@ void main() {
       test(
         'should add MathJax script to HTML head if stem attribute is set',
         () {
-          final output = convertString('', {
-            'attributes': {'stem': ''},
-          });
+          final output = convertString(
+            '',
+            const AsciidoctorOptions(attributes: {'stem': ''}),
+          );
           expect(output, contains('<script type="text/x-mathjax-config">'));
           expect(output, contains(r'inlineMath: [["\\(", "\\)"]]'));
           expect(output, contains(r'displayMath: [["\\[", "\\]"]]'));
@@ -2201,9 +2130,9 @@ void main() {
 
       test('convert methods on built-in converter are registered when '
           'backend is docbook5', () {
-        final doc = emptyDocument({
-          'attributes': {'backend': 'docbook5'},
-        });
+        final doc = emptyDocument(
+          const AsciidoctorOptions(attributes: {'backend': 'docbook5'}),
+        );
         expect(doc.attributes['backend'], equals('docbook5'));
         expect(doc.attributes.containsKey('backend-docbook5'), isTrue);
         expect(doc.attributes['basebackend'], equals('docbook'));
@@ -2219,9 +2148,10 @@ void main() {
           '/favicon.ico': ['/favicon.ico', 'image/x-icon'],
           '/img/favicon.png': ['/img/favicon.png', 'image/png'],
         }).forEach((val, hrefAndType) {
-          final result = convertString('= Untitled', {
-            'attributes': {'favicon': val},
-          });
+          final result = convertString(
+            '= Untitled',
+            AsciidoctorOptions(attributes: {'favicon': val}),
+          );
           assertCss('link[rel="icon"]', result, 1);
           assertCss('link[rel="icon"][href="${hrefAndType[0]}"]', result, 1);
           assertCss('link[rel="icon"][type="${hrefAndType[1]}"]', result, 1);
@@ -2233,7 +2163,7 @@ void main() {
       test('document with no doctitle', () {
         final doc = documentFromString('Snorf');
         expect(doc.doctitle(), isNull);
-        expect(doc.name(), isNull);
+        expect(doc.doctitle(), isNull);
         expect(doc.hasHeader, isFalse);
         expect(doc.header, isNull);
       });
@@ -2242,7 +2172,7 @@ void main() {
         const input = 'Document Title\n==============\n\n+content+\n';
         final doc = documentFromString(input);
         expect(doc.hasAttr('compat-mode'), isTrue);
-        final result = doc.convert()! as String;
+        final result = doc.convert();
         assertXpath('//code[text()="content"]', result, 1);
       });
 
@@ -2252,27 +2182,31 @@ void main() {
             'Document Title\n==============\n:compat-mode!:\n\n+content+\n';
         final doc = documentFromString(input);
         expect(doc.attr('compat-mode'), isNull);
-        final result = doc.convert()! as String;
+        final result = doc.convert();
         assertXpath('//code[text()="content"]', result, 0);
       });
 
       test('should not enable compat mode for document with legacy doctitle '
           'if compat mode is locked by API', () {
         const input = 'Document Title\n==============\n\n+content+\n';
-        final doc = documentFromString(input, {
-          'attributes': <String, Object?>{'compat-mode': null},
-        });
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(
+            attributes: <String, String?>{'compat-mode': null},
+          ),
+        );
         expect(doc.attributeLocked('compat-mode'), isTrue);
         expect(doc.attr('compat-mode'), isNull);
-        final result = doc.convert()! as String;
+        final result = doc.convert();
         assertXpath('//code[text()="content"]', result, 0);
       });
 
       test('should apply max-width to each top-level container', () {
         const input = '= Document Title\n\ncontentfootnote:[placeholder]\n';
-        final output = convertString(input, {
-          'attributes': {'max-width': '70em'},
-        });
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(attributes: {'max-width': '70em'}),
+        );
         assertCss('body[style]', output, 0);
         assertCss('#header[style="max-width: 70em;"]', output, 1);
         assertCss('#content[style="max-width: 70em;"]', output, 1);
@@ -2298,8 +2232,7 @@ void main() {
       test('document with subtitle', () {
         const input = '= Main Title: *Subtitle*\nAuthor Name\n\ncontent\n';
         final doc = documentFromString(input);
-        final title =
-            doc.doctitle(partition: true, sanitize: true)! as DocumentTitle;
+        final title = doc.partitionedTitle(sanitize: true)!;
         expect(title.hasSubtitle, isTrue);
         expect(title.sanitized, isTrue);
         expect(title.main, equals('Main Title'));
@@ -2311,8 +2244,7 @@ void main() {
             '[separator=::]\n= Main Title:: *Subtitle*\nAuthor '
             'Name\n\ncontent\n';
         final doc = documentFromString(input);
-        final title =
-            doc.doctitle(partition: true, sanitize: true)! as DocumentTitle;
+        final title = doc.partitionedTitle(sanitize: true)!;
         expect(title.hasSubtitle, isTrue);
         expect(title.sanitized, isTrue);
         expect(title.main, equals('Main Title'));
@@ -2324,11 +2256,11 @@ void main() {
         const input =
             '[separator=::]\n= Main Title - *Subtitle*\nAuthor '
             'Name\n\ncontent\n';
-        final doc = documentFromString(input, {
-          'attributes': {'title-separator': ' -'},
-        });
-        final title =
-            doc.doctitle(partition: true, sanitize: true)! as DocumentTitle;
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(attributes: {'title-separator': ' -'}),
+        );
+        final title = doc.partitionedTitle(sanitize: true)!;
         expect(title.hasSubtitle, isTrue);
         expect(title.sanitized, isTrue);
         expect(title.main, equals('Main Title'));
@@ -2369,7 +2301,7 @@ void main() {
         expect(doc.firstSection!.title, equals('Document Title'));
         assertXpath(
           '//*[@id="preamble"]//p[text()="Document Title"]',
-          doc.convert()! as String,
+          doc.convert(),
           1,
         );
       });
@@ -2385,7 +2317,7 @@ void main() {
         expect(doc.firstSection!.title, equals('Document Title'));
         assertXpath(
           '//*[@id="preamble"]//p[text()="Document Title"]',
-          doc.convert()! as String,
+          doc.convert(),
           1,
         );
       });
@@ -2398,7 +2330,7 @@ void main() {
         expect(doc.attr('intro'), equals('Welcome to the ACME Documentation!'));
         assertXpath(
           '//p[text()="Welcome to the ACME Documentation!"]',
-          doc.convert()! as String,
+          doc.convert(),
           1,
         );
       });
@@ -2422,7 +2354,7 @@ void main() {
         expect(doc.firstSection!.title, equals('doctitle'));
         assertXpath(
           '//*[@id="preamble"]//p[text()="Document Title, doctitle"]',
-          doc.convert()! as String,
+          doc.convert(),
           1,
         );
       });
@@ -2441,7 +2373,7 @@ void main() {
           expect(doc.firstSection!.title, equals('Override'));
           assertXpath(
             '//*[@id="preamble"]//p[text()="Document Title, Override"]',
-            doc.convert()! as String,
+            doc.convert(),
             1,
           );
         },
@@ -2460,7 +2392,7 @@ void main() {
         expect(doc.firstSection!.title, equals('Override'));
         assertXpath(
           '//*[@id="preamble"]//p[text()="Override"]',
-          doc.convert()! as String,
+          doc.convert(),
           1,
         );
       });
@@ -2472,7 +2404,7 @@ void main() {
         final doc = documentFromString(input);
         expect(doc.attr('doctitle'), equals('&lt;Foo&gt; &#43; &lt;Bar&gt;'));
         expect(
-          doc.blocks[0].content()! as String,
+          doc.blocks[0].content(),
           contains('&lt;Foo&gt; &#43; &lt;Bar&gt;'),
         );
       });
@@ -2482,13 +2414,14 @@ void main() {
         usingMemoryLogger((logger) {
           const input =
               ':project-name: ACME\n= {project-name} Docs\n\n{doctitle}\n';
-          final doc = documentFromString(input, {
-            'attributes': {'attribute-missing': 'warn'},
-          });
+          final doc = documentFromString(
+            input,
+            const AsciidoctorOptions(attributes: {'attribute-missing': 'warn'}),
+          );
           expect(logger.messages, isEmpty);
           expect(doc.attr('doctitle'), equals('ACME Docs'));
           expect(doc.doctitle(), equals('ACME Docs'));
-          assertXpath('//p[text()="ACME Docs"]', doc.convert()! as String, 1);
+          assertXpath('//p[text()="ACME Docs"]', doc.convert(), 1);
         });
       });
 
@@ -2497,23 +2430,23 @@ void main() {
         usingMemoryLogger((logger) {
           const input =
               '= {project-name} Docs\n:project-name: ACME\n\n{doctitle}\n';
-          final doc = documentFromString(input, {
-            'attributes': {'attribute-missing': 'warn'},
-          });
+          final doc = documentFromString(
+            input,
+            const AsciidoctorOptions(attributes: {'attribute-missing': 'warn'}),
+          );
           expect(logger.messages, isEmpty);
           expect(doc.attr('doctitle'), equals('{project-name} Docs'));
           expect(doc.doctitle(), equals('ACME Docs'));
-          assertXpath(
-            '//p[text()="{project-name} Docs"]',
-            doc.convert()! as String,
-            1,
-          );
+          assertXpath('//p[text()="{project-name} Docs"]', doc.convert(), 1);
         });
       });
 
       test('should recognize document title when preceded by blank lines', () {
         const input = '\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
-        final output = convertString(input, {'safe': SafeMode.safe});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         assertCss('#header h1', output, 1);
         assertCss('#content h1', output, 0);
       });
@@ -2523,7 +2456,10 @@ void main() {
         const input =
             'ifdef::sectids[]\n\n:foo: bar\nendif::[]\n= '
             'Title\n\npreamble\n\n== Section 1\n\ntext\n';
-        final output = convertString(input, {'safe': SafeMode.safe});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         assertCss('#header h1', output, 1);
         assertCss('#content h1', output, 0);
       });
@@ -2532,7 +2468,10 @@ void main() {
           'after an attribute entry', () {
         const input =
             ':doctype: book\n\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
-        final output = convertString(input, {'safe': SafeMode.safe});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         assertCss('#header h1', output, 1);
         assertCss('#content h1', output, 0);
       });
@@ -2541,10 +2480,13 @@ void main() {
           'blank lines', () {
         const input =
             'include::fixtures/include-with-leading-blank-line.adoc[]\n';
-        final output = convertString(input, {
-          'safe': SafeMode.safe,
-          'attributes': {'docdir': testdir},
-        });
+        final output = convertString(
+          input,
+          AsciidoctorOptions(
+            safe: SafeMode.safe,
+            attributes: {'docdir': testdir},
+          ),
+        );
         assertXpath('//h1[text()="Document Title"]', output, 1);
         assertCss('#toc', output, 1);
       });
@@ -2553,10 +2495,13 @@ void main() {
           'skipped', () {
         const input =
             'include::fixtures/include-with-leading-blank-line.adoc[lines=6]\n';
-        final output = convertString(input, {
-          'safe': SafeMode.safe,
-          'attributes': {'docdir': testdir},
-        });
+        final output = convertString(
+          input,
+          AsciidoctorOptions(
+            safe: SafeMode.safe,
+            attributes: {'docdir': testdir},
+          ),
+        );
         assertXpath('//h2[text()="Section"]', output, 1);
       });
 
@@ -2675,7 +2620,10 @@ void main() {
         const input =
             '= Document Title\nAuthor Name\n:revdate: '
             '2011-11-11\n:revnumber: 1.0\n\ncontent\n';
-        final output = convertString(input, {'backend': 'docbook'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertCss('revhistory', output, 1);
         assertCss('revhistory > revision', output, 1);
         assertCss('revhistory > revision > date', output, 1);
@@ -2687,7 +2635,10 @@ void main() {
         const input =
             '= Document Title\nAuthor Name\n:revdate: '
             '2011-11-11\n:revremark: features!\n\ncontent\n';
-        final output = convertString(input, {'backend': 'docbook'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertCss('revhistory', output, 1);
         assertCss('revhistory > revision', output, 1);
         assertCss('revhistory > revision > date', output, 1);
@@ -2698,7 +2649,10 @@ void main() {
           'is not set', () {
         const input =
             '= Document Title\nAuthor Name\n:revnumber: 1.0\n\ncontent\n';
-        final output = convertString(input, {'backend': 'docbook'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertCss('revhistory', output, 0);
       });
 
@@ -2706,7 +2660,10 @@ void main() {
         const input =
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n\n== '
             'Version 8.6.8\n\nmore info...\n';
-        final output = convertString(input, {'backend': 'docbook5'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook5'),
+        );
         assertXpath('/article/info', output, 1);
         assertXpath('/article/info/title[text()="AsciiDoc"]', output, 1);
         assertXpath('/article/info/author/personname', output, 1);
@@ -2731,10 +2688,10 @@ void main() {
 
       test('with document ID to Docbook 5', () {
         const input = '[[document-id]]\n= Document Title\n\nmore info...\n';
-        final output = convertString(input, {
-          'backend': 'docbook',
-          'keep_namespaces': true,
-        });
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertCss('article:root[xml|id="document-id"]', output, 1);
       });
 
@@ -2742,7 +2699,10 @@ void main() {
         const input =
             '= Document Title\n:author: Doc Writer\n:email: '
             'thedoctor@asciidoc.org\n\ncontent\n';
-        final output = convertString(input, {'backend': 'docbook'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertXpath('/article/info/author', output, 1);
         assertXpath(
           '/article/info/author/personname/firstname[text()="Doc"]',
@@ -2784,7 +2744,10 @@ void main() {
         const input =
             "= Document Title\nStephen O'Grady "
             '<founder@redmonk.com>\n\ncontent\n';
-        final output = convertString(input, {'backend': 'docbook'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertXpath('//author', output, 1);
         assertXpath(
           '//author/personname/surname[text()="O${decodeChar(8217)}Grady"]',
@@ -2839,7 +2802,10 @@ void main() {
         const input =
             '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; '
             'Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
-        final output = convertString(input, {'backend': 'docbook'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertXpath('/article/info/author', output, 0);
         assertXpath('/article/info/authorgroup', output, 1);
         assertXpath('/article/info/authorgroup/author', output, 2);
@@ -2860,14 +2826,17 @@ void main() {
         const input =
             ':author: Doc Writer\n\n{lastname}, {firstname} '
             '({authorinitials})\n';
-        final doc = documentFromString(input, {'standalone': false});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(standalone: false),
+        );
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('author_1'), isNull);
         expect(doc.attr('lastname'), equals('Writer'));
         expect(doc.attr('firstname'), equals('Doc'));
         expect(doc.attr('authorinitials'), equals('DW'));
-        expect(doc.attr('authorcount'), equals(1));
-        final output = doc.convert()! as String;
+        expect(doc.attr('authorcount'), equals('1'));
+        final output = doc.convert();
         assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
       });
 
@@ -2876,11 +2845,14 @@ void main() {
         const input =
             ':authorinitials: DOC\n:author: Doc Writer\n\n{lastname}, '
             '{firstname} ({authorinitials})\n';
-        final doc = documentFromString(input, {'standalone': false});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(standalone: false),
+        );
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('authorinitials'), equals('DOC'));
-        expect(doc.attr('authorcount'), equals(1));
-        final output = doc.convert()! as String;
+        expect(doc.attr('authorcount'), equals('1'));
+        final output = doc.convert();
         assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
       });
 
@@ -2889,7 +2861,10 @@ void main() {
         const input =
             ':authors: Doc Writer; Other Author\n\n{lastname}, '
             '{firstname} ({authorinitials})\n';
-        final doc = documentFromString(input, {'standalone': false});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(standalone: false),
+        );
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('authors'), equals('Doc Writer, Other Author'));
         expect(doc.attr('author_1'), equals('Doc Writer'));
@@ -2901,8 +2876,8 @@ void main() {
         expect(doc.attr('authorinitials_1'), equals('DW'));
         expect(doc.attr('author_2'), equals('Other Author'));
         expect(doc.attr('authorinitials_2'), equals('OA'));
-        expect(doc.attr('authorcount'), equals(2));
-        final output = doc.convert()! as String;
+        expect(doc.attr('authorcount'), equals('2'));
+        final output = doc.convert();
         assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
       });
 
@@ -2911,29 +2886,32 @@ void main() {
         const input =
             ':authorinitials: DOC\n:authors: Doc Writer; Other Author\n'
             '\n{lastname}, {firstname} ({authorinitials})\n';
-        final doc = documentFromString(input, {'standalone': false});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(standalone: false),
+        );
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('author_1'), equals('Doc Writer'));
         // FIXME this should be supported, but isn't yet
         //expect(doc.attr('authorinitials'), equals('DOC'));
         expect(doc.attr('authorinitials'), equals('DW'));
         expect(doc.attr('author_2'), equals('Other Author'));
-        expect(doc.attr('authorcount'), equals(2));
-        final output = doc.convert()! as String;
+        expect(doc.attr('authorcount'), equals('2'));
+        final output = doc.convert();
         //assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
         assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
       });
 
       test('should set authorcount to 0 if document has no header', () {
         final doc = documentFromString('content');
-        expect(doc.attr('authorcount'), equals(0));
+        expect(doc.attr('authorcount'), equals('0'));
       });
 
       test('should set authorcount to 0 if author not set by attribute and '
           'implicit doctitle is missing', () {
         const input = ':idprefix:\n\n== Section Title\n\ncontent\n';
         final doc = documentFromString(input);
-        expect(doc.attr('authorcount'), equals(0));
+        expect(doc.attr('authorcount'), equals('0'));
       });
 
       test('should set authorcount to 0 if author not set by attribute and '
@@ -2942,7 +2920,7 @@ void main() {
             ':doctype: book\n\n[preface]\n= Preface\n\ncontent\n\n= '
             'Part\n\n== Chapter\n\ncontent\n';
         final doc = documentFromString(input);
-        expect(doc.attr('authorcount'), equals(0));
+        expect(doc.attr('authorcount'), equals('0'));
       });
 
       test('with author defined by indexed attribute name', () {
@@ -2960,7 +2938,10 @@ void main() {
             ':email_2: junior@asciidoc.org\n'
             '\n'
             'content\n';
-        final output = convertString(input, {'backend': 'docbook'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook'),
+        );
         assertXpath('/article/info/author', output, 0);
         assertXpath('/article/info/authorgroup', output, 1);
         assertXpath('/article/info/authorgroup/author', output, 2);
@@ -2991,7 +2972,10 @@ void main() {
         const input =
             '= Jet Bike\n:copyright: ACME, Inc.\n\nEssential for '
             'catching road runners.\n';
-        final output = convertString(input, {'backend': 'docbook5'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook5'),
+        );
         assertXpath('/article/info/copyright', output, 1);
         assertXpath(
           '/article/info/copyright/holder[text()="ACME, Inc."]',
@@ -3005,7 +2989,10 @@ void main() {
         const input =
             '= Jet Bike\n:copyright: ACME, Inc. 1956\n\nEssential for '
             'catching road runners.\n';
-        final output = convertString(input, {'backend': 'docbook5'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook5'),
+        );
         assertXpath('/article/info/copyright', output, 1);
         assertXpath(
           '/article/info/copyright/holder[text()="ACME, Inc."]',
@@ -3021,7 +3008,10 @@ void main() {
         const input =
             '= Jet Bike\n:copyright: ACME, Inc. 1956-2018\n\nEssential '
             'for catching road runners.\n';
-        final output = convertString(input, {'backend': 'docbook5'});
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook5'),
+        );
         assertXpath('/article/info/copyright', output, 1);
         assertXpath(
           '/article/info/copyright/holder[text()="ACME, Inc."]',
@@ -3039,7 +3029,7 @@ void main() {
       test('with header footer', () {
         final doc = documentFromString('= Title\n\nparagraph');
         expect(doc.hasAttr('embedded'), isFalse);
-        final result = doc.convert()! as String;
+        final result = doc.convert();
         assertXpath('/html', result, 1);
         assertXpath('//*[@id="header"]', result, 1);
         assertXpath('//*[@id="header"]/h1', result, 1);
@@ -3054,10 +3044,11 @@ void main() {
       });
 
       test('can disable last updated in footer', () {
-        final doc = documentFromString('= Document Title\n\npreamble', {
-          'attributes': {'last-update-label!': ''},
-        });
-        final result = doc.convert()! as String;
+        final doc = documentFromString(
+          '= Document Title\n\npreamble',
+          const AsciidoctorOptions(attributes: {'last-update-label!': ''}),
+        );
+        final result = doc.convert();
         assertXpath('//*[@id="footer-text"]', result, 1);
         assertXpath(
           '//*[@id="footer-text"][normalize-space(text())=""]',
@@ -3068,11 +3059,12 @@ void main() {
 
       test('should create embedded document if standalone option passed to '
           'constructor is false', () {
-        final doc = Document('= Document Title\n\ncontent', {
-          'standalone': false,
-        }).parse();
+        final doc = Document(
+          '= Document Title\n\ncontent',
+          const AsciidoctorOptions(standalone: false),
+        ).parse();
         expect(doc.hasAttr('embedded'), isTrue);
-        final result = doc.convert()! as String;
+        final result = doc.convert();
         assertXpath('/html', result, 0);
         assertXpath('/h1', result, 0);
         assertXpath('/*[@id="header"]', result, 0);
@@ -3082,11 +3074,12 @@ void main() {
 
       test('should create embedded document if standalone option passed to '
           'convert method is false', () {
-        final doc = Document('= Document Title\n\ncontent', {
-          'standalone': true,
-        }).parse();
+        final doc = Document(
+          '= Document Title\n\ncontent',
+          const AsciidoctorOptions(standalone: true),
+        ).parse();
         expect(doc.hasAttr('embedded'), isFalse);
-        final result = doc.convert({'standalone': false})! as String;
+        final result = doc.convert(standalone: false);
         assertXpath('/html', result, 0);
         assertXpath('/h1', result, 1);
         assertXpath('/*[@id="header"]', result, 0);
@@ -3096,11 +3089,12 @@ void main() {
 
       test('should create embedded document if deprecated header_footer '
           'option is false', () {
-        final doc = Document('= Document Title\n\ncontent', {
-          'header_footer': false,
-        }).parse();
+        final doc = Document(
+          '= Document Title\n\ncontent',
+          const AsciidoctorOptions(standalone: false),
+        ).parse();
         expect(doc.hasAttr('embedded'), isTrue);
-        final result = doc.convert()! as String;
+        final result = doc.convert();
         assertXpath('/html', result, 0);
         assertXpath('/h1', result, 0);
         assertXpath('/*[@id="header"]', result, 0);
@@ -3110,11 +3104,12 @@ void main() {
 
       test('should create embedded document if header_footer option passed '
           'to convert method is false', () {
-        final doc = Document('= Document Title\n\ncontent', {
-          'header_footer': true,
-        }).parse();
+        final doc = Document(
+          '= Document Title\n\ncontent',
+          const AsciidoctorOptions(standalone: true),
+        ).parse();
         expect(doc.hasAttr('embedded'), isFalse);
-        final result = doc.convert({'header_footer': false})! as String;
+        final result = doc.convert(standalone: false);
         assertXpath('/html', result, 0);
         assertXpath('/h1', result, 1);
         assertXpath('/*[@id="header"]', result, 0);
@@ -3126,9 +3121,10 @@ void main() {
         'enable title in embedded document by unassigning notitle attribute',
         () {
           const input = '= Document Title\n\ncontent\n';
-          final result = convertStringToEmbedded(input, {
-            'attributes': {'notitle!': ''},
-          });
+          final result = convertStringToEmbedded(
+            input,
+            const AsciidoctorOptions(attributes: {'notitle!': ''}),
+          );
           assertXpath('/html', result, 0);
           assertXpath('/h1', result, 1);
           assertXpath('/*[@id="header"]', result, 0);
@@ -3140,59 +3136,22 @@ void main() {
       );
 
       test('should be able to enable doctitle for embedded document', () {
-        final cases = <List<Object?>>[
-          [
-            {'notitle': null},
-            null,
-          ],
-          [
-            {'notitle': null},
-            [':!showtitle:'],
-          ],
-          [
-            {'notitle': false},
-            null,
-          ],
-          [
-            {'notitle': '@'},
-            [':!notitle:'],
-          ],
-          [
-            {'notitle': '@'},
-            [':showtitle:'],
-          ],
-          [
-            {'showtitle': ''},
-            [':notitle:'],
-          ],
-          [
-            {'showtitle': '@'},
-            null,
-          ],
-          [
-            {'showtitle': false},
-            [':!notitle:'],
-          ],
-          [
-            <String, Object?>{},
-            [':!notitle:'],
-          ],
-          [
-            <String, Object?>{},
-            [':notitle:', ':showtitle:'],
-          ],
-          [
-            <String, Object?>{},
-            [':showtitle:'],
-          ],
-          [
-            <String, Object?>{},
-            [':!showtitle:', ':!notitle:'],
-          ],
+        final cases = <(Map<String, String?>, List<String>?)>[
+          ({'notitle': null}, null),
+          ({'notitle': null}, [':!showtitle:']),
+          ({'notitle!@': ''}, null),
+          ({'notitle': '@'}, [':!notitle:']),
+          ({'notitle': '@'}, [':showtitle:']),
+          ({'showtitle': ''}, [':notitle:']),
+          ({'showtitle': '@'}, null),
+          ({'showtitle!@': ''}, [':!notitle:']),
+          (<String, String?>{}, [':!notitle:']),
+          (<String, String?>{}, [':notitle:', ':showtitle:']),
+          (<String, String?>{}, [':showtitle:']),
+          (<String, String?>{}, [':!showtitle:', ':!notitle:']),
         ];
         for (final entry in cases) {
-          final apiAttrs = entry[0]! as Map<String, Object?>;
-          final attrEntries = entry[1] as List<String>?;
+          final (apiAttrs, attrEntries) = entry;
           final input =
               '= Document '
               'Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
@@ -3200,9 +3159,10 @@ void main() {
               'ifndef::showtitle[showtitle: not set]\n'
               'ifdef::notitle[notitle: set]\n'
               'ifndef::notitle[notitle: not set]\n';
-          final result = convertStringToEmbedded(input, {
-            'attributes': apiAttrs,
-          });
+          final result = convertStringToEmbedded(
+            input,
+            AsciidoctorOptions(attributes: apiAttrs),
+          );
           assertXpath('/html', result, 0);
           assertXpath('/h1', result, 1);
           assertXpath('(/*)[1]/self::h1', result, 1);
@@ -3214,47 +3174,19 @@ void main() {
 
       test('should be able to explicitly disable doctitle for embedded '
           'document', () {
-        final cases = <List<Object?>>[
-          [
-            {'notitle': ''},
-            null,
-          ],
-          [
-            {'notitle': '@'},
-            null,
-          ],
-          [
-            {'notitle': '@'},
-            [':!showtitle:'],
-          ],
-          [
-            {'showtitle': null},
-            null,
-          ],
-          [
-            {'showtitle': false},
-            null,
-          ],
-          [
-            {'showtitle': '@'},
-            [':notitle:'],
-          ],
-          [
-            <String, Object?>{},
-            [':notitle:'],
-          ],
-          [
-            <String, Object?>{},
-            [':!showtitle:'],
-          ],
-          [
-            <String, Object?>{},
-            [':!showtitle:', ':notitle:'],
-          ],
+        final cases = <(Map<String, String?>, List<String>?)>[
+          ({'notitle': ''}, null),
+          ({'notitle': '@'}, null),
+          ({'notitle': '@'}, [':!showtitle:']),
+          ({'showtitle': null}, null),
+          ({'showtitle!@': ''}, null),
+          ({'showtitle': '@'}, [':notitle:']),
+          (<String, String?>{}, [':notitle:']),
+          (<String, String?>{}, [':!showtitle:']),
+          (<String, String?>{}, [':!showtitle:', ':notitle:']),
         ];
         for (final entry in cases) {
-          final apiAttrs = entry[0]! as Map<String, Object?>;
-          final attrEntries = entry[1] as List<String>?;
+          final (apiAttrs, attrEntries) = entry;
           final input =
               '= Document '
               'Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
@@ -3262,9 +3194,10 @@ void main() {
               'ifndef::showtitle[showtitle: not set]\n'
               'ifdef::notitle[notitle: set]\n'
               'ifndef::notitle[notitle: not set]\n';
-          final result = convertStringToEmbedded(input, {
-            'attributes': apiAttrs,
-          });
+          final result = convertStringToEmbedded(
+            input,
+            AsciidoctorOptions(attributes: apiAttrs),
+          );
           assertXpath('/html', result, 0);
           assertXpath('/h1', result, 0);
           assertXpath('/*[@class="paragraph"]', result, 1);
@@ -3275,7 +3208,10 @@ void main() {
 
       test('parse header only', () {
         const input = '= Document Title\nAuthor Name\n:foo: bar\n\npreamble\n';
-        final doc = documentFromString(input, {'parse_header_only': true});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(parseHeaderOnly: true),
+        );
         expect(doc.doctitle(), equals('Document Title'));
         expect(doc.author, equals('Author Name'));
         expect(doc.attributes['foo'], equals('bar'));
@@ -3287,7 +3223,10 @@ void main() {
         const input =
             '= cmd(1)\nAuthor Name\n:doctype: manpage\n\n== '
             'Name\n\ncmd - does stuff\n';
-        final doc = documentFromString(input, {'parse_header_only': true});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(parseHeaderOnly: true),
+        );
         expect(doc.doctitle(), equals('cmd(1)'));
         expect(doc.author, equals('Author Name'));
         expect(doc.attributes['mantitle'], equals('cmd'));
@@ -3301,7 +3240,10 @@ void main() {
           'and body is empty', () {
         const input = '= cmd(1)\nAuthor Name\n:doctype: manpage\n';
         usingMemoryLogger((logger) {
-          final doc = documentFromString(input, {'parse_header_only': true});
+          final doc = documentFromString(
+            input,
+            const AsciidoctorOptions(parseHeaderOnly: true),
+          );
           expect(logger.messages, isEmpty);
           expect(doc.doctitle(), equals('cmd(1)'));
           expect(doc.author, equals('Author Name'));
@@ -3372,80 +3314,73 @@ void main() {
         const input =
             'Text that has supporting information{empty}footnote:[An '
             'example footnote.].';
-        final output = convertStringToEmbedded(input, {
-          'attributes': {'nofootnotes': ''},
-        });
+        final output = convertStringToEmbedded(
+          input,
+          const AsciidoctorOptions(attributes: {'nofootnotes': ''}),
+        );
         assertCss('#footnotes', output, 0);
       });
     });
 
     group('Catalog', () {
-      test('should alias document catalog as document references', () {
+      test('should expose references and footnotes via the catalog', () {
         const input =
             '= Document Title\n\n== Section A\n\nContent\n\n== Section '
             'B\n\nContent.footnote:[commentary]\n';
         final doc = documentFromString(input);
-        expect(doc.catalog, isNotNull);
         expect(
-          (doc.catalog.keys.toList()..sort()),
-          orderedEquals([
-            'callouts',
-            'footnotes',
-            'ids',
-            'images',
-            'includes',
-            'links',
-            'refs',
-          ]),
+          doc.catalog.refs.keys,
+          containsAll(['_section_a', '_section_b']),
         );
-        expect(doc.catalog, same(doc.references));
-        expect(doc.catalog['footnotes'], same(doc.references['footnotes']));
-        expect(doc.catalog['refs'], same(doc.references['refs']));
+        expect(doc.catalog.footnotes, isEmpty);
+        doc.convert();
+        expect(doc.catalog.footnotes.single.text, equals('commentary'));
+        expect(doc.catalog.links, isEmpty);
+        expect(doc.catalog.images, isEmpty);
+        expect(doc.catalog.includes, isEmpty);
         expect(doc.resolveId('Section A'), equals('_section_a'));
       });
 
-      test('should return empty :ids table', () {
+      test('should register a reference with reftext', () {
         final doc = emptyDocument();
-        expect(doc.catalog['ids'], isNotNull);
-        expect(doc.catalog['ids']! as Map, isEmpty);
-        expect((doc.catalog['ids']! as Map<String, Object?>)['foobar'], isNull);
-      });
-
-      test('should register entry in :refs table with reftext when request is '
-          'made to register entry in :ids table', () {
-        final doc = (emptyDocument())..register('ids', ['foobar', 'Foo Bar']);
-        expect(doc.catalog['ids']! as Map, isEmpty);
-        expect(doc.catalog['refs']! as Map, isNotEmpty);
-        final ref =
-            (doc.catalog['refs']! as Map<String, Object?>)['foobar']! as Inline;
+        final ref = Inline(
+          doc,
+          'anchor',
+          text: 'Foo Bar',
+          type: 'ref',
+          target: 'foobar',
+        );
+        expect(doc.registerRef('foobar', ref), isTrue);
+        expect(doc.catalog.refs['foobar'], same(ref));
         expect(ref.reftext, equals('Foo Bar'));
         expect(doc.resolveId('Foo Bar'), equals('foobar'));
       });
 
-      test('should return nil if there is already an entry for ID in the '
-          ':refs table', () {
+      test('should not replace an existing entry for ID in the refs table', () {
         final doc = emptyDocument();
-        final ref = <Object?>[
-          'tigers',
-          Inline(
-            doc,
-            'anchor',
-            text: '[tigers]',
-            type: 'ref',
-            target: 'tigers',
-          ),
-          '[tigers]',
-        ];
-        expect(doc.register('refs', ref), same(ref[1]));
-        expect(doc.register('refs', ref), isNull);
+        final ref = Inline(
+          doc,
+          'anchor',
+          text: '[tigers]',
+          type: 'ref',
+          target: 'tigers',
+        );
+        expect(doc.registerRef('tigers', ref), isTrue);
+        expect(
+          doc.registerRef('tigers', Inline(doc, 'anchor', type: 'ref')),
+          isFalse,
+        );
+        expect(doc.catalog.refs['tigers'], same(ref));
       });
 
       test('should record imagesdir when image is registered with catalog', () {
-        final doc = (emptyDocument({
-          'attributes': {'imagesdir': 'img'},
-          'catalog_assets': true,
-        }))..register('images', 'diagram.svg');
-        final images = doc.catalog['images']! as List<ImageReference>;
+        final doc = emptyDocument(
+          const AsciidoctorOptions(
+            attributes: {'imagesdir': 'img'},
+            catalogAssets: true,
+          ),
+        )..registerImage('diagram.svg');
+        final images = doc.catalog.images;
         expect(images.length, equals(1));
         expect(images[0].target, equals('diagram.svg'));
         expect(images[0].imagesdir, equals('img'));
@@ -3454,8 +3389,11 @@ void main() {
       test('should catalog assets inside nested document', () {
         const input =
             'image::outer.png[]\n\n|===\na|\nimage::inner.png[]\n|===\n';
-        final doc = documentFromString(input, {'catalog_assets': true});
-        final images = doc.catalog['images']! as List<ImageReference>;
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(catalogAssets: true),
+        );
+        final images = doc.catalog.images;
         expect(images, isNotEmpty);
         expect(images.length, equals(2));
         expect(
@@ -3467,9 +3405,10 @@ void main() {
 
     group('Backends and Doctypes', () {
       test('html5 backend doctype article', () {
-        final result = convertString('= Title\n\nparagraph', {
-          'attributes': {'backend': 'html5'},
-        });
+        final result = convertString(
+          '= Title\n\nparagraph',
+          const AsciidoctorOptions(attributes: {'backend': 'html5'}),
+        );
         assertXpath('/html', result, 1);
         assertXpath('/html/body[@class="article"]', result, 1);
         assertXpath('/html//*[@id="header"]/h1[text()="Title"]', result, 1);
@@ -3481,9 +3420,12 @@ void main() {
       });
 
       test('html5 backend doctype book', () {
-        final result = convertString('= Title\n\nparagraph', {
-          'attributes': {'backend': 'html5', 'doctype': 'book'},
-        });
+        final result = convertString(
+          '= Title\n\nparagraph',
+          const AsciidoctorOptions(
+            attributes: {'backend': 'html5', 'doctype': 'book'},
+          ),
+        );
         assertXpath('/html', result, 1);
         assertXpath('/html/body[@class="book"]', result, 1);
         assertXpath('/html//*[@id="header"]/h1[text()="Title"]', result, 1);
@@ -3496,50 +3438,56 @@ void main() {
 
       test('xhtml5 backend should map to html5 and set htmlsyntax to xml', () {
         const input = 'content';
-        final doc = documentFromString(input, {
-          'backend': 'xhtml5',
-          'parse': false,
-        });
+        final doc = Document(
+          input,
+          const AsciidoctorOptions(backend: 'xhtml5'),
+        );
         expect(doc.backend, equals('html5'));
         expect(doc.attr('htmlsyntax'), equals('xml'));
       });
 
       test('xhtml backend should map to html5 and set htmlsyntax to xml', () {
         const input = 'content';
-        final doc = documentFromString(input, {
-          'backend': 'xhtml',
-          'parse': false,
-        });
+        final doc = Document(input, const AsciidoctorOptions(backend: 'xhtml'));
         expect(doc.backend, equals('html5'));
         expect(doc.attr('htmlsyntax'), equals('xml'));
       });
 
       test('honor htmlsyntax attribute passed via API if backend is html', () {
         const input = '---';
-        final doc = documentFromString(input, {
-          'safe': 'safe',
-          'attributes': {'htmlsyntax': 'xml'},
-        });
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(
+            safe: SafeMode.safe,
+            attributes: {'htmlsyntax': 'xml'},
+          ),
+        );
         expect(doc.backend, equals('html5'));
         expect(doc.attr('htmlsyntax'), equals('xml'));
-        final result = doc.convert({'standalone': false})! as String;
+        final result = doc.convert(standalone: false);
         expect(result, equals('<hr/>'));
       });
 
       test('honor htmlsyntax attribute in document header if followed by '
           'backend attribute', () {
         const input = ':htmlsyntax: xml\n:backend: html5\n\n---\n';
-        final doc = documentFromString(input, {'safe': 'safe'});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         expect(doc.backend, equals('html5'));
         expect(doc.attr('htmlsyntax'), equals('xml'));
-        final result = doc.convert({'standalone': false})! as String;
+        final result = doc.convert(standalone: false);
         expect(result, equals('<hr/>'));
       });
 
       test('does not honor htmlsyntax attribute in document header if not '
           'followed by backend attribute', () {
         const input = ':backend: html5\n:htmlsyntax: xml\n\n---\n';
-        final result = convertStringToEmbedded(input, {'safe': 'safe'});
+        final result = convertStringToEmbedded(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe),
+        );
         expect(result, equals('<hr>'));
       });
 
@@ -3589,20 +3537,19 @@ void main() {
             'two\n'
             '\n'
             "'''\n";
-        final result = convertString(input, {
-          'safe': 'safe',
-          'backend': 'xhtml',
-        });
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe, backend: 'xhtml'),
+        );
         assertWellFormedXml(result);
       });
 
       test('xhtml backend should emit elements in proper namespace', () {
         const input = 'content';
-        final result = convertString(input, {
-          'safe': 'safe',
-          'backend': 'xhtml',
-          'keep_namespaces': true,
-        });
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(safe: SafeMode.safe, backend: 'xhtml'),
+        );
         assertXpath(
           '//*[not(namespace-uri()="http://www.w3.org/1999/xhtml")]',
           result,
@@ -3612,7 +3559,10 @@ void main() {
 
       test('should parse out subtitle when backend is DocBook', () {
         const input = '= Document Title: Subtitle\n:doctype: book\n\ntext\n';
-        final result = convertString(input, {'backend': 'docbook5'});
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook5'),
+        );
         assertXpath('/book', result, 1);
         assertXpath('/book/info/title[text()="Document Title"]', result, 1);
         assertXpath('/book/info/subtitle[text()="Subtitle"]', result, 1);
@@ -3623,10 +3573,10 @@ void main() {
         const input =
             '= Title\nAuthor Name\n\npreamble\n\n== First '
             'Section\n\nsection body\n';
-        final result = convertString(input, {
-          'keep_namespaces': true,
-          'attributes': {'backend': 'docbook5'},
-        });
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(attributes: {'backend': 'docbook5'}),
+        );
         assertXpath('/xmlns:article', result, 1);
         final doc = xmlnodeAtXpath('/xmlns:article', result);
         expect(
@@ -3654,9 +3604,10 @@ void main() {
 
       test('should set doctype to article by default for document with no '
           'title when converting to DocBook', () {
-        final result = convertString('text', {
-          'attributes': {'backend': 'docbook'},
-        });
+        final result = convertString(
+          'text',
+          const AsciidoctorOptions(attributes: {'backend': 'docbook'}),
+        );
         assertXpath('/article', result, 1);
         assertXpath('/article/info/title', result, 1);
         assertXpath('/article/info/title[text()="Untitled"]', result, 1);
@@ -3681,10 +3632,12 @@ void main() {
             '== First Section\n'
             '\n'
             'section body\n';
-        final result = convertString(input, {
-          'keep_namespaces': true,
-          'attributes': {'backend': 'docbook5', 'doctype': 'manpage'},
-        });
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(
+            attributes: {'backend': 'docbook5', 'doctype': 'manpage'},
+          ),
+        );
         assertXpath('/xmlns:article', result, 1);
         assertXpath('/xmlns:article/xmlns:refentry', result, 1);
         final doc = xmlnodeAtXpath('/xmlns:article', result);
@@ -3696,7 +3649,7 @@ void main() {
           doc.namespaces['xmlns:xl'],
           equals('http://www.w3.org/1999/xlink'),
         );
-        expect((doc as dynamic).attr('version'), equals('5.0'));
+        expect(doc.attr('version'), equals('5.0'));
         assertXpath(
           '/xmlns:article/xmlns:info/xmlns:title[text()="asciidoctor(1)"]',
           result,
@@ -3759,10 +3712,12 @@ void main() {
         const input =
             '= asciidoctor(1)\n\n== NAME\n\nasciidoctor - Process '
             'text\n\n== SYNOPSIS\n\nsome text\n';
-        final result = convertString(input, {
-          'keep_namespaces': true,
-          'attributes': {'backend': 'docbook5', 'doctype': 'manpage'},
-        });
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(
+            attributes: {'backend': 'docbook5', 'doctype': 'manpage'},
+          ),
+        );
         assertXpath(
           '/xmlns:article/xmlns:refentry/xmlns:refmeta/xmlns:refmiscinfo[@class="source"][text()="${decodeChar(160)}"]',
           result,
@@ -3787,7 +3742,7 @@ void main() {
           standalone: true,
         );
         expect(doc.attr('mantitle'), equals(r'foo\--bar'));
-        final result = doc.convert()! as String;
+        final result = doc.convert();
         assertXpath(
           '/xmlns:article/xmlns:info/xmlns:title[text()="foo--bar(1)"]',
           result,
@@ -3805,10 +3760,12 @@ void main() {
         const input =
             '= Title\nAuthor Name\n\npreamble\n\n== First '
             'Chapter\n\nchapter body\n';
-        final result = convertString(input, {
-          'keep_namespaces': true,
-          'attributes': {'backend': 'docbook5', 'doctype': 'book'},
-        });
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(
+            attributes: {'backend': 'docbook5', 'doctype': 'book'},
+          ),
+        );
         assertXpath('/xmlns:book', result, 1);
         final doc = xmlnodeAtXpath('/xmlns:book', result);
         expect(
@@ -3836,9 +3793,12 @@ void main() {
 
       test('should be able to set doctype to book for document with no title '
           'when converting to DocBook', () {
-        final result = convertString('text', {
-          'attributes': {'backend': 'docbook5', 'doctype': 'book'},
-        });
+        final result = convertString(
+          'text',
+          const AsciidoctorOptions(
+            attributes: {'backend': 'docbook5', 'doctype': 'book'},
+          ),
+        );
         assertXpath('/book', result, 1);
         assertXpath('/book/info/date', result, 1);
         // NOTE simpara cannot be a direct child of book, so content must
@@ -3864,7 +3824,10 @@ void main() {
             '== SYNOPSIS\n'
             '\n'
             "*eve* ['OPTION']... 'FILE'...\n";
-        final result = convertString(input, {'backend': 'docbook5'});
+        final result = convertString(
+          input,
+          const AsciidoctorOptions(backend: 'docbook5'),
+        );
         assertXpath('/article/refentry/refnamediv/refname', result, 2);
         assertXpath(
           '(/article/refentry/refnamediv/refname)[1][text()="eve"]',
@@ -3886,9 +3849,10 @@ void main() {
               ':front-cover-image: image:front-cover.jpg[scaledwidth=210mm]\n'
               ':back-cover-image: image:back-cover.jpg[]\n\npreamble\n\n'
               '== First Chapter\n\nchapter body\n';
-          final result = convertString(input, {
-            'attributes': {'backend': 'docbook5'},
-          });
+          final result = convertString(
+            input,
+            const AsciidoctorOptions(attributes: {'backend': 'docbook5'}),
+          );
           assertXpath('//info/cover[@role="front"]', result, 1);
           assertXpath(
             '//info/cover[@role="front"]//imagedata[@fileref="images/front-cover.jpg"]',
@@ -3905,28 +3869,32 @@ void main() {
       );
 
       test('should be able to set backend using :backend option key', () {
-        final doc = emptyDocument({'backend': 'html5'});
+        final doc = emptyDocument(const AsciidoctorOptions(backend: 'html5'));
         expect(doc.attributes['backend'], equals('html5'));
       });
 
       test(':backend option should override backend attribute', () {
-        final doc = emptyDocument({
-          'backend': 'html5',
-          'attributes': {'backend': 'docbook5'},
-        });
+        final doc = emptyDocument(
+          const AsciidoctorOptions(
+            backend: 'html5',
+            attributes: {'backend': 'docbook5'},
+          ),
+        );
         expect(doc.attributes['backend'], equals('html5'));
       });
 
       test('should be able to set doctype using :doctype option key', () {
-        final doc = emptyDocument({'doctype': 'book'});
+        final doc = emptyDocument(const AsciidoctorOptions(doctype: 'book'));
         expect(doc.attributes['doctype'], equals('book'));
       });
 
       test(':doctype option should override doctype attribute', () {
-        final doc = emptyDocument({
-          'doctype': 'book',
-          'attributes': {'doctype': 'article'},
-        });
+        final doc = emptyDocument(
+          const AsciidoctorOptions(
+            doctype: 'book',
+            attributes: {'doctype': 'article'},
+          ),
+        );
         expect(doc.attributes['doctype'], equals('book'));
       });
 
@@ -3934,9 +3902,10 @@ void main() {
         const input =
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n'
             ':Author Initials: SJR\n\nmore info...\n';
-        final output = convertString(input, {
-          'attributes': {'backend': 'docbook5'},
-        });
+        final output = convertString(
+          input,
+          const AsciidoctorOptions(attributes: {'backend': 'docbook5'}),
+        );
         assertXpath('/article/info/authorinitials[text()="SJR"]', output, 1);
       });
 
@@ -4002,7 +3971,10 @@ void main() {
             '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - '
             'converts AsciiDoc source files to HTML, DocBook and '
             'other formats\n';
-        final doc = documentFromString(input, {'backend': 'manpage'});
+        final doc = documentFromString(
+          input,
+          const AsciidoctorOptions(backend: 'manpage'),
+        );
         expect(doc.attributes['docname'], equals('asciidoctor'));
         expect(doc.attributes['outfilesuffix'], equals('.1'));
       });
@@ -4163,9 +4135,12 @@ void main() {
           'before conversion', () {
         const input = '= Document Title\n\ntext\n';
         expect(
-          () => Document(input, {'backend': 'unknownBackend'}),
+          () => Document(
+            input,
+            const AsciidoctorOptions(backend: 'unknownBackend'),
+          ),
           throwsA(
-            isA<UnimplementedError>().having(
+            isA<StateError>().having(
               (error) => error.message,
               'message',
               contains("missing converter for backend 'unknownBackend'"),
@@ -4178,9 +4153,12 @@ void main() {
           'while parsing', () {
         const input = '= Document Title\n\n== A _Big_ Section\n\ntext\n';
         expect(
-          () => Document(input, {'backend': 'unknownBackend'}),
+          () => Document(
+            input,
+            const AsciidoctorOptions(backend: 'unknownBackend'),
+          ),
           throwsA(
-            isA<UnimplementedError>().having(
+            isA<StateError>().having(
               (error) => error.message,
               'message',
               contains("missing converter for backend 'unknownBackend'"),
@@ -4194,9 +4172,12 @@ void main() {
       test(
         'should compute docyear and docdatetime from docdate and doctime',
         () {
-          final doc = Document(<String>[], {
-            'attributes': {'docdate': '2015-01-01', 'doctime': '10:00:00-0700'},
-          });
+          final doc = Document(
+            null,
+            const AsciidoctorOptions(
+              attributes: {'docdate': '2015-01-01', 'doctime': '10:00:00-0700'},
+            ),
+          );
           expect(doc.attr('docdate'), equals('2015-01-01'));
           expect(doc.attr('docyear'), equals('2015'));
           expect(doc.attr('doctime'), equals('10:00:00-0700'));
@@ -4205,10 +4186,13 @@ void main() {
       );
 
       test('should allow docdate and doctime to be overridden', () {
-        final doc = Document(<String>[], {
-          'input_mtime': DateTime.now(),
-          'attributes': {'docdate': '2015-01-01', 'doctime': '10:00:00-0700'},
-        });
+        final doc = Document(
+          null,
+          AsciidoctorOptions(
+            inputMtime: DateTime.now(),
+            attributes: {'docdate': '2015-01-01', 'doctime': '10:00:00-0700'},
+          ),
+        );
         expect(doc.attr('docdate'), equals('2015-01-01'));
         expect(doc.attr('docyear'), equals('2015'));
         expect(doc.attr('doctime'), equals('10:00:00-0700'));
@@ -4216,29 +4200,34 @@ void main() {
       });
 
       test('should compute docdatetime from doctime', () {
-        final doc = Document(<String>[], {
-          'attributes': {'doctime': '10:00:00-0700'},
-        });
+        final doc = Document(
+          null,
+          const AsciidoctorOptions(attributes: {'doctime': '10:00:00-0700'}),
+        );
         expect(doc.attr('doctime'), equals('10:00:00-0700'));
-        expect(doc.attr('docdatetime')! as String, endsWith(' 10:00:00-0700'));
+        expect(doc.attr('docdatetime'), endsWith(' 10:00:00-0700'));
       });
 
       test('should compute docyear from docdate', () {
-        final doc = Document(<String>[], {
-          'attributes': {'docdate': '2015-01-01'},
-        });
+        final doc = Document(
+          null,
+          const AsciidoctorOptions(attributes: {'docdate': '2015-01-01'}),
+        );
         expect(doc.attr('docyear'), equals('2015'));
-        expect(doc.attr('docdatetime')! as String, startsWith('2015-01-01 '));
+        expect(doc.attr('docdatetime'), startsWith('2015-01-01 '));
       });
 
       test('should allow doctime to be overridden', () {
         // NOTE Dart cannot unset SOURCE_DATE_EPOCH (Platform.environment is
         // read-only); this test assumes it is not set, as in the Ruby test
         // which deletes it first.
-        final doc = Document(<String>[], {
-          'input_mtime': DateTime(2019, 1, 2, 3, 4, 5),
-          'attributes': {'doctime': '10:00:00-0700'},
-        });
+        final doc = Document(
+          null,
+          AsciidoctorOptions(
+            inputMtime: DateTime(2019, 1, 2, 3, 4, 5),
+            attributes: {'doctime': '10:00:00-0700'},
+          ),
+        );
         expect(doc.attr('docdate'), equals('2019-01-02'));
         expect(doc.attr('docyear'), equals('2019'));
         expect(doc.attr('doctime'), equals('10:00:00-0700'));
@@ -4252,10 +4241,13 @@ void main() {
         // so the expected offset is derived from the input value; a UTC
         // input additionally locks the exact 'UTC' rendering.
         final input = DateTime(2019, 1, 2, 3, 4, 5);
-        final doc = Document(<String>[], {
-          'input_mtime': input,
-          'attributes': {'docdate': '2015-01-01'},
-        });
+        final doc = Document(
+          null,
+          AsciidoctorOptions(
+            inputMtime: input,
+            attributes: {'docdate': '2015-01-01'},
+          ),
+        );
         expect(doc.attr('docdate'), equals('2015-01-01'));
         expect(doc.attr('docyear'), equals('2015'));
         final offset = input.timeZoneOffset;
@@ -4266,10 +4258,13 @@ void main() {
                   '${(offset.inMinutes.abs() % 60).toString().padLeft(2, '0')}';
         expect(doc.attr('docdatetime'), equals('2015-01-01 03:04:05 $zone'));
 
-        final utcDoc = Document(<String>[], {
-          'input_mtime': DateTime.utc(2019, 1, 2, 3, 4, 5),
-          'attributes': {'docdate': '2015-01-01'},
-        });
+        final utcDoc = Document(
+          null,
+          AsciidoctorOptions(
+            inputMtime: DateTime.utc(2019, 1, 2, 3, 4, 5),
+            attributes: {'docdate': '2015-01-01'},
+          ),
+        );
         expect(utcDoc.attr('docdatetime'), equals('2015-01-01 03:04:05 UTC'));
       });
     });

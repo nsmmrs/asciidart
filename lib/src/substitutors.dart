@@ -44,6 +44,7 @@ import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/highlight/highlight.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/rx.dart';
+import 'package:meta/meta.dart';
 
 /// Matches XML special characters. Port of `SpecialCharsRx`.
 final RegExp specialCharsRx = RegExp('[<&>]');
@@ -204,6 +205,10 @@ final Expando<List<Passthrough>> _passthroughs = Expando<List<Passthrough>>(
 /// The passthroughs stashed for [node].
 List<Passthrough> _passthroughsOf(AbstractNode node) =>
     _passthroughs[node] ??= <Passthrough>[];
+
+/// The passthroughs stashed for [node], exposed for tests.
+@visibleForTesting
+List<Passthrough> passthroughsOf(AbstractNode node) => _passthroughsOf(node);
 
 /// Tracks the passthrough lock per node.
 ///

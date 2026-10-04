@@ -25,19 +25,11 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/composite.dart';
-import 'package:asciidoctor/src/converter.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/html5.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/template.dart';
-import 'package:asciidoctor/src/template_loader.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'document_test.dart' show assertXpath;
+import 'support/doc_helpers.dart';
 
 /// Reason for permanently-skipped Tilt-engine-specific tests.
 ///
@@ -67,10 +59,10 @@ class FakeConverter extends Converter {
   final String result;
 
   @override
-  Object? convert(
+  String? convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) => result;
 }
 
@@ -86,10 +78,18 @@ class FakeBaseConverter extends ConverterBase {
   }
 }
 
-/// A [Converter] that overrides nothing (pins default [Converter] behavior).
+/// A [Converter] that overrides only [convert] (pins default [Converter]
+/// behavior).
 class BareConverter extends Converter {
   /// Creates a bare converter for [backend].
   new(super.backend, [super.opts]);
+
+  @override
+  String? convert(
+    AbstractNode node, [
+    String? transform,
+    ConvertOptions? opts,
+  ]) => null;
 }
 
 /// A block whose [content] is fixed (avoids the substitutors wave).
@@ -117,46 +117,46 @@ class BareNode extends AbstractNode {
 }
 
 /// Records log messages for assertions.
-class FakeLogger implements NodeLogger {
-  /// Messages by severity.
-  final List<Object?> debugs = <Object?>[];
-  final List<Object?> infos = <Object?>[];
-  final List<Object?> warns = <Object?>[];
-  final List<Object?> errors = <Object?>[];
-  final List<Object?> fatals = <Object?>[];
+class FakeLogger extends LoggerBase {
+  /// Creates a recording logger.
+  new() : super(Severity.debug);
+
+  /// Messages by severity, in logging order.
+  final List<String> debugs = <String>[];
+  final List<String> infos = <String>[];
+  final List<String> warns = <String>[];
+  final List<String> errors = <String>[];
+  final List<String> fatals = <String>[];
 
   @override
-  void debug(Object? message) {
-    debugs.add(message);
+  Severity? get maxSeverity => null;
+
+  @override
+  void add(Severity severity, LogMessage message) {
+    switch (severity) {
+      case Severity.debug:
+        debugs.add('$message');
+      case Severity.info:
+        infos.add('$message');
+      case Severity.warn:
+        warns.add('$message');
+      case Severity.error:
+        errors.add('$message');
+      case Severity.fatal || Severity.unknown:
+        fatals.add('$message');
+    }
   }
 
   @override
-  void info(Object? message) {
-    infos.add(message);
-  }
-
-  @override
-  void warn(Object? message) {
-    warns.add(message);
-  }
-
-  @override
-  void error(Object? message) {
-    errors.add(message);
-  }
-
-  @override
-  void fatal(Object? message) {
-    fatals.add(message);
-  }
+  Future<void> close() async {}
 }
 
 /// Installs [logger] as the shared logger, restoring the previous one after.
 void useLogger(FakeLogger logger) {
-  final saved = AbstractNode.currentLogger;
-  AbstractNode.currentLogger = logger;
+  final saved = LoggerManager.logger;
+  LoggerManager.logger = logger;
   addTearDown(() {
-    AbstractNode.currentLogger = saved;
+    LoggerManager.logger = saved;
   });
 }
 
@@ -172,10 +172,10 @@ class CustomHtmlConverterA extends Converter {
   new(super.backend, [super.opts]);
 
   @override
-  Object? convert(
+  String? convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) => 'document';
 }
 
@@ -186,10 +186,10 @@ class CustomTextConverterA extends Converter {
   new(super.backend, [super.opts]);
 
   @override
-  Object? convert(
+  String? convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) => 'document';
 }
 
@@ -202,27 +202,8 @@ class CustomDocumentConverter extends ConverterBase {
   }
 }
 
-/// Creates a document from [src] (port of `document_from_string`).
-///
-/// Defaults to `standalone: true` and `parse: true`, like the Ruby helper.
-Document documentFromString(String src, [Map<String, Object?>? options]) {
-  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
-    ..putIfAbsent('standalone', () => true);
-  final parse = opts.remove('parse') ?? true;
-  final doc = Document(src, opts);
-  return (parse == true) ? doc.parse() : doc;
-}
-
 /// Resolves a fixture path (port of `fixture_path`).
 String fixturePath(String name) => 'test/fixtures/$name';
-
-/// Converts [src] to an embedded document (port of
-/// `convert_string_to_embedded`).
-String convertStringToEmbedded(String src, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts['standalone'] = false;
-  return documentFromString(src, opts).convert()! as String;
-}
 
 /// Creates a template directory holding [files] (name to source).
 ///
@@ -257,10 +238,10 @@ class TemplatelessConverter extends Converter {
   new(super.backend, [super.opts]);
 
   @override
-  Object? convert(
+  String? convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) {
     if (node is Document) {
       return node.blocks.map(convert).join('\n');
@@ -294,7 +275,7 @@ void main() {
         skip: noTiltCounterpart,
         () {},
       );
-      test('should coerce template_dirs option to an Array', () {
+      test('should load templates from a single template dir', () {
         // Port of test/converter_test.rb: 'should coerce template_dirs
         // option to an Array'. Adapted: Dart holds no `@template_dirs`
         // ivar to probe, so the coercion is proven behaviorally — a lone
@@ -302,10 +283,10 @@ void main() {
         final dir = makeTemplateDir({
           'paragraph.mustache': '<p>{{content}}</p>',
         });
-        final doc = documentFromString('hi', {
-          'template_dirs': dir.path,
-          'template_cache': false,
-        });
+        final doc = documentFromString(
+          'hi',
+          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+        );
         expect(doc.converter, isA<CompositeConverter>());
         expect(
           templateConverterFor(doc, 'paragraph').templates['paragraph'],
@@ -355,10 +336,10 @@ void main() {
         final dir = makeTemplateDir({
           'paragraph.mustache': '<p>{{content}}</p>',
         });
-        final doc = documentFromString('', {
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final doc = documentFromString(
+          '',
+          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+        );
         expect(doc.converter, isA<CompositeConverter>());
         expect(
           templateConverterFor(doc, 'paragraph').templates['paragraph'],
@@ -374,10 +355,10 @@ void main() {
         final dir = makeTemplateDir({
           'paragraph.mustache': '<p>{{content}}</p>',
         });
-        final withTemplates = documentFromString('content', {
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final withTemplates = documentFromString(
+          'content',
+          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+        );
         expect(withTemplates.attributes['outfilesuffix'], equals('.html'));
       });
       test('should not override outfilesuffix attribute if locked', () {
@@ -385,18 +366,22 @@ void main() {
         // outfilesuffix attribute if locked'. Attributes passed through
         // the options are locked, so the converter-derived suffix never
         // replaces them, with or without templates.
-        final plain = documentFromString('content', {
-          'attributes': {'outfilesuffix': '.foo'},
-        });
+        final plain = documentFromString(
+          'content',
+          const AsciidoctorOptions(attributes: {'outfilesuffix': '.foo'}),
+        );
         expect(plain.attributes['outfilesuffix'], equals('.foo'));
         final dir = makeTemplateDir({
           'paragraph.mustache': '<p>{{content}}</p>',
         });
-        final withTemplates = documentFromString('content', {
-          'template_dir': dir.path,
-          'template_cache': false,
-          'attributes': {'outfilesuffix': '.foo'},
-        });
+        final withTemplates = documentFromString(
+          'content',
+          AsciidoctorOptions(
+            templateDirs: [dir.path],
+            templateCache: false,
+            attributes: {'outfilesuffix': '.foo'},
+          ),
+        );
         expect(withTemplates.attributes['outfilesuffix'], equals('.foo'));
       });
       test('should load Mustache templates for docbook5 backend', () {
@@ -407,11 +392,14 @@ void main() {
         final dir = makeTemplateDir({
           'paragraph.mustache': '<simpara>{{content}}</simpara>',
         });
-        final doc = documentFromString('', {
-          'backend': 'docbook5',
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final doc = documentFromString(
+          '',
+          AsciidoctorOptions(
+            backend: 'docbook5',
+            templateDirs: [dir.path],
+            templateCache: false,
+          ),
+        );
         expect(doc.converter, isA<CompositeConverter>());
         expect(
           templateConverterFor(doc, 'paragraph').templates['paragraph'],
@@ -443,10 +431,10 @@ void main() {
               '{{content}}'
               '</aside>',
         });
-        final output = convertStringToEmbedded(input, {
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final output = convertStringToEmbedded(
+          input,
+          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+        );
         assertXpath('/*[@class="sect1"]/*[@class="sectionbody"]/p', output, 1);
         assertXpath('//aside', output, 1);
         assertXpath(
@@ -470,12 +458,15 @@ void main() {
           'paragraph.mustache': '<p>{{content}}</p>',
           'embedded.mustache': '{{content}}',
         });
-        final doc = documentFromString('content', {
-          'backend': 'html5-tweaks:html',
-          'standalone': false,
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final doc = documentFromString(
+          'content',
+          AsciidoctorOptions(
+            backend: 'html5-tweaks:html',
+            standalone: false,
+            templateDirs: [dir.path],
+            templateCache: false,
+          ),
+        );
         expect(doc.basebackend('html'), isTrue);
         expect(doc.backend, equals('html5-tweaks'));
         final converter = doc.converter as CompositeConverter;
@@ -497,11 +488,14 @@ void main() {
           'paragraph.mustache': '<p>{{content}}</p>',
           'embedded.mustache': '{{content}}',
         });
-        final output = convertStringToEmbedded('paragraph content', {
-          'backend': 'unknown',
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final output = convertStringToEmbedded(
+          'paragraph content',
+          AsciidoctorOptions(
+            backend: 'unknown',
+            templateDirs: [dir.path],
+            templateCache: false,
+          ),
+        );
         expect(output, equals('<p>paragraph content</p>'));
       });
       test('should use built-in global cache to cache templates', () {
@@ -514,12 +508,15 @@ void main() {
         final dir = makeTemplateDir({
           'paragraph.mustache': '<p>{{content}}</p>',
         });
-        documentFromString('hi', {'template_dir': dir.path});
+        documentFromString('hi', AsciidoctorOptions(templateDirs: [dir.path]));
         expect(TemplateCache.shared.scans, isNotEmpty);
         // Rewriting the file must not matter: the cached scan wins.
         File('${dir.path}/paragraph.mustache')
             .writeAsStringSync('<p>changed</p>');
-        final cached = documentFromString('hi', {'template_dir': dir.path});
+        final cached = documentFromString(
+          'hi',
+          AsciidoctorOptions(templateDirs: [dir.path]),
+        );
         expect(
           templateConverterFor(cached, 'paragraph').templates['paragraph'],
           equals('<p>{{content}}</p>'),
@@ -527,10 +524,10 @@ void main() {
         // template_cache: false bypasses the shared cache (fresh scan,
         // no shared writes) while conversion still works.
         final scansBefore = TemplateCache.shared.scans.length;
-        final uncached = documentFromString('hi', {
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final uncached = documentFromString(
+          'hi',
+          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+        );
         expect(
           templateConverterFor(uncached, 'paragraph').templates['paragraph'],
           equals('<p>changed</p>'),
@@ -547,10 +544,13 @@ void main() {
           'paragraph.mustache': '<p>{{content}}</p>',
         });
         final custom = TemplateCache();
-        final doc = documentFromString('hi', {
-          'template_dir': dir.path,
-          'template_cache': custom,
-        });
+        final doc = documentFromString(
+          'hi',
+          AsciidoctorOptions(
+            templateDirs: [dir.path],
+            templateCacheStore: custom,
+          ),
+        );
         expect(custom.scans, isNotEmpty);
         expect(
           custom.scans.values.first['paragraph'],
@@ -570,13 +570,12 @@ void main() {
         final dir = makeTemplateDir({
           'paragraph.mustache': '<p>{{content}}</p>',
         });
-        final doc = documentFromString('hi', {
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final doc = documentFromString(
+          'hi',
+          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+        );
         expect(doc.converter, isA<CompositeConverter>());
         expect(TemplateCache.shared.scans, isEmpty);
-        expect(TemplateCache.shared.templates, isEmpty);
       });
       test(
         'should load ERB templates using ERBTemplate if eruby is not set',
@@ -599,10 +598,10 @@ void main() {
           'paragraph.mustache': '<p>{{content}}</p>',
           'sidebar.mustache': '<aside>{{content}}</aside>',
         });
-        final doc = documentFromString('', {
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final doc = documentFromString(
+          '',
+          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+        );
         expect(doc.converter, isA<CompositeConverter>());
         final selected = templateConverterFor(doc, 'paragraph');
         expect(selected.templates['paragraph'], equals('<p>{{content}}</p>'));
@@ -621,12 +620,15 @@ void main() {
         final dir = makeTemplateDir({
           'paragraph.mustache': '<simpara>{{content}}</simpara>',
         });
-        final doc = documentFromString('', {
-          'backend': 'docbook5',
-          'template_dir': dir.path,
-          'template_cache': false,
-          'template_engine': 'mustache',
-        });
+        final doc = documentFromString(
+          '',
+          AsciidoctorOptions(
+            backend: 'docbook5',
+            templateDirs: [dir.path],
+            templateCache: false,
+            templateEngine: 'mustache',
+          ),
+        );
         expect(doc.converter, isA<CompositeConverter>());
         expect(
           templateConverterFor(doc, 'paragraph').templates['paragraph'],
@@ -647,11 +649,14 @@ void main() {
             (node, [opts]) => '<p>fn:${(node as Block).content()}</p>',
           );
           final dir = makeTemplateDir(<String, String>{});
-          final output = convertStringToEmbedded('Sample paragraph', {
-            'template_dir': dir.path,
-            'template_cache': false,
-            'template_engine': 'dart',
-          });
+          final output = convertStringToEmbedded(
+            'Sample paragraph',
+            AsciidoctorOptions(
+              templateDirs: [dir.path],
+              templateCache: false,
+              templateEngine: 'dart',
+            ),
+          );
           expect(output, contains('<p>fn:Sample paragraph</p>'));
           expect(output, isNot(contains('class="paragraph"')));
         },
@@ -675,12 +680,10 @@ void main() {
             'outline.mustache':
                 '<ul>{{#sections}}<li>{{title}}</li>{{/sections}}</ul>',
           });
-          final output =
-              documentFromString(input, {
-                    'template_dir': dir.path,
-                    'template_cache': false,
-                  }).convert()!
-                  as String;
+          final output = documentFromString(
+            input,
+            AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+          ).convert();
           assertXpath('//*[@id="toc"]/ul', output, 1);
           assertXpath('//*[@id="toc"]/ul[1]/li', output, 3);
           assertXpath(
@@ -710,44 +713,26 @@ void main() {
       test('should derive backend traits for the given backend', () {
         // Port of test/converter_test.rb: 'should derive backend traits for
         // the given backend'. Extra cases verified via `ruby -Ilib -e`.
+        (String, String, String, String?) traits(
+          String backend, [
+          String? basebackend,
+        ]) {
+          final derived = BackendTraits.derive(backend, basebackend);
+          return (
+            derived.basebackend,
+            derived.filetype,
+            derived.outfilesuffix,
+            derived.htmlsyntax,
+          );
+        }
+
+        expect(traits('dita2'), equals(('dita', 'dita', '.dita', null)));
+        expect(traits('html5'), equals(('html', 'html', '.html', 'html')));
         expect(
-          Converter.deriveBackendTraits('dita2'),
-          equals(<String, Object?>{
-            'basebackend': 'dita',
-            'filetype': 'dita',
-            'outfilesuffix': '.dita',
-          }),
+          traits('custom', 'html'),
+          equals(('html', 'html', '.html', 'html')),
         );
-        expect(
-          Converter.deriveBackendTraits(null),
-          equals(<String, Object?>{}),
-        );
-        expect(
-          Converter.deriveBackendTraits('html5'),
-          equals(<String, Object?>{
-            'basebackend': 'html',
-            'filetype': 'html',
-            'htmlsyntax': 'html',
-            'outfilesuffix': '.html',
-          }),
-        );
-        expect(
-          Converter.deriveBackendTraits('custom', 'html'),
-          equals(<String, Object?>{
-            'basebackend': 'html',
-            'filetype': 'html',
-            'htmlsyntax': 'html',
-            'outfilesuffix': '.html',
-          }),
-        );
-        expect(
-          Converter.deriveBackendTraits('manpage'),
-          equals(<String, Object?>{
-            'basebackend': 'manpage',
-            'filetype': 'man',
-            'outfilesuffix': '.man',
-          }),
-        );
+        expect(traits('manpage'), equals(('manpage', 'man', '.man', null)));
       });
 
       test('should use specified converter for current backend', () {
@@ -755,9 +740,10 @@ void main() {
         // for current backend'. Adapted: Dart passes a factory where Ruby
         // passes the class.
         const input = '= Document Title\n\npreamble\n\n== Section\n\ncontent\n';
-        final doc = documentFromString(input, {
-          'converter': CustomHtmlConverterA.new,
-        });
+        final doc = documentFromString(
+          input,
+          AsciidoctorOptions(converter: CustomHtmlConverterA('html5')),
+        );
         expect(doc.converter, isA<CustomHtmlConverterA>());
         expect(doc.attributes['filetype'], equals('html'));
         expect(doc.convert(), equals('document'));
@@ -767,10 +753,13 @@ void main() {
         // for specified backend'. Adapted: Dart passes a factory where
         // Ruby passes the class.
         const input = '= Document Title\n\npreamble\n\n== Section\n\ncontent\n';
-        final doc = documentFromString(input, {
-          'backend': 'text',
-          'converter': CustomTextConverterA.new,
-        });
+        final doc = documentFromString(
+          input,
+          AsciidoctorOptions(
+            backend: 'text',
+            converter: CustomTextConverterA('text'),
+          ),
+        );
         expect(doc.converter, isA<CustomTextConverterA>());
         expect(doc.attributes['filetype'], equals('text'));
         expect(doc.convert(), equals('document'));
@@ -790,17 +779,17 @@ void main() {
         expect(converter.convert(node), isNull);
         expect(logger.warns, hasLength(1));
         expect(
-          logger.warns.single.toString(),
+          logger.warns.single,
           startsWith(
             'missing convert handler for paragraph node in fizzbuzz backend (',
           ),
         );
-        expect(logger.warns.single.toString(), endsWith(')'));
-        expect(logger.warns.single.toString(), contains('FakeBaseConverter'));
+        expect(logger.warns.single, endsWith(')'));
+        expect(logger.warns.single, contains('FakeBaseConverter'));
         // An explicit transform names the transform, not the node.
         expect(converter.convert(node, 'document'), isNull);
         expect(
-          logger.warns.last.toString(),
+          logger.warns.last,
           startsWith(
             'missing convert handler for document node in fizzbuzz backend (',
           ),
@@ -815,9 +804,10 @@ void main() {
         final converterFactory = CustomFactory({
           'html5': CustomDocumentConverter.new,
         });
-        final doc = documentFromString(input, {
-          'converter_factory': converterFactory,
-        });
+        final doc = documentFromString(
+          input,
+          AsciidoctorOptions(converterFactory: converterFactory),
+        );
         expect(doc.converter, isA<CustomDocumentConverter>());
         expect(doc.attributes['filetype'], equals('html'));
         expect(doc.convert(), equals('document'));
@@ -830,13 +820,17 @@ void main() {
           Html5Converter.registerFor();
           addTearDown(Converter.unregisterAll);
           const input = 'image::sunset.jpg[]';
-          final converter = Converter.create('html5', const {
-            'htmlsyntax': 'xml',
-          })!;
-          final doc = documentFromString(input, {'converter': converter});
+          final converter = Converter.create(
+            'html5',
+            const ConverterOptions(htmlsyntax: 'xml'),
+          )!;
+          final doc = documentFromString(
+            input,
+            AsciidoctorOptions(converter: converter),
+          );
           expect(doc.converter, same(converter));
           expect(doc.attr('htmlsyntax'), equals('xml'));
-          final output = doc.convert(const {'standalone': false})! as String;
+          final output = doc.convert(standalone: false);
           expect(output, contains('<img src="sunset.jpg" alt="sunset"/>'));
         },
       );
@@ -846,27 +840,25 @@ void main() {
         // for backend'. Adapted: converts a directly-constructed node
         // instead of parsing a document.
         cleanGlobalRegistry();
-        final before = Converter.converters.length;
+        final before = Converter.registeredBackends.length;
         Converter.register(FakeConverter.new, const ['reg-backend']);
         expect(Converter.forBackend('reg-backend'), equals(FakeConverter.new));
-        final converters = Converter.converters;
-        expect(converters.length, before + 1);
-        expect(converters['reg-backend'], equals(FakeConverter.new));
+        expect(Converter.registeredBackends.length, before + 1);
+        expect(Converter.registeredBackends, contains('reg-backend'));
         final converter = Converter.create('reg-backend')!;
         expect(converter, isA<FakeConverter>());
         expect(converter.backend, 'reg-backend');
-        converter
-          ..baseBackend = 'text'
-          ..fileType = 'text'
-          ..outfileSuffix = '.fb';
-        expect(
-          converter.backendTraits(),
-          equals(<String, Object?>{
-            'basebackend': 'text',
-            'filetype': 'text',
-            'outfilesuffix': '.fb',
-          }),
+        converter.backendTraits = BackendTraits(
+          basebackend: 'text',
+          filetype: 'text',
+          outfilesuffix: '.fb',
         );
+        final traits = converter.backendTraits;
+        expect((
+          traits.basebackend,
+          traits.filetype,
+          traits.outfilesuffix,
+        ), equals(('text', 'text', '.fb')));
         expect(converter.convert(Block(null, 'paragraph')), 'fake content');
       });
 
@@ -887,20 +879,18 @@ void main() {
         cleanGlobalRegistry();
         expect(Converter.forBackend('reg-slides'), isNull);
         Converter.register(
-          (String backend, Map<String, Object?> opts) =>
-              FakeBaseConverter(backend, opts)..baseBackend = 'html',
+          (backend, opts) =>
+              FakeBaseConverter(backend, opts)
+                ..backendTraits = BackendTraits.derive(backend, 'html'),
           const ['reg-slides'],
         );
-        final converter = Converter.create('reg-slides')!;
-        expect(
-          converter.backendTraits(),
-          equals(<String, Object?>{
-            'basebackend': 'html',
-            'filetype': 'html',
-            'htmlsyntax': 'html',
-            'outfilesuffix': '.html',
-          }),
-        );
+        final traits = Converter.create('reg-slides')!.backendTraits;
+        expect((
+          traits.basebackend,
+          traits.filetype,
+          traits.htmlsyntax,
+          traits.outfilesuffix,
+        ), equals(('html', 'html', 'html', '.html')));
       });
 
       test(
@@ -943,17 +933,22 @@ void main() {
           final dir = makeTemplateDir({
             'paragraph.mustache': '<p>{{content}}</p>',
           });
-          final doc = documentFromString('paragraph', {
-            'backend': 'tmpl-less',
-            'template_dir': dir.path,
-            'template_cache': false,
-          });
+          final doc = documentFromString(
+            'paragraph',
+            AsciidoctorOptions(
+              backend: 'tmpl-less',
+              templateDirs: [dir.path],
+              templateCache: false,
+            ),
+          );
           expect(doc.converter, isA<TemplatelessConverter>());
           expect(
-            (doc.converter as TemplatelessConverter).supportsTemplates,
+            (doc.converter as TemplatelessConverter)
+                .backendTraits
+                .supportsTemplates,
             isFalse,
           );
-          final output = doc.convert()! as String;
+          final output = doc.convert();
           assertXpath(
             '//*[@class="paragraph"]/p[text()="paragraph"]',
             output,
@@ -970,7 +965,7 @@ void main() {
         // opts into the composite; the file template wins per
         // transform while the custom converter handles the rest.
         cleanGlobalRegistry();
-        Converter.register((String backend, Map<String, Object?> opts) {
+        Converter.register((backend, opts) {
           final converter = (FakeBaseConverter(backend, opts, {
             'document': (node, [opts]) =>
                 '<body>${(node as AbstractBlock).content()}</body>',
@@ -978,19 +973,22 @@ void main() {
                 '<body>${(node as AbstractBlock).content()}</body>',
             'paragraph': (node, [opts]) =>
                 '<div class="paragraph"><p>${(node as AbstractBlock).content()}</p></div>',
-          }))..supportsTemplates = true;
+          }))..backendTraits.supportsTemplates = true;
           return converter;
         }, const ['tmpl-wrapped']);
         final dir = makeTemplateDir({
           'paragraph.mustache': '<p>{{content}}</p>',
         });
-        final doc = documentFromString('paragraph', {
-          'backend': 'tmpl-wrapped',
-          'template_dir': dir.path,
-          'template_cache': false,
-        });
+        final doc = documentFromString(
+          'paragraph',
+          AsciidoctorOptions(
+            backend: 'tmpl-wrapped',
+            templateDirs: [dir.path],
+            templateCache: false,
+          ),
+        );
         expect(doc.converter, isA<CompositeConverter>());
-        final output = doc.convert()! as String;
+        final output = doc.convert();
         assertXpath('//*[@class="paragraph"]/p[text()="paragraph"]', output, 0);
         assertXpath('//body/p[text()="paragraph"]', output, 1);
       });
@@ -1033,8 +1031,7 @@ void main() {
         // directly-constructed node instead of parsing.
         cleanGlobalRegistry();
         Converter.register(
-          (String backend, Map<String, Object?> opts) =>
-              FakeConverter(backend, opts, 'foobaz content'),
+          (backend, opts) => FakeConverter(backend, opts, 'foobaz content'),
           const ['*'],
         );
         Converter.register(FakeConverter.new, const [
@@ -1043,7 +1040,7 @@ void main() {
         final catchAll = Converter.forBackend('catchall-all');
         expect(Converter.forBackend('catchall-whatever'), same(catchAll));
         expect(Converter.forBackend('reg-explicit'), isNot(same(catchAll)));
-        expect(Converter.converters['*'], isNull);
+        expect(Converter.registeredBackends, isNot(contains('*')));
         final converter = Converter.create('catchall-foobaz')!;
         expect(converter.convert(Block(null, 'paragraph')), 'foobaz content');
       });
@@ -1152,9 +1149,10 @@ void main() {
         // Port of test/converter_test.rb: 'can call read_svg_contents on
         // built-in HTML5 converter; should remove markup prior the root
         // svg element'.
-        final doc = documentFromString('image::circle.svg[]', {
-          'base_dir': fixturePath(''),
-        });
+        final doc = documentFromString(
+          'image::circle.svg[]',
+          AsciidoctorOptions(baseDir: fixturePath('')),
+        );
         final converter = doc.converter as Html5Converter;
         final result = converter.readSvgContents(doc.blocks[0], 'circle.svg');
         expect(result, isNotNull);
@@ -1163,27 +1161,11 @@ void main() {
     });
 
     group('Framework seams', () {
-      test('convert raises UnimplementedError by default', () {
-        // Mirrors Ruby's `NotImplementedError` from `Converter#convert`.
-        final converter = BareConverter('bare');
-        expect(
-          () => converter.convert(Block(null, 'paragraph')),
-          throwsA(
-            isA<UnimplementedError>().having(
-              (error) => error.message,
-              'message',
-              'BareConverter (backend: bare) must implement the convert method',
-            ),
-          ),
-        );
-      });
-
       test('create returns a registered instance as-is', () {
         // Verified via `ruby -Ilib -e` (`equal?` on the created instance).
         cleanGlobalRegistry();
         final instance = FakeConverter('seam-instance');
-        Converter.register(instance, const ['seam-instance']);
-        expect(Converter.forBackend('seam-instance'), same(instance));
+        Converter.registerInstance(instance, const ['seam-instance']);
         expect(Converter.create('seam-instance'), same(instance));
       });
 
@@ -1192,18 +1174,19 @@ void main() {
         () {
           cleanGlobalRegistry();
           String? seenBackend;
-          Map<String, Object?>? seenOpts;
-          Converter.register((String backend, Map<String, Object?> opts) {
+          ConverterOptions? seenOpts;
+          Converter.register((backend, opts) {
             seenBackend = backend;
             seenOpts = opts;
             return FakeConverter(backend, opts);
           }, const ['seam-factory']);
-          final created = Converter.create('seam-factory', const {
-            'htmlsyntax': 'xml',
-          })!;
+          final created = Converter.create(
+            'seam-factory',
+            const ConverterOptions(htmlsyntax: 'xml'),
+          )!;
           expect(created, isA<FakeConverter>());
           expect(seenBackend, 'seam-factory');
-          expect(seenOpts, equals(const {'htmlsyntax': 'xml'}));
+          expect(seenOpts?.htmlsyntax, equals('xml'));
         },
       );
 
@@ -1228,77 +1211,55 @@ void main() {
         });
         // Registered converter that does not support templates: returned
         // as-is, exactly as in Ruby (no composite wrapping).
-        final plain = Converter.create('seam-tmpl-plain', {
-          'template_dirs': [dir.path],
-        });
+        final plain = Converter.create(
+          'seam-tmpl-plain',
+          ConverterOptions(templateDirs: [dir.path]),
+        );
         expect(plain, isA<FakeConverter>());
         // Supporting converter: composite with the template converter
         // ahead, templates loaded from the directory.
         Converter.register(
-          (String backend, Map<String, Object?> opts) =>
-              FakeBaseConverter(backend, opts)..supportsTemplates = true,
+          (backend, opts) =>
+              FakeBaseConverter(backend, opts)
+                ..backendTraits.supportsTemplates = true,
           const ['seam-tmpl-supported'],
         );
-        final composite = Converter.create('seam-tmpl-supported', {
-          'template_dirs': [dir.path],
-        });
+        final composite = Converter.create(
+          'seam-tmpl-supported',
+          ConverterOptions(templateDirs: [dir.path]),
+        );
         expect(composite, isA<CompositeConverter>());
         final chain = composite! as CompositeConverter;
         expect(chain.converters[0], isA<TemplateConverter>());
         expect(chain.converters[1], isA<FakeBaseConverter>());
         expect(chain.findConverter('paragraph'), isA<TemplateConverter>());
         // Unknown backend: bare template converter with derived traits.
-        final bare = Converter.create('seam-tmpl-missing', {
-          'template_dirs': [dir.path],
-        });
+        final bare = Converter.create(
+          'seam-tmpl-missing',
+          ConverterOptions(templateDirs: [dir.path]),
+        );
         expect(bare, isA<TemplateConverter>());
         expect(
           (bare! as TemplateConverter).templates['paragraph'],
           equals('<p>{{content}}</p>'),
         );
-        // A lone String coerces to a one-element dir list.
-        final coerced = Converter.create('seam-tmpl-missing', {
-          'template_dirs': dir.path,
-        });
-        expect(
-          (coerced! as TemplateConverter).templates['paragraph'],
-          equals('<p>{{content}}</p>'),
-        );
         // delegate_backend names the fallback for unknown backends.
-        final delegated = Converter.create('seam-tmpl-missing', {
-          'template_dirs': [dir.path],
-          'delegate_backend': 'seam-tmpl-plain',
-        });
+        final delegated = Converter.create(
+          'seam-tmpl-missing',
+          ConverterOptions(
+            templateDirs: [dir.path],
+            delegateBackend: 'seam-tmpl-plain',
+          ),
+        );
         expect(delegated, isA<CompositeConverter>());
         // A delegate_backend without template_dirs stays inert.
         expect(
-          Converter.create('seam-tmpl-missing', const {
-            'delegate_backend': 'seam-tmpl-plain',
-          }),
+          Converter.create(
+            'seam-tmpl-missing',
+            const ConverterOptions(delegateBackend: 'seam-tmpl-plain'),
+          ),
           isNull,
         );
-      });
-
-      test('register rejects registrations of unknown shape', () {
-        cleanGlobalRegistry();
-        expect(
-          () => Converter.register('nope', const ['seam-garbage']),
-          throwsArgumentError,
-        );
-        expect(
-          () => CustomFactory(const {'seam-garbage': 42}),
-          throwsArgumentError,
-        );
-      });
-
-      test('converters returns a copy of the registry', () {
-        cleanGlobalRegistry();
-        Converter.register(FakeConverter.new, const ['seam-copy']);
-        final snapshot = Converter.converters;
-        snapshot['seam-copy'] = null;
-        snapshot['seam-injected'] = FakeConverter.new;
-        expect(Converter.forBackend('seam-copy'), equals(FakeConverter.new));
-        expect(Converter.converters.containsKey('seam-injected'), isFalse);
       });
 
       test('unregisterAll keeps provided registrations only', () {
@@ -1332,23 +1293,28 @@ void main() {
 
       test('supportsTemplates defaults to false', () {
         // Ruby default is `nil` (falsy); the port uses `false`.
-        expect(FakeConverter('seam-traits').supportsTemplates, isFalse);
-        expect(FakeBaseConverter('seam-traits').supportsTemplates, isFalse);
-      });
-
-      test('backendInfo aliases backendTraits', () {
-        final converter = FakeConverter('seam-info');
-        expect(converter.backendInfo(), equals(converter.backendTraits()));
+        expect(
+          FakeConverter('seam-traits').backendTraits.supportsTemplates,
+          isFalse,
+        );
+        expect(
+          FakeBaseConverter('seam-traits').backendTraits.supportsTemplates,
+          isFalse,
+        );
       });
 
       test('base dispatches to the registered handler for the node name', () {
         AbstractNode? seen;
-        final converter = FakeBaseConverter('seam-dispatch', const {}, {
-          'paragraph': (node, [opts]) {
-            seen = node;
-            return '<p>hi</p>';
+        final converter = FakeBaseConverter(
+          'seam-dispatch',
+          const ConverterOptions(),
+          {
+            'paragraph': (node, [opts]) {
+              seen = node;
+              return '<p>hi</p>';
+            },
           },
-        });
+        );
         final node = Block(null, 'paragraph');
         expect(converter.handles('paragraph'), isTrue);
         expect(converter.handles('sidebar'), isFalse);
@@ -1357,29 +1323,36 @@ void main() {
       });
 
       test('base passes opts to the handler only when non-null', () {
-        final seen = <Map<String, Object?>?>[];
-        final converter = FakeBaseConverter('seam-opts', const {}, {
-          'paragraph': (node, [opts]) {
-            seen.add(opts);
-            return 'ok';
+        final seen = <ConvertOptions?>[];
+        final converter = FakeBaseConverter(
+          'seam-opts',
+          const ConverterOptions(),
+          {
+            'paragraph': (node, [opts]) {
+              seen.add(opts);
+              return 'ok';
+            },
           },
-        });
+        );
         final node = Block(null, 'paragraph');
         expect(converter.convert(node), 'ok');
         expect(
-          converter.convert(node, 'paragraph', const {'outline': true}),
+          converter.convert(
+            node,
+            'paragraph',
+            const ConvertOptions(toclevels: 1),
+          ),
           'ok',
         );
-        expect(seen, [
-          isNull,
-          equals(const {'outline': true}),
-        ]);
+        expect(seen, [isNull, same(const ConvertOptions(toclevels: 1))]);
       });
 
       test('base honors an explicit transform over the node name', () {
-        final converter = FakeBaseConverter('seam-transform', const {}, {
-          'custom': (node, [opts]) => 'custom!',
-        });
+        final converter = FakeBaseConverter(
+          'seam-transform',
+          const ConverterOptions(),
+          {'custom': (node, [opts]) => 'custom!'},
+        );
         expect(
           converter.convert(Block(null, 'paragraph'), 'custom'),
           'custom!',
@@ -1409,12 +1382,12 @@ void main() {
     group('CompositeConverter', () {
       FakeBaseConverter paragraphConverter(String backend) => FakeBaseConverter(
         backend,
-        const {},
+        const ConverterOptions(),
         {'paragraph': (node, [opts]) => '<p>first</p>'},
       );
 
       FakeBaseConverter sidebarConverter(String backend) =>
-          FakeBaseConverter(backend, const {}, {
+          FakeBaseConverter(backend, const ConverterOptions(), {
             'paragraph': (node, [opts]) => '<p>second</p>',
             'sidebar': (node, [opts]) => '<aside/>',
           });
@@ -1430,30 +1403,41 @@ void main() {
 
       test('passes the transform and opts through to the delegate', () {
         String? seenTransform;
-        Map<String, Object?>? seenOpts;
-        final delegate = FakeBaseConverter('seam-passthrough', const {}, {
-          'paragraph': (node, [opts]) {
-            seenOpts = opts;
-            return 'ok';
+        ConvertOptions? seenOpts;
+        final delegate = FakeBaseConverter(
+          'seam-passthrough',
+          const ConverterOptions(),
+          {
+            'paragraph': (node, [opts]) {
+              seenOpts = opts;
+              return 'ok';
+            },
           },
-        });
+        );
         final composite = CompositeConverter('seam-passthrough', [delegate]);
         // A delegate that records the transform it was asked to convert.
         final recording = _RecordingConverter('seam-passthrough');
         final composite2 = CompositeConverter('seam-passthrough', [recording]);
         expect(
-          composite.convert(Block(null, 'paragraph'), 'paragraph', const {
-            'k': 'v',
-          }),
+          composite.convert(
+            Block(null, 'paragraph'),
+            'paragraph',
+            const ConvertOptions(sectnumlevels: 2),
+          ),
           'ok',
         );
-        expect(seenOpts, equals(const {'k': 'v'}));
-        composite2.convert(Block(null, 'paragraph'), 'paragraph', const {
-          'k': 'v',
-        });
+        expect(seenOpts, equals(const ConvertOptions(sectnumlevels: 2)));
+        composite2.convert(
+          Block(null, 'paragraph'),
+          'paragraph',
+          const ConvertOptions(sectnumlevels: 2),
+        );
         seenTransform = recording.seenTransform;
         expect(seenTransform, 'paragraph');
-        expect(recording.seenOpts, equals(const {'k': 'v'}));
+        expect(
+          recording.seenOpts,
+          equals(const ConvertOptions(sectnumlevels: 2)),
+        );
         expect(delegate.handles('paragraph'), isTrue);
       });
 
@@ -1502,15 +1486,17 @@ void main() {
 
       test('adopts the backend traits source', () {
         final source = FakeConverter('seam-source')
-          ..baseBackend = 'docbook'
-          ..fileType = 'xml'
-          ..outfileSuffix = '.xml';
+          ..backendTraits = BackendTraits(
+            basebackend: 'docbook',
+            filetype: 'xml',
+            outfilesuffix: '.xml',
+          );
         final composite = CompositeConverter('seam-adopt', [
           FakeConverter('seam-adopt'),
         ], backendTraitsSource: source);
         // Shared by reference, as in Ruby (`init_backend_traits` assigns).
-        expect(composite.backendTraits(), same(source.backendTraits()));
-        expect(composite.baseBackend, 'docbook');
+        expect(composite.backendTraits, same(source.backendTraits));
+        expect(composite.backendTraits.basebackend, 'docbook');
       });
 
       test('notifies ComposedAware delegates', () {
@@ -1544,10 +1530,10 @@ class _SelfRegisteringConverter extends ConverterBase {
   }
 
   @override
-  Object? convert(
+  String? convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) => 'self';
 }
 
@@ -1560,13 +1546,13 @@ class _RecordingConverter extends Converter {
   String? seenTransform;
 
   /// The last options seen by [convert].
-  Map<String, Object?>? seenOpts;
+  ConvertOptions? seenOpts;
 
   @override
-  Object? convert(
+  String? convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) {
     seenTransform = transform ?? node.nodeName;
     seenOpts = opts;
@@ -1586,4 +1572,11 @@ class _ComposedProbe extends Converter implements ComposedAware {
   void composed(CompositeConverter composite) {
     seen = composite;
   }
+
+  @override
+  String? convert(
+    AbstractNode node, [
+    String? transform,
+    ConvertOptions? opts,
+  ]) => null;
 }

@@ -18,54 +18,42 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/converter.dart';
-import 'package:asciidoctor/src/docbook5.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/list.dart';
-import 'package:asciidoctor/src/load.dart';
-import 'package:asciidoctor/src/section.dart';
-import 'package:asciidoctor/src/table.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Records log messages for assertions.
-class FakeLogger implements NodeLogger {
-  /// Messages by severity.
-  final List<Object?> warns = <Object?>[];
-  final List<Object?> errors = <Object?>[];
+class FakeLogger extends LoggerBase {
+  /// Creates a recording logger.
+  new() : super(Severity.warn);
+
+  /// Warning messages, in logging order.
+  final List<String> warns = <String>[];
+
+  /// Error messages, in logging order.
+  final List<String> errors = <String>[];
 
   @override
-  void debug(Object? message) {}
+  Severity? get maxSeverity => null;
 
   @override
-  void info(Object? message) {}
-
-  @override
-  void warn(Object? message) {
-    warns.add(message);
+  void add(Severity severity, LogMessage message) {
+    if (severity == Severity.warn) warns.add('$message');
+    if (severity == Severity.error) errors.add('$message');
   }
 
   @override
-  void error(Object? message) {
-    errors.add(message);
-  }
-
-  @override
-  void fatal(Object? message) {}
+  Future<void> close() async {}
 }
 
 /// Runs [body] with a recording logger installed.
 void usingMemoryLogger(void Function(FakeLogger logger) body) {
-  final saved = AbstractNode.currentLogger;
+  final saved = LoggerManager.logger;
   final logger = FakeLogger();
-  AbstractNode.currentLogger = logger;
+  LoggerManager.logger = logger;
   try {
     body(logger);
   } finally {
-    AbstractNode.currentLogger = saved;
+    LoggerManager.logger = saved;
   }
 }
 
@@ -134,10 +122,13 @@ class StubSection extends Section {
   new({
     AbstractBlock? parent,
     int? level,
-    Object? numbered = false,
-    Map<String, Object?>? attributes,
+    bool numbered = false,
+    Map<String, String>? attributes,
     this.stubTitle,
-  }) : super(parent, level, numbered, attributes);
+  }) : super(parent, level) {
+    this.numbered = numbered;
+    if (attributes != null) updateAttributes(attributes);
+  }
 
   /// The value [title] returns (`null` means [hasTitle] is false).
   final String? stubTitle;
@@ -180,25 +171,31 @@ class StubListBlock extends ListBlock {
 class StubCell extends Cell {
   /// Creates a stub cell with fixed [text] and [content].
   new(
-    super.column,
-    super.cellText, [
-    super.attributes,
-    super.opts,
+    Column? column,
+    String? cellText, {
+    CellSpec? spec = const CellSpec(),
     this.stubText,
-    this.stubContent,
-  ]);
+    this.stubParagraphs = const <String>[],
+    this.stubContent = '',
+  }) : super(column, cellText, spec);
 
   /// The value [text] returns.
   final String? stubText;
 
+  /// The value [paragraphs] returns.
+  final List<String> stubParagraphs;
+
   /// The value [content] returns.
-  final Object? stubContent;
+  final String stubContent;
 
   @override
-  String? get text => stubText;
+  String get text => stubText ?? '';
 
   @override
-  Object? content() => stubContent;
+  List<String> get paragraphs => stubParagraphs;
+
+  @override
+  String content() => stubContent;
 }
 
 /// A table returning a fixed title (avoids the substitutors wave).
@@ -244,7 +241,7 @@ class StubInline extends Inline {
 /// substitutable characters, for which the identity is byte-identical.
 class StubDocument extends Document {
   /// Creates a stub document (see [Document.new]).
-  new([super.data, super.options]);
+  new([super.source, super.options]);
 
   @override
   String subReplacements(String text) => text;
@@ -255,24 +252,21 @@ class StubDocument extends Document {
 
 /// Creates a document with a [Docbook5Converter] installed.
 ///
-/// [attributes] are assigned directly; [options] go to the constructor
-/// (`'safe'`, `'doctype'`, ...). When [plainSubs] is set, a [StubDocument]
-/// (identity substitutions) is returned.
+/// [attributes] are assigned directly; [options] go to the constructor.
+/// When [plainSubs] is set, a [StubDocument] (identity substitutions) is
+/// returned.
 Document makeDoc({
-  Map<String, Object?> attributes = const <String, Object?>{},
-  Map<String, Object?> options = const <String, Object?>{},
+  Map<String, String> attributes = const <String, String>{},
+  AsciidoctorOptions options = const AsciidoctorOptions(),
   bool plainSubs = false,
 }) {
-  final opts = <String, Object?>{
-    'backend': 'docbook5',
-    'standalone': true,
-    ...options,
-  };
-  final doc =
-      (plainSubs ? StubDocument(<String>[], opts) : Document(<String>[], opts))
-        ..converter = Docbook5Converter('docbook5')
-        ..attributes.addAll(attributes);
-  return doc;
+  final opts = options.copyWith(
+    backend: 'docbook5',
+    standalone: options.standalone ?? true,
+  );
+  return (plainSubs ? StubDocument(null, opts) : Document(null, opts))
+    ..converter = Docbook5Converter('docbook5')
+    ..attributes.addAll(attributes);
 }
 
 /// The [Docbook5Converter] installed on [doc].
@@ -282,14 +276,13 @@ Docbook5Converter convOf(Document doc) => doc.converter as Docbook5Converter;
 /// `document_from_string` test helper), for the tests that need real
 /// substitution output now that the parser and substitutors waves are
 /// merged.
-Document parseDoc(String src, [Map<String, Object?>? options]) {
-  final opts = <String, Object?>{
-    'backend': 'docbook5',
-    'standalone': true,
-    ...?options,
-  };
-  return Document(src, opts).parse();
-}
+Document parseDoc(
+  String src, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+]) => Document(
+  src,
+  options.copyWith(backend: 'docbook5', standalone: options.standalone ?? true),
+).parse();
 
 /// Finds the enclosing repository checkout directory.
 String _findRepoRoot() {
@@ -320,12 +313,12 @@ void setDocHeader(Document doc, String title) {
 StubBlock para(
   AbstractBlock parent, [
   String text = '',
-  Map<String, Object?> attributes = const <String, Object?>{},
+  Map<String, String> attributes = const <String, String>{},
   String? title,
 ]) => StubBlock(
   parent,
   'paragraph',
-  attributes: Map<String, Object?>.of(attributes),
+  attributes: Map<String, String>.of(attributes),
   stubbedContent: text,
   stubTitle: title,
 );
@@ -343,11 +336,11 @@ void main() {
     });
 
     test('backend traits mirror init_backend_traits', () {
-      final conv = Docbook5Converter('docbook5');
-      expect(conv.baseBackend, 'docbook');
-      expect(conv.fileType, 'xml');
-      expect(conv.outfileSuffix, '.xml');
-      expect(conv.supportsTemplates, isTrue);
+      final traits = Docbook5Converter('docbook5').backendTraits;
+      expect(traits.basebackend, 'docbook');
+      expect(traits.filetype, 'xml');
+      expect(traits.outfilesuffix, '.xml');
+      expect(traits.supportsTemplates, isTrue);
     });
 
     test('handles reports every template transform', () {
@@ -432,7 +425,7 @@ void main() {
           'sectnumlevels': '2',
         },
       );
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('<?asciidoc-toc maxdepth="1"?>\n'));
       expect(output, contains('<?asciidoc-numbered maxdepth="2"?>\n'));
     });
@@ -457,7 +450,7 @@ void main() {
 
     test('document id is deferred to the root tag', () {
       final doc = makeDoc(attributes: const {'noheader': ''})..id = 'mydoc';
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('xml:lang="en" xml:id="mydoc">\n'));
       expect(doc.id, 'mydoc');
     });
@@ -468,11 +461,11 @@ void main() {
       final block = StubBlock(
         doc,
         'paragraph',
-        contentFn: () => convOf(doc).convert(xref)! as String,
+        contentFn: () => convOf(doc).convert(xref)!,
       );
       doc.append(block);
       xref = Inline(block, 'anchor', type: 'xref');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('xml:lang="en" xml:id="__article-root__">\n'));
       expect(output, contains('<xref linkend="__article-root__"/>'));
       expect(doc.id, isNull);
@@ -516,7 +509,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Main Title: Sub Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains('<title>Main Title</title>\n<subtitle>Sub Title</subtitle>\n'),
@@ -529,14 +522,14 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('<date>2024-01-02</date>\n'));
     });
 
     test('docdate emits date unless reproducible', () {
       final doc = makeDoc(plainSubs: true);
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('<date>${doc.attr('docdate')}</date>\n'));
     });
 
@@ -551,7 +544,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains(
@@ -573,7 +566,7 @@ void main() {
           'author': 'John Doe',
           'firstname': 'John',
           'lastname': 'Doe',
-          'authorcount': 2,
+          'authorcount': '2',
           'author_2': 'Jane Roe',
           'firstname_2': 'Jane',
           'lastname_2': 'Roe',
@@ -582,7 +575,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('<authorgroup>\n'));
       expect(output, contains('<firstname>John</firstname>\n'));
       expect(output, contains('<firstname>Jane</firstname>\n'));
@@ -596,7 +589,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains(
@@ -611,7 +604,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains('<holder>Acme</holder>\n<year>2019-2020</year>\n'),
@@ -624,7 +617,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('<copyright>\n<holder>Acme Corp</holder>\n'));
       expect(output, isNot(contains('<year>')));
     });
@@ -635,7 +628,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('<orgname>Acme</orgname>\n'));
     });
 
@@ -648,7 +641,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains(
@@ -672,7 +665,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains(
@@ -687,7 +680,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(output, contains('<cover role="front"/>\n<cover role="back">\n'));
     });
 
@@ -699,12 +692,12 @@ void main() {
           'manvolnum': '1',
           'mansource': 'My Project',
           'manmanual': 'User Commands',
-          'mannames': ['mycmd', 'my-alias'],
+          'mannames': '',
           'manpurpose': 'do things',
         },
-        options: const {'doctype': 'manpage'},
+        options: const AsciidoctorOptions(doctype: 'manpage'),
         plainSubs: true,
-      );
+      )..mannames = ['mycmd', 'my-alias'];
       expect(
         convOf(doc).convert(doc),
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -729,10 +722,10 @@ void main() {
     test('manpage defaults source and manual to nbsp', () {
       final doc = makeDoc(
         attributes: const {'noheader': '', 'mantitle': 'mycmd'},
-        options: const {'doctype': 'manpage'},
+        options: const AsciidoctorOptions(doctype: 'manpage'),
         plainSubs: true,
       );
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains('<refmiscinfo class="source">&#160;</refmiscinfo>\n'),
@@ -761,7 +754,7 @@ void main() {
           'foo--bar - puts the foo in your bar\n';
       final doc = parseDoc(input);
       expect(doc.attr('mantitle'), equals(r'foo\--bar'));
-      final result = doc.convert()! as String;
+      final result = doc.convert();
       expect(result, contains('<title>foo--bar(1)</title>'));
       expect(result, contains('<refentrytitle>foo--bar</refentrytitle>'));
     });
@@ -780,7 +773,7 @@ void main() {
       )..style = 'abstract';
       doc.append(abstract);
       doc.append(para(doc, 'Body text'));
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains('<abstract>\n<simpara>Abstract text</simpara>\n</abstract>\n'),
@@ -811,7 +804,7 @@ void main() {
       preamble.append(abstract);
       doc.append(preamble);
       doc.append(para(doc, 'Body text'));
-      final output = convOf(doc).convert(doc)! as String;
+      final output = convOf(doc).convert(doc)!;
       expect(
         output,
         contains('<abstract>\n<simpara>Abstract text</simpara>\n</abstract>\n'),
@@ -841,28 +834,28 @@ void main() {
       // backend': the private `basic-docinfo.xml` lands in the header and
       // the shared `docinfo.xml` (with `{revnumber}` substituted) under
       // `docinfo1`.
-      final output =
-          convertFile('${_findRepoRoot()}/test/fixtures/basic.adoc', const {
-                'to_file': false,
-                'standalone': true,
-                'backend': 'docbook',
-                'safe': SafeMode.server,
-                'attributes': {'docinfo': ''},
-              })!
-              as String;
+      final output = loadFile(
+        '${_findRepoRoot()}/test/fixtures/basic.adoc',
+        options: const AsciidoctorOptions(
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo': ''},
+        ),
+      ).convert();
       expect(output, isNotEmpty);
       expect(output, contains('<copyright>'));
       expect(output, isNot(contains('<productname>')));
 
-      final sharedOutput =
-          convertFile('${_findRepoRoot()}/test/fixtures/basic.adoc', const {
-                'to_file': false,
-                'standalone': true,
-                'backend': 'docbook',
-                'safe': SafeMode.server,
-                'attributes': {'docinfo1': ''},
-              })!
-              as String;
+      final sharedOutput = loadFile(
+        '${_findRepoRoot()}/test/fixtures/basic.adoc',
+        options: const AsciidoctorOptions(
+          standalone: true,
+          backend: 'docbook',
+          safe: SafeMode.server,
+          attributes: {'docinfo1': ''},
+        ),
+      ).convert();
       expect(sharedOutput, isNotEmpty);
       expect(sharedOutput, contains('<productname>Asciidoctor™</productname>'));
       expect(sharedOutput, contains('<edition>1.0</edition>'));
@@ -874,7 +867,7 @@ void main() {
       // `backend: 'docbook'`; exercises the full document template in
       // `lib/asciidoctor/converter/docbook5.rb`.
       const input = '= Doc Title\nAuthor Name\n\nHello, *world*!\n';
-      final output = parseDoc(input).convert()! as String;
+      final output = parseDoc(input).convert();
       expect(output, contains('<?xml version="1.0" encoding="UTF-8"?>'));
       expect(output, contains('<article'));
       expect(output, contains('<title>Doc Title</title>'));
@@ -984,7 +977,9 @@ void main() {
     });
 
     test('manpage section maps to refsection', () {
-      final doc = makeDoc(options: const {'doctype': 'manpage'});
+      final doc = makeDoc(
+        options: const AsciidoctorOptions(doctype: 'manpage'),
+      );
       final section = StubSection(parent: doc, level: 1, stubTitle: 'Name')
         ..sectname = 'section';
       section.append(para(section, 'mycmd - do things'));
@@ -998,7 +993,9 @@ void main() {
     });
 
     test('manpage synopsis section maps to refsynopsisdiv', () {
-      final doc = makeDoc(options: const {'doctype': 'manpage'});
+      final doc = makeDoc(
+        options: const AsciidoctorOptions(doctype: 'manpage'),
+      );
       final section = StubSection(parent: doc, level: 1, stubTitle: 'Synopsis')
         ..sectname = 'synopsis';
       expect(
@@ -1104,7 +1101,7 @@ void main() {
         ..id = id;
       final terms = [StubListItem(list, 'term')];
       final dd = StubListItem(list, 'description');
-      list.items.add([terms, dd]);
+      list.entries.add(DlistEntry(terms, dd));
       return list;
     }
 
@@ -1172,10 +1169,7 @@ void main() {
     test('term without description', () {
       final doc = makeDoc();
       final list = ListBlock(doc, 'dlist');
-      list.items.add([
-        [StubListItem(list, 'lonely')],
-        null,
-      ]);
+      list.entries.add(DlistEntry([StubListItem(list, 'lonely')]));
       expect(
         convOf(doc).convert(list),
         '<variablelist>\n'
@@ -1193,10 +1187,7 @@ void main() {
       final list = ListBlock(doc, 'dlist');
       final dd = StubListItem(list)..text = null;
       dd.append(para(dd, 'nested'));
-      list.items.add([
-        [StubListItem(list, 'term')],
-        dd,
-      ]);
+      list.entries.add(DlistEntry([StubListItem(list, 'term')], dd));
       expect(
         convOf(doc).convert(list),
         '<variablelist>\n'
@@ -1239,7 +1230,7 @@ void main() {
       final list = dlist(doc, style: 'horizontal', title: 'Terms')
         ..attributes['labelwidth'] = '30'
         ..attributes['itemwidth'] = '70';
-      final output = convOf(doc).convert(list)! as String;
+      final output = convOf(doc).convert(list)!;
       expect(
         output,
         startsWith(
@@ -1375,7 +1366,7 @@ void main() {
         'image',
         attributes: const {'target': 'diagram.png', 'scaledwidth': '50%'},
       );
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(
         output,
         contains('<imagedata fileref="diagram.png" width="50%"/>\n'),
@@ -1389,7 +1380,7 @@ void main() {
         'image',
         attributes: const {'target': 'diagram.png', 'scale': '80'},
       );
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(
         output,
         contains('<imagedata fileref="diagram.png" scale="80"/>\n'),
@@ -1684,7 +1675,7 @@ void main() {
 
     test('abstract in book without doctitle warns and drops content', () {
       usingMemoryLogger((logger) {
-        final doc = makeDoc(options: const {'doctype': 'book'});
+        final doc = makeDoc(options: const AsciidoctorOptions(doctype: 'book'));
         final node = StubBlock(
           doc,
           'open',
@@ -1702,7 +1693,7 @@ void main() {
     });
 
     test('partintro in book part', () {
-      final doc = makeDoc(options: const {'doctype': 'book'});
+      final doc = makeDoc(options: const AsciidoctorOptions(doctype: 'book'));
       final part = StubSection(parent: doc, level: 0)..sectname = 'part';
       final node = Block(part, 'open', contentModel: 'compound')
         ..style = 'partintro'
@@ -1869,7 +1860,7 @@ void main() {
     });
 
     test('preamble in book uses preface', () {
-      final doc = makeDoc(options: const {'doctype': 'book'});
+      final doc = makeDoc(options: const AsciidoctorOptions(doctype: 'book'));
       final node = Block(doc, 'preamble', contentModel: 'compound');
       node.append(para(node, 'content'));
       expect(
@@ -1955,23 +1946,30 @@ void main() {
     StubTable table(
       Document doc, {
       String? title,
-      Map<String, Object?> attributes = const <String, Object?>{},
+      Map<String, String> attributes = const <String, String>{},
     }) {
       // NOTE the Table constructor only reads widths from its attributes
       // (as in Ruby); the remaining attributes are assigned directly.
-      final node = StubTable(doc, const {}, stubTitle: title);
+      final node = StubTable(doc, <String, String>{}, stubTitle: title);
       node.attributes.addAll(attributes);
-      node.createColumns([
-        {'width': 1},
-        {'width': 1},
-      ]);
+      node.createColumns([const ColumnSpec(), const ColumnSpec()]);
       final head = [
-        StubCell(node.columns[0], 'Name', const {}, null, 'Name', ['Name']),
-        StubCell(node.columns[1], 'Value', const {}, null, 'Value', ['Value']),
+        StubCell(
+          node.columns[0],
+          'Name',
+          stubText: 'Name',
+          stubParagraphs: ['Name'],
+        ),
+        StubCell(
+          node.columns[1],
+          'Value',
+          stubText: 'Value',
+          stubParagraphs: ['Value'],
+        ),
       ];
       final body = [
-        StubCell(node.columns[0], 'a', const {}, null, 'a', ['a']),
-        StubCell(node.columns[1], 'b', const {}, null, 'b', ['b']),
+        StubCell(node.columns[0], 'a', stubText: 'a', stubParagraphs: ['a']),
+        StubCell(node.columns[1], 'b', stubText: 'b', stubParagraphs: ['b']),
       ];
       node.rows.head.add(head);
       node.rows.body.add(body);
@@ -2006,7 +2004,7 @@ void main() {
 
     test('table without title uses informaltable', () {
       final doc = makeDoc();
-      final output = convOf(doc).convert(table(doc))! as String;
+      final output = convOf(doc).convert(table(doc))!;
       expect(output, startsWith('<informaltable frame="all"'));
       expect(output, endsWith('</informaltable>'));
       expect(output, isNot(contains('<title>')));
@@ -2014,17 +2012,15 @@ void main() {
 
     test('frame ends maps to topbot', () {
       final doc = makeDoc();
-      final output =
-          convOf(doc).convert(table(doc, attributes: const {'frame': 'ends'}))!
-              as String;
+      final output = convOf(doc)
+          .convert(table(doc, attributes: const {'frame': 'ends'}))!;
       expect(output, contains('frame="topbot"'));
     });
 
     test('grid none disables seps', () {
       final doc = makeDoc();
-      final output =
-          convOf(doc).convert(table(doc, attributes: const {'grid': 'none'}))!
-              as String;
+      final output = convOf(doc)
+          .convert(table(doc, attributes: const {'grid': 'none'}))!;
       expect(output, contains('rowsep="0" colsep="0"'));
     });
 
@@ -2033,7 +2029,7 @@ void main() {
       final node = table(doc, attributes: const {'orientation': 'landscape'})
         ..setOption('pgwide')
         ..setOption('unbreakable');
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(output, contains(' pgwide="1" frame="all"'));
       expect(output, contains(' orient="land">\n'));
       expect(output, contains('<?dbfo keep-together="always"?>\n'));
@@ -2042,7 +2038,7 @@ void main() {
     test('width emits table-width processing instructions', () {
       final doc = makeDoc();
       final node = table(doc, attributes: const {'width': '80%'});
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(output, contains('<?dbhtml table-width="80%"?>\n'));
       expect(output, contains('<?dbfo table-width="80%"?>\n'));
       expect(output, contains('<?dblatex table-width="80%"?>\n'));
@@ -2050,17 +2046,19 @@ void main() {
 
     test('cell spans', () {
       final doc = makeDoc();
-      final node = (StubTable(doc, const {}))
-        ..createColumns([
-          {'width': 1},
-          {'width': 1},
-        ]);
+      final node = (StubTable(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec(), const ColumnSpec()]);
       final cell =
-          StubCell(node.columns[0], 'wide', const {}, null, 'wide', ['wide'])
+          StubCell(
+              node.columns[0],
+              'wide',
+              stubText: 'wide',
+              stubParagraphs: ['wide'],
+            )
             ..colspan = 2
             ..rowspan = 2;
       node.rows.body.add([cell]);
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(
         output,
         contains(
@@ -2071,19 +2069,22 @@ void main() {
 
     test('header and literal cell styles', () {
       final doc = makeDoc();
-      final node = (StubTable(doc, const {}))
-        ..createColumns([
-          {'width': 1},
-          {'width': 1},
-        ]);
-      final header = StubCell(node.columns[0], 'h', const {}, null, 'h', [
-        'h1',
-        'h2',
-      ])..style = 'header';
-      final literal = StubCell(node.columns[1], 'l', const {}, null, 'l', ['l'])
-        ..style = 'literal';
+      final node = (StubTable(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec(), const ColumnSpec()]);
+      final header = StubCell(
+        node.columns[0],
+        'h',
+        stubText: 'h',
+        stubParagraphs: ['h1', 'h2'],
+      )..style = 'header';
+      final literal = StubCell(
+        node.columns[1],
+        'l',
+        stubText: 'l',
+        stubParagraphs: ['l'],
+      )..style = 'literal';
       node.rows.body.add([header, literal]);
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(
         output,
         contains(
@@ -2098,38 +2099,32 @@ void main() {
 
     test('asciidoc cell style uses converted content', () {
       final doc = makeDoc();
-      final node = (StubTable(doc, const {}))
-        ..createColumns([
-          {'width': 1},
-        ]);
+      final node = (StubTable(doc, <String, String>{}))
+        ..createColumns([const ColumnSpec()]);
       final cell = StubCell(
         node.columns[0],
         'a',
-        const {},
-        null,
-        'a',
-        '<simpara>a</simpara>',
+        stubText: 'a',
+        stubContent: '<simpara>a</simpara>',
       )..style = 'asciidoc';
       node.rows.body.add([cell]);
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(output, contains('<simpara>a</simpara></entry>\n'));
     });
 
     test('cellbgcolor emits dbfo processing instruction', () {
       final doc = makeDoc(attributes: const {'cellbgcolor': '#fff'});
-      final output = convOf(doc).convert(table(doc))! as String;
+      final output = convOf(doc).convert(table(doc))!;
       expect(output, contains('<?dbfo bgcolor="#fff"?></entry>\n'));
     });
 
     test('table without body rows warns', () {
       usingMemoryLogger((logger) {
         final doc = makeDoc();
-        final node = (StubTable(doc, const {}))
-          ..createColumns([
-            {'width': 1},
-          ]);
+        final node = (StubTable(doc, <String, String>{}))
+          ..createColumns([const ColumnSpec()]);
         node.rows.head.add([
-          StubCell(node.columns[0], 'h', const {}, null, 'h', ['h']),
+          StubCell(node.columns[0], 'h', stubText: 'h', stubParagraphs: ['h']),
         ]);
         convOf(doc).convert(node);
         expect(logger.warns.single, 'tables must have at least one body row');
@@ -2471,7 +2466,7 @@ void main() {
     test('icon image', () {
       final doc = makeDoc();
       final node = Inline(para(doc), 'image', type: 'icon', target: 'note');
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(
         output,
         contains('<imagedata fileref="./images/icons/note.png"/>\n'),
@@ -2491,7 +2486,7 @@ void main() {
         type: 'image',
         target: 'img.png',
       );
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(output, startsWith('<link xl:href="https://example.org">'));
       expect(output, contains(' contentwidth="100"/>\n'));
     });
@@ -2504,7 +2499,7 @@ void main() {
         attributes: const {'link': 'self'},
         target: 'img.png',
       );
-      final output = convOf(doc).convert(node)! as String;
+      final output = convOf(doc).convert(node)!;
       expect(output, startsWith('<link xl:href="self">'));
     });
   });
@@ -2526,13 +2521,7 @@ void main() {
 
     test('single term', () {
       final doc = makeDoc();
-      final node = Inline(
-        para(doc),
-        'indexterm',
-        attributes: const {
-          'terms': ['cats'],
-        },
-      );
+      final node = Inline(para(doc), 'indexterm', terms: ['cats']);
       expect(
         convOf(doc).convert(node),
         '<indexterm>\n<primary>cats</primary>\n</indexterm>',
@@ -2541,13 +2530,7 @@ void main() {
 
     test('two terms', () {
       final doc = makeDoc();
-      final node = Inline(
-        para(doc),
-        'indexterm',
-        attributes: const {
-          'terms': ['cats', 'big'],
-        },
-      );
+      final node = Inline(para(doc), 'indexterm', terms: ['cats', 'big']);
       expect(
         convOf(doc).convert(node),
         '<indexterm>\n<primary>cats</primary><secondary>big</secondary>\n</indexterm>',
@@ -2559,9 +2542,7 @@ void main() {
       final node = Inline(
         para(doc),
         'indexterm',
-        attributes: const {
-          'terms': ['cats', 'big', 'lions'],
-        },
+        terms: ['cats', 'big', 'lions'],
       );
       expect(
         convOf(doc).convert(node),
@@ -2579,13 +2560,7 @@ void main() {
 
     test('two terms with promotion', () {
       final doc = makeDoc(attributes: const {'indexterm-promotion-option': ''});
-      final node = Inline(
-        para(doc),
-        'indexterm',
-        attributes: const {
-          'terms': ['cats', 'big'],
-        },
-      );
+      final node = Inline(para(doc), 'indexterm', terms: ['cats', 'big']);
       expect(
         convOf(doc).convert(node),
         '<indexterm>\n'
@@ -2602,10 +2577,8 @@ void main() {
       final node = Inline(
         para(doc),
         'indexterm',
-        attributes: const {
-          'terms': ['cats'],
-          'see': 'felines',
-        },
+        attributes: const {'see': 'felines'},
+        terms: ['cats'],
       );
       expect(
         convOf(doc).convert(node),
@@ -2618,10 +2591,8 @@ void main() {
       final node = Inline(
         para(doc),
         'indexterm',
-        attributes: const {
-          'terms': ['cats'],
-          'see-also': ['dogs', 'birds'],
-        },
+        terms: ['cats'],
+        seeAlso: ['dogs', 'birds'],
       );
       expect(
         convOf(doc).convert(node),
@@ -2637,25 +2608,13 @@ void main() {
   group('convertInlineKbd', () {
     test('single key', () {
       final doc = makeDoc();
-      final node = Inline(
-        para(doc),
-        'kbd',
-        attributes: const {
-          'keys': ['Enter'],
-        },
-      );
+      final node = Inline(para(doc), 'kbd', keys: ['Enter']);
       expect(convOf(doc).convert(node), '<keycap>Enter</keycap>');
     });
 
     test('key combination', () {
       final doc = makeDoc();
-      final node = Inline(
-        para(doc),
-        'kbd',
-        attributes: const {
-          'keys': ['Ctrl', 'S'],
-        },
-      );
+      final node = Inline(para(doc), 'kbd', keys: ['Ctrl', 'S']);
       expect(
         convOf(doc).convert(node),
         '<keycombo><keycap>Ctrl</keycap><keycap>S</keycap></keycombo>',
@@ -2669,7 +2628,8 @@ void main() {
       final node = Inline(
         para(doc),
         'menu',
-        attributes: const {'menu': 'File', 'submenus': <String>[]},
+        attributes: const {'menu': 'File'},
+        submenus: <String>[],
       );
       expect(convOf(doc).convert(node), '<guimenu>File</guimenu>');
     });
@@ -2679,11 +2639,8 @@ void main() {
       final node = Inline(
         para(doc),
         'menu',
-        attributes: const {
-          'menu': 'File',
-          'submenus': <String>[],
-          'menuitem': 'Open',
-        },
+        attributes: const {'menu': 'File', 'menuitem': 'Open'},
+        submenus: <String>[],
       );
       expect(
         convOf(doc).convert(node),
@@ -2696,11 +2653,8 @@ void main() {
       final node = Inline(
         para(doc),
         'menu',
-        attributes: const {
-          'menu': 'File',
-          'submenus': ['Recent'],
-          'menuitem': 'doc.adoc',
-        },
+        attributes: const {'menu': 'File', 'menuitem': 'doc.adoc'},
+        submenus: ['Recent'],
       );
       expect(
         convOf(doc).convert(node),

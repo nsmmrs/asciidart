@@ -1,8 +1,7 @@
 /// Port of `test/helpers_test.rb`.
 library;
 
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Stand-in for a namespaced application class (cf. `Asciidoctor::Document`).
@@ -85,111 +84,12 @@ void main() {
       );
     });
 
-    group('Type Resolution', () {
-      test('should get class for top-level class name', () {
-        final clazz = Helpers.classForName('String');
-        expect(clazz, equals(String));
-      });
-
-      test('should get class for class name in module', () {
-        Helpers.registerClass('TestModule::TestDocument', TestDocument);
-        final clazz = Helpers.classForName('TestModule::TestDocument');
-        expect(clazz, equals(TestDocument));
-      });
-
-      test('should get class for class name resolved from root', () {
-        final clazz = Helpers.classForName('::String');
-        expect(clazz, equals(String));
-      });
-
-      test('should raise exception if cannot find class for name', () {
-        expect(
-          () => Helpers.classForName('InvalidModule::InvalidClass'),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              'Could not resolve class for name: '
-                  'InvalidModule::InvalidClass',
-            ),
-          ),
-        );
-      });
-
-      test('should raise exception if constant name is invalid', () {
-        expect(
-          () => Helpers.classForName('foobar'),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              'Could not resolve class for name: foobar',
-            ),
-          ),
-        );
-      });
-
-      test('should raise exception if class not found in scope', () {
-        expect(
-          () => Helpers.classForName('Asciidoctor::Extensions::String'),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              'Could not resolve class for name: '
-                  'Asciidoctor::Extensions::String',
-            ),
-          ),
-        );
-      });
-
-      test('should raise exception if name resolves to module', () {
-        // No type is registered under a module-only name, so resolution
-        // fails with the same message Ruby uses for non-class constants.
-        expect(
-          () => Helpers.classForName('Asciidoctor::Extensions'),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              'Could not resolve class for name: Asciidoctor::Extensions',
-            ),
-          ),
-        );
-      });
-
-      test('should resolve class if class is given', () {
-        final clazz = Helpers.resolveClass(TestDocument);
-        expect(clazz, equals(TestDocument));
-      });
-
-      test('should resolve class if class from string', () {
-        Helpers.registerClass('TestModule::TestDocument', TestDocument);
-        final clazz = Helpers.resolveClass('TestModule::TestDocument');
-        expect(clazz, equals(TestDocument));
-      });
-
-      test('should not resolve class if not in scope', () {
-        expect(
-          () => Helpers.resolveClass('Asciidoctor::Extensions::String'),
-          throwsA(
-            isA<ArgumentError>().having(
-              (e) => e.message,
-              'message',
-              'Could not resolve class for name: '
-                  'Asciidoctor::Extensions::String',
-            ),
-          ),
-        );
-      });
-    });
-
     group('Require Library', () {
       test(
         'should report message in error thrown by Helpers.requireLibrary',
         () {
           expect(
-            () => Helpers.requireLibrary('does-not-exist'),
+            () => Helpers.requireLibrary('does-not-exist', 'does-not-exist'),
             throwsA(
               isA<StateError>().having(
                 (e) => e.message,

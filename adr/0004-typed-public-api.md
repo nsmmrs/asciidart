@@ -51,3 +51,31 @@ and throughout the internals.
 ## Implementation
 
 Tracked as TASK-67yl6b and its follow-up cards.
+
+## Outcome
+
+Implemented in TASK-67yl6b. `dart analyze --fatal-infos` runs with
+`strict-casts`, `strict-inference` and `strict-raw-types`, and
+`test/static_typing_test.dart` fails the suite on any use of the `dynamic`
+type in `lib/`, `bin/`, `tool/`, `test/` or `benchmark/`, and on `Object?` in
+`lib/` outside the documented boundaries: the Mustache template context and
+render input, the `Map` overrides of `BlockAttributes`, and JavaScript
+interop.
+
+Where the result differs from the decisions above:
+
+- **Positional attributes stay in the attribute map** under the string keys
+  `'1'`, `'2'`, ... rather than a separate list. The parser, substitutions,
+  extension attribute resolution and templates all address them by
+  position name, exactly as Asciidoctor does, and a second container would
+  have to be kept in sync with the map.
+- **Block conversion returns `String?`.** `null` means "no output", which
+  differs from the empty string in the DocBook converter (compact lists drop
+  `null` children but keep empty ones). `Document.convert`, the top-level
+  `convert` and inline conversion return `String`.
+- **Extensions cannot opt a document out of the global groups.** Ruby's
+  `extensions: false` has no typed counterpart; a document uses the
+  registry passed as `extensionRegistry`, else one built from the
+  `extensions` callback, else the global groups.
+- **The Ruby-only CLI options are gone** (`-r`, `-I`, `--eruby`, `-w`): they
+  have no meaning without runtime library loading.

@@ -11,18 +11,14 @@
 /// so content/title/attr values exercise the real parser and substitutors.
 library;
 
-import 'package:asciidoctor/src/composite.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/html5.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/template.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Parses [src] into an embedded HTML5 document.
-Document parseDoc(String src) => Document(src, const <String, Object?>{
-  'backend': 'html5',
-  'standalone': false,
-}).parse();
+Document parseDoc(String src) => Document(
+  src,
+  const AsciidoctorOptions(backend: 'html5', standalone: false),
+).parse();
 
 /// In-memory [TemplateLoader] resolving synchronously.
 class MapLoader implements TemplateLoader {
@@ -108,7 +104,7 @@ void main() {
       final paragraph = parseDoc('*bold*').blocks[0];
       final converter = TemplateConverter(
         'html5',
-        const <String, Object?>{},
+        const ConverterOptions(),
         TemplateRegistry(htmlEscapeValues: true),
       )..register('paragraph', '<p>{{content}}</p>');
       expect(
@@ -235,14 +231,15 @@ void main() {
 
     test('functions receive convert opts', () {
       final paragraph = parseDoc('hi').blocks[0];
-      Map<String, Object?>? seen;
+      ConvertOptions? seen;
+      const opts = ConvertOptions(toclevels: 1);
       TemplateConverter('html5')
         ..registerFunction('paragraph', (node, [opts]) {
           seen = opts;
           return 'FN';
         })
-        ..convert(paragraph, 'paragraph', const {'x': 1});
-      expect(seen, {'x': 1});
+        ..convert(paragraph, 'paragraph', opts);
+      expect(seen, same(opts));
     });
 
     test('functions win over templates for the same transform', () {
@@ -289,7 +286,7 @@ void main() {
       final doc = parseDoc('hi');
       final converter = TemplateConverter('html5')
         ..register('document', '\n<div>{{content}}</div>\n');
-      final result = converter.convert(doc)! as String;
+      final result = converter.convert(doc)!;
       expect(result.startsWith('<div>'), isTrue);
       expect(result.endsWith('</div>'), isTrue);
     });
@@ -297,15 +294,22 @@ void main() {
     test('convert opts become template locals', () {
       final paragraph = parseDoc('hi').blocks[0];
       final converter = TemplateConverter('html5')
-        ..register('paragraph', '{{extra}}');
+        ..register('paragraph', '{{toclevels}}');
       expect(
-        converter.convert(paragraph, 'paragraph', const {'extra': 'X'}),
-        'X',
+        converter.convert(
+          paragraph,
+          'paragraph',
+          const ConvertOptions(toclevels: 3),
+        ),
+        '3',
       );
     });
 
     test('does not claim supportsTemplates (mirrors Ruby)', () {
-      expect(TemplateConverter('html5').supportsTemplates, isFalse);
+      expect(
+        TemplateConverter('html5').backendTraits.supportsTemplates,
+        isFalse,
+      );
     });
   });
 
@@ -323,8 +327,8 @@ void main() {
     test('composite adopts the fallback backend traits', () {
       final composite = TemplateConverter('html5')
           .withFallback(Html5Converter('html5'));
-      expect(composite.outfileSuffix, '.html');
-      expect(composite.baseBackend, 'html');
+      expect(composite.backendTraits.outfilesuffix, '.html');
+      expect(composite.backendTraits.basebackend, 'html');
     });
 
     test('converterFor caches the template for its transform', () {

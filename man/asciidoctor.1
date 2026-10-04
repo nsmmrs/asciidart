@@ -115,12 +115,6 @@ Output an embeddable document, which excludes the header, the footer, and everyt
 This option is useful for producing documents that can be inserted into an external template.
 .RE
 .sp
-\fB\-I, \-\-load\-path\fP=\fIDIRECTORY\fP
-.RS 4
-Accepted for compatibility; has no effect, because this build cannot load libraries at runtime.
-This option may be specified more than once.
-.RE
-.sp
 \fB\-n, \-\-section\-numbers\fP
 .RS 4
 Auto\-number section titles.
@@ -142,13 +136,6 @@ Source directory.
 Currently only used if the destination directory is also specified.
 Used to preserve the directory structure of files converted within this directory in the destination directory.
 If specified, the directory is resolved relative to the working directory.
-.RE
-.sp
-\fB\-r, \-\-require\fP=\fILIBRARY\fP
-.RS 4
-Accepted for compatibility; because this build cannot load libraries at runtime, any library fails to load and processing stops.
-Compile extensions into a custom binary instead (see \fBasciidoctor init\-config\fP).
-This option may be specified more than once.
 .RE
 .sp
 \fB\-s, \-\-no\-header\-footer\fP
@@ -178,7 +165,7 @@ If this option is not set, the program exits with a zero exit code even if warni
 .sp
 \fB\-q, \-\-quiet\fP
 .RS 4
-Silence application log messages and script warnings.
+Silence application log messages.
 .RE
 .sp
 \fB\-\-trace\fP
@@ -189,11 +176,6 @@ Include backtrace information when reporting errors.
 \fB\-v, \-\-verbose\fP
 .RS 4
 Sets log level to DEBUG so application messages logged at INFO or DEBUG level are printed to stderr.
-.RE
-.sp
-\fB\-w, \-\-warnings\fP
-.RS 4
-Turn on script warnings (applies to executed code).
 .RE
 .sp
 \fB\-t, \-\-timings\fP
