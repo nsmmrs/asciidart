@@ -65,7 +65,7 @@ import 'inline.dart';
 import 'rx.dart';
 
 /// Matches XML special characters. Port of `SpecialCharsRx`.
-final RegExp specialCharsRx = RegExp(r'[<&>]');
+final RegExp specialCharsRx = RegExp('[<&>]');
 
 /// Replacement table for XML special characters. Port of `SpecialCharsTr`.
 const Map<String, String> specialCharsTr = <String, String>{
@@ -77,8 +77,8 @@ const Map<String, String> specialCharsTr = <String, String>{
 /// Detects whether text may contain quoted text, keyed by compat mode.
 /// Port of `QuotedTextSniffRx`.
 final Map<bool, RegExp> quotedTextSniffRx = <bool, RegExp>{
-  false: RegExp(r'[*_`#^~]'),
-  true: RegExp(r"[*'_+#^~]"),
+  false: RegExp('[*_`#^~]'),
+  true: RegExp("[*'_+#^~]"),
 };
 
 /// Substitutions for a bare special-characters pass. Port of `BASIC_SUBS`.

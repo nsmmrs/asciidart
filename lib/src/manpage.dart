@@ -77,10 +77,10 @@ final RegExp _malformedEscapedMacroRx = RegExp(
 final RegExp _mockMacroRx = RegExp('</?($_esc\\\\[^>]+)>');
 
 /// Matches an em-dash character reference (port of `EmDashCharRefRx`).
-final RegExp _emDashCharRefRx = RegExp(r'&#8212;(?:&#8203;)?');
+final RegExp _emDashCharRefRx = RegExp('&#8212;(?:&#8203;)?');
 
 /// Matches an ellipsis character reference (port of `EllipsisCharRefRx`).
-final RegExp _ellipsisCharRefRx = RegExp(r'&#8230;(?:&#8203;)?');
+final RegExp _ellipsisCharRefRx = RegExp('&#8230;(?:&#8203;)?');
 
 /// Matches wrapped indentation (port of `WrappedIndentRx`; `CG_BLANK` is
 /// [cgBlank]).
@@ -97,7 +97,7 @@ final RegExp _pcdataFilterRx = RegExp(
 
 /// Matches runs of two or more spaces (port of the inline `/(^)?  +/`
 /// pattern in `manify`).
-final RegExp _preserveSpacesRx = RegExp(r'(^)?  +', multiLine: true);
+final RegExp _preserveSpacesRx = RegExp('(^)?  +', multiLine: true);
 
 /// How [_manify] handles whitespace (port of the `:whitespace` option).
 enum _WhitespaceMode {

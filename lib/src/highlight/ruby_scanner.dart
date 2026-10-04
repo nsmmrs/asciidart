@@ -105,7 +105,7 @@ const String _methodNameOperator =
     r'\*\*?|[-+~]@?|[/%&|^`]|\[\]=?|<<|>>|<=?>?|>=?|===?|=~|![~=@]?';
 
 /// Method-name suffixes (port of `METHOD_SUFFIX`).
-const String _methodSuffix = r'(?:[?!]|=(?![~>]|=(?!>)))';
+const String _methodSuffix = '(?:[?!]|=(?![~>]|=(?!>)))';
 
 /// Extended method names (port of `METHOD_NAME_EX`).
 const String _methodNameEx = '(?:$_ident$_methodSuffix?|$_methodNameOperator)';
@@ -138,9 +138,9 @@ const String _methodNameOrSymbol = '(?:$_methodNameEx|$_symbol)';
 /// Port of `DECIMAL`, `OCTAL`, `HEXADECIMAL`, `BINARY`, `EXPONENT`,
 /// `FLOAT_SUFFIX`, `FLOAT_OR_INT` and `NUMERIC`.
 const String _decimal = r'\d+(?:_\d+)*';
-const String _octal = r'0_?[0-7]+(?:_[0-7]+)*';
-const String _hexadecimal = r'0x[0-9A-Fa-f]+(?:_[0-9A-Fa-f]+)*';
-const String _binary = r'0b[01]+(?:_[01]+)*';
+const String _octal = '0_?[0-7]+(?:_[0-7]+)*';
+const String _hexadecimal = '0x[0-9A-Fa-f]+(?:_[0-9A-Fa-f]+)*';
+const String _binary = '0b[01]+(?:_[01]+)*';
 const String _exponent = '[eE][+-]?$_decimal';
 const String _floatSuffix = '(?:$_exponent|\\.$_decimal(?:$_exponent)?)';
 const String _floatOrInt = '$_decimal(?:$_floatSuffix())?';
@@ -148,7 +148,7 @@ const String _numeric =
     '(?:(?=0)(?:$_octal|$_hexadecimal|$_binary)|$_floatOrInt)';
 
 /// Port of `SIMPLE_ESCAPE`, `CONTROL_META_ESCAPE`, `ESCAPE` and `CHARACTER`.
-const String _simpleEscape = r'[abefnrstv]|[0-7]{1,3}|x[0-9A-Fa-f]{1,2}|.';
+const String _simpleEscape = '[abefnrstv]|[0-7]{1,3}|x[0-9A-Fa-f]{1,2}|.';
 const String _controlMetaEscape =
     '(?:M-|C-|c)(?:\\\\(?:M-|C-|c))*(?:[^\\\\]|\\\\(?:$_simpleEscape))?';
 const String _escape = '(?:$_controlMetaEscape|$_simpleEscape)';
@@ -157,7 +157,7 @@ const String _character = '\\?(?:[^\\s\\\\]|\\\\(?:$_escape))';
 /// Port of `HEREDOC_OPEN` (groups: 1 = `-`/`~`, 2 = bare delimiter,
 /// 3 = quote, 4 = quoted delimiter).
 const String _heredocOpen =
-    r'<<([-~])?(?:([A-Za-z_0-9]+)|(["'
+    '<<([-~])?(?:([A-Za-z_0-9]+)|(["'
     "'"
     r'`/])([^\n]*?)\3)';
 
@@ -183,8 +183,7 @@ const String _valueFollows =
 
 /// Port of `FANCY_STRING_START` (groups: 1 = kind letter or empty,
 /// 2 = delimiter).
-const String _fancyStringStart =
-    r'%([iIqQrswWx]|(?![a-zA-Z0-9]))([^a-zA-Z0-9])';
+const String _fancyStringStart = '%([iIqQrswWx]|(?![a-zA-Z0-9]))([^a-zA-Z0-9])';
 
 /// Port of `StringState.simple_key_pattern` for `'`, with the original's
 /// atomic `(?>...)` unrolled into `A*(?:B A*)*` (same language, linear
@@ -220,10 +219,10 @@ final RegExp _newlineRe = RegExp(r'\n', unicode: true);
 final RegExp _backslashNewlineRe = RegExp(r'\\\n', unicode: true);
 
 /// An end-of-line comment (away from the start of a line).
-final RegExp _commentRe = RegExp(r'#.*', unicode: true);
+final RegExp _commentRe = RegExp('#.*', unicode: true);
 
 /// A `#` comment at the start of a line (group 1: the `!` of a shebang).
-final RegExp _commentBolRe = RegExp(r'#(!)?.*', unicode: true);
+final RegExp _commentBolRe = RegExp('#(!)?.*', unicode: true);
 
 /// Embedded documentation and `__END__` data sections.
 final RegExp _rubydocOrDataRe = RegExp(
@@ -264,7 +263,7 @@ final RegExp _stringsRe = RegExp(
 final RegExp _instanceVariableRe = RegExp(_instanceVariable, unicode: true);
 
 /// A forward slash (opens a regexp when a value is expected).
-final RegExp _slashRe = RegExp(r'/', unicode: true);
+final RegExp _slashRe = RegExp('/', unicode: true);
 
 /// A numeric literal, with an optional sign when a value is expected
 /// (group 1 is set exactly for floats, via the `()` in `FLOAT_OR_INT`).
@@ -294,7 +293,7 @@ final RegExp _characterRe = RegExp(_character, unicode: true, dotAll: true);
 final RegExp _percentRe = RegExp(r'%=?|<(?:<|=>?)?|\?', unicode: true);
 
 /// A backtick (opens a shell string).
-final RegExp _backtickRe = RegExp(r'`', unicode: true);
+final RegExp _backtickRe = RegExp('`', unicode: true);
 
 /// A global variable (port of `GLOBAL_VARIABLE`).
 final RegExp _globalVariableRe = RegExp(_globalVariable, unicode: true);
@@ -303,12 +302,12 @@ final RegExp _globalVariableRe = RegExp(_globalVariable, unicode: true);
 final RegExp _classVariableRe = RegExp(_classVariable, unicode: true);
 
 /// A colon that does not start `::` (completes an ident `key:` token).
-final RegExp _colonNotColonRe = RegExp(r':(?!:)', unicode: true);
+final RegExp _colonNotColonRe = RegExp(':(?!:)', unicode: true);
 
 /// A plain colon (completes a complete-string `key:` token; unlike the
 /// ident rule, the original scans `/:/` here, so `"s"::sym` keys on the
 /// first colon and leaves `:sym` for the symbol rule).
-final RegExp _colonRe = RegExp(r':', unicode: true);
+final RegExp _colonRe = RegExp(':', unicode: true);
 
 /// A value-shaped token after spaces (port of `VALUE_FOLLOWS`).
 final RegExp _valueFollowsRe = RegExp(
@@ -330,10 +329,10 @@ final RegExp _dotOrColonColonRe = RegExp(r'\.|::', unicode: true);
 final RegExp _moduleNameRe = RegExp('(?:$_ident::)*$_ident', unicode: true);
 
 /// A double left angle (the `<<` of `class << self`).
-final RegExp _lshiftRe = RegExp(r'<<', unicode: true);
+final RegExp _lshiftRe = RegExp('<<', unicode: true);
 
 /// A comma (separates `undef` names).
-final RegExp _undefCommaRe = RegExp(r',', unicode: true);
+final RegExp _undefCommaRe = RegExp(',', unicode: true);
 
 /// An `alias` pair (groups 1-3: name, spaces, name).
 final RegExp _aliasRe = RegExp(
@@ -345,11 +344,11 @@ final RegExp _aliasRe = RegExp(
 final RegExp _escapeRe = RegExp(_escape, unicode: true, dotAll: true);
 
 /// Regexp modifiers (port of `REGEXP_MODIFIERS`; matches empty).
-final RegExp _regexpModifiersRe = RegExp(r'[mousenix]*', unicode: true);
+final RegExp _regexpModifiersRe = RegExp('[mousenix]*', unicode: true);
 
 /// The `rational` and `imaginary` numeric suffixes.
-final RegExp _rSuffixRe = RegExp(r'r', unicode: true);
-final RegExp _iSuffixRe = RegExp(r'i', unicode: true);
+final RegExp _rSuffixRe = RegExp('r', unicode: true);
+final RegExp _iSuffixRe = RegExp('i', unicode: true);
 
 /// A quoted hash key that continues after the opening quote (port of
 /// `StringState.simple_key_pattern`).
@@ -368,7 +367,7 @@ final RegExp _simpleKeyDoubleRe = RegExp(
 final RegExp _lparenRe = RegExp(r'\(', unicode: true);
 
 /// The letter `e` in either case (tests for a float exponent).
-final RegExp _eLetterRe = RegExp(r'e', unicode: true, caseSensitive: false);
+final RegExp _eLetterRe = RegExp('e', unicode: true, caseSensitive: false);
 
 // ---------------------------------------------------------------------------
 // Word lists (port of `Ruby::Patterns` tables).

@@ -1229,7 +1229,7 @@ List<String> _glob(String pattern) {
   final isWindows = Platform.isWindows;
   var root = '';
   var rest = pattern;
-  final drive = RegExp(r'^[A-Za-z]:/').firstMatch(pattern);
+  final drive = RegExp('^[A-Za-z]:/').firstMatch(pattern);
   if (rest.startsWith('/')) {
     root = '/';
     rest = rest.substring(1);

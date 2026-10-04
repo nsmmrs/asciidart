@@ -213,7 +213,7 @@ void main() {
 
     test('reports error if input file does not exist', () {
       final invoker = invokeCli([], 'missing_file.adoc');
-      expect(invoker.readError(), matches(RegExp(r'input file .* is missing')));
+      expect(invoker.readError(), matches(RegExp('input file .* is missing')));
       expect(invoker.code, equals(1));
     });
 
@@ -225,7 +225,7 @@ void main() {
         'arguments',
         'sample.adoc',
       ], null);
-      expect(invoker.readError(), matches(RegExp(r'input file .* is missing')));
+      expect(invoker.readError(), matches(RegExp('input file .* is missing')));
       expect(invoker.code, equals(1));
     });
   });

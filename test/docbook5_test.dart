@@ -1538,14 +1538,14 @@ void main() {
         doc,
         'stem',
         contentModel: 'raw',
-        stubbedContent: r'x^2',
+        stubbedContent: 'x^2',
       )..style = 'latexmath';
       expect(
         convOf(doc).convert(node),
         '<informalequation>\n'
-        r'<alt><![CDATA[x^2]]></alt>'
+        '<alt><![CDATA[x^2]]></alt>'
         '\n'
-        r'<mathphrase><![CDATA[x^2]]></mathphrase>'
+        '<mathphrase><![CDATA[x^2]]></mathphrase>'
         '\n'
         '</informalequation>',
       );
@@ -1573,16 +1573,16 @@ void main() {
         doc,
         'stem',
         contentModel: 'raw',
-        stubbedContent: r'x^2',
+        stubbedContent: 'x^2',
         stubTitle: 'Equation',
       )..style = 'latexmath';
       expect(
         convOf(doc).convert(node),
         '<equation>\n'
         '<title>Equation</title>\n'
-        r'<alt><![CDATA[x^2]]></alt>'
+        '<alt><![CDATA[x^2]]></alt>'
         '\n'
-        r'<mathphrase><![CDATA[x^2]]></mathphrase>'
+        '<mathphrase><![CDATA[x^2]]></mathphrase>'
         '\n'
         '</equation>',
       );
@@ -2802,7 +2802,7 @@ void main() {
 
     test('latexmath passes source to alt and mathphrase', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'quoted', text: r'x^2', type: 'latexmath');
+      final node = Inline(para(doc), 'quoted', text: 'x^2', type: 'latexmath');
       expect(
         convOf(doc).convert(node),
         '<inlineequation><alt><![CDATA[x^2]]></alt><mathphrase><![CDATA[x^2]]></mathphrase></inlineequation>',

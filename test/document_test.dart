@@ -318,9 +318,9 @@ void _checkWellFormedXml(String source) {
 
   void checkText(String text, int start) {
     if (text.contains(']]>')) failAt(']]> in text', start);
-    for (final match in RegExp(r'&').allMatches(text)) {
+    for (final match in RegExp('&').allMatches(text)) {
       final rest = text.substring(match.start);
-      if (!RegExp(r'^&#(?:[0-9]+|x[0-9A-Fa-f]+);|^&(amp|lt|gt|quot|apos);')
+      if (!RegExp('^&#(?:[0-9]+|x[0-9A-Fa-f]+);|^&(amp|lt|gt|quot|apos);')
           .hasMatch(rest)) {
         failAt('invalid entity reference', start + match.start);
       }
@@ -1024,7 +1024,7 @@ class _XPathParser {
 
   /// Consumes a 1-based position, returning `null` when absent.
   int? consumeNumber() {
-    final match = RegExp(r'[0-9]+').matchAsPrefix(source, offset);
+    final match = RegExp('[0-9]+').matchAsPrefix(source, offset);
     if (match == null) return null;
     offset = match.end;
     return int.parse(match.group(0)!);
@@ -1267,7 +1267,7 @@ class _CssParser {
     }
   }
 
-  bool _isNameStart(String char) => RegExp(r'[A-Za-z_-]').hasMatch(char);
+  bool _isNameStart(String char) => RegExp('[A-Za-z_-]').hasMatch(char);
 }
 
 /// Lenient HTML/XML parser producing [XmlNode] trees.

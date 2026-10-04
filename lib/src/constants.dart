@@ -406,15 +406,15 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
     'strong',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r';:}])(?:' +
+          ';:}])(?:' +
           quoteAttributeListRxt +
           r')?\*(\S|\S' +
           ccAll +
           r'*?\S)\*(?!' +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -423,15 +423,15 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
     'double',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r';:}])(?:' +
+          ';:}])(?:' +
           quoteAttributeListRxt +
           r')?"`(\S|\S' +
           ccAll +
           r'*?\S)`"(?!' +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -440,15 +440,15 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
     'single',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r';:`}])(?:' +
+          ';:`}])(?:' +
           quoteAttributeListRxt +
           r")?'`(\S|\S" +
           ccAll +
           r"*?\S)`'(?!" +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -456,7 +456,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'monospaced',
     'unconstrained',
-    RegExp(r'\\?(?:' + quoteAttributeListRxt + r')?``(' + ccAll + r'+?)``'),
+    RegExp(r'\\?(?:' + quoteAttributeListRxt + ')?``(' + ccAll + '+?)``'),
   ),
   QuoteSub(
     'monospaced',
@@ -471,21 +471,21 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'emphasis',
     'unconstrained',
-    RegExp(r'\\?(?:' + quoteAttributeListRxt + r')?__(' + ccAll + r'+?)__'),
+    RegExp(r'\\?(?:' + quoteAttributeListRxt + ')?__(' + ccAll + '+?)__'),
   ),
   QuoteSub(
     'emphasis',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r';:}])(?:' +
+          ';:}])(?:' +
           quoteAttributeListRxt +
           r')?_(\S|\S' +
           ccAll +
           r'*?\S)_(?!' +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -493,21 +493,21 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'mark',
     'unconstrained',
-    RegExp(r'\\?(?:' + quoteAttributeListRxt + r')?##(' + ccAll + r'+?)##'),
+    RegExp(r'\\?(?:' + quoteAttributeListRxt + ')?##(' + ccAll + '+?)##'),
   ),
   QuoteSub(
     'mark',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r'&;:}])(?:' +
+          '&;:}])(?:' +
           quoteAttributeListRxt +
           r')?#(\S|\S' +
           ccAll +
           r'*?\S)#(?!' +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -537,15 +537,15 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
     'double',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r';:}])(?:' +
+          ';:}])(?:' +
           quoteAttributeListRxt +
           r')?``(\S|\S' +
           ccAll +
           r"*?\S)''(?!" +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -554,15 +554,15 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
     'emphasis',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r';:}])(?:' +
+          ';:}])(?:' +
           quoteAttributeListRxt +
           r")?'(\S|\S" +
           ccAll +
           r"*?\S)'(?!" +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -571,15 +571,15 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
     'single',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r';:}])(?:' +
+          ';:}])(?:' +
           quoteAttributeListRxt +
           r')?`(\S|\S' +
           ccAll +
           r"*?\S)'(?!" +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -593,15 +593,15 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
     'monospaced',
     'constrained',
     RegExp(
-      r'(^|[^' +
+      '(^|[^' +
           ccWord +
-          r';:}])(?:' +
+          ';:}])(?:' +
           quoteAttributeListRxt +
           r')?\+(\S|\S' +
           ccAll +
           r'*?\S)\+(?!' +
           cgWord +
-          r')',
+          ')',
       multiLine: true,
       unicode: true,
     ),
@@ -649,14 +649,14 @@ final List<Replacement> replacements = <Replacement>[
     'none',
   ),
   Replacement(
-    RegExp(r'(' + cgWord + r')\\?--(?=' + cgWord + r')', unicode: true),
+    RegExp('(' + cgWord + r')\\?--(?=' + cgWord + ')', unicode: true),
     '&#8212;&#8203;',
     'leading',
   ),
   Replacement(RegExp(r'\\?\.\.\.'), '&#8230;&#8203;', 'none'),
   Replacement(RegExp(r"\\?`'"), '&#8217;', 'none'),
   Replacement(
-    RegExp(r'(' + cgAlnum + r")\\?'(?=" + cgAlpha + r')', unicode: true),
+    RegExp('(' + cgAlnum + r")\\?'(?=" + cgAlpha + ')', unicode: true),
     '&#8217;',
     'leading',
   ),

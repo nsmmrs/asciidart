@@ -497,7 +497,7 @@ void main() {
       expect(par.invoker.code, equals(0));
       // Per-file reports in input order in both modes.
       for (final result in [seq, par]) {
-        final files = RegExp(r'Input file: (.*)')
+        final files = RegExp('Input file: (.*)')
             .allMatches(result.err)
             .map((m) => m.group(1))
             .toList();

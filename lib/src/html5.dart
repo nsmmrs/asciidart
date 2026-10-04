@@ -66,7 +66,7 @@ String _repeat(String value, int count) =>
 final RegExp _dropAnchorRx = RegExp(r'<(?:a\b[^>]*|/a)>');
 
 /// Matches leading section-title anchors (port of `LeadingAnchorsRx`).
-final RegExp _leadingAnchorsRx = RegExp(r'^(?:<a id="[^"]+"></a>)+');
+final RegExp _leadingAnchorsRx = RegExp('^(?:<a id="[^"]+"></a>)+');
 
 /// Matches stem line breaks (port of `StemBreakRx`).
 final RegExp _stemBreakRx = RegExp(r' *\\\n(?:\\\?\n)*|\n\n+');

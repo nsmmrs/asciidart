@@ -2278,8 +2278,8 @@ double _rubyToDouble(String value) {
   final text = value.trimLeft();
   if (text.isEmpty) return 0.0;
   final lower = text.toLowerCase();
-  final signedInf = RegExp(r'^[+-]?inf');
-  final signedNan = RegExp(r'^[+-]?nan');
+  final signedInf = RegExp('^[+-]?inf');
+  final signedNan = RegExp('^[+-]?nan');
   if (signedInf.hasMatch(lower)) {
     return text.startsWith('-') ? double.negativeInfinity : double.infinity;
   }

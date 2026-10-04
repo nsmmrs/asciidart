@@ -1300,8 +1300,8 @@ void main() {
         'a&gt;',
         ';',
       ]);
-      expect(groupsOf(inlineLinkRx, r'"https://x.io[]"'), [
-        r'"https://x.io[]',
+      expect(groupsOf(inlineLinkRx, '"https://x.io[]"'), [
+        '"https://x.io[]',
         '"',
         null,
         'https://',
@@ -1465,7 +1465,7 @@ void main() {
         '"File &gt; New"',
         'File &gt; New',
       ]);
-      expect(groupsOf(inlineMenuRx, r'"A&gt;B"'), isNull);
+      expect(groupsOf(inlineMenuRx, '"A&gt;B"'), isNull);
       expect(groupsOf(inlineMenuRx, 'File &gt; New'), isNull);
     });
 
