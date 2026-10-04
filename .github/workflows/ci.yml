@@ -65,7 +65,9 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install asciidoctor gem (parity oracle)
-      run: gem install asciidoctor -v 2.0.26 --no-document
+      # coderay must be present so the oracle highlights the CodeRay fixtures
+      # the way the Dart port does.
+      run: gem install asciidoctor -v 2.0.26 --no-document && gem install coderay pygments.rb --no-document
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
