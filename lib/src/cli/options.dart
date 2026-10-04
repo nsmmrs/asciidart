@@ -1081,6 +1081,18 @@ List<String> _glob(String pattern) {
           ..add(base)
           ..addAll(_directoriesUnder(root, base));
       }
+    } else if (!_hasMagic(segment)) {
+      // A literal segment is joined as written rather than matched against
+      // a listing, which would miss names that only resolve, such as
+      // Windows short names (`RUNNER~1`).
+      final literal = segment.replaceAllMapped(
+        RegExp(r'\\(.)'),
+        (match) => match[1]!,
+      );
+      for (final base in candidates) {
+        final relative = base.isEmpty ? literal : '$base/$literal';
+        if (_entityExists(_joinRoot(root, relative))) next.add(relative);
+      }
     } else {
       final matcher = _segmentMatcher(segment, isWindows);
       for (final base in candidates) {
