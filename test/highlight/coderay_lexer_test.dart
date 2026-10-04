@@ -13,10 +13,9 @@
 /// adapter passes when the block has no `highlight` attribute.)
 library;
 
-import 'package:test/test.dart';
-
 import 'package:asciidoctor/src/highlight/coderay_lexer.dart';
 import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:test/test.dart';
 
 /// Highlights [source] as Ruby through the real lexer backend.
 String highlightRuby(

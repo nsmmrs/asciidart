@@ -48,7 +48,6 @@ import 'extensions.dart';
 import 'helpers.dart';
 import 'highlight/syntax_highlighter.dart';
 import 'html5.dart';
-import 'timings.dart';
 import 'inline.dart';
 import 'manpage.dart';
 import 'parser.dart';
@@ -57,6 +56,7 @@ import 'reader.dart';
 import 'rx.dart';
 import 'section.dart';
 import 'substitutors.dart' as substitutors;
+import 'timings.dart';
 import 'version.dart';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.

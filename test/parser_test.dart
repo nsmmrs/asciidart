@@ -4,12 +4,11 @@
 /// attribute maps use `int` positional keys exactly like the Ruby hashes.
 library;
 
-import 'package:test/test.dart';
-
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/reader.dart';
+import 'package:test/test.dart';
 
 /// Creates an unparsed document (port of `empty_document`).
 Document emptyDocument([Map<String, Object?> options = const {}]) =>
