@@ -23,6 +23,8 @@
 /// the split fragments, `\p{Alpha}` → `\p{Alphabetic}`).
 library;
 
+import 'dart:io';
+
 import 'package:asciidoctor/src/constants.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:test/test.dart';
@@ -913,6 +915,58 @@ void main() {
       expect(apply(5, 'wait...'), equals('wait&#8230;&#8203;'));
       expect(apply(8, 'a -&gt; b'), equals('a &#8594; b'));
       expect(apply(0, '(C) 2024'), equals('&#169; 2024'));
+    });
+  });
+
+  group('rule guards', () {
+    // The substitutors skip a rule whose guard is absent from the text, so
+    // every match a rule can make must contain its guard. Check that over
+    // the fixture corpus (raw and XML-escaped, since replacements see
+    // escaped text) plus hand-picked edge cases.
+    final corpus = <String>[
+      for (final file in Directory('test/fixtures').listSync(recursive: true))
+        if (file is File && file.path.endsWith('.adoc'))
+          file.readAsStringSync(),
+      File('data/reference/syntax.adoc').readAsStringSync(),
+      File('benchmark/sample-data/mdbasics.adoc').readAsStringSync(),
+      r'\**x** [role]*x* *x* "`x`" ',
+      "'`x`' ``x`` `x` __x__ _x_ ##x## #x# ^x^ ~x~ ++x++ +x+ ``x'' 'x'",
+      r'a <- b <= c => d -> e \(C) (R) (TM) a -- b a--b \... `',
+      r"it's `' it\'s",
+      r'\-&gt; &amp;amp;',
+    ];
+    final texts = [
+      ...corpus,
+      for (final text in corpus)
+        text
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;'),
+    ];
+
+    void checkGuard(String name, RegExp pattern, String guard) {
+      var matched = 0;
+      for (final text in texts) {
+        for (final match in pattern.allMatches(text)) {
+          matched++;
+          expect(match.group(0), contains(guard), reason: name);
+        }
+      }
+      expect(matched, greaterThan(0), reason: '$name never matched');
+    }
+
+    test('every quote match contains its guard', () {
+      for (final compat in [false, true]) {
+        for (final (i, sub) in quoteSubs[compat]!.indexed) {
+          checkGuard('quoteSubs[$compat][$i]', sub.pattern, sub.guard);
+        }
+      }
+    });
+
+    test('every replacement match contains its guard', () {
+      for (final (i, rule) in replacements.indexed) {
+        checkGuard('replacements[$i]', rule.pattern, rule.guard);
+      }
     });
   });
 

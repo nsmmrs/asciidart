@@ -458,6 +458,7 @@ String subQuotes(AbstractNode node, String text) {
   if (!quotedTextSniffRx[compat]!.hasMatch(text)) return text;
   var result = text;
   for (final sub in quoteSubs[compat]!) {
+    if (!result.contains(sub.guard)) continue;
     result = result.replaceAllMapped(
       sub.pattern,
       (match) =>
@@ -764,6 +765,7 @@ String subReplacements(String text) {
   if (!replaceableTextRx.hasMatch(text)) return text;
   var result = text;
   for (final replacement in replacements) {
+    if (!result.contains(replacement.guard)) continue;
     result = result.replaceAllMapped(
       replacement.pattern,
       (match) => doReplacement(

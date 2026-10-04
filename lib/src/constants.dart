@@ -375,10 +375,11 @@ const Map<String, String> intrinsicAttributes = <String, String>{
 /// a [scope] (`'constrained'` or `'unconstrained'`), and the [pattern]
 /// that matches it.
 ///
-/// Ruby stores each rule as a `[type_symbol, scope_symbol, regexp]` triple.
+/// Ruby stores each rule as a `[type_symbol, scope_symbol, regexp]` triple;
+/// the [guard] is a Dart-side addition that lets callers skip the pattern.
 class QuoteSub {
-  /// Creates a rule with [type], [scope] and [pattern].
-  const new(this.type, this.scope, this.pattern);
+  /// Creates a rule with [type], [scope], [pattern] and [guard].
+  const new(this.type, this.scope, this.pattern, this.guard);
 
   /// The quote type (`'strong'`, `'emphasis'`, `'monospaced'`, ...).
   final String type;
@@ -388,6 +389,12 @@ class QuoteSub {
 
   /// The pattern matching the quoted span.
   final RegExp pattern;
+
+  /// A literal every match of [pattern] contains (the opening delimiter).
+  ///
+  /// Text without it cannot match, so the (comparatively slow) regex scan
+  /// is skipped; the result is identical either way.
+  final String guard;
 }
 
 /// Quoted-text substitution rules for normal mode (`QUOTE_SUBS`false``).
@@ -407,6 +414,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       '$ccAll'
       r'+?)\*\*',
     ),
+    '**',
   ),
   QuoteSub(
     'strong',
@@ -420,6 +428,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    '*',
   ),
   QuoteSub(
     'double',
@@ -433,6 +442,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    '"`',
   ),
   QuoteSub(
     'single',
@@ -446,6 +456,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    "'`",
   ),
   QuoteSub(
     'monospaced',
@@ -454,6 +465,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       r'\\?(?:'
       '$quoteAttributeListRxt)?``($ccAll+?)``',
     ),
+    '``',
   ),
   QuoteSub(
     'monospaced',
@@ -464,6 +476,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    '`',
   ),
   QuoteSub(
     'emphasis',
@@ -472,6 +485,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       r'\\?(?:'
       '$quoteAttributeListRxt)?__($ccAll+?)__',
     ),
+    '__',
   ),
   QuoteSub(
     'emphasis',
@@ -485,6 +499,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    '_',
   ),
   QuoteSub(
     'mark',
@@ -493,6 +508,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       r'\\?(?:'
       '$quoteAttributeListRxt)?##($ccAll+?)##',
     ),
+    '##',
   ),
   QuoteSub(
     'mark',
@@ -506,6 +522,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    '#',
   ),
   QuoteSub(
     'superscript',
@@ -515,6 +532,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       '$quoteAttributeListRxt'
       r')?\^(\S+?)\^',
     ),
+    '^',
   ),
   QuoteSub(
     'subscript',
@@ -524,6 +542,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       '$quoteAttributeListRxt'
       r')?~(\S+?)~',
     ),
+    '~',
   ),
 ];
 
@@ -548,6 +567,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    '``',
   ),
   QuoteSub(
     'emphasis',
@@ -561,6 +581,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    "'",
   ),
   QuoteSub(
     'single',
@@ -574,6 +595,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    '`',
   ),
   QuoteSub(
     'monospaced',
@@ -585,6 +607,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
       '$ccAll'
       r'+?)\+\+',
     ),
+    '++',
   ),
   QuoteSub(
     'monospaced',
@@ -598,6 +621,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
       multiLine: true,
       unicode: true,
     ),
+    '+',
   ),
   ..._normalQuoteSubs.sublist(6),
 ];
@@ -616,8 +640,8 @@ final Map<bool, List<QuoteSub>> quoteSubs = <bool, List<QuoteSub>>{
 ///
 /// Ruby stores each rule as a `[regexp, replacement, scope_symbol]` triple.
 class Replacement {
-  /// Creates a rule with [pattern], [replacement] and [scope].
-  const new(this.pattern, this.replacement, this.scope);
+  /// Creates a rule with [pattern], [replacement], [scope] and [guard].
+  const new(this.pattern, this.replacement, this.scope, this.guard);
 
   /// The pattern matching the source text.
   final RegExp pattern;
@@ -627,19 +651,26 @@ class Replacement {
 
   /// How the match boundaries are preserved.
   final String scope;
+
+  /// A literal every match of [pattern] contains.
+  ///
+  /// Text without it cannot match, so the regex scan is skipped; the
+  /// result is identical either way.
+  final String guard;
 }
 
 /// Textual replacements (`REPLACEMENTS`).
 ///
 /// Order is significant: replacements apply in list order.
 final List<Replacement> replacements = <Replacement>[
-  Replacement(RegExp(r'\\?\(C\)'), '&#169;', 'none'),
-  Replacement(RegExp(r'\\?\(R\)'), '&#174;', 'none'),
-  Replacement(RegExp(r'\\?\(TM\)'), '&#8482;', 'none'),
+  Replacement(RegExp(r'\\?\(C\)'), '&#169;', 'none', '(C)'),
+  Replacement(RegExp(r'\\?\(R\)'), '&#174;', 'none', '(R)'),
+  Replacement(RegExp(r'\\?\(TM\)'), '&#8482;', 'none', '(TM)'),
   Replacement(
     RegExp(r'(?: |\n|^|\\)--(?: |\n|$)', multiLine: true),
     '&#8201;&#8212;&#8201;',
     'none',
+    '--',
   ),
   Replacement(
     RegExp(
@@ -650,9 +681,10 @@ final List<Replacement> replacements = <Replacement>[
     ),
     '&#8212;&#8203;',
     'leading',
+    '--',
   ),
-  Replacement(RegExp(r'\\?\.\.\.'), '&#8230;&#8203;', 'none'),
-  Replacement(RegExp(r"\\?`'"), '&#8217;', 'none'),
+  Replacement(RegExp(r'\\?\.\.\.'), '&#8230;&#8203;', 'none', '...'),
+  Replacement(RegExp(r"\\?`'"), '&#8217;', 'none', "`'"),
   Replacement(
     RegExp(
       '($cgAlnum'
@@ -662,11 +694,12 @@ final List<Replacement> replacements = <Replacement>[
     ),
     '&#8217;',
     'leading',
+    "'",
   ),
-  Replacement(RegExp(r'\\?-&gt;'), '&#8594;', 'none'),
-  Replacement(RegExp(r'\\?=&gt;'), '&#8658;', 'none'),
-  Replacement(RegExp(r'\\?&lt;-'), '&#8592;', 'none'),
-  Replacement(RegExp(r'\\?&lt;='), '&#8656;', 'none'),
+  Replacement(RegExp(r'\\?-&gt;'), '&#8594;', 'none', '-&gt;'),
+  Replacement(RegExp(r'\\?=&gt;'), '&#8658;', 'none', '=&gt;'),
+  Replacement(RegExp(r'\\?&lt;-'), '&#8592;', 'none', '&lt;-'),
+  Replacement(RegExp(r'\\?&lt;='), '&#8656;', 'none', '&lt;='),
   Replacement(
     RegExp(
       r'\\?(&)amp;((?:[a-zA-Z][a-zA-Z]+\d{0,2}|#\d\d\d{0,4}|#x[\da-fA-F]'
@@ -674,6 +707,7 @@ final List<Replacement> replacements = <Replacement>[
     ),
     '',
     'bounding',
+    '&amp;',
   ),
 ];
 
