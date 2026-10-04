@@ -938,7 +938,7 @@ void main() {
     });
 
     test('unnumbered section takes only an index', () {
-      final section = FakeSection(doc, numbered: false, sectname: 'section');
+      final section = FakeSection(doc, sectname: 'section');
       doc.assignNumeral(section);
       expect(section.numeral, isNull);
       expect(section.index, equals(0));
@@ -1227,7 +1227,7 @@ void main() {
     });
 
     test('readContents reads files relative to start', () {
-      final block = Block(makeDoc(safe: SafeMode.safe), 'paragraph');
+      final block = Block(makeDoc(), 'paragraph');
       expect(
         block.readContents('img/a.png', start: fixtureDir.path, label: 'pic'),
         equals('PNGDATA'),
@@ -1235,7 +1235,7 @@ void main() {
     });
 
     test('readContents warns for empty contents when asked', () {
-      final block = Block(makeDoc(safe: SafeMode.safe), 'paragraph');
+      final block = Block(makeDoc(), 'paragraph');
       final target = '${fixtureDir.path}/img/empty.txt';
       expect(
         block.readContents(
@@ -1252,7 +1252,7 @@ void main() {
     });
 
     test('readContents of missing file warns and returns null', () {
-      final block = Block(makeDoc(safe: SafeMode.safe), 'paragraph');
+      final block = Block(makeDoc(), 'paragraph');
       expect(
         block.readContents('img/nope.txt', start: fixtureDir.path),
         isNull,
@@ -1354,20 +1354,20 @@ void main() {
     });
 
     test('data-uri images embed file bytes', () {
-      final doc = makeDoc(safe: SafeMode.safe, attributes: {'data-uri': ''});
+      final doc = makeDoc(attributes: {'data-uri': ''});
       final block = Block(doc, 'paragraph');
       expect(
         block.imageUri('img/a.png', null),
         equals('data:image/png;base64,UE5HREFUQQ=='),
       );
       expect(
-        block.generateDataUri('img/a.png', null),
+        block.generateDataUri('img/a.png'),
         equals('data:image/png;base64,UE5HREFUQQ=='),
       );
     });
 
     test('missing embedded image warns with empty payload', () {
-      final doc = makeDoc(safe: SafeMode.safe, attributes: {'data-uri': ''});
+      final doc = makeDoc(attributes: {'data-uri': ''});
       final block = Block(doc, 'paragraph');
       expect(
         block.imageUri('img/nope.png', null),

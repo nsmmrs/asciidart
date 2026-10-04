@@ -121,21 +121,12 @@ ArgParser buildParser() {
       'out-dir',
       help: 'Write raw per-exe outputs here (default: temp dir).',
     )
-    ..addFlag(
-      'keep-outputs',
-      defaultsTo: false,
-      help: 'Keep the temp output dir after the run.',
-    )
+    ..addFlag('keep-outputs', help: 'Keep the temp output dir after the run.')
     ..addOption(
       'filter',
       help: 'Only convert corpus files whose path contains this string.',
     )
-    ..addFlag(
-      'quiet',
-      abbr: 'q',
-      defaultsTo: false,
-      help: 'Only print diffs and the summary.',
-    )
+    ..addFlag('quiet', abbr: 'q', help: 'Only print diffs and the summary.')
     ..addFlag(
       'help',
       abbr: 'h',

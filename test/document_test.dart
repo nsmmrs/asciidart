@@ -2579,7 +2579,7 @@ void main() {
       });
 
       test('should not choke on nil source', () {
-        final doc = Document(null);
+        final doc = Document();
         expect(doc.blocks, isEmpty);
         expect(doc.doctitle(), isNull);
         expect(doc.hasHeader, isFalse);

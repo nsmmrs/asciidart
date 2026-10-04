@@ -426,7 +426,7 @@ void _probeReadable(File file) {
   } catch (_) {
     // Fall through to the probe, which raises the InvalidPath error.
   }
-  file.openSync(mode: FileMode.read).closeSync();
+  file.openSync().closeSync();
 }
 
 /// Converts [input] to the specified backend format.

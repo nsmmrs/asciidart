@@ -60,7 +60,7 @@ void main() {
 
     test('links the default theme from the CDN', () {
       expect(
-        adapter.docinfoHead(cdnBaseUrl: cdn, selfClosingSlash: '/'),
+        adapter.docinfoHead(selfClosingSlash: '/'),
         '<link rel="stylesheet" href="$cdn/prettify/r298/prettify.min.css"/>',
       );
     });
@@ -68,7 +68,6 @@ void main() {
     test('uses an absolute theme URL verbatim', () {
       expect(
         adapter.docinfoHead(
-          cdnBaseUrl: cdn,
           theme: 'https://x.test/t.min.css',
           selfClosingSlash: '/',
         ),
@@ -81,7 +80,6 @@ void main() {
         adapter.docinfoHead(
           prettifyDir: 'https://x.test/pr',
           theme: 'doxy',
-          cdnBaseUrl: cdn,
           selfClosingSlash: '/',
         ),
         '<link rel="stylesheet" href="https://x.test/pr/doxy.min.css"/>',
@@ -92,9 +90,7 @@ void main() {
   group('docinfoFooter', () {
     test('loads run_prettify.js from the CDN', () {
       expect(
-        adapter.docinfoFooter(
-          cdnBaseUrl: 'https://cdnjs.cloudflare.com/ajax/libs',
-        ),
+        adapter.docinfoFooter(),
         '<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/'
         'run_prettify.min.js"></script>',
       );

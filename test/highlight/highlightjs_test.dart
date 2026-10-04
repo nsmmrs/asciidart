@@ -68,10 +68,7 @@ void main() {
   group('docinfoHead', () {
     test('links the default theme from the CDN', () {
       expect(
-        adapter.docinfoHead(
-          cdnBaseUrl: 'https://cdnjs.cloudflare.com/ajax/libs',
-          selfClosingSlash: '/',
-        ),
+        adapter.docinfoHead(selfClosingSlash: '/'),
         '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/'
         'highlight.js/9.18.3/styles/github.min.css"/>',
       );
@@ -82,7 +79,6 @@ void main() {
         adapter.docinfoHead(
           highlightjsDir: 'https://x.test/hj',
           theme: 'monokai',
-          cdnBaseUrl: 'https://cdnjs.cloudflare.com/ajax/libs',
           selfClosingSlash: '/',
         ),
         '<link rel="stylesheet" '
@@ -91,12 +87,7 @@ void main() {
     });
 
     test('omits the slash by default', () {
-      expect(
-        adapter.docinfoHead(
-          cdnBaseUrl: 'https://cdnjs.cloudflare.com/ajax/libs',
-        ),
-        endsWith('.min.css">'),
-      );
+      expect(adapter.docinfoHead(), endsWith('.min.css">'));
     });
   });
 
@@ -113,7 +104,7 @@ void main() {
 
     test('loads the bundle and bootstraps highlighting', () {
       expect(
-        adapter.docinfoFooter(cdnBaseUrl: cdn),
+        adapter.docinfoFooter(),
         '<script src="$cdn/highlight.js/9.18.3/highlight.min.js"></script>\n'
         '$bootstrap',
       );
@@ -121,7 +112,7 @@ void main() {
 
     test('loads extra languages, left-stripping each entry', () {
       expect(
-        adapter.docinfoFooter(cdnBaseUrl: cdn, languagesAttr: 'ruby, python'),
+        adapter.docinfoFooter(languagesAttr: 'ruby, python'),
         '<script src="$cdn/highlight.js/9.18.3/highlight.min.js"></script>\n'
         '<script src="$cdn/highlight.js/9.18.3/languages/ruby.min.js">'
         '</script>\n'
@@ -133,7 +124,7 @@ void main() {
 
     test('empty languages attribute loads no extra languages', () {
       expect(
-        adapter.docinfoFooter(cdnBaseUrl: cdn, languagesAttr: ''),
+        adapter.docinfoFooter(languagesAttr: ''),
         '<script src="$cdn/highlight.js/9.18.3/highlight.min.js"></script>\n'
         '$bootstrap',
       );
@@ -141,11 +132,11 @@ void main() {
 
     test('trailing empty entries are dropped like Ruby split', () {
       expect(
-        adapter.docinfoFooter(cdnBaseUrl: cdn, languagesAttr: 'ruby,'),
+        adapter.docinfoFooter(languagesAttr: 'ruby,'),
         contains('languages/ruby.min.js'),
       );
       expect(
-        adapter.docinfoFooter(cdnBaseUrl: cdn, languagesAttr: 'ruby,'),
+        adapter.docinfoFooter(languagesAttr: 'ruby,'),
         isNot(contains('languages/.min.js')),
       );
     });

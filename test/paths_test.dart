@@ -52,25 +52,25 @@ void main() {
     test('target with absolute path', () {
       expect(resolver.webPath('/images'), equals('/images'));
       expect(resolver.webPath('/images', ''), equals('/images'));
-      expect(resolver.webPath('/images', null), equals('/images'));
+      expect(resolver.webPath('/images'), equals('/images'));
     });
 
     test('target with relative path', () {
       expect(resolver.webPath('images'), equals('images'));
       expect(resolver.webPath('images', ''), equals('images'));
-      expect(resolver.webPath('images', null), equals('images'));
+      expect(resolver.webPath('images'), equals('images'));
     });
 
     test('target with hidden relative path', () {
       expect(resolver.webPath('.images'), equals('.images'));
       expect(resolver.webPath('.images', ''), equals('.images'));
-      expect(resolver.webPath('.images', null), equals('.images'));
+      expect(resolver.webPath('.images'), equals('.images'));
     });
 
     test('target with path relative to current directory', () {
       expect(resolver.webPath('./images'), equals('./images'));
       expect(resolver.webPath('./images', ''), equals('./images'));
-      expect(resolver.webPath('./images', null), equals('./images'));
+      expect(resolver.webPath('./images'), equals('./images'));
     });
 
     test('target with absolute path ignores start path', () {
@@ -335,7 +335,7 @@ void main() {
         equals('$jail/my/path'),
       );
       expect(
-        resolver.systemPath('$jail/my/path', start: null, jail: jail),
+        resolver.systemPath('$jail/my/path', jail: jail),
         equals('$jail/my/path'),
       );
       expect(
@@ -351,7 +351,7 @@ void main() {
         equals('$jail/my/path'),
       );
       expect(
-        resolver.systemPath('/foo/bar/baz.adoc', start: null, jail: '/'),
+        resolver.systemPath('/foo/bar/baz.adoc', jail: '/'),
         equals('/foo/bar/baz.adoc'),
       );
       expect(
@@ -370,7 +370,7 @@ void main() {
         equals('$jail/images/tiger.png'),
       );
       expect(
-        resolver.systemPath('images/tiger.png', start: null, jail: jail),
+        resolver.systemPath('images/tiger.png', jail: jail),
         equals('$jail/images/tiger.png'),
       );
     });
@@ -572,7 +572,7 @@ void main() {
         equals('$pwd/images/tiger.png'),
       );
       expect(
-        resolver.systemPath('images/tiger.png', start: null),
+        resolver.systemPath('images/tiger.png'),
         equals('$pwd/images/tiger.png'),
       );
       expect(
@@ -588,7 +588,7 @@ void main() {
         equals('$pwd/.images/tiger.png'),
       );
       expect(
-        resolver.systemPath('.images/tiger.png', start: null),
+        resolver.systemPath('.images/tiger.png'),
         equals('$pwd/.images/tiger.png'),
       );
     });
@@ -676,7 +676,6 @@ void main() {
     test('should calculate relative path', () {
       final filename = resolver.systemPath(
         'part1/chapter1/section1.adoc',
-        start: null,
         jail: jail,
       );
       expect(filename, equals('$jail/part1/chapter1/section1.adoc'));

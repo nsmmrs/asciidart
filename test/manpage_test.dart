@@ -797,7 +797,6 @@ void main() {
       final node = StubBlock(
         doc,
         'floating_title',
-        stubbedContent: '',
         stubTitle: 'A floating title',
       );
       expect(convOf(doc).convertFloatingTitle(node), '.SS "A floating title"');
@@ -811,7 +810,6 @@ void main() {
         doc,
         'image',
         attributes: {'target': 'signs-point-to-yes.jpg'},
-        stubbedContent: '',
         stubAlt: 'signs point to yes',
       );
       expect(convOf(doc).convertImage(node), '.sp\n[signs point to yes]');
@@ -823,7 +821,6 @@ void main() {
         doc,
         'image',
         attributes: {'target': 'rainbow.jpg'},
-        stubbedContent: '',
         stubTitle: 'Figure - one',
         stubAlt: 'That&#8217;s a double rainbow++!',
       );
@@ -1248,12 +1245,7 @@ void main() {
   group('video and thematic break', () {
     test('converts a video block', () {
       final doc = manDoc();
-      final node = StubBlock(
-        doc,
-        'video',
-        attributes: {'target': 'vid.mp4'},
-        stubbedContent: '',
-      );
+      final node = StubBlock(doc, 'video', attributes: {'target': 'vid.mp4'});
       expect(convOf(doc).convertVideo(node), '.sp\n<vid.mp4> (video)');
     });
 
@@ -1263,7 +1255,6 @@ void main() {
         doc,
         'video',
         attributes: {'target': 'vid.mp4', 'start': '10', 'end': '20'},
-        stubbedContent: '',
         stubTitle: 'Clip',
       );
       expect(
@@ -1410,7 +1401,6 @@ void main() {
         'b\nc    _d_\n.',
         attributes: {'style': 'literal'},
         stubText: 'b\nc    _d_\n.',
-        stubContent: null,
       );
       table.rows.body.add([textCell(table, 0, 'a'), literal]);
       expect(

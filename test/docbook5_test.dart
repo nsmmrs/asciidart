@@ -1198,7 +1198,7 @@ void main() {
     test('description with nested blocks', () {
       final doc = makeDoc();
       final list = ListBlock(doc, 'dlist');
-      final dd = StubListItem(list, null)..text = null;
+      final dd = StubListItem(list)..text = null;
       dd << para(dd, 'nested');
       list.items.add([
         [StubListItem(list, 'term')],

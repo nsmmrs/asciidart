@@ -1304,7 +1304,7 @@ void main() {
       test('include directive with remote target is converted to a link when safe mode is secure', () {
         usingMemoryLogger((logger) {
           const input = 'include::http://example.org/team.adoc[]';
-          final reader = preprocessorReader(input, safe: SafeMode.secure);
+          final reader = preprocessorReader(input);
           expect(
             reader.readLine(),
             equals('link:http://example.org/team.adoc[role=include]'),
@@ -3080,10 +3080,7 @@ void main() {
       test('peekLines should preprocess lines if direct is false', () {
         const input = 'The Asciidoctor\nifdef::asciidoctor[is in.]\n';
         final reader = preprocessorReader(input);
-        expect(
-          reader.peekLines(2, false),
-          equals(['The Asciidoctor', 'is in.']),
-        );
+        expect(reader.peekLines(2), equals(['The Asciidoctor', 'is in.']));
       });
 
       test('peekLines should not preprocess lines if direct is true', () {
@@ -3101,10 +3098,7 @@ void main() {
           const input = 'The Asciidoctor\nifdef::asciidoctor[is in.]\n';
           final reader = preprocessorReader(input);
           reader.peekLines(2, true);
-          expect(
-            reader.peekLines(2, false),
-            equals(['The Asciidoctor', 'is in.']),
-          );
+          expect(reader.peekLines(2), equals(['The Asciidoctor', 'is in.']));
         },
       );
 

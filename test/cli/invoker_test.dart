@@ -428,10 +428,7 @@ void main() {
     });
 
     test('fails if input file matches resolved output file', () {
-      final invoker = invokeCliToBuffer([
-        '-a',
-        'outfilesuffix=.adoc',
-      ], 'sample.adoc');
+      final invoker = invokeCliToBuffer(['-a', 'outfilesuffix=.adoc']);
       expect(
         invoker.readError(),
         contains('input file and output file cannot be the same'),
@@ -439,7 +436,7 @@ void main() {
     });
 
     test('fails if input file matches specified output file', () {
-      final invoker = invokeCliToBuffer(['-o', sampleFile], 'sample.adoc');
+      final invoker = invokeCliToBuffer(['-o', sampleFile]);
       expect(
         invoker.readError(),
         contains('input file and output file cannot be the same'),

@@ -408,7 +408,7 @@ class Html5Converter extends ConverterBase {
         );
       } else {
         result.add(
-          '<style>\n${_s(node.readContents(node.attr('stylesheet') as String, start: node.attr('stylesdir') as String?, warnOnFailure: true, label: 'stylesheet'))}\n</style>',
+          '<style>\n${_s(node.readContents(node.attr('stylesheet') as String, start: node.attr('stylesdir') as String?, label: 'stylesheet'))}\n</style>',
         );
       }
     }

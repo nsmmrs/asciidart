@@ -308,7 +308,7 @@ final class _BlockSubsApplier implements SubsApplier {
 
 /// Applies normal substitutions to [value] on behalf of [node].
 String _applySubsString(AbstractNode node, String value) =>
-    applySubs(node, value, normalSubs) as String;
+    applySubs(node, value) as String;
 
 /// Applies the specified substitutions to the text.
 ///
@@ -404,7 +404,7 @@ Object? applySubs(
 ///
 /// Port of `Substitutors#apply_normal_subs`.
 Object? applyNormalSubs(AbstractNode node, Object? text) =>
-    applySubs(node, text, normalSubs);
+    applySubs(node, text);
 
 /// Applies header substitutions (for header metadata and attribute
 /// assignments) to [text].
@@ -2034,7 +2034,6 @@ String highlightSource(AbstractNode node, String source, bool processCallouts) {
   if (node.hasOption('linenums')) {
     linenumsMode = LineNumbersMode.fromAttribute(
       docAttrs['${syntaxHl.name}-linenums-mode']?.toString(),
-      linenums: true,
     );
     startLineNumber = rubyToInteger(node.attr('start', 1));
     if (startLineNumber < 1) startLineNumber = 1;

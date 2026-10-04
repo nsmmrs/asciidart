@@ -913,7 +913,7 @@ void main() {
           // class-level `register_for` DSL in Dart).
           cleanGlobalRegistry();
           expect(Converter.forBackend('reg-self'), isNull);
-          _SelfRegisteringConverter.registerFor(const ['reg-self']);
+          _SelfRegisteringConverter.registerFor();
           expect(
             Converter.forBackend('reg-self'),
             equals(_SelfRegisteringConverter.new),
