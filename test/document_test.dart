@@ -2739,7 +2739,7 @@ void main() {
 
       test('should substitute replacements in author names in HTML output', () {
         const input =
-            '= Document Title\nStephen O\'Grady <founder@redmonk.com>\n\ncontent\n';
+            "= Document Title\nStephen O'Grady <founder@redmonk.com>\n\ncontent\n";
         final output = convertString(input);
         assertXpath(
           '//meta[@name="author"][@content="Stephen O${decodeChar(8217)}Grady"]',
@@ -2755,7 +2755,7 @@ void main() {
 
       test('should substitute replacements in author names in DocBook output', () {
         const input =
-            '= Document Title\nStephen O\'Grady <founder@redmonk.com>\n\ncontent\n';
+            "= Document Title\nStephen O'Grady <founder@redmonk.com>\n\ncontent\n";
         final output = convertString(input, {'backend': 'docbook'});
         assertXpath('//author', output, 1);
         assertXpath(
@@ -3511,7 +3511,7 @@ void main() {
             'term:: description\n\nNOTE: note\n\n[quote,Author,Source]\n____\nQuote me.\n____\n\n'
             '[verse,Author,Source]\n____\nA tall tale.\n____\n\n[options="autoplay,loop"]\n'
             'video::screencast.ogg[]\n\nvideo::12345[vimeo]\n\n[options="autoplay,loop"]\n'
-            'audio::podcast.ogg[]\n\none +\ntwo\n\n\'\'\'\n';
+            "audio::podcast.ogg[]\n\none +\ntwo\n\n'''\n";
         final result = convertString(input, {
           'safe': 'safe',
           'backend': 'xhtml',
@@ -3755,8 +3755,8 @@ void main() {
           'section of manpage', () {
         const input =
             '= eve(1)\nAndrew Stanton\nv1.0.0\n:doctype: manpage\n:manmanual: EVE\n:mansource: EVE\n\n'
-            '== NAME\n\neve, islifeform - analyzes an image to determine if it\'s a picture of a life form\n\n'
-            '== SYNOPSIS\n\n*eve* [\'OPTION\']... \'FILE\'...\n';
+            "== NAME\n\neve, islifeform - analyzes an image to determine if it's a picture of a life form\n\n"
+            "== SYNOPSIS\n\n*eve* ['OPTION']... 'FILE'...\n";
         final result = convertString(input, {'backend': 'docbook5'});
         assertXpath('/article/refentry/refnamediv/refname', result, 2);
         assertXpath(
@@ -3892,7 +3892,7 @@ void main() {
       test('should mark synopsis as special section in manpage doctype', () {
         const input =
             '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
-            '== SYNOPSIS\n\n*asciidoctor* [\'OPTION\']... \'FILE\'..\n';
+            "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
         final doc = documentFromString(input);
         final synopsisSection = doc.blocks.first as Section;
         expect(synopsisSection.context, equals('section'));
@@ -3905,7 +3905,7 @@ void main() {
         () {
           const input =
               '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
-              '== SYNOPSIS\n\n*asciidoctor* [\'OPTION\']... \'FILE\'..\n';
+              "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
           final output = convertString(input);
           assertCss('body.manpage', output, 1);
           assertXpath(
@@ -3941,7 +3941,7 @@ void main() {
           'doctype', () {
         const input =
             '= asciidoctor(1)\n:doctype: manpage\n:showtitle:\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
-            '== SYNOPSIS\n\n*asciidoctor* [\'OPTION\']... \'FILE\'..\n';
+            "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
         final output = convertStringToEmbedded(input);
         assertXpath('/h1[text()="asciidoctor(1) Manual Page"]', output, 1);
         assertXpath('/h1/following-sibling::h2[text()="NAME"]', output, 1);

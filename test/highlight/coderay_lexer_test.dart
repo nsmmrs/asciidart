@@ -44,13 +44,13 @@ void main() {
   group('strings', () {
     test('fixture', () {
       expect(
-        highlightRuby('puts \'Hello, World!\'\n'),
+        highlightRuby("puts 'Hello, World!'\n"),
         'puts <span class="string"><span class="delimiter">\'</span><span class="content">Hello, World!</span><span class="delimiter">\'</span></span>\n',
       );
     });
     test('single-quote', () {
       expect(
-        highlightRuby('s = \'single\'\n'),
+        highlightRuby("s = 'single'\n"),
         's = <span class="string"><span class="delimiter">\'</span><span class="content">single</span><span class="delimiter">\'</span></span>\n',
       );
     });
@@ -68,7 +68,7 @@ void main() {
     });
     test('sq-escape', () {
       expect(
-        highlightRuby('s = \'it\\\'s\'\n'),
+        highlightRuby("s = 'it\\'s'\n"),
         's = <span class="string"><span class="delimiter">\'</span><span class="content">it</span><span class="char">\\\'</span><span class="content">s</span><span class="delimiter">\'</span></span>\n',
       );
     });
@@ -92,7 +92,7 @@ void main() {
     });
     test('multiline-sq', () {
       expect(
-        highlightRuby('s = \'l1\nl2\'\n'),
+        highlightRuby("s = 'l1\nl2'\n"),
         's = <span class="string"><span class="delimiter">\'</span><span class="content">l1\nl2</span><span class="delimiter">\'</span></span>\n',
       );
     });
@@ -291,13 +291,13 @@ void main() {
     });
     test('heredoc-sq', () {
       expect(
-        highlightRuby('s = <<\'EOS\'\nno #{x}\nEOS\n'),
+        highlightRuby("s = <<'EOS'\nno #{x}\nEOS\n"),
         's = <span class="string"><span class="delimiter">&lt;&lt;\'EOS\'</span></span><span class="string"><span class="content">\nno #{x}</span><span class="delimiter">\nEOS</span></span>\n',
       );
     });
     test('heredoc-empty', () {
       expect(
-        highlightRuby('<<\'\'\nx\n'),
+        highlightRuby("<<''\nx\n"),
         '<span class="string"><span class="delimiter">&lt;&lt;\'\'</span></span><span class="string"><span class="delimiter">\nx</span></span>\n',
       );
     });
@@ -369,13 +369,13 @@ void main() {
   group('encoder options', () {
     test('style-mode', () {
       expect(
-        highlightRuby('puts \'hi\' # c\n', cssMode: CssMode.inline),
+        highlightRuby("puts 'hi' # c\n", cssMode: CssMode.inline),
         'puts <span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">\'</span><span style="color:#D20">hi</span><span style="color:#710">\'</span></span> <span style="color:#777"># c</span>\n',
       );
     });
     test('style-key', () {
       expect(
-        highlightRuby('{\'k\': 1}\n', cssMode: CssMode.inline),
+        highlightRuby("{'k': 1}\n", cssMode: CssMode.inline),
         '{<span style="color:#606"><span style="color:#404">\'</span><span>k</span><span style="color:#404">\'</span></span>: <span style="color:#00D">1</span>}\n',
       );
     });
@@ -426,7 +426,7 @@ void main() {
     });
     test('inline-multi', () {
       expect(
-        highlightRuby('s = \'l1\nl2\'\n', numberLines: LineNumbersMode.inline),
+        highlightRuby("s = 'l1\nl2'\n", numberLines: LineNumbersMode.inline),
         '<span class="line-numbers">1</span>s = <span class="string"><span class="delimiter">\'</span><span class="content">l1</span></span>\n<span class="line-numbers">2</span><span class="string"><span class="content">l2</span><span class="delimiter">\'</span></span>\n',
       );
     });

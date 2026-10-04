@@ -352,7 +352,7 @@ void main() {
           '.\\"\n'
           '.TH "COMMAND" "1" "2026-10-03" "Command 1.2.3" "Command Manual"\n'
           '.ie \\n(.g .ds Aq \\(aq\n'
-          '.el       .ds Aq \'\n'
+          ".el       .ds Aq '\n"
           '.ss \\n[.ss] 0\n'
           '.nh\n'
           '.ad l\n'
@@ -668,7 +668,7 @@ void main() {
         '.TS\n'
         'tab(:);\n'
         'r lw(\\n(.lu*75u/100u).\n'
-        '\\fB(1)\\fP\\h\'-2n\':T{\n'
+        "\\fB(1)\\fP\\h'-2n':T{\n"
         'Installs the asciidoctor gem\n'
         'T}\n'
         '.TE',
@@ -682,8 +682,8 @@ void main() {
         ..append(StubListItem(node, 'first'))
         ..append(StubListItem(node, 'second'));
       final output = convOf(doc).convertColist(node);
-      expect(output, contains('\\fB(1)\\fP\\h\'-2n\':T{\nfirst\nT}'));
-      expect(output, contains('\\fB(2)\\fP\\h\'-2n\':T{\nsecond\nT}'));
+      expect(output, contains("\\fB(1)\\fP\\h'-2n':T{\nfirst\nT}"));
+      expect(output, contains("\\fB(2)\\fP\\h'-2n':T{\nsecond\nT}"));
     });
 
     test('emits the title when set', () {
@@ -926,7 +926,7 @@ void main() {
         '.sp\n'
         '.RS 4\n'
         '.ie n \\{\\\n'
-        '\\h\'-04\' 1.\\h\'+01\'\\c\n'
+        "\\h'-04' 1.\\h'+01'\\c\n"
         '.\\}\n'
         '.el \\{\\\n'
         '.  sp -1\n'
@@ -977,7 +977,7 @@ void main() {
         '.sp\n'
         '.RS 4\n'
         '.ie n \\{\\\n'
-        '\\h\'-04\'\\(bu\\h\'+03\'\\c\n'
+        "\\h'-04'\\(bu\\h'+03'\\c\n"
         '.\\}\n'
         '.el \\{\\\n'
         '.  sp -1\n'
@@ -1281,7 +1281,7 @@ void main() {
       final doc = manDoc();
       expect(
         convOf(doc).convertThematicBreak(Block(doc, 'thematic_break')),
-        '.sp\n.ce\n\\l\'\\n(.lu*25u/100u\\(ap\'',
+        ".sp\n.ce\n\\l'\\n(.lu*25u/100u\\(ap'",
       );
     });
   });

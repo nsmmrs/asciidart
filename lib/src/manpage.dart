@@ -249,7 +249,7 @@ class ManpageConverter extends ConverterBase {
     // see http://bugs.debian.org/507673
     // see http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
     result.add(r'.ie \n(.g .ds Aq \(aq');
-    result.add('.el       .ds Aq \'');
+    result.add(".el       .ds Aq '");
     // set sentence_space_size to 0 to prevent extra space between sentences
     // separated by a newline
     // the alternative is to add \& at the end of the line
@@ -363,7 +363,7 @@ class ManpageConverter extends ConverterBase {
     var num = 0;
     for (final item in node.items) {
       final listItem = item as ListItem;
-      result.add('\\fB(${num += 1})\\fP\\h\'-2n\':T{');
+      result.add("\\fB(${num += 1})\\fP\\h'-2n':T{");
       result.add(
         _manify(listItem.text as String, whitespace: _WhitespaceMode.normalize),
       );
@@ -696,7 +696,7 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] thematic break.
   String convertThematicBreak(Block node) =>
-      '.sp\n.ce\n\\l\'\\n(.lu*25u/100u\\(ap\'';
+      ".sp\n.ce\n\\l'\\n(.lu*25u/100u\\(ap'";
 
   /// Converts the [node] unordered list.
   String convertUlist(ListBlock node) {
@@ -711,7 +711,7 @@ class ManpageConverter extends ConverterBase {
         whitespace: _WhitespaceMode.normalize,
       );
       result.add(
-        '.sp\n.RS 4\n.ie n \\{\\\n\\h\'-04\'\\(bu\\h\'+03\'\\c\n.\\}\n.el \\{\\\n.  sp -1\n.  IP \\(bu 2.3\n.\\}'
+        ".sp\n.RS 4\n.ie n \\{\\\n\\h'-04'\\(bu\\h'+03'\\c\n.\\}\n.el \\{\\\n.  sp -1\n.  IP \\(bu 2.3\n.\\}"
         '${listText.isEmpty ? '' : '\n$listText'}',
       );
       if (listItem.hasBlocks) {

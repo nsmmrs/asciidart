@@ -828,7 +828,7 @@ void main() {
         );
         expect(
           subQuotes(para, para.source()),
-          '&#8216;`a few quoted words&#8217;\'',
+          "&#8216;`a few quoted words&#8217;'",
         );
 
         para = blockFromString(
@@ -867,10 +867,10 @@ void main() {
           "``Here's Johnny!''",
           attributes: {'compat-mode': ''},
         );
-        expect(subQuotes(para, para.source()), '&#8220;Here\'s Johnny!&#8221;');
+        expect(subQuotes(para, para.source()), "&#8220;Here's Johnny!&#8221;");
 
         para = blockFromString('"`Here\'s Johnny!`"');
-        expect(subQuotes(para, para.source()), '&#8220;Here\'s Johnny!&#8221;');
+        expect(subQuotes(para, para.source()), "&#8220;Here's Johnny!&#8221;");
       });
 
       test('double-quoted string with inline backquote', () {
@@ -965,13 +965,13 @@ void main() {
         );
         expect(
           subQuotes(para, para.source()),
-          '&#8216;That isn\'t what I did.&#8217;',
+          "&#8216;That isn't what I did.&#8217;",
         );
 
         para = blockFromString("'`That isn't what I did.`'");
         expect(
           subQuotes(para, para.source()),
-          '&#8216;That isn\'t what I did.&#8217;',
+          "&#8216;That isn't what I did.&#8217;",
         );
       });
 
@@ -1614,11 +1614,11 @@ void main() {
 
       test('single-line superscript chars', () {
         final para = blockFromString(
-          'x^2^ = x * x, e = mc^2^, there\'s a 1^st^ time for everything',
+          "x^2^ = x * x, e = mc^2^, there's a 1^st^ time for everything",
         );
         expect(
           subQuotes(para, para.source()),
-          'x<sup>2</sup> = x * x, e = mc<sup>2</sup>, there\'s a 1<sup>st</sup> time for everything',
+          "x<sup>2</sup> = x * x, e = mc<sup>2</sup>, there's a 1<sup>st</sup> time for everything",
         );
       });
 
@@ -2972,7 +2972,7 @@ void main() {
         expect(
           contentOf(
             paraFor(
-              'L\'origine du mot for\u00eat{blank}footnote:for\u00eat[un massif forestier] est complexe.',
+              "L'origine du mot for\u00eat{blank}footnote:for\u00eat[un massif forestier] est complexe.",
             ),
           ),
           'L&#8217;origine du mot for\u00eat<sup class="footnote" id="_footnote_for\u00eat">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> est complexe.',
@@ -2980,7 +2980,7 @@ void main() {
         expect(
           contentOf(
             paraFor(
-              'Qu\'est-ce qu\'une for\u00eat ?{blank}footnote:for\u00eat[]',
+              "Qu'est-ce qu'une for\u00eat ?{blank}footnote:for\u00eat[]",
             ),
           ),
           'Qu&#8217;est-ce qu&#8217;une for\u00eat ?<sup class="footnoteref">[<a class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup>',
@@ -3827,8 +3827,8 @@ void main() {
 
       test('should not crash if role on passthrough is enclosed in quotes', () {
         for (final input in [
-          '[\'role\']$bs++This++++++++++++',
-          '[\'role\']$bs+++++++++This++++++++++++',
+          "['role']$bs++This++++++++++++",
+          "['role']$bs+++++++++This++++++++++++",
         ]) {
           final para = blockFromString(input);
           expect(contentOf(para), contains('<span class="\'role\'">'));
@@ -3882,7 +3882,7 @@ void main() {
 
       test('collect passthroughs from inline pass macro', () {
         final para = blockFromString(
-          'pass:specialcharacters,quotes[<code>[\'code\'$bs]</code>]',
+          "pass:specialcharacters,quotes[<code>['code'$bs]</code>]",
         );
         final result = extractPassthroughs(para, para.source());
         final passthroughs = para.passthroughs;
@@ -3893,13 +3893,13 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], '<code>[\'code\']</code>');
+        expect(passthroughs[0]['text'], "<code>['code']</code>");
         expect(passthroughs[0]['subs'], ['specialcharacters', 'quotes']);
       });
 
       test('collect multi-line passthroughs from inline pass macro', () {
         final para = blockFromString(
-          'pass:specialcharacters,quotes[<code>[\'more\ncode\'$bs]</code>]',
+          "pass:specialcharacters,quotes[<code>['more\ncode'$bs]</code>]",
         );
         final result = extractPassthroughs(para, para.source());
         final passthroughs = para.passthroughs;
@@ -3910,7 +3910,7 @@ void main() {
           '$passEnd',
         );
         expect(passthroughs.length, 1);
-        expect(passthroughs[0]['text'], '<code>[\'more\ncode\']</code>');
+        expect(passthroughs[0]['text'], "<code>['more\ncode']</code>");
         expect(passthroughs[0]['subs'], ['specialcharacters', 'quotes']);
       });
 
@@ -4013,11 +4013,11 @@ void main() {
         // PORT: `convert_inline_string` renders the single paragraph
         // content.
         final para = blockFromString(
-          '+Sometimes you feel pass:q[`mono`].+ Sometimes you +\$\$don\'t\$\$+.',
+          "+Sometimes you feel pass:q[`mono`].+ Sometimes you +\$\$don't\$\$+.",
         );
         expect(
           contentOf(para),
-          'Sometimes you feel <code>mono</code>. Sometimes you don\'t.',
+          "Sometimes you feel <code>mono</code>. Sometimes you don't.",
         );
       });
 
@@ -4448,7 +4448,7 @@ void main() {
 
       test('replaces punctuation', () {
         final para = blockFromString(
-          'John\'s Hideout is the Whites`\' place... foo$bs\'bar',
+          "John's Hideout is the Whites`' place... foo$bs'bar",
         );
         expect(
           subReplacements(para.source()),
@@ -4458,16 +4458,16 @@ void main() {
 
       test('should replace right single quote marks', () {
         final given = [
-          '`\'Twas the night',
-          'a `\'57 Chevy!',
-          'the whites`\' place',
-          'the whites`\'.',
-          'the whites`\'--where the wild things are',
-          'the whites`\'\nhave',
-          'It\'s Mary`\'s little lamb.',
-          'consecutive single quotes \'\' are not modified',
-          'he is 6\' tall',
-          '$bs`\'',
+          "`'Twas the night",
+          "a `'57 Chevy!",
+          "the whites`' place",
+          "the whites`'.",
+          "the whites`'--where the wild things are",
+          "the whites`'\nhave",
+          "It's Mary`'s little lamb.",
+          "consecutive single quotes '' are not modified",
+          "he is 6' tall",
+          "$bs`'",
         ];
         final expected = [
           '&#8217;Twas the night',
@@ -4477,9 +4477,9 @@ void main() {
           'the whites&#8217;--where the wild things are',
           'the whites&#8217;\nhave',
           'It&#8217;s Mary&#8217;s little lamb.',
-          'consecutive single quotes \'\' are not modified',
-          'he is 6\' tall',
-          '`\'',
+          "consecutive single quotes '' are not modified",
+          "he is 6' tall",
+          "`'",
         ];
         for (var i = 0; i < given.length; i++) {
           final para = blockFromString(given[i]);
@@ -4576,7 +4576,7 @@ void main() {
 
       test('should resolve specialcharacters sub as highlight for source block when source highlighter is pygments', () {
         markTestSkipped(
-          'requires a pygments backend (mirrors the Ruby test gate `if: ENV[\'PYGMENTS_VERSION\']`); with no backend canHighlight is false',
+          "requires a pygments backend (mirrors the Ruby test gate `if: ENV['PYGMENTS_VERSION']`); with no backend canHighlight is false",
         );
       });
 
