@@ -57,6 +57,16 @@ final String _escFs = '$_esc.';
 /// without `multiLine` per `PORTING-REGEXP.md` B2).
 final RegExp _literalBackslashRx = RegExp('^\\\\|($_esc)?\\\\');
 
+/// Whether a line of [text] starts with [prefix], where a line starts
+/// wherever a `multiLine` `^` matches: at the start of [text] and after
+/// each `\n`, `\r`, `\u2028` and `\u2029`.
+bool _hasLineStartingWith(String text, String prefix) =>
+    text.startsWith(prefix) ||
+    text.contains('\n$prefix') ||
+    text.contains('\r$prefix') ||
+    text.contains('\u2028$prefix') ||
+    text.contains('\u2029$prefix');
+
 /// Matches a leading period (port of `LeadingPeriodRx`).
 final RegExp _leadingPeriodRx = RegExp(r'^\.', multiLine: true);
 
@@ -1021,37 +1031,49 @@ class ManpageConverter extends ConverterBase {
         // test becomes an explicit line-start check (exactly equivalent:
         // the run matches either way; only the branch differs).
         final expanded = result.replaceAll(tab, _et);
-        result = expanded.replaceAllMapped(_preserveSpacesRx, (match) {
-          final start = match.start;
-          if (start == 0 || expanded[start - 1] == '\n') {
-            return match.group(0)!;
-          }
-          return '$_escBs&${match.group(0)}';
-        });
+        result = !expanded.contains('  ')
+            ? expanded
+            : expanded.replaceAllMapped(_preserveSpacesRx, (match) {
+                final start = match.start;
+                if (start == 0 || expanded[start - 1] == '\n') {
+                  return match.group(0)!;
+                }
+                return '$_escBs&${match.group(0)}';
+              });
       case _WhitespaceMode.normalize:
         result = result.replaceAll(_wrappedIndentRx, '\n');
       case _WhitespaceMode.collapse:
         result = transliterateSqueeze(result, _whitespace, ' ');
     }
+    // NOTE each regex pass below is skipped when the text lacks a literal
+    // every match contains; the result is identical either way.
     // literal backslash (not a troff escape sequence)
-    result = result.replaceAllMapped(
-      _literalBackslashRx,
-      (match) => match.group(1) != null ? match.group(0)! : r'\(rs',
-    );
+    if (result.contains(r'\')) {
+      result = result.replaceAllMapped(
+        _literalBackslashRx,
+        (match) => match.group(1) != null ? match.group(0)! : r'\(rs',
+      );
+    }
     // horizontal ellipsis (emulate appearance)
-    result = result.replaceAll(_ellipsisCharRefRx, r'.\|.\|.');
+    if (result.contains('&#8230;')) {
+      result = result.replaceAll(_ellipsisCharRefRx, r'.\|.\|.');
+    }
     // leading . is used in troff for macro call or other formatting;
     // replace with \&.
-    result = result.replaceAll(_leadingPeriodRx, r'\&.');
+    if (_hasLineStartingWith(result, '.')) {
+      result = result.replaceAll(_leadingPeriodRx, r'\&.');
+    }
     // drop orphaned \c escape lines, unescape troff macro, quote adjacent
     // character, isolate macro line
-    result = result.replaceAllMapped(_escapedMacroRx, (match) {
-      final rest = lstrip(match.group(3)!);
-      if (rest.isEmpty) {
-        return '.${match.group(1)}"${match.group(2)}"';
-      }
-      return '.${match.group(1)}"${match.group(2)!.rstrip()}"\n$rest';
-    });
+    if (result.contains(_escFs)) {
+      result = result.replaceAllMapped(_escapedMacroRx, (match) {
+        final rest = lstrip(match.group(3)!);
+        if (rest.isEmpty) {
+          return '.${match.group(1)}"${match.group(2)}"';
+        }
+        return '.${match.group(1)}"${match.group(2)!.rstrip()}"\n$rest';
+      });
+    }
     result = result.replaceAll('-', r'\-');
     result = result.replaceAll('&lt;', '<');
     result = result.replaceAll('&gt;', '>');
@@ -1072,7 +1094,9 @@ class ManpageConverter extends ConverterBase {
     // en dash
     result = result.replaceAll('&#8211;', r'\(en');
     // em dash
-    result = result.replaceAll(_emDashCharRefRx, r'\(em');
+    if (result.contains('&#8212;')) {
+      result = result.replaceAll(_emDashCharRefRx, r'\(em');
+    }
     // left single quotation mark
     result = result.replaceAll('&#8216;', r'\(oq');
     // right single quotation mark
@@ -1099,7 +1123,12 @@ class ManpageConverter extends ConverterBase {
     // mock boundary (NOTE Dart's replaceAll takes the replacement
     // literally — `$1` would not interpolate — so this uses
     // replaceAllMapped; verified by probe)
-    result = result.replaceAllMapped(_mockMacroRx, (match) => match.group(1)!);
+    if (result.contains(_escBs)) {
+      result = result.replaceAllMapped(
+        _mockMacroRx,
+        (match) => match.group(1)!,
+      );
+    }
     // unescape troff backslash (NOTE update if more escapes are added)
     result = result.replaceAll(_escBs, r'\');
     // unescape full stop in troff commands (NOTE must take place after
