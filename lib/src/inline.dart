@@ -1,3 +1,5 @@
+// Deprecated aliases mirror Ruby; removed only when upstream removes them.
+// ignore_for_file: remove_deprecations_in_breaking_versions
 /// Inline elements in an AsciiDoc block.
 ///
 /// Port of `lib/asciidoctor/inline.rb`.

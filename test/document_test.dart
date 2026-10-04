@@ -1,3 +1,5 @@
+// Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
+// ignore_for_file: avoid_dynamic_calls
 /// Port of `test/document_test.rb` (156 tests).
 ///
 /// All tests run: `convertFile`/`asciidoctorLoad`/`exampleDocument` are
@@ -179,7 +181,7 @@ String convertFile(
   };
   if (attributes != null) {
     if (attributes.containsKey('_attr_string_')) {
-      options['attributes'] = (attributes['_attr_string_']! as String)!;
+      options['attributes'] = (attributes['_attr_string_']! as String);
     } else {
       options['attributes'] = attributes;
     }
@@ -1439,13 +1441,13 @@ class _XmlParser {
       if (pos >= source.length) return null;
       if (source[pos] == '>') {
         offset = pos + 1;
-        return _XmlTag(name, attributes, false);
+        return _XmlTag(name, attributes, selfClosing: false);
       }
       if (source[pos] == '/' &&
           pos + 1 < source.length &&
           source[pos + 1] == '>') {
         offset = pos + 2;
-        return _XmlTag(name, attributes, true);
+        return _XmlTag(name, attributes, selfClosing: true);
       }
       final attrMatch = RegExp(r'([A-Za-z_][\w:.-]*)')
           .matchAsPrefix(source, pos);
@@ -1501,7 +1503,7 @@ class _XmlParser {
 /// A parsed open tag.
 class _XmlTag {
   /// Creates a tag with [name], [attributes], and [selfClosing].
-  new(this.name, this.attributes, this.selfClosing);
+  new(this.name, this.attributes, {required this.selfClosing});
 
   /// Tag name as written.
   final String name;

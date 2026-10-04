@@ -1,3 +1,5 @@
+// Positional params mirror Ruby signatures for port fidelity.
+// ignore_for_file: avoid_positional_boolean_parameters
 /// Substitutions applied to lines of AsciiDoc text.
 ///
 /// Port of `lib/asciidoctor/substitutors.rb`.

@@ -1,3 +1,5 @@
+// Tests intentionally exercise deprecated aliases for Ruby parity.
+// ignore_for_file: deprecated_member_use_from_same_package
 /// Tests for the top-level load/convert entry points (`load.dart`).
 ///
 /// Ports the load/convert API assertions from `test/api_test.rb` (contexts

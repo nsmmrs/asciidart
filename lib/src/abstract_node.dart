@@ -1,3 +1,6 @@
+// Deprecated aliases mirror Ruby; removed only when upstream removes them.
+// Positional params mirror Ruby signatures for port fidelity.
+// ignore_for_file: remove_deprecations_in_breaking_versions, avoid_positional_boolean_parameters
 /// Base class for every node in a parsed AsciiDoc document.
 ///
 /// Port of `lib/asciidoctor/abstract_node.rb`.

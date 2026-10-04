@@ -1,3 +1,6 @@
+// The `<<` append operator intentionally returns its receiver (Ruby
+// parity); statement uses discard it.
+// ignore_for_file: unnecessary_statements
 /// Tests for the DocBook 5 converter port (`docbook5.dart`).
 ///
 /// Port of the docbook-output assertions in the Ruby suite

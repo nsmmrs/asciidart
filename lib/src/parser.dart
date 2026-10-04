@@ -1,3 +1,7 @@
+// The `<<` append operator intentionally returns its receiver (Ruby
+// parity); statement uses discard it.
+// Positional params mirror Ruby signatures for port fidelity.
+// ignore_for_file: unnecessary_statements, avoid_positional_boolean_parameters
 /// Methods to parse lines of AsciiDoc into an object hierarchy.
 ///
 /// Port of `lib/asciidoctor/parser.rb` (complete).

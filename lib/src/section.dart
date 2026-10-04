@@ -159,6 +159,9 @@ class Section extends AbstractBlock implements NodeSection {
   ///
   /// Port of `Asciidoctor::Section.generate_id`.
   static String generateId(String title, dynamic document) {
+    // `document` is dynamic so tests can pass fakes; production callers pass
+    // a Document. The two dynamic member accesses below are intentional.
+    // ignore: avoid_dynamic_calls
     final attrs = document.attributes as Map<String, Object?>;
     final pre = isTruthy(attrs['idprefix'])
         ? attrs['idprefix']! as String
@@ -204,6 +207,8 @@ class Section extends AbstractBlock implements NodeSection {
         genId = genId.substring(1);
       }
     }
+    // See above: `document` may be a test fake, so this stays dynamic.
+    // ignore: avoid_dynamic_calls
     final refs = document.catalog['refs'] as Map<String, Object?>;
     if (refs.containsKey(genId)) {
       var count = _complianceUniqueIdStartIndex;

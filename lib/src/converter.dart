@@ -1,3 +1,5 @@
+// Positional params mirror Ruby signatures for port fidelity.
+// ignore_for_file: avoid_positional_boolean_parameters
 /// Converter framework: registration, factories and the dispatch base class.
 ///
 /// Port of `lib/asciidoctor/converter.rb` (framework only). The backend

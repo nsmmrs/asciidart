@@ -1,3 +1,7 @@
+// The `<<` append operator intentionally returns its receiver (Ruby
+// parity); statement uses discard it.
+// Tests intentionally exercise deprecated aliases for Ruby parity.
+// ignore_for_file: unnecessary_statements, deprecated_member_use_from_same_package
 /// Behavioral tests for the structural document model port.
 ///
 /// Covers `section.dart`, `list.dart`, `table.dart` against the merged

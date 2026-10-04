@@ -1,3 +1,5 @@
+// Deprecated aliases mirror Ruby; removed only when upstream removes them.
+// ignore_for_file: remove_deprecations_in_breaking_versions
 /// Extension framework: processors, registries and groups.
 ///
 /// Port of `lib/asciidoctor/extensions.rb`.

@@ -1,3 +1,5 @@
+// Positional params mirror Ruby signatures for port fidelity.
+// ignore_for_file: avoid_positional_boolean_parameters
 /// Command-line option parsing for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/cli/options.rb` (`Asciidoctor::Cli::Options`).

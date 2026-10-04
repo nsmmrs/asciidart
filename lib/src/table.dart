@@ -1,3 +1,7 @@
+// Positional params mirror Ruby signatures for port fidelity.
+// The table reader is dynamic so tests can pass fakes; dynamic dispatch on
+// it mirrors Ruby duck typing.
+// ignore_for_file: avoid_positional_boolean_parameters, avoid_dynamic_calls
 /// Structural document model: tables, columns, cells and table parsing.
 ///
 /// Port of `lib/asciidoctor/table.rb` (complete).
@@ -240,13 +244,13 @@ class Table extends AbstractBlock {
       }
       for (final col in columns) {
         totalWidth += colPcwidth =
-            (col.assignWidth(null, widthBase, precision)! as num)!;
+            (col.assignWidth(null, widthBase, precision)! as num);
       }
     } else {
       final computed = (100.0 / columns.length).truncateAtPrecision(precision);
       colPcwidth = computed.toInt() == computed ? computed.toInt() : computed;
       for (final col in columns) {
-        totalWidth += (col.assignWidth(colPcwidth, null, precision)! as num)!;
+        totalWidth += (col.assignWidth(colPcwidth, null, precision)! as num);
       }
     }
 
@@ -466,7 +470,7 @@ class Cell extends AbstractBlock {
         // TODOdelete style attribute from @attributes if set.
         if (!isTruthy(inHeaderRow)) {
           final attrStyle = attrs['style'];
-          if (isTruthy(attrStyle)) cellStyle = (attrStyle! as String)!;
+          if (isTruthy(attrStyle)) cellStyle = (attrStyle! as String);
         }
         updateAttributes(attrs);
       }
@@ -586,7 +590,7 @@ class Cell extends AbstractBlock {
 
   /// The nested document in an AsciiDoc table cell (only set when the style
   /// is `'asciidoc'`).
-  dynamic innerDocument;
+  Document? innerDocument;
 
   dynamic _cursor;
   List<Object?>? _reinitializeArgs;
@@ -672,7 +676,7 @@ class Cell extends AbstractBlock {
   Object? content() {
     final cellStyle = style;
     if (cellStyle == 'asciidoc') {
-      return innerDocument.convert();
+      return innerDocument!.convert();
     } else if (_text!.contains(doubleLf)) {
       return rubySplit(text! as String, _blankLineRx)
           .map(

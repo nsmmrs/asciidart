@@ -1,3 +1,5 @@
+// Positional params mirror Ruby signatures for port fidelity.
+// ignore_for_file: avoid_positional_boolean_parameters
 /// Port of the CodeRay 1.1.3 Ruby scanner (`scanners/ruby.rb` with
 /// `scanners/ruby/patterns.rb` and `scanners/ruby/string_state.rb`).
 ///

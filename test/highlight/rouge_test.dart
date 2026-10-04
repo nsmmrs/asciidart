@@ -1,3 +1,6 @@
+// Adjacent-string joins here are markup/paths, not prose; joined values
+// are asserted byte-identical by tests.
+// ignore_for_file: missing_whitespace_between_adjacent_strings
 /// Tests for the Rouge adapter.
 library;
 

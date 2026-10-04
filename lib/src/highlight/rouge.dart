@@ -1,3 +1,6 @@
+// Adjacent-string joins here are markup/paths, not prose; joined values
+// are asserted byte-identical by tests.
+// ignore_for_file: missing_whitespace_between_adjacent_strings
 /// Rouge adapter: server-side highlighting with theme stylesheets.
 ///
 /// Dart port of `lib/asciidoctor/syntax_highlighter/rouge.rb` (including the

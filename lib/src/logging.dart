@@ -1,3 +1,5 @@
+// Positional params mirror Ruby signatures for port fidelity.
+// ignore_for_file: avoid_positional_boolean_parameters
 /// Logging infrastructure for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/logging.rb` (`Asciidoctor::Logger`,

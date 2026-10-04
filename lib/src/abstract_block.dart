@@ -1,3 +1,5 @@
+// Deprecated aliases mirror Ruby; removed only when upstream removes them.
+// ignore_for_file: remove_deprecations_in_breaking_versions
 /// Base class for block-level nodes in a parsed AsciiDoc document.
 ///
 /// Port of `lib/asciidoctor/abstract_block.rb`.

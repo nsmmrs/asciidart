@@ -91,7 +91,7 @@ void assertMessage(
     actual = message.toString();
   } else {
     expect(record.message, isA<String>());
-    actual = (record.message! as String)!;
+    actual = (record.message! as String);
   }
   if (expectedMessage.startsWith('~')) {
     expect(actual, contains(expectedMessage.substring(1)));

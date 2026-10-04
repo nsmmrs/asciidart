@@ -1,3 +1,5 @@
+// Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
+// ignore_for_file: avoid_dynamic_calls
 /// Tests for CLI `-j/--jobs` parallel bulk conversion.
 ///
 /// Covers flag parsing/validation, the conversion worker codec

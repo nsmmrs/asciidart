@@ -107,6 +107,7 @@ void main() {
 
   final target = File('${repoRoot.path}/lib/src/data.g.dart');
   target.writeAsStringSync(out.toString());
+  // A CLI progress message is the tool's whole UI.
   // ignore: avoid_print
   print('embed_data: wrote ${target.path} (${entries.length} files)');
 }

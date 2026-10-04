@@ -1,8 +1,11 @@
+// Deprecated aliases mirror Ruby; removed only when upstream removes them.
+// Dynamic dispatch here mirrors Ruby duck typing over option maps.
+// ignore_for_file: remove_deprecations_in_breaking_versions, avoid_dynamic_calls
 /// Top-level load and convert entry points for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/load.rb` ([load], [loadFile]) and
 /// `lib/asciidoctor/convert.rb` ([convert], [convertFile], plus the
-/// deprecated [render]/[renderFile] aliases).
+/// deprecated `render`/`renderFile` aliases).
 ///
 /// Option keys are [String]s (`'safe'`, `'backend'`, `'attributes'`,
 /// `'standalone'`, `'to_file'`, `'to_dir'`, `'mkdirs'`, `'timings'`,

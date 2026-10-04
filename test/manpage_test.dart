@@ -1,3 +1,6 @@
+// The `<<` append operator intentionally returns its receiver (Ruby
+// parity); statement uses discard it.
+// ignore_for_file: unnecessary_statements
 /// Tests for the manpage converter port (`manpage.dart`).
 ///
 /// Port of the manpage-output assertions in the Ruby suite

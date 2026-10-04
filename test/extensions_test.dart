@@ -1,3 +1,9 @@
+// Adjacent-string joins here are markup/paths, not prose; joined values
+// are asserted byte-identical by tests.
+// The `<<` append operator intentionally returns its receiver (Ruby
+// parity); statement uses discard it.
+// Tests intentionally exercise deprecated aliases for Ruby parity.
+// ignore_for_file: missing_whitespace_between_adjacent_strings, unnecessary_statements, deprecated_member_use_from_same_package
 /// Port of `test/extensions_test.rb`.
 ///
 /// All tests run: extension integration (activation through the
@@ -2281,7 +2287,7 @@ void main() {
         });
         expect(doc.blocks.length, equals(1));
         expect(doc.blocks[0].context, equals('paragraph'));
-        output = (doc.convert()! as String)!;
+        output = (doc.convert()! as String);
         assertMessage(
           logger,
           'INFO',
