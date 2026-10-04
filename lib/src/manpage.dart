@@ -120,7 +120,7 @@ enum _WhitespaceMode {
 /// below (see the library docs).
 class ManpageConverter extends ConverterBase {
   /// Creates a converter for [backend] with constructor options [opts].
-  ManpageConverter(super.backend, [super.opts]) {
+  new(super.backend, [super.opts]) {
     initBackendTraits(<String, Object?>{
       'basebackend': 'manpage',
       'filetype': 'man',

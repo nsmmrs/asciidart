@@ -43,7 +43,7 @@ double _roundAtPrecision(num value, int precision) {
 /// yet ported). Only used to carry a source location into log messages.
 class ReaderCursor {
   /// Creates a cursor wrapping opaque [data] (as returned by `mark`).
-  ReaderCursor(this.data);
+  new(this.data);
 
   /// The opaque cursor data.
   final List<Object?> data;
@@ -58,13 +58,10 @@ class ReaderCursor {
 /// Port of `Asciidoctor::Table::Rows`.
 class TableRows {
   /// Creates a row collection (all sections default to empty).
-  TableRows([
-    List<List<Cell>>? head,
-    List<List<Cell>>? foot,
-    List<List<Cell>>? body,
-  ]) : head = head ?? <List<Cell>>[],
-       foot = foot ?? <List<Cell>>[],
-       body = body ?? <List<Cell>>[];
+  new([List<List<Cell>>? head, List<List<Cell>>? foot, List<List<Cell>>? body])
+    : head = head ?? <List<Cell>>[],
+      foot = foot ?? <List<Cell>>[],
+      body = body ?? <List<Cell>>[];
 
   /// The head rows.
   List<List<Cell>> head;
@@ -126,7 +123,7 @@ class Table extends AbstractBlock {
   /// Note that [attributes] is only read here (for `'width'` and
   /// `'rotate-option'`); the computed values land on this table's own
   /// attributes, exactly as in Ruby.
-  Table(AbstractBlock? parent, Map<String, Object?> attributes)
+  new(AbstractBlock? parent, Map<String, Object?> attributes)
     : super(parent, 'table') {
     final pcwidth = attributes['width'];
     late final int pcwidthIntval;
@@ -302,7 +299,7 @@ class Column extends AbstractNode {
   /// number and the `width`/`halign`/`valign` defaults into [attributes]
   /// (mutating the passed map, as in Ruby) and copying them onto this
   /// column.
-  Column(Table? table, int index, [Map<String, Object?>? attributes])
+  new(Table? table, int index, [Map<String, Object?>? attributes])
     : super(table, 'table_column') {
     final attrs = attributes ?? <String, Object?>{};
     style = attrs['style'] as String?;
@@ -356,7 +353,7 @@ class Column extends AbstractNode {
 /// in `parser.dart` and `document.dart`).
 class _CursorSourceLocation implements NodeSourceLocation {
   /// Creates a source location from [cursor].
-  _CursorSourceLocation(this._cursor);
+  new(this._cursor);
 
   final Cursor _cursor;
 
@@ -374,7 +371,7 @@ class _CursorSourceLocation implements NodeSourceLocation {
 /// values passed directly, e.g. test doubles).
 class _SnapshotSourceLocation implements NodeSourceLocation {
   /// Creates a snapshot of [file]:[lineno].
-  _SnapshotSourceLocation(this.file, this.lineno);
+  new(this.file, this.lineno);
 
   @override
   final String? file;
@@ -397,7 +394,7 @@ class Cell extends AbstractBlock {
   ///
   /// AsciiDoc-style cells build a nested document eagerly (see the
   /// `asciidoc` branch below), mirroring Ruby.
-  Cell(
+  new(
     Column? column,
     String? cellText, [
     Map<String, Object?>? attributes = const <String, Object?>{},
@@ -730,11 +727,7 @@ class TableParserContext {
   /// `Reader`; `dynamic` until `reader.dart` lands).
   ///
   /// Port of `Asciidoctor::Table::ParserContext#initialize`.
-  TableParserContext(
-    dynamic reader,
-    Table table, [
-    Map<String, Object?>? attributes,
-  ]) {
+  new(dynamic reader, Table table, [Map<String, Object?>? attributes]) {
     final attrs = attributes ?? <String, Object?>{};
     _reader = reader;
     _startCursorData = reader.mark();

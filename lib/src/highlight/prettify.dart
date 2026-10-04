@@ -16,7 +16,7 @@ import 'package:asciidoctor/src/highlight/highlight.dart';
 /// ([docinfoHead], [docinfoFooter]).
 class PrettifyAdapter {
   /// Creates a prettify adapter.
-  const PrettifyAdapter();
+  const new();
 
   /// Names this adapter registers for (`register_for 'prettify'`).
   static const List<String> registeredNames = ['prettify'];

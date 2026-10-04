@@ -153,7 +153,7 @@ String usageText(ArgParser parser) =>
 /// Fatal harness failure. Never a parity verdict.
 class HarnessError implements Exception {
   /// Creates an error with a human-readable [message].
-  HarnessError(this.message);
+  new(this.message);
 
   /// Human-readable description.
   final String message;
@@ -164,7 +164,7 @@ class HarnessError implements Exception {
 
 /// Validated harness configuration.
 class DifferentialConfig {
-  DifferentialConfig._({
+  new _({
     required this.exeA,
     required this.exeB,
     required this.rawExeA,
@@ -507,11 +507,7 @@ List<String> _collectCorpus(DifferentialConfig config) {
 
 /// Outcome of one exe invocation.
 class _RunResult {
-  _RunResult({
-    required this.exitCode,
-    required this.stdout,
-    required this.timedOut,
-  });
+  new({required this.exitCode, required this.stdout, required this.timedOut});
 
   /// Process exit code, or -1 after a timeout kill.
   final int exitCode;
@@ -758,7 +754,7 @@ String formatUnifiedDiff({
 enum _EditOp { equal, delete, insert }
 
 class _Edit {
-  const _Edit(this.op, this.aLine, this.bLine);
+  const new(this.op, this.aLine, this.bLine);
 
   final _EditOp op;
 
@@ -770,7 +766,7 @@ class _Edit {
 }
 
 class _Hunk {
-  _Hunk(this.start, this.end);
+  new(this.start, this.end);
 
   final int start;
   int end;

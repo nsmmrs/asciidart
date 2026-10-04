@@ -102,7 +102,7 @@ class DocumentAttributeEntry {
   /// Creates an entry assigning [value] to [name].
   ///
   /// [negate] defaults to whether [value] is `null` (an unset marker).
-  DocumentAttributeEntry(this.name, this.value, [bool? negate])
+  new(this.name, this.value, [bool? negate])
     : negate = negate ?? (value == null);
 
   /// The attribute name.
@@ -142,7 +142,7 @@ class DocumentTitle {
   /// followed by a space; [main] is the text before it and [subtitle] the
   /// text after it. With no separator match, [main] is the whole value and
   /// [subtitle] is `null`. [combined] is the (possibly sanitized) value.
-  DocumentTitle(String val, {String? separator, bool sanitize = false}) {
+  new(String val, {String? separator, bool sanitize = false}) {
     _sanitized = sanitize;
     var text = val;
     if (sanitize && text.contains('<')) {
@@ -191,7 +191,7 @@ class DocumentTitle {
 /// Port of `Asciidoctor::Document::Author`.
 class DocumentAuthor {
   /// Creates an author record.
-  const DocumentAuthor(
+  const new(
     this.name,
     this.firstname,
     this.middlename,
@@ -224,7 +224,7 @@ class DocumentAuthor {
 /// Port of `Asciidoctor::Document::ImageReference`.
 class ImageReference {
   /// Creates an image reference for [target] with [imagesdir].
-  const ImageReference(this.target, this.imagesdir);
+  const new(this.target, this.imagesdir);
 
   /// The image target.
   final String target;
@@ -242,7 +242,7 @@ class ImageReference {
 /// Port of `Asciidoctor::Document::Footnote`.
 class Footnote {
   /// Creates a footnote with [index], [id] and [text].
-  const Footnote(this.index, this.id, this.text);
+  const new(this.index, this.id, this.text);
 
   /// The footnote index.
   final Object? index;
@@ -261,7 +261,7 @@ class Footnote {
 /// the built-in converters report.
 class _BackendTraits {
   /// Creates backend traits.
-  const _BackendTraits({
+  const new({
     required this.basebackend,
     required this.filetype,
     required this.outfilesuffix,
@@ -290,7 +290,7 @@ class _BackendTraits {
 /// `update_backend_attributes`. [convert] always throws [UnimplementedError].
 class _BuiltinConverterStub implements NodeConverter {
   /// Creates a stub for [backend] with [traits] (`null` to derive).
-  const _BuiltinConverterStub(this.backend, this.traits);
+  const new(this.backend, this.traits);
 
   /// The backend this stub converts to.
   final String backend;
@@ -317,7 +317,7 @@ class _BuiltinConverterStub implements NodeConverter {
 /// delegate to the top-level `substitutors.dart` functions.
 class _ReaderDocumentAdapter implements ReaderDocument {
   /// Creates an adapter delegating to [document].
-  _ReaderDocumentAdapter(this._document);
+  new(this._document);
 
   final Document _document;
 
@@ -398,7 +398,7 @@ class _ReaderDocumentAdapter implements ReaderDocument {
 /// Exposes a reader [Cursor] as a [NodeSourceLocation].
 class _CursorSourceLocation implements NodeSourceLocation {
   /// Creates a source location from [cursor].
-  _CursorSourceLocation(this._cursor);
+  new(this._cursor);
 
   final Cursor _cursor;
 
@@ -425,8 +425,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// `'to_dir'`, `'sourcemap'`, `'timings'`, `'input_mtime'` (a [DateTime]),
   /// `'parse_header_only'`, `'catalog_assets'`, `'converter'`, `'template_dirs'`,
   /// `'cursor'`, `'parent'`, ...). The map is copied, never mutated.
-  Document([Object? data, Map<String, Object?>? options])
-    : super(null, 'document') {
+  new([Object? data, Map<String, Object?>? options]) : super(null, 'document') {
     final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
     final parentDoc = opts.remove('parent') as Document?;
     final attrOverrides = <String, Object?>{};

@@ -177,7 +177,7 @@ class Html5Converter extends ConverterBase {
   ///
   /// `opts['htmlsyntax'] == 'xml'` selects XML mode (void elements close
   /// with a slash and boolean attributes render as `name="name"`).
-  Html5Converter(super.backend, [super.opts])
+  new(super.backend, [super.opts])
     : _xmlMode = opts['htmlsyntax'] == 'xml',
       _voidElementSlash = opts['htmlsyntax'] == 'xml' ? '/' : '' {
     initBackendTraits(<String, Object?>{

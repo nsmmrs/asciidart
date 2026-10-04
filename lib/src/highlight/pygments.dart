@@ -22,7 +22,7 @@ import 'package:asciidoctor/src/highlight/highlight.dart';
 /// tag in inline-CSS mode.
 class PygmentsAdapter {
   /// Creates a Pygments adapter, optionally with a [lexer] backend.
-  PygmentsAdapter({this.lexer});
+  new({this.lexer});
 
   /// Names this adapter registers for (`register_for 'pygments'`).
   static const List<String> registeredNames = ['pygments'];

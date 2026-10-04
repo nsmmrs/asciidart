@@ -78,7 +78,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
   /// Creates a document with [attributes] (and optional [parent], which a
   /// document-context node ignores, as in Ruby).
   // ignore: use_super_parameters (explicit super call fixes the context)
-  FakeDocument({Map<String, Object?>? attributes, AbstractBlock? parent})
+  new({Map<String, Object?>? attributes, AbstractBlock? parent})
     : super(parent, 'document', attributes: attributes);
 
   /// The document catalog (only `refs` is used here).
@@ -183,7 +183,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
 /// parser context calls.
 class FakeReader {
   /// Creates a reader returning [markData] from [mark].
-  FakeReader({
+  new({
     this.markData = const <Object?>[],
     this.prevLineCursor,
     this.beforeMarkCursor,
@@ -217,7 +217,7 @@ class FakeReader {
 /// Minimal source location with `file`/`lineno` and `dup`.
 class FakeCursor implements NodeSourceLocation {
   /// Creates a cursor for [file]:[lineno].
-  FakeCursor(this.file, this.lineno);
+  new(this.file, this.lineno);
 
   /// The source file.
   @override

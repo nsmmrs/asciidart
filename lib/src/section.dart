@@ -22,7 +22,7 @@ class Section extends AbstractBlock implements NodeSection {
   /// The [level] defaults to one more than the parent level for a [Section]
   /// parent, else to 1. [numbered] mirrors the Ruby positional argument of
   /// the same name.
-  Section([
+  new([
     AbstractBlock? parent,
     int? level,
     this.numbered = false,

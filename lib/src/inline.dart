@@ -15,7 +15,7 @@ class Inline extends AbstractNode {
   /// Dart parameter lists cannot mix optional positional and named
   /// parameters, so [text] is named here (Ruby takes it positionally).
   // ignore: use_super_parameters, reason: explicit super passes a derived nodeName.
-  Inline(
+  new(
     AbstractBlock? parent,
     String context, {
     this.text,

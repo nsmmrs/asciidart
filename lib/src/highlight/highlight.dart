@@ -98,7 +98,7 @@ enum DocinfoLocation {
 /// node-derived values lexing needs (`mixed`).
 class HighlightRequest {
   /// Creates an immutable highlight request.
-  const HighlightRequest({
+  const new({
     required this.source,
     this.language,
     this.cssMode = CssMode.classes,
@@ -163,7 +163,7 @@ class HighlightRequest {
 /// cell to anchor to).
 class HighlightResult {
   /// Creates a highlight result.
-  const HighlightResult(this.html, [this.sourceOffset]);
+  const new(this.html, [this.sourceOffset]);
 
   /// The highlighted HTML fragment.
   final String html;

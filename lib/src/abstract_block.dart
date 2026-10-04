@@ -63,7 +63,7 @@ typedef FindByFilter = Object? Function(AbstractBlock node);
 /// Mirrors the `StopIteration` control flow in Ruby's `find_by`.
 final class _TraversalStopped implements Exception {
   /// Creates the traversal-stop signal.
-  const _TraversalStopped();
+  const new();
 }
 
 /// The `Section` API surface consumed by blocks.
@@ -101,7 +101,7 @@ abstract interface class NodeSourceLocation {
 /// Port of `Asciidoctor::AbstractBlock`.
 abstract class AbstractBlock extends AbstractNode {
   /// Creates a block with [parent] and [context].
-  AbstractBlock(super.parent, super.context, {super.attributes}) {
+  new(super.parent, super.context, {super.attributes}) {
     if (context == 'document' || context == 'section') {
       level = _nextSectionIndex = 0;
       _nextSectionOrdinal = 1;

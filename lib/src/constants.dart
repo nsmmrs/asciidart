@@ -148,7 +148,7 @@ const Set<String> verbatimStyles = <String>{
 /// Ruby stores each entry as a `[context_symbol, Set_of_styles]` pair.
 class DelimitedBlockInfo {
   /// Creates an entry with block [context] and accepted [styles].
-  const DelimitedBlockInfo(this.context, [this.styles = const <String>{}]);
+  const new(this.context, [this.styles = const <String>{}]);
 
   /// The block context the delimiter maps to (e.g. `'listing'`).
   final String context;
@@ -378,7 +378,7 @@ const Map<String, String> intrinsicAttributes = <String, String>{
 /// Ruby stores each rule as a `[type_symbol, scope_symbol, regexp]` triple.
 class QuoteSub {
   /// Creates a rule with [type], [scope] and [pattern].
-  const QuoteSub(this.type, this.scope, this.pattern);
+  const new(this.type, this.scope, this.pattern);
 
   /// The quote type (`'strong'`, `'emphasis'`, `'monospaced'`, ...).
   final String type;
@@ -624,7 +624,7 @@ final Map<bool, List<QuoteSub>> quoteSubs = <bool, List<QuoteSub>>{
 /// Ruby stores each rule as a `[regexp, replacement, scope_symbol]` triple.
 class Replacement {
   /// Creates a rule with [pattern], [replacement] and [scope].
-  const Replacement(this.pattern, this.replacement, this.scope);
+  const new(this.pattern, this.replacement, this.scope);
 
   /// The pattern matching the source text.
   final RegExp pattern;

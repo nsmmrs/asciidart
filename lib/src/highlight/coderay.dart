@@ -24,7 +24,7 @@ import 'package:asciidoctor/src/highlight/highlight.dart';
 /// defines no `format` override).
 class CodeRayAdapter {
   /// Creates a CodeRay adapter, optionally with a [lexer] backend.
-  CodeRayAdapter({this.lexer});
+  new({this.lexer});
 
   /// Names this adapter registers for (`register_for 'coderay'`).
   static const List<String> registeredNames = ['coderay'];

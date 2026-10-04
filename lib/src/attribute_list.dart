@@ -29,7 +29,7 @@ abstract class SubsApplier {
 class AttributeList {
   /// Creates a parser for [source], optionally applying substitutions
   /// through [block]. Only the default comma [delimiter] is supported.
-  AttributeList(String source, [SubsApplier? block, String delimiter = ','])
+  new(String source, [SubsApplier? block, String delimiter = ','])
     : _scanner = _StringScanner(source),
       _block = block,
       _delimiter = delimiter {
@@ -231,7 +231,7 @@ class AttributeList {
 /// Minimal port of Ruby's `StringScanner` covering the operations
 /// [AttributeList] needs: all matches are anchored at the scan position.
 class _StringScanner {
-  _StringScanner(this.string);
+  new(this.string);
 
   /// The scanned string.
   final String string;

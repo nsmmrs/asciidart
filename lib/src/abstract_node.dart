@@ -94,7 +94,7 @@ abstract interface class NodeLogger {
 /// records render identically to before via `BasicFormatter`.
 final class _StderrNodeLogger implements NodeLogger {
   /// Creates the default stderr logger.
-  const _StderrNodeLogger();
+  const new();
 
   @override
   void debug(Object? message) {
@@ -205,7 +205,7 @@ abstract class AbstractNode {
   /// leaving [document] unset until the node is attached with [parent] or
   /// `<<`). [attributes] is copied; [nodeName] overrides the default node
   /// name, which is [context].
-  AbstractNode(
+  new(
     AbstractBlock? parent,
     String context, {
     Map<String, Object?>? attributes,

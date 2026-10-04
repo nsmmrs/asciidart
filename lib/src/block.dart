@@ -47,7 +47,7 @@ class Block extends AbstractBlock {
   /// substitutions (ignoring the `subs` attribute), and any other value is
   /// stored as the `subs` attribute. Passing [subs] resolves eagerly
   /// through `commitSubs`, which the substitutors wave still has to port.
-  Block(
+  new(
     super.parent,
     super.context, {
     super.attributes,

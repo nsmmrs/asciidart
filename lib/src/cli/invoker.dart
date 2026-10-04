@@ -65,7 +65,7 @@ import 'package:asciidoctor/src/cli/parallel.dart';
 /// [CliOptions]), then call [invoke] and read [code].
 final class Invoker with Logging {
   /// Creates an invoker for already-parsed [options].
-  Invoker.fromOptions(CliOptions options) : _options = options;
+  new fromOptions(CliOptions options) : _options = options;
 
   /// Creates an invoker from an options [map] (the Ruby `Hash` form).
   ///
@@ -77,7 +77,7 @@ final class Invoker with Logging {
   /// `source_dir`, `destination_dir`, `log_level`, `sourcemap`. The
   /// `failure_level`, `trace` and `timings` seeds are ignored (as in Ruby)
   /// and unknown keys are dropped.
-  Invoker.fromMap(Map<String, Object?> map) : _options = _optionsFromMap(map);
+  new fromMap(Map<String, Object?> map) : _options = _optionsFromMap(map);
 
   /// Creates an invoker by parsing [args] via [CliOptions].
   ///
@@ -89,7 +89,7 @@ final class Invoker with Logging {
   /// [out] and [err] receive parse-time output (defaulting to the process
   /// streams); [environment] supplies environment variables (defaulting to
   /// [Platform.environment]).
-  Invoker.fromArgs(
+  new fromArgs(
     List<String> args, {
     StringSink? out,
     StringSink? err,

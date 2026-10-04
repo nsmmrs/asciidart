@@ -44,7 +44,7 @@ enum Severity {
   unknown(5, 'ANY');
 
   /// Creates a severity with integer [value] and format [label].
-  Severity(this.value, this.label);
+  new(this.value, this.label);
 
   /// The integer severity, matching `::Logger::Severity`.
   final int value;
@@ -125,7 +125,7 @@ abstract interface class LoggerFormatter {
 /// object responding to `call`).
 final class _FunctionFormatter implements LoggerFormatter {
   /// Creates a formatter delegating to [format].
-  const _FunctionFormatter(this.format);
+  const new(this.format);
 
   /// The wrapped formatting function.
   final String Function(
@@ -153,7 +153,7 @@ final class _FunctionFormatter implements LoggerFormatter {
 /// `opts.key? :formatter` check.
 final class DefaultFormatter implements LoggerFormatter {
   /// Creates the default formatter.
-  const DefaultFormatter();
+  const new();
 
   @override
   String call(
@@ -174,7 +174,7 @@ final class DefaultFormatter implements LoggerFormatter {
 /// `FAILED` for `FATAL`.
 final class BasicFormatter implements LoggerFormatter {
   /// Creates the basic formatter.
-  const BasicFormatter();
+  const new();
 
   /// Severity label substitutes. Port of `SEVERITY_LABEL_SUBSTITUTES`.
   static const Map<String, String> severityLabelSubstitutes = {
@@ -201,7 +201,7 @@ final class BasicFormatter implements LoggerFormatter {
 /// delegate to [add]. Subclasses implement [add] and [maxSeverity].
 abstract class LoggerBase {
   /// Creates a logger with the given [level].
-  LoggerBase(Severity level) : _level = level;
+  new(Severity level) : _level = level;
 
   Severity _level;
 
@@ -304,14 +304,14 @@ class Logger extends LoggerBase {
   /// `null` selects the [DefaultFormatter] (mirroring Ruby's
   /// `opts.key? :formatter` check); a [LoggerFormatter] — or a raw
   /// formatting function — is used as is.
-  Logger({
+  new({
     Object? logdev = _unspecified,
     Object? level = _unspecified,
     Object? formatter = _unspecified,
   }) : this._(_resolveLogdev(logdev), _resolveLevel(level), formatter);
 
   /// Creates a logger from an already-resolved log device.
-  Logger._(_ResolvedLogdev resolved, super.level, Object? formatter)
+  new _(_ResolvedLogdev resolved, super.level, Object? formatter)
     : _sink = resolved.sink,
       _ownsSink = resolved.owned {
     this.formatter = _resolveFormatter(formatter);
@@ -408,7 +408,7 @@ class Logger extends LoggerBase {
 /// A log device plus whether the logger owns (and must close) it.
 class _ResolvedLogdev {
   /// Creates a resolved log device.
-  const _ResolvedLogdev(this.sink, this.owned);
+  const new(this.sink, this.owned);
 
   /// The sink records are written to.
   final StringSink sink;
@@ -420,7 +420,7 @@ class _ResolvedLogdev {
 /// A sink discarding everything written to it (a `null` log device).
 class _NullSink implements StringSink {
   /// Creates the discarding sink.
-  const _NullSink();
+  const new();
 
   @override
   void write(Object? object) {}
@@ -442,7 +442,7 @@ class _NullSink implements StringSink {
 /// of a symbol).
 class MemoryLogMessage {
   /// Creates a record of [message] logged at [severity].
-  const MemoryLogMessage(this.severity, this.message);
+  const new(this.severity, this.message);
 
   /// The severity the message was logged at.
   final Severity severity;
@@ -458,7 +458,7 @@ class MemoryLogMessage {
 /// without a level check).
 class MemoryLogger extends LoggerBase {
   /// Creates an empty memory logger.
-  MemoryLogger() : super(Severity.unknown);
+  new() : super(Severity.unknown);
 
   /// The recorded records, in logging order.
   final List<MemoryLogMessage> messages = [];
@@ -501,7 +501,7 @@ class MemoryLogger extends LoggerBase {
 /// Port of `Asciidoctor::NullLogger` (level `UNKNOWN`).
 class NullLogger extends LoggerBase {
   /// Creates a null logger.
-  NullLogger() : super(Severity.unknown);
+  new() : super(Severity.unknown);
 
   Severity? _maxSeverity;
 
@@ -559,7 +559,7 @@ abstract final class LoggerManager {
 /// `sourceLocation: text` when a location is present, else [text].
 class ContextMessage {
   /// Creates a message with [text] and optional [sourceLocation].
-  const ContextMessage(this.text, {this.sourceLocation});
+  const new(this.text, {this.sourceLocation});
 
   /// The message text, without location prefix. Mirrors `message[:text]`.
   final String text;

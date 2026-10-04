@@ -16,7 +16,7 @@ import 'dart:io' show stdout;
 /// `Process.clock_gettime(Process::CLOCK_MONOTONIC)`).
 class Timings {
   /// Creates timings with no recorded phases.
-  Timings() {
+  new() {
     _stopwatch.start();
   }
 

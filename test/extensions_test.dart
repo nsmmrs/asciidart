@@ -88,7 +88,7 @@ class FakeLogger implements NodeLogger {
 /// level-gated call sites such as the parser's debug probes).
 class ManagerLoggerAdapter extends LoggerBase {
   /// Creates an adapter recording into [fake].
-  ManagerLoggerAdapter(this.fake) : super(Severity.unknown);
+  new(this.fake) : super(Severity.unknown);
 
   /// The backing fake logger.
   final FakeLogger fake;
@@ -180,7 +180,7 @@ void assertMessage(FakeLogger logger, String severity, String message) {
 /// [PreprocessorReader] with registry include processors headlessly.
 class FakeReaderDocument implements ReaderDocument {
   /// Creates a fake backed by [document] with [includeProcessors].
-  FakeReaderDocument(this.document, [this.includeProcessors]);
+  new(this.document, [this.includeProcessors]);
 
   /// The backing document.
   final Document document;
@@ -361,7 +361,7 @@ const _voidElements = <String>{
 /// [texts] segments.
 class _XmlElement {
   /// Creates an element with [tag] and [attributes].
-  _XmlElement(this.tag, [Map<String, String>? attributes])
+  new(this.tag, [Map<String, String>? attributes])
     : attributes = attributes ?? <String, String>{};
 
   /// The lower-cased tag name (`'#root'` for the synthetic fragment root).
@@ -485,7 +485,7 @@ _XmlElement _parseFragment(String content) {
 /// A parsed CSS compound selector.
 class _CssCompound {
   /// Creates a compound matching [tag], [classes] and [attrs].
-  _CssCompound(this.tag, this.classes, this.attrs);
+  new(this.tag, this.classes, this.attrs);
 
   /// The tag name, `'*'`, or `null` (any tag).
   final String? tag;
@@ -620,13 +620,13 @@ List<_XmlElement> _queryCss(_XmlElement root, String selector) {
 /// A parsed XPath predicate.
 class _XpathPredicate {
   /// Creates an attribute-equality predicate.
-  _XpathPredicate.attr(this.name, this.value) : kind = 0;
+  new attr(this.name, this.value) : kind = 0;
 
   /// Creates an attribute-absence predicate.
-  _XpathPredicate.absent(this.name) : kind = 1, value = null;
+  new absent(this.name) : kind = 1, value = null;
 
   /// Creates a text-equality predicate.
-  _XpathPredicate.text(this.value) : kind = 2, name = null;
+  new text(this.value) : kind = 2, name = null;
 
   /// The predicate kind: 0 = `[@name="value"]`, 1 = `[not(@name)]`,
   /// 2 = `[text()="value"]`.
@@ -758,7 +758,7 @@ String fixturePath(String name) => 'test/fixtures/$name';
 /// Sample preprocessor (port of `SamplePreprocessor`).
 class SamplePreprocessor extends Preprocessor {
   /// Creates a sample preprocessor with [config].
-  SamplePreprocessor([super.config]);
+  new([super.config]);
 
   @override
   Object? process(Document document, Reader reader) => null;
@@ -771,20 +771,20 @@ class SamplePreprocessor extends Preprocessor {
 /// the default handling behavior instead.
 class SampleIncludeProcessor extends IncludeProcessor {
   /// Creates a sample include processor with [config].
-  SampleIncludeProcessor([super.config]);
+  new([super.config]);
 }
 
 /// Sample docinfo processor (port of `SampleDocinfoProcessor`).
 class SampleDocinfoProcessor extends DocinfoProcessor {
   /// Creates a sample docinfo processor with [config].
-  SampleDocinfoProcessor([super.config]);
+  new([super.config]);
 }
 
 // NOTE intentionally using the deprecated name.
 /// Sample tree processor (port of `SampleTreeprocessor`).
 class SampleTreeprocessor extends Treeprocessor {
   /// Creates a sample tree processor with [config].
-  SampleTreeprocessor([super.config]);
+  new([super.config]);
 
   @override
   Object? process(Document document) => null;
@@ -796,32 +796,32 @@ typedef SampleTreeProcessor = SampleTreeprocessor;
 /// Sample postprocessor (port of `SamplePostprocessor`).
 class SamplePostprocessor extends Postprocessor {
   /// Creates a sample postprocessor with [config].
-  SamplePostprocessor([super.config]);
+  new([super.config]);
 }
 
 /// Sample block processor (port of `SampleBlock`).
 class SampleBlock extends BlockProcessor {
   /// Creates a sample block processor with [name] and [config].
-  SampleBlock([super.name, super.config]);
+  new([super.name, super.config]);
 }
 
 /// Sample block macro processor (port of `SampleBlockMacro`).
 class SampleBlockMacro extends BlockMacroProcessor {
   /// Creates a sample block macro processor with [name] and [config].
-  SampleBlockMacro([super.name, super.config]);
+  new([super.name, super.config]);
 }
 
 /// Sample inline macro processor (port of `SampleInlineMacro`).
 class SampleInlineMacro extends InlineMacroProcessor {
   /// Creates a sample inline macro processor with [name] and [config].
-  SampleInlineMacro([super.name, super.config]);
+  new([super.name, super.config]);
 }
 
 /// Scrubs lines before the document title (port of
 /// `ScrubHeaderPreprocessor`).
 class ScrubHeaderPreprocessor extends Preprocessor {
   /// Creates the preprocessor with [config].
-  ScrubHeaderPreprocessor([super.config]);
+  new([super.config]);
 
   @override
   Object? process(Document document, Reader reader) {
@@ -840,7 +840,7 @@ class ScrubHeaderPreprocessor extends Preprocessor {
 /// `BoilerplateTextIncludeProcessor`).
 class BoilerplateTextIncludeProcessor extends IncludeProcessor {
   /// Creates the processor with [config].
-  BoilerplateTextIncludeProcessor([super.config]);
+  new([super.config]);
 
   @override
   bool handles(ReaderDocument document, String target) =>
@@ -864,7 +864,7 @@ class BoilerplateTextIncludeProcessor extends IncludeProcessor {
 /// Replaces the document author (port of `ReplaceAuthorTreeProcessor`).
 class ReplaceAuthorTreeProcessor extends TreeProcessor {
   /// Creates the processor with [config].
-  ReplaceAuthorTreeProcessor([super.config]);
+  new([super.config]);
 
   @override
   Object? process(Document document) {
@@ -877,7 +877,7 @@ class ReplaceAuthorTreeProcessor extends TreeProcessor {
 /// Replaces the whole document tree (port of `ReplaceTreeTreeProcessor`).
 class ReplaceTreeTreeProcessor extends TreeProcessor {
   /// Creates the processor with [config].
-  ReplaceTreeTreeProcessor([super.config]);
+  new([super.config]);
 
   @override
   Object? process(Document document) {
@@ -894,7 +894,7 @@ class ReplaceTreeTreeProcessor extends TreeProcessor {
 /// `SelfSigningTreeProcessor`).
 class SelfSigningTreeProcessor extends TreeProcessor {
   /// Creates the processor with [config].
-  SelfSigningTreeProcessor([super.config]);
+  new([super.config]);
 
   @override
   Object? process(Document document) {
@@ -907,7 +907,7 @@ class SelfSigningTreeProcessor extends TreeProcessor {
 /// Strips attributes from tags (port of `StripAttributesPostprocessor`).
 class StripAttributesPostprocessor extends Postprocessor {
   /// Creates the processor with [config].
-  StripAttributesPostprocessor([super.config]);
+  new([super.config]);
 
   @override
   Object? process(Document document, String output) {
@@ -925,7 +925,7 @@ class StripAttributesPostprocessor extends Postprocessor {
 /// defaults (see the `extensions.dart` library docs).
 class UppercaseBlock extends BlockProcessor {
   /// Creates the block processor with [name] and [config].
-  UppercaseBlock([String? name, Map<String, Object?>? config])
+  new([String? name, Map<String, Object?>? config])
     : super(name, {
         'name': 'yell',
         'contexts': {'paragraph'},
@@ -962,7 +962,7 @@ class UppercaseBlock extends BlockProcessor {
 /// Script snippet block macro (port of `SnippetMacro`).
 class SnippetMacro extends BlockMacroProcessor {
   /// Creates the macro processor with [name] and [config].
-  SnippetMacro([super.name, super.config]);
+  new([super.name, super.config]);
 
   @override
   Object? process(
@@ -983,7 +983,7 @@ class SnippetMacro extends BlockMacroProcessor {
 /// `LegacyPosAttrsBlockMacro`).
 class LegacyPosAttrsBlockMacro extends BlockMacroProcessor {
   /// Creates the macro processor with [name] and [config].
-  LegacyPosAttrsBlockMacro([String? name, Map<String, Object?>? config])
+  new([String? name, Map<String, Object?>? config])
     : super(name, {
         'pos_attrs': ['target', 'format'],
         ...?config,
@@ -1004,7 +1004,7 @@ class LegacyPosAttrsBlockMacro extends BlockMacroProcessor {
 /// Temperature inline macro (port of `TemperatureMacro`).
 class TemperatureMacro extends InlineMacroProcessor {
   /// Creates the macro processor with [name] and [config].
-  TemperatureMacro([super.name, super.config]) {
+  new([super.name, super.config]) {
     name ??= 'degrees';
     resolveAttributes(['1:units', 'precision=1']);
   }
@@ -1045,7 +1045,7 @@ class TemperatureMacro extends InlineMacroProcessor {
 /// Robots docinfo processor (port of `MetaRobotsDocinfoProcessor`).
 class MetaRobotsDocinfoProcessor extends DocinfoProcessor {
   /// Creates the processor with [config].
-  MetaRobotsDocinfoProcessor([super.config]);
+  new([super.config]);
 
   @override
   Object? process(Document document) =>
@@ -1055,7 +1055,7 @@ class MetaRobotsDocinfoProcessor extends DocinfoProcessor {
 /// Application-name docinfo processor (port of `MetaAppDocinfoProcessor`).
 class MetaAppDocinfoProcessor extends DocinfoProcessor {
   /// Creates the processor with [config].
-  MetaAppDocinfoProcessor([super.config]) {
+  new([super.config]) {
     atLocation('head');
   }
 

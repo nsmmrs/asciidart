@@ -426,7 +426,7 @@ void _checkWellFormedXml(String source) {
 /// [text].
 class XmlNode {
   /// Creates an element node.
-  XmlNode.element(
+  new element(
     this.name, {
     Map<String, String>? attributes,
     List<XmlNode>? children,
@@ -437,7 +437,7 @@ class XmlNode {
        _text = null;
 
   /// Creates a text node with decoded content [text].
-  XmlNode.text(String text, {this.parent})
+  new text(String text, {this.parent})
     : name = '#text',
       attributes = <String, String>{},
       children = <XmlNode>[],
@@ -560,7 +560,7 @@ class XmlNode {
 /// A list of matched [XmlNode]s (port of Nokogiri's `NodeSet`).
 class XmlNodeSet {
   /// Creates a node set wrapping [nodes].
-  XmlNodeSet([List<XmlNode>? nodes]) : nodes = nodes ?? <XmlNode>[];
+  new([List<XmlNode>? nodes]) : nodes = nodes ?? <XmlNode>[];
 
   /// Matched nodes, in document order.
   final List<XmlNode> nodes;
@@ -593,11 +593,10 @@ class XmlNodeSet {
 /// combinators, `*`, `:root`, and `:not(...)`.
 class XmlMatcher {
   /// Parses [content] into a matcher.
-  factory XmlMatcher.parse(String content) =>
-      XmlMatcher(_XmlParser(content).parse());
+  factory parse(String content) => XmlMatcher(_XmlParser(content).parse());
 
   /// Creates a matcher over top-level [roots].
-  XmlMatcher(this.roots);
+  new(this.roots);
 
   /// Top-level nodes (fragments may have several roots).
   final List<XmlNode> roots;
@@ -821,7 +820,7 @@ abstract class _XPathPredicate {
 /// Positional predicate (`[n]`, 1-based).
 class _PositionPredicate extends _XPathPredicate {
   /// Creates a positional predicate for 1-based [position].
-  _PositionPredicate(this.position);
+  new(this.position);
 
   /// 1-based position to keep.
   final int position;
@@ -836,7 +835,7 @@ class _PositionPredicate extends _XPathPredicate {
 /// Attribute-equality predicate (`[@name="value"]`).
 class _AttrEqualsPredicate extends _XPathPredicate {
   /// Creates an attribute-equality predicate.
-  _AttrEqualsPredicate(this.name, this.value);
+  new(this.name, this.value);
 
   /// Attribute name (prefix kept literally, e.g. `xml:id`).
   final String name;
@@ -852,7 +851,7 @@ class _AttrEqualsPredicate extends _XPathPredicate {
 /// Text-equality predicate (`[text()="value"]`, any direct text child).
 class _TextEqualsPredicate extends _XPathPredicate {
   /// Creates a text-equality predicate.
-  _TextEqualsPredicate(this.value);
+  new(this.value);
 
   /// Expected decoded text.
   final String value;
@@ -867,7 +866,7 @@ class _TextEqualsPredicate extends _XPathPredicate {
 /// (`[normalize-space(text())="value"]`).
 class _NormalizeSpacePredicate extends _XPathPredicate {
   /// Creates a normalized-text predicate.
-  _NormalizeSpacePredicate(this.value);
+  new(this.value);
 
   /// Expected normalized text.
   final String value;
@@ -883,7 +882,7 @@ class _NormalizeSpacePredicate extends _XPathPredicate {
 /// Namespace-exclusion predicate (`[not(namespace-uri()="uri")]`).
 class _NotNamespacePredicate extends _XPathPredicate {
   /// Creates a namespace-exclusion predicate.
-  _NotNamespacePredicate(this.uri);
+  new(this.uri);
 
   /// Excluded namespace URI.
   final String uri;
@@ -896,7 +895,7 @@ class _NotNamespacePredicate extends _XPathPredicate {
 /// An XPath location step in the supported subset.
 class _XPathStep {
   /// Creates a step with [axis], node-test [name], and [predicates].
-  _XPathStep(this.axis, this.name, this.predicates, {this.textNode = false});
+  new(this.axis, this.name, this.predicates, {this.textNode = false});
 
   /// Axis: `child` (default), `following-sibling`, or `self`.
   final String axis;
@@ -914,7 +913,7 @@ class _XPathStep {
 /// Recursive-descent parser for the XPath subset.
 class _XPathParser {
   /// Creates a parser over [source].
-  _XPathParser(this.source);
+  new(this.source);
 
   /// The expression being parsed.
   final String source;
@@ -1074,7 +1073,7 @@ class _XPathParser {
 /// A CSS compound selector in the supported subset.
 class _CssCompound {
   /// Creates a compound selector.
-  _CssCompound({
+  new({
     this.type,
     List<String>? ids,
     List<String>? classes,
@@ -1104,7 +1103,7 @@ class _CssCompound {
 /// A CSS attribute matcher.
 class _CssAttr {
   /// Creates an attribute matcher ([value] `null` means presence only).
-  _CssAttr(this.name, this.value);
+  new(this.name, this.value);
 
   /// Literal attribute name (`prefix|local` becomes `prefix:local`).
   final String name;
@@ -1116,7 +1115,7 @@ class _CssAttr {
 /// One compound selector plus the combinator joining it to its predecessor.
 class _CssStep {
   /// Creates a chain step.
-  _CssStep(this.compound, this.combinator);
+  new(this.compound, this.combinator);
 
   /// Compound selector for this step.
   final _CssCompound compound;
@@ -1128,7 +1127,7 @@ class _CssStep {
 /// Recursive-descent parser for the CSS subset.
 class _CssParser {
   /// Creates a parser over [source].
-  _CssParser(this.source);
+  new(this.source);
 
   /// The selector being parsed.
   final String source;
@@ -1279,7 +1278,7 @@ class _CssParser {
 /// entity-decoded.
 class _XmlParser {
   /// Creates a parser over [source].
-  _XmlParser(this.source);
+  new(this.source);
 
   /// The markup being parsed.
   final String source;
@@ -1502,7 +1501,7 @@ class _XmlParser {
 /// A parsed open tag.
 class _XmlTag {
   /// Creates a tag with [name], [attributes], and [selfClosing].
-  _XmlTag(this.name, this.attributes, this.selfClosing);
+  new(this.name, this.attributes, this.selfClosing);
 
   /// Tag name as written.
   final String name;

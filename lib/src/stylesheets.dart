@@ -17,7 +17,7 @@ import 'package:asciidoctor/src/data.g.dart';
 /// See the library documentation for an overview.
 class Stylesheets {
   /// Creates a stylesheets helper. Prefer [Stylesheets.instance].
-  Stylesheets();
+  new();
 
   /// File name of the default Asciidoctor stylesheet.
   static const String defaultStylesheetName = 'asciidoctor.css';

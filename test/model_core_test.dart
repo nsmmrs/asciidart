@@ -80,7 +80,7 @@ class FakeLogger implements NodeLogger {
 /// Stands in for `Document` (document wave) in these tests.
 class FakeDocument extends AbstractBlock implements NodeDocument {
   // ignore: use_super_parameters, reason: explicit super hardcodes the document context.
-  FakeDocument({
+  new({
     Map<String, Object?>? attributes,
     this.safe = SafeMode.safe,
     String? baseDir,
@@ -166,7 +166,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
 /// Stands in for `Section` (section wave) in these tests.
 class FakeSection extends AbstractBlock implements NodeSection {
   // ignore: use_super_parameters, reason: explicit super hardcodes the section context.
-  FakeSection(
+  new(
     AbstractBlock? parent, {
     Map<String, Object?>? attributes,
     this.numbered = false,
@@ -185,7 +185,7 @@ class FakeSection extends AbstractBlock implements NodeSection {
 
 /// Stands in for the reader cursor (reader wave) in these tests.
 class FakeSourceLocation implements NodeSourceLocation {
-  FakeSourceLocation(this.file, this.lineno);
+  new(this.file, this.lineno);
 
   @override
   final String? file;
@@ -196,7 +196,7 @@ class FakeSourceLocation implements NodeSourceLocation {
 
 /// A block with canned URI responses for [AbstractNode.fetchUri].
 class UriBlock extends Block {
-  UriBlock(
+  new(
     super.parent,
     super.context, {
     super.attributes,

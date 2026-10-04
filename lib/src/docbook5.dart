@@ -129,7 +129,7 @@ const List<Object> _defaultQuoteTags = <Object>['', '', true];
 /// below (see the library docs).
 class Docbook5Converter extends ConverterBase {
   /// Creates a converter for [backend] with constructor options [opts].
-  Docbook5Converter(super.backend, [super.opts]) {
+  new(super.backend, [super.opts]) {
     initBackendTraits(<String, Object?>{
       'basebackend': 'docbook',
       'filetype': 'xml',

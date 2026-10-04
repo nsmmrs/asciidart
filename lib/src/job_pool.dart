@@ -57,7 +57,7 @@ abstract interface class JobPool {
 /// [entryPoint] and handshakes each one for its job port before returning.
 final class IsolateJobPool implements JobPool {
   /// Creates a pool over already-handshaked [_isolates] and [_workerPorts].
-  IsolateJobPool._(this._isolates, this._workerPorts);
+  new _(this._isolates, this._workerPorts);
 
   /// Spawns a pool of [size] isolates running [entryPoint].
   ///

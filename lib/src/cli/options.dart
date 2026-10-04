@@ -138,7 +138,7 @@ Example: asciidoctor input.adoc
 /// (e.g. `asciidoctor --s` crashes instead of exiting cleanly).
 final class AmbiguousCliOptionException implements Exception {
   /// Creates an exception with Ruby's message (e.g. `ambiguous option: --s`).
-  const AmbiguousCliOptionException(this.message);
+  const new(this.message);
 
   /// Ruby's `OptionParser::AmbiguousOption` message text.
   final String message;
@@ -155,7 +155,7 @@ final class AmbiguousCliOptionException implements Exception {
 final class NeedlessCliArgumentException implements Exception {
   /// Creates an exception with Ruby's message
   /// (e.g. `needless argument: --quiet=true`).
-  const NeedlessCliArgumentException(this.message);
+  const new(this.message);
 
   /// Ruby's `OptionParser::NeedlessArgument` message text.
   final String message;
@@ -171,7 +171,7 @@ final class NeedlessCliArgumentException implements Exception {
 final class _InvalidCliArgument implements Exception {
   /// Creates an error with Ruby's message
   /// (e.g. `invalid argument: -d chapter`).
-  const _InvalidCliArgument(this.message);
+  const new(this.message);
 
   /// Ruby's `OptionParser::InvalidArgument` message text.
   final String message;
@@ -187,7 +187,7 @@ final class _InvalidCliArgument implements Exception {
 final class _AmbiguousCliArgument implements Exception {
   /// Creates an error with Ruby's message
   /// (e.g. `ambiguous argument: --eruby er`).
-  const _AmbiguousCliArgument(this.message);
+  const new(this.message);
 
   /// Ruby's `OptionParser::AmbiguousArgument` message text.
   final String message;
@@ -300,7 +300,7 @@ class _Spec {
   /// Creates a spec for [option] with short flag [short] (or `null`), long
   /// name [long], argument [arity] and completion [allowed] values (or `null`
   /// for unrestricted arguments).
-  const _Spec(this.option, this.short, this.long, this.arity, [this.allowed]);
+  const new(this.option, this.short, this.long, this.arity, [this.allowed]);
 
   /// The option identity.
   final _CliOption option;
@@ -405,7 +405,7 @@ final class CliOptions {
   /// [Iterable] of directories, or `null` (Ruby callers may seed a bare
   /// string). [logLevel] accepts a [Severity], an [int], or a [String] name
   /// (see [Severity.coerce]).
-  CliOptions({
+  new({
     Map<String, String>? attributes,
     this.inputFiles,
     this.outputFile,
@@ -1382,7 +1382,7 @@ String _basename(String path) {
 /// A compiled single-segment glob matcher.
 class _SegmentMatcher {
   /// Creates a matcher from [pattern] with [_regex] and dot rule flag.
-  const _SegmentMatcher(this._regex, this._literalDotStart);
+  const new(this._regex, this._literalDotStart);
 
   /// The segment pattern translated to a regular expression.
   final RegExp _regex;

@@ -220,7 +220,7 @@ List<List<Object?>> _transferRecords(MemoryLogger memory) {
 /// only the backtrace differs (it starts on the main isolate).
 final class WorkerFailure implements Exception {
   /// Creates a failure carrying the worker-side error [message].
-  const WorkerFailure(this.message);
+  const new(this.message);
 
   /// The worker-side `toString()` of the thrown error.
   final String message;

@@ -27,7 +27,7 @@ Document parseDoc(String src) => Document(src, const <String, Object?>{
 /// In-memory [TemplateLoader] resolving synchronously.
 class MapLoader implements TemplateLoader {
   /// Creates a loader returning [sources].
-  MapLoader(this.sources);
+  new(this.sources);
 
   /// The sources this loader returns.
   final Map<String, String> sources;
@@ -39,7 +39,7 @@ class MapLoader implements TemplateLoader {
 /// In-memory [TemplateLoader] resolving asynchronously.
 class AsyncMapLoader implements TemplateLoader {
   /// Creates a loader returning [sources].
-  AsyncMapLoader(this.sources);
+  new(this.sources);
 
   /// The sources this loader returns.
   final Map<String, String> sources;

@@ -16,7 +16,7 @@ import 'package:asciidoctor/src/substitutors.dart';
 class ListBlock extends AbstractBlock {
   /// Creates a list with [parent] and [context] (`'ulist'`, `'olist'`,
   /// `'dlist'` or `'colist'`).
-  ListBlock(super.parent, super.context, {super.attributes}) {
+  new(super.parent, super.context, {super.attributes}) {
     if (context == 'dlist') _pairs = <Object?>[];
   }
 
@@ -100,7 +100,7 @@ class ListBlock extends AbstractBlock {
 /// Port of `Asciidoctor::ListItem`.
 class ListItem extends AbstractBlock {
   /// Creates a list item with [parent] (the [ListBlock]) and [text].
-  ListItem(AbstractBlock parent, [String? text])
+  new(AbstractBlock parent, [String? text])
     : _text = text,
       super(parent, 'list_item') {
     level = parent.level;

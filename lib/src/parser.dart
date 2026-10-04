@@ -63,7 +63,7 @@ const String _rs = r'\';
 /// Port of `Parser::BlockMatchData` (`context`, `masq`, `tip`, `terminator`).
 class BlockMatchData {
   /// Creates match data for a delimited block of [context].
-  const BlockMatchData(this.context, this.masq, this.tip, this.terminator);
+  const new(this.context, this.masq, this.tip, this.terminator);
 
   /// The block context the delimiter maps to (e.g. `'listing'`).
   final String context;
@@ -85,7 +85,7 @@ class BlockMatchData {
 /// port uses these two singletons in a `List<Object>` buffer instead. The
 /// buffer is mapped back to plain strings before a [Reader] is built.
 final class _ListContinuation {
-  const _ListContinuation._(this.text);
+  const new _(this.text);
 
   /// A live list continuation (`'+'`).
   static const _ListContinuation active = _ListContinuation._('+');
@@ -4946,7 +4946,7 @@ abstract final class Parser {
 /// them.
 class _CursorSourceLocation implements NodeSourceLocation {
   /// Creates a source location from [cursor].
-  _CursorSourceLocation(this._cursor);
+  new(this._cursor);
 
   final Cursor _cursor;
 
@@ -4965,7 +4965,7 @@ class _CursorSourceLocation implements NodeSourceLocation {
 /// attribute-list values for [Parser._parseAttributes].
 class _SeamSubsApplier implements SubsApplier {
   /// Creates an applier resolving references against [document].
-  _SeamSubsApplier(this.document);
+  new(this.document);
 
   /// The document attributes resolve against.
   final Document document;

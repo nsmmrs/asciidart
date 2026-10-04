@@ -24,7 +24,7 @@ import 'package:asciidoctor/src/highlight/highlight.dart';
 /// `<pre>` tag.
 class RougeAdapter {
   /// Creates a Rouge adapter, optionally with a [lexer] backend.
-  RougeAdapter({this.lexer});
+  new({this.lexer});
 
   /// Names this adapter registers for (`register_for 'rouge'`).
   static const List<String> registeredNames = ['rouge'];

@@ -29,7 +29,7 @@ import 'dart:io';
 /// Mirrors Ruby's `::SecurityError` as raised by `PathResolver#system_path`.
 class SecurityError extends Error {
   /// Creates a security error with the given [message].
-  SecurityError(this.message);
+  new(this.message);
 
   /// Human-readable description of the security violation.
   final String message;
@@ -46,7 +46,7 @@ class PathResolver {
   /// [fileSeparator] (to override the system default) and the [workingDir]
   /// (to override the current working directory). The working directory is
   /// expanded to an absolute path inside the constructor.
-  PathResolver({
+  new({
     String? fileSeparator,
     String? workingDir,
     void Function(String message)? onWarn,

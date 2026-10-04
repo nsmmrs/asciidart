@@ -212,7 +212,7 @@ void _checkRegistration(Object? converter) {
 /// execution model makes that unnecessary.
 abstract class Converter implements NodeConverter {
   /// Creates a converter for [backend] with constructor options [opts].
-  Converter(this.backend, [this.opts = const <String, Object?>{}]);
+  new(this.backend, [this.opts = const <String, Object?>{}]);
 
   /// The backend name (aka format) this converter converts to.
   final String backend;
@@ -447,10 +447,8 @@ abstract class ConverterFactory {
   /// `null`. When [proxyDefault] is `true` (default), lookups fall through
   /// to the global registry; otherwise only the seed (and later
   /// [register] calls) resolve.
-  factory ConverterFactory([
-    Map<String, Object?>? converters,
-    bool proxyDefault = true,
-  ]) => proxyDefault
+  factory([Map<String, Object?>? converters, bool proxyDefault = true]) =>
+      proxyDefault
       ? DefaultFactoryProxy(converters)
       : CustomFactory(converters);
 
@@ -484,7 +482,7 @@ abstract class ConverterFactory {
 /// Port of `Converter::CustomFactory`. Never consults the global registry.
 class CustomFactory implements ConverterFactory {
   /// Creates a factory seeded with [seed] (a copy; the map is not mutated).
-  CustomFactory([Map<String, Object?>? seed]) {
+  new([Map<String, Object?>? seed]) {
     seed?.forEach((backend, converter) {
       _checkRegistration(converter);
       if (backend == '*') {
@@ -543,7 +541,7 @@ class CustomFactory implements ConverterFactory {
 /// explicit `null` registered here shadows the global registry.
 class DefaultFactoryProxy extends CustomFactory {
   /// Creates a proxy factory seeded with [seed] (see [CustomFactory]).
-  DefaultFactoryProxy([super.seed]);
+  new([super.seed]);
 
   @override
   Object? forBackend(String backend) {
@@ -577,7 +575,7 @@ class DefaultFactoryProxy extends CustomFactory {
 /// and alias `handles?` do).
 abstract class ConverterBase extends Converter {
   /// Creates a converter for [backend] with constructor options [opts].
-  ConverterBase(super.backend, [super.opts]);
+  new(super.backend, [super.opts]);
 
   /// Handlers by transform name.
   final Map<String, ConvertHandler> _handlers = <String, ConvertHandler>{};

@@ -74,7 +74,7 @@ void usingMemoryLogger(void Function(FakeLogger logger) body) {
 class StubBlock extends Block {
   /// Creates a stub block with fixed [content], [title], [alt] and
   /// [reftext].
-  StubBlock(
+  new(
     super.parent,
     super.context, {
     super.attributes,
@@ -131,7 +131,7 @@ class StubBlock extends Block {
 /// A section returning a fixed title (avoids the substitutors wave).
 class StubSection extends Section {
   /// Creates a stub section with fixed [title].
-  StubSection({
+  new({
     AbstractBlock? parent,
     int? level,
     Object? numbered = false,
@@ -153,7 +153,7 @@ class StubSection extends Section {
 class StubListItem extends ListItem {
   /// Creates a stub item with fixed [text].
   // ignore: use_super_parameters, reason: text is also captured for stubText.
-  StubListItem(AbstractBlock parent, [String? text])
+  new(AbstractBlock parent, [String? text])
     : stubText = text,
       super(parent, text);
 
@@ -167,12 +167,7 @@ class StubListItem extends ListItem {
 /// A list returning a fixed title (avoids the substitutors wave).
 class StubListBlock extends ListBlock {
   /// Creates a stub list with fixed [title].
-  StubListBlock(
-    super.parent,
-    super.context, {
-    super.attributes,
-    this.stubTitle,
-  });
+  new(super.parent, super.context, {super.attributes, this.stubTitle});
 
   /// The value [title] returns (`null` means [hasTitle] is false).
   final String? stubTitle;
@@ -187,7 +182,7 @@ class StubListBlock extends ListBlock {
 /// A table cell returning fixed text/content (avoids the substitutors wave).
 class StubCell extends Cell {
   /// Creates a stub cell with fixed [text] and [content].
-  StubCell(
+  new(
     super.column,
     super.cellText, [
     super.attributes,
@@ -212,7 +207,7 @@ class StubCell extends Cell {
 /// A table returning a fixed title (avoids the substitutors wave).
 class StubTable extends Table {
   /// Creates a stub table with fixed [title].
-  StubTable(super.parent, super.attributes, {this.stubTitle});
+  new(super.parent, super.attributes, {this.stubTitle});
 
   /// The value [title] returns (`null` means [hasTitle] is false).
   final String? stubTitle;
@@ -227,7 +222,7 @@ class StubTable extends Table {
 /// An inline node returning fixed reftext (avoids the substitutors wave).
 class StubInline extends Inline {
   /// Creates a stub inline node with fixed [reftext].
-  StubInline(
+  new(
     super.parent,
     super.context, {
     super.text,
@@ -252,7 +247,7 @@ class StubInline extends Inline {
 /// substitutable characters, for which the identity is byte-identical.
 class StubDocument extends Document {
   /// Creates a stub document (see [Document.new]).
-  StubDocument([super.data, super.options]);
+  new([super.data, super.options]);
 
   @override
   String subReplacements(String text) => text;

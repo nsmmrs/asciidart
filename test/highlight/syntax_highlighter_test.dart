@@ -50,7 +50,7 @@ class _NamelessHighlighter extends SyntaxHighlighterBase {
 /// A listing block with canned converted content (avoids the substitutor
 /// wave).
 class _StubBlock extends Block {
-  _StubBlock(
+  new(
     AbstractBlock? parent,
     this.stubbedContent, [
     Map<String, Object?>? attributes,
@@ -128,7 +128,7 @@ const _voidElements = <String>{
 /// [texts] segments.
 class _XmlElement {
   /// Creates an element with [tag] and [attributes].
-  _XmlElement(this.tag, [Map<String, String>? attributes])
+  new(this.tag, [Map<String, String>? attributes])
     : attributes = attributes ?? <String, String>{};
 
   /// The lower-cased tag name (`'#root'` for the synthetic fragment root).
@@ -232,7 +232,7 @@ _XmlElement _parseFragment(String content) {
 /// A parsed CSS compound selector.
 class _CssCompound {
   /// Creates a compound matching [tag], [classes] and [attrs].
-  _CssCompound(this.tag, this.classes, this.attrs);
+  new(this.tag, this.classes, this.attrs);
 
   /// The tag name, `'*'`, or `null` (any tag).
   final String? tag;

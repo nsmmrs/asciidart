@@ -25,7 +25,7 @@ import 'package:test/test.dart';
 /// A [Logger] subclass, mirroring `MyLogger = Class.new Logger`.
 class TestLogger extends Logger {
   /// Creates a test logger writing to [logdev].
-  TestLogger([Object? logdev]) : super(logdev: logdev);
+  new([Object? logdev]) : super(logdev: logdev);
 }
 
 /// Runs [body] with the global logger (and factory) restored afterwards,

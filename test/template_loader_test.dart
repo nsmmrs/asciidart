@@ -45,8 +45,7 @@ String get sampleFile => '${_findRepoRoot()}/test/fixtures/sample.adoc';
 /// A minimal [Converter] capturing the options it was created with.
 class _CapturingConverter extends Converter {
   /// Creates a converter recording [opts] into [seen].
-  _CapturingConverter(super.backend, Map<String, Object?> opts)
-    : seen = Map.of(opts);
+  new(super.backend, Map<String, Object?> opts) : seen = Map.of(opts);
 
   /// The options the factory received.
   final Map<String, Object?> seen;

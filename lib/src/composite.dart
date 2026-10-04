@@ -32,7 +32,7 @@ class CompositeConverter extends ConverterBase {
   /// Delegates implementing [ComposedAware] are notified. When
   /// [backendTraitsSource] is given, this composite adopts its backend
   /// traits map (shared by reference, as in Ruby).
-  CompositeConverter(
+  new(
     super.backend,
     List<Converter> converters, {
     Converter? backendTraitsSource,

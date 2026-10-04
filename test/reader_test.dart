@@ -163,7 +163,7 @@ const Map<String, String> intrinsicAttributes = {
 /// under the repo `test/` dir, with `null` for anything else (the 404 path).
 /// Retired when `document.dart` lands.
 class FakeDocument implements ReaderDocument {
-  FakeDocument({
+  new({
     Map<String, Object?>? attributes,
     this.safe = SafeMode.secure,
     String? baseDir,

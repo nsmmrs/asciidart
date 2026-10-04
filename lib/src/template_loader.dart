@@ -83,11 +83,9 @@ final class VmTemplateLoader implements TemplateLoader {
   ///
   /// [templateCache] selects the [TemplateCache] store via
   /// [resolveTemplateCache] (default `true`, the process-shared cache).
-  VmTemplateLoader({
-    required List<String> templateDirs,
-    Object? templateCache = true,
-  }) : templateDirs = List.unmodifiable(templateDirs),
-       _cache = resolveTemplateCache(templateCache);
+  new({required List<String> templateDirs, Object? templateCache = true})
+    : templateDirs = List.unmodifiable(templateDirs),
+      _cache = resolveTemplateCache(templateCache);
 
   /// The template directories to scan, in resolution order.
   final List<String> templateDirs;
@@ -159,8 +157,7 @@ final class VmTemplateLoader implements TemplateLoader {
 /// Also the deterministic loader for unit tests.
 final class InMemoryTemplateLoader implements TemplateLoader {
   /// Creates a loader serving [templates].
-  InMemoryTemplateLoader(Map<String, String> templates)
-    : _templates = Map.of(templates);
+  new(Map<String, String> templates) : _templates = Map.of(templates);
 
   final Map<String, String> _templates;
 
@@ -177,7 +174,7 @@ final class InMemoryTemplateLoader implements TemplateLoader {
 final class NodeTemplateLoader implements TemplateLoader {
   /// Creates a stub loader for [templateDirs] (kept for API symmetry with
   /// [VmTemplateLoader]; unused until the npm work lands).
-  NodeTemplateLoader({required List<String> templateDirs})
+  new({required List<String> templateDirs})
     : templateDirs = List.unmodifiable(templateDirs);
 
   /// The template directories to scan once implemented.
@@ -212,7 +209,7 @@ bool isRunningOnNode() => detect.isRunningOnNode();
 /// stays independent of the Mustache adapter).
 final class TemplateCache {
   /// Creates an empty cache (a custom `template_cache` store).
-  TemplateCache();
+  new();
 
   /// Scan results by absolute directory path.
   final Map<String, Map<String, String>> scans = {};

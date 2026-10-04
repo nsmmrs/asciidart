@@ -298,7 +298,7 @@ void _logPossibleInvalidReference(
 /// passing the block itself (`AttributeList.new attrlist, self`).
 final class _BlockSubsApplier implements SubsApplier {
   /// Creates an applier delegating to [node].
-  _BlockSubsApplier(this._node);
+  new(this._node);
 
   final AbstractNode _node;
 

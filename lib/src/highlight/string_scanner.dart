@@ -13,7 +13,7 @@ library;
 /// A scanning cursor over [string], mirroring `StringScanner` semantics.
 class CodeRayStringScanner {
   /// Creates a scanner over [source] at position zero.
-  CodeRayStringScanner(String source) : string = source;
+  new(String source) : string = source;
 
   /// The scanned string (already normalized to `\n` newlines by the caller,
   /// mirroring `Scanner.normalize`).

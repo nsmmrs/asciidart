@@ -97,7 +97,7 @@ void _assignPositionalName(List<String?> names, String index, String name) {
 /// defaults).
 class Processor {
   /// Creates a processor with [config].
-  Processor([Map<String, Object?>? config])
+  new([Map<String, Object?>? config])
     : config = Map<String, Object?>.of(config ?? const <String, Object?>{});
 
   /// The configuration of this processor instance.
@@ -532,7 +532,7 @@ mixin DocumentProcessorDsl on Processor {
 /// [Processor.onProcess] in Dart).
 abstract class NamedProcessor extends Processor {
   /// Creates a named processor with [config].
-  NamedProcessor([super.config]);
+  new([super.config]);
 
   /// The name this processor is registered under.
   String? name;
@@ -681,7 +681,7 @@ abstract class NamedProcessor extends Processor {
 /// Preprocessor implementations must extend [Preprocessor].
 class Preprocessor extends Processor with DocumentProcessorDsl {
   /// Creates a preprocessor with [config].
-  Preprocessor([super.config]);
+  new([super.config]);
 
   /// Processes [document] and [reader].
   ///
@@ -702,7 +702,7 @@ class Preprocessor extends Processor with DocumentProcessorDsl {
 /// Tree processor implementations must extend [TreeProcessor].
 class TreeProcessor extends Processor with DocumentProcessorDsl {
   /// Creates a tree processor with [config].
-  TreeProcessor([super.config]);
+  new([super.config]);
 
   /// Processes [document].
   ///
@@ -730,7 +730,7 @@ typedef Treeprocessor = TreeProcessor;
 /// Postprocessor implementations must extend [Postprocessor].
 class Postprocessor extends Processor with DocumentProcessorDsl {
   /// Creates a postprocessor with [config].
-  Postprocessor([super.config]);
+  new([super.config]);
 
   /// Processes the converted [output] of [document].
   ///
@@ -757,7 +757,7 @@ class IncludeProcessor extends Processor
     with DocumentProcessorDsl
     implements ReaderIncludeProcessor {
   /// Creates an include processor with [config].
-  IncludeProcessor([super.config]);
+  new([super.config]);
 
   /// The handles callback assigned through the registration DSL.
   ///
@@ -808,7 +808,7 @@ class IncludeProcessor extends Processor
 /// Docinfo processor implementations must extend [DocinfoProcessor].
 class DocinfoProcessor extends Processor with DocumentProcessorDsl {
   /// Creates a docinfo processor with [config].
-  DocinfoProcessor([super.config]) {
+  new([super.config]) {
     if (!isTruthy(config['location'])) config['location'] = 'head';
   }
 
@@ -861,7 +861,7 @@ class BlockProcessor extends NamedProcessor {
   /// `'contexts'` entry defaults to `{'open', 'paragraph'}`; a single
   /// string or any iterable is normalized to a set of strings. A missing
   /// `'content_model'` entry defaults to `'compound'`.
-  BlockProcessor([String? name, Map<String, Object?>? config]) : super(config) {
+  new([String? name, Map<String, Object?>? config]) : super(config) {
     this.name = name ?? this.config['name']?.toString();
     final contexts = this.config['contexts'];
     if (contexts == null) {
@@ -928,7 +928,7 @@ class MacroProcessor extends NamedProcessor {
   ///
   /// The [name] falls back to the `'name'` config entry. A missing
   /// `'content_model'` entry defaults to `'attributes'`.
-  MacroProcessor([String? name, Map<String, Object?>? config]) : super(config) {
+  new([String? name, Map<String, Object?>? config]) : super(config) {
     this.name = name ?? this.config['name']?.toString();
     if (!isTruthy(this.config['content_model'])) {
       this.config['content_model'] = 'attributes';
@@ -978,7 +978,7 @@ class MacroProcessor extends NamedProcessor {
 /// Block macro processor implementations must extend [BlockMacroProcessor].
 class BlockMacroProcessor extends MacroProcessor {
   /// Creates a block macro processor with [name] and [config].
-  BlockMacroProcessor([super.name, super.config]);
+  new([super.name, super.config]);
 
   /// The name this processor is registered under.
   ///
@@ -1000,7 +1000,7 @@ class BlockMacroProcessor extends MacroProcessor {
 /// [InlineMacroProcessor].
 class InlineMacroProcessor extends MacroProcessor {
   /// Creates an inline macro processor with [name] and [config].
-  InlineMacroProcessor([super.name, super.config]);
+  new([super.name, super.config]);
 
   /// Cache of resolved inline macro patterns by name and format.
   static final Map<String, RegExp> _rxCache = <String, RegExp>{};
@@ -1067,7 +1067,7 @@ class InlineMacroProcessor extends MacroProcessor {
 /// extension registry when activated.
 class Extension {
   /// Creates a proxy of [kind] for [instance] with [config].
-  Extension(this.kind, this.instance, this.config);
+  new(this.kind, this.instance, this.config);
 
   /// The extension kind (e.g. `'preprocessor'`, `'block_macro'`).
   final String kind;
@@ -1089,7 +1089,7 @@ class ProcessorExtension extends Extension {
   ///
   /// [processMethod] defaults to a closure invoking the family's `process`
   /// method on [instance].
-  ProcessorExtension(String kind, Processor instance, [Function? processMethod])
+  new(String kind, Processor instance, [Function? processMethod])
     : processMethod = processMethod ?? _processMethodFor(kind, instance),
       super(kind, instance, instance.config);
 
@@ -1172,8 +1172,7 @@ abstract class ExtensionGroup {
 /// extensions stored in the registry during parsing.
 class Registry {
   /// Creates a registry holding [groups].
-  Registry([Map<String, Object?>? groups])
-    : groups = groups ?? <String, Object?>{};
+  new([Map<String, Object?>? groups]) : groups = groups ?? <String, Object?>{};
 
   /// The document on which the extensions in this registry are being used.
   Document? get document => _document;

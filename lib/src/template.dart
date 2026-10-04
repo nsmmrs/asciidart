@@ -60,7 +60,7 @@ abstract interface class TemplateLoader {
 /// throwing).
 class MustacheTemplate {
   /// Compiles [source] for transform [name].
-  MustacheTemplate(
+  new(
     this.name,
     this.source, {
     this.lenient = true,
@@ -107,7 +107,7 @@ class MustacheTemplate {
 class TemplateRegistry {
   /// Creates a registry, optionally seeded with [templates], [functions]
   /// and [helpers].
-  TemplateRegistry({
+  new({
     Map<String, String> templates = const <String, String>{},
     Map<String, ConvertHandler> functions = const <String, ConvertHandler>{},
     Map<String, TemplateHelper> helpers = const <String, TemplateHelper>{},
@@ -251,7 +251,7 @@ class TemplateConverter extends ConverterBase {
   ///
   /// Sources enter through [registry] (consuming the wave-B loader maps);
   /// use [register], [registerFunction] and [registerHelper] to add more.
-  TemplateConverter(super.backend, [super.opts, TemplateRegistry? registry])
+  new(super.backend, [super.opts, TemplateRegistry? registry])
     : registry = registry ?? TemplateRegistry();
 
   /// The template, function and helper registrations.

@@ -405,7 +405,7 @@ final CalloutRxMap calloutSourceRxMap = CalloutRxMap(calloutSourceRxt);
 /// prefix (ports the `Hash.new` default-proc construction of
 /// `CalloutExtractRxMap` / `CalloutSourceRxMap`).
 class CalloutRxMap {
-  CalloutRxMap(this.template);
+  new(this.template);
 
   /// The pattern template interpolated after the escaped prefix group.
   final String template;
@@ -702,7 +702,7 @@ final Map<bool, InlinePassEntry> inlinePassRx = {
 /// One entry of [inlinePassRx]: the lone passthrough delimiter, the
 /// optional closing trim marker, and the match pattern.
 class InlinePassEntry {
-  InlinePassEntry(this.delimiter, this.endTrim, this.pattern);
+  new(this.delimiter, this.endTrim, this.pattern);
 
   /// The delimiter for a lone passthrough (`+` or backtick).
   final String delimiter;

@@ -16,7 +16,7 @@ import 'package:asciidoctor/src/highlight/highlight.dart';
 /// ([docinfoHead], [docinfoFooter]).
 class HighlightJsAdapter {
   /// Creates a highlight.js adapter.
-  const HighlightJsAdapter();
+  const new();
 
   /// Names this adapter registers for (`register_for 'highlightjs',
   /// `'highlight.js'`).

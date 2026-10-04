@@ -46,7 +46,7 @@ import 'package:asciidoctor/src/highlight/ruby_scanner.dart';
 /// explicitly allows this, and the adapter never calls them.
 class CodeRaySourceLexer implements SourceLexer {
   /// Creates a CodeRay lexing backend.
-  const CodeRaySourceLexer();
+  const new();
 
   @override
   String get name => 'coderay';

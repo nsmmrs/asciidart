@@ -543,13 +543,9 @@ class _RubyStringState {
   /// the closing delimiter (or the heredoc terminator when [heredoc] is
   /// set). A delimiter with a closing partner (`(`, `[`, `<`, `{`) tracks
   /// nesting depth via [parenDepth].
-  _RubyStringState(
-    this.type,
-    this.interpreted,
-    String delimiter, [
-    _HeredocMode? heredoc,
-  ]) : heredoc = heredoc,
-       nextState = _SymbolState.initial {
+  new(this.type, this.interpreted, String delimiter, [_HeredocMode? heredoc])
+    : heredoc = heredoc,
+      nextState = _SymbolState.initial {
     if (heredoc != null) {
       heredocDelim = delimiter;
     } else {
@@ -714,7 +710,7 @@ bool _interpolationIntroducer(int unit) =>
 /// One [_RubyStringState.scanContent] result.
 class _RubyStringContent {
   /// Creates a content result.
-  const _RubyStringContent(this.text, this.heredocEnded);
+  const new(this.text, this.heredocEnded);
 
   /// The scanned content (empty when already at a delimiter).
   final String text;
@@ -726,7 +722,7 @@ class _RubyStringContent {
 /// A heredoc content stop: [position] with [terminatorFound].
 class _HeredocStop {
   /// Creates a heredoc stop.
-  const _HeredocStop(this.position, this.terminatorFound);
+  const new(this.position, this.terminatorFound);
 
   /// The offset scanning stops at.
   final int position;

@@ -15,7 +15,7 @@ import 'package:asciidoctor/src/highlight/highlight.dart';
 /// html-pipeline filter chain.
 class HtmlPipelineAdapter {
   /// Creates an html-pipeline adapter.
-  const HtmlPipelineAdapter();
+  const new();
 
   /// Names this adapter registers for (`register_for 'html-pipeline'`).
   static const List<String> registeredNames = ['html-pipeline'];

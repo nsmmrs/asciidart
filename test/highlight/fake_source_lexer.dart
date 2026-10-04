@@ -15,7 +15,7 @@ class FakeSourceLexer implements SourceLexer {
   ///
   /// Unspecified callbacks use inert defaults: [highlight] returns `null`,
   /// no style is available, no base style or stylesheet exists.
-  FakeSourceLexer({
+  new({
     this.name = 'fake',
     String? Function(HighlightRequest request)? onHighlight,
     bool Function(String style)? onStyleAvailable,

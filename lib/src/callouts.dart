@@ -7,7 +7,7 @@ library;
 /// its unique [id] (e.g. `CO1-1`).
 class Callout {
   /// Creates a callout for list item [ordinal] with unique [id].
-  const Callout({required this.ordinal, required this.id});
+  const new({required this.ordinal, required this.id});
 
   /// 1-based ordinal of the list item this callout is associated with.
   final int ordinal;
@@ -19,7 +19,7 @@ class Callout {
 /// Maintains a catalog of callouts and their associations.
 class Callouts {
   /// Creates a catalog positioned at the first callout list.
-  Callouts() {
+  new() {
     nextList();
   }
 

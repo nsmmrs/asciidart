@@ -39,7 +39,7 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
   /// [css] selects class or inline-style spans, [lineNumbers] the numbering
   /// mode, [startLine] the number of the first line, and [highlightLines]
   /// the 1-based lines whose numbers are emphasized.
-  CoderayHtmlEncoder({
+  new({
     this.css = CssMode.classes,
     this.lineNumbers,
     this.startLine = 1,

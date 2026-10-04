@@ -35,7 +35,7 @@ import 'package:asciidoctor/src/rx.dart';
 /// `message_with_context` hash; unified with that port when it lands.
 class LogMessage {
   /// Creates a message with [text] and optional source locations.
-  const LogMessage(this.text, {this.sourceLocation, this.includeLocation});
+  const new(this.text, {this.sourceLocation, this.includeLocation});
 
   /// The message text, without location prefix.
   final String text;
@@ -174,7 +174,7 @@ abstract class ReaderIncludeProcessor {
 class Cursor {
   /// Creates a cursor. [file] is a path string, a [Uri], or `null`;
   /// [dir] is a path string or a [Uri].
-  Cursor(this.file, [this.dir, this.path, this.lineno = 1]);
+  new(this.file, [this.dir, this.path, this.lineno = 1]);
 
   /// The file under the cursor, if known.
   final Object? file;
@@ -230,7 +230,7 @@ class Reader {
   /// [Cursor], or `null` (stdin). When [normalize] is set, lines are
   /// normalized as in Ruby (`normalize: true`); [skipFrontMatter] is honored
   /// by [PreprocessorReader] only, exactly like the Ruby `opts` entry.
-  Reader([
+  new([
     Object? data,
     Object? cursor,
     bool normalize = false,
@@ -797,7 +797,7 @@ class PreprocessorReader extends Reader {
   ///
   /// See [Reader.new] for [data], [cursor] and [normalize]. Front matter is
   /// skipped when the document sets the `skip-front-matter` attribute.
-  PreprocessorReader(
+  new(
     ReaderDocument document, [
     Object? data,
     Object? cursor,
@@ -2115,12 +2115,12 @@ class PreprocessorReader extends Reader {
 
 /// Sentinel type backing [Reader.atMark].
 class _AtMark {
-  const _AtMark();
+  const new();
 }
 
 /// Absolute, current and relative max include depths.
 class _MaxDepth {
-  const _MaxDepth(this.abs, this.curr, this.rel);
+  const new(this.abs, this.curr, this.rel);
 
   /// Absolute max depth (from `max-include-depth`).
   final int abs;
@@ -2134,7 +2134,7 @@ class _MaxDepth {
 
 /// An open preprocessor conditional frame.
 class _ConditionalFrame {
-  const _ConditionalFrame({
+  const new({
     required this.name,
     this.target,
     this.expr,
@@ -2164,7 +2164,7 @@ class _ConditionalFrame {
 
 /// An open tag frame while filtering an include by tags.
 class _TagFrame {
-  const _TagFrame(this.name, this.select, this.lineno);
+  const new(this.name, this.select, this.lineno);
 
   /// Tag name.
   final String name;
@@ -2187,7 +2187,7 @@ enum _IncludeTargetType {
 
 /// A resolved include target.
 class _ResolvedInclude {
-  const _ResolvedInclude(this.path, this.type, this.relpath);
+  const new(this.path, this.type, this.relpath);
 
   /// Resolved path (a string for files, a [Uri] for remote targets).
   final Object path;
@@ -2204,12 +2204,12 @@ class _ResolvedInclude {
 
 /// Thrown when include content cannot be read (caught and reported).
 class _IncludeNotReadable {
-  const _IncludeNotReadable();
+  const new();
 }
 
 /// Thrown when `ifeval` operands cannot be compared (caught; drops content).
 class _InvalidExprComparison {
-  const _InvalidExprComparison();
+  const new();
 }
 
 /// Compares resolved `ifeval` operands with [op].

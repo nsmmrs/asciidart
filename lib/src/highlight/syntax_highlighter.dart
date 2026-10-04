@@ -319,7 +319,7 @@ abstract final class SyntaxHighlighter {
 /// back to the globals.
 class SyntaxHighlighterFactory {
   /// Creates an isolated factory, optionally seeded with [seedRegistry].
-  SyntaxHighlighterFactory([Map<String, Object>? seedRegistry])
+  new([Map<String, Object>? seedRegistry])
     : _registry = <String, Object>{...?seedRegistry};
 
   final Map<String, Object> _registry;
@@ -357,7 +357,7 @@ class SyntaxHighlighterFactory {
 /// hash.
 class SyntaxHighlighterDefaultFactoryProxy extends SyntaxHighlighterFactory {
   /// Creates a proxy seeded with [seedRegistry].
-  SyntaxHighlighterDefaultFactoryProxy([super.seedRegistry]);
+  new([super.seedRegistry]);
 
   @override
   Object? for_(String name) => _registry[name] ?? SyntaxHighlighter.for_(name);
@@ -372,8 +372,7 @@ class CodeRayHighlighter extends SyntaxHighlighterBase {
   ///
   /// Without a backend [canHighlight] is `false`, mirroring the Ruby
   /// adapter when the `coderay` library is unavailable.
-  CodeRayHighlighter({SourceLexer? lexer})
-    : adapter = CodeRayAdapter(lexer: lexer);
+  new({SourceLexer? lexer}) : adapter = CodeRayAdapter(lexer: lexer);
 
   /// The bound string-transformer adapter.
   final CodeRayAdapter adapter;
@@ -569,8 +568,7 @@ class PygmentsHighlighter extends SyntaxHighlighterBase {
   ///
   /// Without a backend [canHighlight] is `false`, mirroring the Ruby
   /// adapter when the `pygments` library is unavailable.
-  PygmentsHighlighter({SourceLexer? lexer})
-    : adapter = PygmentsAdapter(lexer: lexer);
+  new({SourceLexer? lexer}) : adapter = PygmentsAdapter(lexer: lexer);
 
   /// The bound string-transformer adapter.
   final PygmentsAdapter adapter;
@@ -651,7 +649,7 @@ class RougeHighlighter extends SyntaxHighlighterBase {
   ///
   /// Without a backend [canHighlight] is `false`, mirroring the Ruby
   /// adapter when the `rouge` library is unavailable.
-  RougeHighlighter({SourceLexer? lexer}) : adapter = RougeAdapter(lexer: lexer);
+  new({SourceLexer? lexer}) : adapter = RougeAdapter(lexer: lexer);
 
   /// The bound string-transformer adapter.
   final RougeAdapter adapter;

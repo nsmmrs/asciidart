@@ -61,7 +61,7 @@ const String noDartCounterpart =
 /// A minimal [Converter] returning [result] for every node.
 class FakeConverter extends Converter {
   /// Creates a converter returning [result] (default `'fake content'`).
-  FakeConverter(super.backend, [super.opts, this.result = 'fake content']);
+  new(super.backend, [super.opts, this.result = 'fake content']);
 
   /// The value [convert] returns.
   final String result;
@@ -77,7 +77,7 @@ class FakeConverter extends Converter {
 /// A [ConverterBase] with handlers wired through [handle].
 class FakeBaseConverter extends ConverterBase {
   /// Creates a converter registering [handlers] for [backend].
-  FakeBaseConverter(
+  new(
     super.backend, [
     super.opts,
     Map<String, ConvertHandler> handlers = const <String, ConvertHandler>{},
@@ -89,13 +89,13 @@ class FakeBaseConverter extends ConverterBase {
 /// A [Converter] that overrides nothing (pins default [Converter] behavior).
 class BareConverter extends Converter {
   /// Creates a bare converter for [backend].
-  BareConverter(super.backend, [super.opts]);
+  new(super.backend, [super.opts]);
 }
 
 /// A block whose [content] is fixed (avoids the substitutors wave).
 class StubBlock extends Block {
   /// Creates a stub block with fixed [content].
-  StubBlock(super.parent, super.context, this.stubbedContent);
+  new(super.parent, super.context, this.stubbedContent);
 
   /// The value [content] returns.
   final String? stubbedContent;
@@ -107,7 +107,7 @@ class StubBlock extends Block {
 /// A bare node that is neither block nor inline content (for [contentOnly]).
 class BareNode extends AbstractNode {
   /// Creates a bare node with node name `'bare'`.
-  BareNode() : super(null, 'bare');
+  new() : super(null, 'bare');
 
   @override
   bool get isBlock => false;
@@ -169,7 +169,7 @@ void cleanGlobalRegistry() {
 /// `CustomHtmlConverterA`).
 class CustomHtmlConverterA extends Converter {
   /// Creates the converter for [backend] with [opts].
-  CustomHtmlConverterA(super.backend, [super.opts]);
+  new(super.backend, [super.opts]);
 
   @override
   Object? convert(
@@ -183,7 +183,7 @@ class CustomHtmlConverterA extends Converter {
 /// `CustomTextConverterA`).
 class CustomTextConverterA extends Converter {
   /// Creates the converter for [backend] with [opts].
-  CustomTextConverterA(super.backend, [super.opts]);
+  new(super.backend, [super.opts]);
 
   @override
   Object? convert(
@@ -197,7 +197,7 @@ class CustomTextConverterA extends Converter {
 /// anonymous `Converter::Base` subclass in the factory test).
 class CustomDocumentConverter extends ConverterBase {
   /// Creates the converter for [backend] with [opts].
-  CustomDocumentConverter(super.backend, [super.opts]) {
+  new(super.backend, [super.opts]) {
     handle('document', (node, [opts]) => 'document');
   }
 }
@@ -254,7 +254,7 @@ TemplateConverter templateConverterFor(Document doc, String transform) {
 /// support).
 class TemplatelessConverter extends Converter {
   /// Creates the converter for [backend] with [opts].
-  TemplatelessConverter(super.backend, [super.opts]);
+  new(super.backend, [super.opts]);
 
   @override
   Object? convert(
@@ -1533,7 +1533,7 @@ void main() {
 /// initialization (idempotent; `provided: true` survives `unregisterAll`).
 class _SelfRegisteringConverter extends ConverterBase {
   /// Creates a self-registering converter.
-  _SelfRegisteringConverter(super.backend, [super.opts]);
+  new(super.backend, [super.opts]);
 
   /// Registers this converter for [backends].
   static void registerFor([List<String> backends = const ['reg-self']]) {
@@ -1551,7 +1551,7 @@ class _SelfRegisteringConverter extends ConverterBase {
 /// Records the transform and options it was asked to convert with.
 class _RecordingConverter extends Converter {
   /// Creates a recording converter.
-  _RecordingConverter(super.backend);
+  new(super.backend);
 
   /// The last transform seen by [convert].
   String? seenTransform;
@@ -1574,7 +1574,7 @@ class _RecordingConverter extends Converter {
 /// A [ComposedAware] delegate recording the composite it joined.
 class _ComposedProbe extends Converter implements ComposedAware {
   /// Creates a probe converter.
-  _ComposedProbe(super.backend);
+  new(super.backend);
 
   /// The composite passed to [composed].
   CompositeConverter? seen;
