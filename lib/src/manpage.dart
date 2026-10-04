@@ -291,6 +291,9 @@ class ManpageConverter extends ConverterBase {
     );
   }
 
+  @override
+  String get converterName => 'ManpageConverter';
+
   /// Memoized document refs catalog (port of `@refs`).
   Map<String, AbstractNode>? _refs;
 

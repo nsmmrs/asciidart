@@ -38,7 +38,7 @@ import 'package:asciidoctor/src/table.dart';
 String _s(String? value) => value ?? '';
 
 /// Splits a copyright attribute into holder and year (port of `CopyrightRx`;
-/// `CC_ANY` is [ccAny], `multiLine` follows `dart/PORTING-REGEXP.md` B9).
+/// `CC_ANY` is [ccAny], `multiLine` follows `PORTING-REGEXP.md` B9).
 ///
 /// `\d` is spelled `[0-9]`: with `unicode: true`, `\d` would also match
 /// non-ASCII decimal digits.
@@ -197,6 +197,9 @@ class Docbook5Converter extends ConverterBase {
       (node, [opts]) => convertInlineQuoted(node as Inline),
     );
   }
+
+  @override
+  String get converterName => 'Docbook5Converter';
 
   /// Registers this converter for [backends]. Called by document
   /// initialization; idempotent.

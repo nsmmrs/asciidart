@@ -476,6 +476,10 @@ abstract class ConverterBase extends Converter {
 
   final Map<String, ConvertHandler> _handlers = <String, ConvertHandler>{};
 
+  /// The name of this converter in diagnostics: its class name, which
+  /// the built-in converters spell out so that it survives minification.
+  String get converterName => '$runtimeType';
+
   /// Registers [handler] for [transform].
   void handle(String transform, ConvertHandler handler) {
     _handlers[transform] = handler;
@@ -492,7 +496,7 @@ abstract class ConverterBase extends Converter {
     if (handler == null) {
       logger.warn(
         'missing convert handler for $transform node in $backend backend '
-        '($runtimeType)',
+        '($converterName)',
       );
       return null;
     }

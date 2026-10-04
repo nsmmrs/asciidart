@@ -214,6 +214,9 @@ class Html5Converter extends ConverterBase {
     );
   }
 
+  @override
+  String get converterName => 'Html5Converter';
+
   /// Quote tags by quoted-text type (port of `QUOTE_TAGS`).
   ///
   /// Each entry holds the opening tag, the closing tag and whether the tag
