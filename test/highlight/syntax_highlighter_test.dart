@@ -730,17 +730,6 @@ void main() {
       );
     });
 
-    test('drops the highlight marker when nohighlight is set', () {
-      final highlighter = HighlightJsHighlighter();
-      final doc = _docWithAttributes(<String, Object?>{});
-      final block = _StubBlock(doc, 'puts 1')..setOption('nohighlight');
-      expect(
-        highlighter.format(block, 'ruby', <String, Object?>{'nowrap': false}),
-        '<pre class="highlightjs">'
-        '<code class="language-ruby hljs" data-lang="ruby">puts 1</code></pre>',
-      );
-    });
-
     test('uses language-none when the language is absent', () {
       final highlighter = HighlightJsHighlighter();
       final doc = _docWithAttributes(<String, Object?>{});
@@ -756,7 +745,7 @@ void main() {
       final highlighter = PrettifyHighlighter();
       final doc = _docWithAttributes(<String, Object?>{});
       final block = _StubBlock(doc, 'x')
-        ..setOption('linenums')
+        ..setAttr('linenums', '')
         ..setAttr('start', '7');
       expect(
         highlighter.format(block, 'ruby', <String, Object?>{'nowrap': false}),
@@ -768,7 +757,7 @@ void main() {
     test('numbers prettify lines without a start value', () {
       final highlighter = PrettifyHighlighter();
       final doc = _docWithAttributes(<String, Object?>{});
-      final block = _StubBlock(doc, 'x')..setOption('linenums');
+      final block = _StubBlock(doc, 'x')..setAttr('linenums', '');
       expect(
         highlighter.format(block, 'ruby', <String, Object?>{'nowrap': false}),
         '<pre class="prettyprint highlight linenums">'

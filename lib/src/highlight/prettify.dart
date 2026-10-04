@@ -36,7 +36,7 @@ class PrettifyAdapter {
 
   /// Formats converted [content] for client-side highlighting.
   ///
-  /// When [linenums] is set (the `linenums` option on the block), the
+  /// When [linenums] is set (the `linenums` attribute on the block), the
   /// `<pre>` class gains `linenums` (or `linenums:{start}` when [start], the
   /// block's `start` attribute, is present). [nowrap] appends the `nowrap`
   /// class.

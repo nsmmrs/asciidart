@@ -4,7 +4,7 @@
 /// `RougeExt::Formatters` line decorators from `lib/asciidoctor/rouge_ext.rb`).
 ///
 /// The HTML format/wrap/docinfo logic and the line-decoration pipeline
-/// (line emphasis, inline/table line numbers, callout offsets) are fully
+/// (line emphasis, table line numbers, callout offsets) are fully
 /// ported. Token lexing and theme stylesheets sit behind the [SourceLexer]
 /// seam: the backend must return delegate-formatted inner HTML with `\n`
 /// line separators and no line decorations, with spans never crossing line
@@ -80,11 +80,11 @@ class RougeAdapter {
   /// computation, which is otherwise the backend's job.
   ///
   /// Line emphasis and numbering mirror `create_formatter`:
-  /// [highlightLines] wraps lines in `<span class="hll">`, [numberLines]
-  /// selects the inline or table numberer, and [startLineNumber] offsets the
-  /// numbering. When line numbers and [hasCallouts] are both set, the result
-  /// carries the offset just past the first code cell's opening tag (`null`
-  /// when the output has no such tag, e.g., inline numbering).
+  /// [highlightLines] wraps lines in `<span class="hll">`, any [numberLines]
+  /// mode lays the code out in a line-number table, and [startLineNumber]
+  /// offsets the numbering. When line numbers and [hasCallouts] are both
+  /// set, the result carries the offset just past the code cell's opening
+  /// tag.
   ///
   /// Throws [UnimplementedError] when no [lexer] backend was provided.
   HighlightResult highlight({
@@ -123,15 +123,11 @@ class RougeAdapter {
     if (inner == null) {
       throw StateError('Rouge backend returned no output.');
     }
-    final String html;
+    final code = highlightLines.isNotEmpty
+        ? highlightHtmlLines(splitHtmlLines(inner), highlightLines).join()
+        : inner;
     if (numberLines != null) {
-      final decorated = highlightHtmlLines(
-        splitHtmlLines(inner),
-        highlightLines,
-      );
-      html = numberLines == LineNumbersMode.table
-          ? numberHtmlLinesAsTable(decorated, startLine: startLine)
-          : numberHtmlLinesInline(decorated, startLine: startLine);
+      final html = numberHtmlAsTable(code, startLine: startLine);
       if (hasCallouts) {
         final index = html.indexOf(_codeCellStartTag);
         return HighlightResult(
@@ -141,12 +137,7 @@ class RougeAdapter {
       }
       return HighlightResult(html);
     }
-    if (highlightLines.isNotEmpty) {
-      html = highlightHtmlLines(splitHtmlLines(inner), highlightLines).join();
-    } else {
-      html = inner;
-    }
-    return HighlightResult(html);
+    return HighlightResult(code);
   }
 
   /// Wraps converted [content] in the `<pre>`/`<code>` envelope.
@@ -286,50 +277,25 @@ List<String> highlightHtmlLines(
   return result;
 }
 
-/// Prepends right-justified line numbers to newline-terminated [htmlLines].
+/// Lays [formattedCode] out as a two-cell line-number table.
 ///
-/// Port of `RougeExt::Formatters::HTMLLineNumberer#stream`: each line gains a
-/// `<span class="linenos">` prefix, padded with spaces to the width of the
-/// last line number. Numbering starts at [startLine].
-String numberHtmlLinesInline(List<String> htmlLines, {int startLine = 1}) {
-  if (htmlLines.isEmpty) return '';
-  final width = (startLine + htmlLines.length - 1).toString().length;
-  final result = StringBuffer();
-  for (var index = 0; index < htmlLines.length; index++) {
-    result.write(
-      '<span class="linenos">'
-      '${(startLine + index).toString().padLeft(width)}'
-      '</span>${htmlLines[index]}',
-    );
-  }
-  return result.toString();
-}
-
-/// Lays newline-terminated [htmlLines] out as a line-number table.
-///
-/// Port of `RougeExt::Formatters::HTMLTableLineNumberer#stream`: one table
-/// row per line with `linenos` and `code` cells. Numbering starts at
-/// [startLine].
-///
-/// NOTE: mirrors the upstream quirk that a single-line table is never
-/// closed: the `<table><tbody>` prefix attaches to the first row while the
-/// `</tbody></table>` suffix attaches to the last row only when it is not
-/// also the first.
-String numberHtmlLinesAsTable(List<String> htmlLines, {int startLine = 1}) {
-  if (htmlLines.isEmpty) return '';
-  final lastIndex = htmlLines.length - 1;
-  final result = StringBuffer();
-  for (var index = 0; index < htmlLines.length; index++) {
-    final row =
-        '<tr><td class="linenos"><pre>${startLine + index}</pre></td>'
-        '<td class="code"><pre>${htmlLines[index]}</pre></td></tr>';
-    if (index == 0) {
-      result.write('<table class="linenotable"><tbody>$row');
-    } else if (index == lastIndex) {
-      result.write('$row</tbody></table>');
-    } else {
-      result.write(row);
-    }
-  }
-  return result.toString();
+/// Port of `RougeExt::Formatters::HTMLTable#stream` (Asciidoctor 2.0.x):
+/// a newline is appended unless the code already ends with one (or with a
+/// hanging `\n</span>`), the line count is the number of newlines, and the
+/// numbers are right-justified to the width of the last one, one per line
+/// with a trailing newline. Numbering starts at [startLine].
+String numberHtmlAsTable(String formattedCode, {int startLine = 1}) {
+  var code = formattedCode;
+  if (!code.endsWith('\n') && !code.endsWith('\n</span>')) code = '$code\n';
+  final lastLineno = startLine + '\n'.allMatches(code).length - 1;
+  final width = lastLineno.toString().length;
+  final linenos = [
+    for (var lineno = startLine; lineno <= lastLineno; lineno++)
+      lineno.toString().padLeft(width),
+    '',
+  ].join('\n');
+  return '<table class="linenotable"><tbody><tr>'
+      '<td class="linenos gl"><pre class="lineno">$linenos</pre></td>'
+      '<td class="code"><pre>$code</pre></td>'
+      '</tr></tbody></table>';
 }

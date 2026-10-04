@@ -144,7 +144,7 @@ void main() {
       final opts = CliOptions(
         attributes: {'toc': ''},
         doctype: 'book',
-        sourcemap: true,
+        eruby: 'erubis',
       );
       final invoker = Invoker.fromOptions(opts);
       expect(identical(invoker.options, opts), isTrue);
@@ -156,13 +156,13 @@ void main() {
         final map = <String, Object?>{
           'attributes': {'toc': ''},
           'doctype': 'book',
-          'sourcemap': true,
+          'eruby': 'erubis',
         };
         final invoker = Invoker.fromMap(map);
         final resolvedOpts = invoker.options!;
         expect(resolvedOpts.attributes!['toc'], equals(''));
         expect(resolvedOpts.attributes!['doctype'], equals('book'));
-        expect(resolvedOpts.sourcemap, isTrue);
+        expect(resolvedOpts.eruby, equals('erubis'));
       },
     );
 
@@ -492,40 +492,6 @@ void main() {
       final result = await runCli(['-o', '/dev/null', '-w', sampleFile]);
       expect(result.stdout as String, isEmpty);
       expect(result.stderr as String, isEmpty);
-    });
-
-    test('changes level on logger when --log-level is specified', () {
-      final invoker = invokeCli(
-        ['--log-level', 'info'],
-        '-',
-        () =>
-            'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
-      );
-      expect(
-        invoker.readError(),
-        equals('asciidoctor: INFO: possible invalid reference: install\n'),
-      );
-    });
-
-    test('does not log when --log-level and -q are both specified', () {
-      final invoker = invokeCli(
-        ['--log-level', 'info', '-q'],
-        '-',
-        () =>
-            'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
-      );
-      expect(invoker.readError(), isEmpty);
-    });
-
-    test('uses specified log level when --log-level and -v are both '
-        'specified', () {
-      final invoker = invokeCli(
-        ['--log-level', 'warn', '-v'],
-        '-',
-        () =>
-            'skip to <<install>>\n\n. download\n. install[[install]]\n. run\n',
-      );
-      expect(invoker.readError(), isEmpty);
     });
 
     test(
@@ -977,21 +943,6 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
           () => 'paragraph one\n\nparagraph two\n\nparagraph three',
         );
         expect(invoker.readError(), isNot(contains('WARNING')));
-      },
-    );
-
-    test(
-      'adds source location to blocks when sourcemap option is specified',
-      () {
-        final invoker = invokeCliToBuffer(['--sourcemap', '-o', '-']);
-        final doc = invoker.document!;
-        final allBlocks = doc.findBy();
-        expect(allBlocks, isNotEmpty);
-        for (final block in allBlocks) {
-          expect(block.sourceLocation, isNotNull);
-        }
-        expect(doc.blocks[0].sourceLocation!.file, equals(sampleFile));
-        expect(doc.blocks[0].sourceLocation!.lineno, equals(6));
       },
     );
 

@@ -99,14 +99,12 @@ Example: asciidoctor input.adoc
                                      provided for compatibility with the asciidoc command
     -S, --safe-mode SAFE_MODE        set safe mode level explicitly: [unsafe, safe, server, secure] (default: unsafe)
                                      disables potentially dangerous macros in source files, such as include::[]
-        --sourcemap                  add source location information to each parsed block (default: false)
     -s, --no-header-footer           suppress enclosing document structure and output an embedded document (default: false)
     -n, --section-numbers            auto-number section titles in the HTML backend; disabled by default
         --eruby ERUBY                specify eRuby implementation to use when rendering custom ERB templates: [erb, erubi, erubis] (default: erb)
     -a, --attribute name[=value]     a document attribute to set in the form of name, name!, or name=value pair
-                                     that takes precedence over the same attribute defined in the source document
+                                     this attribute takes precedence over the same attribute defined in the source document
                                      unless either the name or value ends in @ (i.e., name@=value or name=value@)
-                                     may be specified more than once
     -T, --template-dir DIR           a directory containing custom converter templates that override the built-in converter (requires tilt gem)
                                      may be specified more than once
     -E, --template-engine NAME       template engine to use for the custom converter templates (loads gem on demand)
@@ -117,11 +115,10 @@ Example: asciidoctor input.adoc
                                      may be specified more than once
     -r, --require LIBRARY            require the specified library before executing the processor (using require)
                                      may be specified more than once
-        --log-level LEVEL            set minimum level of log messages that get logged: [DEBUG, INFO, WARN, ERROR, FATAL] (default: WARN)
         --failure-level LEVEL        set minimum log level that yields a non-zero exit code: [INFO, WARN, ERROR, FATAL] (default: FATAL)
     -q, --quiet                      silence application log messages and script warnings (default: false)
         --trace                      include backtrace information when reporting errors (default: false)
-    -v, --verbose                    show all application log messages, including DEBUG and INFO levels (default: false)
+    -v, --verbose                    directs application messages logged at DEBUG or INFO level to STDERR (default: false)
     -w, --warnings                   turn on script warnings (default: false)
     -t, --timings                    print timings report (default: false)
     -h, --help [TOPIC]               print a help message
@@ -228,9 +225,6 @@ enum _CliOption {
   /// `-S/--safe-mode SAFE_MODE`.
   safeMode,
 
-  /// `--sourcemap`.
-  sourcemap,
-
   /// `-s/--no-header-footer`.
   noHeaderFooter,
 
@@ -263,9 +257,6 @@ enum _CliOption {
 
   /// `-r/--require LIBRARY`.
   require,
-
-  /// `--log-level LEVEL`.
-  logLevel,
 
   /// `--failure-level LEVEL`.
   failureLevel,
@@ -333,7 +324,6 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.outFile, 'o', 'out-file', _Arity.required),
   _Spec(_CliOption.safe, null, 'safe', _Arity.none),
   _Spec(_CliOption.safeMode, 'S', 'safe-mode', _Arity.required, _safeModeNames),
-  _Spec(_CliOption.sourcemap, null, 'sourcemap', _Arity.none),
   _Spec(_CliOption.noHeaderFooter, 's', 'no-header-footer', _Arity.none),
   _Spec(_CliOption.sectionNumbers, 'n', 'section-numbers', _Arity.none),
   _Spec(_CliOption.eruby, null, 'eruby', _Arity.required, [
@@ -349,18 +339,6 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.destinationDir, 'D', 'destination-dir', _Arity.required),
   _Spec(_CliOption.loadPath, 'I', 'load-path', _Arity.required),
   _Spec(_CliOption.require, 'r', 'require', _Arity.required),
-  _Spec(_CliOption.logLevel, null, 'log-level', _Arity.required, [
-    'debug',
-    'DEBUG',
-    'info',
-    'INFO',
-    'warning',
-    'WARNING',
-    'error',
-    'ERROR',
-    'fatal',
-    'FATAL',
-  ]),
   _Spec(_CliOption.failureLevel, null, 'failure-level', _Arity.required, [
     'info',
     'INFO',
@@ -403,8 +381,7 @@ final class CliOptions {
   ///
   /// [templateDirs] accepts a single [String] directory, an
   /// [Iterable] of directories, or `null` (Ruby callers may seed a bare
-  /// string). [logLevel] accepts a [Severity], an [int], or a [String] name
-  /// (see [Severity.coerce]).
+  /// string).
   new({
     Map<String, String>? attributes,
     this.inputFiles,
@@ -423,13 +400,10 @@ final class CliOptions {
     this.baseDir,
     this.sourceDir,
     this.destinationDir,
-    Object? logLevel,
-    this.sourcemap,
     this.jobs = 1,
   }) : attributes = attributes ?? <String, String>{},
        safe = safe ?? SafeMode.unsafe,
-       templateDirs = _normalizeTemplateDirs(templateDirs),
-       logLevel = logLevel == null ? null : Severity.coerce(logLevel) {
+       templateDirs = _normalizeTemplateDirs(templateDirs) {
     if (doctype != null) this.attributes!['doctype'] = doctype;
     if (backend != null) this.attributes!['backend'] = backend;
   }
@@ -482,15 +456,9 @@ final class CliOptions {
   /// Destination directory from `-D/--destination-dir`.
   String? destinationDir;
 
-  /// Minimum logged severity from `--log-level`.
-  Severity? logLevel;
-
   /// Minimum severity that yields a non-zero exit code
   /// (from `--failure-level`; default [Severity.fatal]).
   Severity failureLevel = Severity.fatal;
-
-  /// Whether source location info is added (`--sourcemap`).
-  bool? sourcemap;
 
   /// Whether backtraces are shown (`--trace`).
   bool trace = false;
@@ -987,8 +955,6 @@ final class CliOptions {
         safe = SafeMode.safe;
       case _CliOption.safeMode:
         safe = _safeModeValue(value!);
-      case _CliOption.sourcemap:
-        sourcemap = true;
       case _CliOption.sectionNumbers:
         _attributeMap['sectnums'] = '';
       case _CliOption.eruby:
@@ -1009,9 +975,12 @@ final class CliOptions {
         loadPaths ??= [];
         loadPaths!.addAll(value!.split(_pathListSeparator));
       case _CliOption.require:
-        (requires ??= []).add(value!);
-      case _CliOption.logLevel:
-        logLevel = _severityForLevel(value!);
+        // Ruby `path.split ','` drops trailing empty fields.
+        final paths = value!.split(',');
+        while (paths.isNotEmpty && paths.last.isEmpty) {
+          paths.removeLast();
+        }
+        (requires ??= []).addAll(paths);
       case _CliOption.failureLevel:
         failureLevel = _severityForLevel(value!);
       case _CliOption.quiet:
@@ -1140,7 +1109,7 @@ int _parseJobsValue(String value) {
   return jobs;
 }
 
-/// Maps a completed `--log-level`/`--failure-level` value to its severity.
+/// Maps a completed `--failure-level` value to its severity.
 ///
 /// Port of the level handlers: the value is uppercased and `WARNING` folds
 /// to `WARN`.

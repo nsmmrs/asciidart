@@ -787,19 +787,18 @@ class IncludeProcessor extends Processor
 
   /// The handles callback assigned through the registration DSL.
   ///
-  /// This is the Dart equivalent of Ruby's `handles? do ... end` block. It
-  /// always receives the document and the target (Ruby's single-argument
-  /// legacy form has no Dart counterpart; there is no legacy adapter).
-  bool Function(ReaderDocument, String)? onHandles;
+  /// This is the Dart equivalent of Ruby's `handles? do ... end` block; it
+  /// receives the include target.
+  bool Function(String)? onHandles;
 
   /// Whether this processor handles the include [target].
   ///
   /// Runs [onHandles] when assigned through the registration DSL, else
   /// returns true.
   @override
-  bool handles(ReaderDocument document, String target) {
+  bool handles(String target) {
     final handler = onHandles;
-    if (handler != null) return handler(document, target);
+    if (handler != null) return handler(target);
     return true;
   }
 

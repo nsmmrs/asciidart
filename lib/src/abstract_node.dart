@@ -85,7 +85,7 @@ abstract interface class NodeLogger {
 /// Default [NodeLogger], forwarding to the shared manager logger.
 ///
 /// In Ruby every node logs through `LoggerManager.logger` (via the `Logging`
-/// mixin), so CLI level selection (`--log-level`, `-v`, `-q`), formatting,
+/// mixin), so CLI level selection (`-v`, `-q`), formatting,
 /// and `maxSeverity` (for `--failure-level`) apply uniformly. This forwarder
 /// preserves that single-logger behavior; the lookup is dynamic so invoker
 /// swaps (e.g. [NullLogger] for `-q`) and `logger:` option replacements take

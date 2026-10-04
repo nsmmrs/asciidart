@@ -85,24 +85,22 @@ void main() {
       expect(options.baseDir, isNull);
       expect(options.sourceDir, isNull);
       expect(options.destinationDir, isNull);
-      expect(options.logLevel, isNull);
       expect(options.failureLevel, equals(Severity.fatal));
-      expect(options.sourcemap, isNull);
       expect(options.trace, isFalse);
       expect(options.timings, isFalse);
     });
 
-    test('seeds attributes, doctype, backend and sourcemap', () {
+    test('seeds attributes, doctype, backend and eruby', () {
       // Option-parsing half of invoker_test 'should allow options Hash to be
       // passed as first argument of constructor' (the Invoker.new half needs
       // the invoker card).
       final options = CliOptions(
         attributes: {'toc': ''},
         doctype: 'book',
-        sourcemap: true,
+        eruby: 'erubis',
       );
       expect(options.attributes, equals({'toc': '', 'doctype': 'book'}));
-      expect(options.sourcemap, isTrue);
+      expect(options.eruby, equals('erubis'));
 
       final backend = CliOptions(backend: 'docbook5');
       expect(backend.attributes, equals({'backend': 'docbook5'}));
@@ -121,15 +119,6 @@ void main() {
         equals(['a', 'b']),
       );
       expect(() => CliOptions(templateDirs: 42), throwsArgumentError);
-    });
-
-    test('coerces seeded log levels', () {
-      expect(CliOptions(logLevel: 1).logLevel, equals(Severity.info));
-      expect(
-        CliOptions(logLevel: Severity.error).logLevel,
-        equals(Severity.error),
-      );
-      expect(CliOptions(logLevel: 'debug').logLevel, equals(Severity.debug));
     });
 
     test('ignores seeds for trace, timings and failure level', () {
@@ -853,20 +842,6 @@ void main() {
       expect(result.err, contains('invalid argument:'));
     });
 
-    test('sets log level to DEBUG when log-level option is specified', () {
-      final result = parseCli(['--log-level', 'debug', sampleFile]);
-      expect(result.exitCode, isNull);
-      expect(result.options.logLevel, equals(Severity.debug));
-    });
-
-    test('allows log level WARN using any recognized abbreviation', () {
-      for (final value in ['w', 'warn', 'WARN', 'warning', 'WARNING']) {
-        final result = parseCli(['--log-level=$value', sampleFile]);
-        expect(result.exitCode, isNull, reason: value);
-        expect(result.options.logLevel, equals(Severity.warn));
-      }
-    });
-
     test('sets verbose to 2 when -v flag is specified', () {
       final result = parseCli(['-v', sampleFile]);
       expect(result.exitCode, isNull);
@@ -907,18 +882,6 @@ void main() {
       final result = parseCli([sampleFile]);
       expect(result.exitCode, isNull);
       expect(result.options.timings, isFalse);
-    });
-
-    test('enables sourcemap when sourcemap flag is specified', () {
-      final result = parseCli(['--sourcemap', sampleFile]);
-      expect(result.exitCode, isNull);
-      expect(result.options.sourcemap, isTrue);
-    });
-
-    test('sourcemap option is disabled by default', () {
-      final result = parseCli([sampleFile]);
-      expect(result.exitCode, isNull);
-      expect(result.options.sourcemap, isNot(isTrue));
     });
 
     test('enables section numbers when -n flag is specified', () {
@@ -972,20 +935,14 @@ void main() {
       expect(options.requires, equals(['foobar', 'foobaz']));
     });
 
-    test('-r flag with commas is treated as a single path', () {
-      final result = parseCli([
-        '-r',
-        '/no-such-folder/a,b,c/ext.rb',
-        sampleFile,
-      ]);
+    test('-r flag with multiple values requires specified libraries', () {
+      final result = parseCli(['-r', 'foobar,foobaz', sampleFile]);
       expect(result.exitCode, equals(1));
       expect(
         result.err,
-        contains(
-          "asciidoctor: FAILED: '/no-such-folder/a,b,c/ext.rb' could not be loaded",
-        ),
+        contains("asciidoctor: FAILED: 'foobar' could not be loaded"),
       );
-      expect(result.options.requires, equals(['/no-such-folder/a,b,c/ext.rb']));
+      expect(result.options.requires, equals(['foobar', 'foobaz']));
     });
 
     test('suggests --trace when a require fails', () {

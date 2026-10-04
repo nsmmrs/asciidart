@@ -447,7 +447,6 @@ class HighlightJsHighlighter extends SyntaxHighlighterBase {
     content: _s(node.content()),
     language: language,
     nowrap: isTruthy(opts['nowrap']),
-    nohighlight: node.hasOption('nohighlight'),
   );
 
   @override
@@ -522,7 +521,7 @@ class PrettifyHighlighter extends SyntaxHighlighterBase {
     content: _s(node.content()),
     language: language,
     nowrap: isTruthy(opts['nowrap']),
-    linenums: node.hasOption('linenums'),
+    linenums: node.hasAttr('linenums'),
     start: node.attr('start')?.toString(),
   );
 

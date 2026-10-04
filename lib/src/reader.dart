@@ -156,7 +156,7 @@ abstract class ReaderDocument {
 /// `extensions.dart` wave unifies this with the real extension types.
 abstract class ReaderIncludeProcessor {
   /// Whether this processor handles the given include [target].
-  bool handles(ReaderDocument document, String target);
+  bool handles(String target);
 
   /// Pushes the content for [target] onto [reader].
   void process(
@@ -2086,7 +2086,7 @@ class PreprocessorReader extends Reader {
     final extensions = _includeProcessorExtensions;
     if (extensions == null) return null;
     for (final ext in extensions) {
-      if (ext.handles(doc, target)) return ext;
+      if (ext.handles(target)) return ext;
     }
     return null;
   }

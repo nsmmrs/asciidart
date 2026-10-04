@@ -767,9 +767,6 @@ class SamplePreprocessor extends Preprocessor {
 
 /// Sample include processor (port of `SampleIncludeProcessor`).
 ///
-/// Ruby's sample defines the single-argument legacy `handles?`, which has
-/// no Dart counterpart (see [IncludeProcessor.onHandles]); the port keeps
-/// the default handling behavior instead.
 class SampleIncludeProcessor extends IncludeProcessor {
   /// Creates a sample include processor with [config].
   new([super.config]);
@@ -840,8 +837,7 @@ class BoilerplateTextIncludeProcessor extends IncludeProcessor {
   new([super.config]);
 
   @override
-  bool handles(ReaderDocument document, String target) =>
-      target.endsWith('.txt');
+  bool handles(String target) => target.endsWith('.txt');
 
   @override
   Object? process(
@@ -1393,15 +1389,9 @@ void main() {
       expect(extensions.length, equals(1));
       expect(extensions.first, isA<ProcessorExtension>());
       expect(extensions.first.instance, isA<SampleIncludeProcessor>());
-      // Adapted: Ruby adapts the single-argument legacy `handles?` here;
-      // Dart always uses the two-argument form (see
-      // [IncludeProcessor.onHandles]).
       final instance = extensions.first.instance as SampleIncludeProcessor;
       expect(instance.onHandles, isNull);
-      expect(
-        instance.handles(FakeReaderDocument(emptyDocument()), 'include.adoc'),
-        isTrue,
-      );
+      expect(instance.handles('include.adoc'), isTrue);
       expect(extensions.first.processMethod, isA<Function>());
     });
 
@@ -1648,14 +1638,14 @@ void main() {
               build: (processor) {
                 // test onHandles assigned as callback
                 processor
-                  ..onHandles = ((doc, target) => target == 'skip-me.adoc')
+                  ..onHandles = ((target) => target == 'skip-me.adoc')
                   ..onProcess = (doc, reader, target, attributes) => null;
               },
             )
             ..includeProcessor(
               build: (processor) {
                 processor
-                  ..onHandles = ((doc, target) => target == 'include-file.adoc')
+                  ..onHandles = ((target) => target == 'include-file.adoc')
                   ..onProcess = (doc, reader, target, attributes) {
                     // demonstrates that pushInclude normalizes newlines
                     final lineno = reader.cursorAtPrevLine().lineno;
@@ -1722,7 +1712,7 @@ void main() {
           r.includeProcessor(
             build: (processor) {
               processor
-                ..onHandles = ((doc, target) => target == 'include-file.adoc')
+                ..onHandles = ((target) => target == 'include-file.adoc')
                 ..onProcess = (doc, reader, target, attributes) {
                   final content = contentCache.putIfAbsent(
                     'include-file.adoc',

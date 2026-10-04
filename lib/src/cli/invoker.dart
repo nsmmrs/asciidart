@@ -74,7 +74,7 @@ final class Invoker with Logging {
   /// `input_files`, `output_file`, `safe` (an [int] level or a level name),
   /// `standalone`, `template_dirs`, `template_engine`, `doctype`, `backend`,
   /// `eruby`, `verbose`, `warnings`, `load_paths`, `requires`, `base_dir`,
-  /// `source_dir`, `destination_dir`, `log_level`, `sourcemap`. The
+  /// `source_dir`, `destination_dir`. The
   /// `failure_level`, `trace` and `timings` seeds are ignored (as in Ruby)
   /// and unknown keys are dropped.
   new fromMap(Map<String, Object?> map) : _options = _optionsFromMap(map);
@@ -178,16 +178,8 @@ final class Invoker with Logging {
     _putIfPresent(opts, 'template_engine', options.templateEngine);
     _putIfPresent(opts, 'eruby', options.eruby);
     _putIfPresent(opts, 'base_dir', options.baseDir);
-    _putIfPresent(opts, 'sourcemap', options.sourcemap);
-    _putIfPresent(opts, 'log_level', options.logLevel);
     _putIfPresent(opts, 'load_paths', options.loadPaths);
     _putIfPresent(opts, 'requires', options.requires);
-
-    final logLevel = opts.remove('log_level') as Severity?;
-    if (logLevel != null && savedLogger == null) {
-      savedLevel ??= LoggerManager.logger.level;
-      LoggerManager.logger.level = logLevel;
-    }
 
     try {
       var stdinInput = false;
@@ -347,16 +339,8 @@ final class Invoker with Logging {
     _putIfPresent(opts, 'template_engine', options.templateEngine);
     _putIfPresent(opts, 'eruby', options.eruby);
     _putIfPresent(opts, 'base_dir', options.baseDir);
-    _putIfPresent(opts, 'sourcemap', options.sourcemap);
-    _putIfPresent(opts, 'log_level', options.logLevel);
     _putIfPresent(opts, 'load_paths', options.loadPaths);
     _putIfPresent(opts, 'requires', options.requires);
-
-    final logLevel = opts.remove('log_level') as Severity?;
-    if (logLevel != null && savedLogger == null) {
-      savedLevel ??= LoggerManager.logger.level;
-      LoggerManager.logger.level = logLevel;
-    }
 
     try {
       // The caller excluded stdin input and shared explicit `-o` targets, so
@@ -541,8 +525,6 @@ final class Invoker with Logging {
       baseDir: get('base_dir', 'baseDir') as String?,
       sourceDir: get('source_dir', 'sourceDir') as String?,
       destinationDir: get('destination_dir', 'destinationDir') as String?,
-      logLevel: get('log_level', 'logLevel'),
-      sourcemap: get('sourcemap') as bool?,
     );
   }
 

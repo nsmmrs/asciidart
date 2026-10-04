@@ -42,24 +42,17 @@ class HighlightJsAdapter {
   /// Formats converted [content] for client-side highlighting.
   ///
   /// The `<code>` tag carries `language-{language} hljs` (`language-none`
-  /// when [language] is absent). When [nohighlight] is set (the
-  /// `nohighlight` option on the block), the ` highlight` marker is removed
-  /// from the `<pre>` class so the client skips the block. [nowrap] appends
-  /// the `nowrap` class.
+  /// when [language] is absent). [nowrap] appends the `nowrap` class.
   String format({
     required String content,
     String? language,
     bool nowrap = false,
-    bool nohighlight = false,
   }) => wrapSourceBlock(
     preClass: preClass,
     content: content,
     language: language,
     nowrap: nowrap,
     transform: (pre, code) {
-      if (nohighlight) {
-        pre['class'] = pre['class']!.replaceFirst(' highlight', '');
-      }
       code['class'] = 'language-${language ?? 'none'} hljs';
     },
   );

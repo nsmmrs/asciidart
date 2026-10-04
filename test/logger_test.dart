@@ -235,13 +235,13 @@ void main() {
     test('NullLogger level is not null', () {
       final logger = NullLogger();
       expect(logger.level, isNotNull);
-      expect(logger.level, equals(Severity.unknown));
+      expect(logger.level, equals(Severity.warn));
     });
 
     test('MemoryLogger level is not null', () {
       final logger = MemoryLogger();
       expect(logger.level, isNotNull);
-      expect(logger.level, equals(Severity.unknown));
+      expect(logger.level, equals(Severity.warn));
     });
   });
 
@@ -609,10 +609,10 @@ void main() {
       expect(logger.maxSeverity, isNull);
     });
 
-    test('predicates are all false at UNKNOWN, level stays settable', () {
+    test('predicates follow the WARN level, level stays settable', () {
       final logger = MemoryLogger();
       expect(logger.isDebugEnabled, isFalse);
-      expect(logger.isFatalEnabled, isFalse);
+      expect(logger.isWarnEnabled, isTrue);
       logger.level = Severity.debug;
       expect(logger.isDebugEnabled, isTrue);
       logger.debug('still recorded');
@@ -630,10 +630,10 @@ void main() {
       expect(logger.maxSeverity, equals(Severity.error));
     });
 
-    test('predicates are all false', () {
+    test('predicates follow the WARN level', () {
       final logger = NullLogger();
       expect(logger.isDebugEnabled, isFalse);
-      expect(logger.isWarnEnabled, isFalse);
+      expect(logger.isWarnEnabled, isTrue);
     });
   });
 

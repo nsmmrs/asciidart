@@ -459,12 +459,12 @@ class MemoryLogMessage {
 
 /// A logger recording every record in [messages].
 ///
-/// Port of `Asciidoctor::MemoryLogger`: level `UNKNOWN`, no level filtering
+/// Port of `Asciidoctor::MemoryLogger`: level `WARN`, no level filtering
 /// ([add] records everything, exactly like Ruby, which overrides `add`
 /// without a level check).
 class MemoryLogger extends LoggerBase {
   /// Creates an empty memory logger.
-  new() : super(Severity.unknown);
+  new() : super(Severity.warn);
 
   /// The recorded records, in logging order.
   final List<MemoryLogMessage> messages = [];
@@ -504,10 +504,10 @@ class MemoryLogger extends LoggerBase {
 
 /// A logger discarding every record while tracking [maxSeverity].
 ///
-/// Port of `Asciidoctor::NullLogger` (level `UNKNOWN`).
+/// Port of `Asciidoctor::NullLogger` (level `WARN`).
 class NullLogger extends LoggerBase {
   /// Creates a null logger.
-  new() : super(Severity.unknown);
+  new() : super(Severity.warn);
 
   Severity? _maxSeverity;
 

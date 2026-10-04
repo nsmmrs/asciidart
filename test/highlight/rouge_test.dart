@@ -89,19 +89,15 @@ void main() {
               );
       expect(
         result.html,
-        '<table class="linenotable"><tbody>'
-        '<tr><td class="linenos"><pre>1</pre></td><td class="code"><pre>'
-        '<span class="nb">puts</span> <span class="s1">\'hi\'</span>\n'
-        '</pre></td></tr>'
-        '<tr><td class="linenos"><pre>2</pre></td><td class="code"><pre>'
-        '<span class="nb">puts</span> <span class="s1">\'yo\'</span>\n'
-        '</pre></td></tr>'
-        '</tbody></table>',
+        '<table class="linenotable"><tbody><tr><td class="linenos gl">'
+        '<pre class="lineno">1\n2\n</pre></td><td class="code"><pre>'
+        '$twoLineInner'
+        '</pre></td></tr></tbody></table>',
       );
       expect(result.sourceOffset, isNull);
     });
 
-    test('single-line table is unclosed like the Ruby formatter', () {
+    test('single-line table reports the code cell offset for callouts', () {
       const inner =
           '<span class="nb">puts</span> <span class="s1">\'hi\'</span>\n';
       final result = RougeAdapter(lexer: backend(onHighlight: (_) => inner))
@@ -113,15 +109,17 @@ void main() {
           );
       expect(
         result.html,
-        '<table class="linenotable"><tbody>'
-        '<tr><td class="linenos"><pre>1</pre></td><td class="code"><pre>'
-        '<span class="nb">puts</span> <span class="s1">\'hi\'</span>\n'
-        '</pre></td></tr>',
+        '<table class="linenotable"><tbody><tr><td class="linenos gl">'
+        '<pre class="lineno">1\n</pre></td><td class="code"><pre>'
+        '$inner'
+        '</pre></td></tr></tbody></table>',
       );
-      expect(result.sourceOffset, 92);
+      expect(result.sourceOffset, 111);
     });
 
-    test('inline numbering prepends linenos spans', () {
+    test('inline numbering mode also uses the table layout', () {
+      // 2.0.26 has no inline Rouge numberer (rouge-linenums-mode=inline came
+      // with asciidoctor#3641); any mode lays out the linenotable.
       final result =
           RougeAdapter(lexer: backend(onHighlight: (_) => twoLineInner))
               .highlight(
@@ -129,26 +127,16 @@ void main() {
                 language: 'ruby',
                 numberLines: LineNumbersMode.inline,
                 startLineNumber: 5,
+                hasCallouts: true,
               );
       expect(
         result.html,
-        '<span class="linenos">5</span>'
-        '<span class="nb">puts</span> <span class="s1">\'hi\'</span>\n'
-        '<span class="linenos">6</span>'
-        '<span class="nb">puts</span> <span class="s1">\'yo\'</span>\n',
+        '<table class="linenotable"><tbody><tr><td class="linenos gl">'
+        '<pre class="lineno">5\n6\n</pre></td><td class="code"><pre>'
+        '$twoLineInner'
+        '</pre></td></tr></tbody></table>',
       );
-    });
-
-    test('inline numbering with callouts reports no offset', () {
-      final result =
-          RougeAdapter(lexer: backend(onHighlight: (_) => twoLineInner))
-              .highlight(
-                source: "puts 'hi'\nputs 'yo'\n",
-                language: 'ruby',
-                numberLines: LineNumbersMode.inline,
-                hasCallouts: true,
-              );
-      expect(result.sourceOffset, isNull);
+      expect(result.sourceOffset, isNotNull);
     });
 
     test('emphasized lines gain an hll span holding the newline', () {
@@ -178,17 +166,18 @@ void main() {
           .highlight(
             source: "puts 'a'\nputs 'b'\n",
             language: 'ruby',
-            numberLines: LineNumbersMode.inline,
+            numberLines: LineNumbersMode.table,
             highlightLines: [2],
           );
       expect(
         result.html,
-        '<span class="linenos">1</span>'
+        '<table class="linenotable"><tbody><tr><td class="linenos gl">'
+        '<pre class="lineno">1\n2\n</pre></td><td class="code"><pre>'
         '<span class="nb">puts</span> <span class="s1">\'a\'</span>\n'
-        '<span class="linenos">2</span>'
         '<span class="hll">'
         '<span class="nb">puts</span> <span class="s1">\'b\'</span>\n'
-        '</span>',
+        '</span>'
+        '</pre></td></tr></tbody></table>',
       );
     });
 
@@ -230,26 +219,46 @@ void main() {
       expect(splitHtmlLines(''), isEmpty);
     });
 
-    test('inline numbering right-justifies to the last number width', () {
+    test('table numbering right-justifies to the last number width', () {
+      // Expected values generated with Ruby's 2.0.26
+      // RougeExt::Formatters::HTMLTable.
       expect(
-        numberHtmlLinesInline(['a\n', 'b\n'], startLine: 9),
-        '<span class="linenos"> 9</span>a\n'
-        '<span class="linenos">10</span>b\n',
+        numberHtmlAsTable('a\nb', startLine: 9),
+        '<table class="linenotable"><tbody><tr><td class="linenos gl">'
+        '<pre class="lineno"> 9\n10\n</pre></td>'
+        '<td class="code"><pre>a\nb\n</pre></td></tr></tbody></table>',
       );
     });
 
-    test('numbering terminates an unterminated last line', () {
+    test('table numbering keeps a terminated last line', () {
       expect(
-        numberHtmlLinesInline(highlightHtmlLines(splitHtmlLines('a\nb'))),
-        '<span class="linenos">1</span>a\n'
-        '<span class="linenos">2</span>b\n',
+        numberHtmlAsTable('a\nb\n'),
+        '<table class="linenotable"><tbody><tr><td class="linenos gl">'
+        '<pre class="lineno">1\n2\n</pre></td>'
+        '<td class="code"><pre>a\nb\n</pre></td></tr></tbody></table>',
       );
     });
 
-    test('empty input decorates to empty output', () {
+    test('table numbering accepts a hanging emphasized last line', () {
+      expect(
+        numberHtmlAsTable(
+          highlightHtmlLines(splitHtmlLines('a\nb'), [2]).join(),
+        ),
+        '<table class="linenotable"><tbody><tr><td class="linenos gl">'
+        '<pre class="lineno">1\n2\n</pre></td>'
+        '<td class="code"><pre>a\n<span class="hll">b\n</span></pre></td>'
+        '</tr></tbody></table>',
+      );
+    });
+
+    test('empty input numbers a single line', () {
       expect(highlightHtmlLines(splitHtmlLines('')), isEmpty);
-      expect(numberHtmlLinesInline([]), '');
-      expect(numberHtmlLinesAsTable([]), '');
+      expect(
+        numberHtmlAsTable(''),
+        '<table class="linenotable"><tbody><tr><td class="linenos gl">'
+        '<pre class="lineno">1\n</pre></td>'
+        '<td class="code"><pre>\n</pre></td></tr></tbody></table>',
+      );
     });
   });
 

@@ -35,27 +35,6 @@ void main() {
         '<code class="language-none hljs">$content</code></pre>',
       );
     });
-
-    test('nohighlight strips the highlight marker from the pre class', () {
-      expect(
-        adapter.format(content: 'puts 1', language: 'ruby', nohighlight: true),
-        '<pre class="highlightjs">'
-        '<code class="language-ruby hljs" data-lang="ruby">puts 1</code></pre>',
-      );
-    });
-
-    test('nohighlight keeps the nowrap class', () {
-      expect(
-        adapter.format(
-          content: 'puts 1',
-          language: 'ruby',
-          nowrap: true,
-          nohighlight: true,
-        ),
-        '<pre class="highlightjs nowrap">'
-        '<code class="language-ruby hljs" data-lang="ruby">puts 1</code></pre>',
-      );
-    });
   });
 
   group('hasDocinfo', () {
