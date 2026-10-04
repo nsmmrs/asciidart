@@ -26,13 +26,18 @@ const publicLibs = [
   'cli.dart',
 ];
 
+/// The absolute, normalized path of the public library [name], which the
+/// analyzer requires (native separators on Windows).
+String libraryPath(String name) =>
+    File.fromUri(Directory(repo).uri.resolve('lib/$name')).path;
+
 Future<void> main() async {
   final collection = AnalysisContextCollection(
-    includedPaths: [for (final l in publicLibs) '$repo/lib/$l'],
+    includedPaths: [for (final l in publicLibs) libraryPath(l)],
   );
   final exported = <Element>{};
   for (final l in publicLibs) {
-    final path = '$repo/lib/$l';
+    final path = libraryPath(l);
     final session = collection.contextFor(path).currentSession;
     final result = await session.getResolvedLibrary(path);
     if (result is! ResolvedLibraryResult) {
