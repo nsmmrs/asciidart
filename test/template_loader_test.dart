@@ -281,18 +281,16 @@ void main() {
       expect(() => validateTemplateEngine('dart'), returnsNormally);
     });
 
-    test('validateTemplateEngine rejects unknown engines like Ruby', () {
+    test('validateTemplateEngine rejects unknown engines', () {
       for (final engine in ['haml', 'slim', 'erb', '']) {
         expect(
           () => validateTemplateEngine(engine),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AsciidoctorException>().having(
               (e) => e.message,
               'message',
-              allOf(
-                contains('asciidoctor: FAILED'),
-                contains(engine),
-                contains('Processing aborted.'),
+              equals(
+                "unknown template engine '$engine' (supported: mustache, dart)",
               ),
             ),
           ),
@@ -311,7 +309,7 @@ void main() {
           'html5',
           const ConverterOptions(templateDirs: ['dir'], templateEngine: 'haml'),
         ),
-        throwsArgumentError,
+        throwsA(isA<AsciidoctorException>()),
       );
       expect(
         Converter.create(
@@ -390,10 +388,10 @@ void main() {
           ),
         ),
         throwsA(
-          isA<ArgumentError>().having(
+          isA<AsciidoctorException>().having(
             (e) => e.message,
             'message',
-            allOf(contains('asciidoctor: FAILED'), contains('slim')),
+            contains("unknown template engine 'slim'"),
           ),
         ),
       );
@@ -432,7 +430,7 @@ void main() {
         err: err,
         environment: <String, String>{},
       ))..redirectStreams(out, err);
-      expect(invoker.invoke, throwsArgumentError);
+      expect(invoker.invoke, throwsA(isA<AsciidoctorException>()));
       expect(invoker.code, equals(1));
     });
   });

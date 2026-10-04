@@ -455,10 +455,7 @@ abstract class AbstractNode {
     }
     if (uriTarget != null) {
       return doc.hasAttr('allow-uri-read')
-          ? generateDataUriFromUri(
-              uriTarget,
-              cacheUri: doc.hasAttr('cache-uri'),
-            )
+          ? generateDataUriFromUri(uriTarget)
           : uriTarget;
     }
     return generateDataUri(targetImage, assetDirKey);
@@ -536,12 +533,9 @@ abstract class AbstractNode {
 
   /// Returns a data URI built from the image data read at [imageUri].
   ///
-  /// When [cacheUri] is set, the (unavailable) URI cache library is
-  /// required first, which throws a [StateError]. When
-  /// the data cannot be retrieved, a warning is logged and [imageUri] is
-  /// returned unchanged.
-  String generateDataUriFromUri(String imageUri, {bool cacheUri = false}) {
-    Helpers.requireOpenUri(cache: cacheUri);
+  /// When the data cannot be retrieved, a warning is logged and [imageUri]
+  /// is returned unchanged.
+  String generateDataUriFromUri(String imageUri) {
     try {
       final response = fetchUri(imageUri);
       final mimetype = response.contentType;
@@ -695,9 +689,6 @@ abstract class AbstractNode {
     final assetLabel = label ?? 'asset';
     if (targetIsUri) {
       if (doc.hasAttr('allow-uri-read')) {
-        if (doc.hasAttr('cache-uri')) {
-          Helpers.requireLibrary('open-uri/cached', 'open-uri-cached');
-        }
         try {
           final body = utf8.decode(fetchUri(resolvedTarget).body);
           contents = normalize

@@ -532,7 +532,10 @@ void main() {
       expect(seq.invoker.code, equals(1));
       expect(par.invoker.code, equals(1));
       expect(par.err, equals(seq.err));
-      expect(par.err, contains('Failed to load AsciiDoc document'));
+      expect(
+        par.err,
+        contains('asciidoctor: FAILED: failed to load ${inputs[1]}: '),
+      );
       expect(par.err, contains('Use --trace to show backtrace'));
       // The file before the failure converts in both modes.
       expect(File('${out1.path}/a.html').existsSync(), isTrue);

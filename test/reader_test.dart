@@ -1357,7 +1357,7 @@ void main() {
           expect(
             reader.readLines,
             throwsA(
-              isA<ArgumentError>().having(
+              isA<AsciidoctorException>().having(
                 (error) => error.message,
                 'message',
                 'source is either binary or contains invalid Unicode data',

@@ -29,6 +29,8 @@ library;
 
 import 'dart:isolate';
 
+import 'package:asciidoctor/src/cli/diagnostics.dart';
+import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/job_pool.dart';
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
@@ -136,7 +138,7 @@ ConversionResponse runConversionJob(ConversionRequest request) {
   } on Object catch (e) {
     return ConversionResponse(
       ok: false,
-      error: e.toString(),
+      error: describe(e),
       records: _capture(memory),
     );
   } finally {
@@ -166,13 +168,8 @@ List<CapturedRecord> _capture(MemoryLogger memory) => [
 /// Carries the worker's error text verbatim (the original error object
 /// cannot cross isolates), so `--trace` output matches the sequential run's
 /// message; only the backtrace differs (it starts on the main isolate).
-final class WorkerFailure implements Exception {
-  /// Creates a failure carrying the worker-side error [message].
-  const new(this.message);
-
-  /// The worker-side `toString()` of the thrown error.
-  final String message;
-
-  @override
-  String toString() => message;
+final class WorkerFailure extends AsciidoctorException {
+  /// Creates a failure carrying the worker-side error [message] (see
+  /// [describe]).
+  const new(super.message);
 }

@@ -24,6 +24,7 @@ import 'package:asciidoctor/src/abstract_node.dart' show SafeMode;
 import 'package:asciidoctor/src/constants.dart' show defaultStylesheetKeys;
 import 'package:asciidoctor/src/docbook5.dart' show Docbook5Converter;
 import 'package:asciidoctor/src/document.dart' show Document;
+import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/helpers.dart' show Helpers;
 import 'package:asciidoctor/src/html5.dart' show Html5Converter;
 import 'package:asciidoctor/src/logging.dart' show LoggerManager;
@@ -169,9 +170,7 @@ Document _load(_Input input, AsciidoctorOptions options, {bool parse = true}) {
     timings?.record('parse');
     return doc;
   } catch (e, st) {
-    final context =
-        'asciidoctor: FAILED: ${docfile ?? '<stdin>'}: '
-        'Failed to load AsciiDoc document';
+    final context = 'failed to load ${docfile ?? '<stdin>'}';
     Error.throwWithStackTrace(_withContext(e, context), st);
   }
 }
@@ -237,9 +236,8 @@ Document _convert(
       '${doc.attributes['docname'] ?? ''}${doc.outfilesuffix ?? ''}',
     );
     if (outfile == siblingPath) {
-      throw FileSystemException(
+      throw AsciidoctorException(
         'input file and output file cannot be the same: $outfile',
-        outfile,
       );
     }
   } else if (writeToTarget) {
@@ -288,9 +286,8 @@ Document _convert(
     }
 
     if (inputFile != null && outfile == _expandPath(inputFile.path)) {
-      throw FileSystemException(
+      throw AsciidoctorException(
         'input file and output file cannot be the same: $outfile',
-        outfile,
       );
     }
 
@@ -298,10 +295,9 @@ Document _convert(
       Helpers.mkdirP(outdir);
     } else if (!Directory(outdir).existsSync()) {
       // NOTE the directory is intentionally reported as it was passed.
-      throw FileSystemException(
-        'target directory does not exist: ${toDir ?? ''} '
-        '(hint: set :mkdirs option)',
-        outdir,
+      throw AsciidoctorException(
+        'target directory does not exist: ${toDir ?? outdir} '
+        '(set the mkdirs option to create it)',
       );
     }
   }
@@ -353,10 +349,9 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
   if (mkdirs) {
     Helpers.mkdirP(stylesoutdir);
   } else if (!Directory(stylesoutdir).existsSync()) {
-    throw FileSystemException(
+    throw AsciidoctorException(
       'target stylesheet directory does not exist: $stylesoutdir '
-      '(hint: set :mkdirs option)',
-      stylesoutdir,
+      '(set the mkdirs option to create it)',
     );
   }
 
@@ -389,11 +384,10 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
         if (stylesheetOutdir != stylesoutdir &&
             !Directory(stylesheetOutdir).existsSync()) {
           if (!mkdirs) {
-            throw FileSystemException(
-              'target stylesheet directory does not exist: $stylesoutdir '
-              '(hint: set :mkdirs option)',
-              stylesoutdir,
-            );
+            throw AsciidoctorException(
+      'target stylesheet directory does not exist: $stylesoutdir '
+      '(set the mkdirs option to create it)',
+    );
           }
           Helpers.mkdirP(stylesheetOutdir);
         }
@@ -428,7 +422,7 @@ String _readFileString(File file) {
   try {
     return utf8.decode(bytes);
   } on FormatException {
-    throw ArgumentError(
+    throw const AsciidoctorException(
       'source is either binary or contains invalid Unicode data',
     );
   }
@@ -476,28 +470,14 @@ String _joinPath(String parent, String child) {
 
 /// Re-wraps [error] with the load-failure [context] message.
 ///
-/// Known error types are reconstructed with the prefixed message; anything
-/// else is returned unchanged.
-Object _withContext(Object error, String context) {
-  if (error is ArgumentError) {
-    return ArgumentError('$context - ${error.message}');
-  }
-  if (error is StateError) {
-    return StateError('$context - ${error.message}');
-  }
-  if (error is FormatException) {
-    return FormatException(
-      '$context - ${error.message}',
-      error.source,
-      error.offset,
-    );
-  }
-  if (error is FileSystemException) {
-    return FileSystemException(
-      '$context - ${error.message}',
-      error.path,
-      error.osError,
-    );
-  }
-  return error;
-}
+/// Failures caused by the input or the environment gain the context;
+/// anything else (programming errors, extension failures) is returned
+/// unchanged.
+Object _withContext(Object error, String context) => switch (error) {
+  AsciidoctorException(:final message) => AsciidoctorException(
+    '$context: $message',
+  ),
+  FileSystemException(:final message, :final path, :final osError) =>
+    FileSystemException('$context: $message', path, osError),
+  _ => error,
+};

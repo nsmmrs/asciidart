@@ -26,6 +26,7 @@ import 'dart:convert' show utf8;
 import 'dart:io';
 import 'dart:math' show min;
 
+import 'package:asciidoctor/src/cli/diagnostics.dart';
 import 'package:asciidoctor/src/cli/options.dart';
 import 'package:asciidoctor/src/cli/parallel.dart';
 import 'package:asciidoctor/src/document.dart';
@@ -180,10 +181,11 @@ final class Invoker {
         _code = 1;
       }
     } catch (e) {
+      if (isBrokenPipe(e)) rethrow;
       _code = 1;
       if (options.trace) rethrow;
       err
-        ..writeln(e.toString())
+        ..writeln(failureLine(e))
         ..writeln('  Use --trace to show backtrace');
     } finally {
       restoreLogger();
@@ -311,9 +313,10 @@ final class Invoker {
       }
       if (workerError != null) {
         _code = 1;
-        if (options.trace) throw WorkerFailure(workerError);
+        final failure = WorkerFailure(workerError);
+        if (options.trace) throw failure;
         err
-          ..writeln(workerError)
+          ..writeln(failureLine(failure))
           ..writeln('  Use --trace to show backtrace');
         return;
       }
@@ -334,10 +337,11 @@ final class Invoker {
         _code = 1;
       }
     } catch (e) {
+      if (isBrokenPipe(e)) rethrow;
       _code = 1;
       if (options.trace) rethrow;
       err
-        ..writeln(e.toString())
+        ..writeln(failureLine(e))
         ..writeln('  Use --trace to show backtrace');
     } finally {
       restoreLogger();

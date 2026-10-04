@@ -10,22 +10,6 @@ import 'package:asciidoctor/src/rx.dart';
 
 /// Internal helper functions. Except where noted, everything here is internal.
 abstract final class Helpers {
-  /// Fails because the library [name] (in package [gem]) is not
-  /// available: Dart cannot load libraries at runtime.
-  static Never requireLibrary(String name, String gem) => throw StateError(
-    "asciidoctor: FAILED: required gem '$gem' is not available. "
-    'Processing aborted.',
-  );
-
-  /// Ensures URI-reading support is available, optionally with a [cache].
-  ///
-  /// Dart reads URIs through `dart:io` with no setup, so this is a no-op
-  /// unless [cache] is requested, in which case it takes the same failure
-  /// path as [requireLibrary] for the (unavailable) URI cache library.
-  static void requireOpenUri({bool cache = false}) {
-    if (cache) requireLibrary('open-uri/cached', 'open-uri-cached');
-  }
-
   /// Prepares source [data] lines for parsing.
   ///
   /// Strips a leading byte-order mark and, per line, removes trailing

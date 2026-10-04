@@ -56,6 +56,7 @@ library;
 
 import 'dart:io' show Directory, File, FileSystemEntity, FileSystemException;
 
+import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/template.dart';
 import 'package:asciidoctor/src/template_node_detect_js.dart'
@@ -239,8 +240,8 @@ const Set<String> supportedTemplateEngines = {'mustache', 'dart'};
 ///.
 void validateTemplateEngine(String? engine) {
   if (engine == null || supportedTemplateEngines.contains(engine)) return;
-  throw ArgumentError(
-    "asciidoctor: FAILED: required template engine '$engine' is not "
-    'available. Processing aborted.',
+  throw AsciidoctorException(
+    "unknown template engine '$engine' "
+    '(supported: ${supportedTemplateEngines.join(', ')})',
   );
 }

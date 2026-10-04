@@ -160,3 +160,16 @@ EOF
   [ "$status" -eq 0 ]
   assert_stderr_contains 'Total time'
 }
+
+@test "unknown backend fails with a message naming the backend" {
+  printf 'content\n' > input.adoc
+  run --separate-stderr -- "$EXE" -b nosuchbackend -o - input.adoc
+  [ "$status" -eq 1 ]
+  assert_stderr_contains "missing converter for backend 'nosuchbackend'"
+}
+
+@test "version output tolerates a reader that exits early" {
+  run bash -c 'set -o pipefail; "$1" --version | head -c 0' _ "$EXE"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}

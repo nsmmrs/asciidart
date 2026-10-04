@@ -17,6 +17,7 @@ import 'package:asciidoctor/src/constants.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/cursor.dart';
 import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/extensions.dart';
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/logging.dart';
@@ -1778,7 +1779,6 @@ class PreprocessorReader extends Reader {
         replaceNextLine('link:$linkTarget[$linkAttrlist]');
         return null;
       }
-      Helpers.requireOpenUri(cache: doc.hasAttr('cache-uri'));
       return _ResolvedInclude(
         resolvedTarget,
         _IncludeTargetType.uri,
@@ -2252,7 +2252,7 @@ Encoding? _findEncoding(String name) {
 /// undecodable input.
 String _decodeIncludeBytes(List<int> bytes, Encoding encoding) =>
     _tryDecodeIncludeBytes(bytes, encoding) ??
-    (throw ArgumentError(
+    (throw const AsciidoctorException(
       'source is either binary or contains invalid Unicode data',
     ));
 

@@ -211,8 +211,8 @@ void main() {
         expect(
           invoker.readError(),
           contains(
-            "required template engine 'bogus' is not available. Processing "
-            'aborted.\n  Use --trace to show backtrace',
+            "unknown template engine 'bogus' (supported: mustache, dart)\n"
+            '  Use --trace to show backtrace',
           ),
         );
         expect(invoker.code, equals(1));
@@ -228,7 +228,7 @@ void main() {
           err: StringBuffer(),
           environment: <String, String>{},
         );
-        expect(invoker.invoke, throwsArgumentError);
+        expect(invoker.invoke, throwsA(isA<AsciidoctorException>()));
       },
     );
   });
@@ -301,9 +301,28 @@ void main() {
       ]);
       expect(result.exitCode, equals(1));
       final err = result.stderr as String;
-      expect(err, contains("required template engine 'bogus'"));
+      expect(err, contains("unknown template engine 'bogus'"));
       expect(err, contains('#0 '));
     });
+
+    test('stops quietly when the reader of stdout goes away', () async {
+      final dir = Directory.systemTemp.createTempSync('invoker_pipe_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      // Enough output to overflow the pipe buffer after `head` exits.
+      final input = File('${dir.path}/big.adoc')
+        ..writeAsStringSync('paragraph text\n\n' * 20000);
+      const pipeline =
+          r'set -o pipefail; "$0" bin/asciidoctor.dart -o - "$1" '
+          '| head -c 1 >/dev/null';
+      final result = await Process.run('bash', [
+        '-c',
+        pipeline,
+        Platform.resolvedExecutable,
+        input.path,
+      ], workingDirectory: repoRoot);
+      expect(result.exitCode, equals(0), reason: '${result.stderr}');
+      expect(result.stderr as String, isEmpty);
+    }, skip: Platform.isWindows ? 'needs a POSIX shell pipeline' : null);
   });
 
   group('conversion', () {

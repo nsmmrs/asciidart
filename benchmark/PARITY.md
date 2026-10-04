@@ -43,6 +43,15 @@ with no skips against both the Dart CLI and the gem.
 
 ## Known intentional differences
 
+- Fatal errors are reported as one `asciidoctor: FAILED: <message>` line in
+  plain wording, without Ruby exception classes, gem names or `Processing
+  aborted.` (for example `asciidoctor: FAILED: failed to load <stdin>:
+  missing converter for backend 'pdf'`). Log messages (warnings, errors)
+  keep Asciidoctor's wording. Library callers catch `AsciidoctorException`.
+- A reader that closes stdout early (`asciidoctor -o - doc.adoc | head`)
+  ends the run quietly with exit code 0; the gem reports a broken pipe.
+- The `cache-uri` attribute has no effect (the gem requires the
+  `open-uri-cached` gem for it); remote content is read each time.
 - An unknown CLI option prints Ruby's `Did you mean?` hint only in Ruby;
   that suggestion engine depends on the Ruby version (see the notes at the
   top of `lib/src/cli/options.dart`).

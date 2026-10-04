@@ -187,12 +187,14 @@ void main() {
             options: const AsciidoctorOptions(safe: SafeMode.safe),
           ),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AsciidoctorException>().having(
               (e) => e.message,
               'message',
-              contains(
-                'Failed to load AsciiDoc document - source is either binary '
-                'or contains invalid Unicode data',
+              allOf(
+                startsWith('failed to load $path: '),
+                endsWith(
+                  'source is either binary or contains invalid Unicode data',
+                ),
               ),
             ),
           ),
@@ -214,13 +216,10 @@ void main() {
       }
       expect(
         error,
-        isA<ArgumentError>().having(
+        isA<AsciidoctorException>().having(
           (e) => e.message,
           'message',
-          contains(
-            'Failed to load AsciiDoc document - source is either binary or '
-            'contains invalid Unicode data',
-          ),
+          contains('source is either binary or contains invalid Unicode data'),
         ),
       );
       // The original stack trace is preserved (points into load.dart).
@@ -638,8 +637,8 @@ void main() {
             const AsciidoctorOptions(attributes: {'outfilesuffix': '.adoc'}),
           ),
           throwsA(
-            isA<IOException>().having(
-              (e) => e.toString(),
+            isA<AsciidoctorException>().having(
+              (e) => e.message,
               'message',
               contains('input file and output file cannot be the same'),
             ),
@@ -716,12 +715,12 @@ void main() {
             AsciidoctorOptions(toDir: missingDir, baseDir: dir.path),
           ),
           throwsA(
-            isA<IOException>().having(
-              (e) => e.toString(),
+            isA<AsciidoctorException>().having(
+              (e) => e.message,
               'message',
               allOf([
                 contains('target directory does not exist'),
-                contains(':mkdirs option'),
+                contains('mkdirs option'),
               ]),
             ),
           ),
@@ -856,8 +855,8 @@ void main() {
             ),
           ),
           throwsA(
-            isA<IOException>().having(
-              (e) => e.toString(),
+            isA<AsciidoctorException>().having(
+              (e) => e.message,
               'message',
               contains('target stylesheet directory does not exist'),
             ),

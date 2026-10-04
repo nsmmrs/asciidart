@@ -6,8 +6,10 @@
 /// conversion, diagnostics, exit codes — is identical in both cases.
 library;
 
+import 'dart:async';
 import 'dart:io';
 
+import 'package:asciidoctor/src/cli/diagnostics.dart';
 import 'package:asciidoctor/src/cli/init_config.dart';
 import 'package:asciidoctor/src/cli/invoker.dart';
 
@@ -21,6 +23,19 @@ import 'package:asciidoctor/src/cli/invoker.dart';
 /// of converting (see [runInitConfig]); everything else behaves exactly
 /// like the stock CLI.
 Future<void> runCli(List<String> args) async {
+  // A failed stdout also completes its done future with the error. A
+  // reader that went away (`asciidoctor ... | head`) ends the run quietly;
+  // any other write failure is reported.
+  unawaited(
+    stdout.done.then<void>(
+      (_) {},
+      onError: (Object error) {
+        if (isBrokenPipe(error)) return;
+        stderr.writeln(failureLine(error));
+        exitCode = 1;
+      },
+    ),
+  );
   exitCode = await runCliCode(args);
 }
 
@@ -28,9 +43,9 @@ Future<void> runCli(List<String> args) async {
 ///
 /// Testable core of [runCli] (which only reports the result through
 /// [exitCode]). [out] and [err] buffer conversion output and diagnostics
-/// (defaulting to the process streams); the uncaught-exception path
-/// writes the error plus backtrace and returns 1, mirroring
-/// `bin/asciidoctor`'s lack of a rescue.
+/// (defaulting to the process streams). A failure that escapes the
+/// invoker (with `--trace`, conversion failures are rethrown) is reported
+/// with its backtrace and returns 1.
 Future<int> runCliCode(
   List<String> args, {
   StringSink? out,
@@ -46,13 +61,10 @@ Future<int> runCliCode(
     return invoker.code;
     // Last-resort CLI boundary for anything that escapes, Errors included.
   } on Object catch (e, stackTrace) {
-    // Uncaught-exception behavior: the message plus backtrace go to STDERR
-    // and the process
-    // exits 1. Reached for `--trace` re-raises and for the errors
-    // `Options.parse!` lets propagate (ambiguous option, needless
-    // argument, unloadable `--require` under `--trace`).
+    // The reader of the output went away (`asciidoctor ... | head`).
+    if (isBrokenPipe(e)) return 0;
     (err ?? stderr)
-      ..writeln(e)
+      ..writeln(failureLine(e))
       ..writeln(stackTrace);
     return 1;
   }

@@ -195,7 +195,7 @@ void main() {
         err: err,
       );
       expect(code, equals(1));
-      expect(err.toString(), contains("required template engine 'bogus'"));
+      expect(err.toString(), contains("unknown template engine 'bogus'"));
     });
   });
 

@@ -4140,7 +4140,7 @@ void main() {
             const AsciidoctorOptions(backend: 'unknownBackend'),
           ),
           throwsA(
-            isA<StateError>().having(
+            isA<AsciidoctorException>().having(
               (error) => error.message,
               'message',
               contains("missing converter for backend 'unknownBackend'"),
@@ -4158,7 +4158,7 @@ void main() {
             const AsciidoctorOptions(backend: 'unknownBackend'),
           ),
           throwsA(
-            isA<StateError>().having(
+            isA<AsciidoctorException>().having(
               (error) => error.message,
               'message',
               contains("missing converter for backend 'unknownBackend'"),

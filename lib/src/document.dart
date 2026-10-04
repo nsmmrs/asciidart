@@ -28,6 +28,7 @@ import 'package:asciidoctor/src/constants.dart';
 import 'package:asciidoctor/src/converter.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/docbook5.dart';
+import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/extensions.dart';
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
@@ -1850,9 +1851,7 @@ class Document extends AbstractBlock implements NodeDocument {
     if (resolvedConverter == null) {
       // NOTE ideally the converter isn't needed before the converter
       // phase, but it is.
-      throw StateError(
-        "missing converter for backend '$backend'. Processing aborted.",
-      );
+      throw AsciidoctorException("missing converter for backend '$backend'");
     }
     final _BackendTraits traits;
     if (resolvedConverter is _BuiltinConverterStub &&

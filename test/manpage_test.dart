@@ -370,10 +370,10 @@ void main() {
       expect(
         () => convOf(doc).convertDocument(doc),
         throwsA(
-          isStateError.having(
+          isA<AsciidoctorException>().having(
             (e) => e.message,
             'message',
-            'asciidoctor: ERROR: doctype must be set to manpage when using '
+            'doctype must be set to manpage when using '
                 'manpage backend',
           ),
         ),

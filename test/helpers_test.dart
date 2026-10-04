@@ -84,24 +84,7 @@ void main() {
       );
     });
 
-    group('Require Library', () {
-      test(
-        'should report message in error thrown by Helpers.requireLibrary',
-        () {
-          expect(
-            () => Helpers.requireLibrary('does-not-exist', 'does-not-exist'),
-            throwsA(
-              isA<StateError>().having(
-                (e) => e.message,
-                'message',
-                "asciidoctor: FAILED: required gem 'does-not-exist' is not "
-                    'available. Processing aborted.',
-              ),
-            ),
-          );
-        },
-      );
-    });
+    group('Require Library', () {});
 
     group('Roman Numeral Conversion', () {
       test('should convert integer to roman numeral', () {

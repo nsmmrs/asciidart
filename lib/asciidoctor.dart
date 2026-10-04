@@ -34,6 +34,7 @@ export 'src/document.dart'
         DocumentTitle,
         Footnote,
         ImageReference;
+export 'src/errors.dart' show AsciidoctorException;
 export 'src/inline.dart' show Inline;
 export 'src/list.dart' show DlistEntry, ListBlock, ListItem;
 export 'src/load.dart'

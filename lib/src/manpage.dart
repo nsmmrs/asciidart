@@ -25,6 +25,7 @@ import 'package:asciidoctor/src/constants.dart';
 import 'package:asciidoctor/src/converter.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/list.dart';
 import 'package:asciidoctor/src/rx.dart';
@@ -307,9 +308,8 @@ class ManpageConverter extends ConverterBase {
   /// Converts the [node] document to a standalone man page.
   String convertDocument(Document node) {
     if (!node.hasAttr('mantitle')) {
-      throw StateError(
-        'asciidoctor: ERROR: doctype must be set to manpage when using '
-        'manpage backend',
+      throw const AsciidoctorException(
+        'doctype must be set to manpage when using manpage backend',
       );
     }
     final mantitle = node

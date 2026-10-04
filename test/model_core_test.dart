@@ -1246,19 +1246,6 @@ void main() {
       );
     });
 
-    test('readContents with cache-uri requires the cache library', () {
-      final doc = makeDoc(attributes: {'allow-uri-read': '', 'cache-uri': ''});
-      final block = UriBlock(
-        doc,
-        'paragraph',
-        response: (body: utf8.encode('x'), contentType: 'text/plain'),
-      );
-      expect(
-        () => block.readContents('https://example.com/x.adoc'),
-        throwsStateError,
-      );
-    });
-
     test('default fetchUri throws instead of warning', () {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
       final block = Block(doc, 'paragraph');
@@ -1341,17 +1328,6 @@ void main() {
       expect(
         testLogger.warns.single,
         equals('could not retrieve image data from URI: $uri'),
-      );
-    });
-
-    test('generateDataUriFromUri with cache requires open-uri', () {
-      final block = Block(makeDoc(), 'paragraph');
-      expect(
-        () => block.generateDataUriFromUri(
-          'https://example.com/a.png',
-          cacheUri: true,
-        ),
-        throwsStateError,
       );
     });
   });

@@ -23,18 +23,14 @@ library;
 
 import 'dart:io';
 
-/// Error raised when a path breaches the jail and recovery is disabled.
+import 'package:asciidoctor/src/errors.dart';
+
+/// Raised when a path breaches the jail and recovery is disabled.
 ///
 /// Thrown by [PathResolver.systemPath].
-class SecurityError extends Error {
+class SecurityError extends AsciidoctorException {
   /// Creates a security error with the given [message].
-  new(this.message);
-
-  /// Human-readable description of the security violation.
-  final String message;
-
-  @override
-  String toString() => 'SecurityError: $message';
+  const new(super.message);
 }
 
 /// Handles all operations for resolving, cleaning and joining paths.
