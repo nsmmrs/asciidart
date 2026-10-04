@@ -11,10 +11,10 @@ import 'package:asciidoctor/src/writer.dart';
 import 'package:test/test.dart';
 
 /// A converter mixing in [Writer].
-class TestConverter with Writer {}
+class TestConverter with Writer;
 
 /// A converter mixing in [VoidWriter].
-class VoidConverter with VoidWriter {}
+class VoidConverter with VoidWriter;
 
 void main() {
   group('Writer', () {

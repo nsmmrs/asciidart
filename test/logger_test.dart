@@ -82,7 +82,7 @@ mixin SampleMixinA on Logging {
 }
 
 /// Consumes [SampleMixinA].
-class SampleClassA with Logging, SampleMixinA {}
+class SampleClassA with Logging, SampleMixinA;
 
 /// A mixin with a static accessor, mirroring a Ruby module extended with
 /// `Logging`.

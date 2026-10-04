@@ -6,7 +6,7 @@ import 'package:asciidoctor/src/rx.dart';
 import 'package:test/test.dart';
 
 /// Stand-in for a namespaced application class (cf. `Asciidoctor::Document`).
-class TestDocument {}
+class TestDocument;
 
 void main() {
   group('Helpers', () {
