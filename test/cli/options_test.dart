@@ -531,7 +531,7 @@ void main() {
         '-e=true': '-e=true',
         '-V=x': '-V=x',
         '-qe=x': '-e=x',
-      })..forEach((flag, display) {
+      }).forEach((flag, display) {
         expect(
           () => parseCli([flag, sampleFile]),
           throwsA(
@@ -718,7 +718,7 @@ void main() {
         'icons': {'icons': ''},
         'idprefix=id@': {'idprefix': 'id@'},
         'sectids!': {'sectids!': ''},
-      })..forEach((argument, expected) {
+      }).forEach((argument, expected) {
         final result = parseCli(['-a', argument, sampleFile]);
         expect(result.exitCode, isNull, reason: argument);
         expect(result.options.attributes, equals(expected), reason: argument);
@@ -746,7 +746,7 @@ void main() {
         'safe': SafeMode.safe,
         'server': SafeMode.server,
         'secure': SafeMode.secure,
-      })..forEach((name, level) {
+      }).forEach((name, level) {
         final result = parseCli(['-S', name, sampleFile]);
         expect(result.exitCode, isNull, reason: name);
         expect(result.options.safe, equals(level), reason: name);

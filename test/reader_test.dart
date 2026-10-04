@@ -1342,7 +1342,7 @@ void main() {
         () {
           const input = '----\ninclude::fixtures/circle.svg[]\n----\n';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          (PreprocessorReader(doc, input, null, true))..readLines();
+          (PreprocessorReader(doc, input, null, true)).readLines();
           expect(doc.catalogIncludes, isEmpty);
         },
       );
@@ -2029,7 +2029,7 @@ void main() {
             'asciidoctor-reader-test',
           );
           try {
-            (File('${tmpDir.path}/include.adoc'))..writeAsStringSync(
+            (File('${tmpDir.path}/include.adoc')).writeAsStringSync(
               'do not include\r\ntag::include-me[]\r\nincluded line\r\nend::include-me[]\r\ndo not include\r\n',
             );
             const input = 'include::include.adoc[tag=include-me]';
@@ -2052,7 +2052,7 @@ void main() {
             'asciidoctor-reader-test',
           );
           try {
-            (File('${tmpDir.path}/include.adoc'))..writeAsStringSync(
+            (File('${tmpDir.path}/include.adoc')).writeAsStringSync(
               'line not included\ntag::include-me[]\nline included\nend::include-me[]',
             );
             const input = 'include::include.adoc[tag=include-me]';

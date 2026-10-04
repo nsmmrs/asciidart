@@ -3531,7 +3531,7 @@ void main() {
         'style=abstract': ['chapter', 1, false, true, '_section_title'],
         'id=section-title': ['chapter', 1, false, true, 'section-title'],
         'id=false': ['chapter', 1, false, true, null],
-      })..forEach((attrlist, expected) {
+      }).forEach((attrlist, expected) {
         final input = inputFor(attrlist);
         documentFromString(input, {
           'safe': 'server',

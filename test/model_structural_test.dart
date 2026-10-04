@@ -1243,7 +1243,7 @@ void main() {
         '100': 100,
         '101': 100,
         '-5': 100,
-      })..forEach((width, expected) {
+      }).forEach((width, expected) {
         expect(
           Table(doc, {'width': width}).attributes['tablepcwidth'],
           equals(expected),
@@ -2015,7 +2015,7 @@ void main() {
 
     test('closeTable reports incomplete rows only', () {
       final (_, table, _) = makeParts();
-      (TableParserContext(FakeReader(), table))..closeTable();
+      (TableParserContext(FakeReader(), table)).closeTable();
       expect(testLogger.errors, isEmpty);
       final (_, table2, _) = makeParts();
       (TableParserContext(FakeReader(), table2))

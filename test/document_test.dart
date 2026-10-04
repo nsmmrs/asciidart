@@ -1755,7 +1755,7 @@ void main() {
             'footer_script': 0,
             'navbar': 0,
           },
-        })..forEach((attrVal, markup) {
+        }).forEach((attrVal, markup) {
           final output = convertFile(
             sampleInputPath,
             toFile: false,
@@ -2221,7 +2221,7 @@ void main() {
           '': ['favicon.ico', 'image/x-icon'],
           '/favicon.ico': ['/favicon.ico', 'image/x-icon'],
           '/img/favicon.png': ['/img/favicon.png', 'image/png'],
-        })..forEach((val, hrefAndType) {
+        }).forEach((val, hrefAndType) {
           final result = convertString('= Untitled', {
             'attributes': {'favicon': val},
           });
