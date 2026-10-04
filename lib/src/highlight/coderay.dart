@@ -13,8 +13,8 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/stylesheets.dart';
 import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidoctor/src/stylesheets.dart';
 
 /// Syntax-highlighter adapter for CodeRay.
 ///

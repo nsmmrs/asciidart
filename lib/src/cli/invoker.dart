@@ -49,13 +49,13 @@ import 'dart:io';
 import 'dart:math' show min;
 
 import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/cli/options.dart';
+import 'package:asciidoctor/src/cli/parallel.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/job_pool.dart';
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/timings.dart';
-import 'package:asciidoctor/src/cli/options.dart';
-import 'package:asciidoctor/src/cli/parallel.dart';
 
 /// Runs the Asciidoctor processor from parsed command-line options.
 ///

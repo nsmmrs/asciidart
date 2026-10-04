@@ -75,9 +75,9 @@ import 'dart:io'
         stdout;
 
 import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/cli/help_topics.g.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/version.dart';
-import 'package:asciidoctor/src/cli/help_topics.g.dart';
 
 /// The CLI usage text, byte-identical to Ruby's `OptionParser#to_s` output
 /// for this option set (captured from the `options.rb` oracle; the safe

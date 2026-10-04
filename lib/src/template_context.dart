@@ -35,12 +35,11 @@
 /// values win over the node-derived ones.
 library;
 
-import 'package:mustache_template/mustache_template.dart' show LambdaContext;
-
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/list.dart';
+import 'package:mustache_template/mustache_template.dart' show LambdaContext;
 
 /// Computes one custom helper value for [node] on every render.
 ///
