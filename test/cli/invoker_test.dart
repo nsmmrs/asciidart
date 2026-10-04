@@ -10,6 +10,7 @@
 /// `redirect_streams`). Tests with no Dart analog are `skip()`ped with a
 /// `PERMANENT:` reason; tests awaiting a later wave keep a `WAVE-GATED:`
 /// reason with their ported bodies intact.
+@TestOn('vm')
 library;
 
 import 'dart:io';

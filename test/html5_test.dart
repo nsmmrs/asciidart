@@ -1695,7 +1695,7 @@ void main() {
       attributes: attributes,
     );
 
-    test('preamble is stripped', () {
+    test(testOn: 'vm', 'preamble is stripped', () {
       File('${tmp.path}/fig.svg')
           .writeAsStringSync('<?xml version="1.0"?>\n<svg><circle/></svg>');
       final doc = svgDoc(const {});
@@ -1706,7 +1706,7 @@ void main() {
       );
     });
 
-    test('width and height replace dimension attributes', () {
+    test(testOn: 'vm', 'width and height replace dimension attributes', () {
       File('${tmp.path}/fig.svg').writeAsStringSync(
         '<svg width="10" height="10" style="x"><circle/></svg>',
       );
@@ -1722,7 +1722,7 @@ void main() {
       );
     });
 
-    test('inline svg image embeds the file', () {
+    test(testOn: 'vm', 'inline svg image embeds the file', () {
       File('${tmp.path}/fig.svg').writeAsStringSync('<svg><circle/></svg>');
       final doc = svgDoc(const {});
       final node = StubBlock(
@@ -1734,25 +1734,29 @@ void main() {
       expect(convOf(doc).convert(node), contains('<svg><circle/></svg>'));
     });
 
-    test('inline svg with link=self links to the literal target self', () {
-      File('${tmp.path}/fig.svg').writeAsStringSync('<svg><circle/></svg>');
-      final doc = svgDoc(const {});
-      final node = StubBlock(
-        doc,
-        'image',
-        attributes: const {
-          'target': 'fig.svg',
-          'inline-option': '',
-          'link': 'self',
-        },
-        stubAlt: 'Fig',
-      );
-      final output = convOf(doc).convert(node)!;
-      expect(output, contains('<svg><circle/></svg>'));
-      expect(output, contains('<a class="image" href="self"><svg>'));
-    });
+    test(
+      testOn: 'vm',
+      'inline svg with link=self links to the literal target self',
+      () {
+        File('${tmp.path}/fig.svg').writeAsStringSync('<svg><circle/></svg>');
+        final doc = svgDoc(const {});
+        final node = StubBlock(
+          doc,
+          'image',
+          attributes: const {
+            'target': 'fig.svg',
+            'inline-option': '',
+            'link': 'self',
+          },
+          stubAlt: 'Fig',
+        );
+        final output = convOf(doc).convert(node)!;
+        expect(output, contains('<svg><circle/></svg>'));
+        expect(output, contains('<a class="image" href="self"><svg>'));
+      },
+    );
 
-    test('missing svg returns null', () {
+    test(testOn: 'vm', 'missing svg returns null', () {
       final doc = svgDoc(const {});
       final node = StubBlock(doc, 'image');
       expect(convOf(doc).readSvgContents(node, 'nope.svg'), isNull);
@@ -2912,7 +2916,7 @@ void main() {
       );
     });
 
-    test('custom stylesheet embedded from file', () {
+    test(testOn: 'vm', 'custom stylesheet embedded from file', () {
       final tmp = Directory.systemTemp.createTempSync('html5');
       addTearDown(() => tmp.deleteSync(recursive: true));
       File('${tmp.path}/custom.css').writeAsStringSync('body{color:red}');
@@ -3134,7 +3138,7 @@ void main() {
       );
     });
 
-    test('docinfo files are included', () {
+    test(testOn: 'vm', 'docinfo files are included', () {
       // Slice of document_test.rb 'should include docinfo files for html
       // backend' (the `'docinfo'` case): private head, header and footer
       // files from `test/fixtures` are spliced into the standalone page.

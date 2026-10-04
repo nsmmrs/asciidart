@@ -48,22 +48,26 @@ void main() {
       });
     });
 
-    test('resetting the logger restores a default stderr logger', () {
-      withManagerLogger(() {
-        LoggerManager.logger = MemoryLogger();
-        LoggerManager.logger = null;
-        final logger = LoggerManager.logger as Logger;
-        expect(logger.sink, same(stderr));
-      });
-    });
+    test(
+      testOn: 'vm',
+      'resetting the logger restores a default stderr logger',
+      () {
+        withManagerLogger(() {
+          LoggerManager.logger = MemoryLogger();
+          LoggerManager.logger = null;
+          final logger = LoggerManager.logger as Logger;
+          expect(logger.sink, same(stderr));
+        });
+      },
+    );
   });
 
   group('Logger', () {
-    test('writes to stderr by default', () {
+    test(testOn: 'vm', 'writes to stderr by default', () {
       expect(Logger().sink, same(stderr));
     });
 
-    test('appends to the file given to Logger.toFile', () async {
+    test(testOn: 'vm', 'appends to the file given to Logger.toFile', () async {
       final dir = Directory.systemTemp.createTempSync('logger_test_');
       try {
         final path = '${dir.path}/log.txt';
@@ -152,10 +156,14 @@ void main() {
       expect(output, equals('asciidoctor: ANY: any\n'));
     });
 
-    test('close on a stderr logger does not close stderr', () async {
-      await Logger().close();
-      stderr.write('');
-    });
+    test(
+      testOn: 'vm',
+      'close on a stderr logger does not close stderr',
+      () async {
+        await Logger().close();
+        stderr.write('');
+      },
+    );
 
     test('the default formatter renders the traditional tagged line', () {
       final line = const DefaultFormatter()(

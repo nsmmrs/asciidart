@@ -829,7 +829,7 @@ void main() {
       );
     });
 
-    test('docinfo files are included', () {
+    test(testOn: 'vm', 'docinfo files are included', () {
       // Slice of document_test.rb 'should include docinfo files in docbook
       // backend': the private `basic-docinfo.xml` lands in the header and
       // the shared `docinfo.xml` (with `{revnumber}` substituted) under

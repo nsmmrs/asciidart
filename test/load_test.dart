@@ -12,6 +12,7 @@
 /// loopback HTTP server. Output-writing tests use a jailed scratch
 /// directory under the working directory, since safe mode confines
 /// `toDir`/`toFile` targets to it.
+@TestOn('vm')
 library;
 
 import 'dart:async' show unawaited;

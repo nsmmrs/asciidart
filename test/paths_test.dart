@@ -575,67 +575,79 @@ void main() {
       () {},
     );
 
-    test('resolves relative target relative to current directory if '
-        'start is empty', () {
-      // Directory.current.path uses native separators; posixify it the way
-      // the resolver does so the expectation holds on every platform.
-      final pwd = resolver.posixify(Directory.current.path);
-      expect(
-        resolver.systemPath('images/tiger.png', start: ''),
-        equals('$pwd/images/tiger.png'),
-      );
-      expect(
-        resolver.systemPath('images/tiger.png'),
-        equals('$pwd/images/tiger.png'),
-      );
-      expect(
-        resolver.systemPath('images/tiger.png'),
-        equals('$pwd/images/tiger.png'),
-      );
-    });
+    test(
+      testOn: 'vm',
+      'resolves relative target relative to current directory if '
+      'start is empty',
+      () {
+        // Directory.current.path uses native separators; posixify it the way
+        // the resolver does so the expectation holds on every platform.
+        final pwd = resolver.posixify(Directory.current.path);
+        expect(
+          resolver.systemPath('images/tiger.png', start: ''),
+          equals('$pwd/images/tiger.png'),
+        );
+        expect(
+          resolver.systemPath('images/tiger.png'),
+          equals('$pwd/images/tiger.png'),
+        );
+        expect(
+          resolver.systemPath('images/tiger.png'),
+          equals('$pwd/images/tiger.png'),
+        );
+      },
+    );
 
-    test('resolves relative hidden target relative to current '
-        'directory if start is empty', () {
-      final pwd = resolver.posixify(Directory.current.path);
-      expect(
-        resolver.systemPath('.images/tiger.png', start: ''),
-        equals('$pwd/.images/tiger.png'),
-      );
-      expect(
-        resolver.systemPath('.images/tiger.png'),
-        equals('$pwd/.images/tiger.png'),
-      );
-    });
+    test(
+      testOn: 'vm',
+      'resolves relative hidden target relative to current '
+      'directory if start is empty',
+      () {
+        final pwd = resolver.posixify(Directory.current.path);
+        expect(
+          resolver.systemPath('.images/tiger.png', start: ''),
+          equals('$pwd/.images/tiger.png'),
+        );
+        expect(
+          resolver.systemPath('.images/tiger.png'),
+          equals('$pwd/.images/tiger.png'),
+        );
+      },
+    );
 
-    test('resolves and normalizes start when target is empty', () {
-      final pwd = resolver.posixify(Directory.current.path);
-      expect(
-        resolver.systemPath('', start: '/home/doctor/docs'),
-        equals('/home/doctor/docs'),
-      );
-      expect(
-        resolver.systemPath('', start: '/home/doctor/./docs'),
-        equals('/home/doctor/docs'),
-      );
-      expect(
-        resolver.systemPath(null, start: '/home/doctor/docs'),
-        equals('/home/doctor/docs'),
-      );
-      expect(
-        resolver.systemPath(null, start: '/home/doctor/./docs'),
-        equals('/home/doctor/docs'),
-      );
-      expect(
-        resolver.systemPath(null, start: 'assets/images'),
-        equals('$pwd/assets/images'),
-      );
-      resolver.systemPath('', start: '../assets/images', jail: jail);
-      expectWarn(
-        log,
-        'path has illegal reference to ancestor of jail; '
-        'recovering automatically',
-      );
-    });
+    test(
+      testOn: 'vm',
+      'resolves and normalizes start when target is empty',
+      () {
+        final pwd = resolver.posixify(Directory.current.path);
+        expect(
+          resolver.systemPath('', start: '/home/doctor/docs'),
+          equals('/home/doctor/docs'),
+        );
+        expect(
+          resolver.systemPath('', start: '/home/doctor/./docs'),
+          equals('/home/doctor/docs'),
+        );
+        expect(
+          resolver.systemPath(null, start: '/home/doctor/docs'),
+          equals('/home/doctor/docs'),
+        );
+        expect(
+          resolver.systemPath(null, start: '/home/doctor/./docs'),
+          equals('/home/doctor/docs'),
+        );
+        expect(
+          resolver.systemPath(null, start: 'assets/images'),
+          equals('$pwd/assets/images'),
+        );
+        resolver.systemPath('', start: '../assets/images', jail: jail);
+        expectWarn(
+          log,
+          'path has illegal reference to ancestor of jail; '
+          'recovering automatically',
+        );
+      },
+    );
 
     test('posixifies windows paths', () {
       resolver.fileSeparator = r'\';
@@ -721,6 +733,7 @@ void main() {
     });
 
     test(
+      testOn: 'vm',
       'should resolve relative path relative to base dir in unsafe mode',
       () {
         // Mirrors `doc.normalize_system_path 'tiger.png', 'images'` in unsafe

@@ -1483,7 +1483,7 @@ String get testdir => Directory('test').resolveSymbolicLinksSync();
 void main() {
   group('Document', () {
     group('Example document', () {
-      test('document title', () {
+      test(testOn: 'vm', 'document title', () {
         final doc = exampleDocument('asciidoc_index');
         expect(doc.doctitle(), equals('AsciiDoc Home Page'));
         expect(doc.doctitle(), equals('AsciiDoc Home Page'));
@@ -2476,34 +2476,42 @@ void main() {
         assertCss('#content h1', output, 0);
       });
 
-      test('should recognize document title in include file when preceded by '
-          'blank lines', () {
-        const input =
-            'include::fixtures/include-with-leading-blank-line.adoc[]\n';
-        final output = convertString(
-          input,
-          AsciidoctorOptions(
-            safe: SafeMode.safe,
-            attributes: {'docdir': testdir},
-          ),
-        );
-        assertXpath('//h1[text()="Document Title"]', output, 1);
-        assertCss('#toc', output, 1);
-      });
+      test(
+        testOn: 'vm',
+        'should recognize document title in include file when preceded by '
+        'blank lines',
+        () {
+          const input =
+              'include::fixtures/include-with-leading-blank-line.adoc[]\n';
+          final output = convertString(
+            input,
+            AsciidoctorOptions(
+              safe: SafeMode.safe,
+              attributes: {'docdir': testdir},
+            ),
+          );
+          assertXpath('//h1[text()="Document Title"]', output, 1);
+          assertCss('#toc', output, 1);
+        },
+      );
 
-      test('should include specified lines even when leading lines are '
-          'skipped', () {
-        const input =
-            'include::fixtures/include-with-leading-blank-line.adoc[lines=6]\n';
-        final output = convertString(
-          input,
-          AsciidoctorOptions(
-            safe: SafeMode.safe,
-            attributes: {'docdir': testdir},
-          ),
-        );
-        assertXpath('//h2[text()="Section"]', output, 1);
-      });
+      test(
+        testOn: 'vm',
+        'should include specified lines even when leading lines are '
+        'skipped',
+        () {
+          const input =
+              'include::fixtures/include-with-leading-blank-line.adoc[lines=6]\n';
+          final output = convertString(
+            input,
+            AsciidoctorOptions(
+              safe: SafeMode.safe,
+              attributes: {'docdir': testdir},
+            ),
+          );
+          assertXpath('//h2[text()="Section"]', output, 1);
+        },
+      );
 
       test('document with multiline attribute entry but only one line should '
           'not crash', () {
@@ -4100,11 +4108,15 @@ void main() {
     });
 
     group('Secure Asset Path', () {
-      test('allows us to specify a path relative to the current dir', () {
-        final doc = emptyDocument();
-        final legitPath = '${Directory.current.path}/foo';
-        expect(doc.normalizeAssetPath(legitPath), equals(legitPath));
-      });
+      test(
+        testOn: 'vm',
+        'allows us to specify a path relative to the current dir',
+        () {
+          final doc = emptyDocument();
+          final legitPath = '${Directory.current.path}/foo';
+          expect(doc.normalizeAssetPath(legitPath), equals(legitPath));
+        },
+      );
 
       test('keeps naughty absolute paths from getting outside', () {
         const naughtyPath = '/etc/passwd';

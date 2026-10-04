@@ -3,6 +3,7 @@
 /// Drives [IsolateJobPool] with a fake delay worker: jobs carry a
 /// `delayMs` so completions land out of order while results must come back
 /// in input order.
+@TestOn('vm')
 library;
 
 import 'dart:isolate';

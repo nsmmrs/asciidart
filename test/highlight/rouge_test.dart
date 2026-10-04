@@ -381,7 +381,7 @@ void main() {
       expect(adapter.wantsStylesheetFile, isTrue);
     });
 
-    test('writeStylesheet writes the resolved stylesheet', () {
+    test(testOn: 'vm', 'writeStylesheet writes the resolved stylesheet', () {
       final dir = Directory.systemTemp.createTempSync('rouge');
       try {
         RougeAdapter(lexer: backend(onStylesheet: (_) => 'CSS'))

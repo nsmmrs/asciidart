@@ -4,6 +4,7 @@
 /// Node stub + runtime detection), the `template_cache` semantics, the
 /// `-E/--template-engine` vocabulary and the CLI `-T`/`-E` wiring into the
 /// convert flow. Mustache rendering itself is template wave A.
+@TestOn('vm')
 library;
 
 import 'dart:io';

@@ -1,12 +1,12 @@
 /// The I/O seam on JavaScript (see `io.dart`).
 ///
-/// On Node.js, the npm package's wrapper injects the built-in modules this
-/// file uses (`fs`, `zlib`) and the `process` object as
-/// `globalThis.asciidoctorDartHost` before loading the compiled bundle, so
-/// the bundle itself never imports `node:*` modules and stays safe for
-/// bundlers. Without the host (in a browser), there is no file system:
-/// files read as missing, the working directory is `/`, the environment is
-/// empty, and output goes to the console.
+/// On Node.js, the built-in modules this file uses (`fs`, `zlib`) come from
+/// `process.getBuiltinModule`, so the compiled bundle never imports
+/// `node:*` modules and stays safe for bundlers; an embedder can also
+/// supply them as `globalThis.asciidoctorDartHost` (`{fs, process, zlib}`).
+/// Without them (in a browser), there is no file system: files read as
+/// missing, the working directory is `/`, the environment is empty, and
+/// output goes to the console.
 library;
 
 import 'dart:async';
@@ -20,9 +20,39 @@ import 'package:asciidoctor/src/io/types.dart';
 import 'package:asciidoctor/src/remote.dart';
 
 @JS('globalThis.asciidoctorDartHost')
-external _Host? get _host;
+external _Host? get _injectedHost;
 
-/// The Node.js built-ins injected by the npm wrapper.
+@JS('globalThis.process')
+external _NodeProcess? get _nodeProcess;
+
+/// The Node.js built-ins this file uses, or `null` outside Node.js.
+final _Host? _host = _injectedHost ?? _nodeHost();
+
+/// The Node.js built-ins, found through `process.getBuiltinModule` (Node.js
+/// 20.16 and later), or `null` outside Node.js.
+_Host? _nodeHost() {
+  final process = _nodeProcess;
+  if (process == null) return null;
+  final getBuiltinModule = process.getProperty<JSAny?>('getBuiltinModule'.toJS);
+  if (getBuiltinModule == null || !getBuiltinModule.isA<JSFunction>()) {
+    return null;
+  }
+  final fs = process.getBuiltinModule('node:fs');
+  if (fs == null) return null;
+  return _Host(
+    JSObject()
+      ..setProperty('fs'.toJS, fs)
+      ..setProperty('process'.toJS, process)
+      ..setProperty('zlib'.toJS, process.getBuiltinModule('node:zlib')),
+  );
+}
+
+extension type _NodeProcess(JSObject _) implements JSObject {
+  external JSObject? getBuiltinModule(String id);
+}
+
+/// The Node.js built-ins: injected as `globalThis.asciidoctorDartHost`, or
+/// found through `process.getBuiltinModule`.
 extension type _Host(JSObject _) implements JSObject {
   external _Fs get fs;
   external _Process get process;
@@ -393,7 +423,8 @@ set exitCode(int value) {
 
 /// Whether [error] reports that the reader of an output stream went away.
 bool isBrokenPipe(Object error) => switch (error) {
-  IoException(:final reason) => reason == 'EPIPE',
+  IoException(:final reason, :final errorCode) =>
+    reason == 'EPIPE' || errorCode == 32,
   final JSObject object =>
     object.getProperty<JSString?>('code'.toJS)?.toDart == 'EPIPE',
   _ => false,

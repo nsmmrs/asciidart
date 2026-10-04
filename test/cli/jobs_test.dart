@@ -4,6 +4,7 @@
 /// (`lib/src/cli/parallel.dart`, driven directly without isolates) and
 /// end-to-end parity between `jobs=1` and `jobs=4` (identical converted
 /// output, diagnostics and exit codes).
+@TestOn('vm')
 library;
 
 import 'dart:io';

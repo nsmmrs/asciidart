@@ -175,7 +175,7 @@ void main() {
       expect(adapter.wantsStylesheetFile, isTrue);
     });
 
-    test('writes the stylesheet to the target directory', () {
+    test(testOn: 'vm', 'writes the stylesheet to the target directory', () {
       final dir = Directory.systemTemp.createTempSync('coderay');
       try {
         CodeRayAdapter().writeStylesheet(dir.path);

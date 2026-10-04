@@ -4,19 +4,26 @@
 /// dart2js accepts imports of `dart:io` and `dart:isolate` and fails only
 /// at run time, so this test keeps them confined to the VM side of the
 /// seam, and `dart:js_interop` to its JavaScript side.
+@TestOn('vm')
 library;
 
 import 'dart:io';
 
 import 'package:test/test.dart';
 
-/// Files allowed to import each platform library.
+/// Files (or directories, ending in `/`) allowed to import each platform
+/// library.
 const Map<String, Set<String>> allowedImports = {
   'dart:io': {'lib/src/io/vm.dart'},
   'dart:isolate': {'lib/src/cli/workers_isolate.dart', 'lib/src/job_pool.dart'},
-  'dart:js_interop': {'lib/src/io/js.dart', 'lib/src/js/entry.dart'},
-  'dart:js_interop_unsafe': {'lib/src/io/js.dart', 'lib/src/js/entry.dart'},
+  'dart:js_interop': {'lib/src/io/js.dart', 'lib/src/js/'},
+  'dart:js_interop_unsafe': {'lib/src/io/js.dart', 'lib/src/js/'},
 };
+
+/// Whether [path] is covered by one of the [allowed] files or directories.
+bool isAllowed(Set<String> allowed, String path) => allowed.any(
+  (entry) => entry.endsWith('/') ? path.startsWith(entry) : path == entry,
+);
 
 void main() {
   test('platform libraries are imported only behind the seam', () {
@@ -28,13 +35,13 @@ void main() {
             .where((file) => file.path.endsWith('.dart'))
             .toList()
           ..sort((a, b) => a.path.compareTo(b.path));
-    final importRx = RegExp(r"^import '(dart:[a-z_]+)'", multiLine: true);
+    final importRx = RegExp("^import '(dart:[a-z_]+)'", multiLine: true);
     for (final file in files) {
       final path = file.path.replaceAll(r'\', '/');
       for (final match in importRx.allMatches(file.readAsStringSync())) {
         final library = match[1]!;
         final allowed = allowedImports[library];
-        if (allowed != null && !allowed.contains(path)) {
+        if (allowed != null && !isAllowed(allowed, path)) {
           violations.add('$path imports $library');
         }
       }

@@ -8,6 +8,7 @@
 ///
 /// Readers run against a [TestDocument], a real document whose URI
 /// fetches are served from the repository `test/` directory.
+@TestOn('vm')
 library;
 
 import 'dart:convert' show utf8;

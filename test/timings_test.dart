@@ -40,7 +40,8 @@ void main() {
       final duration = timings.record('read');
       expect(duration, isA<double>());
       expect(duration, greaterThanOrEqualTo(0));
-      expect(timings.read, equals(duration));
+      // A coarse clock (JavaScript) can measure zero, which reads as unset.
+      expect(timings.read, equals(duration > 0 ? duration : null));
     });
 
     test('starting twice restarts the timer', () {
@@ -52,31 +53,17 @@ void main() {
     });
 
     test('phase getters combine recorded phases', () {
-      final timings = (Timings())
-        ..start('read')
-        ..record('read');
-      expect(timings.read, isNotNull);
+      final timings = Timings()..log['read'] = 0.25;
+      expect(timings.read, equals(0.25));
       expect(timings.parse, isNull);
-      expect(timings.readParse, equals(timings.read));
-      expect(timings.total, equals(timings.read));
-
-      timings
-        ..start('parse')
-        ..record('parse');
-      expect(timings.readParse, equals(timings.read! + timings.parse!));
-
-      timings
-        ..start('convert')
-        ..record('convert');
-      expect(
-        timings.readParseConvert,
-        equals(timings.readParse! + timings.convert!),
-      );
-
-      timings
-        ..start('write')
-        ..record('write');
-      expect(timings.total, equals(timings.readParseConvert! + timings.write!));
+      expect(timings.readParse, equals(0.25));
+      expect(timings.total, equals(0.25));
+      timings.log['parse'] = 0.5;
+      expect(timings.readParse, equals(0.75));
+      timings.log['convert'] = 1;
+      expect(timings.readParseConvert, equals(1.75));
+      timings.log['write'] = 2;
+      expect(timings.total, equals(3.75));
     });
 
     test('printReport with subject prints four lines', () {

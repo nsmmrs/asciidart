@@ -2218,7 +2218,7 @@ void main() {
   });
 
   group('writeAlternatePages', () {
-    test('writes .so stubs for alternate names', () {
+    test(testOn: 'vm', 'writes .so stubs for alternate names', () {
       final dir = Directory.systemTemp.createTempSync('manpage_test');
       try {
         ManpageConverter.writeAlternatePages(
@@ -2234,7 +2234,7 @@ void main() {
       }
     });
 
-    test('does nothing for a single name', () {
+    test(testOn: 'vm', 'does nothing for a single name', () {
       final dir = Directory.systemTemp.createTempSync('manpage_test');
       try {
         ManpageConverter.writeAlternatePages(

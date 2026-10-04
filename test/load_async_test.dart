@@ -1,5 +1,6 @@
 /// Tests for the asynchronous entry points (`loadAsync`, `convertAsync`,
 /// ...) and the `uriReader` option that serves remote content.
+@TestOn('vm')
 library;
 
 import 'dart:async';

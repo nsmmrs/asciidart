@@ -2073,51 +2073,66 @@ void main() {
         );
       });
 
-      test('an image macro with an inline SVG image should be '
-          'converted to an svg element', () {
-        final para = blockFromString(
-          'image:circle.svg[Tiger,100,opts=inline]',
-          safe: 10,
-          attributes: {'imagesdir': 'fixtures', 'docdir': findTestDir()},
-        );
-        final result = squeezeTags(subMacros(para, para.source()));
-        expect(result, matches(RegExp(r'<svg\s[^>]*width="100"[^>]*>')));
-        expect(result, isNot(matches(RegExp(r'<svg\s[^>]*width="500"[^>]*>'))));
-        expect(
-          result,
-          isNot(matches(RegExp(r'<svg\s[^>]*height="500"[^>]*>'))),
-        );
-        expect(result, isNot(matches(RegExp(r'<svg\s[^>]*style="[^>]*>'))));
-      });
+      test(
+        testOn: 'vm',
+        'an image macro with an inline SVG image should be '
+        'converted to an svg element',
+        () {
+          final para = blockFromString(
+            'image:circle.svg[Tiger,100,opts=inline]',
+            safe: 10,
+            attributes: {'imagesdir': 'fixtures', 'docdir': findTestDir()},
+          );
+          final result = squeezeTags(subMacros(para, para.source()));
+          expect(result, matches(RegExp(r'<svg\s[^>]*width="100"[^>]*>')));
+          expect(
+            result,
+            isNot(matches(RegExp(r'<svg\s[^>]*width="500"[^>]*>'))),
+          );
+          expect(
+            result,
+            isNot(matches(RegExp(r'<svg\s[^>]*height="500"[^>]*>'))),
+          );
+          expect(result, isNot(matches(RegExp(r'<svg\s[^>]*style="[^>]*>'))));
+        },
+      );
 
-      test('should ignore link attribute if value is self and image '
-          'target is inline SVG', () {
-        final para = blockFromString(
-          'image:circle.svg[Tiger,100,opts=inline,link=self]',
-          safe: 10,
-          attributes: {'imagesdir': 'fixtures', 'docdir': findTestDir()},
-        );
-        final result = squeezeTags(subMacros(para, para.source()));
-        expect(result, matches(RegExp(r'<svg\s[^>]*width="100"[^>]*>')));
-        expect(result, isNot(contains('<a href=')));
-      });
+      test(
+        testOn: 'vm',
+        'should ignore link attribute if value is self and image '
+        'target is inline SVG',
+        () {
+          final para = blockFromString(
+            'image:circle.svg[Tiger,100,opts=inline,link=self]',
+            safe: 10,
+            attributes: {'imagesdir': 'fixtures', 'docdir': findTestDir()},
+          );
+          final result = squeezeTags(subMacros(para, para.source()));
+          expect(result, matches(RegExp(r'<svg\s[^>]*width="100"[^>]*>')));
+          expect(result, isNot(contains('<a href=')));
+        },
+      );
 
-      test('an image macro with an inline SVG image should be '
-          'converted to an svg element even when data-uri is set', () {
-        final para = blockFromString(
-          'image:circle.svg[Tiger,100,opts=inline]',
-          safe: 10,
-          attributes: {
-            'data-uri': '',
-            'imagesdir': 'fixtures',
-            'docdir': findTestDir(),
-          },
-        );
-        expect(
-          squeezeTags(subMacros(para, para.source())),
-          matches(RegExp(r'<svg\s[^>]*width="100">')),
-        );
-      });
+      test(
+        testOn: 'vm',
+        'an image macro with an inline SVG image should be '
+        'converted to an svg element even when data-uri is set',
+        () {
+          final para = blockFromString(
+            'image:circle.svg[Tiger,100,opts=inline]',
+            safe: 10,
+            attributes: {
+              'data-uri': '',
+              'imagesdir': 'fixtures',
+              'docdir': findTestDir(),
+            },
+          );
+          expect(
+            squeezeTags(subMacros(para, para.source())),
+            matches(RegExp(r'<svg\s[^>]*width="100">')),
+          );
+        },
+      );
 
       test('an image macro with an SVG image should not use an object '
           'element when safe mode is secure', () {
@@ -2245,30 +2260,34 @@ void main() {
         );
       });
 
-      test('should link to data URI if value of link attribute is self '
-          'and inline image is embedded', () {
-        final para = blockFromString(
-          'image:circle.svg[Tiger,100,link=self]',
-          safe: 10,
-          attributes: {
-            'data-uri': '',
-            'imagesdir': 'fixtures',
-            'docdir': findTestDir(),
-          },
-        );
-        final output = squeezeTags(subMacros(para, para.source()));
-        expect(
-          countOccurrences(
-            output,
-            '<a class="image" href="data:image/svg+xml;base64,',
-          ),
-          1,
-        );
-        expect(
-          countOccurrences(output, '<img src="data:image/svg+xml;base64,'),
-          1,
-        );
-      });
+      test(
+        testOn: 'vm',
+        'should link to data URI if value of link attribute is self '
+        'and inline image is embedded',
+        () {
+          final para = blockFromString(
+            'image:circle.svg[Tiger,100,link=self]',
+            safe: 10,
+            attributes: {
+              'data-uri': '',
+              'imagesdir': 'fixtures',
+              'docdir': findTestDir(),
+            },
+          );
+          final output = squeezeTags(subMacros(para, para.source()));
+          expect(
+            countOccurrences(
+              output,
+              '<a class="image" href="data:image/svg+xml;base64,',
+            ),
+            1,
+          );
+          expect(
+            countOccurrences(output, '<img src="data:image/svg+xml;base64,'),
+            1,
+          );
+        },
+      );
 
       test('rel=noopener should be added to an image with a link that '
           'targets the _blank window', () {
@@ -2419,32 +2438,36 @@ void main() {
 
       // NOTE this test verifies attributes get substituted eagerly in
       // target of image in title
-      test('should substitute attributes in target of inline image in '
-          'section title', () {
-        // PORT: section titles are assigned during parsing (parser wave);
-        // emulate with a paragraph carrying the same substituted text.
-        final logger = FakeLogger();
-        withFakeLogger(logger, () {
-          final para = blockFromString(
-            'image:{iconsdir}/dot.gif[dot] Title',
-            attributes: {
-              'data-uri': '',
-              'iconsdir': 'fixtures',
-              'docdir': findTestDir(),
-            },
-            safe: SafeMode.server,
-            catalogAssets: true,
-          );
-          contentOf(para);
-          final doc = para.document! as Document;
-          final images = doc.catalog.images;
-          expect(images.length, 1);
-          final image = images.single;
-          expect(image.toString(), 'fixtures/dot.gif');
-          expect(image.imagesdir, isNull);
-          expect(logger.isEmpty, isTrue);
-        });
-      });
+      test(
+        testOn: 'vm',
+        'should substitute attributes in target of inline image in '
+        'section title',
+        () {
+          // PORT: section titles are assigned during parsing (parser wave);
+          // emulate with a paragraph carrying the same substituted text.
+          final logger = FakeLogger();
+          withFakeLogger(logger, () {
+            final para = blockFromString(
+              'image:{iconsdir}/dot.gif[dot] Title',
+              attributes: {
+                'data-uri': '',
+                'iconsdir': 'fixtures',
+                'docdir': findTestDir(),
+              },
+              safe: SafeMode.server,
+              catalogAssets: true,
+            );
+            contentOf(para);
+            final doc = para.document! as Document;
+            final images = doc.catalog.images;
+            expect(images.length, 1);
+            final image = images.single;
+            expect(image.toString(), 'fixtures/dot.gif');
+            expect(image.imagesdir, isNull);
+            expect(logger.isEmpty, isTrue);
+          });
+        },
+      );
 
       test(
         'an icon macro should be interpreted as an icon if icons are enabled',

@@ -67,7 +67,7 @@ void main() {
       );
     });
 
-    test('recognizes a closed output pipe', () {
+    test(testOn: 'vm', 'recognizes a closed output pipe', () {
       expect(
         io.isBrokenPipe(
           const FileSystemException('writeFrom failed', '', OSError('', 32)),

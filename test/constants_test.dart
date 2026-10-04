@@ -21,6 +21,7 @@
 /// pattern expectations are the Ruby sources with those documented rewrites
 /// applied (`.`, → `[\s\S]`, `\p{Word}` → the UTS#18 union, `\p{Alnum}` →
 /// the split fragments, `\p{Alpha}` → `\p{Alphabetic}`).
+@TestOn('vm')
 library;
 
 import 'dart:io';

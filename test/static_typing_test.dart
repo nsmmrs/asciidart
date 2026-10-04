@@ -6,6 +6,7 @@
 /// sources, and `Object?` in the library outside the few places where an
 /// untyped value is the contract (the Mustache template context, `Map` and
 /// `StringSink` overrides).
+@TestOn('vm')
 library;
 
 import 'dart:io';

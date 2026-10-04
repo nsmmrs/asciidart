@@ -4,6 +4,7 @@
 /// embedded constant must round-trip to the exact bytes of its source file
 /// (`man/asciidoctor.1`, `data/reference/syntax.adoc`). The fallback tests
 /// prove `-h manpage`/`-h syntax` succeed with no checkout files visible.
+@TestOn('vm')
 library;
 
 import 'dart:convert';

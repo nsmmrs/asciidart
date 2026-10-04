@@ -3,6 +3,7 @@
 /// The byte-for-byte tests guard the `tool/embed_data.dart` contract: every
 /// value in [EmbeddedData.files] must round-trip to the exact bytes of its
 /// source file under the repository `data/` directory.
+@TestOn('vm')
 library;
 
 import 'dart:convert';

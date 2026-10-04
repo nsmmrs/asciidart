@@ -7,6 +7,7 @@
 /// suite). Two subprocess tests prove the scaffold story end to end: the
 /// stock binary serves `init-config`, and the generated project analyzes
 /// cleanly offline with a path override to this checkout.
+@TestOn('vm')
 library;
 
 import 'dart:io';

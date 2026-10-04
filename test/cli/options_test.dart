@@ -8,6 +8,7 @@
 /// against `lib/asciidoctor/cli/options.rb` via `ruby -Ilib` probes and a
 /// 159-vector Ruby-vs-Dart differential run (exit codes, STDOUT/STDERR bytes
 /// and all option fields).
+@TestOn('vm')
 library;
 
 import 'dart:io';

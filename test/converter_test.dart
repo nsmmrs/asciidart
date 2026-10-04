@@ -275,24 +275,28 @@ void main() {
         skip: noTiltCounterpart,
         () {},
       );
-      test('should load templates from a single template dir', () {
-        // Port of test/converter_test.rb: 'should coerce template_dirs
-        // option to an Array'. Adapted: Dart holds no `@template_dirs`
-        // ivar to probe, so the coercion is proven behaviorally — a lone
-        // String resolves as one directory and its templates load.
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-        });
-        final doc = documentFromString(
-          'hi',
-          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
-        );
-        expect(doc.converter, isA<CompositeConverter>());
-        expect(
-          templateConverterFor(doc, 'paragraph').templates['paragraph'],
-          equals('<p>{{content}}</p>'),
-        );
-      });
+      test(
+        testOn: 'vm',
+        'should load templates from a single template dir',
+        () {
+          // Port of test/converter_test.rb: 'should coerce template_dirs
+          // option to an Array'. Adapted: Dart holds no `@template_dirs`
+          // ivar to probe, so the coercion is proven behaviorally — a lone
+          // String resolves as one directory and its templates load.
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+          });
+          final doc = documentFromString(
+            'hi',
+            AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+          );
+          expect(doc.converter, isA<CompositeConverter>());
+          expect(
+            templateConverterFor(doc, 'paragraph').templates['paragraph'],
+            equals('<p>{{content}}</p>'),
+          );
+        },
+      );
       test(
         'should set Slim format to html for html5 backend',
         // Permanent: Slim engine options have no Mustache counterpart.
@@ -329,212 +333,251 @@ void main() {
     });
 
     group('Custom backends', () {
-      test('should load Mustache templates for default backend', () {
-        // Port of test/converter_test.rb: 'should load Haml templates for
-        // default backend' (adapted: Haml -> Mustache; the node name is
-        // the basename minus `.mustache`, with no `block_` prefix).
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-        });
-        final doc = documentFromString(
-          '',
-          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
-        );
-        expect(doc.converter, isA<CompositeConverter>());
-        expect(
-          templateConverterFor(doc, 'paragraph').templates['paragraph'],
-          equals('<p>{{content}}</p>'),
-        );
-      });
-      test('should set outfilesuffix according to backend info', () {
-        // Port of test/converter_test.rb: 'should set outfilesuffix
-        // according to backend info'. The composite adopts the fallback
-        // converter's traits, so the suffix is unchanged by templates.
-        final plain = documentFromString('content');
-        expect(plain.attributes['outfilesuffix'], equals('.html'));
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-        });
-        final withTemplates = documentFromString(
-          'content',
-          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
-        );
-        expect(withTemplates.attributes['outfilesuffix'], equals('.html'));
-      });
-      test('should not override outfilesuffix attribute if locked', () {
-        // Port of test/converter_test.rb: 'should not override
-        // outfilesuffix attribute if locked'. Attributes passed through
-        // the options are locked, so the converter-derived suffix never
-        // replaces them, with or without templates.
-        final plain = documentFromString(
-          'content',
-          const AsciidoctorOptions(attributes: {'outfilesuffix': '.foo'}),
-        );
-        expect(plain.attributes['outfilesuffix'], equals('.foo'));
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-        });
-        final withTemplates = documentFromString(
-          'content',
-          AsciidoctorOptions(
-            templateDirs: [dir.path],
-            templateCache: false,
-            attributes: {'outfilesuffix': '.foo'},
-          ),
-        );
-        expect(withTemplates.attributes['outfilesuffix'], equals('.foo'));
-      });
-      test('should load Mustache templates for docbook5 backend', () {
-        // Port of test/converter_test.rb: 'should load Haml templates for
-        // docbook5 backend' (adapted: Haml -> Mustache). Divergence: Dart
-        // resolves flat names with no backend infix, so the same file
-        // serves docbook5 (no `block_*.xml.haml` split).
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<simpara>{{content}}</simpara>',
-        });
-        final doc = documentFromString(
-          '',
-          AsciidoctorOptions(
-            backend: 'docbook5',
-            templateDirs: [dir.path],
-            templateCache: false,
-          ),
-        );
-        expect(doc.converter, isA<CompositeConverter>());
-        expect(
-          templateConverterFor(doc, 'paragraph').templates['paragraph'],
-          equals('<simpara>{{content}}</simpara>'),
-        );
-      });
-      test('should use Mustache templates in place of built-in templates', () {
-        // Port of test/converter_test.rb: 'should use Haml templates in
-        // place of built-in templates' (adapted: Haml -> Mustache file
-        // templates; unhandled transforms fall back to the built-in
-        // converter).
-        const input =
-            '= Document Title\n'
-            'Author Name\n'
-            '\n'
-            '== Section One\n'
-            '\n'
-            'Sample paragraph\n'
-            '\n'
-            '.Related\n'
-            '****\n'
-            'Sidebar content\n'
-            '****\n';
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-          'sidebar.mustache':
-              '<aside>'
-              '{{#title}}<header><h1>{{title}}</h1></header>{{/title}}'
-              '{{content}}'
-              '</aside>',
-        });
-        final output = convertStringToEmbedded(
-          input,
-          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
-        );
-        assertXpath('/*[@class="sect1"]/*[@class="sectionbody"]/p', output, 1);
-        assertXpath('//aside', output, 1);
-        assertXpath(
-          '/*[@class="sect1"]/*[@class="sectionbody"]/p/following-sibling::aside',
-          output,
-          1,
-        );
-        assertXpath('//aside/header/h1[text()="Related"]', output, 1);
-        assertXpath(
-          '//aside/header/following-sibling::p[text()="Sidebar content"]',
-          output,
-          1,
-        );
-      });
-      test('should allow custom backend to emulate a known backend', () {
-        // Port of test/converter_test.rb: 'should allow custom backend to
-        // emulate a known backend'. `backend: 'html5-tweaks:html'`
-        // resolves traits through the delegate backend while the
-        // template converter handles the overridden transforms.
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-          'embedded.mustache': '{{content}}',
-        });
-        final doc = documentFromString(
-          'content',
-          AsciidoctorOptions(
-            backend: 'html5-tweaks:html',
-            standalone: false,
-            templateDirs: [dir.path],
-            templateCache: false,
-          ),
-        );
-        expect(doc.basebackend('html'), isTrue);
-        expect(doc.backend, equals('html5-tweaks'));
-        final converter = doc.converter as CompositeConverter;
-        expect(converter.findConverter('embedded'), isA<TemplateConverter>());
-        expect(
-          converter.findConverter('admonition'),
-          isNot(isA<TemplateConverter>()),
-        );
-        expect(doc.convert(), equals('<p>content</p>'));
-      });
-      test('should create template converter even when a converter is not '
-          'registered for the specified backend', () {
-        // Port of test/converter_test.rb: 'should create template
-        // converter even when a converter is not registered for the
-        // specified backend' (adapted: Haml -> Mustache). The factory
-        // returns a bare template converter whose traits derive from
-        // the backend name.
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-          'embedded.mustache': '{{content}}',
-        });
-        final output = convertStringToEmbedded(
-          'paragraph content',
-          AsciidoctorOptions(
-            backend: 'unknown',
-            templateDirs: [dir.path],
-            templateCache: false,
-          ),
-        );
-        expect(output, equals('<p>paragraph content</p>'));
-      });
-      test('should use built-in global cache to cache templates', () {
-        // Port of test/converter_test.rb: 'should use built-in global
-        // cache to cache templates' (adapted: the Dart cache stores scan
-        // maps — node name to source — rather than Tilt objects, so reuse
-        // is proven by serving a stale scan after the file changes).
-        TemplateCache.clearCaches();
-        addTearDown(TemplateCache.clearCaches);
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-        });
-        documentFromString('hi', AsciidoctorOptions(templateDirs: [dir.path]));
-        expect(TemplateCache.shared.scans, isNotEmpty);
-        // Rewriting the file must not matter: the cached scan wins.
-        File('${dir.path}/paragraph.mustache')
-            .writeAsStringSync('<p>changed</p>');
-        final cached = documentFromString(
-          'hi',
-          AsciidoctorOptions(templateDirs: [dir.path]),
-        );
-        expect(
-          templateConverterFor(cached, 'paragraph').templates['paragraph'],
-          equals('<p>{{content}}</p>'),
-        );
-        // template_cache: false bypasses the shared cache (fresh scan,
-        // no shared writes) while conversion still works.
-        final scansBefore = TemplateCache.shared.scans.length;
-        final uncached = documentFromString(
-          'hi',
-          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
-        );
-        expect(
-          templateConverterFor(uncached, 'paragraph').templates['paragraph'],
-          equals('<p>changed</p>'),
-        );
-        expect(TemplateCache.shared.scans.length, equals(scansBefore));
-      });
-      test('should use custom cache to cache templates', () {
+      test(
+        testOn: 'vm',
+        'should load Mustache templates for default backend',
+        () {
+          // Port of test/converter_test.rb: 'should load Haml templates for
+          // default backend' (adapted: Haml -> Mustache; the node name is
+          // the basename minus `.mustache`, with no `block_` prefix).
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+          });
+          final doc = documentFromString(
+            '',
+            AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+          );
+          expect(doc.converter, isA<CompositeConverter>());
+          expect(
+            templateConverterFor(doc, 'paragraph').templates['paragraph'],
+            equals('<p>{{content}}</p>'),
+          );
+        },
+      );
+      test(
+        testOn: 'vm',
+        'should set outfilesuffix according to backend info',
+        () {
+          // Port of test/converter_test.rb: 'should set outfilesuffix
+          // according to backend info'. The composite adopts the fallback
+          // converter's traits, so the suffix is unchanged by templates.
+          final plain = documentFromString('content');
+          expect(plain.attributes['outfilesuffix'], equals('.html'));
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+          });
+          final withTemplates = documentFromString(
+            'content',
+            AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+          );
+          expect(withTemplates.attributes['outfilesuffix'], equals('.html'));
+        },
+      );
+      test(
+        testOn: 'vm',
+        'should not override outfilesuffix attribute if locked',
+        () {
+          // Port of test/converter_test.rb: 'should not override
+          // outfilesuffix attribute if locked'. Attributes passed through
+          // the options are locked, so the converter-derived suffix never
+          // replaces them, with or without templates.
+          final plain = documentFromString(
+            'content',
+            const AsciidoctorOptions(attributes: {'outfilesuffix': '.foo'}),
+          );
+          expect(plain.attributes['outfilesuffix'], equals('.foo'));
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+          });
+          final withTemplates = documentFromString(
+            'content',
+            AsciidoctorOptions(
+              templateDirs: [dir.path],
+              templateCache: false,
+              attributes: {'outfilesuffix': '.foo'},
+            ),
+          );
+          expect(withTemplates.attributes['outfilesuffix'], equals('.foo'));
+        },
+      );
+      test(
+        testOn: 'vm',
+        'should load Mustache templates for docbook5 backend',
+        () {
+          // Port of test/converter_test.rb: 'should load Haml templates for
+          // docbook5 backend' (adapted: Haml -> Mustache). Divergence: Dart
+          // resolves flat names with no backend infix, so the same file
+          // serves docbook5 (no `block_*.xml.haml` split).
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<simpara>{{content}}</simpara>',
+          });
+          final doc = documentFromString(
+            '',
+            AsciidoctorOptions(
+              backend: 'docbook5',
+              templateDirs: [dir.path],
+              templateCache: false,
+            ),
+          );
+          expect(doc.converter, isA<CompositeConverter>());
+          expect(
+            templateConverterFor(doc, 'paragraph').templates['paragraph'],
+            equals('<simpara>{{content}}</simpara>'),
+          );
+        },
+      );
+      test(
+        testOn: 'vm',
+        'should use Mustache templates in place of built-in templates',
+        () {
+          // Port of test/converter_test.rb: 'should use Haml templates in
+          // place of built-in templates' (adapted: Haml -> Mustache file
+          // templates; unhandled transforms fall back to the built-in
+          // converter).
+          const input =
+              '= Document Title\n'
+              'Author Name\n'
+              '\n'
+              '== Section One\n'
+              '\n'
+              'Sample paragraph\n'
+              '\n'
+              '.Related\n'
+              '****\n'
+              'Sidebar content\n'
+              '****\n';
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+            'sidebar.mustache':
+                '<aside>'
+                '{{#title}}<header><h1>{{title}}</h1></header>{{/title}}'
+                '{{content}}'
+                '</aside>',
+          });
+          final output = convertStringToEmbedded(
+            input,
+            AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+          );
+          assertXpath(
+            '/*[@class="sect1"]/*[@class="sectionbody"]/p',
+            output,
+            1,
+          );
+          assertXpath('//aside', output, 1);
+          assertXpath(
+            '/*[@class="sect1"]/*[@class="sectionbody"]/p/following-sibling::aside',
+            output,
+            1,
+          );
+          assertXpath('//aside/header/h1[text()="Related"]', output, 1);
+          assertXpath(
+            '//aside/header/following-sibling::p[text()="Sidebar content"]',
+            output,
+            1,
+          );
+        },
+      );
+      test(
+        testOn: 'vm',
+        'should allow custom backend to emulate a known backend',
+        () {
+          // Port of test/converter_test.rb: 'should allow custom backend to
+          // emulate a known backend'. `backend: 'html5-tweaks:html'`
+          // resolves traits through the delegate backend while the
+          // template converter handles the overridden transforms.
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+            'embedded.mustache': '{{content}}',
+          });
+          final doc = documentFromString(
+            'content',
+            AsciidoctorOptions(
+              backend: 'html5-tweaks:html',
+              standalone: false,
+              templateDirs: [dir.path],
+              templateCache: false,
+            ),
+          );
+          expect(doc.basebackend('html'), isTrue);
+          expect(doc.backend, equals('html5-tweaks'));
+          final converter = doc.converter as CompositeConverter;
+          expect(converter.findConverter('embedded'), isA<TemplateConverter>());
+          expect(
+            converter.findConverter('admonition'),
+            isNot(isA<TemplateConverter>()),
+          );
+          expect(doc.convert(), equals('<p>content</p>'));
+        },
+      );
+      test(
+        testOn: 'vm',
+        'should create template converter even when a converter is not '
+        'registered for the specified backend',
+        () {
+          // Port of test/converter_test.rb: 'should create template
+          // converter even when a converter is not registered for the
+          // specified backend' (adapted: Haml -> Mustache). The factory
+          // returns a bare template converter whose traits derive from
+          // the backend name.
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+            'embedded.mustache': '{{content}}',
+          });
+          final output = convertStringToEmbedded(
+            'paragraph content',
+            AsciidoctorOptions(
+              backend: 'unknown',
+              templateDirs: [dir.path],
+              templateCache: false,
+            ),
+          );
+          expect(output, equals('<p>paragraph content</p>'));
+        },
+      );
+      test(
+        testOn: 'vm',
+        'should use built-in global cache to cache templates',
+        () {
+          // Port of test/converter_test.rb: 'should use built-in global
+          // cache to cache templates' (adapted: the Dart cache stores scan
+          // maps — node name to source — rather than Tilt objects, so reuse
+          // is proven by serving a stale scan after the file changes).
+          TemplateCache.clearCaches();
+          addTearDown(TemplateCache.clearCaches);
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+          });
+          documentFromString(
+            'hi',
+            AsciidoctorOptions(templateDirs: [dir.path]),
+          );
+          expect(TemplateCache.shared.scans, isNotEmpty);
+          // Rewriting the file must not matter: the cached scan wins.
+          File('${dir.path}/paragraph.mustache')
+              .writeAsStringSync('<p>changed</p>');
+          final cached = documentFromString(
+            'hi',
+            AsciidoctorOptions(templateDirs: [dir.path]),
+          );
+          expect(
+            templateConverterFor(cached, 'paragraph').templates['paragraph'],
+            equals('<p>{{content}}</p>'),
+          );
+          // template_cache: false bypasses the shared cache (fresh scan,
+          // no shared writes) while conversion still works.
+          final scansBefore = TemplateCache.shared.scans.length;
+          final uncached = documentFromString(
+            'hi',
+            AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+          );
+          expect(
+            templateConverterFor(uncached, 'paragraph').templates['paragraph'],
+            equals('<p>changed</p>'),
+          );
+          expect(TemplateCache.shared.scans.length, equals(scansBefore));
+        },
+      );
+      test(testOn: 'vm', 'should use custom cache to cache templates', () {
         // Port of test/converter_test.rb: 'should use custom cache to
         // cache templates' (adapted: a [TemplateCache] instance replaces
         // Ruby's Hash store).
@@ -562,7 +605,7 @@ void main() {
           isA<TemplateConverter>(),
         );
       });
-      test('should be able to disable template cache', () {
+      test(testOn: 'vm', 'should be able to disable template cache', () {
         // Port of test/converter_test.rb: 'should be able to disable
         // template cache'.
         TemplateCache.clearCaches();
@@ -590,52 +633,61 @@ void main() {
         skip: noTiltCounterpart,
         () {},
       );
-      test('should load several Mustache templates for default backend', () {
-        // Port of test/converter_test.rb: 'should load Slim templates for
-        // default backend' (adapted: Slim -> Mustache; paragraph plus
-        // sidebar in one directory).
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-          'sidebar.mustache': '<aside>{{content}}</aside>',
-        });
-        final doc = documentFromString(
-          '',
-          AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
-        );
-        expect(doc.converter, isA<CompositeConverter>());
-        final selected = templateConverterFor(doc, 'paragraph');
-        expect(selected.templates['paragraph'], equals('<p>{{content}}</p>'));
-        expect(
-          selected.templates['sidebar'],
-          equals('<aside>{{content}}</aside>'),
-        );
-        expect(templateConverterFor(doc, 'sidebar'), same(selected));
-      });
-      test('should load Mustache templates for docbook5 backend with explicit '
-          'engine', () {
-        // Port of test/converter_test.rb: 'should load Slim templates
-        // for docbook5 backend' (adapted: Slim -> Mustache with an
-        // explicit `template_engine`, proving the engine option flows
-        // through document creation).
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<simpara>{{content}}</simpara>',
-        });
-        final doc = documentFromString(
-          '',
-          AsciidoctorOptions(
-            backend: 'docbook5',
-            templateDirs: [dir.path],
-            templateCache: false,
-            templateEngine: 'mustache',
-          ),
-        );
-        expect(doc.converter, isA<CompositeConverter>());
-        expect(
-          templateConverterFor(doc, 'paragraph').templates['paragraph'],
-          equals('<simpara>{{content}}</simpara>'),
-        );
-      });
       test(
+        testOn: 'vm',
+        'should load several Mustache templates for default backend',
+        () {
+          // Port of test/converter_test.rb: 'should load Slim templates for
+          // default backend' (adapted: Slim -> Mustache; paragraph plus
+          // sidebar in one directory).
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+            'sidebar.mustache': '<aside>{{content}}</aside>',
+          });
+          final doc = documentFromString(
+            '',
+            AsciidoctorOptions(templateDirs: [dir.path], templateCache: false),
+          );
+          expect(doc.converter, isA<CompositeConverter>());
+          final selected = templateConverterFor(doc, 'paragraph');
+          expect(selected.templates['paragraph'], equals('<p>{{content}}</p>'));
+          expect(
+            selected.templates['sidebar'],
+            equals('<aside>{{content}}</aside>'),
+          );
+          expect(templateConverterFor(doc, 'sidebar'), same(selected));
+        },
+      );
+      test(
+        testOn: 'vm',
+        'should load Mustache templates for docbook5 backend with explicit '
+        'engine',
+        () {
+          // Port of test/converter_test.rb: 'should load Slim templates
+          // for docbook5 backend' (adapted: Slim -> Mustache with an
+          // explicit `template_engine`, proving the engine option flows
+          // through document creation).
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<simpara>{{content}}</simpara>',
+          });
+          final doc = documentFromString(
+            '',
+            AsciidoctorOptions(
+              backend: 'docbook5',
+              templateDirs: [dir.path],
+              templateCache: false,
+              templateEngine: 'mustache',
+            ),
+          );
+          expect(doc.converter, isA<CompositeConverter>());
+          expect(
+            templateConverterFor(doc, 'paragraph').templates['paragraph'],
+            equals('<simpara>{{content}}</simpara>'),
+          );
+        },
+      );
+      test(
+        testOn: 'vm',
         'should use code-registered transforms in place of built-in templates',
         () {
           // Port of test/converter_test.rb: 'should use Slim templates in
@@ -662,6 +714,7 @@ void main() {
         },
       );
       test(
+        testOn: 'vm',
         'should be able to override the outline using a custom template',
         () {
           // Port of test/converter_test.rb: 'should be able to override the
@@ -922,6 +975,7 @@ void main() {
       });
 
       test(
+        testOn: 'vm',
         'should not configure converter to support templates by default',
         () {
           // Port of test/converter_test.rb: 'should not configure converter
@@ -956,42 +1010,50 @@ void main() {
           );
         },
       );
-      test('should wrap converter in composite converter with template '
-          'converter '
-          'if it declares that it supports templates', () {
-        // Port of test/converter_test.rb: 'should wrap converter in
-        // composite converter with template converter if it declares
-        // that it supports templates'. `supportsTemplates = true`
-        // opts into the composite; the file template wins per
-        // transform while the custom converter handles the rest.
-        cleanGlobalRegistry();
-        Converter.register((backend, opts) {
-          final converter = (FakeBaseConverter(backend, opts, {
-            'document': (node, [opts]) =>
-                '<body>${(node as AbstractBlock).content()}</body>',
-            'embedded': (node, [opts]) =>
-                '<body>${(node as AbstractBlock).content()}</body>',
-            'paragraph': (node, [opts]) =>
-                '<div class="paragraph"><p>${(node as AbstractBlock).content()}</p></div>',
-          }))..backendTraits.supportsTemplates = true;
-          return converter;
-        }, const ['tmpl-wrapped']);
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-        });
-        final doc = documentFromString(
-          'paragraph',
-          AsciidoctorOptions(
-            backend: 'tmpl-wrapped',
-            templateDirs: [dir.path],
-            templateCache: false,
-          ),
-        );
-        expect(doc.converter, isA<CompositeConverter>());
-        final output = doc.convert();
-        assertXpath('//*[@class="paragraph"]/p[text()="paragraph"]', output, 0);
-        assertXpath('//body/p[text()="paragraph"]', output, 1);
-      });
+      test(
+        testOn: 'vm',
+        'should wrap converter in composite converter with template '
+        'converter '
+        'if it declares that it supports templates',
+        () {
+          // Port of test/converter_test.rb: 'should wrap converter in
+          // composite converter with template converter if it declares
+          // that it supports templates'. `supportsTemplates = true`
+          // opts into the composite; the file template wins per
+          // transform while the custom converter handles the rest.
+          cleanGlobalRegistry();
+          Converter.register((backend, opts) {
+            final converter = (FakeBaseConverter(backend, opts, {
+              'document': (node, [opts]) =>
+                  '<body>${(node as AbstractBlock).content()}</body>',
+              'embedded': (node, [opts]) =>
+                  '<body>${(node as AbstractBlock).content()}</body>',
+              'paragraph': (node, [opts]) =>
+                  '<div class="paragraph"><p>${(node as AbstractBlock).content()}</p></div>',
+            }))..backendTraits.supportsTemplates = true;
+            return converter;
+          }, const ['tmpl-wrapped']);
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+          });
+          final doc = documentFromString(
+            'paragraph',
+            AsciidoctorOptions(
+              backend: 'tmpl-wrapped',
+              templateDirs: [dir.path],
+              templateCache: false,
+            ),
+          );
+          expect(doc.converter, isA<CompositeConverter>());
+          final output = doc.convert();
+          assertXpath(
+            '//*[@class="paragraph"]/p[text()="paragraph"]',
+            output,
+            0,
+          );
+          assertXpath('//body/p[text()="paragraph"]', output, 1);
+        },
+      );
 
       test('should map Factory.new to DefaultFactoryProxy constructor by '
           'default', () {
@@ -1197,70 +1259,74 @@ void main() {
         expect(CustomFactory().create('seam-missing'), isNull);
       });
 
-      test('create with template_dirs engages a real template chain', () {
-        // Template wave C: `template_dirs` builds a composite over
-        // supporting converters (as-is otherwise), a bare template
-        // converter for unknown backends, and honors `delegate_backend`
-        // plus lone-String coercion — all against the real loader.
-        cleanGlobalRegistry();
-        TemplateCache.clearCaches();
-        addTearDown(TemplateCache.clearCaches);
-        Converter.register(FakeConverter.new, const ['seam-tmpl-plain']);
-        final dir = makeTemplateDir({
-          'paragraph.mustache': '<p>{{content}}</p>',
-        });
-        // Registered converter that does not support templates: returned
-        // as-is, exactly as in Ruby (no composite wrapping).
-        final plain = Converter.create(
-          'seam-tmpl-plain',
-          ConverterOptions(templateDirs: [dir.path]),
-        );
-        expect(plain, isA<FakeConverter>());
-        // Supporting converter: composite with the template converter
-        // ahead, templates loaded from the directory.
-        Converter.register(
-          (backend, opts) =>
-              FakeBaseConverter(backend, opts)
-                ..backendTraits.supportsTemplates = true,
-          const ['seam-tmpl-supported'],
-        );
-        final composite = Converter.create(
-          'seam-tmpl-supported',
-          ConverterOptions(templateDirs: [dir.path]),
-        );
-        expect(composite, isA<CompositeConverter>());
-        final chain = composite! as CompositeConverter;
-        expect(chain.converters[0], isA<TemplateConverter>());
-        expect(chain.converters[1], isA<FakeBaseConverter>());
-        expect(chain.findConverter('paragraph'), isA<TemplateConverter>());
-        // Unknown backend: bare template converter with derived traits.
-        final bare = Converter.create(
-          'seam-tmpl-missing',
-          ConverterOptions(templateDirs: [dir.path]),
-        );
-        expect(bare, isA<TemplateConverter>());
-        expect(
-          (bare! as TemplateConverter).templates['paragraph'],
-          equals('<p>{{content}}</p>'),
-        );
-        // delegate_backend names the fallback for unknown backends.
-        final delegated = Converter.create(
-          'seam-tmpl-missing',
-          ConverterOptions(
-            templateDirs: [dir.path],
-            delegateBackend: 'seam-tmpl-plain',
-          ),
-        );
-        expect(delegated, isA<CompositeConverter>());
-        // A delegate_backend without template_dirs stays inert.
-        expect(
-          Converter.create(
+      test(
+        testOn: 'vm',
+        'create with template_dirs engages a real template chain',
+        () {
+          // Template wave C: `template_dirs` builds a composite over
+          // supporting converters (as-is otherwise), a bare template
+          // converter for unknown backends, and honors `delegate_backend`
+          // plus lone-String coercion — all against the real loader.
+          cleanGlobalRegistry();
+          TemplateCache.clearCaches();
+          addTearDown(TemplateCache.clearCaches);
+          Converter.register(FakeConverter.new, const ['seam-tmpl-plain']);
+          final dir = makeTemplateDir({
+            'paragraph.mustache': '<p>{{content}}</p>',
+          });
+          // Registered converter that does not support templates: returned
+          // as-is, exactly as in Ruby (no composite wrapping).
+          final plain = Converter.create(
+            'seam-tmpl-plain',
+            ConverterOptions(templateDirs: [dir.path]),
+          );
+          expect(plain, isA<FakeConverter>());
+          // Supporting converter: composite with the template converter
+          // ahead, templates loaded from the directory.
+          Converter.register(
+            (backend, opts) =>
+                FakeBaseConverter(backend, opts)
+                  ..backendTraits.supportsTemplates = true,
+            const ['seam-tmpl-supported'],
+          );
+          final composite = Converter.create(
+            'seam-tmpl-supported',
+            ConverterOptions(templateDirs: [dir.path]),
+          );
+          expect(composite, isA<CompositeConverter>());
+          final chain = composite! as CompositeConverter;
+          expect(chain.converters[0], isA<TemplateConverter>());
+          expect(chain.converters[1], isA<FakeBaseConverter>());
+          expect(chain.findConverter('paragraph'), isA<TemplateConverter>());
+          // Unknown backend: bare template converter with derived traits.
+          final bare = Converter.create(
             'seam-tmpl-missing',
-            const ConverterOptions(delegateBackend: 'seam-tmpl-plain'),
-          ),
-          isNull,
-        );
-      });
+            ConverterOptions(templateDirs: [dir.path]),
+          );
+          expect(bare, isA<TemplateConverter>());
+          expect(
+            (bare! as TemplateConverter).templates['paragraph'],
+            equals('<p>{{content}}</p>'),
+          );
+          // delegate_backend names the fallback for unknown backends.
+          final delegated = Converter.create(
+            'seam-tmpl-missing',
+            ConverterOptions(
+              templateDirs: [dir.path],
+              delegateBackend: 'seam-tmpl-plain',
+            ),
+          );
+          expect(delegated, isA<CompositeConverter>());
+          // A delegate_backend without template_dirs stays inert.
+          expect(
+            Converter.create(
+              'seam-tmpl-missing',
+              const ConverterOptions(delegateBackend: 'seam-tmpl-plain'),
+            ),
+            isNull,
+          );
+        },
+      );
 
       test('unregisterAll keeps provided registrations only', () {
         // Mirrors Ruby, where `unregister_all` keeps `PROVIDED` backends.

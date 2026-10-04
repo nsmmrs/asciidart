@@ -11,6 +11,7 @@
 /// tests pin the seam so the wave knows what to unlock. Vacuous
 /// substitutions (empty text, `null`/empty subs) already pass through, as
 /// in Ruby.
+@TestOn('vm')
 library;
 
 import 'dart:convert' show utf8;
