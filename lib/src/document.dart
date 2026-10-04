@@ -1133,9 +1133,7 @@ class Document extends AbstractBlock implements NodeDocument {
   @override
   set title(String? value) {
     var sect = header;
-    if (sect == null) {
-      sect = (header = Section(this, 0))..sectname = 'header';
-    }
+    sect ??= (header = Section(this, 0))..sectname = 'header';
     sect.title = value;
   }
 
