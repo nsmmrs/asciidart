@@ -91,7 +91,7 @@ enum _ListContinuation {
   /// A consumed list continuation (the empty string).
   placeholder._('');
 
-  const new _(this.text);
+  new _(this.text);
 
   /// The line text this marker stands for.
   final String text;
