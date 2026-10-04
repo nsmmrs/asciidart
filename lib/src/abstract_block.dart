@@ -13,6 +13,7 @@ import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/rx.dart';
+import 'package:meta/meta.dart';
 
 /// Maps ordered-list styles to their HTML marker keywords.
 ///
@@ -245,6 +246,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// Internal: Ruby marks this method protected; it is public here so
   /// subclasses in other libraries (and their traversal overrides) can
   /// recurse into it.
+  @internal
   List<AbstractBlock> findByInternal({
     required List<AbstractBlock> result,
     String? context,
@@ -535,6 +537,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// caption assigned too), chapters take the next chapter number, parts
   /// take roman numerals, and other numbered sections take the next ordinal.
   /// [section] must implement [NodeSection].
+  @internal
   void assignNumeral(AbstractBlock section) {
     final target = (section as NodeSection)..index = _nextSectionIndex;
     _nextSectionIndex = target.index + 1;
@@ -567,6 +570,7 @@ abstract class AbstractBlock extends AbstractNode {
   ///
   /// Invoke this on a node after removing child sections, or the internal
   /// counters will be off.
+  @internal
   void reindexSections() {
     _nextSectionIndex = 0;
     _nextSectionOrdinal = 1;

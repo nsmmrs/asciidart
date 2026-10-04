@@ -72,7 +72,7 @@ void main() {
       expect(transforms, contains("registerFunction('paragraph'"));
 
       final main = File('${dir.path}/bin/main.dart').readAsStringSync();
-      expect(main, contains("import 'package:asciidoctor/asciidoctor.dart';"));
+      expect(main, contains("import 'package:asciidoctor/cli.dart';"));
       expect(main, contains("import 'package:$name/transforms.dart';"));
       expect(main, contains('registerTransforms();'));
       expect(main, contains('await runCli(args);'));

@@ -15,7 +15,7 @@
 /// fresh-counter path; see the class docs.
 library;
 
-import 'package:asciidoctor/asciidoctor.dart';
+import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Records conversions instead of performing them.

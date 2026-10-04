@@ -8,6 +8,7 @@ import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/block.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/substitutors.dart';
+import 'package:meta/meta.dart';
 
 /// Methods for managing AsciiDoc lists (ordered, unordered and description
 /// lists).
@@ -159,6 +160,7 @@ class ListItem extends AbstractBlock {
   /// Folds the adjacent paragraph block into the list item text.
   ///
   /// Port of `Asciidoctor::ListItem#fold_first`.
+  @internal
   void foldFirst() {
     if (_text == null || _text!.isEmpty) {
       _text = (blocks.removeAt(0) as Block).source();

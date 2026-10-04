@@ -58,6 +58,7 @@ import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;
 import 'package:asciidoctor/src/timings.dart';
 import 'package:asciidoctor/src/version.dart';
+import 'package:meta/meta.dart';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.
 ///
@@ -828,6 +829,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Readers (e.g. the first-line preprocessing of AsciiDoc table cells)
   /// need a [ReaderDocument]; a separate adapter is required for the same
   /// reason as [_ReaderDocumentAdapter] (see its docs).
+  @internal
   ReaderDocument asReaderDocument() => _ReaderDocumentAdapter(this);
 
   /// The path resolver used to resolve paths in this document.
@@ -1248,6 +1250,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Clearsplayback state from [unrootedAttributes], saves the header
   /// attributes, and — unless [headerValid] — flags an invalid header.
   /// Returns [unrootedAttributes].
+  @internal
   Map<Object, Object?> finalizeHeader(
     Map<Object, Object?> unrootedAttributes, {
     bool headerValid = true,
@@ -1596,6 +1599,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// defined in it (or is left unmodified when none are specified);
   /// otherwise header substitutions are applied. The result is truncated
   /// to [_maxAttributeValueSize] bytes when a limit is configured.
+  @internal
   String applyAttributeValueSubs(String value) {
     final match = attributeEntryPassMacroRx.firstMatch(value);
     final String result;

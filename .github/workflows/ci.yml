@@ -24,6 +24,8 @@ jobs:
       run: dart format --output=none --set-exit-if-changed .
     - name: Run Dart tests
       run: dart test
+    - name: Check that the public API is closed
+      run: dart run tool/api_check.dart
   e2e:
     runs-on: ubuntu-latest
     steps:

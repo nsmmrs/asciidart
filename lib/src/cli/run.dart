@@ -14,7 +14,7 @@ import 'package:asciidoctor/src/cli/invoker.dart';
 /// Runs the Asciidoctor CLI, reporting through [exitCode].
 ///
 /// Library entrypoint for custom binaries: register transforms on
-/// `TemplateRegistry.global` (from `package:asciidoctor/asciidoctor.dart`),
+/// `TemplateRegistry.global` (from `package:asciidoctor/converter.dart`),
 /// then `await runCli(args)`.
 ///
 /// A first argument of `init-config` runs the project scaffold instead

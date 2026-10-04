@@ -28,6 +28,7 @@ import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/rx.dart';
+import 'package:meta/meta.dart';
 
 /// A log message carrying source context.
 ///
@@ -601,6 +602,7 @@ class Reader {
   /// Internal: use directly only when [peekLine] already determined the line
   /// should be consumed; otherwise use [readLine]. The line number is
   /// incremented even when the stack is empty, exactly as in Ruby.
+  @internal
   String? shift() {
     _lineno += 1;
     if (_lookAhead != 0) _lookAhead -= 1;
@@ -610,6 +612,7 @@ class Reader {
   /// Restores [line] to the stack and decrements the line number.
   ///
   /// Internal: see [shift].
+  @internal
   void unshift(String line) {
     _lineno -= 1;
     _lookAhead += 1;
@@ -619,6 +622,7 @@ class Reader {
   /// Restores [linesToRestore] to the stack and decrements the line number.
   ///
   /// Internal: see [shift].
+  @internal
   void unshiftAll(List<String> linesToRestore) {
     _lineno -= linesToRestore.length;
     _lookAhead += linesToRestore.length;
@@ -676,12 +680,14 @@ class Reader {
   String get source => _sourceLines.map((line) => line ?? '').join(lf);
 
   /// Saves the state of the reader at the cursor.
+  @internal
   void save() {
     _savedState = _captureState();
   }
 
   /// Restores the state saved by [save], discarding the saved state.
   /// Does nothing when no state was saved.
+  @internal
   void restoreSave() {
     final saved = _savedState;
     if (saved == null) return;
@@ -690,6 +696,7 @@ class Reader {
   }
 
   /// Discards state saved by [save].
+  @internal
   void discardSave() {
     _savedState = null;
   }
@@ -704,6 +711,7 @@ class Reader {
   /// Internal (public for parity with Ruby's test seam): marks the line as
   /// processed and returns it unmodified. Returns `null` to drop the line
   /// and advance to the next one.
+  @internal
   String? processLine(String line) {
     if (processLines) _lookAhead += 1;
     return line;
@@ -1008,6 +1016,7 @@ class PreprocessorReader extends Reader {
 
   /// Shifts the line off the stack, unescaping it first when the previous
   /// peek marked it escaped. See [Reader.shift].
+  @internal
   @override
   String? shift() {
     if (_unescapeNextLine) {
@@ -1047,6 +1056,7 @@ class PreprocessorReader extends Reader {
         'include stack: [$includeStack]}>';
   }
 
+  @internal
   @override
   void save() {
     super.save();
@@ -1060,6 +1070,7 @@ class PreprocessorReader extends Reader {
     ];
   }
 
+  @internal
   @override
   void restoreSave() {
     final saved = _savedPreprocessorState;
@@ -1074,6 +1085,7 @@ class PreprocessorReader extends Reader {
     _savedPreprocessorState = null;
   }
 
+  @internal
   @override
   void discardSave() {
     super.discardSave();
@@ -1130,6 +1142,7 @@ class PreprocessorReader extends Reader {
 
   /// Processes a previously unvisited line, expanding preprocessor
   /// directives. See [Reader.processLine].
+  @internal
   @override
   String? processLine(String line) {
     if (!processLines) return line;

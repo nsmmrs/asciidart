@@ -121,6 +121,7 @@ Register one function per transform name; the handler receives the node
 
 ```dart
 import 'package:asciidoctor/asciidoctor.dart';
+import 'package:asciidoctor/converter.dart';
 
 final registry = TemplateRegistry();
 registry.registerFunction('paragraph', (node, [opts]) {

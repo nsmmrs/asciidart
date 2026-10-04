@@ -12,6 +12,7 @@ import 'package:asciidoctor/src/logging.dart' show ContextMessage;
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/reader.dart';
 import 'package:asciidoctor/src/substitutors.dart';
+import 'package:meta/meta.dart';
 
 /// Scans for a leading, non-escaped anchor (id + optional reference text).
 ///
@@ -157,6 +158,7 @@ class Table extends AbstractBlock {
   /// otherwise `false`.
   ///
   /// Port of `Asciidoctor::Table#header_row?`.
+  @internal
   Object get headerRow {
     final value = hasHeaderOption;
     return isTruthy(value) && rows.body.isEmpty ? value! : false;
@@ -165,6 +167,7 @@ class Table extends AbstractBlock {
   /// Creates the [Column] objects from the [colspecs] column specifications.
   ///
   /// Port of `Asciidoctor::Table#create_columns`.
+  @internal
   void createColumns(List<Map<String, Object?>> colspecs) {
     final cols = <Column>[];
     List<Column>? autowidthCols;
@@ -192,6 +195,7 @@ class Table extends AbstractBlock {
   /// any, is donated to the final column. Assumes at least one column.
   ///
   /// Port of `Asciidoctor::Table#assign_column_widths`.
+  @internal
   void assignColumnWidths([Object? widthBase, List<Column>? autowidthCols]) {
     var baseWidth = widthBase;
     const precision = defaultPrecision;
@@ -250,6 +254,7 @@ class Table extends AbstractBlock {
   /// the options on the table.
   ///
   /// Port of `Asciidoctor::Table#partition_header_footer`.
+  @internal
   void partitionHeaderFooter(Map<String, Object?> attrs) {
     final body = rows.body;
     // Set the row count before splitting up the body rows.
@@ -313,6 +318,7 @@ class Column extends AbstractNode {
   /// column, returning the resolved `colpcwidth` value.
   ///
   /// Port of `Asciidoctor::Table::Column#assign_width`.
+  @internal
   Object? assignWidth(Object? colPcwidth, Object? widthBase, int precision) {
     var pcwidth = colPcwidth as num?;
     if (isTruthy(widthBase)) {

@@ -153,6 +153,7 @@ String _transforms() => r'''
 library;
 
 import 'package:asciidoctor/asciidoctor.dart';
+import 'package:asciidoctor/converter.dart';
 
 /// Registers this project's custom transforms on [registry].
 ///
@@ -186,7 +187,7 @@ String _main(String name) =>
 /// ```sh
 /// dart compile exe bin/main.dart -o $name-local
 /// ```
-import 'package:asciidoctor/asciidoctor.dart';
+import 'package:asciidoctor/cli.dart';
 import 'package:$name/transforms.dart';
 
 Future<void> main(List<String> args) async {
