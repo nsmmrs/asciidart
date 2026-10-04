@@ -6,7 +6,6 @@
 /// convert flow. Mustache rendering itself is template wave A.
 library;
 
-import 'dart:async' show FutureOr;
 import 'dart:io';
 
 import 'package:asciidoctor/src/abstract_node.dart';
