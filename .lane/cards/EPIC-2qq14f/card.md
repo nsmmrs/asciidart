@@ -1,14 +1,15 @@
 ---
 id: EPIC-2qq14f
 title: "npm readiness: Asciidoctor.js-parity JS build for Node and browser (no publishing)"
-status: doing
+status: done
 type: epic
 priority: 2
 labels:
 - npm
 created: "2026-10-04T13:58:32.418908Z"
-updated: "2026-10-04T18:09:06.572793Z"
+updated: "2026-10-04T20:42:48.039737Z"
 ---
+
 
 
 Ship-ready (unpublished) npm package `asciidoctor-dart` (name per TASK-bpvxxh; free on npm 2026-10-04): one dart2js bundle serving Node + browser, Asciidoctor.js 4.1 (@asciidoctor/core, core 2.0.26) API parity, `asciidoctor-dart` CLI bin. Decided with user 2026-10-04: runtimes Node + browser; API = Asciidoctor.js parity; CLI = yes, bin `asciidoctor-dart`.

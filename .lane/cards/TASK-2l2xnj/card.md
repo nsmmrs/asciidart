@@ -1,7 +1,7 @@
 ---
 id: TASK-2l2xnj
 title: "npm release readiness: CI npm job, package lint, ADR, README, JS benchmark"
-status: backlog
+status: done
 type: task
 priority: 2
 labels:
@@ -16,8 +16,9 @@ deps:
 - TASK-p0qg86
 - TASK-9dh25p
 created: "2026-10-04T13:59:26.289769Z"
-updated: "2026-10-04T13:59:26.289769Z"
+updated: "2026-10-04T20:42:48.019207Z"
 ---
+
 
 CI (.github/workflows/ci.yml) `npm` job: setup-dart + setup-node (matrix: engines floor + current LTS); tool/build-npm.sh; facade node --test suite; ported Asciidoctor.js tests; bats e2e + differential on the Node CLI; Playwright browser smoke + esbuild check; dart test -p node; `npm pack --dry-run` with asserted file list; npx publint; npx @arethetypeswrong/cli --pack; `npm publish --dry-run`. No publish workflow (belongs to the publish card).
 
