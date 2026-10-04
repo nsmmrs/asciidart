@@ -1,7 +1,7 @@
 ---
 id: TASK-s39q3t
 title: "npm package build: single dart2js bundle, tool/build-npm.sh, Node/browser wrappers, asciidoctor-dart CLI bin"
-status: backlog
+status: doing
 type: task
 priority: 2
 labels:
@@ -11,8 +11,9 @@ parent: EPIC-2qq14f
 deps:
 - TASK-fppdyy
 created: "2026-10-04T13:58:55.217636Z"
-updated: "2026-10-04T13:58:55.217636Z"
+updated: "2026-10-04T18:20:46.029582Z"
 ---
+
 
 One `dart compile js -O2` bundle from `lib/src/js/entry.dart` registering the library bridge + runCli on the injected handle. Checked-in `npm/`: package.json template, npm README, wrappers node.cjs/node.mjs (inject Node built-ins) and browser.mjs (none), bin/asciidoctor-dart.js.
 
