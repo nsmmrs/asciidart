@@ -131,13 +131,13 @@ class Section extends AbstractBlock implements NodeSection {
   }
 
   /// Appends [block] to this section's children, assigning an index (and
-  /// numeral) first when the child is a section. Returns this section.
+  /// numeral) first when the child is a section.
   ///
   /// Port of `Asciidoctor::Section#<<`.
   @override
-  AbstractBlock operator <<(AbstractBlock block) {
+  void append(AbstractBlock block) {
     if (block.context == 'section') assignNumeral(block as Section);
-    return super << block;
+    super.append(block);
   }
 
   @override

@@ -169,19 +169,14 @@ abstract class AbstractBlock extends AbstractNode {
   /// Ruby's `alias content blocks` and `Table::Cell#content`.
   Object? content() => blocks.map((child) => child.convert() ?? '').join(lf);
 
-  /// Appends [child] to this block's list of blocks.
+  /// Appends [child] to this block's list of blocks, reparenting it.
   ///
-  /// Returns this (the parent) block, so appends chain.
-  AbstractBlock operator <<(AbstractBlock child) {
+  /// Port of `AbstractBlock#<<`; chain appends with cascades
+  /// (`block..append(a)..append(b)`).
+  void append(AbstractBlock child) {
     if (child.parent != this) child.parent = this;
     blocks.add(child);
-    return this;
   }
-
-  /// Appends [child] to this block's list of blocks.
-  ///
-  /// Alias of `<<` (required for adapting to a Java API).
-  AbstractBlock append(AbstractBlock child) => this << child;
 
   /// Whether this block has block content.
   bool get hasBlocks => blocks.isNotEmpty;

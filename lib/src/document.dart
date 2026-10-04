@@ -1257,11 +1257,11 @@ class Document extends AbstractBlock implements NodeDocument {
   bool get hasHeader => header != null;
 
   /// Appends [block] to this document, assigning an index first when the
-  /// child is a section. Returns this document.
+  /// child is a section.
   @override
-  AbstractBlock operator <<(AbstractBlock block) {
+  void append(AbstractBlock block) {
     if (block.context == 'section') assignNumeral(block);
-    return super << block;
+    super.append(block);
   }
 
   /// Called by the parser after parsing the header and before parsing the

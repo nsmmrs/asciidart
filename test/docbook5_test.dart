@@ -1,6 +1,3 @@
-// The `<<` append operator intentionally returns its receiver (Ruby
-// parity); statement uses discard it.
-// ignore_for_file: unnecessary_statements
 /// Tests for the DocBook 5 converter port (`docbook5.dart`).
 ///
 /// Port of the docbook-output assertions in the Ruby suite
@@ -476,7 +473,7 @@ void main() {
         'paragraph',
         contentFn: () => convOf(doc).convert(xref)! as String,
       );
-      doc << block;
+      doc.append(block);
       xref = Inline(block, 'anchor', type: 'xref');
       final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('xml:lang="en" xml:id="__article-root__">\n'));
@@ -784,8 +781,8 @@ void main() {
         contentModel: 'simple',
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
-      doc << abstract;
-      doc << para(doc, 'Body text');
+      doc.append(abstract);
+      doc.append(para(doc, 'Body text'));
       final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
@@ -814,9 +811,9 @@ void main() {
         contentModel: 'simple',
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
-      preamble << abstract;
-      doc << preamble;
-      doc << para(doc, 'Body text');
+      preamble.append(abstract);
+      doc.append(preamble);
+      doc.append(para(doc, 'Body text'));
       final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
@@ -830,8 +827,8 @@ void main() {
 
     test('body blocks are joined with line feeds', () {
       final doc = makeDoc(attributes: const {'noheader': ''});
-      doc << para(doc, 'one');
-      doc << para(doc, 'two');
+      doc.append(para(doc, 'one'));
+      doc.append(para(doc, 'two'));
       expect(
         convOf(doc).convert(doc),
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -896,8 +893,8 @@ void main() {
   group('convertEmbedded', () {
     test('body blocks without root element', () {
       final doc = makeDoc();
-      doc << para(doc, 'one');
-      doc << para(doc, 'two');
+      doc.append(para(doc, 'one'));
+      doc.append(para(doc, 'two'));
       expect(
         convOf(doc).convert(doc, 'embedded'),
         '<simpara>one</simpara>\n<simpara>two</simpara>',
@@ -912,8 +909,8 @@ void main() {
         contentModel: 'simple',
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
-      doc << abstract;
-      doc << para(doc, 'Body text');
+      doc.append(abstract);
+      doc.append(para(doc, 'Body text'));
       expect(
         convOf(doc).convert(doc, 'embedded'),
         '<simpara>Body text</simpara>',
@@ -929,7 +926,7 @@ void main() {
         contentModel: 'simple',
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
-      doc << abstract;
+      doc.append(abstract);
       expect(
         convOf(doc).convert(doc, 'embedded'),
         '<abstract>\n<simpara>Abstract text</simpara>\n</abstract>',
@@ -945,7 +942,7 @@ void main() {
         level: 1,
         stubTitle: 'Section Title',
       )..sectname = 'section';
-      section << para(section, 'content');
+      section.append(para(section, 'content'));
       expect(
         convOf(doc).convert(section),
         '<section>\n'
@@ -966,7 +963,7 @@ void main() {
             )
             ..sectname = 'section'
             ..id = 'section_title';
-      section << para(section, 'content');
+      section.append(para(section, 'content'));
       expect(
         convOf(doc).convert(section),
         '<section xml:id="section_title" role="lead">\n'
@@ -982,7 +979,7 @@ void main() {
         ..sectname = 'appendix'
         ..special = true
         ..setOption('notitle');
-      section << para(section, 'content');
+      section.append(para(section, 'content'));
       expect(
         convOf(doc).convert(section),
         '<appendix>\n<simpara>content</simpara>\n</appendix>',
@@ -993,7 +990,7 @@ void main() {
       final doc = makeDoc(options: const {'doctype': 'manpage'});
       final section = StubSection(parent: doc, level: 1, stubTitle: 'Name')
         ..sectname = 'section';
-      section << para(section, 'mycmd - do things');
+      section.append(para(section, 'mycmd - do things'));
       expect(
         convOf(doc).convert(section),
         '<refsection>\n'
@@ -1054,8 +1051,8 @@ void main() {
         attributes: const {'name': 'WARNING'},
         contentModel: 'compound',
       );
-      node << para(node, 'first');
-      node << para(node, 'second');
+      node.append(para(node, 'first'));
+      node.append(para(node, 'second'));
       expect(
         convOf(doc).convert(node),
         '<WARNING>\n'
@@ -1072,7 +1069,7 @@ void main() {
       final list = ListBlock(doc, 'colist');
       final item = StubListItem(list, 'About this line')
         ..attributes['coids'] = 'CO1-1';
-      list << item;
+      list.append(item);
       expect(
         convOf(doc).convert(list),
         '<calloutlist>\n'
@@ -1088,8 +1085,8 @@ void main() {
       final list = StubListBlock(doc, 'colist', stubTitle: 'Callouts');
       final item = StubListItem(list, 'About this line')
         ..attributes['coids'] = 'CO1-1 CO1-2';
-      item << para(item, 'Extra detail');
-      list << item;
+      item.append(para(item, 'Extra detail'));
+      list.append(item);
       expect(
         convOf(doc).convert(list),
         '<calloutlist>\n'
@@ -1198,7 +1195,7 @@ void main() {
       final doc = makeDoc();
       final list = ListBlock(doc, 'dlist');
       final dd = StubListItem(list)..text = null;
-      dd << para(dd, 'nested');
+      dd.append(para(dd, 'nested'));
       list.items.add([
         [StubListItem(list, 'term')],
         dd,
@@ -1270,7 +1267,7 @@ void main() {
         stubTitle: 'Example',
         childContent: true,
       );
-      node << para(node, 'content');
+      node.append(para(node, 'content'));
       expect(
         convOf(doc).convert(node),
         '<example>\n'
@@ -1601,8 +1598,8 @@ void main() {
     test('ordered list', () {
       final doc = makeDoc();
       final list = ListBlock(doc, 'olist');
-      list << StubListItem(list, 'first');
-      list << StubListItem(list, 'second');
+      list.append(StubListItem(list, 'first'));
+      list.append(StubListItem(list, 'second'));
       expect(
         convOf(doc).convert(list),
         '<orderedlist>\n'
@@ -1627,7 +1624,7 @@ void main() {
             )
             ..style = 'lowerroman'
             ..id = 'steps';
-      list << StubListItem(list, 'first');
+      list.append(StubListItem(list, 'first'));
       expect(
         convOf(doc).convert(list),
         '<orderedlist xml:id="steps" numeration="lowerroman" '
@@ -1646,8 +1643,8 @@ void main() {
       final item = StubListItem(list, 'first')
         ..attributes['role'] = 'lead'
         ..id = 'item1';
-      item << para(item, 'nested');
-      list << item;
+      item.append(para(item, 'nested'));
+      list.append(item);
       expect(
         convOf(doc).convert(list),
         '<orderedlist>\n'
@@ -1685,7 +1682,7 @@ void main() {
         contentModel: 'simple',
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
-      partintro << abstract;
+      partintro.append(abstract);
       expect(
         convOf(doc).convert(abstract),
         '<info>\n<abstract>\n<simpara>Abstract text</simpara>\n</abstract>\n</info>',
@@ -1701,7 +1698,7 @@ void main() {
           contentModel: 'simple',
           stubbedContent: 'Abstract text',
         )..style = 'abstract';
-        doc << node;
+        doc.append(node);
         expect(convOf(doc).convert(node), '');
         expect(
           logger.warns.single,
@@ -1717,7 +1714,7 @@ void main() {
       final node = Block(part, 'open', contentModel: 'compound')
         ..style = 'partintro'
         ..level = 0;
-      node << para(node, 'intro');
+      node.append(para(node, 'intro'));
       expect(
         convOf(doc).convert(node),
         '<partintro>\n<simpara>intro</simpara>\n</partintro>',
@@ -1760,7 +1757,7 @@ void main() {
     test('open block with id and compound content uses para', () {
       final doc = makeDoc();
       final node = Block(doc, 'open', contentModel: 'compound')..id = 'open1';
-      node << para(node, 'content');
+      node.append(para(node, 'content'));
       expect(
         convOf(doc).convert(node),
         '<para xml:id="open1">\n<simpara>content</simpara>\n</para>',
@@ -1874,14 +1871,14 @@ void main() {
     test('preamble passes content through', () {
       final doc = makeDoc();
       final node = Block(doc, 'preamble', contentModel: 'compound');
-      node << para(node, 'content');
+      node.append(para(node, 'content'));
       expect(convOf(doc).convert(node), '<simpara>content</simpara>');
     });
 
     test('preamble in book uses preface', () {
       final doc = makeDoc(options: const {'doctype': 'book'});
       final node = Block(doc, 'preamble', contentModel: 'compound');
-      node << para(node, 'content');
+      node.append(para(node, 'content'));
       expect(
         convOf(doc).convert(node),
         '<preface>\n<title></title>\n<simpara>content</simpara>\n</preface>',
@@ -1953,7 +1950,7 @@ void main() {
         stubTitle: 'Side',
         childContent: true,
       );
-      node << para(node, 'content');
+      node.append(para(node, 'content'));
       expect(
         convOf(doc).convert(node),
         '<sidebar>\n<title>Side</title>\n<simpara>content</simpara>\n</sidebar>',
@@ -2151,8 +2148,8 @@ void main() {
     test('unordered list', () {
       final doc = makeDoc();
       final list = ListBlock(doc, 'ulist');
-      list << StubListItem(list, 'first');
-      list << StubListItem(list, 'second');
+      list.append(StubListItem(list, 'first'));
+      list.append(StubListItem(list, 'second'));
       expect(
         convOf(doc).convert(list),
         '<itemizedlist>\n'
@@ -2170,7 +2167,7 @@ void main() {
       final doc = makeDoc();
       final list = StubListBlock(doc, 'ulist', stubTitle: 'Items')
         ..style = 'square';
-      list << StubListItem(list, 'first');
+      list.append(StubListItem(list, 'first'));
       expect(
         convOf(doc).convert(list),
         '<itemizedlist mark="square">\n'
@@ -2185,7 +2182,7 @@ void main() {
     test('bibliography list', () {
       final doc = makeDoc();
       final list = ListBlock(doc, 'ulist')..style = 'bibliography';
-      list << StubListItem(list, 'Doe. Work.');
+      list.append(StubListItem(list, 'Doe. Work.'));
       expect(
         convOf(doc).convert(list),
         '<bibliodiv>\n'

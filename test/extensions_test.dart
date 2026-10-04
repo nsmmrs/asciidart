@@ -1,9 +1,6 @@
 // Adjacent-string joins here are markup/paths, not prose; joined values
 // are asserted byte-identical by tests.
 // ignore_for_file: missing_whitespace_between_adjacent_strings
-// The `<<` append operator intentionally returns its receiver (Ruby
-// parity); statement uses discard it.
-// ignore_for_file: unnecessary_statements
 // Extension callbacks vary per processor kind, so the untyped Function
 // field cannot provide context; parameter annotations are required.
 // ignore_for_file: avoid_types_on_closure_parameters
@@ -904,12 +901,13 @@ class SelfSigningTreeProcessor extends TreeProcessor {
 
   @override
   Object? process(Document document) {
-    document <<
-        createParagraph(
-          document,
-          'SelfSigningTreeProcessor',
-          <String, Object?>{},
-        );
+    document.append(
+      createParagraph(
+        document,
+        'SelfSigningTreeProcessor',
+        <String, Object?>{},
+      ),
+    );
     return null;
   }
 }
@@ -1133,21 +1131,21 @@ Registry createSantaListBlockMacro() {
                 final guillaume = (processor.createListItem(list, 'Guillaume'))
                   ..addRole('friendly')
                   ..id = 'santa-list-guillaume';
-                list << guillaume;
+                list.append(guillaume);
                 final robert = (processor.createListItem(list, 'Robert'))
                   ..addRole('kind')
                   ..addRole('contributor')
                   ..addRole('java');
-                list << robert;
+                list.append(robert);
                 final pepijn = (processor.createListItem(list, 'Pepijn'))
                   ..id = 'santa-list-pepijn';
-                list << pepijn;
+                list.append(pepijn);
                 final dan = (processor.createListItem(list, 'Dan'))
                   ..addRole('naughty')
                   ..id = 'santa-list-dan';
-                list << dan;
+                list.append(dan);
                 final sarah = processor.createListItem(list, 'Sarah');
-                list << sarah;
+                list.append(sarah);
                 return list;
               };
         },
@@ -1828,7 +1826,7 @@ void main() {
                     'file: ${doc.file}, lineno: ${doc.lineno}',
                     <String, Object?>{},
                   );
-                  doc << para;
+                  doc.append(para);
                   return null;
                 };
               },
@@ -1901,8 +1899,9 @@ void main() {
             ..treeProcessor(
               build: (processor) {
                 processor.onProcess = (Document doc) {
-                  doc <<
-                      processor.createParagraph(doc, 'd', <String, Object?>{});
+                  doc.append(
+                    processor.createParagraph(doc, 'd', <String, Object?>{}),
+                  );
                   return null;
                 };
               },
@@ -1911,8 +1910,9 @@ void main() {
               build: (processor) {
                 processor.prefer();
                 processor.onProcess = (Document doc) {
-                  doc <<
-                      processor.createParagraph(doc, 'c', <String, Object?>{});
+                  doc.append(
+                    processor.createParagraph(doc, 'c', <String, Object?>{}),
+                  );
                   return null;
                 };
               },
@@ -1921,8 +1921,9 @@ void main() {
               'tree_processor',
               build: (TreeProcessor processor) {
                 processor.onProcess = (Document doc) {
-                  doc <<
-                      processor.createParagraph(doc, 'b', <String, Object?>{});
+                  doc.append(
+                    processor.createParagraph(doc, 'b', <String, Object?>{}),
+                  );
                   return null;
                 };
               },
@@ -1931,12 +1932,9 @@ void main() {
               registry.treeProcessor(
                 build: (processor) {
                   processor.onProcess = (Document doc) {
-                    doc <<
-                        processor.createParagraph(
-                          doc,
-                          'a',
-                          <String, Object?>{},
-                        );
+                    doc.append(
+                      processor.createParagraph(doc, 'a', <String, Object?>{}),
+                    );
                     return null;
                   };
                 },
@@ -1981,12 +1979,9 @@ void main() {
             registry.treeProcessor(
               build: (processor) {
                 processor.onProcess = (Document doc) {
-                  doc <<
-                      processor.createParagraph(
-                        doc,
-                        'bye!',
-                        <String, Object?>{},
-                      );
+                  doc.append(
+                    processor.createParagraph(doc, 'bye!', <String, Object?>{}),
+                  );
                   return null;
                 };
               },
@@ -3220,7 +3215,7 @@ void main() {
                   ) {
                     final list = processor.createList(parent, 'ulist');
                     for (final line in reader.readLines()) {
-                      list << processor.createListItem(list, line);
+                      list.append(processor.createListItem(list, line));
                     }
                     return list;
                   };
@@ -4111,7 +4106,7 @@ void main() {
       final item = (processor.createListItem(list, 'Guillaume'))
         ..addRole('friendly')
         ..id = 'item-1';
-      list << item;
+      list.append(item);
       expect(list.items.length, equals(1));
       expect(list.hasItems, isTrue);
       expect(item.hasText, isTrue);
@@ -4565,8 +4560,9 @@ void main() {
       final tree = registry.treeProcessor(
         build: (processor) {
           processor.onProcess = (Document document) {
-            document <<
-                processor.createParagraph(document, 'hi', <String, Object?>{});
+            document.append(
+              processor.createParagraph(document, 'hi', <String, Object?>{}),
+            );
             return null;
           };
         },

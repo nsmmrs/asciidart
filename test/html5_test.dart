@@ -1,9 +1,6 @@
 // Adjacent-string joins here are markup/paths, not prose; joined values
 // are asserted byte-identical by tests.
 // ignore_for_file: missing_whitespace_between_adjacent_strings
-// The `<<` append operator intentionally returns its receiver (Ruby
-// parity); statement uses discard it.
-// ignore_for_file: unnecessary_statements
 /// Tests for the HTML5 converter port (`html5.dart`).
 ///
 /// Port of the html5-output assertions in the Ruby suite (`test/blocks_test.rb`,
@@ -569,7 +566,7 @@ void main() {
         numbered: true,
         stubTitle: 'Numbered',
       )..id = 'n1';
-      doc << section;
+      doc.append(section);
       expect(
         convOf(doc).convert(section),
         '<div class="sect1">\n'
@@ -664,7 +661,7 @@ void main() {
           StubSection(parent: doc, level: 1, numbered: true, stubTitle: 'Intro')
             ..sectname = 'chapter'
             ..id = 'intro';
-      doc << section;
+      doc.append(section);
       expect(
         convOf(doc).convert(section),
         contains('<h2 id="intro">Chapter 1. Intro</h2>'),
@@ -680,9 +677,13 @@ void main() {
 
     test('flat sections', () {
       final doc = makeDoc();
-      doc <<
-          (StubSection(parent: doc, level: 1, stubTitle: 'One')..id = 'one') <<
-          (StubSection(parent: doc, level: 1, stubTitle: 'Two')..id = 'two');
+      doc
+        ..append(
+          StubSection(parent: doc, level: 1, stubTitle: 'One')..id = 'one',
+        )
+        ..append(
+          StubSection(parent: doc, level: 1, stubTitle: 'Two')..id = 'two',
+        );
       expect(
         convOf(doc).convert(doc, 'outline'),
         '<ul class="sectlevel1">\n'
@@ -696,9 +697,10 @@ void main() {
       final doc = makeDoc();
       final parent = StubSection(parent: doc, level: 1, stubTitle: 'P')
         ..id = 'p';
-      parent <<
-          (StubSection(parent: parent, level: 2, stubTitle: 'C')..id = 'c');
-      doc << parent;
+      parent.append(
+        StubSection(parent: parent, level: 2, stubTitle: 'C')..id = 'c',
+      );
+      doc.append(parent);
       expect(
         convOf(doc).convert(doc, 'outline'),
         '<ul class="sectlevel1">\n'
@@ -715,9 +717,10 @@ void main() {
       final doc = makeDoc(attributes: const {'toclevels': '1'});
       final parent = StubSection(parent: doc, level: 1, stubTitle: 'P')
         ..id = 'p';
-      parent <<
-          (StubSection(parent: parent, level: 2, stubTitle: 'C')..id = 'c');
-      doc << parent;
+      parent.append(
+        StubSection(parent: parent, level: 2, stubTitle: 'C')..id = 'c',
+      );
+      doc.append(parent);
       expect(
         convOf(doc).convert(doc, 'outline'),
         '<ul class="sectlevel1">\n<li><a href="#p">P</a></li>\n</ul>',
@@ -728,9 +731,10 @@ void main() {
       final doc = makeDoc();
       final parent = StubSection(parent: doc, level: 1, stubTitle: 'P')
         ..id = 'p';
-      parent <<
-          (StubSection(parent: parent, level: 2, stubTitle: 'C')..id = 'c');
-      doc << parent;
+      parent.append(
+        StubSection(parent: parent, level: 2, stubTitle: 'C')..id = 'c',
+      );
+      doc.append(parent);
       expect(
         convOf(doc).convert(doc, 'outline', const {'toclevels': 1}),
         '<ul class="sectlevel1">\n<li><a href="#p">P</a></li>\n</ul>',
@@ -745,7 +749,7 @@ void main() {
         numbered: true,
         stubTitle: 'Numbered',
       )..id = 'n';
-      doc << section;
+      doc.append(section);
       expect(
         convOf(doc).convert(doc, 'outline'),
         '<ul class="sectlevel1">\n'
@@ -756,9 +760,10 @@ void main() {
 
     test('anchor tags are stripped from titles', () {
       final doc = makeDoc();
-      doc <<
-          (StubSection(parent: doc, level: 1, stubTitle: 'A<a href="#x">b</a>C')
-            ..id = 's');
+      doc.append(
+        StubSection(parent: doc, level: 1, stubTitle: 'A<a href="#x">b</a>C')
+          ..id = 's',
+      );
       expect(
         convOf(doc).convert(doc, 'outline'),
         '<ul class="sectlevel1">\n<li><a href="#s">AbC</a></li>\n</ul>',
@@ -1434,7 +1439,7 @@ void main() {
       final doc = makeDoc(
         attributes: const {'toc-placement': 'preamble', 'toc': ''},
       );
-      doc << (StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
+      doc.append(StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
       final node = StubBlock(doc, 'preamble', stubbedContent: 'Intro');
       final output = convOf(doc).convert(node)! as String;
       expect(output, contains('<div id="toc" class="toc">'));
@@ -2163,7 +2168,7 @@ void main() {
   group('convertToc', () {
     test('toc without macro placement is disabled', () {
       final doc = makeDoc(attributes: const {'toc': ''});
-      doc << (StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
+      doc.append(StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
       expect(
         convOf(doc).convert(StubBlock(doc, 'toc')),
         '<!-- toc disabled -->',
@@ -2174,7 +2179,7 @@ void main() {
       final doc = makeDoc(
         attributes: const {'toc-placement': 'macro', 'toc': ''},
       );
-      doc << (StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
+      doc.append(StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
       expect(
         convOf(doc).convert(StubBlock(doc, 'toc')),
         '<div id="toc" class="toc">\n'
@@ -2190,9 +2195,10 @@ void main() {
       );
       final parent = StubSection(parent: doc, level: 1, stubTitle: 'P')
         ..id = 'p';
-      parent <<
-          (StubSection(parent: parent, level: 2, stubTitle: 'C')..id = 'c');
-      doc << parent;
+      parent.append(
+        StubSection(parent: parent, level: 2, stubTitle: 'C')..id = 'c',
+      );
+      doc.append(parent);
       final node = StubBlock(
         doc,
         'toc',
@@ -3010,7 +3016,7 @@ void main() {
       final doc = makeDoc(
         attributes: const {'toc': '', 'toc-class': 'toc', 'toc-title': 'TOC'},
       );
-      doc << (StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
+      doc.append(StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
       final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<body class="article toc toc-header">'));
       expect(
@@ -3138,9 +3144,10 @@ void main() {
       );
       doc.attributes['title'] = 'mycmd(1)';
       doc.attributes.remove('notitle'); // standalone default
-      doc <<
-          (StubSection(parent: doc, level: 1, stubTitle: 'SYNOPSIS')
-            ..id = 'synopsis');
+      doc.append(
+        StubSection(parent: doc, level: 1, stubTitle: 'SYNOPSIS')
+          ..id = 'synopsis',
+      );
       final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<h1>mycmd(1) Manual Page</h1>'));
       expect(
@@ -3216,7 +3223,7 @@ void main() {
 
     test('embedded document with toc', () {
       final doc = makeDoc(attributes: const {'toc': ''});
-      doc << (StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
+      doc.append(StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
       final output = convOf(doc).convert(doc, 'embedded')! as String;
       expect(
         output,

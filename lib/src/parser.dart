@@ -1,6 +1,3 @@
-// The `<<` append operator intentionally returns its receiver (Ruby
-// parity); statement uses discard it.
-// ignore_for_file: unnecessary_statements
 // Positional params mirror Ruby signatures for port fidelity.
 // ignore_for_file: avoid_positional_boolean_parameters
 /// Methods to parse lines of AsciiDoc into an object hierarchy.
@@ -1411,7 +1408,7 @@ abstract final class Parser {
                 ))..defaultSubs = List<String>.of(newBlock.subs);
                 paragraph.attributes.remove('subs');
                 paragraph.subs = List<String>.of(newBlock.subs);
-                newBlock << paragraph;
+                newBlock.append(paragraph);
                 partBlock.lines.clear();
                 newBlock.subs.clear();
               }
@@ -1440,7 +1437,7 @@ abstract final class Parser {
                     ..style = null;
                 }
                 section.blocks.removeAt(0);
-                newIntro << firstBlock;
+                newIntro.append(firstBlock);
                 section.blocks.add(newIntro);
                 intro = newIntro;
               }
@@ -1480,7 +1477,7 @@ abstract final class Parser {
           // except for books, if permissible.
           document.blocks.removeAt(0);
           while (preamble.blocks.isNotEmpty) {
-            document << preamble.blocks.removeAt(0);
+            document.append(preamble.blocks.removeAt(0));
           }
         }
       } else {

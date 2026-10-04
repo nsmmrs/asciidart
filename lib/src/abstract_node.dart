@@ -205,8 +205,8 @@ abstract class AbstractNode {
   /// stays `null`, as in Ruby, where a document never assigns `@parent`);
   /// otherwise the document is taken from [parent] (which may be `null`,
   /// leaving [document] unset until the node is attached with [parent] or
-  /// `<<`). [attributes] is copied; [nodeName] overrides the default node
-  /// name, which is [context].
+  /// `AbstractBlock.append`). [attributes] is copied; [nodeName] overrides
+  /// the default node name, which is [context].
   new(
     AbstractBlock? parent,
     String context, {

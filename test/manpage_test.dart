@@ -1,6 +1,3 @@
-// The `<<` append operator intentionally returns its receiver (Ruby
-// parity); statement uses discard it.
-// ignore_for_file: unnecessary_statements
 /// Tests for the manpage converter port (`manpage.dart`).
 ///
 /// Port of the manpage-output assertions in the Ruby suite
@@ -513,7 +510,7 @@ void main() {
 
     test('converts child blocks into the body', () {
       final doc = manDoc();
-      doc << para(doc, 'hello');
+      doc.append(para(doc, 'hello'));
       final output = convOf(doc).convertDocument(doc);
       expect(output, contains('command \\- does stuff\n.sp\nhello\n'));
     });
@@ -540,7 +537,7 @@ void main() {
   group('embedded', () {
     test('converts content and footnotes without header or authors', () {
       final doc = manDoc();
-      doc << para(doc, 'hello');
+      doc.append(para(doc, 'hello'));
       addFootnote(doc, 1, 'first footnote');
       expect(
         convOf(doc).convertEmbedded(doc),
@@ -558,8 +555,8 @@ void main() {
     test('uppercases level-1 titles', () {
       final doc = manDoc();
       final node = StubSection(parent: doc, level: 1, stubTitle: 'Options')
-        ..sectname = 'section';
-      node << para(doc, 'body');
+        ..sectname = 'section'
+        ..append(para(doc, 'body'));
       expect(convOf(doc).convertSection(node), '.SH "OPTIONS"\n.sp\nbody');
     });
 
@@ -601,8 +598,8 @@ void main() {
       final doc = manDoc();
       final node = StubSection(parent: doc, level: 2, stubTitle: 'Options')
         ..sectname = 'section'
-        ..caption = 'Section 1. ';
-      node << para(doc, 'body');
+        ..caption = 'Section 1. '
+        ..append(para(doc, 'body'));
       expect(
         convOf(doc).convertSection(node),
         '.SS "Section 1. Options"\n.sp\nbody',
@@ -658,7 +655,7 @@ void main() {
     test('generates a callout list with formatting commands', () {
       final doc = manDoc();
       final node = ListBlock(doc, 'colist');
-      node << StubListItem(node, 'Installs the asciidoctor gem');
+      node.append(StubListItem(node, 'Installs the asciidoctor gem'));
       expect(
         convOf(doc).convertColist(node),
         '.TS\n'
@@ -732,8 +729,7 @@ void main() {
     test('drops the space before block content without dd text', () {
       final doc = manDoc();
       final node = ListBlock(doc, 'dlist');
-      final dd = StubListItem(node, '');
-      dd << para(doc, 'description');
+      final dd = StubListItem(node, '')..append(para(doc, 'description'));
       addDlistPair(node, [StubListItem(node, 'term')], dd);
       expect(
         convOf(doc).convertDlist(node),
@@ -913,7 +909,7 @@ void main() {
     test('converts ordered items', () {
       final doc = manDoc();
       final node = ListBlock(doc, 'olist');
-      node << StubListItem(node, 'five');
+      node.append(StubListItem(node, 'five'));
       expect(
         convOf(doc).convertOlist(node),
         '.sp\n'
@@ -944,9 +940,8 @@ void main() {
     test('drops principal text of an empty item', () {
       final doc = manDoc();
       final node = ListBlock(doc, 'olist');
-      final item = StubListItem(node, '');
-      item << para(doc, 'the main text');
-      node << item;
+      final item = StubListItem(node, '')..append(para(doc, 'the main text'));
+      node.append(item);
       expect(
         convOf(doc).convertOlist(node),
         endsWith('.\\}\nthe main text\n.RE'),
@@ -964,7 +959,7 @@ void main() {
     test('converts unordered items', () {
       final doc = manDoc();
       final node = ListBlock(doc, 'ulist');
-      node << StubListItem(node, 'one');
+      node.append(StubListItem(node, 'one'));
       expect(
         convOf(doc).convertUlist(node),
         '.sp\n'
@@ -984,9 +979,8 @@ void main() {
     test('drops principal text of an empty item', () {
       final doc = manDoc();
       final node = ListBlock(doc, 'ulist');
-      final item = StubListItem(node, '');
-      item << para(doc, 'the main text');
-      node << item;
+      final item = StubListItem(node, '')..append(para(doc, 'the main text'));
+      node.append(item);
       expect(
         convOf(doc).convertUlist(node),
         endsWith('.\\}\nthe main text\n.RE'),

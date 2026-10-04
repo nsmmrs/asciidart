@@ -1,6 +1,3 @@
-// The `<<` append operator intentionally returns its receiver (Ruby
-// parity); statement uses discard it.
-// ignore_for_file: unnecessary_statements
 /// Behavioral tests for the structural document model port.
 ///
 /// Covers `section.dart`, `list.dart`, `table.dart` against the merged
@@ -176,9 +173,9 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
   ///
   /// Mirrors `Document#<<`.
   @override
-  AbstractBlock operator <<(AbstractBlock block) {
+  void append(AbstractBlock block) {
     if (block.context == 'section') assignNumeral(block as Section);
-    return super << block;
+    super.append(block);
   }
 }
 
@@ -499,14 +496,13 @@ void main() {
       final section = Section(doc, 1);
       final other = Section(doc, 1);
       final para = Block(other, 'paragraph');
-      final result = section << para;
-      expect(result, same(section));
+      section.append(para);
       expect(para.parent, same(section));
       expect(para.document, same(doc));
       expect(section.blocks, equals([para]));
       expect(section.hasBlocks, isTrue);
       // Appending again keeps the same parent without churn.
-      expect(section.append(para), same(section));
+      section.append(para);
       expect(para.parent, same(section));
       expect(Block(doc, 'paragraph').hasBlocks, isFalse);
     });
@@ -516,7 +512,9 @@ void main() {
       final section = Section(doc, 1);
       final child = Section(section, 2);
       final para = Block(section, 'paragraph');
-      section << child << para;
+      section
+        ..append(child)
+        ..append(para);
       expect(section.sections, equals([child]));
       expect(section.hasSections, isTrue);
       expect(para.hasSections, isFalse);
@@ -577,7 +575,9 @@ void main() {
     test('compound content joins converted children', () {
       final doc = FakeDocument();
       final section = Section(doc, 1);
-      section << Block(section, 'paragraph') << Block(section, 'paragraph');
+      section
+        ..append(Block(section, 'paragraph'))
+        ..append(Block(section, 'paragraph'));
       expect(section.content(), equals('<paragraph>\n<paragraph>'));
     });
 
@@ -623,10 +623,12 @@ void main() {
     test('nextAdjacentBlock walks siblings and lists', () {
       final doc = FakeDocument();
       final section = Section(doc, 1);
-      doc << section;
+      doc.append(section);
       final list = ListBlock(section, 'dlist');
       final para = Block(section, 'paragraph');
-      section << list << para;
+      section
+        ..append(list)
+        ..append(para);
       final terms = ListItem(list, 'term');
       final desc = ListItem(list, 'def');
       final terms2 = ListItem(list, 'term2');
@@ -697,11 +699,10 @@ void main() {
       final a = Section(doc, 1, true)..title = 'A';
       final b = Section(doc, 1, true)..title = 'B';
       final c = Section(doc, 1, true)..title = 'C';
-      // Separate statements: `<<` returns the static AbstractBlock type,
-      // so chaining would bypass the FakeDocument override.
-      doc << a;
-      doc << b;
-      doc << c;
+      doc
+        ..append(a)
+        ..append(b)
+        ..append(c);
       doc.blocks.removeAt(0);
       doc.reindexSections();
       expect(
@@ -795,7 +796,7 @@ void main() {
     test('compound content joins children; empty and unknown models', () {
       final doc = FakeDocument();
       final open = Block(doc, 'open')..contentModel = 'compound';
-      open << Block(open, 'paragraph', source: 'a');
+      open.append(Block(open, 'paragraph', source: 'a'));
       expect(open.content(), equals('<paragraph>'));
       expect(Block(doc, 'image').content(), isNull);
       expect(testLogger.warns, isEmpty);
@@ -854,7 +855,7 @@ void main() {
         ),
       );
       final compound = Block(doc, 'open')..contentModel = 'compound';
-      compound << Block(compound, 'paragraph');
+      compound.append(Block(compound, 'paragraph'));
       expect(compound.toString(), contains('blocks: 1'));
       expect(compound.toString(), contains('content_model: :compound'));
     });
@@ -956,10 +957,10 @@ void main() {
       final section = Section(doc, 1);
       expect(section.name, isNull);
       expect(section.hasSections, isFalse);
-      section << Section(section, 2);
+      section.append(Section(section, 2));
       expect(section.hasSections, isTrue);
       // Non-section children do not count.
-      section << Block(section, 'paragraph');
+      section.append(Block(section, 'paragraph'));
       expect(section.sections, hasLength(1));
     });
 
@@ -968,8 +969,9 @@ void main() {
       final section = Section(doc, 1);
       final a = Section(section, 2);
       final b = Section(section, 2);
-      section << a;
-      section << b;
+      section
+        ..append(a)
+        ..append(b);
       expect([a.index, b.index], equals([0, 1]));
       expect(section.nextSectionIndex, equals(2));
     });
@@ -979,9 +981,9 @@ void main() {
       final a = Section(doc, 1, true)..sectname = 'section';
       final b = Section(a, 2, true)..sectname = 'section';
       final c = Section(doc, 1, true)..sectname = 'section';
-      doc << a;
-      a << b;
-      doc << c;
+      doc.append(a);
+      a.append(b);
+      doc.append(c);
       expect([a.numeral, a.sectnum()], equals(['1', '1.']));
       expect([b.numeral, b.sectnum()], equals(['1', '1.1.']));
       expect([c.numeral, c.sectnum()], equals(['2', '2.']));
@@ -1002,8 +1004,8 @@ void main() {
       final section = Section(doc, 1, true)
         ..title = 'A'
         ..numeral = '1';
-      section << Block(section, 'paragraph');
-      section << Block(section, 'paragraph');
+      section.append(Block(section, 'paragraph'));
+      section.append(Block(section, 'paragraph'));
       expect(
         section.toString(),
         matches(
@@ -1093,7 +1095,7 @@ void main() {
       expect(ListBlock(doc, 'dlist').isOutline, isFalse);
       expect(ListBlock(doc, 'colist').isOutline, isFalse);
       final item = ListItem(ulist, 'x');
-      ulist << item;
+      ulist.append(item);
       expect(ulist.items, same(ulist.blocks));
       expect(ulist.content(), same(ulist.blocks));
       expect(ulist.hasItems, isTrue);
@@ -1118,7 +1120,7 @@ void main() {
     test('toString shape', () {
       final doc = FakeDocument();
       final list = ListBlock(doc, 'ulist');
-      list << ListItem(list, 'x');
+      list.append(ListItem(list, 'x'));
       expect(
         list.toString(),
         matches(
@@ -1167,10 +1169,10 @@ void main() {
       expect(bare.isSimple, isTrue);
       expect(bare.isCompound, isFalse);
       final nested = ListItem(list, 'x');
-      nested << ListBlock(nested, 'olist');
+      nested.append(ListBlock(nested, 'olist'));
       expect(nested.isSimple, isTrue);
       final complex = ListItem(list, 'x');
-      complex << Block(complex, 'paragraph');
+      complex.append(Block(complex, 'paragraph'));
       expect(complex.isSimple, isFalse);
       expect(complex.isCompound, isTrue);
     });
@@ -1179,12 +1181,12 @@ void main() {
       final doc = FakeDocument();
       final list = ListBlock(doc, 'ulist');
       final folded = (ListItem(list))..subs = [];
-      folded << Block(folded, 'paragraph', source: 'cont');
+      folded.append(Block(folded, 'paragraph', source: 'cont'));
       folded.foldFirst();
       expect(folded.text, equals('cont'));
       expect(folded.blocks, isEmpty);
       final prefixed = (ListItem(list, 'item'))..subs = [];
-      prefixed << Block(prefixed, 'paragraph', source: 'cont');
+      prefixed.append(Block(prefixed, 'paragraph', source: 'cont'));
       prefixed.foldFirst();
       expect(prefixed.text, equals('item\ncont'));
     });

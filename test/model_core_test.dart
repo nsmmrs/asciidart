@@ -1,6 +1,3 @@
-// The `<<` append operator intentionally returns its receiver (Ruby
-// parity); statement uses discard it.
-// ignore_for_file: unnecessary_statements
 /// Direct behavioral tests for the document-model core port.
 ///
 /// Covers `abstract_node.dart`, `abstract_block.dart`, `block.dart` and
@@ -510,7 +507,7 @@ void main() {
     test('compound content joins converted children', () {
       final doc = makeDoc();
       final open = Block(doc, 'open');
-      open << Block(open, 'paragraph', source: 'a *b*');
+      open.append(Block(open, 'paragraph', source: 'a *b*'));
       doc.converter.handler = (node) => '[${node.nodeName}]';
       expect(open.content(), equals('[paragraph]'));
     });
@@ -537,23 +534,25 @@ void main() {
   });
 
   group('tree', () {
-    test('append operators parent and return self', () {
+    test('append reparents children in order', () {
       final doc = makeDoc();
       final open = Block(doc, 'open');
       final first = Block(doc, 'paragraph', source: 'x');
-      expect(open << first, same(open));
+      open.append(first);
       expect(first.parent, same(open));
       expect(first.document, same(doc));
       expect(open.blocks, equals([first]));
       final second = Block(doc, 'paragraph', source: 'y');
-      expect(open.append(second), same(open));
+      open.append(second);
       expect(open.blocks, equals([first, second]));
     });
 
     test('re-appending appends again', () {
       final open = Block(makeDoc(), 'open');
       final child = Block(open, 'paragraph');
-      open << child << child;
+      open
+        ..append(child)
+        ..append(child);
       expect(open.blocks, equals([child, child]));
       expect(child.parent, same(open));
     });
@@ -565,7 +564,9 @@ void main() {
       expect(open.hasSections, isFalse);
       expect(open.sections, isEmpty);
       final section = FakeSection(open);
-      open << Block(open, 'paragraph') << section;
+      open
+        ..append(Block(open, 'paragraph'))
+        ..append(section);
       expect(open.hasBlocks, isTrue);
       expect(open.hasSections, isFalse);
       expect(open.sections, equals([section]));
@@ -668,16 +669,18 @@ void main() {
     setUp(() {
       doc = makeDoc();
       section = FakeSection(doc);
-      doc << section;
+      doc.append(section);
       first = Block(section, 'paragraph', source: 'one');
       second = Block(section, 'paragraph', source: 'two');
-      section << first << second;
+      section
+        ..append(first)
+        ..append(second);
       image = Block(
         section,
         'image',
         attributes: {'target': 'a.png', 'role': 'thumb'},
       )..id = 'fig1';
-      section << image;
+      section.append(image);
     });
 
     test('matches everything, contexts, roles, and ids', () {
@@ -740,9 +743,9 @@ void main() {
 
     test('section search skips non-section subtrees', () {
       final open = Block(doc, 'open');
-      doc << open;
+      doc.append(open);
       final nested = FakeSection(open);
-      open << nested;
+      open.append(nested);
       var visits = 0;
       final found = doc.findBy(
         context: 'section',
@@ -762,11 +765,14 @@ void main() {
     test('walks siblings then past the parent', () {
       final doc = makeDoc();
       final section = FakeSection(doc);
-      doc << section;
+      doc.append(section);
       final first = Block(section, 'paragraph', source: 'one');
       final second = Block(section, 'paragraph', source: 'two');
       final image = Block(section, 'image');
-      section << first << second << image;
+      section
+        ..append(first)
+        ..append(second)
+        ..append(image);
       expect(first.nextAdjacentBlock(), same(second));
       expect(second.nextAdjacentBlock(), same(image));
       expect(image.nextAdjacentBlock(), isNull);
@@ -926,8 +932,9 @@ void main() {
       final second = FakeSection(doc, numbered: true, sectname: 'section');
       doc
         ..assignNumeral(first)
-        ..assignNumeral(second);
-      doc << first << second;
+        ..assignNumeral(second)
+        ..append(first)
+        ..append(second);
       doc.blocks.removeAt(0);
       doc.reindexSections();
       expect(second.index, equals(0));
@@ -999,7 +1006,7 @@ void main() {
         ),
       );
       final compound = Block(makeDoc(), 'open')..style = 's';
-      compound << Block(compound, 'paragraph');
+      compound.append(Block(compound, 'paragraph'));
       expect(compound.toString(), contains('blocks: 1'));
       expect(compound.toString(), contains('style: "s"'));
     });
