@@ -659,7 +659,6 @@ void main() {
 
   group('convert', () {
     test('render is aliased to convert', () {
-      // ignore: deprecated_member_use
       final viaRender = render('text', {'to_file': '/dev/null'});
       final viaConvert = convert('text', {'to_file': '/dev/null'});
       expect(viaRender, isA<Document>());
@@ -674,7 +673,6 @@ void main() {
       withTempDir((dir) {
         final inputPath = '${dir.path}/sample.adoc';
         File(inputPath).writeAsStringSync('text\n');
-        // ignore: deprecated_member_use
         final viaRender = renderFile(inputPath, {'to_file': '/dev/null'});
         final viaConvert = convertFile(inputPath, {'to_file': '/dev/null'});
         expect(viaRender, isA<Document>());

@@ -781,7 +781,6 @@ class SampleDocinfoProcessor extends DocinfoProcessor {
 }
 
 // NOTE intentionally using the deprecated name.
-// ignore: deprecated_member_use
 /// Sample tree processor (port of `SampleTreeprocessor`).
 class SampleTreeprocessor extends Treeprocessor {
   /// Creates a sample tree processor with [config].
@@ -1435,12 +1434,9 @@ void main() {
     test('should instantiate tree processors', () {
       // NOTE intentionally using the legacy names.
       final registry = Registry();
-      // ignore: deprecated_member_use
       registry.treeprocessor(processor: SampleTreeprocessor.new);
       registry.activate(emptyDocument());
-      // ignore: deprecated_member_use
       expect(registry.hasTreeprocessors, isTrue);
-      // ignore: deprecated_member_use
       final extensions = registry.treeprocessors;
       expect(extensions.length, equals(1));
       expect(extensions.first, isA<ProcessorExtension>());
@@ -4244,16 +4240,12 @@ void main() {
 
     test('deprecated aliases delegate', () {
       final processor = SampleInlineMacro();
-      // ignore: deprecated_member_use
       processor.positionalAttrs(['a']);
       expect(processor.config['positional_attrs'], equals(['a']));
-      // ignore: deprecated_member_use
       processor.defaultAttrs({'foo': 'bar'});
       expect(processor.config['default_attrs'], equals({'foo': 'bar'}));
-      // ignore: deprecated_member_use
       processor.resolvesAttributes(['1:name']);
       expect(processor.config['positional_attrs'], equals(['name']));
-      // ignore: deprecated_member_use
       processor.usingFormat('short');
       expect(processor.config['format'], equals('short'));
     });

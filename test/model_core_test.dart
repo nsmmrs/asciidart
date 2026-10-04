@@ -510,7 +510,6 @@ void main() {
     test('render aliases convert', () {
       final doc = makeDoc();
       final block = Block(doc, 'paragraph', source: 'hi');
-      // ignore: deprecated_member_use
       expect(block.render(), equals('<paragraph>'));
       expect(doc.converter.converted, equals([block]));
     });
@@ -670,31 +669,23 @@ void main() {
   group('number', () {
     test('number coerces integer-like numerals', () {
       final block = Block(makeDoc(), 'section');
-      // ignore: deprecated_member_use
       expect(block.number, isNull);
       block.numeral = '5';
-      // ignore: deprecated_member_use
       expect(block.number, equals(5));
       block.numeral = 'A';
-      // ignore: deprecated_member_use
       expect(block.number, equals('A'));
       block.numeral = ' 7 ';
-      // ignore: deprecated_member_use
       expect(block.number, equals(7));
       block.numeral = '0x10';
-      // ignore: deprecated_member_use
       expect(block.number, equals(16));
       block.numeral = '010';
-      // ignore: deprecated_member_use
       expect(block.number, equals(8));
       block.numeral = 5;
-      // ignore: deprecated_member_use
       expect(block.number, equals(5));
     });
 
     test('number setter stringifies', () {
       final block = Block(makeDoc(), 'section');
-      // ignore: deprecated_member_use
       block.number = 5;
       expect(block.numeral, equals('5'));
     });
@@ -1116,7 +1107,6 @@ void main() {
 
     test('render aliases convert', () {
       final node = Inline(makeDoc(), 'quoted', text: 'hi');
-      // ignore: deprecated_member_use
       expect(node.render(), equals('<inline_quoted>'));
     });
 
@@ -1432,9 +1422,7 @@ void main() {
   group('misc', () {
     test('isUri sniffs URI schemes', () {
       final block = Block(makeDoc(), 'paragraph');
-      // ignore: deprecated_member_use
       expect(block.isUri('https://x'), isTrue);
-      // ignore: deprecated_member_use
       expect(block.isUri('rel/path'), isFalse);
     });
 
