@@ -100,10 +100,16 @@ const Map<String, List<String>> _inlineMathDelimiters = <String, List<String>>{
 /// Renders [delimiters] the way Ruby's `Array#inspect` does (backslash
 /// escaping plus double quotes), as embedded in the MathJax configuration
 /// script (results verified against the Ruby runtime).
-String _inspectDelimiters(List<String> delimiters) =>
-    // Unwrappable long literal (no valid split point).
-    // ignore: lines_longer_than_80_chars
-    '[${delimiters.map((delimiter) => '"${delimiter.replaceAll(r'\', r'\\')}"').join(', ')}]';
+String _inspectDelimiters(List<String> delimiters) {
+  final quoted = delimiters.map(
+    (delimiter) => '"${delimiter.replaceAll(r'\', r'\\')}"',
+  );
+  return '[${quoted.join(', ')}]';
+}
+
+/// Prefixes [title] with the chapter/part [signifier] when it is set.
+String _withSignifier(Object? signifier, String title) =>
+    isTruthy(signifier) ? '$signifier $title' : title;
 
 /// Ruby `Array#inspect` of the inline latexmath delimiters (see above).
 final String _inlineLatexmathInspect = _inspectDelimiters(
@@ -319,12 +325,11 @@ class Html5Converter extends ConverterBase {
     final langAttribute = node.hasAttr('nolang')
         ? ''
         : ' lang="${_s(node.attr('lang', 'en'))}"';
+    final xmlnsAttribute = _xmlMode
+        ? ' xmlns="http://www.w3.org/1999/xhtml"'
+        : '';
     result
-      ..add(
-        // Unwrappable long literal (no valid split point).
-        // ignore: lines_longer_than_80_chars
-        '<html${_xmlMode ? ' xmlns="http://www.w3.org/1999/xhtml"' : ''}$langAttribute>',
-      )
+      ..add('<html$xmlnsAttribute$langAttribute>')
       ..add(
         '<head>\n'
         '<meta charset="${_s(node.attr('encoding', 'UTF-8'))}"$slash>\n'
@@ -394,6 +399,7 @@ class Html5Converter extends ConverterBase {
       '<title>${_s(node.doctitle(sanitize: true, useFallback: true))}</title>',
     );
 
+    late final stylesdir = node.attr('stylesdir') as String?;
     if (_defaultStylesheetKeys.contains(node.attr('stylesheet'))) {
       final webfonts = node.attr('webfonts');
       if (webfonts != null && webfonts != false) {
@@ -402,49 +408,49 @@ class Html5Converter extends ConverterBase {
         );
       }
       if (linkcss) {
-        result.add(
-          '<link rel="stylesheet" '
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'href="${node.normalizeWebPath(Stylesheets.defaultStylesheetName, node.attr('stylesdir') as String?, false)}"$slash>',
+        final href = node.normalizeWebPath(
+          Stylesheets.defaultStylesheetName,
+          stylesdir,
+          false,
         );
+        result.add('<link rel="stylesheet" href="$href"$slash>');
       } else {
         result.add(
           '<style>\n${Stylesheets.instance.primaryStylesheetData}\n</style>',
         );
       }
     } else if (node.hasAttr('stylesheet')) {
+      final stylesheet = node.attr('stylesheet')! as String;
       if (linkcss) {
-        result.add(
-          '<link rel="stylesheet" '
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'href="${node.normalizeWebPath(node.attr('stylesheet')! as String, node.attr('stylesdir') as String?)}"$slash>',
-        );
+        final href = node.normalizeWebPath(stylesheet, stylesdir);
+        result.add('<link rel="stylesheet" href="$href"$slash>');
       } else {
-        result.add(
-          '<style>\n${_s(node.readContents(node.attr('stylesheet')! as String, start: node.attr('stylesdir') as String?, label: 'stylesheet'))}\n</style>',
+        final contents = node.readContents(
+          stylesheet,
+          start: stylesdir,
+          label: 'stylesheet',
         );
+        result.add('<style>\n${_s(contents)}\n</style>');
       }
     }
 
     if (node.hasAttr('icons', 'font')) {
       if (node.hasAttr('iconfont-remote')) {
-        result.add(
-          '<link rel="stylesheet" '
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'href="${_s(node.attr('iconfont-cdn', '$cdnBaseUrl/font-awesome/$_fontAwesomeVersion/css/font-awesome.min.css'))}"$slash>',
+        final href = node.attr(
+          'iconfont-cdn',
+          '$cdnBaseUrl/font-awesome/$_fontAwesomeVersion/css/'
+              'font-awesome.min.css',
         );
+        result.add('<link rel="stylesheet" href="${_s(href)}"$slash>');
       } else {
         final iconfontStylesheet =
             '${_s(node.attr('iconfont-name', 'font-awesome'))}.css';
-        result.add(
-          '<link rel="stylesheet" '
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'href="${node.normalizeWebPath(iconfontStylesheet, node.attr('stylesdir') as String?, false)}"$slash>',
+        final href = node.normalizeWebPath(
+          iconfontStylesheet,
+          stylesdir,
+          false,
         );
+        result.add('<link rel="stylesheet" href="$href"$slash>');
       }
     }
 
@@ -772,19 +778,17 @@ class Html5Converter extends ConverterBase {
           final signifierAttrs = node.document!.attributes;
           switch (section.sectname) {
             case 'chapter':
-              final signifier = signifierAttrs['chapter-signifier'];
-              stitle =
-                  // Unwrappable long literal (no valid split point).
-                  // ignore: lines_longer_than_80_chars
-                  '${isTruthy(signifier) ? '$signifier ' : ''}${section.sectnum()} ${section.title!}';
+              stitle = _withSignifier(
+                signifierAttrs['chapter-signifier'],
+                '${section.sectnum()} ${section.title!}',
+              );
             case 'part':
-              final signifier = signifierAttrs['part-signifier'];
               // Ruby calls `sectnum nil, ':'`; with level < 2 that renders
               // the bare numeral plus ':', identical to `sectnum('.', ':')`.
-              stitle =
-                  // Unwrappable long literal (no valid split point).
-                  // ignore: lines_longer_than_80_chars
-                  '${isTruthy(signifier) ? '$signifier ' : ''}${section.sectnum('.', ':')} ${section.title!}';
+              stitle = _withSignifier(
+                signifierAttrs['part-signifier'],
+                '${section.sectnum('.', ':')} ${section.title!}',
+              );
             default:
               stitle = '${section.sectnum()} ${section.title!}';
           }
@@ -836,18 +840,16 @@ class Html5Converter extends ConverterBase {
         if (level < 2 && (node.document! as Document).doctype == 'book') {
           switch (node.sectname) {
             case 'chapter':
-              final signifier = docAttrs['chapter-signifier'];
-              resolvedTitle =
-                  // Unwrappable long literal (no valid split point).
-                  // ignore: lines_longer_than_80_chars
-                  '${isTruthy(signifier) ? '$signifier ' : ''}${node.sectnum()} ${node.title!}';
+              resolvedTitle = _withSignifier(
+                docAttrs['chapter-signifier'],
+                '${node.sectnum()} ${node.title!}',
+              );
             case 'part':
-              final signifier = docAttrs['part-signifier'];
               // See convertOutline for the `sectnum nil, ':'` mapping.
-              resolvedTitle =
-                  // Unwrappable long literal (no valid split point).
-                  // ignore: lines_longer_than_80_chars
-                  '${isTruthy(signifier) ? '$signifier ' : ''}${node.sectnum('.', ':')} ${node.title!}';
+              resolvedTitle = _withSignifier(
+                docAttrs['part-signifier'],
+                '${node.sectnum('.', ':')} ${node.title!}',
+              );
             default:
               resolvedTitle = '${node.sectnum()} ${node.title!}';
           }
@@ -890,15 +892,18 @@ class Html5Converter extends ConverterBase {
       idAttr = '';
     }
     final role = node.role;
+    final roleClass = isTruthy(role) ? ' ${_s(role)}' : '';
     if (level == 0) {
-      return '<h1$idAttr class="sect0${isTruthy(role) ? ' ${_s(role)}' : ''}">$linkedTitle</h1>\n'
+      return '<h1$idAttr class="sect0$roleClass">$linkedTitle</h1>\n'
           '${_s(node.content())}';
     }
-    return '<div class="sect$level${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+    final content = _s(node.content());
+    final body = level == 1
+        ? '<div class="sectionbody">\n$content\n</div>'
+        : content;
+    return '<div class="sect$level$roleClass">\n'
         '<h${level + 1}$idAttr>$linkedTitle</h${level + 1}>\n'
-        // Unwrappable long literal (no valid split point).
-        // ignore: lines_longer_than_80_chars
-        '${level == 1 ? '<div class="sectionbody">\n${_s(node.content())}\n</div>' : _s(node.content())}\n'
+        '$body\n'
         '</div>';
   }
 
@@ -955,12 +960,14 @@ class Html5Converter extends ConverterBase {
     final timeAnchor = startT != null || endT != null
         ? '#t=${_s(startT)}${endT != null ? ',${_s(endT)}' : ''}'
         : '';
+    final src = node.mediaUri(node.attr('target')! as String);
+    final controlsAttribute = node.hasOption('nocontrols')
+        ? ''
+        : _appendBooleanAttribute('controls', xml);
     return '<div$idAttribute$classAttribute>\n'
         '$titleElement<div class="content">\n'
-        '<audio '
-        // Unwrappable long literal (no valid split point).
-        // ignore: lines_longer_than_80_chars
-        'src="${node.mediaUri(node.attr('target')! as String)}$timeAnchor"${node.hasOption('autoplay') ? _appendBooleanAttribute('autoplay', xml) : ''}${node.hasOption('nocontrols') ? '' : _appendBooleanAttribute('controls', xml)}${node.hasOption('loop') ? _appendBooleanAttribute('loop', xml) : ''}>\n'
+        '<audio src="$src$timeAnchor"${_optionAttribute(node, 'autoplay')}'
+        '$controlsAttribute${_optionAttribute(node, 'loop')}>\n'
         'Your browser does not support the audio tag.\n'
         '</audio>\n'
         '</div>\n'
@@ -1165,9 +1172,8 @@ class Html5Converter extends ConverterBase {
       final summaryElement = node.hasTitle
           ? '<summary class="title">${_s(node.title)}</summary>'
           : '<summary class="title">Details</summary>';
-      // Unwrappable long literal (no valid split point).
-      // ignore: lines_longer_than_80_chars
-      return '<details$idAttribute$classAttribute${node.hasOption('open') ? ' open' : ''}>\n'
+      final openAttribute = node.hasOption('open') ? ' open' : '';
+      return '<details$idAttribute$classAttribute$openAttribute>\n'
           '$summaryElement\n'
           '<div class="content">\n'
           '${_s(node.content())}\n'
@@ -1209,6 +1215,9 @@ class Html5Converter extends ConverterBase {
     final heightAttr = node.hasAttr('height')
         ? ' height="${_s(node.attr('height'))}"'
         : '';
+    String imgTag(String src) =>
+        '<img src="$src" alt="${_encodeAttributeValue(node.alt)}"'
+        '$widthAttr$heightAttr$_voidElementSlash>';
     final String img;
     String? src;
     if ((node.hasAttr('format', 'svg') || target.contains('.svg')) &&
@@ -1219,37 +1228,29 @@ class Html5Converter extends ConverterBase {
             '<span class="alt">${_s(node.alt)}</span>';
       } else if (node.hasOption('interactive')) {
         final fallback = node.hasAttr('fallback')
-            ? '<img src="${node.imageUri(node.attr('fallback')! as String)}" '
-                  // Unwrappable long literal (no valid split point).
-                  // ignore: lines_longer_than_80_chars
-                  'alt="${_encodeAttributeValue(node.alt)}"$widthAttr$heightAttr$_voidElementSlash>'
+            ? imgTag(node.imageUri(node.attr('fallback')! as String))
             : '<span class="alt">${_s(node.alt)}</span>';
         src = node.imageUri(target);
         img =
-            '<object type="image/svg+xml" data="$src"$widthAttr$heightAttr>$fallback</object>';
+            '<object type="image/svg+xml" data="$src"$widthAttr$heightAttr>'
+            '$fallback</object>';
       } else {
         src = node.imageUri(target);
-        img =
-            '<img src="$src" '
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'alt="${_encodeAttributeValue(node.alt)}"$widthAttr$heightAttr$_voidElementSlash>';
+        img = imgTag(src);
       }
     } else {
       src = node.imageUri(target);
-      img =
-          '<img src="$src" '
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'alt="${_encodeAttributeValue(node.alt)}"$widthAttr$heightAttr$_voidElementSlash>';
+      img = imgTag(src);
     }
     var wrappedImg = img;
     Object? hrefAttrVal;
     if (node.hasAttr('link') &&
         (((hrefAttrVal = node.attr('link')) != 'self') ||
             ((hrefAttrVal = src) != null))) {
+      final linkConstraintAttrs = _appendLinkConstraintAttrs(node).join();
       wrappedImg =
-          '<a class="image" href="${_s(hrefAttrVal)}"${_appendLinkConstraintAttrs(node).join()}>$img</a>';
+          '<a class="image" href="${_s(hrefAttrVal)}"$linkConstraintAttrs>'
+          '$img</a>';
     }
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
     final classes = <String>['imageblock'];
@@ -1301,11 +1302,11 @@ class Html5Converter extends ConverterBase {
       } else {
         syntaxHl = null;
         hlOpts = <String, Object?>{};
-        preOpen =
-            '<pre '
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'class="highlight${nowrap ? ' nowrap' : ''}"><code${lang != null ? ' class="language-$lang" data-lang="$lang"' : ''}>';
+        final nowrapClass = nowrap ? ' nowrap' : '';
+        final langAttributes = lang != null
+            ? ' class="language-$lang" data-lang="$lang"'
+            : '';
+        preOpen = '<pre class="highlight$nowrapClass"><code$langAttributes>';
         preClose = '</code></pre>';
       }
     } else {
@@ -1410,31 +1411,17 @@ class Html5Converter extends ConverterBase {
     final startAttribute = node.hasAttr('start')
         ? ' start="${_s(node.attr('start'))}"'
         : '';
-    final reversedAttribute = node.hasOption('reversed')
-        ? _appendBooleanAttribute('reversed', _xmlMode)
-        : '';
+    final reversedAttribute = _optionAttribute(node, 'reversed');
     result.add(
-      '<ol '
-      // Unwrappable long literal (no valid split point).
-      // ignore: lines_longer_than_80_chars
-      'class="${_s(node.style)}"$typeAttribute$startAttribute$reversedAttribute>',
+      '<ol class="${_s(node.style)}"'
+      '$typeAttribute$startAttribute$reversedAttribute>',
     );
 
     for (final item in node.items) {
       final listItem = item! as ListItem;
-      if (listItem.id != null) {
-        result.add(
-          '<li '
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'id="${listItem.id}"${listItem.role != null ? ' class="${_s(listItem.role)}"' : ''}>',
-        );
-      } else if (listItem.role != null) {
-        result.add('<li class="${_s(listItem.role)}">');
-      } else {
-        result.add('<li>');
-      }
-      result.add('<p>${_s(listItem.text)}</p>');
+      result
+        ..add(_listItemOpenTag(listItem))
+        ..add('<p>${_s(listItem.text)}</p>');
       if (listItem.hasBlocks) {
         result.add(_s(listItem.content()));
       }
@@ -1486,10 +1473,9 @@ class Html5Converter extends ConverterBase {
         ? '<div class="title">${_s(node.title)}</div>\n'
         : '';
     final role = node.role;
-    return '<div$idAttr '
-        // Unwrappable long literal (no valid split point).
-        // ignore: lines_longer_than_80_chars
-        'class="openblock${style != null && style != 'open' ? ' $style' : ''}${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+    final styleClass = style != null && style != 'open' ? ' $style' : '';
+    final roleClass = isTruthy(role) ? ' ${_s(role)}' : '';
+    return '<div$idAttr class="openblock$styleClass$roleClass">\n'
         '$titleEl<div class="content">\n'
         '${_s(node.content())}\n'
         '</div>\n'
@@ -1554,26 +1540,7 @@ class Html5Converter extends ConverterBase {
     final titleElement = node.hasTitle
         ? '\n<div class="title">${_s(node.title)}</div>'
         : '';
-    final attribution = node.hasAttr('attribution')
-        ? node.attr('attribution')
-        : null;
-    final citetitle = node.hasAttr('citetitle') ? node.attr('citetitle') : null;
-    final String attributionElement;
-    if (attribution != null || citetitle != null) {
-      final citeElement = citetitle != null
-          ? '<cite>${_s(citetitle)}</cite>'
-          : '';
-      final attributionText = attribution != null
-          ? '&#8212; '
-                // Unwrappable long literal (no valid split point).
-                // ignore: lines_longer_than_80_chars
-                '${_s(attribution)}${citetitle != null ? '<br$_voidElementSlash>\n' : ''}'
-          : '';
-      attributionElement =
-          '\n<div class="attribution">\n$attributionText$citeElement\n</div>';
-    } else {
-      attributionElement = '';
-    }
+    final attributionElement = _attributionElement(node);
 
     return '<div$idAttribute$classAttribute>$titleElement\n'
         '<blockquote>\n'
@@ -1701,15 +1668,15 @@ class Html5Converter extends ConverterBase {
             final cellRowspanAttribute = isTruthy(cell.rowspan)
                 ? ' rowspan="${_s(cell.rowspan)}"'
                 : '';
-            final cellStyleAttribute =
-                (node.document! as Document).hasAttr('cellbgcolor')
+            final document = node.document! as Document;
+            final cellStyleAttribute = document.hasAttr('cellbgcolor')
                 ? ' style="background-color: '
-                      // Unwrappable long literal (no valid split point).
-                      // ignore: lines_longer_than_80_chars
-                      '${_s((node.document! as Document).attr('cellbgcolor'))};"'
+                      '${_s(document.attr('cellbgcolor'))};"'
                 : '';
             result.add(
-              '<$cellTagName$cellClassAttribute$cellColspanAttribute$cellRowspanAttribute$cellStyleAttribute>$cellContent</$cellTagName>',
+              '<$cellTagName$cellClassAttribute$cellColspanAttribute'
+              '$cellRowspanAttribute$cellStyleAttribute>'
+              '$cellContent</$cellTagName>',
             );
           }
           result.add('</tr>');
@@ -1747,11 +1714,14 @@ class Html5Converter extends ConverterBase {
         ? _s(node.role)
         : _s(doc.attr('toc-class', 'toc'));
 
+    final outline = (doc.converter as Converter).convert(
+      doc,
+      'outline',
+      <String, Object?>{'toclevels': levels},
+    );
     return '<div$idAttr class="$role">\n'
         '<div$titleIdAttr class="title">$title</div>\n'
-        // Unwrappable long literal (no valid split point).
-        // ignore: lines_longer_than_80_chars
-        '${_s((doc.converter as Converter).convert(doc, 'outline', <String, Object?>{'toclevels': levels}))}\n'
+        '${_s(outline)}\n'
         '</div>';
   }
 
@@ -1800,18 +1770,7 @@ class Html5Converter extends ConverterBase {
 
     for (final item in node.items) {
       final listItem = item! as ListItem;
-      if (listItem.id != null) {
-        result.add(
-          '<li '
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'id="${listItem.id}"${listItem.role != null ? ' class="${_s(listItem.role)}"' : ''}>',
-        );
-      } else if (listItem.role != null) {
-        result.add('<li class="${_s(listItem.role)}">');
-      } else {
-        result.add('<li>');
-      }
+      result.add(_listItemOpenTag(listItem));
       if (checklist && listItem.hasAttr('checkbox')) {
         result.add(
           '<p>${listItem.hasAttr('checked') ? markerChecked : markerUnchecked}${_s(listItem.text)}</p>',
@@ -1842,26 +1801,7 @@ class Html5Converter extends ConverterBase {
     final titleElement = node.hasTitle
         ? '\n<div class="title">${_s(node.title)}</div>'
         : '';
-    final attribution = node.hasAttr('attribution')
-        ? node.attr('attribution')
-        : null;
-    final citetitle = node.hasAttr('citetitle') ? node.attr('citetitle') : null;
-    final String attributionElement;
-    if (attribution != null || citetitle != null) {
-      final citeElement = citetitle != null
-          ? '<cite>${_s(citetitle)}</cite>'
-          : '';
-      final attributionText = attribution != null
-          ? '&#8212; '
-                // Unwrappable long literal (no valid split point).
-                // ignore: lines_longer_than_80_chars
-                '${_s(attribution)}${citetitle != null ? '<br$_voidElementSlash>\n' : ''}'
-          : '';
-      attributionElement =
-          '\n<div class="attribution">\n$attributionText$citeElement\n</div>';
-    } else {
-      attributionElement = '';
-    }
+    final attributionElement = _attributionElement(node);
 
     return '<div$idAttribute$classAttribute>$titleElement\n'
         '<pre class="content">${_s(node.content())}</pre>$attributionElement\n'
@@ -2044,12 +1984,17 @@ class Html5Converter extends ConverterBase {
         final timeAnchor = startT != null || endT != null
             ? '#t=${_s(startT)}${endT != null ? ',${_s(endT)}' : ''}'
             : '';
+        final src = node.mediaUri(node.attr('target')! as String);
+        final controlsAttribute = node.hasOption('nocontrols')
+            ? ''
+            : _appendBooleanAttribute('controls', xml);
         return '<div$idAttribute$classAttribute>$titleElement\n'
             '<div class="content">\n'
-            '<video '
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'src="${node.mediaUri(node.attr('target')! as String)}$timeAnchor"$widthAttribute$heightAttribute$posterAttribute${node.hasOption('autoplay') ? _appendBooleanAttribute('autoplay', xml) : ''}${node.hasOption('muted') ? _appendBooleanAttribute('muted', xml) : ''}${node.hasOption('nocontrols') ? '' : _appendBooleanAttribute('controls', xml)}${node.hasOption('loop') ? _appendBooleanAttribute('loop', xml) : ''}$preloadAttribute>\n'
+            '<video src="$src$timeAnchor"'
+            '$widthAttribute$heightAttribute$posterAttribute'
+            '${_optionAttribute(node, 'autoplay')}'
+            '${_optionAttribute(node, 'muted')}$controlsAttribute'
+            '${_optionAttribute(node, 'loop')}$preloadAttribute>\n'
             'Your browser does not support the video tag.\n'
             '</video>\n'
             '</div>\n'
@@ -2181,6 +2126,23 @@ class Html5Converter extends ConverterBase {
   String convertInlineImage(Inline node) {
     final target = node.target!;
     final type = node.type ?? 'image';
+    String imgAttrs() {
+      var attrs = node.hasAttr('width')
+          ? ' width="${_s(node.attr('width'))}"'
+          : '';
+      if (node.hasAttr('height')) {
+        attrs = '$attrs height="${_s(node.attr('height'))}"';
+      }
+      if (node.hasAttr('title')) {
+        attrs = '$attrs title="${_s(node.attr('title'))}"';
+      }
+      return attrs;
+    }
+
+    String imgTag(String src, String attrs) =>
+        '<img src="$src" alt="${_encodeAttributeValue(_s(node.alt))}"'
+        '$attrs$_voidElementSlash>';
+
     final String img;
     String? src;
     if (type == 'icon') {
@@ -2200,34 +2162,14 @@ class Html5Converter extends ConverterBase {
             : '';
         img = '<i class="$iClassAttrVal"$attrs></i>';
       } else if (isTruthy(icons)) {
-        var attrs = node.hasAttr('width')
-            ? ' width="${_s(node.attr('width'))}"'
-            : '';
-        if (node.hasAttr('height')) {
-          attrs = '$attrs height="${_s(node.attr('height'))}"';
-        }
-        if (node.hasAttr('title')) {
-          attrs = '$attrs title="${_s(node.attr('title'))}"';
-        }
+        final attrs = imgAttrs();
         src = node.iconUri(target);
-        img =
-            '<img src="$src" '
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'alt="${_encodeAttributeValue(_s(node.alt))}"$attrs$_voidElementSlash>';
+        img = imgTag(src, attrs);
       } else {
         img = '[${_s(node.alt)}&#93;';
       }
     } else {
-      var attrs = node.hasAttr('width')
-          ? ' width="${_s(node.attr('width'))}"'
-          : '';
-      if (node.hasAttr('height')) {
-        attrs = '$attrs height="${_s(node.attr('height'))}"';
-      }
-      if (node.hasAttr('title')) {
-        attrs = '$attrs title="${_s(node.attr('title'))}"';
-      }
+      final attrs = imgAttrs();
       if ((node.hasAttr('format', 'svg') || target.contains('.svg')) &&
           node.document!.safe < SafeMode.secure) {
         if (node.hasOption('inline')) {
@@ -2236,30 +2178,19 @@ class Html5Converter extends ConverterBase {
               '<span class="alt">${_s(node.alt)}</span>';
         } else if (node.hasOption('interactive')) {
           final fallback = node.hasAttr('fallback')
-              ? '<img '
-                    'src="${node.imageUri(node.attr('fallback')! as String)}" '
-                    // Unwrappable long literal (no valid split point).
-                    // ignore: lines_longer_than_80_chars
-                    'alt="${_encodeAttributeValue(_s(node.alt))}"$attrs$_voidElementSlash>'
+              ? imgTag(node.imageUri(node.attr('fallback')! as String), attrs)
               : '<span class="alt">${_s(node.alt)}</span>';
           src = node.imageUri(target);
           img =
-              '<object type="image/svg+xml" data="$src"$attrs>$fallback</object>';
+              '<object type="image/svg+xml" data="$src"$attrs>'
+              '$fallback</object>';
         } else {
           src = node.imageUri(target);
-          img =
-              '<img src="$src" '
-              // Unwrappable long literal (no valid split point).
-              // ignore: lines_longer_than_80_chars
-              'alt="${_encodeAttributeValue(_s(node.alt))}"$attrs$_voidElementSlash>';
+          img = imgTag(src, attrs);
         }
       } else {
         src = node.imageUri(target);
-        img =
-            '<img src="$src" '
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'alt="${_encodeAttributeValue(_s(node.alt))}"$attrs$_voidElementSlash>';
+        img = imgTag(src, attrs);
       }
     }
     var wrappedImg = img;
@@ -2267,8 +2198,10 @@ class Html5Converter extends ConverterBase {
     if (node.hasAttr('link') &&
         (((hrefAttrVal = node.attr('link')) != 'self') ||
             ((hrefAttrVal = src) != null))) {
+      final linkConstraintAttrs = _appendLinkConstraintAttrs(node).join();
       wrappedImg =
-          '<a class="image" href="${_s(hrefAttrVal)}"${_appendLinkConstraintAttrs(node).join()}>$img</a>';
+          '<a class="image" href="${_s(hrefAttrVal)}"$linkConstraintAttrs>'
+          '$img</a>';
     }
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
     final role = node.role;
@@ -2397,6 +2330,36 @@ class Html5Converter extends ConverterBase {
   /// Renders the boolean HTML attribute [name] for [xml] mode.
   String _appendBooleanAttribute(String name, bool xml) =>
       xml ? ' $name="$name"' : ' $name';
+
+  /// The attribution `<div>` (attribution and cite title) of a quote or
+  /// verse [node], or an empty string when it has neither.
+  String _attributionElement(Block node) {
+    final attribution = node.hasAttr('attribution')
+        ? node.attr('attribution')
+        : null;
+    final citetitle = node.hasAttr('citetitle') ? node.attr('citetitle') : null;
+    if (attribution == null && citetitle == null) return '';
+    final citeElement = citetitle != null
+        ? '<cite>${_s(citetitle)}</cite>'
+        : '';
+    final lineBreak = citetitle != null ? '<br$_voidElementSlash>\n' : '';
+    final attributionText = attribution != null
+        ? '&#8212; ${_s(attribution)}$lineBreak'
+        : '';
+    return '\n<div class="attribution">\n$attributionText$citeElement\n</div>';
+  }
+
+  /// The `<li>` start tag for [item], carrying its id and role.
+  String _listItemOpenTag(ListItem item) {
+    final idAttribute = item.id != null ? ' id="${item.id}"' : '';
+    final role = item.role;
+    final classAttribute = role != null ? ' class="${_s(role)}"' : '';
+    return '<li$idAttribute$classAttribute>';
+  }
+
+  /// The boolean [option] attribute when [node] has that option set.
+  String _optionAttribute(AbstractNode node, String option) =>
+      node.hasOption(option) ? _appendBooleanAttribute(option, _xmlMode) : '';
 
   /// Appends link-constraint attributes (`target`, `rel`) for [node] to
   /// [attrs] (a fresh list when omitted) and returns it.

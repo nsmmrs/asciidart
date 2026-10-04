@@ -2409,10 +2409,14 @@ void main() {
       test('document with title attribute entry overrides doctitle attribute '
           'entry', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= Document Title\n:snapshot: {doctitle}\n:doctitle: doctitle\n:title: Override\n\n'
-            '{snapshot}, {doctitle}\n\n== First Section\n';
+            '= Document Title\n'
+            ':snapshot: {doctitle}\n'
+            ':doctitle: doctitle\n'
+            ':title: Override\n'
+            '\n'
+            '{snapshot}, {doctitle}\n'
+            '\n'
+            '== First Section\n';
         final doc = documentFromString(input);
         expect(doc.doctitle(), equals('Override'));
         expect(doc.title, equals('Override'));
@@ -2602,13 +2606,16 @@ void main() {
 
       test('with metadata', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\nv8.6.8, 2012-07-12: See changelog.\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            ':description: AsciiDoc user guide\n:keywords: asciidoc,documentation\n:copyright: Stuart Rackham\n'
-            '\n== Version 8.6.8\n\nmore info...\n';
+            '= AsciiDoc\n'
+            'Stuart Rackham <founder@asciidoc.org>\n'
+            'v8.6.8, 2012-07-12: See changelog.\n'
+            ':description: AsciiDoc user guide\n'
+            ':keywords: asciidoc,documentation\n'
+            ':copyright: Stuart Rackham\n'
+            '\n'
+            '== Version 8.6.8\n'
+            '\n'
+            'more info...\n';
         final output = convertString(input);
         assertXpath(
           '//meta[@name="author"][@content="Stuart Rackham"]',
@@ -2950,10 +2957,12 @@ void main() {
 
       test('with authors defined using attribute entry to DocBook', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= Document Title\n:authors: Doc Writer; Junior Writer\n:email_1: thedoctor@asciidoc.org\n'
-            ':email_2: junior@asciidoc.org\n\ncontent\n';
+            '= Document Title\n'
+            ':authors: Doc Writer; Junior Writer\n'
+            ':email_1: thedoctor@asciidoc.org\n'
+            ':email_2: junior@asciidoc.org\n'
+            '\n'
+            'content\n';
         final output = convertString(input, {'backend': 'docbook'});
         assertXpath('/article/info/author', output, 0);
         assertXpath('/article/info/authorgroup', output, 1);
@@ -3310,9 +3319,8 @@ void main() {
       test('outputs footnotes in footer', () {
         const input =
             'A footnote footnote:[An example footnote.];\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'a second footnote with a reference ID footnote:note2[Second footnote.];\n'
+            'a second footnote with a reference ID footnote:note2[Second '
+            'footnote.];\n'
             'and finally a reference to the second footnote '
             'footnote:note2[].\n';
         final output = convertString(input);
@@ -3549,25 +3557,50 @@ void main() {
 
       test('should close all short tags when htmlsyntax is xml', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= Document Title\nAuthor Name\nv1.0, 2001-01-01\n:icons:\n:favicon:\n\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'image:tiger.png[]\n\nimage::tiger.png[]\n\n* [x] one\n* [ ] two\n\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '|===\n|A |B\n|===\n\n[horizontal, labelwidth="25%", itemwidth="75%"]\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'term:: description\n\nNOTE: note\n\n[quote,Author,Source]\n____\nQuote me.\n____\n\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '[verse,Author,Source]\n____\nA tall tale.\n____\n\n[options="autoplay,loop"]\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'video::screencast.ogg[]\n\nvideo::12345[vimeo]\n\n[options="autoplay,loop"]\n'
-            "audio::podcast.ogg[]\n\none +\ntwo\n\n'''\n";
+            '= Document Title\n'
+            'Author Name\n'
+            'v1.0, 2001-01-01\n'
+            ':icons:\n'
+            ':favicon:\n'
+            '\n'
+            'image:tiger.png[]\n'
+            '\n'
+            'image::tiger.png[]\n'
+            '\n'
+            '* [x] one\n'
+            '* [ ] two\n'
+            '\n'
+            '|===\n'
+            '|A |B\n'
+            '|===\n'
+            '\n'
+            '[horizontal, labelwidth="25%", itemwidth="75%"]\n'
+            'term:: description\n'
+            '\n'
+            'NOTE: note\n'
+            '\n'
+            '[quote,Author,Source]\n'
+            '____\n'
+            'Quote me.\n'
+            '____\n'
+            '\n'
+            '[verse,Author,Source]\n'
+            '____\n'
+            'A tall tale.\n'
+            '____\n'
+            '\n'
+            '[options="autoplay,loop"]\n'
+            'video::screencast.ogg[]\n'
+            '\n'
+            'video::12345[vimeo]\n'
+            '\n'
+            '[options="autoplay,loop"]\n'
+            'audio::podcast.ogg[]\n'
+            '\n'
+            'one +\n'
+            'two\n'
+            '\n'
+            "'''\n";
         final result = convertString(input, {
           'safe': 'safe',
           'backend': 'xhtml',
@@ -3645,13 +3678,21 @@ void main() {
       test('should be able to convert DocBook manpage output when backend is '
           'DocBook and doctype is manpage', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= asciidoctor(1)\n:mansource: Asciidoctor\n:manmanual: Asciidoctor Manual\n\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '== NAME\n\nasciidoctor - Process text\n\n== SYNOPSIS\n\nsome text\n\n'
-            '== First Section\n\nsection body\n';
+            '= asciidoctor(1)\n'
+            ':mansource: Asciidoctor\n'
+            ':manmanual: Asciidoctor Manual\n'
+            '\n'
+            '== NAME\n'
+            '\n'
+            'asciidoctor - Process text\n'
+            '\n'
+            '== SYNOPSIS\n'
+            '\n'
+            'some text\n'
+            '\n'
+            '== First Section\n'
+            '\n'
+            'section body\n';
         final result = convertString(input, {
           'keep_namespaces': true,
           'attributes': {'backend': 'docbook5', 'doctype': 'manpage'},
@@ -3820,13 +3861,21 @@ void main() {
       test('adds refname to DocBook output for each name defined in NAME '
           'section of manpage', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= eve(1)\nAndrew Stanton\nv1.0.0\n:doctype: manpage\n:manmanual: EVE\n:mansource: EVE\n\n'
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            "== NAME\n\neve, islifeform - analyzes an image to determine if it's a picture of a life form\n\n"
-            "== SYNOPSIS\n\n*eve* ['OPTION']... 'FILE'...\n";
+            '= eve(1)\n'
+            'Andrew Stanton\n'
+            'v1.0.0\n'
+            ':doctype: manpage\n'
+            ':manmanual: EVE\n'
+            ':mansource: EVE\n'
+            '\n'
+            '== NAME\n'
+            '\n'
+            "eve, islifeform - analyzes an image to determine if it's a "
+            'picture of a life form\n'
+            '\n'
+            '== SYNOPSIS\n'
+            '\n'
+            "*eve* ['OPTION']... 'FILE'...\n";
         final result = convertString(input, {'backend': 'docbook5'});
         assertXpath('/article/refentry/refnamediv/refname', result, 2);
         assertXpath(
@@ -3972,10 +4021,17 @@ void main() {
 
       test('should mark synopsis as special section in manpage doctype', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
-            "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
+            '= asciidoctor(1)\n'
+            ':doctype: manpage\n'
+            '\n'
+            '== NAME\n'
+            '\n'
+            'asciidoctor - converts AsciiDoc source files to HTML, DocBook and '
+            'other formats\n'
+            '\n'
+            '== SYNOPSIS\n'
+            '\n'
+            "*asciidoctor* ['OPTION']... 'FILE'..\n";
         final doc = documentFromString(input);
         final synopsisSection = doc.blocks.first as Section;
         expect(synopsisSection.context, equals('section'));
@@ -3987,10 +4043,17 @@ void main() {
         'should output special header block in HTML for manpage doctype',
         () {
           const input =
-              // Unwrappable long literal (no valid split point).
-              // ignore: lines_longer_than_80_chars
-              '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
-              "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
+              '= asciidoctor(1)\n'
+              ':doctype: manpage\n'
+              '\n'
+              '== NAME\n'
+              '\n'
+              'asciidoctor - converts AsciiDoc source files to HTML, DocBook '
+              'and other formats\n'
+              '\n'
+              '== SYNOPSIS\n'
+              '\n'
+              "*asciidoctor* ['OPTION']... 'FILE'..\n";
           final output = convertString(input);
           assertCss('body.manpage', output, 1);
           assertXpath(
@@ -4025,10 +4088,18 @@ void main() {
       test('should output special header block in embeddable HTML for manpage '
           'doctype', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= asciidoctor(1)\n:doctype: manpage\n:showtitle:\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
-            "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
+            '= asciidoctor(1)\n'
+            ':doctype: manpage\n'
+            ':showtitle:\n'
+            '\n'
+            '== NAME\n'
+            '\n'
+            'asciidoctor - converts AsciiDoc source files to HTML, DocBook and '
+            'other formats\n'
+            '\n'
+            '== SYNOPSIS\n'
+            '\n'
+            "*asciidoctor* ['OPTION']... 'FILE'..\n";
         final output = convertStringToEmbedded(input);
         assertXpath('/h1[text()="asciidoctor(1) Manual Page"]', output, 1);
         assertXpath('/h1/following-sibling::h2[text()="NAME"]', output, 1);
@@ -4047,10 +4118,17 @@ void main() {
 
       test('should output all mannames in name section in man page output', () {
         const input =
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '= eve(1)\n:doctype: manpage\n\n== NAME\n\neve, probe - analyzes an image to determine if it is a picture of a life form\n\n'
-            '== SYNOPSIS\n\n*eve* [OPTION]... FILE...\n';
+            '= eve(1)\n'
+            ':doctype: manpage\n'
+            '\n'
+            '== NAME\n'
+            '\n'
+            'eve, probe - analyzes an image to determine if it is a picture of '
+            'a life form\n'
+            '\n'
+            '== SYNOPSIS\n'
+            '\n'
+            '*eve* [OPTION]... FILE...\n';
         final output = convertString(input);
         assertCss('body.manpage', output, 1);
         assertXpath(

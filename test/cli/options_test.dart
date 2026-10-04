@@ -164,16 +164,18 @@ void main() {
     test('usage banner shape matches the oracle', () {
       final result = parseCli(['-h']);
       final lines = result.out.split('\n');
+      const convertLine =
+          'Convert the AsciiDoc input FILE(s) to the backend output format '
+          '(e.g., HTML 5, DocBook 5, etc.)';
+      const outputLine =
+          'Unless specified otherwise, the output is written to a file whose '
+          'name is derived from the input file.';
       expect(
         lines.take(6).toList(),
         equals([
           'Usage: asciidoctor [OPTION]... FILE...',
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'Convert the AsciiDoc input FILE(s) to the backend output format (e.g., HTML 5, DocBook 5, etc.)',
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'Unless specified otherwise, the output is written to a file whose name is derived from the input file.',
+          convertLine,
+          outputLine,
           'Application log messages are printed to STDERR.',
           'Example: asciidoctor input.adoc',
           '',

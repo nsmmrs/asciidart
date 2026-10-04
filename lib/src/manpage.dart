@@ -350,12 +350,21 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] admonition block.
   String convertAdmonition(Block node) {
-    return '.if n .sp\n.RS 4\n.it 1 an-trap\n.nr an-no-space-flag '
-        '1\n.nr an-break-flag 1\n.br\n.ps +1\n'
-        // Unwrappable long literal (no valid split point).
-        // ignore: lines_longer_than_80_chars
-        '.B ${_s(node.attr('textlabel'))}${node.hasTitle ? '\\fP: ${_manify(node.title!)}' : ''}\n.ps -1\n.br\n'
-        '${_encloseContent(node)}\n.sp .5v\n.RE';
+    final label = _s(node.attr('textlabel'));
+    final titleSuffix = node.hasTitle ? '\\fP: ${_manify(node.title!)}' : '';
+    return '.if n .sp\n'
+        '.RS 4\n'
+        '.it 1 an-trap\n'
+        '.nr an-no-space-flag 1\n'
+        '.nr an-break-flag 1\n'
+        '.br\n'
+        '.ps +1\n'
+        '.B $label$titleSuffix\n'
+        '.ps -1\n'
+        '.br\n'
+        '${_encloseContent(node)}\n'
+        '.sp .5v\n'
+        '.RE';
   }
 
   /// Converts the [node] callout list.
@@ -401,12 +410,11 @@ class ManpageConverter extends ConverterBase {
           '${_manify(terms.map((dt) => _s(dt.text)).join(' '))}\n.RS 4',
         );
       } else {
-        result.add(
-          '.sp\n'
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          '${_manify(terms.map((dt) => _s(dt.text)).join(', '), whitespace: _WhitespaceMode.normalize)}\n.RS 4',
+        final termText = _manify(
+          terms.map((dt) => _s(dt.text)).join(', '),
+          whitespace: _WhitespaceMode.normalize,
         );
+        result.add('.sp\n$termText\n.RS 4');
       }
       if (dd != null) {
         final hasText = dd.hasText;
@@ -637,11 +645,11 @@ class ManpageConverter extends ConverterBase {
               case 'asciidoc':
                 cellContent = _s(cell.content());
               case 'literal':
-                cellContent =
-                    '.nf\n'
-                    // Unwrappable long literal (no valid split point).
-                    // ignore: lines_longer_than_80_chars
-                    '${_manify(cell.text!, whitespace: _WhitespaceMode.preserve)}\n.fi';
+                final text = _manify(
+                  cell.text!,
+                  whitespace: _WhitespaceMode.preserve,
+                );
+                cellContent = '.nf\n$text\n.fi';
               default:
                 cellContent = (cell.content()! as List<Object?>)
                     .map(
@@ -787,14 +795,11 @@ class ManpageConverter extends ConverterBase {
         ? '&start=${_s(node.attr('start'))}'
         : '';
     final endParam = node.hasAttr('end') ? '&end=${_s(node.attr('end'))}' : '';
-    final result = (<String>[])
-      ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp')
-      ..add(
-        // Unwrappable long literal (no valid split point).
-        // ignore: lines_longer_than_80_chars
-        '<${node.mediaUri(node.attr('target')! as String)}$startParam$endParam> (video)',
-      );
-    return result.join('\n');
+    final titleLine = node.hasTitle
+        ? '.sp\n.B ${_manify(node.title!)}\n.br'
+        : '.sp';
+    final target = node.mediaUri(node.attr('target')! as String);
+    return '$titleLine\n<$target$startParam$endParam> (video)';
   }
 
   /// Converts the [node] inline anchor.
@@ -981,14 +986,13 @@ class ManpageConverter extends ConverterBase {
       // normalize_text in substitutor
       final rawText = fn.text! as String;
       if (rawText.contains('$_esc\\c $_esc.')) {
+        final restored = rawText.replaceAllMapped(
+          _malformedEscapedMacroRx,
+          (match) => '${match.group(1)}\n${match.group(2)}',
+        );
         result.add(
           chompSuffix(
-            _manify(
-              // Unwrappable long literal (no valid split point).
-              // ignore: lines_longer_than_80_chars
-              '${rawText.replaceAllMapped(_malformedEscapedMacroRx, (match) => '${match.group(1)}\n${match.group(2)}')} ',
-              whitespace: _WhitespaceMode.normalize,
-            ),
+            _manify('$restored ', whitespace: _WhitespaceMode.normalize),
             ' ',
           ),
         );

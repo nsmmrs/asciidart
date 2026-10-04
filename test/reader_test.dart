@@ -1595,18 +1595,12 @@ void main() {
         () {
           const input =
               '....\ninclude::fixtures/encoding.adoc[tag=romé,encoding=iso-1000-1]\n....\n';
+          const expectedLine =
+              'Gregory Romé has written an AsciiDoc plugin for the Redmine '
+              'project management application.';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
           final reader = PreprocessorReader(doc, input, null, true);
-          expect(
-            reader.readLines(),
-            equals([
-              '....',
-              // Unwrappable long literal (no valid split point).
-              // ignore: lines_longer_than_80_chars
-              'Gregory Romé has written an AsciiDoc plugin for the Redmine project management application.',
-              '....',
-            ]),
-          );
+          expect(reader.readLines(), equals(['....', expectedLine, '....']));
         },
       );
 

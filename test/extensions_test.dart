@@ -1697,10 +1697,9 @@ void main() {
                         Map<Object, String?> attributes,
                       ) {
                         // demonstrates that pushInclude normalizes newlines
+                        final lineno = reader.cursorAtPrevLine().lineno;
                         final content = [
-                          // Unwrappable long literal (no valid split point).
-                          // ignore: lines_longer_than_80_chars
-                          "found include target '$target' at line ${reader.cursorAtPrevLine().lineno}\r\n",
+                          "found include target '$target' at line $lineno\r\n",
                           '\r\n',
                           'middle line\r\n',
                         ];
@@ -2809,17 +2808,14 @@ void main() {
           'full-text:target[[text\\]]\n'
           '@target\n'
           '++++\n';
+      const fullAttributes = '{1=>"value","key"=>"val","name"=>"value"}';
       const expected =
           'target="",attributes={}\n'
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'target="value,key=val",attributes={1=>"value","key"=>"val","name"=>"value"}\n'
+          'target="value,key=val",attributes=$fullAttributes\n'
           'target="",attributes={"text"=>""}\n'
           'target="[text]",attributes={"text"=>"[text]"}\n'
           'target="target",attributes={}\n'
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'target="target",attributes={1=>"value","key"=>"val","name"=>"value"}\n'
+          'target="target",attributes=$fullAttributes\n'
           'target="target",attributes={"text"=>""}\n'
           'target="target",attributes={"text"=>"[text]"}\n'
           'target="target",attributes={}';

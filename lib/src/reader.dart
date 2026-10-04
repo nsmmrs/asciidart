@@ -878,9 +878,8 @@ class PreprocessorReader extends Reader {
         LoggerManager.logger.error(
           _messageWithContext(
             'detected unterminated preprocessor conditional directive: '
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '${conditional.name}::${conditional.target ?? ''}[${conditional.expr ?? ''}]',
+            '${conditional.name}::${conditional.target ?? ''}'
+            '[${conditional.expr ?? ''}]',
             sourceLocation:
                 conditional.sourceLocation ??
                 (endCursor ??= cursorAtPrevLine()),
@@ -1387,9 +1386,7 @@ class PreprocessorReader extends Reader {
               LoggerManager.logger.error(
                 _messageWithContext(
                   'malformed preprocessor directive - '
-                  // Unwrappable long literal (no valid split point).
-                  // ignore: lines_longer_than_80_chars
-                  '${text != null ? 'invalid expression' : 'missing expression'}: '
+                  '${text != null ? 'invalid' : 'missing'} expression: '
                   'ifeval::[${text ?? ''}]',
                   sourceLocation: cursor(),
                 ),
@@ -1484,6 +1481,9 @@ class PreprocessorReader extends Reader {
             dropLineSeverity: 'ignore',
           )
           .isEmpty;
+      final dropReason = attrMissing == 'warn' && droppedDueToMissingAttr
+          ? 'due to missing attribute'
+          : 'because resolved target is blank';
       if (attrMissing == 'drop-line' && droppedDueToMissingAttr) {
         LoggerManager.logger.info(
           () => _messageWithContext(
@@ -1499,10 +1499,7 @@ class PreprocessorReader extends Reader {
           .containsKey('optional-option')) {
         LoggerManager.logger.info(
           () => _messageWithContext(
-            'optional include dropped '
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '${attrMissing == 'warn' && droppedDueToMissingAttr ? 'due to missing attribute' : 'because resolved target is blank'}: '
+            'optional include dropped $dropReason: '
             'include::$target[${attrlist ?? ''}]',
             sourceLocation: cursor(),
           ),
@@ -1512,10 +1509,7 @@ class PreprocessorReader extends Reader {
       } else {
         LoggerManager.logger.warn(
           _messageWithContext(
-            'include dropped '
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            '${attrMissing == 'warn' && droppedDueToMissingAttr ? 'due to missing attribute' : 'because resolved target is blank'}: '
+            'include dropped $dropReason: '
             'include::$target[${attrlist ?? ''}]',
             sourceLocation: cursor(),
           ),

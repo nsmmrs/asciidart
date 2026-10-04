@@ -12,32 +12,40 @@
 /// Every render receives these keys (`null` when the node has no value, which
 /// renders as empty output in the lenient adapter, see `template.dart`):
 ///
-/// | Key | Value |
-/// | --- | ----- |
-/// | `content` | Converted content: `AbstractBlock.content()` (usually a String; a List of items for lists, mirroring Ruby, which templates can iterate as a section), `Inline.content()` (the text), else `null`. |
-/// | `text` | Inline/list-item text (`Inline.text`, `ListItem.text`), else `null`. |
-/// | `id` | The node id (`AbstractNode.id`). |
-/// | `role` | The node role (`AbstractNode.role`). |
-/// | `roles` | All roles (`AbstractNode.roles`). |
-/// | `title` | Converted block title (`AbstractBlock.title`, caption excluded; the doctitle on documents), else `null`. |
-/// | `caption` | Block caption (`AbstractBlock.caption`), else `null`. |
-/// | `context` | The node context (e.g. `'paragraph'`). |
-/// | `node_name` | The node name (e.g. `'inline_quoted'` on inlines). |
-/// | `attributes` | Shallow copy of the node attribute map (supports dotted lookups such as `{{attributes.foo}}` and truthiness sections). |
-/// | `attr` | Section lambda for attributes with arguments: `{{#attr}}name{{/attr}}`, with an optional `=default` suffix (`{{#attr}}lang=en{{/attr}}`). Falls back to the document attributes, mirroring Ruby's inheriting `attr` default in Tilt templates. |
-/// | `document` | Shallow document map (`title`, `attributes`); `null` while the node is detached. Never nested recursively. |
-/// | `items` | List items, each pre-flattened with [buildTemplateContext] (description-list pairs become `{'terms': [...], 'description': ...}`); `null` on non-list nodes. |
-/// | `sections` | Child sections of a document or section node, each pre-flattened with [buildTemplateContext] (so `{{#sections}}{{title}}{{/sections}}` lists them and nesting recurses); `null` on other nodes. This is what a custom `outline` template iterates. |
+/// - `content`: Converted content: `AbstractBlock.content()` (usually a String;
+///   a List of items for lists, mirroring Ruby, which templates can iterate as
+///   a section), `Inline.content()` (the text), else `null`.
+/// - `text`: Inline/list-item text (`Inline.text`, `ListItem.text`), else
+///   `null`.
+/// - `id`: The node id (`AbstractNode.id`).
+/// - `role`: The node role (`AbstractNode.role`).
+/// - `roles`: All roles (`AbstractNode.roles`).
+/// - `title`: Converted block title (`AbstractBlock.title`, caption excluded;
+///   the doctitle on documents), else `null`.
+/// - `caption`: Block caption (`AbstractBlock.caption`), else `null`.
+/// - `context`: The node context (e.g. `'paragraph'`).
+/// - `node_name`: The node name (e.g. `'inline_quoted'` on inlines).
+/// - `attributes`: Shallow copy of the node attribute map (supports dotted
+///   lookups such as `{{attributes.foo}}` and truthiness sections).
+/// - `attr`: Section lambda for attributes with arguments:
+///   `{{#attr}}name{{/attr}}`, with an optional `=default` suffix
+///   (`{{#attr}}lang=en{{/attr}}`). Falls back to the document attributes,
+///   mirroring Ruby's inheriting `attr` default in Tilt templates.
+/// - `document`: Shallow document map (`title`, `attributes`); `null` while the
+///   node is detached. Never nested recursively.
+/// - `items`: List items, each pre-flattened with [buildTemplateContext]
+///   (description-list pairs become `{'terms': [...], 'description': ...}`);
+///   `null` on non-list nodes.
+/// - `sections`: Child sections of a document or section node, each
+///   pre-flattened with [buildTemplateContext] (so
+///   `{{#sections}}{{title}}{{/sections}}` lists them and nesting recurses);
+///   `null` on other nodes. This is what a custom `outline` template iterates.
 ///
 /// `opts` (the per-call options map, mirroring the Tilt locals in Ruby's
 /// `TemplateConverter#convert`) and `helpers` (path-(a) lambdas per ADR-0002
 /// T4) are merged in as top-level keys; on collision the explicit call-site
 /// values win over the node-derived ones.
 library;
-
-// The context-vocabulary reference table above keeps one row per
-// line; wrapping rows would corrupt the rendered table.
-// ignore_for_file: lines_longer_than_80_chars
 
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';

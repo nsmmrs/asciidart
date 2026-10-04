@@ -354,7 +354,7 @@ class Docbook5Converter extends ConverterBase {
             (node.hasOption('notitle') || node.hasOption('untitled'))
         ? ''
         : '<title>${_s(node.title)}</title>\n';
-    return '<$tagName${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+    return '<$tagName${_nodeAttributes(node)}>\n'
         '$titleEl${_s(node.content())}\n'
         '</$tagName>';
   }
@@ -362,16 +362,14 @@ class Docbook5Converter extends ConverterBase {
   /// Converts the [node] admonition block.
   String convertAdmonition(Block node) {
     final tagName = _s(node.attr('name'));
-    return '<$tagName${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+    return '<$tagName${_nodeAttributes(node)}>\n'
         '${_titleTag(node)}${_encloseContent(node)}\n'
         '</$tagName>';
   }
 
   /// Converts the [node] callout list.
   String convertColist(ListBlock node) {
-    final result = <String>[
-      '<calloutlist${_commonAttributes(node.id, node.role, node.reftext)}>',
-    ];
+    final result = <String>['<calloutlist${_nodeAttributes(node)}>'];
     if (node.hasTitle) {
       result.add('<title>${_s(node.title)}</title>');
     }
@@ -395,7 +393,7 @@ class Docbook5Converter extends ConverterBase {
     if (node.style == 'horizontal') {
       final tagName = node.hasTitle ? 'table' : 'informaltable';
       result.add(
-        '<$tagName${_commonAttributes(node.id, node.role, node.reftext)} '
+        '<$tagName${_nodeAttributes(node)} '
         'tabstyle="horizontal" frame="none" colsep="0" rowsep="0">\n'
         '${_titleTag(node)}<tgroup cols="2">\n'
         '<colspec colwidth="${_s(node.attr('labelwidth', 15))}*"/>\n'
@@ -430,9 +428,7 @@ class Docbook5Converter extends ConverterBase {
       final termTag = tags['term']!;
       final itemTag = tags['item']!;
       if (listTag != null) {
-        result.add(
-          '<$listTag${_commonAttributes(node.id, node.role, node.reftext)}>',
-        );
+        result.add('<$listTag${_nodeAttributes(node)}>');
         if (node.hasTitle) {
           result.add('<title>${_s(node.title)}</title>');
         }
@@ -473,7 +469,7 @@ class Docbook5Converter extends ConverterBase {
 
   /// Converts the [node] example block.
   String convertExample(Block node) {
-    final attrs = _commonAttributes(node.id, node.role, node.reftext);
+    final attrs = _nodeAttributes(node);
     if (node.hasTitle) {
       return '<example$attrs>\n'
           '<title>${_s(node.title)}</title>\n'
@@ -487,7 +483,7 @@ class Docbook5Converter extends ConverterBase {
 
   /// Converts the [node] floating title.
   String convertFloatingTitle(Block node) =>
-      '<bridgehead${_commonAttributes(node.id, node.role, node.reftext)} renderas="sect${_s(node.level)}">${_s(node.title)}</bridgehead>';
+      '<bridgehead${_nodeAttributes(node)} renderas="sect${_s(node.level)}">${_s(node.title)}</bridgehead>';
 
   /// Converts the [node] image block.
   String convertImage(Block node) {
@@ -502,14 +498,12 @@ class Docbook5Converter extends ConverterBase {
         '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
         '</mediaobject>';
     if (node.hasTitle) {
-      return '<figure${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+      return '<figure${_nodeAttributes(node)}>\n'
           '<title>${_s(node.title)}</title>\n'
           '$mediaobject\n'
           '</figure>';
     }
-    // Unwrappable long literal (no valid split point).
-    // ignore: lines_longer_than_80_chars
-    return '<informalfigure${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+    return '<informalfigure${_nodeAttributes(node)}>\n'
         '$mediaobject\n'
         '</informalfigure>';
   }
@@ -517,7 +511,7 @@ class Docbook5Converter extends ConverterBase {
   /// Converts the [node] listing block.
   String convertListing(Block node) {
     final informal = !node.hasTitle;
-    final commonAttrs = _commonAttributes(node.id, node.role, node.reftext);
+    final commonAttrs = _nodeAttributes(node);
     final String wrappedContent;
     if (node.style == 'source') {
       final attrs = node.attributes;
@@ -555,16 +549,14 @@ class Docbook5Converter extends ConverterBase {
   /// Converts the [node] literal block.
   String convertLiteral(Block node) {
     if (node.hasTitle) {
-      // Unwrappable long literal (no valid split point).
-      // ignore: lines_longer_than_80_chars
-      return '<formalpara${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+      return '<formalpara${_nodeAttributes(node)}>\n'
           '<title>${_s(node.title)}</title>\n'
           '<para>\n'
           '<literallayout class="monospaced">${_s(node.content())}</literallayout>\n'
           '</para>\n'
           '</formalpara>';
     }
-    return '<literallayout${_commonAttributes(node.id, node.role, node.reftext)} class="monospaced">${_s(node.content())}</literallayout>';
+    return '<literallayout${_nodeAttributes(node)} class="monospaced">${_s(node.content())}</literallayout>';
   }
 
   /// Converts the [node] stem block.
@@ -591,7 +583,7 @@ class Docbook5Converter extends ConverterBase {
           '<alt><![CDATA[$equation]]></alt>\n<mathphrase><![CDATA[$equation]]></mathphrase>';
     }
     if (node.hasTitle) {
-      return '<equation${_commonAttributes(node.id, node.role, node.reftext)}>'
+      return '<equation${_nodeAttributes(node)}>'
           '\n'
           '<title>${_s(node.title)}</title>\n'
           '$equationData\n'
@@ -599,9 +591,7 @@ class Docbook5Converter extends ConverterBase {
     }
     // WARNING dblatex displays the <informalequation> element inline instead
     // of block as documented (except w/ mathml).
-    // Unwrappable long literal (no valid split point).
-    // ignore: lines_longer_than_80_chars
-    return '<informalequation${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+    return '<informalequation${_nodeAttributes(node)}>\n'
         '$equationData\n'
         '</informalequation>';
   }
@@ -616,9 +606,7 @@ class Docbook5Converter extends ConverterBase {
         ? ' startingnumber="${_s(node.attr('start'))}"'
         : '';
     result.add(
-      // Unwrappable long literal (no valid split point).
-      // ignore: lines_longer_than_80_chars
-      '<orderedlist${_commonAttributes(node.id, node.role, node.reftext)}$numAttribute$startAttribute>',
+      '<orderedlist${_nodeAttributes(node)}$numAttribute$startAttribute>',
     );
     if (node.hasTitle) {
       result.add('<title>${_s(node.title)}</title>');
@@ -667,9 +655,7 @@ class Docbook5Converter extends ConverterBase {
         if (node.level == 0 &&
             node.parent!.context == 'section' &&
             doc.doctype == 'book') {
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          return '<partintro${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+          return '<partintro${_nodeAttributes(node)}>\n'
               '${_titleTag(node)}${_encloseContent(node)}\n'
               '</partintro>';
         }
@@ -707,20 +693,18 @@ class Docbook5Converter extends ConverterBase {
   /// Converts the [node] paragraph.
   String convertParagraph(Block node) {
     if (node.hasTitle) {
-      // Unwrappable long literal (no valid split point).
-      // ignore: lines_longer_than_80_chars
-      return '<formalpara${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+      return '<formalpara${_nodeAttributes(node)}>\n'
           '<title>${_s(node.title)}</title>\n'
           '<para>${_s(node.content())}</para>\n'
           '</formalpara>';
     }
-    return '<simpara${_commonAttributes(node.id, node.role, node.reftext)}>${_s(node.content())}</simpara>';
+    return '<simpara${_nodeAttributes(node)}>${_s(node.content())}</simpara>';
   }
 
   /// Converts the [node] preamble.
   String convertPreamble(Block node) {
     if ((node.document! as Document).doctype == 'book') {
-      return '<preface${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+      return '<preface${_nodeAttributes(node)}>\n'
           '${_titleTag(node, false)}${_s(node.content())}\n'
           '</preface>';
     }
@@ -740,7 +724,7 @@ class Docbook5Converter extends ConverterBase {
 
   /// Converts the [node] sidebar block.
   String convertSidebar(Block node) =>
-      '<sidebar${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+      '<sidebar${_nodeAttributes(node)}>\n'
       '${_titleTag(node)}${_encloseContent(node)}\n'
       '</sidebar>';
 
@@ -755,10 +739,15 @@ class Docbook5Converter extends ConverterBase {
     }
     final grid = _s(node.attr('grid', null, 'table-grid'));
     final tagName = node.hasTitle ? 'table' : 'informaltable';
+    final rowsep = grid == 'none' || grid == 'cols' ? 0 : 1;
+    final colsep = grid == 'none' || grid == 'rows' ? 0 : 1;
+    final orientAttribute =
+        node.hasAttr('orientation', 'landscape', 'table-orientation')
+        ? ' orient="land"'
+        : '';
     result.add(
-      // Unwrappable long literal (no valid split point).
-      // ignore: lines_longer_than_80_chars
-      '<$tagName${_commonAttributes(node.id, node.role, node.reftext)}$pgwideAttribute frame="$frame" rowsep="${(grid == 'none' || grid == 'cols') ? 0 : 1}" colsep="${(grid == 'none' || grid == 'rows') ? 0 : 1}"${node.hasAttr('orientation', 'landscape', 'table-orientation') ? ' orient="land"' : ''}>',
+      '<$tagName${_nodeAttributes(node)}$pgwideAttribute frame="$frame" '
+      'rowsep="$rowsep" colsep="$colsep"$orientAttribute>',
     );
     if (node.hasOption('unbreakable')) {
       result.add('<?dbfo keep-together="always"?>');
@@ -813,9 +802,8 @@ class Docbook5Converter extends ConverterBase {
           // direct descendant according to DocBook rules.
           final entryStart =
               '<entry align="${_s(cell.attr('halign'))}" '
-              // Unwrappable long literal (no valid split point).
-              // ignore: lines_longer_than_80_chars
-              'valign="${_s(cell.attr('valign'))}"$colspanAttribute$rowspanAttribute>';
+              'valign="${_s(cell.attr('valign'))}"'
+              '$colspanAttribute$rowspanAttribute>';
           final String cellContent;
           if (tsec == 'head') {
             cellContent = _s(cell.text);
@@ -861,9 +849,7 @@ class Docbook5Converter extends ConverterBase {
   String convertUlist(ListBlock node) {
     final result = <String>[];
     if (node.style == 'bibliography') {
-      result.add(
-        '<bibliodiv${_commonAttributes(node.id, node.role, node.reftext)}>',
-      );
+      result.add('<bibliodiv${_nodeAttributes(node)}>');
       if (node.hasTitle) {
         result.add('<title>${_s(node.title)}</title>');
       }
@@ -882,11 +868,7 @@ class Docbook5Converter extends ConverterBase {
       final checklist = node.hasOption('checklist');
       final markType = checklist ? 'none' : node.style;
       final markAttribute = isTruthy(markType) ? ' mark="$markType"' : '';
-      result.add(
-        // Unwrappable long literal (no valid split point).
-        // ignore: lines_longer_than_80_chars
-        '<itemizedlist${_commonAttributes(node.id, node.role, node.reftext)}$markAttribute>',
-      );
+      result.add('<itemizedlist${_nodeAttributes(node)}$markAttribute>');
       if (node.hasTitle) {
         result.add('<title>${_s(node.title)}</title>');
       }
@@ -1078,6 +1060,10 @@ class Docbook5Converter extends ConverterBase {
         ? '<anchor${_commonAttributes(node.id)}/>$quotedText'
         : quotedText;
   }
+
+  /// [_commonAttributes] for [node]'s own id, role and reftext.
+  String _nodeAttributes(AbstractNode node) =>
+      _commonAttributes(node.id, node.role, node.reftext);
 
   /// The `xml:id`, `role` and `xreflabel` attributes shared by most elements.
   String _commonAttributes(String? id, [Object? role, String? reftext]) {
@@ -1353,9 +1339,7 @@ class Docbook5Converter extends ConverterBase {
       startTag = '<blockquote';
       endTag = '</blockquote>';
     }
-    final result = <String>[
-      '$startTag${_commonAttributes(node.id, node.role, node.reftext)}>',
-    ];
+    final result = <String>['$startTag${_nodeAttributes(node)}>'];
     if (node.hasTitle) {
       result.add('<title>${_s(node.title)}</title>');
     }

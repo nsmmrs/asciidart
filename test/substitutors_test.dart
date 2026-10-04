@@ -2959,11 +2959,11 @@ void main() {
             'Sentence text.footnoteref:[fn1,Commentary on this sentence.]',
           );
           subMacros(para, para.source());
-          expect(logger.warns, [
-            // Unwrappable long literal (no valid split point).
-            // ignore: lines_longer_than_80_chars
-            'found deprecated footnoteref macro: footnoteref:[fn1,Commentary on this sentence.]; use footnote macro with target instead',
-          ]);
+          const warning =
+              'found deprecated footnoteref macro: '
+              'footnoteref:[fn1,Commentary on this sentence.]; '
+              'use footnote macro with target instead';
+          expect(logger.warns, [warning]);
         });
       });
 
@@ -3023,10 +3023,11 @@ void main() {
           'id and text', () {
         // PORT: `convert_string_to_embedded` over two paragraphs; each
         // paragraph is substituted independently here.
+        const footnoteLine =
+            'The footnote:[] macro can be used for defining and referencing '
+            'footnotes.';
         for (final line in const [
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'The footnote:[] macro can be used for defining and referencing footnotes.',
+          footnoteLine,
           'The footnoteref:[] macro is now deprecated.',
         ]) {
           expect(contentOf(blockFromString(line)), contains(line));
@@ -3250,12 +3251,9 @@ void main() {
           'an index reference and retain term inline', () {
         const sentence =
             'The tiger (Panthera tigris) is the largest cat species.';
-        for (final macro in const [
-          // Unwrappable long literal (no valid split point).
-          // ignore: lines_longer_than_80_chars
-          'The indexterm2:[tiger] (Panthera tigris) is the largest cat species.',
-          'The ((tiger)) (Panthera tigris) is the largest cat species.',
-        ]) {
+        for (final term in const ['indexterm2:[tiger]', '((tiger))']) {
+          final macro =
+              'The $term (Panthera tigris) is the largest cat species.';
           final para = blockFromString(macro);
           expect(subMacros(para, para.source()), sentence);
         }
