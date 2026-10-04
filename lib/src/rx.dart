@@ -13,12 +13,6 @@
 ///   ported for [hardLineBreakRx] (R5).
 library;
 
-// Regex patterns are assembled from shared CC/CG fragments with `+`,
-// mirroring the Ruby `/...#{...}.../` originals fragment-for-fragment.
-// Interpolation would force raw<->cooked escape unification (backslash
-// quadrupling) and destroy that correspondence.
-// ignore_for_file: prefer_interpolation_to_compose_strings
-
 // Character class fragments (mirror the CC_*/CG_* constants).
 
 /// Any character, including newlines (`CC_ALL`).
@@ -67,19 +61,12 @@ const String _admonitionStyles = 'NOTE|TIP|IMPORTANT|WARNING|CAUTION';
 
 /// Matches the author info line immediately following the document title.
 final RegExp authorInfoLineRx = RegExp(
-  '^(' +
-      cgWord +
-      '[' +
-      ccWord +
-      r"\-'.]*)(?: +(" +
-      cgWord +
-      '[' +
-      ccWord +
-      r"\-'.]*))?(?: +(" +
-      cgWord +
-      '[' +
-      ccWord +
-      r"\-'.]*))?(?: +<([^>]+)>)?$",
+  '^($cgWord[$ccWord'
+  r"\-'.]*)(?: +("
+  '$cgWord[$ccWord'
+  r"\-'.]*))?(?: +("
+  '$cgWord[$ccWord'
+  r"\-'.]*))?(?: +<([^>]+)>)?$",
   multiLine: true,
   unicode: true,
 );
@@ -89,25 +76,23 @@ final RegExp authorDelimiterRx = RegExp(r';(?: |$)', multiLine: true);
 
 /// Matches the revision info line beneath the author info line.
 final RegExp revisionInfoLineRx = RegExp(
-  r'^(?:[^\d{]*(' +
-      ccAny +
-      '*?),)? *(?!:)(' +
-      ccAny +
-      '*?)(?: *(?!^),?: *(' +
-      ccAny +
-      r'*))?$',
+  r'^(?:[^\d{]*('
+  '$ccAny*?),)? *(?!:)($ccAny*?)(?: *(?!^),?: *($ccAny*))?\$',
   multiLine: true,
 );
 
 /// Matches the title and volnum in the manpage doctype.
 final RegExp manpageTitleVolnumRx = RegExp(
-  '^(' + ccAny + r'+?) *\( *(' + ccAny + r'+?) *\)$',
+  '^($ccAny'
+  r'+?) *\( *('
+  '$ccAny'
+  r'+?) *\)$',
   multiLine: true,
 );
 
 /// Matches the name and purpose in the manpage doctype.
 final RegExp manpageNamePurposeRx = RegExp(
-  '^(' + ccAny + '+?) +- +(' + ccAny + r'+)$',
+  '^($ccAny+?) +- +($ccAny+)\$',
   multiLine: true,
 );
 
@@ -116,21 +101,23 @@ final RegExp manpageNamePurposeRx = RegExp(
 /// Matches a conditional preprocessor directive
 /// (e.g., ifdef, ifndef, ifeval and endif).
 final RegExp conditionalDirectiveRx = RegExp(
-  r'^(\\)?(ifdef|ifndef|ifeval|endif)::(\S*?(?:([,+])\S*?)?)\[(' +
-      ccAny +
-      r'+)?\]$',
+  r'^(\\)?(ifdef|ifndef|ifeval|endif)::(\S*?(?:([,+])\S*?)?)\[('
+  '$ccAny'
+  r'+)?\]$',
   multiLine: true,
 );
 
 /// Matches a restricted (read as safe) eval expression.
 final RegExp evalExpressionRx = RegExp(
-  '^(' + ccAny + '+?) *([=!><]=|[><]) *(' + ccAny + r'+)$',
+  '^($ccAny+?) *([=!><]=|[><]) *($ccAny+)\$',
   multiLine: true,
 );
 
 /// Matches an include preprocessor directive.
 final RegExp includeDirectiveRx = RegExp(
-  r'^(\\)?include::([^\s\[](?:[^\[]*[^\s\[])?)\[(' + ccAny + r'+)?\]$',
+  r'^(\\)?include::([^\s\[](?:[^\[]*[^\s\[])?)\[('
+  '$ccAny'
+  r'+)?\]$',
   multiLine: true,
 );
 
@@ -144,7 +131,9 @@ final RegExp tagDirectiveRx = RegExp(
 
 /// Matches a document attribute entry.
 final RegExp attributeEntryRx = RegExp(
-  '^:(!?' + cgWord + r'[^:]*):(?:[ \t]+(' + ccAny + r'*))?$',
+  '^:(!?$cgWord'
+  r'[^:]*):(?:[ \t]+('
+  '$ccAny*))?\$',
   multiLine: true,
   unicode: true,
 );
@@ -156,18 +145,16 @@ final RegExp invalidAttributeNameCharsRx = RegExp('[^$ccWord-]', unicode: true);
 /// entry once it has been parsed (opal variant: `^`/`$` without
 /// multiLine emulate the Ruby `\A`/`\Z` string anchors).
 final RegExp attributeEntryPassMacroRx = RegExp(
-  r'^pass:([a-z]+(?:,[a-z-]+)*)?\[(' + ccAll + r'*)\]$',
+  r'^pass:([a-z]+(?:,[a-z-]+)*)?\[('
+  '$ccAll'
+  r'*)\]$',
 );
 
 /// Matches an inline attribute reference.
 final RegExp attributeReferenceRx = RegExp(
-  r'(\\)?\{(' +
-      cgWord +
-      '[' +
-      ccWord +
-      '-]*|(set|counter2?):' +
-      ccAny +
-      r'+?)(\\)?\}',
+  r'(\\)?\{('
+  '$cgWord[$ccWord-]*|(set|counter2?):$ccAny'
+  r'+?)(\\)?\}',
   unicode: true,
 );
 
@@ -176,20 +163,22 @@ final RegExp attributeReferenceRx = RegExp(
 /// Matches an anchor (i.e., id + optional reference text) on a line
 /// above a block.
 final RegExp blockAnchorRx = RegExp(
-  r'^\[\[(?:|([' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*)(?:, *(' +
-      ccAny +
-      r'+))?)\]\]$',
+  r'^\[\[(?:|(['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*)(?:, *('
+  '$ccAny'
+  r'+))?)\]\]$',
   multiLine: true,
   unicode: true,
 );
 
 /// Matches an attribute list above a block element.
 final RegExp blockAttributeListRx = RegExp(
-  r'^\[(|[' + ccWord + r'.#%{,"\x27]' + ccAny + r'*)\]$',
+  r'^\[(|['
+  '$ccWord'
+  r'.#%{,"\x27]'
+  '$ccAny'
+  r'*)\]$',
   multiLine: true,
   unicode: true,
 );
@@ -197,24 +186,23 @@ final RegExp blockAttributeListRx = RegExp(
 /// A combined pattern that matches either a block anchor or a block
 /// attribute list.
 final RegExp blockAttributeLineRx = RegExp(
-  r'^\[(?:|[' +
-      ccWord +
-      r'.#%{,"\x27]' +
-      ccAny +
-      r'*|\[(?:|[' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*(?:, *' +
-      ccAny +
-      r'+)?)\])\]$',
+  r'^\[(?:|['
+  '$ccWord'
+  r'.#%{,"\x27]'
+  '$ccAny'
+  r'*|\[(?:|['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*(?:, *'
+  '$ccAny'
+  r'+)?)\])\]$',
   multiLine: true,
   unicode: true,
 );
 
 /// Matches a title above a block.
 final RegExp blockTitleRx = RegExp(
-  r'^\.(\.?[^ \t.]' + ccAny + r'*)$',
+  r'^\.(\.?[^ \t.]'
+  '$ccAny*)\$',
   multiLine: true,
 );
 
@@ -227,7 +215,8 @@ final RegExp admonitionParagraphRx = RegExp(
 /// Matches a literal paragraph (a line of text preceded by at least
 /// one space).
 final RegExp literalParagraphRx = RegExp(
-  r'^([ \t]+' + ccAny + r'*)$',
+  r'^([ \t]+'
+  '$ccAny*)\$',
   multiLine: true,
 );
 
@@ -235,7 +224,9 @@ final RegExp literalParagraphRx = RegExp(
 
 /// Matches an Atx (single-line) section title.
 final RegExp atxSectionTitleRx = RegExp(
-  r'^(=={0,5})[ \t]+(' + ccAny + r'+?)(?:[ \t]+\1)?$',
+  r'^(=={0,5})[ \t]+('
+  '$ccAny'
+  r'+?)(?:[ \t]+\1)?$',
   multiLine: true,
 );
 
@@ -243,14 +234,17 @@ final RegExp atxSectionTitleRx = RegExp(
 /// (`\#` in the Ruby source is a Ruby-literal escape for `#`, not a
 /// regex escape, so a bare `#` is used here.)
 final RegExp extAtxSectionTitleRx = RegExp(
-  r'^(=={0,5}|##{0,5})[ \t]+(' + ccAny + r'+?)(?:[ \t]+\1)?$',
+  r'^(=={0,5}|##{0,5})[ \t]+('
+  '$ccAny'
+  r'+?)(?:[ \t]+\1)?$',
   multiLine: true,
 );
 
 /// Matches the title-only first line of a Setext (two-line) section
 /// title.
 final RegExp setextSectionTitleRx = RegExp(
-  r'^((?!\.)' + ccAny + '*?' + cgAlnum + ccAny + r'*)$',
+  r'^((?!\.)'
+  '$ccAny*?$cgAlnum$ccAny*)\$',
   multiLine: true,
   unicode: true,
 );
@@ -258,22 +252,20 @@ final RegExp setextSectionTitleRx = RegExp(
 /// Matches an anchor (i.e., id + optional reference text) inside a
 /// section title.
 final RegExp inlineSectionAnchorRx = RegExp(
-  r' (\\)?\[\[([' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*)(?:, *(' +
-      ccAny +
-      r'+))?\]\]$',
+  r' (\\)?\[\[(['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*)(?:, *('
+  '$ccAny'
+  r'+))?\]\]$',
   multiLine: true,
   unicode: true,
 );
 
 /// Matches invalid ID characters in a section title.
 final RegExp invalidSectionIdCharsRx = RegExp(
-  r'<[^>]+>|&(?:[a-z][a-z]+\d{0,2}|#\d\d\d{0,4}|#x[\da-f][\da-f][\da-f]{0,3});|[^ ' +
-      ccWord +
-      r'\-.]+?',
+  r'<[^>]+>|&(?:[a-z][a-z]+\d{0,2}|#\d\d\d{0,4}|#x[\da-f][\da-f][\da-f]{0,3});|[^ '
+  '$ccWord'
+  r'\-.]+?',
   unicode: true,
 );
 
@@ -284,22 +276,24 @@ final RegExp sectionLevelStyleRx = RegExp(r'^sect\d$', multiLine: true);
 
 /// Detects the start of any list item.
 final RegExp anyListRx = RegExp(
-  r'^(?:[ \t]*(?:-|\*\**|\.\.*|\u2022|\d+\.|[a-zA-Z]\.|[IVXivx]+\))[ \t]|(?!//[^/])[ \t]*[^ \t]' +
-      ccAny +
-      r'*?(?::::{0,2}|;;)(?:$|[ \t])|<(?:\d+|\.)>[ \t])',
+  r'^(?:[ \t]*(?:-|\*\**|\.\.*|\u2022|\d+\.|[a-zA-Z]\.|[IVXivx]+\))[ \t]|(?!//[^/])[ \t]*[^ \t]'
+  '$ccAny'
+  r'*?(?::::{0,2}|;;)(?:$|[ \t])|<(?:\d+|\.)>[ \t])',
   multiLine: true,
 );
 
 /// Matches an unordered list item.
 final RegExp unorderedListRx = RegExp(
-  r'^[ \t]*(-|\*\**|\u2022)[ \t]+(' + ccAny + r'*)$',
+  r'^[ \t]*(-|\*\**|\u2022)[ \t]+('
+  '$ccAny*)\$',
   multiLine: true,
 );
 
 /// Matches an ordered list item (explicit numbering or up to 5
 /// consecutive dots).
 final RegExp orderedListRx = RegExp(
-  r'^[ \t]*(\.\.*|\d+\.|[a-zA-Z]\.|[IVXivx]+\))[ \t]+(' + ccAny + r'*)$',
+  r'^[ \t]*(\.\.*|\d+\.|[a-zA-Z]\.|[IVXivx]+\))[ \t]+('
+  '$ccAny*)\$',
   multiLine: true,
 );
 
@@ -314,11 +308,10 @@ final Map<String, RegExp> orderedListMarkerRxMap = {
 
 /// Matches a description list entry.
 final RegExp descriptionListRx = RegExp(
-  r'^(?!//[^/])[ \t]*([^ \t]' +
-      ccAny +
-      r'*?)(:::{0,2}|;;)(?:$|[ \t]+(' +
-      ccAny +
-      r'*)$)',
+  r'^(?!//[^/])[ \t]*([^ \t]'
+  '$ccAny'
+  r'*?)(:::{0,2}|;;)(?:$|[ \t]+('
+  '$ccAny*)\$)',
   multiLine: true,
 );
 
@@ -326,42 +319,39 @@ final RegExp descriptionListRx = RegExp(
 /// specified by the key).
 final Map<String, RegExp> descriptionListSiblingRx = {
   '::': RegExp(
-    r'^(?!//[^/])[ \t]*([^ \t]' +
-        ccAny +
-        r'*?[^:]|[^ \t:])(::)(?:$|[ \t]+(' +
-        ccAny +
-        r'*)$)',
+    r'^(?!//[^/])[ \t]*([^ \t]'
+    '$ccAny'
+    r'*?[^:]|[^ \t:])(::)(?:$|[ \t]+('
+    '$ccAny*)\$)',
     multiLine: true,
   ),
   ':::': RegExp(
-    r'^(?!//[^/])[ \t]*([^ \t]' +
-        ccAny +
-        r'*?[^:]|[^ \t:])(:::)(?:$|[ \t]+(' +
-        ccAny +
-        r'*)$)',
+    r'^(?!//[^/])[ \t]*([^ \t]'
+    '$ccAny'
+    r'*?[^:]|[^ \t:])(:::)(?:$|[ \t]+('
+    '$ccAny*)\$)',
     multiLine: true,
   ),
   '::::': RegExp(
-    r'^(?!//[^/])[ \t]*([^ \t]' +
-        ccAny +
-        r'*?[^:]|[^ \t:])(::::)(?:$|[ \t]+(' +
-        ccAny +
-        r'*)$)',
+    r'^(?!//[^/])[ \t]*([^ \t]'
+    '$ccAny'
+    r'*?[^:]|[^ \t:])(::::)(?:$|[ \t]+('
+    '$ccAny*)\$)',
     multiLine: true,
   ),
   ';;': RegExp(
-    r'^(?!//[^/])[ \t]*([^ \t]' +
-        ccAny +
-        r'*?)(;;)(?:$|[ \t]+(' +
-        ccAny +
-        r'*)$)',
+    r'^(?!//[^/])[ \t]*([^ \t]'
+    '$ccAny'
+    r'*?)(;;)(?:$|[ \t]+('
+    '$ccAny*)\$)',
     multiLine: true,
   ),
 };
 
 /// Matches a callout list item.
 final RegExp calloutListRx = RegExp(
-  r'^<(\d+|\.)>[ \t]+(' + ccAny + r'*)$',
+  r'^<(\d+|\.)>[ \t]+('
+  '$ccAny*)\$',
   multiLine: true,
 );
 
@@ -382,16 +372,16 @@ final CalloutRxMap calloutExtractRxMap = CalloutRxMap(calloutExtractRxt);
 
 /// Scans for callout references (special characters not yet replaced).
 final RegExp calloutScanRx = RegExp(
-  r'\\?<!?(|--)(\d+|\.)\1>(?=(?: ?\\?<!?\1(?:\d+|\.)\1>)*' + ccEol + ')',
+  r'\\?<!?(|--)(\d+|\.)\1>(?=(?: ?\\?<!?\1(?:\d+|\.)\1>)*'
+  '$ccEol)',
   multiLine: true,
 );
 
 /// Matches a callout reference once special characters have been
 /// replaced (SGML output).
 final RegExp calloutSourceRx = RegExp(
-  r'((?://|#|--|;;) ?)?(\\)?&lt;!?(|--)(\d+|\.)\3&gt;(?=(?: ?\\?&lt;!?\3(?:\d+|\.)\3&gt;)*' +
-      ccEol +
-      ')',
+  r'((?://|#|--|;;) ?)?(\\)?&lt;!?(|--)(\d+|\.)\3&gt;(?=(?: ?\\?&lt;!?\3(?:\d+|\.)\3&gt;)*'
+  '$ccEol)',
   multiLine: true,
 );
 
@@ -463,28 +453,31 @@ final RegExp cellSpecEndRx = RegExp(
 
 /// Matches the custom block macro pattern.
 final RegExp customBlockMacroRx = RegExp(
-  '^(' +
-      cgWord +
-      '[' +
-      ccWord +
-      r'-]*)::(|\S|\S' +
-      ccAny +
-      r'*?\S)\[(' +
-      ccAny +
-      r'+)?\]$',
+  '^($cgWord[$ccWord'
+  r'-]*)::(|\S|\S'
+  '$ccAny'
+  r'*?\S)\[('
+  '$ccAny'
+  r'+)?\]$',
   multiLine: true,
   unicode: true,
 );
 
 /// Matches an image, video or audio block macro.
 final RegExp blockMediaMacroRx = RegExp(
-  r'^(image|video|audio)::(\S|\S' + ccAny + r'*?\S)\[(' + ccAny + r'+)?\]$',
+  r'^(image|video|audio)::(\S|\S'
+  '$ccAny'
+  r'*?\S)\[('
+  '$ccAny'
+  r'+)?\]$',
   multiLine: true,
 );
 
 /// Matches the TOC block macro.
 final RegExp blockTocMacroRx = RegExp(
-  r'^toc::\[(' + ccAny + r'+)?\]$',
+  r'^toc::\[('
+  '$ccAny'
+  r'+)?\]$',
   multiLine: true,
 );
 
@@ -493,63 +486,51 @@ final RegExp blockTocMacroRx = RegExp(
 /// Matches an anchor (i.e., id + optional reference text) in the flow
 /// of text.
 final RegExp inlineAnchorRx = RegExp(
-  r'(\\)?(?:\[\[([' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*)(?:, *(' +
-      ccAny +
-      r'+?))? ?\]\]|anchor:([' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*)\[(?:\]|(' +
-      ccAny +
-      r'*?[^\\])\]))',
+  r'(\\)?(?:\[\[(['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*)(?:, *('
+  '$ccAny'
+  r'+?))? ?\]\]|anchor:(['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*)\[(?:\]|('
+  '$ccAny'
+  r'*?[^\\])\]))',
   unicode: true,
 );
 
 /// Scans for a non-escaped anchor in the flow of text.
 final RegExp inlineAnchorScanRx = RegExp(
-  r'(?:^|[^\\\[])\[\[([' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*)(?:, *(' +
-      ccAny +
-      r'+?))? ?\]\]|(?:^|[^\\])anchor:([' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*)\[(?:\]|(' +
-      ccAny +
-      r'*?[^\\])\])',
+  r'(?:^|[^\\\[])\[\[(['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*)(?:, *('
+  '$ccAny'
+  r'+?))? ?\]\]|(?:^|[^\\])anchor:(['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*)\[(?:\]|('
+  '$ccAny'
+  r'*?[^\\])\])',
   multiLine: true,
   unicode: true,
 );
 
 /// Scans for a leading, non-escaped anchor.
 final RegExp leadingInlineAnchorRx = RegExp(
-  r'^\[\[([' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*)(?:, *(' +
-      ccAny +
-      r'+?))?\]\]',
+  r'^\[\[(['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*)(?:, *('
+  '$ccAny'
+  r'+?))?\]\]',
   multiLine: true,
   unicode: true,
 );
 
 /// Matches a bibliography anchor at the start of the list item text.
 final RegExp inlineBiblioAnchorRx = RegExp(
-  r'^\[\[\[([' +
-      ccAlpha +
-      '_:][' +
-      ccWord +
-      r'\-:.]*)(?:, *(' +
-      ccAny +
-      r'+?))?\]\]\]',
+  r'^\[\[\[(['
+  '${ccAlpha}_:][$ccWord'
+  r'\-:.]*)(?:, *('
+  '$ccAny'
+  r'+?))?\]\]\]',
   multiLine: true,
   unicode: true,
 );
@@ -558,47 +539,45 @@ final RegExp inlineBiblioAnchorRx = RegExp(
 /// (The Ruby lead-in class contains an escaped `>`, which is invalid
 /// under `unicode: true`, so a bare `>` is used here.)
 final RegExp inlineEmailRx = RegExp(
-  r'([\\>:/])?' +
-      cgWord +
-      '(?:&amp;|[' +
-      ccWord +
-      r'\-.%+])*@' +
-      cgAlnum +
-      '[' +
-      ccAlnum +
-      r'_\-.]*\.[a-zA-Z]{2,5}\b',
+  r'([\\>:/])?'
+  '$cgWord(?:&amp;|[$ccWord'
+  r'\-.%+])*@'
+  '$cgAlnum[$ccAlnum'
+  r'_\-.]*\.[a-zA-Z]{2,5}\b',
   unicode: true,
 );
 
 /// Matches an inline footnote macro, which may span multiple lines.
 final RegExp inlineFootnoteMacroRx = RegExp(
-  r'\\?footnote(?:(ref):|:([' +
-      ccWord +
-      r'-]+)?)\[(?:|(' +
-      ccAll +
-      r'*?[^\\]))\](?!</a>)',
+  r'\\?footnote(?:(ref):|:(['
+  '$ccWord'
+  r'-]+)?)\[(?:|('
+  '$ccAll'
+  r'*?[^\\]))\](?!</a>)',
   unicode: true,
 );
 
 /// Matches an image or icon inline macro.
 final RegExp inlineImageMacroRx = RegExp(
-  r'\\?i(?:mage|con):([^:\s\[](?:[^\n\[]*[^\s\[])?)\[(|' +
-      ccAll +
-      r'*?[^\\])\]',
+  r'\\?i(?:mage|con):([^:\s\[](?:[^\n\[]*[^\s\[])?)\[(|'
+  '$ccAll'
+  r'*?[^\\])\]',
 );
 
 /// Matches an indexterm inline macro, which may span multiple lines.
 final RegExp inlineIndextermMacroRx = RegExp(
-  r'\\?(?:(indexterm2?):\[(' +
-      ccAll +
-      r'*?[^\\])\]|\(\((' +
-      ccAll +
-      r'+?)\)\)(?!\)))',
+  r'\\?(?:(indexterm2?):\[('
+  '$ccAll'
+  r'*?[^\\])\]|\(\(('
+  '$ccAll'
+  r'+?)\)\)(?!\)))',
 );
 
 /// Matches either the kbd or btn inline macro.
 final RegExp inlineKbdBtnMacroRx = RegExp(
-  r'(\\)?(kbd|btn):\[(' + ccAll + r'*?[^\\])\]',
+  r'(\\)?(kbd|btn):\[('
+  '$ccAll'
+  r'*?[^\\])\]',
 );
 
 /// Matches an implicit link and some of the link inline macro (opal
@@ -610,22 +589,23 @@ final RegExp inlineKbdBtnMacroRx = RegExp(
 /// ASCII `[ \t]`), so no `unicode` flag is needed; omitting it also
 /// keeps `\s` at its narrowest.
 final RegExp inlineLinkRx = RegExp(
-  '(^|link:|' +
-      cgBlank +
-      r'|\\?&lt;(?=\\?(?:https?|file|ftp|irc)(:))|[>\(\)\[\];"\x27])(\\?(?:https?|file|ftp|irc)://)(?:([^\s\[\]]+)\[(|' +
-      ccAll +
-      r'*?[^\\])\]|(?!\2)([^\s]+?)&gt;|([^\s\[\]<]*([^\s,.?!\[\]<\)])))',
+  '(^|link:|$cgBlank'
+  r'|\\?&lt;(?=\\?(?:https?|file|ftp|irc)(:))|[>\(\)\[\];"\x27])(\\?(?:https?|file|ftp|irc)://)(?:([^\s\[\]]+)\[(|'
+  '$ccAll'
+  r'*?[^\\])\]|(?!\2)([^\s]+?)&gt;|([^\s\[\]<]*([^\s,.?!\[\]<\)])))',
   multiLine: true,
 );
 
 /// Matches a link or e-mail inline macro.
 final RegExp inlineLinkMacroRx = RegExp(
-  r'\\?(?:link|(mailto)):(|[^:\s\[][^\s\[]*)\[(|' + ccAll + r'*?[^\\])\]',
+  r'\\?(?:link|(mailto)):(|[^:\s\[][^\s\[]*)\[(|'
+  '$ccAll'
+  r'*?[^\\])\]',
 );
 
 /// Matches the name of a macro.
 final RegExp macroNameRx = RegExp(
-  '^' + cgWord + '[' + ccWord + r'-]*$',
+  '^$cgWord[$ccWord-]*\$',
   multiLine: true,
   unicode: true,
 );
@@ -633,26 +613,26 @@ final RegExp macroNameRx = RegExp(
 /// Matches a stem (and alternatives, asciimath and latexmath) inline
 /// macro, which may span multiple lines.
 final RegExp inlineStemMacroRx = RegExp(
-  r'\\?(stem|(?:latex|ascii)math):([a-z]+(?:,[a-z-]+)*)?\[(' +
-      ccAll +
-      r'*?[^\\])\]',
+  r'\\?(stem|(?:latex|ascii)math):([a-z]+(?:,[a-z-]+)*)?\[('
+  '$ccAll'
+  r'*?[^\\])\]',
 );
 
 /// Matches a menu inline macro.
 final RegExp inlineMenuMacroRx = RegExp(
-  r'\\?menu:(' +
-      cgWord +
-      '|[' +
-      ccWord +
-      r'&][^\n\[]*[^\s\[])\[ *(?:|(' +
-      ccAll +
-      r'*?[^\\]))\]',
+  r'\\?menu:('
+  '$cgWord|[$ccWord'
+  r'&][^\n\[]*[^\s\[])\[ *(?:|('
+  '$ccAll'
+  r'*?[^\\]))\]',
   unicode: true,
 );
 
 /// Matches an implicit menu inline macro.
 final RegExp inlineMenuRx = RegExp(
-  r'\\?"([' + ccWord + r'&][^"]*?[ \n]+&gt;[ \n]+[^"]*)"',
+  r'\\?"(['
+  '$ccWord'
+  r'&][^"]*?[ \n]+&gt;[ \n]+[^"]*)"',
   unicode: true,
 );
 
@@ -670,16 +650,14 @@ final Map<bool, InlinePassEntry> inlinePassRx = {
     '+',
     '-]',
     RegExp(
-      '((?:^|[^' +
-          ccWord +
-          r';:\\])(?=(\[)|\+)|\\(?=\[)|(?=\\\+))(?:\2(x-|[^\[\]]+ x-)\]|(?:' +
-          quoteAttributeListRxt +
-          r')?(?=(\\)?\+))(\5?(\+|`)' +
-          r'(\S|\S' +
-          ccAll +
-          r'*?\S)\7)(?!' +
-          cgWord +
-          ')',
+      '((?:^|[^$ccWord'
+      r';:\\])(?=(\[)|\+)|\\(?=\[)|(?=\\\+))(?:\2(x-|[^\[\]]+ x-)\]|(?:'
+      '$quoteAttributeListRxt'
+      r')?(?=(\\)?\+))(\5?(\+|`)'
+      r'(\S|\S'
+      '$ccAll'
+      r'*?\S)\7)(?!'
+      '$cgWord)',
       multiLine: true,
       unicode: true,
     ),
@@ -688,15 +666,13 @@ final Map<bool, InlinePassEntry> inlinePassRx = {
     '`',
     null,
     RegExp(
-      '(^|[^`' +
-          ccWord +
-          r'}])(?:((?=\n?(?![\s\S])))()|' +
-          quoteAttributeListRxt +
-          r'(?=(\\)?))?(\5?(`)([^`\s]|[^`\s]' +
-          ccAll +
-          r'*?\S)\7)(?![`' +
-          ccWord +
-          '}])',
+      '(^|[^`$ccWord'
+      r'}])(?:((?=\n?(?![\s\S])))()|'
+      '$quoteAttributeListRxt'
+      r'(?=(\\)?))?(\5?(`)([^`\s]|[^`\s]'
+      '$ccAll'
+      r'*?\S)\7)(?![`'
+      '$ccWord}])',
       multiLine: true,
       unicode: true,
     ),
@@ -722,29 +698,23 @@ class InlinePassEntry {
 /// Matches several variants of the passthrough inline macro, which may
 /// span multiple lines.
 final RegExp inlinePassMacroRx = RegExp(
-  r'(?:(?:(\\?)' +
-      quoteAttributeListRxt +
-      r')?(\\{0,2})(\+\+\+?|\$\$)(' +
-      ccAll +
-      r'*?)\4|(\\?)pass:([a-z]+(?:,[a-z-]+)*)?\[(|' +
-      ccAll +
-      r'*?[^\\])\])',
+  r'(?:(?:(\\?)'
+  '$quoteAttributeListRxt'
+  r')?(\\{0,2})(\+\+\+?|\$\$)('
+  '$ccAll'
+  r'*?)\4|(\\?)pass:([a-z]+(?:,[a-z-]+)*)?\[(|'
+  '$ccAll'
+  r'*?[^\\])\])',
 );
 
 /// Matches an xref (i.e., cross-reference) inline macro, which may
 /// span multiple lines.
 final RegExp inlineXrefMacroRx = RegExp(
-  r'\\?(?:&lt;&lt;([' +
-      ccWord +
-      '#/.:{]' +
-      ccAll +
-      '*?)&gt;&gt;|xref:([' +
-      ccWord +
-      '#/.:{]' +
-      ccAll +
-      r'*?)\[(?:\]|(' +
-      ccAll +
-      r'*?[^\\])\]))',
+  r'\\?(?:&lt;&lt;(['
+  '$ccWord#/.:{]$ccAll*?)&gt;&gt;|xref:([$ccWord#/.:{]$ccAll'
+  r'*?)\[(?:\]|('
+  '$ccAll'
+  r'*?[^\\])\]))',
   unicode: true,
 );
 
@@ -753,7 +723,8 @@ final RegExp inlineXrefMacroRx = RegExp(
 /// Matches a trailing `+` preceded by a space, which forces a hard
 /// line break (Ruby branch plus multiLine).
 final RegExp hardLineBreakRx = RegExp(
-  '^(' + ccAny + r'*) \+$',
+  '^($ccAny'
+  r'*) \+$',
   multiLine: true,
 );
 
