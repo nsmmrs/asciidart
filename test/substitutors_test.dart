@@ -1,8 +1,6 @@
 // Adjacent-string joins here are markup/paths, not prose; joined values
 // are asserted byte-identical by tests.
 // ignore_for_file: missing_whitespace_between_adjacent_strings
-// Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
-// ignore_for_file: avoid_dynamic_calls
 /// Port of `test/substitutions_test.rb` for `lib/src/substitutors.dart`.
 ///
 /// Ruby's suite drives substitutions through parsed blocks
@@ -2511,8 +2509,9 @@ void main() {
           final doc = para.document! as Document;
           final images = doc.catalog['images']! as List;
           expect(images.length, 1);
-          expect(images[0].toString(), 'fixtures/dot.gif');
-          expect(images[0].imagesdir, isNull);
+          final image = images.single! as ImageReference;
+          expect(image.toString(), 'fixtures/dot.gif');
+          expect(image.imagesdir, isNull);
           expect(logger.isEmpty, isTrue);
         });
       });

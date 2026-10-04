@@ -395,23 +395,27 @@ void main() {
     });
 
     test('should not load invalid file', () {
+      Object? error;
+      StackTrace? stackTrace;
       try {
         loadFile(fixturePath('hello-asciidoctor.pdf'), {'safe': SafeMode.safe});
-        fail('expected an ArgumentError');
-        // The test asserts the message and stack trace of the thrown
-        // ArgumentError, which requires catching it.
-        // ignore: avoid_catching_errors
-      } on ArgumentError catch (e, st) {
-        expect(
-          e.message,
+      } on Object catch (e, st) {
+        error = e;
+        stackTrace = st;
+      }
+      expect(
+        error,
+        isA<ArgumentError>().having(
+          (e) => e.message,
+          'message',
           contains(
             'Failed to load AsciiDoc document - source is either binary or '
             'contains invalid Unicode data',
           ),
-        );
-        // The original stack trace is preserved (points into load.dart).
-        expect(st.toString(), contains('load.dart'));
-      }
+        ),
+      );
+      // The original stack trace is preserved (points into load.dart).
+      expect('$stackTrace', contains('load.dart'));
     });
 
     test('returns unparsed document when parse is false', () {

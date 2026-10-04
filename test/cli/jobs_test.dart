@@ -1,5 +1,3 @@
-// Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
-// ignore_for_file: avoid_dynamic_calls
 /// Tests for CLI `-j/--jobs` parallel bulk conversion.
 ///
 /// Covers flag parsing/validation, the conversion worker codec
@@ -307,8 +305,9 @@ void main() {
       expect(response['ok'], isTrue);
       final records = response['records']! as List;
       expect(records, hasLength(1));
-      expect(records.single[0], equals(Severity.warn.value));
-      expect(records.single[1], contains('section title out of sequence'));
+      final [severity, message, ...] = records.single! as List;
+      expect(severity, equals(Severity.warn.value));
+      expect(message, contains('section title out of sequence'));
       expect(response['max_severity'], equals(Severity.warn.value));
     });
 
@@ -626,8 +625,7 @@ void main() {
       try {
         seqInvoker.invoke();
         // Parity comparison must capture whatever surfaces, Errors included.
-        // ignore: avoid_catches_without_on_clauses
-      } catch (e) {
+      } on Object catch (e) {
         sequentialError = e;
       }
       expect(sequentialError, isNotNull);
@@ -642,8 +640,7 @@ void main() {
       try {
         await parInvoker.invokeAsync();
         // Parity comparison must capture whatever surfaces, Errors included.
-        // ignore: avoid_catches_without_on_clauses
-      } catch (e) {
+      } on Object catch (e) {
         parallelError = e;
       }
       expect(parallelError, isA<WorkerFailure>());

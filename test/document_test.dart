@@ -1,5 +1,3 @@
-// Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
-// ignore_for_file: avoid_dynamic_calls
 /// Port of `test/document_test.rb` (156 tests).
 ///
 /// All tests run: `convertFile`/`asciidoctorLoad`/`exampleDocument` are
@@ -232,15 +230,14 @@ void assertCss(String css, String? content, int count) {
   );
 }
 
-/// Returns the nodes matching [xpath] in [content] (port of
-/// `xmlnodes_at_xpath`).
-///
-/// Like Ruby (`count == 1 ? results.first : results`), returns the first
-/// [XmlNode] when [count] is 1, else the [XmlNodeSet].
-dynamic xmlnodesAtXpath(String xpath, String? content, [int? count]) {
-  final nodes = XmlMatcher.parse(content ?? '').xpath(xpath);
-  return count == 1 ? nodes.first : nodes;
-}
+/// The nodes matching [xpath] in [content] (port of `xmlnodes_at_xpath`).
+XmlNodeSet xmlnodesAtXpath(String xpath, String? content) =>
+    XmlMatcher.parse(content ?? '').xpath(xpath);
+
+/// The first node matching [xpath] in [content] (port of
+/// `xmlnodes_at_xpath xpath, content, 1`).
+XmlNode xmlnodeAtXpath(String xpath, String? content) =>
+    xmlnodesAtXpath(xpath, content).first;
 
 /// Fails unless [result] is well-formed XML (port of the
 /// `Nokogiri::XML::Document.parse(result) { STRICT | NONET }` assertion).
@@ -2578,7 +2575,7 @@ void main() {
         final output = convertString(input);
         assertXpath('/html/head/title[text()="Document Title"]', output, 1);
         final nodes = xmlnodesAtXpath('//*[@id="header"]/h1', output);
-        expect((nodes as dynamic).length, equals(1));
+        expect(nodes.length, equals(1));
         expect(
           output,
           contains(
@@ -3336,10 +3333,7 @@ void main() {
           '//div[@id="footnotes"]/div[@id="_footnotedef_1"]/text()',
           output,
         );
-        expect(
-          (text1 as dynamic).text.toString().trim(),
-          equals('. An example footnote.'),
-        );
+        expect(text1.text.trim(), equals('. An example footnote.'));
         assertCss('#footnotes .footnote#_footnotedef_2', output, 1);
         assertXpath(
           '//div[@id="footnotes"]/div[@id="_footnotedef_2"]/a[@href="#_footnoteref_2"][text()="2"]',
@@ -3350,10 +3344,7 @@ void main() {
           '//div[@id="footnotes"]/div[@id="_footnotedef_2"]/text()',
           output,
         );
-        expect(
-          (text2 as dynamic).text.toString().trim(),
-          equals('. Second footnote.'),
-        );
+        expect(text2.text.trim(), equals('. Second footnote.'));
       });
 
       test('outputs footnotes block in embedded document by default', () {
@@ -3373,10 +3364,7 @@ void main() {
           '/div[@id="footnotes"]/div[@id="_footnotedef_1"]/text()',
           output,
         );
-        expect(
-          (text as dynamic).text.toString().trim(),
-          equals('. An example footnote.'),
-        );
+        expect(text.text.trim(), equals('. An example footnote.'));
       });
 
       test('does not output footnotes block in embedded document if '
@@ -3640,13 +3628,13 @@ void main() {
           'attributes': {'backend': 'docbook5'},
         });
         assertXpath('/xmlns:article', result, 1);
-        final doc = xmlnodesAtXpath('/xmlns:article', result, 1);
+        final doc = xmlnodeAtXpath('/xmlns:article', result);
         expect(
-          (doc as dynamic).namespaces['xmlns'],
+          doc.namespaces['xmlns'],
           equals('http://docbook.org/ns/docbook'),
         );
         expect(
-          (doc as dynamic).namespaces['xmlns:xl'],
+          doc.namespaces['xmlns:xl'],
           equals('http://www.w3.org/1999/xlink'),
         );
         assertXpath('/xmlns:article[@version="5.0"]', result, 1);
@@ -3699,13 +3687,13 @@ void main() {
         });
         assertXpath('/xmlns:article', result, 1);
         assertXpath('/xmlns:article/xmlns:refentry', result, 1);
-        final doc = xmlnodesAtXpath('/xmlns:article', result, 1);
+        final doc = xmlnodeAtXpath('/xmlns:article', result);
         expect(
-          (doc as dynamic).namespaces['xmlns'],
+          doc.namespaces['xmlns'],
           equals('http://docbook.org/ns/docbook'),
         );
         expect(
-          (doc as dynamic).namespaces['xmlns:xl'],
+          doc.namespaces['xmlns:xl'],
           equals('http://www.w3.org/1999/xlink'),
         );
         expect((doc as dynamic).attr('version'), equals('5.0'));
@@ -3822,13 +3810,13 @@ void main() {
           'attributes': {'backend': 'docbook5', 'doctype': 'book'},
         });
         assertXpath('/xmlns:book', result, 1);
-        final doc = xmlnodesAtXpath('/xmlns:book', result, 1);
+        final doc = xmlnodeAtXpath('/xmlns:book', result);
         expect(
-          (doc as dynamic).namespaces['xmlns'],
+          doc.namespaces['xmlns'],
           equals('http://docbook.org/ns/docbook'),
         );
         expect(
-          (doc as dynamic).namespaces['xmlns:xl'],
+          doc.namespaces['xmlns:xl'],
           equals('http://www.w3.org/1999/xlink'),
         );
         assertXpath('/xmlns:book[@version="5.0"]', result, 1);

@@ -69,8 +69,7 @@ void conversionWorkerMain(SendPort mainPort) {
       response = runConversionJob(request);
       // Worker boundary: every failure (including Errors) must serialize
       // into an error response instead of killing the isolate silently.
-      // ignore: avoid_catches_without_on_clauses
-    } catch (e) {
+    } on Object catch (e) {
       response = <String, Object?>{
         'ok': false,
         'error': e.toString(),
@@ -186,8 +185,7 @@ Map<String, Object?> runConversionJob(Map<String, Object?> request) {
     };
     // Worker boundary: every failure (including Errors) must serialize
     // into an error response instead of killing the isolate silently.
-    // ignore: avoid_catches_without_on_clauses
-  } catch (e) {
+  } on Object catch (e) {
     return <String, Object?>{
       'ok': false,
       'error': e.toString(),

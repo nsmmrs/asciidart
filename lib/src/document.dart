@@ -1165,13 +1165,11 @@ class Document extends AbstractBlock implements NodeDocument {
         sanitize: sanitize,
       );
     }
-    // The `as` cast both checks and promotes `val` to String for the block
-    // below; the `!` form would not promote.
-    // ignore: cast_nullable_to_non_nullable
-    if (sanitize && (val as String).contains('<')) {
-      // `val` is promoted to String by the `as` cast in the condition.
-      final str = val;
-      return squeezeChar(str.replaceAll(xmlSanitizeRx, ''), ' ').trim();
+    if (sanitize) {
+      final title = val! as String;
+      if (title.contains('<')) {
+        return squeezeChar(title.replaceAll(xmlSanitizeRx, ''), ' ').trim();
+      }
     }
     return val;
   }

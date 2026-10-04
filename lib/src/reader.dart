@@ -1683,20 +1683,13 @@ class PreprocessorReader extends Reader {
     List<String>? incLines;
     int? incOffset;
     try {
-      String content;
-      try {
-        final raw = _readIncludeRaw(resolution, encoding);
-        content = raw is String
-            ? raw
-            : _decodeIncludeBytes(raw as List<int>, encoding);
-        // Catches the deliberate decode-failure signal (not arbitrary
-        // Errors): corrupt input surfaces as ArgumentError by design.
-        // ignore: avoid_catching_errors
-      } on ArgumentError {
-        // Ruby rescues decode failures raised while streaming the file, so
-        // they are handled as an unreadable include here.
-        throw const _IncludeNotReadable();
-      }
+      final raw = _readIncludeRaw(resolution, encoding);
+      // Ruby rescues decode failures raised while streaming the file, so
+      // they are handled as an unreadable include here.
+      final content = raw is String
+          ? raw
+          : _tryDecodeIncludeBytes(raw as List<int>, encoding) ??
+                (throw const _IncludeNotReadable());
       incLines = [];
       var incLineno = 0;
       final remaining = List<num>.of(incLinenos);
@@ -1784,20 +1777,13 @@ class PreprocessorReader extends Reader {
     List<String>? incLines;
     int? incOffset;
     try {
-      String content;
-      try {
-        final raw = _readIncludeRaw(resolution, encoding);
-        content = raw is String
-            ? raw
-            : _decodeIncludeBytes(raw as List<int>, encoding);
-        // Catches the deliberate decode-failure signal (not arbitrary
-        // Errors): corrupt input surfaces as ArgumentError by design.
-        // ignore: avoid_catching_errors
-      } on ArgumentError {
-        // Ruby rescues decode failures raised while streaming the file, so
-        // they are handled as an unreadable include here.
-        throw const _IncludeNotReadable();
-      }
+      final raw = _readIncludeRaw(resolution, encoding);
+      // Ruby rescues decode failures raised while streaming the file, so
+      // they are handled as an unreadable include here.
+      final content = raw is String
+          ? raw
+          : _tryDecodeIncludeBytes(raw as List<int>, encoding) ??
+                (throw const _IncludeNotReadable());
       incLines = [];
       var incLineno = 0;
       final tagStack = <_TagFrame>[];
@@ -2366,13 +2352,19 @@ Encoding? _findEncoding(String name) {
 
 /// Decodes include [bytes] strictly, raising Ruby's invalid-Unicode error on
 /// undecodable input.
-String _decodeIncludeBytes(List<int> bytes, Encoding encoding) {
+String _decodeIncludeBytes(List<int> bytes, Encoding encoding) =>
+    _tryDecodeIncludeBytes(bytes, encoding) ??
+    (throw ArgumentError(
+      'source is either binary or contains invalid Unicode data',
+    ));
+
+/// Decodes include [bytes] strictly, or returns `null` when they are not
+/// valid in [encoding].
+String? _tryDecodeIncludeBytes(List<int> bytes, Encoding encoding) {
   try {
     return encoding.decode(bytes);
   } on FormatException {
-    throw ArgumentError(
-      'source is either binary or contains invalid Unicode data',
-    );
+    return null;
   }
 }
 

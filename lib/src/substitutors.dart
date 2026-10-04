@@ -810,14 +810,10 @@ bool _hasNamedGroups(RegExp regexp) =>
 /// Returns the `name`d group of [match], or `null` when the pattern does
 /// not declare it (port of `$~[name] rescue nil`).
 String? _namedGroupOrNull(Match match, String name) {
-  try {
-    return (match as RegExpMatch).namedGroup(name);
-    // `namedGroup` documents an ArgumentError throw for undeclared groups;
-    // that documented signal is the check (port of `$~[name] rescue nil`).
-    // ignore: avoid_catching_errors
-  } on ArgumentError {
-    return null;
-  }
+  final regExpMatch = match as RegExpMatch;
+  return regExpMatch.groupNames.contains(name)
+      ? regExpMatch.namedGroup(name)
+      : null;
 }
 
 /// Substitutes inline macros (e.g., links, images, etc.) in [text], which
