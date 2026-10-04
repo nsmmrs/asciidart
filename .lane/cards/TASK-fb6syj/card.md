@@ -7,12 +7,13 @@ priority: 2
 labels:
 - release
 deps:
-- EPIC-9frzpm
 - TASK-03yrhq
 - TASK-c177z4
 - TASK-zs44d6
+- TASK-67yl6b
 created: "2026-10-04T13:42:23.246900Z"
-updated: "2026-10-04T13:42:23.246900Z"
+updated: "2026-10-04T14:17:36.176245Z"
 ---
+
 
 From green master: manual `dart pub publish` (first publish must be manual), tag v0.1.0 + push, enable pub.dev automated publishing for nsmmrs/asciidoctor-dart (tag pattern v{{version}}), create GitHub Release (optionally attach tool/build-exes.sh binaries + SHA256SUMS). Outward-facing: only on explicit go-ahead.
