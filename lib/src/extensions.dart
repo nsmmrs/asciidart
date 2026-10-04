@@ -33,8 +33,9 @@
 ///   an instance is passed instead. String class names resolve through the
 ///   factory table populated by [Extensions.registerProcessorFactory].
 /// * Ruby blocks become callbacks: the registration block receives the
-///   processor instance (e.g. `registry.block(name: 'shout', build: (p) {...})`)
-///   and the `process do ... end` form becomes an assignment to
+///   processor instance (e.g.
+///   `registry.block(name: 'shout', build: (p) {...})`) and the `process
+///   do ... end` form becomes an assignment to
 ///   [Processor.onProcess].
 /// * Class-level `option` defaults from Ruby (`Processor.option`) are
 ///   expressed by merging defaults in the subclass constructor.
@@ -800,7 +801,8 @@ class IncludeProcessor extends Processor
       return Function.apply(handler, [document, reader, target, attributes]);
     }
     throw UnimplementedError(
-      'IncludeProcessor subclass $runtimeType must implement the process method',
+      'IncludeProcessor subclass $runtimeType must implement the '
+      'process method',
     );
   }
 }
@@ -827,7 +829,8 @@ class DocinfoProcessor extends Processor with DocumentProcessorDsl {
     final handler = onProcess;
     if (handler != null) return Function.apply(handler, [document]);
     throw UnimplementedError(
-      'DocinfoProcessor subclass $runtimeType must implement the process method',
+      'DocinfoProcessor subclass $runtimeType must implement the '
+      'process method',
     );
   }
 

@@ -81,6 +81,8 @@ class Section extends AbstractBlock implements NodeSection {
         ? '$append'
         : (append == false ? '' : delimiter);
     if (level! > 1 && parent is Section) {
+      // Unwrappable long literal (no valid split point).
+      // ignore: lines_longer_than_80_chars
       return '${(parent! as Section).sectnum(delimiter, delimiter)}${numeral ?? ''}$app';
     }
     return '${numeral ?? ''}$app';

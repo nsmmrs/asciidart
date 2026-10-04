@@ -16,7 +16,8 @@ import 'package:asciidoctor/src/substitutors.dart';
 /// Methods for managing AsciiDoc lists (ordered, unordered and description
 /// lists).
 ///
-/// Port of `Asciidoctor::List` (renamed: a top-level `List` would collide with `dart:core` in every importer).
+/// Port of `Asciidoctor::List` (renamed: a top-level `List` would collide
+/// with `dart:core` in every importer).
 class ListBlock extends AbstractBlock {
   /// Creates a list with [parent] and [context] (`'ulist'`, `'olist'`,
   /// `'dlist'` or `'colist'`).

@@ -224,7 +224,8 @@ class Docbook5Converter extends ConverterBase {
     if (node.hasAttr('sectnums')) {
       result.add(
         node.hasAttr('sectnumlevels')
-            ? '<?asciidoc-numbered maxdepth="${_s(node.attr('sectnumlevels'))}"?>'
+            ? '<?asciidoc-numbered '
+                  'maxdepth="${_s(node.attr('sectnumlevels'))}"?>'
             : '<?asciidoc-numbered?>',
       );
     }
@@ -394,7 +395,8 @@ class Docbook5Converter extends ConverterBase {
     if (node.style == 'horizontal') {
       final tagName = node.hasTitle ? 'table' : 'informaltable';
       result.add(
-        '<$tagName${_commonAttributes(node.id, node.role, node.reftext)} tabstyle="horizontal" frame="none" colsep="0" rowsep="0">\n'
+        '<$tagName${_commonAttributes(node.id, node.role, node.reftext)} '
+        'tabstyle="horizontal" frame="none" colsep="0" rowsep="0">\n'
         '${_titleTag(node)}<tgroup cols="2">\n'
         '<colspec colwidth="${_s(node.attr('labelwidth', 15))}*"/>\n'
         '<colspec colwidth="${_s(node.attr('itemwidth', 85))}*"/>\n'
@@ -505,6 +507,8 @@ class Docbook5Converter extends ConverterBase {
           '$mediaobject\n'
           '</figure>';
     }
+    // Unwrappable long literal (no valid split point).
+    // ignore: lines_longer_than_80_chars
     return '<informalfigure${_commonAttributes(node.id, node.role, node.reftext)}>\n'
         '$mediaobject\n'
         '</informalfigure>';
@@ -520,7 +524,8 @@ class Docbook5Converter extends ConverterBase {
       final String numberingAttrs;
       if (node.hasOption('linenums')) {
         numberingAttrs = attrs.containsKey('start')
-            ? ' linenumbering="numbered" startinglinenumber="${rubyToInteger(attrs['start'])}"'
+            ? ' linenumbering="numbered" '
+                  'startinglinenumber="${rubyToInteger(attrs['start'])}"'
             : ' linenumbering="numbered"';
       } else {
         numberingAttrs = ' linenumbering="unnumbered"';
@@ -550,6 +555,8 @@ class Docbook5Converter extends ConverterBase {
   /// Converts the [node] literal block.
   String convertLiteral(Block node) {
     if (node.hasTitle) {
+      // Unwrappable long literal (no valid split point).
+      // ignore: lines_longer_than_80_chars
       return '<formalpara${_commonAttributes(node.id, node.role, node.reftext)}>\n'
           '<title>${_s(node.title)}</title>\n'
           '<para>\n'
@@ -584,13 +591,16 @@ class Docbook5Converter extends ConverterBase {
           '<alt><![CDATA[$equation]]></alt>\n<mathphrase><![CDATA[$equation]]></mathphrase>';
     }
     if (node.hasTitle) {
-      return '<equation${_commonAttributes(node.id, node.role, node.reftext)}>\n'
+      return '<equation${_commonAttributes(node.id, node.role, node.reftext)}>'
+          '\n'
           '<title>${_s(node.title)}</title>\n'
           '$equationData\n'
           '</equation>';
     }
     // WARNING dblatex displays the <informalequation> element inline instead
     // of block as documented (except w/ mathml).
+    // Unwrappable long literal (no valid split point).
+    // ignore: lines_longer_than_80_chars
     return '<informalequation${_commonAttributes(node.id, node.role, node.reftext)}>\n'
         '$equationData\n'
         '</informalequation>';
@@ -606,6 +616,8 @@ class Docbook5Converter extends ConverterBase {
         ? ' startingnumber="${_s(node.attr('start'))}"'
         : '';
     result.add(
+      // Unwrappable long literal (no valid split point).
+      // ignore: lines_longer_than_80_chars
       '<orderedlist${_commonAttributes(node.id, node.role, node.reftext)}$numAttribute$startAttribute>',
     );
     if (node.hasTitle) {
@@ -633,7 +645,8 @@ class Docbook5Converter extends ConverterBase {
         final parent = node.parent;
         if (parent == doc && doc.doctype == 'book') {
           logger.warn(
-            'abstract block cannot be used in a document without a doctitle when doctype is book. Excluding block content.',
+            'abstract block cannot be used in a document without a doctitle '
+            'when doctype is book. Excluding block content.',
           );
           return '';
         }
@@ -654,12 +667,15 @@ class Docbook5Converter extends ConverterBase {
         if (node.level == 0 &&
             node.parent!.context == 'section' &&
             doc.doctype == 'book') {
+          // Unwrappable long literal (no valid split point).
+          // ignore: lines_longer_than_80_chars
           return '<partintro${_commonAttributes(node.id, node.role, node.reftext)}>\n'
               '${_titleTag(node)}${_encloseContent(node)}\n'
               '</partintro>';
         }
         logger.error(
-          'partintro block can only be used when doctype is book and must be a child of a book part. Excluding block content.',
+          'partintro block can only be used when doctype is book and must be '
+          'a child of a book part. Excluding block content.',
         );
         return '';
       default:
@@ -691,6 +707,8 @@ class Docbook5Converter extends ConverterBase {
   /// Converts the [node] paragraph.
   String convertParagraph(Block node) {
     if (node.hasTitle) {
+      // Unwrappable long literal (no valid split point).
+      // ignore: lines_longer_than_80_chars
       return '<formalpara${_commonAttributes(node.id, node.role, node.reftext)}>\n'
           '<title>${_s(node.title)}</title>\n'
           '<para>${_s(node.content())}</para>\n'
@@ -738,6 +756,8 @@ class Docbook5Converter extends ConverterBase {
     final grid = _s(node.attr('grid', null, 'table-grid'));
     final tagName = node.hasTitle ? 'table' : 'informaltable';
     result.add(
+      // Unwrappable long literal (no valid split point).
+      // ignore: lines_longer_than_80_chars
       '<$tagName${_commonAttributes(node.id, node.role, node.reftext)}$pgwideAttribute frame="$frame" rowsep="${(grid == 'none' || grid == 'cols') ? 0 : 1}" colsep="${(grid == 'none' || grid == 'rows') ? 0 : 1}"${node.hasAttr('orientation', 'landscape', 'table-orientation') ? ' orient="land"' : ''}>',
     );
     if (node.hasOption('unbreakable')) {
@@ -781,7 +801,8 @@ class Docbook5Converter extends ConverterBase {
           if (isTruthy(cell.colspan)) {
             final colnum = rubyToInteger(cell.column!.attr('colnumber'));
             colspanAttribute =
-                ' namest="col_$colnum" nameend="col_${colnum + rubyToInteger(cell.colspan) - 1}"';
+                ' namest="col_$colnum" '
+                'nameend="col_${colnum + rubyToInteger(cell.colspan) - 1}"';
           } else {
             colspanAttribute = '';
           }
@@ -791,7 +812,10 @@ class Docbook5Converter extends ConverterBase {
           // NOTE <entry> may not have whitespace (e.g., line breaks) as a
           // direct descendant according to DocBook rules.
           final entryStart =
-              '<entry align="${_s(cell.attr('halign'))}" valign="${_s(cell.attr('valign'))}"$colspanAttribute$rowspanAttribute>';
+              '<entry align="${_s(cell.attr('halign'))}" '
+              // Unwrappable long literal (no valid split point).
+              // ignore: lines_longer_than_80_chars
+              'valign="${_s(cell.attr('valign'))}"$colspanAttribute$rowspanAttribute>';
           final String cellContent;
           if (tsec == 'head') {
             cellContent = _s(cell.text);
@@ -859,6 +883,8 @@ class Docbook5Converter extends ConverterBase {
       final markType = checklist ? 'none' : node.style;
       final markAttribute = isTruthy(markType) ? ' mark="$markType"' : '';
       result.add(
+        // Unwrappable long literal (no valid split point).
+        // ignore: lines_longer_than_80_chars
         '<itemizedlist${_commonAttributes(node.id, node.role, node.reftext)}$markAttribute>',
       );
       if (node.hasTitle) {
@@ -1042,7 +1068,8 @@ class Docbook5Converter extends ConverterBase {
         quotedText = '$open<phrase role="${_s(role)}">$text</phrase>$close';
       } else {
         quotedText =
-            '${open.substring(0, open.length - 1)} role="${_s(role)}">$text$close';
+            '${open.substring(0, open.length - 1)} '
+            'role="${_s(role)}">$text$close';
       }
     } else {
       quotedText = '$open$text$close';

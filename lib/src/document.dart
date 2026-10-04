@@ -429,8 +429,9 @@ class Document extends AbstractBlock implements NodeDocument {
   /// string keys (`'safe'`, `'backend'`, `'doctype'`, `'attributes'`,
   /// `'standalone'`, `'header_footer'`, `'base_dir'`, `'to_file'`,
   /// `'to_dir'`, `'sourcemap'`, `'timings'`, `'input_mtime'` (a [DateTime]),
-  /// `'parse_header_only'`, `'catalog_assets'`, `'converter'`, `'template_dirs'`,
-  /// `'cursor'`, `'parent'`, ...). The map is copied, never mutated.
+  /// `'parse_header_only'`, `'catalog_assets'`, `'converter'`,
+  /// `'template_dirs'`, `'cursor'`, `'parent'`, ...). The map is copied,
+  /// never mutated.
   new([Object? data, Map<String, Object?>? options]) : super(null, 'document') {
     final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
     final parentDoc = opts.remove('parent') as Document?;
@@ -1626,7 +1627,8 @@ class Document extends AbstractBlock implements NodeDocument {
     final doctitleVal = header?.title;
     return '#$runtimeType@${identityHashCode(this)} '
         '{doctype: ${inspectString(doctype)}, '
-        'doctitle: ${doctitleVal == null ? 'nil' : inspectString(doctitleVal)}, '
+        'doctitle: '
+        '${doctitleVal == null ? 'nil' : inspectString(doctitleVal)}, '
         'blocks: ${blocks.length}}';
   }
 

@@ -261,7 +261,8 @@ class ManpageConverter extends ConverterBase {
         r'.\"',
       )
       ..add(
-        '.TH "${_manify((manname! as String).toUpperCase())}" "${_s(manvolnum)}" "${_s(docdate)}" '
+        '.TH "${_manify((manname! as String).toUpperCase())}" '
+        '"${_s(manvolnum)}" "${_s(docdate)}" '
         '"${isTruthy(mansource) ? _manify(mansource! as String) : r'\ \&'}" '
         '"${isTruthy(manmanual) ? _manify(manmanual! as String) : r'\ \&'}"',
       )
@@ -292,7 +293,8 @@ class ManpageConverter extends ConverterBase {
         final mannames =
             node.attr('mannames', <Object?>[manname])! as List<Object?>;
         result.add(
-          '.SH "${(node.attr('manname-title', 'NAME')! as String).toUpperCase()}"\n'
+          '.SH '
+          '"${(node.attr('manname-title', 'NAME')! as String).toUpperCase()}"\n'
           '${mannames.map((n) => _manify(n! as String).replaceAll(r'\-', '-')).join(', ')} \\- ${_manify(node.attr('manpurpose')! as String, whitespace: _WhitespaceMode.normalize)}',
         );
       }
@@ -348,7 +350,10 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] admonition block.
   String convertAdmonition(Block node) {
-    return '.if n .sp\n.RS 4\n.it 1 an-trap\n.nr an-no-space-flag 1\n.nr an-break-flag 1\n.br\n.ps +1\n'
+    return '.if n .sp\n.RS 4\n.it 1 an-trap\n.nr an-no-space-flag '
+        '1\n.nr an-break-flag 1\n.br\n.ps +1\n'
+        // Unwrappable long literal (no valid split point).
+        // ignore: lines_longer_than_80_chars
         '.B ${_s(node.attr('textlabel'))}${node.hasTitle ? '\\fP: ${_manify(node.title!)}' : ''}\n.ps -1\n.br\n'
         '${_encloseContent(node)}\n.sp .5v\n.RE';
   }
@@ -392,11 +397,15 @@ class ManpageConverter extends ConverterBase {
       counter += 1;
       if (node.style == 'qanda') {
         result.add(
-          '.sp\n$counter. ${_manify(terms.map((dt) => _s(dt.text)).join(' '))}\n.RS 4',
+          '.sp\n$counter. '
+          '${_manify(terms.map((dt) => _s(dt.text)).join(' '))}\n.RS 4',
         );
       } else {
         result.add(
-          '.sp\n${_manify(terms.map((dt) => _s(dt.text)).join(', '), whitespace: _WhitespaceMode.normalize)}\n.RS 4',
+          '.sp\n'
+          // Unwrappable long literal (no valid split point).
+          // ignore: lines_longer_than_80_chars
+          '${_manify(terms.map((dt) => _s(dt.text)).join(', '), whitespace: _WhitespaceMode.normalize)}\n.RS 4',
         );
       }
       if (dd != null) {
@@ -451,7 +460,10 @@ class ManpageConverter extends ConverterBase {
       result.add('.sp\n.B ${_manify(node.captionedTitle())}\n.br');
     }
     result.add(
-      '.sp\n.if n .RS 4\n.nf\n.fam C\n${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n.fam\n.fi\n.if n .RE',
+      '.sp\n.if n .RS 4\n.nf\n.fam '
+      'C\n'
+      '${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n.fam'
+      '\n.fi\n.if n .RE',
     );
     return result.join('\n');
   }
@@ -463,7 +475,10 @@ class ManpageConverter extends ConverterBase {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
     }
     result.add(
-      '.sp\n.if n .RS 4\n.nf\n.fam C\n${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n.fam\n.fi\n.if n .RE',
+      '.sp\n.if n .RS 4\n.nf\n.fam '
+      'C\n'
+      '${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n.fam'
+      '\n.fi\n.if n .RE',
     );
     return result.join('\n');
   }
@@ -526,9 +541,12 @@ class ManpageConverter extends ConverterBase {
   /// Converts the [node] paragraph.
   String convertParagraph(Block node) {
     if (node.hasTitle) {
-      return '.sp\n.B ${_manify(node.title!)}\n.br\n${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
+      return '.sp\n.B '
+          '${_manify(node.title!)}\n.br\n'
+          '${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
     }
-    return '.sp\n${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
+    return '.sp\n'
+        '${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
   }
 
   /// Converts the [node] quote block.
@@ -565,7 +583,8 @@ class ManpageConverter extends ConverterBase {
       );
     }
     result.add(
-      '${_manify(equation, whitespace: _WhitespaceMode.preserve)} (${_s(node.style)})',
+      '${_manify(equation, whitespace: _WhitespaceMode.preserve)} '
+      '(${_s(node.style)})',
     );
     return result.join('\n');
   }
@@ -580,7 +599,8 @@ class ManpageConverter extends ConverterBase {
     final result = <String>[];
     if (node.hasTitle) {
       result.add(
-        '.sp\n.it 1 an-trap\n.nr an-no-space-flag 1\n.nr an-break-flag 1\n.br\n.B ${_manify(node.captionedTitle())}\n',
+        '.sp\n.it 1 an-trap\n.nr an-no-space-flag 1\n.nr an-break-flag '
+        '1\n.br\n.B ${_manify(node.captionedTitle())}\n',
       );
     }
     result.add('.TS\nallbox tab(:);');
@@ -618,7 +638,10 @@ class ManpageConverter extends ConverterBase {
                 cellContent = _s(cell.content());
               case 'literal':
                 cellContent =
-                    '.nf\n${_manify(cell.text!, whitespace: _WhitespaceMode.preserve)}\n.fi';
+                    '.nf\n'
+                    // Unwrappable long literal (no valid split point).
+                    // ignore: lines_longer_than_80_chars
+                    '${_manify(cell.text!, whitespace: _WhitespaceMode.preserve)}\n.fi';
               default:
                 cellContent = (cell.content()! as List<Object?>)
                     .map(
@@ -748,7 +771,9 @@ class ManpageConverter extends ConverterBase {
         ? '${_s(attributionLine)}\\(em ${_s(node.attr('attribution'))}'
         : null;
     result.add(
-      '.sp\n.nf\n${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n.fi\n.br',
+      '.sp\n.nf\n'
+      '${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n'
+      '.fi\n.br',
     );
     if (attributionLine != null) {
       result.add('.in +.5i\n.ll -.5i\n$attributionLine\n.in\n.ll');
@@ -765,6 +790,8 @@ class ManpageConverter extends ConverterBase {
     final result = (<String>[])
       ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp')
       ..add(
+        // Unwrappable long literal (no valid split point).
+        // ignore: lines_longer_than_80_chars
         '<${node.mediaUri(node.attr('target')! as String)}$startParam$endParam> (video)',
       );
     return result.join('\n');
@@ -957,6 +984,8 @@ class ManpageConverter extends ConverterBase {
         result.add(
           chompSuffix(
             _manify(
+              // Unwrappable long literal (no valid split point).
+              // ignore: lines_longer_than_80_chars
               '${rawText.replaceAllMapped(_malformedEscapedMacroRx, (match) => '${match.group(1)}\n${match.group(2)}')} ',
               whitespace: _WhitespaceMode.normalize,
             ),
@@ -974,8 +1003,9 @@ class ManpageConverter extends ConverterBase {
   ///
   /// It's crucial that text only ever pass through manify once.
   ///
-  /// [whitespace] selects how whitespace is handled: [collapse][_WhitespaceMode.collapse]
-  /// collapses adjacent whitespace to a single space (default),
+  /// [whitespace] selects how whitespace is handled:
+  /// [collapse][_WhitespaceMode.collapse] collapses adjacent whitespace to
+  /// a single space (default),
   /// [normalize][_WhitespaceMode.normalize] normalizes whitespace (removes
   /// spaces around newlines), [preserve][_WhitespaceMode.preserve] preserves
   /// spaces (only expanding tabs). When [appendNewline] is set, a newline is
@@ -1095,7 +1125,8 @@ class ManpageConverter extends ConverterBase {
   /// a `.sp` paragraph.
   String _encloseContent(Block node) {
     if (node.contentModel == 'compound') return _s(node.content());
-    return '.sp\n${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
+    return '.sp\n'
+        '${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
   }
 
   /// Returns the root document of [node]'s document tree.

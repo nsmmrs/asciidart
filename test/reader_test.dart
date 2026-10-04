@@ -631,7 +631,8 @@ void main() {
         expect(reader.lineno, equals(3));
       });
 
-      test('advance should consume next line and return a Boolean indicating if a line was consumed', () {
+      test('advance should consume next line and return a Boolean '
+          'indicating if a line was consumed', () {
         final reader = Reader(sampleData);
         expect(reader.advance(), isTrue);
         expect(reader.advance(), isTrue);
@@ -689,7 +690,8 @@ void main() {
     });
 
     group('Line context', () {
-      test('cursor.toString should return file name and line number of current line', () {
+      test('cursor.toString should return file name and line number of '
+          'current line', () {
         final reader = (Reader(sampleData, 'sample.adoc'))..readLine();
         expect(reader.cursor().toString(), equals('sample.adoc: line 2'));
       });
@@ -702,7 +704,8 @@ void main() {
         },
       );
 
-      test('cursorAtPrevLine should return file name and line number of previous line read', () {
+      test('cursorAtPrevLine should return file name and line number '
+          'of previous line read', () {
         final reader = (Reader(sampleData, 'sample.adoc'))..readLine();
         expect(
           reader.cursorAtPrevLine().toString(),
@@ -830,7 +833,8 @@ void main() {
         expect(reader.isNextLineEmpty(), isTrue);
       });
 
-      test('Read lines until until condition is true, taking and preserving last line', () {
+      test('Read lines until until condition is true, taking and '
+          'preserving last line', () {
         final lines = [
           '--',
           'This is one paragraph inside the block.',
@@ -876,7 +880,8 @@ void main() {
         expect(reader.unterminated, isFalse);
       });
 
-      test('should flag reader as unterminated if reader reaches end of source without finding terminator', () {
+      test('should flag reader as unterminated if reader reaches end '
+          'of source without finding terminator', () {
         final lines = [
           '****\n',
           'captured\n',
@@ -1026,7 +1031,8 @@ void main() {
         },
       );
 
-      test('should skip TOML front matter if specified by skip-front-matter attribute', () {
+      test('should skip TOML front matter if specified by '
+          'skip-front-matter attribute', () {
         const frontMatter =
             "layout = 'post'\n"
             "title = 'Document Title'\n"
@@ -1049,7 +1055,8 @@ void main() {
         expect(reader.lineno, equals(7));
       });
 
-      test('should not skip front matter in include file if skip-front-matter attribute is set', () {
+      test('should not skip front matter in include file if '
+          'skip-front-matter attribute is set', () {
         const input =
             '....\n'
             'include::fixtures/with-front-matter.adoc[]\n'
@@ -1068,7 +1075,8 @@ void main() {
         expect(doc.attrSet('front-matter'), isFalse);
       });
 
-      test('should skip front matter in include file if skip-front-matter option is set on include directiv', () {
+      test('should skip front matter in include file if '
+          'skip-front-matter option is set on include directiv', () {
         const input =
             '....\n'
             'include::fixtures/with-front-matter.adoc[opts=skip-front-matter]\n'
@@ -1092,14 +1100,16 @@ void main() {
         expect(result, same(reader));
       });
 
-      test('PreprocessorReader#push_include method should put lines on top of stack', () {
+      test('PreprocessorReader#push_include method should put lines on '
+          'top of stack', () {
         final reader = (preprocessorReader(['a', 'b', 'c']))
           ..pushInclude(['one', 'two', 'three'], '', '<stdin>');
         expect(reader.includeStack, hasLength(1));
         expect(reader.readLine()!.rstrip(), equals('one'));
       });
 
-      test('PreprocessorReader#push_include method should gracefully handle file and path', () {
+      test('PreprocessorReader#push_include method should gracefully '
+          'handle file and path', () {
         final reader = (preprocessorReader(['a', 'b', 'c']))
           ..pushInclude(['one', 'two', 'three']);
         expect(reader.includeStack, hasLength(1));
@@ -1108,7 +1118,8 @@ void main() {
         expect(reader.path, equals('<stdin>'));
       });
 
-      test('PreprocessorReader#push_include method should set path from file automatically if not specified', () {
+      test('PreprocessorReader#push_include method should set path '
+          'from file automatically if not specified', () {
         final doc = FakeDocument();
         final reader = (PreprocessorReader(doc, ['a', 'b', 'c'], null, true))
           ..pushInclude(['one', 'two', 'three'], '/tmp/lines.adoc');
@@ -1117,7 +1128,8 @@ void main() {
         expect(doc.catalogIncludes['lines'], isTrue);
       });
 
-      test('PreprocessorReader#push_include method should accept file as a URI and compute dir and path', () {
+      test('PreprocessorReader#push_include method should accept file '
+          'as a URI and compute dir and path', () {
         final fileUri = Uri.parse('http://example.com/docs/file.adoc');
         final dirUri = Uri.parse('http://example.com/docs');
         final reader = (preprocessorReader([]))
@@ -1127,7 +1139,8 @@ void main() {
         expect(reader.path, equals('file.adoc'));
       });
 
-      test('PreprocessorReader#push_include method should accept file as a top-level URI and compute dir and path', () {
+      test('PreprocessorReader#push_include method should accept file '
+          'as a top-level URI and compute dir and path', () {
         final fileUri = Uri.parse('http://example.com/index.adoc');
         final dirUri = Uri.parse('http://example.com');
         final reader = (preprocessorReader([]))
@@ -1137,14 +1150,16 @@ void main() {
         expect(reader.path, equals('index.adoc'));
       });
 
-      test('PreprocessorReader#push_include method should not fail if data is null', () {
+      test('PreprocessorReader#push_include method should not fail if '
+          'data is null', () {
         final reader = (preprocessorReader(['a', 'b', 'c']))
           ..pushInclude(null, '', '<stdin>');
         expect(reader.includeStack, isEmpty);
         expect(reader.readLine()!.rstrip(), equals('a'));
       });
 
-      test('PreprocessorReader#push_include method should ignore dot in directory name when computing include path', () {
+      test('PreprocessorReader#push_include method should ignore dot '
+          'in directory name when computing include path', () {
         final doc = FakeDocument();
         final reader = (PreprocessorReader(doc, ['a', 'b', 'c'], null, true))
           ..pushInclude(['one', 'two', 'three'], null, 'include.d/data');
@@ -1167,7 +1182,8 @@ void main() {
         },
       );
 
-      test('should not add role to link macro used to replace include directive in compat mode', () {
+      test('should not add role to link macro used to replace include '
+          'directive in compat mode', () {
         const input = 'include::include-file.adoc[]';
         final reader = preprocessorReader(
           input,
@@ -1176,7 +1192,8 @@ void main() {
         expect(reader.readLine(), equals('link:include-file.adoc[]'));
       });
 
-      test('should escape spaces in target when generating link from include directive', () {
+      test('should escape spaces in target when generating link from '
+          'include directive', () {
         const input = 'include::foo bar baz.adoc[]';
         final reader = preprocessorReader(input);
         expect(
@@ -1185,7 +1202,8 @@ void main() {
         );
       });
 
-      test('should preserve attrlist when replacing include directive with link macro', () {
+      test('should preserve attrlist when replacing include directive '
+          'with link macro', () {
         const input = 'include::include-file.adoc[leveloffset=+1]';
         final reader = preprocessorReader(input);
         expect(
@@ -1194,7 +1212,8 @@ void main() {
         );
       });
 
-      test('should replace include directive with link macro if safe mode allows it, but allow-uri-read is not set', () {
+      test('should replace include directive with link macro if safe '
+          'mode allows it, but allow-uri-read is not set', () {
         usingMemoryLogger((logger) {
           const input = 'include::https://example.org/dist/info.adoc[]';
           final reader = preprocessorReader(input, safe: SafeMode.safe);
@@ -1211,7 +1230,8 @@ void main() {
         });
       });
 
-      test('should not add role to link macro that replaces include directive with remote target in compat mode', () {
+      test('should not add role to link macro that replaces include '
+          'directive with remote target in compat mode', () {
         const input = 'include::https://example.org/dist/info.adoc[]';
         usingMemoryLogger((logger) {
           final reader = preprocessorReader(
@@ -1232,7 +1252,8 @@ void main() {
         });
       });
 
-      test('should escape spaces in target when generating link from remote include directive', () {
+      test('should escape spaces in target when generating link from '
+          'remote include directive', () {
         usingMemoryLogger((logger) {
           const input = 'include::https://example.org/no such file.adoc[]';
           final reader = preprocessorReader(input, safe: SafeMode.safe);
@@ -1251,7 +1272,8 @@ void main() {
         });
       });
 
-      test('should preserve attrlist when replacing remove include directive with link macro', () {
+      test('should preserve attrlist when replacing remove include '
+          'directive with link macro', () {
         usingMemoryLogger((logger) {
           const input =
               'include::https://example.org/dist/info.adoc[leveloffset=+1]';
@@ -1271,7 +1293,8 @@ void main() {
         });
       });
 
-      test('include directive with remote target is converted to a link when allow-uri-read is not set', () {
+      test('include directive with remote target is converted to a '
+          'link when allow-uri-read is not set', () {
         usingMemoryLogger((logger) {
           const input = 'include::http://example.org/team.adoc[]';
           final reader = preprocessorReader(input, safe: SafeMode.safe);
@@ -1288,7 +1311,8 @@ void main() {
         });
       });
 
-      test('include directive with remote target is converted to a link when safe mode is secure', () {
+      test('include directive with remote target is converted to a '
+          'link when safe mode is secure', () {
         usingMemoryLogger((logger) {
           const input = 'include::http://example.org/team.adoc[]';
           final reader = preprocessorReader(input);
@@ -1385,7 +1409,8 @@ void main() {
         },
       );
 
-      test('include directive should not match if target is empty or starts or ends with space', () {
+      test('include directive should not match if target is empty or '
+          'starts or ends with space', () {
         const inputs = [
           'include::[]',
           'include:: []',
@@ -1399,7 +1424,8 @@ void main() {
       });
 
       test(
-        'include directive should not attempt to resolve target as remote if allow-uri-read is set and URL is not on first line',
+        'include directive should not attempt to resolve target as remote if '
+        'allow-uri-read is set and URL is not on first line',
         // READER-LEVEL: the `target` attribute is preset (attribute-entry
         // parsing belongs to the document wave); line shape and log
         // message are unchanged.
@@ -1513,7 +1539,8 @@ void main() {
       );
 
       test(
-        'include directive should process lines when file extension of target is .asciidoc',
+        'include directive should process lines when file extension of '
+        'target is .asciidoc',
         // READER-LEVEL: asserts expanded lines instead of parsed blocks.
         () {
           const input = 'include::fixtures/include-alt-extension.asciidoc[]';
@@ -1527,7 +1554,8 @@ void main() {
       );
 
       test(
-        'should only strip trailing newlines, not trailing whitespace, if include file is not AsciiDoc',
+        'should only strip trailing newlines, not trailing whitespace, '
+        'if include file is not AsciiDoc',
         // READER-LEVEL: asserts expanded lines instead of parsed blocks.
         () {
           const input = '....\ninclude::fixtures/data.tsv[]\n....\n';
@@ -1540,7 +1568,8 @@ void main() {
       );
 
       test(
-        'should fail to read include file if not UTF-8 encoded and encoding is not specified',
+        'should fail to read include file if not UTF-8 encoded and '
+        'encoding is not specified',
         // READER-LEVEL: Ruby raises ArgumentError from push_include at
         // reader level (verified via oracle probe); convert is not needed.
         () {
@@ -1572,6 +1601,8 @@ void main() {
             reader.readLines(),
             equals([
               '....',
+              // Unwrappable long literal (no valid split point).
+              // ignore: lines_longer_than_80_chars
               'Gregory Romé has written an AsciiDoc plugin for the Redmine project management application.',
               '....',
             ]),
@@ -1580,7 +1611,8 @@ void main() {
       );
 
       test(
-        'should use encoding specified by encoding attribute when reading include file',
+        'should use encoding specified by encoding attribute when '
+        'reading include file',
         // READER-LEVEL: asserts expanded lines instead of parsed blocks.
         () {
           const input =
@@ -1595,7 +1627,8 @@ void main() {
       );
 
       test(
-        'unresolved target referenced by include directive is skipped when optional option is set',
+        'unresolved target referenced by include directive is skipped '
+        'when optional option is set',
         // READER-LEVEL: asserts expanded lines instead of parsed blocks.
         () {
           const input =
@@ -1607,7 +1640,8 @@ void main() {
             assertMessage(
               logger,
               Severity.info,
-              '~<stdin>: line 1: optional include dropped because include file not found',
+              '~<stdin>: line 1: optional include dropped because '
+              'include file not found',
               contextual: true,
             );
           });
@@ -1615,7 +1649,8 @@ void main() {
       );
 
       test(
-        'should skip include directive that references missing file if optional option is set',
+        'should skip include directive that references missing file if '
+        'optional option is set',
         // READER-LEVEL: asserts expanded lines instead of parsed blocks.
         () {
           const input =
@@ -1627,7 +1662,8 @@ void main() {
             assertMessage(
               logger,
               Severity.info,
-              '~<stdin>: line 1: optional include dropped because include file not found',
+              '~<stdin>: line 1: optional include dropped because '
+              'include file not found',
               contextual: true,
             );
           });
@@ -1635,7 +1671,8 @@ void main() {
       );
 
       test(
-        'should replace include directive that references missing file with message',
+        'should replace include directive that references missing file '
+        'with message',
         // READER-LEVEL: asserts expanded lines instead of parsed blocks.
         () {
           const input =
@@ -1662,7 +1699,8 @@ void main() {
       );
 
       test(
-        'should replace include directive that references unreadable file with message',
+        'should replace include directive that references unreadable '
+        'file with message',
         // READER-LEVEL: asserts expanded lines instead of parsed blocks.
         () {
           if (Platform.isWindows || _isRoot()) {
@@ -1769,7 +1807,8 @@ void main() {
       );
 
       test(
-        'nested remote include directive is resolved relative to uri of current file',
+        'nested remote include directive is resolved relative to uri '
+        'of current file',
         // READER-LEVEL: asserts expanded lines instead of converted
         // output; URI transport is the FakeDocument test double.
         () {
@@ -1797,7 +1836,8 @@ void main() {
       );
 
       test(
-        'nested remote include directive that cannot be resolved does not crash processor',
+        'nested remote include directive that cannot be resolved does '
+        'not crash processor',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
           const includeUrl =
@@ -1814,7 +1854,8 @@ void main() {
             expect(
               lines,
               contains(
-                'Unresolved directive in $includeUrl - include::$nestedIncludeUrl[]',
+                'Unresolved directive in $includeUrl - '
+                'include::$nestedIncludeUrl[]',
               ),
             );
             assertMessage(
@@ -1898,7 +1939,8 @@ void main() {
       );
 
       test(
-        'include directive supports line ranges separated by commas in quoted attribute value',
+        'include directive supports line ranges separated by commas in '
+        'quoted attribute value',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
           const input =
@@ -1917,7 +1959,8 @@ void main() {
       );
 
       test(
-        'include directive ignores spaces between line ranges in quoted attribute value',
+        'include directive ignores spaces between line ranges in '
+        'quoted attribute value',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
           const input =
@@ -2005,7 +2048,8 @@ void main() {
       );
 
       test(
-        'include directive supports selecting lines by tag in language that uses circumfix comments',
+        'include directive supports selecting lines by tag in language '
+        'that uses circumfix comments',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
           const cases = {
@@ -2022,7 +2066,8 @@ void main() {
       );
 
       test(
-        'include directive supports selecting lines by tag in file that has CRLF line endings',
+        'include directive supports selecting lines by tag in file '
+        'that has CRLF line endings',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
           final tmpDir = Directory.systemTemp.createTempSync(
@@ -2030,7 +2075,8 @@ void main() {
           );
           try {
             File('${tmpDir.path}/include.adoc').writeAsStringSync(
-              'do not include\r\ntag::include-me[]\r\nincluded line\r\nend::include-me[]\r\ndo not include\r\n',
+              'do not include\r\ntag::include-me[]\r\nincluded '
+              'line\r\nend::include-me[]\r\ndo not include\r\n',
             );
             const input = 'include::include.adoc[tag=include-me]';
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: tmpDir.path);
@@ -2045,7 +2091,8 @@ void main() {
       );
 
       test(
-        'include directive finds closing tag on last line of file without a trailing newline',
+        'include directive finds closing tag on last line of file '
+        'without a trailing newline',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
           final tmpDir = Directory.systemTemp.createTempSync(
@@ -2053,7 +2100,8 @@ void main() {
           );
           try {
             File('${tmpDir.path}/include.adoc').writeAsStringSync(
-              'line not included\ntag::include-me[]\nline included\nend::include-me[]',
+              'line not included\ntag::include-me[]\nline '
+              'included\nend::include-me[]',
             );
             const input = 'include::include.adoc[tag=include-me]';
             usingMemoryLogger((logger) {
@@ -2074,7 +2122,8 @@ void main() {
       );
 
       test(
-        'include directive does not select lines containing tag directives within selected tag region',
+        'include directive does not select lines containing tag '
+        'directives within selected tag region',
         // READER-LEVEL: asserts expanded lines instead of converted output
         // (expectation verified against the oracle at reader level).
         () {
@@ -2108,7 +2157,8 @@ void main() {
       );
 
       test(
-        'include directive selects all lines without a tag directive when value is double asterisk',
+        'include directive selects all lines without a tag directive '
+        'when value is double asterisk',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2133,7 +2183,8 @@ void main() {
       );
 
       test(
-        'include directive selects all lines except lines inside tag which is negated when value starts with double asterisk',
+        'include directive selects all lines except lines inside tag '
+        'which is negated when value starts with double asterisk',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2150,7 +2201,9 @@ void main() {
       );
 
       test(
-        'include directive selects all lines, including lines inside nested tags, except lines inside tag which is negated when value starts with double asterisk',
+        'include directive selects all lines, including lines inside nested '
+        'tags, except lines inside tag which is negated when value '
+        'starts with double asterisk',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2172,7 +2225,8 @@ void main() {
       );
 
       test(
-        'include directive selects all lines outside of tags when value is double asterisk followed by negated wildcard',
+        'include directive selects all lines outside of tags when '
+        'value is double asterisk followed by negated wildcard',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2183,7 +2237,8 @@ void main() {
       );
 
       test(
-        'include directive skips all tagged regions when value of tags attribute is negated wildcard',
+        'include directive skips all tagged regions when value of tags '
+        'attribute is negated wildcard',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2196,7 +2251,9 @@ void main() {
       // FIXME this is a weird one since we'd expect it to only select the
       // specified tags; but it's always been this way
       test(
-        'include directive selects all lines except for lines containing tag directive if value is double asterisk followed by nested tag names',
+        'include directive selects all lines except for lines containing tag '
+        'directive if value is double asterisk followed by nested '
+        'tag names',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2223,7 +2280,9 @@ void main() {
       // FIXME this is a weird one since we'd expect it to only select the
       // specified tags; but it's always been this way
       test(
-        'include directive selects all lines except for lines containing tag directive when value is double asterisk followed by outer tag name',
+        'include directive selects all lines except for lines containing tag '
+        'directive when value is double asterisk followed by outer '
+        'tag name',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2248,7 +2307,8 @@ void main() {
       );
 
       test(
-        'include directive selects all lines inside unspecified tags when value is negated double asterisk followed by negated tags',
+        'include directive selects all lines inside unspecified tags when '
+        'value is negated double asterisk followed by negated tags',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe; the leading
         // blank line the converter drops is preserved here).
@@ -2269,7 +2329,8 @@ void main() {
       );
 
       test(
-        'include directive selects all lines except tag which is negated when value only contains negated tag',
+        'include directive selects all lines except tag which is '
+        'negated when value only contains negated tag',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2286,7 +2347,8 @@ void main() {
       );
 
       test(
-        'include directive selects all lines except tags which are negated when value only contains negated tags',
+        'include directive selects all lines except tags which are '
+        'negated when value only contains negated tags',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2320,7 +2382,8 @@ void main() {
       );
 
       test(
-        'include directive selects lines between tags when value of tags attribute is wildcard',
+        'include directive selects lines between tags when value of '
+        'tags attribute is wildcard',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2343,7 +2406,8 @@ void main() {
       );
 
       test(
-        'include directive selects lines inside tags when value of tags attribute is wildcard and tag surrounds content',
+        'include directive selects lines inside tags when value of '
+        'tags attribute is wildcard and tag surrounds content',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2368,7 +2432,9 @@ void main() {
       );
 
       test(
-        'include directive selects lines inside all tags except tag which is negated when value of tags attribute is wildcard followed by negated tag',
+        'include directive selects lines inside all tags except tag which is '
+        'negated when value of tags attribute is wildcard followed '
+        'by negated tag',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2390,7 +2456,9 @@ void main() {
       );
 
       test(
-        'include directive skips all tagged regions except ones re-enabled when value of tags attribute is negated wildcard followed by tag name',
+        'include directive skips all tagged regions except ones re-enabled '
+        'when value of tags attribute is negated wildcard followed '
+        'by tag name',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2413,7 +2481,8 @@ void main() {
       );
 
       test(
-        'include directive includes regions outside tags and inside specified tags when value begins with negated wildcard',
+        'include directive includes regions outside tags and inside '
+        'specified tags when value begins with negated wildcard',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2430,7 +2499,8 @@ void main() {
       );
 
       test(
-        'include directive includes lines inside tag except for lines inside nested tags when tag is followed by negated wildcard',
+        'include directive includes lines inside tag except for lines inside '
+        'nested tags when tag is followed by negated wildcard',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe; the leading
         // blank line the converter drops is preserved here).
@@ -2448,7 +2518,9 @@ void main() {
       );
 
       test(
-        'include directive selects lines inside tag except for lines inside nested tags when tag is preceded by negated double asterisk and negated wildcard',
+        'include directive selects lines inside tag except for lines inside '
+        'nested tags when tag is preceded by negated double '
+        'asterisk and negated wildcard',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe; the leading
         // blank line the converter drops is preserved here).
@@ -2463,7 +2535,8 @@ void main() {
       );
 
       test(
-        'include directive does not select lines inside tag that has been included then excluded',
+        'include directive does not select lines inside tag that has '
+        'been included then excluded',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2474,7 +2547,8 @@ void main() {
       );
 
       test(
-        'include directive only selects lines inside specified tag, even if proceeded by negated double asterisk',
+        'include directive only selects lines inside specified tag, '
+        'even if proceeded by negated double asterisk',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe; the leading
         // blank line the converter drops is preserved here).
@@ -2501,7 +2575,8 @@ void main() {
       );
 
       test(
-        'include directive selects lines inside specified tag and ignores lines inside a negated tag',
+        'include directive selects lines inside specified tag and '
+        'ignores lines inside a negated tag',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe; the
         // [indent=0] block attribute only takes effect at conversion, so
@@ -2584,7 +2659,8 @@ void main() {
             assertMessage(
               logger,
               Severity.warn,
-              "~<stdin>: line 2: tags '$expectedTags' not found in include file",
+              "~<stdin>: line 2: tags '$expectedTags' not found in "
+              'include file',
               contextual: true,
             );
           });
@@ -2592,7 +2668,8 @@ void main() {
       );
 
       test(
-        'should not warn if specified negated tags are not found in include file',
+        'should not warn if specified negated tags are not found in '
+        'include file',
         // READER-LEVEL: asserts expanded lines instead of the converted
         // <pre> block (expectation verified via oracle probe).
         () {
@@ -2630,7 +2707,8 @@ void main() {
             assertMessage(
               logger,
               Severity.warn,
-              "~<stdin>: line 2: detected unclosed tag 'a' starting at line 2 of include file",
+              "~<stdin>: line 2: detected unclosed tag 'a' starting at "
+              'line 2 of include file',
               contextual: true,
             );
             final message = logger.messages[0].message! as LogMessage;
@@ -2651,7 +2729,8 @@ void main() {
             assertMessage(
               logger,
               Severity.warn,
-              "<stdin>: line 2: mismatched end tag (expected 'b' but found 'a') at line 5 of include file: $incPath",
+              "<stdin>: line 2: mismatched end tag (expected 'b' but "
+              "found 'a') at line 5 of include file: $incPath",
               contextual: true,
             );
             final message = logger.messages[0].message! as LogMessage;
@@ -2672,7 +2751,8 @@ void main() {
             assertMessage(
               logger,
               Severity.warn,
-              "<stdin>: line 2: unexpected end tag 'a' at line 4 of include file: $incPath",
+              "<stdin>: line 2: unexpected end tag 'a' at line 4 of "
+              'include file: $incPath',
               contextual: true,
             );
             final message = logger.messages[0].message! as LogMessage;
@@ -2696,7 +2776,8 @@ void main() {
       );
 
       test(
-        'lines attribute takes precedence over tags attribute in include directive',
+        'lines attribute takes precedence over tags attribute in '
+        'include directive',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
           const input =
@@ -2744,7 +2825,8 @@ void main() {
       );
 
       test(
-        'should fall back to built-in include directive behavior when not handled by include processor',
+        'should fall back to built-in include directive behavior when '
+        'not handled by include processor',
         // NOTE the Ruby test sets the dead @include_processors ivar (the
         // implementation reads @include_processor_extensions), so it
         // exercises the built-in path; the port does the same directly.
@@ -2757,7 +2839,8 @@ void main() {
         },
       );
 
-      test('leveloffset attribute entries should be added to content if leveloffset attribute is specified', () {
+      test('leveloffset attribute entries should be added to content '
+          'if leveloffset attribute is specified', () {
         const input = 'include::fixtures/main.adoc[]';
         const expected = [
           '= Main Document',
@@ -2795,7 +2878,8 @@ void main() {
         },
       );
 
-      test('line is skipped by default if target of include directive resolves to empty', () {
+      test('line is skipped by default if target of include directive '
+          'resolves to empty', () {
         const input = 'include::{blank}[]';
         usingMemoryLogger((logger) {
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
@@ -2807,13 +2891,15 @@ void main() {
           assertMessage(
             logger,
             Severity.warn,
-            '<stdin>: line 1: include dropped because resolved target is blank: include::{blank}[]',
+            '<stdin>: line 1: include dropped because resolved target '
+            'is blank: include::{blank}[]',
             contextual: true,
           );
         });
       });
 
-      test('include is dropped if target contains missing attribute and attribute-missing is drop-line', () {
+      test('include is dropped if target contains missing attribute '
+          'and attribute-missing is drop-line', () {
         const input = 'include::{foodir}/include-file.adoc[]';
         usingMemoryLogger((logger) {
           final doc = FakeDocument(
@@ -2934,7 +3020,8 @@ void main() {
         },
       );
 
-      test('include directive should be disabled if max include depth has been exceeded', () {
+      test('include directive should be disabled if max include depth '
+          'has been exceeded', () {
         const input = 'include::fixtures/parent-include.adoc[depth=1]';
         usingMemoryLogger((logger) {
           final pseudoDocfile = '$repoTestDir/main.adoc';
@@ -2956,7 +3043,8 @@ void main() {
         });
       });
 
-      test('include directive should be disabled if max include depth set in nested context has been exceeded', () {
+      test('include directive should be disabled if max include depth '
+          'set in nested context has been exceeded', () {
         const input =
             'include::fixtures/parent-include-restricted.adoc[depth=3]';
         usingMemoryLogger((logger) {
@@ -3087,15 +3175,18 @@ void main() {
 
       test('processLine returns line if cursor not advanced', () {
         const input =
-            'content\nifdef::asciidoctor[]\nAsciidoctor!\nendif::asciidoctor[]\n';
+            'content\nifdef::asciidoctor[]\nAsciidoctor!\n'
+            'endif::asciidoctor[]\n';
 
         final reader = preprocessorReader(input);
         expect(reader.processLine(reader.lines.first!), isNotNull);
       });
 
-      test('peekLine does not advance cursor when on a regular content line', () {
+      test('peekLine does not advance cursor when on a regular content '
+          'line', () {
         const input =
-            'content\nifdef::asciidoctor[]\nAsciidoctor!\nendif::asciidoctor[]\n';
+            'content\nifdef::asciidoctor[]\nAsciidoctor!\n'
+            'endif::asciidoctor[]\n';
 
         final reader = preprocessorReader(input);
         expect(reader.lineno, equals(1));
@@ -3112,7 +3203,8 @@ void main() {
         expect(reader.lineno, equals(4));
       });
 
-      test('peekLine returns null if contents of skipped conditional is empty line', () {
+      test('peekLine returns null if contents of skipped conditional '
+          'is empty line', () {
         const input = 'ifdef::foobar[]\n\nendif::foobar[]\n';
 
         final reader = preprocessorReader(input);
@@ -3138,12 +3230,14 @@ void main() {
         expect(
           lines.join('\n'),
           equals(
-            'On our quest we go...\nThere is a holy grail!\nThere was much rejoicing.',
+            'On our quest we go...\nThere is a holy grail!\nThere was '
+            'much rejoicing.',
           ),
         );
       });
 
-      test('ifdef with defined attribute processes include directive in brackets', () {
+      test('ifdef with defined attribute processes include directive '
+          'in brackets', () {
         const input =
             'ifdef::asciidoctor-version[include::fixtures/include-file.adoc[tag=snippetA]]';
         final lines = readAll(input, safe: SafeMode.safe, baseDir: repoTestDir);
@@ -3400,7 +3494,8 @@ void main() {
         },
       );
 
-      test('ifndef with at least one required attributes set does not include content', () {
+      test('ifndef with at least one required attributes set does not '
+          'include content', () {
         const input =
             'ifndef::holygrail+swallow[]\n'
             'Our quest is complete!\n'
@@ -3437,7 +3532,8 @@ void main() {
           assertMessage(
             logger,
             Severity.error,
-            '~<stdin>: line 2: unmatched preprocessor directive: endif::on-quest[]',
+            '~<stdin>: line 2: unmatched preprocessor directive: '
+            'endif::on-quest[]',
             contextual: true,
           );
         });
@@ -3459,12 +3555,14 @@ void main() {
           assertMessages(logger, [
             (
               Severity.error,
-              '~<stdin>: line 3: mismatched preprocessor directive: endif::on-journey[]',
+              '~<stdin>: line 3: mismatched preprocessor directive: '
+                  'endif::on-journey[]',
               true,
             ),
             (
               Severity.error,
-              '~<stdin>: line 1: detected unterminated preprocessor conditional directive: ifdef::on-quest[]',
+              '~<stdin>: line 1: detected unterminated preprocessor '
+                  'conditional directive: ifdef::on-quest[]',
               true,
             ),
           ]);
@@ -3488,12 +3586,14 @@ void main() {
           assertMessages(logger, [
             (
               Severity.error,
-              '~<stdin>: line 3: malformed preprocessor directive - text not permitted: endif::on-quest[complete!]',
+              '~<stdin>: line 3: malformed preprocessor directive - '
+                  'text not permitted: endif::on-quest[complete!]',
               true,
             ),
             (
               Severity.error,
-              '~<stdin>: line 1: detected unterminated preprocessor conditional directive: ifdef::on-quest[]',
+              '~<stdin>: line 1: detected unterminated preprocessor '
+                  'conditional directive: ifdef::on-quest[]',
               true,
             ),
           ]);
@@ -3525,7 +3625,8 @@ void main() {
         expect(lines.join('\n'), equals(''));
       });
 
-      test('ifeval running unsupported operation on missing attribute drops content', () {
+      test('ifeval running unsupported operation on missing attribute '
+          'drops content', () {
         const input =
             "ifeval::[{leveloffset} >= 3]\nI didn't make the cut!\nendif::[]\n";
 
@@ -3535,13 +3636,15 @@ void main() {
 
       test('ifeval running invalid operation drops content', () {
         const input =
-            "ifeval::[{asciidoctor-version} > true]\nI didn't make the cut!\nendif::[]\n";
+            "ifeval::[{asciidoctor-version} > true]\nI didn't make the "
+            'cut!\nendif::[]\n';
 
         final lines = readAll(input);
         expect(lines.join('\n'), equals(''));
       });
 
-      test('ifeval comparing double-quoted attribute to matching string includes content', () {
+      test('ifeval comparing double-quoted attribute to matching '
+          'string includes content', () {
         const input =
             'ifeval::["{gem}" == "asciidoctor"]\n'
             'Asciidoctor it is!\n'
@@ -3551,7 +3654,8 @@ void main() {
         expect(lines.join('\n'), equals('Asciidoctor it is!'));
       });
 
-      test('ifeval comparing single-quoted attribute to matching string includes content', () {
+      test('ifeval comparing single-quoted attribute to matching '
+          'string includes content', () {
         const input =
             "ifeval::['{gem}' == 'asciidoctor']\n"
             'Asciidoctor it is!\n'
@@ -3561,7 +3665,8 @@ void main() {
         expect(lines.join('\n'), equals('Asciidoctor it is!'));
       });
 
-      test('ifeval comparing quoted attribute to non-matching string drops content', () {
+      test('ifeval comparing quoted attribute to non-matching string '
+          'drops content', () {
         const input =
             "ifeval::['{gem}' == 'asciidoctor']\n"
             'Asciidoctor it is!\n'
@@ -3633,7 +3738,8 @@ void main() {
           assertMessage(
             logger,
             Severity.error,
-            '~<stdin>: line 1: malformed preprocessor directive - target not permitted: ifeval::target[1 == 1]',
+            '~<stdin>: line 1: malformed preprocessor directive - '
+            'target not permitted: ifeval::target[1 == 1]',
             contextual: true,
           );
         });
@@ -3648,7 +3754,8 @@ void main() {
           assertMessage(
             logger,
             Severity.error,
-            '~<stdin>: line 1: malformed preprocessor directive - invalid expression: ifeval::[1 | 2]',
+            '~<stdin>: line 1: malformed preprocessor directive - '
+            'invalid expression: ifeval::[1 | 2]',
             contextual: true,
           );
         });
@@ -3663,7 +3770,8 @@ void main() {
           assertMessage(
             logger,
             Severity.error,
-            '~<stdin>: line 1: malformed preprocessor directive - missing expression: ifeval::[]',
+            '~<stdin>: line 1: malformed preprocessor directive - '
+            'missing expression: ifeval::[]',
             contextual: true,
           );
         });
@@ -3678,13 +3786,15 @@ void main() {
           assertMessage(
             logger,
             Severity.error,
-            '~<stdin>: line 1: malformed preprocessor directive - missing target: ifdef::[]',
+            '~<stdin>: line 1: malformed preprocessor directive - '
+            'missing target: ifdef::[]',
             contextual: true,
           );
         });
       });
 
-      test('should not warn about invalid ifdef preprocessor directive if already skipping', () {
+      test('should not warn about invalid ifdef preprocessor directive '
+          'if already skipping', () {
         const input =
             'ifdef::attribute-not-set[]\n'
             'foo\n'
@@ -3699,7 +3809,8 @@ void main() {
         });
       });
 
-      test('should not warn about invalid ifeval preprocessor directive if already skipping', () {
+      test('should not warn about invalid ifeval preprocessor '
+          'directive if already skipping', () {
         const input =
             'ifdef::attribute-not-set[]\n'
             'foo\n'
@@ -3714,7 +3825,8 @@ void main() {
         });
       });
 
-      test('should log error with end position if preprocessor conditional directive is unterminated', () {
+      test('should log error with end position if preprocessor '
+          'conditional directive is unterminated', () {
         const input =
             'before\n'
             'ifdef::not-set[]\n'
@@ -3729,13 +3841,15 @@ void main() {
           assertMessage(
             logger,
             Severity.error,
-            '~<stdin>: line 6: detected unterminated preprocessor conditional directive: ifdef::not-set[]',
+            '~<stdin>: line 6: detected unterminated preprocessor '
+            'conditional directive: ifdef::not-set[]',
             contextual: true,
           );
         });
       });
 
-      test('should log error with start location if preprocessor conditional directive is unterminated and sourcemap is set', () {
+      test('should log error with start location if preprocessor conditional '
+          'directive is unterminated and sourcemap is set', () {
         const input =
             'before\n'
             'ifdef::not-set[]\n'
@@ -3750,13 +3864,15 @@ void main() {
           assertMessage(
             logger,
             Severity.error,
-            '~<stdin>: line 2: detected unterminated preprocessor conditional directive: ifdef::not-set[]',
+            '~<stdin>: line 2: detected unterminated preprocessor '
+            'conditional directive: ifdef::not-set[]',
             contextual: true,
           );
         });
       });
 
-      test('should log error if multiple preprocessor conditional directives are unterminated', () {
+      test('should log error if multiple preprocessor conditional '
+          'directives are unterminated', () {
         const input =
             'before\n'
             'ifdef::not-set[]\n'
@@ -3773,12 +3889,14 @@ void main() {
           assertMessages(logger, [
             (
               Severity.error,
-              '~<stdin>: line 2: detected unterminated preprocessor conditional directive: ifdef::not-set[]',
+              '~<stdin>: line 2: detected unterminated preprocessor '
+                  'conditional directive: ifdef::not-set[]',
               true,
             ),
             (
               Severity.error,
-              '~<stdin>: line 6: detected unterminated preprocessor conditional directive: ifeval::[1 == 2]',
+              '~<stdin>: line 6: detected unterminated preprocessor '
+                  'conditional directive: ifeval::[1 == 2]',
               true,
             ),
           ]);
@@ -3786,12 +3904,14 @@ void main() {
       });
 
       test(
-        'should not fail to process preprocessor directive that evaluates to false and has a large number of lines',
+        'should not fail to process preprocessor directive that '
+        'evaluates to false and has a large number of lines',
         // READER-LEVEL: asserts expanded lines instead of parsed blocks.
         () {
           final bulk = List.filled(5000, 'data').join('\n');
           final input =
-              'before\n\nifdef::attribute-not-set[]\n$bulk\nendif::attribute-not-set[]\n\nafter\n';
+              'before\n\nifdef::attribute-not-set[]\n$bulk\n'
+              'endif::attribute-not-set[]\n\nafter\n';
           expect(
             preprocessorReader(input).readLines(),
             equals(['before', '', '', 'after']),

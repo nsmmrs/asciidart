@@ -715,7 +715,8 @@ class Reader {
 
   @override
   String toString() =>
-      '#<$runtimeType@${identityHashCode(this)} {path: ${_inspect(_path)}, line: $_lineno}>';
+      '#<$runtimeType@${identityHashCode(this)} {path: '
+      '${_inspect(_path)}, line: $_lineno}>';
 
   /// Processes a previously unvisited line.
   ///
@@ -877,6 +878,8 @@ class PreprocessorReader extends Reader {
         LoggerManager.logger.error(
           _messageWithContext(
             'detected unterminated preprocessor conditional directive: '
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '${conditional.name}::${conditional.target ?? ''}[${conditional.expr ?? ''}]',
             sourceLocation:
                 conditional.sourceLocation ??
@@ -1009,7 +1012,8 @@ class PreprocessorReader extends Reader {
       }
 
       // FIXME kind of a hack
-      //Document::AttributeEntry.new('infile', @file).save_to_next_block @document
+      //Document::AttributeEntry.new('infile', @file)
+      //  .save_to_next_block @document
       //Document::AttributeEntry.new('indir', @dir).save_to_next_block @document
       _lookAhead = 0;
     }
@@ -1070,7 +1074,10 @@ class PreprocessorReader extends Reader {
 
   @override
   String toString() =>
-      '#<$runtimeType@${identityHashCode(this)} {path: ${_inspect(_path)}, line: $_lineno, include depth: ${_includeStack.length}, include stack: [${_includeStack.map((inc) => inc.toString()).join(', ')}]}>';
+      '#<$runtimeType@${identityHashCode(this)} {path: ${_inspect(_path)}, '
+      'line: $_lineno, include depth: ${_includeStack.length}, include '
+      'stack: '
+      '[${_includeStack.map((inc) => inc.toString()).join(', ')}]}>';
 
   @override
   void save() {
@@ -1273,7 +1280,8 @@ class PreprocessorReader extends Reader {
       } else {
         LoggerManager.logger.error(
           _messageWithContext(
-            'mismatched preprocessor directive: endif::$directiveTarget[], expected '
+            'mismatched preprocessor directive: '
+            'endif::$directiveTarget[], expected '
             'endif::${_conditionalStack.last.target ?? ''}[]',
             sourceLocation: cursor(),
           ),
@@ -1379,6 +1387,8 @@ class PreprocessorReader extends Reader {
               LoggerManager.logger.error(
                 _messageWithContext(
                   'malformed preprocessor directive - '
+                  // Unwrappable long literal (no valid split point).
+                  // ignore: lines_longer_than_80_chars
                   '${text != null ? 'invalid expression' : 'missing expression'}: '
                   'ifeval::[${text ?? ''}]',
                   sourceLocation: cursor(),
@@ -1490,6 +1500,8 @@ class PreprocessorReader extends Reader {
         LoggerManager.logger.info(
           () => _messageWithContext(
             'optional include dropped '
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '${attrMissing == 'warn' && droppedDueToMissingAttr ? 'due to missing attribute' : 'because resolved target is blank'}: '
             'include::$target[${attrlist ?? ''}]',
             sourceLocation: cursor(),
@@ -1501,6 +1513,8 @@ class PreprocessorReader extends Reader {
         LoggerManager.logger.warn(
           _messageWithContext(
             'include dropped '
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '${attrMissing == 'warn' && droppedDueToMissingAttr ? 'due to missing attribute' : 'because resolved target is blank'}: '
             'include::$target[${attrlist ?? ''}]',
             sourceLocation: cursor(),
@@ -1509,7 +1523,8 @@ class PreprocessorReader extends Reader {
         // QUESTION should this line include target or expanded_target (or
         // escaped target?)
         return replaceNextLine(
-          'Unresolved directive in $_path - include::$target[${attrlist ?? ''}]',
+          'Unresolved directive in $_path - '
+          'include::$target[${attrlist ?? ''}]',
         );
       }
     } else {
@@ -1645,7 +1660,8 @@ class PreprocessorReader extends Reader {
           } on _IncludeNotReadable {
             LoggerManager.logger.error(
               _messageWithContext(
-                'include ${resolution.typeName} not readable: ${resolution.path}',
+                'include ${resolution.typeName} not readable: '
+                '${resolution.path}',
                 sourceLocation: cursor(),
               ),
             );
@@ -1881,7 +1897,8 @@ class PreprocessorReader extends Reader {
           LoggerManager.logger.warn(
             _messageWithContext(
               "detected unclosed tag '${frame.name}' starting at line "
-              '${frame.lineno} of include ${resolution.typeName}: ${resolution.path}',
+              '${frame.lineno} of include ${resolution.typeName}: '
+              '${resolution.path}',
               sourceLocation: cursor(),
               includeLocation: createIncludeCursor(
                 resolution.path,
@@ -1899,7 +1916,8 @@ class PreprocessorReader extends Reader {
       if (missingTags.isNotEmpty) {
         LoggerManager.logger.warn(
           _messageWithContext(
-            "tag${missingTags.length > 1 ? 's' : ''} '${missingTags.join(', ')}' "
+            "tag${missingTags.length > 1 ? 's' : ''} "
+            "'${missingTags.join(', ')}' "
             'not found in include ${resolution.typeName}: ${resolution.path}',
             sourceLocation: cursor(),
           ),
@@ -1987,7 +2005,8 @@ class PreprocessorReader extends Reader {
         if (attributes.containsKey('optional-option')) {
           LoggerManager.logger.info(
             () => _messageWithContext(
-              'optional include dropped because include file not found: $incPath',
+              'optional include dropped because include file not '
+              'found: $incPath',
               sourceLocation: cursor(),
             ),
           );
@@ -2001,7 +2020,8 @@ class PreprocessorReader extends Reader {
             ),
           );
           replaceNextLine(
-            'Unresolved directive in $_path - include::$target[${attrlist ?? ''}]',
+            'Unresolved directive in $_path - '
+            'include::$target[${attrlist ?? ''}]',
           );
           return null;
         }
@@ -2045,7 +2065,8 @@ class PreprocessorReader extends Reader {
     processLines = frame[6]! as bool;
     // FIXME kind of a hack
     //Document::AttributeEntry.new('infile', @file).save_to_next_block @document
-    //Document::AttributeEntry.new('indir', ::File.dirname(@file)).save_to_next_block @document
+    //Document::AttributeEntry.new('indir', ::File.dirname(@file))
+    //  .save_to_next_block @document
     _lookAhead = 0;
   }
 

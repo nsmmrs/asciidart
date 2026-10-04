@@ -495,6 +495,8 @@ String convertQuotedText(
   final block = _blockOf(node);
   if (scope == 'constrained') {
     if (unescapedAttrs != null) {
+      // Unwrappable long literal (no valid split point).
+      // ignore: lines_longer_than_80_chars
       return '$unescapedAttrs${_str(Inline(block, 'quoted', text: match.group(3), type: resolvedType).convert())}';
     }
     final attrlist = match.group(2);
@@ -505,6 +507,8 @@ String convertQuotedText(
       id = attributes['id'] as String?;
       if (resolvedType == 'mark') resolvedType = 'unquoted';
     }
+    // Unwrappable long literal (no valid split point).
+    // ignore: lines_longer_than_80_chars
     return '${match.group(1)}${_str(Inline(block, 'quoted', text: match.group(3), type: resolvedType, id: id, attributes: attributes).convert())}';
   } else {
     final attrlist = match.group(1);
@@ -615,7 +619,8 @@ String subAttributes(
             );
           }
           //elsif drop_line_severity == :warn
-          //  logger.warn %(dropping line containing reference to missing attribute: #{key})
+          //  logger.warn %(dropping line containing reference to missing
+          //  attribute: #{key})
           drop = true;
           dropLine = true;
           return can;
@@ -1447,6 +1452,8 @@ String _subMacrosLinks(
         }
 
         doc.register('links', target);
+        // Unwrappable long literal (no valid split point).
+        // ignore: lines_longer_than_80_chars
         return '$prefix${_str(Inline(block, 'anchor', text: linkText, type: 'link', target: target, id: id, attributes: attrs == null ? null : _stringMap(attrs)).convert())}$suffix';
       }
     });
@@ -1486,10 +1493,16 @@ String _subMacrosLinks(
             if (attrs.containsKey(2)) {
               if (attrs.containsKey(3)) {
                 target =
+                    // Unwrappable long literal (no valid split point).
+                    // ignore: lines_longer_than_80_chars
                     '$target?subject=${Helpers.encodeUriComponent(attrs[2]! as String)}'
+                    // Unwrappable long literal (no valid split point).
+                    // ignore: lines_longer_than_80_chars
                     '&amp;body=${Helpers.encodeUriComponent(attrs[3]! as String)}';
               } else {
                 target =
+                    // Unwrappable long literal (no valid split point).
+                    // ignore: lines_longer_than_80_chars
                     '$target?subject=${Helpers.encodeUriComponent(attrs[2]! as String)}';
               }
             }
@@ -2221,8 +2234,12 @@ String restoreCallouts(
             if (conums == null) return line;
             if (conums.length == 1) {
               final mark = conums[0];
+              // Unwrappable long literal (no valid split point).
+              // ignore: lines_longer_than_80_chars
               return '$line${_str(Inline(block, 'callout', text: mark.numeral, id: doc.callouts.readNextId(), attributes: {'guard': mark.guard}).convert())}';
             } else {
+              // Unwrappable long literal (no valid split point).
+              // ignore: lines_longer_than_80_chars
               return '$line${conums.map((mark) => _str(Inline(block, 'callout', text: mark.numeral, id: doc.callouts.readNextId(), attributes: {'guard': mark.guard}).convert())).join(' ')}';
             }
           })
@@ -2262,6 +2279,8 @@ String extractPassthroughs(AbstractNode node, String text) {
         if (attrlist != null) {
           if (escapeCount > 0) {
             // NOTE we don't look for nested unconstrained pass macros
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             return '${match.group(1) ?? ''}[$attrlist]${rs * (escapeCount - 1)}$boundary${match.group(5)}$boundary';
           } else if (match.group(1) == rs) {
             preceding = '[$attrlist]';
@@ -2759,6 +2778,8 @@ String subPlaceholder(String format, Object? value) {
   final idx = escaped.indexOf('%s');
   final substituted = idx == -1
       ? escaped
+      // Unwrappable long literal (no valid split point).
+      // ignore: lines_longer_than_80_chars
       : '${escaped.substring(0, idx)}${_str(value)}${escaped.substring(idx + 2)}';
   return substituted.replaceAll(token, '%');
 }

@@ -2311,7 +2311,8 @@ void main() {
 
       test('document with subtitle and custom separator', () {
         const input =
-            '[separator=::]\n= Main Title:: *Subtitle*\nAuthor Name\n\ncontent\n';
+            '[separator=::]\n= Main Title:: *Subtitle*\nAuthor '
+            'Name\n\ncontent\n';
         final doc = documentFromString(input);
         final title =
             doc.doctitle(partition: true, sanitize: true)! as DocumentTitle;
@@ -2324,7 +2325,8 @@ void main() {
       test('should not honor custom separator for doctitle if attribute is '
           'locked by API', () {
         const input =
-            '[separator=::]\n= Main Title - *Subtitle*\nAuthor Name\n\ncontent\n';
+            '[separator=::]\n= Main Title - *Subtitle*\nAuthor '
+            'Name\n\ncontent\n';
         final doc = documentFromString(input, {
           'attributes': {'title-separator': ' -'},
         });
@@ -2360,7 +2362,8 @@ void main() {
 
       test('document with title attribute entry overrides doctitle', () {
         const input =
-            '= Document Title\n:title: Override\n\n{doctitle}\n\n== First Section\n';
+            '= Document Title\n:title: Override\n\n{doctitle}\n\n== '
+            'First Section\n';
         final doc = documentFromString(input);
         expect(doc.doctitle(), equals('Override'));
         expect(doc.title, equals('Override'));
@@ -2392,7 +2395,8 @@ void main() {
 
       test('document header can reference intrinsic doctitle attribute', () {
         const input =
-            '= ACME Documentation\n:intro: Welcome to the {doctitle}!\n\n{intro}\n';
+            '= ACME Documentation\n:intro: Welcome to the '
+            '{doctitle}!\n\n{intro}\n';
         final doc = documentFromString(input);
         expect(doc.attr('intro'), equals('Welcome to the ACME Documentation!'));
         assertXpath(
@@ -2405,6 +2409,8 @@ void main() {
       test('document with title attribute entry overrides doctitle attribute '
           'entry', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= Document Title\n:snapshot: {doctitle}\n:doctitle: doctitle\n:title: Override\n\n'
             '{snapshot}, {doctitle}\n\n== First Section\n';
         final doc = documentFromString(input);
@@ -2440,9 +2446,11 @@ void main() {
         },
       );
 
-      test('doctitle attribute entry above header overrides implicit doctitle', () {
+      test('doctitle attribute entry above header overrides implicit '
+          'doctitle', () {
         const input =
-            ':doctitle: Override\n= Document Title\n\n{doctitle}\n\n== First Section\n';
+            ':doctitle: Override\n= Document Title\n\n{doctitle}\n\n== '
+            'First Section\n';
         final doc = documentFromString(input);
         expect(doc.doctitle(), equals('Override'));
         expect(doc.attributes['title'], isNull);
@@ -2512,7 +2520,8 @@ void main() {
       test('should recognize document title when preceded by blank lines '
           'introduced by a preprocessor conditional', () {
         const input =
-            'ifdef::sectids[]\n\n:foo: bar\nendif::[]\n= Title\n\npreamble\n\n== Section 1\n\ntext\n';
+            'ifdef::sectids[]\n\n:foo: bar\nendif::[]\n= '
+            'Title\n\npreamble\n\n== Section 1\n\ntext\n';
         final output = convertString(input, {'safe': SafeMode.safe});
         assertCss('#header h1', output, 1);
         assertCss('#content h1', output, 0);
@@ -2539,7 +2548,8 @@ void main() {
         assertCss('#toc', output, 1);
       });
 
-      test('should include specified lines even when leading lines are skipped', () {
+      test('should include specified lines even when leading lines are '
+          'skipped', () {
         const input =
             'include::fixtures/include-with-leading-blank-line.adoc[lines=6]\n';
         final output = convertString(input, {
@@ -2559,7 +2569,8 @@ void main() {
 
       test('should sanitize contents of HTML title element', () {
         const input =
-            '= *Document* image:logo.png[] _Title_ image:another-logo.png[another logo]\n\ncontent\n';
+            '= *Document* image:logo.png[] _Title_ '
+            'image:another-logo.png[another logo]\n\ncontent\n';
         final output = convertString(input);
         assertXpath('/html/head/title[text()="Document Title"]', output, 1);
         final nodes = xmlnodesAtXpath('//*[@id="header"]/h1', output);
@@ -2591,7 +2602,11 @@ void main() {
 
       test('with metadata', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\nv8.6.8, 2012-07-12: See changelog.\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             ':description: AsciiDoc user guide\n:keywords: asciidoc,documentation\n:copyright: Stuart Rackham\n'
             '\n== Version 8.6.8\n\nmore info...\n';
         final output = convertString(input);
@@ -2654,7 +2669,8 @@ void main() {
       test('should include revision history in DocBook output if revdate and '
           'revnumber is set', () {
         const input =
-            '= Document Title\nAuthor Name\n:revdate: 2011-11-11\n:revnumber: 1.0\n\ncontent\n';
+            '= Document Title\nAuthor Name\n:revdate: '
+            '2011-11-11\n:revnumber: 1.0\n\ncontent\n';
         final output = convertString(input, {'backend': 'docbook'});
         assertCss('revhistory', output, 1);
         assertCss('revhistory > revision', output, 1);
@@ -2665,7 +2681,8 @@ void main() {
       test('should include revision history in DocBook output if revdate and '
           'revremark is set', () {
         const input =
-            '= Document Title\nAuthor Name\n:revdate: 2011-11-11\n:revremark: features!\n\ncontent\n';
+            '= Document Title\nAuthor Name\n:revdate: '
+            '2011-11-11\n:revremark: features!\n\ncontent\n';
         final output = convertString(input, {'backend': 'docbook'});
         assertCss('revhistory', output, 1);
         assertCss('revhistory > revision', output, 1);
@@ -2683,7 +2700,8 @@ void main() {
 
       test('with metadata to DocBook 5', () {
         const input =
-            '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n\n== Version 8.6.8\n\nmore info...\n';
+            '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n\n== '
+            'Version 8.6.8\n\nmore info...\n';
         final output = convertString(input, {'backend': 'docbook5'});
         assertXpath('/article/info', output, 1);
         assertXpath('/article/info/title[text()="AsciiDoc"]', output, 1);
@@ -2718,7 +2736,8 @@ void main() {
 
       test('with author defined using attribute entry to DocBook', () {
         const input =
-            '= Document Title\n:author: Doc Writer\n:email: thedoctor@asciidoc.org\n\ncontent\n';
+            '= Document Title\n:author: Doc Writer\n:email: '
+            'thedoctor@asciidoc.org\n\ncontent\n';
         final output = convertString(input, {'backend': 'docbook'});
         assertXpath('/article/info/author', output, 1);
         assertXpath(
@@ -2741,7 +2760,8 @@ void main() {
 
       test('should substitute replacements in author names in HTML output', () {
         const input =
-            "= Document Title\nStephen O'Grady <founder@redmonk.com>\n\ncontent\n";
+            "= Document Title\nStephen O'Grady "
+            '<founder@redmonk.com>\n\ncontent\n';
         final output = convertString(input);
         assertXpath(
           '//meta[@name="author"][@content="Stephen O${decodeChar(8217)}Grady"]',
@@ -2755,9 +2775,11 @@ void main() {
         );
       });
 
-      test('should substitute replacements in author names in DocBook output', () {
+      test('should substitute replacements in author names in DocBook '
+          'output', () {
         const input =
-            "= Document Title\nStephen O'Grady <founder@redmonk.com>\n\ncontent\n";
+            "= Document Title\nStephen O'Grady "
+            '<founder@redmonk.com>\n\ncontent\n';
         final output = convertString(input, {'backend': 'docbook'});
         assertXpath('//author', output, 1);
         assertXpath(
@@ -2786,7 +2808,8 @@ void main() {
 
       test('should include multiple authors in HTML output', () {
         const input =
-            '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
+            '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; '
+            'Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
         final output = convertString(input);
         assertXpath('//span[@id="author"]', output, 1);
         assertXpath('//span[@id="author"][text()="Doc Writer"]', output, 1);
@@ -2810,7 +2833,8 @@ void main() {
 
       test('should create authorgroup in DocBook when multiple authors', () {
         const input =
-            '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
+            '= Document Title\nDoc Writer <thedoctor@asciidoc.org>; '
+            'Junior Writer <junior@asciidoctor.org>\n\ncontent\n';
         final output = convertString(input, {'backend': 'docbook'});
         assertXpath('/article/info/author', output, 0);
         assertXpath('/article/info/authorgroup', output, 1);
@@ -2830,7 +2854,8 @@ void main() {
       test('should process author defined by attribute when implicit doctitle '
           'is absent', () {
         const input =
-            ':author: Doc Writer\n\n{lastname}, {firstname} ({authorinitials})\n';
+            ':author: Doc Writer\n\n{lastname}, {firstname} '
+            '({authorinitials})\n';
         final doc = documentFromString(input, {'standalone': false});
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('author_1'), isNull);
@@ -2845,7 +2870,8 @@ void main() {
       test('should process author and authorinitials defined by attribute '
           'when implicit doctitle is absent', () {
         const input =
-            ':authorinitials: DOC\n:author: Doc Writer\n\n{lastname}, {firstname} ({authorinitials})\n';
+            ':authorinitials: DOC\n:author: Doc Writer\n\n{lastname}, '
+            '{firstname} ({authorinitials})\n';
         final doc = documentFromString(input, {'standalone': false});
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('authorinitials'), equals('DOC'));
@@ -2857,7 +2883,8 @@ void main() {
       test('should process authors defined by attribute when implicit '
           'doctitle is absent', () {
         const input =
-            ':authors: Doc Writer; Other Author\n\n{lastname}, {firstname} ({authorinitials})\n';
+            ':authors: Doc Writer; Other Author\n\n{lastname}, '
+            '{firstname} ({authorinitials})\n';
         final doc = documentFromString(input, {'standalone': false});
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('authors'), equals('Doc Writer, Other Author'));
@@ -2878,7 +2905,8 @@ void main() {
       test('should process authors and authorinitials defined by attribute '
           'when implicit doctitle is absent', () {
         const input =
-            ':authorinitials: DOC\n:authors: Doc Writer; Other Author\n\n{lastname}, {firstname} ({authorinitials})\n';
+            ':authorinitials: DOC\n:authors: Doc Writer; Other Author\n'
+            '\n{lastname}, {firstname} ({authorinitials})\n';
         final doc = documentFromString(input, {'standalone': false});
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('author_1'), equals('Doc Writer'));
@@ -2907,7 +2935,8 @@ void main() {
       test('should set authorcount to 0 if author not set by attribute and '
           'document starts with level-0 section with style', () {
         const input =
-            ':doctype: book\n\n[preface]\n= Preface\n\ncontent\n\n= Part\n\n== Chapter\n\ncontent\n';
+            ':doctype: book\n\n[preface]\n= Preface\n\ncontent\n\n= '
+            'Part\n\n== Chapter\n\ncontent\n';
         final doc = documentFromString(input);
         expect(doc.attr('authorcount'), equals(0));
       });
@@ -2921,6 +2950,8 @@ void main() {
 
       test('with authors defined using attribute entry to DocBook', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= Document Title\n:authors: Doc Writer; Junior Writer\n:email_1: thedoctor@asciidoc.org\n'
             ':email_2: junior@asciidoc.org\n\ncontent\n';
         final output = convertString(input, {'backend': 'docbook'});
@@ -2952,7 +2983,8 @@ void main() {
       test('should populate copyright element in DocBook output if copyright '
           'attribute is defined', () {
         const input =
-            '= Jet Bike\n:copyright: ACME, Inc.\n\nEssential for catching road runners.\n';
+            '= Jet Bike\n:copyright: ACME, Inc.\n\nEssential for '
+            'catching road runners.\n';
         final output = convertString(input, {'backend': 'docbook5'});
         assertXpath('/article/info/copyright', output, 1);
         assertXpath(
@@ -2965,7 +2997,8 @@ void main() {
       test('should populate copyright element in DocBook output if copyright '
           'attribute is defined with year', () {
         const input =
-            '= Jet Bike\n:copyright: ACME, Inc. 1956\n\nEssential for catching road runners.\n';
+            '= Jet Bike\n:copyright: ACME, Inc. 1956\n\nEssential for '
+            'catching road runners.\n';
         final output = convertString(input, {'backend': 'docbook5'});
         assertXpath('/article/info/copyright', output, 1);
         assertXpath(
@@ -2980,7 +3013,8 @@ void main() {
       test('should populate copyright element in DocBook output if copyright '
           'attribute is defined with year range', () {
         const input =
-            '= Jet Bike\n:copyright: ACME, Inc. 1956-2018\n\nEssential for catching road runners.\n';
+            '= Jet Bike\n:copyright: ACME, Inc. 1956-2018\n\nEssential '
+            'for catching road runners.\n';
         final output = convertString(input, {'backend': 'docbook5'});
         assertXpath('/article/info/copyright', output, 1);
         assertXpath(
@@ -3154,7 +3188,8 @@ void main() {
           final apiAttrs = entry[0]! as Map<String, Object?>;
           final attrEntries = entry[1] as List<String>?;
           final input =
-              '= Document Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
+              '= Document '
+              'Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
               '\n\nifdef::showtitle[showtitle: set]\n'
               'ifndef::showtitle[showtitle: not set]\n'
               'ifdef::notitle[notitle: set]\n'
@@ -3171,7 +3206,8 @@ void main() {
         }
       });
 
-      test('should be able to explicitly disable doctitle for embedded document', () {
+      test('should be able to explicitly disable doctitle for embedded '
+          'document', () {
         final cases = <List<Object?>>[
           [
             {'notitle': ''},
@@ -3214,7 +3250,8 @@ void main() {
           final apiAttrs = entry[0]! as Map<String, Object?>;
           final attrEntries = entry[1] as List<String>?;
           final input =
-              '= Document Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
+              '= Document '
+              'Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
               '\n\nifdef::showtitle[showtitle: set]\n'
               'ifndef::showtitle[showtitle: not set]\n'
               'ifdef::notitle[notitle: set]\n'
@@ -3242,7 +3279,8 @@ void main() {
 
       test('should parse header only when docytpe is manpage', () {
         const input =
-            '= cmd(1)\nAuthor Name\n:doctype: manpage\n\n== Name\n\ncmd - does stuff\n';
+            '= cmd(1)\nAuthor Name\n:doctype: manpage\n\n== '
+            'Name\n\ncmd - does stuff\n';
         final doc = documentFromString(input, {'parse_header_only': true});
         expect(doc.doctitle(), equals('cmd(1)'));
         expect(doc.author, equals('Author Name'));
@@ -3272,8 +3310,11 @@ void main() {
       test('outputs footnotes in footer', () {
         const input =
             'A footnote footnote:[An example footnote.];\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             'a second footnote with a reference ID footnote:note2[Second footnote.];\n'
-            'and finally a reference to the second footnote footnote:note2[].\n';
+            'and finally a reference to the second footnote '
+            'footnote:note2[].\n';
         final output = convertString(input);
         assertCss('#footnotes', output, 1);
         assertCss('#footnotes .footnote', output, 2);
@@ -3309,7 +3350,8 @@ void main() {
 
       test('outputs footnotes block in embedded document by default', () {
         const input =
-            'Text that has supporting information{empty}footnote:[An example footnote.].';
+            'Text that has supporting information{empty}footnote:[An '
+            'example footnote.].';
         final output = convertStringToEmbedded(input);
         assertCss('#footnotes', output, 1);
         assertCss('#footnotes .footnote', output, 1);
@@ -3332,7 +3374,8 @@ void main() {
       test('does not output footnotes block in embedded document if '
           'nofootnotes attribute is set', () {
         const input =
-            'Text that has supporting information{empty}footnote:[An example footnote.].';
+            'Text that has supporting information{empty}footnote:[An '
+            'example footnote.].';
         final output = convertStringToEmbedded(input, {
           'attributes': {'nofootnotes': ''},
         });
@@ -3343,7 +3386,8 @@ void main() {
     group('Catalog', () {
       test('should alias document catalog as document references', () {
         const input =
-            '= Document Title\n\n== Section A\n\nContent\n\n== Section B\n\nContent.footnote:[commentary]\n';
+            '= Document Title\n\n== Section A\n\nContent\n\n== Section '
+            'B\n\nContent.footnote:[commentary]\n';
         final doc = documentFromString(input);
         expect(doc.catalog, isNotNull);
         expect(
@@ -3505,11 +3549,23 @@ void main() {
 
       test('should close all short tags when htmlsyntax is xml', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= Document Title\nAuthor Name\nv1.0, 2001-01-01\n:icons:\n:favicon:\n\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             'image:tiger.png[]\n\nimage::tiger.png[]\n\n* [x] one\n* [ ] two\n\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '|===\n|A |B\n|===\n\n[horizontal, labelwidth="25%", itemwidth="75%"]\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             'term:: description\n\nNOTE: note\n\n[quote,Author,Source]\n____\nQuote me.\n____\n\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '[verse,Author,Source]\n____\nA tall tale.\n____\n\n[options="autoplay,loop"]\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             'video::screencast.ogg[]\n\nvideo::12345[vimeo]\n\n[options="autoplay,loop"]\n'
             "audio::podcast.ogg[]\n\none +\ntwo\n\n'''\n";
         final result = convertString(input, {
@@ -3541,9 +3597,11 @@ void main() {
         assertXpath('/book/info/subtitle[text()="Subtitle"]', result, 1);
       });
 
-      test('should be able to set doctype to article when converting to DocBook', () {
+      test('should be able to set doctype to article when converting '
+          'to DocBook', () {
         const input =
-            '= Title\nAuthor Name\n\npreamble\n\n== First Section\n\nsection body\n';
+            '= Title\nAuthor Name\n\npreamble\n\n== First '
+            'Section\n\nsection body\n';
         final result = convertString(input, {
           'keep_namespaces': true,
           'attributes': {'backend': 'docbook5'},
@@ -3587,7 +3645,11 @@ void main() {
       test('should be able to convert DocBook manpage output when backend is '
           'DocBook and doctype is manpage', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= asciidoctor(1)\n:mansource: Asciidoctor\n:manmanual: Asciidoctor Manual\n\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '== NAME\n\nasciidoctor - Process text\n\n== SYNOPSIS\n\nsome text\n\n'
             '== First Section\n\nsection body\n';
         final result = convertString(input, {
@@ -3666,7 +3728,8 @@ void main() {
       test('should output non-breaking space for source and manual in docbook '
           'manpage output if absent from source', () {
         const input =
-            '= asciidoctor(1)\n\n== NAME\n\nasciidoctor - Process text\n\n== SYNOPSIS\n\nsome text\n';
+            '= asciidoctor(1)\n\n== NAME\n\nasciidoctor - Process '
+            'text\n\n== SYNOPSIS\n\nsome text\n';
         final result = convertString(input, {
           'keep_namespaces': true,
           'attributes': {'backend': 'docbook5', 'doctype': 'manpage'},
@@ -3687,7 +3750,8 @@ void main() {
           'attribute used in DocBook output', () {
         const input =
             '= foo\\--bar(1)\nAuthor Name\n:doctype: manpage\n:man manual: Foo Bar Manual\n'
-            ':man source: Foo Bar 1.0\n\n== NAME\n\nfoo--bar - puts the foo in your bar\n';
+            ':man source: Foo Bar 1.0\n\n== NAME\n\nfoo--bar - puts '
+            'the foo in your bar\n';
         final doc = asciidoctorLoad(
           input,
           backend: 'docbook',
@@ -3707,9 +3771,11 @@ void main() {
         );
       });
 
-      test('should be able to set doctype to book when converting to DocBook', () {
+      test('should be able to set doctype to book when converting to '
+          'DocBook', () {
         const input =
-            '= Title\nAuthor Name\n\npreamble\n\n== First Chapter\n\nchapter body\n';
+            '= Title\nAuthor Name\n\npreamble\n\n== First '
+            'Chapter\n\nchapter body\n';
         final result = convertString(input, {
           'keep_namespaces': true,
           'attributes': {'backend': 'docbook5', 'doctype': 'book'},
@@ -3754,7 +3820,11 @@ void main() {
       test('adds refname to DocBook output for each name defined in NAME '
           'section of manpage', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= eve(1)\nAndrew Stanton\nv1.0.0\n:doctype: manpage\n:manmanual: EVE\n:mansource: EVE\n\n'
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             "== NAME\n\neve, islifeform - analyzes an image to determine if it's a picture of a life form\n\n"
             "== SYNOPSIS\n\n*eve* ['OPTION']... 'FILE'...\n";
         final result = convertString(input, {'backend': 'docbook5'});
@@ -3825,7 +3895,8 @@ void main() {
 
       test('do not override explicit author initials', () {
         const input =
-            '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n:Author Initials: SJR\n\nmore info...\n';
+            '= AsciiDoc\nStuart Rackham <founder@asciidoc.org>\n'
+            ':Author Initials: SJR\n\nmore info...\n';
         final output = convertString(input, {
           'attributes': {'backend': 'docbook5'},
         });
@@ -3839,7 +3910,8 @@ void main() {
         expect(doc.attr('toc'), equals(''));
       });
 
-      test('attribute entry can appear before author line under document title', () {
+      test('attribute entry can appear before author line under '
+          'document title', () {
         const input =
             'Reference Guide\n===============\n:toc:\nDan Allen\n\npreamble\n';
         final doc = documentFromString(input);
@@ -3851,15 +3923,20 @@ void main() {
       test('should parse mantitle and manvolnum from document title for '
           'manpage doctype', () {
         const input =
-            '= asciidoctor ( 1 )\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
+            '= asciidoctor ( 1 )\n:doctype: manpage\n\n== NAME\n\nasciidoctor '
+            '- converts AsciiDoc source files to HTML, DocBook and '
+            'other formats\n';
         final doc = documentFromString(input);
         expect(doc.attr('mantitle'), equals('asciidoctor'));
         expect(doc.attr('manvolnum'), equals('1'));
       });
 
-      test('should perform attribute substitution on mantitle in manpage doctype', () {
+      test('should perform attribute substitution on mantitle in '
+          'manpage doctype', () {
         const input =
-            '= {app}(1)\n:doctype: manpage\n:app: Asciidoctor\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
+            '= {app}(1)\n:doctype: manpage\n:app: Asciidoctor\n\n== '
+            'NAME\n\nasciidoctor - converts AsciiDoc source files '
+            'to HTML, DocBook and other formats\n';
         final doc = documentFromString(input);
         expect(doc.attr('mantitle'), equals('asciidoctor'));
       });
@@ -3867,7 +3944,9 @@ void main() {
       test('should consume name section as manname and manpurpose for manpage '
           'doctype', () {
         const input =
-            '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
+            '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - '
+            'converts AsciiDoc source files to HTML, DocBook and '
+            'other formats\n';
         final doc = documentFromString(input);
         expect(doc.attr('manname'), equals('asciidoctor'));
         expect(
@@ -3883,7 +3962,9 @@ void main() {
       test('should set docname and outfilesuffix from manname and manvolnum '
           'for manpage backend and doctype', () {
         const input =
-            '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n';
+            '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - '
+            'converts AsciiDoc source files to HTML, DocBook and '
+            'other formats\n';
         final doc = documentFromString(input, {'backend': 'manpage'});
         expect(doc.attributes['docname'], equals('asciidoctor'));
         expect(doc.attributes['outfilesuffix'], equals('.1'));
@@ -3891,6 +3972,8 @@ void main() {
 
       test('should mark synopsis as special section in manpage doctype', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
             "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
         final doc = documentFromString(input);
@@ -3904,6 +3987,8 @@ void main() {
         'should output special header block in HTML for manpage doctype',
         () {
           const input =
+              // Unwrappable long literal (no valid split point).
+              // ignore: lines_longer_than_80_chars
               '= asciidoctor(1)\n:doctype: manpage\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
               "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
           final output = convertString(input);
@@ -3940,6 +4025,8 @@ void main() {
       test('should output special header block in embeddable HTML for manpage '
           'doctype', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= asciidoctor(1)\n:doctype: manpage\n:showtitle:\n\n== NAME\n\nasciidoctor - converts AsciiDoc source files to HTML, DocBook and other formats\n\n'
             "== SYNOPSIS\n\n*asciidoctor* ['OPTION']... 'FILE'..\n";
         final output = convertStringToEmbedded(input);
@@ -3960,6 +4047,8 @@ void main() {
 
       test('should output all mannames in name section in man page output', () {
         const input =
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             '= eve(1)\n:doctype: manpage\n\n== NAME\n\neve, probe - analyzes an image to determine if it is a picture of a life form\n\n'
             '== SYNOPSIS\n\n*eve* [OPTION]... FILE...\n';
         final output = convertString(input);

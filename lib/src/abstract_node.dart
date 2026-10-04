@@ -527,7 +527,8 @@ abstract class AbstractNode {
     final String icon;
     if (hasAttr('icon')) {
       var custom = attr('icon')! as String;
-      // QUESTION should we be adding the extension if the icon is an absolute URI?
+      // QUESTION should we be adding the extension if the icon is an
+      // absolute URI?
       if (!Helpers.hasExtname(custom)) {
         custom = '$custom.${document!.attr('icontype', 'png')}';
       }
@@ -789,7 +790,8 @@ abstract class AbstractNode {
   /// [warnIfEmpty] warns when the contents are empty.
   ///
   /// Returns the contents, or `null` when the target cannot be read.
-  // TODOrefactor other methods in this class to use this method were possible (repurposing if necessary)
+  // TODOrefactor other methods in this class to use this method were
+  // possible (repurposing if necessary)
   String? readContents(
     String target, {
     String? label,
@@ -821,7 +823,8 @@ abstract class AbstractNode {
         } on Exception {
           if (warnOnFailure) {
             logger.warn(
-              'could not retrieve contents of $assetLabel at URI: $resolvedTarget',
+              'could not retrieve contents of $assetLabel at URI: '
+              '$resolvedTarget',
             );
           }
         }

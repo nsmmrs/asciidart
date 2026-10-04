@@ -961,7 +961,8 @@ void main() {
           );
         },
       );
-      test('should wrap converter in composite converter with template converter '
+      test('should wrap converter in composite converter with template '
+          'converter '
           'if it declares that it supports templates', () {
         // Port of test/converter_test.rb: 'should wrap converter in
         // composite converter with template converter if it declares

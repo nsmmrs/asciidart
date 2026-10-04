@@ -157,13 +157,15 @@ String _htmlQuoted(Inline node) {
   if (node.id != null) {
     final classAttr = node.hasRole() ? ' class="${node.role}"' : '';
     if (hasTag) {
-      return '${open.substring(0, open.length - 1)} id="${node.id}"$classAttr>$text$close';
+      return '${open.substring(0, open.length - 1)} '
+          'id="${node.id}"$classAttr>$text$close';
     } else {
       return '<span id="${node.id}"$classAttr>$open$text$close</span>';
     }
   } else if (node.hasRole()) {
     if (hasTag) {
-      return '${open.substring(0, open.length - 1)} class="${node.role}">$text$close';
+      return '${open.substring(0, open.length - 1)} '
+          'class="${node.role}">$text$close';
     } else {
       return '<span class="${node.role}">$open$text$close</span>';
     }
@@ -208,7 +210,8 @@ String _docbookQuoted(Inline node) {
       quotedText = '$open<phrase role="${node.role}">$text</phrase>$close';
     } else {
       quotedText =
-          '${open.substring(0, open.length - 1)} role="${node.role}">$text$close';
+          '${open.substring(0, open.length - 1)} '
+          'role="${node.role}">$text$close';
     }
   } else {
     quotedText = '$open$text$close';
@@ -422,7 +425,8 @@ String _htmlImage(Inline node, Document doc) {
         attrs = '$attrs title="${node.attr('title')}"';
       }
       img =
-          '<img src="${node.iconUri(target)}" alt="${_encodeAttrValue(_inlineAlt(node))}"$attrs>';
+          '<img src="${node.iconUri(target)}" '
+          'alt="${_encodeAttrValue(_inlineAlt(node))}"$attrs>';
     } else {
       img = '[${_inlineAlt(node)}&#93;';
     }
@@ -442,17 +446,20 @@ String _htmlImage(Inline node, Document doc) {
             '<span class="alt">${_inlineAlt(node)}</span>';
       } else if (node.hasOption('interactive')) {
         final fallback = node.hasAttr('fallback')
-            ? '<img src="${node.imageUri(node.attr('fallback').toString())}" alt="${_encodeAttrValue(_inlineAlt(node))}"$attrs>'
+            ? '<img src="${node.imageUri(node.attr('fallback').toString())}" '
+                  'alt="${_encodeAttrValue(_inlineAlt(node))}"$attrs>'
             : '<span class="alt">${_inlineAlt(node)}</span>';
         img =
             '<object type="image/svg+xml" data="${src = node.imageUri(target)}"$attrs>$fallback</object>';
       } else {
         img =
-            '<img src="${src = node.imageUri(target)}" alt="${_encodeAttrValue(_inlineAlt(node))}"$attrs>';
+            '<img src="${src = node.imageUri(target)}" '
+            'alt="${_encodeAttrValue(_inlineAlt(node))}"$attrs>';
       }
     } else {
       img =
-          '<img src="${src = node.imageUri(target)}" alt="${_encodeAttrValue(_inlineAlt(node))}"$attrs>';
+          '<img src="${src = node.imageUri(target)}" '
+          'alt="${_encodeAttrValue(_inlineAlt(node))}"$attrs>';
     }
   }
   var wrapped = img;
@@ -526,7 +533,8 @@ String? _readSvgContents(Inline node, String target) {
     // NOTE a unitless value in HTML is assumed to be px, so we can pass
     // the value straight through
     newStartTag =
-        '${newStartTag.substring(0, newStartTag.length - 1)} $dim="${node.attr(dim)}">';
+        '${newStartTag.substring(0, newStartTag.length - 1)} '
+        '$dim="${node.attr(dim)}">';
   }
   if (newStartTag != null) {
     svg = '$newStartTag${svg.substring(oldStartTag!.length)}';
@@ -992,7 +1000,8 @@ void main() {
       });
 
       test('single-line constrained marked string', () {
-        //para = block_from_string('#a few words#', attributes: { 'compat-mode' => '' })
+        //para = block_from_string('#a few words#',
+        //  attributes: { 'compat-mode' => '' })
         //assert_equal 'a few words', para.sub_quotes(para.source)
 
         final para = blockFromString('#a few words#');
@@ -1023,7 +1032,8 @@ void main() {
       });
 
       test('single-line unconstrained marked string', () {
-        //para = block_from_string('##--anything goes ##', attributes: { 'compat-mode' => '' })
+        //para = block_from_string('##--anything goes ##',
+        //  attributes: { 'compat-mode' => '' })
         //assert_equal '--anything goes ', para.sub_quotes(para.source)
 
         final para = blockFromString('##--anything goes ##');
@@ -1054,7 +1064,8 @@ void main() {
         );
       });
 
-      test('does not recognize attribute list with left square bracket on formatted text', () {
+      test('does not recognize attribute list with left square bracket '
+          'on formatted text', () {
         final para = blockFromString(
           'key: [ *before [.redacted]#redacted# after* ]',
         );
@@ -1064,7 +1075,8 @@ void main() {
         );
       });
 
-      test('should ignore enclosing square brackets when processing formatted text with attribute list', () {
+      test('should ignore enclosing square brackets when processing '
+          'formatted text with attribute list', () {
         // PORT: `doc.convert` with inline doctype renders the single
         // paragraph content; the parser wave owns block parsing.
         final para = blockFromString('nums = [1, 2, 3, [.blue]#4#]');
@@ -1100,7 +1112,8 @@ void main() {
         expect(subQuotes(para, para.source()), '<strong>bl*ck</strong>-eye');
       });
 
-      test('constrained strong string containing an asterisk and multibyte word chars', () {
+      test('constrained strong string containing an asterisk and '
+          'multibyte word chars', () {
         final para = blockFromString('*黑*眼圈*');
         expect(subQuotes(para, para.source()), '<strong>黑*眼圈</strong>');
       });
@@ -1321,7 +1334,8 @@ void main() {
 
       // NOTE must use apply_subs because constrained monospaced is handled
       // as a passthrough
-      test('should ignore role that ends with transitional role on constrained monospace span', () {
+      test('should ignore role that ends with transitional role on '
+          'constrained monospace span', () {
         final para = blockFromString('[foox-]`leave it alone`');
         expect(
           applySubs(para, para.source()),
@@ -1331,14 +1345,16 @@ void main() {
 
       // NOTE must use apply_subs because constrained monospaced is handled
       // as a passthrough
-      test('escaped single-line constrained monospace string with forced compat role', () {
+      test('escaped single-line constrained monospace string with '
+          'forced compat role', () {
         final para = blockFromString('[x-]$bs`leave it alone`');
         expect(applySubs(para, para.source()), '[x-]`leave it alone`');
       });
 
       // NOTE must use apply_subs because constrained monospaced is handled
       // as a passthrough
-      test('escaped forced compat role on single-line constrained monospace string', () {
+      test('escaped forced compat role on single-line constrained '
+          'monospace string', () {
         final para = blockFromString('$bs[x-]`just *mono*`');
         expect(
           applySubs(para, para.source()),
@@ -1566,7 +1582,8 @@ void main() {
 
       // NOTE must use apply_subs because constrained monospaced is handled
       // as a passthrough
-      test('escaped single-line constrained passthrough string with forced compat role', () {
+      test('escaped single-line constrained passthrough string with '
+          'forced compat role', () {
         final para = blockFromString('[x-]$bs+leave it alone+');
         expect(applySubs(para, para.source()), '[x-]+leave it alone+');
       });
@@ -1636,7 +1653,8 @@ void main() {
         expect(subQuotes(para, para.source()), para.source());
       });
 
-      test('allow spaces in superscript if spaces are inserted using an attribute reference', () {
+      test('allow spaces in superscript if spaces are inserted using '
+          'an attribute reference', () {
         final para = blockFromString(
           'Night ^A{sp}poem{sp}by{sp}Jane{sp}Kondo^.',
         );
@@ -1784,7 +1802,8 @@ void main() {
         );
       });
 
-      test('should remove leading and trailing spaces around role after ignoring attributes after comma', () {
+      test('should remove leading and trailing spaces around role '
+          'after ignoring attributes after comma', () {
         final para = blockFromString('[ red , foobar]#alert#');
         expect(
           subQuotes(para, para.source()),
@@ -1849,7 +1868,8 @@ void main() {
         },
       );
 
-      test('a mailto macro with text and subject should be interpreted as a mailto link', () {
+      test('a mailto macro with text and subject should be interpreted '
+          'as a mailto link', () {
         final para = blockFromString(
           'mailto:doc.writer@asciidoc.org[Doc Writer, Pull request]',
         );
@@ -1859,9 +1879,11 @@ void main() {
         );
       });
 
-      test('a mailto macro with text, subject and body should be interpreted as a mailto link', () {
+      test('a mailto macro with text, subject and body should be '
+          'interpreted as a mailto link', () {
         final para = blockFromString(
-          'mailto:doc.writer@asciidoc.org[Doc Writer, Pull request, Please accept my pull request]',
+          'mailto:doc.writer@asciidoc.org[Doc Writer, Pull request, '
+          'Please accept my pull request]',
         );
         expect(
           subMacros(para, para.source()),
@@ -1873,7 +1895,8 @@ void main() {
         'a mailto macro with subject and body only should use e-mail as text',
         () {
           final para = blockFromString(
-            'mailto:doc.writer@asciidoc.org[,Pull request,Please accept my pull request]',
+            'mailto:doc.writer@asciidoc.org[,Pull request,Please '
+            'accept my pull request]',
           );
           expect(
             subMacros(para, para.source()),
@@ -1966,7 +1989,8 @@ void main() {
         },
       );
 
-      test('a single-line raw url with attribute as text should be interpreted as a link with resolved attribute', () {
+      test('a single-line raw url with attribute as text should be '
+          'interpreted as a link with resolved attribute', () {
         final para = blockFromString('http://google.com[{google_homepage}]');
         para.document!.attributes['google_homepage'] = 'Google Homepage';
         expect(
@@ -2021,7 +2045,8 @@ void main() {
         );
       });
 
-      test('should use the imagesdir attribute defined on image macro when resolving image path', () {
+      test('should use the imagesdir attribute defined on image macro '
+          'when resolving image path', () {
         // PORT: the `:imagesdir:` attribute entry and document structure
         // belong to the parser wave; emulate with document attributes.
         final para = blockFromString(
@@ -2031,7 +2056,8 @@ void main() {
         expect(contentOf(para), contains('src="stickers/rainbow.png"'));
       });
 
-      test('should replace underscore and hyphen with space in generated alt text for an inline image', () {
+      test('should replace underscore and hyphen with space in '
+          'generated alt text for an inline image', () {
         final para = blockFromString('image:tiger-with-family_1.png[]');
         expect(
           squeezeTags(subMacros(para, para.source())),
@@ -2039,7 +2065,8 @@ void main() {
         );
       });
 
-      test('a single-line image macro with text should be interpreted as an image with alt text', () {
+      test('a single-line image macro with text should be interpreted '
+          'as an image with alt text', () {
         final para = blockFromString('image:tiger.png[Tiger]');
         expect(
           squeezeTags(subMacros(para, para.source())),
@@ -2050,7 +2077,8 @@ void main() {
       test('should encode special characters in alt text of inline image', () {
         const input = 'A tiger\'s "roar" is < a bear\'s "growl"';
         const expected =
-            'A tiger&#8217;s &quot;roar&quot; is &lt; a bear&#8217;s &quot;growl&quot;';
+            'A tiger&#8217;s &quot;roar&quot; is &lt; a bear&#8217;s '
+            '&quot;growl&quot;';
         // PORT: `convert_inline_string` renders the single paragraph
         // content.
         final para = blockFromString('image:tiger-roar.png[$input]');
@@ -2060,7 +2088,8 @@ void main() {
         );
       });
 
-      test('an image macro with SVG image and text should be interpreted as an image with alt text', () {
+      test('an image macro with SVG image and text should be '
+          'interpreted as an image with alt text', () {
         final para = blockFromString('image:tiger.svg[Tiger]');
         expect(
           squeezeTags(subMacros(para, para.source())),
@@ -2068,7 +2097,8 @@ void main() {
         );
       });
 
-      test('an image macro with an interactive SVG image and alt text should be converted to an object element', () {
+      test('an image macro with an interactive SVG image and alt text '
+          'should be converted to an object element', () {
         final para = blockFromString(
           'image:tiger.svg[Tiger,opts=interactive]',
           safe: 10,
@@ -2080,7 +2110,8 @@ void main() {
         );
       });
 
-      test('an image macro with an interactive SVG image, fallback and alt text should be converted to an object element', () {
+      test('an image macro with an interactive SVG image, fallback and '
+          'alt text should be converted to an object element', () {
         final para = blockFromString(
           'image:tiger.svg[Tiger,fallback=tiger.png,opts=interactive]',
           safe: 10,
@@ -2092,7 +2123,8 @@ void main() {
         );
       });
 
-      test('an image macro with an inline SVG image should be converted to an svg element', () {
+      test('an image macro with an inline SVG image should be '
+          'converted to an svg element', () {
         final para = blockFromString(
           'image:circle.svg[Tiger,100,opts=inline]',
           safe: 10,
@@ -2108,7 +2140,8 @@ void main() {
         expect(result, isNot(matches(RegExp(r'<svg\s[^>]*style="[^>]*>'))));
       });
 
-      test('should ignore link attribute if value is self and image target is inline SVG', () {
+      test('should ignore link attribute if value is self and image '
+          'target is inline SVG', () {
         final para = blockFromString(
           'image:circle.svg[Tiger,100,opts=inline,link=self]',
           safe: 10,
@@ -2119,7 +2152,8 @@ void main() {
         expect(result, isNot(contains('<a href=')));
       });
 
-      test('an image macro with an inline SVG image should be converted to an svg element even when data-uri is set', () {
+      test('an image macro with an inline SVG image should be '
+          'converted to an svg element even when data-uri is set', () {
         final para = blockFromString(
           'image:circle.svg[Tiger,100,opts=inline]',
           safe: 10,
@@ -2135,7 +2169,8 @@ void main() {
         );
       });
 
-      test('an image macro with an SVG image should not use an object element when safe mode is secure', () {
+      test('an image macro with an SVG image should not use an object '
+          'element when safe mode is secure', () {
         final para = blockFromString(
           'image:tiger.svg[Tiger,opts=interactive]',
           attributes: {'imagesdir': 'images'},
@@ -2146,7 +2181,8 @@ void main() {
         );
       });
 
-      test('a single-line image macro with text containing escaped square bracket should be interpreted as an image with alt text', () {
+      test('a single-line image macro with text containing escaped square '
+          'bracket should be interpreted as an image with alt text', () {
         final para = blockFromString('image:tiger.png[[Another$bs] Tiger]');
         expect(
           squeezeTags(subMacros(para, para.source())),
@@ -2154,7 +2190,8 @@ void main() {
         );
       });
 
-      test('a single-line image macro with text and dimensions should be interpreted as an image with alt text and dimensions', () {
+      test('a single-line image macro with text and dimensions should be '
+          'interpreted as an image with alt text and dimensions', () {
         final para = blockFromString('image:tiger.png[Tiger, 200, 100]');
         expect(
           squeezeTags(subMacros(para, para.source())),
@@ -2162,7 +2199,9 @@ void main() {
         );
       });
 
-      test('a single-line image macro with text and dimensions should be interpreted as an image with alt text and dimensions in docbook', () {
+      test('a single-line image macro with text and dimensions should be '
+          'interpreted as an image with alt text and dimensions in '
+          'docbook', () {
         final para = blockFromString(
           'image:tiger.png[Tiger, 200, 100]',
           backend: 'docbook',
@@ -2173,7 +2212,8 @@ void main() {
         );
       });
 
-      test('a single-line image macro with scaledwidth attribute should be supported in docbook', () {
+      test('a single-line image macro with scaledwidth attribute '
+          'should be supported in docbook', () {
         final para = blockFromString(
           'image:tiger.png[Tiger,scaledwidth=25%]',
           backend: 'docbook',
@@ -2184,7 +2224,8 @@ void main() {
         );
       });
 
-      test('a single-line image macro with scaled attribute should be supported in docbook', () {
+      test('a single-line image macro with scaled attribute should be '
+          'supported in docbook', () {
         final para = blockFromString(
           'image:tiger.png[Tiger,scale=200]',
           backend: 'docbook',
@@ -2206,7 +2247,8 @@ void main() {
         );
       });
 
-      test('a single-line image macro with text and link should be interpreted as a linked image with alt text', () {
+      test('a single-line image macro with text and link should be '
+          'interpreted as a linked image with alt text', () {
         final para = blockFromString(
           'image:tiger.png[Tiger, link="http://en.wikipedia.org/wiki/Tiger"]',
         );
@@ -2216,7 +2258,8 @@ void main() {
         );
       });
 
-      test('an inline image macro with link should be interpreted as a linked image in docbook', () {
+      test('an inline image macro with link should be interpreted as a '
+          'linked image in docbook', () {
         final para = blockFromString(
           'image:apache license 2_0.png[Apache License 2.0,link=http://www.apache.org/licenses/LICENSE-2.0]',
           backend: 'docbook',
@@ -2227,7 +2270,8 @@ void main() {
         );
       });
 
-      test('a single-line image macro with text and link to self should be interpreted as a self-referencing image with alt text', () {
+      test('a single-line image macro with text and link to self should be '
+          'interpreted as a self-referencing image with alt text', () {
         final para = blockFromString(
           'image:tiger.png[Tiger, link=self]',
           attributes: {'imagesdir': 'img'},
@@ -2238,7 +2282,8 @@ void main() {
         );
       });
 
-      test('an inline image macro with text and link to self should be interpreted as a self-referencing image in docbook', () {
+      test('an inline image macro with text and link to self should be '
+          'interpreted as a self-referencing image in docbook', () {
         final para = blockFromString(
           'image:tiger.png[Tiger,link=self]',
           attributes: {'imagesdir': 'img'},
@@ -2250,7 +2295,8 @@ void main() {
         );
       });
 
-      test('should link to data URI if value of link attribute is self and inline image is embedded', () {
+      test('should link to data URI if value of link attribute is self '
+          'and inline image is embedded', () {
         final para = blockFromString(
           'image:circle.svg[Tiger,100,link=self]',
           safe: 10,
@@ -2274,7 +2320,8 @@ void main() {
         );
       });
 
-      test('rel=noopener should be added to an image with a link that targets the _blank window', () {
+      test('rel=noopener should be added to an image with a link that '
+          'targets the _blank window', () {
         final para = blockFromString(
           'image:tiger.png[Tiger,link=http://en.wikipedia.org/wiki/Tiger,window=_blank]',
         );
@@ -2284,7 +2331,8 @@ void main() {
         );
       });
 
-      test('rel=noopener should be added to an image with a link that targets a named window when the noopener option is set', () {
+      test('rel=noopener should be added to an image with a link that '
+          'targets a named window when the noopener option is set', () {
         final para = blockFromString(
           'image:tiger.png[Tiger,link=http://en.wikipedia.org/wiki/Tiger,window=name,opts=noopener]',
         );
@@ -2294,7 +2342,8 @@ void main() {
         );
       });
 
-      test('rel=nofollow should be added to an image with a link when the nofollow option is set', () {
+      test('rel=nofollow should be added to an image with a link when '
+          'the nofollow option is set', () {
         final para = blockFromString(
           'image:tiger.png[Tiger,link=http://en.wikipedia.org/wiki/Tiger,opts=nofollow]',
         );
@@ -2304,7 +2353,8 @@ void main() {
         );
       });
 
-      test('a multi-line image macro with text and dimensions should be interpreted as an image with alt text and dimensions', () {
+      test('a multi-line image macro with text and dimensions should be '
+          'interpreted as an image with alt text and dimensions', () {
         final para = blockFromString(
           'image:tiger.png[Another\nAwesome\nTiger, 200,\n100]',
         );
@@ -2314,7 +2364,8 @@ void main() {
         );
       });
 
-      test('an inline image macro with a url target should be interpreted as an image', () {
+      test('an inline image macro with a url target should be '
+          'interpreted as an image', () {
         final para = blockFromString(
           'Beware of the image:http://example.com/images/tiger.png[tiger].',
         );
@@ -2324,7 +2375,8 @@ void main() {
         );
       });
 
-      test('an inline image macro with a float attribute should be interpreted as a floating image', () {
+      test('an inline image macro with a float attribute should be '
+          'interpreted as a floating image', () {
         final para = blockFromString(
           'image:http://example.com/images/tiger.png[tiger, float="right"] Beware of the tigers!',
         );
@@ -2344,7 +2396,8 @@ void main() {
         );
       });
 
-      test('should propagate id attribute on inline image and use alt text as reftext when converting to DocBook', () {
+      test('should propagate id attribute on inline image and use alt '
+          'text as reftext when converting to DocBook', () {
         final para = blockFromString(
           'image:ruby.png[Ruby logo,id=ruby-logo] is the Ruby logo',
           backend: 'docbook',
@@ -2355,7 +2408,8 @@ void main() {
         );
       });
 
-      test('should prepend value of imagesdir attribute to inline image target if target is relative path', () {
+      test('should prepend value of imagesdir attribute to inline '
+          'image target if target is relative path', () {
         final para = blockFromString(
           'Beware of the image:tiger.png[tiger].',
           attributes: {'imagesdir': './images'},
@@ -2366,7 +2420,8 @@ void main() {
         );
       });
 
-      test('should not prepend value of imagesdir attribute to inline image target if target is absolute path', () {
+      test('should not prepend value of imagesdir attribute to inline '
+          'image target if target is absolute path', () {
         final para = blockFromString(
           'Beware of the image:/tiger.png[tiger].',
           attributes: {'imagesdir': './images'},
@@ -2377,7 +2432,8 @@ void main() {
         );
       });
 
-      test('should not prepend value of imagesdir attribute to inline image target if target is url', () {
+      test('should not prepend value of imagesdir attribute to inline '
+          'image target if target is url', () {
         final para = blockFromString(
           'Beware of the image:http://example.com/images/tiger.png[tiger].',
           attributes: {'imagesdir': './images'},
@@ -2388,7 +2444,8 @@ void main() {
         );
       });
 
-      test('should match an inline image macro if target contains a space character', () {
+      test('should match an inline image macro if target contains a '
+          'space character', () {
         final para = blockFromString(
           'Beware of the image:big cats.png[] around here.',
         );
@@ -2398,7 +2455,8 @@ void main() {
         );
       });
 
-      test('should not match an inline image macro if target contains a newline character', () {
+      test('should not match an inline image macro if target contains '
+          'a newline character', () {
         final para = blockFromString(
           'Fear not. There are no image:big\ncats.png[] around here.',
         );
@@ -2407,7 +2465,8 @@ void main() {
         expect(result, contains('image:big\ncats.png[]'));
       });
 
-      test('should not match an inline image macro if target begins or ends with space character', () {
+      test('should not match an inline image macro if target begins or '
+          'ends with space character', () {
         for (final input in const [
           'image: big cats.png[]',
           'image:big cats.png []',
@@ -2432,7 +2491,8 @@ void main() {
 
       // NOTE this test verifies attributes get substituted eagerly in
       // target of image in title
-      test('should substitute attributes in target of inline image in section title', () {
+      test('should substitute attributes in target of inline image in '
+          'section title', () {
         // PORT: section titles are assigned during parsing (parser wave);
         // emulate with a paragraph carrying the same substituted text.
         final logger = FakeLogger();
@@ -2500,7 +2560,8 @@ void main() {
         );
       });
 
-      test('an icon macro should output alt text if icons are disabled and alt is given', () {
+      test('an icon macro should output alt text if icons are disabled '
+          'and alt is given', () {
         final para = blockFromString('icon:github[alt="GitHub"]');
         expect(
           squeezeTags(subMacros(para, para.source())),
@@ -2508,7 +2569,8 @@ void main() {
         );
       });
 
-      test('an icon macro should be interpreted as a font-based icon when icons=font', () {
+      test('an icon macro should be interpreted as a font-based icon '
+          'when icons=font', () {
         final para = blockFromString(
           'icon:github[]',
           attributes: {'icons': 'font'},
@@ -2519,7 +2581,8 @@ void main() {
         );
       });
 
-      test('an icon macro with a size should be interpreted as a font-based icon with a size when icons=font', () {
+      test('an icon macro with a size should be interpreted as a '
+          'font-based icon with a size when icons=font', () {
         final para = blockFromString(
           'icon:github[4x]',
           attributes: {'icons': 'font'},
@@ -2530,7 +2593,8 @@ void main() {
         );
       });
 
-      test('an icon macro with flip should be interpreted as a flipped font-based icon when icons=font', () {
+      test('an icon macro with flip should be interpreted as a flipped '
+          'font-based icon when icons=font', () {
         final para = blockFromString(
           'icon:shield[fw,flip=horizontal]',
           attributes: {'icons': 'font'},
@@ -2541,7 +2605,8 @@ void main() {
         );
       });
 
-      test('an icon macro with rotate should be interpreted as a rotated font-based icon when icons=font', () {
+      test('an icon macro with rotate should be interpreted as a '
+          'rotated font-based icon when icons=font', () {
         final para = blockFromString(
           'icon:shield[fw,rotate=90]',
           attributes: {'icons': 'font'},
@@ -2552,7 +2617,8 @@ void main() {
         );
       });
 
-      test('an icon macro with a role and title should be interpreted as a font-based icon with a class and title when icons=font', () {
+      test('an icon macro with a role and title should be interpreted as a '
+          'font-based icon with a class and title when icons=font', () {
         final para = blockFromString(
           'icon:heart[role="red", title="Heart me"]',
           attributes: {'icons': 'font'},
@@ -2563,7 +2629,8 @@ void main() {
         );
       });
 
-      test('should use the imagesdir attribute on the node when resolving the icon path', () {
+      test('should use the imagesdir attribute on the node when '
+          'resolving the icon path', () {
         final doc = makeDoc(
           attributes: {'iconsdir': 'assets/icons', 'icons': 'image'},
         );
@@ -2576,7 +2643,8 @@ void main() {
         expect(icon.iconUri('wave'), 'chapter-1/icons/wave.png');
       });
 
-      test('a single-line footnote macro should be registered and output as a footnote', () {
+      test('a single-line footnote macro should be registered and '
+          'output as a footnote', () {
         final para = blockFromString(
           'Sentence text footnote:[An example footnote.].',
         );
@@ -2592,7 +2660,8 @@ void main() {
         expect(footnote.text, 'An example footnote.');
       });
 
-      test('a multi-line footnote macro should be registered and output as a footnote without newline', () {
+      test('a multi-line footnote macro should be registered and '
+          'output as a footnote without newline', () {
         final para = blockFromString(
           'Sentence text footnote:[An example footnote\nwith wrapped text.].',
         );
@@ -2608,7 +2677,8 @@ void main() {
         expect(footnote.text, 'An example footnote with wrapped text.');
       });
 
-      test('an escaped closing square bracket in a footnote should be unescaped when converted', () {
+      test('an escaped closing square bracket in a footnote should be '
+          'unescaped when converted', () {
         final para = blockFromString('footnote:[a $bs] b].');
         expect(
           subMacros(para, para.source()),
@@ -2687,7 +2757,8 @@ void main() {
 
       test('a footnote macro may contain text formatting', () {
         final para = blockFromString(
-          'You can download patches from the product page.footnote:[Only available with an _active_ subscription.]',
+          'You can download patches from the product page.footnote:[Only '
+          'available with an _active_ subscription.]',
         );
         // PORT: `para.convert` renders paragraph content (the quotes sub
         // runs before the macros sub, formatting the footnote content).
@@ -2779,7 +2850,8 @@ void main() {
         expect(footnotes[0].text, 'a <a id="b"></a> [[c]] d');
       });
 
-      test('subsequent footnote macros with escaped URLs should be restored in DocBook', () {
+      test('subsequent footnote macros with escaped URLs should be '
+          'restored in DocBook', () {
         // PORT: `convert_string_to_embedded` with inline doctype renders
         // the single paragraph content.
         const input =
@@ -2793,7 +2865,8 @@ void main() {
 
       test('should increment index of subsequent footnote macros', () {
         final para = blockFromString(
-          'Sentence text footnote:[An example footnote.]. Sentence text footnote:[Another footnote.].',
+          'Sentence text footnote:[An example footnote.]. Sentence '
+          'text footnote:[Another footnote.].',
         );
         expect(
           subMacros(para, para.source()),
@@ -2809,7 +2882,8 @@ void main() {
         expect(footnotes[1].text, 'Another footnote.');
       });
 
-      test('a footnoteref macro with id and single-line text should be registered and output as a footnote', () {
+      test('a footnoteref macro with id and single-line text should be '
+          'registered and output as a footnote', () {
         final para = blockFromString(
           'Sentence text footnoteref:[ex1, An example footnote.].',
           attributes: {'compat-mode': ''},
@@ -2825,9 +2899,11 @@ void main() {
         expect(footnotes.first.text, 'An example footnote.');
       });
 
-      test('a footnoteref macro with id and multi-line text should be registered and output as a footnote without newlines', () {
+      test('a footnoteref macro with id and multi-line text should be '
+          'registered and output as a footnote without newlines', () {
         final para = blockFromString(
-          'Sentence text footnoteref:[ex1, An example footnote\nwith wrapped text.].',
+          'Sentence text footnoteref:[ex1, An example footnote\nwith '
+          'wrapped text.].',
           attributes: {'compat-mode': ''},
         );
         expect(
@@ -2845,7 +2921,8 @@ void main() {
         'a footnoteref macro with id should refer to footnoteref with same id',
         () {
           final para = blockFromString(
-            'Sentence text footnoteref:[ex1, An example footnote.]. Sentence text footnoteref:[ex1].',
+            'Sentence text footnoteref:[ex1, An example footnote.]. '
+            'Sentence text footnoteref:[ex1].',
             attributes: {'compat-mode': ''},
           );
           expect(
@@ -2860,7 +2937,8 @@ void main() {
         },
       );
 
-      test('an unresolved footnote reference should produce a warning message and output fallback text in red', () {
+      test('an unresolved footnote reference should produce a warning '
+          'message and output fallback text in red', () {
         final logger = FakeLogger();
         withFakeLogger(logger, () {
           final para = blockFromString('Sentence text.footnote:ex1[]');
@@ -2873,7 +2951,8 @@ void main() {
         });
       });
 
-      test('using a footnoteref macro should generate a warning when compat mode is not enabled', () {
+      test('using a footnoteref macro should generate a warning when '
+          'compat mode is not enabled', () {
         final logger = FakeLogger();
         withFakeLogger(logger, () {
           final para = blockFromString(
@@ -2881,12 +2960,15 @@ void main() {
           );
           subMacros(para, para.source());
           expect(logger.warns, [
+            // Unwrappable long literal (no valid split point).
+            // ignore: lines_longer_than_80_chars
             'found deprecated footnoteref macro: footnoteref:[fn1,Commentary on this sentence.]; use footnote macro with target instead',
           ]);
         });
       });
 
-      test('inline footnote macro can be used to define and reference a footnote reference', () {
+      test('inline footnote macro can be used to define and reference '
+          'a footnote reference', () {
         // PORT: needs multi-paragraph parsing and footnote-list rendering.
         markTestSkipped(
           'parser wave (document structure) and converter wave (footnote list)',
@@ -2916,7 +2998,8 @@ void main() {
         expect((para.document! as Document).footnotes.length, 1);
       });
 
-      test('should not register footnote with id and text if id already registered', () {
+      test('should not register footnote with id and text if id '
+          'already registered', () {
         // PORT: the `:fn-notable-text:` attribute entry is parsed by the
         // reader (parser wave); emulate its stored value (header subs
         // leave it unchanged) on a shared document.
@@ -2936,25 +3019,28 @@ void main() {
         expect(doc.footnotes.length, 1);
       });
 
-      test(
-        'should not resolve an inline footnote macro missing both id and text',
-        () {
-          // PORT: `convert_string_to_embedded` over two paragraphs; each
-          // paragraph is substituted independently here.
-          for (final line in const [
-            'The footnote:[] macro can be used for defining and referencing footnotes.',
-            'The footnoteref:[] macro is now deprecated.',
-          ]) {
-            expect(contentOf(blockFromString(line)), contains(line));
-          }
-        },
-      );
+      test('should not resolve an inline footnote macro missing both '
+          'id and text', () {
+        // PORT: `convert_string_to_embedded` over two paragraphs; each
+        // paragraph is substituted independently here.
+        for (final line in const [
+          // Unwrappable long literal (no valid split point).
+          // ignore: lines_longer_than_80_chars
+          'The footnote:[] macro can be used for defining and referencing footnotes.',
+          'The footnoteref:[] macro is now deprecated.',
+        ]) {
+          expect(contentOf(blockFromString(line)), contains(line));
+        }
+      });
 
-      test('inline footnote macro can define a numeric id without conflicting with auto-generated ID', () {
+      test('inline footnote macro can define a numeric id without '
+          'conflicting with auto-generated ID', () {
         // PORT: the `#footnotes` list assertion belongs to the converter
         // wave; the paragraph output is asserted exactly.
         final para = blockFromString(
-          'You can download the software from the product page.footnote:1[Option only available if you have an active subscription.]',
+          'You can download the software from the product '
+          'page.footnote:1[Option only available if you have an '
+          'active subscription.]',
         );
         expect(
           contentOf(para),
@@ -2962,7 +3048,8 @@ void main() {
         );
       });
 
-      test('inline footnote macro can define an id that uses any word characters in Unicode', () {
+      test('inline footnote macro can define an id that uses any word '
+          'characters in Unicode', () {
         // PORT: the `#footnotes` list assertion belongs to the converter
         // wave; the paragraph outputs are asserted exactly.
         final doc = makeDoc();
@@ -2976,7 +3063,8 @@ void main() {
         expect(
           contentOf(
             paraFor(
-              "L'origine du mot for\u00eat{blank}footnote:for\u00eat[un massif forestier] est complexe.",
+              "L'origine du mot for\u00eat{blank}footnote:for\u00ea"
+              't[un massif forestier] est complexe.',
             ),
           ),
           'L&#8217;origine du mot for\u00eat<sup class="footnote" id="_footnote_for\u00eat">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> est complexe.',
@@ -3011,7 +3099,8 @@ void main() {
         },
       );
 
-      test('a single-line index term macro with a primary term should be registered as an index reference', () {
+      test('a single-line index term macro with a primary term should '
+          'be registered as an index reference', () {
         const sentence =
             'The tiger (Panthera tigris) is the largest cat species.\n';
         for (final macro in const ['indexterm:[Tigers]', '(((Tigers)))']) {
@@ -3021,7 +3110,8 @@ void main() {
         }
       });
 
-      test('a single-line index term macro with primary and secondary terms should be registered as an index reference', () {
+      test('a single-line index term macro with primary and secondary '
+          'terms should be registered as an index reference', () {
         const sentence =
             'The tiger (Panthera tigris) is the largest cat species.\n';
         for (final macro in const [
@@ -3034,7 +3124,8 @@ void main() {
         }
       });
 
-      test('a single-line index term macro with primary, secondary and tertiary terms should be registered as an index reference', () {
+      test('a single-line index term macro with primary, secondary and '
+          'tertiary terms should be registered as an index reference', () {
         const sentence =
             'The tiger (Panthera tigris) is the largest cat species.\n';
         for (final macro in const [
@@ -3047,7 +3138,8 @@ void main() {
         }
       });
 
-      test('a multi-line index term macro should be compacted and registered as an index reference', () {
+      test('a multi-line index term macro should be compacted and '
+          'registered as an index reference', () {
         const sentence =
             'The tiger (Panthera tigris) is the largest cat species.\n';
         for (final macro in const [
@@ -3060,7 +3152,8 @@ void main() {
         }
       });
 
-      test('should escape concealed index term if second bracket is preceded by a backslash', () {
+      test('should escape concealed index term if second bracket is '
+          'preceded by a backslash', () {
         // PORT: assert the paragraph content instead of the converted
         // document.
         final para = blockFromString(
@@ -3072,7 +3165,8 @@ void main() {
         );
       });
 
-      test('should only escape enclosing brackets if concealed index term is preceded by a backslash', () {
+      test('should only escape enclosing brackets if concealed index '
+          'term is preceded by a backslash', () {
         // PORT: assert the paragraph content instead of the converted
         // document.
         final para = blockFromString(
@@ -3115,7 +3209,8 @@ void main() {
         expect(output.rstrip(), sentence);
       });
 
-      test('an index term macro with round bracket syntax may contain round brackets in term', () {
+      test('an index term macro with round bracket syntax may contain '
+          'round brackets in term', () {
         const sentence =
             'The tiger (Panthera tigris) is the largest cat species.\n';
         const macro = '(((Tiger (Panthera tigris))))';
@@ -3123,7 +3218,8 @@ void main() {
         expect(subMacros(para, para.source()), sentence);
       });
 
-      test('visible shorthand index term macro should not consume trailing round bracket', () {
+      test('visible shorthand index term macro should not consume '
+          'trailing round bracket', () {
         const input = '(text with ((index term)))';
         const expected =
             '(text with <indexterm>\n<primary>index term</primary>\n</indexterm>index term)';
@@ -3131,7 +3227,8 @@ void main() {
         expect(subMacros(para, para.source()), expected);
       });
 
-      test('visible shorthand index term macro should not consume leading round bracket', () {
+      test('visible shorthand index term macro should not consume '
+          'leading round bracket', () {
         const input = '(((index term)) for text)';
         const expected =
             '(<indexterm>\n<primary>index term</primary>\n</indexterm>index term for text)';
@@ -3139,7 +3236,8 @@ void main() {
         expect(subMacros(para, para.source()), expected);
       });
 
-      test('an index term macro with square bracket syntax may contain square brackets in term', () {
+      test('an index term macro with square bracket syntax may contain '
+          'square brackets in term', () {
         const sentence =
             'The tiger (Panthera tigris) is the largest cat species.\n';
         final para = blockFromString(
@@ -3148,10 +3246,13 @@ void main() {
         expect(subMacros(para, para.source()), sentence);
       });
 
-      test('a single-line index term 2 macro should be registered as an index reference and retain term inline', () {
+      test('a single-line index term 2 macro should be registered as '
+          'an index reference and retain term inline', () {
         const sentence =
             'The tiger (Panthera tigris) is the largest cat species.';
         for (final macro in const [
+          // Unwrappable long literal (no valid split point).
+          // ignore: lines_longer_than_80_chars
           'The indexterm2:[tiger] (Panthera tigris) is the largest cat species.',
           'The ((tiger)) (Panthera tigris) is the largest cat species.',
         ]) {
@@ -3160,7 +3261,8 @@ void main() {
         }
       });
 
-      test('a multi-line index term 2 macro should be compacted and registered as an index reference and retain term inline', () {
+      test('a multi-line index term 2 macro should be compacted and '
+          'registered as an index reference and retain term inline', () {
         const sentence = 'The panthera tigris is the largest cat species.';
         for (final macro in const [
           'The indexterm2:[ panthera\ntigris ] is the largest cat species.',
@@ -3183,7 +3285,8 @@ void main() {
 
       test('should escape visible index term if preceded by a backslash', () {
         final para = blockFromString(
-          'The $bs((tiger)) (Panthera tigris) is the largest $bs((cat)) species.',
+          'The $bs((tiger)) (Panthera tigris) is the largest '
+          '$bs((cat)) species.',
         );
         expect(
           subMacros(para, para.source()),
@@ -3201,9 +3304,11 @@ void main() {
         );
       });
 
-      test('index term 2 macro with round bracket syntax should not interfere with index term macro with round bracket syntax', () {
+      test('index term 2 macro with round bracket syntax should not interfere '
+          'with index term macro with round bracket syntax', () {
         final para = blockFromString(
-          'The ((panthera tigris)) is the largest cat species.\n(((Big cats,Tigers)))',
+          'The ((panthera tigris)) is the largest cat species.\n(((Big '
+          'cats,Tigers)))',
         );
         expect(
           subMacros(para, para.source()),
@@ -3217,7 +3322,8 @@ void main() {
           // PORT: assert the paragraph content instead of the converted
           // document.
           final para = blockFromString(
-            '((Flash >> HTML 5)) has been supplanted by ((HTML 5 &> CSS 3 &> SVG)).',
+            '((Flash >> HTML 5)) has been supplanted by ((HTML 5 &> '
+            'CSS 3 &> SVG)).',
             backend: 'docbook',
           );
           final output = contentOf(para);
@@ -3242,7 +3348,8 @@ void main() {
           // PORT: assert the paragraph content instead of the converted
           // document.
           final para = blockFromString(
-            'Flash(((Flash >> HTML 5))) has been supplanted by HTML 5(((HTML 5 &> CSS 3 &> SVG))).',
+            'Flash(((Flash >> HTML 5))) has been supplanted by HTML '
+            '5(((HTML 5 &> CSS 3 &> SVG))).',
             backend: 'docbook',
           );
           final output = contentOf(para);
@@ -3265,7 +3372,8 @@ void main() {
         // PORT: assert the paragraph content instead of the converted
         // document.
         final para = blockFromString(
-          'indexterm2:[Flash,see=HTML 5] has been supplanted by indexterm2:[HTML 5,see-also="CSS 3, SVG"].',
+          'indexterm2:[Flash,see=HTML 5] has been supplanted by '
+          'indexterm2:[HTML 5,see-also="CSS 3, SVG"].',
           backend: 'docbook',
         );
         final output = contentOf(para);
@@ -3287,7 +3395,8 @@ void main() {
         // PORT: assert the paragraph content instead of the converted
         // document.
         final para = blockFromString(
-          'Flashindexterm:[Flash,see=HTML 5] has been supplanted by HTML 5indexterm:[HTML 5,see-also="CSS 3, SVG"].',
+          'Flashindexterm:[Flash,see=HTML 5] has been supplanted by '
+          'HTML 5indexterm:[HTML 5,see-also="CSS 3, SVG"].',
           backend: 'docbook',
         );
         final output = contentOf(para);
@@ -3305,7 +3414,8 @@ void main() {
         );
       });
 
-      test('should honor secondary and tertiary index terms when primary index term is quoted and contains equals sign', () {
+      test('should honor secondary and tertiary index terms when '
+          'primary index term is quoted and contains equals sign', () {
         const sentence = 'Assigning variables.';
         const expected =
             '$sentence<indexterm><primary>name=value</primary><secondary>variable</secondary><tertiary>assignment</tertiary></indexterm>';
@@ -3448,7 +3558,8 @@ void main() {
         },
       );
 
-      test('kbd macro with key combination delimited by plus containing a comma key', () {
+      test('kbd macro with key combination delimited by plus '
+          'containing a comma key', () {
         final para = blockFromString(
           'kbd:[Ctrl+,]',
           attributes: {'experimental': ''},
@@ -3459,7 +3570,8 @@ void main() {
         );
       });
 
-      test('kbd macro with key combination delimited by commas containing a plus key', () {
+      test('kbd macro with key combination delimited by commas '
+          'containing a plus key', () {
         final para = blockFromString(
           'kbd:[Ctrl, +, Shift]',
           attributes: {'experimental': ''},
@@ -3599,7 +3711,8 @@ void main() {
         );
       });
 
-      test('should process menu with menu item using macro syntax when fonts icons are enabled', () {
+      test('should process menu with menu item using macro syntax when '
+          'fonts icons are enabled', () {
         final para = blockFromString(
           'menu:Tools[More Tools &gt; Extensions]',
           attributes: {'experimental': '', 'icons': 'font'},
@@ -3651,7 +3764,8 @@ void main() {
         },
       );
 
-      test('should process menu with menu item in submenu using macro syntax and comma delimiter', () {
+      test('should process menu with menu item in submenu using macro '
+          'syntax and comma delimiter', () {
         final para = blockFromString(
           'menu:Tools[Project, Build]',
           attributes: {'experimental': ''},
@@ -3729,7 +3843,8 @@ void main() {
         },
       );
 
-      test('should process a menu macro with a target that begins with a character reference', () {
+      test('should process a menu macro with a target that begins with '
+          'a character reference', () {
         final para = blockFromString(
           'menu:&#8942;[More Tools, Extensions]',
           attributes: {'experimental': ''},
@@ -3839,7 +3954,8 @@ void main() {
         }
       });
 
-      test('should allow inline double plus passthrough to be escaped using backslash', () {
+      test('should allow inline double plus passthrough to be escaped '
+          'using backslash', () {
         final para = blockFromString(
           'you need to replace `int a = n$bs++;` with `int a = ++n;`!',
         );
@@ -3849,7 +3965,8 @@ void main() {
         );
       });
 
-      test('should allow inline double plus passthrough with attributes to be escaped using backslash', () {
+      test('should allow inline double plus passthrough with '
+          'attributes to be escaped using backslash', () {
         final para = blockFromString('=[attrs]$bs$bs++text++');
         expect(applySubs(para, para.source()), '=[attrs]++text++');
       });
@@ -3918,7 +4035,8 @@ void main() {
         expect(passthroughs[0]['subs'], ['specialcharacters', 'quotes']);
       });
 
-      test('should find and replace placeholder duplicated by substitution', () {
+      test('should find and replace placeholder duplicated by '
+          'substitution', () {
         // PORT: `convert_inline_string` renders the single paragraph
         // content.
         const input =
@@ -3996,7 +4114,8 @@ void main() {
 
       test('restore inline passthroughs with subs', () {
         final para = blockFromString(
-          'some ${passStart}0$passEnd to study in the ${passStart}1$passEnd programming language',
+          'some ${passStart}0$passEnd to study in the '
+          '${passStart}1$passEnd programming language',
         );
         extractPassthroughs(para, '');
         para.passthroughs.add({
@@ -4025,7 +4144,8 @@ void main() {
         );
       });
 
-      test('should not fail to restore remaining passthroughs after processing inline passthrough with macro substitution', () {
+      test('should not fail to restore remaining passthroughs after '
+          'processing inline passthrough with macro substitution', () {
         // PORT: `convert_inline_string` renders the single paragraph
         // content.
         final para = blockFromString('pass:m[.] pass:[.]');
@@ -4075,12 +4195,14 @@ void main() {
         },
       );
 
-      test('should support constrained passthrough in monospace span preceded by escaped boxed attrlist with transitional role', () {
+      test('should support constrained passthrough in monospace span preceded '
+          'by escaped boxed attrlist with transitional role', () {
         final para = blockFromString('$bs[x-]`foo +bar+ baz`');
         expect(contentOf(para), '[x-]<code>foo bar baz</code>');
       });
 
-      test('should treat monospace phrase with escaped boxed attrlist with transitional role as monospace', () {
+      test('should treat monospace phrase with escaped boxed attrlist '
+          'with transitional role as monospace', () {
         final para = blockFromString('$bs[x-]`*foo* +bar+ baz`');
         expect(
           contentOf(para),
@@ -4088,7 +4210,8 @@ void main() {
         );
       });
 
-      test('should ignore escaped attrlist with transitional role on monospace phrase if not proceeded by [', () {
+      test('should ignore escaped attrlist with transitional role on '
+          'monospace phrase if not proceeded by [', () {
         final para = blockFromString('${bs}x-]`*foo* +bar+ baz`');
         expect(
           contentOf(para),
@@ -4097,12 +4220,14 @@ void main() {
         );
       });
 
-      test('should not process passthrough inside transitional literal monospace span', () {
+      test('should not process passthrough inside transitional literal '
+          'monospace span', () {
         final para = blockFromString('a [x-]`foo +bar+ baz` kind of thing');
         expect(contentOf(para), 'a <code>foo +bar+ baz</code> kind of thing');
       });
 
-      test('should support constrained passthrough in monospace phrase with attrlist', () {
+      test('should support constrained passthrough in monospace phrase '
+          'with attrlist', () {
         final para = blockFromString('[.role]`foo +bar+ baz`');
         expect(contentOf(para), '<code class="role">foo bar baz</code>');
       });
@@ -4112,7 +4237,8 @@ void main() {
         expect(contentOf(para), '<code class="baz">foo--bar</code>');
       });
 
-      test('should not process an escaped passthrough macro inside a monospaced phrase', () {
+      test('should not process an escaped passthrough macro inside a '
+          'monospaced phrase', () {
         final para = blockFromString(
           'use the `$bs'
           'pass:c[]` macro',
@@ -4120,7 +4246,8 @@ void main() {
         expect(contentOf(para), 'use the <code>pass:c[]</code> macro');
       });
 
-      test('should not process an escaped passthrough macro inside a monospaced phrase with attributes', () {
+      test('should not process an escaped passthrough macro inside a '
+          'monospaced phrase with attributes', () {
         final para = blockFromString(
           'use the [syntax]`$bs'
           'pass:c[]` macro',
@@ -4131,7 +4258,8 @@ void main() {
         );
       });
 
-      test('should honor an escaped single plus passthrough inside a monospaced phrase', () {
+      test('should honor an escaped single plus passthrough inside a '
+          'monospaced phrase', () {
         final para = blockFromString(
           'use `$bs+{author}+` to show an attribute reference',
           attributes: {'author': 'Dan'},
@@ -4144,7 +4272,8 @@ void main() {
     });
 
     group('Math macros', () {
-      test('should passthrough text in asciimath macro and surround with AsciiMath delimiters', () {
+      test('should passthrough text in asciimath macro and surround '
+          'with AsciiMath delimiters', () {
         final logger = FakeLogger();
         withFakeLogger(logger, () {
           final para = blockFromString(
@@ -4164,18 +4293,22 @@ void main() {
         expect(contentOf(para), 'asciimath:[]');
       });
 
-      test('should perform specialcharacters subs on asciimath macro content in html backend by default', () {
+      test('should perform specialcharacters subs on asciimath macro '
+          'content in html backend by default', () {
         final para = blockFromString('asciimath:[a < b]');
         expect(contentOf(para), r'$a &lt; b$');
       });
 
-      test('should convert contents of asciimath macro to MathML in DocBook output if asciimath gem is available', () {
+      test('should convert contents of asciimath macro to MathML in '
+          'DocBook output if asciimath gem is available', () {
         markTestSkipped(
-          'requires the asciimath Ruby gem, which has no Dart equivalent in this wave',
+          'requires the asciimath Ruby gem, which has no Dart '
+          'equivalent in this wave',
         );
       });
 
-      test('should not perform specialcharacters subs on asciimath macro content in Docbook output if asciimath gem not available', () {
+      test('should not perform specialcharacters subs on asciimath macro '
+          'content in Docbook output if asciimath gem not available', () {
         // PORT: the asciimath gem is never available in Dart, so the
         // converter always takes the unavailable path.
         final para = blockFromString('asciimath:[a < b]', backend: 'docbook');
@@ -4193,9 +4326,11 @@ void main() {
         expect(contentOf(para), r'$x != 0$');
       });
 
-      test('should passthrough text in latexmath macro and surround with LaTeX math delimiters', () {
+      test('should passthrough text in latexmath macro and surround '
+          'with LaTeX math delimiters', () {
         final para = blockFromString(
-          'latexmath:[C = $bs${'alpha'} + $bs${'beta'} Y^{$bs${'gamma'}} + $bs${'epsilon'}]',
+          'latexmath:[C = $bs${'alpha'} + $bs${'beta'} '
+          'Y^{$bs${'gamma'}} + $bs${'epsilon'}]',
         );
         expect(
           contentOf(para),
@@ -4203,9 +4338,11 @@ void main() {
         );
       });
 
-      test('should strip legacy LaTeX math delimiters around latexmath content if present', () {
+      test('should strip legacy LaTeX math delimiters around latexmath '
+          'content if present', () {
         final para = blockFromString(
-          'latexmath:[\$C = $bs${'alpha'} + $bs${'beta'} Y^{$bs${'gamma'}} + $bs${'epsilon'}\$]',
+          'latexmath:[\$C = $bs${'alpha'} + $bs${'beta'} '
+          'Y^{$bs${'gamma'}} + $bs${'epsilon'}\$]',
         );
         expect(
           contentOf(para),
@@ -4223,12 +4360,14 @@ void main() {
         expect(contentOf(para), '\\($bs${'sqrt'}[3]{x}\\)');
       });
 
-      test('should perform specialcharacters subs on latexmath macro in html backend by default', () {
+      test('should perform specialcharacters subs on latexmath macro '
+          'in html backend by default', () {
         final para = blockFromString('latexmath:[a < b]');
         expect(contentOf(para), r'\(a &lt; b\)');
       });
 
-      test('should not perform specialcharacters subs on latexmath macro content in docbook backend by default', () {
+      test('should not perform specialcharacters subs on latexmath '
+          'macro content in docbook backend by default', () {
         final para = blockFromString('latexmath:[a < b]', backend: 'docbook');
         expect(
           contentOf(para),
@@ -4246,7 +4385,8 @@ void main() {
 
       test('should passthrough math macro inside another passthrough', () {
         var para = blockFromString(
-          'the text `asciimath:[x = y]` should be passed through as +literal+ text',
+          'the text `asciimath:[x = y]` should be passed through as '
+          '+literal+ text',
           attributes: {'compat-mode': ''},
         );
         expect(
@@ -4255,7 +4395,8 @@ void main() {
         );
 
         para = blockFromString(
-          'the text [x-]`asciimath:[x = y]` should be passed through as `literal` text',
+          'the text [x-]`asciimath:[x = y]` should be passed through '
+          'as `literal` text',
         );
         expect(
           contentOf(para),
@@ -4263,7 +4404,8 @@ void main() {
         );
 
         para = blockFromString(
-          'the text `+asciimath:[x = y]+` should be passed through as `literal` text',
+          'the text `+asciimath:[x = y]+` should be passed through as '
+          '`literal` text',
         );
         expect(
           contentOf(para),
@@ -4276,7 +4418,8 @@ void main() {
         expect(contentOf(para), 'stem:[]');
       });
 
-      test('should passthrough text in stem macro and surround with AsciiMath delimiters if stem attribute is asciimath, empty, or not set', () {
+      test('should passthrough text in stem macro and surround with AsciiMath '
+          'delimiters if stem attribute is asciimath, empty, or not set', () {
         for (final attributes in const [
           <String, String>{},
           {'stem': ''},
@@ -4298,14 +4441,16 @@ void main() {
         }
       });
 
-      test('should passthrough text in stem macro and surround with LaTeX math delimiters if stem attribute is latexmath, latex, or tex', () {
+      test('should passthrough text in stem macro and surround with LaTeX '
+          'math delimiters if stem attribute is latexmath, latex, or tex', () {
         for (final attributes in const [
           {'stem': 'latexmath'},
           {'stem': 'latex'},
           {'stem': 'tex'},
         ]) {
           final para = blockFromString(
-            'stem:[C = $bs${'alpha'} + $bs${'beta'} Y^{$bs${'gamma'}} + $bs${'epsilon'}]',
+            'stem:[C = $bs${'alpha'} + $bs${'beta'} Y^{$bs${'gamma'}} '
+            '+ $bs${'epsilon'}]',
             attributes: attributes,
           );
           expect(
@@ -4413,7 +4558,8 @@ void main() {
             'stuff in between\n'
             'foo --\n';
         const expected =
-            '&#8201;&#8212;&#8201;foo foo&#8212;&#8203;bar foo--bar foo&#8201;&#8212;&#8201;bar foo -- bar\n'
+            '&#8201;&#8212;&#8201;foo foo&#8212;&#8203;bar foo--bar '
+            'foo&#8201;&#8212;&#8201;bar foo -- bar\n'
             'stuff in between&#8201;&#8212;&#8201;foo\n'
             'stuff in between\n'
             'foo&#8201;&#8212;&#8201;stuff in between\n'
@@ -4456,7 +4602,8 @@ void main() {
         );
         expect(
           subReplacements(para.source()),
-          "John&#8217;s Hideout is the Whites&#8217; place&#8230;&#8203; foo'bar",
+          'John&#8217;s Hideout is the Whites&#8217; '
+          "place&#8230;&#8203; foo'bar",
         );
       });
 
@@ -4512,7 +4659,8 @@ void main() {
         expect(result.first, 'First line<br>');
       });
 
-      test('line break character stripped from end of line with hardbreaks enabled', () {
+      test('line break character stripped from end of line with '
+          'hardbreaks enabled', () {
         final para = blockFromString(
           'First line +\nSecond line',
           attributes: {'hardbreaks': ''},
@@ -4560,7 +4708,8 @@ void main() {
         ]);
       });
 
-      test('should resolve specialcharacters sub as highlight for source block when source highlighter is coderay', () {
+      test('should resolve specialcharacters sub as highlight for '
+          'source block when source highlighter is coderay', () {
         final doc = makeDoc(attributes: {'source-highlighter': 'coderay'});
         // PORT: bare Document construction skips save_attributes, so
         // resolve the highlighter explicitly (Ruby's `parse: true` does
@@ -4574,13 +4723,17 @@ void main() {
         expect(block.subs, ['highlight']);
       });
 
-      test('should resolve specialcharacters sub as highlight for source block when source highlighter is pygments', () {
+      test('should resolve specialcharacters sub as highlight for '
+          'source block when source highlighter is pygments', () {
         markTestSkipped(
-          "requires a pygments backend (mirrors the Ruby test gate `if: ENV['PYGMENTS_VERSION']`); with no backend canHighlight is false",
+          'requires a pygments backend (mirrors the Ruby test gate `if: '
+          "ENV['PYGMENTS_VERSION']`); with no backend canHighlight "
+          'is false',
         );
       });
 
-      test('should not replace specialcharacters sub with highlight for source block when source highlighter is not set', () {
+      test('should not replace specialcharacters sub with highlight '
+          'for source block when source highlighter is not set', () {
         final doc = makeDoc();
         final block = (Block(doc, 'listing', contentModel: 'verbatim'))
           ..style = 'source';
@@ -4607,7 +4760,8 @@ void main() {
         },
       );
 
-      test('should not use subs if subs option passed to block constructor is empty array', () {
+      test('should not use subs if subs option passed to block '
+          'constructor is empty array', () {
         // PORT: same constructor emulation as above (empty list seeds
         // defaultSubs).
         final doc = makeDoc();
@@ -4632,7 +4786,8 @@ void main() {
         expect(block.subs, ['specialcharacters']);
       });
 
-      test('should use subs from subs attribute if subs option is not passed to block constructor', () {
+      test('should use subs from subs attribute if subs option is not '
+          'passed to block constructor', () {
         final doc = makeDoc();
         final block = Block(doc, 'paragraph', attributes: {'subs': 'quotes'});
         expect(block.subs, isEmpty);
@@ -4641,7 +4796,8 @@ void main() {
         expect(block.subs, ['quotes']);
       });
 
-      test('should use subs from subs attribute if subs option passed to block constructor is default', () {
+      test('should use subs from subs attribute if subs option passed '
+          'to block constructor is default', () {
         // PORT: same constructor emulation as above (`default` honors
         // the subs attribute eagerly).
         final doc = makeDoc();
@@ -4653,7 +4809,8 @@ void main() {
         expect(block.subs, ['quotes']);
       });
 
-      test('should use built-in subs if subs option passed to block constructor is default and subs attribute is absent', () {
+      test('should use built-in subs if subs option passed to block '
+          'constructor is default and subs attribute is absent', () {
         // PORT: same constructor emulation as above (`default` falls
         // back to the context built-ins eagerly).
         final doc = makeDoc();

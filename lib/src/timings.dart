@@ -98,13 +98,15 @@ class Timings {
     if (subject != null) out.writeln('Input file: $subject');
     out
       ..writeln(
-        '  Time to read and parse source: ${(readParse ?? 0).toStringAsFixed(5)}',
+        '  Time to read and parse source: '
+        '${(readParse ?? 0).toStringAsFixed(5)}',
       )
       ..writeln(
         '  Time to convert document: ${(convert ?? 0).toStringAsFixed(5)}',
       )
       ..writeln(
-        '  Total time (read, parse and convert): ${(readParseConvert ?? 0).toStringAsFixed(5)}',
+        '  Total time (read, parse and convert): '
+        '${(readParseConvert ?? 0).toStringAsFixed(5)}',
       );
   }
 }

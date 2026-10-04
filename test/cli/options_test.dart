@@ -168,7 +168,11 @@ void main() {
         lines.take(6).toList(),
         equals([
           'Usage: asciidoctor [OPTION]... FILE...',
+          // Unwrappable long literal (no valid split point).
+          // ignore: lines_longer_than_80_chars
           'Convert the AsciiDoc input FILE(s) to the backend output format (e.g., HTML 5, DocBook 5, etc.)',
+          // Unwrappable long literal (no valid split point).
+          // ignore: lines_longer_than_80_chars
           'Unless specified otherwise, the output is written to a file whose name is derived from the input file.',
           'Application log messages are printed to STDERR.',
           'Example: asciidoctor input.adoc',
@@ -178,7 +182,8 @@ void main() {
       expect(
         lines[lines.length - 2],
         equals(
-          '    -V, --version                    display the version and runtime environment (or -v if no other flags or arguments)',
+          '    -V, --version                    display the version and '
+          'runtime environment (or -v if no other flags or arguments)',
         ),
       );
       expect(result.out, endsWith('\n'));
@@ -725,10 +730,17 @@ void main() {
       });
     });
 
-    test('force-encodes mislabeled attribute strings to UTF-8', skip: 'PERMANENT: Ruby string encodings do not exist in Dart; strings are Unicode.', () {
-      // Port of options_test 'should gracefully force encoding to UTF-8 if
-      // encoding on string is mislabeled'.
-    });
+    test(
+      'force-encodes mislabeled attribute strings to '
+      'UTF-8',
+      skip:
+          'PERMANENT: Ruby string encodings do not exist '
+          'in Dart; strings are Unicode.',
+      () {
+        // Port of options_test 'should gracefully force encoding to UTF-8 if
+        // encoding on string is mislabeled'.
+      },
+    );
   });
 
   group('backend, doctype and safe mode', () {
@@ -982,7 +994,8 @@ void main() {
       expect(
         result.err,
         contains(
-          "'no-such-module' could not be loaded\n  Use --trace to show backtrace",
+          "'no-such-module' could not be loaded\n  Use --trace to show "
+          'backtrace',
         ),
       );
     });
@@ -1011,9 +1024,15 @@ void main() {
       expect(result.options.loadPaths, equals(['foobar', 'foobaz']));
     });
 
-    test('-I option appends paths to the load path', skip: r'PERMANENT: Dart has no $LOAD_PATH; values are recorded in loadPaths only.', () {
-      // The `\$:` assertions of the options_test -I tests.
-    });
+    test(
+      '-I option appends paths to the load path',
+      skip:
+          'PERMANENT: Dart '
+          r'has no $LOAD_PATH; values are recorded in loadPaths only.',
+      () {
+        // The `\$:` assertions of the options_test -I tests.
+      },
+    );
   });
 
   group('input files', () {
@@ -1344,7 +1363,9 @@ void main() {
   group('deferred to later phases', () {
     test(
       'fails when template directories need a missing engine',
-      skip: "WAVE-GATED: deferred to the template-converter phase (Ruby requires the 'tilt' gem).",
+      skip:
+          'WAVE-GATED: deferred to the template-converter phase '
+          "(Ruby requires the 'tilt' gem).",
       () {},
     );
 
@@ -1357,7 +1378,9 @@ void main() {
 
     test(
       'falls back to man -w for the man page',
-      skip: 'PERMANENT: The man database cannot be controlled hermetically in a unit test.',
+      skip:
+          'PERMANENT: The man database cannot be controlled '
+          'hermetically in a unit test.',
       () {},
     );
 

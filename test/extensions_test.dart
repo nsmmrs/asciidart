@@ -1698,6 +1698,8 @@ void main() {
                       ) {
                         // demonstrates that pushInclude normalizes newlines
                         final content = [
+                          // Unwrappable long literal (no valid split point).
+                          // ignore: lines_longer_than_80_chars
                           "found include target '$target' at line ${reader.cursorAtPrevLine().lineno}\r\n",
                           '\r\n',
                           'middle line\r\n',
@@ -2809,10 +2811,14 @@ void main() {
           '++++\n';
       const expected =
           'target="",attributes={}\n'
+          // Unwrappable long literal (no valid split point).
+          // ignore: lines_longer_than_80_chars
           'target="value,key=val",attributes={1=>"value","key"=>"val","name"=>"value"}\n'
           'target="",attributes={"text"=>""}\n'
           'target="[text]",attributes={"text"=>"[text]"}\n'
           'target="target",attributes={}\n'
+          // Unwrappable long literal (no valid split point).
+          // ignore: lines_longer_than_80_chars
           'target="target",attributes={1=>"value","key"=>"val","name"=>"value"}\n'
           'target="target",attributes={"text"=>""}\n'
           'target="target",attributes={"text"=>"[text]"}\n'

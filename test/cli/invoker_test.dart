@@ -237,7 +237,8 @@ void main() {
         expect(
           invoker.readError(),
           contains(
-            "'no-such-module' could not be loaded\n  Use --trace to show backtrace",
+            "'no-such-module' could not be loaded\n  Use --trace to "
+            'show backtrace',
           ),
         );
         expect(invoker.code, equals(1));
@@ -318,7 +319,8 @@ void main() {
       expect(result.stderr as String, contains('is missing'));
     });
 
-    test('shows backtrace when --trace option is specified and program raises error', () async {
+    test('shows backtrace when --trace option is specified and program '
+        'raises error', () async {
       final result = await runCli([
         '-r',
         'no-such-module',
@@ -515,7 +517,8 @@ void main() {
       expect(invoker.readError(), isEmpty);
     });
 
-    test('uses specified log level when --log-level and -v are both specified', () {
+    test('uses specified log level when --log-level and -v are both '
+        'specified', () {
       final invoker = invokeCli(
         ['--log-level', 'warn', '-v'],
         '-',
@@ -610,7 +613,8 @@ void main() {
       }
     });
 
-    test('preserves directory structure in destination directory if source directory is set', () {
+    test('preserves directory structure in destination directory if '
+        'source directory is set', () {
       final tempDir = Directory.systemTemp.createTempSync(
         'asciidoctor-invoker-',
       );
@@ -944,7 +948,8 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       expect(invoker.readOutput(), contains('class="book"'));
     });
 
-    test('warns if doctype is inline and the first block is not an inline candidate', () {
+    test('warns if doctype is inline and the first block is not an '
+        'inline candidate', () {
       for (final input in ['== Section Title', 'image::tiger.png[]']) {
         final invoker = invokeCliToBuffer(['-d', 'inline'], '-', () => input);
         expect(invoker.readError(), contains('no inline candidate'));
@@ -1162,7 +1167,8 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       'forces default external encoding to UTF-8',
       skip:
           'PERMANENT: No Dart analog: Dart strings are Unicode and the invoker '
-          'forces UTF-8 stdio; Ruby`s Encoding.default_external does not exist.',
+          'forces UTF-8 stdio; Ruby`s Encoding.default_external does '
+          'not exist.',
       () {},
     );
 

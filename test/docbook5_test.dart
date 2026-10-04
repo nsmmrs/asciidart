@@ -1220,7 +1220,8 @@ void main() {
       final doc = makeDoc();
       expect(
         convOf(doc).convert(dlist(doc, style: 'horizontal')),
-        '<informaltable tabstyle="horizontal" frame="none" colsep="0" rowsep="0">\n'
+        '<informaltable tabstyle="horizontal" frame="none" colsep="0" '
+        'rowsep="0">\n'
         '<tgroup cols="2">\n'
         '<colspec colwidth="15*"/>\n'
         '<colspec colwidth="85*"/>\n'
@@ -1629,7 +1630,8 @@ void main() {
       list << StubListItem(list, 'first');
       expect(
         convOf(doc).convert(list),
-        '<orderedlist xml:id="steps" numeration="lowerroman" startingnumber="3">\n'
+        '<orderedlist xml:id="steps" numeration="lowerroman" '
+        'startingnumber="3">\n'
         '<title>Steps</title>\n'
         '<listitem>\n'
         '<simpara>first</simpara>\n'
@@ -1703,7 +1705,8 @@ void main() {
         expect(convOf(doc).convert(node), '');
         expect(
           logger.warns.single,
-          'abstract block cannot be used in a document without a doctitle when doctype is book. Excluding block content.',
+          'abstract block cannot be used in a document without a '
+          'doctitle when doctype is book. Excluding block content.',
         );
       });
     });
@@ -1733,7 +1736,8 @@ void main() {
         expect(convOf(doc).convert(node), '');
         expect(
           logger.errors.single,
-          'partintro block can only be used when doctype is book and must be a child of a book part. Excluding block content.',
+          'partintro block can only be used when doctype is book and must be '
+          'a child of a book part. Excluding block content.',
         );
       });
     });

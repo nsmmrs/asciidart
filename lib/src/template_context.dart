@@ -35,6 +35,10 @@
 /// values win over the node-derived ones.
 library;
 
+// The context-vocabulary reference table above keeps one row per
+// line; wrapping rows would corrupt the rendered table.
+// ignore_for_file: lines_longer_than_80_chars
+
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/inline.dart';

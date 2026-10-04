@@ -291,7 +291,8 @@ void main() {
       );
     });
 
-    test('treats absolute target outside of jail as relative when jail is specified', () {
+    test('treats absolute target outside of jail as relative when jail '
+        'is specified', () {
       final rootResult = resolver.systemPath(
         '/',
         start: '$jail/assets/stylesheets',
@@ -329,7 +330,8 @@ void main() {
       expectWarn(log, 'path is outside of jail; recovering automatically');
     });
 
-    test('allows use of absolute target or start if resolved path is sub-path of jail', () {
+    test('allows use of absolute target or start if resolved path is '
+        'sub-path of jail', () {
       expect(
         resolver.systemPath('$jail/my/path', start: '', jail: jail),
         equals('$jail/my/path'),
@@ -400,7 +402,8 @@ void main() {
       expectWarn(log, 'path is outside of jail; recovering automatically');
     });
 
-    test('allows start path to be parent of jail if resolved target is inside jail', () {
+    test('allows start path to be parent of jail if resolved target is '
+        'inside jail', () {
       expect(
         resolver.systemPath('foo/path', start: jail, jail: '$jail/foo'),
         equals('$jail/foo/path'),
@@ -439,7 +442,8 @@ void main() {
       },
     );
 
-    test('raises security error if start is not contained within jail and recover is disabled', () {
+    test('raises security error if start is not contained within jail '
+        'and recover is disabled', () {
       expect(
         () => resolver.systemPath(
           'images/tiger.png',
@@ -499,7 +503,8 @@ void main() {
     test(
       'File.dirname preserves UNC path root on Windows',
       skip:
-          'PERMANENT: asserts Ruby-stdlib File.dirname behavior, which has no Dart '
+          'PERMANENT: asserts Ruby-stdlib File.dirname behavior, which '
+          'has no Dart '
           'equivalent; UNC resolution is covered by the PathResolver tests '
           'below',
       () {},
@@ -508,7 +513,8 @@ void main() {
     test(
       'File.dirname preserves posix-style UNC path root on Windows',
       skip:
-          'PERMANENT: asserts Ruby-stdlib File.dirname behavior, which has no Dart '
+          'PERMANENT: asserts Ruby-stdlib File.dirname behavior, which '
+          'has no Dart '
           'equivalent; UNC resolution is covered by the PathResolver tests '
           'below',
       () {},
@@ -540,30 +546,37 @@ void main() {
     });
 
     test(
-      'resolves classloader path if start is classloader path and target is relative',
+      'resolves classloader path if start is classloader path and '
+      'target is relative',
       skip:
-          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
+          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a '
+          'classloader URI '
           'is not a root',
       () {},
     );
 
     test(
-      'resolves classloader path if start is root-relative classloader path and target is relative',
+      'resolves classloader path if start is root-relative classloader '
+      'path and target is relative',
       skip:
-          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
+          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a '
+          'classloader URI '
           'is not a root',
       () {},
     );
 
     test(
-      'preserves classloader path if start is absolute path and target is classloader path',
+      'preserves classloader path if start is absolute path and target '
+      'is classloader path',
       skip:
-          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a classloader URI '
+          'PERMANENT: JRuby-only; isRoot mirrors MRI Ruby, where a '
+          'classloader URI '
           'is not a root',
       () {},
     );
 
-    test('resolves relative target relative to current directory if start is empty', () {
+    test('resolves relative target relative to current directory if '
+        'start is empty', () {
       // Directory.current.path uses native separators; posixify it the way
       // the resolver does so the expectation holds on every platform.
       final pwd = resolver.posixify(Directory.current.path);
@@ -581,7 +594,8 @@ void main() {
       );
     });
 
-    test('resolves relative hidden target relative to current directory if start is empty', () {
+    test('resolves relative hidden target relative to current '
+        'directory if start is empty', () {
       final pwd = resolver.posixify(Directory.current.path);
       expect(
         resolver.systemPath('.images/tiger.png', start: ''),

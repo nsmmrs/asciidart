@@ -57,7 +57,8 @@ class PrettifyAdapter {
             // branch; Ruby tests the attribute for truthiness, and only
             // nil (absent) is falsy.
             pre['class'] =
-                '${pre['class']} ${start != null ? 'linenums:$start' : 'linenums'}';
+                '${pre['class']} '
+                '${start != null ? 'linenums:$start' : 'linenums'}';
           }
         : null,
   );

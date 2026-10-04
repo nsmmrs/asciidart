@@ -16,8 +16,9 @@
 ///   parameters. The merged adapter files are never modified.
 /// * [SyntaxHighlighter] is the global registry and factory (port of the
 ///   `DefaultFactory` statics), [SyntaxHighlighterFactory] an isolated
-///   registry (port of `CustomFactory`) and [SyntaxHighlighterDefaultFactoryProxy] a seeded
-///   registry with global fallback.
+///   registry (port of `CustomFactory`) and
+///   [SyntaxHighlighterDefaultFactoryProxy] a seeded registry with global
+///   fallback.
 /// * [SyntaxHighlighter.resolveForDocument] ports the
 ///   `Document#save_attributes` hook: it resolves the `source-highlighter`
 ///   attribute to an instance. The Document wave calls it from the hook and
@@ -307,8 +308,8 @@ abstract final class SyntaxHighlighter {
 /// Isolated highlighter registry (port of `CustomFactory`).
 ///
 /// Starts empty (or seeded with `seedRegistry`) and never sees the global
-/// registrations; use [SyntaxHighlighterDefaultFactoryProxy] for a seeded registry that falls
-/// back to the globals.
+/// registrations; use [SyntaxHighlighterDefaultFactoryProxy] for a seeded
+/// registry that falls back to the globals.
 class SyntaxHighlighterFactory {
   /// Creates an isolated factory, optionally seeded with [seedRegistry].
   new([Map<String, Object>? seedRegistry])

@@ -391,7 +391,11 @@ _alphaStyles = <String, Map<String, String>>{
   'escape': <String, String>{'': 'color:#666'},
   'exception': <String, String>{'': 'color:#C00;font-weight:bold'},
   'eyecatcher': <String, String>{
+    // Unwrappable long literal (no valid split point).
+    // ignore: lines_longer_than_80_chars
     'delete': 'background-color:hsla(0,100%,50%,0.2);border:1pxsolidhsla(0,100%,45%,0.5);margin:-1px;border-bottom:none;border-top-left-radius:5px;border-top-right-radius:5px',
+    // Unwrappable long literal (no valid split point).
+    // ignore: lines_longer_than_80_chars
     'insert': 'background-color:hsla(120,100%,50%,0.2);border:1pxsolidhsla(120,100%,25%,0.5);margin:-1px;border-top:none;border-bottom-left-radius:5px;border-bottom-right-radius:5px',
   },
   'filename': <String, String>{'head': 'color:white'},

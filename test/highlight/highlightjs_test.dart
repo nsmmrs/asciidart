@@ -101,7 +101,8 @@ void main() {
         'if (!hljs.initHighlighting.called) {\n'
         '  hljs.initHighlighting.called = true\n'
         "  ;[].slice.call(document.querySelectorAll('pre.highlight > "
-        "code[data-lang]')).forEach(function (el) { hljs.highlightBlock(el) })\n"
+        "code[data-lang]')).forEach(function (el) { "
+        'hljs.highlightBlock(el) })\n'
         '}\n'
         '</script>';
 

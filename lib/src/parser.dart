@@ -4329,8 +4329,9 @@ abstract final class Parser {
         if (keepOpen) {
           nextLine = nextLine.substring(0, nextLine.length - 2).trimRight();
         }
-        joined.write(endsWithBreak ? lf : ' ');
-        joined.write(nextLine);
+        joined
+          ..write(endsWithBreak ? lf : ' ')
+          ..write(nextLine);
         endsWithBreak = nextLine.endsWith(_hardLineBreak);
         if (!keepOpen) break;
       }

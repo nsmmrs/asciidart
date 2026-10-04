@@ -165,7 +165,8 @@ final class DefaultFormatter implements LoggerFormatter {
     Object? message,
   ) {
     final label = severity.label;
-    return '${label[0]}, [${time.toIso8601String()} #$pid] ${label.padLeft(5)} -- $progname: $message\n';
+    return '${label[0]}, [${time.toIso8601String()} #$pid] '
+        '${label.padLeft(5)} -- $progname: $message\n';
   }
 }
 

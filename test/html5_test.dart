@@ -1687,7 +1687,8 @@ void main() {
       // replacement substitutions to alt text'.
       const input = 'A tiger\'s "roar" is < a bear\'s "growl"';
       const expected =
-          'A tiger&#8217;s &quot;roar&quot; is &lt; a bear&#8217;s &quot;growl&quot;';
+          'A tiger&#8217;s &quot;roar&quot; is &lt; a bear&#8217;s '
+          '&quot;growl&quot;';
       final result = convertEmbedded('image::images/tiger-roar.png[$input]');
       expect(result, contains('alt="$expected"'));
     });
@@ -2022,7 +2023,8 @@ void main() {
       expect(
         output,
         contains(
-          '<table class="tableblock frame-ends grid-none stripes-even left spread" width="50%">',
+          '<table class="tableblock frame-ends grid-none stripes-even '
+          'left spread" width="50%">',
         ),
       );
       expect(
@@ -2393,7 +2395,8 @@ void main() {
       // `:xrefstyle: full` (cf. `AbstractNode#xreftext` in
       // `lib/asciidoctor/abstract_node.rb`).
       const input =
-          ':xrefstyle: full\n\nSee <<tiger>>.\n\n[#tiger]\n.Tiger\nimage::tiger.png[Tiger]\n';
+          ':xrefstyle: full\n\nSee <<tiger>>.\n\n[#tiger]\n.Tiger\n'
+          'image::tiger.png[Tiger]\n';
       expect(
         convertEmbedded(input),
         contains(
@@ -2831,7 +2834,8 @@ void main() {
         '<head>\n'
         '<meta charset="UTF-8">\n'
         '<meta http-equiv="X-UA-Compatible" content="IE=edge">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        '<meta name="viewport" content="width=device-width, '
+        'initial-scale=1.0">\n'
         '<title>Doc Title</title>\n'
         '</head>\n'
         '<body class="article">\n'

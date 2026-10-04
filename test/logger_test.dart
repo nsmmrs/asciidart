@@ -214,7 +214,8 @@ void main() {
       });
     });
 
-    test('configures default logger to use a formatter that matches traditional format', () {
+    test('configures default logger to use a formatter that matches '
+        'traditional format', () {
       withManagerLogger(() {
         final buffer = StringBuffer();
         LoggerManager.logger = Logger(logdev: buffer);
@@ -291,19 +292,23 @@ void main() {
   );
 
   group('Logging', () {
-    test('including Logging gives instance methods on mixin access to logging infrastructure', () {
+    test('including Logging gives instance methods on mixin access to '
+        'logging infrastructure', () {
       expect(SampleClassA().retrieveLogger(), same(LoggerManager.logger));
     });
 
-    test('including Logging gives static methods on mixin access to logging infrastructure', () {
+    test('including Logging gives static methods on mixin access to '
+        'logging infrastructure', () {
       expect(SampleMixinB.retrieveLogger(), same(LoggerManager.logger));
     });
 
-    test('including Logging gives instance methods on class access to logging infrastructure', () {
+    test('including Logging gives instance methods on class access to '
+        'logging infrastructure', () {
       expect(SampleClassC().retrieveLogger(), same(LoggerManager.logger));
     });
 
-    test('including Logging gives static methods on class access to logging infrastructure', () {
+    test('including Logging gives static methods on class access to '
+        'logging infrastructure', () {
       expect(SampleClassD.retrieveLogger(), same(LoggerManager.logger));
     });
 
@@ -332,7 +337,8 @@ void main() {
       expect(
         buffer.toString().trim(),
         equals(
-          'asciidoctor: WARNING: <stdin>: line 5: id assigned to block already in use: first',
+          'asciidoctor: WARNING: <stdin>: line 5: id assigned to block '
+          'already in use: first',
         ),
       );
     });

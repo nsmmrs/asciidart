@@ -58,7 +58,8 @@ void assertLogMessage(MemoryLogger logger, Severity severity, String text) {
     isTrue,
     reason:
         'expected log $severity: $text; '
-        'got ${logger.messages.map((m) => '${m.severity}: ${m.message}').toList()}',
+        'got '
+        '${logger.messages.map((m) => '${m.severity}: ${m.message}').toList()}',
   );
 }
 
@@ -122,7 +123,8 @@ void main() {
       expect(entries[0].value, equals('bar'));
     });
 
-    test('store accessible attribute on document with value that contains attribute reference', () {
+    test('store accessible attribute on document with value that '
+        'contains attribute reference', () {
       final doc = emptyDocument();
       // TEMP-SEAM (parser): stands in for `setAttribute`, which throws
       // until the substitutors wave lands; observably identical for
@@ -469,7 +471,8 @@ void main() {
 
     test('parse multiple authors', () {
       final metadata = parseHeaderMetadata(
-        'Doc Writer <doc.writer@asciidoc.org>; John Smith <john.smith@asciidoc.org>',
+        'Doc Writer <doc.writer@asciidoc.org>; John Smith '
+        '<john.smith@asciidoc.org>',
       );
       expect(metadata['authorcount'], equals(2));
       expect(metadata['authors'], equals('Doc Writer, John Smith'));
@@ -478,7 +481,8 @@ void main() {
       expect(metadata['author_2'], equals('John Smith'));
     });
 
-    test('should not parse multiple authors if semi-colon is not followed by space', () {
+    test('should not parse multiple authors if semi-colon is not '
+        'followed by space', () {
       final metadata = parseHeaderMetadata('Joe Doe;Smith Johnson');
       expect(metadata['authorcount'], equals(1));
     });
@@ -515,7 +519,8 @@ void main() {
       expect(doc.attributes['authorinitials'], equals('JCVD'));
     });
 
-    test('use implicit authors if value of authors attribute matches computed value', () {
+    test('use implicit authors if value of authors attribute matches '
+        'computed value', () {
       const input =
           'Doc Writer; Junior Writer\n'
           ':authors: Doc Writer, Junior Writer\n';
@@ -526,7 +531,8 @@ void main() {
       expect(doc.attributes['author_2'], equals('Junior Writer'));
     });
 
-    test('replace implicit authors if value of authors attribute does not match computed value', () {
+    test('replace implicit authors if value of authors attribute does '
+        'not match computed value', () {
       const input =
           'Doc Writer; Junior Writer\n'
           ':authors: Stuart Rackham; Dan Allen; Sarah White\n';
@@ -551,7 +557,8 @@ void main() {
       expect(metadata['authorcount'], equals(0));
     });
 
-    test('returns empty hash if document has no authors and invoked without document', () {
+    test('returns empty hash if document has no authors and invoked '
+        'without document', () {
       final metadata = parseHeaderMetadata('');
       expect(metadata, isEmpty);
     });
@@ -590,7 +597,8 @@ void main() {
       },
     );
 
-    test('removes formatting before partitioning author defined using author attribute', () {
+    test('removes formatting before partitioning author defined using '
+        'author attribute', () {
       const input =
           ':author: pass:n[http://example.org/community/team.html[Ze_**Project** team]]';
       final doc = emptyDocument();
