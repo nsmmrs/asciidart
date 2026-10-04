@@ -27,18 +27,18 @@
 ///   (byte-identical to Ruby output when the gem is not installed).
 library;
 
-import 'abstract_block.dart';
-import 'abstract_node.dart';
-import 'attribute_list.dart';
-import 'block.dart';
-import 'converter.dart';
-import 'core_ext.dart';
-import 'document.dart';
-import 'inline.dart';
-import 'list.dart';
-import 'rx.dart';
-import 'section.dart';
-import 'table.dart';
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/attribute_list.dart';
+import 'package:asciidoctor/src/block.dart';
+import 'package:asciidoctor/src/converter.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/list.dart';
+import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/section.dart';
+import 'package:asciidoctor/src/table.dart';
 
 /// Renders [value] the way Ruby string interpolation does: `toString`,
 /// except `null` renders as the empty string instead of `'null'`.

@@ -37,27 +37,27 @@ library;
 import 'dart:convert' show Encoding, utf8;
 import 'dart:io' show Directory, File, IOSink, Platform;
 
-import 'abstract_block.dart';
-import 'abstract_node.dart';
-import 'callouts.dart';
-import 'constants.dart';
-import 'converter.dart';
-import 'core_ext.dart';
-import 'docbook5.dart';
-import 'extensions.dart';
-import 'helpers.dart';
-import 'highlight/syntax_highlighter.dart';
-import 'html5.dart';
-import 'inline.dart';
-import 'manpage.dart';
-import 'parser.dart';
-import 'path_resolver.dart';
-import 'reader.dart';
-import 'rx.dart';
-import 'section.dart';
-import 'substitutors.dart' as substitutors;
-import 'timings.dart';
-import 'version.dart';
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/callouts.dart';
+import 'package:asciidoctor/src/constants.dart';
+import 'package:asciidoctor/src/converter.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/docbook5.dart';
+import 'package:asciidoctor/src/extensions.dart';
+import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
+import 'package:asciidoctor/src/html5.dart';
+import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/manpage.dart';
+import 'package:asciidoctor/src/parser.dart';
+import 'package:asciidoctor/src/path_resolver.dart';
+import 'package:asciidoctor/src/reader.dart';
+import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/section.dart';
+import 'package:asciidoctor/src/substitutors.dart' as substitutors;
+import 'package:asciidoctor/src/timings.dart';
+import 'package:asciidoctor/src/version.dart';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.
 ///

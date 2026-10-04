@@ -13,7 +13,7 @@ library;
 
 import 'dart:io';
 
-import 'highlight.dart';
+import 'package:asciidoctor/src/highlight/highlight.dart';
 
 /// Syntax-highlighter adapter for Rouge.
 ///

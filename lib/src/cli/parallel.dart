@@ -46,9 +46,9 @@ library;
 
 import 'dart:isolate';
 
-import '../load.dart';
-import '../logging.dart';
-import '../timings.dart';
+import 'package:asciidoctor/src/load.dart';
+import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/timings.dart';
 
 /// Worker isolate entry point for conversion jobs (see [WorkerMain]).
 ///

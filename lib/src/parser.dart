@@ -34,25 +34,25 @@
 ///   [Parser.catalogInlineAnchor].
 library;
 
-import 'abstract_block.dart';
-import 'abstract_node.dart';
-import 'attribute_list.dart';
-import 'block.dart';
-import 'callouts.dart';
-import 'constants.dart';
-import 'core_ext.dart';
-import 'document.dart';
-import 'extensions.dart';
-import 'helpers.dart';
-import 'highlight/syntax_highlighter.dart';
-import 'inline.dart';
-import 'list.dart';
-import 'logging.dart';
-import 'reader.dart';
-import 'rx.dart';
-import 'section.dart';
-import 'substitutors.dart';
-import 'table.dart';
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/attribute_list.dart';
+import 'package:asciidoctor/src/block.dart';
+import 'package:asciidoctor/src/callouts.dart';
+import 'package:asciidoctor/src/constants.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/extensions.dart';
+import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
+import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/list.dart';
+import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/reader.dart';
+import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/section.dart';
+import 'package:asciidoctor/src/substitutors.dart';
+import 'package:asciidoctor/src/table.dart';
 
 const String _del = '\u007f';
 const String _can = '\u0018';

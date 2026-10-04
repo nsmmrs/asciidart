@@ -35,9 +35,9 @@
 /// output (the oracle really highlights them).
 library;
 
-import 'coderay_html.dart';
-import 'highlight.dart';
-import 'ruby_scanner.dart';
+import 'package:asciidoctor/src/highlight/coderay_html.dart';
+import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidoctor/src/highlight/ruby_scanner.dart';
 
 /// A real CodeRay [SourceLexer] backend for Ruby and plain text.
 ///

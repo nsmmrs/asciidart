@@ -20,14 +20,14 @@ library;
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
 import 'dart:io' show File, FileSystemEntity;
 
-import 'abstract_node.dart';
-import 'constants.dart';
-import 'core_ext.dart';
-import 'helpers.dart';
-import 'logging.dart';
-import 'parser.dart';
-import 'path_resolver.dart';
-import 'rx.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/constants.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/parser.dart';
+import 'package:asciidoctor/src/path_resolver.dart';
+import 'package:asciidoctor/src/rx.dart';
 
 /// A log message carrying source context.
 ///

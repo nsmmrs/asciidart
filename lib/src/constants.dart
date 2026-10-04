@@ -19,7 +19,7 @@
 /// `DATA_DIR`, `USER_HOME`, `UTF_8`.
 library;
 
-import 'rx.dart';
+import 'package:asciidoctor/src/rx.dart';
 
 /// The null character used for splitting attribute values (`NULL`).
 const String nullChar = '\x00';

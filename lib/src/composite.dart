@@ -3,8 +3,8 @@
 /// Port of `lib/asciidoctor/converter/composite.rb`.
 library;
 
-import 'abstract_node.dart';
-import 'converter.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/converter.dart';
 
 /// Implemented by converters that want a back-reference when composed.
 ///

@@ -60,8 +60,8 @@
 ///   on): Dart rejects unknown identity escapes when `unicode` is set.
 library;
 
-import 'coderay_tokens.dart';
-import 'string_scanner.dart';
+import 'package:asciidoctor/src/highlight/coderay_tokens.dart';
+import 'package:asciidoctor/src/highlight/string_scanner.dart';
 
 /// Symbol states of the Ruby scanner (the `Symbol` side of the original
 /// `state`, as opposed to [_RubyStringState]).

@@ -10,7 +10,7 @@ library;
 
 import 'dart:io';
 
-import 'data.g.dart';
+import 'package:asciidoctor/src/data.g.dart';
 
 /// A utility class for working with the built-in stylesheets.
 ///

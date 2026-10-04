@@ -41,20 +41,20 @@
 ///   `false` when no extension matches.
 library;
 
-import 'abstract_block.dart';
-import 'attribute_list.dart';
-import 'block.dart';
-import 'constants.dart';
-import 'core_ext.dart';
-import 'document.dart';
-import 'helpers.dart';
-import 'inline.dart';
-import 'list.dart';
-import 'parser.dart';
-import 'reader.dart';
-import 'rx.dart';
-import 'section.dart';
-import 'substitutors.dart' as substitutors;
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/attribute_list.dart';
+import 'package:asciidoctor/src/block.dart';
+import 'package:asciidoctor/src/constants.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/list.dart';
+import 'package:asciidoctor/src/parser.dart';
+import 'package:asciidoctor/src/reader.dart';
+import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/section.dart';
+import 'package:asciidoctor/src/substitutors.dart' as substitutors;
 
 /// Sentinel distinguishing a missing `numbered` argument from an explicit
 /// value in [Processor.createSection] (mirrors `Hash#fetch` with a default).

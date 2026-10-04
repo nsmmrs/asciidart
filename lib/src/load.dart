@@ -38,19 +38,22 @@ import 'dart:io'
         FileSystemException,
         RandomAccessFile;
 
-import 'abstract_node.dart' show SafeMode;
-import 'constants.dart' show defaultStylesheetKeys, nullChar;
-import 'core_ext.dart' show isTruthy;
-import 'docbook5.dart' show Docbook5Converter;
-import 'document.dart' show Document;
-import 'helpers.dart' show Helpers;
-import 'highlight/syntax_highlighter.dart' show SyntaxHighlighterBase;
-import 'html5.dart' show Html5Converter;
-import 'logging.dart' show LoggerBase, LoggerManager, NullLogger;
-import 'path_resolver.dart' show PathResolver;
-import 'rx.dart' show escapedSpaceRx, spaceDelimiterRx;
-import 'stylesheets.dart' show Stylesheets;
-import 'timings.dart' show Timings;
+import 'package:asciidoctor/src/abstract_node.dart' show SafeMode;
+import 'package:asciidoctor/src/constants.dart'
+    show defaultStylesheetKeys, nullChar;
+import 'package:asciidoctor/src/core_ext.dart' show isTruthy;
+import 'package:asciidoctor/src/docbook5.dart' show Docbook5Converter;
+import 'package:asciidoctor/src/document.dart' show Document;
+import 'package:asciidoctor/src/helpers.dart' show Helpers;
+import 'package:asciidoctor/src/highlight/syntax_highlighter.dart'
+    show SyntaxHighlighterBase;
+import 'package:asciidoctor/src/html5.dart' show Html5Converter;
+import 'package:asciidoctor/src/logging.dart'
+    show LoggerBase, LoggerManager, NullLogger;
+import 'package:asciidoctor/src/path_resolver.dart' show PathResolver;
+import 'package:asciidoctor/src/rx.dart' show escapedSpaceRx, spaceDelimiterRx;
+import 'package:asciidoctor/src/stylesheets.dart' show Stylesheets;
+import 'package:asciidoctor/src/timings.dart' show Timings;
 
 /// Parses the AsciiDoc source [input] into a [Document].
 ///

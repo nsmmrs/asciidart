@@ -37,10 +37,10 @@ library;
 
 import 'package:mustache_template/mustache_template.dart' show LambdaContext;
 
-import 'abstract_block.dart';
-import 'abstract_node.dart';
-import 'inline.dart';
-import 'list.dart';
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/list.dart';
 
 /// Computes one custom helper value for [node] on every render.
 ///

@@ -3,8 +3,8 @@
 /// Port of `lib/asciidoctor/inline.rb`.
 library;
 
-import 'abstract_block.dart';
-import 'abstract_node.dart';
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
 
 /// Methods for managing inline elements in an AsciiDoc block.
 ///

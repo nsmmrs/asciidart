@@ -9,10 +9,10 @@
 /// section- and reader-wave slices this file consumes.
 library;
 
-import 'abstract_node.dart';
-import 'core_ext.dart';
-import 'helpers.dart';
-import 'rx.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/rx.dart';
 
 /// Maps ordered-list styles to their HTML marker keywords.
 ///

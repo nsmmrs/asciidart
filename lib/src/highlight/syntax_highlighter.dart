@@ -29,18 +29,18 @@
 /// resolved highlighters work with the converter unchanged.
 library;
 
-import '../abstract_block.dart';
-import '../core_ext.dart';
-import '../document.dart';
-import '../html5.dart';
-import 'coderay.dart';
-import 'coderay_lexer.dart';
-import 'highlight.dart';
-import 'highlightjs.dart';
-import 'html_pipeline.dart';
-import 'prettify.dart';
-import 'pygments.dart';
-import 'rouge.dart';
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/html5.dart';
+import 'package:asciidoctor/src/highlight/coderay.dart';
+import 'package:asciidoctor/src/highlight/coderay_lexer.dart';
+import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidoctor/src/highlight/highlightjs.dart';
+import 'package:asciidoctor/src/highlight/html_pipeline.dart';
+import 'package:asciidoctor/src/highlight/prettify.dart';
+import 'package:asciidoctor/src/highlight/pygments.dart';
+import 'package:asciidoctor/src/highlight/rouge.dart';
 
 /// Creates a highlighter instance for a registered name.
 ///

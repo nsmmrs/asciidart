@@ -25,8 +25,8 @@
 /// helpers.
 library;
 
-import 'coderay_tokens.dart';
-import 'highlight.dart';
+import 'package:asciidoctor/src/highlight/coderay_tokens.dart';
+import 'package:asciidoctor/src/highlight/highlight.dart';
 
 /// Encodes a CodeRay token stream as an HTML fragment.
 ///

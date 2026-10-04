@@ -34,10 +34,10 @@ import 'dart:async' show FutureOr;
 
 import 'package:mustache_template/mustache_template.dart' show Template;
 
-import 'abstract_node.dart';
-import 'composite.dart';
-import 'converter.dart';
-import 'template_context.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/composite.dart';
+import 'package:asciidoctor/src/converter.dart';
+import 'package:asciidoctor/src/template_context.dart';
 
 /// Loads template sources as a node-name to Mustache-source map.
 ///

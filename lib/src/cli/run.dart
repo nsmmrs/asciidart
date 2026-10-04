@@ -8,8 +8,8 @@ library;
 
 import 'dart:io';
 
-import 'init_config.dart';
-import 'invoker.dart';
+import 'package:asciidoctor/src/cli/init_config.dart';
+import 'package:asciidoctor/src/cli/invoker.dart';
 
 /// Runs the Asciidoctor CLI, reporting through [exitCode].
 ///

@@ -3,9 +3,9 @@
 /// Port of `lib/asciidoctor/section.rb` (complete).
 library;
 
-import 'abstract_block.dart';
-import 'core_ext.dart';
-import 'rx.dart' show invalidSectionIdCharsRx;
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/rx.dart' show invalidSectionIdCharsRx;
 
 /// First index used when generating a unique ID suffix.
 ///

@@ -63,9 +63,9 @@ library;
 
 import 'dart:io' show Directory, File, FileSystemEntity, FileSystemException;
 
-import 'path_resolver.dart';
-import 'template.dart';
-import 'template_node_detect_js.dart'
+import 'package:asciidoctor/src/path_resolver.dart';
+import 'package:asciidoctor/src/template.dart';
+import 'package:asciidoctor/src/template_node_detect_js.dart'
     if (dart.library.io) 'template_node_detect_stub.dart'
     as detect;
 

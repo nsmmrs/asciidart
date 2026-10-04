@@ -7,7 +7,7 @@
 /// footer loader tags). No [SourceLexer] is involved.
 library;
 
-import 'highlight.dart';
+import 'package:asciidoctor/src/highlight/highlight.dart';
 
 /// Syntax-highlighter adapter for highlight.js.
 ///

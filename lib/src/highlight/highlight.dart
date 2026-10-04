@@ -24,7 +24,7 @@
 /// `dart/test/highlight/`).
 library;
 
-import '../path_resolver.dart';
+import 'package:asciidoctor/src/path_resolver.dart';
 
 /// Selects whether highlighted HTML references stylesheet classes or carries
 /// inline styles.

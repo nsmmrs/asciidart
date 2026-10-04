@@ -5,8 +5,8 @@ library;
 
 import 'dart:io' show Directory, Platform, stderr;
 
-import 'core_ext.dart';
-import 'rx.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/rx.dart';
 
 /// Internal helper functions. Except where noted, everything here is internal.
 abstract final class Helpers {

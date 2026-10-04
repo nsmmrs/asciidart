@@ -30,19 +30,19 @@
 ///   ported; [handles] reports the registered transforms instead.
 library;
 
-import 'abstract_block.dart';
-import 'abstract_node.dart';
-import 'block.dart';
-import 'converter.dart';
-import 'core_ext.dart';
-import 'document.dart';
-import 'helpers.dart';
-import 'inline.dart';
-import 'list.dart';
-import 'rx.dart';
-import 'section.dart';
-import 'stylesheets.dart';
-import 'table.dart';
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/block.dart';
+import 'package:asciidoctor/src/converter.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/list.dart';
+import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/section.dart';
+import 'package:asciidoctor/src/stylesheets.dart';
+import 'package:asciidoctor/src/table.dart';
 
 /// Renders [value] the way Ruby string interpolation does: `toString`,
 /// except `null` (and, via callers, Ruby `nil`) renders as the empty

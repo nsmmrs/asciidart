@@ -50,19 +50,19 @@
 ///   them).
 library;
 
-import 'abstract_block.dart';
-import 'abstract_node.dart';
-import 'attribute_list.dart';
-import 'block.dart';
-import 'constants.dart';
-import 'core_ext.dart';
-import 'document.dart';
-import 'extensions.dart';
-import 'helpers.dart';
-import 'highlight/highlight.dart';
-import 'highlight/syntax_highlighter.dart';
-import 'inline.dart';
-import 'rx.dart';
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/attribute_list.dart';
+import 'package:asciidoctor/src/block.dart';
+import 'package:asciidoctor/src/constants.dart';
+import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/extensions.dart';
+import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
+import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/rx.dart';
 
 /// Matches XML special characters. Port of `SpecialCharsRx`.
 final RegExp specialCharsRx = RegExp('[<&>]');

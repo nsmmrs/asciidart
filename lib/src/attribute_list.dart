@@ -5,7 +5,7 @@ library;
 
 import 'dart:math' show min;
 
-import 'core_ext.dart';
+import 'package:asciidoctor/src/core_ext.dart';
 
 /// Minimal surface of a block needed by [AttributeList]: single-quoted
 /// values have substitutions applied through [applySubs].

@@ -43,12 +43,14 @@
 /// contract the [CompositeConverter] relies on.
 library;
 
-import 'abstract_block.dart';
-import 'abstract_node.dart';
-import 'constants.dart';
-import 'inline.dart';
-import 'template.dart' show TemplateRegistry, buildTemplateChain;
-import 'template_loader.dart' show VmTemplateLoader, validateTemplateEngine;
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/constants.dart';
+import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/template.dart'
+    show TemplateRegistry, buildTemplateChain;
+import 'package:asciidoctor/src/template_loader.dart'
+    show VmTemplateLoader, validateTemplateEngine;
 
 /// Trailing digits stripped from a backend name to derive its base backend.
 ///

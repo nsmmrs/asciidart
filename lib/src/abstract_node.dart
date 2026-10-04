@@ -25,12 +25,12 @@ library;
 import 'dart:convert' show base64Encode, utf8;
 import 'dart:io' show File, FileSystemException;
 
-import 'abstract_block.dart';
-import 'callouts.dart';
-import 'helpers.dart';
-import 'logging.dart';
-import 'path_resolver.dart';
-import 'substitutors.dart' as substitutors;
+import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/callouts.dart';
+import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/path_resolver.dart';
+import 'package:asciidoctor/src/substitutors.dart' as substitutors;
 
 /// Line feed. Port of the `LF` constant in `lib/asciidoctor.rb`.
 const String lf = '\n';
