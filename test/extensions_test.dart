@@ -1694,7 +1694,7 @@ void main() {
                       ) {
                         // demonstrates that pushInclude normalizes newlines
                         final content = [
-                          "found include target '${target}' at line ${reader.cursorAtPrevLine().lineno}\r\n",
+                          "found include target '$target' at line ${reader.cursorAtPrevLine().lineno}\r\n",
                           '\r\n',
                           'middle line\r\n',
                         ];
