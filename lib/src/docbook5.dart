@@ -27,9 +27,6 @@
 ///   (byte-identical to Ruby output when the gem is not installed).
 library;
 
-import 'dart:convert' show Converter;
-
-import 'package:asciidoctor/asciidoctor.dart' show Converter;
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/attribute_list.dart';

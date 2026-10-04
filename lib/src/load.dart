@@ -39,7 +39,6 @@ import 'dart:io'
         FileSystemEntity,
         FileSystemEntityType,
         FileSystemException,
-        IOSink,
         RandomAccessFile;
 
 import 'package:asciidoctor/src/abstract_node.dart' show SafeMode;

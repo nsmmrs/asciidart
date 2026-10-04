@@ -30,9 +30,6 @@
 ///   ported; [handles] reports the registered transforms instead.
 library;
 
-import 'dart:convert' show Converter;
-
-import 'package:asciidoctor/asciidoctor.dart' show Converter;
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/block.dart';

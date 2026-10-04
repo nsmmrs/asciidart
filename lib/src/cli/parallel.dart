@@ -46,7 +46,6 @@ library;
 
 import 'dart:isolate';
 
-import 'package:asciidoctor/src/job_pool.dart' show WorkerMain;
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/timings.dart';

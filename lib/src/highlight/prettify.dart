@@ -7,10 +7,7 @@
 /// hooks plus the head and footer loader tags). No [SourceLexer] is involved.
 library;
 
-import 'package:asciidoctor/asciidoctor.dart' show HighlightJsAdapter;
 import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/highlight/highlightjs.dart'
-    show HighlightJsAdapter;
 
 /// Syntax-highlighter adapter for Google Code Prettify.
 ///

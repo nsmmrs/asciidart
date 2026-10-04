@@ -45,10 +45,8 @@
 /// contract the [CompositeConverter] relies on.
 library;
 
-import 'package:asciidoctor/asciidoctor.dart' show CompositeConverter;
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/composite.dart' show CompositeConverter;
 import 'package:asciidoctor/src/constants.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/template.dart'
