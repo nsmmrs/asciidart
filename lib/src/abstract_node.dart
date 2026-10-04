@@ -21,9 +21,11 @@ import 'dart:io' show File, FileSystemException;
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/callouts.dart';
 import 'package:asciidoctor/src/document.dart' show Catalog;
+import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
+import 'package:asciidoctor/src/remote.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;
 
 /// Line feed. Port of the `LF` constant in `lib/asciidoctor.rb`.
@@ -119,6 +121,9 @@ abstract interface class NodeDocument {
   /// Replays the attribute entries recorded on [block] against the
   /// document.
   void playbackAttributes(AbstractBlock block);
+
+  /// Reads the remote resource at [uri] (see `AbstractNode.fetchUri`).
+  RemoteResource fetchUri(String uri);
 }
 
 /// An abstract base class that provides state and methods for managing a
@@ -517,19 +522,18 @@ abstract class AbstractNode {
     }
   }
 
-  /// Fetches [uri] over HTTP(S).
+  /// Reads the remote resource at [uri].
   ///
-  /// Returns the response body bytes and content type. The default
-  /// implementation throws [UnimplementedError]: `dart:io` offers no
-  /// synchronous HTTP client, so URI fetching is not built in. Tests and
-  /// embedders can override this method to supply URI data. Fetch failures
-  /// surface as [Exception]s; anything else (including [UnimplementedError])
-  /// propagates to the caller instead of taking the warning path.
-  ({List<int> body, String? contentType}) fetchUri(String uri) =>
-      throw UnimplementedError(
-        'Synchronous URI fetching is not available in dart:io; '
-        'override AbstractNode.fetchUri to supply URI data.',
-      );
+  /// Delegates to the document, which reads through the `uriReader`
+  /// option. Throws an [Exception] when the resource cannot be read, which
+  /// callers turn into a warning.
+  RemoteResource fetchUri(String uri) {
+    final doc = document;
+    if (doc == null || identical(doc, this)) {
+      throw AsciidoctorException('cannot read $uri: no URI reader');
+    }
+    return doc.fetchUri(uri);
+  }
 
   /// Returns a data URI built from the image data read at [imageUri].
   ///

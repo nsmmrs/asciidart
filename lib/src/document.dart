@@ -39,6 +39,7 @@ import 'package:asciidoctor/src/options.dart';
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/reader.dart';
+import 'package:asciidoctor/src/remote.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;
@@ -903,6 +904,17 @@ class Document extends AbstractBlock implements NodeDocument {
     if (options.catalogAssets) {
       catalog.images.add(ImageReference(target, attributes['imagesdir']));
     }
+  }
+
+  /// Reads the remote resource at [uri] through the `uriReader` option
+  /// (of the root document, for a nested document).
+  @override
+  RemoteResource fetchUri(String uri) {
+    final reader = (parentDocument ?? this).options.uriReader;
+    if (reader == null) {
+      throw AsciidoctorException('cannot read $uri: no URI reader');
+    }
+    return reader(uri);
   }
 
   /// Scans registered references and returns the ID of the first reference

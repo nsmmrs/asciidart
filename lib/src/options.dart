@@ -7,7 +7,8 @@ import 'package:asciidoctor/src/converter.dart'
 import 'package:asciidoctor/src/extensions.dart' show Registry;
 import 'package:asciidoctor/src/highlight/syntax_highlighter.dart'
     show SyntaxHighlighterFactory, SyntaxHighlighterFactoryFn;
-import 'package:asciidoctor/src/logging.dart' show LoggerBase;
+import 'package:asciidoctor/src/logging.dart' show LoggerBase, NullLogger;
+import 'package:asciidoctor/src/remote.dart' show UriReader;
 import 'package:asciidoctor/src/template_loader.dart' show TemplateCache;
 import 'package:asciidoctor/src/timings.dart' show Timings;
 import 'package:meta/meta.dart';
@@ -44,6 +45,7 @@ final class AsciidoctorOptions {
     this.syntaxHighlighterFactory,
     this.syntaxHighlighters,
     this.inputMtime,
+    this.uriReader,
   });
 
   /// The safe mode level (see [SafeMode]).
@@ -134,6 +136,16 @@ final class AsciidoctorOptions {
   /// The modification time of the input file (feeds `docdate`).
   final DateTime? inputMtime;
 
+  /// Reads remote content when the `allow-uri-read` attribute is set:
+  /// includes, images embedded as data URIs and stylesheets or other
+  /// assets read from a URI.
+  ///
+  /// Without a reader, remote content is unavailable and the conversion
+  /// warns as for any unreadable content. The asynchronous entry points
+  /// (`loadAsync`, `convertAsync`, ...) fetch remote content over HTTP and
+  /// supply a reader for it.
+  final UriReader? uriReader;
+
   /// Returns a copy with the given fields replaced.
   AsciidoctorOptions copyWith({
     int? safe,
@@ -161,6 +173,7 @@ final class AsciidoctorOptions {
     SyntaxHighlighterFactory? syntaxHighlighterFactory,
     Map<String, SyntaxHighlighterFactoryFn>? syntaxHighlighters,
     DateTime? inputMtime,
+    UriReader? uriReader,
   }) => AsciidoctorOptions(
     safe: safe ?? this.safe,
     backend: backend ?? this.backend,
@@ -188,6 +201,7 @@ final class AsciidoctorOptions {
         syntaxHighlighterFactory ?? this.syntaxHighlighterFactory,
     syntaxHighlighters: syntaxHighlighters ?? this.syntaxHighlighters,
     inputMtime: inputMtime ?? this.inputMtime,
+    uriReader: uriReader ?? this.uriReader,
   );
 
   /// Returns a copy whose output targets are exactly [toFile] and [toDir]
@@ -220,5 +234,35 @@ final class AsciidoctorOptions {
         syntaxHighlighterFactory: syntaxHighlighterFactory,
         syntaxHighlighters: syntaxHighlighters,
         inputMtime: inputMtime,
+        uriReader: uriReader,
       );
+
+  /// Returns a copy for a discovery pass of the asynchronous entry points:
+  /// remote content comes from [uriReader], nothing is logged or timed, and
+  /// no output target is set.
+  @internal
+  AsciidoctorOptions forDiscovery(UriReader uriReader) => AsciidoctorOptions(
+    safe: safe,
+    backend: backend,
+    doctype: doctype,
+    attributes: attributes,
+    standalone: standalone,
+    baseDir: baseDir,
+    sourcemap: sourcemap,
+    parseHeaderOnly: parseHeaderOnly,
+    catalogAssets: catalogAssets,
+    converter: converter,
+    converterFactory: converterFactory,
+    templateDirs: templateDirs,
+    templateEngine: templateEngine,
+    templateCache: templateCache,
+    templateCacheStore: templateCacheStore,
+    extensions: extensions,
+    extensionRegistry: extensionRegistry,
+    logger: NullLogger(),
+    syntaxHighlighterFactory: syntaxHighlighterFactory,
+    syntaxHighlighters: syntaxHighlighters,
+    inputMtime: inputMtime,
+    uriReader: uriReader,
+  );
 }

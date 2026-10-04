@@ -34,6 +34,7 @@ import 'package:asciidoctor/src/job_pool.dart';
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/options.dart';
+import 'package:asciidoctor/src/remote.dart';
 import 'package:asciidoctor/src/timings.dart';
 
 /// Runs the Asciidoctor processor from parsed command-line options.
@@ -121,7 +122,8 @@ final class Invoker {
     final showTimings = options.timings;
     // NOTE trace is consumed here (it is not a processor option).
     final restoreLogger = _applyVerbosity(options);
-    final baseOptions = _processorOptions(options);
+    final baseOptions = _processorOptions(options)
+        .copyWith(uriReader: _uriReader);
 
     try {
       var stdinInput = false;
@@ -212,10 +214,39 @@ final class Invoker {
     final sharedOutfile = outfile != null && outfile != '-' && multiFile;
     if (options.jobs > 1 && multiFile && !stdinInput && !sharedOutfile) {
       await _invokeParallel();
-    } else {
-      invoke(stdinSource: stdinSource);
+      return;
     }
+    var source = stdinSource;
+    if (_allowsUriRead(options)) {
+      // Fetch the remote content the inputs read before converting them.
+      final cache = <String, RemoteResource?>{};
+      final base = _processorOptions(options);
+      if (stdinInput) {
+        final input = stdinSource != null ? stdinSource() : _readStdin();
+        source = () => input;
+        await prefetchRemoteContent(base, cache, source: input);
+      } else {
+        for (final infile in infiles) {
+          // A named pipe can be read only once.
+          if (_isPipe(infile)) continue;
+          try {
+            await prefetchRemoteContent(base, cache, path: infile);
+            // The conversion reports any failure, so prefetching ignores it.
+            // ignore: avoid_catches_without_on_clauses
+          } catch (_) {}
+        }
+      }
+      _uriReader = cachedUriReader(cache);
+    }
+    invoke(stdinSource: source);
   }
+
+  /// The reader for remote content fetched by [invokeAsync].
+  UriReader? _uriReader;
+
+  /// Whether the `allow-uri-read` attribute is set on the command line.
+  static bool _allowsUriRead(CliOptions options) =>
+      options.attributes?['allow-uri-read'] != null;
 
   /// Converts several input files on a pool of worker isolates.
   ///

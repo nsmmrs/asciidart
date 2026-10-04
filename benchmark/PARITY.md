@@ -50,8 +50,12 @@ with no skips against both the Dart CLI and the gem.
   keep Asciidoctor's wording. Library callers catch `AsciidoctorException`.
 - A reader that closes stdout early (`asciidoctor -o - doc.adoc | head`)
   ends the run quietly with exit code 0; the gem reports a broken pipe.
-- The `cache-uri` attribute has no effect (the gem requires the
-  `open-uri-cached` gem for it); remote content is read each time.
+- Remote content (`allow-uri-read`) is read by the CLI and by the
+  asynchronous API (`convertAsync`, `loadAsync`, ...), which fetch it over
+  HTTP before converting; the synchronous API reads it only through an
+  `AsciidoctorOptions.uriReader`. The `cache-uri` attribute keeps fetched
+  content for later conversions in the same process instead of an on-disk
+  cache (the gem needs the `open-uri-cached` gem for it).
 - An unknown CLI option prints Ruby's `Did you mean?` hint only in Ruby;
   that suggestion engine depends on the Ruby version (see the notes at the
   top of `lib/src/cli/options.dart`).

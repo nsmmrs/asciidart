@@ -109,16 +109,15 @@ void conversionWorkerMain(SendPort mainPort) =>
 
 /// Converts the single input file described by [request].
 ///
-/// Runs [convertFile] (with a capture buffer in STDOUT mode and a [Timings]
-/// when requested) under a [MemoryLogger] that records every log record
-/// regardless of level; level filtering happens on the main isolate during
-/// replay, exactly as in the sequential run. Failures are reported as
+/// Runs [convertFileAsync] (with a capture buffer in STDOUT mode and a
+/// [Timings] when requested) under a [MemoryLogger] that records every log
+/// record regardless of level; level filtering happens on the main isolate
+/// during replay, exactly as in the sequential run. Failures are reported as
 /// unsuccessful responses carrying the records logged before the failure;
 /// the worker isolate's logger is always restored.
 ///
-/// This is a plain synchronous function so unit tests can drive it
-/// without spawning isolates.
-ConversionResponse runConversionJob(ConversionRequest request) {
+/// Unit tests drive it directly, without spawning isolates.
+Future<ConversionResponse> runConversionJob(ConversionRequest request) async {
   final savedLogger = LoggerManager.logger;
   final memory = MemoryLogger();
   LoggerManager.logger = memory;
@@ -126,7 +125,7 @@ ConversionResponse runConversionJob(ConversionRequest request) {
     final timings = request.showTimings ? Timings() : null;
     final options = request.options.copyWith(timings: timings);
     final capture = request.toStdout ? StringBuffer() : null;
-    convertFile(request.infile, options, capture);
+    await convertFileAsync(request.infile, options, capture);
     return ConversionResponse(
       ok: true,
       records: _capture(memory),

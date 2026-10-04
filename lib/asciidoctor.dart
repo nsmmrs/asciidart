@@ -35,10 +35,21 @@ export 'src/document.dart'
         Footnote,
         ImageReference;
 export 'src/errors.dart' show AsciidoctorException;
+export 'src/http_fetch.dart' show fetchHttp;
 export 'src/inline.dart' show Inline;
 export 'src/list.dart' show DlistEntry, ListBlock, ListItem;
 export 'src/load.dart'
-    show convert, convertFile, convertToTarget, load, loadFile;
+    show
+        convert,
+        convertAsync,
+        convertFile,
+        convertFileAsync,
+        convertToTarget,
+        convertToTargetAsync,
+        load,
+        loadAsync,
+        loadFile,
+        loadFileAsync;
 export 'src/logging.dart'
     show
         BasicFormatter,
@@ -54,6 +65,7 @@ export 'src/logging.dart'
         Severity;
 export 'src/options.dart' show AsciidoctorOptions;
 export 'src/path_resolver.dart' show PathResolver, SecurityError;
+export 'src/remote.dart' show RemoteResource, UriFetcher, UriReader;
 export 'src/section.dart' show Section;
 export 'src/table.dart'
     show Cell, CellSpec, Column, ColumnSpec, Table, TableHeader, TableRows;

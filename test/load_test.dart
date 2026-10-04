@@ -8,10 +8,10 @@
 /// and arrays, hash-likes, boolean `to_file`) have no Dart counterpart and
 /// are not ported.
 ///
-/// The three remote-stylesheet tests under [needsSyncHttp] stay skipped
-/// until the asynchronous API can fetch `http(s)` URIs. Output-writing tests
-/// use a jailed scratch directory under the working directory, since safe
-/// mode confines `toDir`/`toFile` targets to it.
+/// The remote-stylesheet tests convert through [convertAsync] against a
+/// loopback HTTP server. Output-writing tests use a jailed scratch
+/// directory under the working directory, since safe mode confines
+/// `toDir`/`toFile` targets to it.
 library;
 
 import 'dart:async' show unawaited;
@@ -19,18 +19,6 @@ import 'dart:io';
 
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
-
-/// Permanent skip reason for the remote-stylesheet tests.
-///
-/// `dart:io` offers no synchronous HTTP client, so the synchronous
-/// `convert` flow cannot fetch `http(s)` stylesheets the way Ruby's
-/// `open-uri` does (`AbstractNode.fetchUri` throws `UnimplementedError` by
-/// design). These bodies spin up a real loopback `HttpServer` and stay
-/// skipped until a (future) async convert flow can reach it; the
-/// allow-uri-read warning paths are covered by passing tests elsewhere.
-const String needsSyncHttp =
-    'PERMANENT SKIP: sync convert cannot fetch http(s) stylesheets in Dart '
-    '(dart:io has no sync HTTP client; AbstractNode.fetchUri throws by design)';
 
 /// Joins a fixture [name] to the Ruby fixtures directory (port of
 /// `fixture_path`; tests run with `dart/` as the working directory).
@@ -933,36 +921,32 @@ void main() {
       expect(output, contains('<style>'));
     });
 
-    test(
-      'should embed remote stylesheet by default if SafeMode is less than '
-      'SECURE and allow-uri-read is set',
-      skip: needsSyncHttp,
-      () async {
-        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-        try {
-          server.listen((request) {
-            final response = request.response..write('body { color: green; }');
-            unawaited(response.close());
-          });
-          const input = '= Document Title\n\ntext\n';
-          final output = convert(
-            input,
-            AsciidoctorOptions(
-              safe: SafeMode.server,
-              standalone: true,
-              attributes: {
-                'allow-uri-read': '',
-                'stylesheet': 'http://127.0.0.1:${server.port}/custom.css',
-              },
-            ),
-          );
-          expect(output, contains('<style>'));
-          expect(output, contains('color: green'));
-        } finally {
-          await server.close();
-        }
-      },
-    );
+    test('should embed remote stylesheet by default if SafeMode is less than '
+        'SECURE and allow-uri-read is set', () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      try {
+        server.listen((request) {
+          final response = request.response..write('body { color: green; }');
+          unawaited(response.close());
+        });
+        const input = '= Document Title\n\ntext\n';
+        final output = await convertAsync(
+          input,
+          AsciidoctorOptions(
+            safe: SafeMode.server,
+            standalone: true,
+            attributes: {
+              'allow-uri-read': '',
+              'stylesheet': 'http://127.0.0.1:${server.port}/custom.css',
+            },
+          ),
+        );
+        expect(output, contains('<style>'));
+        expect(output, contains('color: green'));
+      } finally {
+        await server.close();
+      }
+    });
 
     test(
       'should not allow linkcss be unset from document if SafeMode is SECURE '
@@ -1068,7 +1052,6 @@ void main() {
     test(
       'should embed custom remote stylesheet if SafeMode is less than SECURE '
       'and allow-uri-read is set',
-      skip: needsSyncHttp,
       () async {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         try {
@@ -1077,7 +1060,7 @@ void main() {
             unawaited(response.close());
           });
           const input = '= Document Title\n\ntext\n';
-          final output = convert(
+          final output = await convertAsync(
             input,
             AsciidoctorOptions(
               safe: SafeMode.server,
@@ -1099,7 +1082,6 @@ void main() {
     test(
       'should embed custom stylesheet in remote stylesdir if SafeMode is less '
       'than SECURE and allow-uri-read is set',
-      skip: needsSyncHttp,
       () async {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         try {
@@ -1108,7 +1090,7 @@ void main() {
             unawaited(response.close());
           });
           const input = '= Document Title\n\ntext\n';
-          final output = convert(
+          final output = await convertAsync(
             input,
             AsciidoctorOptions(
               safe: SafeMode.server,

@@ -251,10 +251,10 @@ void main() {
       showTimings: false,
     );
 
-    test('runConversionJob converts a file', () {
+    test('runConversionJob converts a file', () async {
       final src = writeParityFixtures();
       final dest = makeTempDir('jobs_codec_');
-      final response = runConversionJob(
+      final response = await runConversionJob(
         request('${src.path}/a.adoc', toDir: dest.path),
       );
       expect(response.ok, isTrue);
@@ -265,10 +265,10 @@ void main() {
       );
     });
 
-    test('runConversionJob captures log records with severities', () {
+    test('runConversionJob captures log records with severities', () async {
       final src = writeParityFixtures();
       final dest = makeTempDir('jobs_codec_warn_');
-      final response = runConversionJob(
+      final response = await runConversionJob(
         request('${src.path}/b.adoc', toDir: dest.path),
       );
       expect(response.ok, isTrue);
@@ -277,9 +277,9 @@ void main() {
       expect(record.message, contains('section title out of sequence'));
     });
 
-    test('runConversionJob captures converted text in stdout mode', () {
+    test('runConversionJob captures converted text in stdout mode', () async {
       final src = writeParityFixtures();
-      final response = runConversionJob(
+      final response = await runConversionJob(
         request('${src.path}/a.adoc', toStdout: true),
       );
       expect(response.ok, isTrue);
@@ -288,20 +288,20 @@ void main() {
       expect(src.listSync().whereType<File>(), hasLength(4));
     });
 
-    test('runConversionJob reports failures as unsuccessful', () {
+    test('runConversionJob reports failures as unsuccessful', () async {
       final src = writeParityFixtures();
-      final response = runConversionJob(
+      final response = await runConversionJob(
         request('${src.path}/no-such-file.adoc'),
       );
       expect(response.ok, isFalse);
       expect(response.error, contains('no-such-file.adoc'));
     });
 
-    test('runConversionJob restores the logger', () {
+    test('runConversionJob restores the logger', () async {
       final before = LoggerManager.logger;
       final src = writeParityFixtures();
       final dest = makeTempDir('jobs_codec_log_');
-      runConversionJob(request('${src.path}/a.adoc', toDir: dest.path));
+      await runConversionJob(request('${src.path}/a.adoc', toDir: dest.path));
       expect(identical(LoggerManager.logger, before), isTrue);
     });
   });

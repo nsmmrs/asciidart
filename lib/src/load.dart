@@ -27,10 +27,13 @@ import 'package:asciidoctor/src/document.dart' show Document;
 import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/helpers.dart' show Helpers;
 import 'package:asciidoctor/src/html5.dart' show Html5Converter;
+import 'package:asciidoctor/src/http_fetch.dart' show fetchHttp;
 import 'package:asciidoctor/src/logging.dart' show LoggerManager;
 import 'package:asciidoctor/src/options.dart';
 import 'package:asciidoctor/src/path_resolver.dart' show PathResolver;
+import 'package:asciidoctor/src/remote.dart';
 import 'package:asciidoctor/src/stylesheets.dart' show Stylesheets;
+import 'package:meta/meta.dart';
 
 /// Parses the AsciiDoc [source] (an empty document when `null`) into a
 /// [Document].
@@ -115,6 +118,198 @@ Document convertToTarget(
     );
   }
   return _convert(_Input.text(source), options, output);
+}
+
+/// Like [load], reading remote content with [fetch].
+///
+/// When the `allow-uri-read` attribute is set, the remote content the
+/// document needs (includes, assets read from a URI) is fetched with
+/// [fetch] (HTTP GET by default) and supplied through
+/// [AsciidoctorOptions.uriReader]; see [convertAsync].
+Future<Document> loadAsync(
+  String? source, {
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+  bool parse = true,
+  UriFetcher fetch = fetchHttp,
+}) async {
+  final input = _Input.text(source);
+  final reader = await _prefetch(input, options, fetch, convert: false);
+  return _load(input, options.copyWith(uriReader: reader), parse: parse);
+}
+
+/// Like [loadFile], reading remote content with [fetch] (see [loadAsync]).
+Future<Document> loadFileAsync(
+  String path, {
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+  bool parse = true,
+  UriFetcher fetch = fetchHttp,
+}) async {
+  final file = File(path);
+  _probeReadable(file);
+  final input = _Input.file(file);
+  final reader = await _prefetch(input, options, fetch, convert: false);
+  return _load(input, options.copyWith(uriReader: reader), parse: parse);
+}
+
+/// Like [convert], reading remote content with [fetch].
+///
+/// When the `allow-uri-read` attribute is set, the document is converted
+/// once silently to find the remote content it reads (includes, images
+/// embedded as data URIs, stylesheets and other assets read from a URI),
+/// which is fetched with [fetch] (HTTP GET by default); this repeats until
+/// no new content is needed, since fetched content can refer to more.
+/// The document is then converted for real with the fetched content
+/// supplied through [AsciidoctorOptions.uriReader]. Content that cannot be
+/// fetched is reported as unreadable, as in the synchronous API.
+///
+/// With the `cache-uri` attribute set, fetched content is kept for later
+/// conversions in the same process.
+Future<String> convertAsync(
+  String? source, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+  UriFetcher fetch = fetchHttp,
+]) async {
+  final reader = await _prefetch(_Input.text(source), options, fetch);
+  return convert(source, options.copyWith(uriReader: reader));
+}
+
+/// Like [convertFile], reading remote content with [fetch] (see
+/// [convertAsync]).
+Future<Document> convertFileAsync(
+  String path, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+  StringSink? output,
+  UriFetcher fetch = fetchHttp,
+]) async {
+  final file = File(path);
+  _probeReadable(file);
+  final reader = await _prefetch(_Input.file(file), options, fetch);
+  return convertFile(path, options.copyWith(uriReader: reader), output);
+}
+
+/// Like [convertToTarget], reading remote content with [fetch] (see
+/// [convertAsync]).
+Future<Document> convertToTargetAsync(
+  String? source, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+  StringSink? output,
+  UriFetcher fetch = fetchHttp,
+]) async {
+  final reader = await _prefetch(_Input.text(source), options, fetch);
+  return convertToTarget(source, options.copyWith(uriReader: reader), output);
+}
+
+/// Fetches the remote content that converting the AsciiDoc file at [path]
+/// (or [source], when [path] is `null`) reads into [cache], by URI (`null`
+/// for content that could not be fetched); see [convertAsync].
+///
+/// For the CLI, which converts several inputs with one [cachedUriReader].
+@internal
+Future<void> prefetchRemoteContent(
+  AsciidoctorOptions options,
+  Map<String, RemoteResource?> cache, {
+  String? path,
+  String? source,
+  UriFetcher fetch = fetchHttp,
+}) async {
+  final input = path == null ? _Input.text(source) : _Input.file(File(path));
+  if (path != null) _probeReadable(File(path));
+  await _prefetch(input, options, fetch, cache: cache);
+}
+
+/// A reader serving the remote content in [cache] (filled by
+/// [prefetchRemoteContent]).
+@internal
+UriReader cachedUriReader(Map<String, RemoteResource?> cache) =>
+    (uri) => cache[uri] ?? (throw AsciidoctorException('cannot read $uri'));
+
+/// Remote content kept across conversions for documents that set the
+/// `cache-uri` attribute, by URI (`null` for content that failed).
+final Map<String, RemoteResource?> _sharedUriCache = {};
+
+/// The most discovery passes run for one document; each pass fetches at
+/// least one new URI, so this bounds documents that keep naming new ones.
+const int _maxDiscoveryPasses = 32;
+
+/// Finds and fetches the remote content [input] reads, returning a reader
+/// that serves it.
+///
+/// Runs silent discovery passes (parsing, and converting unless [convert]
+/// is `false`) with a reader that records the URIs it is asked for, then
+/// fetches the new ones, until a pass asks for nothing new. A
+/// [AsciidoctorOptions.uriReader] given by the caller is consulted first.
+Future<UriReader> _prefetch(
+  _Input input,
+  AsciidoctorOptions options,
+  UriFetcher fetch, {
+  bool convert = true,
+  Map<String, RemoteResource?>? cache,
+}) async {
+  final fetched = cache ?? <String, RemoteResource?>{};
+  final callerReader = options.uriReader;
+  RemoteResource read(String uri, Set<String> missing) {
+    if (callerReader != null) {
+      try {
+        return callerReader(uri);
+      } on Exception {
+        // Fall back to fetching.
+      }
+    }
+    if (!fetched.containsKey(uri)) {
+      missing.add(uri);
+      throw AsciidoctorException('cannot read $uri: not fetched yet');
+    }
+    return fetched[uri] ??
+        (throw AsciidoctorException('cannot read $uri: fetch failed'));
+  }
+
+  final savedLogger = LoggerManager.logger;
+  try {
+    for (var pass = 0; pass < _maxDiscoveryPasses; pass++) {
+      final missing = <String>{};
+      final Document doc;
+      try {
+        doc = _load(input, options.forDiscovery((uri) => read(uri, missing)));
+        if (convert) doc.convert();
+      } on Object {
+        // The real run reports the failure.
+        break;
+      }
+      if (missing.isEmpty) break;
+      final shared = doc.hasAttr('cache-uri');
+      await Future.wait([
+        for (final uri in missing)
+          if (shared && _sharedUriCache.containsKey(uri))
+            Future<void>.sync(() => fetched[uri] = _sharedUriCache[uri])
+          else
+            _fetchInto(fetched, uri, fetch, shared: shared),
+      ]);
+    }
+  } finally {
+    LoggerManager.logger = savedLogger;
+  }
+  RemoteResource readFetched(String uri) => read(uri, <String>{});
+  return readFetched;
+}
+
+/// Fetches [uri] with [fetch] into [fetched] (`null` on failure), and into
+/// the shared cache when [shared] is set.
+Future<void> _fetchInto(
+  Map<String, RemoteResource?> fetched,
+  String uri,
+  UriFetcher fetch, {
+  required bool shared,
+}) async {
+  RemoteResource? resource;
+  try {
+    resource = await fetch(Uri.parse(uri));
+    // A failed fetch is reported as unreadable content by the real run.
+    // ignore: avoid_catches_without_on_clauses
+  } catch (_) {
+    resource = null;
+  }
+  fetched[uri] = resource;
+  if (shared) _sharedUriCache[uri] = resource;
 }
 
 /// The source of a document: AsciiDoc text or a file.
@@ -385,9 +580,9 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
             !Directory(stylesheetOutdir).existsSync()) {
           if (!mkdirs) {
             throw AsciidoctorException(
-      'target stylesheet directory does not exist: $stylesoutdir '
-      '(set the mkdirs option to create it)',
-    );
+              'target stylesheet directory does not exist: $stylesoutdir '
+              '(set the mkdirs option to create it)',
+            );
           }
           Helpers.mkdirP(stylesheetOutdir);
         }

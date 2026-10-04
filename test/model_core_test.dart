@@ -1246,14 +1246,17 @@ void main() {
       );
     });
 
-    test('default fetchUri throws instead of warning', () {
+    test('without a URI reader, remote content warns as unreadable', () {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
       final block = Block(doc, 'paragraph');
+      expect(block.readContents('https://example.com/x.adoc'), isNull);
       expect(
-        () => block.readContents('https://example.com/x.adoc'),
-        throwsUnimplementedError,
+        testLogger.warns.single,
+        equals(
+          'could not retrieve contents of asset at URI: '
+          'https://example.com/x.adoc',
+        ),
       );
-      expect(testLogger.warns, isEmpty);
     });
   });
 
