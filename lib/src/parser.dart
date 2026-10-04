@@ -9,31 +9,14 @@
 /// `_strKeys` because the ported model types its attribute maps as
 /// `Map<String, Object?>`.
 ///
-/// Known gap (BUG-fwc380): private helpers marked `TEMP-SEAM (parser)` —
-/// `_subSpecialchars`, `_subAttributes`, `_applyHeaderSubs`,
-/// `_applyAttributeValueSubs`, `_parseAttributes`, `_resolveSubs`,
-/// `_commitSubs` and `_titleText` — apply only the `specialcharacters` and
-/// `attributes` substitutions where Asciidoctor applies the full set (for
-/// example, section IDs generated from titles that contain replacements
-/// differ). They are to be routed to the real substitutions.
-/// (`_setDocumentAttribute` already delegates to [Document.setAttribute].)
-/// * Extension integration is ported: the block/block-macro extension
-///   branches in `nextBlock` and `buildBlock` consult
-///   `document.extensions`, and attribute entries route through
-///   [Document.setAttribute] (whose backend/doctype refresh this needs).
-/// * The syntax-highlighter wave restores the `highlight` subs swap in
-///   `_commitSubs` (`document.syntaxHighlighter` is always `null`).
-/// * The constants wave unifies the `CONST-PENDING` tables below with the
-///   canonical module constants; the values here are verbatim copies.
-/// * `table.dart` still carries its own `Parser.catalogInlineAnchor` stub
-///   (imported here with `hide Parser`); the table wave deletes that stub
-///   and imports this library so table cells catalog anchors through
-///   [Parser.catalogInlineAnchor].
+/// Substitutions go through `substitutors.dart` and the node title
+/// getters, and attribute entries through [Document.setAttribute], so the
+/// parser applies exactly the substitutions Asciidoctor applies at each
+/// step. A few tables below duplicate values from `constants.dart`.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/attribute_list.dart';
 import 'package:asciidoctor/src/block.dart';
 import 'package:asciidoctor/src/callouts.dart';
 import 'package:asciidoctor/src/constants.dart';
@@ -41,7 +24,6 @@ import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/extensions.dart';
 import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/list.dart';
 import 'package:asciidoctor/src/logging.dart';
@@ -50,10 +32,6 @@ import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/substitutors.dart';
 import 'package:asciidoctor/src/table.dart';
-
-const String _del = '\u007f';
-const String _can = '\u0018';
-const String _rs = r'\';
 
 /// Match data for a delimited block boundary line.
 ///
@@ -99,8 +77,8 @@ abstract final class Parser {
   /// String for matching the tab character. Port of `Parser::TAB`.
   static const String tab = '\t';
 
-  // CONST-PENDING (parser): canonical module constants, owned by the
-  // constants wave. Values are verbatim copies of lib/asciidoctor.rb.
+  // Values copied from `lib/asciidoctor.rb` (some duplicate
+  // `constants.dart`).
 
   /// Port of `Compliance.block_terminates_paragraph`.
   static const bool _blockTerminatesParagraph = true;
@@ -330,55 +308,6 @@ abstract final class Parser {
     'a': 'asciidoc',
   };
 
-  /// Port of `Substitutors::VERBATIM_SUBS` (needed by [_commitSubs]).
-  static const List<String> _verbatimSubs = <String>[
-    'specialcharacters',
-    'callouts',
-  ];
-
-  /// Port of `Substitutors::INTRINSIC_ATTRIBUTES` (needed by [_subAttributes]).
-  static const Map<String, String> _intrinsicAttributes = <String, String>{
-    'startsb': '[',
-    'endsb': ']',
-    'vbar': '|',
-    'caret': '^',
-    'asterisk': '*',
-    'tilde': '~',
-    'plus': '&#43;',
-    'backslash': r'\',
-    'backtick': '`',
-    'blank': '',
-    'empty': '',
-    'sp': ' ',
-  };
-
-  /// Port of `Substitutors::SUB_GROUPS` (needed by [_resolveSubs]).
-  static const Map<String, List<String>> _subGroups = <String, List<String>>{
-    'none': <String>[],
-    'normal': <String>[
-      'specialcharacters',
-      'quotes',
-      'attributes',
-      'replacements',
-      'macros',
-      'post_replacements',
-    ],
-    'verbatim': <String>['specialcharacters', 'callouts'],
-    'specialchars': <String>['specialcharacters'],
-  };
-
-  /// Port of `Substitutors::SUB_HINTS` (needed by [_resolveSubs]).
-  static const Map<String, String> _subHints = <String, String>{
-    'a': 'attributes',
-    'm': 'macros',
-    'n': 'normal',
-    'p': 'post_replacements',
-    'q': 'quotes',
-    'r': 'replacements',
-    'c': 'specialcharacters',
-    'v': 'verbatim',
-  };
-
   /// The shared logger (mirrors `Parser.include Logging`).
   static LoggerBase get _logger => LoggerManager.logger;
 
@@ -397,31 +326,6 @@ abstract final class Parser {
 
   /// Returns the [Document] of [node].
   static Document _docOf(AbstractNode node) => node.document! as Document;
-
-  /// TEMP-SEAM (parser): effective doctype of [document].
-  ///
-  /// [_setDocumentAttribute] cannot reach the document wave's private
-  /// doctype updater, so entry-set doctypes only land in the attribute
-  /// map; read the map first (it mirrors the field otherwise) and fall
-  /// back to the field. Delete with the seam and read
-  /// `document.doctype` directly. (If an entry-set doctype is later
-  /// unset, this falls back to the stale field where Asciidoctor keeps the
-  /// entry value; no test covers that.)
-  static String? _doctype(Document document) {
-    final fromAttrs = document.attributes['doctype'];
-    if (fromAttrs is String) return fromAttrs;
-    return document.doctype;
-  }
-
-  /// TEMP-SEAM (parser): effective backend of [document].
-  ///
-  /// Same rationale as [_doctype]; delete with the seam and read
-  /// `document.backend` directly.
-  static String? _backend(Document document) {
-    final fromAttrs = document.attributes['backend'];
-    if (fromAttrs is String) return fromAttrs;
-    return document.backend;
-  }
 
   /// Wraps a reader [Cursor] as a [NodeSourceLocation].
   static NodeSourceLocation? _loc(Cursor? cursor) =>
@@ -497,141 +401,6 @@ abstract final class Parser {
     return match == null ? 0 : int.parse(match.group(0)!);
   }
 
-  // TEMP-SEAM (parser): substitutor ports. Each mirrors a method owned by
-  // the substitutors wave (named in the doc comment); delete the seam and
-  // route the call to the real API when that wave lands. Substitution
-  // coverage here is limited to `specialcharacters` and `attributes`.
-
-  /// TEMP-SEAM (parser): port of `Substitutors#sub_specialchars`.
-  static String _subSpecialchars(String text) {
-    if (!(text.contains('>') || text.contains('&') || text.contains('<'))) {
-      return text;
-    }
-    // Only `&`, `<` and `>` are escaped (never quotes).
-    return text
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;');
-  }
-
-  /// TEMP-SEAM (parser): port of `Substitutors#sub_attributes`.
-  static String _subAttributes(
-    Document document,
-    String text, {
-    String? attributeMissing,
-    String dropLineSeverity = 'info',
-  }) {
-    if (!text.contains(attrRefHead)) return text;
-    final docAttrs = document.attributes;
-    var drop = false;
-    var dropLine = false;
-    var dropEmptyLine = false;
-    String? attributeUndefined;
-    String? missing;
-    final result = text.replaceAllMapped(attributeReferenceRx, (match) {
-      final escapeBefore = match.group(1);
-      final name = match.group(2)!;
-      final setOrCounter = match.group(3);
-      final escapeAfter = match.group(4);
-      // Escaped attribute; return unescaped.
-      if (escapeBefore == _rs || escapeAfter == _rs) return '{$name}';
-      if (setOrCounter != null) {
-        final args = _splitLimit(name, ':', 3)..removeAt(0);
-        switch (setOrCounter) {
-          case 'set':
-            final stored = storeAttribute(
-              args[0],
-              args.length > 1 ? args[1] : '',
-              document,
-            );
-            // NOTE since this is an assignment, only drop-line applies
-            // here (skip and drop imply the same result).
-            if (stored.$2 != null ||
-                (attributeUndefined ??=
-                        docAttrs['attribute-undefined'] as String? ??
-                        Compliance.attributeUndefined) !=
-                    'drop-line') {
-              drop = true;
-              dropEmptyLine = true;
-              return _del;
-            } else {
-              drop = true;
-              dropLine = true;
-              return _can;
-            }
-          case 'counter2':
-            document.counter(args[0], args.length > 1 ? args[1] : null);
-            drop = true;
-            dropEmptyLine = true;
-            return _del;
-          default: // 'counter'
-            return document
-                .counter(args[0], args.length > 1 ? args[1] : null)
-                .toString();
-        }
-      }
-      final key = name.toLowerCase();
-      if (docAttrs.containsKey(key)) return '${docAttrs[key]}';
-      final intrinsic = _intrinsicAttributes[key];
-      if (intrinsic != null) return intrinsic;
-      switch (missing ??=
-          attributeMissing ??
-          docAttrs['attribute-missing'] as String? ??
-          _attributeMissing) {
-        case 'drop':
-          drop = true;
-          dropEmptyLine = true;
-          return _del;
-        case 'drop-line':
-          if (dropLineSeverity == 'info') {
-            _logger.info(
-              'dropping line containing reference to missing attribute: $key',
-            );
-          }
-          drop = true;
-          dropLine = true;
-          return _can;
-        case 'warn':
-          _logger.warn('skipping reference to missing attribute: $key');
-          return match.group(0)!;
-        default: // 'skip'
-          return match.group(0)!;
-      }
-    });
-    if (!drop) return result;
-    if (dropEmptyLine) {
-      final lines = collapseRuns(result, _del).split(lf);
-      if (dropLine) {
-        return lines
-            .where(
-              (line) =>
-                  line != _del &&
-                  line != _can &&
-                  !line.startsWith(_can) &&
-                  !line.contains(_can),
-            )
-            .join(lf)
-            .replaceAll(_del, '');
-      }
-      return lines.where((line) => line != _del).join(lf).replaceAll(_del, '');
-    }
-    if (result.contains(lf)) {
-      return result
-          .split(lf)
-          .where(
-            (line) =>
-                line != _can && !line.startsWith(_can) && !line.contains(_can),
-          )
-          .join(lf);
-    }
-    return '';
-  }
-
-  /// TEMP-SEAM (parser): port of `Substitutors#apply_header_subs`
-  /// (`specialcharacters`, then `attributes`).
-  static String _applyHeaderSubs(Document document, String text) =>
-      _subAttributes(document, _subSpecialchars(text));
-
   /// Assigns the document attribute [name] to [value].
   ///
   /// Delegates to [Document.setAttribute] (port of `Document#set_attribute`,
@@ -644,212 +413,6 @@ abstract final class Parser {
     String value,
   ) => document.setAttribute(name, value);
 
-  /// TEMP-SEAM (parser): port of `Substitutors#parse_attributes` for the
-  /// options the parser uses (`sub_input`, `sub_result`, `into`).
-  ///
-  /// Single-quoted values are resolved with the partial normal
-  /// substitutions (`specialcharacters` and `attributes` only).
-  static Map<Object, Object?> _parseAttributes(
-    Document document,
-    String? attrlist,
-    List<String?> posattrs, {
-    bool subInput = false,
-    bool subResult = false,
-    Map<Object, Object?>? into,
-  }) {
-    if (attrlist == null || attrlist.isEmpty) return <Object, Object?>{};
-    var input = attrlist;
-    if (subInput && input.contains(attrRefHead)) {
-      input = _subAttributes(document, input);
-    }
-    final parsed = AttributeList(
-      input,
-      subResult ? _SeamSubsApplier(document) : null,
-    ).parse(posattrs);
-    if (into != null) {
-      into.addAll(parsed);
-      return into;
-    }
-    return Map<Object, Object?>.of(parsed);
-  }
-
-  /// TEMP-SEAM (parser): port of `Substitutors#resolve_subs`.
-  static List<String>? _resolveSubs(
-    String subs,
-    String type,
-    List<String>? defaults,
-    String? subject,
-  ) {
-    if (subs.isEmpty) return null;
-    var input = subs;
-    if (input.contains(' ')) input = input.replaceAll(' ', '');
-    final modifiersPresent = subModifierSniffRx.hasMatch(input);
-    List<String>? candidates;
-    for (final rawKey in splitDropTrailingEmpty(input, ',')) {
-      var key = rawKey;
-      String? modifierOperation;
-      if (modifiersPresent) {
-        final first = key.isEmpty ? '' : key[0];
-        if (first == '+') {
-          modifierOperation = 'append';
-          key = key.substring(1);
-        } else if (first == '-') {
-          modifierOperation = 'remove';
-          key = key.substring(1);
-        } else if (key.endsWith('+')) {
-          modifierOperation = 'prepend';
-          key = key.substring(0, key.length - 1);
-        }
-      }
-      late final List<String> resolvedKeys;
-      if (type == 'inline' && (key == 'verbatim' || key == 'v')) {
-        // Special case to disable callouts for inline subs.
-        resolvedKeys = _subGroups['specialchars']!;
-      } else if (_subGroups.containsKey(key)) {
-        resolvedKeys = _subGroups[key]!;
-      } else if (type == 'inline' &&
-          key.length == 1 &&
-          _subHints.containsKey(key)) {
-        final resolvedKey = _subHints[key]!;
-        final candidate = _subGroups[resolvedKey];
-        resolvedKeys = candidate ?? <String>[resolvedKey];
-      } else {
-        resolvedKeys = <String>[key];
-      }
-      if (modifierOperation != null) {
-        candidates ??= defaults != null
-            ? List<String>.of(defaults)
-            : <String>[];
-        switch (modifierOperation) {
-          case 'append':
-            candidates.addAll(resolvedKeys);
-          case 'prepend':
-            candidates = <String>[...resolvedKeys, ...candidates];
-          case 'remove':
-            candidates.removeWhere(resolvedKeys.contains);
-        }
-      } else {
-        (candidates ??= <String>[]).addAll(resolvedKeys);
-      }
-    }
-    final found = candidates;
-    if (found == null) return null;
-    final valid = type == 'inline'
-        ? const <String>{
-            'none',
-            'normal',
-            'verbatim',
-            'specialchars',
-            'specialcharacters',
-            'quotes',
-            'attributes',
-            'replacements',
-            'macros',
-            'post_replacements',
-          }
-        : const <String>{
-            'none',
-            'normal',
-            'verbatim',
-            'specialchars',
-            'specialcharacters',
-            'quotes',
-            'attributes',
-            'replacements',
-            'macros',
-            'post_replacements',
-            'callouts',
-          };
-    final resolved = <String>[];
-    for (final candidate in found) {
-      if (valid.contains(candidate) && !resolved.contains(candidate)) {
-        resolved.add(candidate);
-      }
-    }
-    final invalid = found.where((c) => !valid.contains(c)).toList();
-    if (invalid.isNotEmpty) {
-      _logger.warn(
-        'invalid substitution type${invalid.length > 1 ? 's' : ''}'
-        '${subject != null ? ' for ' : ''}${subject ?? ''}: '
-        '${invalid.join(', ')}',
-      );
-    }
-    return resolved;
-  }
-
-  /// TEMP-SEAM (parser): port of `Substitutors#commit_subs`.
-  ///
-  /// Mirrors the real [commitSubs], including the `highlight` swap for
-  /// source blocks once a highlighting-capable syntax highlighter is set.
-  static void _commitSubs(AbstractBlock block) {
-    final defaultSubs = block is Block ? block.defaultSubs : null;
-    late final List<String> defaults;
-    if (defaultSubs == null) {
-      switch (block.contentModel) {
-        case 'simple':
-          defaults = List<String>.of(normalSubs);
-        case 'verbatim':
-          defaults = block.context == 'verse'
-              ? List<String>.of(normalSubs)
-              : List<String>.of(_verbatimSubs);
-        case 'raw':
-          // TODOmake pass subs a compliance setting; AsciiDoc.py performs
-          // :attributes and :macros on a pass block.
-          defaults = block.context == 'stem'
-              ? List<String>.of(basicSubs)
-              : <String>[];
-        default:
-          return;
-      }
-    } else {
-      defaults = List<String>.from(defaultSubs as List<Object?>);
-    }
-    final customSubs = block.attributes['subs'];
-    if (customSubs != null && customSubs != false) {
-      block.subs =
-          _resolveSubs(
-            customSubs as String,
-            'block',
-            defaults,
-            block.context,
-          ) ??
-          <String>[];
-    } else {
-      block.subs = defaults;
-    }
-    // Mirror of the `Substitutors#commit_subs` highlight swap: source
-    // blocks highlight through the document highlighter when it can.
-    final syntaxHl = _docOf(block).syntaxHighlighter;
-    if (block.context == 'listing' &&
-        block.style == 'source' &&
-        syntaxHl is SyntaxHighlighterBase &&
-        syntaxHl.canHighlight) {
-      final idx = block.subs.indexOf('specialcharacters');
-      if (idx != -1) block.subs[idx] = 'highlight';
-    }
-  }
-
-  /// TEMP-SEAM (parser): converted title with the partial title
-  /// substitutions (`specialcharacters`, then `attributes`).
-  ///
-  /// Used where Asciidoctor reads `block.title` (conversion plus
-  /// memoization):
-  /// attribute and counter side effects run, but quotes, macros and
-  /// replacements need the substitutors wave.
-  static String _titleText(AbstractBlock block) {
-    final source = block.sourceTitle;
-    if (source == null) return '';
-    return _subAttributes(_docOf(block), _subSpecialchars(source));
-  }
-
-  /// TEMP-SEAM (parser): partial normal substitutions for quote credit
-  /// lines (`specialcharacters`, then `attributes`).
-  static String _creditText(Document document, String text) =>
-      _subAttributes(document, _subSpecialchars(text));
-
-  /// TEMP-SEAM (parser): port of `AttributeList.rekey` for parser working
-  /// maps, which hold `Object?` values (attribute entry lists) that
-  /// [AttributeList.rekeyAttributes] (`Map<Object, String?>`) rejects.
   /// Positional attribute names from an extension [config] (port of
   /// `ext_config[:positional_attrs] || ext_config[:pos_attrs] || []`).
   static List<String?> _posAttrsOf(Map<String, Object?> config) {
@@ -858,6 +421,8 @@ abstract final class Parser {
     return <String?>[];
   }
 
+  /// Port of `AttributeList.rekey` for parser working maps, whose values are
+  /// not all strings.
   static void _rekey(Map<Object, Object?> attributes, List<String?> posattrs) {
     for (var index = 0; index < posattrs.length; index++) {
       final key = posattrs[index];
@@ -868,9 +433,9 @@ abstract final class Parser {
     }
   }
 
-  /// TEMP-SEAM (parser): port of `Document::AttributeEntry#save_to` for
-  /// parser working maps, which carry `int` positional keys that
-  /// [DocumentAttributeEntry.saveTo] (`Map<String, Object?>`) rejects.
+  /// Port of `Document::AttributeEntry#save_to` for parser working maps, which
+  /// carry `int` positional keys that [DocumentAttributeEntry.saveTo]
+  /// (`Map<String, Object?>`) rejects.
   static void _saveAttributeEntry(
     DocumentAttributeEntry entry,
     Map<Object, Object?> attributes,
@@ -976,12 +541,12 @@ abstract final class Parser {
         l0SectionTitle = null;
       } else {
         document.title = l0SectionTitle;
-        final converted = _subSpecialchars(l0SectionTitle);
+        final converted = subSpecialchars(l0SectionTitle);
         docAttrs['doctitle'] = doctitleAttrVal = converted;
         if (converted.contains(attrRefHead)) {
           // QUESTION should we defer substituting attributes until the end
           // of the header? or should we substitute again if necessary?
-          docAttrs['doctitle'] = doctitleAttrVal = _subAttributes(
+          docAttrs['doctitle'] = doctitleAttrVal = subAttributes(
             document,
             converted,
             attributeMissing: 'skip',
@@ -1011,11 +576,10 @@ abstract final class Parser {
       final reftext = blockAttrs['reftext'];
       if (isTruthy(reftext)) docAttrs['reftext'] = reftext;
       blockAttrs.clear();
-      // TEMP-SEAM (parser): the document wave's `@attributes_modified`
-      // set is private; detect a doctitle change by snapshotting the
-      // value instead (observably equivalent; see analysis in the port
-      // notes). The `elsif` branch only appends to that set, which no
-      // ported reader consults for `doctitle`, so it is omitted.
+      // Detect a doctitle change by snapshotting the value (the document's
+      // modified-attributes set is private; observably equivalent). The `elsif`
+      // branch only appends to that set, which no ported reader consults for
+      // `doctitle`, so it is omitted.
       final doctitleBefore = docAttrs['doctitle'];
       parseHeaderMetadata(reader, document: document, retrieve: false);
       if (docAttrs['doctitle'] != doctitleBefore) {
@@ -1048,7 +612,7 @@ abstract final class Parser {
     }
 
     // Parse title and consume name section of manpage document.
-    if (_doctype(document) == 'manpage') {
+    if (document.doctype == 'manpage') {
       parseManpageHeader(reader, document, blockAttrs, headerOnly: headerOnly);
     }
 
@@ -1078,7 +642,7 @@ abstract final class Parser {
       final mantitle = volnumMatch.group(1)!;
       docAttrs['mantitle'] =
           (mantitle.contains(attrRefHead)
-                  ? _subAttributes(document, mantitle)
+                  ? subAttributes(document, mantitle)
                   : mantitle)
               .toLowerCase();
     } else {
@@ -1096,7 +660,7 @@ abstract final class Parser {
         docAttrs['manname-title'] = 'Name';
       }
       docAttrs['mannames'] = [mannameAttr];
-      if (_backend(document) == 'manpage') {
+      if (document.backend == 'manpage') {
         docAttrs['docname'] = mannameAttr;
         docAttrs['outfilesuffix'] = '.$manvolnum';
       }
@@ -1122,7 +686,7 @@ abstract final class Parser {
           if (purposeMatch != null) {
             var manname = purposeMatch.group(1)!;
             if (manname.contains(attrRefHead)) {
-              manname = _subAttributes(document, manname);
+              manname = subAttributes(document, manname);
             }
             late final List<String> mannames;
             String? resolvedManname = manname;
@@ -1137,13 +701,10 @@ abstract final class Parser {
             }
             var manpurpose = purposeMatch.group(2)!;
             if (manpurpose.contains(attrRefHead)) {
-              manpurpose = _subAttributes(document, manpurpose);
+              manpurpose = subAttributes(document, manpurpose);
             }
             if (!isTruthy(docAttrs['manname-title'])) {
-              // TEMP-SEAM (parser): `nameSection.title` needs the
-              // substitutors wave; the partial conversion runs the same
-              // attribute side effects.
-              docAttrs['manname-title'] = _titleText(nameSection);
+              docAttrs['manname-title'] = nameSection.title ?? '';
             }
             if (nameSection.id != null) {
               docAttrs['manname-id'] = nameSection.id;
@@ -1151,7 +712,7 @@ abstract final class Parser {
             docAttrs['manname'] = resolvedManname;
             docAttrs['mannames'] = mannames;
             docAttrs['manpurpose'] = manpurpose;
-            if (_backend(document) == 'manpage') {
+            if (document.backend == 'manpage') {
               docAttrs['docname'] = resolvedManname;
               docAttrs['outfilesuffix'] = '.$manvolnum';
             }
@@ -1170,7 +731,7 @@ abstract final class Parser {
         final fallback = docAttrs['docname'] ?? 'command';
         docAttrs['manname'] = fallback;
         docAttrs['mannames'] = [fallback];
-        if (_backend(document) == 'manpage') {
+        if (document.backend == 'manpage') {
           docAttrs['docname'] = fallback;
           docAttrs['outfilesuffix'] = '.$manvolnum';
         }
@@ -1212,7 +773,7 @@ abstract final class Parser {
             isTruthy(attrs.remove('invalid-header')) ||
             isNextLineSection(reader, attrs) == null)) {
       document = parentDocument!;
-      book = _doctype(document) == 'book';
+      book = document.doctype == 'book';
       if (hasHeader || (book && attrs[1] != 'abstract')) {
         intro = preamble = Block(
           document,
@@ -1237,7 +798,7 @@ abstract final class Parser {
       }
     } else {
       document = _docOf(parent);
-      book = _doctype(document) == 'book';
+      book = document.doctype == 'book';
       final newSection = initializeSection(reader, parent, attrs);
       // Clear attributes except for title attribute, which must be carried
       // over to next content block.
@@ -1363,9 +924,8 @@ abstract final class Parser {
                 // never reach this branch.)
                 final partBlock = newBlock as Block;
                 newBlock.contentModel = 'compound';
-                // TEMP-SEAM (parser): `subs:` would call the substitutors
-                // wave's commitSubs (throws); replicate its fixed-list
-                // outcome instead.
+                // Give the paragraph the open block's resolved subs as a
+                // fixed list.
                 final paragraph = (Block(
                   newBlock,
                   'paragraph',
@@ -1469,7 +1029,7 @@ abstract final class Parser {
   ]) {
     final attrs = attributes ?? <Object, Object?>{};
     final document = _docOf(parent);
-    final doctype = _doctype(document);
+    final doctype = document.doctype;
     final book = doctype == 'book';
     final sourceLocation = document.sourcemap ? reader.cursor() : null;
     final sectStyle = attrs[1] as String?;
@@ -1536,17 +1096,13 @@ abstract final class Parser {
     var id = section.id;
     var generatedId = false;
     if (id == null && document.attributes.containsKey('sectids')) {
-      // TEMP-SEAM (parser): `section.title` needs the substitutors wave;
-      // the partial conversion feeds the ID generator instead.
-      section.id = id = Section.generateId(_titleText(section), document);
+      section.id = id = Section.generateId(section.title ?? '', document);
       generatedId = true;
     }
     if (id != null) {
       if (!generatedId && sectTitle.contains(attrRefHead)) {
         // Convert title to resolve attributes while in scope.
-        // TEMP-SEAM (parser): `section.title` needs the substitutors
-        // wave; the partial conversion runs the same side effects.
-        _titleText(section);
+        final _ = section.title;
       }
       if (document.register('refs', [id, section]) == null) {
         _logger.warn(
@@ -1896,10 +1452,10 @@ abstract final class Parser {
                   // 'image'
                   posattrs = ['alt', 'width', 'height'];
                 }
-                _parseAttributes(
+                parseAttributes(
                   document,
                   blkAttrs,
-                  posattrs,
+                  posattrs: posattrs,
                   subInput: true,
                   into: attrs,
                 );
@@ -1907,12 +1463,12 @@ abstract final class Parser {
               // Style doesn't have special meaning for media macros.
               if (attrs.containsKey('style')) attrs.remove('style');
               if (target.contains(attrRefHead)) {
-                final expandedTarget = _subAttributes(document, target);
+                final expandedTarget = subAttributes(document, target);
                 if (expandedTarget.isEmpty &&
                     (docAttrs['attribute-missing'] as String? ??
                             _attributeMissing) ==
                         'drop-line' &&
-                    _subAttributes(
+                    subAttributes(
                       document,
                       '$target ',
                       attributeMissing: 'drop-line',
@@ -1960,10 +1516,10 @@ abstract final class Parser {
               block = Block(parent, 'toc', contentModel: 'empty');
               final tocAttrs = tocMatch.group(1);
               if (tocAttrs != null) {
-                _parseAttributes(
+                parseAttributes(
                   document,
                   tocAttrs,
-                  [],
+                  posattrs: [],
                   subInput: true,
                   into: attrs,
                 );
@@ -1998,12 +1554,12 @@ abstract final class Parser {
               final content = macroMatch!.group(3);
               var target = macroMatch.group(2)!;
               if (target.contains(attrRefHead)) {
-                final expandedTarget = _subAttributes(document, target);
+                final expandedTarget = subAttributes(document, target);
                 if (expandedTarget.isEmpty &&
                     (docAttrs['attribute-missing'] as String? ??
                             _attributeMissing) ==
                         'drop-line' &&
-                    _subAttributes(
+                    subAttributes(
                       document,
                       '$target ',
                       attributeMissing: 'drop-line',
@@ -2018,10 +1574,10 @@ abstract final class Parser {
               final extConfig = macroExtension.config;
               if (extConfig['content_model'] == 'attributes') {
                 if (content != null) {
-                  _parseAttributes(
+                  parseAttributes(
                     document,
                     content,
-                    _posAttrsOf(extConfig),
+                    posattrs: _posAttrsOf(extConfig),
                     subInput: true,
                     into: attrs,
                   );
@@ -2119,12 +1675,10 @@ abstract final class Parser {
         block = (Block(parent, 'floating_title', contentModel: 'empty'))
           ..title = floatTitle.title;
         attrs.remove('title');
-        // TEMP-SEAM (parser): `block.title` needs the substitutors wave;
-        // the partial conversion feeds the ID generator instead.
         block.id =
             floatTitle.id ??
             (docAttrs.containsKey('sectids')
-                ? Section.generateId(_titleText(block), document)
+                ? Section.generateId(block.title ?? '', document)
                 : null);
         block.level = floatTitle.level;
         break;
@@ -2271,7 +1825,7 @@ abstract final class Parser {
           )!;
           if (creditLine != null) {
             final parts = _splitLimit(
-              _creditText(document, creditLine),
+              block.applySubs(creditLine)! as String,
               ', ',
               2,
             );
@@ -2302,7 +1856,11 @@ abstract final class Parser {
             source: lines,
             attributes: _strKeys(attrs),
           );
-          final parts = _splitLimit(_creditText(document, creditLine), ', ', 2);
+          final parts = _splitLimit(
+            block.applySubs(creditLine)! as String,
+            ', ',
+            2,
+          );
           final attribution = parts[0];
           final citetitle = parts.length > 1 ? parts[1] : null;
           attrs['attribution'] = attribution;
@@ -2551,12 +2109,10 @@ abstract final class Parser {
     final blockId = result.id ?? (result.id = attrs['id'] as String?);
     if (blockId != null) {
       // Convert title to resolve attributes while in scope.
-      // TEMP-SEAM (parser): `result.title` needs the substitutors wave;
-      // the partial conversion runs the same side effects.
-      if (blockTitle != null) {
-        if (blockTitle.contains(attrRefHead)) _titleText(result);
-      } else if (result.hasTitle) {
-        _titleText(result);
+      if (blockTitle != null
+          ? blockTitle.contains(attrRefHead)
+          : result.hasTitle) {
+        final _ = result.title;
       }
       if (document.register('refs', [blockId, result]) == null) {
         _logger.warn(
@@ -2569,7 +2125,7 @@ abstract final class Parser {
     }
     // FIXME remove the need for this update!
     if (attrs.isNotEmpty) result.updateAttributes(_strKeys(attrs));
-    _commitSubs(result);
+    result.commitSubs();
 
     //if doc_attrs.key? :pending_attribute_entries
     //  doc_attrs.delete(:pending_attribute_entries).each do |entry|
@@ -2933,7 +2489,7 @@ abstract final class Parser {
     final document = doc ?? _docOf(node);
     var ref = reftext;
     if (ref != null && ref.contains(attrRefHead)) {
-      ref = _subAttributes(document, ref);
+      ref = subAttributes(document, ref);
     }
     if (document.register('refs', [
           id,
@@ -2968,7 +2524,7 @@ abstract final class Parser {
         id = match.group(1)!;
         reftext = match.group(2);
         if (reftext != null && reftext.contains(attrRefHead)) {
-          reftext = _subAttributes(document, reftext);
+          reftext = subAttributes(document, reftext);
           if (reftext.isEmpty) continue;
         }
       } else {
@@ -2978,10 +2534,10 @@ abstract final class Parser {
           if (reftext.contains(']')) {
             reftext = reftext.replaceAll(r'\]', ']');
             if (reftext.contains(attrRefHead)) {
-              reftext = _subAttributes(document, reftext);
+              reftext = subAttributes(document, reftext);
             }
           } else if (reftext.contains(attrRefHead)) {
-            reftext = _subAttributes(document, reftext);
+            reftext = subAttributes(document, reftext);
             if (reftext.isEmpty) reftext = null;
           }
         }
@@ -4132,7 +3688,7 @@ abstract final class Parser {
           final reftext = anchorMatch.group(2);
           if (reftext != null) {
             attributes['reftext'] = reftext.contains(attrRefHead)
-                ? _subAttributes(document, reftext)
+                ? subAttributes(document, reftext)
                 : reftext;
           }
           return true;
@@ -4143,10 +3699,10 @@ abstract final class Parser {
           final currentStyle = attributes[1];
           // Extract id, role, and options from first positional attribute
           // and remove, if present.
-          final parsed = _parseAttributes(
+          final parsed = parseAttributes(
             document,
             attrMatch.group(1),
-            [],
+            posattrs: [],
             subInput: true,
             subResult: true,
             into: attributes,
@@ -4496,10 +4052,8 @@ abstract final class Parser {
           implicitAuthorMetadata.forEach((key, val) {
             // Apply header subs and assign to document; attributes
             // substitution only relevant for email.
-            // TEMP-SEAM (parser): `apply_header_subs` needs the
-            // substitutors wave.
             if (!docAttrs.containsKey(key)) {
-              docAttrs[key] = _applyHeaderSubs(document, val! as String);
+              docAttrs[key] = document.applyHeaderSubs(val! as String);
             }
           });
           implicitAuthor = docAttrs['author'];
@@ -4536,7 +4090,7 @@ abstract final class Parser {
             // Apply header subs and assign to document.
             revMetadata.forEach((key, val) {
               if (!docAttrs.containsKey(key)) {
-                docAttrs[key] = _applyHeaderSubs(document, val! as String);
+                docAttrs[key] = document.applyHeaderSubs(val! as String);
               }
             });
           }
@@ -4884,9 +4438,8 @@ abstract final class Parser {
 
 /// Adapts a reader [Cursor] to a [NodeSourceLocation].
 ///
-/// Mirrors the private adapters each wave keeps locally (the reader wave
-/// does not make [Cursor] implement the interface); the merger may unify
-/// them.
+/// [Cursor] does not implement the interface itself; `table.dart` keeps a
+/// similar private adapter.
 class _CursorSourceLocation implements NodeSourceLocation {
   /// Creates a source location from `cursor`.
   new(this._cursor);
@@ -4901,19 +4454,4 @@ class _CursorSourceLocation implements NodeSourceLocation {
 
   @override
   int? get lineno => _cursor.lineno;
-}
-
-/// TEMP-SEAM (parser): applies the partial normal substitutions
-/// (`specialcharacters`, then `attributes`) to single-quoted
-/// attribute-list values for [Parser._parseAttributes].
-class _SeamSubsApplier implements SubsApplier {
-  /// Creates an applier resolving references against [document].
-  new(this.document);
-
-  /// The document attributes resolve against.
-  final Document document;
-
-  @override
-  String applySubs(String value) =>
-      Parser._subAttributes(document, Parser._subSpecialchars(value));
 }

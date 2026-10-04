@@ -876,6 +876,28 @@ void main() {
       });
     });
 
+    test('generates section ids from the fully substituted title', () {
+      final doc = documentFromString('== A -- B\n\n== _Em_ *Strong*');
+      expect(doc.blocks[0].id, equals('_ab'));
+      expect(doc.blocks[1].id, equals('_em_strong'));
+    });
+
+    test('node applySubs defaults to the normal substitutions', () {
+      final doc = documentFromString('text');
+      expect(
+        doc.applySubs('*a* -- b'),
+        equals('<strong>a</strong>&#8201;&#8212;&#8201;b'),
+      );
+      expect(doc.applySubs('*a*', null), equals('*a*'));
+    });
+
+    test('applies normal substitutions to quote credits', () {
+      final doc = documentFromString('> quoted\n> -- *Md* Author, _Book_\n');
+      final quote = doc.blocks[0];
+      expect(quote.attr('attribution'), equals('<strong>Md</strong> Author'));
+      expect(quote.attr('citetitle'), equals('<em>Book</em>'));
+    });
+
     test('marker-derived ordered list style has no list marker keyword', () {
       // Ruby assigns the implicit style as a Symbol, which misses the
       // String-keyed ORDERED_LIST_KEYWORDS, so no HTML type attribute is

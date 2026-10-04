@@ -848,13 +848,16 @@ abstract class AbstractNode {
     return contents;
   }
 
-  /// Applies the substitutions [subs] to [source].
+  /// Applies the substitutions [subs] (the normal substitutions by
+  /// default; `null` applies none) to [source].
   ///
   /// [source] is a [String] or a [List] of lines (the verbatim path passes
   /// lines and gets lines back).
   /// Delegates to `substitutors.applySubs` with this node.
-  Object? applySubs(Object? source, [List<String>? subs]) =>
-      substitutors.applySubs(this, source, subs);
+  Object? applySubs(
+    Object? source, [
+    List<String>? subs = substitutors.normalSubs,
+  ]) => substitutors.applySubs(this, source, subs);
 
   /// Applies title substitutions to [text].
   ///

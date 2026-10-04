@@ -18,3 +18,4 @@ tool/parity.sh build/asciidoctor
 | `book-toc.adoc` | multipart book TOC levels (#2262, #4814) |
 | `manpage-lists.adoc` | manpage list and table cell spacing (#4182, #4482) |
 | `olist-markers.adoc` | ordered list marker validation warnings and implicit styles |
+| `substitutions.adoc` | full substitutions in titles that feed generated IDs, quote credits (paragraph and Markdown), single-quoted attribute values, reftext and the author line (BUG-fwc380) |

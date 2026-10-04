@@ -1,0 +1,44 @@
+= Doc *Title* -- with {doctype}
+Jane Doe <jane@example.org>
+:counter-start: 3
+
+== A -- B
+
+== _Emphasis_ and *strong* Title
+
+== Title with {counter:sec} counter
+
+== Link https://example.org[site] and `code`
+
+== Quotes "`double`" and '`single`' (C) (R) ...
+
+[discrete]
+=== Floating -- title *bold*
+
+[#explicit]
+== Explicit {doctype} -- id
+
+[quote, '*Bold* Author', '_Book_ -- Part']
+____
+quoted
+____
+
+[verse,'Poet <tag>','Title & co']
+____
+line
+____
+
+"Quote" said _x_ -- yes
+-- *Credit* Name, _Work_ -- Vol
+
+> markdown quote
+> -- *Md* Author, _Md Book_
+
+.Title -- with *bold*
+[#blk]
+====
+example
+====
+
+[[anchor,Ref -- *text*]]
+Para with <<anchor>> and <<_a_b>>.
