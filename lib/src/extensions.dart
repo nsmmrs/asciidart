@@ -639,10 +639,7 @@ abstract class NamedProcessor extends Processor {
           }
         }
       }
-      option('positional_attrs', [
-        for (final name in names)
-          if (name != null) name,
-      ]);
+      option('positional_attrs', [for (final name in names) ?name]);
       option('default_attrs', defaults);
     } else if (spec is Map) {
       final names = <String?>[];
@@ -657,10 +654,7 @@ abstract class NamedProcessor extends Processor {
         }
         if (isTruthy(value)) defaults[name] = value;
       });
-      option('positional_attrs', [
-        for (final name in names)
-          if (name != null) name,
-      ]);
+      option('positional_attrs', [for (final name in names) ?name]);
       option('default_attrs', defaults);
     } else {
       throw ArgumentError(

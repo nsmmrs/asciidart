@@ -70,7 +70,7 @@ Invoker invokeCli(
       ? filename
       : fixturePath(filename);
   final invoker = Invoker.fromArgs(
-    [...argv, if (filepath != null) filepath],
+    [...argv, ?filepath],
     out: out,
     err: err,
     environment: <String, String>{},

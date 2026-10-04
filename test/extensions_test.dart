@@ -291,8 +291,8 @@ String convertFile(
 }) => api.convertFile(path, <String, Object?>{
   'to_file': toFile,
   'standalone': standalone,
-  if (safe != null) 'safe': safe,
-  if (attributes != null) 'attributes': attributes,
+  'safe': ?safe,
+  'attributes': ?attributes,
 }) as String;
 
 /// Loads the file at [path] (port of `Asciidoctor.load_file`).

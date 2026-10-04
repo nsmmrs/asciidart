@@ -237,7 +237,7 @@ String wrapSourceBlock({
       : '$preClass highlight';
   if (transform != null) {
     final pre = <String, String>{'class': classAttrVal};
-    final code = <String, String>{if (language != null) 'data-lang': language};
+    final code = <String, String>{'data-lang': ?language};
     transform(pre, code);
     // NOTE make sure data-lang is the last attribute on the code tag to
     // remain consistent with 1.5.x

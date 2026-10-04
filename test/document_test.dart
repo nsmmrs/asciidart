@@ -172,10 +172,10 @@ String convertFile(
   Map<String, Object?>? attributes,
 }) {
   final options = <String, Object?>{
-    if (toFile != null) 'to_file': toFile,
+    'to_file': ?toFile,
     'standalone': standalone,
-    if (backend != null) 'backend': backend,
-    if (safe != null) 'safe': safe,
+    'backend': ?backend,
+    'safe': ?safe,
   };
   if (attributes != null) {
     if (attributes.containsKey('_attr_string_')) {
@@ -192,10 +192,7 @@ Document asciidoctorLoad(
   String input, {
   Object? backend,
   bool standalone = false,
-}) => api.load(input, {
-  if (backend != null) 'backend': backend,
-  'standalone': standalone,
-});
+}) => api.load(input, {'backend': ?backend, 'standalone': standalone});
 
 /// Loads a sample document (port of `example_document`).
 ///
