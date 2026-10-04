@@ -518,16 +518,11 @@ class ManpageConverter extends ConverterBase {
         result.add('.sp\n$termText\n.RS 4');
       }
       if (dd != null) {
-        final hasText = dd.hasText;
-        if (hasText) {
+        if (dd.hasText) {
           result.add(_manify(dd.text!, whitespace: _WhitespaceMode.normalize));
         }
         if (dd.hasBlocks) {
-          var ddContent = dd.content()! as String;
-          if (!hasText && ddContent.startsWith('.sp\n')) {
-            ddContent = ddContent.substring(4);
-          }
-          result.add(ddContent);
+          result.add(dd.content()! as String);
         }
       }
       result.add('.RE');
@@ -619,14 +614,10 @@ class ManpageConverter extends ConverterBase {
       );
       result.add(
         '.sp\n.RS 4\n.ie n \\{\\\n\\h\'-04\' $numeral.\\h\'+01\'\\c\n.\\}\n.el \\{\\\n.  sp -1\n.  IP " $numeral." 4.2\n.\\}'
-        '${listText.isEmpty ? '' : '\n$listText'}',
+        '\n$listText',
       );
       if (listItem.hasBlocks) {
-        var itemContent = listItem.content()! as String;
-        if (listText.isEmpty && itemContent.startsWith('.sp\n')) {
-          itemContent = itemContent.substring(4);
-        }
-        result.add(itemContent);
+        result.add(listItem.content()! as String);
       }
       result.add('.RE');
     }
@@ -730,9 +721,9 @@ class ManpageConverter extends ConverterBase {
           final headerCell = _headerCellAt(headerRow, cellIndex);
           // add an empty cell as a placeholder if this is a rowspan cell
           if (headerCell.length == 1 && headerCell[0] == '^t') {
-            textRow.add('T{\nT}:');
+            textRow.add('T{\n.sp\nT}:');
           }
-          textRow.add('T{\n');
+          textRow.add('T{\n.sp\n');
           final halignValue = cell.attr('halign', 'left')! as String;
           final cellHalign = halignValue.isEmpty ? '' : halignValue[0];
           if (tsec == 'body') {
@@ -847,14 +838,10 @@ class ManpageConverter extends ConverterBase {
       );
       result.add(
         ".sp\n.RS 4\n.ie n \\{\\\n\\h'-04'\\(bu\\h'+03'\\c\n.\\}\n.el \\{\\\n.  sp -1\n.  IP \\(bu 2.3\n.\\}"
-        '${listText.isEmpty ? '' : '\n$listText'}',
+        '\n$listText',
       );
       if (listItem.hasBlocks) {
-        var itemContent = listItem.content()! as String;
-        if (listText.isEmpty && itemContent.startsWith('.sp\n')) {
-          itemContent = itemContent.substring(4);
-        }
-        result.add(itemContent);
+        result.add(listItem.content()! as String);
       }
       result.add('.RE');
     }

@@ -1449,11 +1449,7 @@ void main() {
       final node = StubBlock(
         doc,
         'listing',
-        attributes: const {
-          'language': 'ruby',
-          'linenums-option': '',
-          'start': '3',
-        },
+        attributes: const {'language': 'ruby', 'linenums': '', 'start': '3'},
         contentModel: 'verbatim',
         stubbedContent: 'puts 1',
       )..style = 'source';
@@ -2500,7 +2496,7 @@ void main() {
       expect(output, contains(' contentwidth="100"/>\n'));
     });
 
-    test('self link resolves to fileref', () {
+    test('self link is used literally', () {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
@@ -2509,7 +2505,7 @@ void main() {
         target: 'img.png',
       );
       final output = convOf(doc).convert(node)! as String;
-      expect(output, startsWith('<link xl:href="img.png">'));
+      expect(output, startsWith('<link xl:href="self">'));
     });
   });
 
@@ -2720,8 +2716,8 @@ void main() {
         'monospaced': ['<literal>', '</literal>'],
         'emphasis': ['<emphasis>', '</emphasis>'],
         'strong': ['<emphasis role="strong">', '</emphasis>'],
-        'double': ['<quote role="double">', '</quote>'],
-        'single': ['<quote role="single">', '</quote>'],
+        'double': ['<quote>', '</quote>'],
+        'single': ['<quote>', '</quote>'],
         'mark': ['<emphasis role="marked">', '</emphasis>'],
         'superscript': ['<superscript>', '</superscript>'],
         'subscript': ['<subscript>', '</subscript>'],

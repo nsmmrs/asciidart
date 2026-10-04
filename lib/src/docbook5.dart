@@ -111,8 +111,8 @@ const Map<String, List<Object>> _quoteTags = <String, List<Object>>{
   'monospaced': <Object>['<literal>', '</literal>'],
   'emphasis': <Object>['<emphasis>', '</emphasis>', true],
   'strong': <Object>['<emphasis role="strong">', '</emphasis>', true],
-  'double': <Object>['<quote role="double">', '</quote>', true],
-  'single': <Object>['<quote role="single">', '</quote>', true],
+  'double': <Object>['<quote>', '</quote>', true],
+  'single': <Object>['<quote>', '</quote>', true],
   'mark': <Object>['<emphasis role="marked">', '</emphasis>'],
   'superscript': <Object>['<superscript>', '</superscript>'],
   'subscript': <Object>['<subscript>', '</subscript>'],
@@ -516,7 +516,7 @@ class Docbook5Converter extends ConverterBase {
     if (node.style == 'source') {
       final attrs = node.attributes;
       final String numberingAttrs;
-      if (node.hasOption('linenums')) {
+      if (attrs.containsKey('linenums')) {
         numberingAttrs = attrs.containsKey('start')
             ? ' linenumbering="numbered" '
                   'startinglinenumber="${rubyToInteger(attrs['start'])}"'
@@ -958,7 +958,7 @@ class Docbook5Converter extends ConverterBase {
       uri = fileref;
     }
     final img =
-        '<inlinemediaobject${_commonAttributes(node.id, node.role)}>\n'
+        '<inlinemediaobject${_commonAttributes(null, node.role)}>\n'
         '<imageobject>\n'
         '<imagedata fileref="$uri"${_imageSizeAttributes(node.attributes)}/>\n'
         '</imageobject>\n'
@@ -966,8 +966,7 @@ class Docbook5Converter extends ConverterBase {
         '</inlinemediaobject>';
     final linkHref = node.hasAttr('link') ? node.attr('link') : null;
     if (fileref != null && isTruthy(linkHref)) {
-      final href = linkHref == 'self' ? fileref : _s(linkHref);
-      return '<link xl:href="$href">$img</link>';
+      return '<link xl:href="${_s(linkHref)}">$img</link>';
     }
     return img;
   }

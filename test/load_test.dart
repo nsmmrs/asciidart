@@ -525,18 +525,6 @@ void main() {
       },
     );
 
-    test('should not output meta generator tag in HTML 5 if reproducible '
-        'attribute is set', () {
-      final doc = load('text', {
-        'backend': 'html5',
-        'standalone': true,
-        'attributes': {'linkcss': '', 'reproducible': ''},
-      });
-      final result = doc.convert()! as String;
-      expect(doc.hasAttr('reproducible'), isTrue);
-      expect(result, isNot(contains('<meta name="generator"')));
-    });
-
     test('should not output timestamps if reproducible attribute is set in '
         'DocBook', () {
       final doc = load('text', {

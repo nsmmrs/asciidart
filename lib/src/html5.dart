@@ -335,15 +335,10 @@ class Html5Converter extends ConverterBase {
         '<meta charset="${_s(node.attr('encoding', 'UTF-8'))}"$slash>\n'
         '<meta http-equiv="X-UA-Compatible" content="IE=edge"$slash>\n'
         '<meta name="viewport" content="width=device-width, '
-        'initial-scale=1.0"$slash>',
-      );
-    final reproducible = node.hasAttr('reproducible');
-    if (!reproducible) {
-      result.add(
+        'initial-scale=1.0"$slash>\n'
         '<meta name="generator" content="Asciidoctor '
         '${_s(node.attr('asciidoctor-version'))}"$slash>',
       );
-    }
     if (node.hasAttr('app-name')) {
       result.add(
         '<meta name="application-name" '
@@ -404,7 +399,7 @@ class Html5Converter extends ConverterBase {
       final webfonts = node.attr('webfonts');
       if (webfonts != null && webfonts != false) {
         result.add(
-          '<link rel="stylesheet" href="$assetUriScheme//fonts.googleapis.com/css?family=${(webfonts as String).isEmpty ? 'Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CNoto+Sans+Mono:400,700' : webfonts}"$slash>',
+          '<link rel="stylesheet" href="$assetUriScheme//fonts.googleapis.com/css?family=${(webfonts as String).isEmpty ? 'Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700' : webfonts}"$slash>',
         );
       }
       if (linkcss) {
@@ -593,7 +588,7 @@ class Html5Converter extends ConverterBase {
           '${_s(node.attr('version-label'))} ${_s(node.attr('revnumber'))}$br',
         );
       }
-      if (node.hasAttr('last-update-label') && !reproducible) {
+      if (node.hasAttr('last-update-label') && !node.hasAttr('reproducible')) {
         result.add(
           '${_s(node.attr('last-update-label'))} '
           '${_s(node.attr('docdatetime'))}',
@@ -738,38 +733,20 @@ class Html5Converter extends ConverterBase {
     if (!node.hasSections) {
       return null;
     }
-    final sections = node.sections;
-    final parts =
-        node.context == 'document' && (node as Document).multipart == true;
-    final sectlevel = parts ? 0 : sections[0].level!;
     final sectnumlevels = opts != null && opts['sectnumlevels'] is int
         ? opts['sectnumlevels']! as int
         : rubyToInteger(node.document!.attributes['sectnumlevels'] ?? 3);
-    int toclevels;
     final optsToclevels = opts?['toclevels'];
-    if (optsToclevels is int) {
-      toclevels = optsToclevels;
-    } else {
-      final rawToclevels = node.document!.attributes['toclevels'];
-      if (rawToclevels != null) {
-        toclevels = rubyToInteger(rawToclevels);
-        if (toclevels < 1 && !parts) {
-          toclevels = 1;
-        }
-      } else {
-        toclevels = 2;
-      }
-    }
-    final result = <String>['<ul class="sectlevel$sectlevel">'];
+    final toclevels = optsToclevels is int
+        ? optsToclevels
+        : rubyToInteger(node.document!.attributes['toclevels'] ?? 2);
+    final sections = node.sections;
+    // FIXME top level is incorrect if a multipart book starts with a special
+    // section defined at level 0
+    final result = <String>['<ul class="sectlevel${sections[0].level}">'];
     for (final child in sections) {
       final section = child as Section;
       final slevel = section.level!;
-      final stoclevels = section.hasAttr('toclevels')
-          ? rubyToInteger(section.attr('toclevels'))
-          : toclevels;
-      if (slevel > stoclevels) {
-        continue;
-      }
       final String stitle;
       if (section.caption != null) {
         stitle = section.captionedTitle();
@@ -801,13 +778,10 @@ class Html5Converter extends ConverterBase {
       final cleanTitle = stitle.contains('<a')
           ? stitle.replaceAll(_dropAnchorRx, '')
           : stitle;
-      final otag = slevel == sectlevel
-          ? '<li>'
-          : '<li class="sectlevel$slevel">';
       final String? childTocLevel;
-      if (slevel < stoclevels) {
+      if (slevel < toclevels) {
         childTocLevel = convertOutline(section, <String, Object?>{
-          'toclevels': stoclevels,
+          'toclevels': toclevels,
           'sectnumlevels': sectnumlevels,
         });
       } else {
@@ -815,11 +789,11 @@ class Html5Converter extends ConverterBase {
       }
       if (childTocLevel != null) {
         result
-          ..add('$otag<a href="#${_s(section.id)}">$cleanTitle</a>')
+          ..add('<li><a href="#${_s(section.id)}">$cleanTitle</a>')
           ..add(childTocLevel)
           ..add('</li>');
       } else {
-        result.add('$otag<a href="#${_s(section.id)}">$cleanTitle</a></li>');
+        result.add('<li><a href="#${_s(section.id)}">$cleanTitle</a></li>');
       }
     }
     result.add('</ul>');
@@ -1087,11 +1061,13 @@ class Html5Converter extends ConverterBase {
         if (node.hasAttr('labelwidth') || node.hasAttr('itemwidth')) {
           result.add('<colgroup>');
           final labelWidth = node.hasAttr('labelwidth')
-              ? ' width="${_chompPercent(node.attr('labelwidth')! as String)}%"'
+              ? ' style="width: '
+                    '${_chompPercent(node.attr('labelwidth')! as String)}%;"'
               : '';
           result.add('<col$labelWidth$slash>');
           final itemWidth = node.hasAttr('itemwidth')
-              ? ' width="${_chompPercent(node.attr('itemwidth')! as String)}%"'
+              ? ' style="width: '
+                    '${_chompPercent(node.attr('itemwidth')! as String)}%;"'
               : '';
           result
             ..add('<col$itemWidth$slash>')
@@ -1219,7 +1195,6 @@ class Html5Converter extends ConverterBase {
         '<img src="$src" alt="${_encodeAttributeValue(node.alt)}"'
         '$widthAttr$heightAttr$_voidElementSlash>';
     final String img;
-    String? src;
     if ((node.hasAttr('format', 'svg') || target.contains('.svg')) &&
         node.document!.safe < SafeMode.secure) {
       if (node.hasOption('inline')) {
@@ -1230,27 +1205,22 @@ class Html5Converter extends ConverterBase {
         final fallback = node.hasAttr('fallback')
             ? imgTag(node.imageUri(node.attr('fallback')! as String))
             : '<span class="alt">${_s(node.alt)}</span>';
-        src = node.imageUri(target);
         img =
-            '<object type="image/svg+xml" data="$src"$widthAttr$heightAttr>'
+            '<object type="image/svg+xml" data="${node.imageUri(target)}"'
+            '$widthAttr$heightAttr>'
             '$fallback</object>';
       } else {
-        src = node.imageUri(target);
-        img = imgTag(src);
+        img = imgTag(node.imageUri(target));
       }
     } else {
-      src = node.imageUri(target);
-      img = imgTag(src);
+      img = imgTag(node.imageUri(target));
     }
     var wrappedImg = img;
-    Object? hrefAttrVal;
-    if (node.hasAttr('link') &&
-        (((hrefAttrVal = node.attr('link')) != 'self') ||
-            ((hrefAttrVal = src) != null))) {
+    if (node.hasAttr('link')) {
       final linkConstraintAttrs = _appendLinkConstraintAttrs(node).join();
       wrappedImg =
-          '<a class="image" href="${_s(hrefAttrVal)}"$linkConstraintAttrs>'
-          '$img</a>';
+          '<a class="image" href="${_s(node.attr('link'))}"'
+          '$linkConstraintAttrs>$img</a>';
     }
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
     final classes = <String>['imageblock'];
@@ -1483,7 +1453,8 @@ class Html5Converter extends ConverterBase {
   }
 
   /// Converts the [node] page break.
-  String convertPageBreak(Block node) => '<div class="page-break"></div>';
+  String convertPageBreak(Block node) =>
+      '<div style="page-break-after: always;"></div>';
 
   /// Converts the [node] paragraph.
   String convertParagraph(Block node) {
@@ -1550,10 +1521,7 @@ class Html5Converter extends ConverterBase {
   }
 
   /// Converts the [node] thematic break.
-  String convertThematicBreak(Block node) {
-    final classAttribute = node.role != null ? ' class="${_s(node.role)}"' : '';
-    return '<hr$classAttribute$_voidElementSlash>';
-  }
+  String convertThematicBreak(Block node) => '<hr$_voidElementSlash>';
 
   /// Converts the [node] sidebar block.
   String convertSidebar(Block node) {
@@ -1587,7 +1555,7 @@ class Html5Converter extends ConverterBase {
     if (isTruthy(stripes)) {
       classes.add('stripes-${_s(stripes)}');
     }
-    var widthAttribute = '';
+    var styleAttribute = '';
     final autowidth = node.hasOption('autowidth') && !node.hasAttr('width');
     final tablewidth = node.attr('tablepcwidth');
     if (autowidth) {
@@ -1595,7 +1563,7 @@ class Html5Converter extends ConverterBase {
     } else if (tablewidth == 100) {
       classes.add('stretch');
     } else {
-      widthAttribute = ' width="${_s(tablewidth)}%"';
+      styleAttribute = ' style="width: ${_s(tablewidth)}%;"';
     }
     if (node.hasAttr('float')) {
       classes.add(_s(node.attr('float')));
@@ -1606,7 +1574,7 @@ class Html5Converter extends ConverterBase {
     }
     final classAttribute = ' class="${classes.join(' ')}"';
 
-    result.add('<table$idAttribute$classAttribute$widthAttribute>');
+    result.add('<table$idAttribute$classAttribute$styleAttribute>');
     if (node.hasTitle) {
       result.add('<caption class="title">${node.captionedTitle()}</caption>');
     }
@@ -1622,7 +1590,7 @@ class Html5Converter extends ConverterBase {
           result.add(
             col.hasOption('autowidth')
                 ? '<col$slash>'
-                : '<col width="${_s(col.attr('colpcwidth'))}%"$slash>',
+                : '<col style="width: ${_s(col.attr('colpcwidth'))}%;"$slash>',
           );
         }
       }
@@ -1940,36 +1908,6 @@ class Html5Converter extends ConverterBase {
             '<iframe$widthAttribute$heightAttribute src="$assetUriScheme//www.youtube.com/embed/$target?rel=$relParamVal$startParam$endParam$autoplayParam$loopParam$muteParam$controlsParam$listParam$fsParam$modestParam$themeParam$hlParam" frameborder="0"$fsAttribute></iframe>\n'
             '</div>\n'
             '</div>';
-      case 'wistia':
-        var assetUriScheme =
-            (node.document! as Document).attr('asset-uri-scheme', 'https')!
-                as String;
-        if (assetUriScheme.isNotEmpty) {
-          assetUriScheme = '$assetUriScheme:';
-        }
-        final delimiter = <String>['?'];
-        String popDelimiter() =>
-            delimiter.isNotEmpty ? delimiter.removeLast() : '&amp;';
-        final startAnchor = node.hasAttr('start')
-            ? '${popDelimiter()}time=${_s(node.attr('start'))}'
-            : '';
-        final endVideoBehaviorParam = node.hasOption('loop')
-            ? '${popDelimiter()}endVideoBehavior=loop'
-            : (node.hasOption('reset')
-                  ? '${popDelimiter()}endVideoBehavior=reset'
-                  : '');
-        final target = node.attr('target')! as String;
-        final autoplayParam = node.hasOption('autoplay')
-            ? '${popDelimiter()}autoPlay=true'
-            : '';
-        final mutedParam = node.hasOption('muted')
-            ? '${popDelimiter()}muted=true'
-            : '';
-        return '<div$idAttribute$classAttribute>$titleElement\n'
-            '<div class="content">\n'
-            '<iframe$widthAttribute$heightAttribute src="$assetUriScheme//fast.wistia.com/embed/iframe/$target$startAnchor$autoplayParam$endVideoBehaviorParam$mutedParam" frameborder="0"${node.hasOption('nofullscreen') ? '' : _appendBooleanAttribute('allowfullscreen', xml)} class="wistia_embed" name="wistia_embed"></iframe>\n'
-            '</div>\n'
-            '</div>';
       default:
         final posterVal = node.attr('poster') as String?;
         final posterAttribute = posterVal == null || posterVal.isEmpty
@@ -2144,7 +2082,6 @@ class Html5Converter extends ConverterBase {
         '$attrs$_voidElementSlash>';
 
     final String img;
-    String? src;
     if (type == 'icon') {
       final icons = (node.document! as Document).attr('icons');
       if (icons == 'font') {
@@ -2163,8 +2100,7 @@ class Html5Converter extends ConverterBase {
         img = '<i class="$iClassAttrVal"$attrs></i>';
       } else if (isTruthy(icons)) {
         final attrs = imgAttrs();
-        src = node.iconUri(target);
-        img = imgTag(src, attrs);
+        img = imgTag(node.iconUri(target), attrs);
       } else {
         img = '[${_s(node.alt)}&#93;';
       }
@@ -2180,30 +2116,24 @@ class Html5Converter extends ConverterBase {
           final fallback = node.hasAttr('fallback')
               ? imgTag(node.imageUri(node.attr('fallback')! as String), attrs)
               : '<span class="alt">${_s(node.alt)}</span>';
-          src = node.imageUri(target);
           img =
-              '<object type="image/svg+xml" data="$src"$attrs>'
+              '<object type="image/svg+xml" '
+              'data="${node.imageUri(target)}"$attrs>'
               '$fallback</object>';
         } else {
-          src = node.imageUri(target);
-          img = imgTag(src, attrs);
+          img = imgTag(node.imageUri(target), attrs);
         }
       } else {
-        src = node.imageUri(target);
-        img = imgTag(src, attrs);
+        img = imgTag(node.imageUri(target), attrs);
       }
     }
     var wrappedImg = img;
-    Object? hrefAttrVal;
-    if (node.hasAttr('link') &&
-        (((hrefAttrVal = node.attr('link')) != 'self') ||
-            ((hrefAttrVal = src) != null))) {
+    if (node.hasAttr('link')) {
       final linkConstraintAttrs = _appendLinkConstraintAttrs(node).join();
       wrappedImg =
-          '<a class="image" href="${_s(hrefAttrVal)}"$linkConstraintAttrs>'
-          '$img</a>';
+          '<a class="image" href="${_s(node.attr('link'))}"'
+          '$linkConstraintAttrs>$img</a>';
     }
-    final idAttr = node.id != null ? ' id="${node.id}"' : '';
     final role = node.role;
     final String classAttrVal;
     if (role != null) {
@@ -2215,7 +2145,7 @@ class Html5Converter extends ConverterBase {
     } else {
       classAttrVal = type;
     }
-    return '<span$idAttr class="$classAttrVal">$wrappedImg</span>';
+    return '<span class="$classAttrVal">$wrappedImg</span>';
   }
 
   /// Converts the [node] inline index term.
