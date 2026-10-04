@@ -1259,9 +1259,8 @@ class PreprocessorReader extends Reader {
         );
       } else if (noTarget || target == _conditionalStack.last.target) {
         _conditionalStack.removeLast();
-        _skipping = _conditionalStack.isEmpty
-            ? false
-            : _conditionalStack.last.skipping;
+        _skipping =
+            _conditionalStack.isNotEmpty && _conditionalStack.last.skipping;
       } else {
         LoggerManager.logger.error(
           _messageWithContext(
@@ -1359,14 +1358,11 @@ class PreprocessorReader extends Reader {
               final op = exprMatch.group(2)!;
               final rhs = exprMatch.group(3)!;
               try {
-                skip =
-                    _compareExprValues(
-                      _resolveExprVal(lhs),
-                      op,
-                      _resolveExprVal(rhs),
-                    )
-                    ? false
-                    : true;
+                skip = !_compareExprValues(
+                  _resolveExprVal(lhs),
+                  op,
+                  _resolveExprVal(rhs),
+                );
               } catch (_) {
                 skip = true;
               }
@@ -1855,7 +1851,7 @@ class PreprocessorReader extends Reader {
             activeTag = thisTag;
             tagStack.add(_TagFrame(thisTag, select, incLineno));
           } else if (wildcard != null) {
-            select = activeTag != null && !select ? false : wildcard;
+            select = (activeTag == null || select) && wildcard;
             activeTag = thisTag;
             tagStack.add(_TagFrame(thisTag, select, incLineno));
           }

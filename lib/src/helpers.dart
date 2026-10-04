@@ -77,10 +77,14 @@ abstract final class Helpers {
     bool trimEnd = true,
   ]) {
     if (data.isEmpty) return [];
-    final lines = data[0].startsWith('\uFEFF')
-        ? [data[0].substring(1), ...data.skip(1)]
-        : data;
-    return [for (final line in lines) trimEnd ? line.rstrip() : line.chomp()];
+    final lines = [
+      if (data[0].startsWith('\uFEFF')) data[0].substring(1) else data[0],
+      ...data.skip(1),
+    ];
+    return [
+      for (final line in lines)
+        if (trimEnd) line.rstrip() else line.chomp(),
+    ];
   }
 
   /// Prepares source [data] text for parsing.
@@ -101,7 +105,10 @@ abstract final class Helpers {
       end = text.indexOf('\n', start);
     }
     if (start < text.length) lines.add(text.substring(start));
-    return [for (final line in lines) trimEnd ? line.rstrip() : line.chomp()];
+    return [
+      for (final line in lines)
+        if (trimEnd) line.rstrip() else line.chomp(),
+    ];
   }
 
   /// Whether [str] resembles a URI (i.e. starts with a URI prefix).

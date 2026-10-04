@@ -36,7 +36,6 @@ import 'dart:io'
     show
         Directory,
         File,
-        FileMode,
         FileSystemEntity,
         FileSystemEntityType,
         FileSystemException,

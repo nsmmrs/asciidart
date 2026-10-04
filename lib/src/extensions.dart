@@ -1931,8 +1931,6 @@ abstract final class Extensions {
 
   /// Unregisters the statically-registered extension groups in [names].
   static void unregister(Iterable<String> names) {
-    for (final name in names) {
-      _groups.remove(name);
-    }
+    names.forEach(_groups.remove);
   }
 }

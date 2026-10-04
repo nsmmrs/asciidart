@@ -698,9 +698,7 @@ class Document extends AbstractBlock implements NodeDocument {
         if (val == false) unlockedKeys.add(key);
       }
     }
-    for (final key in unlockedKeys) {
-      attrOverrides.remove(key);
-    }
+    unlockedKeys.forEach(attrOverrides.remove);
 
     if (parentDoc != null) {
       _backend = attrs['backend'] as String?;

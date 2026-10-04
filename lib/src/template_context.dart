@@ -145,7 +145,7 @@ Object? _itemsOf(AbstractNode node) {
   }
   return <Object?>[
     for (final item in node.items)
-      item is AbstractNode ? buildTemplateContext(item) : item.toString(),
+      if (item is AbstractNode) buildTemplateContext(item) else item.toString(),
   ];
 }
 
@@ -171,7 +171,10 @@ Map<String, Object?> _flattenDlistPair(List<Object?> pair) {
   return <String, Object?>{
     'terms': <Object?>[
       for (final term in terms)
-        term is AbstractNode ? buildTemplateContext(term) : term.toString(),
+        if (term is AbstractNode)
+          buildTemplateContext(term)
+        else
+          term.toString(),
     ],
     'description': description is AbstractNode
         ? buildTemplateContext(description)

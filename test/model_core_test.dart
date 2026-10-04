@@ -762,7 +762,7 @@ void main() {
     test('false filter still visits children', () {
       final found = doc.findBy(
         context: 'paragraph',
-        filter: (node) => node == first ? false : true,
+        filter: (node) => node != first,
       );
       expect(found, equals([second]));
     });

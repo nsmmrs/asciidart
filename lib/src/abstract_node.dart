@@ -505,9 +505,7 @@ abstract class AbstractNode {
     final flat = <String>[];
     void collect(Object? item) {
       if (item is List<Object?>) {
-        for (final child in item) {
-          collect(child);
-        }
+        item.forEach(collect);
       } else if (item != null) {
         flat.add('$item');
       } else {
@@ -515,9 +513,7 @@ abstract class AbstractNode {
       }
     }
 
-    for (final item in items) {
-      collect(item);
-    }
+    items.forEach(collect);
     return flat.join(' ');
   }
 
