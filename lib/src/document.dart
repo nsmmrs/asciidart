@@ -576,6 +576,7 @@ class Document extends AbstractBlock implements NodeDocument {
 
     attrOverrides['asciidoctor'] = '';
     attrOverrides['asciidoctor-version'] = Asciidoctor.version;
+    attrOverrides['asciidoctor-dart-version'] = Asciidoctor.packageVersion;
 
     final safeModeName = safeModeNameForValue(safe);
     attrOverrides['safe-mode-name'] = safeModeName;

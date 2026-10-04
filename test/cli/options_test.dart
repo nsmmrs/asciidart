@@ -335,7 +335,13 @@ void main() {
         lines[0],
         equals('Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]'),
       );
-      expect(lines[1], startsWith('Runtime Environment (Dart '));
+      expect(
+        lines[1],
+        startsWith(
+          'Runtime Environment (asciidoctor-dart '
+          '${Asciidoctor.packageVersion}; Dart ',
+        ),
+      );
     });
   });
 

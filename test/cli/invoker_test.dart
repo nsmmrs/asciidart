@@ -196,7 +196,7 @@ void main() {
     test('displays version and exits', () {
       const expected =
           'Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]\n'
-          'Runtime Environment (Dart ';
+          'Runtime Environment (asciidoctor-dart ';
       for (final flag in ['--version', '-V']) {
         final invoker = invokeCliToBuffer([flag]);
         expect(invoker.code, equals(0));

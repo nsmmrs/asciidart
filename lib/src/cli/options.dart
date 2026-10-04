@@ -668,12 +668,14 @@ final class CliOptions {
 
   /// Prints the version and runtime environment to [out] (default STDOUT).
   ///
-  /// Port of `Options#print_version`. Always returns 0.
+  /// Port of `Options#print_version`; the runtime line also names this
+  /// package and its version. Always returns 0.
   int printVersion([StringSink? out]) {
     (out ?? stdout)
       ..writeln('Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]')
       ..writeln(
-        'Runtime Environment (Dart ${Platform.version}) '
+        'Runtime Environment (asciidoctor-dart ${Asciidoctor.packageVersion}; '
+        'Dart ${Platform.version}) '
         '(lc:UTF-8 fs:UTF-8 in:UTF-8 ex:UTF-8)',
       );
     return 0;

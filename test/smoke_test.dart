@@ -11,8 +11,26 @@ String get _cliScript =>
     '${Platform.pathSeparator}asciidoctor.dart';
 
 void main() {
-  test('version constant matches pubspec', () {
-    expect(Asciidoctor.version, equals('0.1.0'));
+  test('version reports the matched Asciidoctor release', () {
+    expect(Asciidoctor.version, equals('2.0.26'));
+  });
+
+  test('package version matches pubspec', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    final version = RegExp(
+      r'^version: (\S+)$',
+      multiLine: true,
+    ).firstMatch(pubspec)!.group(1);
+    expect(Asciidoctor.packageVersion, equals(version));
+  });
+
+  test('documents expose both versions as attributes', () {
+    final doc = load('text');
+    expect(doc.attr('asciidoctor-version'), equals('2.0.26'));
+    expect(
+      doc.attr('asciidoctor-dart-version'),
+      equals(Asciidoctor.packageVersion),
+    );
   });
 
   test('CLI --version exits 0 and prints version', () async {
@@ -21,7 +39,16 @@ void main() {
       '--version',
     ]);
     expect(result.exitCode, equals(0));
-    expect(result.stdout as String, contains(Asciidoctor.version));
+    expect(
+      result.stdout as String,
+      startsWith(
+        'Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]',
+      ),
+    );
+    expect(
+      result.stdout as String,
+      contains('(asciidoctor-dart ${Asciidoctor.packageVersion}; Dart '),
+    );
   });
 
   test('CLI --help exits 0', () async {
