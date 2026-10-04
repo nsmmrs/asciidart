@@ -605,7 +605,7 @@ class Document extends AbstractBlock implements NodeDocument {
     if (isTruthy(baseDirOpt)) {
       baseDir = attrOverrides['docdir'] = _expandBaseDir(baseDirOpt.toString());
     } else if (isTruthy(attrOverrides['docdir'])) {
-      baseDir = (attrOverrides['docdir']! as String);
+      baseDir = attrOverrides['docdir']! as String;
     } else {
       baseDir = attrOverrides['docdir'] = Directory.current.path;
     }
@@ -1987,7 +1987,7 @@ class Document extends AbstractBlock implements NodeDocument {
     final localdateOpt = attrs['localdate'];
     final String localdate;
     if (isTruthy(localdateOpt)) {
-      localdate = (localdateOpt! as String);
+      localdate = localdateOpt! as String;
       if (!isTruthy(attrs['localyear'])) {
         attrs['localyear'] = (localdate.indexOf('-') == 4)
             ? localdate.substring(0, 4)
@@ -2025,7 +2025,7 @@ class Document extends AbstractBlock implements NodeDocument {
     final docdateOpt = attrs['docdate'];
     final String docdate;
     if (isTruthy(docdateOpt)) {
-      docdate = (docdateOpt! as String);
+      docdate = docdateOpt! as String;
       if (!isTruthy(attrs['docyear'])) {
         attrs['docyear'] = (docdate.indexOf('-') == 4)
             ? docdate.substring(0, 4)

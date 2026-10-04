@@ -1223,7 +1223,7 @@ class Html5Converter extends ConverterBase {
       lang = node.attr('language') as String?;
       final syntaxHlValue = (node.document! as Document).syntaxHighlighter;
       if (isTruthy(syntaxHlValue)) {
-        syntaxHl = (syntaxHlValue! as NodeSyntaxHighlighter);
+        syntaxHl = syntaxHlValue! as NodeSyntaxHighlighter;
         final docAttrs = node.document!.attributes;
         if (syntaxHl.canHighlight) {
           hlOpts = <String, Object?>{
@@ -1971,7 +1971,7 @@ class Html5Converter extends ConverterBase {
         var text = node.text;
         if (text == null) {
           final refs = _refs ??=
-              (node.document!.catalog['refs']! as Map<String, Object?>);
+              node.document!.catalog['refs']! as Map<String, Object?>;
           final refid = node.attributes['refid'] as String?;
           Document? top;
           final ref =

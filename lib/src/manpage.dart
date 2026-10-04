@@ -792,7 +792,7 @@ class ManpageConverter extends ConverterBase {
         var text = node.text;
         if (text == null) {
           final refs = _refs ??=
-              (node.document!.catalog['refs']! as Map<String, Object?>);
+              node.document!.catalog['refs']! as Map<String, Object?>;
           final refid = node.attributes['refid'] as String?;
           Document? top;
           final ref =

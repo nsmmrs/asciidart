@@ -181,7 +181,7 @@ String convertFile(
   };
   if (attributes != null) {
     if (attributes.containsKey('_attr_string_')) {
-      options['attributes'] = (attributes['_attr_string_']! as String);
+      options['attributes'] = attributes['_attr_string_']! as String;
     } else {
       options['attributes'] = attributes;
     }

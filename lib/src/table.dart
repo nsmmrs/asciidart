@@ -244,13 +244,13 @@ class Table extends AbstractBlock {
       }
       for (final col in columns) {
         totalWidth += colPcwidth =
-            (col.assignWidth(null, widthBase, precision)! as num);
+            col.assignWidth(null, widthBase, precision)! as num;
       }
     } else {
       final computed = (100.0 / columns.length).truncateAtPrecision(precision);
       colPcwidth = computed.toInt() == computed ? computed.toInt() : computed;
       for (final col in columns) {
-        totalWidth += (col.assignWidth(colPcwidth, null, precision)! as num);
+        totalWidth += col.assignWidth(colPcwidth, null, precision)! as num;
       }
     }
 
@@ -470,7 +470,7 @@ class Cell extends AbstractBlock {
         // TODOdelete style attribute from @attributes if set.
         if (!isTruthy(inHeaderRow)) {
           final attrStyle = attrs['style'];
-          if (isTruthy(attrStyle)) cellStyle = (attrStyle! as String);
+          if (isTruthy(attrStyle)) cellStyle = attrStyle! as String;
         }
         updateAttributes(attrs);
       }

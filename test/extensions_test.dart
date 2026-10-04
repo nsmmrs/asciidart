@@ -2287,7 +2287,7 @@ void main() {
         });
         expect(doc.blocks.length, equals(1));
         expect(doc.blocks[0].context, equals('paragraph'));
-        output = (doc.convert()! as String);
+        output = doc.convert()! as String;
         assertMessage(
           logger,
           'INFO',

@@ -140,9 +140,9 @@ Map<String, Object?> runConversionJob(Map<String, Object?> request) {
     final opts = <String, Object?>{};
     final attributes = request['attributes'];
     if (attributes != null) opts['attributes'] = attributes;
-    opts['safe'] = (request['safe']! as int);
-    opts['standalone'] = (request['standalone']! as bool);
-    opts['warnings'] = (request['warnings']! as bool);
+    opts['safe'] = request['safe']! as int;
+    opts['standalone'] = request['standalone']! as bool;
+    opts['warnings'] = request['warnings']! as bool;
     opts['failure_level'] = Severity.fromValue(
       request['failure_level']! as int,
     );
