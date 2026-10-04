@@ -320,25 +320,22 @@ void main() {
     });
 
     test('class mode requires the stylesheet, inline mode does not', () {
-      final classes = PygmentsAdapter(
+      final classes = (PygmentsAdapter(
         lexer: backend(onHighlight: (_) => rawPlain),
-      );
-      classes.highlight(source: 'x', language: 'ruby');
+      ))..highlight(source: 'x', language: 'ruby');
       expect(classes.requiresStylesheet, isTrue);
 
-      final inline = PygmentsAdapter(
+      final inline = (PygmentsAdapter(
         lexer: backend(onHighlight: (_) => rawPlain),
-      );
-      inline.highlight(source: 'x', language: 'ruby', cssMode: CssMode.inline);
+      ))..highlight(source: 'x', language: 'ruby', cssMode: CssMode.inline);
       expect(inline.requiresStylesheet, isFalse);
     });
 
     test('highlight memoizes the first resolved style', () {
-      final adapter = PygmentsAdapter(
-        lexer: backend(onHighlight: (_) => rawPlain),
-      );
-      adapter.highlight(source: 'x', language: 'ruby', style: 'monokai');
-      adapter.highlight(source: 'x', language: 'ruby', style: 'default');
+      final adapter =
+          (PygmentsAdapter(lexer: backend(onHighlight: (_) => rawPlain)))
+            ..highlight(source: 'x', language: 'ruby', style: 'monokai')
+            ..highlight(source: 'x', language: 'ruby', style: 'default');
       expect(adapter.currentStyle, 'monokai');
     });
   });
@@ -452,10 +449,9 @@ void main() {
     });
 
     test('docinfoHead links the resolved stylesheet', () {
-      final adapter = PygmentsAdapter(
+      final adapter = (PygmentsAdapter(
         lexer: backend(onHighlight: (_) => rawPlain),
-      );
-      adapter.highlight(source: 'x', language: 'ruby');
+      ))..highlight(source: 'x', language: 'ruby');
       expect(
         adapter.docinfoHead(
           linkCss: true,

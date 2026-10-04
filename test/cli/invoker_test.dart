@@ -74,8 +74,7 @@ Invoker invokeCli(
     out: out,
     err: err,
     environment: <String, String>{},
-  );
-  invoker.redirectStreams(out, err);
+  )..redirectStreams(out, err);
   final savedLogger = LoggerManager.logger;
   LoggerManager.logger = Logger(logdev: err)..level = savedLogger.level;
   try {
@@ -114,8 +113,8 @@ Invoker invokeCliWithFilenames(List<String> argv, List<String> filenames) {
 /// leave the reader blocked forever.
 void _writePipe(List<Object> args) {
   final raf = (File(args[0] as String).openSync(mode: FileMode.writeOnly))
-    ..writeStringSync('pipe content');
-  raf.closeSync();
+    ..writeStringSync('pipe content')
+    ..closeSync();
   (args[1] as SendPort).send(null);
 }
 

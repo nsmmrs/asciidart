@@ -428,8 +428,8 @@ final class Invoker with Logging {
         if (toStdout) (tofile! as StringSink).write(response['output']);
         if (showTimings) {
           final workerTimings = Timings()
-            ..log.addAll((response['timings']! as Map).cast<String, double>());
-          workerTimings.printReport(err, infiles[i]);
+            ..log.addAll((response['timings']! as Map).cast<String, double>())
+            ..printReport(err, infiles[i]);
           summedSeconds += workerTimings.readParseConvert ?? 0;
         }
       }

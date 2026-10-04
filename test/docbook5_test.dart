@@ -274,11 +274,10 @@ Document makeDoc({
     'standalone': true,
     ...options,
   };
-  final doc = plainSubs
-      ? StubDocument(<String>[], opts)
-      : Document(<String>[], opts);
-  doc.converter = Docbook5Converter('docbook5');
-  doc.attributes.addAll(attributes);
+  final doc =
+      (plainSubs ? StubDocument(<String>[], opts) : Document(<String>[], opts))
+        ..converter = Docbook5Converter('docbook5')
+        ..attributes.addAll(attributes);
   return doc;
 }
 
@@ -2057,11 +2056,11 @@ void main() {
 
     test('cell spans', () {
       final doc = makeDoc();
-      final node = StubTable(doc, const {});
-      node.createColumns([
-        {'width': 1},
-        {'width': 1},
-      ]);
+      final node = (StubTable(doc, const {}))
+        ..createColumns([
+          {'width': 1},
+          {'width': 1},
+        ]);
       final cell =
           StubCell(node.columns[0], 'wide', const {}, null, 'wide', ['wide'])
             ..colspan = 2
@@ -2078,11 +2077,11 @@ void main() {
 
     test('header and literal cell styles', () {
       final doc = makeDoc();
-      final node = StubTable(doc, const {});
-      node.createColumns([
-        {'width': 1},
-        {'width': 1},
-      ]);
+      final node = (StubTable(doc, const {}))
+        ..createColumns([
+          {'width': 1},
+          {'width': 1},
+        ]);
       final header = StubCell(node.columns[0], 'h', const {}, null, 'h', [
         'h1',
         'h2',
@@ -2105,10 +2104,10 @@ void main() {
 
     test('asciidoc cell style uses converted content', () {
       final doc = makeDoc();
-      final node = StubTable(doc, const {});
-      node.createColumns([
-        {'width': 1},
-      ]);
+      final node = (StubTable(doc, const {}))
+        ..createColumns([
+          {'width': 1},
+        ]);
       final cell = StubCell(
         node.columns[0],
         'a',
@@ -2131,10 +2130,10 @@ void main() {
     test('table without body rows warns', () {
       usingMemoryLogger((logger) {
         final doc = makeDoc();
-        final node = StubTable(doc, const {});
-        node.createColumns([
-          {'width': 1},
-        ]);
+        final node = (StubTable(doc, const {}))
+          ..createColumns([
+            {'width': 1},
+          ]);
         node.rows.head.add([
           StubCell(node.columns[0], 'h', const {}, null, 'h', ['h']),
         ]);

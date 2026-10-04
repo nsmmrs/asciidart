@@ -127,8 +127,8 @@ Document emptyDocument([Map<String, Object?>? options]) {
 ///
 /// Defaults to `standalone: true` and `parse: true`, like the Ruby helper.
 Document documentFromString(String src, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts.putIfAbsent('standalone', () => true);
+  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
+    ..putIfAbsent('standalone', () => true);
   final parse = opts.remove('parse') ?? true;
   if (opts['standalone'] == true) {
     final attrs =
@@ -787,8 +787,8 @@ abstract class _XPathPredicate {
         final inner = parser.consumeIdentifier();
         parser
           ..expect('(')
-          ..expect(')');
-        parser.expect('=');
+          ..expect(')')
+          ..expect('=');
         final value = parser.parseString();
         parser
           ..expect(')')
@@ -1660,123 +1660,130 @@ void main() {
       test('should include docinfo files for html backend', () {
         final sampleInputPath = fixturePath('basic.adoc');
 
-        final cases = <String, Map<String, int>>{
-          'docinfo': {
-            'head_script': 1,
-            'meta': 0,
-            'top_link': 0,
-            'footer_script': 1,
-            'navbar': 1,
-          },
-          'docinfo=private': {
-            'head_script': 1,
-            'meta': 0,
-            'top_link': 0,
-            'footer_script': 1,
-            'navbar': 1,
-          },
-          'docinfo1': {
-            'head_script': 0,
-            'meta': 1,
-            'top_link': 1,
-            'footer_script': 0,
-            'navbar': 0,
-          },
-          'docinfo=shared': {
-            'head_script': 0,
-            'meta': 1,
-            'top_link': 1,
-            'footer_script': 0,
-            'navbar': 0,
-          },
-          'docinfo2': {
-            'head_script': 1,
-            'meta': 1,
-            'top_link': 1,
-            'footer_script': 1,
-            'navbar': 1,
-          },
-          'docinfo docinfo2': {
-            'head_script': 1,
-            'meta': 1,
-            'top_link': 1,
-            'footer_script': 1,
-            'navbar': 1,
-          },
-          'docinfo=private,shared': {
-            'head_script': 1,
-            'meta': 1,
-            'top_link': 1,
-            'footer_script': 1,
-            'navbar': 1,
-          },
-          'docinfo=private-head': {
-            'head_script': 1,
-            'meta': 0,
-            'top_link': 0,
-            'footer_script': 0,
-            'navbar': 0,
-          },
-          'docinfo=private-header': {
-            'head_script': 0,
-            'meta': 0,
-            'top_link': 0,
-            'footer_script': 0,
-            'navbar': 1,
-          },
-          'docinfo=shared-head': {
-            'head_script': 0,
-            'meta': 1,
-            'top_link': 0,
-            'footer_script': 0,
-            'navbar': 0,
-          },
-          'docinfo=private-footer': {
-            'head_script': 0,
-            'meta': 0,
-            'top_link': 0,
-            'footer_script': 1,
-            'navbar': 0,
-          },
-          'docinfo=shared-footer': {
-            'head_script': 0,
-            'meta': 0,
-            'top_link': 1,
-            'footer_script': 0,
-            'navbar': 0,
-          },
-          r'docinfo=private-head\ ,\ shared-footer': {
-            'head_script': 1,
-            'meta': 0,
-            'top_link': 1,
-            'footer_script': 0,
-            'navbar': 0,
-          },
-        };
-
         // NOTE the Ruby test passes the attribute overrides as a string;
         // `convertFile` forwards the '_attr_string_' entry verbatim since
         // `load.dart` already coerces attribute strings.
-        cases.forEach((attrVal, markup) {
-          final output = convertFile(
-            sampleInputPath,
-            toFile: false,
-            standalone: true,
-            safe: SafeMode.server,
-            attributes: {'_attr_string_': 'linkcss copycss! $attrVal'},
-          );
-          expect(output, isNotEmpty);
-          assertCss(
-            'script[src="modernizr.js"]',
-            output,
-            markup['head_script']!,
-          );
-          assertCss('meta[http-equiv="imagetoolbar"]', output, markup['meta']!);
-          assertCss('body > a#top', output, markup['top_link']!);
-          assertCss('body > script', output, markup['footer_script']!);
-          assertCss('body > nav.navbar', output, markup['navbar']!);
-          assertCss('body > nav.navbar + #header', output, markup['navbar']!);
-        });
+        final cases =
+            (<String, Map<String, int>>{
+              'docinfo': {
+                'head_script': 1,
+                'meta': 0,
+                'top_link': 0,
+                'footer_script': 1,
+                'navbar': 1,
+              },
+              'docinfo=private': {
+                'head_script': 1,
+                'meta': 0,
+                'top_link': 0,
+                'footer_script': 1,
+                'navbar': 1,
+              },
+              'docinfo1': {
+                'head_script': 0,
+                'meta': 1,
+                'top_link': 1,
+                'footer_script': 0,
+                'navbar': 0,
+              },
+              'docinfo=shared': {
+                'head_script': 0,
+                'meta': 1,
+                'top_link': 1,
+                'footer_script': 0,
+                'navbar': 0,
+              },
+              'docinfo2': {
+                'head_script': 1,
+                'meta': 1,
+                'top_link': 1,
+                'footer_script': 1,
+                'navbar': 1,
+              },
+              'docinfo docinfo2': {
+                'head_script': 1,
+                'meta': 1,
+                'top_link': 1,
+                'footer_script': 1,
+                'navbar': 1,
+              },
+              'docinfo=private,shared': {
+                'head_script': 1,
+                'meta': 1,
+                'top_link': 1,
+                'footer_script': 1,
+                'navbar': 1,
+              },
+              'docinfo=private-head': {
+                'head_script': 1,
+                'meta': 0,
+                'top_link': 0,
+                'footer_script': 0,
+                'navbar': 0,
+              },
+              'docinfo=private-header': {
+                'head_script': 0,
+                'meta': 0,
+                'top_link': 0,
+                'footer_script': 0,
+                'navbar': 1,
+              },
+              'docinfo=shared-head': {
+                'head_script': 0,
+                'meta': 1,
+                'top_link': 0,
+                'footer_script': 0,
+                'navbar': 0,
+              },
+              'docinfo=private-footer': {
+                'head_script': 0,
+                'meta': 0,
+                'top_link': 0,
+                'footer_script': 1,
+                'navbar': 0,
+              },
+              'docinfo=shared-footer': {
+                'head_script': 0,
+                'meta': 0,
+                'top_link': 1,
+                'footer_script': 0,
+                'navbar': 0,
+              },
+              r'docinfo=private-head\ ,\ shared-footer': {
+                'head_script': 1,
+                'meta': 0,
+                'top_link': 1,
+                'footer_script': 0,
+                'navbar': 0,
+              },
+            })..forEach((attrVal, markup) {
+              final output = convertFile(
+                sampleInputPath,
+                toFile: false,
+                standalone: true,
+                safe: SafeMode.server,
+                attributes: {'_attr_string_': 'linkcss copycss! $attrVal'},
+              );
+              expect(output, isNotEmpty);
+              assertCss(
+                'script[src="modernizr.js"]',
+                output,
+                markup['head_script']!,
+              );
+              assertCss(
+                'meta[http-equiv="imagetoolbar"]',
+                output,
+                markup['meta']!,
+              );
+              assertCss('body > a#top', output, markup['top_link']!);
+              assertCss('body > script', output, markup['footer_script']!);
+              assertCss('body > nav.navbar', output, markup['navbar']!);
+              assertCss(
+                'body > nav.navbar + #header',
+                output,
+                markup['navbar']!,
+              );
+            });
       });
 
       test(
@@ -2219,19 +2226,27 @@ void main() {
       });
 
       test('should add favicon if favicon attribute is set', () {
-        final cases = <String, List<String>>{
-          '': ['favicon.ico', 'image/x-icon'],
-          '/favicon.ico': ['/favicon.ico', 'image/x-icon'],
-          '/img/favicon.png': ['/img/favicon.png', 'image/png'],
-        };
-        cases.forEach((val, hrefAndType) {
-          final result = convertString('= Untitled', {
-            'attributes': {'favicon': val},
-          });
-          assertCss('link[rel="icon"]', result, 1);
-          assertCss('link[rel="icon"][href="${hrefAndType[0]}"]', result, 1);
-          assertCss('link[rel="icon"][type="${hrefAndType[1]}"]', result, 1);
-        });
+        final cases =
+            (<String, List<String>>{
+              '': ['favicon.ico', 'image/x-icon'],
+              '/favicon.ico': ['/favicon.ico', 'image/x-icon'],
+              '/img/favicon.png': ['/img/favicon.png', 'image/png'],
+            })..forEach((val, hrefAndType) {
+              final result = convertString('= Untitled', {
+                'attributes': {'favicon': val},
+              });
+              assertCss('link[rel="icon"]', result, 1);
+              assertCss(
+                'link[rel="icon"][href="${hrefAndType[0]}"]',
+                result,
+                1,
+              );
+              assertCss(
+                'link[rel="icon"][type="${hrefAndType[1]}"]',
+                result,
+                1,
+              );
+            });
       });
     });
 
@@ -3404,11 +3419,10 @@ void main() {
       });
 
       test('should record imagesdir when image is registered with catalog', () {
-        final doc = emptyDocument({
+        final doc = (emptyDocument({
           'attributes': {'imagesdir': 'img'},
           'catalog_assets': true,
-        });
-        doc.register('images', 'diagram.svg');
+        }))..register('images', 'diagram.svg');
         final images = doc.catalog['images']! as List<ImageReference>;
         expect(images.length, equals(1));
         expect(images[0].target, equals('diagram.svg'));

@@ -1401,15 +1401,14 @@ abstract final class Parser {
                 // never reach this branch.)
                 final partBlock = newBlock as Block;
                 newBlock.contentModel = 'compound';
-                final paragraph = Block(
-                  newBlock,
-                  'paragraph',
-                  source: partBlock.lines,
-                );
                 // TEMP-SEAM (parser): `subs:` would call the substitutors
                 // wave's commitSubs (throws); replicate its fixed-list
                 // outcome instead.
-                paragraph.defaultSubs = List<String>.of(newBlock.subs);
+                final paragraph = (Block(
+                  newBlock,
+                  'paragraph',
+                  source: partBlock.lines,
+                ))..defaultSubs = List<String>.of(newBlock.subs);
                 paragraph.attributes.remove('subs');
                 paragraph.subs = List<String>.of(newBlock.subs);
                 newBlock << paragraph;
@@ -1541,10 +1540,11 @@ abstract final class Parser {
     }
 
     if (reftext != null) attrs['reftext'] = reftext;
-    final section = (Section(parent, level))..id = sectId;
-    section.title = sectTitle;
-    section.sectname = sectName;
-    section.sourceLocation = _loc(sourceLocation);
+    final section = (Section(parent, level))
+      ..id = sectId
+      ..title = sectTitle
+      ..sectname = sectName
+      ..sourceLocation = _loc(sourceLocation);
     if (sectSpecial) {
       section.special = true;
       if (sectNumbered) {
@@ -3459,17 +3459,18 @@ abstract final class Parser {
           : null;
       if (delimitedMatch != null) {
         if (continuation != 'active') break;
-        buffer.add(thisLine);
         // Grab all the lines in the block, leaving the delimiters in
         // place. We're being more strict here about the terminator, but
         // I think that's a good thing.
-        buffer.addAll(
-          reader.readLinesUntil(
-            terminator: delimitedMatch.terminator,
-            readLastLine: true,
-            context: null,
-          ),
-        );
+        buffer
+          ..add(thisLine)
+          ..addAll(
+            reader.readLinesUntil(
+              terminator: delimitedMatch.terminator,
+              readLastLine: true,
+              context: null,
+            ),
+          );
         continuation = 'inactive';
       } else if (dlist &&
           continuation != 'active' &&

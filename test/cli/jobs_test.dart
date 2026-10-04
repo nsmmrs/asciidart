@@ -54,13 +54,12 @@ Future<({Invoker invoker, String out, String err})> invokeJobs(
 }) async {
   final out = StringBuffer();
   final err = StringBuffer();
-  final invoker = Invoker.fromArgs(
+  final invoker = (Invoker.fromArgs(
     argv,
     out: out,
     err: err,
     environment: <String, String>{},
-  );
-  invoker.redirectStreams(out, err);
+  ))..redirectStreams(out, err);
   final savedLogger = LoggerManager.logger;
   LoggerManager.logger = Logger(logdev: err)..level = savedLogger.level;
   try {
@@ -659,8 +658,7 @@ void main() {
         out: out,
         err: err,
         environment: <String, String>{},
-      );
-      invoker.redirectStreams(out, err);
+      )..redirectStreams(out, err);
       final savedLogger = LoggerManager.logger;
       LoggerManager.logger = Logger(logdev: err)..level = savedLogger.level;
       try {

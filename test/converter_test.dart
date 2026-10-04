@@ -206,8 +206,8 @@ class CustomDocumentConverter extends ConverterBase {
 ///
 /// Defaults to `standalone: true` and `parse: true`, like the Ruby helper.
 Document documentFromString(String src, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts.putIfAbsent('standalone', () => true);
+  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
+    ..putIfAbsent('standalone', () => true);
   final parse = opts.remove('parse') ?? true;
   final doc = Document(src, opts);
   return (parse == true) ? doc.parse() : doc;
@@ -970,15 +970,14 @@ void main() {
         // transform while the custom converter handles the rest.
         cleanGlobalRegistry();
         Converter.register((String backend, Map<String, Object?> opts) {
-          final converter = FakeBaseConverter(backend, opts, {
+          final converter = (FakeBaseConverter(backend, opts, {
             'document': (node, [opts]) =>
                 '<body>${(node as AbstractBlock).content()}</body>',
             'embedded': (node, [opts]) =>
                 '<body>${(node as AbstractBlock).content()}</body>',
             'paragraph': (node, [opts]) =>
                 '<div class="paragraph"><p>${(node as AbstractBlock).content()}</p></div>',
-          });
-          converter.supportsTemplates = true;
+          }))..supportsTemplates = true;
           return converter;
         }, const ['tmpl-wrapped']);
         final dir = makeTemplateDir({
@@ -1323,10 +1322,9 @@ void main() {
         // `DefaultFactory#unregister_all` (verified via `ruby -Ilib -e`).
         cleanGlobalRegistry();
         Converter.register(FakeConverter.new, const ['seam-global']);
-        final factory = DefaultFactoryProxy(const {
+        final factory = (DefaultFactoryProxy(const {
           'seam-local': FakeConverter.new,
-        });
-        factory.unregisterAll();
+        }))..unregisterAll();
         expect(factory.forBackend('seam-local'), isNull);
         expect(Converter.forBackend('seam-global'), isNull);
       });

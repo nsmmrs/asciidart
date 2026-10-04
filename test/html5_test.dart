@@ -296,14 +296,13 @@ Document makeDoc({
   bool xml = false,
 }) {
   final opts = <String, Object?>{'backend': 'html5', ...options};
-  final doc = plainSubs
-      ? StubDocument(<String>[], opts)
-      : Document(<String>[], opts);
-  doc.converter = Html5Converter(
-    'html5',
-    xml ? const {'htmlsyntax': 'xml'} : const {},
-  );
-  doc.attributes.addAll(attributes);
+  final doc =
+      (plainSubs ? StubDocument(<String>[], opts) : Document(<String>[], opts))
+        ..converter = Html5Converter(
+          'html5',
+          xml ? const {'htmlsyntax': 'xml'} : const {},
+        )
+        ..attributes.addAll(attributes);
   return doc;
 }
 
@@ -1374,8 +1373,8 @@ void main() {
     test('abstract block renders quoteblock', () {
       final doc = makeDoc();
       final node = StubBlock(doc, 'open', stubbedContent: 'Abs')
-        ..style = 'abstract';
-      node.parent = doc;
+        ..style = 'abstract'
+        ..parent = doc;
       expect(
         convOf(doc).convert(node),
         '<div class="quoteblock abstract">\n'
@@ -1390,8 +1389,8 @@ void main() {
       usingMemoryLogger((logger) {
         final doc = makeDoc(options: const {'doctype': 'book'});
         final node = StubBlock(doc, 'open', stubbedContent: 'Abs')
-          ..style = 'abstract';
-        node.parent = doc;
+          ..style = 'abstract'
+          ..parent = doc;
         expect(convOf(doc).convert(node), '');
         expect(logger.warns, hasLength(1));
         expect(
@@ -1405,8 +1404,8 @@ void main() {
       usingMemoryLogger((logger) {
         final doc = makeDoc();
         final node = StubBlock(doc, 'open', stubbedContent: 'x')
-          ..style = 'partintro';
-        node.parent = doc;
+          ..style = 'partintro'
+          ..parent = doc;
         expect(convOf(doc).convert(node), '');
         expect(logger.errors, hasLength(1));
         expect(
@@ -1541,8 +1540,8 @@ void main() {
     test('floating title', () {
       final doc = makeDoc();
       final node = StubBlock(doc, 'floating_title', stubTitle: 'Float')
-        ..style = 'float';
-      node.level = 1;
+        ..style = 'float'
+        ..level = 1;
       expect(convOf(doc).convert(node), '<h2 class="float">Float</h2>');
     });
   });

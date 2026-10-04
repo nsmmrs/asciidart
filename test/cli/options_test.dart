@@ -523,28 +523,28 @@ void main() {
 
     test('needless arguments on flags throw like Ruby', () {
       // OptionParser::NeedlessArgument is not rescued by parse! either.
-      final cases = {
-        '--quiet=true': '--quiet=true',
-        '--version=x': '--version=x',
-        '--safe=x': '--safe=x',
-        '--=x': '--=x',
-        '-e=true': '-e=true',
-        '-V=x': '-V=x',
-        '-qe=x': '-e=x',
-      };
-      cases.forEach((flag, display) {
-        expect(
-          () => parseCli([flag, sampleFile]),
-          throwsA(
-            isA<NeedlessCliArgumentException>().having(
-              (e) => e.message,
-              'message',
-              equals('needless argument: $display'),
-            ),
-          ),
-          reason: flag,
-        );
-      });
+      final cases =
+          ({
+            '--quiet=true': '--quiet=true',
+            '--version=x': '--version=x',
+            '--safe=x': '--safe=x',
+            '--=x': '--=x',
+            '-e=true': '-e=true',
+            '-V=x': '-V=x',
+            '-qe=x': '-e=x',
+          })..forEach((flag, display) {
+            expect(
+              () => parseCli([flag, sampleFile]),
+              throwsA(
+                isA<NeedlessCliArgumentException>().having(
+                  (e) => e.message,
+                  'message',
+                  equals('needless argument: $display'),
+                ),
+              ),
+              reason: flag,
+            );
+          });
     });
 
     test('reports usage to stderr when no input file given', () {
@@ -712,19 +712,23 @@ void main() {
     test('stores invoker-level attributes verbatim', () {
       // Option-parsing halves of the invoker attribute tests: the CLI stores
       // the pairs; applying `!`/`@` overrides happens document-side.
-      final cases = {
-        'idprefix=id': {'idprefix': 'id'},
-        'toc-title=t=o=c': {'toc-title': 't=o=c'},
-        'note-caption=Note to self:': {'note-caption': 'Note to self:'},
-        'icons': {'icons': ''},
-        'idprefix=id@': {'idprefix': 'id@'},
-        'sectids!': {'sectids!': ''},
-      };
-      cases.forEach((argument, expected) {
-        final result = parseCli(['-a', argument, sampleFile]);
-        expect(result.exitCode, isNull, reason: argument);
-        expect(result.options.attributes, equals(expected), reason: argument);
-      });
+      final cases =
+          ({
+            'idprefix=id': {'idprefix': 'id'},
+            'toc-title=t=o=c': {'toc-title': 't=o=c'},
+            'note-caption=Note to self:': {'note-caption': 'Note to self:'},
+            'icons': {'icons': ''},
+            'idprefix=id@': {'idprefix': 'id@'},
+            'sectids!': {'sectids!': ''},
+          })..forEach((argument, expected) {
+            final result = parseCli(['-a', argument, sampleFile]);
+            expect(result.exitCode, isNull, reason: argument);
+            expect(
+              result.options.attributes,
+              equals(expected),
+              reason: argument,
+            );
+          });
     });
 
     test('force-encodes mislabeled attribute strings to UTF-8', skip: 'PERMANENT: Ruby string encodings do not exist in Dart; strings are Unicode.', () {
@@ -743,17 +747,17 @@ void main() {
     test('sets safe mode to the specified level', () {
       // Option-parsing half of invoker_test 'should set safe mode to
       // specified level'.
-      final levels = {
-        'unsafe': SafeMode.unsafe,
-        'safe': SafeMode.safe,
-        'server': SafeMode.server,
-        'secure': SafeMode.secure,
-      };
-      levels.forEach((name, level) {
-        final result = parseCli(['-S', name, sampleFile]);
-        expect(result.exitCode, isNull, reason: name);
-        expect(result.options.safe, equals(level), reason: name);
-      });
+      final levels =
+          ({
+            'unsafe': SafeMode.unsafe,
+            'safe': SafeMode.safe,
+            'server': SafeMode.server,
+            'secure': SafeMode.secure,
+          })..forEach((name, level) {
+            final result = parseCli(['-S', name, sampleFile]);
+            expect(result.exitCode, isNull, reason: name);
+            expect(result.options.safe, equals(level), reason: name);
+          });
     });
 
     test('completes unambiguous safe mode abbreviations', () {

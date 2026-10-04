@@ -177,8 +177,9 @@ class Processor {
     } else {
       sectname = 'section';
     }
-    final sect = (Section(parent, sectLevel))..title = title;
-    sect.sectname = sectname;
+    final sect = (Section(parent, sectLevel))
+      ..title = title
+      ..sectname = sectname;
     if (special) {
       sect.special = true;
       final numberedValue = identical(numbered, _absent)

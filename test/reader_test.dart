@@ -722,9 +722,10 @@ void main() {
       });
 
       test('save and restoreSave round-trip reader state', () {
-        final reader = (Reader(['a', 'b', 'c', 'd']))..readLine();
-        reader.mark();
-        reader.save();
+        final reader = (Reader(['a', 'b', 'c', 'd']))
+          ..readLine()
+          ..mark()
+          ..save();
         expect(reader.readLine(), equals('b'));
         reader.restoreSave();
         expect(reader.readLine(), equals('b'));
@@ -736,9 +737,9 @@ void main() {
         // discardSave drops the saved state
         reader
           ..save()
-          ..readLine();
-        reader.discardSave();
-        reader.restoreSave();
+          ..readLine()
+          ..discardSave()
+          ..restoreSave();
         expect(reader.readLine(), isNull);
       });
     });
@@ -1418,11 +1419,11 @@ void main() {
                 'target': 'not-a-file.adoc +\nhttp://example.org/team.adoc',
               },
             );
-            final reader = PreprocessorReader(doc, input, null, true);
             // skip the attribute entry lines the parser would have consumed
-            reader.readLine();
-            reader.readLine();
-            reader.readLine();
+            final reader = (PreprocessorReader(doc, input, null, true))
+              ..readLine()
+              ..readLine()
+              ..readLine();
             expect(
               reader.readLine(),
               equals(
@@ -2029,10 +2030,10 @@ void main() {
             'asciidoctor-reader-test',
           );
           try {
-            final tmpFile = File('${tmpDir.path}/include.adoc');
-            tmpFile.writeAsStringSync(
-              'do not include\r\ntag::include-me[]\r\nincluded line\r\nend::include-me[]\r\ndo not include\r\n',
-            );
+            final tmpFile = (File('${tmpDir.path}/include.adoc'))
+              ..writeAsStringSync(
+                'do not include\r\ntag::include-me[]\r\nincluded line\r\nend::include-me[]\r\ndo not include\r\n',
+              );
             const input = 'include::include.adoc[tag=include-me]';
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: tmpDir.path);
             final reader = PreprocessorReader(doc, input, null, true);
@@ -2053,10 +2054,10 @@ void main() {
             'asciidoctor-reader-test',
           );
           try {
-            final tmpFile = File('${tmpDir.path}/include.adoc');
-            tmpFile.writeAsStringSync(
-              'line not included\ntag::include-me[]\nline included\nend::include-me[]',
-            );
+            final tmpFile = (File('${tmpDir.path}/include.adoc'))
+              ..writeAsStringSync(
+                'line not included\ntag::include-me[]\nline included\nend::include-me[]',
+              );
             const input = 'include::include.adoc[tag=include-me]';
             usingMemoryLogger((logger) {
               final doc = FakeDocument(

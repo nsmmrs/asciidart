@@ -258,10 +258,8 @@ StubBlock para(
 
 /// Creates a table with one column per entry in [widths] under [doc].
 Table makeTable(Document doc, List<int> widths) {
-  final table = Table(doc, <String, Object?>{});
-  table.createColumns(
-    widths.map((w) => <String, Object?>{'width': w}).toList(),
-  );
+  final table = (Table(doc, <String, Object?>{}))
+    ..createColumns(widths.map((w) => <String, Object?>{'width': w}).toList());
   return table;
 }
 
@@ -1328,15 +1326,13 @@ void main() {
 
     test('manifies table titles', () {
       final doc = manDoc();
-      final table = StubTable(
-        doc,
-        <String, Object?>{},
-        stubTitle: 'Table of options',
-      )..caption = 'Table 1. ';
-      table.createColumns(
-        List.generate(3, (_) => <String, Object?>{'width': 1}),
-      );
-      table.hasHeaderOption = true;
+      final table =
+          StubTable(doc, <String, Object?>{}, stubTitle: 'Table of options')
+            ..caption = 'Table 1. '
+            ..createColumns(
+              List.generate(3, (_) => <String, Object?>{'width': 1}),
+            )
+            ..hasHeaderOption = true;
       table.rows.head.add([
         textCell(table, 0, 'Name'),
         textCell(table, 1, 'Description'),

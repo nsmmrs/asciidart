@@ -66,11 +66,12 @@ int runInitConfig(List<String> args, {StringSink? out, StringSink? err}) {
     } else if (dir == null) {
       dir = arg;
     } else {
-      stderrSink.writeln(
-        'asciidoctor init-config: expected at most one directory, '
-        'got "$dir" and "$arg"',
-      );
-      stderrSink.write(initConfigUsage);
+      stderrSink
+        ..writeln(
+          'asciidoctor init-config: expected at most one directory, '
+          'got "$dir" and "$arg"',
+        )
+        ..write(initConfigUsage);
       return 1;
     }
   }

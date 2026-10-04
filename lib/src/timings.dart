@@ -96,14 +96,15 @@ class Timings {
   void printReport([StringSink? to, String? subject]) {
     final out = to ?? stdout;
     if (subject != null) out.writeln('Input file: $subject');
-    out.writeln(
-      '  Time to read and parse source: ${(readParse ?? 0).toStringAsFixed(5)}',
-    );
-    out.writeln(
-      '  Time to convert document: ${(convert ?? 0).toStringAsFixed(5)}',
-    );
-    out.writeln(
-      '  Total time (read, parse and convert): ${(readParseConvert ?? 0).toStringAsFixed(5)}',
-    );
+    out
+      ..writeln(
+        '  Time to read and parse source: ${(readParse ?? 0).toStringAsFixed(5)}',
+      )
+      ..writeln(
+        '  Time to convert document: ${(convert ?? 0).toStringAsFixed(5)}',
+      )
+      ..writeln(
+        '  Total time (read, parse and convert): ${(readParseConvert ?? 0).toStringAsFixed(5)}',
+      );
   }
 }

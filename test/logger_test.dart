@@ -166,12 +166,11 @@ void main() {
       () async {
         await withTempDir((dir) async {
           final path = '${dir.path}${Platform.pathSeparator}out.log';
-          final logger = Logger(
+          final logger = (Logger(
             logdev: path,
             formatter: null,
             level: Severity.debug,
-          );
-          logger.debug('this is a sign of life');
+          ))..debug('this is a sign of life');
           await logger.close();
           expect(
             File(path).readAsStringSync().trim().split('\n').last,
@@ -462,8 +461,9 @@ void main() {
 
     test('non-string messages render via toString', () {
       final buffer = StringBuffer();
-      final logger = (Logger(logdev: buffer))..warn(42);
-      logger.warn({'a': 1});
+      final logger = (Logger(logdev: buffer))
+        ..warn(42)
+        ..warn({'a': 1});
       expect(
         buffer.toString(),
         equals('asciidoctor: WARNING: 42\nasciidoctor: WARNING: {a: 1}\n'),
@@ -565,9 +565,10 @@ void main() {
 
   group('MemoryLogger (extra)', () {
     test('records every severity without level filtering', () {
-      final logger = (MemoryLogger())..add(Severity.warn, 'w1');
-      logger.warn('w2');
-      logger.debug('d');
+      final logger = (MemoryLogger())
+        ..add(Severity.warn, 'w1')
+        ..warn('w2')
+        ..debug('d');
       expect(logger.messages, hasLength(3));
       expect(logger.messages[0].severity, equals(Severity.warn));
       expect(logger.messages[0].message, equals('w1'));
@@ -578,8 +579,9 @@ void main() {
     test(
       'add resolves message from block or progname, defaulting severity',
       () {
-        final logger = (MemoryLogger())..add(null, null, 'progonly');
-        logger.add(Severity.error, () => 'from-block');
+        final logger = (MemoryLogger())
+          ..add(null, null, 'progonly')
+          ..add(Severity.error, () => 'from-block');
         expect(logger.messages[0].severity, equals(Severity.unknown));
         expect(logger.messages[0].message, equals('progonly'));
         expect(logger.messages[1].severity, equals(Severity.error));

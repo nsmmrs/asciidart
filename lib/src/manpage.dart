@@ -233,31 +233,15 @@ class ManpageConverter extends ConverterBase {
     if (isTruthy(docdate)) {
       result.add('.\\"      Date: ${_s(docdate)}');
     }
-    result.add(
-      '.\\"    Manual: ${isTruthy(manmanual) ? transliterateSqueeze(manmanual! as String, _whitespace, ' ') : r'\ \&'}\n'
-      '.\\"    Source: ${isTruthy(mansource) ? transliterateSqueeze(mansource! as String, _whitespace, ' ') : r'\ \&'}\n'
-      '.\\"  Language: English\n'
-      r'.\"',
-    );
     // TODOadd document-level setting to disable capitalization of manname
-    result.add(
-      '.TH "${_manify((manname! as String).toUpperCase())}" "${_s(manvolnum)}" "${_s(docdate)}" '
-      '"${isTruthy(mansource) ? _manify(mansource! as String) : r'\ \&'}" '
-      '"${isTruthy(manmanual) ? _manify(manmanual! as String) : r'\ \&'}"',
-    );
     // define portability settings
     // see http://bugs.debian.org/507673
     // see http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
-    result.add(r'.ie \n(.g .ds Aq \(aq');
-    result.add(".el       .ds Aq '");
     // set sentence_space_size to 0 to prevent extra space between sentences
     // separated by a newline
     // the alternative is to add \& at the end of the line
-    result.add(r'.ss \n[.ss] 0');
     // disable hyphenation
-    result.add('.nh');
     // disable justification (adjust text to left margin only)
-    result.add('.ad l');
     // define URL macro for portability
     // see http://web.archive.org/web/20060102165607/http://people.debian.org/~branden/talks/wtfm/wtfm.pdf
     //
@@ -269,22 +253,39 @@ class ManpageConverter extends ConverterBase {
     // * Second argument: text to be hyperlinked
     // * Third (optional) argument: text that needs to immediately trail the
     //   hyperlink without intervening whitespace
-    result.add(
-      '.de URL\n'
-      '\\fI\\\\\$2\\fP <\\\\\$1>\\\\\$3\n'
-      '..\n'
-      '.als MTO URL\n'
-      '.if \\n[.g] \\{\\\n'
-      '.  mso www.tmac\n'
-      '.  am URL\n'
-      '.    ad l\n'
-      '.  .\n'
-      '.  am MTO\n'
-      '.    ad l\n'
-      '.  .',
-    );
-    result.add('.  LINKSTYLE ${_s(node.attr('man-linkstyle', 'blue R < >'))}');
-    result.add(r'.\}');
+    result
+      ..add(
+        '.\\"    Manual: ${isTruthy(manmanual) ? transliterateSqueeze(manmanual! as String, _whitespace, ' ') : r'\ \&'}\n'
+        '.\\"    Source: ${isTruthy(mansource) ? transliterateSqueeze(mansource! as String, _whitespace, ' ') : r'\ \&'}\n'
+        '.\\"  Language: English\n'
+        r'.\"',
+      )
+      ..add(
+        '.TH "${_manify((manname! as String).toUpperCase())}" "${_s(manvolnum)}" "${_s(docdate)}" '
+        '"${isTruthy(mansource) ? _manify(mansource! as String) : r'\ \&'}" '
+        '"${isTruthy(manmanual) ? _manify(manmanual! as String) : r'\ \&'}"',
+      )
+      ..add(r'.ie \n(.g .ds Aq \(aq')
+      ..add(".el       .ds Aq '")
+      ..add(r'.ss \n[.ss] 0')
+      ..add('.nh')
+      ..add('.ad l')
+      ..add(
+        '.de URL\n'
+        '\\fI\\\\\$2\\fP <\\\\\$1>\\\\\$3\n'
+        '..\n'
+        '.als MTO URL\n'
+        '.if \\n[.g] \\{\\\n'
+        '.  mso www.tmac\n'
+        '.  am URL\n'
+        '.    ad l\n'
+        '.  .\n'
+        '.  am MTO\n'
+        '.    ad l\n'
+        '.  .',
+      )
+      ..add('.  LINKSTYLE ${_s(node.attr('man-linkstyle', 'blue R < >'))}')
+      ..add(r'.\}');
 
     if (!node.noheader) {
       if (node.hasAttr('manpurpose')) {
@@ -363,10 +364,9 @@ class ManpageConverter extends ConverterBase {
     var num = 0;
     for (final item in node.items) {
       final listItem = item! as ListItem;
-      result.add("\\fB(${num += 1})\\fP\\h'-2n':T{");
-      result.add(
-        _manify(listItem.text!, whitespace: _WhitespaceMode.normalize),
-      );
+      result
+        ..add("\\fB(${num += 1})\\fP\\h'-2n':T{")
+        ..add(_manify(listItem.text!, whitespace: _WhitespaceMode.normalize));
       if (listItem.hasBlocks) {
         result.add(_s(listItem.content()));
       }
@@ -419,11 +419,13 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] example block.
   String convertExample(Block node) {
-    final result = <String>[];
-    result.add(
-      node.hasTitle ? '.sp\n.B ${_manify(node.captionedTitle())}\n.br' : '.sp',
-    );
-    result.add('.RS 4\n${_encloseContent(node)}\n.RE');
+    final result = (<String>[])
+      ..add(
+        node.hasTitle
+            ? '.sp\n.B ${_manify(node.captionedTitle())}\n.br'
+            : '.sp',
+      )
+      ..add('.RS 4\n${_encloseContent(node)}\n.RE');
     return result.join('\n');
   }
 
@@ -432,11 +434,13 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] image block.
   String convertImage(Block node) {
-    final result = <String>[];
-    result.add(
-      node.hasTitle ? '.sp\n.B ${_manify(node.captionedTitle())}\n.br' : '.sp',
-    );
-    result.add('[${_manify(node.alt)}]');
+    final result = (<String>[])
+      ..add(
+        node.hasTitle
+            ? '.sp\n.B ${_manify(node.captionedTitle())}\n.br'
+            : '.sp',
+      )
+      ..add('[${_manify(node.alt)}]');
     return result.join('\n');
   }
 
@@ -467,8 +471,8 @@ class ManpageConverter extends ConverterBase {
   /// Converts the [node] sidebar block.
   String convertSidebar(Block node) {
     final result = (<String>[])
-      ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp');
-    result.add('.RS 4\n${_encloseContent(node)}\n.RE');
+      ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp')
+      ..add('.RS 4\n${_encloseContent(node)}\n.RE');
     return result.join('\n');
   }
 
@@ -681,11 +685,12 @@ class ManpageConverter extends ConverterBase {
     var bodyTextRows = rowText;
     final headerRowText = rowText.isNotEmpty ? rowText[0] : null;
     if (isTruthy(node.hasHeaderOption) && headerRowText != null) {
-      result.add(
-        '\n${rowHeader[0]!.map((cell) => cell?.join(' ') ?? '').join(' ')}.',
-      );
-      result.add('\n${headerRowText.join()}');
-      result.add('.T&');
+      result
+        ..add(
+          '\n${rowHeader[0]!.map((cell) => cell?.join(' ') ?? '').join(' ')}.',
+        )
+        ..add('\n${headerRowText.join()}')
+        ..add('.T&');
       bodyTextRows = rowText.sublist(1);
     }
     result.add(
@@ -758,10 +763,10 @@ class ManpageConverter extends ConverterBase {
         : '';
     final endParam = node.hasAttr('end') ? '&end=${_s(node.attr('end'))}' : '';
     final result = (<String>[])
-      ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp');
-    result.add(
-      '<${node.mediaUri(node.attr('target')! as String)}$startParam$endParam> (video)',
-    );
+      ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp')
+      ..add(
+        '<${node.mediaUri(node.attr('target')! as String)}$startParam$endParam> (video)',
+      );
     return result.join('\n');
   }
 

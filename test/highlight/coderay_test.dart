@@ -103,16 +103,14 @@ void main() {
     });
 
     test('class mode requires the stylesheet, inline mode does not', () {
-      final classes = CodeRayAdapter(
+      final classes = (CodeRayAdapter(
         lexer: FakeSourceLexer(onHighlight: (_) => classOutput),
-      );
-      classes.highlight(source: 'x', language: 'ruby');
+      ))..highlight(source: 'x', language: 'ruby');
       expect(classes.requiresStylesheet, isTrue);
 
-      final inline = CodeRayAdapter(
+      final inline = (CodeRayAdapter(
         lexer: FakeSourceLexer(onHighlight: (_) => classOutput),
-      );
-      inline.highlight(source: 'x', language: 'ruby', cssMode: CssMode.inline);
+      ))..highlight(source: 'x', language: 'ruby', cssMode: CssMode.inline);
       expect(inline.requiresStylesheet, isFalse);
     });
   });

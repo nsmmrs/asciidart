@@ -699,8 +699,8 @@ Block blockFromString(
     catalogAssets: catalogAssets,
   );
   final block = (Block(doc, 'paragraph'))
-    ..lines = src.isEmpty ? <String>[] : src.chomp().split('\n');
-  block.subs = List<String>.of(normalSubs);
+    ..lines = src.isEmpty ? <String>[] : src.chomp().split('\n')
+    ..subs = List<String>.of(normalSubs);
   return block;
 }
 
@@ -2923,8 +2923,9 @@ void main() {
         final doc = makeDoc();
         doc.attributes['fn-notable-text'] = 'footnote:id[about this text]';
         Block paraFor(String line) {
-          final para = (Block(doc, 'paragraph'))..lines = [line];
-          para.subs = List<String>.of(normalSubs);
+          final para = (Block(doc, 'paragraph'))
+            ..lines = [line]
+            ..subs = List<String>.of(normalSubs);
           return para;
         }
 
@@ -2966,8 +2967,9 @@ void main() {
         // wave; the paragraph outputs are asserted exactly.
         final doc = makeDoc();
         Block paraFor(String line) {
-          final para = (Block(doc, 'paragraph'))..lines = [line];
-          para.subs = List<String>.of(normalSubs);
+          final para = (Block(doc, 'paragraph'))
+            ..lines = [line]
+            ..subs = List<String>.of(normalSubs);
           return para;
         }
 

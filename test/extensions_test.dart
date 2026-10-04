@@ -266,8 +266,8 @@ Document emptyDocument([Map<String, Object?>? options]) {
 ///
 /// Defaults to `standalone: true` and `parse: true`, like the Ruby helper.
 Document documentFromString(String src, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts.putIfAbsent('standalone', () => true);
+  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
+    ..putIfAbsent('standalone', () => true);
   final parse = opts.remove('parse') ?? true;
   if (opts['standalone'] == true) {
     final attrs =
@@ -1133,20 +1133,20 @@ Registry createSantaListBlockMacro() {
               (AbstractBlock parent, String target, Map<Object, Object?> _) {
                 final list = processor.createList(parent, target);
                 final guillaume = (processor.createListItem(list, 'Guillaume'))
-                  ..addRole('friendly');
-                guillaume.id = 'santa-list-guillaume';
+                  ..addRole('friendly')
+                  ..id = 'santa-list-guillaume';
                 list << guillaume;
                 final robert = (processor.createListItem(list, 'Robert'))
-                  ..addRole('kind');
-                robert.addRole('contributor');
-                robert.addRole('java');
+                  ..addRole('kind')
+                  ..addRole('contributor')
+                  ..addRole('java');
                 list << robert;
-                final pepijn = processor.createListItem(list, 'Pepijn');
-                pepijn.id = 'santa-list-pepijn';
+                final pepijn = (processor.createListItem(list, 'Pepijn'))
+                  ..id = 'santa-list-pepijn';
                 list << pepijn;
                 final dan = (processor.createListItem(list, 'Dan'))
-                  ..addRole('naughty');
-                dan.id = 'santa-list-dan';
+                  ..addRole('naughty')
+                  ..id = 'santa-list-dan';
                 list << dan;
                 final sarah = processor.createListItem(list, 'Sarah');
                 list << sarah;
@@ -1295,8 +1295,8 @@ void main() {
               build: (processor) {
                 processor
                   ..named('whisper')
-                  ..onContext('paragraph');
-                processor.parseContentAs('simple');
+                  ..onContext('paragraph')
+                  ..parseContentAs('simple');
                 processor.onProcess =
                     (
                       AbstractBlock parent,
@@ -1397,8 +1397,8 @@ void main() {
   group('Instantiate', () {
     test('should instantiate preprocessors', () {
       final registry = (Registry())
-        ..preprocessor(processor: SamplePreprocessor.new);
-      registry.activate(emptyDocument());
+        ..preprocessor(processor: SamplePreprocessor.new)
+        ..activate(emptyDocument());
       expect(registry.hasPreprocessors, isTrue);
       final extensions = registry.preprocessors;
       expect(extensions.length, equals(1));
@@ -1409,8 +1409,8 @@ void main() {
 
     test('should instantiate include processors', () {
       final registry = (Registry())
-        ..includeProcessor(processor: SampleIncludeProcessor.new);
-      registry.activate(emptyDocument());
+        ..includeProcessor(processor: SampleIncludeProcessor.new)
+        ..activate(emptyDocument());
       expect(registry.hasIncludeProcessors, isTrue);
       final extensions = registry.includeProcessors;
       expect(extensions.length, equals(1));
@@ -1430,8 +1430,8 @@ void main() {
 
     test('should instantiate docinfo processors', () {
       final registry = (Registry())
-        ..docinfoProcessor(processor: SampleDocinfoProcessor.new);
-      registry.activate(emptyDocument());
+        ..docinfoProcessor(processor: SampleDocinfoProcessor.new)
+        ..activate(emptyDocument());
       expect(registry.hasDocinfoProcessors(), isTrue);
       expect(registry.hasDocinfoProcessors('head'), isTrue);
       final extensions = registry.docinfoProcessors();
@@ -1444,8 +1444,8 @@ void main() {
     test('should instantiate tree processors', () {
       // NOTE intentionally using the legacy names.
       final registry = (Registry())
-        ..treeprocessor(processor: SampleTreeprocessor.new);
-      registry.activate(emptyDocument());
+        ..treeprocessor(processor: SampleTreeprocessor.new)
+        ..activate(emptyDocument());
       expect(registry.hasTreeprocessors, isTrue);
       final extensions = registry.treeprocessors;
       expect(extensions.length, equals(1));
@@ -1456,8 +1456,8 @@ void main() {
 
     test('should instantiate postprocessors', () {
       final registry = (Registry())
-        ..postprocessor(processor: SamplePostprocessor.new);
-      registry.activate(emptyDocument());
+        ..postprocessor(processor: SamplePostprocessor.new)
+        ..activate(emptyDocument());
       expect(registry.hasPostprocessors, isTrue);
       final extensions = registry.postprocessors;
       expect(extensions.length, equals(1));
@@ -1468,8 +1468,8 @@ void main() {
 
     test('should instantiate block processor', () {
       final registry = (Registry())
-        ..block(processor: SampleBlock.new, name: 'sample');
-      registry.activate(emptyDocument());
+        ..block(processor: SampleBlock.new, name: 'sample')
+        ..activate(emptyDocument());
       expect(registry.hasBlocks, isTrue);
       expect(
         registry.registeredForBlock('sample', 'paragraph'),
@@ -1483,15 +1483,15 @@ void main() {
 
     test('should not match block processor for unsupported context', () {
       final registry = (Registry())
-        ..block(processor: SampleBlock.new, name: 'sample');
-      registry.activate(emptyDocument());
+        ..block(processor: SampleBlock.new, name: 'sample')
+        ..activate(emptyDocument());
       expect(registry.registeredForBlock('sample', 'sidebar'), isNull);
     });
 
     test('should instantiate block macro processor', () {
       final registry = (Registry())
-        ..blockMacro(processor: SampleBlockMacro.new, name: 'sample');
-      registry.activate(emptyDocument());
+        ..blockMacro(processor: SampleBlockMacro.new, name: 'sample')
+        ..activate(emptyDocument());
       expect(registry.hasBlockMacros, isTrue);
       expect(
         registry.registeredForBlockMacro('sample'),
@@ -1505,8 +1505,8 @@ void main() {
 
     test('should instantiate inline macro processor', () {
       final registry = (Registry())
-        ..inlineMacro(processor: SampleInlineMacro.new, name: 'sample');
-      registry.activate(emptyDocument());
+        ..inlineMacro(processor: SampleInlineMacro.new, name: 'sample')
+        ..activate(emptyDocument());
       expect(registry.hasInlineMacros, isTrue);
       expect(
         registry.registeredForInlineMacro('sample'),
@@ -1520,8 +1520,8 @@ void main() {
 
     test('should allow processors to be registered by a string name', () {
       final registry = (Registry())
-        ..preprocessor(processor: 'SamplePreprocessor');
-      registry.activate(emptyDocument());
+        ..preprocessor(processor: 'SamplePreprocessor')
+        ..activate(emptyDocument());
       expect(registry.hasPreprocessors, isTrue);
       final extensions = registry.preprocessors;
       expect(extensions.length, equals(1));
@@ -1667,42 +1667,49 @@ void main() {
 
       final registry = Extensions.create(
         build: (r) {
-          r.includeProcessor(
-            build: (processor) {
-              // test onHandles assigned as callback
-              processor.onHandles = (doc, target) => target == 'skip-me.adoc';
-              processor.onProcess = (
-                ReaderDocument doc,
-                PreprocessorReader reader,
-                String target,
-                Map<Object, String?> attributes,
-              ) => null;
-            },
-          );
-
-          r.includeProcessor(
-            build: (processor) {
-              processor.onHandles = (doc, target) =>
-                  target == 'include-file.adoc';
-              processor.onProcess =
-                  (
+          r
+            ..includeProcessor(
+              build: (processor) {
+                // test onHandles assigned as callback
+                processor
+                  ..onHandles = ((doc, target) => target == 'skip-me.adoc')
+                  ..onProcess = (
                     ReaderDocument doc,
                     PreprocessorReader reader,
                     String target,
                     Map<Object, String?> attributes,
-                  ) {
-                    // demonstrates that pushInclude normalizes newlines
-                    final content = [
-                      "found include target '$target' at line "
-                          '${reader.cursorAtPrevLine().lineno}\r\n',
-                      '\r\n',
-                      'middle line\r\n',
-                    ];
-                    reader.pushInclude(content, target, target, 1, attributes);
-                    return null;
-                  };
-            },
-          );
+                  ) => null;
+              },
+            )
+            ..includeProcessor(
+              build: (processor) {
+                processor
+                  ..onHandles = ((doc, target) => target == 'include-file.adoc')
+                  ..onProcess =
+                      (
+                        ReaderDocument doc,
+                        PreprocessorReader reader,
+                        String target,
+                        Map<Object, String?> attributes,
+                      ) {
+                        // demonstrates that pushInclude normalizes newlines
+                        final content = [
+                          "found include target '$target' at line "
+                              '${reader.cursorAtPrevLine().lineno}\r\n',
+                          '\r\n',
+                          'middle line\r\n',
+                        ];
+                        reader.pushInclude(
+                          content,
+                          target,
+                          target,
+                          1,
+                          attributes,
+                        );
+                        return null;
+                      };
+              },
+            );
         },
       );
       final document = emptyDocument({'safe': 'safe'});
@@ -1755,22 +1762,28 @@ void main() {
         build: (r) {
           r.includeProcessor(
             build: (processor) {
-              processor.onHandles = (doc, target) =>
-                  target == 'include-file.adoc';
-              processor.onProcess =
-                  (
-                    ReaderDocument doc,
-                    PreprocessorReader reader,
-                    String target,
-                    Map<Object, String?> attributes,
-                  ) {
-                    final content = contentCache.putIfAbsent(
-                      'include-file.adoc',
-                      () => 'contents of include-file.adoc',
-                    );
-                    reader.pushInclude(content, target, target, 1, attributes);
-                    return null;
-                  };
+              processor
+                ..onHandles = ((doc, target) => target == 'include-file.adoc')
+                ..onProcess =
+                    (
+                      ReaderDocument doc,
+                      PreprocessorReader reader,
+                      String target,
+                      Map<Object, String?> attributes,
+                    ) {
+                      final content = contentCache.putIfAbsent(
+                        'include-file.adoc',
+                        () => 'contents of include-file.adoc',
+                      );
+                      reader.pushInclude(
+                        content,
+                        target,
+                        target,
+                        1,
+                        attributes,
+                      );
+                      return null;
+                    };
             },
           );
         },
@@ -1784,8 +1797,9 @@ void main() {
             .toList(),
       );
       final reader = PreprocessorReader(fake, input, null, true);
-      final lines = (<String?>[])..add(reader.readLine());
-      lines.add(reader.readLine());
+      final lines = (<String?>[])
+        ..add(reader.readLine())
+        ..add(reader.readLine());
       expect(lines.last, equals('contents of include-file.adoc'));
       expect(contentCache.length, equals(1));
       expect(contentCache['include-file.adoc'], equals(lines.last));
@@ -1886,51 +1900,52 @@ void main() {
       // methods are invoked in registry order (no parse/convert).
       Extensions.register(
         build: (registry) {
-          registry.treeProcessor(
-            build: (processor) {
-              processor.onProcess = (Document doc) {
-                doc << processor.createParagraph(doc, 'd', <String, Object?>{});
-                return null;
-              };
-            },
-          );
-
-          registry.treeProcessor(
-            build: (processor) {
-              processor.prefer();
-              processor.onProcess = (Document doc) {
-                doc << processor.createParagraph(doc, 'c', <String, Object?>{});
-                return null;
-              };
-            },
-          );
-
-          registry.prefer(
-            'tree_processor',
-            build: (TreeProcessor processor) {
-              processor.onProcess = (Document doc) {
-                doc << processor.createParagraph(doc, 'b', <String, Object?>{});
-                return null;
-              };
-            },
-          );
-
-          registry.prefer(
-            registry.treeProcessor(
+          registry
+            ..treeProcessor(
               build: (processor) {
                 processor.onProcess = (Document doc) {
                   doc <<
-                      processor.createParagraph(doc, 'a', <String, Object?>{});
+                      processor.createParagraph(doc, 'd', <String, Object?>{});
                   return null;
                 };
               },
-            ),
-          );
-
-          registry.prefer(
-            'tree_processor',
-            processor: SelfSigningTreeProcessor.new,
-          );
+            )
+            ..treeProcessor(
+              build: (processor) {
+                processor.prefer();
+                processor.onProcess = (Document doc) {
+                  doc <<
+                      processor.createParagraph(doc, 'c', <String, Object?>{});
+                  return null;
+                };
+              },
+            )
+            ..prefer(
+              'tree_processor',
+              build: (TreeProcessor processor) {
+                processor.onProcess = (Document doc) {
+                  doc <<
+                      processor.createParagraph(doc, 'b', <String, Object?>{});
+                  return null;
+                };
+              },
+            )
+            ..prefer(
+              registry.treeProcessor(
+                build: (processor) {
+                  processor.onProcess = (Document doc) {
+                    doc <<
+                        processor.createParagraph(
+                          doc,
+                          'a',
+                          <String, Object?>{},
+                        );
+                    return null;
+                  };
+                },
+              ),
+            )
+            ..prefer('tree_processor', processor: SelfSigningTreeProcessor.new);
         },
       );
 
@@ -2069,16 +2084,17 @@ void main() {
           registry.block(
             name: 'custom',
             build: (processor) {
-              processor.onContext('sidebar');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    cloakedContext = attrs['cloaked-context'] as String?;
-                    return null;
-                  };
+              processor
+                ..onContext('sidebar')
+                ..onProcess =
+                    (
+                      AbstractBlock parent,
+                      Reader reader,
+                      Map<String, Object?> attrs,
+                    ) {
+                      cloakedContext = attrs['cloaked-context'] as String?;
+                      return null;
+                    };
             },
           );
         },
@@ -2145,16 +2161,17 @@ void main() {
           registry.blockMacro(
             name: 'log',
             build: (processor) {
-              processor.resolveAttributes(false);
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    parent.logger.info(attrs['text']);
-                    return null;
-                  };
+              processor
+                ..resolveAttributes(false)
+                ..onProcess =
+                    (
+                      AbstractBlock parent,
+                      String target,
+                      Map<Object, Object?> attrs,
+                    ) {
+                      parent.logger.info(attrs['text']);
+                      return null;
+                    };
             },
           );
         },
@@ -2176,16 +2193,17 @@ void main() {
           registry.blockMacro(
             name: 'log',
             build: (processor) {
-              processor.contentModel('text');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    parent.logger.info(attrs['text']);
-                    return null;
-                  };
+              processor
+                ..contentModel('text')
+                ..onProcess =
+                    (
+                      AbstractBlock parent,
+                      String target,
+                      Map<Object, Object?> attrs,
+                    ) {
+                      parent.logger.info(attrs['text']);
+                      return null;
+                    };
             },
           );
         },
@@ -2369,12 +2387,13 @@ void main() {
         build: (registry) {
           registry.blockMacro(
             build: (processor) {
-              processor.named('illegal name');
-              processor.onProcess = (
-                AbstractBlock parent,
-                String target,
-                Map<Object, Object?> attrs,
-              ) => null;
+              processor
+                ..named('illegal name')
+                ..onProcess = (
+                  AbstractBlock parent,
+                  String target,
+                  Map<Object, Object?> attrs,
+                ) => null;
             },
           );
         },
@@ -2435,44 +2454,45 @@ void main() {
     test('should be able to set header attribute in block macro processor', () {
       Extensions.register(
         build: (registry) {
-          registry.blockMacro(
-            build: (processor) {
-              processor
-                ..named('attribute')
-                ..resolveAttributes('1:value');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    (parent.document! as Document).setAttr(
-                      target,
-                      attrs['value'],
-                    );
-                    return null;
-                  };
-            },
-          );
-          registry.blockMacro(
-            build: (processor) {
-              processor
-                ..named('header_attribute')
-                ..resolveAttributes('1:value');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    (parent.document! as Document).setHeaderAttribute(
-                      target,
-                      attrs['value'],
-                    );
-                    return null;
-                  };
-            },
-          );
+          registry
+            ..blockMacro(
+              build: (processor) {
+                processor
+                  ..named('attribute')
+                  ..resolveAttributes('1:value')
+                  ..onProcess =
+                      (
+                        AbstractBlock parent,
+                        String target,
+                        Map<Object, Object?> attrs,
+                      ) {
+                        (parent.document! as Document).setAttr(
+                          target,
+                          attrs['value'],
+                        );
+                        return null;
+                      };
+              },
+            )
+            ..blockMacro(
+              build: (processor) {
+                processor
+                  ..named('header_attribute')
+                  ..resolveAttributes('1:value')
+                  ..onProcess =
+                      (
+                        AbstractBlock parent,
+                        String target,
+                        Map<Object, Object?> attrs,
+                      ) {
+                        (parent.document! as Document).setHeaderAttribute(
+                          target,
+                          attrs['value'],
+                        );
+                        return null;
+                      };
+              },
+            );
         },
       );
       const input = 'attribute::yin[yang]\n\nheader_attribute::foo[bar]\n';
@@ -2579,19 +2599,19 @@ void main() {
             build: (processor) {
               processor
                 ..named('label')
-                ..matchFormat('short');
-              processor.parseContentAs('text');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInlinePass(
-                      parent,
-                      '<label>${attrs['text']}</label>',
-                    );
-                  };
+                ..matchFormat('short')
+                ..parseContentAs('text')
+                ..onProcess =
+                    (
+                      AbstractBlock parent,
+                      String target,
+                      Map<Object, Object?> attrs,
+                    ) {
+                      return processor.createInlinePass(
+                        parent,
+                        '<label>${attrs['text']}</label>',
+                      );
+                    };
             },
           );
         },
@@ -2632,44 +2652,44 @@ void main() {
     test('should parse text in square brackets as attrlist by default', () {
       Extensions.register(
         build: (registry) {
-          registry.inlineMacro(
-            build: (processor) {
-              processor
-                ..named('json')
-                ..matchFormat('short');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    final pairs = attrs.entries
-                        .map((entry) => '"${entry.key}": "${entry.value}"')
-                        .join(', ');
-                    return processor.createInlinePass(parent, '{ $pairs }');
-                  };
-            },
-          );
-
-          registry.inlineMacro(
-            build: (processor) {
-              processor.named('data');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    if (target != 'json') {
-                      return null;
-                    }
-                    final pairs = attrs.entries
-                        .map((entry) => '"${entry.key}": "${entry.value}"')
-                        .join(', ');
-                    return processor.createInlinePass(parent, '{ $pairs }');
-                  };
-            },
-          );
+          registry
+            ..inlineMacro(
+              build: (processor) {
+                processor
+                  ..named('json')
+                  ..matchFormat('short');
+                processor.onProcess =
+                    (
+                      AbstractBlock parent,
+                      String target,
+                      Map<Object, Object?> attrs,
+                    ) {
+                      final pairs = attrs.entries
+                          .map((entry) => '"${entry.key}": "${entry.value}"')
+                          .join(', ');
+                      return processor.createInlinePass(parent, '{ $pairs }');
+                    };
+              },
+            )
+            ..inlineMacro(
+              build: (processor) {
+                processor.named('data');
+                processor.onProcess =
+                    (
+                      AbstractBlock parent,
+                      String target,
+                      Map<Object, Object?> attrs,
+                    ) {
+                      if (target != 'json') {
+                        return null;
+                      }
+                      final pairs = attrs.entries
+                          .map((entry) => '"${entry.key}": "${entry.value}"')
+                          .join(', ');
+                      return processor.createInlinePass(parent, '{ $pairs }');
+                    };
+              },
+            );
         },
       );
 
@@ -2704,73 +2724,70 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.inlineMacro(
-            build: (processor) {
-              processor
-                ..named('short_attributes')
-                ..matchFormat('short');
-              processor.resolveAttributes('1:name');
-              processor.onProcess = (
-                AbstractBlock parent,
-                String target,
-                Map<Object, Object?> attrs,
-              ) => capture(processor, parent, target, attrs);
-            },
-          );
-
-          registry.inlineMacro(
-            build: (processor) {
-              processor
-                ..named('short_text')
-                ..matchFormat('short');
-              processor.resolveAttributes(false);
-              processor.onProcess = (
-                AbstractBlock parent,
-                String target,
-                Map<Object, Object?> attrs,
-              ) => capture(processor, parent, target, attrs);
-            },
-          );
-
-          registry.inlineMacro(
-            build: (processor) {
-              processor
-                ..named('full-attributes')
-                ..resolveAttributes({'1:name': null});
-              processor.onProcess = (
-                AbstractBlock parent,
-                String target,
-                Map<Object, Object?> attrs,
-              ) => capture(processor, parent, target, attrs);
-            },
-          );
-
-          registry.inlineMacro(
-            build: (processor) {
-              processor
-                ..named('full-text')
-                ..resolveAttributes(false);
-              processor.onProcess = (
-                AbstractBlock parent,
-                String target,
-                Map<Object, Object?> attrs,
-              ) => capture(processor, parent, target, attrs);
-            },
-          );
-
-          registry.inlineMacro(
-            build: (processor) {
-              processor
-                ..named('@short_match')
-                ..match(RegExp(r'@(\w+)'));
-              processor.resolveAttributes(false);
-              processor.onProcess = (
-                AbstractBlock parent,
-                String target,
-                Map<Object, Object?> attrs,
-              ) => capture(processor, parent, target, attrs);
-            },
-          );
+          registry
+            ..inlineMacro(
+              build: (processor) {
+                processor
+                  ..named('short_attributes')
+                  ..matchFormat('short')
+                  ..resolveAttributes('1:name');
+                processor.onProcess = (
+                  AbstractBlock parent,
+                  String target,
+                  Map<Object, Object?> attrs,
+                ) => capture(processor, parent, target, attrs);
+              },
+            )
+            ..inlineMacro(
+              build: (processor) {
+                processor
+                  ..named('short_text')
+                  ..matchFormat('short')
+                  ..resolveAttributes(false);
+                processor.onProcess = (
+                  AbstractBlock parent,
+                  String target,
+                  Map<Object, Object?> attrs,
+                ) => capture(processor, parent, target, attrs);
+              },
+            )
+            ..inlineMacro(
+              build: (processor) {
+                processor
+                  ..named('full-attributes')
+                  ..resolveAttributes({'1:name': null});
+                processor.onProcess = (
+                  AbstractBlock parent,
+                  String target,
+                  Map<Object, Object?> attrs,
+                ) => capture(processor, parent, target, attrs);
+              },
+            )
+            ..inlineMacro(
+              build: (processor) {
+                processor
+                  ..named('full-text')
+                  ..resolveAttributes(false);
+                processor.onProcess = (
+                  AbstractBlock parent,
+                  String target,
+                  Map<Object, Object?> attrs,
+                ) => capture(processor, parent, target, attrs);
+              },
+            )
+            ..inlineMacro(
+              build: (processor) {
+                processor
+                  ..named('@short_match')
+                  ..match(RegExp(r'@(\w+)'))
+                  ..resolveAttributes(false);
+                processor.onProcess = (
+                  AbstractBlock parent,
+                  String target,
+                  Map<Object, Object?> attrs,
+                ) => capture(processor, parent, target, attrs);
+              },
+            );
         },
       );
 
@@ -2848,12 +2865,12 @@ void main() {
             build: (processor) {
               processor
                 ..named('skipme')
-                ..matchFormat('short');
-              processor.onProcess = (
-                AbstractBlock parent,
-                String target,
-                Map<Object, Object?> attrs,
-              ) => null;
+                ..matchFormat('short')
+                ..onProcess = (
+                  AbstractBlock parent,
+                  String target,
+                  Map<Object, Object?> attrs,
+                ) => null;
             },
           );
         },
@@ -2873,12 +2890,13 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('say');
-              processor.onProcess = (
-                AbstractBlock parent,
-                String target,
-                Map<Object, Object?> attrs,
-              ) => target;
+              processor
+                ..named('say')
+                ..onProcess = (
+                  AbstractBlock parent,
+                  String target,
+                  Map<Object, Object?> attrs,
+                ) => target;
             },
           );
         },
@@ -3026,20 +3044,20 @@ void main() {
             build: (processor) {
               processor
                 ..matchFormat('short')
-                ..defaultAttributes({1: 'a', 2: 'b', 'foo': 'baz'});
-              processor.positionalAttributes(['a', 'b']);
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInlinePass(
-                      parent,
-                      "a=${attrs['a']},2=${attrs[2]},"
-                      "b=${attrs['b'] ?? 'nil'},foo=${attrs['foo']}",
-                    );
-                  };
+                ..defaultAttributes({1: 'a', 2: 'b', 'foo': 'baz'})
+                ..positionalAttributes(['a', 'b'])
+                ..onProcess =
+                    (
+                      AbstractBlock parent,
+                      String target,
+                      Map<Object, Object?> attrs,
+                    ) {
+                      return processor.createInlinePass(
+                        parent,
+                        "a=${attrs['a']},2=${attrs[2]},"
+                        "b=${attrs['b'] ?? 'nil'},foo=${attrs['foo']}",
+                      );
+                    };
             },
           );
         },
@@ -3059,20 +3077,21 @@ void main() {
           registry.inlineMacro(
             name: 'attrs',
             build: (processor) {
-              processor.matchFormat('short');
               // Adapted: names are strings in Dart (no symbols).
-              processor.positionalAttributes(['a', 'b']);
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInlinePass(
-                      parent,
-                      "a=${attrs['a']},b=${attrs['b']}",
-                    );
-                  };
+              processor
+                ..matchFormat('short')
+                ..positionalAttributes(['a', 'b'])
+                ..onProcess =
+                    (
+                      AbstractBlock parent,
+                      String target,
+                      Map<Object, Object?> attrs,
+                    ) {
+                      return processor.createInlinePass(
+                        parent,
+                        "a=${attrs['a']},b=${attrs['b']}",
+                      );
+                    };
             },
           );
         },
@@ -3091,13 +3110,13 @@ void main() {
             build: (processor) {
               processor
                 ..named('skip-me')
-                ..onContext('paragraph');
-              processor.parseContentAs('raw');
-              processor.onProcess = (
-                AbstractBlock parent,
-                Reader reader,
-                Map<String, Object?> attrs,
-              ) => null;
+                ..onContext('paragraph')
+                ..parseContentAs('raw')
+                ..onProcess = (
+                  AbstractBlock parent,
+                  Reader reader,
+                  Map<String, Object?> attrs,
+                ) => null;
             },
           );
         },
@@ -3124,17 +3143,17 @@ void main() {
             build: (processor) {
               processor
                 ..named('ignore')
-                ..onContext('paragraph');
-              processor.parseContentAs('skip');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    processMethodCalled = true;
-                    return null;
-                  };
+                ..onContext('paragraph')
+                ..parseContentAs('skip')
+                ..onProcess =
+                    (
+                      AbstractBlock parent,
+                      Reader reader,
+                      Map<String, Object?> attrs,
+                    ) {
+                      processMethodCalled = true;
+                      return null;
+                    };
             },
           );
         },
@@ -3160,22 +3179,22 @@ void main() {
             build: (processor) {
               processor
                 ..named('foo')
-                ..onContext('paragraph');
-              processor.parseContentAs('raw');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    final originalAttrs = Map<String, Object?>.of(attrs);
-                    attrs.remove('title');
-                    return processor.createParagraph(
-                      parent,
-                      reader.readLines(),
-                      {...originalAttrs, 'id': 'value'},
-                    );
-                  };
+                ..onContext('paragraph')
+                ..parseContentAs('raw')
+                ..onProcess =
+                    (
+                      AbstractBlock parent,
+                      Reader reader,
+                      Map<String, Object?> attrs,
+                    ) {
+                      final originalAttrs = Map<String, Object?>.of(attrs);
+                      attrs.remove('title');
+                      return processor.createParagraph(
+                        parent,
+                        reader.readLines(),
+                        {...originalAttrs, 'id': 'value'},
+                      );
+                    };
             },
           );
         },
@@ -3488,45 +3507,51 @@ void main() {
           '\n'
           'sect::[$attrlist]\n';
 
-      final cases = <String, List<Object?>>{
-        '': ['chapter', 1, false, true, '_section_title'],
-        'level=0': ['part', 0, false, false, '_section_title'],
-        'level=0,alt': [
-          'part',
-          0,
-          false,
-          true,
-          '_section_title',
-          {'partnums': ''},
-        ],
-        'level=0,style=appendix': ['appendix', 1, true, true, '_section_title'],
-        'style=appendix': ['appendix', 1, true, true, '_section_title'],
-        'style=glossary': ['glossary', 1, true, false, '_section_title'],
-        'style=glossary,alt': [
-          'glossary',
-          1,
-          true,
-          'chapter',
-          '_section_title',
-          {'sectnums': 'all'},
-        ],
-        'style=abstract': ['chapter', 1, false, true, '_section_title'],
-        'id=section-title': ['chapter', 1, false, true, 'section-title'],
-        'id=false': ['chapter', 1, false, true, null],
-      };
-      cases.forEach((attrlist, expected) {
-        final input = inputFor(attrlist);
-        documentFromString(input, {
-          'safe': 'server',
-          if (expected.length > 5)
-            'attributes': expected[5]! as Map<String, Object?>,
-        });
-        expect(sect!.sectname, equals(expected[0]));
-        expect(sect!.level, equals(expected[1]));
-        expect(sect!.special, equals(expected[2]));
-        expect(sect!.numbered, equals(expected[3]));
-        expect(sect!.id, equals(expected[4]));
-      });
+      final cases =
+          (<String, List<Object?>>{
+            '': ['chapter', 1, false, true, '_section_title'],
+            'level=0': ['part', 0, false, false, '_section_title'],
+            'level=0,alt': [
+              'part',
+              0,
+              false,
+              true,
+              '_section_title',
+              {'partnums': ''},
+            ],
+            'level=0,style=appendix': [
+              'appendix',
+              1,
+              true,
+              true,
+              '_section_title',
+            ],
+            'style=appendix': ['appendix', 1, true, true, '_section_title'],
+            'style=glossary': ['glossary', 1, true, false, '_section_title'],
+            'style=glossary,alt': [
+              'glossary',
+              1,
+              true,
+              'chapter',
+              '_section_title',
+              {'sectnums': 'all'},
+            ],
+            'style=abstract': ['chapter', 1, false, true, '_section_title'],
+            'id=section-title': ['chapter', 1, false, true, 'section-title'],
+            'id=false': ['chapter', 1, false, true, null],
+          })..forEach((attrlist, expected) {
+            final input = inputFor(attrlist);
+            documentFromString(input, {
+              'safe': 'server',
+              if (expected.length > 5)
+                'attributes': expected[5]! as Map<String, Object?>,
+            });
+            expect(sect!.sectname, equals(expected[0]));
+            expect(sect!.level, equals(expected[1]));
+            expect(sect!.special, equals(expected[2]));
+            expect(sect!.numbered, equals(expected[3]));
+            expect(sect!.id, equals(expected[4]));
+          });
     });
 
     test('should add docinfo to document', () {
@@ -3551,18 +3576,20 @@ void main() {
 
       Extensions.register(
         build: (registry) {
-          registry.docinfoProcessor(processor: MetaAppDocinfoProcessor.new);
-          registry.docinfoProcessor(
-            processor: MetaRobotsDocinfoProcessor.new,
-            config: {'position': '>>'},
-          );
-          registry.docinfoProcessor(
-            build: (processor) {
-              processor.atLocation('footer');
-              processor.onProcess = (Document doc) =>
-                  '<script><!-- analytics code --></script>';
-            },
-          );
+          registry
+            ..docinfoProcessor(processor: MetaAppDocinfoProcessor.new)
+            ..docinfoProcessor(
+              processor: MetaRobotsDocinfoProcessor.new,
+              config: {'position': '>>'},
+            )
+            ..docinfoProcessor(
+              build: (processor) {
+                processor
+                  ..atLocation('footer')
+                  ..onProcess = (Document doc) =>
+                      '<script><!-- analytics code --></script>';
+              },
+            );
         },
       );
 
@@ -3606,15 +3633,16 @@ void main() {
       final exts = <ProcessorExtension>[];
       Extensions.register(
         build: (registry) {
-          exts.add(registry.preprocessor(processor: SamplePreprocessor.new));
-          exts.add(
-            registry.includeProcessor(processor: SampleIncludeProcessor.new),
-          );
-          exts.add(registry.treeProcessor(processor: SampleTreeProcessor.new));
-          exts.add(
-            registry.docinfoProcessor(processor: SampleDocinfoProcessor.new),
-          );
-          exts.add(registry.postprocessor(processor: SamplePostprocessor.new));
+          exts
+            ..add(registry.preprocessor(processor: SamplePreprocessor.new))
+            ..add(
+              registry.includeProcessor(processor: SampleIncludeProcessor.new),
+            )
+            ..add(registry.treeProcessor(processor: SampleTreeProcessor.new))
+            ..add(
+              registry.docinfoProcessor(processor: SampleDocinfoProcessor.new),
+            )
+            ..add(registry.postprocessor(processor: SamplePostprocessor.new));
         },
       );
       Registry().activate(emptyDocument());
@@ -4090,8 +4118,8 @@ void main() {
       expect(list, isA<ListBlock>());
       expect(list.context, equals('ulist'));
       final item = (processor.createListItem(list, 'Guillaume'))
-        ..addRole('friendly');
-      item.id = 'item-1';
+        ..addRole('friendly')
+        ..id = 'item-1';
       list << item;
       expect(list.items.length, equals(1));
       expect(list.hasItems, isTrue);
@@ -4299,8 +4327,9 @@ void main() {
     });
 
     test('resolveAttributes with no arguments resets both lists', () {
-      final processor = (SampleBlockMacro())..resolveAttributes(['1:value']);
-      processor.resolveAttributes();
+      final processor = (SampleBlockMacro())
+        ..resolveAttributes(['1:value'])
+        ..resolveAttributes();
       expect(processor.config['positional_attrs'], equals([]));
       expect(processor.config['default_attrs'], equals({}));
       expect(processor.config['content_model'], equals('attributes'));
@@ -4475,12 +4504,12 @@ void main() {
     });
 
     test('prefer registers through a kind name', () {
-      final registry = Registry();
-      registry.treeProcessor(
-        build: (processor) {
-          processor.onProcess = (Document doc) => null;
-        },
-      );
+      final registry = (Registry())
+        ..treeProcessor(
+          build: (processor) {
+            processor.onProcess = (Document doc) => null;
+          },
+        );
       final preferred = registry.prefer(
         'tree_processor',
         build: (TreeProcessor processor) {
@@ -4523,13 +4552,15 @@ void main() {
       final registry = Registry();
       expect(registry.hasDocinfoProcessors(), isFalse);
       expect(registry.docinfoProcessors(), isEmpty);
-      registry.docinfoProcessor(processor: MetaAppDocinfoProcessor.new);
-      registry.docinfoProcessor(
-        build: (processor) {
-          processor.atLocation('footer');
-          processor.onProcess = (Document doc) => 'footer';
-        },
-      );
+      registry
+        ..docinfoProcessor(processor: MetaAppDocinfoProcessor.new)
+        ..docinfoProcessor(
+          build: (processor) {
+            processor
+              ..atLocation('footer')
+              ..onProcess = (Document doc) => 'footer';
+          },
+        );
       expect(registry.hasDocinfoProcessors(), isTrue);
       expect(registry.hasDocinfoProcessors('head'), isTrue);
       expect(registry.hasDocinfoProcessors('footer'), isTrue);
@@ -4729,12 +4760,11 @@ void main() {
 
     test('activate runs zero-argument group callbacks', () {
       var called = false;
-      final registry = Registry({
+      final registry = (Registry({
         'empty': () {
           called = true;
         },
-      });
-      registry.activate(emptyDocument());
+      }))..activate(emptyDocument());
       expect(called, isTrue);
       expect(registry.hasPreprocessors, isFalse);
     });

@@ -704,14 +704,12 @@ final class CliOptions {
   ///
   /// Port of `Options#print_version`. Always returns 0.
   int printVersion([StringSink? out]) {
-    final sink = out ?? stdout;
-    sink.writeln(
-      'Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]',
-    );
-    sink.writeln(
-      'Runtime Environment (Dart ${Platform.version}) '
-      '(lc:UTF-8 fs:UTF-8 in:UTF-8 ex:UTF-8)',
-    );
+    final sink = (out ?? stdout)
+      ..writeln('Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]')
+      ..writeln(
+        'Runtime Environment (Dart ${Platform.version}) '
+        '(lc:UTF-8 fs:UTF-8 in:UTF-8 ex:UTF-8)',
+      );
     return 0;
   }
 

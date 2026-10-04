@@ -861,8 +861,8 @@ void main() {
     test('skips captioned and untitled blocks', () {
       final captioned = Block(makeDoc(), 'example')
         ..title = 'T'
-        ..caption = 'Keep. ';
-      captioned.assignCaption(null);
+        ..caption = 'Keep. '
+        ..assignCaption(null);
       expect(captioned.caption, equals('Keep. '));
       final untitled = (Block(makeDoc(), 'example'))..assignCaption(null);
       expect(untitled.caption, isNull);
@@ -1291,12 +1291,11 @@ void main() {
 
     test('readContents of URI resolves against a URI start', () {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
-      final block = UriBlock(
+      final block = (UriBlock(
         doc,
         'paragraph',
         response: (body: utf8.encode('x'), contentType: 'text/plain'),
-      );
-      block.readContents('b.adoc', start: 'https://example.com/a/');
+      ))..readContents('b.adoc', start: 'https://example.com/a/');
       expect(block.fetchedUris.single, equals('https://example.com/a/b.adoc'));
     });
 

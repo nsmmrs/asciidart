@@ -1234,23 +1234,23 @@ void main() {
       expect(table.rows.body, isEmpty);
       expect(table.columns, isEmpty);
       expect(table.hasHeaderOption, equals(false));
-      final widths = <String, int>{
-        'abc': 100,
-        '0%': 0,
-        '50': 50,
-        '50%': 50,
-        '0': 0,
-        '100': 100,
-        '101': 100,
-        '-5': 100,
-      };
-      widths.forEach((width, expected) {
-        expect(
-          Table(doc, {'width': width}).attributes['tablepcwidth'],
-          equals(expected),
-          reason: 'width $width',
-        );
-      });
+      final widths =
+          (<String, int>{
+            'abc': 100,
+            '0%': 0,
+            '50': 50,
+            '50%': 50,
+            '0': 0,
+            '100': 100,
+            '101': 100,
+            '-5': 100,
+          })..forEach((width, expected) {
+            expect(
+              Table(doc, {'width': width}).attributes['tablepcwidth'],
+              equals(expected),
+              reason: 'width $width',
+            );
+          });
       expect(Table(doc, {'width': 50}).attributes['tablepcwidth'], equals(50));
     });
 
@@ -1320,12 +1320,12 @@ void main() {
 
     test('autowidth columns split the remainder; balance to final', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
-      table.createColumns([
-        {'width': -1},
-        {'width': -1},
-        {'width': -1},
-      ]);
+      final table = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': -1},
+          {'width': -1},
+          {'width': -1},
+        ]);
       expect(
         table.columns.map(
           (c) => [c.attributes['width'], c.attributes['colpcwidth']],
@@ -1340,12 +1340,12 @@ void main() {
 
     test('autowidth over 100 warns and zeroes autowidth columns', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
-      table.createColumns([
-        {'width': 60},
-        {'width': 60},
-        {'width': -1},
-      ]);
+      final table = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 60},
+          {'width': 60},
+          {'width': -1},
+        ]);
       expect(
         table.columns.map(
           (c) => [c.attributes['width'], c.attributes['colpcwidth']],
@@ -1364,29 +1364,29 @@ void main() {
 
     test('zero widths fall back to an equal split', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
-      table.createColumns([
-        {'width': 0},
-        {'width': 0},
-      ]);
+      final table = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 0},
+          {'width': 0},
+        ]);
       expect(
         table.columns.map((c) => c.attributes['colpcwidth']),
         equals([50, 50]),
       );
-      final single = Table(doc, <String, Object?>{});
-      single.createColumns([
-        {'width': 1},
-      ]);
+      final single = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 1},
+        ]);
       expect(single.columns.single.attributes['colpcwidth'], equals(100));
     });
 
     test('partitionHeaderFooter splits head, body and foot', () {
       FakeDocument makeDoc() => FakeDocument();
       Table makeTable(FakeDocument doc, int cols) {
-        final table = Table(doc, <String, Object?>{});
-        table.createColumns(
-          List.generate(cols, (_) => <String, Object?>{'width': 1}),
-        );
+        final table = (Table(doc, <String, Object?>{}))
+          ..createColumns(
+            List.generate(cols, (_) => <String, Object?>{'width': 1}),
+          );
         return table;
       }
 
@@ -1433,12 +1433,12 @@ void main() {
 
     test('partitionHeaderFooter with nil header option reinitializes', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
-      table.createColumns([
-        {'width': 1},
-      ]);
       // Cells built while the header is implicit defer literal handling.
-      table.hasHeaderOption = 'implicit';
+      final table = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 1},
+        ])
+        ..hasHeaderOption = 'implicit';
       final cell = Cell(table.columns.single, '  x  \n\n', {
         'style': 'literal',
       });
@@ -1461,10 +1461,10 @@ void main() {
   group('TableRows', () {
     TableRows makeRows() {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
-      table.createColumns([
-        {'width': 1},
-      ]);
+      final table = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 1},
+        ]);
       final rows = TableRows();
       rows.head.add([Cell(table.columns.single, 'h', {})]);
       rows.body.add([Cell(table.columns.single, 'b', {})]);
@@ -1514,22 +1514,22 @@ void main() {
 
     test('assignWidth resolves percentage and absolute widths', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
-      table.createColumns([
-        {'width': 1},
-        {'width': 3},
-      ]);
+      final table = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 1},
+          {'width': 3},
+        ]);
       expect(
         table.columns.map((c) => c.attributes['colpcwidth']),
         equals([25, 75]),
       );
       // Whole values become ints; fractional values stay doubles.
-      final thirds = Table(doc, <String, Object?>{});
-      thirds.createColumns([
-        {'width': 1},
-        {'width': 1},
-        {'width': 1},
-      ]);
+      final thirds = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 1},
+          {'width': 1},
+          {'width': 1},
+        ]);
       expect(
         thirds.columns.map((c) => c.attributes['colpcwidth']),
         equals([33.3333, 33.3333, 33.3334]),
@@ -1541,10 +1541,10 @@ void main() {
 
   group('Cell', () {
     Table makeTable(AbstractBlock doc) {
-      final table = Table(doc, <String, Object?>{});
-      table.createColumns([
-        {'width': 1},
-      ]);
+      final table = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 1},
+        ]);
       return table;
     }
 
@@ -1585,10 +1585,10 @@ void main() {
 
     test('styles resolve from column, then cell attributes', () {
       final doc = FakeDocument();
-      final table = Table(doc, <String, Object?>{});
-      table.createColumns([
-        {'width': 1, 'style': 'strong'},
-      ]);
+      final table = (Table(doc, <String, Object?>{}))
+        ..createColumns([
+          {'width': 1, 'style': 'strong'},
+        ]);
       final col = table.columns.single;
       expect(Cell(col, 'a', {}).style, equals('strong'));
       expect(Cell(col, 'a', {'style': 'emphasis'}).style, equals('emphasis'));
@@ -1831,8 +1831,9 @@ void main() {
         ..buffer = 'x'
         ..skipPastDelimiter('pre');
       expect(pc.buffer, equals('xpre|'));
-      pc.buffer = 'x';
-      pc.skipPastEscapedDelimiter(r'pre\');
+      pc
+        ..buffer = 'x'
+        ..skipPastEscapedDelimiter(r'pre\');
       expect(pc.buffer, equals('xpre|'));
       pc
         ..buffer = 'x'
@@ -1878,9 +1879,9 @@ void main() {
       // closeOpenCell closes an open cell and advances the line number.
       pc
         ..pushCellspect({})
-        ..buffer = 'x';
-      pc.keepCellOpen();
-      pc.closeOpenCell({'b': 2});
+        ..buffer = 'x'
+        ..keepCellOpen()
+        ..closeOpenCell({'b': 2});
       expect(pc.isCellClosed, isTrue);
       expect(pc.takeCellspect(), equals({'b': 2}));
       expect(table.rows.body.single.single.source(), equals('x'));
@@ -1892,13 +1893,13 @@ void main() {
       expect(pc.colcount, equals(2));
       pc
         ..pushCellspect({})
-        ..buffer = 'a';
-      pc.closeCell();
+        ..buffer = 'a'
+        ..closeCell();
       expect(table.rows.body, isEmpty);
       pc
         ..pushCellspect({})
-        ..buffer = 'b';
-      pc.closeCell();
+        ..buffer = 'b'
+        ..closeCell();
       expect(table.rows.body, hasLength(1));
       expect(table.rows.body.single.map((c) => c.source()), equals(['a', 'b']));
       expect(reader.marks, equals(3));
@@ -1908,15 +1909,16 @@ void main() {
       // No predefined columns: colcount starts at -1 and rows close on
       // end-of-line (or once a second line has been seen).
       final (_, table, reader) = makeParts();
-      final pc = (TableParserContext(reader, table))..pushCellspect({});
-      pc.buffer = 'a';
-      pc.closeCell();
+      final pc = (TableParserContext(reader, table))
+        ..pushCellspect({})
+        ..buffer = 'a'
+        ..closeCell();
       expect(table.rows.body, isEmpty);
       expect(table.columns, hasLength(1));
       pc
         ..pushCellspect({})
-        ..buffer = 'b';
-      pc.closeCell(true);
+        ..buffer = 'b'
+        ..closeCell(true);
       expect(table.rows.body.single.map((c) => c.source()), equals(['a', 'b']));
       expect(table.columns, hasLength(2));
       expect(pc.colcount, equals(2));
@@ -1924,27 +1926,28 @@ void main() {
 
     test('closeOpenCell advances lines so later rows close implicitly', () {
       final (_, table, _) = makeParts();
-      final pc = (TableParserContext(FakeReader(), table))..closeOpenCell();
-      pc.closeOpenCell();
-      pc.buffer = 'a';
-      pc.closeCell();
+      final pc = (TableParserContext(FakeReader(), table))
+        ..closeOpenCell()
+        ..closeOpenCell()
+        ..buffer = 'a'
+        ..closeCell();
       expect(table.rows.body, hasLength(1));
     });
 
     test('closeCell honors repeatcol and colspan', () {
       final (_, table, reader) = makeParts();
       final pc = (TableParserContext(reader, table))
-        ..pushCellspect({'repeatcol': 2});
-      pc.buffer = 'x';
-      pc.closeCell(true);
+        ..pushCellspect({'repeatcol': 2})
+        ..buffer = 'x'
+        ..closeCell(true);
       expect(table.rows.body.single, hasLength(2));
       expect(table.columns, hasLength(2));
 
       final (_, table2, reader2) = makeParts();
       final pc2 = (TableParserContext(reader2, table2))
-        ..pushCellspect({'colspan': 2});
-      pc2.buffer = 'y';
-      pc2.closeCell(true);
+        ..pushCellspect({'colspan': 2})
+        ..buffer = 'y'
+        ..closeCell(true);
       expect(table2.columns, hasLength(2));
       expect(table2.rows.body.single.single.colspan, equals(2));
     });
@@ -1973,18 +1976,18 @@ void main() {
     test('rowspans count towards later rows', () {
       final (_, table, _) = makeParts(cols: 2);
       final pc = (TableParserContext(FakeReader(), table))
-        ..pushCellspect({'rowspan': 2});
-      pc.buffer = 'a';
-      pc.closeCell();
-      pc.pushCellspect({});
-      pc.buffer = 'b';
-      pc.closeCell();
+        ..pushCellspect({'rowspan': 2})
+        ..buffer = 'a'
+        ..closeCell()
+        ..pushCellspect({})
+        ..buffer = 'b'
+        ..closeCell();
       expect(table.rows.body, hasLength(1));
       // The second row needs a single cell: the rowspan fills the gap.
       pc
         ..pushCellspect({})
-        ..buffer = 'c';
-      pc.closeCell();
+        ..buffer = 'c'
+        ..closeCell();
       expect(table.rows.body, hasLength(2));
       expect(table.rows.body[1], hasLength(1));
     });
@@ -1992,17 +1995,18 @@ void main() {
     test('overrunning cells are dropped with an error', () {
       final (_, table, _) = makeParts(cols: 1);
       final pc = (TableParserContext(FakeReader(), table))
-        ..pushCellspect({'colspan': 2});
-      pc.buffer = 'wide';
-      pc.closeCell();
+        ..pushCellspect({'colspan': 2})
+        ..buffer = 'wide'
+        ..closeCell();
       expect(table.rows.body, isEmpty);
       expect(testLogger.errors.single, contains('dropping cell'));
     });
 
     test('missing leading separator recovers with an error', () {
       final (_, table, _) = makeParts();
-      final pc = (TableParserContext(FakeReader(), table))..buffer = 'a';
-      pc.closeCell(true);
+      final pc = (TableParserContext(FakeReader(), table))
+        ..buffer = 'a'
+        ..closeCell(true);
       expect(
         testLogger.errors.single,
         contains('table missing leading separator'),
@@ -2016,10 +2020,10 @@ void main() {
       expect(testLogger.errors, isEmpty);
       final (_, table2, _) = makeParts();
       final pending = (TableParserContext(FakeReader(), table2))
-        ..pushCellspect({});
-      pending.buffer = 'a';
-      pending.closeCell();
-      pending.closeTable();
+        ..pushCellspect({})
+        ..buffer = 'a'
+        ..closeCell()
+        ..closeTable();
       expect(testLogger.errors.single, contains('incomplete row'));
     });
   });

@@ -44,15 +44,17 @@ void main() {
     });
 
     test('starting twice restarts the timer', () {
-      final timings = (Timings())..start('parse');
-      timings.start('parse');
+      final timings = (Timings())
+        ..start('parse')
+        ..start('parse');
       expect(timings.record('parse'), greaterThanOrEqualTo(0));
       expect(() => timings.record('parse'), throwsStateError);
     });
 
     test('phase getters combine recorded phases', () {
-      final timings = (Timings())..start('read');
-      timings.record('read');
+      final timings = (Timings())
+        ..start('read')
+        ..record('read');
       expect(timings.read, isNotNull);
       expect(timings.parse, isNull);
       expect(timings.readParse, equals(timings.read));
@@ -78,10 +80,11 @@ void main() {
     });
 
     test('printReport with subject prints four lines', () {
-      final timings = (Timings())..start('read');
-      timings.record('read');
-      timings.start('convert');
-      timings.record('convert');
+      final timings = (Timings())
+        ..start('read')
+        ..record('read')
+        ..start('convert')
+        ..record('convert');
       final buffer = StringBuffer();
       timings.printReport(buffer, 'in.adoc');
       final lines = buffer.toString().split('\n');

@@ -948,8 +948,8 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         if (second == "'" || second == '"') {
           sink
             ..beginGroup('symbol')
-            ..textToken(':', 'symbol');
-          sink.textToken(second, 'delimiter');
+            ..textToken(':', 'symbol')
+            ..textToken(second, 'delimiter');
           state = _RubyStringState('symbol', second == '"', second);
         } else {
           sink.textToken(sym, 'symbol');
@@ -1017,8 +1017,8 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         final kind = _quoteToType[quote] ?? 'string';
         sink
           ..beginGroup(kind)
-          ..textToken(heredoc, 'delimiter');
-        sink.endGroup(kind);
+          ..textToken(heredoc, 'delimiter')
+          ..endGroup(kind);
         // Create the heredoc queue when empty.
         (heredocs ??= []).add(
           _RubyStringState(
@@ -1121,14 +1121,13 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           if (second == "'" || second == '"') {
             sink
               ..beginGroup('symbol')
-              ..textToken(':', 'symbol');
-            sink.textToken(second, 'delimiter');
-            final stringState = _RubyStringState(
+              ..textToken(':', 'symbol')
+              ..textToken(second, 'delimiter');
+            final stringState = (_RubyStringState(
               'symbol',
               second == '"',
               second,
-            );
-            stringState.nextState = _SymbolState.undefCommaExpected;
+            ))..nextState = _SymbolState.undefCommaExpected;
             state = stringState;
           } else {
             sink.textToken(sym, 'symbol');
@@ -1155,8 +1154,8 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         final third = s.capture(3)!;
         sink
           ..textToken(first, first.startsWith(':') ? 'symbol' : 'method')
-          ..textToken(spaces, 'space');
-        sink.textToken(third, third.startsWith(':') ? 'symbol' : 'method');
+          ..textToken(spaces, 'space')
+          ..textToken(third, third.startsWith(':') ? 'symbol' : 'method');
       }
       state = _SymbolState.initial;
     } else {

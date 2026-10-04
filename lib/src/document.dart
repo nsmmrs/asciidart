@@ -450,13 +450,13 @@ class Document extends AbstractBlock implements NodeDocument {
       };
       attrOverrides
         ..addAll(parentDoc._attributeOverrides)
-        ..addAll(parentDoc.attributes);
-      attrOverrides.remove('compat-mode');
+        ..addAll(parentDoc.attributes)
+        ..remove('compat-mode');
       parentDoctype = attrOverrides.remove('doctype') as String?;
       attrOverrides
         ..remove('notitle')
-        ..remove('showtitle');
-      attrOverrides.remove('toc');
+        ..remove('showtitle')
+        ..remove('toc');
       final tocPlacement = attrOverrides.remove('toc-placement');
       attributes['toc-placement'] = isTruthy(tocPlacement)
           ? tocPlacement
@@ -2164,10 +2164,9 @@ class Document extends AbstractBlock implements NodeDocument {
     if (traits.basebackend != currentBasebackend) {
       if (currentDoctype != null) {
         if (currentBasebackend != null) {
-          attrs.remove('basebackend-$currentBasebackend');
-          attrs.remove(
-            'basebackend-$currentBasebackend-doctype-$currentDoctype',
-          );
+          attrs
+            ..remove('basebackend-$currentBasebackend')
+            ..remove('basebackend-$currentBasebackend-doctype-$currentDoctype');
         }
         attrs['basebackend-${traits.basebackend}-doctype-$currentDoctype'] = '';
       } else if (currentBasebackend != null) {

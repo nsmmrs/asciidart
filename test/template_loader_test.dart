@@ -66,8 +66,7 @@ Invoker _invoke(List<String> argv) {
     out: out,
     err: err,
     environment: <String, String>{},
-  );
-  invoker.redirectStreams(out, err);
+  )..redirectStreams(out, err);
   final savedLogger = LoggerManager.logger;
   LoggerManager.logger = Logger(logdev: err)..level = savedLogger.level;
   try {
@@ -362,11 +361,11 @@ void main() {
 
     test('document coerces template dirs and defaults template_cache', () {
       Map<String, Object?>? seen;
-      final factory = ConverterFactory(null, false);
-      factory.register((String backend, Map<String, Object?> opts) {
-        seen = Map.of(opts);
-        return _CapturingConverter(backend, opts);
-      }, ['capture-backend']);
+      final factory = (ConverterFactory(null, false))
+        ..register((String backend, Map<String, Object?> opts) {
+          seen = Map.of(opts);
+          return _CapturingConverter(backend, opts);
+        }, ['capture-backend']);
       final doc = Document('hi', {
         'backend': 'capture-backend',
         'converter_factory': factory,
@@ -381,11 +380,11 @@ void main() {
 
     test('document passes explicit template options through', () {
       Map<String, Object?>? seen;
-      final factory = ConverterFactory(null, false);
-      factory.register((String backend, Map<String, Object?> opts) {
-        seen = Map.of(opts);
-        return _CapturingConverter(backend, opts);
-      }, ['capture-backend']);
+      final factory = (ConverterFactory(null, false))
+        ..register((String backend, Map<String, Object?> opts) {
+          seen = Map.of(opts);
+          return _CapturingConverter(backend, opts);
+        }, ['capture-backend']);
       const engineOptions = {
         'mustache': {'escape': false},
       };
@@ -451,13 +450,12 @@ void main() {
       final dir = _makeTemplateDir({'paragraph.mustache': 'x'});
       final out = StringBuffer();
       final err = StringBuffer();
-      final invoker = Invoker.fromArgs(
+      final invoker = (Invoker.fromArgs(
         ['--trace', '-T', dir.path, '-E', 'haml', '-o', '-', sampleFile],
         out: out,
         err: err,
         environment: <String, String>{},
-      );
-      invoker.redirectStreams(out, err);
+      ))..redirectStreams(out, err);
       expect(invoker.invoke, throwsArgumentError);
       expect(invoker.code, equals(1));
     });

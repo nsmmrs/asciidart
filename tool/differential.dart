@@ -47,8 +47,8 @@ Future<void> main(List<String> arguments) async {
   } on FormatException catch (e) {
     stderr
       ..writeln('differential: ${e.message}')
-      ..writeln();
-    stderr.writeln(usageText(parser));
+      ..writeln()
+      ..writeln(usageText(parser));
     exitCode = exitHarnessError;
     return;
   }
@@ -569,9 +569,8 @@ String _cappedDiff(
     textB: textB,
     contextLines: config.contextLines,
   );
-  final lines = full.split('\n');
   // `full` ends with a newline, leaving an empty trailing element.
-  lines.removeLast();
+  final lines = (full.split('\n'))..removeLast();
   if (lines.length <= config.maxDiffLines) return full;
   final kept = lines.take(config.maxDiffLines).join('\n');
   return '$kept\n'

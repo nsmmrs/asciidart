@@ -204,24 +204,24 @@ void main() {
     });
 
     test('class mode requires the stylesheet, inline mode does not', () {
-      final classes = RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n'));
-      classes.highlight(source: 'x', language: 'ruby');
+      final classes = (RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n')))
+        ..highlight(source: 'x', language: 'ruby');
       expect(classes.requiresStylesheet, isTrue);
 
-      final inline = RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n'));
-      inline.highlight(source: 'x', language: 'ruby', cssMode: CssMode.inline);
+      final inline = (RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n')))
+        ..highlight(source: 'x', language: 'ruby', cssMode: CssMode.inline);
       expect(inline.requiresStylesheet, isFalse);
     });
 
     test('highlight resolves and records the style', () {
-      final adapter = RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n'));
-      adapter.highlight(source: 'x', language: 'ruby', style: 'monokai');
+      final adapter = (RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n')))
+        ..highlight(source: 'x', language: 'ruby', style: 'monokai');
       expect(adapter.currentStyle, 'monokai');
     });
 
     test('unknown style falls back to the default', () {
-      final adapter = RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n'));
-      adapter.highlight(source: 'x', language: 'ruby', style: 'nosuchstylezzz');
+      final adapter = (RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n')))
+        ..highlight(source: 'x', language: 'ruby', style: 'nosuchstylezzz');
       expect(adapter.currentStyle, 'github');
     });
   });
@@ -357,8 +357,8 @@ void main() {
     });
 
     test('docinfoHead links the resolved stylesheet', () {
-      final adapter = RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n'));
-      adapter.highlight(source: 'x', language: 'ruby');
+      final adapter = (RougeAdapter(lexer: backend(onHighlight: (_) => 'x\n')))
+        ..highlight(source: 'x', language: 'ruby');
       expect(
         adapter.docinfoHead(
           linkCss: true,

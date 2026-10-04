@@ -317,15 +317,16 @@ class Html5Converter extends ConverterBase {
     final langAttribute = node.hasAttr('nolang')
         ? ''
         : ' lang="${_s(node.attr('lang', 'en'))}"';
-    result.add(
-      '<html${_xmlMode ? ' xmlns="http://www.w3.org/1999/xhtml"' : ''}$langAttribute>',
-    );
-    result.add(
-      '<head>\n'
-      '<meta charset="${_s(node.attr('encoding', 'UTF-8'))}"$slash>\n'
-      '<meta http-equiv="X-UA-Compatible" content="IE=edge"$slash>\n'
-      '<meta name="viewport" content="width=device-width, initial-scale=1.0"$slash>',
-    );
+    result
+      ..add(
+        '<html${_xmlMode ? ' xmlns="http://www.w3.org/1999/xhtml"' : ''}$langAttribute>',
+      )
+      ..add(
+        '<head>\n'
+        '<meta charset="${_s(node.attr('encoding', 'UTF-8'))}"$slash>\n'
+        '<meta http-equiv="X-UA-Compatible" content="IE=edge"$slash>\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0"$slash>',
+      );
     final reproducible = node.hasAttr('reproducible');
     if (!reproducible) {
       result.add(
@@ -522,8 +523,8 @@ class Html5Converter extends ConverterBase {
           if (details.isNotEmpty) {
             result
               ..add('<div class="details">')
-              ..addAll(details);
-            result.add('</div>');
+              ..addAll(details)
+              ..add('</div>');
           }
         }
 
@@ -783,8 +784,8 @@ class Html5Converter extends ConverterBase {
       if (childTocLevel != null) {
         result
           ..add('$otag<a href="#${_s(section.id)}">$cleanTitle</a>')
-          ..add(childTocLevel);
-        result.add('</li>');
+          ..add(childTocLevel)
+          ..add('</li>');
       } else {
         result.add('$otag<a href="#${_s(section.id)}">$cleanTitle</a></li>');
       }
@@ -1053,10 +1054,11 @@ class Html5Converter extends ConverterBase {
           final parts = pair! as List<Object?>;
           final terms = parts[0]! as List<Object?>;
           final dd = parts[1] as ListItem?;
-          result.add('<tr>');
-          result.add(
-            '<td class="hdlist1${node.hasOption('strong') ? ' strong' : ''}">',
-          );
+          result
+            ..add('<tr>')
+            ..add(
+              '<td class="hdlist1${node.hasOption('strong') ? ' strong' : ''}">',
+            );
           var firstTerm = true;
           for (final term in terms) {
             if (!firstTerm) {

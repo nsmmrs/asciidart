@@ -90,8 +90,8 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
     if (style != null) {
       _out
         ..write(style)
-        ..write(escaped);
-      _out.write('</span>');
+        ..write(escaped)
+        ..write('</span>');
     } else {
       _out.write(escaped);
     }

@@ -60,8 +60,8 @@ void main() {
 
     test('re-registering a name replaces it (last-wins)', () {
       final registry = (TemplateRegistry())
-        ..registerTemplate('paragraph', 'first');
-      registry.registerTemplate('paragraph', 'second');
+        ..registerTemplate('paragraph', 'first')
+        ..registerTemplate('paragraph', 'second');
       expect(registry.templates['paragraph'], 'second');
     });
 
@@ -76,9 +76,9 @@ void main() {
     });
 
     test('registers functions and helpers', () {
-      final registry = TemplateRegistry();
-      registry.registerFunction('paragraph', (node, [opts]) => 'fn');
-      registry.registerHelper('up', (node) => node.nodeName.toUpperCase());
+      final registry = (TemplateRegistry())
+        ..registerFunction('paragraph', (node, [opts]) => 'fn')
+        ..registerHelper('up', (node) => node.nodeName.toUpperCase());
       expect(registry.handles('paragraph'), isTrue);
       expect(registry.functions.keys, contains('paragraph'));
       expect(registry.helpers.keys, contains('up'));
@@ -240,8 +240,8 @@ void main() {
         ..registerFunction('paragraph', (node, [opts]) {
           seen = opts;
           return 'FN';
-        });
-      converter.convert(paragraph, 'paragraph', const {'x': 1});
+        })
+        ..convert(paragraph, 'paragraph', const {'x': 1});
       expect(seen, {'x': 1});
     });
 

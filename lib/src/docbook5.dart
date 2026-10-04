@@ -255,14 +255,15 @@ class Docbook5Converter extends ConverterBase {
       if (node.hasAttr('manvolnum')) {
         result.add('<manvolnum>${_s(node.attr('manvolnum'))}</manvolnum>');
       }
-      result.add(
-        '<refmiscinfo class="source">${_s(node.attr('mansource', '&#160;'))}</refmiscinfo>',
-      );
-      result.add(
-        '<refmiscinfo class="manual">${_s(node.attr('manmanual', '&#160;'))}</refmiscinfo>',
-      );
-      result.add('</refmeta>');
-      result.add('<refnamediv>');
+      result
+        ..add(
+          '<refmiscinfo class="source">${_s(node.attr('mansource', '&#160;'))}</refmiscinfo>',
+        )
+        ..add(
+          '<refmiscinfo class="manual">${_s(node.attr('manmanual', '&#160;'))}</refmiscinfo>',
+        )
+        ..add('</refmeta>')
+        ..add('<refnamediv>');
       if (node.hasAttr('mannames')) {
         for (final name in node.attr('mannames')! as List<Object?>) {
           result.add('<refname>${_s(name)}</refname>');
@@ -305,11 +306,12 @@ class Docbook5Converter extends ConverterBase {
       node.id = null;
     }
     // Defer adding root tag in case document ID is auto-generated on demand.
-    result.insert(
-      rootTagIdx,
-      '<$rootTagName xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0"$langAttribute${_commonAttributes(rootId)}>',
-    );
-    result.add('</$rootTagName>');
+    result
+      ..insert(
+        rootTagIdx,
+        '<$rootTagName xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0"$langAttribute${_commonAttributes(rootId)}>',
+      )
+      ..add('</$rootTagName>');
     return result.join(lf);
   }
 
@@ -1097,8 +1099,9 @@ class Docbook5Converter extends ConverterBase {
 
   /// The `<author>` element for [author] in the document info tag.
   String _authorTag(Document doc, DocumentAuthor author) {
-    final result = (<String>[])..add('<author>');
-    result.add('<personname>');
+    final result = (<String>[])
+      ..add('<author>')
+      ..add('<personname>');
     if (author.firstname != null) {
       result.add(
         '<firstname>${doc.subReplacements(author.firstname!)}</firstname>',
@@ -1142,8 +1145,9 @@ class Docbook5Converter extends ConverterBase {
     }
     if (doc.hasAttr('copyright')) {
       final match = _copyrightRx.firstMatch(doc.attr('copyright')! as String);
-      result.add('<copyright>');
-      result.add('<holder>${match?.group(1) ?? ''}</holder>');
+      result
+        ..add('<copyright>')
+        ..add('<holder>${match?.group(1) ?? ''}</holder>');
       final year = match?.group(2);
       if (year != null) {
         result.add('<year>$year</year>');
