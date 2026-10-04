@@ -7,13 +7,13 @@
 library;
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:asciidoctor/src/cli/diagnostics.dart';
 import 'package:asciidoctor/src/cli/init_config.dart';
 import 'package:asciidoctor/src/cli/invoker.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 
-/// Runs the Asciidoctor CLI, reporting through [exitCode].
+/// Runs the Asciidoctor CLI, reporting through the process exit code.
 ///
 /// Library entrypoint for custom binaries: register transforms on
 /// `TemplateRegistry.global` (from `package:asciidoctor/converter.dart`),
@@ -27,23 +27,23 @@ Future<void> runCli(List<String> args) async {
   // reader that went away (`asciidoctor ... | head`) ends the run quietly;
   // any other write failure is reported.
   unawaited(
-    stdout.done.then<void>(
+    io.standardOutputDone.then<void>(
       (_) {},
       onError: (Object error) {
-        if (isBrokenPipe(error)) return;
-        stderr.writeln(failureLine(error));
-        exitCode = 1;
+        if (io.isBrokenPipe(error)) return;
+        io.standardError.writeln(failureLine(error));
+        io.exitCode = 1;
       },
     ),
   );
-  exitCode = await runCliCode(args);
+  io.exitCode = await runCliCode(args);
 }
 
 /// Runs the Asciidoctor CLI, returning the process exit code.
 ///
-/// Testable core of [runCli] (which only reports the result through
-/// [exitCode]). [out] and [err] buffer conversion output and diagnostics
-/// (defaulting to the process streams). A failure that escapes the
+/// Testable core of [runCli] (which only reports the result through the
+/// process exit code). [out] and [err] buffer conversion output and
+/// diagnostics (defaulting to the process streams). A failure that escapes the
 /// invoker (with `--trace`, conversion failures are rethrown) is reported
 /// with its backtrace and returns 1.
 Future<int> runCliCode(
@@ -62,8 +62,8 @@ Future<int> runCliCode(
     // Last-resort CLI boundary for anything that escapes, Errors included.
   } on Object catch (e, stackTrace) {
     // The reader of the output went away (`asciidoctor ... | head`).
-    if (isBrokenPipe(e)) return 0;
-    (err ?? stderr)
+    if (io.isBrokenPipe(e)) return 0;
+    (err ?? io.standardError)
       ..writeln(failureLine(e))
       ..writeln(stackTrace);
     return 1;

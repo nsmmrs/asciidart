@@ -5,7 +5,7 @@
 /// `convert`, `write`).
 library;
 
-import 'dart:io' show stdout;
+import 'package:asciidoctor/src/io.dart' as io;
 
 /// Measures the wall-clock time spent in each document processing phase.
 ///
@@ -86,14 +86,14 @@ class Timings {
   /// `null` when unrecorded.
   double? get total => time('read', 'parse', 'convert', 'write');
 
-  /// Prints the timing report to [to] (default [stdout]), headed by
+  /// Prints the timing report to [to] (default standard output), headed by
   /// `Input file: [subject]` when [subject] is given.
   ///
   /// Mirrors `Timings#print_report`, including the `%05.5f` rendering (always
   /// at least 7 characters wide, so plain 5-decimal fixed notation matches
   /// exactly) and the `0.00000` fallback for unrecorded phases.
   void printReport([StringSink? to, String? subject]) {
-    final out = to ?? stdout;
+    final out = to ?? io.standardOutput;
     if (subject != null) out.writeln('Input file: $subject');
     out
       ..writeln(

@@ -4,8 +4,8 @@
 /// `strict-raw-types`, which catch implicit `dynamic`. These checks catch
 /// what the analyzer allows: the explicit `dynamic` type anywhere in the
 /// sources, and `Object?` in the library outside the few places where an
-/// untyped value is the contract (the Mustache template context, `Map`
-/// overrides, and JavaScript interop).
+/// untyped value is the contract (the Mustache template context, `Map` and
+/// `StringSink` overrides).
 library;
 
 import 'dart:io';
@@ -20,8 +20,9 @@ const Map<String, String> objectBoundaries = {
   'lib/src/template.dart': 'Mustache render input',
   // `Map.operator []` and `Map.remove` take `Object?` keys.
   'lib/src/parser.dart': 'Map overrides on BlockAttributes',
-  // Node.js detection through `dart:js_interop`.
-  'lib/src/template_node_detect_js.dart': 'JavaScript interop',
+  // The I/O seam's `StringSink` implementations take `Object?` writes.
+  'lib/src/io/vm.dart': 'StringSink implementation',
+  'lib/src/io/js.dart': 'StringSink implementations',
 };
 
 /// The Dart sources under [roots], as paths relative to the package root.

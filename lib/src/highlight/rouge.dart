@@ -11,9 +11,8 @@
 /// boundaries (upstream, `RougeExt` guarantees this via `token_lines`).
 library;
 
-import 'dart:io';
-
 import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 
 /// Syntax-highlighter adapter for Rouge.
 ///
@@ -208,8 +207,10 @@ class RougeAdapter {
   /// Writes the Rouge stylesheet for the resolved style to [toDir]
   /// (`write_stylesheet`).
   void writeStylesheet(String toDir) {
-    File('$toDir/${stylesheetBasename(_style)}')
-        .writeAsStringSync(readStylesheet(_style));
+    io.writeString(
+      '$toDir/${stylesheetBasename(_style)}',
+      readStylesheet(_style),
+    );
   }
 
   /// Resolves a requested style name to a usable one.

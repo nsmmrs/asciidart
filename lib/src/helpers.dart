@@ -3,9 +3,8 @@
 /// Port of `lib/asciidoctor/helpers.rb`.
 library;
 
-import 'dart:io' show Directory, Platform;
-
 import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/rx.dart';
 
 /// Internal helper functions. Except where noted, everything here is internal.
@@ -131,7 +130,7 @@ abstract final class Helpers {
   /// Whether [unit] is a directory separator (`/` everywhere, plus `\` on
   /// Windows).
   static bool _isDirSeparator(int unit) =>
-      unit == 0x2f || (Platform.isWindows && unit == 0x5c);
+      unit == 0x2f || (io.isWindows && unit == 0x5c);
 
   /// Whether [base] has a non-dot character before [dotIdx] (i.e. the
   /// `.*` wildcard has a stem to preserve, as in `a..` but not `..`).
@@ -157,7 +156,7 @@ abstract final class Helpers {
     final lastDotIdx = path.lastIndexOf('.');
     if (lastDotIdx == -1) return fallback;
     if (path.indexOf('/', lastDotIdx) != -1) return fallback;
-    if (Platform.isWindows && path.indexOf(r'\', lastDotIdx) != -1) {
+    if (io.isWindows && path.indexOf(r'\', lastDotIdx) != -1) {
       return fallback;
     }
     return path.substring(lastDotIdx);
@@ -165,7 +164,7 @@ abstract final class Helpers {
 
   /// Makes directory [dir], ensuring all parent directories exist.
   static void mkdirP(String dir) {
-    Directory(dir).createSync(recursive: true);
+    io.createDirectories(dir);
   }
 
   static const Map<String, int> _romanNumeralsWithReducers = {

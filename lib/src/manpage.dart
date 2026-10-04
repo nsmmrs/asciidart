@@ -16,8 +16,6 @@
 /// `title`, `text`, `alt`, `captioned_title`, `xreftext`).
 library;
 
-import 'dart:io';
-
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/block.dart';
@@ -27,6 +25,7 @@ import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/list.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
@@ -1039,8 +1038,7 @@ class ManpageConverter extends ConverterBase {
     final manvolext = '.${_s(manvolnum)}';
     final (dir, basename) = _splitPath(target);
     for (final manname in mannames.skip(1)) {
-      File(_joinPath(dir, '$manname$manvolext'))
-          .writeAsStringSync('.so $basename');
+      io.writeString(_joinPath(dir, '$manname$manvolext'), '.so $basename');
     }
   }
 

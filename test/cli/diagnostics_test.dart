@@ -4,6 +4,7 @@ library;
 import 'dart:io';
 
 import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:test/test.dart';
 
 void main() {
@@ -37,10 +38,11 @@ void main() {
     test('adds the path and reason of a file system failure', () {
       expect(
         failureLine(
-          const FileSystemException(
+          const io.IoException(
             'Cannot open file',
-            '/tmp/x.adoc',
-            OSError('No such file or directory', 2),
+            path: '/tmp/x.adoc',
+            reason: 'No such file or directory',
+            errorCode: 2,
           ),
         ),
         equals(
@@ -49,35 +51,42 @@ void main() {
         ),
       );
       expect(
-        failureLine(const FileSystemException('failed to load /a: gone', '/a')),
+        failureLine(
+          const io.IoException('failed to load /a: gone', path: '/a'),
+        ),
         equals('asciidoctor: FAILED: failed to load /a: gone'),
       );
     });
   });
 
   group('isBrokenPipe', () {
+    test('recognizes a closed pipe reported by the seam', () {
+      expect(
+        io.isBrokenPipe(const io.IoException('write failed', errorCode: 32)),
+        isTrue,
+      );
+    });
+
     test('recognizes a closed output pipe', () {
       expect(
-        isBrokenPipe(
+        io.isBrokenPipe(
           const FileSystemException('writeFrom failed', '', OSError('', 32)),
         ),
         isTrue,
       );
       expect(
-        isBrokenPipe(const StdoutException('write failed', OSError('', 32))),
+        io.isBrokenPipe(const StdoutException('write failed', OSError('', 32))),
         isTrue,
       );
     });
 
     test('rejects other failures', () {
       expect(
-        isBrokenPipe(
-          const FileSystemException('Cannot open file', '', OSError('', 2)),
-        ),
+        io.isBrokenPipe(const io.IoException('Cannot open file', errorCode: 2)),
         isFalse,
       );
-      expect(isBrokenPipe(const AsciidoctorException('nope')), isFalse);
-      expect(isBrokenPipe(StateError('nope')), isFalse);
+      expect(io.isBrokenPipe(const AsciidoctorException('nope')), isFalse);
+      expect(io.isBrokenPipe(StateError('nope')), isFalse);
     });
   });
 }

@@ -27,11 +27,8 @@
 /// CPU cost to the conversion while the wall clock shows the `-j` win.
 library;
 
-import 'dart:isolate';
-
 import 'package:asciidoctor/src/cli/diagnostics.dart';
 import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/job_pool.dart';
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/options.dart';
@@ -99,13 +96,6 @@ final class ConversionResponse {
   /// The converted text, in STDOUT mode.
   final String? output;
 }
-
-/// Worker isolate entry point for conversion jobs.
-void conversionWorkerMain(SendPort mainPort) =>
-    serveJobs<ConversionRequest, ConversionResponse>(
-      mainPort,
-      runConversionJob,
-    );
 
 /// Converts the single input file described by [request].
 ///

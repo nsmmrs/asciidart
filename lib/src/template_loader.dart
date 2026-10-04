@@ -9,13 +9,12 @@
 ///
 /// ## The seam
 ///
-/// [TemplateLoader] is the platform seam: it resolves template directories
-/// to node name -> Mustache source with last-wins already applied. The three
-/// T5 implementations are [VmTemplateLoader] (`dart:io` scan, the `-T` CLI
-/// path), [NodeTemplateLoader] (Node `fs` via JS interop; stubbed until the
-/// npm/JS build lands) and [InMemoryTemplateLoader] (browser path + tests).
-/// [TemplateLoader] itself is defined in `template.dart` (single home for
-/// the seam contract).
+/// [TemplateLoader] resolves template directories to node name -> Mustache
+/// source with last-wins already applied. [FileTemplateLoader] scans the
+/// file system through the I/O seam (`io.dart`), so it serves the `-T` CLI
+/// path on the Dart VM and on Node.js alike; [InMemoryTemplateLoader] serves
+/// a browser and tests. [TemplateLoader] itself is defined in
+/// `template.dart`.
 ///
 /// ## Scan semantics
 ///
@@ -54,25 +53,23 @@
 /// 1) and rethrown under `--trace`.
 library;
 
-import 'dart:io' show Directory, File, FileSystemEntity, FileSystemException;
+import 'dart:convert' show utf8;
 
 import 'package:asciidoctor/src/errors.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/template.dart';
-import 'package:asciidoctor/src/template_node_detect_js.dart'
-    if (dart.library.io) 'template_node_detect_stub.dart'
-    as detect;
 
 /// The only file extension the VM scanner loads (ADR-0002 T1(b)).
 const String _mustacheExtension = '.mustache';
 
-/// Scans `template_dirs` for `*.mustache` files using `dart:io`.
+/// Scans `template_dirs` for `*.mustache` files.
 ///
-/// The Dart VM / AOT implementation of [TemplateLoader] (the `-T` CLI
+/// The file system implementation of [TemplateLoader] (the `-T` CLI
 /// path): every directory is scanned top-level only, missing entries are
 /// skipped, and later directories win for a repeated node name. The node
 /// name is the file basename minus `.mustache`.
-final class VmTemplateLoader implements TemplateLoader {
+final class FileTemplateLoader implements TemplateLoader {
   /// Creates a loader scanning [templateDirs] in order.
   ///
   /// [templateCacheStore] is the cache to use; otherwise [templateCache]
@@ -98,7 +95,7 @@ final class VmTemplateLoader implements TemplateLoader {
     for (final dir in templateDirs) {
       // Resolved with the path resolver, so relative spellings of one
       // directory share a cache entry.
-      final resolved = resolver.systemPath(dir, start: Directory.current.path);
+      final resolved = resolver.systemPath(dir, start: io.currentDirectory);
       final cached = _cache?.scans[resolved];
       if (cached != null) {
         merged.addAll(cached);
@@ -120,28 +117,28 @@ final class VmTemplateLoader implements TemplateLoader {
   /// Returns `null` when [templateDir] is not a directory (skipped);
   /// otherwise the node name -> source map (possibly empty).
   static Map<String, String>? _scanDir(String templateDir) {
-    final directory = Directory(templateDir);
-    if (!directory.existsSync()) return null;
-    final List<FileSystemEntity> entries;
+    if (!io.isDirectory(templateDir)) return null;
+    final List<String> files;
     try {
-      // Default `followLinks: true` counts a symlink to a file as a file;
-      // `recursive: false` keeps the scan top-level.
-      entries = directory.listSync();
-    } on FileSystemException {
+      // A symlink to a file counts as a file; the scan stays top-level.
+      files = [
+        for (final entry in io.listDirectory(templateDir))
+          if (entry.isFile) entry.path,
+      ];
+    } on io.IoException {
       // An unreadable directory yields nothing.
       return <String, String>{};
     }
     final result = <String, String>{};
-    for (final entry in entries) {
-      if (entry is! File) continue;
-      final basename = entry.path.split(RegExp(r'[\\/]')).last;
+    for (final file in files) {
+      final basename = file.split(RegExp(r'[\\/]')).last;
       if (!basename.endsWith(_mustacheExtension)) continue;
       final name = basename.substring(
         0,
         basename.length - _mustacheExtension.length,
       );
       if (name.isEmpty) continue;
-      result[name] = entry.readAsStringSync();
+      result[name] = utf8.decode(io.readBytes(file));
     }
     return result;
   }
@@ -161,41 +158,6 @@ final class InMemoryTemplateLoader implements TemplateLoader {
   @override
   Map<String, String> load() => Map.of(_templates);
 }
-
-/// Loads templates with Node.js `fs` (JS-on-Node stub).
-///
-/// The Node implementation of [TemplateLoader] (ADR-0002 T5): one npm
-/// bundle serves both JS environments, selected at runtime via
-/// [isRunningOnNode]. The `fs` interop ships with the deferred npm/JS
-/// build; until then [load] throws [UnimplementedError].
-final class NodeTemplateLoader implements TemplateLoader {
-  /// Creates a stub loader for [templateDirs] (kept for API symmetry with
-  /// [VmTemplateLoader]; unused until the npm work lands).
-  new({required List<String> templateDirs})
-    : templateDirs = List.unmodifiable(templateDirs);
-
-  /// The template directories to scan once implemented.
-  final List<String> templateDirs;
-
-  @override
-  Future<Map<String, String>> load() {
-    throw UnimplementedError(
-      'NodeTemplateLoader.load() is not implemented yet: reading template '
-      'directories with Node.js fs interop ships with the deferred npm/JS '
-      'build (ADR-0002 T5). On the Dart VM use VmTemplateLoader; in the '
-      'browser use InMemoryTemplateLoader.',
-    );
-  }
-}
-
-/// Whether the current runtime is Node.js.
-///
-/// Defensive port of `typeof process?.versions?.node === 'string'`, behind
-/// the platform seam: the `dart.library.io` conditional import selects the
-/// VM stub (always `false`, no `dart:js_interop` import) on native
-/// targets and the `dart:js_interop` walk on JS targets, so this helper is
-/// safe to call everywhere.
-bool isRunningOnNode() => detect.isRunningOnNode();
 
 /// Process-lifetime template caches.
 ///

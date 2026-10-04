@@ -21,9 +21,8 @@
 /// `systemPath` is `system_path`, ...).
 library;
 
-import 'dart:io';
-
 import 'package:asciidoctor/src/errors.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 
 /// Raised when a path breaches the jail and recovery is disabled.
 ///
@@ -45,11 +44,11 @@ class PathResolver {
     String? fileSeparator,
     String? workingDir,
     void Function(String message)? onWarn,
-  }) : fileSeparator = fileSeparator ?? Platform.pathSeparator,
+  }) : fileSeparator = fileSeparator ?? io.pathSeparator,
        onWarn = onWarn ?? _defaultWarn,
        workingDir = _resolveWorkingDir(
          workingDir,
-         fileSeparator ?? Platform.pathSeparator,
+         fileSeparator ?? io.pathSeparator,
        );
 
   /// Self (current directory) path segment.
@@ -108,19 +107,16 @@ class PathResolver {
       {};
 
   static void _defaultWarn(String message) {
-    stderr.writeln('asciidoctor: WARNING: $message');
+    io.standardError.writeln('asciidoctor: WARNING: $message');
   }
 
   static String _resolveWorkingDir(String? workingDir, String fileSeparator) {
     if (workingDir == null) {
-      return Directory.current.path;
+      return io.currentDirectory;
     } else if (_isRoot(workingDir, fileSeparator)) {
       return _posixify(workingDir, fileSeparator);
     } else {
-      return _expandPath(
-        '${Directory.current.path}/$workingDir',
-        fileSeparator,
-      );
+      return _expandPath('${io.currentDirectory}/$workingDir', fileSeparator);
     }
   }
 

@@ -22,18 +22,18 @@
 ///   symlinks are not resolved. Backslash folding applies on Windows only.
 library;
 
-import 'dart:convert' show utf8;
-import 'dart:io';
 import 'dart:math' show min;
 
 import 'package:asciidoctor/src/cli/diagnostics.dart';
 import 'package:asciidoctor/src/cli/options.dart';
 import 'package:asciidoctor/src/cli/parallel.dart';
+import 'package:asciidoctor/src/cli/workers.dart';
 import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/job_pool.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/options.dart';
+import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/remote.dart';
 import 'package:asciidoctor/src/timings.dart';
 
@@ -54,7 +54,7 @@ final class Invoker {
   ///
   /// [out] and [err] receive parse-time output (defaulting to the process
   /// streams); [environment] supplies environment variables (defaulting to
-  /// [Platform.environment]).
+  /// the process environment).
   new fromArgs(
     List<String> args, {
     StringSink? out,
@@ -114,7 +114,7 @@ final class Invoker {
     final options = _options;
     if (options == null) return;
 
-    final err = _err ?? stderr;
+    final err = _err ?? io.standardError;
     final infiles = options.inputFiles ?? <String>[];
     var outfile = options.outputFile;
     final sourceDir = options.sourceDir;
@@ -142,9 +142,7 @@ final class Invoker {
       if (outfile == '-') {
         final out = _out;
         if (out == null) {
-          // Mirrors `$stdout.set_encoding UTF_8`.
-          stdout.encoding = utf8;
-          sink = stdout;
+          sink = io.standardOutput;
         } else {
           sink = out;
         }
@@ -183,7 +181,7 @@ final class Invoker {
         _code = 1;
       }
     } catch (e) {
-      if (isBrokenPipe(e)) rethrow;
+      if (io.isBrokenPipe(e)) rethrow;
       _code = 1;
       if (options.trace) rethrow;
       err
@@ -268,7 +266,7 @@ final class Invoker {
   /// exit code match the sequential stop-at-first-failure exactly).
   Future<void> _invokeParallel() async {
     final options = _options!;
-    final err = _err ?? stderr;
+    final err = _err ?? io.standardError;
     final infiles = options.inputFiles ?? <String>[];
     final outfile = options.outputFile;
     final sourceDir = options.sourceDir;
@@ -286,8 +284,7 @@ final class Invoker {
       if (toStdout) {
         final out = _out;
         if (out == null) {
-          stdout.encoding = utf8;
-          sink = stdout;
+          sink = io.standardOutput;
         } else {
           sink = out;
         }
@@ -306,19 +303,9 @@ final class Invoker {
       ];
 
       final workerCount = min(options.jobs, infiles.length);
-      final pool =
-          await IsolateJobPool.spawn<ConversionRequest, ConversionResponse>(
-            size: workerCount,
-            entryPoint: conversionWorkerMain,
-          );
       final wallClock = Stopwatch()..start();
-      List<ConversionResponse> responses;
-      try {
-        responses = await pool.runOrdered(requests);
-      } finally {
-        wallClock.stop();
-        await pool.close();
-      }
+      final responses = await convertOnWorkers(requests, workerCount);
+      wallClock.stop();
 
       // Replay in input order. The first hard failure stops the replay like
       // the sequential loop's exception (later jobs' logs, output and
@@ -368,7 +355,7 @@ final class Invoker {
         _code = 1;
       }
     } catch (e) {
-      if (isBrokenPipe(e)) rethrow;
+      if (io.isBrokenPipe(e)) rethrow;
       _code = 1;
       if (options.trace) rethrow;
       err
@@ -455,35 +442,20 @@ final class Invoker {
 }
 
 /// Whether [path] is a named pipe.
-bool _isPipe(String path) {
-  try {
-    return FileSystemEntity.typeSync(path) == FileSystemEntityType.pipe;
-  } on Exception catch (_) {
-    return false;
-  }
-}
+bool _isPipe(String path) => io.isPipe(path);
 
 /// The absolute, lexically normalized form of [path] with forward slashes
 /// on Windows.
 String _expandPath(String path) {
-  var expanded = File(path).absolute.uri.normalizePath().toFilePath();
-  if (Platform.isWindows) expanded = expanded.replaceAll(r'\', '/');
-  if (expanded.length > 1 && expanded.endsWith('/')) {
-    expanded = expanded.substring(0, expanded.length - 1);
-  }
-  return expanded;
+  final resolver = PathResolver();
+  final absolute = resolver.isRoot(path)
+      ? path
+      : resolver.joinPath([io.currentDirectory, path]);
+  return resolver.expandPath(absolute);
 }
 
 /// Reads stdin fully and decodes it as UTF-8.
-String _readStdin() {
-  final bytes = <int>[];
-  while (true) {
-    final byte = stdin.readByteSync();
-    if (byte < 0) break;
-    bytes.add(byte);
-  }
-  return utf8.decode(bytes);
-}
+String _readStdin() => io.readStdin();
 
 /// The parent directory of an (expanded) absolute [path].
 String _dirname(String path) {

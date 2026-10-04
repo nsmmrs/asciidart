@@ -16,13 +16,13 @@
 library;
 
 import 'dart:convert' show base64Encode, utf8;
-import 'dart:io' show File, FileSystemException;
 
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/callouts.dart';
 import 'package:asciidoctor/src/document.dart' show Catalog;
 import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/remote.dart';
@@ -514,10 +514,10 @@ abstract class AbstractNode {
   /// Reads the file at [path], returning `null` when it does not exist or
   /// cannot be read.
   static List<int>? _readBytes(String path) {
-    if (!File(path).existsSync()) return null;
+    if (!io.isFile(path)) return null;
     try {
-      return File(path).readAsBytesSync();
-    } on FileSystemException {
+      return io.readBytes(path);
+    } on io.IoException {
       return null;
     }
   }
@@ -638,14 +638,14 @@ abstract class AbstractNode {
     bool normalize = false,
     String? label,
   }) {
-    if (File(path).existsSync()) {
+    if (io.isFile(path)) {
       try {
         // QUESTION should we chomp content if normalize is false?
-        final content = File(path).readAsStringSync();
+        final content = utf8.decode(io.readBytes(path));
         return normalize
             ? Helpers.prepareSourceString(content).join(lf)
             : content;
-      } on FileSystemException {
+      } on Exception {
         // Fall through to the warn-or-null path below (the file exists but
         // cannot be read).
       }

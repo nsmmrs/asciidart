@@ -43,6 +43,7 @@ export 'highlight/syntax_highlighter.dart';
 export 'html5.dart';
 export 'http_fetch.dart';
 export 'inline.dart';
+export 'io/types.dart';
 export 'job_pool.dart';
 export 'list.dart';
 export 'load.dart';

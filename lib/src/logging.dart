@@ -9,9 +9,8 @@
 /// `WARNING`, `FATAL` → `FAILED`) behave as in Asciidoctor.
 library;
 
-import 'dart:io' show File, FileMode, IOSink, pid, stderr;
-
 import 'package:asciidoctor/src/cursor.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 
 /// Severity levels for log messages.
 ///
@@ -129,7 +128,7 @@ final class DefaultFormatter implements LoggerFormatter {
     LogMessage message,
   ) {
     final label = severity.label;
-    return '${label[0]}, [${time.toIso8601String()} #$pid] '
+    return '${label[0]}, [${time.toIso8601String()} #${io.processId}] '
         '${label.padLeft(5)} -- $progname: $message\n';
   }
 }
@@ -233,7 +232,7 @@ class Logger extends LoggerBase {
     StringSink? sink,
     Severity level = Severity.warn,
     this.formatter = const BasicFormatter(),
-  }) : _sink = sink ?? stderr,
+  }) : _sink = sink ?? io.standardError,
        _ownsSink = false,
        super(level);
 
@@ -243,7 +242,7 @@ class Logger extends LoggerBase {
     String path, {
     Severity level = Severity.warn,
     this.formatter = const BasicFormatter(),
-  }) : _sink = File(path).openWrite(mode: FileMode.append),
+  }) : _sink = io.openAppend(path),
        _ownsSink = true,
        super(level);
 
@@ -277,7 +276,7 @@ class Logger extends LoggerBase {
   @override
   Future<void> close() async {
     final sink = _sink;
-    if (_ownsSink && sink is IOSink) await sink.close();
+    if (_ownsSink && sink is io.ClosableSink) await sink.close();
   }
 }
 

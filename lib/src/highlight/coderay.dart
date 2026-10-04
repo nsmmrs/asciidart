@@ -11,9 +11,8 @@
 /// never consulted.
 library;
 
-import 'dart:io';
-
 import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/stylesheets.dart';
 
 /// Syntax-highlighter adapter for CodeRay.
@@ -157,7 +156,7 @@ class CodeRayAdapter {
 
   /// Writes the CodeRay stylesheet to [toDir] (`write_stylesheet`).
   void writeStylesheet(String toDir) {
-    File('$toDir/$stylesheetBasename').writeAsStringSync(stylesheetData);
+    io.writeString('$toDir/$stylesheetBasename', stylesheetData);
   }
 
   /// The CodeRay stylesheet data (`read_stylesheet`).

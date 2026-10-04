@@ -9,7 +9,8 @@
 /// it `./init-config`.
 library;
 
-import 'dart:io';
+import 'package:asciidoctor/src/io.dart' as io;
+import 'package:asciidoctor/src/path_resolver.dart';
 
 /// Usage text for `init-config` (printed by `--help` and on misuse).
 const String initConfigUsage = '''
@@ -48,8 +49,8 @@ const String scaffoldSdkConstraint = '^3.13.0';
 /// (defaulting to stdout) and diagnostics to [err] (defaulting to
 /// stderr). Returns the process exit code (0 on success).
 int runInitConfig(List<String> args, {StringSink? out, StringSink? err}) {
-  final stdoutSink = out ?? stdout;
-  final stderrSink = err ?? stderr;
+  final stdoutSink = out ?? io.standardOutput;
+  final stderrSink = err ?? io.standardError;
   var force = false;
   String? dir;
   for (final arg in args) {
@@ -75,51 +76,52 @@ int runInitConfig(List<String> args, {StringSink? out, StringSink? err}) {
       return 1;
     }
   }
-  final target = Directory(dir ?? '.');
-  if (File(target.path).existsSync() && !Directory(target.path).existsSync()) {
+  final target = dir ?? '.';
+  if (io.exists(target) && !io.isDirectory(target)) {
     stderrSink.writeln(
-      'asciidoctor init-config: ${target.path} exists and is not a directory',
+      'asciidoctor init-config: $target exists and is not a directory',
     );
     return 1;
   }
+  final separator = io.pathSeparator;
   final name = _projectName(target);
   final files = <String, String>{
     'pubspec.yaml': _pubspec(name),
-    'lib${Platform.pathSeparator}transforms.dart': _transforms(),
-    'bin${Platform.pathSeparator}main.dart': _main(name),
+    'lib${separator}transforms.dart': _transforms(),
+    'bin${separator}main.dart': _main(name),
     'README.md': _readme(name),
   };
   final existing = files.keys
-      .where(
-        (relative) =>
-            File('${target.path}${Platform.pathSeparator}$relative')
-                .existsSync(),
-      )
+      .where((relative) => io.isFile('$target$separator$relative'))
       .toList();
   if (existing.isNotEmpty && !force) {
     stderrSink.writeln(
       'asciidoctor init-config: refusing to overwrite existing files in '
-      '${target.path}: ${existing.join(', ')} (use --force to overwrite)',
+      '$target: ${existing.join(', ')} (use --force to overwrite)',
     );
     return 1;
   }
-  target.createSync(recursive: true);
+  io.createDirectories(target);
   for (final entry in files.entries) {
-    final file = File('${target.path}${Platform.pathSeparator}${entry.key}');
-    file.parent.createSync(recursive: true);
-    file.writeAsStringSync(entry.value);
-    stdoutSink.writeln('created ${file.path}');
+    final path = '$target$separator${entry.key}';
+    io.createDirectories(path.substring(0, path.lastIndexOf(separator)));
+    io.writeString(path, entry.value);
+    stdoutSink.writeln('created $path');
   }
-  stdoutSink.writeln('next: cd ${target.path} && dart pub get');
+  stdoutSink.writeln('next: cd $target && dart pub get');
   return 0;
 }
 
-/// Derives a Dart package name from [target]'s basename.
-String _projectName(Directory target) {
-  final absolute = target.absolute.path;
-  final segments = absolute
-      .split(Platform.pathSeparator)
-      .where((segment) => segment.isNotEmpty);
+/// Derives a Dart package name from the basename of the [target]
+/// directory.
+String _projectName(String target) {
+  final resolver = PathResolver();
+  final absolute = resolver.expandPath(
+    resolver.isRoot(target)
+        ? target
+        : resolver.joinPath([io.currentDirectory, target]),
+  );
+  final segments = absolute.split('/').where((segment) => segment.isNotEmpty);
   final base = (segments.isEmpty ? '' : segments.last).toLowerCase();
   final sanitized = base.replaceAll(RegExp('[^a-z0-9_]'), '_');
   if (sanitized.isEmpty || RegExp('^[0-9]').hasMatch(sanitized)) {

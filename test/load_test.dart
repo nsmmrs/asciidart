@@ -404,11 +404,11 @@ void main() {
       expect(doc.attr('docfilesuffix'), equals('.asciidoc'));
     });
 
-    test('raises FileSystemException for missing file', () {
+    test('raises IoException for missing file', () {
       expect(
         () => loadFile('/no-such-dir/missing.adoc'),
         throwsA(
-          isA<FileSystemException>().having(
+          isA<IoException>().having(
             (e) => e.message,
             'message',
             isNot(contains('FAILED')),

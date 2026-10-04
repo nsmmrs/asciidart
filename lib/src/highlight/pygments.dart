@@ -10,9 +10,8 @@
 /// in which case the adapter falls back to escaped source.
 library;
 
-import 'dart:io';
-
 import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 
 /// Syntax-highlighter adapter for Pygments.
 ///
@@ -279,8 +278,10 @@ class PygmentsAdapter {
   /// Writes the Pygments stylesheet for the resolved style to [toDir]
   /// (`write_stylesheet`).
   void writeStylesheet(String toDir) {
-    File('$toDir/${stylesheetBasename(_style)}')
-        .writeAsStringSync(readStylesheet(_style));
+    io.writeString(
+      '$toDir/${stylesheetBasename(_style)}',
+      readStylesheet(_style),
+    );
   }
 
   /// Resolves a requested style name to a usable one.

@@ -79,25 +79,22 @@ Directory _makeTemplateDir(Map<String, String> files) {
 
 void main() {
   group('TemplateLoader seam contract', () {
-    test('all three loaders implement the shared interface', () {
-      final TemplateLoader vm = VmTemplateLoader(templateDirs: const []);
+    test('both loaders implement the shared interface', () {
+      final TemplateLoader files = FileTemplateLoader(templateDirs: const []);
       final TemplateLoader memory = InMemoryTemplateLoader(
         const <String, String>{},
       );
-      final TemplateLoader node = NodeTemplateLoader(templateDirs: const []);
       // The bound-method tear-offs pin the exact seam shape
       // `FutureOr<Map<String, String>> load()`: any signature drift fails
-      // to compile here (and in wave A's identical interface).
-      final vmLoad = vm.load;
+      // to compile here.
+      final filesLoad = files.load;
       final memoryLoad = memory.load;
-      final nodeLoad = node.load;
-      expect(vmLoad, isNotNull);
+      expect(filesLoad, isNotNull);
       expect(memoryLoad, isNotNull);
-      expect(nodeLoad, isNotNull);
     });
   });
 
-  group('VmTemplateLoader', () {
+  group('FileTemplateLoader', () {
     setUp(TemplateCache.clearCaches);
     tearDown(TemplateCache.clearCaches);
 
@@ -106,7 +103,7 @@ void main() {
         'paragraph.mustache': '<p>{{content}}</p>',
         'document.mustache': '<html>{{content}}</html>',
       });
-      final loaded = VmTemplateLoader(templateDirs: [dir.path]).load();
+      final loaded = FileTemplateLoader(templateDirs: [dir.path]).load();
       expect(
         loaded,
         equals({
@@ -124,7 +121,7 @@ void main() {
         'nested/document.mustache': 'too deep',
         '.mustache': 'nameless',
       });
-      final loaded = VmTemplateLoader(templateDirs: [dir.path]).load();
+      final loaded = FileTemplateLoader(templateDirs: [dir.path]).load();
       expect(loaded, isEmpty);
     });
 
@@ -134,11 +131,11 @@ void main() {
         'only-first.mustache': 'first',
       });
       final second = _makeTemplateDir({'paragraph.mustache': 'second'});
-      final loaded = VmTemplateLoader(templateDirs: [first.path, second.path])
+      final loaded = FileTemplateLoader(templateDirs: [first.path, second.path])
           .load();
       expect(loaded, equals({'paragraph': 'second', 'only-first': 'first'}));
       // Reversed order reverses the winner.
-      final flipped = VmTemplateLoader(
+      final flipped = FileTemplateLoader(
         templateDirs: [second.path, first.path],
         templateCache: false,
       ).load();
@@ -148,19 +145,19 @@ void main() {
     test('skips missing directories and file paths', () {
       final dir = _makeTemplateDir({'paragraph.mustache': 'kept'});
       final notADir = File('${dir.path}/paragraph.mustache').path;
-      final loaded = VmTemplateLoader(
+      final loaded = FileTemplateLoader(
         templateDirs: ['/no/such/dir', notADir, dir.path],
       ).load();
       expect(loaded, equals({'paragraph': 'kept'}));
     });
 
     test('empty templateDirs loads an empty map', () {
-      expect(VmTemplateLoader(templateDirs: const []).load(), isEmpty);
+      expect(FileTemplateLoader(templateDirs: const []).load(), isEmpty);
     });
 
     test('returns a fresh map per load', () {
       final dir = _makeTemplateDir({'paragraph.mustache': 'x'});
-      final loader = VmTemplateLoader(templateDirs: [dir.path]);
+      final loader = FileTemplateLoader(templateDirs: [dir.path]);
       final first = loader.load();
       first['paragraph'] = 'mutated';
       first['extra'] = 'mutated';
@@ -169,21 +166,21 @@ void main() {
 
     test('caches scans by default within the process', () {
       final dir = _makeTemplateDir({'paragraph.mustache': 'v1'});
-      final loader = VmTemplateLoader(templateDirs: [dir.path]);
+      final loader = FileTemplateLoader(templateDirs: [dir.path]);
       expect(loader.load(), equals({'paragraph': 'v1'}));
       File('${dir.path}/paragraph.mustache').writeAsStringSync('v2');
       // The shared cache still serves the first scan ...
       expect(loader.load(), equals({'paragraph': 'v1'}));
       // ... even for a second loader over the same directory.
       expect(
-        VmTemplateLoader(templateDirs: [dir.path]).load(),
+        FileTemplateLoader(templateDirs: [dir.path]).load(),
         equals({'paragraph': 'v1'}),
       );
     });
 
     test('templateCache false disables the cache', () {
       final dir = _makeTemplateDir({'paragraph.mustache': 'v1'});
-      final loader = VmTemplateLoader(
+      final loader = FileTemplateLoader(
         templateDirs: [dir.path],
         templateCache: false,
       );
@@ -197,7 +194,7 @@ void main() {
     test('a custom TemplateCache store is populated and shared', () {
       final dir = _makeTemplateDir({'paragraph.mustache': 'v1'});
       final custom = TemplateCache();
-      final loader = VmTemplateLoader(
+      final loader = FileTemplateLoader(
         templateDirs: [dir.path],
         templateCacheStore: custom,
       );
@@ -207,7 +204,7 @@ void main() {
       File('${dir.path}/paragraph.mustache').writeAsStringSync('v2');
       // The custom store serves the stale scan to a second loader.
       expect(
-        VmTemplateLoader(
+        FileTemplateLoader(
           templateDirs: [dir.path],
           templateCacheStore: custom,
         ).load(),
@@ -217,7 +214,7 @@ void main() {
 
     test('clearCaches drops shared scan entries', () {
       final dir = _makeTemplateDir({'paragraph.mustache': 'v1'});
-      final loader = VmTemplateLoader(templateDirs: [dir.path]);
+      final loader = FileTemplateLoader(templateDirs: [dir.path]);
       expect(loader.load(), equals({'paragraph': 'v1'}));
       File('${dir.path}/paragraph.mustache').writeAsStringSync('v2');
       TemplateCache.clearCaches();
@@ -226,7 +223,7 @@ void main() {
 
     test('relative spellings of one directory share a cache entry', () {
       final dir = _makeTemplateDir({'paragraph.mustache': 'v1'});
-      final loader = VmTemplateLoader(
+      final loader = FileTemplateLoader(
         templateDirs: [dir.path, '${dir.path}/.'],
       );
       expect(loader.load(), equals({'paragraph': 'v1'}));
@@ -244,29 +241,6 @@ void main() {
       final loaded = loader.load();
       loaded['paragraph'] = 'mutated';
       expect(loader.load(), equals({'paragraph': 'a'}));
-    });
-  });
-
-  group('NodeTemplateLoader', () {
-    test('load throws UnimplementedError naming the npm work', () {
-      final loader = NodeTemplateLoader(templateDirs: const ['dir']);
-      expect(
-        loader.load,
-        throwsA(
-          isA<UnimplementedError>().having(
-            (e) => e.message,
-            'message',
-            contains('npm/JS build'),
-          ),
-        ),
-      );
-    });
-
-    test('isRunningOnNode is false on the VM', () {
-      // The conditional import selects the stub (no dart:js_interop) on
-      // native targets; the JS side is proven by compiling the probe in
-      // /tmp (see the wave report) and running it under node.
-      expect(isRunningOnNode(), isFalse);
     });
   });
 

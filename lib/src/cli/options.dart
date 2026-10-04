@@ -46,20 +46,10 @@
 library;
 
 import 'dart:convert';
-import 'dart:io'
-    show
-        Directory,
-        File,
-        FileSystemEntity,
-        FileSystemEntityType,
-        Platform,
-        Process,
-        gzip,
-        stderr,
-        stdout;
 
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/cli/help_topics.g.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/version.dart';
 
@@ -445,7 +435,7 @@ final class CliOptions {
   ///
   /// [out] and [err] receive STDOUT and STDERR output (defaulting to the
   /// process streams); [environment] supplies environment variables
-  /// (defaulting to [Platform.environment]) and is consulted only for
+  /// (defaulting to the process environment) and is consulted only for
   /// `ASCIIDOCTOR_MANPAGE_PATH`.
   ///
   /// Throws [AmbiguousCliOptionException] for abbreviated long options
@@ -458,9 +448,9 @@ final class CliOptions {
     StringSink? err,
     Map<String, String>? environment,
   }) {
-    final outSink = out ?? stdout;
-    final errSink = err ?? stderr;
-    final env = environment ?? Platform.environment;
+    final outSink = out ?? io.standardOutput;
+    final errSink = err ?? io.standardError;
+    final env = environment ?? io.environment;
 
     final positionals = <String>[];
     var endOfOptions = false;
@@ -517,7 +507,7 @@ final class CliOptions {
         } else {
           // NOTE only attempt to glob if file is not found.
           // Turn backslashes in Windows paths into forward slashes.
-          if (Platform.isWindows && file.contains(r'\')) {
+          if (io.isWindows && file.contains(r'\')) {
             file = file.replaceAll(r'\', '/');
           }
           final matches = _glob(file);
@@ -533,18 +523,16 @@ final class CliOptions {
 
     for (final file in infiles) {
       if (file == '-') continue;
-      final type = FileSystemEntity.typeSync(file);
-      if (type == FileSystemEntityType.directory) {
+      if (io.isDirectory(file)) {
         errSink.writeln(
           'asciidoctor: FAILED: input path $file is a directory, not a file',
         );
         return 1;
       }
-      if (type == FileSystemEntityType.file ||
-          type == FileSystemEntityType.pipe) {
+      if (io.isFile(file) || io.isPipe(file)) {
         // Permission-bit approximation of `File::Stat#readable?` (see the
         // library docs). Never open the file: opening a fifo would block.
-        if ((File(file).statSync().mode & 0x124) == 0) {
+        if (!io.isReadable(file)) {
           errSink.writeln(
             'asciidoctor: FAILED: input file $file is not readable',
           );
@@ -571,11 +559,11 @@ final class CliOptions {
   /// Port of `Options#print_version`; the runtime line also names this
   /// package and its version. Always returns 0.
   int printVersion([StringSink? out]) {
-    (out ?? stdout)
+    (out ?? io.standardOutput)
       ..writeln('Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]')
       ..writeln(
         'Runtime Environment (asciidoctor-dart ${Asciidoctor.packageVersion}; '
-        'Dart ${Platform.version}) '
+        '${io.runtimeName}) '
         '(lc:UTF-8 fs:UTF-8 in:UTF-8 ex:UTF-8)',
       );
     return 0;
@@ -620,7 +608,7 @@ final class CliOptions {
   ) {
     final override = env['ASCIIDOCTOR_MANPAGE_PATH'];
     if (override != null) {
-      if (File(override).existsSync()) {
+      if (io.isFile(override)) {
         _putsManpage(outSink, override);
       } else {
         errSink.writeln(
@@ -636,15 +624,10 @@ final class CliOptions {
       _putsContent(outSink, HelpTopics.manpage);
       return 0;
     } else {
-      var resolved = '';
-      try {
-        final result = Process.runSync('man', ['-w', 'asciidoctor']);
-        resolved = result.stdout.toString();
-        if (resolved.endsWith('\n')) {
-          resolved = resolved.substring(0, resolved.length - 1);
-        }
-      } on Exception catch (_) {
-        // A failing `man -w` call counts as no result.
+      // A failing `man -w` call counts as no result.
+      var resolved = io.commandOutput('man', ['-w', 'asciidoctor']) ?? '';
+      if (resolved.endsWith('\n')) {
+        resolved = resolved.substring(0, resolved.length - 1);
       }
       if (resolved.isEmpty) {
         errSink.writeln(
@@ -1007,18 +990,12 @@ Severity _severityForLevel(String value) {
 }
 
 /// Port of `File.file?` (follows links).
-bool _isFile(String path) {
-  try {
-    return FileSystemEntity.typeSync(path) == FileSystemEntityType.file;
-  } on Exception catch (_) {
-    return false;
-  }
-}
+bool _isFile(String path) => io.isFile(path);
 
 /// Writes [path] to [sink] with `puts` semantics (exactly one trailing
 /// newline), read as UTF-8.
 void _putsFile(StringSink sink, String path) {
-  final content = File(path).readAsStringSync();
+  final content = utf8.decode(io.readBytes(path));
   sink.write(content);
   if (!content.endsWith('\n')) sink.writeln();
 }
@@ -1032,7 +1009,7 @@ void _putsContent(StringSink sink, String content) {
 
 /// Writes gzip-compressed [path] to [sink] with `puts` semantics.
 void _putsGzipFile(StringSink sink, String path) {
-  final content = utf8.decode(gzip.decode(File(path).readAsBytesSync()));
+  final content = utf8.decode(io.gunzip(io.readBytes(path)));
   sink.write(content);
   if (!content.endsWith('\n')) sink.writeln();
 }
@@ -1051,13 +1028,18 @@ void _putsManpage(StringSink sink, String path) {
 ///
 /// Returns the path, or `null` when no enclosing directory holds it.
 String? _findCheckoutFile(List<String> segments) {
-  final relative = segments.join(Platform.pathSeparator);
-  var dir = Directory.current;
+  final separator = io.pathSeparator;
+  final relative = segments.join(separator);
+  var dir = io.currentDirectory;
   for (var depth = 0; depth <= 10; depth++) {
-    final candidate = '${dir.path}${Platform.pathSeparator}$relative';
-    if (File(candidate).existsSync()) return candidate;
-    final parent = dir.parent;
-    if (parent.path == dir.path) return null;
+    final candidate = dir.endsWith(separator)
+        ? '$dir$relative'
+        : '$dir$separator$relative';
+    if (io.isFile(candidate)) return candidate;
+    final cut = dir.lastIndexOf(separator);
+    if (cut < 0 || dir.length == 1) return null;
+    final parent = cut == 0 ? separator : dir.substring(0, cut);
+    if (parent == dir) return null;
     dir = parent;
   }
   return null;
@@ -1077,7 +1059,7 @@ List<String> _glob(String pattern) {
   if (!_hasMagic(pattern)) {
     return _entityExists(pattern) ? [pattern] : [];
   }
-  final isWindows = Platform.isWindows;
+  final isWindows = io.isWindows;
   var root = '';
   var rest = pattern;
   final drive = RegExp('^[A-Za-z]:/').firstMatch(pattern);
@@ -1112,7 +1094,7 @@ List<String> _glob(String pattern) {
   for (final candidate in candidates) {
     final path = _joinRoot(root, candidate);
     if (trailingSlash) {
-      if (_entityType(path) == FileSystemEntityType.directory) {
+      if (io.isDirectory(path.isEmpty ? '.' : path)) {
         results.add('$path/');
       }
     } else {
@@ -1158,19 +1140,8 @@ String _rootAsDir(String root) {
   return root;
 }
 
-/// The entity type at [path], or [FileSystemEntityType.notFound].
-FileSystemEntityType _entityType(String path) {
-  final target = path.isEmpty ? '.' : path;
-  try {
-    return FileSystemEntity.typeSync(target);
-  } on Exception catch (_) {
-    return FileSystemEntityType.notFound;
-  }
-}
-
 /// Whether any filesystem node exists at [path].
-bool _entityExists(String path) =>
-    _entityType(path) != FileSystemEntityType.notFound;
+bool _entityExists(String path) => io.exists(path.isEmpty ? '.' : path);
 
 /// The base-joined relative paths of every directory under the glob
 /// [root]/[base], recursively (excluding [base] itself; the `**` caller adds
@@ -1183,15 +1154,15 @@ List<String> _directoriesUnder(String root, String base) {
   final queue = [(path: start, relative: base)];
   while (queue.isNotEmpty) {
     final current = queue.removeLast();
-    List<FileSystemEntity> entries;
+    List<io.DirectoryEntry> entries;
     try {
-      entries = Directory(current.path).listSync();
+      entries = io.listDirectory(current.path);
     } on Exception catch (_) {
       continue;
     }
     for (final entry in entries) {
-      if (entry is! Directory) continue;
-      final name = _basename(entry.path);
+      if (!entry.isDirectory) continue;
+      final name = entry.name;
       final relative = current.relative.isEmpty
           ? name
           : '${current.relative}/$name';
@@ -1207,28 +1178,20 @@ List<String> _directoriesUnder(String root, String base) {
 /// Matches one path segment against [matcher] inside the glob [root]/[base].
 List<String> _matchSegment(String root, String base, _SegmentMatcher matcher) {
   final dirPath = base.isEmpty ? _rootAsDir(root) : _joinRoot(root, base);
-  List<FileSystemEntity> entries;
+  List<io.DirectoryEntry> entries;
   try {
-    entries = Directory(dirPath).listSync();
+    entries = io.listDirectory(dirPath);
   } on Exception catch (_) {
     return [];
   }
   final matches = <String>[];
   for (final entry in entries) {
-    final name = _basename(entry.path);
+    final name = entry.name;
     if (matcher.matches(name)) {
       matches.add(base.isEmpty ? name : '$base/$name');
     }
   }
   return matches;
-}
-
-/// The final component of [path].
-String _basename(String path) {
-  final slash = path.lastIndexOf('/');
-  final backslash = Platform.isWindows ? path.lastIndexOf(r'\') : -1;
-  final cut = slash > backslash ? slash : backslash;
-  return cut < 0 ? path : path.substring(cut + 1);
 }
 
 /// A compiled single-segment glob matcher.

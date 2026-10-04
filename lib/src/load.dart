@@ -12,13 +12,6 @@
 library;
 
 import 'dart:convert' show utf8;
-import 'dart:io'
-    show
-        Directory,
-        File,
-        FileSystemEntity,
-        FileSystemEntityType,
-        FileSystemException;
 
 import 'package:asciidoctor/src/abstract_node.dart' show SafeMode;
 import 'package:asciidoctor/src/constants.dart' show defaultStylesheetKeys;
@@ -28,6 +21,7 @@ import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/helpers.dart' show Helpers;
 import 'package:asciidoctor/src/html5.dart' show Html5Converter;
 import 'package:asciidoctor/src/http_fetch.dart' show fetchHttp;
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/logging.dart' show LoggerManager;
 import 'package:asciidoctor/src/options.dart';
 import 'package:asciidoctor/src/path_resolver.dart' show PathResolver;
@@ -57,9 +51,8 @@ Document loadFile(
   AsciidoctorOptions options = const AsciidoctorOptions(),
   bool parse = true,
 }) {
-  final file = File(path);
-  _probeReadable(file);
-  return _load(_Input.file(file), options, parse: parse);
+  _probeReadable(path);
+  return _load(_Input.file(path), options, parse: parse);
 }
 
 /// Converts the AsciiDoc [source] (an empty document when `null`) and
@@ -96,9 +89,8 @@ Document convertFile(
   AsciidoctorOptions options = const AsciidoctorOptions(),
   StringSink? output,
 ]) {
-  final file = File(path);
-  _probeReadable(file);
-  return _convert(_Input.file(file), options, output);
+  _probeReadable(path);
+  return _convert(_Input.file(path), options, output);
 }
 
 /// Converts the AsciiDoc [source] (an empty document when `null`) and
@@ -124,7 +116,7 @@ Document convertToTarget(
 ///
 /// When the `allow-uri-read` attribute is set, the remote content the
 /// document needs (includes, assets read from a URI) is fetched with
-/// [fetch] (HTTP GET by default) and supplied through
+/// [fetch] (an HTTP GET by default) and supplied through
 /// [AsciidoctorOptions.uriReader]; see [convertAsync].
 Future<Document> loadAsync(
   String? source, {
@@ -144,9 +136,8 @@ Future<Document> loadFileAsync(
   bool parse = true,
   UriFetcher fetch = fetchHttp,
 }) async {
-  final file = File(path);
-  _probeReadable(file);
-  final input = _Input.file(file);
+  _probeReadable(path);
+  final input = _Input.file(path);
   final reader = await _prefetch(input, options, fetch, convert: false);
   return _load(input, options.copyWith(uriReader: reader), parse: parse);
 }
@@ -156,7 +147,7 @@ Future<Document> loadFileAsync(
 /// When the `allow-uri-read` attribute is set, the document is converted
 /// once silently to find the remote content it reads (includes, images
 /// embedded as data URIs, stylesheets and other assets read from a URI),
-/// which is fetched with [fetch] (HTTP GET by default); this repeats until
+/// which is fetched with [fetch] (an HTTP GET by default); this repeats until
 /// no new content is needed, since fetched content can refer to more.
 /// The document is then converted for real with the fetched content
 /// supplied through [AsciidoctorOptions.uriReader]. Content that cannot be
@@ -181,9 +172,8 @@ Future<Document> convertFileAsync(
   StringSink? output,
   UriFetcher fetch = fetchHttp,
 ]) async {
-  final file = File(path);
-  _probeReadable(file);
-  final reader = await _prefetch(_Input.file(file), options, fetch);
+  _probeReadable(path);
+  final reader = await _prefetch(_Input.file(path), options, fetch);
   return convertFile(path, options.copyWith(uriReader: reader), output);
 }
 
@@ -212,8 +202,8 @@ Future<void> prefetchRemoteContent(
   String? source,
   UriFetcher fetch = fetchHttp,
 }) async {
-  final input = path == null ? _Input.text(source) : _Input.file(File(path));
-  if (path != null) _probeReadable(File(path));
+  final input = path == null ? _Input.text(source) : _Input.file(path);
+  if (path != null) _probeReadable(path);
   await _prefetch(input, options, fetch, cache: cache);
 }
 
@@ -315,10 +305,12 @@ Future<void> _fetchInto(
 /// The source of a document: AsciiDoc text or a file.
 final class _Input {
   const new text(this.text) : file = null;
-  const new file(File this.file) : text = null;
+  const new file(String this.file) : text = null;
 
   final String? text;
-  final File? file;
+
+  /// The path of the input file.
+  final String? file;
 }
 
 Document _load(_Input input, AsciidoctorOptions options, {bool parse = true}) {
@@ -339,10 +331,10 @@ Document _load(_Input input, AsciidoctorOptions options, {bool parse = true}) {
     final String? source;
     final file = input.file;
     if (file != null) {
-      final inputPath = docfile = _expandPath(file.path);
+      final inputPath = docfile = _expandPath(file);
       final docfilesuffix = Helpers.extname(inputPath) ?? '';
       opts = opts.copyWith(
-        inputMtime: file.lastModifiedSync(),
+        inputMtime: io.modificationTime(file),
         attributes: <String, String?>{
           ...opts.attributes,
           'docfile': inputPath,
@@ -393,7 +385,7 @@ Document _convert(
     siblingPath = null;
     writeToTarget = true;
   } else {
-    siblingPath = _expandPath(inputFile!.path);
+    siblingPath = _expandPath(inputFile!);
     writeToTarget = false;
   }
 
@@ -440,7 +432,7 @@ Document _convert(
     final baseDir = opts.baseDir;
     final workingDir = baseDir != null
         ? _expandPath(baseDir)
-        : Directory.current.path;
+        : io.currentDirectory;
     // QUESTION should the jail be the working_dir or doc.base_dir???
     final jail = doc.safe >= SafeMode.safe ? workingDir : null;
     if (toDir != null) {
@@ -480,7 +472,7 @@ Document _convert(
       outdir = _dirname(resolvedOutfile);
     }
 
-    if (inputFile != null && outfile == _expandPath(inputFile.path)) {
+    if (inputFile != null && outfile == _expandPath(inputFile)) {
       throw AsciidoctorException(
         'input file and output file cannot be the same: $outfile',
       );
@@ -488,7 +480,7 @@ Document _convert(
 
     if (mkdirs) {
       Helpers.mkdirP(outdir);
-    } else if (!Directory(outdir).existsSync()) {
+    } else if (!io.isDirectory(outdir)) {
       // NOTE the directory is intentionally reported as it was passed.
       throw AsciidoctorException(
         'target directory does not exist: ${toDir ?? outdir} '
@@ -543,7 +535,7 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
   );
   if (mkdirs) {
     Helpers.mkdirP(stylesoutdir);
-  } else if (!Directory(stylesoutdir).existsSync()) {
+  } else if (!io.isDirectory(stylesoutdir)) {
     throw AsciidoctorException(
       'target stylesheet directory does not exist: $stylesoutdir '
       '(set the mkdirs option to create it)',
@@ -571,13 +563,13 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
     if (stylesheetSrc != stylesheetDest) {
       final stylesheetData = doc.readAsset(
         stylesheetSrc,
-        warnOnFailure: !File(stylesheetDest).existsSync(),
+        warnOnFailure: !io.isFile(stylesheetDest),
         label: 'stylesheet',
       );
       if (stylesheetData != null) {
         final stylesheetOutdir = _dirname(stylesheetDest);
         if (stylesheetOutdir != stylesoutdir &&
-            !Directory(stylesheetOutdir).existsSync()) {
+            !io.isDirectory(stylesheetOutdir)) {
           if (!mkdirs) {
             throw AsciidoctorException(
               'target stylesheet directory does not exist: $stylesoutdir '
@@ -586,34 +578,28 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
           }
           Helpers.mkdirP(stylesheetOutdir);
         }
-        File(stylesheetDest).writeAsStringSync(stylesheetData);
+        io.writeString(stylesheetDest, stylesheetData);
       }
     }
   }
   if (copySyntaxHlStylesheet) syntaxHl!.writeStylesheet(doc, stylesoutdir);
 }
 
-/// Opens [file] eagerly so that open errors (missing file, directory,
-/// permissions) propagate unwrapped.
+/// Opens the file at [path] eagerly so that open errors (missing file,
+/// directory, permissions) propagate unwrapped.
 ///
 /// Named pipes are exempt: an eager probe would consume the writer
 /// rendezvous and leave the real read blocked forever.
-void _probeReadable(File file) {
-  try {
-    if (FileSystemEntity.typeSync(file.path) == FileSystemEntityType.pipe) {
-      return;
-    }
-  } on Exception catch (_) {
-    // Fall through to the probe, which raises the InvalidPath error.
-  }
-  file.openSync().closeSync();
+void _probeReadable(String path) {
+  if (io.isPipe(path)) return;
+  io.probeReadable(path);
 }
 
-/// Reads [file] as UTF-8, strictly.
+/// Reads the file at [path] as UTF-8, strictly.
 ///
-/// Undecodable bytes raise an invalid-data [ArgumentError].
-String _readFileString(File file) {
-  final bytes = file.readAsBytesSync();
+/// Undecodable bytes raise an [AsciidoctorException].
+String _readFileString(String path) {
+  final bytes = io.readBytes(path);
   try {
     return utf8.decode(bytes);
   } on FormatException {
@@ -629,7 +615,7 @@ String _readFileString(File file) {
 String _expandPath(String path, [String? base]) {
   final resolver = PathResolver();
   if (resolver.isRoot(path)) return resolver.expandPath(path);
-  var start = base ?? Directory.current.path;
+  var start = base ?? io.currentDirectory;
   if (start.length > 1) start = start.replaceAll(RegExp(r'/+$'), '');
   return resolver.expandPath(resolver.joinPath([start, path]));
 }
@@ -672,7 +658,17 @@ Object _withContext(Object error, String context) => switch (error) {
   AsciidoctorException(:final message) => AsciidoctorException(
     '$context: $message',
   ),
-  FileSystemException(:final message, :final path, :final osError) =>
-    FileSystemException('$context: $message', path, osError),
+  io.IoException(
+    :final message,
+    :final path,
+    :final reason,
+    :final errorCode,
+  ) =>
+    io.IoException(
+      '$context: $message',
+      path: path,
+      reason: reason,
+      errorCode: errorCode,
+    ),
   _ => error,
 };

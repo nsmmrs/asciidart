@@ -19,7 +19,6 @@
 library;
 
 import 'dart:convert' show utf8;
-import 'dart:io' show Directory, File, Platform;
 
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
@@ -34,6 +33,7 @@ import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
 import 'package:asciidoctor/src/html5.dart';
 import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/manpage.dart';
 import 'package:asciidoctor/src/options.dart';
 import 'package:asciidoctor/src/parser.dart';
@@ -544,7 +544,7 @@ class Document extends AbstractBlock implements NodeDocument {
     } else if (docdirOverride is _SetValue) {
       baseDir = docdirOverride.value;
     } else {
-      baseDir = Directory.current.path;
+      baseDir = io.currentDirectory;
       attrOverrides['docdir'] = _SetValue(baseDir);
     }
 
@@ -1298,7 +1298,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// the manpage converter produces.
   void writeFile(String output, String path) {
     _timings?.start('write');
-    File(path).writeAsStringSync(output);
+    io.writeString(path, output);
     // Only when the converter itself writes alternate pages (the manpage
     // converter, not a template or composite chain).
     if (backend == 'manpage' && converter is ManpageConverter) {
@@ -1748,7 +1748,7 @@ class Document extends AbstractBlock implements NodeDocument {
     DateTime? inputMtime,
   ) {
     // See https://reproducible-builds.org/specs/source-date-epoch/
-    final epochEnv = Platform.environment['SOURCE_DATE_EPOCH'];
+    final epochEnv = io.environment['SOURCE_DATE_EPOCH'];
     final DateTime now;
     final DateTime? sourceDateEpoch;
     if (epochEnv == null || epochEnv.isEmpty) {
@@ -1971,13 +1971,12 @@ class Document extends AbstractBlock implements NodeDocument {
   String _expandBaseDir(String path) {
     final absolute = pathResolver.isRoot(path)
         ? path
-        : pathResolver.joinPath(<String>[Directory.current.path, path]);
+        : pathResolver.joinPath(<String>[io.currentDirectory, path]);
     return pathResolver.expandPath(absolute);
   }
 
   /// The user's home directory.
-  static String get _userHome =>
-      Platform.environment['HOME'] ?? Directory.current.path;
+  static String get _userHome => io.environment['HOME'] ?? io.currentDirectory;
 
   /// Mirrors a `showtitle`/`notitle` API override to its counterpart: an
   /// unset sets the counterpart, a soft unset sets it softly (`@`), a soft

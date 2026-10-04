@@ -7,9 +7,8 @@
 /// strings are identical: file contents with trailing whitespace stripped.
 library;
 
-import 'dart:io';
-
 import 'package:asciidoctor/src/data.g.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 
 /// A utility class for working with the built-in stylesheets.
 ///
@@ -55,8 +54,7 @@ class Stylesheets {
 
   /// Writes the primary stylesheet to [targetDir].
   void writePrimaryStylesheet([String targetDir = '.']) {
-    File('$targetDir/$primaryStylesheetName')
-        .writeAsStringSync(primaryStylesheetData);
+    io.writeString('$targetDir/$primaryStylesheetName', primaryStylesheetData);
   }
 
   /// The file name of the default CodeRay stylesheet.
@@ -69,8 +67,7 @@ class Stylesheets {
 
   /// Writes the CodeRay stylesheet to [targetDir].
   void writeCoderayStylesheet([String targetDir = '.']) {
-    File('$targetDir/$coderayStylesheetName')
-        .writeAsStringSync(coderayStylesheetData);
+    io.writeString('$targetDir/$coderayStylesheetName', coderayStylesheetData);
   }
 
   /// The file name of the Pygments stylesheet for [style].
@@ -87,8 +84,10 @@ class Stylesheets {
 
   /// Writes the Pygments stylesheet for [style] to [targetDir].
   void writePygmentsStylesheet([String targetDir = '.', String? style]) {
-    File('$targetDir/${pygmentsStylesheetName(style)}')
-        .writeAsStringSync(pygmentsStylesheetData(style));
+    io.writeString(
+      '$targetDir/${pygmentsStylesheetName(style)}',
+      pygmentsStylesheetData(style),
+    );
   }
 }
 

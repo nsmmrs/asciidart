@@ -208,7 +208,7 @@ String fixturePath(String name) => 'test/fixtures/$name';
 /// Creates a template directory holding [files] (name to source).
 ///
 /// The directory is deleted after the test. Names are flat Mustache
-/// filenames (`paragraph.mustache`); see [VmTemplateLoader] for the
+/// filenames (`paragraph.mustache`); see [FileTemplateLoader] for the
 /// resolution semantics.
 Directory makeTemplateDir(Map<String, String> files) {
   final dir = Directory.systemTemp.createTempSync('converter-template-test');

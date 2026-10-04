@@ -45,7 +45,7 @@ import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/template.dart'
     show TemplateRegistry, buildTemplateChain;
 import 'package:asciidoctor/src/template_loader.dart'
-    show TemplateCache, VmTemplateLoader, validateTemplateEngine;
+    show FileTemplateLoader, TemplateCache, validateTemplateEngine;
 
 /// Trailing digits stripped from a backend name to derive its base backend.
 final RegExp _trailingDigits = RegExp(r'\d+$');
@@ -210,7 +210,7 @@ Converter? _createFrom(
 
 /// Builds the template chain for ([backend], [opts]) with [fallback].
 ///
-/// Loads `*.mustache` sources through [VmTemplateLoader] (last-wins
+/// Loads `*.mustache` sources through [FileTemplateLoader] (last-wins
 /// across `templateDirs`, honoring the template cache); the `dart` engine
 /// selects code-registered transforms only and scans no files.
 Converter _templateChain(
@@ -222,7 +222,7 @@ Converter _templateChain(
   if (opts.templateEngine == 'dart' || opts.templateDirs.isEmpty) {
     sources = const <String, String>{};
   } else {
-    sources = VmTemplateLoader(
+    sources = FileTemplateLoader(
       templateDirs: opts.templateDirs,
       templateCache: opts.templateCache,
       templateCacheStore: opts.templateCacheStore,

@@ -10,7 +10,6 @@
 library;
 
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
-import 'dart:io' show File, FileSystemEntity;
 
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/constants.dart';
@@ -20,6 +19,7 @@ import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/extensions.dart';
 import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/io.dart' as io;
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/rx.dart';
@@ -1792,7 +1792,7 @@ class PreprocessorReader extends Reader {
         start: _dir,
         targetName: 'include file',
       );
-      if (!FileSystemEntity.isFileSync(incPath)) {
+      if (!io.isFile(incPath)) {
         if (attributes.containsKey('optional-option')) {
           LoggerManager.logger.info(
             'optional include dropped because include file not '
@@ -1830,7 +1830,7 @@ class PreprocessorReader extends Reader {
   ) {
     if (resolution.type == _IncludeTargetType.file) {
       try {
-        return _IncludeContent.bytes(File(resolution.path).readAsBytesSync());
+        return _IncludeContent.bytes(io.readBytes(resolution.path));
       } on Exception catch (_) {
         throw const _IncludeNotReadable();
       }

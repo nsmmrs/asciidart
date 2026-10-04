@@ -1,7 +1,7 @@
 ---
 id: TASK-fppdyy
 title: "JS platform I/O seam: lib/src/io.dart conditional exports, JS-safe maxInt, no-dart:io gate"
-status: backlog
+status: doing
 type: task
 priority: 2
 labels:
@@ -9,8 +9,9 @@ labels:
 - js
 parent: EPIC-2qq14f
 created: "2026-10-04T13:58:55.180427Z"
-updated: "2026-10-04T13:58:55.180427Z"
+updated: "2026-10-04T18:09:06.565344Z"
 ---
+
 
 dart-sass pattern: `lib/src/io.dart` exports `io/interface.dart` if (dart.library.io) `io/vm.dart` if (dart.library.js_interop) `io/js.dart`. Surface (from inventory): read bytes/string, isFile/isDirectory/exists, list dir, write/append, mkdirs, cwd, environment, pathSeparator, isWindows, sync read-all stdin, stdout/stderr as StringSink, exit code, pid, maxInt (VM literal lives in vm.dart only; JS 9007199254740991 — fixes _maxInt63 at document.dart:2279).
 
