@@ -237,6 +237,12 @@ Future<UriReader> _prefetch(
 }) async {
   final fetched = cache ?? <String, RemoteResource?>{};
   final callerReader = options.uriReader;
+  // Only the API can set allow-uri-read, so without it no pass would ask
+  // for a URI: skip the passes, which would run extensions twice.
+  if (options.attributes['allow-uri-read'] == null) {
+    return callerReader ??
+        (String uri) => throw AsciidoctorException('cannot read $uri');
+  }
   RemoteResource read(String uri, Set<String> missing) {
     if (callerReader != null) {
       try {

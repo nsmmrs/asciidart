@@ -258,7 +258,7 @@ final class AsciidoctorOptions {
     templateCache: templateCache,
     templateCacheStore: templateCacheStore,
     extensions: extensions,
-    extensionRegistry: extensionRegistry,
+    extensionRegistry: extensionRegistry?.snapshot(),
     logger: NullLogger(),
     syntaxHighlighterFactory: syntaxHighlighterFactory,
     syntaxHighlighters: syntaxHighlighters,

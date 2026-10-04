@@ -41,6 +41,7 @@ import 'package:asciidoctor/src/reader.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;
+import 'package:meta/meta.dart';
 
 /// The configuration of a processor.
 ///
@@ -1336,6 +1337,27 @@ class Registry {
     store[instance.name!] = extension;
     return extension;
   }
+
+  /// A copy of this registry in its current state, which a discovery pass
+  /// activates in place of this one; the real run then activates this
+  /// registry as if no pass had run.
+  @internal
+  Registry snapshot() => Registry(groups)
+    .._document = _document
+    .._preprocessorExtensions = _preprocessorExtensions?.toList()
+    .._treeProcessorExtensions = _treeProcessorExtensions?.toList()
+    .._postprocessorExtensions = _postprocessorExtensions?.toList()
+    .._includeProcessorExtensions = _includeProcessorExtensions?.toList()
+    .._docinfoProcessorExtensions = _docinfoProcessorExtensions?.toList()
+    .._blockExtensions = _blockExtensions == null
+        ? null
+        : {..._blockExtensions!}
+    .._blockMacroExtensions = _blockMacroExtensions == null
+        ? null
+        : {..._blockMacroExtensions!}
+    .._inlineMacroExtensions = _inlineMacroExtensions == null
+        ? null
+        : {..._inlineMacroExtensions!};
 
   /// Clears all extension stores and detaches the document.
   void _reset() {
