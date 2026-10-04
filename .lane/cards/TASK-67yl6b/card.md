@@ -1,6 +1,6 @@
 ---
 id: TASK-67yl6b
-title: "Typed options and entry points (ADR-0004)"
+title: "Static typing end to end (ADR-0004)"
 status: backlog
 type: task
 priority: 2
@@ -9,9 +9,9 @@ labels:
 - api
 parent: EPIC-k5nzlv
 deps:
-- TASK-txhd50
+- BUG-fwc380
 created: "2026-10-04T14:17:36.134031Z"
-updated: "2026-10-04T14:17:36.134031Z"
+updated: "2026-10-04T14:58:41.298015Z"
 ---
 
-Implement ADR-0004 once accepted: immutable AsciidoctorOptions (typed safe enum, backend, doctype, standalone, attributes, baseDir, toFile/toDir/mkdirs, templateDirs, extensions, logger, sourcemap, parseHeaderOnly) translating to the internal option map; public load/loadFile/convert/convertFile with String/path inputs and String/Document results; Document.convert() returns String; stringAttr/intAttr helpers. CLI keeps the internal map API. Tests for the translation layer; parity gate unchanged.
+Implement ADR-0004 (Final): remove all Object?/dynamic option maps, attribute maps, results and extension maps. Attributes become Map<String, String> with positional attributes as a typed list, numeric internals (rowcount, colcount, colpcwidth, safe-mode-level, counters) as typed node fields formatted once, and unset/soft-unset modeled explicitly. Typed options classes for the entry points and the CLI; convert/converters return String; typed extension API (processor callbacks, create* helpers, registration) and template converter. Output byte-identical throughout (tool/parity.sh + e2e gate each step). Split into sub-cards as the work is sized.

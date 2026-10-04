@@ -1,7 +1,7 @@
 ---
 id: TASK-txhd50
 title: "Decision record: typed public API instead of Object? and option maps"
-status: review
+status: done
 type: task
 priority: 2
 labels:
@@ -11,8 +11,9 @@ parent: EPIC-k5nzlv
 deps:
 - EPIC-9frzpm
 created: "2026-10-04T13:53:24.463329Z"
-updated: "2026-10-04T14:17:36.189605Z"
+updated: "2026-10-04T14:58:41.290948Z"
 ---
+
 
 
 
