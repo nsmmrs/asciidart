@@ -3627,7 +3627,13 @@ abstract final class Parser {
         if (anchorMatch != null) {
           // NOTE registration of id and reftext is deferred until block is
           // processed.
-          attributes['id'] = anchorMatch.group(1)!;
+          // An empty anchor (`[[]]`) clears the id.
+          switch (anchorMatch.group(1)) {
+            case final id?:
+              attributes['id'] = id;
+            case null:
+              attributes.remove('id');
+          }
           final reftext = anchorMatch.group(2);
           if (reftext != null) {
             attributes['reftext'] = reftext.contains(attrRefHead)

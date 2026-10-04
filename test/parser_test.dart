@@ -289,6 +289,13 @@ void main() {
       },
     );
 
+    test('an empty block anchor clears the id', () {
+      final doc = load('[#keep]\n[[]]\n--\nBlock content\n--\n');
+      final block = doc.blocks.single;
+      expect(block.id, isNull);
+      expect(block.blocks.single.context, equals('paragraph'));
+    });
+
     test('parse author first', () {
       final metadata = parseHeaderMetadata('Stuart');
       expect(metadata.length, equals(5));
