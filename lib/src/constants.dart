@@ -1,8 +1,7 @@
 /// Top-level constants ported from `lib/asciidoctor.rb`.
 ///
-/// Naming follows the existing Dart ports: `SCREAMING_SNAKE` becomes
-/// lowerCamelCase ([maxInt]), Ruby symbols become plain strings (list
-/// contexts are `'ulist'` etc.), and Ruby `Set`s become Dart `Set`s.
+/// `SCREAMING_SNAKE` names become lowerCamelCase ([maxInt]) and symbolic
+/// values are plain strings (list contexts are `'ulist'` etc.).
 /// [Compliance] mirrors the `SafeMode` port in `abstract_node.dart` as an
 /// `abstract final class` with `static const` members.
 ///
@@ -14,9 +13,9 @@
 ///   `abstract_block.dart` (the latter deliberately omits the unreachable
 ///   `'figure'` string key; see the doc comment there)
 ///
-/// Deliberately not ported (Ruby runtime concepts with no static Dart
-/// equivalent): `RUBY_ENGINE_OPAL`, `RUBY_ENGINE`, `ROOT_DIR`, `LIB_DIR`,
-/// `DATA_DIR`, `USER_HOME`, `UTF_8`.
+/// Deliberately not ported (runtime-environment constants): `RUBY_ENGINE`,
+/// `RUBY_ENGINE_OPAL`, `ROOT_DIR`, `LIB_DIR`, `DATA_DIR`, `USER_HOME`,
+/// `UTF_8`.
 library;
 
 import 'package:asciidoctor/src/rx.dart';
@@ -43,7 +42,7 @@ const List<int> bomBytesUtf16be = <int>[0xfe, 0xff];
 
 /// The mode to use when opening a file for reading (`FILE_READ_MODE`).
 ///
-/// A Ruby IO mode string, kept for reference; Dart file IO does not use it.
+/// An IO mode string kept for reference; nothing here uses it.
 const String fileReadMode = 'rb:UTF-8:UTF-8';
 
 /// The mode to use when opening a URI for reading (`URI_READ_MODE`).
@@ -51,7 +50,7 @@ const String uriReadMode = fileReadMode;
 
 /// The mode to use when opening a file for writing (`FILE_WRITE_MODE`).
 ///
-/// A Ruby IO mode string, kept for reference; Dart file IO does not use it.
+/// An IO mode string kept for reference; nothing here uses it.
 const String fileWriteMode = 'wb:UTF-8';
 
 /// The default document type (`DEFAULT_DOCTYPE`).
@@ -145,7 +144,7 @@ const Set<String> verbatimStyles = <String>{
 
 /// The block context and masquerade styles of one [delimitedBlocks] entry.
 ///
-/// Ruby stores each entry as a `[context_symbol, Set_of_styles]` pair.
+/// The block context and the set of styles it can masquerade as.
 class DelimitedBlockInfo {
   /// Creates an entry with block [context] and accepted [styles].
   const new(this.context, [this.styles = const <String>{}]);
@@ -288,8 +287,7 @@ const Map<String, List<String>> inlineMathDelimiters = <String, List<String>>{
 
 /// Stem type aliases (`STEM_TYPE_ALIASES`).
 ///
-/// Ruby gives this map a default of `'asciimath'`; lookups of unknown types
-/// must fall back to that value.
+/// Lookups of unknown types must fall back to `'asciimath'`.
 const Map<String, String> stemTypeAliases = <String, String>{
   'latexmath': 'latexmath',
   'latex': 'latexmath',
@@ -371,8 +369,8 @@ const Map<String, String> intrinsicAttributes = <String, String>{
 /// a [scope] (`'constrained'` or `'unconstrained'`), and the [pattern]
 /// that matches it.
 ///
-/// Ruby stores each rule as a `[type_symbol, scope_symbol, regexp]` triple;
-/// the [guard] is a Dart-side addition that lets callers skip the pattern.
+/// A quote rule: type, scope and pattern; the [guard] lets callers skip
+/// the pattern when it cannot match.
 class QuoteSub {
   /// Creates a rule with [type], [scope], [pattern] and [guard]; [close]
   /// is the closing delimiter when it differs from [guard].
@@ -408,8 +406,8 @@ class QuoteSub {
 
 /// Quoted-text substitution rules for normal mode (`QUOTE_SUBS`false``).
 ///
-/// Patterns are built from the `rx.dart` character-class fragments exactly
-/// as Ruby interpolates `CC_ALL`/`CC_WORD`/`CG_WORD`; flags follow
+/// Patterns are built from the `rx.dart` character-class fragments
+/// (`CC_ALL`/`CC_WORD`/`CG_WORD`); flags follow
 /// `PORTING-REGEXP.md` (any pattern containing `^` gets `multiLine: true`,
 /// any pattern using `\p{...}` gets `unicode: true`).
 final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
@@ -559,10 +557,10 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
 
 /// Quoted-text substitution rules for compat mode (`QUOTE_SUBS`true``).
 ///
-/// Mirrors Ruby's construction: a copy of [_normalQuoteSubs] with the
+/// A copy of [_normalQuoteSubs] with the
 /// double-quote, single-quote and `+`-monospace entries replaced and the
 /// legacy `'`-emphasis entry inserted at index 3 (shared entries reuse the
-/// same rule objects, as in Ruby).
+/// same rule objects).
 final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   _normalQuoteSubs[0],
   _normalQuoteSubs[1],
@@ -651,7 +649,7 @@ final Map<bool, List<QuoteSub>> quoteSubs = <bool, List<QuoteSub>>{
 /// One textual replacement rule: the [pattern] to match, its [replacement],
 /// and the [scope] (`'none'`, `'leading'` or `'bounding'`).
 ///
-/// Ruby stores each rule as a `[regexp, replacement, scope_symbol]` triple.
+/// A replacement rule: pattern, replacement and scope.
 class Replacement {
   /// Creates a rule with [pattern], [replacement], [scope] and [guard].
   const new(this.pattern, this.replacement, this.scope, this.guard);
@@ -726,8 +724,9 @@ final List<Replacement> replacements = <Replacement>[
 
 /// Flags controlling compliance with the behavior of AsciiDoc.
 ///
-/// Port of the `Compliance` module in `lib/asciidoctor.rb`. Ruby exposes
-/// these as mutable accessors; the Dart port freezes the defaults.
+/// Port of the `Compliance` module in `lib/asciidoctor.rb`, with the
+/// default values as constants (Asciidoctor lets them be changed at
+/// runtime).
 abstract final class Compliance {
   /// Terminates a paragraph adjacent to block content.
   static const bool blockTerminatesParagraph = true;

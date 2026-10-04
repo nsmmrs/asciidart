@@ -1,16 +1,16 @@
 /// Central regular expression table, ported from `lib/asciidoctor/rx.rb`.
 ///
-/// rewrite rules applied here come from `dart/PORTING-REGEXP.md`:
+/// rewrite rules applied here come from `PORTING-REGEXP.md`:
 /// - `CC_ALL` -> `[\s\S]`, `CC_ANY` -> `[^\n]`, `CC_EOL` -> `$`,
 ///   `CG_BLANK` -> `[ \t]` (exact).
 /// - `\p{Alpha}` -> `\p{Alphabetic}`, `\p{Alnum}` -> split fragments,
 ///   `\p{Word}` -> `\w`, all with `unicode: true` (B1, R1, R2).
 /// - Any pattern containing `^` or `$` gets `multiLine: true` (B9, R3),
 ///   except [attributeEntryPassMacroRx] and [uriSniffRx], which emulate
-///   Ruby `\A` string anchors and therefore use a bare `^` (B2).
-/// - The `opal` branch is ported for [inlineLinkRx],
-///   [attributeEntryPassMacroRx] and [uriSniffRx]; the Ruby branch is
-///   ported for [hardLineBreakRx] (R5).
+///   the upstream `\A` string anchors and therefore use a bare `^` (B2).
+/// - Where upstream has a JavaScript variant, [inlineLinkRx],
+///   [attributeEntryPassMacroRx] and [uriSniffRx] follow it, while
+///   [hardLineBreakRx] follows the default pattern (R5).
 library;
 
 // Character class fragments (mirror the CC_*/CG_* constants).
@@ -41,7 +41,7 @@ const String cgBlank = r'[ \t]';
 
 /// Word characters, for use inside a character class (`CC_WORD`).
 /// (Dart `\w` stays ASCII-only even with `unicode: true`, so the UTS#18
-/// Word union is spelled out. Verified equivalent to Ruby `\p{Word}`
+/// Word union is spelled out. Verified equivalent to upstream `\p{Word}`
 /// on letters, marks, decimal digits, `_`, and Join_Controls.)
 const String ccWord =
     r'\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}';
@@ -142,8 +142,8 @@ final RegExp attributeEntryRx = RegExp(
 final RegExp invalidAttributeNameCharsRx = RegExp('[^$ccWord-]', unicode: true);
 
 /// Matches a pass inline macro surrounding the value of an attribute
-/// entry once it has been parsed (opal variant: `^`/`$` without
-/// multiLine emulate the Ruby `\A`/`\Z` string anchors).
+/// entry once it has been parsed (`^`/`$` without multiLine anchor at the
+/// string boundaries).
 final RegExp attributeEntryPassMacroRx = RegExp(
   r'^pass:([a-z]+(?:,[a-z-]+)*)?\[('
   '$ccAll'
@@ -231,8 +231,8 @@ final RegExp atxSectionTitleRx = RegExp(
 );
 
 /// Matches an extended Atx section title (Markdown variant included).
-/// (`\#` in the Ruby source is a Ruby-literal escape for `#`, not a
-/// regex escape, so a bare `#` is used here.)
+/// (`\#` in the upstream source escapes `#` in the string literal, not in
+/// the pattern, so a bare `#` is used here.)
 final RegExp extAtxSectionTitleRx = RegExp(
   r'^(=={0,5}|##{0,5})[ \t]+('
   '$ccAny'
@@ -412,8 +412,8 @@ class CalloutRxMap {
     prefix,
     () => RegExp(
       prefix.isEmpty
-          // `(|)` participates with "" exactly like Ruby's `()?`;
-          // Dart's `()?` instead yields null for the skipped group.
+          // `(|)` participates with ""; `()?` would yield null for the
+          // skipped group.
           ? '(|)$template'
           : '(${RegExp.escape(prefix)} ?)?$template',
       multiLine: true,
@@ -536,7 +536,7 @@ final RegExp inlineBiblioAnchorRx = RegExp(
 );
 
 /// Matches an inline e-mail address.
-/// (The Ruby lead-in class contains an escaped `>`, which is invalid
+/// (The upstream lead-in class contains an escaped `>`, which is invalid
 /// under `unicode: true`, so a bare `>` is used here.)
 final RegExp inlineEmailRx = RegExp(
   r'([\\>:/])?'
@@ -641,7 +641,7 @@ final RegExp inlineMenuRx = RegExp(
 /// form, `true` the legacy backtick-only form.
 ///
 /// The compat form carries two deviations from a naive port: `(\Z)`
-/// becomes a lookahead-only empty capture (B2), and the Ruby-only
+/// becomes a lookahead-only empty capture (B2), and the upstream
 /// quantified lookahead `(?=((\\))?)?` drops its outer `?` (an optional
 /// always-succeeding assertion, which Dart rejects at construction);
 /// the `?` that makes the enclosing alternation optional is kept.
@@ -721,7 +721,7 @@ final RegExp inlineXrefMacroRx = RegExp(
 // Layout.
 
 /// Matches a trailing `+` preceded by a space, which forces a hard
-/// line break (Ruby branch plus multiLine).
+/// line break (with multiLine).
 final RegExp hardLineBreakRx = RegExp(
   '^($ccAny'
   r'*) \+$',
@@ -762,8 +762,8 @@ final RegExp subModifierSniffRx = RegExp('[+-]');
 /// Matches one or more consecutive digits at the end of a line.
 final RegExp trailingDigitsRx = RegExp(r'\d+$', multiLine: true);
 
-/// Detects strings that resemble URIs (opal variant: `^` without
-/// multiLine emulates the Ruby `\A` string anchor).
+/// Detects strings that resemble URIs (`^` without multiLine anchors at the
+/// start of the string).
 final RegExp uriSniffRx = RegExp(
   '^$cgAlpha[$ccAlnum.+-]+:/{0,2}',
   unicode: true,

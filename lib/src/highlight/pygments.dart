@@ -99,8 +99,7 @@ class PygmentsAdapter {
 
   /// The lexing backend, or `null` when no backend is available.
   ///
-  /// Mirrors the Ruby loader: the library counts as available exactly when a
-  /// backend is present.
+  /// The library counts as available exactly when a backend is present.
   final SourceLexer? lexer;
 
   bool _requiresStylesheet = false;
@@ -138,10 +137,9 @@ class PygmentsAdapter {
   /// cell's opening tag (`null` when the tag is absent).
   ///
   /// A `null` [startLineNumber] takes the non-table path even when
-  /// [numberLines] is [LineNumbersMode.table], mirroring the Ruby condition
-  /// chain (in practice the converter always supplies a start line when
-  /// `linenums` is set). A `null` backend response falls back to escaped
-  /// [source] (Ruby `node.sub_source source, false`).
+  /// [numberLines] is [LineNumbersMode.table] (in practice the converter always
+  /// supplies a start line when `linenums` is set). A `null` backend response
+  /// falls back to escaped [source].
   ///
   /// Throws [UnimplementedError] when no [lexer] backend was provided.
   HighlightResult highlight({
@@ -159,7 +157,7 @@ class PygmentsAdapter {
     if (backend == null) {
       throw UnimplementedError(
         'Pygments highlighting needs a SourceLexer backend; '
-        'real lexers are a later wave.',
+        'no Pygments lexer is built in.',
       );
     }
     final noclasses = cssMode != CssMode.classes;
@@ -221,10 +219,9 @@ class PygmentsAdapter {
   /// Wraps converted [content] in the `<pre>`/`<code>` envelope.
   ///
   /// In inline-CSS mode the style's base rule is resolved (which also records
-  /// the style for later [docinfoHead] calls, mirroring the Ruby `@style`
-  /// assignment) and attached as the `<pre>` `style` attribute; without a
-  /// backend, or when the style contributes no base rule, no `style`
-  /// attribute is emitted.
+  /// the style for later [docinfoHead] calls) and attached as the `<pre>`
+  /// `style` attribute; without a backend, or when the style contributes no
+  /// base rule, no `style` attribute is emitted.
   String format({
     required String content,
     String? language,

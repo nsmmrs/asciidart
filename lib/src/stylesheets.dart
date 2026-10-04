@@ -2,8 +2,7 @@
 ///
 /// Dart port of `lib/asciidoctor/stylesheets.rb`.
 ///
-/// Unlike the Ruby implementation, which reads stylesheet data from
-/// `STYLESHEETS_DIR` at runtime, this port reads from the compile-time
+/// Stylesheet data comes from the compile-time
 /// embedded data in [EmbeddedData] (see `tool/embed_data.dart`). The returned
 /// strings are identical: file contents with trailing whitespace stripped.
 library;
@@ -24,22 +23,19 @@ class Stylesheets {
 
   /// File name of the default CodeRay stylesheet.
   ///
-  /// Mirrors `SyntaxHighlighter::CodeRay.stylesheet_basename`, which the Ruby
-  /// implementation delegates to.
+  /// Mirrors `SyntaxHighlighter::CodeRay.stylesheet_basename`.
   static const String defaultCoderayStylesheetName = 'coderay-asciidoctor.css';
 
   /// Default Pygments style name.
   ///
-  /// Mirrors `SyntaxHighlighter::Pygments::DEFAULT_STYLE`, which the Ruby
-  /// implementation delegates to.
+  /// Mirrors `SyntaxHighlighter::Pygments::DEFAULT_STYLE`.
   static const String pygmentsDefaultStyle = 'default';
 
   /// Fallback returned when the Pygments stylesheet cannot be generated.
   ///
-  /// Mirrors the Ruby `Pygments.read_stylesheet` branch taken when the
-  /// Pygments library is unavailable. The syntax-highlighter port owns the
-  /// live Pygments CSS strategy; until it lands, the library is always
-  /// unavailable in the Dart port.
+  /// What Asciidoctor emits when the Pygments library is unavailable. The
+  /// syntax-highlighter port owns the live Pygments CSS strategy; until it
+  /// lands, the library is always unavailable in the Dart port.
   static const String pygmentsUnavailableStylesheet =
       '/* Pygments CSS disabled because Pygments is not available. */';
 
@@ -96,8 +92,8 @@ class Stylesheets {
   }
 }
 
-/// Strips trailing ASCII whitespace and null bytes, mirroring Ruby's
-/// `String#rstrip` (which, unlike Dart's `trimRight`, leaves non-ASCII
+/// Strips trailing ASCII whitespace and null bytes (unlike Dart's
+/// `trimRight`, this leaves non-ASCII
 /// whitespace untouched).
 String _rstrip(String value) =>
     value.replaceAll(RegExp('[\x00 \t\n\v\f\r]+\$'), '');

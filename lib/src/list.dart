@@ -24,8 +24,7 @@ class ListBlock extends AbstractBlock {
 
   /// The `[terms, description]` pairs of a description list.
   ///
-  /// Ruby pushes the pairs straight into the blocks array, but the port
-  /// types [AbstractBlock.blocks] as `List<AbstractBlock>`, so description
+  /// [AbstractBlock.blocks] is a `List<AbstractBlock>`, so description
   /// lists keep their pairs here instead (`terms` is a `List<ListItem>`,
   /// `description` a [ListItem], or `null` when unset). `null` unless the
   /// context is `'dlist'`.
@@ -48,10 +47,9 @@ class ListBlock extends AbstractBlock {
   /// The style the parser derived from the first ordered list marker, if
   /// any.
   ///
-  /// Ruby assigns that style as a Symbol (`:loweralpha`), while
-  /// `ORDERED_LIST_KEYWORDS` is keyed by String, so `list_marker_keyword`
-  /// finds no keyword for it and the HTML `type` attribute is omitted. The
-  /// port records the value to reproduce that lookup miss.
+  /// Asciidoctor finds no list marker keyword for a marker-derived style, so
+  /// the HTML `type` attribute is omitted for it (an explicit style does
+  /// get one). This field records the value to reproduce that.
   String? markerStyle;
 
   @override
@@ -89,7 +87,7 @@ class ListBlock extends AbstractBlock {
       return (parts[0]! as List<Object?>).contains(item) || parts[1] == item;
     });
     if (index == -1) {
-      // Ruby raises NoMethodError on `nil + 1` here.
+      // The item must belong to this list.
       throw StateError(
         'nextAdjacentBlock: node is not a member of its dlist parent',
       );

@@ -7,8 +7,8 @@
 ///
 /// ## Language dispatch
 ///
-/// The adapter resolves the block language exactly like the Ruby adapter's
-/// `Scanners[lang.to_sym] && lang rescue :text` (verified against CodeRay
+/// The adapter resolves the block language like Asciidoctor's CodeRay
+/// adapter (verified against CodeRay
 /// 1.1.3, whose plugin lookup downcases through its default proc and falls
 /// back to the `:text` scanner for unknown ids):
 ///
@@ -20,7 +20,7 @@
 ///   to a scanner file stem; anything else scans as plain text.
 /// * The `scanner` stem raises, mirroring the unrescued
 ///   `PluginNotFound` the oracle throws for `[source,scanner]` (a
-///   `LoadError`, which the Ruby adapter's `rescue` does not catch).
+///   load error, which Asciidoctor's adapter does not catch).
 ///
 /// ## Supported languages
 ///

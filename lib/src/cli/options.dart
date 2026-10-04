@@ -4,61 +4,48 @@
 ///
 /// ## Parser choice
 ///
-/// Ruby configures its stdlib `OptionParser` here. The Dart port hand-rolls an
-/// equivalent parser instead of using `package:args` (already in
-/// `pubspec.yaml`), because `package:args` cannot express the behaviors this
-/// port must preserve: options with optional arguments (`-h/--help [TOPIC]`),
-/// unambiguous-prefix completion of long options (`--back`) and of
-/// enumerated values (`--failure-level=e`, `-d art`), in-order short-circuit
-/// (`-h`/`-V` return before a later invalid option is examined), order
-/// dependence (`-q -v` vs `-v -q`), and Ruby's exact error strings. No new
-/// dependency is added.
+/// The parser is hand-rolled instead of using `package:args` (already in
+/// `pubspec.yaml`), because `package:args` cannot express the behaviors the
+/// `asciidoctor` CLI has: options with optional arguments
+/// (`-h/--help [TOPIC]`), unambiguous-prefix completion of long options
+/// (`--back`) and of enumerated values (`--failure-level=e`, `-d art`),
+/// in-order short-circuit (`-h`/`-V` return before a later invalid option is
+/// examined), order dependence (`-q -v` vs `-v -q`), and Asciidoctor's exact
+/// error strings.
 ///
-/// ## Deliberate divergences from `options.rb`
+/// ## Differences from Asciidoctor 2.0.26
 ///
 /// - [CliOptions.parse] returns `null` on success and an `int` exit code on
-///   early exit or error, instead of returning the options object or an exit
-///   code. Ruby callers distinguish with `Integer === result`; Dart callers
-///   check for `null`.
-/// - [CliOptions.parse] does not mutate the [List] it is given. Ruby's
-///   `parse!` removes the parsed switches from the argument array; no caller
-///   or test depends on that.
-/// - `-I/--load-path` values are recorded in [CliOptions.loadPaths] but are
-///   not pushed anywhere: Dart has no `$LOAD_PATH`.
-/// - Every `-r/--require` fails with an
-///   `asciidoctor: FAILED: '...' could not be loaded` message, exactly as
-///   Ruby reports an unloadable library, because Dart cannot load libraries
-///   at runtime. With `--trace`, Ruby re-raises the `LoadError`; the Dart
-///   port throws [UnsupportedError] instead.
-/// - `-T/--template-dir` is accepted and recorded without requiring the
-///   `tilt` gem (Ruby-only). `-E/--template-engine` records any name
-///   untouched (Ruby parity); the name is validated when templates engage
-///   during conversion (only `mustache` + `dart` exist, per ADR-0002 T1),
-///   and an unknown engine fails like Ruby's missing-engine error (see
-///   `template_loader.dart`). Mustache rendering itself is template wave A.
-/// - The `manpage`/`syntax` help topics resolve `ROOT_DIR`-relative files by
-///   searching upward from the current working directory for a checkout
-///   containing them (Ruby joins the compile-time `ROOT_DIR`). The
-///   `ASCIIDOCTOR_MANPAGE_PATH` override and the `man -w` fallback keep
-///   Ruby's precedence and messages.
-/// - Ruby suggests near-miss spellings for some invalid long options
-///   (`Did you mean? ...`); that suggestion engine is Ruby-version dependent
-///   and is not ported. The stable `asciidoctor: invalid option: ...` first
-///   line is preserved.
+///   early exit or error. It never mutates the [List] it is given.
+/// - `-I/--load-path` values are recorded in [CliOptions.loadPaths] and
+///   otherwise ignored, because libraries cannot be loaded at runtime.
+/// - Every `-r/--require` fails with the
+///   `asciidoctor: FAILED: '...' could not be loaded` message Asciidoctor
+///   prints for an unloadable library. With `--trace` it throws
+///   [UnsupportedError] instead.
+/// - `-T/--template-dir` is recorded as is. `-E/--template-engine` records
+///   any name; the name is validated when templates engage during
+///   conversion (only `mustache` and `dart` exist, per ADR-0002 T1), and an
+///   unknown engine fails with a missing-engine error (see
+///   `template_loader.dart`).
+/// - The `manpage`/`syntax` help topics are read from the nearest checkout
+///   found by searching upward from the working directory, falling back to
+///   the embedded copies. The `ASCIIDOCTOR_MANPAGE_PATH` override and the
+///   `man -w` fallback keep Asciidoctor's precedence and messages.
+/// - Near-miss suggestions for invalid long options (`Did you mean? ...`)
+///   are not printed; Asciidoctor's suggestions depend on the Ruby version
+///   it runs on. The `asciidoctor: invalid option: ...` line is the same.
 /// - Input readability is approximated with permission bits
 ///   (`mode & 0o444`, i.e. `0x124`) instead of an access check, so a
-///   superuser may see `is not readable` where Ruby would proceed. Character
-///   and block device nodes (e.g. `/dev/null`) report as `is missing` because
-///   `dart:io` cannot distinguish them from absent paths (`File.stat` in Ruby
-///   reports their `ftype`).
+///   superuser may see `is not readable` where Asciidoctor would proceed.
+///   Character and block device nodes (e.g. `/dev/null`) report as
+///   `is missing` because `dart:io` cannot tell them from absent paths.
 /// - Glob expansion supports `*`, `?`, `[...]` and `**`. Brace expansion
 ///   (`{a,b}`) is not supported; such patterns fall back to the
 ///   missing-file path. (Shells normally expand braces before the program
 ///   runs, so this rarely matters.)
-/// - Ruby manipulates the `$VERBOSE` flag while parsing; Dart has no
-///   equivalent and ignores it.
-/// - The `Runtime Environment` line in [CliOptions.printVersion] reports the
-///   Dart VM version; the encoding quadruplet is always UTF-8.
+/// - The `Runtime Environment` line in [CliOptions.printVersion] names this
+///   package and the Dart VM; the encoding quadruplet is always UTF-8.
 library;
 
 import 'dart:convert';
@@ -134,13 +121,13 @@ Example: asciidoctor input.adoc
 /// Thrown when an abbreviated long option matches more than one option.
 ///
 /// Port of `OptionParser::AmbiguousOption`, which `parse!` does not rescue,
-/// so it propagates to the caller just like in Ruby
-/// (e.g. `asciidoctor --s` crashes instead of exiting cleanly).
+/// so it propagates to the caller (e.g. `asciidoctor --s` crashes instead
+/// of exiting cleanly), as in Asciidoctor.
 final class AmbiguousCliOptionException implements Exception {
-  /// Creates an exception with Ruby's message (e.g. `ambiguous option: --s`).
+  /// Creates an exception with [message] (e.g. `ambiguous option: --s`).
   const new(this.message);
 
-  /// Ruby's `OptionParser::AmbiguousOption` message text.
+  /// The error message.
   final String message;
 
   @override
@@ -150,14 +137,14 @@ final class AmbiguousCliOptionException implements Exception {
 /// Thrown when an explicit `=value` is attached to a flag that takes none.
 ///
 /// Port of `OptionParser::NeedlessArgument`, which `parse!` does not rescue,
-/// so it propagates to the caller just like in Ruby
-/// (e.g. `asciidoctor --quiet=true` raises).
+/// so it propagates to the caller (e.g. `asciidoctor --quiet=true` raises),
+/// as in Asciidoctor.
 final class NeedlessCliArgumentException implements Exception {
-  /// Creates an exception with Ruby's message
+  /// Creates an exception with [message]
   /// (e.g. `needless argument: --quiet=true`).
   const new(this.message);
 
-  /// Ruby's `OptionParser::NeedlessArgument` message text.
+  /// The error message.
   final String message;
 
   @override
@@ -169,11 +156,11 @@ final class NeedlessCliArgumentException implements Exception {
 /// Port of `OptionParser::InvalidArgument`. Caught inside [CliOptions.parse],
 /// which prints `asciidoctor: <message>` plus the usage text and returns 1.
 final class _InvalidCliArgument implements Exception {
-  /// Creates an error with Ruby's message
+  /// Creates an error with [message]
   /// (e.g. `invalid argument: -d chapter`).
   const new(this.message);
 
-  /// Ruby's `OptionParser::InvalidArgument` message text.
+  /// The error message.
   final String message;
 
   @override
@@ -185,11 +172,11 @@ final class _InvalidCliArgument implements Exception {
 /// Port of `OptionParser::AmbiguousArgument`. Handled exactly like
 /// [_InvalidCliArgument] with an `ambiguous argument: ...` message.
 final class _AmbiguousCliArgument implements Exception {
-  /// Creates an error with Ruby's message
+  /// Creates an error with [message]
   /// (e.g. `ambiguous argument: --eruby er`).
   const new(this.message);
 
-  /// Ruby's `OptionParser::AmbiguousArgument` message text.
+  /// The error message.
   final String message;
 
   @override
@@ -279,7 +266,7 @@ enum _CliOption {
   /// `-t/--timings`.
   timings,
 
-  /// `-j/--jobs N` (Dart-only extension; no Ruby analog).
+  /// `-j/--jobs N` (specific to this port).
   jobs,
 
   /// `-h/--help [TOPIC]`.
@@ -367,24 +354,23 @@ const List<String> _safeModeNames = ['unsafe', 'safe', 'server', 'secure'];
 
 /// Parsed command-line options.
 ///
-/// Port of `Asciidoctor::Cli::Options` (a `Hash` subclass in Ruby). Field
-/// names mirror the Ruby keys (`input_files` becomes [inputFiles] and so on).
-/// Collection fields alias the objects passed to the constructor, exactly as
-/// Ruby stores the caller's objects without copying; [parse] may mutate them.
+/// Port of `Asciidoctor::Cli::Options`. Field names follow the option keys
+/// (`input_files` becomes [inputFiles] and so on). Collection fields alias
+/// the objects passed to the constructor without copying; [parse] may
+/// mutate them.
 final class CliOptions {
   /// Creates an options object with the given seeds.
   ///
   /// Mirrors `Options.new`: [attributes] defaults to an empty map,
   /// [standalone] to `true`, [safe] to [SafeMode.unsafe], [verbose] to 1,
   /// [warnings] to `false`, and [failureLevel] to [Severity.fatal];
-  /// [trace] and [timings] are always `false` (Ruby ignores any seed for
-  /// them, as it does for the failure level); everything else defaults to
+  /// [trace] and [timings] are always `false` (seeds for them are ignored,
+  /// as for the failure level); everything else defaults to
   /// `null`. [doctype] and [backend] seed `attributes['doctype']` and
   /// `attributes['backend']` when given.
   ///
   /// [templateDirs] accepts a single [String] directory, an
-  /// [Iterable] of directories, or `null` (Ruby callers may seed a bare
-  /// string).
+  /// [Iterable] of directories, or `null`.
   new({
     Map<String, String>? attributes,
     this.inputFiles,
@@ -413,8 +399,7 @@ final class CliOptions {
 
   /// Document attributes from `-a/--attribute` (plus `-b`, `-d` and `-n`).
   ///
-  /// Set to `null` by [parse] when no attribute was defined, mirroring
-  /// Ruby's `delete :attributes`.
+  /// Set to `null` by [parse] when no attribute was defined.
   Map<String, String>? attributes;
 
   /// Input files to convert, after glob expansion.
@@ -471,8 +456,8 @@ final class CliOptions {
 
   /// Worker count from `-j/--jobs N` (default 1: sequential conversion).
   ///
-  /// A Dart-only extension with no Ruby analog (hence absent from
-  /// [usageText], which stays byte-identical to Ruby's help): with N > 1 the
+  /// Specific to this port (hence absent from [usageText], which follows
+  /// Asciidoctor's help): with N > 1 the
   /// invoker converts multiple input files on a pool of worker isolates (see
   /// `Invoker.invokeAsync`). Values below 1 behave like 1; [parse] rejects
   /// them (and non-integers) with a make-style usage error instead.
@@ -517,9 +502,9 @@ final class CliOptions {
   /// exit code when parsing ends early: 0 for `-h/--help` and `-V/--version`
   /// (and lone `-v`), 1 for usage and input errors. Option switches are
   /// processed strictly in order; `-h` and `-V` act (and return) before any
-  /// later argument is examined, exactly as in Ruby.
+  /// later argument is examined.
   ///
-  /// The [List] itself is never mutated (unlike Ruby's `parse!`).
+  /// The [List] itself is never mutated.
   ///
   /// [out] and [err] receive STDOUT and STDERR output (defaulting to the
   /// process streams); [environment] supplies environment variables
@@ -529,7 +514,8 @@ final class CliOptions {
   /// Throws [AmbiguousCliOptionException] for abbreviated long options
   /// matching several options, [NeedlessCliArgumentException] for `=value`
   /// attached to a flag, and [UnsupportedError] when `--trace` is combined
-  /// with `-r` (mirroring the errors Ruby lets propagate out of `parse!`).
+  /// with `-r` (the errors Asciidoctor lets propagate out of option
+  /// parsing).
   int? parse(
     List<String> args, {
     StringSink? out,
@@ -569,8 +555,8 @@ final class CliOptions {
     }
 
     if (positionals.isEmpty) {
-      // `asciidoctor -v` (with nothing else) prints the version; Ruby checks
-      // `verbose == 2` rather than the flag itself.
+      // `asciidoctor -v` (with nothing else) prints the version; the check
+      // is on `verbose == 2` rather than on the flag itself.
       if (verbose == 2) return printVersion(outSink);
       errSink.write(usageText);
       return 1;
@@ -594,7 +580,7 @@ final class CliOptions {
           infiles.add(file);
         } else {
           // NOTE only attempt to glob if file is not found.
-          // Tilt backslashes in Windows paths the Ruby-friendly way.
+          // Turn backslashes in Windows paths into forward slashes.
           if (Platform.isWindows && file.contains(r'\')) {
             file = file.replaceAll(r'\', '/');
           }
@@ -638,12 +624,11 @@ final class CliOptions {
 
     if (attributes != null && attributes!.isEmpty) attributes = null;
 
-    // Ruby requires the `tilt` gem here when template directories are set.
-    // Dart has no tilt; the engine name is validated when templates engage
+    // The template engine name is validated when templates engage
     // during conversion instead (see the library docs).
 
     if (loadPaths != null) {
-      // Ruby unshifts the expanded paths onto $LOAD_PATH; Dart records them.
+      // Libraries cannot be loaded at runtime; the paths are only recorded.
       final seen = <String>{};
       loadPaths = loadPaths!.where(seen.add).toList();
     }
@@ -653,7 +638,7 @@ final class CliOptions {
       requires = requires!.where(seen.add).toList();
       for (final path in requires!) {
         // Dart cannot load libraries at runtime (see the library docs), so
-        // every require fails exactly as an unloadable library does in Ruby.
+        // every require fails like an unloadable library.
         if (trace) {
           throw UnsupportedError(
             "asciidoctor: FAILED: '$path' could not be loaded",
@@ -747,7 +732,7 @@ final class CliOptions {
           resolved = resolved.substring(0, resolved.length - 1);
         }
       } on Exception catch (_) {
-        // Ruby rescues the backtick call to ''.
+        // A failing `man -w` call counts as no result.
       }
       if (resolved.isEmpty) {
         errSink.writeln(
@@ -779,8 +764,8 @@ final class CliOptions {
     final name = equals < 0 ? body : body.substring(0, equals);
     final attached = equals < 0 ? null : body.substring(equals + 1);
     if (name.isEmpty) {
-      // Only `--=...` reaches here (`--` alone is the terminator); Ruby
-      // reports the value as needless.
+      // Only `--=...` reaches here (`--` alone is the terminator); the
+      // value is reported as needless.
       throw NeedlessCliArgumentException('needless argument: $token');
     }
     final spec = _resolveLong(name, token);
@@ -867,7 +852,7 @@ final class CliOptions {
           break;
         }
       }
-      // Ruby reports the unconsumed remainder of the cluster.
+      // Report the unconsumed remainder of the cluster.
       final rest = '-${token.substring(j)}';
       if (spec == null) {
         errSink.writeln('asciidoctor: invalid option: $rest');
@@ -980,7 +965,7 @@ final class CliOptions {
         loadPaths ??= [];
         loadPaths!.addAll(value!.split(_pathListSeparator));
       case _CliOption.require:
-        // Ruby `path.split ','` drops trailing empty fields.
+        // Split on commas, dropping trailing empty fields.
         final paths = value!.split(',');
         while (paths.isNotEmpty && paths.last.isEmpty) {
           paths.removeLast();
@@ -1010,9 +995,8 @@ final class CliOptions {
 
   /// The attribute map, recreating it when [parse] already nulled it.
   ///
-  /// Ruby would raise `NoMethodError` on a second `parse!` call once
-  /// `:attributes` was deleted; recreating the map keeps repeated parsing
-  /// usable. Single-parse behavior is identical.
+  /// Recreating the map keeps a second [parse] call usable after the first
+  /// one nulled it.
   Map<String, String> get _attributeMap => attributes ??= {};
 
   /// Assigns one `-a/--attribute` value. Port of the `-a` handler: trailing
@@ -1036,13 +1020,13 @@ bool _looksLikeOption(String token) => token.startsWith('-') && token != '-';
 
 /// Whether [token] may be consumed as an optional option-argument.
 ///
-/// Ruby only consumes the following token when it is neither `--` nor
+/// The following token is consumed only when it is neither `--` nor
 /// option-looking; a lone `-` is consumed (as the `-h` topic it still prints
 /// the usage text).
 bool _consumableAsOptionalArgument(String token) =>
     token != '--' && !_looksLikeOption(token);
 
-/// Resolves a long option [name] with Ruby's completion rules: exact match
+/// Resolves a long option [name] with these completion rules: exact match
 /// first (an exact case-insensitive match beats prefix matches), then a
 /// unique case-insensitive prefix match. Returns `null` for unknown names
 /// and throws [AmbiguousCliOptionException] for ambiguous ones. [token] is
@@ -1067,9 +1051,9 @@ _Spec? _resolveLong(String name, String token) {
   return match;
 }
 
-/// Completes [value] against the candidate list of [spec] with Ruby's
+/// Completes [value] against the candidate list of [spec] with
 /// case-sensitive rules: an exact match wins, else a unique prefix match
-/// wins. [display] renders the failure messages exactly as Ruby spells them
+/// wins. [display] renders the failure messages as Asciidoctor spells them
 /// (`--opt value` or `--opt=value` for longs, `-x value` or `-xvalue` for
 /// shorts, always with the option as given on the command line).
 String _completeValue(_Spec spec, String value, String display) {
@@ -1170,8 +1154,7 @@ void _putsManpage(StringSink sink, String path) {
 /// Finds [segments] (e.g. `['man', 'asciidoctor.1']`) in the enclosing
 /// checkout, searching the current directory and its parents.
 ///
-/// Substitution for Ruby's compile-time `ROOT_DIR` join (see the library
-/// docs). Returns the path, or `null` when no enclosing directory holds it.
+/// Returns the path, or `null` when no enclosing directory holds it.
 String? _findCheckoutFile(List<String> segments) {
   final relative = segments.join(Platform.pathSeparator);
   var dir = Directory.current;
@@ -1433,7 +1416,8 @@ _SegmentMatcher _segmentMatcher(String segment, bool isWindows) {
 }
 
 /// Finds the closing bracket of the character class opening at [open].
-/// Returns -1 for an unterminated class (matched literally, as in Ruby).
+/// Returns -1 for an unterminated class (matched literally, as Asciidoctor
+/// does).
 int _classEnd(String segment, int open) {
   var i = open + 1;
   if (i < segment.length && (segment[i] == '!' || segment[i] == '^')) i++;

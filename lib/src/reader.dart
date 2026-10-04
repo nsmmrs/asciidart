@@ -10,11 +10,9 @@
 /// (`ifdef`/`ifndef`/`ifeval`/`endif`) and `include` preprocessor directives
 /// as lines are read.
 ///
-/// Several names in this file are temporary homes for concepts owned by waves
-/// that have not landed yet; each is marked `TEMPORARY` with the owning wave:
-/// the `rx.dart` regular expressions, the `logging.dart` log surface, the
-/// `SafeMode` constants and the [ReaderDocument]/[ReaderIncludeProcessor]
-/// interfaces (owned by the `document.dart` and `extensions.dart` waves).
+/// The reader reaches the document and the include processors through the
+/// small [ReaderDocument] and [ReaderIncludeProcessor] interfaces, which keep
+/// this library independent of `document.dart` and `extensions.dart`.
 library;
 
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
@@ -68,11 +66,9 @@ LogMessage _messageWithContext(
 
 /// Minimal document surface consumed by [PreprocessorReader].
 ///
-/// TEMPORARY interface, defined by the reader wave because `document.dart`
-/// has not landed yet. It covers exactly what `reader.rb` touches on
-/// `Document` (attribute lookup, substitution, include resolution inputs and
-/// the include catalog). The `document.dart` wave unifies this with the real
-/// `Document`, which must then implement (or absorb) this surface:
+/// It covers exactly what the reader needs from `Document` (attribute
+/// lookup, substitution, include resolution inputs and the include catalog);
+/// `Document.asReaderDocument` provides it:
 ///
 /// * [attributes] is the live attribute map; the reader reads
 ///   `skip-front-matter`, `max-include-depth`, `attribute-missing` and
@@ -89,7 +85,7 @@ LogMessage _messageWithContext(
 ///   `null` when the extensions framework has none.
 /// * [readUri] fetches an include target over HTTP. Dart has no synchronous
 ///   HTTP client, so URI transport is injected here instead of living in the
-///   reader (where Ruby uses OpenURI directly). Returns the decoded body, or
+///   reader. Returns the decoded body, or
 ///   `null` when the URI is not readable.
 abstract class ReaderDocument {
   /// Live document attributes.
@@ -152,9 +148,8 @@ abstract class ReaderDocument {
 /// Minimal include processor extension surface consumed by
 /// [PreprocessorReader].
 ///
-/// TEMPORARY interface mirroring the two `IncludeProcessor` methods
-/// `reader.rb` calls (`handles?` and the process method). The
-/// `extensions.dart` wave unifies this with the real extension types.
+/// The two `IncludeProcessor` methods the reader calls (`handles` and the
+/// process method); implemented by `IncludeProcessor`.
 abstract class ReaderIncludeProcessor {
   /// Whether this processor handles the given include [target].
   bool handles(String target);
@@ -194,8 +189,8 @@ class Cursor {
     lineno += num;
   }
 
-  /// Returns a copy of this cursor (port of Ruby's `Cursor#dup`, used for
-  /// source locations in `lib/asciidoctor/table.rb` and `lib/asciidoctor/parser.rb`).
+  /// Returns a copy of this cursor (used for table and parser source
+  /// locations).
   Cursor dup() => Cursor(file, dir, path, lineno);
 
   /// `path: line N` summary of this cursor.
@@ -210,26 +205,25 @@ enum _LineNormalization {
   /// No normalization; string input is chomped and split only.
   none,
 
-  /// Coerce to Unicode and strip trailing whitespace (Ruby `normalize: true`).
+  /// Coerce to Unicode and strip trailing whitespace.
   full,
 
-  /// Strip a single trailing record separator only (Ruby `normalize: :chomp`).
+  /// Strip a single trailing line terminator only.
   chomp,
 }
 
 /// Methods for retrieving lines from AsciiDoc source.
 ///
 /// Port of `Asciidoctor::Reader`. Lines are held on a stack in reverse; the
-/// next line is the last element. A `null` entry behaves exactly as in Ruby:
-/// it peeks as end-of-data but still occupies (and is consumed from) the
-/// stack when read directly.
+/// next line is the last element. A `null` entry peeks as end-of-data but still
+/// occupies (and is consumed from) the stack when read directly.
 class Reader {
   /// Initializes the reader.
   ///
   /// [data] is a string, a list of lines (which may contain `null` entries),
   /// or `null` for an empty reader. [cursor] is a file path string, a
   /// [Cursor], or `null` (stdin). When [normalize] is set, lines are
-  /// normalized as in Ruby (`normalize: true`).
+  /// coerced to Unicode and stripped of trailing whitespace.
   new(Object? data, {Object? cursor, bool normalize = false}) {
     if (cursor == null) {
       _file = null;
@@ -274,7 +268,7 @@ class Reader {
   }
 
   /// Sentinel for [readLinesUntil]'s [cursor] parameter selecting the cursor
-  /// at the mark (resolved lazily, as with Ruby's `cursor: :at_mark`).
+  /// at the mark (resolved lazily).
   static const Object atMark = _AtMark();
 
   /// Default `context` marker for [readLinesUntil], selecting the terminator.
@@ -508,7 +502,7 @@ class Reader {
   ///
   /// * [terminator] stops at the line whose contents equal it.
   /// * [breakOnListContinuation] stops at a list continuation line (which is
-  ///   then preserved, as in Ruby).
+  ///   then preserved).
   /// * [skipFirstLine] advances beyond the first line before scanning.
   /// * [preserveLastLine] pushes the stopping line back onto the stack.
   /// * [readLastLine] includes the stopping line in the result.
@@ -601,7 +595,7 @@ class Reader {
   ///
   /// Internal: use directly only when [peekLine] already determined the line
   /// should be consumed; otherwise use [readLine]. The line number is
-  /// incremented even when the stack is empty, exactly as in Ruby.
+  /// incremented even when the stack is empty.
   @internal
   String? shift() {
     _lineno += 1;
@@ -661,7 +655,7 @@ class Reader {
   Cursor cursorAtPrevLine() => Cursor(_file, _dir, _path, _lineno - 1);
 
   /// Marks the current cursor position. Always returns `true` so the call
-  /// can be chained in boolean expressions, as in Ruby.
+  /// can be chained in boolean expressions.
   bool mark() {
     _mark = [_file, _dir, _path, _lineno];
     return true;
@@ -708,7 +702,7 @@ class Reader {
 
   /// Processes a previously unvisited line.
   ///
-  /// Internal (public for parity with Ruby's test seam): marks the line as
+  /// Internal (public so tests can call it): marks the line as
   /// processed and returns it unmodified. Returns `null` to drop the line
   /// and advance to the next one.
   @internal
@@ -750,8 +744,8 @@ class Reader {
   /// Converts [data] into a list of lines ready for parsing. [normalize]
   /// controls encoding/whitespace handling.
   ///
-  /// Unlike Ruby, no encoding rescue is needed: Dart strings are always
-  /// valid Unicode.
+  /// No encoding recovery is needed: Dart strings are always valid
+  /// Unicode.
   List<String?> _prepareLines(
     Object? data, {
     _LineNormalization normalize = _LineNormalization.none,
@@ -1351,7 +1345,6 @@ class PreprocessorReader extends Reader {
                 : evalExpressionRx.firstMatch(text.trim());
             if (exprMatch != null) {
               // NOTE assignments must happen before call to resolveExprVal
-              // for compatibility with Opal
               final lhs = exprMatch.group(1)!;
               // regex enforces a restricted set of math-related operations
               // (==, !=, <=, >=, <, >)
@@ -1649,8 +1642,8 @@ class PreprocessorReader extends Reader {
           // NOTE read content before shift so cursor is only advanced if IO
           // operation succeeds
           shift();
-          // NOTE a decode failure raises here, after the shift, exactly as
-          // Ruby raises from push_include after shifting.
+          // NOTE a decode failure raises here, after the shift, as
+          // Asciidoctor does.
           final content = raw is String
               ? raw
               : _decodeIncludeBytes(raw as List<int>, encoding);
@@ -1681,8 +1674,8 @@ class PreprocessorReader extends Reader {
     int? incOffset;
     try {
       final raw = _readIncludeRaw(resolution, encoding);
-      // Ruby rescues decode failures raised while streaming the file, so
-      // they are handled as an unreadable include here.
+      // Decode failures while streaming the file are handled as an
+      // unreadable include.
       final content = raw is String
           ? raw
           : _tryDecodeIncludeBytes(raw as List<int>, encoding) ??
@@ -1746,7 +1739,7 @@ class PreprocessorReader extends Reader {
     Encoding encoding,
     Map<String, bool> incTags,
   ) {
-    // The selection tables below mutate the tag map, as in Ruby.
+    // The selection tables below mutate the tag map.
     final tags = Map<String, bool>.of(incTags);
     late bool select;
     late bool baseSelect;
@@ -1756,8 +1749,7 @@ class PreprocessorReader extends Reader {
       if (tags.containsKey('*')) {
         wildcard = tags.remove('*');
       } else if (!select && tags.isNotEmpty && !tags.values.first) {
-        // NOTE the isNotEmpty guard mirrors Ruby, where first on an empty
-        // map yields nil, which != false.
+        // NOTE an empty map counts as not starting with an exclusion.
         wildcard = true;
       }
     } else if (tags.containsKey('*')) {
@@ -1775,8 +1767,8 @@ class PreprocessorReader extends Reader {
     int? incOffset;
     try {
       final raw = _readIncludeRaw(resolution, encoding);
-      // Ruby rescues decode failures raised while streaming the file, so
-      // they are handled as an unreadable include here.
+      // Decode failures while streaming the file are handled as an
+      // unreadable include.
       final content = raw is String
           ? raw
           : _tryDecodeIncludeBytes(raw as List<int>, encoding) ??
@@ -2208,7 +2200,7 @@ class _InvalidExprComparison implements Exception {
 
 /// Compares resolved `ifeval` operands with [op].
 ///
-/// Mirrors Ruby's `Object#send` semantics: `==`/`!=` compare numbers with
+/// Comparison semantics: `==`/`!=` compare numbers with
 /// numbers, strings with strings and booleans with booleans (mixed types
 /// never match; only `null` equals `null`), while relational operators work
 /// on two numbers or two strings and throw [_InvalidExprComparison]
@@ -2245,12 +2237,12 @@ int _exprCompareTo(Object? lhs, Object? rhs) {
   throw const _InvalidExprComparison();
 }
 
-/// Ruby truthiness: only `null` and `false` are falsy.
+/// Only `null` and `false` count as false.
 bool _isTruthy(Object? value) => value != null && value != false;
 
 final RegExp _intPrefixRx = RegExp(r'^[+-]?\d[\d_]*');
 
-/// Coerces [value] to an integer with Ruby's `to_i` semantics: an [int] is
+/// Coerces [value] to an integer: an [int] is
 /// returned as is, a [double] is truncated, and a [String] contributes its
 /// leading numeric prefix (else 0). Anything else yields 0.
 int _toInt(Object? value) {
@@ -2266,7 +2258,7 @@ final RegExp _floatPrefixRx = RegExp(
   r'^[+-]?(?:\d[\d_]*)?(?:\.\d[\d_]*)?(?:[eE][+-]?\d[\d_]*)?',
 );
 
-/// Coerces [value] to a double with Ruby's `to_f` semantics: leading
+/// Coerces [value] to a double: leading
 /// whitespace is skipped, then the leading numeric (or inf/nan) prefix is
 /// parsed, else 0.0.
 double _parseFloatPrefix(String value) {
@@ -2284,8 +2276,8 @@ double _parseFloatPrefix(String value) {
   return double.tryParse(number) ?? 0.0;
 }
 
-/// Splits [content] into raw lines with Ruby's `each_line` semantics: each
-/// line keeps its trailing newline except possibly the last.
+/// Splits [content] into raw lines; each line keeps its trailing newline except
+/// possibly the last.
 List<String> _splitRawLines(String content) {
   final lines = <String>[];
   var start = 0;
@@ -2300,7 +2292,7 @@ List<String> _splitRawLines(String content) {
 }
 
 /// Splits a delimited include value on commas (when present) or semicolons,
-/// dropping trailing empty entries as Ruby's default `split` does.
+/// dropping trailing empty entries.
 List<String> _splitDelimitedValue(String value) {
   if (value.isEmpty) return [];
   final parts = value.contains(',') ? value.split(',') : value.split(';');
@@ -2312,12 +2304,11 @@ List<String> _splitDelimitedValue(String value) {
 }
 
 /// Resolves an `encoding` attribute value to a Dart [Encoding], or `null`
-/// when unknown (the caller then keeps UTF-8, as Ruby does when
-/// `Encoding.find` fails).
+/// when unknown (the caller then keeps UTF-8).
 ///
 /// Only the encodings Dart decodes natively are supported; anything else
 /// falls back to UTF-8, which then raises the invalid-Unicode error on
-/// undecodable input, exactly as in Ruby.
+/// undecodable input.
 Encoding? _findEncoding(String name) {
   switch (name.toLowerCase()) {
     case 'utf-8':
@@ -2338,7 +2329,7 @@ Encoding? _findEncoding(String name) {
   }
 }
 
-/// Decodes include [bytes] strictly, raising Ruby's invalid-Unicode error on
+/// Decodes include [bytes] strictly, raising an invalid-Unicode error on
 /// undecodable input.
 String _decodeIncludeBytes(List<int> bytes, Encoding encoding) =>
     _tryDecodeIncludeBytes(bytes, encoding) ??
@@ -2356,8 +2347,7 @@ String? _tryDecodeIncludeBytes(List<int> bytes, Encoding encoding) {
   }
 }
 
-/// Returns the directory name of [path] with Ruby's posix `File.dirname`
-/// semantics.
+/// Returns the directory name of [path] (POSIX `dirname` semantics).
 String _dirname(String path) {
   var end = path.length;
   while (end > 1 && path.codeUnitAt(end - 1) == 0x2f) {
@@ -2388,8 +2378,7 @@ Object _dirnameOf(Object file) {
   throw ArgumentError('file must be a String or a Uri');
 }
 
-/// Quotes [value] with Ruby's `String#inspect` escaping (for [Object.toString]
-/// parity; untested surface).
+/// Quotes [value] with backslash escapes, for [Object.toString].
 String _inspect(String value) {
   final buffer = StringBuffer('"');
   for (final unit in value.codeUnits) {

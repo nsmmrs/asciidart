@@ -44,11 +44,10 @@ Future<int> runCliCode(
     if (out != null) invoker.redirectStreams(out, err);
     await invoker.invokeAsync();
     return invoker.code;
-    // Last-resort CLI boundary: mirror Ruby's uncaught-exception exit for
-    // anything that escapes, Errors included.
+    // Last-resort CLI boundary for anything that escapes, Errors included.
   } on Object catch (e, stackTrace) {
-    // Mirror Ruby's uncaught-exception behavior (`bin/asciidoctor` has no
-    // rescue): the message plus backtrace go to STDERR and the process
+    // Uncaught-exception behavior: the message plus backtrace go to STDERR
+    // and the process
     // exits 1. Reached for `--trace` re-raises and for the errors
     // `Options.parse!` lets propagate (ambiguous option, needless
     // argument, unloadable `--require` under `--trace`).

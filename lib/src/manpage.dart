@@ -2,20 +2,18 @@
 ///
 /// Port of `lib/asciidoctor/converter/manpage.rb` (complete). Per
 /// `adr/0001-dart-rewrite-goals.md` (D4) every template method produces
-/// byte-identical output to the Ruby converter, including whitespace.
+/// output byte-identical to Asciidoctor 2.0.26, including whitespace.
 ///
 /// ## Framework integration
 ///
-/// Ruby's `convert_<transform>` methods become handler registrations via
-/// [ConverterBase.handle] (see `converter.dart`); [ManpageConverter.convert]
-/// itself is inherited from [ConverterBase], which warns and returns `null`
-/// for unregistered transforms, mirroring Ruby's `NoMethodError` rescue. The
-/// converter registers itself with [Converter.register] (explicit
-/// registration replaces Ruby's lazy `require`).
+/// Each transform is a handler registered with [ConverterBase.handle] (see
+/// `converter.dart`); [ManpageConverter.convert] itself is inherited from
+/// [ConverterBase], which warns and returns `null` for unregistered
+/// transforms. The converter registers itself explicitly with
+/// [Converter.register].
 ///
 /// The converter only consumes already-substituted strings (`content`,
-/// `title`, `text`, `alt`, `captioned_title`, `xreftext`), so — unlike the
-/// html5 port — it needs no TEMP-SHIM from the substitutors wave.
+/// `title`, `text`, `alt`, `captioned_title`, `xreftext`).
 library;
 
 import 'dart:io';
@@ -33,9 +31,8 @@ import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/table.dart';
 
-/// Renders [value] the way Ruby string interpolation does: `toString`,
-/// except `null` (and, via callers, Ruby `nil`) renders as the empty
-/// string instead of `'null'`.
+/// Renders [value] for interpolation into output: `toString`, except
+/// `null` renders as the empty string instead of `'null'`.
 String _s(Object? value) => value?.toString() ?? '';
 
 /// Whitespace characters collapsed by `tr_s` (port of `WHITESPACE`).
@@ -44,7 +41,7 @@ const String _whitespace = '\n\t ';
 /// Tab expansion for preserved whitespace (port of `ET`, `' ' * 8`).
 const String _et = '        ';
 
-/// Troff leader marker (port of Ruby's `ESC`, the single ESC character).
+/// Troff leader marker (the single ESC character).
 final String _esc = String.fromCharCode(27);
 
 /// Escaped backslash: indicates a troff formatting sequence (`ESC_BS`).
@@ -75,7 +72,7 @@ bool _hasLineStartingWith(String text, String char) {
 }
 
 /// Troff replacements for the character references `manify` rewrites, in
-/// Ruby's order. `&#8212;` (em dash) is handled in [_replaceCharRefs]
+/// Asciidoctor's order. `&#8212;` (em dash) is handled in [_replaceCharRefs]
 /// because it absorbs a trailing `&#8203;` (port of `EmDashCharRefRx`).
 const Map<String, String> _charRefReplacements = {
   '&lt;': '<',
@@ -126,11 +123,10 @@ const int _maxCharRefLength = 7;
 /// Replaces the character references in [text] per [_charRefReplacements]
 /// in a single left-to-right pass.
 ///
-/// Equivalent to Ruby's chain of one `gsub` per reference (ending with
-/// `&amp;`): every reference starts with `&`, no replacement contains `&`
-/// or starts with a character that could continue a reference, and no
-/// reference is a prefix of another, so no replacement creates or hides a
-/// later match.
+/// Equivalent to replacing each reference in turn (ending with `&amp;`): every
+/// reference starts with `&`, no replacement contains `&` or starts with a
+/// character that could continue a reference, and no reference is a prefix of
+/// another, so no replacement creates or hides a later match.
 String _replaceCharRefs(String text) {
   var amp = text.indexOf('&');
   if (amp < 0) return text;
@@ -216,9 +212,8 @@ enum _WhitespaceMode {
 /// (groff) format.
 ///
 /// Port of `Asciidoctor::Converter::ManPageConverter`. Each `convert*`
-/// method mirrors its Ruby `convert_*` namesake; template selection that
-/// Ruby performs by method dispatch is expressed as [handle] registrations
-/// below (see the library docs).
+/// method corresponds to Asciidoctor's `convert_*` method of the same name
+/// and is registered with [handle] below (see the library docs).
 class ManpageConverter extends ConverterBase {
   /// Creates a converter for [backend] with constructor options [opts].
   new(super.backend, [super.opts]) {
@@ -1041,8 +1036,8 @@ class ManpageConverter extends ConverterBase {
   ///
   /// The first name is the primary page (already written to [target]); every
   /// remaining name gets a stub page pointing at it. Does nothing unless
-  /// [mannames] holds at least two names. Mirrors Ruby, which drops the
-  /// primary name from the passed list (`Array#shift`).
+  /// [mannames] holds at least two names. The primary name is removed from
+  /// the passed list.
   static void writeAlternatePages(
     List<Object?>? mannames,
     Object? manvolnum,
@@ -1105,8 +1100,8 @@ class ManpageConverter extends ConverterBase {
     switch (whitespace) {
       case _WhitespaceMode.preserve:
         // NOTE Dart reports the zero-width `(^)?` group as non-participating
-        // even at a line start (verified by probe), so Ruby's `$1 ? ...`
-        // test becomes an explicit line-start check (exactly equivalent:
+        // even at a line start (verified by probe), so the group test
+        // becomes an explicit line-start check (exactly equivalent:
         // the run matches either way; only the branch differs).
         final expanded = result.replaceAll(tab, _et);
         result = !expanded.contains('  ')
@@ -1216,7 +1211,7 @@ class ManpageConverter extends ConverterBase {
 
   /// Returns the header cells of row [index], creating rows up to it.
   ///
-  /// Mirrors Ruby's auto-extending `Array#[]=` (`row_header[i] ||= []`).
+  /// Grows [rows] as needed.
   static List<List<String>?> _rowHeaderAt(
     List<List<List<String>?>?> rows,
     int index,
@@ -1229,7 +1224,7 @@ class ManpageConverter extends ConverterBase {
 
   /// Returns the text cells of row [index], creating rows up to it.
   ///
-  /// Mirrors Ruby's auto-extending `Array#[]=` (`row_text[i] ||= []`).
+  /// Grows [rows] as needed.
   static List<String> _rowTextAt(List<List<String>?> rows, int index) {
     while (rows.length <= index) {
       rows.add(null);
@@ -1239,7 +1234,7 @@ class ManpageConverter extends ConverterBase {
 
   /// Returns the header entry of cell [index], creating cells up to it.
   ///
-  /// Mirrors Ruby's auto-extending `Array#[]=` (`row[i] ||= []`).
+  /// Grows [row] as needed.
   static List<String> _headerCellAt(List<List<String>?> row, int index) {
     while (row.length <= index) {
       row.add(null);

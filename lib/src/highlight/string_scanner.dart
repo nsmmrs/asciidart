@@ -1,11 +1,11 @@
-/// Minimal port of Ruby's `StringScanner` for the CodeRay scanner ports.
+/// Minimal string scanner for the CodeRay scanners.
 ///
-/// Only the surface the Ruby scanner port exercises is implemented: `scan`,
+/// Only the surface the Ruby-language scanner exercises is implemented: `scan`,
 /// `scanUntil`, `scanRest`, `check`, `getch`, `peek`, `unscan`, `eos`,
 /// `bol`, `pos`, `lastMatch` (captures via `capture`) and `terminate`.
 ///
-/// Positions are UTF-16 code-unit offsets (Dart string convention); the Ruby
-/// original counts characters. The two agree on the Basic Multilingual Plane
+/// Positions are UTF-16 code-unit offsets (Dart string convention); CodeRay
+/// counts characters. The two agree on the Basic Multilingual Plane
 /// and differ only inside astral characters, which the supported scanners
 /// treat as opaque identifier characters either way.
 library;
@@ -25,7 +25,7 @@ class CodeRayStringScanner {
   /// The most recent match, or `null` after a failed match operation.
   ///
   /// Mirrors `StringScanner#matched` plus the capture registers (`self[1]`
-  /// reads [capture]`(1)`). Failed matches clear it, as in Ruby.
+  /// reads [capture]`(1)`). Failed matches clear it.
   Match? lastMatch;
 
   /// Length of the most recent [scan], for [unscan].
@@ -48,7 +48,7 @@ class CodeRayStringScanner {
   ///
   /// Returns the matched text and advances past it, or returns `null`
   /// without moving when [pattern] does not match here. A zero-width match
-  /// returns `''` without moving (as in Ruby).
+  /// returns `''` without moving.
   String? scan(RegExp pattern) {
     final match = pattern.matchAsPrefix(string, _pos);
     _lastLength = 0;
@@ -65,7 +65,7 @@ class CodeRayStringScanner {
   /// Matches [pattern] anchored at the cursor without consuming input.
   ///
   /// Returns the matched text, or `null` without moving. Captures are
-  /// recorded in [lastMatch], as in Ruby.
+  /// recorded in [lastMatch].
   String? check(RegExp pattern) {
     final match = pattern.matchAsPrefix(string, _pos);
     lastMatch = match;
@@ -85,10 +85,10 @@ class CodeRayStringScanner {
   /// Returns everything from the cursor through the end of the match and
   /// advances past it, or returns `null` without moving when [pattern]
   /// never matches again. A zero-width match at the cursor returns `''`
-  /// without moving (as in Ruby).
+  /// without moving.
   ///
-  /// One known deviation: Ruby's `StringScanner` matches against the
-  /// unscanned rest, so `\A` anchors at the scan position there; Dart
+  /// One known deviation: CodeRay matches against the unscanned rest, so
+  /// `\A` anchors at the scan position there; here
   /// cannot spell `\A` at all, so no caller passes `\A` patterns. (The
   /// heredoc terminator search, the one `\A` use in the original, is
   /// implemented by hand with faithful scan-position semantics.)

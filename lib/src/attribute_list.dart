@@ -39,10 +39,10 @@ class AttributeList {
   }
 
   // Attribute name: word char followed by word chars, hyphens or dots
-  // (approx. name token from XML). Ruby's
-  // `\p{Word}` is unknown to Dart's RegExp, hence the emulation, verified
-  // equivalent against Ruby over letters, marks, decimal numbers,
-  // connector punctuation and join controls (see ADR-0001 D1 notes).
+  // (approx. name token from XML). `\p{Word}` is unknown to Dart's RegExp,
+  // hence the emulation, verified equivalent to upstream over letters, marks,
+  // decimal numbers, connector punctuation and join controls (see ADR-0001 D1
+  // notes).
   static final RegExp _nameRx = RegExp(
     '[\\p{Alpha}\\p{M}\\p{Nd}\\p{Pc}\u200C\u200D][\\p{Alpha}\\p{M}\\p{Nd}\\p{Pc}\u200C\u200D.-]*',
     unicode: true,
@@ -230,7 +230,7 @@ class AttributeList {
       _scanner.scan(quote == _quot ? _boundaryQuot : _boundaryApos);
 }
 
-/// Minimal port of Ruby's `StringScanner` covering the operations
+/// Minimal string scanner covering the operations
 /// [AttributeList] needs: all matches are anchored at the scan position.
 class _StringScanner {
   new(this.string);
@@ -248,8 +248,8 @@ class _StringScanner {
 
   /// Consumes and returns the next character (one rune), or `null` at end.
   ///
-  /// Ruby's `get_byte` advances a single byte; advancing a whole rune keeps
-  /// multibyte characters intact while behaving identically for the ASCII
+  /// Advances a whole rune, which keeps multibyte characters intact and
+  /// behaves like a single-byte advance for the ASCII
   /// delimiters, quotes and operators this scanner inspects.
   String? getByte() {
     if (isEos) return null;

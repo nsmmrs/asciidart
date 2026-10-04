@@ -2,24 +2,21 @@
 ///
 /// Port of `lib/asciidoctor/abstract_node.rb`.
 ///
-/// Ruby symbols (`:paragraph`, `:document`, ...) are represented as `String`s
-/// throughout this port, so a Ruby `context` of `:listing` becomes the Dart
-/// string `'listing'`.
+/// Node contexts and other symbolic names are `String`s throughout
+/// (`'paragraph'`, `'listing'`, ...).
 ///
-/// Several collaborators of [AbstractNode] live in waves that have not landed
-/// yet. Their node-facing slices are declared here as small interfaces so
-/// this file compiles standalone with sound null safety:
+/// Nodes reach their collaborators through small interfaces declared here,
+/// which keep this library free of dependencies on the concrete classes:
 ///
-/// * [NodeDocument] — the `Document` API surface nodes consume. Implemented
-///   by `Document` (document wave), which extends [AbstractBlock].
-/// * [NodeConverter] — the `Converter#convert` entry point. Implemented by
-///   the converter wave.
-/// * [NodeLogger] — the logger API. The logging wave provides the concrete
-///   `Logger`, `MemoryLogger` and `NullLogger` implementations.
+/// * [NodeDocument]: the document API nodes consume, implemented by
+///   `Document`.
+/// * [NodeConverter]: the converter entry point, implemented by `Converter`.
+/// * [NodeLogger]: the logger API, implemented by the loggers in
+///   `logging.dart`.
 ///
 /// The substitution methods (`applySubs`, `subQuotes` and friends) delegate
-/// to the top-level functions in `substitutors.dart`, preserving Ruby's
-/// mixin shape (every node answers the `Substitutors` methods).
+/// to the top-level functions in `substitutors.dart`, so every node answers
+/// them.
 library;
 
 import 'dart:convert' show base64Encode, utf8;
@@ -53,8 +50,8 @@ abstract final class SafeMode {
 
 /// The converter entry point consumed by nodes.
 ///
-/// Port of the `convert` method on `Asciidoctor::Converter`. The converter
-/// wave implements this interface.
+/// Port of the `convert` method on `Asciidoctor::Converter`; implemented by
+/// `Converter`.
 abstract interface class NodeConverter {
   /// Converts [node] to the output format.
   Object? convert(AbstractNode node);
@@ -62,9 +59,8 @@ abstract interface class NodeConverter {
 
 /// The logger API consumed by nodes.
 ///
-/// Mirrors the `::Logger` severity methods used through the `Logging` mixin.
-/// The logging wave implements this interface with `Logger`, `MemoryLogger`
-/// and `NullLogger`.
+/// The severity methods nodes log through; implemented by the loggers in
+/// `logging.dart`.
 abstract interface class NodeLogger {
   /// Logs [message] at debug severity.
   void debug(Object? message);
@@ -84,14 +80,12 @@ abstract interface class NodeLogger {
 
 /// Default [NodeLogger], forwarding to the shared manager logger.
 ///
-/// In Ruby every node logs through `LoggerManager.logger` (via the `Logging`
-/// mixin), so CLI level selection (`-v`, `-q`), formatting,
-/// and `maxSeverity` (for `--failure-level`) apply uniformly. This forwarder
-/// preserves that single-logger behavior; the lookup is dynamic so invoker
-/// swaps (e.g. [NullLogger] for `-q`) and `logger:` option replacements take
-/// effect. Tests keep replacing [AbstractNode.currentLogger] wholesale.
-/// With the default level (`WARN`) debug and info messages are dropped, and
-/// records render identically to before via `BasicFormatter`.
+/// Every node logs through `LoggerManager.logger`, so CLI level selection
+/// (`-v`, `-q`), formatting, and `maxSeverity` (for `--failure-level`) apply
+/// uniformly. The lookup is dynamic so invoker swaps (e.g. [NullLogger] for
+/// `-q`) and `logger:` option replacements take effect. Tests keep replacing
+/// [AbstractNode.currentLogger] wholesale. With the default level (`WARN`)
+/// debug and info messages are dropped.
 final class _StderrNodeLogger implements NodeLogger {
   /// Creates the default stderr logger.
   const new();
@@ -124,7 +118,7 @@ final class _StderrNodeLogger implements NodeLogger {
 
 /// The `Document` API surface consumed by nodes.
 ///
-/// Implemented by `Document` (document wave). Most members are satisfied
+/// Implemented by `Document`. Most members are satisfied
 /// automatically because `Document` extends [AbstractBlock], which extends
 /// [AbstractNode].
 abstract interface class NodeDocument {
@@ -148,8 +142,7 @@ abstract interface class NodeDocument {
 
   /// The document catalog (`'refs'`, `'callouts'`, ...).
   ///
-  /// Mirrors `Document#catalog` (whose Ruby keys are symbols; the port uses
-  /// their string names).
+  /// Mirrors `Document#catalog`.
   Map<String, Object?> get catalog;
 
   /// The document callouts catalog.
@@ -200,7 +193,7 @@ abstract class AbstractNode {
   ///
   /// When [context] is `'document'`, the node refers to itself as its
   /// document (and must implement [NodeDocument]), ignoring [parent] (which
-  /// stays `null`, as in Ruby, where a document never assigns `@parent`);
+  /// stays `null`);
   /// otherwise the document is taken from [parent] (which may be `null`,
   /// leaving [document] unset until the node is attached with [parent] or
   /// `AbstractBlock.append`). [attributes] is copied; [nodeName] overrides
@@ -240,7 +233,7 @@ abstract class AbstractNode {
 
   /// Passthrough slots stashed while substitutions run.
   ///
-  /// Internal: written and cleared by the substitutors wave. Each entry maps
+  /// Internal: written and cleared by the substitutions. Each entry maps
   /// `text`, `subs` and optionally `type` / `attributes`.
   final List<Map<String, Object?>> passthroughs = <Map<String, Object?>>[];
 
@@ -263,8 +256,7 @@ abstract class AbstractNode {
 
   /// Reassigns the context and re-derives [nodeName] from it.
   ///
-  /// Ruby defines `context=` on `AbstractBlock` only; it lives here so every
-  /// subclass across libraries shares the same behavior. Prefer using it on
+  /// Defined here so every subclass shares the same behavior; meant for
   /// blocks.
   set context(String value) {
     _context = value;
@@ -301,7 +293,7 @@ abstract class AbstractNode {
   /// this node is not the document node, returns the value of that
   /// attribute (or [name] when [fallbackName] is `true`) from the document
   /// node instead. Otherwise returns [defaultValue]. A stored value of
-  /// `null` or `false` counts as "not found", exactly as in Ruby.
+  /// `null` or `false` counts as "not found".
   Object? attr(Object name, [Object? defaultValue, Object? fallbackName]) {
     final key = name.toString();
     final value = attributes[key];
@@ -420,7 +412,7 @@ abstract class AbstractNode {
   ///
   /// Accepts a single role name, a space-separated string of role names, or
   /// a (possibly nested) list of role names, which is flattened and joined
-  /// with spaces exactly like Ruby's `Array#join`.
+  /// with spaces.
   set role(Object? names) {
     attributes['role'] = names is List<Object?> ? _joinAll(names) : names;
   }
@@ -468,8 +460,8 @@ abstract class AbstractNode {
 
   /// Splits [input] on runs of ASCII whitespace, dropping empty parts.
   ///
-  /// Mirrors Ruby's `String#split` with no arguments (which sees ASCII
-  /// whitespace only, unlike Dart's unicode-aware `\s`).
+  /// Only ASCII whitespace separates (Dart's `\s` would also match Unicode
+  /// spaces).
   static List<String> _splitOnBlank(String input) {
     final parts = <String>[];
     var start = -1;
@@ -496,7 +488,7 @@ abstract class AbstractNode {
   }
 
   /// Joins [items] with spaces, flattening nested lists and mapping `null`
-  /// to the empty string, exactly like Ruby's `Array#join(' ')`.
+  /// to the empty string.
   static String _joinAll(List<Object?> items) {
     final flat = <String>[];
     void collect(Object? item) {
@@ -594,8 +586,7 @@ abstract class AbstractNode {
   /// Returns [value] when it is a string, otherwise `null`.
   ///
   /// Directory attributes resolve to strings; a `false` (or otherwise
-  /// non-string) value is treated as absent, matching how Ruby's path
-  /// helpers treat falsy values.
+  /// non-string) value is treated as absent.
   static String? _stringOrNull(Object? value) => value is String ? value : null;
 
   /// Returns a data URI embedding the image at [targetImage].
@@ -631,7 +622,7 @@ abstract class AbstractNode {
   }
 
   /// Reads the file at [path], returning `null` when it does not exist or
-  /// cannot be read (mirroring Ruby's `File.readable?` gate).
+  /// cannot be read.
   static List<int>? _readBytes(String path) {
     if (!File(path).existsSync()) return null;
     try {
@@ -645,11 +636,10 @@ abstract class AbstractNode {
   ///
   /// Returns the response body bytes and content type. The default
   /// implementation throws [UnimplementedError]: `dart:io` offers no
-  /// synchronous HTTP client, so URI fetching awaits a later wave (which
-  /// may make these methods asynchronous). Tests and embedders can override
-  /// this seam to supply URI data. Fetch failures surface as [Exception]s;
-  /// anything else (including [UnimplementedError]) propagates to the
-  /// caller instead of taking the warning path.
+  /// synchronous HTTP client, so URI fetching is not built in. Tests and
+  /// embedders can override this method to supply URI data. Fetch failures
+  /// surface as [Exception]s; anything else (including [UnimplementedError])
+  /// propagates to the caller instead of taking the warning path.
   ({List<int> body, String? contentType}) fetchUri(String uri) =>
       throw UnimplementedError(
         'Synchronous URI fetching is not available in dart:io; '
@@ -659,7 +649,7 @@ abstract class AbstractNode {
   /// Returns a data URI built from the image data read at [imageUri].
   ///
   /// When [cacheUri] is set, the (unavailable) URI cache library is
-  /// required first, mirroring Ruby's `LoadError` with a [StateError]. When
+  /// required first, which throws a [StateError]. When
   /// the data cannot be retrieved, a warning is logged and [imageUri] is
   /// returned unchanged.
   String generateDataUriFromUri(String imageUri, {bool cacheUri = false}) {
@@ -770,8 +760,8 @@ abstract class AbstractNode {
             ? Helpers.prepareSourceString(content).join(lf)
             : content;
       } on FileSystemException {
-        // Fall through to the warn-or-nil path below (the file exists but
-        // cannot be read, which Ruby's `File.readable?` gate would reject).
+        // Fall through to the warn-or-null path below (the file exists but
+        // cannot be read).
       }
     }
     if (warnOnFailure) {
@@ -810,7 +800,7 @@ abstract class AbstractNode {
     String? contents;
     var targetIsUri = Helpers.isUriish(resolvedTarget);
     if (!targetIsUri && start != null && Helpers.isUriish(start)) {
-      // NOTE the assigned web path (a string) is always truthy in Ruby.
+      // NOTE the assigned web path (a string) always counts as set.
       resolvedTarget = doc.pathResolver.webPath(resolvedTarget, start);
       targetIsUri = true;
     }
@@ -860,16 +850,15 @@ abstract class AbstractNode {
 
   /// Applies the substitutions [subs] to [source].
   ///
-  /// [source] is a [String] or a [List] of lines (mirroring Ruby, where the
-  /// verbatim path passes the lines array and gets an array back).
+  /// [source] is a [String] or a [List] of lines (the verbatim path passes
+  /// lines and gets lines back).
   /// Delegates to `substitutors.applySubs` with this node.
   Object? applySubs(Object? source, [List<String>? subs]) =>
       substitutors.applySubs(this, source, subs);
 
   /// Applies title substitutions to [text].
   ///
-  /// Ruby aliases this to `apply_subs` (defaulting to the normal
-  /// substitutions, which always perform real work on non-empty text).
+  /// Uses the normal substitutions.
   /// Delegates to `substitutors.applyTitleSubs` with this node.
   Object? applyTitleSubs(Object? text) =>
       substitutors.applyTitleSubs(this, text);
@@ -902,7 +891,7 @@ abstract class AbstractNode {
 
   /// Substitutes [value] into the `%s` placeholder of [format].
   ///
-  /// Ruby aliases this to `sprintf`. Delegates to
+  /// Delegates to
   /// `substitutors.subPlaceholder` (pure function).
   String subPlaceholder(String format, Object? value) =>
       substitutors.subPlaceholder(format, value);

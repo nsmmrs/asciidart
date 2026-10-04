@@ -12,7 +12,7 @@ class Inline extends AbstractNode {
   /// Creates an inline element with [parent], [context] and [text].
   ///
   /// Dart parameter lists cannot mix optional positional and named
-  /// parameters, so [text] is named here (Ruby takes it positionally).
+  /// parameters, so [text] is named.
   new(
     super.parent,
     super.context, {

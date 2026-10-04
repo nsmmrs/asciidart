@@ -2,33 +2,17 @@
 ///
 /// Port of `lib/asciidoctor/document.rb` (complete).
 ///
-/// Ruby symbols (`:paragraph`, `:document`, ...) are represented as `String`s
-/// throughout this port, so a Ruby context of `:document` becomes the Dart
-/// string `'document'`.
+/// Node contexts and other symbolic names are `String`s throughout
+/// (`'paragraph'`, `'document'`, ...).
 ///
-/// Several collaborators live in waves that have not landed yet:
-///
-/// * The parser wave replaces the [Parser] stub (`parser.dart`) and un-skips
-///   the parse-dependent tests. Until then [Document.parse] (and everything
-///   that parses, such as [Document.convert]) throws [UnimplementedError].
-/// * Ported backend converters (html5, docbook5, manpage) register
-///   with [Converter] and [Document] resolves them through
-///   [Converter.create]. Until a backend lands, [Document] carries a minimal
-///   internal stub ([_BuiltinConverterStub]) that reports the built-in
-///   backend traits (basebackend, filetype, outfilesuffix, htmlsyntax) so
-///   constructor-level behavior is byte-identical; calling `convert` on the
-///   stub throws [UnimplementedError]. [Document.convert] calls the
-///   single-argument `NodeConverter.convert`.
-/// * The substitutors wave fills in the private `_resolveDocinfoSubs`
-///   stub (throwing [UnimplementedError] until then); `applyHeaderSubs`
-///   and `_applyPassMacroSubs` are ported.
-/// * Extension integration is ported: the `extensions` and
-///   `extension_registry` options activate a [Registry] into
-///   [Document.extensions], pre/tree/postprocessors and docinfo processors
-///   run, and the `converter`/`converter_factory` options resolve through
-///   [CustomFactory]/[ConverterFactory].
-/// * [Document.syntaxHighlighter] resolves from the `source-highlighter`
-///   attribute when the header is saved.
+/// The backend converters (html5, docbook5, manpage) register with
+/// [Converter] and are resolved through [Converter.create]; an unknown
+/// backend fails when the converter is first needed. The `extensions` and
+/// `extension_registry` options activate a [Registry] into
+/// [Document.extensions], and the `converter`/`converter_factory` options
+/// resolve through [CustomFactory]/[ConverterFactory].
+/// [Document.syntaxHighlighter] resolves from the `source-highlighter`
+/// attribute when the header is saved.
 ///
 /// [Timings] (from `timings.dart`) records the read/parse/convert/write
 /// phase durations surfaced via the `timings` option and `--timings`.
@@ -117,8 +101,7 @@ class DocumentAttributeEntry {
 
   /// Records this entry in [blockAttributes] under `'attribute_entries'`.
   ///
-  /// (Ruby keys the entry list with a symbol; the port uses the string
-  /// `'attribute_entries'` per the symbols-become-strings convention.)
+  /// (The entry list lives under the string key `'attribute_entries'`.)
   void saveTo(Map<String, Object?> blockAttributes) {
     var entries = blockAttributes['attribute_entries'];
     if (entries == null || entries == false) {
@@ -152,7 +135,7 @@ class DocumentTitle {
       main = text;
       subtitle = null;
     } else {
-      // Mirrors Ruby's `String#rpartition` (split at the last occurrence).
+      // Split at the last occurrence.
       final idx = text.lastIndexOf(sep);
       main = text.substring(0, idx);
       subtitle = text.substring(idx + sep.length);
@@ -280,7 +263,7 @@ class _BackendTraits {
   final String? htmlsyntax;
 }
 
-/// Minimal stand-in for a converter until the converter wave lands.
+/// Placeholder converter that only reports backend traits.
 ///
 /// Carries the backend [traits] when they are known (a built-in backend, or
 /// a template chain delegating to one); otherwise ([traits] is `null`) the
@@ -301,9 +284,8 @@ class _BuiltinConverterStub implements NodeConverter {
   bool get hasTraits => traits != null;
 
   @override
-  Object? convert(AbstractNode node) => throw UnimplementedError(
-    'Converter wave: no converter for backend "$backend" is ported yet.',
-  );
+  Object? convert(AbstractNode node) =>
+      throw UnimplementedError('no converter for backend "$backend"');
 }
 
 /// Adapts a [Document] to the [ReaderDocument] interface.
@@ -418,7 +400,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Creates a document for [data] with [options].
   ///
   /// [data] is the AsciiDoc source as a string, a list of lines, or `null`
-  /// for an empty document. [options] mirrors the Ruby options hash with
+  /// for an empty document. [options] is the options map with
   /// string keys (`'safe'`, `'backend'`, `'doctype'`, `'attributes'`,
   /// `'standalone'`, `'header_footer'`, `'base_dir'`, `'to_file'`,
   /// `'to_dir'`, `'sourcemap'`, `'timings'`, `'input_mtime'` (a [DateTime]),
@@ -689,7 +671,7 @@ class Document extends AbstractBlock implements NodeDocument {
         attrs[key] = newVal;
         if (verdict) unlockedKeys.add(key);
       } else {
-        // A nil or false value both unset the attribute; only a nil value
+        // A null or false value both unset the attribute; only a null value
         // locks it.
         attrs.remove(key);
         if (val == false) unlockedKeys.add(key);
@@ -804,8 +786,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// The level-0 section (i.e., doctitle). Only stores the title, not the
   /// header attributes.
   ///
-  /// Written by the parser wave once the header is parsed (Ruby assigns the
-  /// ivar directly; Dart exposes the field for the same purpose).
+  /// Written by the parser once the header is parsed.
   Section? header;
 
   /// The base directory for converting this document.
@@ -838,7 +819,7 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// The converter associated with this document.
   ///
-  /// A minimal stub until the converter wave lands (see the library docs).
+  /// Resolved from the backend when the backend attributes are updated.
   @override
   late NodeConverter converter;
 
@@ -869,9 +850,6 @@ class Document extends AbstractBlock implements NodeDocument {
   /// If [data] is given, a new [PreprocessorReader] is first assigned to
   /// [reader]. If parsing was already performed, returns this document
   /// without further processing. Returns this document.
-  ///
-  /// Throws [UnimplementedError] until the parser wave lands ([Parser.parse]
-  /// is a stub).
   Document parse([Object? data]) {
     if (_parsed) return this;
     var doc = this;
@@ -957,8 +935,8 @@ class Document extends AbstractBlock implements NodeDocument {
             ? intval
             : seed;
       } else {
-        // An integer seed (or anything else) is used as is: Ruby compares
-        // `seed == seed.to_i.to_s`, which is only true for strings.
+        // An integer seed (or anything else) is used as is; only a string
+        // seed that spells an integer is converted.
         nextVal = counters[name] = seed;
       }
     } else {
@@ -1003,8 +981,8 @@ class Document extends AbstractBlock implements NodeDocument {
         final entry = value! as List<Object?>;
         final refs = catalog['refs']! as Map<String, Object?>;
         final key = entry[0]! as String;
-        // Ruby evaluates `(ref = value[1])` only when assigning, then
-        // returns `ref` (nil when the key already exists).
+        // The ref is returned only when it was assigned (null when the key
+        // already exists).
         if (!isTruthy(refs[key])) {
           refs[key] = entry[1];
           return entry[1];
@@ -1019,8 +997,7 @@ class Document extends AbstractBlock implements NodeDocument {
           final stored = type == 'images'
               ? ImageReference(value! as String, attributes['imagesdir'])
               : value;
-          // Throws when the catalog has no such table, mirroring Ruby's
-          // NoMethodError on `nil.<<`.
+          // Throws when the catalog has no such table.
           final assets = (catalog[type]! as List)..add(stored);
           return assets;
         }
@@ -1342,10 +1319,8 @@ class Document extends AbstractBlock implements NodeDocument {
     return true;
   }
 
-  /// Converts the AsciiDoc document using the converter.
-  ///
-  /// Throws [UnimplementedError] until the parser wave lands (conversion
-  /// always parses first).
+  /// Converts the AsciiDoc document using the converter (parsing it first
+  /// if needed).
   @override
   Object? convert([Map<String, Object?> opts = const <String, Object?>{}]) {
     _timings?.start('convert');
@@ -1388,8 +1363,7 @@ class Document extends AbstractBlock implements NodeDocument {
         transform = isTruthy(options['standalone']) ? 'document' : 'embedded';
       }
       // `NodeConverter` only exposes the single-argument entry point; the
-      // full `Converter` API takes the transform (Ruby: `convert self,
-      // transform`). Stubs for unported backends keep throwing below.
+      // full `Converter` API takes the transform.
       final nodeConverter = converter;
       output = nodeConverter is Converter
           ? nodeConverter.convert(this, transform)
@@ -1418,8 +1392,8 @@ class Document extends AbstractBlock implements NodeDocument {
   /// or a [String] file path.
   void write(Object? output, Object target) {
     _timings?.start('write');
-    // Converter wave: converters implementing the writer brotherhood take
-    // over here; until then output is always written directly.
+    // Output is always written directly (no converter here writes output
+    // itself).
     if (target is StringSink) {
       if (!_isNilOrEmpty(output)) {
         final text = _chomp(output! as String);
@@ -1434,7 +1408,7 @@ class Document extends AbstractBlock implements NodeDocument {
           ..writeln();
       }
     } else if (target is String) {
-      // Ruby's `File.write target, output` coerces nil to empty.
+      // A null output writes an empty file.
       File(target).writeAsStringSync(output as String? ?? '');
     } else {
       throw ArgumentError.value(
@@ -1443,8 +1417,8 @@ class Document extends AbstractBlock implements NodeDocument {
         'must be a StringSink, IOSink, or file path',
       );
     }
-    // Ruby: only when the converter class responds to write_alternate_pages
-    // (i.e. the manpage converter itself, not a template/composite chain).
+    // Only when the converter itself writes alternate pages (the manpage
+    // converter, not a template or composite chain).
     if (backend == 'manpage' &&
         target is String &&
         converter is ManpageConverter) {
@@ -1575,8 +1549,8 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// Reads the include target [uri] decoded with [encoding].
   ///
-  /// Returns `null` when the URI cannot be read. Used by the reader wave
-  /// through the [ReaderDocument] adapter.
+  /// Returns `null` when the URI cannot be read. Used by the reader through
+  /// the [ReaderDocument] adapter.
   String? readUri(Uri uri, Encoding encoding) {
     try {
       final response = fetchUri(uri.toString());
@@ -1637,7 +1611,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Safely truncates [str] to [max] bytes.
   ///
   /// A multibyte char split by the cut is dropped whole, so the result is
-  /// always valid (mirrors the `valid_encoding?` loop in Ruby).
+  /// always valid.
   static String _limitBytesize(String str, int max) {
     final bytes = utf8.encode(str);
     if (bytes.length <= max) return str;
@@ -1670,8 +1644,7 @@ class Document extends AbstractBlock implements NodeDocument {
   ///
   /// From the `docinfosubs` attribute when set, else `['attributes']`
   /// (port of `resolve_docinfo_subs`; document.rb:1146; an empty value
-  /// resolves to no subs, matching Ruby's `nil` short-circuit in
-  /// `apply_subs`).
+  /// resolves to no subs).
   List<String> _resolveDocinfoSubs() {
     if (attributes.containsKey('docinfosubs')) {
       return substitutors.resolveSubs(
@@ -1701,9 +1674,9 @@ class Document extends AbstractBlock implements NodeDocument {
     };
     final templateDirs = options['template_dirs'] ?? options['template_dir'];
     if (isTruthy(templateDirs)) {
-      // Ruby's `[*template_dirs]` coerces a lone String to a one-element
-      // Array; `template_cache` defaults to true only when the key is
-      // absent (an explicit nil/false disables the cache).
+      // A lone String becomes a one-element list; `template_cache`
+      // defaults to true only when the key is
+      // absent (an explicit null/false disables the cache).
       converterOpts['template_dirs'] = templateDirs is Iterable
           ? templateDirs.map((dir) => dir.toString()).toList()
           : [templateDirs.toString()];
@@ -2010,14 +1983,14 @@ class Document extends AbstractBlock implements NodeDocument {
     }
   }
 
-  /// Formats [time] as `yyyy-MM-dd` (Ruby `%F`).
+  /// Formats [time] as `yyyy-MM-dd`.
   static String _formatDate(DateTime time) =>
       '${time.year.toString().padLeft(4, '0')}-'
       '${time.month.toString().padLeft(2, '0')}-'
       '${time.day.toString().padLeft(2, '0')}';
 
   /// Formats [time] as `HH:mm:ss <zone>` with `UTC` for a zero offset,
-  /// else `+HHMM`/`-HHMM` (Ruby `%T %z`, with `UTC` for `+0000`).
+  /// else `+HHMM`/`-HHMM`.
   static String _formatTime(DateTime time) {
     final offset = time.timeZoneOffset;
     final zone = offset == Duration.zero
@@ -2190,7 +2163,7 @@ class Document extends AbstractBlock implements NodeDocument {
     return newDoctype;
   }
 
-  /// Expands [path] against the working directory (Ruby `File.expand_path`).
+  /// Expands [path] against the working directory.
   String _expandBaseDir(String path) {
     final absolute = pathResolver.isRoot(path)
         ? path
@@ -2198,13 +2171,13 @@ class Document extends AbstractBlock implements NodeDocument {
     return pathResolver.expandPath(absolute);
   }
 
-  /// The user's home directory (Ruby `USER_HOME`).
+  /// The user's home directory.
   static String get _userHome =>
       Platform.environment['HOME'] ?? Directory.current.path;
 
   /// Mirrors a `showtitle`/`notitle` API value to its counterpart.
   ///
-  /// Port of `{nil => '', false => '@', '@' => false}[value]`.
+  /// Maps `null` to `''`, `false` to `'@'` and `'@'` to `false`.
   static Object? _mirrorShowtitle(Object? value) {
     if (value == null) return '';
     if (value == false) return '@';
@@ -2215,9 +2188,10 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Returns the next value in the sequence after [current].
   ///
   /// Port of `Helpers.nextval`: integers increment; integer-looking strings
-  /// increment numerically; anything else takes Ruby's `String#succ`.
+  /// increment numerically; anything else takes its string successor
+  /// ([_succ]).
   /// [current] is `null` only when a locked counter has no recorded value,
-  /// which Ruby rejects (`NoMethodError`); here a [StateError] is thrown.
+  /// which is an error ([StateError]).
   static Object _nextval(Object? current) {
     if (current is int) return current + 1;
     if (current is BigInt) return current + BigInt.one;
@@ -2232,10 +2206,10 @@ class Document extends AbstractBlock implements NodeDocument {
     throw StateError('counter value must be an Integer or String: $current');
   }
 
-  /// Parses the leading integer of [value] (Ruby `String#to_i`).
+  /// Parses the leading integer of [value].
   ///
   /// Returns `null` when the value has no leading integer. [BigInt] is used
-  /// so arbitrarily large values behave exactly like Ruby.
+  /// so arbitrarily large values parse exactly.
   static BigInt? _parseLeadingInt(String value) {
     final match = _leadingIntRx.firstMatch(value);
     if (match == null) return null;
@@ -2266,14 +2240,15 @@ class Document extends AbstractBlock implements NodeDocument {
 
   static const int _maxInt63 = 9223372036854775807;
 
-  /// Returns the successor of [s] (Ruby `String#succ`).
+  /// Returns the successor of [s] (`'a'` to `'b'`, `'az'` to `'ba'`,
+  /// `'9'` to `'10'`).
   ///
   /// The last alphanumeric run (ASCII letters and digits) is incremented
   /// with carry; when it overflows, the carry crosses separators to the
   /// previous run when that run ends in the same class (digit or letter),
   /// else the carry char (`'1'`, `'a'`, `'A'`) is inserted at the run
   /// start. With no alphanumeric char, the last char is incremented by
-  /// codepoint. Verified against CRuby, including `'19-99'` -> `'20-00'`,
+  /// codepoint. Verified against Asciidoctor, including `'19-99'` -> `'20-00'`,
   /// `'a-9'` -> `'a-10'`, `'9-Z'` -> `'9-AA'` and `'a-Z'` -> `'b-A'`.
   static String _succ(String s) {
     bool isDigit(int c) => c >= 0x30 && c <= 0x39;
@@ -2347,16 +2322,15 @@ class Document extends AbstractBlock implements NodeDocument {
     }
   }
 
-  /// Whether [value] is `null` or an empty string (Ruby `nil_or_empty?`).
+  /// Whether [value] is `null` or an empty string.
   ///
-  /// Note `false` is *not* nil-or-empty (Ruby's `Object#nil_or_empty?`
-  /// returns false).
+  /// Note `false` is *not* null-or-empty.
   static bool _isNilOrEmpty(Object? value) =>
       value == null || (value is String && value.isEmpty);
 
   /// Removes one trailing line break (`\n`, `\r\n` or `\r`) from [s].
   ///
-  /// Port of Ruby's `String#chomp` with no arguments.
+  /// Removes one trailing line terminator.
   static String _chomp(String s) {
     if (s.endsWith('\n')) {
       return s.substring(0, s.length - (s.endsWith('\r\n') ? 2 : 1));

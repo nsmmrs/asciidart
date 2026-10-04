@@ -2,24 +2,21 @@
 ///
 /// Port of `lib/asciidoctor/parser.rb` (complete).
 ///
-/// Ruby symbols (`:paragraph`, `:document`, ...) are represented as `String`s
-/// throughout this port. Attribute maps that carry positional entries use
-/// `Map<Object, Object?>` with `int` keys (exactly like the Ruby hashes);
+/// Node contexts and other symbolic names are `String`s throughout.
+/// Attribute maps that carry positional entries use `Map<Object, Object?>`
+/// with `int` keys;
 /// they are converted to string keys when handed to block constructors via
 /// `_strKeys` because the ported model types its attribute maps as
 /// `Map<String, Object?>`.
 ///
-/// Several collaborators live in waves that have not landed yet; every
-/// private workaround for one is marked `TEMP-SEAM (parser)` and must be
-/// deleted (routing the call to the real API) when that wave lands:
-///
-/// * The substitutors wave replaces `_subSpecialchars`, `_subAttributes`,
-///   `_applyHeaderSubs`, `_applyAttributeValueSubs`,
-///   `_parseAttributes`, `_resolveSubs`, `_commitSubs` and `_titleText`.
-///   Substitution coverage in these seams is limited to the
-///   `specialcharacters` and `attributes` substitutions; quotes, macros,
-///   replacements and post-replacements are applied by the real wave.
-///   (`_setDocumentAttribute` already delegates to [Document.setAttribute].)
+/// Known gap (BUG-fwc380): private helpers marked `TEMP-SEAM (parser)` —
+/// `_subSpecialchars`, `_subAttributes`, `_applyHeaderSubs`,
+/// `_applyAttributeValueSubs`, `_parseAttributes`, `_resolveSubs`,
+/// `_commitSubs` and `_titleText` — apply only the `specialcharacters` and
+/// `attributes` substitutions where Asciidoctor applies the full set (for
+/// example, section IDs generated from titles that contain replacements
+/// differ). They are to be routed to the real substitutions.
+/// (`_setDocumentAttribute` already delegates to [Document.setAttribute].)
 /// * Extension integration is ported: the block/block-macro extension
 ///   branches in `nextBlock` and `buildBlock` consult
 ///   `document.extensions`, and attribute entries route through
@@ -80,9 +77,7 @@ class BlockMatchData {
 
 /// Internal marker for a list continuation line inside a list-item buffer.
 ///
-/// Ruby extends the `'+'` (and `''` placeholder) strings with the
-/// `ListContinuationMarker` module and tests membership with `===`; the
-/// port uses these two singletons in a `List<Object>` buffer instead. The
+/// The two markers live in a `List<Object>` buffer next to plain lines. The
 /// buffer is mapped back to plain strings before a [Reader] is built.
 enum _ListContinuation {
   /// A live list continuation (`'+'`).
@@ -410,7 +405,7 @@ abstract final class Parser {
   /// map; read the map first (it mirrors the field otherwise) and fall
   /// back to the field. Delete with the seam and read
   /// `document.doctype` directly. (If an entry-set doctype is later
-  /// unset, this falls back to the stale field where Ruby keeps the
+  /// unset, this falls back to the stale field where Asciidoctor keeps the
   /// entry value; no test covers that.)
   static String? _doctype(Document document) {
     final fromAttrs = document.attributes['doctype'];
@@ -453,8 +448,8 @@ abstract final class Parser {
   /// Whether a list-item buffer entry is a [_ListContinuation] marker.
   static bool _isContinuation(Object? entry) => entry is _ListContinuation;
 
-  /// Splits [value] on [sep] into at most [limit] parts (Ruby `split`
-  /// with a limit; the last part keeps the remainder).
+  /// Splits [value] on [sep] into at most [limit] parts (the last part keeps
+  /// the remainder).
   static List<String> _splitLimit(String value, String sep, int limit) {
     final parts = value.split(sep);
     if (parts.length <= limit) return parts;
@@ -466,8 +461,8 @@ abstract final class Parser {
 
   /// Splits [value] on whitespace runs into at most [limit] parts.
   ///
-  /// Port of Ruby `String#split` with a `nil` pattern: leading whitespace
-  /// is dropped and trailing empty fields never appear.
+  /// Splits on whitespace runs: leading whitespace is dropped and trailing
+  /// empty fields never appear.
   static List<String> _splitWhitespace(String value, [int? limit]) {
     final rest = value.trimLeft();
     if (rest.isEmpty) return <String>[];
@@ -485,11 +480,11 @@ abstract final class Parser {
     return parts;
   }
 
-  /// The first character of [value] (first rune, mirroring `String#chr`).
+  /// The first character of [value] (first rune).
   static String _firstChar(String value) =>
       value.isEmpty ? '' : String.fromCharCode(value.runes.first);
 
-  /// Coerces [value] to an integer with Ruby `to_i` semantics.
+  /// Coerces [value] to an integer (its leading integer, else 0).
   ///
   /// `null` and unparsable values become `0`; leading whitespace is
   /// skipped and a leading `[+-]?\d+` run is parsed.
@@ -512,9 +507,7 @@ abstract final class Parser {
     if (!(text.contains('>') || text.contains('&') || text.contains('<'))) {
       return text;
     }
-    // Both Ruby branches agree: only `&`, `<` and `>` are escaped (the
-    // gsub branch never touches quotes; the CGI branch only runs when no
-    // quotes are present, where its `"` rule is a no-op).
+    // Only `&`, `<` and `>` are escaped (never quotes).
     return text
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
@@ -839,7 +832,8 @@ abstract final class Parser {
   /// TEMP-SEAM (parser): converted title with the partial title
   /// substitutions (`specialcharacters`, then `attributes`).
   ///
-  /// Used where Ruby reads `block.title` (conversion plus memoization):
+  /// Used where Asciidoctor reads `block.title` (conversion plus
+  /// memoization):
   /// attribute and counter side effects run, but quotes, macros and
   /// replacements need the substitutors wave.
   static String _titleText(AbstractBlock block) {
@@ -2586,7 +2580,7 @@ abstract final class Parser {
     if (result.hasSub('callouts')) {
       // Only simple content-model blocks can carry the callouts sub, so
       // this is always a Block here (lists and tables short-circuit in
-      // _commitSubs, exactly like Ruby, which would fail on `source`).
+      // _commitSubs).
       // No need to sub callouts if none are found when cataloging.
       if (!catalogCallouts((result as Block).source(), document)) {
         result.removeSub('callouts');
@@ -2642,9 +2636,7 @@ abstract final class Parser {
   /// Determines whether [line] is the start of a known delimited block.
   ///
   /// Port of `Parser.is_delimited_block?`. Returns the [BlockMatchData]
-  /// when it is, else `null`. (Ruby returns `true` instead of the data
-  /// unless `return_match_data` is set; every call site only needs
-  /// truthiness or the data, so the port always returns the data.)
+  /// when it is, else `null`.
   static BlockMatchData? isDelimitedBlock(String line) {
     // Highly optimized for best performance.
     final lineLen = line.length;
@@ -3246,8 +3238,8 @@ abstract final class Parser {
           // Using list level makes more sense, but we don't track it.
           // Basing style on marker level is compliant with AsciiDoc.py.
           final fallbackIndex = resolvedMarker.length - 1;
-          // NOTE Ruby's implicit style is a Symbol; the fallback is a String
-          // (`.to_s`). See ListBlock.markerStyle.
+          // NOTE the implicit style and the fallback are distinguished; see
+          // ListBlock.markerStyle.
           listBlock.style =
               (listBlock.markerStyle = implicitStyle) ??
               (fallbackIndex >= 0 && fallbackIndex < _orderedListStyles.length
@@ -3310,7 +3302,7 @@ abstract final class Parser {
         if (subsequentLine.isNotEmpty) {
           contentAdjacent = true;
           // Treat lines as paragraph text if continuation does not connect
-          // first block (i.e., has_text = nil).
+          // first block (i.e., hasText is null).
           if (!dlist) hasText = false;
         }
       }
@@ -3783,7 +3775,7 @@ abstract final class Parser {
       table.hasHeaderOption = true;
     } else if (skipped == 0 && !isTruthy(attributes['noheader-option'])) {
       // NOTE assume table has header until we know otherwise; if it
-      // doesn't (nil), cells in first row get reprocessed.
+      // doesn't (null), cells in first row get reprocessed.
       table.hasHeaderOption = 'implicit';
       implicitHeader = true;
     }
@@ -3816,7 +3808,7 @@ abstract final class Parser {
             'start',
             parserCtx.delimiter,
           );
-          // If cellspec is not nil, we're at a cell boundary.
+          // If cellspec is not null, we're at a cell boundary.
           if (nextCellspec != null) {
             parserCtx.closeOpenCell(nextCellspec);
             if (implicitHeaderBoundary != null) {
@@ -4288,11 +4280,11 @@ abstract final class Parser {
     var resolvedName = name;
     var resolvedValue = value;
     if (resolvedName.endsWith('!')) {
-      // A nil value signals the attribute should be deleted (unset).
+      // A null value signals the attribute should be deleted (unset).
       resolvedName = resolvedName.substring(0, resolvedName.length - 1);
       resolvedValue = null;
     } else if (resolvedName.startsWith('!')) {
-      // A nil value signals the attribute should be deleted (unset).
+      // A null value signals the attribute should be deleted (unset).
       resolvedName = resolvedName.substring(1);
       resolvedValue = null;
     }
@@ -4341,12 +4333,8 @@ abstract final class Parser {
           }
         }
       } else if (!doc.attributeLocked(resolvedName)) {
-        // TEMP-SEAM (parser): Ruby `delete_attribute` returns true
-        // whenever the attribute is unlocked (even when absent), but the
-        // document wave's port returns whether it was present; gate on
-        // the lock instead so the entry is recorded exactly like Ruby.
-        // The document wave must fix `deleteAttribute` to return true
-        // when unlocked (document.rb `delete_attribute`).
+        // Unlocked attributes are always deleted (and the entry recorded),
+        // even when absent.
         doc.deleteAttribute(resolvedName);
         if (attrs != null) {
           _saveAttributeEntry(
@@ -4718,8 +4706,8 @@ abstract final class Parser {
       }
 
       if (segments != null) {
-        // NOTE Ruby returns nil for out-of-range indexes; Dart throws, so
-        // read defensively (segments has 1-3 entries when names_only).
+        // NOTE segments has 1-3 entries when names_only; missing ones are
+        // null.
         final seg1 = segments.length > 1 ? segments[1] : null;
         final seg2 = segments.length > 2 ? segments[2] : null;
         final seg3 = segments.length > 3 ? segments[3] : null;
@@ -4836,8 +4824,8 @@ abstract final class Parser {
     if (indentSize < 0) return;
 
     // Determine block indent (assumes no whitespace-only lines are
-    // present). The indent prefix is ASCII whitespace only (mirroring
-    // Ruby `lstrip`), so UTF-16 offsets equal character offsets.
+    // present). The indent prefix is ASCII whitespace only, so UTF-16
+    // offsets equal character offsets.
     int? blockIndent;
     for (final line in lines) {
       if (line.isEmpty) continue;
@@ -4853,7 +4841,7 @@ abstract final class Parser {
     }
 
     // Remove block indent then apply indent_size if specified.
-    // NOTE block_indent is > 0 if not nil.
+    // NOTE blockIndent is > 0 if not null.
     if (indentSize == 0) {
       if (blockIndent != null) {
         for (var i = 0; i < lines.length; i++) {

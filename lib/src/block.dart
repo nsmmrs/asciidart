@@ -27,8 +27,8 @@ const Map<String, String> defaultContentModels = <String, String>{
 
 /// Sentinel marking the [Block.subs] option as absent.
 ///
-/// Ruby's constructor distinguishes a missing `:subs` option from an
-/// explicit `subs: nil`; this default preserves that distinction.
+/// The default distinguishes a missing `subs` option from an explicit
+/// `null`.
 const Object subsAbsent = Object();
 
 /// Methods for managing AsciiDoc content blocks.
@@ -46,7 +46,7 @@ class Block extends AbstractBlock {
   /// [defaultSubs] and then to the context built-ins), a list fixes the
   /// substitutions (ignoring the `subs` attribute), and any other value is
   /// stored as the `subs` attribute. Passing [subs] resolves eagerly
-  /// through `commitSubs`, which the substitutors wave still has to port.
+  /// through `commitSubs`.
   new(
     super.parent,
     super.context, {
@@ -91,7 +91,7 @@ class Block extends AbstractBlock {
   /// The original content lines of this block, if applicable.
   List<String> lines;
 
-  /// Substitution overrides consulted by `commitSubs` (substitutors wave).
+  /// Substitution overrides consulted by `commitSubs`.
   ///
   /// Internal: `null` defers resolution, an empty list prevents it, and any
   /// other value seeds it.

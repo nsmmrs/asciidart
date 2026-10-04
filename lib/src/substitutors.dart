@@ -2,52 +2,38 @@
 ///
 /// Port of `lib/asciidoctor/substitutors.rb`.
 ///
-/// Ruby's `Substitutors` is a mixin (`self` is the block or document being
-/// substituted). The port expresses it as top-level functions that take the
-/// node explicitly as the first parameter (the explicit-param seam style used
-/// by `reader.dart` and `highlight/`):
+/// The substitutions are top-level functions:
 ///
-/// * Functions whose Ruby method uses `self` take an [AbstractNode] first
-///   (e.g. [applySubs], [subQuotes], [subMacros]); the document is derived
-///   from the node exactly as Ruby reads `@document`.
+/// * Functions that act on a node take an [AbstractNode] first (e.g.
+///   [applySubs], [subQuotes], [subMacros]); the document is derived from
+///   the node.
 /// * Pure functions take no node (e.g. [subSpecialchars], [subReplacements],
 ///   [normalizeText], [splitSimpleCsv]).
-/// * Ruby symbols become strings (`:quotes` -> `'quotes'`, `:highlight` ->
-///   `'highlight'`); substitution-type constants keep their Ruby names in
-///   camelCase ([normalSubs], [basicSubs], ...).
+/// * Substitution names are strings (`'quotes'`, `'highlight'`, ...), and
+///   the standard substitution groups are constants ([normalSubs],
+///   [basicSubs], ...).
 ///
-/// Main-module constants consumed here ([intrinsicAttributes], [quoteSubs],
-/// [replacements], [hardLineBreak], [stemTypeAliases], [asciidocExtensions],
-/// the compliance flags) live in `constants.dart`. All regular expressions
-/// reused from `rx.dart` are imported, never redefined.
+/// Shared constants ([intrinsicAttributes], [quoteSubs], [replacements],
+/// [hardLineBreak], [stemTypeAliases], [asciidocExtensions], the compliance
+/// flags) live in `constants.dart`, and the regular expressions in
+/// `rx.dart`.
 ///
-/// TEMP-SEAMs (missing collaborator APIs worked around privately; each is
-/// marked at the use site and listed for the merger):
+/// Implementation notes:
 ///
-/// * Node/document API surface: every function requires a real [Document]
-///   behind the node ([_documentOf] throws a [StateError] otherwise) because
+/// * Every function requires a real [Document] behind the node
+///   ([_documentOf] throws a [StateError] otherwise), because
 ///   [NodeDocument] does not expose `register`, `resolveId`, `footnotes`,
 ///   `outfilesuffix`, attribute locking, extensions or the syntax
-///   highlighter. The sibling merger replaces these casts with interface
-///   methods when they land.
-/// * Passthrough locking (`@passthroughs_locked`) has no home on
-///   [AbstractNode]; it is kept in a private [Expando].
-/// * `{set:...}` attribute assignments replicate `Parser.store_attribute`
-///   ([_storeAttribute]) and the value-substitution half of
-///   `Document#set_attribute` (which routes through `Document`'s private
-///   substitutor stubs that this wave cannot fill from here).
-/// * Custom inline macros consult `Document.extensions` (ported); syntax
-///   highlighting (syntax-highlighter wave) is a loud seam: a non-null
-///   `Document.syntaxHighlighter` throws [UnimplementedError] in the
-///   highlight path.
-/// * [NodeDocument]/[NodeLogger] expose no severity gate, so the Ruby
-///   `logger.info?` guards are not replicated ([_logPossibleInvalidReference]
-///   always logs on a missed reference). The default logger drops info
-///   messages, matching Ruby's default level.
-/// * [AttributeList] results carry integer positional keys in Ruby; Dart
-///   [Inline] attributes only accept strings, so [_stringMap] drops the
-///   integer keys when constructing inline nodes (converters never read
-///   them).
+///   highlighter.
+/// * The passthrough lock is kept in a private [Expando] rather than on
+///   [AbstractNode].
+/// * `{set:...}` attribute assignments go through [_storeAttribute], which
+///   reproduces the parser's attribute storing.
+/// * Missed references are always passed to the logger at info level
+///   ([_logPossibleInvalidReference]); the default logger drops them.
+/// * Attribute lists carry integer positional keys, but [Inline] attributes
+///   only accept strings, so [_stringMap] drops the integer keys when
+///   constructing inline nodes (converters never read them).
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -197,14 +183,13 @@ const String plus = '+';
 
 /// Tracks the passthrough lock per node.
 ///
-/// TEMP-SEAM: Ruby keeps this as `@passthroughs_locked` on the node; there
-/// is no such field on [AbstractNode], so the lock lives here. Placeholders
+/// [AbstractNode] has no field for it, so the lock lives here. Placeholders
 /// can move around, so only the outermost substitution call clears them.
 final Expando<bool> _passthroughsLocked = Expando<bool>('passthroughsLocked');
 
 /// Returns the [Document] behind [node].
 ///
-/// TEMP-SEAM: [NodeDocument] does not expose the members substitutors need
+/// [NodeDocument] does not expose the members substitutors need
 /// (`register`, `resolveId`, `footnotes`, `outfilesuffix`, attribute
 /// locking, extensions, the syntax highlighter), so every function requires
 /// a real document. Throws a [StateError] for foreign node implementations.
@@ -221,9 +206,8 @@ Document _documentOf(AbstractNode node) {
 
 /// Returns [node] as a block, for constructing [Inline] children.
 ///
-/// TEMP-SEAM: substitutors always run on block-level nodes in Ruby (the
-/// mixin is included in section/block/document classes); a non-block node
-/// falls back to its parent.
+/// Substitutions normally run on block-level nodes; a non-block node falls
+/// back to its parent.
 AbstractBlock _blockOf(AbstractNode node) {
   if (node is AbstractBlock) return node;
   final parent = node.parent;
@@ -235,14 +219,13 @@ AbstractBlock _blockOf(AbstractNode node) {
   return parent;
 }
 
-/// Renders [value] as Ruby string interpolation would (`null` becomes the
-/// empty string, unlike Dart's `'null'`).
+/// Renders [value] for interpolation into output (`null` becomes the empty
+/// string, not `'null'`).
 String _str(Object? value) => value?.toString() ?? '';
 
 /// Drops the non-string (positional integer) keys from [attrs].
 ///
-/// TEMP-SEAM: Ruby attribute lists carry 1-based integer keys that travel
-/// into [Inline] attributes; Dart inline attributes are
+/// Attribute lists carry 1-based integer keys; [Inline] attributes are
 /// `Map<String, Object?>` and converters never read the integer keys.
 Map<String, Object?> _stringMap(Map<Object, Object?> attrs) {
   final result = <String, Object?>{};
@@ -262,7 +245,7 @@ bool _endsWithAny(String value, Iterable<String> suffixes) {
 }
 
 /// Splits [source] on [separator] into at most [limit] parts, keeping
-/// trailing empty fields, like Ruby's `String#split` with a limit.
+/// trailing empty fields.
 List<String> _splitLimit(String source, String separator, int limit) {
   final parts = <String>[];
   var start = 0;
@@ -278,9 +261,8 @@ List<String> _splitLimit(String source, String separator, int limit) {
 
 /// Logs a possible invalid reference to [refid] unless it is registered.
 ///
-/// TEMP-SEAM: Ruby guards this with `logger.info?`, but [NodeLogger] exposes
-/// no severity gate, so the message is always emitted on a miss. The default
-/// logger drops info messages, matching Ruby's default level.
+/// [NodeLogger] exposes no severity gate, so the message is always passed to
+/// the logger on a miss; the default logger drops info messages.
 void _logPossibleInvalidReference(
   AbstractNode node,
   Document doc,
@@ -294,8 +276,7 @@ void _logPossibleInvalidReference(
 
 /// Applies [SubsApplier] substitutions on behalf of `node`.
 ///
-/// [AttributeList] calls this for single-quoted values, mirroring Ruby
-/// passing the block itself (`AttributeList.new attrlist, self`).
+/// [AttributeList] calls this for single-quoted values.
 final class _BlockSubsApplier implements SubsApplier {
   /// Creates an applier delegating to `node`.
   new(this._node);
@@ -672,8 +653,7 @@ String subAttributes(
 
 /// Returns the first truthy option as a string, else [fallback.
 ///
-/// Mirrors Ruby's `a || b || default` chains for attribute settings, where
-/// only `null` and `false` are falsy.
+/// Only `null` and `false` count as unset.
 String _firstTruthy(Object? first, Object? second, String fallback) {
   if (isTruthy(first)) return first.toString();
   if (isTruthy(second)) return second.toString();
@@ -696,12 +676,12 @@ Object? _counterWithArgs(Document doc, List<String> args) {
 
 /// Stores an attribute assignment from a `{set:name:value}` reference.
 ///
-/// TEMP-SEAM: mirrors `Parser.store_attribute` plus the value-substitution
-/// half of `Document#set_attribute`. The latter routes through `Document`'s
+/// Mirrors `Parser.store_attribute` plus the value-substitution half of
+/// `Document#set_attribute`. The latter routes through `Document`'s
 /// private substitutor stubs (which cannot be filled from this library), so
 /// header substitutions are applied here and the value is assigned directly;
 /// backend/doctype remapping and the value-size limit are not replicated.
-/// Returns the (name, value) pair like the Ruby method.
+/// Returns the (name, value) pair.
 (String, Object?) _storeAttribute(Document doc, String name, Object? value) {
   // TODOmove processing of attribute value to utility method
   var attrName = name;
@@ -804,13 +784,12 @@ String doReplacement(RegExpMatch match, String replacement, String restore) {
 /// Whether [regexp] declares any named capture groups (`(?<name>...)`,
 /// excluding the `(?<=` / `(?<!` lookbehinds).
 ///
-/// Dart exposes no group-name list (unlike Ruby's `MatchData#names`), so
-/// the pattern source is inspected instead.
+/// The pattern source is inspected.
 bool _hasNamedGroups(RegExp regexp) =>
     RegExp(r'\(\?<[A-Za-z_]').hasMatch(regexp.pattern);
 
 /// Returns the `name`d group of [match], or `null` when the pattern does
-/// not declare it (port of `$~[name] rescue nil`).
+/// not declare it.
 String? _namedGroupOrNull(Match match, String name) {
   final regExpMatch = match as RegExpMatch;
   return regExpMatch.groupNames.contains(name)
@@ -1313,8 +1292,8 @@ String subMacros(AbstractNode node, String text) {
 
 /// Continues [subMacros] with links, emails, anchors, xrefs and footnotes.
 ///
-/// Split out only to keep function sizes manageable; the Ruby method runs
-/// these steps inline, in this order. [foundSquareBracket] and
+/// Split out only to keep function sizes manageable; the steps run in this
+/// order. [foundSquareBracket] and
 /// [foundMacroish] are the sniffs computed on the original text.
 String _subMacrosLinks(
   AbstractNode node,
@@ -1734,8 +1713,8 @@ String _convertXrefMacro(
     fragment = refid;
   } else {
     final hashIdx = refid.indexOf('#');
-    // NOTE Ruby reads refid[hash_idx - 1], which wraps to the last
-    // character when hash_idx is 0.
+    // NOTE when the hash is the first character, the character before it
+    // wraps around to the last character (as in Asciidoctor).
     final charBeforeHash = hashIdx == -1
         ? null
         : hashIdx == 0
@@ -1970,7 +1949,6 @@ String _convertFootnoteMacro(
 ///
 /// Port of `Substitutors#sub_post_replacements`.
 String subPostReplacements(AbstractNode node, String text) {
-  //if attr? 'hardbreaks-option', nil, true
   final docAttrs = _documentOf(node).attributes;
   if (isTruthy(node.attributes['hardbreaks-option']) ||
       isTruthy(docAttrs['hardbreaks-option'])) {
@@ -2083,8 +2061,8 @@ String highlightSource(
   // NOTE (coderay parity gap): the shared CssMode/LineNumbersMode mapping is
   // lenient (unknown values map to inline), which matches pygments, but
   // CodeRay itself rejects unknown :css / :line_numbers values with an
-  // error. Plumbing the raw strings through the typed adapter seam so the
-  // CodeRay backend can validate them is framework-wave work.
+  // error. Passing the raw strings through to the CodeRay backend so it can
+  // validate them is not implemented.
   LineNumbersMode? linenumsMode;
   int? startLineNumber;
   if (node.hasAttr('linenums')) {
@@ -2785,7 +2763,7 @@ Map<Object, Object?> parseAttributes(
     source = subAttributes(_documentOf(node), source);
   }
   // substitutions are only performed on attribute values if block is not
-  // nil
+  // null
   final block = subResult ? _BlockSubsApplier(node) : null;
   final parsed = AttributeList(source, block).parse(posattrs);
   if (into != null) {

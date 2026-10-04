@@ -17,16 +17,15 @@
 /// posix and windows paths independent of the operating system on which it
 /// runs. This makes the class both deterministic and easier to test.
 ///
-/// Mirrors the Ruby API (`web_path`, `system_path`, ...) as idiomatic Dart
-/// (`webPath`, `systemPath`, ...). Where Ruby uses `nil`-or-value returns
-/// (`descends_from?`), Dart uses nullable returns (`int?`).
+/// Methods correspond to Asciidoctor's (`webPath` is `web_path`,
+/// `systemPath` is `system_path`, ...).
 library;
 
 import 'dart:io';
 
 /// Error raised when a path breaches the jail and recovery is disabled.
 ///
-/// Mirrors Ruby's `::SecurityError` as raised by `PathResolver#system_path`.
+/// Thrown by [PathResolver.systemPath].
 class SecurityError extends Error {
   /// Creates a security error with the given [message].
   new(this.message);
@@ -75,11 +74,10 @@ class PathResolver {
   /// UNC path root prefix (`//`).
   static const String doubleSlash = '//';
 
-  /// URI prefix used for classloader paths on JRuby.
+  /// URI prefix of Java classloader paths.
   ///
-  /// Kept for structural parity with the Ruby implementation. [isRoot] mirrors
-  /// MRI Ruby, where a classloader URI is not a root, so this prefix only takes
-  /// effect if a subclass ever treats such URIs as roots.
+  /// [isRoot] does not treat such URIs as roots, so this prefix only takes
+  /// effect if a subclass ever does.
   static const String uriClassloader = 'uri:classloader:';
 
   /// Matches a Windows root: an optional drive letter followed by a separator.
@@ -87,10 +85,9 @@ class PathResolver {
 
   /// Sniffs a URI scheme prefix (e.g. `http://`, `file:///`, `data:`).
   ///
-  /// Mirrors `UriSniffRx`; like the Ruby original, this deliberately does not
-  /// match a Windows drive prefix such as `c:/sample.adoc`. The Ruby pattern
-  /// uses Unicode `Alpha`/`Alnum` classes; this port uses ASCII letters and
-  /// digits since URI schemes are ASCII by definition (RFC 3986).
+  /// Deliberately does not match a Windows drive prefix such as
+  /// `c:/sample.adoc`. URI schemes are ASCII by definition (RFC 3986), so
+  /// only ASCII letters and digits are matched.
   static final RegExp _uriSniffRx = RegExp(r'^[A-Za-z][A-Za-z0-9.+\-]+:/{0,2}');
 
   /// The file separator to use for path operations.
@@ -104,9 +101,8 @@ class PathResolver {
 
   /// Receives recoverable-path warning messages.
   ///
-  /// Mirrors the `logger.warn` calls in the Ruby implementation. The logging
-  /// framework port owns the global logger; this per-instance callback keeps
-  /// path resolution decoupled from it. Defaults to writing
+  /// A per-instance callback keeps path resolution decoupled from the
+  /// global logger. Defaults to writing
   /// `asciidoctor: WARNING: <message>` lines to stderr.
   void Function(String message) onWarn;
 
@@ -151,9 +147,7 @@ class PathResolver {
 
   /// Checks if the specified path is an absolute root path.
   ///
-  /// Mirrors the MRI Ruby implementation, where `root?` is an alias of
-  /// `absolute_path?`. (On JRuby the Ruby implementation additionally accepts
-  /// classloader URIs; on Opal it additionally accepts absolute URIs.)
+  /// Same as [isAbsolutePath].
   bool isRoot(String path) => isAbsolutePath(path);
 
   /// Determines if the path is a UNC (root) path.
@@ -166,8 +160,8 @@ class PathResolver {
   ///
   /// If [path] equals [base], or [base] is a parent of [path], returns the
   /// offset (the number of characters to skip to get the relative portion).
-  /// Otherwise returns `null`. (Ruby returns `false` instead of `null`; note
-  /// that Ruby's `0` is truthy, so callers must null-check, not zero-check.)
+  /// Otherwise returns `null`. Callers must null-check, not zero-check: `0`
+  /// means [path] equals [base].
   int? descendsFrom(String path, String base) {
     if (base == path) {
       return 0;
@@ -198,15 +192,12 @@ class PathResolver {
   }
 
   /// Computes the relative path from [base] to [path], or `null` when they
-  /// have no common root (in which case Ruby's `Pathname#relative_path_from`
-  /// raises and [relativePath] falls back to the original path).
+  /// have no common root (then [relativePath] falls back to the original
+  /// path).
   ///
-  /// When the roots differ (e.g. `D:/...` vs `C:/...`), CRuby answers
-  /// platform-dependently: on Windows `Pathname` raises (so the original path
-  /// is returned, as the `windows?`-gated Ruby test asserts), while on POSIX
-  /// it treats the drive letters as plain directory names. This port is
-  /// deterministic and always returns the original path, matching the asserted
-  /// Windows behavior.
+  /// When the roots differ (e.g. `D:/...` vs `C:/...`) the result is always
+  /// `null`, on every platform; Asciidoctor answers this platform-dependently
+  /// and its tests assert this Windows behavior.
   String? _relativePathFrom(String path, String base) {
     final pathSegments = _splitPath(path);
     final baseSegments = _splitPath(base);
@@ -235,8 +226,7 @@ class PathResolver {
 
   /// Normalizes path by converting any backslashes to forward slashes.
   ///
-  /// A `null` path normalizes to the empty string, mirroring the Ruby
-  /// implementation.
+  /// A `null` path normalizes to the empty string.
   String posixify(String? path) => _posixify(path, fileSeparator);
 
   static String _posixify(String? path, String fileSeparator) {
@@ -279,7 +269,7 @@ class PathResolver {
     final resolvedSegments = <String>[];
     for (final segment in pathSegments) {
       if (segment == dotDot) {
-        // Ruby's Array#pop on an empty array returns nil instead of failing.
+        // `..` at the top has nothing to pop.
         if (resolvedSegments.isNotEmpty) {
           resolvedSegments.removeLast();
         }
@@ -358,8 +348,7 @@ class PathResolver {
     // otherwise ex. sample/path
 
     final rest = root != null ? posixPath.substring(root.length) : posixPath;
-    // Ruby's String#split drops trailing empty fields; Dart's does not, so
-    // drop them explicitly to stay identical.
+    // Drop trailing empty fields.
     final pathSegments = rest.isEmpty ? <String>[] : rest.split(slash);
     while (pathSegments.isNotEmpty && pathSegments.last.isEmpty) {
       pathSegments.removeLast();
@@ -467,8 +456,6 @@ class PathResolver {
     // both jail and start have been posixified at this point if jail is set
     var recheck = jailPath != null && descendsFrom(startPath, jailPath) == null;
     List<String> startSegments;
-    // NOTE the Ruby implementation names this variable jail_root even though
-    // it holds the start path's root outside of the backslash branch.
     String? pathRoot;
     List<String>? jailSegments;
     if (jailPath != null && recheck && fileSeparator == backslash) {
@@ -533,8 +520,7 @@ class PathResolver {
       } else {
         for (final segment in unresolvedSegments) {
           if (segment == dotDot) {
-            // Ruby's Array#pop on an empty array returns nil instead of
-            // failing.
+            // `..` at the top has nothing to pop.
             if (resolvedSegments.isNotEmpty) {
               resolvedSegments.removeLast();
             }
@@ -637,7 +623,7 @@ class PathResolver {
   }
 }
 
-/// Removes a single trailing `/`, mirroring Ruby's `chomp '/'`.
+/// Removes a single trailing `/`.
 String _chompSlash(String value) =>
     value.endsWith(PathResolver.slash) && value.isNotEmpty
     ? value.substring(0, value.length - 1)

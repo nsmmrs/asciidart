@@ -54,8 +54,7 @@ class PrettifyAdapter {
     transform: linenums
         ? (pre, _) {
             // NOTE a present-but-empty start still takes the numbered
-            // branch; Ruby tests the attribute for truthiness, and only
-            // nil (absent) is falsy.
+            // branch; only an absent attribute counts as unset.
             pre['class'] =
                 '${pre['class']} '
                 '${start != null ? 'linenums:$start' : 'linenums'}';

@@ -1,30 +1,23 @@
 /// DocBook 5 converter: generates DocBook 5 output from a parsed document.
 ///
-/// Port of `lib/asciidoctor/converter/docbook5.rb` (complete). Per
+/// Port of `lib/asciidoctor/converter/docbook5.rb`. Per
 /// `adr/0001-dart-rewrite-goals.md` (D4) every template method produces
-/// byte-identical output to the Ruby converter, including whitespace.
+/// output byte-identical to Asciidoctor 2.0.26, including whitespace.
 ///
 /// ## Framework integration
 ///
-/// Ruby's `convert_<transform>` methods become handler registrations via
-/// [ConverterBase.handle] (see `converter.dart`); `convert` itself is
-/// inherited from [ConverterBase], which warns and returns `null` for
-/// unregistered transforms, mirroring Ruby's `NoMethodError` rescue. The
-/// converter registers itself with `Converter.registerFor` (explicit
-/// registration replaces Ruby's lazy `require`).
+/// Each transform is a handler registered with [ConverterBase.handle] (see
+/// `converter.dart`); `convert` itself is inherited from [ConverterBase],
+/// which warns and returns `null` for unregistered transforms. The
+/// converter registers itself explicitly with `Converter.registerFor`.
 ///
-/// ## Cross-wave contracts
+/// Notes:
 ///
-/// * Substitutions: [AbstractNode] declares the substitutor stubs
-///   (`applyReftextSubs`, `subReplacements`, ...) that the
-///   `port/substitutors` merge implements; this converter calls them with
-///   the same arguments Ruby passes.
-/// * Ruby's `has_role?` (includes semantics) maps to
-///   [AbstractNode.includesRole]; [AbstractNode.hasRole] is the port of
-///   Ruby's `role?` (equality) instead.
-/// * AsciiMath: the `asciimath` gem has no Dart counterpart, so stem and
-///   quoted `asciimath` nodes always take Ruby's `:unavailable` branch
-///   (byte-identical to Ruby output when the gem is not installed).
+/// * Role checks use [AbstractNode.includesRole] (membership);
+///   [AbstractNode.hasRole] tests equality.
+/// * AsciiMath: there is no AsciiMath-to-MathML converter here, so stem and
+///   quoted `asciimath` nodes always produce the output Asciidoctor gives
+///   when its optional `asciimath` gem is not installed.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -40,15 +33,15 @@ import 'package:asciidoctor/src/rx.dart';
 import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/table.dart';
 
-/// Renders [value] the way Ruby string interpolation does: `toString`,
-/// except `null` renders as the empty string instead of `'null'`.
+/// Renders [value] for interpolation into output: `toString`, except
+/// `null` renders as the empty string instead of `'null'`.
 String _s(Object? value) => value?.toString() ?? '';
 
 /// Splits a copyright attribute into holder and year (port of `CopyrightRx`;
 /// `CC_ANY` is [ccAny], `multiLine` follows `dart/PORTING-REGEXP.md` B9).
 ///
-/// `\d` is spelled `[0-9]`: Dart `\d` also matches Unicode decimal digits,
-/// which Ruby `\d` never does.
+/// `\d` is spelled `[0-9]`: with `unicode: true`, `\d` would also match
+/// non-ASCII decimal digits.
 final RegExp _copyrightRx = RegExp(
   '^($ccAny+?)(?: ((?:[0-9]{4}-)?[0-9]{4}))?\$',
   multiLine: true,
@@ -75,7 +68,7 @@ const List<String> _tablePiNames = <String>['dbhtml', 'dbfo', 'dblatex'];
 /// Description-list tags by list style (port of `DLIST_TAGS`).
 ///
 /// The `'glossary'` style has no list tag. Styles missing from this map use
-/// [_defaultDlistTags] (the Ruby `Hash` default).
+/// [_defaultDlistTags] (the map default).
 const Map<String, Map<String, String?>> _dlistTags =
     <String, Map<String, String?>>{
       'qanda': <String, String?>{
@@ -106,7 +99,7 @@ const Map<String, String?> _defaultDlistTags = <String, String?>{
 ///
 /// Each entry holds the opening tag, the closing tag and, for tags that
 /// wrap the role in a phrase element, a trailing `true`. Lookups miss with
-/// [_defaultQuoteTags] (the Ruby `Hash` default).
+/// [_defaultQuoteTags] (the map default).
 const Map<String, List<Object>> _quoteTags = <String, List<Object>>{
   'monospaced': <Object>['<literal>', '</literal>'],
   'emphasis': <Object>['<emphasis>', '</emphasis>', true],
@@ -124,9 +117,8 @@ const List<Object> _defaultQuoteTags = <Object>['', '', true];
 /// A built-in [Converter] implementation that generates DocBook 5 output.
 ///
 /// Port of `Asciidoctor::Converter::DocBook5Converter`. Each `convert*`
-/// method mirrors its Ruby `convert_*` namesake; template selection that
-/// Ruby performs by method dispatch is expressed as [handle] registrations
-/// below (see the library docs).
+/// method corresponds to Asciidoctor's `convert_*` method of the same name
+/// and is registered with [handle] below (see the library docs).
 class Docbook5Converter extends ConverterBase {
   /// Creates a converter for [backend] with constructor options [opts].
   new(super.backend, [super.opts]) {
@@ -572,9 +564,9 @@ class Docbook5Converter extends ConverterBase {
     }
     final String equationData;
     if (node.style == 'asciimath') {
-      // NOTE fop requires jeuclid to process mathml markup. The asciimath
-      // gem has no Dart counterpart, so this always takes Ruby's
-      // `:unavailable` branch (byte-identical to Ruby without the gem).
+      // NOTE fop requires jeuclid to process mathml markup. There is no
+      // AsciiMath-to-MathML converter here, so this always produces what
+      // Asciidoctor emits without its optional asciimath gem.
       equationData = '<mathphrase><![CDATA[$equation]]></mathphrase>';
     } else {
       // Unhandled math; pass source to alt and required mathphrase element;
@@ -1027,9 +1019,9 @@ class Docbook5Converter extends ConverterBase {
   String convertInlineQuoted(Inline node) {
     final type = node.type;
     if (type == 'asciimath') {
-      // NOTE fop requires jeuclid to process mathml markup. The asciimath
-      // gem has no Dart counterpart, so this always takes Ruby's
-      // `:unavailable` branch (byte-identical to Ruby without the gem).
+      // NOTE fop requires jeuclid to process mathml markup. There is no
+      // AsciiMath-to-MathML converter here, so this always produces what
+      // Asciidoctor emits without its optional asciimath gem.
       return '<inlineequation><mathphrase><![CDATA[${_s(node.text)}]]></mathphrase></inlineequation>';
     } else if (type == 'latexmath') {
       // Unhandled math; pass source to alt and required mathphrase element;

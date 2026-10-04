@@ -4,7 +4,7 @@
 /// the map from token kind to CSS class. Kinds mapped to `null`
 /// (`:ident`, `:operator`, `:space`, `:plain`) emit no span.
 ///
-/// Token kinds are plain strings (the Ruby symbol names) so scanners stay
+/// Token kinds are plain strings (CodeRay's kind names) so scanners stay
 /// decoupled from the encoder; [CoderayTokenSink] is the streaming interface
 /// scanners write to (the `text_token` / `begin_group` / `end_group` side of
 /// `CodeRay::Encoders::Encoder`, which is also the `:tokens` object the
@@ -14,10 +14,10 @@ library;
 /// Receives the token stream produced by a CodeRay scanner port.
 ///
 /// Mirrors the encoder half of `CodeRay::Encoders::Encoder#token`: plain
-/// [textToken] events plus group open/close events. (The Ruby scanner also
-/// supports line events, but the Ruby scanner port never emits them.)
+/// [textToken] events plus group open/close events. (CodeRay also supports
+/// line events, but the scanners here never emit them.)
 abstract interface class CoderayTokenSink {
-  /// Records [text] of token kind [kind] (a Ruby symbol name such as
+  /// Records [text] of token kind [kind] (a kind name such as
   /// `'string'`, `'keyword'` or `'space'`).
   void textToken(String text, String kind);
 
@@ -32,8 +32,7 @@ abstract interface class CoderayTokenSink {
 /// Maps a CodeRay token kind to its CSS class (port of `TokenKinds`).
 ///
 /// Returns `null` for the transparent kinds (`ident`, `operator`, `space`,
-/// `plain`, `unknown`) and for unknown kinds (the Ruby map defaults to
-/// `false`).
+/// `plain`, `unknown`) and for unknown kinds.
 String? coderayTokenClass(String kind) => _coderayTokenClasses[kind];
 
 /// Port of the `TokenKinds.update(...)` table plus the `:method` and

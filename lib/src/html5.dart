@@ -1,33 +1,19 @@
 /// HTML5 converter: generates HTML 5 output from a parsed document.
 ///
-/// Port of `lib/asciidoctor/converter/html5.rb` (complete). Per
+/// Port of `lib/asciidoctor/converter/html5.rb`. Per
 /// `adr/0001-dart-rewrite-goals.md` (D4) every template method produces
-/// byte-identical output to the Ruby converter, including whitespace.
+/// output byte-identical to Asciidoctor 2.0.26, including whitespace.
 ///
 /// ## Framework integration
 ///
-/// Ruby's `convert_<transform>` methods become handler registrations via
-/// [ConverterBase.handle] (see `converter.dart`); `convert` itself is
-/// inherited from [ConverterBase], which warns and returns `null` for
-/// unregistered transforms, mirroring Ruby's `NoMethodError` rescue. The
-/// converter registers itself with `Converter.registerFor` (explicit
-/// registration replaces Ruby's lazy `require`).
+/// Each transform is a handler registered with [ConverterBase.handle] (see
+/// `converter.dart`); `convert` itself is inherited from [ConverterBase],
+/// which warns and returns `null` for unregistered transforms. The
+/// converter registers itself explicitly with `Converter.registerFor`.
 ///
-/// ## Cross-wave contracts
-///
-/// * Substitutions: [AbstractNode] already declares the substitutor stubs
-///   (`subReplacements`, ...). The one missing signature, `subMacros`
-///   (`Substitutors#sub_macros`, used for author emails), resolves through
-///   the TEMP-SHIM `substitutors.dart`, which the `port/substitutors`
-///   merge deletes.
-/// * Syntax highlighting: [NodeSyntaxHighlighter] mirrors the
-///   `SyntaxHighlighter::Base` surface `html5.rb` consumes (`name`,
-///   `highlight?`, `format`, `docinfo?`, `docinfo`). The full framework
-///   (registry, factory, adapter wiring) arrives with the converter wave;
-///   until then `Document.syntaxHighlighter` is cast to this interface.
-/// * `method_missing` / `respond_to_missing?` (Ruby adapters for
-///   unprefixed template names) have no Dart equivalent and are not
-///   ported; `handles` reports the registered transforms instead.
+/// Syntax highlighting goes through [NodeSyntaxHighlighter], the slice of
+/// the highlighter API this converter consumes (`name`, `highlight?`,
+/// `format`, `docinfo?`, `docinfo`).
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -44,17 +30,15 @@ import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/stylesheets.dart';
 import 'package:asciidoctor/src/table.dart';
 
-/// Renders [value] the way Ruby string interpolation does: `toString`,
-/// except `null` (and, via callers, Ruby `nil`) renders as the empty
-/// string instead of `'null'`.
+/// Renders [value] for interpolation into output: `toString`, except
+/// `null` renders as the empty string instead of `'null'`.
 String _s(Object? value) => value?.toString() ?? '';
 
-/// Repeats [value] [count] times (port of Ruby's `String#*`).
+/// Repeats [value] [count] times.
 String _repeat(String value, int count) =>
     count <= 0 ? '' : List<String>.filled(count, value).join();
 
-/// Splits [value] on the first [separator] (port of Ruby's
-/// `String#split(sep, 2)` destructured into two variables).
+/// Splits [value] on the first [separator] into two parts.
 (String, String?) _split2(String value, String separator) {
   final idx = value.indexOf(separator);
   return idx == -1
@@ -72,8 +56,8 @@ final RegExp _leadingAnchorsRx = RegExp('^(?:<a id="[^"]+"></a>)+');
 final RegExp _stemBreakRx = RegExp(r' *\\\n(?:\\\?\n)*|\n\n+');
 
 /// Matches everything before the `<svg` start tag (port of
-/// `SvgPreambleRx`; the non-Opal branch; Ruby `\A` is `^` without
-/// `multiLine` in Dart).
+/// `SvgPreambleRx`; `^` without `multiLine` anchors at the start of the
+/// input).
 final RegExp _svgPreambleRx = RegExp(r'^.*?(?=<svg[\s>])', dotAll: true);
 
 /// Matches the `<svg` start tag (port of `SvgStartTagRx`).
@@ -97,9 +81,9 @@ const Map<String, List<String>> _inlineMathDelimiters = <String, List<String>>{
   'latexmath': <String>[r'\(', r'\)'],
 };
 
-/// Renders [delimiters] the way Ruby's `Array#inspect` does (backslash
-/// escaping plus double quotes), as embedded in the MathJax configuration
-/// script (results verified against the Ruby runtime).
+/// Renders [delimiters] as a bracketed list of double-quoted strings with
+/// backslash escapes, as embedded in the MathJax configuration script
+/// (verified against Asciidoctor's output).
 String _inspectDelimiters(List<String> delimiters) {
   final quoted = delimiters.map(
     (delimiter) => '"${delimiter.replaceAll(r'\', r'\\')}"',
@@ -111,17 +95,17 @@ String _inspectDelimiters(List<String> delimiters) {
 String _withSignifier(Object? signifier, String title) =>
     isTruthy(signifier) ? '$signifier $title' : title;
 
-/// Ruby `Array#inspect` of the inline latexmath delimiters (see above).
+/// The inline latexmath delimiters, rendered (see above).
 final String _inlineLatexmathInspect = _inspectDelimiters(
   _inlineMathDelimiters['latexmath']!,
 );
 
-/// Ruby `Array#inspect` of the block latexmath delimiters (see above).
+/// The block latexmath delimiters, rendered (see above).
 final String _blockLatexmathInspect = _inspectDelimiters(
   _blockMathDelimiters['latexmath']!,
 );
 
-/// Ruby `Array#inspect` of the block asciimath delimiters (see above).
+/// The block asciimath delimiters, rendered (see above).
 final String _blockAsciimathInspect = _inspectDelimiters(
   _blockMathDelimiters['asciimath']!,
 );
@@ -140,10 +124,9 @@ const Set<String> _defaultStylesheetKeys = <String>{'', 'DEFAULT'};
 ///
 /// Mirrors the `SyntaxHighlighter::Base` API used by `html5.rb`: [name]
 /// (e.g. `'rouge'`), [canHighlight] (`highlight?`), [format], [hasDocinfo]
-/// (`docinfo?`) and [docinfo]. The full framework (registry, factory and
-/// the wiring to the adapters in `highlight/`) arrives with the converter
-/// wave; until then `Document.syntaxHighlighter` is cast to this interface
-/// when set. `location` is `'head'` or `'footer'`.
+/// (`docinfo?`) and [docinfo]. The highlighters in
+/// `highlight/syntax_highlighter.dart` implement it. `location` is `'head'`
+/// or `'footer'`.
 abstract interface class NodeSyntaxHighlighter {
   /// The highlighter name (selects the `{name}-css` document attribute).
   String get name;
@@ -177,9 +160,8 @@ abstract interface class NodeSyntaxHighlighter {
 /// A built-in [Converter] implementation that generates HTML 5 output.
 ///
 /// Port of `Asciidoctor::Converter::Html5Converter`. Each `convert*`
-/// method mirrors its Ruby `convert_*` namesake; template selection that
-/// Ruby performs by method dispatch is expressed as [handle] registrations
-/// below (see the library docs).
+/// method corresponds to Asciidoctor's `convert_*` method of the same name
+/// and is registered with [handle] below (see the library docs).
 class Html5Converter extends ConverterBase {
   /// Creates a converter for [backend] with constructor options [opts].
   ///
@@ -272,7 +254,7 @@ class Html5Converter extends ConverterBase {
   ///
   /// Each entry holds the opening tag, the closing tag and, for tags that
   /// carry attributes, a trailing `true`. Lookups miss with `['', '']`
-  /// (the Ruby `Hash` default).
+  /// (the map default).
   static const Map<String, List<Object>> quoteTags = <String, List<Object>>{
     'monospaced': <Object>['<code>', '</code>', true],
     'emphasis': <Object>['<em>', '</em>', true],
@@ -634,8 +616,8 @@ class Html5Converter extends ConverterBase {
       }
       final eqnumsOpt = ' equationNumbers: { autoNumber: "$eqnumsVal" } ';
       // IMPORTANT inspect calls on delimiter arrays are intentional for
-      // JavaScript compat (emulates JSON.stringify); the values below are
-      // the Ruby `Array#inspect` results, verified against the runtime.
+      // JavaScript compat (emulates JSON.stringify); the values below were
+      // verified against Asciidoctor's output.
       result.add(
         '<script type="text/x-mathjax-config">\n'
         'MathJax.Hub.Config({\n'
@@ -760,8 +742,7 @@ class Html5Converter extends ConverterBase {
                 '${section.sectnum()} ${section.title!}',
               );
             case 'part':
-              // Ruby calls `sectnum nil, ':'`; with level < 2 that renders
-              // the bare numeral plus ':', identical to `sectnum('.', ':')`.
+              // With level < 2 this renders the bare numeral plus ':'.
               stitle = _withSignifier(
                 signifierAttrs['part-signifier'],
                 '${section.sectnum('.', ':')} ${section.title!}',
@@ -819,7 +800,7 @@ class Html5Converter extends ConverterBase {
                 '${node.sectnum()} ${node.title!}',
               );
             case 'part':
-              // See convertOutline for the `sectnum nil, ':'` mapping.
+              // See convertOutline for the part numeral format.
               resolvedTitle = _withSignifier(
                 docAttrs['part-signifier'],
                 '${node.sectnum('.', ':')} ${node.title!}',
@@ -2210,7 +2191,7 @@ class Html5Converter extends ConverterBase {
   /// height, those dimensions replace any `width`/`height`/`style`
   /// attributes on the `<svg>` start tag.
   ///
-  /// NOTE exposed for Bespoke converters (as in Ruby).
+  /// NOTE exposed for Bespoke converters.
   String? readSvgContents(AbstractNode node, String target) {
     var svg = node.readContents(
       target,

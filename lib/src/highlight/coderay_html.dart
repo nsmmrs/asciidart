@@ -153,7 +153,7 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
       final style = _styleForClasses(classes.toList());
       // A missing rule renders a bare span; an empty rule still renders
       // the (empty) attribute — the original's `if style` distinguishes
-      // `nil` from `''`, both of which the lookup can return.
+      // `null` from `''`, both of which the lookup can return.
       return style == null ? '<span>' : '<span style="$style">';
     }
     return '<span class="${coderayTokenClass(first)}">';
@@ -168,7 +168,7 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
   /// matching the original's `1.upto size` walk over
   /// `css_classes[offset..-1]` — and returns the first hit, or `null`
   /// when every context misses (each miss overwrites the accumulator
-  /// with `nil`, so a total miss returns `nil`, not the `''` seed).
+  /// with `null`, so a total miss returns `null`, not the `''` seed).
   String? _styleForClasses(List<String> classes) {
     final table = _alphaStyles[classes.first];
     // Unreachable in practice (every class the scanners emit has table

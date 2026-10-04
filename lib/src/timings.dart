@@ -26,8 +26,8 @@ class Timings {
 
   /// Recorded phase durations in seconds, keyed by phase name.
   ///
-  /// Exposed so tests can seed exact values (the Dart equivalent of Ruby's
-  /// test-suite `@log` access); production code must use [start]/[record].
+  /// Exposed so tests can seed exact values; production code must use
+  /// [start]/[record].
   Map<String, double> get log => _log;
 
   double get _now =>
@@ -41,8 +41,7 @@ class Timings {
   /// Records the elapsed seconds for [key] since the matching [start].
   ///
   /// Returns the recorded duration. Throws a [StateError] when no timer was
-  /// started for [key] (Ruby raises `TypeError: nil can't be coerced into
-  /// Float` there). Mirrors `Timings#record`.
+  /// started for [key]. Mirrors `Timings#record`.
   double record(String key) {
     final startTime = _timers.remove(key);
     if (startTime == null) {
@@ -92,7 +91,7 @@ class Timings {
   ///
   /// Mirrors `Timings#print_report`, including the `%05.5f` rendering (always
   /// at least 7 characters wide, so plain 5-decimal fixed notation matches
-  /// exactly) and the `nil.to_f` → `0.00000` fallback for unrecorded phases.
+  /// exactly) and the `0.00000` fallback for unrecorded phases.
   void printReport([StringSink? to, String? subject]) {
     final out = to ?? stdout;
     if (subject != null) out.writeln('Input file: $subject');

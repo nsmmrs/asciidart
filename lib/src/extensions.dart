@@ -20,26 +20,22 @@
 /// Extensions may be registered globally using [Extensions.register] or added
 /// to a custom [Registry] and passed as an option to a single processor.
 ///
-/// ## Dart adaptations
+/// ## Notes
 ///
-/// * Ruby symbols become strings, in both config keys and values
-///   (e.g. `:content_model` / `:compound` become `'content_model'` /
+/// * Config keys and values are strings (e.g. `'content_model'` /
 ///   `'compound'`).
-/// * Ruby classes passed for registration (e.g. `registry.preprocessor
-///   SamplePreprocessor`) cannot be instantiated reflectively in Dart, so a
-///   factory function or typedef tear-off (e.g. `SamplePreprocessor.new`) or
-///   an instance is passed instead. String class names resolve through the
-///   factory table populated by [Extensions.registerProcessorFactory].
-/// * Ruby blocks become callbacks: the registration block receives the
-///   processor instance (e.g.
-///   `registry.block(name: 'shout', build: (p) {...})`) and the `process
-///   do ... end` form becomes an assignment to the family's typed
-///   `onProcess` callback (e.g. [TreeProcessor.onProcess]).
-/// * Class-level `option` defaults from Ruby (`Processor.option`) are
-///   expressed by merging defaults in the subclass constructor.
+/// * Processors are registered as a factory or tear-off (e.g.
+///   `SamplePreprocessor.new`) or as an instance. String names resolve
+///   through the factory table populated by
+///   [Extensions.registerProcessorFactory].
+/// * The `build` callback of a registration receives the processor instance
+///   (e.g. `registry.block(name: 'shout', build: (p) {...})`); assign the
+///   family's typed `onProcess` callback (e.g. [TreeProcessor.onProcess])
+///   to define its behavior without subclassing.
+/// * Subclasses set default options by merging them in their constructor.
 /// * `registeredForBlock`, [Registry.registeredForBlockMacro] and
-///   [Registry.registeredForInlineMacro] return `null` instead of Ruby's
-///   `false` when no extension matches.
+///   [Registry.registeredForInlineMacro] return `null` when no extension
+///   matches.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -58,7 +54,7 @@ import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/substitutors.dart' as substitutors;
 
 /// Sentinel distinguishing a missing `numbered` argument from an explicit
-/// value in [Processor.createSection] (mirrors `Hash#fetch` with a default).
+/// value in [Processor.createSection].
 const Object _absent = Object();
 
 /// Converts a loosely-typed config [map] to string keys.
@@ -66,8 +62,7 @@ Map<String, Object?> _asConfig(Map<dynamic, dynamic> map) =>
     map.map((key, value) => MapEntry(key.toString(), value));
 
 /// Assigns [name] at [index] in [names], growing the list with `null`
-/// placeholders when the index lies past the end (mirrors Ruby's `ary`idx` =
-/// name` padding semantics).
+/// placeholders when the index lies past the end.
 void _assignPositionalName(List<String?> names, String index, String name) {
   var idx = index == '@' ? names.length : parseLeadingInt(index);
   if (idx < 0) idx = names.length + idx;
@@ -86,8 +81,7 @@ void _assignPositionalName(List<String?> names, String index, String name) {
 /// [Block] and [Inline], and for parsing child content. Configuration
 /// defaults declared with [option] apply to the instance; subclass
 /// constructors merge class-wide defaults underneath any explicitly passed
-/// [config] (the Dart equivalent of Ruby's `Processor.option` class-level
-/// defaults).
+/// [config].
 class Processor {
   /// Creates a processor with [config].
   new([Map<String, Object?>? config])
@@ -98,9 +92,8 @@ class Processor {
 
   /// Whether a process callback was assigned through the registration DSL.
   ///
-  /// Each processor family declares a typed `onProcess` field (the Dart
-  /// equivalent of Ruby's `process do ... end` block) and invokes it from
-  /// its `process` method; a subclass that overrides `process` never
+  /// Each processor family declares a typed `onProcess` field and invokes
+  /// it from its `process` method; a subclass that overrides `process` never
   /// consults it.
   bool get hasOnProcess => false;
 
@@ -111,8 +104,8 @@ class Processor {
 
   /// Assigns [value] as the configuration [key] on this processor.
   ///
-  /// This is the instance-level DSL counterpart of Ruby's `option` (see the
-  /// library docs for how class-level defaults are expressed instead).
+  /// Class-level defaults are set in subclass constructors instead (see the
+  /// library docs).
   void option(String key, Object? value) {
     config[key] = value;
   }
@@ -126,8 +119,7 @@ class Processor {
   /// generation when `false`). [level] assigns an explicit level (defaulting
   /// to one greater than the parent level); [numbered] forces numbering
   /// (defaulting to the state of the `sectnums` document attribute). An
-  /// omitted [numbered] is distinguished from an explicit `false`, exactly
-  /// like Ruby's `opts.fetch :numbered`.
+  /// omitted [numbered] is distinguished from an explicit `false`.
   Section createSection(
     AbstractBlock parent,
     String title,
@@ -519,11 +511,9 @@ mixin DocumentProcessorDsl on Processor {
 /// An abstract base class for the named (syntax) processor families
 /// ([BlockProcessor] and [MacroProcessor]).
 ///
-/// Ruby gives [BlockProcessor] and `MacroProcessor` independent `name`
-/// accessors; this intermediate base only shares the Dart implementation of
-/// that contract and the syntax builder DSL (port of
-/// `Extensions::SyntaxProcessorDsl`, whose `process` half is
-/// each family's `onProcess` callback in Dart).
+/// Shares the `name` accessor and the syntax builder DSL (port of
+/// `Extensions::SyntaxProcessorDsl`; the `process` half is each family's
+/// `onProcess` callback).
 abstract class NamedProcessor extends Processor {
   /// Creates a named processor with [config].
   new([super.config]);
@@ -567,22 +557,19 @@ abstract class NamedProcessor extends Processor {
 
   /// Declares how the macro attribute list maps to named attributes.
   ///
-  /// [args] is a single specification or a list of them (the Dart spelling
-  /// of Ruby's variadic arguments): `name=value` pairs seed defaults (with
-  /// an optional `index:` prefix assigning a positional slot), `index:name`
-  /// pairs assign positional slots, and bare names append positional slots.
-  /// A map assigns positional slots from `index:name` keys and seeds
-  /// defaults from truthy values. With no arguments, both lists are reset
-  /// to empty.
+  /// [args] is a single specification or a list of them: `name=value` pairs
+  /// seed defaults (with an optional `index:` prefix assigning a positional
+  /// slot), `index:name` pairs assign positional slots, and bare names append
+  /// positional slots. A map assigns positional slots from `index:name` keys
+  /// and seeds defaults from truthy values. With no arguments, both lists are
+  /// reset to empty.
   void resolveAttributes([Object? args]) {
     final Object? spec;
     if (args == null) {
-      // Zero-argument default (Ruby: args.fetch 0, true). An explicit null
-      // is indistinguishable from an omitted argument in Dart and takes the
-      // same path.
+      // No argument (or an explicit null) resets both lists.
       spec = true;
     } else if (args is String) {
-      // Rewrap a single string (Ruby: to_sym branch).
+      // Wrap a single string in a list.
       spec = [args];
     } else {
       spec = args;
@@ -779,8 +766,7 @@ class IncludeProcessor extends Processor
 
   /// The handles callback assigned through the registration DSL.
   ///
-  /// This is the Dart equivalent of Ruby's `handles? do ... end` block; it
-  /// receives the include target.
+  /// It receives the include target.
   bool Function(String)? onHandles;
 
   /// Whether this processor handles the include [target].
@@ -1040,7 +1026,7 @@ class BlockMacroProcessor extends MacroProcessor {
   /// The name this processor is registered under.
   ///
   /// Reading the name validates it against [macroNameRx], throwing
-  /// [ArgumentError] for a missing or illegal name, exactly like Ruby.
+  /// [ArgumentError] for a missing or illegal name.
   @override
   String? get name {
     final value = super.name;
@@ -1752,7 +1738,7 @@ class Registry {
       };
       final processor = create(nameArg, config);
       build(processor);
-      // Reading the name validates it for block macros, exactly like Ruby.
+      // Reading the name validates it for block macros.
       name = processor.name;
       if (name == null) {
         throw ArgumentError('No name specified for $kindName extension');
@@ -1767,10 +1753,10 @@ class Registry {
       if (second is String) {
         nameArg = second;
       } else if (second is Map) {
-        // A config map in the name position (Ruby: trailing hash).
+        // A config map in the name position.
         config.addAll(_asConfig(second));
       }
-      // Silently drop non-string, non-map extras, like Ruby's resolve_args.
+      // Silently drop non-string, non-map extras.
       if (configArg != null) config.addAll(configArg);
       final processor = first;
       if (processor is T) {
@@ -1893,9 +1879,8 @@ abstract final class Extensions {
 
   /// Registers a factory resolving the processor class [name].
   ///
-  /// Dart has no reflection by name, so processors registered by string
-  /// resolve through this table instead of Ruby's constant lookup. A
-  /// missing entry throws [ArgumentError] carrying Ruby's
+  /// Processors registered by name resolve through this table. A missing
+  /// entry throws [ArgumentError] with Asciidoctor's
   /// `Could not resolve class for name: ...` message.
   static void registerProcessorFactory(
     String name,
@@ -1906,8 +1891,7 @@ abstract final class Extensions {
 
   /// Registers a factory resolving the extension group class [name].
   ///
-  /// See [registerProcessorFactory] for why a table replaces Ruby's
-  /// constant lookup.
+  /// See [registerProcessorFactory].
   static void registerGroupFactory(
     String name,
     ExtensionGroup Function() factory,

@@ -1,27 +1,27 @@
 /// Top-level load and convert entry points for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/load.rb` ([load], [loadFile]) and
-/// `lib/asciidoctor/convert.rb` ([convert], [convertFile]). Ruby's
-/// deprecated `render`/`render_file` aliases are intentionally not ported.
+/// `lib/asciidoctor/convert.rb` ([convert], [convertFile]). The deprecated
+/// `render`/`render_file` aliases are not ported.
 ///
 /// Option keys are [String]s (`'safe'`, `'backend'`, `'attributes'`,
 /// `'standalone'`, `'to_file'`, `'to_dir'`, `'mkdirs'`, `'timings'`,
 /// `'logger'`, `'parse'`, ...), matching [Document]. The options map is never
 /// mutated; the document receives a copy.
 ///
-/// Accepted `input` types mirror the Ruby branches: a [File] (read from disk;
+/// Accepted `input` types: a [File] (read from disk;
 /// `docfile`/`docdir`/`docname`/`docfilesuffix` attributes are assigned), a
 /// [RandomAccessFile] (the rewindable-IO branch; rewound, then read fully), a
-/// [String], a [List] of lines (copied, as Ruby's `drop 0` does), or `null`
-/// (and `false`, as in Ruby) for an empty document. Anything else raises an
+/// [String], a [List] of lines (copied), or `null`
+/// (and `false`) for an empty document. Anything else raises an
 /// [ArgumentError]. There is no synchronous in-memory IO type in `dart:io`,
 /// so callers with buffered bytes should decode to a [String] first.
 ///
 /// [loadFile] and [convertFile] accept a [String] path, a [File], or a [Uri]
 /// (the `Pathname` analog) as the filename.
 ///
-/// One deliberate divergence: Ruby treats a [File] passed as `'to_file'` as
-/// an output stream (it responds to `write`); here only [StringSink] values
+/// One difference from Asciidoctor, which treats a writable object passed as
+/// `'to_file'` as an output stream: here only [StringSink] values
 /// (e.g. [StringBuffer], `IOSink`) select stream mode, while [File] and [Uri]
 /// values are treated as output paths, since `dart:io` offers no synchronous
 /// string-writing file stream accepted by [Document.write].
@@ -60,13 +60,10 @@ import 'package:asciidoctor/src/timings.dart' show Timings;
 /// `options['parse']` is `false`, the document is parsed before it is
 /// returned. Failures are re-raised with an
 /// `asciidoctor: FAILED: <file>: Failed to load AsciiDoc document - ...`
-/// message prefix, preserving the error type where possible (mirroring
-/// Ruby's same-class re-wrap); [UnimplementedError] — the port's not-yet-
-/// ported signal — always propagates unchanged.
+/// message prefix, preserving the error type where possible;
+/// [UnimplementedError] always propagates unchanged.
 Document load(Object? input, [Map<String, Object?>? options]) {
-  // Reproduces Ruby's lazy-`require` side effect (converters become
-  // available once the API is used). Idempotent; the manpage converter has
-  // no registration yet (TASK-g1gk6g).
+  // Make the built-in converters available (idempotent).
   Html5Converter.registerFor();
   Docbook5Converter.registerFor();
   final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
@@ -131,7 +128,7 @@ Document load(Object? input, [Map<String, Object?>? options]) {
 ///
 /// [filename] is a [String] path, a [File], or a [Uri]. The file is opened
 /// eagerly so that open errors (missing file, directory, permissions)
-/// propagate unwrapped, as Ruby's `File.open` block does.
+/// propagate unwrapped.
 Document loadFile(Object? filename, [Map<String, Object?>? options]) {
   final file = File(_filenameToPath(filename));
   _probeReadable(file);
@@ -412,11 +409,10 @@ Object? convertFile(Object? filename, [Map<String, Object?>? options]) {
 }
 
 /// Opens [file] eagerly so that open errors (missing file, directory,
-/// permissions) propagate unwrapped, as Ruby's `File.open` block does
-/// (`lib/asciidoctor/convert.rb`, `convert_file`).
+/// permissions) propagate unwrapped.
 ///
-/// Named pipes are exempt: Ruby opens the handle once and reads from it,
-/// while an eager probe here would consume the writer rendezvous and leave
+/// Named pipes are exempt: an eager probe would consume the writer
+/// rendezvous and leave
 /// the real read in [load] blocked forever.
 void _probeReadable(File file) {
   try {
@@ -433,8 +429,7 @@ void _probeReadable(File file) {
 ///
 /// Accepts `null` (yields `{}`), a [Map] (copied), a [List] of `k=v` entries,
 /// or a [String] of blank-separated `k=v` entries (with `\`-escaped blanks
-/// kept literal). Ruby's duck-typed hash-likes (`respond_to?(:keys)`)
-/// correspond to custom [Map] implementations here. Anything else raises an
+/// kept literal). Anything else raises an
 /// [ArgumentError].
 Map<String, Object?> _coerceAttributes(Object? value) {
   if (value == null) return <String, Object?>{};
@@ -464,8 +459,7 @@ Map<String, Object?> _coerceAttributes(Object? value) {
 
 /// Assigns the `k=v` [entry] into [attrs] (a bare `k` assigns `''`).
 ///
-/// Mirrors Ruby's `partition '='` (and the identical `-a` parsing in
-/// `cli/options.rb`, consulted read-only).
+/// Splits at the first `=`, like the CLI's `-a` parsing.
 void _assignAttributeEntry(Map<String, Object?> attrs, String entry) {
   final idx = entry.indexOf('=');
   if (idx == -1) {
@@ -478,7 +472,7 @@ void _assignAttributeEntry(Map<String, Object?> attrs, String entry) {
 /// Splits an attributes [String] into `k=v` entries.
 ///
 /// Condenses unescaped blanks to [nullChar], unescapes `\`-escaped blanks,
-/// then splits; trailing empty fields are dropped, as Ruby's `split` does.
+/// then splits; trailing empty fields are dropped.
 List<String> _splitAttributeEntries(String value) {
   final condensed = value
       .replaceAllMapped(spaceDelimiterRx, (m) => '${m.group(1)}$nullChar')
@@ -494,8 +488,7 @@ List<String> _splitAttributeEntries(String value) {
 
 /// Reads [file] as UTF-8, strictly.
 ///
-/// Undecodable bytes raise Ruby's invalid-data [ArgumentError] (normally
-/// raised by the reader, which only ever sees valid Dart strings).
+/// Undecodable bytes raise an invalid-data [ArgumentError].
 String _readFileString(File file) {
   final bytes = file.readAsBytesSync();
   try {
@@ -540,8 +533,7 @@ String _filenameToPath(Object? filename) {
 
 /// Coerces a path-like [value] ([String], [File], [Uri]) to a path string.
 ///
-/// Anything else raises a [TypeError], as Ruby's `File.expand_path` does for
-/// values without a path conversion.
+/// Anything else raises a [TypeError].
 String _coercePath(Object? value) {
   if (value is String) return value;
   if (value is File) return value.path;
@@ -551,8 +543,8 @@ String _coercePath(Object? value) {
 
 /// Returns the absolute form of [path] (port of `File.absolute_path`).
 ///
-/// Like Ruby, `.` and `..` segments are resolved lexically (unlike
-/// [File.absolute], which merely prefixes the working directory).
+/// `.` and `..` segments are resolved lexically (unlike [File.absolute],
+/// which merely prefixes the working directory).
 String _absolutePath(String path) => _expandPath(path);
 
 /// Expands [path] against [base] (default: working directory).
@@ -598,9 +590,8 @@ String _joinPath(String parent, String child) {
 
 /// Re-wraps [error] with the load-failure [context] message.
 ///
-/// Known error types are reconstructed with the prefixed message (mirroring
-/// Ruby's same-class re-wrap); anything else is returned unchanged (mirroring
-/// Ruby's fallback when wrapping fails).
+/// Known error types are reconstructed with the prefixed message; anything
+/// else is returned unchanged.
 Object _withContext(Object error, String context) {
   if (error is ArgumentError) {
     return ArgumentError('$context - ${error.message}');

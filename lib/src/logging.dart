@@ -4,25 +4,19 @@
 /// `Asciidoctor::MemoryLogger`, `Asciidoctor::NullLogger`,
 /// `Asciidoctor::LoggerManager` and `Asciidoctor::Logging`).
 ///
-/// Ruby's `::Logger` severity scale, manager memoization, `max_severity`
-/// tracking (including messages dropped by the level filter) and the
+/// The severity scale, manager memoization, `max_severity` tracking
+/// (including messages dropped by the level filter) and the
 /// `BasicFormatter` label substitutes (`WARN` → `WARNING`, `FATAL` →
-/// `FAILED`) are all preserved. Deliberate divergences from `::Logger` are
-/// marked `DIVERGENCE` in the member docs.
-///
-/// This file intentionally does not reference the temporary seams in
-/// `abstract_node.dart` (`NodeLogger`) or `reader.dart` (`LogSeverity`,
-/// `LogMessage`, `ReaderLogger`, `LoggerManager`); unifying them with this
-/// port is a later pass (see the wave report).
+/// `FAILED`) behave as in Asciidoctor. Differences are marked `DIVERGENCE`
+/// in the member docs.
 library;
 
 import 'dart:io' show File, FileMode, IOSink, pid, stderr;
 
 /// Severity levels for log messages.
 ///
-/// Port of `::Logger::Severity`. Integer [value]s match Ruby exactly
-/// (`DEBUG` = 0 through `UNKNOWN` = 5); [label]s match Ruby's `SEV_LABEL`
-/// (note: `UNKNOWN` renders as `ANY`, as in Ruby).
+/// Integer [value]s run from `DEBUG` = 0 through `UNKNOWN` = 5; [label]s
+/// are the standard level names, except that `UNKNOWN` renders as `ANY`.
 enum Severity {
   /// Debugging detail.
   debug(0, 'DEBUG'),
@@ -39,8 +33,7 @@ enum Severity {
   /// Unrecoverable failure.
   fatal(4, 'FATAL'),
 
-  /// Severity outside the known scale (label `ANY`, as in Ruby's
-  /// `SEV_LABEL`).
+  /// Severity outside the known scale (label `ANY`).
   unknown(5, 'ANY');
 
   /// Creates a severity with integer [value] and format [label].
@@ -54,10 +47,9 @@ enum Severity {
 
   /// Returns the severity with integer [value].
   ///
-  /// Throws an [ArgumentError] for values outside 0–5. DIVERGENCE: modern
-  /// Ruby assigns out-of-range integer levels unchecked (e.g. `level = 99`
-  /// silences every predicate); no in-repo caller relies on that (the CLI
-  /// coerces level names upstream in `cli/options.rb`).
+  /// Throws an [ArgumentError] for values outside 0–5. DIVERGENCE:
+  /// Asciidoctor accepts out-of-range integer levels unchecked (e.g. 99
+  /// silences every predicate); nothing here relies on that.
   static Severity fromValue(int value) {
     for (final severity in Severity.values) {
       if (severity.value == value) return severity;
@@ -67,10 +59,9 @@ enum Severity {
 
   /// Returns the severity named [name] (case-insensitive).
   ///
-  /// Accepts exactly the names Ruby's `Logger#level=` accepts: `DEBUG`,
+  /// Accepts exactly these names: `DEBUG`,
   /// `INFO`, `WARN`, `ERROR`, `FATAL`, `UNKNOWN`. Anything else — including
-  /// `WARNING` — throws an [ArgumentError], matching Ruby
-  /// (`invalid log level: ...`).
+  /// `WARNING` — throws an [ArgumentError] (`invalid log level: ...`).
   static Severity fromName(String name) {
     switch (name.toUpperCase()) {
       case 'DEBUG':
@@ -121,8 +112,7 @@ abstract interface class LoggerFormatter {
 
 /// Wraps a formatting function as a [LoggerFormatter].
 ///
-/// Used when a raw function is passed as `formatter:` (Ruby accepts any
-/// object responding to `call`).
+/// Used when a raw function is passed as `formatter:`.
 final class _FunctionFormatter implements LoggerFormatter {
   /// Creates a formatter delegating to [format].
   const new(this.format);
@@ -149,8 +139,7 @@ final class _FunctionFormatter implements LoggerFormatter {
 ///
 /// Mirrors `::Logger::Formatter#call`
 /// (`D, [2026-10-03T05:25:29.294678 #pid] DEBUG -- progname: message`). Used
-/// when `formatter:` is explicitly `null`, matching Ruby's
-/// `opts.key? :formatter` check.
+/// when `formatter:` is explicitly `null`.
 final class DefaultFormatter implements LoggerFormatter {
   /// Creates the default formatter.
   const new();
@@ -207,7 +196,7 @@ abstract class LoggerBase {
   Severity _level;
 
   /// The minimum severity emitted (messages below it are dropped, except by
-  /// [MemoryLogger], which records everything like its Ruby counterpart).
+  /// [MemoryLogger], which records everything).
   ///
   /// Assigning through this setter accepts a [Severity], an [int], or a
   /// [String] name (see [Severity.coerce]), mirroring `::Logger#level=`.
@@ -245,22 +234,22 @@ abstract class LoggerBase {
   /// Mirrors `::Logger#fatal?`.
   bool get isFatalEnabled => _level.value <= Severity.fatal.value;
 
-  /// Logs [message] at [Severity.debug]. Returns `true`, as in Ruby.
+  /// Logs [message] at [Severity.debug]. Returns `true`.
   bool debug(Object? message) => add(Severity.debug, message);
 
-  /// Logs [message] at [Severity.info]. Returns `true`, as in Ruby.
+  /// Logs [message] at [Severity.info]. Returns `true`.
   bool info(Object? message) => add(Severity.info, message);
 
-  /// Logs [message] at [Severity.warn]. Returns `true`, as in Ruby.
+  /// Logs [message] at [Severity.warn]. Returns `true`.
   bool warn(Object? message) => add(Severity.warn, message);
 
-  /// Logs [message] at [Severity.error]. Returns `true`, as in Ruby.
+  /// Logs [message] at [Severity.error]. Returns `true`.
   bool error(Object? message) => add(Severity.error, message);
 
-  /// Logs [message] at [Severity.fatal]. Returns `true`, as in Ruby.
+  /// Logs [message] at [Severity.fatal]. Returns `true`.
   bool fatal(Object? message) => add(Severity.fatal, message);
 
-  /// Logs [message] at [Severity.unknown]. Returns `true`, as in Ruby.
+  /// Logs [message] at [Severity.unknown]. Returns `true`.
   bool unknown(Object? message) => add(Severity.unknown, message);
 
   /// Logs [message] at [severity], resolving a `null` [message] from
@@ -268,18 +257,16 @@ abstract class LoggerBase {
   /// pass their argument as `progname`).
   ///
   /// A `null` [severity] means [Severity.unknown]. A zero-argument function
-  /// passed as [message] plays the role of Ruby's block form (`logger.info
-  /// { ... }`): it is only invoked when the record is actually emitted (or
-  /// recorded, for [MemoryLogger]), never for level-filtered records.
-  /// Always returns `true`, as in Ruby.
+  /// passed as [message] is evaluated lazily: it is only invoked when the
+  /// record is actually emitted (or recorded, for [MemoryLogger]), never for
+  /// level-filtered records. Always returns `true`.
   bool add(Severity? severity, [Object? message, Object? progname]);
 
   /// Releases resources held by this logger.
   ///
   /// [Logger] closes file sinks it opened itself; [MemoryLogger] and
-  /// [NullLogger] do nothing. DIVERGENCE: Ruby's `Logger#close` closes
-  /// whatever log device it was given; the Dart port never closes a
-  /// caller-supplied sink (in particular never stderr).
+  /// [NullLogger] do nothing. A caller-supplied sink (in particular stderr)
+  /// is never closed.
   Future<void> close();
 }
 
@@ -292,18 +279,16 @@ class Logger extends LoggerBase {
   /// Creates a logger writing to [logdev].
   ///
   /// [logdev] may be a [StringSink] (e.g. a [StringBuffer] or [IOSink]), a
-  /// [File], or a [String] file path (opened for appending, as Ruby's
-  /// `Logger` does). When omitted it defaults to stderr; an explicit `null`
-  /// discards all output (mirroring `::Logger.new(nil)`). Anything else
-  /// throws an [ArgumentError].
+  /// [File], or a [String] file path (opened for appending). When omitted it
+  /// defaults to stderr; an explicit `null` discards all output (mirroring
+  /// a `null` device). Anything else throws an [ArgumentError].
   ///
   /// [level] defaults to [Severity.warn] when omitted and accepts a
   /// [Severity], [int], or [String] name (see [Severity.coerce]); an
-  /// explicit `null` throws an [ArgumentError], as in Ruby.
+  /// explicit `null` throws an [ArgumentError].
   ///
   /// [formatter] defaults to the [BasicFormatter] when omitted; an explicit
-  /// `null` selects the [DefaultFormatter] (mirroring Ruby's
-  /// `opts.key? :formatter` check); a [LoggerFormatter] — or a raw
+  /// `null` selects the [DefaultFormatter]; a [LoggerFormatter] — or a raw
   /// formatting function — is used as is.
   new({
     Object? logdev = _unspecified,
@@ -319,14 +304,14 @@ class Logger extends LoggerBase {
   }
 
   /// Sentinel distinguishing an omitted optional argument from an explicit
-  /// `null` (which Ruby's `opts.key?` checks can tell apart).
+  /// `null`.
   static const Object _unspecified = Object();
 
   final StringSink _sink;
   final bool _ownsSink;
 
   /// The program name stamped on every record. Always starts as
-  /// `asciidoctor` (Ruby assigns it unconditionally in the constructor).
+  /// `asciidoctor`.
   String progname = 'asciidoctor';
 
   /// The record formatter. Mirrors `::Logger#formatter`.
@@ -460,8 +445,7 @@ class MemoryLogMessage {
 /// A logger recording every record in [messages].
 ///
 /// Port of `Asciidoctor::MemoryLogger`: level `WARN`, no level filtering
-/// ([add] records everything, exactly like Ruby, which overrides `add`
-/// without a level check).
+/// ([add] records everything regardless of [level]).
 class MemoryLogger extends LoggerBase {
   /// Creates an empty memory logger.
   new() : super(Severity.warn);

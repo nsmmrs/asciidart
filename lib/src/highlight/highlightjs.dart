@@ -87,8 +87,7 @@ class HighlightJsAdapter {
   /// [languagesAttr] mirrors the raw `highlightjs-languages` document
   /// attribute (comma-separated); each entry is left-stripped and loaded from
   /// `{baseUrl}/languages/{lang}.min.js`. A missing or empty value loads no
-  /// extra languages. Splitting mirrors Ruby's `String#split`, which drops
-  /// trailing empty entries.
+  /// extra languages. Trailing empty entries are dropped.
   String docinfoFooter({
     String? highlightjsDir,
     String? languagesAttr,
@@ -114,9 +113,8 @@ class HighlightJsAdapter {
         '</script>';
   }
 
-  /// Splits the raw `highlightjs-languages` attribute like Ruby's
-  /// `String#split(',')` (trailing empty entries dropped) and left-strips
-  /// each entry (Ruby `String#lstrip`).
+  /// Splits the raw `highlightjs-languages` attribute on commas (trailing
+  /// empty entries dropped) and left-trims each entry.
   static List<String> _splitLanguages(String? value) {
     if (value == null || value.isEmpty) return const [];
     final parts = value.split(',');

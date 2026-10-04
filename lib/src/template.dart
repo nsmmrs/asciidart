@@ -1,8 +1,8 @@
 /// Template converter: per-transform Mustache and Dart-function overrides.
 ///
-/// Port of `lib/asciidoctor/converter/template.rb` (ADR-0002). Ruby renders
-/// user templates through Tilt (ERB/Haml/Slim, ...); Dart has no runtime code
-/// evaluation, so the port ships the two-path story from ADR-0002 T1:
+/// Port of `lib/asciidoctor/converter/template.rb` (ADR-0002). Asciidoctor
+/// renders user templates through Tilt (ERB/Haml/Slim, ...); without runtime
+/// code evaluation, this port offers the two paths from ADR-0002 T1:
 ///
 /// - **(a) Code-first overrides (primary):** Dart functions registered per
 ///   transform name with [TemplateConverter.registerFunction] (or
@@ -13,19 +13,18 @@
 ///   [TemplateRegistry.registerTemplate]), rendered by [MustacheTemplate]
 ///   against the pre-flattened context from `template_context.dart`.
 ///
-/// ## Loader seam (shared with wave B)
+/// ## Loaders
 ///
 /// Template *sources* always enter the registry as a `Map<String, String>`
 /// (node name to Mustache source); loaders implement [TemplateLoader] and
-/// apply last-wins resolution themselves. Wave B provides the `dart:io`
-/// directory scanner, the Node-`fs` loader and the in-memory loader behind
-/// this one-method interface; this wave only consumes the map.
+/// apply last-wins resolution themselves (see `template_loader.dart` for the
+/// directory scanner, the Node `fs` loader and the in-memory loader).
 ///
 /// ## Composition
 ///
 /// [TemplateConverter.handles] reports exactly the registered transforms, so
 /// chaining it ahead of a built-in converter in a [CompositeConverter]
-/// (see [TemplateConverter.withFallback]) reproduces Ruby's
+/// (see [TemplateConverter.withFallback]) reproduces Asciidoctor's
 /// `Factory.create` semantics: template overrides win per transform, the
 /// built-in converter handles everything else.
 library;
@@ -40,10 +39,9 @@ import 'package:mustache_template/mustache_template.dart' show Template;
 
 /// Loads template sources as a node-name to Mustache-source map.
 ///
-/// Seam contract shared with the wave-B worker: loaders (directory scanner,
-/// Node-`fs` interop, in-memory map) produce `Map<String, String>` with
-/// last-wins resolution already applied; the [TemplateRegistry] consumes the
-/// map. Kept to this one method so both branches merge cleanly.
+/// Loaders (directory scanner, Node `fs` interop, in-memory map) produce a
+/// `Map<String, String>` with last-wins resolution already applied; the
+/// [TemplateRegistry] consumes the map.
 abstract interface class TemplateLoader {
   /// Loads and returns the template sources.
   FutureOr<Map<String, String>> load();
@@ -55,8 +53,7 @@ abstract interface class TemplateLoader {
 /// `false` (raw by default per ADR-0002 T3: converter output is already-safe
 /// HTML, and Mustache-default escaping would double-escape every
 /// `{{content}}`) and [lenient] defaulting to `true` (missing keys render as
-/// empty output, mirroring Ruby's `nil`-to-empty rendering, instead of
-/// throwing).
+/// empty output instead of throwing).
 class MustacheTemplate {
   /// Compiles [source] for transform [name].
   new(
@@ -185,8 +182,8 @@ class TemplateRegistry {
   /// Registers helper [helper] under context key [name] (ADR-0002 T4).
   ///
   /// The helper is evaluated against the converted node on every Mustache
-  /// render and injected into the context; it is the Dart replacement for
-  /// Ruby's loadable `helpers.rb` (no helper file loading exists).
+  /// render and injected into the context (template directories have no
+  /// loadable `helpers.rb`).
   void registerHelper(String name, TemplateHelper helper) {
     _helpers[name] = helper;
   }
@@ -203,8 +200,7 @@ class TemplateRegistry {
 
   /// A copy of the registered Mustache sources by transform name.
   ///
-  /// Mirrors Ruby's `TemplateConverter#templates` (which returns Tilt
-  /// objects; the port returns their sources).
+  /// The registered template sources by transform name.
   Map<String, String> get templates => <String, String>{
     for (final entry in _templates.entries) entry.key: entry.value.source,
   };
@@ -239,16 +235,16 @@ class TemplateRegistry {
 /// Port of `Converter::TemplateConverter`. [convert] derives the transform
 /// from the node name (unless given), runs the registered function when one
 /// exists, else renders the registered Mustache template against
-/// [buildTemplateContext], else throws a [StateError] mirroring Ruby's
-/// `Could not find a custom template to handle transform: ...`.
+/// [buildTemplateContext], else throws a [StateError] with Asciidoctor's
+/// `Could not find a custom template to handle transform: ...` message.
 ///
-/// Mustache output is trimmed like Ruby (`strip` for `document`,
-/// `rstrip` otherwise); function results pass through unmodified, exactly
+/// Mustache output is trimmed (both ends for `document`, the end
+/// otherwise); function results pass through unmodified, exactly
 /// like [ConverterBase] handler results.
 class TemplateConverter extends ConverterBase {
   /// Creates a template converter for [backend].
   ///
-  /// Sources enter through [registry] (consuming the wave-B loader maps);
+  /// Sources enter through [registry] (consuming the loader maps);
   /// use [register], [registerFunction] and [registerHelper] to add more.
   new(super.backend, [super.opts, TemplateRegistry? registry])
     : registry = registry ?? TemplateRegistry();
@@ -258,8 +254,7 @@ class TemplateConverter extends ConverterBase {
 
   /// Registers Mustache [source] for transform [name] (path (b)).
   ///
-  /// Mirrors Ruby's `TemplateConverter#register` (which takes a Tilt
-  /// template object; the port compiles the source instead).
+  /// Compiles [source] as the template for [name].
   void register(String name, String source) {
     registry.registerTemplate(name, source);
   }
@@ -310,7 +305,7 @@ class TemplateConverter extends ConverterBase {
 
   /// Chains this converter ahead of [fallback] in a [CompositeConverter].
   ///
-  /// Mirrors the Ruby `Factory.create` template chain: template overrides
+  /// The `Factory.create` template chain: template overrides
   /// win per transform, [fallback] (typically the built-in converter)
   /// handles the rest, and the composite adopts [fallback]'s backend traits.
   CompositeConverter withFallback(Converter fallback) => CompositeConverter(
@@ -323,7 +318,7 @@ class TemplateConverter extends ConverterBase {
 /// Builds the template side of a converter-factory `create` call.
 ///
 /// Port of the `TemplateConverter.new backend, template_dirs, opts` half
-/// of Ruby's `Factory.create`: compiles [sources] (the loader's
+/// of `Factory.create`: compiles [sources] (the loader's
 /// node-name-to-Mustache-source map) into a fresh registry, merges
 /// [TemplateRegistry.global] over them (explicit in-process registrations
 /// beat files; functions beat templates per transform as usual), and

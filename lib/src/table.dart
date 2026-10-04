@@ -32,7 +32,6 @@ final RegExp _leadingInlineAnchorRx = RegExp(
 final RegExp _blankLineRx = RegExp(r'\n{2,}');
 
 /// Rounds [value] to [precision] decimal places, half away from zero.
-/// Port of Ruby's `Float#round` with a precision argument.
 double _roundAtPrecision(num value, int precision) {
   var factor = 1;
   for (var i = 0; i < precision; i++) {
@@ -62,8 +61,7 @@ class TableRows {
   List<List<Cell>> body;
 
   /// Returns the rows of the [section] (`'head'`, `'body'` or `'foot'`;
-  /// anything else throws, mirroring Ruby's `method_missing` on the
-  /// `Rows#[]` → `send` alias).
+  /// anything else throws).
   List<List<Cell>> operator [](Object section) {
     switch (section.toString()) {
       case 'head':
@@ -79,8 +77,8 @@ class TableRows {
 
   /// The rows grouped by section, in document order (head, body, foot).
   ///
-  /// Port of `Asciidoctor::Table::Rows#by_section` (note the order really
-  /// is head, body, foot despite the doc comment in Ruby).
+  /// Port of `Asciidoctor::Table::Rows#by_section` (the order is head,
+  /// body, foot).
   List<(String, List<List<Cell>>)> get bySection =>
       <(String, List<List<Cell>>)>[
         ('head', head),
@@ -107,7 +105,7 @@ class Table extends AbstractBlock {
   ///
   /// Note that [attributes] is only read here (for `'width'` and
   /// `'rotate-option'`); the computed values land on this table's own
-  /// attributes, exactly as in Ruby.
+  /// attributes.
   new(AbstractBlock? parent, Map<String, Object?> attributes)
     : super(parent, 'table') {
     final pcwidth = attributes['width'];
@@ -294,7 +292,7 @@ class Table extends AbstractBlock {
 class Column extends AbstractNode {
   /// Creates a column of [table] at 0-based [index], resolving the column
   /// number and the `width`/`halign`/`valign` defaults into [attributes]
-  /// (mutating the passed map, as in Ruby) and copying them onto this
+  /// (mutating the passed map) and copying them onto this
   /// column.
   new(Table? table, int index, [Map<String, Object?>? attributes])
     : super(table, 'table_column') {
@@ -387,11 +385,11 @@ class Cell extends AbstractBlock {
   /// The [attributes] map selects the PSV path (it is mutated: `colspan`
   /// and `rowspan` are removed); an explicit `null` selects the
   /// CSV/DSV path. [opts] carries the parser cursor under `'cursor'`.
-  /// The default is a shared empty map, which is safe because Ruby never
-  /// mutates the default (the empty-attributes branch performs no writes).
+  /// The default is a shared empty map, which is safe because it is never
+  /// written to (the empty-attributes branch performs no writes).
   ///
   /// AsciiDoc-style cells build a nested document eagerly (see the
-  /// `asciidoc` branch below), mirroring Ruby.
+  /// `asciidoc` branch below).
   new(
     Column? column,
     String? cellText, [
@@ -402,13 +400,12 @@ class Cell extends AbstractBlock {
     var cellContent = cellText;
     final attrs = attributes;
     if (document!.sourcemap) {
-      // Port of `@source_location = opts[:cursor].dup if @document.sourcemap`
-      // (`lib/asciidoctor/table.rb`); `nil.dup` is `nil` in Ruby. The copy
+      // Store a copy of the cursor as the source location. The copy
       // matters: the original cursor may advance afterwards (asciidoc
       // cells), which must not move the stored location.
       final cursor = opts?['cursor'];
-      // Ruby dups the cursor (`nil.dup` is `nil`). Real cursors are exposed
-      // through the wave-local adapter since `Cursor` does not implement
+      // Real cursors are exposed through an adapter since `Cursor` does not
+      // implement
       // `NodeSourceLocation` itself; doubles implementing the interface
       // (e.g. `FakeCursor`) are snapshotted (immutable copy semantics).
       sourceLocation = switch (cursor) {
@@ -495,7 +492,7 @@ class Cell extends AbstractBlock {
         cellContent = text;
       } else {
         normalPsv = true;
-        // NOTE AsciidoctorJ uses nil cell_text to create an empty cell.
+        // NOTE AsciidoctorJ uses a null cell_text to create an empty cell.
         cellContent = cellContent != null ? cellContent.trim() : '';
       }
     } else {
@@ -519,9 +516,8 @@ class Cell extends AbstractBlock {
       // have been processed. The included content cannot expect to match
       // conditional terminators in the remaining lines of table cell
       // content; it must be self-contained logic.
-      // Dart's `split` keeps trailing empty segments like Ruby's
-      // `split LF, -1`, except that `''.split` yields `['']` where Ruby
-      // yields `[]`.
+      // Keep trailing empty segments, but an empty string has no lines
+      // (`''.split` would yield `['']`).
       final cellSource = cellContent;
       final innerDocumentLines = cellSource == null || cellSource.isEmpty
           ? <String>[]
@@ -553,8 +549,7 @@ class Cell extends AbstractBlock {
       if (parentDoctitle != null) {
         parentDoc.attributes['doctitle'] = parentDoctitle;
       }
-      // Ruby assigns `@subs = nil` (a nil subs list applies nothing);
-      // `subs` is non-nullable here, so the empty list plays that role.
+      // No substitutions: the empty list applies nothing.
       subs = <String>[];
     } else if (literal) {
       contentModel = 'verbatim';
@@ -593,9 +588,8 @@ class Cell extends AbstractBlock {
 
   /// The column this cell belongs to.
   ///
-  /// Ruby parents the cell to the column, but the port types node parents
-  /// as [AbstractBlock] and columns are not blocks, so the constructor
-  /// passes the table instead and the column is kept here.
+  /// Node parents are [AbstractBlock]s and columns are not blocks, so the
+  /// cell's parent is the table and the column is kept here.
   final Column? _column;
 
   /// An alias for the column this cell belongs to (mirrors
@@ -664,9 +658,9 @@ class Cell extends AbstractBlock {
   /// Handles the body data, applying styles and partitioning into
   /// paragraphs. Not for head-row or literal-style cells.
   ///
-  /// Port of `Asciidoctor::Table::Cell#content`. Ruby parents the styled
-  /// paragraphs to the column; the port passes this cell's parent (the
-  /// table) instead, since inline nodes require a block parent.
+  /// Port of `Asciidoctor::Table::Cell#content`. The styled paragraphs are
+  /// parented to this cell's parent (the table), since inline nodes require
+  /// a block parent.
   @override
   Object? content() {
     final cellStyle = style;
@@ -766,8 +760,8 @@ class TableParserContext {
         _delimiter = entry.$1;
         _delimiterRx = entry.$2;
       } else if (sep == r'\t') {
-        // NOTE the Ruby source compares against single-quoted '\t', i.e.
-        // a literal backslash followed by `t`, not a tab.
+        // NOTE this compares against a literal backslash followed by `t`,
+        // not a tab (as Asciidoctor does).
         final entry = delimiters['tsv']!;
         _delimiter = entry.$1;
         _delimiterRx = entry.$2;
@@ -843,15 +837,13 @@ class TableParserContext {
 
   /// The compiled cell-delimiter pattern for this table.
   ///
-  /// Faithful quirk: in Ruby only the `delimiter_re` reader is declared
-  /// while the constructor assigns `@delimiter_rx`, so `delimiter_re` is
-  /// always `nil` (verified with `ruby -Ilib -e`). This getter preserves
-  /// that behavior; matching uses the private pattern.
+  /// Always `null`, as in Asciidoctor (where the reader and the assigned
+  /// field have different names); matching uses the private pattern.
   RegExp? get delimiterRe => null;
 
   late final Reader _reader;
 
-  /// Where the table starts (Ruby's `@start_cursor_data`), reported when
+  /// Where the table starts, reported when
   /// the leading separator is missing.
   late final Cursor _startCursor;
   List<Map<String, Object?>> _cellspecs = <Map<String, Object?>>[];

@@ -21,8 +21,7 @@ class Section extends AbstractBlock implements NodeSection {
   /// Creates a section with [parent] and [level].
   ///
   /// The [level] defaults to one more than the parent level for a [Section]
-  /// parent, else to 1. [numbered] mirrors the Ruby positional argument of
-  /// the same name.
+  /// parent, else to 1.
   new([
     AbstractBlock? parent,
     int? level,
@@ -60,9 +59,8 @@ class Section extends AbstractBlock implements NodeSection {
 
   /// Generates a string ID from the title of this section.
   ///
-  /// Named `generateIdFromTitle` because Dart forbids an instance member and
-  /// a static member sharing the name `generateId`, as Ruby's
-  /// `Section#generate_id` / `Section.generate_id` pair does.
+  /// Named `generateIdFromTitle` because an instance member cannot share the
+  /// name of the static [generateId].
   String generateIdFromTitle() => Section.generateId(title!, document!);
 
   /// Whether this section has child sections.
@@ -157,7 +155,7 @@ class Section extends AbstractBlock implements NodeSection {
   /// attribute (`'_'` by default). When the ID is already referenced in the
   /// document catalog, a count is appended until a unique ID is found.
   /// A multi-character separator is truncated to its first character (an
-  /// observable side effect on the document attributes, as in Ruby).
+  /// observable side effect on the document attributes).
   ///
   /// Port of `Asciidoctor::Section.generate_id`.
   static String generateId(String title, NodeDocument document) {
@@ -176,7 +174,7 @@ class Section extends AbstractBlock implements NodeSection {
       } else {
         noSep = s.isEmpty;
         if (!noSep) {
-          // Ruby `String#chr`: the first character (not UTF-16 unit).
+          // The first character (not UTF-16 unit).
           s = String.fromCharCode(s.runes.first);
           attrs['idseparator'] = s;
           sepSub = (s == '-' || s == '.') ? ' .-' : ' $s.-';
@@ -187,10 +185,9 @@ class Section extends AbstractBlock implements NodeSection {
       sep = '_';
       sepSub = ' _.-';
     }
-    // Shared table regex: Ruby `CC_WORD` (`\p{Word}`) keeps non-ASCII letters
-    // such as `ü` (`lib/asciidoctor/rx.rb:263`, `lib/asciidoctor/section.rb:208`);
-    // Dart `\w` stays ASCII-only even with `unicode: true`, so the `ccWord`
-    // spelling in `rx.dart` is required here.
+    // Shared table regex: word characters include non-ASCII letters such as
+    // `ü`. Dart `\w` stays ASCII-only even with `unicode: true`, so the
+    // `ccWord` spelling in `rx.dart` is required here.
     var genId =
         '$pre${title.toLowerCase().replaceAll(invalidSectionIdCharsRx, '')}';
     if (noSep) {

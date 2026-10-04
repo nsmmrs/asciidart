@@ -10,7 +10,7 @@ import 'package:asciidoctor/src/converter.dart';
 ///
 /// Port of the duck-typed `composed` callback: the [CompositeConverter]
 /// invokes [composed] on every delegate that implements this interface
-/// (in Ruby, `TemplateConverter` does).
+/// (`TemplateConverter` does).
 abstract interface class ComposedAware {
   /// Receives the [composite] this converter was composed into.
   void composed(CompositeConverter composite);
@@ -21,17 +21,16 @@ abstract interface class ComposedAware {
 /// Port of `Converter::CompositeConverter`. [converters] holds the chain;
 /// [converterFor] selects (and caches) the first converter whose [handles]
 /// accepts the transform, and [findConverter] raises a [StateError] when
-/// none does (port of Ruby's `raise` with the same message).
+/// none does.
 ///
 /// Note that a composite [handles] no transform itself (it registers no
-/// handlers), exactly as in Ruby, where `CompositeConverter` defines no
-/// `convert_*` methods.
+/// handlers).
 class CompositeConverter extends ConverterBase {
   /// Creates a composite for [backend] delegating to [converters].
   ///
   /// Delegates implementing [ComposedAware] are notified. When
   /// [backendTraitsSource] is given, this composite adopts its backend
-  /// traits map (shared by reference, as in Ruby).
+  /// traits map (shared by reference).
   new(
     super.backend,
     List<Converter> converters, {

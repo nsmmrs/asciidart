@@ -17,9 +17,8 @@ mixin Writer {
   /// such as stdout), [output] is chomped (one trailing line break removed)
   /// and written with a single trailing `\n`. When [target] is a [File] or a
   /// [String] file path, [output] is written to that file as UTF-8, without
-  /// any trailing newline adjustment (mirroring the asymmetry in the Ruby
-  /// source, including its `QUESTION` about it). Any other [target] type
-  /// throws an [ArgumentError].
+  /// any trailing newline adjustment (the same asymmetry as Asciidoctor). Any
+  /// other [target] type throws an [ArgumentError].
   ///
   /// Mirrors `Writer#write`.
   void write(String output, Object target) {
@@ -40,7 +39,7 @@ mixin Writer {
 
   /// Removes one trailing line break (`\r\n`, `\r`, or `\n`) from [value].
   ///
-  /// Mirrors Ruby's `String#chomp` (default record separator).
+  /// Removes one trailing line terminator.
   static String _chomp(String value) {
     var result = value;
     if (result.endsWith('\n')) {

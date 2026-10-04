@@ -2,10 +2,10 @@
 ///
 /// Port of the directory-scanning half of
 /// `lib/asciidoctor/converter/template.rb` (`TemplateConverter#scan` /
-/// `#scan_dir`), per ADR-0002 T1(b) + T5. The rendering half (Mustache
-/// adapter, pre-flattened context, `TemplateConverter`, composite wiring)
-/// belongs to template wave A; this library owns the loader seam, the
-/// `template_cache` semantics and the `-E/--template-engine` vocabulary.
+/// `#scan_dir`), per ADR-0002 T1(b) + T5. The rendering half lives in
+/// `template.dart` and `template_context.dart`; this library owns the
+/// loaders, the `template_cache` semantics and the `-E/--template-engine`
+/// vocabulary.
 ///
 /// ## The seam
 ///
@@ -17,17 +17,16 @@
 /// [TemplateLoader] itself is defined in `template.dart` (single home for
 /// the seam contract).
 ///
-/// ## Scan semantics (Ruby parity + deliberate divergences)
+/// ## Scan semantics
 ///
-/// Like Ruby, every directory in `template_dirs` is scanned top-level only
-/// (no recursion), missing entries are skipped, and later directories win
+/// As in Asciidoctor, every directory in `template_dirs` is scanned top-level
+/// only (no recursion), missing entries are skipped, and later directories win
 /// for a repeated node name. Divergences, all forced by ADR-0002 T1(b):
 ///
 /// - Single extension: only `*.mustache` files load (Tilt's per-engine
 ///   extensions and auto-detection have no Dart analog).
-/// - No engine/backend subdirectories: Ruby descends into per-engine and
-///   per-backend subdirectories; Dart resolves Asciidoctor.js style (flat
-///   directory, no backend infix).
+/// - No engine/backend subdirectories (Asciidoctor descends into them);
+///   directories are flat, as in Asciidoctor.js.
 /// - No `block_` prefix stripping or `block_ruler` renaming: the node name
 ///   is exactly the file basename minus `.mustache`.
 /// - No `helpers.rb`: arbitrary code loading is impossible on Dart
@@ -35,30 +34,27 @@
 ///
 /// ## Template cache
 ///
-/// [TemplateCache] ports Ruby's `{ scans:, templates: }` process-lifetime
-/// caches: [TemplateCache.scans] memoizes directory scans (name -> source)
-/// and [TemplateCache.templates] reserves the per-file parsed-template slot
-/// the wave-A renderer fills. The `template_cache` document option selects
-/// the store (see [resolveTemplateCache]): absent or `true` (the default)
-/// shares the process-wide [TemplateCache.shared]; an explicit `false`,
-/// `null` or anything else disables caching; a [TemplateCache] instance is
-/// used as a custom store. [TemplateCache.clearCaches] ports Ruby's
-/// `TemplateConverter.clear_caches`.
+/// [TemplateCache] holds the process-lifetime caches:
+/// [TemplateCache.scans] memoizes directory scans (name -> source) and
+/// [TemplateCache.templates] holds parsed templates per file. The
+/// `template_cache` document option selects the store (see
+/// [resolveTemplateCache]): absent or `true` (the default) shares the
+/// process-wide [TemplateCache.shared]; an explicit `false`, `null` or anything
+/// else disables caching; a [TemplateCache] instance is used as a custom store.
+/// [TemplateCache.clearCaches] ports `TemplateConverter.clear_caches`.
 ///
 /// ## Template engines
 ///
 /// `-E/--template-engine` keeps flag parity with a Dart-side vocabulary
 /// (see [supportedTemplateEngines]): only `mustache` (file templates) and
 /// `dart` (code-registered transforms, path (a)) exist. Parsing records any
-/// name untouched (Ruby parity: `options_test.rb` expects `-E haml` to
-/// parse); the name is validated when templates engage (see
-/// [validateTemplateEngine], called from the converter factory while
-/// `template_dirs` is set). An unknown engine throws the port's analog of
-/// Ruby's missing-engine `LoadError` (`Helpers.require_library :abort`),
-/// e.g. ``asciidoctor: FAILED: required template engine 'haml' is not
-/// available. Processing aborted.`` — reported by the invoker with the
-/// `Use --trace to show backtrace` hint (exit 1) and rethrown under
-/// `--trace`, exactly like Ruby.
+/// name untouched (so `-E haml` parses, as in Asciidoctor); the name is
+/// validated when templates engage (see [validateTemplateEngine], called from
+/// the converter factory while `template_dirs` is set). An unknown engine fails
+/// like Asciidoctor's missing-engine error, e.g. ``asciidoctor: FAILED:
+/// required template engine 'haml' is not available. Processing aborted.`` —
+/// reported by the invoker with the `Use --trace to show backtrace` hint (exit
+/// 1) and rethrown under `--trace`.
 library;
 
 import 'dart:io' show Directory, File, FileSystemEntity, FileSystemException;
@@ -98,16 +94,15 @@ final class VmTemplateLoader implements TemplateLoader {
     final merged = <String, String>{};
     final resolver = PathResolver();
     for (final dir in templateDirs) {
-      // Resolved exactly like Ruby (`path_resolver.system_path`), so
-      // relative spellings of one directory share a cache entry.
+      // Resolved with the path resolver, so relative spellings of one
+      // directory share a cache entry.
       final resolved = resolver.systemPath(dir, start: Directory.current.path);
       final cached = _cache?.scans[resolved];
       if (cached != null) {
         merged.addAll(cached);
         continue;
       }
-      // A missing entry skips without a cache write (Ruby's
-      // `next unless File.directory?`).
+      // A missing entry skips without a cache write.
       final scanned = _scanDir(resolved);
       if (scanned != null) {
         _cache?.scans[resolved] = scanned;
@@ -120,18 +115,18 @@ final class VmTemplateLoader implements TemplateLoader {
 
   /// Scans [templateDir] top-level for `*.mustache` files.
   ///
-  /// Returns `null` when [templateDir] is not a directory (skipped, like
-  /// Ruby); otherwise the node name -> source map (possibly empty).
+  /// Returns `null` when [templateDir] is not a directory (skipped);
+  /// otherwise the node name -> source map (possibly empty).
   static Map<String, String>? _scanDir(String templateDir) {
     final directory = Directory(templateDir);
     if (!directory.existsSync()) return null;
     final List<FileSystemEntity> entries;
     try {
-      // Default `followLinks: true` matches Ruby's `File.file?` (a symlink
-      // to a file counts); `recursive: false` keeps the scan top-level.
+      // Default `followLinks: true` counts a symlink to a file as a file;
+      // `recursive: false` keeps the scan top-level.
       entries = directory.listSync();
     } on FileSystemException {
-      // Ruby's `Dir.glob` on an unreadable directory yields nothing.
+      // An unreadable directory yields nothing.
       return <String, String>{};
     }
     final result = <String, String>{};
@@ -205,8 +200,8 @@ bool isRunningOnNode() => detect.isRunningOnNode();
 /// Port of `TemplateConverter.caches` (`{ scans:, templates: }`): [scans]
 /// memoizes directory scans (absolute directory path -> node name ->
 /// source) and [templates] holds parsed templates by absolute file path
-/// (populated by the wave-A renderer; typed `Object?` so the loader seam
-/// stays independent of the Mustache adapter).
+/// (typed `Object?` so the loaders stay independent of the Mustache
+/// adapter).
 final class TemplateCache {
   /// Creates an empty cache (a custom `template_cache` store).
   new();
@@ -214,7 +209,7 @@ final class TemplateCache {
   /// Scan results by absolute directory path.
   final Map<String, Map<String, String>> scans = {};
 
-  /// Parsed templates by absolute file path (wave-A renderer slot).
+  /// Parsed templates by absolute file path.
   final Map<String, Object?> templates = {};
 
   /// Clears both stores.
@@ -259,7 +254,7 @@ const Set<String> supportedTemplateEngines = {'mustache', 'dart'};
 /// [ArgumentError] with the port's missing-engine diagnostic (see the
 /// library documentation). Called from the converter factory while
 /// `template_dirs` is set — an engine without directories stays inert,
-/// exactly as in Ruby.
+///.
 void validateTemplateEngine(Object? engine) {
   if (engine == null || engine == false) return;
   if (engine is String && supportedTemplateEngines.contains(engine)) return;

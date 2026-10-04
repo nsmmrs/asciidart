@@ -1,6 +1,6 @@
 /// `init-config` scaffold: generates an XMonad-style custom-binary project.
 ///
-/// Dart-only tooling with no Ruby analog (ADR-0002 T6). Running
+/// Specific to this port (ADR-0002 T6). Running
 /// `asciidoctor init-config [DIR]` writes a user project (pubspec +
 /// `lib/transforms.dart` stub + `bin/main.dart`) that registers Dart
 /// functions and compiles with `dart compile exe`. The subcommand form

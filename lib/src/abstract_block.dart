@@ -4,9 +4,9 @@
 ///
 /// Child traversal for [AbstractBlock.findBy] lives in [AbstractBlock],
 /// which subclasses with non-standard child storage (`Document` header,
-/// dlist pairs, table rows/cells) override when those waves land. The
-/// [NodeSection] and [NodeSourceLocation] interfaces below declare the
-/// section- and reader-wave slices this file consumes.
+/// dlist pairs, table rows/cells) override. The [NodeSection] and
+/// [NodeSourceLocation] interfaces below declare the slices of `Section` and
+/// the reader cursor this file consumes.
 library;
 
 import 'package:asciidoctor/src/abstract_node.dart';
@@ -27,10 +27,10 @@ const Map<String, String> orderedListKeywords = <String, String>{
 
 /// Maps block contexts to the document attribute holding their caption prefix.
 ///
-/// Port of `CAPTION_ATTRIBUTE_NAMES` in `lib/asciidoctor.rb`. Ruby's map also
-/// carries a `'figure'` *string* key, but every lookup passes the context
-/// *symbol*, so that entry never matches and is left out here to preserve
-/// byte-identical behavior for figure blocks.
+/// Port of `CAPTION_ATTRIBUTE_NAMES` in `lib/asciidoctor.rb`. The upstream
+/// map also has a `'figure'` entry that block-context lookups never reach,
+/// so it is left out here; explicit `'figure'` lookups are handled in
+/// `AbstractBlock.assignCaption`.
 const Map<String, String> captionAttributeNames = <String, String>{
   'example': 'example-caption',
   'listing': 'listing-caption',
@@ -39,7 +39,7 @@ const Map<String, String> captionAttributeNames = <String, String>{
 
 /// Controls [AbstractBlock.findBy] traversal from a [FindByFilter].
 ///
-/// Mirrors the `:prune`, `:reject` and `:stop` verdicts a Ruby filter block
+/// The `prune`, `reject` and `stop` verdicts a `AbstractBlock.findBy` filter
 /// may return.
 enum FindByVerdict {
   /// Accept the node but skip its descendants.
@@ -61,7 +61,7 @@ typedef FindByFilter = Object? Function(AbstractBlock node);
 
 /// Raised internally to abort a [AbstractBlock.findBy] traversal.
 ///
-/// Mirrors the `StopIteration` control flow in Ruby's `find_by`.
+/// Stops a `AbstractBlock.findBy` traversal early.
 final class _TraversalStopped implements Exception {
   /// Creates the traversal-stop signal.
   const new();
@@ -69,7 +69,7 @@ final class _TraversalStopped implements Exception {
 
 /// The `Section` API surface consumed by blocks.
 ///
-/// Implemented by `Section` (section wave). [AbstractBlock.assignNumeral]
+/// Implemented by `Section`. [AbstractBlock.assignNumeral]
 /// casts its argument to this interface.
 abstract interface class NodeSection {
   /// The 0-based index of the section within its parent.
@@ -87,7 +87,7 @@ abstract interface class NodeSection {
 
 /// The source-location API surface consumed by blocks.
 ///
-/// Implemented by the reader wave's cursor. Assigned to
+/// Implemented by an adapter over the reader cursor. Assigned to
 /// [AbstractBlock.sourceLocation] when source maps are enabled.
 abstract interface class NodeSourceLocation {
   /// The source file where the block starts.
@@ -136,7 +136,7 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// The substitutions applied to content in this block.
   ///
-  /// Reassigned by `commitSubs` (substitutors wave).
+  /// Reassigned by `commitSubs`.
   List<String> subs = <String>[];
 
   String? _caption;
@@ -166,8 +166,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// Returns the converted result of the child blocks.
   ///
   /// The return type is [Object] because subclasses narrow it: `List`
-  /// returns its items and table cells return paragraph arrays, mirroring
-  /// Ruby's `alias content blocks` and `Table::Cell#content`.
+  /// returns its items and table cells return paragraph arrays.
   Object? content() => blocks.map((child) => child.convert() ?? '').join(lf);
 
   /// Appends [child] to this block's list of blocks, reparenting it.
@@ -198,7 +197,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// [FindByVerdict.stop] aborts the traversal. A non-null [id] stops the
   /// traversal after the first match attempt. With no selector or filter,
   /// every block-level node in the tree is returned. [traverseDocuments]
-  /// lets table cells descend into nested documents (table wave).
+  /// lets table cells descend into nested documents.
   List<AbstractBlock> findBy({
     String? context,
     String? style,
@@ -243,9 +242,8 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// Performs the work for [findBy] without handling [_TraversalStopped].
   ///
-  /// Internal: Ruby marks this method protected; it is public here so
-  /// subclasses in other libraries (and their traversal overrides) can
-  /// recurse into it.
+  /// Internal: public so subclasses in other libraries (and their traversal
+  /// overrides) can recurse into it.
   @internal
   List<AbstractBlock> findByInternal({
     required List<AbstractBlock> result,
@@ -330,7 +328,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// When this block is the last item of its parent, the search continues
   /// with the following sibling of the parent, and so on. The return type
   /// is [Object] because description-list items advance to the next
-  /// `[terms, description]` pair (a [List]), exactly as in Ruby; otherwise
+  /// `[terms, description]` pair (a [List]); otherwise
   /// the result is an [AbstractBlock], or `null` at the end of the document.
   Object? nextAdjacentBlock() {
     if (context == 'document') return null;
@@ -352,14 +350,13 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// Returns the pair following dlist item [item] within this list.
   ///
-  /// List wave: `List` overrides this to walk its term/description pairs
+  /// `ListBlock` overrides this to walk its term/description pairs
   /// (returning the next `[terms, description]` pair, or `null` for the
-  /// last one so the search continues past the list). The default
-  /// implementation throws [UnimplementedError].
-  Object? nextAdjacentDlistBlock(AbstractBlock item) =>
-      throw UnimplementedError(
-        'List wave: AbstractBlock.nextAdjacentDlistBlock is not yet ported.',
-      );
+  /// last one so the search continues past the list). Other blocks throw
+  /// [UnsupportedError].
+  Object? nextAdjacentDlistBlock(AbstractBlock item) => throw UnsupportedError(
+    'nextAdjacentDlistBlock is only defined for description lists',
+  );
 
   /// The child sections of this block.
   List<AbstractBlock> get sections =>
@@ -423,8 +420,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// The raw source title of this block, if set ([title] returns the
   /// converted title).
   ///
-  /// Internal (no reader in Ruby); `Section` renders it from another
-  /// library. Ruby reads the `@title` field directly for the same purpose.
+  /// Internal: `Section` renders it from another library.
   String? get sourceTitle => _title;
 
   /// Sets the block title, clearing the memoized converted title.
@@ -489,7 +485,7 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// Removes one trailing `'. '` from [caption], if present.
   ///
-  /// Mirrors Ruby's `String#chomp('. ')`.
+  /// Removes one trailing `'. '`.
   static String _chompDotSpace(String caption) => caption.endsWith('. ')
       ? caption.substring(0, caption.length - 2)
       : caption;
@@ -510,14 +506,11 @@ abstract class AbstractBlock extends AbstractNode {
       _caption = assigned as String;
       return;
     }
-    // NOTE Ruby leaves the falsy assigned value in @caption here; keeping
-    // null is equivalent (both are falsy, so assignment stays re-runnable).
+    // NOTE the caption stays null, so assignment remains re-runnable.
     //
-    // Ruby keys 'figure' as a String while contexts are Symbols, so only an
-    // explicitly passed 'figure' caption context hits; the parser passes it
-    // for titled images (parser.rb), while a block whose context merely is
-    // 'figure' misses. The port's all-string contexts collapse that
-    // distinction, so the explicit path is routed here.
+    // Only an explicitly passed 'figure' caption context (the parser passes
+    // it for titled images) uses the figure caption; a block whose context
+    // merely is 'figure' does not, as in Asciidoctor.
     final attrName = targetContext == 'figure' && captionContext != null
         ? 'figure-caption'
         : captionAttributeNames[targetContext];
@@ -562,8 +555,7 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// The next 0-based section index within this block.
   ///
-  /// Internal (no reader in Ruby); `Section` reads it from another library
-  /// for `hasSections`. Only meaningful on document/section nodes.
+  /// Internal: `Section` reads it from another library for `hasSections`. Only meaningful on document/section nodes.
   int get nextSectionIndex => _nextSectionIndex;
 
   /// Reassigns section indexes by walking the descendants in document order.

@@ -1,17 +1,14 @@
 /// Converter framework: registration, factories and the dispatch base class.
 ///
-/// Port of `lib/asciidoctor/converter.rb` (framework only). The backend
+/// Port of `lib/asciidoctor/converter.rb` (framework only): the registry,
+/// the factory types and the [ConverterBase] dispatch machinery the backend
 /// converters (`html5`, `docbook5`, `manpage`) and the template converter
-/// arrive in later waves; this library provides the registry, the factory
-/// types and the [ConverterBase] dispatch machinery they build on.
+/// build on.
 ///
-/// ## Explicit registration (Dart replaces Ruby's lazy `require`)
+/// ## Explicit registration
 ///
-/// Ruby resolves provided backends lazily: `Converter.for 'html5'` runs
-/// `require 'asciidoctor/converter/html5'`, which registers the converter
-/// class as a side effect (`converter.rb:320`). Dart has no runtime
-/// `require`, so every converter registers itself explicitly with
-/// [Converter.register]. Backend waves follow this pattern:
+/// Every converter registers itself explicitly with [Converter.register]
+/// (there is no lazy loading by backend name):
 ///
 /// ```dart
 /// class Html5Converter extends ConverterBase {
@@ -20,7 +17,7 @@
 ///   }
 ///
 ///   /// Registers this converter for [backends]. Called by document
-///   /// initialization (document wave); idempotent.
+///   /// initialization; idempotent.
 ///   static void registerFor([List<String> backends = const ['html5']]) {
 ///     Converter.register(Html5Converter.new, backends, provided: true);
 ///   }
@@ -28,19 +25,16 @@
 /// ```
 ///
 /// Registrations flagged `provided: true` survive
-/// [Converter.unregisterAll], mirroring how Ruby's `unregister_all` keeps
-/// `PROVIDED` backends. Registration is idempotent (re-registering
+/// [Converter.unregisterAll]. Registration is idempotent (re-registering
 /// overwrites the same entry), so document initialization can safely call
 /// every backend's `registerFor` before looking a converter up.
 ///
 /// ## Method dispatch
 ///
-/// Ruby's `Converter::Base#convert` dispatches with `send 'convert_' +
-/// transform`, which has no Dart equivalent. [ConverterBase] replaces the
-/// `convert_<transform>` methods with a handler map populated through
-/// [ConverterBase.handle]; [ConverterBase.handles] reports whether a
-/// transform is registered, preserving the `handles?`/`respond_to?`
-/// contract the `CompositeConverter` relies on.
+/// [ConverterBase] dispatches each transform (`paragraph`, `inline_quoted`,
+/// ...) to a handler registered through [ConverterBase.handle];
+/// [ConverterBase.handles] reports whether a transform is registered, which
+/// is what `CompositeConverter` relies on.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -69,8 +63,8 @@ typedef ConverterFactoryFn = Converter Function(
   Map<String, Object?> opts,
 );
 
-/// Whether [value] counts as set, mirroring Ruby truthiness (`nil`/`false`
-/// are unset; everything else, including empty collections, is set).
+/// Whether [value] counts as set (`null` and `false` are unset; everything
+/// else, including empty collections, is set).
 bool _isSet(Object? value) => value != null && value != false;
 
 /// Resolves a registry [registration] to a [Converter] instance.
@@ -101,10 +95,9 @@ Converter _resolveRegistration(
 /// (templates ignored). With no registration, `delegate_backend` names
 /// the fallback converter, else a bare template converter is returned
 /// (its backend traits derive from [backend]). A `delegate_backend`
-/// without `template_dirs` stays inert (Ruby parity: both branches miss
-/// and `create` returns `null`).
+/// without `template_dirs` stays inert (`create` returns `null`).
 ///
-/// Dart-only addition (ADR-0002 T6): compiled-in [TemplateRegistry.global]
+/// Specific to this port (ADR-0002 T6): compiled-in [TemplateRegistry.global]
 /// overrides engage a template chain even without `template_dirs`, so an
 /// XMonad-style custom binary needs no `-T` directory.
 Converter? _createFrom(
@@ -115,11 +108,11 @@ Converter? _createFrom(
   final templateDirsOpt = opts['template_dirs'];
   if (_isSet(templateDirsOpt)) {
     // Unknown engines fail here — before any TemplateConverter work — so
-    // `-E bogus -T dir` reports Ruby's missing-engine failure.
+    // `-E bogus -T dir` reports the missing-engine failure.
     validateTemplateEngine(opts['template_engine']);
   }
-  // Templates engage through `template_dirs` (Ruby) or through compiled-in
-  // global overrides (Dart-only path (a)).
+  // Templates engage through `template_dirs` or through compiled-in
+  // global overrides (path (a)).
   final templatesEngaged =
       _isSet(templateDirsOpt) || TemplateRegistry.globalHasOverrides;
   final found = forBackend(backend);
@@ -155,8 +148,8 @@ Converter? _createFrom(
 /// Loads `*.mustache` sources through [VmTemplateLoader] (last-wins
 /// across `template_dirs`, honoring `template_cache`); the `dart` engine
 /// selects code-registered transforms only and scans no files. A lone
-/// `template_dirs` string coerces to a one-element list (Ruby's
-/// `[*template_dirs]`). See [buildTemplateChain] for the assembly.
+/// `template_dirs` string coerces to a one-element list. See
+/// [buildTemplateChain] for the assembly.
 Converter _templateChain(
   String backend,
   Map<String, Object?> opts,
@@ -205,10 +198,9 @@ void _checkRegistration(Object? converter) {
 /// extending [ConverterBase] (and registering per-transform handlers), then
 /// registering the converter for one or more backends with [register].
 ///
-/// This class also hosts the global (static) converter registry, port of
-/// the `DefaultFactory` state mixed into the Ruby `Converter` module. Ruby
-/// guards the global registry with a mutex; Dart's single-threaded
-/// execution model makes that unnecessary.
+/// This class also hosts the global (static) converter registry (the
+/// `DefaultFactory` state). It needs no locking: isolates do not share
+/// memory.
 abstract class Converter implements NodeConverter {
   /// Creates a converter for [backend] with constructor options [opts].
   new(this.backend, [this.opts = const <String, Object?>{}]);
@@ -218,15 +210,13 @@ abstract class Converter implements NodeConverter {
 
   /// The options this converter was created with.
   ///
-  /// Ruby's `Converter#initialize` accepts but ignores `opts`; subclasses
-  /// consume them. The port stores the map so subclasses can read it.
+  /// Subclasses read their configuration from it.
   final Map<String, Object?> opts;
 
   /// Lazily derived backend traits (see [backendTraits]).
   Map<String, Object?>? _backendTraits;
 
-  /// The shared logger. Mirrors the `logger` method from the `Logging`
-  /// mixin (mixed into `Converter::Base` in Ruby).
+  /// The shared logger (see [AbstractNode.currentLogger]).
   NodeLogger get logger => AbstractNode.currentLogger;
 
   /// Converts [node] using the given [transform].
@@ -234,9 +224,8 @@ abstract class Converter implements NodeConverter {
   /// When [transform] is omitted, most converters derive it from
   /// [AbstractNode.nodeName]. [opts] carries per-call conversion hints.
   ///
-  /// The default implementation throws [UnimplementedError], mirroring
-  /// Ruby's `NotImplementedError`, so subclasses that forget to override
-  /// it fail loudly instead of silently.
+  /// The default implementation throws [UnimplementedError], so subclasses
+  /// that forget to override it fail loudly instead of silently.
   @override
   Object? convert(
     AbstractNode node, [
@@ -293,7 +282,7 @@ abstract class Converter implements NodeConverter {
   /// The backend traits for this converter, derived lazily from [backend].
   ///
   /// Port of `BackendTraits#backend_traits`. [baseBackend] is honored only
-  /// on the first call (the result is memoized), exactly as in Ruby.
+  /// on the first call (the result is memoized).
   Map<String, Object?> backendTraits([String? baseBackend]) =>
       _backendTraits ??= deriveBackendTraits(backend, baseBackend);
 
@@ -313,8 +302,7 @@ abstract class Converter implements NodeConverter {
   ///
   /// Setting re-derives the memoized traits from `value` first (when not
   /// yet derived), so `filetype` and `outfilesuffix` follow the new base
-  /// backend — mirroring Ruby, where the setter delegates to
-  /// `backend_traits value`.
+  /// backend.
   String? get baseBackend => backendTraits()['basebackend'] as String?;
   set baseBackend(String? value) {
     backendTraits(value)['basebackend'] = value;
@@ -340,8 +328,6 @@ abstract class Converter implements NodeConverter {
 
   /// Whether template overrides wrap this converter in a composite.
   ///
-  /// Ruby spells the setter `supports_templates` (defaulting to `true`)
-  /// and the getter `supports_templates?`; Dart uses one property.
   /// Defaults to `false`.
   bool get supportsTemplates => backendTraits()['supports_templates'] == true;
   set supportsTemplates(bool value) {
@@ -357,20 +343,19 @@ abstract class Converter implements NodeConverter {
 
   /// Globally registered backends that survive [unregisterAll].
   ///
-  /// Mirrors Ruby's `PROVIDED` map: backends whose converters are part of
-  /// the port register with `provided: true` and are kept when test
+  /// Backends whose converters ship with this package register with
+  /// `provided: true` and are kept when test
   /// doubles are unregistered.
   static final Set<String> _provided = <String>{};
 
   /// Registers [converter] globally to handle [backends].
   ///
-  /// Port of `Converter.register` (invoked via the `register_for` DSL in
-  /// Ruby). [converter] is a [Converter] instance (returned as-is by
-  /// [create]), a [ConverterFactoryFn] (invoked per [create] call), or
-  /// `null` (shadowing any other registration). Registering backend `'*'`
-  /// installs a catch-all used for backends with no registration. Pass
-  /// `provided: true` for converters shipped by the port so the entry
-  /// survives [unregisterAll].
+  /// Port of `Converter.register`. [converter] is a [Converter] instance
+  /// (returned as-is by [create]), a [ConverterFactoryFn] (invoked per [create]
+  /// call), or `null` (shadowing any other registration). Registering backend
+  /// `'*'` installs a catch-all used for backends with no registration. Pass
+  /// `provided: true` for converters shipped by the port so the entry survives
+  /// [unregisterAll].
   static void register(
     Object? converter,
     List<String> backends, {
@@ -395,9 +380,8 @@ abstract class Converter implements NodeConverter {
   ///
   /// Port of `Converter.for`. Returns the registered [Converter] instance,
   /// [ConverterFactoryFn], or explicit `null`; returns the catch-all (if
-  /// any) when [backend] has no registration. Unlike Ruby, there is no
-  /// lazy loading: backends must be registered explicitly (see the
-  /// library documentation).
+  /// any) when [backend] has no registration. Backends must be registered
+  /// explicitly (see the library documentation).
   static Object? forBackend(String backend) {
     if (_registry.containsKey(backend)) return _registry[backend];
     return _catchAll;
@@ -472,7 +456,7 @@ abstract class ConverterFactory {
   /// Unregisters every converter registered with this factory.
   ///
   /// Intended for testing only. Note that [DefaultFactoryProxy] also
-  /// clears the global registry, mirroring Ruby.
+  /// clears the global registry.
   void unregisterAll();
 }
 
@@ -536,7 +520,7 @@ class CustomFactory implements ConverterFactory {
 ///
 /// Port of `Converter::DefaultFactoryProxy`. Lookup order for an
 /// unregistered backend is: global registry hit, this factory's catch-all,
-/// global catch-all (mirroring Ruby's `fetch`-then-`catch_all` chain). An
+/// global catch-all. An
 /// explicit `null` registered here shadows the global registry.
 class DefaultFactoryProxy extends CustomFactory {
   /// Creates a proxy factory seeded with [seed] (see [CustomFactory]).
@@ -553,9 +537,8 @@ class DefaultFactoryProxy extends CustomFactory {
 
   /// Clears this factory's registry and the global one.
   ///
-  /// Mirrors Ruby, where `DefaultFactoryProxy#unregister_all` delegates to
-  /// `DefaultFactory#unregister_all` (clearing non-provided global entries
-  /// and the global catch-all) before clearing its own registry.
+  /// Clears the non-provided global entries and the global catch-all, then
+  /// this factory's own registry.
   @override
   void unregisterAll() {
     Converter.unregisterAll();
@@ -566,12 +549,9 @@ class DefaultFactoryProxy extends CustomFactory {
 /// Base class for converters that dispatch per transform.
 ///
 /// Port of `Converter::Base`. Subclasses register one handler per
-/// transform with [handle] (the Dart equivalent of defining
-/// `convert_<transform>` methods); [convert] dispatches on the transform
-/// and warns (returning `null`) when no handler is registered, mirroring
-/// Ruby's `NoMethodError` rescue. Subclasses may override [convert] and
-/// [handles] directly instead (as Ruby converters that override `convert`
-/// and alias `handles?` do).
+/// transform with [handle]; [convert] dispatches on the transform and warns
+/// (returning `null`) when no handler is registered. Subclasses may
+/// override [convert] and [handles] directly instead.
 abstract class ConverterBase extends Converter {
   /// Creates a converter for [backend] with constructor options [opts].
   new(super.backend, [super.opts]);
@@ -582,8 +562,7 @@ abstract class ConverterBase extends Converter {
   /// Registers [handler] for [transform].
   ///
   /// The handler receives the node and, when [convert] is called with a
-  /// non-`null` options map, that map — mirroring how Ruby's `Base#convert`
-  /// calls two-argument dispatch methods only when `opts` is non-nil.
+  /// non-`null` options map, that map.
   void handle(String transform, ConvertHandler handler) {
     _handlers[transform] = handler;
   }
@@ -624,9 +603,8 @@ abstract class ConverterBase extends Converter {
 
 /// Converts [node], optionally guided by conversion [opts].
 ///
-/// Handlers registered with [ConverterBase.handle]. The optional [opts]
-/// parameter mirrors Ruby dispatch methods, which declare a second
-/// parameter only when they accept conversion options.
+/// Handlers registered with [ConverterBase.handle]. [opts] is passed only
+/// when [Converter.convert] receives a non-`null` options map.
 typedef ConvertHandler = Object? Function(
   AbstractNode node, [
   Map<String, Object?>? opts,

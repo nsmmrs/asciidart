@@ -1,8 +1,9 @@
 /// Pre-flattened Mustache render context for template-converter nodes.
 ///
 /// Port foundation for the render context of
-/// `lib/asciidoctor/converter/template.rb` (ADR-0002, T2). Tilt templates in
-/// Ruby execute with the node as `self`, so they call arbitrary node methods.
+/// `lib/asciidoctor/converter/template.rb` (ADR-0002, T2). Asciidoctor's
+/// Tilt templates execute with the node as `self`, so they call arbitrary
+/// node methods.
 /// `package:mustache_template` resolves Map keys and dotted paths only — Dart
 /// object members are invisible to it (probe recorded in ADR-0002 T2) — so
 /// [buildTemplateContext] pre-flattens each node to a Map before rendering.
@@ -13,8 +14,8 @@
 /// renders as empty output in the lenient adapter, see `template.dart`):
 ///
 /// - `content`: Converted content: `AbstractBlock.content()` (usually a String;
-///   a List of items for lists, mirroring Ruby, which templates can iterate as
-///   a section), the text of an [Inline], else `null`.
+///   a List of items for lists, which templates can iterate as a section), the
+///   text of an [Inline], else `null`.
 /// - `text`: Inline/list-item text (`Inline.text`, `ListItem.text`), else
 ///   `null`.
 /// - `id`: The node id (`AbstractNode.id`).
@@ -30,7 +31,7 @@
 /// - `attr`: Section lambda for attributes with arguments:
 ///   `{{#attr}}name{{/attr}}`, with an optional `=default` suffix
 ///   (`{{#attr}}lang=en{{/attr}}`). Falls back to the document attributes,
-///   mirroring Ruby's inheriting `attr` default in Tilt templates.
+///   as `attr` does.
 /// - `document`: Shallow document map (`title`, `attributes`); `null` while the
 ///   node is detached. Never nested recursively.
 /// - `items`: List items, each pre-flattened with [buildTemplateContext]
@@ -41,10 +42,9 @@
 ///   `{{#sections}}{{title}}{{/sections}}` lists them and nesting recurses);
 ///   `null` on other nodes. This is what a custom `outline` template iterates.
 ///
-/// `opts` (the per-call options map, mirroring the Tilt locals in Ruby's
-/// `TemplateConverter#convert`) and `helpers` (path-(a) lambdas per ADR-0002
-/// T4) are merged in as top-level keys; on collision the explicit call-site
-/// values win over the node-derived ones.
+/// `opts` (the per-call options map) and `helpers` (path-(a) lambdas per
+/// ADR-0002 T4) are merged in as top-level keys; on collision the explicit
+/// call-site values win over the node-derived ones.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -55,8 +55,8 @@ import 'package:mustache_template/mustache_template.dart' show LambdaContext;
 
 /// Computes one custom helper value for [node] on every render.
 ///
-/// Helpers are path-(a) Dart lambdas (ADR-0002 T4): unlike Ruby's
-/// per-directory `helpers.rb` (arbitrary loadable code), the Dart port
+/// Helpers are path-(a) Dart lambdas (ADR-0002 T4): unlike Asciidoctor's
+/// per-directory `helpers.rb` (arbitrary loadable code), this port
 /// receives helper code through registration, and the context builder injects
 /// each computed value into the render context under its registered name.
 typedef TemplateHelper = Object? Function(AbstractNode node);
@@ -93,8 +93,8 @@ Map<String, Object?> buildTemplateContext(
   return context;
 }
 
-/// The converted content of [node], mirroring Ruby's `content` call in Tilt
-/// templates (a List of items on lists, a String elsewhere).
+/// The converted content of [node] (a List of items on lists, a String
+/// elsewhere).
 Object? _contentOf(AbstractNode node) {
   if (node is AbstractBlock) return node.content();
   if (node is Inline) return node.text;
@@ -111,8 +111,7 @@ String? _textOf(AbstractNode node) {
 /// Section lambda resolving `{{#attr}}name[=default]{{/attr}}`.
 ///
 /// The section body is rendered first (so it may itself contain tags), then
-/// looked up with document fallback, mirroring Ruby's inheriting `attr`
-/// default as used by Tilt templates.
+/// looked up with document fallback, as `attr` does.
 Object Function(LambdaContext) _attrLambda(AbstractNode node) {
   return (LambdaContext ctx) {
     final spec = ctx.renderString().trim();

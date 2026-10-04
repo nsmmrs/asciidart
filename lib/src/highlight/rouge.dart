@@ -50,8 +50,7 @@ class RougeAdapter {
 
   /// The lexing backend, or `null` when no backend is available.
   ///
-  /// Mirrors the Ruby loader: the library counts as available exactly when a
-  /// backend is present.
+  /// The library counts as available exactly when a backend is present.
   final SourceLexer? lexer;
 
   bool _requiresStylesheet = false;
@@ -76,7 +75,7 @@ class RougeAdapter {
   /// The style resolves from [style] (falling back to [defaultStyle] when
   /// absent or unknown) and sticks for later [docinfoHead] calls. [language]
   /// passes through to the backend untouched, including any cgi-style
-  /// options (Ruby `Lexer.find_fancy`); [mixed] feeds the PHP `start_inline`
+  /// options; [mixed] feeds the PHP `start_inline`
   /// computation, which is otherwise the backend's job.
   ///
   /// Line emphasis and numbering mirror `create_formatter`:
@@ -102,7 +101,7 @@ class RougeAdapter {
     if (backend == null) {
       throw UnimplementedError(
         'Rouge highlighting needs a SourceLexer backend; '
-        'real lexers are a later wave.',
+        'no Rouge lexer is built in.',
       );
     }
     _style ??= resolveStyle(style);
@@ -144,9 +143,9 @@ class RougeAdapter {
   ///
   /// Any cgi-style options are stripped from [language] for the `data-lang`
   /// attribute. In inline-CSS mode the theme's base style is resolved (which
-  /// also records the style for later [docinfoHead] calls, mirroring the
-  /// Ruby `@style` assignment) and attached as the `<pre>` `style`
-  /// attribute; without a backend no `style` attribute is emitted.
+  /// also records the style for later [docinfoHead] calls) and attached as the
+  /// `<pre>` `style` attribute; without a backend no `style` attribute is
+  /// emitted.
   String format({
     required String content,
     String? language,
@@ -217,8 +216,7 @@ class RougeAdapter {
   ///
   /// Returns [style] when the backend offers it, else [defaultStyle].
   /// Without a backend every style is unknown, so this always returns
-  /// [defaultStyle]. (The Ruby adapter would crash resolving a style with no
-  /// library loaded; returning the default is the graceful equivalent.)
+  /// [defaultStyle].
   String resolveStyle(String? style) =>
       style != null && styleAvailable(style) ? style : defaultStyle;
 

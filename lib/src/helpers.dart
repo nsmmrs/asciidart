@@ -14,11 +14,11 @@ abstract final class Helpers {
   ///
   /// Dart cannot load libraries at runtime, so this always takes the failure
   /// path. When [onFailure] is `'abort'` (the default) it throws a
-  /// [StateError] carrying the same message Ruby's `LoadError` would; when
+  /// [StateError] carrying Asciidoctor's load-failure message; when
   /// `'warn'` it reports the message and returns `null`; otherwise it
   /// silently returns `null`.
   ///
-  /// [gemName] mirrors Ruby's argument: `true` (the default) uses [name],
+  /// [gemName]: `true` (the default) uses [name],
   /// a [String] names the gem explicitly, and `false` or `null` produces the
   /// generic "cannot load such file" message.
   static bool? requireLibrary(
@@ -68,8 +68,7 @@ abstract final class Helpers {
   ///
   /// Strips a leading byte-order mark and, per line, removes trailing
   /// whitespace when [trimEnd] is set (the default) or a single trailing
-  /// record separator otherwise. Unlike Ruby, the input list is not mutated;
-  /// encoding conversion is unnecessary because Dart strings are Unicode.
+  /// line terminator otherwise. The input list is not mutated.
   static List<String> prepareSourceArray(
     List<String> data, {
     bool trimEnd = true,
@@ -88,7 +87,7 @@ abstract final class Helpers {
   /// Prepares source [data] text for parsing.
   ///
   /// Strips a leading byte-order mark, splits the text into lines on `\n`
-  /// (as Ruby's `each_line` does) and trims each line per [trimEnd] (see
+  /// and trims each line per [trimEnd] (see
   /// [prepareSourceArray]). A `null` or empty input yields an empty list.
   static List<String> prepareSourceString(String? data, {bool trimEnd = true}) {
     if (data.isNullOrEmpty) return [];
@@ -111,14 +110,13 @@ abstract final class Helpers {
 
   /// Whether [str] resembles a URI (i.e. starts with a URI prefix).
   ///
-  /// No validation of the URI is performed. (The JRuby-only `classloader`
-  /// exclusion has no Dart equivalent.)
+  /// No validation of the URI is performed.
   static bool isUriish(String str) =>
       str.contains(':') && uriSniffRx.hasMatch(str);
 
   /// Encodes [str] for safe inclusion as a URI component.
   ///
-  /// Mirrors Ruby's `CGI.escape` with `+` rewritten to `%20`: everything
+  /// Form-style escaping with spaces as `%20`: everything
   /// except letters, digits and `-_.~` is percent-encoded (uppercase hex,
   /// UTF-8 bytes for non-ASCII). Dart's [Uri.encodeComponent] additionally
   /// leaves `!'()*` raw, so those are encoded here.
@@ -148,8 +146,8 @@ abstract final class Helpers {
   /// Returns the last segment of [filename], dropping [dropExt] if given.
   ///
   /// When [dropExt] is `true`, the file extension is dropped; when a
-  /// [String], that suffix is dropped (with Ruby's `File.basename` semantics,
-  /// including the `.*` wildcard); otherwise the basename is kept whole.
+  /// [String], that suffix is dropped (`.*` drops any extension); otherwise the
+  /// basename is kept whole.
   static String basename(String filename, [Object? dropExt]) {
     var end = filename.length;
     while (end > 1 && _isDirSeparator(filename.codeUnitAt(end - 1))) {
@@ -183,7 +181,7 @@ abstract final class Helpers {
   }
 
   /// Whether [unit] is a directory separator (`/` everywhere, plus `\` on
-  /// Windows, mirroring Ruby's `File::ALT_SEPARATOR` handling).
+  /// Windows).
   static bool _isDirSeparator(int unit) =>
       unit == 0x2f || (Platform.isWindows && unit == 0x5c);
 
@@ -256,7 +254,8 @@ abstract final class Helpers {
   ///
   /// Handles both integer and character sequences: an [int] (or a [String]
   /// that round-trips through `int.parse`, such as `'1'`) yields the
-  /// incremented integer; any other string yields its Ruby `succ` successor.
+  /// incremented integer; any other string yields its successor
+  /// (`'a'` to `'b'`, `'az'` to `'ba'`).
   static Object nextVal(Object current) {
     if (current is int) return current + 1;
     if (current is! String) {
@@ -266,8 +265,8 @@ abstract final class Helpers {
     }
     final intval = int.tryParse(current);
     if (intval != null && intval.toString() == current) return intval + 1;
-    // Beyond 64 bits Ruby keeps counting with a bignum; mirror that with
-    // BigInt so arbitrarily long digit strings still take the integer path.
+    // Use BigInt so arbitrarily long digit strings still take the integer
+    // path.
     final bigval = BigInt.tryParse(current);
     if (bigval != null && bigval.toString() == current) {
       return bigval + BigInt.one;
@@ -275,9 +274,9 @@ abstract final class Helpers {
     return _succ(current);
   }
 
-  // Alphanumeric per Ruby's Onigmo `\p{Alnum}` (alphabetic or decimal digit).
+  // Alphanumeric: alphabetic or decimal digit.
   static final RegExp _alnumChar = RegExp(r'[\p{Alpha}\p{Nd}]', unicode: true);
-  // Decimal digit per Ruby's Onigmo `\p{Digit}` (includes ASCII 0-9).
+  // Decimal digit (includes ASCII 0-9).
   static final RegExp _digitChar = RegExp(r'\p{Nd}', unicode: true);
 
   static bool _isAlnum(int rune) =>
@@ -295,7 +294,7 @@ abstract final class Helpers {
     return !_digitChar.hasMatch(String.fromCharCode(rune));
   }
 
-  /// Ruby `String#succ` successor for [current].
+  /// The string successor of [current].
   ///
   /// Increments the trailing alphanumeric run with carry (`'a9'` becomes
   /// `'b0'`). Non-alphanumeric separators inside the run are transparent
@@ -379,9 +378,8 @@ abstract final class Helpers {
     return String.fromCharCodes(runes);
   }
 
-  /// Registry backing [classForName]. Dart has no reflection by name, so
-  /// ported classes register themselves (or are registered by their
-  /// library) under their Ruby qualified name.
+  /// Registry backing [classForName]: classes register themselves (or are
+  /// registered by their library) under their Asciidoctor qualified name.
   static final Map<String, Type> _classRegistry = {
     'String': String,
     'int': int,
@@ -399,7 +397,8 @@ abstract final class Helpers {
 
   /// Resolves the [Type] registered under [qualifiedName].
   ///
-  /// A leading `::` is ignored. Throws an [ArgumentError] carrying Ruby's
+  /// A leading `::` is ignored. Throws an [ArgumentError] carrying
+  /// Asciidoctor's
   /// `Could not resolve class for name: ...` message when nothing is
   /// registered under that name.
   static Type classForName(String qualifiedName) {

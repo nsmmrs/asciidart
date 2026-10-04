@@ -20,8 +20,7 @@ import 'package:asciidoctor/src/stylesheets.dart';
 ///
 /// Server-side adapter: [highlight] delegates lexing to the injected
 /// [SourceLexer] and only computes the callout offset for table-numbered
-/// output. [format] is the plain [wrapSourceBlock] wrapper (the Ruby adapter
-/// defines no `format` override).
+/// output. [format] is the plain [wrapSourceBlock] wrapper.
 class CodeRayAdapter {
   /// Creates a CodeRay adapter, optionally with a [lexer] backend.
   new({this.lexer});
@@ -44,8 +43,7 @@ class CodeRayAdapter {
 
   /// The lexing backend, or `null` when no backend is available.
   ///
-  /// Mirrors the Ruby loader: the library counts as available exactly when a
-  /// backend is present.
+  /// The library counts as available exactly when a backend is present.
   final SourceLexer? lexer;
 
   bool _requiresStylesheet = false;
@@ -63,15 +61,15 @@ class CodeRayAdapter {
   /// Highlights [source] using the [lexer] backend.
   ///
   /// [language] is passed through untouched (a missing language arrives as
-  /// `'text'`, mirroring the Ruby `:text` default); unknown-alias fallback
+  /// `'text'`); unknown-alias fallback
   /// is the backend's job. [numberLines], [startLineNumber], and
   /// [highlightLines] are forwarded to the backend, which renders them
-  /// (Ruby `CodeRay::Duo` options `line_numbers`, `line_number_start`, and
-  /// `highlight_lines`).
+  /// (CodeRay's `line_numbers`, `line_number_start` and `highlight_lines`
+  /// options).
   ///
   /// When [numberLines] is [LineNumbersMode.table] and [hasCallouts] is set,
   /// the result carries the offset just past the code cell's opening tag so
-  /// extracted callout marks can be restored (`nil` when the tag is absent).
+  /// extracted callout marks can be restored (`null` when the tag is absent).
   ///
   /// Throws [UnimplementedError] when no [lexer] backend was provided.
   HighlightResult highlight({
@@ -87,7 +85,7 @@ class CodeRayAdapter {
     if (backend == null) {
       throw UnimplementedError(
         'CodeRay highlighting needs a SourceLexer backend; '
-        'real lexers are a later wave.',
+        'construct the adapter with one.',
       );
     }
     if (cssMode == CssMode.classes) _requiresStylesheet = true;
@@ -116,8 +114,7 @@ class CodeRayAdapter {
 
   /// Wraps converted [content] in the plain `<pre>`/`<code>` envelope.
   ///
-  /// The Ruby adapter defines no `format` override, so this is exactly
-  /// [wrapSourceBlock] with the `CodeRay` pre class.
+  /// Exactly [wrapSourceBlock] with the `CodeRay` pre class.
   String format({
     required String content,
     String? language,
@@ -166,6 +163,6 @@ class CodeRayAdapter {
   /// The CodeRay stylesheet data (`read_stylesheet`).
   ///
   /// Served from the embedded data files with trailing whitespace stripped,
-  /// exactly like the Ruby `File.read(...).rstrip`.
+  /// as Asciidoctor does.
   String get stylesheetData => Stylesheets.instance.coderayStylesheetData;
 }

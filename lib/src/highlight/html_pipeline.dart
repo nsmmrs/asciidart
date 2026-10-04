@@ -33,6 +33,6 @@ class HtmlPipelineAdapter {
 
   /// Whether this adapter injects markup at [location].
   ///
-  /// Always false: the Ruby adapter defines no docinfo methods.
+  /// Always false: this adapter adds no docinfo.
   bool hasDocinfo(DocinfoLocation location) => false;
 }

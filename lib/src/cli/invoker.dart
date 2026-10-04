@@ -2,46 +2,34 @@
 ///
 /// Port of `lib/asciidoctor/cli/invoker.rb` (`Asciidoctor::Cli::Invoker`).
 ///
-/// ## Deliberate divergences from `invoker.rb`
+/// ## Differences from Asciidoctor 2.0.26
 ///
-/// - Construction is split into named constructors ([Invoker.fromOptions],
-///   [Invoker.fromMap], [Invoker.fromArgs]) because Dart has no splat
-///   arguments; Ruby's `*options` flattening has no analog.
-/// - Ruby's `invoke!` block (which supplies stdin, used by tests) becomes the
-///   [Invoker.invoke] `stdinSource` callback. Without it, stdin is read fully
-///   as UTF-8 (`stdin.readAsStringSync(encoding: utf8)`), matching Ruby's
-///   forced UTF-8 stdio encoding.
+/// - Construction uses named constructors ([Invoker.fromOptions],
+///   [Invoker.fromMap], [Invoker.fromArgs]).
+/// - Tests supply stdin through the [Invoker.invoke] `stdinSource` callback.
+///   Without it, stdin is read fully as UTF-8.
 /// - `Invoker.fromMap` ignores the `failure_level`, `trace` and `timings`
-///   seeds, exactly as Ruby's `Options#initialize` does, and drops unknown
-///   keys (Ruby only reads known keys out of the hash).
+///   seeds and drops unknown keys.
 /// - A missing `input_files` entry (only possible via [Invoker.fromMap] or a
 ///   hand-built [CliOptions], never via parsing) converts zero files and
-///   succeeds; Ruby crashes with a `NoMethodError` on `nil.size` there.
+///   succeeds, where Asciidoctor crashes.
 /// - `-r/--require` libraries are already resolved (and rejected) during
 ///   [CliOptions.parse], as documented in `cli/options.dart`; there is
 ///   nothing left for the invoker to require.
-/// - Dart has no `$VERBOSE`, so `-w` is only forwarded to the processor in
-///   the `warnings` option; there is no script-warning flag to set and
-///   restore, and no `refute`-style `$VERBOSE` round-trip to preserve.
-/// - `SOURCE_DATE_EPOCH` handling is a no-op: Ruby only deletes the variable
-///   to neutralize RubyGems' Ruby 2.7 behavior, and Dart has no RubyGems. The
-///   process environment is read-only in Dart anyway.
-/// - Signal delivery differs: Ruby raises `SignalException` inside `invoke!`
-///   (exit code = signal number, plus a newline for `Interrupt`). Dart
-///   delivers no signals as exceptions, so that branch has no port; an
-///   interactive SIGINT terminates the VM with its default exit code.
-/// - Ruby reports `e.status` as the exit code when the raised error responds
-///   to it (e.g. `SystemExit`); Dart errors carry no status, so processor
-///   failures always yield exit code 1.
-/// - The failure message is the error's `toString()` (Dart exceptions expose
-///   no uniform `message` getter); Ruby's `RuntimeError`-only
-///   `"#{message} (#{class})"` suffix has no Dart analog.
-/// - `File.expand_path` lexical normalization of `.`/`..` segments is
-///   approximated with `Uri.normalizePath`; symlinks are not resolved, as in
-///   Ruby. Backslash folding applies on Windows only, as in Ruby.
+/// - `-w` is only forwarded to the processor in the `warnings` option; there
+///   are no interpreter warnings to switch on.
+/// - `SOURCE_DATE_EPOCH` is left untouched (Asciidoctor clears it only to
+///   work around a RubyGems issue).
+/// - Signals are not delivered as exceptions, so an interactive SIGINT
+///   terminates the VM with its default exit code instead of exiting with
+///   the signal number.
+/// - Processor failures always yield exit code 1.
+/// - The failure message is the error's `toString()`.
+/// - `.`/`..` segments are normalized lexically with `Uri.normalizePath`;
+///   symlinks are not resolved. Backslash folding applies on Windows only.
 /// - The `to_dir`/`to_file`/`mkdirs`/`timings`/`failure_level` option keys
-///   passed to the processor are snake_case strings, mirroring the Ruby
-///   symbol keys; the `port/load` merge owns that contract.
+///   passed to the processor are snake_case strings, like every other
+///   option key.
 library;
 
 import 'dart:convert' show utf8;
@@ -67,24 +55,23 @@ final class Invoker with Logging {
   /// Creates an invoker for already-parsed [options].
   new fromOptions(CliOptions options) : _options = options;
 
-  /// Creates an invoker from an options [map] (the Ruby `Hash` form).
+  /// Creates an invoker from an options [map].
   ///
   /// Known snake_case keys (camelCase aliases accepted) seed a [CliOptions]
-  /// exactly as Ruby's `Options#initialize` reads them: `attributes`,
+  /// `attributes`,
   /// `input_files`, `output_file`, `safe` (an [int] level or a level name),
   /// `standalone`, `template_dirs`, `template_engine`, `doctype`, `backend`,
   /// `eruby`, `verbose`, `warnings`, `load_paths`, `requires`, `base_dir`,
   /// `source_dir`, `destination_dir`. The
-  /// `failure_level`, `trace` and `timings` seeds are ignored (as in Ruby)
-  /// and unknown keys are dropped.
+  /// `failure_level`, `trace` and `timings` seeds are ignored and unknown
+  /// keys are dropped.
   new fromMap(Map<String, Object?> map) : _options = _optionsFromMap(map);
 
   /// Creates an invoker by parsing [args] via [CliOptions].
   ///
   /// On success [options] holds the parsed options and [code] is 0. When
   /// parsing ends early (help, version, or an error) [options] is `null`
-  /// and [code] holds the exit code, mirroring Ruby's
-  /// `Integer === Options.parse!(options)` branch.
+  /// and [code] holds the exit code.
   ///
   /// [out] and [err] receive parse-time output (defaulting to the process
   /// streams); [environment] supplies environment variables (defaulting to
@@ -137,7 +124,7 @@ final class Invoker with Logging {
   /// Port of `Invoker#invoke!`: a `null` [options] is a no-op (the exit
   /// [code] was already set by parsing). When the single input is `-`,
   /// stdin supplies the source: [stdinSource] is called when given
-  /// (mirroring the Ruby block form, used by tests), otherwise stdin is
+  /// (as tests do), otherwise stdin is
   /// read fully as UTF-8. Processor failures set [code] to 1 (or rethrow
   /// when `--trace` was given) and report to the error stream; a logger
   /// severity at or above the failure level also yields exit code 1.
@@ -169,7 +156,7 @@ final class Invoker with Logging {
       savedLevel = LoggerManager.logger.level;
       LoggerManager.logger.level = Severity.debug;
     }
-    // Every other option passes through unless null (Ruby's `else` branch).
+    // Every other option passes through unless null.
     opts['safe'] = options.safe;
     opts['standalone'] = options.standalone;
     opts['warnings'] = options.warnings;
@@ -267,7 +254,7 @@ final class Invoker with Logging {
 
   /// Converts the input files, fanning out to worker isolates when `-j` asks.
   ///
-  /// Dart-only extension (no Ruby analog): when [CliOptions.jobs] exceeds 1
+  /// Specific to this port: when [CliOptions.jobs] exceeds 1
   /// and several input files are given, each file converts on a pooled
   /// worker isolate and the per-file results are replayed in input order,
   /// so converted output, diagnostics and the exit [code] match the
@@ -330,7 +317,7 @@ final class Invoker with Logging {
       savedLevel = LoggerManager.logger.level;
       LoggerManager.logger.level = Severity.debug;
     }
-    // Every other option passes through unless null (Ruby's `else` branch).
+    // Every other option passes through unless null.
     opts['safe'] = options.safe;
     opts['standalone'] = options.standalone;
     opts['warnings'] = options.warnings;
@@ -485,7 +472,7 @@ final class Invoker with Logging {
     _err = null;
   }
 
-  /// Builds a [CliOptions] from a Ruby-style options [map].
+  /// Builds a [CliOptions] from an options [map].
   static CliOptions _optionsFromMap(Map<String, Object?> map) {
     Object? get(String snake, [String? camel]) {
       if (map.containsKey(snake)) return map[snake];
@@ -552,7 +539,7 @@ void _putIfPresent(Map<String, Object?> opts, String key, Object? value) {
   if (value != null) opts[key] = value;
 }
 
-/// Whether [path] is a named pipe (cf. Ruby `File.pipe?`).
+/// Whether [path] is a named pipe.
 bool _isPipe(String path) {
   try {
     return FileSystemEntity.typeSync(path) == FileSystemEntityType.pipe;
@@ -562,7 +549,7 @@ bool _isPipe(String path) {
 }
 
 /// The absolute, lexically normalized form of [path] with forward slashes
-/// on Windows (cf. Ruby `File.expand_path` plus the `RS`/`FS` tilt).
+/// on Windows.
 String _expandPath(String path) {
   var expanded = File(path).absolute.uri.normalizePath().toFilePath();
   if (Platform.isWindows) expanded = expanded.replaceAll(r'\', '/');
@@ -572,8 +559,7 @@ String _expandPath(String path) {
   return expanded;
 }
 
-/// Reads stdin fully and decodes it as UTF-8 (cf. Ruby's forced UTF-8
-/// stdio encoding).
+/// Reads stdin fully and decodes it as UTF-8.
 String _readStdin() {
   final bytes = <int>[];
   while (true) {

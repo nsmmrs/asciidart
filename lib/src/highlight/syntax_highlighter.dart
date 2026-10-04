@@ -11,9 +11,9 @@
 ///
 /// * [SyntaxHighlighterBase] is the base-class contract custom highlighters
 ///   extend (port of the module defaults plus `Base#format`).
-/// * The `*Highlighter` wrapper classes adapt each merged adapter to that
+/// * The `*Highlighter` wrapper classes adapt each adapter to that
 ///   contract, translating node/document reads into the adapters' explicit
-///   parameters. The merged adapter files are never modified.
+///   parameters.
 /// * [SyntaxHighlighter] is the global registry and factory (port of the
 ///   `DefaultFactory` statics), [SyntaxHighlighterFactory] an isolated
 ///   registry (port of `CustomFactory`) and
@@ -21,13 +21,11 @@
 ///   fallback.
 /// * [SyntaxHighlighter.resolveForDocument] ports the
 ///   `Document#save_attributes` hook: it resolves the `source-highlighter`
-///   attribute to an instance. The Document wave calls it from the hook and
-///   assigns the result to `Document.syntaxHighlighter`; until then callers
-///   assign the result themselves.
+///   attribute to an instance, which `Document` assigns to
+///   `Document.syntaxHighlighter`.
 ///
-/// Framework instances implement [NodeSyntaxHighlighter], the exact interface
-/// the merged HTML5 converter casts `Document.syntaxHighlighter` to, so
-/// resolved highlighters work with the converter unchanged.
+/// Framework instances implement [NodeSyntaxHighlighter], the interface the
+/// HTML5 converter consumes.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -60,13 +58,13 @@ typedef SyntaxHighlighterFactoryFn = SyntaxHighlighterBase Function(
 /// Port of the `SyntaxHighlighter` module defaults plus `Base`. Custom
 /// highlighters extend this class and override what they support; anything
 /// left at its default either reports absence (`false`) or throws
-/// [UnimplementedError] (the Dart shape of Ruby's `NotImplementedError`).
+/// [UnimplementedError].
 abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
   /// The highlighter name (e.g. `'rouge'`).
   ///
   /// Selects the `{name}-css`, `{name}-style` and `{name}-linenums-mode`
   /// document attributes. Must be non-empty: [SyntaxHighlighter.create]
-  /// rejects nameless instances, mirroring the Ruby `NameError`.
+  /// rejects nameless instances.
   @override
   String get name;
 
@@ -77,8 +75,8 @@ abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
 
   /// Whether highlighting runs during conversion (port of `highlight?`).
   ///
-  /// Defaults to `false`. When `true`, the substitutor wave calls
-  /// [highlight] to handle the `:specialcharacters` substitution.
+  /// Defaults to `false`. When `true`, the substitutions call [highlight] to
+  /// handle the `specialcharacters` substitution.
   @override
   bool get canHighlight => false;
 
@@ -175,10 +173,8 @@ abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
 
 /// Global highlighter registry and factory (port of `DefaultFactory`).
 ///
-/// Ruby lazy-requires four of the six adapters on first lookup; Dart imports
-/// are static, so all six built-ins register eagerly on first access instead.
-/// Lookups for unknown names return `null` (Ruby memoizes the miss; the
-/// observable behavior is identical).
+/// All six built-in adapters register on first access. Lookups for unknown
+/// names return `null`.
 abstract final class SyntaxHighlighter {
   static final Map<String, Object> _registry = <String, Object>{};
   static bool _builtinsRegistered = false;
@@ -188,7 +184,7 @@ abstract final class SyntaxHighlighter {
   ///
   /// [highlighter] is either a [SyntaxHighlighterBase] instance (returned
   /// as-is by [create]) or a [SyntaxHighlighterFactoryFn] (called by
-  /// [create]); this mirrors Ruby, which accepts a class or an object.
+  /// [create]).
   static void register(Object highlighter, Iterable<String> names) {
     _ensureBuiltins();
     for (final name in names) {
@@ -224,13 +220,9 @@ abstract final class SyntaxHighlighter {
   ///
   /// Returns `null` unless the base backend is HTML, the `source-highlighter`
   /// attribute is set, and the `{name}-unavailable` attribute is unset —
-  /// exactly the Ruby conditions. [factory] and [highlighters] override the
+  /// as in Asciidoctor. [factory] and [highlighters] override the
   /// `'syntax_highlighter_factory'` and `'syntax_highlighters'` document
-  /// options (Ruby `@options` `:syntax_highlighter_factory` and
-  /// `:syntax_highlighters`).
-  ///
-  /// NOTE there is no Ruby `Document#syntax_highlighter_for` method; the
-  /// hook above plus [create] is the actual integration surface.
+  /// options.
   static SyntaxHighlighterBase? resolveForDocument(
     Document doc, {
     SyntaxHighlighterFactory? factory,
@@ -341,13 +333,12 @@ class SyntaxHighlighterFactory {
   }
 }
 
-/// Seeded registry with global fallback (port of Ruby's
-/// `SyntaxHighlighter::DefaultFactoryProxy`; prefixed because Dart has no
-/// namespacing and `Converter` already owns `DefaultFactoryProxy`).
+/// Seeded registry with global fallback (port of
+/// `SyntaxHighlighter::DefaultFactoryProxy`; prefixed because `converter.dart`
+/// already defines a `DefaultFactoryProxy`).
 ///
 /// Looks up the seed registry first, then the global [SyntaxHighlighter]
-/// registry — the Dart shape of Ruby's `@options[:syntax_highlighters]`
-/// hash.
+/// registry (the `syntax_highlighters` document option).
 class SyntaxHighlighterDefaultFactoryProxy extends SyntaxHighlighterFactory {
   /// Creates a proxy seeded with [seedRegistry].
   new([super.seedRegistry]);
@@ -359,12 +350,12 @@ class SyntaxHighlighterDefaultFactoryProxy extends SyntaxHighlighterFactory {
 /// Framework binding for the CodeRay adapter.
 ///
 /// Server-side highlighter. `format` is inherited from
-/// [SyntaxHighlighterBase] (the Ruby adapter defines no `format` override).
+/// [SyntaxHighlighterBase].
 class CodeRayHighlighter extends SyntaxHighlighterBase {
   /// Creates a CodeRay highlighter, optionally with a [lexer] backend.
   ///
-  /// Without a backend [canHighlight] is `false`, mirroring the Ruby
-  /// adapter when the `coderay` library is unavailable.
+  /// Without a backend [canHighlight] is `false`, as when Asciidoctor
+  /// cannot load the `coderay` library.
   new({SourceLexer? lexer}) : adapter = CodeRayAdapter(lexer: lexer);
 
   /// The bound string-transformer adapter.
@@ -481,7 +472,7 @@ class HighlightJsHighlighter extends SyntaxHighlighterBase {
 ///
 /// Emits `<pre lang>` hooks only; highlighting happens downstream in the
 /// html-pipeline filter chain. `hasDocinfo` stays `false` and `docinfo` is
-/// left unimplemented (calling it throws, as in Ruby).
+/// left unimplemented (calling it throws).
 class HtmlPipelineHighlighter extends SyntaxHighlighterBase {
   /// The bound string-transformer adapter.
   final HtmlPipelineAdapter adapter = const HtmlPipelineAdapter();
@@ -558,8 +549,8 @@ class PrettifyHighlighter extends SyntaxHighlighterBase {
 class PygmentsHighlighter extends SyntaxHighlighterBase {
   /// Creates a Pygments highlighter, optionally with a [lexer] backend.
   ///
-  /// Without a backend [canHighlight] is `false`, mirroring the Ruby
-  /// adapter when the `pygments` library is unavailable.
+  /// Without a backend [canHighlight] is `false`, as when Asciidoctor
+  /// cannot load the `pygments` library.
   new({SourceLexer? lexer}) : adapter = PygmentsAdapter(lexer: lexer);
 
   /// The bound string-transformer adapter.
@@ -639,8 +630,8 @@ class PygmentsHighlighter extends SyntaxHighlighterBase {
 class RougeHighlighter extends SyntaxHighlighterBase {
   /// Creates a Rouge highlighter, optionally with a [lexer] backend.
   ///
-  /// Without a backend [canHighlight] is `false`, mirroring the Ruby
-  /// adapter when the `rouge` library is unavailable.
+  /// Without a backend [canHighlight] is `false`, as when Asciidoctor
+  /// cannot load the `rouge` library.
   new({SourceLexer? lexer}) : adapter = RougeAdapter(lexer: lexer);
 
   /// The bound string-transformer adapter.
@@ -717,7 +708,7 @@ class RougeHighlighter extends SyntaxHighlighterBase {
 /// Instantiates a registry [value] (port of the `Factory#create` tail).
 ///
 /// Factory functions are called; instances are returned as-is. Instances
-/// without a name are rejected, mirroring the Ruby `NameError`.
+/// without a name are rejected.
 SyntaxHighlighterBase _instantiate(
   Object value,
   String name,
@@ -737,6 +728,6 @@ SyntaxHighlighterBase _instantiate(
 SourceLexer? _lexerFromOpts(Map<String, Object?> opts) =>
     opts['lexer'] as SourceLexer?;
 
-/// Renders [value] the way Ruby string interpolation does: `null` becomes
-/// the empty string instead of `'null'`.
+/// Renders [value] for interpolation into output: `null` becomes the empty
+/// string instead of `'null'`.
 String _s(Object? value) => value?.toString() ?? '';
