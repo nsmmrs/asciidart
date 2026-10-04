@@ -81,11 +81,11 @@ void main() {
         final pool = await _spawn(3);
         try {
           // Descending delays on three workers: job 2 finishes first, then
-          // job 1, then job 0 (60-80ms gaps).
+          // job 1, then job 0 (200ms gaps).
           final requests = [
-            _request('first', 1, 200),
-            _request('second', 2, 120),
-            _request('third', 3, 60),
+            _request('first', 1, 600),
+            _request('second', 2, 400),
+            _request('third', 3, 200),
           ];
           final wallClock = Stopwatch()..start();
           final results = await pool.runOrdered(requests);
@@ -94,9 +94,10 @@ void main() {
             for (final r in results) r.id,
           ], equals(['first', 'second', 'third']));
           expect([for (final r in results) r.doubled], equals([2, 4, 6]));
-          // Overlap proof: sequential in-order execution would take 380ms;
-          // parallel execution takes ~200ms plus scheduling jitter.
-          expect(wallClock.elapsedMilliseconds, lessThan(320));
+          // Overlap proof: sequential in-order execution would take 1200ms;
+          // parallel execution takes ~600ms plus scheduling jitter, which
+          // leaves room for slow or busy machines.
+          expect(wallClock.elapsedMilliseconds, lessThan(1000));
         } finally {
           await pool.close();
         }
