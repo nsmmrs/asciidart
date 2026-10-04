@@ -144,7 +144,7 @@ class DocumentTitle {
     _sanitized = sanitize;
     var text = val;
     if (sanitize && text.contains('<')) {
-      text = squeezeChar(text.replaceAll(xmlSanitizeRx, ''), ' ').trim();
+      text = collapseRuns(text.replaceAll(xmlSanitizeRx, ''), ' ').trim();
     }
     var sep = separator ?? ':';
     if (sep.isEmpty || !text.contains(sep = '$sep ')) {
@@ -670,7 +670,7 @@ class Document extends AbstractBlock implements NodeDocument {
     }
     final maxSize = attrOverrides['max-attribute-value-size'];
     _maxAttributeValueSize = isTruthy(maxSize)
-        ? _rubyToInt(maxSize).abs()
+        ? _toIntSaturating(maxSize).abs()
         : null;
 
     final unlockedKeys = <String>[];
@@ -1150,7 +1150,7 @@ class Document extends AbstractBlock implements NodeDocument {
     if (sanitize) {
       final title = val! as String;
       if (title.contains('<')) {
-        return squeezeChar(title.replaceAll(xmlSanitizeRx, ''), ' ').trim();
+        return collapseRuns(title.replaceAll(xmlSanitizeRx, ''), ' ').trim();
       }
     }
     return val;
@@ -1586,11 +1586,8 @@ class Document extends AbstractBlock implements NodeDocument {
   @override
   String toString() {
     final doctitleVal = header?.title;
-    return '#Document@${identityHashCode(this)} '
-        '{doctype: ${inspectString(doctype)}, '
-        'doctitle: '
-        '${doctitleVal == null ? 'nil' : inspectString(doctitleVal)}, '
-        'blocks: ${blocks.length}}';
+    return 'Document(doctype: ${debugQuote(doctype)}, '
+        'doctitle: ${debugQuote(doctitleVal)}, blocks: ${blocks.length})';
   }
 
   /// Applies substitutions to the attribute [value].
@@ -2243,13 +2240,14 @@ class Document extends AbstractBlock implements NodeDocument {
 
   static final RegExp _leadingIntRx = RegExp(r'^\s*[+-]?\d+');
 
-  /// Converts [value] to an integer (Ruby `Object#to_i`).
+  /// Converts [value] to an integer: an [int] as is, a string by its leading
+  /// integer (else 0).
   ///
   /// Only integers and strings occur in practice; anything else throws a
-  /// [StateError] (mirroring Ruby's `NoMethodError`). Values exceeding the
+  /// [StateError]. Values exceeding the
   /// 64-bit range saturate at [_maxInt63] (used for sizes, where a huge
   /// value behaves like no effective limit).
-  static int _rubyToInt(Object? value) {
+  static int _toIntSaturating(Object? value) {
     if (value is int) return value;
     if (value is BigInt) {
       return value.bitLength < 63 ? value.toInt() : _maxInt63;

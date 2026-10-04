@@ -735,11 +735,11 @@ class Html5Converter extends ConverterBase {
     }
     final sectnumlevels = opts != null && opts['sectnumlevels'] is int
         ? opts['sectnumlevels']! as int
-        : rubyToInteger(node.document!.attributes['sectnumlevels'] ?? 3);
+        : parseLeadingInt(node.document!.attributes['sectnumlevels'] ?? 3);
     final optsToclevels = opts?['toclevels'];
     final toclevels = optsToclevels is int
         ? optsToclevels
-        : rubyToInteger(node.document!.attributes['toclevels'] ?? 2);
+        : parseLeadingInt(node.document!.attributes['toclevels'] ?? 2);
     final sections = node.sections;
     // FIXME top level is incorrect if a multipart book starts with a special
     // section defined at level 0
@@ -810,7 +810,7 @@ class Html5Converter extends ConverterBase {
       if (node.caption != null) {
         resolvedTitle = node.captionedTitle();
       } else if (isTruthy(node.numbered) &&
-          level <= rubyToInteger(docAttrs['sectnumlevels'] ?? 3)) {
+          level <= parseLeadingInt(docAttrs['sectnumlevels'] ?? 3)) {
         if (level < 2 && (node.document! as Document).doctype == 'book') {
           switch (node.sectname) {
             case 'chapter':
@@ -1676,7 +1676,7 @@ class Html5Converter extends ConverterBase {
     }
     final title = node.hasTitle ? _s(node.title) : _s(doc.attr('toc-title'));
     final levels = node.hasAttr('levels')
-        ? rubyToInteger(node.attr('levels'))
+        ? parseLeadingInt(node.attr('levels'))
         : null;
     final role = node.hasRole()
         ? _s(node.role)

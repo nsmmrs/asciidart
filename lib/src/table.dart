@@ -72,11 +72,7 @@ class TableRows {
       case 'foot':
         return foot;
       default:
-        throw ArgumentError.value(
-          section,
-          'section',
-          'no such row section (mirrors Ruby send)',
-        );
+        throw ArgumentError.value(section, 'section', 'no such row section');
     }
   }
 
@@ -116,7 +112,7 @@ class Table extends AbstractBlock {
     final pcwidth = attributes['width'];
     late final int pcwidthIntval;
     if (isTruthy(pcwidth)) {
-      var intval = rubyToInteger(pcwidth);
+      var intval = parseLeadingInt(pcwidth);
       if (intval > 100 || intval < 1) {
         if (!(intval == 0 && (pcwidth == '0' || pcwidth == '0%'))) {
           intval = 100;
@@ -130,8 +126,9 @@ class Table extends AbstractBlock {
 
     final pagewidth = document!.attributes['pagewidth'];
     if (isTruthy(pagewidth)) {
-      final abswidthVal = ((pcwidthIntval / 100.0) * rubyToDouble(pagewidth))
-          .truncateAtPrecision(defaultPrecision);
+      final abswidthVal =
+          ((pcwidthIntval / 100.0) * parseLeadingDouble(pagewidth))
+              .truncateAtPrecision(defaultPrecision);
       this.attributes['tableabswidth'] = abswidthVal.toInt() == abswidthVal
           ? abswidthVal.toInt()
           : abswidthVal;
@@ -469,7 +466,7 @@ class Cell extends AbstractBlock {
       if (cellStyle == 'asciidoc') {
         asciidoc = true;
         innerDocumentCursor = opts?['cursor'];
-        var text = cellContent!.rstrip();
+        var text = cellContent!.trimRightAscii();
         if (text.startsWith(lf)) {
           var linesAdvanced = 1;
           while ((text = text.substring(1)).startsWith(lf)) {
@@ -478,12 +475,12 @@ class Cell extends AbstractBlock {
           // NOTE this only works if we remain in the same file.
           (opts!['cursor']! as Cursor).advance(linesAdvanced);
         } else {
-          text = lstrip(text);
+          text = trimLeftAscii(text);
         }
         cellContent = text;
       } else if (cellStyle == 'literal') {
         literal = true;
-        var text = cellContent!.rstrip();
+        var text = cellContent!.trimRightAscii();
         // QUESTION should we use same logic as :asciidoc cell? strip
         // leading space if text doesn't start with newline?
         while (text.startsWith(lf)) {
@@ -670,7 +667,7 @@ class Cell extends AbstractBlock {
     if (cellStyle == 'asciidoc') {
       return innerDocument!.convert();
     } else if (_text!.contains(doubleLf)) {
-      return rubySplit(text!, _blankLineRx)
+      return splitDropTrailingEmpty(text!, _blankLineRx)
           .map(
             (para) => isTruthy(cellStyle) && cellStyle != 'header'
                 ? (Inline(
@@ -697,17 +694,17 @@ class Cell extends AbstractBlock {
   }
 
   /// The lines of this cell's text.
-  List<String> lines() => rubySplit(_text!, lf);
+  List<String> lines() => splitDropTrailingEmpty(_text!, lf);
 
   /// The source text of this cell.
   String? source() => _text;
 
   @override
   String toString() =>
-      '${super.toString()} - [text: ${_text ?? ''}, '
+      'Cell(text: ${debugQuote(_text)}, '
       'colspan: ${isTruthy(colspan) ? colspan : 1}, '
       'rowspan: ${isTruthy(rowspan) ? rowspan : 1}, '
-      'attributes: $attributes]';
+      'attributes: $attributes)';
 }
 
 /// Methods for managing the parsing of an AsciiDoc table.
@@ -872,7 +869,7 @@ class TableParserContext {
 
   /// Skips past the matched delimiter because it is escaped.
   void skipPastEscapedDelimiter(String pre) {
-    buffer = '$buffer${chopLast(pre)}$_delimiter';
+    buffer = '$buffer${dropLastChar(pre)}$_delimiter';
   }
 
   /// Whether the buffer has unclosed quotes (used for CSV data).
@@ -946,7 +943,7 @@ class TableParserContext {
       if (taken != null) {
         cellspec = taken;
         final repeatcol = taken.remove('repeatcol');
-        repeat = isTruthy(repeatcol) ? rubyToInteger(repeatcol) : 1;
+        repeat = isTruthy(repeatcol) ? parseLeadingInt(repeatcol) : 1;
       } else {
         logger.error(
           messageWithContext(
@@ -968,7 +965,7 @@ class TableParserContext {
           // Unquote.
           if (text.length > 1) {
             // Trim whitespace and collapse escaped quotes.
-            text = squeezeChar(text.substring(1, text.length - 1).trim(), '"');
+            text = collapseRuns(text.substring(1, text.length - 1).trim(), '"');
           } else {
             logger.error(
               messageWithContext(
@@ -980,7 +977,7 @@ class TableParserContext {
           }
         } else {
           // Collapse escaped quotes.
-          text = squeezeChar(text, '"');
+          text = collapseRuns(text, '"');
         }
       }
       cellText = text;
@@ -995,7 +992,7 @@ class TableParserContext {
         t.columns.add(column);
         final cs = cellspec;
         if (cs != null && cs.containsKey('colspan')) {
-          final extraCols = rubyToInteger(cs['colspan']) - 1;
+          final extraCols = parseLeadingInt(cs['colspan']) - 1;
           if (extraCols > 0) {
             final offset = t.columns.length;
             for (var j = 0; j < extraCols; j++) {
@@ -1013,11 +1010,13 @@ class TableParserContext {
       _reader.mark();
       if (isTruthy(cell.rowspan) && cell.rowspan != 1) {
         _activateRowspan(
-          rubyToInteger(cell.rowspan),
-          isTruthy(cell.colspan) ? rubyToInteger(cell.colspan) : 1,
+          parseLeadingInt(cell.rowspan),
+          isTruthy(cell.colspan) ? parseLeadingInt(cell.colspan) : 1,
         );
       }
-      _columnVisits += isTruthy(cell.colspan) ? rubyToInteger(cell.colspan) : 1;
+      _columnVisits += isTruthy(cell.colspan)
+          ? parseLeadingInt(cell.colspan)
+          : 1;
       _currentRow.add(cell);
       final rowStatus = _endOfRow();
       if (rowStatus > -1 &&

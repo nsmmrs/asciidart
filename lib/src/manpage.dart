@@ -602,7 +602,7 @@ class ManpageConverter extends ConverterBase {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
     }
 
-    final start = rubyToInteger(node.attr('start', 1));
+    final start = parseLeadingInt(node.attr('start', 1));
     var idx = 0;
     for (final item in node.items) {
       final listItem = item! as ListItem;
@@ -1073,7 +1073,7 @@ class ManpageConverter extends ConverterBase {
           (match) => '${match.group(1)}\n${match.group(2)}',
         );
         result.add(
-          chompSuffix(
+          removeSuffix(
             _manify('$restored ', whitespace: _WhitespaceMode.normalize),
             ' ',
           ),
@@ -1145,11 +1145,11 @@ class ManpageConverter extends ConverterBase {
     // character, isolate macro line
     if (result.contains(_escFs)) {
       result = result.replaceAllMapped(_escapedMacroRx, (match) {
-        final rest = lstrip(match.group(3)!);
+        final rest = trimLeftAscii(match.group(3)!);
         if (rest.isEmpty) {
           return '.${match.group(1)}"${match.group(2)}"';
         }
-        return '.${match.group(1)}"${match.group(2)!.rstrip()}"\n$rest';
+        return '.${match.group(1)}"${match.group(2)!.trimRightAscii()}"\n$rest';
       });
     }
     result = result.replaceAll('-', r'\-');
@@ -1172,7 +1172,7 @@ class ManpageConverter extends ConverterBase {
     // the leading-period replacement)
     result = result.replaceAll(_escFs, '.');
     // strip trailing space
-    result = result.rstrip();
+    result = result.trimRightAscii();
     return appendNewline ? '$result\n' : result;
   }
 

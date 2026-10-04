@@ -760,7 +760,10 @@ void main() {
         final reader = Reader(lines, normalize: true);
         final result = reader.readLinesUntil();
         expect(result, hasLength(3));
-        expect(result, equals(lines.map((line) => line.chomp()).toList()));
+        expect(
+          result,
+          equals(lines.map((line) => line.withoutTrailingNewline()).toList()),
+        );
         expect(reader.hasMoreLines(), isFalse);
         expect(reader.isEof, isTrue);
       });
@@ -775,8 +778,8 @@ void main() {
         final reader = Reader(lines, normalize: true);
         final result = reader.readLinesUntil(breakOnBlankLines: true);
         expect(result, hasLength(1));
-        expect(result.first, equals(lines.first.chomp()));
-        expect(reader.peekLine(), equals(lines.last.chomp()));
+        expect(result.first, equals(lines.first.withoutTrailingNewline()));
+        expect(reader.peekLine(), equals(lines.last.withoutTrailingNewline()));
       });
 
       test('Read lines until until blank line preserving last line', () {
@@ -792,7 +795,7 @@ void main() {
           preserveLastLine: true,
         );
         expect(result, hasLength(1));
-        expect(result.first, equals(lines.first.chomp()));
+        expect(result.first, equals(lines.first.withoutTrailingNewline()));
         expect(reader.isNextLineEmpty(), isTrue);
       });
 
@@ -893,7 +896,10 @@ void main() {
           'captured yet again\n',
         ];
 
-        final expected = lines.sublist(1).map((line) => line.chomp()).toList();
+        final expected = lines
+            .sublist(1)
+            .map((line) => line.withoutTrailingNewline())
+            .toList();
 
         usingMemoryLogger((logger) {
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
@@ -1060,7 +1066,7 @@ void main() {
         final reader = (preprocessorReader(['a', 'b', 'c']))
           ..pushInclude(['one', 'two', 'three'], '', '<stdin>');
         expect(reader.includeStack, hasLength(1));
-        expect(reader.readLine()!.rstrip(), equals('one'));
+        expect(reader.readLine()!.trimRightAscii(), equals('one'));
       });
 
       test('PreprocessorReader#push_include method should gracefully '
@@ -1068,7 +1074,7 @@ void main() {
         final reader = (preprocessorReader(['a', 'b', 'c']))
           ..pushInclude(['one', 'two', 'three']);
         expect(reader.includeStack, hasLength(1));
-        expect(reader.readLine()!.rstrip(), equals('one'));
+        expect(reader.readLine()!.trimRightAscii(), equals('one'));
         expect(reader.file, isNull);
         expect(reader.path, equals('<stdin>'));
       });
@@ -1113,7 +1119,7 @@ void main() {
         final reader = (preprocessorReader(['a', 'b', 'c']))
           ..pushInclude(null, '', '<stdin>');
         expect(reader.includeStack, isEmpty);
-        expect(reader.readLine()!.rstrip(), equals('a'));
+        expect(reader.readLine()!.trimRightAscii(), equals('a'));
       });
 
       test('PreprocessorReader#push_include method should ignore dot '
@@ -2976,7 +2982,12 @@ void main() {
           );
           expect(
             result,
-            equals(lines.map((line) => line.chomp()).toList().sublist(1, 2)),
+            equals(
+              lines
+                  .map((line) => line.withoutTrailingNewline())
+                  .toList()
+                  .sublist(1, 2),
+            ),
           );
         },
       );

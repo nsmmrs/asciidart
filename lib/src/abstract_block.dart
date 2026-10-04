@@ -451,7 +451,7 @@ abstract class AbstractBlock extends AbstractNode {
     if (reftextValue != null && reftextValue.isNotEmpty) return reftextValue;
     // NOTE xrefstyle only applies to blocks with a title and a caption or
     // number.
-    if (xrefstyle != null && _title != null && !_caption.isNilOrEmpty) {
+    if (xrefstyle != null && _title != null && !_caption.isNullOrEmpty) {
       switch (xrefstyle) {
         case 'full':
           final quotedTitle = subPlaceholder(

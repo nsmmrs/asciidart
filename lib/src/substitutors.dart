@@ -645,7 +645,7 @@ String subAttributes(
   if (!drop) return result;
   // drop lines from text
   if (dropEmptyLine) {
-    final lines = squeezeChar(result, del).split(lf);
+    final lines = collapseRuns(result, del).split(lf);
     final kept = dropLine
         ? lines
               .where(
@@ -708,7 +708,7 @@ Object? _counterWithArgs(Document doc, List<String> args) {
   var attrValue = value;
   if (attrName.endsWith('!')) {
     // a null value signals the attribute should be deleted (unset)
-    attrName = chopLast(attrName);
+    attrName = dropLastChar(attrName);
     attrValue = null;
   } else if (attrName.startsWith('!')) {
     // a null value signals the attribute should be deleted (unset)
@@ -731,13 +731,13 @@ Object? _counterWithArgs(Document doc, List<String> args) {
       // support relative leveloffset values
       if (strValue.startsWith('+')) {
         strValue =
-            (rubyToInteger(doc.attr('leveloffset', 0)) +
-                    rubyToInteger(strValue.substring(1)))
+            (parseLeadingInt(doc.attr('leveloffset', 0)) +
+                    parseLeadingInt(strValue.substring(1)))
                 .toString();
       } else if (strValue.startsWith('-')) {
         strValue =
-            (rubyToInteger(doc.attr('leveloffset', 0)) -
-                    rubyToInteger(strValue.substring(1)))
+            (parseLeadingInt(doc.attr('leveloffset', 0)) -
+                    parseLeadingInt(strValue.substring(1)))
                 .toString();
       }
     }
@@ -1018,7 +1018,7 @@ String subMacros(AbstractNode node, String text) {
             delim = null;
           }
           if (delim != null) {
-            final parts = rubySplit(
+            final parts = splitDropTrailingEmpty(
               items,
               delim,
             ).map((item) => item.trim()).toList();
@@ -1026,7 +1026,7 @@ String subMacros(AbstractNode node, String text) {
             submenus = parts;
           } else {
             submenus = <String>[];
-            menuitem = items.rstrip();
+            menuitem = items.trimRightAscii();
           }
         } else {
           submenus = <String>[];
@@ -1054,7 +1054,7 @@ String subMacros(AbstractNode node, String text) {
           return match.group(0)!.substring(1);
         }
 
-        final parts = rubySplit(
+        final parts = splitDropTrailingEmpty(
           match.group(1)!,
           '&gt;',
         ).map((item) => item.trim()).toList();
@@ -1158,7 +1158,10 @@ String subMacros(AbstractNode node, String text) {
             if (isTruthy(seeAlso)) {
               final seeAlsoStr = seeAlso.toString();
               wide['see-also'] = seeAlsoStr.contains(',')
-                  ? rubySplit(seeAlsoStr, ',').map(lstrip).toList()
+                  ? splitDropTrailingEmpty(
+                      seeAlsoStr,
+                      ',',
+                    ).map(trimLeftAscii).toList()
                   : [seeAlsoStr];
             }
             attrs = wide;
@@ -1194,7 +1197,10 @@ String subMacros(AbstractNode node, String text) {
             if (isTruthy(seeAlso)) {
               final seeAlsoStr = seeAlso.toString();
               attrs['see-also'] = seeAlsoStr.contains(',')
-                  ? rubySplit(seeAlsoStr, ',').map(lstrip).toList()
+                  ? splitDropTrailingEmpty(
+                      seeAlsoStr,
+                      ',',
+                    ).map(trimLeftAscii).toList()
                   : [seeAlsoStr];
             }
           } else {
@@ -1238,7 +1244,7 @@ String subMacros(AbstractNode node, String text) {
               after = '';
             }
           } else if (enclText.endsWith(')')) {
-            enclText = chopLast(enclText);
+            enclText = dropLastChar(enclText);
             before = '';
             after = ')';
           }
@@ -1254,7 +1260,7 @@ String subMacros(AbstractNode node, String text) {
               termAttrs = {'see': term.substring(idx + ' &gt;&gt; '.length)};
               term = term.substring(0, idx);
             } else if (term.contains(' &amp;&gt; ')) {
-              final parts = rubySplit(term, ' &amp;&gt; ');
+              final parts = splitDropTrailingEmpty(term, ' &amp;&gt; ');
               term = parts.removeAt(0);
               termAttrs = {'see-also': parts};
             }
@@ -1278,7 +1284,7 @@ String subMacros(AbstractNode node, String text) {
               attrs['see'] = terms.substring(idx + ' &gt;&gt; '.length);
               terms = terms.substring(0, idx);
             } else if (terms.contains(' &amp;&gt; ')) {
-              final parts = rubySplit(terms, ' &amp;&gt; ');
+              final parts = splitDropTrailingEmpty(terms, ' &amp;&gt; ');
               terms = parts.removeAt(0);
               attrs['see-also'] = parts;
             }
@@ -1698,7 +1704,7 @@ String _convertXrefMacro(
   if (refid != null) {
     if (refid.contains(',')) {
       final idx = refid.indexOf(',');
-      linkText = lstrip(refid.substring(idx + 1));
+      linkText = trimLeftAscii(refid.substring(idx + 1));
       if (linkText.isEmpty) linkText = null;
       refid = refid.substring(0, idx);
     }
@@ -2085,7 +2091,7 @@ String highlightSource(
     linenumsMode = LineNumbersMode.fromAttribute(
       docAttrs['${syntaxHl.name}-linenums-mode']?.toString(),
     );
-    startLineNumber = rubyToInteger(node.attr('start', 1));
+    startLineNumber = parseLeadingInt(node.attr('start', 1));
     if (startLineNumber < 1) startLineNumber = 1;
   }
   final highlightLines = node.hasAttr('highlight')
@@ -2132,8 +2138,8 @@ List<int> resolveLinesToHighlight(String source, Object? spec, [int? start]) {
   var specStr = spec.toString();
   if (specStr.contains(' ')) specStr = specStr.replaceAll(' ', '');
   final entries = specStr.contains(',')
-      ? rubySplit(specStr, ',')
-      : rubySplit(specStr, ';');
+      ? splitDropTrailingEmpty(specStr, ',')
+      : splitDropTrailingEmpty(specStr, ';');
   for (var entry in entries) {
     var negate = false;
     if (entry.startsWith('!')) {
@@ -2156,10 +2162,10 @@ List<int> resolveLinesToHighlight(String source, Object? spec, [int? start]) {
       if (toStr.isEmpty) {
         to = '\n'.allMatches(source).length + 1;
       } else {
-        final parsed = rubyToInteger(toStr);
+        final parsed = parseLeadingInt(toStr);
         to = parsed < 0 ? '\n'.allMatches(source).length + 1 : parsed;
       }
-      final range = <int>[for (var i = rubyToInteger(from); i <= to; i++) i];
+      final range = <int>[for (var i = parseLeadingInt(from); i <= to; i++) i];
       if (negate) {
         lines = lines.where((line) => !range.contains(line)).toList();
       } else {
@@ -2168,9 +2174,9 @@ List<int> resolveLinesToHighlight(String source, Object? spec, [int? start]) {
         }
       }
     } else if (negate) {
-      lines.remove(rubyToInteger(entry));
+      lines.remove(parseLeadingInt(entry));
     } else {
-      final line = rubyToInteger(entry);
+      final line = parseLeadingInt(entry);
       if (!lines.contains(line)) lines.add(line);
     }
   }
@@ -2570,7 +2576,7 @@ List<String>? resolveSubs(
   var source = subs;
   if (source.contains(' ')) source = source.replaceAll(' ', '');
   final modifiersPresent = subModifierSniffRx.hasMatch(source);
-  for (var key in rubySplit(source, ',')) {
+  for (var key in splitDropTrailingEmpty(source, ',')) {
     String? modifierOperation;
     if (modifiersPresent) {
       final first = key.isNotEmpty ? key[0] : '';
@@ -2928,6 +2934,6 @@ List<String> splitSimpleCsv(String str) {
     values.add(accum.toString().trim());
     return values;
   } else {
-    return rubySplit(str, ',').map((item) => item.trim()).toList();
+    return splitDropTrailingEmpty(str, ',').map((item) => item.trim()).toList();
   }
 }

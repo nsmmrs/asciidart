@@ -48,3 +48,6 @@ with no skips against both the Dart CLI and the gem.
   top of `lib/src/cli/options.dart`).
 - Dart-only features (Mustache templates, `init-config`, `-j/--jobs`) have
   no Ruby counterpart.
+- `--help` and `-h manpage` describe `-T`, `-E`, `-I` and `-r` as they work
+  in this build (Mustache templates; libraries cannot be loaded at runtime)
+  instead of mentioning tilt, gems, `$LOAD_PATH` and Ruby's `require`.

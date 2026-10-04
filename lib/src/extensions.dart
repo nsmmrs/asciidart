@@ -65,19 +65,11 @@ const Object _absent = Object();
 Map<String, Object?> _asConfig(Map<dynamic, dynamic> map) =>
     map.map((key, value) => MapEntry(key.toString(), value));
 
-/// Ruby `String#to_i` semantics for a positional index: an optional sign and
-/// leading digits, else 0.
-int _rubyToInt(String value) {
-  final match = RegExp(r'^\s*[+-]?\d+').firstMatch(value);
-  if (match == null) return 0;
-  return int.tryParse(match.group(0)!.trim()) ?? 0;
-}
-
 /// Assigns [name] at [index] in [names], growing the list with `null`
 /// placeholders when the index lies past the end (mirrors Ruby's `ary`idx` =
 /// name` padding semantics).
 void _assignPositionalName(List<String?> names, String index, String name) {
-  var idx = index == '@' ? names.length : _rubyToInt(index);
+  var idx = index == '@' ? names.length : parseLeadingInt(index);
   if (idx < 0) idx = names.length + idx;
   if (idx < 0) {
     throw RangeError('positional attribute index out of range: $index');

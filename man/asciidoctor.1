@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: asciidoctor
 .\"    Author: Dan Allen, Sarah White
-.\" Generator: Asciidoctor 2.0.25
-.\"      Date: 2018-03-20
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-10-04
 .\"    Manual: Asciidoctor Manual
 .\"    Source: Asciidoctor 2.0.26
 .\"  Language: English
 .\"
-.TH "ASCIIDOCTOR" "1" "2018-03-20" "Asciidoctor 2.0.26" "Asciidoctor Manual"
+.TH "ASCIIDOCTOR" "1" "2026-10-04" "Asciidoctor 2.0.26" "Asciidoctor Manual"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -104,8 +104,7 @@ If specified, the directory is resolved relative to the working directory.
 .sp
 \fB\-E, \-\-template\-engine\fP=\fINAME\fP
 .RS 4
-Template engine to use for the custom converter templates.
-The gem with the same name as the engine will be loaded automatically.
+Template engine to use for the custom converter templates: \fImustache\fP (templates loaded from the template directory) or \fIdart\fP (transforms registered in code only).
 This name is also used to build the full path to the custom converter templates.
 If a template engine is not specified, it will be auto\-detected based on the file extension of the custom converter templates found.
 .RE
@@ -118,7 +117,7 @@ This option is useful for producing documents that can be inserted into an exter
 .sp
 \fB\-I, \-\-load\-path\fP=\fIDIRECTORY\fP
 .RS 4
-Add the specified directory to the load path, so that \fI\-r\fP can load extensions from outside the default Ruby load path.
+Accepted for compatibility; has no effect, because this build cannot load libraries at runtime.
 This option may be specified more than once.
 .RE
 .sp
@@ -147,7 +146,8 @@ If specified, the directory is resolved relative to the working directory.
 .sp
 \fB\-r, \-\-require\fP=\fILIBRARY\fP
 .RS 4
-Require the specified library before executing the processor, using the standard Ruby require.
+Accepted for compatibility; because this build cannot load libraries at runtime, any library fails to load and processing stops.
+Compile extensions into a custom binary instead (see \fBasciidoctor init\-config\fP).
 This option may be specified more than once.
 .RE
 .sp
@@ -160,7 +160,7 @@ This option is useful for producing documents that can be inserted into an exter
 \fB\-T, \-\-template\-dir\fP=\fIDIR\fP
 .RS 4
 A directory containing custom converter templates that override one or more templates from the built\-in set.
-(requires \fItilt\fP gem)
+Templates are Mustache files named after the node, such as \fIparagraph.mustache\fP.
 .sp
 If there is a subfolder that matches the engine name (if specified), that folder is appended to the template directory path.
 Similarly, if there is a subfolder in the resulting template directory that matches the name of the backend, that folder is appended to the template directory path.

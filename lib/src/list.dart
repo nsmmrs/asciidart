@@ -98,9 +98,8 @@ class ListBlock extends AbstractBlock {
 
   @override
   String toString() =>
-      // Contexts render with a `:` prefix to mimic Ruby's Symbol#inspect.
-      '#ListBlock@${identityHashCode(this)} {context: :$context, '
-      'style: ${inspectString(style)}, items: ${items.length}}';
+      'ListBlock(context: $context, style: ${debugQuote(style)}, '
+      'items: ${items.length})';
 }
 
 /// Methods for managing items of AsciiDoc olists, ulists and dlists.
@@ -170,8 +169,6 @@ class ListItem extends AbstractBlock {
 
   @override
   String toString() =>
-      // Contexts render with a `:` prefix to mimic Ruby's Symbol#inspect.
-      '#ListItem@${identityHashCode(this)} '
-      '{list_context: :${(parent!).context}, '
-      'text: ${inspectString(_text)}, blocks: ${blocks.length}}';
+      'ListItem(listContext: ${(parent!).context}, '
+      'text: ${debugQuote(_text)}, blocks: ${blocks.length})';
 }

@@ -149,12 +149,12 @@ class Block extends AbstractBlock {
         }
         while (result.isNotEmpty) {
           final first = result.first;
-          if (first == null || first.rstrip().isNotEmpty) break;
+          if (first == null || first.trimRightAscii().isNotEmpty) break;
           result.removeAt(0);
         }
         while (result.isNotEmpty) {
           final last = result.last;
-          if (last == null || last.rstrip().isNotEmpty) break;
+          if (last == null || last.trimRightAscii().isNotEmpty) break;
           result.removeLast();
         }
         return result.map((line) => line ?? '').join(lf);
@@ -174,9 +174,7 @@ class Block extends AbstractBlock {
     final summary = contentModel == 'compound'
         ? 'blocks: ${blocks.length}'
         : 'lines: ${lines.length}';
-    final styleRepr = style == null ? 'nil' : '"$style"';
-    return '#<Block@${identityHashCode(this)} '
-        '{context: :$context, content_model: :$contentModel, '
-        'style: $styleRepr, $summary}>';
+    return 'Block(context: $context, contentModel: $contentModel, '
+        'style: ${debugQuote(style)}, $summary)';
   }
 }

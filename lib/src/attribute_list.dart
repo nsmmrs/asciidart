@@ -125,7 +125,8 @@ class AttributeList {
       final skipped = scannedName == null ? 0 : (_skipBlank() ?? 0);
       name = scannedName;
       if (_scanner.isEos) {
-        if (name == null && !_scanner.string.rstrip().endsWith(_delimiter)) {
+        if (name == null &&
+            !_scanner.string.trimRightAscii().endsWith(_delimiter)) {
           return false;
         }
         cont = false;

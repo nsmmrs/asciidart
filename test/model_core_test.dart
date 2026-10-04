@@ -523,11 +523,11 @@ void main() {
       final message = testLogger.warns.single.toString();
       expect(
         message,
-        startsWith("unknown content model 'bogus' for block: #<Block@"),
+        equals(
+          "unknown content model 'bogus' for block: "
+          'Block(context: image, contentModel: bogus, style: null, lines: 0)',
+        ),
       );
-      expect(message, contains('{context: :image'));
-      expect(message, contains('content_model: :bogus'));
-      expect(message, contains('style: nil, lines: 0}'));
     });
   });
 
@@ -993,14 +993,13 @@ void main() {
       expect(Block(makeDoc(), 'listing').blockname, equals('listing'));
     });
 
-    test('toString mirrors the Ruby shape', () {
+    test('toString summarizes the block', () {
       final text = Block(makeDoc(), 'paragraph', source: ['a', 'b']).toString();
-      expect(text, startsWith('#<Block@'));
       expect(
         text,
-        endsWith(
-          ' {context: :paragraph, content_model: :simple, '
-          'style: nil, lines: 2}>',
+        equals(
+          'Block(context: paragraph, contentModel: simple, '
+          'style: null, lines: 2)',
         ),
       );
       final compound = Block(makeDoc(), 'open')..style = 's';

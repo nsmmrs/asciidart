@@ -147,7 +147,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
       return next;
     }
     if (seed != null) {
-      final asInt = rubyToInteger(seed);
+      final asInt = parseLeadingInt(seed);
       final value = seed == asInt.toString() ? asInt : seed;
       documentCounters[name] = value;
       attributes[name] = value;
@@ -236,7 +236,7 @@ void main() {
     AbstractNode.currentLogger = savedLogger;
   });
 
-  group('Ruby shims', () {
+  group('string helpers', () {
     test('isTruthy matches Ruby truthiness', () {
       expect(isTruthy(null), isFalse);
       expect(isTruthy(false), isFalse);
@@ -246,54 +246,57 @@ void main() {
       expect(isTruthy(<int>[]), isTrue);
     });
 
-    test('rubyToInteger matches to_i', () {
-      expect(rubyToInteger(12), equals(12));
-      expect(rubyToInteger(12.9), equals(12));
-      expect(rubyToInteger('12abc'), equals(12));
-      expect(rubyToInteger('  -12x'), equals(-12));
-      expect(rubyToInteger('+12'), equals(12));
-      expect(rubyToInteger('abc'), equals(0));
-      expect(rubyToInteger(''), equals(0));
-      expect(rubyToInteger(null), equals(0));
-      expect(() => rubyToInteger(true), throwsStateError);
+    test('parseLeadingInt matches to_i', () {
+      expect(parseLeadingInt(12), equals(12));
+      expect(parseLeadingInt(12.9), equals(12));
+      expect(parseLeadingInt('12abc'), equals(12));
+      expect(parseLeadingInt('  -12x'), equals(-12));
+      expect(parseLeadingInt('+12'), equals(12));
+      expect(parseLeadingInt('abc'), equals(0));
+      expect(parseLeadingInt(''), equals(0));
+      expect(parseLeadingInt(null), equals(0));
+      expect(() => parseLeadingInt(true), throwsStateError);
     });
 
-    test('rubyToDouble matches to_f', () {
-      expect(rubyToDouble(800), equals(800.0));
-      expect(rubyToDouble('12.9x'), equals(12.9));
-      expect(rubyToDouble('abc'), equals(0.0));
-      expect(rubyToDouble(null), equals(0.0));
+    test('parseLeadingDouble matches to_f', () {
+      expect(parseLeadingDouble(800), equals(800.0));
+      expect(parseLeadingDouble('12.9x'), equals(12.9));
+      expect(parseLeadingDouble('abc'), equals(0.0));
+      expect(parseLeadingDouble(null), equals(0.0));
     });
 
-    test('rubySplit drops trailing empties like Ruby split', () {
-      expect(rubySplit('a\n', '\n'), equals(['a']));
-      expect(rubySplit('a\n\n', '\n'), equals(['a']));
-      expect(rubySplit('', '\n'), equals([]));
-      expect(rubySplit('a\n\nb', '\n'), equals(['a', '', 'b']));
-      expect(rubySplit('p1\n\np2', RegExp(r'\n{2,}')), equals(['p1', 'p2']));
+    test('splitDropTrailingEmpty drops trailing empties like Ruby split', () {
+      expect(splitDropTrailingEmpty('a\n', '\n'), equals(['a']));
+      expect(splitDropTrailingEmpty('a\n\n', '\n'), equals(['a']));
+      expect(splitDropTrailingEmpty('', '\n'), equals([]));
+      expect(splitDropTrailingEmpty('a\n\nb', '\n'), equals(['a', '', 'b']));
+      expect(
+        splitDropTrailingEmpty('p1\n\np2', RegExp(r'\n{2,}')),
+        equals(['p1', 'p2']),
+      );
     });
 
     test('chopLast, chompSuffix, squeezeChar, lstrip', () {
-      expect(chopLast('ab\r\n'), equals('ab'));
-      expect(chopLast('a'), equals(''));
-      expect(chopLast(''), equals(''));
-      expect(chompSuffix('Figure 1. ', '. '), equals('Figure 1'));
-      expect(chompSuffix('Figure 1', '. '), equals('Figure 1'));
-      expect(squeezeChar('a"b""c', '"'), equals('a"b"c'));
-      expect(lstrip('  \n x'), equals('x'));
-      expect(lstrip('\x00\t\v\f\r x '), equals('x '));
-      expect(lstrip(' x'), equals(' x'));
-      expect(lstrip(' \t'), equals(''));
-      expect(lstrip(''), equals(''));
+      expect(dropLastChar('ab\r\n'), equals('ab'));
+      expect(dropLastChar('a'), equals(''));
+      expect(dropLastChar(''), equals(''));
+      expect(removeSuffix('Figure 1. ', '. '), equals('Figure 1'));
+      expect(removeSuffix('Figure 1', '. '), equals('Figure 1'));
+      expect(collapseRuns('a"b""c', '"'), equals('a"b"c'));
+      expect(trimLeftAscii('  \n x'), equals('x'));
+      expect(trimLeftAscii('\x00\t\v\f\r x '), equals('x '));
+      expect(trimLeftAscii(' x'), equals(' x'));
+      expect(trimLeftAscii(' \t'), equals(''));
+      expect(trimLeftAscii(''), equals(''));
     });
 
     test('rstrip matches Ruby String#rstrip', () {
-      expect(' x \x00\t\n\v\f\r'.rstrip(), equals(' x'));
-      expect('x '.rstrip(), equals('x '));
-      expect('x '.rstrip(), equals('x '));
-      expect(' \n'.rstrip(), equals(''));
-      expect(''.rstrip(), equals(''));
-      expect('a b'.rstrip(), equals('a b'));
+      expect(' x \x00\t\n\v\f\r'.trimRightAscii(), equals(' x'));
+      expect('x '.trimRightAscii(), equals('x '));
+      expect('x '.trimRightAscii(), equals('x '));
+      expect(' \n'.trimRightAscii(), equals(''));
+      expect(''.trimRightAscii(), equals(''));
+      expect('a b'.trimRightAscii(), equals('a b'));
     });
 
     test('transliterateSqueeze matches tr_s', () {
@@ -305,12 +308,12 @@ void main() {
       expect(transliterateSqueeze('a  b', ' .-', '-'), equals('a-b'));
     });
 
-    test('splitWords and inspectString', () {
+    test('splitWords and debugQuote', () {
       expect(splitWords('  a  b\tc '), equals(['a', 'b', 'c']));
       expect(splitWords(''), equals([]));
       expect(splitWords('   '), equals([]));
-      expect(inspectString('a"b'), equals(r'"a\"b"'));
-      expect(inspectString(null), equals('nil'));
+      expect(debugQuote('a"b'), equals(r'"a\"b"'));
+      expect(debugQuote(null), equals('null'));
     });
   });
 
@@ -843,17 +846,15 @@ void main() {
       expect(
         block.toString(),
         matches(
-          // Ruby-faithful `#<...>` shape (the merged core's Block pins it;
-          // the reference regex omitted the brackets).
           RegExp(
-            r'^#<Block@\d+ \{context: :paragraph, content_model: :simple, style: nil, lines: 1\}>$',
+            r'^Block\(context: paragraph, contentModel: simple, style: null, lines: 1\)$',
           ),
         ),
       );
       final compound = Block(doc, 'open')..contentModel = 'compound';
       compound.append(Block(compound, 'paragraph'));
       expect(compound.toString(), contains('blocks: 1'));
-      expect(compound.toString(), contains('content_model: :compound'));
+      expect(compound.toString(), contains('contentModel: compound'));
     });
   });
 
@@ -1003,9 +1004,7 @@ void main() {
       section.append(Block(section, 'paragraph'));
       expect(
         section.toString(),
-        matches(
-          RegExp(r'^#Section@\d+ \{level: 1, title: "1\. A", blocks: 2\}$'),
-        ),
+        matches(RegExp(r'^Section\(level: 1, title: "1\. A", blocks: 2\)$')),
       );
       final untitled = Section(doc, 1);
       expect(untitled.toString(), isNot(contains('level:')));
@@ -1119,7 +1118,7 @@ void main() {
       expect(
         list.toString(),
         matches(
-          RegExp(r'^#ListBlock@\d+ \{context: :ulist, style: nil, items: 1\}$'),
+          RegExp(r'^ListBlock\(context: ulist, style: null, items: 1\)$'),
         ),
       );
     });
@@ -1193,9 +1192,7 @@ void main() {
       expect(
         item.toString(),
         matches(
-          RegExp(
-            r'^#ListItem@\d+ \{list_context: :ulist, text: "x", blocks: 0\}$',
-          ),
+          RegExp(r'^ListItem\(listContext: ulist, text: "x", blocks: 0\)$'),
         ),
       );
     });
@@ -1701,7 +1698,7 @@ void main() {
       final col = makeTable(doc).columns.single;
       final cell = Cell(col, 'a', {});
       final rendered = cell.toString();
-      expect(rendered, contains('[text: a, colspan: 1, rowspan: 1,'));
+      expect(rendered, startsWith('Cell(text: "a", colspan: 1, rowspan: 1,'));
       expect(rendered, contains('colnumber: 1'));
     });
   });

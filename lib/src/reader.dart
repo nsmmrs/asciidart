@@ -334,7 +334,7 @@ class Reader {
 
   /// Whether the next line is empty (or there are no more lines). Does not
   /// consume the line.
-  bool isNextLineEmpty() => peekLine().isNilOrEmpty;
+  bool isNextLineEmpty() => peekLine().isNullOrEmpty;
 
   /// Peeks at the next line of source data. Processes the line if not
   /// already visited, but does not consume it.
@@ -776,7 +776,9 @@ class Reader {
       case _LineNormalization.none:
         if (data is List) return List<String?>.from(data);
         if (data != null) {
-          return <String?>[...(data as String).chomp().split(lf)];
+          return <String?>[
+            ...(data as String).withoutTrailingNewline().split(lf),
+          ];
         }
         return [];
     }
@@ -1400,7 +1402,7 @@ class PreprocessorReader extends Reader {
       // single line conditional inclusion
     } else if (text != null) {
       if (!_skipping && !skip) {
-        replaceNextLine(text.rstrip());
+        replaceNextLine(text.trimRightAscii());
         // HACK push dummy line to stand in for the opening conditional
         // directive that's subsequently dropped
         unshift('');
@@ -1683,12 +1685,12 @@ class PreprocessorReader extends Reader {
             (select is double && (selectRemaining = select.isInfinite))) {
           // NOTE record line where we started selecting
           incOffset ??= incLineno;
-          incLines.add(rawLine.chomp());
+          incLines.add(rawLine.withoutTrailingNewline());
         } else {
           if (select == incLineno) {
             // NOTE record line where we started selecting
             incOffset ??= incLineno;
-            incLines.add(rawLine.chomp());
+            incLines.add(rawLine.withoutTrailingNewline());
             remaining.removeAt(0);
           }
           if (remaining.isEmpty) break;
@@ -1773,7 +1775,7 @@ class PreprocessorReader extends Reader {
       String? activeTag;
       for (final rawLine in _splitRawLines(content)) {
         incLineno += 1;
-        final line = rawLine.chomp();
+        final line = rawLine.withoutTrailingNewline();
         final tagMatch = line.contains('::') && line.contains('[]')
             ? tagDirectiveRx.firstMatch(line)
             : null;
@@ -2067,10 +2069,10 @@ class PreprocessorReader extends Reader {
       return true;
     } else if (current == 'false') {
       return false;
-    } else if (current.rstrip().isEmpty) {
+    } else if (current.trimRightAscii().isEmpty) {
       return ' ';
     } else if (current.contains('.')) {
-      return _rubyToDouble(current);
+      return _parseFloatPrefix(current);
     } else {
       // fallback to coercing to integer, since we
       // require string values to be explicitly quoted
@@ -2254,7 +2256,7 @@ final RegExp _floatPrefixRx = RegExp(
 /// Coerces [value] to a double with Ruby's `to_f` semantics: leading
 /// whitespace is skipped, then the leading numeric (or inf/nan) prefix is
 /// parsed, else 0.0.
-double _rubyToDouble(String value) {
+double _parseFloatPrefix(String value) {
   final text = value.trimLeft();
   if (text.isEmpty) return 0;
   final lower = text.toLowerCase();

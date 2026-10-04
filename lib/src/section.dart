@@ -144,8 +144,8 @@ class Section extends AbstractBlock implements NodeSection {
       final formalTitle = isTruthy(numbered)
           ? '${sectnum()} $rawTitle'
           : rawTitle;
-      return '#Section@${identityHashCode(this)} {level: $level, '
-          'title: ${inspectString(formalTitle)}, blocks: ${blocks.length}}';
+      return 'Section(level: $level, title: ${debugQuote(formalTitle)}, '
+          'blocks: ${blocks.length})';
     }
     return super.toString();
   }
@@ -199,7 +199,7 @@ class Section extends AbstractBlock implements NodeSection {
       // Replace spaces with the separator and drop repeating and trailing
       // separator characters.
       genId = transliterateSqueeze(genId, sepSub!, sep);
-      if (genId.endsWith(sep)) genId = chopLast(genId);
+      if (genId.endsWith(sep)) genId = dropLastChar(genId);
       // Ensure the ID doesn't begin with the separator when the prefix is
       // empty (assuming the separator is not empty).
       if (pre.isEmpty && genId.startsWith(sep)) {

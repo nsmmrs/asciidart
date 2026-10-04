@@ -79,10 +79,13 @@ import 'package:asciidoctor/src/cli/help_topics.g.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/version.dart';
 
-/// The CLI usage text, byte-identical to Ruby's `OptionParser#to_s` output
-/// for this option set (captured from the `options.rb` oracle; the safe
-/// mode names interpolate to `unsafe, safe, server, secure`).
-const String usageText = r'''
+/// The CLI usage text.
+///
+/// Matches the Asciidoctor 2.0.26 `--help` output byte for byte, except
+/// the `-T`, `-E`, `-I` and `-r` descriptions, which describe what those
+/// options do in this build (Mustache templates; no runtime library
+/// loading).
+const String usageText = '''
 Usage: asciidoctor [OPTION]... FILE...
 Convert the AsciiDoc input FILE(s) to the backend output format (e.g., HTML 5, DocBook 5, etc.)
 Unless specified otherwise, the output is written to a file whose name is derived from the input file.
@@ -105,15 +108,15 @@ Example: asciidoctor input.adoc
     -a, --attribute name[=value]     a document attribute to set in the form of name, name!, or name=value pair
                                      this attribute takes precedence over the same attribute defined in the source document
                                      unless either the name or value ends in @ (i.e., name@=value or name=value@)
-    -T, --template-dir DIR           a directory containing custom converter templates that override the built-in converter (requires tilt gem)
+    -T, --template-dir DIR           a directory containing custom converter templates (Mustache) that override the built-in converter
                                      may be specified more than once
-    -E, --template-engine NAME       template engine to use for the custom converter templates (loads gem on demand)
+    -E, --template-engine NAME       template engine to use for the custom converter templates: [mustache, dart]
     -B, --base-dir DIR               base directory containing the document and resources (default: directory of source file)
     -R, --source-dir DIR             source root directory (used for calculating path in destination directory)
     -D, --destination-dir DIR        destination output directory (default: directory of source file)
-    -I, --load-path DIRECTORY        add a directory to the $LOAD_PATH
+    -I, --load-path DIRECTORY        accepted for compatibility; has no effect (libraries cannot be loaded at runtime)
                                      may be specified more than once
-    -r, --require LIBRARY            require the specified library before executing the processor (using require)
+    -r, --require LIBRARY            accepted for compatibility; always fails (libraries cannot be loaded at runtime)
                                      may be specified more than once
         --failure-level LEVEL        set minimum log level that yields a non-zero exit code: [INFO, WARN, ERROR, FATAL] (default: FATAL)
     -q, --quiet                      silence application log messages and script warnings (default: false)

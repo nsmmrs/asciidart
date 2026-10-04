@@ -81,7 +81,7 @@ abstract final class Helpers {
     ];
     return [
       for (final line in lines)
-        if (trimEnd) line.rstrip() else line.chomp(),
+        if (trimEnd) line.trimRightAscii() else line.withoutTrailingNewline(),
     ];
   }
 
@@ -91,7 +91,7 @@ abstract final class Helpers {
   /// (as Ruby's `each_line` does) and trims each line per [trimEnd] (see
   /// [prepareSourceArray]). A `null` or empty input yields an empty list.
   static List<String> prepareSourceString(String? data, {bool trimEnd = true}) {
-    if (data.isNilOrEmpty) return [];
+    if (data.isNullOrEmpty) return [];
     var text = data!;
     if (text.startsWith('\uFEFF')) text = text.substring(1);
     final lines = <String>[];
@@ -105,7 +105,7 @@ abstract final class Helpers {
     if (start < text.length) lines.add(text.substring(start));
     return [
       for (final line in lines)
-        if (trimEnd) line.rstrip() else line.chomp(),
+        if (trimEnd) line.trimRightAscii() else line.withoutTrailingNewline(),
     ];
   }
 

@@ -228,7 +228,7 @@ String _commonAttributes(String? id, Object? role, String? reftext) {
     var label = reftext;
     if (label.contains('<')) {
       label = label.replaceAll(xmlSanitizeRx, '');
-      if (label.contains(' ')) label = squeezeChar(label, ' ').trim();
+      if (label.contains(' ')) label = collapseRuns(label, ' ').trim();
     }
     if (label.contains('"')) label = label.replaceAll('"', '&quot;');
     attrs = '$attrs xreflabel="$label"';
@@ -702,7 +702,9 @@ Block blockFromString(
     catalogAssets: catalogAssets,
   );
   final block = (Block(doc, 'paragraph'))
-    ..lines = src.isEmpty ? <String>[] : src.chomp().split('\n')
+    ..lines = src.isEmpty
+        ? <String>[]
+        : src.withoutTrailingNewline().split('\n')
     ..subs = List<String>.of(normalSubs);
   return block;
 }
@@ -3130,7 +3132,7 @@ void main() {
         const macros = '(((Tigers)))\n(((Animals,Cats)))';
         final para = blockFromString('$sentence\n$macros');
         final output = subMacros(para, para.source());
-        expect(output.rstrip(), sentence);
+        expect(output.trimRightAscii(), sentence);
       });
 
       test('an index term macro with round bracket syntax may contain '

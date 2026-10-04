@@ -23,7 +23,7 @@ Document documentFromString([
 
 /// Splits [source] into lines with Ruby `split` semantics (trailing empty
 /// fields are dropped).
-List<String> _rubyLines(String source) {
+List<String> _splitLines(String source) {
   final lines = source.split('\n');
   while (lines.isNotEmpty && lines.last.isEmpty) {
     lines.removeLast();
@@ -33,7 +33,7 @@ List<String> _rubyLines(String source) {
 
 /// Parses header metadata from [source] (port of `parse_header_metadata`).
 Map<String, Object?> parseHeaderMetadata(String source, [Document? doc]) =>
-    Parser.parseHeaderMetadata(Reader(_rubyLines(source)), document: doc);
+    Parser.parseHeaderMetadata(Reader(_splitLines(source)), document: doc);
 
 /// Runs [body] with a memory logger installed (port of
 /// `using_memory_logger`).

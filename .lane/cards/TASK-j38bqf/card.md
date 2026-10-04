@@ -1,7 +1,7 @@
 ---
 id: TASK-j38bqf
 title: "Rename ruby* helpers and remove Ruby from user-facing text"
-status: backlog
+status: done
 type: task
 priority: 2
 labels:
@@ -10,8 +10,10 @@ parent: EPIC-k5nzlv
 deps:
 - EPIC-9frzpm
 created: "2026-10-04T13:53:24.446492Z"
-updated: "2026-10-04T13:53:24.446492Z"
+updated: "2026-10-04T14:16:10.567329Z"
 ---
+
+
 
 Rename helpers by what they do, keeping behavior identical:
 - core_ext.dart: `RubyString` extension, `rubyToInteger` (lenient leading-int parse, e.g. a name like parseLeadingInt), `rubyToDouble`, `rubySplit` (split that drops trailing empty pieces), `_isRubyStripChar`.

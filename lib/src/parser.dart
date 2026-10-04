@@ -453,16 +453,6 @@ abstract final class Parser {
   /// Whether a list-item buffer entry is a [_ListContinuation] marker.
   static bool _isContinuation(Object? entry) => entry is _ListContinuation;
 
-  /// Splits [value] on [sep] with Ruby `split` semantics (trailing empty
-  /// fields are dropped).
-  static List<String> _rubySplit(String value, String sep) {
-    final parts = value.split(sep);
-    while (parts.isNotEmpty && parts.last.isEmpty) {
-      parts.removeLast();
-    }
-    return parts;
-  }
-
   /// Splits [value] on [sep] into at most [limit] parts (Ruby `split`
   /// with a limit; the last part keeps the remainder).
   static List<String> _splitLimit(String value, String sep, int limit) {
@@ -617,7 +607,7 @@ abstract final class Parser {
     });
     if (!drop) return result;
     if (dropEmptyLine) {
-      final lines = squeezeChar(result, _del).split(lf);
+      final lines = collapseRuns(result, _del).split(lf);
       if (dropLine) {
         return lines
             .where(
@@ -702,7 +692,7 @@ abstract final class Parser {
     if (input.contains(' ')) input = input.replaceAll(' ', '');
     final modifiersPresent = subModifierSniffRx.hasMatch(input);
     List<String>? candidates;
-    for (final rawKey in _rubySplit(input, ',')) {
+    for (final rawKey in splitDropTrailingEmpty(input, ',')) {
       var key = rawKey;
       String? modifierOperation;
       if (modifiersPresent) {
@@ -1143,7 +1133,7 @@ abstract final class Parser {
             late final List<String> mannames;
             String? resolvedManname = manname;
             if (manname.contains(',')) {
-              mannames = _rubySplit(
+              mannames = splitDropTrailingEmpty(
                 manname,
                 ',',
               ).map((n) => n.trimLeft()).toList();
@@ -3978,7 +3968,7 @@ abstract final class Parser {
           final spec = <String, Object?>{};
           if (m.group(2) != null) {
             // Make this an operation.
-            final alignParts = _rubySplit(m.group(2)!, '.');
+            final alignParts = splitDropTrailingEmpty(m.group(2)!, '.');
             final colspec = alignParts[0];
             final rowspec = alignParts.length > 1 ? alignParts[1] : null;
             if (!_isNilOrEmpty(colspec) &&
@@ -4057,7 +4047,7 @@ abstract final class Parser {
   ) {
     final spec = <String, Object?>{};
     if (m.group(1) != null) {
-      final spanParts = _rubySplit(m.group(1)!, '.');
+      final spanParts = splitDropTrailingEmpty(m.group(1)!, '.');
       final colspec = spanParts[0];
       final rowspec = spanParts.length > 1 ? spanParts[1] : null;
       final col = _isNilOrEmpty(colspec) ? 1 : _toInt(colspec);
@@ -4071,7 +4061,7 @@ abstract final class Parser {
     }
 
     if (m.group(3) != null) {
-      final alignParts = _rubySplit(m.group(3)!, '.');
+      final alignParts = splitDropTrailingEmpty(m.group(3)!, '.');
       final colspec = alignParts[0];
       final rowspec = alignParts.length > 1 ? alignParts[1] : null;
       if (!_isNilOrEmpty(colspec) &&
@@ -4712,7 +4702,7 @@ abstract final class Parser {
         // any leading whitespace).
         final parts = _splitWhitespace(entry, 3);
         if (parts.length == 3) {
-          parts[2] = squeezeChar(parts[2], ' ');
+          parts[2] = collapseRuns(parts[2], ' ');
         }
         segments = parts;
       } else {
@@ -4759,7 +4749,7 @@ abstract final class Parser {
           authorMetadata[keyMap['email']!] = seg3;
         }
       } else {
-        final fname = squeezeChar(authorEntry, ' ').trim();
+        final fname = collapseRuns(authorEntry, ' ').trim();
         authorMetadata[keyMap['author']!] =
             authorMetadata[keyMap['firstname']!] = fname;
         authorMetadata[keyMap['authorinitials']!] = _firstChar(fname);

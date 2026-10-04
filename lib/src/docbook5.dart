@@ -519,7 +519,7 @@ class Docbook5Converter extends ConverterBase {
       if (attrs.containsKey('linenums')) {
         numberingAttrs = attrs.containsKey('start')
             ? ' linenumbering="numbered" '
-                  'startinglinenumber="${rubyToInteger(attrs['start'])}"'
+                  'startinglinenumber="${parseLeadingInt(attrs['start'])}"'
             : ' linenumbering="numbered"';
       } else {
         numberingAttrs = ' linenumbering="unnumbered"';
@@ -788,15 +788,15 @@ class Docbook5Converter extends ConverterBase {
         for (final cell in row) {
           final String colspanAttribute;
           if (isTruthy(cell.colspan)) {
-            final colnum = rubyToInteger(cell.column!.attr('colnumber'));
+            final colnum = parseLeadingInt(cell.column!.attr('colnumber'));
             colspanAttribute =
                 ' namest="col_$colnum" '
-                'nameend="col_${colnum + rubyToInteger(cell.colspan) - 1}"';
+                'nameend="col_${colnum + parseLeadingInt(cell.colspan) - 1}"';
           } else {
             colspanAttribute = '';
           }
           final rowspanAttribute = isTruthy(cell.rowspan)
-              ? ' morerows="${rubyToInteger(cell.rowspan) - 1}"'
+              ? ' morerows="${parseLeadingInt(cell.rowspan) - 1}"'
               : '';
           // NOTE <entry> may not have whitespace (e.g., line breaks) as a
           // direct descendant according to DocBook rules.
@@ -1079,7 +1079,7 @@ class Docbook5Converter extends ConverterBase {
       if (label.contains('<')) {
         label = label.replaceAll(xmlSanitizeRx, '');
         if (label.contains(' ')) {
-          label = squeezeChar(label, ' ').trim();
+          label = collapseRuns(label, ' ').trim();
         }
       }
       if (label.contains('"')) {
