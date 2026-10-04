@@ -1751,7 +1751,7 @@ class PreprocessorReader extends Reader {
       select = baseSelect = tags.remove('**')!;
       if (tags.containsKey('*')) {
         wildcard = tags.remove('*');
-      } else if (!select && tags.isNotEmpty && tags.values.first == false) {
+      } else if (!select && tags.isNotEmpty && !tags.values.first) {
         // NOTE the isNotEmpty guard mirrors Ruby, where first on an empty
         // map yields nil, which != false.
         wildcard = true;
