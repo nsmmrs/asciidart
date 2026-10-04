@@ -1,0 +1,92 @@
+= Probe Blocks
+:toc:
+:toclevels: 0
+:source-linenums-option:
+
+[abstract]
+~~~~
+Tilde open block.
+~~~~
+
+[partintro]
+~~~~~
+Five tildes.
+~~~~~
+
+== Section A
+
+[#]
+=== Empty id
+
+[id=]
+=== Empty id attr
+
+[toclevels=3]
+=== Override toclevels
+
+==== Deep
+
+[.heavy]
+'''
+
+<<<
+
+[source,ruby]
+----
+puts 1
+----
+
+[source,ruby,linenums]
+----
+puts 2
+----
+
+```ruby
+puts 3
+```
+
+. first
+. second
+
+[start=3]
+. three
+. four
+
+4. four
+5. five
+
+c. cee
+d. dee
+
+iii) three
+iv) four
+
+. {empty}
++
+para in empty item
+
+* {empty}
++
+para in empty item
+
+term::
++
+desc block
+
+[cols="1,3",width=50%]
+|===
+|a |b
+|c |d
+|===
+
+[%header,stripes=even]
+|===
+|H1 |H2
+|r1 |r2
+|r3 |r4
+|===
+
+|===
+.2+|span |b
+|c
+|===

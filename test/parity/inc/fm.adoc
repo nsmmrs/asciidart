@@ -1,0 +1,4 @@
+---
+title: inc
+---
+included body

@@ -34,7 +34,7 @@ in `setup_file` when it is missing. Requires bats >= 1.5 (`run
 - `cli_output_files.bats` — output routing: default naming, `-o`/`--out-file`
   incl. STDOUT `-`, trailing-newline rules, `-D`/`-R`, multiple inputs, globs.
 - `cli_attributes.bats` — `-a`/`--attribute` assignment variants.
-- `cli_modes_options.bats` — safe modes, `-B`, `--log-level`,
+- `cli_modes_options.bats` — safe modes, `-B`,
   `--failure-level`, `-q`, `-v`, `--trace`, `-t`.
 - `cli_help_version_errors.bats` — help topics, version, stdin input, CLI
   error paths (from `test/options_test.rb` + `test/invoker_test.rb`).

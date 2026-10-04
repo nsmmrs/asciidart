@@ -1,0 +1,8 @@
++++
+title = "toml"
++++
+= Doc
+
+include::inc/fm.adoc[]
+
+include::inc/fm.adoc[skip-front-matter]

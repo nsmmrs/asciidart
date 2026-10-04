@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # Black-box CLI cases for safe modes, base dir, logging, and diagnostics:
-# -S/--safe-mode, --safe, -B/--base-dir, --log-level, --failure-level,
+# -S/--safe-mode, --safe, -B/--base-dir, --failure-level,
 # -q/--quiet, -v/--verbose, --trace, -t/--timings.
 # Mirrors the corresponding coverage in test/invoker_test.rb.
 
@@ -97,42 +97,6 @@ EOF
   [ "$status" -eq 0 ]
   assert_stderr_contains 'WARNING'
   assert_stderr_contains 'list item index: expected 2, got 3'
-}
-
-@test "log level info reveals info messages" {
-  require_log_level_flag
-  cat > input.adoc <<'EOF'
-skip to <<install>>
-
-. download
-. install[[install]]
-. run
-EOF
-  run --separate-stderr -- "$EXE" --log-level INFO -o - input.adoc
-  [ "$status" -eq 0 ]
-  assert_stderr_contains 'asciidoctor: INFO: possible invalid reference: install'
-}
-
-@test "log level warn hides info messages" {
-  require_log_level_flag
-  cat > input.adoc <<'EOF'
-skip to <<install>>
-
-. download
-. install[[install]]
-. run
-EOF
-  run --separate-stderr -- "$EXE" --log-level WARN -o - input.adoc
-  [ "$status" -eq 0 ]
-  [ "$stderr" = "" ]
-}
-
-@test "log level error hides warnings" {
-  require_log_level_flag
-  printf '1. first\n3. third\n' > input.adoc
-  run --separate-stderr -- "$EXE" --log-level ERROR -o out.html input.adoc
-  [ "$status" -eq 0 ]
-  [ "$stderr" = "" ]
 }
 
 @test "failure level yields non-zero exit code when reached" {

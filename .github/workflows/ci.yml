@@ -38,7 +38,7 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install asciidoctor gem (e2e oracle)
-      run: gem install asciidoctor coderay pygments.rb --no-document
+      run: gem install asciidoctor -v 2.0.26 --no-document && gem install coderay pygments.rb --no-document
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart)
@@ -60,6 +60,12 @@ jobs:
       uses: dart-lang/setup-dart@v1
     - name: Build Dart executable
       run: ./tool/build-exes.sh
+    - name: Set up Ruby (oracle only)
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+    - name: Install asciidoctor gem (parity oracle)
+      run: gem install asciidoctor -v 2.0.26 --no-document
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
@@ -67,3 +73,5 @@ jobs:
         EXE="$(pwd)/dist/$(ls dist | grep '^asciidoctor-linux-')"
         echo "ASCIIDOCTOR_EXE=$EXE"
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
+    - name: Check byte-identical parity with Asciidoctor 2.0.26
+      run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidoctor-linux-')"

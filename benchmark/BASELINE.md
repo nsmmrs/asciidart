@@ -159,3 +159,33 @@ Net: 2.2x (html5), 2.2x (docbook5) and 2.5x (manpage) faster than before,
 and faster than Ruby + YJIT on every backend. CLI startup-dominated cells
 are unchanged (small html5 9.3 -> 9.2 ms); the `large` CLI cell (8 KB)
 went from 17.6 to 14.8 ms.
+
+## After the 2.0.26 retarget (2026-10-04)
+
+`master` now targets Asciidoctor 2.0.26 (see
+[ADR-0003](../adr/0003-target-latest-stable.md)); the earlier numbers above
+were taken against the 2.1.0.alpha.0 port. Same machine, same methods.
+
+CLI end to end (`ruby benchmark/bench-exe.rb --exe ...`, 3 warmup + 21
+timed iterations, medians; Ruby = gem 2.0.26):
+
+| Doc \\ backend | Ruby html5 | AOT html5 | Speedup | Ruby docbook5 | AOT docbook5 | Speedup |
+| ------------- | ---------: | --------: | ------: | ------------: | -----------: | ------: |
+| small | 76.4 ms | 9.0 ms | 8.5x | 75.2 ms | 7.3 ms | 10.3x |
+| medium | 78.4 ms | 12.4 ms | 6.3x | 76.2 ms | 10.5 ms | 7.3x |
+| large | 78.5 ms | 15.2 ms | 5.2x | 77.5 ms | 13.3 ms | 5.8x |
+
+In process (`benchmark/throughput.dart` compiled with `dart compile exe`,
+median of 15 after 5 warmups; Ruby = `Asciidoctor.convert` on the corpus
+written by `--write-corpus`, same options, mean of 15 after 3 warmups). The
+corpus is ~1% smaller than before because `data/reference/syntax.adoc` is
+now the 2.0.26 copy.
+
+| Impl | html5 | docbook5 | manpage |
+| --- | --: | --: | --: |
+| Ruby (gem 2.0.26) | 84.9 ms | 86.6 ms | 117.0 ms |
+| Ruby + YJIT | 50.6 ms | 63.7 ms | 86.5 ms |
+| Dart AOT | 40.0 ms | 40.2 ms | 52.2 ms |
+
+The AOT binary stays ahead of Ruby on every cell (5.2x–10.3x end to end)
+and ahead of Ruby + YJIT in process on every backend.

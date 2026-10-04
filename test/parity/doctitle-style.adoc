@@ -1,0 +1,4 @@
+[preface]
+= Document Title
+
+content

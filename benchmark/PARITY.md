@@ -1,71 +1,50 @@
-# Differential Parity Verdict — ADR-0001 D4 (port/parity-gate, 2026-10-03)
+# Differential Parity Verdict
 
-Byte-identical gate: Dart CLI vs Ruby oracle over the fixture corpus,
-via `tool/differential.dart` (normalization: version stamps and
-timestamps only, per ADR-0001 D4).
+Byte-identical gate (ADR-0001 D4): the Dart CLI against the Asciidoctor
+**2.0.26** gem, via `tool/differential.dart` (normalization: version stamps
+and timestamps only). `master` targets 2.0.26 per
+[ADR-0003](../adr/0003-target-latest-stable.md); the earlier port of
+upstream `main` (2.1.0.alpha.0) is preserved on the `2.1.0` branch.
 
 ## Corpus
 
-31 files per backend run:
-
-- `test/fixtures/**` (`*.adoc`, `*.asciidoc`, recursive): 29 files
-- (pre-split runs also passed `--extra-file README.adoc`; the Ruby README
-  left with the repo split, so the default corpus is now fixtures +
-  `data/reference/syntax.adoc`)
-- `--extra-file data/reference/syntax.adoc` (added by this gate task;
-  `data/reference` coverage previously missing from the harness default)
-
-## Post-split re-verification (2026-10-03)
-
-After the repo split (package at root, Ruby sources removed), re-ran all
-three backends against the pre-split 2.1.0.alpha.0 oracle:
-32/32 identical each (32 = 31 fixtures + `data/reference/syntax.adoc`;
-the dropped `README.adoc` was the Ruby README).
-
-Note: the latest published gem (2.0.26) is NOT byte-identical — its default
-stylesheet and CLI surface predate 2.1 (`--log-level` missing). The e2e
-suite probes for `--log-level` and skips those 3 tests against gem oracles.
+- `test/fixtures/**` (`*.adoc`, `*.asciidoc`, recursive) plus
+  `data/reference/syntax.adoc`: 32 files per backend.
+- `test/parity/**` plus `data/reference/syntax.adoc`: 9 files per backend.
+  These pin the places where 2.0.26 differs from upstream `main` (tilde
+  open blocks, ordered list starts, `link=self`, front matter, table and
+  manpage layout, ...); see [`test/parity/README.md`](../test/parity/README.md).
 
 ## Method
 
-From `dart/`:
+From the repository root, with the gem on `PATH`
+(`gem install asciidoctor -v 2.0.26`):
 
 ```sh
-RUBY="test/e2e/bin/asciidoctor-ruby"
-DART="test/e2e/bin/asciidoctor-dart"
-dart run tool/differential.dart --exe-a "$RUBY" --exe-b "$DART" --backend html5
-dart run tool/differential.dart --exe-a "$RUBY" --exe-b "$DART" --backend docbook5
-dart run tool/differential.dart --exe-a "$RUBY" --exe-b "$DART" --backend manpage
+tool/build-exes.sh
+tool/parity.sh dist/asciidoctor-linux-x64
 ```
 
-Each file is converted as `<exe> -b <backend> -o - -q <input>` with
-`TZ=UTC` and `SOURCE_DATE_EPOCH=0`.
+`tool/parity.sh` runs both corpora on html5, docbook5 and manpage. Each file
+is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
+`SOURCE_DATE_EPOCH=0`. CI runs the same script on every push
+(`dart-exe-e2e` job).
 
-## Verdict: PASS — 93/93 identical (31 files × 3 backends)
+## Verdict (2026-10-04): PASS — 123/123 identical
 
-| Backend | Identical | Differ |
-| ------- | --------: | -----: |
-| html5 | 31 | 0 |
-| docbook5 | 31 | 0 |
-| manpage | 31 | 0 |
+| Corpus | html5 | docbook5 | manpage |
+| --- | --: | --: | --: |
+| fixtures | 32/32 | 32/32 | 32/32 |
+| parity | 9/9 | 9/9 | 9/9 |
 
-## Divergence found and fixed (1)
+Warnings on stderr were compared by hand over the parity corpus and match
+too (the harness passes `-q`). The e2e suite (`test/e2e/`, 128 tests) passes
+with no skips against both the Dart CLI and the gem.
 
-Before the fix, html5 and docbook5 each showed 1 diff
-(`test/fixtures/encoding.adoc`); manpage output contains no section IDs
-for this file and was unaffected.
+## Known intentional differences
 
-- Symptom: `Überschrift` section got `id="_überschrift"` (Ruby) vs
-  `id="_berschrift"` (Dart) — Dart dropped the non-ASCII `ü`.
-- Root cause: `lib/src/section.dart` used a private duplicate of
-  `InvalidSectionIdCharsRx` with `\w`, which in Dart stays ASCII-only
-  even with `unicode: true`. Ruby `CC_WORD` is `\p{Word}`
-  (`lib/asciidoctor/rx.rb:263`), which keeps non-ASCII letters
-  (`lib/asciidoctor/section.rb:208`).
-- Fix: deleted the private duplicate; `Section.generateId` now uses the
-  shared unicode-correct `invalidSectionIdCharsRx` from
-  `lib/src/rx.dart` (same one `manpage.dart` already used).
-- Regression test: `Section.generateId` non-ASCII case in
-  `test/model_structural_test.dart`.
-
-Diff count before → after: 1 → 0 per affected backend (html5, docbook5).
+- An unknown CLI option prints Ruby's `Did you mean?` hint only in Ruby;
+  that suggestion engine depends on the Ruby version (see the notes at the
+  top of `lib/src/cli/options.dart`).
+- Dart-only features (Mustache templates, `init-config`, `-j/--jobs`) have
+  no Ruby counterpart.

@@ -1,0 +1,14 @@
+= Book
+:doctype: book
+:toc:
+
+[preface]
+= Preface
+
+preface text
+
+= Part One
+
+== Chapter
+
+text

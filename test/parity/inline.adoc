@@ -1,0 +1,30 @@
+= Probe Inline
+:imagesdir: img
+:iconsdir: ic
+:icons: font
+:experimental:
+
+C{cxx} and C{cpp}.
+
+[.role]*strong* and [[x]]_not an anchor_ and [a[b]]*bracket attr*.
+
+[foo.bar=baz]#marked#
+
+image:pic.png[Alt,id=imgid,link=self]
+
+image:pic.png[Alt,imagesdir=other]
+
+image::block.png[Block,link=self]
+
+image::block.png[Block,imagesdir=override]
+
+video::abc123[wistia,start=5]
+
+"`double`" and '`single`'
+
+[horizontal,labelwidth=25,itemwidth=75]
+term:: def
+
+include::https://example.org/remote.adoc[leveloffset=+1]
+
+pass:[<b>raw</b>] and [x-]+x-pass+ and [a]+aplus+
