@@ -31,6 +31,7 @@
 library;
 
 import 'dart:async' show unawaited;
+import 'dart:collection' show MapBase;
 import 'dart:io';
 
 import 'package:asciidoctor/src/abstract_node.dart';
@@ -100,16 +101,26 @@ Converter html5Converter() {
   return Converter.create('html5')!;
 }
 
-/// A duck-typed attribute map (port of the `Hashlike` test double).
-class FakeHashlike {
+/// A custom attribute map (port of the `Hashlike` test double, which Ruby
+/// duck-types via `keys` and `[]`).
+class FakeHashlike extends MapBase<String, Object?> {
   /// Attribute table.
   final Map<String, Object?> table = {'toc': ''};
 
-  /// Returns the attribute names.
-  List<String> keys() => table.keys.toList();
+  @override
+  Iterable<String> get keys => table.keys;
 
-  /// Returns the value of attribute [key].
+  @override
   Object? operator [](Object? key) => table[key];
+
+  @override
+  void operator []=(String key, Object? value) => table[key] = value;
+
+  @override
+  Object? remove(Object? key) => table.remove(key);
+
+  @override
+  void clear() => table.clear();
 }
 
 void main() {

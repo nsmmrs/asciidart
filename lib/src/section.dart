@@ -8,6 +8,7 @@ library;
 // ignore_for_file: no_runtimetype_tostring
 
 import 'package:asciidoctor/src/abstract_block.dart';
+import 'package:asciidoctor/src/abstract_node.dart' show NodeDocument;
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/rx.dart' show invalidSectionIdCharsRx;
 
@@ -66,7 +67,7 @@ class Section extends AbstractBlock implements NodeSection {
   /// Named `generateIdFromTitle` because Dart forbids an instance member and
   /// a static member sharing the name `generateId`, as Ruby's
   /// `Section#generate_id` / `Section.generate_id` pair does.
-  String generateIdFromTitle() => Section.generateId(title!, document);
+  String generateIdFromTitle() => Section.generateId(title!, document!);
 
   /// Whether this section has child sections.
   @override
@@ -163,11 +164,8 @@ class Section extends AbstractBlock implements NodeSection {
   /// observable side effect on the document attributes, as in Ruby).
   ///
   /// Port of `Asciidoctor::Section.generate_id`.
-  static String generateId(String title, dynamic document) {
-    // `document` is dynamic so tests can pass fakes; production callers pass
-    // a Document. The two dynamic member accesses below are intentional.
-    // ignore: avoid_dynamic_calls
-    final attrs = document.attributes as Map<String, Object?>;
+  static String generateId(String title, NodeDocument document) {
+    final attrs = document.attributes;
     final pre = isTruthy(attrs['idprefix'])
         ? attrs['idprefix']! as String
         : '_';
@@ -212,9 +210,7 @@ class Section extends AbstractBlock implements NodeSection {
         genId = genId.substring(1);
       }
     }
-    // See above: `document` may be a test fake, so this stays dynamic.
-    // ignore: avoid_dynamic_calls
-    final refs = document.catalog['refs'] as Map<String, Object?>;
+    final refs = document.catalog['refs']! as Map<String, Object?>;
     if (refs.containsKey(genId)) {
       var count = _complianceUniqueIdStartIndex;
       late String candidateId;

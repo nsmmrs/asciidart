@@ -1,5 +1,3 @@
-// Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
-// ignore_for_file: avoid_dynamic_calls
 /// Top-level load and convert entry points for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/load.rb` ([load], [loadFile]) and
@@ -434,9 +432,10 @@ void _probeReadable(File file) {
 /// Coerces the `'attributes'` option [value] to a fresh attribute map.
 ///
 /// Accepts `null` (yields `{}`), a [Map] (copied), a [List] of `k=v` entries,
-/// a [String] of blank-separated `k=v` entries (with `\`-escaped blanks kept
-/// literal), or a duck-typed map exposing `keys` and `[]` (a [Function]
-/// `keys` is invoked). Anything else raises an [ArgumentError].
+/// or a [String] of blank-separated `k=v` entries (with `\`-escaped blanks
+/// kept literal). Ruby's duck-typed hash-likes (`respond_to?(:keys)`)
+/// correspond to custom [Map] implementations here. Anything else raises an
+/// [ArgumentError].
 Map<String, Object?> _coerceAttributes(Object? value) {
   if (value == null) return <String, Object?>{};
   if (value is Map<Object?, Object?>) {
@@ -458,23 +457,9 @@ Map<String, Object?> _coerceAttributes(Object? value) {
     }
     return attrs;
   }
-  // Duck-typed map (port of the `respond_to?(:keys)` branch).
-  try {
-    final dynamic keys = (value as dynamic).keys;
-    final resolvedKeys = keys is Function ? keys() : keys;
-    final attrs = <String, Object?>{};
-    for (final key in resolvedKeys as Iterable<Object?>) {
-      attrs[key.toString()] = (value as dynamic)[key];
-    }
-    return attrs;
-    // Duck-type probe (port of `respond_to?(:keys)`): Dart has no
-    // respond_to?, so NoSuchMethodError is the probe signal.
-    // ignore: avoid_catching_errors
-  } on NoSuchMethodError {
-    throw ArgumentError(
-      'illegal type for attributes option: ${value.runtimeType}',
-    );
-  }
+  throw ArgumentError(
+    'illegal type for attributes option: ${value.runtimeType}',
+  );
 }
 
 /// Assigns the `k=v` [entry] into [attrs] (a bare `k` assigns `''`).
