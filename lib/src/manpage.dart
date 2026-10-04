@@ -643,9 +643,9 @@ class ManpageConverter extends ConverterBase {
             );
           }
           final colspan = cell.colspan;
-          // ignore: cast_nullable_to_non_nullable
           // The `as` cast both checks and promotes `colspan` to int for the
           // loop below; the `!` form would not promote.
+          // ignore: cast_nullable_to_non_nullable
           if (isTruthy(colspan) && (colspan as int) > 1) {
             for (var i = 0; i < colspan - 1; i++) {
               if (headerRow.isEmpty || headerRow[cellIndex]!.isEmpty) {
@@ -656,9 +656,9 @@ class ManpageConverter extends ConverterBase {
             }
           }
           final rowspan = cell.rowspan;
-          // ignore: cast_nullable_to_non_nullable
           // The `as` cast both checks and promotes `rowspan` to int for the
           // loop below; the `!` form would not promote.
+          // ignore: cast_nullable_to_non_nullable
           if (isTruthy(rowspan) && (rowspan as int) > 1) {
             for (var i = 0; i < rowspan - 1; i++) {
               final futureRow = _rowHeaderAt(rowHeader, rowIndex + 1 + i);
