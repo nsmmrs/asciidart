@@ -541,6 +541,10 @@ abstract class NamedProcessor extends Processor {
   String? name;
 
   /// Sets the name this processor is registered under.
+  ///
+  /// A method (not a setter) for extension-DSL parity: extension authors
+  /// call `processor.named('...')`, mirroring the Ruby/JS API.
+  // ignore: use_setters_to_change_properties
   void named(String value) {
     name = value;
   }
@@ -1200,8 +1204,8 @@ class Registry {
   /// Each group is a `void Function(Registry)` callback, a zero-argument
   /// callback (invoked without the registry, for groups that register
   /// nothing), an [ExtensionGroup] instance, or an [ExtensionGroup]
-  /// factory. Returns this registry.
-  Registry activate(Document document) {
+  /// factory.
+  void activate(Document document) {
     if (_document != null) _reset();
     _document = document;
     final extGroups = [...Extensions.groups.values, ...groups.values];
@@ -1218,7 +1222,6 @@ class Registry {
         throw ArgumentError('Invalid extension group: $group');
       }
     }
-    return this;
   }
 
   /// Registers a [Preprocessor] with the registry.

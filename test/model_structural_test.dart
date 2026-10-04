@@ -1716,7 +1716,7 @@ void main() {
       final cell = table.rows.body.single.single;
       expect(cell.style, equals('asciidoc'));
       expect(cell.innerDocument, isA<Document>());
-      expect((cell.innerDocument as Document).blocks, hasLength(1));
+      expect(cell.innerDocument!.blocks, hasLength(1));
       expect(cell.content()! as String, contains('<strong>this</strong>'));
     });
 

@@ -46,6 +46,10 @@ class Stylesheets {
   static Stylesheets? _instance;
 
   /// Returns the shared [Stylesheets] instance.
+  ///
+  /// A static getter (not a factory) to keep the stable public singleton
+  /// accessor `Stylesheets.instance`.
+  // ignore: prefer_constructors_over_static_methods
   static Stylesheets get instance => _instance ??= Stylesheets();
 
   String? _primaryStylesheetData;

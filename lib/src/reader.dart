@@ -1009,6 +1009,8 @@ class PreprocessorReader extends Reader {
       //Document::AttributeEntry.new('indir', @dir).save_to_next_block @document
       _lookAhead = 0;
     }
+    // Ruby API parity: `push_include` returns the reader (pinned by test).
+    // ignore: avoid_returning_this
     return this;
   }
 

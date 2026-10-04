@@ -4317,7 +4317,11 @@ abstract final class Parser {
     } else if (rawValue.endsWith(_lineContinuation) ||
         rawValue.endsWith(_lineContinuationLegacy)) {
       final con = rawValue.substring(rawValue.length - 2);
-      var joined = rawValue.substring(0, rawValue.length - 2).trimRight();
+      final first = rawValue.substring(0, rawValue.length - 2).trimRight();
+      final joined = StringBuffer(first);
+      // The accumulator always ends with the last appended line, so the
+      // ends-with-break check tracks just that line.
+      var endsWithBreak = first.endsWith(_hardLineBreak);
       while (reader.advance()) {
         var nextLine = (reader.peekLine() ?? '').trimLeft();
         if (nextLine.isEmpty) break;
@@ -4325,11 +4329,12 @@ abstract final class Parser {
         if (keepOpen) {
           nextLine = nextLine.substring(0, nextLine.length - 2).trimRight();
         }
-        joined =
-            '$joined${joined.endsWith(_hardLineBreak) ? lf : ' '}$nextLine';
+        joined.write(endsWithBreak ? lf : ' ');
+        joined.write(nextLine);
+        endsWithBreak = nextLine.endsWith(_hardLineBreak);
         if (!keepOpen) break;
       }
-      value = joined;
+      value = joined.toString();
     } else {
       value = rawValue;
     }

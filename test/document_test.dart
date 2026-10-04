@@ -460,7 +460,7 @@ class XmlNode {
 
   /// Sibling context for top-level nodes (set by the parser so
   /// `following-sibling` and `+` work across fragment roots).
-  List<XmlNode>? _rootSiblings;
+  late List<XmlNode>? _rootSiblings;
 
   /// Whether this is a text node.
   final bool isText;

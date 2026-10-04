@@ -120,17 +120,15 @@ class DocumentAttributeEntry {
 
   /// Records this entry in [blockAttributes] under `'attribute_entries'`.
   ///
-  /// Returns this entry. (Ruby keys the entry list with a symbol; the port
-  /// uses the string `'attribute_entries'` per the symbols-become-strings
-  /// convention.)
-  DocumentAttributeEntry saveTo(Map<String, Object?> blockAttributes) {
+  /// (Ruby keys the entry list with a symbol; the port uses the string
+  /// `'attribute_entries'` per the symbols-become-strings convention.)
+  void saveTo(Map<String, Object?> blockAttributes) {
     var entries = blockAttributes['attribute_entries'];
     if (entries == null || entries == false) {
       entries = <DocumentAttributeEntry>[];
       blockAttributes['attribute_entries'] = entries;
     }
     (entries as List<DocumentAttributeEntry>).add(this);
-    return this;
   }
 }
 
@@ -748,16 +746,17 @@ class Document extends AbstractBlock implements NodeDocument {
       // documents (nested documents inherit the parent registry above).
       final extRegistry = opts['extension_registry'];
       if (extRegistry is Registry) {
-        extensions = extRegistry.activate(this);
+        extRegistry.activate(this);
+        extensions = extRegistry;
       } else if (!opts.containsKey('extensions') ||
           opts['extensions'] == null) {
         if (Extensions.groups.isNotEmpty) {
-          extensions = Registry().activate(this);
+          extensions = Registry()..activate(this);
         }
       } else if (opts['extensions'] is void Function(Registry)) {
         extensions = Extensions.create(
           build: opts['extensions']! as void Function(Registry),
-        ).activate(this);
+        )..activate(this);
       }
 
       reader = PreprocessorReader(

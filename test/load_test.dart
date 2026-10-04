@@ -32,6 +32,7 @@
 /// `SafeMode` contexts, syntax-highlighter tests, and the JRuby-only tests.
 library;
 
+import 'dart:async' show unawaited;
 import 'dart:io';
 
 import 'package:asciidoctor/src/abstract_node.dart';
@@ -1358,9 +1359,8 @@ void main() {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         try {
           server.listen((request) {
-            request.response
-              ..write('body { color: green; }')
-              ..close();
+            final response = request.response..write('body { color: green; }');
+            unawaited(response.close());
           });
           const input = '= Document Title\n\ntext\n';
           final output =
@@ -1484,9 +1484,8 @@ void main() {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         try {
           server.listen((request) {
-            request.response
-              ..write('body { color: green; }')
-              ..close();
+            final response = request.response..write('body { color: green; }');
+            unawaited(response.close());
           });
           const input = '= Document Title\n\ntext\n';
           final output =
@@ -1516,9 +1515,8 @@ void main() {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         try {
           server.listen((request) {
-            request.response
-              ..write('body { color: green; }')
-              ..close();
+            final response = request.response..write('body { color: green; }');
+            unawaited(response.close());
           });
           const input = '= Document Title\n\ntext\n';
           final output =
