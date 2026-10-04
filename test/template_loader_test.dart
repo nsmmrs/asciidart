@@ -361,7 +361,7 @@ void main() {
 
     test('document coerces template dirs and defaults template_cache', () {
       Map<String, Object?>? seen;
-      final factory = (ConverterFactory(null, false))
+      final factory = (ConverterFactory(proxyDefault: false))
         ..register((String backend, Map<String, Object?> opts) {
           seen = Map.of(opts);
           return _CapturingConverter(backend, opts);
@@ -380,7 +380,7 @@ void main() {
 
     test('document passes explicit template options through', () {
       Map<String, Object?>? seen;
-      final factory = (ConverterFactory(null, false))
+      final factory = (ConverterFactory(proxyDefault: false))
         ..register((String backend, Map<String, Object?> opts) {
           seen = Map.of(opts);
           return _CapturingConverter(backend, opts);

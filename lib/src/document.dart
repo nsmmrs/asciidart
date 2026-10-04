@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// The document node: root of a parsed AsciiDoc document.
 ///
 /// Port of `lib/asciidoctor/document.rb` (complete).
@@ -108,7 +106,7 @@ class DocumentAttributeEntry {
   /// Creates an entry assigning [value] to [name].
   ///
   /// [negate] defaults to whether [value] is `null` (an unset marker).
-  new(this.name, this.value, [bool? negate])
+  new(this.name, this.value, {bool? negate})
     : negate = negate ?? (value == null);
 
   /// The attribute name.
@@ -710,7 +708,7 @@ class Document extends AbstractBlock implements NodeDocument {
       }
 
       // Don't need to do the extra processing within our own document.
-      reader = Reader(data, opts['cursor']);
+      reader = Reader(data, cursor: opts['cursor']);
       if (sourcemap) sourceLocation = _CursorSourceLocation(reader.cursor());
 
       // Now parse the lines in the reader into blocks.
@@ -765,8 +763,8 @@ class Document extends AbstractBlock implements NodeDocument {
       reader = PreprocessorReader(
         _ReaderDocumentAdapter(this),
         data,
-        Cursor(attrs['docfile'], baseDir),
-        true,
+        cursor: Cursor(attrs['docfile'], baseDir),
+        normalize: true,
       );
       if (sourcemap) sourceLocation = _CursorSourceLocation(reader.cursor());
     }
@@ -884,8 +882,8 @@ class Document extends AbstractBlock implements NodeDocument {
       reader = PreprocessorReader(
         _ReaderDocumentAdapter(this),
         data,
-        Cursor(attributes['docfile'], baseDir),
-        true,
+        cursor: Cursor(attributes['docfile'], baseDir),
+        normalize: true,
       );
       if (sourcemap) sourceLocation = _CursorSourceLocation(reader.cursor());
     }
@@ -1271,9 +1269,9 @@ class Document extends AbstractBlock implements NodeDocument {
   /// attributes, and — unless [headerValid] — flags an invalid header.
   /// Returns [unrootedAttributes].
   Map<Object, Object?> finalizeHeader(
-    Map<Object, Object?> unrootedAttributes, [
+    Map<Object, Object?> unrootedAttributes, {
     bool headerValid = true,
-  ]) {
+  }) {
     _clearPlaybackAttributes(unrootedAttributes);
     _saveAttributes();
     if (!headerValid) unrootedAttributes['invalid-header'] = true;
@@ -1354,11 +1352,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// (typically between processor phases). Returns whether the assignment
   /// was performed (`false` only when [overwrite] is `false` and the
   /// attribute already exists).
-  bool setHeaderAttribute(
-    String name, [
-    Object? value = '',
-    bool overwrite = true,
-  ]) {
+  bool setHeaderAttribute(String name, Object? value, {bool overwrite = true}) {
     final attrs = _headerAttributes ?? attributes;
     if (!overwrite && attrs.containsKey(name)) return false;
     attrs[name] = value;

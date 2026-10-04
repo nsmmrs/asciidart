@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Command-line option parsing for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/cli/options.rb` (`Asciidoctor::Cli::Options`).
@@ -1384,7 +1382,7 @@ String _basename(String path) {
 /// A compiled single-segment glob matcher.
 class _SegmentMatcher {
   /// Creates a matcher from `pattern` with [_regex] and dot rule flag.
-  const new(this._regex, this._literalDotStart);
+  const new(this._regex, {required this._literalDotStart});
 
   /// The segment pattern translated to a regular expression.
   final RegExp _regex;
@@ -1454,7 +1452,10 @@ _SegmentMatcher _segmentMatcher(String segment, bool isWindows) {
     first = false;
   }
   buffer.write(r'$');
-  return _SegmentMatcher(RegExp(buffer.toString()), literalDotStart);
+  return _SegmentMatcher(
+    RegExp(buffer.toString()),
+    literalDotStart: literalDotStart,
+  );
 }
 
 /// Finds the closing bracket of the character class opening at [open].

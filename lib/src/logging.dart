@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Logging infrastructure for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/logging.rb` (`Asciidoctor::Logger`,
@@ -388,16 +386,21 @@ class Logger extends LoggerBase {
   }
 
   static _ResolvedLogdev _resolveLogdev(Object? logdev) {
-    if (identical(logdev, _unspecified)) return _ResolvedLogdev(stderr, false);
-    if (logdev == null) return const _ResolvedLogdev(_NullSink(), false);
-    if (logdev is StringSink) return _ResolvedLogdev(logdev, false);
+    if (identical(logdev, _unspecified)) {
+      return _ResolvedLogdev(stderr, owned: false);
+    }
+    if (logdev == null) return const _ResolvedLogdev(_NullSink(), owned: false);
+    if (logdev is StringSink) return _ResolvedLogdev(logdev, owned: false);
     if (logdev is File) {
-      return _ResolvedLogdev(logdev.openWrite(mode: FileMode.append), true);
+      return _ResolvedLogdev(
+        logdev.openWrite(mode: FileMode.append),
+        owned: true,
+      );
     }
     if (logdev is String) {
       return _ResolvedLogdev(
         File(logdev).openWrite(mode: FileMode.append),
-        true,
+        owned: true,
       );
     }
     throw ArgumentError.value(
@@ -411,7 +414,7 @@ class Logger extends LoggerBase {
 /// A log device plus whether the logger owns (and must close) it.
 class _ResolvedLogdev {
   /// Creates a resolved log device.
-  const new(this.sink, this.owned);
+  const new(this.sink, {required this.owned});
 
   /// The sink records are written to.
   final StringSink sink;

@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Converter framework: registration, factories and the dispatch base class.
 ///
 /// Port of `lib/asciidoctor/converter.rb` (framework only). The backend
@@ -439,8 +437,8 @@ abstract class Converter implements NodeConverter {
 ///
 /// Port of the `Converter::Factory` module. Use the factory constructor
 /// (port of `Factory.new`): `ConverterFactory()` proxies the global
-/// registry, while `ConverterFactory(null, false)` resolves only its own
-/// registrations.
+/// registry, while `ConverterFactory(proxyDefault: false)` resolves only its
+/// own registrations.
 abstract class ConverterFactory {
   /// Creates a factory, optionally seeded with [converters].
   ///
@@ -449,7 +447,7 @@ abstract class ConverterFactory {
   /// `null`. When [proxyDefault] is `true` (default), lookups fall through
   /// to the global registry; otherwise only the seed (and later
   /// [register] calls) resolve.
-  factory([Map<String, Object?>? converters, bool proxyDefault = true]) =>
+  factory({Map<String, Object?>? converters, bool proxyDefault = true}) =>
       proxyDefault
       ? DefaultFactoryProxy(converters)
       : CustomFactory(converters);

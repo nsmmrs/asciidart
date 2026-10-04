@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 // The table reader is dynamic so tests can pass fakes; dynamic dispatch on
 // it mirrors Ruby duck typing.
 // ignore_for_file: avoid_dynamic_calls
@@ -279,14 +277,20 @@ class Table extends AbstractBlock {
     if (numBodyRows > 0) {
       if (isTruthy(hasHeaderOption)) {
         rows.head = [
-          body.removeAt(0).map((cell) => cell.reinitialize(true)).toList(),
+          body
+              .removeAt(0)
+              .map((cell) => cell.reinitialize(hasHeader: true))
+              .toList(),
         ];
         numBodyRows -= 1;
       } else if (hasHeaderOption == null) {
         hasHeaderOption = false;
         body.insert(
           0,
-          body.removeAt(0).map((cell) => cell.reinitialize(false)).toList(),
+          body
+              .removeAt(0)
+              .map((cell) => cell.reinitialize(hasHeader: false))
+              .toList(),
         );
       }
     }
@@ -541,7 +545,7 @@ class Cell extends AbstractBlock {
           final preprocessedLines = PreprocessorReader(
             parentDoc.asReaderDocument(),
             [unprocessedLine1],
-            innerDocumentCursor,
+            cursor: innerDocumentCursor,
           ).readlines().whereType<String>().toList();
           if (!(preprocessedLines.isNotEmpty &&
               unprocessedLine1 == preprocessedLines[0] &&
@@ -613,7 +617,7 @@ class Cell extends AbstractBlock {
   /// Reinitializes this cell for (or out of) the header row.
   ///
   /// Port of `Asciidoctor::Table::Cell#reinitialize`.
-  Cell reinitialize(bool hasHeader) {
+  Cell reinitialize({required bool hasHeader}) {
     if (hasHeader) {
       _reinitializeArgs = null;
     } else if (_reinitializeArgs != null) {
@@ -945,7 +949,7 @@ class TableParserContext {
   /// cell, and advances to the next line.
   void closeOpenCell([Map<String, Object?>? nextCellspect]) {
     pushCellspect(nextCellspect);
-    if (isCellOpen) closeCell(true);
+    if (isCellOpen) closeCell(eol: true);
     _advance();
   }
 
@@ -954,7 +958,7 @@ class TableParserContext {
   /// begins a new one.
   ///
   /// Port of `Asciidoctor::Table::ParserContext#close_cell`.
-  void closeCell([bool eol = false]) {
+  void closeCell({bool eol = false}) {
     late final String cellText;
     late final Map<String, Object?>? cellspec;
     late final int repeat;

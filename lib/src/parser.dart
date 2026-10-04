@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Methods to parse lines of AsciiDoc into an object hierarchy.
 ///
 /// Port of `lib/asciidoctor/parser.rb` (complete).
@@ -947,7 +945,11 @@ abstract final class Parser {
     Document document, {
     bool headerOnly = false,
   }) {
-    final blockAttributes = parseDocumentHeader(reader, document, headerOnly);
+    final blockAttributes = parseDocumentHeader(
+      reader,
+      document,
+      headerOnly: headerOnly,
+    );
 
     if (!headerOnly) {
       while (reader.hasMoreLines()) {
@@ -976,9 +978,9 @@ abstract final class Parser {
   /// block attributes captured above the header.
   static Map<Object, Object?> parseDocumentHeader(
     Reader reader,
-    Document document, [
+    Document document, {
     bool headerOnly = false,
-  ]) {
+  }) {
     // Capture lines of block-level metadata and plow away comment lines
     // that precede first block.
     final blockAttrs = reader.skipBlankLines() != null
@@ -996,7 +998,7 @@ abstract final class Parser {
     if (implicitDoctitle &&
         (isTruthy(blockAttrs['title']) || isTruthy(blockAttrs['style']))) {
       docAttrs['authorcount'] = 0;
-      return document.finalizeHeader(blockAttrs, false);
+      return document.finalizeHeader(blockAttrs, headerValid: false);
     }
 
     String? doctitleAttrVal;
@@ -1059,7 +1061,7 @@ abstract final class Parser {
       // notes). The `elsif` branch only appends to that set, which no
       // ported reader consults for `doctitle`, so it is omitted.
       final doctitleBefore = docAttrs['doctitle'];
-      parseHeaderMetadata(reader, document, false);
+      parseHeaderMetadata(reader, document: document, retrieve: false);
       if (docAttrs['doctitle'] != doctitleBefore) {
         final val = docAttrs['doctitle'];
         if (_isNilOrEmpty(val) || val == doctitleAttrVal) {
@@ -1070,13 +1072,20 @@ abstract final class Parser {
       }
       if (docId != null) document.register('refs', [docId, document]);
     } else if (isTruthy(docAttrs['author'])) {
-      final authorMetadata = processAuthors(docAttrs['author']!, true, false);
+      final authorMetadata = processAuthors(
+        docAttrs['author']!,
+        namesOnly: true,
+        multiple: false,
+      );
       if (docAttrs.containsKey('authorinitials')) {
         authorMetadata.remove('authorinitials');
       }
       docAttrs.addAll(authorMetadata);
     } else if (isTruthy(docAttrs['authors'])) {
-      final authorMetadata = processAuthors(docAttrs['authors']!, true);
+      final authorMetadata = processAuthors(
+        docAttrs['authors']!,
+        namesOnly: true,
+      );
       docAttrs.addAll(authorMetadata);
     } else {
       docAttrs['authorcount'] = 0;
@@ -1084,7 +1093,7 @@ abstract final class Parser {
 
     // Parse title and consume name section of manpage document.
     if (_doctype(document) == 'manpage') {
-      parseManpageHeader(reader, document, blockAttrs, headerOnly);
+      parseManpageHeader(reader, document, blockAttrs, headerOnly: headerOnly);
     }
 
     // NOTE blockAttrs are the block-level attributes (not document
@@ -1099,9 +1108,9 @@ abstract final class Parser {
   static void parseManpageHeader(
     Reader reader,
     Document document,
-    Map<Object, Object?> blockAttributes, [
+    Map<Object, Object?> blockAttributes, {
     bool headerOnly = false,
-  ]) {
+  }) {
     final docAttrs = document.attributes;
     final doctitle = docAttrs['doctitle'];
     final volnumMatch = doctitle is String
@@ -1613,7 +1622,7 @@ abstract final class Parser {
     if (_underlineStyleSectionTitles) {
       final nextLines = reader.peekLines(
         2,
-        style != null && style == 'comment',
+        direct: style != null && style == 'comment',
       );
       return isSectionTitle(
         nextLines.isNotEmpty ? nextLines[0] : '',
@@ -1712,7 +1721,9 @@ abstract final class Parser {
         }
       }
     } else {
-      final line2 = _underlineStyleSectionTitles ? reader.peekLine(true) : null;
+      final line2 = _underlineStyleSectionTitles
+          ? reader.peekLine(direct: true)
+          : null;
       final line2ch0 = line2 == null ? null : _firstChar(line2);
       final level = line2ch0 == null ? null : _setextSectionLevels[line2ch0];
       final setextMatch =
@@ -2469,7 +2480,7 @@ abstract final class Parser {
             context: 'table',
             cursor: Reader.atMark,
           ),
-          blockCursor,
+          cursor: blockCursor,
         );
         // NOTE it's very rare that format is set when using a format hint
         // char, so short-circuit.
@@ -2806,7 +2817,7 @@ abstract final class Parser {
           context: blockContext,
           cursor: Reader.atMark,
         ),
-        blockCursor,
+        cursor: blockCursor,
       );
     }
 
@@ -3273,9 +3284,9 @@ abstract final class Parser {
         }
         final (resolvedMarker, implicitStyle) = resolveOrderedListMarker(
           trait as String,
-          ordinal,
-          validate,
-          reader,
+          ordinal: ordinal,
+          validate: validate,
+          reader: reader,
         );
         trait = resolvedMarker;
         listItem.marker = resolvedMarker;
@@ -3322,8 +3333,13 @@ abstract final class Parser {
     reader.shift();
     final blockCursor = reader.cursor();
     final listItemReader = Reader(
-      readLinesForListItem(reader, listType, trait, hasText),
-      blockCursor,
+      readLinesForListItem(
+        reader,
+        listType,
+        siblingTrait: trait,
+        hasText: hasText,
+      ),
+      cursor: blockCursor,
     );
     if (listItemReader.hasMoreLines()) {
       if (sourcemapAssignmentDeferred) {
@@ -3390,10 +3406,10 @@ abstract final class Parser {
   /// Port of `Parser.read_lines_for_list_item`.
   static List<String> readLinesForListItem(
     Reader reader,
-    String listType, [
+    String listType, {
     Object? siblingTrait,
     bool hasText = true,
-  ]) {
+  }) {
     final buffer = <Object>[];
 
     // Three states for continuation: inactive, active & frozen.
@@ -3712,11 +3728,11 @@ abstract final class Parser {
   /// marker in the number series and, when [ordinal] is given, the
   /// implicit list style.
   static (String, String?) resolveOrderedListMarker(
-    String marker, [
+    String marker, {
     int? ordinal,
     bool validate = false,
     Reader? reader,
-  ]) {
+  }) {
     if (marker.startsWith('.')) return (marker, null);
     // NOTE case statement is guaranteed to match one of the conditions.
     String? style;
@@ -3979,10 +3995,10 @@ abstract final class Parser {
               }
               parserCtx.keepCellOpen();
             } else {
-              parserCtx.closeCell(true);
+              parserCtx.closeCell(eol: true);
             }
           } else if (format == 'dsv') {
-            parserCtx.closeCell(true);
+            parserCtx.closeCell(eol: true);
           } else {
             // psv
             parserCtx.keepCellOpen();
@@ -3993,7 +4009,7 @@ abstract final class Parser {
 
       // NOTE cell may already be closed if table format is csv or dsv.
       if (parserCtx.isCellOpen) {
-        if (!tableReader.hasMoreLines()) parserCtx.closeCell(true);
+        if (!tableReader.hasMoreLines()) parserCtx.closeCell(eol: true);
       } else {
         if (tableReader.skipBlankLines() == null) break;
       }
@@ -4552,10 +4568,10 @@ abstract final class Parser {
   /// the metadata is applied to it. Returns the merged metadata map when
   /// [retrieve] is set, else an empty map.
   static Map<String, Object?> parseHeaderMetadata(
-    Reader reader, [
+    Reader reader, {
     Document? document,
     bool retrieve = true,
-  ]) {
+  }) {
     final docAttrs = document?.attributes;
     // NOTE this will discard any comment lines, but not skip blank lines.
     processAttributeEntries(reader, document);
@@ -4640,14 +4656,18 @@ abstract final class Parser {
       if (docAttrs.containsKey('author') &&
           docAttrs['author'] != implicitAuthor) {
         // Do not allow multiple, process as names only.
-        authorMetadata = processAuthors(docAttrs['author'] ?? '', true, false);
+        authorMetadata = processAuthors(
+          docAttrs['author'] ?? '',
+          namesOnly: true,
+          multiple: false,
+        );
         if (docAttrs['authorinitials'] != implicitAuthorinitials) {
           authorMetadata.remove('authorinitials');
         }
       } else if (docAttrs.containsKey('authors') &&
           docAttrs['authors'] != implicitAuthors) {
         // Allow multiple, process as names only.
-        authorMetadata = processAuthors(docAttrs['authors']!, true);
+        authorMetadata = processAuthors(docAttrs['authors']!, namesOnly: true);
       } else {
         final authors = <String?>[];
         var authorIdx = 1;
@@ -4687,7 +4707,11 @@ abstract final class Parser {
             }
           }
           // Process as names only.
-          authorMetadata = processAuthors(authors, true, false);
+          authorMetadata = processAuthors(
+            authors,
+            namesOnly: true,
+            multiple: false,
+          );
         } else {
           authorMetadata = <String, Object?>{'authorcount': 0};
         }
@@ -4721,10 +4745,10 @@ abstract final class Parser {
   /// Port of `Parser.process_authors`. [authorLine] is a `String` author
   /// line or a `List` of entries.
   static Map<String, Object?> processAuthors(
-    Object authorLine, [
+    Object authorLine, {
     bool namesOnly = false,
     bool multiple = true,
-  ]) {
+  }) {
     final authorMetadata = <String, Object?>{};
     var authorIdx = 0;
     final List<String> entries;

@@ -402,13 +402,13 @@ PreprocessorReader preprocessorReader(
     baseDir: baseDir,
     sourcemap: sourcemap,
   );
-  return PreprocessorReader(doc, input, cursor, true);
+  return PreprocessorReader(doc, input, cursor: cursor, normalize: true);
 }
 
 /// Reads all lines for [input] in safe mode against the fixtures dir.
 List<String?> _includeLines(String input) {
   final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-  return PreprocessorReader(doc, input, null, true).readLines();
+  return PreprocessorReader(doc, input, normalize: true).readLines();
 }
 
 /// Expanded lines between the block delimiters of a delimited [input]
@@ -467,7 +467,7 @@ void main() {
       test('should remove UTF-8 BOM from first line of String data', () {
         // NOTE Dart strings have no encoding; only BOM removal is portable.
         final data = '\uFEFF${sampleData.join('\n')}';
-        final reader = Reader(data, null, true);
+        final reader = Reader(data, normalize: true);
         expect(reader.lines[0]![0], equals('f'));
         expect(reader.lines, equals(sampleData));
       });
@@ -475,7 +475,7 @@ void main() {
       test('should remove UTF-8 BOM from first line of Array data', () {
         final data = [...sampleData];
         data[0] = '\uFEFF${data[0]}';
-        final reader = Reader(data, null, true);
+        final reader = Reader(data, normalize: true);
         expect(reader.lines[0]![0], equals('f'));
         expect(reader.lines, equals(sampleData));
       });
@@ -515,32 +515,32 @@ void main() {
 
     group('With empty data', () {
       test('hasMoreLines should return false with empty data', () {
-        expect(Reader().hasMoreLines(), isFalse);
+        expect(Reader(null).hasMoreLines(), isFalse);
       });
 
       test('isEmpty should return true with empty data', () {
-        expect(Reader().isEmpty, isTrue);
-        expect(Reader().isEof, isTrue);
+        expect(Reader(null).isEmpty, isTrue);
+        expect(Reader(null).isEof, isTrue);
       });
 
       test('isNextLineEmpty should return true with empty data', () {
-        expect(Reader().isNextLineEmpty(), isTrue);
+        expect(Reader(null).isNextLineEmpty(), isTrue);
       });
 
       test('peekLine should return null with empty data', () {
-        expect(Reader().peekLine(), isNull);
+        expect(Reader(null).peekLine(), isNull);
       });
 
       test('peekLines should return empty Array with empty data', () {
-        expect(Reader().peekLines(1), isEmpty);
+        expect(Reader(null).peekLines(1), isEmpty);
       });
 
       test('readLine should return null with empty data', () {
-        expect(Reader().readLine(), isNull);
+        expect(Reader(null).readLine(), isNull);
       });
 
       test('readLines should return empty Array with empty data', () {
-        expect(Reader().readLines(), isEmpty);
+        expect(Reader(null).readLines(), isEmpty);
       });
     });
 
@@ -608,7 +608,7 @@ void main() {
 
       test('peekLines should peek all lines if no arguments are given', () {
         final reader = Reader(sampleData);
-        expect(reader.peekLines(), equals(sampleData));
+        expect(reader.peekLines(null), equals(sampleData));
         expect(reader.lineno, equals(1));
       });
 
@@ -656,7 +656,8 @@ void main() {
       });
 
       test('unshift puts line onto Reader as next line to read', () {
-        final reader = (Reader(sampleData, null, true))..unshift('line zero');
+        final reader = (Reader(sampleData, normalize: true))
+          ..unshift('line zero');
         expect(reader.peekLine(), equals('line zero'));
         expect(reader.readLine(), equals('line zero'));
         expect(reader.lineno, equals(1));
@@ -692,21 +693,22 @@ void main() {
     group('Line context', () {
       test('cursor.toString should return file name and line number of '
           'current line', () {
-        final reader = (Reader(sampleData, 'sample.adoc'))..readLine();
+        final reader = (Reader(sampleData, cursor: 'sample.adoc'))..readLine();
         expect(reader.cursor().toString(), equals('sample.adoc: line 2'));
       });
 
       test(
         'lineInfo should return file name and line number of current line',
         () {
-          final reader = (Reader(sampleData, 'sample.adoc'))..readLine();
+          final reader = (Reader(sampleData, cursor: 'sample.adoc'))
+            ..readLine();
           expect(reader.lineInfo, equals('sample.adoc: line 2'));
         },
       );
 
       test('cursorAtPrevLine should return file name and line number '
           'of previous line read', () {
-        final reader = (Reader(sampleData, 'sample.adoc'))..readLine();
+        final reader = (Reader(sampleData, cursor: 'sample.adoc'))..readLine();
         expect(
           reader.cursorAtPrevLine().toString(),
           equals('sample.adoc: line 1'),
@@ -755,7 +757,7 @@ void main() {
           'This is another paragraph.\n',
         ];
 
-        final reader = Reader(lines, null, true);
+        final reader = Reader(lines, normalize: true);
         final result = reader.readLinesUntil();
         expect(result, hasLength(3));
         expect(result, equals(lines.map((line) => line.chomp()).toList()));
@@ -770,7 +772,7 @@ void main() {
           'This is another paragraph.\n',
         ];
 
-        final reader = Reader(lines, null, true);
+        final reader = Reader(lines, normalize: true);
         final result = reader.readLinesUntil(breakOnBlankLines: true);
         expect(result, hasLength(1));
         expect(result.first, equals(lines.first.chomp()));
@@ -870,7 +872,7 @@ void main() {
         const expected = ['captured', '', 'also captured'];
 
         final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-        final reader = PreprocessorReader(doc, lines, null, true);
+        final reader = PreprocessorReader(doc, lines, normalize: true);
         final terminator = reader.readLine();
         final result = reader.readLinesUntil(
           terminator: terminator,
@@ -895,7 +897,7 @@ void main() {
 
         usingMemoryLogger((logger) {
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, lines, null, true);
+          final reader = PreprocessorReader(doc, lines, normalize: true);
           final terminator = reader.peekLine();
           final result = reader.readLinesUntil(
             terminator: terminator,
@@ -982,7 +984,7 @@ void main() {
             'preamble\n';
 
         final doc = FakeDocument();
-        final reader = PreprocessorReader(doc, input, null, true);
+        final reader = PreprocessorReader(doc, input, normalize: true);
         expect(doc.attributes.containsKey('front-matter'), isFalse);
         expect(reader.peekLine(), equals('---'));
         expect(reader.lineno, equals(1));
@@ -999,7 +1001,7 @@ void main() {
             'preamble\n';
 
         final doc = FakeDocument(attributes: {'skip-front-matter': ''});
-        final reader = PreprocessorReader(doc, input, null, true);
+        final reader = PreprocessorReader(doc, input, normalize: true);
         expect(reader.peekLine(), equals('---'));
         expect(doc.attributes.containsKey('front-matter'), isFalse);
         expect(reader.lineno, equals(1));
@@ -1024,7 +1026,7 @@ void main() {
               'preamble\n';
 
           final doc = FakeDocument(attributes: {'skip-front-matter': ''});
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(reader.peekLine(), equals('= Document Title'));
           expect(doc.attributes['front-matter'], equals(frontMatter));
           expect(reader.lineno, equals(7));
@@ -1049,7 +1051,7 @@ void main() {
             'preamble\n';
 
         final doc = FakeDocument(attributes: {'skip-front-matter': ''});
-        final reader = PreprocessorReader(doc, input, null, true);
+        final reader = PreprocessorReader(doc, input, normalize: true);
         expect(reader.peekLine(), equals('= Document Title'));
         expect(doc.attributes['front-matter'], equals(frontMatter));
         expect(reader.lineno, equals(7));
@@ -1062,7 +1064,7 @@ void main() {
             'include::fixtures/with-front-matter.adoc[]\n'
             '....\n';
         final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-        final reader = PreprocessorReader(doc, input, null, true);
+        final reader = PreprocessorReader(doc, input, normalize: true);
         const expected = [
           '....',
           '---',
@@ -1082,7 +1084,7 @@ void main() {
             'include::fixtures/with-front-matter.adoc[opts=skip-front-matter]\n'
             '....\n';
         final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-        final reader = PreprocessorReader(doc, input, null, true);
+        final reader = PreprocessorReader(doc, input, normalize: true);
         const expected = ['....', 'content', '....'];
         expect(reader.readlines(), equals(expected));
         expect(doc.attrSet('front-matter'), isFalse);
@@ -1121,8 +1123,11 @@ void main() {
       test('PreprocessorReader#push_include method should set path '
           'from file automatically if not specified', () {
         final doc = FakeDocument();
-        final reader = (PreprocessorReader(doc, ['a', 'b', 'c'], null, true))
-          ..pushInclude(['one', 'two', 'three'], '/tmp/lines.adoc');
+        final reader = (PreprocessorReader(
+          doc,
+          ['a', 'b', 'c'],
+          normalize: true,
+        ))..pushInclude(['one', 'two', 'three'], '/tmp/lines.adoc');
         expect(reader.file, equals('/tmp/lines.adoc'));
         expect(reader.path, equals('lines.adoc'));
         expect(doc.catalogIncludes['lines'], isTrue);
@@ -1161,8 +1166,11 @@ void main() {
       test('PreprocessorReader#push_include method should ignore dot '
           'in directory name when computing include path', () {
         final doc = FakeDocument();
-        final reader = (PreprocessorReader(doc, ['a', 'b', 'c'], null, true))
-          ..pushInclude(['one', 'two', 'three'], null, 'include.d/data');
+        final reader = (PreprocessorReader(
+          doc,
+          ['a', 'b', 'c'],
+          normalize: true,
+        ))..pushInclude(['one', 'two', 'three'], null, 'include.d/data');
         expect(reader.file, isNull);
         expect(reader.path, equals('include.d/data'));
         expect(doc.catalogIncludes['include.d/data'], isTrue);
@@ -1330,7 +1338,7 @@ void main() {
         () {
           const input = 'include::fixtures/include-file.adoc[]';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           final lines = reader.readLines();
           expect(
             lines.any(
@@ -1349,7 +1357,7 @@ void main() {
           const input =
               ':showtitle:\ninclude::fixtures/file-with-utf8-bom.adoc[]';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(reader.readLines(), equals([':showtitle:', '= 人']));
         },
       );
@@ -1366,7 +1374,7 @@ void main() {
         () {
           const input = '----\ninclude::fixtures/circle.svg[]\n----\n';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          PreprocessorReader(doc, input, null, true).readLines();
+          PreprocessorReader(doc, input, normalize: true).readLines();
           expect(doc.catalogIncludes, isEmpty);
         },
       );
@@ -1381,7 +1389,7 @@ void main() {
           File(includeFile).copySync(includeFileWithSp);
           try {
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-            final reader = PreprocessorReader(doc, input, null, true);
+            final reader = PreprocessorReader(doc, input, normalize: true);
             final source = reader.readLines().join('\n');
             expect(source, contains('included content'));
           } finally {
@@ -1400,7 +1408,7 @@ void main() {
           File(includeFile).copySync(includeFileWithSp);
           try {
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-            final reader = PreprocessorReader(doc, input, null, true);
+            final reader = PreprocessorReader(doc, input, normalize: true);
             final source = reader.readLines().join('\n');
             expect(source, contains('included content'));
           } finally {
@@ -1445,7 +1453,7 @@ void main() {
               },
             );
             // skip the attribute entry lines the parser would have consumed
-            final reader = (PreprocessorReader(doc, input, null, true))
+            final reader = (PreprocessorReader(doc, input, normalize: true))
               ..readLine()
               ..readLine()
               ..readLine();
@@ -1476,7 +1484,12 @@ void main() {
               '$fixtureDir/grandchild-include.adoc';
 
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, pseudoDocfile, true);
+          final reader = PreprocessorReader(
+            doc,
+            input,
+            cursor: pseudoDocfile,
+            normalize: true,
+          );
 
           expect(reader.file, equals(pseudoDocfile));
           expect(reader.dir, equals(repoTestDir));
@@ -1545,7 +1558,7 @@ void main() {
         () {
           const input = 'include::fixtures/include-alt-extension.asciidoc[]';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(
             reader.readLines(),
             equals(['first line', '', 'Asciidoctor!', '', 'last line']),
@@ -1560,7 +1573,7 @@ void main() {
         () {
           const input = '....\ninclude::fixtures/data.tsv[]\n....\n';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           final lines = reader.readLines();
           expect(lines, hasLength(6));
           expect(lines[3], endsWith('\t'));
@@ -1575,7 +1588,7 @@ void main() {
         () {
           const input = '....\ninclude::fixtures/iso-8859-1.txt[]\n....\n';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(
             reader.readLines,
             throwsA(
@@ -1599,7 +1612,7 @@ void main() {
               'Gregory Romé has written an AsciiDoc plugin for the Redmine '
               'project management application.';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(reader.readLines(), equals(['....', expectedLine, '....']));
         },
       );
@@ -1612,7 +1625,7 @@ void main() {
           const input =
               '....\ninclude::fixtures/iso-8859-1.txt[encoding=iso-8859-1]\n....\n';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(
             reader.readLines(),
             equals(['....', "Où est l'hôpital ?", '....']),
@@ -1629,7 +1642,7 @@ void main() {
               'include::fixtures/{no-such-file}[opts=optional]\n\ntrailing content\n';
           usingMemoryLogger((logger) {
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-            final reader = PreprocessorReader(doc, input, null, true);
+            final reader = PreprocessorReader(doc, input, normalize: true);
             expect(reader.readLines(), equals(['', 'trailing content']));
             assertMessage(
               logger,
@@ -1651,7 +1664,7 @@ void main() {
               'include::fixtures/no-such-file.adoc[opts=optional]\n\ntrailing content\n';
           usingMemoryLogger((logger) {
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-            final reader = PreprocessorReader(doc, input, null, true);
+            final reader = PreprocessorReader(doc, input, normalize: true);
             expect(reader.readLines(), equals(['', 'trailing content']));
             assertMessage(
               logger,
@@ -1673,7 +1686,7 @@ void main() {
               'include::fixtures/no-such-file.adoc[]\n\ntrailing content\n';
           usingMemoryLogger((logger) {
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-            final reader = PreprocessorReader(doc, input, null, true);
+            final reader = PreprocessorReader(doc, input, normalize: true);
             expect(
               reader.readLines(),
               equals([
@@ -1711,7 +1724,7 @@ void main() {
                 safe: SafeMode.safe,
                 baseDir: repoTestDir,
               );
-              final reader = PreprocessorReader(doc, input, null, true);
+              final reader = PreprocessorReader(doc, input, normalize: true);
               expect(
                 reader.readLines(),
                 equals([
@@ -1743,7 +1756,7 @@ void main() {
           final input = 'include::$includePath[]';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: fixtureDir);
           expect(
-            PreprocessorReader(doc, input, null, true).readLine(),
+            PreprocessorReader(doc, input, normalize: true).readLine(),
             equals('= Chapter A'),
           );
 
@@ -1752,7 +1765,7 @@ void main() {
             baseDir: Directory.systemTemp.path,
           );
           expect(
-            PreprocessorReader(unsafeDoc, input, null, true).readLine(),
+            PreprocessorReader(unsafeDoc, input, normalize: true).readLine(),
             equals('= Chapter A'),
           );
         },
@@ -1770,7 +1783,7 @@ void main() {
             safe: SafeMode.safe,
             attributes: {'allow-uri-read': ''},
           );
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           final lines = reader.readLines();
           expect(lines, hasLength(3));
           expect(lines[1], contains('{"name": "asciidoctor"}'));
@@ -1783,7 +1796,7 @@ void main() {
         () {
           const input = '....\ninclude::fixtures/outer-include.adoc[]\n....\n';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           const expected =
               'first line of outer\n'
               '\n'
@@ -1812,7 +1825,7 @@ void main() {
             safe: SafeMode.safe,
             attributes: {'allow-uri-read': ''},
           );
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           const expected =
               'first line of outer\n'
               '\n'
@@ -1843,7 +1856,7 @@ void main() {
               safe: SafeMode.safe,
               attributes: {'allow-uri-read': ''},
             );
-            final reader = PreprocessorReader(doc, input, null, true);
+            final reader = PreprocessorReader(doc, input, normalize: true);
             final lines = reader.readLines();
             expect(
               lines,
@@ -1874,7 +1887,7 @@ void main() {
             safe: SafeMode.safe,
             attributes: {'allow-uri-read': ''},
           );
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(
             reader.readLines().join('\n'),
             contains('def initialize breed\n  @breed = breed\nend'),
@@ -1893,7 +1906,7 @@ void main() {
               safe: SafeMode.safe,
               attributes: {'allow-uri-read': ''},
             );
-            final reader = PreprocessorReader(doc, input, null, true);
+            final reader = PreprocessorReader(doc, input, normalize: true);
             final lines = reader.readLines();
             expect(lines, isNotEmpty);
             expect(
@@ -2074,7 +2087,7 @@ void main() {
             );
             const input = 'include::include.adoc[tag=include-me]';
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: tmpDir.path);
-            final reader = PreprocessorReader(doc, input, null, true);
+            final reader = PreprocessorReader(doc, input, normalize: true);
             final source = reader.readLines().join('\n');
             expect(source, contains('included line'));
             expect(source, isNot(contains('do not include')));
@@ -2103,7 +2116,7 @@ void main() {
                 safe: SafeMode.safe,
                 baseDir: tmpDir.path,
               );
-              final reader = PreprocessorReader(doc, input, null, true);
+              final reader = PreprocessorReader(doc, input, normalize: true);
               final source = reader.readLines().join('\n');
               expect(logger.messages, isEmpty);
               expect(source, contains('line included'));
@@ -2809,7 +2822,7 @@ void main() {
             baseDir: repoTestDir,
             attributes: {'name-of-tag': 'snippetA'},
           );
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           final source = reader.readLines().join('\n');
           expect(source, contains('snippetA content'));
           expect(source, isNot(contains('snippetB content')));
@@ -2827,7 +2840,7 @@ void main() {
         () {
           const input = 'include::fixtures/include-file.adoc[]';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           final source = reader.readLines().join('\n');
           expect(source, contains('included content'));
         },
@@ -2851,7 +2864,7 @@ void main() {
         ];
 
         final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-        final reader = PreprocessorReader(doc, input, null, true);
+        final reader = PreprocessorReader(doc, input, normalize: true);
         expect(reader.readLines(), equals(expected));
       });
 
@@ -2867,7 +2880,7 @@ void main() {
             baseDir: repoTestDir,
             attributes: {'fixturesdir': 'fixtures', 'ext': 'adoc'},
           );
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(reader.readLines().join('\n'), contains('included content'));
         },
       );
@@ -2877,7 +2890,7 @@ void main() {
         const input = 'include::{blank}[]';
         usingMemoryLogger((logger) {
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(
             reader.readLine(),
             equals('Unresolved directive in <stdin> - include::{blank}[]'),
@@ -2901,7 +2914,7 @@ void main() {
             baseDir: repoTestDir,
             attributes: {'attribute-missing': 'drop-line'},
           );
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(reader.readLine(), isNull);
           assertMessages(logger, [
             (
@@ -2926,7 +2939,7 @@ void main() {
             baseDir: repoTestDir,
             attributes: {'attribute-missing': 'warn'},
           );
-          final reader = PreprocessorReader(doc, input, null, true);
+          final reader = PreprocessorReader(doc, input, normalize: true);
           expect(
             reader.readLine(),
             equals(
@@ -2953,7 +2966,7 @@ void main() {
         const input =
             '\\include::fixtures/include-file.adoc[]\n\\escape preserved here\n';
         final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-        final reader = PreprocessorReader(doc, input, null, true);
+        final reader = PreprocessorReader(doc, input, normalize: true);
         // we should be able to peek it multiple times and still have the
         // backslash preserved; this is the test for unescapeNextLine
         expect(
@@ -3023,8 +3036,8 @@ void main() {
           final reader = PreprocessorReader(
             doc,
             input,
-            Cursor(pseudoDocfile),
-            true,
+            cursor: Cursor(pseudoDocfile),
+            normalize: true,
           );
           final lines = reader.readlines();
           expect(lines, contains('include::grandchild-include.adoc[]'));
@@ -3047,8 +3060,8 @@ void main() {
           final reader = PreprocessorReader(
             doc,
             input,
-            Cursor(pseudoDocfile),
-            true,
+            cursor: Cursor(pseudoDocfile),
+            normalize: true,
           );
           final lines = reader.readlines();
           expect(lines, contains('first line of child'));
@@ -3072,7 +3085,7 @@ void main() {
           ];
 
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = (PreprocessorReader(doc, lines, null, true))
+          final reader = (PreprocessorReader(doc, lines, normalize: true))
             ..readLine();
           final result = reader.readLinesUntil(
             terminator: '////',
@@ -3091,12 +3104,11 @@ void main() {
         // the parser wave calls (verified against the oracle).
         () {
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(
-            doc,
-            ['a', 'include::fixtures/include-file.adoc[tag=snippetA]', 'z'],
-            null,
-            true,
-          );
+          final reader = PreprocessorReader(doc, [
+            'a',
+            'include::fixtures/include-file.adoc[tag=snippetA]',
+            'z',
+          ], normalize: true);
           expect(reader.readLine(), equals('a'));
           reader.save();
           expect(reader.readLine(), equals('snippetA content'));
@@ -3116,7 +3128,7 @@ void main() {
 
         usingMemoryLogger((logger) {
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = (PreprocessorReader(doc, lines, null, true))
+          final reader = (PreprocessorReader(doc, lines, normalize: true))
             ..skipCommentLines();
           expect(reader.isEmpty, isTrue);
           expect(logger.messages, isEmpty);
@@ -3153,7 +3165,7 @@ void main() {
         const input = 'The Asciidoctor\nifdef::asciidoctor[is in.]\n';
         final reader = preprocessorReader(input);
         expect(
-          reader.peekLines(2, true),
+          reader.peekLines(2, direct: true),
           equals(['The Asciidoctor', 'ifdef::asciidoctor[is in.]']),
         );
       });
@@ -3162,7 +3174,8 @@ void main() {
         'peekLines should not prevent subsequent preprocessing of peeked lines',
         () {
           const input = 'The Asciidoctor\nifdef::asciidoctor[is in.]\n';
-          final reader = (preprocessorReader(input))..peekLines(2, true);
+          final reader = (preprocessorReader(input))
+            ..peekLines(2, direct: true);
           expect(reader.peekLines(2), equals(['The Asciidoctor', 'is in.']));
         },
       );

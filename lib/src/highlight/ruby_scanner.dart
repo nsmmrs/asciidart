@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Port of the CodeRay 1.1.3 Ruby scanner (`scanners/ruby.rb` with
 /// `scanners/ruby/patterns.rb` and `scanners/ruby/string_state.rb`).
 ///
@@ -545,9 +543,13 @@ class _RubyStringState {
   /// the closing delimiter (or the heredoc terminator when [heredoc] is
   /// set). A delimiter with a closing partner (`(`, `[`, `<`, `{`) tracks
   /// nesting depth via [parenDepth].
-  new(this.type, this.interpreted, String delimiter, [_HeredocMode? heredoc])
-    : heredoc = heredoc,
-      nextState = _SymbolState.initial {
+  new(
+    this.type,
+    String delimiter, {
+    required this.interpreted,
+    _HeredocMode? heredoc,
+  }) : heredoc = heredoc,
+       nextState = _SymbolState.initial {
     if (heredoc != null) {
       heredocDelim = delimiter;
     } else {
@@ -605,7 +607,7 @@ class _RubyStringState {
       final stop = _heredocStop(input, pos, end);
       final text = input.substring(pos, stop.position);
       scanner.consume(stop.position - pos);
-      return _RubyStringContent(text, stop.terminatorFound);
+      return _RubyStringContent(text, heredocEnded: stop.terminatorFound);
     }
     final stopAt = _stopCharacters();
     final hashInterpolates = interpreted && delim != '#';
@@ -624,7 +626,7 @@ class _RubyStringState {
     }
     final text = input.substring(pos, i);
     scanner.consume(i - pos);
-    return _RubyStringContent(text, false);
+    return _RubyStringContent(text, heredocEnded: false);
   }
 
   /// The characters plain-string content stops at (the original's
@@ -659,26 +661,26 @@ class _RubyStringState {
     // below, like the original's first alternative (a quoted delimiter
     // can start with `\` or `#`, so the order is observable).
     if (_terminatorAt(input, pos, end, delim, indented)) {
-      return _HeredocStop(pos, true);
+      return _HeredocStop(pos, terminatorFound: true);
     }
     var i = pos;
     while (i < end) {
       final unit = input.codeUnitAt(i);
       if (unit == 0x5C) {
-        return _HeredocStop(i, false); // backslash
+        return _HeredocStop(i, terminatorFound: false); // backslash
       }
       if (interpreted &&
           unit == 0x23 &&
           i + 1 < end &&
           _interpolationIntroducer(input.codeUnitAt(i + 1))) {
-        return _HeredocStop(i, false);
+        return _HeredocStop(i, terminatorFound: false);
       }
       if (unit == 0x0A && _terminatorAt(input, i + 1, end, delim, indented)) {
-        return _HeredocStop(i, true);
+        return _HeredocStop(i, terminatorFound: true);
       }
       i++;
     }
-    return _HeredocStop(end, false);
+    return _HeredocStop(end, terminatorFound: false);
   }
 
   /// Whether the terminator line starts at [j] (spaces munched
@@ -712,7 +714,7 @@ bool _interpolationIntroducer(int unit) =>
 /// One [_RubyStringState.scanContent] result.
 class _RubyStringContent {
   /// Creates a content result.
-  const new(this.text, this.heredocEnded);
+  const new(this.text, {required this.heredocEnded});
 
   /// The scanned content (empty when already at a delimiter).
   final String text;
@@ -724,7 +726,7 @@ class _RubyStringContent {
 /// A heredoc content stop: [position] with [terminatorFound].
 class _HeredocStop {
   /// Creates a heredoc stop.
-  const new(this.position, this.terminatorFound);
+  const new(this.position, {required this.terminatorFound});
 
   /// The offset scanning stops at.
   final int position;
@@ -950,7 +952,11 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
             ..beginGroup('symbol')
             ..textToken(':', 'symbol')
             ..textToken(second, 'delimiter');
-          state = _RubyStringState('symbol', second == '"', second);
+          state = _RubyStringState(
+            'symbol',
+            second,
+            interpreted: second == '"',
+          );
         } else {
           sink.textToken(sym, 'symbol');
           valueExpected = false;
@@ -966,7 +972,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
             ..beginGroup(kind)
             ..textToken(str, 'delimiter');
           // Important for streaming: the state carries the quote.
-          state = _RubyStringState(kind, str == '"', str);
+          state = _RubyStringState(kind, str, interpreted: str == '"');
         } else {
           final isKey = valueExpected == true && s.scan(_colonRe) != null;
           final kind = isKey ? 'key' : 'string';
@@ -990,7 +996,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         sink
           ..beginGroup('regexp')
           ..textToken(slash, 'delimiter');
-        state = _RubyStringState('regexp', true, '/');
+        state = _RubyStringState('regexp', '/', interpreted: true);
       } else if (s.scan(
             _valueTruthy(valueExpected) ? _numericSignedRe : _numericPlainRe,
           )
@@ -1023,9 +1029,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         (heredocs ??= []).add(
           _RubyStringState(
             kind,
-            quote != "'",
             delim,
-            s.capture(1) != null
+            interpreted: quote != "'",
+            heredoc: s.capture(1) != null
                 ? _HeredocMode.indented
                 : _HeredocMode.linestart,
           ),
@@ -1040,8 +1046,8 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         sink.beginGroup(kind);
         state = _RubyStringState(
           kind,
-          !_fancyStringNotInterpreted.contains(letter),
           s.capture(2)!,
+          interpreted: !_fancyStringNotInterpreted.contains(letter),
         );
         sink.textToken(fancy, 'delimiter');
       } else if (_valueTruthy(valueExpected) ? s.scan(_characterRe) : null
@@ -1055,7 +1061,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         sink
           ..beginGroup('shell')
           ..textToken(tick, 'delimiter');
-        state = _RubyStringState('shell', true, tick);
+        state = _RubyStringState('shell', tick, interpreted: true);
       } else if (s.scan(_globalVariableRe) case final gvar?) {
         sink.textToken(gvar, 'global_variable');
         valueExpected = false;
@@ -1125,8 +1131,8 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
               ..textToken(second, 'delimiter');
             final stringState = (_RubyStringState(
               'symbol',
-              second == '"',
               second,
+              interpreted: second == '"',
             ))..nextState = _SymbolState.undefCommaExpected;
             state = stringState;
           } else {

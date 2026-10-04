@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Internal helper functions for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/helpers.rb`.
@@ -62,7 +60,7 @@ abstract final class Helpers {
   /// Dart reads URIs through `dart:io` with no setup, so this is a no-op
   /// unless [cache] is requested, in which case it takes the same failure
   /// path as [requireLibrary] for the (unavailable) URI cache library.
-  static void requireOpenUri([bool cache = false]) {
+  static void requireOpenUri({bool cache = false}) {
     if (cache) requireLibrary('open-uri/cached', 'open-uri-cached');
   }
 
@@ -73,9 +71,9 @@ abstract final class Helpers {
   /// record separator otherwise. Unlike Ruby, the input list is not mutated;
   /// encoding conversion is unnecessary because Dart strings are Unicode.
   static List<String> prepareSourceArray(
-    List<String> data, [
+    List<String> data, {
     bool trimEnd = true,
-  ]) {
+  }) {
     if (data.isEmpty) return [];
     final lines = [
       if (data[0].startsWith('\uFEFF')) data[0].substring(1) else data[0],
@@ -92,7 +90,7 @@ abstract final class Helpers {
   /// Strips a leading byte-order mark, splits the text into lines on `\n`
   /// (as Ruby's `each_line` does) and trims each line per [trimEnd] (see
   /// [prepareSourceArray]). A `null` or empty input yields an empty list.
-  static List<String> prepareSourceString(String? data, [bool trimEnd = true]) {
+  static List<String> prepareSourceString(String? data, {bool trimEnd = true}) {
     if (data.isNilOrEmpty) return [];
     var text = data!;
     if (text.startsWith('\uFEFF')) text = text.substring(1);

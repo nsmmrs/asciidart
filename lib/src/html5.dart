@@ -410,8 +410,8 @@ class Html5Converter extends ConverterBase {
       if (linkcss) {
         final href = node.normalizeWebPath(
           Stylesheets.defaultStylesheetName,
-          stylesdir,
-          false,
+          start: stylesdir,
+          preserveUriTarget: false,
         );
         result.add('<link rel="stylesheet" href="$href"$slash>');
       } else {
@@ -422,7 +422,7 @@ class Html5Converter extends ConverterBase {
     } else if (node.hasAttr('stylesheet')) {
       final stylesheet = node.attr('stylesheet')! as String;
       if (linkcss) {
-        final href = node.normalizeWebPath(stylesheet, stylesdir);
+        final href = node.normalizeWebPath(stylesheet, start: stylesdir);
         result.add('<link rel="stylesheet" href="$href"$slash>');
       } else {
         final contents = node.readContents(
@@ -447,8 +447,8 @@ class Html5Converter extends ConverterBase {
             '${_s(node.attr('iconfont-name', 'font-awesome'))}.css';
         final href = node.normalizeWebPath(
           iconfontStylesheet,
-          stylesdir,
-          false,
+          start: stylesdir,
+          preserveUriTarget: false,
         );
         result.add('<link rel="stylesheet" href="$href"$slash>');
       }

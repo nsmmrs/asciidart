@@ -1715,7 +1715,7 @@ void main() {
             .map((ext) => ext.instance as IncludeProcessor)
             .toList(),
       );
-      final reader = PreprocessorReader(fake, input, null, true);
+      final reader = PreprocessorReader(fake, input, normalize: true);
       final lines = (<String?>[])..add(reader.readLine());
       expect(lines.last, equals('line after skip'));
       lines
@@ -1791,7 +1791,7 @@ void main() {
             .map((ext) => ext.instance as IncludeProcessor)
             .toList(),
       );
-      final reader = PreprocessorReader(fake, input, null, true);
+      final reader = PreprocessorReader(fake, input, normalize: true);
       final lines = (<String?>[])
         ..add(reader.readLine())
         ..add(reader.readLine());
@@ -4631,7 +4631,7 @@ void main() {
         throwsUnimplementedError,
       );
       expect(
-        () => SampleBlock().process(doc, Reader(), <String, Object?>{}),
+        () => SampleBlock().process(doc, Reader(null), <String, Object?>{}),
         throwsUnimplementedError,
       );
       expect(

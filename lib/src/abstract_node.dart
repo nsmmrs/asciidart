@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Base class for every node in a parsed AsciiDoc document.
 ///
 /// Port of `lib/asciidoctor/abstract_node.rb`.
@@ -346,7 +344,7 @@ abstract class AbstractNode {
   ///
   /// Returns whether the assignment was performed (`false` only when
   /// [overwrite] is `false` and the attribute already exists).
-  bool setAttr(String name, [Object? value = '', bool overwrite = true]) {
+  bool setAttr(String name, Object? value, {bool overwrite = true}) {
     if (!overwrite && attributes.containsKey(name)) return false;
     attributes[name] = value;
     return true;
@@ -549,7 +547,7 @@ abstract class AbstractNode {
     if (doc.safe >= SafeMode.secure || !doc.hasAttr('data-uri')) {
       return normalizeWebPath(
         targetImage,
-        assetDirKey == null
+        start: assetDirKey == null
             ? null
             : _stringOrNull(attr(assetDirKey, null, true)),
       );
@@ -560,12 +558,19 @@ abstract class AbstractNode {
     } else if (assetDirKey != null) {
       final imagesBase = _stringOrNull(attr(assetDirKey, null, true));
       if (imagesBase != null && Helpers.isUriish(imagesBase)) {
-        uriTarget = normalizeWebPath(targetImage, imagesBase, false);
+        uriTarget = normalizeWebPath(
+          targetImage,
+          start: imagesBase,
+          preserveUriTarget: false,
+        );
       }
     }
     if (uriTarget != null) {
       return doc.hasAttr('allow-uri-read')
-          ? generateDataUriFromUri(uriTarget, doc.hasAttr('cache-uri'))
+          ? generateDataUriFromUri(
+              uriTarget,
+              cacheUri: doc.hasAttr('cache-uri'),
+            )
           : uriTarget;
     }
     return generateDataUri(targetImage, assetDirKey);
@@ -580,7 +585,9 @@ abstract class AbstractNode {
   String mediaUri(String media, [String? assetDirKey = 'imagesdir']) {
     return normalizeWebPath(
       media,
-      assetDirKey == null ? null : _stringOrNull(attr(assetDirKey, null, true)),
+      start: assetDirKey == null
+          ? null
+          : _stringOrNull(attr(assetDirKey, null, true)),
     );
   }
 
@@ -655,8 +662,8 @@ abstract class AbstractNode {
   /// required first, mirroring Ruby's `LoadError` with a [StateError]. When
   /// the data cannot be retrieved, a warning is logged and [imageUri] is
   /// returned unchanged.
-  String generateDataUriFromUri(String imageUri, [bool cacheUri = false]) {
-    Helpers.requireOpenUri(cacheUri);
+  String generateDataUriFromUri(String imageUri, {bool cacheUri = false}) {
+    Helpers.requireOpenUri(cache: cacheUri);
     try {
       final response = fetchUri(imageUri);
       final mimetype = response.contentType;
@@ -678,10 +685,10 @@ abstract class AbstractNode {
   /// document base directory. [assetName] names the target in messages;
   /// [autocorrect] controls recovery from illegal paths.
   String normalizeAssetPath(
-    String assetRef, [
+    String assetRef, {
     String assetName = 'path',
     bool autocorrect = true,
-  ]) {
+  }) {
     return normalizeSystemPath(
       assetRef,
       start: document!.baseDir,
@@ -734,10 +741,10 @@ abstract class AbstractNode {
   /// set (the default) and [target] is already a URI, it is returned with
   /// spaces encoded instead of being resolved.
   String normalizeWebPath(
-    String target, [
+    String target, {
     String? start,
     bool preserveUriTarget = true,
-  ]) {
+  }) {
     if (preserveUriTarget && Helpers.isUriish(target)) {
       return Helpers.encodeSpacesInUri(target);
     }

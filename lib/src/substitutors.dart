@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Substitutions applied to lines of AsciiDoc text.
 ///
 /// Port of `lib/asciidoctor/substitutors.rb`.
@@ -378,7 +376,7 @@ Object? applySubs(
         subject = highlightSource(
           node,
           subject,
-          effectiveSubs.contains('callouts'),
+          processCallouts: effectiveSubs.contains('callouts'),
         );
       case 'callouts':
         if (!effectiveSubs.contains('highlight')) {
@@ -873,7 +871,11 @@ String subMacros(AbstractNode node, String text) {
               attributes['text'] = content;
             }
           } else {
-            final normalized = normalizeText(content, true, true);
+            final normalized = normalizeText(
+              content,
+              normalizeWhitespace: true,
+              unescapeClosingSquareBrackets: true,
+            );
             // QUESTION should we store the unparsed attrlist in the
             // attrlist key?
             if (extConfig['content_model'] == 'attributes') {
@@ -982,7 +984,11 @@ String subMacros(AbstractNode node, String text) {
             Inline(
               block,
               'button',
-              text: normalizeText(match.group(3)!, true, true),
+              text: normalizeText(
+                match.group(3)!,
+                normalizeWhitespace: true,
+                unescapeClosingSquareBrackets: true,
+              ),
             ).convert(),
           );
         }
@@ -1131,7 +1137,11 @@ String subMacros(AbstractNode node, String text) {
         }
 
         // indexterm:[Tigers,Big cats]
-        final attrlist = normalizeText(match.group(2)!, true, true);
+        final attrlist = normalizeText(
+          match.group(2)!,
+          normalizeWhitespace: true,
+          unescapeClosingSquareBrackets: true,
+        );
         final Map<Object, Object?> attrs;
         if (attrlist.contains('=')) {
           final parsed = AttributeList(
@@ -1175,7 +1185,11 @@ String subMacros(AbstractNode node, String text) {
         }
 
         // indexterm2:[Tigers]
-        var term = normalizeText(match.group(2)!, true, true);
+        var term = normalizeText(
+          match.group(2)!,
+          normalizeWhitespace: true,
+          unescapeClosingSquareBrackets: true,
+        );
         Map<Object, Object?>? attrs;
         if (term.contains('=')) {
           final parsed = AttributeList(term, _BlockSubsApplier(node)).parse();
@@ -1239,7 +1253,7 @@ String subMacros(AbstractNode node, String text) {
         final String subbedTerm;
         if (visible) {
           // ((Tigers))
-          var term = normalizeText(enclText, true);
+          var term = normalizeText(enclText, normalizeWhitespace: true);
           Map<String, Object?>? termAttrs;
           if (term.contains(';&')) {
             if (term.contains(' &gt;&gt; ')) {
@@ -1263,7 +1277,7 @@ String subMacros(AbstractNode node, String text) {
           );
         } else {
           // (((Tigers,Big cats)))
-          var terms = normalizeText(enclText, true);
+          var terms = normalizeText(enclText, normalizeWhitespace: true);
           final attrs = <String, Object?>{};
           if (terms.contains(';&')) {
             if (terms.contains(' &gt;&gt; ')) {
@@ -1907,7 +1921,11 @@ String _convertFootnoteMacro(
     } else if (content != null) {
       finalContent = restorePassthroughs(
         node,
-        normalizeText(content, true, true),
+        normalizeText(
+          content,
+          normalizeWhitespace: true,
+          unescapeClosingSquareBrackets: true,
+        ),
       );
       index = doc.counter('footnote-number');
       doc.register('footnotes', Footnote(index, id, finalContent));
@@ -1923,7 +1941,11 @@ String _convertFootnoteMacro(
   } else if (content != null) {
     finalContent = restorePassthroughs(
       node,
-      normalizeText(content, true, true),
+      normalizeText(
+        content,
+        normalizeWhitespace: true,
+        unescapeClosingSquareBrackets: true,
+      ),
     );
     index = doc.counter('footnote-number');
     doc.register('footnotes', Footnote(index, id, finalContent));
@@ -1993,8 +2015,11 @@ String subPostReplacements(AbstractNode node, String text) {
 /// substituted as well.
 ///
 /// Port of `Substitutors#sub_source`.
-String subSource(AbstractNode node, String source, bool processCallouts) =>
-    processCallouts
+String subSource(
+  AbstractNode node,
+  String source, {
+  required bool processCallouts,
+}) => processCallouts
     ? subCallouts(node, subSpecialchars(source))
     : subSpecialchars(source);
 
@@ -2036,14 +2061,18 @@ String subCallouts(AbstractNode node, String text) {
 /// highlighting and restored after, so they don't confuse the highlighter.
 ///
 /// Port of `Substitutors#highlight_source`.
-String highlightSource(AbstractNode node, String source, bool processCallouts) {
+String highlightSource(
+  AbstractNode node,
+  String source, {
+  required bool processCallouts,
+}) {
   var code = source;
   final doc = _documentOf(node);
   final syntaxHl = doc.syntaxHighlighter;
   // NOTE the call to highlight? is a defensive check since, normally, we
   // wouldn't arrive here unless it returns true
   if (syntaxHl is! SyntaxHighlighterBase || !syntaxHl.canHighlight) {
-    return subSource(node, code, processCallouts);
+    return subSource(node, code, processCallouts: processCallouts);
   }
   final docAttrs = doc.attributes;
   Map<int, List<PendingCallout>>? calloutMarks;
@@ -2349,11 +2378,19 @@ String extractPassthroughs(AbstractNode node, String text) {
         final passthruKey = passthrus.length;
         if (subs != null) {
           passthrus.add({
-            'text': normalizeText(match.group(8)!, null, true),
+            'text': normalizeText(
+              match.group(8)!,
+              unescapeClosingSquareBrackets: true,
+            ),
             'subs': resolvePassSubs(node, subs),
           });
         } else {
-          passthrus.add({'text': normalizeText(match.group(8)!, null, true)});
+          passthrus.add({
+            'text': normalizeText(
+              match.group(8)!,
+              unescapeClosingSquareBrackets: true,
+            ),
+          });
         }
         return '$passStart$passthruKey$passEnd';
       }
@@ -2455,7 +2492,10 @@ String extractPassthroughs(AbstractNode node, String text) {
         type = stemTypeAliases[doc.attributes['stem']] ?? 'asciimath';
       }
       final subs = match.group(2);
-      var content = normalizeText(match.group(3)!, null, true);
+      var content = normalizeText(
+        match.group(3)!,
+        unescapeClosingSquareBrackets: true,
+      );
       // NOTE drop enclosing $ signs around latexmath for backwards
       // compatibility with AsciiDoc.py
       if (type == 'latexmath' &&
@@ -2735,7 +2775,13 @@ Map<Object, Object?> parseAttributes(
 }) {
   if (attrlist == null || attrlist.isEmpty) return <Object, Object?>{};
   var source = attrlist;
-  if (unescapeInput) source = normalizeText(source, true, true);
+  if (unescapeInput) {
+    source = normalizeText(
+      source,
+      normalizeWhitespace: true,
+      unescapeClosingSquareBrackets: true,
+    );
+  }
   if (subInput && source.contains(attrRefHead)) {
     source = subAttributes(_documentOf(node), source);
   }
@@ -2846,16 +2892,16 @@ Map<String, Object?> parseQuotedTextAttributes(AbstractNode node, String str) {
 ///
 /// Port of `Substitutors#normalize_text`.
 String normalizeText(
-  String text, [
-  bool? normalizeWhitespace,
-  bool? unescapeClosingSquareBrackets,
-]) {
+  String text, {
+  bool normalizeWhitespace = false,
+  bool unescapeClosingSquareBrackets = false,
+}) {
   var result = text;
   if (result.isNotEmpty) {
-    if (isTruthy(normalizeWhitespace)) {
+    if (normalizeWhitespace) {
       result = result.trim().replaceAll(lf, ' ');
     }
-    if (isTruthy(unescapeClosingSquareBrackets) && result.contains(rSb)) {
+    if (unescapeClosingSquareBrackets && result.contains(rSb)) {
       result = result.replaceAll(escRSb, rSb);
     }
   }

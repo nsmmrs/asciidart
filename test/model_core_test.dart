@@ -365,7 +365,7 @@ void main() {
 
     test('setAttr reports overwrite refusals', () {
       expect(block.setAttr('n', 'v'), isTrue);
-      expect(block.setAttr('n', 'w', false), isFalse);
+      expect(block.setAttr('n', 'w', overwrite: false), isFalse);
       expect(block.setAttr('n', 'w'), isTrue);
       expect(block.attr('n'), equals('w'));
     });
@@ -1162,7 +1162,10 @@ void main() {
 
     test('normalizeWebPath joins and preserves URIs', () {
       final block = Block(makeDoc(), 'paragraph');
-      expect(block.normalizeWebPath('a.png', 'img'), equals('img/a.png'));
+      expect(
+        block.normalizeWebPath('a.png', start: 'img'),
+        equals('img/a.png'),
+      );
       expect(
         block.normalizeWebPath('https://x/y z'),
         equals('https://x/y%20z'),
@@ -1384,7 +1387,10 @@ void main() {
     test('generateDataUriFromUri with cache requires open-uri', () {
       final block = Block(makeDoc(), 'paragraph');
       expect(
-        () => block.generateDataUriFromUri('https://example.com/a.png', true),
+        () => block.generateDataUriFromUri(
+          'https://example.com/a.png',
+          cacheUri: true,
+        ),
         throwsStateError,
       );
     });

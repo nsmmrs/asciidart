@@ -388,9 +388,9 @@ void main() {
     test('setAttr and removeAttr', () {
       final doc = FakeDocument();
       final block = Block(doc, 'paragraph');
-      expect(block.setAttr('a'), isTrue);
+      expect(block.setAttr('a', ''), isTrue);
       expect(block.attributes['a'], equals(''));
-      expect(block.setAttr('a', '1', false), isFalse);
+      expect(block.setAttr('a', '1', overwrite: false), isFalse);
       expect(block.attributes['a'], equals(''));
       expect(block.setAttr('a', '1'), isTrue);
       expect(block.attributes['a'], equals('1'));
@@ -1588,9 +1588,9 @@ void main() {
       expect(refs, isNot(contains('hx')));
       // Plain cells reinitialize to themselves.
       final plain = Cell(table.columns.single, 'H', {});
-      expect(plain.reinitialize(true), same(plain));
+      expect(plain.reinitialize(hasHeader: true), same(plain));
       // The anchored cell catalogs on reinitialization.
-      cell.reinitialize(true);
+      cell.reinitialize(hasHeader: true);
       expect(refs, contains('hx'));
     });
 
@@ -1602,7 +1602,7 @@ void main() {
       });
       expect(cell.contentModel, equals('simple'));
       table.hasHeaderOption = false;
-      final rebuilt = cell.reinitialize(false);
+      final rebuilt = cell.reinitialize(hasHeader: false);
       expect(rebuilt, isNot(same(cell)));
       expect(rebuilt.contentModel, equals('verbatim'));
       expect(rebuilt.source(), equals('  lit'));
@@ -1610,7 +1610,7 @@ void main() {
       // Explicit header rows just clear the deferred arguments.
       table.hasHeaderOption = 'implicit';
       final cell2 = Cell(table.columns.single, 'x', {'style': 'literal'});
-      expect(cell2.reinitialize(true), same(cell2));
+      expect(cell2.reinitialize(hasHeader: true), same(cell2));
     });
 
     test('literal cells rstrip and drop leading blank lines', () {
@@ -1898,7 +1898,7 @@ void main() {
       pc
         ..pushCellspect({})
         ..buffer = 'b'
-        ..closeCell(true);
+        ..closeCell(eol: true);
       expect(table.rows.body.single.map((c) => c.source()), equals(['a', 'b']));
       expect(table.columns, hasLength(2));
       expect(pc.colcount, equals(2));
@@ -1919,7 +1919,7 @@ void main() {
       (TableParserContext(reader, table))
         ..pushCellspect({'repeatcol': 2})
         ..buffer = 'x'
-        ..closeCell(true);
+        ..closeCell(eol: true);
       expect(table.rows.body.single, hasLength(2));
       expect(table.columns, hasLength(2));
 
@@ -1927,7 +1927,7 @@ void main() {
       (TableParserContext(reader2, table2))
         ..pushCellspect({'colspan': 2})
         ..buffer = 'y'
-        ..closeCell(true);
+        ..closeCell(eol: true);
       expect(table2.columns, hasLength(2));
       expect(table2.rows.body.single.single.colspan, equals(2));
     });
@@ -1938,7 +1938,7 @@ void main() {
       for (final text in ['a', '"b ""q"" c"', 'd']) {
         pc
           ..buffer = text
-          ..closeCell(true);
+          ..closeCell(eol: true);
       }
       expect(table.rows.body, hasLength(3));
       expect(
@@ -1948,7 +1948,7 @@ void main() {
       // A lone quote logs an error and yields an empty cell.
       pc
         ..buffer = '"'
-        ..closeCell(true);
+        ..closeCell(eol: true);
       expect(table.rows.body.last.single.source(), equals(''));
       expect(testLogger.errors.single, contains('unclosed quote in CSV data'));
     });
@@ -1986,7 +1986,7 @@ void main() {
       final (_, table, _) = makeParts();
       (TableParserContext(FakeReader(), table))
         ..buffer = 'a'
-        ..closeCell(true);
+        ..closeCell(eol: true);
       expect(
         testLogger.errors.single,
         contains('table missing leading separator'),

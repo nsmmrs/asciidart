@@ -1019,7 +1019,7 @@ void main() {
         // lookup is meaningful (a proxy-less factory must not see it).
         cleanGlobalRegistry();
         Converter.register(FakeConverter.new, const ['reg-proxy-off']);
-        final factory = ConverterFactory(null, false);
+        final factory = ConverterFactory(proxyDefault: false);
         expect(factory, isA<CustomFactory>());
         expect(factory, isNot(isA<DefaultFactoryProxy>()));
         expect(factory.forBackend('reg-proxy-off'), isNull);
@@ -1124,9 +1124,9 @@ void main() {
           'invoked', () {
         // Port of test/converter_test.rb: 'should create a new custom
         // factory when Converter::Factory.new is invoked'.
-        final factory = ConverterFactory(const {
-          'factory-mine': FakeConverter.new,
-        });
+        final factory = ConverterFactory(
+          converters: const {'factory-mine': FakeConverter.new},
+        );
         expect(factory, isA<CustomFactory>());
         expect(factory.forBackend('factory-mine'), equals(FakeConverter.new));
       });

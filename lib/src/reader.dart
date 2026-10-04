@@ -1,5 +1,3 @@
-// Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: avoid_positional_boolean_parameters
 /// Line reader with preprocessor directive support for the Dart port of
 /// Asciidoctor.
 ///
@@ -236,12 +234,12 @@ class Reader {
   /// [Cursor], or `null` (stdin). When [normalize] is set, lines are
   /// normalized as in Ruby (`normalize: true`); [skipFrontMatter] is honored
   /// by [PreprocessorReader] only, exactly like the Ruby `opts` entry.
-  new([
-    Object? data,
+  new(
+    Object? data, {
     Object? cursor,
     bool normalize = false,
     bool skipFrontMatter = false,
-  ]) {
+  }) {
     if (cursor == null) {
       _file = null;
       _dir = '.';
@@ -354,7 +352,7 @@ class Reader {
   ///
   /// When [direct] is set, processing is bypassed and the top stack element
   /// is returned immediately. Returns `null` when there is no more data.
-  String? peekLine([bool direct = false]) {
+  String? peekLine({bool direct = false}) {
     while (true) {
       final nextLine = _lines.isEmpty ? null : _lines.last;
       if (direct || _lookAhead > 0) {
@@ -373,7 +371,7 @@ class Reader {
 
   /// Peeks at the next [num] lines (all lines when `null`) without consuming
   /// them. When [direct] is set, processing is disabled while reading.
-  List<String> peekLines([int? num, bool direct = false]) {
+  List<String> peekLines(int? num, {bool direct = false}) {
     final oldLookAhead = _lookAhead;
     final result = <String>[];
     for (var i = 0; i < (num ?? maxInt); i++) {
@@ -781,12 +779,12 @@ class Reader {
           return List<String?>.of(
             Helpers.prepareSourceArray(
               data.map((line) => line as String).toList(),
-              false,
+              trimEnd: false,
             ),
           );
         }
         return List<String?>.of(
-          Helpers.prepareSourceString(data as String?, false),
+          Helpers.prepareSourceString(data as String?, trimEnd: false),
         );
       case _LineNormalization.none:
         if (data is List) return List<String?>.from(data);
@@ -807,20 +805,13 @@ class PreprocessorReader extends Reader {
   ///
   /// See [Reader.new] for [data], [cursor] and [normalize]. Front matter is
   /// skipped when the document sets the `skip-front-matter` attribute.
-  new(
-    ReaderDocument document, [
-    Object? data,
-    Object? cursor,
-    bool normalize = false,
-  ]) : _document = document,
-       _sourcemap = document.sourcemap,
-       _includes = document.catalogIncludes,
-       super(
-         data,
-         cursor,
-         normalize,
-         _isTruthy(document.attributes['skip-front-matter']),
-       ) {
+  new(ReaderDocument document, super.data, {super.cursor, super.normalize})
+    : _document = document,
+      _sourcemap = document.sourcemap,
+      _includes = document.catalogIncludes,
+      super(
+        skipFrontMatter: _isTruthy(document.attributes['skip-front-matter']),
+      ) {
     final maxDepthValue = document.attributes['max-include-depth'];
     final defaultDepth = maxDepthValue == null || maxDepthValue == false
         ? 64
@@ -863,8 +854,8 @@ class PreprocessorReader extends Reader {
   /// reached, reporting unterminated preprocessor conditionals when the
   /// outermost source is exhausted. See [Reader.peekLine].
   @override
-  String? peekLine([bool direct = false]) {
-    final line = super.peekLine(direct);
+  String? peekLine({bool direct = false}) {
+    final line = super.peekLine(direct: direct);
     if (line != null) return line;
     if (_includeStack.isEmpty) {
       Cursor? endCursor;
@@ -884,7 +875,7 @@ class PreprocessorReader extends Reader {
       return null;
     } else {
       _popInclude();
-      return peekLine(direct);
+      return peekLine(direct: direct);
     }
   }
 
@@ -1868,11 +1859,11 @@ class PreprocessorReader extends Reader {
             // QUESTION should we prevent tag from being selected when
             // enclosing tag is excluded?
             activeTag = thisTag;
-            tagStack.add(_TagFrame(thisTag, select, incLineno));
+            tagStack.add(_TagFrame(thisTag, incLineno, select: select));
           } else if (wildcard != null) {
             select = (activeTag == null || select) && wildcard;
             activeTag = thisTag;
-            tagStack.add(_TagFrame(thisTag, select, incLineno));
+            tagStack.add(_TagFrame(thisTag, incLineno, select: select));
           }
         } else if (select) {
           // NOTE record the line where we started selecting
@@ -1975,7 +1966,7 @@ class PreprocessorReader extends Reader {
         replaceNextLine('link:$linkTarget[$linkAttrlist]');
         return null;
       }
-      Helpers.requireOpenUri(doc.attrSet('cache-uri'));
+      Helpers.requireOpenUri(cache: doc.attrSet('cache-uri'));
       return _ResolvedInclude(
         Uri.parse(resolvedTarget),
         _IncludeTargetType.uri,
@@ -2193,7 +2184,7 @@ class _ConditionalFrame {
 
 /// An open tag frame while filtering an include by tags.
 class _TagFrame {
-  const new(this.name, this.select, this.lineno);
+  const new(this.name, this.lineno, {required this.select});
 
   /// Tag name.
   final String name;

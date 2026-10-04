@@ -32,7 +32,7 @@ List<String> _rubyLines(String source) {
 
 /// Parses header metadata from [source] (port of `parse_header_metadata`).
 Map<String, Object?> parseHeaderMetadata(String source, [Document? doc]) =>
-    Parser.parseHeaderMetadata(Reader(_rubyLines(source)), doc);
+    Parser.parseHeaderMetadata(Reader(_rubyLines(source)), document: doc);
 
 /// Runs [body] with a memory logger installed (port of
 /// `using_memory_logger`).
