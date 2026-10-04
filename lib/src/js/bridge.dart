@@ -2,17 +2,47 @@
 /// `entry.dart`).
 library;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
+import 'package:asciidoctor/src/cli/diagnostics.dart';
 import 'package:asciidoctor/src/cli/run.dart';
 import 'package:asciidoctor/src/cursor.dart';
+import 'package:asciidoctor/src/errors.dart';
 import 'package:asciidoctor/src/js/convert.dart';
 import 'package:asciidoctor/src/js/nodes.dart';
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/options.dart';
 import 'package:asciidoctor/src/version.dart';
+
+@JS('Error')
+external JSFunction get _errorConstructor;
+
+/// A JavaScript promise for [body]'s result; a failure rejects it with a
+/// JavaScript `Error` carrying the failure's message (see [describe]).
+JSPromise<T> _promise<T extends JSAny?>(Future<T> Function() body) =>
+    JSPromise<T>(
+      (JSFunction resolve, JSFunction reject) {
+        unawaited(
+          Future<T>.sync(body).then(
+            (value) => resolve.callAsFunction(null, value),
+            onError: (Object error, StackTrace stack) {
+              final jsError = _errorConstructor.callAsConstructor<JSObject>(
+                describe(error).toJS,
+              );
+              if (error is AsciidoctorException) {
+                jsError.setProperty('name'.toJS, 'AsciidoctorError'.toJS);
+              }
+              jsError.setProperty('dartStack'.toJS, '$stack'.toJS);
+              reject.callAsFunction(null, jsError);
+            },
+          ),
+        );
+      }.toJS,
+    );
 
 /// The top-level functions of the facade.
 @JSExport()
@@ -32,45 +62,49 @@ final class ApiBridge {
   /// Loads [input] (a string, an array of lines or UTF-8 bytes) with the
   /// facade [options], resolving to the document's view.
   JSPromise<JSObject> load(JSAny? input, JSObject? options) {
-    final settings = _Settings.of(options);
-    return loadAsync(
-      _source(input),
-      options: settings.options,
-      parse: settings.parse,
-    ).then((doc) => wrapNode(doc)!).toJS;
+    return _promise(() {
+      final settings = _Settings.of(options);
+      return loadAsync(
+        _source(input),
+        options: settings.options,
+        parse: settings.parse,
+      ).then((doc) => wrapNode(doc)!);
+    });
   }
 
   /// Loads the file at [path] with the facade [options], resolving to the
   /// document's view.
   JSPromise<JSObject> loadFile(String path, JSObject? options) {
-    final settings = _Settings.of(options);
-    return loadFileAsync(
-      path,
-      options: settings.options,
-      parse: settings.parse,
-    ).then((doc) => wrapNode(doc)!).toJS;
+    return _promise(() {
+      final settings = _Settings.of(options);
+      return loadFileAsync(
+        path,
+        options: settings.options,
+        parse: settings.parse,
+      ).then((doc) => wrapNode(doc)!);
+    });
   }
 
   /// Converts [input] with the facade [options], resolving to the output,
   /// or to the document's view when the output was written to a file.
-  JSPromise<JSAny> convert(JSAny? input, JSObject? options) {
+  JSPromise<JSAny> convert(JSAny? input, JSObject? options) => _promise(() {
     final settings = _Settings.of(options);
     final source = _source(input);
     if (settings.writesToTarget) {
       return convertToTargetAsync(
         source,
         settings.options,
-      ).then<JSAny>((doc) => wrapNode(doc)!).toJS;
+      ).then<JSAny>((doc) => wrapNode(doc)!);
     }
     return convertAsync(
       source,
       settings.options,
-    ).then<JSAny>((output) => output.toJS).toJS;
-  }
+    ).then<JSAny>((output) => output.toJS);
+  });
 
   /// Converts the file at [path] with the facade [options], resolving to
   /// the document's view, or to the output when `to_file` is `false`.
-  JSPromise<JSAny> convertFile(String path, JSObject? options) {
+  JSPromise<JSAny> convertFile(String path, JSObject? options) => _promise(() {
     final settings = _Settings.of(options);
     if (settings.returnsString) {
       final output = StringBuffer();
@@ -78,13 +112,13 @@ final class ApiBridge {
         path,
         settings.options,
         output,
-      ).then<JSAny>((_) => output.toString().toJS).toJS;
+      ).then<JSAny>((_) => output.toString().toJS);
     }
     return convertFileAsync(
       path,
       settings.options,
-    ).then<JSAny>((doc) => wrapNode(doc)!).toJS;
-  }
+    ).then<JSAny>((doc) => wrapNode(doc)!);
+  });
 
   /// Sends every log record to [handler] (called with the severity number,
   /// the message text and the source location object or `null`), asking

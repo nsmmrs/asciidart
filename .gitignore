@@ -11,3 +11,5 @@ pubspec.lock
 .idea/
 *.iml
 .DS_Store
+# npm test tooling dependencies (test/npm)
+node_modules/

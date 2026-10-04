@@ -1,0 +1,16 @@
+{
+  "name": "asciidoctor-dart-npm-tests",
+  "private": true,
+  "type": "module",
+  "description": "Tests of the npm package built by tool/build-npm.sh (build/npm).",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "asciidoctor-dart": "file:../../build/npm"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright-core": "1.63.0"
+  }
+}
