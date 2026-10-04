@@ -495,7 +495,7 @@ class Html5Converter extends ConverterBase {
           var idx = 1;
           for (final author in node.authors) {
             details.add(
-              '<span id="author${idx > 1 ? idx : ''}" class="author">${node.subReplacements(author.name! as String)}</span>$br',
+              '<span id="author${idx > 1 ? idx : ''}" class="author">${node.subReplacements(author.name!)}</span>$br',
             );
             if (author.email != null) {
               details.add(
@@ -1286,7 +1286,7 @@ class Html5Converter extends ConverterBase {
     final titleElement = node.hasTitle
         ? '<div class="title">${_s(node.title)}</div>\n'
         : '';
-    final style = node.style! as String;
+    final style = node.style!;
     final delimiters = _blockMathDelimiters[style]!;
     final open = delimiters[0];
     final close = delimiters[1];
@@ -2076,7 +2076,7 @@ class Html5Converter extends ConverterBase {
 
   /// Converts the [node] inline image.
   String convertInlineImage(Inline node) {
-    final target = node.target! as String;
+    final target = node.target!;
     final type = node.type ?? 'image';
     final String img;
     String? src;

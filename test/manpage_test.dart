@@ -302,17 +302,9 @@ String linkText(
   AbstractBlock parent,
   String target, [
   String? text,
-]) =>
-    conv.convertInlineAnchor(
-          Inline(
-            parent,
-            'anchor',
-            type: 'link',
-            target: target,
-            text: text ?? target,
-          ),
-        )!
-        as String;
+]) => conv.convertInlineAnchor(
+  Inline(parent, 'anchor', type: 'link', target: target, text: text ?? target),
+)!;
 
 void main() {
   group('registration', () {
@@ -577,21 +569,12 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final quoted =
-          conv.convertInlineQuoted(
-                Inline(parent, 'quoted', type: 'double', text: 'Main'),
-              )!
-              as String;
-      final italic =
-          conv.convertInlineQuoted(
-                Inline(
-                  parent,
-                  'quoted',
-                  type: 'emphasis',
-                  text: '&lt;Options&gt;',
-                ),
-              )!
-              as String;
+      final quoted = conv.convertInlineQuoted(
+        Inline(parent, 'quoted', type: 'double', text: 'Main'),
+      )!;
+      final italic = conv.convertInlineQuoted(
+        Inline(parent, 'quoted', type: 'emphasis', text: '&lt;Options&gt;'),
+      )!;
       // Simulate the substituted title the parser would produce.
       final node = StubSection(
         parent: doc,
@@ -608,11 +591,9 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final mono =
-          conv.convertInlineQuoted(
-                Inline(parent, 'quoted', type: 'monospaced', text: 'show'),
-              )!
-              as String;
+      final mono = conv.convertInlineQuoted(
+        Inline(parent, 'quoted', type: 'monospaced', text: 'show'),
+      )!;
       final node = StubSection(parent: doc, level: 1, stubTitle: '$mono option')
         ..sectname = 'section';
       expect(conv.convertSection(node), '.SH "\\f(CRshow\\fP OPTION"\n');
@@ -1186,11 +1167,9 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      String q(String type, String text) =>
-          conv.convertInlineQuoted(
-                Inline(parent, 'quoted', type: type, text: text),
-              )!
-              as String;
+      String q(String type, String text) => conv.convertInlineQuoted(
+        Inline(parent, 'quoted', type: type, text: text),
+      )!;
       final node = StubBlock(
         doc,
         'verse',
@@ -1974,11 +1953,9 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      String q(String type, String text) =>
-          conv.convertInlineQuoted(
-                Inline(parent, 'quoted', type: type, text: text),
-              )!
-              as String;
+      String q(String type, String text) => conv.convertInlineQuoted(
+        Inline(parent, 'quoted', type: type, text: text),
+      )!;
       final node = para(
         doc,
         '${q('double', 'hello')} ${q('single', 'goodbye')} '
@@ -2053,17 +2030,15 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final link =
-          conv.convertInlineAnchor(
-                Inline(
-                  parent,
-                  'anchor',
-                  type: 'link',
-                  target: 'http://asciidoc.org',
-                  text: 'AsciiDoc',
-                ),
-              )!
-              as String;
+      final link = conv.convertInlineAnchor(
+        Inline(
+          parent,
+          'anchor',
+          type: 'link',
+          target: 'http://asciidoc.org',
+          text: 'AsciiDoc',
+        ),
+      )!;
       expect(
         conv.convertParagraph(para(doc, link)),
         '.sp\n.URL "http://asciidoc.org" "AsciiDoc" ""',
@@ -2074,17 +2049,15 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final link =
-          conv.convertInlineAnchor(
-                Inline(
-                  parent,
-                  'anchor',
-                  type: 'link',
-                  target: 'http://asciidoc.org',
-                  text: 'AsciiDoc',
-                ),
-              )!
-              as String;
+      final link = conv.convertInlineAnchor(
+        Inline(
+          parent,
+          'anchor',
+          type: 'link',
+          target: 'http://asciidoc.org',
+          text: 'AsciiDoc',
+        ),
+      )!;
       expect(
         conv.convertParagraph(para(doc, '$link can be used.')),
         '.sp\n.URL "http://asciidoc.org" "AsciiDoc" ""\ncan be used.',
@@ -2095,17 +2068,15 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final link =
-          conv.convertInlineAnchor(
-                Inline(
-                  parent,
-                  'anchor',
-                  type: 'link',
-                  target: 'http://asciidoc.org',
-                  text: 'AsciiDoc',
-                ),
-              )!
-              as String;
+      final link = conv.convertInlineAnchor(
+        Inline(
+          parent,
+          'anchor',
+          type: 'link',
+          target: 'http://asciidoc.org',
+          text: 'AsciiDoc',
+        ),
+      )!;
       expect(
         conv.convertParagraph(para(doc, 'This is $link.')),
         '.sp\nThis is \\c\n.URL "http://asciidoc.org" "AsciiDoc" "."',
@@ -2116,17 +2087,15 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final link =
-          conv.convertInlineAnchor(
-                Inline(
-                  parent,
-                  'anchor',
-                  type: 'link',
-                  target: 'http://asciidoc.org',
-                  text: 'AsciiDoc',
-                ),
-              )!
-              as String;
+      final link = conv.convertInlineAnchor(
+        Inline(
+          parent,
+          'anchor',
+          type: 'link',
+          target: 'http://asciidoc.org',
+          text: 'AsciiDoc',
+        ),
+      )!;
       expect(
         conv.convertParagraph(
           para(doc, 'This is $link, which can be used to write content.'),
@@ -2140,17 +2109,9 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      String link(String target, String text) =>
-          conv.convertInlineAnchor(
-                Inline(
-                  parent,
-                  'anchor',
-                  type: 'link',
-                  target: target,
-                  text: text,
-                ),
-              )!
-              as String;
+      String link(String target, String text) => conv.convertInlineAnchor(
+        Inline(parent, 'anchor', type: 'link', target: target, text: text),
+      )!;
       final first = link('http://clisp.sf.net', 'CLISP');
       final second = link('http://ccl.clozure.com', 'Clozure CL');
       expect(
@@ -2168,22 +2129,12 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final mono =
-          conv.convertInlineQuoted(
-                Inline(parent, 'quoted', type: 'monospaced', text: 'cat'),
-              )!
-              as String;
-      final link =
-          conv.convertInlineAnchor(
-                Inline(
-                  parent,
-                  'anchor',
-                  type: 'link',
-                  target: 'cat',
-                  text: mono,
-                ),
-              )!
-              as String;
+      final mono = conv.convertInlineQuoted(
+        Inline(parent, 'quoted', type: 'monospaced', text: 'cat'),
+      )!;
+      final link = conv.convertInlineAnchor(
+        Inline(parent, 'anchor', type: 'link', target: 'cat', text: mono),
+      )!;
       expect(
         conv.convertParagraph(para(doc, 'Enter the $link command.')),
         '.sp\nEnter the \\c\n.URL "cat" "\\f(CRcat\\fP" ""\ncommand.',
@@ -2194,17 +2145,15 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final mto =
-          conv.convertInlineAnchor(
-                Inline(
-                  parent,
-                  'anchor',
-                  type: 'link',
-                  target: 'mailto:doc@example.org',
-                  text: 'Contact the doc',
-                ),
-              )!
-              as String;
+      final mto = conv.convertInlineAnchor(
+        Inline(
+          parent,
+          'anchor',
+          type: 'link',
+          target: 'mailto:doc@example.org',
+          text: 'Contact the doc',
+        ),
+      )!;
       expect(
         conv.convertParagraph(para(doc, mto)),
         '.sp\n.MTO "doc\\(atexample.org" "Contact the doc" ""',
@@ -2266,17 +2215,15 @@ void main() {
     test('formats a footnote with a URL macro and punctuation', () {
       final doc = manDoc();
       final conv = convOf(doc);
-      final link =
-          conv.convertInlineAnchor(
-                Inline(
-                  para(doc, ''),
-                  'anchor',
-                  type: 'link',
-                  target: 'https://example.org',
-                  text: 'example site',
-                ),
-              )!
-              as String;
+      final link = conv.convertInlineAnchor(
+        Inline(
+          para(doc, ''),
+          'anchor',
+          type: 'link',
+          target: 'https://example.org',
+          text: 'example site',
+        ),
+      )!;
       addFootnote(doc, 1, 'go to $link.');
       expect(
         conv.convertEmbedded(doc),
@@ -2289,17 +2236,15 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final link =
-          conv.convertInlineAnchor(
-                Inline(
-                  parent,
-                  'anchor',
-                  type: 'link',
-                  target: 'https://example.org',
-                  text: 'example site',
-                ),
-              )!
-              as String;
+      final link = conv.convertInlineAnchor(
+        Inline(
+          parent,
+          'anchor',
+          type: 'link',
+          target: 'https://example.org',
+          text: 'example site',
+        ),
+      )!;
       // Simulate normalize_text collapsing the newline after \c.
       addFootnote(doc, 1, 'go to ${link.replaceAll('\n', ' ')}.');
       expect(

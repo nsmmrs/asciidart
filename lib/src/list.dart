@@ -160,6 +160,6 @@ class ListItem extends AbstractBlock {
   String toString() =>
       // Contexts render with a `:` prefix to mimic Ruby's Symbol#inspect.
       '#$runtimeType@${identityHashCode(this)} '
-      '{list_context: :${(parent! as AbstractBlock).context}, '
+      '{list_context: :${(parent!).context}, '
       'text: ${inspectString(_text)}, blocks: ${blocks.length}}';
 }

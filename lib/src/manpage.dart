@@ -365,10 +365,7 @@ class ManpageConverter extends ConverterBase {
       final listItem = item! as ListItem;
       result.add("\\fB(${num += 1})\\fP\\h'-2n':T{");
       result.add(
-        _manify(
-          listItem.text! as String,
-          whitespace: _WhitespaceMode.normalize,
-        ),
+        _manify(listItem.text!, whitespace: _WhitespaceMode.normalize),
       );
       if (listItem.hasBlocks) {
         result.add(_s(listItem.content()));
@@ -405,9 +402,7 @@ class ManpageConverter extends ConverterBase {
       if (dd != null) {
         final hasText = dd.hasText;
         if (hasText) {
-          result.add(
-            _manify(dd.text! as String, whitespace: _WhitespaceMode.normalize),
-          );
+          result.add(_manify(dd.text!, whitespace: _WhitespaceMode.normalize));
         }
         if (dd.hasBlocks) {
           var ddContent = dd.content()! as String;
@@ -452,7 +447,7 @@ class ManpageConverter extends ConverterBase {
       result.add('.sp\n.B ${_manify(node.captionedTitle())}\n.br');
     }
     result.add(
-      '.sp\n.if n .RS 4\n.nf\n.fam C\n${_manify(node.content()! as String, whitespace: _WhitespaceMode.preserve)}\n.fam\n.fi\n.if n .RE',
+      '.sp\n.if n .RS 4\n.nf\n.fam C\n${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n.fam\n.fi\n.if n .RE',
     );
     return result.join('\n');
   }
@@ -464,7 +459,7 @@ class ManpageConverter extends ConverterBase {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
     }
     result.add(
-      '.sp\n.if n .RS 4\n.nf\n.fam C\n${_manify(node.content()! as String, whitespace: _WhitespaceMode.preserve)}\n.fam\n.fi\n.if n .RE',
+      '.sp\n.if n .RS 4\n.nf\n.fam C\n${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n.fam\n.fi\n.if n .RE',
     );
     return result.join('\n');
   }
@@ -491,7 +486,7 @@ class ManpageConverter extends ConverterBase {
       final numeral = idx + start;
       idx += 1;
       final listText = _manify(
-        listItem.text! as String,
+        listItem.text!,
         whitespace: _WhitespaceMode.normalize,
       );
       result.add(
@@ -527,9 +522,9 @@ class ManpageConverter extends ConverterBase {
   /// Converts the [node] paragraph.
   String convertParagraph(Block node) {
     if (node.hasTitle) {
-      return '.sp\n.B ${_manify(node.title!)}\n.br\n${_manify(node.content()! as String, whitespace: _WhitespaceMode.normalize)}';
+      return '.sp\n.B ${_manify(node.title!)}\n.br\n${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
     }
-    return '.sp\n${_manify(node.content()! as String, whitespace: _WhitespaceMode.normalize)}';
+    return '.sp\n${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
   }
 
   /// Converts the [node] quote block.
@@ -558,7 +553,7 @@ class ManpageConverter extends ConverterBase {
     final delimiters = blockMathDelimiters[node.style]!;
     final open = delimiters[0];
     final close = delimiters[1];
-    var equation = node.content()! as String;
+    var equation = node.content()!;
     if (equation.startsWith(open) && equation.endsWith(close)) {
       equation = equation.substring(
         open.length,
@@ -619,7 +614,7 @@ class ManpageConverter extends ConverterBase {
                 cellContent = _s(cell.content());
               case 'literal':
                 cellContent =
-                    '.nf\n${_manify(cell.text! as String, whitespace: _WhitespaceMode.preserve)}\n.fi';
+                    '.nf\n${_manify(cell.text!, whitespace: _WhitespaceMode.preserve)}\n.fi';
               default:
                 cellContent = (cell.content()! as List<Object?>)
                     .map(
@@ -639,7 +634,7 @@ class ManpageConverter extends ConverterBase {
               _headerCellAt(headerRow, cellIndex + 1).add('${cellHalign}tB');
             }
             textRow.add(
-              '${_manify(cell.text! as String, whitespace: _WhitespaceMode.normalize)}\n',
+              '${_manify(cell.text!, whitespace: _WhitespaceMode.normalize)}\n',
             );
           }
           final colspan = cell.colspan;
@@ -716,7 +711,7 @@ class ManpageConverter extends ConverterBase {
     for (final item in node.items) {
       final listItem = item! as ListItem;
       final listText = _manify(
-        listItem.text! as String,
+        listItem.text!,
         whitespace: _WhitespaceMode.normalize,
       );
       result.add(
@@ -748,7 +743,7 @@ class ManpageConverter extends ConverterBase {
         ? '${_s(attributionLine)}\\(em ${_s(node.attr('attribution'))}'
         : null;
     result.add(
-      '.sp\n.nf\n${_manify(node.content()! as String, whitespace: _WhitespaceMode.preserve)}\n.fi\n.br',
+      '.sp\n.nf\n${_manify(node.content()!, whitespace: _WhitespaceMode.preserve)}\n.fi\n.br',
     );
     if (attributionLine != null) {
       result.add('.in +.5i\n.ll -.5i\n$attributionLine\n.in\n.ll');
@@ -775,7 +770,7 @@ class ManpageConverter extends ConverterBase {
     switch (node.type) {
       case 'link':
         final String macro;
-        var linkTarget = node.target! as String;
+        var linkTarget = node.target!;
         if (linkTarget.startsWith('mailto:')) {
           macro = 'MTO';
           linkTarget = linkTarget.substring(7);
@@ -1094,7 +1089,7 @@ class ManpageConverter extends ConverterBase {
   /// a `.sp` paragraph.
   String _encloseContent(Block node) {
     if (node.contentModel == 'compound') return _s(node.content());
-    return '.sp\n${_manify(node.content()! as String, whitespace: _WhitespaceMode.normalize)}';
+    return '.sp\n${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
   }
 
   /// Returns the root document of [node]'s document tree.

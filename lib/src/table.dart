@@ -678,7 +678,7 @@ class Cell extends AbstractBlock {
     if (cellStyle == 'asciidoc') {
       return innerDocument!.convert();
     } else if (_text!.contains(doubleLf)) {
-      return rubySplit(text! as String, _blankLineRx)
+      return rubySplit(text!, _blankLineRx)
           .map(
             (para) => isTruthy(cellStyle) && cellStyle != 'header'
                 ? (Inline(
@@ -692,7 +692,7 @@ class Cell extends AbstractBlock {
           )
           .toList();
     } else {
-      final subbedText = text! as String;
+      final subbedText = text!;
       if (subbedText.isEmpty) return <String>[];
       if (isTruthy(cellStyle) && cellStyle != 'header') {
         return <String>[

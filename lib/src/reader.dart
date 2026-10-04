@@ -738,7 +738,7 @@ class Reader {
   void _restoreState(List<Object?> saved) {
     _lines = (saved[0]! as List<String?>);
     _file = saved[1];
-    _dir = (saved[2]! as Object);
+    _dir = saved[2]!;
     _path = (saved[3]! as String);
     _lineno = (saved[4]! as int);
     _mark = saved[5] as List<Object?>?;
@@ -2029,7 +2029,7 @@ class PreprocessorReader extends Reader {
     final frame = _includeStack.removeLast();
     _lines = (frame[0]! as List<String?>);
     _file = frame[1];
-    _dir = (frame[2]! as Object);
+    _dir = frame[2]!;
     _path = (frame[3]! as String);
     _lineno = (frame[4]! as int);
     _maxdepth = frame[5] as _MaxDepth?;
