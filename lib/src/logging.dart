@@ -44,7 +44,7 @@ enum Severity {
   unknown(5, 'ANY');
 
   /// Creates a severity with integer [value] and format [label].
-  const Severity(this.value, this.label);
+  Severity(this.value, this.label);
 
   /// The integer severity, matching `::Logger::Severity`.
   final int value;
