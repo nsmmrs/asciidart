@@ -1,8 +1,12 @@
-/// Generates `lib/src/data.g.dart` from the repository `data/` directory.
+/// Generates `lib/src/data.g.dart` from the repository `data/` directory, and
+/// `lib/src/cli/help_topics.g.dart` from `man/asciidoctor.1` and
+/// `data/reference/syntax.adoc`.
 ///
 /// The Dart port embeds `data/locale/*.adoc` and `data/stylesheets/*` as
 /// compile-time string constants so converted documents and stylesheets never
-/// depend on runtime file lookup. Run from the `dart/` directory:
+/// depend on runtime file lookup, and embeds the `-h` topic files so
+/// `-h manpage`/`-h syntax` work outside a checkout. Run from the repository
+/// root:
 ///
 /// ```sh
 /// dart run tool/embed_data.dart
@@ -108,6 +112,56 @@ void main() {
   final target = (File('${repoRoot.path}/lib/src/data.g.dart'))
     ..writeAsStringSync(out.toString());
   stdout.writeln('embed_data: wrote ${target.path} (${entries.length} files)');
+
+  _writeHelpTopics(repoRoot);
+}
+
+/// The `-h` topic files embedded in `help_topics.g.dart`, as
+/// (constant name, path relative to the repository root).
+const List<(String, String)> _helpTopics = [
+  ('manpage', 'man/asciidoctor.1'),
+  ('syntax', 'data/reference/syntax.adoc'),
+];
+
+void _writeHelpTopics(Directory repoRoot) {
+  final out = StringBuffer()
+    ..writeln('// GENERATED CODE - DO NOT MODIFY BY HAND.')
+    ..writeln('// Generated from `man/asciidoctor.1` and')
+    ..writeln(
+      '// `data/reference/syntax.adoc` (see `tool/embed_data.dart` for the',
+    )
+    ..writeln('// escaping rules; concatenation reproduces each file exactly).')
+    ..writeln('library;')
+    ..writeln()
+    ..writeln('/// Compile-time embedded copies of the `-h` topic files.')
+    ..writeln('///')
+    ..writeln('/// Used as a fallback when the checkout files cannot be found')
+    ..writeln('/// (e.g. a standalone executable run outside the repository);')
+    ..writeln('/// see `test/cli/help_topics_test.dart`.')
+    ..writeln('abstract final class HelpTopics {');
+  for (final (i, (name, path)) in _helpTopics.indexed) {
+    final file = File('${repoRoot.path}/$path');
+    if (!file.existsSync()) {
+      stderr.writeln('embed_data: help topic not found: ${file.path}');
+      exitCode = 1;
+      return;
+    }
+    if (i > 0) out.writeln();
+    final description = path.endsWith('.1') ? 'troff source' : 'source';
+    out
+      ..writeln('  /// The `$path` $description, byte-identical.')
+      ..writeln('  static const String $name =');
+    final chunks = _encode(utf8.decode(file.readAsBytesSync())).toList();
+    for (var c = 0; c < chunks.length; c++) {
+      out.writeln("      '${chunks[c]}'${c == chunks.length - 1 ? ';' : ''}");
+    }
+  }
+  out.writeln('}');
+  final target = File('${repoRoot.path}/lib/src/cli/help_topics.g.dart')
+    ..writeAsStringSync(out.toString());
+  stdout.writeln(
+    'embed_data: wrote ${target.path} (${_helpTopics.length} topics)',
+  );
 }
 
 /// Splits [content] into escaped single-quoted-literal chunks, one per source

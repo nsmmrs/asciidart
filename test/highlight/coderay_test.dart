@@ -140,7 +140,7 @@ void main() {
   group('docinfoHead', () {
     test('embeds the CodeRay stylesheet', () {
       final css = CodeRayAdapter().stylesheetData;
-      expect(css.length, 3462);
+      expect(css.length, 3483);
       expect(
         css.startsWith(
           '/*! Stylesheet for CodeRay to loosely match GitHub themes | '

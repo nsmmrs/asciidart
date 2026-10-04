@@ -27,7 +27,7 @@ void main() {
   group('EmbeddedData', () {
     test('embeds all locale attributes and stylesheets', () {
       final keys = EmbeddedData.files.keys.toList()..sort();
-      expect(keys.where((key) => key.startsWith('locale/')), hasLength(37));
+      expect(keys.where((key) => key.startsWith('locale/')), hasLength(36));
       expect(
         keys.where((key) => key.startsWith('stylesheets/')),
         orderedEquals([
@@ -35,7 +35,7 @@ void main() {
           'stylesheets/coderay-asciidoctor.css',
         ]),
       );
-      expect(keys, hasLength(39));
+      expect(keys, hasLength(38));
     });
 
     test('embedded bytes equal the data files byte-for-byte', () {

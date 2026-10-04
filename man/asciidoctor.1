@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: asciidoctor
 .\"    Author: Dan Allen, Sarah White
-.\" Generator: Asciidoctor 2.1.0.alpha.0
-.\"      Date: 2022-12-02
+.\" Generator: Asciidoctor 2.0.25
+.\"      Date: 2018-03-20
 .\"    Manual: Asciidoctor Manual
-.\"    Source: Asciidoctor 2.1.0.dev
+.\"    Source: Asciidoctor 2.0.26
 .\"  Language: English
 .\"
-.TH "ASCIIDOCTOR" "1" "2022-12-02" "Asciidoctor 2.1.0.dev" "Asciidoctor Manual"
+.TH "ASCIIDOCTOR" "1" "2018-03-20" "Asciidoctor 2.0.26" "Asciidoctor Manual"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -31,7 +31,7 @@
 asciidoctor \- converts AsciiDoc source files to HTML, DocBook, and other formats
 .SH "SYNOPSIS"
 .sp
-\fBasciidoctor\fP [\fIOPTION\fP]... \fIFILE\fP...
+\fBasciidoctor\fP [\fIOPTION\fP].\|.\|. \fIFILE\fP.\|.\|.
 .SH "DESCRIPTION"
 .sp
 The asciidoctor(1) command converts the AsciiDoc source file(s) \fIFILE\fP to HTML5, DocBook 5, man(ual) page, and other custom output formats.
@@ -66,7 +66,7 @@ If not set, the safe mode level defaults to \fIunsafe\fP when Asciidoctor is inv
 \fB\-a, \-\-attribute\fP=\fIATTRIBUTE\fP
 .RS 4
 Define, override, or unset a document attribute.
-This attribute takes precedence over the same attribute defined in the source file unless either the name or value ends in \fI@\fP.
+Command\-line attributes take precedence over attributes defined in the source file unless either the name or value ends in \fI@\fP.
 No substitutions are applied to the value.
 .sp
 \fIATTRIBUTE\fP is normally formatted as a key\-value pair, in the form \fINAME=VALUE\fP.
@@ -119,7 +119,6 @@ This option is useful for producing documents that can be inserted into an exter
 \fB\-I, \-\-load\-path\fP=\fIDIRECTORY\fP
 .RS 4
 Add the specified directory to the load path, so that \fI\-r\fP can load extensions from outside the default Ruby load path.
-.sp
 This option may be specified more than once.
 .RE
 .sp
@@ -149,7 +148,6 @@ If specified, the directory is resolved relative to the working directory.
 \fB\-r, \-\-require\fP=\fILIBRARY\fP
 .RS 4
 Require the specified library before executing the processor, using the standard Ruby require.
-.sp
 This option may be specified more than once.
 .RE
 .sp
@@ -157,12 +155,6 @@ This option may be specified more than once.
 .RS 4
 Output an embeddable document, which excludes the header, the footer, and everything outside the body of the document.
 This option is useful for producing documents that can be inserted into an external template.
-.RE
-.sp
-\fB\-\-sourcemap\fP
-.RS 4
-Enable the sourcemap option on the parser, which instructs the parser to add source location information to each parsed block.
-The sourcemap information is useful for extensions that need access to the file and line number of blocks in the source document.
 .RE
 .sp
 \fB\-T, \-\-template\-dir\fP=\fIDIR\fP
@@ -174,14 +166,9 @@ If there is a subfolder that matches the engine name (if specified), that folder
 Similarly, if there is a subfolder in the resulting template directory that matches the name of the backend, that folder is appended to the template directory path.
 .sp
 This option may be specified more than once.
-Matching templates in later directories override templates discovered in previous directories.
+Matching templates found in subsequent directories override ones previously discovered.
 .RE
 .SS "Processing Information"
-.sp
-\fB\-\-log\-level\fP=\fILEVEL\fP
-.RS 4
-Set the minimum severity level (default: WARN) of application log messages that get reported.
-.RE
 .sp
 \fB\-\-failure\-level\fP=\fILEVEL\fP
 .RS 4
@@ -201,8 +188,7 @@ Include backtrace information when reporting errors.
 .sp
 \fB\-v, \-\-verbose\fP
 .RS 4
-Sets log level to DEBUG so all application log messages are printed to stderr, including DEBUG and INFO levels.
-If the \f(CR\-\-log\-level\fP option is also specified, it takes precedence.
+Sets log level to DEBUG so application messages logged at INFO or DEBUG level are printed to stderr.
 .RE
 .sp
 \fB\-w, \-\-warnings\fP
