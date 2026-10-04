@@ -46,7 +46,6 @@ library;
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/constants.dart';
-import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/template.dart'
     show TemplateRegistry, buildTemplateChain;
 import 'package:asciidoctor/src/template_loader.dart'
@@ -616,12 +615,7 @@ abstract class ConverterBase extends Converter {
   /// Converts [node] using only its converted content.
   Object? contentOnly(AbstractNode node) {
     if (node is AbstractBlock) return node.content();
-    if (node is Inline) return node.content();
-    throw ArgumentError.value(
-      node,
-      'node',
-      'must be a block or inline node with content',
-    );
+    throw ArgumentError.value(node, 'node', 'must be a block with content');
   }
 
   /// Skips conversion of [node]. Returns `null`.

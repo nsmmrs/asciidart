@@ -209,12 +209,6 @@ void main() {
         expect(Helpers.intToRoman(4), equals('IV'));
         expect(Helpers.intToRoman(64), equals('LXIV'));
       });
-
-      test('should convert roman numeral to integer', () {
-        expect(Helpers.romanToInt('I'), equals(1));
-        expect(Helpers.romanToInt('IV'), equals(4));
-        expect(Helpers.romanToInt('LXIV'), equals(64));
-      });
     });
   });
 }

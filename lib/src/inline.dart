@@ -43,9 +43,6 @@ class Inline extends AbstractNode {
   /// Returns the converted result of this node.
   Object? convert() => converter.convert(this);
 
-  /// The converted result of this node's primary content (aka text).
-  String? content() => text;
-
   /// The converted alt text for this inline image.
   ///
   /// The value of the `alt` attribute, or the empty string when unset.

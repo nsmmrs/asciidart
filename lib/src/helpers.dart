@@ -252,31 +252,6 @@ abstract final class Helpers {
     return result.toString();
   }
 
-  static const Map<String, int> _romanNumerals = {
-    'I': 1,
-    'V': 5,
-    'X': 10,
-    'L': 50,
-    'C': 100,
-    'D': 500,
-    'M': 1000,
-  };
-
-  /// Converts the uppercase Roman numeral [val] to an integer.
-  static int romanToInt(String val) {
-    var result = 0;
-    final values = [for (final c in val.split('')) _romanNumerals[c]!];
-    for (var idx = 0; idx < values.length; idx++) {
-      final succ = idx + 1 < values.length ? values[idx + 1] : null;
-      if (succ != null && succ > values[idx]) {
-        result -= values[idx];
-      } else {
-        result += values[idx];
-      }
-    }
-    return result;
-  }
-
   /// Returns the next value in the sequence after [current].
   ///
   /// Handles both integer and character sequences: an [int] (or a [String]

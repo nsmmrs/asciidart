@@ -1066,21 +1066,6 @@ class Document extends AbstractBlock implements NodeDocument {
   @override
   bool get hasSections => nextSectionIndex > 0;
 
-  /// Whether this book document has parts (level-0 sections).
-  ///
-  /// Returns `null` unless the doctype is `'book'` with a top-level
-  /// structure to inspect, mirroring Ruby's true/false/nil tristate.
-  bool? get multipart {
-    if (doctype != 'book') return null;
-    for (final block in blocks) {
-      if (block.context != 'section') continue;
-      final section = block as Section;
-      if (section.level == 0) return true;
-      if (!section.special) return null;
-    }
-    return false;
-  }
-
   /// Whether the document has footnotes.
   bool get hasFootnotes => (catalog['footnotes']! as List<Footnote>).isNotEmpty;
 

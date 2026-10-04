@@ -1033,30 +1033,6 @@ void main() {
         },
       );
 
-      test('should skip TOML front matter if specified by '
-          'skip-front-matter attribute', () {
-        const frontMatter =
-            "layout = 'post'\n"
-            "title = 'Document Title'\n"
-            "author = 'username'\n"
-            "tags = ['first', 'second']";
-
-        const input =
-            '+++\n'
-            '$frontMatter\n'
-            '+++\n'
-            '= Document Title\n'
-            'Author Name\n'
-            '\n'
-            'preamble\n';
-
-        final doc = FakeDocument(attributes: {'skip-front-matter': ''});
-        final reader = PreprocessorReader(doc, input, normalize: true);
-        expect(reader.peekLine(), equals('= Document Title'));
-        expect(doc.attributes['front-matter'], equals(frontMatter));
-        expect(reader.lineno, equals(7));
-      });
-
       test('should not skip front matter in include file if '
           'skip-front-matter attribute is set', () {
         const input =
@@ -1073,19 +1049,6 @@ void main() {
           'content',
           '....',
         ];
-        expect(reader.readlines(), equals(expected));
-        expect(doc.attrSet('front-matter'), isFalse);
-      });
-
-      test('should skip front matter in include file if '
-          'skip-front-matter option is set on include directiv', () {
-        const input =
-            '....\n'
-            'include::fixtures/with-front-matter.adoc[opts=skip-front-matter]\n'
-            '....\n';
-        final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-        final reader = PreprocessorReader(doc, input, normalize: true);
-        const expected = ['....', 'content', '....'];
         expect(reader.readlines(), equals(expected));
         expect(doc.attrSet('front-matter'), isFalse);
       });
@@ -1200,16 +1163,6 @@ void main() {
         );
       });
 
-      test('should preserve attrlist when replacing include directive '
-          'with link macro', () {
-        const input = 'include::include-file.adoc[leveloffset=+1]';
-        final reader = preprocessorReader(input);
-        expect(
-          reader.readLine(),
-          equals('link:include-file.adoc[role=include,leveloffset=+1]'),
-        );
-      });
-
       test('should replace include directive with link macro if safe '
           'mode allows it, but allow-uri-read is not set', () {
         usingMemoryLogger((logger) {
@@ -1219,94 +1172,34 @@ void main() {
             reader.readLine(),
             equals('link:https://example.org/dist/info.adoc[role=include]'),
           );
-          assertMessage(
-            logger,
-            Severity.warn,
-            '<stdin>: line 1: cannot include contents of URI: https://example.org/dist/info.adoc (allow-uri-read attribute not enabled)',
-            contextual: true,
-          );
+          expect(logger.messages, isEmpty);
         });
       });
 
       test('should not add role to link macro that replaces include '
           'directive with remote target in compat mode', () {
         const input = 'include::https://example.org/dist/info.adoc[]';
-        usingMemoryLogger((logger) {
-          final reader = preprocessorReader(
-            input,
-            safe: SafeMode.safe,
-            attributes: {'compat-mode': ''},
-          );
-          expect(
-            reader.readLine(),
-            equals('link:https://example.org/dist/info.adoc[]'),
-          );
-          assertMessage(
-            logger,
-            Severity.warn,
-            '<stdin>: line 1: cannot include contents of URI: https://example.org/dist/info.adoc (allow-uri-read attribute not enabled)',
-            contextual: true,
-          );
-        });
+        final reader = preprocessorReader(
+          input,
+          safe: SafeMode.safe,
+          attributes: {'compat-mode': ''},
+        );
+        expect(
+          reader.readLine(),
+          equals('link:https://example.org/dist/info.adoc[]'),
+        );
       });
 
       test('should escape spaces in target when generating link from '
           'remote include directive', () {
-        usingMemoryLogger((logger) {
-          const input = 'include::https://example.org/no such file.adoc[]';
-          final reader = preprocessorReader(input, safe: SafeMode.safe);
-          expect(
-            reader.readLine(),
-            equals(
-              'link:pass:c[https://example.org/no such file.adoc][role=include]',
-            ),
-          );
-          assertMessage(
-            logger,
-            Severity.warn,
-            '<stdin>: line 1: cannot include contents of URI: https://example.org/no such file.adoc (allow-uri-read attribute not enabled)',
-            contextual: true,
-          );
-        });
-      });
-
-      test('should preserve attrlist when replacing remove include '
-          'directive with link macro', () {
-        usingMemoryLogger((logger) {
-          const input =
-              'include::https://example.org/dist/info.adoc[leveloffset=+1]';
-          final reader = preprocessorReader(input, safe: SafeMode.safe);
-          expect(
-            reader.readLine(),
-            equals(
-              'link:https://example.org/dist/info.adoc[role=include,leveloffset=+1]',
-            ),
-          );
-          assertMessage(
-            logger,
-            Severity.warn,
-            '<stdin>: line 1: cannot include contents of URI: https://example.org/dist/info.adoc (allow-uri-read attribute not enabled)',
-            contextual: true,
-          );
-        });
-      });
-
-      test('include directive with remote target is converted to a '
-          'link when allow-uri-read is not set', () {
-        usingMemoryLogger((logger) {
-          const input = 'include::http://example.org/team.adoc[]';
-          final reader = preprocessorReader(input, safe: SafeMode.safe);
-          expect(
-            reader.readLine(),
-            equals('link:http://example.org/team.adoc[role=include]'),
-          );
-          assertMessage(
-            logger,
-            Severity.warn,
-            '<stdin>: line 1: cannot include contents of URI: http://example.org/team.adoc (allow-uri-read attribute not enabled)',
-            contextual: true,
-          );
-        });
+        const input = 'include::https://example.org/no such file.adoc[]';
+        final reader = preprocessorReader(input, safe: SafeMode.safe);
+        expect(
+          reader.readLine(),
+          equals(
+            'link:pass:c[https://example.org/no such file.adoc][role=include]',
+          ),
+        );
       });
 
       test('include directive with remote target is converted to a '

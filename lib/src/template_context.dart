@@ -14,7 +14,7 @@
 ///
 /// - `content`: Converted content: `AbstractBlock.content()` (usually a String;
 ///   a List of items for lists, mirroring Ruby, which templates can iterate as
-///   a section), `Inline.content()` (the text), else `null`.
+///   a section), the text of an [Inline], else `null`.
 /// - `text`: Inline/list-item text (`Inline.text`, `ListItem.text`), else
 ///   `null`.
 /// - `id`: The node id (`AbstractNode.id`).
@@ -97,7 +97,7 @@ Map<String, Object?> buildTemplateContext(
 /// templates (a List of items on lists, a String elsewhere).
 Object? _contentOf(AbstractNode node) {
   if (node is AbstractBlock) return node.content();
-  if (node is Inline) return node.content();
+  if (node is Inline) return node.text;
   return null;
 }
 

@@ -1386,13 +1386,17 @@ void main() {
         );
       });
 
-      test('base contentOnly converts block and inline content', () {
+      test('base contentOnly converts block content', () {
         final converter = FakeBaseConverter('seam-content-only');
         expect(
           converter.contentOnly(StubBlock(null, 'sidebar', '<aside/>')),
           '<aside/>',
         );
-        expect(converter.contentOnly(Inline(null, 'quoted', text: 'hi')), 'hi');
+        // Inline has no content in 2.0.26 (the alias came with #3220).
+        expect(
+          () => converter.contentOnly(Inline(null, 'quoted', text: 'hi')),
+          throwsArgumentError,
+        );
         expect(() => converter.contentOnly(BareNode()), throwsArgumentError);
       });
 

@@ -1069,7 +1069,6 @@ void main() {
       expect(node.document, same(doc));
       expect(node.isBlock, isFalse);
       expect(node.isInline, isTrue);
-      expect(node.content(), equals('x'));
     });
 
     test('convert delegates without playback', () {

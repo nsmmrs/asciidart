@@ -5,6 +5,7 @@
 library;
 
 import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/list.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/reader.dart';
@@ -873,6 +874,25 @@ void main() {
           '<stdin>: line 5: id assigned to anchor already in use: in-use',
         );
       });
+    });
+
+    test('marker-derived ordered list style has no list marker keyword', () {
+      // Ruby assigns the implicit style as a Symbol, which misses the
+      // String-keyed ORDERED_LIST_KEYWORDS, so no HTML type attribute is
+      // emitted; an explicit style (a String) does get one.
+      final implicit =
+          documentFromString('a. one\nb. two').blocks[0] as ListBlock;
+      expect(implicit.style, equals('loweralpha'));
+      expect(implicit.listMarkerKeyword(), isNull);
+      expect(implicit.listMarkerKeyword('loweralpha'), equals('a'));
+      final explicit =
+          documentFromString('[loweralpha]\n. one\n. two').blocks[0]
+              as ListBlock;
+      expect(explicit.listMarkerKeyword(), equals('a'));
+      final nested = documentFromString('. one\n.. two').blocks[0] as ListBlock;
+      final inner = (nested.items[0]! as ListItem).blocks[0] as ListBlock;
+      expect(inner.style, equals('loweralpha'));
+      expect(inner.listMarkerKeyword(), equals('a'));
     });
   });
 }

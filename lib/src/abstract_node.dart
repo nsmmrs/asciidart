@@ -549,14 +549,14 @@ abstract class AbstractNode {
         targetImage,
         start: assetDirKey == null
             ? null
-            : _stringOrNull(attr(assetDirKey, null, true)),
+            : _stringOrNull(doc.attr(assetDirKey)),
       );
     }
     String? uriTarget;
     if (Helpers.isUriish(targetImage)) {
       uriTarget = Helpers.encodeSpacesInUri(targetImage);
     } else if (assetDirKey != null) {
-      final imagesBase = _stringOrNull(attr(assetDirKey, null, true));
+      final imagesBase = _stringOrNull(doc.attr(assetDirKey));
       if (imagesBase != null && Helpers.isUriish(imagesBase)) {
         uriTarget = normalizeWebPath(
           targetImage,
@@ -587,7 +587,7 @@ abstract class AbstractNode {
       media,
       start: assetDirKey == null
           ? null
-          : _stringOrNull(attr(assetDirKey, null, true)),
+          : _stringOrNull(document!.attr(assetDirKey)),
     );
   }
 
@@ -615,7 +615,7 @@ abstract class AbstractNode {
         ? normalizeSystemPath(targetImage)
         : normalizeSystemPath(
             targetImage,
-            start: _stringOrNull(attr(assetDirKey, null, true)),
+            start: _stringOrNull(document!.attr(assetDirKey)),
             targetName: 'image',
           );
 
@@ -775,7 +775,7 @@ abstract class AbstractNode {
       }
     }
     if (warnOnFailure) {
-      final docfile = document!.attr('docfile');
+      final docfile = attr('docfile');
       logger.warn(
         '${docfile == null || docfile == false ? '<stdin>' : docfile}: '
         '${label ?? 'file'} does not exist or cannot be read: $path',

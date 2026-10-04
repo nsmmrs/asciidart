@@ -44,6 +44,21 @@ class ListBlock extends AbstractBlock {
   /// Whether this list is an outline list (unordered or ordered).
   bool get isOutline => context == 'ulist' || context == 'olist';
 
+  /// The style the parser derived from the first ordered list marker, if
+  /// any.
+  ///
+  /// Ruby assigns that style as a Symbol (`:loweralpha`), while
+  /// `ORDERED_LIST_KEYWORDS` is keyed by String, so `list_marker_keyword`
+  /// finds no keyword for it and the HTML `type` attribute is omitted. The
+  /// port records the value to reproduce that lookup miss.
+  String? markerStyle;
+
+  @override
+  String? listMarkerKeyword([String? listType]) =>
+      listType == null && style != null && style == markerStyle
+      ? null
+      : super.listMarkerKeyword(listType);
+
   /// Converts this list, advancing the document callouts catalog past a
   /// callout list.
   ///

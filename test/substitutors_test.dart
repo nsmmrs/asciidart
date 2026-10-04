@@ -1055,28 +1055,6 @@ void main() {
         );
       });
 
-      test('does not recognize attribute list with left square bracket '
-          'on formatted text', () {
-        final para = blockFromString(
-          'key: [ *before [.redacted]#redacted# after* ]',
-        );
-        expect(
-          subQuotes(para, para.source()),
-          'key: [ <strong>before <span class="redacted">redacted</span> after</strong> ]',
-        );
-      });
-
-      test('should ignore enclosing square brackets when processing '
-          'formatted text with attribute list', () {
-        // PORT: `doc.convert` with inline doctype renders the single
-        // paragraph content; the parser wave owns block parsing.
-        final para = blockFromString('nums = [1, 2, 3, [.blue]#4#]');
-        expect(
-          contentOf(para),
-          'nums = [1, 2, 3, <span class="blue">4</span>]',
-        );
-      });
-
       test('single-line constrained strong string', () {
         final para = blockFromString('*a few strong words*');
         expect(
@@ -2036,17 +2014,6 @@ void main() {
         );
       });
 
-      test('should use the imagesdir attribute defined on image macro '
-          'when resolving image path', () {
-        // PORT: the `:imagesdir:` attribute entry and document structure
-        // belong to the parser wave; emulate with document attributes.
-        final para = blockFromString(
-          'Great job! image:rainbow.png[imagesdir=stickers]',
-          attributes: {'imagesdir': 'images'},
-        );
-        expect(contentOf(para), contains('src="stickers/rainbow.png"'));
-      });
-
       test('should replace underscore and hyphen with space in '
           'generated alt text for an inline image', () {
         final para = blockFromString('image:tiger-with-family_1.png[]');
@@ -2377,28 +2344,6 @@ void main() {
         );
       });
 
-      test('should propagate id attribute on inline image', () {
-        final para = blockFromString(
-          'image:ruby.png[Ruby logo,id=ruby-logo] is the Ruby logo',
-        );
-        expect(
-          squeezeTags(subMacros(para, para.source())),
-          '<span id="ruby-logo" class="image"><img src="ruby.png" alt="Ruby logo"></span> is the Ruby logo',
-        );
-      });
-
-      test('should propagate id attribute on inline image and use alt '
-          'text as reftext when converting to DocBook', () {
-        final para = blockFromString(
-          'image:ruby.png[Ruby logo,id=ruby-logo] is the Ruby logo',
-          backend: 'docbook',
-        );
-        expect(
-          squeezeTags(subMacros(para, para.source())),
-          '<inlinemediaobject xml:id="ruby-logo"><imageobject><imagedata fileref="ruby.png"/></imageobject><textobject><phrase>Ruby logo</phrase></textobject></inlinemediaobject> is the Ruby logo',
-        );
-      });
-
       test('should prepend value of imagesdir attribute to inline '
           'image target if target is relative path', () {
         final para = blockFromString(
@@ -2619,20 +2564,6 @@ void main() {
           squeezeTags(subMacros(para, para.source())),
           '<span class="icon red"><i class="fa fa-heart" title="Heart me"></i></span>',
         );
-      });
-
-      test('should use the imagesdir attribute on the node when '
-          'resolving the icon path', () {
-        final doc = makeDoc(
-          attributes: {'iconsdir': 'assets/icons', 'icons': 'image'},
-        );
-        final icon = Inline(
-          doc,
-          'image',
-          type: 'icon',
-          attributes: {'iconsdir': 'chapter-1/icons'},
-        );
-        expect(icon.iconUri('wave'), 'chapter-1/icons/wave.png');
       });
 
       test('a single-line footnote macro should be registered and '

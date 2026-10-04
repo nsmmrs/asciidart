@@ -52,7 +52,7 @@ const String cgWord =
 
 /// Matches `[attributes]` in the shorthand quoted-text / passthrough
 /// position (`QuoteAttributeListRxt`).
-const String quoteAttributeListRxt = r'\[([^\[\]]+)\]';
+const String quoteAttributeListRxt = r'\[([^\]]+)\]';
 
 /// Admonition style names (`ADMONITION_STYLES.to_a.join '|'`).
 const String _admonitionStyles = 'NOTE|TIP|IMPORTANT|WARNING|CAUTION';
@@ -651,7 +651,7 @@ final Map<bool, InlinePassEntry> inlinePassRx = {
     '-]',
     RegExp(
       '((?:^|[^$ccWord'
-      r';:\\])(?=(\[)|\+)|\\(?=\[)|(?=\\\+))(?:\2(x-|[^\[\]]+ x-)\]|(?:'
+      r';:\\])(?=(\[)|\+)|\\(?=\[)|(?=\\\+))(?:\2(x-|[^\]]+ x-)\]|(?:'
       '$quoteAttributeListRxt'
       r')?(?=(\\)?\+))(\5?(\+|`)'
       r'(\S|\S'

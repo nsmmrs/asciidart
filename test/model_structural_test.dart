@@ -881,11 +881,10 @@ void main() {
       expect(inline.parent, same(para));
     });
 
-    test('content aliases text; convert', () {
+    test('convert', () {
       final doc = FakeDocument();
       final para = Block(doc, 'paragraph');
       final inline = Inline(para, 'quoted', text: 'hi', type: 'strong');
-      expect(inline.content(), equals('hi'));
       expect(inline.convert(), equals('<inline_quoted:strong=hi>'));
       expect(doc.converter.converted, equals([inline]));
     });

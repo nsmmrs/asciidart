@@ -210,7 +210,6 @@ abstract final class Parser {
         ',===': ('table', <String>{}),
         ':===': ('table', <String>{}),
         '!===': ('table', <String>{}),
-        '~~~~': ('open', <String>{'abstract', 'partintro'}),
         '////': ('comment', <String>{}),
         '```': ('fenced_code', <String>{}),
       };
@@ -227,7 +226,6 @@ abstract final class Parser {
     ',=',
     ':=',
     '!=',
-    '~~',
     '//',
     '``',
   };
@@ -244,7 +242,6 @@ abstract final class Parser {
     ',===': '=',
     ':===': '=',
     '!===': '=',
-    '~~~~': '~',
     '////': '/',
   };
 
@@ -971,8 +968,7 @@ abstract final class Parser {
       blockAttrs,
       docAttrs['leveloffset'],
     );
-    if (implicitDoctitle &&
-        (isTruthy(blockAttrs['title']) || isTruthy(blockAttrs['style']))) {
+    if (implicitDoctitle && isTruthy(blockAttrs['title'])) {
       docAttrs['authorcount'] = 0;
       return document.finalizeHeader(blockAttrs, headerValid: false);
     }
@@ -1554,21 +1550,20 @@ abstract final class Parser {
     // Generate an ID if one was not embedded or specified as anchor above
     // section title.
     var id = section.id;
+    var generatedId = false;
+    if (id == null && document.attributes.containsKey('sectids')) {
+      // TEMP-SEAM (parser): `section.title` needs the substitutors wave;
+      // the partial conversion feeds the ID generator instead.
+      section.id = id = Section.generateId(_titleText(section), document);
+      generatedId = true;
+    }
     if (id != null) {
-      if (id.isEmpty) {
-        section.id = id = null;
-      } else if (sectTitle.contains(attrRefHead)) {
+      if (!generatedId && sectTitle.contains(attrRefHead)) {
         // Convert title to resolve attributes while in scope.
         // TEMP-SEAM (parser): `section.title` needs the substitutors
         // wave; the partial conversion runs the same side effects.
         _titleText(section);
       }
-    } else if (document.attributes.containsKey('sectids')) {
-      // TEMP-SEAM (parser): `section.title` needs the substitutors wave;
-      // the partial conversion feeds the ID generator instead.
-      section.id = id = Section.generateId(_titleText(section), document);
-    }
-    if (id != null) {
       if (document.register('refs', [id, section]) == null) {
         _logger.warn(
           _msg(
@@ -1946,9 +1941,7 @@ abstract final class Parser {
               }
               if (blkCtx == 'image') {
                 document.register('images', target);
-                if (!isTruthy(attrs['imagesdir'])) {
-                  attrs['imagesdir'] = docAttrs['imagesdir'];
-                }
+                attrs['imagesdir'] = docAttrs['imagesdir'];
                 // NOTE style is the value of the first positional
                 // attribute in the block attribute line.
                 if (!isTruthy(attrs['alt'])) {
@@ -2119,13 +2112,7 @@ abstract final class Parser {
         break;
       } else if (orderedListRx.hasMatch(thisLine)) {
         reader.unshiftLine(thisLine);
-        block = parseList(
-          reader,
-          'olist',
-          parent,
-          style,
-          start: attrs.remove('start'),
-        );
+        block = parseList(reader, 'olist', parent, style);
         if (block.style != null) attrs['style'] = block.style;
         break;
       } else if (dlistMatch != null) {
@@ -2384,10 +2371,10 @@ abstract final class Parser {
               attrs['cloaked-context'] = cloakedContext;
             }
           }
-          if (!attrs.containsKey('linenums-option') &&
-              (attrs.containsKey('linenums') ||
-                  docAttrs.containsKey('source-linenums-option'))) {
-            attrs['linenums-option'] = '';
+          if (!attrs.containsKey('linenums') &&
+              (isTruthy(attrs['linenums-option']) ||
+                  isTruthy(docAttrs['source-linenums-option']))) {
+            attrs['linenums'] = '';
           }
           if (!attrs.containsKey('indent') &&
               docAttrs.containsKey('source-indent')) {
@@ -2429,10 +2416,10 @@ abstract final class Parser {
           attrs['language'] = language;
         }
         attrs['cloaked-context'] = cloakedContext;
-        if (!attrs.containsKey('linenums-option') &&
-            (attrs.containsKey('linenums') ||
-                docAttrs.containsKey('source-linenums-option'))) {
-          attrs['linenums-option'] = '';
+        if (!attrs.containsKey('linenums') &&
+            (isTruthy(attrs['linenums-option']) ||
+                isTruthy(docAttrs['source-linenums-option']))) {
+          attrs['linenums'] = '';
         }
         if (!attrs.containsKey('indent') &&
             docAttrs.containsKey('source-indent')) {
@@ -2893,16 +2880,9 @@ abstract final class Parser {
     Reader reader,
     String listType,
     AbstractBlock parent,
-    String? style, {
-    Object? start,
-  }) {
-    final listBlock = isTruthy(start) && _toInt(start) != 1
-        ? ListBlock(
-            parent,
-            listType,
-            attributes: <String, Object?>{'start': _toInt(start)},
-          )
-        : ListBlock(parent, listType);
+    String? style,
+  ) {
+    final listBlock = ListBlock(parent, listType);
     final listRx = listRxMap[listType]!;
 
     while (reader.hasMoreLines()) {
@@ -3263,34 +3243,23 @@ abstract final class Parser {
           }
         }
       } else if (listType == 'olist') {
-        var ordinal = listBlock.items.length;
-        final first = ordinal == 0;
-        var validate = true;
-        final startAttr = listBlock.attributes['start'];
-        if (startAttr != null) {
-          ordinal += (startAttr as int) - 1;
-        } else if (first) {
-          final start = resolveOrderedListStart(trait as String);
-          if (start != 1) {
-            listBlock.attributes['start'] = start;
-            ordinal += start - 1;
-            validate = false;
-          }
-        }
+        final ordinal = listBlock.items.length;
         final (resolvedMarker, implicitStyle) = resolveOrderedListMarker(
           trait as String,
           ordinal: ordinal,
-          validate: validate,
+          validate: true,
           reader: reader,
         );
         trait = resolvedMarker;
         listItem.marker = resolvedMarker;
-        if (first && style == null) {
+        if (ordinal == 0 && style == null) {
           // Using list level makes more sense, but we don't track it.
           // Basing style on marker level is compliant with AsciiDoc.py.
           final fallbackIndex = resolvedMarker.length - 1;
+          // NOTE Ruby's implicit style is a Symbol; the fallback is a String
+          // (`.to_s`). See ListBlock.markerStyle.
           listBlock.style =
-              implicitStyle ??
+              (listBlock.markerStyle = implicitStyle) ??
               (fallbackIndex >= 0 && fallbackIndex < _orderedListStyles.length
                   ? _orderedListStyles[fallbackIndex]
                   : 'arabic');
@@ -3720,11 +3689,11 @@ abstract final class Parser {
   /// Resolves the 0-index marker for an ordered list item.
   ///
   /// Port of `Parser.resolve_ordered_list_marker`. Returns the first
-  /// marker in the number series and, when [ordinal] is given, the
-  /// implicit list style.
+  /// marker in the number series and the implicit list style, if
+  /// applicable.
   static (String, String?) resolveOrderedListMarker(
     String marker, {
-    int? ordinal,
+    int ordinal = 0,
     bool validate = false,
     Reader? reader,
   }) {
@@ -3742,83 +3711,45 @@ abstract final class Parser {
     var resolved = marker;
     if (style == 'arabic') {
       if (validate) {
-        expected = (ordinal! + 1).toString();
+        expected = (ordinal + 1).toString();
         actual = _toInt(marker).toString(); // remove trailing .
       }
       resolved = '1.';
     } else if (style == 'loweralpha') {
       if (validate) {
-        expected = String.fromCharCode(97 + ordinal!); // 97 is a
+        expected = String.fromCharCode(97 + ordinal); // 97 is a
         actual = marker.substring(0, marker.length - 1); // remove .
       }
       resolved = 'a.';
     } else if (style == 'upperalpha') {
       if (validate) {
-        expected = String.fromCharCode(65 + ordinal!); // 65 is A
+        expected = String.fromCharCode(65 + ordinal); // 65 is A
         actual = marker.substring(0, marker.length - 1); // remove .
       }
       resolved = 'A.';
     } else if (style == 'lowerroman') {
       if (validate) {
-        expected = Helpers.intToRoman(ordinal! + 1).toLowerCase();
+        expected = Helpers.intToRoman(ordinal + 1).toLowerCase();
         actual = marker.substring(0, marker.length - 1); // remove )
       }
       resolved = 'i)';
     } else if (style == 'upperroman') {
       if (validate) {
-        expected = Helpers.intToRoman(ordinal! + 1);
+        expected = Helpers.intToRoman(ordinal + 1);
         actual = marker.substring(0, marker.length - 1); // remove )
       }
       resolved = 'I)';
     }
 
-    if (ordinal != null) {
-      if (validate && expected != actual) {
-        _logger.warn(
-          _msg(
-            'list item index: expected $expected, got $actual',
-            reader!.cursor(),
-          ),
-        );
-      }
-      return (resolved, style);
+    if (validate && expected != actual) {
+      _logger.warn(
+        _msg(
+          'list item index: expected $expected, got $actual',
+          reader!.cursor(),
+        ),
+      );
     }
-    return (resolved, null);
-  }
-
-  /// Resolves the start value for an ordered list marker.
-  ///
-  /// Port of `Parser.resolve_ordered_list_start`.
-  static int resolveOrderedListStart(String marker) {
-    var start = 1;
-    if (marker.startsWith('.')) return start;
-    String? style;
-    for (final candidate in _orderedListStyles) {
-      if (orderedListMarkerRxMap[candidate]!.hasMatch(marker)) {
-        style = candidate;
-        break;
-      }
-    }
-    if (style == 'arabic') {
-      start = _toInt(marker); // remove trailing . and coerce to int
-    } else if (style == 'loweralpha') {
-      start =
-          marker.substring(0, marker.length - 1).codeUnitAt(0) -
-          96; // remove trailing .
-    } else if (style == 'upperalpha') {
-      start =
-          marker.substring(0, marker.length - 1).codeUnitAt(0) -
-          64; // remove trailing .
-    } else if (style == 'lowerroman') {
-      start = Helpers.romanToInt(
-        marker.substring(0, marker.length - 1).toUpperCase(),
-      ); // remove trailing )
-    } else if (style == 'upperroman') {
-      start = Helpers.romanToInt(
-        marker.substring(0, marker.length - 1),
-      ); // remove trailing )
-    }
-    return start;
+    return (resolved, style);
   }
 
   /// Determines whether [line] is a sibling list item.

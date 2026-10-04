@@ -189,7 +189,6 @@ const Map<String, DelimitedBlockInfo> delimitedBlocks =
       ',===': DelimitedBlockInfo('table'),
       ':===': DelimitedBlockInfo('table'),
       '!===': DelimitedBlockInfo('table'),
-      '~~~~': DelimitedBlockInfo('open', <String>{'abstract', 'partintro'}),
       '////': DelimitedBlockInfo('comment'),
       '```': DelimitedBlockInfo('fenced_code'),
     };
@@ -207,7 +206,6 @@ const Map<String, bool> delimitedBlockHeads = <String, bool>{
   ',=': true,
   ':=': true,
   '!=': true,
-  '~~': true,
   '//': true,
   '``': true,
 };
@@ -225,7 +223,6 @@ const Map<String, String> delimitedBlockTails = <String, String>{
   ',===': '=',
   ':===': '=',
   '!===': '=',
-  '~~~~': '~',
   '////': '/',
 };
 
@@ -365,7 +362,6 @@ const Map<String, String> intrinsicAttributes = <String, String>{
   'brvbar': '&#166;',
   'pp': '&#43;&#43;',
   'cpp': 'C&#43;&#43;',
-  'cxx': 'C&#43;&#43;',
   'amp': '&',
   'lt': '<',
   'gt': '>',

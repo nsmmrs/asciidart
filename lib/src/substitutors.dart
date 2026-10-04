@@ -1091,13 +1091,9 @@ String subMacros(AbstractNode node, String text) {
         posattrs: posattrs,
         unescapeInput: true,
       );
-      String? id;
       if (!isIcon) {
-        id = attrs['id'] as String?;
         doc.register('images', target);
-        if (!isTruthy(attrs['imagesdir'])) {
-          attrs['imagesdir'] = docAttrs['imagesdir'];
-        }
+        attrs['imagesdir'] = docAttrs['imagesdir'];
       }
       if (!isTruthy(attrs['alt'])) {
         final defaultAlt = Helpers.basename(
@@ -1113,7 +1109,6 @@ String subMacros(AbstractNode node, String text) {
           'image',
           type: type,
           target: target,
-          id: id,
           attributes: _stringMap(attrs),
         ).convert(),
       );
@@ -2086,7 +2081,7 @@ String highlightSource(
   // CodeRay backend can validate them is framework-wave work.
   LineNumbersMode? linenumsMode;
   int? startLineNumber;
-  if (node.hasOption('linenums')) {
+  if (node.hasAttr('linenums')) {
     linenumsMode = LineNumbersMode.fromAttribute(
       docAttrs['${syntaxHl.name}-linenums-mode']?.toString(),
     );

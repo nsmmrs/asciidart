@@ -228,14 +228,8 @@ class Reader {
   /// [data] is a string, a list of lines (which may contain `null` entries),
   /// or `null` for an empty reader. [cursor] is a file path string, a
   /// [Cursor], or `null` (stdin). When [normalize] is set, lines are
-  /// normalized as in Ruby (`normalize: true`); [skipFrontMatter] is honored
-  /// by [PreprocessorReader] only, exactly like the Ruby `opts` entry.
-  new(
-    Object? data, {
-    Object? cursor,
-    bool normalize = false,
-    bool skipFrontMatter = false,
-  }) {
+  /// normalized as in Ruby (`normalize: true`).
+  new(Object? data, {Object? cursor, bool normalize = false}) {
     if (cursor == null) {
       _file = null;
       _dir = '.';
@@ -268,7 +262,6 @@ class Reader {
     _sourceLines = _prepareLines(
       data,
       normalize: normalize ? _LineNormalization.full : _LineNormalization.none,
-      skipFrontMatter: skipFrontMatter,
     );
     _lines = _sourceLines.reversed.toList();
     _mark = null;
@@ -747,15 +740,13 @@ class Reader {
   /// Prepares the source data for parsing.
   ///
   /// Converts [data] into a list of lines ready for parsing. [normalize]
-  /// controls encoding/whitespace handling; [skipFrontMatter] is honored by
-  /// the [PreprocessorReader] override only.
+  /// controls encoding/whitespace handling.
   ///
   /// Unlike Ruby, no encoding rescue is needed: Dart strings are always
   /// valid Unicode.
   List<String?> _prepareLines(
     Object? data, {
     _LineNormalization normalize = _LineNormalization.none,
-    bool skipFrontMatter = false,
   }) {
     // NOTE results are normalized to a runtime List<String?> so later
     // mutations (front matter restore, null entries) never hit covariance
@@ -804,10 +795,7 @@ class PreprocessorReader extends Reader {
   new(ReaderDocument document, super.data, {super.cursor, super.normalize})
     : _document = document,
       _sourcemap = document.sourcemap,
-      _includes = document.catalogIncludes,
-      super(
-        skipFrontMatter: _isTruthy(document.attributes['skip-front-matter']),
-      ) {
+      _includes = document.catalogIncludes {
     final maxDepthValue = document.attributes['max-include-depth'];
     final defaultDepth = maxDepthValue == null || maxDepthValue == false
         ? 64
@@ -964,9 +952,8 @@ class PreprocessorReader extends Reader {
       normalize: processLines
           ? _LineNormalization.full
           : _LineNormalization.chomp,
-      include: true,
+      condense: false,
       indent: attrs['indent'],
-      skipFrontMatter: attrs['skip-front-matter-option'] != null,
     );
     if (prepared.isEmpty) {
       _popInclude();
@@ -1091,46 +1078,48 @@ class PreprocessorReader extends Reader {
     _savedPreprocessorState = null;
   }
 
-  /// Prepares include [data], skipping front matter and adjusting
-  /// indentation for includes, or dropping trailing blank lines otherwise.
+  /// Prepares [data], skipping front matter when the document sets the
+  /// `skip-front-matter` attribute, dropping trailing blank lines unless
+  /// [condense] is false, and adjusting indentation when [indent] is set.
   @override
   List<String?> _prepareLines(
     Object? data, {
     _LineNormalization normalize = _LineNormalization.none,
-    bool skipFrontMatter = false,
-    bool include = false,
+    bool condense = true,
     Object? indent,
   }) {
     final result = super._prepareLines(data, normalize: normalize);
 
-    if (skipFrontMatter) {
+    // QUESTION should this work for AsciiDoc table cell content? Currently it
+    // does not.
+    if (_isTruthy(_document.attributes['skip-front-matter'])) {
       final frontMatter = _skipFrontMatter(result);
-      if (frontMatter != null && !include) {
+      if (frontMatter != null) {
         _document.attributes['front-matter'] = frontMatter
             .map((line) => line ?? '')
             .join(lf);
       }
     }
 
-    if (include) {
-      if (indent != null) {
-        // Port of the `Parser.adjust_indentation!` call in
-        // `PreprocessorReader#prepare_lines` (lib/asciidoctor/reader.rb:803).
-        // The include path always normalizes to non-null strings, so the
-        // `?? ''` fallback never fires in practice.
-        final lines = List<String>.of(result.map((line) => line ?? ''));
-        Parser.adjustIndentation(
-          lines,
-          _toInt(indent),
-          _toInt(_document.attr('tabsize')),
-        );
-        for (var i = 0; i < lines.length; i++) {
-          result[i] = lines[i];
-        }
-      }
-    } else {
+    if (condense) {
       while (result.isNotEmpty && (result.last?.isEmpty ?? false)) {
         result.removeLast();
+      }
+    }
+
+    if (indent != null) {
+      // Port of the `Parser.adjust_indentation!` call in
+      // `PreprocessorReader#prepare_lines`. The include path always
+      // normalizes to non-null strings, so the `?? ''` fallback never fires
+      // in practice.
+      final lines = List<String>.of(result.map((line) => line ?? ''));
+      Parser.adjustIndentation(
+        lines,
+        _toInt(indent),
+        _toInt(_document.attr('tabsize')),
+      );
+      for (var i = 0; i < lines.length; i++) {
+        result[i] = lines[i];
       }
     }
 
@@ -1523,9 +1512,7 @@ class PreprocessorReader extends Reader {
         // a verbatim context
         var linkTarget = expandedTarget;
         if (linkTarget.contains(' ')) linkTarget = 'pass:c[$linkTarget]';
-        final linkAttrlist = doc.attrSet('compat-mode')
-            ? (attrlist ?? '')
-            : 'role=include${attrlist != null ? ',$attrlist' : ''}';
+        final linkAttrlist = doc.attrSet('compat-mode') ? '' : 'role=include';
         return replaceNextLine('link:$linkTarget[$linkAttrlist]');
       } else if (_maxdepth != null) {
         final maxdepth = _maxdepth!;
@@ -1930,20 +1917,11 @@ class PreprocessorReader extends Reader {
     }
     if (Helpers.isUriish(resolvedTarget) || _dir is! String) {
       if (!doc.attrSet('allow-uri-read')) {
-        LoggerManager.logger.warn(
-          _messageWithContext(
-            'cannot include contents of URI: $resolvedTarget '
-            '(allow-uri-read attribute not enabled)',
-            sourceLocation: cursor(),
-          ),
-        );
         // FIXME we don't want to use a passthrough or link macro if we're in
         // a verbatim context
         var linkTarget = resolvedTarget;
         if (linkTarget.contains(' ')) linkTarget = 'pass:c[$linkTarget]';
-        final linkAttrlist = doc.attrSet('compat-mode')
-            ? (attrlist ?? '')
-            : 'role=include${attrlist != null ? ',$attrlist' : ''}';
+        final linkAttrlist = doc.attrSet('compat-mode') ? '' : 'role=include';
         replaceNextLine('link:$linkTarget[$linkAttrlist]');
         return null;
       }
@@ -2039,7 +2017,7 @@ class PreprocessorReader extends Reader {
     bool incrementLinenos = true,
   ]) {
     final delim = data.isEmpty ? null : data[0];
-    if (delim != '---' && delim != '+++') return null;
+    if (delim != '---') return null;
     final originalData = List<String?>.of(data);
     data.removeAt(0);
     final frontMatter = <String?>[];

@@ -261,10 +261,6 @@ void main() {
           ',===': <Object>['table', <String>{}],
           ':===': <Object>['table', <String>{}],
           '!===': <Object>['table', <String>{}],
-          '~~~~': <Object>[
-            'open',
-            <String>{'abstract', 'partintro'},
-          ],
           '////': <Object>['comment', <String>{}],
           '```': <Object>['fenced_code', <String>{}],
         }),
@@ -275,7 +271,7 @@ void main() {
       // Probe: table dump (DELIMITED_BLOCK_HEADS={"--" => true,
       // ".." => true, "==" => true, "**" => true, "__" => true,
       // "++" => true, "|=" => true, ",=" => true, ":=" => true,
-      // "!=" => true, "~~" => true, "//" => true, "``" => true}).
+      // "!=" => true, "//" => true, "``" => true}).
       expect(
         delimitedBlockHeads,
         equals(<String, bool>{
@@ -289,7 +285,6 @@ void main() {
           ',=': true,
           ':=': true,
           '!=': true,
-          '~~': true,
           '//': true,
           '``': true,
         }),
@@ -308,7 +303,7 @@ void main() {
       // Probe: table dump (DELIMITED_BLOCK_TAILS={"----" => "-",
       // "...." => ".", "====" => "=", "****" => "*", "____" => "_",
       // "++++" => "+", "|===" => "=", ",===" => "=", ":===" => "=",
-      // "!==" => "=", "~~~~" => "~", "////" => "/"}).
+      // "!==" => "=", "////" => "/"}).
       expect(
         delimitedBlockTails,
         equals(<String, String>{
@@ -322,7 +317,6 @@ void main() {
           ',===': '=',
           ':===': '=',
           '!===': '=',
-          '~~~~': '~',
           '////': '/',
         }),
       );
@@ -551,7 +545,6 @@ void main() {
           'brvbar': '&#166;',
           'pp': '&#43;&#43;',
           'cpp': 'C&#43;&#43;',
-          'cxx': 'C&#43;&#43;',
           'amp': '&',
           'lt': '<',
           'gt': '>',
@@ -629,7 +622,7 @@ void main() {
       expect(
         patterns,
         equals(<String>[
-          // Ruby: \\?(?:\[([^\[\]]+)\])?\*\*(.+?)\*\*
+          // Ruby: \\?(?:\[([^\]]+)\])?\*\*(.+?)\*\*
           '\\\\?(?:$quoteAttributeListRxt)?\\*\\*($ccAll+?)\\*\\*',
           // Ruby: (^|[^\p{Word};:}])(?:\[...\\])?\*(\S|\S.*?\S)\*(?!\p{Word})
           '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?\\*(\\S|\\S$ccAll*?\\S)\\*(?!$cgWord)',
@@ -637,21 +630,21 @@ void main() {
           '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?"`(\\S|\\S$ccAll*?\\S)`"(?!$cgWord)',
           // Ruby: (^|[^\p{Word};:`}])(?:\[...\])?'`(\S|\S.*?\S)`'(?!\p{Word})
           "(^|[^$ccWord;:`}])(?:$quoteAttributeListRxt)?'`(\\S|\\S$ccAll*?\\S)`'(?!$cgWord)",
-          // Ruby: \\?(?:\[([^\[\]]+)\])?``(.+?)``
+          // Ruby: \\?(?:\[([^\]]+)\])?``(.+?)``
           '\\\\?(?:$quoteAttributeListRxt)?``($ccAll+?)``',
           // Ruby: (^|[^\p{Word};:"'`}])(?:\[...\])?`(\S|\S.*?\S)`(?![\p{Word}"'`])
           "(^|[^$ccWord;:\"'`}])(?:$quoteAttributeListRxt)?`(\\S|\\S$ccAll*?\\S)`(?![$ccWord\"'`])",
-          // Ruby: \\?(?:\[([^\[\]]+)\])?__(.+?)__
+          // Ruby: \\?(?:\[([^\]]+)\])?__(.+?)__
           '\\\\?(?:$quoteAttributeListRxt)?__($ccAll+?)__',
           // Ruby: (^|[^\p{Word};:}])(?:\[...\])?_(\S|\S.*?\S)_(?!\p{Word})
           '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?_(\\S|\\S$ccAll*?\\S)_(?!$cgWord)',
-          // Ruby: \\?(?:\[([^\[\]]+)\])?##(.+?)##
+          // Ruby: \\?(?:\[([^\]]+)\])?##(.+?)##
           '\\\\?(?:$quoteAttributeListRxt)?##($ccAll+?)##',
           // Ruby: (^|[^\p{Word}&;:}])(?:\[...\])?#(\S|\S.*?\S)#(?!\p{Word})
           '(^|[^$ccWord&;:}])(?:$quoteAttributeListRxt)?#(\\S|\\S$ccAll*?\\S)#(?!$cgWord)',
-          // Ruby: \\?(?:\[([^\[\]]+)\])?\^(\S+?)\^
+          // Ruby: \\?(?:\[([^\]]+)\])?\^(\S+?)\^
           '\\\\?(?:$quoteAttributeListRxt)?\\^(\\S+?)\\^',
-          // Ruby: \\?(?:\[([^\[\]]+)\])?~(\S+?)~
+          // Ruby: \\?(?:\[([^\]]+)\])?~(\S+?)~
           '\\\\?(?:$quoteAttributeListRxt)?~(\\S+?)~',
         ]),
       );
@@ -676,7 +669,7 @@ void main() {
           "(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?'(\\S|\\S$ccAll*?\\S)'(?!$cgWord)",
           // Ruby: (^|[^\p{Word};:}])(?:\[...\])?`(\S|\S.*?\S)'(?!\p{Word})
           "(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?`(\\S|\\S$ccAll*?\\S)'(?!$cgWord)",
-          // Ruby: \\?(?:\[([^\[\]]+)\])?\+\+(.+?)\+\+
+          // Ruby: \\?(?:\[([^\]]+)\])?\+\+(.+?)\+\+
           '\\\\?(?:$quoteAttributeListRxt)?\\+\\+($ccAll+?)\\+\\+',
           // Ruby: (^|[^\p{Word};:}])(?:\[...\])?\+(\S|\S.*?\S)\+(?!\p{Word})
           '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?\\+(\\S|\\S$ccAll*?\\S)\\+(?!$cgWord)',
@@ -689,18 +682,18 @@ void main() {
       // unconstrained rule, one constrained rule and one compat-only rule.
       expect(
         quoteSubs[false]![0].pattern.pattern,
-        equals(r'\\?(?:\[([^\[\]]+)\])?\*\*([\s\S]+?)\*\*'),
+        equals(r'\\?(?:\[([^\]]+)\])?\*\*([\s\S]+?)\*\*'),
       );
       expect(
         quoteSubs[false]![1].pattern.pattern,
         equals(
-          r'(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\[\]]+)\])?\*(\S|\S[\s\S]*?\S)\*(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))',
+          r'(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\]]+)\])?\*(\S|\S[\s\S]*?\S)\*(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))',
         ),
       );
       expect(
         quoteSubs[true]![3].pattern.pattern,
         equals(
-          r"(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\[\]]+)\])?'(\S|\S[\s\S]*?\S)'(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))",
+          r"(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\]]+)\])?'(\S|\S[\s\S]*?\S)'(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))",
         ),
       );
     });
