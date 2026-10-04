@@ -427,7 +427,7 @@ void _probeReadable(File file) {
     if (FileSystemEntity.typeSync(file.path) == FileSystemEntityType.pipe) {
       return;
     }
-  } catch (_) {
+  } on Exception catch (_) {
     // Fall through to the probe, which raises the InvalidPath error.
   }
   file.openSync().closeSync();
@@ -483,6 +483,9 @@ Map<String, Object?> _coerceAttributes(Object? value) {
       attrs[key.toString()] = (value as dynamic)[key];
     }
     return attrs;
+    // Duck-type probe (port of `respond_to?(:keys)`): Dart has no
+    // respond_to?, so NoSuchMethodError is the probe signal.
+    // ignore: avoid_catching_errors
   } on NoSuchMethodError {
     throw ArgumentError(
       'illegal type for attributes option: ${value.runtimeType}',

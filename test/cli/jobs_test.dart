@@ -625,6 +625,8 @@ void main() {
       );
       try {
         seqInvoker.invoke();
+        // Parity comparison must capture whatever surfaces, Errors included.
+        // ignore: avoid_catches_without_on_clauses
       } catch (e) {
         sequentialError = e;
       }
@@ -639,6 +641,8 @@ void main() {
       Object? parallelError;
       try {
         await parInvoker.invokeAsync();
+        // Parity comparison must capture whatever surfaces, Errors included.
+        // ignore: avoid_catches_without_on_clauses
       } catch (e) {
         parallelError = e;
       }

@@ -911,7 +911,11 @@ class SelfSigningTreeProcessor extends TreeProcessor {
   @override
   Object? process(Document document) {
     document <<
-        createParagraph(document, runtimeType.toString(), <String, Object?>{});
+        createParagraph(
+          document,
+          'SelfSigningTreeProcessor',
+          <String, Object?>{},
+        );
     return null;
   }
 }

@@ -44,6 +44,9 @@ Future<int> runCliCode(
     if (out != null) invoker.redirectStreams(out, err);
     await invoker.invokeAsync();
     return invoker.code;
+    // Last-resort CLI boundary: mirror Ruby's uncaught-exception exit for
+    // anything that escapes, Errors included.
+    // ignore: avoid_catches_without_on_clauses
   } catch (e, stackTrace) {
     // Mirror Ruby's uncaught-exception behavior (`bin/asciidoctor` has no
     // rescue): the message plus backtrace go to STDERR and the process

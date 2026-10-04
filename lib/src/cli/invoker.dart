@@ -574,7 +574,7 @@ void _putIfPresent(Map<String, Object?> opts, String key, Object? value) {
 bool _isPipe(String path) {
   try {
     return FileSystemEntity.typeSync(path) == FileSystemEntityType.pipe;
-  } catch (_) {
+  } on Exception catch (_) {
     return false;
   }
 }

@@ -3,6 +3,10 @@
 /// Port of `lib/asciidoctor/list.rb` (complete).
 library;
 
+// `toString` ports Ruby `#inspect` (`#<ClassName@hash ...>`), pinned
+// by tests; the concrete (subclass-aware) class name is load-bearing.
+// ignore_for_file: no_runtimetype_tostring
+
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/block.dart';

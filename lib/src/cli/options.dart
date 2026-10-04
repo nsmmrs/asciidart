@@ -775,7 +775,7 @@ final class CliOptions {
         if (resolved.endsWith('\n')) {
           resolved = resolved.substring(0, resolved.length - 1);
         }
-      } catch (_) {
+      } on Exception catch (_) {
         // Ruby rescues the backtick call to ''.
       }
       if (resolved.isEmpty) {
@@ -1159,7 +1159,7 @@ String get _pathListSeparator => Platform.isWindows ? ';' : ':';
 bool _isFile(String path) {
   try {
     return FileSystemEntity.typeSync(path) == FileSystemEntityType.file;
-  } catch (_) {
+  } on Exception catch (_) {
     return false;
   }
 }
@@ -1313,7 +1313,7 @@ FileSystemEntityType _entityType(String path) {
   final target = path.isEmpty ? '.' : path;
   try {
     return FileSystemEntity.typeSync(target);
-  } catch (_) {
+  } on Exception catch (_) {
     return FileSystemEntityType.notFound;
   }
 }
@@ -1336,7 +1336,7 @@ List<String> _directoriesUnder(String root, String base) {
     List<FileSystemEntity> entries;
     try {
       entries = Directory(current.path).listSync();
-    } catch (_) {
+    } on Exception catch (_) {
       continue;
     }
     for (final entry in entries) {
@@ -1360,7 +1360,7 @@ List<String> _matchSegment(String root, String base, _SegmentMatcher matcher) {
   List<FileSystemEntity> entries;
   try {
     entries = Directory(dirPath).listSync();
-  } catch (_) {
+  } on Exception catch (_) {
     return [];
   }
   final matches = <String>[];

@@ -367,7 +367,7 @@ class FakeDocument implements ReaderDocument {
     }
     try {
       return encoding.decode(file.readAsBytesSync());
-    } catch (_) {
+    } on Exception catch (_) {
       return null;
     }
   }
@@ -378,7 +378,7 @@ class FakeDocument implements ReaderDocument {
 bool _isRoot() {
   try {
     return Process.runSync('id', ['-u']).stdout.toString().trim() == '0';
-  } catch (_) {
+  } on Exception catch (_) {
     return false;
   }
 }

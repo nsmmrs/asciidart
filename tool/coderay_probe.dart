@@ -35,6 +35,8 @@ Future<void> main() async {
         hasCallouts: m['hasCallouts'] == true,
       );
       results.add({'ok': true, 'html': result.html});
+      // Diagnostic probe: record every failure instead of crashing.
+      // ignore: avoid_catches_without_on_clauses
     } catch (e) {
       results.add({
         'ok': false,

@@ -38,6 +38,10 @@
 /// phase durations surfaced via the `timings` option and `--timings`.
 library;
 
+// `toString` ports Ruby `#inspect` (`#<ClassName@hash ...>`), pinned
+// by tests; the concrete (subclass-aware) class name is load-bearing.
+// ignore_for_file: no_runtimetype_tostring
+
 import 'dart:convert' show Encoding, utf8;
 import 'dart:io' show Directory, File, IOSink, Platform;
 

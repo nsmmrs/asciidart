@@ -389,6 +389,9 @@ void main() {
       try {
         loadFile(fixturePath('hello-asciidoctor.pdf'), {'safe': SafeMode.safe});
         fail('expected an ArgumentError');
+        // The test asserts the message and stack trace of the thrown
+        // ArgumentError, which requires catching it.
+        // ignore: avoid_catching_errors
       } on ArgumentError catch (e, st) {
         expect(
           e.message,

@@ -799,6 +799,9 @@ bool _hasNamedGroups(RegExp regexp) =>
 String? _namedGroupOrNull(Match match, String name) {
   try {
     return (match as RegExpMatch).namedGroup(name);
+    // `namedGroup` documents an ArgumentError throw for undeclared groups;
+    // that documented signal is the check (port of `$~[name] rescue nil`).
+    // ignore: avoid_catching_errors
   } on ArgumentError {
     return null;
   }

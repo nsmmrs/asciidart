@@ -21,6 +21,10 @@
 /// interfaces (owned by the `document.dart` and `extensions.dart` waves).
 library;
 
+// `toString` ports Ruby `#inspect` (`#<ClassName@hash ...>`), pinned
+// by tests; the concrete (subclass-aware) class name is load-bearing.
+// ignore_for_file: no_runtimetype_tostring
+
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
 import 'dart:io' show File, FileSystemEntity;
 
@@ -1368,7 +1372,7 @@ class PreprocessorReader extends Reader {
                   op,
                   _resolveExprVal(rhs),
                 );
-              } catch (_) {
+              } on Exception catch (_) {
                 skip = true;
               }
             } else {
@@ -1690,6 +1694,9 @@ class PreprocessorReader extends Reader {
         content = raw is String
             ? raw
             : _decodeIncludeBytes(raw as List<int>, encoding);
+        // Catches the deliberate decode-failure signal (not arbitrary
+        // Errors): corrupt input surfaces as ArgumentError by design.
+        // ignore: avoid_catching_errors
       } on ArgumentError {
         // Ruby rescues decode failures raised while streaming the file, so
         // they are handled as an unreadable include here.
@@ -1788,6 +1795,9 @@ class PreprocessorReader extends Reader {
         content = raw is String
             ? raw
             : _decodeIncludeBytes(raw as List<int>, encoding);
+        // Catches the deliberate decode-failure signal (not arbitrary
+        // Errors): corrupt input surfaces as ArgumentError by design.
+        // ignore: avoid_catching_errors
       } on ArgumentError {
         // Ruby rescues decode failures raised while streaming the file, so
         // they are handled as an unreadable include here.
@@ -2011,16 +2021,12 @@ class PreprocessorReader extends Reader {
     if (resolution.type == _IncludeTargetType.file) {
       try {
         return File(resolution.path as String).readAsBytesSync();
-      } catch (_) {
+      } on Exception catch (_) {
         throw const _IncludeNotReadable();
       }
     } else {
-      String? content;
-      try {
-        content = _document.readUri(resolution.path as Uri, encoding);
-      } catch (_) {
-        content = null;
-      }
+      // `readUri` already maps read failures to `null`.
+      final content = _document.readUri(resolution.path as Uri, encoding);
       if (content == null) throw const _IncludeNotReadable();
       return content;
     }
@@ -2217,12 +2223,12 @@ class _ResolvedInclude {
 }
 
 /// Thrown when include content cannot be read (caught and reported).
-class _IncludeNotReadable {
+class _IncludeNotReadable implements Exception {
   const new();
 }
 
 /// Thrown when `ifeval` operands cannot be compared (caught; drops content).
-class _InvalidExprComparison {
+class _InvalidExprComparison implements Exception {
   const new();
 }
 
