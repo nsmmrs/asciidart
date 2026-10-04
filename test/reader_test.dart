@@ -1500,6 +1500,7 @@ void main() {
         () {
           if (Platform.isWindows || _isRoot()) {
             markTestSkipped('requires POSIX permissions and a non-root user');
+            return;
           }
           final includeFile = '$fixtureDir/chapter-a.adoc';
           final oldMode = File(includeFile).statSync().mode;

@@ -434,24 +434,28 @@ void main() {
       );
     });
 
-    test('accepts input from named pipe and outputs to stdout', () async {
-      final tempDir = createTempDir('asciidoctor-invoker-');
-      try {
-        final pipePath = '${tempDir.path}/sample-pipe.adoc';
-        final mkfifo = Process.runSync('mkfifo', [pipePath]);
-        expect(mkfifo.exitCode, equals(0));
-        // Ruby uses a writer thread; Dart uses a writer isolate (a
-        // top-level entry point: closures cannot cross isolates).
-        final writerDone = ReceivePort();
-        await Isolate.spawn(_writePipe, [pipePath, writerDone.sendPort]);
-        final invoker = invokeCliToBuffer(['-a', 'stylesheet!'], pipePath);
-        expect(invoker.readOutput(), contains('pipe content'));
-        await writerDone.first;
-        writerDone.close();
-      } finally {
-        tempDir.deleteSync(recursive: true);
-      }
-    });
+    test(
+      'accepts input from named pipe and outputs to stdout',
+      skip: Platform.isWindows ? 'named pipes need a POSIX system' : null,
+      () async {
+        final tempDir = createTempDir('asciidoctor-invoker-');
+        try {
+          final pipePath = '${tempDir.path}/sample-pipe.adoc';
+          final mkfifo = Process.runSync('mkfifo', [pipePath]);
+          expect(mkfifo.exitCode, equals(0));
+          // Ruby uses a writer thread; Dart uses a writer isolate (a
+          // top-level entry point: closures cannot cross isolates).
+          final writerDone = ReceivePort();
+          await Isolate.spawn(_writePipe, [pipePath, writerDone.sendPort]);
+          final invoker = invokeCliToBuffer(['-a', 'stylesheet!'], pipePath);
+          expect(invoker.readOutput(), contains('pipe content'));
+          await writerDone.first;
+          writerDone.close();
+        } finally {
+          tempDir.deleteSync(recursive: true);
+        }
+      },
+    );
 
     test('allows docdir to be specified when input is a string', () {
       // Ruby passes a root-relative `--base-dir`; the Dart suite runs
@@ -724,7 +728,11 @@ void main() {
           'stylesheet=custom.css',
         ]);
         expect(File(outPath).existsSync(), isTrue);
-        expect(Directory('${tempDir.path}/http:').existsSync(), isFalse);
+        // No directory named after the URI scheme (an invalid name on
+        // Windows, so look at the listing rather than the path).
+        expect([
+          for (final entry in tempDir.listSync()) entry.uri.pathSegments,
+        ], everyElement(isNot(contains('http:'))));
       } finally {
         tempDir.deleteSync(recursive: true);
       }
