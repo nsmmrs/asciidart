@@ -440,7 +440,7 @@ class Cell extends AbstractBlock {
               _reinitializeArgs = <Object?>[
                 column,
                 cellText,
-                attrs == null ? null : Map<String, Object?>.of(attrs),
+                if (attrs == null) null else Map<String, Object?>.of(attrs),
                 opts,
               ];
             }

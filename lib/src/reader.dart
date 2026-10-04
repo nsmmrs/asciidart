@@ -719,7 +719,7 @@ class Reader {
     _dir,
     _path,
     _lineno,
-    _mark == null ? null : List<Object?>.of(_mark!),
+    if (_mark == null) null else List<Object?>.of(_mark!),
     _lookAhead,
     processLines,
     _unescapeNextLine,
@@ -978,9 +978,10 @@ class PreprocessorReader extends Reader {
       if (attrs.containsKey('leveloffset')) {
         final leveloffset = _document.attr('leveloffset');
         _lines = [
-          _isTruthy(leveloffset)
-              ? ':leveloffset: $leveloffset'
-              : ':leveloffset!:',
+          if (_isTruthy(leveloffset))
+            ':leveloffset: $leveloffset'
+          else
+            ':leveloffset!:',
           '',
           ...prepared.reversed,
           '',
