@@ -94,5 +94,6 @@ the new phase-0 gate alongside the differential harness.
 - **Deferred stages:** registry publishing (pub/npm/releases); npm
   package name/scope and repo-split timing stay open as lane-board
   follow-ups (TASK-bpvxxh, TASK-n1447f); each needs its own decision
-  before any future publishing step.
+  before any future publishing step. The JS bundle became the npm package
+  `asciidoctor-dart`: see [ADR-0005](0005-js-build.md).
 - **Acceptance quote:** "accept" — chat, 2026-10-03 07:28 UTC.

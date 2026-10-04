@@ -109,14 +109,25 @@ startup dominates; it is a dev-mode runner, not a D2 candidate.
 **D2 verdict: PASS.** The AOT binary beats Ruby on every cell by
 3.48x–8.77x, far above the ±~15% noise band.
 
-## JS target: not run
+## JS target (npm package on Node.js, 2026-10-04)
 
-`dart compile js bin/asciidoctor.dart` fails: `lib/src/document.dart`
-declares `static const int _maxInt63 = 9223372036854775807`, which
-"can't be represented exactly in JavaScript". Changing the saturation
-constant would alter VM integer semantics (a parity risk), so per the
-parity-gate task the JS target is recorded as not-run rather than fixed
-here. (Node v26.8.1 is installed; compilation itself is the blocker.)
+The `_maxInt63` constant that once blocked `dart compile js` is gone; the
+npm package (`tool/build-npm.sh`, one dart2js `-O2` bundle, see
+[ADR-0005](../adr/0005-js-build.md)) runs the same core.
+`benchmark/throughput.mjs` times it in process on the corpus and options of
+`benchmark/throughput.dart` below (median of 15 after 5 warmups), next to
+Asciidoctor.js 4.1.0 (`@asciidoctor/core`, the JavaScript rewrite that
+reports core 2.0.26), on Node.js 26.8.1:
+
+```sh
+tool/build-npm.sh && node benchmark/throughput.mjs --ajs PATH/TO/core/src/index.js
+```
+
+| Impl | html5 | docbook5 | manpage |
+| --- | --: | --: | --: |
+| asciidoctor-dart (dart2js, Node.js) | 43.4 ms | 40.2 ms | 44.8 ms |
+| Asciidoctor.js 4.1.0 (Node.js) | 49.5 ms | 46.9 ms | 55.5 ms |
+| Dart AOT (for reference, below) | 40.0 ms | 40.2 ms | 52.2 ms |
 
 ## Throughput (steady state, in-process)
 
