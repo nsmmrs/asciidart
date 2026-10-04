@@ -49,8 +49,8 @@ class AttributeList {
   static final RegExp _blankRx = RegExp('[ \t]+');
   static final RegExp _skipComma = RegExp('[ \t]*(,|\$)');
   static final RegExp _boundaryComma = RegExp('.*?(?=[ \t]*(,|\$))');
-  static final RegExp _boundaryQuot = RegExp('.*?[^\\\\](?=")');
-  static final RegExp _boundaryApos = RegExp(".*?[^\\\\](?=')");
+  static final RegExp _boundaryQuot = RegExp(r'.*?[^\\](?=")');
+  static final RegExp _boundaryApos = RegExp(r".*?[^\\](?=')");
 
   static const String _apos = "'";
   static const String _quot = '"';

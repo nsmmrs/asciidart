@@ -518,9 +518,9 @@ void main() {
       expect(
         resolver.systemPath(
           'assets/stylesheet.css',
-          start: '//QA/c\$/users/asciidoctor',
+          start: r'//QA/c$/users/asciidoctor',
         ),
-        equals('//QA/c\$/users/asciidoctor/assets/stylesheet.css'),
+        equals(r'//QA/c$/users/asciidoctor/assets/stylesheet.css'),
       );
     });
 

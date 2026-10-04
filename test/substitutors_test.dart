@@ -28,7 +28,7 @@ import 'package:asciidoctor/src/substitutors.dart';
 import 'package:test/test.dart';
 
 /// A single backslash, mirroring the `BACKSLASH` constant in the Ruby suite.
-const String bs = '\\';
+const String bs = r'\';
 
 /// Records log messages for assertions.
 class FakeLogger implements NodeLogger {
@@ -1973,9 +1973,9 @@ void main() {
 
       test('should not resolve an escaped attribute in link text', () {
         for (final entry in const {
-          'http://google.com': 'http://google.com[\\{google_homepage}]',
+          'http://google.com': r'http://google.com[\{google_homepage}]',
           'http://google.com?q=,':
-              'link:http://google.com?q=,[\\{google_homepage}]',
+              r'link:http://google.com?q=,[\{google_homepage}]',
         }.entries) {
           final para = blockFromString(entry.value);
           para.document!.attributes['google_homepage'] = 'Google Homepage';
@@ -2893,7 +2893,7 @@ void main() {
         // PORT: the `#footnotes` list assertion belongs to the converter
         // wave; the substitution-level behavior is asserted exactly.
         final para = blockFromString(
-          'notable text.footnote:id[about this [text\\]], footnote:id[], footnote:id[]',
+          r'notable text.footnote:id[about this [text\]], footnote:id[], footnote:id[]',
         );
         final output = subMacros(para, para.source());
         expect(countOccurrences(output, ' id="_footnote_id"'), 1);
@@ -3796,7 +3796,7 @@ void main() {
       });
 
       test('collect inline double dollar passthroughs', () {
-        final para = blockFromString('\$\$<code>{code}</code>\$\$');
+        final para = blockFromString(r'$$<code>{code}</code>$$');
         final result = extractPassthroughs(para, para.source());
         final passthroughs = para.passthroughs;
         expect(
@@ -3918,7 +3918,7 @@ void main() {
         // PORT: `convert_inline_string` renders the single paragraph
         // content.
         const input =
-            '+first passthrough+ followed by link:\$\$http://example.com/__u_no_format_me__\$\$[] with passthrough';
+            r'+first passthrough+ followed by link:$$http://example.com/__u_no_format_me__$$[] with passthrough';
         final para = blockFromString(input);
         expect(
           contentOf(para),
@@ -4050,7 +4050,7 @@ void main() {
         expect(passthroughs[0]['text'], textToEscape);
 
         const escaped =
-            "[(\\] <'basic form'> <'logical operator'> <'basic form'> [)\\]";
+            r"[(\] <'basic form'> <'logical operator'> <'basic form'> [)\]";
         para = blockFromString('pass:specialcharacters[$escaped]');
         extractPassthroughs(para, para.source());
         passthroughs = para.passthroughs;
@@ -4149,7 +4149,7 @@ void main() {
           );
           expect(
             contentOf(para),
-            '\$x/x={(1,if x!=0),(text{undefined},if x=0):}\$',
+            r'$x/x={(1,if x!=0),(text{undefined},if x=0):}$',
           );
           expect(logger.isEmpty, isTrue);
         });
@@ -4162,7 +4162,7 @@ void main() {
 
       test('should perform specialcharacters subs on asciimath macro content in html backend by default', () {
         final para = blockFromString('asciimath:[a < b]');
-        expect(contentOf(para), '\$a &lt; b\$');
+        expect(contentOf(para), r'$a &lt; b$');
       });
 
       test('should convert contents of asciimath macro to MathML in DocBook output if asciimath gem is available', () {
@@ -4186,7 +4186,7 @@ void main() {
           'asciimath:attributes[{expr}]',
           attributes: {'expr': 'x != 0'},
         );
-        expect(contentOf(para), '\$x != 0\$');
+        expect(contentOf(para), r'$x != 0$');
       });
 
       test('should passthrough text in latexmath macro and surround with LaTeX math delimiters', () {
@@ -4221,7 +4221,7 @@ void main() {
 
       test('should perform specialcharacters subs on latexmath macro in html backend by default', () {
         final para = blockFromString('latexmath:[a < b]');
-        expect(contentOf(para), '\\(a &lt; b\\)');
+        expect(contentOf(para), r'\(a &lt; b\)');
       });
 
       test('should not perform specialcharacters subs on latexmath macro content in docbook backend by default', () {
@@ -4287,7 +4287,7 @@ void main() {
             );
             expect(
               contentOf(para),
-              '\$x/x={(1,if x!=0),(text{undefined},if x=0):}\$',
+              r'$x/x={(1,if x!=0),(text{undefined},if x=0):}$',
             );
             expect(logger.isEmpty, isTrue);
           });
@@ -4320,13 +4320,13 @@ void main() {
             input,
             attributes: {'stem': 'asciimath', 'solve-for-x': '13'},
           );
-          expect(contentOf(para), '\$sqrt(x) &lt;=&gt; 13\$');
+          expect(contentOf(para), r'$sqrt(x) &lt;=&gt; 13$');
         }
       });
 
       test('should replace passthroughs inside stem expression', () {
         final cases = [
-          ['stem:[+1+]', '\$1\$'],
+          ['stem:[+1+]', r'$1$'],
           [
             'stem:[+$bs${'infty'}-(+$bs${'infty'})]',
             '\$$bs${'infty'}-($bs${'infty'})\$',
@@ -4344,8 +4344,8 @@ void main() {
 
       test('should allow passthrough inside stem expression to be escaped', () {
         final cases = [
-          ['stem:[$bs+] and stem:[+]', '\$+\$ and \$+\$'],
-          ['stem:[$bs+1+]', '\$+1+\$'],
+          ['stem:[$bs+] and stem:[+]', r'$+$ and $+$'],
+          ['stem:[$bs+1+]', r'$+1+$'],
         ];
         for (final c in cases) {
           final para = blockFromString(c[0], attributes: {'stem': ''});
@@ -4374,7 +4374,7 @@ void main() {
             'stem:$subs[x^2]',
             attributes: {'stem': 'asciimath'},
           );
-          expect(contentOf(para), '\$x^2\$');
+          expect(contentOf(para), r'$x^2$');
           expect(logger.warns, [
             'invalid substitution type for stem macro: $subs',
           ]);

@@ -237,7 +237,7 @@ class ManpageConverter extends ConverterBase {
       '.\\"    Manual: ${isTruthy(manmanual) ? transliterateSqueeze(manmanual as String, _whitespace, ' ') : r'\ \&'}\n'
       '.\\"    Source: ${isTruthy(mansource) ? transliterateSqueeze(mansource as String, _whitespace, ' ') : r'\ \&'}\n'
       '.\\"  Language: English\n'
-      '.\\"',
+      r'.\"',
     );
     // TODO add document-level setting to disable capitalization of manname
     result.add(
@@ -248,12 +248,12 @@ class ManpageConverter extends ConverterBase {
     // define portability settings
     // see http://bugs.debian.org/507673
     // see http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
-    result.add('.ie \\n(.g .ds Aq \\(aq');
+    result.add(r'.ie \n(.g .ds Aq \(aq');
     result.add('.el       .ds Aq \'');
     // set sentence_space_size to 0 to prevent extra space between sentences
     // separated by a newline
     // the alternative is to add \& at the end of the line
-    result.add('.ss \\n[.ss] 0');
+    result.add(r'.ss \n[.ss] 0');
     // disable hyphenation
     result.add('.nh');
     // disable justification (adjust text to left margin only)
@@ -284,7 +284,7 @@ class ManpageConverter extends ConverterBase {
       '.  .',
     );
     result.add('.  LINKSTYLE ${_s(node.attr('man-linkstyle', 'blue R < >'))}');
-    result.add('.\\}');
+    result.add(r'.\}');
 
     if (!node.noheader) {
       if (node.hasAttr('manpurpose')) {
@@ -1063,7 +1063,7 @@ class ManpageConverter extends ConverterBase {
     // replaceAllMapped; verified by probe)
     str = str.replaceAllMapped(_mockMacroRx, (match) => match.group(1)!);
     // unescape troff backslash (NOTE update if more escapes are added)
-    str = str.replaceAll(_escBs, '\\');
+    str = str.replaceAll(_escBs, r'\');
     // unescape full stop in troff commands (NOTE must take place after
     // the leading-period replacement)
     str = str.replaceAll(_escFs, '.');

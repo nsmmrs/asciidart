@@ -313,7 +313,7 @@ void main() {
       expect(splitWords('  a  b\tc '), equals(['a', 'b', 'c']));
       expect(splitWords(''), equals([]));
       expect(splitWords('   '), equals([]));
-      expect(inspectString('a"b'), equals('"a\\"b"'));
+      expect(inspectString('a"b'), equals(r'"a\"b"'));
       expect(inspectString(null), equals('nil'));
     });
   });
@@ -1833,7 +1833,7 @@ void main() {
       pc.skipPastDelimiter('pre');
       expect(pc.buffer, equals('xpre|'));
       pc.buffer = 'x';
-      pc.skipPastEscapedDelimiter('pre\\');
+      pc.skipPastEscapedDelimiter(r'pre\');
       expect(pc.buffer, equals('xpre|'));
       pc.buffer = 'x';
       pc.skipPastEscapedDelimiter('a\r\n');

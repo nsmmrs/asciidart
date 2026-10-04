@@ -184,13 +184,13 @@ final RegExp highlightedPassSlotRx = RegExp(
 );
 
 /// A single backslash. Port of `RS`.
-const String rs = '\\';
+const String rs = r'\';
 
 /// A closing square bracket. Port of `R_SB`.
 const String rSb = ']';
 
 /// An escaped closing square bracket. Port of `ESC_R_SB`.
-const String escRSb = '\\]';
+const String escRSb = r'\]';
 
 /// A plus sign. Port of `PLUS`.
 const String plus = '+';

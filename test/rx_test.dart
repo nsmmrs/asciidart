@@ -138,7 +138,7 @@ void main() {
       ]);
       expect(groupsOf(conditionalDirectiveRx, r'\ifdef::foo[]'), [
         r'\ifdef::foo[]',
-        '\\',
+        r'\',
         'ifdef',
         'foo',
         null,
@@ -208,7 +208,7 @@ void main() {
       ]);
       expect(groupsOf(includeDirectiveRx, r'\include::x[]'), [
         r'\include::x[]',
-        '\\',
+        r'\',
         'x',
         null,
       ]);
@@ -319,7 +319,7 @@ void main() {
       ]);
       expect(groupsOf(attributeReferenceRx, r'\{foobar}'), [
         r'\{foobar}',
-        '\\',
+        r'\',
         'foobar',
         null,
         null,
@@ -357,7 +357,7 @@ void main() {
         null,
         'foo',
         null,
-        '\\',
+        r'\',
       ]);
       expect(groupsOf(attributeReferenceRx, '{}'), isNull);
       expect(groupsOf(attributeReferenceRx, '{a b}'), isNull);
@@ -686,7 +686,7 @@ void main() {
       expect(groupsOf(calloutExtractRx, r'\<1>'), [
         r'\<1>',
         null,
-        '\\',
+        r'\',
         '',
         '1',
       ]);
@@ -995,7 +995,7 @@ void main() {
       ]);
       expect(groupsOf(inlineAnchorRx, r'\[[id]]'), [
         r'\[[id]]',
-        '\\',
+        r'\',
         'id',
         null,
         null,
@@ -1202,7 +1202,7 @@ void main() {
       ]);
       expect(groupsOf(inlineKbdBtnMacroRx, r'\kbd:[x]'), [
         r'\kbd:[x]',
-        '\\',
+        r'\',
         'kbd',
         'x',
       ]);

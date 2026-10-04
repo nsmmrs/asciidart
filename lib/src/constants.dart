@@ -272,7 +272,7 @@ const String listContinuation = '+';
 const String hardLineBreak = ' +';
 
 /// Line continuation suffix (`LINE_CONTINUATION`).
-const String lineContinuation = ' \\';
+const String lineContinuation = r' \';
 
 /// Legacy line continuation suffix (`LINE_CONTINUATION_LEGACY`).
 const String lineContinuationLegacy = ' +';
@@ -345,7 +345,7 @@ const Map<String, String> intrinsicAttributes = <String, String>{
   'asterisk': '*',
   'tilde': '~',
   'plus': '&#43;',
-  'backslash': '\\',
+  'backslash': r'\',
   'backtick': '`',
   'blank': '',
   'empty': '',

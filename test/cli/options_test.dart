@@ -1014,7 +1014,7 @@ void main() {
       expect(result.options.loadPaths, equals(['foobar', 'foobaz']));
     });
 
-    test('-I option appends paths to the load path', skip: 'PERMANENT: Dart has no \$LOAD_PATH; values are recorded in loadPaths only.', () {
+    test('-I option appends paths to the load path', skip: r'PERMANENT: Dart has no $LOAD_PATH; values are recorded in loadPaths only.', () {
       // The `\$:` assertions of the options_test -I tests.
     });
   });
@@ -1354,7 +1354,7 @@ void main() {
     test(
       'enables Ruby script warnings for -w',
       skip:
-          'PERMANENT: No Dart equivalent of \$VERBOSE-backed script warnings.',
+          r'PERMANENT: No Dart equivalent of $VERBOSE-backed script warnings.',
       () {},
     );
 

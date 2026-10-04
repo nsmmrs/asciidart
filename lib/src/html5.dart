@@ -101,7 +101,7 @@ const Map<String, List<String>> _inlineMathDelimiters = <String, List<String>>{
 /// escaping plus double quotes), as embedded in the MathJax configuration
 /// script (results verified against the Ruby runtime).
 String _inspectDelimiters(List<String> delimiters) =>
-    '[${delimiters.map((delimiter) => '"${delimiter.replaceAll('\\', '\\\\')}"').join(', ')}]';
+    '[${delimiters.map((delimiter) => '"${delimiter.replaceAll(r'\', r'\\')}"').join(', ')}]';
 
 /// Ruby `Array#inspect` of the inline latexmath delimiters (see above).
 final String _inlineLatexmathInspect = _inspectDelimiters(

@@ -127,7 +127,7 @@ const Map<String, String> intrinsicAttributes = {
   'asterisk': '*',
   'tilde': '~',
   'plus': '&#43;',
-  'backslash': '\\',
+  'backslash': r'\',
   'backtick': '`',
   'blank': '',
   'empty': '',
@@ -262,7 +262,7 @@ class FakeDocument implements ReaderDocument {
     var dropEmptyLine = false;
     final result = text.replaceAllMapped(attrRefRx, (match) {
       // escaped attribute, return unescaped
-      if (match.group(1) == '\\' || match.group(4) == '\\') {
+      if (match.group(1) == r'\' || match.group(4) == r'\') {
         return '{${match.group(2)}}';
       }
       if (match.group(3) != null) {
@@ -2904,7 +2904,7 @@ void main() {
           reader.readLine(),
           equals('include::fixtures/include-file.adoc[]'),
         );
-        expect(reader.readLine(), equals('\\escape preserved here'));
+        expect(reader.readLine(), equals(r'\escape preserved here'));
       });
 
       test(

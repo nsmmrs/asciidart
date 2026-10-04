@@ -769,7 +769,7 @@ void main() {
           '\n'
           'foo--bar - puts the foo in your bar\n';
       final doc = parseDoc(input);
-      expect(doc.attr('mantitle'), equals('foo\\--bar'));
+      expect(doc.attr('mantitle'), equals(r'foo\--bar'));
       final result = doc.convert() as String;
       expect(result, contains('<title>foo--bar(1)</title>'));
       expect(result, contains('<refentrytitle>foo--bar</refentrytitle>'));

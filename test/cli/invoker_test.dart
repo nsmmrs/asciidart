@@ -532,7 +532,7 @@ void main() {
     test(
       'enables script warnings if -w flag is specified',
       skip:
-          'PERMANENT: No Dart equivalent of \$VERBOSE-backed script warnings '
+          r'PERMANENT: No Dart equivalent of $VERBOSE-backed script warnings '
           '(Ruby-only behavior); -w parsing is covered in options_test.dart.',
       () {},
     );

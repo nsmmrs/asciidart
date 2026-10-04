@@ -580,7 +580,7 @@ bool _isPipe(String path) {
 /// on Windows (cf. Ruby `File.expand_path` plus the `RS`/`FS` tilt).
 String _expandPath(String path) {
   var expanded = File(path).absolute.uri.normalizePath().toFilePath();
-  if (Platform.isWindows) expanded = expanded.replaceAll('\\', '/');
+  if (Platform.isWindows) expanded = expanded.replaceAll(r'\', '/');
   if (expanded.length > 1 && expanded.endsWith('/')) {
     expanded = expanded.substring(0, expanded.length - 1);
   }

@@ -417,7 +417,7 @@ void main() {
 
     test('lineContinuation', () {
       // Probe: table dump (LINE_CONTINUATION=" \\").
-      expect(lineContinuation, equals(' \\'));
+      expect(lineContinuation, equals(r' \'));
     });
 
     test('lineContinuationLegacy', () {
@@ -529,7 +529,7 @@ void main() {
           'asterisk': '*',
           'tilde': '~',
           'plus': '&#43;',
-          'backslash': '\\',
+          'backslash': r'\',
           'backtick': '`',
           'blank': '',
           'empty': '',

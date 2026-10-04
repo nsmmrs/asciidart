@@ -68,7 +68,7 @@ class PathResolver {
   static const String uriClassloader = 'uri:classloader:';
 
   /// Matches a Windows root: an optional drive letter followed by a separator.
-  static final RegExp windowsRootRx = RegExp('^(?:[a-zA-Z]:)?[\\\\/]');
+  static final RegExp windowsRootRx = RegExp(r'^(?:[a-zA-Z]:)?[\\/]');
 
   /// Sniffs a URI scheme prefix (e.g. `http://`, `file:///`, `data:`).
   ///
@@ -76,7 +76,7 @@ class PathResolver {
   /// match a Windows drive prefix such as `c:/sample.adoc`. The Ruby pattern
   /// uses Unicode `Alpha`/`Alnum` classes; this port uses ASCII letters and
   /// digits since URI schemes are ASCII by definition (RFC 3986).
-  static final RegExp _uriSniffRx = RegExp('^[A-Za-z][A-Za-z0-9.+\\-]+:/{0,2}');
+  static final RegExp _uriSniffRx = RegExp(r'^[A-Za-z][A-Za-z0-9.+\-]+:/{0,2}');
 
   /// The file separator to use for path operations.
   ///

@@ -12,7 +12,7 @@ void main() {
   group('Helpers', () {
     group('URI Encoding', () {
       test('should URI encode non-word characters generally', () {
-        const given = ' !*/%&?\\=';
+        const given = r' !*/%&?\=';
         const expected = '%20%21%2A%2F%25%26%3F%5C%3D';
         expect(Helpers.encodeUriComponent(given), equals(expected));
       });

@@ -38,7 +38,7 @@ void main() {
     test(
       'collect unnamed attribute double-quoted containing escaped quote',
       () {
-        expect(parseInto('"ba\\"zaar"'), equals({1: 'ba"zaar'}));
+        expect(parseInto(r'"ba\"zaar"'), equals({1: 'ba"zaar'}));
       },
     );
 
@@ -71,7 +71,7 @@ void main() {
     test(
       'collect unnamed attribute single-quoted containing escaped quote',
       () {
-        expect(parseInto("'ba\\'zaar'"), equals({1: "ba'zaar"}));
+        expect(parseInto(r"'ba\'zaar'"), equals({1: "ba'zaar"}));
       },
     );
 

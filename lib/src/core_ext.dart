@@ -283,7 +283,7 @@ String inspectString(String? value) {
   for (var i = 0; i < value.length; i++) {
     final c = value[i];
     switch (c) {
-      case '\\':
+      case r'\':
         buf.write(r'\\');
       case '"':
         buf.write(r'\"');

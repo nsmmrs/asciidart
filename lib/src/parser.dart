@@ -56,7 +56,7 @@ import 'table.dart';
 
 const String _del = '\u007f';
 const String _can = '\u0018';
-const String _rs = '\\';
+const String _rs = r'\';
 
 /// Match data for a delimited block boundary line.
 ///
@@ -295,7 +295,7 @@ abstract final class Parser {
   };
 
   /// Port of `LINE_CONTINUATION`.
-  static const String _lineContinuation = ' \\';
+  static const String _lineContinuation = r' \';
 
   /// Port of `LINE_CONTINUATION_LEGACY`.
   static const String _lineContinuationLegacy = ' +';
@@ -353,7 +353,7 @@ abstract final class Parser {
     'asterisk': '*',
     'tilde': '~',
     'plus': '&#43;',
-    'backslash': '\\',
+    'backslash': r'\',
     'backtick': '`',
     'blank': '',
     'empty': '',
@@ -2935,7 +2935,7 @@ abstract final class Parser {
     var found = false;
     var autonum = 0;
     for (final match in calloutScanRx.allMatches(text)) {
-      if (!match.group(0)!.startsWith('\\')) {
+      if (!match.group(0)!.startsWith(r'\')) {
         final num = match.group(2)!;
         document.callouts.register(num == '.' ? ++autonum : int.parse(num));
       }
@@ -3002,7 +3002,7 @@ abstract final class Parser {
         reftext = match.group(4);
         if (reftext != null) {
           if (reftext.contains(']')) {
-            reftext = reftext.replaceAll('\\]', ']');
+            reftext = reftext.replaceAll(r'\]', ']');
             if (reftext.contains(attrRefHead)) {
               reftext = _subAttributes(document, reftext);
             }
@@ -3926,7 +3926,7 @@ abstract final class Parser {
             }
             parserCtx.buffer = '${parserCtx.buffer}$preMatch';
           } else if (format == 'dsv') {
-            if (preMatch.endsWith('\\')) {
+            if (preMatch.endsWith(r'\')) {
               parserCtx.skipPastEscapedDelimiter(preMatch);
               current = postMatch;
               if (current.isEmpty) {
@@ -3939,7 +3939,7 @@ abstract final class Parser {
             parserCtx.buffer = '${parserCtx.buffer}$preMatch';
           } else {
             // psv
-            if (preMatch.endsWith('\\')) {
+            if (preMatch.endsWith(r'\')) {
               parserCtx.skipPastEscapedDelimiter(preMatch);
               current = postMatch;
               if (current.isEmpty) {

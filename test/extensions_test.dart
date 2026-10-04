@@ -430,7 +430,7 @@ _XmlElement _parseFragment(String content) {
   final root = _XmlElement('#root');
   final stack = <_XmlElement>[root];
   final tagRx = RegExp(
-    '<!--.*?(?:-->|\$)|<![^>]*>|</\\s*([A-Za-z][^\\s>]*)[^>]*>|<([A-Za-z][^\\s>/]*)([^>]*)>',
+    r'<!--.*?(?:-->|$)|<![^>]*>|</\s*([A-Za-z][^\s>]*)[^>]*>|<([A-Za-z][^\s>/]*)([^>]*)>',
     dotAll: true,
   );
   final attrRx = RegExp(
@@ -913,7 +913,7 @@ class StripAttributesPostprocessor extends Postprocessor {
   @override
   Object? process(Document document, String output) {
     return output.replaceAllMapped(
-      RegExp('<(\\w+).*?>', multiLine: true, dotAll: true),
+      RegExp(r'<(\w+).*?>', multiLine: true, dotAll: true),
       (match) => '<${match.group(1)}>',
     );
   }
@@ -2746,7 +2746,7 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor.named('@short_match');
-              processor.match(RegExp('@(\\w+)'));
+              processor.match(RegExp(r'@(\w+)'));
               processor.resolveAttributes(false);
               processor.onProcess = (
                 AbstractBlock parent,
@@ -4360,7 +4360,7 @@ void main() {
       expect(processor.config['format'], equals('short'));
       processor.matchFormat('full');
       expect(processor.config['format'], equals('full'));
-      final pattern = RegExp('@(\\w+)');
+      final pattern = RegExp(r'@(\w+)');
       processor.match(pattern);
       expect(processor.config['regexp'], same(pattern));
     });
@@ -4421,7 +4421,7 @@ void main() {
 
     test('explicit match pattern wins over resolution', () {
       final processor = SampleInlineMacro('@short_match');
-      final pattern = RegExp('@(\\w+)');
+      final pattern = RegExp(r'@(\w+)');
       processor.match(pattern);
       expect(processor.regexp, same(pattern));
     });

@@ -1154,7 +1154,7 @@ class PreprocessorReader extends Reader {
         final condMatch = conditionalDirectiveRx.firstMatch(line);
         if (condMatch != null) {
           // if escaped, mark as processed and return line unescaped
-          if (condMatch.group(1) == '\\') {
+          if (condMatch.group(1) == r'\') {
             _unescapeNextLine = true;
             _lookAhead += 1;
             return line.substring(1);
@@ -1180,11 +1180,11 @@ class PreprocessorReader extends Reader {
         shift();
         return null;
       }
-      if (line.startsWith('inc') || line.startsWith('\\inc')) {
+      if (line.startsWith('inc') || line.startsWith(r'\inc')) {
         final incMatch = includeDirectiveRx.firstMatch(line);
         if (incMatch != null) {
           // if escaped, mark as processed and return line unescaped
-          if (incMatch.group(1) == '\\') {
+          if (incMatch.group(1) == r'\') {
             _unescapeNextLine = true;
             _lookAhead += 1;
             return line.substring(1);

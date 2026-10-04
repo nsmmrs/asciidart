@@ -81,7 +81,7 @@ class PygmentsAdapter {
 
   /// Matches a styled inline lineno span (`StyledLinenoSpanTagRx`).
   static final RegExp _styledLinenoSpanTagRx = RegExp(
-    '(?<=^|<span></span>)<span style="[^"]+">( *\\d+) ?</span>',
+    r'(?<=^|<span></span>)<span style="[^"]+">( *\d+) ?</span>',
   );
 
   /// Matches the styled lineno column opener (`StyledLinenoColumnStartTagsRx`).

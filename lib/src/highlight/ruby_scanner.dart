@@ -635,7 +635,7 @@ class _RubyStringState {
   Set<String> _stopCharacters() {
     final stopAt = <String>{delim!};
     if (openingParen != null) stopAt.add(openingParen!);
-    if (delim != '\\') stopAt.add('\\');
+    if (delim != r'\') stopAt.add(r'\');
     return stopAt;
   }
 
@@ -795,7 +795,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         sink.endGroup(current.type);
         valueExpected = false;
         state = current.nextState;
-      } else if (ch == '\\') {
+      } else if (ch == r'\') {
         if (current.interpreted) {
           final esc = s.scan(_escapeRe);
           if (esc != null) {
@@ -807,7 +807,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           final esc = s.getch();
           if (esc == null) {
             sink.textToken(ch, 'content');
-          } else if (esc == current.delim || esc == '\\') {
+          } else if (esc == current.delim || esc == r'\') {
             sink.textToken(ch + esc, 'char');
           } else {
             sink.textToken(ch + esc, 'content');

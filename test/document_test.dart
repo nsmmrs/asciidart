@@ -2550,7 +2550,7 @@ void main() {
       test('document with multiline attribute entry but only one line should '
           'not crash', () {
         // Port of Asciidoctor::LINE_CONTINUATION (' \\').
-        final input = ':foo: bar \\';
+        final input = r':foo: bar \';
         final doc = documentFromString(input);
         expect(doc.attributes['foo'], equals('bar'));
       });
@@ -3693,7 +3693,7 @@ void main() {
           backend: 'docbook',
           standalone: true,
         );
-        expect(doc.attr('mantitle'), equals('foo\\--bar'));
+        expect(doc.attr('mantitle'), equals(r'foo\--bar'));
         final result = doc.convert() as String;
         assertXpath(
           '/xmlns:article/xmlns:info/xmlns:title[text()="foo--bar(1)"]',

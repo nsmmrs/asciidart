@@ -189,7 +189,7 @@ _XmlElement _parseFragment(String content) {
   final root = _XmlElement('#root');
   final stack = <_XmlElement>[root];
   final tagRx = RegExp(
-    '<!--.*?(?:-->|\$)|<![^>]*>|</\\s*([A-Za-z][^\\s>]*)[^>]*>|<([A-Za-z][^\\s>/]*)([^>]*)>',
+    r'<!--.*?(?:-->|$)|<![^>]*>|</\s*([A-Za-z][^\s>]*)[^>]*>|<([A-Za-z][^\s>/]*)([^>]*)>',
     dotAll: true,
   );
   final attrRx = RegExp(

@@ -289,7 +289,7 @@ class DifferentialConfig {
 
     final extensions = <String>{};
     for (final part in (results['extensions'] as String? ?? '').split(',')) {
-      final ext = part.trim().toLowerCase().replaceAll(RegExp('^\\.+'), '');
+      final ext = part.trim().toLowerCase().replaceAll(RegExp(r'^\.+'), '');
       if (ext.isNotEmpty) extensions.add(ext);
     }
     if (extensions.isEmpty) problems.add('--extensions names no extensions');
@@ -591,12 +591,10 @@ String _cappedDiff(
 
 final _versionStamp = RegExp('Asciidoctor [0-9][0-9A-Za-z.+_~-]*');
 final _lastUpdated = RegExp(
-  'Last updated \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2} [+-]\\d{4}',
+  r'Last updated \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}',
 );
-final _manDate = RegExp('^(\\.\\" +Date: ).*\$', multiLine: true);
-final _manThDate = RegExp(
-  '''(\\.TH("[^"\\n]*"\\s+){2}")\\d{4}-\\d{2}-\\d{2}(")''',
-);
+final _manDate = RegExp(r'^(\.\" +Date: ).*$', multiLine: true);
+final _manThDate = RegExp(r'''(\.TH("[^"\n]*"\s+){2}")\d{4}-\d{2}-\d{2}(")''');
 
 /// Normalizes the narrow volatile stamps (ADR-0001, D4) so two
 /// implementations built at different versions or times compare equal:
@@ -643,7 +641,7 @@ List<String> splitCommand(String command) {
       }
       continue;
     }
-    if (ch == '\\') {
+    if (ch == r'\') {
       if (quote == "'") {
         token.write(ch);
       } else {
@@ -667,7 +665,7 @@ List<String> splitCommand(String command) {
     hasToken = true;
   }
   if (escaped) {
-    token.write('\\');
+    token.write(r'\');
   }
   if (hasToken) {
     parts.add(token.toString());
@@ -914,7 +912,7 @@ String _joinPath(String a, String b) {
 
 bool _isAbsolutePath(String path) =>
     path.startsWith(Platform.pathSeparator) ||
-    RegExp('^[A-Za-z]:[\\\\/]').hasMatch(path);
+    RegExp(r'^[A-Za-z]:[\\/]').hasMatch(path);
 
 String _normalizePath(String path) {
   final segments = File(path).absolute.path.split(Platform.pathSeparator);

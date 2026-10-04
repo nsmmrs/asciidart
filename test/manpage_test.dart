@@ -418,10 +418,7 @@ void main() {
       final output = convOf(doc).convertDocument(doc);
       expect(output, contains('.\\"    Manual: \\ \\&\n'));
       expect(output, contains('.\\"    Source: \\ \\&\n'));
-      expect(
-        output,
-        contains('.TH "COMMAND" "1" "2026-10-03" "\\ \\&" "\\ \\&"'),
-      );
+      expect(output, contains(r'.TH "COMMAND" "1" "2026-10-03" "\ \&" "\ \&"'));
     });
 
     test('collapses whitespace in manual and source', () {
@@ -849,7 +846,7 @@ void main() {
         doc,
         'listing',
         contentModel: 'verbatim',
-        stubbedContent: '\$ gem install x',
+        stubbedContent: r'$ gem install x',
       );
       expect(
         convOf(doc).convertListing(node),
@@ -1681,11 +1678,9 @@ void main() {
       final lines = (doc.convert() as String).split('\n');
       expect(
         lines,
-        contains(
-          'To get your fortune, see Figure 1, \\(lqMagic 8\\-Ball\\(rq.',
-        ),
+        contains(r'To get your fortune, see Figure 1, \(lqMagic 8\-Ball\(rq.'),
       );
-      expect(lines, contains('.B Figure 1. Magic 8\\-Ball'));
+      expect(lines, contains(r'.B Figure 1. Magic 8\-Ball'));
     });
   });
 
@@ -1880,30 +1875,30 @@ void main() {
   group('manify entities', () {
     const cases = <String, String>{
       '&#169; &amp; &#174; are translated, but not the &amp;.':
-          '\\(co & \\(rg are translated, but not the &.',
+          r'\(co & \(rg are translated, but not the &.',
       'A &#43; B': 'A + B',
-      '0&#176; is freezing': '0\\(de is freezing',
-      'go &#8212; to': 'go \\(em to',
-      'go&#8212;&#8203;to': 'go\\(emto',
-      "'command'": '\\*(Aqcommand\\*(Aq',
-      'a-b': 'a\\-b',
+      '0&#176; is freezing': r'0\(de is freezing',
+      'go &#8212; to': r'go \(em to',
+      'go&#8212;&#8203;to': r'go\(emto',
+      "'command'": r'\*(Aqcommand\*(Aq',
+      'a-b': r'a\-b',
       '&lt;tag&gt;': '<tag>',
-      'a&#160;b': 'a\\~b',
-      '&#169; 2026': '\\(co 2026',
-      '&#174;': '\\(rg',
-      '&#8482;': '\\(tm',
+      'a&#160;b': r'a\~b',
+      '&#169; 2026': r'\(co 2026',
+      '&#174;': r'\(rg',
+      '&#8482;': r'\(tm',
       'a&#8201;b': 'a b',
-      'a&#8211;b': 'a\\(enb',
-      '&#8216;hi&#8217;': '\\(oqhi\\(cq',
-      '&#8220;hi&#8221;': '\\(lqhi\\(rq',
-      '&#8592; back': '\\(<- back',
-      'forth &#8594;': 'forth \\(->',
-      '&#8656; wide': '\\(lA wide',
-      'wide &#8658;': 'wide \\(rA',
-      'a&#8203;b': 'a\\:b',
+      'a&#8211;b': r'a\(enb',
+      '&#8216;hi&#8217;': r'\(oqhi\(cq',
+      '&#8220;hi&#8221;': r'\(lqhi\(rq',
+      '&#8592; back': r'\(<- back',
+      'forth &#8594;': r'forth \(->',
+      '&#8656; wide': r'\(lA wide',
+      'wide &#8658;': r'wide \(rA',
+      'a&#8203;b': r'a\:b',
       'AT&amp;T': 'AT&T',
-      '&#8230;': '\\&.\\|.\\|.',
-      'x &#8230;.': 'x .\\|.\\|..',
+      '&#8230;': r'\&.\|.\|.',
+      'x &#8230;.': r'x .\|.\|..',
     };
     for (final entry in cases.entries) {
       test('manifies ${entry.key}', () {
@@ -1961,7 +1956,7 @@ void main() {
     test('escapes literal escape sequences', () {
       final doc = manDoc();
       expect(
-        convOf(doc).convertParagraph(para(doc, '\\fB makes text bold')),
+        convOf(doc).convertParagraph(para(doc, r'\fB makes text bold')),
         '.sp\n\\(rsfB makes text bold',
       );
     });
@@ -1982,7 +1977,7 @@ void main() {
       expect(
         conv.convertParagraph(node),
         '.sp\n\\(lqhello\\(rq \\(oqgoodbye\\(cq '
-        '\\fBstrong\\fP \\fIweak\\fP \\f(CReven\\fP',
+        r'\fBstrong\fP \fIweak\fP \f(CReven\fP',
       );
     });
 
@@ -2037,7 +2032,7 @@ void main() {
       expect(
         conv.convertParagraph(para(doc, '$btn $kbd $menu')),
         '.sp\n\\fB[\\0S\\0]\\fP \\f(CRCtrl\\0+\\0s\\fP '
-        '\\fIFile\\0\\(fc\\0New\\fP',
+        r'\fIFile\0\(fc\0New\fP',
       );
     });
   });
@@ -2190,7 +2185,7 @@ void main() {
       expect(
         conv.convertParagraph(para(doc, 'Bugs fixed daily by $mto.')),
         '.sp\nBugs fixed daily by \\c\n'
-        '.MTO "doc\\(atexample.org" "" "."',
+        r'.MTO "doc\(atexample.org" "" "."',
       );
     });
   });
