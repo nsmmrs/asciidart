@@ -4013,7 +4013,7 @@ void main() {
         // PORT: `convert_inline_string` renders the single paragraph
         // content.
         final para = blockFromString(
-          "+Sometimes you feel pass:q[`mono`].+ Sometimes you +\$\$don't\$\$+.",
+          r"+Sometimes you feel pass:q[`mono`].+ Sometimes you +$$don't$$+.",
         );
         expect(
           contentOf(para),
