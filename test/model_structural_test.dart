@@ -1918,6 +1918,19 @@ void main() {
       );
     });
 
+    test('a dropped cell is reported at the line where it starts', () {
+      // Asciidoctor 2.0.26: `<stdin>: line 3: dropping cell ...`, the line
+      // of the overrunning cell, not of the cell read after it.
+      load('[cols=2*]\n|===\n3+|A\n|B\n|===\n');
+      expect(
+        '${testLogger.errors.first}',
+        equals(
+          '<stdin>: line 3: dropping cell because it exceeds specified '
+          'number of columns',
+        ),
+      );
+    });
+
     test('missing leading separator is reported at the table start', () {
       // Regression: the start cursor used to be the bool returned by
       // Reader.mark, so a real parse crashed with a TypeError here.

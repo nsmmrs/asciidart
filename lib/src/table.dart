@@ -1031,7 +1031,8 @@ class TableParserContext {
         column = table!.columns[_currentRow.length];
       }
 
-      final cell = Cell(column, cellText, cellspec, _reader.cursorBeforeMark());
+      final cursorBeforeMark = _reader.cursorBeforeMark();
+      final cell = Cell(column, cellText, cellspec, cursorBeforeMark);
       _reader.mark();
       final rowspan = cell.rowspan;
       if (rowspan != null && rowspan != 1) {
@@ -1045,7 +1046,7 @@ class TableParserContext {
         if (rowStatus > 0) {
           logger.error(
             'dropping cell because it exceeds specified number of columns',
-            at: _reader.cursorBeforeMark(),
+            at: cursorBeforeMark,
           );
           _closeRow(true);
         } else {
