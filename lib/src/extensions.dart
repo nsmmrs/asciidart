@@ -1234,7 +1234,7 @@ class Registry {
     void Function(Preprocessor processor)? build,
   }) => _addDocumentProcessor<Preprocessor>(
     'preprocessor',
-    (c) => Preprocessor(c),
+    Preprocessor.new,
     processor,
     config,
     build,
@@ -1258,7 +1258,7 @@ class Registry {
     void Function(TreeProcessor processor)? build,
   }) => _addDocumentProcessor<TreeProcessor>(
     'tree_processor',
-    (c) => TreeProcessor(c),
+    TreeProcessor.new,
     processor,
     config,
     build,
@@ -1298,7 +1298,7 @@ class Registry {
     void Function(Postprocessor processor)? build,
   }) => _addDocumentProcessor<Postprocessor>(
     'postprocessor',
-    (c) => Postprocessor(c),
+    Postprocessor.new,
     processor,
     config,
     build,
@@ -1322,7 +1322,7 @@ class Registry {
     void Function(IncludeProcessor processor)? build,
   }) => _addDocumentProcessor<IncludeProcessor>(
     'include_processor',
-    (c) => IncludeProcessor(c),
+    IncludeProcessor.new,
     processor,
     config,
     build,
@@ -1346,7 +1346,7 @@ class Registry {
     void Function(DocinfoProcessor processor)? build,
   }) => _addDocumentProcessor<DocinfoProcessor>(
     'docinfo_processor',
-    (c) => DocinfoProcessor(c),
+    DocinfoProcessor.new,
     processor,
     config,
     build,
@@ -1390,7 +1390,7 @@ class Registry {
     void Function(BlockProcessor processor)? build,
   }) => _addSyntaxProcessor<BlockProcessor>(
     'block',
-    (name, c) => BlockProcessor(name, c),
+    BlockProcessor.new,
     processor,
     name,
     config,
@@ -1426,7 +1426,7 @@ class Registry {
     void Function(BlockMacroProcessor processor)? build,
   }) => _addSyntaxProcessor<BlockMacroProcessor>(
     'block_macro',
-    (name, c) => BlockMacroProcessor(name, c),
+    BlockMacroProcessor.new,
     processor,
     name,
     config,
@@ -1457,7 +1457,7 @@ class Registry {
     void Function(InlineMacroProcessor processor)? build,
   }) => _addSyntaxProcessor<InlineMacroProcessor>(
     'inline_macro',
-    (name, c) => InlineMacroProcessor(name, c),
+    InlineMacroProcessor.new,
     processor,
     name,
     config,

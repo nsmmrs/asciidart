@@ -132,7 +132,7 @@ void main() {
     test('creates logger instance from static loggerFactory property', () {
       // Ruby: `logger_class` property; Dart: [LoggerManager.loggerFactory].
       withManagerLogger(() {
-        LoggerManager.loggerFactory = ([Object? logdev]) => TestLogger(logdev);
+        LoggerManager.loggerFactory = TestLogger.new;
         LoggerManager.logger = null;
         expect(LoggerManager.logger, isNotNull);
         expect(LoggerManager.logger, isA<TestLogger>());

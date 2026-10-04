@@ -1011,7 +1011,7 @@ void main() {
       final section = Section(doc, 1);
       // No title means the conversion throws only when a title is set;
       // with no title the `!` on null throws instead (both throw).
-      expect(() => section.generateIdFromTitle(), throwsA(anything));
+      expect(section.generateIdFromTitle, throwsA(anything));
     });
 
     test('toString shape with and without title', () {

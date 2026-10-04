@@ -1155,7 +1155,7 @@ void main() {
   );
   Extensions.registerProcessorFactory(
     'SamplePreprocessor',
-    (config) => SamplePreprocessor(config),
+    SamplePreprocessor.new,
   );
 
   // Explicit global-state reset between tests (mirrors Ruby's
@@ -1322,7 +1322,7 @@ void main() {
 
     test('should raise ArgumentError when registering without a group', () {
       expect(
-        () => Extensions.register(),
+        Extensions.register,
         throwsA(
           isArgumentError.having(
             (error) => error.message,
