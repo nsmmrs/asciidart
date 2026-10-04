@@ -1,7 +1,6 @@
 name: asciidoctor
-description: Dart port of Asciidoctor, the fast text processor for converting AsciiDoc to HTML and more.
+description: Unofficial Dart port of Asciidoctor 2.0.26. Converts AsciiDoc to HTML 5, DocBook 5 and man pages with output identical to the Ruby original.
 version: 0.1.0
-homepage: https://asciidoctor.org
 repository: https://github.com/nsmmrs/asciidoctor-dart
 issue_tracker: https://github.com/nsmmrs/asciidoctor-dart/issues
 topics:

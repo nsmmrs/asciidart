@@ -1,146 +1,121 @@
-# Asciidoctor (Dart port)
+# asciidoctor (Dart)
 
 [![CI](https://github.com/nsmmrs/asciidoctor-dart/actions/workflows/ci.yml/badge.svg)](https://github.com/nsmmrs/asciidoctor-dart/actions/workflows/ci.yml)
-[![pub package](https://img.shields.io/pub/v/asciidoctor.svg)](https://pub.dev/packages/asciidoctor)
 
-Dart port of [Asciidoctor](https://asciidoctor.org), the text processor
-for converting AsciiDoc to HTML 5, DocBook 5, and Unix man pages.
+An unofficial Dart port of [Asciidoctor](https://asciidoctor.org) 2.0.26.
+It converts AsciiDoc to HTML 5, DocBook 5 and man pages, with output
+identical to the Ruby original. It is a library, a command line tool, and
+(compiled to JavaScript) an npm package.
 
-> Status: working CLI (v0.1.0). All three backends, the option parser, and
-> the extension framework are ported; the bats e2e suite passes 131/131
-> against this CLI and the differential corpus is byte-identical to Ruby
-> (see `benchmark/PARITY.md`).
->
-> Performance (measured 2026-10-03, see `benchmark/BASELINE.md`): the
-> AOT-compiled binary converts the benchmark corpus **3.5–8.8x faster**
-> than the Ruby CLI end to end. `dart run` (JIT dev mode) is not a
-> performance target and runs ~13–15x slower than Ruby per spawn.
+> This project is not affiliated with the Asciidoctor project. Report
+> problems with this port [here](https://github.com/nsmmrs/asciidoctor-dart/issues),
+> not upstream.
 
-## Usage
+## Why
 
-Add the dependency (`dart pub add asciidoctor`), then convert:
+- **Same output.** Every release is checked byte for byte against the
+  Asciidoctor 2.0.26 gem on all three backends (`tool/parity.sh`, run in
+  CI), and the command line passes the same end-to-end suite as the gem.
+- **Fast.** The compiled command converts a document 5–10x faster than the
+  `asciidoctor` gem end to end, and about 2x faster in process
+  (`benchmark/BASELINE.md`).
+- **No Ruby.** One self-contained executable, or a Dart dependency, or an
+  npm package for Node.js and browsers.
+
+## Library
+
+```sh
+dart pub add asciidoctor
+```
 
 ```dart
 import 'package:asciidoctor/asciidoctor.dart';
 
 void main() {
-  final html = convert('Hello, *World*!');
-  print(html); // <div class="paragraph">...
+  print(convert('Hello, *World*!')); // <div class="paragraph">...
+
+  final doc = load(
+    '= Title\n\n== Section\n\ntext',
+    options: const AsciidoctorOptions(safe: SafeMode.safe),
+  );
+  print(doc.doctitle()); // Title
 }
 ```
 
-`convert` takes a string (or lines, a file, or rewindable IO) plus the usual
-options (`backend`, `standalone`, `safe`, `attributes`, ...); see
-`example/asciidoctor_example.dart` and the API docs. There is also a
-CLI: `dart pub global activate asciidoctor`, then
-`asciidoctor doc.adoc`.
+The public libraries:
 
-## Prerequisites
+| Import | Contents |
+| --- | --- |
+| `package:asciidoctor/asciidoctor.dart` | `load`, `convert`, `convertFile` and their async variants, `AsciidoctorOptions`, the document tree, logging |
+| `package:asciidoctor/extensions.dart` | `Extensions`, `Registry` and the processor kinds |
+| `package:asciidoctor/converter.dart` | converters, the converter factory, function and Mustache templates |
+| `package:asciidoctor/syntax_highlighter.dart` | the syntax highlighter API |
+| `package:asciidoctor/cli.dart` | `runCli`, for building your own command |
 
-- Dart SDK `^3.13.0` (check with `dart --version`)
+`example/asciidoctor_example.dart` shows a tree walk, an extension and a
+custom converter. Remote content (`allow-uri-read`) needs the async API
+(`loadAsync`, `convertAsync`, ...), which fetches what the document
+includes before converting.
 
-## Setup
-
-```sh
-dart pub get
-```
-
-## Run the tests
-
-```sh
-dart test
-```
-
-## Run the CLI
+## Command line
 
 ```sh
-dart run bin/asciidoctor.dart --version
-dart run bin/asciidoctor.dart --help
+dart pub global activate asciidoctor
+asciidoctor document.adoc
 ```
 
-## Build a native executable
+It takes the options of the `asciidoctor` command (`asciidoctor --help`).
+Differences: the Ruby-specific options (`-r`, `-I`, `--eruby`, `-w`) are
+not available, and messages read like a Dart tool's
+(`benchmark/PARITY.md` lists every difference). If the Ruby gem is also
+installed, whichever `asciidoctor` comes first on `PATH` wins.
 
-```sh
-mkdir -p build
-dart compile exe bin/asciidoctor.dart -o build/asciidoctor
-./build/asciidoctor --version
-```
+Native executables can be built with `tool/build-exes.sh` or
+`dart compile exe bin/asciidoctor.dart`.
 
-## Custom converter templates
+### Custom converters
 
-Two override paths (Tilt templates cannot run on Dart; see
-[ADR-0002](adr/0002-template-converter-strategy.md) and the
+Ruby's Tilt templates cannot run on Dart. Instead
+([ADR-0002](adr/0002-template-converter-strategy.md),
 [cookbook](doc/templates.md)):
 
-- **Mustache files:** `-T templates` loads `paragraph.mustache`-style
-  overrides on top of the built-in converter (last `-T` wins per
-  transform; `-E` accepts `mustache` and `dart`).
-- **Dart functions:** register per-transform handlers in code; they win
-  over Mustache files per transform.
+- `-T DIR` loads Mustache templates (`paragraph.mustache`, ...) on top of
+  the built-in converter.
+- Dart functions override transforms in code. `asciidoctor init-config DIR`
+  generates a project for a custom command with your functions compiled in.
 
-For a compiled-in custom binary (XMonad-style):
+## JavaScript and npm
 
-```sh
-asciidoctor init-config my-config
-cd my-config
-dart pub get
-dart compile exe bin/main.dart -o my-asciidoctor
+The same core compiles to JavaScript as the npm package
+[`asciidoctor-dart`](npm/README.md), with an API shaped after
+Asciidoctor.js 4.1, TypeScript types, and an `asciidoctor-dart` command. It
+runs on Node.js 20.19+ and in browsers ([ADR-0005](adr/0005-js-build.md)).
+
+```js
+import { convert } from 'asciidoctor-dart'
+
+const html = await convert('Hello, *AsciiDoc*!')
 ```
 
-## Lint
+## Versions
 
-```sh
-dart analyze
-```
-
-## Regenerating the embedded data
-
-`lib/src/data.g.dart` embeds `data/locale/*.adoc` and `data/stylesheets/*`
-as compile-time string constants so the package never reads them from disk
-at runtime. It is generated — do not edit it by hand. After changing any
-file under the repository `data/` directory, regenerate it:
-
-```sh
-dart run tool/embed_data.dart
-dart format lib/src/data.g.dart
-dart test test/stylesheets_test.dart
-```
-
-`test/stylesheets_test.dart` asserts every embedded value round-trips to
-the exact bytes of its source file.
-
-## Layout
-
-- `lib/asciidoctor.dart` — public library entry point
-- `lib/src/version.dart` — version constant
-- `lib/src/path_resolver.dart` — path resolution, cleaning, and jail
-  confinement (port of `lib/asciidoctor/path_resolver.rb`)
-- `lib/src/stylesheets.dart` — built-in stylesheets helper (port of
-  `lib/asciidoctor/stylesheets.rb`)
-- `lib/src/data.g.dart` — generated compile-time copy of `data/` (see above)
-- `tool/embed_data.dart` — generator for `lib/src/data.g.dart`
-- `bin/asciidoctor.dart` — CLI entry point
-- `test/smoke_test.dart` — smoke tests
-- `test/paths_test.dart` — path resolver tests (port of `test/paths_test.rb`)
-- `test/stylesheets_test.dart` — embedded-data and stylesheets tests
-
-## Origins
-
-This is a Dart port of
-[Asciidoctor](https://github.com/asciidoctor/asciidoctor) (the Ruby
-implementation by Dan Allen and contributors), ported file by file with
-byte-identical output as the acceptance bar. The Ruby project is the
-upstream reference; this repository contains only the Dart
-implementation.
-
-## License
-
-MIT — see [LICENSE](LICENSE). The license text is unchanged from
-upstream, as are the embedded stylesheets, locale data, and man page.
+The port matches the Asciidoctor **2.0.26** release
+([ADR-0003](adr/0003-target-latest-stable.md)); `Asciidoctor.version` and
+`{asciidoctor-version}` report 2.0.26, and `{asciidoctor-dart-version}` the
+version of this package. Work toward Asciidoctor 2.1 lives on the `2.1.0`
+branch until upstream releases it.
 
 ## Contributing
 
-Bug reports and pull requests are welcome at the
-[issue tracker](https://github.com/nsmmrs/asciidoctor-dart/issues).
-Please include a minimal `.adoc` reproducer and, when output differs
-from Ruby Asciidoctor, the expected output.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports are welcome at the
+[issue tracker](https://github.com/nsmmrs/asciidoctor-dart/issues); include
+an `.adoc` reproducer and, when the output differs from the gem, the gem's
+output.
+
+## Origins and license
+
+A file-by-file port of [Asciidoctor](https://github.com/asciidoctor/asciidoctor),
+the Ruby implementation by Dan Allen, Sarah White, Ryan Waldron and the
+Asciidoctor contributors, with byte-identical output as the bar. MIT
+licensed (see [LICENSE](LICENSE)); the license text, stylesheets, locale
+data and man page are unchanged from upstream.

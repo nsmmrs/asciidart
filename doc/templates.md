@@ -131,7 +131,7 @@ registry.registerFunction('paragraph', (node, [opts]) {
 // Function plus Mustache template for one transform: the function wins.
 registry.registerTemplate('paragraph', '<p>{{content}}</p>');
 
-final converter = TemplateConverter('html5', {}, registry)
+final converter = TemplateConverter('html5', const ConverterOptions(), registry)
     .withFallback(Html5Converter('html5'));
 ```
 

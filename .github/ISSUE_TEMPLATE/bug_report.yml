@@ -1,50 +1,58 @@
-name: Report a bug or security vulnerability
+name: Report a bug
 description: >-
-  Report a bug or security vulnerability in Asciidoctor.
-  Note that usage questions are not considered bugs.
-  Please direct those questions to the project chat (see link below).
+  Report a problem with the Dart port (the pub package, the asciidoctor
+  command or the asciidoctor-dart npm package).
 labels: [bug]
 body:
 - type: markdown
   attributes:
     value: >-
-      Before reporting a bug, please verify that you're using the latest patch release (refer to the CHANGELOG) and have fulfilled the prerequisites as stated in the README.
-      If not, please upgrade and retest your scenario first.
-      Usage questions should be directed to the [project chat](https://chat.asciidoctor.org) and are not considered bugs.
+      This port aims to convert documents exactly as Asciidoctor 2.0.26 (the
+      Ruby gem) does. Output that differs from the gem is a bug. For a
+      security problem, open a minimal issue asking for a private channel
+      instead of describing it here.
+- type: dropdown
+  id: package
+  attributes:
+    label: Package
+    options:
+    - Dart library (asciidoctor on pub.dev)
+    - asciidoctor command
+    - npm package (asciidoctor-dart)
+  validations:
+    required: true
 - type: input
   id: version
   attributes:
-    label: Asciidoctor version
-    description: Run `asciidoctor -v` to find the version of Asciidoctor and Ruby you're using.
-    placeholder: "e.g., Asciidoctor 2.0.23 [https://asciidoctor.org] Runtime Environment (ruby 3.3.0 ...)"
+    label: Version
+    description: Run `asciidoctor --version` (or `asciidoctor-dart --version`) and paste the output.
+    placeholder: "Asciidoctor 2.0.26 [https://asciidoctor.org] Runtime Environment (asciidoctor-dart 0.1.0; ...)"
   validations:
     required: true
 - type: textarea
   id: description
   attributes:
     label: Description
-    description: A clear and concise description of the bug.
+    description: What went wrong?
   validations:
     required: true
 - type: textarea
   id: reproducer
   attributes:
     label: Sample document
-    description: Provide a minimal AsciiDoc document that reproduces the problem.
+    description: A minimal AsciiDoc document that shows the problem, and the command or code you ran.
     render: asciidoc
-  validations:
-    required: true
-- type: textarea
-  id: expected
-  attributes:
-    label: Expected behavior
-    description: What did you expect to happen?
   validations:
     required: true
 - type: textarea
   id: actual
   attributes:
-    label: Actual behavior
-    description: What actually happened? Include any error messages or unexpected output.
+    label: Actual output
+    description: The output or error you got.
   validations:
     required: true
+- type: textarea
+  id: gem
+  attributes:
+    label: Output of the Asciidoctor 2.0.26 gem
+    description: If you can, the gem's output for the same document and options (`gem install asciidoctor -v 2.0.26`).

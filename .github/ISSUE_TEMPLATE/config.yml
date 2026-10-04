@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-- name: Project Chat
-  url: https://chat.asciidoctor.org
-  about: Please direct usage questions or ideas for potential enhancements here.
+- name: Questions about AsciiDoc itself
+  url: https://docs.asciidoctor.org/asciidoc/latest/
+  about: The AsciiDoc language is documented by the Asciidoctor project. This port is not affiliated with it; report problems with the port here, not upstream.

@@ -20,7 +20,7 @@ dart run tool/differential.dart --exe-a "$RUBY" --exe-b "$RUBY" \
   --backend-a html5 --backend-b docbook5
 ```
 
-Both commands run from `dart/`; the repo root is auto-detected. Exe child
+Both commands run from the repository root, which is auto-detected. Exe child
 processes run with the repo root as their working directory, so use
 gem exe (`asciidoctor`) or absolute exe paths.
 

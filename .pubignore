@@ -1,0 +1,26 @@
+# The files left out of the pub.dev package. This file replaces .gitignore
+# for publishing, so its entries are repeated here.
+.dart_tool/
+build/
+doc/api/
+pubspec.lock
+/dist/
+.idea/
+*.iml
+.DS_Store
+node_modules/
+
+# Development only: the package is lib/, bin/, example/, doc/templates.md,
+# the README, CHANGELOG, LICENSE and pubspec.yaml. The data/ and man/ files
+# are embedded in lib/ (lib/src/data.g.dart, lib/src/cli/help_topics.g.dart).
+/.github/
+/.lane/
+/adr/
+/benchmark/
+/data/
+/man/
+/npm/
+/test/
+/tool/
+/CONTRIBUTING.md
+/PORTING-REGEXP.md
