@@ -19,6 +19,12 @@
 /// `DATA_DIR`, `USER_HOME`, `UTF_8`.
 library;
 
+// Regex patterns are assembled from shared CC/CG fragments with `+`,
+// mirroring the Ruby `/...#{...}.../` originals fragment-for-fragment.
+// Interpolation would force raw<->cooked escape unification (backslash
+// quadrupling) and destroy that correspondence.
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 import 'package:asciidoctor/src/rx.dart';
 
 /// The null character used for splitting attribute values (`NULL`).

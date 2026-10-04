@@ -13,6 +13,12 @@
 ///   ported for [hardLineBreakRx] (R5).
 library;
 
+// Regex patterns are assembled from shared CC/CG fragments with `+`,
+// mirroring the Ruby `/...#{...}.../` originals fragment-for-fragment.
+// Interpolation would force raw<->cooked escape unification (backslash
+// quadrupling) and destroy that correspondence.
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 // Character class fragments (mirror the CC_*/CG_* constants).
 
 /// Any character, including newlines (`CC_ALL`).
