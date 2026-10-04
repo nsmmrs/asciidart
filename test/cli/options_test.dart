@@ -307,7 +307,7 @@ void main() {
     test('displays version and exits for -V and --version', () {
       // Option-parsing half of invoker_test 'should display version and
       // exit' (invocation asserted nothing more).
-      final expected =
+      const expected =
           'Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]\n'
           'Runtime Environment (';
       for (final flag in ['--version', '-V']) {

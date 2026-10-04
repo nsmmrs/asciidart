@@ -1884,7 +1884,7 @@ abstract final class Parser {
         } else {
           indented = false;
           ch0 = thisLine.isEmpty ? '' : thisLine[0];
-          final layoutBreakChars = _markdownSyntax
+          const layoutBreakChars = _markdownSyntax
               ? _hybridLayoutBreakChars
               : _layoutBreakChars;
           if (layoutBreakChars.containsKey(ch0) &&

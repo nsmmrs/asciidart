@@ -2727,7 +2727,7 @@ void main() {
 
   group('convertInlineQuoted', () {
     test('tagged and untagged quotes', () {
-      final cases = const {
+      const cases = {
         'monospaced': ['<code>', '</code>'],
         'emphasis': ['<em>', '</em>'],
         'strong': ['<strong>', '</strong>'],

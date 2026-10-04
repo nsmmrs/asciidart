@@ -2723,7 +2723,7 @@ void main() {
   group('convertInlineQuoted', () {
     test('quoted types', () {
       final doc = makeDoc();
-      final cases = const {
+      const cases = {
         'monospaced': ['<literal>', '</literal>'],
         'emphasis': ['<emphasis>', '</emphasis>'],
         'strong': ['<emphasis role="strong">', '</emphasis>'],

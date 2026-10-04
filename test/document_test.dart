@@ -134,7 +134,7 @@ Document documentFromString(String src, [Map<String, Object?>? options]) {
     attrs['linkcss'] = '';
     opts['attributes'] = attrs;
   }
-  final templateDir = const String.fromEnvironment('TEMPLATE_DIR');
+  const templateDir = String.fromEnvironment('TEMPLATE_DIR');
   if (templateDir.isNotEmpty) {
     opts.putIfAbsent('template_dir', () => templateDir);
   }
@@ -2550,7 +2550,7 @@ void main() {
       test('document with multiline attribute entry but only one line should '
           'not crash', () {
         // Port of Asciidoctor::LINE_CONTINUATION (' \\').
-        final input = r':foo: bar \';
+        const input = r':foo: bar \';
         final doc = documentFromString(input);
         expect(doc.attributes['foo'], equals('bar'));
       });

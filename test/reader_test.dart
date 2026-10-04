@@ -1747,7 +1747,7 @@ void main() {
         // docs), keyed on the request path.
         () {
           const url = 'http://localhost:9876/name/asciidoctor';
-          final input = '....\ninclude::$url[]\n....\n';
+          const input = '....\ninclude::$url[]\n....\n';
           final doc = FakeDocument(
             safe: SafeMode.safe,
             attributes: {'allow-uri-read': ''},
@@ -1788,7 +1788,7 @@ void main() {
         // output; URI transport is the FakeDocument test double.
         () {
           const url = 'http://localhost:9876/fixtures/outer-include.adoc';
-          final input = '....\ninclude::$url[]\n....\n';
+          const input = '....\ninclude::$url[]\n....\n';
           final doc = FakeDocument(
             safe: SafeMode.safe,
             attributes: {'allow-uri-read': ''},
@@ -1817,7 +1817,7 @@ void main() {
           const includeUrl =
               'http://localhost:9876/fixtures/file-with-missing-include.adoc';
           const nestedIncludeUrl = 'no-such-file.adoc';
-          final input = '....\ninclude::$includeUrl[]\n....\n';
+          const input = '....\ninclude::$includeUrl[]\n....\n';
           usingMemoryLogger((logger) {
             final doc = FakeDocument(
               safe: SafeMode.safe,
@@ -1847,7 +1847,7 @@ void main() {
         // output; URI transport is the FakeDocument test double.
         () {
           const url = 'http://localhost:9876/fixtures/tagged-class.rb';
-          final input =
+          const input =
               '[source,ruby]\n----\ninclude::$url[tag=init,indent=0]\n----\n';
           final doc = FakeDocument(
             safe: SafeMode.safe,
@@ -1866,7 +1866,7 @@ void main() {
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
           const url = 'http://localhost:9876/no_such_file';
-          final input = '....\ninclude::$url[]\n....\n';
+          const input = '....\ninclude::$url[]\n....\n';
           usingMemoryLogger((logger) {
             final doc = FakeDocument(
               safe: SafeMode.safe,
@@ -2047,7 +2047,7 @@ void main() {
             tmpFile.writeAsStringSync(
               'do not include\r\ntag::include-me[]\r\nincluded line\r\nend::include-me[]\r\ndo not include\r\n',
             );
-            final input = 'include::include.adoc[tag=include-me]';
+            const input = 'include::include.adoc[tag=include-me]';
             final doc = FakeDocument(safe: SafeMode.safe, baseDir: tmpDir.path);
             final reader = PreprocessorReader(doc, input, null, true);
             final source = reader.readLines().join('\n');
@@ -2071,7 +2071,7 @@ void main() {
             tmpFile.writeAsStringSync(
               'line not included\ntag::include-me[]\nline included\nend::include-me[]',
             );
-            final input = 'include::include.adoc[tag=include-me]';
+            const input = 'include::include.adoc[tag=include-me]';
             usingMemoryLogger((logger) {
               final doc = FakeDocument(
                 safe: SafeMode.safe,

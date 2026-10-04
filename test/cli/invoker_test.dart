@@ -195,7 +195,7 @@ void main() {
 
   group('version and usage', () {
     test('displays version and exits', () {
-      final expected =
+      const expected =
           'Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]\n'
           'Runtime Environment (Dart ';
       for (final flag in ['--version', '-V']) {
