@@ -112,7 +112,7 @@ Invoker invokeCliWithFilenames(List<String> argv, List<String> filenames) {
 /// writer that wins the race would come and go before the reader opens and
 /// leave the reader blocked forever.
 void _writePipe(List<Object> args) {
-  final raf = (File(args[0] as String).openSync(mode: FileMode.writeOnly))
+  (File(args[0] as String).openSync(mode: FileMode.writeOnly))
     ..writeStringSync('pipe content')
     ..closeSync();
   (args[1] as SendPort).send(null);

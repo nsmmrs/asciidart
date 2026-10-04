@@ -236,7 +236,7 @@ void main() {
     test('functions receive convert opts', () {
       final paragraph = parseDoc('hi').blocks[0];
       Map<String, Object?>? seen;
-      final converter = TemplateConverter('html5')
+      TemplateConverter('html5')
         ..registerFunction('paragraph', (node, [opts]) {
           seen = opts;
           return 'FN';

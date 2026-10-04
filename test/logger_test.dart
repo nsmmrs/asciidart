@@ -461,7 +461,7 @@ void main() {
 
     test('non-string messages render via toString', () {
       final buffer = StringBuffer();
-      final logger = (Logger(logdev: buffer))
+      (Logger(logdev: buffer))
         ..warn(42)
         ..warn({'a': 1});
       expect(

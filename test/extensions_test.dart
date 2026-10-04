@@ -3507,51 +3507,44 @@ void main() {
           '\n'
           'sect::[$attrlist]\n';
 
-      final cases =
-          (<String, List<Object?>>{
-            '': ['chapter', 1, false, true, '_section_title'],
-            'level=0': ['part', 0, false, false, '_section_title'],
-            'level=0,alt': [
-              'part',
-              0,
-              false,
-              true,
-              '_section_title',
-              {'partnums': ''},
-            ],
-            'level=0,style=appendix': [
-              'appendix',
-              1,
-              true,
-              true,
-              '_section_title',
-            ],
-            'style=appendix': ['appendix', 1, true, true, '_section_title'],
-            'style=glossary': ['glossary', 1, true, false, '_section_title'],
-            'style=glossary,alt': [
-              'glossary',
-              1,
-              true,
-              'chapter',
-              '_section_title',
-              {'sectnums': 'all'},
-            ],
-            'style=abstract': ['chapter', 1, false, true, '_section_title'],
-            'id=section-title': ['chapter', 1, false, true, 'section-title'],
-            'id=false': ['chapter', 1, false, true, null],
-          })..forEach((attrlist, expected) {
-            final input = inputFor(attrlist);
-            documentFromString(input, {
-              'safe': 'server',
-              if (expected.length > 5)
-                'attributes': expected[5]! as Map<String, Object?>,
-            });
-            expect(sect!.sectname, equals(expected[0]));
-            expect(sect!.level, equals(expected[1]));
-            expect(sect!.special, equals(expected[2]));
-            expect(sect!.numbered, equals(expected[3]));
-            expect(sect!.id, equals(expected[4]));
-          });
+      (<String, List<Object?>>{
+        '': ['chapter', 1, false, true, '_section_title'],
+        'level=0': ['part', 0, false, false, '_section_title'],
+        'level=0,alt': [
+          'part',
+          0,
+          false,
+          true,
+          '_section_title',
+          {'partnums': ''},
+        ],
+        'level=0,style=appendix': ['appendix', 1, true, true, '_section_title'],
+        'style=appendix': ['appendix', 1, true, true, '_section_title'],
+        'style=glossary': ['glossary', 1, true, false, '_section_title'],
+        'style=glossary,alt': [
+          'glossary',
+          1,
+          true,
+          'chapter',
+          '_section_title',
+          {'sectnums': 'all'},
+        ],
+        'style=abstract': ['chapter', 1, false, true, '_section_title'],
+        'id=section-title': ['chapter', 1, false, true, 'section-title'],
+        'id=false': ['chapter', 1, false, true, null],
+      })..forEach((attrlist, expected) {
+        final input = inputFor(attrlist);
+        documentFromString(input, {
+          'safe': 'server',
+          if (expected.length > 5)
+            'attributes': expected[5]! as Map<String, Object?>,
+        });
+        expect(sect!.sectname, equals(expected[0]));
+        expect(sect!.level, equals(expected[1]));
+        expect(sect!.special, equals(expected[2]));
+        expect(sect!.numbered, equals(expected[3]));
+        expect(sect!.id, equals(expected[4]));
+      });
     });
 
     test('should add docinfo to document', () {

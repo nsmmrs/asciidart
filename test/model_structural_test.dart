@@ -1234,23 +1234,22 @@ void main() {
       expect(table.rows.body, isEmpty);
       expect(table.columns, isEmpty);
       expect(table.hasHeaderOption, equals(false));
-      final widths =
-          (<String, int>{
-            'abc': 100,
-            '0%': 0,
-            '50': 50,
-            '50%': 50,
-            '0': 0,
-            '100': 100,
-            '101': 100,
-            '-5': 100,
-          })..forEach((width, expected) {
-            expect(
-              Table(doc, {'width': width}).attributes['tablepcwidth'],
-              equals(expected),
-              reason: 'width $width',
-            );
-          });
+      (<String, int>{
+        'abc': 100,
+        '0%': 0,
+        '50': 50,
+        '50%': 50,
+        '0': 0,
+        '100': 100,
+        '101': 100,
+        '-5': 100,
+      })..forEach((width, expected) {
+        expect(
+          Table(doc, {'width': width}).attributes['tablepcwidth'],
+          equals(expected),
+          reason: 'width $width',
+        );
+      });
       expect(Table(doc, {'width': 50}).attributes['tablepcwidth'], equals(50));
     });
 
@@ -1926,7 +1925,7 @@ void main() {
 
     test('closeOpenCell advances lines so later rows close implicitly', () {
       final (_, table, _) = makeParts();
-      final pc = (TableParserContext(FakeReader(), table))
+      (TableParserContext(FakeReader(), table))
         ..closeOpenCell()
         ..closeOpenCell()
         ..buffer = 'a'
@@ -1936,7 +1935,7 @@ void main() {
 
     test('closeCell honors repeatcol and colspan', () {
       final (_, table, reader) = makeParts();
-      final pc = (TableParserContext(reader, table))
+      (TableParserContext(reader, table))
         ..pushCellspect({'repeatcol': 2})
         ..buffer = 'x'
         ..closeCell(true);
@@ -1944,7 +1943,7 @@ void main() {
       expect(table.columns, hasLength(2));
 
       final (_, table2, reader2) = makeParts();
-      final pc2 = (TableParserContext(reader2, table2))
+      (TableParserContext(reader2, table2))
         ..pushCellspect({'colspan': 2})
         ..buffer = 'y'
         ..closeCell(true);
@@ -1994,7 +1993,7 @@ void main() {
 
     test('overrunning cells are dropped with an error', () {
       final (_, table, _) = makeParts(cols: 1);
-      final pc = (TableParserContext(FakeReader(), table))
+      (TableParserContext(FakeReader(), table))
         ..pushCellspect({'colspan': 2})
         ..buffer = 'wide'
         ..closeCell();
@@ -2004,7 +2003,7 @@ void main() {
 
     test('missing leading separator recovers with an error', () {
       final (_, table, _) = makeParts();
-      final pc = (TableParserContext(FakeReader(), table))
+      (TableParserContext(FakeReader(), table))
         ..buffer = 'a'
         ..closeCell(true);
       expect(
@@ -2016,10 +2015,10 @@ void main() {
 
     test('closeTable reports incomplete rows only', () {
       final (_, table, _) = makeParts();
-      final quiet = (TableParserContext(FakeReader(), table))..closeTable();
+      (TableParserContext(FakeReader(), table))..closeTable();
       expect(testLogger.errors, isEmpty);
       final (_, table2, _) = makeParts();
-      final pending = (TableParserContext(FakeReader(), table2))
+      (TableParserContext(FakeReader(), table2))
         ..pushCellspect({})
         ..buffer = 'a'
         ..closeCell()
