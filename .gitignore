@@ -1,6 +1,8 @@
 # Dart build output (never committed)
 .dart_tool/
 build/
+# Generated API docs (dart doc output; never committed)
+doc/api/
 # Pub lockfile for a library package (applications keep their own)
 pubspec.lock
 # Release executables (tool/build-exes.sh output; never committed)
