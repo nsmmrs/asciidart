@@ -308,7 +308,7 @@ final class _BlockSubsApplier implements SubsApplier {
 
 /// Applies normal substitutions to [value] on behalf of [node].
 String _applySubsString(AbstractNode node, String value) =>
-    applySubs(node, value) as String;
+    applySubs(node, value)! as String;
 
 /// Applies the specified substitutions to the text.
 ///
@@ -331,7 +331,7 @@ Object? applySubs(
     isMultiline = true;
     subject = (text.length > 1 && isTruthy(text[1]))
         ? text.join(lf)
-        : text[0] as String;
+        : text[0]! as String;
   } else if (text is String) {
     if (text.isEmpty) return text;
     isMultiline = false;
@@ -730,7 +730,7 @@ Object? _counterWithArgs(Document doc, List<String> args) {
     if (!doc.attributeLocked(attrName)) {
       final resolved = strValue.isEmpty
           ? strValue
-          : applyHeaderSubs(doc, strValue) as String;
+          : applyHeaderSubs(doc, strValue)! as String;
       doc.attributes[attrName] = resolved;
       return (attrName, resolved);
     }
@@ -1481,11 +1481,11 @@ String _subMacrosLinks(
             if (attrs.containsKey(2)) {
               if (attrs.containsKey(3)) {
                 target =
-                    '$target?subject=${Helpers.encodeUriComponent(attrs[2] as String)}'
-                    '&amp;body=${Helpers.encodeUriComponent(attrs[3] as String)}';
+                    '$target?subject=${Helpers.encodeUriComponent(attrs[2]! as String)}'
+                    '&amp;body=${Helpers.encodeUriComponent(attrs[3]! as String)}';
               } else {
                 target =
-                    '$target?subject=${Helpers.encodeUriComponent(attrs[2] as String)}';
+                    '$target?subject=${Helpers.encodeUriComponent(attrs[2]! as String)}';
               }
             }
           }
@@ -1788,7 +1788,7 @@ String _convertXrefMacro(
     _logPossibleInvalidReference(node, doc, refid!);
     // handles: id
   } else if (isTruthy(
-    (doc.catalog['refs'] as Map<String, Object?>)[fragment],
+    (doc.catalog['refs']! as Map<String, Object?>)[fragment],
   )) {
     refid = fragment;
     target = '#$fragment';
@@ -2451,11 +2451,13 @@ String restorePassthroughs(AbstractNode node, String text) {
     final slot = int.parse(match.group(1)!);
     final pass = slot < passthrus.length ? passthrus[slot] : null;
     if (pass != null) {
-      var subbedText = applySubs(
-        node,
-        pass['text'] as String,
-        pass['subs'] as List<String>?,
-      ) as String;
+      var subbedText =
+          applySubs(
+                node,
+                pass['text']! as String,
+                pass['subs'] as List<String>?,
+              )!
+              as String;
       final type = pass['type'] as String?;
       if (type != null) {
         final attributes = pass['attributes'] as Map<String, Object?>?;
@@ -2613,7 +2615,7 @@ List<String>? expandSubs(AbstractNode node, Object? subs, [String? subject]) {
       if (subGroup != null) {
         expandedSubs.addAll(subGroup);
       } else {
-        expandedSubs.add(key as String);
+        expandedSubs.add(key! as String);
       }
     }
     return expandedSubs.isEmpty ? null : expandedSubs;
@@ -2647,7 +2649,7 @@ List<String>? commitSubs(AbstractBlock node) {
         return node.subs;
     }
   } else {
-    effective = List<String>.from(defaultSubs as List);
+    effective = List<String>.from(defaultSubs! as List);
   }
 
   final customSubs = node.attributes['subs'];

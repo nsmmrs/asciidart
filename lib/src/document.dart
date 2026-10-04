@@ -344,7 +344,7 @@ class _ReaderDocumentAdapter implements ReaderDocument {
 
   @override
   Map<String, bool?> get catalogIncludes =>
-      _document.catalog['includes'] as Map<String, bool?>;
+      _document.catalog['includes']! as Map<String, bool?>;
 
   @override
   List<ReaderIncludeProcessor>? get includeProcessors {
@@ -602,7 +602,7 @@ class Document extends AbstractBlock implements NodeDocument {
     if (isTruthy(baseDirOpt)) {
       baseDir = attrOverrides['docdir'] = _expandBaseDir(baseDirOpt.toString());
     } else if (isTruthy(attrOverrides['docdir'])) {
-      baseDir = attrOverrides['docdir'] as String;
+      baseDir = (attrOverrides['docdir']! as String)!;
     } else {
       baseDir = attrOverrides['docdir'] = Directory.current.path;
     }
@@ -632,8 +632,8 @@ class Document extends AbstractBlock implements NodeDocument {
       // Restrict the document from seeing docdir; trim docfile to a
       // relative path.
       if (parentDoc == null && attrOverrides.containsKey('docfile')) {
-        final docfile = attrOverrides['docfile'] as String;
-        final docdir = attrOverrides['docdir'] as String;
+        final docfile = attrOverrides['docfile']! as String;
+        final docdir = attrOverrides['docdir']! as String;
         final start = docdir.length + 1;
         attrOverrides['docfile'] = start <= docfile.length
             ? docfile.substring(start)
@@ -752,7 +752,7 @@ class Document extends AbstractBlock implements NodeDocument {
         }
       } else if (opts['extensions'] is void Function(Registry)) {
         extensions = Extensions.create(
-          build: opts['extensions'] as void Function(Registry),
+          build: opts['extensions']! as void Function(Registry),
         ).activate(this);
       }
 
@@ -989,8 +989,8 @@ class Document extends AbstractBlock implements NodeDocument {
   Object? register(String type, Object? value) {
     switch (type) {
       case 'ids': // deprecated
-        final entry = value as List<Object?>;
-        final id = entry[0] as String;
+        final entry = value! as List<Object?>;
+        final id = entry[0]! as String;
         return register('refs', <Object?>[
           id,
           Inline(
@@ -1002,9 +1002,9 @@ class Document extends AbstractBlock implements NodeDocument {
           ),
         ]);
       case 'refs':
-        final entry = value as List<Object?>;
-        final refs = catalog['refs'] as Map<String, Object?>;
-        final key = entry[0] as String;
+        final entry = value! as List<Object?>;
+        final refs = catalog['refs']! as Map<String, Object?>;
+        final key = entry[0]! as String;
         // Ruby evaluates `(ref = value[1])` only when assigning, then
         // returns `ref` (nil when the key already exists).
         if (!isTruthy(refs[key])) {
@@ -1013,17 +1013,17 @@ class Document extends AbstractBlock implements NodeDocument {
         }
         return null;
       case 'footnotes':
-        final footnoteList = catalog['footnotes'] as List<Footnote>;
-        footnoteList.add(value as Footnote);
+        final footnoteList = catalog['footnotes']! as List<Footnote>;
+        footnoteList.add(value! as Footnote);
         return footnoteList;
       default:
         if (isTruthy(options['catalog_assets'])) {
           final stored = type == 'images'
-              ? ImageReference(value as String, attributes['imagesdir'])
+              ? ImageReference(value! as String, attributes['imagesdir'])
               : value;
           // Throws when the catalog has no such table, mirroring Ruby's
           // NoMethodError on `nil.<<`.
-          final assets = catalog[type] as List;
+          final assets = catalog[type]! as List;
           assets.add(stored);
           return assets;
         }
@@ -1036,7 +1036,7 @@ class Document extends AbstractBlock implements NodeDocument {
   String? resolveId(String text) {
     final cached = _reftexts;
     if (cached != null) return cached[text];
-    final refs = catalog['refs'] as Map<String, Object?>;
+    final refs = catalog['refs']! as Map<String, Object?>;
     if (_parsed) {
       // Set eagerly to prevent nested lazy init.
       final accum = <String?, String>{};
@@ -1065,7 +1065,7 @@ class Document extends AbstractBlock implements NodeDocument {
 
   static String? _xreftextOf(Object? ref) {
     if (ref is AbstractBlock) return ref.xreftext();
-    return (ref as Inline).xreftext();
+    return (ref! as Inline).xreftext();
   }
 
   /// Whether this document has any child section objects.
@@ -1088,14 +1088,14 @@ class Document extends AbstractBlock implements NodeDocument {
   }
 
   /// Whether the document has footnotes.
-  bool get hasFootnotes => (catalog['footnotes'] as List<Footnote>).isNotEmpty;
+  bool get hasFootnotes => (catalog['footnotes']! as List<Footnote>).isNotEmpty;
 
   /// The footnotes registered in the document catalog.
-  List<Footnote> get footnotes => catalog['footnotes'] as List<Footnote>;
+  List<Footnote> get footnotes => catalog['footnotes']! as List<Footnote>;
 
   /// The callouts catalog.
   @override
-  Callouts get callouts => catalog['callouts'] as Callouts;
+  Callouts get callouts => catalog['callouts']! as Callouts;
 
   /// Whether this document is nested inside another one.
   @override
@@ -1165,11 +1165,14 @@ class Document extends AbstractBlock implements NodeDocument {
           ? attributes['title-separator'] as String?
           : partition as String?;
       return DocumentTitle(
-        val as String,
+        val! as String,
         separator: separator,
         sanitize: sanitize,
       );
     }
+    // ignore: cast_nullable_to_non_nullable
+    // The `as` cast both checks and promotes `val` to String for the block
+    // below; the `!` form would not promote.
     if (sanitize && (val as String).contains('<')) {
       // `val` is promoted to String by the `as` cast in the condition.
       final str = val;
@@ -1285,7 +1288,7 @@ class Document extends AbstractBlock implements NodeDocument {
   void playbackAttributes(Map<String, Object?> blockAttributes) {
     if (!blockAttributes.containsKey('attribute_entries')) return;
     final entries =
-        blockAttributes['attribute_entries'] as List<DocumentAttributeEntry>;
+        blockAttributes['attribute_entries']! as List<DocumentAttributeEntry>;
     for (final entry in entries) {
       final name = entry.name;
       if (entry.negate) {
@@ -1451,13 +1454,13 @@ class Document extends AbstractBlock implements NodeDocument {
     // over here; until then output is always written directly.
     if (target is StringSink) {
       if (!_isNilOrEmpty(output)) {
-        final text = _chomp(output as String);
+        final text = _chomp(output! as String);
         target.write(text);
         target.write(lf);
       }
     } else if (target is IOSink) {
       if (!_isNilOrEmpty(output)) {
-        target.write(_chomp(output as String));
+        target.write(_chomp(output! as String));
         target.writeln();
       }
     } else if (target is String) {
@@ -1542,7 +1545,7 @@ class Document extends AbstractBlock implements NodeDocument {
           // NOTE normalizing the lines is essential if substitutions run.
           final sharedDocinfo = readAsset(docinfoPath, normalize: true);
           if (sharedDocinfo != null) {
-            content.add(applySubs(sharedDocinfo, docinfoSubs) as String);
+            content.add(applySubs(sharedDocinfo, docinfoSubs)! as String);
           }
         }
 
@@ -1557,7 +1560,7 @@ class Document extends AbstractBlock implements NodeDocument {
           // NOTE normalizing the lines is essential if substitutions run.
           final privateDocinfo = readAsset(docinfoPath, normalize: true);
           if (privateDocinfo != null) {
-            content.add(applySubs(privateDocinfo, docinfoSubs) as String);
+            content.add(applySubs(privateDocinfo, docinfoSubs)! as String);
           }
         }
       }
@@ -1568,7 +1571,7 @@ class Document extends AbstractBlock implements NodeDocument {
     if (extensions != null && docinfoProcessors(location)) {
       final extContent = content ?? <String>[];
       for (final ext
-          in _docinfoProcessorExtensions[location]
+          in _docinfoProcessorExtensions[location]!
               as List<ProcessorExtension>) {
         final result = (ext.processMethod as Object? Function(Document))(this);
         if (result != null) extContent.add(result.toString());
@@ -1645,7 +1648,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Port of `Substitutors#apply_header_subs` (via
   /// `Document#apply_attribute_value_subs` in `lib/asciidoctor/document.rb`).
   String applyHeaderSubs(String value) =>
-      substitutors.applyHeaderSubs(this, value) as String;
+      substitutors.applyHeaderSubs(this, value)! as String;
 
   /// Applies the passthrough-macro [subs] to [value].
   ///
@@ -1655,10 +1658,11 @@ class Document extends AbstractBlock implements NodeDocument {
   String _applyPassMacroSubs(String value, String? subs) {
     if (subs == null) return value;
     return substitutors.applySubs(
-      this,
-      value,
-      substitutors.resolvePassSubs(this, subs) ?? <String>[],
-    ) as String;
+          this,
+          value,
+          substitutors.resolvePassSubs(this, subs) ?? <String>[],
+        )!
+        as String;
   }
 
   /// Safely truncates [str] to [max] bytes.
@@ -1867,7 +1871,7 @@ class Document extends AbstractBlock implements NodeDocument {
           (isTruthy(tocPlacementVal) && tocPlacementVal != 'auto')
           ? tocPlacementVal
           : attrs['toc-position'];
-      final toc = tocVal as String;
+      final toc = tocVal! as String;
       if (!(toc.isEmpty && _isNilOrEmpty(tocPositionVal))) {
         const defaultTocPosition = 'left';
         // TODOrename toc2 to aside-toc
@@ -1980,7 +1984,7 @@ class Document extends AbstractBlock implements NodeDocument {
     final localdateOpt = attrs['localdate'];
     final String localdate;
     if (isTruthy(localdateOpt)) {
-      localdate = localdateOpt as String;
+      localdate = (localdateOpt! as String)!;
       if (!isTruthy(attrs['localyear'])) {
         attrs['localyear'] = (localdate.indexOf('-') == 4)
             ? localdate.substring(0, 4)
@@ -2018,7 +2022,7 @@ class Document extends AbstractBlock implements NodeDocument {
     final docdateOpt = attrs['docdate'];
     final String docdate;
     if (isTruthy(docdateOpt)) {
-      docdate = docdateOpt as String;
+      docdate = (docdateOpt! as String)!;
       if (!isTruthy(attrs['docyear'])) {
         attrs['docyear'] = (docdate.indexOf('-') == 4)
             ? docdate.substring(0, 4)
@@ -2125,9 +2129,9 @@ class Document extends AbstractBlock implements NodeDocument {
       // 'xml'` does).
       final converterTraits = resolvedConverter.backendTraits();
       traits = _BackendTraits(
-        basebackend: converterTraits['basebackend'] as String,
-        filetype: converterTraits['filetype'] as String,
-        outfilesuffix: converterTraits['outfilesuffix'] as String,
+        basebackend: converterTraits['basebackend']! as String,
+        filetype: converterTraits['filetype']! as String,
+        outfilesuffix: converterTraits['outfilesuffix']! as String,
         htmlsyntax: converterTraits['htmlsyntax'] as String?,
       );
       final htmlsyntax = traits.htmlsyntax;

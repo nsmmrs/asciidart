@@ -436,7 +436,7 @@ void main() {
           'sectnumlevels': '2',
         },
       );
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<?asciidoc-toc maxdepth="1"?>\n'));
       expect(output, contains('<?asciidoc-numbered maxdepth="2"?>\n'));
     });
@@ -461,7 +461,7 @@ void main() {
 
     test('document id is deferred to the root tag', () {
       final doc = makeDoc(attributes: const {'noheader': ''})..id = 'mydoc';
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('xml:lang="en" xml:id="mydoc">\n'));
       expect(doc.id, 'mydoc');
     });
@@ -472,11 +472,11 @@ void main() {
       final block = StubBlock(
         doc,
         'paragraph',
-        contentFn: () => convOf(doc).convert(xref) as String,
+        contentFn: () => convOf(doc).convert(xref)! as String,
       );
       doc << block;
       xref = Inline(block, 'anchor', type: 'xref');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('xml:lang="en" xml:id="__article-root__">\n'));
       expect(output, contains('<xref linkend="__article-root__"/>'));
       expect(doc.id, isNull);
@@ -520,7 +520,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Main Title: Sub Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains('<title>Main Title</title>\n<subtitle>Sub Title</subtitle>\n'),
@@ -533,14 +533,14 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<date>2024-01-02</date>\n'));
     });
 
     test('docdate emits date unless reproducible', () {
       final doc = makeDoc(plainSubs: true);
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<date>${doc.attr('docdate')}</date>\n'));
     });
 
@@ -555,7 +555,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains(
@@ -586,7 +586,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<authorgroup>\n'));
       expect(output, contains('<firstname>John</firstname>\n'));
       expect(output, contains('<firstname>Jane</firstname>\n'));
@@ -600,7 +600,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains(
@@ -615,7 +615,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains('<holder>Acme</holder>\n<year>2019-2020</year>\n'),
@@ -628,7 +628,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<copyright>\n<holder>Acme Corp</holder>\n'));
       expect(output, isNot(contains('<year>')));
     });
@@ -639,7 +639,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<orgname>Acme</orgname>\n'));
     });
 
@@ -652,7 +652,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains(
@@ -676,7 +676,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains(
@@ -691,7 +691,7 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<cover role="front"/>\n<cover role="back">\n'));
     });
 
@@ -736,7 +736,7 @@ void main() {
         options: const {'doctype': 'manpage'},
         plainSubs: true,
       );
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains('<refmiscinfo class="source">&#160;</refmiscinfo>\n'),
@@ -765,7 +765,7 @@ void main() {
           'foo--bar - puts the foo in your bar\n';
       final doc = parseDoc(input);
       expect(doc.attr('mantitle'), equals(r'foo\--bar'));
-      final result = doc.convert() as String;
+      final result = doc.convert()! as String;
       expect(result, contains('<title>foo--bar(1)</title>'));
       expect(result, contains('<refentrytitle>foo--bar</refentrytitle>'));
     });
@@ -784,7 +784,7 @@ void main() {
       )..style = 'abstract';
       doc << abstract;
       doc << para(doc, 'Body text');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains('<abstract>\n<simpara>Abstract text</simpara>\n</abstract>\n'),
@@ -815,7 +815,7 @@ void main() {
       preamble << abstract;
       doc << preamble;
       doc << para(doc, 'Body text');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains('<abstract>\n<simpara>Abstract text</simpara>\n</abstract>\n'),
@@ -845,30 +845,28 @@ void main() {
       // backend': the private `basic-docinfo.xml` lands in the header and
       // the shared `docinfo.xml` (with `{revnumber}` substituted) under
       // `docinfo1`.
-      final output = convertFile(
-        '${_findRepoRoot()}/test/fixtures/basic.adoc',
-        const {
-          'to_file': false,
-          'standalone': true,
-          'backend': 'docbook',
-          'safe': SafeMode.server,
-          'attributes': {'docinfo': ''},
-        },
-      ) as String;
+      final output =
+          convertFile('${_findRepoRoot()}/test/fixtures/basic.adoc', const {
+                'to_file': false,
+                'standalone': true,
+                'backend': 'docbook',
+                'safe': SafeMode.server,
+                'attributes': {'docinfo': ''},
+              })!
+              as String;
       expect(output, isNotEmpty);
       expect(output, contains('<copyright>'));
       expect(output, isNot(contains('<productname>')));
 
-      final sharedOutput = convertFile(
-        '${_findRepoRoot()}/test/fixtures/basic.adoc',
-        const {
-          'to_file': false,
-          'standalone': true,
-          'backend': 'docbook',
-          'safe': SafeMode.server,
-          'attributes': {'docinfo1': ''},
-        },
-      ) as String;
+      final sharedOutput =
+          convertFile('${_findRepoRoot()}/test/fixtures/basic.adoc', const {
+                'to_file': false,
+                'standalone': true,
+                'backend': 'docbook',
+                'safe': SafeMode.server,
+                'attributes': {'docinfo1': ''},
+              })!
+              as String;
       expect(sharedOutput, isNotEmpty);
       expect(sharedOutput, contains('<productname>Asciidoctor™</productname>'));
       expect(sharedOutput, contains('<edition>1.0</edition>'));
@@ -880,7 +878,7 @@ void main() {
       // `backend: 'docbook'`; exercises the full document template in
       // `lib/asciidoctor/converter/docbook5.rb`.
       const input = '= Doc Title\nAuthor Name\n\nHello, *world*!\n';
-      final output = parseDoc(input).convert() as String;
+      final output = parseDoc(input).convert()! as String;
       expect(output, contains('<?xml version="1.0" encoding="UTF-8"?>'));
       expect(output, contains('<article'));
       expect(output, contains('<title>Doc Title</title>'));
@@ -1245,7 +1243,7 @@ void main() {
       final list = dlist(doc, style: 'horizontal', title: 'Terms')
         ..attributes['labelwidth'] = '30'
         ..attributes['itemwidth'] = '70';
-      final output = convOf(doc).convert(list) as String;
+      final output = convOf(doc).convert(list)! as String;
       expect(
         output,
         startsWith(
@@ -1381,7 +1379,7 @@ void main() {
         'image',
         attributes: const {'target': 'diagram.png', 'scaledwidth': '50%'},
       );
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(
         output,
         contains('<imagedata fileref="diagram.png" width="50%"/>\n'),
@@ -1395,7 +1393,7 @@ void main() {
         'image',
         attributes: const {'target': 'diagram.png', 'scale': '80'},
       );
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(
         output,
         contains('<imagedata fileref="diagram.png" scale="80"/>\n'),
@@ -2012,7 +2010,7 @@ void main() {
 
     test('table without title uses informaltable', () {
       final doc = makeDoc();
-      final output = convOf(doc).convert(table(doc)) as String;
+      final output = convOf(doc).convert(table(doc))! as String;
       expect(output, startsWith('<informaltable frame="all"'));
       expect(output, endsWith('</informaltable>'));
       expect(output, isNot(contains('<title>')));
@@ -2020,17 +2018,17 @@ void main() {
 
     test('frame ends maps to topbot', () {
       final doc = makeDoc();
-      final output = convOf(
-        doc,
-      ).convert(table(doc, attributes: const {'frame': 'ends'})) as String;
+      final output =
+          convOf(doc).convert(table(doc, attributes: const {'frame': 'ends'}))!
+              as String;
       expect(output, contains('frame="topbot"'));
     });
 
     test('grid none disables seps', () {
       final doc = makeDoc();
-      final output = convOf(
-        doc,
-      ).convert(table(doc, attributes: const {'grid': 'none'})) as String;
+      final output =
+          convOf(doc).convert(table(doc, attributes: const {'grid': 'none'}))!
+              as String;
       expect(output, contains('rowsep="0" colsep="0"'));
     });
 
@@ -2039,7 +2037,7 @@ void main() {
       final node = table(doc, attributes: const {'orientation': 'landscape'})
         ..setOption('pgwide')
         ..setOption('unbreakable');
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(output, contains(' pgwide="1" frame="all"'));
       expect(output, contains(' orient="land">\n'));
       expect(output, contains('<?dbfo keep-together="always"?>\n'));
@@ -2048,7 +2046,7 @@ void main() {
     test('width emits table-width processing instructions', () {
       final doc = makeDoc();
       final node = table(doc, attributes: const {'width': '80%'});
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(output, contains('<?dbhtml table-width="80%"?>\n'));
       expect(output, contains('<?dbfo table-width="80%"?>\n'));
       expect(output, contains('<?dblatex table-width="80%"?>\n'));
@@ -2066,7 +2064,7 @@ void main() {
             ..colspan = 2
             ..rowspan = 2;
       node.rows.body.add([cell]);
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(
         output,
         contains(
@@ -2089,7 +2087,7 @@ void main() {
       final literal = StubCell(node.columns[1], 'l', const {}, null, 'l', ['l'])
         ..style = 'literal';
       node.rows.body.add([header, literal]);
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(
         output,
         contains(
@@ -2117,13 +2115,13 @@ void main() {
         '<simpara>a</simpara>',
       )..style = 'asciidoc';
       node.rows.body.add([cell]);
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(output, contains('<simpara>a</simpara></entry>\n'));
     });
 
     test('cellbgcolor emits dbfo processing instruction', () {
       final doc = makeDoc(attributes: const {'cellbgcolor': '#fff'});
-      final output = convOf(doc).convert(table(doc)) as String;
+      final output = convOf(doc).convert(table(doc))! as String;
       expect(output, contains('<?dbfo bgcolor="#fff"?></entry>\n'));
     });
 
@@ -2477,7 +2475,7 @@ void main() {
     test('icon image', () {
       final doc = makeDoc();
       final node = Inline(para(doc), 'image', type: 'icon', target: 'note');
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(
         output,
         contains('<imagedata fileref="./images/icons/note.png"/>\n'),
@@ -2497,7 +2495,7 @@ void main() {
         type: 'image',
         target: 'img.png',
       );
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(output, startsWith('<link xl:href="https://example.org">'));
       expect(output, contains(' contentwidth="100"/>\n'));
     });
@@ -2510,7 +2508,7 @@ void main() {
         attributes: const {'link': 'self'},
         target: 'img.png',
       );
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(output, startsWith('<link xl:href="img.png">'));
     });
   });

@@ -140,7 +140,7 @@ Object? _itemsOf(AbstractNode node) {
   if (node is! ListBlock) return null;
   if (node.context == 'dlist') {
     return <Map<String, Object?>>[
-      for (final pair in node.items) _flattenDlistPair(pair as List<Object?>),
+      for (final pair in node.items) _flattenDlistPair(pair! as List<Object?>),
     ];
   }
   return <Object?>[
@@ -166,7 +166,7 @@ Object? _sectionsOf(AbstractNode node) {
 
 /// Flattens one `[terms, description]` description-list pair.
 Map<String, Object?> _flattenDlistPair(List<Object?> pair) {
-  final terms = pair[0] as List<Object?>;
+  final terms = pair[0]! as List<Object?>;
   final description = pair[1];
   return <String, Object?>{
     'terms': <Object?>[

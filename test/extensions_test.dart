@@ -211,7 +211,7 @@ class FakeReaderDocument implements ReaderDocument {
 
   @override
   Map<String, bool?> get catalogIncludes =>
-      document.catalog['includes'] as Map<String, bool?>;
+      document.catalog['includes']! as Map<String, bool?>;
 
   @override
   String normalizeSystemPath(
@@ -270,7 +270,7 @@ Document documentFromString(String src, [Map<String, Object?>? options]) {
 
 /// Converts [src] to a standalone document (port of `convert_string`).
 String convertString(String src, [Map<String, Object?>? options]) {
-  return documentFromString(src, options).convert() as String;
+  return documentFromString(src, options).convert()! as String;
 }
 
 /// Converts [src] to an embedded document (port of
@@ -278,7 +278,7 @@ String convertString(String src, [Map<String, Object?>? options]) {
 String convertStringToEmbedded(String src, [Map<String, Object?>? options]) {
   final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
   opts['standalone'] = false;
-  return documentFromString(src, opts).convert() as String;
+  return documentFromString(src, opts).convert()! as String;
 }
 
 /// Converts the file at [path] (port of `Asciidoctor.convert_file`).
@@ -288,12 +288,14 @@ String convertFile(
   bool standalone = false,
   Object? safe,
   Map<String, Object?>? attributes,
-}) => api.convertFile(path, <String, Object?>{
-  'to_file': toFile,
-  'standalone': standalone,
-  'safe': ?safe,
-  'attributes': ?attributes,
-}) as String;
+}) =>
+    api.convertFile(path, <String, Object?>{
+          'to_file': toFile,
+          'standalone': standalone,
+          'safe': ?safe,
+          'attributes': ?attributes,
+        })!
+        as String;
 
 /// Loads the file at [path] (port of `Asciidoctor.load_file`).
 Document loadFile(String path, {bool sourcemap = false}) =>
@@ -303,7 +305,7 @@ Document loadFile(String path, {bool sourcemap = false}) =>
 Document asciidoctorLoad(String input) => api.load(input);
 
 /// Converts [input] (port of `Asciidoctor.convert`).
-String asciidoctorConvert(String input) => api.convert(input) as String;
+String asciidoctorConvert(String input) => api.convert(input)! as String;
 
 /// Asserts [content] matches [xpath] [count] times (port of `assert_xpath`).
 void assertXpath(String xpath, String? content, int count) {
@@ -1018,7 +1020,7 @@ class TemperatureMacro extends InlineMacroProcessor {
     final document = parent.document! as Document;
     final units =
         attributes['units'] as String? ??
-        document.attr('temperature-unit', 'C') as String;
+        document.attr('temperature-unit', 'C')! as String;
     final precision = int.parse(attributes['precision'].toString());
     final c = double.parse(target);
     switch (units) {
@@ -1617,7 +1619,7 @@ void main() {
 
       final doc = documentFromString(input);
       expect(doc.hasAttr('skipped'), isTrue);
-      expect((doc.attr('skipped') as String).trim(), equals('junk line'));
+      expect((doc.attr('skipped')! as String).trim(), equals('junk line'));
       expect(doc.hasHeader, isTrue);
       expect(doc.doctitle(), equals('Document Title'));
     });
@@ -1819,7 +1821,7 @@ void main() {
         final sampleDoc = fixturePath('sample.adoc');
         final doc = loadFile(sampleDoc, sourcemap: true);
         expect(
-          doc.convert() as String,
+          doc.convert()! as String,
           contains('file: sample.adoc, lineno: 1'),
         );
       },
@@ -2279,7 +2281,7 @@ void main() {
         });
         expect(doc.blocks.length, equals(1));
         expect(doc.blocks[0].context, equals('paragraph'));
-        output = doc.convert() as String;
+        output = (doc.convert()! as String)!;
         assertMessage(
           logger,
           'INFO',
@@ -2798,7 +2800,7 @@ void main() {
                       String target,
                       Map<Object, Object?> attrs,
                     ) {
-                      var text = attrs['text'] as String;
+                      var text = attrs['text']! as String;
                       if (text.isEmpty) text = '@$target';
                       return processor.createAnchor(
                         parent,
@@ -3190,8 +3192,8 @@ void main() {
       final list = doc.blocks[1] as ListBlock;
       expect(list.context, equals('ulist'));
       expect(list.items.length, equals(3));
-      expect((list.items[0] as ListItem).text, equals('a'));
-      assertCss('li', doc.convert() as String, 3);
+      expect((list.items[0]! as ListItem).text, equals('a'));
+      assertCss('li', doc.convert()! as String, 3);
     });
 
     test('should allow extension to replace custom block with a section', () {
@@ -3209,7 +3211,7 @@ void main() {
                   ) {
                     return processor.createSection(
                       parent,
-                      attrs['title'] as String,
+                      attrs['title']! as String,
                       <String, Object?>{},
                     );
                   };
@@ -3233,7 +3235,7 @@ void main() {
       expect(sect.blocks.length, equals(2));
       expect(sect.blocks[0].context, equals('paragraph'));
       expect(sect.blocks[1].context, equals('paragraph'));
-      assertCss('p', doc.convert() as String, 2);
+      assertCss('p', doc.convert()! as String, 2);
     });
 
     test('can use parse_content to append blocks to current parent', () {
@@ -3265,7 +3267,7 @@ void main() {
       expect(doc.blocks.length, equals(3));
       final table = doc.blocks[1];
       expect(table.context, equals('table'));
-      assertCss('td', doc.convert() as String, 3);
+      assertCss('td', doc.convert()! as String, 3);
     });
 
     test('should ignore return value of custom block if value is parent', () {
@@ -3294,7 +3296,7 @@ void main() {
         expect(block.context, equals('paragraph'));
       }
       expect((doc.blocks[0] as Block).source(), equals('a'));
-      assertCss('p', doc.convert() as String, 3);
+      assertCss('p', doc.convert()! as String, 3);
     });
 
     test(
@@ -3322,7 +3324,7 @@ void main() {
         expect(doc.blocks.length, equals(1));
         expect(doc.blocks[0].context, equals('paragraph'));
         expect((doc.blocks[0] as Block).source(), equals('text'));
-        assertCss('p', doc.convert() as String, 1);
+        assertCss('p', doc.convert()! as String, 1);
       },
     );
 
@@ -3487,7 +3489,7 @@ void main() {
         documentFromString(input, {
           'safe': 'server',
           if (expected.length > 5)
-            'attributes': expected[5] as Map<String, Object?>,
+            'attributes': expected[5]! as Map<String, Object?>,
         });
         expect(sect!.sectname, equals(expected[0]));
         expect(sect!.level, equals(expected[1]));
@@ -3699,7 +3701,7 @@ void main() {
         final image = doc.blocks[0];
         expect(image.attr('alt'), equals('cat in sink day 25'));
         expect(image.attr('default-alt'), equals('cat in sink day 25'));
-        final output = doc.convert() as String;
+        final output = doc.convert()! as String;
         expect(
           output,
           contains(
@@ -3720,7 +3722,7 @@ void main() {
         final image = doc.blocks[0];
         expect(image.attr('alt'), equals('cat in sink (yes)'));
         expect(image.hasAttr('default-alt'), isFalse);
-        final output = doc.convert() as String;
+        final output = doc.convert()! as String;
         expect(
           output,
           contains(
@@ -3737,7 +3739,7 @@ void main() {
         'standalone': false,
         'extension_registry': createCatInSinkBlockMacro(),
       });
-      final output = doc.convert() as String;
+      final output = doc.convert()! as String;
       assertXpath('/*[@class="imageblock"]/*[@class="title"]', output, 0);
     });
 
@@ -3748,7 +3750,7 @@ void main() {
         'standalone': false,
         'extension_registry': createCatInSinkBlockMacro(),
       });
-      final output = doc.convert() as String;
+      final output = doc.convert()! as String;
       assertXpath(
         '/*[@class="imageblock"]/*[@class="title"]'
         '[text()="Figure 1. Cat in Sink?"]',
@@ -3823,7 +3825,7 @@ void main() {
         'standalone': false,
         'extension_registry': createSantaListBlockMacro(),
       });
-      final output = doc.convert() as String;
+      final output = doc.convert()! as String;
       assertXpath(
         '/div[@class="ulist"]/ul/li[@class="friendly"]'
         '[@id="santa-list-guillaume"]',
@@ -3866,7 +3868,7 @@ void main() {
         'standalone': false,
         'extension_registry': createSantaListBlockMacro(),
       });
-      final output = doc.convert() as String;
+      final output = doc.convert()! as String;
       assertXpath(
         '/div[@class="olist"]/ol/li[@class="friendly"]'
         '[@id="santa-list-guillaume"]',
@@ -4586,7 +4588,7 @@ void main() {
                     AbstractBlock,
                     Reader,
                     Map<String, Object?>,
-                  ))(doc, Reader('hi'), <String, Object?>{})
+                  ))(doc, Reader('hi'), <String, Object?>{})!
               as Block;
       expect(created.lines, equals(['HI']));
     });

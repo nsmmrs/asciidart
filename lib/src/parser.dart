@@ -404,7 +404,7 @@ abstract final class Parser {
       ContextMessage(text, sourceLocation: location);
 
   /// Returns the [Document] of [node].
-  static Document _docOf(AbstractNode node) => node.document as Document;
+  static Document _docOf(AbstractNode node) => node.document! as Document;
 
   /// TEMP-SEAM (parser): effective doctype of [document].
   ///
@@ -451,7 +451,7 @@ abstract final class Parser {
   /// The line text of a list-item buffer entry (a [String] or a
   /// [_ListContinuation] marker).
   static String _lineOf(Object? entry) =>
-      entry is _ListContinuation ? entry.text : entry as String;
+      entry is _ListContinuation ? entry.text : entry! as String;
 
   /// Whether a list-item buffer entry is a [_ListContinuation] marker.
   static bool _isContinuation(Object? entry) => entry is _ListContinuation;
@@ -2263,7 +2263,7 @@ abstract final class Parser {
         } else if (admonitionMatch != null) {
           lines[0] = thisLine.substring(admonitionMatch.end);
           attrs['style'] = admonitionMatch.group(1);
-          final admonitionName = (attrs['style'] as String).toLowerCase();
+          final admonitionName = (attrs['style']! as String).toLowerCase();
           attrs['name'] = admonitionName;
           final caption = attrs.remove('caption');
           attrs['textlabel'] = isTruthy(caption)
@@ -3097,8 +3097,8 @@ abstract final class Parser {
         currentPair = nextPair;
         listBlock.items.add(currentPair);
       } else {
-        (currentPair[0] as List<Object?>).add(
-          (nextPair[0] as List<Object?>)[0],
+        (currentPair[0]! as List<Object?>).add(
+          (nextPair[0]! as List<Object?>)[0],
         );
         currentPair[1] = nextPair[1];
       }
@@ -3830,7 +3830,7 @@ abstract final class Parser {
 
     var explicitColspecs = false;
     if (attributes.containsKey('cols')) {
-      final colspecs = parseColspecs(attributes['cols'] as String);
+      final colspecs = parseColspecs(attributes['cols']! as String);
       if (colspecs.isNotEmpty) {
         table.createColumns(colspecs);
         explicitColspecs = true;
@@ -4466,7 +4466,7 @@ abstract final class Parser {
         }
 
         if (parsedAttrs.containsKey('role')) {
-          final roles = (parsedAttrs['role'] as List<String>).join(' ');
+          final roles = (parsedAttrs['role']! as List<String>).join(' ');
           final existingRole = attributes['role'];
           attributes['role'] = _isNilOrEmpty(existingRole)
               ? roles
@@ -4474,7 +4474,7 @@ abstract final class Parser {
         }
 
         if (parsedAttrs.containsKey('option')) {
-          for (final opt in parsedAttrs['option'] as List<String>) {
+          for (final opt in parsedAttrs['option']! as List<String>) {
             attributes['$opt-option'] = '';
           }
         }
@@ -4564,7 +4564,7 @@ abstract final class Parser {
             // TEMP-SEAM (parser): `apply_header_subs` needs the
             // substitutors wave.
             if (!docAttrs.containsKey(key)) {
-              docAttrs[key] = _applyHeaderSubs(document, val as String);
+              docAttrs[key] = _applyHeaderSubs(document, val! as String);
             }
           });
           implicitAuthor = docAttrs['author'];
@@ -4601,7 +4601,7 @@ abstract final class Parser {
             // Apply header subs and assign to document.
             revMetadata.forEach((key, val) {
               if (!docAttrs.containsKey(key)) {
-                docAttrs[key] = _applyHeaderSubs(document, val as String);
+                docAttrs[key] = _applyHeaderSubs(document, val! as String);
               }
             });
           }

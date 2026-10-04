@@ -304,7 +304,7 @@ class Html5Converter extends ConverterBase {
   String convertDocument(Document node) {
     final slash = _voidElementSlash;
     final br = '<br$slash>';
-    var assetUriScheme = node.attr('asset-uri-scheme', 'https') as String;
+    var assetUriScheme = node.attr('asset-uri-scheme', 'https')! as String;
     if (assetUriScheme.isNotEmpty) {
       assetUriScheme = '$assetUriScheme:';
     }
@@ -348,7 +348,7 @@ class Html5Converter extends ConverterBase {
       );
     }
     if (node.hasAttr('authors')) {
-      final authors = node.subReplacements(node.attr('authors') as String);
+      final authors = node.subReplacements(node.attr('authors')! as String);
       final authorContent = authors.contains('<')
           ? authors.replaceAll(xmlSanitizeRx, '')
           : authors;
@@ -360,7 +360,7 @@ class Html5Converter extends ConverterBase {
       );
     }
     if (node.hasAttr('favicon')) {
-      final iconHref = node.attr('favicon') as String;
+      final iconHref = node.attr('favicon')! as String;
       final String iconType;
       final String resolvedHref;
       if (iconHref.isEmpty) {
@@ -404,11 +404,11 @@ class Html5Converter extends ConverterBase {
     } else if (node.hasAttr('stylesheet')) {
       if (linkcss) {
         result.add(
-          '<link rel="stylesheet" href="${node.normalizeWebPath(node.attr('stylesheet') as String, node.attr('stylesdir') as String?)}"$slash>',
+          '<link rel="stylesheet" href="${node.normalizeWebPath(node.attr('stylesheet')! as String, node.attr('stylesdir') as String?)}"$slash>',
         );
       } else {
         result.add(
-          '<style>\n${_s(node.readContents(node.attr('stylesheet') as String, start: node.attr('stylesdir') as String?, label: 'stylesheet'))}\n</style>',
+          '<style>\n${_s(node.readContents(node.attr('stylesheet')! as String, start: node.attr('stylesdir') as String?, label: 'stylesheet'))}\n</style>',
         );
       }
     }
@@ -429,7 +429,7 @@ class Html5Converter extends ConverterBase {
 
     final syntaxHlValue = node.syntaxHighlighter;
     final syntaxHl = isTruthy(syntaxHlValue)
-        ? syntaxHlValue as NodeSyntaxHighlighter
+        ? syntaxHlValue! as NodeSyntaxHighlighter
         : null;
     var syntaxHlDocinfoHeadIdx = -1;
     if (syntaxHl != null) {
@@ -495,7 +495,7 @@ class Html5Converter extends ConverterBase {
           var idx = 1;
           for (final author in node.authors) {
             details.add(
-              '<span id="author${idx > 1 ? idx : ''}" class="author">${node.subReplacements(author.name as String)}</span>$br',
+              '<span id="author${idx > 1 ? idx : ''}" class="author">${node.subReplacements(author.name! as String)}</span>$br',
             );
             if (author.email != null) {
               details.add(
@@ -708,7 +708,7 @@ class Html5Converter extends ConverterBase {
         node.context == 'document' && (node as Document).multipart == true;
     final sectlevel = parts ? 0 : sections[0].level!;
     final sectnumlevels = opts != null && opts['sectnumlevels'] is int
-        ? opts['sectnumlevels'] as int
+        ? opts['sectnumlevels']! as int
         : rubyToInteger(node.document!.attributes['sectnumlevels'] ?? 3);
     int toclevels;
     final optsToclevels = opts?['toclevels'];
@@ -915,7 +915,7 @@ class Html5Converter extends ConverterBase {
         : '';
     return '<div$idAttribute$classAttribute>\n'
         '$titleElement<div class="content">\n'
-        '<audio src="${node.mediaUri(node.attr('target') as String)}$timeAnchor"${node.hasOption('autoplay') ? _appendBooleanAttribute('autoplay', xml) : ''}${node.hasOption('nocontrols') ? '' : _appendBooleanAttribute('controls', xml)}${node.hasOption('loop') ? _appendBooleanAttribute('loop', xml) : ''}>\n'
+        '<audio src="${node.mediaUri(node.attr('target')! as String)}$timeAnchor"${node.hasOption('autoplay') ? _appendBooleanAttribute('autoplay', xml) : ''}${node.hasOption('nocontrols') ? '' : _appendBooleanAttribute('controls', xml)}${node.hasOption('loop') ? _appendBooleanAttribute('loop', xml) : ''}>\n'
         'Your browser does not support the audio tag.\n'
         '</audio>\n'
         '</div>\n'
@@ -945,7 +945,7 @@ class Html5Converter extends ConverterBase {
       final fontIcons = node.document!.hasAttr('icons', 'font');
       var num = 0;
       for (final item in node.items) {
-        final listItem = item as ListItem;
+        final listItem = item! as ListItem;
         num += 1;
         final String numLabel;
         if (fontIcons) {
@@ -965,7 +965,7 @@ class Html5Converter extends ConverterBase {
     } else {
       result.add('<ol>');
       for (final item in node.items) {
-        final listItem = item as ListItem;
+        final listItem = item! as ListItem;
         result.add(
           '<li>\n'
           '<p>${_s(listItem.text)}</p>${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}\n'
@@ -1010,12 +1010,12 @@ class Html5Converter extends ConverterBase {
       case 'qanda':
         result.add('<ol>');
         for (final pair in node.items) {
-          final parts = pair as List<Object?>;
-          final terms = parts[0] as List<Object?>;
+          final parts = pair! as List<Object?>;
+          final terms = parts[0]! as List<Object?>;
           final dd = parts[1] as ListItem?;
           result.add('<li>');
           for (final term in terms) {
-            result.add('<p><em>${_s((term as ListItem).text)}</em></p>');
+            result.add('<p><em>${_s((term! as ListItem).text)}</em></p>');
           }
           if (dd != null) {
             if (dd.hasText) {
@@ -1034,18 +1034,18 @@ class Html5Converter extends ConverterBase {
         if (node.hasAttr('labelwidth') || node.hasAttr('itemwidth')) {
           result.add('<colgroup>');
           final labelWidth = node.hasAttr('labelwidth')
-              ? ' width="${_chompPercent(node.attr('labelwidth') as String)}%"'
+              ? ' width="${_chompPercent(node.attr('labelwidth')! as String)}%"'
               : '';
           result.add('<col$labelWidth$slash>');
           final itemWidth = node.hasAttr('itemwidth')
-              ? ' width="${_chompPercent(node.attr('itemwidth') as String)}%"'
+              ? ' width="${_chompPercent(node.attr('itemwidth')! as String)}%"'
               : '';
           result.add('<col$itemWidth$slash>');
           result.add('</colgroup>');
         }
         for (final pair in node.items) {
-          final parts = pair as List<Object?>;
-          final terms = parts[0] as List<Object?>;
+          final parts = pair! as List<Object?>;
+          final terms = parts[0]! as List<Object?>;
           final dd = parts[1] as ListItem?;
           result.add('<tr>');
           result.add(
@@ -1056,7 +1056,7 @@ class Html5Converter extends ConverterBase {
             if (!firstTerm) {
               result.add('<br$slash>');
             }
-            result.add(_s((term as ListItem).text));
+            result.add(_s((term! as ListItem).text));
             firstTerm = false;
           }
           result.add('</td>');
@@ -1077,12 +1077,12 @@ class Html5Converter extends ConverterBase {
         result.add('<dl>');
         final dtStyleAttribute = node.style != null ? '' : ' class="hdlist1"';
         for (final pair in node.items) {
-          final parts = pair as List<Object?>;
-          final terms = parts[0] as List<Object?>;
+          final parts = pair! as List<Object?>;
+          final terms = parts[0]! as List<Object?>;
           final dd = parts[1] as ListItem?;
           for (final term in terms) {
             result.add(
-              '<dt$dtStyleAttribute>${_s((term as ListItem).text)}</dt>',
+              '<dt$dtStyleAttribute>${_s((term! as ListItem).text)}</dt>',
             );
           }
           if (dd == null) {
@@ -1148,7 +1148,7 @@ class Html5Converter extends ConverterBase {
 
   /// Converts the [node] image block.
   String convertImage(Block node) {
-    final target = node.attr('target') as String;
+    final target = node.attr('target')! as String;
     final widthAttr = node.hasAttr('width')
         ? ' width="${_s(node.attr('width'))}"'
         : '';
@@ -1165,7 +1165,7 @@ class Html5Converter extends ConverterBase {
             '<span class="alt">${_s(node.alt)}</span>';
       } else if (node.hasOption('interactive')) {
         final fallback = node.hasAttr('fallback')
-            ? '<img src="${node.imageUri(node.attr('fallback') as String)}" alt="${_encodeAttributeValue(node.alt)}"$widthAttr$heightAttr$_voidElementSlash>'
+            ? '<img src="${node.imageUri(node.attr('fallback')! as String)}" alt="${_encodeAttributeValue(node.alt)}"$widthAttr$heightAttr$_voidElementSlash>'
             : '<span class="alt">${_s(node.alt)}</span>';
         src = node.imageUri(target);
         img =
@@ -1223,7 +1223,7 @@ class Html5Converter extends ConverterBase {
       lang = node.attr('language') as String?;
       final syntaxHlValue = (node.document! as Document).syntaxHighlighter;
       if (isTruthy(syntaxHlValue)) {
-        syntaxHl = syntaxHlValue as NodeSyntaxHighlighter;
+        syntaxHl = (syntaxHlValue! as NodeSyntaxHighlighter)!;
         final docAttrs = node.document!.attributes;
         if (syntaxHl.canHighlight) {
           hlOpts = <String, Object?>{
@@ -1286,7 +1286,7 @@ class Html5Converter extends ConverterBase {
     final titleElement = node.hasTitle
         ? '<div class="title">${_s(node.title)}</div>\n'
         : '';
-    final style = node.style as String;
+    final style = node.style! as String;
     final delimiters = _blockMathDelimiters[style]!;
     final open = delimiters[0];
     final close = delimiters[1];
@@ -1349,7 +1349,7 @@ class Html5Converter extends ConverterBase {
     );
 
     for (final item in node.items) {
-      final listItem = item as ListItem;
+      final listItem = item! as ListItem;
       if (listItem.id != null) {
         result.add(
           '<li id="${listItem.id}"${listItem.role != null ? ' class="${_s(listItem.role)}"' : ''}>',
@@ -1556,7 +1556,7 @@ class Html5Converter extends ConverterBase {
     if (node.hasTitle) {
       result.add('<caption class="title">${node.captionedTitle()}</caption>');
     }
-    if ((node.attr('rowcount') as int) > 0) {
+    if ((node.attr('rowcount')! as int) > 0) {
       final slash = _voidElementSlash;
       result.add('<colgroup>');
       if (autowidth) {
@@ -1595,7 +1595,7 @@ class Html5Converter extends ConverterBase {
                   cellContent =
                       '<div class="literal"><pre>${_s(cell.text)}</pre></div>';
                 default:
-                  final content = cell.content() as List<Object?>;
+                  final content = cell.content()! as List<Object?>;
                   cellContent = content.isEmpty
                       ? ''
                       : '<p class="tableblock">${content.map(_s).join('</p>\n<p class="tableblock">')}</p>';
@@ -1706,7 +1706,7 @@ class Html5Converter extends ConverterBase {
     result.add('<ul$ulClassAttribute>');
 
     for (final item in node.items) {
-      final listItem = item as ListItem;
+      final listItem = item! as ListItem;
       if (listItem.id != null) {
         result.add(
           '<li id="${listItem.id}"${listItem.role != null ? ' class="${_s(listItem.role)}"' : ''}>',
@@ -1794,10 +1794,9 @@ class Html5Converter extends ConverterBase {
         : '';
     switch (node.attr('poster')) {
       case 'vimeo':
-        var assetUriScheme = (node.document! as Document).attr(
-          'asset-uri-scheme',
-          'https',
-        ) as String;
+        var assetUriScheme =
+            (node.document! as Document).attr('asset-uri-scheme', 'https')!
+                as String;
         if (assetUriScheme.isNotEmpty) {
           assetUriScheme = '$assetUriScheme:';
         }
@@ -1807,7 +1806,7 @@ class Html5Converter extends ConverterBase {
         final delimiter = <String>['?'];
         String popDelimiter() =>
             delimiter.isNotEmpty ? delimiter.removeLast() : '&amp;';
-        final targetAndHash = _split2(node.attr('target') as String, '/');
+        final targetAndHash = _split2(node.attr('target')! as String, '/');
         final target = targetAndHash.$1;
         var hash = targetAndHash.$2;
         hash ??= node.attr('hash') as String?;
@@ -1827,10 +1826,9 @@ class Html5Converter extends ConverterBase {
             '</div>\n'
             '</div>';
       case 'youtube':
-        var assetUriScheme = (node.document! as Document).attr(
-          'asset-uri-scheme',
-          'https',
-        ) as String;
+        var assetUriScheme =
+            (node.document! as Document).attr('asset-uri-scheme', 'https')!
+                as String;
         if (assetUriScheme.isNotEmpty) {
           assetUriScheme = '$assetUriScheme:';
         }
@@ -1874,7 +1872,7 @@ class Html5Converter extends ConverterBase {
 
         // parse video_id/list_id syntax where list_id (i.e., playlist) is
         // optional
-        final targetAndList = _split2(node.attr('target') as String, '/');
+        final targetAndList = _split2(node.attr('target')! as String, '/');
         var target = targetAndList.$1;
         final list = targetAndList.$2 ?? node.attr('list') as String?;
         final String listParam;
@@ -1903,10 +1901,9 @@ class Html5Converter extends ConverterBase {
             '</div>\n'
             '</div>';
       case 'wistia':
-        var assetUriScheme = (node.document! as Document).attr(
-          'asset-uri-scheme',
-          'https',
-        ) as String;
+        var assetUriScheme =
+            (node.document! as Document).attr('asset-uri-scheme', 'https')!
+                as String;
         if (assetUriScheme.isNotEmpty) {
           assetUriScheme = '$assetUriScheme:';
         }
@@ -1921,7 +1918,7 @@ class Html5Converter extends ConverterBase {
             : (node.hasOption('reset')
                   ? '${popDelimiter()}endVideoBehavior=reset'
                   : '');
-        final target = node.attr('target') as String;
+        final target = node.attr('target')! as String;
         final autoplayParam = node.hasOption('autoplay')
             ? '${popDelimiter()}autoPlay=true'
             : '';
@@ -1949,7 +1946,7 @@ class Html5Converter extends ConverterBase {
             : '';
         return '<div$idAttribute$classAttribute>$titleElement\n'
             '<div class="content">\n'
-            '<video src="${node.mediaUri(node.attr('target') as String)}$timeAnchor"$widthAttribute$heightAttribute$posterAttribute${node.hasOption('autoplay') ? _appendBooleanAttribute('autoplay', xml) : ''}${node.hasOption('muted') ? _appendBooleanAttribute('muted', xml) : ''}${node.hasOption('nocontrols') ? '' : _appendBooleanAttribute('controls', xml)}${node.hasOption('loop') ? _appendBooleanAttribute('loop', xml) : ''}$preloadAttribute>\n'
+            '<video src="${node.mediaUri(node.attr('target')! as String)}$timeAnchor"$widthAttribute$heightAttribute$posterAttribute${node.hasOption('autoplay') ? _appendBooleanAttribute('autoplay', xml) : ''}${node.hasOption('muted') ? _appendBooleanAttribute('muted', xml) : ''}${node.hasOption('nocontrols') ? '' : _appendBooleanAttribute('controls', xml)}${node.hasOption('loop') ? _appendBooleanAttribute('loop', xml) : ''}$preloadAttribute>\n'
             'Your browser does not support the video tag.\n'
             '</video>\n'
             '</div>\n'
@@ -1974,7 +1971,7 @@ class Html5Converter extends ConverterBase {
         var text = node.text;
         if (text == null) {
           final refs = _refs ??=
-              node.document!.catalog['refs'] as Map<String, Object?>;
+              (node.document!.catalog['refs']! as Map<String, Object?>)!;
           final refid = node.attributes['refid'] as String?;
           Document? top;
           final ref =
@@ -2079,7 +2076,7 @@ class Html5Converter extends ConverterBase {
 
   /// Converts the [node] inline image.
   String convertInlineImage(Inline node) {
-    final target = node.target as String;
+    final target = node.target! as String;
     final type = node.type ?? 'image';
     final String img;
     String? src;
@@ -2133,7 +2130,7 @@ class Html5Converter extends ConverterBase {
               '<span class="alt">${_s(node.alt)}</span>';
         } else if (node.hasOption('interactive')) {
           final fallback = node.hasAttr('fallback')
-              ? '<img src="${node.imageUri(node.attr('fallback') as String)}" alt="${_encodeAttributeValue(_s(node.alt))}"$attrs$_voidElementSlash>'
+              ? '<img src="${node.imageUri(node.attr('fallback')! as String)}" alt="${_encodeAttributeValue(_s(node.alt))}"$attrs$_voidElementSlash>'
               : '<span class="alt">${_s(node.alt)}</span>';
           src = node.imageUri(target);
           img =
@@ -2178,7 +2175,7 @@ class Html5Converter extends ConverterBase {
 
   /// Converts the [node] inline keyboard shortcut.
   String convertInlineKbd(Inline node) {
-    final keys = node.attr('keys') as List<Object?>;
+    final keys = node.attr('keys')! as List<Object?>;
     if (keys.length == 1) {
       return '<kbd>${_s(keys[0])}</kbd>';
     }
@@ -2192,7 +2189,7 @@ class Html5Converter extends ConverterBase {
         : '&#160;<b class="caret">&#8250;</b> ';
     final submenuJoiner = '</b>$caret<b class="submenu">';
     final menu = _s(node.attr('menu'));
-    final submenus = node.attr('submenus') as List<Object?>;
+    final submenus = node.attr('submenus')! as List<Object?>;
     if (submenus.isEmpty) {
       final menuitem = node.attr('menuitem');
       if (menuitem != null) {
@@ -2325,7 +2322,7 @@ class Html5Converter extends ConverterBase {
     final mannameIdAttr = mannameId != null ? ' id="$mannameId"' : '';
     return '<h2$mannameIdAttr>$mannameTitle</h2>\n'
         '<div class="sectionbody">\n'
-        '<p>${(node.attr('mannames') as List<Object?>).map(_s).join(', ')} - ${_s(node.attr('manpurpose'))}</p>\n'
+        '<p>${(node.attr('mannames')! as List<Object?>).map(_s).join(', ')} - ${_s(node.attr('manpurpose'))}</p>\n'
         '</div>';
   }
 

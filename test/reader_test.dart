@@ -86,12 +86,12 @@ void assertMessage(
   final String actual;
   if (contextual) {
     expect(record.message, isA<LogMessage>());
-    final message = record.message as LogMessage;
+    final message = record.message! as LogMessage;
     expect(message.sourceLocation, isNotNull);
     actual = message.toString();
   } else {
     expect(record.message, isA<String>());
-    actual = record.message as String;
+    actual = (record.message! as String)!;
   }
   if (expectedMessage.startsWith('~')) {
     expect(actual, contains(expectedMessage.substring(1)));
@@ -2649,7 +2649,7 @@ void main() {
               "~<stdin>: line 2: detected unclosed tag 'a' starting at line 2 of include file",
               contextual: true,
             );
-            final message = logger.messages[0].message as LogMessage;
+            final message = logger.messages[0].message! as LogMessage;
             expect(message.includeLocation, isNotNull);
           });
         },
@@ -2670,7 +2670,7 @@ void main() {
               "<stdin>: line 2: mismatched end tag (expected 'b' but found 'a') at line 5 of include file: $incPath",
               contextual: true,
             );
-            final message = logger.messages[0].message as LogMessage;
+            final message = logger.messages[0].message! as LogMessage;
             expect(message.includeLocation, isNotNull);
           });
         },
@@ -2691,7 +2691,7 @@ void main() {
               "<stdin>: line 2: unexpected end tag 'a' at line 4 of include file: $incPath",
               contextual: true,
             );
-            final message = logger.messages[0].message as LogMessage;
+            final message = logger.messages[0].message! as LogMessage;
             expect(message.includeLocation, isNotNull);
           });
         },

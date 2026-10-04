@@ -77,7 +77,7 @@ class Section extends AbstractBlock implements NodeSection {
         ? '$append'
         : (append == false ? '' : delimiter);
     if (level! > 1 && parent is Section) {
-      return '${(parent as Section).sectnum(delimiter, delimiter)}${numeral ?? ''}$app';
+      return '${(parent! as Section).sectnum(delimiter, delimiter)}${numeral ?? ''}$app';
     }
     return '${numeral ?? ''}$app';
   }
@@ -160,13 +160,15 @@ class Section extends AbstractBlock implements NodeSection {
   /// Port of `Asciidoctor::Section.generate_id`.
   static String generateId(String title, dynamic document) {
     final attrs = document.attributes as Map<String, Object?>;
-    final pre = isTruthy(attrs['idprefix']) ? attrs['idprefix'] as String : '_';
+    final pre = isTruthy(attrs['idprefix'])
+        ? attrs['idprefix']! as String
+        : '_';
     late final String sep;
     String? sepSub;
     var noSep = false;
     final rawSep = attrs['idseparator'];
     if (isTruthy(rawSep)) {
-      var s = rawSep as String;
+      var s = rawSep! as String;
       if (s.length == 1) {
         sepSub = (s == '-' || s == '.') ? ' .-' : ' $s.-';
       } else {

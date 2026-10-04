@@ -72,8 +72,8 @@ class ListBlock extends AbstractBlock {
   Object? nextAdjacentDlistBlock(AbstractBlock item) {
     final pairs = items;
     final index = pairs.indexWhere((pair) {
-      final parts = pair as List<Object?>;
-      return (parts[0] as List<Object?>).contains(item) || parts[1] == item;
+      final parts = pair! as List<Object?>;
+      return (parts[0]! as List<Object?>).contains(item) || parts[1] == item;
     });
     if (index == -1) {
       // Ruby raises NoMethodError on `nil + 1` here.
@@ -160,6 +160,6 @@ class ListItem extends AbstractBlock {
   String toString() =>
       // Contexts render with a `:` prefix to mimic Ruby's Symbol#inspect.
       '#$runtimeType@${identityHashCode(this)} '
-      '{list_context: :${(parent as AbstractBlock).context}, '
+      '{list_context: :${(parent! as AbstractBlock).context}, '
       'text: ${inspectString(_text)}, blocks: ${blocks.length}}';
 }

@@ -221,7 +221,7 @@ String fixturePath(String name) => 'test/fixtures/$name';
 String convertStringToEmbedded(String src, [Map<String, Object?>? options]) {
   final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
   opts['standalone'] = false;
-  return documentFromString(src, opts).convert() as String;
+  return documentFromString(src, opts).convert()! as String;
 }
 
 /// Creates a template directory holding [files] (name to source).
@@ -679,7 +679,7 @@ void main() {
               documentFromString(input, {
                     'template_dir': dir.path,
                     'template_cache': false,
-                  }).convert()
+                  }).convert()!
                   as String;
           assertXpath('//*[@id="toc"]/ul', output, 1);
           assertXpath('//*[@id="toc"]/ul[1]/li', output, 3);
@@ -836,7 +836,7 @@ void main() {
           final doc = documentFromString(input, {'converter': converter});
           expect(doc.converter, same(converter));
           expect(doc.attr('htmlsyntax'), equals('xml'));
-          final output = doc.convert(const {'standalone': false}) as String;
+          final output = doc.convert(const {'standalone': false})! as String;
           expect(output, contains('<img src="sunset.jpg" alt="sunset"/>'));
         },
       );
@@ -953,7 +953,7 @@ void main() {
             (doc.converter as TemplatelessConverter).supportsTemplates,
             isFalse,
           );
-          final output = doc.convert() as String;
+          final output = doc.convert()! as String;
           assertXpath(
             '//*[@class="paragraph"]/p[text()="paragraph"]',
             output,
@@ -990,7 +990,7 @@ void main() {
           'template_cache': false,
         });
         expect(doc.converter, isA<CompositeConverter>());
-        final output = doc.convert() as String;
+        final output = doc.convert()! as String;
         assertXpath('//*[@class="paragraph"]/p[text()="paragraph"]', output, 0);
         assertXpath('//body/p[text()="paragraph"]', output, 1);
       });
@@ -1243,7 +1243,7 @@ void main() {
           'template_dirs': [dir.path],
         });
         expect(composite, isA<CompositeConverter>());
-        final chain = composite as CompositeConverter;
+        final chain = composite! as CompositeConverter;
         expect(chain.converters[0], isA<TemplateConverter>());
         expect(chain.converters[1], isA<FakeBaseConverter>());
         expect(chain.findConverter('paragraph'), isA<TemplateConverter>());
@@ -1253,7 +1253,7 @@ void main() {
         });
         expect(bare, isA<TemplateConverter>());
         expect(
-          (bare as TemplateConverter).templates['paragraph'],
+          (bare! as TemplateConverter).templates['paragraph'],
           equals('<p>{{content}}</p>'),
         );
         // A lone String coerces to a one-element dir list.
@@ -1261,7 +1261,7 @@ void main() {
           'template_dirs': dir.path,
         });
         expect(
-          (coerced as TemplateConverter).templates['paragraph'],
+          (coerced! as TemplateConverter).templates['paragraph'],
           equals('<p>{{content}}</p>'),
         );
         // delegate_backend names the fallback for unknown backends.

@@ -289,7 +289,7 @@ void main() {
       final doc = parseDoc('hi');
       final converter = TemplateConverter('html5')
         ..register('document', '\n<div>{{content}}</div>\n');
-      final result = converter.convert(doc) as String;
+      final result = converter.convert(doc)! as String;
       expect(result.startsWith('<div>'), isTrue);
       expect(result.endsWith('</div>'), isTrue);
     });

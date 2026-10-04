@@ -20,13 +20,13 @@ void _delayWorker(SendPort mainPort) {
     final index = frame[0] as int;
     final request = (frame[1] as Map).cast<String, Object?>();
     final replyTo = frame[2] as SendPort;
-    final delayMs = request['delay_ms'] as int;
+    final delayMs = request['delay_ms']! as int;
     if (delayMs > 0) {
       await Future<void>.delayed(Duration(milliseconds: delayMs));
     }
     replyTo.send([
       index,
-      {'id': request['id'], 'double': (request['n'] as int) * 2},
+      {'id': request['id'], 'double': (request['n']! as int) * 2},
     ]);
   });
 }

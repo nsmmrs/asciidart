@@ -319,7 +319,7 @@ Document parseDoc(String src, [Map<String, Object?>? options]) {
 
 /// Converts [src] to embedded HTML5 (port of `convert_string_to_embedded`).
 String convertEmbedded(String src, [Map<String, Object?>? options]) =>
-    parseDoc(src, options).convert() as String;
+    parseDoc(src, options).convert()! as String;
 
 /// Finds the enclosing repository checkout directory.
 String _findRepoRoot() {
@@ -830,11 +830,11 @@ void main() {
       expect(convOf(doc).convert(node), contains('<pre>highlighted</pre>'));
       expect(hl.lastFormatArgs!['language'], 'ruby');
       expect(
-        (hl.lastFormatArgs!['opts'] as Map<String, Object?>)['css_mode'],
+        (hl.lastFormatArgs!['opts']! as Map<String, Object?>)['css_mode'],
         'class',
       );
       expect(
-        (hl.lastFormatArgs!['opts'] as Map<String, Object?>)['nowrap'],
+        (hl.lastFormatArgs!['opts']! as Map<String, Object?>)['nowrap'],
         isFalse,
       );
     });
@@ -1058,7 +1058,7 @@ void main() {
         ..attributes.addAll(const {'checkbox': '', 'checked': ''});
       final todo = StubListItem(list, 'Todo')..attributes['checkbox'] = '';
       list.blocks.addAll([done, todo]);
-      final output = convOf(doc).convert(list) as String;
+      final output = convOf(doc).convert(list)! as String;
       expect(output, contains('<div class="ulist checklist bullet">'));
       expect(output, contains('<ul class="checklist">'));
       expect(output, contains('<p>&#10003; Done</p>'));
@@ -1122,7 +1122,7 @@ void main() {
         ..attributes['role'] = 'r';
       item.blocks.add(para(doc, 'Nested')..parent = item);
       list.blocks.add(item);
-      final output = convOf(doc).convert(list) as String;
+      final output = convOf(doc).convert(list)! as String;
       expect(output, contains('<li id="i1" class="r">'));
       expect(
         output,
@@ -1206,7 +1206,7 @@ void main() {
         <Object?>[StubListItem(list, 'Question')],
         StubListItem(list, 'Answer'),
       ]);
-      final output = convOf(doc).convert(list) as String;
+      final output = convOf(doc).convert(list)! as String;
       expect(output, contains('<div class="qlist qanda">'));
       expect(output, contains('<p><em>Question</em></p>'));
       expect(output, contains('<p>Answer</p>'));
@@ -1223,7 +1223,7 @@ void main() {
         <Object?>[StubListItem(list, 'A'), StubListItem(list, 'B')],
         StubListItem(list, 'Def'),
       ]);
-      final output = convOf(doc).convert(list) as String;
+      final output = convOf(doc).convert(list)! as String;
       expect(output, contains('<div class="hdlist">'));
       expect(output, contains('<col width="20%">'));
       expect(output, contains('<col width="80%">'));
@@ -1239,7 +1239,7 @@ void main() {
         <Object?>[StubListItem(list, 'Lonely')],
         null,
       ]);
-      final output = convOf(doc).convert(list) as String;
+      final output = convOf(doc).convert(list)! as String;
       expect(output, contains('<dt class="hdlist1">Lonely</dt>'));
       expect(output, isNot(contains('<dd>')));
     });
@@ -1264,7 +1264,7 @@ void main() {
       final doc = makeDoc(attributes: const {'icons': 'font'});
       final list = ListBlock(doc, 'colist');
       list.blocks.add(StubListItem(list, 'First'));
-      final output = convOf(doc).convert(list) as String;
+      final output = convOf(doc).convert(list)! as String;
       expect(output, contains('<table>'));
       expect(
         output,
@@ -1431,7 +1431,7 @@ void main() {
       );
       doc << (StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
       final node = StubBlock(doc, 'preamble', stubbedContent: 'Intro');
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(output, contains('<div id="toc" class="toc">'));
       expect(output, contains('<div id="toctitle">Table of Contents</div>'));
       expect(output, contains('<a href="#s">S</a>'));
@@ -1615,7 +1615,7 @@ void main() {
             )
             ..id = 'fig'
             ..caption = 'Figure 1. ';
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(
         output,
         contains(
@@ -1756,7 +1756,7 @@ void main() {
         },
         stubAlt: 'Fig',
       );
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(output, contains('<svg><circle/></svg>'));
       expect(output, isNot(contains('<a class="image"')));
     });
@@ -2013,7 +2013,7 @@ void main() {
           ),
         ],
       ];
-      final output = convOf(doc).convert(table) as String;
+      final output = convOf(doc).convert(table)! as String;
       expect(
         output,
         contains(
@@ -2047,7 +2047,7 @@ void main() {
           ),
         ],
       ];
-      final output = convOf(doc).convert(table) as String;
+      final output = convOf(doc).convert(table)! as String;
       expect(
         output,
         contains('class="tableblock frame-all grid-all fit-content"'),
@@ -2092,7 +2092,7 @@ void main() {
       table.rows.body = [
         [asciidocCell, literalCell],
       ];
-      final output = convOf(doc).convert(table) as String;
+      final output = convOf(doc).convert(table)! as String;
       expect(
         output,
         contains(
@@ -2192,7 +2192,7 @@ void main() {
         attributes: const {'levels': '1', 'role': 'manual'},
         stubTitle: 'Contents',
       )..id = 'mytoc';
-      final output = convOf(doc).convert(node) as String;
+      final output = convOf(doc).convert(node)! as String;
       expect(output, contains('<div id="mytoc" class="manual">'));
       expect(
         output,
@@ -2257,7 +2257,7 @@ void main() {
       final doc = makeDoc();
       final section = StubSection(parent: doc, level: 1, stubTitle: 'Sec')
         ..id = 's';
-      (doc.catalog['refs'] as Map<String, Object?>)['s'] = section;
+      (doc.catalog['refs']! as Map<String, Object?>)['s'] = section;
       final node = anchor(
         doc,
         type: 'xref',
@@ -2274,7 +2274,7 @@ void main() {
         level: 1,
         stubTitle: 'A<a href="#y">b</a>',
       )..id = 's';
-      (doc.catalog['refs'] as Map<String, Object?>)['s'] = section;
+      (doc.catalog['refs']! as Map<String, Object?>)['s'] = section;
       final node = anchor(
         doc,
         type: 'xref',
@@ -2866,7 +2866,7 @@ void main() {
           'copyright': '2024',
         },
       );
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<meta name="application-name" content="App">'));
       expect(output, contains('<meta name="description" content="Desc">'));
       expect(output, contains('<meta name="keywords" content="a, b">'));
@@ -2906,7 +2906,7 @@ void main() {
       final doc = makeDoc(
         attributes: const {'stylesheet': '', 'linkcss': '', 'webfonts': ''},
       );
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains(
@@ -2919,7 +2919,7 @@ void main() {
     test('default stylesheet embedded without linkcss', () {
       final doc = makeDoc(attributes: const {'stylesheet': 'DEFAULT'});
       doc.attributes.remove('linkcss'); // secure mode forces linkcss
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<style>\n'));
       expect(output, contains('\n</style>'));
       expect(output.length, greaterThan(10000));
@@ -2979,7 +2979,7 @@ void main() {
     test('syntax highlighter head and footer docinfo', () {
       final doc = makeDoc();
       doc.syntaxHighlighter = FakeHighlighter(footer: true);
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output.indexOf('<style>fake</style>'),
         lessThan(output.indexOf('</head>')),
@@ -2993,7 +2993,7 @@ void main() {
     test('missing head docinfo removes placeholder', () {
       final doc = makeDoc();
       doc.syntaxHighlighter = FakeHighlighter(head: false);
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, isNot(contains('fake')));
       expect(output, contains('</head>'));
     });
@@ -3003,7 +3003,7 @@ void main() {
         attributes: const {'toc': '', 'toc-class': 'toc', 'toc-title': 'TOC'},
       );
       doc << (StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<body class="article toc toc-header">'));
       expect(
         output,
@@ -3023,7 +3023,7 @@ void main() {
         },
       );
       setDocHeader(doc, 'T');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains(
@@ -3041,7 +3041,7 @@ void main() {
     test('footnotes section', () {
       final doc = makeDoc();
       doc.footnotes.add(const Footnote(1, 'f1', 'Note text'));
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains(
@@ -3067,7 +3067,7 @@ void main() {
       );
       setDocHeader(doc, 'T');
       doc.blocks.add(para(doc, 'Body'));
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, isNot(contains('id="header"')));
       expect(output, isNot(contains('id="footer"')));
       expect(output, contains('<div id="content">'));
@@ -3076,7 +3076,7 @@ void main() {
     test('max-width styles header, content and footer', () {
       final doc = makeDoc(attributes: const {'max-width': '800px'});
       setDocHeader(doc, 'T');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<div id="header" style="max-width: 800px;">'));
       expect(output, contains('<div id="content" style="max-width: 800px;">'));
       expect(output, contains('<div id="footer" style="max-width: 800px;">'));
@@ -3091,7 +3091,7 @@ void main() {
 
     test('xml mode uses xmlns and slashed voids', () {
       final doc = makeDoc(xml: true);
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(
         output,
         contains('<html xmlns="http://www.w3.org/1999/xhtml" lang="en">'),
@@ -3101,7 +3101,7 @@ void main() {
 
     test('stem enables mathjax scripts', () {
       final doc = makeDoc(attributes: const {'stem': ''});
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('MathJax.Hub.Config({'));
       expect(output, contains('inlineMath: [${r'["\\(", "\\)"]'}],'));
       expect(output, contains('displayMath: [${r'["\\[", "\\]"]'}],'));
@@ -3133,7 +3133,7 @@ void main() {
       doc <<
           (StubSection(parent: doc, level: 1, stubTitle: 'SYNOPSIS')
             ..id = 'synopsis');
-      final output = convOf(doc).convert(doc) as String;
+      final output = convOf(doc).convert(doc)! as String;
       expect(output, contains('<h1>mycmd(1) Manual Page</h1>'));
       expect(
         output,
@@ -3150,7 +3150,7 @@ void main() {
       const input =
           '= Document Title\nAuthor Name <author@example.org>\n\ncontent\n';
       final output =
-          parseDoc(input, const {'standalone': true}).convert() as String;
+          parseDoc(input, const {'standalone': true}).convert()! as String;
       expect(output, contains('<meta name="author" content="Author Name">'));
       expect(
         output,
@@ -3166,15 +3166,14 @@ void main() {
       // Slice of document_test.rb 'should include docinfo files for html
       // backend' (the `'docinfo'` case): private head, header and footer
       // files from `test/fixtures` are spliced into the standalone page.
-      final output = convertFile(
-        '${_findRepoRoot()}/test/fixtures/basic.adoc',
-        const {
-          'to_file': false,
-          'standalone': true,
-          'safe': SafeMode.server,
-          'attributes': 'linkcss copycss! docinfo',
-        },
-      ) as String;
+      final output =
+          convertFile('${_findRepoRoot()}/test/fixtures/basic.adoc', const {
+                'to_file': false,
+                'standalone': true,
+                'safe': SafeMode.server,
+                'attributes': 'linkcss copycss! docinfo',
+              })!
+              as String;
       expect(output, contains('<script src="modernizr.js"></script>'));
       expect(output, contains('<nav class="navbar">'));
       expect(output, contains('plusone.js'));
@@ -3186,7 +3185,7 @@ void main() {
       // `lib/asciidoctor/converter/html5.rb`.
       const input = '= Doc Title\n\nHello, *world*!\n';
       final output =
-          parseDoc(input, const {'standalone': true}).convert() as String;
+          parseDoc(input, const {'standalone': true}).convert()! as String;
       expect(output, contains('<!DOCTYPE html>'));
       expect(output, contains('<title>Doc Title</title>'));
       expect(output, contains('<h1>Doc Title</h1>'));
@@ -3210,7 +3209,7 @@ void main() {
     test('embedded document with toc', () {
       final doc = makeDoc(attributes: const {'toc': ''});
       doc << (StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
-      final output = convOf(doc).convert(doc, 'embedded') as String;
+      final output = convOf(doc).convert(doc, 'embedded')! as String;
       expect(
         output,
         contains(
@@ -3245,7 +3244,7 @@ void main() {
       final doc = makeDoc();
       doc.blocks.add(para(doc, 'Body'));
       doc.footnotes.add(const Footnote(1, 'f1', 'Note'));
-      final output = convOf(doc).convert(doc, 'embedded') as String;
+      final output = convOf(doc).convert(doc, 'embedded')! as String;
       expect(output, contains('<div id="footnotes">\n<hr>'));
     });
   });

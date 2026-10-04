@@ -225,10 +225,10 @@ final class Invoker with Logging {
         if (showTimings) {
           final timings = Timings();
           inputOpts['timings'] = timings;
-          documents.add(convert(input, inputOpts) as Document);
+          documents.add(convert(input, inputOpts)! as Document);
           timings.printReport(err, '-');
         } else {
-          documents.add(convert(input, inputOpts) as Document);
+          documents.add(convert(input, inputOpts)! as Document);
         }
       } else {
         for (final infile in infiles) {
@@ -246,10 +246,10 @@ final class Invoker with Logging {
           if (showTimings) {
             final timings = Timings();
             inputOpts['timings'] = timings;
-            documents.add(convertFile(infile, inputOpts) as Document);
+            documents.add(convertFile(infile, inputOpts)! as Document);
             timings.printReport(err, infile);
           } else {
-            documents.add(convertFile(infile, inputOpts) as Document);
+            documents.add(convertFile(infile, inputOpts)! as Document);
           }
         }
       }
@@ -424,10 +424,10 @@ final class Invoker with Logging {
           workerError = response['error'] as String?;
           break;
         }
-        if (toStdout) (tofile as StringSink).write(response['output']);
+        if (toStdout) (tofile! as StringSink).write(response['output']);
         if (showTimings) {
           final workerTimings = Timings()
-            ..log.addAll((response['timings'] as Map).cast<String, double>());
+            ..log.addAll((response['timings']! as Map).cast<String, double>());
           workerTimings.printReport(err, infiles[i]);
           summedSeconds += workerTimings.readParseConvert ?? 0;
         }

@@ -136,12 +136,12 @@ class Block extends AbstractBlock {
         // string; the cast only narrows the widened (polymorphic) override.
         return super.content() as String?;
       case 'simple':
-        return applySubs(lines.join(lf), subs) as String;
+        return applySubs(lines.join(lf), subs)! as String;
       case 'verbatim':
       case 'raw':
         // QUESTION could we use strip here instead of popping empty lines?
         // maybe apply_subs can know how to strip whitespace?
-        final result = (applySubs(lines, subs) as List<Object?>)
+        final result = (applySubs(lines, subs)! as List<Object?>)
             .map((line) => line as String?)
             .toList();
         if (result.length < 2) {

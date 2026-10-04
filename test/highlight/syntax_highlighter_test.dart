@@ -85,7 +85,7 @@ Document _documentFromString(String src, [Map<String, Object?>? options]) {
 
 /// Converts [src] to a standalone document (port of `convert_string`).
 String _convertString(String src, [Map<String, Object?>? options]) =>
-    _documentFromString(src, options).convert() as String;
+    _documentFromString(src, options).convert()! as String;
 
 /// Asserts [content] matches [css] [count] times (port of `assert_css`).
 void _assertCss(String css, String? content, int count) {
@@ -1181,7 +1181,7 @@ void main() {
       final doc = _documentFromString(input, <String, Object?>{
         'attributes': <String, Object?>{'source-highlighter': 'unavailable'},
       });
-      final output = doc.convert() as String;
+      final output = doc.convert()! as String;
       _assertCss('pre.highlight > code.language-ruby', output, 1);
     });
 

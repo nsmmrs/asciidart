@@ -484,7 +484,7 @@ void main() {
         'standalone': true,
         'attributes': {'linkcss': ''},
       });
-      final result = doc.convert() as String;
+      final result = doc.convert()! as String;
       expect(doc.hasAttr('docdate'), isTrue);
       expect(doc.hasAttr('reproducible'), isFalse);
       // Ruby asserts an xpath match on the footer; the port checks the text.
@@ -499,7 +499,7 @@ void main() {
           'standalone': true,
           'attributes': {'linkcss': '', 'reproducible': ''},
         });
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         expect(doc.hasAttr('docdate'), isTrue);
         expect(doc.hasAttr('reproducible'), isTrue);
         expect(result, isNot(contains('Last updated')));
@@ -513,7 +513,7 @@ void main() {
         'standalone': true,
         'attributes': {'linkcss': '', 'reproducible': ''},
       });
-      final result = doc.convert() as String;
+      final result = doc.convert()! as String;
       expect(doc.hasAttr('reproducible'), isTrue);
       expect(result, isNot(contains('<meta name="generator"')));
     });
@@ -525,7 +525,7 @@ void main() {
         'standalone': true,
         'attributes': {'reproducible': ''},
       });
-      final result = doc.convert() as String;
+      final result = doc.convert()! as String;
       expect(doc.hasAttr('docdate'), isTrue);
       expect(doc.hasAttr('reproducible'), isTrue);
       expect(result, isNot(contains('<date>')));
@@ -543,10 +543,12 @@ void main() {
     });
 
     test('should coerce encoding of file to UTF-8', () {
-      final output = convertFile(fixturePath('encoding.adoc'), {
-        'to_file': false,
-        'safe': 'safe',
-      }) as String;
+      final output =
+          convertFile(fixturePath('encoding.adoc'), {
+                'to_file': false,
+                'safe': 'safe',
+              })!
+              as String;
       expect(output, contains('Romé'));
     });
 
@@ -576,7 +578,7 @@ void main() {
       final doc = loadFile(fixturePath('sample.adoc'), {'safe': SafeMode.safe});
       // Ruby asserts exact `File.expand_path` equality; the port pins the
       // stable suffix plus lexical `..` normalization (see `_absolutePath`).
-      final docfile = doc.attr('docfile') as String;
+      final docfile = doc.attr('docfile')! as String;
       expect(docfile, endsWith('/test/fixtures/sample.adoc'));
       expect(docfile, isNot(contains('..')));
       expect(doc.attr('docdir'), endsWith('/test/fixtures'));
@@ -664,8 +666,8 @@ void main() {
       expect(viaRender, isA<Document>());
       expect(viaConvert, isA<Document>());
       expect(
-        (viaRender as Document).blocks.length,
-        equals((viaConvert as Document).blocks.length),
+        (viaRender! as Document).blocks.length,
+        equals((viaConvert! as Document).blocks.length),
       );
     });
 
@@ -677,21 +679,21 @@ void main() {
         final viaConvert = convertFile(inputPath, {'to_file': '/dev/null'});
         expect(viaRender, isA<Document>());
         expect(
-          (viaRender as Document).attr('docfile'),
-          equals((viaConvert as Document).attr('docfile')),
+          (viaRender! as Document).attr('docfile'),
+          equals((viaConvert! as Document).attr('docfile')),
         );
       });
     });
 
     test('returns document without converting when to_file is /dev/null', () {
-      final doc = convert('text', {'to_file': '/dev/null'}) as Document;
+      final doc = convert('text', {'to_file': '/dev/null'})! as Document;
       expect(doc.blocks, hasLength(1));
       expect(doc.isParsed, isTrue);
       withTempDir((dir) {
         final inputPath = '${dir.path}/sample.adoc';
         File(inputPath).writeAsStringSync('text\n');
         final fileDoc =
-            convertFile(inputPath, {'to_file': '/dev/null'}) as Document;
+            convertFile(inputPath, {'to_file': '/dev/null'})! as Document;
         expect(fileDoc.blocks, hasLength(1));
         expect(
           File('${dir.path}/sample.html').existsSync(),
@@ -704,10 +706,9 @@ void main() {
     test('returns converted string when to_file is false', () {
       // Ruby: stream output leaves standalone unset, so the transform is
       // embedded (`convert "text", to_file: false` => paragraph divs).
-      final output = convert('text', {
-        'to_file': false,
-        'converter': html5Converter(),
-      }) as String;
+      final output =
+          convert('text', {'to_file': false, 'converter': html5Converter()})!
+              as String;
       expect(output, isNotEmpty);
       expect(output, contains('<p>text</p>'));
       expect(output, isNot(contains('<html')));
@@ -716,7 +717,8 @@ void main() {
     test('ignores parse option', () {
       // `parse: false` is deleted by `convert`, so the document is parsed.
       final doc =
-          convert('text', {'to_file': '/dev/null', 'parse': false}) as Document;
+          convert('text', {'to_file': '/dev/null', 'parse': false})!
+              as Document;
       expect(doc.isParsed, isTrue);
     });
 
@@ -724,10 +726,12 @@ void main() {
       withTempDir((dir) {
         final inputPath = '${dir.path}/sample.adoc';
         File(inputPath).writeAsStringSync('');
-        final doc = convertFile(inputPath, {
-          'safe': SafeMode.safe,
-          'converter': html5Converter(),
-        }) as Document;
+        final doc =
+            convertFile(inputPath, {
+                  'safe': SafeMode.safe,
+                  'converter': html5Converter(),
+                })!
+                as Document;
         expect(doc.options['standalone'], equals(true));
         expect(File('${dir.path}/sample.html').existsSync(), isTrue);
       });
@@ -735,20 +739,21 @@ void main() {
 
     test('leaves standalone unset for stream output unless header_footer', () {
       final buffer = StringBuffer();
-      final doc = convert('', {
-        'to_file': buffer,
-        'converter': html5Converter(),
-      }) as Document;
+      final doc =
+          convert('', {'to_file': buffer, 'converter': html5Converter()})!
+              as Document;
       expect(doc.options.containsKey('standalone'), isFalse);
       // Ruby: an empty document converts to the empty embedded string.
       expect(buffer.toString(), isEmpty);
 
       final buffer2 = StringBuffer();
-      final doc2 = convert('', {
-        'to_file': buffer2,
-        'header_footer': true,
-        'converter': html5Converter(),
-      }) as Document;
+      final doc2 =
+          convert('', {
+                'to_file': buffer2,
+                'header_footer': true,
+                'converter': html5Converter(),
+              })!
+              as Document;
       expect(doc2.options['standalone'], equals(true));
     });
 
@@ -756,10 +761,12 @@ void main() {
       withTempDir((dir) {
         final inputPath = '${dir.path}/sample.adoc';
         File(inputPath).writeAsStringSync('');
-        final doc = convertFile(inputPath, {
-          'safe': SafeMode.safe,
-          'converter': html5Converter(),
-        }) as Document;
+        final doc =
+            convertFile(inputPath, {
+                  'safe': SafeMode.safe,
+                  'converter': html5Converter(),
+                })!
+                as Document;
         final expectedOut = '${dir.path}/sample.html';
         expect(File(expectedOut).existsSync(), isTrue);
         expect(doc.attr('outfile'), equals(expectedOut));
@@ -777,10 +784,12 @@ void main() {
               ? filename.path
               : (filename as Uri).toFilePath();
           File(path).writeAsStringSync('');
-          final doc = convertFile(filename, {
-            'safe': SafeMode.safe,
-            'converter': html5Converter(),
-          }) as Document;
+          final doc =
+              convertFile(filename, {
+                    'safe': SafeMode.safe,
+                    'converter': html5Converter(),
+                  })!
+                  as Document;
           expect(doc, isA<Document>());
           expect(
             File(path.replaceAll('.adoc', '.html')).existsSync(),
@@ -796,12 +805,14 @@ void main() {
         final inputPath = '${dir.path}/sample.adoc';
         File(inputPath).writeAsStringSync('');
         final outputPath = '${dir.path}/result.html';
-        final doc = convertFile(inputPath, {
-          'to_file': outputPath,
-          'base_dir': dir.path,
-          'safe': SafeMode.safe,
-          'converter': html5Converter(),
-        }) as Document;
+        final doc =
+            convertFile(inputPath, {
+                  'to_file': outputPath,
+                  'base_dir': dir.path,
+                  'safe': SafeMode.safe,
+                  'converter': html5Converter(),
+                })!
+                as Document;
         expect(File(outputPath).existsSync(), isTrue);
         expect(doc.attr('outfile'), equals(outputPath));
       });
@@ -811,11 +822,13 @@ void main() {
       withTempDir((dir) {
         final inputPath = '${dir.path}/sample.adoc';
         File(inputPath).writeAsStringSync('');
-        final doc = convertFile(inputPath, {
-          'to_file': true,
-          'safe': SafeMode.safe,
-          'converter': html5Converter(),
-        }) as Document;
+        final doc =
+            convertFile(inputPath, {
+                  'to_file': true,
+                  'safe': SafeMode.safe,
+                  'converter': html5Converter(),
+                })!
+                as Document;
         expect(doc, isA<Document>());
         expect(File('${dir.path}/sample.html').existsSync(), isTrue);
       });
@@ -862,12 +875,14 @@ void main() {
           final inputPath = '${dir.path}/sample.adoc';
           File(inputPath).writeAsStringSync('');
           final outputPath = '${dir.path}/out.html';
-          final doc = convertFile(inputPath, {
-            'to_file': outputPath,
-            'to_dir': dir.path,
-            'safe': 'unsafe',
-            'converter': html5Converter(),
-          }) as Document;
+          final doc =
+              convertFile(inputPath, {
+                    'to_file': outputPath,
+                    'to_dir': dir.path,
+                    'safe': 'unsafe',
+                    'converter': html5Converter(),
+                  })!
+                  as Document;
           expect(File(outputPath).existsSync(), isTrue);
           expect(doc.options['to_file'], equals(outputPath));
           expect(doc.options['to_dir'], equals(dir.path));
@@ -1002,7 +1017,7 @@ void main() {
           'to_file': output,
           'converter': html5Converter(),
         };
-        final doc = convertFile(inputPath, options) as Document;
+        final doc = convertFile(inputPath, options)! as Document;
         expect(identical(options, doc.options), isFalse);
         expect(options.keys, containsAll(['safe', 'to_file', 'converter']));
         expect(options, hasLength(3));
@@ -1020,11 +1035,13 @@ void main() {
           final inputPath = '${dir.path}/basic.adoc';
           File(inputPath).writeAsStringSync('');
           final outputPath = '${dir.path}/basic.html';
-          final doc = convertFile(inputPath, {
-            'to_file': outputPath,
-            'base_dir': dir.path,
-            'converter': html5Converter(),
-          }) as Document;
+          final doc =
+              convertFile(inputPath, {
+                    'to_file': outputPath,
+                    'base_dir': dir.path,
+                    'converter': html5Converter(),
+                  })!
+                  as Document;
           expect(doc.options['to_dir'], equals(dir.path));
         });
       },
@@ -1038,12 +1055,14 @@ void main() {
         File(inputPath).writeAsStringSync('');
         final outputDir = '${dir.path}/fixtures';
         Directory(outputDir).createSync();
-        final doc = convertFile(inputPath, {
-          'to_dir': dir.path,
-          'base_dir': dir.path,
-          'to_file': 'fixtures/basic.html',
-          'converter': html5Converter(),
-        }) as Document;
+        final doc =
+            convertFile(inputPath, {
+                  'to_dir': dir.path,
+                  'base_dir': dir.path,
+                  'to_file': 'fixtures/basic.html',
+                  'converter': html5Converter(),
+                })!
+                as Document;
         expect(doc.options['to_dir'], equals(outputDir));
       });
     });
@@ -1247,10 +1266,12 @@ void main() {
 
     test('should convert source document to standalone document string when '
         'to_file is false and standalone is true', () {
-      final output = convertFile(fixturePath('sample.adoc'), {
-        'standalone': true,
-        'to_file': false,
-      }) as String;
+      final output =
+          convertFile(fixturePath('sample.adoc'), {
+                'standalone': true,
+                'to_file': false,
+              })!
+              as String;
       expect(output, isNotEmpty);
       expect(output, contains('<html lang="en">'));
       expect(output, contains('<title>Document Title</title>'));
@@ -1258,10 +1279,12 @@ void main() {
 
     test('should convert source document to standalone document string when '
         'to_file is false and header_footer is true', () {
-      final output = convertFile(fixturePath('sample.adoc'), {
-        'header_footer': true,
-        'to_file': false,
-      }) as String;
+      final output =
+          convertFile(fixturePath('sample.adoc'), {
+                'header_footer': true,
+                'to_file': false,
+              })!
+              as String;
       expect(output, isNotEmpty);
       expect(output, contains('<html lang="en">'));
       expect(output, contains('<title>Document Title</title>'));
@@ -1270,28 +1293,34 @@ void main() {
     test(
       'lines in output should be separated by line feed (universal newline)',
       () {
-        final output = convertFile(fixturePath('sample.adoc'), {
-          'standalone': true,
-          'to_file': false,
-        }) as String;
+        final output =
+            convertFile(fixturePath('sample.adoc'), {
+                  'standalone': true,
+                  'to_file': false,
+                })!
+                as String;
         expect(output, isNotEmpty);
         expect(output, isNot(contains('\r')));
       },
     );
 
     test('should accept attributes as array', () {
-      final output = convertFile(fixturePath('sample.adoc'), {
-        'attributes': ['sectnums', 'idprefix', 'idseparator=-'],
-        'to_file': false,
-      }) as String;
+      final output =
+          convertFile(fixturePath('sample.adoc'), {
+                'attributes': ['sectnums', 'idprefix', 'idseparator=-'],
+                'to_file': false,
+              })!
+              as String;
       expect(output, contains('id="section-a"'));
     });
 
     test('should accept attributes as string', () {
-      final output = convertFile(fixturePath('sample.adoc'), {
-        'attributes': 'sectnums idprefix idseparator=-',
-        'to_file': false,
-      }) as String;
+      final output =
+          convertFile(fixturePath('sample.adoc'), {
+                'attributes': 'sectnums idprefix idseparator=-',
+                'to_file': false,
+              })!
+              as String;
       expect(output, contains('id="section-a"'));
     });
 
@@ -1299,10 +1328,12 @@ void main() {
       'should link to default stylesheet by default when safe mode is SECURE '
       'or greater',
       () {
-        final output = convertFile(fixturePath('basic.adoc'), {
-          'standalone': true,
-          'to_file': false,
-        }) as String;
+        final output =
+            convertFile(fixturePath('basic.adoc'), {
+                  'standalone': true,
+                  'to_file': false,
+                })!
+                as String;
         expect(output, contains('href="./asciidoctor.css"'));
       },
     );
@@ -1310,10 +1341,9 @@ void main() {
     test('should embed default stylesheet by default if SafeMode is less than '
         'SECURE', () {
       const input = '= Document Title\n\ntext\n';
-      final output = convert(input, {
-        'safe': SafeMode.server,
-        'standalone': true,
-      }) as String;
+      final output =
+          convert(input, {'safe': SafeMode.server, 'standalone': true})!
+              as String;
       expect(output, isNot(contains('href="./asciidoctor.css"')));
       expect(output, contains('<style>'));
     });
@@ -1331,14 +1361,17 @@ void main() {
               ..close();
           });
           const input = '= Document Title\n\ntext\n';
-          final output = convert(input, {
-            'safe': SafeMode.server,
-            'standalone': true,
-            'attributes': {
-              'allow-uri-read': '',
-              'stylesheet': 'http://127.0.0.1:${server.port}/custom.css',
-            },
-          }) as String;
+          final output =
+              convert(input, {
+                    'safe': SafeMode.server,
+                    'standalone': true,
+                    'attributes': {
+                      'allow-uri-read': '',
+                      'stylesheet':
+                          'http://127.0.0.1:${server.port}/custom.css',
+                    },
+                  })!
+                  as String;
           expect(output, contains('<style>'));
           expect(output, contains('color: green'));
         } finally {
@@ -1352,7 +1385,7 @@ void main() {
       'or greater',
       () {
         const input = '= Document Title\n:linkcss!:\n\ntext\n';
-        final output = convert(input, {'standalone': true}) as String;
+        final output = convert(input, {'standalone': true})! as String;
         expect(output, contains('href="./asciidoctor.css"'));
       },
     );
@@ -1366,7 +1399,8 @@ void main() {
         {'linkcss': false},
       ]) {
         final output =
-            convert(input, {'standalone': true, 'attributes': attrs}) as String;
+            convert(input, {'standalone': true, 'attributes': attrs})!
+                as String;
         expect(output, isNot(contains('href="./asciidoctor.css"')));
         expect(output, contains('<style>'));
       }
@@ -1374,21 +1408,25 @@ void main() {
 
     test('should embed default stylesheet if safe mode is less than SECURE and '
         'linkcss is unset from API', () {
-      final output = convertFile(fixturePath('basic.adoc'), {
-        'standalone': true,
-        'to_file': false,
-        'safe': SafeMode.safe,
-        'attributes': {'linkcss!': ''},
-      }) as String;
+      final output =
+          convertFile(fixturePath('basic.adoc'), {
+                'standalone': true,
+                'to_file': false,
+                'safe': SafeMode.safe,
+                'attributes': {'linkcss!': ''},
+              })!
+              as String;
       expect(output, contains('<style>'));
     });
 
     test('should not link to stylesheet if stylesheet is unset', () {
       const input = '= Document Title\n\ntext\n';
-      final output = convert(input, {
-        'standalone': true,
-        'attributes': {'stylesheet!': ''},
-      }) as String;
+      final output =
+          convert(input, {
+                'standalone': true,
+                'attributes': {'stylesheet!': ''},
+              })!
+              as String;
       expect(output, isNot(contains('rel="stylesheet"')));
     });
 
@@ -1396,37 +1434,43 @@ void main() {
       'should link to custom stylesheet if specified in stylesheet attribute',
       () {
         const input = '= Document Title\n\ntext\n';
-        final output = convert(input, {
-          'standalone': true,
-          'attributes': {'stylesheet': './custom.css'},
-        }) as String;
+        final output =
+            convert(input, {
+                  'standalone': true,
+                  'attributes': {'stylesheet': './custom.css'},
+                })!
+                as String;
         expect(output, contains('href="./custom.css"'));
       },
     );
 
     test('should resolve custom stylesheet relative to stylesdir', () {
       const input = '= Document Title\n\ntext\n';
-      final output = convert(input, {
-        'standalone': true,
-        'attributes': {
-          'stylesheet': 'custom.css',
-          'stylesdir': './stylesheets',
-        },
-      }) as String;
+      final output =
+          convert(input, {
+                'standalone': true,
+                'attributes': {
+                  'stylesheet': 'custom.css',
+                  'stylesdir': './stylesheets',
+                },
+              })!
+              as String;
       expect(output, contains('href="./stylesheets/custom.css"'));
     });
 
     test('should resolve custom stylesheet to embed relative to stylesdir', () {
-      final output = convertFile(fixturePath('basic.adoc'), {
-        'standalone': true,
-        'safe': SafeMode.safe,
-        'to_file': false,
-        'attributes': {
-          'stylesheet': 'custom.css',
-          'stylesdir': './stylesheets',
-          'linkcss!': '',
-        },
-      }) as String;
+      final output =
+          convertFile(fixturePath('basic.adoc'), {
+                'standalone': true,
+                'safe': SafeMode.safe,
+                'to_file': false,
+                'attributes': {
+                  'stylesheet': 'custom.css',
+                  'stylesdir': './stylesheets',
+                  'linkcss!': '',
+                },
+              })!
+              as String;
       expect(output, contains('<style>'));
     });
 
@@ -1443,14 +1487,17 @@ void main() {
               ..close();
           });
           const input = '= Document Title\n\ntext\n';
-          final output = convert(input, {
-            'safe': SafeMode.server,
-            'standalone': true,
-            'attributes': {
-              'allow-uri-read': '',
-              'stylesheet': 'http://127.0.0.1:${server.port}/custom.css',
-            },
-          }) as String;
+          final output =
+              convert(input, {
+                    'safe': SafeMode.server,
+                    'standalone': true,
+                    'attributes': {
+                      'allow-uri-read': '',
+                      'stylesheet':
+                          'http://127.0.0.1:${server.port}/custom.css',
+                    },
+                  })!
+                  as String;
           expect(output, contains('<style>'));
           expect(output, contains('color: green'));
         } finally {
@@ -1472,15 +1519,17 @@ void main() {
               ..close();
           });
           const input = '= Document Title\n\ntext\n';
-          final output = convert(input, {
-            'safe': SafeMode.server,
-            'standalone': true,
-            'attributes': {
-              'allow-uri-read': '',
-              'stylesdir': 'http://127.0.0.1:${server.port}/fixtures',
-              'stylesheet': 'custom.css',
-            },
-          }) as String;
+          final output =
+              convert(input, {
+                    'safe': SafeMode.server,
+                    'standalone': true,
+                    'attributes': {
+                      'allow-uri-read': '',
+                      'stylesdir': 'http://127.0.0.1:${server.port}/fixtures',
+                      'stylesheet': 'custom.css',
+                    },
+                  })!
+                  as String;
           expect(output, contains('<style>'));
           expect(output, contains('color: green'));
         } finally {
@@ -1599,7 +1648,7 @@ void main() {
       final sampleInputPath = Uri.file(fixturePath('sample.adoc'));
       final sampleOutputPath = fixturePath('sample.html');
       try {
-        final doc = convertFile(sampleInputPath, {'safe': 'safe'}) as Document;
+        final doc = convertFile(sampleInputPath, {'safe': 'safe'})! as Document;
         expect(doc.attr('outfile'), endsWith('/test/fixtures/sample.html'));
         expect(File(sampleOutputPath).existsSync(), isTrue);
         final output = File(sampleOutputPath).readAsStringSync();

@@ -236,7 +236,7 @@ String _commonAttributes(String? id, Object? role, String? reftext) {
 /// Reference text of [node] with reftext substitutions applied.
 String? _inlineReftext(Inline node) {
   final value = node.text;
-  return value == null ? null : applyReftextSubs(node, value) as String;
+  return value == null ? null : applyReftextSubs(node, value)! as String;
 }
 
 String? _htmlAnchor(Inline node, Document doc) {
@@ -270,7 +270,7 @@ String? _htmlAnchor(Inline node, Document doc) {
 
 /// Resolves display text for an xref without explicit link text.
 String _resolveXrefText(Inline node, Document doc) {
-  final refs = doc.catalog['refs'] as Map<String, Object?>;
+  final refs = doc.catalog['refs']! as Map<String, Object?>;
   final refid = node.attributes['refid'] as String?;
   final ref = refid == null ? null : refs[refid];
   String? text;
@@ -578,7 +578,7 @@ String _docbookIndexterm(Inline node, Document doc) {
   } else {
     final seeAlsoList = node.attr('see-also');
     if (isTruthy(seeAlsoList)) {
-      rel = (seeAlsoList as List)
+      rel = (seeAlsoList! as List)
           .map((seeAlso) => '\n<seealso>$seeAlso</seealso>')
           .join();
     } else {
@@ -588,7 +588,7 @@ String _docbookIndexterm(Inline node, Document doc) {
   if (node.type == 'visible') {
     return '<indexterm>\n<primary>${node.text}</primary>$rel\n</indexterm>${node.text}';
   }
-  final terms = (node.attributes['terms'] as List).cast<String>();
+  final terms = (node.attributes['terms']! as List).cast<String>();
   final numterms = terms.length;
   if (numterms > 2) {
     final promotion = doc.hasOption('indexterm-promotion')
@@ -606,7 +606,7 @@ String _docbookIndexterm(Inline node, Document doc) {
 }
 
 String _htmlKbd(Inline node) {
-  final keys = (node.attr('keys') as List).cast<String>();
+  final keys = (node.attr('keys')! as List).cast<String>();
   if (keys.length == 1) {
     return '<kbd>${keys[0]}</kbd>';
   } else {
@@ -615,7 +615,7 @@ String _htmlKbd(Inline node) {
 }
 
 String _docbookKbd(Inline node) {
-  final keys = (node.attr('keys') as List).cast<String>();
+  final keys = (node.attr('keys')! as List).cast<String>();
   if (keys.length == 1) {
     return '<keycap>${keys[0]}</keycap>';
   } else {
@@ -629,7 +629,7 @@ String _htmlMenu(Inline node, Document doc) {
       : '&#160;<b class="caret">&#8250;</b> ';
   final submenuJoiner = '</b>$caret<b class="submenu">';
   final menu = node.attr('menu');
-  final submenus = (node.attr('submenus') as List).cast<String>();
+  final submenus = (node.attr('submenus')! as List).cast<String>();
   if (submenus.isEmpty) {
     final menuitem = node.attr('menuitem');
     if (isTruthy(menuitem)) {
@@ -644,7 +644,7 @@ String _htmlMenu(Inline node, Document doc) {
 
 String _docbookMenu(Inline node) {
   final menu = node.attr('menu');
-  final submenus = (node.attr('submenus') as List).cast<String>();
+  final submenus = (node.attr('submenus')! as List).cast<String>();
   if (submenus.isEmpty) {
     final menuitem = node.attr('menuitem');
     if (isTruthy(menuitem)) {
@@ -702,7 +702,7 @@ Block blockFromString(
 
 /// Converted content of a simple block (mirrors `Block#content`).
 String contentOf(Block block) =>
-    applySubs(block, block.source(), block.subs) as String;
+    applySubs(block, block.source(), block.subs)! as String;
 
 /// Collapses inter-tag whitespace like the Ruby `gsub(/>\s+</, '><')`.
 String squeezeTags(String value) => value.replaceAll(RegExp(r'>\s+<'), '><');
@@ -2445,7 +2445,7 @@ void main() {
           );
           contentOf(para);
           final doc = para.document! as Document;
-          final images = doc.catalog['images'] as List;
+          final images = doc.catalog['images']! as List;
           expect(images.length, 1);
           expect(images[0].toString(), 'fixtures/dot.gif');
           expect(images[0].imagesdir, isNull);
@@ -3777,7 +3777,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0]['text'], '<code>inline code</code>');
-        expect(passthroughs[0]['subs'] as List, isEmpty);
+        expect(passthroughs[0]['subs']! as List, isEmpty);
       });
 
       test('collect multi-line inline triple plus passthroughs', () {
@@ -3792,7 +3792,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0]['text'], '<code>inline\ncode</code>');
-        expect(passthroughs[0]['subs'] as List, isEmpty);
+        expect(passthroughs[0]['subs']! as List, isEmpty);
       });
 
       test('collect inline double dollar passthroughs', () {
@@ -4491,11 +4491,9 @@ void main() {
     group('Post replacements', () {
       test('line break inserted after line with line break character', () {
         final para = blockFromString('First line +\nSecond line');
-        final result = applySubs(
-          para,
-          para.lines,
-          expandSubs(para, 'post_replacements'),
-        ) as List;
+        final result =
+            applySubs(para, para.lines, expandSubs(para, 'post_replacements'))!
+                as List;
         expect(result.first, 'First line<br>');
       });
 
@@ -4504,11 +4502,9 @@ void main() {
           'First line\nSecond line',
           attributes: {'hardbreaks': ''},
         );
-        final result = applySubs(
-          para,
-          para.lines,
-          expandSubs(para, 'post_replacements'),
-        ) as List;
+        final result =
+            applySubs(para, para.lines, expandSubs(para, 'post_replacements'))!
+                as List;
         expect(result.first, 'First line<br>');
       });
 
@@ -4517,11 +4513,9 @@ void main() {
           'First line +\nSecond line',
           attributes: {'hardbreaks': ''},
         );
-        final result = applySubs(
-          para,
-          para.lines,
-          expandSubs(para, 'post_replacements'),
-        ) as List;
+        final result =
+            applySubs(para, para.lines, expandSubs(para, 'post_replacements'))!
+                as List;
         expect(result.first, 'First line<br>');
       });
 
@@ -4532,11 +4526,13 @@ void main() {
             'First line',
             attributes: {'hardbreaks': ''},
           );
-          final result = applySubs(
-            para,
-            para.lines,
-            expandSubs(para, 'post_replacements'),
-          ) as List;
+          final result =
+              applySubs(
+                    para,
+                    para.lines,
+                    expandSubs(para, 'post_replacements'),
+                  )!
+                  as List;
           expect(result.first, 'First line');
         },
       );

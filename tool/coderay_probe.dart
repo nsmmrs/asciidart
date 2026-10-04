@@ -20,7 +20,7 @@ Future<void> main() async {
       final adapter = CodeRayAdapter(lexer: const CodeRaySourceLexer());
       final numberLines = m['numberLines'] as String?;
       final result = adapter.highlight(
-        source: m['source'] as String,
+        source: m['source']! as String,
         language: m['language'] as String?,
         cssMode: m['cssMode'] == 'style' ? CssMode.inline : CssMode.classes,
         numberLines: numberLines == null

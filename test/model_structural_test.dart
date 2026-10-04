@@ -1601,7 +1601,7 @@ void main() {
       final cell = Cell(table.columns.single, '[[hx]] H', {}, {
         'cursor': FakeCursor('t.adoc', 1),
       });
-      final refs = doc.catalog['refs'] as Map<String, Object?>;
+      final refs = doc.catalog['refs']! as Map<String, Object?>;
       expect(refs, isNot(contains('hx')));
       // Plain cells reinitialize to themselves.
       final plain = Cell(table.columns.single, 'H', {});
@@ -1720,7 +1720,7 @@ void main() {
       expect(cell.style, equals('asciidoc'));
       expect(cell.innerDocument, isA<Document>());
       expect((cell.innerDocument as Document).blocks, hasLength(1));
-      expect(cell.content() as String, contains('<strong>this</strong>'));
+      expect(cell.content()! as String, contains('<strong>this</strong>'));
     });
 
     test('toString carries text, spans and attributes', () {
@@ -2042,7 +2042,7 @@ void main() {
       final col = Column(table, 0);
       Cell(col, '[[id]] text', {});
       Parser.catalogInlineAnchor('id2', null, table, null, doc);
-      final refs = doc.catalog['refs'] as Map<String, Object?>;
+      final refs = doc.catalog['refs']! as Map<String, Object?>;
       expect(refs, contains('id'));
       expect(refs, contains('id2'));
     });

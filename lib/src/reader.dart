@@ -644,7 +644,7 @@ class Reader {
   Cursor cursorAtMark() {
     final mark = _mark;
     return mark != null
-        ? Cursor(mark[0], mark[1], mark[2] as String?, mark[3] as int)
+        ? Cursor(mark[0], mark[1], mark[2] as String?, mark[3]! as int)
         : cursor();
   }
 
@@ -652,7 +652,12 @@ class Reader {
   Cursor cursorBeforeMark() {
     final mark = _mark;
     if (mark != null) {
-      return Cursor(mark[0], mark[1], mark[2] as String?, (mark[3] as int) - 1);
+      return Cursor(
+        mark[0],
+        mark[1],
+        mark[2] as String?,
+        (mark[3]! as int) - 1,
+      );
     }
     return Cursor(_file, _dir, _path, _lineno - 1);
   }
@@ -728,16 +733,16 @@ class Reader {
 
   /// Restores state captured by [_captureState].
   void _restoreState(List<Object?> saved) {
-    _lines = saved[0] as List<String?>;
+    _lines = (saved[0]! as List<String?>)!;
     _file = saved[1];
-    _dir = saved[2] as Object;
-    _path = saved[3] as String;
-    _lineno = saved[4] as int;
+    _dir = (saved[2]! as Object)!;
+    _path = (saved[3]! as String)!;
+    _lineno = (saved[4]! as int)!;
     _mark = saved[5] as List<Object?>?;
-    _lookAhead = saved[6] as int;
-    processLines = saved[7] as bool;
-    _unescapeNextLine = saved[8] as bool;
-    unterminated = saved[9] as bool;
+    _lookAhead = (saved[6]! as int)!;
+    processLines = (saved[7]! as bool)!;
+    _unescapeNextLine = (saved[8]! as bool)!;
+    unterminated = (saved[9]! as bool)!;
   }
 
   /// Prepares the source data for parsing.
@@ -1073,12 +1078,12 @@ class PreprocessorReader extends Reader {
     final saved = _savedPreprocessorState;
     super.restoreSave();
     if (saved == null) return;
-    _includeStack = saved[0] as List<List<Object?>>;
+    _includeStack = (saved[0]! as List<List<Object?>>)!;
     _maxdepth = saved[1] as _MaxDepth?;
-    _skipping = saved[2] as bool;
-    _conditionalStack = saved[3] as List<_ConditionalFrame>;
+    _skipping = (saved[2]! as bool)!;
+    _conditionalStack = (saved[3]! as List<_ConditionalFrame>)!;
     _includeProcessorExtensions = saved[4] as List<ReaderIncludeProcessor>?;
-    _includeProcessorsChecked = saved[5] as bool;
+    _includeProcessorsChecked = (saved[5]! as bool)!;
     _savedPreprocessorState = null;
   }
 
@@ -2019,13 +2024,13 @@ class PreprocessorReader extends Reader {
   void _popInclude() {
     if (_includeStack.isEmpty) return;
     final frame = _includeStack.removeLast();
-    _lines = frame[0] as List<String?>;
+    _lines = (frame[0]! as List<String?>)!;
     _file = frame[1];
-    _dir = frame[2] as Object;
-    _path = frame[3] as String;
-    _lineno = frame[4] as int;
+    _dir = (frame[2]! as Object)!;
+    _path = (frame[3]! as String)!;
+    _lineno = (frame[4]! as int)!;
     _maxdepth = frame[5] as _MaxDepth?;
-    processLines = frame[6] as bool;
+    processLines = (frame[6]! as bool)!;
     // FIXME kind of a hack
     //Document::AttributeEntry.new('infile', @file).save_to_next_block @document
     //Document::AttributeEntry.new('indir', ::File.dirname(@file)).save_to_next_block @document

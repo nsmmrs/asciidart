@@ -116,7 +116,7 @@ void main() {
       expect(doc.attr('foo'), equals('bar'));
       expect(attrs.containsKey('attribute_entries'), isTrue);
       final entries =
-          attrs['attribute_entries'] as List<DocumentAttributeEntry>;
+          attrs['attribute_entries']! as List<DocumentAttributeEntry>;
       expect(entries, hasLength(1));
       expect(entries[0].name, equals('foo'));
       expect(entries[0].value, equals('bar'));
@@ -141,7 +141,7 @@ void main() {
       expect(doc.attr('foo'), equals('ultramega'));
       expect(attrs.containsKey('attribute_entries'), isTrue);
       final entries =
-          attrs['attribute_entries'] as List<DocumentAttributeEntry>;
+          attrs['attribute_entries']! as List<DocumentAttributeEntry>;
       expect(entries, hasLength(1));
       expect(entries[0].name, equals('foo'));
       expect(entries[0].value, equals('ultramega'));
@@ -182,7 +182,7 @@ void main() {
         expect(attrValue, isNull);
         expect(attrs.containsKey('attribute_entries'), isTrue);
         final entries =
-            attrs['attribute_entries'] as List<DocumentAttributeEntry>;
+            attrs['attribute_entries']! as List<DocumentAttributeEntry>;
         expect(entries, hasLength(1));
         expect(entries[0].name, equals('foo'));
         expect(entries[0].value, isNull);

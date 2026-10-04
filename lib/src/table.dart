@@ -185,7 +185,7 @@ class Table extends AbstractBlock {
     List<Column>? autowidthCols;
     num widthBase = 0;
     for (final colspec in colspecs) {
-      final colwidth = colspec['width'] as num;
+      final colwidth = colspec['width']! as num;
       cols.add(Column(this, cols.length, colspec));
       if (colwidth < 0) {
         (autowidthCols ??= <Column>[]).add(cols.last);
@@ -214,7 +214,7 @@ class Table extends AbstractBlock {
 
     if (isTruthy(widthBase)) {
       if (autowidthCols != null) {
-        final base = widthBase as num;
+        final base = widthBase! as num;
         late final num autowidth;
         if (base > 100) {
           autowidth = 0;
@@ -240,13 +240,13 @@ class Table extends AbstractBlock {
       }
       for (final col in columns) {
         totalWidth += colPcwidth =
-            col.assignWidth(null, widthBase, precision) as num;
+            (col.assignWidth(null, widthBase, precision)! as num)!;
       }
     } else {
       final computed = (100.0 / columns.length).truncateAtPrecision(precision);
       colPcwidth = computed.toInt() == computed ? computed.toInt() : computed;
       for (final col in columns) {
-        totalWidth += col.assignWidth(colPcwidth, null, precision) as num;
+        totalWidth += (col.assignWidth(colPcwidth, null, precision)! as num)!;
       }
     }
 
@@ -325,15 +325,15 @@ class Column extends AbstractNode {
     var pcwidth = colPcwidth as num?;
     if (isTruthy(widthBase)) {
       final computed =
-          ((attributes['width'] as num).toDouble() *
+          ((attributes['width']! as num).toDouble() *
                   100.0 /
-                  (widthBase as num).toDouble())
+                  (widthBase! as num).toDouble())
               .truncateAtPrecision(precision);
       pcwidth = computed.toInt() == computed ? computed.toInt() : computed;
     }
     final tableAbswidth = parent!.attributes['tableabswidth'];
     if (isTruthy(tableAbswidth)) {
-      final computed = ((pcwidth! / 100.0) * (tableAbswidth as num).toDouble())
+      final computed = ((pcwidth! / 100.0) * (tableAbswidth! as num).toDouble())
           .truncateAtPrecision(precision);
       attributes['colabswidth'] = computed.toInt() == computed
           ? computed.toInt()
@@ -466,7 +466,7 @@ class Cell extends AbstractBlock {
         // TODOdelete style attribute from @attributes if set.
         if (!isTruthy(inHeaderRow)) {
           final attrStyle = attrs['style'];
-          if (isTruthy(attrStyle)) cellStyle = attrStyle as String;
+          if (isTruthy(attrStyle)) cellStyle = (attrStyle! as String)!;
         }
         updateAttributes(attrs);
       }
@@ -511,7 +511,7 @@ class Cell extends AbstractBlock {
     if (asciidoc) {
       // NodeDocument/Document unification pending: the document is always
       // a Document here (same cast as `catalogInlineAnchor`).
-      final parentDoc = document as Document;
+      final parentDoc = document! as Document;
       // FIXME hide doctitle from nested document; temporary workaround to
       // fix nested document seeing doctitle and assuming it has its own
       // document title.
@@ -674,7 +674,7 @@ class Cell extends AbstractBlock {
     if (cellStyle == 'asciidoc') {
       return innerDocument.convert();
     } else if (_text!.contains(doubleLf)) {
-      return rubySplit(text as String, _blankLineRx)
+      return rubySplit(text! as String, _blankLineRx)
           .map(
             (para) => isTruthy(cellStyle) && cellStyle != 'header'
                 ? (Inline(
@@ -682,17 +682,17 @@ class Cell extends AbstractBlock {
                         'quoted',
                         text: para,
                         type: cellStyle,
-                      ).convert()
+                      ).convert()!
                       as String)
                 : para,
           )
           .toList();
     } else {
-      final subbedText = text as String;
+      final subbedText = text! as String;
       if (subbedText.isEmpty) return <String>[];
       if (isTruthy(cellStyle) && cellStyle != 'header') {
         return <String>[
-          Inline(parent, 'quoted', text: subbedText, type: cellStyle).convert()
+          Inline(parent, 'quoted', text: subbedText, type: cellStyle).convert()!
               as String,
         ];
       }
@@ -965,7 +965,7 @@ class TableParserContext {
             'table missing leading separator; recovering automatically',
             {
               'sourceLocation': ReaderCursor(
-                List<Object?>.of(_startCursorData as List<Object?>),
+                List<Object?>.of(_startCursorData! as List<Object?>),
               ),
             },
           ),

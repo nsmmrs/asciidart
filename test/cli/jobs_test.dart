@@ -304,7 +304,7 @@ void main() {
         ),
       );
       expect(response['ok'], isTrue);
-      final records = response['records'] as List;
+      final records = response['records']! as List;
       expect(records, hasLength(1));
       expect(records.single[0], equals(Severity.warn.value));
       expect(records.single[1], contains('section title out of sequence'));

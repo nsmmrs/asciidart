@@ -248,7 +248,7 @@ class Docbook5Converter extends ConverterBase {
       result.add('<refmeta>');
       if (node.hasAttr('mantitle')) {
         result.add(
-          '<refentrytitle>${node.applyReftextSubs(node.attr('mantitle') as String)}</refentrytitle>',
+          '<refentrytitle>${node.applyReftextSubs(node.attr('mantitle')! as String)}</refentrytitle>',
         );
       }
       if (node.hasAttr('manvolnum')) {
@@ -263,7 +263,7 @@ class Docbook5Converter extends ConverterBase {
       result.add('</refmeta>');
       result.add('<refnamediv>');
       if (node.hasAttr('mannames')) {
-        for (final name in node.attr('mannames') as List<Object?>) {
+        for (final name in node.attr('mannames')! as List<Object?>) {
           result.add('<refname>${_s(name)}</refname>');
         }
       }
@@ -372,7 +372,7 @@ class Docbook5Converter extends ConverterBase {
       result.add('<title>${_s(node.title)}</title>');
     }
     for (final itemObj in node.items) {
-      final item = itemObj as ListItem;
+      final item = itemObj! as ListItem;
       result.add('<callout arearefs="${_s(item.attr('coids'))}">');
       result.add('<para>${_s(item.text)}</para>');
       if (item.hasBlocks) {
@@ -397,12 +397,12 @@ class Docbook5Converter extends ConverterBase {
         '<tbody valign="top">',
       );
       for (final pair in node.items) {
-        final parts = pair as List<Object?>;
-        final terms = parts[0] as List<Object?>;
+        final parts = pair! as List<Object?>;
+        final terms = parts[0]! as List<Object?>;
         final dd = parts[1] as ListItem?;
         result.add('<row>\n<entry>');
         for (final dt in terms) {
-          result.add('<simpara>${_s((dt as ListItem).text)}</simpara>');
+          result.add('<simpara>${_s((dt! as ListItem).text)}</simpara>');
         }
         result.add('</entry>\n<entry>');
         if (dd != null) {
@@ -432,15 +432,15 @@ class Docbook5Converter extends ConverterBase {
         }
       }
       for (final pair in node.items) {
-        final parts = pair as List<Object?>;
-        final terms = parts[0] as List<Object?>;
+        final parts = pair! as List<Object?>;
+        final terms = parts[0]! as List<Object?>;
         final dd = parts[1] as ListItem?;
         result.add('<$entryTag>');
         if (labelTag != null) {
           result.add('<$labelTag>');
         }
         for (final dt in terms) {
-          result.add('<$termTag>${_s((dt as ListItem).text)}</$termTag>');
+          result.add('<$termTag>${_s((dt! as ListItem).text)}</$termTag>');
         }
         if (labelTag != null) {
           result.add('</$labelTag>');
@@ -490,7 +490,7 @@ class Docbook5Converter extends ConverterBase {
     final mediaobject =
         '<mediaobject>\n'
         '<imageobject>\n'
-        '<imagedata fileref="${node.imageUri(node.attr('target') as String)}"${_imageSizeAttributes(node.attributes)}$alignAttribute/>\n'
+        '<imagedata fileref="${node.imageUri(node.attr('target')! as String)}"${_imageSizeAttributes(node.attributes)}$alignAttribute/>\n'
         '</imageobject>\n'
         '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
         '</mediaobject>';
@@ -607,7 +607,7 @@ class Docbook5Converter extends ConverterBase {
       result.add('<title>${_s(node.title)}</title>');
     }
     for (final itemObj in node.items) {
-      final item = itemObj as ListItem;
+      final item = itemObj! as ListItem;
       result.add('<listitem${_commonAttributes(item.id, item.role)}>');
       result.add('<simpara>${_s(item.text)}</simpara>');
       if (item.hasBlocks) {
@@ -797,12 +797,12 @@ class Docbook5Converter extends ConverterBase {
                 cellContent =
                     '<literallayout class="monospaced">${_s(cell.text)}</literallayout>';
               case 'header':
-                final content = cell.content() as List<Object?>;
+                final content = cell.content()! as List<Object?>;
                 cellContent = content.isEmpty
                     ? ''
                     : '<simpara><emphasis role="strong">${content.map(_s).join('</emphasis></simpara><simpara><emphasis role="strong">')}</emphasis></simpara>';
               default:
-                final content = cell.content() as List<Object?>;
+                final content = cell.content()! as List<Object?>;
                 cellContent = content.isEmpty
                     ? ''
                     : '<simpara>${content.map(_s).join('</simpara><simpara>')}</simpara>';
@@ -837,7 +837,7 @@ class Docbook5Converter extends ConverterBase {
         result.add('<title>${_s(node.title)}</title>');
       }
       for (final itemObj in node.items) {
-        final item = itemObj as ListItem;
+        final item = itemObj! as ListItem;
         result.add('<bibliomixed>');
         result.add('<bibliomisc>${_s(item.text)}</bibliomisc>');
         if (item.hasBlocks) {
@@ -857,7 +857,7 @@ class Docbook5Converter extends ConverterBase {
         result.add('<title>${_s(node.title)}</title>');
       }
       for (final itemObj in node.items) {
-        final item = itemObj as ListItem;
+        final item = itemObj! as ListItem;
         final textMarker = checklist && item.hasAttr('checkbox')
             ? (item.hasAttr('checked') ? '&#10003; ' : '&#10063; ')
             : null;
@@ -964,7 +964,7 @@ class Docbook5Converter extends ConverterBase {
     } else {
       final seeAlsoList = node.attr('see-also');
       rel = isTruthy(seeAlsoList)
-          ? (seeAlsoList as List<Object?>)
+          ? (seeAlsoList! as List<Object?>)
                 .map((seeAlso) => '\n<seealso>${_s(seeAlso)}</seealso>')
                 .join()
           : '';
@@ -972,7 +972,7 @@ class Docbook5Converter extends ConverterBase {
     if (node.type == 'visible') {
       return '<indexterm>\n<primary>${_s(node.text)}</primary>$rel\n</indexterm>${_s(node.text)}';
     }
-    final terms = node.attr('terms') as List<Object?>;
+    final terms = node.attr('terms')! as List<Object?>;
     final promotion = (node.document! as Document).hasOption(
       'indexterm-promotion',
     );
@@ -986,7 +986,7 @@ class Docbook5Converter extends ConverterBase {
 
   /// Converts the [node] inline keyboard shortcut.
   String convertInlineKbd(Inline node) {
-    final keys = node.attr('keys') as List<Object?>;
+    final keys = node.attr('keys')! as List<Object?>;
     if (keys.length == 1) {
       return '<keycap>${_s(keys[0])}</keycap>';
     }
@@ -996,7 +996,7 @@ class Docbook5Converter extends ConverterBase {
   /// Converts the [node] inline menu reference.
   String convertInlineMenu(Inline node) {
     final menu = _s(node.attr('menu'));
-    final submenus = node.attr('submenus') as List<Object?>;
+    final submenus = node.attr('submenus')! as List<Object?>;
     if (submenus.isEmpty) {
       final menuitem = node.attr('menuitem');
       if (isTruthy(menuitem)) {
@@ -1119,7 +1119,7 @@ class Docbook5Converter extends ConverterBase {
     final result = <String>['<info>'];
     if (!doc.notitle) {
       final title =
-          doc.doctitle(partition: true, useFallback: true) as DocumentTitle;
+          doc.doctitle(partition: true, useFallback: true)! as DocumentTitle;
       if (title.hasSubtitle) {
         result.add(
           '<title>${title.main}</title>\n<subtitle>${title.subtitle}</subtitle>',
@@ -1135,7 +1135,7 @@ class Docbook5Converter extends ConverterBase {
       result.add('<date>${_s(date)}</date>');
     }
     if (doc.hasAttr('copyright')) {
-      final match = _copyrightRx.firstMatch(doc.attr('copyright') as String);
+      final match = _copyrightRx.firstMatch(doc.attr('copyright')! as String);
       result.add('<copyright>');
       result.add('<holder>${match?.group(1) ?? ''}</holder>');
       final year = match?.group(2);
@@ -1271,7 +1271,7 @@ class Docbook5Converter extends ConverterBase {
   String? _coverTag(Document doc, String face, [bool usePlaceholder = false]) {
     final coverAttr = doc.attr('$face-cover-image');
     if (isTruthy(coverAttr)) {
-      var coverImage = coverAttr as String;
+      var coverImage = coverAttr! as String;
       var sizeAttrs = '';
       if (coverImage.contains(':')) {
         final match = _imageMacroRx.firstMatch(coverImage);

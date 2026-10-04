@@ -104,7 +104,7 @@ Map<String, Object?> buildConversionRequest({
     'safe': processorOptions['safe'],
     'standalone': processorOptions['standalone'],
     'warnings': processorOptions['warnings'],
-    'failure_level': (processorOptions['failure_level'] as Severity).value,
+    'failure_level': (processorOptions['failure_level']! as Severity).value,
     'template_dirs': processorOptions['template_dirs'],
     'template_engine': processorOptions['template_engine'],
     'eruby': processorOptions['eruby'],
@@ -140,10 +140,12 @@ Map<String, Object?> runConversionJob(Map<String, Object?> request) {
     final opts = <String, Object?>{};
     final attributes = request['attributes'];
     if (attributes != null) opts['attributes'] = attributes;
-    opts['safe'] = request['safe'] as int;
-    opts['standalone'] = request['standalone'] as bool;
-    opts['warnings'] = request['warnings'] as bool;
-    opts['failure_level'] = Severity.fromValue(request['failure_level'] as int);
+    opts['safe'] = (request['safe']! as int)!;
+    opts['standalone'] = (request['standalone']! as bool)!;
+    opts['warnings'] = (request['warnings']! as bool)!;
+    opts['failure_level'] = Severity.fromValue(
+      request['failure_level']! as int,
+    );
     for (final key in [
       'template_dirs',
       'template_engine',
@@ -171,7 +173,7 @@ Map<String, Object?> runConversionJob(Map<String, Object?> request) {
       timings = Timings();
       opts['timings'] = timings;
     }
-    convertFile(request['infile'] as String, opts);
+    convertFile(request['infile']! as String, opts);
     return <String, Object?>{
       'ok': true,
       'records': _transferRecords(memory),
@@ -197,7 +199,7 @@ Map<String, Object?> runConversionJob(Map<String, Object?> request) {
 /// run logged it, so filtered output bytes and [LoggerBase.maxSeverity]
 /// match the sequential run. [records] comes from a job response verbatim.
 void replayRecords(LoggerBase logger, Object? records) {
-  for (final record in records as List) {
+  for (final record in records! as List) {
     final pair = record as List;
     logger.add(Severity.fromValue(pair[0] as int), pair[1] as String);
   }

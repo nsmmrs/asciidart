@@ -237,7 +237,7 @@ Object? convert(Object? input, [Map<String, Object?>? options]) {
     final jail = doc.safe >= SafeMode.safe ? workingDir : null;
     if (isTruthy(toDir)) {
       outdir = doc.normalizeSystemPath(
-        toDir as String,
+        toDir! as String,
         start: workingDir,
         jail: jail,
         targetName: 'to_dir',
@@ -245,7 +245,7 @@ Object? convert(Object? input, [Map<String, Object?>? options]) {
       );
       if (isTruthy(toFile)) {
         final resolvedOutfile = doc.normalizeSystemPath(
-          toFile as String,
+          toFile! as String,
           start: outdir,
           targetName: 'to_dir',
           recover: false,
@@ -262,7 +262,7 @@ Object? convert(Object? input, [Map<String, Object?>? options]) {
       }
     } else if (isTruthy(toFile)) {
       final resolvedOutfile = doc.normalizeSystemPath(
-        toFile as String,
+        toFile! as String,
         start: workingDir,
         jail: jail,
         targetName: 'to_dir',
@@ -354,14 +354,14 @@ Object? convert(Object? input, [Map<String, Object?>? options]) {
           final copycss = doc.attr('copycss');
           final String stylesheetSrc;
           if (copycss == '' || copycss == true) {
-            stylesheetSrc = doc.normalizeSystemPath(stylesheet as String);
+            stylesheetSrc = doc.normalizeSystemPath(stylesheet! as String);
           } else {
             // NOTE in this case, copycss is a source location (but cannot
             // be a URI).
             stylesheetSrc = doc.normalizeSystemPath(_coercePath(copycss));
           }
           final stylesheetDest = doc.normalizeSystemPath(
-            stylesheet as String,
+            stylesheet! as String,
             start: stylesoutdir,
             jail: doc.safe >= SafeMode.safe ? outdir : null,
           );
@@ -459,7 +459,7 @@ Map<String, Object?> _coerceAttributes(Object? value) {
   if (value is List<Object?>) {
     final attrs = <String, Object?>{};
     for (final entry in value) {
-      _assignAttributeEntry(attrs, entry as String);
+      _assignAttributeEntry(attrs, entry! as String);
     }
     return attrs;
   }
@@ -570,7 +570,7 @@ String _coercePath(Object? value) {
   if (value is String) return value;
   if (value is File) return value.path;
   if (value is Uri) return value.toFilePath();
-  return value as String;
+  return value! as String;
 }
 
 /// Returns the absolute form of [path] (port of `File.absolute_path`).

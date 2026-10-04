@@ -146,7 +146,7 @@ Document documentFromString(String src, [Map<String, Object?>? options]) {
 String convertString(String src, [Map<String, Object?>? options]) {
   final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
   opts.remove('keep_namespaces');
-  return documentFromString(src, opts).convert() as String;
+  return documentFromString(src, opts).convert()! as String;
 }
 
 /// Converts [src] to an embedded document (port of
@@ -154,7 +154,7 @@ String convertString(String src, [Map<String, Object?>? options]) {
 String convertStringToEmbedded(String src, [Map<String, Object?>? options]) {
   final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
   opts['standalone'] = false;
-  return documentFromString(src, opts).convert() as String;
+  return documentFromString(src, opts).convert()! as String;
 }
 
 /// Converts the file at [path] (port of `Asciidoctor.convert_file`).
@@ -179,12 +179,12 @@ String convertFile(
   };
   if (attributes != null) {
     if (attributes.containsKey('_attr_string_')) {
-      options['attributes'] = attributes['_attr_string_'] as String;
+      options['attributes'] = (attributes['_attr_string_']! as String)!;
     } else {
       options['attributes'] = attributes;
     }
   }
-  return api.convertFile(path, options) as String;
+  return api.convertFile(path, options)! as String;
 }
 
 /// Loads [input] into a parsed document (port of `Asciidoctor.load`).
@@ -1607,7 +1607,7 @@ void main() {
           final doc = documentFromString('content', {'backend': 'docbook'});
           expect(doc.hasAttr('toc'), isTrue);
           expect(doc.hasAttr('sectnums'), isTrue);
-          final result = doc.convert() as String;
+          final result = doc.convert()! as String;
           expect(result, contains('<?asciidoc-toc?>'));
           expect(result, contains('<?asciidoc-numbered?>'));
         },
@@ -1621,7 +1621,7 @@ void main() {
         });
         expect(doc.hasAttr('toc'), isTrue);
         expect(doc.hasAttr('sectnums'), isTrue);
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         expect(result, contains('<?asciidoc-toc maxdepth="1"?>'));
         expect(result, contains('<?asciidoc-numbered maxdepth="1"?>'));
       });
@@ -2242,7 +2242,7 @@ void main() {
         const input = 'Document Title\n==============\n\n+content+\n';
         final doc = documentFromString(input);
         expect(doc.hasAttr('compat-mode'), isTrue);
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         assertXpath('//code[text()="content"]', result, 1);
       });
 
@@ -2252,7 +2252,7 @@ void main() {
             'Document Title\n==============\n:compat-mode!:\n\n+content+\n';
         final doc = documentFromString(input);
         expect(doc.attr('compat-mode'), isNull);
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         assertXpath('//code[text()="content"]', result, 0);
       });
 
@@ -2264,7 +2264,7 @@ void main() {
         });
         expect(doc.attributeLocked('compat-mode'), isTrue);
         expect(doc.attr('compat-mode'), isNull);
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         assertXpath('//code[text()="content"]', result, 0);
       });
 
@@ -2299,7 +2299,7 @@ void main() {
         const input = '= Main Title: *Subtitle*\nAuthor Name\n\ncontent\n';
         final doc = documentFromString(input);
         final title =
-            doc.doctitle(partition: true, sanitize: true) as DocumentTitle;
+            doc.doctitle(partition: true, sanitize: true)! as DocumentTitle;
         expect(title.hasSubtitle, isTrue);
         expect(title.sanitized, isTrue);
         expect(title.main, equals('Main Title'));
@@ -2311,7 +2311,7 @@ void main() {
             '[separator=::]\n= Main Title:: *Subtitle*\nAuthor Name\n\ncontent\n';
         final doc = documentFromString(input);
         final title =
-            doc.doctitle(partition: true, sanitize: true) as DocumentTitle;
+            doc.doctitle(partition: true, sanitize: true)! as DocumentTitle;
         expect(title.hasSubtitle, isTrue);
         expect(title.sanitized, isTrue);
         expect(title.main, equals('Main Title'));
@@ -2326,7 +2326,7 @@ void main() {
           'attributes': {'title-separator': ' -'},
         });
         final title =
-            doc.doctitle(partition: true, sanitize: true) as DocumentTitle;
+            doc.doctitle(partition: true, sanitize: true)! as DocumentTitle;
         expect(title.hasSubtitle, isTrue);
         expect(title.sanitized, isTrue);
         expect(title.main, equals('Main Title'));
@@ -2366,7 +2366,7 @@ void main() {
         expect(doc.firstSection!.title, equals('Document Title'));
         assertXpath(
           '//*[@id="preamble"]//p[text()="Document Title"]',
-          doc.convert() as String,
+          doc.convert()! as String,
           1,
         );
       });
@@ -2382,7 +2382,7 @@ void main() {
         expect(doc.firstSection!.title, equals('Document Title'));
         assertXpath(
           '//*[@id="preamble"]//p[text()="Document Title"]',
-          doc.convert() as String,
+          doc.convert()! as String,
           1,
         );
       });
@@ -2394,7 +2394,7 @@ void main() {
         expect(doc.attr('intro'), equals('Welcome to the ACME Documentation!'));
         assertXpath(
           '//p[text()="Welcome to the ACME Documentation!"]',
-          doc.convert() as String,
+          doc.convert()! as String,
           1,
         );
       });
@@ -2412,7 +2412,7 @@ void main() {
         expect(doc.firstSection!.title, equals('doctitle'));
         assertXpath(
           '//*[@id="preamble"]//p[text()="Document Title, doctitle"]',
-          doc.convert() as String,
+          doc.convert()! as String,
           1,
         );
       });
@@ -2431,7 +2431,7 @@ void main() {
           expect(doc.firstSection!.title, equals('Override'));
           assertXpath(
             '//*[@id="preamble"]//p[text()="Document Title, Override"]',
-            doc.convert() as String,
+            doc.convert()! as String,
             1,
           );
         },
@@ -2448,7 +2448,7 @@ void main() {
         expect(doc.firstSection!.title, equals('Override'));
         assertXpath(
           '//*[@id="preamble"]//p[text()="Override"]',
-          doc.convert() as String,
+          doc.convert()! as String,
           1,
         );
       });
@@ -2460,7 +2460,7 @@ void main() {
         final doc = documentFromString(input);
         expect(doc.attr('doctitle'), equals('&lt;Foo&gt; &#43; &lt;Bar&gt;'));
         expect(
-          doc.blocks[0].content() as String,
+          doc.blocks[0].content()! as String,
           contains('&lt;Foo&gt; &#43; &lt;Bar&gt;'),
         );
       });
@@ -2476,7 +2476,7 @@ void main() {
           expect(logger.messages, isEmpty);
           expect(doc.attr('doctitle'), equals('ACME Docs'));
           expect(doc.doctitle(), equals('ACME Docs'));
-          assertXpath('//p[text()="ACME Docs"]', doc.convert() as String, 1);
+          assertXpath('//p[text()="ACME Docs"]', doc.convert()! as String, 1);
         });
       });
 
@@ -2493,7 +2493,7 @@ void main() {
           expect(doc.doctitle(), equals('ACME Docs'));
           assertXpath(
             '//p[text()="{project-name} Docs"]',
-            doc.convert() as String,
+            doc.convert()! as String,
             1,
           );
         });
@@ -2835,7 +2835,7 @@ void main() {
         expect(doc.attr('firstname'), equals('Doc'));
         expect(doc.attr('authorinitials'), equals('DW'));
         expect(doc.attr('authorcount'), equals(1));
-        final output = doc.convert() as String;
+        final output = doc.convert()! as String;
         assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
       });
 
@@ -2847,7 +2847,7 @@ void main() {
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('authorinitials'), equals('DOC'));
         expect(doc.attr('authorcount'), equals(1));
-        final output = doc.convert() as String;
+        final output = doc.convert()! as String;
         assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
       });
 
@@ -2868,7 +2868,7 @@ void main() {
         expect(doc.attr('author_2'), equals('Other Author'));
         expect(doc.attr('authorinitials_2'), equals('OA'));
         expect(doc.attr('authorcount'), equals(2));
-        final output = doc.convert() as String;
+        final output = doc.convert()! as String;
         assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
       });
 
@@ -2884,7 +2884,7 @@ void main() {
         expect(doc.attr('authorinitials'), equals('DW'));
         expect(doc.attr('author_2'), equals('Other Author'));
         expect(doc.attr('authorcount'), equals(2));
-        final output = doc.convert() as String;
+        final output = doc.convert()! as String;
         //assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
         assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
       });
@@ -2996,7 +2996,7 @@ void main() {
       test('with header footer', () {
         final doc = documentFromString('= Title\n\nparagraph');
         expect(doc.hasAttr('embedded'), isFalse);
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         assertXpath('/html', result, 1);
         assertXpath('//*[@id="header"]', result, 1);
         assertXpath('//*[@id="header"]/h1', result, 1);
@@ -3014,7 +3014,7 @@ void main() {
         final doc = documentFromString('= Document Title\n\npreamble', {
           'attributes': {'last-update-label!': ''},
         });
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         assertXpath('//*[@id="footer-text"]', result, 1);
         assertXpath(
           '//*[@id="footer-text"][normalize-space(text())=""]',
@@ -3029,7 +3029,7 @@ void main() {
           'standalone': false,
         }).parse();
         expect(doc.hasAttr('embedded'), isTrue);
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         assertXpath('/html', result, 0);
         assertXpath('/h1', result, 0);
         assertXpath('/*[@id="header"]', result, 0);
@@ -3043,7 +3043,7 @@ void main() {
           'standalone': true,
         }).parse();
         expect(doc.hasAttr('embedded'), isFalse);
-        final result = doc.convert({'standalone': false}) as String;
+        final result = doc.convert({'standalone': false})! as String;
         assertXpath('/html', result, 0);
         assertXpath('/h1', result, 1);
         assertXpath('/*[@id="header"]', result, 0);
@@ -3057,7 +3057,7 @@ void main() {
           'header_footer': false,
         }).parse();
         expect(doc.hasAttr('embedded'), isTrue);
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         assertXpath('/html', result, 0);
         assertXpath('/h1', result, 0);
         assertXpath('/*[@id="header"]', result, 0);
@@ -3071,7 +3071,7 @@ void main() {
           'header_footer': true,
         }).parse();
         expect(doc.hasAttr('embedded'), isFalse);
-        final result = doc.convert({'header_footer': false}) as String;
+        final result = doc.convert({'header_footer': false})! as String;
         assertXpath('/html', result, 0);
         assertXpath('/h1', result, 1);
         assertXpath('/*[@id="header"]', result, 0);
@@ -3148,7 +3148,7 @@ void main() {
           ],
         ];
         for (final entry in cases) {
-          final apiAttrs = entry[0] as Map<String, Object?>;
+          final apiAttrs = entry[0]! as Map<String, Object?>;
           final attrEntries = entry[1] as List<String>?;
           final input =
               '= Document Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
@@ -3208,7 +3208,7 @@ void main() {
           ],
         ];
         for (final entry in cases) {
-          final apiAttrs = entry[0] as Map<String, Object?>;
+          final apiAttrs = entry[0]! as Map<String, Object?>;
           final attrEntries = entry[1] as List<String>?;
           final input =
               '= Document Title${attrEntries == null ? '' : '\n${attrEntries.join('\n')}'}'
@@ -3364,18 +3364,18 @@ void main() {
       test('should return empty :ids table', () {
         final doc = emptyDocument();
         expect(doc.catalog['ids'], isNotNull);
-        expect(doc.catalog['ids'] as Map, isEmpty);
-        expect((doc.catalog['ids'] as Map<String, Object?>)['foobar'], isNull);
+        expect(doc.catalog['ids']! as Map, isEmpty);
+        expect((doc.catalog['ids']! as Map<String, Object?>)['foobar'], isNull);
       });
 
       test('should register entry in :refs table with reftext when request is '
           'made to register entry in :ids table', () {
         final doc = emptyDocument();
         doc.register('ids', ['foobar', 'Foo Bar']);
-        expect(doc.catalog['ids'] as Map, isEmpty);
-        expect(doc.catalog['refs'] as Map, isNotEmpty);
+        expect(doc.catalog['ids']! as Map, isEmpty);
+        expect(doc.catalog['refs']! as Map, isNotEmpty);
         final ref =
-            (doc.catalog['refs'] as Map<String, Object?>)['foobar'] as Inline;
+            (doc.catalog['refs']! as Map<String, Object?>)['foobar']! as Inline;
         expect(ref.reftext, equals('Foo Bar'));
         expect(doc.resolveId('Foo Bar'), equals('foobar'));
       });
@@ -3404,7 +3404,7 @@ void main() {
           'catalog_assets': true,
         });
         doc.register('images', 'diagram.svg');
-        final images = doc.catalog['images'] as List<ImageReference>;
+        final images = doc.catalog['images']! as List<ImageReference>;
         expect(images.length, equals(1));
         expect(images[0].target, equals('diagram.svg'));
         expect(images[0].imagesdir, equals('img'));
@@ -3414,7 +3414,7 @@ void main() {
         const input =
             'image::outer.png[]\n\n|===\na|\nimage::inner.png[]\n|===\n';
         final doc = documentFromString(input, {'catalog_assets': true});
-        final images = doc.catalog['images'] as List<ImageReference>;
+        final images = doc.catalog['images']! as List<ImageReference>;
         expect(images, isNotEmpty);
         expect(images.length, equals(2));
         expect(
@@ -3481,7 +3481,7 @@ void main() {
         });
         expect(doc.backend, equals('html5'));
         expect(doc.attr('htmlsyntax'), equals('xml'));
-        final result = doc.convert({'standalone': false}) as String;
+        final result = doc.convert({'standalone': false})! as String;
         expect(result, equals('<hr/>'));
       });
 
@@ -3491,7 +3491,7 @@ void main() {
         final doc = documentFromString(input, {'safe': 'safe'});
         expect(doc.backend, equals('html5'));
         expect(doc.attr('htmlsyntax'), equals('xml'));
-        final result = doc.convert({'standalone': false}) as String;
+        final result = doc.convert({'standalone': false})! as String;
         expect(result, equals('<hr/>'));
       });
 
@@ -3693,7 +3693,7 @@ void main() {
           standalone: true,
         );
         expect(doc.attr('mantitle'), equals(r'foo\--bar'));
-        final result = doc.convert() as String;
+        final result = doc.convert()! as String;
         assertXpath(
           '/xmlns:article/xmlns:info/xmlns:title[text()="foo--bar(1)"]',
           result,
@@ -4064,7 +4064,7 @@ void main() {
           'attributes': {'doctime': '10:00:00-0700'},
         });
         expect(doc.attr('doctime'), equals('10:00:00-0700'));
-        expect(doc.attr('docdatetime') as String, endsWith(' 10:00:00-0700'));
+        expect(doc.attr('docdatetime')! as String, endsWith(' 10:00:00-0700'));
       });
 
       test('should compute docyear from docdate', () {
@@ -4072,7 +4072,7 @@ void main() {
           'attributes': {'docdate': '2015-01-01'},
         });
         expect(doc.attr('docyear'), equals('2015'));
-        expect(doc.attr('docdatetime') as String, startsWith('2015-01-01 '));
+        expect(doc.attr('docdatetime')! as String, startsWith('2015-01-01 '));
       });
 
       test('should allow doctime to be overridden', () {

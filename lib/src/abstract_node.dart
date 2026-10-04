@@ -526,7 +526,7 @@ abstract class AbstractNode {
   String iconUri(String name) {
     final String icon;
     if (hasAttr('icon')) {
-      var custom = attr('icon') as String;
+      var custom = attr('icon')! as String;
       // QUESTION should we be adding the extension if the icon is an absolute URI?
       if (!Helpers.hasExtname(custom)) {
         custom = '$custom.${document!.attr('icontype', 'png')}';
