@@ -10,7 +10,7 @@ upstream `main` (2.1.0.alpha.0) is preserved on the `2.1.0` branch.
 
 - `test/fixtures/**` (`*.adoc`, `*.asciidoc`, recursive) plus
   `data/reference/syntax.adoc`: 32 files per backend.
-- `test/parity/**` plus `data/reference/syntax.adoc`: 9 files per backend.
+- `test/parity/**` plus `data/reference/syntax.adoc`: 10 files per backend.
   These pin the places where 2.0.26 differs from upstream `main` (tilde
   open blocks, ordered list starts, `link=self`, front matter, table and
   manpage layout, ...); see [`test/parity/README.md`](../test/parity/README.md).
@@ -27,10 +27,11 @@ tool/parity.sh dist/asciidoctor-linux-x64
 
 `tool/parity.sh` runs both corpora on html5, docbook5 and manpage. Each file
 is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
-`SOURCE_DATE_EPOCH=0`. CI runs the same script on every push
-(`dart-exe-e2e` job).
+`SOURCE_DATE_EPOCH=0`. CI runs the same script on every push, against the
+native executable (`dart-exe-e2e` job) and against the npm package's CLI on
+Node.js (`npm` job, `tool/parity.sh test/e2e/bin/asciidoctor-node`).
 
-## Verdict (2026-10-04): PASS — 123/123 identical
+## Verdict (2026-10-04): PASS — 126/126 identical
 
 | Corpus | html5 | docbook5 | manpage |
 | --- | --: | --: | --: |
@@ -38,8 +39,9 @@ is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
 | parity | 10/10 | 10/10 | 10/10 |
 
 Warnings on stderr were compared by hand over the parity corpus and match
-too (the harness passes `-q`). The e2e suite (`test/e2e/`, 128 tests) passes
-with no skips against both the Dart CLI and the gem.
+too (the harness passes `-q`). The e2e suite (`test/e2e/`, 134 tests) passes
+with no skips against the Dart CLI, the Node.js CLI and the gem. The Node.js
+CLI gives the same 126/126.
 
 ## Known intentional differences
 
