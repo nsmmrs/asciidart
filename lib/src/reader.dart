@@ -2276,7 +2276,7 @@ final RegExp _floatPrefixRx = RegExp(
 /// parsed, else 0.0.
 double _rubyToDouble(String value) {
   final text = value.trimLeft();
-  if (text.isEmpty) return 0.0;
+  if (text.isEmpty) return 0;
   final lower = text.toLowerCase();
   final signedInf = RegExp('^[+-]?inf');
   final signedNan = RegExp('^[+-]?nan');

@@ -188,7 +188,7 @@ int rubyToInteger(Object? value) {
 double rubyToDouble(Object? value) {
   if (value is double) return value;
   if (value is num) return value.toDouble();
-  if (value == null) return 0.0;
+  if (value == null) return 0;
   if (value is! String) {
     throw StateError(
       'no implicit conversion of ${value.runtimeType} into '
@@ -196,7 +196,7 @@ double rubyToDouble(Object? value) {
     );
   }
   final match = _leadingFloat.firstMatch(value);
-  if (match == null) return 0.0;
+  if (match == null) return 0;
   return double.tryParse(match.group(0)!.trim()) ?? 0.0;
 }
 
