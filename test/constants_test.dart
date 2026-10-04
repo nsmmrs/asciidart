@@ -944,29 +944,46 @@ void main() {
             .replaceAll('>', '&gt;'),
     ];
 
-    void checkGuard(String name, RegExp pattern, String guard) {
+    void checkGuard(
+      String name,
+      RegExp pattern,
+      bool Function(String match) admits,
+    ) {
       var matched = 0;
       for (final text in texts) {
         for (final match in pattern.allMatches(text)) {
           matched++;
-          expect(match.group(0), contains(guard), reason: name);
+          expect(admits(match.group(0)!), isTrue, reason: '$name: $match');
         }
       }
       expect(matched, greaterThan(0), reason: '$name never matched');
     }
 
-    test('every quote match contains its guard', () {
+    test('every quote match has its opening then closing delimiter', () {
       for (final compat in [false, true]) {
         for (final (i, sub) in quoteSubs[compat]!.indexed) {
-          checkGuard('quoteSubs[$compat][$i]', sub.pattern, sub.guard);
+          checkGuard('quoteSubs[$compat][$i]', sub.pattern, sub.mayMatch);
         }
       }
     });
 
     test('every replacement match contains its guard', () {
       for (final (i, rule) in replacements.indexed) {
-        checkGuard('replacements[$i]', rule.pattern, rule.guard);
+        checkGuard(
+          'replacements[$i]',
+          rule.pattern,
+          (match) => match.contains(rule.guard),
+        );
       }
+    });
+
+    test('mayMatch needs the closing delimiter after the opening one', () {
+      final strong = quoteSubs[false]![1];
+      expect(strong.mayMatch('a * b'), isFalse);
+      expect(strong.mayMatch('*x*'), isTrue);
+      final doubleQuote = quoteSubs[false]![2];
+      expect(doubleQuote.mayMatch('`" then "`'), isFalse);
+      expect(doubleQuote.mayMatch('"`x`"'), isTrue);
     });
   });
 

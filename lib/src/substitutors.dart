@@ -458,7 +458,7 @@ String subQuotes(AbstractNode node, String text) {
   if (!quotedTextSniffRx[compat]!.hasMatch(text)) return text;
   var result = text;
   for (final sub in quoteSubs[compat]!) {
-    if (!result.contains(sub.guard)) continue;
+    if (!sub.mayMatch(result)) continue;
     result = result.replaceAllMapped(
       sub.pattern,
       (match) =>

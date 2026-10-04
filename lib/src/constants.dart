@@ -378,8 +378,10 @@ const Map<String, String> intrinsicAttributes = <String, String>{
 /// Ruby stores each rule as a `[type_symbol, scope_symbol, regexp]` triple;
 /// the [guard] is a Dart-side addition that lets callers skip the pattern.
 class QuoteSub {
-  /// Creates a rule with [type], [scope], [pattern] and [guard].
-  const new(this.type, this.scope, this.pattern, this.guard);
+  /// Creates a rule with [type], [scope], [pattern] and [guard]; [close]
+  /// is the closing delimiter when it differs from [guard].
+  const new(this.type, this.scope, this.pattern, this.guard, [String? close])
+    : closeGuard = close ?? guard;
 
   /// The quote type (`'strong'`, `'emphasis'`, `'monospaced'`, ...).
   final String type;
@@ -390,11 +392,22 @@ class QuoteSub {
   /// The pattern matching the quoted span.
   final RegExp pattern;
 
-  /// A literal every match of [pattern] contains (the opening delimiter).
-  ///
-  /// Text without it cannot match, so the (comparatively slow) regex scan
-  /// is skipped; the result is identical either way.
+  /// The opening delimiter, a literal every match of [pattern] contains.
   final String guard;
+
+  /// The closing delimiter, which every match of [pattern] contains after
+  /// (and not overlapping) its [guard].
+  final String closeGuard;
+
+  /// Whether [text] could contain a match of [pattern].
+  ///
+  /// Text without the opening delimiter followed by the closing one cannot
+  /// match, so the (comparatively slow) regex scan can be skipped; the
+  /// result is identical either way.
+  bool mayMatch(String text) {
+    final open = text.indexOf(guard);
+    return open >= 0 && text.indexOf(closeGuard, open + guard.length) >= 0;
+  }
 }
 
 /// Quoted-text substitution rules for normal mode (`QUOTE_SUBS`false``).
@@ -443,6 +456,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       unicode: true,
     ),
     '"`',
+    '`"',
   ),
   QuoteSub(
     'single',
@@ -457,6 +471,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
       unicode: true,
     ),
     "'`",
+    "`'",
   ),
   QuoteSub(
     'monospaced',
@@ -568,6 +583,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
       unicode: true,
     ),
     '``',
+    "''",
   ),
   QuoteSub(
     'emphasis',
@@ -596,6 +612,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
       unicode: true,
     ),
     '`',
+    "'",
   ),
   QuoteSub(
     'monospaced',
