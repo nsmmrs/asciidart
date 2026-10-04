@@ -601,7 +601,7 @@ class _RubyStringState {
   /// consumed (the original's `scan_until(...) || scan_rest`).
   _RubyStringContent scanContent(CodeRayStringScanner scanner) {
     final input = scanner.string;
-    var pos = scanner.pos;
+    final pos = scanner.pos;
     final end = input.length;
     if (heredoc != null) {
       final stop = _heredocStop(input, pos, end);

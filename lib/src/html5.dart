@@ -1880,7 +1880,7 @@ class Html5Converter extends ConverterBase {
         // optional
         final targetAndList = _split2(node.attr('target') as String, '/');
         var target = targetAndList.$1;
-        var list = targetAndList.$2 ?? node.attr('list') as String?;
+        final list = targetAndList.$2 ?? node.attr('list') as String?;
         final String listParam;
         if (list != null) {
           listParam = '&amp;list=$list';

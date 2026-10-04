@@ -3418,7 +3418,7 @@ abstract final class Parser {
       // of the list.
       if (isSiblingListItem(rawLine, listType, siblingTrait)) break;
 
-      Object thisLine = rawLine == listContinuation
+      final Object thisLine = rawLine == listContinuation
           ? _ListContinuation.active
           : rawLine;
       final prevLine = buffer.isEmpty ? null : buffer.last;
