@@ -1,17 +1,39 @@
 # Asciidoctor (Dart port)
 
+[![CI](https://github.com/nsmmrs/asciidoctor-dart/actions/workflows/ci.yml/badge.svg)](https://github.com/nsmmrs/asciidoctor-dart/actions/workflows/ci.yml)
+[![pub package](https://img.shields.io/pub/v/asciidoctor.svg)](https://pub.dev/packages/asciidoctor)
+
 Dart port of [Asciidoctor](https://asciidoctor.org), the text processor
 for converting AsciiDoc to HTML 5, DocBook 5, and Unix man pages.
 
 > Status: working CLI (v0.1.0). All three backends, the option parser, and
 > the extension framework are ported; the bats e2e suite passes 131/131
 > against this CLI and the differential corpus is byte-identical to Ruby
-> (see `../benchmark/PARITY.md`).
+> (see `benchmark/PARITY.md`).
 >
-> Performance (measured 2026-10-03, see `../benchmark/BASELINE.md`): the
+> Performance (measured 2026-10-03, see `benchmark/BASELINE.md`): the
 > AOT-compiled binary converts the benchmark corpus **3.5–8.8x faster**
 > than the Ruby CLI end to end. `dart run` (JIT dev mode) is not a
 > performance target and runs ~13–15x slower than Ruby per spawn.
+
+## Usage
+
+Add the dependency (`dart pub add asciidoctor`), then convert:
+
+```dart
+import 'package:asciidoctor/asciidoctor.dart';
+
+void main() {
+  final html = convert('Hello, *World*!');
+  print(html); // <div class="paragraph">...
+}
+```
+
+`convert` takes a string (or lines, a file, or rewindable IO) plus the usual
+options (`backend`, `standalone`, `safe`, `attributes`, ...); see
+`example/asciidoctor_example.dart` and the API docs. There is also a
+CLI: `dart pub global activate asciidoctor`, then
+`asciidoctor doc.adoc`.
 
 ## Prerequisites
 
@@ -47,7 +69,7 @@ dart compile exe bin/asciidoctor.dart -o build/asciidoctor
 ## Custom converter templates
 
 Two override paths (Tilt templates cannot run on Dart; see
-[ADR-0002](../adr/0002-template-converter-strategy.md) and the
+[ADR-0002](adr/0002-template-converter-strategy.md) and the
 [cookbook](doc/templates.md)):
 
 - **Mustache files:** `-T templates` loads `paragraph.mustache`-style
@@ -101,3 +123,24 @@ the exact bytes of its source file.
 - `test/smoke_test.dart` — smoke tests
 - `test/paths_test.dart` — path resolver tests (port of `test/paths_test.rb`)
 - `test/stylesheets_test.dart` — embedded-data and stylesheets tests
+
+## Origins
+
+This is a Dart port of
+[Asciidoctor](https://github.com/asciidoctor/asciidoctor) (the Ruby
+implementation by Dan Allen and contributors), ported file by file with
+byte-identical output as the acceptance bar. The Ruby project is the
+upstream reference; this repository contains only the Dart
+implementation.
+
+## License
+
+MIT — see [LICENSE](LICENSE). The license text is unchanged from
+upstream, as are the embedded stylesheets, locale data, and man page.
+
+## Contributing
+
+Bug reports and pull requests are welcome at the
+[issue tracker](https://github.com/nsmmrs/asciidoctor-dart/issues).
+Please include a minimal `.adoc` reproducer and, when output differs
+from Ruby Asciidoctor, the expected output.

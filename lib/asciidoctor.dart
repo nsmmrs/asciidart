@@ -1,6 +1,8 @@
-/// Dart port of Asciidoctor.
+/// Dart port of Asciidoctor, the text processor for converting AsciiDoc
+/// to HTML 5, DocBook 5, and Unix man pages.
 ///
-/// This is a skeleton package. Converter modules arrive in later phases.
+/// Start with the top-level entry points [convert], [convertFile], [load],
+/// and [loadFile]. See the package README for a usage sample.
 library;
 
 export 'src/abstract_block.dart';
