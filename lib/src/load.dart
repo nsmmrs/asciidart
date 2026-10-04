@@ -1,6 +1,7 @@
 // Deprecated aliases mirror Ruby; removed only when upstream removes them.
-// Dynamic dispatch here mirrors Ruby duck typing over option maps.
-// ignore_for_file: remove_deprecations_in_breaking_versions, avoid_dynamic_calls
+// ignore_for_file: remove_deprecations_in_breaking_versions
+// Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
+// ignore_for_file: avoid_dynamic_calls
 /// Top-level load and convert entry points for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/load.rb` ([load], [loadFile]) and

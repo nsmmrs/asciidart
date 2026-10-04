@@ -792,9 +792,8 @@ void main() {
 
     test('attaches the rouge base style in inline-css mode', () {
       final lexer = FakeSourceLexer(
-        onStyleAvailable: (String style) => true,
-        onBaseStyle: (String style) =>
-            'color: #f8f8f2;background-color: #49483e',
+        onStyleAvailable: (style) => true,
+        onBaseStyle: (style) => 'color: #f8f8f2;background-color: #49483e',
       );
       final highlighter = RougeHighlighter(lexer: lexer);
       final doc = _docWithAttributes(<String, Object?>{});
@@ -813,8 +812,8 @@ void main() {
 
     test('omits the pre style in class mode', () {
       final lexer = FakeSourceLexer(
-        onStyleAvailable: (String style) => true,
-        onBaseStyle: (String style) => 'color: #000;',
+        onStyleAvailable: (style) => true,
+        onBaseStyle: (style) => 'color: #000;',
       );
       final highlighter = PygmentsHighlighter(lexer: lexer);
       final doc = _docWithAttributes(<String, Object?>{});
@@ -830,9 +829,8 @@ void main() {
   group('highlight wiring', () {
     test('routes rouge highlight options to the backend', () {
       final lexer = FakeSourceLexer(
-        onHighlight: (HighlightRequest request) =>
-            '<span class="nb">puts</span> 1',
-        onStyleAvailable: (String style) => style == 'monokai',
+        onHighlight: (request) => '<span class="nb">puts</span> 1',
+        onStyleAvailable: (style) => style == 'monokai',
       );
       final highlighter = RougeHighlighter(lexer: lexer);
       expect(highlighter.canHighlight, isTrue);
@@ -858,8 +856,8 @@ void main() {
 
     test('routes pygments highlight options to the backend', () {
       final lexer = FakeSourceLexer(
-        onHighlight: (HighlightRequest request) => '<div class="lineno"><pre><span class="tok-n">puts</span> 1</pre></div>',
-        onStyleAvailable: (String style) => true,
+        onHighlight: (request) => '<div class="lineno"><pre><span class="tok-n">puts</span> 1</pre></div>',
+        onStyleAvailable: (style) => true,
       );
       final highlighter = PygmentsHighlighter(lexer: lexer);
       final doc = _docWithAttributes(<String, Object?>{});
@@ -880,9 +878,7 @@ void main() {
     test('maps callouts to the coderay table offset', () {
       const backendHtml =
           '<table><tr><td class="code"><pre>x</pre></td></tr></table>';
-      final lexer = FakeSourceLexer(
-        onHighlight: (HighlightRequest request) => backendHtml,
-      );
+      final lexer = FakeSourceLexer(onHighlight: (request) => backendHtml);
       final highlighter = CodeRayHighlighter(lexer: lexer);
       final doc = _docWithAttributes(<String, Object?>{});
       final block = _StubBlock(doc, 'x');
@@ -1032,9 +1028,7 @@ void main() {
     });
 
     test('gates server docinfo on highlighted output', () {
-      final lexer = FakeSourceLexer(
-        onHighlight: (HighlightRequest request) => 'x',
-      );
+      final lexer = FakeSourceLexer(onHighlight: (request) => 'x');
       final highlighter = CodeRayHighlighter(lexer: lexer);
       expect(highlighter.hasDocinfo('head'), isFalse);
       final doc = _docWithAttributes(<String, Object?>{});
@@ -1045,9 +1039,7 @@ void main() {
     });
 
     test('links the coderay stylesheet when linkcss is set', () {
-      final lexer = FakeSourceLexer(
-        onHighlight: (HighlightRequest request) => 'x',
-      );
+      final lexer = FakeSourceLexer(onHighlight: (request) => 'x');
       final highlighter = CodeRayHighlighter(lexer: lexer);
       final doc = _docWithAttributes(<String, Object?>{'stylesdir': 'css'});
       highlighter.highlight(_StubBlock(doc, 'x'), 'x', 'ruby');
@@ -1065,8 +1057,8 @@ void main() {
 
     test('embeds the rouge stylesheet for the resolved style', () {
       final lexer = FakeSourceLexer(
-        onHighlight: (HighlightRequest request) => 'x',
-        onStylesheet: (String style) => '/* $style */',
+        onHighlight: (request) => 'x',
+        onStylesheet: (style) => '/* $style */',
       );
       final highlighter = RougeHighlighter(lexer: lexer);
       final doc = _docWithAttributes(<String, Object?>{});

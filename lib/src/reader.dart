@@ -1,6 +1,7 @@
 // Deprecated aliases mirror Ruby; removed only when upstream removes them.
+// ignore_for_file: remove_deprecations_in_breaking_versions
 // Positional params mirror Ruby signatures for port fidelity.
-// ignore_for_file: remove_deprecations_in_breaking_versions, avoid_positional_boolean_parameters
+// ignore_for_file: avoid_positional_boolean_parameters
 /// Line reader with preprocessor directive support for the Dart port of
 /// Asciidoctor.
 ///

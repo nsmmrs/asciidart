@@ -282,31 +282,23 @@ abstract final class SyntaxHighlighter {
     // theirs from `opts['lexer']` only (no Dart ports of those lexing
     // libraries exist yet), so they stay seam-gated until one is wired.
     add(
-      (Map<String, Object?> opts) => CodeRayHighlighter(
+      (opts) => CodeRayHighlighter(
         lexer: _lexerFromOpts(opts) ?? const CodeRaySourceLexer(),
       ),
       CodeRayAdapter.registeredNames,
     );
+    add((opts) => HighlightJsHighlighter(), HighlightJsAdapter.registeredNames);
     add(
-      (Map<String, Object?> opts) => HighlightJsHighlighter(),
-      HighlightJsAdapter.registeredNames,
-    );
-    add(
-      (Map<String, Object?> opts) => HtmlPipelineHighlighter(),
+      (opts) => HtmlPipelineHighlighter(),
       HtmlPipelineAdapter.registeredNames,
     );
+    add((opts) => PrettifyHighlighter(), PrettifyAdapter.registeredNames);
     add(
-      (Map<String, Object?> opts) => PrettifyHighlighter(),
-      PrettifyAdapter.registeredNames,
-    );
-    add(
-      (Map<String, Object?> opts) =>
-          PygmentsHighlighter(lexer: _lexerFromOpts(opts)),
+      (opts) => PygmentsHighlighter(lexer: _lexerFromOpts(opts)),
       PygmentsAdapter.registeredNames,
     );
     add(
-      (Map<String, Object?> opts) =>
-          RougeHighlighter(lexer: _lexerFromOpts(opts)),
+      (opts) => RougeHighlighter(lexer: _lexerFromOpts(opts)),
       RougeAdapter.registeredNames,
     );
   }

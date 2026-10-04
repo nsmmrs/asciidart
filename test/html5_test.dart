@@ -1,8 +1,9 @@
 // Adjacent-string joins here are markup/paths, not prose; joined values
 // are asserted byte-identical by tests.
+// ignore_for_file: missing_whitespace_between_adjacent_strings
 // The `<<` append operator intentionally returns its receiver (Ruby
 // parity); statement uses discard it.
-// ignore_for_file: missing_whitespace_between_adjacent_strings, unnecessary_statements
+// ignore_for_file: unnecessary_statements
 /// Tests for the HTML5 converter port (`html5.dart`).
 ///
 /// Port of the html5-output assertions in the Ruby suite (`test/blocks_test.rb`,

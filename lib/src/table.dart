@@ -1,7 +1,7 @@
 // Positional params mirror Ruby signatures for port fidelity.
-// The table reader is dynamic so tests can pass fakes; dynamic dispatch on
-// it mirrors Ruby duck typing.
-// ignore_for_file: avoid_positional_boolean_parameters, avoid_dynamic_calls
+// ignore_for_file: avoid_positional_boolean_parameters
+// Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
+// ignore_for_file: avoid_dynamic_calls
 /// Structural document model: tables, columns, cells and table parsing.
 ///
 /// Port of `lib/asciidoctor/table.rb` (complete).

@@ -1,9 +1,14 @@
 // Adjacent-string joins here are markup/paths, not prose; joined values
 // are asserted byte-identical by tests.
+// ignore_for_file: missing_whitespace_between_adjacent_strings
 // The `<<` append operator intentionally returns its receiver (Ruby
 // parity); statement uses discard it.
+// ignore_for_file: unnecessary_statements
 // Tests intentionally exercise deprecated aliases for Ruby parity.
-// ignore_for_file: missing_whitespace_between_adjacent_strings, unnecessary_statements, deprecated_member_use_from_same_package
+// ignore_for_file: deprecated_member_use_from_same_package
+// Extension callbacks vary per processor kind, so the untyped Function
+// field cannot provide context; parameter annotations are required.
+// ignore_for_file: avoid_types_on_closure_parameters
 /// Port of `test/extensions_test.rb`.
 ///
 /// All tests run: extension integration (activation through the

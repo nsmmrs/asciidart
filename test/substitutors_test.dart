@@ -1,7 +1,8 @@
 // Adjacent-string joins here are markup/paths, not prose; joined values
 // are asserted byte-identical by tests.
+// ignore_for_file: missing_whitespace_between_adjacent_strings
 // Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
-// ignore_for_file: missing_whitespace_between_adjacent_strings, avoid_dynamic_calls
+// ignore_for_file: avoid_dynamic_calls
 /// Port of `test/substitutions_test.rb` for `lib/src/substitutors.dart`.
 ///
 /// Ruby's suite drives substitutions through parsed blocks

@@ -532,9 +532,8 @@ class NullLogger extends LoggerBase {
 abstract final class LoggerManager {
   /// Creates loggers from a log device. Mirrors the `logger_class`
   /// property; tests replace it to observe instantiation.
-  static LoggerBase Function([Object? logdev]) loggerFactory = ([
-    Object? logdev,
-  ]) => Logger(logdev: logdev ?? stderr);
+  static LoggerBase Function([Object? logdev]) loggerFactory = ([logdev]) =>
+      Logger(logdev: logdev ?? stderr);
 
   static LoggerBase? _logger;
 
