@@ -1,5 +1,3 @@
-// Tests intentionally exercise deprecated aliases for Ruby parity.
-// ignore_for_file: deprecated_member_use_from_same_package
 /// Tests for the top-level load/convert entry points (`load.dart`).
 ///
 /// Ports the load/convert API assertions from `test/api_test.rb` (contexts
@@ -666,31 +664,6 @@ void main() {
   });
 
   group('convert', () {
-    test('render is aliased to convert', () {
-      final viaRender = render('text', {'to_file': '/dev/null'});
-      final viaConvert = convert('text', {'to_file': '/dev/null'});
-      expect(viaRender, isA<Document>());
-      expect(viaConvert, isA<Document>());
-      expect(
-        (viaRender! as Document).blocks.length,
-        equals((viaConvert! as Document).blocks.length),
-      );
-    });
-
-    test('render_file is aliased to convert_file', () {
-      withTempDir((dir) {
-        final inputPath = '${dir.path}/sample.adoc';
-        File(inputPath).writeAsStringSync('text\n');
-        final viaRender = renderFile(inputPath, {'to_file': '/dev/null'});
-        final viaConvert = convertFile(inputPath, {'to_file': '/dev/null'});
-        expect(viaRender, isA<Document>());
-        expect(
-          (viaRender! as Document).attr('docfile'),
-          equals((viaConvert! as Document).attr('docfile')),
-        );
-      });
-    });
-
     test('returns document without converting when to_file is /dev/null', () {
       final doc = convert('text', {'to_file': '/dev/null'})! as Document;
       expect(doc.blocks, hasLength(1));

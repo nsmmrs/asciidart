@@ -1,5 +1,3 @@
-// Deprecated aliases mirror Ruby; removed only when upstream removes them.
-// ignore_for_file: remove_deprecations_in_breaking_versions
 /// Extension framework: processors, registries and groups.
 ///
 /// Port of `lib/asciidoctor/extensions.rb`.
@@ -579,21 +577,9 @@ abstract class NamedProcessor extends Processor {
     positionalAttributes(values);
   }
 
-  /// Alias of [positionalAttributes].
-  @Deprecated('Use namePositionAttributes instead.')
-  void positionalAttrs(Object values) {
-    positionalAttributes(values);
-  }
-
   /// Seeds the attributes map with [value].
   void defaultAttributes(Map<Object, Object?> value) {
     option('default_attrs', value);
-  }
-
-  /// Alias of [defaultAttributes].
-  @Deprecated('Use defaultAttributes instead.')
-  void defaultAttrs(Map<Object, Object?> value) {
-    defaultAttributes(value);
   }
 
   /// Declares how the macro attribute list maps to named attributes.
@@ -670,12 +656,6 @@ abstract class NamedProcessor extends Processor {
       );
     }
   }
-
-  /// Alias of [resolveAttributes].
-  @Deprecated('Use resolveAttributes instead.')
-  void resolvesAttributes([Object? args]) {
-    resolveAttributes(args);
-  }
 }
 
 /// Preprocessors run after the source text is split into lines and
@@ -724,10 +704,6 @@ class TreeProcessor extends Processor with DocumentProcessorDsl {
     );
   }
 }
-
-/// Alias of [TreeProcessor] for backwards compatibility.
-@Deprecated('Use TreeProcessor instead.')
-typedef Treeprocessor = TreeProcessor;
 
 /// Postprocessors run after the document is converted, but before it is
 /// written to the output stream.
@@ -1057,12 +1033,6 @@ class InlineMacroProcessor extends MacroProcessor {
     format(value);
   }
 
-  /// Alias of [format].
-  @Deprecated('Use matchFormat instead.')
-  void usingFormat(String value) {
-    format(value);
-  }
-
   /// Sets an explicit match pattern.
   void match(RegExp value) {
     option('regexp', value);
@@ -1280,22 +1250,6 @@ class Registry {
   /// registry.
   List<ProcessorExtension> get treeProcessors =>
       _treeProcessorExtensions ?? <ProcessorExtension>[];
-
-  /// Alias of [treeProcessor] for backwards compatibility.
-  @Deprecated('Use treeProcessor instead.')
-  ProcessorExtension treeprocessor({
-    Object? processor,
-    Map<String, Object?>? config,
-    void Function(TreeProcessor processor)? build,
-  }) => treeProcessor(processor: processor, config: config, build: build);
-
-  /// Alias of [hasTreeProcessors] for backwards compatibility.
-  @Deprecated('Use hasTreeProcessors instead.')
-  bool get hasTreeprocessors => hasTreeProcessors;
-
-  /// Alias of [treeProcessors] for backwards compatibility.
-  @Deprecated('Use treeProcessors instead.')
-  List<ProcessorExtension> get treeprocessors => treeProcessors;
 
   /// Registers a [Postprocessor] with the registry.
   ///

@@ -1,5 +1,3 @@
-// Deprecated aliases mirror Ruby; removed only when upstream removes them.
-// ignore_for_file: remove_deprecations_in_breaking_versions
 // Positional params mirror Ruby signatures for port fidelity.
 // ignore_for_file: avoid_positional_boolean_parameters
 /// The document node: root of a parsed AsciiDoc document.
@@ -984,11 +982,6 @@ class Document extends AbstractBlock implements NodeDocument {
         counter(counterName),
       )..saveTo(block.attributes)).value;
 
-  /// Alias of [incrementAndStoreCounter] for backwards compatibility.
-  @Deprecated('Use incrementAndStoreCounter instead.')
-  Object? counterIncrement(String counterName, AbstractBlock block) =>
-      incrementAndStoreCounter(counterName, block);
-
   /// Registers a reference in the document catalog.
   ///
   /// [type] is `'ids'` (deprecated; registers in `'refs'` instead),
@@ -1441,12 +1434,6 @@ class Document extends AbstractBlock implements NodeDocument {
     _timings?.record('convert');
     return output;
   }
-
-  /// Alias of [convert].
-  @Deprecated('Use convert instead.')
-  @override
-  Object? render([Map<String, Object?> opts = const <String, Object?>{}]) =>
-      convert(opts);
 
   /// Writes [output] to [target].
   ///

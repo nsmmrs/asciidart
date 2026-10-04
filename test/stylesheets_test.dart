@@ -88,13 +88,6 @@ void main() {
       expect(stylesheets.primaryStylesheetData, isNot(endsWith('\n')));
     });
 
-    test('embed primary stylesheet wraps data in a style tag', () {
-      expect(
-        stylesheets.embedPrimaryStylesheet(),
-        equals('<style>\n${stylesheets.primaryStylesheetData}\n</style>'),
-      );
-    });
-
     test('write primary stylesheet writes exact data', () {
       stylesheets.writePrimaryStylesheet(tempDir.path);
       final written = File('${tempDir.path}/asciidoctor.css')
@@ -115,13 +108,6 @@ void main() {
       );
       expect(raw, endsWith('\n'));
       expect(stylesheets.coderayStylesheetData, equals(rstrip(raw)));
-    });
-
-    test('embed coderay stylesheet wraps data in a style tag', () {
-      expect(
-        stylesheets.embedCoderayStylesheet(),
-        equals('<style>\n${stylesheets.coderayStylesheetData}\n</style>'),
-      );
     });
 
     test('write coderay stylesheet writes exact data', () {
@@ -154,13 +140,6 @@ void main() {
       expect(
         stylesheets.pygmentsStylesheetData('monokai'),
         equals(stylesheets.pygmentsStylesheetData()),
-      );
-    });
-
-    test('embed pygments stylesheet wraps data in a style tag', () {
-      expect(
-        stylesheets.embedPygmentsStylesheet(),
-        equals('<style>\n${stylesheets.pygmentsStylesheetData()}\n</style>'),
       );
     });
 

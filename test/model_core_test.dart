@@ -1,8 +1,6 @@
 // The `<<` append operator intentionally returns its receiver (Ruby
 // parity); statement uses discard it.
 // ignore_for_file: unnecessary_statements
-// Tests intentionally exercise deprecated aliases for Ruby parity.
-// ignore_for_file: deprecated_member_use_from_same_package
 /// Direct behavioral tests for the document-model core port.
 ///
 /// Covers `abstract_node.dart`, `abstract_block.dart`, `block.dart` and
@@ -509,13 +507,6 @@ void main() {
       expect(doc.playedBack, equals([block.attributes]));
     });
 
-    test('render aliases convert', () {
-      final doc = makeDoc();
-      final block = Block(doc, 'paragraph', source: 'hi');
-      expect(block.render(), equals('<paragraph>'));
-      expect(doc.converter.converted, equals([block]));
-    });
-
     test('compound content joins converted children', () {
       final doc = makeDoc();
       final open = Block(doc, 'open');
@@ -664,30 +655,6 @@ void main() {
       expect(Block(makeDoc(), 'olist').listMarkerKeyword(), isNull);
       block.style = 'upperalpha';
       expect(block.listMarkerKeyword(), equals('A'));
-    });
-  });
-
-  group('number', () {
-    test('number coerces integer-like numerals', () {
-      final block = Block(makeDoc(), 'section');
-      expect(block.number, isNull);
-      block.numeral = '5';
-      expect(block.number, equals(5));
-      block.numeral = 'A';
-      expect(block.number, equals('A'));
-      block.numeral = ' 7 ';
-      expect(block.number, equals(7));
-      block.numeral = '0x10';
-      expect(block.number, equals(16));
-      block.numeral = '010';
-      expect(block.number, equals(8));
-      block.numeral = 5;
-      expect(block.number, equals(5));
-    });
-
-    test('number setter stringifies', () {
-      final block = (Block(makeDoc(), 'section'))..number = 5;
-      expect(block.numeral, equals('5'));
     });
   });
 
@@ -1108,11 +1075,6 @@ void main() {
       expect(doc.playedBack, isEmpty);
     });
 
-    test('render aliases convert', () {
-      final node = Inline(makeDoc(), 'quoted', text: 'hi');
-      expect(node.render(), equals('<inline_quoted>'));
-    });
-
     test('alt reads the attribute or defaults empty', () {
       expect(
         Inline(makeDoc(), 'image', attributes: {'alt': 'A'}).alt,
@@ -1422,12 +1384,6 @@ void main() {
   });
 
   group('misc', () {
-    test('isUri sniffs URI schemes', () {
-      final block = Block(makeDoc(), 'paragraph');
-      expect(block.isUri('https://x'), isTrue);
-      expect(block.isUri('rel/path'), isFalse);
-    });
-
     test('logger is shared and replaceable', () {
       final block = Block(makeDoc(), 'paragraph');
       expect(block.logger, same(testLogger));

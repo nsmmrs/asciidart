@@ -1,5 +1,3 @@
-// Deprecated aliases mirror Ruby; removed only when upstream removes them.
-// ignore_for_file: remove_deprecations_in_breaking_versions
 /// Inline elements in an AsciiDoc block.
 ///
 /// Port of `lib/asciidoctor/inline.rb`.
@@ -51,10 +49,6 @@ class Inline extends AbstractNode {
 
   /// Returns the converted result of this node.
   Object? convert() => converter.convert(this);
-
-  /// Returns the converted result of this node.
-  @Deprecated('Use convert instead.')
-  Object? render() => convert();
 
   /// The converted result of this node's primary content (aka text).
   String? content() => text;

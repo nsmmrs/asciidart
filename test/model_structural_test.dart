@@ -1,8 +1,6 @@
 // The `<<` append operator intentionally returns its receiver (Ruby
 // parity); statement uses discard it.
 // ignore_for_file: unnecessary_statements
-// Tests intentionally exercise deprecated aliases for Ruby parity.
-// ignore_for_file: deprecated_member_use_from_same_package
 /// Behavioral tests for the structural document model port.
 ///
 /// Covers `section.dart`, `list.dart`, `table.dart` against the merged
@@ -567,30 +565,13 @@ void main() {
       expect(list.listMarkerKeyword(), isNull);
     });
 
-    test('number coerces integers, number= stringifies', () {
-      final doc = FakeDocument();
-      final section = (Section(doc, 1))..numeral = '1';
-      expect(section.number, equals(1));
-      section.numeral = 'A';
-      expect(section.number, equals('A'));
-      section.numeral = 'IV';
-      expect(section.number, equals('IV'));
-      section.numeral = null;
-      expect(section.number, isNull);
-      section.number = 3;
-      expect(section.numeral, equals('3'));
-      section.number = null;
-      expect(section.numeral, equals(''));
-    });
-
-    test('convert plays back attributes and converts; render aliases', () {
+    test('convert plays back attributes and converts', () {
       final doc = FakeDocument();
       final block = Block(doc, 'paragraph', attributes: {'a': '1'});
       final result = block.convert();
       expect(result, equals('<paragraph>'));
       expect(doc.playbacked, equals([block.attributes]));
       expect(doc.converter.converted, equals([block]));
-      expect(block.render(), equals('<paragraph>'));
     });
 
     test('compound content joins converted children', () {
@@ -903,14 +884,13 @@ void main() {
       expect(inline.parent, same(para));
     });
 
-    test('content aliases text; convert and render', () {
+    test('content aliases text; convert', () {
       final doc = FakeDocument();
       final para = Block(doc, 'paragraph');
       final inline = Inline(para, 'quoted', text: 'hi', type: 'strong');
       expect(inline.content(), equals('hi'));
       expect(inline.convert(), equals('<inline_quoted:strong=hi>'));
-      expect(inline.render(), equals('<inline_quoted:strong=hi>'));
-      expect(doc.converter.converted, equals([inline, inline]));
+      expect(doc.converter.converted, equals([inline]));
     });
 
     test('alt returns the alt attribute or empty string', () {
@@ -1125,7 +1105,6 @@ void main() {
       final ulist = ListBlock(doc, 'ulist');
       expect(ulist.convert(), equals('<ulist>'));
       expect(doc.playbacked, hasLength(1));
-      expect(ulist.render(), equals('<ulist>'));
 
       final colist = ListBlock(doc, 'colist');
       expect(doc.callouts.register(1), equals('CO1-1'));

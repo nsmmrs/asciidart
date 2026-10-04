@@ -63,13 +63,6 @@ class Stylesheets {
     EmbeddedData.file('stylesheets/asciidoctor-default.css'),
   );
 
-  /// Generates code to embed the primary stylesheet.
-  ///
-  /// Returns the primary stylesheet data wrapped in a `<style>` tag.
-  /// Deprecated in the Ruby implementation; kept for parity.
-  String embedPrimaryStylesheet() =>
-      '<style>\n$primaryStylesheetData\n</style>';
-
   /// Writes the primary stylesheet to [targetDir].
   void writePrimaryStylesheet([String targetDir = '.']) {
     File('$targetDir/$primaryStylesheetName')
@@ -83,13 +76,6 @@ class Stylesheets {
   String get coderayStylesheetData => _coderayStylesheetData ??= _rstrip(
     EmbeddedData.file('stylesheets/$coderayStylesheetName'),
   );
-
-  /// Generates code to embed the CodeRay stylesheet.
-  ///
-  /// Returns the CodeRay stylesheet data wrapped in a `<style>` tag.
-  /// Deprecated in the Ruby implementation; kept for parity.
-  String embedCoderayStylesheet() =>
-      '<style>\n$coderayStylesheetData\n</style>';
 
   /// Writes the CodeRay stylesheet to [targetDir].
   void writeCoderayStylesheet([String targetDir = '.']) {
@@ -108,14 +94,6 @@ class Stylesheets {
   /// provides the live Pygments CSS strategy.
   String pygmentsStylesheetData([String? style]) =>
       pygmentsUnavailableStylesheet;
-
-  /// Generates code to embed the Pygments stylesheet.
-  ///
-  /// Returns the Pygments stylesheet data for the specified [style] wrapped
-  /// in a `<style>` tag. Deprecated in the Ruby implementation; kept for
-  /// parity.
-  String embedPygmentsStylesheet([String? style]) =>
-      '<style>\n${pygmentsStylesheetData(style)}\n</style>';
 
   /// Writes the Pygments stylesheet for [style] to [targetDir].
   void writePygmentsStylesheet([String targetDir = '.', String? style]) {

@@ -62,10 +62,6 @@ class ListBlock extends AbstractBlock {
     return super.convert();
   }
 
-  /// Deprecated alias of [convert] (mirrors `alias render convert`).
-  @override
-  dynamic render() => convert();
-
   /// Returns the `[terms, description]` pair following dlist item [item]
   /// within this list, or `null` for the last pair (so the search continues
   /// past the list).

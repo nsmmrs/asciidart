@@ -1,12 +1,10 @@
-// Deprecated aliases mirror Ruby; removed only when upstream removes them.
-// ignore_for_file: remove_deprecations_in_breaking_versions
 // Dynamic dispatch here mirrors Ruby duck typing; covered by tests.
 // ignore_for_file: avoid_dynamic_calls
 /// Top-level load and convert entry points for the Dart port of Asciidoctor.
 ///
 /// Port of `lib/asciidoctor/load.rb` ([load], [loadFile]) and
-/// `lib/asciidoctor/convert.rb` ([convert], [convertFile], plus the
-/// deprecated `render`/`renderFile` aliases).
+/// `lib/asciidoctor/convert.rb` ([convert], [convertFile]). Ruby's
+/// deprecated `render`/`render_file` aliases are intentionally not ported.
 ///
 /// Option keys are [String]s (`'safe'`, `'backend'`, `'attributes'`,
 /// `'standalone'`, `'to_file'`, `'to_dir'`, `'mkdirs'`, `'timings'`,
@@ -432,20 +430,6 @@ void _probeReadable(File file) {
   }
   file.openSync().closeSync();
 }
-
-/// Converts [input] to the specified backend format.
-///
-/// Deprecated: use [convert] instead.
-@Deprecated('Use convert instead.')
-Object? render(Object? input, [Map<String, Object?>? options]) =>
-    convert(input, options);
-
-/// Converts the file at [filename] to the specified backend format.
-///
-/// Deprecated: use [convertFile] instead.
-@Deprecated('Use convertFile instead.')
-Object? renderFile(Object? filename, [Map<String, Object?>? options]) =>
-    convertFile(filename, options);
 
 /// Coerces the `'attributes'` option [value] to a fresh attribute map.
 ///

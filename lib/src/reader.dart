@@ -1,5 +1,3 @@
-// Deprecated aliases mirror Ruby; removed only when upstream removes them.
-// ignore_for_file: remove_deprecations_in_breaking_versions
 // Positional params mirror Ruby signatures for port fidelity.
 // ignore_for_file: avoid_positional_boolean_parameters
 /// Line reader with preprocessor directive support for the Dart port of
@@ -448,10 +446,6 @@ class Reader {
     unshift(replacement);
     return true;
   }
-
-  /// Alias of [replaceNextLine]. Deprecated in Ruby; kept for parity.
-  @Deprecated('Use replaceNextLine instead.')
-  bool replaceLine(String replacement) => replaceNextLine(replacement);
 
   /// Skips blank lines at the cursor.
   ///

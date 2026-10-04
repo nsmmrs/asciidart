@@ -4,8 +4,6 @@
 // The `<<` append operator intentionally returns its receiver (Ruby
 // parity); statement uses discard it.
 // ignore_for_file: unnecessary_statements
-// Tests intentionally exercise deprecated aliases for Ruby parity.
-// ignore_for_file: deprecated_member_use_from_same_package
 // Extension callbacks vary per processor kind, so the untyped Function
 // field cannot provide context; parameter annotations are required.
 // ignore_for_file: avoid_types_on_closure_parameters
@@ -792,18 +790,14 @@ class SampleDocinfoProcessor extends DocinfoProcessor {
   new([super.config]);
 }
 
-// NOTE intentionally using the deprecated name.
-/// Sample tree processor (port of `SampleTreeprocessor`).
-class SampleTreeprocessor extends Treeprocessor {
+/// Sample tree processor (port of `SampleTreeProcessor`).
+class SampleTreeProcessor extends TreeProcessor {
   /// Creates a sample tree processor with [config].
   new([super.config]);
 
   @override
   Object? process(Document document) => null;
 }
-
-/// Alias of [SampleTreeprocessor] (port of `SampleTreeProcessor = ...`).
-typedef SampleTreeProcessor = SampleTreeprocessor;
 
 /// Sample postprocessor (port of `SamplePostprocessor`).
 class SamplePostprocessor extends Postprocessor {
@@ -1446,15 +1440,14 @@ void main() {
     });
 
     test('should instantiate tree processors', () {
-      // NOTE intentionally using the legacy names.
       final registry = (Registry())
-        ..treeprocessor(processor: SampleTreeprocessor.new)
+        ..treeProcessor(processor: SampleTreeProcessor.new)
         ..activate(emptyDocument());
-      expect(registry.hasTreeprocessors, isTrue);
-      final extensions = registry.treeprocessors;
+      expect(registry.hasTreeProcessors, isTrue);
+      final extensions = registry.treeProcessors;
       expect(extensions.length, equals(1));
       expect(extensions.first, isA<ProcessorExtension>());
-      expect(extensions.first.instance, isA<SampleTreeprocessor>());
+      expect(extensions.first.instance, isA<SampleTreeProcessor>());
       expect(extensions.first.processMethod, isA<Function>());
     });
 
@@ -4292,17 +4285,6 @@ void main() {
       expect(processor.config['positional_attrs'], equals(['x']));
       processor.defaultAttributes({1: 'a', 'foo': 'baz'});
       expect(processor.config['default_attrs'], equals({1: 'a', 'foo': 'baz'}));
-    });
-
-    test('deprecated aliases delegate', () {
-      final processor = (SampleInlineMacro())..positionalAttrs(['a']);
-      expect(processor.config['positional_attrs'], equals(['a']));
-      processor.defaultAttrs({'foo': 'bar'});
-      expect(processor.config['default_attrs'], equals({'foo': 'bar'}));
-      processor.resolvesAttributes(['1:name']);
-      expect(processor.config['positional_attrs'], equals(['name']));
-      processor.usingFormat('short');
-      expect(processor.config['format'], equals('short'));
     });
 
     test('resolveAttributes handles list specifications', () {

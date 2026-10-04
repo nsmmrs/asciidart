@@ -1,5 +1,3 @@
-// Deprecated aliases mirror Ruby; removed only when upstream removes them.
-// ignore_for_file: remove_deprecations_in_breaking_versions
 /// Base class for block-level nodes in a parsed AsciiDoc document.
 ///
 /// Port of `lib/asciidoctor/abstract_block.rb`.
@@ -164,10 +162,6 @@ abstract class AbstractBlock extends AbstractNode {
     return doc.converter.convert(this);
   }
 
-  /// Returns the converted content of this block.
-  @Deprecated('Use convert instead.')
-  Object? render() => convert();
-
   /// Returns the converted result of the child blocks.
   ///
   /// The return type is [Object] because subclasses narrow it: `List`
@@ -196,67 +190,6 @@ abstract class AbstractBlock extends AbstractNode {
   ///
   /// Always `false` here; `Document` and `Section` override it.
   bool get hasSections => false;
-
-  /// The numeral of this section, coerced to an integer when possible.
-  @Deprecated('Legacy property; use numeral instead.')
-  Object? get number {
-    final value = numeral;
-    if (value is num) return value.toInt();
-    if (value is String) return _parseRubyInteger(value) ?? value;
-    return value;
-  }
-
-  /// Sets the numeral of this section, coercing [value] to a string.
-  @Deprecated('Legacy property; use numeral instead.')
-  set number(Object? value) {
-    numeral = value?.toString() ?? '';
-  }
-
-  /// Parses [input] with Ruby's `Integer()` semantics.
-  ///
-  /// Surrounding whitespace is ignored, `0x`/`0b`/`0o`/`0d` prefixes select
-  /// the base (a leading `0` means octal), and single underscores may
-  /// separate digits. Returns `null` when [input] is not a valid integer
-  /// literal, mirroring the `ArgumentError` Ruby raises.
-  static int? _parseRubyInteger(String input) {
-    var text = input.trim();
-    if (text.isEmpty) return null;
-    var negative = false;
-    if (text.startsWith('-')) {
-      negative = true;
-      text = text.substring(1);
-    } else if (text.startsWith('+')) {
-      text = text.substring(1);
-    }
-    var base = 10;
-    if (text.length > 2 && text.startsWith('0')) {
-      switch (text[1]) {
-        case 'x' || 'X':
-          base = 16;
-          text = text.substring(2);
-        case 'b' || 'B':
-          base = 2;
-          text = text.substring(2);
-        case 'o' || 'O':
-          base = 8;
-          text = text.substring(2);
-        case 'd' || 'D':
-          text = text.substring(2);
-      }
-    }
-    if (base == 10 && text.length > 1 && text.startsWith('0')) base = 8;
-    if (text.isEmpty ||
-        text.startsWith('_') ||
-        text.endsWith('_') ||
-        text.contains('__')) {
-      return null;
-    }
-    text = text.replaceAll('_', '');
-    if (text.isEmpty) return null;
-    final value = int.tryParse(text, radix: base);
-    if (value == null) return null;
-    return negative ? -value : value;
-  }
 
   /// Walks the document tree and returns every block-level node matching
   /// the selector ([context], [style], [role] and/or [id]).
