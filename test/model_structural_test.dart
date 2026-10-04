@@ -32,6 +32,10 @@ class FakeConverter implements NodeConverter {
   }
 }
 
+/// Matches a [ContextMessage] whose text satisfies [text].
+Matcher isContextMessage(Matcher text) =>
+    isA<ContextMessage>().having((message) => message.text, 'text', text);
+
 /// Records log messages for assertions.
 class FakeLogger implements NodeLogger {
   /// Messages by severity.
@@ -179,39 +183,20 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
   }
 }
 
-/// Minimal stand-in for `Reader`, exposing the cursor surface the table
-/// parser context calls.
-class FakeReader {
-  /// Creates a reader returning [markData] from [mark].
-  new({
-    this.markData = const <Object?>[],
-    this.prevLineCursor,
-    this.beforeMarkCursor,
-  });
-
-  /// Data returned by [mark].
-  final List<Object?> markData;
-
-  /// Value returned by [cursorAtPrevLine].
-  final Object? prevLineCursor;
-
-  /// Value returned by [cursorBeforeMark].
-  final Object? beforeMarkCursor;
+/// An empty [Reader] that counts [mark] calls made by the table parser
+/// context.
+class FakeReader extends Reader {
+  /// Creates an empty reader.
+  new() : super(null);
 
   /// How often [mark] was called.
   int marks = 0;
 
-  /// Records a mark and returns [markData].
-  List<Object?> mark() {
+  @override
+  bool mark() {
     marks += 1;
-    return markData;
+    return super.mark();
   }
-
-  /// Returns [prevLineCursor].
-  Object? cursorAtPrevLine() => prevLineCursor;
-
-  /// Returns [beforeMarkCursor].
-  Object? cursorBeforeMark() => beforeMarkCursor;
 }
 
 /// Minimal source location with `file`/`lineno` and `dup`.
@@ -1772,7 +1757,10 @@ void main() {
       final pc = TableParserContext(reader, table, {'format': 'bogus'});
       expect(pc.format, equals('psv'));
       expect(pc.delimiter, equals('|'));
-      expect(testLogger.errors.single, contains('illegal table format: bogus'));
+      expect(
+        testLogger.errors.single,
+        isContextMessage(contains('illegal table format: bogus')),
+      );
     });
 
     test('separators: empty, tab escape and custom values', () {
@@ -1950,7 +1938,10 @@ void main() {
         ..buffer = '"'
         ..closeCell(eol: true);
       expect(table.rows.body.last.single.source(), equals(''));
-      expect(testLogger.errors.single, contains('unclosed quote in CSV data'));
+      expect(
+        testLogger.errors.single,
+        isContextMessage(contains('unclosed quote in CSV data')),
+      );
     });
 
     test('rowspans count towards later rows', () {
@@ -1979,7 +1970,26 @@ void main() {
         ..buffer = 'wide'
         ..closeCell();
       expect(table.rows.body, isEmpty);
-      expect(testLogger.errors.single, contains('dropping cell'));
+      expect(
+        testLogger.errors.single,
+        isContextMessage(contains('dropping cell')),
+      );
+    });
+
+    test('missing leading separator is reported at the table start', () {
+      // Regression: the start cursor used to be the bool returned by
+      // Reader.mark, so a real parse crashed with a TypeError here.
+      final doc = load('text\n\n|===\nnot a cell\n|===\n');
+      final table = doc.blocks.last as Table;
+      // Ruby: `<stdin>: line 4: table missing leading separator; ...`.
+      expect(
+        '${testLogger.errors.single}',
+        equals(
+          '<stdin>: line 4: table missing leading separator; '
+          'recovering automatically',
+        ),
+      );
+      expect(table.rows.body.single.single.text, equals('not a cell'));
     });
 
     test('missing leading separator recovers with an error', () {
@@ -1989,7 +1999,7 @@ void main() {
         ..closeCell(eol: true);
       expect(
         testLogger.errors.single,
-        contains('table missing leading separator'),
+        isContextMessage(contains('table missing leading separator')),
       );
       expect(table.rows.body.single.single.source(), equals('a'));
     });
@@ -2004,7 +2014,10 @@ void main() {
         ..buffer = 'a'
         ..closeCell()
         ..closeTable();
-      expect(testLogger.errors.single, contains('incomplete row'));
+      expect(
+        testLogger.errors.single,
+        isContextMessage(contains('incomplete row')),
+      );
     });
   });
 

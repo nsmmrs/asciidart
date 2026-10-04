@@ -1,6 +1,3 @@
-// The table reader is dynamic so tests can pass fakes; dynamic dispatch on
-// it mirrors Ruby duck typing.
-// ignore_for_file: avoid_dynamic_calls
 /// Structural document model: tables, columns, cells and table parsing.
 ///
 /// Port of `lib/asciidoctor/table.rb` (complete).
@@ -11,6 +8,7 @@ import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/inline.dart';
+import 'package:asciidoctor/src/logging.dart' show ContextMessage;
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/reader.dart';
 import 'package:asciidoctor/src/substitutors.dart';
@@ -40,19 +38,6 @@ double _roundAtPrecision(num value, int precision) {
     factor *= 10;
   }
   return (value.toDouble() * factor).round() / factor;
-}
-
-/// Minimal forward stub for `Asciidoctor::Reader::Cursor` (reader.dart not
-/// yet ported). Only used to carry a source location into log messages.
-class ReaderCursor {
-  /// Creates a cursor wrapping opaque [data] (as returned by `mark`).
-  new(this.data);
-
-  /// The opaque cursor data.
-  final List<Object?> data;
-
-  @override
-  String toString() => 'ReaderCursor($data)';
 }
 
 /// A data object that encapsulates the collection of rows (head, foot,
@@ -491,7 +476,7 @@ class Cell extends AbstractBlock {
             linesAdvanced += 1;
           }
           // NOTE this only works if we remain in the same file.
-          (opts?['cursor'] as dynamic).advance(linesAdvanced);
+          (opts!['cursor']! as Cursor).advance(linesAdvanced);
         } else {
           text = lstrip(text);
         }
@@ -599,7 +584,7 @@ class Cell extends AbstractBlock {
   /// is `'asciidoc'`).
   Document? innerDocument;
 
-  dynamic _cursor;
+  Object? _cursor;
   List<Object?>? _reinitializeArgs;
   String? _text;
 
@@ -734,14 +719,13 @@ class Cell extends AbstractBlock {
 ///
 /// Port of `Asciidoctor::Table::ParserContext`.
 class TableParserContext {
-  /// Creates a parser context for [table], reading from [reader] (a
-  /// `Reader`; `dynamic` until `reader.dart` lands).
+  /// Creates a parser context for [table], reading from [reader].
   ///
   /// Port of `Asciidoctor::Table::ParserContext#initialize`.
-  new(dynamic reader, Table table, [Map<String, Object?>? attributes]) {
+  new(Reader reader, Table table, [Map<String, Object?>? attributes]) {
     final attrs = attributes ?? <String, Object?>{};
-    _reader = reader;
-    _startCursorData = reader.mark();
+    _reader = reader..mark();
+    _startCursor = reader.cursorAtMark();
     this.table = table;
 
     late String xsv;
@@ -759,9 +743,10 @@ class TableParserContext {
         }
       } else {
         logger.error(
-          messageWithContext('illegal table format: $xsv', {
-            'sourceLocation': reader.cursorAtPrevLine(),
-          }),
+          messageWithContext(
+            'illegal table format: $xsv',
+            sourceLocation: reader.cursorAtPrevLine(),
+          ),
         );
         format = 'psv';
         xsv = table.document!.nested() ? '!sv' : 'psv';
@@ -825,22 +810,11 @@ class TableParserContext {
   /// every node (mirrors the `logger` method from the `Logging` mixin).
   NodeLogger get logger => AbstractNode.currentLogger;
 
-  /// Builds a log message carrying [text] plus optional [context] entries
-  /// (e.g. `{'sourceLocation': cursor}`).
+  /// Builds a [ContextMessage] carrying [text] and its [sourceLocation].
   ///
-  /// Port of `Logging#message_with_context`, which returns a Hash extended
-  /// with auto-formatting; here the entries are folded into a plain string.
-  /// (The logging wave may replace the folding with a structured message.)
-  String messageWithContext(
-    String text, [
-    Map<String, Object?> context = const <String, Object?>{},
-  ]) {
-    if (context.isEmpty) return text;
-    final details = context.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join(', ');
-    return '$text ($details)';
-  }
+  /// Port of `Logging#message_with_context`.
+  ContextMessage messageWithContext(String text, {Object? sourceLocation}) =>
+      ContextMessage(text, sourceLocation: sourceLocation);
 
   /// The table currently being parsed.
   Table? table;
@@ -872,8 +846,11 @@ class TableParserContext {
   /// that behavior; matching uses the private pattern.
   RegExp? get delimiterRe => null;
 
-  dynamic _reader;
-  Object? _startCursorData;
+  late final Reader _reader;
+
+  /// Where the table starts (Ruby's `@start_cursor_data`), reported when
+  /// the leading separator is missing.
+  late final Cursor _startCursor;
   List<Map<String, Object?>> _cellspecs = <Map<String, Object?>>[];
   bool _cellOpen = false;
   List<int> _activeRowspans = <int>[0];
@@ -974,11 +951,7 @@ class TableParserContext {
         logger.error(
           messageWithContext(
             'table missing leading separator; recovering automatically',
-            {
-              'sourceLocation': ReaderCursor(
-                List<Object?>.of(_startCursorData! as List<Object?>),
-              ),
-            },
+            sourceLocation: _startCursor,
           ),
         );
         cellspec = <String, Object?>{};
@@ -1000,7 +973,7 @@ class TableParserContext {
             logger.error(
               messageWithContext(
                 'unclosed quote in CSV data; setting cell to empty',
-                {'sourceLocation': _reader.cursorAtPrevLine()},
+                sourceLocation: _reader.cursorAtPrevLine(),
               ),
             );
             text = '';
@@ -1053,7 +1026,7 @@ class TableParserContext {
           logger.error(
             messageWithContext(
               'dropping cell because it exceeds specified number of columns',
-              {'sourceLocation': _reader.cursorBeforeMark()},
+              sourceLocation: _reader.cursorBeforeMark(),
             ),
           );
           _closeRow(true);
@@ -1071,7 +1044,7 @@ class TableParserContext {
     logger.error(
       messageWithContext(
         'dropping cells from incomplete row detected end of table',
-        {'sourceLocation': _reader.cursorBeforeMark()},
+        sourceLocation: _reader.cursorBeforeMark(),
       ),
     );
   }
