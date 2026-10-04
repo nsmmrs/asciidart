@@ -1,7 +1,7 @@
 ---
 id: TASK-9dh25p
 title: "npm API: Asciidoctor.js 4.1 parity facade (Promise-based load/loadFile/convert/convertFile, AST, extensions)"
-status: backlog
+status: doing
 type: task
 priority: 2
 labels:
@@ -14,8 +14,9 @@ deps:
 - TASK-03yrhq
 - TASK-c177z4
 created: "2026-10-03T16:08:29.483649Z"
-updated: "2026-10-04T13:59:14.310704Z"
+updated: "2026-10-04T18:42:05.711358Z"
 ---
+
 
 Reference: @asciidoctor/core@4.1.0 tarball (types/*.d.ts ~6.8k lines, src/index.js; reports core 2.0.26 = our retarget) plus its repo tests at tag v4.1.0, shallow-cloned into scratchpad.
 
