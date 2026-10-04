@@ -25,11 +25,50 @@ const Map<String, String> defaultContentModels = <String, String>{
   'video': 'empty',
 };
 
-/// Sentinel marking the [Block.subs] option as absent.
+/// How a new [Block] resolves its substitutions.
 ///
-/// The default distinguishes a missing `subs` option from an explicit
-/// `null`.
-const Object subsAbsent = Object();
+/// Passed as the `subs` argument of the [Block] constructor; any value
+/// resolves the substitutions eagerly. Leaving it out defers resolution to
+/// the parser, which honors the `subs` attribute.
+sealed class BlockSubs {
+  const new();
+
+  /// Applies no substitutions (ignores the `subs` attribute).
+  const factory none() = _NoSubs;
+
+  /// Honors the `subs` attribute, falling back to [defaults] and then to
+  /// the built-in substitutions for the block's context.
+  const factory defaults([List<String>? defaults]) = _DefaultSubs;
+
+  /// Applies exactly [subs] (ignores the `subs` attribute).
+  const factory fixed(List<String> subs) = _FixedSubs;
+
+  /// Resolves the substitutions from [spec], a `subs` attribute value such
+  /// as `'+quotes'` or `'normal,-replacements'`.
+  const factory spec(String spec) = _SpecSubs;
+}
+
+final class _NoSubs extends BlockSubs {
+  const new();
+}
+
+final class _DefaultSubs extends BlockSubs {
+  const new([this.defaults]);
+
+  final List<String>? defaults;
+}
+
+final class _FixedSubs extends BlockSubs {
+  const new(this.subs);
+
+  final List<String> subs;
+}
+
+final class _SpecSubs extends BlockSubs {
+  const new(this.spec);
+
+  final String spec;
+}
 
 /// Methods for managing AsciiDoc content blocks.
 ///
@@ -40,52 +79,50 @@ class Block extends AbstractBlock {
   /// [contentModel] selects how [lines] are processed (`'compound'`,
   /// `'simple'`, `'verbatim'`, `'raw'` or `'empty'`), defaulting per
   /// [defaultContentModels] (`'simple'` when the context is unknown).
-  /// [source] is the raw source as a string or a list of lines. [subs]
-  /// controls substitution resolution: omitted defers it, `null` prevents
-  /// it, `'default'` honors the `subs` attribute (falling back to
-  /// [defaultSubs] and then to the context built-ins), a list fixes the
-  /// substitutions (ignoring the `subs` attribute), and any other value is
-  /// stored as the `subs` attribute. Passing [subs] resolves eagerly
-  /// through `commitSubs`.
+  /// [source] is the raw source text, or [lines] the source lines (only
+  /// one may be given). [subs] resolves the substitutions eagerly (see
+  /// [BlockSubs]); leaving it out defers resolution.
   new(
     super.parent,
     super.context, {
     super.attributes,
     String? contentModel,
-    Object? subs = subsAbsent,
-    Object? defaultSubs,
-    Object? source,
-  }) : lines = _linesFromSource(source) {
+    BlockSubs? subs,
+    String? source,
+    List<String>? lines,
+  }) : assert(source == null || lines == null, 'pass source or lines'),
+       lines = lines != null
+           ? List<String>.of(lines)
+           : source == null || source.isEmpty
+           ? <String>[]
+           : Helpers.prepareSourceString(source) {
     this.contentModel =
         contentModel ?? defaultContentModels[context] ?? 'simple';
-    if (identical(subs, subsAbsent)) {
-      // Defer subs resolution; the subs attribute is honored later.
-      // NOTE @subs is initialized as empty array by super constructor.
-      // QUESTION should we honor the :default_subs option here?
-      this.defaultSubs = null;
-    } else if (subs == null) {
-      // NOTE @subs is initialized as empty array by super constructor.
-      // Prevent subs from being resolved.
-      this.defaultSubs = <String>[];
-      attributes.remove('subs');
-    } else {
-      if (subs == 'default') {
-        // Subs attribute is honored; falls back to defaultSubs, then to
-        // the built-in defaults based on context.
-        this.defaultSubs = defaultSubs;
-      } else if (subs is List<Object?>) {
-        // Subs attribute is not honored.
-        this.defaultSubs = List<String>.from(subs);
+    switch (subs) {
+      case null:
+        // Defer subs resolution; the subs attribute is honored later.
+        // NOTE subs is initialized as an empty list by the super
+        // constructor.
+        defaultSubs = null;
+        return;
+      case _NoSubs():
+        // Prevent subs from being resolved.
+        defaultSubs = <String>[];
         attributes.remove('subs');
-      } else {
+      case _DefaultSubs(:final defaults):
+        // Subs attribute is honored; falls back to defaults, then to the
+        // built-in defaults based on context.
+        defaultSubs = defaults == null ? null : List<String>.of(defaults);
+      case _FixedSubs(subs: final fixed):
         // Subs attribute is not honored.
-        this.defaultSubs = null;
-        attributes['subs'] = subs.toString();
-      }
-      // Resolve the subs eagerly only if the subs option is specified.
-      // QUESTION should we skip subsequent calls to commit_subs?
-      commitSubs();
+        defaultSubs = List<String>.of(fixed);
+        attributes.remove('subs');
+      case _SpecSubs(:final spec):
+        defaultSubs = null;
+        attributes['subs'] = spec;
     }
+    // Resolve the subs eagerly only if the subs option is specified.
+    commitSubs();
   }
 
   /// The original content lines of this block, if applicable.
@@ -93,30 +130,9 @@ class Block extends AbstractBlock {
 
   /// Substitution overrides consulted by `commitSubs`.
   ///
-  /// Internal: `null` defers resolution, an empty list prevents it, and any
-  /// other value seeds it.
-  Object? defaultSubs;
-
-  /// Copies [source] into content lines.
-  ///
-  /// A `null` or empty source yields no lines, a string is split into
-  /// lines, and a list is duplicated.
-  static List<String> _linesFromSource(Object? source) {
-    if (source == null) return <String>[];
-    if (source is String) {
-      if (source.isEmpty) return <String>[];
-      return Helpers.prepareSourceString(source);
-    }
-    if (source is List<Object?>) {
-      if (source.isEmpty) return <String>[];
-      return List<String>.from(source);
-    }
-    throw ArgumentError.value(
-      source,
-      'source',
-      'must be a String or a List<String>',
-    );
-  }
+  /// Internal: `null` defers to the content model defaults, an empty list
+  /// prevents substitutions, and any other value seeds them.
+  List<String>? defaultSubs;
 
   /// The context of this block. Alias of [AbstractNode.context].
   String get blockname => context;
@@ -132,32 +148,22 @@ class Block extends AbstractBlock {
   String? content() {
     switch (contentModel) {
       case 'compound':
-        // The base implementation always joins converted children into a
-        // string; the cast only narrows the widened (polymorphic) override.
-        return super.content() as String?;
+        return super.content();
       case 'simple':
-        return applySubs(lines.join(lf), subs)! as String;
+        return applySubs(lines.join(lf), subs);
       case 'verbatim':
       case 'raw':
         // QUESTION could we use strip here instead of popping empty lines?
         // maybe apply_subs can know how to strip whitespace?
-        final result = (applySubs(lines, subs)! as List<Object?>)
-            .map((line) => line as String?)
-            .toList();
-        if (result.length < 2) {
-          return result.isEmpty ? '' : (result[0] ?? '');
-        }
-        while (result.isNotEmpty) {
-          final first = result.first;
-          if (first == null || first.trimRightAscii().isNotEmpty) break;
+        final result = applySubsToLines(lines, subs);
+        if (result.length < 2) return result.isEmpty ? '' : result[0];
+        while (result.isNotEmpty && result.first.trimRightAscii().isEmpty) {
           result.removeAt(0);
         }
-        while (result.isNotEmpty) {
-          final last = result.last;
-          if (last == null || last.trimRightAscii().isNotEmpty) break;
+        while (result.isNotEmpty && result.last.trimRightAscii().isEmpty) {
           result.removeLast();
         }
-        return result.map((line) => line ?? '').join(lf);
+        return result.join(lf);
       default:
         if (contentModel != 'empty') {
           logger.warn("unknown content model '$contentModel' for block: $this");

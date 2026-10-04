@@ -33,7 +33,7 @@ import 'package:asciidoctor/src/table.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
 /// `null` renders as the empty string instead of `'null'`.
-String _s(Object? value) => value?.toString() ?? '';
+String _s(String? value) => value ?? '';
 
 /// Whitespace characters collapsed by `tr_s` (port of `WHITESPACE`).
 const String _whitespace = '\n\t ';
@@ -217,12 +217,12 @@ enum _WhitespaceMode {
 class ManpageConverter extends ConverterBase {
   /// Creates a converter for [backend] with constructor options [opts].
   new(super.backend, [super.opts]) {
-    initBackendTraits(<String, Object?>{
-      'basebackend': 'manpage',
-      'filetype': 'man',
-      'outfilesuffix': '.man',
-      'supports_templates': true,
-    });
+    backendTraits = BackendTraits(
+      basebackend: 'manpage',
+      filetype: 'man',
+      outfilesuffix: '.man',
+      supportsTemplates: true,
+    );
     handle('document', (node, [opts]) => convertDocument(node as Document));
     handle('embedded', (node, [opts]) => convertEmbedded(node as Document));
     handle('section', (node, [opts]) => convertSection(node as Section));
@@ -292,7 +292,7 @@ class ManpageConverter extends ConverterBase {
   }
 
   /// Memoized document refs catalog (port of `@refs`).
-  Map<String, Object?>? _refs;
+  Map<String, AbstractNode>? _refs;
 
   /// Whether an xref is currently being resolved (port of
   /// `@resolving_xref`; guards against recursive xrefs).
@@ -312,12 +312,11 @@ class ManpageConverter extends ConverterBase {
         'manpage backend',
       );
     }
-    final mantitle = (node.attr('mantitle')! as String).replaceAll(
-      invalidSectionIdCharsRx,
-      '',
-    );
+    final mantitle = node
+        .attr('mantitle')!
+        .replaceAll(invalidSectionIdCharsRx, '');
     final manvolnum = node.attr('manvolnum', '1');
-    final manname = node.attr('manname', mantitle);
+    final manname = node.attr('manname', mantitle)!;
     final manmanual = node.attr('manmanual');
     final mansource = node.attr('mansource');
     final docdate = node.hasAttr('reproducible') ? null : node.attr('docdate');
@@ -326,10 +325,10 @@ class ManpageConverter extends ConverterBase {
     final result = <String>[
       '\'\\" t\n.\\"     Title: $mantitle\n.\\"    Author: ${node.hasAttr('authors') ? _s(node.attr('authors')) : '[see the "AUTHOR(S)" section]'}\n.\\" Generator: Asciidoctor ${_s(node.attr('asciidoctor-version'))}',
     ];
-    if (isTruthy(docdate)) {
+    if (docdate != null) {
       result.add('.\\"      Date: ${_s(docdate)}');
     }
-    // TODOadd document-level setting to disable capitalization of manname
+    // TODO add document-level setting to disable capitalization of manname
     // define portability settings
     // see http://bugs.debian.org/507673
     // see http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
@@ -351,16 +350,16 @@ class ManpageConverter extends ConverterBase {
     //   hyperlink without intervening whitespace
     result
       ..add(
-        '.\\"    Manual: ${isTruthy(manmanual) ? transliterateSqueeze(manmanual! as String, _whitespace, ' ') : r'\ \&'}\n'
-        '.\\"    Source: ${isTruthy(mansource) ? transliterateSqueeze(mansource! as String, _whitespace, ' ') : r'\ \&'}\n'
+        '.\\"    Manual: ${manmanual != null ? transliterateSqueeze(manmanual, _whitespace, ' ') : r'\ \&'}\n'
+        '.\\"    Source: ${mansource != null ? transliterateSqueeze(mansource, _whitespace, ' ') : r'\ \&'}\n'
         '.\\"  Language: English\n'
         r'.\"',
       )
       ..add(
-        '.TH "${_manify((manname! as String).toUpperCase())}" '
+        '.TH "${_manify(manname.toUpperCase())}" '
         '"${_s(manvolnum)}" "${_s(docdate)}" '
-        '"${isTruthy(mansource) ? _manify(mansource! as String) : r'\ \&'}" '
-        '"${isTruthy(manmanual) ? _manify(manmanual! as String) : r'\ \&'}"',
+        '"${mansource != null ? _manify(mansource) : r'\ \&'}" '
+        '"${manmanual != null ? _manify(manmanual) : r'\ \&'}"',
       )
       ..add(r'.ie \n(.g .ds Aq \(aq')
       ..add(".el       .ds Aq '")
@@ -386,12 +385,11 @@ class ManpageConverter extends ConverterBase {
 
     if (!node.noheader) {
       if (node.hasAttr('manpurpose')) {
-        final mannames =
-            node.attr('mannames', <Object?>[manname])! as List<Object?>;
+        final mannames = node.mannames ?? <String>[manname];
         result.add(
           '.SH '
-          '"${(node.attr('manname-title', 'NAME')! as String).toUpperCase()}"\n'
-          '${mannames.map((n) => _manify(n! as String).replaceAll(r'\-', '-')).join(', ')} \\- ${_manify(node.attr('manpurpose')! as String, whitespace: _WhitespaceMode.normalize)}',
+          '"${node.attr('manname-title', 'NAME')!.toUpperCase()}"\n'
+          '${mannames.map((n) => _manify(n).replaceAll(r'\-', '-')).join(', ')} \\- ${_manify(node.attr('manpurpose')!, whitespace: _WhitespaceMode.normalize)}',
         );
       }
     }
@@ -473,7 +471,7 @@ class ManpageConverter extends ConverterBase {
 
     var num = 0;
     for (final item in node.items) {
-      final listItem = item! as ListItem;
+      final listItem = item;
       result
         ..add("\\fB(${num += 1})\\fP\\h'-2n':T{")
         ..add(_manify(listItem.text!, whitespace: _WhitespaceMode.normalize));
@@ -488,17 +486,14 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] description list.
   ///
-  // TODOimplement horizontal (if it makes sense)
+  // TODO implement horizontal (if it makes sense)
   String convertDlist(ListBlock node) {
     final result = <String>[];
     if (node.hasTitle) {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
     }
     var counter = 0;
-    for (final pair in node.items) {
-      final parts = pair! as List<Object?>;
-      final terms = (parts[0]! as List<Object?>).cast<ListItem>();
-      final dd = parts[1] as ListItem?;
+    for (final DlistEntry(:terms, description: dd) in node.entries) {
       counter += 1;
       if (node.style == 'qanda') {
         result.add(
@@ -517,7 +512,7 @@ class ManpageConverter extends ConverterBase {
           result.add(_manify(dd.text!, whitespace: _WhitespaceMode.normalize));
         }
         if (dd.hasBlocks) {
-          result.add(dd.content()! as String);
+          result.add(dd.content() ?? '');
         }
       }
       result.add('.RE');
@@ -597,10 +592,10 @@ class ManpageConverter extends ConverterBase {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
     }
 
-    final start = parseLeadingInt(node.attr('start', 1));
+    final start = parseLeadingInt(node.attr('start', '1'));
     var idx = 0;
     for (final item in node.items) {
-      final listItem = item! as ListItem;
+      final listItem = item;
       final numeral = idx + start;
       idx += 1;
       final listText = _manify(
@@ -612,7 +607,7 @@ class ManpageConverter extends ConverterBase {
         '\n$listText',
       );
       if (listItem.hasBlocks) {
-        result.add(listItem.content()! as String);
+        result.add(listItem.content() ?? '');
       }
       result.add('.RE');
     }
@@ -620,7 +615,7 @@ class ManpageConverter extends ConverterBase {
   }
 
   /// Converts the [node] open block.
-  Object? convertOpen(Block node) {
+  String? convertOpen(Block node) {
     switch (node.style) {
       case 'abstract':
       case 'partintro':
@@ -719,7 +714,7 @@ class ManpageConverter extends ConverterBase {
             textRow.add('T{\n.sp\nT}:');
           }
           textRow.add('T{\n.sp\n');
-          final halignValue = cell.attr('halign', 'left')! as String;
+          final halignValue = cell.attr('halign', 'left')!;
           final cellHalign = halignValue.isEmpty ? '' : halignValue[0];
           if (tsec == 'body') {
             if (headerRow.isEmpty || headerRow[cellIndex]!.isEmpty) {
@@ -733,17 +728,14 @@ class ManpageConverter extends ConverterBase {
                 cellContent = _s(cell.content());
               case 'literal':
                 final text = _manify(
-                  cell.text!,
+                  cell.text,
                   whitespace: _WhitespaceMode.preserve,
                 );
                 cellContent = '.nf\n$text\n.fi';
               default:
-                cellContent = (cell.content()! as List<Object?>)
+                cellContent = cell.paragraphs
                     .map(
-                      (p) => _manify(
-                        p! as String,
-                        whitespace: _WhitespaceMode.normalize,
-                      ),
+                      (p) => _manify(p, whitespace: _WhitespaceMode.normalize),
                     )
                     .join('\n.sp\n');
             }
@@ -756,10 +748,10 @@ class ManpageConverter extends ConverterBase {
               _headerCellAt(headerRow, cellIndex + 1).add('${cellHalign}tB');
             }
             textRow.add(
-              '${_manify(cell.text!, whitespace: _WhitespaceMode.normalize)}\n',
+              '${_manify(cell.text, whitespace: _WhitespaceMode.normalize)}\n',
             );
           }
-          final colspan = isTruthy(cell.colspan) ? cell.colspan! as int : 1;
+          final colspan = cell.colspan ?? 1;
           if (colspan > 1) {
             for (var i = 0; i < colspan - 1; i++) {
               if (headerRow.isEmpty || headerRow[cellIndex]!.isEmpty) {
@@ -769,7 +761,7 @@ class ManpageConverter extends ConverterBase {
               }
             }
           }
-          final rowspan = isTruthy(cell.rowspan) ? cell.rowspan! as int : 1;
+          final rowspan = cell.rowspan ?? 1;
           if (rowspan > 1) {
             for (var i = 0; i < rowspan - 1; i++) {
               final futureRow = _rowHeaderAt(rowHeader, rowIndex + 1 + i);
@@ -796,7 +788,9 @@ class ManpageConverter extends ConverterBase {
 
     var bodyTextRows = rowText;
     final headerRowText = rowText.isNotEmpty ? rowText[0] : null;
-    if (isTruthy(node.hasHeaderOption) && headerRowText != null) {
+    if ((node.header == TableHeader.explicit ||
+            node.header == TableHeader.implicit) &&
+        headerRowText != null) {
       result
         ..add(
           '\n${rowHeader[0]!.map((cell) => cell?.join(' ') ?? '').join(' ')}.',
@@ -826,7 +820,7 @@ class ManpageConverter extends ConverterBase {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
     }
     for (final item in node.items) {
-      final listItem = item! as ListItem;
+      final listItem = item;
       final listText = _manify(
         listItem.text!,
         whitespace: _WhitespaceMode.normalize,
@@ -836,7 +830,7 @@ class ManpageConverter extends ConverterBase {
         '\n$listText',
       );
       if (listItem.hasBlocks) {
-        result.add(listItem.content()! as String);
+        result.add(listItem.content() ?? '');
       }
       result.add('.RE');
     }
@@ -875,7 +869,7 @@ class ManpageConverter extends ConverterBase {
     final titleLine = node.hasTitle
         ? '.sp\n.B ${_manify(node.title!)}\n.br'
         : '.sp';
-    final target = node.mediaUri(node.attr('target')! as String);
+    final target = node.mediaUri(node.attr('target')!);
     return '$titleLine\n<$target$startParam$endParam> (video)';
   }
 
@@ -905,9 +899,8 @@ class ManpageConverter extends ConverterBase {
       case 'xref':
         var text = node.text;
         if (text == null) {
-          final refs = _refs ??=
-              node.document!.catalog['refs']! as Map<String, Object?>;
-          final refid = node.attributes['refid'] as String?;
+          final refs = _refs ??= node.document!.catalog.refs;
+          final refid = node.attributes['refid'];
           Document? top;
           final ref =
               refs[refid] ??
@@ -924,7 +917,7 @@ class ManpageConverter extends ConverterBase {
               try {
                 resolved = _xreftextOf(
                   ref,
-                  node.attr('xrefstyle', null, true) as String?,
+                  node.attr('xrefstyle', null, 'xrefstyle'),
                 );
               } finally {
                 _resolvingXref = false;
@@ -970,7 +963,7 @@ class ManpageConverter extends ConverterBase {
   /// Converts the [node] inline footnote.
   String? convertInlineFootnote(Inline node) {
     final index = node.attr('index');
-    if (isTruthy(index)) return '[${_s(index)}]';
+    if (index != null) return '[$index]';
     if (node.type == 'xref') return '[${_s(node.text)}]';
     return null;
   }
@@ -986,10 +979,10 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] inline keyboard shortcut.
   String convertInlineKbd(Inline node) {
-    final keys = node.attr('keys')! as List<Object?>;
+    final keys = node.keys!;
     final rendered = keys.length == 1
-        ? _s(keys[0])
-        : keys.map(_s).join('${_escBs}0+${_escBs}0');
+        ? keys[0]
+        : keys.join('${_escBs}0+${_escBs}0');
     return '<${_escBs}f(CR>$rendered</${_escBs}fP>';
   }
 
@@ -997,15 +990,15 @@ class ManpageConverter extends ConverterBase {
   String convertInlineMenu(Inline node) {
     final caret = '${_escBs}0$_escBs(fc${_escBs}0';
     final menu = _s(node.attr('menu'));
-    final submenus = node.attr('submenus')! as List<Object?>;
+    final submenus = node.submenus!;
     if (submenus.isNotEmpty) {
       final submenuPath = submenus
-          .map((item) => '<${_escBs}fI>${_s(item)}</${_escBs}fP>')
+          .map((item) => '<${_escBs}fI>$item</${_escBs}fP>')
           .join(caret);
       return '<${_escBs}fI>$menu</${_escBs}fP>$caret$submenuPath$caret<${_escBs}fI>${_s(node.attr('menuitem'))}</${_escBs}fP>';
     }
     final menuitem = node.attr('menuitem');
-    if (isTruthy(menuitem)) {
+    if (menuitem != null) {
       return '<${_escBs}fI>$menu$caret${_s(menuitem)}</${_escBs}fP>';
     }
     return '<${_escBs}fI>$menu</${_escBs}fP>';
@@ -1036,19 +1029,17 @@ class ManpageConverter extends ConverterBase {
   ///
   /// The first name is the primary page (already written to [target]); every
   /// remaining name gets a stub page pointing at it. Does nothing unless
-  /// [mannames] holds at least two names. The primary name is removed from
-  /// the passed list.
+  /// [mannames] holds at least two names.
   static void writeAlternatePages(
-    List<Object?>? mannames,
-    Object? manvolnum,
+    List<String>? mannames,
+    String? manvolnum,
     String target,
   ) {
     if (mannames == null || mannames.length < 2) return;
-    mannames.removeAt(0);
     final manvolext = '.${_s(manvolnum)}';
     final (dir, basename) = _splitPath(target);
-    for (final manname in mannames) {
-      File(_joinPath(dir, '${_s(manname)}$manvolext'))
+    for (final manname in mannames.skip(1)) {
+      File(_joinPath(dir, '$manname$manvolext'))
           .writeAsStringSync('.so $basename');
     }
   }
@@ -1058,10 +1049,10 @@ class ManpageConverter extends ConverterBase {
     if (!node.hasFootnotes || node.hasAttr('nofootnotes')) return;
     result.add('.SH "NOTES"');
     for (final fn in node.footnotes) {
-      result.add('.IP [${_s(fn.index)}]');
+      result.add('.IP [${fn.index}]');
       // NOTE restore newline in escaped macro that gets removed by
       // normalize_text in substitutor
-      final rawText = fn.text! as String;
+      final rawText = fn.text;
       if (rawText.contains('$_esc\\c $_esc.')) {
         final restored = rawText.replaceAllMapped(
           _malformedEscapedMacroRx,
@@ -1199,15 +1190,11 @@ class ManpageConverter extends ConverterBase {
 
   /// Returns the cross-reference text for [ref], which is either a block
   /// or an inline node (`xreftext` lives on both classes).
-  String? _xreftextOf(Object? ref, String? xrefstyle) {
-    if (ref is AbstractBlock) {
-      return ref.xreftext(xrefstyle);
-    }
-    if (ref is Inline) {
-      return ref.xreftext(xrefstyle);
-    }
-    return null;
-  }
+  String? _xreftextOf(AbstractNode ref, String? xrefstyle) => switch (ref) {
+    AbstractBlock() => ref.xreftext(xrefstyle),
+    Inline() => ref.xreftext(xrefstyle),
+    _ => null,
+  };
 
   /// Returns the header cells of row [index], creating rows up to it.
   ///

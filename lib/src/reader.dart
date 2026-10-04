@@ -1,18 +1,12 @@
-/// Line reader with preprocessor directive support for the Dart port of
-/// Asciidoctor.
+/// Line reader with preprocessor directive support.
 ///
-/// Port of `lib/asciidoctor/reader.rb` (`Reader`, `PreprocessorReader` and
-/// `Reader::Cursor`).
+/// Port of `lib/asciidoctor/reader.rb` (`Reader` and `PreprocessorReader`).
 ///
 /// The reader is a line stack with a 1-based line number. Lines are stored in
 /// reverse so the next line is always the last element. [Reader] is a plain
 /// line source; [PreprocessorReader] additionally expands conditional
 /// (`ifdef`/`ifndef`/`ifeval`/`endif`) and `include` preprocessor directives
 /// as lines are read.
-///
-/// The reader reaches the document and the include processors through the
-/// small [ReaderDocument] and [ReaderIncludeProcessor] interfaces, which keep
-/// this library independent of `document.dart` and `extensions.dart`.
 library;
 
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
@@ -21,184 +15,17 @@ import 'dart:io' show File, FileSystemEntity;
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/constants.dart';
 import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/cursor.dart';
+import 'package:asciidoctor/src/document.dart';
+import 'package:asciidoctor/src/extensions.dart';
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/parser.dart';
-import 'package:asciidoctor/src/path_resolver.dart';
 import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidoctor/src/substitutors.dart' as substitutors;
 import 'package:meta/meta.dart';
 
-/// A log message carrying source context.
-///
-/// TEMPORARY: a minimal stand-in for the `logging.dart`
-/// `message_with_context` hash; unified with that port when it lands.
-class LogMessage {
-  /// Creates a message with [text] and optional source locations.
-  const new(this.text, {this.sourceLocation, this.includeLocation});
-
-  /// The message text, without location prefix.
-  final String text;
-
-  /// Location of the line under the cursor when the message was logged.
-  final Cursor? sourceLocation;
-
-  /// Location inside an include file the message refers to, if any.
-  final Cursor? includeLocation;
-
-  @override
-  String toString() {
-    final location = sourceLocation;
-    return location == null ? text : '$location: $text';
-  }
-}
-
-/// Builds a [LogMessage]. Temporary stand-in for `Logging#message_with_context`
-/// (see [LogMessage]).
-LogMessage _messageWithContext(
-  String text, {
-  Cursor? sourceLocation,
-  Cursor? includeLocation,
-}) => LogMessage(
-  text,
-  sourceLocation: sourceLocation,
-  includeLocation: includeLocation,
-);
-
-/// Minimal document surface consumed by [PreprocessorReader].
-///
-/// It covers exactly what the reader needs from `Document` (attribute
-/// lookup, substitution, include resolution inputs and the include catalog);
-/// `Document.asReaderDocument` provides it:
-///
-/// * [attributes] is the live attribute map; the reader reads
-///   `skip-front-matter`, `max-include-depth`, `attribute-missing` and
-///   conditional names from it and stores `front-matter` in it.
-/// * [attr]/[attrSet] mirror `Document#attr`/`Document#attr?` for the single
-///   names the reader queries (`leveloffset`, `tabsize`, `allow-uri-read`,
-///   `compat-mode`, `cache-uri`).
-/// * [subAttributes]/[parseAttributes] are the `Substitutors` entry points
-///   used for include targets, include attr lists and `ifeval` operands.
-/// * [normalizeSystemPath]/[pathResolver]/[baseDir] resolve include files;
-///   [catalogIncludes] is the `catalog[:includes]` table; [safe] and
-///   [sourcemap] gate secure-mode and location tracking.
-/// * [includeProcessors] are the registered include processor extensions, or
-///   `null` when the extensions framework has none.
-/// * [readUri] fetches an include target over HTTP. Dart has no synchronous
-///   HTTP client, so URI transport is injected here instead of living in the
-///   reader. Returns the decoded body, or
-///   `null` when the URI is not readable.
-abstract class ReaderDocument {
-  /// Live document attributes.
-  Map<String, Object?> get attributes;
-
-  /// Resolves the attribute [name], or `null` when undefined.
-  Object? attr(String name);
-
-  /// Whether the attribute [name] is defined.
-  bool attrSet(String name);
-
-  /// Whether source locations are tracked.
-  bool get sourcemap;
-
-  /// Safe mode level (see [SafeMode]).
-  int get safe;
-
-  /// Base directory include files resolve against.
-  String get baseDir;
-
-  /// Path resolver used for include paths.
-  PathResolver get pathResolver;
-
-  /// Include catalog mapping an include path (sans extension) to `true`, or
-  /// to `null` for a partial include that stays invisible to xrefs.
-  Map<String, bool?> get catalogIncludes;
-
-  /// Registered include processor extensions, or `null` when there are none.
-  List<ReaderIncludeProcessor>? get includeProcessors;
-
-  /// Resolves the include [target] against [start], honoring the safe-mode
-  /// jail. Mirrors `AbstractNode#normalize_system_path`.
-  String normalizeSystemPath(
-    String target,
-    String? start, {
-    String? targetName,
-  });
-
-  /// Substitutes attribute references in [text]. Mirrors
-  /// `Substitutors#sub_attributes` for the options the reader uses.
-  String subAttributes(
-    String text, {
-    String? attributeMissing,
-    String dropLineSeverity = 'info',
-  });
-
-  /// Parses an include directive attr list. Mirrors
-  /// `Substitutors#parse_attributes` for the options the reader uses.
-  Map<Object, String?> parseAttributes(
-    String? attrlist, {
-    bool subInput = false,
-  });
-
-  /// Reads the include target [uri] decoded with [encoding].
-  ///
-  /// Returns `null` when the URI cannot be read.
-  String? readUri(Uri uri, Encoding encoding);
-}
-
-/// Minimal include processor extension surface consumed by
-/// [PreprocessorReader].
-///
-/// The two `IncludeProcessor` methods the reader calls (`handles` and the
-/// process method); implemented by `IncludeProcessor`.
-abstract class ReaderIncludeProcessor {
-  /// Whether this processor handles the given include [target].
-  bool handles(String target);
-
-  /// Pushes the content for [target] onto [reader].
-  void process(
-    ReaderDocument document,
-    PreprocessorReader reader,
-    String target,
-    Map<Object, String?> attributes,
-  );
-}
-
-/// A file position: the file, directory, document-relative path and 1-based
-/// line number of a line under the cursor.
-///
-/// Port of `Asciidoctor::Reader::Cursor`.
-class Cursor {
-  /// Creates a cursor. [file] is a path string, a [Uri], or `null`;
-  /// [dir] is a path string or a [Uri].
-  new(this.file, [this.dir, this.path, this.lineno = 1]);
-
-  /// The file under the cursor, if known.
-  final Object? file;
-
-  /// The directory of [file], if known.
-  final Object? dir;
-
-  /// The document-relative path of [file].
-  final String? path;
-
-  /// The 1-based line number under the cursor.
-  int lineno;
-
-  /// Advances the line number by [num].
-  void advance(int num) {
-    lineno += num;
-  }
-
-  /// Returns a copy of this cursor (used for table and parser source
-  /// locations).
-  Cursor dup() => Cursor(file, dir, path, lineno);
-
-  /// `path: line N` summary of this cursor.
-  String get lineInfo => '$path: line $lineno';
-
-  @override
-  String toString() => lineInfo;
-}
+export 'package:asciidoctor/src/cursor.dart' show Cursor;
 
 /// How source lines are normalized during preparation.
 enum _LineNormalization {
@@ -218,69 +45,63 @@ enum _LineNormalization {
 /// next line is the last element. A `null` entry peeks as end-of-data but still
 /// occupies (and is consumed from) the stack when read directly.
 class Reader {
-  /// Initializes the reader.
+  /// Initializes the reader with source [lines].
   ///
-  /// [data] is a string, a list of lines (which may contain `null` entries),
-  /// or `null` for an empty reader. [cursor] is a file path string, a
-  /// [Cursor], or `null` (stdin). When [normalize] is set, lines are
-  /// coerced to Unicode and stripped of trailing whitespace.
-  new(Object? data, {Object? cursor, bool normalize = false}) {
+  /// [cursor] gives the file, directory, path and line number of the first
+  /// line (default: standard input at line 1). When [normalize] is set,
+  /// lines are stripped of trailing whitespace.
+  new(List<String> lines, {Cursor? cursor, bool normalize = false}) {
+    _initCursor(cursor);
+    _sourceLines = _prepareLines(
+      lines: lines,
+      normalize: normalize ? _LineNormalization.full : _LineNormalization.none,
+    );
+    _lines = _sourceLines.reversed.toList();
+  }
+
+  /// Initializes the reader with the AsciiDoc [source] text (an empty
+  /// reader when `null`). See [Reader.new].
+  new fromString(String? source, {Cursor? cursor, bool normalize = false}) {
+    _initCursor(cursor);
+    _sourceLines = _prepareLines(
+      source: source,
+      normalize: normalize ? _LineNormalization.full : _LineNormalization.none,
+    );
+    _lines = _sourceLines.reversed.toList();
+  }
+
+  void _initCursor(Cursor? cursor) {
     if (cursor == null) {
       _file = null;
       _dir = '.';
       _path = '<stdin>';
       _lineno = 1;
-    } else if (cursor is String) {
-      _file = cursor;
-      _dir = _dirname(cursor);
-      _path = Helpers.basename(cursor);
-      _lineno = 1;
-    } else if (cursor is Cursor) {
-      final cursorFile = cursor.file;
-      if (cursorFile != null) {
-        _file = cursorFile;
-        _dir = cursor.dir ?? _dirnameOf(cursorFile);
-        _path =
-            cursor.path ??
-            (cursorFile is String
-                ? Helpers.basename(cursorFile)
-                : Helpers.basename(cursorFile.toString()));
-      } else {
-        _file = null;
-        _dir = cursor.dir ?? '.';
-        _path = cursor.path ?? '<stdin>';
-      }
-      _lineno = cursor.lineno;
-    } else {
-      throw ArgumentError('cursor must be a String, a Cursor, or null');
+      return;
     }
-    _sourceLines = _prepareLines(
-      data,
-      normalize: normalize ? _LineNormalization.full : _LineNormalization.none,
-    );
-    _lines = _sourceLines.reversed.toList();
-    _mark = null;
-    _lookAhead = 0;
-    processLines = true;
-    _unescapeNextLine = false;
-    unterminated = false;
-    _savedState = null;
+    final cursorFile = cursor.file;
+    if (cursorFile != null) {
+      _file = cursorFile;
+      _dir = cursor.dir ?? _dirname(cursorFile);
+      _path = cursor.path ?? Helpers.basename(cursorFile);
+    } else {
+      _file = null;
+      _dir = cursor.dir ?? '.';
+      _path = cursor.path ?? '<stdin>';
+    }
+    _lineno = cursor.lineno;
   }
 
-  /// Sentinel for [readLinesUntil]'s [cursor] parameter selecting the cursor
-  /// at the mark (resolved lazily).
-  static const Object atMark = _AtMark();
+  String? _file;
+  late String _dir;
 
-  /// Default `context` marker for [readLinesUntil], selecting the terminator.
-  static const Object _defaultContext = Object();
-
-  Object? _file;
-  late Object _dir;
+  /// Whether the current file is a remote (URI) include, so relative
+  /// include targets resolve against [dir] as a URI.
+  bool _remote = false;
   late String _path;
   late int _lineno;
-  late List<String?> _lines;
-  late List<String?> _sourceLines;
-  List<Object?>? _mark;
+  late List<String> _lines;
+  late List<String> _sourceLines;
+  Cursor? _mark;
   int _lookAhead = 0;
 
   /// Whether lines are processed using [processLine] on first visit.
@@ -289,13 +110,13 @@ class Reader {
 
   /// Whether the end of the reader was reached with a delimited block open.
   bool unterminated = false;
-  List<Object?>? _savedState;
+  _ReaderState? _savedState;
 
-  /// The file under the cursor, if known.
-  Object? get file => _file;
+  /// The file under the cursor, if known (a path or a URI).
+  String? get file => _file;
 
-  /// The directory of [file].
-  Object get dir => _dir;
+  /// The directory of [file] (a path or a URI).
+  String get dir => _dir;
 
   /// The document-relative path of [file].
   String get path => _path;
@@ -304,7 +125,7 @@ class Reader {
   int get lineno => _lineno;
 
   /// The live document source lines (normal order).
-  List<String?> get sourceLines => _sourceLines;
+  List<String> get sourceLines => _sourceLines;
 
   /// Whether there are any lines left to read.
   bool hasMoreLines() {
@@ -385,20 +206,22 @@ class Reader {
   }
 
   /// Gets the remaining lines of source data, processing each in turn.
-  List<String?> readLines() {
-    final lines = <String?>[];
+  List<String> readLines() {
+    final lines = <String>[];
     // hasMoreLines triggers preprocessing in subclasses.
     while (hasMoreLines()) {
-      lines.add(shift());
+      final line = shift();
+      if (line == null) break;
+      lines.add(line);
     }
     return lines;
   }
 
   /// Alias of [readLines].
-  List<String?> readlines() => readLines();
+  List<String> readlines() => readLines();
 
   /// Gets the remaining lines of source data joined as a string.
-  String read() => readLines().map((line) => line ?? '').join(lf);
+  String read() => readLines().join(lf);
 
   /// Advances past the next line, returning whether a line was consumed.
   bool advance() => shift() != null;
@@ -509,9 +332,10 @@ class Reader {
   /// * [skipLineComments] drops line comments from the result.
   /// * [skipProcessing] disables line (pre)processing for the scan.
   /// * [context] names the block in the unterminated warning and defaults to
-  ///   [terminator]; pass an explicit `null` to suppress the warning.
-  /// * [cursor] selects the start cursor for the warning, or [atMark] to use
-  ///   the cursor at the mark.
+  ///   [terminator]; [warnIfUnterminated] set to `false` suppresses the
+  ///   warning.
+  /// * [cursor] selects the start cursor for the warning; [cursorAtMark]
+  ///   uses the cursor at the mark instead.
   List<String> readLinesUntil({
     String? terminator,
     bool breakOnBlankLines = false,
@@ -521,8 +345,10 @@ class Reader {
     bool readLastLine = false,
     bool skipLineComments = false,
     bool skipProcessing = false,
-    Object? context = _defaultContext,
-    Object? cursor,
+    String? context,
+    bool warnIfUnterminated = true,
+    Cursor? cursor,
+    bool cursorAtMark = false,
     bool Function(String line)? test,
   }) {
     var breakOnListCont = breakOnListContinuation;
@@ -533,10 +359,10 @@ class Reader {
       processLines = false;
       restoreProcessLines = true;
     }
-    Object? startCursor;
+    Cursor? startCursor;
     var preserveLast = preserveLastLine;
     if (terminator != null) {
-      startCursor = cursor ?? this.cursor();
+      startCursor = cursorAtMark ? null : cursor ?? this.cursor();
       breakOnBlank = false;
       breakOnListCont = false;
     }
@@ -574,17 +400,10 @@ class Reader {
       processLines = true;
       if (lineRestored && terminator == null) _lookAhead -= 1;
     }
-    final effectiveContext = identical(context, _defaultContext)
-        ? terminator
-        : context;
-    if (terminator != null && terminator != line && effectiveContext != null) {
-      var start = startCursor;
-      if (identical(start, atMark)) start = cursorAtMark();
+    if (terminator != null && terminator != line && warnIfUnterminated) {
       LoggerManager.logger.warn(
-        _messageWithContext(
-          'unterminated $effectiveContext block',
-          sourceLocation: start as Cursor?,
-        ),
+        'unterminated ${context ?? terminator} block',
+        at: startCursor ?? this.cursorAtMark(),
       );
       unterminated = true;
     }
@@ -630,23 +449,13 @@ class Reader {
   Cursor cursorAtLine(int lineno) => Cursor(_file, _dir, _path, lineno);
 
   /// The cursor at the mark, or the current cursor when unmarked.
-  Cursor cursorAtMark() {
-    final mark = _mark;
-    return mark != null
-        ? Cursor(mark[0], mark[1], mark[2] as String?, mark[3]! as int)
-        : cursor();
-  }
+  Cursor cursorAtMark() => _mark?.dup() ?? cursor();
 
   /// The cursor on the line before the mark (or the current line).
   Cursor cursorBeforeMark() {
     final mark = _mark;
     if (mark != null) {
-      return Cursor(
-        mark[0],
-        mark[1],
-        mark[2] as String?,
-        (mark[3]! as int) - 1,
-      );
+      return Cursor(mark.file, mark.dir, mark.path, mark.lineno - 1);
     }
     return Cursor(_file, _dir, _path, _lineno - 1);
   }
@@ -657,7 +466,7 @@ class Reader {
   /// Marks the current cursor position. Always returns `true` so the call
   /// can be chained in boolean expressions.
   bool mark() {
-    _mark = [_file, _dir, _path, _lineno];
+    _mark = cursor();
     return true;
   }
 
@@ -665,13 +474,13 @@ class Reader {
   String get lineInfo => '$path: line $lineno';
 
   /// A copy of the remaining lines managed by this reader.
-  List<String?> get lines => _lines.reversed.toList();
+  List<String> get lines => _lines.reversed.toList();
 
   /// A copy of the remaining lines managed by this reader joined as a string.
-  String get string => _lines.reversed.map((line) => line ?? '').join(lf);
+  String get string => _lines.reversed.join(lf);
 
   /// The source lines for this reader joined as a string.
-  String get source => _sourceLines.map((line) => line ?? '').join(lf);
+  String get source => _sourceLines.join(lf);
 
   /// Saves the state of the reader at the cursor.
   @internal
@@ -712,79 +521,88 @@ class Reader {
   }
 
   /// Captures this reader's saveable state.
-  List<Object?> _captureState() => [
-    List<String?>.of(_lines),
-    _file,
-    _dir,
-    _path,
-    _lineno,
-    if (_mark == null) null else List<Object?>.of(_mark!),
-    _lookAhead,
-    processLines,
-    _unescapeNextLine,
-    unterminated,
-  ];
+  _ReaderState _captureState() => _ReaderState(
+    lines: List<String>.of(_lines),
+    file: _file,
+    dir: _dir,
+    remote: _remote,
+    path: _path,
+    lineno: _lineno,
+    mark: _mark?.dup(),
+    lookAhead: _lookAhead,
+    processLines: processLines,
+    unescapeNextLine: _unescapeNextLine,
+    unterminated: unterminated,
+  );
 
   /// Restores state captured by [_captureState].
-  void _restoreState(List<Object?> saved) {
-    _lines = saved[0]! as List<String?>;
-    _file = saved[1];
-    _dir = saved[2]!;
-    _path = saved[3]! as String;
-    _lineno = saved[4]! as int;
-    _mark = saved[5] as List<Object?>?;
-    _lookAhead = saved[6]! as int;
-    processLines = saved[7]! as bool;
-    _unescapeNextLine = saved[8]! as bool;
-    unterminated = saved[9]! as bool;
+  void _restoreState(_ReaderState saved) {
+    _lines = saved.lines;
+    _file = saved.file;
+    _dir = saved.dir;
+    _remote = saved.remote;
+    _path = saved.path;
+    _lineno = saved.lineno;
+    _mark = saved.mark;
+    _lookAhead = saved.lookAhead;
+    processLines = saved.processLines;
+    _unescapeNextLine = saved.unescapeNextLine;
+    unterminated = saved.unterminated;
   }
 
   /// Prepares the source data for parsing.
   ///
-  /// Converts [data] into a list of lines ready for parsing. [normalize]
-  /// controls encoding/whitespace handling.
-  ///
-  /// No encoding recovery is needed: Dart strings are always valid
-  /// Unicode.
-  List<String?> _prepareLines(
-    Object? data, {
+  /// Converts the [source] text or the source [lines] into a list of lines
+  /// ready for parsing. [normalize] controls whitespace handling.
+  List<String> _prepareLines({
+    String? source,
+    List<String>? lines,
     _LineNormalization normalize = _LineNormalization.none,
   }) {
-    // NOTE results are normalized to a runtime List<String?> so later
-    // mutations (front matter restore, null entries) never hit covariance
-    // checks against a List<String>.
     switch (normalize) {
       case _LineNormalization.full:
-        if (data is List) {
-          return List<String?>.of(
-            Helpers.prepareSourceArray(
-              data.map((line) => line as String).toList(),
-            ),
-          );
-        }
-        return List<String?>.of(Helpers.prepareSourceString(data as String?));
+        if (lines != null) return Helpers.prepareSourceArray(lines);
+        return Helpers.prepareSourceString(source);
       case _LineNormalization.chomp:
-        if (data is List) {
-          return List<String?>.of(
-            Helpers.prepareSourceArray(
-              data.map((line) => line as String).toList(),
-              trimEnd: false,
-            ),
-          );
+        if (lines != null) {
+          return Helpers.prepareSourceArray(lines, trimEnd: false);
         }
-        return List<String?>.of(
-          Helpers.prepareSourceString(data as String?, trimEnd: false),
-        );
+        return Helpers.prepareSourceString(source, trimEnd: false);
       case _LineNormalization.none:
-        if (data is List) return List<String?>.from(data);
-        if (data != null) {
-          return <String?>[
-            ...(data as String).withoutTrailingNewline().split(lf),
-          ];
-        }
-        return [];
+        if (lines != null) return List<String>.of(lines);
+        if (source != null) return source.withoutTrailingNewline().split(lf);
+        return <String>[];
     }
   }
+}
+
+/// A saved [Reader] state.
+final class _ReaderState {
+  const new({
+    required this.lines,
+    required this.file,
+    required this.dir,
+    required this.remote,
+    required this.path,
+    required this.lineno,
+    required this.mark,
+    required this.lookAhead,
+    required this.processLines,
+    required this.unescapeNextLine,
+    required this.unterminated,
+  });
+
+  final List<String> lines;
+  final String? file;
+  final String dir;
+  final bool remote;
+  final String path;
+  final int lineno;
+  final Cursor? mark;
+  final int lookAhead;
+  final bool processLines;
+  final bool unescapeNextLine;
+  final bool unterminated;
 }
 
 /// Methods for retrieving lines from AsciiDoc source files, evaluating
@@ -792,45 +610,64 @@ class Reader {
 ///
 /// Port of `Asciidoctor::PreprocessorReader`.
 class PreprocessorReader extends Reader {
-  /// Initializes the preprocessor reader for [document].
+  /// Initializes the preprocessor reader for [document] with source
+  /// [lines].
   ///
-  /// See [Reader.new] for [data], [cursor] and [normalize]. Front matter is
-  /// skipped when the document sets the `skip-front-matter` attribute.
-  new(ReaderDocument document, super.data, {super.cursor, super.normalize})
-    : _document = document,
-      _sourcemap = document.sourcemap,
-      _includes = document.catalogIncludes {
-    final maxDepthValue = document.attributes['max-include-depth'];
-    final defaultDepth = maxDepthValue == null || maxDepthValue == false
-        ? 64
-        : _toInt(maxDepthValue);
+  /// See [Reader.new] for [cursor] and [normalize]. Front matter is skipped
+  /// when the document sets the `skip-front-matter` attribute.
+  new(
+    Document document,
+    List<String> lines, {
+    super.cursor,
+    bool normalize = false,
+  }) : _document = document,
+       _sourcemap = document.sourcemap,
+       _includes = document.catalog.includes,
+       super(const <String>[]) {
+    _init(lines: lines, normalize: normalize);
+  }
+
+  /// Initializes the preprocessor reader for [document] with the AsciiDoc
+  /// [source] text. See [PreprocessorReader.new].
+  new fromString(
+    Document document,
+    String? source, {
+    super.cursor,
+    bool normalize = false,
+  }) : _document = document,
+       _sourcemap = document.sourcemap,
+       _includes = document.catalog.includes,
+       super(const <String>[]) {
+    _init(source: source, normalize: normalize);
+  }
+
+  void _init({required bool normalize, String? source, List<String>? lines}) {
+    final maxDepthValue = _document.attributes['max-include-depth'];
+    final defaultDepth = maxDepthValue == null ? 64 : _toInt(maxDepthValue);
     // Track absolute max depth, current max depth for comparing to include
     // stack size, and relative max depth for reporting.
     // If _maxdepth is not set, built-in include functionality is disabled.
     _maxdepth = defaultDepth > 0
         ? _MaxDepth(defaultDepth, defaultDepth, defaultDepth)
         : null;
-    _includeStack = [];
-    _skipping = false;
-    _conditionalStack = [];
-    _includeProcessorExtensions = null;
-    _includeProcessorsChecked = false;
-    _savedPreprocessorState = null;
+    _sourceLines = _prepareLines(
+      source: source,
+      lines: lines,
+      normalize: normalize ? _LineNormalization.full : _LineNormalization.none,
+    );
+    _lines = _sourceLines.reversed.toList();
   }
 
-  final ReaderDocument _document;
+  final Document _document;
   final bool _sourcemap;
-  final Map<String, bool?> _includes;
+  final Map<String, bool> _includes;
   _MaxDepth? _maxdepth;
-  late List<List<Object?>> _includeStack;
-  late bool _skipping;
-  late List<_ConditionalFrame> _conditionalStack;
-  List<ReaderIncludeProcessor>? _includeProcessorExtensions;
+  List<_IncludeFrame> _includeStack = <_IncludeFrame>[];
+  bool _skipping = false;
+  List<_ConditionalFrame> _conditionalStack = <_ConditionalFrame>[];
+  List<IncludeProcessor>? _includeProcessorExtensions;
   bool _includeProcessorsChecked = false;
-  List<Object?>? _savedPreprocessorState;
-
-  /// The stack of active include frames.
-  List<List<Object?>> get includeStack => _includeStack;
+  _PreprocessorState? _savedPreprocessorState;
 
   @override
   bool hasMoreLines() => peekLine() != null;
@@ -849,14 +686,10 @@ class PreprocessorReader extends Reader {
       Cursor? endCursor;
       _conditionalStack.removeWhere((conditional) {
         LoggerManager.logger.error(
-          _messageWithContext(
-            'detected unterminated preprocessor conditional directive: '
-            '${conditional.name}::${conditional.target ?? ''}'
-            '[${conditional.expr ?? ''}]',
-            sourceLocation:
-                conditional.sourceLocation ??
-                (endCursor ??= cursorAtPrevLine()),
-          ),
+          'detected unterminated preprocessor conditional directive: '
+          '${conditional.name}::${conditional.target ?? ''}'
+          '[${conditional.expr ?? ''}]',
+          at: conditional.sourceLocation ?? (endCursor ??= cursorAtPrevLine()),
         );
         return true;
       });
@@ -867,78 +700,116 @@ class PreprocessorReader extends Reader {
     }
   }
 
-  /// Pushes [data] onto the front of the reader and switches the context to
-  /// the given [file], document-relative [path] and line info.
+  /// Pushes the [source] text onto the front of the reader and switches
+  /// the context to the given [file], document-relative [path] and line
+  /// info.
   ///
   /// Typically used in an include processor to add source read from the
-  /// target. [lineno] defaults to 1.
+  /// target. [lineno] defaults to 1. [attributes] are the include
+  /// directive's attributes (`depth`, `indent`, `leveloffset`,
+  /// `partial-option`).
   void pushInclude(
-    Object? data, [
-    Object? file,
+    String source, [
+    String? file,
     String? path,
     int lineno = 1,
-    Map<Object, String?>? attributes,
-  ]) {
-    final attrs = attributes ?? <Object, String?>{};
-    _includeStack.add([
-      _lines,
-      _file,
-      _dir,
-      _path,
-      _lineno,
-      _maxdepth,
-      processLines,
-    ]);
-    final includeFile = file;
-    if (includeFile != null) {
-      if (includeFile is String) {
-        _dir = _dirname(includeFile);
-      } else if (includeFile is Uri) {
-        final dirPath = _dirname(includeFile.path);
-        _dir = includeFile.replace(path: dirPath == '/' ? '' : dirPath);
+    Map<String, String> attributes = const <String, String>{},
+  ]) => _pushInclude(
+    source: source,
+    file: file,
+    path: path,
+    lineno: lineno,
+    attrs: attributes,
+  );
+
+  /// Pushes source [lines] onto the front of the reader. See
+  /// [pushInclude].
+  void pushIncludeLines(
+    List<String> lines, [
+    String? file,
+    String? path,
+    int lineno = 1,
+    Map<String, String> attributes = const <String, String>{},
+  ]) => _pushInclude(
+    lines: lines,
+    file: file,
+    path: path,
+    lineno: lineno,
+    attrs: attributes,
+  );
+
+  void _pushInclude({
+    String? source,
+    List<String>? lines,
+    String? file,
+    String? path,
+    int lineno = 1,
+    Map<String, String> attrs = const <String, String>{},
+    bool remote = false,
+  }) {
+    _includeStack.add(
+      _IncludeFrame(
+        lines: _lines,
+        file: _file,
+        dir: _dir,
+        remote: _remote,
+        path: _path,
+        lineno: _lineno,
+        maxdepth: _maxdepth,
+        processLines: processLines,
+      ),
+    );
+    if (file != null) {
+      if (remote) {
+        // The directory of a URI is the URI with the last path segment
+        // removed.
+        final uri = Uri.parse(file);
+        final dirPath = _dirname(uri.path);
+        _dir = uri.replace(path: dirPath == '/' ? '' : dirPath).toString();
       } else {
-        throw ArgumentError('file must be a String, a Uri, or null');
+        _dir = _dirname(file);
       }
-      // NOTE _file keeps the original object (a Uri stays a Uri); only the
-      // local string form is used for path computations below.
-      final fileString = includeFile.toString();
-      _path = path ?? Helpers.basename(fileString);
+      _remote = remote;
+      _path = path ?? Helpers.basename(file);
       // only process lines in AsciiDoc files
-      if (processLines = asciidocExtensions.keys.any(fileString.endsWith)) {
+      if (processLines = asciidocExtensions.keys.any(file.endsWith)) {
         final dot = _path.lastIndexOf('.');
         final key = dot == -1 ? _path : _path.substring(0, dot);
-        // NOTE registering the include with a null value tracks it while not
+        // NOTE registering the include as partial tracks it while not
         // making it visible to interdocument xrefs
-        if (_includes[key] == null) {
-          _includes[key] = attrs['partial-option'] != null ? null : true;
+        if (_includes[key] != true) {
+          _includes[key] = !attrs.containsKey('partial-option');
         }
       }
     } else {
       _dir = '.';
+      _remote = false;
       // we don't know what file type we have, so assume AsciiDoc
       processLines = true;
       if (path != null) {
         _path = path;
-        // NOTE registering the include with a null value tracks it while not
+        // NOTE registering the include as partial tracks it while not
         // making it visible to interdocument xrefs
         final key = Helpers.rootname(path);
-        if (_includes[key] == null) {
-          _includes[key] = attrs['partial-option'] != null ? null : true;
+        if (_includes[key] != true) {
+          _includes[key] = !attrs.containsKey('partial-option');
         }
       } else {
         _path = '<stdin>';
       }
     }
 
-    _file = includeFile;
+    _file = file;
     _lineno = lineno;
 
-    if (_maxdepth != null && attrs.containsKey('depth')) {
-      final relMaxdepth = _toInt(attrs['depth']);
+    final maxdepth = _maxdepth;
+    final depthAttr = attrs['depth'];
+    if (maxdepth != null && depthAttr != null) {
+      final relMaxdepth = _toInt(depthAttr);
       if (relMaxdepth > 0) {
         var currMaxdepth = _includeStack.length + relMaxdepth;
         var rel = relMaxdepth;
-        final absMaxdepth = _maxdepth!.abs;
+        final absMaxdepth = maxdepth.abs;
         if (currMaxdepth > absMaxdepth) {
           // if relative depth exceeds absolute max depth, effectively ignore
           // relative depth request
@@ -946,17 +817,17 @@ class PreprocessorReader extends Reader {
         }
         _maxdepth = _MaxDepth(absMaxdepth, currMaxdepth, rel);
       } else {
-        _maxdepth = _MaxDepth(_maxdepth!.abs, _includeStack.length, 0);
+        _maxdepth = _MaxDepth(maxdepth.abs, _includeStack.length, 0);
       }
     }
 
     // effectively fill the buffer
-    final prepared = _prepareLines(
-      data,
+    final prepared = _prepareIncludeLines(
+      source: source,
+      lines: lines,
       normalize: processLines
           ? _LineNormalization.full
           : _LineNormalization.chomp,
-      condense: false,
       indent: attrs['indent'],
     );
     if (prepared.isEmpty) {
@@ -964,28 +835,24 @@ class PreprocessorReader extends Reader {
     } else {
       // FIXME we eventually want to handle leveloffset without affecting
       // the lines
-      if (attrs.containsKey('leveloffset')) {
+      final leveloffsetAttr = attrs['leveloffset'];
+      if (leveloffsetAttr != null) {
         final leveloffset = _document.attr('leveloffset');
         _lines = [
-          if (_isTruthy(leveloffset))
+          if (leveloffset != null)
             ':leveloffset: $leveloffset'
           else
             ':leveloffset!:',
           '',
           ...prepared.reversed,
           '',
-          ':leveloffset: ${attrs['leveloffset']}',
+          ':leveloffset: $leveloffsetAttr',
         ];
         // compensate for these extra lines at the top
         _lineno -= 2;
       } else {
         _lines = prepared.reversed.toList();
       }
-
-      // FIXME kind of a hack
-      //Document::AttributeEntry.new('infile', @file)
-      //  .save_to_next_block @document
-      //Document::AttributeEntry.new('indir', @dir).save_to_next_block @document
       _lookAhead = 0;
     }
   }
@@ -993,20 +860,19 @@ class PreprocessorReader extends Reader {
   /// The current include depth (size of the include stack).
   int get includeDepth => _includeStack.length;
 
-  /// Whether pushing an include would exceed the max include depth.
-  ///
-  /// Returns `null` when no max depth is set (includes disabled), `false`
-  /// when the current max depth will not be exceeded, and the relative max
-  /// include depth when it will be exceeded.
-  Object? get exceedsMaxDepth {
+  /// The relative max include depth when pushing an include would exceed
+  /// it, else `null` (also when includes are disabled; see
+  /// [includesEnabled]).
+  int? get exceedsMaxDepth {
     final maxdepth = _maxdepth;
     if (maxdepth == null) return null;
     if (_includeStack.length >= maxdepth.curr) return maxdepth.rel;
-    return false;
+    return null;
   }
 
-  /// Alias of [exceedsMaxDepth].
-  Object? get exceededMaxDepth => exceedsMaxDepth;
+  /// Whether the built-in include directive is enabled (the
+  /// `max-include-depth` attribute is positive).
+  bool get includesEnabled => _maxdepth != null;
 
   /// Shifts the line off the stack, unescaping it first when the previous
   /// peek marked it escaped. See [Reader.shift].
@@ -1024,44 +890,46 @@ class PreprocessorReader extends Reader {
   bool get hasIncludeProcessors {
     if (!_includeProcessorsChecked) {
       _includeProcessorsChecked = true;
-      _includeProcessorExtensions = _document.includeProcessors;
+      final exts = _document.extensions;
+      if (exts != null && exts.hasIncludeProcessors) {
+        _includeProcessorExtensions = [
+          for (final ext in exts.includeProcessors) ext.instance,
+        ];
+      }
     }
     return _includeProcessorExtensions != null;
   }
 
-  /// Creates a cursor for [file] (a path string or [Uri]) at [lineno].
-  Cursor createIncludeCursor(Object file, String path, int lineno) {
-    if (file is String) {
-      return Cursor(file, _dirname(file), path, lineno);
-    } else if (file is Uri) {
-      var dir = _dirname(file.path);
-      if (dir == '') dir = '/';
-      return Cursor(file.toString(), dir, path, lineno);
-    }
-    throw ArgumentError('file must be a String or a Uri');
+  /// Creates a cursor for [file] at [lineno]; a [remote] file is a URI.
+  Cursor createIncludeCursor(
+    String file,
+    String path,
+    int lineno, {
+    bool remote = false,
+  }) {
+    if (!remote) return Cursor(file, _dirname(file), path, lineno);
+    var dir = _dirname(Uri.parse(file).path);
+    if (dir == '') dir = '/';
+    return Cursor(file, dir, path, lineno);
   }
 
   @override
-  String toString() {
-    final includeStack = _includeStack.map((inc) => inc.toString()).join(', ');
-    return '#<PreprocessorReader@${identityHashCode(this)} '
-        '{path: ${_inspect(_path)}, line: $_lineno, '
-        'include depth: ${_includeStack.length}, '
-        'include stack: [$includeStack]}>';
-  }
+  String toString() =>
+      'PreprocessorReader(path: ${_inspect(_path)}, line: $_lineno, '
+      'include depth: ${_includeStack.length})';
 
   @internal
   @override
   void save() {
     super.save();
-    _savedPreprocessorState = [
-      List<List<Object?>>.of(_includeStack),
-      _maxdepth,
-      _skipping,
-      List<_ConditionalFrame>.of(_conditionalStack),
-      _includeProcessorExtensions,
-      _includeProcessorsChecked,
-    ];
+    _savedPreprocessorState = _PreprocessorState(
+      includeStack: List<_IncludeFrame>.of(_includeStack),
+      maxdepth: _maxdepth,
+      skipping: _skipping,
+      conditionalStack: List<_ConditionalFrame>.of(_conditionalStack),
+      includeProcessors: _includeProcessorExtensions,
+      includeProcessorsChecked: _includeProcessorsChecked,
+    );
   }
 
   @internal
@@ -1070,12 +938,12 @@ class PreprocessorReader extends Reader {
     final saved = _savedPreprocessorState;
     super.restoreSave();
     if (saved == null) return;
-    _includeStack = saved[0]! as List<List<Object?>>;
-    _maxdepth = saved[1] as _MaxDepth?;
-    _skipping = saved[2]! as bool;
-    _conditionalStack = saved[3]! as List<_ConditionalFrame>;
-    _includeProcessorExtensions = saved[4] as List<ReaderIncludeProcessor>?;
-    _includeProcessorsChecked = saved[5]! as bool;
+    _includeStack = saved.includeStack;
+    _maxdepth = saved.maxdepth;
+    _skipping = saved.skipping;
+    _conditionalStack = saved.conditionalStack;
+    _includeProcessorExtensions = saved.includeProcessors;
+    _includeProcessorsChecked = saved.includeProcessorsChecked;
     _savedPreprocessorState = null;
   }
 
@@ -1086,49 +954,58 @@ class PreprocessorReader extends Reader {
     _savedPreprocessorState = null;
   }
 
-  /// Prepares [data], skipping front matter when the document sets the
-  /// `skip-front-matter` attribute, dropping trailing blank lines unless
-  /// [condense] is false, and adjusting indentation when [indent] is set.
+  /// Prepares the source, skipping front matter when the document sets the
+  /// `skip-front-matter` attribute and dropping trailing blank lines.
   @override
-  List<String?> _prepareLines(
-    Object? data, {
+  List<String> _prepareLines({
+    String? source,
+    List<String>? lines,
     _LineNormalization normalize = _LineNormalization.none,
-    bool condense = true,
-    Object? indent,
+  }) => _prepareIncludeLines(
+    source: source,
+    lines: lines,
+    normalize: normalize,
+    condense: true,
+  );
+
+  /// Prepares the [source] text or [lines], skipping front matter when the
+  /// document sets the `skip-front-matter` attribute, dropping trailing
+  /// blank lines when [condense] is set, and adjusting indentation when
+  /// [indent] is set.
+  List<String> _prepareIncludeLines({
+    String? source,
+    List<String>? lines,
+    _LineNormalization normalize = _LineNormalization.none,
+    bool condense = false,
+    String? indent,
   }) {
-    final result = super._prepareLines(data, normalize: normalize);
+    final result = super._prepareLines(
+      source: source,
+      lines: lines,
+      normalize: normalize,
+    );
 
     // QUESTION should this work for AsciiDoc table cell content? Currently it
     // does not.
-    if (_isTruthy(_document.attributes['skip-front-matter'])) {
+    if (_document.attributes.containsKey('skip-front-matter')) {
       final frontMatter = _skipFrontMatter(result);
       if (frontMatter != null) {
-        _document.attributes['front-matter'] = frontMatter
-            .map((line) => line ?? '')
-            .join(lf);
+        _document.attributes['front-matter'] = frontMatter.join(lf);
       }
     }
 
     if (condense) {
-      while (result.isNotEmpty && (result.last?.isEmpty ?? false)) {
+      while (result.isNotEmpty && result.last.isEmpty) {
         result.removeLast();
       }
     }
 
     if (indent != null) {
-      // Port of the `Parser.adjust_indentation!` call in
-      // `PreprocessorReader#prepare_lines`. The include path always
-      // normalizes to non-null strings, so the `?? ''` fallback never fires
-      // in practice.
-      final lines = List<String>.of(result.map((line) => line ?? ''));
       Parser.adjustIndentation(
-        lines,
+        result,
         _toInt(indent),
         _toInt(_document.attr('tabsize')),
       );
-      for (var i = 0; i < lines.length; i++) {
-        result[i] = lines[i];
-      }
     }
 
     return result;
@@ -1237,18 +1114,14 @@ class PreprocessorReader extends Reader {
     if (name == 'endif') {
       if (text != null) {
         LoggerManager.logger.error(
-          _messageWithContext(
-            'malformed preprocessor directive - text not permitted: '
-            'endif::$directiveTarget[$text]',
-            sourceLocation: cursor(),
-          ),
+          'malformed preprocessor directive - text not permitted: '
+          'endif::$directiveTarget[$text]',
+          at: cursor(),
         );
       } else if (_conditionalStack.isEmpty) {
         LoggerManager.logger.error(
-          _messageWithContext(
-            'unmatched preprocessor directive: endif::$directiveTarget[]',
-            sourceLocation: cursor(),
-          ),
+          'unmatched preprocessor directive: endif::$directiveTarget[]',
+          at: cursor(),
         );
       } else if (noTarget || directiveTarget == _conditionalStack.last.target) {
         _conditionalStack.removeLast();
@@ -1256,12 +1129,10 @@ class PreprocessorReader extends Reader {
             _conditionalStack.isNotEmpty && _conditionalStack.last.skipping;
       } else {
         LoggerManager.logger.error(
-          _messageWithContext(
-            'mismatched preprocessor directive: '
-            'endif::$directiveTarget[], expected '
-            'endif::${_conditionalStack.last.target ?? ''}[]',
-            sourceLocation: cursor(),
-          ),
+          'mismatched preprocessor directive: '
+          'endif::$directiveTarget[], expected '
+          'endif::${_conditionalStack.last.target ?? ''}[]',
+          at: cursor(),
         );
       }
       return true;
@@ -1284,11 +1155,9 @@ class PreprocessorReader extends Reader {
         case 'ifdef':
           if (noTarget) {
             LoggerManager.logger.error(
-              _messageWithContext(
-                'malformed preprocessor directive - missing target: '
-                'ifdef::[${text ?? ''}]',
-                sourceLocation: cursor(),
-              ),
+              'malformed preprocessor directive - missing target: '
+              'ifdef::[${text ?? ''}]',
+              at: cursor(),
             );
             return true;
           }
@@ -1297,9 +1166,7 @@ class PreprocessorReader extends Reader {
               : directiveTarget.split(delimiter == ',' ? ',' : '+');
           if (delimiter == ',') {
             // skip if no attribute is defined
-            skip = !parts!.any(
-              (attrName) => _document.attributes.containsKey(attrName),
-            );
+            skip = !parts!.any(_document.attributes.containsKey);
           } else if (delimiter == '+') {
             // skip if any attribute is undefined
             skip = parts!.any(
@@ -1312,11 +1179,9 @@ class PreprocessorReader extends Reader {
         case 'ifndef':
           if (noTarget) {
             LoggerManager.logger.error(
-              _messageWithContext(
-                'malformed preprocessor directive - missing target: '
-                'ifndef::[${text ?? ''}]',
-                sourceLocation: cursor(),
-              ),
+              'malformed preprocessor directive - missing target: '
+              'ifndef::[${text ?? ''}]',
+              at: cursor(),
             );
             return true;
           }
@@ -1325,14 +1190,10 @@ class PreprocessorReader extends Reader {
               : directiveTarget.split(delimiter == ',' ? ',' : '+');
           if (delimiter == ',') {
             // skip if any attribute is defined
-            skip = parts!.any(
-              (attrName) => _document.attributes.containsKey(attrName),
-            );
+            skip = parts!.any(_document.attributes.containsKey);
           } else if (delimiter == '+') {
             // skip if all attributes are defined
-            skip = parts!.every(
-              (attrName) => _document.attributes.containsKey(attrName),
-            );
+            skip = parts!.every(_document.attributes.containsKey);
           } else {
             // if the attribute is defined, then skip
             skip = _document.attributes.containsKey(directiveTarget);
@@ -1361,22 +1222,18 @@ class PreprocessorReader extends Reader {
               }
             } else {
               LoggerManager.logger.error(
-                _messageWithContext(
-                  'malformed preprocessor directive - '
-                  '${text != null ? 'invalid' : 'missing'} expression: '
-                  'ifeval::[${text ?? ''}]',
-                  sourceLocation: cursor(),
-                ),
+                'malformed preprocessor directive - '
+                '${text != null ? 'invalid' : 'missing'} expression: '
+                'ifeval::[${text ?? ''}]',
+                at: cursor(),
               );
               return true;
             }
           } else {
             LoggerManager.logger.error(
-              _messageWithContext(
-                'malformed preprocessor directive - target not permitted: '
-                'ifeval::$directiveTarget[${text ?? ''}]',
-                sourceLocation: cursor(),
-              ),
+              'malformed preprocessor directive - target not permitted: '
+              'ifeval::$directiveTarget[${text ?? ''}]',
+              at: cursor(),
             );
             return true;
           }
@@ -1440,19 +1297,19 @@ class PreprocessorReader extends Reader {
   bool _preprocessIncludeDirective(String target, String? attrlist) {
     final doc = _document;
     var expandedTarget = target;
-    final attrMissingValue = doc.attributes['attribute-missing'];
-    final attrMissing = attrMissingValue == null || attrMissingValue == false
-        ? Compliance.attributeMissing
-        : attrMissingValue.toString();
+    final attrMissing =
+        doc.attributes['attribute-missing'] ?? Compliance.attributeMissing;
     if (target.contains(attrRefHead) &&
-        (expandedTarget = doc.subAttributes(
+        (expandedTarget = substitutors.subAttributes(
+          doc,
           target,
           attributeMissing: attrMissing == 'warn' ? 'drop-line' : attrMissing,
         )).isEmpty) {
       // The re-substitution check is pure (drop-line with ignore severity
       // logs nothing), so it is computed once for the branches below.
-      final droppedDueToMissingAttr = doc
+      final droppedDueToMissingAttr = substitutors
           .subAttributes(
+            doc,
             '$target ',
             attributeMissing: 'drop-line',
             dropLineSeverity: 'ignore',
@@ -1463,33 +1320,27 @@ class PreprocessorReader extends Reader {
           : 'because resolved target is blank';
       if (attrMissing == 'drop-line' && droppedDueToMissingAttr) {
         LoggerManager.logger.info(
-          () => _messageWithContext(
-            'include dropped due to missing attribute: '
-            'include::$target[${attrlist ?? ''}]',
-            sourceLocation: cursor(),
-          ),
+          'include dropped due to missing attribute: '
+          'include::$target[${attrlist ?? ''}]',
+          at: cursor(),
         );
         shift();
         return true;
-      } else if (doc
-          .parseAttributes(attrlist, subInput: true)
+      } else if (substitutors
+          .parseAttributes(doc, attrlist, subInput: true)
           .containsKey('optional-option')) {
         LoggerManager.logger.info(
-          () => _messageWithContext(
-            'optional include dropped $dropReason: '
-            'include::$target[${attrlist ?? ''}]',
-            sourceLocation: cursor(),
-          ),
+          'optional include dropped $dropReason: '
+          'include::$target[${attrlist ?? ''}]',
+          at: cursor(),
         );
         shift();
         return true;
       } else {
         LoggerManager.logger.warn(
-          _messageWithContext(
-            'include dropped $dropReason: '
-            'include::$target[${attrlist ?? ''}]',
-            sourceLocation: cursor(),
-          ),
+          'include dropped $dropReason: '
+          'include::$target[${attrlist ?? ''}]',
+          at: cursor(),
         );
         // QUESTION should this line include target or expanded_target (or
         // escaped target?)
@@ -1500,7 +1351,7 @@ class PreprocessorReader extends Reader {
       }
     } else {
       final ext = hasIncludeProcessors
-          ? _findIncludeProcessor(doc, expandedTarget)
+          ? _findIncludeProcessor(expandedTarget)
           : null;
       if (ext != null) {
         shift();
@@ -1509,7 +1360,7 @@ class PreprocessorReader extends Reader {
           doc,
           this,
           expandedTarget,
-          doc.parseAttributes(attrlist, subInput: true),
+          substitutors.parseAttributes(doc, attrlist, subInput: true),
         );
         return true;
         // if running in SafeMode::SECURE or greater, don't process this
@@ -1520,21 +1371,23 @@ class PreprocessorReader extends Reader {
         // a verbatim context
         var linkTarget = expandedTarget;
         if (linkTarget.contains(' ')) linkTarget = 'pass:c[$linkTarget]';
-        final linkAttrlist = doc.attrSet('compat-mode') ? '' : 'role=include';
+        final linkAttrlist = doc.hasAttr('compat-mode') ? '' : 'role=include';
         return replaceNextLine('link:$linkTarget[$linkAttrlist]');
       } else if (_maxdepth != null) {
         final maxdepth = _maxdepth!;
         if (_includeStack.length >= maxdepth.curr) {
           LoggerManager.logger.error(
-            _messageWithContext(
-              'maximum include depth of ${maxdepth.rel} exceeded',
-              sourceLocation: cursor(),
-            ),
+            'maximum include depth of ${maxdepth.rel} exceeded',
+            at: cursor(),
           );
           return false;
         }
 
-        final parsedAttrs = doc.parseAttributes(attrlist, subInput: true);
+        final parsedAttrs = substitutors.parseAttributes(
+          doc,
+          attrlist,
+          subInput: true,
+        );
         final resolution = _resolveIncludePath(
           expandedTarget,
           attrlist,
@@ -1557,9 +1410,7 @@ class PreprocessorReader extends Reader {
         if (attrlist != null) {
           if (parsedAttrs.containsKey('lines')) {
             final collected = <num>[];
-            for (final linedef in _splitDelimitedValue(
-              parsedAttrs['lines'] ?? '',
-            )) {
+            for (final linedef in _splitDelimitedValue(parsedAttrs['lines']!)) {
               final rangeIdx = linedef.indexOf('..');
               if (rangeIdx != -1) {
                 final from = _toInt(linedef.substring(0, rangeIdx));
@@ -1583,7 +1434,7 @@ class PreprocessorReader extends Reader {
               incLinenos = collected.toSet().toList();
             }
           } else if (parsedAttrs.containsKey('tag')) {
-            final tag = parsedAttrs['tag'] ?? '';
+            final tag = parsedAttrs['tag']!;
             if (tag.isNotEmpty && tag != '!') {
               incTags = tag.startsWith('!')
                   ? {tag.substring(1): false}
@@ -1591,9 +1442,7 @@ class PreprocessorReader extends Reader {
             }
           } else if (parsedAttrs.containsKey('tags')) {
             final tags = <String, bool>{};
-            for (final tagdef in _splitDelimitedValue(
-              parsedAttrs['tags'] ?? '',
-            )) {
+            for (final tagdef in _splitDelimitedValue(parsedAttrs['tags']!)) {
               if (tagdef.startsWith('!')) {
                 tags[tagdef.substring(1)] = false;
               } else if (tagdef.isNotEmpty && tagdef != '!') {
@@ -1623,16 +1472,14 @@ class PreprocessorReader extends Reader {
             incTags,
           );
         } else {
-          final Object raw;
+          final _IncludeContent raw;
           try {
             raw = _readIncludeRaw(resolution, encoding);
           } on _IncludeNotReadable {
             LoggerManager.logger.error(
-              _messageWithContext(
-                'include ${resolution.typeName} not readable: '
-                '${resolution.path}',
-                sourceLocation: cursor(),
-              ),
+              'include ${resolution.typeName} not readable: '
+              '${resolution.path}',
+              at: cursor(),
             );
             return replaceNextLine(
               'Unresolved directive in $_path - '
@@ -1644,15 +1491,13 @@ class PreprocessorReader extends Reader {
           shift();
           // NOTE a decode failure raises here, after the shift, as
           // Asciidoctor does.
-          final content = raw is String
-              ? raw
-              : _decodeIncludeBytes(raw as List<int>, encoding);
-          pushInclude(
-            content,
-            resolution.path,
-            resolution.relpath,
-            1,
-            parsedAttrs,
+          final content = raw.text ?? _decodeIncludeBytes(raw.bytes!, encoding);
+          _pushInclude(
+            source: content,
+            file: resolution.path,
+            path: resolution.relpath,
+            attrs: parsedAttrs,
+            remote: resolution.remote,
           );
         }
         return true;
@@ -1666,7 +1511,7 @@ class PreprocessorReader extends Reader {
     _ResolvedInclude resolution,
     String expandedTarget,
     String? attrlist,
-    Map<Object, String?> parsedAttrs,
+    Map<String, String> parsedAttrs,
     Encoding encoding,
     List<num> incLinenos,
   ) {
@@ -1676,10 +1521,10 @@ class PreprocessorReader extends Reader {
       final raw = _readIncludeRaw(resolution, encoding);
       // Decode failures while streaming the file are handled as an
       // unreadable include.
-      final content = raw is String
-          ? raw
-          : _tryDecodeIncludeBytes(raw as List<int>, encoding) ??
-                (throw const _IncludeNotReadable());
+      final content =
+          raw.text ??
+          _tryDecodeIncludeBytes(raw.bytes!, encoding) ??
+          (throw const _IncludeNotReadable());
       incLines = [];
       var incLineno = 0;
       final remaining = List<num>.of(incLinenos);
@@ -1704,10 +1549,8 @@ class PreprocessorReader extends Reader {
       }
     } on _IncludeNotReadable {
       LoggerManager.logger.error(
-        _messageWithContext(
-          'include ${resolution.typeName} not readable: ${resolution.path}',
-          sourceLocation: cursor(),
-        ),
+        'include ${resolution.typeName} not readable: ${resolution.path}',
+        at: cursor(),
       );
       return replaceNextLine(
         'Unresolved directive in $_path - '
@@ -1719,12 +1562,13 @@ class PreprocessorReader extends Reader {
     final offset = incOffset;
     if (offset != null) {
       parsedAttrs['partial-option'] = '';
-      pushInclude(
-        incLines,
-        resolution.path,
-        resolution.relpath,
-        offset,
-        parsedAttrs,
+      _pushInclude(
+        lines: incLines,
+        file: resolution.path,
+        path: resolution.relpath,
+        lineno: offset,
+        attrs: parsedAttrs,
+        remote: resolution.remote,
       );
     }
     return true;
@@ -1735,7 +1579,7 @@ class PreprocessorReader extends Reader {
     _ResolvedInclude resolution,
     String expandedTarget,
     String? attrlist,
-    Map<Object, String?> parsedAttrs,
+    Map<String, String> parsedAttrs,
     Encoding encoding,
     Map<String, bool> incTags,
   ) {
@@ -1769,10 +1613,10 @@ class PreprocessorReader extends Reader {
       final raw = _readIncludeRaw(resolution, encoding);
       // Decode failures while streaming the file are handled as an
       // unreadable include.
-      final content = raw is String
-          ? raw
-          : _tryDecodeIncludeBytes(raw as List<int>, encoding) ??
-                (throw const _IncludeNotReadable());
+      final content =
+          raw.text ??
+          _tryDecodeIncludeBytes(raw.bytes!, encoding) ??
+          (throw const _IncludeNotReadable());
       incLines = [];
       var incLineno = 0;
       final tagStack = <_TagFrame>[];
@@ -1802,14 +1646,16 @@ class PreprocessorReader extends Reader {
                 resolution.path,
                 expandedTarget,
                 incLineno,
+                remote: resolution.remote,
               );
               final idx = tagStack.lastIndexWhere(
                 (frame) => frame.name == thisTag,
               );
               if (idx != -1) {
                 tagStack.removeAt(idx);
-                LoggerManager.logger.warn(
-                  _messageWithContext(
+                LoggerManager.logger.add(
+                  Severity.warn,
+                  LogMessage(
                     "mismatched end tag (expected '$activeTag' but found "
                     "'$thisTag') at line $incLineno of include "
                     '${resolution.typeName}: ${resolution.path}',
@@ -1818,8 +1664,9 @@ class PreprocessorReader extends Reader {
                   ),
                 );
               } else {
-                LoggerManager.logger.warn(
-                  _messageWithContext(
+                LoggerManager.logger.add(
+                  Severity.warn,
+                  LogMessage(
                     "unexpected end tag '$thisTag' at line $incLineno of "
                     'include ${resolution.typeName}: ${resolution.path}',
                     sourceLocation: cursor(),
@@ -1848,8 +1695,9 @@ class PreprocessorReader extends Reader {
       }
       if (tagStack.isNotEmpty) {
         for (final frame in tagStack) {
-          LoggerManager.logger.warn(
-            _messageWithContext(
+          LoggerManager.logger.add(
+            Severity.warn,
+            LogMessage(
               "detected unclosed tag '${frame.name}' starting at line "
               '${frame.lineno} of include ${resolution.typeName}: '
               '${resolution.path}',
@@ -1858,6 +1706,7 @@ class PreprocessorReader extends Reader {
                 resolution.path,
                 expandedTarget,
                 frame.lineno,
+                remote: resolution.remote,
               ),
             ),
           );
@@ -1869,20 +1718,16 @@ class PreprocessorReader extends Reader {
           .toList();
       if (missingTags.isNotEmpty) {
         LoggerManager.logger.warn(
-          _messageWithContext(
-            "tag${missingTags.length > 1 ? 's' : ''} "
-            "'${missingTags.join(', ')}' "
-            'not found in include ${resolution.typeName}: ${resolution.path}',
-            sourceLocation: cursor(),
-          ),
+          "tag${missingTags.length > 1 ? 's' : ''} "
+          "'${missingTags.join(', ')}' "
+          'not found in include ${resolution.typeName}: ${resolution.path}',
+          at: cursor(),
         );
       }
     } on _IncludeNotReadable {
       LoggerManager.logger.error(
-        _messageWithContext(
-          'include ${resolution.typeName} not readable: ${resolution.path}',
-          sourceLocation: cursor(),
-        ),
+        'include ${resolution.typeName} not readable: ${resolution.path}',
+        at: cursor(),
       );
       return replaceNextLine(
         'Unresolved directive in $_path - '
@@ -1896,12 +1741,13 @@ class PreprocessorReader extends Reader {
         parsedAttrs['partial-option'] = '';
       }
       // FIXME not accounting for skipped lines in reader line numbering
-      pushInclude(
-        incLines,
-        resolution.path,
-        resolution.relpath,
-        offset,
-        parsedAttrs,
+      _pushInclude(
+        lines: incLines,
+        file: resolution.path,
+        path: resolution.relpath,
+        lineno: offset,
+        attrs: parsedAttrs,
+        remote: resolution.remote,
       );
     }
     return true;
@@ -1915,26 +1761,26 @@ class PreprocessorReader extends Reader {
   _ResolvedInclude? _resolveIncludePath(
     String target,
     String? attrlist,
-    Map<Object, String?> attributes,
+    Map<String, String> attributes,
   ) {
     final doc = _document;
     var resolvedTarget = target;
-    if (!Helpers.isUriish(resolvedTarget) && _dir is! String) {
+    if (!Helpers.isUriish(resolvedTarget) && _remote) {
       resolvedTarget = '$_dir/$resolvedTarget';
     }
-    if (Helpers.isUriish(resolvedTarget) || _dir is! String) {
-      if (!doc.attrSet('allow-uri-read')) {
+    if (Helpers.isUriish(resolvedTarget) || _remote) {
+      if (!doc.hasAttr('allow-uri-read')) {
         // FIXME we don't want to use a passthrough or link macro if we're in
         // a verbatim context
         var linkTarget = resolvedTarget;
         if (linkTarget.contains(' ')) linkTarget = 'pass:c[$linkTarget]';
-        final linkAttrlist = doc.attrSet('compat-mode') ? '' : 'role=include';
+        final linkAttrlist = doc.hasAttr('compat-mode') ? '' : 'role=include';
         replaceNextLine('link:$linkTarget[$linkAttrlist]');
         return null;
       }
-      Helpers.requireOpenUri(cache: doc.attrSet('cache-uri'));
+      Helpers.requireOpenUri(cache: doc.hasAttr('cache-uri'));
       return _ResolvedInclude(
-        Uri.parse(resolvedTarget),
+        resolvedTarget,
         _IncludeTargetType.uri,
         resolvedTarget,
       );
@@ -1943,26 +1789,22 @@ class PreprocessorReader extends Reader {
       // base_dir if within original docfile
       final incPath = doc.normalizeSystemPath(
         target,
-        _dir as String?,
+        start: _dir,
         targetName: 'include file',
       );
       if (!FileSystemEntity.isFileSync(incPath)) {
         if (attributes.containsKey('optional-option')) {
           LoggerManager.logger.info(
-            () => _messageWithContext(
-              'optional include dropped because include file not '
-              'found: $incPath',
-              sourceLocation: cursor(),
-            ),
+            'optional include dropped because include file not '
+            'found: $incPath',
+            at: cursor(),
           );
           shift();
           return null;
         } else {
           LoggerManager.logger.error(
-            _messageWithContext(
-              'include file not found: $incPath',
-              sourceLocation: cursor(),
-            ),
+            'include file not found: $incPath',
+            at: cursor(),
           );
           replaceNextLine(
             'Unresolved directive in $_path - '
@@ -1982,18 +1824,23 @@ class PreprocessorReader extends Reader {
   /// Reads the raw include content: bytes for files, decoded text for URIs.
   ///
   /// Throws [_IncludeNotReadable] when the content cannot be read.
-  Object _readIncludeRaw(_ResolvedInclude resolution, Encoding encoding) {
+  _IncludeContent _readIncludeRaw(
+    _ResolvedInclude resolution,
+    Encoding encoding,
+  ) {
     if (resolution.type == _IncludeTargetType.file) {
       try {
-        return File(resolution.path as String).readAsBytesSync();
+        return _IncludeContent.bytes(File(resolution.path).readAsBytesSync());
       } on Exception catch (_) {
         throw const _IncludeNotReadable();
       }
-    } else {
-      // `readUri` already maps read failures to `null`.
-      final content = _document.readUri(resolution.path as Uri, encoding);
-      if (content == null) throw const _IncludeNotReadable();
-      return content;
+    }
+    try {
+      return _IncludeContent.text(
+        encoding.decode(_document.fetchUri(resolution.path).body),
+      );
+    } on Exception catch (_) {
+      throw const _IncludeNotReadable();
     }
   }
 
@@ -2001,13 +1848,14 @@ class PreprocessorReader extends Reader {
   void _popInclude() {
     if (_includeStack.isEmpty) return;
     final frame = _includeStack.removeLast();
-    _lines = frame[0]! as List<String?>;
-    _file = frame[1];
-    _dir = frame[2]!;
-    _path = frame[3]! as String;
-    _lineno = frame[4]! as int;
-    _maxdepth = frame[5] as _MaxDepth?;
-    processLines = frame[6]! as bool;
+    _lines = frame.lines;
+    _file = frame.file;
+    _dir = frame.dir;
+    _remote = frame.remote;
+    _path = frame.path;
+    _lineno = frame.lineno;
+    _maxdepth = frame.maxdepth;
+    processLines = frame.processLines;
     // FIXME kind of a hack
     //Document::AttributeEntry.new('infile', @file).save_to_next_block @document
     //Document::AttributeEntry.new('indir', ::File.dirname(@file))
@@ -2019,15 +1867,15 @@ class PreprocessorReader extends Reader {
   ///
   /// Mutates [data] in place. Returns the front matter lines, or `null` when
   /// no (complete) front matter block is present.
-  List<String?>? _skipFrontMatter(
-    List<String?> data, [
+  List<String>? _skipFrontMatter(
+    List<String> data, [
     bool incrementLinenos = true,
   ]) {
     final delim = data.isEmpty ? null : data[0];
     if (delim != '---') return null;
-    final originalData = List<String?>.of(data);
+    final originalData = List<String>.of(data);
     data.removeAt(0);
-    final frontMatter = <String?>[];
+    final frontMatter = <String>[];
     if (incrementLinenos) _lineno += 1;
     while (true) {
       if (data.isEmpty) {
@@ -2046,7 +1894,7 @@ class PreprocessorReader extends Reader {
 
   /// Resolves the value of one side of an `ifeval` expression, coerced to
   /// the appropriate type.
-  Object? _resolveExprVal(String val) {
+  _Operand _resolveExprVal(String val) {
     var current = val;
     final bool quoted;
     if ((current.startsWith('"') && current.endsWith('"')) ||
@@ -2063,33 +1911,34 @@ class PreprocessorReader extends Reader {
     // QUESTION should we also require string to be single quoted (like block
     // attribute values?)
     if (current.contains(attrRefHead)) {
-      current = _document.subAttributes(current, attributeMissing: 'drop');
+      current = substitutors.subAttributes(
+        _document,
+        current,
+        attributeMissing: 'drop',
+      );
     }
 
     if (quoted) {
-      return current;
+      return _StringOperand(current);
     } else if (current.isEmpty) {
-      return null;
+      return const _NullOperand();
     } else if (current == 'true') {
-      return true;
+      return const _BoolOperand(value: true);
     } else if (current == 'false') {
-      return false;
+      return const _BoolOperand(value: false);
     } else if (current.trimRightAscii().isEmpty) {
-      return ' ';
+      return const _StringOperand(' ');
     } else if (current.contains('.')) {
-      return _parseFloatPrefix(current);
+      return _NumOperand(_parseFloatPrefix(current));
     } else {
       // fallback to coercing to integer, since we
       // require string values to be explicitly quoted
-      return _toInt(current);
+      return _NumOperand(_toInt(current));
     }
   }
 
   /// Finds the first include processor handling [target], or `null`.
-  ReaderIncludeProcessor? _findIncludeProcessor(
-    ReaderDocument doc,
-    String target,
-  ) {
+  IncludeProcessor? _findIncludeProcessor(String target) {
     final extensions = _includeProcessorExtensions;
     if (extensions == null) return null;
     for (final ext in extensions) {
@@ -2099,9 +1948,82 @@ class PreprocessorReader extends Reader {
   }
 }
 
-/// Sentinel type backing [Reader.atMark].
-class _AtMark {
+/// A saved include context, restored when the include is exhausted.
+final class _IncludeFrame {
+  const new({
+    required this.lines,
+    required this.file,
+    required this.dir,
+    required this.remote,
+    required this.path,
+    required this.lineno,
+    required this.maxdepth,
+    required this.processLines,
+  });
+
+  final List<String> lines;
+  final String? file;
+  final String dir;
+  final bool remote;
+  final String path;
+  final int lineno;
+  final _MaxDepth? maxdepth;
+  final bool processLines;
+}
+
+/// A saved [PreprocessorReader] state (beyond the [Reader] state).
+final class _PreprocessorState {
+  const new({
+    required this.includeStack,
+    required this.maxdepth,
+    required this.skipping,
+    required this.conditionalStack,
+    required this.includeProcessors,
+    required this.includeProcessorsChecked,
+  });
+
+  final List<_IncludeFrame> includeStack;
+  final _MaxDepth? maxdepth;
+  final bool skipping;
+  final List<_ConditionalFrame> conditionalStack;
+  final List<IncludeProcessor>? includeProcessors;
+  final bool includeProcessorsChecked;
+}
+
+/// The content read for an include: raw file bytes or decoded URI text.
+final class _IncludeContent {
+  const new bytes(List<int> this.bytes) : text = null;
+  const new text(String this.text) : bytes = null;
+
+  final List<int>? bytes;
+  final String? text;
+}
+
+/// One side of an `ifeval` comparison.
+sealed class _Operand {
   const new();
+}
+
+final class _NullOperand extends _Operand {
+  const new();
+}
+
+final class _StringOperand extends _Operand {
+  const new(this.value);
+
+  final String value;
+}
+
+final class _NumOperand extends _Operand {
+  const new(this.value);
+
+  final num value;
+}
+
+final class _BoolOperand extends _Operand {
+  const new({required this.value});
+
+  final bool value;
 }
 
 /// Absolute, current and relative max include depths.
@@ -2175,14 +2097,17 @@ enum _IncludeTargetType {
 class _ResolvedInclude {
   const new(this.path, this.type, this.relpath);
 
-  /// Resolved path (a string for files, a [Uri] for remote targets).
-  final Object path;
+  /// Resolved path (a file path, or a URI for remote targets).
+  final String path;
 
   /// Target kind.
   final _IncludeTargetType type;
 
   /// Path relative to the root document.
   final String relpath;
+
+  /// Whether the target is remote (a URI).
+  bool get remote => type == _IncludeTargetType.uri;
 
   /// `file` or `uri`, as interpolated into log messages.
   String get typeName => type == _IncludeTargetType.file ? 'file' : 'uri';
@@ -2200,12 +2125,11 @@ class _InvalidExprComparison implements Exception {
 
 /// Compares resolved `ifeval` operands with [op].
 ///
-/// Comparison semantics: `==`/`!=` compare numbers with
-/// numbers, strings with strings and booleans with booleans (mixed types
-/// never match; only `null` equals `null`), while relational operators work
-/// on two numbers or two strings and throw [_InvalidExprComparison]
-/// otherwise.
-bool _compareExprValues(Object? lhs, String op, Object? rhs) {
+/// `==`/`!=` compare numbers with numbers, strings with strings and
+/// booleans with booleans (mixed types never match; only null equals
+/// null), while relational operators work on two numbers or two strings and
+/// throw [_InvalidExprComparison] otherwise.
+bool _compareExprValues(_Operand lhs, String op, _Operand rhs) {
   switch (op) {
     case '==':
       return _exprEquals(lhs, rhs);
@@ -2223,32 +2147,27 @@ bool _compareExprValues(Object? lhs, String op, Object? rhs) {
   }
 }
 
-bool _exprEquals(Object? lhs, Object? rhs) {
-  if (lhs == null || rhs == null) return lhs == null && rhs == null;
-  if (lhs is num && rhs is num) return lhs == rhs;
-  if (lhs is String && rhs is String) return lhs == rhs;
-  if (lhs is bool && rhs is bool) return lhs == rhs;
-  return false;
-}
+bool _exprEquals(_Operand lhs, _Operand rhs) => switch ((lhs, rhs)) {
+  (_NullOperand(), _NullOperand()) => true,
+  (_NumOperand(value: final a), _NumOperand(value: final b)) => a == b,
+  (_StringOperand(value: final a), _StringOperand(value: final b)) => a == b,
+  (_BoolOperand(value: final a), _BoolOperand(value: final b)) => a == b,
+  _ => false,
+};
 
-int _exprCompareTo(Object? lhs, Object? rhs) {
-  if (lhs is num && rhs is num) return lhs.compareTo(rhs);
-  if (lhs is String && rhs is String) return lhs.compareTo(rhs);
-  throw const _InvalidExprComparison();
-}
-
-/// Only `null` and `false` count as false.
-bool _isTruthy(Object? value) => value != null && value != false;
+int _exprCompareTo(_Operand lhs, _Operand rhs) => switch ((lhs, rhs)) {
+  (_NumOperand(value: final a), _NumOperand(value: final b)) => a.compareTo(b),
+  (_StringOperand(value: final a), _StringOperand(value: final b)) =>
+    a.compareTo(b),
+  _ => throw const _InvalidExprComparison(),
+};
 
 final RegExp _intPrefixRx = RegExp(r'^[+-]?\d[\d_]*');
 
-/// Coerces [value] to an integer: an [int] is
-/// returned as is, a [double] is truncated, and a [String] contributes its
-/// leading numeric prefix (else 0). Anything else yields 0.
-int _toInt(Object? value) {
-  if (value is int) return value;
-  if (value is double) return value.toInt();
-  if (value is! String) return 0;
+/// Coerces [value] to an integer from its leading numeric prefix (else
+/// 0); `null` yields 0.
+int _toInt(String? value) {
+  if (value == null) return 0;
   final match = _intPrefixRx.firstMatch(value.trimLeft());
   if (match == null) return 0;
   return int.tryParse(match.group(0)!.replaceAll('_', '')) ?? 0;
@@ -2366,16 +2285,6 @@ String _dirname(String path) {
   }
   if (slash == 0) return '/';
   return path.substring(0, slash);
-}
-
-/// Returns the directory of the cursor [file] (a path string or [Uri]).
-Object _dirnameOf(Object file) {
-  if (file is String) return _dirname(file);
-  if (file is Uri) {
-    final dirPath = _dirname(file.path);
-    return file.replace(path: dirPath == '/' ? '' : dirPath);
-  }
-  throw ArgumentError('file must be a String or a Uri');
 }
 
 /// Quotes [value] with backslash escapes, for [Object.toString].

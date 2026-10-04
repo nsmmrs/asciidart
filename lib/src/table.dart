@@ -8,7 +8,7 @@ import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/logging.dart' show ContextMessage;
+import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/parser.dart';
 import 'package:asciidoctor/src/reader.dart';
 import 'package:asciidoctor/src/substitutors.dart';
@@ -62,8 +62,8 @@ class TableRows {
 
   /// Returns the rows of the [section] (`'head'`, `'body'` or `'foot'`;
   /// anything else throws).
-  List<List<Cell>> operator [](Object section) {
-    switch (section.toString()) {
+  List<List<Cell>> operator [](String section) {
+    switch (section) {
       case 'head':
         return head;
       case 'body':
@@ -96,6 +96,88 @@ class TableRows {
   };
 }
 
+/// The specification of one table column, parsed from the `cols`
+/// attribute.
+final class ColumnSpec {
+  /// Creates a column spec.
+  const new({this.width = 1, this.halign, this.valign, this.style});
+
+  /// The relative width (a negative value requests an automatic width).
+  final int width;
+
+  /// The horizontal alignment (`left`, `center` or `right`).
+  final String? halign;
+
+  /// The vertical alignment (`top`, `middle` or `bottom`).
+  final String? valign;
+
+  /// The column style (e.g. `asciidoc`, `literal`, `header`).
+  final String? style;
+}
+
+/// The specification of one table cell, parsed from the text before a cell
+/// separator.
+final class CellSpec {
+  /// Creates a cell spec.
+  const new({
+    this.colspan,
+    this.rowspan,
+    this.repeat,
+    this.halign,
+    this.valign,
+    this.style,
+  });
+
+  /// The number of columns the cell spans, when more than one.
+  final int? colspan;
+
+  /// The number of rows the cell spans, when more than one.
+  final int? rowspan;
+
+  /// How many times the cell repeats across columns, when more than once.
+  final int? repeat;
+
+  /// The horizontal alignment (`left`, `center` or `right`).
+  final String? halign;
+
+  /// The vertical alignment (`top`, `middle` or `bottom`).
+  final String? valign;
+
+  /// The cell style (e.g. `asciidoc`, `literal`, `header`).
+  final String? style;
+
+  /// Whether the spec sets nothing.
+  bool get isEmpty =>
+      colspan == null &&
+      rowspan == null &&
+      repeat == null &&
+      halign == null &&
+      valign == null &&
+      style == null;
+
+  /// The alignment and style as node attributes.
+  Map<String, String> get attributes => <String, String>{
+    'halign': ?halign,
+    'valign': ?valign,
+    'style': ?style,
+  };
+}
+
+/// How a table treats its first row.
+enum TableHeader {
+  /// The first row is the header (the `header` option).
+  explicit,
+
+  /// The first row is the header because it is followed by a blank line.
+  implicit,
+
+  /// The first row is not the header (the `noheader` option).
+  none,
+
+  /// Not decided yet: the parser decides from the first row.
+  undecided,
+}
+
 /// Methods and constants for managing AsciiDoc table content in a document.
 ///
 /// Port of `Asciidoctor::Table`.
@@ -106,34 +188,35 @@ class Table extends AbstractBlock {
   /// Note that [attributes] is only read here (for `'width'` and
   /// `'rotate-option'`); the computed values land on this table's own
   /// attributes.
-  new(AbstractBlock? parent, Map<String, Object?> attributes)
+  new(AbstractBlock? parent, Map<String, String> attributes)
     : super(parent, 'table') {
     final pcwidth = attributes['width'];
-    late final int pcwidthIntval;
-    if (isTruthy(pcwidth)) {
+    if (pcwidth != null) {
       var intval = parseLeadingInt(pcwidth);
       if (intval > 100 || intval < 1) {
         if (!(intval == 0 && (pcwidth == '0' || pcwidth == '0%'))) {
           intval = 100;
         }
       }
-      pcwidthIntval = intval;
+      this.pcwidth = intval;
     } else {
-      pcwidthIntval = 100;
+      this.pcwidth = 100;
     }
-    this.attributes['tablepcwidth'] = pcwidthIntval;
+    this.attributes['tablepcwidth'] = '${this.pcwidth}';
 
     final pagewidth = document!.attributes['pagewidth'];
-    if (isTruthy(pagewidth)) {
+    if (pagewidth != null) {
       final abswidthVal =
-          ((pcwidthIntval / 100.0) * parseLeadingDouble(pagewidth))
+          ((this.pcwidth / 100.0) * parseLeadingDouble(pagewidth))
               .truncateAtPrecision(defaultPrecision);
-      this.attributes['tableabswidth'] = abswidthVal.toInt() == abswidthVal
+      final value = abswidthVal.toInt() == abswidthVal
           ? abswidthVal.toInt()
           : abswidthVal;
+      abswidth = value;
+      this.attributes['tableabswidth'] = formatNumber(value);
     }
 
-    if (isTruthy(attributes['rotate-option'])) {
+    if (attributes.containsKey('rotate-option')) {
       this.attributes['orientation'] = 'landscape';
     }
   }
@@ -141,37 +224,45 @@ class Table extends AbstractBlock {
   /// The precision of column widths.
   static const int defaultPrecision = 4;
 
+  /// The width of the table as a percentage of the available width.
+  late final int pcwidth;
+
+  /// The absolute width of the table, when the backend has a page width.
+  num? abswidth;
+
   /// The columns of this table.
   List<Column> columns = <Column>[];
 
   /// The rows of this table (head, foot and body).
   TableRows rows = TableRows();
 
-  /// Whether this table has a header row: `true`, `'implicit'`, `false`
-  /// or `null` (each with distinct meaning in [partitionHeaderFooter]).
-  Object? hasHeaderOption = false;
+  /// How this table treats its first row.
+  TableHeader header = TableHeader.none;
 
-  /// The current state of the header option (`true` or `'implicit'`) when
-  /// the row being processed is (or is assumed to be) the header row,
-  /// otherwise `false`.
+  /// The number of body rows before the head and foot rows were split off.
+  int rowcount = 0;
+
+  /// Whether the row being processed is (or is assumed to be) the header
+  /// row; [TableHeader.implicit] when assumed from a blank line.
   ///
   /// Port of `Asciidoctor::Table#header_row?`.
   @internal
-  Object get headerRow {
-    final value = hasHeaderOption;
-    return isTruthy(value) && rows.body.isEmpty ? value! : false;
-  }
+  TableHeader get headerRow =>
+      (header == TableHeader.explicit || header == TableHeader.implicit) &&
+          rows.body.isEmpty
+      ? header
+      : TableHeader.none;
 
   /// Creates the [Column] objects from the [colspecs] column specifications.
   ///
   /// Port of `Asciidoctor::Table#create_columns`.
   @internal
-  void createColumns(List<Map<String, Object?>> colspecs) {
+  void createColumns(List<ColumnSpec> colspecs) {
     final cols = <Column>[];
     List<Column>? autowidthCols;
     num widthBase = 0;
     for (final colspec in colspecs) {
-      final colwidth = colspec['width']! as num;
+      final colwidth = colspec.width;
       cols.add(Column(this, cols.length, colspec));
       if (colwidth < 0) {
         (autowidthCols ??= <Column>[]).add(cols.last);
@@ -181,7 +272,7 @@ class Table extends AbstractBlock {
     }
     columns = cols;
     if (cols.isNotEmpty) {
-      attributes['colcount'] = cols.length;
+      attributes['colcount'] = '${cols.length}';
       final base = widthBase > 0 || autowidthCols != null ? widthBase : null;
       assignColumnWidths(base, autowidthCols);
     }
@@ -194,15 +285,15 @@ class Table extends AbstractBlock {
   ///
   /// Port of `Asciidoctor::Table#assign_column_widths`.
   @internal
-  void assignColumnWidths([Object? widthBase, List<Column>? autowidthCols]) {
+  void assignColumnWidths([num? widthBase, List<Column>? autowidthCols]) {
     var baseWidth = widthBase;
     const precision = defaultPrecision;
     num totalWidth = 0;
     num colPcwidth = 0;
 
-    if (isTruthy(baseWidth)) {
+    if (baseWidth != null) {
       if (autowidthCols != null) {
-        final base = baseWidth! as num;
+        final base = baseWidth;
         late final num autowidth;
         if (base > 100) {
           autowidth = 0;
@@ -218,23 +309,20 @@ class Table extends AbstractBlock {
               : computed;
           baseWidth = 100;
         }
-        final autowidthAttrs = <String, Object?>{
-          'width': autowidth,
-          'autowidth-option': '',
-        };
         for (final col in autowidthCols) {
-          col.updateAttributes(autowidthAttrs);
+          col
+            ..width = autowidth
+            ..setOption('autowidth');
         }
       }
       for (final col in columns) {
-        totalWidth += colPcwidth =
-            col.assignWidth(null, baseWidth, precision)! as num;
+        totalWidth += colPcwidth = col.assignWidth(null, baseWidth, precision);
       }
     } else {
       final computed = (100.0 / columns.length).truncateAtPrecision(precision);
       colPcwidth = computed.toInt() == computed ? computed.toInt() : computed;
       for (final col in columns) {
-        totalWidth += col.assignWidth(colPcwidth, null, precision)! as num;
+        totalWidth += col.assignWidth(colPcwidth, null, precision);
       }
     }
 
@@ -253,14 +341,14 @@ class Table extends AbstractBlock {
   ///
   /// Port of `Asciidoctor::Table#partition_header_footer`.
   @internal
-  void partitionHeaderFooter(Map<String, Object?> attrs) {
+  void partitionHeaderFooter({required bool footer}) {
     final body = rows.body;
     // Set the row count before splitting up the body rows.
-    var numBodyRows = body.length;
-    attributes['rowcount'] = numBodyRows;
+    var numBodyRows = rowcount = body.length;
+    attributes['rowcount'] = '$numBodyRows';
 
     if (numBodyRows > 0) {
-      if (isTruthy(hasHeaderOption)) {
+      if (header == TableHeader.explicit || header == TableHeader.implicit) {
         rows.head = [
           body
               .removeAt(0)
@@ -268,8 +356,8 @@ class Table extends AbstractBlock {
               .toList(),
         ];
         numBodyRows -= 1;
-      } else if (hasHeaderOption == null) {
-        hasHeaderOption = false;
+      } else if (header == TableHeader.undecided) {
+        header = TableHeader.none;
         body.insert(
           0,
           body
@@ -280,7 +368,7 @@ class Table extends AbstractBlock {
       }
     }
 
-    if (numBodyRows > 0 && isTruthy(attrs['footer-option'])) {
+    if (numBodyRows > 0 && footer) {
       rows.foot = [body.removeLast()];
     }
   }
@@ -290,52 +378,71 @@ class Table extends AbstractBlock {
 ///
 /// Port of `Asciidoctor::Table::Column`.
 class Column extends AbstractNode {
-  /// Creates a column of [table] at 0-based [index], resolving the column
-  /// number and the `width`/`halign`/`valign` defaults into [attributes]
-  /// (mutating the passed map) and copying them onto this
-  /// column.
-  new(Table? table, int index, [Map<String, Object?>? attributes])
-    : super(table, 'table_column') {
-    final attrs = attributes ?? <String, Object?>{};
-    style = attrs['style'] as String?;
-    attrs['colnumber'] = index + 1;
-    if (!isTruthy(attrs['width'])) attrs['width'] = 1;
-    if (!isTruthy(attrs['halign'])) attrs['halign'] = 'left';
-    if (!isTruthy(attrs['valign'])) attrs['valign'] = 'top';
-    updateAttributes(attrs);
+  /// Creates a column of [table] at 0-based [index] from [spec], recording
+  /// the column number, width and alignments in [attributes].
+  new(Table? table, int index, [ColumnSpec spec = const ColumnSpec()])
+    : colnumber = index + 1,
+      style = spec.style,
+      super(table, 'table_column') {
+    attributes['colnumber'] = '$colnumber';
+    width = spec.width;
+    attributes['halign'] = spec.halign ?? 'left';
+    attributes['valign'] = spec.valign ?? 'top';
+    if (spec.style case final style?) attributes['style'] = style;
   }
+
+  /// The 1-based column number.
+  final int colnumber;
 
   /// The style of this column (e.g. `'asciidoc'`).
   String? style;
+
+  num _width = 1;
+
+  /// The relative width of this column (the `width` attribute).
+  num get width => _width;
+
+  set width(num value) {
+    _width = value;
+    attributes['width'] = formatNumber(value);
+  }
+
+  /// The width of this column as a percentage of the table width (the
+  /// `colpcwidth` attribute), once assigned.
+  num? pcwidth;
+
+  /// The absolute width of this column (the `colabswidth` attribute), when
+  /// the table has an absolute width.
+  num? abswidth;
 
   /// An alias for the parent block (which is always a [Table]; mirrors
   /// `alias table parent`).
   Table? get table => parent as Table?;
 
   /// Calculates and assigns the percentage and absolute widths of this
-  /// column, returning the resolved `colpcwidth` value.
+  /// column, returning the percentage width.
   ///
   /// Port of `Asciidoctor::Table::Column#assign_width`.
   @internal
-  Object? assignWidth(Object? colPcwidth, Object? widthBase, int precision) {
-    var pcwidth = colPcwidth as num?;
-    if (isTruthy(widthBase)) {
-      final computed =
-          ((attributes['width']! as num).toDouble() *
-                  100.0 /
-                  (widthBase! as num).toDouble())
-              .truncateAtPrecision(precision);
+  num assignWidth(num? colPcwidth, num? widthBase, int precision) {
+    var pcwidth = colPcwidth;
+    if (widthBase != null) {
+      final computed = (_width.toDouble() * 100.0 / widthBase.toDouble())
+          .truncateAtPrecision(precision);
       pcwidth = computed.toInt() == computed ? computed.toInt() : computed;
     }
-    final tableAbswidth = parent!.attributes['tableabswidth'];
-    if (isTruthy(tableAbswidth)) {
-      final computed = ((pcwidth! / 100.0) * (tableAbswidth! as num).toDouble())
+    final resolved = pcwidth!;
+    final tableAbswidth = table?.abswidth;
+    if (tableAbswidth != null) {
+      final computed = ((resolved / 100.0) * tableAbswidth.toDouble())
           .truncateAtPrecision(precision);
-      attributes['colabswidth'] = computed.toInt() == computed
-          ? computed.toInt()
-          : computed;
+      final value = computed.toInt() == computed ? computed.toInt() : computed;
+      abswidth = value;
+      attributes['colabswidth'] = formatNumber(value);
     }
-    return attributes['colpcwidth'] = pcwidth;
+    this.pcwidth = resolved;
+    attributes['colpcwidth'] = formatNumber(resolved);
+    return resolved;
   }
 
   @override
@@ -345,97 +452,43 @@ class Column extends AbstractNode {
   bool get isInline => false;
 }
 
-/// Adapts a [Cursor] to [NodeSourceLocation] (mirrors the private adapters
-/// in `parser.dart` and `document.dart`).
-class _CursorSourceLocation implements NodeSourceLocation {
-  /// Creates a source location from `cursor`.
-  new(this._cursor);
-
-  final Cursor _cursor;
-
-  @override
-  String? get file {
-    final file = _cursor.file;
-    return file is String ? file : file?.toString();
-  }
-
-  @override
-  int? get lineno => _cursor.lineno;
-}
-
-/// An immutable [NodeSourceLocation] snapshot (copy semantics for location
-/// values passed directly, e.g. test doubles).
-class _SnapshotSourceLocation implements NodeSourceLocation {
-  /// Creates a snapshot of [file]:[lineno].
-  new(this.file, this.lineno);
-
-  @override
-  final String? file;
-
-  @override
-  final int? lineno;
-}
-
 /// Methods for managing a cell in an AsciiDoc table.
 ///
 /// Port of `Asciidoctor::Table::Cell`.
 class Cell extends AbstractBlock {
   /// Creates a cell of [column] with [cellText].
   ///
-  /// The [attributes] map selects the PSV path (it is mutated: `colspan`
-  /// and `rowspan` are removed); an explicit `null` selects the
-  /// CSV/DSV path. [opts] carries the parser cursor under `'cursor'`.
-  /// The default is a shared empty map, which is safe because it is never
-  /// written to (the empty-attributes branch performs no writes).
+  /// [spec] is the cell spec of a PSV table cell, whose text is stripped;
+  /// `null` marks a CSV or DSV cell, whose text is taken as is. [cursor] is
+  /// the position of the cell in the source.
   ///
-  /// AsciiDoc-style cells build a nested document eagerly (see the
-  /// `asciidoc` branch below).
+  /// AsciiDoc-style cells build a nested document eagerly.
   new(
     Column? column,
     String? cellText, [
-    Map<String, Object?>? attributes = const <String, Object?>{},
-    Map<String, Object?>? opts,
+    CellSpec? spec = const CellSpec(),
+    Cursor? cursor,
   ]) : _column = column,
        super(column?.table, 'table_cell') {
     var cellContent = cellText;
-    final attrs = attributes;
     if (document!.sourcemap) {
       // Store a copy of the cursor as the source location. The copy
       // matters: the original cursor may advance afterwards (asciidoc
       // cells), which must not move the stored location.
-      final cursor = opts?['cursor'];
-      // Real cursors are exposed through an adapter since `Cursor` does not
-      // implement
-      // `NodeSourceLocation` itself; doubles implementing the interface
-      // (e.g. `FakeCursor`) are snapshotted (immutable copy semantics).
-      sourceLocation = switch (cursor) {
-        Cursor() => _CursorSourceLocation(cursor.dup()),
-        NodeSourceLocation() => _SnapshotSourceLocation(
-          cursor.file,
-          cursor.lineno,
-        ),
-        _ => null,
-      };
+      sourceLocation = cursor?.dup();
     }
     String? cellStyle;
-    Object? inHeaderRow;
+    var inHeaderRow = TableHeader.none;
     // NOTE column is always set when parsing; may not be set when building
     // a table from the API.
     if (column != null) {
       inHeaderRow = column.table!.headerRow;
-      if (isTruthy(inHeaderRow)) {
-        if (inHeaderRow == 'implicit') {
-          cellStyle =
-              column.style ??
-              (attrs == null ? null : attrs['style'] as String?);
-          if (isTruthy(cellStyle)) {
+      if (inHeaderRow != TableHeader.none) {
+        if (inHeaderRow == TableHeader.implicit) {
+          cellStyle = column.style ?? spec?.style;
+          if (cellStyle != null) {
             if (cellStyle == 'asciidoc' || cellStyle == 'literal') {
-              _reinitializeArgs = <Object?>[
-                column,
-                cellContent,
-                if (attrs == null) null else Map<String, Object?>.of(attrs),
-                opts,
-              ];
+              _reinitializeArgs = (column, cellContent, spec, cursor);
             }
             cellStyle = null;
           }
@@ -449,26 +502,22 @@ class Cell extends AbstractBlock {
     var asciidoc = false;
     var literal = false;
     var normalPsv = false;
-    Object? innerDocumentCursor;
-    // NOTE when attributes is defined, this is a PSV cell, which implies
-    // the text needs to be stripped.
-    if (attrs != null) {
-      if (attrs.isEmpty) {
-        colspan = null;
-        rowspan = null;
-      } else {
-        colspan = attrs.remove('colspan');
-        rowspan = attrs.remove('rowspan');
-        // TODOdelete style attribute from @attributes if set.
-        if (!isTruthy(inHeaderRow)) {
-          final attrStyle = attrs['style'];
-          if (isTruthy(attrStyle)) cellStyle = attrStyle! as String;
+    Cursor? innerDocumentCursor;
+    // NOTE when a spec is given, this is a PSV cell, which implies the text
+    // needs to be stripped.
+    if (spec != null) {
+      colspan = spec.colspan;
+      rowspan = spec.rowspan;
+      if (!spec.isEmpty) {
+        // TODO delete style attribute from attributes if set.
+        if (inHeaderRow == TableHeader.none) {
+          if (spec.style case final style?) cellStyle = style;
         }
-        updateAttributes(attrs);
+        updateAttributes(spec.attributes);
       }
       if (cellStyle == 'asciidoc') {
         asciidoc = true;
-        innerDocumentCursor = opts?['cursor'];
+        innerDocumentCursor = cursor;
         var text = cellContent!.trimRightAscii();
         if (text.startsWith(lf)) {
           var linesAdvanced = 1;
@@ -476,7 +525,7 @@ class Cell extends AbstractBlock {
             linesAdvanced += 1;
           }
           // NOTE this only works if we remain in the same file.
-          (opts!['cursor']! as Cursor).advance(linesAdvanced);
+          cursor!.advance(linesAdvanced);
         } else {
           text = trimLeftAscii(text);
         }
@@ -500,13 +549,11 @@ class Cell extends AbstractBlock {
       rowspan = null;
       if (cellStyle == 'asciidoc') {
         asciidoc = true;
-        innerDocumentCursor = opts?['cursor'];
+        innerDocumentCursor = cursor;
       }
     }
     // NOTE only true for non-header rows.
     if (asciidoc) {
-      // NodeDocument/Document unification pending: the document is always
-      // a Document here (same cast as `catalogInlineAnchor`).
       final parentDoc = document! as Document;
       // FIXME hide doctitle from nested document; temporary workaround to
       // fix nested document seeing doctitle and assuming it has its own
@@ -526,11 +573,9 @@ class Cell extends AbstractBlock {
         final unprocessedLine1 = innerDocumentLines[0];
         // QUESTION is it faster to check for `::` before splitting?
         if (unprocessedLine1.contains('::')) {
-          final preprocessedLines = PreprocessorReader(
-            parentDoc.asReaderDocument(),
-            [unprocessedLine1],
-            cursor: innerDocumentCursor,
-          ).readlines().whereType<String>().toList();
+          final preprocessedLines = PreprocessorReader(parentDoc, [
+            unprocessedLine1,
+          ], cursor: innerDocumentCursor).readlines();
           if (!(preprocessedLines.isNotEmpty &&
               unprocessedLine1 == preprocessedLines[0] &&
               preprocessedLines.length < 2)) {
@@ -541,11 +586,11 @@ class Cell extends AbstractBlock {
           }
         }
       }
-      innerDocument = Document(innerDocumentLines, {
-        'standalone': false,
-        'parent': parentDoc,
-        'cursor': innerDocumentCursor,
-      });
+      innerDocument = Document.nested(
+        parentDoc,
+        innerDocumentLines,
+        cursor: innerDocumentCursor,
+      );
       if (parentDoctitle != null) {
         parentDoc.attributes['doctitle'] = parentDoctitle;
       }
@@ -556,10 +601,10 @@ class Cell extends AbstractBlock {
       subs = basicSubs;
     } else {
       if (normalPsv) {
-        if (isTruthy(inHeaderRow)) {
-          _cursor = opts?['cursor']; // Used in the deferred catalog call.
+        if (inHeaderRow != TableHeader.none) {
+          _cursor = cursor; // Used in the deferred catalog call.
         } else {
-          catalogInlineAnchor(cellContent, opts?['cursor']);
+          catalogInlineAnchor(cellContent, cursor);
         }
       }
       contentModel = 'simple';
@@ -572,18 +617,18 @@ class Cell extends AbstractBlock {
   /// Two consecutive line feeds (a blank line).
   static const String doubleLf = '\n\n';
 
-  /// The number of columns this cell spans, if set.
-  Object? colspan;
+  /// The number of columns this cell spans, if more than one.
+  int? colspan;
 
-  /// The number of rows this cell spans, if set.
-  Object? rowspan;
+  /// The number of rows this cell spans, if more than one.
+  int? rowspan;
 
   /// The nested document in an AsciiDoc table cell (only set when the style
   /// is `'asciidoc'`).
   Document? innerDocument;
 
-  Object? _cursor;
-  List<Object?>? _reinitializeArgs;
+  Cursor? _cursor;
+  (Column?, String?, CellSpec?, Cursor?)? _reinitializeArgs;
   String? _text;
 
   /// The column this cell belongs to.
@@ -600,18 +645,14 @@ class Cell extends AbstractBlock {
   ///
   /// Port of `Asciidoctor::Table::Cell#reinitialize`.
   Cell reinitialize({required bool hasHeader}) {
+    final args = _reinitializeArgs;
     if (hasHeader) {
       _reinitializeArgs = null;
-    } else if (_reinitializeArgs != null) {
-      final args = _reinitializeArgs!;
-      return Cell(
-        args[0] as Column?,
-        args[1] as String?,
-        args[2] as Map<String, Object?>?,
-        args[3] as Map<String, Object?>?,
-      );
+    } else if (args != null) {
+      final (column, text, spec, cursor) = args;
+      return Cell(column, text, spec, cursor);
     } else {
-      style = attributes['style'] as String?;
+      style = attributes['style'];
     }
     if (_cursor != null) catalogInlineAnchor();
     return this;
@@ -621,9 +662,9 @@ class Cell extends AbstractBlock {
   /// cell's text), unless there is none.
   ///
   /// Port of `Asciidoctor::Table::Cell#catalog_inline_anchor`.
-  void catalogInlineAnchor([String? cellText, Object? cursor]) {
+  void catalogInlineAnchor([String? cellText, Cursor? cursor]) {
     var c = cursor;
-    if (!isTruthy(c)) {
+    if (c == null) {
       c = _cursor;
       _cursor = null;
     }
@@ -636,61 +677,62 @@ class Cell extends AbstractBlock {
       match.group(2),
       this,
       c,
-      // NodeDocument/Document unification pending: the document is always
-      // a Document here (same cast as Parser._docOf).
-      document as Document?,
+      document! as Document,
     );
   }
 
   /// The text of this cell with substitutions applied.
   ///
   /// Used for head-row cells as well as text-only cells in the foot row and
-  /// body; not for AsciiDoc-style cells. (The writer mirrors
-  /// `attr_writer :text`.)
+  /// body; not for AsciiDoc-style cells.
   // NOTE `this.` is load-bearing (see list.dart: same import-scope
   // shadowing quirk for substitutor members).
-  String? get text => this.applySubs(_text, subs) as String?;
+  String get text => this.applySubs(_text ?? '', subs);
 
   set text(String? value) {
     _text = value;
   }
 
-  /// Handles the body data, applying styles and partitioning into
-  /// paragraphs. Not for head-row or literal-style cells.
+  /// The paragraphs of this cell's text with substitutions and the cell
+  /// style applied (empty when the text is empty). Not for AsciiDoc-style
+  /// cells.
   ///
-  /// Port of `Asciidoctor::Table::Cell#content`. The styled paragraphs are
-  /// parented to this cell's parent (the table), since inline nodes require
-  /// a block parent.
-  @override
-  Object? content() {
+  /// Port of the paragraph branch of `Asciidoctor::Table::Cell#content`.
+  /// The styled paragraphs are parented to this cell's parent (the table),
+  /// since inline nodes require a block parent.
+  List<String> get paragraphs {
     final cellStyle = style;
-    if (cellStyle == 'asciidoc') {
-      return innerDocument!.convert();
-    } else if (_text!.contains(doubleLf)) {
-      return splitDropTrailingEmpty(text!, _blankLineRx)
+    final styled = cellStyle != null && cellStyle != 'header';
+    if (_text!.contains(doubleLf)) {
+      return splitDropTrailingEmpty(text, _blankLineRx)
           .map(
-            (para) => isTruthy(cellStyle) && cellStyle != 'header'
-                ? (Inline(
-                        parent,
-                        'quoted',
-                        text: para,
-                        type: cellStyle,
-                      ).convert()!
-                      as String)
+            (para) => styled
+                ? Inline(
+                    parent,
+                    'quoted',
+                    text: para,
+                    type: cellStyle,
+                  ).convert()
                 : para,
           )
           .toList();
-    } else {
-      final subbedText = text!;
-      if (subbedText.isEmpty) return <String>[];
-      if (isTruthy(cellStyle) && cellStyle != 'header') {
-        return <String>[
-          Inline(parent, 'quoted', text: subbedText, type: cellStyle).convert()!
-              as String,
-        ];
-      }
-      return <String>[subbedText];
     }
+    final subbedText = text;
+    if (subbedText.isEmpty) return <String>[];
+    if (styled) {
+      return <String>[
+        Inline(parent, 'quoted', text: subbedText, type: cellStyle).convert(),
+      ];
+    }
+    return <String>[subbedText];
+  }
+
+  /// The converted content of this cell: the nested document of an
+  /// AsciiDoc cell, otherwise the [paragraphs] joined by blank lines.
+  @override
+  String content() {
+    if (style == 'asciidoc') return innerDocument!.convert();
+    return paragraphs.join('$lf$lf');
   }
 
   /// The lines of this cell's text.
@@ -702,8 +744,8 @@ class Cell extends AbstractBlock {
   @override
   String toString() =>
       'Cell(text: ${debugQuote(_text)}, '
-      'colspan: ${isTruthy(colspan) ? colspan : 1}, '
-      'rowspan: ${isTruthy(rowspan) ? rowspan : 1}, '
+      'colspan: ${colspan ?? 1}, '
+      'rowspan: ${rowspan ?? 1}, '
       'attributes: $attributes)';
 }
 
@@ -719,15 +761,19 @@ class TableParserContext {
   /// Creates a parser context for [table], reading from [reader].
   ///
   /// Port of `Asciidoctor::Table::ParserContext#initialize`.
-  new(Reader reader, Table table, [Map<String, Object?>? attributes]) {
-    final attrs = attributes ?? <String, Object?>{};
+  new(
+    Reader reader,
+    Table table, [
+    Map<String, String> attributes = const <String, String>{},
+  ]) {
+    final attrs = attributes;
     _reader = reader..mark();
     _startCursor = reader.cursorAtMark();
     this.table = table;
 
     late String xsv;
     if (attrs.containsKey('format')) {
-      xsv = attrs['format'] as String? ?? '';
+      xsv = attrs['format']!;
       if (formats.contains(xsv)) {
         if (xsv == 'tsv') {
           // NOTE tsv is just an alias for csv with a tab separator.
@@ -740,10 +786,8 @@ class TableParserContext {
         }
       } else {
         logger.error(
-          messageWithContext(
-            'illegal table format: $xsv',
-            sourceLocation: reader.cursorAtPrevLine(),
-          ),
+          'illegal table format: $xsv',
+          at: reader.cursorAtPrevLine(),
         );
         format = 'psv';
         xsv = table.document!.nested() ? '!sv' : 'psv';
@@ -754,8 +798,8 @@ class TableParserContext {
     }
 
     if (attrs.containsKey('separator')) {
-      final sep = attrs['separator'] as String?;
-      if (sep == null || sep.isEmpty) {
+      final sep = attrs['separator']!;
+      if (sep.isEmpty) {
         final entry = delimiters[xsv]!;
         _delimiter = entry.$1;
         _delimiterRx = entry.$2;
@@ -777,7 +821,7 @@ class TableParserContext {
 
     _colcount = table.columns.isEmpty ? -1 : table.columns.length;
     buffer = '';
-    _cellspecs = <Map<String, Object?>>[];
+    _cellspecs = <CellSpec>[];
     _cellOpen = false;
     _activeRowspans = <int>[0];
     _columnVisits = 0;
@@ -801,17 +845,8 @@ class TableParserContext {
         '!sv': ('!', RegExp('!')),
       };
 
-  /// The shared logger.
-  ///
-  /// Routes to [AbstractNode.currentLogger], the [NodeLogger] seam shared by
-  /// every node (mirrors the `logger` method from the `Logging` mixin).
-  NodeLogger get logger => AbstractNode.currentLogger;
-
-  /// Builds a [ContextMessage] carrying [text] and its [sourceLocation].
-  ///
-  /// Port of `Logging#message_with_context`.
-  ContextMessage messageWithContext(String text, {Object? sourceLocation}) =>
-      ContextMessage(text, sourceLocation: sourceLocation);
+  /// The shared logger ([LoggerManager.logger]).
+  LoggerBase get logger => LoggerManager.logger;
 
   /// The table currently being parsed.
   Table? table;
@@ -846,7 +881,7 @@ class TableParserContext {
   /// Where the table starts, reported when
   /// the leading separator is missing.
   late final Cursor _startCursor;
-  List<Map<String, Object?>> _cellspecs = <Map<String, Object?>>[];
+  List<CellSpec> _cellspecs = <CellSpec>[];
   bool _cellOpen = false;
   List<int> _activeRowspans = <int>[0];
   int _columnVisits = 0;
@@ -890,13 +925,12 @@ class TableParserContext {
 
   /// Takes a cell spec from the stack (cell specs precede the delimiter, so
   /// a stack carries the spec from the previous cell to the current one).
-  Map<String, Object?>? takeCellspect() =>
+  CellSpec? takeCellspec() =>
       _cellspecs.isEmpty ? null : _cellspecs.removeAt(0);
 
   /// Pushes a cell spec onto the stack for the next cell.
-  void pushCellspect([Map<String, Object?>? cellspec]) {
-    // This shouldn't be null, but we check anyway.
-    _cellspecs.add(cellspec ?? <String, Object?>{});
+  void pushCellspec([CellSpec cellspec = const CellSpec()]) {
+    _cellspecs.add(cellspec);
   }
 
   /// Marks that the cell stays open (used at end of line when the cell may
@@ -917,10 +951,10 @@ class TableParserContext {
   /// Whether the current cell has been marked as closed.
   bool get isCellClosed => !_cellOpen;
 
-  /// Closes the open cell, if any, pushing [nextCellspect] for the next
+  /// Closes the open cell, if any, pushing [nextCellspec] for the next
   /// cell, and advances to the next line.
-  void closeOpenCell([Map<String, Object?>? nextCellspect]) {
-    pushCellspect(nextCellspect);
+  void closeOpenCell([CellSpec nextCellspec = const CellSpec()]) {
+    pushCellspec(nextCellspec);
     if (isCellOpen) closeCell(eol: true);
     _advance();
   }
@@ -932,24 +966,21 @@ class TableParserContext {
   /// Port of `Asciidoctor::Table::ParserContext#close_cell`.
   void closeCell({bool eol = false}) {
     late final String cellText;
-    late final Map<String, Object?>? cellspec;
+    late final CellSpec? cellspec;
     late final int repeat;
     if (format == 'psv') {
       cellText = buffer;
       buffer = '';
-      final taken = takeCellspect();
+      final taken = takeCellspec();
       if (taken != null) {
         cellspec = taken;
-        final repeatcol = taken.remove('repeatcol');
-        repeat = isTruthy(repeatcol) ? parseLeadingInt(repeatcol) : 1;
+        repeat = taken.repeat ?? 1;
       } else {
         logger.error(
-          messageWithContext(
-            'table missing leading separator; recovering automatically',
-            sourceLocation: _startCursor,
-          ),
+          'table missing leading separator; recovering automatically',
+          at: _startCursor,
         );
-        cellspec = <String, Object?>{};
+        cellspec = const CellSpec();
         repeat = 1;
       }
     } else {
@@ -966,10 +997,8 @@ class TableParserContext {
             text = collapseRuns(text.substring(1, text.length - 1).trim(), '"');
           } else {
             logger.error(
-              messageWithContext(
-                'unclosed quote in CSV data; setting cell to empty',
-                sourceLocation: _reader.cursorAtPrevLine(),
-              ),
+              'unclosed quote in CSV data; setting cell to empty',
+              at: _reader.cursorAtPrevLine(),
             );
             text = '';
           }
@@ -982,15 +1011,15 @@ class TableParserContext {
     }
 
     for (var i = 1; i <= repeat; i++) {
-      // TODOmake column resolving an operation.
+      // TODO make column resolving an operation.
       late final Column? column;
       if (_colcount == -1) {
         final t = table!;
         column = Column(t, t.columns.length + i - 1);
         t.columns.add(column);
-        final cs = cellspec;
-        if (cs != null && cs.containsKey('colspan')) {
-          final extraCols = parseLeadingInt(cs['colspan']) - 1;
+        final colspan = cellspec?.colspan;
+        if (colspan != null) {
+          final extraCols = colspan - 1;
           if (extraCols > 0) {
             final offset = t.columns.length;
             for (var j = 0; j < extraCols; j++) {
@@ -1002,29 +1031,21 @@ class TableParserContext {
         column = table!.columns[_currentRow.length];
       }
 
-      final cell = Cell(column, cellText, cellspec, {
-        'cursor': _reader.cursorBeforeMark(),
-      });
+      final cell = Cell(column, cellText, cellspec, _reader.cursorBeforeMark());
       _reader.mark();
-      if (isTruthy(cell.rowspan) && cell.rowspan != 1) {
-        _activateRowspan(
-          parseLeadingInt(cell.rowspan),
-          isTruthy(cell.colspan) ? parseLeadingInt(cell.colspan) : 1,
-        );
+      final rowspan = cell.rowspan;
+      if (rowspan != null && rowspan != 1) {
+        _activateRowspan(rowspan, cell.colspan ?? 1);
       }
-      _columnVisits += isTruthy(cell.colspan)
-          ? parseLeadingInt(cell.colspan)
-          : 1;
+      _columnVisits += cell.colspan ?? 1;
       _currentRow.add(cell);
       final rowStatus = _endOfRow();
       if (rowStatus > -1 &&
           (_colcount != -1 || _linenum > 0 || (eol && i == repeat))) {
         if (rowStatus > 0) {
           logger.error(
-            messageWithContext(
-              'dropping cell because it exceeds specified number of columns',
-              sourceLocation: _reader.cursorBeforeMark(),
-            ),
+            'dropping cell because it exceeds specified number of columns',
+            at: _reader.cursorBeforeMark(),
           );
           _closeRow(true);
         } else {
@@ -1039,10 +1060,8 @@ class TableParserContext {
   void closeTable() {
     if (_columnVisits == 0) return;
     logger.error(
-      messageWithContext(
-        'dropping cells from incomplete row detected end of table',
-        sourceLocation: _reader.cursorBeforeMark(),
-      ),
+      'dropping cells from incomplete row detected end of table',
+      at: _reader.cursorBeforeMark(),
     );
   }
 

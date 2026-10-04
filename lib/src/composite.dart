@@ -30,7 +30,7 @@ class CompositeConverter extends ConverterBase {
   ///
   /// Delegates implementing [ComposedAware] are notified. When
   /// [backendTraitsSource] is given, this composite adopts its backend
-  /// traits map (shared by reference).
+  /// traits (shared by reference).
   new(
     super.backend,
     List<Converter> converters, {
@@ -44,7 +44,7 @@ class CompositeConverter extends ConverterBase {
       }
     }
     if (backendTraitsSource != null) {
-      initBackendTraits(backendTraitsSource.backendTraits());
+      backendTraits = backendTraitsSource.backendTraits;
     }
   }
 
@@ -55,10 +55,10 @@ class CompositeConverter extends ConverterBase {
   final Map<String, Converter> _converterCache = <String, Converter>{};
 
   @override
-  Object? convert(
+  String? convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) {
     transform ??= node.nodeName;
     return converterFor(transform).convert(node, transform, opts);

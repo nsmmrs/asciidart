@@ -21,9 +21,30 @@ class Inline extends AbstractNode {
     String? id,
     this.type,
     this.target,
+    this.keys,
+    this.submenus,
+    this.terms,
+    this.seeAlso,
+    this.xmlCommentGuard = false,
   }) : super(nodeName: 'inline_$context') {
     this.id = id;
   }
+
+  /// The keys of a keyboard shortcut (the `kbd` macro).
+  final List<String>? keys;
+
+  /// The submenus leading to the menu item (the `menu` macro).
+  final List<String>? submenus;
+
+  /// The terms of a concealed index term (primary, secondary, tertiary).
+  final List<String>? terms;
+
+  /// The related index terms of an index term (its `see-also` attribute).
+  final List<String>? seeAlso;
+
+  /// Whether a callout is guarded by an XML comment (`<!--1-->`) rather
+  /// than by the line comment in the `guard` attribute.
+  final bool xmlCommentGuard;
 
   /// The text of this inline element.
   String? text;
@@ -41,15 +62,12 @@ class Inline extends AbstractNode {
   bool get isInline => true;
 
   /// Returns the converted result of this node.
-  Object? convert() => converter.convert(this);
+  String convert() => converter.convert(this) ?? '';
 
   /// The converted alt text for this inline image.
   ///
   /// The value of the `alt` attribute, or the empty string when unset.
-  Object get alt {
-    final value = attr('alt');
-    return value == null || value == false ? '' : value;
-  }
+  String get alt => attributes['alt'] ?? '';
 
   /// Whether this node carries reference text.
   ///
@@ -66,7 +84,7 @@ class Inline extends AbstractNode {
   String? get reftext {
     final value = text;
     if (value == null) return null;
-    return applyReftextSubs(value) as String?;
+    return applyReftextSubs(value);
   }
 
   /// Generates cross reference text that can refer to this inline node.

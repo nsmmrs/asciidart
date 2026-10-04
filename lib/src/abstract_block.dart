@@ -4,13 +4,14 @@
 ///
 /// Child traversal for [AbstractBlock.findBy] lives in [AbstractBlock],
 /// which subclasses with non-standard child storage (`Document` header,
-/// dlist pairs, table rows/cells) override. The [NodeSection] and
-/// [NodeSourceLocation] interfaces below declare the slices of `Section` and
-/// the reader cursor this file consumes.
+/// dlist entries, table rows/cells) override. The [NodeSection] interface
+/// below declares the slice of `Section` this file consumes.
 library;
 
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/core_ext.dart';
+import 'package:asciidoctor/src/cursor.dart';
+import 'package:asciidoctor/src/document.dart' show DocumentAttributeEntry;
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/rx.dart';
 import 'package:meta/meta.dart';
@@ -38,10 +39,13 @@ const Map<String, String> captionAttributeNames = <String, String>{
 };
 
 /// Controls [AbstractBlock.findBy] traversal from a [FindByFilter].
-///
-/// The `prune`, `reject` and `stop` verdicts a `AbstractBlock.findBy` filter
-/// may return.
 enum FindByVerdict {
+  /// Accept the node and keep traversing its descendants.
+  accept,
+
+  /// Skip the node but still visit its descendants.
+  skip,
+
   /// Accept the node but skip its descendants.
   prune,
 
@@ -52,12 +56,9 @@ enum FindByVerdict {
   stop,
 }
 
-/// Supplemental filter for [AbstractBlock.findBy].
-///
-/// Returns `true` (or any other truthy value) to accept the node and keep
-/// traversing, `false` (or `null`) to skip the node but still visit its
-/// children, or a [FindByVerdict] for finer control.
-typedef FindByFilter = Object? Function(AbstractBlock node);
+/// Supplemental filter for [AbstractBlock.findBy]: decides, per node,
+/// whether to accept it and whether to descend into it.
+typedef FindByFilter = FindByVerdict Function(AbstractBlock node);
 
 /// Raised internally to abort a [AbstractBlock.findBy] traversal.
 ///
@@ -78,23 +79,15 @@ abstract interface class NodeSection {
   /// Assigns the 0-based [index] of the section within its parent.
   set index(int value);
 
-  /// Whether the section is numbered (`true`, `false`, or `'chapter'`).
-  Object? get numbered;
+  /// Whether the section is numbered.
+  bool get numbered;
+
+  /// Whether a numbered section takes the next chapter number (a level-1
+  /// section of a book when `sectnums` is `all`).
+  bool get chapterNumbering;
 
   /// The section name (`'appendix'`, `'chapter'`, `'part'`, `'section'`, ...).
   String? get sectname;
-}
-
-/// The source-location API surface consumed by blocks.
-///
-/// Implemented by an adapter over the reader cursor. Assigned to
-/// [AbstractBlock.sourceLocation] when source maps are enabled.
-abstract interface class NodeSourceLocation {
-  /// The source file where the block starts.
-  String? get file;
-
-  /// The source line number where the block starts.
-  int? get lineno;
 }
 
 /// An abstract base class for block-level nodes of AsciiDoc content.
@@ -124,12 +117,16 @@ abstract class AbstractBlock extends AbstractNode {
   int? level;
 
   /// The numeral of this block (section number or caption number).
-  Object? numeral;
+  String? numeral;
 
   /// The location in the AsciiDoc source where this block begins.
   ///
   /// Only tracked when source maps are enabled.
-  NodeSourceLocation? sourceLocation;
+  Cursor? sourceLocation;
+
+  /// The attribute entries (`:name: value` lines) that preceded this block,
+  /// replayed against the document when the block is converted.
+  List<DocumentAttributeEntry>? attributeEntries;
 
   /// The style (block type qualifier) of this block.
   String? style;
@@ -157,17 +154,16 @@ abstract class AbstractBlock extends AbstractNode {
   /// The source line number where this block starts.
   int? get lineno => sourceLocation?.lineno;
 
-  /// Returns the converted content of this block.
-  Object? convert() {
-    final doc = (document!)..playbackAttributes(attributes);
+  /// Returns the converted content of this block, or `null` when the
+  /// converter produces nothing for it.
+  String? convert() {
+    final doc = (document!)..playbackAttributes(this);
     return doc.converter.convert(this);
   }
 
-  /// Returns the converted result of the child blocks.
-  ///
-  /// The return type is [Object] because subclasses narrow it: `List`
-  /// returns its items and table cells return paragraph arrays.
-  Object? content() => blocks.map((child) => child.convert() ?? '').join(lf);
+  /// Returns the converted result of the child blocks, or `null` when the
+  /// block has no content (the `empty` content model).
+  String? content() => blocks.map((child) => child.convert() ?? '').join(lf);
 
   /// Appends [child] to this block's list of blocks, reparenting it.
   ///
@@ -259,21 +255,21 @@ abstract class AbstractBlock extends AbstractNode {
         (role == null || includesRole(role)) &&
         (id == null || id == this.id)) {
       if (filter != null) {
-        final verdict = filter(this);
-        if (verdict == null || verdict == false) {
-          if (id != null) throw const _TraversalStopped();
-        } else if (verdict == FindByVerdict.prune) {
-          result.add(this);
-          if (id != null) throw const _TraversalStopped();
-          return result;
-        } else if (verdict == FindByVerdict.reject) {
-          if (id != null) throw const _TraversalStopped();
-          return result;
-        } else if (verdict == FindByVerdict.stop) {
-          throw const _TraversalStopped();
-        } else {
-          result.add(this);
-          if (id != null) throw const _TraversalStopped();
+        switch (filter(this)) {
+          case FindByVerdict.skip:
+            if (id != null) throw const _TraversalStopped();
+          case FindByVerdict.prune:
+            result.add(this);
+            if (id != null) throw const _TraversalStopped();
+            return result;
+          case FindByVerdict.reject:
+            if (id != null) throw const _TraversalStopped();
+            return result;
+          case FindByVerdict.stop:
+            throw const _TraversalStopped();
+          case FindByVerdict.accept:
+            result.add(this);
+            if (id != null) throw const _TraversalStopped();
         }
       } else {
         result.add(this);
@@ -326,11 +322,10 @@ abstract class AbstractBlock extends AbstractNode {
   /// Returns the next adjacent block in document order.
   ///
   /// When this block is the last item of its parent, the search continues
-  /// with the following sibling of the parent, and so on. The return type
-  /// is [Object] because description-list items advance to the next
-  /// `[terms, description]` pair (a [List]); otherwise
-  /// the result is an [AbstractBlock], or `null` at the end of the document.
-  Object? nextAdjacentBlock() {
+  /// with the following sibling of the parent, and so on. A description
+  /// list item advances to the first term of the next entry. Returns `null`
+  /// at the end of the document.
+  AbstractBlock? nextAdjacentBlock() {
     if (context == 'document') return null;
     final p = parent;
     if (p == null) {
@@ -348,15 +343,15 @@ abstract class AbstractBlock extends AbstractNode {
     return next < siblings.length ? siblings[next] : p.nextAdjacentBlock();
   }
 
-  /// Returns the pair following dlist item [item] within this list.
+  /// Returns the block following dlist item [item] within this list.
   ///
-  /// `ListBlock` overrides this to walk its term/description pairs
-  /// (returning the next `[terms, description]` pair, or `null` for the
-  /// last one so the search continues past the list). Other blocks throw
-  /// [UnsupportedError].
-  Object? nextAdjacentDlistBlock(AbstractBlock item) => throw UnsupportedError(
-    'nextAdjacentDlistBlock is only defined for description lists',
-  );
+  /// `ListBlock` overrides this to walk its entries (returning the first
+  /// term of the next entry, or `null` for the last one so the search
+  /// continues past the list). Other blocks throw [UnsupportedError].
+  AbstractBlock? nextAdjacentDlistBlock(AbstractBlock item) =>
+      throw UnsupportedError(
+        'nextAdjacentDlistBlock is only defined for description lists',
+      );
 
   /// The child sections of this block.
   List<AbstractBlock> get sections =>
@@ -368,9 +363,8 @@ abstract class AbstractBlock extends AbstractNode {
   /// replacement substitutions applied (special characters only when it
   /// equals the default alt text), or the empty string when unset.
   String get alt {
-    final text = attributes['alt'];
-    if (text == null || text == false) return '';
-    final source = text as String;
+    final source = attributes['alt'];
+    if (source == null) return '';
     if (source == attributes['default-alt']) return subSpecialchars(source);
     final converted = subSpecialchars(source);
     return _hasReplaceableText(converted)
@@ -387,7 +381,7 @@ abstract class AbstractBlock extends AbstractNode {
   ///
   /// On admonition blocks this routes to the `textlabel` attribute.
   String? get caption =>
-      context == 'admonition' ? attributes['textlabel'] as String? : _caption;
+      context == 'admonition' ? attributes['textlabel'] : _caption;
 
   /// Sets the caption of this block.
   set caption(String? value) {
@@ -409,9 +403,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// substitutions are never applied twice.
   String? get title {
     final source = _title;
-    return _convertedTitle ??= source == null
-        ? null
-        : applyTitleSubs(source) as String?;
+    return _convertedTitle ??= source == null ? null : applyTitleSubs(source);
   }
 
   /// Whether this block has a title.
@@ -454,7 +446,7 @@ abstract class AbstractBlock extends AbstractNode {
         case 'full':
           final quotedTitle = subPlaceholder(
             subQuotes(document!.compatMode ? "``%s''" : '"`%s`"'),
-            title,
+            title!,
           );
           final fullPrefix = _captionPrefix();
           if (fullPrefix != null) {
@@ -475,12 +467,13 @@ abstract class AbstractBlock extends AbstractNode {
   /// Returns `'<prefix> <numeral>'` when this block has a numeral and its
   /// context resolves a caption prefix on the document, else `null`.
   String? _captionPrefix() {
-    if (numeral == null || numeral == false) return null;
+    final number = numeral;
+    if (number == null) return null;
     final attrName = captionAttributeNames[context];
     if (attrName == null) return null;
     final prefix = document!.attributes[attrName];
-    if (prefix == null || prefix == false) return null;
-    return '$prefix $numeral';
+    if (prefix == null) return null;
+    return '$prefix $number';
   }
 
   /// Removes one trailing `'. '` from [caption], if present.
@@ -496,14 +489,12 @@ abstract class AbstractBlock extends AbstractNode {
   /// the caption. Otherwise, when the [captionContext] (default [context])
   /// resolves a caption prefix on the document, a `'<prefix> <number>. '`
   /// caption is built and the block takes the next `<context>-number`.
-  void assignCaption(Object? value, [String? captionContext]) {
+  void assignCaption(String? value, [String? captionContext]) {
     final targetContext = captionContext ?? context;
     if (_caption != null || _title == null) return;
-    final assigned = (value == null || value == false)
-        ? document!.attributes['caption']
-        : value;
-    if (assigned != null && assigned != false) {
-      _caption = assigned as String;
+    final assigned = value ?? document!.attributes['caption'];
+    if (assigned != null) {
+      _caption = assigned;
       return;
     }
     // NOTE the caption stays null, so assignment remains re-runnable.
@@ -515,7 +506,7 @@ abstract class AbstractBlock extends AbstractNode {
         ? 'figure-caption'
         : captionAttributeNames[targetContext];
     final prefix = attrName == null ? null : document!.attributes[attrName];
-    if (attrName != null && prefix != null && prefix != false) {
+    if (attrName != null && prefix != null) {
       numeral = document!.incrementAndStoreCounter(
         '$targetContext-number',
         this,
@@ -534,17 +525,16 @@ abstract class AbstractBlock extends AbstractNode {
   void assignNumeral(AbstractBlock section) {
     final target = (section as NodeSection)..index = _nextSectionIndex;
     _nextSectionIndex = target.index + 1;
-    final like = target.numbered;
-    if (like == null || like == false) return;
+    if (!target.numbered) return;
     final sectname = target.sectname;
     if (sectname == 'appendix') {
       section.numeral = document!.counter('appendix-number', 'A');
       final caption = document!.attributes['appendix-caption'];
-      section.caption = caption == null || caption == false
+      section.caption = caption == null
           ? '${section.numeral}. '
           : '$caption ${section.numeral}: ';
-    } else if (sectname == 'chapter' || like == 'chapter') {
-      section.numeral = document!.counter('chapter-number', 1).toString();
+    } else if (sectname == 'chapter' || target.chapterNumbering) {
+      section.numeral = document!.counter('chapter-number', '1');
     } else {
       section.numeral = sectname == 'part'
           ? Helpers.intToRoman(_nextSectionOrdinal)

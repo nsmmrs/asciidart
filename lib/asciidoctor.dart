@@ -3,7 +3,9 @@
 ///
 /// Start with `convert` (a string to a string) or `load` (a string to a
 /// `Document` you can inspect and convert). `convertFile` and `loadFile` do
-/// the same for files. The related libraries cover the rest of the API:
+/// the same for files, and `convertToTarget` writes converted source to a
+/// file. `AsciidoctorOptions` configures them all. The related libraries
+/// cover the rest of the API:
 ///
 /// - `package:asciidoctor/extensions.dart`: preprocessors, tree processors,
 ///   block and inline macros, include and docinfo processors.
@@ -16,20 +18,31 @@
 library;
 
 export 'src/abstract_block.dart'
-    show AbstractBlock, FindByFilter, NodeSection, NodeSourceLocation;
+    show AbstractBlock, FindByFilter, FindByVerdict, NodeSection;
 export 'src/abstract_node.dart'
-    show AbstractNode, NodeConverter, NodeDocument, NodeLogger, SafeMode;
-export 'src/block.dart' show Block;
+    show AbstractNode, NodeConverter, NodeDocument, SafeMode;
+export 'src/block.dart' show Block, BlockSubs;
 export 'src/callouts.dart' show Callout, Callouts;
 export 'src/constants.dart' show Compliance;
+export 'src/cursor.dart' show Cursor;
 export 'src/document.dart'
-    show Document, DocumentAuthor, DocumentTitle, Footnote, ImageReference;
+    show
+        Catalog,
+        Document,
+        DocumentAttributeEntry,
+        DocumentAuthor,
+        DocumentTitle,
+        Footnote,
+        ImageReference;
 export 'src/inline.dart' show Inline;
-export 'src/list.dart' show ListBlock, ListItem;
-export 'src/load.dart' show convert, convertFile, load, loadFile;
+export 'src/list.dart' show DlistEntry, ListBlock, ListItem;
+export 'src/load.dart'
+    show convert, convertFile, convertToTarget, load, loadFile;
 export 'src/logging.dart'
     show
-        ContextMessage,
+        BasicFormatter,
+        DefaultFormatter,
+        LogMessage,
         Logger,
         LoggerBase,
         LoggerFormatter,
@@ -38,10 +51,10 @@ export 'src/logging.dart'
         MemoryLogger,
         NullLogger,
         Severity;
+export 'src/options.dart' show AsciidoctorOptions;
 export 'src/path_resolver.dart' show PathResolver, SecurityError;
-export 'src/reader.dart' show Cursor;
 export 'src/section.dart' show Section;
-export 'src/table.dart' show Cell, Column, Table, TableRows;
+export 'src/table.dart'
+    show Cell, CellSpec, Column, ColumnSpec, Table, TableHeader, TableRows;
 export 'src/timings.dart' show Timings;
 export 'src/version.dart' show Asciidoctor;
-export 'src/writer.dart' show Writer;

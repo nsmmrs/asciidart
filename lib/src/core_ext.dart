@@ -85,13 +85,6 @@ extension DoubleTruncatePrecision on double {
   }
 }
 
-/// Whether [value] counts as set: everything except `null` and `false`.
-///
-/// Attribute and option values are loosely typed (strings, numbers, booleans
-/// or `null`), and only `null` and `false` mean "unset"; an empty string,
-/// for example, is set.
-bool isTruthy(Object? value) => value != null && value != false;
-
 final RegExp _leadingInteger = RegExp(r'^\s*[+-]?\d+');
 final RegExp _leadingFloat = RegExp(
   r'^\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?',
@@ -99,17 +92,11 @@ final RegExp _leadingFloat = RegExp(
 
 /// Parses the leading integer of [value].
 ///
-/// An [int] maps to itself and other numbers truncate. A string contributes
-/// its leading signed integer (after leading whitespace) and ignores the
-/// rest, so `'12px'` is 12 and `'px'` is 0. `null` maps to 0; any other type
-/// throws a [StateError].
-int parseLeadingInt(Object? value) {
-  if (value is int) return value;
-  if (value is num) return value.toInt();
+/// A string contributes its leading signed integer (after leading
+/// whitespace) and ignores the rest, so `'12px'` is 12 and `'px'` is 0.
+/// `null` maps to 0.
+int parseLeadingInt(String? value) {
   if (value == null) return 0;
-  if (value is! String) {
-    throw StateError('cannot convert ${value.runtimeType} to an integer');
-  }
   final match = _leadingInteger.firstMatch(value);
   if (match == null) return 0;
   return int.tryParse(match.group(0)!.trim()) ?? 0;
@@ -117,16 +104,10 @@ int parseLeadingInt(Object? value) {
 
 /// Parses the leading floating-point number of [value].
 ///
-/// Numbers convert directly. A string contributes its leading decimal
-/// literal (after leading whitespace) and ignores the rest; `null` maps to
-/// 0.0; any other type throws a [StateError].
-double parseLeadingDouble(Object? value) {
-  if (value is double) return value;
-  if (value is num) return value.toDouble();
+/// A string contributes its leading decimal literal (after leading
+/// whitespace) and ignores the rest; `null` maps to 0.0.
+double parseLeadingDouble(String? value) {
   if (value == null) return 0;
-  if (value is! String) {
-    throw StateError('cannot convert ${value.runtimeType} to a number');
-  }
   final match = _leadingFloat.firstMatch(value);
   if (match == null) return 0;
   return double.tryParse(match.group(0)!.trim()) ?? 0.0;
@@ -237,4 +218,36 @@ String debugQuote(String? value) {
   }
   buf.write('"');
   return buf.toString();
+}
+
+/// Formats [value] the way Asciidoctor prints numbers: integers plainly and
+/// doubles with the shortest round-trip digits, always with a fractional
+/// part (`25.0`), switching to exponent form (`1.0e-05`, `1.0e+16`) below
+/// `0.0001` and from 16 integer digits up.
+String formatNumber(num value) {
+  if (value is int) return '$value';
+  final d = value.toDouble();
+  if (d.isNaN) return 'NaN';
+  if (d.isInfinite) return d.isNegative ? '-Infinity' : 'Infinity';
+  if (d == 0) return d.isNegative ? '-0.0' : '0.0';
+  // Shortest round-trip digits and the decimal exponent.
+  final exp = d.abs().toStringAsExponential();
+  final eIndex = exp.indexOf('e');
+  final digits = exp.substring(0, eIndex).replaceFirst('.', '');
+  final decpt = int.parse(exp.substring(eIndex + 1)) + 1;
+  final sign = d.isNegative ? '-' : '';
+  if (decpt > 0) {
+    if (decpt < digits.length) {
+      return '$sign${digits.substring(0, decpt)}.${digits.substring(decpt)}';
+    }
+    if (decpt < 16) return '$sign${digits.padRight(decpt, '0')}.0';
+  } else if (decpt > -4) {
+    return '${sign}0.${'0' * -decpt}$digits';
+  }
+  final mantissa = digits.length > 1
+      ? '${digits[0]}.${digits.substring(1)}'
+      : '$digits.0';
+  final e = decpt - 1;
+  return '$sign${mantissa}e${e < 0 ? '-' : '+'}'
+      '${e.abs().toString().padLeft(2, '0')}';
 }

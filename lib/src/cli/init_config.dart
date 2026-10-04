@@ -164,11 +164,11 @@ void registerTransforms([TemplateRegistry? registry]) {
   final target = registry ?? TemplateRegistry.global;
   // Example: render every paragraph with a custom wrapper. Delete or
   // adapt, then add one `registerFunction` per overridden transform.
-  // (The handler accepts the optional per-call options map, like every
-  // converter handler; it is unused here.)
+  // (The handler accepts the optional per-call conversion options, like
+  // every converter handler; they are unused here.)
   target.registerFunction('paragraph', (
     AbstractNode node, [
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) {
     final content = (node as Block).content();
     return '<div class="paragraph custom">\n<p>$content</p>\n</div>';

@@ -11,9 +11,7 @@
 /// which warns and returns `null` for unregistered transforms. The
 /// converter registers itself explicitly with `Converter.registerFor`.
 ///
-/// Syntax highlighting goes through [NodeSyntaxHighlighter], the slice of
-/// the highlighter API this converter consumes (`name`, `highlight?`,
-/// `format`, `docinfo?`, `docinfo`).
+/// Syntax highlighting goes through the document's [SyntaxHighlighterBase].
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -23,6 +21,8 @@ import 'package:asciidoctor/src/converter.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidoctor/src/highlight/highlight.dart' show CssMode;
+import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/list.dart';
 import 'package:asciidoctor/src/rx.dart';
@@ -30,9 +30,9 @@ import 'package:asciidoctor/src/section.dart';
 import 'package:asciidoctor/src/stylesheets.dart';
 import 'package:asciidoctor/src/table.dart';
 
-/// Renders [value] for interpolation into output: `toString`, except
-/// `null` renders as the empty string instead of `'null'`.
-String _s(Object? value) => value?.toString() ?? '';
+/// Renders [value] for interpolation into output: `null` renders as the
+/// empty string.
+String _s(String? value) => value ?? '';
 
 /// Repeats [value] [count] times.
 String _repeat(String value, int count) =>
@@ -92,8 +92,8 @@ String _inspectDelimiters(List<String> delimiters) {
 }
 
 /// Prefixes [title] with the chapter/part [signifier] when it is set.
-String _withSignifier(Object? signifier, String title) =>
-    isTruthy(signifier) ? '$signifier $title' : title;
+String _withSignifier(String? signifier, String title) =>
+    signifier != null ? '$signifier $title' : title;
 
 /// The inline latexmath delimiters, rendered (see above).
 final String _inlineLatexmathInspect = _inspectDelimiters(
@@ -120,43 +120,6 @@ const String _mathjaxVersion = '2.7.9';
 /// `DEFAULT_STYLESHEET_KEYS`).
 const Set<String> _defaultStylesheetKeys = <String>{'', 'DEFAULT'};
 
-/// The syntax-highlighter surface consumed by the HTML5 converter.
-///
-/// Mirrors the `SyntaxHighlighter::Base` API used by `html5.rb`: [name]
-/// (e.g. `'rouge'`), [canHighlight] (`highlight?`), [format], [hasDocinfo]
-/// (`docinfo?`) and [docinfo]. The highlighters in
-/// `highlight/syntax_highlighter.dart` implement it. `location` is `'head'`
-/// or `'footer'`.
-abstract interface class NodeSyntaxHighlighter {
-  /// The highlighter name (selects the `{name}-css` document attribute).
-  String get name;
-
-  /// Whether this highlighter performs highlighting (`highlight?`).
-  bool get canHighlight;
-
-  /// Formats the source [node] written in [language] as highlighted HTML.
-  ///
-  /// [opts] carries `css_mode`, `style` (both only when [canHighlight])
-  /// and `nowrap`, exactly as `html5.rb` builds them.
-  String format(
-    AbstractBlock node,
-    String? language,
-    Map<String, Object?> opts,
-  );
-
-  /// Whether this highlighter injects markup at [location] (`docinfo?`).
-  bool hasDocinfo(String location);
-
-  /// Returns the markup injected at [location] for [node] (`docinfo`).
-  String docinfo(
-    String location,
-    Document node, {
-    required String cdnBaseUrl,
-    required bool linkcss,
-    required String selfClosingTagSlash,
-  });
-}
-
 /// A built-in [Converter] implementation that generates HTML 5 output.
 ///
 /// Port of `Asciidoctor::Converter::Html5Converter`. Each `convert*`
@@ -165,18 +128,19 @@ abstract interface class NodeSyntaxHighlighter {
 class Html5Converter extends ConverterBase {
   /// Creates a converter for [backend] with constructor options [opts].
   ///
-  /// `opts['htmlsyntax'] == 'xml'` selects XML mode (void elements close
-  /// with a slash and boolean attributes render as `name="name"`).
+  /// An `xml` [ConverterOptions.htmlsyntax] selects XML mode (void
+  /// elements close with a slash and boolean attributes render as
+  /// `name="name"`).
   new(super.backend, [super.opts])
-    : _xmlMode = opts['htmlsyntax'] == 'xml',
-      _voidElementSlash = opts['htmlsyntax'] == 'xml' ? '/' : '' {
-    initBackendTraits(<String, Object?>{
-      'basebackend': 'html',
-      'filetype': 'html',
-      'htmlsyntax': _xmlMode ? 'xml' : 'html',
-      'outfilesuffix': '.html',
-      'supports_templates': true,
-    });
+    : _xmlMode = opts.htmlsyntax == 'xml',
+      _voidElementSlash = opts.htmlsyntax == 'xml' ? '/' : '' {
+    backendTraits = BackendTraits(
+      basebackend: 'html',
+      filetype: 'html',
+      htmlsyntax: _xmlMode ? 'xml' : 'html',
+      outfilesuffix: '.html',
+      supportsTemplates: true,
+    );
     handle(
       'inline_quoted',
       (node, [opts]) => convertInlineQuoted(node as Inline),
@@ -184,7 +148,7 @@ class Html5Converter extends ConverterBase {
     handle('paragraph', (node, [opts]) => convertParagraph(node as Block));
     handle(
       'inline_anchor',
-      (node, [opts]) => convertInlineAnchor(node as Inline),
+      (node, [opts]) => convertInlineAnchor(node as Inline) ?? '',
     );
     handle('section', (node, [opts]) => convertSection(node as Section));
     handle('listing', (node, [opts]) => convertListing(node as Block));
@@ -215,7 +179,7 @@ class Html5Converter extends ConverterBase {
     );
     handle(
       'inline_footnote',
-      (node, [opts]) => convertInlineFootnote(node as Inline),
+      (node, [opts]) => convertInlineFootnote(node as Inline) ?? '',
     );
     handle(
       'inline_image',
@@ -246,30 +210,30 @@ class Html5Converter extends ConverterBase {
     handle('audio', (node, [opts]) => convertAudio(node as Block));
     handle(
       'outline',
-      (node, [opts]) => convertOutline(node as AbstractBlock, opts),
+      (node, [opts]) => convertOutline(node as AbstractBlock, opts) ?? '',
     );
   }
 
   /// Quote tags by quoted-text type (port of `QUOTE_TAGS`).
   ///
-  /// Each entry holds the opening tag, the closing tag and, for tags that
-  /// carry attributes, a trailing `true`. Lookups miss with `['', '']`
-  /// (the map default).
-  static const Map<String, List<Object>> quoteTags = <String, List<Object>>{
-    'monospaced': <Object>['<code>', '</code>', true],
-    'emphasis': <Object>['<em>', '</em>', true],
-    'strong': <Object>['<strong>', '</strong>', true],
-    'double': <Object>['&#8220;', '&#8221;'],
-    'single': <Object>['&#8216;', '&#8217;'],
-    'mark': <Object>['<mark>', '</mark>', true],
-    'superscript': <Object>['<sup>', '</sup>', true],
-    'subscript': <Object>['<sub>', '</sub>', true],
-    'asciimath': <Object>[r'\$', r'\$'],
-    'latexmath': <Object>[r'\(', r'\)'],
-  };
+  /// Each entry holds the opening tag, the closing tag and whether the tag
+  /// carries attributes. Lookups miss with empty tags.
+  static const Map<String, (String, String, bool)> quoteTags =
+      <String, (String, String, bool)>{
+        'monospaced': ('<code>', '</code>', true),
+        'emphasis': ('<em>', '</em>', true),
+        'strong': ('<strong>', '</strong>', true),
+        'double': ('&#8220;', '&#8221;', false),
+        'single': ('&#8216;', '&#8217;', false),
+        'mark': ('<mark>', '</mark>', true),
+        'superscript': ('<sup>', '</sup>', true),
+        'subscript': ('<sub>', '</sub>', true),
+        'asciimath': (r'\$', r'\$', false),
+        'latexmath': (r'\(', r'\)', false),
+      };
 
   /// Default quote tags for unknown quoted-text types.
-  static const List<Object> _defaultQuoteTags = <Object>['', ''];
+  static const (String, String, bool) _defaultQuoteTags = ('', '', false);
 
   /// Whether void elements close with a slash (the `xml` htmlsyntax).
   final bool _xmlMode;
@@ -278,7 +242,7 @@ class Html5Converter extends ConverterBase {
   final String _voidElementSlash;
 
   /// Memoized document refs catalog (port of `@refs`).
-  Map<String, Object?>? _refs;
+  Map<String, AbstractNode>? _refs;
 
   /// Whether an xref is currently being resolved (port of
   /// `@resolving_xref`; guards against recursive xrefs).
@@ -294,7 +258,7 @@ class Html5Converter extends ConverterBase {
   String convertDocument(Document node) {
     final slash = _voidElementSlash;
     final br = '<br$slash>';
-    var assetUriScheme = node.attr('asset-uri-scheme', 'https')! as String;
+    var assetUriScheme = node.attr('asset-uri-scheme', 'https')!;
     if (assetUriScheme.isNotEmpty) {
       assetUriScheme = '$assetUriScheme:';
     }
@@ -339,7 +303,7 @@ class Html5Converter extends ConverterBase {
       );
     }
     if (node.hasAttr('authors')) {
-      final authors = node.subReplacements(node.attr('authors')! as String);
+      final authors = node.subReplacements(node.attr('authors')!);
       final authorContent = authors.contains('<')
           ? authors.replaceAll(xmlSanitizeRx, '')
           : authors;
@@ -351,7 +315,7 @@ class Html5Converter extends ConverterBase {
       );
     }
     if (node.hasAttr('favicon')) {
-      final iconHref = node.attr('favicon')! as String;
+      final iconHref = node.attr('favicon')!;
       final String iconType;
       final String resolvedHref;
       if (iconHref.isEmpty) {
@@ -376,12 +340,12 @@ class Html5Converter extends ConverterBase {
       '<title>${_s(node.doctitle(sanitize: true, useFallback: true))}</title>',
     );
 
-    late final stylesdir = node.attr('stylesdir') as String?;
+    late final stylesdir = node.attr('stylesdir');
     if (_defaultStylesheetKeys.contains(node.attr('stylesheet'))) {
       final webfonts = node.attr('webfonts');
-      if (webfonts != null && webfonts != false) {
+      if (webfonts != null) {
         result.add(
-          '<link rel="stylesheet" href="$assetUriScheme//fonts.googleapis.com/css?family=${(webfonts as String).isEmpty ? 'Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700' : webfonts}"$slash>',
+          '<link rel="stylesheet" href="$assetUriScheme//fonts.googleapis.com/css?family=${webfonts.isEmpty ? 'Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700' : webfonts}"$slash>',
         );
       }
       if (linkcss) {
@@ -397,7 +361,7 @@ class Html5Converter extends ConverterBase {
         );
       }
     } else if (node.hasAttr('stylesheet')) {
-      final stylesheet = node.attr('stylesheet')! as String;
+      final stylesheet = node.attr('stylesheet')!;
       if (linkcss) {
         final href = node.normalizeWebPath(stylesheet, start: stylesdir);
         result.add('<link rel="stylesheet" href="$href"$slash>');
@@ -431,10 +395,7 @@ class Html5Converter extends ConverterBase {
       }
     }
 
-    final syntaxHlValue = node.syntaxHighlighter;
-    final syntaxHl = isTruthy(syntaxHlValue)
-        ? syntaxHlValue! as NodeSyntaxHighlighter
-        : null;
+    final syntaxHl = node.syntaxHighlighter;
     var syntaxHlDocinfoHeadIdx = -1;
     if (syntaxHl != null) {
       syntaxHlDocinfoHeadIdx = result.length;
@@ -510,7 +471,7 @@ class Html5Converter extends ConverterBase {
           }
           if (node.hasAttr('revnumber')) {
             details.add(
-              '<span id="revnumber">${(node.attr('version-label') ?? '').toString().toLowerCase()} ${_s(node.attr('revnumber'))}${node.hasAttr('revdate') ? ',' : ''}</span>',
+              '<span id="revnumber">${(node.attr('version-label') ?? '').toLowerCase()} ${_s(node.attr('revnumber'))}${node.hasAttr('revdate') ? ',' : ''}</span>',
             );
           }
           if (node.hasAttr('revdate')) {
@@ -679,8 +640,8 @@ class Html5Converter extends ConverterBase {
 
     if (node.hasSections &&
         node.hasAttr('toc') &&
-        (node.attr('toc-placement') as String?) != 'macro' &&
-        (node.attr('toc-placement') as String?) != 'preamble') {
+        (node.attr('toc-placement')) != 'macro' &&
+        (node.attr('toc-placement')) != 'preamble') {
       result.add(
         '<div id="toc" class="toc">\n'
         '<div id="toctitle">${_s(node.attr('toc-title'))}</div>\n'
@@ -711,17 +672,16 @@ class Html5Converter extends ConverterBase {
   /// Returns `null` when [node] has no sections. [opts] carries
   /// `toclevels` and `sectnumlevels` overrides (used by the recursive call
   /// and the toc macro).
-  String? convertOutline(AbstractBlock node, [Map<String, Object?>? opts]) {
+  String? convertOutline(AbstractBlock node, [ConvertOptions? opts]) {
     if (!node.hasSections) {
       return null;
     }
-    final sectnumlevels = opts != null && opts['sectnumlevels'] is int
-        ? opts['sectnumlevels']! as int
-        : parseLeadingInt(node.document!.attributes['sectnumlevels'] ?? 3);
-    final optsToclevels = opts?['toclevels'];
-    final toclevels = optsToclevels is int
-        ? optsToclevels
-        : parseLeadingInt(node.document!.attributes['toclevels'] ?? 2);
+    final sectnumlevels =
+        opts?.sectnumlevels ??
+        parseLeadingInt(node.document!.attributes['sectnumlevels'] ?? '3');
+    final toclevels =
+        opts?.toclevels ??
+        parseLeadingInt(node.document!.attributes['toclevels'] ?? '2');
     final sections = node.sections;
     // FIXME top level is incorrect if a multipart book starts with a special
     // section defined at level 0
@@ -732,7 +692,7 @@ class Html5Converter extends ConverterBase {
       final String stitle;
       if (section.caption != null) {
         stitle = section.captionedTitle();
-      } else if (isTruthy(section.numbered) && slevel <= sectnumlevels) {
+      } else if (section.numbered && slevel <= sectnumlevels) {
         if (slevel < 2 && (node.document! as Document).doctype == 'book') {
           final signifierAttrs = node.document!.attributes;
           switch (section.sectname) {
@@ -761,10 +721,10 @@ class Html5Converter extends ConverterBase {
           : stitle;
       final String? childTocLevel;
       if (slevel < toclevels) {
-        childTocLevel = convertOutline(section, <String, Object?>{
-          'toclevels': toclevels,
-          'sectnumlevels': sectnumlevels,
-        });
+        childTocLevel = convertOutline(
+          section,
+          ConvertOptions(toclevels: toclevels, sectnumlevels: sectnumlevels),
+        );
       } else {
         childTocLevel = null;
       }
@@ -790,8 +750,8 @@ class Html5Converter extends ConverterBase {
       var resolvedTitle = '';
       if (node.caption != null) {
         resolvedTitle = node.captionedTitle();
-      } else if (isTruthy(node.numbered) &&
-          level <= parseLeadingInt(docAttrs['sectnumlevels'] ?? 3)) {
+      } else if (node.numbered &&
+          level <= parseLeadingInt(docAttrs['sectnumlevels'] ?? '3')) {
         if (level < 2 && (node.document! as Document).doctype == 'book') {
           switch (node.sectname) {
             case 'chapter':
@@ -821,7 +781,7 @@ class Html5Converter extends ConverterBase {
     if (node.id != null) {
       final id = node.id!;
       idAttr = ' id="$id"';
-      if (isTruthy(docAttrs['sectlinks'])) {
+      if (docAttrs['sectlinks'] != null) {
         if (linkedTitle.startsWith('<a ')) {
           final leading = _leadingAnchorsRx.firstMatch(linkedTitle);
           if (leading != null) {
@@ -835,7 +795,7 @@ class Html5Converter extends ConverterBase {
           linkedTitle = '<a class="link" href="#$id">$linkedTitle</a>';
         }
       }
-      if (isTruthy(docAttrs['sectanchors'])) {
+      if (docAttrs['sectanchors'] != null) {
         // QUESTION should we add a font-based icon in anchor if icons=font?
         if (docAttrs['sectanchors'] == 'after') {
           linkedTitle = '$linkedTitle<a class="anchor" href="#$id"></a>';
@@ -847,7 +807,7 @@ class Html5Converter extends ConverterBase {
       idAttr = '';
     }
     final role = node.role;
-    final roleClass = isTruthy(role) ? ' ${_s(role)}' : '';
+    final roleClass = role != null ? ' ${_s(role)}' : '';
     if (level == 0) {
       return '<h1$idAttr class="sect0$roleClass">$linkedTitle</h1>\n'
           '${_s(node.content())}';
@@ -884,7 +844,7 @@ class Html5Converter extends ConverterBase {
     }
     final role = node.role;
     return '<div$idAttr class="admonitionblock '
-        '$name${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+        '$name${role != null ? ' ${_s(role)}' : ''}">\n'
         '<table>\n'
         '<tr>\n'
         '<td class="icon">\n'
@@ -915,7 +875,7 @@ class Html5Converter extends ConverterBase {
     final timeAnchor = startT != null || endT != null
         ? '#t=${_s(startT)}${endT != null ? ',${_s(endT)}' : ''}'
         : '';
-    final src = node.mediaUri(node.attr('target')! as String);
+    final src = node.mediaUri(node.attr('target')!);
     final controlsAttribute = node.hasOption('nocontrols')
         ? ''
         : _appendBooleanAttribute('controls', xml);
@@ -952,7 +912,7 @@ class Html5Converter extends ConverterBase {
       final fontIcons = node.document!.hasAttr('icons', 'font');
       var num = 0;
       for (final item in node.items) {
-        final listItem = item! as ListItem;
+        final listItem = item;
         num += 1;
         final String numLabel;
         if (fontIcons) {
@@ -973,7 +933,7 @@ class Html5Converter extends ConverterBase {
     } else {
       result.add('<ol>');
       for (final item in node.items) {
-        final listItem = item! as ListItem;
+        final listItem = item;
         result.add(
           '<li>\n'
           '<p>${_s(listItem.text)}</p>${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}\n'
@@ -1017,13 +977,10 @@ class Html5Converter extends ConverterBase {
     switch (node.style) {
       case 'qanda':
         result.add('<ol>');
-        for (final pair in node.items) {
-          final parts = pair! as List<Object?>;
-          final terms = parts[0]! as List<Object?>;
-          final dd = parts[1] as ListItem?;
+        for (final DlistEntry(:terms, description: dd) in node.entries) {
           result.add('<li>');
           for (final term in terms) {
-            result.add('<p><em>${_s((term! as ListItem).text)}</em></p>');
+            result.add('<p><em>${_s(term.text)}</em></p>');
           }
           if (dd != null) {
             if (dd.hasText) {
@@ -1043,21 +1000,18 @@ class Html5Converter extends ConverterBase {
           result.add('<colgroup>');
           final labelWidth = node.hasAttr('labelwidth')
               ? ' style="width: '
-                    '${_chompPercent(node.attr('labelwidth')! as String)}%;"'
+                    '${_chompPercent(node.attr('labelwidth')!)}%;"'
               : '';
           result.add('<col$labelWidth$slash>');
           final itemWidth = node.hasAttr('itemwidth')
               ? ' style="width: '
-                    '${_chompPercent(node.attr('itemwidth')! as String)}%;"'
+                    '${_chompPercent(node.attr('itemwidth')!)}%;"'
               : '';
           result
             ..add('<col$itemWidth$slash>')
             ..add('</colgroup>');
         }
-        for (final pair in node.items) {
-          final parts = pair! as List<Object?>;
-          final terms = parts[0]! as List<Object?>;
-          final dd = parts[1] as ListItem?;
+        for (final DlistEntry(:terms, description: dd) in node.entries) {
           result
             ..add('<tr>')
             ..add(
@@ -1069,7 +1023,7 @@ class Html5Converter extends ConverterBase {
             if (!firstTerm) {
               result.add('<br$slash>');
             }
-            result.add(_s((term! as ListItem).text));
+            result.add(_s(term.text));
             firstTerm = false;
           }
           result
@@ -1091,14 +1045,9 @@ class Html5Converter extends ConverterBase {
       default:
         result.add('<dl>');
         final dtStyleAttribute = node.style != null ? '' : ' class="hdlist1"';
-        for (final pair in node.items) {
-          final parts = pair! as List<Object?>;
-          final terms = parts[0]! as List<Object?>;
-          final dd = parts[1] as ListItem?;
+        for (final DlistEntry(:terms, description: dd) in node.entries) {
           for (final term in terms) {
-            result.add(
-              '<dt$dtStyleAttribute>${_s((term! as ListItem).text)}</dt>',
-            );
+            result.add('<dt$dtStyleAttribute>${_s(term.text)}</dt>');
           }
           if (dd == null) {
             continue;
@@ -1142,7 +1091,7 @@ class Html5Converter extends ConverterBase {
         : '';
     final role = node.role;
     return '<div$idAttribute '
-        'class="exampleblock${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+        'class="exampleblock${role != null ? ' ${_s(role)}' : ''}">\n'
         '$titleElement<div class="content">\n'
         '${_s(node.content())}\n'
         '</div>\n'
@@ -1165,7 +1114,7 @@ class Html5Converter extends ConverterBase {
 
   /// Converts the [node] image block.
   String convertImage(Block node) {
-    final target = node.attr('target')! as String;
+    final target = node.attr('target')!;
     final widthAttr = node.hasAttr('width')
         ? ' width="${_s(node.attr('width'))}"'
         : '';
@@ -1184,7 +1133,7 @@ class Html5Converter extends ConverterBase {
             '<span class="alt">${_s(node.alt)}</span>';
       } else if (node.hasOption('interactive')) {
         final fallback = node.hasAttr('fallback')
-            ? imgTag(node.imageUri(node.attr('fallback')! as String))
+            ? imgTag(node.imageUri(node.attr('fallback')!))
             : '<span class="alt">${_s(node.alt)}</span>';
         img =
             '<object type="image/svg+xml" data="${node.imageUri(target)}"'
@@ -1230,29 +1179,25 @@ class Html5Converter extends ConverterBase {
     final nowrap =
         node.hasOption('nowrap') || !node.document!.hasAttr('prewrap');
     final String? lang;
-    final NodeSyntaxHighlighter? syntaxHl;
-    final Map<String, Object?> hlOpts;
+    final SyntaxHighlighterBase? syntaxHl;
+    var hlOpts = const FormatOptions();
     var preOpen = '';
     var preClose = '';
     if (node.style == 'source') {
-      lang = node.attr('language') as String?;
-      final syntaxHlValue = (node.document! as Document).syntaxHighlighter;
-      if (isTruthy(syntaxHlValue)) {
-        syntaxHl = syntaxHlValue! as NodeSyntaxHighlighter;
+      lang = node.attr('language');
+      syntaxHl = (node.document! as Document).syntaxHighlighter;
+      if (syntaxHl != null) {
         final docAttrs = node.document!.attributes;
-        if (syntaxHl.canHighlight) {
-          hlOpts = <String, Object?>{
-            'css_mode': (docAttrs['${syntaxHl.name}-css'] ?? 'class')
-                .toString(),
-            'style': docAttrs['${syntaxHl.name}-style'],
-          };
-        } else {
-          hlOpts = <String, Object?>{};
-        }
-        hlOpts['nowrap'] = nowrap;
+        hlOpts = syntaxHl.canHighlight
+            ? FormatOptions(
+                nowrap: nowrap,
+                cssMode: CssMode.fromAttribute(
+                  docAttrs['${syntaxHl.name}-css'],
+                ),
+                style: docAttrs['${syntaxHl.name}-style'],
+              )
+            : FormatOptions(nowrap: nowrap);
       } else {
-        syntaxHl = null;
-        hlOpts = <String, Object?>{};
         final nowrapClass = nowrap ? ' nowrap' : '';
         final langAttributes = lang != null
             ? ' class="language-$lang" data-lang="$lang"'
@@ -1263,7 +1208,6 @@ class Html5Converter extends ConverterBase {
     } else {
       lang = null;
       syntaxHl = null;
-      hlOpts = <String, Object?>{};
       preOpen = '<pre${nowrap ? ' class="nowrap"' : ''}>';
       preClose = '</pre>';
     }
@@ -1276,7 +1220,7 @@ class Html5Converter extends ConverterBase {
         ? syntaxHl.format(node, lang, hlOpts)
         : '$preOpen${_s(node.content())}$preClose';
     return '<div$idAttribute '
-        'class="listingblock${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+        'class="listingblock${role != null ? ' ${_s(role)}' : ''}">\n'
         '$titleElement<div class="content">\n'
         '$body\n'
         '</div>\n'
@@ -1293,7 +1237,7 @@ class Html5Converter extends ConverterBase {
         !node.document!.hasAttr('prewrap') || node.hasOption('nowrap');
     final role = node.role;
     return '<div$idAttribute '
-        'class="literalblock${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+        'class="literalblock${role != null ? ' ${_s(role)}' : ''}">\n'
         '$titleElement<div class="content">\n'
         '<pre${nowrap ? ' class="nowrap"' : ''}>${_s(node.content())}</pre>\n'
         '</div>\n'
@@ -1332,7 +1276,7 @@ class Html5Converter extends ConverterBase {
     }
     final role = node.role;
     return '<div$idAttribute '
-        'class="stemblock${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+        'class="stemblock${role != null ? ' ${_s(role)}' : ''}">\n'
         '$titleElement<div class="content">\n'
         '$equation\n'
         '</div>\n'
@@ -1369,7 +1313,7 @@ class Html5Converter extends ConverterBase {
     );
 
     for (final item in node.items) {
-      final listItem = item! as ListItem;
+      final listItem = item;
       result
         ..add(_listItemOpenTag(listItem))
         ..add('<p>${_s(listItem.text)}</p>');
@@ -1403,7 +1347,7 @@ class Html5Converter extends ConverterBase {
           : '';
       final role = node.role;
       return '<div$idAttr class="quoteblock '
-          'abstract${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+          'abstract${role != null ? ' ${_s(role)}' : ''}">\n'
           '$titleEl<blockquote>\n'
           '${_s(node.content())}\n'
           '</blockquote>\n'
@@ -1425,7 +1369,7 @@ class Html5Converter extends ConverterBase {
         : '';
     final role = node.role;
     final styleClass = style != null && style != 'open' ? ' $style' : '';
-    final roleClass = isTruthy(role) ? ' ${_s(role)}' : '';
+    final roleClass = role != null ? ' ${_s(role)}' : '';
     return '<div$idAttr class="openblock$styleClass$roleClass">\n'
         '$titleEl<div class="content">\n'
         '${_s(node.content())}\n'
@@ -1512,7 +1456,7 @@ class Html5Converter extends ConverterBase {
         : '';
     final role = node.role;
     return '<div$idAttribute '
-        'class="sidebarblock${isTruthy(role) ? ' ${_s(role)}' : ''}">\n'
+        'class="sidebarblock${role != null ? ' ${_s(role)}' : ''}">\n'
         '<div class="content">\n'
         '$titleElement${_s(node.content())}\n'
         '</div>\n'
@@ -1533,7 +1477,7 @@ class Html5Converter extends ConverterBase {
       'grid-${_s(node.attr('grid', 'all', 'table-grid'))}',
     ];
     final stripes = node.attr('stripes', null, 'table-stripes');
-    if (isTruthy(stripes)) {
+    if (stripes != null) {
       classes.add('stripes-${_s(stripes)}');
     }
     var styleAttribute = '';
@@ -1541,7 +1485,7 @@ class Html5Converter extends ConverterBase {
     final tablewidth = node.attr('tablepcwidth');
     if (autowidth) {
       classes.add('fit-content');
-    } else if (tablewidth == 100) {
+    } else if (tablewidth == '100') {
       classes.add('stretch');
     } else {
       styleAttribute = ' style="width: ${_s(tablewidth)}%;"';
@@ -1550,7 +1494,7 @@ class Html5Converter extends ConverterBase {
       classes.add(_s(node.attr('float')));
     }
     final role = node.role;
-    if (isTruthy(role)) {
+    if (role != null) {
       classes.add(_s(role));
     }
     final classAttribute = ' class="${classes.join(' ')}"';
@@ -1559,7 +1503,7 @@ class Html5Converter extends ConverterBase {
     if (node.hasTitle) {
       result.add('<caption class="title">${node.captionedTitle()}</caption>');
     }
-    if ((node.attr('rowcount')! as int) > 0) {
+    if (node.rowcount > 0) {
       final slash = _voidElementSlash;
       result.add('<colgroup>');
       if (autowidth) {
@@ -1598,10 +1542,10 @@ class Html5Converter extends ConverterBase {
                   cellContent =
                       '<div class="literal"><pre>${_s(cell.text)}</pre></div>';
                 default:
-                  final content = cell.content()! as List<Object?>;
-                  cellContent = content.isEmpty
+                  final paragraphs = cell.paragraphs;
+                  cellContent = paragraphs.isEmpty
                       ? ''
-                      : '<p class="tableblock">${content.map(_s).join('</p>\n<p class="tableblock">')}</p>';
+                      : '<p class="tableblock">${paragraphs.join('</p>\n<p class="tableblock">')}</p>';
               }
             }
 
@@ -1611,11 +1555,11 @@ class Html5Converter extends ConverterBase {
             final cellClassAttribute =
                 ' class="tableblock halign-${_s(cell.attr('halign'))} '
                 'valign-${_s(cell.attr('valign'))}"';
-            final cellColspanAttribute = isTruthy(cell.colspan)
-                ? ' colspan="${_s(cell.colspan)}"'
+            final cellColspanAttribute = cell.colspan != null
+                ? ' colspan="${cell.colspan}"'
                 : '';
-            final cellRowspanAttribute = isTruthy(cell.rowspan)
-                ? ' rowspan="${_s(cell.rowspan)}"'
+            final cellRowspanAttribute = cell.rowspan != null
+                ? ' rowspan="${cell.rowspan}"'
                 : '';
             final document = node.document! as Document;
             final cellStyleAttribute = document.hasAttr('cellbgcolor')
@@ -1666,7 +1610,7 @@ class Html5Converter extends ConverterBase {
     final outline = (doc.converter as Converter).convert(
       doc,
       'outline',
-      <String, Object?>{'toclevels': levels},
+      ConvertOptions(toclevels: levels),
     );
     return '<div$idAttr class="$role">\n'
         '<div$titleIdAttr class="title">$title</div>\n'
@@ -1718,7 +1662,7 @@ class Html5Converter extends ConverterBase {
     result.add('<ul$ulClassAttribute>');
 
     for (final item in node.items) {
-      final listItem = item! as ListItem;
+      final listItem = item;
       result.add(_listItemOpenTag(listItem));
       if (checklist && listItem.hasAttr('checkbox')) {
         result.add(
@@ -1783,9 +1727,10 @@ class Html5Converter extends ConverterBase {
         : '';
     switch (node.attr('poster')) {
       case 'vimeo':
-        var assetUriScheme =
-            (node.document! as Document).attr('asset-uri-scheme', 'https')!
-                as String;
+        var assetUriScheme = (node.document! as Document).attr(
+          'asset-uri-scheme',
+          'https',
+        )!;
         if (assetUriScheme.isNotEmpty) {
           assetUriScheme = '$assetUriScheme:';
         }
@@ -1795,10 +1740,10 @@ class Html5Converter extends ConverterBase {
         final delimiter = <String>['?'];
         String popDelimiter() =>
             delimiter.isNotEmpty ? delimiter.removeLast() : '&amp;';
-        final targetAndHash = _split2(node.attr('target')! as String, '/');
+        final targetAndHash = _split2(node.attr('target')!, '/');
         final target = targetAndHash.$1;
         var hash = targetAndHash.$2;
-        hash ??= node.attr('hash') as String?;
+        hash ??= node.attr('hash');
         final hashParam = hash != null ? '${popDelimiter()}h=$hash' : '';
         final autoplayParam = node.hasOption('autoplay')
             ? '${popDelimiter()}autoplay=1'
@@ -1815,9 +1760,10 @@ class Html5Converter extends ConverterBase {
             '</div>\n'
             '</div>';
       case 'youtube':
-        var assetUriScheme =
-            (node.document! as Document).attr('asset-uri-scheme', 'https')!
-                as String;
+        var assetUriScheme = (node.document! as Document).attr(
+          'asset-uri-scheme',
+          'https',
+        )!;
         if (assetUriScheme.isNotEmpty) {
           assetUriScheme = '$assetUriScheme:';
         }
@@ -1861,9 +1807,9 @@ class Html5Converter extends ConverterBase {
 
         // parse video_id/list_id syntax where list_id (i.e., playlist) is
         // optional
-        final targetAndList = _split2(node.attr('target')! as String, '/');
+        final targetAndList = _split2(node.attr('target')!, '/');
         var target = targetAndList.$1;
-        final list = targetAndList.$2 ?? node.attr('list') as String?;
+        final list = targetAndList.$2 ?? node.attr('list');
         final String listParam;
         if (list != null) {
           listParam = '&amp;list=$list';
@@ -1871,8 +1817,7 @@ class Html5Converter extends ConverterBase {
           // parse dynamic playlist syntax: video_id1,video_id2,...
           final targetAndPlaylist = _split2(target, ',');
           target = targetAndPlaylist.$1;
-          final playlist =
-              targetAndPlaylist.$2 ?? node.attr('playlist') as String?;
+          final playlist = targetAndPlaylist.$2 ?? node.attr('playlist');
           if (playlist != null) {
             // INFO playlist bar doesn't appear in Firefox unless showinfo=1
             // and modestbranding=1
@@ -1890,11 +1835,11 @@ class Html5Converter extends ConverterBase {
             '</div>\n'
             '</div>';
       default:
-        final posterVal = node.attr('poster') as String?;
+        final posterVal = node.attr('poster');
         final posterAttribute = posterVal == null || posterVal.isEmpty
             ? ''
             : ' poster="${node.mediaUri(posterVal)}"';
-        final preloadVal = node.attr('preload') as String?;
+        final preloadVal = node.attr('preload');
         final preloadAttribute = preloadVal == null || preloadVal.isEmpty
             ? ''
             : ' preload="$preloadVal"';
@@ -1903,7 +1848,7 @@ class Html5Converter extends ConverterBase {
         final timeAnchor = startT != null || endT != null
             ? '#t=${_s(startT)}${endT != null ? ',${_s(endT)}' : ''}'
             : '';
-        final src = node.mediaUri(node.attr('target')! as String);
+        final src = node.mediaUri(node.attr('target')!);
         final controlsAttribute = node.hasOption('nocontrols')
             ? ''
             : _appendBooleanAttribute('controls', xml);
@@ -1927,7 +1872,7 @@ class Html5Converter extends ConverterBase {
       case 'xref':
         final path = node.attributes['path'];
         if (path != null) {
-          final initial = isTruthy(node.role)
+          final initial = node.role != null
               ? <String>[' class="${_s(node.role)}"']
               : <String>[];
           final attrs = _appendLinkConstraintAttrs(node, initial).join();
@@ -1937,9 +1882,8 @@ class Html5Converter extends ConverterBase {
         final attrs = node.role != null ? ' class="${_s(node.role)}"' : '';
         var text = node.text;
         if (text == null) {
-          final refs = _refs ??=
-              node.document!.catalog['refs']! as Map<String, Object?>;
-          final refid = node.attributes['refid'] as String?;
+          final refs = _refs ??= node.document!.catalog.refs;
+          final refid = node.attributes['refid'];
           Document? top;
           final ref =
               refs[refid] ??
@@ -1957,7 +1901,7 @@ class Html5Converter extends ConverterBase {
               if (outer) {
                 final resolved = _xreftextOf(
                   ref,
-                  node.attr('xrefstyle', null, true) as String?,
+                  node.attr('xrefstyle', null, 'xrefstyle'),
                 );
                 if (resolved != null) {
                   text = resolved.contains('<a')
@@ -2018,11 +1962,10 @@ class Html5Converter extends ConverterBase {
       final src = node.iconUri('callouts/${_s(node.text)}');
       return '<img src="$src" alt="${_s(node.text)}"$_voidElementSlash>';
     }
-    final guard = node.attributes['guard'];
-    if (guard is List<Object?>) {
+    if (node.xmlCommentGuard) {
       return '&lt;!--<b class="conum">(${_s(node.text)})</b>--&gt;';
     }
-    return '${_s(guard)}<b class="conum">(${_s(node.text)})</b>';
+    return '${_s(node.attributes['guard'])}<b class="conum">(${_s(node.text)})</b>';
   }
 
   /// Converts the [node] inline footnote.
@@ -2079,7 +2022,7 @@ class Html5Converter extends ConverterBase {
             ? ' title="${_s(node.attr('title'))}"'
             : '';
         img = '<i class="$iClassAttrVal"$attrs></i>';
-      } else if (isTruthy(icons)) {
+      } else if (icons != null) {
         final attrs = imgAttrs();
         img = imgTag(node.iconUri(target), attrs);
       } else {
@@ -2095,7 +2038,7 @@ class Html5Converter extends ConverterBase {
               '<span class="alt">${_s(node.alt)}</span>';
         } else if (node.hasOption('interactive')) {
           final fallback = node.hasAttr('fallback')
-              ? imgTag(node.imageUri(node.attr('fallback')! as String), attrs)
+              ? imgTag(node.imageUri(node.attr('fallback')!), attrs)
               : '<span class="alt">${_s(node.alt)}</span>';
           img =
               '<object type="image/svg+xml" '
@@ -2135,11 +2078,9 @@ class Html5Converter extends ConverterBase {
 
   /// Converts the [node] inline keyboard shortcut.
   String convertInlineKbd(Inline node) {
-    final keys = node.attr('keys')! as List<Object?>;
-    if (keys.length == 1) {
-      return '<kbd>${_s(keys[0])}</kbd>';
-    }
-    return '<span class="keyseq"><kbd>${keys.map(_s).join('</kbd>+<kbd>')}</kbd></span>';
+    final keys = node.keys!;
+    if (keys.length == 1) return '<kbd>${keys[0]}</kbd>';
+    return '<span class="keyseq"><kbd>${keys.join('</kbd>+<kbd>')}</kbd></span>';
   }
 
   /// Converts the [node] inline menu reference.
@@ -2149,7 +2090,7 @@ class Html5Converter extends ConverterBase {
         : '&#160;<b class="caret">&#8250;</b> ';
     final submenuJoiner = '</b>$caret<b class="submenu">';
     final menu = _s(node.attr('menu'));
-    final submenus = node.attr('submenus')! as List<Object?>;
+    final submenus = node.submenus!;
     if (submenus.isEmpty) {
       final menuitem = node.attr('menuitem');
       if (menuitem != null) {
@@ -2157,15 +2098,12 @@ class Html5Converter extends ConverterBase {
       }
       return '<b class="menuref">$menu</b>';
     }
-    return '<span class="menuseq"><b class="menu">$menu</b>$caret<b class="submenu">${submenus.map(_s).join(submenuJoiner)}</b>$caret<b class="menuitem">${_s(node.attr('menuitem'))}</b></span>';
+    return '<span class="menuseq"><b class="menu">$menu</b>$caret<b class="submenu">${submenus.join(submenuJoiner)}</b>$caret<b class="menuitem">${_s(node.attr('menuitem'))}</b></span>';
   }
 
   /// Converts the [node] inline quoted text.
   String convertInlineQuoted(Inline node) {
-    final spec = quoteTags[node.type] ?? _defaultQuoteTags;
-    final open = spec[0] as String;
-    final close = spec[1] as String;
-    final tag = spec.length > 2;
+    final (open, close, tag) = quoteTags[node.type] ?? _defaultQuoteTags;
     if (node.id != null) {
       final classAttr = node.role != null ? ' class="${_s(node.role)}"' : '';
       if (tag) {
@@ -2195,7 +2133,7 @@ class Html5Converter extends ConverterBase {
   String? readSvgContents(AbstractNode node, String target) {
     var svg = node.readContents(
       target,
-      start: node.document!.attr('imagesdir') as String?,
+      start: node.document!.attr('imagesdir'),
       normalize: true,
       label: 'SVG',
       warnIfEmpty: true,
@@ -2281,7 +2219,7 @@ class Html5Converter extends ConverterBase {
     final result = attrs ?? <String>[];
     final rel = node.hasOption('nofollow') ? 'nofollow' : null;
     final window = node.attributes['window'];
-    if (isTruthy(window)) {
+    if (window != null) {
       result.add(' target="${_s(window)}"');
       if (_s(window) == '_blank' || node.hasOption('noopener')) {
         result.add(rel != null ? ' rel="$rel noopener"' : ' rel="noopener"');
@@ -2311,11 +2249,11 @@ class Html5Converter extends ConverterBase {
         nextSectionTitle == nextSectionTitle.toUpperCase()) {
       mannameTitle = mannameTitle.toUpperCase();
     }
-    final mannameId = node.attr('manname-id') as String?;
+    final mannameId = node.attr('manname-id');
     final mannameIdAttr = mannameId != null ? ' id="$mannameId"' : '';
     return '<h2$mannameIdAttr>$mannameTitle</h2>\n'
         '<div class="sectionbody">\n'
-        '<p>${(node.attr('mannames')! as List<Object?>).map(_s).join(', ')} - ${_s(node.attr('manpurpose'))}</p>\n'
+        '<p>${(node.mannames ?? const <String>[]).join(', ')} - ${_s(node.attr('manpurpose'))}</p>\n'
         '</div>';
   }
 
@@ -2330,13 +2268,9 @@ class Html5Converter extends ConverterBase {
 
   /// Returns the cross-reference text for [ref], which is either a block
   /// or an inline node (`xreftext` lives on both classes).
-  String? _xreftextOf(Object? ref, String? xrefstyle) {
-    if (ref is AbstractBlock) {
-      return ref.xreftext(xrefstyle);
-    }
-    if (ref is Inline) {
-      return ref.xreftext(xrefstyle);
-    }
-    return null;
-  }
+  String? _xreftextOf(AbstractNode ref, String? xrefstyle) => switch (ref) {
+    AbstractBlock() => ref.xreftext(xrefstyle),
+    Inline() => ref.xreftext(xrefstyle),
+    _ => null,
+  };
 }

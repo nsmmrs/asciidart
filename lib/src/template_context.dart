@@ -13,9 +13,8 @@
 /// Every render receives these keys (`null` when the node has no value, which
 /// renders as empty output in the lenient adapter, see `template.dart`):
 ///
-/// - `content`: Converted content: `AbstractBlock.content()` (usually a String;
-///   a List of items for lists, which templates can iterate as a section), the
-///   text of an [Inline], else `null`.
+/// - `content`: Converted content: `AbstractBlock.content()`, the text of an
+///   [Inline], else `null`.
 /// - `text`: Inline/list-item text (`Inline.text`, `ListItem.text`), else
 ///   `null`.
 /// - `id`: The node id (`AbstractNode.id`).
@@ -42,13 +41,18 @@
 ///   `{{#sections}}{{title}}{{/sections}}` lists them and nesting recurses);
 ///   `null` on other nodes. This is what a custom `outline` template iterates.
 ///
-/// `opts` (the per-call options map) and `helpers` (path-(a) lambdas per
-/// ADR-0002 T4) are merged in as top-level keys; on collision the explicit
-/// call-site values win over the node-derived ones.
+/// The per-call options (`toclevels`, `sectnumlevels`) and `helpers`
+/// (path-(a) lambdas per ADR-0002 T4) are merged in as top-level keys; on
+/// collision the explicit call-site values win over the node-derived ones.
+///
+/// The render context is the boundary with `package:mustache_template`,
+/// which reads untyped maps, lists, strings, booleans and lambdas; it is
+/// the one place where values are `Object?`.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
+import 'package:asciidoctor/src/converter.dart' show ConvertOptions;
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/list.dart';
 import 'package:mustache_template/mustache_template.dart' show LambdaContext;
@@ -68,7 +72,7 @@ typedef TemplateHelper = Object? Function(AbstractNode node);
 Map<String, Object?> buildTemplateContext(
   AbstractNode node, {
   Map<String, TemplateHelper> helpers = const <String, TemplateHelper>{},
-  Map<String, Object?>? opts,
+  ConvertOptions? opts,
 }) {
   final context = <String, Object?>{
     'content': _contentOf(node),
@@ -89,13 +93,15 @@ Map<String, Object?> buildTemplateContext(
   for (final entry in helpers.entries) {
     context[entry.key] = entry.value(node);
   }
-  if (opts != null) context.addAll(opts);
+  if (opts?.toclevels case final toclevels?) context['toclevels'] = toclevels;
+  if (opts?.sectnumlevels case final levels?) {
+    context['sectnumlevels'] = levels;
+  }
   return context;
 }
 
-/// The converted content of [node] (a List of items on lists, a String
-/// elsewhere).
-Object? _contentOf(AbstractNode node) {
+/// The converted content of [node].
+String? _contentOf(AbstractNode node) {
   if (node is AbstractBlock) return node.content();
   if (node is Inline) return node.text;
   return null;
@@ -116,17 +122,9 @@ Object Function(LambdaContext) _attrLambda(AbstractNode node) {
   return (LambdaContext ctx) {
     final spec = ctx.renderString().trim();
     final equals = spec.indexOf('=');
-    final Object? value;
-    if (equals == -1) {
-      value = node.attr(spec, null, true);
-    } else {
-      value = node.attr(
-        spec.substring(0, equals),
-        spec.substring(equals + 1),
-        true,
-      );
-    }
-    return value?.toString() ?? '';
+    if (equals == -1) return node.attr(spec, null, spec) ?? '';
+    final name = spec.substring(0, equals);
+    return node.attr(name, spec.substring(equals + 1), name) ?? '';
   };
 }
 
@@ -138,7 +136,7 @@ Map<String, Object?>? _documentOf(AbstractNode node) {
   final doc = node.document;
   if (doc == null) return null;
   return <String, Object?>{
-    'title': doc.attr('doctitle')?.toString(),
+    'title': doc.attr('doctitle'),
     'attributes': Map<String, Object?>.of(doc.attributes),
   };
 }
@@ -147,16 +145,15 @@ Map<String, Object?>? _documentOf(AbstractNode node) {
 ///
 /// Outline-list items flatten to their own render contexts.
 /// Description-list pairs flatten to `{'terms': [...], 'description': ...}`.
-Object? _itemsOf(AbstractNode node) {
+List<Map<String, Object?>>? _itemsOf(AbstractNode node) {
   if (node is! ListBlock) return null;
   if (node.context == 'dlist') {
     return <Map<String, Object?>>[
-      for (final pair in node.items) _flattenDlistPair(pair! as List<Object?>),
+      for (final entry in node.entries) _flattenDlistEntry(entry),
     ];
   }
-  return <Object?>[
-    for (final item in node.items)
-      if (item is AbstractNode) buildTemplateContext(item) else item.toString(),
+  return <Map<String, Object?>>[
+    for (final item in node.items) buildTemplateContext(item),
   ];
 }
 
@@ -167,28 +164,23 @@ Object? _itemsOf(AbstractNode node) {
 /// custom `outline` template iterates them with `{{#sections}}`. The
 /// recursion always terminates: section nesting is finite and the
 /// flattened children never re-enter their own ancestors.
-Object? _sectionsOf(AbstractNode node) {
+List<Map<String, Object?>>? _sectionsOf(AbstractNode node) {
   if (node is! AbstractBlock) return null;
   if (node.context != 'document' && node.context != 'section') return null;
-  return <Object?>[
+  return <Map<String, Object?>>[
     for (final section in node.sections) buildTemplateContext(section),
   ];
 }
 
-/// Flattens one `[terms, description]` description-list pair.
-Map<String, Object?> _flattenDlistPair(List<Object?> pair) {
-  final terms = pair[0]! as List<Object?>;
-  final description = pair[1];
+/// Flattens one description-list entry.
+Map<String, Object?> _flattenDlistEntry(DlistEntry entry) {
+  final description = entry.description;
   return <String, Object?>{
-    'terms': <Object?>[
-      for (final term in terms)
-        if (term is AbstractNode)
-          buildTemplateContext(term)
-        else
-          term.toString(),
+    'terms': <Map<String, Object?>>[
+      for (final term in entry.terms) buildTemplateContext(term),
     ],
-    'description': description is AbstractNode
-        ? buildTemplateContext(description)
-        : null,
+    'description': description == null
+        ? null
+        : buildTemplateContext(description),
   };
 }

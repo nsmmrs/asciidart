@@ -5,14 +5,10 @@
 /// Node contexts and other symbolic names are `String`s throughout
 /// (`'paragraph'`, `'listing'`, ...).
 ///
-/// Nodes reach their collaborators through small interfaces declared here,
-/// which keep this library free of dependencies on the concrete classes:
-///
-/// * [NodeDocument]: the document API nodes consume, implemented by
-///   `Document`.
-/// * [NodeConverter]: the converter entry point, implemented by `Converter`.
-/// * [NodeLogger]: the logger API, implemented by the loggers in
-///   `logging.dart`.
+/// Nodes reach the document and the converter through two small interfaces
+/// declared here: [NodeDocument], implemented by `Document`, and
+/// [NodeConverter], implemented by `Converter`. Nodes log through
+/// [LoggerManager.logger].
 ///
 /// The substitution methods (`applySubs`, `subQuotes` and friends) delegate
 /// to the top-level functions in `substitutors.dart`, so every node answers
@@ -24,6 +20,7 @@ import 'dart:io' show File, FileSystemException;
 
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/callouts.dart';
+import 'package:asciidoctor/src/document.dart' show Catalog;
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/path_resolver.dart';
@@ -53,67 +50,9 @@ abstract final class SafeMode {
 /// Port of the `convert` method on `Asciidoctor::Converter`; implemented by
 /// `Converter`.
 abstract interface class NodeConverter {
-  /// Converts [node] to the output format.
-  Object? convert(AbstractNode node);
-}
-
-/// The logger API consumed by nodes.
-///
-/// The severity methods nodes log through; implemented by the loggers in
-/// `logging.dart`.
-abstract interface class NodeLogger {
-  /// Logs [message] at debug severity.
-  void debug(Object? message);
-
-  /// Logs [message] at info severity.
-  void info(Object? message);
-
-  /// Logs [message] at warning severity.
-  void warn(Object? message);
-
-  /// Logs [message] at error severity.
-  void error(Object? message);
-
-  /// Logs [message] at fatal severity.
-  void fatal(Object? message);
-}
-
-/// Default [NodeLogger], forwarding to the shared manager logger.
-///
-/// Every node logs through `LoggerManager.logger`, so CLI level selection
-/// (`-v`, `-q`), formatting, and `maxSeverity` (for `--failure-level`) apply
-/// uniformly. The lookup is dynamic so invoker swaps (e.g. [NullLogger] for
-/// `-q`) and `logger:` option replacements take effect. Tests keep replacing
-/// [AbstractNode.currentLogger] wholesale. With the default level (`WARN`)
-/// debug and info messages are dropped.
-final class _StderrNodeLogger implements NodeLogger {
-  /// Creates the default stderr logger.
-  const new();
-
-  @override
-  void debug(Object? message) {
-    LoggerManager.logger.debug(message);
-  }
-
-  @override
-  void info(Object? message) {
-    LoggerManager.logger.info(message);
-  }
-
-  @override
-  void warn(Object? message) {
-    LoggerManager.logger.warn(message);
-  }
-
-  @override
-  void error(Object? message) {
-    LoggerManager.logger.error(message);
-  }
-
-  @override
-  void fatal(Object? message) {
-    LoggerManager.logger.fatal(message);
-  }
+  /// Converts [node] to the output format, or returns `null` when the
+  /// converter produces nothing for it.
+  String? convert(AbstractNode node);
 }
 
 /// The `Document` API surface consumed by nodes.
@@ -123,7 +62,7 @@ final class _StderrNodeLogger implements NodeLogger {
 /// [AbstractNode].
 abstract interface class NodeDocument {
   /// The document-wide attributes.
-  Map<String, Object?> get attributes;
+  Map<String, String> get attributes;
 
   /// The converter used to convert the document.
   NodeConverter get converter;
@@ -140,10 +79,8 @@ abstract interface class NodeDocument {
   /// Whether the document runs in AsciiDoc compatibility mode.
   bool get compatMode;
 
-  /// The document catalog (`'refs'`, `'callouts'`, ...).
-  ///
-  /// Mirrors `Document#catalog`.
-  Map<String, Object?> get catalog;
+  /// The document catalog (references, footnotes, images, callouts, ...).
+  Catalog get catalog;
 
   /// The document callouts catalog.
   ///
@@ -163,24 +100,25 @@ abstract interface class NodeDocument {
   /// Returns the value of document attribute [name], or [defaultValue].
   ///
   /// Mirrors `AbstractNode#attr` as inherited by `Document`.
-  Object? attr(Object name, [Object? defaultValue, Object? fallbackName]);
+  String? attr(String name, [String? defaultValue, String? fallbackName]);
 
   /// Whether document attribute [name] is set, optionally comparing it
   /// against [expectedValue].
   ///
   /// Mirrors `AbstractNode#attr?` as inherited by `Document`.
-  bool hasAttr(Object name, [Object? expectedValue, Object? fallbackName]);
+  bool hasAttr(String name, [String? expectedValue, String? fallbackName]);
 
-  /// Returns the next number in the sequence for the counter [name],
+  /// Returns the next value in the sequence for the counter [name],
   /// seeding it with [seed] when seen for the first time.
-  Object? counter(String name, [Object? seed]);
+  String counter(String name, [String? seed]);
 
   /// Increments the counter [counterName], stores it in [block]'s
   /// attributes, and returns the new value.
-  Object? incrementAndStoreCounter(String counterName, AbstractBlock block);
+  String incrementAndStoreCounter(String counterName, AbstractBlock block);
 
-  /// Replays block-level attribute assignments against the document.
-  void playbackAttributes(Map<String, Object?> blockAttributes);
+  /// Replays the attribute entries recorded on [block] against the
+  /// document.
+  void playbackAttributes(AbstractBlock block);
 }
 
 /// An abstract base class that provides state and methods for managing a
@@ -201,14 +139,14 @@ abstract class AbstractNode {
   new(
     AbstractBlock? parent,
     String context, {
-    Map<String, Object?>? attributes,
+    Map<String, String>? attributes,
     String? nodeName,
   }) : _parent = parent,
        _context = context,
        _nodeName = nodeName ?? context,
        attributes = attributes == null
-           ? <String, Object?>{}
-           : Map<String, Object?>.of(attributes) {
+           ? <String, String>{}
+           : Map<String, String>.of(attributes) {
     if (context == 'document') {
       if (this is! NodeDocument) {
         throw StateError(
@@ -222,20 +160,8 @@ abstract class AbstractNode {
     }
   }
 
-  /// The shared logger used by every node.
-  ///
-  /// Mirrors `LoggerManager.logger` / `LoggerManager#logger=`. Tests
-  /// replace it with a recording logger.
-  static NodeLogger currentLogger = const _StderrNodeLogger();
-
   /// The attributes of this node.
-  final Map<String, Object?> attributes;
-
-  /// Passthrough slots stashed while substitutions run.
-  ///
-  /// Internal: written and cleared by the substitutions. Each entry maps
-  /// `text`, `subs` and optionally `type` / `attributes`.
-  final List<Map<String, Object?>> passthroughs = <Map<String, Object?>>[];
+  final Map<String, String> attributes;
 
   /// The id of this node.
   String? id;
@@ -281,28 +207,24 @@ abstract class AbstractNode {
   /// The document to which this node belongs (`null` while detached).
   NodeDocument? get document => _document;
 
-  /// The shared logger. Mirrors the `logger` method from the `Logging` mixin.
-  NodeLogger get logger => currentLogger;
+  /// The shared logger ([LoggerManager.logger]).
+  LoggerBase get logger => LoggerManager.logger;
 
   /// The converter being used to convert the current document.
   NodeConverter get converter => document!.converter;
 
   /// Returns the value of attribute [name] on this node.
   ///
-  /// If the attribute is not found on this node, [fallbackName] is set and
-  /// this node is not the document node, returns the value of that
-  /// attribute (or [name] when [fallbackName] is `true`) from the document
-  /// node instead. Otherwise returns [defaultValue]. A stored value of
-  /// `null` or `false` counts as "not found".
-  Object? attr(Object name, [Object? defaultValue, Object? fallbackName]) {
-    final key = name.toString();
-    final value = attributes[key];
-    if (value != null && value != false) return value;
-    if (fallbackName != null && fallbackName != false && parent != null) {
-      final fallbackKey = (fallbackName == true ? name : fallbackName)
-          .toString();
-      final docValue = document!.attributes[fallbackKey];
-      if (docValue != null && docValue != false) return docValue;
+  /// If the attribute is not found on this node, [fallbackName] is given and
+  /// this node is not the document node, returns the value of the document
+  /// attribute named [fallbackName] instead. Otherwise returns
+  /// [defaultValue].
+  String? attr(String name, [String? defaultValue, String? fallbackName]) {
+    final value = attributes[name];
+    if (value != null) return value;
+    if (fallbackName != null && parent != null) {
+      final docValue = document!.attributes[fallbackName];
+      if (docValue != null) return docValue;
     }
     return defaultValue;
   }
@@ -310,25 +232,18 @@ abstract class AbstractNode {
   /// Whether attribute [name] is defined, using the same lookup logic as
   /// [attr], optionally comparing against [expectedValue].
   ///
-  /// If [expectedValue] is truthy, returns whether the resolved value equals
-  /// it; otherwise returns whether the attribute was found. A [fallbackName]
-  /// of `true` falls back to [name] on the document.
-  bool hasAttr(Object name, [Object? expectedValue, Object? fallbackName]) {
-    final key = name.toString();
-    final useFallback =
-        fallbackName != null && fallbackName != false && parent != null;
-    final fallbackKey = useFallback
-        ? (fallbackName == true ? name : fallbackName).toString()
-        : null;
-    if (expectedValue != null && expectedValue != false) {
-      var value = attributes[key];
-      if (value == null || value == false) {
-        value = useFallback ? document!.attributes[fallbackKey!] : null;
-      }
+  /// If [expectedValue] is given, returns whether the resolved value equals
+  /// it; otherwise returns whether the attribute was found.
+  bool hasAttr(String name, [String? expectedValue, String? fallbackName]) {
+    final useFallback = fallbackName != null && parent != null;
+    if (expectedValue != null) {
+      final value =
+          attributes[name] ??
+          (useFallback ? document!.attributes[fallbackName] : null);
       return expectedValue == value;
     }
-    if (attributes.containsKey(key)) return true;
-    if (useFallback) return document!.attributes.containsKey(fallbackKey);
+    if (attributes.containsKey(name)) return true;
+    if (useFallback) return document!.attributes.containsKey(fallbackName);
     return false;
   }
 
@@ -336,7 +251,7 @@ abstract class AbstractNode {
   ///
   /// Returns whether the assignment was performed (`false` only when
   /// [overwrite] is `false` and the attribute already exists).
-  bool setAttr(String name, Object? value, {bool overwrite = true}) {
+  bool setAttr(String name, String value, {bool overwrite = true}) {
     if (!overwrite && attributes.containsKey(name)) return false;
     attributes[name] = value;
     return true;
@@ -345,18 +260,15 @@ abstract class AbstractNode {
   /// Removes attribute [name] from this node.
   ///
   /// Returns the previous value, or `null` if the attribute was absent.
-  Object? removeAttr(String name) => attributes.remove(name);
+  String? removeAttr(String name) => attributes.remove(name);
 
   /// Whether the option [name] is enabled on this node.
   ///
   /// An option is enabled when the `<name>-option` attribute is defined.
-  bool hasOption(Object name) {
-    final value = attributes['$name-option'];
-    return value != null && value != false;
-  }
+  bool hasOption(String name) => attributes.containsKey('$name-option');
 
   /// Enables the option [name] on this node.
-  void setOption(Object name) {
+  void setOption(String name) {
     attributes['$name-option'] = '';
   }
 
@@ -374,47 +286,51 @@ abstract class AbstractNode {
   /// Updates the attributes of this node with [newAttributes].
   ///
   /// Returns the updated attributes of this node.
-  Map<String, Object?> updateAttributes(Map<String, Object?> newAttributes) {
+  Map<String, String> updateAttributes(Map<String, String> newAttributes) {
     attributes.addAll(newAttributes);
     return attributes;
   }
 
   /// The space-separated role of this node.
-  Object? get role => attributes['role'];
+  String? get role => attributes['role'];
+
+  /// Sets the role attribute on this node (a single role name or a
+  /// space-separated list of role names); `null` removes it.
+  set role(String? names) {
+    if (names == null) {
+      attributes.remove('role');
+    } else {
+      attributes['role'] = names;
+    }
+  }
+
+  /// Sets the role attribute on this node from a list of role [names].
+  void setRoles(List<String> names) {
+    attributes['role'] = names.join(' ');
+  }
 
   /// The role names of this node.
   ///
   /// Empty when the `role` attribute is absent on this node.
   List<String> get roles {
     final value = attributes['role'];
-    if (value is! String) return <String>[];
+    if (value == null) return <String>[];
     return _splitOnBlank(value);
   }
 
   /// Whether the role attribute is set on this node and, when
   /// [expectedValue] is given, whether it equals that value.
-  bool hasRole([Object? expectedValue]) {
-    if (expectedValue == null || expectedValue == false) {
-      return attributes.containsKey('role');
-    }
+  bool hasRole([String? expectedValue]) {
+    if (expectedValue == null) return attributes.containsKey('role');
     return expectedValue == attributes['role'];
   }
 
   /// Whether [name] is one of the roles of this node.
   bool includesRole(String name) {
     final value = attributes['role'];
-    if (value == null || value == false) return false;
+    if (value == null) return false;
     // NOTE center + contains is faster than split + contains.
     return ' $value '.contains(' $name ');
-  }
-
-  /// Sets the role attribute on this node.
-  ///
-  /// Accepts a single role name, a space-separated string of role names, or
-  /// a (possibly nested) list of role names, which is flattened and joined
-  /// with spaces.
-  set role(Object? names) {
-    attributes['role'] = names is List<Object?> ? _joinAll(names) : names;
   }
 
   /// Adds the role [name] to this node.
@@ -422,7 +338,7 @@ abstract class AbstractNode {
   /// Returns whether the role was added (`false` when already present).
   bool addRole(String name) {
     final value = attributes['role'];
-    if (value == null || value == false) {
+    if (value == null) {
       attributes['role'] = name;
       return true;
     }
@@ -437,8 +353,8 @@ abstract class AbstractNode {
   /// Returns whether the role was removed.
   bool removeRole(String name) {
     final value = attributes['role'];
-    if (value == null || value == false) return false;
-    final parts = _splitOnBlank(value as String);
+    if (value == null) return false;
+    final parts = _splitOnBlank(value);
     if (!parts.remove(name)) return false;
     if (parts.isEmpty) {
       attributes.remove('role');
@@ -451,8 +367,8 @@ abstract class AbstractNode {
   /// The value of the `reftext` attribute with substitutions applied.
   String? get reftext {
     final value = attributes['reftext'];
-    if (value == null || value == false) return null;
-    return applyReftextSubs(value as String) as String?;
+    if (value == null) return null;
+    return applyReftextSubs(value);
   }
 
   /// Whether the `reftext` attribute is defined on this node.
@@ -487,24 +403,6 @@ abstract class AbstractNode {
     return parts;
   }
 
-  /// Joins [items] with spaces, flattening nested lists and mapping `null`
-  /// to the empty string.
-  static String _joinAll(List<Object?> items) {
-    final flat = <String>[];
-    void collect(Object? item) {
-      if (item is List<Object?>) {
-        item.forEach(collect);
-      } else if (item != null) {
-        flat.add('$item');
-      } else {
-        flat.add('');
-      }
-    }
-
-    items.forEach(collect);
-    return flat.join(' ');
-  }
-
   /// Returns a reference or data URI to an icon image for [name].
   ///
   /// If the `icon` attribute is set on this node, its value is used as the
@@ -514,7 +412,7 @@ abstract class AbstractNode {
   String iconUri(String name) {
     final String icon;
     if (hasAttr('icon')) {
-      var custom = attr('icon')! as String;
+      var custom = attr('icon')!;
       // QUESTION should we be adding the extension if the icon is an
       // absolute URI?
       if (!Helpers.hasExtname(custom)) {
@@ -539,16 +437,14 @@ abstract class AbstractNode {
     if (doc.safe >= SafeMode.secure || !doc.hasAttr('data-uri')) {
       return normalizeWebPath(
         targetImage,
-        start: assetDirKey == null
-            ? null
-            : _stringOrNull(doc.attr(assetDirKey)),
+        start: assetDirKey == null ? null : doc.attr(assetDirKey),
       );
     }
     String? uriTarget;
     if (Helpers.isUriish(targetImage)) {
       uriTarget = Helpers.encodeSpacesInUri(targetImage);
     } else if (assetDirKey != null) {
-      final imagesBase = _stringOrNull(doc.attr(assetDirKey));
+      final imagesBase = doc.attr(assetDirKey);
       if (imagesBase != null && Helpers.isUriish(imagesBase)) {
         uriTarget = normalizeWebPath(
           targetImage,
@@ -577,17 +473,9 @@ abstract class AbstractNode {
   String mediaUri(String media, [String? assetDirKey = 'imagesdir']) {
     return normalizeWebPath(
       media,
-      start: assetDirKey == null
-          ? null
-          : _stringOrNull(document!.attr(assetDirKey)),
+      start: assetDirKey == null ? null : document!.attr(assetDirKey),
     );
   }
-
-  /// Returns [value] when it is a string, otherwise `null`.
-  ///
-  /// Directory attributes resolve to strings; a `false` (or otherwise
-  /// non-string) value is treated as absent.
-  static String? _stringOrNull(Object? value) => value is String ? value : null;
 
   /// Returns a data URI embedding the image at [targetImage].
   ///
@@ -606,7 +494,7 @@ abstract class AbstractNode {
         ? normalizeSystemPath(targetImage)
         : normalizeSystemPath(
             targetImage,
-            start: _stringOrNull(document!.attr(assetDirKey)),
+            start: document!.attr(assetDirKey),
             targetName: 'image',
           );
 
@@ -767,7 +655,7 @@ abstract class AbstractNode {
     if (warnOnFailure) {
       final docfile = attr('docfile');
       logger.warn(
-        '${docfile == null || docfile == false ? '<stdin>' : docfile}: '
+        '${docfile ?? '<stdin>'}: '
         '${label ?? 'file'} does not exist or cannot be read: $path',
       );
     }
@@ -785,7 +673,7 @@ abstract class AbstractNode {
   /// [warnIfEmpty] warns when the contents are empty.
   ///
   /// Returns the contents, or `null` when the target cannot be read.
-  // TODOrefactor other methods in this class to use this method were
+  // TODO refactor other methods in this class to use this method were
   // possible (repurposing if necessary)
   String? readContents(
     String target, {
@@ -849,27 +737,32 @@ abstract class AbstractNode {
   }
 
   /// Applies the substitutions [subs] (the normal substitutions by
-  /// default; `null` applies none) to [source].
+  /// default; `null` applies none) to [text].
   ///
-  /// [source] is a [String] or a [List] of lines (the verbatim path passes
-  /// lines and gets lines back).
   /// Delegates to `substitutors.applySubs` with this node.
-  Object? applySubs(
-    Object? source, [
+  String applySubs(
+    String text, [
     List<String>? subs = substitutors.normalSubs,
-  ]) => substitutors.applySubs(this, source, subs);
+  ]) => substitutors.applySubs(this, text, subs);
+
+  /// Applies the substitutions [subs] to [lines] as one multi-line text,
+  /// returning the result split back into lines.
+  ///
+  /// Delegates to `substitutors.applySubsToLines` with this node.
+  List<String> applySubsToLines(
+    List<String> lines, [
+    List<String>? subs = substitutors.normalSubs,
+  ]) => substitutors.applySubsToLines(this, lines, subs);
 
   /// Applies title substitutions to [text].
   ///
-  /// Uses the normal substitutions.
   /// Delegates to `substitutors.applyTitleSubs` with this node.
-  Object? applyTitleSubs(Object? text) =>
-      substitutors.applyTitleSubs(this, text);
+  String applyTitleSubs(String text) => substitutors.applyTitleSubs(this, text);
 
   /// Applies reference-text substitutions to [text].
   ///
   /// Delegates to `substitutors.applyReftextSubs` with this node.
-  Object? applyReftextSubs(String text) =>
+  String applyReftextSubs(String text) =>
       substitutors.applyReftextSubs(this, text);
 
   /// Replaces XML special characters in [text].
@@ -896,7 +789,7 @@ abstract class AbstractNode {
   ///
   /// Delegates to
   /// `substitutors.subPlaceholder` (pure function).
-  String subPlaceholder(String format, Object? value) =>
+  String subPlaceholder(String format, String value) =>
       substitutors.subPlaceholder(format, value);
 
   /// Resolves and assigns the substitutions for this block.
@@ -904,5 +797,5 @@ abstract class AbstractNode {
   /// Only meaningful on blocks (mirrors `Substitutors#commit_subs`, which
   /// reads the block's content model). Delegates to
   /// `substitutors.commitSubs`.
-  List<String>? commitSubs() => substitutors.commitSubs(this as AbstractBlock);
+  void commitSubs() => substitutors.commitSubs(this as AbstractBlock);
 }

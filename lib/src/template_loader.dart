@@ -34,13 +34,10 @@
 ///
 /// ## Template cache
 ///
-/// [TemplateCache] holds the process-lifetime caches:
-/// [TemplateCache.scans] memoizes directory scans (name -> source) and
-/// [TemplateCache.templates] holds parsed templates per file. The
-/// `template_cache` document option selects the store (see
-/// [resolveTemplateCache]): absent or `true` (the default) shares the
-/// process-wide [TemplateCache.shared]; an explicit `false`, `null` or anything
-/// else disables caching; a [TemplateCache] instance is used as a custom store.
+/// [TemplateCache] holds the process-lifetime cache of directory scans
+/// ([TemplateCache.scans], name -> source). The `templateCache` option
+/// selects the process-wide [TemplateCache.shared] (the default) or no
+/// caching; the `templateCacheStore` option supplies a custom store.
 /// [TemplateCache.clearCaches] ports `TemplateConverter.clear_caches`.
 ///
 /// ## Template engines
@@ -77,11 +74,15 @@ const String _mustacheExtension = '.mustache';
 final class VmTemplateLoader implements TemplateLoader {
   /// Creates a loader scanning [templateDirs] in order.
   ///
-  /// [templateCache] selects the [TemplateCache] store via
-  /// [resolveTemplateCache] (default `true`, the process-shared cache).
-  new({required List<String> templateDirs, Object? templateCache = true})
-    : templateDirs = List.unmodifiable(templateDirs),
-      _cache = resolveTemplateCache(templateCache);
+  /// [templateCacheStore] is the cache to use; otherwise [templateCache]
+  /// selects the process-shared cache (the default) or no caching.
+  new({
+    required List<String> templateDirs,
+    bool templateCache = true,
+    TemplateCache? templateCacheStore,
+  }) : templateDirs = List.unmodifiable(templateDirs),
+       _cache =
+           templateCacheStore ?? (templateCache ? TemplateCache.shared : null);
 
   /// The template directories to scan, in resolution order.
   final List<String> templateDirs;
@@ -197,11 +198,8 @@ bool isRunningOnNode() => detect.isRunningOnNode();
 
 /// Process-lifetime template caches.
 ///
-/// Port of `TemplateConverter.caches` (`{ scans:, templates: }`): [scans]
-/// memoizes directory scans (absolute directory path -> node name ->
-/// source) and [templates] holds parsed templates by absolute file path
-/// (typed `Object?` so the loaders stay independent of the Mustache
-/// adapter).
+/// Port of `TemplateConverter.caches`: [scans] memoizes directory scans
+/// (absolute directory path -> node name -> source).
 final class TemplateCache {
   /// Creates an empty cache (a custom `template_cache` store).
   new();
@@ -209,13 +207,9 @@ final class TemplateCache {
   /// Scan results by absolute directory path.
   final Map<String, Map<String, String>> scans = {};
 
-  /// Parsed templates by absolute file path.
-  final Map<String, Object?> templates = {};
-
-  /// Clears both stores.
+  /// Clears the store.
   void clear() {
     scans.clear();
-    templates.clear();
   }
 
   /// The process-shared cache (the default `template_cache` store).
@@ -225,18 +219,6 @@ final class TemplateCache {
   ///
   /// Port of `TemplateConverter.clear_caches`.
   static void clearCaches() => shared.clear();
-}
-
-/// Resolves the `template_cache` option to a [TemplateCache] store.
-///
-/// Port of the `case opts[:template_cache]` in `TemplateConverter#new`:
-/// `true` (and the option's absent default, resolved by the caller to
-/// `true`) selects [TemplateCache.shared]; a [TemplateCache] is used as a
-/// custom store; anything else (`false`, `null`, ...) disables caching.
-TemplateCache? resolveTemplateCache(Object? option) {
-  if (option is TemplateCache) return option;
-  if (option == true) return TemplateCache.shared;
-  return null;
 }
 
 /// Template engines with a Dart implementation (ADR-0002 T1).
@@ -255,9 +237,8 @@ const Set<String> supportedTemplateEngines = {'mustache', 'dart'};
 /// library documentation). Called from the converter factory while
 /// `template_dirs` is set — an engine without directories stays inert,
 ///.
-void validateTemplateEngine(Object? engine) {
-  if (engine == null || engine == false) return;
-  if (engine is String && supportedTemplateEngines.contains(engine)) return;
+void validateTemplateEngine(String? engine) {
+  if (engine == null || supportedTemplateEngines.contains(engine)) return;
   throw ArgumentError(
     "asciidoctor: FAILED: required template engine '$engine' is not "
     'available. Processing aborted.',

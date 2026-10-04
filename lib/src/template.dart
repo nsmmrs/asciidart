@@ -173,8 +173,8 @@ class TemplateRegistry {
   /// Registers Dart function [fn] for transform [name] (path (a)).
   ///
   /// Replaces any function previously registered for [name]. The function
-  /// follows [ConvertHandler]: it receives the node and, when `convert` is
-  /// called with a non-`null` options map, that map.
+  /// follows [ConvertHandler]: it receives the node and the per-call
+  /// conversion options, if any.
   void registerFunction(String name, ConvertHandler fn) {
     _functions[name] = fn;
   }
@@ -273,14 +273,14 @@ class TemplateConverter extends ConverterBase {
   Map<String, String> get templates => registry.templates;
 
   @override
-  Object? convert(
+  String? convert(
     AbstractNode node, [
     String? transform,
-    Map<String, Object?>? opts,
+    ConvertOptions? opts,
   ]) {
     transform ??= node.nodeName;
     final fn = registry.lookupFunction(transform);
-    if (fn != null) return opts == null ? fn(node) : fn(node, opts);
+    if (fn != null) return fn(node, opts);
     final template = registry.lookupTemplate(transform);
     if (template == null) {
       throw StateError(
@@ -327,7 +327,7 @@ class TemplateConverter extends ConverterBase {
 /// [opts] become the template converter's constructor options.
 Converter buildTemplateChain(
   String backend,
-  Map<String, Object?> opts,
+  ConverterOptions opts,
   Converter? fallback, {
   required Map<String, String> sources,
 }) {

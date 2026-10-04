@@ -63,9 +63,12 @@ library;
 import 'package:asciidoctor/src/highlight/coderay_tokens.dart';
 import 'package:asciidoctor/src/highlight/string_scanner.dart';
 
+/// A state of the Ruby scanner: a [_SymbolState] or a [_RubyStringState].
+sealed class _ScanState;
+
 /// Symbol states of the Ruby scanner (the `Symbol` side of the original
 /// `state`, as opposed to [_RubyStringState]).
-enum _SymbolState {
+enum _SymbolState implements _ScanState {
   initial,
   defExpected,
   dotExpected,
@@ -75,17 +78,27 @@ enum _SymbolState {
   aliasExpected,
 }
 
-/// Sentinel for the `:colon_expected` value of `value_expected`.
+/// The `value_expected` flag of the scanner.
 ///
 /// The original stores `true`, `false`, `nil`, a `String` (the result of
-/// `check`) or `:colon_expected` in one variable; the port uses `Object?`
-/// with the same values (`null` for `nil`) so every comparison translates
-/// directly.
-const String _colonExpected = 'colon_expected';
+/// `check`) or `:colon_expected` in one variable; `false` and `nil` behave
+/// alike, and a `String` is truthy without being `true`.
+enum _ValueExpected {
+  /// `false` or `nil`.
+  no,
 
-/// Whether a `value_expected` cell counts as truthy (neither `false`
-/// nor `null`).
-bool _valueTruthy(Object? value) => value != null && value != false;
+  /// `true`.
+  yes,
+
+  /// A string matched by `check` (truthy, but not `true`).
+  matched,
+
+  /// `:colon_expected`.
+  colon;
+
+  /// Whether the value counts as truthy.
+  bool get truthy => this != no;
+}
 
 /// First character of a Ruby identifier.
 ///
@@ -536,7 +549,7 @@ enum _HeredocMode {
 /// possessively by hand (the original's atomic `(?>[ \t]*)` is NOT
 /// equivalent to greedy matching for quoted delimiters with leading
 /// spaces, so a regex translation would diverge).
-class _RubyStringState {
+final class _RubyStringState implements _ScanState {
   /// Creates a string state for a token of [type].
   ///
   /// [interpreted] enables escapes and `#{}` interpolation, [delimiter] is
@@ -746,10 +759,10 @@ class _HeredocStop {
 /// spots where Dart needs a different shape for identical behavior.
 void scanRubyTokens(String source, CoderayTokenSink sink) {
   final s = CodeRayStringScanner(source);
-  Object state = _SymbolState.initial;
-  Object? lastState;
+  _ScanState state = _SymbolState.initial;
+  _ScanState? lastState;
   String? methodCallExpected;
-  Object? valueExpected = true;
+  var valueExpected = _ValueExpected.yes;
   List<({_RubyStringState state, int depth, List<_RubyStringState>? heredocs})>?
   inlineStack;
   var inlineCurlyDepth = 0;
@@ -793,7 +806,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           }
         }
         sink.endGroup(current.type);
-        valueExpected = false;
+        valueExpected = _ValueExpected.no;
         state = current.nextState;
       } else if (ch == r'\') {
         if (current.interpreted) {
@@ -821,7 +834,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
             depth: inlineCurlyDepth,
             heredocs: heredocs,
           ));
-          valueExpected = true;
+          valueExpected = _ValueExpected.yes;
           state = _SymbolState.initial;
           inlineCurlyDepth = 1;
           sink
@@ -860,7 +873,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           state = _SymbolState.initial;
         }
         sink.textToken(newline, 'space');
-        valueExpected = true;
+        valueExpected = _ValueExpected.yes;
       }
     } else if (_scanCommentText(s) case final comment?) {
       // ----------------------------------------------------- Comment ---
@@ -883,14 +896,14 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
       if (methodCallExpected == null ? s.scan(_methodNameRe) : null
           case final name?) {
         var kind = _identKind(name);
-        if (valueExpected != _colonExpected &&
+        if (valueExpected != _ValueExpected.colon &&
             s.scan(_colonNotColonRe) != null) {
-          valueExpected = true;
+          valueExpected = _ValueExpected.yes;
           sink
             ..textToken(name, 'key')
             ..textToken(':', 'operator');
         } else {
-          valueExpected = false;
+          valueExpected = _ValueExpected.no;
           if (kind == 'ident') {
             if (_startsUppercase(name) &&
                 !_endsWithBangOrQuestion(name) &&
@@ -900,12 +913,13 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           } else if (kind == 'keyword') {
             state = _keywordNewState[name] ?? _SymbolState.initial;
             if (_keywordsExpectingValue.contains(name)) {
-              valueExpected = name == 'when' ? _colonExpected : true;
+              valueExpected = name == 'when'
+                  ? _ValueExpected.colon
+                  : _ValueExpected.yes;
             }
           }
-          if (!_valueTruthy(valueExpected) &&
-              s.check(_valueFollowsRe) != null) {
-            valueExpected = true;
+          if (!valueExpected.truthy && s.check(_valueFollowsRe) != null) {
+            valueExpected = _ValueExpected.yes;
           }
           sink.textToken(name, kind);
         }
@@ -919,11 +933,15 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           sink.textToken(afterDot, 'ident');
         }
         methodCallExpected = null;
-        valueExpected = s.check(_valueFollowsRe);
+        valueExpected = s.check(_valueFollowsRe) != null
+            ? _ValueExpected.matched
+            : _ValueExpected.no;
       } else if (methodCallExpected == null ? s.scan(_operatorsRe) : null
           case final op?) {
         methodCallExpected = s.capture(1);
-        valueExpected = methodCallExpected == null && s.capture(2) != null;
+        valueExpected = methodCallExpected == null && s.capture(2) != null
+            ? _ValueExpected.yes
+            : _ValueExpected.no;
         if (inlineStack != null) {
           if (op == '{') {
             inlineCurlyDepth++;
@@ -959,7 +977,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           );
         } else {
           sink.textToken(sym, 'symbol');
-          valueExpected = false;
+          valueExpected = _ValueExpected.no;
         }
       } else if (s.scan(_stringsRe) case final str?) {
         if (str.length == 1) {
@@ -974,7 +992,8 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           // Important for streaming: the state carries the quote.
           state = _RubyStringState(kind, str, interpreted: str == '"');
         } else {
-          final isKey = valueExpected == true && s.scan(_colonRe) != null;
+          final isKey =
+              valueExpected == _ValueExpected.yes && s.scan(_colonRe) != null;
           final kind = isKey ? 'key' : 'string';
           sink
             ..beginGroup(kind)
@@ -986,19 +1005,19 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
             ..textToken(str.substring(str.length - 1), 'delimiter')
             ..endGroup(kind);
           if (isKey) sink.textToken(':', 'operator');
-          valueExpected = false;
+          valueExpected = _ValueExpected.no;
         }
       } else if (s.scan(_instanceVariableRe) case final ivar?) {
-        valueExpected = false;
+        valueExpected = _ValueExpected.no;
         sink.textToken(ivar, 'instance_variable');
-      } else if (_valueTruthy(valueExpected) ? s.scan(_slashRe) : null
+      } else if (valueExpected.truthy ? s.scan(_slashRe) : null
           case final slash?) {
         sink
           ..beginGroup('regexp')
           ..textToken(slash, 'delimiter');
         state = _RubyStringState('regexp', '/', interpreted: true);
       } else if (s.scan(
-            _valueTruthy(valueExpected) ? _numericSignedRe : _numericPlainRe,
+            valueExpected.truthy ? _numericSignedRe : _numericPlainRe,
           )
           case var num?) {
         if (methodCallExpected != null) {
@@ -1012,11 +1031,11 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           if (s.scan(_iSuffixRe) != null) num += 'i';
           sink.textToken(num, kind);
         }
-        valueExpected = false;
+        valueExpected = _ValueExpected.no;
       } else if (s.scan(_operators2Re) case final op2?) {
-        valueExpected = true;
+        valueExpected = _ValueExpected.yes;
         sink.textToken(op2, 'operator');
-      } else if (_valueTruthy(valueExpected) ? s.scan(_heredocOpenRe) : null
+      } else if (valueExpected.truthy ? s.scan(_heredocOpenRe) : null
           case final heredoc?) {
         final quote = s.capture(3);
         final delim = quote != null ? s.capture(4)! : s.capture(2)!;
@@ -1036,10 +1055,8 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
                 : _HeredocMode.linestart,
           ),
         );
-        valueExpected = false;
-      } else if (_valueTruthy(valueExpected)
-              ? s.scan(_fancyStringStartRe)
-              : null
+        valueExpected = _ValueExpected.no;
+      } else if (valueExpected.truthy ? s.scan(_fancyStringStartRe) : null
           case final fancy?) {
         final letter = s.capture(1)!;
         final kind = _fancyStringKind[letter] ?? 'string';
@@ -1050,12 +1067,14 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           interpreted: !_fancyStringNotInterpreted.contains(letter),
         );
         sink.textToken(fancy, 'delimiter');
-      } else if (_valueTruthy(valueExpected) ? s.scan(_characterRe) : null
+      } else if (valueExpected.truthy ? s.scan(_characterRe) : null
           case final char?) {
-        valueExpected = false;
+        valueExpected = _ValueExpected.no;
         sink.textToken(char, 'integer');
       } else if (s.scan(_percentRe) case final percent?) {
-        valueExpected = percent == '?' ? _colonExpected : true;
+        valueExpected = percent == '?'
+            ? _ValueExpected.colon
+            : _ValueExpected.yes;
         sink.textToken(percent, 'operator');
       } else if (s.scan(_backtickRe) case final tick?) {
         sink
@@ -1064,10 +1083,10 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         state = _RubyStringState('shell', tick, interpreted: true);
       } else if (s.scan(_globalVariableRe) case final gvar?) {
         sink.textToken(gvar, 'global_variable');
-        valueExpected = false;
+        valueExpected = _ValueExpected.no;
       } else if (s.scan(_classVariableRe) case final cvar?) {
         sink.textToken(cvar, 'class_variable');
-        valueExpected = false;
+        valueExpected = _ValueExpected.no;
       } else if (_scanTrailingBackslash(s)) {
         sink.textToken(s.getch()!, 'space');
       } else {

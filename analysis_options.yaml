@@ -19,3 +19,7 @@ linter:
     # where inserting whitespace would change the output. The rule assumes
     # prose, so it is disabled here once instead of per file.
     missing_whitespace_between_adjacent_strings: false
+    # The upstream source carries its own TODO notes (`# TODO move ...`),
+    # kept verbatim as `// TODO ...` to stay traceable to the original. The
+    # Flutter style (`TODO(username): ...`) would need an owner for each.
+    flutter_style_todos: false

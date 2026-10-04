@@ -12,8 +12,10 @@ export 'src/highlight/highlight.dart'
         SourceLexer;
 export 'src/highlight/syntax_highlighter.dart'
     show
+        FormatOptions,
+        HighlighterOptions,
         SyntaxHighlighter,
         SyntaxHighlighterBase,
+        SyntaxHighlighterDefaultFactoryProxy,
         SyntaxHighlighterFactory,
         SyntaxHighlighterFactoryFn;
-export 'src/html5.dart' show NodeSyntaxHighlighter;

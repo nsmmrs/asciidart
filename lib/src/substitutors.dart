@@ -31,9 +31,6 @@
 ///   reproduces the parser's attribute storing.
 /// * Missed references are always passed to the logger at info level
 ///   ([_logPossibleInvalidReference]); the default logger drops them.
-/// * Attribute lists carry integer positional keys, but [Inline] attributes
-///   only accept strings, so [_stringMap] drops the integer keys when
-///   constructing inline nodes (converters never read them).
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -43,10 +40,8 @@ import 'package:asciidoctor/src/block.dart';
 import 'package:asciidoctor/src/constants.dart';
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/extensions.dart';
 import 'package:asciidoctor/src/helpers.dart';
 import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
 import 'package:asciidoctor/src/inline.dart';
 import 'package:asciidoctor/src/rx.dart';
 
@@ -181,6 +176,35 @@ const String escRSb = r'\]';
 /// A plus sign. Port of `PLUS`.
 const String plus = '+';
 
+/// A passthrough stashed while substitutions run, restored afterwards.
+final class Passthrough {
+  /// Creates a passthrough of [text] with [subs], optionally converted as
+  /// quoted text of [type] with [attributes].
+  const new(this.text, {this.subs, this.type, this.attributes});
+
+  /// The passthrough text.
+  final String text;
+
+  /// The substitutions applied when the text is restored (`null` for
+  /// none).
+  final List<String>? subs;
+
+  /// The quoted text type the restored text is converted as, if any.
+  final String? type;
+
+  /// The attributes of the quoted text, if any.
+  final Map<String, String>? attributes;
+}
+
+/// The passthroughs stashed per node while substitutions run.
+final Expando<List<Passthrough>> _passthroughs = Expando<List<Passthrough>>(
+  'passthroughs',
+);
+
+/// The passthroughs stashed for [node].
+List<Passthrough> _passthroughsOf(AbstractNode node) =>
+    _passthroughs[node] ??= <Passthrough>[];
+
 /// Tracks the passthrough lock per node.
 ///
 /// [AbstractNode] has no field for it, so the lock lives here. Placeholders
@@ -194,12 +218,9 @@ final Expando<bool> _passthroughsLocked = Expando<bool>('passthroughsLocked');
 /// locking, extensions, the syntax highlighter), so every function requires
 /// a real document. Throws a [StateError] for foreign node implementations.
 Document _documentOf(AbstractNode node) {
-  final Object? doc = node is Document ? node : node.document;
+  final doc = node is Document ? node : node.document;
   if (doc is! Document) {
-    throw StateError(
-      'Substitutors require the node to belong to a Document '
-      '(got ${doc.runtimeType}).',
-    );
+    throw StateError('Substitutions require the node to belong to a Document.');
   }
   return doc;
 }
@@ -217,23 +238,6 @@ AbstractBlock _blockOf(AbstractNode node) {
     );
   }
   return parent;
-}
-
-/// Renders [value] for interpolation into output (`null` becomes the empty
-/// string, not `'null'`).
-String _str(Object? value) => value?.toString() ?? '';
-
-/// Drops the non-string (positional integer) keys from [attrs].
-///
-/// Attribute lists carry 1-based integer keys; [Inline] attributes are
-/// `Map<String, Object?>` and converters never read the integer keys.
-Map<String, Object?> _stringMap(Map<Object, Object?> attrs) {
-  final result = <String, Object?>{};
-  for (final entry in attrs.entries) {
-    final key = entry.key;
-    if (key is String) result[key] = entry.value;
-  }
-  return result;
 }
 
 /// Whether [value] ends with any of [suffixes].
@@ -261,15 +265,13 @@ List<String> _splitLimit(String source, String separator, int limit) {
 
 /// Logs a possible invalid reference to [refid] unless it is registered.
 ///
-/// [NodeLogger] exposes no severity gate, so the message is always passed to
-/// the logger on a miss; the default logger drops info messages.
+/// The message is logged at info level, which the default logger drops.
 void _logPossibleInvalidReference(
   AbstractNode node,
   Document doc,
   String refid,
 ) {
-  final refs = doc.catalog['refs'];
-  if (!isTruthy(refs is Map<String, Object?> ? refs[refid] : null)) {
+  if (!doc.catalog.refs.containsKey(refid)) {
     node.logger.info('possible invalid reference: $refid');
   }
 }
@@ -289,57 +291,38 @@ final class _BlockSubsApplier implements SubsApplier {
 
 /// Applies normal substitutions to [value] on behalf of [node].
 String _applySubsString(AbstractNode node, String value) =>
-    applySubs(node, value)! as String;
+    applySubs(node, value);
 
-/// Applies the specified substitutions to the text.
+/// Applies the specified substitutions to [text].
 ///
-/// [text] is the [String] or line [List] to process; it must not be `null`.
 /// [subs] are the substitutions to perform (defaults to [normalSubs]); a
-/// `null` [subs] returns [text] unchanged. Returns a [String] or a
-/// `List<String>` to match the type of [text].
+/// `null` [subs] returns [text] unchanged.
 ///
 /// Port of `Substitutors#apply_subs`.
-Object? applySubs(
+String applySubs(
   AbstractNode node,
-  Object? text, [
+  String text, [
   List<String>? subs = normalSubs,
 ]) {
-  final effectiveSubs = subs ?? normalSubs;
-  final bool isMultiline;
-  String subject;
-  if (text is List<Object?>) {
-    if (text.isEmpty) return text;
-    isMultiline = true;
-    subject = (text.length > 1 && isTruthy(text[1]))
-        ? text.join(lf)
-        : text[0]! as String;
-  } else if (text is String) {
-    if (text.isEmpty) return text;
-    isMultiline = false;
-    subject = text;
-  } else {
-    throw StateError('applySubs: text must be a String or a List');
-  }
-  // NOTE `subs == null` (rather than the defaulted list) returns [text]
-  // unchanged, mirroring `return text if text.empty? || !subs`.
-  if (subs == null) return text;
+  if (text.isEmpty || subs == null) return text;
+  var subject = text;
 
-  List<Map<String, Object?>>? passthrus;
+  List<Passthrough>? passthrus;
   var clearPassthrus = false;
-  if (effectiveSubs.contains('macros')) {
+  if (subs.contains('macros')) {
     subject = extractPassthroughs(node, subject);
-    if (node.passthroughs.isNotEmpty) {
-      passthrus = node.passthroughs;
+    if (_passthroughsOf(node).isNotEmpty) {
+      passthrus = _passthroughsOf(node);
       // NOTE placeholders can move around, so we can only clear in the
       // outermost substitution call
-      if (!isTruthy(_passthroughsLocked[node])) {
+      if (_passthroughsLocked[node] != true) {
         _passthroughsLocked[node] = true;
         clearPassthrus = true;
       }
     }
   }
 
-  for (final type in effectiveSubs) {
+  for (final type in subs) {
     switch (type) {
       case 'specialcharacters':
         subject = subSpecialchars(subject);
@@ -357,10 +340,10 @@ Object? applySubs(
         subject = highlightSource(
           node,
           subject,
-          processCallouts: effectiveSubs.contains('callouts'),
+          processCallouts: subs.contains('callouts'),
         );
       case 'callouts':
-        if (!effectiveSubs.contains('highlight')) {
+        if (!subs.contains('highlight')) {
           subject = subCallouts(node, subject);
         }
       case 'post_replacements':
@@ -378,35 +361,49 @@ Object? applySubs(
     }
   }
 
-  return isMultiline ? subject.split(lf) : subject;
+  return subject;
+}
+
+/// Applies the specified substitutions to [lines] as one text, returning
+/// the result split back into lines (a new list).
+///
+/// Port of `Substitutors#apply_subs` for an array of lines.
+List<String> applySubsToLines(
+  AbstractNode node,
+  List<String> lines, [
+  List<String>? subs = normalSubs,
+]) {
+  if (lines.isEmpty || subs == null) return List<String>.of(lines);
+  final result = applySubs(
+    node,
+    lines.length > 1 ? lines.join(lf) : lines[0],
+    subs,
+  );
+  // An empty result has no lines.
+  return result.isEmpty ? <String>[] : result.split(lf);
 }
 
 /// Applies normal substitutions to [text].
 ///
 /// Port of `Substitutors#apply_normal_subs`.
-Object? applyNormalSubs(AbstractNode node, Object? text) =>
-    applySubs(node, text);
+String applyNormalSubs(AbstractNode node, String text) => applySubs(node, text);
 
 /// Applies header substitutions (for header metadata and attribute
 /// assignments) to [text].
 ///
 /// Port of `Substitutors#apply_header_subs`.
-Object? applyHeaderSubs(AbstractNode node, Object? text) =>
+String applyHeaderSubs(AbstractNode node, String text) =>
     applySubs(node, text, headerSubs);
 
 /// Applies title substitutions to [text].
 ///
 /// Port of `Substitutors#apply_title_subs` (an alias of `apply_subs`).
-Object? applyTitleSubs(
-  AbstractNode node,
-  Object? text, [
-  List<String>? subs = normalSubs,
-]) => applySubs(node, text, subs);
+String applyTitleSubs(AbstractNode node, String text) => applySubs(node, text);
 
 /// Applies reftext substitutions to [text].
 ///
 /// Port of `Substitutors#apply_reftext_subs`.
-Object? applyReftextSubs(AbstractNode node, Object? text) =>
+String applyReftextSubs(AbstractNode node, String text) =>
     applySubs(node, text, reftextSubs);
 
 /// Substitutes special characters (i.e., encodes XML) in [text].
@@ -481,14 +478,14 @@ String convertQuotedText(
         text: match.group(3),
         type: resolvedType,
       );
-      return '$unescapedAttrs${_str(quoted.convert())}';
+      return '$unescapedAttrs${quoted.convert()}';
     }
     final attrlist = match.group(2);
     String? id;
-    Map<String, Object?>? attributes;
+    Map<String, String>? attributes;
     if (attrlist != null) {
       attributes = parseQuotedTextAttributes(node, attrlist);
-      id = attributes['id'] as String?;
+      id = attributes['id'];
       if (resolvedType == 'mark') resolvedType = 'unquoted';
     }
     final quoted = Inline(
@@ -499,26 +496,24 @@ String convertQuotedText(
       id: id,
       attributes: attributes,
     );
-    return '${match.group(1)}${_str(quoted.convert())}';
+    return '${match.group(1)}${quoted.convert()}';
   } else {
     final attrlist = match.group(1);
     String? id;
-    Map<String, Object?>? attributes;
+    Map<String, String>? attributes;
     if (attrlist != null) {
       attributes = parseQuotedTextAttributes(node, attrlist);
-      id = attributes['id'] as String?;
+      id = attributes['id'];
       if (resolvedType == 'mark') resolvedType = 'unquoted';
     }
-    return _str(
-      Inline(
-        block,
-        'quoted',
-        text: match.group(2),
-        type: resolvedType,
-        id: id,
-        attributes: attributes,
-      ).convert(),
-    );
+    return Inline(
+      block,
+      'quoted',
+      text: match.group(2),
+      type: resolvedType,
+      id: id,
+      attributes: attributes,
+    ).convert();
   }
 }
 
@@ -545,11 +540,10 @@ String subAttributes(
   var dropEmptyLine = false;
   String? attributeUndefined;
   String? attributeMissingResolved;
-  String resolveMissing() => attributeMissingResolved ??= _firstTruthy(
-    attributeMissing,
-    docAttrs['attribute-missing'],
-    Compliance.attributeMissing,
-  );
+  String resolveMissing() => attributeMissingResolved ??=
+      attributeMissing ??
+      docAttrs['attribute-missing'] ??
+      Compliance.attributeMissing;
   final result = text.replaceAllMapped(attributeReferenceRx, (match) {
     // escaped attribute, return unescaped
     if (match.group(1) == rs || match.group(4) == rs) {
@@ -567,12 +561,10 @@ String subAttributes(
           ).$2;
           // NOTE since this is an assignment, only drop-line applies here
           // (skip and drop imply the same result)
-          if (isTruthy(value) ||
-              (attributeUndefined ??= _firstTruthy(
-                    docAttrs['attribute-undefined'],
-                    null,
-                    Compliance.attributeUndefined,
-                  )) !=
+          if (value != null ||
+              (attributeUndefined ??=
+                      docAttrs['attribute-undefined'] ??
+                      Compliance.attributeUndefined) !=
                   'drop-line') {
             drop = true;
             dropEmptyLine = true;
@@ -588,10 +580,10 @@ String subAttributes(
           dropEmptyLine = true;
           return del;
         default: // 'counter'
-          return _str(_counterWithArgs(doc, args));
+          return _counterWithArgs(doc, args);
       }
     } else if (docAttrs.containsKey(match.group(2)!.toLowerCase())) {
-      return _str(docAttrs[match.group(2)!.toLowerCase()]);
+      return docAttrs[match.group(2)!.toLowerCase()]!;
     } else if (intrinsicAttributes.containsKey(match.group(2)!.toLowerCase())) {
       return intrinsicAttributes[match.group(2)!.toLowerCase()]!;
     } else {
@@ -651,17 +643,8 @@ String subAttributes(
   }
 }
 
-/// Returns the first truthy option as a string, else [fallback.
-///
-/// Only `null` and `false` count as unset.
-String _firstTruthy(Object? first, Object? second, String fallback) {
-  if (isTruthy(first)) return first.toString();
-  if (isTruthy(second)) return second.toString();
-  return fallback;
-}
-
 /// Runs the document counter with the `{counter:...}` [args].
-Object? _counterWithArgs(Document doc, List<String> args) {
+String _counterWithArgs(Document doc, List<String> args) {
   if (args.length > 2) {
     throw ArgumentError(
       'wrong number of arguments for counter '
@@ -676,14 +659,11 @@ Object? _counterWithArgs(Document doc, List<String> args) {
 
 /// Stores an attribute assignment from a `{set:name:value}` reference.
 ///
-/// Mirrors `Parser.store_attribute` plus the value-substitution half of
-/// `Document#set_attribute`. The latter routes through `Document`'s
-/// private substitutor stubs (which cannot be filled from this library), so
-/// header substitutions are applied here and the value is assigned directly;
-/// backend/doctype remapping and the value-size limit are not replicated.
-/// Returns the (name, value) pair.
-(String, Object?) _storeAttribute(Document doc, String name, Object? value) {
-  // TODOmove processing of attribute value to utility method
+/// Mirrors `Parser.store_attribute` with a document and no block
+/// attributes. Returns the (name, value) pair; the value is `null` for an
+/// unset.
+(String, String?) _storeAttribute(Document doc, String name, String? value) {
+  // TODO move processing of attribute value to utility method
   var attrName = name;
   var attrValue = value;
   if (attrName.endsWith('!')) {
@@ -702,35 +682,28 @@ Object? _counterWithArgs(Document doc, List<String> args) {
   } else if (attrName == 'hardbreaks') {
     attrName = 'hardbreaks-option';
   } else if (attrName == 'showtitle') {
-    _storeAttribute(doc, 'notitle', isTruthy(attrValue) ? null : '');
+    _storeAttribute(doc, 'notitle', attrValue != null ? null : '');
   }
 
-  if (isTruthy(attrValue)) {
-    var strValue = attrValue.toString();
+  if (attrValue != null) {
+    var strValue = attrValue;
     if (attrName == 'leveloffset') {
       // support relative leveloffset values
       if (strValue.startsWith('+')) {
         strValue =
-            (parseLeadingInt(doc.attr('leveloffset', 0)) +
+            (parseLeadingInt(doc.attr('leveloffset', '0')) +
                     parseLeadingInt(strValue.substring(1)))
                 .toString();
       } else if (strValue.startsWith('-')) {
         strValue =
-            (parseLeadingInt(doc.attr('leveloffset', 0)) -
+            (parseLeadingInt(doc.attr('leveloffset', '0')) -
                     parseLeadingInt(strValue.substring(1)))
                 .toString();
       }
     }
     // QUESTION should we set value to locked value if set_attribute
     // returns false?
-    if (!doc.attributeLocked(attrName)) {
-      final resolved = strValue.isEmpty
-          ? strValue
-          : applyHeaderSubs(doc, strValue)! as String;
-      doc.attributes[attrName] = resolved;
-      return (attrName, resolved);
-    }
-    return (attrName, strValue);
+    return (attrName, doc.setAttribute(attrName, strValue) ?? strValue);
   } else {
     doc.deleteAttribute(attrName);
     return (attrName, attrValue);
@@ -814,15 +787,15 @@ String subMacros(AbstractNode node, String text) {
   final block = _blockOf(node);
   var result = text;
 
-  // TODOallow position of substitution to be controlled (before or after
+  // TODO allow position of substitution to be controlled (before or after
   // other macros)
-  // TODOthis handling needs some cleanup
+  // TODO this handling needs some cleanup
   // Port of `Substitutors#sub_macros` (lib/asciidoctor/substitutors.rb:308-349).
   final macroExtensions = doc.extensions;
   if (macroExtensions != null && macroExtensions.hasInlineMacros) {
     for (final extension in macroExtensions.inlineMacros) {
-      final instance = extension.instance as InlineMacroProcessor;
-      final extConfig = extension.config;
+      final instance = extension.instance;
+      final config = instance.config;
       final regexp = instance.regexp;
       final hasNamedGroups = _hasNamedGroups(regexp);
       result = result.replaceAllMapped(regexp, (match) {
@@ -838,13 +811,10 @@ String subMacros(AbstractNode node, String text) {
           target = match.groupCount >= 1 ? match.group(1) : null;
           content = match.groupCount >= 2 ? match.group(2) : null;
         }
-        final defaultAttrs = extConfig['default_attrs'];
-        final attributes = <Object, Object?>{
-          if (defaultAttrs is Map) ...defaultAttrs.cast<Object, Object?>(),
-        };
+        final attributes = <String, String>{...config.defaultAttrs};
         if (content != null) {
           if (content.isEmpty) {
-            if (extConfig['content_model'] != 'attributes') {
+            if (config.contentModel != 'attributes') {
               attributes['text'] = content;
             }
           } else {
@@ -855,15 +825,11 @@ String subMacros(AbstractNode node, String text) {
             );
             // QUESTION should we store the unparsed attrlist in the
             // attrlist key?
-            if (extConfig['content_model'] == 'attributes') {
-              final posattrs =
-                  extConfig['positional_attrs'] ?? extConfig['pos_attrs'];
+            if (config.contentModel == 'attributes') {
               parseAttributes(
                 node,
                 normalized,
-                posattrs: posattrs is List
-                    ? posattrs.map((e) => e?.toString()).toList()
-                    : const <String?>[],
+                posattrs: config.positionalAttrs,
                 into: attributes,
               );
             } else {
@@ -873,37 +839,21 @@ String subMacros(AbstractNode node, String text) {
           }
           // NOTE for convenience, map content (unparsed attrlist) to
           // target when format is short.
-          target ??= extConfig['format'] == 'short' ? content : target;
+          target ??= config.format == 'short' ? content : target;
         }
         // NOTE `target` is null only for custom patterns without a
-        // target capture; like the rest of this port, the process method
-        // requires a non-null target (see `MacroProcessor.process`).
-        final replacement =
-            (extension.processMethod
-                as Object? Function(
-                  AbstractBlock,
-                  String,
-                  Map<Object, Object?>,
-                ))(block, target!, attributes);
-        if (replacement is Inline) {
-          final inlineSubsRaw = replacement.attributes.remove('subs');
-          final inlineSubs = isTruthy(inlineSubsRaw)
-              ? expandSubs(node, inlineSubsRaw, 'custom inline macro')
-              : null;
-          if (inlineSubs != null) {
-            replacement.text =
-                applySubs(node, replacement.text, inlineSubs) as String?;
-          }
-          return _str(replacement.convert());
-        } else if (replacement != null) {
-          node.logger.info(
-            'expected substitution value for custom inline macro to be of '
-            'type Inline; got ${replacement.runtimeType}: $fullMatch',
-          );
-          return replacement.toString();
-        } else {
-          return '';
+        // target capture; the process method requires a target.
+        final replacement = instance.process(block, target!, attributes);
+        if (replacement == null) return '';
+        final inlineSubsSpec = replacement.attributes.remove('subs');
+        final inlineSubs = inlineSubsSpec != null
+            ? expandSubs(node, inlineSubsSpec, 'custom inline macro')
+            : null;
+        final replacementText = replacement.text;
+        if (inlineSubs != null && replacementText != null) {
+          replacement.text = applySubs(node, replacementText, inlineSubs);
         }
+        return replacement.convert();
       });
     }
   }
@@ -952,22 +902,18 @@ String subMacros(AbstractNode node, String text) {
           } else {
             keyList = [keys];
           }
-          return _str(
-            Inline(block, 'kbd', attributes: {'keys': keyList}).convert(),
-          );
+          return Inline(block, 'kbd', keys: keyList).convert();
         } else {
           // match.group(2) == 'btn'
-          return _str(
-            Inline(
-              block,
-              'button',
-              text: normalizeText(
-                match.group(3)!,
-                normalizeWhitespace: true,
-                unescapeClosingSquareBrackets: true,
-              ),
-            ).convert(),
-          );
+          return Inline(
+            block,
+            'button',
+            text: normalizeText(
+              match.group(3)!,
+              normalizeWhitespace: true,
+              unescapeClosingSquareBrackets: true,
+            ),
+          ).convert();
         }
       });
     }
@@ -1012,17 +958,12 @@ String subMacros(AbstractNode node, String text) {
           menuitem = null;
         }
 
-        return _str(
-          Inline(
-            block,
-            'menu',
-            attributes: {
-              'menu': menu,
-              'submenus': submenus,
-              'menuitem': menuitem,
-            },
-          ).convert(),
-        );
+        return Inline(
+          block,
+          'menu',
+          attributes: {'menu': menu, 'menuitem': ?menuitem},
+          submenus: submenus,
+        ).convert();
       });
     }
 
@@ -1039,13 +980,12 @@ String subMacros(AbstractNode node, String text) {
         ).map((item) => item.trim()).toList();
         final menu = parts.removeAt(0);
         final menuitem = parts.removeLast();
-        return _str(
-          Inline(
-            block,
-            'menu',
-            attributes: {'menu': menu, 'submenus': parts, 'menuitem': menuitem},
-          ).convert(),
-        );
+        return Inline(
+          block,
+          'menu',
+          attributes: {'menu': menu, 'menuitem': menuitem},
+          submenus: parts,
+        ).convert();
       });
     }
   }
@@ -1071,26 +1011,26 @@ String subMacros(AbstractNode node, String text) {
         unescapeInput: true,
       );
       if (!isIcon) {
-        doc.register('images', target);
-        attrs['imagesdir'] = docAttrs['imagesdir'];
+        doc.registerImage(target);
+        if (docAttrs['imagesdir'] case final imagesdir?) {
+          attrs['imagesdir'] = imagesdir;
+        }
       }
-      if (!isTruthy(attrs['alt'])) {
+      if (!attrs.containsKey('alt')) {
         final defaultAlt = Helpers.basename(
           target,
-          true,
+          dropExtension: true,
         ).replaceAll(RegExp('[_-]'), ' ');
         attrs['alt'] = defaultAlt;
         attrs['default-alt'] = defaultAlt;
       }
-      return _str(
-        Inline(
-          block,
-          'image',
-          type: type,
-          target: target,
-          attributes: _stringMap(attrs),
-        ).convert(),
-      );
+      return Inline(
+        block,
+        'image',
+        type: type,
+        target: target,
+        attributes: attrs,
+      ).convert();
     });
   }
 
@@ -1114,45 +1054,40 @@ String subMacros(AbstractNode node, String text) {
           normalizeWhitespace: true,
           unescapeClosingSquareBrackets: true,
         );
-        final Map<Object, Object?> attrs;
+        Map<String, String> attrs;
+        List<String> terms;
+        List<String>? seeAlso;
         if (attrlist.contains('=')) {
-          final parsed = AttributeList(
-            attrlist,
-            _BlockSubsApplier(node),
-          ).parse();
-          if (parsed[1] != null) {
-            final primary = parsed[1]!;
-            final terms = <String>[primary];
-            final secondary = parsed[2];
+          attrs = AttributeList(attrlist, _BlockSubsApplier(node)).parse();
+          final primary = attrs['1'];
+          if (primary != null) {
+            terms = <String>[primary];
+            final secondary = attrs['2'];
             if (secondary != null) {
               terms.add(secondary);
-              final tertiary = parsed[3];
-              if (tertiary != null) {
-                terms.add(tertiary);
-              }
+              final tertiary = attrs['3'];
+              if (tertiary != null) terms.add(tertiary);
             }
-            final wide = Map<Object, Object?>.of(parsed);
-            wide['terms'] = terms;
-            final seeAlso = wide['see-also'];
-            if (isTruthy(seeAlso)) {
-              final seeAlsoStr = seeAlso.toString();
-              wide['see-also'] = seeAlsoStr.contains(',')
-                  ? splitDropTrailingEmpty(
-                      seeAlsoStr,
-                      ',',
-                    ).map(trimLeftAscii).toList()
-                  : [seeAlsoStr];
-            }
-            attrs = wide;
+            seeAlso = _seeAlsoList(attrs.remove('see-also'));
           } else {
-            attrs = {'terms': attrlist};
+            // Without a primary term, the whole attrlist is the term and
+            // the terms are its characters, as in Asciidoctor.
+            attrs = <String, String>{};
+            terms = [
+              for (final rune in attrlist.runes) String.fromCharCode(rune),
+            ];
           }
         } else {
-          attrs = {'terms': splitSimpleCsv(attrlist)};
+          attrs = <String, String>{};
+          terms = splitSimpleCsv(attrlist);
         }
-        return _str(
-          Inline(block, 'indexterm', attributes: _stringMap(attrs)).convert(),
-        );
+        return Inline(
+          block,
+          'indexterm',
+          attributes: attrs,
+          terms: terms,
+          seeAlso: seeAlso,
+        ).convert();
       } else if (macro == 'indexterm2') {
         // honor the escape
         if (match.group(0)!.startsWith(rs)) {
@@ -1165,36 +1100,25 @@ String subMacros(AbstractNode node, String text) {
           normalizeWhitespace: true,
           unescapeClosingSquareBrackets: true,
         );
-        Map<Object, Object?>? attrs;
+        Map<String, String>? attrs;
+        List<String>? seeAlso;
         if (term.contains('=')) {
           final parsed = AttributeList(term, _BlockSubsApplier(node)).parse();
-          final first = parsed[1];
-          if (isTruthy(first)) {
-            term = first!;
-            attrs = Map<Object, Object?>.of(parsed);
-            final seeAlso = attrs['see-also'];
-            if (isTruthy(seeAlso)) {
-              final seeAlsoStr = seeAlso.toString();
-              attrs['see-also'] = seeAlsoStr.contains(',')
-                  ? splitDropTrailingEmpty(
-                      seeAlsoStr,
-                      ',',
-                    ).map(trimLeftAscii).toList()
-                  : [seeAlsoStr];
-            }
-          } else {
-            attrs = null;
+          final first = parsed['1'];
+          if (first != null) {
+            term = first;
+            attrs = parsed;
+            seeAlso = _seeAlsoList(parsed.remove('see-also'));
           }
         }
-        return _str(
-          Inline(
-            block,
-            'indexterm',
-            text: term,
-            attributes: attrs == null ? null : _stringMap(attrs),
-            type: 'visible',
-          ).convert(),
-        );
+        return Inline(
+          block,
+          'indexterm',
+          text: term,
+          attributes: attrs,
+          type: 'visible',
+          seeAlso: seeAlso,
+        ).convert();
       } else {
         var enclText = match.group(3)!;
         var visible = false;
@@ -1232,7 +1156,8 @@ String subMacros(AbstractNode node, String text) {
         if (visible) {
           // ((Tigers))
           var term = normalizeText(enclText, normalizeWhitespace: true);
-          Map<String, Object?>? termAttrs;
+          Map<String, String>? termAttrs;
+          List<String>? seeAlso;
           if (term.contains(';&')) {
             if (term.contains(' &gt;&gt; ')) {
               final idx = term.indexOf(' &gt;&gt; ');
@@ -1241,22 +1166,22 @@ String subMacros(AbstractNode node, String text) {
             } else if (term.contains(' &amp;&gt; ')) {
               final parts = splitDropTrailingEmpty(term, ' &amp;&gt; ');
               term = parts.removeAt(0);
-              termAttrs = {'see-also': parts};
+              seeAlso = parts;
             }
           }
-          subbedTerm = _str(
-            Inline(
-              block,
-              'indexterm',
-              text: term,
-              attributes: termAttrs,
-              type: 'visible',
-            ).convert(),
-          );
+          subbedTerm = Inline(
+            block,
+            'indexterm',
+            text: term,
+            attributes: termAttrs,
+            type: 'visible',
+            seeAlso: seeAlso,
+          ).convert();
         } else {
           // (((Tigers,Big cats)))
           var terms = normalizeText(enclText, normalizeWhitespace: true);
-          final attrs = <String, Object?>{};
+          final attrs = <String, String>{};
+          List<String>? seeAlso;
           if (terms.contains(';&')) {
             if (terms.contains(' &gt;&gt; ')) {
               final idx = terms.indexOf(' &gt;&gt; ');
@@ -1265,13 +1190,16 @@ String subMacros(AbstractNode node, String text) {
             } else if (terms.contains(' &amp;&gt; ')) {
               final parts = splitDropTrailingEmpty(terms, ' &amp;&gt; ');
               terms = parts.removeAt(0);
-              attrs['see-also'] = parts;
+              seeAlso = parts;
             }
           }
-          attrs['terms'] = splitSimpleCsv(terms);
-          subbedTerm = _str(
-            Inline(block, 'indexterm', attributes: attrs).convert(),
-          );
+          subbedTerm = Inline(
+            block,
+            'indexterm',
+            attributes: attrs,
+            terms: splitSimpleCsv(terms),
+            seeAlso: seeAlso,
+          ).convert();
         }
         return before != null ? '$before$subbedTerm$after' : subbedTerm;
       }
@@ -1290,6 +1218,15 @@ String subMacros(AbstractNode node, String text) {
   );
 }
 
+/// Splits a `see-also` attribute value into its terms, or returns `null`
+/// when [value] is `null`.
+List<String>? _seeAlsoList(String? value) {
+  if (value == null) return null;
+  return value.contains(',')
+      ? splitDropTrailingEmpty(value, ',').map(trimLeftAscii).toList()
+      : <String>[value];
+}
+
 /// Continues [subMacros] with links, emails, anchors, xrefs and footnotes.
 ///
 /// Split out only to keep function sizes manageable; the steps run in this
@@ -1299,7 +1236,7 @@ String _subMacrosLinks(
   AbstractNode node,
   AbstractBlock block,
   Document doc,
-  Map<String, Object?> docAttrs,
+  Map<String, String> docAttrs,
   bool compat,
   String text,
   bool foundSquareBracket,
@@ -1325,20 +1262,18 @@ String _subMacrosLinks(
         final rest = match.group(6);
         if (rest == null) return match.group(0)!;
         final target = scheme + rest;
-        doc.register('links', target);
+        doc.registerLink(target);
         final linkText = docAttrs.containsKey('hide-uri-scheme')
             ? target.replaceFirst(uriSniffRx, '')
             : target;
-        return _str(
-          Inline(
-            block,
-            'anchor',
-            text: linkText,
-            type: 'link',
-            target: target,
-            attributes: const {'role': 'bare'},
-          ).convert(),
-        );
+        return Inline(
+          block,
+          'anchor',
+          text: linkText,
+          type: 'link',
+          target: target,
+          attributes: const {'role': 'bare'},
+        ).convert();
       } else {
         final scheme = match.group(3)!;
         // honor the escape
@@ -1398,7 +1333,7 @@ String _subMacrosLinks(
         }
 
         String? id;
-        Map<Object, Object?>? attrs;
+        Map<String, String>? attrs;
         var bare = false;
         if (linkText != null) {
           String? newLinkText;
@@ -1413,14 +1348,14 @@ String _subMacrosLinks(
             linkText = extracted.text!;
             newLinkText = linkText;
             attrs = extracted.attributes;
-            id = attrs['id'] as String?;
+            id = attrs['id'];
           }
 
           if (linkText.endsWith('^')) {
             linkText = linkText.substring(0, linkText.length - 1);
             newLinkText = linkText;
             if (attrs != null) {
-              if (!isTruthy(attrs['window'])) attrs['window'] = '_blank';
+              attrs['window'] ??= '_blank';
             } else {
               attrs = {'window': '_blank'};
             }
@@ -1453,7 +1388,7 @@ String _subMacrosLinks(
           }
         }
 
-        doc.register('links', target);
+        doc.registerLink(target);
         final anchor = Inline(
           block,
           'anchor',
@@ -1461,9 +1396,9 @@ String _subMacrosLinks(
           type: 'link',
           target: target,
           id: id,
-          attributes: attrs == null ? null : _stringMap(attrs),
+          attributes: attrs,
         );
-        return '$prefix${_str(anchor.convert())}$suffix';
+        return '$prefix${anchor.convert()}$suffix';
       }
     });
   }
@@ -1484,7 +1419,7 @@ String _subMacrosLinks(
       } else {
         mailtoText = '';
       }
-      Map<Object, Object?>? attrs;
+      Map<String, String>? attrs;
       String? id;
       var linkText = match.group(3)!;
       if (linkText.isNotEmpty) {
@@ -1498,13 +1433,13 @@ String _subMacrosLinks(
             final extracted = extractAttributesFromText(node, linkText, '');
             linkText = extracted.text!;
             attrs = extracted.attributes;
-            id = attrs['id'] as String?;
-            if (attrs.containsKey(2)) {
-              final subject = Helpers.encodeUriComponent(attrs[2]! as String);
-              target = '$target?subject=$subject';
-              if (attrs.containsKey(3)) {
-                final body = Helpers.encodeUriComponent(attrs[3]! as String);
-                target = '$target&amp;body=$body';
+            id = attrs['id'];
+            final subject = attrs['2'];
+            if (subject != null) {
+              target = '$target?subject=${Helpers.encodeUriComponent(subject)}';
+              final body = attrs['3'];
+              if (body != null) {
+                target = '$target&amp;body=${Helpers.encodeUriComponent(body)}';
               }
             }
           }
@@ -1514,13 +1449,13 @@ String _subMacrosLinks(
           final extracted = extractAttributesFromText(node, linkText, '');
           linkText = extracted.text!;
           attrs = extracted.attributes;
-          id = attrs['id'] as String?;
+          id = attrs['id'];
         }
 
         if (linkText.endsWith('^')) {
           linkText = linkText.substring(0, linkText.length - 1);
           if (attrs != null) {
-            if (!isTruthy(attrs['window'])) attrs['window'] = '_blank';
+            attrs['window'] ??= '_blank';
           } else {
             attrs = {'window': '_blank'};
           }
@@ -1549,18 +1484,16 @@ String _subMacrosLinks(
       }
 
       // QUESTION should a mailto be registered as an e-mail address?
-      doc.register('links', target);
-      return _str(
-        Inline(
-          block,
-          'anchor',
-          text: linkText,
-          type: 'link',
-          target: target,
-          id: id,
-          attributes: attrs == null ? null : _stringMap(attrs),
-        ).convert(),
-      );
+      doc.registerLink(target);
+      return Inline(
+        block,
+        'anchor',
+        text: linkText,
+        type: 'link',
+        target: target,
+        id: id,
+        attributes: attrs,
+      ).convert();
     });
   }
 
@@ -1576,17 +1509,15 @@ String _subMacrosLinks(
       final address = match.group(0)!;
       final target = 'mailto:$address';
       // QUESTION should this be registered as an e-mail address?
-      doc.register('links', target);
+      doc.registerLink(target);
 
-      return _str(
-        Inline(
-          block,
-          'anchor',
-          text: address,
-          type: 'link',
-          target: target,
-        ).convert(),
-      );
+      return Inline(
+        block,
+        'anchor',
+        text: address,
+        type: 'link',
+        target: target,
+      ).convert();
     });
   }
 
@@ -1595,15 +1526,13 @@ String _subMacrosLinks(
       node.parent?.style == 'bibliography') {
     result = result.replaceFirstMapped(
       inlineBiblioAnchorRx,
-      (match) => _str(
-        Inline(
-          block,
-          'anchor',
-          text: match.group(2),
-          type: 'bibref',
-          id: match.group(1),
-        ).convert(),
-      ),
+      (match) => Inline(
+        block,
+        'anchor',
+        text: match.group(2),
+        type: 'bibref',
+        id: match.group(1),
+      ).convert(),
     );
   }
 
@@ -1629,9 +1558,13 @@ String _subMacrosLinks(
           reftext = reftext.replaceAll(escRSb, rSb);
         }
       }
-      return _str(
-        Inline(block, 'anchor', text: reftext, type: 'ref', id: id).convert(),
-      );
+      return Inline(
+        block,
+        'anchor',
+        text: reftext,
+        type: 'ref',
+        id: id,
+      ).convert();
     });
   }
 
@@ -1667,7 +1600,7 @@ String _convertXrefMacro(
   AbstractNode node,
   AbstractBlock block,
   Document doc,
-  Map<String, Object?> docAttrs,
+  Map<String, String> docAttrs,
   bool compat,
   RegExpMatch match,
 ) {
@@ -1676,7 +1609,7 @@ String _convertXrefMacro(
     return match.group(0)!.substring(1);
   }
 
-  var attrs = <String, Object?>{};
+  var attrs = <String, String>{};
   var refid = match.group(1);
   String? linkText;
   var macro = false;
@@ -1700,7 +1633,7 @@ String _convertXrefMacro(
       if (!compat && linkText.contains('=')) {
         final extracted = extractAttributesFromText(node, linkText);
         linkText = extracted.text;
-        attrs = _stringMap(extracted.attributes);
+        attrs = extracted.attributes;
       }
     }
   }
@@ -1768,10 +1701,8 @@ String _convertXrefMacro(
     // macro only)
     // the referenced path is the current document, or its contents have
     // been included in the current document
-    final includes = doc.catalog['includes'];
     if (src2src != null &&
-        (docAttrs['docname'] == path ||
-            (includes is Map && isTruthy(includes[path])))) {
+        (docAttrs['docname'] == path || doc.catalog.includes[path] == true)) {
       if (fragment != null) {
         refid = fragment;
         path = null;
@@ -1784,13 +1715,9 @@ String _convertXrefMacro(
       }
     } else {
       refid = path;
-      final prefix = isTruthy(docAttrs['relfileprefix'])
-          ? docAttrs['relfileprefix'].toString()
-          : '';
+      final prefix = docAttrs['relfileprefix'] ?? '';
       final suffix = src2src != null
-          ? (docAttrs.containsKey('relfilesuffix')
-                ? _str(docAttrs['relfilesuffix'])
-                : _str(doc.outfilesuffix))
+          ? docAttrs['relfilesuffix'] ?? doc.outfilesuffix ?? ''
           : '';
       path = '$prefix$path$suffix';
       if (fragment != null) {
@@ -1806,9 +1733,7 @@ String _convertXrefMacro(
     target = '#$fragment';
     _logPossibleInvalidReference(node, doc, refid!);
     // handles: id
-  } else if (isTruthy(
-    (doc.catalog['refs']! as Map<String, Object?>)[fragment],
-  )) {
+  } else if (doc.catalog.refs.containsKey(fragment)) {
     refid = fragment;
     target = '#$fragment';
     // handles: Node Title or Reference Text
@@ -1829,19 +1754,25 @@ String _convertXrefMacro(
       node.logger.info('possible invalid reference: $refid');
     }
   }
-  attrs['path'] = path;
-  attrs['fragment'] = fragment;
-  attrs['refid'] = refid;
-  return _str(
-    Inline(
-      block,
-      'anchor',
-      text: linkText,
-      type: 'xref',
-      target: target,
-      attributes: attrs,
-    ).convert(),
-  );
+  void put(String key, String? value) {
+    if (value == null) {
+      attrs.remove(key);
+    } else {
+      attrs[key] = value;
+    }
+  }
+
+  put('path', path);
+  put('fragment', fragment);
+  put('refid', refid);
+  return Inline(
+    block,
+    'anchor',
+    text: linkText,
+    type: 'xref',
+    target: target,
+    attributes: attrs,
+  ).convert();
 }
 
 /// Converts one footnote macro match. Part of [subMacros].
@@ -1877,7 +1808,7 @@ String _convertFootnoteMacro(
     content = match.group(3);
   }
 
-  Object? index;
+  String? index;
   String? type;
   String? target;
   var finalId = id;
@@ -1892,7 +1823,7 @@ String _convertFootnoteMacro(
     }
     if (footnote != null) {
       index = footnote.index;
-      finalContent = footnote.text.toString();
+      finalContent = footnote.text;
       type = 'xref';
       target = id;
       finalId = null;
@@ -1906,7 +1837,7 @@ String _convertFootnoteMacro(
         ),
       );
       index = doc.counter('footnote-number');
-      doc.register('footnotes', Footnote(index, id, finalContent));
+      doc.registerFootnote(Footnote(index, id, finalContent));
       type = 'ref';
       target = null;
     } else {
@@ -1926,23 +1857,21 @@ String _convertFootnoteMacro(
       ),
     );
     index = doc.counter('footnote-number');
-    doc.register('footnotes', Footnote(index, id, finalContent));
+    doc.registerFootnote(Footnote(index, id, finalContent));
     type = null;
     target = null;
   } else {
     return match.group(0)!;
   }
-  return _str(
-    Inline(
-      block,
-      'footnote',
-      text: finalContent,
-      attributes: {'index': index},
-      id: finalId,
-      target: target,
-      type: type,
-    ).convert(),
-  );
+  return Inline(
+    block,
+    'footnote',
+    text: finalContent,
+    attributes: {'index': ?index},
+    id: finalId,
+    target: target,
+    type: type,
+  ).convert();
 }
 
 /// Substitutes post replacements (hard line breaks) in [text].
@@ -1950,37 +1879,33 @@ String _convertFootnoteMacro(
 /// Port of `Substitutors#sub_post_replacements`.
 String subPostReplacements(AbstractNode node, String text) {
   final docAttrs = _documentOf(node).attributes;
-  if (isTruthy(node.attributes['hardbreaks-option']) ||
-      isTruthy(docAttrs['hardbreaks-option'])) {
+  if (node.attributes.containsKey('hardbreaks-option') ||
+      docAttrs.containsKey('hardbreaks-option')) {
     final lines = text.split(lf);
     if (lines.length < 2) return text;
     final last = lines.removeLast();
     final converted = <String>[
       for (final line in lines)
-        _str(
-          Inline(
-            _blockOf(node),
-            'break',
-            text: line.endsWith(hardLineBreak)
-                ? line.substring(0, line.length - 2)
-                : line,
-            type: 'line',
-          ).convert(),
-        ),
+        Inline(
+          _blockOf(node),
+          'break',
+          text: line.endsWith(hardLineBreak)
+              ? line.substring(0, line.length - 2)
+              : line,
+          type: 'line',
+        ).convert(),
       last,
     ];
     return converted.join(lf);
   } else if (text.contains(plus) && text.contains(hardLineBreak)) {
     return text.replaceAllMapped(
       hardLineBreakRx,
-      (match) => _str(
-        Inline(
-          _blockOf(node),
-          'break',
-          text: match.group(1),
-          type: 'line',
-        ).convert(),
-      ),
+      (match) => Inline(
+        _blockOf(node),
+        'break',
+        text: match.group(1),
+        type: 'line',
+      ).convert(),
     );
   } else {
     return text;
@@ -2005,8 +1930,9 @@ String subSource(
 /// Port of `Substitutors#sub_callouts`.
 String subCallouts(AbstractNode node, String text) {
   final doc = _documentOf(node);
-  final pattern = node.hasAttr('line-comment')
-      ? calloutSourceRxMap[node.attr('line-comment').toString()]
+  final lineComment = node.attr('line-comment');
+  final pattern = lineComment != null
+      ? calloutSourceRxMap[lineComment]
       : calloutSourceRx;
   var autonum = 0;
   return text.replaceAllMapped(pattern, (match) {
@@ -2016,17 +1942,15 @@ String subCallouts(AbstractNode node, String text) {
       return match.group(0)!.replaceFirst(rs, '');
     }
     final numeral = match.group(4) == '.' ? '${++autonum}' : match.group(4)!;
-    Object? guard = match.group(1);
-    guard ??= match.group(3) == '--' ? const ['<!--', '-->'] : null;
-    return _str(
-      Inline(
-        _blockOf(node),
-        'callout',
-        text: numeral,
-        id: doc.callouts.readNextId(),
-        attributes: {'guard': guard},
-      ).convert(),
-    );
+    final guard = match.group(1);
+    return Inline(
+      _blockOf(node),
+      'callout',
+      text: numeral,
+      id: doc.callouts.readNextId(),
+      attributes: {'guard': ?guard},
+      xmlCommentGuard: guard == null && match.group(3) == '--',
+    ).convert();
   });
 }
 
@@ -2048,7 +1972,7 @@ String highlightSource(
   final syntaxHl = doc.syntaxHighlighter;
   // NOTE the call to highlight? is a defensive check since, normally, we
   // wouldn't arrive here unless it returns true
-  if (syntaxHl is! SyntaxHighlighterBase || !syntaxHl.canHighlight) {
+  if (syntaxHl == null || !syntaxHl.canHighlight) {
     return subSource(node, code, processCallouts: processCallouts);
   }
   final docAttrs = doc.attributes;
@@ -2067,9 +1991,9 @@ String highlightSource(
   int? startLineNumber;
   if (node.hasAttr('linenums')) {
     linenumsMode = LineNumbersMode.fromAttribute(
-      docAttrs['${syntaxHl.name}-linenums-mode']?.toString(),
+      docAttrs['${syntaxHl.name}-linenums-mode'],
     );
-    startLineNumber = parseLeadingInt(node.attr('start', 1));
+    startLineNumber = parseLeadingInt(node.attr('start', '1'));
     if (startLineNumber < 1) startLineNumber = 1;
   }
   final highlightLines = node.hasAttr('highlight')
@@ -2078,22 +2002,20 @@ String highlightSource(
   final result = syntaxHl.highlight(
     node as AbstractBlock,
     code,
-    node.attr('language')?.toString(),
+    node.attr('language'),
     // The framework only reads the null/emptiness of this map (to derive
     // `hasCallouts`); the marks themselves travel separately below.
     callouts: (calloutMarks == null || calloutMarks.isEmpty)
         ? null
         : <int, String>{for (final lineno in calloutMarks.keys) lineno: ''},
-    cssMode: CssMode.fromAttribute(
-      docAttrs['${syntaxHl.name}-css']?.toString(),
-    ),
+    cssMode: CssMode.fromAttribute(docAttrs['${syntaxHl.name}-css']),
     highlightLines: highlightLines,
     numberLines: linenumsMode,
     startLineNumber: startLineNumber,
-    style: docAttrs['${syntaxHl.name}-style']?.toString(),
+    style: docAttrs['${syntaxHl.name}-style'],
   );
   var highlighted = result.html;
-  if (node.passthroughs.isNotEmpty) {
+  if (_passthroughsOf(node).isNotEmpty) {
     highlighted = highlighted.replaceAllMapped(
       highlightedPassSlotRx,
       (match) => '$passStart${match[1]}$passEnd',
@@ -2110,10 +2032,10 @@ String highlightSource(
 /// line numbers.
 ///
 /// Port of `Substitutors#resolve_lines_to_highlight`.
-List<int> resolveLinesToHighlight(String source, Object? spec, [int? start]) {
+List<int> resolveLinesToHighlight(String source, String? spec, [int? start]) {
   if (spec == null) return <int>[];
   var lines = <int>[];
-  var specStr = spec.toString();
+  var specStr = spec;
   if (specStr.contains(' ')) specStr = specStr.replaceAll(' ', '');
   final entries = specStr.contains(',')
       ? splitDropTrailingEmpty(specStr, ',')
@@ -2160,7 +2082,7 @@ List<int> resolveLinesToHighlight(String source, Object? spec, [int? start]) {
   }
   // If the start attribute is defined, then the lines to highlight
   // specified by the provided spec should be relative to the start value.
-  final shift = isTruthy(start) ? start! - 1 : 0;
+  final shift = start != null ? start - 1 : 0;
   if (shift != 0) {
     lines = lines.map((line) => line - shift).toList();
   }
@@ -2168,9 +2090,13 @@ List<int> resolveLinesToHighlight(String source, Object? spec, [int? start]) {
   return lines;
 }
 
-/// A callout mark extracted from source: its `guard` (line-comment prefix
-/// or the `<!--`/`-->` pair) and its `numeral`.
-typedef PendingCallout = ({Object? guard, String numeral});
+/// A callout mark extracted from source: its `guard` (line-comment prefix,
+/// if any), whether an XML comment guards it, and its `numeral`.
+typedef PendingCallout = ({
+  String? guard,
+  bool xmlCommentGuard,
+  String numeral,
+});
 
 /// Extracts the callout numbers from [source] to prepare it for syntax
 /// highlighting.
@@ -2187,8 +2113,9 @@ typedef PendingCallout = ({Object? guard, String numeral});
   var autonum = 0;
   var lineno = 0;
   int? lastLineno;
-  final pattern = node.hasAttr('line-comment')
-      ? calloutExtractRxMap[node.attr('line-comment').toString()]
+  final lineComment = node.attr('line-comment');
+  final pattern = lineComment != null
+      ? calloutExtractRxMap[lineComment]
       : calloutExtractRx;
   // extract callout marks, indexed by line number
   final cleaned = source
@@ -2201,12 +2128,15 @@ typedef PendingCallout = ({Object? guard, String numeral});
             // use sub since it might be behind a line comment
             return match.group(0)!.replaceFirst(rs, '');
           }
-          Object? guard = match.group(1);
-          guard ??= match.group(3) == '--' ? const ['<!--', '-->'] : null;
+          final guard = match.group(1);
           final numeral = match.group(4) == '.'
               ? '${++autonum}'
               : match.group(4)!;
-          (calloutMarks![lineno] ??= []).add((guard: guard, numeral: numeral));
+          (calloutMarks![lineno] ??= []).add((
+            guard: guard,
+            xmlCommentGuard: guard == null && match.group(3) == '--',
+            numeral: numeral,
+          ));
           lastLineno = lineno;
           return '';
         });
@@ -2247,15 +2177,14 @@ String restoreCallouts(
             lineno++;
             final conums = calloutMarks.remove(lineno);
             if (conums == null) return line;
-            String conum(PendingCallout mark) => _str(
-              Inline(
-                block,
-                'callout',
-                text: mark.numeral,
-                id: doc.callouts.readNextId(),
-                attributes: {'guard': mark.guard},
-              ).convert(),
-            );
+            String conum(PendingCallout mark) => Inline(
+              block,
+              'callout',
+              text: mark.numeral,
+              id: doc.callouts.readNextId(),
+              attributes: {'guard': ?mark.guard},
+              xmlCommentGuard: mark.xmlCommentGuard,
+            ).convert();
             return '$line${conums.map(conum).join(' ')}';
           })
           .join(lf);
@@ -2270,7 +2199,7 @@ String restoreCallouts(
 String extractPassthroughs(AbstractNode node, String text) {
   final doc = _documentOf(node);
   final compatMode = doc.compatMode;
-  final passthrus = node.passthroughs;
+  final passthrus = _passthroughsOf(node);
   var result = text;
   if (text.contains('++') || text.contains(r'$$') || text.contains('ss:')) {
     result = result.replaceAllMapped(inlinePassMacroRx, (match) {
@@ -2288,7 +2217,7 @@ String extractPassthroughs(AbstractNode node, String text) {
 
         final attrlist = match.group(2);
         final escapeCount = (match.group(3) ?? '').length;
-        Map<String, Object?>? attributes;
+        Map<String, String>? attributes;
         var oldBehavior = false;
         String? preceding;
         if (attrlist != null) {
@@ -2302,7 +2231,7 @@ String extractPassthroughs(AbstractNode node, String text) {
           } else if (boundary == '++') {
             if (attrlist == 'x-') {
               oldBehavior = true;
-              attributes = <String, Object?>{};
+              attributes = <String, String>{};
             } else if (attrlist.endsWith(' x-')) {
               oldBehavior = true;
               attributes = parseQuotedTextAttributes(
@@ -2324,24 +2253,29 @@ String extractPassthroughs(AbstractNode node, String text) {
             : List<String>.of(basicSubs);
 
         final passthruKey = passthrus.length;
+        final text = match.group(5)!;
         if (attributes != null) {
           if (oldBehavior) {
-            passthrus.add({
-              'text': match.group(5),
-              'subs': normalSubs,
-              'type': 'monospaced',
-              'attributes': attributes,
-            });
+            passthrus.add(
+              Passthrough(
+                text,
+                subs: normalSubs,
+                type: 'monospaced',
+                attributes: attributes,
+              ),
+            );
           } else {
-            passthrus.add({
-              'text': match.group(5),
-              'subs': subs,
-              'type': 'unquoted',
-              'attributes': attributes,
-            });
+            passthrus.add(
+              Passthrough(
+                text,
+                subs: subs,
+                type: 'unquoted',
+                attributes: attributes,
+              ),
+            );
           }
         } else {
-          passthrus.add({'text': match.group(5), 'subs': subs});
+          passthrus.add(Passthrough(text, subs: subs));
         }
         return '${preceding ?? ''}$passStart$passthruKey$passEnd';
       } else {
@@ -2353,22 +2287,16 @@ String extractPassthroughs(AbstractNode node, String text) {
         }
         final subs = match.group(7);
         final passthruKey = passthrus.length;
-        if (subs != null) {
-          passthrus.add({
-            'text': normalizeText(
-              match.group(8)!,
-              unescapeClosingSquareBrackets: true,
-            ),
-            'subs': resolvePassSubs(node, subs),
-          });
-        } else {
-          passthrus.add({
-            'text': normalizeText(
-              match.group(8)!,
-              unescapeClosingSquareBrackets: true,
-            ),
-          });
-        }
+        final text = normalizeText(
+          match.group(8)!,
+          unescapeClosingSquareBrackets: true,
+        );
+        passthrus.add(
+          Passthrough(
+            text,
+            subs: subs != null ? resolvePassSubs(node, subs) : null,
+          ),
+        );
         return '$passStart$passthruKey$passEnd';
       }
     });
@@ -2394,7 +2322,7 @@ String extractPassthroughs(AbstractNode node, String text) {
         oldBehaviorForced = true;
       }
 
-      Map<String, Object?>? attributes;
+      Map<String, String>? attributes;
       if (attrlist != null) {
         if (escaped) {
           // honor the escape of the formatting mark
@@ -2407,7 +2335,7 @@ String extractPassthroughs(AbstractNode node, String text) {
           preceding = '[$attrlist]';
         } else if (oldBehaviorForced) {
           attributes = attrlist == 'x-'
-              ? <String, Object?>{}
+              ? <String, String>{}
               : parseQuotedTextAttributes(
                   node,
                   attrlist.substring(0, attrlist.length - 3),
@@ -2424,30 +2352,36 @@ String extractPassthroughs(AbstractNode node, String text) {
 
       final passthruKey = passthrus.length;
       if (compatMode) {
-        passthrus.add({
-          'text': content,
-          'subs': basicSubs,
-          'attributes': attributes,
-          'type': 'monospaced',
-        });
+        passthrus.add(
+          Passthrough(
+            content,
+            subs: basicSubs,
+            attributes: attributes,
+            type: 'monospaced',
+          ),
+        );
       } else if (attributes != null) {
         if (oldBehavior) {
-          passthrus.add({
-            'text': content,
-            'subs': formatMark == '`' ? basicSubs : normalSubs,
-            'attributes': attributes,
-            'type': 'monospaced',
-          });
+          passthrus.add(
+            Passthrough(
+              content,
+              subs: formatMark == '`' ? basicSubs : normalSubs,
+              attributes: attributes,
+              type: 'monospaced',
+            ),
+          );
         } else {
-          passthrus.add({
-            'text': content,
-            'subs': basicSubs,
-            'attributes': attributes,
-            'type': 'unquoted',
-          });
+          passthrus.add(
+            Passthrough(
+              content,
+              subs: basicSubs,
+              attributes: attributes,
+              type: 'unquoted',
+            ),
+          );
         }
       } else {
-        passthrus.add({'text': content, 'subs': basicSubs});
+        passthrus.add(Passthrough(content, subs: basicSubs));
       }
 
       return '$preceding$passStart$passthruKey$passEnd';
@@ -2484,7 +2418,7 @@ String extractPassthroughs(AbstractNode node, String text) {
           ? resolvePassSubs(node, subs, 'stem macro')
           : (doc.basebackend('html') ? basicSubs : null);
       final passthruKey = passthrus.length;
-      passthrus.add({'text': content, 'subs': resolvedSubs, 'type': type});
+      passthrus.add(Passthrough(content, subs: resolvedSubs, type: type));
       return '$passStart$passthruKey$passEnd';
     });
   }
@@ -2497,32 +2431,23 @@ String extractPassthroughs(AbstractNode node, String text) {
 ///
 /// Port of `Substitutors#restore_passthroughs`.
 String restorePassthroughs(AbstractNode node, String text) {
-  final passthrus = node.passthroughs;
+  final passthrus = _passthroughsOf(node);
   return text.replaceAllMapped(passSlotRx, (match) {
     final slot = int.parse(match.group(1)!);
     final pass = slot < passthrus.length ? passthrus[slot] : null;
     if (pass != null) {
-      var subbedText =
-          applySubs(
-                node,
-                pass['text']! as String,
-                pass['subs'] as List<String>?,
-              )!
-              as String;
-      final type = pass['type'] as String?;
+      var subbedText = applySubs(node, pass.text, pass.subs);
+      final type = pass.type;
       if (type != null) {
-        final attributes = pass['attributes'] as Map<String, Object?>?;
-        final id = attributes?['id'] as String?;
-        subbedText = _str(
-          Inline(
-            _blockOf(node),
-            'quoted',
-            text: subbedText,
-            type: type,
-            id: id,
-            attributes: attributes,
-          ).convert(),
-        );
+        final attributes = pass.attributes;
+        subbedText = Inline(
+          _blockOf(node),
+          'quoted',
+          text: subbedText,
+          type: type,
+          id: attributes?['id'],
+          attributes: attributes,
+        ).convert();
       }
       return subbedText.contains(passStart)
           ? restorePassthroughs(node, subbedText)
@@ -2643,36 +2568,15 @@ List<String>? resolvePassSubs(
   String subject = 'passthrough macro',
 ]) => resolveSubs(node, subs, 'inline', null, subject);
 
-/// Expands all groups in [subs] and returns the result, or `null` if no
-/// subs are resolved.
+/// Expands all groups in the comma-delimited [subs] and returns the
+/// result, or `null` if no subs are resolved (or [subs] is `none`).
 ///
-/// [subs] is a single name, a list of names, or a comma-delimited string;
 /// [subject] names the subject in log messages.
 ///
 /// Port of `Substitutors#expand_subs`.
-List<String>? expandSubs(AbstractNode node, Object? subs, [String? subject]) {
-  if (subs is String) {
-    // Port of `Substitutors#expand_subs` (lib/asciidoctor/substitutors.rb:
-    // 1257-1276): strings resolve through `resolve_subs` (which splits
-    // comma-delimited lists and expands groups); only the symbol-like
-    // `'none'` short-circuits to `null`.
-    if (subs == 'none') return null;
-    return resolveSubs(node, subs, 'inline', null, subject);
-  } else if (subs is List<Object?>) {
-    final expandedSubs = <String>[];
-    for (final key in subs) {
-      if (key == 'none') continue;
-      final subGroup = subGroups[key];
-      if (subGroup != null) {
-        expandedSubs.addAll(subGroup);
-      } else {
-        expandedSubs.add(key! as String);
-      }
-    }
-    return expandedSubs.isEmpty ? null : expandedSubs;
-  } else {
-    return resolveSubs(node, subs as String?, 'inline', null, subject);
-  }
+List<String>? expandSubs(AbstractNode node, String subs, [String? subject]) {
+  if (subs == 'none') return null;
+  return resolveSubs(node, subs, 'inline', null, subject);
 }
 
 /// Commits the requested substitutions to [node].
@@ -2686,33 +2590,27 @@ List<String>? expandSubs(AbstractNode node, Object? subs, [String? subject]) {
 List<String>? commitSubs(AbstractBlock node) {
   final defaultSubs = node is Block ? node.defaultSubs : null;
   late List<String> effective;
-  if (!isTruthy(defaultSubs)) {
+  if (defaultSubs == null) {
     switch (node.contentModel) {
       case 'simple':
         effective = normalSubs;
       case 'verbatim':
         effective = node.context == 'verse' ? normalSubs : verbatimSubs;
       case 'raw':
-        // TODOmake pass subs a compliance setting; AsciiDoc.py performs
+        // TODO make pass subs a compliance setting; AsciiDoc.py performs
         // :attributes and :macros on a pass block
         effective = node.context == 'stem' ? basicSubs : noSubs;
       default:
         return node.subs;
     }
   } else {
-    effective = List<String>.from(defaultSubs! as List);
+    effective = List<String>.of(defaultSubs);
   }
 
   final customSubs = node.attributes['subs'];
-  if (isTruthy(customSubs)) {
+  if (customSubs != null) {
     node.subs =
-        resolveBlockSubs(
-          node,
-          customSubs.toString(),
-          effective,
-          node.context,
-        ) ??
-        [];
+        resolveBlockSubs(node, customSubs, effective, node.context) ?? [];
   } else {
     node.subs = List<String>.of(effective);
   }
@@ -2722,7 +2620,7 @@ List<String>? commitSubs(AbstractBlock node) {
   final syntaxHl = doc is Document ? doc.syntaxHighlighter : null;
   if (node.context == 'listing' &&
       node.style == 'source' &&
-      syntaxHl is SyntaxHighlighterBase &&
+      syntaxHl != null &&
       syntaxHl.canHighlight) {
     final idx = node.subs.indexOf('specialcharacters');
     if (idx != -1) node.subs[idx] = 'highlight';
@@ -2741,16 +2639,16 @@ List<String>? commitSubs(AbstractBlock node) {
 /// [attrlist] is null or empty.
 ///
 /// Port of `Substitutors#parse_attributes`.
-Map<Object, Object?> parseAttributes(
+Map<String, String> parseAttributes(
   AbstractNode node,
   String? attrlist, {
   List<String?> posattrs = const [],
-  Map<Object, Object?>? into,
+  Map<String, String>? into,
   bool subInput = false,
   bool subResult = false,
   bool unescapeInput = false,
 }) {
-  if (attrlist == null || attrlist.isEmpty) return <Object, Object?>{};
+  if (attrlist == null || attrlist.isEmpty) return into ?? <String, String>{};
   var source = attrlist;
   if (unescapeInput) {
     source = normalizeText(
@@ -2770,7 +2668,7 @@ Map<Object, Object?> parseAttributes(
     into.addAll(parsed);
     return into;
   }
-  return Map<Object, Object?>.of(parsed);
+  return Map<String, String>.of(parsed);
 }
 
 /// Extracts attributes mixed with macro text.
@@ -2780,37 +2678,39 @@ Map<Object, Object?> parseAttributes(
 /// returned as the text when no positional attribute is found.
 ///
 /// Port of `Substitutors#extract_attributes_from_text`.
-({String? text, Map<Object, Object?> attributes}) extractAttributesFromText(
+({String? text, Map<String, String> attributes}) extractAttributesFromText(
   AbstractNode node,
   String text, [
   String? defaultText,
 ]) {
   final attrlist = text.contains(lf) ? text.replaceAll(lf, ' ') : text;
-  final attrs = AttributeList(attrlist, _BlockSubsApplier(node)).parse();
-  final resolvedText = attrs[1];
+  final attrs = Map<String, String>.of(
+    AttributeList(attrlist, _BlockSubsApplier(node)).parse(),
+  );
+  final resolvedText = attrs['1'];
   if (resolvedText != null) {
     // NOTE if resolved text remains unchanged, clear attributes and
     // return unparsed text
     if (resolvedText == attrlist) {
       attrs.clear();
-      return (text: text, attributes: Map<Object, Object?>.of(attrs));
+      return (text: text, attributes: attrs);
     }
-    return (text: resolvedText, attributes: Map<Object, Object?>.of(attrs));
+    return (text: resolvedText, attributes: attrs);
   }
-  return (text: defaultText, attributes: Map<Object, Object?>.of(attrs));
+  return (text: defaultText, attributes: attrs);
 }
 
 /// Substitutes [value] into the `%s` placeholder of [format].
 ///
 /// Port of `Substitutors#sub_placeholder` (an alias of `sprintf`; every
 /// call site formats a single `%s` value).
-String subPlaceholder(String format, Object? value) {
+String subPlaceholder(String format, String value) {
   const token = '\u0000';
   final escaped = format.replaceAll('%%', token);
   final idx = escaped.indexOf('%s');
   final substituted = idx == -1
       ? escaped
-      : escaped.replaceRange(idx, idx + 2, _str(value));
+      : escaped.replaceRange(idx, idx + 2, value);
   return substituted.replaceAll(token, '%');
 }
 
@@ -2820,7 +2720,7 @@ String subPlaceholder(String format, Object? value) {
 /// `#idname.role`). Returns the role and id attributes.
 ///
 /// Port of `Substitutors#parse_quoted_text_attributes`.
-Map<String, Object?> parseQuotedTextAttributes(AbstractNode node, String str) {
+Map<String, String> parseQuotedTextAttributes(AbstractNode node, String str) {
   // NOTE attributes are typically resolved after quoted text, so
   // substitute eagerly
   var text = str.contains(attrRefHead) ? subAttributes(node, str) : str;
@@ -2829,13 +2729,13 @@ Map<String, Object?> parseQuotedTextAttributes(AbstractNode node, String str) {
   if (text.contains(',')) text = text.substring(0, text.indexOf(','));
   text = text.trim();
   if (text.isEmpty) {
-    return <String, Object?>{};
+    return <String, String>{};
   } else if ((text.startsWith('.') || text.startsWith('#')) &&
       Compliance.shorthandPropertySyntax) {
     final hashIdx = text.indexOf('#');
     final before = hashIdx == -1 ? text : text.substring(0, hashIdx);
     final after = hashIdx == -1 ? '' : text.substring(hashIdx + 1);
-    final attrs = <String, Object?>{};
+    final attrs = <String, String>{};
     if (after.isEmpty) {
       if (before.length > 1) {
         attrs['role'] = before.replaceAll('.', ' ').trimLeft();

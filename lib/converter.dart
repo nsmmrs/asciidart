@@ -6,14 +6,20 @@ library;
 export 'src/composite.dart' show CompositeConverter;
 export 'src/converter.dart'
     show
+        BackendTraits,
         ConvertHandler,
+        ConvertOptions,
         Converter,
         ConverterBase,
         ConverterFactory,
-        ConverterFactoryFn;
+        ConverterFactoryFn,
+        ConverterOptions,
+        CustomFactory,
+        DefaultFactoryProxy;
 export 'src/docbook5.dart' show Docbook5Converter;
 export 'src/html5.dart' show Html5Converter;
 export 'src/manpage.dart' show ManpageConverter;
 export 'src/template.dart'
     show MustacheTemplate, TemplateConverter, TemplateRegistry;
 export 'src/template_context.dart' show TemplateHelper;
+export 'src/template_loader.dart' show TemplateCache;

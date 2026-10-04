@@ -17,12 +17,9 @@
 ///
 /// - [CliOptions.parse] returns `null` on success and an `int` exit code on
 ///   early exit or error. It never mutates the [List] it is given.
-/// - `-I/--load-path` values are recorded in [CliOptions.loadPaths] and
-///   otherwise ignored, because libraries cannot be loaded at runtime.
-/// - Every `-r/--require` fails with the
-///   `asciidoctor: FAILED: '...' could not be loaded` message Asciidoctor
-///   prints for an unloadable library. With `--trace` it throws
-///   [UnsupportedError] instead.
+/// - The Ruby-specific options `-r/--require`, `-I/--load-path`,
+///   `--eruby` and `-w/--warnings` do not exist: Dart programs load no
+///   libraries at runtime and run no eRuby templates.
 /// - `-T/--template-dir` is recorded as is. `-E/--template-engine` records
 ///   any name; the name is validated when templates engage during
 ///   conversion (only `mustache` and `dart` exist, per ADR-0002 T1), and an
@@ -68,10 +65,9 @@ import 'package:asciidoctor/src/version.dart';
 
 /// The CLI usage text.
 ///
-/// Matches the Asciidoctor 2.0.26 `--help` output byte for byte, except
-/// the `-T`, `-E`, `-I` and `-r` descriptions, which describe what those
-/// options do in this build (Mustache templates; no runtime library
-/// loading).
+/// Follows the Asciidoctor 2.0.26 `--help` output, except that the `-T`
+/// and `-E` descriptions describe Mustache templates and the Ruby-specific
+/// `--eruby`, `-I`, `-r` and `-w` options are absent.
 const String usageText = '''
 Usage: asciidoctor [OPTION]... FILE...
 Convert the AsciiDoc input FILE(s) to the backend output format (e.g., HTML 5, DocBook 5, etc.)
@@ -91,7 +87,6 @@ Example: asciidoctor input.adoc
                                      disables potentially dangerous macros in source files, such as include::[]
     -s, --no-header-footer           suppress enclosing document structure and output an embedded document (default: false)
     -n, --section-numbers            auto-number section titles in the HTML backend; disabled by default
-        --eruby ERUBY                specify eRuby implementation to use when rendering custom ERB templates: [erb, erubi, erubis] (default: erb)
     -a, --attribute name[=value]     a document attribute to set in the form of name, name!, or name=value pair
                                      this attribute takes precedence over the same attribute defined in the source document
                                      unless either the name or value ends in @ (i.e., name@=value or name=value@)
@@ -101,15 +96,10 @@ Example: asciidoctor input.adoc
     -B, --base-dir DIR               base directory containing the document and resources (default: directory of source file)
     -R, --source-dir DIR             source root directory (used for calculating path in destination directory)
     -D, --destination-dir DIR        destination output directory (default: directory of source file)
-    -I, --load-path DIRECTORY        accepted for compatibility; has no effect (libraries cannot be loaded at runtime)
-                                     may be specified more than once
-    -r, --require LIBRARY            accepted for compatibility; always fails (libraries cannot be loaded at runtime)
-                                     may be specified more than once
         --failure-level LEVEL        set minimum log level that yields a non-zero exit code: [INFO, WARN, ERROR, FATAL] (default: FATAL)
     -q, --quiet                      silence application log messages and script warnings (default: false)
         --trace                      include backtrace information when reporting errors (default: false)
     -v, --verbose                    directs application messages logged at DEBUG or INFO level to STDERR (default: false)
-    -w, --warnings                   turn on script warnings (default: false)
     -t, --timings                    print timings report (default: false)
     -h, --help [TOPIC]               print a help message
                                      show this usage if TOPIC is not specified or recognized
@@ -221,9 +211,6 @@ enum _CliOption {
   /// `-n/--section-numbers`.
   sectionNumbers,
 
-  /// `--eruby ERUBY`.
-  eruby,
-
   /// `-a/--attribute name[=value]`.
   attribute,
 
@@ -242,12 +229,6 @@ enum _CliOption {
   /// `-D/--destination-dir DIR`.
   destinationDir,
 
-  /// `-I/--load-path DIRECTORY`.
-  loadPath,
-
-  /// `-r/--require LIBRARY`.
-  require,
-
   /// `--failure-level LEVEL`.
   failureLevel,
 
@@ -259,9 +240,6 @@ enum _CliOption {
 
   /// `-v/--verbose`.
   verbose,
-
-  /// `-w/--warnings`.
-  warnings,
 
   /// `-t/--timings`.
   timings,
@@ -316,19 +294,12 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.safeMode, 'S', 'safe-mode', _Arity.required, _safeModeNames),
   _Spec(_CliOption.noHeaderFooter, 's', 'no-header-footer', _Arity.none),
   _Spec(_CliOption.sectionNumbers, 'n', 'section-numbers', _Arity.none),
-  _Spec(_CliOption.eruby, null, 'eruby', _Arity.required, [
-    'erb',
-    'erubi',
-    'erubis',
-  ]),
   _Spec(_CliOption.attribute, 'a', 'attribute', _Arity.required),
   _Spec(_CliOption.templateDir, 'T', 'template-dir', _Arity.required),
   _Spec(_CliOption.templateEngine, 'E', 'template-engine', _Arity.required),
   _Spec(_CliOption.baseDir, 'B', 'base-dir', _Arity.required),
   _Spec(_CliOption.sourceDir, 'R', 'source-dir', _Arity.required),
   _Spec(_CliOption.destinationDir, 'D', 'destination-dir', _Arity.required),
-  _Spec(_CliOption.loadPath, 'I', 'load-path', _Arity.required),
-  _Spec(_CliOption.require, 'r', 'require', _Arity.required),
   _Spec(_CliOption.failureLevel, null, 'failure-level', _Arity.required, [
     'info',
     'INFO',
@@ -342,7 +313,6 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.quiet, 'q', 'quiet', _Arity.none),
   _Spec(_CliOption.trace, null, 'trace', _Arity.none),
   _Spec(_CliOption.verbose, 'v', 'verbose', _Arity.none),
-  _Spec(_CliOption.warnings, 'w', 'warnings', _Arity.none),
   _Spec(_CliOption.timings, 't', 'timings', _Arity.none),
   _Spec(_CliOption.jobs, 'j', 'jobs', _Arity.required),
   _Spec(_CliOption.help, 'h', 'help', _Arity.optional),
@@ -363,36 +333,28 @@ final class CliOptions {
   ///
   /// Mirrors `Options.new`: [attributes] defaults to an empty map,
   /// [standalone] to `true`, [safe] to [SafeMode.unsafe], [verbose] to 1,
-  /// [warnings] to `false`, and [failureLevel] to [Severity.fatal];
+  /// and [failureLevel] to [Severity.fatal];
   /// [trace] and [timings] are always `false` (seeds for them are ignored,
   /// as for the failure level); everything else defaults to
   /// `null`. [doctype] and [backend] seed `attributes['doctype']` and
   /// `attributes['backend']` when given.
-  ///
-  /// [templateDirs] accepts a single [String] directory, an
-  /// [Iterable] of directories, or `null`.
   new({
     Map<String, String>? attributes,
     this.inputFiles,
     this.outputFile,
     int? safe,
     this.standalone = true,
-    Object? templateDirs,
+    this.templateDirs,
     this.templateEngine,
     String? doctype,
     String? backend,
-    this.eruby,
     this.verbose = 1,
-    this.warnings = false,
-    this.loadPaths,
-    this.requires,
     this.baseDir,
     this.sourceDir,
     this.destinationDir,
     this.jobs = 1,
   }) : attributes = attributes ?? <String, String>{},
-       safe = safe ?? SafeMode.unsafe,
-       templateDirs = _normalizeTemplateDirs(templateDirs) {
+       safe = safe ?? SafeMode.unsafe {
     if (doctype != null) this.attributes!['doctype'] = doctype;
     if (backend != null) this.attributes!['backend'] = backend;
   }
@@ -420,20 +382,8 @@ final class CliOptions {
   /// Template engine name from `-E/--template-engine`.
   String? templateEngine;
 
-  /// eRuby implementation from `--eruby`.
-  String? eruby;
-
   /// Verbosity from `-q/--quiet` (0), default (1) or `-v/--verbose` (2).
   int verbose;
-
-  /// Whether script warnings are enabled (`-w/--warnings`).
-  bool warnings;
-
-  /// Load paths from `-I/--load-path`.
-  List<String>? loadPaths;
-
-  /// Libraries from `-r/--require`.
-  List<String>? requires;
 
   /// Base directory from `-B/--base-dir`.
   String? baseDir;
@@ -462,19 +412,6 @@ final class CliOptions {
   /// `Invoker.invokeAsync`). Values below 1 behave like 1; [parse] rejects
   /// them (and non-integers) with a make-style usage error instead.
   int jobs;
-
-  /// Normalizes a [CliOptions.templateDirs] seed. See the constructor docs.
-  static List<String>? _normalizeTemplateDirs(Object? value) {
-    if (value == null) return null;
-    if (value is String) return [value];
-    if (value is List<String>) return value;
-    if (value is Iterable<String>) return value.toList();
-    throw ArgumentError.value(
-      value,
-      'templateDirs',
-      'expected a String, an Iterable<String>, or null',
-    );
-  }
 
   /// Parses [args] into a fresh [CliOptions].
   ///
@@ -512,10 +449,9 @@ final class CliOptions {
   /// `ASCIIDOCTOR_MANPAGE_PATH`.
   ///
   /// Throws [AmbiguousCliOptionException] for abbreviated long options
-  /// matching several options, [NeedlessCliArgumentException] for `=value`
-  /// attached to a flag, and [UnsupportedError] when `--trace` is combined
-  /// with `-r` (the errors Asciidoctor lets propagate out of option
-  /// parsing).
+  /// matching several options and [NeedlessCliArgumentException] for
+  /// `=value` attached to a flag (the errors Asciidoctor lets propagate out
+  /// of option parsing).
   int? parse(
     List<String> args, {
     StringSink? out,
@@ -626,30 +562,6 @@ final class CliOptions {
 
     // The template engine name is validated when templates engage
     // during conversion instead (see the library docs).
-
-    if (loadPaths != null) {
-      // Libraries cannot be loaded at runtime; the paths are only recorded.
-      final seen = <String>{};
-      loadPaths = loadPaths!.where(seen.add).toList();
-    }
-
-    if (requires != null) {
-      final seen = <String>{};
-      requires = requires!.where(seen.add).toList();
-      for (final path in requires!) {
-        // Dart cannot load libraries at runtime (see the library docs), so
-        // every require fails like an unloadable library.
-        if (trace) {
-          throw UnsupportedError(
-            "asciidoctor: FAILED: '$path' could not be loaded",
-          );
-        }
-        errSink
-          ..writeln("asciidoctor: FAILED: '$path' could not be loaded")
-          ..writeln('  Use --trace to show backtrace');
-        return 1;
-      }
-    }
 
     return null;
   }
@@ -947,8 +859,6 @@ final class CliOptions {
         safe = _safeModeValue(value!);
       case _CliOption.sectionNumbers:
         _attributeMap['sectnums'] = '';
-      case _CliOption.eruby:
-        eruby = value;
       case _CliOption.attribute:
         _assignAttribute(value!);
       case _CliOption.templateDir:
@@ -961,16 +871,6 @@ final class CliOptions {
         sourceDir = value;
       case _CliOption.destinationDir:
         destinationDir = value;
-      case _CliOption.loadPath:
-        loadPaths ??= [];
-        loadPaths!.addAll(value!.split(_pathListSeparator));
-      case _CliOption.require:
-        // Split on commas, dropping trailing empty fields.
-        final paths = value!.split(',');
-        while (paths.isNotEmpty && paths.last.isEmpty) {
-          paths.removeLast();
-        }
-        (requires ??= []).addAll(paths);
       case _CliOption.failureLevel:
         failureLevel = _severityForLevel(value!);
       case _CliOption.quiet:
@@ -979,8 +879,6 @@ final class CliOptions {
         trace = true;
       case _CliOption.verbose:
         verbose = 2;
-      case _CliOption.warnings:
-        warnings = true;
       case _CliOption.timings:
         timings = true;
       case _CliOption.jobs:
@@ -1107,9 +1005,6 @@ Severity _severityForLevel(String value) {
   if (level == 'WARNING') level = 'WARN';
   return Severity.fromName(level);
 }
-
-/// The path-list separator. Port of `File::PATH_SEPARATOR`.
-String get _pathListSeparator => Platform.isWindows ? ';' : ':';
 
 /// Port of `File.file?` (follows links).
 bool _isFile(String path) {

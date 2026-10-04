@@ -79,7 +79,7 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
   @override
   void textToken(String text, String kind) {
     final style = _spanForKinds(
-      _lastOpened != null ? <String>[kind, ..._opened] : kind,
+      _lastOpened != null ? <String>[kind, ..._opened] : <String>[kind],
     );
     var escaped = _escapeHtml(text);
     if (_breakLines &&
@@ -100,7 +100,9 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
   @override
   void beginGroup(String kind) {
     _out.write(
-      _spanForKinds(_lastOpened != null ? <String>[kind, ..._opened] : kind) ??
+      _spanForKinds(
+            _lastOpened != null ? <String>[kind, ..._opened] : <String>[kind],
+          ) ??
           '<span>',
     );
     _opened.add(kind);
@@ -131,22 +133,15 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
     return html;
   }
 
-  /// Returns the opening span for [kinds] (a kind or a kind plus its
-  /// enclosing groups), or `null` when no span is emitted.
+  /// Returns the opening span for [kinds] (a kind, optionally followed by
+  /// its enclosing groups), or `null` when no span is emitted.
   ///
   /// A span is emitted exactly when the current kind has a CSS class; in
   /// `:style` mode the `style` attribute always renders (possibly empty),
   /// resolved from the `alpha` theme over the nested classes.
-  String? _spanForKinds(Object kinds) {
-    final String first;
-    final List<String> nested;
-    if (kinds is List<String>) {
-      first = kinds.first;
-      nested = kinds;
-    } else {
-      first = kinds as String;
-      nested = <String>[first];
-    }
+  String? _spanForKinds(List<String> kinds) {
+    final first = kinds.first;
+    final nested = kinds;
     if (coderayTokenClass(first) == null) return null;
     if (css == CssMode.inline) {
       final classes = nested.map((kind) => coderayTokenClass(kind) ?? '');
@@ -189,7 +184,7 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
       // The current kind first, then its enclosing groups from outermost
       // to innermost (the original's `[kind, *opened[0...index]]`).
       final kinds = index == 0
-          ? _opened[0]
+          ? <String>[_opened[0]]
           : <String>[_opened[index], ..._opened.sublist(0, index)];
       reopen.write(_spanForKinds(kinds) ?? '<span>');
     }

@@ -4,14 +4,14 @@
 /// `Asciidoctor::MemoryLogger`, `Asciidoctor::NullLogger`,
 /// `Asciidoctor::LoggerManager` and `Asciidoctor::Logging`).
 ///
-/// The severity scale, manager memoization, `max_severity` tracking
-/// (including messages dropped by the level filter) and the
-/// `BasicFormatter` label substitutes (`WARN` → `WARNING`, `FATAL` →
-/// `FAILED`) behave as in Asciidoctor. Differences are marked `DIVERGENCE`
-/// in the member docs.
+/// The severity scale, `maxSeverity` tracking (including messages dropped by
+/// the level filter) and the [BasicFormatter] label substitutes (`WARN` →
+/// `WARNING`, `FATAL` → `FAILED`) behave as in Asciidoctor.
 library;
 
 import 'dart:io' show File, FileMode, IOSink, pid, stderr;
+
+import 'package:asciidoctor/src/cursor.dart';
 
 /// Severity levels for log messages.
 ///
@@ -39,17 +39,15 @@ enum Severity {
   /// Creates a severity with integer [value] and format [label].
   new(this.value, this.label);
 
-  /// The integer severity, matching `::Logger::Severity`.
+  /// The integer severity.
   final int value;
 
-  /// The severity label used by formatters, matching `SEV_LABEL`.
+  /// The severity label used by formatters.
   final String label;
 
   /// Returns the severity with integer [value].
   ///
-  /// Throws an [ArgumentError] for values outside 0–5. DIVERGENCE:
-  /// Asciidoctor accepts out-of-range integer levels unchecked (e.g. 99
-  /// silences every predicate); nothing here relies on that.
+  /// Throws an [ArgumentError] for values outside 0–5.
   static Severity fromValue(int value) {
     for (final severity in Severity.values) {
       if (severity.value == value) return severity;
@@ -59,9 +57,8 @@ enum Severity {
 
   /// Returns the severity named [name] (case-insensitive).
   ///
-  /// Accepts exactly these names: `DEBUG`,
-  /// `INFO`, `WARN`, `ERROR`, `FATAL`, `UNKNOWN`. Anything else — including
-  /// `WARNING` — throws an [ArgumentError] (`invalid log level: ...`).
+  /// Accepts exactly these names: `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`,
+  /// `UNKNOWN`. Anything else throws an [ArgumentError].
   static Severity fromName(String name) {
     switch (name.toUpperCase()) {
       case 'DEBUG':
@@ -80,66 +77,46 @@ enum Severity {
         throw ArgumentError('invalid log level: $name');
     }
   }
+}
 
-  /// Coerces a user-supplied level to a [Severity].
-  ///
-  /// Accepts a [Severity] (returned as is), an [int] (see [fromValue]) or a
-  /// [String] name (see [fromName]). Anything else, including `null`, throws
-  /// an [ArgumentError]. Mirrors `::Logger#level=`.
-  static Severity coerce(Object? value) {
-    if (value is Severity) return value;
-    if (value is int) return Severity.fromValue(value);
-    if (value is String) return Severity.fromName(value);
-    throw ArgumentError('invalid log level: $value');
+/// A log message: its [text] plus the source position it refers to.
+///
+/// Port of the hash built by `Logging#message_with_context`. [toString]
+/// renders `sourceLocation: text` when a location is present, else [text].
+class LogMessage {
+  /// Creates a message with [text] and optional source locations.
+  const new(this.text, {this.sourceLocation, this.includeLocation});
+
+  /// The message text, without location prefix.
+  final String text;
+
+  /// The source position the message refers to, if any.
+  final Cursor? sourceLocation;
+
+  /// The position inside an include file the message refers to, if any.
+  final Cursor? includeLocation;
+
+  @override
+  String toString() {
+    final location = sourceLocation;
+    return location == null ? text : '$location: $text';
   }
 }
 
 /// Formats a single log record.
-///
-/// Mirrors the `call(severity, time, progname, msg)` protocol of
-/// `::Logger::Formatter` (here `severity` is a [Severity] instead of a
-/// label string).
 abstract interface class LoggerFormatter {
-  /// Formats a record logged at [severity] with program name [progname] and
-  /// resolved [message] at [time].
+  /// Formats [message], logged at [severity] by [progname] at [time].
   String call(
     Severity severity,
     DateTime time,
     String progname,
-    Object? message,
+    LogMessage message,
   );
 }
 
-/// Wraps a formatting function as a [LoggerFormatter].
+/// Detailed log record formatter.
 ///
-/// Used when a raw function is passed as `formatter:`.
-final class _FunctionFormatter implements LoggerFormatter {
-  /// Creates a formatter delegating to [format].
-  const new(this.format);
-
-  /// The wrapped formatting function.
-  final String Function(
-    Severity severity,
-    DateTime time,
-    String progname,
-    Object? message,
-  )
-  format;
-
-  @override
-  String call(
-    Severity severity,
-    DateTime time,
-    String progname,
-    Object? message,
-  ) => format(severity, time, progname, message);
-}
-
-/// Default log record formatter.
-///
-/// Mirrors `::Logger::Formatter#call`
-/// (`D, [2026-10-03T05:25:29.294678 #pid] DEBUG -- progname: message`). Used
-/// when `formatter:` is explicitly `null`.
+/// Renders `D, [2026-10-03T05:25:29.294678 #pid] DEBUG -- progname: message`.
 final class DefaultFormatter implements LoggerFormatter {
   /// Creates the default formatter.
   const new();
@@ -149,7 +126,7 @@ final class DefaultFormatter implements LoggerFormatter {
     Severity severity,
     DateTime time,
     String progname,
-    Object? message,
+    LogMessage message,
   ) {
     final label = severity.label;
     return '${label[0]}, [${time.toIso8601String()} #$pid] '
@@ -157,7 +134,7 @@ final class DefaultFormatter implements LoggerFormatter {
   }
 }
 
-/// Traditional single-line log record formatter.
+/// Single-line log record formatter.
 ///
 /// Port of `Asciidoctor::Logger::BasicFormatter`: renders
 /// `progname: SEVERITY: message`, substituting `WARNING` for `WARN` and
@@ -166,7 +143,7 @@ final class BasicFormatter implements LoggerFormatter {
   /// Creates the basic formatter.
   const new();
 
-  /// Severity label substitutes. Port of `SEVERITY_LABEL_SUBSTITUTES`.
+  /// Severity label substitutes.
   static const Map<String, String> severityLabelSubstitutes = {
     'WARN': 'WARNING',
     'FATAL': 'FAILED',
@@ -177,174 +154,124 @@ final class BasicFormatter implements LoggerFormatter {
     Severity severity,
     DateTime time,
     String progname,
-    Object? message,
+    LogMessage message,
   ) {
     final label = severityLabelSubstitutes[severity.label] ?? severity.label;
     return '$progname: $label: $message\n';
   }
 }
 
-/// Shared `::Logger` behavior for [Logger], [MemoryLogger] and [NullLogger].
+/// Shared behavior for [Logger], [MemoryLogger] and [NullLogger].
 ///
-/// Holds the level filter, the `debug?`-style predicates (named
-/// `isDebugEnabled`, etc.) and the severity convenience methods, which all
-/// delegate to [add]. Subclasses implement [add] and [maxSeverity].
+/// Holds the level filter, the `isDebugEnabled`-style predicates and the
+/// severity convenience methods, which all delegate to [add].
 abstract class LoggerBase {
   /// Creates a logger with the given [level].
-  new(Severity level) : _level = level;
-
-  Severity _level;
+  new(this.level);
 
   /// The minimum severity emitted (messages below it are dropped, except by
   /// [MemoryLogger], which records everything).
-  ///
-  /// Assigning through this setter accepts a [Severity], an [int], or a
-  /// [String] name (see [Severity.coerce]), mirroring `::Logger#level=`.
-  Severity get level => _level;
-
-  /// Sets the level from a [Severity], [int], or [String] name.
-  set level(Object? value) => _level = Severity.coerce(value);
+  Severity level;
 
   /// The highest severity passed to [add] so far, or `null` when nothing
-  /// was logged yet. Mirrors `max_severity`.
+  /// was logged yet.
   Severity? get maxSeverity;
 
-  /// Whether [Severity.debug] messages are emitted (`level <= DEBUG`).
-  ///
-  /// Mirrors `::Logger#debug?`.
-  bool get isDebugEnabled => _level.value <= Severity.debug.value;
+  /// Whether [Severity.debug] messages are emitted.
+  bool get isDebugEnabled => level.value <= Severity.debug.value;
 
-  /// Whether [Severity.info] messages are emitted (`level <= INFO`).
-  ///
-  /// Mirrors `::Logger#info?`.
-  bool get isInfoEnabled => _level.value <= Severity.info.value;
+  /// Whether [Severity.info] messages are emitted.
+  bool get isInfoEnabled => level.value <= Severity.info.value;
 
-  /// Whether [Severity.warn] messages are emitted (`level <= WARN`).
-  ///
-  /// Mirrors `::Logger#warn?`.
-  bool get isWarnEnabled => _level.value <= Severity.warn.value;
+  /// Whether [Severity.warn] messages are emitted.
+  bool get isWarnEnabled => level.value <= Severity.warn.value;
 
-  /// Whether [Severity.error] messages are emitted (`level <= ERROR`).
-  ///
-  /// Mirrors `::Logger#ERROR` predicate (`error?`).
-  bool get isErrorEnabled => _level.value <= Severity.error.value;
+  /// Whether [Severity.error] messages are emitted.
+  bool get isErrorEnabled => level.value <= Severity.error.value;
 
-  /// Whether [Severity.fatal] messages are emitted (`level <= FATAL`).
-  ///
-  /// Mirrors `::Logger#fatal?`.
-  bool get isFatalEnabled => _level.value <= Severity.fatal.value;
+  /// Whether [Severity.fatal] messages are emitted.
+  bool get isFatalEnabled => level.value <= Severity.fatal.value;
 
-  /// Logs [message] at [Severity.debug]. Returns `true`.
-  bool debug(Object? message) => add(Severity.debug, message);
+  /// Logs [text] at [Severity.debug], optionally located [at] a position.
+  void debug(String text, {Cursor? at}) =>
+      add(Severity.debug, LogMessage(text, sourceLocation: at));
 
-  /// Logs [message] at [Severity.info]. Returns `true`.
-  bool info(Object? message) => add(Severity.info, message);
+  /// Logs [text] at [Severity.info], optionally located [at] a position.
+  void info(String text, {Cursor? at}) =>
+      add(Severity.info, LogMessage(text, sourceLocation: at));
 
-  /// Logs [message] at [Severity.warn]. Returns `true`.
-  bool warn(Object? message) => add(Severity.warn, message);
+  /// Logs [text] at [Severity.warn], optionally located [at] a position.
+  void warn(String text, {Cursor? at}) =>
+      add(Severity.warn, LogMessage(text, sourceLocation: at));
 
-  /// Logs [message] at [Severity.error]. Returns `true`.
-  bool error(Object? message) => add(Severity.error, message);
+  /// Logs [text] at [Severity.error], optionally located [at] a position.
+  void error(String text, {Cursor? at}) =>
+      add(Severity.error, LogMessage(text, sourceLocation: at));
 
-  /// Logs [message] at [Severity.fatal]. Returns `true`.
-  bool fatal(Object? message) => add(Severity.fatal, message);
+  /// Logs [text] at [Severity.fatal], optionally located [at] a position.
+  void fatal(String text, {Cursor? at}) =>
+      add(Severity.fatal, LogMessage(text, sourceLocation: at));
 
-  /// Logs [message] at [Severity.unknown]. Returns `true`.
-  bool unknown(Object? message) => add(Severity.unknown, message);
-
-  /// Logs [message] at [severity], resolving a `null` [message] from
-  /// [progname] (mirroring `::Logger#add`, where the convenience methods
-  /// pass their argument as `progname`).
-  ///
-  /// A `null` [severity] means [Severity.unknown]. A zero-argument function
-  /// passed as [message] is evaluated lazily: it is only invoked when the
-  /// record is actually emitted (or recorded, for [MemoryLogger]), never for
-  /// level-filtered records. Always returns `true`.
-  bool add(Severity? severity, [Object? message, Object? progname]);
+  /// Logs [message] at [severity].
+  void add(Severity severity, LogMessage message);
 
   /// Releases resources held by this logger.
   ///
-  /// [Logger] closes file sinks it opened itself; [MemoryLogger] and
-  /// [NullLogger] do nothing. A caller-supplied sink (in particular stderr)
-  /// is never closed.
+  /// [Logger] closes file sinks it opened itself; a caller-supplied sink (in
+  /// particular stderr) is never closed.
   Future<void> close();
 }
 
 /// The application logger.
 ///
-/// Port of `Asciidoctor::Logger`: writes formatted records to a log device,
-/// defaults to stderr, program name `asciidoctor`, level `WARN` and the
+/// Port of `Asciidoctor::Logger`: writes formatted records to a sink,
+/// defaulting to stderr, program name `asciidoctor`, level `WARN` and the
 /// [BasicFormatter].
 class Logger extends LoggerBase {
-  /// Creates a logger writing to [logdev].
-  ///
-  /// [logdev] may be a [StringSink] (e.g. a [StringBuffer] or [IOSink]), a
-  /// [File], or a [String] file path (opened for appending). When omitted it
-  /// defaults to stderr; an explicit `null` discards all output (mirroring
-  /// a `null` device). Anything else throws an [ArgumentError].
-  ///
-  /// [level] defaults to [Severity.warn] when omitted and accepts a
-  /// [Severity], [int], or [String] name (see [Severity.coerce]); an
-  /// explicit `null` throws an [ArgumentError].
-  ///
-  /// [formatter] defaults to the [BasicFormatter] when omitted; an explicit
-  /// `null` selects the [DefaultFormatter]; a [LoggerFormatter] — or a raw
-  /// formatting function — is used as is.
+  /// Creates a logger writing to [sink] (default stderr).
   new({
-    Object? logdev = _unspecified,
-    Object? level = _unspecified,
-    Object? formatter = _unspecified,
-  }) : this._(_resolveLogdev(logdev), _resolveLevel(level), formatter);
+    StringSink? sink,
+    Severity level = Severity.warn,
+    this.formatter = const BasicFormatter(),
+  }) : _sink = sink ?? stderr,
+       _ownsSink = false,
+       super(level);
 
-  /// Creates a logger from an already-resolved log device.
-  new _(_ResolvedLogdev resolved, super.level, Object? formatter)
-    : _sink = resolved.sink,
-      _ownsSink = resolved.owned {
-    this.formatter = _resolveFormatter(formatter);
-  }
-
-  /// Sentinel distinguishing an omitted optional argument from an explicit
-  /// `null`.
-  static const Object _unspecified = Object();
+  /// Creates a logger appending to the file at [path], which it closes in
+  /// [close].
+  new toFile(
+    String path, {
+    Severity level = Severity.warn,
+    this.formatter = const BasicFormatter(),
+  }) : _sink = File(path).openWrite(mode: FileMode.append),
+       _ownsSink = true,
+       super(level);
 
   final StringSink _sink;
   final bool _ownsSink;
 
-  /// The program name stamped on every record. Always starts as
-  /// `asciidoctor`.
+  /// The program name stamped on every record.
   String progname = 'asciidoctor';
 
-  /// The record formatter. Mirrors `::Logger#formatter`.
-  late LoggerFormatter formatter;
+  /// The record formatter.
+  LoggerFormatter formatter;
 
   Severity? _maxSeverity;
 
   @override
   Severity? get maxSeverity => _maxSeverity;
 
-  /// The sink records are written to (stderr, a caller-supplied sink, or a
-  /// file sink opened from a path).
-  StringSink get logdev => _sink;
+  /// The sink records are written to.
+  StringSink get sink => _sink;
 
   @override
-  bool add(Severity? severity, [Object? message, Object? progname]) {
-    final resolved = severity ?? Severity.unknown;
+  void add(Severity severity, LogMessage message) {
     final currentMax = _maxSeverity;
-    if (currentMax == null || resolved.value > currentMax.value) {
-      _maxSeverity = resolved;
+    if (currentMax == null || severity.value > currentMax.value) {
+      _maxSeverity = severity;
     }
-    if (resolved.value < level.value) return true;
-    var text = message;
-    if (text is Object? Function()) text = text();
-    final String effectiveProgname;
-    if (text == null) {
-      text = progname;
-      effectiveProgname = this.progname;
-    } else {
-      effectiveProgname = progname?.toString() ?? this.progname;
-    }
-    _sink.write(formatter(resolved, DateTime.now(), effectiveProgname, text));
-    return true;
+    if (severity.value < level.value) return;
+    _sink.write(formatter(severity, DateTime.now(), progname, message));
   }
 
   @override
@@ -352,85 +279,9 @@ class Logger extends LoggerBase {
     final sink = _sink;
     if (_ownsSink && sink is IOSink) await sink.close();
   }
-
-  static Severity _resolveLevel(Object? level) =>
-      identical(level, _unspecified) ? Severity.warn : Severity.coerce(level);
-
-  static LoggerFormatter _resolveFormatter(Object? formatter) {
-    if (identical(formatter, _unspecified)) return const BasicFormatter();
-    if (formatter == null) return const DefaultFormatter();
-    if (formatter is LoggerFormatter) return formatter;
-    if (formatter is String Function(Severity, DateTime, String, Object?)) {
-      return _FunctionFormatter(formatter);
-    }
-    throw ArgumentError.value(
-      formatter,
-      'formatter',
-      'expected a LoggerFormatter, a formatting function, or null',
-    );
-  }
-
-  static _ResolvedLogdev _resolveLogdev(Object? logdev) {
-    if (identical(logdev, _unspecified)) {
-      return _ResolvedLogdev(stderr, owned: false);
-    }
-    if (logdev == null) return const _ResolvedLogdev(_NullSink(), owned: false);
-    if (logdev is StringSink) return _ResolvedLogdev(logdev, owned: false);
-    if (logdev is File) {
-      return _ResolvedLogdev(
-        logdev.openWrite(mode: FileMode.append),
-        owned: true,
-      );
-    }
-    if (logdev is String) {
-      return _ResolvedLogdev(
-        File(logdev).openWrite(mode: FileMode.append),
-        owned: true,
-      );
-    }
-    throw ArgumentError.value(
-      logdev,
-      'logdev',
-      'expected a StringSink, File, file path, or null',
-    );
-  }
-}
-
-/// A log device plus whether the logger owns (and must close) it.
-class _ResolvedLogdev {
-  /// Creates a resolved log device.
-  const new(this.sink, {required this.owned});
-
-  /// The sink records are written to.
-  final StringSink sink;
-
-  /// Whether the logger opened [sink] itself.
-  final bool owned;
-}
-
-/// A sink discarding everything written to it (a `null` log device).
-class _NullSink implements StringSink {
-  /// Creates the discarding sink.
-  const new();
-
-  @override
-  void write(Object? object) {}
-
-  @override
-  void writeAll(Iterable<Object?> objects, [String separator = '']) {}
-
-  @override
-  void writeCharCode(int charCode) {}
-
-  @override
-  void writeln([Object? object = '']) {}
 }
 
 /// A log record kept in memory.
-///
-/// Port of the `{severity:, message:}` hashes stored in
-/// `Asciidoctor::MemoryLogger#messages` ([severity] is a [Severity] instead
-/// of a symbol).
 class MemoryLogMessage {
   /// Creates a record of [message] logged at [severity].
   const new(this.severity, this.message);
@@ -438,8 +289,8 @@ class MemoryLogMessage {
   /// The severity the message was logged at.
   final Severity severity;
 
-  /// The resolved message (never a lazy function).
-  final Object? message;
+  /// The logged message.
+  final LogMessage message;
 }
 
 /// A logger recording every record in [messages].
@@ -454,17 +305,11 @@ class MemoryLogger extends LoggerBase {
   final List<MemoryLogMessage> messages = [];
 
   @override
-  bool add(Severity? severity, [Object? message, Object? progname]) {
-    var text = message;
-    if (text is Object? Function()) text = text();
-    text ??= progname;
-    messages.add(MemoryLogMessage(severity ?? Severity.unknown, text));
-    return true;
+  void add(Severity severity, LogMessage message) {
+    messages.add(MemoryLogMessage(severity, message));
   }
 
   /// The highest recorded severity, or `null` when [messages] is empty.
-  ///
-  /// Mirrors `MemoryLogger#max_severity`.
   @override
   Severity? get maxSeverity {
     Severity? max;
@@ -476,10 +321,10 @@ class MemoryLogger extends LoggerBase {
     return max;
   }
 
-  /// Drops all recorded records. Mirrors `MemoryLogger#clear`.
+  /// Drops all recorded records.
   void clear() => messages.clear();
 
-  /// Whether no records were recorded. Mirrors `MemoryLogger#empty?`.
+  /// Whether no records were recorded.
   bool get isEmpty => messages.isEmpty;
 
   @override
@@ -499,13 +344,11 @@ class NullLogger extends LoggerBase {
   Severity? get maxSeverity => _maxSeverity;
 
   @override
-  bool add(Severity? severity, [Object? message, Object? progname]) {
-    final resolved = severity ?? Severity.unknown;
+  void add(Severity severity, LogMessage message) {
     final currentMax = _maxSeverity;
-    if (currentMax == null || resolved.value > currentMax.value) {
-      _maxSeverity = resolved;
+    if (currentMax == null || severity.value > currentMax.value) {
+      _maxSeverity = severity;
     }
-    return true;
   }
 
   @override
@@ -514,68 +357,14 @@ class NullLogger extends LoggerBase {
 
 /// Global logger registry.
 ///
-/// Port of `Asciidoctor::LoggerManager`. [loggerFactory] plays the role of
-/// the `logger_class` property (a factory rather than a class object, since
-/// Dart cannot instantiate a `Type`).
+/// Port of `Asciidoctor::LoggerManager`.
 abstract final class LoggerManager {
-  /// Creates loggers from a log device. Mirrors the `logger_class`
-  /// property; tests replace it to observe instantiation.
-  static LoggerBase Function([Object? logdev]) loggerFactory = ([logdev]) =>
-      Logger(logdev: logdev ?? stderr);
-
   static LoggerBase? _logger;
 
-  /// The global logger, memoized on first access (mirroring the
-  /// `memoize_logger` redefinition of `LoggerManager.logger`).
-  static LoggerBase get logger => _logger ??= loggerFactory(stderr);
+  /// The global logger, created on first access (a [Logger] on stderr).
+  static LoggerBase get logger => _logger ??= Logger();
 
-  /// Replaces the global logger, or resets it to a default instance when
-  /// [newLogger] is `null`. Mirrors `LoggerManager.logger=`.
-  static set logger(LoggerBase? newLogger) =>
-      _logger = newLogger ?? loggerFactory(stderr);
-
-  /// Returns the memoized global logger, creating it with [logdev] on first
-  /// access. Mirrors the optional `pipe` argument of
-  /// `LoggerManager.logger`, which is only honored before memoization.
-  static LoggerBase loggerWithLogdev([Object? logdev]) =>
-      _logger ??= loggerFactory(logdev ?? stderr);
-}
-
-/// A log message carrying source context.
-///
-/// Port of the `{text:, ...}` hash built by `Logging#message_with_context`
-/// (extended with `Logger::AutoFormattingMessage`): [toString] renders
-/// `sourceLocation: text` when a location is present, else [text].
-class ContextMessage {
-  /// Creates a message with [text] and optional [sourceLocation].
-  const new(this.text, {this.sourceLocation});
-
-  /// The message text, without location prefix. Mirrors `message[:text]`.
-  final String text;
-
-  /// The source location (e.g. a reader cursor) the message refers to, if
-  /// any. Mirrors `message[:source_location]`.
-  final Object? sourceLocation;
-
-  @override
-  String toString() {
-    final location = sourceLocation;
-    return location == null ? text : '$location: $text';
-  }
-}
-
-/// Mixes the logging surface into a class.
-///
-/// Port of `Asciidoctor::Logging`: [logger] reaches the global logger and
-/// [messageWithContext] builds auto-formatting [ContextMessage]s.
-mixin Logging {
-  /// The global logger. Mirrors `Logging#logger`.
-  LoggerBase get logger => LoggerManager.logger;
-
-  /// Builds a [ContextMessage] with [text] plus [sourceLocation] context.
-  ///
-  /// Mirrors `Logging#message_with_context` (whose arbitrary `context` hash
-  /// is only ever given `source_location` by in-repo callers).
-  ContextMessage messageWithContext(String text, {Object? sourceLocation}) =>
-      ContextMessage(text, sourceLocation: sourceLocation);
+  /// Replaces the global logger, or resets it to a default stderr [Logger]
+  /// when [newLogger] is `null`.
+  static set logger(LoggerBase? newLogger) => _logger = newLogger ?? Logger();
 }

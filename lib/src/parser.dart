@@ -2,18 +2,17 @@
 ///
 /// Port of `lib/asciidoctor/parser.rb` (complete).
 ///
-/// Node contexts and other symbolic names are `String`s throughout.
-/// Attribute maps that carry positional entries use `Map<Object, Object?>`
-/// with `int` keys;
-/// they are converted to string keys when handed to block constructors via
-/// `_strKeys` because the ported model types its attribute maps as
-/// `Map<String, Object?>`.
+/// Node contexts and other symbolic names are `String`s throughout. The
+/// attributes collected for the next block travel in a [BlockAttributes]
+/// map, which also carries the attribute entries that preceded the block.
 ///
 /// Substitutions go through `substitutors.dart` and the node title
 /// getters, and attribute entries through [Document.setAttribute], so the
 /// parser applies exactly the substitutions Asciidoctor applies at each
 /// step. A few tables below duplicate values from `constants.dart`.
 library;
+
+import 'dart:collection' show MapBase;
 
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
@@ -53,11 +52,76 @@ class BlockMatchData {
   final String terminator;
 }
 
-/// Internal marker for a list continuation line inside a list-item buffer.
+/// The attributes collected for the next block while parsing.
 ///
-/// The two markers live in a `List<Object>` buffer next to plain lines. The
-/// buffer is mapped back to plain strings before a [Reader] is built.
-enum _ListContinuation {
+/// A string map of the block attributes (positional attributes under `'1'`,
+/// `'2'`, ...) that also carries the attribute entries (`:name: value`
+/// lines) recorded before the block, which are replayed when the block is
+/// converted.
+final class BlockAttributes extends MapBase<String, String> {
+  /// Creates a map holding a copy of [attributes].
+  new([Map<String, String>? attributes])
+    : _attributes = <String, String>{...?attributes};
+
+  final Map<String, String> _attributes;
+
+  /// The attribute entries recorded before the block, if any.
+  List<DocumentAttributeEntry>? attributeEntries;
+
+  /// Whether the document header preceding these attributes was invalid.
+  bool invalidHeader = false;
+
+  /// Records [entry] for replay when the block is converted.
+  void addEntry(DocumentAttributeEntry entry) {
+    (attributeEntries ??= <DocumentAttributeEntry>[]).add(entry);
+  }
+
+  /// Returns a copy, including the attribute entries.
+  BlockAttributes copy() => BlockAttributes(_attributes)
+    ..attributeEntries = attributeEntries == null
+        ? null
+        : List.of(attributeEntries!)
+    ..invalidHeader = invalidHeader;
+
+  @override
+  String? operator [](Object? key) => _attributes[key];
+
+  @override
+  void operator []=(String key, String value) {
+    _attributes[key] = value;
+  }
+
+  @override
+  void clear() {
+    _attributes.clear();
+    attributeEntries = null;
+    invalidHeader = false;
+  }
+
+  @override
+  Iterable<String> get keys => _attributes.keys;
+
+  @override
+  String? remove(Object? key) => _attributes.remove(key);
+}
+
+/// A line in a list-item buffer: a text line or a list continuation
+/// marker.
+sealed class _ItemLine {
+  /// The line text.
+  String get text;
+}
+
+/// A plain text line in a list-item buffer.
+final class _TextLine implements _ItemLine {
+  const new(this.text);
+
+  @override
+  final String text;
+}
+
+/// A list continuation line inside a list-item buffer.
+enum _ListContinuation implements _ItemLine {
   /// A live list continuation (`'+'`).
   active._('+'),
 
@@ -66,7 +130,7 @@ enum _ListContinuation {
 
   new _(this.text);
 
-  /// The line text this marker stands for.
+  @override
   final String text;
 }
 
@@ -320,37 +384,21 @@ abstract final class Parser {
   /// Matches leading ASCII whitespace (for [adjustIndentation]).
   static final RegExp _leadingWhitespaceRx = RegExp(r'^[\x00\t\x0b\f\r ]+');
 
-  /// Builds a log message with optional source [location].
-  static ContextMessage _msg(String text, [Object? location]) =>
-      ContextMessage(text, sourceLocation: location);
-
   /// Returns the [Document] of [node].
   static Document _docOf(AbstractNode node) => node.document! as Document;
 
-  /// Wraps a reader [Cursor] as a [NodeSourceLocation].
-  static NodeSourceLocation? _loc(Cursor? cursor) =>
-      cursor == null ? null : _CursorSourceLocation(cursor);
-
-  /// Converts a parser working map to string keys for block constructors.
-  ///
-  /// Positional `int` keys become their decimal form (`1` to `'1'`), which
-  /// [AbstractNode.attr] resolves identically since it stringifies names.
-  /// Returns a fresh map; the input is never modified.
-  static Map<String, Object?> _strKeys(Map<Object, Object?> attributes) {
-    final result = <String, Object?>{};
-    attributes.forEach((key, value) {
-      result[key is int ? key.toString() : key as String] = value;
-    });
-    return result;
+  /// Applies the collected [attributes] to [block], including the attribute
+  /// entries (ahead of any the block recorded itself).
+  static void _applyAttributes(
+    AbstractBlock block,
+    BlockAttributes attributes,
+  ) {
+    block.updateAttributes(attributes);
+    final entries = attributes.attributeEntries;
+    if (entries != null) {
+      block.attributeEntries = [...entries, ...?block.attributeEntries];
+    }
   }
-
-  /// The line text of a list-item buffer entry (a [String] or a
-  /// [_ListContinuation] marker).
-  static String _lineOf(Object? entry) =>
-      entry is _ListContinuation ? entry.text : entry! as String;
-
-  /// Whether a list-item buffer entry is a [_ListContinuation] marker.
-  static bool _isContinuation(Object? entry) => entry is _ListContinuation;
 
   /// Splits [value] on [sep] into at most [limit] parts (the last part keeps
   /// the remainder).
@@ -392,69 +440,22 @@ abstract final class Parser {
   ///
   /// `null` and unparsable values become `0`; leading whitespace is
   /// skipped and a leading `[+-]?\d+` run is parsed.
-  static int _toInt(Object? value) {
+  static int _toInt(String? value) {
     if (value == null) return 0;
-    if (value is int) return value;
-    if (value is num) return value.toInt();
-    final text = value.toString().trimLeft();
-    final match = _leadingIntRx.firstMatch(text);
+    final match = _leadingIntRx.firstMatch(value.trimLeft());
     return match == null ? 0 : int.parse(match.group(0)!);
   }
 
-  /// Assigns the document attribute [name] to [value].
-  ///
-  /// Delegates to [Document.setAttribute] (port of `Document#set_attribute`,
-  /// lib/asciidoctor/document.rb:870-887), which applies attribute value
-  /// substitutions and refreshes the backend/doctype derived attributes
-  /// while the header is being parsed.
-  static String? _setDocumentAttribute(
-    Document document,
-    String name,
-    String value,
-  ) => document.setAttribute(name, value);
-
-  /// Positional attribute names from an extension [config] (port of
-  /// `ext_config[:positional_attrs] || ext_config[:pos_attrs] || []`).
-  static List<String?> _posAttrsOf(Map<String, Object?> config) {
-    final value = config['positional_attrs'] ?? config['pos_attrs'];
-    if (value is List) return value.map((e) => e?.toString()).toList();
-    return <String?>[];
-  }
-
-  /// Port of `AttributeList.rekey` for parser working maps, whose values are
-  /// not all strings.
-  static void _rekey(Map<Object, Object?> attributes, List<String?> posattrs) {
+  /// Port of `AttributeList.rekey`: copies the positional attributes to
+  /// the names in [posattrs].
+  static void _rekey(Map<String, String> attributes, List<String?> posattrs) {
     for (var index = 0; index < posattrs.length; index++) {
       final key = posattrs[index];
       if (key == null) continue;
-      final value = attributes[index + 1];
+      final value = attributes['${index + 1}'];
       if (value == null) continue;
       attributes[key] = value;
     }
-  }
-
-  /// Port of `Document::AttributeEntry#save_to` for parser working maps, which
-  /// carry `int` positional keys that [DocumentAttributeEntry.saveTo]
-  /// (`Map<String, Object?>`) rejects.
-  static void _saveAttributeEntry(
-    DocumentAttributeEntry entry,
-    Map<Object, Object?> attributes,
-  ) {
-    var entries = attributes['attribute_entries'];
-    if (entries == null || entries == false) {
-      entries = <DocumentAttributeEntry>[];
-      attributes['attribute_entries'] = entries;
-    }
-    (entries as List<DocumentAttributeEntry>).add(entry);
-  }
-
-  /// Whether [value] is `null` or empty (port of `nil_or_empty?`).
-  static bool _isNilOrEmpty(Object? value) {
-    if (value == null) return true;
-    if (value is String) return value.isEmpty;
-    if (value is Iterable) return value.isEmpty;
-    if (value is Map) return value.isEmpty;
-    return false;
   }
 
   /// Parses AsciiDoc source read from [reader] into [document].
@@ -483,7 +484,9 @@ abstract final class Parser {
         // nextSection returns a merged copy; keep the local map in sync.
         blockAttributes
           ..clear()
-          ..addAll(orphaned);
+          ..addAll(orphaned)
+          ..attributeEntries = orphaned.attributeEntries
+          ..invalidHeader = orphaned.invalidHeader;
         if (newSection != null) {
           document.assignNumeral(newSection);
           document.blocks.add(newSection);
@@ -498,7 +501,7 @@ abstract final class Parser {
   ///
   /// Port of `Parser.parse_document_header`. Returns the map of orphan
   /// block attributes captured above the header.
-  static Map<Object, Object?> parseDocumentHeader(
+  static BlockAttributes parseDocumentHeader(
     Reader reader,
     Document document, {
     bool headerOnly = false,
@@ -506,8 +509,8 @@ abstract final class Parser {
     // Capture lines of block-level metadata and plow away comment lines
     // that precede first block.
     final blockAttrs = reader.skipBlankLines() != null
-        ? parseBlockMetadataLines(reader, document, <Object, Object?>{})
-        : <Object, Object?>{};
+        ? parseBlockMetadataLines(reader, document, BlockAttributes())
+        : BlockAttributes();
     final docAttrs = document.attributes;
 
     // Special cases, block style or title is not allowed above document
@@ -517,15 +520,15 @@ abstract final class Parser {
       blockAttrs,
       docAttrs['leveloffset'],
     );
-    if (implicitDoctitle && isTruthy(blockAttrs['title'])) {
-      docAttrs['authorcount'] = 0;
-      return document.finalizeHeader(blockAttrs, headerValid: false);
+    if (implicitDoctitle && blockAttrs.containsKey('title')) {
+      docAttrs['authorcount'] = '0';
+      return _finalizeHeader(document, blockAttrs, headerValid: false);
     }
 
     String? doctitleAttrVal;
     final presetDoctitle = docAttrs['doctitle'];
-    if (!_isNilOrEmpty(presetDoctitle)) {
-      document.title = doctitleAttrVal = presetDoctitle as String?;
+    if (!presetDoctitle.isNullOrEmpty) {
+      document.title = doctitleAttrVal = presetDoctitle;
     }
 
     // If the first line is the document title, add a header to the
@@ -554,27 +557,27 @@ abstract final class Parser {
         }
       }
       if (sourceLocation != null) {
-        document.header!.sourceLocation = _loc(sourceLocation);
+        document.header!.sourceLocation = sourceLocation;
       }
       // Default to compat-mode if document has setext doctitle.
       if (!atx && !document.attributeLocked('compat-mode')) {
         docAttrs['compat-mode'] = '';
       }
       final separator = blockAttrs['separator'];
-      if (isTruthy(separator) && !document.attributeLocked('title-separator')) {
+      if (separator != null && !document.attributeLocked('title-separator')) {
         docAttrs['title-separator'] = separator;
       }
       final blockId = blockAttrs['id'];
       String? docId;
-      if (isTruthy(blockId)) {
-        document.id = docId = blockId as String?;
+      if (blockId != null) {
+        document.id = docId = blockId;
       } else {
         docId = document.id;
       }
       final role = blockAttrs['role'];
-      if (isTruthy(role)) docAttrs['role'] = role;
+      if (role != null) docAttrs['role'] = role;
       final reftext = blockAttrs['reftext'];
-      if (isTruthy(reftext)) docAttrs['reftext'] = reftext;
+      if (reftext != null) docAttrs['reftext'] = reftext;
       blockAttrs.clear();
       // Detect a doctitle change by snapshotting the value (the document's
       // modified-attributes set is private; observably equivalent). The `elsif`
@@ -584,16 +587,16 @@ abstract final class Parser {
       parseHeaderMetadata(reader, document: document, retrieve: false);
       if (docAttrs['doctitle'] != doctitleBefore) {
         final val = docAttrs['doctitle'];
-        if (_isNilOrEmpty(val) || val == doctitleAttrVal) {
-          docAttrs['doctitle'] = doctitleAttrVal;
+        if (val == null || val.isEmpty || val == doctitleAttrVal) {
+          _setOrRemove(docAttrs, 'doctitle', doctitleAttrVal);
         } else {
-          document.title = val as String?;
+          document.title = val;
         }
       }
-      if (docId != null) document.register('refs', [docId, document]);
-    } else if (isTruthy(docAttrs['author'])) {
+      if (docId != null) document.registerRef(docId, document);
+    } else if (docAttrs['author'] case final author?) {
       final authorMetadata = processAuthors(
-        docAttrs['author']!,
+        author,
         namesOnly: true,
         multiple: false,
       );
@@ -601,14 +604,11 @@ abstract final class Parser {
         authorMetadata.remove('authorinitials');
       }
       docAttrs.addAll(authorMetadata);
-    } else if (isTruthy(docAttrs['authors'])) {
-      final authorMetadata = processAuthors(
-        docAttrs['authors']!,
-        namesOnly: true,
-      );
+    } else if (docAttrs['authors'] case final authors?) {
+      final authorMetadata = processAuthors(authors, namesOnly: true);
       docAttrs.addAll(authorMetadata);
     } else {
-      docAttrs['authorcount'] = 0;
+      docAttrs['authorcount'] = '0';
     }
 
     // Parse title and consume name section of manpage document.
@@ -619,7 +619,36 @@ abstract final class Parser {
     // NOTE blockAttrs are the block-level attributes (not document
     // attributes) that precede the first line of content (document title,
     // first section or first block).
-    return document.finalizeHeader(blockAttrs);
+    return _finalizeHeader(document, blockAttrs);
+  }
+
+  /// Finishes the header: drops the attribute entries recorded before the
+  /// first block (they were applied to the header), saves the header
+  /// attributes on [document] and flags an invalid header. Returns
+  /// [blockAttrs].
+  static BlockAttributes _finalizeHeader(
+    Document document,
+    BlockAttributes blockAttrs, {
+    bool headerValid = true,
+  }) {
+    blockAttrs.attributeEntries = null;
+    document.finalizeHeader();
+    if (!headerValid) blockAttrs.invalidHeader = true;
+    return blockAttrs;
+  }
+
+  /// Sets [name] to [value] in [attributes], or removes it when [value] is
+  /// `null`.
+  static void _setOrRemove(
+    Map<String, String> attributes,
+    String name,
+    String? value,
+  ) {
+    if (value == null) {
+      attributes.remove(name);
+    } else {
+      attributes[name] = value;
+    }
   }
 
   /// Parses the manpage header of the AsciiDoc source read from [reader].
@@ -628,12 +657,12 @@ abstract final class Parser {
   static void parseManpageHeader(
     Reader reader,
     Document document,
-    Map<Object, Object?> blockAttributes, {
+    BlockAttributes blockAttributes, {
     bool headerOnly = false,
   }) {
     final docAttrs = document.attributes;
     final doctitle = docAttrs['doctitle'];
-    final volnumMatch = doctitle is String
+    final volnumMatch = doctitle != null
         ? manpageTitleVolnumRx.firstMatch(doctitle)
         : null;
     late final String manvolnum;
@@ -646,20 +675,16 @@ abstract final class Parser {
                   : mantitle)
               .toLowerCase();
     } else {
-      _logger.error(
-        _msg('non-conforming manpage title', reader.cursorAtLine(1)),
-      );
+      _logger.error('non-conforming manpage title', at: reader.cursorAtLine(1));
       // Provide sensible fallbacks.
       docAttrs['mantitle'] =
           docAttrs['doctitle'] ?? docAttrs['docname'] ?? 'command';
       docAttrs['manvolnum'] = manvolnum = '1';
     }
     final mannameAttr = docAttrs['manname'];
-    if (isTruthy(mannameAttr) && isTruthy(docAttrs['manpurpose'])) {
-      if (!isTruthy(docAttrs['manname-title'])) {
-        docAttrs['manname-title'] = 'Name';
-      }
-      docAttrs['mannames'] = [mannameAttr];
+    if (mannameAttr != null && docAttrs.containsKey('manpurpose')) {
+      docAttrs['manname-title'] ??= 'Name';
+      _setMannames(document, [mannameAttr]);
       if (document.backend == 'manpage') {
         docAttrs['docname'] = mannameAttr;
         docAttrs['outfilesuffix'] = '.$manvolnum';
@@ -668,14 +693,24 @@ abstract final class Parser {
       reader
         ..skipBlankLines()
         ..save();
-      blockAttributes.addAll(
-        parseBlockMetadataLines(reader, document, <Object, Object?>{}),
+      final nameAttributes = parseBlockMetadataLines(
+        reader,
+        document,
+        BlockAttributes(),
       );
+      blockAttributes.addAll(nameAttributes);
+      if (nameAttributes.attributeEntries case final entries?) {
+        entries.forEach(blockAttributes.addEntry);
+      }
       String? errorMsg;
-      final nameSectionLevel = isNextLineSection(reader, {});
+      final nameSectionLevel = isNextLineSection(reader, BlockAttributes());
       if (nameSectionLevel != null) {
         if (nameSectionLevel == 1) {
-          final nameSection = initializeSection(reader, document, {});
+          final nameSection = initializeSection(
+            reader,
+            document,
+            BlockAttributes(),
+          );
           final nameSectionBuffer = reader
               .readLinesUntil(breakOnBlankLines: true, skipLineComments: true)
               .map((l) => l.trimLeft())
@@ -703,17 +738,13 @@ abstract final class Parser {
             if (manpurpose.contains(attrRefHead)) {
               manpurpose = subAttributes(document, manpurpose);
             }
-            if (!isTruthy(docAttrs['manname-title'])) {
-              docAttrs['manname-title'] = nameSection.title ?? '';
-            }
-            if (nameSection.id != null) {
-              docAttrs['manname-id'] = nameSection.id;
-            }
-            docAttrs['manname'] = resolvedManname;
-            docAttrs['mannames'] = mannames;
+            docAttrs['manname-title'] ??= nameSection.title ?? '';
+            if (nameSection.id case final id?) docAttrs['manname-id'] = id;
+            _setOrRemove(docAttrs, 'manname', resolvedManname);
+            _setMannames(document, mannames);
             docAttrs['manpurpose'] = manpurpose;
             if (document.backend == 'manpage') {
-              docAttrs['docname'] = resolvedManname;
+              _setOrRemove(docAttrs, 'docname', resolvedManname);
               docAttrs['outfilesuffix'] = '.$manvolnum';
             }
           } else {
@@ -727,10 +758,10 @@ abstract final class Parser {
       }
       if (errorMsg != null) {
         reader.restoreSave();
-        _logger.error(_msg(errorMsg, reader.cursor()));
+        _logger.error(errorMsg, at: reader.cursor());
         final fallback = docAttrs['docname'] ?? 'command';
         docAttrs['manname'] = fallback;
-        docAttrs['mannames'] = [fallback];
+        _setMannames(document, [fallback]);
         if (document.backend == 'manpage') {
           docAttrs['docname'] = fallback;
           docAttrs['outfilesuffix'] = '.$manvolnum';
@@ -741,17 +772,25 @@ abstract final class Parser {
     }
   }
 
+  /// Records the names a man page documents on [document], also as the
+  /// `mannames` attribute (in Asciidoctor's list notation).
+  static void _setMannames(Document document, List<String> mannames) {
+    document.mannames = mannames;
+    document.attributes['mannames'] =
+        '[${mannames.map(debugQuote).join(', ')}]';
+  }
+
   /// Returns the next section from [reader].
   ///
   /// Port of `Parser.next_section`. Returns a record of the new [Section]
   /// (`null` when [parent] itself was consumed, i.e. the preamble case)
   /// and the map of orphaned attributes for the next section or block.
-  static (Section?, Map<Object, Object?>) nextSection(
+  static (Section?, BlockAttributes) nextSection(
     Reader reader,
     AbstractBlock parent, [
-    Map<Object, Object?>? attributes,
+    BlockAttributes? attributes,
   ]) {
-    var attrs = attributes ?? <Object, Object?>{};
+    var attrs = attributes ?? BlockAttributes();
     Block? preamble;
     Block? intro;
     var part = false;
@@ -770,18 +809,18 @@ abstract final class Parser {
     if (parent.context == 'document' &&
         parent.blocks.isEmpty &&
         ((hasHeader = parentDocument?.hasHeader ?? false) ||
-            isTruthy(attrs.remove('invalid-header')) ||
+            _takeInvalidHeader(attrs) ||
             isNextLineSection(reader, attrs) == null)) {
       document = parentDocument!;
       book = document.doctype == 'book';
-      if (hasHeader || (book && attrs[1] != 'abstract')) {
+      if (hasHeader || (book && attrs['1'] != 'abstract')) {
         intro = preamble = Block(
           document,
           'preamble',
           contentModel: 'compound',
         );
         if (book && document.hasAttr('preface-title')) {
-          preamble.title = document.attr('preface-title') as String?;
+          preamble.title = document.attr('preface-title');
         }
         parent.blocks.add(preamble);
       }
@@ -803,9 +842,9 @@ abstract final class Parser {
       // Clear attributes except for title attribute, which must be carried
       // over to next content block.
       final carriedTitle = attrs['title'];
-      attrs = isTruthy(carriedTitle)
-          ? <Object, Object?>{'title': carriedTitle}
-          : <Object, Object?>{};
+      attrs = carriedTitle != null
+          ? BlockAttributes({'title': carriedTitle})
+          : BlockAttributes();
       currentLevel = newSection.level!;
       expectedNextLevel = currentLevel + 1;
       section = newSection;
@@ -846,19 +885,15 @@ abstract final class Parser {
                         '$expectedNextLevel'
                   : 'expected level $expectedNextLevel';
               _logger.warn(
-                _msg(
-                  'section title out of sequence: $expectedCondition, '
-                  'got level $nextLevel',
-                  reader.cursor(),
-                ),
+                'section title out of sequence: $expectedCondition, '
+                'got level $nextLevel',
+                at: reader.cursor(),
               );
             }
           } else {
             _logger.error(
-              _msg(
-                '$sectname sections do not support nested sections',
-                reader.cursor(),
-              ),
+              '$sectname sections do not support nested sections',
+              at: reader.cursor(),
             );
           }
           final (child, childAttrs) = nextSection(reader, section, attrs);
@@ -870,10 +905,8 @@ abstract final class Parser {
         } else if (nextLevel == 0 && identical(section, document)) {
           if (!book) {
             _logger.error(
-              _msg(
-                'level 0 sections can only be used when doctype is book',
-                reader.cursor(),
-              ),
+              'level 0 sections can only be used when doctype is book',
+              at: reader.cursor(),
             );
           }
           final (child, childAttrs) = nextSection(reader, section, attrs);
@@ -929,7 +962,7 @@ abstract final class Parser {
                 final paragraph = (Block(
                   newBlock,
                   'paragraph',
-                  source: partBlock.lines,
+                  lines: partBlock.lines,
                 ))..defaultSubs = List<String>.of(newBlock.subs);
                 paragraph.attributes.remove('subs');
                 paragraph.subs = List<String>.of(newBlock.subs);
@@ -942,10 +975,8 @@ abstract final class Parser {
               // Open the [partintro] open block for appending.
               if (intro == null && firstBlock.contentModel == 'compound') {
                 _logger.error(
-                  _msg(
-                    'illegal block content outside of partintro block',
-                    blockCursor,
-                  ),
+                  'illegal block content outside of partintro block',
+                  at: blockCursor,
                 );
               } else if (firstBlock.contentModel != 'compound') {
                 // Rebuild [partintro] paragraph as an open block.
@@ -980,11 +1011,9 @@ abstract final class Parser {
     if (part) {
       if (section.blocks.isEmpty || section.blocks.last.context != 'section') {
         _logger.error(
-          _msg(
-            'invalid part, must have at least one section (e.g., chapter, '
-            'appendix, etc.)',
-            reader.cursor(),
-          ),
+          'invalid part, must have at least one section (e.g., chapter, '
+          'appendix, etc.)',
+          at: reader.cursor(),
         );
       }
       // NOTE we could try to avoid creating a preamble in the first place,
@@ -1015,8 +1044,15 @@ abstract final class Parser {
     // end of a section that need to get transferred to the next section.
     return (
       identical(section, parent) ? null : section as Section,
-      Map<Object, Object?>.of(attrs),
+      attrs.copy(),
     );
+  }
+
+  /// Returns and clears the invalid-header flag of [attrs].
+  static bool _takeInvalidHeader(BlockAttributes attrs) {
+    final invalid = attrs.invalidHeader;
+    attrs.invalidHeader = false;
+    return invalid;
   }
 
   /// Initializes a new [Section] and assigns any attributes provided.
@@ -1025,16 +1061,16 @@ abstract final class Parser {
   static Section initializeSection(
     Reader reader,
     AbstractBlock parent, [
-    Map<Object, Object?>? attributes,
+    BlockAttributes? attributes,
   ]) {
-    final attrs = attributes ?? <Object, Object?>{};
+    final attrs = attributes ?? BlockAttributes();
     final document = _docOf(parent);
     final doctype = document.doctype;
     final book = doctype == 'book';
     final sourceLocation = document.sourcemap ? reader.cursor() : null;
-    final sectStyle = attrs[1] as String?;
+    final sectStyle = attrs['1'];
     var (id: sectId, :reftext, title: sectTitle, :level, :atx) =
-        parseSectionTitle(reader, document, attrs['id'] as String?);
+        parseSectionTitle(reader, document, attrs['id']);
 
     String? sectName;
     var sectSpecial = false;
@@ -1066,28 +1102,27 @@ abstract final class Parser {
       ..id = sectId
       ..title = sectTitle
       ..sectname = sectName
-      ..sourceLocation = _loc(sourceLocation);
+      ..sourceLocation = sourceLocation;
     if (sectSpecial) {
       section.special = true;
       if (sectNumbered) {
         section.numbered = true;
       } else if (document.attributes['sectnums'] == 'all') {
-        section.numbered = book && level == 1 ? 'chapter' : true;
+        section
+          ..numbered = true
+          ..chapterNumbering = book && level == 1;
       }
-    } else if (isTruthy(document.attributes['sectnums']) && level > 0) {
+    } else if (document.attributes.containsKey('sectnums') && level > 0) {
       // NOTE a special section here is guaranteed to be nested in another
       // section.
       if (section.special && parent is Section) {
-        final parentNumbered = parent.numbered;
-        section.numbered = (parentNumbered == null || parentNumbered == false)
-            ? parentNumbered
-            : true;
+        section.numbered = parent.numbered;
       } else {
         section.numbered = true;
       }
     } else if (book &&
         level == 0 &&
-        isTruthy(document.attributes['partnums'])) {
+        document.attributes.containsKey('partnums')) {
       section.numbered = true;
     }
 
@@ -1104,17 +1139,15 @@ abstract final class Parser {
         // Convert title to resolve attributes while in scope.
         final _ = section.title;
       }
-      if (document.register('refs', [id, section]) == null) {
+      if (!document.registerRef(id, section)) {
         _logger.warn(
-          _msg(
-            'id assigned to section already in use: $id',
-            reader.cursorAtLine(reader.lineno - (atx ? 1 : 2)),
-          ),
+          'id assigned to section already in use: $id',
+          at: reader.cursorAtLine(reader.lineno - (atx ? 1 : 2)),
         );
       }
     }
 
-    section.updateAttributes(_strKeys(attrs));
+    _applyAttributes(section, attrs);
     reader.skipBlankLines();
 
     return section;
@@ -1124,11 +1157,8 @@ abstract final class Parser {
   ///
   /// Port of `Parser.is_next_line_section?`. Returns the section level, or
   /// `null` when the reader is not positioned at a section title.
-  static int? isNextLineSection(
-    Reader reader,
-    Map<Object, Object?> attributes,
-  ) {
-    final style = attributes[1] as String?;
+  static int? isNextLineSection(Reader reader, BlockAttributes attributes) {
+    final style = attributes['1'];
     if (style != null && (style == 'discrete' || style == 'float')) return null;
     if (_underlineStyleSectionTitles) {
       final nextLines = reader.peekLines(
@@ -1148,8 +1178,8 @@ abstract final class Parser {
   /// Port of `Parser.is_next_line_doctitle?`.
   static bool isNextLineDoctitle(
     Reader reader,
-    Map<Object, Object?> attributes,
-    Object? leveloffset,
+    BlockAttributes attributes,
+    String? leveloffset,
   ) {
     if (leveloffset != null) {
       final sectLevel = isNextLineSection(reader, attributes);
@@ -1164,7 +1194,9 @@ abstract final class Parser {
   /// `null` when the lines are not a section title.
   static int? isSectionTitle(String line1, [String? line2]) =>
       atxSectionTitle(line1) ??
-      (_isNilOrEmpty(line2) ? null : setextSectionTitle(line1, line2!));
+      (line2 == null || line2.isEmpty
+          ? null
+          : setextSectionTitle(line1, line2));
 
   /// Checks whether the line given is an atx section title.
   ///
@@ -1286,7 +1318,7 @@ abstract final class Parser {
   static AbstractBlock? nextBlock(
     Reader reader,
     AbstractBlock parent, {
-    Map<Object, Object?>? attributes,
+    BlockAttributes? attributes,
     bool textOnly = false,
     String? listType,
     bool parseMetadata = true,
@@ -1301,7 +1333,7 @@ abstract final class Parser {
     var textOnly_ = textOnly;
     if (textOnly_ && skipped > 0) textOnly_ = false;
 
-    final attrs = attributes ?? <Object, Object?>{};
+    final attrs = attributes ?? BlockAttributes();
     final document = _docOf(parent);
     final docAttrs = document.attributes;
 
@@ -1330,7 +1362,7 @@ abstract final class Parser {
     // QUESTION should we introduce a parsing context object?
     reader.mark();
     final thisLine = reader.readLine()!;
-    var style = attrs[1] as String?;
+    var style = attrs['1'];
     AbstractBlock? block;
     String? blockContext;
     String? cloakedContext;
@@ -1354,10 +1386,8 @@ abstract final class Parser {
           } else {
             if (_logger.isDebugEnabled) {
               _logger.debug(
-                _msg(
-                  'unknown style for $blockContext block: $style',
-                  reader.cursorAtMark(),
-                ),
+                'unknown style for $blockContext block: $style',
+                at: reader.cursorAtMark(),
               );
             }
             style = blockContext;
@@ -1465,8 +1495,7 @@ abstract final class Parser {
               if (target.contains(attrRefHead)) {
                 final expandedTarget = subAttributes(document, target);
                 if (expandedTarget.isEmpty &&
-                    (docAttrs['attribute-missing'] as String? ??
-                            _attributeMissing) ==
+                    (docAttrs['attribute-missing'] ?? _attributeMissing) ==
                         'drop-line' &&
                     subAttributes(
                       document,
@@ -1480,27 +1509,27 @@ abstract final class Parser {
                 target = expandedTarget;
               }
               if (blkCtx == 'image') {
-                document.register('images', target);
-                attrs['imagesdir'] = docAttrs['imagesdir'];
+                document.registerImage(target);
+                _setOrRemove(attrs, 'imagesdir', docAttrs['imagesdir']);
                 // NOTE style is the value of the first positional
                 // attribute in the block attribute line.
-                if (!isTruthy(attrs['alt'])) {
+                if (!attrs.containsKey('alt')) {
                   attrs['alt'] =
                       style ??
                       (attrs['default-alt'] = Helpers.basename(
                         target,
-                        true,
+                        dropExtension: true,
                       ).replaceAll('_', ' ').replaceAll('-', ' '));
                 }
-                final scaledwidth = attrs.remove('scaledwidth') as String?;
-                if (!_isNilOrEmpty(scaledwidth)) {
+                final scaledwidth = attrs.remove('scaledwidth');
+                if (scaledwidth != null && scaledwidth.isNotEmpty) {
                   // NOTE assume % units if not specified.
-                  attrs['scaledwidth'] = trailingDigitsRx.hasMatch(scaledwidth!)
+                  attrs['scaledwidth'] = trailingDigitsRx.hasMatch(scaledwidth)
                       ? '$scaledwidth%'
                       : scaledwidth;
                 }
-                if (isTruthy(attrs['title'])) {
-                  blockTitle = attrs.remove('title') as String?;
+                if (attrs.containsKey('title')) {
+                  blockTitle = attrs.remove('title');
                   block
                     ..title = blockTitle
                     ..assignCaption(attrs.remove('caption'), 'figure');
@@ -1529,7 +1558,7 @@ abstract final class Parser {
             // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:648-679):
             // custom block macros, including the unknown-macro debug probe.
             final macroMatch = customBlockMacroRx.firstMatch(thisLine);
-            ProcessorExtension? macroExtension;
+            ProcessorExtension<BlockMacroProcessor>? macroExtension;
             var reportUnknownBlockMacro = false;
             if (macroMatch != null) {
               if (blockMacroExtensions) {
@@ -1545,10 +1574,8 @@ abstract final class Parser {
             }
             if (reportUnknownBlockMacro) {
               _logger.debug(
-                _msg(
-                  'unknown name for block macro: ${macroMatch!.group(1)}',
-                  reader.cursorAtMark(),
-                ),
+                'unknown name for block macro: ${macroMatch!.group(1)}',
+                at: reader.cursorAtMark(),
               );
             } else if (macroExtension != null) {
               final content = macroMatch!.group(3);
@@ -1556,8 +1583,7 @@ abstract final class Parser {
               if (target.contains(attrRefHead)) {
                 final expandedTarget = subAttributes(document, target);
                 if (expandedTarget.isEmpty &&
-                    (docAttrs['attribute-missing'] as String? ??
-                            _attributeMissing) ==
+                    (docAttrs['attribute-missing'] ?? _attributeMissing) ==
                         'drop-line' &&
                     subAttributes(
                       document,
@@ -1571,13 +1597,13 @@ abstract final class Parser {
                   target = expandedTarget;
                 }
               }
-              final extConfig = macroExtension.config;
-              if (extConfig['content_model'] == 'attributes') {
+              final extConfig = macroExtension.instance.config;
+              if (extConfig.contentModel == 'attributes') {
                 if (content != null) {
                   parseAttributes(
                     document,
                     content,
-                    posattrs: _posAttrsOf(extConfig),
+                    posattrs: extConfig.positionalAttrs,
                     subInput: true,
                     into: attrs,
                   );
@@ -1585,29 +1611,22 @@ abstract final class Parser {
               } else {
                 attrs['text'] = content ?? '';
               }
-              final defaultAttrs = extConfig['default_attrs'];
-              if (defaultAttrs is Map) {
-                for (final entry in defaultAttrs.entries) {
-                  final defaultKey = entry.key as Object;
-                  if (!attrs.containsKey(defaultKey)) {
-                    attrs[defaultKey] = entry.value;
-                  }
-                }
-              }
-              final macroBlock =
-                  (macroExtension.processMethod
-                      as Object? Function(
-                        AbstractBlock,
-                        String,
-                        Map<Object, Object?>,
-                      ))(parent, target, attrs);
-              if (macroBlock is AbstractBlock &&
-                  !identical(macroBlock, parent)) {
-                // `attributes.replace block.attributes`: the extension
-                // result owns the attribute set from here on.
+              extConfig.defaultAttrs.forEach(
+                (key, value) => attrs.putIfAbsent(key, () => value),
+              );
+              final macroBlock = macroExtension.instance.process(
+                parent,
+                target,
+                attrs,
+              );
+              if (macroBlock != null && !identical(macroBlock, parent)) {
+                // The extension result owns the attribute set from here on
+                // (the attribute entries carry over).
+                final entries = attrs.attributeEntries;
                 attrs
                   ..clear()
-                  ..addAll(macroBlock.attributes);
+                  ..addAll(macroBlock.attributes)
+                  ..attributeEntries = entries;
                 block = macroBlock;
                 break;
               } else {
@@ -1653,7 +1672,7 @@ abstract final class Parser {
       } else if (orderedListRx.hasMatch(thisLine)) {
         reader.unshiftLine(thisLine);
         block = parseList(reader, 'olist', parent, style);
-        if (block.style != null) attrs['style'] = block.style;
+        if (block.style case final listStyle?) attrs['style'] = listStyle;
         break;
       } else if (dlistMatch != null) {
         reader.unshiftLine(thisLine);
@@ -1664,14 +1683,8 @@ abstract final class Parser {
               ? isSectionTitle(thisLine, reader.peekLine()) != null
               : !indented && atxSectionTitle(thisLine) != null)) {
         reader.unshiftLine(thisLine);
-        final floatTitle = parseSectionTitle(
-          reader,
-          document,
-          attrs['id'] as String?,
-        );
-        if (floatTitle.reftext != null) {
-          attrs['reftext'] = floatTitle.reftext;
-        }
+        final floatTitle = parseSectionTitle(reader, document, attrs['id']);
+        if (floatTitle.reftext case final reftext?) attrs['reftext'] = reftext;
         block = (Block(parent, 'floating_title', contentModel: 'empty'))
           ..title = floatTitle.title;
         attrs.remove('title');
@@ -1709,10 +1722,8 @@ abstract final class Parser {
         } else {
           if (_logger.isDebugEnabled) {
             _logger.debug(
-              _msg(
-                'unknown style for paragraph: $style',
-                reader.cursorAtMark(),
-              ),
+              'unknown style for paragraph: $style',
+              at: reader.cursorAtMark(),
             );
           }
           style = null;
@@ -1739,16 +1750,16 @@ abstract final class Parser {
             parent,
             'paragraph',
             contentModel: 'simple',
-            source: lines,
-            attributes: _strKeys(attrs),
+            lines: lines,
+            attributes: attrs,
           );
         } else {
           block = Block(
             parent,
             'literal',
             contentModel: 'verbatim',
-            source: lines,
-            attributes: _strKeys(attrs),
+            lines: lines,
+            attributes: attrs,
           );
         }
       } else {
@@ -1775,24 +1786,26 @@ abstract final class Parser {
             parent,
             'paragraph',
             contentModel: 'simple',
-            source: lines,
-            attributes: _strKeys(attrs),
+            lines: lines,
+            attributes: attrs,
           );
         } else if (admonitionMatch != null) {
           lines[0] = thisLine.substring(admonitionMatch.end);
-          attrs['style'] = admonitionMatch.group(1);
-          final admonitionName = (attrs['style']! as String).toLowerCase();
+          final admonitionStyle = attrs['style'] = admonitionMatch.group(1)!;
+          final admonitionName = admonitionStyle.toLowerCase();
           attrs['name'] = admonitionName;
           final caption = attrs.remove('caption');
-          attrs['textlabel'] = isTruthy(caption)
-              ? caption
-              : docAttrs['$admonitionName-caption'];
+          _setOrRemove(
+            attrs,
+            'textlabel',
+            caption ?? docAttrs['$admonitionName-caption'],
+          );
           block = Block(
             parent,
             'admonition',
             contentModel: 'simple',
-            source: lines,
-            attributes: _strKeys(attrs),
+            lines: lines,
+            attributes: attrs,
           );
         } else if (_markdownSyntax && ch0 == '>' && thisLine.startsWith('> ')) {
           for (var i = 0; i < lines.length; i++) {
@@ -1813,22 +1826,19 @@ abstract final class Parser {
           }
           attrs['style'] = 'quote';
           // NOTE will only detect discrete (aka free-floating) headings
-          // TODOcould assume a discrete heading when inside a block context
+          // TODO could assume a discrete heading when inside a block context
           // FIXME Reader needs to be created w/ line info
           block = buildBlock(
             'quote',
             'compound',
-            false,
+            null,
             parent,
             Reader(lines),
             attrs,
+            readerPrepared: true,
           )!;
           if (creditLine != null) {
-            final parts = _splitLimit(
-              block.applySubs(creditLine)! as String,
-              ', ',
-              2,
-            );
+            final parts = _splitLimit(block.applySubs(creditLine), ', ', 2);
             final attribution = parts[0];
             final citetitle = parts.length > 1 ? parts[1] : null;
             attrs['attribution'] = attribution;
@@ -1853,14 +1863,10 @@ abstract final class Parser {
             parent,
             'quote',
             contentModel: 'simple',
-            source: lines,
-            attributes: _strKeys(attrs),
+            lines: lines,
+            attributes: attrs,
           );
-          final parts = _splitLimit(
-            block.applySubs(creditLine)! as String,
-            ', ',
-            2,
-          );
+          final parts = _splitLimit(block.applySubs(creditLine), ', ', 2);
           final attribution = parts[0];
           final citetitle = parts.length > 1 ? parts[1] : null;
           attrs['attribution'] = attribution;
@@ -1875,8 +1881,8 @@ abstract final class Parser {
             parent,
             'paragraph',
             contentModel: 'simple',
-            source: lines,
-            attributes: _strKeys(attrs),
+            lines: lines,
+            attributes: attrs,
           );
         }
 
@@ -1890,14 +1896,14 @@ abstract final class Parser {
     if (block == null) {
       final bc = blockContext!;
       if (bc == 'listing' || bc == 'source') {
-        Object? language;
+        String? language;
         if (bc != 'source') {
-          language = isTruthy(attrs[1])
+          language = attrs.containsKey('1')
               ? null
-              : (isTruthy(attrs[2]) ? attrs[2] : docAttrs['source-language']);
+              : attrs['2'] ?? docAttrs['source-language'];
         }
-        if (bc == 'source' || isTruthy(language)) {
-          if (isTruthy(language)) {
+        if (bc == 'source' || language != null) {
+          if (language != null) {
             // :listing with language
             attrs['style'] = 'source';
             attrs['language'] = language;
@@ -1905,22 +1911,20 @@ abstract final class Parser {
           } else {
             // :source
             _rekey(attrs, [null, 'language', 'linenums']);
-            if (docAttrs.containsKey('source-language') &&
-                !attrs.containsKey('language')) {
-              attrs['language'] = docAttrs['source-language'];
+            if (docAttrs['source-language'] case final sourceLanguage?) {
+              attrs.putIfAbsent('language', () => sourceLanguage);
             }
             if (cloakedContext != 'listing') {
-              attrs['cloaked-context'] = cloakedContext;
+              attrs['cloaked-context'] = cloakedContext!;
             }
           }
           if (!attrs.containsKey('linenums') &&
-              (isTruthy(attrs['linenums-option']) ||
-                  isTruthy(docAttrs['source-linenums-option']))) {
+              (attrs.containsKey('linenums-option') ||
+                  docAttrs.containsKey('source-linenums-option'))) {
             attrs['linenums'] = '';
           }
-          if (!attrs.containsKey('indent') &&
-              docAttrs.containsKey('source-indent')) {
-            attrs['indent'] = docAttrs['source-indent'];
+          if (docAttrs['source-indent'] case final sourceIndent?) {
+            attrs.putIfAbsent('indent', () => sourceIndent);
           }
         }
         block = buildBlock(
@@ -1950,22 +1954,21 @@ abstract final class Parser {
             language = info.trimLeft();
           }
         }
-        if (_isNilOrEmpty(language)) {
-          if (docAttrs.containsKey('source-language')) {
-            attrs['language'] = docAttrs['source-language'];
+        if (language == null || language.isEmpty) {
+          if (docAttrs['source-language'] case final sourceLanguage?) {
+            attrs['language'] = sourceLanguage;
           }
         } else {
           attrs['language'] = language;
         }
-        attrs['cloaked-context'] = cloakedContext;
+        attrs['cloaked-context'] = cloakedContext!;
         if (!attrs.containsKey('linenums') &&
-            (isTruthy(attrs['linenums-option']) ||
-                isTruthy(docAttrs['source-linenums-option']))) {
+            (attrs.containsKey('linenums-option') ||
+                docAttrs.containsKey('source-linenums-option'))) {
           attrs['linenums'] = '';
         }
-        if (!attrs.containsKey('indent') &&
-            docAttrs.containsKey('source-indent')) {
-          attrs['indent'] = docAttrs['source-indent'];
+        if (docAttrs['source-indent'] case final sourceIndent?) {
+          attrs.putIfAbsent('indent', () => sourceIndent);
         }
         terminator = terminator!.substring(0, 3);
         block = buildBlock(
@@ -1983,7 +1986,7 @@ abstract final class Parser {
             terminator: terminator,
             skipLineComments: true,
             context: 'table',
-            cursor: Reader.atMark,
+            cursorAtMark: true,
           ),
           cursor: blockCursor,
         );
@@ -1991,9 +1994,7 @@ abstract final class Parser {
         // char, so short-circuit.
         if (!terminator!.startsWith('|') && !terminator.startsWith('!')) {
           // NOTE infer dsv once all other format hint chars are ruled out.
-          if (!isTruthy(attrs['format'])) {
-            attrs['format'] = terminator.startsWith(',') ? 'csv' : 'dsv';
-          }
+          attrs['format'] ??= terminator.startsWith(',') ? 'csv' : 'dsv';
         }
         block = parseTable(tableReader, parent, attrs);
       } else if (bc == 'sidebar') {
@@ -2002,9 +2003,11 @@ abstract final class Parser {
         final admonitionName = style!.toLowerCase();
         attrs['name'] = admonitionName;
         final caption = attrs.remove('caption');
-        attrs['textlabel'] = isTruthy(caption)
-            ? caption
-            : docAttrs['$admonitionName-caption'];
+        _setOrRemove(
+          attrs,
+          'textlabel',
+          caption ?? docAttrs['$admonitionName-caption'],
+        );
         block = buildBlock(bc, 'compound', terminator, parent, reader, attrs);
       } else if (bc == 'open' || bc == 'abstract' || bc == 'partintro') {
         block = buildBlock(
@@ -2018,7 +2021,7 @@ abstract final class Parser {
       } else if (bc == 'literal') {
         block = buildBlock(bc, 'verbatim', terminator, parent, reader, attrs);
       } else if (bc == 'example') {
-        if (isTruthy(attrs['collapsible-option'])) attrs['caption'] = '';
+        if (attrs.containsKey('collapsible-option')) attrs['caption'] = '';
         block = buildBlock(bc, 'compound', terminator, parent, reader, attrs);
       } else if (bc == 'quote' || bc == 'verse') {
         _rekey(attrs, [null, 'attribution', 'citetitle']);
@@ -2033,7 +2036,8 @@ abstract final class Parser {
       } else if (bc == 'stem' || bc == 'latexmath' || bc == 'asciimath') {
         if (bc == 'stem') {
           attrs['style'] =
-              _stemTypeAliases[attrs[2] ?? docAttrs['stem']] ?? 'asciimath';
+              _stemTypeAliases[attrs['2'] ?? docAttrs['stem'] ?? ''] ??
+              'asciimath';
         }
         block = buildBlock('stem', 'raw', terminator, parent, reader, attrs);
       } else if (bc == 'pass') {
@@ -2045,7 +2049,7 @@ abstract final class Parser {
       } else {
         // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:905-923):
         // custom block contexts handled by a registered extension.
-        ProcessorExtension? blockExtension;
+        ProcessorExtension<BlockProcessor>? blockExtension;
         if (blockExtensions) {
           blockExtension = extensions!.registeredForBlock(bc, cloakedContext!);
         }
@@ -2053,25 +2057,19 @@ abstract final class Parser {
           // This should only happen if there's a misconfiguration.
           throw StateError('Unsupported block type $bc at ${reader.cursor()}');
         }
-        final extConfig = blockExtension.config;
-        final contentModel = extConfig['content_model'] as String?;
+        final extConfig = blockExtension.instance.config;
+        final contentModel = extConfig.contentModel;
         if (contentModel != 'skip') {
-          final positionalAttrs = _posAttrsOf(extConfig);
+          final positionalAttrs = extConfig.positionalAttrs;
           if (positionalAttrs.isNotEmpty) {
             _rekey(attrs, [null, ...positionalAttrs]);
           }
-          final defaultAttrs = extConfig['default_attrs'];
-          if (defaultAttrs is Map) {
-            for (final entry in defaultAttrs.entries) {
-              final defaultKey = entry.key as Object;
-              if (!isTruthy(attrs[defaultKey])) {
-                attrs[defaultKey] = entry.value;
-              }
-            }
-          }
+          extConfig.defaultAttrs.forEach(
+            (key, value) => attrs.putIfAbsent(key, () => value),
+          );
           // QUESTION should we clone the extension for each cloaked
           // context and set in config?
-          attrs['cloaked-context'] = cloakedContext;
+          attrs['cloaked-context'] = cloakedContext!;
         }
         final customBlock = buildBlock(
           bc,
@@ -2093,20 +2091,20 @@ abstract final class Parser {
     // FIXME we've got to clean this up, it's horrible!
     final result = block!;
     if (document.sourcemap) {
-      result.sourceLocation = _loc(reader.cursorAtMark());
+      result.sourceLocation = reader.cursorAtMark();
     }
     // FIXME title and caption should be assigned when block is constructed
     // (though we need to handle all cases)
-    if (isTruthy(attrs['title'])) {
-      result.title = blockTitle = attrs.remove('title') as String?;
+    if (attrs.containsKey('title')) {
+      result.title = blockTitle = attrs.remove('title');
       if (captionAttributeNames.containsKey(result.context)) {
         result.assignCaption(attrs.remove('caption'));
       }
     }
-    // TODOeventually remove the style attribute from the attributes hash
+    // TODO eventually remove the style attribute from the attributes hash
     //block.style = attributes.delete 'style'
-    result.style = attrs['style'] as String?;
-    final blockId = result.id ?? (result.id = attrs['id'] as String?);
+    result.style = attrs['style'];
+    final blockId = result.id ?? (result.id = attrs['id']);
     if (blockId != null) {
       // Convert title to resolve attributes while in scope.
       if (blockTitle != null
@@ -2114,17 +2112,15 @@ abstract final class Parser {
           : result.hasTitle) {
         final _ = result.title;
       }
-      if (document.register('refs', [blockId, result]) == null) {
+      if (!document.registerRef(blockId, result)) {
         _logger.warn(
-          _msg(
-            'id assigned to block already in use: $blockId',
-            reader.cursorAtMark(),
-          ),
+          'id assigned to block already in use: $blockId',
+          at: reader.cursorAtMark(),
         );
       }
     }
     // FIXME remove the need for this update!
-    if (attrs.isNotEmpty) result.updateAttributes(_strKeys(attrs));
+    _applyAttributes(result, attrs);
     result.commitSubs();
 
     //if doc_attrs.key? :pending_attribute_entries
@@ -2152,12 +2148,12 @@ abstract final class Parser {
   /// Port of `Parser.read_paragraph_lines`.
   static List<String> readParagraphLines(
     Reader reader,
-    Object? breakAtList, {
+    String? breakAtList, {
     bool skipLineComments = false,
     bool skipProcessing = false,
   }) {
     final bool Function(String)? breakCondition;
-    if (isTruthy(breakAtList)) {
+    if (breakAtList != null) {
       breakCondition = _blockTerminatesParagraph
           ? _startOfBlockOrList
           : _startOfList;
@@ -2251,18 +2247,19 @@ abstract final class Parser {
   /// Builds a block of [blockContext] with [contentModel] from [reader].
   ///
   /// Port of `Parser.build_block`. [terminator] is the delimiter line, or
-  /// `null` for a styled paragraph, or `false` when [reader] is already
-  /// prepared. When [extension] is given, its process method builds the
-  /// block instead. Returns the block, or `null` for the `skip` model (or
-  /// when the extension returns `null` or the parent).
+  /// `null` for a styled paragraph; [readerPrepared] means [reader] holds
+  /// exactly the block content. When [extension] is given, its process
+  /// method builds the block instead. Returns the block, or `null` for the
+  /// `skip` model (or when the extension returns `null` or the parent).
   static AbstractBlock? buildBlock(
     String blockContext,
     String contentModel,
-    Object? terminator,
+    String? terminator,
     AbstractBlock parent,
     Reader reader,
-    Map<Object, Object?> attributes, {
-    ProcessorExtension? extension,
+    BlockAttributes attributes, {
+    ProcessorExtension<BlockProcessor>? extension,
+    bool readerPrepared = false,
   }) {
     final bool skipProcessing;
     final String parseAsContentModel;
@@ -2280,7 +2277,7 @@ abstract final class Parser {
     var model = contentModel;
     List<String>? lines;
     Reader? blockReader;
-    if (terminator == null) {
+    if (terminator == null && !readerPrepared) {
       if (parseAsContentModel == 'verbatim') {
         lines = reader.readLinesUntil(
           breakOnBlankLines: true,
@@ -2288,7 +2285,7 @@ abstract final class Parser {
         );
       } else {
         if (model == 'compound') model = 'simple';
-        // TODOwe could also skip processing if we're able to detect
+        // TODO we could also skip processing if we're able to detect
         // reader is a BlockReader.
         lines = readParagraphLines(
           reader,
@@ -2301,34 +2298,32 @@ abstract final class Parser {
       }
     } else if (parseAsContentModel != 'compound') {
       lines = reader.readLinesUntil(
-        terminator: terminator as String,
+        terminator: terminator,
         skipProcessing: skipProcessing,
         context: blockContext,
-        cursor: Reader.atMark,
+        cursorAtMark: true,
       );
-    } else if (identical(terminator, false)) {
-      // Terminator is false when reader has already been prepared.
+    } else if (readerPrepared) {
       blockReader = reader;
     } else {
       final blockCursor = reader.cursor();
       blockReader = Reader(
         reader.readLinesUntil(
-          terminator: terminator as String,
+          terminator: terminator,
           skipProcessing: skipProcessing,
           context: blockContext,
-          cursor: Reader.atMark,
+          cursorAtMark: true,
         ),
         cursor: blockCursor,
       );
     }
 
     if (model == 'verbatim') {
-      final tabsizeRaw = isTruthy(attributes['tabsize'])
-          ? attributes['tabsize']
-          : _docOf(parent).attributes['tabsize'];
-      final tabSize = _toInt(tabsizeRaw);
+      final tabSize = _toInt(
+        attributes['tabsize'] ?? _docOf(parent).attributes['tabsize'],
+      );
       final indent = attributes['indent'];
-      if (isTruthy(indent)) {
+      if (indent != null) {
         adjustIndentation(lines!, _toInt(indent), tabSize);
       } else if (tabSize > 0) {
         adjustIndentation(lines!, -1, tabSize);
@@ -2344,22 +2339,18 @@ abstract final class Parser {
     if (extension != null) {
       // QUESTION do we want to delete the style?
       attributes.remove('style');
-      final processAttrs = <String, Object?>{
-        for (final entry in attributes.entries)
-          if (entry.key is String) entry.key as String: entry.value,
-      };
-      final extBlock =
-          (extension.processMethod
-              as Object? Function(AbstractBlock, Reader, Map<String, Object?>))(
-            parent,
-            blockReader ?? Reader(lines),
-            processAttrs,
-          );
+      final extBlock = extension.instance.process(
+        parent,
+        blockReader ?? Reader(lines ?? const <String>[]),
+        attributes,
+      );
       if (extBlock == null || identical(extBlock, parent)) return null;
-      block = extBlock as AbstractBlock;
+      block = extBlock;
+      final entries = attributes.attributeEntries;
       attributes
         ..clear()
-        ..addAll(block.attributes);
+        ..addAll(block.attributes)
+        ..attributeEntries = entries;
       // NOTE an extension can change the content model from simple to
       // compound. It's up to the extension to decide which one to use. The
       // extension can consult the cloaked-context attribute to determine
@@ -2375,8 +2366,8 @@ abstract final class Parser {
         parent,
         blockContext,
         contentModel: model,
-        source: lines,
-        attributes: _strKeys(attributes),
+        lines: lines,
+        attributes: attributes,
       );
     }
 
@@ -2393,16 +2384,10 @@ abstract final class Parser {
   static void parseBlocks(
     Reader reader,
     AbstractBlock parent, [
-    Map<Object, Object?>? attributes,
+    BlockAttributes? attributes,
   ]) {
     while (true) {
-      final block = nextBlock(
-        reader,
-        parent,
-        attributes: attributes == null
-            ? null
-            : Map<Object, Object?>.of(attributes),
-      );
+      final block = nextBlock(reader, parent, attributes: attributes?.copy());
       if (block != null) {
         parent.blocks.add(block);
       } else if (!reader.hasMoreLines()) {
@@ -2429,8 +2414,8 @@ abstract final class Parser {
       if (match == null) break;
       // NOTE parseListItem will stop at sibling item or end of list; never
       // sees ancestor items.
-      listBlock.items.add(
-        parseListItem(reader, listBlock, match, match.group(1)!, style),
+      listBlock.blocks.add(
+        parseListItem(reader, listBlock, match, match.group(1)!, style).item!,
       );
       if (reader.skipBlankLines() == null) break;
     }
@@ -2482,8 +2467,8 @@ abstract final class Parser {
   static void catalogInlineAnchor(
     String id,
     String? reftext,
-    AbstractNode node,
-    Object? location, [
+    AbstractBlock node,
+    Cursor? location, [
     Document? doc,
   ]) {
     final document = doc ?? _docOf(node);
@@ -2491,19 +2476,11 @@ abstract final class Parser {
     if (ref != null && ref.contains(attrRefHead)) {
       ref = subAttributes(document, ref);
     }
-    if (document.register('refs', [
-          id,
-          Inline(
-            node as AbstractBlock,
-            'anchor',
-            text: ref,
-            type: 'ref',
-            id: id,
-          ),
-        ]) ==
-        null) {
-      final loc = location is Reader ? location.cursor() : location;
-      _logger.warn(_msg('id assigned to anchor already in use: $id', loc));
+    if (!document.registerRef(
+      id,
+      Inline(node, 'anchor', text: ref, type: 'ref', id: id),
+    )) {
+      _logger.warn('id assigned to anchor already in use: $id', at: location);
     }
   }
 
@@ -2542,11 +2519,10 @@ abstract final class Parser {
           }
         }
       }
-      if (document.register('refs', [
-            id,
-            Inline(block, 'anchor', text: reftext, type: 'ref', id: id),
-          ]) ==
-          null) {
+      if (!document.registerRef(
+        id,
+        Inline(block, 'anchor', text: reftext, type: 'ref', id: id),
+      )) {
         final mark = reader.cursorAtMark();
         final pre = text.substring(0, match.start);
         final offset =
@@ -2555,9 +2531,7 @@ abstract final class Parser {
         final location = offset > 0
             ? Cursor(mark.file, mark.dir, mark.path, mark.lineno + offset)
             : mark;
-        _logger.warn(
-          _msg('id assigned to anchor already in use: $id', location),
-        );
+        _logger.warn('id assigned to anchor already in use: $id', at: location);
       }
     }
   }
@@ -2568,27 +2542,24 @@ abstract final class Parser {
   static void catalogInlineBiblioAnchor(
     String id,
     String? reftext,
-    AbstractNode node,
+    AbstractBlock node,
     Reader reader,
   ) {
     // QUESTION should we sub attributes in reftext (like with regular
     // anchors)?
-    if (_docOf(node).register('refs', [
-          id,
-          Inline(
-            node as AbstractBlock,
-            'anchor',
-            text: reftext == null ? null : '[$reftext]',
-            type: 'bibref',
-            id: id,
-          ),
-        ]) ==
-        null) {
+    if (!_docOf(node).registerRef(
+      id,
+      Inline(
+        node,
+        'anchor',
+        text: reftext == null ? null : '[$reftext]',
+        type: 'bibref',
+        id: id,
+      ),
+    )) {
       _logger.warn(
-        _msg(
-          'id assigned to bibliography anchor already in use: $id',
-          reader.cursor(),
-        ),
+        'id assigned to bibliography anchor already in use: $id',
+        at: reader.cursor(),
       );
     }
   }
@@ -2605,32 +2576,21 @@ abstract final class Parser {
     // Detects a description list item that uses the same delimiter
     // (::, :::, :::: or ;;).
     final siblingPattern = descriptionListSiblingRx[match.group(2)!]!;
-    var currentPair = parseListItem(
-      reader,
-      listBlock,
-      match,
-      siblingPattern,
-    ) as List<Object?>;
-    listBlock.items.add(currentPair);
+    final first = parseListItem(reader, listBlock, match, siblingPattern);
+    var current = DlistEntry([first.term!], first.item);
+    listBlock.entries.add(current);
 
     while (reader.hasMoreLines()) {
       final peeked = reader.peekLine();
       final sibling = peeked == null ? null : siblingPattern.firstMatch(peeked);
       if (sibling == null) break;
-      final nextPair = parseListItem(
-        reader,
-        listBlock,
-        sibling,
-        siblingPattern,
-      ) as List<Object?>;
-      if (currentPair[1] != null) {
-        currentPair = nextPair;
-        listBlock.items.add(currentPair);
+      final next = parseListItem(reader, listBlock, sibling, siblingPattern);
+      if (current.description != null) {
+        current = DlistEntry([next.term!], next.item);
+        listBlock.entries.add(current);
       } else {
-        (currentPair[0]! as List<Object?>).add(
-          (nextPair[0]! as List<Object?>)[0],
-        );
-        currentPair[1] = nextPair[1];
+        current.terms.add(next.term!);
+        current.description = next.item;
       }
     }
 
@@ -2667,24 +2627,19 @@ abstract final class Parser {
       // Might want to move this check to a validate method.
       if (num != nextIndex.toString()) {
         _logger.warn(
-          _msg(
-            'callout list item index: expected $nextIndex, got $num',
-            reader.cursorAtMark(),
-          ),
+          'callout list item index: expected $nextIndex, got $num',
+          at: reader.cursorAtMark(),
         );
       }
       final current = match;
       match = null;
-      final listItem =
-          parseListItem(reader, listBlock, current, '<1>') as ListItem;
-      listBlock.items.add(listItem);
+      final listItem = parseListItem(reader, listBlock, current, '<1>').item!;
+      listBlock.blocks.add(listItem);
       final coids = callouts.calloutIds(listBlock.items.length);
       if (coids.isEmpty) {
         _logger.warn(
-          _msg(
-            'no callout found for <${listBlock.items.length}>',
-            reader.cursorAtMark(),
-          ),
+          'no callout found for <${listBlock.items.length}>',
+          at: reader.cursorAtMark(),
         );
       } else {
         listItem.attributes['coids'] = coids;
@@ -2698,13 +2653,14 @@ abstract final class Parser {
 
   /// Parses the next list item (or description term/description pair).
   ///
-  /// Port of `Parser.parse_list_item`. Returns the next [ListItem], or a
-  /// `[terms, description]` pair (a `List`) for description lists.
-  static Object parseListItem(
+  /// Port of `Parser.parse_list_item`. Returns the next list item; for a
+  /// description list, the term and its description (`null` when the term
+  /// has none).
+  static ({ListItem? term, ListItem? item}) parseListItem(
     Reader reader,
     ListBlock listBlock,
     RegExpMatch match,
-    Object siblingTrait, [
+    Pattern siblingTrait, [
     String? style,
   ]) {
     var trait = siblingTrait;
@@ -2725,14 +2681,14 @@ abstract final class Parser {
           termAnchor.group(1)!,
           termAnchor.group(2) ?? termText.substring(termAnchor.end).trimLeft(),
           listTerm,
-          reader,
+          reader.cursor(),
         );
       }
       final itemText = match.group(3);
       if (itemText != null) hasText = true;
       listItem = ListItem(listBlock, itemText);
       if (_docOf(listBlock).sourcemap) {
-        listTerm.sourceLocation = _loc(reader.cursor());
+        listTerm.sourceLocation = reader.cursor();
         if (hasText) {
           listItem.sourceLocation = listTerm.sourceLocation;
         } else {
@@ -2744,7 +2700,7 @@ abstract final class Parser {
       final itemText = match.group(2)!;
       listItem = ListItem(listBlock, itemText);
       if (_docOf(listBlock).sourcemap) {
-        listItem.sourceLocation = _loc(reader.cursor());
+        listItem.sourceLocation = reader.cursor();
       }
       if (listType == 'ulist') {
         listItem.marker = trait as String;
@@ -2766,7 +2722,7 @@ abstract final class Parser {
                 anchorMatch.group(1)!,
                 anchorMatch.group(2),
                 listItem,
-                reader,
+                reader.cursor(),
               );
             }
           } else if (itemText.startsWith('[ ] ') ||
@@ -2781,7 +2737,7 @@ abstract final class Parser {
           }
         }
       } else if (listType == 'olist') {
-        final ordinal = listBlock.items.length;
+        final ordinal = listBlock.blocks.length;
         final (resolvedMarker, implicitStyle) = resolveOrderedListMarker(
           trait as String,
           ordinal: ordinal,
@@ -2809,7 +2765,7 @@ abstract final class Parser {
               anchorMatch.group(1)!,
               anchorMatch.group(2),
               listItem,
-              reader,
+              reader.cursor(),
             );
           }
         }
@@ -2823,7 +2779,7 @@ abstract final class Parser {
               anchorMatch.group(1)!,
               anchorMatch.group(2),
               listItem,
-              reader,
+              reader.cursor(),
             );
           }
         }
@@ -2845,7 +2801,7 @@ abstract final class Parser {
     );
     if (listItemReader.hasMoreLines()) {
       if (sourcemapAssignmentDeferred) {
-        listItem.sourceLocation = _loc(blockCursor);
+        listItem.sourceLocation = blockCursor;
       }
       // NOTE peek on the other side of any comment lines.
       final commentLines = listItemReader.skipLineComments();
@@ -2868,7 +2824,7 @@ abstract final class Parser {
       final firstBlock = nextBlock(
         listItemReader,
         listItem,
-        attributes: {},
+        attributes: BlockAttributes(),
         textOnly: !hasText,
         listType: listType,
       );
@@ -2878,7 +2834,7 @@ abstract final class Parser {
         final block = nextBlock(
           listItemReader,
           listItem,
-          attributes: {},
+          attributes: BlockAttributes(),
           listType: listType,
         );
         if (block != null) listItem.blocks.add(block);
@@ -2895,12 +2851,9 @@ abstract final class Parser {
       final description = listItem.hasText || listItem.blocks.isNotEmpty
           ? listItem
           : null;
-      return <Object?>[
-        <ListItem>[listTerm!],
-        description,
-      ];
+      return (term: listTerm, item: description);
     }
-    return listItem;
+    return (term: null, item: listItem);
   }
 
   /// Collects the lines belonging to the current list item.
@@ -2909,10 +2862,10 @@ abstract final class Parser {
   static List<String> readLinesForListItem(
     Reader reader,
     String listType, {
-    Object? siblingTrait,
+    Pattern? siblingTrait,
     bool hasText = true,
   }) {
-    final buffer = <Object>[];
+    final buffer = <_ItemLine>[];
 
     // Three states for continuation: inactive, active & frozen.
     // Frozen signifies we've detected sequential continuation lines &
@@ -2945,10 +2898,10 @@ abstract final class Parser {
 
       final thisLine = rawLine == listContinuation
           ? _ListContinuation.active
-          : rawLine;
+          : _TextLine(rawLine);
       final prevLine = buffer.isEmpty ? null : buffer.last;
 
-      if (_isContinuation(prevLine)) {
+      if (prevLine is _ListContinuation) {
         if (continuation == 'inactive') {
           continuation = 'active';
           hasText_ = true;
@@ -2959,7 +2912,7 @@ abstract final class Parser {
 
         // Dealing with adjacent list continuations (which is really a
         // syntax error).
-        if (_isContinuation(thisLine)) {
+        if (thisLine is _ListContinuation) {
           if (continuation != 'frozen') {
             continuation = 'frozen';
             buffer.add(thisLine);
@@ -2971,8 +2924,8 @@ abstract final class Parser {
 
       // A delimited block immediately breaks the list unless preceded
       // by a list continuation (they are harsh like that ;0).
-      final delimitedMatch = thisLine is String
-          ? isDelimitedBlock(thisLine)
+      final delimitedMatch = thisLine is _TextLine
+          ? isDelimitedBlock(thisLine.text)
           : null;
       if (delimitedMatch != null) {
         if (continuation != 'active') break;
@@ -2982,21 +2935,23 @@ abstract final class Parser {
         buffer
           ..add(thisLine)
           ..addAll(
-            reader.readLinesUntil(
-              terminator: delimitedMatch.terminator,
-              readLastLine: true,
-              context: null,
-            ),
+            reader
+                .readLinesUntil(
+                  terminator: delimitedMatch.terminator,
+                  readLastLine: true,
+                  warnIfUnterminated: false,
+                )
+                .map(_TextLine.new),
           );
         continuation = 'inactive';
       } else if (dlist &&
           continuation != 'active' &&
-          thisLine is String &&
-          thisLine.startsWith('[') &&
-          blockAttributeLineRx.hasMatch(thisLine)) {
+          thisLine is _TextLine &&
+          thisLine.text.startsWith('[') &&
+          blockAttributeLineRx.hasMatch(thisLine.text)) {
         // BlockAttributeLineRx only breaks dlist if ensuing line is not a
         // list item.
-        final blockAttributeLines = <String>[thisLine];
+        final blockAttributeLines = <String>[thisLine.text];
         var interrupt = false;
         while (true) {
           final nextLine = reader.peekLine();
@@ -3010,7 +2965,7 @@ abstract final class Parser {
             continue;
           } else if (anyListRx.hasMatch(nextLine) &&
               !isSiblingListItem(nextLine, listType, siblingTrait)) {
-            buffer.addAll(blockAttributeLines);
+            buffer.addAll(blockAttributeLines.map(_TextLine.new));
           } else {
             interrupt = true;
           }
@@ -3021,36 +2976,41 @@ abstract final class Parser {
           reader.unshiftLines(blockAttributeLines);
           break;
         }
-      } else if (continuation == 'active' && _lineOf(thisLine).isNotEmpty) {
+      } else if (continuation == 'active' && thisLine.text.isNotEmpty) {
         // Literal paragraphs have special considerations (and this is one
         // of two entry points into one). If we don't process it as a
         // whole, then a line in it that looks like a list item will throw
         // off the exit from it.
-        if (literalParagraphRx.hasMatch(_lineOf(thisLine))) {
-          reader.unshiftLine(_lineOf(thisLine));
+        if (literalParagraphRx.hasMatch(thisLine.text)) {
+          reader.unshiftLine(thisLine.text);
           if (dlist) {
             // We may be in an indented list disguised as a literal
             // paragraph, so we need to make sure we don't slurp up a
             // legitimate sibling.
             buffer.addAll(
-              reader.readLinesUntil(
-                preserveLastLine: true,
-                breakOnBlankLines: true,
-                breakOnListContinuation: true,
-                test: (line) => isSiblingListItem(line, listType, siblingTrait),
-              ),
+              reader
+                  .readLinesUntil(
+                    preserveLastLine: true,
+                    breakOnBlankLines: true,
+                    breakOnListContinuation: true,
+                    test: (line) =>
+                        isSiblingListItem(line, listType, siblingTrait),
+                  )
+                  .map(_TextLine.new),
             );
           } else {
             buffer.addAll(
-              reader.readLinesUntil(
-                preserveLastLine: true,
-                breakOnBlankLines: true,
-                breakOnListContinuation: true,
-              ),
+              reader
+                  .readLinesUntil(
+                    preserveLastLine: true,
+                    breakOnBlankLines: true,
+                    breakOnListContinuation: true,
+                  )
+                  .map(_TextLine.new),
             );
           }
           continuation = 'inactive';
-        } else if (_lineOf(thisLine) case final text
+        } else if (thisLine.text case final text
             when (text.startsWith('.') && blockTitleRx.hasMatch(text)) ||
                 (text.startsWith('[') && blockAttributeLineRx.hasMatch(text)) ||
                 (text.startsWith(':') && attributeEntryRx.hasMatch(text))) {
@@ -3058,12 +3018,12 @@ abstract final class Parser {
           buffer.add(thisLine);
         } else {
           final nested = _findNestedList(
-            _lineOf(thisLine),
+            thisLine.text,
             withinNestedList ? const ['dlist'] : _nestableListContexts,
           );
           if (nested != null) {
             withinNestedList = true;
-            if (nested.$1 == 'dlist' && _isNilOrEmpty(nested.$2.group(3))) {
+            if (nested.$1 == 'dlist' && nested.$2.group(3).isNullOrEmpty) {
               // Get greedy again.
               hasText_ = false;
             }
@@ -3071,8 +3031,8 @@ abstract final class Parser {
           buffer.add(thisLine);
           continuation = 'inactive';
         }
-      } else if (prevLine != null && _lineOf(prevLine).isEmpty) {
-        var current = _lineOf(thisLine);
+      } else if (prevLine != null && prevLine.text.isEmpty) {
+        var current = thisLine.text;
         // Advance to the next line of content.
         if (current.isEmpty) {
           // Stop reading if we reach eof.
@@ -3101,7 +3061,7 @@ abstract final class Parser {
           // it has text for an item; has_text is always true for all other
           // lists. In this block, we have to see whether we stay in the
           // list.
-          // TODOany way to combine this with the check after skipping
+          // TODO any way to combine this with the check after skipping
           // blank lines?
           if (isSiblingListItem(current, listType, siblingTrait)) {
             pendingLine = current;
@@ -3109,9 +3069,9 @@ abstract final class Parser {
           }
           final nested = _findNestedList(current, _nestableListContexts);
           if (nested != null) {
-            buffer.add(current);
+            buffer.add(_TextLine(current));
             withinNestedList = true;
-            if (nested.$1 == 'dlist' && _isNilOrEmpty(nested.$2.group(3))) {
+            if (nested.$1 == 'dlist' && nested.$2.group(3).isNullOrEmpty) {
               // Get greedy again.
               hasText_ = false;
             }
@@ -3124,21 +3084,25 @@ abstract final class Parser {
               // paragraph, so we need to make sure we don't slurp up a
               // legitimate sibling.
               buffer.addAll(
-                reader.readLinesUntil(
-                  preserveLastLine: true,
-                  breakOnBlankLines: true,
-                  breakOnListContinuation: true,
-                  test: (line) =>
-                      isSiblingListItem(line, listType, siblingTrait),
-                ),
+                reader
+                    .readLinesUntil(
+                      preserveLastLine: true,
+                      breakOnBlankLines: true,
+                      breakOnListContinuation: true,
+                      test: (line) =>
+                          isSiblingListItem(line, listType, siblingTrait),
+                    )
+                    .map(_TextLine.new),
               );
             } else {
               buffer.addAll(
-                reader.readLinesUntil(
-                  preserveLastLine: true,
-                  breakOnBlankLines: true,
-                  breakOnListContinuation: true,
-                ),
+                reader
+                    .readLinesUntil(
+                      preserveLastLine: true,
+                      breakOnBlankLines: true,
+                      breakOnListContinuation: true,
+                    )
+                    .map(_TextLine.new),
               );
             }
           } else {
@@ -3150,14 +3114,14 @@ abstract final class Parser {
           // Pop the blank line so it's not interpreted as a list
           // continuation.
           if (!withinNestedList) buffer.removeLast();
-          buffer.add(current);
+          buffer.add(_TextLine(current));
           hasText_ = true;
         }
-      } else if (_isContinuation(thisLine)) {
+      } else if (thisLine is _ListContinuation) {
         hasText_ = true;
         buffer.add(thisLine);
       } else {
-        final text = _lineOf(thisLine);
+        final text = thisLine.text;
         if (text.isNotEmpty) {
           hasText_ = true;
           final nested = _findNestedList(
@@ -3166,7 +3130,7 @@ abstract final class Parser {
           );
           if (nested != null) {
             withinNestedList = true;
-            if (nested.$1 == 'dlist' && _isNilOrEmpty(nested.$2.group(3))) {
+            if (nested.$1 == 'dlist' && nested.$2.group(3).isNullOrEmpty) {
               // Get greedy again.
               hasText_ = false;
             }
@@ -3185,11 +3149,11 @@ abstract final class Parser {
 
     while (buffer.isNotEmpty) {
       final lastLine = buffer.last;
-      if (_isContinuation(lastLine)) {
+      if (lastLine is _ListContinuation) {
         // Drop optional trailing continuation.
         buffer.removeLast();
         break;
-      } else if (_lineOf(lastLine).isEmpty) {
+      } else if (lastLine.text.isEmpty) {
         // Strip trailing blank lines to prevent empty blocks.
         buffer.removeLast();
       } else {
@@ -3197,7 +3161,7 @@ abstract final class Parser {
       }
     }
 
-    return buffer.map(_lineOf).toList();
+    return [for (final line in buffer) line.text];
   }
 
   /// Finds the first list context in [contexts] matching [line].
@@ -3281,10 +3245,8 @@ abstract final class Parser {
 
     if (validate && expected != actual) {
       _logger.warn(
-        _msg(
-          'list item index: expected $expected, got $actual',
-          reader!.cursor(),
-        ),
+        'list item index: expected $expected, got $actual',
+        at: reader!.cursor(),
       );
     }
     return (resolved, style);
@@ -3297,7 +3259,7 @@ abstract final class Parser {
   static bool isSiblingListItem(
     String line,
     String listType,
-    Object? siblingTrait,
+    Pattern? siblingTrait,
   ) {
     if (siblingTrait == null) return false;
     if (siblingTrait is RegExp) return siblingTrait.hasMatch(line);
@@ -3312,13 +3274,13 @@ abstract final class Parser {
   static Table parseTable(
     Reader tableReader,
     AbstractBlock parent,
-    Map<Object, Object?> attributes,
+    BlockAttributes attributes,
   ) {
-    final table = Table(parent, _strKeys(attributes));
+    final table = Table(parent, attributes);
 
     var explicitColspecs = false;
     if (attributes.containsKey('cols')) {
-      final colspecs = parseColspecs(attributes['cols']! as String);
+      final colspecs = parseColspecs(attributes['cols']!);
       if (colspecs.isNotEmpty) {
         table.createColumns(colspecs);
         explicitColspecs = true;
@@ -3327,19 +3289,15 @@ abstract final class Parser {
 
     final skipped = tableReader.skipBlankLines() ?? 0;
     var implicitHeader = false;
-    if (isTruthy(attributes['header-option'])) {
-      table.hasHeaderOption = true;
-    } else if (skipped == 0 && !isTruthy(attributes['noheader-option'])) {
+    if (attributes.containsKey('header-option')) {
+      table.header = TableHeader.explicit;
+    } else if (skipped == 0 && !attributes.containsKey('noheader-option')) {
       // NOTE assume table has header until we know otherwise; if it
-      // doesn't (null), cells in first row get reprocessed.
-      table.hasHeaderOption = 'implicit';
+      // doesn't (undecided), cells in first row get reprocessed.
+      table.header = TableHeader.implicit;
       implicitHeader = true;
     }
-    final parserCtx = TableParserContext(
-      tableReader,
-      table,
-      _strKeys(attributes),
-    );
+    final parserCtx = TableParserContext(tableReader, table, attributes);
     final format = parserCtx.format!;
     var loopIdx = -1;
     int? implicitHeaderBoundary;
@@ -3373,7 +3331,7 @@ abstract final class Parser {
           } else if (implicitHeaderBoundary != null &&
               implicitHeaderBoundary == loopIdx) {
             // Otherwise, the cell continues from previous line.
-            table.hasHeaderOption = null;
+            table.header = TableHeader.undecided;
             implicitHeader = false;
             implicitHeaderBoundary = null;
           }
@@ -3390,7 +3348,7 @@ abstract final class Parser {
               (tableReader.peekLine() ?? '').isEmpty) {
             implicitHeaderBoundary = 1;
           } else {
-            table.hasHeaderOption = null;
+            table.header = TableHeader.undecided;
             implicitHeader = false;
           }
         }
@@ -3438,7 +3396,7 @@ abstract final class Parser {
               continue;
             }
             final (nextCellspec, cellText) = parseCellspec(preMatch);
-            parserCtx.pushCellspect(nextCellspec);
+            parserCtx.pushCellspec(nextCellspec ?? const CellSpec());
             parserCtx.buffer = '${parserCtx.buffer}$cellText';
           }
           // Don't break if empty to preserve empty cell found at end of
@@ -3453,7 +3411,7 @@ abstract final class Parser {
           if (format == 'csv') {
             if (parserCtx.bufferHasUnclosedQuotes()) {
               if (implicitHeaderBoundary != null && loopIdx == 0) {
-                table.hasHeaderOption = null;
+                table.header = TableHeader.undecided;
                 implicitHeader = false;
                 implicitHeaderBoundary = null;
               }
@@ -3480,14 +3438,12 @@ abstract final class Parser {
     }
 
     parserCtx.closeTable();
-    if (!isTruthy(table.attributes['colcount'])) {
-      table.attributes['colcount'] = table.columns.length;
-    }
-    if (table.attributes['colcount'] != 0 && !explicitColspecs) {
-      table.assignColumnWidths();
-    }
-    if (implicitHeader) table.hasHeaderOption = true;
-    table.partitionHeaderFooter(_strKeys(attributes));
+    final colcount = table.attributes['colcount'] ??= '${table.columns.length}';
+    if (colcount != '0' && !explicitColspecs) table.assignColumnWidths();
+    if (implicitHeader) table.header = TableHeader.explicit;
+    table.partitionHeaderFooter(
+      footer: attributes.containsKey('footer-option'),
+    );
 
     return table;
   }
@@ -3495,59 +3451,49 @@ abstract final class Parser {
   /// Parses the column specs for a table.
   ///
   /// Port of `Parser.parse_colspecs`.
-  static List<Map<String, Object?>> parseColspecs(String records) {
+  static List<ColumnSpec> parseColspecs(String records) {
     var input = records;
     if (input.contains(' ')) input = input.replaceAll(' ', '');
     // Check for deprecated syntax: single number, equal column spread.
     if (input == _toInt(input).toString()) {
-      return List.generate(_toInt(input), (_) => <String, Object?>{'width': 1});
+      return List.generate(_toInt(input), (_) => const ColumnSpec());
     }
 
-    final specs = <Map<String, Object?>>[];
+    final specs = <ColumnSpec>[];
     // NOTE Dart split keeps trailing empty records, like split with -1.
     final parts = input.contains(',') ? input.split(',') : input.split(';');
     for (final record in parts) {
       if (record.isEmpty) {
-        specs.add(<String, Object?>{'width': 1});
+        specs.add(const ColumnSpec());
       } else {
-        // TODOmight want to use scan rather than this mega-regexp.
+        // TODO might want to use scan rather than this mega-regexp.
         final m = columnSpecRx.firstMatch(record);
         if (m != null) {
-          final spec = <String, Object?>{};
+          String? halign;
+          String? valign;
           if (m.group(2) != null) {
             // Make this an operation.
             final alignParts = splitDropTrailingEmpty(m.group(2)!, '.');
             final colspec = alignParts[0];
             final rowspec = alignParts.length > 1 ? alignParts[1] : null;
-            if (!_isNilOrEmpty(colspec) &&
-                _tableCellHorzAlignments.containsKey(colspec)) {
-              spec['halign'] = _tableCellHorzAlignments[colspec];
-            }
-            if (!_isNilOrEmpty(rowspec) &&
-                _tableCellVertAlignments.containsKey(rowspec)) {
-              spec['valign'] = _tableCellVertAlignments[rowspec];
-            }
+            halign = _tableCellHorzAlignments[colspec];
+            if (rowspec != null) valign = _tableCellVertAlignments[rowspec];
           }
 
           final width = m.group(3);
-          if (width != null) {
-            // to_i will strip the optional %.
-            spec['width'] = width == '~' ? -1 : _toInt(width);
-          } else {
-            spec['width'] = 1;
-          }
-
-          // Make this an operation.
-          final styleKey = m.group(4);
-          if (styleKey != null && _tableCellStyles.containsKey(styleKey)) {
-            spec['style'] = _tableCellStyles[styleKey];
-          }
+          // to_i will strip the optional %.
+          final spec = ColumnSpec(
+            width: width == null ? 1 : (width == '~' ? -1 : _toInt(width)),
+            halign: halign,
+            valign: valign,
+            style: _tableCellStyles[m.group(4) ?? ''],
+          );
 
           final repeat = m.group(1);
           if (repeat != null) {
             final count = int.parse(repeat);
             for (var i = 0; i < count; i++) {
-              specs.add(Map<String, Object?>.of(spec));
+              specs.add(spec);
             }
           } else {
             specs.add(spec);
@@ -3563,7 +3509,7 @@ abstract final class Parser {
   /// Port of `Parser.parse_cellspec`. [pos] is `'start'` or `'end'`.
   /// Returns the spec (or `null` at `'start'` when no boundary is found)
   /// and the remaining text.
-  static (Map<String, Object?>?, String) parseCellspec(
+  static (CellSpec?, String) parseCellspec(
     String line, [
     String pos = 'end',
     String? delimiter,
@@ -3575,68 +3521,65 @@ abstract final class Parser {
       final rest = line.substring(sepIndex + delimiter.length);
       final m = cellSpecStartRx.firstMatch(specPart);
       if (m == null) return (null, line);
-      if (m.group(0)!.isEmpty) return (<String, Object?>{}, rest);
-      return _cellspecFromMatch(m, rest);
+      if (m.group(0)!.isEmpty) return (const CellSpec(), rest);
+      return (_cellspecFromMatch(m), rest);
     }
     final m = cellSpecEndRx.firstMatch(line);
-    if (m == null) return (<String, Object?>{}, line);
+    if (m == null) return (const CellSpec(), line);
     // NOTE return the line stripped of trailing whitespace if no cellspec
     // is found in this case.
     if (m.group(0)!.trimLeft().isEmpty) {
-      return (<String, Object?>{}, line.trimRight());
+      return (const CellSpec(), line.trimRight());
     }
-    return _cellspecFromMatch(m, line.substring(0, m.start));
+    return (_cellspecFromMatch(m), line.substring(0, m.start));
   }
 
-  /// Builds a cell spec from a cellspec regex `match` and [rest] text.
-  static (Map<String, Object?>, String) _cellspecFromMatch(
-    RegExpMatch m,
-    String rest,
-  ) {
-    final spec = <String, Object?>{};
+  /// Builds a cell spec from a cellspec regex match.
+  static CellSpec _cellspecFromMatch(RegExpMatch m) {
+    int? colspan;
+    int? rowspan;
+    int? repeat;
     if (m.group(1) != null) {
       final spanParts = splitDropTrailingEmpty(m.group(1)!, '.');
-      final colspec = spanParts[0];
+      final colspec = spanParts.isEmpty ? null : spanParts[0];
       final rowspec = spanParts.length > 1 ? spanParts[1] : null;
-      final col = _isNilOrEmpty(colspec) ? 1 : _toInt(colspec);
-      final row = _isNilOrEmpty(rowspec) ? 1 : _toInt(rowspec);
+      final col = colspec.isNullOrEmpty ? 1 : _toInt(colspec);
+      final row = rowspec.isNullOrEmpty ? 1 : _toInt(rowspec);
       if (m.group(2) == '+') {
-        if (col != 1) spec['colspan'] = col;
-        if (row != 1) spec['rowspan'] = row;
+        if (col != 1) colspan = col;
+        if (row != 1) rowspan = row;
       } else if (m.group(2) == '*') {
-        if (col != 1) spec['repeatcol'] = col;
+        if (col != 1) repeat = col;
       }
     }
 
+    String? halign;
+    String? valign;
     if (m.group(3) != null) {
       final alignParts = splitDropTrailingEmpty(m.group(3)!, '.');
-      final colspec = alignParts[0];
+      final colspec = alignParts.isEmpty ? null : alignParts[0];
       final rowspec = alignParts.length > 1 ? alignParts[1] : null;
-      if (!_isNilOrEmpty(colspec) &&
-          _tableCellHorzAlignments.containsKey(colspec)) {
-        spec['halign'] = _tableCellHorzAlignments[colspec];
-      }
-      if (!_isNilOrEmpty(rowspec) &&
-          _tableCellVertAlignments.containsKey(rowspec)) {
-        spec['valign'] = _tableCellVertAlignments[rowspec];
-      }
+      if (colspec != null) halign = _tableCellHorzAlignments[colspec];
+      if (rowspec != null) valign = _tableCellVertAlignments[rowspec];
     }
 
-    final styleKey = m.group(4);
-    if (styleKey != null && _tableCellStyles.containsKey(styleKey)) {
-      spec['style'] = _tableCellStyles[styleKey];
-    }
-
-    return (spec, rest);
+    return CellSpec(
+      colspan: colspan,
+      rowspan: rowspan,
+      repeat: repeat,
+      halign: halign,
+      valign: valign,
+      style: _tableCellStyles[m.group(4) ?? ''],
+    );
   }
 
   /// Parses lines of metadata until a line of metadata is not found.
   ///
   /// Port of `Parser.parse_block_metadata_lines`.
-  static Map<Object, Object?> parseBlockMetadataLines(
+  static BlockAttributes parseBlockMetadataLines(
     Reader reader,
     Document document,
-    Map<Object, Object?> attributes, {
+    BlockAttributes attributes, {
     bool textOnly = false,
   }) {
     final attrs = attributes;
@@ -3660,7 +3603,7 @@ abstract final class Parser {
   static bool parseBlockMetadataLine(
     Reader reader,
     Document document,
-    Map<Object, Object?> attributes, {
+    BlockAttributes attributes, {
     bool textOnly = false,
   }) {
     final nextLine = reader.peekLine();
@@ -3684,7 +3627,7 @@ abstract final class Parser {
         if (anchorMatch != null) {
           // NOTE registration of id and reftext is deferred until block is
           // processed.
-          attributes['id'] = anchorMatch.group(1);
+          attributes['id'] = anchorMatch.group(1)!;
           final reftext = anchorMatch.group(2);
           if (reftext != null) {
             attributes['reftext'] = reftext.contains(attrRefHead)
@@ -3696,7 +3639,7 @@ abstract final class Parser {
       } else if (nextLine.endsWith(']')) {
         final attrMatch = blockAttributeListRx.firstMatch(nextLine);
         if (attrMatch != null) {
-          final currentStyle = attributes[1];
+          final currentStyle = attributes['1'];
           // Extract id, role, and options from first positional attribute
           // and remove, if present.
           final parsed = parseAttributes(
@@ -3707,9 +3650,12 @@ abstract final class Parser {
             subResult: true,
             into: attributes,
           );
-          if (parsed[1] != null) {
-            attributes[1] =
-                parseStyleAttribute(attributes, reader) ?? currentStyle;
+          if (parsed['1'] != null) {
+            _setOrRemove(
+              attributes,
+              '1',
+              parseStyleAttribute(attributes, reader) ?? currentStyle,
+            );
           }
           return true;
         }
@@ -3719,9 +3665,9 @@ abstract final class Parser {
       if (titleMatch != null) {
         // NOTE title doesn't apply to section, but we need to stash it for
         // the first block.
-        // TODOshould issue an error if this is found above the document
+        // TODO should issue an error if this is found above the document
         // title.
-        attributes['title'] = titleMatch.group(1);
+        attributes['title'] = titleMatch.group(1)!;
         return true;
       }
     } else if (!normal || nextLine.startsWith('/')) {
@@ -3760,7 +3706,7 @@ abstract final class Parser {
   static void processAttributeEntries(
     Reader reader,
     Document? document, [
-    Map<Object, Object?>? attributes,
+    BlockAttributes? attributes,
   ]) {
     reader.skipCommentLines();
     while (processAttributeEntry(reader, document, attributes)) {
@@ -3778,7 +3724,7 @@ abstract final class Parser {
   static bool processAttributeEntry(
     Reader reader,
     Document? document, [
-    Map<Object, Object?>? attributes,
+    BlockAttributes? attributes,
     RegExpMatch? match,
   ]) {
     final entryMatch =
@@ -3826,13 +3772,13 @@ abstract final class Parser {
   ///
   /// Port of `Parser.store_attribute`. A leading or trailing `!` on [name]
   /// unsets the attribute. Returns the resolved name and value.
-  static (String, Object?) storeAttribute(
+  static (String, String?) storeAttribute(
     String name,
-    Object? value, [
+    String? value, [
     Document? doc,
-    Map<Object, Object?>? attrs,
+    BlockAttributes? attrs,
   ]) {
-    // TODOmove processing of attribute value to utility method.
+    // TODO move processing of attribute value to utility method.
     var resolvedName = name;
     var resolvedValue = value;
     if (resolvedName.endsWith('!')) {
@@ -3851,59 +3797,41 @@ abstract final class Parser {
     } else if (resolvedName == 'hardbreaks') {
       resolvedName = 'hardbreaks-option';
     } else if (resolvedName == 'showtitle') {
-      storeAttribute(
-        'notitle',
-        isTruthy(resolvedValue) ? null : '',
-        doc,
-        attrs,
-      );
+      storeAttribute('notitle', resolvedValue != null ? null : '', doc, attrs);
     }
 
     if (doc != null) {
       if (resolvedValue != null) {
-        var stringValue = resolvedValue as String;
+        var stringValue = resolvedValue;
         if (resolvedName == 'leveloffset') {
           // Support relative leveloffset values.
           if (stringValue.startsWith('+')) {
             stringValue =
-                (_toInt(doc.attr('leveloffset', 0)) +
+                (_toInt(doc.attr('leveloffset', '0')) +
                         _toInt(stringValue.substring(1)))
                     .toString();
           } else if (stringValue.startsWith('-')) {
             stringValue =
-                (_toInt(doc.attr('leveloffset', 0)) -
+                (_toInt(doc.attr('leveloffset', '0')) -
                         _toInt(stringValue.substring(1)))
                     .toString();
           }
         }
         // QUESTION should we set value to locked value if set_attribute
         // returns false?
-        final resolved = _setDocumentAttribute(doc, resolvedName, stringValue);
+        final resolved = doc.setAttribute(resolvedName, stringValue);
         if (resolved != null) {
           resolvedValue = resolved;
-          if (attrs != null) {
-            _saveAttributeEntry(
-              DocumentAttributeEntry(resolvedName, resolvedValue),
-              attrs,
-            );
-          }
+          attrs?.addEntry(DocumentAttributeEntry(resolvedName, resolved));
         }
       } else if (!doc.attributeLocked(resolvedName)) {
         // Unlocked attributes are always deleted (and the entry recorded),
         // even when absent.
         doc.deleteAttribute(resolvedName);
-        if (attrs != null) {
-          _saveAttributeEntry(
-            DocumentAttributeEntry(resolvedName, resolvedValue),
-            attrs,
-          );
-        }
+        attrs?.addEntry(DocumentAttributeEntry(resolvedName, null));
       }
-    } else if (attrs != null) {
-      _saveAttributeEntry(
-        DocumentAttributeEntry(resolvedName, resolvedValue),
-        attrs,
-      );
+    } else {
+      attrs?.addEntry(DocumentAttributeEntry(resolvedName, resolvedValue));
     }
 
     return (resolvedName, resolvedValue);
@@ -3913,31 +3841,31 @@ abstract final class Parser {
   ///
   /// Port of `Parser.parse_style_attribute`. Returns the parsed style.
   static String? parseStyleAttribute(
-    Map<Object, Object?> attributes, [
+    Map<String, String> attributes, [
     Reader? reader,
   ]) {
     // NOTE spaces are not allowed in shorthand, so if we detect one, this
     // ain't no shorthand.
-    final rawStyle = attributes[1] as String?;
+    final rawStyle = attributes['1'];
     if (rawStyle != null &&
         !rawStyle.contains(' ') &&
         _shorthandPropertySyntax) {
       String? name;
       var accum = '';
-      final parsedAttrs = <String, Object?>{};
+      final parsed = _Shorthand();
 
       for (final rune in rawStyle.runes) {
         final c = String.fromCharCode(rune);
         if (c == '.') {
-          yieldBufferedAttribute(parsedAttrs, name, accum, reader);
+          parsed.add(name, accum, reader);
           accum = '';
           name = 'role';
         } else if (c == '#') {
-          yieldBufferedAttribute(parsedAttrs, name, accum, reader);
+          parsed.add(name, accum, reader);
           accum = '';
           name = 'id';
         } else if (c == '%') {
-          yieldBufferedAttribute(parsedAttrs, name, accum, reader);
+          parsed.add(name, accum, reader);
           accum = '';
           name = 'option';
         } else {
@@ -3947,78 +3875,30 @@ abstract final class Parser {
 
       // Small optimization if no shorthand is found.
       if (name != null) {
-        yieldBufferedAttribute(parsedAttrs, name, accum, reader);
+        parsed.add(name, accum, reader);
 
-        final parsedStyle = parsedAttrs['style'] as String?;
+        final parsedStyle = parsed.style;
         if (parsedStyle != null) attributes['style'] = parsedStyle;
 
-        if (parsedAttrs.containsKey('id')) {
-          attributes['id'] = parsedAttrs['id'];
-        }
+        if (parsed.id case final id?) attributes['id'] = id;
 
-        if (parsedAttrs.containsKey('role')) {
-          final roles = (parsedAttrs['role']! as List<String>).join(' ');
+        if (parsed.roles.isNotEmpty) {
+          final roles = parsed.roles.join(' ');
           final existingRole = attributes['role'];
-          attributes['role'] = _isNilOrEmpty(existingRole)
+          attributes['role'] = existingRole == null || existingRole.isEmpty
               ? roles
               : '$existingRole $roles';
         }
 
-        if (parsedAttrs.containsKey('option')) {
-          for (final opt in parsedAttrs['option']! as List<String>) {
-            attributes['$opt-option'] = '';
-          }
+        for (final opt in parsed.options) {
+          attributes['$opt-option'] = '';
         }
 
         return parsedStyle;
       }
     }
-    attributes['style'] = rawStyle;
+    _setOrRemove(attributes, 'style', rawStyle);
     return rawStyle;
-  }
-
-  /// Saves the collected attribute (`id`, `option`, `role`, or `null` for
-  /// `style`) in the attribute map.
-  ///
-  /// Port of `Parser.yield_buffered_attribute`.
-  static void yieldBufferedAttribute(
-    Map<String, Object?> attrs,
-    String? name,
-    String value,
-    Reader? reader,
-  ) {
-    if (name != null) {
-      if (value.isEmpty) {
-        if (reader != null) {
-          _logger.warn(
-            _msg(
-              'invalid empty $name detected in style attribute',
-              reader.cursorAtPrevLine(),
-            ),
-          );
-        } else {
-          _logger.warn('invalid empty $name detected in style attribute');
-        }
-      } else if (name == 'id') {
-        if (attrs.containsKey('id')) {
-          if (reader != null) {
-            _logger.warn(
-              _msg(
-                'multiple ids detected in style attribute',
-                reader.cursorAtPrevLine(),
-              ),
-            );
-          } else {
-            _logger.warn('multiple ids detected in style attribute');
-          }
-        }
-        attrs[name] = value;
-      } else {
-        ((attrs[name] ??= <String>[]) as List<String>).add(value);
-      }
-    } else if (value.isNotEmpty) {
-      attrs['style'] = value;
-    }
   }
 
   /// Consumes and parses the two header lines (line 1 = author info,
@@ -4027,7 +3907,7 @@ abstract final class Parser {
   /// Port of `Parser.parse_header_metadata`. When [document] is given,
   /// the metadata is applied to it. Returns the merged metadata map when
   /// [retrieve] is set, else an empty map.
-  static Map<String, Object?> parseHeaderMetadata(
+  static Map<String, String> parseHeaderMetadata(
     Reader reader, {
     Document? document,
     bool retrieve = true,
@@ -4036,24 +3916,24 @@ abstract final class Parser {
     // NOTE this will discard any comment lines, but not skip blank lines.
     processAttributeEntries(reader, document);
 
-    Map<String, Object?> implicitAuthorMetadata;
-    Map<String, Object?>? revMetadata;
-    Map<String, Object?>? authorMetadata;
-    int? authorcount;
-    Object? implicitAuthor;
-    Object? implicitAuthorinitials;
-    Object? implicitAuthors;
+    Map<String, String> implicitAuthorMetadata;
+    Map<String, String>? revMetadata;
+    Map<String, String>? authorMetadata;
+    String? authorcount;
+    String? implicitAuthor;
+    String? implicitAuthorinitials;
+    String? implicitAuthors;
     if (reader.hasMoreLines() && !reader.isNextLineEmpty()) {
       implicitAuthorMetadata = processAuthors(reader.readLine()!);
-      authorcount = implicitAuthorMetadata.remove('authorcount') as int?;
+      authorcount = implicitAuthorMetadata.remove('authorcount');
       if (document != null && docAttrs != null) {
-        docAttrs['authorcount'] = authorcount;
-        if ((authorcount ?? 0) > 0) {
+        _setOrRemove(docAttrs, 'authorcount', authorcount);
+        if (_toInt(authorcount) > 0) {
           implicitAuthorMetadata.forEach((key, val) {
             // Apply header subs and assign to document; attributes
             // substitution only relevant for email.
             if (!docAttrs.containsKey(key)) {
-              docAttrs[key] = document.applyHeaderSubs(val! as String);
+              docAttrs[key] = document.applyHeaderSubs(val);
             }
           });
           implicitAuthor = docAttrs['author'];
@@ -4061,7 +3941,7 @@ abstract final class Parser {
           implicitAuthors = docAttrs['authors'];
         }
       }
-      implicitAuthorMetadata['authorcount'] = authorcount;
+      _setOrRemove(implicitAuthorMetadata, 'authorcount', authorcount);
 
       // NOTE this will discard any comment lines, but not skip blank lines.
       processAttributeEntries(reader, document);
@@ -4070,7 +3950,7 @@ abstract final class Parser {
         final revLine = reader.readLine()!;
         final revMatch = revisionInfoLineRx.firstMatch(revLine);
         if (revMatch != null) {
-          revMetadata = <String, Object?>{};
+          revMetadata = <String, String>{};
           if (revMatch.group(1) != null) {
             revMetadata['revnumber'] = revMatch.group(1)!.trimRight();
           }
@@ -4090,7 +3970,7 @@ abstract final class Parser {
             // Apply header subs and assign to document.
             revMetadata.forEach((key, val) {
               if (!docAttrs.containsKey(key)) {
-                docAttrs[key] = document.applyHeaderSubs(val! as String);
+                docAttrs[key] = document.applyHeaderSubs(val);
               }
             });
           }
@@ -4105,7 +3985,7 @@ abstract final class Parser {
 
       reader.skipBlankLines();
     } else {
-      implicitAuthorMetadata = <String, Object?>{};
+      implicitAuthorMetadata = <String, String>{};
     }
 
     // Process author attribute entries that override (or stand in for)
@@ -4115,7 +3995,7 @@ abstract final class Parser {
           docAttrs['author'] != implicitAuthor) {
         // Do not allow multiple, process as names only.
         authorMetadata = processAuthors(
-          docAttrs['author'] ?? '',
+          docAttrs['author']!,
           namesOnly: true,
           multiple: false,
         );
@@ -4136,7 +4016,7 @@ abstract final class Parser {
           // Only use indexed author attribute if value is different.
           // Leaves corner case if line matches with underscores converted
           // to spaces; use double space to force.
-          final authorOverride = docAttrs[authorKey] as String?;
+          final authorOverride = docAttrs[authorKey];
           if (authorOverride == implicitAuthorMetadata[authorKey]) {
             authors.add(null);
             sparse = true;
@@ -4165,58 +4045,62 @@ abstract final class Parser {
             }
           }
           // Process as names only.
-          authorMetadata = processAuthors(
-            authors,
-            namesOnly: true,
-            multiple: false,
-          );
+          authorMetadata = _processAuthorEntries([
+            for (final author in authors) author ?? '',
+          ], namesOnly: true);
         } else {
-          authorMetadata = <String, Object?>{'authorcount': 0};
+          authorMetadata = <String, String>{'authorcount': '0'};
         }
       }
 
-      if (authorMetadata['authorcount'] == 0) {
+      if (authorMetadata['authorcount'] == '0') {
         if (authorcount != null) {
           authorMetadata = null;
         } else {
-          docAttrs['authorcount'] = 0;
+          docAttrs['authorcount'] = '0';
         }
       } else {
         docAttrs.addAll(authorMetadata);
 
         // Special case.
         if (!docAttrs.containsKey('email') && docAttrs.containsKey('email_1')) {
-          docAttrs['email'] = docAttrs['email_1'];
+          docAttrs['email'] = docAttrs['email_1']!;
         }
       }
     }
 
-    if (!retrieve) return <String, Object?>{};
-    return <String, Object?>{}
-      ..addAll(implicitAuthorMetadata)
-      ..addAll(revMetadata ?? const <String, Object?>{})
-      ..addAll(authorMetadata ?? const <String, Object?>{});
+    if (!retrieve) return <String, String>{};
+    return <String, String>{
+      ...implicitAuthorMetadata,
+      ...?revMetadata,
+      ...?authorMetadata,
+    };
   }
 
   /// Parses the author line into a map of author metadata.
   ///
-  /// Port of `Parser.process_authors`. [authorLine] is a `String` author
-  /// line or a `List` of entries.
-  static Map<String, Object?> processAuthors(
-    Object authorLine, {
+  /// Port of `Parser.process_authors`. With [multiple], the line may hold
+  /// several authors separated by semicolons. The `authorcount` entry holds
+  /// the number of authors.
+  static Map<String, String> processAuthors(
+    String authorLine, {
     bool namesOnly = false,
     bool multiple = true,
+  }) => _processAuthorEntries(
+    multiple && authorLine.contains(';')
+        ? authorLine.split(authorDelimiterRx)
+        : [authorLine],
+    namesOnly: namesOnly,
+  );
+
+  /// Parses author [entries] (one author each) into author metadata (see
+  /// [processAuthors]).
+  static Map<String, String> _processAuthorEntries(
+    List<String> entries, {
+    bool namesOnly = false,
   }) {
-    final authorMetadata = <String, Object?>{};
+    final authorMetadata = <String, String>{};
     var authorIdx = 0;
-    final List<String> entries;
-    if (authorLine is String) {
-      entries = multiple && authorLine.contains(';')
-          ? authorLine.split(authorDelimiterRx)
-          : [authorLine];
-    } else {
-      entries = List<String>.from(authorLine as List<Object?>);
-    }
     for (final authorEntry in entries) {
       if (authorEntry.isEmpty) continue;
       final keyMap = <String, String>{};
@@ -4298,13 +4182,13 @@ abstract final class Parser {
       }
 
       if (authorIdx == 1) {
-        authorMetadata['authors'] = authorMetadata[keyMap['author']];
+        authorMetadata['authors'] = authorMetadata[keyMap['author']]!;
       } else {
         // Only assign the _1 attributes once we see the second author.
         if (authorIdx == 2) {
           for (final key in _authorKeys) {
             if (authorMetadata.containsKey(key)) {
-              authorMetadata['${key}_1'] = authorMetadata[key];
+              authorMetadata['${key}_1'] = authorMetadata[key]!;
             }
           }
         }
@@ -4313,7 +4197,7 @@ abstract final class Parser {
       }
     }
 
-    authorMetadata['authorcount'] = authorIdx;
+    authorMetadata['authorcount'] = '$authorIdx';
     return authorMetadata;
   }
 
@@ -4436,22 +4320,40 @@ abstract final class Parser {
       name.replaceAll(invalidAttributeNameCharsRx, '').toLowerCase();
 }
 
-/// Adapts a reader [Cursor] to a [NodeSourceLocation].
-///
-/// [Cursor] does not implement the interface itself; `table.dart` keeps a
-/// similar private adapter.
-class _CursorSourceLocation implements NodeSourceLocation {
-  /// Creates a source location from `cursor`.
-  new(this._cursor);
+/// The attributes collected from the shorthand syntax of a first positional
+/// attribute (`style#id.role%option`).
+final class _Shorthand {
+  String? style;
+  String? id;
+  final List<String> roles = <String>[];
+  final List<String> options = <String>[];
 
-  final Cursor _cursor;
-
-  @override
-  String? get file {
-    final file = _cursor.file;
-    return file is String ? file : file?.toString();
+  /// Saves the collected [value] for [name] (`id`, `option`, `role`, or
+  /// `null` for the style).
+  ///
+  /// Port of `Parser.yield_buffered_attribute`.
+  void add(String? name, String value, Reader? reader) {
+    if (name != null) {
+      if (value.isEmpty) {
+        LoggerManager.logger.warn(
+          'invalid empty $name detected in style attribute',
+          at: reader?.cursorAtPrevLine(),
+        );
+      } else if (name == 'id') {
+        if (id != null) {
+          LoggerManager.logger.warn(
+            'multiple ids detected in style attribute',
+            at: reader?.cursorAtPrevLine(),
+          );
+        }
+        id = value;
+      } else if (name == 'role') {
+        roles.add(value);
+      } else {
+        options.add(value);
+      }
+    } else if (value.isNotEmpty) {
+      style = value;
+    }
   }
-
-  @override
-  int? get lineno => _cursor.lineno;
 }

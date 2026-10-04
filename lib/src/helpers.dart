@@ -3,57 +3,19 @@
 /// Port of `lib/asciidoctor/helpers.rb`.
 library;
 
-import 'dart:io' show Directory, Platform, stderr;
+import 'dart:io' show Directory, Platform;
 
 import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/rx.dart';
 
 /// Internal helper functions. Except where noted, everything here is internal.
 abstract final class Helpers {
-  /// Loads the library [name], handling failure per [onFailure].
-  ///
-  /// Dart cannot load libraries at runtime, so this always takes the failure
-  /// path. When [onFailure] is `'abort'` (the default) it throws a
-  /// [StateError] carrying Asciidoctor's load-failure message; when
-  /// `'warn'` it reports the message and returns `null`; otherwise it
-  /// silently returns `null`.
-  ///
-  /// [gemName]: `true` (the default) uses [name],
-  /// a [String] names the gem explicitly, and `false` or `null` produces the
-  /// generic "cannot load such file" message.
-  static bool? requireLibrary(
-    String name, [
-    Object? gemName = true,
-    String onFailure = 'abort',
-  ]) {
-    if (gemName == null || gemName == false) {
-      if (onFailure == 'abort') {
-        throw StateError(
-          'asciidoctor: FAILED: cannot load such file -- $name. '
-          'Processing aborted.',
-        );
-      }
-      if (onFailure == 'warn') {
-        stderr.writeln(
-          'cannot load such file -- $name. Functionality disabled.',
-        );
-      }
-      return null;
-    }
-    final gem = gemName == true ? name : gemName as String;
-    if (onFailure == 'abort') {
-      throw StateError(
-        "asciidoctor: FAILED: required gem '$gem' is not available. "
-        'Processing aborted.',
-      );
-    }
-    if (onFailure == 'warn') {
-      stderr.writeln(
-        "optional gem '$gem' is not available. Functionality disabled.",
-      );
-    }
-    return null;
-  }
+  /// Fails because the library [name] (in package [gem]) is not
+  /// available: Dart cannot load libraries at runtime.
+  static Never requireLibrary(String name, String gem) => throw StateError(
+    "asciidoctor: FAILED: required gem '$gem' is not available. "
+    'Processing aborted.',
+  );
 
   /// Ensures URI-reading support is available, optionally with a [cache].
   ///
@@ -143,12 +105,16 @@ abstract final class Helpers {
         : filename;
   }
 
-  /// Returns the last segment of [filename], dropping [dropExt] if given.
+  /// Returns the last segment of [filename], optionally without a suffix.
   ///
-  /// When [dropExt] is `true`, the file extension is dropped; when a
-  /// [String], that suffix is dropped (`.*` drops any extension); otherwise the
-  /// basename is kept whole.
-  static String basename(String filename, [Object? dropExt]) {
+  /// When [dropExtension] is set, the file extension is dropped; when
+  /// [dropSuffix] is given, that suffix is dropped (`.*` drops any
+  /// extension); otherwise the basename is kept whole.
+  static String basename(
+    String filename, {
+    String? dropSuffix,
+    bool dropExtension = false,
+  }) {
     var end = filename.length;
     while (end > 1 && _isDirSeparator(filename.codeUnitAt(end - 1))) {
       end--;
@@ -162,10 +128,8 @@ abstract final class Helpers {
     }
     var base = filename.substring(start, end);
     if (base.isEmpty && end > 0) base = '/';
-    if (dropExt != null && dropExt != false) {
-      final suffix = dropExt == true
-          ? extname(filename) ?? ''
-          : dropExt as String;
+    final suffix = dropExtension ? extname(filename) ?? '' : dropSuffix;
+    if (suffix != null) {
       if (suffix == '.*') {
         final dotIdx = base.lastIndexOf('.');
         if (dotIdx != -1 && _hasStem(base, dotIdx)) {
@@ -248,177 +212,5 @@ abstract final class Helpers {
       }
     }
     return result.toString();
-  }
-
-  /// Returns the next value in the sequence after [current].
-  ///
-  /// Handles both integer and character sequences: an [int] (or a [String]
-  /// that round-trips through `int.parse`, such as `'1'`) yields the
-  /// incremented integer; any other string yields its successor
-  /// (`'a'` to `'b'`, `'az'` to `'ba'`).
-  static Object nextVal(Object current) {
-    if (current is int) return current + 1;
-    if (current is! String) {
-      throw ArgumentError(
-        'Cannot compute next value for ${current.runtimeType}',
-      );
-    }
-    final intval = int.tryParse(current);
-    if (intval != null && intval.toString() == current) return intval + 1;
-    // Use BigInt so arbitrarily long digit strings still take the integer
-    // path.
-    final bigval = BigInt.tryParse(current);
-    if (bigval != null && bigval.toString() == current) {
-      return bigval + BigInt.one;
-    }
-    return _succ(current);
-  }
-
-  // Alphanumeric: alphabetic or decimal digit.
-  static final RegExp _alnumChar = RegExp(r'[\p{Alpha}\p{Nd}]', unicode: true);
-  // Decimal digit (includes ASCII 0-9).
-  static final RegExp _digitChar = RegExp(r'\p{Nd}', unicode: true);
-
-  static bool _isAlnum(int rune) =>
-      _alnumChar.hasMatch(String.fromCharCode(rune));
-  static bool _isAsciiAlnum(int rune) =>
-      (rune >= 0x30 && rune <= 0x39) ||
-      (rune >= 0x61 && rune <= 0x7a) ||
-      (rune >= 0x41 && rune <= 0x5a);
-
-  /// Letter (true) or digit (false) class of the alphanumeric [rune].
-  static bool _isLetter(int rune) {
-    if (rune >= 0x61 && rune <= 0x7a) return true;
-    if (rune >= 0x41 && rune <= 0x5a) return true;
-    if (rune >= 0x30 && rune <= 0x39) return false;
-    return !_digitChar.hasMatch(String.fromCharCode(rune));
-  }
-
-  /// The string successor of [current].
-  ///
-  /// Increments the trailing alphanumeric run with carry (`'a9'` becomes
-  /// `'b0'`). Non-alphanumeric separators inside the run are transparent
-  /// (`'1-9'` becomes `'2-0'`), but the run aborts before an ASCII letter
-  /// or digit whose class differs from the nearest alphanumeric on its
-  /// right (`'a-9'` becomes `'a-10'`, `'1-z9'` becomes `'1-aa0'`).
-  /// Non-ASCII alphanumerics increment by codepoint and absorb the carry
-  /// (`'ä9'` becomes `'å0'`). With no alphanumeric present, the last
-  /// character is incremented by codepoint.
-  static String _succ(String current) {
-    if (current.isEmpty) return current;
-    final runes = current.runes.toList();
-    var i = runes.length;
-    while (i > 0 && !_isAlnum(runes[i - 1])) {
-      i--;
-    }
-    if (i == 0) {
-      runes[runes.length - 1] = runes.last + 1;
-      return String.fromCharCodes(runes);
-    }
-    final lastAlnumEnd = i;
-    var last = runes[i - 1];
-    i--;
-    var pendingSeps = 0;
-    while (i > 0) {
-      final c = runes[i - 1];
-      if (_isAlnum(c)) {
-        if (pendingSeps > 0 &&
-            _isAsciiAlnum(c) &&
-            _isLetter(c) != _isLetter(last)) {
-          break;
-        }
-        last = c;
-        pendingSeps = 0;
-        i--;
-      } else {
-        pendingSeps++;
-        i--;
-      }
-    }
-    final regionStart = i + pendingSeps;
-    var carry = true;
-    var j = lastAlnumEnd - 1;
-    while (carry && j >= regionStart) {
-      final c = runes[j];
-      if (c >= 0x30 && c <= 0x39) {
-        if (c == 0x39) {
-          runes[j] = 0x30;
-        } else {
-          runes[j] = c + 1;
-          carry = false;
-        }
-      } else if (c >= 0x61 && c <= 0x7a) {
-        if (c == 0x7a) {
-          runes[j] = 0x61;
-        } else {
-          runes[j] = c + 1;
-          carry = false;
-        }
-      } else if (c >= 0x41 && c <= 0x5a) {
-        if (c == 0x5a) {
-          runes[j] = 0x41;
-        } else {
-          runes[j] = c + 1;
-          carry = false;
-        }
-      } else if (_isAlnum(c)) {
-        runes[j] = c + 1;
-        carry = false;
-      } else {
-        // Transparent separator; the carry passes through.
-      }
-      j--;
-    }
-    if (carry) {
-      // The char at regionStart rolled over (9/z/Z became 0/a/A); the carry
-      // materializes as a new leading 1/a/A.
-      final first = runes[regionStart];
-      runes.insert(regionStart, first == 0x30 ? 0x31 : first);
-    }
-    return String.fromCharCodes(runes);
-  }
-
-  /// Registry backing [classForName]: classes register themselves (or are
-  /// registered by their library) under their Asciidoctor qualified name.
-  static final Map<String, Type> _classRegistry = {
-    'String': String,
-    'int': int,
-    'double': double,
-    'bool': bool,
-    'List': List,
-    'Map': Map,
-    'Object': Object,
-  };
-
-  /// Registers [type] under [qualifiedName] for [classForName] lookups.
-  static void registerClass(String qualifiedName, Type type) {
-    _classRegistry[qualifiedName] = type;
-  }
-
-  /// Resolves the [Type] registered under [qualifiedName].
-  ///
-  /// A leading `::` is ignored. Throws an [ArgumentError] carrying
-  /// Asciidoctor's
-  /// `Could not resolve class for name: ...` message when nothing is
-  /// registered under that name.
-  static Type classForName(String qualifiedName) {
-    final name = qualifiedName.startsWith('::')
-        ? qualifiedName.substring(2)
-        : qualifiedName;
-    final type = _classRegistry[name];
-    if (type == null) {
-      throw ArgumentError('Could not resolve class for name: $qualifiedName');
-    }
-    return type;
-  }
-
-  /// Resolves [object] as a [Type].
-  ///
-  /// Returns [object] itself when it is already a [Type], resolves it via
-  /// [classForName] when it is a [String], and returns `null` otherwise.
-  static Type? resolveClass(Object? object) {
-    if (object is Type) return object;
-    if (object is String) return classForName(object);
-    return null;
   }
 }

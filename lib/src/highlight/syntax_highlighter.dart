@@ -24,12 +24,9 @@
 ///   attribute to an instance, which `Document` assigns to
 ///   `Document.syntaxHighlighter`.
 ///
-/// Framework instances implement [NodeSyntaxHighlighter], the interface the
-/// HTML5 converter consumes.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/core_ext.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/highlight/coderay.dart';
 import 'package:asciidoctor/src/highlight/coderay_lexer.dart';
@@ -39,18 +36,53 @@ import 'package:asciidoctor/src/highlight/html_pipeline.dart';
 import 'package:asciidoctor/src/highlight/prettify.dart';
 import 'package:asciidoctor/src/highlight/pygments.dart';
 import 'package:asciidoctor/src/highlight/rouge.dart';
-import 'package:asciidoctor/src/html5.dart';
+
+/// The context a highlighter is created in.
+final class HighlighterOptions {
+  /// Creates highlighter options.
+  const new({this.document, this.lexer});
+
+  /// The document being converted, if known.
+  final Document? document;
+
+  /// The lexing backend the built-in server-side highlighters use, if any.
+  final SourceLexer? lexer;
+}
+
+/// Options for formatting a source block.
+final class FormatOptions {
+  /// Creates format options.
+  const new({
+    this.nowrap = false,
+    this.cssMode = CssMode.classes,
+    this.style,
+    this.transform,
+  });
+
+  /// Whether long lines are not wrapped.
+  final bool nowrap;
+
+  /// Whether highlighting uses classes or inline styles (server-side
+  /// highlighters only).
+  final CssMode cssMode;
+
+  /// The highlighting theme (server-side highlighters only).
+  final String? style;
+
+  /// Adjusts the attributes of the `pre` and `code` tags before they are
+  /// rendered.
+  final void Function(Map<String, String> pre, Map<String, String> code)?
+  transform;
+}
 
 /// Creates a highlighter instance for a registered name.
 ///
-/// Port of registering a `Class`: [name] is the lookup name, [backend] the
-/// document backend (`'html5'` by default) and [opts] carries context (at
-/// least `'document'`). The built-in server-side factories additionally honor
-/// a `'lexer'` entry holding the [SourceLexer] backend used for real lexing.
+/// [name] is the lookup name, [backend] the document backend (`'html5'` by
+/// default) and [opts] carries the creation context.
 typedef SyntaxHighlighterFactoryFn = SyntaxHighlighterBase Function(
   String name,
   String backend,
-  Map<String, Object?> opts,
+  HighlighterOptions opts,
 );
 
 /// Base-class contract for syntax highlighters.
@@ -59,13 +91,12 @@ typedef SyntaxHighlighterFactoryFn = SyntaxHighlighterBase Function(
 /// highlighters extend this class and override what they support; anything
 /// left at its default either reports absence (`false`) or throws
 /// [UnimplementedError].
-abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
+abstract class SyntaxHighlighterBase {
   /// The highlighter name (e.g. `'rouge'`).
   ///
   /// Selects the `{name}-css`, `{name}-style` and `{name}-linenums-mode`
   /// document attributes. Must be non-empty: [SyntaxHighlighter.create]
   /// rejects nameless instances.
-  @override
   String get name;
 
   /// The `<pre>` CSS class (port of `@pre_class`).
@@ -77,7 +108,6 @@ abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
   ///
   /// Defaults to `false`. When `true`, the substitutions call [highlight] to
   /// handle the `specialcharacters` substitution.
-  @override
   bool get canHighlight => false;
 
   /// Highlights [source] written in [language] for [node].
@@ -109,32 +139,20 @@ abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
   ///
   /// Direct port of `Base#format`: the
   /// `<pre class="{preClass} highlight[ nowrap]">` envelope with an optional
-  /// `data-lang`, running the `transform` callback from [opts] when present.
-  /// [opts] carries `nowrap` (any truthy value disables wrapping) and, for
-  /// server-side highlighters, `css_mode` and `style`.
-  @override
-  String format(
-    AbstractBlock node,
-    String? language,
-    Map<String, Object?> opts,
-  ) {
-    final transform = opts['transform'];
-    return wrapSourceBlock(
-      preClass: preClass,
-      content: _s(node.content()),
-      language: language,
-      nowrap: isTruthy(opts['nowrap']),
-      transform:
-          transform is void Function(Map<String, String>, Map<String, String>)
-          ? transform
-          : null,
-    );
-  }
+  /// `data-lang`, running the [FormatOptions.transform] callback when
+  /// present.
+  String format(AbstractBlock node, String? language, FormatOptions opts) =>
+      wrapSourceBlock(
+        preClass: preClass,
+        content: node.content() ?? '',
+        language: language,
+        nowrap: opts.nowrap,
+        transform: opts.transform,
+      );
 
   /// Whether markup is injected at [location] (port of `docinfo?`).
   ///
   /// [location] is `'head'` or `'footer'`. Defaults to `false`.
-  @override
   bool hasDocinfo(String location) => false;
 
   /// Returns the markup injected at [location] (port of `docinfo`).
@@ -144,7 +162,6 @@ abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
   /// embedded, and [selfClosingTagSlash] the converter's void-element slash.
   ///
   /// Throws [UnimplementedError] unless overridden.
-  @override
   String docinfo(
     String location,
     Document node, {
@@ -176,41 +193,43 @@ abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
 /// All six built-in adapters register on first access. Lookups for unknown
 /// names return `null`.
 abstract final class SyntaxHighlighter {
-  static final Map<String, Object> _registry = <String, Object>{};
+  static final Map<String, SyntaxHighlighterFactoryFn> _registry =
+      <String, SyntaxHighlighterFactoryFn>{};
   static bool _builtinsRegistered = false;
 
-  /// Associates [highlighter] with each of [names] (port of
+  /// Associates [factory] with each of [names] (port of
   /// `Factory#register`).
-  ///
-  /// [highlighter] is either a [SyntaxHighlighterBase] instance (returned
-  /// as-is by [create]) or a [SyntaxHighlighterFactoryFn] (called by
-  /// [create]).
-  static void register(Object highlighter, Iterable<String> names) {
+  static void register(
+    SyntaxHighlighterFactoryFn factory,
+    Iterable<String> names,
+  ) {
     _ensureBuiltins();
     for (final name in names) {
-      _registry[name] = highlighter;
+      _registry[name] = factory;
     }
   }
 
+  /// Associates the [highlighter] instance with each of [names].
+  static void registerInstance(
+    SyntaxHighlighterBase highlighter,
+    Iterable<String> names,
+  ) => register((_, _, _) => highlighter, names);
+
   /// Returns the registration for [name], or `null` (port of `Factory#for`).
-  ///
-  /// Named `for_` because `for` is a reserved word in Dart.
-  static Object? for_(String name) {
+  static SyntaxHighlighterFactoryFn? forName(String name) {
     _ensureBuiltins();
     return _registry[name];
   }
 
   /// Resolves [name] to a highlighter instance (port of `Factory#create`).
   ///
-  /// Returns `null` when [name] is not registered. [opts] carries context
-  /// (at least `'document'`); the built-in server-side factories
-  /// additionally honor a `'lexer'` entry holding the [SourceLexer] backend.
+  /// Returns `null` when [name] is not registered.
   static SyntaxHighlighterBase? create(
     String name, [
     String backend = 'html5',
-    Map<String, Object?> opts = const <String, Object?>{},
+    HighlighterOptions opts = const HighlighterOptions(),
   ]) {
-    final found = for_(name);
+    final found = forName(name);
     if (found == null) return null;
     return _instantiate(found, name, backend, opts);
   }
@@ -220,36 +239,22 @@ abstract final class SyntaxHighlighter {
   ///
   /// Returns `null` unless the base backend is HTML, the `source-highlighter`
   /// attribute is set, and the `{name}-unavailable` attribute is unset —
-  /// as in Asciidoctor. [factory] and [highlighters] override the
-  /// `'syntax_highlighter_factory'` and `'syntax_highlighters'` document
-  /// options.
-  static SyntaxHighlighterBase? resolveForDocument(
-    Document doc, {
-    SyntaxHighlighterFactory? factory,
-    Map<String, Object>? highlighters,
-  }) {
+  /// as in Asciidoctor. The `syntaxHighlighterFactory` and
+  /// `syntaxHighlighters` document options take precedence over the global
+  /// registry.
+  static SyntaxHighlighterBase? resolveForDocument(Document doc) {
     if (!doc.basebackend('html')) return null;
-    final rawName = doc.attributes['source-highlighter'];
-    if (!isTruthy(rawName)) return null;
-    final name = rawName.toString();
-    if (isTruthy(doc.attributes['$name-unavailable'])) return null;
+    final name = doc.attributes['source-highlighter'];
+    if (name == null) return null;
+    if (doc.attributes.containsKey('$name-unavailable')) return null;
     final backend = doc.backend ?? 'html5';
-    final opts = <String, Object?>{'document': doc};
-    final resolvedFactory =
-        factory ?? doc.options['syntax_highlighter_factory'];
-    if (resolvedFactory != null) {
-      return (resolvedFactory as SyntaxHighlighterFactory).create(
-        name,
-        backend,
-        opts,
-      );
-    }
-    final resolvedHighlighters =
-        highlighters ?? doc.options['syntax_highlighters'];
-    if (resolvedHighlighters != null) {
-      return SyntaxHighlighterDefaultFactoryProxy(
-        (resolvedHighlighters as Map<Object?, Object?>).cast<String, Object>(),
-      ).create(name, backend, opts);
+    final opts = HighlighterOptions(document: doc);
+    final factory = doc.options.syntaxHighlighterFactory;
+    if (factory != null) return factory.create(name, backend, opts);
+    final highlighters = doc.options.syntaxHighlighters;
+    if (highlighters != null) {
+      return SyntaxHighlighterDefaultFactoryProxy(highlighters)
+          .create(name, backend, opts);
     }
     return create(name, backend, opts);
   }
@@ -258,26 +263,20 @@ abstract final class SyntaxHighlighter {
     if (_builtinsRegistered) return;
     _builtinsRegistered = true;
     void add(
-      SyntaxHighlighterBase Function(Map<String, Object?> opts) make,
+      SyntaxHighlighterBase Function(HighlighterOptions opts) make,
       Iterable<String> names,
     ) {
-      SyntaxHighlighterBase factory(
-        String name,
-        String backend,
-        Map<String, Object?> opts,
-      ) => make(opts);
       for (final name in names) {
-        _registry[name] = factory;
+        _registry[name] = (_, _, opts) => make(opts);
       }
     }
 
     // CodeRay ships a real default backend; rouge and pygments resolve
-    // theirs from `opts['lexer']` only (no Dart ports of those lexing
-    // libraries exist yet), so they stay seam-gated until one is wired.
+    // theirs from the `lexer` option only (no Dart ports of those lexing
+    // libraries exist yet), so they stay unavailable until one is wired.
     add(
-      (opts) => CodeRayHighlighter(
-        lexer: _lexerFromOpts(opts) ?? const CodeRaySourceLexer(),
-      ),
+      (opts) =>
+          CodeRayHighlighter(lexer: opts.lexer ?? const CodeRaySourceLexer()),
       CodeRayAdapter.registeredNames,
     );
     add((opts) => HighlightJsHighlighter(), HighlightJsAdapter.registeredNames);
@@ -287,11 +286,11 @@ abstract final class SyntaxHighlighter {
     );
     add((opts) => PrettifyHighlighter(), PrettifyAdapter.registeredNames);
     add(
-      (opts) => PygmentsHighlighter(lexer: _lexerFromOpts(opts)),
+      (opts) => PygmentsHighlighter(lexer: opts.lexer),
       PygmentsAdapter.registeredNames,
     );
     add(
-      (opts) => RougeHighlighter(lexer: _lexerFromOpts(opts)),
+      (opts) => RougeHighlighter(lexer: opts.lexer),
       RougeAdapter.registeredNames,
     );
   }
@@ -304,47 +303,51 @@ abstract final class SyntaxHighlighter {
 /// registry that falls back to the globals.
 class SyntaxHighlighterFactory {
   /// Creates an isolated factory, optionally seeded with [seedRegistry].
-  new([Map<String, Object>? seedRegistry])
-    : _registry = <String, Object>{...?seedRegistry};
+  new([Map<String, SyntaxHighlighterFactoryFn>? seedRegistry])
+    : _registry = <String, SyntaxHighlighterFactoryFn>{...?seedRegistry};
 
-  final Map<String, Object> _registry;
+  final Map<String, SyntaxHighlighterFactoryFn> _registry;
 
-  /// Associates [highlighter] with each of [names] (port of
-  /// `Factory#register`). See [SyntaxHighlighter.register] for the accepted
-  /// value shapes.
-  void register(Object highlighter, Iterable<String> names) {
+  /// Associates [factory] with each of [names].
+  void register(SyntaxHighlighterFactoryFn factory, Iterable<String> names) {
     for (final name in names) {
-      _registry[name] = highlighter;
+      _registry[name] = factory;
     }
   }
 
+  /// Associates the [highlighter] instance with each of [names].
+  void registerInstance(
+    SyntaxHighlighterBase highlighter,
+    Iterable<String> names,
+  ) => register((_, _, _) => highlighter, names);
+
   /// Returns the registration for [name], or `null` (port of `Factory#for`).
-  Object? for_(String name) => _registry[name];
+  SyntaxHighlighterFactoryFn? forName(String name) => _registry[name];
 
   /// Resolves [name] to a highlighter instance (port of `Factory#create`).
   SyntaxHighlighterBase? create(
     String name, [
     String backend = 'html5',
-    Map<String, Object?> opts = const <String, Object?>{},
+    HighlighterOptions opts = const HighlighterOptions(),
   ]) {
-    final found = for_(name);
+    final found = forName(name);
     if (found == null) return null;
     return _instantiate(found, name, backend, opts);
   }
 }
 
 /// Seeded registry with global fallback (port of
-/// `SyntaxHighlighter::DefaultFactoryProxy`; prefixed because `converter.dart`
-/// already defines a `DefaultFactoryProxy`).
+/// `SyntaxHighlighter::DefaultFactoryProxy`).
 ///
 /// Looks up the seed registry first, then the global [SyntaxHighlighter]
-/// registry (the `syntax_highlighters` document option).
+/// registry (the `syntaxHighlighters` document option).
 class SyntaxHighlighterDefaultFactoryProxy extends SyntaxHighlighterFactory {
   /// Creates a proxy seeded with [seedRegistry].
   new([super.seedRegistry]);
 
   @override
-  Object? for_(String name) => _registry[name] ?? SyntaxHighlighter.for_(name);
+  SyntaxHighlighterFactoryFn? forName(String name) =>
+      _registry[name] ?? SyntaxHighlighter.forName(name);
 }
 
 /// Framework binding for the CodeRay adapter.
@@ -405,7 +408,7 @@ class CodeRayHighlighter extends SyntaxHighlighterBase {
     required String selfClosingTagSlash,
   }) => adapter.docinfoHead(
     linkCss: linkcss,
-    stylesDir: _s(node.attr('stylesdir')),
+    stylesDir: node.attr('stylesdir') ?? '',
     selfClosingSlash: selfClosingTagSlash,
   );
 
@@ -430,15 +433,12 @@ class HighlightJsHighlighter extends SyntaxHighlighterBase {
   String get name => HighlightJsAdapter.name;
 
   @override
-  String format(
-    AbstractBlock node,
-    String? language,
-    Map<String, Object?> opts,
-  ) => adapter.format(
-    content: _s(node.content()),
-    language: language,
-    nowrap: isTruthy(opts['nowrap']),
-  );
+  String format(AbstractBlock node, String? language, FormatOptions opts) =>
+      adapter.format(
+        content: node.content() ?? '',
+        language: language,
+        nowrap: opts.nowrap,
+      );
 
   @override
   bool hasDocinfo(String location) => true;
@@ -451,18 +451,18 @@ class HighlightJsHighlighter extends SyntaxHighlighterBase {
     required bool linkcss,
     required String selfClosingTagSlash,
   }) {
-    final highlightjsDir = node.attr('highlightjsdir')?.toString();
+    final highlightjsDir = node.attr('highlightjsdir');
     if (location == 'head') {
       return adapter.docinfoHead(
         highlightjsDir: highlightjsDir,
-        theme: _s(node.attr('highlightjs-theme', 'github')),
+        theme: node.attr('highlightjs-theme', 'github')!,
         cdnBaseUrl: cdnBaseUrl,
         selfClosingSlash: selfClosingTagSlash,
       );
     }
     return adapter.docinfoFooter(
       highlightjsDir: highlightjsDir,
-      languagesAttr: node.attr('highlightjs-languages')?.toString(),
+      languagesAttr: node.attr('highlightjs-languages'),
       cdnBaseUrl: cdnBaseUrl,
     );
   }
@@ -481,11 +481,8 @@ class HtmlPipelineHighlighter extends SyntaxHighlighterBase {
   String get name => HtmlPipelineAdapter.name;
 
   @override
-  String format(
-    AbstractBlock node,
-    String? language,
-    Map<String, Object?> opts,
-  ) => adapter.format(content: _s(node.content()), language: language);
+  String format(AbstractBlock node, String? language, FormatOptions opts) =>
+      adapter.format(content: node.content() ?? '', language: language);
 }
 
 /// Framework binding for the Prettify adapter.
@@ -504,17 +501,14 @@ class PrettifyHighlighter extends SyntaxHighlighterBase {
   String get preClass => PrettifyAdapter.preClass;
 
   @override
-  String format(
-    AbstractBlock node,
-    String? language,
-    Map<String, Object?> opts,
-  ) => adapter.format(
-    content: _s(node.content()),
-    language: language,
-    nowrap: isTruthy(opts['nowrap']),
-    linenums: node.hasAttr('linenums'),
-    start: node.attr('start')?.toString(),
-  );
+  String format(AbstractBlock node, String? language, FormatOptions opts) =>
+      adapter.format(
+        content: node.content() ?? '',
+        language: language,
+        nowrap: opts.nowrap,
+        linenums: node.hasAttr('linenums'),
+        start: node.attr('start'),
+      );
 
   @override
   bool hasDocinfo(String location) => true;
@@ -527,11 +521,11 @@ class PrettifyHighlighter extends SyntaxHighlighterBase {
     required bool linkcss,
     required String selfClosingTagSlash,
   }) {
-    final prettifyDir = node.attr('prettifydir')?.toString();
+    final prettifyDir = node.attr('prettifydir');
     if (location == 'head') {
       return adapter.docinfoHead(
         prettifyDir: prettifyDir,
-        theme: _s(node.attr('prettify-theme', 'prettify')),
+        theme: node.attr('prettify-theme', 'prettify')!,
         cdnBaseUrl: cdnBaseUrl,
         selfClosingSlash: selfClosingTagSlash,
       );
@@ -586,17 +580,14 @@ class PygmentsHighlighter extends SyntaxHighlighterBase {
   );
 
   @override
-  String format(
-    AbstractBlock node,
-    String? language,
-    Map<String, Object?> opts,
-  ) => adapter.format(
-    content: _s(node.content()),
-    language: language,
-    nowrap: isTruthy(opts['nowrap']),
-    cssMode: CssMode.fromAttribute(opts['css_mode']?.toString()),
-    style: opts['style']?.toString(),
-  );
+  String format(AbstractBlock node, String? language, FormatOptions opts) =>
+      adapter.format(
+        content: node.content() ?? '',
+        language: language,
+        nowrap: opts.nowrap,
+        cssMode: opts.cssMode,
+        style: opts.style,
+      );
 
   @override
   bool hasDocinfo(String location) => adapter.hasDocinfo(
@@ -612,7 +603,7 @@ class PygmentsHighlighter extends SyntaxHighlighterBase {
     required String selfClosingTagSlash,
   }) => adapter.docinfoHead(
     linkCss: linkcss,
-    stylesDir: _s(node.attr('stylesdir')),
+    stylesDir: node.attr('stylesdir') ?? '',
     selfClosingSlash: selfClosingTagSlash,
   );
 
@@ -667,17 +658,14 @@ class RougeHighlighter extends SyntaxHighlighterBase {
   );
 
   @override
-  String format(
-    AbstractBlock node,
-    String? language,
-    Map<String, Object?> opts,
-  ) => adapter.format(
-    content: _s(node.content()),
-    language: language,
-    nowrap: isTruthy(opts['nowrap']),
-    cssMode: CssMode.fromAttribute(opts['css_mode']?.toString()),
-    style: opts['style']?.toString(),
-  );
+  String format(AbstractBlock node, String? language, FormatOptions opts) =>
+      adapter.format(
+        content: node.content() ?? '',
+        language: language,
+        nowrap: opts.nowrap,
+        cssMode: opts.cssMode,
+        style: opts.style,
+      );
 
   @override
   bool hasDocinfo(String location) => adapter.hasDocinfo(
@@ -693,7 +681,7 @@ class RougeHighlighter extends SyntaxHighlighterBase {
     required String selfClosingTagSlash,
   }) => adapter.docinfoHead(
     linkCss: linkcss,
-    stylesDir: _s(node.attr('stylesdir')),
+    stylesDir: node.attr('stylesdir') ?? '',
     selfClosingSlash: selfClosingTagSlash,
   );
 
@@ -705,29 +693,17 @@ class RougeHighlighter extends SyntaxHighlighterBase {
       adapter.writeStylesheet(toDir);
 }
 
-/// Instantiates a registry [value] (port of the `Factory#create` tail).
-///
-/// Factory functions are called; instances are returned as-is. Instances
-/// without a name are rejected.
+/// Instantiates a registered [factory] (port of the `Factory#create`
+/// tail), rejecting instances without a name.
 SyntaxHighlighterBase _instantiate(
-  Object value,
+  SyntaxHighlighterFactoryFn factory,
   String name,
   String backend,
-  Map<String, Object?> opts,
+  HighlighterOptions opts,
 ) {
-  final instance = value is SyntaxHighlighterFactoryFn
-      ? value(name, backend, opts)
-      : value as SyntaxHighlighterBase;
+  final instance = factory(name, backend, opts);
   if (instance.name.isEmpty) {
     throw StateError('${instance.runtimeType} must specify a value for `name`');
   }
   return instance;
 }
-
-/// Reads the optional [SourceLexer] backend from factory [opts].
-SourceLexer? _lexerFromOpts(Map<String, Object?> opts) =>
-    opts['lexer'] as SourceLexer?;
-
-/// Renders [value] for interpolation into output: `null` becomes the empty
-/// string instead of `'null'`.
-String _s(Object? value) => value?.toString() ?? '';

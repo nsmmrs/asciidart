@@ -5,19 +5,12 @@
 /// ## Differences from Asciidoctor 2.0.26
 ///
 /// - Construction uses named constructors ([Invoker.fromOptions],
-///   [Invoker.fromMap], [Invoker.fromArgs]).
+///   [Invoker.fromArgs]).
 /// - Tests supply stdin through the [Invoker.invoke] `stdinSource` callback.
 ///   Without it, stdin is read fully as UTF-8.
-/// - `Invoker.fromMap` ignores the `failure_level`, `trace` and `timings`
-///   seeds and drops unknown keys.
-/// - A missing `input_files` entry (only possible via [Invoker.fromMap] or a
-///   hand-built [CliOptions], never via parsing) converts zero files and
-///   succeeds, where Asciidoctor crashes.
-/// - `-r/--require` libraries are already resolved (and rejected) during
-///   [CliOptions.parse], as documented in `cli/options.dart`; there is
-///   nothing left for the invoker to require.
-/// - `-w` is only forwarded to the processor in the `warnings` option; there
-///   are no interpreter warnings to switch on.
+/// - Missing input files (only possible with hand-built [CliOptions],
+///   never via parsing) convert zero files and succeed, where Asciidoctor
+///   crashes.
 /// - `SOURCE_DATE_EPOCH` is left untouched (Asciidoctor clears it only to
 ///   work around a RubyGems issue).
 /// - Signals are not delivered as exceptions, so an interactive SIGINT
@@ -27,45 +20,29 @@
 /// - The failure message is the error's `toString()`.
 /// - `.`/`..` segments are normalized lexically with `Uri.normalizePath`;
 ///   symlinks are not resolved. Backslash folding applies on Windows only.
-/// - The `to_dir`/`to_file`/`mkdirs`/`timings`/`failure_level` option keys
-///   passed to the processor are snake_case strings, like every other
-///   option key.
 library;
 
 import 'dart:convert' show utf8;
 import 'dart:io';
 import 'dart:math' show min;
 
-import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/cli/options.dart';
 import 'package:asciidoctor/src/cli/parallel.dart';
 import 'package:asciidoctor/src/document.dart';
 import 'package:asciidoctor/src/job_pool.dart';
 import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidoctor/src/options.dart';
 import 'package:asciidoctor/src/timings.dart';
 
 /// Runs the Asciidoctor processor from parsed command-line options.
 ///
 /// Port of `Asciidoctor::Cli::Invoker`. Construct from parsed options
-/// ([Invoker.fromOptions]), an options map ([Invoker.fromMap], the `Hash`
-/// form) or raw arguments ([Invoker.fromArgs], which parses via
-/// [CliOptions]), then call [invoke] and read [code].
-final class Invoker with Logging {
+/// ([Invoker.fromOptions]) or raw arguments ([Invoker.fromArgs], which
+/// parses via [CliOptions]), then call [invoke] and read [code].
+final class Invoker {
   /// Creates an invoker for already-parsed [options].
   new fromOptions(CliOptions options) : _options = options;
-
-  /// Creates an invoker from an options [map].
-  ///
-  /// Known snake_case keys (camelCase aliases accepted) seed a [CliOptions]
-  /// `attributes`,
-  /// `input_files`, `output_file`, `safe` (an [int] level or a level name),
-  /// `standalone`, `template_dirs`, `template_engine`, `doctype`, `backend`,
-  /// `eruby`, `verbose`, `warnings`, `load_paths`, `requires`, `base_dir`,
-  /// `source_dir`, `destination_dir`. The
-  /// `failure_level`, `trace` and `timings` seeds are ignored and unknown
-  /// keys are dropped.
-  new fromMap(Map<String, Object?> map) : _options = _optionsFromMap(map);
 
   /// Creates an invoker by parsing [args] via [CliOptions].
   ///
@@ -136,37 +113,14 @@ final class Invoker with Logging {
     if (options == null) return;
 
     final err = _err ?? stderr;
-    final opts = <String, Object?>{};
     final infiles = options.inputFiles ?? <String>[];
     var outfile = options.outputFile;
     final sourceDir = options.sourceDir;
     final absSrcdirPosix = sourceDir == null ? null : _expandPath(sourceDir);
-    final destinationDir = options.destinationDir;
-    if (destinationDir != null) opts['to_dir'] = destinationDir;
-    final attributes = options.attributes;
-    if (attributes != null) opts['attributes'] = attributes;
     final showTimings = options.timings;
-    // NOTE :trace is consumed here (no assignment to processor options).
-    LoggerBase? savedLogger;
-    Severity? savedLevel;
-    if (options.verbose == 0) {
-      savedLogger = LoggerManager.logger;
-      LoggerManager.logger = NullLogger();
-    } else if (options.verbose == 2) {
-      savedLevel = LoggerManager.logger.level;
-      LoggerManager.logger.level = Severity.debug;
-    }
-    // Every other option passes through unless null.
-    opts['safe'] = options.safe;
-    opts['standalone'] = options.standalone;
-    opts['warnings'] = options.warnings;
-    opts['failure_level'] = options.failureLevel;
-    _putIfPresent(opts, 'template_dirs', options.templateDirs);
-    _putIfPresent(opts, 'template_engine', options.templateEngine);
-    _putIfPresent(opts, 'eruby', options.eruby);
-    _putIfPresent(opts, 'base_dir', options.baseDir);
-    _putIfPresent(opts, 'load_paths', options.loadPaths);
-    _putIfPresent(opts, 'requires', options.requires);
+    // NOTE trace is consumed here (it is not a processor option).
+    final restoreLogger = _applyVerbosity(options);
+    final baseOptions = _processorOptions(options);
 
     try {
       var stdinInput = false;
@@ -180,59 +134,47 @@ final class Invoker with Logging {
         }
       }
 
-      Object? tofile;
+      StringSink? sink;
+      var opts = baseOptions;
       if (outfile == '-') {
         final out = _out;
         if (out == null) {
           // Mirrors `$stdout.set_encoding UTF_8`.
           stdout.encoding = utf8;
-          tofile = stdout;
+          sink = stdout;
         } else {
-          tofile = out;
+          sink = out;
         }
-      } else if (outfile != null) {
-        opts['mkdirs'] = true;
-        tofile = outfile;
       } else {
-        opts['mkdirs'] = true;
-        // tofile stays null: the outfile is derived from the infile.
+        // An explicit output file, or one derived from the input file.
+        opts = opts.copyWith(mkdirs: true, toFile: outfile);
       }
 
       if (stdinInput) {
         final input = stdinSource != null ? stdinSource() : _readStdin();
-        final inputOpts = Map<String, Object?>.of(opts)..['to_file'] = tofile;
-        if (showTimings) {
-          final timings = Timings();
-          inputOpts['timings'] = timings;
-          documents.add(convert(input, inputOpts)! as Document);
-          timings.printReport(err, '-');
-        } else {
-          documents.add(convert(input, inputOpts)! as Document);
-        }
+        final timings = showTimings ? Timings() : null;
+        documents.add(
+          convertToTarget(input, opts.copyWith(timings: timings), sink),
+        );
+        timings?.printReport(err, '-');
       } else {
         for (final infile in infiles) {
-          // Fresh merge per file so the `to_dir` adjustment below never
-          // accumulates across files.
-          final inputOpts = Map<String, Object?>.of(opts)..['to_file'] = tofile;
-          final srcdir = absSrcdirPosix;
-          if (srcdir != null && inputOpts.containsKey('to_dir')) {
-            final absIndir = _dirname(_expandPath(infile));
-            if (absIndir.startsWith('$srcdir/')) {
-              inputOpts['to_dir'] =
-                  '${inputOpts['to_dir']}${absIndir.substring(srcdir.length)}';
-            }
-          }
-          if (showTimings) {
-            final timings = Timings();
-            inputOpts['timings'] = timings;
-            documents.add(convertFile(infile, inputOpts)! as Document);
-            timings.printReport(err, infile);
-          } else {
-            documents.add(convertFile(infile, inputOpts)! as Document);
-          }
+          final timings = showTimings ? Timings() : null;
+          documents.add(
+            convertFile(
+              infile,
+              _withSourceDir(
+                opts,
+                infile,
+                absSrcdirPosix,
+              ).copyWith(timings: timings),
+              sink,
+            ),
+          );
+          timings?.printReport(err, infile);
         }
       }
-      final maxSeverity = logger.maxSeverity;
+      final maxSeverity = LoggerManager.logger.maxSeverity;
       if (maxSeverity != null &&
           maxSeverity.value >= options.failureLevel.value) {
         _code = 1;
@@ -244,11 +186,7 @@ final class Invoker with Logging {
         ..writeln(e.toString())
         ..writeln('  Use --trace to show backtrace');
     } finally {
-      if (savedLogger != null) {
-        LoggerManager.logger = savedLogger;
-      } else if (savedLevel != null) {
-        LoggerManager.logger.level = savedLevel;
-      }
+      restoreLogger();
     }
   }
 
@@ -298,85 +236,50 @@ final class Invoker with Logging {
   Future<void> _invokeParallel() async {
     final options = _options!;
     final err = _err ?? stderr;
-    final opts = <String, Object?>{};
     final infiles = options.inputFiles ?? <String>[];
     final outfile = options.outputFile;
     final sourceDir = options.sourceDir;
     final absSrcdirPosix = sourceDir == null ? null : _expandPath(sourceDir);
-    final destinationDir = options.destinationDir;
-    if (destinationDir != null) opts['to_dir'] = destinationDir;
-    final attributes = options.attributes;
-    if (attributes != null) opts['attributes'] = attributes;
     final showTimings = options.timings;
-    LoggerBase? savedLogger;
-    Severity? savedLevel;
-    if (options.verbose == 0) {
-      savedLogger = LoggerManager.logger;
-      LoggerManager.logger = NullLogger();
-    } else if (options.verbose == 2) {
-      savedLevel = LoggerManager.logger.level;
-      LoggerManager.logger.level = Severity.debug;
-    }
-    // Every other option passes through unless null.
-    opts['safe'] = options.safe;
-    opts['standalone'] = options.standalone;
-    opts['warnings'] = options.warnings;
-    opts['failure_level'] = options.failureLevel;
-    _putIfPresent(opts, 'template_dirs', options.templateDirs);
-    _putIfPresent(opts, 'template_engine', options.templateEngine);
-    _putIfPresent(opts, 'eruby', options.eruby);
-    _putIfPresent(opts, 'base_dir', options.baseDir);
-    _putIfPresent(opts, 'load_paths', options.loadPaths);
-    _putIfPresent(opts, 'requires', options.requires);
+    final restoreLogger = _applyVerbosity(options);
+    final baseOptions = _processorOptions(options);
 
     try {
       // The caller excluded stdin input and shared explicit `-o` targets, so
-      // `tofile` is either the STDOUT sink or per-input derived outputs.
+      // the output is either STDOUT or per-input derived files.
       final toStdout = outfile == '-';
-      Object? tofile;
+      StringSink? sink;
+      var opts = baseOptions;
       if (toStdout) {
         final out = _out;
         if (out == null) {
           stdout.encoding = utf8;
-          tofile = stdout;
+          sink = stdout;
         } else {
-          tofile = out;
+          sink = out;
         }
       } else {
-        opts['mkdirs'] = true;
-        tofile = null;
+        opts = opts.copyWith(mkdirs: true);
       }
 
-      final requests = <Map<String, Object?>>[];
-      for (final infile in infiles) {
-        // Fresh merge per file so the `to_dir` adjustment below never
-        // accumulates across files (same computation as [invoke]).
-        final inputOpts = Map<String, Object?>.of(opts)..['to_file'] = tofile;
-        final srcdir = absSrcdirPosix;
-        if (srcdir != null && inputOpts.containsKey('to_dir')) {
-          final absIndir = _dirname(_expandPath(infile));
-          if (absIndir.startsWith('$srcdir/')) {
-            inputOpts['to_dir'] =
-                '${inputOpts['to_dir']}${absIndir.substring(srcdir.length)}';
-          }
-        }
-        requests.add(
-          buildConversionRequest(
+      final requests = <ConversionRequest>[
+        for (final infile in infiles)
+          ConversionRequest(
             infile: infile,
-            processorOptions: inputOpts,
+            options: _withSourceDir(opts, infile, absSrcdirPosix),
             toStdout: toStdout,
             showTimings: showTimings,
           ),
-        );
-      }
+      ];
 
       final workerCount = min(options.jobs, infiles.length);
-      final pool = await IsolateJobPool.spawn(
-        size: workerCount,
-        entryPoint: conversionWorkerMain,
-      );
+      final pool =
+          await IsolateJobPool.spawn<ConversionRequest, ConversionResponse>(
+            size: workerCount,
+            entryPoint: conversionWorkerMain,
+          );
       final wallClock = Stopwatch()..start();
-      List<Map<String, Object?>> responses;
+      List<ConversionResponse> responses;
       try {
         responses = await pool.runOrdered(requests);
       } finally {
@@ -387,19 +290,21 @@ final class Invoker with Logging {
       // Replay in input order. The first hard failure stops the replay like
       // the sequential loop's exception (later jobs' logs, output and
       // timings are dropped).
+      final logger = LoggerManager.logger;
       String? workerError;
       var summedSeconds = 0.0;
       for (var i = 0; i < responses.length; i++) {
         final response = responses[i];
-        replayRecords(logger, response['records']);
-        if (response['ok'] != true) {
-          workerError = response['error'] as String?;
+        replayRecords(logger, response.records);
+        if (!response.ok) {
+          workerError = response.error;
           break;
         }
-        if (toStdout) (tofile! as StringSink).write(response['output']);
-        if (showTimings) {
+        if (sink != null) sink.write(response.output);
+        final timingsLog = response.timings;
+        if (showTimings && timingsLog != null) {
           final workerTimings = Timings()
-            ..log.addAll((response['timings']! as Map).cast<String, double>())
+            ..log.addAll(timingsLog)
             ..printReport(err, infiles[i]);
           summedSeconds += workerTimings.readParseConvert ?? 0;
         }
@@ -435,12 +340,53 @@ final class Invoker with Logging {
         ..writeln(e.toString())
         ..writeln('  Use --trace to show backtrace');
     } finally {
-      if (savedLogger != null) {
-        LoggerManager.logger = savedLogger;
-      } else if (savedLevel != null) {
-        LoggerManager.logger.level = savedLevel;
-      }
+      restoreLogger();
     }
+  }
+
+  /// Applies the verbosity of [options] to the global logger (silenced for
+  /// `-q`, debug level for `-v`) and returns a callback restoring it.
+  static void Function() _applyVerbosity(CliOptions options) {
+    if (options.verbose == 0) {
+      final savedLogger = LoggerManager.logger;
+      LoggerManager.logger = NullLogger();
+      return () => LoggerManager.logger = savedLogger;
+    }
+    if (options.verbose == 2) {
+      final logger = LoggerManager.logger;
+      final savedLevel = logger.level;
+      logger.level = Severity.debug;
+      return () => logger.level = savedLevel;
+    }
+    return () {};
+  }
+
+  /// The processor options for [options], before output targets.
+  static AsciidoctorOptions _processorOptions(CliOptions options) =>
+      AsciidoctorOptions(
+        safe: options.safe,
+        standalone: options.standalone,
+        attributes: options.attributes ?? const <String, String?>{},
+        templateDirs: options.templateDirs ?? const <String>[],
+        templateEngine: options.templateEngine,
+        baseDir: options.baseDir,
+        toDir: options.destinationDir,
+      );
+
+  /// Mirrors the input file's position below the `-R` source directory
+  /// ([absSrcdir]) in the destination directory.
+  static AsciidoctorOptions _withSourceDir(
+    AsciidoctorOptions opts,
+    String infile,
+    String? absSrcdir,
+  ) {
+    final toDir = opts.toDir;
+    if (absSrcdir == null || toDir == null) return opts;
+    final absIndir = _dirname(_expandPath(infile));
+    if (!absIndir.startsWith('$absSrcdir/')) return opts;
+    return opts.copyWith(
+      toDir: '$toDir${absIndir.substring(absSrcdir.length)}',
+    );
   }
 
   /// Redirects converted output ([out]) and reports ([err]) to buffers.
@@ -471,72 +417,6 @@ final class Invoker with Logging {
     _out = null;
     _err = null;
   }
-
-  /// Builds a [CliOptions] from an options [map].
-  static CliOptions _optionsFromMap(Map<String, Object?> map) {
-    Object? get(String snake, [String? camel]) {
-      if (map.containsKey(snake)) return map[snake];
-      if (camel != null && map.containsKey(camel)) return map[camel];
-      return null;
-    }
-
-    List<String>? stringList(Object? value) {
-      if (value == null) return null;
-      if (value is List<String>) return value;
-      if (value is Iterable) {
-        return value.map((element) => element.toString()).toList();
-      }
-      throw ArgumentError.value(value, 'options map entry', 'expected a List');
-    }
-
-    final attributes = get('attributes');
-    return CliOptions(
-      attributes: attributes == null
-          ? null
-          : (attributes as Map).map(
-              (key, value) => MapEntry(key.toString(), value.toString()),
-            ),
-      inputFiles: stringList(get('input_files', 'inputFiles')),
-      outputFile: get('output_file', 'outputFile') as String?,
-      safe: _coerceSafe(get('safe')),
-      standalone: (get('standalone') as bool?) ?? true,
-      templateDirs: get('template_dirs', 'templateDirs'),
-      templateEngine: get('template_engine', 'templateEngine') as String?,
-      doctype: get('doctype') as String?,
-      backend: get('backend') as String?,
-      eruby: get('eruby') as String?,
-      verbose: (get('verbose') as int?) ?? 1,
-      warnings: (get('warnings') as bool?) ?? false,
-      loadPaths: stringList(get('load_paths', 'loadPaths')),
-      requires: stringList(get('requires')),
-      baseDir: get('base_dir', 'baseDir') as String?,
-      sourceDir: get('source_dir', 'sourceDir') as String?,
-      destinationDir: get('destination_dir', 'destinationDir') as String?,
-    );
-  }
-
-  /// Coerces a `safe` seed to a level, accepting names for convenience.
-  static int? _coerceSafe(Object? value) {
-    if (value == null || value is int) return value as int?;
-    if (value is String) {
-      switch (value) {
-        case 'unsafe':
-          return SafeMode.unsafe;
-        case 'safe':
-          return SafeMode.safe;
-        case 'server':
-          return SafeMode.server;
-        case 'secure':
-          return SafeMode.secure;
-      }
-    }
-    throw ArgumentError.value(value, 'safe', 'expected a level or its name');
-  }
-}
-
-/// Assigns `opts[key] = value` unless [value] is `null`.
-void _putIfPresent(Map<String, Object?> opts, String key, Object? value) {
-  if (value != null) opts[key] = value;
 }
 
 /// Whether [path] is a named pipe.

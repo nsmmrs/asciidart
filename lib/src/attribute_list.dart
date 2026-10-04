@@ -17,14 +17,15 @@ abstract class SubsApplier {
 /// Parses AsciiDoc attribute lists into key/value pairs.
 ///
 /// Attributes are separated by commas and values may be quoted. A value
-/// without a key is assigned to a 1-based positional key; positional
-/// attributes can be "rekeyed" via [parse]'s `positionalAttrs` argument or
-/// after the fact with [rekey].
+/// without a key is assigned to a 1-based positional key (`'1'`, `'2'`, ...;
+/// blank positional values are left out); positional attributes can be
+/// "rekeyed" via [parse]'s `positionalAttrs` argument or after the fact with
+/// [rekey].
 ///
 /// ```dart
 /// final attrlist = AttributeList('quote, Famous Person, Famous Book (2001)');
 /// attrlist.parse(['style', 'attribution', 'citetitle']);
-/// // {1: 'quote', 'style': 'quote', 2: 'Famous Person', ...}
+/// // {'1': 'quote', 'style': 'quote', '2': 'Famous Person', ...}
 /// ```
 class AttributeList {
   /// Creates a parser for [source], optionally applying substitutions
@@ -60,11 +61,11 @@ class AttributeList {
   final _StringScanner _scanner;
   final SubsApplier? _block;
   final String _delimiter;
-  Map<Object, String?>? _attributes;
+  Map<String, String>? _attributes;
 
   /// Parses the source into [attributes] and returns it.
-  Map<Object, String?> parseInto(
-    Map<Object, String?> attributes, [
+  Map<String, String> parseInto(
+    Map<String, String> attributes, [
     List<String?> positionalAttrs = const [],
   ]) {
     attributes.addAll(parse(positionalAttrs));
@@ -72,11 +73,11 @@ class AttributeList {
   }
 
   /// Parses the source into a map of attribute names (or 1-based positional
-  /// keys) to values. Blank positional attributes map to `null`.
-  Map<Object, String?> parse([List<String?> positionalAttrs = const []]) {
+  /// keys) to values. Blank positional attributes are left out.
+  Map<String, String> parse([List<String?> positionalAttrs = const []]) {
     final cached = _attributes;
     if (cached != null) return cached;
-    final attributes = <Object, String?>{};
+    final attributes = <String, String>{};
     _attributes = attributes;
     var index = 0;
     while (_parseAttribute(index, positionalAttrs)) {
@@ -88,20 +89,20 @@ class AttributeList {
   }
 
   /// Rekeys this list's positional attributes per [positionalAttrs].
-  Map<Object, String?> rekey(List<String?> positionalAttrs) =>
+  Map<String, String> rekey(List<String?> positionalAttrs) =>
       AttributeList.rekeyAttributes(_attributes!, positionalAttrs);
 
   /// Assigns positional attribute names to the positional entries of
-  /// [attributes]: entry `index + 1` (when non-`null`) is also stored under
+  /// [attributes]: entry `index + 1` (when present) is also stored under
   /// `positionalAttrs[index]` (when non-`null`). Returns [attributes].
-  static Map<Object, String?> rekeyAttributes(
-    Map<Object, String?> attributes,
+  static Map<String, String> rekeyAttributes(
+    Map<String, String> attributes,
     List<String?> positionalAttrs,
   ) {
     for (var index = 0; index < positionalAttrs.length; index++) {
       final key = positionalAttrs[index];
       if (key == null) continue;
-      final val = attributes[index + 1];
+      final val = attributes['${index + 1}'];
       if (val == null) continue;
       attributes[key] = val;
     }
@@ -195,7 +196,7 @@ class AttributeList {
       if (positionalName != null && name != null) {
         attributes[positionalName] = name;
       }
-      attributes[index + 1] = name;
+      if (name != null) attributes['${index + 1}'] = name;
     }
 
     return cont;

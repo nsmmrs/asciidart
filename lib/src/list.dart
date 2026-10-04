@@ -18,28 +18,21 @@ import 'package:meta/meta.dart';
 class ListBlock extends AbstractBlock {
   /// Creates a list with [parent] and [context] (`'ulist'`, `'olist'`,
   /// `'dlist'` or `'colist'`).
-  new(super.parent, super.context, {super.attributes}) {
-    if (context == 'dlist') _pairs = <Object?>[];
-  }
+  new(super.parent, super.context, {super.attributes});
 
-  /// The `[terms, description]` pairs of a description list.
+  /// The entries of a description list (empty for other lists).
   ///
-  /// [AbstractBlock.blocks] is a `List<AbstractBlock>`, so description
-  /// lists keep their pairs here instead (`terms` is a `List<ListItem>`,
-  /// `description` a [ListItem], or `null` when unset). `null` unless the
-  /// context is `'dlist'`.
-  List<Object?>? _pairs;
+  /// Description lists keep their items here rather than in
+  /// [AbstractBlock.blocks], since each entry groups one or more terms with
+  /// an optional description.
+  final List<DlistEntry> entries = <DlistEntry>[];
 
-  /// The items in this list (the description pairs for a `'dlist'`, else an
-  /// alias of [AbstractBlock.blocks], mirroring `alias items blocks`).
-  List<Object?> get items => _pairs ?? blocks;
+  /// The items in this list (empty for a description list, whose items are
+  /// [entries]).
+  List<ListItem> get items => blocks.cast<ListItem>();
 
-  /// The items in this list (mirrors `alias content blocks`).
-  @override
-  Object? content() => _pairs ?? blocks;
-
-  /// Whether this list has items (mirrors `alias items? blocks?`).
-  bool get hasItems => items.isNotEmpty;
+  /// Whether this list has items (or, for a description list, entries).
+  bool get hasItems => blocks.isNotEmpty || entries.isNotEmpty;
 
   /// Whether this list is an outline list (unordered or ordered).
   bool get isOutline => context == 'ulist' || context == 'olist';
@@ -63,7 +56,7 @@ class ListBlock extends AbstractBlock {
   ///
   /// Port of `Asciidoctor::List#convert`.
   @override
-  dynamic convert() {
+  String? convert() {
     if (context == 'colist') {
       final result = super.convert();
       document!.callouts.nextList();
@@ -72,40 +65,46 @@ class ListBlock extends AbstractBlock {
     return super.convert();
   }
 
-  /// Returns the `[terms, description]` pair following dlist item [item]
-  /// within this list, or `null` for the last pair (so the search continues
-  /// past the list).
-  ///
-  /// Port of the description-list path of
-  /// `Asciidoctor::AbstractBlock#next_adjacent_block` (which returns the
-  /// pair array itself).
+  /// Returns the first term of the entry following dlist item [item]
+  /// within this list, or `null` for the last entry (so the search
+  /// continues past the list).
   @override
-  Object? nextAdjacentDlistBlock(AbstractBlock item) {
-    final pairs = items;
-    final index = pairs.indexWhere((pair) {
-      final parts = pair! as List<Object?>;
-      return (parts[0]! as List<Object?>).contains(item) || parts[1] == item;
-    });
+  AbstractBlock? nextAdjacentDlistBlock(AbstractBlock item) {
+    final index = entries.indexWhere(
+      (entry) => entry.terms.contains(item) || entry.description == item,
+    );
     if (index == -1) {
       // The item must belong to this list.
       throw StateError(
         'nextAdjacentBlock: node is not a member of its dlist parent',
       );
     }
-    return index + 1 < pairs.length ? pairs[index + 1] : null;
+    return index + 1 < entries.length ? entries[index + 1].terms.first : null;
   }
 
   @override
   String toString() =>
       'ListBlock(context: $context, style: ${debugQuote(style)}, '
-      'items: ${items.length})';
+      'items: ${context == 'dlist' ? entries.length : blocks.length})';
+}
+
+/// One entry of a description list: one or more terms and an optional
+/// description.
+class DlistEntry {
+  /// Creates an entry with [terms] and an optional [description].
+  new(this.terms, [this.description]);
+
+  /// The terms (at least one).
+  final List<ListItem> terms;
+
+  /// The description, if any.
+  ListItem? description;
 }
 
 /// Methods for managing items of AsciiDoc olists, ulists and dlists.
 ///
-/// In a description list each item is a `[terms, description]` pair stored
-/// in the list's [ListBlock.items] (see [ListBlock]): `terms` is a
-/// `List<ListItem>` and `description` a [ListItem] (or `null` when unset).
+/// In a description list the items are grouped into the list's
+/// [ListBlock.entries].
 ///
 /// Port of `Asciidoctor::ListItem`.
 class ListItem extends AbstractBlock {
@@ -137,7 +136,7 @@ class ListItem extends AbstractBlock {
     // NOTE `this.` is load-bearing: without it the call binds the
     // top-level `substitutors.applySubs` (import scope wins over the
     // inherited member here) and fails to compile.
-    return t == null ? null : this.applySubs(t, subs) as String?;
+    return t == null ? null : this.applySubs(t, subs);
   }
 
   set text(String? value) {

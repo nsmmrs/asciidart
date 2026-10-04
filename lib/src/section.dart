@@ -22,12 +22,9 @@ class Section extends AbstractBlock implements NodeSection {
   ///
   /// The [level] defaults to one more than the parent level for a [Section]
   /// parent, else to 1.
-  new([
-    AbstractBlock? parent,
-    int? level,
-    this.numbered = false,
-    Map<String, Object?>? attributes,
-  ]) : super(parent, 'section', attributes: attributes) {
+  new([AbstractBlock? parent, int? level])
+    : numbered = false,
+      super(parent, 'section') {
     if (parent is Section) {
       this.level = level ?? (parent.level! + 1);
       special = parent.special;
@@ -49,10 +46,13 @@ class Section extends AbstractBlock implements NodeSection {
   /// Whether this is a special section or a child of one.
   bool special = false;
 
-  /// Whether this section is numbered (`'chapter'`-style markers aside, this
-  /// is a boolean; `sectnum` must only be called when it is truthy).
+  /// Whether this section is numbered.
   @override
-  Object? numbered;
+  bool numbered;
+
+  /// Whether this section, when numbered, takes the next chapter number.
+  @override
+  bool chapterNumbering = false;
 
   /// The name of this section (an alias of the section title).
   String? get name => title;
@@ -70,11 +70,11 @@ class Section extends AbstractBlock implements NodeSection {
   /// The section number for this section: a delimiter-separated string that
   /// uniquely describes its position in the document (e.g. `'1.1.'`).
   ///
+  /// [append] is the text after the last numeral (default [delimiter]).
+  ///
   /// Port of `Asciidoctor::Section#sectnum`.
-  String sectnum([String delimiter = '.', Object? append]) {
-    final app = isTruthy(append)
-        ? '$append'
-        : (append == false ? '' : delimiter);
+  String sectnum([String delimiter = '.', String? append]) {
+    final app = append ?? delimiter;
     if (level! > 1 && parent is Section) {
       final parentSectnum = (parent! as Section).sectnum(delimiter, delimiter);
       return '$parentSectnum${numeral ?? ''}$app';
@@ -90,38 +90,39 @@ class Section extends AbstractBlock implements NodeSection {
   String? xreftext([String? xrefstyle]) {
     final val = reftext;
     if (val != null && val.isNotEmpty) return val;
-    if (!isTruthy(xrefstyle)) return title;
-    if (isTruthy(numbered)) {
+    if (xrefstyle == null) return title;
+    final titleText = title ?? '';
+    if (numbered) {
       switch (xrefstyle) {
         case 'full':
           final type = sectname;
           final quotedTitle = type == 'chapter' || type == 'appendix'
-              ? subPlaceholder(subQuotes('_%s_'), title)
+              ? subPlaceholder(subQuotes('_%s_'), titleText)
               : subPlaceholder(
                   subQuotes(document!.compatMode ? "``%s''" : '"`%s`"'),
-                  title,
+                  titleText,
                 );
           final signifier = document!.attributes['$type-refsig'];
-          if (isTruthy(signifier)) {
+          if (signifier != null) {
             return '$signifier ${sectnum('.', ',')} $quotedTitle';
           }
           return '${sectnum('.', ',')} $quotedTitle';
         case 'short':
           final signifier = document!.attributes['$sectname-refsig'];
-          if (isTruthy(signifier)) {
+          if (signifier != null) {
             return '$signifier ${sectnum('.', '')}';
           }
           return sectnum('.', '');
         default:
           final type = sectname;
           return type == 'chapter' || type == 'appendix'
-              ? subPlaceholder(subQuotes('_%s_'), title)
+              ? subPlaceholder(subQuotes('_%s_'), titleText)
               : title;
       }
     }
     final type = sectname;
     return type == 'chapter' || type == 'appendix'
-        ? subPlaceholder(subQuotes('_%s_'), title)
+        ? subPlaceholder(subQuotes('_%s_'), titleText)
         : title;
   }
 
@@ -139,9 +140,7 @@ class Section extends AbstractBlock implements NodeSection {
   String toString() {
     final rawTitle = sourceTitle;
     if (rawTitle != null) {
-      final formalTitle = isTruthy(numbered)
-          ? '${sectnum()} $rawTitle'
-          : rawTitle;
+      final formalTitle = numbered ? '${sectnum()} $rawTitle' : rawTitle;
       return 'Section(level: $level, title: ${debugQuote(formalTitle)}, '
           'blocks: ${blocks.length})';
     }
@@ -160,15 +159,13 @@ class Section extends AbstractBlock implements NodeSection {
   /// Port of `Asciidoctor::Section.generate_id`.
   static String generateId(String title, NodeDocument document) {
     final attrs = document.attributes;
-    final pre = isTruthy(attrs['idprefix'])
-        ? attrs['idprefix']! as String
-        : '_';
+    final pre = attrs['idprefix'] ?? '_';
     late final String sep;
     String? sepSub;
     var noSep = false;
     final rawSep = attrs['idseparator'];
-    if (isTruthy(rawSep)) {
-      var s = rawSep! as String;
+    if (rawSep != null) {
+      var s = rawSep;
       if (s.length == 1) {
         sepSub = (s == '-' || s == '.') ? ' .-' : ' $s.-';
       } else {
@@ -203,7 +200,7 @@ class Section extends AbstractBlock implements NodeSection {
         genId = genId.substring(1);
       }
     }
-    final refs = document.catalog['refs']! as Map<String, Object?>;
+    final refs = document.catalog.refs;
     if (refs.containsKey(genId)) {
       var count = _complianceUniqueIdStartIndex;
       late String candidateId;

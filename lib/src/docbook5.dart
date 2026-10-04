@@ -35,7 +35,7 @@ import 'package:asciidoctor/src/table.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
 /// `null` renders as the empty string instead of `'null'`.
-String _s(Object? value) => value?.toString() ?? '';
+String _s(String? value) => value ?? '';
 
 /// Splits a copyright attribute into holder and year (port of `CopyrightRx`;
 /// `CC_ANY` is [ccAny], `multiLine` follows `dart/PORTING-REGEXP.md` B9).
@@ -97,22 +97,23 @@ const Map<String, String?> _defaultDlistTags = <String, String?>{
 
 /// Quote tags by quoted-text type (port of `QUOTE_TAGS`).
 ///
-/// Each entry holds the opening tag, the closing tag and, for tags that
-/// wrap the role in a phrase element, a trailing `true`. Lookups miss with
+/// Each entry holds the opening tag, the closing tag and whether the tag
+/// supports wrapping the role in a phrase element. Lookups miss with
 /// [_defaultQuoteTags] (the map default).
-const Map<String, List<Object>> _quoteTags = <String, List<Object>>{
-  'monospaced': <Object>['<literal>', '</literal>'],
-  'emphasis': <Object>['<emphasis>', '</emphasis>', true],
-  'strong': <Object>['<emphasis role="strong">', '</emphasis>', true],
-  'double': <Object>['<quote>', '</quote>', true],
-  'single': <Object>['<quote>', '</quote>', true],
-  'mark': <Object>['<emphasis role="marked">', '</emphasis>'],
-  'superscript': <Object>['<superscript>', '</superscript>'],
-  'subscript': <Object>['<subscript>', '</subscript>'],
-};
+const Map<String, (String, String, bool)> _quoteTags =
+    <String, (String, String, bool)>{
+      'monospaced': ('<literal>', '</literal>', false),
+      'emphasis': ('<emphasis>', '</emphasis>', true),
+      'strong': ('<emphasis role="strong">', '</emphasis>', true),
+      'double': ('<quote>', '</quote>', true),
+      'single': ('<quote>', '</quote>', true),
+      'mark': ('<emphasis role="marked">', '</emphasis>', false),
+      'superscript': ('<superscript>', '</superscript>', false),
+      'subscript': ('<subscript>', '</subscript>', false),
+    };
 
 /// Default quote tags for unknown quoted-text types.
-const List<Object> _defaultQuoteTags = <Object>['', '', true];
+const (String, String, bool) _defaultQuoteTags = ('', '', true);
 
 /// A built-in [Converter] implementation that generates DocBook 5 output.
 ///
@@ -122,12 +123,12 @@ const List<Object> _defaultQuoteTags = <Object>['', '', true];
 class Docbook5Converter extends ConverterBase {
   /// Creates a converter for [backend] with constructor options [opts].
   new(super.backend, [super.opts]) {
-    initBackendTraits(<String, Object?>{
-      'basebackend': 'docbook',
-      'filetype': 'xml',
-      'outfilesuffix': '.xml',
-      'supports_templates': true,
-    });
+    backendTraits = BackendTraits(
+      basebackend: 'docbook',
+      filetype: 'xml',
+      outfilesuffix: '.xml',
+      supportsTemplates: true,
+    );
     handle('document', (node, [opts]) => convertDocument(node as Document));
     handle('embedded', (node, [opts]) => convertEmbedded(node as Document));
     handle('section', (node, [opts]) => convertSection(node as Section));
@@ -242,7 +243,7 @@ class Docbook5Converter extends ConverterBase {
         ..add('<refmeta>');
       if (node.hasAttr('mantitle')) {
         result.add(
-          '<refentrytitle>${node.applyReftextSubs(node.attr('mantitle')! as String)}</refentrytitle>',
+          '<refentrytitle>${node.applyReftextSubs(node.attr('mantitle')!)}</refentrytitle>',
         );
       }
       if (node.hasAttr('manvolnum')) {
@@ -258,8 +259,8 @@ class Docbook5Converter extends ConverterBase {
         ..add('</refmeta>')
         ..add('<refnamediv>');
       if (node.hasAttr('mannames')) {
-        for (final name in node.attr('mannames')! as List<Object?>) {
-          result.add('<refname>${_s(name)}</refname>');
+        for (final name in node.mannames ?? const <String>[]) {
+          result.add('<refname>$name</refname>');
         }
       }
       if (node.hasAttr('manpurpose')) {
@@ -276,13 +277,7 @@ class Docbook5Converter extends ConverterBase {
       extracted = _extractAbstract(node, abstract);
     }
     if (node.hasBlocks) {
-      result.add(
-        node.blocks
-            .map((block) => block.convert())
-            .where((converted) => converted != null)
-            .map(_s)
-            .join(lf),
-      );
+      result.add(node.blocks.map((block) => block.convert()).nonNulls.join(lf));
     }
     if (extracted != null) {
       _restoreAbstract(extracted);
@@ -321,8 +316,7 @@ class Docbook5Converter extends ConverterBase {
     }
     final result = node.blocks
         .map((block) => block.convert())
-        .where((converted) => converted != null)
-        .map(_s)
+        .nonNulls
         .join(lf);
     if (extracted != null) {
       _restoreAbstract(extracted);
@@ -366,7 +360,7 @@ class Docbook5Converter extends ConverterBase {
       result.add('<title>${_s(node.title)}</title>');
     }
     for (final itemObj in node.items) {
-      final item = itemObj! as ListItem;
+      final item = itemObj;
       result
         ..add('<callout arearefs="${_s(item.attr('coids'))}">')
         ..add('<para>${_s(item.text)}</para>');
@@ -388,17 +382,14 @@ class Docbook5Converter extends ConverterBase {
         '<$tagName${_nodeAttributes(node)} '
         'tabstyle="horizontal" frame="none" colsep="0" rowsep="0">\n'
         '${_titleTag(node)}<tgroup cols="2">\n'
-        '<colspec colwidth="${_s(node.attr('labelwidth', 15))}*"/>\n'
-        '<colspec colwidth="${_s(node.attr('itemwidth', 85))}*"/>\n'
+        '<colspec colwidth="${_s(node.attr('labelwidth', '15'))}*"/>\n'
+        '<colspec colwidth="${_s(node.attr('itemwidth', '85'))}*"/>\n'
         '<tbody valign="top">',
       );
-      for (final pair in node.items) {
-        final parts = pair! as List<Object?>;
-        final terms = parts[0]! as List<Object?>;
-        final dd = parts[1] as ListItem?;
+      for (final DlistEntry(:terms, description: dd) in node.entries) {
         result.add('<row>\n<entry>');
         for (final dt in terms) {
-          result.add('<simpara>${_s((dt! as ListItem).text)}</simpara>');
+          result.add('<simpara>${_s(dt.text)}</simpara>');
         }
         result.add('</entry>\n<entry>');
         if (dd != null) {
@@ -425,16 +416,13 @@ class Docbook5Converter extends ConverterBase {
           result.add('<title>${_s(node.title)}</title>');
         }
       }
-      for (final pair in node.items) {
-        final parts = pair! as List<Object?>;
-        final terms = parts[0]! as List<Object?>;
-        final dd = parts[1] as ListItem?;
+      for (final DlistEntry(:terms, description: dd) in node.entries) {
         result.add('<$entryTag>');
         if (labelTag != null) {
           result.add('<$labelTag>');
         }
         for (final dt in terms) {
-          result.add('<$termTag>${_s((dt! as ListItem).text)}</$termTag>');
+          result.add('<$termTag>${_s(dt.text)}</$termTag>');
         }
         if (labelTag != null) {
           result.add('</$labelTag>');
@@ -475,7 +463,7 @@ class Docbook5Converter extends ConverterBase {
 
   /// Converts the [node] floating title.
   String convertFloatingTitle(Block node) =>
-      '<bridgehead${_nodeAttributes(node)} renderas="sect${_s(node.level)}">${_s(node.title)}</bridgehead>';
+      '<bridgehead${_nodeAttributes(node)} renderas="sect${node.level}">${_s(node.title)}</bridgehead>';
 
   /// Converts the [node] image block.
   String convertImage(Block node) {
@@ -485,7 +473,7 @@ class Docbook5Converter extends ConverterBase {
     final mediaobject =
         '<mediaobject>\n'
         '<imageobject>\n'
-        '<imagedata fileref="${node.imageUri(node.attr('target')! as String)}"${_imageSizeAttributes(node.attributes)}$alignAttribute/>\n'
+        '<imagedata fileref="${node.imageUri(node.attr('target')!)}"${_imageSizeAttributes(node.attributes)}$alignAttribute/>\n'
         '</imageobject>\n'
         '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
         '</mediaobject>';
@@ -604,7 +592,7 @@ class Docbook5Converter extends ConverterBase {
       result.add('<title>${_s(node.title)}</title>');
     }
     for (final itemObj in node.items) {
-      final item = itemObj! as ListItem;
+      final item = itemObj;
       result
         ..add('<listitem${_commonAttributes(item.id, item.role)}>')
         ..add('<simpara>${_s(item.text)}</simpara>');
@@ -666,7 +654,7 @@ class Docbook5Converter extends ConverterBase {
               '<title>${_s(node.title)}</title>\n'
               '<para>$spacer${_s(node.content())}$spacer</para>\n'
               '</formalpara>';
-        } else if (isTruthy(id) || isTruthy(role)) {
+        } else if (id != null || role != null) {
           if (node.contentModel == 'compound') {
             return '<para${_commonAttributes(id, role, reftext)}>\n'
                 '${_s(node.content())}\n'
@@ -779,16 +767,18 @@ class Docbook5Converter extends ConverterBase {
         result.add('<row>');
         for (final cell in row) {
           final String colspanAttribute;
-          if (isTruthy(cell.colspan)) {
+          final colspan = cell.colspan;
+          if (colspan != null) {
             final colnum = parseLeadingInt(cell.column!.attr('colnumber'));
             colspanAttribute =
                 ' namest="col_$colnum" '
-                'nameend="col_${colnum + parseLeadingInt(cell.colspan) - 1}"';
+                'nameend="col_${colnum + colspan - 1}"';
           } else {
             colspanAttribute = '';
           }
-          final rowspanAttribute = isTruthy(cell.rowspan)
-              ? ' morerows="${parseLeadingInt(cell.rowspan) - 1}"'
+          final rowspan = cell.rowspan;
+          final rowspanAttribute = rowspan != null
+              ? ' morerows="${rowspan - 1}"'
               : '';
           // NOTE <entry> may not have whitespace (e.g., line breaks) as a
           // direct descendant according to DocBook rules.
@@ -807,15 +797,15 @@ class Docbook5Converter extends ConverterBase {
                 cellContent =
                     '<literallayout class="monospaced">${_s(cell.text)}</literallayout>';
               case 'header':
-                final content = cell.content()! as List<Object?>;
-                cellContent = content.isEmpty
+                final paragraphs = cell.paragraphs;
+                cellContent = paragraphs.isEmpty
                     ? ''
-                    : '<simpara><emphasis role="strong">${content.map(_s).join('</emphasis></simpara><simpara><emphasis role="strong">')}</emphasis></simpara>';
+                    : '<simpara><emphasis role="strong">${paragraphs.join('</emphasis></simpara><simpara><emphasis role="strong">')}</emphasis></simpara>';
               default:
-                final content = cell.content()! as List<Object?>;
-                cellContent = content.isEmpty
+                final paragraphs = cell.paragraphs;
+                cellContent = paragraphs.isEmpty
                     ? ''
-                    : '<simpara>${content.map(_s).join('</simpara><simpara>')}</simpara>';
+                    : '<simpara>${paragraphs.join('</simpara><simpara>')}</simpara>';
             }
           }
           final entryEnd = (node.document! as Document).hasAttr('cellbgcolor')
@@ -846,7 +836,7 @@ class Docbook5Converter extends ConverterBase {
         result.add('<title>${_s(node.title)}</title>');
       }
       for (final itemObj in node.items) {
-        final item = itemObj! as ListItem;
+        final item = itemObj;
         result
           ..add('<bibliomixed>')
           ..add('<bibliomisc>${_s(item.text)}</bibliomisc>');
@@ -859,13 +849,13 @@ class Docbook5Converter extends ConverterBase {
     } else {
       final checklist = node.hasOption('checklist');
       final markType = checklist ? 'none' : node.style;
-      final markAttribute = isTruthy(markType) ? ' mark="$markType"' : '';
+      final markAttribute = markType != null ? ' mark="$markType"' : '';
       result.add('<itemizedlist${_nodeAttributes(node)}$markAttribute>');
       if (node.hasTitle) {
         result.add('<title>${_s(node.title)}</title>');
       }
       for (final itemObj in node.items) {
-        final item = itemObj! as ListItem;
+        final item = itemObj;
         final textMarker = checklist && item.hasAttr('checkbox')
             ? (item.hasAttr('checked') ? '&#10003; ' : '&#10063; ')
             : null;
@@ -897,10 +887,10 @@ class Docbook5Converter extends ConverterBase {
         return '<anchor${_commonAttributes(id, null, node.reftext ?? '[${_s(id)}]')}/>';
       case 'xref':
         final path = node.attributes['path'];
-        if (isTruthy(path)) {
+        if (path != null) {
           return '<link xl:href="${_s(node.target)}">${node.text ?? _s(path)}</link>';
         }
-        var linkend = node.attributes['refid'] as String?;
+        var linkend = node.attributes['refid'];
         if (linkend == null || linkend.isEmpty) {
           final rootDoc = _getRootDocument(node);
           linkend = rootDoc.id ??= _generateDocumentId(rootDoc);
@@ -957,7 +947,7 @@ class Docbook5Converter extends ConverterBase {
         '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
         '</inlinemediaobject>';
     final linkHref = node.hasAttr('link') ? node.attr('link') : null;
-    if (fileref != null && isTruthy(linkHref)) {
+    if (fileref != null && linkHref != null) {
       return '<link xl:href="${_s(linkHref)}">$img</link>';
     }
     return img;
@@ -967,52 +957,48 @@ class Docbook5Converter extends ConverterBase {
   String convertInlineIndexterm(Inline node) {
     final see = node.attr('see');
     final String rel;
-    if (isTruthy(see)) {
+    if (see != null) {
       rel = '\n<see>${_s(see)}</see>';
     } else {
-      final seeAlsoList = node.attr('see-also');
-      rel = isTruthy(seeAlsoList)
-          ? (seeAlsoList! as List<Object?>)
-                .map((seeAlso) => '\n<seealso>${_s(seeAlso)}</seealso>')
-                .join()
+      final seeAlsoList = node.seeAlso;
+      rel = seeAlsoList != null
+          ? seeAlsoList.map((seeAlso) => '\n<seealso>$seeAlso</seealso>').join()
           : '';
     }
     if (node.type == 'visible') {
       return '<indexterm>\n<primary>${_s(node.text)}</primary>$rel\n</indexterm>${_s(node.text)}';
     }
-    final terms = node.attr('terms')! as List<Object?>;
+    final terms = node.terms!;
     final promotion = (node.document! as Document).hasOption(
       'indexterm-promotion',
     );
     if (terms.length > 2) {
-      return '<indexterm>\n<primary>${_s(terms[0])}</primary><secondary>${_s(terms[1])}</secondary><tertiary>${_s(terms[2])}</tertiary>$rel\n</indexterm>${promotion ? '\n<indexterm>\n<primary>${_s(terms[1])}</primary><secondary>${_s(terms[2])}</secondary>\n</indexterm>\n<indexterm>\n<primary>${_s(terms[2])}</primary>\n</indexterm>' : ''}';
+      return '<indexterm>\n<primary>${terms[0]}</primary><secondary>${terms[1]}</secondary><tertiary>${terms[2]}</tertiary>$rel\n</indexterm>${promotion ? '\n<indexterm>\n<primary>${terms[1]}</primary><secondary>${terms[2]}</secondary>\n</indexterm>\n<indexterm>\n<primary>${terms[2]}</primary>\n</indexterm>' : ''}';
     } else if (terms.length > 1) {
-      return '<indexterm>\n<primary>${_s(terms[0])}</primary><secondary>${_s(terms[1])}</secondary>$rel\n</indexterm>${promotion ? '\n<indexterm>\n<primary>${_s(terms[1])}</primary>\n</indexterm>' : ''}';
+      return '<indexterm>\n<primary>${terms[0]}</primary><secondary>${terms[1]}</secondary>$rel\n</indexterm>${promotion ? '\n<indexterm>\n<primary>${terms[1]}</primary>\n</indexterm>' : ''}';
     }
-    return '<indexterm>\n<primary>${_s(terms[0])}</primary>$rel\n</indexterm>';
+    return '<indexterm>\n<primary>${terms[0]}</primary>$rel\n</indexterm>';
   }
 
   /// Converts the [node] inline keyboard shortcut.
   String convertInlineKbd(Inline node) {
-    final keys = node.attr('keys')! as List<Object?>;
-    if (keys.length == 1) {
-      return '<keycap>${_s(keys[0])}</keycap>';
-    }
-    return '<keycombo><keycap>${keys.map(_s).join('</keycap><keycap>')}</keycap></keycombo>';
+    final keys = node.keys!;
+    if (keys.length == 1) return '<keycap>${keys[0]}</keycap>';
+    return '<keycombo><keycap>${keys.join('</keycap><keycap>')}</keycap></keycombo>';
   }
 
   /// Converts the [node] inline menu reference.
   String convertInlineMenu(Inline node) {
     final menu = _s(node.attr('menu'));
-    final submenus = node.attr('submenus')! as List<Object?>;
+    final submenus = node.submenus!;
     if (submenus.isEmpty) {
       final menuitem = node.attr('menuitem');
-      if (isTruthy(menuitem)) {
+      if (menuitem != null) {
         return '<menuchoice><guimenu>$menu</guimenu> <guimenuitem>${_s(menuitem)}</guimenuitem></menuchoice>';
       }
       return '<guimenu>$menu</guimenu>';
     }
-    return '<menuchoice><guimenu>$menu</guimenu> <guisubmenu>${submenus.map(_s).join('</guisubmenu> <guisubmenu>')}</guisubmenu> <guimenuitem>${_s(node.attr('menuitem'))}</guimenuitem></menuchoice>';
+    return '<menuchoice><guimenu>$menu</guimenu> <guisubmenu>${submenus.join('</guisubmenu> <guisubmenu>')}</guisubmenu> <guimenuitem>${_s(node.attr('menuitem'))}</guimenuitem></menuchoice>';
   }
 
   /// Converts the [node] inline quoted text.
@@ -1029,14 +1015,11 @@ class Docbook5Converter extends ConverterBase {
       final equation = _s(node.text);
       return '<inlineequation><alt><![CDATA[$equation]]></alt><mathphrase><![CDATA[$equation]]></mathphrase></inlineequation>';
     }
-    final tags = _quoteTags[type] ?? _defaultQuoteTags;
-    final open = tags[0] as String;
-    final close = tags[1] as String;
-    final supportsPhrase = tags.length > 2;
+    final (open, close, supportsPhrase) = _quoteTags[type] ?? _defaultQuoteTags;
     final text = _s(node.text);
     final String quotedText;
     final role = node.role;
-    if (isTruthy(role)) {
+    if (role != null) {
       if (supportsPhrase) {
         quotedText = '$open<phrase role="${_s(role)}">$text</phrase>$close';
       } else {
@@ -1057,11 +1040,11 @@ class Docbook5Converter extends ConverterBase {
       _commonAttributes(node.id, node.role, node.reftext);
 
   /// The `xml:id`, `role` and `xreflabel` attributes shared by most elements.
-  String _commonAttributes(String? id, [Object? role, String? reftext]) {
+  String _commonAttributes(String? id, [String? role, String? reftext]) {
     final String attrs;
     if (id != null) {
-      attrs = ' xml:id="$id"${isTruthy(role) ? ' role="${_s(role)}"' : ''}';
-    } else if (isTruthy(role)) {
+      attrs = ' xml:id="$id"${role != null ? ' role="${_s(role)}"' : ''}';
+    } else if (role != null) {
       attrs = ' role="${_s(role)}"';
     } else {
       attrs = '';
@@ -1083,7 +1066,7 @@ class Docbook5Converter extends ConverterBase {
   }
 
   /// The size attributes of an image (`width`/`scale`/`contentwidth`/...).
-  String _imageSizeAttributes(Map<Object, Object?> attributes) {
+  String _imageSizeAttributes(Map<String, String> attributes) {
     // NOTE according to the DocBook spec, content area, scaling, and scaling
     // to fit are mutually exclusive. See
     // http://tdg.docbook.org/tdg/4.5/imagedata-x.html#d0e79635
@@ -1131,8 +1114,7 @@ class Docbook5Converter extends ConverterBase {
   String _documentInfoTag(Document doc, AbstractBlock? abstract) {
     final result = <String>['<info>'];
     if (!doc.notitle) {
-      final title =
-          doc.doctitle(partition: true, useFallback: true)! as DocumentTitle;
+      final title = doc.partitionedTitle(useFallback: true)!;
       if (title.hasSubtitle) {
         result.add(
           '<title>${title.main}</title>\n<subtitle>${title.subtitle}</subtitle>',
@@ -1144,11 +1126,11 @@ class Docbook5Converter extends ConverterBase {
     final date = doc.hasAttr('revdate')
         ? doc.attr('revdate')
         : (doc.hasAttr('reproducible') ? null : doc.attr('docdate'));
-    if (isTruthy(date)) {
+    if (date != null) {
       result.add('<date>${_s(date)}</date>');
     }
     if (doc.hasAttr('copyright')) {
-      final match = _copyrightRx.firstMatch(doc.attr('copyright')! as String);
+      final match = _copyrightRx.firstMatch(doc.attr('copyright')!);
       result
         ..add('<copyright>')
         ..add('<holder>${match?.group(1) ?? ''}</holder>');
@@ -1285,8 +1267,8 @@ class Docbook5Converter extends ConverterBase {
   /// The `<cover>` element for the [face] cover image of [doc].
   String? _coverTag(Document doc, String face, [bool usePlaceholder = false]) {
     final coverAttr = doc.attr('$face-cover-image');
-    if (isTruthy(coverAttr)) {
-      var coverImage = coverAttr! as String;
+    if (coverAttr != null) {
+      var coverImage = coverAttr;
       var sizeAttrs = '';
       if (coverImage.contains(':')) {
         final match = _imageMacroRx.firstMatch(coverImage);
