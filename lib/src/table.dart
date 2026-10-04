@@ -242,8 +242,8 @@ class Table extends AbstractBlock {
         }
       }
       for (final col in columns) {
-        totalWidth += (colPcwidth =
-            col.assignWidth(null, widthBase, precision) as num);
+        totalWidth += colPcwidth =
+            col.assignWidth(null, widthBase, precision) as num;
       }
     } else {
       final computed = (100.0 / columns.length).truncateAtPrecision(precision);

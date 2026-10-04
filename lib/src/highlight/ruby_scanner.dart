@@ -880,7 +880,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
       }
     } else if (current == _SymbolState.initial) {
       // ------------------------------------------------------ Initial ---
-      if ((methodCallExpected == null ? s.scan(_methodNameRe) : null)
+      if (methodCallExpected == null ? s.scan(_methodNameRe) : null
           case final name?) {
         var kind = _identKind(name);
         if (valueExpected != _colonExpected &&
@@ -908,7 +908,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           }
           sink.textToken(name, kind);
         }
-      } else if ((methodCallExpected != null ? s.scan(_methodAfterDotRe) : null)
+      } else if (methodCallExpected != null ? s.scan(_methodAfterDotRe) : null
           case final afterDot?) {
         if (methodCallExpected == '::' &&
             _startsUppercase(afterDot) &&
@@ -919,7 +919,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         }
         methodCallExpected = null;
         valueExpected = s.check(_valueFollowsRe);
-      } else if ((methodCallExpected == null ? s.scan(_operatorsRe) : null)
+      } else if (methodCallExpected == null ? s.scan(_operatorsRe) : null
           case final op?) {
         methodCallExpected = s.capture(1);
         valueExpected = methodCallExpected == null && s.capture(2) != null;
@@ -981,7 +981,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
       } else if (s.scan(_instanceVariableRe) case final ivar?) {
         valueExpected = false;
         sink.textToken(ivar, 'instance_variable');
-      } else if ((_valueTruthy(valueExpected) ? s.scan(_slashRe) : null)
+      } else if (_valueTruthy(valueExpected) ? s.scan(_slashRe) : null
           case final slash?) {
         sink.beginGroup('regexp');
         sink.textToken(slash, 'delimiter');
@@ -1005,7 +1005,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
       } else if (s.scan(_operators2Re) case final op2?) {
         valueExpected = true;
         sink.textToken(op2, 'operator');
-      } else if ((_valueTruthy(valueExpected) ? s.scan(_heredocOpenRe) : null)
+      } else if (_valueTruthy(valueExpected) ? s.scan(_heredocOpenRe) : null
           case final heredoc?) {
         final quote = s.capture(3);
         final delim = quote != null ? s.capture(4)! : s.capture(2)!;
@@ -1025,9 +1025,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           ),
         );
         valueExpected = false;
-      } else if ((_valueTruthy(valueExpected)
+      } else if (_valueTruthy(valueExpected)
               ? s.scan(_fancyStringStartRe)
-              : null)
+              : null
           case final fancy?) {
         final letter = s.capture(1)!;
         final kind = _fancyStringKind[letter] ?? 'string';
@@ -1038,7 +1038,7 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           s.capture(2)!,
         );
         sink.textToken(fancy, 'delimiter');
-      } else if ((_valueTruthy(valueExpected) ? s.scan(_characterRe) : null)
+      } else if (_valueTruthy(valueExpected) ? s.scan(_characterRe) : null
           case final char?) {
         valueExpected = false;
         sink.textToken(char, 'integer');

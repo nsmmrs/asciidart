@@ -3777,7 +3777,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0]['text'], '<code>inline code</code>');
-        expect((passthroughs[0]['subs'] as List), isEmpty);
+        expect(passthroughs[0]['subs'] as List, isEmpty);
       });
 
       test('collect multi-line inline triple plus passthroughs', () {
@@ -3792,7 +3792,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0]['text'], '<code>inline\ncode</code>');
-        expect((passthroughs[0]['subs'] as List), isEmpty);
+        expect(passthroughs[0]['subs'] as List, isEmpty);
       });
 
       test('collect inline double dollar passthroughs', () {

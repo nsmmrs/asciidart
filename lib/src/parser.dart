@@ -3043,7 +3043,7 @@ abstract final class Parser {
   ) {
     // QUESTION should we sub attributes in reftext (like with regular
     // anchors)?
-    if ((_docOf(node)).register('refs', [
+    if (_docOf(node).register('refs', [
           id,
           Inline(
             node as AbstractBlock,

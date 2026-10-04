@@ -594,7 +594,7 @@ String subAttributes(
         default: // 'counter'
           return _str(_counterWithArgs(doc, args));
       }
-    } else if (docAttrs.containsKey((match.group(2)!.toLowerCase()))) {
+    } else if (docAttrs.containsKey(match.group(2)!.toLowerCase())) {
       return _str(docAttrs[match.group(2)!.toLowerCase()]);
     } else if (intrinsicAttributes.containsKey(match.group(2)!.toLowerCase())) {
       return intrinsicAttributes[match.group(2)!.toLowerCase()]!;
@@ -2792,7 +2792,7 @@ Map<String, Object?> parseQuotedTextAttributes(AbstractNode node, String str) {
           attrs['role'] = before.replaceAll('.', ' ').trimLeft();
         }
       } else if (before.length > 1) {
-        attrs['role'] = ('$before.$roles').replaceAll('.', ' ').trimLeft();
+        attrs['role'] = '$before.$roles'.replaceAll('.', ' ').trimLeft();
       } else {
         attrs['role'] = roles.replaceAll('.', ' ');
       }
