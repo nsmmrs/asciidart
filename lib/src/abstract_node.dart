@@ -336,7 +336,7 @@ abstract class AbstractNode {
       return expectedValue == value;
     }
     if (attributes.containsKey(key)) return true;
-    if (useFallback) return document!.attributes.containsKey(fallbackKey!);
+    if (useFallback) return document!.attributes.containsKey(fallbackKey);
     return false;
   }
 

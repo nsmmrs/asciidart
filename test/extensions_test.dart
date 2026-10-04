@@ -661,16 +661,16 @@ List<_XpathPredicate> _parseXpathPredicates(String source) {
   for (final match in predRx.allMatches(source)) {
     if (match.group(1) != null) {
       predicates.add(
-        _XpathPredicate.attr(match.group(1)!.toLowerCase(), match.group(2)!),
+        _XpathPredicate.attr(match.group(1)!.toLowerCase(), match.group(2)),
       );
     } else if (match.group(3) != null) {
       predicates.add(
-        _XpathPredicate.attr(match.group(3)!.toLowerCase(), match.group(4)!),
+        _XpathPredicate.attr(match.group(3)!.toLowerCase(), match.group(4)),
       );
     } else if (match.group(5) != null) {
       predicates.add(_XpathPredicate.absent(match.group(5)!.toLowerCase()));
     } else {
-      predicates.add(_XpathPredicate.text(match.group(6)!));
+      predicates.add(_XpathPredicate.text(match.group(6)));
     }
   }
   return predicates;

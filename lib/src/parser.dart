@@ -2262,7 +2262,7 @@ abstract final class Parser {
           );
         } else if (admonitionMatch != null) {
           lines[0] = thisLine.substring(admonitionMatch.end);
-          attrs['style'] = admonitionMatch.group(1)!;
+          attrs['style'] = admonitionMatch.group(1);
           final admonitionName = (attrs['style'] as String).toLowerCase();
           attrs['name'] = admonitionName;
           final caption = attrs.remove('caption');
@@ -2834,7 +2834,7 @@ abstract final class Parser {
           (extension.processMethod
               as Object? Function(AbstractBlock, Reader, Map<String, Object?>))(
             parent,
-            blockReader ?? Reader(lines!),
+            blockReader ?? Reader(lines),
             processAttrs,
           );
       if (extBlock == null || identical(extBlock, parent)) return null;
