@@ -496,6 +496,23 @@ void main() {
       expect(metadata['author_2'], equals('John Smith'));
     });
 
+    test('catalogCallouts finds each callout form', () {
+      for (final text in [
+        'a <1>',
+        'a <.>',
+        r'a \<1>',
+        'a <!--1-->',
+        'a <!1>',
+        'a <--1-->',
+        'a <b> <1>',
+      ]) {
+        expect(Parser.catalogCallouts(text, emptyDocument()), isTrue);
+      }
+      for (final text in ['a <b>', 'a <', 'a <1> b', '<html> x', '']) {
+        expect(Parser.catalogCallouts(text, emptyDocument()), isFalse);
+      }
+    });
+
     test('parse name with more than 3 parts in author attribute', () {
       final doc = emptyDocument();
       parseHeaderMetadata(':author: Leroy  Harold  Scherer,  Jr.', doc);

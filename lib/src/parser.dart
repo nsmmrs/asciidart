@@ -2920,11 +2920,30 @@ abstract final class Parser {
     return listBlock;
   }
 
+  /// Whether [text] has a `<` followed by `!`, `-`, a digit or `.`.
+  ///
+  /// Every [calloutScanRx] match contains one, so text without it is
+  /// skipped without running the (comparatively slow) regex scan.
+  static bool _mayContainCallout(String text) {
+    final last = text.length - 1;
+    for (var i = text.indexOf('<'); i >= 0 && i < last;) {
+      final next = text.codeUnitAt(i + 1);
+      if (next == 0x21 || // !
+          next == 0x2D || // -
+          next == 0x2E || // .
+          (next >= 0x30 && next <= 0x39)) {
+        return true;
+      }
+      i = text.indexOf('<', i + 1);
+    }
+    return false;
+  }
+
   /// Catalogs any callouts found in [text], but doesn't process them.
   ///
   /// Port of `Parser.catalog_callouts`. Returns whether callouts were found.
   static bool catalogCallouts(String text, Document document) {
-    if (!text.contains('<')) return false;
+    if (!_mayContainCallout(text)) return false;
     var found = false;
     var autonum = 0;
     for (final match in calloutScanRx.allMatches(text)) {
