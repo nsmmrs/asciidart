@@ -137,3 +137,25 @@ Ruby comparison: the same corpus and options through
 | Ruby | 81.6 ms | 82.8 ms | 121.1 ms |
 | Ruby + YJIT | 56.6 ms | 56.2 ms | 91.5 ms |
 | Dart AOT, before perf work (`39e4201`) | 89.0 ms | 90.6 ms | 134.3 ms |
+| Dart AOT, after perf work (`2286244`) | 41.3 ms | 40.4 ms | 53.4 ms |
+
+Per step (html5 / manpage, same machine, `perf/throughput` branch):
+
+| Commit | Change | html5 | manpage |
+| --- | --- | --: | --: |
+| `7b201c9` | baseline | 89.0 ms | 134.3 ms |
+| `1d1c992` | `rstrip`/`lstrip` as code-unit scans | 75.8 ms | 112.4 ms |
+| `5c37af6` | literal guards on quote/replacement rules | 43.9 ms | 85.4 ms |
+| `80273f4` | quote guards need the closing delimiter | 42.0 ms | 82.0 ms |
+| `f95b862` | literal guards on manpage `manify` regexes | 43.7 ms | 70.6 ms |
+| `f860409` | single-pass manpage character references | 43.0 ms | 54.3 ms |
+| `2286244` | callout scan pre-check | 41.3 ms | 53.4 ms |
+
+Run-to-run noise is about ±2 ms. Every step was checked byte-identical
+against an AOT build of `39e4201` with `tool/differential.dart` on all
+three backends (fixtures, `syntax.adoc` and the throughput corpus).
+
+Net: 2.2x (html5), 2.2x (docbook5) and 2.5x (manpage) faster than before,
+and faster than Ruby + YJIT on every backend. CLI startup-dominated cells
+are unchanged (small html5 9.3 -> 9.2 ms); the `large` CLI cell (8 KB)
+went from 17.6 to 14.8 ms.
