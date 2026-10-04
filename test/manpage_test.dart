@@ -1872,6 +1872,11 @@ void main() {
       'AT&amp;T': 'AT&T',
       '&#8230;': r'\&.\|.\|.',
       'x &#8230;.': r'x .\|.\|..',
+      // replacements never create or hide a later reference
+      '&amp;lt; &amp;amp;': '&lt; &amp;',
+      'x &#8212;&amp;#8203; z': r'x \(em&#8203; z',
+      '&&lt;b': '&<b',
+      '&;&#;&#99999999;&unknown;&amp': '&;&#;&#99999999;&unknown;&amp',
     };
     for (final entry in cases.entries) {
       test('manifies ${entry.key}', () {

@@ -57,15 +57,109 @@ final String _escFs = '$_esc.';
 /// without `multiLine` per `PORTING-REGEXP.md` B2).
 final RegExp _literalBackslashRx = RegExp('^\\\\|($_esc)?\\\\');
 
-/// Whether a line of [text] starts with [prefix], where a line starts
+/// Whether a line of [text] starts with [char], where a line starts
 /// wherever a `multiLine` `^` matches: at the start of [text] and after
 /// each `\n`, `\r`, `\u2028` and `\u2029`.
-bool _hasLineStartingWith(String text, String prefix) =>
-    text.startsWith(prefix) ||
-    text.contains('\n$prefix') ||
-    text.contains('\r$prefix') ||
-    text.contains('\u2028$prefix') ||
-    text.contains('\u2029$prefix');
+bool _hasLineStartingWith(String text, String char) {
+  for (var i = text.indexOf(char); i >= 0; i = text.indexOf(char, i + 1)) {
+    if (i == 0) return true;
+    final previous = text.codeUnitAt(i - 1);
+    if (previous == 0x0A ||
+        previous == 0x0D ||
+        previous == 0x2028 ||
+        previous == 0x2029) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Troff replacements for the character references `manify` rewrites, in
+/// Ruby's order. `&#8212;` (em dash) is handled in [_replaceCharRefs]
+/// because it absorbs a trailing `&#8203;` (port of `EmDashCharRefRx`).
+const Map<String, String> _charRefReplacements = {
+  '&lt;': '<',
+  '&gt;': '>',
+  // plus sign; alternately could use (pl
+  '&#43;': '+',
+  // non-breaking space
+  '&#160;': r'\~',
+  // copyright sign
+  '&#169;': r'\(co',
+  // registered sign
+  '&#174;': r'\(rg',
+  // trademark sign
+  '&#8482;': r'\(tm',
+  // degree sign
+  '&#176;': r'\(de',
+  // thin space
+  '&#8201;': ' ',
+  // en dash
+  '&#8211;': r'\(en',
+  // em dash
+  '&#8212;': r'\(em',
+  // left single quotation mark
+  '&#8216;': r'\(oq',
+  // right single quotation mark
+  '&#8217;': r'\(cq',
+  // left double quotation mark
+  '&#8220;': r'\(lq',
+  // right double quotation mark
+  '&#8221;': r'\(rq',
+  // leftwards arrow
+  '&#8592;': r'\(<-',
+  // rightwards arrow
+  '&#8594;': r'\(->',
+  // leftwards double arrow
+  '&#8656;': r'\(lA',
+  // rightwards double arrow
+  '&#8658;': r'\(rA',
+  // zero width space
+  '&#8203;': r'\:',
+  // literal ampersand
+  '&amp;': '&',
+};
+
+/// The longest key of [_charRefReplacements].
+const int _maxCharRefLength = 7;
+
+/// Replaces the character references in [text] per [_charRefReplacements]
+/// in a single left-to-right pass.
+///
+/// Equivalent to Ruby's chain of one `gsub` per reference (ending with
+/// `&amp;`): every reference starts with `&`, no replacement contains `&`
+/// or starts with a character that could continue a reference, and no
+/// reference is a prefix of another, so no replacement creates or hides a
+/// later match.
+String _replaceCharRefs(String text) {
+  var amp = text.indexOf('&');
+  if (amp < 0) return text;
+  final buffer = StringBuffer();
+  var copied = 0;
+  while (amp >= 0) {
+    final semi = text.indexOf(';', amp + 1);
+    if (semi < 0) break;
+    var end = semi + 1;
+    final replacement = end - amp <= _maxCharRefLength
+        ? _charRefReplacements[text.substring(amp, end)]
+        : null;
+    if (replacement == null) {
+      amp = text.indexOf('&', amp + 1);
+      continue;
+    }
+    if (replacement == r'\(em' && text.startsWith('&#8203;', end)) {
+      end += '&#8203;'.length;
+    }
+    buffer
+      ..write(text.substring(copied, amp))
+      ..write(replacement);
+    copied = end;
+    amp = text.indexOf('&', end);
+  }
+  if (copied == 0) return text;
+  buffer.write(text.substring(copied));
+  return buffer.toString();
+}
 
 /// Matches a leading period (port of `LeadingPeriodRx`).
 final RegExp _leadingPeriodRx = RegExp(r'^\.', multiLine: true);
@@ -85,9 +179,6 @@ final RegExp _malformedEscapedMacroRx = RegExp(
 
 /// Matches mock macro boundaries (port of `MockMacroRx`).
 final RegExp _mockMacroRx = RegExp('</?($_esc\\\\[^>]+)>');
-
-/// Matches an em-dash character reference (port of `EmDashCharRefRx`).
-final RegExp _emDashCharRefRx = RegExp('&#8212;(?:&#8203;)?');
 
 /// Matches an ellipsis character reference (port of `EllipsisCharRefRx`).
 final RegExp _ellipsisCharRefRx = RegExp('&#8230;(?:&#8203;)?');
@@ -1075,49 +1166,8 @@ class ManpageConverter extends ConverterBase {
       });
     }
     result = result.replaceAll('-', r'\-');
-    result = result.replaceAll('&lt;', '<');
-    result = result.replaceAll('&gt;', '>');
-    // plus sign; alternately could use (pl
-    result = result.replaceAll('&#43;', '+');
-    // non-breaking space
-    result = result.replaceAll('&#160;', r'\~');
-    // copyright sign
-    result = result.replaceAll('&#169;', r'\(co');
-    // registered sign
-    result = result.replaceAll('&#174;', r'\(rg');
-    // trademark sign
-    result = result.replaceAll('&#8482;', r'\(tm');
-    // degree sign
-    result = result.replaceAll('&#176;', r'\(de');
-    // thin space
-    result = result.replaceAll('&#8201;', ' ');
-    // en dash
-    result = result.replaceAll('&#8211;', r'\(en');
-    // em dash
-    if (result.contains('&#8212;')) {
-      result = result.replaceAll(_emDashCharRefRx, r'\(em');
-    }
-    // left single quotation mark
-    result = result.replaceAll('&#8216;', r'\(oq');
-    // right single quotation mark
-    result = result.replaceAll('&#8217;', r'\(cq');
-    // left double quotation mark
-    result = result.replaceAll('&#8220;', r'\(lq');
-    // right double quotation mark
-    result = result.replaceAll('&#8221;', r'\(rq');
-    // leftwards arrow
-    result = result.replaceAll('&#8592;', r'\(<-');
-    // rightwards arrow
-    result = result.replaceAll('&#8594;', r'\(->');
-    // leftwards double arrow
-    result = result.replaceAll('&#8656;', r'\(lA');
-    // rightwards double arrow
-    result = result.replaceAll('&#8658;', r'\(rA');
-    // zero width space
-    result = result.replaceAll('&#8203;', r'\:');
-    // literal ampersand (NOTE must take place after any other replacement
-    // that includes &)
-    result = result.replaceAll('&amp;', '&');
+    // character references (named, numeric and the literal ampersand)
+    result = _replaceCharRefs(result);
     // apostrophe / neutral single quote
     result = result.replaceAll("'", r'\*(Aq');
     // mock boundary (NOTE Dart's replaceAll takes the replacement
