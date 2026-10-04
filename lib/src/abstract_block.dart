@@ -317,12 +317,12 @@ abstract class AbstractBlock extends AbstractNode {
   /// subclasses in other libraries (and their traversal overrides) can
   /// recurse into it.
   List<AbstractBlock> findByInternal({
+    required List<AbstractBlock> result,
     String? context,
     String? style,
     String? role,
     String? id,
     bool traverseDocuments = false,
-    required List<AbstractBlock> result,
     FindByFilter? filter,
   }) {
     if ((context == null || context == this.context) &&
@@ -371,12 +371,12 @@ abstract class AbstractBlock extends AbstractNode {
   /// `List` (dlist term/description pairs) and `Table` (rows and cells,
   /// honoring [traverseDocuments]).
   void traverseChildren({
+    required List<AbstractBlock> result,
     String? context,
     String? style,
     String? role,
     String? id,
     bool traverseDocuments = false,
-    required List<AbstractBlock> result,
     FindByFilter? filter,
   }) {
     for (final child in blocks) {

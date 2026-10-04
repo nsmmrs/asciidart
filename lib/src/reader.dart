@@ -2136,10 +2136,10 @@ class _MaxDepth {
 class _ConditionalFrame {
   const new({
     required this.name,
-    this.target,
-    this.expr,
     required this.skip,
     required this.skipping,
+    this.target,
+    this.expr,
     this.sourceLocation,
   });
 
