@@ -43,14 +43,8 @@ class Stylesheets {
   static const String pygmentsUnavailableStylesheet =
       '/* Pygments CSS disabled because Pygments is not available. */';
 
-  static Stylesheets? _instance;
-
-  /// Returns the shared [Stylesheets] instance.
-  ///
-  /// A static getter (not a factory) to keep the stable public singleton
-  /// accessor `Stylesheets.instance`.
-  // ignore: prefer_constructors_over_static_methods
-  static Stylesheets get instance => _instance ??= Stylesheets();
+  /// The shared [Stylesheets] instance (created lazily on first access).
+  static final Stylesheets instance = Stylesheets();
 
   String? _primaryStylesheetData;
   String? _coderayStylesheetData;

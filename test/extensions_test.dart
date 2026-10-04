@@ -1,6 +1,3 @@
-// Adjacent-string joins here are markup/paths, not prose; joined values
-// are asserted byte-identical by tests.
-// ignore_for_file: missing_whitespace_between_adjacent_strings
 /// Port of `test/extensions_test.rb`.
 ///
 /// All tests run: extension integration (activation through the
@@ -1089,7 +1086,7 @@ Registry createCatInSinkBlockMacro() {
     build: (registry) {
       registry.blockMacro(
         build: (processor) {
-          processor.named('cat_in_sink');
+          processor.name = 'cat_in_sink';
           processor.onProcess = (parent, target, attrs) {
             final imageAttrs = <String, Object?>{};
             if (target.isNotEmpty) {
@@ -1114,7 +1111,7 @@ Registry createSantaListBlockMacro() {
     build: (registry) {
       registry.blockMacro(
         build: (processor) {
-          processor.named('santa_list');
+          processor.name = 'santa_list';
           // Adapted: Ruby blocks tolerate the unused third argument;
           // Dart closures must declare it.
           processor.onProcess = (parent, target, _) {
@@ -1281,7 +1278,7 @@ void main() {
             registry.block(
               build: (processor) {
                 processor
-                  ..named('whisper')
+                  ..name = 'whisper'
                   ..onContext('paragraph')
                   ..parseContentAs('simple');
                 processor.onProcess = (parent, reader, attributes) {
@@ -2272,7 +2269,7 @@ void main() {
         build: (registry) {
           registry.blockMacro(
             build: (processor) {
-              processor.named('custom-toc');
+              processor.name = 'custom-toc';
               processor.onProcess = (parent, target, attrs) {
                 resolvedTarget = target;
                 return processor.createPassBlock(
@@ -2300,7 +2297,7 @@ void main() {
           registry.blockMacro(
             build: (processor) {
               processor
-                ..named('illegal name')
+                ..name = 'illegal name'
                 ..onProcess = (parent, target, attrs) => null;
             },
           );
@@ -2361,7 +2358,7 @@ void main() {
             ..blockMacro(
               build: (processor) {
                 processor
-                  ..named('attribute')
+                  ..name = 'attribute'
                   ..resolveAttributes('1:value')
                   ..onProcess = (parent, target, attrs) {
                     (parent.document! as Document).setAttr(
@@ -2375,7 +2372,7 @@ void main() {
             ..blockMacro(
               build: (processor) {
                 processor
-                  ..named('header_attribute')
+                  ..name = 'header_attribute'
                   ..resolveAttributes('1:value')
                   ..onProcess = (parent, target, attrs) {
                     (parent.document! as Document).setHeaderAttribute(
@@ -2481,7 +2478,7 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor
-                ..named('label')
+                ..name = 'label'
                 ..matchFormat('short')
                 ..parseContentAs('text')
                 ..onProcess = (parent, target, attrs) {
@@ -2505,7 +2502,7 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor
-                ..named('label')
+                ..name = 'label'
                 ..matchFormat('short');
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInlinePass(
@@ -2529,7 +2526,7 @@ void main() {
             ..inlineMacro(
               build: (processor) {
                 processor
-                  ..named('json')
+                  ..name = 'json'
                   ..matchFormat('short');
                 processor.onProcess = (parent, target, attrs) {
                   final pairs = attrs.entries
@@ -2541,7 +2538,7 @@ void main() {
             )
             ..inlineMacro(
               build: (processor) {
-                processor.named('data');
+                processor.name = 'data';
                 processor.onProcess = (parent, target, attrs) {
                   if (target != 'json') {
                     return null;
@@ -2591,7 +2588,7 @@ void main() {
             ..inlineMacro(
               build: (processor) {
                 processor
-                  ..named('short_attributes')
+                  ..name = 'short_attributes'
                   ..matchFormat('short')
                   ..resolveAttributes('1:name');
                 processor.onProcess = (parent, target, attrs) =>
@@ -2601,7 +2598,7 @@ void main() {
             ..inlineMacro(
               build: (processor) {
                 processor
-                  ..named('short_text')
+                  ..name = 'short_text'
                   ..matchFormat('short')
                   ..resolveAttributes(false);
                 processor.onProcess = (parent, target, attrs) =>
@@ -2611,7 +2608,7 @@ void main() {
             ..inlineMacro(
               build: (processor) {
                 processor
-                  ..named('full-attributes')
+                  ..name = 'full-attributes'
                   ..resolveAttributes({'1:name': null});
                 processor.onProcess = (parent, target, attrs) =>
                     capture(processor, parent, target, attrs);
@@ -2620,7 +2617,7 @@ void main() {
             ..inlineMacro(
               build: (processor) {
                 processor
-                  ..named('full-text')
+                  ..name = 'full-text'
                   ..resolveAttributes(false);
                 processor.onProcess = (parent, target, attrs) =>
                     capture(processor, parent, target, attrs);
@@ -2629,7 +2626,7 @@ void main() {
             ..inlineMacro(
               build: (processor) {
                 processor
-                  ..named('@short_match')
+                  ..name = '@short_match'
                   ..match(RegExp(r'@(\w+)'))
                   ..resolveAttributes(false);
                 processor.onProcess = (parent, target, attrs) =>
@@ -2677,7 +2674,7 @@ void main() {
             registry.inlineMacro(
               build: (processor) {
                 processor
-                  ..named('mention')
+                  ..name = 'mention'
                   ..resolveAttributes(false);
                 processor.onProcess = (parent, target, attrs) {
                   var text = attrs['text']! as String;
@@ -2708,7 +2705,7 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor
-                ..named('skipme')
+                ..name = 'skipme'
                 ..matchFormat('short')
                 ..onProcess = (parent, target, attrs) => null;
             },
@@ -2731,7 +2728,7 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor
-                ..named('say')
+                ..name = 'say'
                 ..onProcess = (parent, target, attrs) => target;
             },
           );
@@ -2758,7 +2755,7 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('say');
+              processor.name = 'say';
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInline(
                   parent,
@@ -2782,7 +2779,7 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('say');
+              processor.name = 'say';
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInlinePass(
                   parent,
@@ -2805,7 +2802,7 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('say');
+              processor.name = 'say';
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInlinePass(
                   parent,
@@ -2832,7 +2829,7 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('say');
+              processor.name = 'say';
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInlinePass(
                   parent,
@@ -2915,7 +2912,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('skip-me')
+                ..name = 'skip-me'
                 ..onContext('paragraph')
                 ..parseContentAs('raw')
                 ..onProcess = (parent, reader, attrs) => null;
@@ -2944,7 +2941,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('ignore')
+                ..name = 'ignore'
                 ..onContext('paragraph')
                 ..parseContentAs('skip')
                 ..onProcess = (parent, reader, attrs) {
@@ -2975,7 +2972,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('foo')
+                ..name = 'foo'
                 ..onContext('paragraph')
                 ..parseContentAs('raw')
                 ..onProcess = (parent, reader, attrs) {
@@ -3003,7 +3000,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('lst')
+                ..name = 'lst'
                 ..onContext('paragraph');
               processor.onProcess = (parent, reader, attrs) {
                 final list = processor.createList(parent, 'ulist');
@@ -3032,7 +3029,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('sect')
+                ..name = 'sect'
                 ..onContext('open');
               processor.onProcess = (parent, reader, attrs) {
                 return processor.createSection(
@@ -3070,7 +3067,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('csv')
+                ..name = 'csv'
                 ..onContext('literal');
               processor.onProcess = (parent, reader, attrs) {
                 processor.parseContent(parent, [
@@ -3098,7 +3095,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('unwrap')
+                ..name = 'unwrap'
                 ..onContext('open');
               processor.onProcess = (parent, reader, attrs) {
                 return processor.parseContent(parent, reader.readLines());
@@ -3147,7 +3144,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('wrap')
+                ..name = 'wrap'
                 ..onContext('open');
               processor.onProcess = (parent, reader, attrs) {
                 final wrap = processor.createOpenBlock(parent, null, attrs);
@@ -3187,7 +3184,7 @@ void main() {
           registry.block(
             build: (processor) {
               processor
-                ..named('attrs')
+                ..name = 'attrs'
                 ..onContext('open');
               processor.onProcess = (parent, reader, attrs) {
                 parsedAttrs = processor.parseAttributes(
@@ -3222,7 +3219,7 @@ void main() {
         build: (registry) {
           registry.blockMacro(
             build: (processor) {
-              processor.named('sect');
+              processor.name = 'sect';
               processor.onProcess = (parent, target, attrs) {
                 final stringAttrs = <String, Object?>{
                   for (final entry in attrs.entries)
@@ -4007,7 +4004,7 @@ void main() {
 
   group('Dsl', () {
     test('named and content model helpers set config', () {
-      final processor = (SampleBlock())..named('shout');
+      final processor = (SampleBlock())..name = 'shout';
       expect(processor.name, equals('shout'));
       processor.contentModel('simple');
       expect(processor.config['content_model'], equals('simple'));

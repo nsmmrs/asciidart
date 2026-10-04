@@ -1,6 +1,3 @@
-// Adjacent-string joins here are markup/paths, not prose; joined values
-// are asserted byte-identical by tests.
-// ignore_for_file: missing_whitespace_between_adjacent_strings
 /// highlight.js adapter: marks up source blocks for client-side highlighting.
 ///
 /// Dart port of `lib/asciidoctor/syntax_highlighter/highlightjs.rb`.

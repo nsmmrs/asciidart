@@ -1,6 +1,3 @@
-// Adjacent-string joins here are markup/paths, not prose; joined values
-// are asserted byte-identical by tests.
-// ignore_for_file: missing_whitespace_between_adjacent_strings
 /// Port of the framework assertions in `test/syntax_highlighter_test.rb`
 /// (registration, factory selection including the unknown-highlighter
 /// fallback, `Document` integration and docinfo aggregation).

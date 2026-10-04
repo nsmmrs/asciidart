@@ -3,7 +3,6 @@
 /// Port of `lib/asciidoctor/inline.rb`.
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 
 /// Methods for managing inline elements in an AsciiDoc block.
@@ -14,21 +13,15 @@ class Inline extends AbstractNode {
   ///
   /// Dart parameter lists cannot mix optional positional and named
   /// parameters, so [text] is named here (Ruby takes it positionally).
-  // ignore: use_super_parameters, reason: explicit super passes a derived nodeName.
   new(
-    AbstractBlock? parent,
-    String context, {
+    super.parent,
+    super.context, {
     this.text,
-    Map<String, Object?>? attributes,
+    super.attributes,
     String? id,
     this.type,
     this.target,
-  }) : super(
-         parent,
-         context,
-         attributes: attributes,
-         nodeName: 'inline_$context',
-       ) {
+  }) : super(nodeName: 'inline_$context') {
     this.id = id;
   }
 

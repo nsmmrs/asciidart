@@ -11,3 +11,11 @@ analyzer:
     strict-casts: true
     strict-inference: true
     strict-raw-types: true
+
+linter:
+  rules:
+    # Converters and their tests assemble byte-exact HTML/XML and XPath from
+    # adjacent literals split at tag boundaries ('<pre class="x">' '<code>'),
+    # where inserting whitespace would change the output. The rule assumes
+    # prose, so it is disabled here once instead of per file.
+    missing_whitespace_between_adjacent_strings: false

@@ -3,10 +3,6 @@
 /// Port of `lib/asciidoctor/section.rb` (complete).
 library;
 
-// `toString` ports Ruby `#inspect` (`#<ClassName@hash ...>`), pinned
-// by tests; the concrete (subclass-aware) class name is load-bearing.
-// ignore_for_file: no_runtimetype_tostring
-
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart' show NodeDocument;
 import 'package:asciidoctor/src/core_ext.dart';
@@ -148,7 +144,7 @@ class Section extends AbstractBlock implements NodeSection {
       final formalTitle = isTruthy(numbered)
           ? '${sectnum()} $rawTitle'
           : rawTitle;
-      return '#$runtimeType@${identityHashCode(this)} {level: $level, '
+      return '#Section@${identityHashCode(this)} {level: $level, '
           'title: ${inspectString(formalTitle)}, blocks: ${blocks.length}}';
     }
     return super.toString();

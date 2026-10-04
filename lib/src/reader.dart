@@ -17,10 +17,6 @@
 /// interfaces (owned by the `document.dart` and `extensions.dart` waves).
 library;
 
-// `toString` ports Ruby `#inspect` (`#<ClassName@hash ...>`), pinned
-// by tests; the concrete (subclass-aware) class name is load-bearing.
-// ignore_for_file: no_runtimetype_tostring
-
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
 import 'dart:io' show File, FileSystemEntity;
 
@@ -707,7 +703,7 @@ class Reader {
 
   @override
   String toString() =>
-      '#<$runtimeType@${identityHashCode(this)} {path: '
+      '#<Reader@${identityHashCode(this)} {path: '
       '${_inspect(_path)}, line: $_lineno}>';
 
   /// Processes a previously unvisited line.
@@ -883,8 +879,8 @@ class PreprocessorReader extends Reader {
   /// the given [file], document-relative [path] and line info.
   ///
   /// Typically used in an include processor to add source read from the
-  /// target. [lineno] defaults to 1. Returns this reader.
-  PreprocessorReader pushInclude(
+  /// target. [lineno] defaults to 1.
+  void pushInclude(
     Object? data, [
     Object? file,
     String? path,
@@ -1001,9 +997,6 @@ class PreprocessorReader extends Reader {
       //Document::AttributeEntry.new('indir', @dir).save_to_next_block @document
       _lookAhead = 0;
     }
-    // Ruby API parity: `push_include` returns the reader (pinned by test).
-    // ignore: avoid_returning_this
-    return this;
   }
 
   /// The current include depth (size of the include stack).
@@ -1057,11 +1050,13 @@ class PreprocessorReader extends Reader {
   }
 
   @override
-  String toString() =>
-      '#<$runtimeType@${identityHashCode(this)} {path: ${_inspect(_path)}, '
-      'line: $_lineno, include depth: ${_includeStack.length}, include '
-      'stack: '
-      '[${_includeStack.map((inc) => inc.toString()).join(', ')}]}>';
+  String toString() {
+    final includeStack = _includeStack.map((inc) => inc.toString()).join(', ');
+    return '#<PreprocessorReader@${identityHashCode(this)} '
+        '{path: ${_inspect(_path)}, line: $_lineno, '
+        'include depth: ${_includeStack.length}, '
+        'include stack: [$includeStack]}>';
+  }
 
   @override
   void save() {

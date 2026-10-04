@@ -1,6 +1,3 @@
-// Adjacent-string joins here are markup/paths, not prose; joined values
-// are asserted byte-identical by tests.
-// ignore_for_file: missing_whitespace_between_adjacent_strings
 /// Tests for the HTML5 converter port (`html5.dart`).
 ///
 /// Port of the html5-output assertions in the Ruby suite (`test/blocks_test.rb`,
@@ -130,10 +127,7 @@ class StubSection extends Section {
 /// A list item returning fixed text (avoids the substitutors wave).
 class StubListItem extends ListItem {
   /// Creates a stub item with fixed [text].
-  // ignore: use_super_parameters, reason: text is also captured for stubText.
-  new(AbstractBlock parent, [String? text])
-    : stubText = text,
-      super(parent, text);
+  new(super.parent, [super.text]) : stubText = text;
 
   /// The value [text] returns.
   final String? stubText;

@@ -1,6 +1,3 @@
-// Adjacent-string joins here are markup/paths, not prose; joined values
-// are asserted byte-identical by tests.
-// ignore_for_file: missing_whitespace_between_adjacent_strings
 /// Port of `test/substitutions_test.rb` for `lib/src/substitutors.dart`.
 ///
 /// Ruby's suite drives substitutions through parsed blocks
@@ -832,8 +829,7 @@ void main() {
 
       test('escaped single-line double-quoted string', () {
         var para = blockFromString(
-          '$bs``a few quoted words'
-          "''",
+          "$bs``a few quoted words''",
           attributes: {'compat-mode': ''},
         );
         expect(
@@ -842,8 +838,7 @@ void main() {
         );
 
         para = blockFromString(
-          '$bs$bs``a few quoted words'
-          "''",
+          "$bs$bs``a few quoted words''",
           attributes: {'compat-mode': ''},
         );
         expect(subQuotes(para, para.source()), "``a few quoted words''");
@@ -941,8 +936,7 @@ void main() {
 
       test('escaped single-line single-quoted string', () {
         var para = blockFromString(
-          '$bs`a few quoted words'
-          "'",
+          "$bs`a few quoted words'",
           attributes: {'compat-mode': ''},
         );
         expect(subQuotes(para, para.source()), "`a few quoted words'");
@@ -987,8 +981,7 @@ void main() {
 
       test('single-quoted string with inline backquote', () {
         var para = blockFromString(
-          '`Here`s Johnny!'
-          "'",
+          "`Here`s Johnny!'",
           attributes: {'compat-mode': ''},
         );
         expect(subQuotes(para, para.source()), '&#8216;Here`s Johnny!&#8217;');
@@ -3063,8 +3056,8 @@ void main() {
         expect(
           contentOf(
             paraFor(
-              "L'origine du mot for\u00eat{blank}footnote:for\u00ea"
-              't[un massif forestier] est complexe.',
+              "L'origine du mot for\u00eat{blank}footnote:for\u00eat[un massif "
+              'forestier] est complexe.',
             ),
           ),
           'L&#8217;origine du mot for\u00eat<sup class="footnote" id="_footnote_for\u00eat">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> est complexe.',

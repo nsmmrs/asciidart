@@ -134,10 +134,7 @@ class StubSection extends Section {
 /// A list item returning fixed text (avoids the substitutors wave).
 class StubListItem extends ListItem {
   /// Creates a stub item with fixed [text].
-  // ignore: use_super_parameters, reason: text is also captured for stubText.
-  new(AbstractBlock parent, [String? text])
-    : stubText = text,
-      super(parent, text);
+  new(super.parent, [super.text]) : stubText = text;
 
   /// The value [text] returns.
   final String? stubText;

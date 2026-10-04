@@ -81,9 +81,7 @@ class FakeLogger implements NodeLogger {
 class FakeDocument extends AbstractBlock implements NodeDocument {
   /// Creates a document with [attributes] (and optional [parent], which a
   /// document-context node ignores, as in Ruby).
-  // ignore: use_super_parameters (explicit super call fixes the context)
-  new({Map<String, Object?>? attributes, AbstractBlock? parent})
-    : super(parent, 'document', attributes: attributes);
+  new({super.attributes, AbstractBlock? parent}) : super(parent, 'document');
 
   /// The document catalog (only `refs` is used here).
   @override

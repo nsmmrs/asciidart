@@ -79,16 +79,15 @@ class FakeLogger implements NodeLogger {
 
 /// Stands in for `Document` (document wave) in these tests.
 class FakeDocument extends AbstractBlock implements NodeDocument {
-  // ignore: use_super_parameters, reason: explicit super hardcodes the document context.
   new({
-    Map<String, Object?>? attributes,
+    super.attributes,
     this.safe = SafeMode.safe,
     String? baseDir,
     PathResolver? pathResolver,
     this.compatMode = false,
   }) : baseDir = baseDir ?? Directory.current.path,
        pathResolver = pathResolver ?? PathResolver(),
-       super(null, 'document', attributes: attributes);
+       super(null, 'document');
 
   @override
   int safe;
@@ -165,13 +164,12 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
 
 /// Stands in for `Section` (section wave) in these tests.
 class FakeSection extends AbstractBlock implements NodeSection {
-  // ignore: use_super_parameters, reason: explicit super hardcodes the section context.
   new(
     AbstractBlock? parent, {
-    Map<String, Object?>? attributes,
+    super.attributes,
     this.numbered = false,
     this.sectname,
-  }) : super(parent, 'section', attributes: attributes);
+  }) : super(parent, 'section');
 
   @override
   int index = 0;

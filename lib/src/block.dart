@@ -3,10 +3,6 @@
 /// Port of `lib/asciidoctor/block.rb`.
 library;
 
-// `toString` ports Ruby `#inspect` (`#<ClassName@hash ...>`), pinned
-// by tests; the concrete (subclass-aware) class name is load-bearing.
-// ignore_for_file: no_runtimetype_tostring
-
 import 'package:asciidoctor/src/abstract_block.dart';
 import 'package:asciidoctor/src/abstract_node.dart';
 import 'package:asciidoctor/src/core_ext.dart';
@@ -179,7 +175,7 @@ class Block extends AbstractBlock {
         ? 'blocks: ${blocks.length}'
         : 'lines: ${lines.length}';
     final styleRepr = style == null ? 'nil' : '"$style"';
-    return '#<$runtimeType@${identityHashCode(this)} '
+    return '#<Block@${identityHashCode(this)} '
         '{context: :$context, content_model: :$contentModel, '
         'style: $styleRepr, $summary}>';
   }

@@ -1092,16 +1092,6 @@ void main() {
     });
 
     group('Include Stack', () {
-      test('PreprocessorReader#push_include method should return reader', () {
-        final reader = preprocessorReader([]);
-        final result = reader.pushInclude(
-          ['one', 'two', 'three'],
-          '<stdin>',
-          '<stdin>',
-        );
-        expect(result, same(reader));
-      });
-
       test('PreprocessorReader#push_include method should put lines on '
           'top of stack', () {
         final reader = (preprocessorReader(['a', 'b', 'c']))

@@ -652,30 +652,6 @@ abstract final class Parser {
   static String _applyHeaderSubs(Document document, String text) =>
       _subAttributes(document, _subSpecialchars(text));
 
-  /// Assigns the attribute entry `name` to [value] on [document].
-  ///
-  /// Kept for the substitutors wave's final seam sweep (no remaining
-  /// callers: attribute entries route through [Document.setAttribute]).
-  // ignore: unused_element
-  static String _applyAttributeValueSubs(Document document, String value) {
-    final match = attributeEntryPassMacroRx.firstMatch(value);
-    if (match == null) return _applyHeaderSubs(document, value);
-    var result = match.group(2) ?? '';
-    final subs = match.group(1);
-    if (subs != null) {
-      final resolved = _resolveSubs(subs, 'inline', null, null);
-      if (resolved != null) {
-        if (resolved.contains('specialcharacters')) {
-          result = _subSpecialchars(result);
-        }
-        if (resolved.contains('attributes')) {
-          result = _subAttributes(document, result);
-        }
-      }
-    }
-    return result;
-  }
-
   /// Assigns the document attribute [name] to [value].
   ///
   /// Delegates to [Document.setAttribute] (port of `Document#set_attribute`,

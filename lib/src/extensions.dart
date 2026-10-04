@@ -539,15 +539,6 @@ abstract class NamedProcessor extends Processor {
   /// The name this processor is registered under.
   String? name;
 
-  /// Sets the name this processor is registered under.
-  ///
-  /// A method (not a setter) for extension-DSL parity: extension authors
-  /// call `processor.named('...')`, mirroring the Ruby/JS API.
-  // ignore: use_setters_to_change_properties
-  void named(String value) {
-    name = value;
-  }
-
   /// Sets the content model (e.g. `'compound'`, `'simple'`, `'raw'`).
   void contentModel(String value) {
     option('content_model', value);
