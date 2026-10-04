@@ -2012,18 +2012,19 @@ String subCallouts(AbstractNode node, String text) {
 ///
 /// Port of `Substitutors#highlight_source`.
 String highlightSource(AbstractNode node, String source, bool processCallouts) {
+  var code = source;
   final doc = _documentOf(node);
   final syntaxHl = doc.syntaxHighlighter;
   // NOTE the call to highlight? is a defensive check since, normally, we
   // wouldn't arrive here unless it returns true
   if (syntaxHl is! SyntaxHighlighterBase || !syntaxHl.canHighlight) {
-    return subSource(node, source, processCallouts);
+    return subSource(node, code, processCallouts);
   }
   final docAttrs = doc.attributes;
   Map<int, List<PendingCallout>>? calloutMarks;
   if (processCallouts) {
-    final extracted = extractCallouts(node, source);
-    source = extracted.source;
+    final extracted = extractCallouts(node, code);
+    code = extracted.source;
     calloutMarks = extracted.calloutMarks;
   }
   // NOTE (coderay parity gap): the shared CssMode/LineNumbersMode mapping is
@@ -2041,11 +2042,11 @@ String highlightSource(AbstractNode node, String source, bool processCallouts) {
     if (startLineNumber < 1) startLineNumber = 1;
   }
   final highlightLines = node.hasAttr('highlight')
-      ? resolveLinesToHighlight(source, node.attr('highlight'), startLineNumber)
+      ? resolveLinesToHighlight(code, node.attr('highlight'), startLineNumber)
       : const <int>[];
   final result = syntaxHl.highlight(
     node as AbstractBlock,
-    source,
+    code,
     node.attr('language')?.toString(),
     // The framework only reads the null/emptiness of this map (to derive
     // `hasCallouts`); the marks themselves travel separately below.

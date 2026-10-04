@@ -545,6 +545,8 @@ class Reader {
     Object? cursor,
     bool Function(String line)? test,
   }) {
+    var breakOnListCont = breakOnListContinuation;
+    var breakOnBlank = breakOnBlankLines;
     final result = <String>[];
     var restoreProcessLines = false;
     if (processLines && skipProcessing) {
@@ -555,8 +557,8 @@ class Reader {
     var preserveLast = preserveLastLine;
     if (terminator != null) {
       startCursor = cursor ?? this.cursor();
-      breakOnBlankLines = false;
-      breakOnListContinuation = false;
+      breakOnBlank = false;
+      breakOnListCont = false;
     }
     final skipComments = skipLineComments;
     var lineRead = false;
@@ -567,8 +569,8 @@ class Reader {
       final current = line!;
       final stop = terminator != null
           ? current == terminator
-          : ((breakOnBlankLines && current.isEmpty) ||
-                (breakOnListContinuation &&
+          : ((breakOnBlank && current.isEmpty) ||
+                (breakOnListCont &&
                     lineRead &&
                     current == listContinuation &&
                     (preserveLast = true)) ||
@@ -1237,34 +1239,35 @@ class PreprocessorReader extends Reader {
     String? delimiter,
     String? text,
   ) {
+    var directiveTarget = target;
     // attributes are case insensitive
-    final noTarget = target.isEmpty;
-    if (!noTarget) target = target.toLowerCase();
+    final noTarget = directiveTarget.isEmpty;
+    if (!noTarget) directiveTarget = directiveTarget.toLowerCase();
 
     if (name == 'endif') {
       if (text != null) {
         LoggerManager.logger.error(
           _messageWithContext(
             'malformed preprocessor directive - text not permitted: '
-            'endif::$target[$text]',
+            'endif::$directiveTarget[$text]',
             sourceLocation: cursor(),
           ),
         );
       } else if (_conditionalStack.isEmpty) {
         LoggerManager.logger.error(
           _messageWithContext(
-            'unmatched preprocessor directive: endif::$target[]',
+            'unmatched preprocessor directive: endif::$directiveTarget[]',
             sourceLocation: cursor(),
           ),
         );
-      } else if (noTarget || target == _conditionalStack.last.target) {
+      } else if (noTarget || directiveTarget == _conditionalStack.last.target) {
         _conditionalStack.removeLast();
         _skipping =
             _conditionalStack.isNotEmpty && _conditionalStack.last.skipping;
       } else {
         LoggerManager.logger.error(
           _messageWithContext(
-            'mismatched preprocessor directive: endif::$target[], expected '
+            'mismatched preprocessor directive: endif::$directiveTarget[], expected '
             'endif::${_conditionalStack.last.target ?? ''}[]',
             sourceLocation: cursor(),
           ),
@@ -1282,7 +1285,7 @@ class PreprocessorReader extends Reader {
         return true;
       }
       // skip stays false; the tail below no-ops while skipping
-      return _pushConditionalFrame(name, target, text, false);
+      return _pushConditionalFrame(name, directiveTarget, text, false);
     } else {
       // QUESTION any way to wrap ifdef & ifndef logic up together?
       var skip = false;
@@ -1300,7 +1303,7 @@ class PreprocessorReader extends Reader {
           }
           final parts = delimiter == null
               ? null
-              : target.split(delimiter == ',' ? ',' : '+');
+              : directiveTarget.split(delimiter == ',' ? ',' : '+');
           if (delimiter == ',') {
             // skip if no attribute is defined
             skip = !parts!.any(
@@ -1313,7 +1316,7 @@ class PreprocessorReader extends Reader {
             );
           } else {
             // if the attribute is undefined, then skip
-            skip = !_document.attributes.containsKey(target);
+            skip = !_document.attributes.containsKey(directiveTarget);
           }
         case 'ifndef':
           if (noTarget) {
@@ -1328,7 +1331,7 @@ class PreprocessorReader extends Reader {
           }
           final parts = delimiter == null
               ? null
-              : target.split(delimiter == ',' ? ',' : '+');
+              : directiveTarget.split(delimiter == ',' ? ',' : '+');
           if (delimiter == ',') {
             // skip if any attribute is defined
             skip = parts!.any(
@@ -1341,7 +1344,7 @@ class PreprocessorReader extends Reader {
             );
           } else {
             // if the attribute is defined, then skip
-            skip = _document.attributes.containsKey(target);
+            skip = _document.attributes.containsKey(directiveTarget);
           }
         case 'ifeval':
           if (noTarget) {
@@ -1381,14 +1384,14 @@ class PreprocessorReader extends Reader {
             LoggerManager.logger.error(
               _messageWithContext(
                 'malformed preprocessor directive - target not permitted: '
-                'ifeval::$target[${text ?? ''}]',
+                'ifeval::$directiveTarget[${text ?? ''}]',
                 sourceLocation: cursor(),
               ),
             );
             return true;
           }
       }
-      return _pushConditionalFrame(name, target, text, skip);
+      return _pushConditionalFrame(name, directiveTarget, text, skip);
     }
   }
 
@@ -2070,11 +2073,14 @@ class PreprocessorReader extends Reader {
   /// Resolves the value of one side of an `ifeval` expression, coerced to
   /// the appropriate type.
   Object? _resolveExprVal(String val) {
+    var current = val;
     final bool quoted;
-    if ((val.startsWith('"') && val.endsWith('"')) ||
-        (val.startsWith("'") && val.endsWith("'"))) {
+    if ((current.startsWith('"') && current.endsWith('"')) ||
+        (current.startsWith("'") && current.endsWith("'"))) {
       quoted = true;
-      val = val.length >= 2 ? val.substring(1, val.length - 1) : '';
+      current = current.length >= 2
+          ? current.substring(1, current.length - 1)
+          : '';
     } else {
       quoted = false;
     }
@@ -2082,26 +2088,26 @@ class PreprocessorReader extends Reader {
     // QUESTION should we substitute first?
     // QUESTION should we also require string to be single quoted (like block
     // attribute values?)
-    if (val.contains(attrRefHead)) {
-      val = _document.subAttributes(val, attributeMissing: 'drop');
+    if (current.contains(attrRefHead)) {
+      current = _document.subAttributes(current, attributeMissing: 'drop');
     }
 
     if (quoted) {
-      return val;
-    } else if (val.isEmpty) {
+      return current;
+    } else if (current.isEmpty) {
       return null;
-    } else if (val == 'true') {
+    } else if (current == 'true') {
       return true;
-    } else if (val == 'false') {
+    } else if (current == 'false') {
       return false;
-    } else if (val.rstrip().isEmpty) {
+    } else if (current.rstrip().isEmpty) {
       return ' ';
-    } else if (val.contains('.')) {
-      return _rubyToDouble(val);
+    } else if (current.contains('.')) {
+      return _rubyToDouble(current);
     } else {
       // fallback to coercing to integer, since we
       // require string values to be explicitly quoted
-      return _toInt(val);
+      return _toInt(current);
     }
   }
 

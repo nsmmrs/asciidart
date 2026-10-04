@@ -243,9 +243,10 @@ abstract final class Helpers {
   /// Converts integer [val] to a Roman numeral.
   static String intToRoman(int val) {
     final result = StringBuffer();
+    var remainder = val;
     for (final entry in _romanNumeralsWithReducers.entries) {
-      final repeat = val ~/ entry.value;
-      val = val % entry.value;
+      final repeat = remainder ~/ entry.value;
+      remainder = remainder % entry.value;
       for (var i = 0; i < repeat; i++) {
         result.write(entry.key);
       }

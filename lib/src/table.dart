@@ -213,13 +213,14 @@ class Table extends AbstractBlock {
   ///
   /// Port of `Asciidoctor::Table#assign_column_widths`.
   void assignColumnWidths([Object? widthBase, List<Column>? autowidthCols]) {
+    var baseWidth = widthBase;
     const precision = defaultPrecision;
     num totalWidth = 0;
     num colPcwidth = 0;
 
-    if (isTruthy(widthBase)) {
+    if (isTruthy(baseWidth)) {
       if (autowidthCols != null) {
-        final base = widthBase! as num;
+        final base = baseWidth! as num;
         late final num autowidth;
         if (base > 100) {
           autowidth = 0;
@@ -233,7 +234,7 @@ class Table extends AbstractBlock {
           autowidth = computed.toInt() == computed
               ? computed.toInt()
               : computed;
-          widthBase = 100;
+          baseWidth = 100;
         }
         final autowidthAttrs = <String, Object?>{
           'width': autowidth,
@@ -245,7 +246,7 @@ class Table extends AbstractBlock {
       }
       for (final col in columns) {
         totalWidth += colPcwidth =
-            col.assignWidth(null, widthBase, precision)! as num;
+            col.assignWidth(null, baseWidth, precision)! as num;
       }
     } else {
       final computed = (100.0 / columns.length).truncateAtPrecision(precision);
@@ -406,6 +407,7 @@ class Cell extends AbstractBlock {
     Map<String, Object?>? opts,
   ]) : _column = column,
        super(column?.table, 'table_cell') {
+    var cellContent = cellText;
     final attrs = attributes;
     if (document!.sourcemap) {
       // Port of `@source_location = opts[:cursor].dup if @document.sourcemap`
@@ -441,7 +443,7 @@ class Cell extends AbstractBlock {
             if (cellStyle == 'asciidoc' || cellStyle == 'literal') {
               _reinitializeArgs = <Object?>[
                 column,
-                cellText,
+                cellContent,
                 if (attrs == null) null else Map<String, Object?>.of(attrs),
                 opts,
               ];
@@ -478,7 +480,7 @@ class Cell extends AbstractBlock {
       if (cellStyle == 'asciidoc') {
         asciidoc = true;
         innerDocumentCursor = opts?['cursor'];
-        var text = cellText!.rstrip();
+        var text = cellContent!.rstrip();
         if (text.startsWith(lf)) {
           var linesAdvanced = 1;
           while ((text = text.substring(1)).startsWith(lf)) {
@@ -489,20 +491,20 @@ class Cell extends AbstractBlock {
         } else {
           text = lstrip(text);
         }
-        cellText = text;
+        cellContent = text;
       } else if (cellStyle == 'literal') {
         literal = true;
-        var text = cellText!.rstrip();
+        var text = cellContent!.rstrip();
         // QUESTION should we use same logic as :asciidoc cell? strip
         // leading space if text doesn't start with newline?
         while (text.startsWith(lf)) {
           text = text.substring(1);
         }
-        cellText = text;
+        cellContent = text;
       } else {
         normalPsv = true;
         // NOTE AsciidoctorJ uses nil cell_text to create an empty cell.
-        cellText = cellText != null ? cellText.trim() : '';
+        cellContent = cellContent != null ? cellContent.trim() : '';
       }
     } else {
       colspan = null;
@@ -528,7 +530,7 @@ class Cell extends AbstractBlock {
       // Dart's `split` keeps trailing empty segments like Ruby's
       // `split LF, -1`, except that `''.split` yields `['']` where Ruby
       // yields `[]`.
-      final cellSource = cellText;
+      final cellSource = cellContent;
       final innerDocumentLines = cellSource == null || cellSource.isEmpty
           ? <String>[]
           : cellSource.split(lf);
@@ -570,13 +572,13 @@ class Cell extends AbstractBlock {
         if (isTruthy(inHeaderRow)) {
           _cursor = opts?['cursor']; // Used in the deferred catalog call.
         } else {
-          catalogInlineAnchor(cellText, opts?['cursor']);
+          catalogInlineAnchor(cellContent, opts?['cursor']);
         }
       }
       contentModel = 'simple';
       subs = normalSubs;
     }
-    _text = cellText;
+    _text = cellContent;
     style = cellStyle;
   }
 

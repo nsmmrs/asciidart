@@ -1310,9 +1310,9 @@ String _rootAsDir(String root) {
 
 /// The entity type at [path], or [FileSystemEntityType.notFound].
 FileSystemEntityType _entityType(String path) {
-  if (path.isEmpty) path = '.';
+  final target = path.isEmpty ? '.' : path;
   try {
-    return FileSystemEntity.typeSync(path);
+    return FileSystemEntity.typeSync(target);
   } catch (_) {
     return FileSystemEntityType.notFound;
   }

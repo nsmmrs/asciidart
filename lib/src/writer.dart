@@ -42,13 +42,16 @@ mixin Writer {
   ///
   /// Mirrors Ruby's `String#chomp` (default record separator).
   static String _chomp(String value) {
-    if (value.endsWith('\n')) {
-      value = value.substring(0, value.length - 1);
-      if (value.endsWith('\r')) value = value.substring(0, value.length - 1);
-    } else if (value.endsWith('\r')) {
-      value = value.substring(0, value.length - 1);
+    var result = value;
+    if (result.endsWith('\n')) {
+      result = result.substring(0, result.length - 1);
+      if (result.endsWith('\r')) {
+        result = result.substring(0, result.length - 1);
+      }
+    } else if (result.endsWith('\r')) {
+      result = result.substring(0, result.length - 1);
     }
-    return value;
+    return result;
   }
 }
 

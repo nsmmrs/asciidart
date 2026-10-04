@@ -985,14 +985,15 @@ class ManpageConverter extends ConverterBase {
     _WhitespaceMode whitespace = _WhitespaceMode.collapse,
     bool appendNewline = false,
   }) {
+    var result = str;
     switch (whitespace) {
       case _WhitespaceMode.preserve:
         // NOTE Dart reports the zero-width `(^)?` group as non-participating
         // even at a line start (verified by probe), so Ruby's `$1 ? ...`
         // test becomes an explicit line-start check (exactly equivalent:
         // the run matches either way; only the branch differs).
-        final expanded = str.replaceAll(tab, _et);
-        str = expanded.replaceAllMapped(_preserveSpacesRx, (match) {
+        final expanded = result.replaceAll(tab, _et);
+        result = expanded.replaceAllMapped(_preserveSpacesRx, (match) {
           final start = match.start;
           if (start == 0 || expanded[start - 1] == '\n') {
             return match.group(0)!;
@@ -1000,85 +1001,85 @@ class ManpageConverter extends ConverterBase {
           return '$_escBs&${match.group(0)}';
         });
       case _WhitespaceMode.normalize:
-        str = str.replaceAll(_wrappedIndentRx, '\n');
+        result = result.replaceAll(_wrappedIndentRx, '\n');
       case _WhitespaceMode.collapse:
-        str = transliterateSqueeze(str, _whitespace, ' ');
+        result = transliterateSqueeze(result, _whitespace, ' ');
     }
     // literal backslash (not a troff escape sequence)
-    str = str.replaceAllMapped(
+    result = result.replaceAllMapped(
       _literalBackslashRx,
       (match) => match.group(1) != null ? match.group(0)! : r'\(rs',
     );
     // horizontal ellipsis (emulate appearance)
-    str = str.replaceAll(_ellipsisCharRefRx, r'.\|.\|.');
+    result = result.replaceAll(_ellipsisCharRefRx, r'.\|.\|.');
     // leading . is used in troff for macro call or other formatting;
     // replace with \&.
-    str = str.replaceAll(_leadingPeriodRx, r'\&.');
+    result = result.replaceAll(_leadingPeriodRx, r'\&.');
     // drop orphaned \c escape lines, unescape troff macro, quote adjacent
     // character, isolate macro line
-    str = str.replaceAllMapped(_escapedMacroRx, (match) {
+    result = result.replaceAllMapped(_escapedMacroRx, (match) {
       final rest = lstrip(match.group(3)!);
       if (rest.isEmpty) {
         return '.${match.group(1)}"${match.group(2)}"';
       }
       return '.${match.group(1)}"${match.group(2)!.rstrip()}"\n$rest';
     });
-    str = str.replaceAll('-', r'\-');
-    str = str.replaceAll('&lt;', '<');
-    str = str.replaceAll('&gt;', '>');
+    result = result.replaceAll('-', r'\-');
+    result = result.replaceAll('&lt;', '<');
+    result = result.replaceAll('&gt;', '>');
     // plus sign; alternately could use (pl
-    str = str.replaceAll('&#43;', '+');
+    result = result.replaceAll('&#43;', '+');
     // non-breaking space
-    str = str.replaceAll('&#160;', r'\~');
+    result = result.replaceAll('&#160;', r'\~');
     // copyright sign
-    str = str.replaceAll('&#169;', r'\(co');
+    result = result.replaceAll('&#169;', r'\(co');
     // registered sign
-    str = str.replaceAll('&#174;', r'\(rg');
+    result = result.replaceAll('&#174;', r'\(rg');
     // trademark sign
-    str = str.replaceAll('&#8482;', r'\(tm');
+    result = result.replaceAll('&#8482;', r'\(tm');
     // degree sign
-    str = str.replaceAll('&#176;', r'\(de');
+    result = result.replaceAll('&#176;', r'\(de');
     // thin space
-    str = str.replaceAll('&#8201;', ' ');
+    result = result.replaceAll('&#8201;', ' ');
     // en dash
-    str = str.replaceAll('&#8211;', r'\(en');
+    result = result.replaceAll('&#8211;', r'\(en');
     // em dash
-    str = str.replaceAll(_emDashCharRefRx, r'\(em');
+    result = result.replaceAll(_emDashCharRefRx, r'\(em');
     // left single quotation mark
-    str = str.replaceAll('&#8216;', r'\(oq');
+    result = result.replaceAll('&#8216;', r'\(oq');
     // right single quotation mark
-    str = str.replaceAll('&#8217;', r'\(cq');
+    result = result.replaceAll('&#8217;', r'\(cq');
     // left double quotation mark
-    str = str.replaceAll('&#8220;', r'\(lq');
+    result = result.replaceAll('&#8220;', r'\(lq');
     // right double quotation mark
-    str = str.replaceAll('&#8221;', r'\(rq');
+    result = result.replaceAll('&#8221;', r'\(rq');
     // leftwards arrow
-    str = str.replaceAll('&#8592;', r'\(<-');
+    result = result.replaceAll('&#8592;', r'\(<-');
     // rightwards arrow
-    str = str.replaceAll('&#8594;', r'\(->');
+    result = result.replaceAll('&#8594;', r'\(->');
     // leftwards double arrow
-    str = str.replaceAll('&#8656;', r'\(lA');
+    result = result.replaceAll('&#8656;', r'\(lA');
     // rightwards double arrow
-    str = str.replaceAll('&#8658;', r'\(rA');
+    result = result.replaceAll('&#8658;', r'\(rA');
     // zero width space
-    str = str.replaceAll('&#8203;', r'\:');
+    result = result.replaceAll('&#8203;', r'\:');
     // literal ampersand (NOTE must take place after any other replacement
     // that includes &)
-    str = str.replaceAll('&amp;', '&');
+    result = result.replaceAll('&amp;', '&');
     // apostrophe / neutral single quote
-    str = str.replaceAll("'", r'\*(Aq');
+    result = result.replaceAll("'", r'\*(Aq');
     // mock boundary (NOTE Dart's replaceAll takes the replacement
     // literally — `$1` would not interpolate — so this uses
     // replaceAllMapped; verified by probe)
-    str = str.replaceAllMapped(_mockMacroRx, (match) => match.group(1)!);
+    result = result.replaceAllMapped(_mockMacroRx, (match) => match.group(1)!);
     // unescape troff backslash (NOTE update if more escapes are added)
-    str = str.replaceAll(_escBs, r'\');
+    result = result.replaceAll(_escBs, r'\');
     // unescape full stop in troff commands (NOTE must take place after
     // the leading-period replacement)
-    str = str.replaceAll(_escFs, '.');
+    result = result.replaceAll(_escFs, '.');
     // strip trailing space
-    str = str.rstrip();
-    return appendNewline ? '$str\n' : str;
+    result = result.rstrip();
+    return appendNewline ? '$result\n' : result;
   }
 
   /// Uppercases the PCDATA in [string], leaving markup untouched.

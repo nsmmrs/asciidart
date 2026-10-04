@@ -1684,6 +1684,7 @@ abstract final class Parser {
   /// reftext, title, level and whether an atx title was matched.
   static ({String? id, String? reftext, String title, int level, bool atx})
   parseSectionTitle(Reader reader, Document document, [String? sectId]) {
+    var resolvedSectId = sectId;
     String? sectReftext;
     final line1 = reader.readLine()!;
 
@@ -1702,14 +1703,14 @@ abstract final class Parser {
       sectLevel = atxMatch.group(1)!.length - 1;
       sectTitle = atxMatch.group(2)!;
       atx = true;
-      if (sectId == null && sectTitle.endsWith(']]')) {
+      if (resolvedSectId == null && sectTitle.endsWith(']]')) {
         final anchorMatch = inlineSectionAnchorRx.firstMatch(sectTitle);
         if (anchorMatch != null && anchorMatch.group(1) == null) {
           sectTitle = sectTitle.substring(
             0,
             sectTitle.length - anchorMatch.group(0)!.length,
           );
-          sectId = anchorMatch.group(2);
+          resolvedSectId = anchorMatch.group(2);
           sectReftext = anchorMatch.group(3);
         }
       }
@@ -1728,14 +1729,14 @@ abstract final class Parser {
         sectLevel = level;
         sectTitle = setextMatch.group(1)!;
         atx = false;
-        if (sectId == null && sectTitle.endsWith(']]')) {
+        if (resolvedSectId == null && sectTitle.endsWith(']]')) {
           final anchorMatch = inlineSectionAnchorRx.firstMatch(sectTitle);
           if (anchorMatch != null && anchorMatch.group(1) == null) {
             sectTitle = sectTitle.substring(
               0,
               sectTitle.length - anchorMatch.group(0)!.length,
             );
-            sectId = anchorMatch.group(2);
+            resolvedSectId = anchorMatch.group(2);
             sectReftext = anchorMatch.group(3);
           }
         }
@@ -1751,7 +1752,7 @@ abstract final class Parser {
       if (sectLevel < 0) sectLevel = 0;
     }
     return (
-      id: sectId,
+      id: resolvedSectId,
       reftext: sectReftext,
       title: sectTitle,
       level: sectLevel,
@@ -2980,8 +2981,8 @@ abstract final class Parser {
           ),
         ]) ==
         null) {
-      if (location is Reader) location = location.cursor();
-      _logger.warn(_msg('id assigned to anchor already in use: $id', location));
+      final loc = location is Reader ? location.cursor() : location;
+      _logger.warn(_msg('id assigned to anchor already in use: $id', loc));
     }
   }
 
@@ -3185,6 +3186,7 @@ abstract final class Parser {
     Object siblingTrait, [
     String? style,
   ]) {
+    var trait = siblingTrait;
     final listType = listBlock.context;
     final dlist = listType == 'dlist';
     late final ListItem listItem;
@@ -3224,7 +3226,7 @@ abstract final class Parser {
         listItem.sourceLocation = _loc(reader.cursor());
       }
       if (listType == 'ulist') {
-        listItem.marker = siblingTrait as String;
+        listItem.marker = trait as String;
         if (itemText.startsWith('[')) {
           if (style != null && style == 'bibliography') {
             final biblioMatch = inlineBiblioAnchorRx.firstMatch(itemText);
@@ -3265,7 +3267,7 @@ abstract final class Parser {
         if (startAttr != null) {
           ordinal += (startAttr as int) - 1;
         } else if (first) {
-          final start = resolveOrderedListStart(siblingTrait as String);
+          final start = resolveOrderedListStart(trait as String);
           if (start != 1) {
             listBlock.attributes['start'] = start;
             ordinal += start - 1;
@@ -3273,12 +3275,12 @@ abstract final class Parser {
           }
         }
         final (resolvedMarker, implicitStyle) = resolveOrderedListMarker(
-          siblingTrait as String,
+          trait as String,
           ordinal,
           validate,
           reader,
         );
-        siblingTrait = resolvedMarker;
+        trait = resolvedMarker;
         listItem.marker = resolvedMarker;
         if (first && style == null) {
           // Using list level makes more sense, but we don't track it.
@@ -3303,7 +3305,7 @@ abstract final class Parser {
         }
       } else {
         // 'colist'
-        listItem.marker = siblingTrait as String;
+        listItem.marker = trait as String;
         if (itemText.startsWith('[[')) {
           final anchorMatch = leadingInlineAnchorRx.firstMatch(itemText);
           if (anchorMatch != null) {
@@ -3323,7 +3325,7 @@ abstract final class Parser {
     reader.shift();
     final blockCursor = reader.cursor();
     final listItemReader = Reader(
-      readLinesForListItem(reader, listType, siblingTrait, hasText),
+      readLinesForListItem(reader, listType, trait, hasText),
       blockCursor,
     );
     if (listItemReader.hasMoreLines()) {
