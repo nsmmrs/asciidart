@@ -325,7 +325,7 @@ class Column extends AbstractNode {
   ///
   /// Port of `Asciidoctor::Table::Column#assign_width`.
   Object? assignWidth(Object? colPcwidth, Object? widthBase, int precision) {
-    num? pcwidth = colPcwidth as num?;
+    var pcwidth = colPcwidth as num?;
     if (isTruthy(widthBase)) {
       final computed =
           ((attributes['width'] as num).toDouble() *
@@ -404,7 +404,7 @@ class Cell extends AbstractBlock {
     Map<String, Object?>? opts,
   ]) : _column = column,
        super(column?.table, 'table_cell') {
-    final Map<String, Object?>? attrs = attributes;
+    final attrs = attributes;
     if (document!.sourcemap) {
       // Port of `@source_location = opts[:cursor].dup if @document.sourcemap`
       // (`lib/asciidoctor/table.rb`); `nil.dup` is `nil` in Ruby. The copy

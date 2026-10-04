@@ -535,7 +535,7 @@ class ManpageConverter extends ConverterBase {
     if (node.hasTitle) {
       result.add('.sp\n.RS 3\n.B ${_manify(node.title!)}\n.br\n.RE');
     }
-    String? attributionLine = node.hasAttr('citetitle')
+    var attributionLine = node.hasAttr('citetitle')
         ? '${_s(node.attr('citetitle'))} '
         : null;
     attributionLine = node.hasAttr('attribution')
@@ -732,7 +732,7 @@ class ManpageConverter extends ConverterBase {
     if (node.hasTitle) {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
     }
-    String? attributionLine = node.hasAttr('citetitle')
+    var attributionLine = node.hasAttr('citetitle')
         ? '${_s(node.attr('citetitle'))} '
         : null;
     attributionLine = node.hasAttr('attribution')
@@ -791,7 +791,7 @@ class ManpageConverter extends ConverterBase {
               node.document!.catalog['refs'] as Map<String, Object?>;
           final refid = node.attributes['refid'] as String?;
           Document? top;
-          final Object? ref =
+          final ref =
               refs[refid] ??
               ((refid == null || refid.isEmpty)
                   ? top = _getRootDocument(node)

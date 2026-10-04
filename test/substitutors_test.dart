@@ -453,7 +453,7 @@ String _htmlImage(Inline node, Document doc) {
   var wrapped = img;
   if (node.hasAttr('link')) {
     final linkVal = node.attr('link').toString();
-    final String? href = linkVal != 'self' ? linkVal : src;
+    final href = linkVal != 'self' ? linkVal : src;
     if (href != null) {
       wrapped =
           '<a class="image" href="$href"${_appendLinkConstraintAttrs(node, <String>[]).join()}>$img</a>';
@@ -530,7 +530,7 @@ String? _readSvgContents(Inline node, String target) {
 }
 
 String _docbookImage(Inline node, Document doc) {
-  final bool isIcon = node.type == 'icon';
+  final isIcon = node.type == 'icon';
   final fileref = isIcon
       ? node.iconUri(node.target!)
       : node.imageUri(node.target!);

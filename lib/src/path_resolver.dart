@@ -406,7 +406,7 @@ class PathResolver {
   }) {
     final name = targetName ?? 'path';
 
-    String? jailPath = jail;
+    var jailPath = jail;
     if (jailPath != null) {
       if (!isRoot(jailPath)) {
         throw SecurityError('Jail is not an absolute path: $jailPath');
@@ -440,7 +440,7 @@ class PathResolver {
       targetSegments = [];
     }
 
-    String? startPath = start;
+    var startPath = start;
     if (targetSegments.isEmpty) {
       if (startPath == null || startPath.isEmpty) {
         return jailPath ?? workingDir;

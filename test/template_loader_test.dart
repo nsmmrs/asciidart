@@ -103,9 +103,9 @@ void main() {
       // The bound-method tear-offs pin the exact seam shape
       // `FutureOr<Map<String, String>> load()`: any signature drift fails
       // to compile here (and in wave A's identical interface).
-      final FutureOr<Map<String, String>> Function() vmLoad = vm.load;
-      final FutureOr<Map<String, String>> Function() memoryLoad = memory.load;
-      final FutureOr<Map<String, String>> Function() nodeLoad = node.load;
+      final vmLoad = vm.load;
+      final memoryLoad = memory.load;
+      final nodeLoad = node.load;
       expect(vmLoad, isNotNull);
       expect(memoryLoad, isNotNull);
       expect(nodeLoad, isNotNull);

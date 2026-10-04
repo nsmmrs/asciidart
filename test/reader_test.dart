@@ -211,7 +211,7 @@ class FakeDocument implements ReaderDocument {
     String? start, {
     String? targetName,
   }) {
-    String? startPath = start;
+    var startPath = start;
     String? jail;
     if (safe < SafeMode.safe) {
       if (startPath != null) {

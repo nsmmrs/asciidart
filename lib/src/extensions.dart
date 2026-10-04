@@ -1711,7 +1711,7 @@ class Registry {
           '[$second]',
         );
       }
-      final String? nameArg = second is String ? second : null;
+      final nameArg = second is String ? second : null;
       final config = <String, Object?>{
         if (first is Map) ..._asConfig(first),
         if (second is Map) ..._asConfig(second),
@@ -1903,11 +1903,11 @@ abstract final class Extensions {
     Object? group,
     void Function(Registry)? build,
   }) {
-    final Object? stored = build ?? group;
+    final stored = build ?? group;
     if (stored == null) {
       throw ArgumentError('Extension group to register not specified');
     }
-    final String key = name ?? generateName();
+    final key = name ?? generateName();
     final Object? resolved;
     if (stored is String) {
       final factory = _groupFactories[stored];

@@ -151,10 +151,10 @@ Document loadFile(Object? filename, [Map<String, Object?>? options]) {
 Object? convert(Object? input, [Map<String, Object?>? options]) {
   final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
   opts.remove('parse');
-  Object? toDir = opts.remove('to_dir');
+  var toDir = opts.remove('to_dir');
   if (toDir is File || toDir is Uri) toDir = _coercePath(toDir);
   final mkdirs = opts.remove('mkdirs');
-  Object? toFile = opts.remove('to_file');
+  var toFile = opts.remove('to_file');
 
   String? siblingPath;
   Object? writeToTarget;
@@ -327,9 +327,7 @@ Object? convert(Object? input, [Map<String, Object?>? options]) {
         copyUserStylesheet = true;
       }
       final syntaxHl = doc.syntaxHighlighter;
-      final SyntaxHighlighterBase? hlAdapter = syntaxHl is SyntaxHighlighterBase
-          ? syntaxHl
-          : null;
+      final hlAdapter = syntaxHl is SyntaxHighlighterBase ? syntaxHl : null;
       final copySyntaxHlStylesheet =
           hlAdapter?.wantsStylesheetFile(doc) ?? false;
       if (copyAsciidoctorStylesheet ||

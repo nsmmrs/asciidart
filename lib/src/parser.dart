@@ -1797,7 +1797,7 @@ abstract final class Parser {
     }
 
     // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:528-530).
-    final Registry? extensions = document.extensions;
+    final extensions = document.extensions;
     final blockExtensions = extensions?.hasBlocks ?? false;
     final blockMacroExtensions = extensions?.hasBlockMacros ?? false;
 
@@ -3418,7 +3418,7 @@ abstract final class Parser {
       // of the list.
       if (isSiblingListItem(rawLine, listType, siblingTrait)) break;
 
-      final Object thisLine = rawLine == listContinuation
+      final thisLine = rawLine == listContinuation
           ? _ListContinuation.active
           : rawLine;
       final prevLine = buffer.isEmpty ? null : buffer.last;
@@ -3858,7 +3858,7 @@ abstract final class Parser {
 
     String? line;
     while ((line = tableReader.readLine()) != null) {
-      String? current = line;
+      var current = line;
       loopIdx += 1;
       final beyondFirst = loopIdx > 0;
       if (beyondFirst && current!.isEmpty) {
@@ -4339,7 +4339,7 @@ abstract final class Parser {
   ]) {
     // TODOmove processing of attribute value to utility method.
     var resolvedName = name;
-    Object? resolvedValue = value;
+    var resolvedValue = value;
     if (resolvedName.endsWith('!')) {
       // A nil value signals the attribute should be deleted (unset).
       resolvedName = resolvedName.substring(0, resolvedName.length - 1);

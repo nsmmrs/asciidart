@@ -187,7 +187,7 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
     for (var index = 0; index < _opened.length; index++) {
       // The current kind first, then its enclosing groups from outermost
       // to innermost (the original's `[kind, *opened[0...index]]`).
-      final Object kinds = index == 0
+      final kinds = index == 0
           ? _opened[0]
           : <String>[_opened[index], ..._opened.sublist(0, index)];
       reopen.write(_spanForKinds(kinds) ?? '<span>');

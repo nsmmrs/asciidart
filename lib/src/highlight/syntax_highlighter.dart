@@ -119,7 +119,7 @@ abstract class SyntaxHighlighterBase implements NodeSyntaxHighlighter {
     String? language,
     Map<String, Object?> opts,
   ) {
-    final Object? transform = opts['transform'];
+    final transform = opts['transform'];
     return wrapSourceBlock(
       preClass: preClass,
       content: _s(node.content()),
@@ -190,7 +190,7 @@ abstract final class SyntaxHighlighter {
   /// [create]); this mirrors Ruby, which accepts a class or an object.
   static void register(Object highlighter, Iterable<String> names) {
     _ensureBuiltins();
-    for (final String name in names) {
+    for (final name in names) {
       _registry[name] = highlighter;
     }
   }
@@ -213,7 +213,7 @@ abstract final class SyntaxHighlighter {
     String backend = 'html5',
     Map<String, Object?> opts = const <String, Object?>{},
   ]) {
-    final Object? found = for_(name);
+    final found = for_(name);
     if (found == null) return null;
     return _instantiate(found, name, backend, opts);
   }
@@ -236,13 +236,13 @@ abstract final class SyntaxHighlighter {
     Map<String, Object>? highlighters,
   }) {
     if (!doc.basebackend('html')) return null;
-    final Object? rawName = doc.attributes['source-highlighter'];
+    final rawName = doc.attributes['source-highlighter'];
     if (!isTruthy(rawName)) return null;
-    final String name = rawName.toString();
+    final name = rawName.toString();
     if (isTruthy(doc.attributes['$name-unavailable'])) return null;
-    final String backend = doc.backend ?? 'html5';
-    final Map<String, Object?> opts = <String, Object?>{'document': doc};
-    final Object? resolvedFactory =
+    final backend = doc.backend ?? 'html5';
+    final opts = <String, Object?>{'document': doc};
+    final resolvedFactory =
         factory ?? doc.options['syntax_highlighter_factory'];
     if (resolvedFactory != null) {
       return (resolvedFactory as SyntaxHighlighterFactory).create(
@@ -251,7 +251,7 @@ abstract final class SyntaxHighlighter {
         opts,
       );
     }
-    final Object? resolvedHighlighters =
+    final resolvedHighlighters =
         highlighters ?? doc.options['syntax_highlighters'];
     if (resolvedHighlighters != null) {
       return SyntaxHighlighterDefaultFactoryProxy(
@@ -273,7 +273,7 @@ abstract final class SyntaxHighlighter {
         String backend,
         Map<String, Object?> opts,
       ) => make(opts);
-      for (final String name in names) {
+      for (final name in names) {
         _registry[name] = factory;
       }
     }
@@ -328,7 +328,7 @@ class SyntaxHighlighterFactory {
   /// `Factory#register`). See [SyntaxHighlighter.register] for the accepted
   /// value shapes.
   void register(Object highlighter, Iterable<String> names) {
-    for (final String name in names) {
+    for (final name in names) {
       _registry[name] = highlighter;
     }
   }
@@ -342,7 +342,7 @@ class SyntaxHighlighterFactory {
     String backend = 'html5',
     Map<String, Object?> opts = const <String, Object?>{},
   ]) {
-    final Object? found = for_(name);
+    final found = for_(name);
     if (found == null) return null;
     return _instantiate(found, name, backend, opts);
   }
@@ -469,7 +469,7 @@ class HighlightJsHighlighter extends SyntaxHighlighterBase {
     required bool linkcss,
     required String selfClosingTagSlash,
   }) {
-    final String? highlightjsDir = node.attr('highlightjsdir')?.toString();
+    final highlightjsDir = node.attr('highlightjsdir')?.toString();
     if (location == 'head') {
       return adapter.docinfoHead(
         highlightjsDir: highlightjsDir,
@@ -545,7 +545,7 @@ class PrettifyHighlighter extends SyntaxHighlighterBase {
     required bool linkcss,
     required String selfClosingTagSlash,
   }) {
-    final String? prettifyDir = node.attr('prettifydir')?.toString();
+    final prettifyDir = node.attr('prettifydir')?.toString();
     if (location == 'head') {
       return adapter.docinfoHead(
         prettifyDir: prettifyDir,
@@ -734,7 +734,7 @@ SyntaxHighlighterBase _instantiate(
   String backend,
   Map<String, Object?> opts,
 ) {
-  final SyntaxHighlighterBase instance = value is SyntaxHighlighterFactoryFn
+  final instance = value is SyntaxHighlighterFactoryFn
       ? value(name, backend, opts)
       : value as SyntaxHighlighterBase;
   if (instance.name.isEmpty) {

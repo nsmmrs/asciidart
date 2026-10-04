@@ -428,7 +428,7 @@ class Html5Converter extends ConverterBase {
     }
 
     final syntaxHlValue = node.syntaxHighlighter;
-    final NodeSyntaxHighlighter? syntaxHl = isTruthy(syntaxHlValue)
+    final syntaxHl = isTruthy(syntaxHlValue)
         ? syntaxHlValue as NodeSyntaxHighlighter
         : null;
     var syntaxHlDocinfoHeadIdx = -1;
@@ -821,7 +821,7 @@ class Html5Converter extends ConverterBase {
       }
       title = resolvedTitle;
     }
-    String linkedTitle = title;
+    var linkedTitle = title;
     final String idAttr;
     if (node.id != null) {
       final id = node.id!;
@@ -1217,7 +1217,7 @@ class Html5Converter extends ConverterBase {
     final String? lang;
     final NodeSyntaxHighlighter? syntaxHl;
     final Map<String, Object?> hlOpts;
-    String preOpen = '';
+    var preOpen = '';
     var preClose = '';
     if (node.style == 'source') {
       lang = node.attr('language') as String?;
@@ -1471,12 +1471,10 @@ class Html5Converter extends ConverterBase {
     final titleElement = node.hasTitle
         ? '\n<div class="title">${_s(node.title)}</div>'
         : '';
-    final Object? attribution = node.hasAttr('attribution')
+    final attribution = node.hasAttr('attribution')
         ? node.attr('attribution')
         : null;
-    final Object? citetitle = node.hasAttr('citetitle')
-        ? node.attr('citetitle')
-        : null;
+    final citetitle = node.hasAttr('citetitle') ? node.attr('citetitle') : null;
     final String attributionElement;
     if (attribution != null || citetitle != null) {
       final citeElement = citetitle != null
@@ -1651,7 +1649,7 @@ class Html5Converter extends ConverterBase {
       titleIdAttr = ' id="toctitle"';
     }
     final title = node.hasTitle ? _s(node.title) : _s(doc.attr('toc-title'));
-    final int? levels = node.hasAttr('levels')
+    final levels = node.hasAttr('levels')
         ? rubyToInteger(node.attr('levels'))
         : null;
     final role = node.hasRole()
@@ -1747,12 +1745,10 @@ class Html5Converter extends ConverterBase {
     final titleElement = node.hasTitle
         ? '\n<div class="title">${_s(node.title)}</div>'
         : '';
-    final Object? attribution = node.hasAttr('attribution')
+    final attribution = node.hasAttr('attribution')
         ? node.attr('attribution')
         : null;
-    final Object? citetitle = node.hasAttr('citetitle')
-        ? node.attr('citetitle')
-        : null;
+    final citetitle = node.hasAttr('citetitle') ? node.attr('citetitle') : null;
     final String attributionElement;
     if (attribution != null || citetitle != null) {
       final citeElement = citetitle != null
@@ -1981,7 +1977,7 @@ class Html5Converter extends ConverterBase {
               node.document!.catalog['refs'] as Map<String, Object?>;
           final refid = node.attributes['refid'] as String?;
           Document? top;
-          final Object? ref =
+          final ref =
               refs[refid] ??
               ((refid == null || refid.isEmpty)
                   ? top = _getRootDocument(node)

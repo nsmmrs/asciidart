@@ -151,7 +151,7 @@ final class Invoker with Logging {
     final err = _err ?? stderr;
     final opts = <String, Object?>{};
     final infiles = options.inputFiles ?? <String>[];
-    String? outfile = options.outputFile;
+    var outfile = options.outputFile;
     final sourceDir = options.sourceDir;
     final absSrcdirPosix = sourceDir == null ? null : _expandPath(sourceDir);
     final destinationDir = options.destinationDir;

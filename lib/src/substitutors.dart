@@ -323,7 +323,7 @@ Object? applySubs(
   Object? text, [
   List<String>? subs = normalSubs,
 ]) {
-  final List<String> effectiveSubs = subs ?? normalSubs;
+  final effectiveSubs = subs ?? normalSubs;
   final bool isMultiline;
   String subject;
   if (text is List<Object?>) {
@@ -689,7 +689,7 @@ Object? _counterWithArgs(Document doc, List<String> args) {
 (String, Object?) _storeAttribute(Document doc, String name, Object? value) {
   // TODOmove processing of attribute value to utility method
   var attrName = name;
-  Object? attrValue = value;
+  var attrValue = value;
   if (attrName.endsWith('!')) {
     // a null value signals the attribute should be deleted (unset)
     attrName = chopLast(attrName);
@@ -823,7 +823,7 @@ String subMacros(AbstractNode node, String text) {
   // other macros)
   // TODOthis handling needs some cleanup
   // Port of `Substitutors#sub_macros` (lib/asciidoctor/substitutors.rb:308-349).
-  final Registry? macroExtensions = doc.extensions;
+  final macroExtensions = doc.extensions;
   if (macroExtensions != null && macroExtensions.hasInlineMacros) {
     for (final extension in macroExtensions.inlineMacros) {
       final instance = extension.instance as InlineMacroProcessor;
@@ -1055,7 +1055,7 @@ String subMacros(AbstractNode node, String text) {
       if (match.group(0)!.startsWith(rs)) {
         return match.group(0)!.substring(1);
       }
-      final bool isIcon = match.group(0)!.startsWith('icon:');
+      final isIcon = match.group(0)!.startsWith('icon:');
       final type = isIcon ? 'icon' : 'image';
       final posattrs = isIcon
           ? const ['size']
@@ -1658,7 +1658,7 @@ String _convertXrefMacro(
   }
 
   var attrs = <String, Object?>{};
-  String? refid = match.group(1);
+  var refid = match.group(1);
   String? linkText;
   var macro = false;
   if (refid != null) {
@@ -1861,8 +1861,8 @@ String _convertFootnoteMacro(
   Object? index;
   String? type;
   String? target;
-  String? finalId = id;
-  String? finalContent = content;
+  var finalId = id;
+  var finalContent = content;
   if (id != null) {
     Footnote? footnote;
     for (final candidate in doc.footnotes) {
@@ -2632,7 +2632,7 @@ List<String>? expandSubs(AbstractNode node, Object? subs, [String? subject]) {
 ///
 /// Port of `Substitutors#commit_subs`.
 List<String>? commitSubs(AbstractBlock node) {
-  final Object? defaultSubs = node is Block ? node.defaultSubs : null;
+  final defaultSubs = node is Block ? node.defaultSubs : null;
   late List<String> effective;
   if (!isTruthy(defaultSubs)) {
     switch (node.contentModel) {

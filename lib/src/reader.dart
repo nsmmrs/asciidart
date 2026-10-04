@@ -899,7 +899,7 @@ class PreprocessorReader extends Reader {
       _maxdepth,
       processLines,
     ]);
-    final Object? includeFile = file;
+    final includeFile = file;
     if (includeFile != null) {
       if (includeFile is String) {
         _dir = _dirname(includeFile);

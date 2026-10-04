@@ -1128,7 +1128,7 @@ class Docbook5Converter extends ConverterBase {
         result.add('<title>$title</title>');
       }
     }
-    final Object? date = doc.hasAttr('revdate')
+    final date = doc.hasAttr('revdate')
         ? doc.attr('revdate')
         : (doc.hasAttr('reproducible') ? null : doc.attr('docdate'));
     if (isTruthy(date)) {

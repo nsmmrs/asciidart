@@ -678,7 +678,7 @@ class Document extends AbstractBlock implements NodeDocument {
       final val = entry.value;
       if (isTruthy(val)) {
         // A value ending in @ allows the document to override the value.
-        Object? newVal = val;
+        var newVal = val;
         var verdict = false;
         if (val is String && val.endsWith('@')) {
           newVal = val.substring(0, val.length - 1);
@@ -1150,7 +1150,7 @@ class Document extends AbstractBlock implements NodeDocument {
     bool sanitize = false,
     bool useFallback = false,
   }) {
-    Object? val = attributes['title'];
+    var val = attributes['title'];
     if (!isTruthy(val)) {
       final sect = firstSection;
       if (sect != null) {
@@ -1873,7 +1873,7 @@ class Document extends AbstractBlock implements NodeDocument {
         const defaultTocPosition = 'left';
         // TODOrename toc2 to aside-toc
         String? defaultTocClass = 'toc2';
-        final Object? position = _isNilOrEmpty(tocPositionVal)
+        final position = _isNilOrEmpty(tocPositionVal)
             ? (toc.isEmpty ? defaultTocPosition : toc)
             : tocPositionVal;
         attrs['toc'] = '';
