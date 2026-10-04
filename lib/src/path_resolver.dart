@@ -28,11 +28,11 @@ import 'dart:io';
 ///
 /// Mirrors Ruby's `::SecurityError` as raised by `PathResolver#system_path`.
 class SecurityError extends Error {
-  /// Human-readable description of the security violation.
-  final String message;
-
   /// Creates a security error with the given [message].
   SecurityError(this.message);
+
+  /// Human-readable description of the security violation.
+  final String message;
 
   @override
   String toString() => 'SecurityError: $message';
@@ -42,6 +42,21 @@ class SecurityError extends Error {
 ///
 /// See the library documentation for an overview.
 class PathResolver {
+  /// Constructs a new instance of [PathResolver], optionally specifying the
+  /// [fileSeparator] (to override the system default) and the [workingDir]
+  /// (to override the current working directory). The working directory is
+  /// expanded to an absolute path inside the constructor.
+  PathResolver({
+    String? fileSeparator,
+    String? workingDir,
+    void Function(String message)? onWarn,
+  }) : fileSeparator = fileSeparator ?? Platform.pathSeparator,
+       onWarn = onWarn ?? _defaultWarn,
+       workingDir = _resolveWorkingDir(
+         workingDir,
+         fileSeparator ?? Platform.pathSeparator,
+       );
+
   /// Self (current directory) path segment.
   static const String dot = '.';
 
@@ -99,21 +114,6 @@ class PathResolver {
       {};
   final Map<String, ({List<String> segments, String? root})> _partitionPathWeb =
       {};
-
-  /// Constructs a new instance of [PathResolver], optionally specifying the
-  /// [fileSeparator] (to override the system default) and the [workingDir]
-  /// (to override the current working directory). The working directory is
-  /// expanded to an absolute path inside the constructor.
-  PathResolver({
-    String? fileSeparator,
-    String? workingDir,
-    void Function(String message)? onWarn,
-  }) : fileSeparator = fileSeparator ?? Platform.pathSeparator,
-       onWarn = onWarn ?? _defaultWarn,
-       workingDir = _resolveWorkingDir(
-         workingDir,
-         fileSeparator ?? Platform.pathSeparator,
-       );
 
   static void _defaultWarn(String message) {
     stderr.writeln('asciidoctor: WARNING: $message');

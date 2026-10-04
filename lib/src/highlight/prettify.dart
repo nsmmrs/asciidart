@@ -15,6 +15,9 @@ import 'highlight.dart';
 /// adapter only emits the markup hooks ([format]) and the loader tags
 /// ([docinfoHead], [docinfoFooter]).
 class PrettifyAdapter {
+  /// Creates a prettify adapter.
+  const PrettifyAdapter();
+
   /// Names this adapter registers for (`register_for 'prettify'`).
   static const List<String> registeredNames = ['prettify'];
 
@@ -30,9 +33,6 @@ class PrettifyAdapter {
 
   /// The pinned prettify revision on the CDN.
   static const String prettifyRevision = 'r298';
-
-  /// Creates a prettify adapter.
-  const PrettifyAdapter();
 
   /// Formats converted [content] for client-side highlighting.
   ///

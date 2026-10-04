@@ -57,15 +57,6 @@ class ReaderCursor {
 ///
 /// Port of `Asciidoctor::Table::Rows`.
 class TableRows {
-  /// The head rows.
-  List<List<Cell>> head;
-
-  /// The foot rows.
-  List<List<Cell>> foot;
-
-  /// The body rows.
-  List<List<Cell>> body;
-
   /// Creates a row collection (all sections default to empty).
   TableRows([
     List<List<Cell>>? head,
@@ -74,6 +65,15 @@ class TableRows {
   ]) : head = head ?? <List<Cell>>[],
        foot = foot ?? <List<Cell>>[],
        body = body ?? <List<Cell>>[];
+
+  /// The head rows.
+  List<List<Cell>> head;
+
+  /// The foot rows.
+  List<List<Cell>> foot;
+
+  /// The body rows.
+  List<List<Cell>> body;
 
   /// Returns the rows of the [section] (`'head'`, `'body'` or `'foot'`;
   /// anything else throws, mirroring Ruby's `method_missing` on the
@@ -120,19 +120,6 @@ class TableRows {
 ///
 /// Port of `Asciidoctor::Table`.
 class Table extends AbstractBlock {
-  /// The precision of column widths.
-  static const int defaultPrecision = 4;
-
-  /// The columns of this table.
-  List<Column> columns = <Column>[];
-
-  /// The rows of this table (head, foot and body).
-  TableRows rows = TableRows();
-
-  /// Whether this table has a header row: `true`, `'implicit'`, `false`
-  /// or `null` (each with distinct meaning in [partitionHeaderFooter]).
-  Object? hasHeaderOption = false;
-
   /// Creates a table with [parent], resolving the table widths from the
   /// `'width'` and page-width attributes.
   ///
@@ -169,6 +156,19 @@ class Table extends AbstractBlock {
       this.attributes['orientation'] = 'landscape';
     }
   }
+
+  /// The precision of column widths.
+  static const int defaultPrecision = 4;
+
+  /// The columns of this table.
+  List<Column> columns = <Column>[];
+
+  /// The rows of this table (head, foot and body).
+  TableRows rows = TableRows();
+
+  /// Whether this table has a header row: `true`, `'implicit'`, `false`
+  /// or `null` (each with distinct meaning in [partitionHeaderFooter]).
+  Object? hasHeaderOption = false;
 
   /// The current state of the header option (`true` or `'implicit'`) when
   /// the row being processed is (or is assumed to be) the header row,
@@ -298,9 +298,6 @@ class Table extends AbstractBlock {
 ///
 /// Port of `Asciidoctor::Table::Column`.
 class Column extends AbstractNode {
-  /// The style of this column (e.g. `'asciidoc'`).
-  String? style;
-
   /// Creates a column of [table] at 0-based [index], resolving the column
   /// number and the `width`/`halign`/`valign` defaults into [attributes]
   /// (mutating the passed map, as in Ruby) and copying them onto this
@@ -315,6 +312,9 @@ class Column extends AbstractNode {
     if (!isTruthy(attrs['valign'])) attrs['valign'] = 'top';
     updateAttributes(attrs);
   }
+
+  /// The style of this column (e.g. `'asciidoc'`).
+  String? style;
 
   /// An alias for the parent block (which is always a [Table]; mirrors
   /// `alias table parent`).
@@ -387,30 +387,6 @@ class _SnapshotSourceLocation implements NodeSourceLocation {
 ///
 /// Port of `Asciidoctor::Table::Cell`.
 class Cell extends AbstractBlock {
-  /// Two consecutive line feeds (a blank line).
-  static const String doubleLf = '\n\n';
-
-  /// The number of columns this cell spans, if set.
-  Object? colspan;
-
-  /// The number of rows this cell spans, if set.
-  Object? rowspan;
-
-  /// The nested document in an AsciiDoc table cell (only set when the style
-  /// is `'asciidoc'`).
-  dynamic innerDocument;
-
-  dynamic _cursor;
-  List<Object?>? _reinitializeArgs;
-  String? _text;
-
-  /// The column this cell belongs to.
-  ///
-  /// Ruby parents the cell to the column, but the port types node parents
-  /// as [AbstractBlock] and columns are not blocks, so the constructor
-  /// passes the table instead and the column is kept here.
-  final Column? _column;
-
   /// Creates a cell of [column] with [cellText].
   ///
   /// The [attributes] map selects the PSV path (it is mutated: `colspan`
@@ -602,6 +578,30 @@ class Cell extends AbstractBlock {
     style = cellStyle;
   }
 
+  /// Two consecutive line feeds (a blank line).
+  static const String doubleLf = '\n\n';
+
+  /// The number of columns this cell spans, if set.
+  Object? colspan;
+
+  /// The number of rows this cell spans, if set.
+  Object? rowspan;
+
+  /// The nested document in an AsciiDoc table cell (only set when the style
+  /// is `'asciidoc'`).
+  dynamic innerDocument;
+
+  dynamic _cursor;
+  List<Object?>? _reinitializeArgs;
+  String? _text;
+
+  /// The column this cell belongs to.
+  ///
+  /// Ruby parents the cell to the column, but the port types node parents
+  /// as [AbstractBlock] and columns are not blocks, so the constructor
+  /// passes the table instead and the column is kept here.
+  final Column? _column;
+
   /// An alias for the column this cell belongs to (mirrors
   /// `alias column parent`).
   Column? get column => _column;
@@ -726,6 +726,79 @@ class Cell extends AbstractBlock {
 ///
 /// Port of `Asciidoctor::Table::ParserContext`.
 class TableParserContext {
+  /// Creates a parser context for [table], reading from [reader] (a
+  /// `Reader`; `dynamic` until `reader.dart` lands).
+  ///
+  /// Port of `Asciidoctor::Table::ParserContext#initialize`.
+  TableParserContext(
+    dynamic reader,
+    Table table, [
+    Map<String, Object?>? attributes,
+  ]) {
+    final attrs = attributes ?? <String, Object?>{};
+    _reader = reader;
+    _startCursorData = reader.mark();
+    this.table = table;
+
+    late String xsv;
+    if (attrs.containsKey('format')) {
+      xsv = attrs['format'] as String? ?? '';
+      if (formats.contains(xsv)) {
+        if (xsv == 'tsv') {
+          // NOTE tsv is just an alias for csv with a tab separator.
+          format = 'csv';
+        } else {
+          format = xsv;
+          if (xsv == 'psv' && table.document!.nested()) {
+            xsv = '!sv';
+          }
+        }
+      } else {
+        logger.error(
+          messageWithContext('illegal table format: $xsv', {
+            'sourceLocation': reader.cursorAtPrevLine(),
+          }),
+        );
+        format = 'psv';
+        xsv = table.document!.nested() ? '!sv' : 'psv';
+      }
+    } else {
+      format = 'psv';
+      xsv = table.document!.nested() ? '!sv' : 'psv';
+    }
+
+    if (attrs.containsKey('separator')) {
+      final sep = attrs['separator'] as String?;
+      if (sep == null || sep.isEmpty) {
+        final entry = delimiters[xsv]!;
+        _delimiter = entry.$1;
+        _delimiterRx = entry.$2;
+      } else if (sep == r'\t') {
+        // NOTE the Ruby source compares against single-quoted '\t', i.e.
+        // a literal backslash followed by `t`, not a tab.
+        final entry = delimiters['tsv']!;
+        _delimiter = entry.$1;
+        _delimiterRx = entry.$2;
+      } else {
+        _delimiter = sep;
+        _delimiterRx = RegExp(RegExp.escape(sep));
+      }
+    } else {
+      final entry = delimiters[xsv]!;
+      _delimiter = entry.$1;
+      _delimiterRx = entry.$2;
+    }
+
+    _colcount = table.columns.isEmpty ? -1 : table.columns.length;
+    buffer = '';
+    _cellspecs = <Map<String, Object?>>[];
+    _cellOpen = false;
+    _activeRowspans = <int>[0];
+    _columnVisits = 0;
+    _currentRow = <Cell>[];
+    _linenum = -1;
+  }
+
   /// The table formats recognized in AsciiDoc.
   static const Set<String> formats = <String>{'psv', 'csv', 'dsv', 'tsv'};
 
@@ -803,79 +876,6 @@ class TableParserContext {
   int _columnVisits = 0;
   List<Cell> _currentRow = <Cell>[];
   int _linenum = -1;
-
-  /// Creates a parser context for [table], reading from [reader] (a
-  /// `Reader`; `dynamic` until `reader.dart` lands).
-  ///
-  /// Port of `Asciidoctor::Table::ParserContext#initialize`.
-  TableParserContext(
-    dynamic reader,
-    Table table, [
-    Map<String, Object?>? attributes,
-  ]) {
-    final attrs = attributes ?? <String, Object?>{};
-    _reader = reader;
-    _startCursorData = reader.mark();
-    this.table = table;
-
-    late String xsv;
-    if (attrs.containsKey('format')) {
-      xsv = attrs['format'] as String? ?? '';
-      if (formats.contains(xsv)) {
-        if (xsv == 'tsv') {
-          // NOTE tsv is just an alias for csv with a tab separator.
-          format = 'csv';
-        } else {
-          format = xsv;
-          if (xsv == 'psv' && table.document!.nested()) {
-            xsv = '!sv';
-          }
-        }
-      } else {
-        logger.error(
-          messageWithContext('illegal table format: $xsv', {
-            'sourceLocation': reader.cursorAtPrevLine(),
-          }),
-        );
-        format = 'psv';
-        xsv = table.document!.nested() ? '!sv' : 'psv';
-      }
-    } else {
-      format = 'psv';
-      xsv = table.document!.nested() ? '!sv' : 'psv';
-    }
-
-    if (attrs.containsKey('separator')) {
-      final sep = attrs['separator'] as String?;
-      if (sep == null || sep.isEmpty) {
-        final entry = delimiters[xsv]!;
-        _delimiter = entry.$1;
-        _delimiterRx = entry.$2;
-      } else if (sep == r'\t') {
-        // NOTE the Ruby source compares against single-quoted '\t', i.e.
-        // a literal backslash followed by `t`, not a tab.
-        final entry = delimiters['tsv']!;
-        _delimiter = entry.$1;
-        _delimiterRx = entry.$2;
-      } else {
-        _delimiter = sep;
-        _delimiterRx = RegExp(RegExp.escape(sep));
-      }
-    } else {
-      final entry = delimiters[xsv]!;
-      _delimiter = entry.$1;
-      _delimiterRx = entry.$2;
-    }
-
-    _colcount = table.columns.isEmpty ? -1 : table.columns.length;
-    buffer = '';
-    _cellspecs = <Map<String, Object?>>[];
-    _cellOpen = false;
-    _activeRowspans = <int>[0];
-    _columnVisits = 0;
-    _currentRow = <Cell>[];
-    _linenum = -1;
-  }
 
   /// Whether [line] starts with the cell delimiter of this table.
   bool startsWithDelimiter(String line) => line.startsWith(_delimiter);

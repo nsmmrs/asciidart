@@ -592,15 +592,15 @@ class XmlNodeSet {
 /// bare, `prefix|name` for namespaced attributes), descendant/`>`/`+`
 /// combinators, `*`, `:root`, and `:not(...)`.
 class XmlMatcher {
+  /// Parses [content] into a matcher.
+  factory XmlMatcher.parse(String content) =>
+      XmlMatcher(_XmlParser(content).parse());
+
   /// Creates a matcher over top-level [roots].
   XmlMatcher(this.roots);
 
   /// Top-level nodes (fragments may have several roots).
   final List<XmlNode> roots;
-
-  /// Parses [content] into a matcher.
-  factory XmlMatcher.parse(String content) =>
-      XmlMatcher(_XmlParser(content).parse());
 
   /// All elements in the fragment, in document order.
   List<XmlNode> get _allElements {

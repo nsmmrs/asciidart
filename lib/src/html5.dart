@@ -173,40 +173,6 @@ abstract interface class NodeSyntaxHighlighter {
 /// Ruby performs by method dispatch is expressed as [handle] registrations
 /// below (see the library docs).
 class Html5Converter extends ConverterBase {
-  /// Quote tags by quoted-text type (port of `QUOTE_TAGS`).
-  ///
-  /// Each entry holds the opening tag, the closing tag and, for tags that
-  /// carry attributes, a trailing `true`. Lookups miss with `['', '']`
-  /// (the Ruby `Hash` default).
-  static const Map<String, List<Object>> quoteTags = <String, List<Object>>{
-    'monospaced': <Object>['<code>', '</code>', true],
-    'emphasis': <Object>['<em>', '</em>', true],
-    'strong': <Object>['<strong>', '</strong>', true],
-    'double': <Object>['&#8220;', '&#8221;'],
-    'single': <Object>['&#8216;', '&#8217;'],
-    'mark': <Object>['<mark>', '</mark>', true],
-    'superscript': <Object>['<sup>', '</sup>', true],
-    'subscript': <Object>['<sub>', '</sub>', true],
-    'asciimath': <Object>[r'\$', r'\$'],
-    'latexmath': <Object>[r'\(', r'\)'],
-  };
-
-  /// Default quote tags for unknown quoted-text types.
-  static const List<Object> _defaultQuoteTags = <Object>['', ''];
-
-  /// Whether void elements close with a slash (the `xml` htmlsyntax).
-  final bool _xmlMode;
-
-  /// The void-element slash: `'/'` in XML mode, else `''`.
-  final String _voidElementSlash;
-
-  /// Memoized document refs catalog (port of `@refs`).
-  Map<String, Object?>? _refs;
-
-  /// Whether an xref is currently being resolved (port of
-  /// `@resolving_xref`; guards against recursive xrefs).
-  bool _resolvingXref = false;
-
   /// Creates a converter for [backend] with constructor options [opts].
   ///
   /// `opts['htmlsyntax'] == 'xml'` selects XML mode (void elements close
@@ -293,6 +259,40 @@ class Html5Converter extends ConverterBase {
       (node, [opts]) => convertOutline(node as AbstractBlock, opts),
     );
   }
+
+  /// Quote tags by quoted-text type (port of `QUOTE_TAGS`).
+  ///
+  /// Each entry holds the opening tag, the closing tag and, for tags that
+  /// carry attributes, a trailing `true`. Lookups miss with `['', '']`
+  /// (the Ruby `Hash` default).
+  static const Map<String, List<Object>> quoteTags = <String, List<Object>>{
+    'monospaced': <Object>['<code>', '</code>', true],
+    'emphasis': <Object>['<em>', '</em>', true],
+    'strong': <Object>['<strong>', '</strong>', true],
+    'double': <Object>['&#8220;', '&#8221;'],
+    'single': <Object>['&#8216;', '&#8217;'],
+    'mark': <Object>['<mark>', '</mark>', true],
+    'superscript': <Object>['<sup>', '</sup>', true],
+    'subscript': <Object>['<sub>', '</sub>', true],
+    'asciimath': <Object>[r'\$', r'\$'],
+    'latexmath': <Object>[r'\(', r'\)'],
+  };
+
+  /// Default quote tags for unknown quoted-text types.
+  static const List<Object> _defaultQuoteTags = <Object>['', ''];
+
+  /// Whether void elements close with a slash (the `xml` htmlsyntax).
+  final bool _xmlMode;
+
+  /// The void-element slash: `'/'` in XML mode, else `''`.
+  final String _voidElementSlash;
+
+  /// Memoized document refs catalog (port of `@refs`).
+  Map<String, Object?>? _refs;
+
+  /// Whether an xref is currently being resolved (port of
+  /// `@resolving_xref`; guards against recursive xrefs).
+  bool _resolvingXref = false;
 
   /// Registers this converter for [backends]. Called by document
   /// initialization; idempotent.

@@ -10,15 +10,6 @@ import 'abstract_node.dart';
 ///
 /// Port of `Asciidoctor::Inline`.
 class Inline extends AbstractNode {
-  /// The text of this inline element.
-  String? text;
-
-  /// The type (qualifier) of this inline element.
-  final String? type;
-
-  /// The target (e.g. URI) of this inline element.
-  String? target;
-
   /// Creates an inline element with [parent], [context] and [text].
   ///
   /// Dart parameter lists cannot mix optional positional and named
@@ -40,6 +31,15 @@ class Inline extends AbstractNode {
        ) {
     this.id = id;
   }
+
+  /// The text of this inline element.
+  String? text;
+
+  /// The type (qualifier) of this inline element.
+  final String? type;
+
+  /// The target (e.g. URI) of this inline element.
+  String? target;
 
   @override
   bool get isBlock => false;

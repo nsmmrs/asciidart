@@ -11,18 +11,6 @@ import 'package:asciidoctor/src/highlight/highlight.dart';
 
 /// A configurable fake lexing backend.
 class FakeSourceLexer implements SourceLexer {
-  @override
-  final String name;
-
-  /// The most recent request passed to [highlight], if any.
-  HighlightRequest? lastRequest;
-
-  /// Canned responses consulted by each member.
-  final String? Function(HighlightRequest request) onHighlight;
-  final bool Function(String style) onStyleAvailable;
-  final String? Function(String style) onBaseStyle;
-  final String? Function(String style) onStylesheet;
-
   /// Creates a fake backend.
   ///
   /// Unspecified callbacks use inert defaults: [highlight] returns `null`,
@@ -37,6 +25,17 @@ class FakeSourceLexer implements SourceLexer {
        onStyleAvailable = onStyleAvailable ?? ((_) => false),
        onBaseStyle = onBaseStyle ?? ((_) => null),
        onStylesheet = onStylesheet ?? ((_) => null);
+  @override
+  final String name;
+
+  /// The most recent request passed to [highlight], if any.
+  HighlightRequest? lastRequest;
+
+  /// Canned responses consulted by each member.
+  final String? Function(HighlightRequest request) onHighlight;
+  final bool Function(String style) onStyleAvailable;
+  final String? Function(String style) onBaseStyle;
+  final String? Function(String style) onStylesheet;
 
   @override
   String? highlight(HighlightRequest request) {

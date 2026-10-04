@@ -26,11 +26,11 @@ Document parseDoc(String src) => Document(src, const <String, Object?>{
 
 /// In-memory [TemplateLoader] resolving synchronously.
 class MapLoader implements TemplateLoader {
-  /// The sources this loader returns.
-  final Map<String, String> sources;
-
   /// Creates a loader returning [sources].
   MapLoader(this.sources);
+
+  /// The sources this loader returns.
+  final Map<String, String> sources;
 
   @override
   Map<String, String> load() => sources;
@@ -38,11 +38,11 @@ class MapLoader implements TemplateLoader {
 
 /// In-memory [TemplateLoader] resolving asynchronously.
 class AsyncMapLoader implements TemplateLoader {
-  /// The sources this loader returns.
-  final Map<String, String> sources;
-
   /// Creates a loader returning [sources].
   AsyncMapLoader(this.sources);
+
+  /// The sources this loader returns.
+  final Map<String, String> sources;
 
   @override
   Future<Map<String, String>> load() async => sources;

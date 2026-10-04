@@ -21,6 +21,9 @@ import 'highlight.dart';
 /// wrapper output. [format] attaches the style's base rule to the `<pre>`
 /// tag in inline-CSS mode.
 class PygmentsAdapter {
+  /// Creates a Pygments adapter, optionally with a [lexer] backend.
+  PygmentsAdapter({this.lexer});
+
   /// Names this adapter registers for (`register_for 'pygments'`).
   static const List<String> registeredNames = ['pygments'];
 
@@ -102,9 +105,6 @@ class PygmentsAdapter {
 
   bool _requiresStylesheet = false;
   String? _style;
-
-  /// Creates a Pygments adapter, optionally with a [lexer] backend.
-  PygmentsAdapter({this.lexer});
 
   /// Whether server-side highlighting can run (`highlight?`).
   ///

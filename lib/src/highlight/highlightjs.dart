@@ -15,6 +15,9 @@ import 'highlight.dart';
 /// adapter only emits the markup hooks ([format]) and the loader tags
 /// ([docinfoHead], [docinfoFooter]).
 class HighlightJsAdapter {
+  /// Creates a highlight.js adapter.
+  const HighlightJsAdapter();
+
   /// Names this adapter registers for (`register_for 'highlightjs',
   /// `'highlight.js'`).
   static const List<String> registeredNames = ['highlightjs', 'highlight.js'];
@@ -35,9 +38,6 @@ class HighlightJsAdapter {
   /// `asset-uri-scheme` of `https`.
   static const String defaultCdnBaseUrl =
       'https://cdnjs.cloudflare.com/ajax/libs';
-
-  /// Creates a highlight.js adapter.
-  const HighlightJsAdapter();
 
   /// Formats converted [content] for client-side highlighting.
   ///

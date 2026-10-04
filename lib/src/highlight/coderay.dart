@@ -23,6 +23,9 @@ import 'highlight.dart';
 /// output. [format] is the plain [wrapSourceBlock] wrapper (the Ruby adapter
 /// defines no `format` override).
 class CodeRayAdapter {
+  /// Creates a CodeRay adapter, optionally with a [lexer] backend.
+  CodeRayAdapter({this.lexer});
+
   /// Names this adapter registers for (`register_for 'coderay'`).
   static const List<String> registeredNames = ['coderay'];
 
@@ -46,9 +49,6 @@ class CodeRayAdapter {
   final SourceLexer? lexer;
 
   bool _requiresStylesheet = false;
-
-  /// Creates a CodeRay adapter, optionally with a [lexer] backend.
-  CodeRayAdapter({this.lexer});
 
   /// Whether server-side highlighting can run (`highlight?`).
   ///

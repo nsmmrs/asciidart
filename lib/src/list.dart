@@ -14,6 +14,12 @@ import 'substitutors.dart';
 ///
 /// Port of `Asciidoctor::List` (renamed: a top-level `List` would collide with `dart:core` in every importer).
 class ListBlock extends AbstractBlock {
+  /// Creates a list with [parent] and [context] (`'ulist'`, `'olist'`,
+  /// `'dlist'` or `'colist'`).
+  ListBlock(super.parent, super.context, {super.attributes}) {
+    if (context == 'dlist') _pairs = <Object?>[];
+  }
+
   /// The `[terms, description]` pairs of a description list.
   ///
   /// Ruby pushes the pairs straight into the blocks array, but the port
@@ -22,12 +28,6 @@ class ListBlock extends AbstractBlock {
   /// `description` a [ListItem], or `null` when unset). `null` unless the
   /// context is `'dlist'`.
   List<Object?>? _pairs;
-
-  /// Creates a list with [parent] and [context] (`'ulist'`, `'olist'`,
-  /// `'dlist'` or `'colist'`).
-  ListBlock(super.parent, super.context, {super.attributes}) {
-    if (context == 'dlist') _pairs = <Object?>[];
-  }
 
   /// The items in this list (the description pairs for a `'dlist'`, else an
   /// alias of [AbstractBlock.blocks], mirroring `alias items blocks`).
@@ -99,6 +99,13 @@ class ListBlock extends AbstractBlock {
 ///
 /// Port of `Asciidoctor::ListItem`.
 class ListItem extends AbstractBlock {
+  /// Creates a list item with [parent] (the [ListBlock]) and [text].
+  ListItem(AbstractBlock parent, [String? text])
+    : _text = text,
+      super(parent, 'list_item') {
+    level = parent.level;
+    subs = List<String>.of(normalSubs);
+  }
   String? _text;
 
   /// A contextual alias for the list parent node (mirrors
@@ -107,14 +114,6 @@ class ListItem extends AbstractBlock {
 
   /// The marker used for this list item (e.g. `'*'`).
   String? marker;
-
-  /// Creates a list item with [parent] (the [ListBlock]) and [text].
-  ListItem(AbstractBlock parent, [String? text])
-    : _text = text,
-      super(parent, 'list_item') {
-    level = parent.level;
-    subs = List<String>.of(normalSubs);
-  }
 
   /// Whether the text of this list item is not blank.
   bool get hasText => _text != null && _text!.isNotEmpty;

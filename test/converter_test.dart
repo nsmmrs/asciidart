@@ -60,11 +60,11 @@ const String noDartCounterpart =
 
 /// A minimal [Converter] returning [result] for every node.
 class FakeConverter extends Converter {
-  /// The value [convert] returns.
-  final String result;
-
   /// Creates a converter returning [result] (default `'fake content'`).
   FakeConverter(super.backend, [super.opts, this.result = 'fake content']);
+
+  /// The value [convert] returns.
+  final String result;
 
   @override
   Object? convert(
@@ -94,11 +94,11 @@ class BareConverter extends Converter {
 
 /// A block whose [content] is fixed (avoids the substitutors wave).
 class StubBlock extends Block {
-  /// The value [content] returns.
-  final String? stubbedContent;
-
   /// Creates a stub block with fixed [content].
   StubBlock(super.parent, super.context, this.stubbedContent);
+
+  /// The value [content] returns.
+  final String? stubbedContent;
 
   @override
   String? content() => stubbedContent;
@@ -1550,14 +1550,14 @@ class _SelfRegisteringConverter extends ConverterBase {
 
 /// Records the transform and options it was asked to convert with.
 class _RecordingConverter extends Converter {
+  /// Creates a recording converter.
+  _RecordingConverter(super.backend);
+
   /// The last transform seen by [convert].
   String? seenTransform;
 
   /// The last options seen by [convert].
   Map<String, Object?>? seenOpts;
-
-  /// Creates a recording converter.
-  _RecordingConverter(super.backend);
 
   @override
   Object? convert(
@@ -1573,11 +1573,11 @@ class _RecordingConverter extends Converter {
 
 /// A [ComposedAware] delegate recording the composite it joined.
 class _ComposedProbe extends Converter implements ComposedAware {
-  /// The composite passed to [composed].
-  CompositeConverter? seen;
-
   /// Creates a probe converter.
   _ComposedProbe(super.backend);
+
+  /// The composite passed to [composed].
+  CompositeConverter? seen;
 
   @override
   void composed(CompositeConverter composite) {

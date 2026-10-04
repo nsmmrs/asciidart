@@ -35,15 +35,6 @@ const Object subsAbsent = Object();
 ///
 /// Port of `Asciidoctor::Block`.
 class Block extends AbstractBlock {
-  /// The original content lines of this block, if applicable.
-  List<String> lines;
-
-  /// Substitution overrides consulted by `commitSubs` (substitutors wave).
-  ///
-  /// Internal: `null` defers resolution, an empty list prevents it, and any
-  /// other value seeds it.
-  Object? defaultSubs;
-
   /// Creates a block with [parent] and [context].
   ///
   /// [contentModel] selects how [lines] are processed (`'compound'`,
@@ -96,6 +87,15 @@ class Block extends AbstractBlock {
       commitSubs();
     }
   }
+
+  /// The original content lines of this block, if applicable.
+  List<String> lines;
+
+  /// Substitution overrides consulted by `commitSubs` (substitutors wave).
+  ///
+  /// Internal: `null` defers resolution, an empty list prevents it, and any
+  /// other value seeds it.
+  Object? defaultSubs;
 
   /// Copies [source] into content lines.
   ///

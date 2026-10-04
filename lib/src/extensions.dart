@@ -96,6 +96,10 @@ void _assignPositionalName(List<String?> names, String index, String name) {
 /// [config] (the Dart equivalent of Ruby's `Processor.option` class-level
 /// defaults).
 class Processor {
+  /// Creates a processor with [config].
+  Processor([Map<String, Object?>? config])
+    : config = Map<String, Object?>.of(config ?? const <String, Object?>{});
+
   /// The configuration of this processor instance.
   final Map<String, Object?> config;
 
@@ -106,10 +110,6 @@ class Processor {
   /// family's arguments; a subclass that overrides [process] never consults
   /// it.
   Function? onProcess;
-
-  /// Creates a processor with [config].
-  Processor([Map<String, Object?>? config])
-    : config = Map<String, Object?>.of(config ?? const <String, Object?>{});
 
   /// Merges [config] into this processor's configuration.
   void updateConfig(Map<String, Object?> config) {
@@ -531,11 +531,11 @@ mixin DocumentProcessorDsl on Processor {
 /// `Extensions::SyntaxProcessorDsl`, whose `process` half is
 /// [Processor.onProcess] in Dart).
 abstract class NamedProcessor extends Processor {
-  /// The name this processor is registered under.
-  String? name;
-
   /// Creates a named processor with [config].
   NamedProcessor([super.config]);
+
+  /// The name this processor is registered under.
+  String? name;
 
   /// Sets the name this processor is registered under.
   void named(String value) {
@@ -756,15 +756,15 @@ class Postprocessor extends Processor with DocumentProcessorDsl {
 class IncludeProcessor extends Processor
     with DocumentProcessorDsl
     implements ReaderIncludeProcessor {
+  /// Creates an include processor with [config].
+  IncludeProcessor([super.config]);
+
   /// The handles callback assigned through the registration DSL.
   ///
   /// This is the Dart equivalent of Ruby's `handles? do ... end` block. It
   /// always receives the document and the target (Ruby's single-argument
   /// legacy form has no Dart counterpart; there is no legacy adapter).
   bool Function(ReaderDocument, String)? onHandles;
-
-  /// Creates an include processor with [config].
-  IncludeProcessor([super.config]);
 
   /// Whether this processor handles the include [target].
   ///
@@ -999,11 +999,11 @@ class BlockMacroProcessor extends MacroProcessor {
 /// Inline macro processor implementations must extend
 /// [InlineMacroProcessor].
 class InlineMacroProcessor extends MacroProcessor {
-  /// Cache of resolved inline macro patterns by name and format.
-  static final Map<String, RegExp> _rxCache = <String, RegExp>{};
-
   /// Creates an inline macro processor with [name] and [config].
   InlineMacroProcessor([super.name, super.config]);
+
+  /// Cache of resolved inline macro patterns by name and format.
+  static final Map<String, RegExp> _rxCache = <String, RegExp>{};
 
   /// The pattern matching this macro in inline content.
   ///
@@ -1066,6 +1066,9 @@ class InlineMacroProcessor extends MacroProcessor {
 /// and the extension [instance]. This proxy is what gets stored in the
 /// extension registry when activated.
 class Extension {
+  /// Creates a proxy of [kind] for [instance] with [config].
+  Extension(this.kind, this.instance, this.config);
+
   /// The extension kind (e.g. `'preprocessor'`, `'block_macro'`).
   final String kind;
 
@@ -1074,9 +1077,6 @@ class Extension {
 
   /// The configuration map of the extension instance.
   final Map<String, Object?> config;
-
-  /// Creates a proxy of [kind] for [instance] with [config].
-  Extension(this.kind, this.instance, this.config);
 }
 
 /// An [Extension] proxy that additionally stores a reference to the
@@ -1085,9 +1085,6 @@ class Extension {
 /// By storing this reference, both concrete extension implementations and
 /// [Processor.onProcess] callbacks are accommodated uniformly.
 class ProcessorExtension extends Extension {
-  /// The bound `process` function of the extension instance.
-  final Function processMethod;
-
   /// Creates a proxy of [kind] for [instance].
   ///
   /// [processMethod] defaults to a closure invoking the family's `process`
@@ -1095,6 +1092,9 @@ class ProcessorExtension extends Extension {
   ProcessorExtension(String kind, Processor instance, [Function? processMethod])
     : processMethod = processMethod ?? _processMethodFor(kind, instance),
       super(kind, instance, instance.config);
+
+  /// The bound `process` function of the extension instance.
+  final Function processMethod;
 
   /// Builds the default [processMethod] closure for [kind] and [instance].
   static Function _processMethodFor(String kind, Processor instance) {
@@ -1171,6 +1171,10 @@ abstract class ExtensionGroup {
 /// has methods for registering or defining a processor, and looks up
 /// extensions stored in the registry during parsing.
 class Registry {
+  /// Creates a registry holding [groups].
+  Registry([Map<String, Object?>? groups])
+    : groups = groups ?? <String, Object?>{};
+
   /// The document on which the extensions in this registry are being used.
   Document? get document => _document;
   Document? _document;
@@ -1187,10 +1191,6 @@ class Registry {
   Map<String, ProcessorExtension>? _blockExtensions;
   Map<String, ProcessorExtension>? _blockMacroExtensions;
   Map<String, ProcessorExtension>? _inlineMacroExtensions;
-
-  /// Creates a registry holding [groups].
-  Registry([Map<String, Object?>? groups])
-    : groups = groups ?? <String, Object?>{};
 
   /// Activates all the global extension groups and the extension groups
   /// associated with this registry.

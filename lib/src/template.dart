@@ -59,6 +59,19 @@ abstract interface class TemplateLoader {
 /// empty output, mirroring Ruby's `nil`-to-empty rendering, instead of
 /// throwing).
 class MustacheTemplate {
+  /// Compiles [source] for transform [name].
+  MustacheTemplate(
+    this.name,
+    this.source, {
+    this.lenient = true,
+    this.htmlEscapeValues = false,
+  }) : _template = Template(
+         source,
+         name: name,
+         lenient: lenient,
+         htmlEscapeValues: htmlEscapeValues,
+       );
+
   /// The transform name this template is registered under.
   final String name;
 
@@ -73,19 +86,6 @@ class MustacheTemplate {
 
   /// The compiled template.
   final Template _template;
-
-  /// Compiles [source] for transform [name].
-  MustacheTemplate(
-    this.name,
-    this.source, {
-    this.lenient = true,
-    this.htmlEscapeValues = false,
-  }) : _template = Template(
-         source,
-         name: name,
-         lenient: lenient,
-         htmlEscapeValues: htmlEscapeValues,
-       );
 
   /// Renders this template against [values] (see [buildTemplateContext]).
   String render(Map<String, Object?> values) => _template.renderString(values);
@@ -105,6 +105,20 @@ class MustacheTemplate {
 /// `main.dart` that registers functions and then calls `runCli` needs no
 /// `-T` directory for its overrides to engage.
 class TemplateRegistry {
+  /// Creates a registry, optionally seeded with [templates], [functions]
+  /// and [helpers].
+  TemplateRegistry({
+    Map<String, String> templates = const <String, String>{},
+    Map<String, ConvertHandler> functions = const <String, ConvertHandler>{},
+    Map<String, TemplateHelper> helpers = const <String, TemplateHelper>{},
+    this.lenient = true,
+    this.htmlEscapeValues = false,
+  }) {
+    templates.forEach(registerTemplate);
+    functions.forEach(registerFunction);
+    helpers.forEach(registerHelper);
+  }
+
   /// Compiled Mustache templates by transform name.
   final Map<String, MustacheTemplate> _templates = <String, MustacheTemplate>{};
 
@@ -147,20 +161,6 @@ class TemplateRegistry {
 
   /// Default `htmlEscapeValues` flag for templates registered here.
   final bool htmlEscapeValues;
-
-  /// Creates a registry, optionally seeded with [templates], [functions]
-  /// and [helpers].
-  TemplateRegistry({
-    Map<String, String> templates = const <String, String>{},
-    Map<String, ConvertHandler> functions = const <String, ConvertHandler>{},
-    Map<String, TemplateHelper> helpers = const <String, TemplateHelper>{},
-    this.lenient = true,
-    this.htmlEscapeValues = false,
-  }) {
-    templates.forEach(registerTemplate);
-    functions.forEach(registerFunction);
-    helpers.forEach(registerHelper);
-  }
 
   /// Registers (compiling) Mustache [source] for transform [name].
   ///
@@ -247,15 +247,15 @@ class TemplateRegistry {
 /// `rstrip` otherwise); function results pass through unmodified, exactly
 /// like [ConverterBase] handler results.
 class TemplateConverter extends ConverterBase {
-  /// The template, function and helper registrations.
-  final TemplateRegistry registry;
-
   /// Creates a template converter for [backend].
   ///
   /// Sources enter through [registry] (consuming the wave-B loader maps);
   /// use [register], [registerFunction] and [registerHelper] to add more.
   TemplateConverter(super.backend, [super.opts, TemplateRegistry? registry])
     : registry = registry ?? TemplateRegistry();
+
+  /// The template, function and helper registrations.
+  final TemplateRegistry registry;
 
   /// Registers Mustache [source] for transform [name] (path (b)).
   ///

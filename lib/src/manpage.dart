@@ -119,13 +119,6 @@ enum _WhitespaceMode {
 /// Ruby performs by method dispatch is expressed as [handle] registrations
 /// below (see the library docs).
 class ManpageConverter extends ConverterBase {
-  /// Memoized document refs catalog (port of `@refs`).
-  Map<String, Object?>? _refs;
-
-  /// Whether an xref is currently being resolved (port of
-  /// `@resolving_xref`; guards against recursive xrefs).
-  bool _resolvingXref = false;
-
   /// Creates a converter for [backend] with constructor options [opts].
   ManpageConverter(super.backend, [super.opts]) {
     initBackendTraits(<String, Object?>{
@@ -201,6 +194,13 @@ class ManpageConverter extends ConverterBase {
       (node, [opts]) => convertInlineQuoted(node as Inline),
     );
   }
+
+  /// Memoized document refs catalog (port of `@refs`).
+  Map<String, Object?>? _refs;
+
+  /// Whether an xref is currently being resolved (port of
+  /// `@resolving_xref`; guards against recursive xrefs).
+  bool _resolvingXref = false;
 
   /// Registers this converter for [backends]. Called by document
   /// initialization; idempotent.

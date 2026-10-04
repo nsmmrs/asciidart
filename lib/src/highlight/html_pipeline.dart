@@ -14,14 +14,14 @@ import 'highlight.dart';
 /// Emits `<pre[ lang]>` hooks only; highlighting happens downstream in the
 /// html-pipeline filter chain.
 class HtmlPipelineAdapter {
+  /// Creates an html-pipeline adapter.
+  const HtmlPipelineAdapter();
+
   /// Names this adapter registers for (`register_for 'html-pipeline'`).
   static const List<String> registeredNames = ['html-pipeline'];
 
   /// The adapter name.
   static const String name = 'html-pipeline';
-
-  /// Creates an html-pipeline adapter.
-  const HtmlPipelineAdapter();
 
   /// Wraps converted [content] in `<pre lang>` / `<code>` hooks.
   ///

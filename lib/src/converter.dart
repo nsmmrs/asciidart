@@ -209,6 +209,9 @@ void _checkRegistration(Object? converter) {
 /// guards the global registry with a mutex; Dart's single-threaded
 /// execution model makes that unnecessary.
 abstract class Converter implements NodeConverter {
+  /// Creates a converter for [backend] with constructor options [opts].
+  Converter(this.backend, [this.opts = const <String, Object?>{}]);
+
   /// The backend name (aka format) this converter converts to.
   final String backend;
 
@@ -220,9 +223,6 @@ abstract class Converter implements NodeConverter {
 
   /// Lazily derived backend traits (see [backendTraits]).
   Map<String, Object?>? _backendTraits;
-
-  /// Creates a converter for [backend] with constructor options [opts].
-  Converter(this.backend, [this.opts = const <String, Object?>{}]);
 
   /// The shared logger. Mirrors the `logger` method from the `Logging`
   /// mixin (mixed into `Converter::Base` in Ruby).
@@ -481,12 +481,6 @@ abstract class ConverterFactory {
 ///
 /// Port of `Converter::CustomFactory`. Never consults the global registry.
 class CustomFactory implements ConverterFactory {
-  /// This factory's registry (never contains `'*'`).
-  final Map<String, Object?> _registry = <String, Object?>{};
-
-  /// This factory's catch-all registration (backend `'*'`), if any.
-  Object? _catchAll;
-
   /// Creates a factory seeded with [seed] (a copy; the map is not mutated).
   CustomFactory([Map<String, Object?>? seed]) {
     seed?.forEach((backend, converter) {
@@ -498,6 +492,12 @@ class CustomFactory implements ConverterFactory {
       }
     });
   }
+
+  /// This factory's registry (never contains `'*'`).
+  final Map<String, Object?> _registry = <String, Object?>{};
+
+  /// This factory's catch-all registration (backend `'*'`), if any.
+  Object? _catchAll;
 
   @override
   Object? forBackend(String backend) {
@@ -574,11 +574,11 @@ class DefaultFactoryProxy extends CustomFactory {
 /// [handles] directly instead (as Ruby converters that override `convert`
 /// and alias `handles?` do).
 abstract class ConverterBase extends Converter {
-  /// Handlers by transform name.
-  final Map<String, ConvertHandler> _handlers = <String, ConvertHandler>{};
-
   /// Creates a converter for [backend] with constructor options [opts].
   ConverterBase(super.backend, [super.opts]);
+
+  /// Handlers by transform name.
+  final Map<String, ConvertHandler> _handlers = <String, ConvertHandler>{};
 
   /// Registers [handler] for [transform].
   ///

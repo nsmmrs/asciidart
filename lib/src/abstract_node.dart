@@ -196,29 +196,6 @@ abstract interface class NodeDocument {
 /// The state and methods on this class are common to all content segments
 /// in an AsciiDoc document. Port of `Asciidoctor::AbstractNode`.
 abstract class AbstractNode {
-  /// The shared logger used by every node.
-  ///
-  /// Mirrors `LoggerManager.logger` / `LoggerManager#logger=`. Tests
-  /// replace it with a recording logger.
-  static NodeLogger currentLogger = const _StderrNodeLogger();
-
-  /// The attributes of this node.
-  final Map<String, Object?> attributes;
-
-  /// Passthrough slots stashed while substitutions run.
-  ///
-  /// Internal: written and cleared by the substitutors wave. Each entry maps
-  /// `text`, `subs` and optionally `type` / `attributes`.
-  final List<Map<String, Object?>> passthroughs = <Map<String, Object?>>[];
-
-  /// The id of this node.
-  String? id;
-
-  String _context;
-  String _nodeName;
-  AbstractBlock? _parent;
-  NodeDocument? _document;
-
   /// Creates a node with [parent] and [context].
   ///
   /// When [context] is `'document'`, the node refers to itself as its
@@ -251,6 +228,29 @@ abstract class AbstractNode {
       _document = parent.document;
     }
   }
+
+  /// The shared logger used by every node.
+  ///
+  /// Mirrors `LoggerManager.logger` / `LoggerManager#logger=`. Tests
+  /// replace it with a recording logger.
+  static NodeLogger currentLogger = const _StderrNodeLogger();
+
+  /// The attributes of this node.
+  final Map<String, Object?> attributes;
+
+  /// Passthrough slots stashed while substitutions run.
+  ///
+  /// Internal: written and cleared by the substitutors wave. Each entry maps
+  /// `text`, `subs` and optionally `type` / `attributes`.
+  final List<Map<String, Object?>> passthroughs = <Map<String, Object?>>[];
+
+  /// The id of this node.
+  String? id;
+
+  String _context;
+  String _nodeName;
+  AbstractBlock? _parent;
+  NodeDocument? _document;
 
   /// Whether this node is a block-level node.
   bool get isBlock;

@@ -27,12 +27,6 @@ abstract interface class ComposedAware {
 /// handlers), exactly as in Ruby, where `CompositeConverter` defines no
 /// `convert_*` methods.
 class CompositeConverter extends ConverterBase {
-  /// The chained converters, in delegation order.
-  final List<Converter> converters;
-
-  /// Converters selected per transform (see [converterFor]).
-  final Map<String, Converter> _converterCache = <String, Converter>{};
-
   /// Creates a composite for [backend] delegating to [converters].
   ///
   /// Delegates implementing [ComposedAware] are notified. When
@@ -54,6 +48,12 @@ class CompositeConverter extends ConverterBase {
       initBackendTraits(backendTraitsSource.backendTraits());
     }
   }
+
+  /// The chained converters, in delegation order.
+  final List<Converter> converters;
+
+  /// Converters selected per transform (see [converterFor]).
+  final Map<String, Converter> _converterCache = <String, Converter>{};
 
   @override
   Object? convert(

@@ -100,6 +100,18 @@ abstract interface class NodeSourceLocation {
 ///
 /// Port of `Asciidoctor::AbstractBlock`.
 abstract class AbstractBlock extends AbstractNode {
+  /// Creates a block with [parent] and [context].
+  AbstractBlock(super.parent, super.context, {super.attributes}) {
+    if (context == 'document' || context == 'section') {
+      level = _nextSectionIndex = 0;
+      _nextSectionOrdinal = 1;
+    } else if (parent != null) {
+      level = parent!.level;
+    } else {
+      level = null;
+    }
+  }
+
   /// The child blocks of this block (compound content model only).
   final List<AbstractBlock> blocks = <AbstractBlock>[];
 
@@ -131,18 +143,6 @@ abstract class AbstractBlock extends AbstractNode {
   String? _convertedTitle;
   int _nextSectionIndex = 0;
   int _nextSectionOrdinal = 1;
-
-  /// Creates a block with [parent] and [context].
-  AbstractBlock(super.parent, super.context, {super.attributes}) {
-    if (context == 'document' || context == 'section') {
-      level = _nextSectionIndex = 0;
-      _nextSectionOrdinal = 1;
-    } else if (parent != null) {
-      level = parent!.level;
-    } else {
-      level = null;
-    }
-  }
 
   @override
   bool get isBlock => true;

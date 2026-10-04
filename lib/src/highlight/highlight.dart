@@ -97,6 +97,18 @@ enum DocinfoLocation {
 /// `:start_line_number`, `:highlight_lines`, `:style`) plus the few
 /// node-derived values lexing needs (`mixed`).
 class HighlightRequest {
+  /// Creates an immutable highlight request.
+  const HighlightRequest({
+    required this.source,
+    this.language,
+    this.cssMode = CssMode.classes,
+    this.numberLines,
+    this.startLineNumber = 1,
+    this.highlightLines = const [],
+    this.style,
+    this.mixed = false,
+  });
+
   /// The raw source text to highlight (callouts already extracted).
   final String source;
 
@@ -140,18 +152,6 @@ class HighlightRequest {
   /// Ruby computes `start_inline` as `lexer.name == 'PHP' && !mixed`; the
   /// lexer owns the name half of that test, the adapter supplies this flag.
   final bool mixed;
-
-  /// Creates an immutable highlight request.
-  const HighlightRequest({
-    required this.source,
-    this.language,
-    this.cssMode = CssMode.classes,
-    this.numberLines,
-    this.startLineNumber = 1,
-    this.highlightLines = const [],
-    this.style,
-    this.mixed = false,
-  });
 }
 
 /// The result of one server-side highlight operation.
@@ -162,14 +162,14 @@ class HighlightRequest {
 /// restoration needs no offset (no callouts, or the backend emitted no code
 /// cell to anchor to).
 class HighlightResult {
+  /// Creates a highlight result.
+  const HighlightResult(this.html, [this.sourceOffset]);
+
   /// The highlighted HTML fragment.
   final String html;
 
   /// The callout-restoration offset, or `null` when not applicable.
   final int? sourceOffset;
-
-  /// Creates a highlight result.
-  const HighlightResult(this.html, [this.sourceOffset]);
 }
 
 /// Lexing backend behind the server-side adapters.

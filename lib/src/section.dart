@@ -17,22 +17,6 @@ const int _complianceUniqueIdStartIndex = 2;
 ///
 /// Port of `Asciidoctor::Section`.
 class Section extends AbstractBlock implements NodeSection {
-  /// The 0-based index order of this section within the parent block.
-  @override
-  int index = 0;
-
-  /// The section name of this section (e.g. `'chapter'`, `'appendix'`).
-  @override
-  String? sectname;
-
-  /// Whether this is a special section or a child of one.
-  bool special = false;
-
-  /// Whether this section is numbered (`'chapter'`-style markers aside, this
-  /// is a boolean; `sectnum` must only be called when it is truthy).
-  @override
-  Object? numbered;
-
   /// Creates a section with [parent] and [level].
   ///
   /// The [level] defaults to one more than the parent level for a [Section]
@@ -53,6 +37,22 @@ class Section extends AbstractBlock implements NodeSection {
     }
     index = 0;
   }
+
+  /// The 0-based index order of this section within the parent block.
+  @override
+  int index = 0;
+
+  /// The section name of this section (e.g. `'chapter'`, `'appendix'`).
+  @override
+  String? sectname;
+
+  /// Whether this is a special section or a child of one.
+  bool special = false;
+
+  /// Whether this section is numbered (`'chapter'`-style markers aside, this
+  /// is a boolean; `sectnum` must only be called when it is truthy).
+  @override
+  Object? numbered;
 
   /// The name of this section (an alias of the section title).
   String? get name => title;

@@ -16,6 +16,9 @@ import 'data.g.dart';
 ///
 /// See the library documentation for an overview.
 class Stylesheets {
+  /// Creates a stylesheets helper. Prefer [Stylesheets.instance].
+  Stylesheets();
+
   /// File name of the default Asciidoctor stylesheet.
   static const String defaultStylesheetName = 'asciidoctor.css';
 
@@ -47,9 +50,6 @@ class Stylesheets {
 
   String? _primaryStylesheetData;
   String? _coderayStylesheetData;
-
-  /// Creates a stylesheets helper. Prefer [Stylesheets.instance].
-  Stylesheets();
 
   /// The file name of the primary stylesheet.
   String get primaryStylesheetName => defaultStylesheetName;
