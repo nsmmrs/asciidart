@@ -84,14 +84,14 @@ class BlockMatchData {
 /// `ListContinuationMarker` module and tests membership with `===`; the
 /// port uses these two singletons in a `List<Object>` buffer instead. The
 /// buffer is mapped back to plain strings before a [Reader] is built.
-final class _ListContinuation {
-  const new _(this.text);
-
+enum _ListContinuation {
   /// A live list continuation (`'+'`).
-  static const _ListContinuation active = _ListContinuation._('+');
+  active._('+'),
 
   /// A consumed list continuation (the empty string).
-  static const _ListContinuation placeholder = _ListContinuation._('');
+  placeholder._('');
+
+  const new _(this.text);
 
   /// The line text this marker stands for.
   final String text;
