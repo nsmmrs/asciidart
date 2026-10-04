@@ -13,7 +13,7 @@
 /// `'logger'`, `'parse'`, ...), matching [Document]. The options map is never
 /// mutated; the document receives a copy.
 ///
-/// Accepted [input] types mirror the Ruby branches: a [File] (read from disk;
+/// Accepted `input` types mirror the Ruby branches: a [File] (read from disk;
 /// `docfile`/`docdir`/`docname`/`docfilesuffix` attributes are assigned), a
 /// [RandomAccessFile] (the rewindable-IO branch; rewound, then read fully), a
 /// [String], a [List] of lines (copied, as Ruby's `drop 0` does), or `null`
@@ -26,7 +26,7 @@
 ///
 /// One deliberate divergence: Ruby treats a [File] passed as `'to_file'` as
 /// an output stream (it responds to `write`); here only [StringSink] values
-/// (e.g. [StringBuffer], [IOSink]) select stream mode, while [File] and [Uri]
+/// (e.g. [StringBuffer], `IOSink`) select stream mode, while [File] and [Uri]
 /// values are treated as output paths, since `dart:io` offers no synchronous
 /// string-writing file stream accepted by [Document.write].
 library;

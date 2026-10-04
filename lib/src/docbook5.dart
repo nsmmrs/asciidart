@@ -7,10 +7,10 @@
 /// ## Framework integration
 ///
 /// Ruby's `convert_<transform>` methods become handler registrations via
-/// [ConverterBase.handle] (see `converter.dart`); [convert] itself is
+/// [ConverterBase.handle] (see `converter.dart`); `convert` itself is
 /// inherited from [ConverterBase], which warns and returns `null` for
 /// unregistered transforms, mirroring Ruby's `NoMethodError` rescue. The
-/// converter registers itself with [Converter.registerFor] (explicit
+/// converter registers itself with `Converter.registerFor` (explicit
 /// registration replaces Ruby's lazy `require`).
 ///
 /// ## Cross-wave contracts

@@ -1383,7 +1383,7 @@ String _basename(String path) {
 
 /// A compiled single-segment glob matcher.
 class _SegmentMatcher {
-  /// Creates a matcher from [pattern] with [_regex] and dot rule flag.
+  /// Creates a matcher from `pattern` with [_regex] and dot rule flag.
   const new(this._regex, this._literalDotStart);
 
   /// The segment pattern translated to a regular expression.

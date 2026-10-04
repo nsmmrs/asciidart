@@ -294,12 +294,12 @@ void _logPossibleInvalidReference(
   }
 }
 
-/// Applies [SubsApplier] substitutions on behalf of [node].
+/// Applies [SubsApplier] substitutions on behalf of `node`.
 ///
 /// [AttributeList] calls this for single-quoted values, mirroring Ruby
 /// passing the block itself (`AttributeList.new attrlist, self`).
 final class _BlockSubsApplier implements SubsApplier {
-  /// Creates an applier delegating to [node].
+  /// Creates an applier delegating to `node`.
   new(this._node);
 
   final AbstractNode _node;
@@ -2136,8 +2136,8 @@ List<int> resolveLinesToHighlight(String source, Object? spec, [int? start]) {
   return lines;
 }
 
-/// A callout mark extracted from source: its [guard] (line-comment prefix
-/// or the `<!--`/`-->` pair) and its [numeral].
+/// A callout mark extracted from source: its `guard` (line-comment prefix
+/// or the `<!--`/`-->` pair) and its `numeral`.
 typedef PendingCallout = ({Object? guard, String numeral});
 
 /// Extracts the callout numbers from [source] to prepare it for syntax

@@ -29,8 +29,8 @@
 /// | `items` | List items, each pre-flattened with [buildTemplateContext] (description-list pairs become `{'terms': [...], 'description': ...}`); `null` on non-list nodes. |
 /// | `sections` | Child sections of a document or section node, each pre-flattened with [buildTemplateContext] (so `{{#sections}}{{title}}{{/sections}}` lists them and nesting recurses); `null` on other nodes. This is what a custom `outline` template iterates. |
 ///
-/// [opts] (the per-call options map, mirroring the Tilt locals in Ruby's
-/// `TemplateConverter#convert`) and [helpers] (path-(a) lambdas per ADR-0002
+/// `opts` (the per-call options map, mirroring the Tilt locals in Ruby's
+/// `TemplateConverter#convert`) and `helpers` (path-(a) lambdas per ADR-0002
 /// T4) are merged in as top-level keys; on collision the explicit call-site
 /// values win over the node-derived ones.
 library;

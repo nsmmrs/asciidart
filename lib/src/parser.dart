@@ -11,26 +11,26 @@
 /// throughout this port. Attribute maps that carry positional entries use
 /// `Map<Object, Object?>` with `int` keys (exactly like the Ruby hashes);
 /// they are converted to string keys when handed to block constructors via
-/// [_strKeys] because the ported model types its attribute maps as
+/// `_strKeys` because the ported model types its attribute maps as
 /// `Map<String, Object?>`.
 ///
 /// Several collaborators live in waves that have not landed yet; every
 /// private workaround for one is marked `TEMP-SEAM (parser)` and must be
 /// deleted (routing the call to the real API) when that wave lands:
 ///
-/// * The substitutors wave replaces [_subSpecialchars], [_subAttributes],
-///   [_applyHeaderSubs], [_applyAttributeValueSubs],
-///   [_parseAttributes], [_resolveSubs], [_commitSubs] and [_titleText].
+/// * The substitutors wave replaces `_subSpecialchars`, `_subAttributes`,
+///   `_applyHeaderSubs`, `_applyAttributeValueSubs`,
+///   `_parseAttributes`, `_resolveSubs`, `_commitSubs` and `_titleText`.
 ///   Substitution coverage in these seams is limited to the
 ///   `specialcharacters` and `attributes` substitutions; quotes, macros,
 ///   replacements and post-replacements are applied by the real wave.
-///   ([_setDocumentAttribute] already delegates to [Document.setAttribute].)
+///   (`_setDocumentAttribute` already delegates to [Document.setAttribute].)
 /// * Extension integration is ported: the block/block-macro extension
-///   branches in [nextBlock] and [buildBlock] consult
+///   branches in `nextBlock` and `buildBlock` consult
 ///   `document.extensions`, and attribute entries route through
 ///   [Document.setAttribute] (whose backend/doctype refresh this needs).
 /// * The syntax-highlighter wave restores the `highlight` subs swap in
-///   [_commitSubs] (`document.syntaxHighlighter` is always `null`).
+///   `_commitSubs` (`document.syntaxHighlighter` is always `null`).
 /// * The constants wave unifies the `CONST-PENDING` tables below with the
 ///   canonical module constants; the values here are verbatim copies.
 /// * `table.dart` still carries its own `Parser.catalogInlineAnchor` stub
@@ -657,7 +657,7 @@ abstract final class Parser {
   static String _applyHeaderSubs(Document document, String text) =>
       _subAttributes(document, _subSpecialchars(text));
 
-  /// Assigns the attribute entry [name] to [value] on [document].
+  /// Assigns the attribute entry `name` to [value] on [document].
   ///
   /// Kept for the substitutors wave's final seam sweep (no remaining
   /// callers: attribute entries route through [Document.setAttribute]).
@@ -4109,7 +4109,7 @@ abstract final class Parser {
     return _cellspecFromMatch(m, line.substring(0, m.start));
   }
 
-  /// Builds a cell spec from a cellspec regex [match] and [rest] text.
+  /// Builds a cell spec from a cellspec regex `match` and [rest] text.
   static (Map<String, Object?>, String) _cellspecFromMatch(
     RegExpMatch m,
     String rest,
@@ -4955,7 +4955,7 @@ abstract final class Parser {
 /// does not make [Cursor] implement the interface); the merger may unify
 /// them.
 class _CursorSourceLocation implements NodeSourceLocation {
-  /// Creates a source location from [cursor].
+  /// Creates a source location from `cursor`.
   new(this._cursor);
 
   final Cursor _cursor;

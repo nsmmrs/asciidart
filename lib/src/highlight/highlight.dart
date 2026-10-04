@@ -16,8 +16,8 @@
 ///
 /// ## The lexer seam
 ///
-/// The server-side adapters ([CodeRayAdapter], [PygmentsAdapter],
-/// [RougeAdapter]) accept an optional [SourceLexer]. Constructed without
+/// The server-side adapters (`CodeRayAdapter`, `PygmentsAdapter`,
+/// `RougeAdapter`) accept an optional [SourceLexer]. Constructed without
 /// one, they report `canHighlight == false` and throw [UnimplementedError]
 /// from `highlight`. Stylesheet queries degrade exactly like the Ruby
 /// adapters do when their library is unavailable (fallback comment /
@@ -199,7 +199,7 @@ abstract interface class SourceLexer {
   /// The backend name (`rouge`, `coderay`, or `pygments`).
   String get name;
 
-  /// Highlights [request.source] and returns the raw backend HTML.
+  /// Highlights `request.source` and returns the raw backend HTML.
   ///
   /// See the interface documentation for the per-adapter output contract.
   /// Returns `null` when the backend fails (handled per adapter).

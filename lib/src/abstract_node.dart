@@ -21,7 +21,7 @@
 /// * [NodeLogger] — the logger API. The logging wave provides the concrete
 ///   `Logger`, `MemoryLogger` and `NullLogger` implementations.
 ///
-/// The substitution methods ([applySubs], [subQuotes] and friends) delegate
+/// The substitution methods (`applySubs`, `subQuotes` and friends) delegate
 /// to the top-level functions in `substitutors.dart`, preserving Ruby's
 /// mixin shape (every node answers the `Substitutors` methods).
 library;
@@ -275,7 +275,7 @@ abstract class AbstractNode {
     _nodeName = value;
   }
 
-  /// The name of this node (the context, except on [Inline] nodes).
+  /// The name of this node (the context, except on `Inline` nodes).
   String get nodeName => _nodeName;
 
   /// The parent block of this node.

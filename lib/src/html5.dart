@@ -7,10 +7,10 @@
 /// ## Framework integration
 ///
 /// Ruby's `convert_<transform>` methods become handler registrations via
-/// [ConverterBase.handle] (see `converter.dart`); [convert] itself is
+/// [ConverterBase.handle] (see `converter.dart`); `convert` itself is
 /// inherited from [ConverterBase], which warns and returns `null` for
 /// unregistered transforms, mirroring Ruby's `NoMethodError` rescue. The
-/// converter registers itself with [Converter.registerFor] (explicit
+/// converter registers itself with `Converter.registerFor` (explicit
 /// registration replaces Ruby's lazy `require`).
 ///
 /// ## Cross-wave contracts
@@ -27,7 +27,7 @@
 ///   until then `Document.syntaxHighlighter` is cast to this interface.
 /// * `method_missing` / `respond_to_missing?` (Ruby adapters for
 ///   unprefixed template names) have no Dart equivalent and are not
-///   ported; [handles] reports the registered transforms instead.
+///   ported; `handles` reports the registered transforms instead.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -135,7 +135,7 @@ const Set<String> _defaultStylesheetKeys = <String>{'', 'DEFAULT'};
 /// (`docinfo?`) and [docinfo]. The full framework (registry, factory and
 /// the wiring to the adapters in `highlight/`) arrives with the converter
 /// wave; until then `Document.syntaxHighlighter` is cast to this interface
-/// when set. [location] is `'head'` or `'footer'`.
+/// when set. `location` is `'head'` or `'footer'`.
 abstract interface class NodeSyntaxHighlighter {
   /// The highlighter name (selects the `{name}-css` document attribute).
   String get name;

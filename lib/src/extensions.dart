@@ -75,7 +75,7 @@ int _rubyToInt(String value) {
 }
 
 /// Assigns [name] at [index] in [names], growing the list with `null`
-/// placeholders when the index lies past the end (mirrors Ruby's `ary[idx] =
+/// placeholders when the index lies past the end (mirrors Ruby's `ary`idx` =
 /// name` padding semantics).
 void _assignPositionalName(List<String?> names, String index, String name) {
   var idx = index == '@' ? names.length : _rubyToInt(index);
@@ -108,8 +108,8 @@ class Processor {
   /// The process callback assigned through the registration DSL.
   ///
   /// This is the Dart equivalent of Ruby's `process do ... end` block. Each
-  /// processor family invokes it from its [process] method with that
-  /// family's arguments; a subclass that overrides [process] never consults
+  /// processor family invokes it from its `process` method with that
+  /// family's arguments; a subclass that overrides `process` never consults
   /// it.
   Function? onProcess;
 
@@ -727,7 +727,7 @@ typedef Treeprocessor = TreeProcessor;
 /// Postprocessors run after the document is converted, but before it is
 /// written to the output stream.
 ///
-/// Asciidoctor passes the converted [output] to [process], which modifies it
+/// Asciidoctor passes the converted `output` to [process], which modifies it
 /// as necessary and returns the replacement.
 ///
 /// Postprocessor implementations must extend [Postprocessor].

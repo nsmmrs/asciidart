@@ -27,7 +27,7 @@ class PrettifyAdapter {
   /// The `<pre>` CSS class.
   static const String preClass = 'prettyprint';
 
-  /// The default CDN base URL (see [HighlightJsAdapter.defaultCdnBaseUrl]).
+  /// The default CDN base URL (see `HighlightJsAdapter.defaultCdnBaseUrl`).
   static const String defaultCdnBaseUrl =
       'https://cdnjs.cloudflare.com/ajax/libs';
 

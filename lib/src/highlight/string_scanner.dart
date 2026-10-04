@@ -1,8 +1,8 @@
 /// Minimal port of Ruby's `StringScanner` for the CodeRay scanner ports.
 ///
-/// Only the surface the Ruby scanner port exercises is implemented: [scan],
-/// [scanUntil], [scanRest], [check], [getch], [peek], [unscan], [eos],
-/// [bol], [pos], [lastMatch] (captures via [capture]) and [terminate].
+/// Only the surface the Ruby scanner port exercises is implemented: `scan`,
+/// `scanUntil`, `scanRest`, `check`, `getch`, `peek`, `unscan`, `eos`,
+/// `bol`, `pos`, `lastMatch` (captures via `capture`) and `terminate`.
 ///
 /// Positions are UTF-16 code-unit offsets (Dart string convention); the Ruby
 /// original counts characters. The two agree on the Basic Multilingual Plane

@@ -99,7 +99,7 @@ final RegExp _pcdataFilterRx = RegExp(
 /// pattern in `manify`).
 final RegExp _preserveSpacesRx = RegExp('(^)?  +', multiLine: true);
 
-/// How [_manify] handles whitespace (port of the `:whitespace` option).
+/// How `_manify` handles whitespace (port of the `:whitespace` option).
 enum _WhitespaceMode {
   /// Collapse adjacent whitespace to a single space (the default).
   collapse,

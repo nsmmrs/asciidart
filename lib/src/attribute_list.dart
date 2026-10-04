@@ -18,7 +18,7 @@ abstract class SubsApplier {
 ///
 /// Attributes are separated by commas and values may be quoted. A value
 /// without a key is assigned to a 1-based positional key; positional
-/// attributes can be "rekeyed" via [parse]'s [positionalAttrs] argument or
+/// attributes can be "rekeyed" via [parse]'s `positionalAttrs` argument or
 /// after the fact with [rekey].
 ///
 /// ```dart

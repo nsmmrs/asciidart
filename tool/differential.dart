@@ -474,7 +474,7 @@ Future<int> runDifferential(DifferentialConfig config) async {
   }
 }
 
-/// Collects corpus paths relative to [config.root], sorted.
+/// Collects corpus paths relative to `config.root`, sorted.
 List<String> _collectCorpus(DifferentialConfig config) {
   final rels = <String>{};
   final entities = Directory(config.corpusDir)

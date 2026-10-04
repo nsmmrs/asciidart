@@ -390,7 +390,7 @@ class QuoteSub {
   final RegExp pattern;
 }
 
-/// Quoted-text substitution rules for normal mode (`QUOTE_SUBS[false]`).
+/// Quoted-text substitution rules for normal mode (`QUOTE_SUBS`false``).
 ///
 /// Patterns are built from the `rx.dart` character-class fragments exactly
 /// as Ruby interpolates `CC_ALL`/`CC_WORD`/`CG_WORD`; flags follow
@@ -524,7 +524,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
 ];
 
-/// Quoted-text substitution rules for compat mode (`QUOTE_SUBS[true]`).
+/// Quoted-text substitution rules for compat mode (`QUOTE_SUBS`true``).
 ///
 /// Mirrors Ruby's construction: a copy of [_normalQuoteSubs] with the
 /// double-quote, single-quote and `+`-monospace entries replaced and the

@@ -128,7 +128,7 @@ const _voidElements = <String>{
 };
 
 /// A parsed element: [tag], [attributes], child [children] and direct
-/// [texts] segments.
+/// `texts` segments.
 class _XmlElement {
   /// Creates an element with [tag] and [attributes].
   new(this.tag, [Map<String, String>? attributes])

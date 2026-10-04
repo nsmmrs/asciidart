@@ -104,7 +104,7 @@ class StubBlock extends Block {
   String? content() => stubbedContent;
 }
 
-/// A bare node that is neither block nor inline content (for [contentOnly]).
+/// A bare node that is neither block nor inline content (for `contentOnly`).
 class BareNode extends AbstractNode {
   /// Creates a bare node with node name `'bare'`.
   new() : super(null, 'bare');

@@ -24,7 +24,7 @@
 ///   stub throws [UnimplementedError]. [Document.convert] calls the
 ///   single-argument `NodeConverter.convert`.
 /// * The substitutors wave fills in the private `_resolveDocinfoSubs`
-///   stub (throwing [UnimplementedError] until then); [applyHeaderSubs]
+///   stub (throwing [UnimplementedError] until then); `applyHeaderSubs`
 ///   and `_applyPassMacroSubs` are ported.
 /// * Extension integration is ported: the `extensions` and
 ///   `extension_registry` options activate a [Registry] into
@@ -320,7 +320,7 @@ class _BuiltinConverterStub implements NodeConverter {
 /// The substitutor entry points ([subAttributes], [parseAttributes])
 /// delegate to the top-level `substitutors.dart` functions.
 class _ReaderDocumentAdapter implements ReaderDocument {
-  /// Creates an adapter delegating to [document].
+  /// Creates an adapter delegating to `document`.
   new(this._document);
 
   final Document _document;
@@ -401,7 +401,7 @@ class _ReaderDocumentAdapter implements ReaderDocument {
 
 /// Exposes a reader [Cursor] as a [NodeSourceLocation].
 class _CursorSourceLocation implements NodeSourceLocation {
-  /// Creates a source location from [cursor].
+  /// Creates a source location from `cursor`.
   new(this._cursor);
 
   final Cursor _cursor;

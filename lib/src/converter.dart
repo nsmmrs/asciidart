@@ -42,7 +42,7 @@
 /// `convert_<transform>` methods with a handler map populated through
 /// [ConverterBase.handle]; [ConverterBase.handles] reports whether a
 /// transform is registered, preserving the `handles?`/`respond_to?`
-/// contract the [CompositeConverter] relies on.
+/// contract the `CompositeConverter` relies on.
 library;
 
 import 'package:asciidoctor/src/abstract_block.dart';
@@ -253,7 +253,7 @@ abstract class Converter implements NodeConverter {
 
   /// Reports whether this converter can convert [transform].
   ///
-  /// Used by the [CompositeConverter] to select which converter handles a
+  /// Used by the `CompositeConverter` to select which converter handles a
   /// node. Returns `true` by default; [ConverterBase] overrides it to
   /// report registered handlers.
   bool handles(String transform) => true;
@@ -307,14 +307,14 @@ abstract class Converter implements NodeConverter {
   /// Replaces the memoized [backendTraits] with [value] (or `{}`).
   ///
   /// Port of `BackendTraits#init_backend_traits`. Used by the
-  /// [CompositeConverter] to adopt its delegate's traits.
+  /// `CompositeConverter` to adopt its delegate's traits.
   void initBackendTraits([Map<String, Object?>? value]) {
     _backendTraits = value ?? <String, Object?>{};
   }
 
   /// The base backend (e.g. `'html'` for backend `'html5'`).
   ///
-  /// Setting re-derives the memoized traits from [value] first (when not
+  /// Setting re-derives the memoized traits from `value` first (when not
   /// yet derived), so `filetype` and `outfilesuffix` follow the new base
   /// backend — mirroring Ruby, where the setter delegates to
   /// `backend_traits value`.

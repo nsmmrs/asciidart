@@ -357,7 +357,7 @@ class Column extends AbstractNode {
 /// Adapts a [Cursor] to [NodeSourceLocation] (mirrors the private adapters
 /// in `parser.dart` and `document.dart`).
 class _CursorSourceLocation implements NodeSourceLocation {
-  /// Creates a source location from [cursor].
+  /// Creates a source location from `cursor`.
   new(this._cursor);
 
   final Cursor _cursor;

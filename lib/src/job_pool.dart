@@ -8,7 +8,7 @@
 ///
 /// ## Worker protocol
 ///
-/// A worker [entryPoint] receives the main isolate's handshake [SendPort],
+/// A worker `entryPoint` receives the main isolate's handshake [SendPort],
 /// creates its own [ReceivePort], and sends that port's [SendPort] back as
 /// the handshake reply. Afterwards it serves `[index, request, replyPort]`
 /// frames, where `index` is the request's position in the [JobPool.runOrdered]
@@ -54,7 +54,7 @@ abstract interface class JobPool {
 /// A [JobPool] of long-lived worker isolates.
 ///
 /// Created with [IsolateJobPool.spawn], which spawns [size] isolates running
-/// [entryPoint] and handshakes each one for its job port before returning.
+/// `entryPoint` and handshakes each one for its job port before returning.
 final class IsolateJobPool implements JobPool {
   /// Creates a pool over already-handshaked [_isolates] and [_workerPorts].
   new _(this._isolates, this._workerPorts);

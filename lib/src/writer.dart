@@ -13,7 +13,7 @@ import 'dart:io' show File;
 mixin Writer {
   /// Writes [output] to [target].
   ///
-  /// When [target] is a [StringSink] (e.g. a [StringBuffer] or an [IOSink]
+  /// When [target] is a [StringSink] (e.g. a [StringBuffer] or an `IOSink`
   /// such as stdout), [output] is chomped (one trailing line break removed)
   /// and written with a single trailing `\n`. When [target] is a [File] or a
   /// [String] file path, [output] is written to that file as UTF-8, without

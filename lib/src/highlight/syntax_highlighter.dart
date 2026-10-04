@@ -306,7 +306,7 @@ abstract final class SyntaxHighlighter {
 
 /// Isolated highlighter registry (port of `CustomFactory`).
 ///
-/// Starts empty (or seeded with [seedRegistry]) and never sees the global
+/// Starts empty (or seeded with `seedRegistry`) and never sees the global
 /// registrations; use [SyntaxHighlighterDefaultFactoryProxy] for a seeded registry that falls
 /// back to the globals.
 class SyntaxHighlighterFactory {

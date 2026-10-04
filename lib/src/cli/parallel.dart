@@ -8,7 +8,7 @@
 ///
 /// ## Request/response codec
 ///
-/// Jobs cross the isolate boundary as plain transferable data: [buildRequest]
+/// Jobs cross the isolate boundary as plain transferable data: `buildRequest`
 /// freezes the per-file processor options (paths plus option maps — never
 /// live objects such as documents, loggers or sinks) into a
 /// `Map<String, Object?>`, and [runConversionJob] answers with another one:
@@ -50,7 +50,7 @@ import 'package:asciidoctor/src/load.dart';
 import 'package:asciidoctor/src/logging.dart';
 import 'package:asciidoctor/src/timings.dart';
 
-/// Worker isolate entry point for conversion jobs (see [WorkerMain]).
+/// Worker isolate entry point for conversion jobs (see `WorkerMain`).
 ///
 /// Handshakes its job port back to [mainPort] and then serves
 /// `[index, request, replyPort]` frames with [runConversionJob], wrapping

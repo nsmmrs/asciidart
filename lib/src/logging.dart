@@ -108,7 +108,7 @@ enum Severity {
 /// Formats a single log record.
 ///
 /// Mirrors the `call(severity, time, progname, msg)` protocol of
-/// `::Logger::Formatter` (here [severity] is a [Severity] instead of a
+/// `::Logger::Formatter` (here `severity` is a [Severity] instead of a
 /// label string).
 abstract interface class LoggerFormatter {
   /// Formats a record logged at [severity] with program name [progname] and
