@@ -64,14 +64,18 @@ extension NullableNumIsNilOrEmpty on num? {
 
 /// Ruby `String` core methods used across the port.
 extension RubyString on String {
-  static final RegExp _trailingWhitespace = RegExp(r'[ \t\n\x0B\x0C\r\x00]+$');
-
   /// Copy of this string with trailing whitespace removed.
   ///
   /// Mirrors Ruby's `String#rstrip`: removes trailing spaces, tabs,
   /// newlines, vertical tabs, form feeds, carriage returns and null bytes.
   /// Unlike [String.trimRight], this is ASCII-only and strips `\x00`.
-  String rstrip() => replaceAll(_trailingWhitespace, '');
+  String rstrip() {
+    var end = length;
+    while (end > 0 && _isRubyStripChar(codeUnitAt(end - 1))) {
+      end--;
+    }
+    return end == length ? this : substring(0, end);
+  }
 
   /// Copy of this string with one trailing record separator removed.
   ///
@@ -226,11 +230,20 @@ String chompSuffix(String s, String suffix) =>
     ? s.substring(0, s.length - suffix.length)
     : s;
 
-final RegExp _leadingSpace = RegExp(r'^[\x00 \t\n\x0b\f\r]+');
-
 /// Removes leading ASCII whitespace (and NUL bytes) from [s].
 /// Port of Ruby's `String#lstrip`.
-String lstrip(String s) => s.replaceFirst(_leadingSpace, '');
+String lstrip(String s) {
+  var start = 0;
+  while (start < s.length && _isRubyStripChar(s.codeUnitAt(start))) {
+    start++;
+  }
+  return start == 0 ? s : s.substring(start);
+}
+
+/// Whether [codeUnit] is one Ruby's `strip` family removes: NUL, tab,
+/// newline, vertical tab, form feed, carriage return or space.
+bool _isRubyStripChar(int codeUnit) =>
+    codeUnit == 0x20 || (codeUnit >= 0x09 && codeUnit <= 0x0D) || codeUnit == 0;
 
 /// Collapses every run of [char] in [s] to a single occurrence.
 /// Port of Ruby's `String#squeeze` with a single-character argument.

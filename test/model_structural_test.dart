@@ -281,6 +281,19 @@ void main() {
       expect(chompSuffix('Figure 1', '. '), equals('Figure 1'));
       expect(squeezeChar('a"b""c', '"'), equals('a"b"c'));
       expect(lstrip('  \n x'), equals('x'));
+      expect(lstrip('\x00\t\v\f\r x '), equals('x '));
+      expect(lstrip(' x'), equals(' x'));
+      expect(lstrip(' \t'), equals(''));
+      expect(lstrip(''), equals(''));
+    });
+
+    test('rstrip matches Ruby String#rstrip', () {
+      expect(' x \x00\t\n\v\f\r'.rstrip(), equals(' x'));
+      expect('x '.rstrip(), equals('x '));
+      expect('x '.rstrip(), equals('x '));
+      expect(' \n'.rstrip(), equals(''));
+      expect(''.rstrip(), equals(''));
+      expect('a b'.rstrip(), equals('a b'));
     });
 
     test('transliterateSqueeze matches tr_s', () {
