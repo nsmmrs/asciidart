@@ -58,3 +58,15 @@ setup() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"files identical"* ]]
 }
+
+@test "selfcheck: an --extra-file outside the root is left untouched" {
+  local mini="$REPO_ROOT/test/differential/miniroot"
+  local extra="$BATS_TEST_TMPDIR/outside.adoc"
+  printf 'outside the root\n' > "$extra"
+  run dart run tool/differential.dart --root "$mini" --extra-file "$extra" \
+    --exe-a "sh $REPO_ROOT/test/differential/bin/exe-ver-a.sh" \
+    --exe-b "sh $REPO_ROOT/test/differential/bin/exe-ver-b.sh"
+  echo "$output"
+  [ "$status" -eq 0 ]
+  [ "$(cat "$extra")" = "outside the root" ]
+}

@@ -551,7 +551,10 @@ Future<_RunResult> _runExe(
 }
 
 void _writeBytes(Directory outDir, String side, String rel, List<int> bytes) {
-  final file = File(_joinPath(_joinPath(outDir.path, side), rel));
+  // An --extra-file outside the root keeps its absolute path as `rel`;
+  // nest it under the side directory rather than writing over the input.
+  final nested = rel.replaceFirst(_absolutePrefix, '');
+  final file = File(_joinPath(_joinPath(outDir.path, side), nested));
   file.parent.createSync(recursive: true);
   file.writeAsBytesSync(bytes);
 }
@@ -577,6 +580,8 @@ String _cappedDiff(
       '... [diff truncated: showing ${config.maxDiffLines} '
       'of ${lines.length} lines]\n';
 }
+
+final _absolutePrefix = RegExp(r'^(?:[A-Za-z]:)?[\\/]+');
 
 final _versionStamp = RegExp('Asciidoctor [0-9][0-9A-Za-z.+_~-]*');
 final _lastUpdated = RegExp(
