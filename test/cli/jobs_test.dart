@@ -12,6 +12,8 @@ import 'dart:io';
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
+import '../support/paths.dart';
+
 /// GNU make's `-j` validation message (verified against make 4.4.1), with the
 /// `asciidoctor: ` prefix the CLI reports it with.
 const String jobsError =
@@ -74,7 +76,7 @@ Future<({Invoker invoker, String out, String err})> invokeJobs(
 ///
 /// Returns the source directory; the caller owns cleanup via [addTearDown].
 Directory writeParityFixtures() {
-  final dir = Directory.systemTemp.createTempSync('jobs_src_');
+  final dir = createTempDir('jobs_src_');
   addTearDown(() => dir.deleteSync(recursive: true));
   File('${dir.path}/a.adoc').writeAsStringSync('= Doc A\n\nHello A.\n');
   File('${dir.path}/b.adoc')
@@ -87,7 +89,7 @@ Directory writeParityFixtures() {
 
 /// Creates an empty temp directory owned by the test (see [addTearDown]).
 Directory makeTempDir(String prefix) {
-  final dir = Directory.systemTemp.createTempSync(prefix);
+  final dir = createTempDir(prefix);
   addTearDown(() => dir.deleteSync(recursive: true));
   return dir;
 }

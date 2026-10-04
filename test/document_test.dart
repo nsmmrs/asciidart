@@ -12,6 +12,7 @@ import 'package:asciidoctor/src/load.dart' as api;
 import 'package:test/test.dart';
 
 import 'support/doc_helpers.dart';
+import 'support/paths.dart';
 
 /// Built-in converter element names (port of `BUILT_IN_ELEMENTS`).
 const List<String> builtInElements = <String>[
@@ -4113,7 +4114,7 @@ void main() {
         'allows us to specify a path relative to the current dir',
         () {
           final doc = emptyDocument();
-          final legitPath = '${Directory.current.path}/foo';
+          final legitPath = '$currentPath/foo';
           expect(doc.normalizeAssetPath(legitPath), equals(legitPath));
         },
       );

@@ -16,19 +16,19 @@ import 'dart:io';
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
+import '../support/paths.dart';
+
 /// Finds the enclosing repository checkout directory.
 String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
         Directory('${dir.path}/test/fixtures').existsSync()) {
-      return dir.path;
+      return posixPath(dir.path);
     }
     final parent = dir.parent;
     if (parent.path == dir.path) {
-      throw StateError(
-        'repository checkout not found above ${Directory.current.path}',
-      );
+      throw StateError('repository checkout not found above $currentPath');
     }
     dir = parent;
   }
@@ -190,7 +190,7 @@ void main() {
     });
 
     test('reads a gzipped man page override', () {
-      final tmp = Directory.systemTemp.createTempSync('manpage');
+      final tmp = createTempDir('manpage');
       try {
         final source = File('$repoRoot/man/asciidoctor.1').readAsBytesSync();
         final gzPath = '${tmp.path}/asciidoctor.1.gz';
@@ -952,7 +952,7 @@ void main() {
       'reports an unreadable input file',
       skip: Platform.isWindows ? 'chmod-based readability needs POSIX.' : null,
       () {
-        final tmp = Directory.systemTemp.createTempSync('unreadable');
+        final tmp = createTempDir('unreadable');
         try {
           final path = '${tmp.path}/input.adoc';
           File(path).writeAsStringSync('content\n');
@@ -1035,7 +1035,7 @@ void main() {
     );
 
     test('glob skips dotfiles and supports classes and recursion', () {
-      final tmp = Directory.systemTemp.createTempSync('glob');
+      final tmp = createTempDir('glob');
       try {
         Directory('${tmp.path}/sub/deep').createSync(recursive: true);
         for (final name in [

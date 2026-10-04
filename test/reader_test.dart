@@ -18,6 +18,8 @@ import 'dart:io'
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
+import 'support/paths.dart';
+
 const List<String> sampleData = ['first line', 'second line', 'third line'];
 
 /// Repo root, found by searching upward for the directory that holds both
@@ -30,7 +32,7 @@ String _findRepoRoot() {
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
         Directory('${dir.path}/test/fixtures').existsSync()) {
-      return dir.path;
+      return posixPath(dir.path);
     }
     final parent = dir.parent;
     if (parent.path == dir.path) {
@@ -162,7 +164,7 @@ class TestDocument extends Document {
          null,
          AsciidoctorOptions(
            safe: safe,
-           baseDir: baseDir ?? Directory.current.path,
+           baseDir: baseDir ?? currentPath,
            sourcemap: sourcemap,
            attributes: {...?attributes},
          ),
@@ -1897,9 +1899,7 @@ void main() {
         'that has CRLF line endings',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
-          final tmpDir = Directory.systemTemp.createTempSync(
-            'asciidoctor-reader-test',
-          );
+          final tmpDir = createTempDir('asciidoctor-reader-test');
           try {
             File('${tmpDir.path}/include.adoc').writeAsStringSync(
               'do not include\r\ntag::include-me[]\r\nincluded '
@@ -1926,9 +1926,7 @@ void main() {
         'without a trailing newline',
         // READER-LEVEL: asserts expanded lines instead of converted output.
         () {
-          final tmpDir = Directory.systemTemp.createTempSync(
-            'asciidoctor-reader-test',
-          );
+          final tmpDir = createTempDir('asciidoctor-reader-test');
           try {
             File('${tmpDir.path}/include.adoc').writeAsStringSync(
               'line not included\ntag::include-me[]\nline '

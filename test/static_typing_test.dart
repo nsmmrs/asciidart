@@ -34,7 +34,7 @@ List<String> dartSources(List<String> roots) => [
         if (entity is File &&
             entity.path.endsWith('.dart') &&
             !entity.path.endsWith('.g.dart'))
-          entity.path,
+          entity.path.replaceAll(r'\', '/'),
 ]..sort();
 
 /// [source] with comments and string literal contents blanked out, so

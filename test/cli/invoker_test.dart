@@ -19,19 +19,19 @@ import 'dart:isolate';
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
+import '../support/paths.dart';
+
 /// Finds the enclosing repository checkout directory.
 String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
         Directory('${dir.path}/test/fixtures').existsSync()) {
-      return dir.path;
+      return posixPath(dir.path);
     }
     final parent = dir.parent;
     if (parent.path == dir.path) {
-      throw StateError(
-        'repository checkout not found above ${Directory.current.path}',
-      );
+      throw StateError('repository checkout not found above $currentPath');
     }
     dir = parent;
   }
@@ -307,7 +307,7 @@ void main() {
     });
 
     test('stops quietly when the reader of stdout goes away', () async {
-      final dir = Directory.systemTemp.createTempSync('invoker_pipe_');
+      final dir = createTempDir('invoker_pipe_');
       addTearDown(() => dir.deleteSync(recursive: true));
       // Enough output to overflow the pipe buffer after `head` exits.
       final input = File('${dir.path}/big.adoc')
@@ -380,7 +380,7 @@ void main() {
       final doc = invoker.document!;
       expect(doc.hasAttr('docname'), isFalse);
       expect(doc.hasAttr('docfile'), isFalse);
-      expect(doc.attr('docdir'), equals(Directory.current.path));
+      expect(doc.attr('docdir'), equals(currentPath));
       expect(doc.attr('docdate'), equals(doc.attr('localdate')));
       expect(doc.attr('docyear'), equals(doc.attr('localyear')));
       expect(doc.attr('doctime'), equals(doc.attr('localtime')));
@@ -398,16 +398,14 @@ void main() {
     });
 
     test('accepts document from stdin and writes to output file', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final outPath = '${tempDir.path}/sample-output.html';
         final invoker = invokeCli(['-e', '-o', outPath], '-', () => 'content');
         final doc = invoker.document!;
         expect(doc.hasAttr('docname'), isFalse);
         expect(doc.hasAttr('docfile'), isFalse);
-        expect(doc.attr('docdir'), equals(Directory.current.path));
+        expect(doc.attr('docdir'), equals(currentPath));
         expect(doc.attr('docdate'), equals(doc.attr('localdate')));
         expect(doc.attr('docyear'), equals(doc.attr('localyear')));
         expect(doc.attr('doctime'), equals(doc.attr('localtime')));
@@ -437,9 +435,7 @@ void main() {
     });
 
     test('accepts input from named pipe and outputs to stdout', () async {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final pipePath = '${tempDir.path}/sample-pipe.adoc';
         final mkfifo = Process.runSync('mkfifo', [pipePath]);
@@ -532,9 +528,7 @@ void main() {
     });
 
     test('outputs to file name based on input file name', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final input = copyFixtureTo('sample.adoc', tempDir);
         final expectedOut = '${tempDir.path}/sample.html';
@@ -550,9 +544,7 @@ void main() {
     });
 
     test('outputs to file in destination directory if set', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final expectedOut = '${tempDir.path}/sample.html';
         final invoker = invokeCli(['-D', tempDir.path]);
@@ -565,9 +557,7 @@ void main() {
 
     test('preserves directory structure in destination directory if '
         'source directory is set', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         invokeCli([
           '-D',
@@ -583,9 +573,7 @@ void main() {
     });
 
     test('outputs to file specified', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final outPath = '${tempDir.path}/sample-output.html';
         final invoker = invokeCli(['-o', outPath]);
@@ -599,9 +587,7 @@ void main() {
     test(
       'copies default stylesheet to target directory if linkcss is specified',
       () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
+        final tempDir = createTempDir('asciidoctor-invoker-');
         try {
           final outPath = '${tempDir.path}/sample-output.html';
           invokeCli([
@@ -633,9 +619,7 @@ void main() {
     test(
       'does not copy coderay stylesheet when no source blocks were highlighted',
       () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
+        final tempDir = createTempDir('asciidoctor-invoker-');
         try {
           final outPath = '${tempDir.path}/sample-output.html';
           invokeCli([
@@ -661,9 +645,7 @@ void main() {
     test(
       'does not copy default stylesheet if linkcss is set and copycss is unset',
       () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
+        final tempDir = createTempDir('asciidoctor-invoker-');
         try {
           final outPath = '${tempDir.path}/sample-output.html';
           invokeCli(['-o', outPath, '-a', 'linkcss', '-a', 'copycss!']);
@@ -678,9 +660,7 @@ void main() {
     test(
       'copies custom stylesheet if stylesheet and linkcss are specified',
       () {
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
+        final tempDir = createTempDir('asciidoctor-invoker-');
         try {
           final outPath = '${tempDir.path}/sample-output.html';
           invokeCli([
@@ -707,9 +687,7 @@ void main() {
     );
 
     test('does not copy custom stylesheet if copycss is unset', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final outPath = '${tempDir.path}/sample-output.html';
         invokeCli([
@@ -732,9 +710,7 @@ void main() {
     });
 
     test('does not copy custom stylesheet if stylesdir is a URI', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final outPath = '${tempDir.path}/sample-output.html';
         invokeCli([
@@ -755,9 +731,7 @@ void main() {
     });
 
     test('converts all passed files', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final basic = copyFixtureTo('basic.adoc', tempDir);
         final sample = copyFixtureTo('sample.adoc', tempDir);
@@ -770,9 +744,7 @@ void main() {
     });
 
     test('does not modify options when processing multiple files', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         invokeCliWithFilenames(
           ['-D', tempDir.path, '-a', 'outfilesuffix=.htm'],
@@ -786,9 +758,7 @@ void main() {
     });
 
     test('converts all files matching a glob expression', () {
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         copyFixtureTo('basic.adoc', tempDir);
         invokeCli(['${tempDir.path}/ba*.adoc'], null);
@@ -801,9 +771,7 @@ void main() {
     test('converts all files matching an absolute path glob expression', () {
       // Ruby additionally tries a backslash-style pattern on Windows;
       // tempDir.path already uses native separators there.
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         copyFixtureTo('basic.adoc', tempDir);
         invokeCliToBuffer(['${tempDir.path}/ba*.adoc'], null);
@@ -843,9 +811,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
 
 *eve* ['OPTION']... 'FILE'...
 ''';
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final outPath = '${tempDir.path}/eve.1';
         invokeCli(['-b', 'manpage', '-o', outPath], '-', () => input);
@@ -937,9 +903,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
         // based on template dir, template engine and backend' (adapted:
         // `-E mustache` — `-E haml` errors in the Dart port, see
         // template_loader_test.dart).
-        final dir = Directory.systemTemp.createTempSync(
-          'invoker-template-test',
-        );
+        final dir = createTempDir('invoker-template-test');
         addTearDown(() => dir.deleteSync(recursive: true));
         File('${dir.path}/paragraph.mustache')
             .writeAsStringSync('<p>{{content}}</p>');
@@ -970,9 +934,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
       // multiple template directories' (adapted: Mustache files; the last
       // `-T` wins per template and the built-in wrapper is gone).
       Directory makeDir(String name, String source) {
-        final dir = Directory.systemTemp.createTempSync(
-          'invoker-template-test',
-        );
+        final dir = createTempDir('invoker-template-test');
         addTearDown(() => dir.deleteSync(recursive: true));
         File('${dir.path}/$name').writeAsStringSync(source);
         return dir;
@@ -1171,9 +1133,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
         // read-only in-process, so the CLI runs in a subprocess (cf. the
         // timezone tests above) and the datetime attributes are asserted
         // through attribute references in the converted output.
-        final tempDir = Directory.systemTemp.createTempSync(
-          'asciidoctor-invoker-',
-        );
+        final tempDir = createTempDir('asciidoctor-invoker-');
         try {
           final inputPath = '${tempDir.path}/epoch.adoc';
           File(inputPath).writeAsStringSync(
@@ -1200,9 +1160,7 @@ eve, islifeform - analyzes an image to determine if it's a picture of a life for
     test('ignores SOURCE_DATE_EPOCH if value is empty', () async {
       // Port of invoker_test.rb 'should ignore SOURCE_DATE_EPOCH is value
       // is empty', via a subprocess (see the test above).
-      final tempDir = Directory.systemTemp.createTempSync(
-        'asciidoctor-invoker-',
-      );
+      final tempDir = createTempDir('asciidoctor-invoker-');
       try {
         final inputPath = '${tempDir.path}/epoch.adoc';
         File(inputPath).writeAsStringSync('{localyear}\n');

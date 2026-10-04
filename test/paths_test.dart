@@ -12,6 +12,8 @@ import 'dart:io';
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
+import 'support/paths.dart';
+
 /// Collects warning messages passed to [PathResolver.onWarn].
 ///
 /// Mirrors `Asciidoctor::MemoryLogger` for the warnings `PathResolver` emits
@@ -580,7 +582,7 @@ void main() {
       'resolves relative target relative to current directory if '
       'start is empty',
       () {
-        // Directory.current.path uses native separators; posixify it the way
+        // currentPath uses native separators; posixify it the way
         // the resolver does so the expectation holds on every platform.
         final pwd = resolver.posixify(Directory.current.path);
         expect(
@@ -738,7 +740,7 @@ void main() {
       () {
         // Mirrors `doc.normalize_system_path 'tiger.png', 'images'` in unsafe
         // mode, where the start is joined to the base dir and no jail applies.
-        final baseDir = '${Directory.current.path}/test/fixtures/base';
+        final baseDir = '$currentPath/test/fixtures/base';
         final expected = '$baseDir/images/tiger.png';
         final actual = resolver.systemPath(
           'tiger.png',

@@ -20,6 +20,8 @@ import 'dart:io' show Directory, File;
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
+import 'support/paths.dart';
+
 /// Records conversions for assertions.
 class FakeConverter implements NodeConverter {
   /// Nodes passed to [convert], in order.
@@ -78,7 +80,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
     String? baseDir,
     PathResolver? pathResolver,
     this.compatMode = false,
-  }) : baseDir = baseDir ?? Directory.current.path,
+  }) : baseDir = baseDir ?? currentPath,
        pathResolver = pathResolver ?? PathResolver(),
        super(null, 'document');
 
@@ -211,7 +213,7 @@ void main() {
     savedLogger = LoggerManager.logger;
     testLogger = FakeLogger();
     LoggerManager.logger = testLogger;
-    fixtureDir = Directory.systemTemp.createTempSync('model_core');
+    fixtureDir = createTempDir('model_core');
     Directory('${fixtureDir.path}/img').createSync();
     File('${fixtureDir.path}/img/a.png')
         .writeAsBytesSync(utf8.encode('PNGDATA'));

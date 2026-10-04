@@ -21,13 +21,15 @@ import 'dart:io';
 import 'package:asciidoctor/src/internal.dart';
 import 'package:test/test.dart';
 
+import 'support/paths.dart';
+
 /// Joins a fixture [name] to the Ruby fixtures directory (port of
 /// `fixture_path`; tests run with `dart/` as the working directory).
 String fixturePath(String name) => 'test/fixtures/$name';
 
 /// Runs [fn] with a fresh temporary directory, deleted afterwards.
 void withTempDir(void Function(Directory dir) fn) {
-  final dir = Directory.systemTemp.createTempSync('asciidoctor-load-test-');
+  final dir = createTempDir('asciidoctor-load-test-');
   try {
     fn(dir);
   } finally {
@@ -43,7 +45,7 @@ void withTempDir(void Function(Directory dir) fn) {
 /// that write output files cannot use [withTempDir] (`/tmp` is outside the
 /// jail). Deleted afterwards.
 void withJailedTempDir(void Function(Directory dir) fn) {
-  final dir = Directory.current.createTempSync('asciidoctor-load-test-');
+  final dir = _posixTemp(Directory.current, 'asciidoctor-load-test-');
   try {
     fn(dir);
   } finally {
@@ -1345,3 +1347,8 @@ void main() {
     });
   });
 }
+
+/// A new directory under [parent], named with [prefix], whose path uses
+/// forward slashes.
+Directory _posixTemp(Directory parent, String prefix) =>
+    Directory(posixPath(parent.createTempSync(prefix).path));
