@@ -1,9 +1,6 @@
 // Adjacent-string joins here are markup/paths, not prose; joined values
 // are asserted byte-identical by tests.
 // ignore_for_file: missing_whitespace_between_adjacent_strings
-// Extension callbacks vary per processor kind, so the untyped Function
-// field cannot provide context; parameter annotations are required.
-// ignore_for_file: avoid_types_on_closure_parameters
 /// Port of `test/extensions_test.rb`.
 ///
 /// All tests run: extension integration (activation through the
@@ -1093,22 +1090,17 @@ Registry createCatInSinkBlockMacro() {
       registry.blockMacro(
         build: (processor) {
           processor.named('cat_in_sink');
-          processor.onProcess =
-              (
-                AbstractBlock parent,
-                String? target,
-                Map<Object, Object?> attrs,
-              ) {
-                final imageAttrs = <String, Object?>{};
-                if (target != null && target.isNotEmpty) {
-                  imageAttrs['target'] = 'cat-in-sink-day-$target.png';
-                }
-                final title = attrs.remove('title');
-                if (title != null) imageAttrs['title'] = title;
-                final alt = attrs.remove(1);
-                if (alt != null) imageAttrs['alt'] = alt;
-                return processor.createImageBlock(parent, imageAttrs);
-              };
+          processor.onProcess = (parent, target, attrs) {
+            final imageAttrs = <String, Object?>{};
+            if (target.isNotEmpty) {
+              imageAttrs['target'] = 'cat-in-sink-day-$target.png';
+            }
+            final title = attrs.remove('title');
+            if (title != null) imageAttrs['title'] = title;
+            final alt = attrs.remove(1);
+            if (alt != null) imageAttrs['alt'] = alt;
+            return processor.createImageBlock(parent, imageAttrs);
+          };
         },
       );
     },
@@ -1125,29 +1117,28 @@ Registry createSantaListBlockMacro() {
           processor.named('santa_list');
           // Adapted: Ruby blocks tolerate the unused third argument;
           // Dart closures must declare it.
-          processor.onProcess =
-              (AbstractBlock parent, String target, Map<Object, Object?> _) {
-                final list = processor.createList(parent, target);
-                final guillaume = (processor.createListItem(list, 'Guillaume'))
-                  ..addRole('friendly')
-                  ..id = 'santa-list-guillaume';
-                list.append(guillaume);
-                final robert = (processor.createListItem(list, 'Robert'))
-                  ..addRole('kind')
-                  ..addRole('contributor')
-                  ..addRole('java');
-                list.append(robert);
-                final pepijn = (processor.createListItem(list, 'Pepijn'))
-                  ..id = 'santa-list-pepijn';
-                list.append(pepijn);
-                final dan = (processor.createListItem(list, 'Dan'))
-                  ..addRole('naughty')
-                  ..id = 'santa-list-dan';
-                list.append(dan);
-                final sarah = processor.createListItem(list, 'Sarah');
-                list.append(sarah);
-                return list;
-              };
+          processor.onProcess = (parent, target, _) {
+            final list = processor.createList(parent, target);
+            final guillaume = (processor.createListItem(list, 'Guillaume'))
+              ..addRole('friendly')
+              ..id = 'santa-list-guillaume';
+            list.append(guillaume);
+            final robert = (processor.createListItem(list, 'Robert'))
+              ..addRole('kind')
+              ..addRole('contributor')
+              ..addRole('java');
+            list.append(robert);
+            final pepijn = (processor.createListItem(list, 'Pepijn'))
+              ..id = 'santa-list-pepijn';
+            list.append(pepijn);
+            final dan = (processor.createListItem(list, 'Dan'))
+              ..addRole('naughty')
+              ..id = 'santa-list-dan';
+            list.append(dan);
+            final sarah = processor.createListItem(list, 'Sarah');
+            list.append(sarah);
+            return list;
+          };
         },
       );
     },
@@ -1293,20 +1284,13 @@ void main() {
                   ..named('whisper')
                   ..onContext('paragraph')
                   ..parseContentAs('simple');
-                processor.onProcess =
-                    (
-                      AbstractBlock parent,
-                      Reader reader,
-                      Map<String, Object?> attributes,
-                    ) {
-                      return processor.createParagraph(
-                        parent,
-                        reader.lines
-                            .map((line) => line!.toLowerCase())
-                            .toList(),
-                        attributes,
-                      );
-                    };
+                processor.onProcess = (parent, reader, attributes) {
+                  return processor.createParagraph(
+                    parent,
+                    reader.lines.map((line) => line!.toLowerCase()).toList(),
+                    attributes,
+                  );
+                };
               },
             );
           },
@@ -1668,41 +1652,24 @@ void main() {
                 // test onHandles assigned as callback
                 processor
                   ..onHandles = ((doc, target) => target == 'skip-me.adoc')
-                  ..onProcess = (
-                    ReaderDocument doc,
-                    PreprocessorReader reader,
-                    String target,
-                    Map<Object, String?> attributes,
-                  ) => null;
+                  ..onProcess = (doc, reader, target, attributes) => null;
               },
             )
             ..includeProcessor(
               build: (processor) {
                 processor
                   ..onHandles = ((doc, target) => target == 'include-file.adoc')
-                  ..onProcess =
-                      (
-                        ReaderDocument doc,
-                        PreprocessorReader reader,
-                        String target,
-                        Map<Object, String?> attributes,
-                      ) {
-                        // demonstrates that pushInclude normalizes newlines
-                        final lineno = reader.cursorAtPrevLine().lineno;
-                        final content = [
-                          "found include target '$target' at line $lineno\r\n",
-                          '\r\n',
-                          'middle line\r\n',
-                        ];
-                        reader.pushInclude(
-                          content,
-                          target,
-                          target,
-                          1,
-                          attributes,
-                        );
-                        return null;
-                      };
+                  ..onProcess = (doc, reader, target, attributes) {
+                    // demonstrates that pushInclude normalizes newlines
+                    final lineno = reader.cursorAtPrevLine().lineno;
+                    final content = [
+                      "found include target '$target' at line $lineno\r\n",
+                      '\r\n',
+                      'middle line\r\n',
+                    ];
+                    reader.pushInclude(content, target, target, 1, attributes);
+                    return null;
+                  };
               },
             );
         },
@@ -1759,26 +1726,14 @@ void main() {
             build: (processor) {
               processor
                 ..onHandles = ((doc, target) => target == 'include-file.adoc')
-                ..onProcess =
-                    (
-                      ReaderDocument doc,
-                      PreprocessorReader reader,
-                      String target,
-                      Map<Object, String?> attributes,
-                    ) {
-                      final content = contentCache.putIfAbsent(
-                        'include-file.adoc',
-                        () => 'contents of include-file.adoc',
-                      );
-                      reader.pushInclude(
-                        content,
-                        target,
-                        target,
-                        1,
-                        attributes,
-                      );
-                      return null;
-                    };
+                ..onProcess = (doc, reader, target, attributes) {
+                  final content = contentCache.putIfAbsent(
+                    'include-file.adoc',
+                    () => 'contents of include-file.adoc',
+                  );
+                  reader.pushInclude(content, target, target, 1, attributes);
+                  return null;
+                };
             },
           );
         },
@@ -1820,7 +1775,7 @@ void main() {
           build: (registry) {
             registry.treeProcessor(
               build: (processor) {
-                processor.onProcess = (Document doc) {
+                processor.onProcess = (doc) {
                   final para = processor.createParagraph(
                     doc.blocks.last.parent!,
                     'file: ${doc.file}, lineno: ${doc.lineno}',
@@ -1871,7 +1826,7 @@ void main() {
         build: (registry) {
           registry.treeProcessor(
             build: (processor) {
-              processor.onProcess = (Document doc) {
+              processor.onProcess = (doc) {
                 final ex = doc.findBy(context: 'example')[0];
                 oldTitle = ex.title;
                 ex.title = 'New block title';
@@ -1898,7 +1853,7 @@ void main() {
           registry
             ..treeProcessor(
               build: (processor) {
-                processor.onProcess = (Document doc) {
+                processor.onProcess = (doc) {
                   doc.append(
                     processor.createParagraph(doc, 'd', <String, Object?>{}),
                   );
@@ -1909,7 +1864,7 @@ void main() {
             ..treeProcessor(
               build: (processor) {
                 processor.prefer();
-                processor.onProcess = (Document doc) {
+                processor.onProcess = (doc) {
                   doc.append(
                     processor.createParagraph(doc, 'c', <String, Object?>{}),
                   );
@@ -1920,7 +1875,7 @@ void main() {
             ..prefer(
               'tree_processor',
               build: (TreeProcessor processor) {
-                processor.onProcess = (Document doc) {
+                processor.onProcess = (doc) {
                   doc.append(
                     processor.createParagraph(doc, 'b', <String, Object?>{}),
                   );
@@ -1931,7 +1886,7 @@ void main() {
             ..prefer(
               registry.treeProcessor(
                 build: (processor) {
-                  processor.onProcess = (Document doc) {
+                  processor.onProcess = (doc) {
                     doc.append(
                       processor.createParagraph(doc, 'a', <String, Object?>{}),
                     );
@@ -1978,7 +1933,7 @@ void main() {
             // Adapted: the callback always receives the processor in Dart.
             registry.treeProcessor(
               build: (processor) {
-                processor.onProcess = (Document doc) {
+                processor.onProcess = (doc) {
                   doc.append(
                     processor.createParagraph(doc, 'bye!', <String, Object?>{}),
                   );
@@ -2039,23 +1994,18 @@ void main() {
               name: 'eval',
               build: (processor) {
                 processor.onContext('literal');
-                processor.onProcess =
-                    (
-                      AbstractBlock parent,
-                      Reader reader,
-                      Map<String, Object?> attrs,
-                    ) {
-                      // Adapted: Dart has no eval; emulate the intent.
-                      final source = reader.readLines()[0]!;
-                      final expanded = source.contains('*')
-                          ? List.filled(5, 'yolo').join()
-                          : source;
-                      return processor.createParagraph(
-                        parent,
-                        expanded,
-                        <String, Object?>{},
-                      );
-                    };
+                processor.onProcess = (parent, reader, attrs) {
+                  // Adapted: Dart has no eval; emulate the intent.
+                  final source = reader.readLines()[0]!;
+                  final expanded = source.contains('*')
+                      ? List.filled(5, 'yolo').join()
+                      : source;
+                  return processor.createParagraph(
+                    parent,
+                    expanded,
+                    <String, Object?>{},
+                  );
+                };
               },
             );
           },
@@ -2078,15 +2028,10 @@ void main() {
             build: (processor) {
               processor
                 ..onContext('sidebar')
-                ..onProcess =
-                    (
-                      AbstractBlock parent,
-                      Reader reader,
-                      Map<String, Object?> attrs,
-                    ) {
-                      cloakedContext = attrs['cloaked-context'] as String?;
-                      return null;
-                    };
+                ..onProcess = (parent, reader, attrs) {
+                  cloakedContext = attrs['cloaked-context'] as String?;
+                  return null;
+                };
             },
           );
         },
@@ -2104,19 +2049,14 @@ void main() {
             name: 'ex',
             build: (processor) {
               processor.onContext('paragraph');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    return processor.createExampleBlock(
-                      parent,
-                      reader.readLines(),
-                      <String, Object?>{},
-                      contentModel: 'compound',
-                    );
-                  };
+              processor.onProcess = (parent, reader, attrs) {
+                return processor.createExampleBlock(
+                  parent,
+                  reader.readLines(),
+                  <String, Object?>{},
+                  contentModel: 'compound',
+                );
+              };
             },
           );
         },
@@ -2155,15 +2095,10 @@ void main() {
             build: (processor) {
               processor
                 ..resolveAttributes(false)
-                ..onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      parent.logger.info(attrs['text']);
-                      return null;
-                    };
+                ..onProcess = (parent, target, attrs) {
+                  parent.logger.info(attrs['text']);
+                  return null;
+                };
             },
           );
         },
@@ -2187,15 +2122,10 @@ void main() {
             build: (processor) {
               processor
                 ..contentModel('text')
-                ..onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      parent.logger.info(attrs['text']);
-                      return null;
-                    };
+                ..onProcess = (parent, target, attrs) {
+                  parent.logger.info(attrs['text']);
+                  return null;
+                };
             },
           );
         },
@@ -2317,18 +2247,13 @@ void main() {
           registry.blockMacro(
             name: 'message',
             build: (processor) {
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createParagraph(
-                      parent,
-                      target.toUpperCase(),
-                      <String, Object?>{},
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createParagraph(
+                  parent,
+                  target.toUpperCase(),
+                  <String, Object?>{},
+                );
+              };
             },
           );
         },
@@ -2348,20 +2273,15 @@ void main() {
           registry.blockMacro(
             build: (processor) {
               processor.named('custom-toc');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    resolvedTarget = target;
-                    return processor.createPassBlock(
-                      parent,
-                      '<!-- custom toc goes here -->',
-                      <String, Object?>{},
-                      contentModel: 'raw',
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                resolvedTarget = target;
+                return processor.createPassBlock(
+                  parent,
+                  '<!-- custom toc goes here -->',
+                  <String, Object?>{},
+                  contentModel: 'raw',
+                );
+              };
             },
           );
         },
@@ -2381,11 +2301,7 @@ void main() {
             build: (processor) {
               processor
                 ..named('illegal name')
-                ..onProcess = (
-                  AbstractBlock parent,
-                  String target,
-                  Map<Object, Object?> attrs,
-                ) => null;
+                ..onProcess = (parent, target, attrs) => null;
             },
           );
         },
@@ -2424,16 +2340,11 @@ void main() {
             name: 'diag',
             build: (processor) {
               processor.option('pos_attrs', ['target', 'format']);
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createImageBlock(parent, {
-                      'target': "${attrs['target']}.${attrs['format']}",
-                    });
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createImageBlock(parent, {
+                  'target': "${attrs['target']}.${attrs['format']}",
+                });
+              };
             },
           );
         },
@@ -2452,18 +2363,13 @@ void main() {
                 processor
                   ..named('attribute')
                   ..resolveAttributes('1:value')
-                  ..onProcess =
-                      (
-                        AbstractBlock parent,
-                        String target,
-                        Map<Object, Object?> attrs,
-                      ) {
-                        (parent.document! as Document).setAttr(
-                          target,
-                          attrs['value'],
-                        );
-                        return null;
-                      };
+                  ..onProcess = (parent, target, attrs) {
+                    (parent.document! as Document).setAttr(
+                      target,
+                      attrs['value'],
+                    );
+                    return null;
+                  };
               },
             )
             ..blockMacro(
@@ -2471,18 +2377,13 @@ void main() {
                 processor
                   ..named('header_attribute')
                   ..resolveAttributes('1:value')
-                  ..onProcess =
-                      (
-                        AbstractBlock parent,
-                        String target,
-                        Map<Object, Object?> attrs,
-                      ) {
-                        (parent.document! as Document).setHeaderAttribute(
-                          target,
-                          attrs['value'],
-                        );
-                        return null;
-                      };
+                  ..onProcess = (parent, target, attrs) {
+                    (parent.document! as Document).setHeaderAttribute(
+                      target,
+                      attrs['value'],
+                    );
+                    return null;
+                  };
               },
             );
         },
@@ -2526,20 +2427,15 @@ void main() {
               processor
                 ..matchFormat('short')
                 ..resolveAttributes(false);
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInline(
-                      parent,
-                      'quoted',
-                      attrs['text'] as String?,
-                      type: 'unquoted',
-                      attributes: {'role': 'line-through'},
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createInline(
+                  parent,
+                  'quoted',
+                  attrs['text'] as String?,
+                  type: 'unquoted',
+                  attributes: {'role': 'line-through'},
+                );
+              };
             },
           );
         },
@@ -2561,20 +2457,15 @@ void main() {
               processor
                 ..matchFormat('short')
                 ..contentModel('text');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInline(
-                      parent,
-                      'quoted',
-                      attrs['text'] as String?,
-                      type: 'unquoted',
-                      attributes: {'role': 'line-through'},
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createInline(
+                  parent,
+                  'quoted',
+                  attrs['text'] as String?,
+                  type: 'unquoted',
+                  attributes: {'role': 'line-through'},
+                );
+              };
             },
           );
         },
@@ -2593,17 +2484,12 @@ void main() {
                 ..named('label')
                 ..matchFormat('short')
                 ..parseContentAs('text')
-                ..onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      return processor.createInlinePass(
-                        parent,
-                        '<label>${attrs['text']}</label>',
-                      );
-                    };
+                ..onProcess = (parent, target, attrs) {
+                  return processor.createInlinePass(
+                    parent,
+                    '<label>${attrs['text']}</label>',
+                  );
+                };
             },
           );
         },
@@ -2621,17 +2507,12 @@ void main() {
               processor
                 ..named('label')
                 ..matchFormat('short');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInlinePass(
-                      parent,
-                      '<label>$target</label>',
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createInlinePass(
+                  parent,
+                  '<label>$target</label>',
+                );
+              };
             },
           );
         },
@@ -2650,36 +2531,26 @@ void main() {
                 processor
                   ..named('json')
                   ..matchFormat('short');
-                processor.onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      final pairs = attrs.entries
-                          .map((entry) => '"${entry.key}": "${entry.value}"')
-                          .join(', ');
-                      return processor.createInlinePass(parent, '{ $pairs }');
-                    };
+                processor.onProcess = (parent, target, attrs) {
+                  final pairs = attrs.entries
+                      .map((entry) => '"${entry.key}": "${entry.value}"')
+                      .join(', ');
+                  return processor.createInlinePass(parent, '{ $pairs }');
+                };
               },
             )
             ..inlineMacro(
               build: (processor) {
                 processor.named('data');
-                processor.onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      if (target != 'json') {
-                        return null;
-                      }
-                      final pairs = attrs.entries
-                          .map((entry) => '"${entry.key}": "${entry.value}"')
-                          .join(', ');
-                      return processor.createInlinePass(parent, '{ $pairs }');
-                    };
+                processor.onProcess = (parent, target, attrs) {
+                  if (target != 'json') {
+                    return null;
+                  }
+                  final pairs = attrs.entries
+                      .map((entry) => '"${entry.key}": "${entry.value}"')
+                      .join(', ');
+                  return processor.createInlinePass(parent, '{ $pairs }');
+                };
               },
             );
         },
@@ -2723,11 +2594,8 @@ void main() {
                   ..named('short_attributes')
                   ..matchFormat('short')
                   ..resolveAttributes('1:name');
-                processor.onProcess = (
-                  AbstractBlock parent,
-                  String target,
-                  Map<Object, Object?> attrs,
-                ) => capture(processor, parent, target, attrs);
+                processor.onProcess = (parent, target, attrs) =>
+                    capture(processor, parent, target, attrs);
               },
             )
             ..inlineMacro(
@@ -2736,11 +2604,8 @@ void main() {
                   ..named('short_text')
                   ..matchFormat('short')
                   ..resolveAttributes(false);
-                processor.onProcess = (
-                  AbstractBlock parent,
-                  String target,
-                  Map<Object, Object?> attrs,
-                ) => capture(processor, parent, target, attrs);
+                processor.onProcess = (parent, target, attrs) =>
+                    capture(processor, parent, target, attrs);
               },
             )
             ..inlineMacro(
@@ -2748,11 +2613,8 @@ void main() {
                 processor
                   ..named('full-attributes')
                   ..resolveAttributes({'1:name': null});
-                processor.onProcess = (
-                  AbstractBlock parent,
-                  String target,
-                  Map<Object, Object?> attrs,
-                ) => capture(processor, parent, target, attrs);
+                processor.onProcess = (parent, target, attrs) =>
+                    capture(processor, parent, target, attrs);
               },
             )
             ..inlineMacro(
@@ -2760,11 +2622,8 @@ void main() {
                 processor
                   ..named('full-text')
                   ..resolveAttributes(false);
-                processor.onProcess = (
-                  AbstractBlock parent,
-                  String target,
-                  Map<Object, Object?> attrs,
-                ) => capture(processor, parent, target, attrs);
+                processor.onProcess = (parent, target, attrs) =>
+                    capture(processor, parent, target, attrs);
               },
             )
             ..inlineMacro(
@@ -2773,11 +2632,8 @@ void main() {
                   ..named('@short_match')
                   ..match(RegExp(r'@(\w+)'))
                   ..resolveAttributes(false);
-                processor.onProcess = (
-                  AbstractBlock parent,
-                  String target,
-                  Map<Object, Object?> attrs,
-                ) => capture(processor, parent, target, attrs);
+                processor.onProcess = (parent, target, attrs) =>
+                    capture(processor, parent, target, attrs);
               },
             );
         },
@@ -2823,21 +2679,16 @@ void main() {
                 processor
                   ..named('mention')
                   ..resolveAttributes(false);
-                processor.onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      var text = attrs['text']! as String;
-                      if (text.isEmpty) text = '@$target';
-                      return processor.createAnchor(
-                        parent,
-                        text,
-                        type: 'link',
-                        target: 'https://github.com/$target',
-                      );
-                    };
+                processor.onProcess = (parent, target, attrs) {
+                  var text = attrs['text']! as String;
+                  if (text.isEmpty) text = '@$target';
+                  return processor.createAnchor(
+                    parent,
+                    text,
+                    type: 'link',
+                    target: 'https://github.com/$target',
+                  );
+                };
               },
             );
           },
@@ -2859,11 +2710,7 @@ void main() {
               processor
                 ..named('skipme')
                 ..matchFormat('short')
-                ..onProcess = (
-                  AbstractBlock parent,
-                  String target,
-                  Map<Object, Object?> attrs,
-                ) => null;
+                ..onProcess = (parent, target, attrs) => null;
             },
           );
         },
@@ -2885,11 +2732,7 @@ void main() {
             build: (processor) {
               processor
                 ..named('say')
-                ..onProcess = (
-                  AbstractBlock parent,
-                  String target,
-                  Map<Object, Object?> attrs,
-                ) => target;
+                ..onProcess = (parent, target, attrs) => target;
             },
           );
         },
@@ -2916,19 +2759,14 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor.named('say');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInline(
-                      parent,
-                      'quoted',
-                      '*$target*',
-                      type: 'emphasis',
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createInline(
+                  parent,
+                  'quoted',
+                  '*$target*',
+                  type: 'emphasis',
+                );
+              };
             },
           );
         },
@@ -2945,18 +2783,13 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor.named('say');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInlinePass(
-                      parent,
-                      '*$target*',
-                      attributes: {'subs': 'normal'},
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createInlinePass(
+                  parent,
+                  '*$target*',
+                  attributes: {'subs': 'normal'},
+                );
+              };
             },
           );
         },
@@ -2973,20 +2806,15 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor.named('say');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInlinePass(
-                      parent,
-                      '*$target*',
-                      attributes: {
-                        'subs': ['specialchars', 'quotes'],
-                      },
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createInlinePass(
+                  parent,
+                  '*$target*',
+                  attributes: {
+                    'subs': ['specialchars', 'quotes'],
+                  },
+                );
+              };
             },
           );
         },
@@ -3005,18 +2833,13 @@ void main() {
           registry.inlineMacro(
             build: (processor) {
               processor.named('say');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createInlinePass(
-                      parent,
-                      '*$target*',
-                      attributes: {'subs': 'specialchars,quotes'},
-                    );
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createInlinePass(
+                  parent,
+                  '*$target*',
+                  attributes: {'subs': 'specialchars,quotes'},
+                );
+              };
             },
           );
         },
@@ -3039,18 +2862,13 @@ void main() {
                 ..matchFormat('short')
                 ..defaultAttributes({1: 'a', 2: 'b', 'foo': 'baz'})
                 ..positionalAttributes(['a', 'b'])
-                ..onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      return processor.createInlinePass(
-                        parent,
-                        "a=${attrs['a']},2=${attrs[2]},"
-                        "b=${attrs['b'] ?? 'nil'},foo=${attrs['foo']}",
-                      );
-                    };
+                ..onProcess = (parent, target, attrs) {
+                  return processor.createInlinePass(
+                    parent,
+                    "a=${attrs['a']},2=${attrs[2]},"
+                    "b=${attrs['b'] ?? 'nil'},foo=${attrs['foo']}",
+                  );
+                };
             },
           );
         },
@@ -3074,17 +2892,12 @@ void main() {
               processor
                 ..matchFormat('short')
                 ..positionalAttributes(['a', 'b'])
-                ..onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      return processor.createInlinePass(
-                        parent,
-                        "a=${attrs['a']},b=${attrs['b']}",
-                      );
-                    };
+                ..onProcess = (parent, target, attrs) {
+                  return processor.createInlinePass(
+                    parent,
+                    "a=${attrs['a']},b=${attrs['b']}",
+                  );
+                };
             },
           );
         },
@@ -3105,11 +2918,7 @@ void main() {
                 ..named('skip-me')
                 ..onContext('paragraph')
                 ..parseContentAs('raw')
-                ..onProcess = (
-                  AbstractBlock parent,
-                  Reader reader,
-                  Map<String, Object?> attrs,
-                ) => null;
+                ..onProcess = (parent, reader, attrs) => null;
             },
           );
         },
@@ -3138,15 +2947,10 @@ void main() {
                 ..named('ignore')
                 ..onContext('paragraph')
                 ..parseContentAs('skip')
-                ..onProcess =
-                    (
-                      AbstractBlock parent,
-                      Reader reader,
-                      Map<String, Object?> attrs,
-                    ) {
-                      processMethodCalled = true;
-                      return null;
-                    };
+                ..onProcess = (parent, reader, attrs) {
+                  processMethodCalled = true;
+                  return null;
+                };
             },
           );
         },
@@ -3174,20 +2978,14 @@ void main() {
                 ..named('foo')
                 ..onContext('paragraph')
                 ..parseContentAs('raw')
-                ..onProcess =
-                    (
-                      AbstractBlock parent,
-                      Reader reader,
-                      Map<String, Object?> attrs,
-                    ) {
-                      final originalAttrs = Map<String, Object?>.of(attrs);
-                      attrs.remove('title');
-                      return processor.createParagraph(
-                        parent,
-                        reader.readLines(),
-                        {...originalAttrs, 'id': 'value'},
-                      );
-                    };
+                ..onProcess = (parent, reader, attrs) {
+                  final originalAttrs = Map<String, Object?>.of(attrs);
+                  attrs.remove('title');
+                  return processor.createParagraph(parent, reader.readLines(), {
+                    ...originalAttrs,
+                    'id': 'value',
+                  });
+                };
             },
           );
         },
@@ -3207,18 +3005,13 @@ void main() {
               processor
                 ..named('lst')
                 ..onContext('paragraph');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    final list = processor.createList(parent, 'ulist');
-                    for (final line in reader.readLines()) {
-                      list.append(processor.createListItem(list, line));
-                    }
-                    return list;
-                  };
+              processor.onProcess = (parent, reader, attrs) {
+                final list = processor.createList(parent, 'ulist');
+                for (final line in reader.readLines()) {
+                  list.append(processor.createListItem(list, line));
+                }
+                return list;
+              };
             },
           );
         },
@@ -3241,18 +3034,13 @@ void main() {
               processor
                 ..named('sect')
                 ..onContext('open');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    return processor.createSection(
-                      parent,
-                      attrs['title']! as String,
-                      <String, Object?>{},
-                    );
-                  };
+              processor.onProcess = (parent, reader, attrs) {
+                return processor.createSection(
+                  parent,
+                  attrs['title']! as String,
+                  <String, Object?>{},
+                );
+              };
             },
           );
         },
@@ -3284,19 +3072,14 @@ void main() {
               processor
                 ..named('csv')
                 ..onContext('literal');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    processor.parseContent(parent, [
-                      ',===',
-                      ...reader.readLines().whereType<String>(),
-                      ',===',
-                    ]);
-                    return null;
-                  };
+              processor.onProcess = (parent, reader, attrs) {
+                processor.parseContent(parent, [
+                  ',===',
+                  ...reader.readLines().whereType<String>(),
+                  ',===',
+                ]);
+                return null;
+              };
             },
           );
         },
@@ -3317,14 +3100,9 @@ void main() {
               processor
                 ..named('unwrap')
                 ..onContext('open');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    return processor.parseContent(parent, reader.readLines());
-                  };
+              processor.onProcess = (parent, reader, attrs) {
+                return processor.parseContent(parent, reader.readLines());
+              };
             },
           );
         },
@@ -3347,14 +3125,9 @@ void main() {
             registry.blockMacro(
               name: 'para',
               build: (processor) {
-                processor.onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      return processor.parseContent(parent, target);
-                    };
+                processor.onProcess = (parent, target, attrs) {
+                  return processor.parseContent(parent, target);
+                };
               },
             );
           },
@@ -3376,16 +3149,11 @@ void main() {
               processor
                 ..named('wrap')
                 ..onContext('open');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    final wrap = processor.createOpenBlock(parent, null, attrs);
-                    processor.parseContent(wrap, reader.readLines());
-                    return wrap;
-                  };
+              processor.onProcess = (parent, reader, attrs) {
+                final wrap = processor.createOpenBlock(parent, null, attrs);
+                processor.parseContent(wrap, reader.readLines());
+                return wrap;
+              };
             },
           );
         },
@@ -3421,26 +3189,21 @@ void main() {
               processor
                 ..named('attrs')
                 ..onContext('open');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    Reader reader,
-                    Map<String, Object?> attrs,
-                  ) {
-                    parsedAttrs = processor.parseAttributes(
-                      parent,
-                      reader.readLine(),
-                      positionalAttributes: ['a', 'b'],
-                    );
-                    parsedAttrs!.addAll(
-                      processor.parseAttributes(
-                        parent,
-                        'foo={foo}',
-                        subAttributes: true,
-                      ),
-                    );
-                    return null;
-                  };
+              processor.onProcess = (parent, reader, attrs) {
+                parsedAttrs = processor.parseAttributes(
+                  parent,
+                  reader.readLine(),
+                  positionalAttributes: ['a', 'b'],
+                );
+                parsedAttrs!.addAll(
+                  processor.parseAttributes(
+                    parent,
+                    'foo={foo}',
+                    subAttributes: true,
+                  ),
+                );
+                return null;
+              };
             },
           );
         },
@@ -3460,34 +3223,29 @@ void main() {
           registry.blockMacro(
             build: (processor) {
               processor.named('sect');
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    final stringAttrs = <String, Object?>{
-                      for (final entry in attrs.entries)
-                        entry.key.toString(): entry.value,
-                    };
-                    final levelValue = stringAttrs.remove('level');
-                    var current = parent;
-                    if (current.context == 'preamble') {
-                      current = current.parent!;
-                    }
-                    if (stringAttrs['id'] == 'false') {
-                      stringAttrs['id'] = false;
-                    }
-                    sect = processor.createSection(
-                      current,
-                      'Section Title',
-                      stringAttrs,
-                      level: levelValue == null
-                          ? null
-                          : int.parse(levelValue.toString()),
-                    );
-                    return null;
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                final stringAttrs = <String, Object?>{
+                  for (final entry in attrs.entries)
+                    entry.key.toString(): entry.value,
+                };
+                final levelValue = stringAttrs.remove('level');
+                var current = parent;
+                if (current.context == 'preamble') {
+                  current = current.parent!;
+                }
+                if (stringAttrs['id'] == 'false') {
+                  stringAttrs['id'] = false;
+                }
+                sect = processor.createSection(
+                  current,
+                  'Section Title',
+                  stringAttrs,
+                  level: levelValue == null
+                      ? null
+                      : int.parse(levelValue.toString()),
+                );
+                return null;
+              };
             },
           );
         },
@@ -3572,7 +3330,7 @@ void main() {
               build: (processor) {
                 processor
                   ..atLocation('footer')
-                  ..onProcess = (Document doc) =>
+                  ..onProcess = (doc) =>
                       '<script><!-- analytics code --></script>';
               },
             );
@@ -3687,11 +3445,7 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.onProcess = (
-                AbstractBlock parent,
-                Reader reader,
-                Map<String, Object?> attrs,
-              ) => null;
+              processor.onProcess = (parent, reader, attrs) => null;
             },
           );
         },
@@ -3809,16 +3563,11 @@ void main() {
           registry.blockMacro(
             name: 'no_alt',
             build: (processor) {
-              processor.onProcess =
-                  (
-                    AbstractBlock parent,
-                    String target,
-                    Map<Object, Object?> attrs,
-                  ) {
-                    return processor.createBlock(parent, 'image', null, {
-                      'target': 'picture.jpg',
-                    });
-                  };
+              processor.onProcess = (parent, target, attrs) {
+                return processor.createBlock(parent, 'image', null, {
+                  'target': 'picture.jpg',
+                });
+              };
             },
           );
         },
@@ -3837,19 +3586,14 @@ void main() {
               name: 'no_alt',
               build: (processor) {
                 processor.matchFormat('short');
-                processor.onProcess =
-                    (
-                      AbstractBlock parent,
-                      String target,
-                      Map<Object, Object?> attrs,
-                    ) {
-                      return processor.createInline(
-                        parent,
-                        'image',
-                        null,
-                        target: 'picture.jpg',
-                      );
-                    };
+                processor.onProcess = (parent, target, attrs) {
+                  return processor.createInline(
+                    parent,
+                    'image',
+                    null,
+                    target: 'picture.jpg',
+                  );
+                };
               },
             );
           },
@@ -4463,12 +4207,12 @@ void main() {
       final registry = Registry();
       final first = registry.treeProcessor(
         build: (processor) {
-          processor.onProcess = (Document doc) => null;
+          processor.onProcess = (doc) => null;
         },
       );
       final second = registry.treeProcessor(
         build: (processor) {
-          processor.onProcess = (Document doc) => null;
+          processor.onProcess = (doc) => null;
         },
       );
       expect(registry.treeProcessors, equals([first, second]));
@@ -4482,13 +4226,13 @@ void main() {
       final registry = (Registry())
         ..treeProcessor(
           build: (processor) {
-            processor.onProcess = (Document doc) => null;
+            processor.onProcess = (doc) => null;
           },
         );
       final preferred = registry.prefer(
         'tree_processor',
         build: (TreeProcessor processor) {
-          processor.onProcess = (Document doc) => null;
+          processor.onProcess = (doc) => null;
         },
       );
       expect(registry.treeProcessors.first, same(preferred));
@@ -4533,7 +4277,7 @@ void main() {
           build: (processor) {
             processor
               ..atLocation('footer')
-              ..onProcess = (Document doc) => 'footer';
+              ..onProcess = (doc) => 'footer';
           },
         );
       expect(registry.hasDocinfoProcessors(), isTrue);
@@ -4559,7 +4303,7 @@ void main() {
 
       final tree = registry.treeProcessor(
         build: (processor) {
-          processor.onProcess = (Document document) {
+          processor.onProcess = (document) {
             document.append(
               processor.createParagraph(document, 'hi', <String, Object?>{}),
             );
@@ -4572,8 +4316,7 @@ void main() {
 
       final post = registry.postprocessor(
         build: (processor) {
-          processor.onProcess = (Document document, String output) =>
-              '$output!';
+          processor.onProcess = (document, output) => '$output!';
         },
       );
       expect(
@@ -4583,7 +4326,7 @@ void main() {
 
       final pre = registry.preprocessor(
         build: (processor) {
-          processor.onProcess = (Document document, Reader reader) => reader;
+          processor.onProcess = (document, reader) => reader;
         },
       );
       final reader = Reader('hi');
@@ -4595,18 +4338,13 @@ void main() {
       final block = registry.block(
         name: 'shout',
         build: (processor) {
-          processor.onProcess =
-              (
-                AbstractBlock parent,
-                Reader reader,
-                Map<String, Object?> attrs,
-              ) {
-                return processor.createParagraph(
-                  parent,
-                  reader.lines.map((line) => line!.toUpperCase()).toList(),
-                  attrs,
-                );
-              };
+          processor.onProcess = (parent, reader, attrs) {
+            return processor.createParagraph(
+              parent,
+              reader.lines.map((line) => line!.toUpperCase()).toList(),
+              attrs,
+            );
+          };
         },
       );
       final created =
@@ -4728,7 +4466,7 @@ void main() {
       final ext = registry.preprocessor(
         processor: const {'key': 'value'},
         build: (processor) {
-          processor.onProcess = (Document document, Reader reader) => null;
+          processor.onProcess = (document, reader) => null;
         },
       );
       expect(ext.config['key'], equals('value'));

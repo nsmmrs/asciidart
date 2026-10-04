@@ -33,8 +33,8 @@
 /// * Ruby blocks become callbacks: the registration block receives the
 ///   processor instance (e.g.
 ///   `registry.block(name: 'shout', build: (p) {...})`) and the `process
-///   do ... end` form becomes an assignment to
-///   [Processor.onProcess].
+///   do ... end` form becomes an assignment to the family's typed
+///   `onProcess` callback (e.g. [TreeProcessor.onProcess]).
 /// * Class-level `option` defaults from Ruby (`Processor.option`) are
 ///   expressed by merging defaults in the subclass constructor.
 /// * `registeredForBlock`, [Registry.registeredForBlockMacro] and
@@ -104,13 +104,13 @@ class Processor {
   /// The configuration of this processor instance.
   final Map<String, Object?> config;
 
-  /// The process callback assigned through the registration DSL.
+  /// Whether a process callback was assigned through the registration DSL.
   ///
-  /// This is the Dart equivalent of Ruby's `process do ... end` block. Each
-  /// processor family invokes it from its `process` method with that
-  /// family's arguments; a subclass that overrides `process` never consults
-  /// it.
-  Function? onProcess;
+  /// Each processor family declares a typed `onProcess` field (the Dart
+  /// equivalent of Ruby's `process do ... end` block) and invokes it from
+  /// its `process` method; a subclass that overrides `process` never
+  /// consults it.
+  bool get hasOnProcess => false;
 
   /// Merges [config] into this processor's configuration.
   void updateConfig(Map<String, Object?> config) {
@@ -515,7 +515,7 @@ class Processor {
 /// [DocinfoProcessor]).
 ///
 /// Port of `Extensions::DocumentProcessorDsl` (whose `process` half is
-/// [Processor.onProcess] in Dart).
+/// each family's `onProcess` callback in Dart).
 mixin DocumentProcessorDsl on Processor {
   /// Marks this processor as preferred, moving it to the front of its
   /// registry list.
@@ -531,7 +531,7 @@ mixin DocumentProcessorDsl on Processor {
 /// accessors; this intermediate base only shares the Dart implementation of
 /// that contract and the syntax builder DSL (port of
 /// `Extensions::SyntaxProcessorDsl`, whose `process` half is
-/// [Processor.onProcess] in Dart).
+/// each family's `onProcess` callback in Dart).
 abstract class NamedProcessor extends Processor {
   /// Creates a named processor with [config].
   new([super.config]);
@@ -658,6 +658,13 @@ abstract class NamedProcessor extends Processor {
   }
 }
 
+/// The process callback of a [Preprocessor] built through the
+/// registration DSL.
+typedef PreprocessorCallback = Object? Function(
+  Document document,
+  Reader reader,
+);
+
 /// Preprocessors run after the source text is split into lines and
 /// normalized, but before parsing begins.
 ///
@@ -671,18 +678,28 @@ class Preprocessor extends Processor with DocumentProcessorDsl {
   /// Creates a preprocessor with [config].
   new([super.config]);
 
+  /// The process callback assigned through the registration DSL.
+  PreprocessorCallback? onProcess;
+
+  @override
+  bool get hasOnProcess => onProcess != null;
+
   /// Processes [document] and [reader].
   ///
-  /// Runs [Processor.onProcess] when the processor was built through the
+  /// Runs [onProcess] when the processor was built through the
   /// registration DSL, else throws [UnimplementedError].
   Object? process(Document document, Reader reader) {
     final handler = onProcess;
-    if (handler != null) return Function.apply(handler, [document, reader]);
+    if (handler != null) return handler(document, reader);
     throw UnimplementedError(
       'Preprocessor subclass $runtimeType must implement the process method',
     );
   }
 }
+
+/// The process callback of a [TreeProcessor] built through the
+/// registration DSL.
+typedef TreeProcessorCallback = Object? Function(Document document);
 
 /// Tree processors run on the [Document] after the source has been parsed
 /// into an abstract syntax tree.
@@ -692,18 +709,31 @@ class TreeProcessor extends Processor with DocumentProcessorDsl {
   /// Creates a tree processor with [config].
   new([super.config]);
 
+  /// The process callback assigned through the registration DSL.
+  TreeProcessorCallback? onProcess;
+
+  @override
+  bool get hasOnProcess => onProcess != null;
+
   /// Processes [document].
   ///
-  /// Runs [Processor.onProcess] when the processor was built through the
+  /// Runs [onProcess] when the processor was built through the
   /// registration DSL, else throws [UnimplementedError].
   Object? process(Document document) {
     final handler = onProcess;
-    if (handler != null) return Function.apply(handler, [document]);
+    if (handler != null) return handler(document);
     throw UnimplementedError(
       'TreeProcessor subclass $runtimeType must implement the process method',
     );
   }
 }
+
+/// The process callback of a [Postprocessor] built through the
+/// registration DSL.
+typedef PostprocessorCallback = Object? Function(
+  Document document,
+  String output,
+);
 
 /// Postprocessors run after the document is converted, but before it is
 /// written to the output stream.
@@ -716,18 +746,33 @@ class Postprocessor extends Processor with DocumentProcessorDsl {
   /// Creates a postprocessor with [config].
   new([super.config]);
 
+  /// The process callback assigned through the registration DSL.
+  PostprocessorCallback? onProcess;
+
+  @override
+  bool get hasOnProcess => onProcess != null;
+
   /// Processes the converted [output] of [document].
   ///
-  /// Runs [Processor.onProcess] when the processor was built through the
+  /// Runs [onProcess] when the processor was built through the
   /// registration DSL, else throws [UnimplementedError].
   Object? process(Document document, String output) {
     final handler = onProcess;
-    if (handler != null) return Function.apply(handler, [document, output]);
+    if (handler != null) return handler(document, output);
     throw UnimplementedError(
       'Postprocessor subclass $runtimeType must implement the process method',
     );
   }
 }
+
+/// The process callback of a [IncludeProcessor] built through the
+/// registration DSL.
+typedef IncludeProcessorCallback = Object? Function(
+  ReaderDocument document,
+  PreprocessorReader reader,
+  String target,
+  Map<Object, String?> attributes,
+);
 
 /// Include processors handle `include::<target>[]` directives for targets
 /// which they claim to handle.
@@ -742,6 +787,12 @@ class IncludeProcessor extends Processor
     implements ReaderIncludeProcessor {
   /// Creates an include processor with [config].
   new([super.config]);
+
+  /// The process callback assigned through the registration DSL.
+  IncludeProcessorCallback? onProcess;
+
+  @override
+  bool get hasOnProcess => onProcess != null;
 
   /// The handles callback assigned through the registration DSL.
   ///
@@ -763,7 +814,7 @@ class IncludeProcessor extends Processor
 
   /// Pushes the content for [target] onto [reader].
   ///
-  /// Runs [Processor.onProcess] when the processor was built through the
+  /// Runs [onProcess] when the processor was built through the
   /// registration DSL, else throws [UnimplementedError].
   @override
   Object? process(
@@ -774,7 +825,7 @@ class IncludeProcessor extends Processor
   ) {
     final handler = onProcess;
     if (handler != null) {
-      return Function.apply(handler, [document, reader, target, attributes]);
+      return handler(document, reader, target, attributes);
     }
     throw UnimplementedError(
       'IncludeProcessor subclass $runtimeType must implement the '
@@ -782,6 +833,10 @@ class IncludeProcessor extends Processor
     );
   }
 }
+
+/// The process callback of a [DocinfoProcessor] built through the
+/// registration DSL.
+typedef DocinfoProcessorCallback = Object? Function(Document document);
 
 /// Docinfo processors add additional content to the header and/or footer of
 /// the generated document.
@@ -797,13 +852,19 @@ class DocinfoProcessor extends Processor with DocumentProcessorDsl {
     if (!isTruthy(config['location'])) config['location'] = 'head';
   }
 
+  /// The process callback assigned through the registration DSL.
+  DocinfoProcessorCallback? onProcess;
+
+  @override
+  bool get hasOnProcess => onProcess != null;
+
   /// Processes [document], returning the docinfo content.
   ///
-  /// Runs [Processor.onProcess] when the processor was built through the
+  /// Runs [onProcess] when the processor was built through the
   /// registration DSL, else throws [UnimplementedError].
   Object? process(Document document) {
     final handler = onProcess;
-    if (handler != null) return Function.apply(handler, [document]);
+    if (handler != null) return handler(document);
     throw UnimplementedError(
       'DocinfoProcessor subclass $runtimeType must implement the '
       'process method',
@@ -815,6 +876,14 @@ class DocinfoProcessor extends Processor with DocumentProcessorDsl {
     option('location', value);
   }
 }
+
+/// The process callback of a [BlockProcessor] built through the
+/// registration DSL.
+typedef BlockProcessorCallback = Object? Function(
+  AbstractBlock parent,
+  Reader reader,
+  Map<String, Object?> attributes,
+);
 
 /// Block processors handle delimited blocks and paragraphs that have a
 /// custom name.
@@ -864,9 +933,15 @@ class BlockProcessor extends NamedProcessor {
     }
   }
 
+  /// The process callback assigned through the registration DSL.
+  BlockProcessorCallback? onProcess;
+
+  @override
+  bool get hasOnProcess => onProcess != null;
+
   /// Builds the node for the custom block.
   ///
-  /// Runs [Processor.onProcess] when the processor was built through the
+  /// Runs [onProcess] when the processor was built through the
   /// registration DSL, else throws [UnimplementedError].
   Object? process(
     AbstractBlock parent,
@@ -875,7 +950,7 @@ class BlockProcessor extends NamedProcessor {
   ) {
     final handler = onProcess;
     if (handler != null) {
-      return Function.apply(handler, [parent, reader, attributes]);
+      return handler(parent, reader, attributes);
     }
     throw UnimplementedError(
       'BlockProcessor subclass $runtimeType must implement the process method',
@@ -907,6 +982,14 @@ class BlockProcessor extends NamedProcessor {
   }
 }
 
+/// The process callback of a [MacroProcessor] built through the
+/// registration DSL.
+typedef MacroProcessorCallback = Object? Function(
+  AbstractBlock parent,
+  String target,
+  Map<Object, Object?> attributes,
+);
+
 /// An abstract base class for the macro processor families
 /// ([BlockMacroProcessor] and [InlineMacroProcessor]).
 class MacroProcessor extends NamedProcessor {
@@ -921,9 +1004,15 @@ class MacroProcessor extends NamedProcessor {
     }
   }
 
+  /// The process callback assigned through the registration DSL.
+  MacroProcessorCallback? onProcess;
+
+  @override
+  bool get hasOnProcess => onProcess != null;
+
   /// Builds the node for the macro invocation.
   ///
-  /// Runs [Processor.onProcess] when the processor was built through the
+  /// Runs [onProcess] when the processor was built through the
   /// registration DSL, else throws [UnimplementedError].
   Object? process(
     AbstractBlock parent,
@@ -932,7 +1021,7 @@ class MacroProcessor extends NamedProcessor {
   ) {
     final handler = onProcess;
     if (handler != null) {
-      return Function.apply(handler, [parent, target, attributes]);
+      return handler(parent, target, attributes);
     }
     throw UnimplementedError(
       'MacroProcessor subclass $runtimeType must implement the process method',
@@ -1063,7 +1152,7 @@ class Extension {
 /// processor's `process` method.
 ///
 /// By storing this reference, both concrete extension implementations and
-/// [Processor.onProcess] callbacks are accommodated uniformly.
+/// `onProcess` callbacks are accommodated uniformly.
 class ProcessorExtension extends Extension {
   /// Creates a proxy of [kind] for [instance].
   ///
@@ -1594,7 +1683,7 @@ class Registry {
       };
       final processor = create(config);
       build(processor);
-      if (processor.onProcess == null) {
+      if (!processor.hasOnProcess) {
         throw StateError('No block specified to process $kindName extension');
       }
       instance = processor;
@@ -1686,7 +1775,7 @@ class Registry {
       if (name == null) {
         throw ArgumentError('No name specified for $kindName extension');
       }
-      if (processor.onProcess == null) {
+      if (!processor.hasOnProcess) {
         throw StateError('No block specified to process $kindName extension');
       }
       instance = processor;
