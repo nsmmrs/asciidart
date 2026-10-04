@@ -38,6 +38,20 @@ ASCIIDOCTOR_EXE="$PWD/dist/asciidoctor-linux-x64" bats test/e2e/
 `ASCIIDOCTOR_EXE=test/e2e/bin/asciidoctor-ruby bats test/e2e/` runs the
 same suite against the gem; both must pass.
 
+## Corpus check
+
+A wider comparison with the gem over thousands of real documents (stdout,
+warnings and exit codes, four modes each); see `benchmark/PARITY.md`:
+
+```sh
+tool/corpus/fetch.sh /tmp/corpus
+dart run tool/corpus_parity.dart --exe-a asciidoctor \
+  --exe-b dist/asciidoctor-linux-x64 --out /tmp/corpus-results /tmp/corpus
+```
+
+Use a gem install whose only optional gem is CodeRay as `--exe-a`. Every
+difference it finds deserves a reproducer in `test/parity/`.
+
 ## The npm package
 
 ```sh

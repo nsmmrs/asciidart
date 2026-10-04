@@ -1,0 +1,16 @@
+# Corpus for tool/corpus_parity.dart: NAME URL COMMIT [SPARSE-PATH]
+# The documents stay in their repositories; tool/corpus/fetch.sh clones
+# them at these commits. Several paths for one repository are separated
+# by commas.
+antora https://gitlab.com/antora/antora.git 87797da7a7f337301ec9b1ad26aa291a28342d56
+asciidoc-docs https://github.com/asciidoctor/asciidoc-docs.git 45b7693d7327c8850e7f486049c125fb61e666db
+asciidoctor https://github.com/asciidoctor/asciidoctor.git 0b99b39c9df884d4aec13bba45f03cdbab505769
+asciidoctor-diagram https://github.com/asciidoctor/asciidoctor-diagram.git c559bce56772453bb7446b7a12126ad6980fcda4
+asciidoctor-epub3 https://github.com/asciidoctor/asciidoctor-epub3.git 199ab4c43d65421f3bb399a7fb40bb267e9d339b
+asciidoctor.js https://github.com/asciidoctor/asciidoctor.js.git 9c27e439f1173f9e2586a86062608e49533307f9
+asciidoctor-maven-plugin https://github.com/asciidoctor/asciidoctor-maven-plugin.git c95c58978e51fcf882e722417e9803eed77c4b20
+asciidoctor-pdf https://github.com/asciidoctor/asciidoctor-pdf.git 7ea543badd3677d6b6b860bc167f699bbe9a9d62
+git https://github.com/git/git.git 8103b446517e0c44e67561b9d0ccce56efa60a71
+hibernate https://github.com/hibernate/hibernate-orm.git bc6aa6d42f3547a3e5b4204ada1e597ffcc5ed20 documentation
+quarkus https://github.com/quarkusio/quarkus.git 1f3f7fae7924013db0d5f23479d11654a34f1f70 docs/src/main/asciidoc
+spring-boot https://github.com/spring-projects/spring-boot.git f6142c9f47591b70949391d1848c1f81503006db documentation,build-plugin/spring-boot-maven-plugin/src/docs,build-plugin/spring-boot-gradle-plugin/src/docs
