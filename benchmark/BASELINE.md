@@ -117,3 +117,23 @@ declares `static const int _maxInt63 = 9223372036854775807`, which
 constant would alter VM integer semantics (a parity risk), so per the
 parity-gate task the JS target is recorded as not-run rather than fixed
 here. (Node v26.8.1 is installed; compilation itself is the blocker.)
+
+## Throughput (steady state, in-process)
+
+The CLI numbers above are dominated by process startup at those corpus
+sizes. `benchmark/throughput.dart` measures the engine itself: a ~294 KB
+document (mdbasics + the syntax reference + `sample.adoc`, ×20) converted
+in-process with `safe`, `doctype: book`, standalone; 5 warmups, median of 15.
+
+```sh
+dart compile exe benchmark/throughput.dart -o /tmp/throughput && /tmp/throughput
+```
+
+Ruby comparison: the same corpus and options through
+`Asciidoctor.convert` (gem 2.0.26, Ruby 4.0.7, mean of 15 after 3 warmups).
+
+| Impl (2026-10-04) | html5 | docbook5 | manpage |
+| --- | --: | --: | --: |
+| Ruby | 81.6 ms | 82.8 ms | 121.1 ms |
+| Ruby + YJIT | 56.6 ms | 56.2 ms | 91.5 ms |
+| Dart AOT, before perf work (`39e4201`) | 89.0 ms | 90.6 ms | 134.3 ms |
