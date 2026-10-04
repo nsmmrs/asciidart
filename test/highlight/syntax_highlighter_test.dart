@@ -221,8 +221,7 @@ _XmlElement _parseFragment(String content) {
       }
       attributes[attr.group(1)!.toLowerCase()] = _decodeEntities(value);
     }
-    final element = _XmlElement(name, attributes);
-    element.parent = stack.last;
+    final element = (_XmlElement(name, attributes))..parent = stack.last;
     stack.last.children.add(element);
     final raw = match.group(0)!;
     if (!raw.endsWith('/>') && !_voidElements.contains(name)) {
@@ -598,8 +597,8 @@ void main() {
     });
 
     test('honors the syntax_highlighter_factory document option', () {
-      final factory = SyntaxHighlighterFactory();
-      factory.register(_UnavailableHighlighter(), <String>['unavailable']);
+      final factory = (SyntaxHighlighterFactory())
+        ..register(_UnavailableHighlighter(), <String>['unavailable']);
       final doc = _docWithAttributes(
         <String, Object?>{'source-highlighter': 'unavailable'},
         options: <String, Object?>{'syntax_highlighter_factory': factory},

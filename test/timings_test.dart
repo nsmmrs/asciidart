@@ -44,41 +44,41 @@ void main() {
     });
 
     test('starting twice restarts the timer', () {
-      final timings = Timings();
-      timings.start('parse');
+      final timings = (Timings())..start('parse');
       timings.start('parse');
       expect(timings.record('parse'), greaterThanOrEqualTo(0));
       expect(() => timings.record('parse'), throwsStateError);
     });
 
     test('phase getters combine recorded phases', () {
-      final timings = Timings();
-      timings.start('read');
+      final timings = (Timings())..start('read');
       timings.record('read');
       expect(timings.read, isNotNull);
       expect(timings.parse, isNull);
       expect(timings.readParse, equals(timings.read));
       expect(timings.total, equals(timings.read));
 
-      timings.start('parse');
-      timings.record('parse');
+      timings
+        ..start('parse')
+        ..record('parse');
       expect(timings.readParse, equals(timings.read! + timings.parse!));
 
-      timings.start('convert');
-      timings.record('convert');
+      timings
+        ..start('convert')
+        ..record('convert');
       expect(
         timings.readParseConvert,
         equals(timings.readParse! + timings.convert!),
       );
 
-      timings.start('write');
-      timings.record('write');
+      timings
+        ..start('write')
+        ..record('write');
       expect(timings.total, equals(timings.readParseConvert! + timings.write!));
     });
 
     test('printReport with subject prints four lines', () {
-      final timings = Timings();
-      timings.start('read');
+      final timings = (Timings())..start('read');
       timings.record('read');
       timings.start('convert');
       timings.record('convert');

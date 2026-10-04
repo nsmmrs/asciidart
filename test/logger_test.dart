@@ -152,8 +152,7 @@ void main() {
     test('should set logdev to specified file', () async {
       await withTempDir((dir) async {
         final path = '${dir.path}${Platform.pathSeparator}out.log';
-        final logger = Logger(logdev: path);
-        logger.warn('this is a call');
+        final logger = (Logger(logdev: path))..warn('this is a call');
         await logger.close();
         expect(
           File(path).readAsStringSync().trim().split('\n').last,
@@ -184,8 +183,8 @@ void main() {
 
     test('should set level to value specified by level kwarg', () {
       final buffer = StringBuffer();
-      final logger = Logger(logdev: buffer, level: 'fatal');
-      logger.warn('this is a call');
+      final logger = (Logger(logdev: buffer, level: 'fatal'))
+        ..warn('this is a call');
       expect(buffer.toString(), isEmpty);
       expect(logger.level, equals(Severity.fatal));
     });
@@ -385,8 +384,7 @@ void main() {
 
   group('Logger behavior (extra)', () {
     test('level setter accepts Severity, int, and String', () {
-      final logger = Logger(logdev: StringBuffer());
-      logger.level = Severity.debug;
+      final logger = (Logger(logdev: StringBuffer()))..level = Severity.debug;
       expect(logger.level, equals(Severity.debug));
       logger.level = 3;
       expect(logger.level, equals(Severity.error));
@@ -464,8 +462,7 @@ void main() {
 
     test('non-string messages render via toString', () {
       final buffer = StringBuffer();
-      final logger = Logger(logdev: buffer);
-      logger.warn(42);
+      final logger = (Logger(logdev: buffer))..warn(42);
       logger.warn({'a': 1});
       expect(
         buffer.toString(),
@@ -504,8 +501,7 @@ void main() {
       await withTempDir((dir) async {
         final path = '${dir.path}${Platform.pathSeparator}app.log';
         File(path).writeAsStringSync('old');
-        final logger = Logger(logdev: path);
-        logger.warn('new');
+        final logger = (Logger(logdev: path))..warn('new');
         await logger.close();
         expect(
           File(path).readAsStringSync(),
@@ -569,8 +565,7 @@ void main() {
 
   group('MemoryLogger (extra)', () {
     test('records every severity without level filtering', () {
-      final logger = MemoryLogger();
-      logger.add(Severity.warn, 'w1');
+      final logger = (MemoryLogger())..add(Severity.warn, 'w1');
       logger.warn('w2');
       logger.debug('d');
       expect(logger.messages, hasLength(3));
@@ -583,8 +578,7 @@ void main() {
     test(
       'add resolves message from block or progname, defaulting severity',
       () {
-        final logger = MemoryLogger();
-        logger.add(null, null, 'progonly');
+        final logger = (MemoryLogger())..add(null, null, 'progonly');
         logger.add(Severity.error, () => 'from-block');
         expect(logger.messages[0].severity, equals(Severity.unknown));
         expect(logger.messages[0].message, equals('progonly'));
@@ -597,8 +591,9 @@ void main() {
       final logger = MemoryLogger();
       expect(logger.isEmpty, isTrue);
       expect(logger.maxSeverity, isNull);
-      logger.debug('d');
-      logger.warn('w');
+      logger
+        ..debug('d')
+        ..warn('w');
       expect(logger.isEmpty, isFalse);
       expect(logger.maxSeverity, equals(Severity.warn));
       logger.clear();

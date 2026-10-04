@@ -923,8 +923,7 @@ void main() {
     });
 
     test('abstract is retained when backend is not docbook5', () {
-      final doc = makeDoc();
-      doc.converter = Docbook5Converter('docbook45');
+      final doc = (makeDoc())..converter = Docbook5Converter('docbook45');
       final abstract = StubBlock(
         doc,
         'open',
@@ -1643,8 +1642,9 @@ void main() {
     test('item with id, role and nested blocks', () {
       final doc = makeDoc();
       final list = ListBlock(doc, 'olist');
-      final item = StubListItem(list, 'first')..attributes['role'] = 'lead';
-      item.id = 'item1';
+      final item = StubListItem(list, 'first')
+        ..attributes['role'] = 'lead'
+        ..id = 'item1';
       item << para(item, 'nested');
       list << item;
       expect(

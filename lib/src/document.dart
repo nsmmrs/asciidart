@@ -448,12 +448,14 @@ class Document extends AbstractBlock implements NodeDocument {
         ...parentDoc.catalog,
         'footnotes': <Footnote>[],
       };
-      attrOverrides.addAll(parentDoc._attributeOverrides);
-      attrOverrides.addAll(parentDoc.attributes);
+      attrOverrides
+        ..addAll(parentDoc._attributeOverrides)
+        ..addAll(parentDoc.attributes);
       attrOverrides.remove('compat-mode');
       parentDoctype = attrOverrides.remove('doctype') as String?;
-      attrOverrides.remove('notitle');
-      attrOverrides.remove('showtitle');
+      attrOverrides
+        ..remove('notitle')
+        ..remove('showtitle');
       attrOverrides.remove('toc');
       final tocPlacement = attrOverrides.remove('toc-placement');
       attributes['toc-placement'] = isTruthy(tocPlacement)
@@ -1017,8 +1019,8 @@ class Document extends AbstractBlock implements NodeDocument {
         }
         return null;
       case 'footnotes':
-        final footnoteList = catalog['footnotes']! as List<Footnote>;
-        footnoteList.add(value! as Footnote);
+        final footnoteList = (catalog['footnotes']! as List<Footnote>)
+          ..add(value! as Footnote);
         return footnoteList;
       default:
         if (isTruthy(options['catalog_assets'])) {
@@ -1027,8 +1029,7 @@ class Document extends AbstractBlock implements NodeDocument {
               : value;
           // Throws when the catalog has no such table, mirroring Ruby's
           // NoMethodError on `nil.<<`.
-          final assets = catalog[type]! as List;
-          assets.add(stored);
+          final assets = (catalog[type]! as List)..add(stored);
           return assets;
         }
         return null;
@@ -1133,8 +1134,7 @@ class Document extends AbstractBlock implements NodeDocument {
   set title(String? value) {
     var sect = header;
     if (sect == null) {
-      sect = header = Section(this, 0);
-      sect.sectname = 'header';
+      sect = (header = Section(this, 0))..sectname = 'header';
     }
     sect.title = value;
   }
@@ -1459,13 +1459,15 @@ class Document extends AbstractBlock implements NodeDocument {
     if (target is StringSink) {
       if (!_isNilOrEmpty(output)) {
         final text = _chomp(output! as String);
-        target.write(text);
-        target.write(lf);
+        target
+          ..write(text)
+          ..write(lf);
       }
     } else if (target is IOSink) {
       if (!_isNilOrEmpty(output)) {
-        target.write(_chomp(output! as String));
-        target.writeln();
+        target
+          ..write(_chomp(output! as String))
+          ..writeln();
       }
     } else if (target is String) {
       // Ruby's `File.write target, output` coerces nil to empty.
@@ -2096,8 +2098,9 @@ class Document extends AbstractBlock implements NodeDocument {
     }
     if (currentDoctype != null) {
       if (currentBackend != null) {
-        attrs.remove('backend-$currentBackend');
-        attrs.remove('backend-$currentBackend-doctype-$currentDoctype');
+        attrs
+          ..remove('backend-$currentBackend')
+          ..remove('backend-$currentBackend-doctype-$currentDoctype');
       }
       attrs['backend-$backend-doctype-$currentDoctype'] = '';
       attrs['doctype-$currentDoctype'] = '';

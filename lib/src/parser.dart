@@ -1139,8 +1139,9 @@ abstract final class Parser {
         docAttrs['outfilesuffix'] = '.$manvolnum';
       }
     } else if (!headerOnly) {
-      reader.skipBlankLines();
-      reader.save();
+      reader
+        ..skipBlankLines()
+        ..save();
       blockAttributes.addAll(
         parseBlockMetadataLines(reader, document, <Object, Object?>{}),
       );
@@ -1435,8 +1436,9 @@ abstract final class Parser {
                 newBlock.parent = newIntro;
                 newIntro.style = 'partintro';
                 if (firstBlock.style == 'partintro') {
-                  firstBlock.context = 'paragraph';
-                  firstBlock.style = null;
+                  firstBlock
+                    ..context = 'paragraph'
+                    ..style = null;
                 }
                 section.blocks.removeAt(0);
                 newIntro << firstBlock;
@@ -1539,8 +1541,7 @@ abstract final class Parser {
     }
 
     if (reftext != null) attrs['reftext'] = reftext;
-    final section = Section(parent, level);
-    section.id = sectId;
+    final section = (Section(parent, level))..id = sectId;
     section.title = sectTitle;
     section.sectname = sectName;
     section.sourceLocation = _loc(sourceLocation);
@@ -1981,8 +1982,10 @@ abstract final class Parser {
                       : scaledwidth;
                 }
                 if (isTruthy(attrs['title'])) {
-                  block.title = blockTitle = attrs.remove('title') as String?;
-                  block.assignCaption(attrs.remove('caption'), 'figure');
+                  blockTitle = attrs.remove('title') as String?;
+                  block
+                    ..title = blockTitle
+                    ..assignCaption(attrs.remove('caption'), 'figure');
                 }
               }
               attrs['target'] = target;
@@ -2157,8 +2160,8 @@ abstract final class Parser {
         if (floatTitle.reftext != null) {
           attrs['reftext'] = floatTitle.reftext;
         }
-        block = Block(parent, 'floating_title', contentModel: 'empty');
-        block.title = floatTitle.title;
+        block = (Block(parent, 'floating_title', contentModel: 'empty'))
+          ..title = floatTitle.title;
         attrs.remove('title');
         // TEMP-SEAM (parser): `block.title` needs the substitutors wave;
         // the partial conversion feeds the ID generator instead.
@@ -4282,8 +4285,9 @@ abstract final class Parser {
     reader.skipCommentLines();
     while (processAttributeEntry(reader, document, attributes)) {
       // Discard line just processed.
-      reader.shift();
-      reader.skipCommentLines();
+      reader
+        ..shift()
+        ..skipCommentLines();
     }
   }
 

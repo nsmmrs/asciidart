@@ -678,8 +678,7 @@ Document makeDoc({
   if (safe != null) opts['safe'] = safe;
   if (doctype != null) opts['doctype'] = doctype;
   if (catalogAssets) opts['catalog_assets'] = true;
-  final doc = Document([], opts);
-  doc.converter = FakeInlineConverter();
+  final doc = (Document([], opts))..converter = FakeInlineConverter();
   return doc;
 }
 
@@ -699,8 +698,8 @@ Block blockFromString(
     doctype: doctype,
     catalogAssets: catalogAssets,
   );
-  final block = Block(doc, 'paragraph');
-  block.lines = src.isEmpty ? <String>[] : src.chomp().split('\n');
+  final block = (Block(doc, 'paragraph'))
+    ..lines = src.isEmpty ? <String>[] : src.chomp().split('\n');
   block.subs = List<String>.of(normalSubs);
   return block;
 }
@@ -2924,8 +2923,7 @@ void main() {
         final doc = makeDoc();
         doc.attributes['fn-notable-text'] = 'footnote:id[about this text]';
         Block paraFor(String line) {
-          final para = Block(doc, 'paragraph');
-          para.lines = [line];
+          final para = (Block(doc, 'paragraph'))..lines = [line];
           para.subs = List<String>.of(normalSubs);
           return para;
         }
@@ -2968,8 +2966,7 @@ void main() {
         // wave; the paragraph outputs are asserted exactly.
         final doc = makeDoc();
         Block paraFor(String line) {
-          final para = Block(doc, 'paragraph');
-          para.lines = [line];
+          final para = (Block(doc, 'paragraph'))..lines = [line];
           para.subs = List<String>.of(normalSubs);
           return para;
         }
@@ -4567,8 +4564,8 @@ void main() {
         // resolve the highlighter explicitly (Ruby's `parse: true` does
         // this via the parse path).
         doc.syntaxHighlighter = SyntaxHighlighter.resolveForDocument(doc);
-        final block = Block(doc, 'listing', contentModel: 'verbatim');
-        block.style = 'source';
+        final block = (Block(doc, 'listing', contentModel: 'verbatim'))
+          ..style = 'source';
         block.attributes['subs'] = 'specialcharacters';
         block.attributes['language'] = 'ruby';
         commitSubs(block);
@@ -4583,8 +4580,8 @@ void main() {
 
       test('should not replace specialcharacters sub with highlight for source block when source highlighter is not set', () {
         final doc = makeDoc();
-        final block = Block(doc, 'listing', contentModel: 'verbatim');
-        block.style = 'source';
+        final block = (Block(doc, 'listing', contentModel: 'verbatim'))
+          ..style = 'source';
         block.attributes['subs'] = 'specialcharacters';
         block.attributes['language'] = 'ruby';
         commitSubs(block);
@@ -4646,8 +4643,8 @@ void main() {
         // PORT: same constructor emulation as above (`default` honors
         // the subs attribute eagerly).
         final doc = makeDoc();
-        final block = Block(doc, 'paragraph', attributes: {'subs': 'quotes'});
-        block.defaultSubs = null;
+        final block = (Block(doc, 'paragraph', attributes: {'subs': 'quotes'}))
+          ..defaultSubs = null;
         commitSubs(block);
         expect(block.subs, ['quotes']);
         commitSubs(block);
@@ -4658,8 +4655,7 @@ void main() {
         // PORT: same constructor emulation as above (`default` falls
         // back to the context built-ins eagerly).
         final doc = makeDoc();
-        final block = Block(doc, 'paragraph');
-        block.defaultSubs = null;
+        final block = (Block(doc, 'paragraph'))..defaultSubs = null;
         commitSubs(block);
         expect(block.subs, [
           'specialcharacters',

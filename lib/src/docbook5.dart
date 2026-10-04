@@ -244,8 +244,9 @@ class Docbook5Converter extends ConverterBase {
       result.add(_documentInfoTag(node, abstract));
     }
     if (manpage) {
-      result.add('<refentry>');
-      result.add('<refmeta>');
+      result
+        ..add('<refentry>')
+        ..add('<refmeta>');
       if (node.hasAttr('mantitle')) {
         result.add(
           '<refentrytitle>${node.applyReftextSubs(node.attr('mantitle')! as String)}</refentrytitle>',
@@ -373,8 +374,9 @@ class Docbook5Converter extends ConverterBase {
     }
     for (final itemObj in node.items) {
       final item = itemObj! as ListItem;
-      result.add('<callout arearefs="${_s(item.attr('coids'))}">');
-      result.add('<para>${_s(item.text)}</para>');
+      result
+        ..add('<callout arearefs="${_s(item.attr('coids'))}">')
+        ..add('<para>${_s(item.text)}</para>');
       if (item.hasBlocks) {
         result.add(_s(item.content()));
       }
@@ -454,8 +456,9 @@ class Docbook5Converter extends ConverterBase {
             result.add(_s(dd.content()));
           }
         }
-        result.add('</$itemTag>');
-        result.add('</$entryTag>');
+        result
+          ..add('</$itemTag>')
+          ..add('</$entryTag>');
       }
       if (listTag != null) {
         result.add('</$listTag>');
@@ -608,8 +611,9 @@ class Docbook5Converter extends ConverterBase {
     }
     for (final itemObj in node.items) {
       final item = itemObj! as ListItem;
-      result.add('<listitem${_commonAttributes(item.id, item.role)}>');
-      result.add('<simpara>${_s(item.text)}</simpara>');
+      result
+        ..add('<listitem${_commonAttributes(item.id, item.role)}>')
+        ..add('<simpara>${_s(item.text)}</simpara>');
       if (item.hasBlocks) {
         result.add(_s(item.content()));
       }
@@ -817,8 +821,9 @@ class Docbook5Converter extends ConverterBase {
       }
       result.add('</t$tsec>');
     }
-    result.add('</tgroup>');
-    result.add('</$tagName>');
+    result
+      ..add('</tgroup>')
+      ..add('</$tagName>');
 
     if (!hasBody) {
       logger.warn('tables must have at least one body row');
@@ -838,8 +843,9 @@ class Docbook5Converter extends ConverterBase {
       }
       for (final itemObj in node.items) {
         final item = itemObj! as ListItem;
-        result.add('<bibliomixed>');
-        result.add('<bibliomisc>${_s(item.text)}</bibliomisc>');
+        result
+          ..add('<bibliomixed>')
+          ..add('<bibliomisc>${_s(item.text)}</bibliomisc>');
         if (item.hasBlocks) {
           result.add(_s(item.content()));
         }
@@ -861,8 +867,9 @@ class Docbook5Converter extends ConverterBase {
         final textMarker = checklist && item.hasAttr('checkbox')
             ? (item.hasAttr('checked') ? '&#10003; ' : '&#10063; ')
             : null;
-        result.add('<listitem${_commonAttributes(item.id, item.role)}>');
-        result.add('<simpara>${textMarker ?? ''}${_s(item.text)}</simpara>');
+        result
+          ..add('<listitem${_commonAttributes(item.id, item.role)}>')
+          ..add('<simpara>${textMarker ?? ''}${_s(item.text)}</simpara>');
         if (item.hasBlocks) {
           result.add(_s(item.content()));
         }
@@ -1090,8 +1097,7 @@ class Docbook5Converter extends ConverterBase {
 
   /// The `<author>` element for [author] in the document info tag.
   String _authorTag(Document doc, DocumentAuthor author) {
-    final result = <String>[];
-    result.add('<author>');
+    final result = (<String>[])..add('<author>');
     result.add('<personname>');
     if (author.firstname != null) {
       result.add(
@@ -1183,8 +1189,9 @@ class Docbook5Converter extends ConverterBase {
       if (doc.hasAttr('front-cover-image') || doc.hasAttr('back-cover-image')) {
         final backCoverTag = _coverTag(doc, 'back');
         if (backCoverTag != null) {
-          result.add(_coverTag(doc, 'front', true)!);
-          result.add(backCoverTag);
+          result
+            ..add(_coverTag(doc, 'front', true)!)
+            ..add(backCoverTag);
         } else {
           final frontCoverTag = _coverTag(doc, 'front');
           if (frontCoverTag != null) {
@@ -1331,8 +1338,9 @@ class Docbook5Converter extends ConverterBase {
       }
       result.add('</attribution>');
     }
-    result.add(content());
-    result.add(endTag);
+    result
+      ..add(content())
+      ..add(endTag);
     return result.join(lf);
   }
 }

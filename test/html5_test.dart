@@ -2983,8 +2983,8 @@ void main() {
     });
 
     test('syntax highlighter head and footer docinfo', () {
-      final doc = makeDoc();
-      doc.syntaxHighlighter = FakeHighlighter(footer: true);
+      final doc = (makeDoc())
+        ..syntaxHighlighter = FakeHighlighter(footer: true);
       final output = convOf(doc).convert(doc)! as String;
       expect(
         output.indexOf('<style>fake</style>'),
@@ -2997,8 +2997,7 @@ void main() {
     });
 
     test('missing head docinfo removes placeholder', () {
-      final doc = makeDoc();
-      doc.syntaxHighlighter = FakeHighlighter(head: false);
+      final doc = (makeDoc())..syntaxHighlighter = FakeHighlighter(head: false);
       final output = convOf(doc).convert(doc)! as String;
       expect(output, isNot(contains('fake')));
       expect(output, contains('</head>'));

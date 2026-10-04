@@ -112,8 +112,9 @@ Document load(Object? input, [Map<String, Object?>? options]) {
     }
 
     if (timings is Timings) {
-      timings.record('read');
-      timings.start('parse');
+      timings
+        ..record('read')
+        ..start('parse');
     }
 
     opts['attributes'] = attrs;
@@ -153,8 +154,8 @@ Document loadFile(Object? filename, [Map<String, Object?>? options]) {
 /// `options['to_file']` and `options['mkdirs']` control the output target;
 /// `options['parse']` is always ignored (conversion implies parsing).
 Object? convert(Object? input, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts.remove('parse');
+  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
+    ..remove('parse');
   var toDir = opts.remove('to_dir');
   if (toDir is File || toDir is Uri) toDir = _coercePath(toDir);
   final mkdirs = opts.remove('mkdirs');

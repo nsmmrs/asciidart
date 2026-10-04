@@ -407,8 +407,9 @@ void main() {
       final doc = FakeDocument();
       final block = Block(doc, 'paragraph');
       expect(block.hasOption('header'), isFalse);
-      block.setOption('header');
-      block.setOption('footer');
+      block
+        ..setOption('header')
+        ..setOption('footer');
       expect(block.hasOption('header'), isTrue);
       expect(block.enabledOptions, equals({'header', 'footer'}));
     });
@@ -433,8 +434,7 @@ void main() {
 
     test('role setter joins lists like Array#join', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph');
-      block.role = ['a', 'b'];
+      final block = (Block(doc, 'paragraph'))..role = ['a', 'b'];
       expect(block.attributes['role'], equals('a b'));
       block.role = ['a', null];
       expect(block.attributes['role'], equals('a '));
@@ -478,8 +478,7 @@ void main() {
       final doc = FakeDocument();
       final a = Section(doc, 1);
       final b = Section(doc, 1);
-      final para = Block(a, 'paragraph');
-      para.parent = b;
+      final para = (Block(a, 'paragraph'))..parent = b;
       expect(para.parent, same(b));
       expect(para.document, same(doc));
     });
@@ -527,8 +526,7 @@ void main() {
 
     test('context setter refreshes node name', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph');
-      block.context = 'sidebar';
+      final block = (Block(doc, 'paragraph'))..context = 'sidebar';
       expect(block.context, equals('sidebar'));
       expect(block.nodeName, equals('sidebar'));
     });
@@ -561,8 +559,7 @@ void main() {
 
     test('listMarkerKeyword', () {
       final doc = FakeDocument();
-      final list = ListBlock(doc, 'olist');
-      list.style = 'lowerroman';
+      final list = (ListBlock(doc, 'olist'))..style = 'lowerroman';
       expect(list.listMarkerKeyword(), equals('i'));
       expect(list.listMarkerKeyword('upperalpha'), equals('A'));
       expect(list.listMarkerKeyword('arabic'), isNull);
@@ -572,8 +569,7 @@ void main() {
 
     test('number coerces integers, number= stringifies', () {
       final doc = FakeDocument();
-      final section = Section(doc, 1);
-      section.numeral = '1';
+      final section = (Section(doc, 1))..numeral = '1';
       expect(section.number, equals(1));
       section.numeral = 'A';
       expect(section.number, equals('A'));
@@ -740,20 +736,22 @@ void main() {
 
     test('assignCaption builds figure captions with counters', () {
       final doc = FakeDocument(attributes: {'figure-caption': 'Figure'});
-      final img = Block(doc, 'image')..title = 'Tiger';
-      img.assignCaption(null, 'figure');
+      final img = Block(doc, 'image')
+        ..title = 'Tiger'
+        ..assignCaption(null, 'figure');
       expect(img.caption, equals('Figure 1. '));
       expect(img.numeral, equals(1));
       // A second captioned figure continues the counter.
-      final img2 = Block(doc, 'image')..title = 'Lion';
-      img2.assignCaption(null, 'figure');
+      final img2 = Block(doc, 'image')
+        ..title = 'Lion'
+        ..assignCaption(null, 'figure');
       expect(img2.caption, equals('Figure 2. '));
       // Explicit captions win; untitled blocks stay captionless.
-      final explicit = Block(doc, 'image')..title = 'T';
-      explicit.assignCaption('Custom. ');
+      final explicit = Block(doc, 'image')
+        ..title = 'T'
+        ..assignCaption('Custom. ');
       expect(explicit.caption, equals('Custom. '));
-      final untitled = Block(doc, 'image');
-      untitled.assignCaption(null, 'figure');
+      final untitled = (Block(doc, 'image'))..assignCaption(null, 'figure');
       expect(untitled.caption, isNull);
     });
   });
@@ -1021,8 +1019,9 @@ void main() {
 
     test('toString shape with and without title', () {
       final doc = FakeDocument();
-      final section = Section(doc, 1, true)..title = 'A';
-      section.numeral = '1';
+      final section = Section(doc, 1, true)
+        ..title = 'A'
+        ..numeral = '1';
       section << Block(section, 'paragraph');
       section << Block(section, 'paragraph');
       expect(
@@ -1153,8 +1152,7 @@ void main() {
   group('ListItem', () {
     test('constructor takes level and copies default subs', () {
       final doc = FakeDocument();
-      final list = ListBlock(doc, 'ulist');
-      list.level = 2;
+      final list = (ListBlock(doc, 'ulist'))..level = 2;
       final item = ListItem(list, 'text');
       expect(item.level, equals(2));
       expect(item.subs, equals(normalSubs));
@@ -1201,14 +1199,12 @@ void main() {
     test('foldFirst folds the first block into the text', () {
       final doc = FakeDocument();
       final list = ListBlock(doc, 'ulist');
-      final folded = ListItem(list);
-      folded.subs = [];
+      final folded = (ListItem(list))..subs = [];
       folded << Block(folded, 'paragraph', source: 'cont');
       folded.foldFirst();
       expect(folded.text, equals('cont'));
       expect(folded.blocks, isEmpty);
-      final prefixed = ListItem(list, 'item');
-      prefixed.subs = [];
+      final prefixed = (ListItem(list, 'item'))..subs = [];
       prefixed << Block(prefixed, 'paragraph', source: 'cont');
       prefixed.foldFirst();
       expect(prefixed.text, equals('item\ncont'));
@@ -1403,8 +1399,9 @@ void main() {
           Cell(table.columns[1], parts[1], {}),
         ]);
       }
-      table.hasHeaderOption = true;
-      table.partitionHeaderFooter({});
+      table
+        ..hasHeaderOption = true
+        ..partitionHeaderFooter({});
       expect(table.attributes['rowcount'], equals(3));
       expect(table.rows.head, hasLength(1));
       expect(table.rows.body, hasLength(2));
@@ -1423,8 +1420,9 @@ void main() {
           Cell(withFoot.columns[1], parts[1], {}),
         ]);
       }
-      withFoot.hasHeaderOption = true;
-      withFoot.partitionHeaderFooter({'footer-option': ''});
+      withFoot
+        ..hasHeaderOption = true
+        ..partitionHeaderFooter({'footer-option': ''});
       expect(withFoot.rows.head, hasLength(1));
       expect(withFoot.rows.body, hasLength(1));
       expect(
@@ -1446,8 +1444,9 @@ void main() {
       });
       expect(cell.contentModel, equals('simple'));
       table.rows.body.add([cell]);
-      table.hasHeaderOption = null;
-      table.partitionHeaderFooter({});
+      table
+        ..hasHeaderOption = null
+        ..partitionHeaderFooter({});
       expect(table.hasHeaderOption, equals(false));
       expect(table.attributes['rowcount'], equals(1));
       // The row stays in the body, rebuilt as a literal cell.
@@ -1600,8 +1599,7 @@ void main() {
 
     test('header cells defer anchor cataloging until reinitialized', () {
       final doc = Document(<String>[]);
-      final table = makeTable(doc);
-      table.hasHeaderOption = true;
+      final table = (makeTable(doc))..hasHeaderOption = true;
       // Would catalog (parser) if done eagerly; header cells defer it.
       final cell = Cell(table.columns.single, '[[hx]] H', {}, {
         'cursor': FakeCursor('t.adoc', 1),
@@ -1618,8 +1616,7 @@ void main() {
 
     test('implicit header with literal style rebuilds on reinitialize', () {
       final doc = FakeDocument();
-      final table = makeTable(doc);
-      table.hasHeaderOption = 'implicit';
+      final table = (makeTable(doc))..hasHeaderOption = 'implicit';
       final cell = Cell(table.columns.single, '  lit  \n\n', {
         'style': 'literal',
       });
@@ -1663,20 +1660,16 @@ void main() {
     test('content styles paragraphs through the converter', () {
       final doc = FakeDocument();
       final col = makeTable(doc).columns.single;
-      final multi = Cell(col, 'p1\n\np2', {'style': 'strong'});
-      multi.subs = [];
+      final multi = (Cell(col, 'p1\n\np2', {'style': 'strong'}))..subs = [];
       expect(
         multi.content(),
         equals(['<inline_quoted:strong=p1>', '<inline_quoted:strong=p2>']),
       );
-      final single = Cell(col, 'x', {'style': 'strong'});
-      single.subs = [];
+      final single = (Cell(col, 'x', {'style': 'strong'}))..subs = [];
       expect(single.content(), equals(['<inline_quoted:strong=x>']));
-      final header = Cell(col, 'x', {'style': 'header'});
-      header.subs = [];
+      final header = (Cell(col, 'x', {'style': 'header'}))..subs = [];
       expect(header.content(), equals(['x']));
-      final plain = Cell(col, 'x', {});
-      plain.subs = [];
+      final plain = (Cell(col, 'x', {}))..subs = [];
       expect(plain.content(), equals(['x']));
     });
 
@@ -1834,21 +1827,22 @@ void main() {
       expect(match?.group(0), equals('|'));
       expect(match?.start, equals(1));
       expect(pc.matchDelimiter('ab'), isNull);
-      pc.buffer = 'x';
-      pc.skipPastDelimiter('pre');
+      pc
+        ..buffer = 'x'
+        ..skipPastDelimiter('pre');
       expect(pc.buffer, equals('xpre|'));
       pc.buffer = 'x';
       pc.skipPastEscapedDelimiter(r'pre\');
       expect(pc.buffer, equals('xpre|'));
-      pc.buffer = 'x';
-      pc.skipPastEscapedDelimiter('a\r\n');
+      pc
+        ..buffer = 'x'
+        ..skipPastEscapedDelimiter('a\r\n');
       expect(pc.buffer, equals('xa|'));
     });
 
     test('bufferHasUnclosedQuotes', () {
       final (_, table, reader) = makeParts();
-      final pc = TableParserContext(reader, table);
-      pc.buffer = '"ab';
+      final pc = (TableParserContext(reader, table))..buffer = '"ab';
       expect(pc.bufferHasUnclosedQuotes(), isTrue);
       pc.buffer = '"ab"';
       expect(pc.bufferHasUnclosedQuotes(), isFalse);
@@ -1864,8 +1858,9 @@ void main() {
       final (_, table, reader) = makeParts();
       final pc = TableParserContext(reader, table);
       expect(pc.takeCellspect(), isNull);
-      pc.pushCellspect({'a': 1});
-      pc.pushCellspect();
+      pc
+        ..pushCellspect({'a': 1})
+        ..pushCellspect();
       expect(pc.takeCellspect(), equals({'a': 1}));
       expect(pc.takeCellspect(), equals({}));
       expect(pc.takeCellspect(), isNull);
@@ -1881,8 +1876,9 @@ void main() {
       pc.markCellClosed();
       expect(pc.isCellClosed, isTrue);
       // closeOpenCell closes an open cell and advances the line number.
-      pc.pushCellspect({});
-      pc.buffer = 'x';
+      pc
+        ..pushCellspect({})
+        ..buffer = 'x';
       pc.keepCellOpen();
       pc.closeOpenCell({'b': 2});
       expect(pc.isCellClosed, isTrue);
@@ -1894,12 +1890,14 @@ void main() {
       final (_, table, reader) = makeParts(cols: 2);
       final pc = TableParserContext(reader, table);
       expect(pc.colcount, equals(2));
-      pc.pushCellspect({});
-      pc.buffer = 'a';
+      pc
+        ..pushCellspect({})
+        ..buffer = 'a';
       pc.closeCell();
       expect(table.rows.body, isEmpty);
-      pc.pushCellspect({});
-      pc.buffer = 'b';
+      pc
+        ..pushCellspect({})
+        ..buffer = 'b';
       pc.closeCell();
       expect(table.rows.body, hasLength(1));
       expect(table.rows.body.single.map((c) => c.source()), equals(['a', 'b']));
@@ -1910,14 +1908,14 @@ void main() {
       // No predefined columns: colcount starts at -1 and rows close on
       // end-of-line (or once a second line has been seen).
       final (_, table, reader) = makeParts();
-      final pc = TableParserContext(reader, table);
-      pc.pushCellspect({});
+      final pc = (TableParserContext(reader, table))..pushCellspect({});
       pc.buffer = 'a';
       pc.closeCell();
       expect(table.rows.body, isEmpty);
       expect(table.columns, hasLength(1));
-      pc.pushCellspect({});
-      pc.buffer = 'b';
+      pc
+        ..pushCellspect({})
+        ..buffer = 'b';
       pc.closeCell(true);
       expect(table.rows.body.single.map((c) => c.source()), equals(['a', 'b']));
       expect(table.columns, hasLength(2));
@@ -1926,8 +1924,7 @@ void main() {
 
     test('closeOpenCell advances lines so later rows close implicitly', () {
       final (_, table, _) = makeParts();
-      final pc = TableParserContext(FakeReader(), table);
-      pc.closeOpenCell();
+      final pc = (TableParserContext(FakeReader(), table))..closeOpenCell();
       pc.closeOpenCell();
       pc.buffer = 'a';
       pc.closeCell();
@@ -1936,16 +1933,16 @@ void main() {
 
     test('closeCell honors repeatcol and colspan', () {
       final (_, table, reader) = makeParts();
-      final pc = TableParserContext(reader, table);
-      pc.pushCellspect({'repeatcol': 2});
+      final pc = (TableParserContext(reader, table))
+        ..pushCellspect({'repeatcol': 2});
       pc.buffer = 'x';
       pc.closeCell(true);
       expect(table.rows.body.single, hasLength(2));
       expect(table.columns, hasLength(2));
 
       final (_, table2, reader2) = makeParts();
-      final pc2 = TableParserContext(reader2, table2);
-      pc2.pushCellspect({'colspan': 2});
+      final pc2 = (TableParserContext(reader2, table2))
+        ..pushCellspect({'colspan': 2});
       pc2.buffer = 'y';
       pc2.closeCell(true);
       expect(table2.columns, hasLength(2));
@@ -1956,8 +1953,9 @@ void main() {
       final (_, table, reader) = makeParts();
       final pc = TableParserContext(reader, table, {'format': 'csv'});
       for (final text in ['a', '"b ""q"" c"', 'd']) {
-        pc.buffer = text;
-        pc.closeCell(true);
+        pc
+          ..buffer = text
+          ..closeCell(true);
       }
       expect(table.rows.body, hasLength(3));
       expect(
@@ -1965,16 +1963,17 @@ void main() {
         equals(['a', 'b "q" c', 'd']),
       );
       // A lone quote logs an error and yields an empty cell.
-      pc.buffer = '"';
-      pc.closeCell(true);
+      pc
+        ..buffer = '"'
+        ..closeCell(true);
       expect(table.rows.body.last.single.source(), equals(''));
       expect(testLogger.errors.single, contains('unclosed quote in CSV data'));
     });
 
     test('rowspans count towards later rows', () {
       final (_, table, _) = makeParts(cols: 2);
-      final pc = TableParserContext(FakeReader(), table);
-      pc.pushCellspect({'rowspan': 2});
+      final pc = (TableParserContext(FakeReader(), table))
+        ..pushCellspect({'rowspan': 2});
       pc.buffer = 'a';
       pc.closeCell();
       pc.pushCellspect({});
@@ -1982,8 +1981,9 @@ void main() {
       pc.closeCell();
       expect(table.rows.body, hasLength(1));
       // The second row needs a single cell: the rowspan fills the gap.
-      pc.pushCellspect({});
-      pc.buffer = 'c';
+      pc
+        ..pushCellspect({})
+        ..buffer = 'c';
       pc.closeCell();
       expect(table.rows.body, hasLength(2));
       expect(table.rows.body[1], hasLength(1));
@@ -1991,8 +1991,8 @@ void main() {
 
     test('overrunning cells are dropped with an error', () {
       final (_, table, _) = makeParts(cols: 1);
-      final pc = TableParserContext(FakeReader(), table);
-      pc.pushCellspect({'colspan': 2});
+      final pc = (TableParserContext(FakeReader(), table))
+        ..pushCellspect({'colspan': 2});
       pc.buffer = 'wide';
       pc.closeCell();
       expect(table.rows.body, isEmpty);
@@ -2001,8 +2001,7 @@ void main() {
 
     test('missing leading separator recovers with an error', () {
       final (_, table, _) = makeParts();
-      final pc = TableParserContext(FakeReader(), table);
-      pc.buffer = 'a';
+      final pc = (TableParserContext(FakeReader(), table))..buffer = 'a';
       pc.closeCell(true);
       expect(
         testLogger.errors.single,
@@ -2013,12 +2012,11 @@ void main() {
 
     test('closeTable reports incomplete rows only', () {
       final (_, table, _) = makeParts();
-      final quiet = TableParserContext(FakeReader(), table);
-      quiet.closeTable();
+      final quiet = (TableParserContext(FakeReader(), table))..closeTable();
       expect(testLogger.errors, isEmpty);
       final (_, table2, _) = makeParts();
-      final pending = TableParserContext(FakeReader(), table2);
-      pending.pushCellspect({});
+      final pending = (TableParserContext(FakeReader(), table2))
+        ..pushCellspect({});
       pending.buffer = 'a';
       pending.closeCell();
       pending.closeTable();

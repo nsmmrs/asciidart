@@ -690,8 +690,9 @@ final class CliOptions {
             "asciidoctor: FAILED: '$path' could not be loaded",
           );
         }
-        errSink.writeln("asciidoctor: FAILED: '$path' could not be loaded");
-        errSink.writeln('  Use --trace to show backtrace');
+        errSink
+          ..writeln("asciidoctor: FAILED: '$path' could not be loaded")
+          ..writeln('  Use --trace to show backtrace');
         return 1;
       }
     }
@@ -1246,8 +1247,9 @@ List<String> _glob(String pattern) {
     final next = <String>[];
     if (segment == '**') {
       for (final base in candidates) {
-        next.add(base);
-        next.addAll(_directoriesUnder(root, base));
+        next
+          ..add(base)
+          ..addAll(_directoriesUnder(root, base));
       }
     } else {
       final matcher = _segmentMatcher(segment, isWindows);

@@ -113,8 +113,8 @@ Invoker invokeCliWithFilenames(List<String> argv, List<String> filenames) {
 /// writer that wins the race would come and go before the reader opens and
 /// leave the reader blocked forever.
 void _writePipe(List<Object> args) {
-  final raf = File(args[0] as String).openSync(mode: FileMode.writeOnly);
-  raf.writeStringSync('pipe content');
+  final raf = (File(args[0] as String).openSync(mode: FileMode.writeOnly))
+    ..writeStringSync('pipe content');
   raf.closeSync();
   (args[1] as SendPort).send(null);
 }
@@ -271,8 +271,8 @@ void main() {
     });
 
     test('redirects and resets streams', () {
-      final invoker = Invoker.fromOptions(CliOptions());
-      invoker.redirectStreams(StringBuffer('out'), StringBuffer('err'));
+      final invoker = (Invoker.fromOptions(CliOptions()))
+        ..redirectStreams(StringBuffer('out'), StringBuffer('err'));
       expect(invoker.readOutput(), equals('out'));
       expect(invoker.readError(), equals('err'));
       invoker.resetStreams();

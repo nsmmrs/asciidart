@@ -160,8 +160,7 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// Returns the converted content of this block.
   Object? convert() {
-    final doc = document!;
-    doc.playbackAttributes(attributes);
+    final doc = (document!)..playbackAttributes(attributes);
     return doc.converter.convert(this);
   }
 
@@ -608,8 +607,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// take roman numerals, and other numbered sections take the next ordinal.
   /// [section] must implement [NodeSection].
   void assignNumeral(AbstractBlock section) {
-    final target = section as NodeSection;
-    target.index = _nextSectionIndex;
+    final target = (section as NodeSection)..index = _nextSectionIndex;
     _nextSectionIndex = target.index + 1;
     final like = target.numbered;
     if (like == null || like == false) return;

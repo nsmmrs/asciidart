@@ -177,8 +177,7 @@ class Processor {
     } else {
       sectname = 'section';
     }
-    final sect = Section(parent, sectLevel);
-    sect.title = title;
+    final sect = (Section(parent, sectLevel))..title = title;
     sect.sectname = sectname;
     if (special) {
       sect.special = true;
@@ -301,8 +300,9 @@ class Processor {
       contentModel: contentModel,
     );
     if (isTruthy(title)) {
-      block.title = title.toString();
-      block.assignCaption(attrs.remove('caption'), 'figure');
+      block
+        ..title = title.toString()
+        ..assignCaption(attrs.remove('caption'), 'figure');
     }
     return block;
   }

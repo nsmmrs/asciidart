@@ -146,8 +146,8 @@ Document documentFromString(String src, [Map<String, Object?>? options]) {
 
 /// Converts [src] to a standalone document (port of `convert_string`).
 String convertString(String src, [Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts.remove('keep_namespaces');
+  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
+    ..remove('keep_namespaces');
   return documentFromString(src, opts).convert()! as String;
 }
 
@@ -608,8 +608,9 @@ class XmlMatcher {
     final result = <XmlNode>[];
     for (final root in roots) {
       if (!root.isText) {
-        result.add(root);
-        result.addAll(root.descendants());
+        result
+          ..add(root)
+          ..addAll(root.descendants());
       }
     }
     return result;
@@ -784,12 +785,14 @@ abstract class _XPathPredicate {
       if (name == 'not') {
         parser.expect('(');
         final inner = parser.consumeIdentifier();
-        parser.expect('(');
-        parser.expect(')');
+        parser
+          ..expect('(')
+          ..expect(')');
         parser.expect('=');
         final value = parser.parseString();
-        parser.expect(')');
-        parser.expect(']');
+        parser
+          ..expect(')')
+          ..expect(']');
         if (inner != 'namespace-uri') {
           throw ArgumentError('unsupported not() predicate: $inner');
         }
@@ -800,8 +803,9 @@ abstract class _XPathPredicate {
         if (!parser.consumeTextTest()) {
           throw ArgumentError('expected text() in normalize-space()');
         }
-        parser.expect(')');
-        parser.expect('=');
+        parser
+          ..expect(')')
+          ..expect('=');
         final value = parser.parseString();
         parser.expect(']');
         return _NormalizeSpacePredicate(value);
@@ -3372,8 +3376,7 @@ void main() {
 
       test('should register entry in :refs table with reftext when request is '
           'made to register entry in :ids table', () {
-        final doc = emptyDocument();
-        doc.register('ids', ['foobar', 'Foo Bar']);
+        final doc = (emptyDocument())..register('ids', ['foobar', 'Foo Bar']);
         expect(doc.catalog['ids']! as Map, isEmpty);
         expect(doc.catalog['refs']! as Map, isNotEmpty);
         final ref =

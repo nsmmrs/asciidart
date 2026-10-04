@@ -88,8 +88,9 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
       escaped = _breakLinesIn(escaped, style);
     }
     if (style != null) {
-      _out.write(style);
-      _out.write(escaped);
+      _out
+        ..write(style)
+        ..write(escaped);
       _out.write('</span>');
     } else {
       _out.write(escaped);
@@ -262,8 +263,9 @@ class CoderayHtmlEncoder implements CoderayTokenSink {
     }
     final numbers = StringBuffer();
     for (var n = startLine; n < startLine + lineCount; n++) {
-      numbers.write(renderNumber(n));
-      numbers.write('\n');
+      numbers
+        ..write(renderNumber(n))
+        ..write('\n');
     }
     return '<table class="CodeRay"><tr>\n'
         '  <td class="line-numbers"><pre>$numbers</pre></td>\n'

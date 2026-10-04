@@ -318,8 +318,7 @@ void main() {
     test('parent setter re-points document', () {
       final doc = makeDoc();
       final open = Block(doc, 'open')..contentModel = 'compound';
-      final detached = Block(null, 'paragraph');
-      detached.parent = open;
+      final detached = (Block(null, 'paragraph'))..parent = open;
       expect(detached.parent, same(open));
       expect(detached.document, same(doc));
     });
@@ -444,8 +443,7 @@ void main() {
     });
 
     test('role setter joins lists like Ruby', () {
-      final block = Block(makeDoc(), 'paragraph');
-      block.role = 'solo';
+      final block = (Block(makeDoc(), 'paragraph'))..role = 'solo';
       expect(block.role, equals('solo'));
       block.role = ['a', 'b'];
       expect(block.role, equals('a b'));
@@ -472,8 +470,7 @@ void main() {
     });
 
     test('addRole to an empty role prefixes a blank', () {
-      final block = Block(makeDoc(), 'paragraph');
-      block.role = '';
+      final block = (Block(makeDoc(), 'paragraph'))..role = '';
       expect(block.addRole('x'), isTrue);
       expect(block.role, equals(' x'));
     });
@@ -584,8 +581,7 @@ void main() {
     });
 
     test('context setter re-derives the node name', () {
-      final block = Block(makeDoc(), 'paragraph');
-      block.context = 'sidebar';
+      final block = (Block(makeDoc(), 'paragraph'))..context = 'sidebar';
       expect(block.context, equals('sidebar'));
       expect(block.nodeName, equals('sidebar'));
     });
@@ -690,8 +686,7 @@ void main() {
     });
 
     test('number setter stringifies', () {
-      final block = Block(makeDoc(), 'section');
-      block.number = 5;
+      final block = (Block(makeDoc(), 'section'))..number = 5;
       expect(block.numeral, equals('5'));
     });
   });
@@ -869,25 +864,27 @@ void main() {
         ..caption = 'Keep. ';
       captioned.assignCaption(null);
       expect(captioned.caption, equals('Keep. '));
-      final untitled = Block(makeDoc(), 'example');
-      untitled.assignCaption(null);
+      final untitled = (Block(makeDoc(), 'example'))..assignCaption(null);
       expect(untitled.caption, isNull);
     });
 
     test('explicit value wins over the document caption', () {
       final doc = makeDoc(attributes: {'caption': 'Doc. '});
-      final valued = Block(doc, 'example')..title = 'T';
-      valued.assignCaption('Given. ');
+      final valued = Block(doc, 'example')
+        ..title = 'T'
+        ..assignCaption('Given. ');
       expect(valued.caption, equals('Given. '));
-      final fallback = Block(doc, 'example')..title = 'T';
-      fallback.assignCaption(null);
+      final fallback = Block(doc, 'example')
+        ..title = 'T'
+        ..assignCaption(null);
       expect(fallback.caption, equals('Doc. '));
     });
 
     test('auto caption numbers from the document', () {
       final doc = makeDoc(attributes: {'example-caption': 'Example'});
-      final block = Block(doc, 'example')..title = 'T *em*';
-      block.assignCaption(null);
+      final block = Block(doc, 'example')
+        ..title = 'T *em*'
+        ..assignCaption(null);
       expect(block.caption, equals('Example 1. '));
       expect(block.numeral, equals(1));
       expect(block.attributes.containsKey('example-number'), isFalse);
@@ -900,8 +897,9 @@ void main() {
       // Ruby's caption map holds 'figure' as a string key that context
       // (symbol) lookups never match.
       final doc = makeDoc(attributes: {'figure-caption': 'Figure'});
-      final figure = Block(doc, 'figure')..title = 'T';
-      figure.assignCaption(null);
+      final figure = Block(doc, 'figure')
+        ..title = 'T'
+        ..assignCaption(null);
       expect(figure.caption, isNull);
       expect(figure.numeral, isNull);
     });

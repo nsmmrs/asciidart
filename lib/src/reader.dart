@@ -1577,8 +1577,9 @@ class PreprocessorReader extends Reader {
                 final toText = linedef.substring(rangeIdx + 2);
                 final to = toText.isEmpty ? null : _toInt(toText);
                 if (to == null || to < 0) {
-                  collected.add(from);
-                  collected.add(double.infinity);
+                  collected
+                    ..add(from)
+                    ..add(double.infinity);
                 } else {
                   for (var n = from; n <= to; n++) {
                     collected.add(n);

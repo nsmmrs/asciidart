@@ -261,8 +261,9 @@ final class Invoker with Logging {
     } catch (e) {
       _code = 1;
       if (options.trace) rethrow;
-      err.writeln(e.toString());
-      err.writeln('  Use --trace to show backtrace');
+      err
+        ..writeln(e.toString())
+        ..writeln('  Use --trace to show backtrace');
     } finally {
       if (savedLogger != null) {
         LoggerManager.logger = savedLogger;
@@ -435,8 +436,9 @@ final class Invoker with Logging {
       if (workerError != null) {
         _code = 1;
         if (options.trace) throw WorkerFailure(workerError);
-        err.writeln(workerError);
-        err.writeln('  Use --trace to show backtrace');
+        err
+          ..writeln(workerError)
+          ..writeln('  Use --trace to show backtrace');
         return;
       }
       if (showTimings) {
@@ -458,8 +460,9 @@ final class Invoker with Logging {
     } catch (e) {
       _code = 1;
       if (options.trace) rethrow;
-      err.writeln(e.toString());
-      err.writeln('  Use --trace to show backtrace');
+      err
+        ..writeln(e.toString())
+        ..writeln('  Use --trace to show backtrace');
     } finally {
       if (savedLogger != null) {
         LoggerManager.logger = savedLogger;

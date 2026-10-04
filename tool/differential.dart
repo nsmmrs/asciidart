@@ -45,8 +45,9 @@ Future<void> main(List<String> arguments) async {
   try {
     results = parser.parse(arguments);
   } on FormatException catch (e) {
-    stderr.writeln('differential: ${e.message}');
-    stderr.writeln();
+    stderr
+      ..writeln('differential: ${e.message}')
+      ..writeln();
     stderr.writeln(usageText(parser));
     exitCode = exitHarnessError;
     return;
@@ -317,8 +318,9 @@ class DifferentialConfig {
       for (final problem in problems) {
         stderr.writeln('differential: $problem');
       }
-      stderr.writeln();
-      stderr.writeln(usageText(parser));
+      stderr
+        ..writeln()
+        ..writeln(usageText(parser));
       return null;
     }
     return DifferentialConfig._(
@@ -369,8 +371,9 @@ Future<int> runDifferential(DifferentialConfig config) async {
   }
 
   if (!config.quiet) {
-    stdout.writeln('differential: exe-a: ${config.rawExeA}');
-    stdout.writeln('differential: exe-b: ${config.rawExeB}');
+    stdout
+      ..writeln('differential: exe-a: ${config.rawExeA}')
+      ..writeln('differential: exe-b: ${config.rawExeB}');
   }
   stdout.writeln(
     'differential: comparing ${files.length} files '

@@ -822,8 +822,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
           valueExpected = true;
           state = _SymbolState.initial;
           inlineCurlyDepth = 1;
-          sink.beginGroup('inline');
-          sink.textToken(ch + s.getch()!, 'inline_delimiter');
+          sink
+            ..beginGroup('inline')
+            ..textToken(ch + s.getch()!, 'inline_delimiter');
         } else if (next == r'$' || next == '@') {
           sink.textToken(ch, 'escape');
           lastState = current;
@@ -883,8 +884,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         if (valueExpected != _colonExpected &&
             s.scan(_colonNotColonRe) != null) {
           valueExpected = true;
-          sink.textToken(name, 'key');
-          sink.textToken(':', 'operator');
+          sink
+            ..textToken(name, 'key')
+            ..textToken(':', 'operator');
         } else {
           valueExpected = false;
           if (kind == 'ident') {
@@ -933,8 +935,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
               heredocs = frame.heredocs;
               if (inlineStack.isEmpty) inlineStack = null;
               if (heredocs != null && heredocs.isEmpty) heredocs = null;
-              sink.textToken(op, 'inline_delimiter');
-              sink.endGroup('inline');
+              sink
+                ..textToken(op, 'inline_delimiter')
+                ..endGroup('inline');
               continue;
             }
           }
@@ -943,8 +946,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
       } else if (s.scan(_symbolRe) case final sym?) {
         final second = sym.length > 1 ? sym[1] : '';
         if (second == "'" || second == '"') {
-          sink.beginGroup('symbol');
-          sink.textToken(':', 'symbol');
+          sink
+            ..beginGroup('symbol')
+            ..textToken(':', 'symbol');
           sink.textToken(second, 'delimiter');
           state = _RubyStringState('symbol', second == '"', second);
         } else {
@@ -958,20 +962,23 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
                   null
               ? 'key'
               : 'string';
-          sink.beginGroup(kind);
-          sink.textToken(str, 'delimiter');
+          sink
+            ..beginGroup(kind)
+            ..textToken(str, 'delimiter');
           // Important for streaming: the state carries the quote.
           state = _RubyStringState(kind, str == '"', str);
         } else {
           final isKey = valueExpected == true && s.scan(_colonRe) != null;
           final kind = isKey ? 'key' : 'string';
-          sink.beginGroup(kind);
-          sink.textToken(str.substring(0, 1), 'delimiter');
+          sink
+            ..beginGroup(kind)
+            ..textToken(str.substring(0, 1), 'delimiter');
           if (str.length > 2) {
             sink.textToken(str.substring(1, str.length - 1), 'content');
           }
-          sink.textToken(str.substring(str.length - 1), 'delimiter');
-          sink.endGroup(kind);
+          sink
+            ..textToken(str.substring(str.length - 1), 'delimiter')
+            ..endGroup(kind);
           if (isKey) sink.textToken(':', 'operator');
           valueExpected = false;
         }
@@ -980,8 +987,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         sink.textToken(ivar, 'instance_variable');
       } else if (_valueTruthy(valueExpected) ? s.scan(_slashRe) : null
           case final slash?) {
-        sink.beginGroup('regexp');
-        sink.textToken(slash, 'delimiter');
+        sink
+          ..beginGroup('regexp')
+          ..textToken(slash, 'delimiter');
         state = _RubyStringState('regexp', true, '/');
       } else if (s.scan(
             _valueTruthy(valueExpected) ? _numericSignedRe : _numericPlainRe,
@@ -1007,8 +1015,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         final quote = s.capture(3);
         final delim = quote != null ? s.capture(4)! : s.capture(2)!;
         final kind = _quoteToType[quote] ?? 'string';
-        sink.beginGroup(kind);
-        sink.textToken(heredoc, 'delimiter');
+        sink
+          ..beginGroup(kind)
+          ..textToken(heredoc, 'delimiter');
         sink.endGroup(kind);
         // Create the heredoc queue when empty.
         (heredocs ??= []).add(
@@ -1043,8 +1052,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         valueExpected = percent == '?' ? _colonExpected : true;
         sink.textToken(percent, 'operator');
       } else if (s.scan(_backtickRe) case final tick?) {
-        sink.beginGroup('shell');
-        sink.textToken(tick, 'delimiter');
+        sink
+          ..beginGroup('shell')
+          ..textToken(tick, 'delimiter');
         state = _RubyStringState('shell', true, tick);
       } else if (s.scan(_globalVariableRe) case final gvar?) {
         sink.textToken(gvar, 'global_variable');
@@ -1109,8 +1119,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         if (sym != null) {
           final second = sym.length > 1 ? sym[1] : '';
           if (second == "'" || second == '"') {
-            sink.beginGroup('symbol');
-            sink.textToken(':', 'symbol');
+            sink
+              ..beginGroup('symbol')
+              ..textToken(':', 'symbol');
             sink.textToken(second, 'delimiter');
             final stringState = _RubyStringState(
               'symbol',
@@ -1142,8 +1153,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
         final first = s.capture(1)!;
         final spaces = s.capture(2)!;
         final third = s.capture(3)!;
-        sink.textToken(first, first.startsWith(':') ? 'symbol' : 'method');
-        sink.textToken(spaces, 'space');
+        sink
+          ..textToken(first, first.startsWith(':') ? 'symbol' : 'method')
+          ..textToken(spaces, 'space');
         sink.textToken(third, third.startsWith(':') ? 'symbol' : 'method');
       }
       state = _SymbolState.initial;
@@ -1161,8 +1173,9 @@ void scanRubyTokens(String source, CoderayTokenSink sink) {
   }
   if (inlineStack != null) {
     for (final frame in inlineStack.reversed) {
-      sink.endGroup('inline');
-      sink.endGroup(frame.state.type);
+      sink
+        ..endGroup('inline')
+        ..endGroup(frame.state.type);
     }
   }
 }
@@ -1200,8 +1213,9 @@ String? _scanAtomicMethodName(CodeRayStringScanner s) {
   if (match == null) return null;
   final rest = s.rest;
   if (rest.startsWith('.') || rest.startsWith('::')) {
-    s.unscan();
-    s.lastMatch = null;
+    s
+      ..unscan()
+      ..lastMatch = null;
     return null;
   }
   return match;

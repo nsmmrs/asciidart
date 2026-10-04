@@ -50,8 +50,7 @@ Future<int> runCliCode(
     // exits 1. Reached for `--trace` re-raises and for the errors
     // `Options.parse!` lets propagate (ambiguous option, needless
     // argument, unloadable `--require` under `--trace`).
-    final sink = err ?? stderr;
-    sink.writeln(e);
+    final sink = (err ?? stderr)..writeln(e);
     sink.writeln(stackTrace);
     return 1;
   }

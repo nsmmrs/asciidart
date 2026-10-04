@@ -59,8 +59,8 @@ void main() {
     });
 
     test('re-registering a name replaces it (last-wins)', () {
-      final registry = TemplateRegistry();
-      registry.registerTemplate('paragraph', 'first');
+      final registry = (TemplateRegistry())
+        ..registerTemplate('paragraph', 'first');
       registry.registerTemplate('paragraph', 'second');
       expect(registry.templates['paragraph'], 'second');
     });

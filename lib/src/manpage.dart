@@ -466,8 +466,8 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] sidebar block.
   String convertSidebar(Block node) {
-    final result = <String>[];
-    result.add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp');
+    final result = (<String>[])
+      ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp');
     result.add('.RS 4\n${_encloseContent(node)}\n.RE');
     return result.join('\n');
   }
@@ -548,8 +548,8 @@ class ManpageConverter extends ConverterBase {
 
   /// Converts the [node] stem block.
   String convertStem(Block node) {
-    final result = <String>[];
-    result.add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp');
+    final result = (<String>[])
+      ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp');
     final delimiters = blockMathDelimiters[node.style]!;
     final open = delimiters[0];
     final close = delimiters[1];
@@ -757,8 +757,8 @@ class ManpageConverter extends ConverterBase {
         ? '&start=${_s(node.attr('start'))}'
         : '';
     final endParam = node.hasAttr('end') ? '&end=${_s(node.attr('end'))}' : '';
-    final result = <String>[];
-    result.add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp');
+    final result = (<String>[])
+      ..add(node.hasTitle ? '.sp\n.B ${_manify(node.title!)}\n.br' : '.sp');
     result.add(
       '<${node.mediaUri(node.attr('target')! as String)}$startParam$endParam> (video)',
     );

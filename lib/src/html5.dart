@@ -520,8 +520,9 @@ class Html5Converter extends ConverterBase {
             );
           }
           if (details.isNotEmpty) {
-            result.add('<div class="details">');
-            result.addAll(details);
+            result
+              ..add('<div class="details">')
+              ..addAll(details);
             result.add('</div>');
           }
         }
@@ -557,8 +558,9 @@ class Html5Converter extends ConverterBase {
     }
 
     if (!node.nofooter) {
-      result.add('<div id="footer"$maxWidthAttr>');
-      result.add('<div id="footer-text">');
+      result
+        ..add('<div id="footer"$maxWidthAttr>')
+        ..add('<div id="footer-text">');
       if (node.hasAttr('revnumber')) {
         result.add(
           '${_s(node.attr('version-label'))} ${_s(node.attr('revnumber'))}$br',
@@ -569,8 +571,9 @@ class Html5Converter extends ConverterBase {
           '${_s(node.attr('last-update-label'))} ${_s(node.attr('docdatetime'))}',
         );
       }
-      result.add('</div>');
-      result.add('</div>');
+      result
+        ..add('</div>')
+        ..add('</div>');
     }
 
     // JavaScript (and auxiliary stylesheets) loaded at the end of body for
@@ -643,8 +646,9 @@ class Html5Converter extends ConverterBase {
       result.add(footerDocinfo);
     }
 
-    result.add('</body>');
-    result.add('</html>');
+    result
+      ..add('</body>')
+      ..add('</html>');
     return result.join(lf);
   }
 
@@ -777,8 +781,9 @@ class Html5Converter extends ConverterBase {
         childTocLevel = null;
       }
       if (childTocLevel != null) {
-        result.add('$otag<a href="#${_s(section.id)}">$cleanTitle</a>');
-        result.add(childTocLevel);
+        result
+          ..add('$otag<a href="#${_s(section.id)}">$cleanTitle</a>')
+          ..add(childTocLevel);
         result.add('</li>');
       } else {
         result.add('$otag<a href="#${_s(section.id)}">$cleanTitle</a></li>');
@@ -1040,8 +1045,9 @@ class Html5Converter extends ConverterBase {
           final itemWidth = node.hasAttr('itemwidth')
               ? ' width="${_chompPercent(node.attr('itemwidth')! as String)}%"'
               : '';
-          result.add('<col$itemWidth$slash>');
-          result.add('</colgroup>');
+          result
+            ..add('<col$itemWidth$slash>')
+            ..add('</colgroup>');
         }
         for (final pair in node.items) {
           final parts = pair! as List<Object?>;
@@ -1059,8 +1065,9 @@ class Html5Converter extends ConverterBase {
             result.add(_s((term! as ListItem).text));
             firstTerm = false;
           }
-          result.add('</td>');
-          result.add('<td class="hdlist2">');
+          result
+            ..add('</td>')
+            ..add('<td class="hdlist2">');
           if (dd != null) {
             if (dd.hasText) {
               result.add('<p>${_s(dd.text)}</p>');
@@ -1069,8 +1076,9 @@ class Html5Converter extends ConverterBase {
               result.add(_s(dd.content()));
             }
           }
-          result.add('</td>');
-          result.add('</tr>');
+          result
+            ..add('</td>')
+            ..add('</tr>');
         }
         result.add('</table>');
       default:
@@ -1366,8 +1374,9 @@ class Html5Converter extends ConverterBase {
       result.add('</li>');
     }
 
-    result.add('</ol>');
-    result.add('</div>');
+    result
+      ..add('</ol>')
+      ..add('</div>');
     return result.join(lf);
   }
 
@@ -1729,8 +1738,9 @@ class Html5Converter extends ConverterBase {
       result.add('</li>');
     }
 
-    result.add('</ul>');
-    result.add('</div>');
+    result
+      ..add('</ul>')
+      ..add('</div>');
     return result.join(lf);
   }
 

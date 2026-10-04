@@ -257,8 +257,8 @@ class FakeReaderDocument implements ReaderDocument {
 
 /// Creates an empty document (port of `empty_document`; never parses).
 Document emptyDocument([Map<String, Object?>? options]) {
-  final opts = Map<String, Object?>.of(options ?? const <String, Object?>{});
-  opts.remove('parse');
+  final opts = (Map<String, Object?>.of(options ?? const <String, Object?>{}))
+    ..remove('parse');
   return Document(<String>[], opts);
 }
 
@@ -481,8 +481,7 @@ _XmlElement _parseFragment(String content) {
       }
       attributes[attr.group(1)!.toLowerCase()] = _decodeEntities(value);
     }
-    final element = _XmlElement(name, attributes);
-    element.parent = stack.last;
+    final element = (_XmlElement(name, attributes))..parent = stack.last;
     stack.last.children.add(element);
     final raw = match.group(0)!;
     if (!raw.endsWith('/>') && !_voidElements.contains(name)) {
@@ -1133,20 +1132,20 @@ Registry createSantaListBlockMacro() {
           processor.onProcess =
               (AbstractBlock parent, String target, Map<Object, Object?> _) {
                 final list = processor.createList(parent, target);
-                final guillaume = processor.createListItem(list, 'Guillaume');
-                guillaume.addRole('friendly');
+                final guillaume = (processor.createListItem(list, 'Guillaume'))
+                  ..addRole('friendly');
                 guillaume.id = 'santa-list-guillaume';
                 list << guillaume;
-                final robert = processor.createListItem(list, 'Robert');
-                robert.addRole('kind');
+                final robert = (processor.createListItem(list, 'Robert'))
+                  ..addRole('kind');
                 robert.addRole('contributor');
                 robert.addRole('java');
                 list << robert;
                 final pepijn = processor.createListItem(list, 'Pepijn');
                 pepijn.id = 'santa-list-pepijn';
                 list << pepijn;
-                final dan = processor.createListItem(list, 'Dan');
-                dan.addRole('naughty');
+                final dan = (processor.createListItem(list, 'Dan'))
+                  ..addRole('naughty');
                 dan.id = 'santa-list-dan';
                 list << dan;
                 final sarah = processor.createListItem(list, 'Sarah');
@@ -1294,8 +1293,9 @@ void main() {
           build: (registry) {
             registry.block(
               build: (processor) {
-                processor.named('whisper');
-                processor.onContext('paragraph');
+                processor
+                  ..named('whisper')
+                  ..onContext('paragraph');
                 processor.parseContentAs('simple');
                 processor.onProcess =
                     (
@@ -1352,8 +1352,7 @@ void main() {
       // Adapted: Dart passes a factory where Ruby passes the class.
       final doc = emptyDocument();
       Extensions.register(name: 'sample', group: SampleExtensionGroup.new);
-      final registry = Registry();
-      registry.activate(doc);
+      final registry = (Registry())..activate(doc);
       expect(doc.hasAttr('activate-method-called'), isTrue);
       expect(registry.hasPreprocessors, isTrue);
     });
@@ -1361,8 +1360,7 @@ void main() {
     test('should reset registry if activate is called again', () {
       Extensions.register(name: 'sample', group: SampleExtensionGroup.new);
       var doc = emptyDocument();
-      final registry = Registry();
-      registry.activate(doc);
+      final registry = (Registry())..activate(doc);
       expect(doc.hasAttr('activate-method-called'), isTrue);
       expect(registry.hasPreprocessors, isTrue);
       expect(registry.preprocessors.length, equals(1));
@@ -1383,8 +1381,7 @@ void main() {
           registry.preprocessor(processor: SamplePreprocessor.new);
         },
       );
-      final registry = Registry();
-      registry.activate(doc);
+      final registry = (Registry())..activate(doc);
       expect(doc.hasAttr('block-called'), isTrue);
       expect(registry.hasPreprocessors, isTrue);
     });
@@ -1399,8 +1396,8 @@ void main() {
 
   group('Instantiate', () {
     test('should instantiate preprocessors', () {
-      final registry = Registry();
-      registry.preprocessor(processor: SamplePreprocessor.new);
+      final registry = (Registry())
+        ..preprocessor(processor: SamplePreprocessor.new);
       registry.activate(emptyDocument());
       expect(registry.hasPreprocessors, isTrue);
       final extensions = registry.preprocessors;
@@ -1411,8 +1408,8 @@ void main() {
     });
 
     test('should instantiate include processors', () {
-      final registry = Registry();
-      registry.includeProcessor(processor: SampleIncludeProcessor.new);
+      final registry = (Registry())
+        ..includeProcessor(processor: SampleIncludeProcessor.new);
       registry.activate(emptyDocument());
       expect(registry.hasIncludeProcessors, isTrue);
       final extensions = registry.includeProcessors;
@@ -1432,8 +1429,8 @@ void main() {
     });
 
     test('should instantiate docinfo processors', () {
-      final registry = Registry();
-      registry.docinfoProcessor(processor: SampleDocinfoProcessor.new);
+      final registry = (Registry())
+        ..docinfoProcessor(processor: SampleDocinfoProcessor.new);
       registry.activate(emptyDocument());
       expect(registry.hasDocinfoProcessors(), isTrue);
       expect(registry.hasDocinfoProcessors('head'), isTrue);
@@ -1446,8 +1443,8 @@ void main() {
 
     test('should instantiate tree processors', () {
       // NOTE intentionally using the legacy names.
-      final registry = Registry();
-      registry.treeprocessor(processor: SampleTreeprocessor.new);
+      final registry = (Registry())
+        ..treeprocessor(processor: SampleTreeprocessor.new);
       registry.activate(emptyDocument());
       expect(registry.hasTreeprocessors, isTrue);
       final extensions = registry.treeprocessors;
@@ -1458,8 +1455,8 @@ void main() {
     });
 
     test('should instantiate postprocessors', () {
-      final registry = Registry();
-      registry.postprocessor(processor: SamplePostprocessor.new);
+      final registry = (Registry())
+        ..postprocessor(processor: SamplePostprocessor.new);
       registry.activate(emptyDocument());
       expect(registry.hasPostprocessors, isTrue);
       final extensions = registry.postprocessors;
@@ -1470,8 +1467,8 @@ void main() {
     });
 
     test('should instantiate block processor', () {
-      final registry = Registry();
-      registry.block(processor: SampleBlock.new, name: 'sample');
+      final registry = (Registry())
+        ..block(processor: SampleBlock.new, name: 'sample');
       registry.activate(emptyDocument());
       expect(registry.hasBlocks, isTrue);
       expect(
@@ -1485,15 +1482,15 @@ void main() {
     });
 
     test('should not match block processor for unsupported context', () {
-      final registry = Registry();
-      registry.block(processor: SampleBlock.new, name: 'sample');
+      final registry = (Registry())
+        ..block(processor: SampleBlock.new, name: 'sample');
       registry.activate(emptyDocument());
       expect(registry.registeredForBlock('sample', 'sidebar'), isNull);
     });
 
     test('should instantiate block macro processor', () {
-      final registry = Registry();
-      registry.blockMacro(processor: SampleBlockMacro.new, name: 'sample');
+      final registry = (Registry())
+        ..blockMacro(processor: SampleBlockMacro.new, name: 'sample');
       registry.activate(emptyDocument());
       expect(registry.hasBlockMacros, isTrue);
       expect(
@@ -1507,8 +1504,8 @@ void main() {
     });
 
     test('should instantiate inline macro processor', () {
-      final registry = Registry();
-      registry.inlineMacro(processor: SampleInlineMacro.new, name: 'sample');
+      final registry = (Registry())
+        ..inlineMacro(processor: SampleInlineMacro.new, name: 'sample');
       registry.activate(emptyDocument());
       expect(registry.hasInlineMacros, isTrue);
       expect(
@@ -1522,8 +1519,8 @@ void main() {
     });
 
     test('should allow processors to be registered by a string name', () {
-      final registry = Registry();
-      registry.preprocessor(processor: 'SamplePreprocessor');
+      final registry = (Registry())
+        ..preprocessor(processor: 'SamplePreprocessor');
       registry.activate(emptyDocument());
       expect(registry.hasPreprocessors, isTrue);
       final extensions = registry.preprocessors;
@@ -1572,8 +1569,8 @@ void main() {
     test(
       'can provide extension registry created without any groups as option',
       () {
-        final registry = Extensions.create();
-        registry.treeProcessor(processor: SampleTreeProcessor.new);
+        final registry = (Extensions.create())
+          ..treeProcessor(processor: SampleTreeProcessor.new);
 
         final doc = documentFromString('= Document Title\n\ncontent', {
           'extension_registry': registry,
@@ -1717,11 +1714,11 @@ void main() {
             .toList(),
       );
       final reader = PreprocessorReader(fake, input, null, true);
-      final lines = <String?>[];
-      lines.add(reader.readLine());
+      final lines = (<String?>[])..add(reader.readLine());
       expect(lines.last, equals('line after skip'));
-      lines.add(reader.readLine());
-      lines.add(reader.readLine());
+      lines
+        ..add(reader.readLine())
+        ..add(reader.readLine());
       expect(
         lines.last,
         equals("found include target 'include-file.adoc' at line 4"),
@@ -1787,8 +1784,7 @@ void main() {
             .toList(),
       );
       final reader = PreprocessorReader(fake, input, null, true);
-      final lines = <String?>[];
-      lines.add(reader.readLine());
+      final lines = (<String?>[])..add(reader.readLine());
       lines.add(reader.readLine());
       expect(lines.last, equals('contents of include-file.adoc'));
       expect(contentCache.length, equals(1));
@@ -1939,8 +1935,7 @@ void main() {
       );
 
       final doc = emptyDocument();
-      final registry = Registry();
-      registry.activate(doc);
+      final registry = (Registry())..activate(doc);
       for (final ext in registry.treeProcessors) {
         (ext.processMethod as Object? Function(Document))(doc);
       }
@@ -2442,8 +2437,9 @@ void main() {
         build: (registry) {
           registry.blockMacro(
             build: (processor) {
-              processor.named('attribute');
-              processor.resolveAttributes('1:value');
+              processor
+                ..named('attribute')
+                ..resolveAttributes('1:value');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -2460,8 +2456,9 @@ void main() {
           );
           registry.blockMacro(
             build: (processor) {
-              processor.named('header_attribute');
-              processor.resolveAttributes('1:value');
+              processor
+                ..named('header_attribute')
+                ..resolveAttributes('1:value');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -2514,8 +2511,9 @@ void main() {
           registry.inlineMacro(
             name: 'del',
             build: (processor) {
-              processor.matchFormat('short');
-              processor.resolveAttributes(false);
+              processor
+                ..matchFormat('short')
+                ..resolveAttributes(false);
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -2548,8 +2546,9 @@ void main() {
           registry.inlineMacro(
             name: 'del',
             build: (processor) {
-              processor.matchFormat('short');
-              processor.contentModel('text');
+              processor
+                ..matchFormat('short')
+                ..contentModel('text');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -2578,8 +2577,9 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('label');
-              processor.matchFormat('short');
+              processor
+                ..named('label')
+                ..matchFormat('short');
               processor.parseContentAs('text');
               processor.onProcess =
                   (
@@ -2606,8 +2606,9 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('label');
-              processor.matchFormat('short');
+              processor
+                ..named('label')
+                ..matchFormat('short');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -2633,8 +2634,9 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('json');
-              processor.matchFormat('short');
+              processor
+                ..named('json')
+                ..matchFormat('short');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -2704,8 +2706,9 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('short_attributes');
-              processor.matchFormat('short');
+              processor
+                ..named('short_attributes')
+                ..matchFormat('short');
               processor.resolveAttributes('1:name');
               processor.onProcess = (
                 AbstractBlock parent,
@@ -2717,8 +2720,9 @@ void main() {
 
           registry.inlineMacro(
             build: (processor) {
-              processor.named('short_text');
-              processor.matchFormat('short');
+              processor
+                ..named('short_text')
+                ..matchFormat('short');
               processor.resolveAttributes(false);
               processor.onProcess = (
                 AbstractBlock parent,
@@ -2730,8 +2734,9 @@ void main() {
 
           registry.inlineMacro(
             build: (processor) {
-              processor.named('full-attributes');
-              processor.resolveAttributes({'1:name': null});
+              processor
+                ..named('full-attributes')
+                ..resolveAttributes({'1:name': null});
               processor.onProcess = (
                 AbstractBlock parent,
                 String target,
@@ -2742,8 +2747,9 @@ void main() {
 
           registry.inlineMacro(
             build: (processor) {
-              processor.named('full-text');
-              processor.resolveAttributes(false);
+              processor
+                ..named('full-text')
+                ..resolveAttributes(false);
               processor.onProcess = (
                 AbstractBlock parent,
                 String target,
@@ -2754,8 +2760,9 @@ void main() {
 
           registry.inlineMacro(
             build: (processor) {
-              processor.named('@short_match');
-              processor.match(RegExp(r'@(\w+)'));
+              processor
+                ..named('@short_match')
+                ..match(RegExp(r'@(\w+)'));
               processor.resolveAttributes(false);
               processor.onProcess = (
                 AbstractBlock parent,
@@ -2803,8 +2810,9 @@ void main() {
           build: (registry) {
             registry.inlineMacro(
               build: (processor) {
-                processor.named('mention');
-                processor.resolveAttributes(false);
+                processor
+                  ..named('mention')
+                  ..resolveAttributes(false);
                 processor.onProcess =
                     (
                       AbstractBlock parent,
@@ -2838,8 +2846,9 @@ void main() {
         build: (registry) {
           registry.inlineMacro(
             build: (processor) {
-              processor.named('skipme');
-              processor.matchFormat('short');
+              processor
+                ..named('skipme')
+                ..matchFormat('short');
               processor.onProcess = (
                 AbstractBlock parent,
                 String target,
@@ -3015,8 +3024,9 @@ void main() {
           registry.inlineMacro(
             name: 'attrs',
             build: (processor) {
-              processor.matchFormat('short');
-              processor.defaultAttributes({1: 'a', 2: 'b', 'foo': 'baz'});
+              processor
+                ..matchFormat('short')
+                ..defaultAttributes({1: 'a', 2: 'b', 'foo': 'baz'});
               processor.positionalAttributes(['a', 'b']);
               processor.onProcess =
                   (
@@ -3079,8 +3089,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('skip-me');
-              processor.onContext('paragraph');
+              processor
+                ..named('skip-me')
+                ..onContext('paragraph');
               processor.parseContentAs('raw');
               processor.onProcess = (
                 AbstractBlock parent,
@@ -3111,8 +3122,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('ignore');
-              processor.onContext('paragraph');
+              processor
+                ..named('ignore')
+                ..onContext('paragraph');
               processor.parseContentAs('skip');
               processor.onProcess =
                   (
@@ -3146,8 +3158,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('foo');
-              processor.onContext('paragraph');
+              processor
+                ..named('foo')
+                ..onContext('paragraph');
               processor.parseContentAs('raw');
               processor.onProcess =
                   (
@@ -3179,8 +3192,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('lst');
-              processor.onContext('paragraph');
+              processor
+                ..named('lst')
+                ..onContext('paragraph');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -3212,8 +3226,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('sect');
-              processor.onContext('open');
+              processor
+                ..named('sect')
+                ..onContext('open');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -3254,8 +3269,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('csv');
-              processor.onContext('literal');
+              processor
+                ..named('csv')
+                ..onContext('literal');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -3286,8 +3302,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('unwrap');
-              processor.onContext('open');
+              processor
+                ..named('unwrap')
+                ..onContext('open');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -3344,8 +3361,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('wrap');
-              processor.onContext('open');
+              processor
+                ..named('wrap')
+                ..onContext('open');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -3388,8 +3406,9 @@ void main() {
         build: (registry) {
           registry.block(
             build: (processor) {
-              processor.named('attrs');
-              processor.onContext('open');
+              processor
+                ..named('attrs')
+                ..onContext('open');
               processor.onProcess =
                   (
                     AbstractBlock parent,
@@ -4070,8 +4089,8 @@ void main() {
       final list = processor.createList(doc, 'ulist');
       expect(list, isA<ListBlock>());
       expect(list.context, equals('ulist'));
-      final item = processor.createListItem(list, 'Guillaume');
-      item.addRole('friendly');
+      final item = (processor.createListItem(list, 'Guillaume'))
+        ..addRole('friendly');
       item.id = 'item-1';
       list << item;
       expect(list.items.length, equals(1));
@@ -4230,8 +4249,7 @@ void main() {
 
   group('Dsl', () {
     test('named and content model helpers set config', () {
-      final processor = SampleBlock();
-      processor.named('shout');
+      final processor = (SampleBlock())..named('shout');
       expect(processor.name, equals('shout'));
       processor.contentModel('simple');
       expect(processor.config['content_model'], equals('simple'));
@@ -4240,8 +4258,7 @@ void main() {
     });
 
     test('positional and default attribute helpers set config', () {
-      final processor = SampleInlineMacro();
-      processor.positionalAttributes(['a', 'b']);
+      final processor = (SampleInlineMacro())..positionalAttributes(['a', 'b']);
       expect(processor.config['positional_attrs'], equals(['a', 'b']));
       processor.positionalAttributes('chars');
       expect(processor.config['positional_attrs'], equals(['chars']));
@@ -4252,8 +4269,7 @@ void main() {
     });
 
     test('deprecated aliases delegate', () {
-      final processor = SampleInlineMacro();
-      processor.positionalAttrs(['a']);
+      final processor = (SampleInlineMacro())..positionalAttrs(['a']);
       expect(processor.config['positional_attrs'], equals(['a']));
       processor.defaultAttrs({'foo': 'bar'});
       expect(processor.config['default_attrs'], equals({'foo': 'bar'}));
@@ -4264,29 +4280,26 @@ void main() {
     });
 
     test('resolveAttributes handles list specifications', () {
-      final processor = SampleInlineMacro();
-      processor.resolveAttributes(['1:units', 'precision=1']);
+      final processor = (SampleInlineMacro())
+        ..resolveAttributes(['1:units', 'precision=1']);
       expect(processor.config['positional_attrs'], equals(['units']));
       expect(processor.config['default_attrs'], equals({'precision': '1'}));
       expect(processor.config['content_model'], equals('attributes'));
     });
 
     test('resolveAttributes handles a single string', () {
-      final processor = SampleBlockMacro();
-      processor.resolveAttributes('1:value');
+      final processor = (SampleBlockMacro())..resolveAttributes('1:value');
       expect(processor.config['positional_attrs'], equals(['value']));
       expect(processor.config['default_attrs'], equals({}));
     });
 
     test('resolveAttributes with false selects the text content model', () {
-      final processor = SampleBlockMacro();
-      processor.resolveAttributes(false);
+      final processor = (SampleBlockMacro())..resolveAttributes(false);
       expect(processor.config['content_model'], equals('text'));
     });
 
     test('resolveAttributes with no arguments resets both lists', () {
-      final processor = SampleBlockMacro();
-      processor.resolveAttributes(['1:value']);
+      final processor = (SampleBlockMacro())..resolveAttributes(['1:value']);
       processor.resolveAttributes();
       expect(processor.config['positional_attrs'], equals([]));
       expect(processor.config['default_attrs'], equals({}));
@@ -4294,15 +4307,15 @@ void main() {
     });
 
     test('resolveAttributes handles map specifications', () {
-      final processor = SampleInlineMacro();
-      processor.resolveAttributes({'1:name': null});
+      final processor = (SampleInlineMacro())
+        ..resolveAttributes({'1:name': null});
       expect(processor.config['positional_attrs'], equals(['name']));
       expect(processor.config['default_attrs'], equals({}));
     });
 
     test('resolveAttributes handles @ indices and offset slots', () {
-      final processor = SampleInlineMacro();
-      processor.resolveAttributes(['@:first', '2:third']);
+      final processor = (SampleInlineMacro())
+        ..resolveAttributes(['@:first', '2:third']);
       expect(processor.config['positional_attrs'], equals(['first', 'third']));
     });
 
@@ -4330,8 +4343,7 @@ void main() {
         'contexts': ['paragraph', 'sidebar'],
       });
       expect(listed.config['contexts'], equals({'paragraph', 'sidebar'}));
-      final bound = SampleBlock();
-      bound.onContext('literal');
+      final bound = (SampleBlock())..onContext('literal');
       expect(bound.config['contexts'], equals({'literal'}));
       bound.onContexts(['sidebar', 'open']);
       expect(bound.config['contexts'], equals({'sidebar', 'open'}));
@@ -4347,8 +4359,7 @@ void main() {
     });
 
     test('prefer marks the processor position', () {
-      final processor = SampleTreeProcessor();
-      processor.prefer();
+      final processor = (SampleTreeProcessor())..prefer();
       expect(processor.config['position'], equals('>>'));
     });
 
@@ -4360,8 +4371,7 @@ void main() {
     });
 
     test('inline macro format and match helpers set config', () {
-      final processor = SampleInlineMacro();
-      processor.format('short');
+      final processor = (SampleInlineMacro())..format('short');
       expect(processor.config['format'], equals('short'));
       processor.matchFormat('full');
       expect(processor.config['format'], equals('full'));
@@ -4407,8 +4417,7 @@ void main() {
     });
 
     test('short format matches without a target', () {
-      final processor = SampleInlineMacro('label');
-      processor.matchFormat('short');
+      final processor = (SampleInlineMacro('label'))..matchFormat('short');
       final pattern = processor.regexp;
       final match = pattern.firstMatch('label:[Checkbox]')!;
       // Matches Ruby: the short-format target capture is nil.
@@ -4501,8 +4510,8 @@ void main() {
     });
 
     test('position config inserts at the front', () {
-      final registry = Registry();
-      registry.preprocessor(processor: SamplePreprocessor.new);
+      final registry = (Registry())
+        ..preprocessor(processor: SamplePreprocessor.new);
       final preferred = registry.preprocessor(
         processor: SamplePreprocessor.new,
         config: {'position': '>>'},

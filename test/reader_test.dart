@@ -650,70 +650,60 @@ void main() {
       });
 
       test('hasMoreLines should return false after readLines is invoked', () {
-        final reader = Reader(sampleData);
-        reader.readLines();
+        final reader = (Reader(sampleData))..readLines();
         expect(reader.hasMoreLines(), isFalse);
       });
 
       test('unshift puts line onto Reader as next line to read', () {
-        final reader = Reader(sampleData, null, true);
-        reader.unshift('line zero');
+        final reader = (Reader(sampleData, null, true))..unshift('line zero');
         expect(reader.peekLine(), equals('line zero'));
         expect(reader.readLine(), equals('line zero'));
         expect(reader.lineno, equals(1));
       });
 
       test('terminate should consume all lines and update line number', () {
-        final reader = Reader(sampleData);
-        reader.terminate();
+        final reader = (Reader(sampleData))..terminate();
         expect(reader.isEof, isTrue);
         expect(reader.lineno, equals(4));
       });
 
       test('skipBlankLines should skip blank lines', () {
-        final reader = Reader(['', '', ...sampleData]);
-        reader.skipBlankLines();
+        final reader = Reader(['', '', ...sampleData])..skipBlankLines();
         expect(reader.peekLine(), equals(sampleData.first));
       });
 
       test('lines should return remaining lines', () {
-        final reader = Reader(sampleData);
-        reader.readLine();
+        final reader = (Reader(sampleData))..readLine();
         expect(reader.lines, equals(sampleData.sublist(1)));
       });
 
       test('sourceLines should return copy of original data Array', () {
-        final reader = Reader(sampleData);
-        reader.readLines();
+        final reader = (Reader(sampleData))..readLines();
         expect(reader.sourceLines, equals(sampleData));
       });
 
       test('source should return original data Array joined as String', () {
-        final reader = Reader(sampleData);
-        reader.readLines();
+        final reader = (Reader(sampleData))..readLines();
         expect(reader.source, equals(sampleData.join('\n')));
       });
     });
 
     group('Line context', () {
       test('cursor.toString should return file name and line number of current line', () {
-        final reader = Reader(sampleData, 'sample.adoc');
-        reader.readLine();
+        final reader = (Reader(sampleData, 'sample.adoc'))..readLine();
         expect(reader.cursor().toString(), equals('sample.adoc: line 2'));
       });
 
       test(
         'lineInfo should return file name and line number of current line',
         () {
-          final reader = Reader(sampleData, 'sample.adoc');
-          reader.readLine();
+          final reader = (Reader(sampleData, 'sample.adoc'))..readLine();
           expect(reader.lineInfo, equals('sample.adoc: line 2'));
         },
       );
 
       test('cursorAtPrevLine should return file name and line number of previous line read', () {
-        final reader = Reader(sampleData, 'sample.adoc');
-        reader.readLine();
+        final reader = (Reader(sampleData, 'sample.adoc'))..readLine();
         expect(
           reader.cursorAtPrevLine().toString(),
           equals('sample.adoc: line 1'),
@@ -723,8 +713,7 @@ void main() {
       // NOTE the following save/restore/mark tests have no Ruby counterpart
       // in reader_test.rb; they pin ported behavior the parser wave calls.
       test('mark and cursorAtMark track the marked position', () {
-        final reader = Reader(['a', 'b', 'c', 'd']);
-        reader.readLine();
+        final reader = (Reader(['a', 'b', 'c', 'd']))..readLine();
         expect(reader.mark(), isTrue);
         expect(reader.cursorAtMark().toString(), equals('<stdin>: line 2'));
         expect(reader.cursorBeforeMark().toString(), equals('<stdin>: line 1'));
@@ -733,8 +722,7 @@ void main() {
       });
 
       test('save and restoreSave round-trip reader state', () {
-        final reader = Reader(['a', 'b', 'c', 'd']);
-        reader.readLine();
+        final reader = (Reader(['a', 'b', 'c', 'd']))..readLine();
         reader.mark();
         reader.save();
         expect(reader.readLine(), equals('b'));
@@ -746,8 +734,9 @@ void main() {
         reader.restoreSave();
         expect(reader.readLine(), equals('c'));
         // discardSave drops the saved state
-        reader.save();
-        reader.readLine();
+        reader
+          ..save()
+          ..readLine();
         reader.discardSave();
         reader.restoreSave();
         expect(reader.readLine(), isNull);
@@ -812,8 +801,7 @@ void main() {
           'This is a paragraph outside the block.',
         ];
 
-        final reader = Reader(lines);
-        reader.readLine();
+        final reader = (Reader(lines))..readLine();
         final result = reader.readLinesUntil(test: (line) => line == '--');
         expect(result, hasLength(3));
         expect(result, equals(lines.sublist(1, 4)));
@@ -831,8 +819,7 @@ void main() {
           'This is a paragraph outside the block.',
         ];
 
-        final reader = Reader(lines);
-        reader.readLine();
+        final reader = (Reader(lines))..readLine();
         final result = reader.readLinesUntil(
           readLastLine: true,
           test: (line) => line == '--',
@@ -853,8 +840,7 @@ void main() {
           'This is a paragraph outside the block.',
         ];
 
-        final reader = Reader(lines);
-        reader.readLine();
+        final reader = (Reader(lines))..readLine();
         final result = reader.readLinesUntil(
           readLastLine: true,
           preserveLastLine: true,
@@ -1106,15 +1092,15 @@ void main() {
       });
 
       test('PreprocessorReader#push_include method should put lines on top of stack', () {
-        final reader = preprocessorReader(['a', 'b', 'c']);
-        reader.pushInclude(['one', 'two', 'three'], '', '<stdin>');
+        final reader = (preprocessorReader(['a', 'b', 'c']))
+          ..pushInclude(['one', 'two', 'three'], '', '<stdin>');
         expect(reader.includeStack, hasLength(1));
         expect(reader.readLine()!.rstrip(), equals('one'));
       });
 
       test('PreprocessorReader#push_include method should gracefully handle file and path', () {
-        final reader = preprocessorReader(['a', 'b', 'c']);
-        reader.pushInclude(['one', 'two', 'three']);
+        final reader = (preprocessorReader(['a', 'b', 'c']))
+          ..pushInclude(['one', 'two', 'three']);
         expect(reader.includeStack, hasLength(1));
         expect(reader.readLine()!.rstrip(), equals('one'));
         expect(reader.file, isNull);
@@ -1123,8 +1109,8 @@ void main() {
 
       test('PreprocessorReader#push_include method should set path from file automatically if not specified', () {
         final doc = FakeDocument();
-        final reader = PreprocessorReader(doc, ['a', 'b', 'c'], null, true);
-        reader.pushInclude(['one', 'two', 'three'], '/tmp/lines.adoc');
+        final reader = (PreprocessorReader(doc, ['a', 'b', 'c'], null, true))
+          ..pushInclude(['one', 'two', 'three'], '/tmp/lines.adoc');
         expect(reader.file, equals('/tmp/lines.adoc'));
         expect(reader.path, equals('lines.adoc'));
         expect(doc.catalogIncludes['lines'], isTrue);
@@ -1133,8 +1119,8 @@ void main() {
       test('PreprocessorReader#push_include method should accept file as a URI and compute dir and path', () {
         final fileUri = Uri.parse('http://example.com/docs/file.adoc');
         final dirUri = Uri.parse('http://example.com/docs');
-        final reader = preprocessorReader([]);
-        reader.pushInclude(['one', 'two', 'three'], fileUri);
+        final reader = (preprocessorReader([]))
+          ..pushInclude(['one', 'two', 'three'], fileUri);
         expect(reader.file, same(fileUri));
         expect(reader.dir, equals(dirUri));
         expect(reader.path, equals('file.adoc'));
@@ -1143,24 +1129,24 @@ void main() {
       test('PreprocessorReader#push_include method should accept file as a top-level URI and compute dir and path', () {
         final fileUri = Uri.parse('http://example.com/index.adoc');
         final dirUri = Uri.parse('http://example.com');
-        final reader = preprocessorReader([]);
-        reader.pushInclude(['one', 'two', 'three'], fileUri);
+        final reader = (preprocessorReader([]))
+          ..pushInclude(['one', 'two', 'three'], fileUri);
         expect(reader.file, same(fileUri));
         expect(reader.dir, equals(dirUri));
         expect(reader.path, equals('index.adoc'));
       });
 
       test('PreprocessorReader#push_include method should not fail if data is null', () {
-        final reader = preprocessorReader(['a', 'b', 'c']);
-        reader.pushInclude(null, '', '<stdin>');
+        final reader = (preprocessorReader(['a', 'b', 'c']))
+          ..pushInclude(null, '', '<stdin>');
         expect(reader.includeStack, isEmpty);
         expect(reader.readLine()!.rstrip(), equals('a'));
       });
 
       test('PreprocessorReader#push_include method should ignore dot in directory name when computing include path', () {
         final doc = FakeDocument();
-        final reader = PreprocessorReader(doc, ['a', 'b', 'c'], null, true);
-        reader.pushInclude(['one', 'two', 'three'], null, 'include.d/data');
+        final reader = (PreprocessorReader(doc, ['a', 'b', 'c'], null, true))
+          ..pushInclude(['one', 'two', 'three'], null, 'include.d/data');
         expect(reader.file, isNull);
         expect(reader.path, equals('include.d/data'));
         expect(doc.catalogIncludes['include.d/data'], isTrue);
@@ -1355,8 +1341,8 @@ void main() {
         () {
           const input = '----\ninclude::fixtures/circle.svg[]\n----\n';
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, input, null, true);
-          reader.readLines();
+          final reader = (PreprocessorReader(doc, input, null, true))
+            ..readLines();
           expect(doc.catalogIncludes, isEmpty);
         },
       );
@@ -3006,8 +2992,8 @@ void main() {
           ];
 
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, lines, null, true);
-          reader.readLine();
+          final reader = (PreprocessorReader(doc, lines, null, true))
+            ..readLine();
           final result = reader.readLinesUntil(
             terminator: '////',
             skipProcessing: true,
@@ -3050,8 +3036,8 @@ void main() {
 
         usingMemoryLogger((logger) {
           final doc = FakeDocument(safe: SafeMode.safe, baseDir: repoTestDir);
-          final reader = PreprocessorReader(doc, lines, null, true);
-          reader.skipCommentLines();
+          final reader = (PreprocessorReader(doc, lines, null, true))
+            ..skipCommentLines();
           expect(reader.isEmpty, isTrue);
           expect(logger.messages, isEmpty);
         });
@@ -3096,8 +3082,7 @@ void main() {
         'peekLines should not prevent subsequent preprocessing of peeked lines',
         () {
           const input = 'The Asciidoctor\nifdef::asciidoctor[is in.]\n';
-          final reader = preprocessorReader(input);
-          reader.peekLines(2, true);
+          final reader = (preprocessorReader(input))..peekLines(2, true);
           expect(reader.peekLines(2), equals(['The Asciidoctor', 'is in.']));
         },
       );

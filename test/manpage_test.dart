@@ -212,8 +212,8 @@ Document makeDoc({
   Map<String, Object?> options = const <String, Object?>{},
 }) {
   final opts = <String, Object?>{'backend': 'manpage', ...options};
-  final doc = Document(<String>[], opts);
-  doc.converter = ManpageConverter('manpage');
+  final doc = (Document(<String>[], opts))
+    ..converter = ManpageConverter('manpage');
   doc.attributes.addAll(attributes);
   return doc;
 }
@@ -1297,8 +1297,7 @@ void main() {
 
     test('creates header, body and footer rows in order', () {
       final doc = manDoc();
-      final table = makeTable(doc, [100]);
-      table.hasHeaderOption = true;
+      final table = (makeTable(doc, [100]))..hasHeaderOption = true;
       table.rows.head.add([textCell(table, 0, 'Header')]);
       table.rows.body.add([textCell(table, 0, 'Body 1')]);
       table.rows.body.add([textCell(table, 0, 'Body 2')]);
@@ -1443,8 +1442,7 @@ void main() {
 
     test('marks colspan cells with st', () {
       final doc = manDoc();
-      final table = makeTable(doc, [1, 1, 1]);
-      table.hasHeaderOption = true;
+      final table = (makeTable(doc, [1, 1, 1]))..hasHeaderOption = true;
       table.rows.head.add([
         textCell(table, 0, 'wide cell', attributes: {'colspan': 3}),
       ]);

@@ -59,8 +59,9 @@ int runInitConfig(List<String> args, {StringSink? out, StringSink? err}) {
     } else if (arg == '--force' || arg == '-f') {
       force = true;
     } else if (arg.startsWith('-')) {
-      stderrSink.writeln('asciidoctor init-config: unknown option: $arg');
-      stderrSink.write(initConfigUsage);
+      stderrSink
+        ..writeln('asciidoctor init-config: unknown option: $arg')
+        ..write(initConfigUsage);
       return 1;
     } else if (dir == null) {
       dir = arg;
