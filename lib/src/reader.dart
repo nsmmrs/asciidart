@@ -1681,7 +1681,7 @@ class PreprocessorReader extends Reader {
       } on ArgumentError {
         // Ruby rescues decode failures raised while streaming the file, so
         // they are handled as an unreadable include here.
-        throw _IncludeNotReadable();
+        throw const _IncludeNotReadable();
       }
       incLines = [];
       var incLineno = 0;
@@ -1779,7 +1779,7 @@ class PreprocessorReader extends Reader {
       } on ArgumentError {
         // Ruby rescues decode failures raised while streaming the file, so
         // they are handled as an unreadable include here.
-        throw _IncludeNotReadable();
+        throw const _IncludeNotReadable();
       }
       incLines = [];
       var incLineno = 0;
@@ -2000,7 +2000,7 @@ class PreprocessorReader extends Reader {
       try {
         return File(resolution.path as String).readAsBytesSync();
       } catch (_) {
-        throw _IncludeNotReadable();
+        throw const _IncludeNotReadable();
       }
     } else {
       String? content;
@@ -2009,7 +2009,7 @@ class PreprocessorReader extends Reader {
       } catch (_) {
         content = null;
       }
-      if (content == null) throw _IncludeNotReadable();
+      if (content == null) throw const _IncludeNotReadable();
       return content;
     }
   }

@@ -386,7 +386,7 @@ class Logger extends LoggerBase {
 
   static _ResolvedLogdev _resolveLogdev(Object? logdev) {
     if (identical(logdev, _unspecified)) return _ResolvedLogdev(stderr, false);
-    if (logdev == null) return _ResolvedLogdev(_NullSink(), false);
+    if (logdev == null) return const _ResolvedLogdev(_NullSink(), false);
     if (logdev is StringSink) return _ResolvedLogdev(logdev, false);
     if (logdev is File) {
       return _ResolvedLogdev(logdev.openWrite(mode: FileMode.append), true);
