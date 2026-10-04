@@ -10,7 +10,11 @@ concurrency:
 permissions: read-all
 jobs:
   dart:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -26,6 +30,9 @@ jobs:
       run: dart test
     - name: Check that the public API is closed
       run: dart run tool/api_check.dart
+    - name: Check the package for pub.dev (dry run, nothing is published)
+      if: matrix.os == 'ubuntu-latest'
+      run: dart pub publish --dry-run
   e2e:
     runs-on: ubuntu-latest
     steps:
@@ -79,3 +86,54 @@ jobs:
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
     - name: Check byte-identical parity with Asciidoctor 2.0.26
       run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidoctor-linux-')"
+  npm:
+    strategy:
+      fail-fast: false
+      matrix:
+        # The engines floor in npm/package.json, and the current LTS.
+        node: ['20.19', 'lts/*']
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node }}
+    - name: Build the npm package
+      run: ./tool/build-npm.sh
+    - name: Install the package test dependencies
+      working-directory: test/npm
+      run: npm ci
+    - name: Run the package tests (API, exports, contents, bundler, browser)
+      working-directory: test/npm
+      env:
+        CHROMIUM_PATH: /usr/bin/google-chrome
+      run: node --test
+    - name: Check the type declarations
+      working-directory: test/npm
+      run: npm run types
+    - name: Lint the package (publint, are-the-types-wrong)
+      working-directory: test/npm
+      run: npm run lint
+    - name: Check the package for npm (dry run, nothing is published)
+      working-directory: build/npm
+      run: npm publish --dry-run
+    - name: Run the Dart tests on Node.js
+      run: dart test -p node
+    - name: Set up Ruby (oracle only)
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+    - name: Install asciidoctor gem (parity oracle)
+      run: gem install asciidoctor -v 2.0.26 --no-document && gem install coderay pygments.rb --no-document
+    - name: Install bats
+      run: sudo npm i -g bats
+    - name: Run e2e CLI tests (Node CLI)
+      env:
+        ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-node
+      run: bats test/e2e/
+    - name: Check byte-identical parity with Asciidoctor 2.0.26 (Node CLI)
+      run: ./tool/parity.sh test/e2e/bin/asciidoctor-node
