@@ -133,6 +133,10 @@ final class PdfConverter extends BuiltInConverter
         convertUlist(list);
       case final ListBlock list when list.context == BlockContext.olist:
         convertOlist(list);
+      case final ListBlock list when list.context == BlockContext.dlist:
+        convertDlist(list);
+      case final ListBlock list when list.context == BlockContext.colist:
+        convertColist(list);
       case final Block block:
         final context = block.context;
         if (context == BlockContext.paragraph) {
@@ -351,9 +355,25 @@ final class PdfConverter extends BuiltInConverter
     if (block is Document) return null;
     final parent = block.parent;
     if (parent is! AbstractBlock) return null;
-    final siblings = parent.blocks;
+    final siblings =
+        block is ListItem &&
+            parent is ListBlock &&
+            parent.context == BlockContext.dlist
+        ? [
+            for (final entry in parent.entries) ...[
+              ...entry.terms,
+              entry.description,
+            ],
+          ]
+        : <AbstractBlock?>[...parent.blocks];
     final index = siblings.indexOf(block);
-    if (index >= 0 && index < siblings.length - 1) return siblings[index + 1];
+    if (index >= 0 && index < siblings.length - 1) {
+      if (block.context == BlockContext.open &&
+          block.style == 'table-container') {
+        return _nextEnclosedBlock(parent);
+      }
+      return siblings[index + 1];
+    }
     final parentContext = parent.context;
     if (parentContext == BlockContext.listItem ||
         (parentContext == BlockContext.open && parent.style != 'abstract') ||
@@ -1071,7 +1091,8 @@ final class PdfConverter extends BuiltInConverter
   /// highlighting).
   void convertCode(Block node) {
     final font = _themeFont('code', _font);
-    final source = _guardIndentation(node.content() ?? '');
+    var source = '';
+    _withFont('code', () => source = _guardIndentation(node.content() ?? ''));
     final captionBelow = _s('code_caption_end') == 'bottom';
     if (!captionBelow && node.hasTitle) _caption(node, category: 'code');
     final box = _textBox(
@@ -1450,6 +1471,333 @@ final class PdfConverter extends BuiltInConverter
     _out.add(BlockBox(children, style: BoxStyle(anchor: item.id)));
   }
 
+  /// Converts the description list [node].
+  void convertDlist(ListBlock node) {
+    if (node.style == 'horizontal') {
+      _horizontalDlist(node);
+    } else {
+      _dlist(node);
+    }
+  }
+
+  /// The height of a line of text in [font] (the gem's
+  /// `height_of_typeset_text`).
+  double _typesetHeight(_FontState font) => _textBox(
+    'A',
+    font,
+    align: 'left',
+  ).place(1000000, double.infinity, atTop: true)!.height;
+
+  /// The styles [font] gives text (to inherit).
+  static Set<String> _stylesOf(_FontState font) => {
+    if (font.style == 'bold' || font.style == 'bold_italic') 'bold',
+    if (font.style == 'italic' || font.style == 'bold_italic') 'italic',
+  };
+
+  /// The text of the description list term [term] in [font].
+  CustomContent _term(ListItem term, _FontState font) {
+    var text = term.text ?? '';
+    if (font.transform case final transform? when transform != 'none') {
+      text = transformText(text, transform);
+    }
+    return _textBox(
+      text,
+      font,
+      align: 'left',
+      normalizeLineHeight: true,
+      inheritedStyles: _stylesOf(font),
+    );
+  }
+
+  /// Adds the description [desc] of a description list entry: its text,
+  /// then its blocks (the gem's `traverse_list_item` for descriptions).
+  void _description(ListItem desc) {
+    final marginBottom = _nextEnclosedBlockDescending(desc) == null
+        ? 0.0
+        : (_n('prose_margin_bottom') ?? 0).toDouble();
+    final text = desc.text;
+    final primary = text == null || text.isEmpty
+        ? (desc.blocks.isEmpty ? _dummyText : null)
+        : text;
+    if (primary != null) {
+      _out.add(
+        CustomBox(
+          _textBox(
+            primary,
+            _font,
+            align: _baseTextAlign,
+            normalizeLineHeight: true,
+          ),
+          style: BoxStyle(margin: EdgeInsets(bottom: marginBottom)),
+        ),
+      );
+    }
+    _traverse(desc);
+  }
+
+  void _dlist(ListBlock node) {
+    final boxes = _collect(() {
+      if (node.hasTitle) {
+        _caption(node, category: 'description_list', labeled: false);
+      }
+      final termSpacing = (_n('description_list_term_spacing') ?? 0).toDouble();
+      final termFont = _themeFont('description_list_term', _font);
+      final termHeight = _typesetHeight(termFont);
+      final proseHeight = _typesetHeight(_font);
+      final indent = (_n('description_list_description_indent') ?? 0)
+          .toDouble();
+      for (final DlistEntry(:terms, description: desc) in node.entries) {
+        final hasText = desc != null && desc.hasText;
+        final lines = terms.length + (hasText ? 1 : 0);
+        final need =
+            lines * termHeight +
+            (lines - 1) * termSpacing +
+            (desc != null && !hasText && desc.blocks.isNotEmpty
+                ? termSpacing + proseHeight
+                : 0);
+        for (final (i, term) in terms.indexed) {
+          final box = _term(term, termFont);
+          _out.add(
+            CustomBox(
+              i == 0 ? _MinRoom(box, need) : box,
+              style: BoxStyle(margin: EdgeInsets(top: i > 0 ? termSpacing : 0)),
+            ),
+          );
+        }
+        if (desc == null) continue;
+        final children = _collect(() {
+          if (termSpacing > 0) _out.add(SpacerBox(termSpacing));
+          _description(desc);
+        });
+        _out.add(
+          BlockBox(
+            children,
+            style: BoxStyle(margin: EdgeInsets(left: indent)),
+          ),
+        );
+      }
+    });
+    _out.add(
+      BlockBox(
+        boxes,
+        style: BoxStyle(
+          margin: EdgeInsets(
+            bottom: node.parent is ListItem
+                ? 0
+                : _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          anchor: node.id,
+        ),
+      ),
+    );
+  }
+
+  /// A description list with its terms in a column beside the
+  /// descriptions.
+  void _horizontalDlist(ListBlock node) {
+    final boxes = _collect(() {
+      if (node.hasTitle) {
+        _caption(node, category: 'description_list', labeled: false);
+      }
+      final termFont = _themeFont('description_list_term', _font);
+      final prawnFont = _fonts.font(termFont.family, termFont.style);
+      final termHeight = _typesetHeight(termFont);
+      final proseHeight = _typesetHeight(_font);
+      final termSpacing = (_n('description_list_term_spacing') ?? 0).toDouble();
+      const termLeft = 10.0;
+      const termRight = 10.0;
+      const descLeft = 10.0;
+      const descRight = 10.0;
+      var widest = 0.0;
+      for (final entry in node.entries) {
+        for (final term in entry.terms) {
+          var text = term.text ?? '';
+          if (termFont.transform case final transform?
+              when transform != 'none') {
+            text = transformText(text, transform);
+          }
+          final width = prawnFont.widthOf(
+            _plain(text),
+            termFont.size,
+            kerning: termFont.kerning,
+          );
+          if (width > widest) widest = width;
+        }
+      }
+      final rows = <TableRow>[];
+      for (final DlistEntry(:terms, description: desc) in node.entries) {
+        final need = math.max(
+          (termSpacing + termHeight) * terms.length - termSpacing,
+          desc != null ? proseHeight : 0.0,
+        );
+        final termBoxes = [
+          for (final (i, term) in terms.indexed)
+            CustomBox(
+              i == 0
+                  ? _MinRoom(_term(term, termFont), need)
+                  : _term(term, termFont),
+              style: BoxStyle(margin: EdgeInsets(top: i > 0 ? termSpacing : 0)),
+            ),
+        ];
+        rows.add(
+          TableRow([
+            TableCell(termBoxes, padding: const EdgeInsets(left: termLeft)),
+            TableCell(
+              desc == null ? const [] : _collect(() => _description(desc)),
+              padding: const EdgeInsets(left: descLeft, right: descRight),
+            ),
+          ]),
+        );
+      }
+      final termWidth = widest + termLeft + termRight;
+      _out.add(
+        TableBox(
+          rows,
+          columns: [
+            ColumnWidth.computed(
+              (width) =>
+                  math.min(termWidth, width * 0.5 - termLeft - termRight),
+            ),
+            const ColumnWidth.fraction(1),
+          ],
+        ),
+      );
+    });
+    _out.add(
+      BlockBox(
+        boxes,
+        style: BoxStyle(
+          margin: EdgeInsets(
+            bottom: node.parent is ListItem
+                ? 0
+                : _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          anchor: node.id,
+        ),
+      ),
+    );
+  }
+
+  /// The callout glyphs of the theme.
+  late final List<String> _conumGlyphs = () {
+    final setting = _s('conum_glyphs') ?? 'circled';
+    List<String> range(int from, int to) => [
+      for (var c = from; c <= to; c++) String.fromCharCode(c),
+    ];
+    String char(String code) => code.startsWith(r'\u')
+        ? String.fromCharCode(int.tryParse(code.substring(2), radix: 16) ?? 0)
+        : code;
+    return switch (setting) {
+      'circled' => range(0x2460, 0x2473),
+      'filled' => [...range(0x2776, 0x277f), ...range(0x24eb, 0x24f4)],
+      _ => [
+        for (final part in setting.split(','))
+          ...switch (part.trimLeft().split('-')) {
+            [final from, final to, ...] => range(
+              char(from).runes.first,
+              char(to).runes.first,
+            ),
+            [final from, ...] => [char(from)],
+            _ => const <String>[],
+          },
+      ],
+    };
+  }();
+
+  /// The glyph of callout [number] (empty when the theme has none).
+  String _conumGlyph(int number) => number >= 1 && number <= _conumGlyphs.length
+      ? _conumGlyphs[number - 1]
+      : '';
+
+  /// Converts the callout list [node].
+  void convertColist(ListBlock node) {
+    final previous = _previousSibling(node)?.context;
+    final marginTop =
+        previous == BlockContext.listing || previous == BlockContext.literal
+        ? (_n('callout_list_margin_top_after_code') ?? 0).toDouble()
+        : 0.0;
+    final spacing =
+        (_n('callout_list_item_spacing') ?? _n('list_item_spacing') ?? 0)
+            .toDouble();
+    final align = _alignOf(node.roles) ?? _s('list_text_align');
+    final items = _collect(() {
+      _withFont('callout_list', () {
+        final conumFont = _themeFont('conum', _font);
+        final metrics = _lineMetrics(conumFont);
+        final minRoom =
+            conumFont.lineHeight * conumFont.size +
+            metrics.leading +
+            metrics.paddingTop;
+        final markerFont = conumFont.copyWith(
+          color: _c('callout_list_marker_font_color') ?? conumFont.color,
+        );
+        final prawnFont = _fonts.font(conumFont.family, conumFont.style);
+        for (final (i, item) in node.items.indexed) {
+          final glyph = _conumGlyph(i + 1);
+          final markerWidth = prawnFont.widthOf(
+            '${glyph}x',
+            conumFont.size,
+            kerning: conumFont.kerning,
+          );
+          final marker = _textBox(
+            glyph.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
+            markerFont,
+            align: 'center',
+            normalize: false,
+          );
+          final last = i == node.items.length - 1;
+          final text = item.text;
+          final primary = text == null || text.isEmpty
+              ? (item.blocks.isEmpty ? _dummyText : null)
+              : text;
+          final children = _collect(() {
+            if (primary != null) {
+              final box = _textBox(
+                primary,
+                _font,
+                align: align ?? _baseTextAlign,
+                normalizeLineHeight: true,
+              );
+              _out.add(
+                CustomBox(
+                  _MinRoom(
+                    _Marked(box, marker, markerWidth, -markerWidth),
+                    minRoom,
+                  ),
+                  style: BoxStyle(
+                    margin: EdgeInsets(bottom: last ? 0 : spacing),
+                  ),
+                ),
+              );
+            }
+            _traverse(item);
+          });
+          _out.add(
+            BlockBox(
+              children,
+              style: BoxStyle(
+                margin: EdgeInsets(left: markerWidth),
+                anchor: item.id,
+              ),
+            ),
+          );
+        }
+      });
+    });
+    _out.add(
+      BlockBox(
+        items,
+        style: BoxStyle(
+          margin: EdgeInsets(
+            top: marginTop,
+            bottom: _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          anchor: node.id,
+        ),
+      ),
+    );
+  }
+
   /// The next block, descending into [item] first when it has blocks (the
   /// gem's `next_enclosed_block descend: true`).
   AbstractBlock? _nextEnclosedBlockDescending(ListItem item) =>
@@ -1698,7 +2046,7 @@ final class PdfConverter extends BuiltInConverter
     InlineContext.lineBreak => '${node.text ?? ''}<br>',
     InlineContext.button =>
       '<button>${(_s('button_content') ?? '%s').replaceFirst('%s', node.text ?? '')}</button>',
-    InlineContext.callout => node.text ?? '',
+    InlineContext.callout => _inlineCallout(node),
     InlineContext.footnote => _inlineFootnote(node),
     InlineContext.image => '[${node.alt}&#93;',
     InlineContext.indexterm => node.type == 'visible' ? node.text ?? '' : '',
@@ -1752,6 +2100,18 @@ final class PdfConverter extends BuiltInConverter
         logger.warn('unknown anchor type: ${node.type}');
         return '';
     }
+  }
+
+  String _inlineCallout(Inline node) {
+    final glyph = _conumGlyph(int.tryParse(node.text ?? '') ?? 0);
+    final family = _s('conum_font_family');
+    var result = family == null || family == _font.family
+        ? glyph
+        : '<font name="$family">$glyph</font>';
+    if (_theme.value('conum_font_color') case final color?) {
+      result = '<font color="${color.rubyString}">$result</font>';
+    }
+    return result;
   }
 
   String _inlineFootnote(Inline node) {
