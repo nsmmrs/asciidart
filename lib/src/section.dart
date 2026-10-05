@@ -202,6 +202,9 @@ class Section extends AbstractBlock implements NodeSection {
         genId = genId.substring(1);
       }
     }
+    // A title made only of characters an ID can't hold (`== ...`) leaves
+    // nothing; keep a separator rather than write an empty ID (#4877).
+    if (genId.isEmpty) genId = sep.isEmpty ? '_' : sep;
     final refs = document.catalog.refs;
     if (refs.containsKey(genId)) {
       var count = _complianceUniqueIdStartIndex;
