@@ -350,6 +350,16 @@ class PathResolver {
     return (segments: pathSegments, root: root);
   }
 
+  /// Drops the empty segments a doubled slash left at the end of
+  /// [segments], so a `..` that follows removes the directory before the
+  /// slashes, as the file system has it (`a//../b` is `b`, not `a/b`:
+  /// #4419).
+  static void _dropEmptySegments(List<String> segments) {
+    while (segments.isNotEmpty && segments.last.isEmpty) {
+      segments.removeLast();
+    }
+  }
+
   /// Joins the segments using the posix file separator. Uses the [root], if
   /// specified, to construct an absolute path. Otherwise joins the segments as
   /// a relative path.
@@ -489,6 +499,7 @@ class PathResolver {
         var warned = false;
         for (final segment in unresolvedSegments) {
           if (segment == dotDot) {
+            _dropEmptySegments(resolvedSegments);
             if (resolvedSegments.length > jailSegments.length) {
               resolvedSegments.removeLast();
             } else if (recover) {
@@ -512,6 +523,7 @@ class PathResolver {
       } else {
         for (final segment in unresolvedSegments) {
           if (segment == dotDot) {
+            _dropEmptySegments(resolvedSegments);
             // `..` at the top has nothing to pop.
             if (resolvedSegments.isNotEmpty) {
               resolvedSegments.removeLast();
