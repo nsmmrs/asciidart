@@ -144,7 +144,7 @@ Document asciidoctorLoad(
 
 /// Loads a sample document (port of `example_document`).
 ///
-/// Reads `test/fixtures/<name>.<ext>` for the first matching `ext` in
+/// Reads `vendor/asciidoctor/test/fixtures/<name>.<ext>` for the first matching `ext` in
 /// `adoc`/`asciidoc`/`txt` (port of `sample_doc_path`), then parses it via
 /// [documentFromString] with [options].
 Document exampleDocument(
@@ -1472,14 +1472,16 @@ String decodeChar(int number) => String.fromCharCode(number);
 
 /// Joins a fixture [name] to the fixtures directory (port of
 /// `fixture_path`).
-String fixturePath(String name) => 'test/fixtures/$name';
+String fixturePath(String name) => 'vendor/asciidoctor/test/fixtures/$name';
 
 /// The Ruby test directory (port of `testdir`).
 ///
 /// Canonical absolute path, like Ruby's `ASCIIDOCTOR_TEST_DIR`: include
 /// resolution uses it as the jail, which must be absolute in both ports,
 /// and jail recovery misfires on `..` segments.
-String get testdir => Directory('test').resolveSymbolicLinksSync();
+/// Upstream's `test/` directory, whose `fixtures/` are vendored.
+String get testdir =>
+    Directory('vendor/asciidoctor/test').resolveSymbolicLinksSync();
 
 void main() {
   group('Document', () {

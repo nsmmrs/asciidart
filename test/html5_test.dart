@@ -315,7 +315,8 @@ String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
-        Directory('${dir.path}/test/fixtures').existsSync()) {
+        Directory('${dir.path}/vendor/asciidoctor/test/fixtures')
+            .existsSync()) {
       return dir.path;
     }
     final parent = dir.parent;
@@ -3141,9 +3142,9 @@ void main() {
     test(testOn: 'vm', 'docinfo files are included', () {
       // Slice of document_test.rb 'should include docinfo files for html
       // backend' (the `'docinfo'` case): private head, header and footer
-      // files from `test/fixtures` are spliced into the standalone page.
+      // files from `vendor/asciidoctor/test/fixtures` are spliced into the standalone page.
       final output = loadFile(
-        '${_findRepoRoot()}/test/fixtures/basic.adoc',
+        '${_findRepoRoot()}/vendor/asciidoctor/test/fixtures/basic.adoc',
         options: const AsciidoctorOptions(
           standalone: true,
           safe: SafeMode.server,

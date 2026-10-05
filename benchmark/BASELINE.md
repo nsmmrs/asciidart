@@ -3,7 +3,7 @@
 The AOT binary must beat these Ruby CLI end-to-end wall-clock medians
 (process spawn + convert, output to a temp file).
 
-Note: `benchmark/benchmark.rb` was inspected but is not runnable as-is
+Note: upstream's `benchmark/benchmark.rb` was inspected but is not runnable as-is
 (it requires a network download, the `erubis` gem, and the legacy
 `Compliance.markdown_syntax` API), so this baseline uses the CLI-loop
 method below. At these corpus sizes the ~60 ms Ruby startup dominates;
@@ -21,9 +21,9 @@ the D2 comparison is CLI-to-CLI, so startup-inclusive timing is correct.
 
 | Label | File | Size |
 | ----- | ---- | ---- |
-| small | `test/fixtures/basic.adoc` | 86 B |
-| medium | `test/fixtures/lists.adoc` | 1431 B |
-| large | `benchmark/sample-data/mdbasics.adoc` | 7840 B |
+| small | `vendor/asciidoctor/test/fixtures/basic.adoc` | 86 B |
+| medium | `vendor/asciidoctor/test/fixtures/lists.adoc` | 1431 B |
+| large | `vendor/asciidoctor/benchmark/sample-data/mdbasics.adoc` | 7840 B |
 
 Backends: `html5`, `docbook5`.
 
@@ -189,7 +189,7 @@ timed iterations, medians; Ruby = gem 2.0.26):
 In process (`benchmark/throughput.dart` compiled with `dart compile exe`,
 median of 15 after 5 warmups; Ruby = `Asciidoctor.convert` on the corpus
 written by `--write-corpus`, same options, mean of 15 after 3 warmups). The
-corpus is ~1% smaller than before because `data/reference/syntax.adoc` is
+corpus is ~1% smaller than before because `vendor/asciidoctor/data/reference/syntax.adoc` is
 now the 2.0.26 copy.
 
 | Impl | html5 | docbook5 | manpage |

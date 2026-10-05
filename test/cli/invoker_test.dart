@@ -3,7 +3,7 @@
 /// Port of `test/invoker_test.rb` (the invocation halves; option-parsing
 /// halves already live in `options_test.dart`). Adaptations: XPath/CSS
 /// assertions become substring checks (no Nokogiri equivalent), file outputs
-/// go to temp directories instead of `test/fixtures` where the behavior
+/// go to temp directories instead of `vendor/asciidoctor/test/fixtures` where the behavior
 /// allows it, and Ruby's `invoke_cli` / `invoke_cli_to_buffer` / global
 /// `$stdout` swapping collapses into [invokeCli], which always buffers and
 /// installs a temporary logger on the error buffer (cf. Ruby's
@@ -26,7 +26,8 @@ String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
-        Directory('${dir.path}/test/fixtures').existsSync()) {
+        Directory('${dir.path}/vendor/asciidoctor/test/fixtures')
+            .existsSync()) {
       return posixPath(dir.path);
     }
     final parent = dir.parent;
@@ -40,8 +41,9 @@ String _findRepoRoot() {
 /// The repository checkout directory.
 final String repoRoot = _findRepoRoot();
 
-/// Resolves [name] under `test/fixtures`.
-String fixturePath(String name) => '$repoRoot/test/fixtures/$name';
+/// Resolves [name] under `vendor/asciidoctor/test/fixtures`.
+String fixturePath(String name) =>
+    '$repoRoot/vendor/asciidoctor/test/fixtures/$name';
 
 /// An existing oracle fixture used as the default input file.
 String get sampleFile => fixturePath('sample.adoc');
@@ -49,7 +51,7 @@ String get sampleFile => fixturePath('sample.adoc');
 /// Invokes the CLI like Ruby's `invoke_cli` / `invoke_cli_to_buffer`.
 ///
 /// [argv] plus [filename] (`-` and absolute paths pass through, other names
-/// resolve under `test/fixtures`, `null` passes no file) are parsed and
+/// resolve under `vendor/asciidoctor/test/fixtures`, `null` passes no file) are parsed and
 /// invoked with all output buffered; [stdin] supplies stdin input (cf. the
 /// Ruby block form). A temporary logger on the error buffer is installed
 /// around the invocation (cf. Ruby's `redirect_streams`) and restored after.
@@ -351,7 +353,10 @@ void main() {
       final doc = invoker.document!;
       expect(doc.attr('docname'), equals('sample'));
       expect(doc.attr('docfile'), equals(fixturePath('sample.adoc')));
-      expect(doc.attr('docdir'), equals('$repoRoot/test/fixtures'));
+      expect(
+        doc.attr('docdir'),
+        equals('$repoRoot/vendor/asciidoctor/test/fixtures'),
+      );
       expect(doc.hasAttr('docdate'), isTrue);
       expect(doc.hasAttr('docyear'), isTrue);
       expect(doc.hasAttr('doctime'), isTrue);
@@ -460,7 +465,7 @@ void main() {
     test('allows docdir to be specified when input is a string', () {
       // Ruby passes a root-relative `--base-dir`; the Dart suite runs
       // from `dart/`, so the path is absolute here.
-      final expectedDocdir = '$repoRoot/test/fixtures';
+      final expectedDocdir = '$repoRoot/vendor/asciidoctor/test/fixtures';
       final invoker = invokeCliToBuffer(
         ['-e', '--base-dir', expectedDocdir, '-o', '/dev/null'],
         '-',
@@ -567,7 +572,7 @@ void main() {
           '-D',
           tempDir.path,
           '-R',
-          '$repoRoot/test/fixtures',
+          '$repoRoot/vendor/asciidoctor/test/fixtures',
         ], 'subdir/index.adoc');
         expect(Directory('${tempDir.path}/subdir').existsSync(), isTrue);
         expect(File('${tempDir.path}/subdir/index.html').existsSync(), isTrue);

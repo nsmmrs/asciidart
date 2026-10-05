@@ -86,10 +86,15 @@ The browser test looks for Chromium at `/usr/bin/chromium`; set
 
 ## Embedded data
 
-`lib/src/data.g.dart` embeds `data/locale/*.adoc` and `data/stylesheets/*`
-so the package never reads them at run time, and
-`lib/src/cli/help_topics.g.dart` embeds the man page and syntax reference
-for `-h`. Both are generated; after changing `data/` or `man/`:
+Files taken from Asciidoctor (its stylesheets, locales, syntax reference and
+test fixtures) live under `vendor/asciidoctor/`, unchanged and pinned to an
+upstream revision; see `vendor/README.md`. `tool/vendor.sh` recreates them
+(`--check` verifies them). Documents of our own go in `test/parity/`.
+
+`lib/src/data.g.dart` embeds the vendored locales and stylesheets so the
+package never reads them at run time, and `lib/src/cli/help_topics.g.dart`
+embeds the man page and syntax reference for `-h`. Both are generated;
+`tool/vendor.sh` regenerates them, and after changing `man/`:
 
 ```sh
 dart run tool/embed_data.dart

@@ -9,7 +9,7 @@ import { build } from 'esbuild'
 import { chromium } from 'playwright-core'
 import { convert } from 'asciidoctor-dart'
 
-const fixtures = join(import.meta.dirname, '..', 'fixtures')
+const fixtures = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor', 'test', 'fixtures')
 const executablePath = process.env.CHROMIUM_PATH ?? '/usr/bin/chromium'
 
 let server

@@ -2,7 +2,7 @@
 ///
 /// The byte-for-byte tests guard the `help_topics.g.dart` contract: each
 /// embedded constant must round-trip to the exact bytes of its source file
-/// (`man/asciidoctor.1`, `data/reference/syntax.adoc`). The fallback tests
+/// (`man/asciidoctor.1`, `vendor/asciidoctor/data/reference/syntax.adoc`). The fallback tests
 /// prove `-h manpage`/`-h syntax` succeed with no checkout files visible.
 @TestOn('vm')
 library;
@@ -20,7 +20,7 @@ String findRepoRoot() {
   var dir = Directory.current;
   for (var depth = 0; depth <= 6; depth++) {
     if (Directory('${dir.path}/man').existsSync() &&
-        Directory('${dir.path}/data').existsSync()) {
+        Directory('${dir.path}/vendor/asciidoctor/data').existsSync()) {
       return dir.path;
     }
     final parent = dir.parent;
@@ -65,7 +65,8 @@ void main() {
       expect(
         utf8.encode(HelpTopics.syntax),
         orderedEquals(
-          File('$repoRoot/data/reference/syntax.adoc').readAsBytesSync(),
+          File('$repoRoot/vendor/asciidoctor/data/reference/syntax.adoc')
+              .readAsBytesSync(),
         ),
       );
     });

@@ -94,12 +94,12 @@ ArgParser buildParser() {
     ..addOption('root', help: 'Repo root (default: auto-detect).')
     ..addOption(
       'corpus-dir',
-      defaultsTo: 'test/fixtures',
+      defaultsTo: 'vendor/asciidoctor/test/fixtures',
       help: 'Corpus directory, relative to --root unless absolute.',
     )
     ..addMultiOption(
       'extra-file',
-      defaultsTo: ['data/reference/syntax.adoc'],
+      defaultsTo: ['vendor/asciidoctor/data/reference/syntax.adoc'],
       help: 'Extra corpus file(s), relative to --root unless absolute.',
     )
     ..addOption(
@@ -256,7 +256,7 @@ class DifferentialConfig {
 
     final corpusOption = _nonEmpty(
       results['corpus-dir'] as String?,
-      'test/fixtures',
+      'vendor/asciidoctor/test/fixtures',
     );
     final corpusDir = _isAbsolutePath(corpusOption)
         ? _normalizePath(corpusOption)
@@ -891,7 +891,7 @@ String? _scriptRoot() {
 }
 
 bool _looksLikeRoot(String dir) =>
-    Directory(_joinPath(dir, 'test/fixtures')).existsSync() &&
+    Directory(_joinPath(dir, 'vendor/asciidoctor')).existsSync() &&
     File(_joinPath(dir, 'pubspec.yaml')).existsSync();
 
 String _joinPath(String a, String b) {

@@ -203,7 +203,7 @@ class CustomDocumentConverter extends ConverterBase {
 }
 
 /// Resolves a fixture path (port of `fixture_path`).
-String fixturePath(String name) => 'test/fixtures/$name';
+String fixturePath(String name) => 'vendor/asciidoctor/test/fixtures/$name';
 
 /// Creates a template directory holding [files] (name to source).
 ///

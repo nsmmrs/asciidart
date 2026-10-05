@@ -712,14 +712,16 @@ int countOccurrences(String value, String pattern) =>
 
 /// Resolves the Ruby `test/` directory (for fixture files).
 String findTestDir() {
-  for (final candidate in const ['test']) {
+  for (final candidate in const ['vendor/asciidoctor/test']) {
     if (Directory('$candidate/fixtures').existsSync() &&
         File('$candidate/fixtures/circle.svg').existsSync()) {
       // The path resolver requires an absolute, normalized jail.
       return Directory(candidate).resolveSymbolicLinksSync();
     }
   }
-  throw StateError('Cannot locate test/fixtures/circle.svg.');
+  throw StateError(
+    'Cannot locate vendor/asciidoctor/test/fixtures/circle.svg.',
+  );
 }
 
 void main() {

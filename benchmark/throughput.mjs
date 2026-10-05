@@ -12,9 +12,9 @@ import { performance } from 'node:perf_hooks'
 import { parseArgs } from 'node:util'
 
 const sources = [
-  'benchmark/sample-data/mdbasics.adoc',
-  'data/reference/syntax.adoc',
-  'test/fixtures/sample.adoc',
+  'vendor/asciidoctor/benchmark/sample-data/mdbasics.adoc',
+  'vendor/asciidoctor/data/reference/syntax.adoc',
+  'vendor/asciidoctor/test/fixtures/sample.adoc',
 ]
 
 const { values } = parseArgs({

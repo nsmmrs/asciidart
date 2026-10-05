@@ -15,9 +15,9 @@ import 'package:args/args.dart';
 import 'package:asciidoctor/asciidoctor.dart' as asciidoctor;
 
 const _sources = [
-  'benchmark/sample-data/mdbasics.adoc',
-  'data/reference/syntax.adoc',
-  'test/fixtures/sample.adoc',
+  'vendor/asciidoctor/benchmark/sample-data/mdbasics.adoc',
+  'vendor/asciidoctor/data/reference/syntax.adoc',
+  'vendor/asciidoctor/test/fixtures/sample.adoc',
 ];
 
 void main(List<String> args) {

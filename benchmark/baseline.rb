@@ -16,9 +16,9 @@ require 'optparse'
 require 'tmpdir'
 
 CORPUS = {
-  'small' => 'test/fixtures/basic.adoc', # 86 B
-  'medium' => 'test/fixtures/lists.adoc', # 1431 B
-  'large' => 'benchmark/sample-data/mdbasics.adoc', # 7840 B
+  'small' => 'vendor/asciidoctor/test/fixtures/basic.adoc', # 86 B
+  'medium' => 'vendor/asciidoctor/test/fixtures/lists.adoc', # 1431 B
+  'large' => 'vendor/asciidoctor/benchmark/sample-data/mdbasics.adoc', # 7840 B
 }.freeze
 
 BACKENDS = %w[html5 docbook5].freeze

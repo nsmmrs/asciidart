@@ -2,7 +2,7 @@
 
 Byte-identical parity gate (ADR-0001, D4). Runs **two** asciidoctor
 executables over the fixture corpus plus
-`data/reference/syntax.adoc`, normalizes version
+`vendor/asciidoctor/data/reference/syntax.adoc`, normalizes version
 stamps and timestamps, and reports per-file unified diffs. Exits nonzero on
 any mismatch.
 
@@ -40,8 +40,8 @@ dart run tool/differential.dart \
 | `--backend` | `html5` | Backend for both exes. |
 | `--backend-a`, `--backend-b` | `--backend` | Per-exe backend override. |
 | `--root` | auto-detect | Repo root. |
-| `--corpus-dir` | `test/fixtures` | Corpus dir, relative to `--root` unless absolute (scanned recursively). |
-| `--extra-file` | `data/reference/syntax.adoc` | Extra corpus file(s), repeatable, relative to `--root` unless absolute. |
+| `--corpus-dir` | `vendor/asciidoctor/test/fixtures` | Corpus dir, relative to `--root` unless absolute (scanned recursively). |
+| `--extra-file` | `vendor/asciidoctor/data/reference/syntax.adoc` | Extra corpus file(s), repeatable, relative to `--root` unless absolute. |
 | `--extensions` | `adoc,asciidoc` | Comma-separated corpus extensions. |
 | `--context` | `3` | Unified-diff context lines. |
 | `--max-diff-lines` | `200` | Max diff lines printed per file (rest truncated). |

@@ -1,9 +1,11 @@
 # Parity corpus
 
-Documents that pin behavior where Asciidoctor 2.0.26 (the release this port
-targets, see [ADR-0003](../../adr/0003-target-latest-stable.md)) differs from
-upstream `main`. The fixture corpus in `test/fixtures` never exercised most of
-these, so they live here and run through the same differential harness:
+Documents of our own that pin behavior the vendored fixture corpus
+(`vendor/asciidoctor/test/fixtures`) never exercised: where Asciidoctor
+2.0.26 (the release this port targets, see
+[ADR-0003](../../adr/0003-target-latest-stable.md)) differs from upstream
+`main`, and differences found later. They run through the same differential
+harness:
 
 ```sh
 tool/parity.sh build/asciidoctor
@@ -21,3 +23,4 @@ tool/parity.sh build/asciidoctor
 | `substitutions.adoc` | full substitutions in titles that feed generated IDs, quote credits (paragraph and Markdown), single-quoted attribute values, reftext and the author line (BUG-fwc380) |
 | `corpus-findings.adoc` | differences found by the corpus parity check (`tool/corpus_parity.dart`): `cols=""`, `%autowidth` with a width, a nested description list item with an attached block, line breaks in AsciiMath blocks, special case mappings in generated ids (`ß`, `Σ`), no-break and ideographic spaces |
 | `manpage-unicode.adoc` | the same in a man page: upper-cased headings (`ß` → `SS`), a link followed by a no-break space, a trailing ideographic space, `cols=""` |
+| `source-coderay-ruby.adoc`, `source-coderay-options.adoc` | CodeRay highlighting of Ruby and its options (line numbers, styles, emphasis) |

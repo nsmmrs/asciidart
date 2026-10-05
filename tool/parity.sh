@@ -2,7 +2,7 @@
 # Byte-identical parity gate against the Asciidoctor gem (ADR-0003).
 #
 # Runs tool/differential.dart over the fixture corpus (plus
-# data/reference/syntax.adoc) and the parity corpus in test/parity, on the
+# vendor/asciidoctor/data/reference/syntax.adoc) and the parity corpus in test/parity, on the
 # html5, docbook5 and manpage backends. Exits nonzero on any difference.
 #
 # Usage: tool/parity.sh DART_EXE [RUBY_EXE]
@@ -19,7 +19,7 @@ dart_exe="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 ruby_exe="${2:-asciidoctor}"
 
 status=0
-for corpus in test/fixtures test/parity; do
+for corpus in vendor/asciidoctor/test/fixtures test/parity; do
   for backend in html5 docbook5 manpage; do
     echo "== $corpus ($backend)"
     dart run "$root/tool/differential.dart" --root "$root" -q \

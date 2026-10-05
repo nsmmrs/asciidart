@@ -17,7 +17,8 @@ String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
-        Directory('${dir.path}/test/fixtures').existsSync()) {
+        Directory('${dir.path}/vendor/asciidoctor/test/fixtures')
+            .existsSync()) {
       return dir.path;
     }
     final parent = dir.parent;
@@ -31,7 +32,8 @@ String _findRepoRoot() {
 }
 
 /// An existing oracle fixture used as the CLI input file.
-String get sampleFile => '${_findRepoRoot()}/test/fixtures/sample.adoc';
+String get sampleFile =>
+    '${_findRepoRoot()}/vendor/asciidoctor/test/fixtures/sample.adoc';
 
 /// A minimal [Converter] capturing the options it was created with.
 class _CapturingConverter extends Converter {

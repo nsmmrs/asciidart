@@ -934,11 +934,14 @@ void main() {
     // the fixture corpus (raw and XML-escaped, since replacements see
     // escaped text) plus hand-picked edge cases.
     final corpus = <String>[
-      for (final file in Directory('test/fixtures').listSync(recursive: true))
+      for (final file in Directory(
+        'vendor/asciidoctor/test/fixtures',
+      ).listSync(recursive: true))
         if (file is File && file.path.endsWith('.adoc'))
           file.readAsStringSync(),
-      File('data/reference/syntax.adoc').readAsStringSync(),
-      File('benchmark/sample-data/mdbasics.adoc').readAsStringSync(),
+      File('vendor/asciidoctor/data/reference/syntax.adoc').readAsStringSync(),
+      File('vendor/asciidoctor/benchmark/sample-data/mdbasics.adoc')
+          .readAsStringSync(),
       r'\**x** [role]*x* *x* "`x`" ',
       "'`x`' ``x`` `x` __x__ _x_ ##x## #x# ^x^ ~x~ ++x++ +x+ ``x'' 'x'",
       r'a <- b <= c => d -> e \(C) (R) (TM) a -- b a--b \... `',

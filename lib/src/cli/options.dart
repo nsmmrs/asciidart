@@ -582,6 +582,8 @@ final class CliOptions {
         return _showManpage(outSink, errSink, env);
       case 'syntax':
         final syntaxPath = _findCheckoutFile([
+          'vendor',
+          'asciidoctor',
           'data',
           'reference',
           'syntax.adoc',

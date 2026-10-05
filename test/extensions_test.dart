@@ -576,9 +576,9 @@ List<_XmlElement> _queryXpath(_XmlElement root, String path) {
 /// Resolves a fixture path (port of `fixture_path`).
 ///
 /// Tests run with `dart/` as the working directory, so fixtures resolve
-/// against the Ruby suite's `test/fixtures` directory (same shape as
+/// against the Ruby suite's `vendor/asciidoctor/test/fixtures` directory (same shape as
 /// `load_test.dart`).
-String fixturePath(String name) => 'test/fixtures/$name';
+String fixturePath(String name) => 'vendor/asciidoctor/test/fixtures/$name';
 
 // ---------------------------------------------------------------------------
 // Sample processors (ports of the Ruby test file's top-level classes).

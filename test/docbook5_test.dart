@@ -289,7 +289,8 @@ String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
-        Directory('${dir.path}/test/fixtures').existsSync()) {
+        Directory('${dir.path}/vendor/asciidoctor/test/fixtures')
+            .existsSync()) {
       return dir.path;
     }
     final parent = dir.parent;
@@ -835,7 +836,7 @@ void main() {
       // the shared `docinfo.xml` (with `{revnumber}` substituted) under
       // `docinfo1`.
       final output = loadFile(
-        '${_findRepoRoot()}/test/fixtures/basic.adoc',
+        '${_findRepoRoot()}/vendor/asciidoctor/test/fixtures/basic.adoc',
         options: const AsciidoctorOptions(
           standalone: true,
           backend: 'docbook',
@@ -848,7 +849,7 @@ void main() {
       expect(output, isNot(contains('<productname>')));
 
       final sharedOutput = loadFile(
-        '${_findRepoRoot()}/test/fixtures/basic.adoc',
+        '${_findRepoRoot()}/vendor/asciidoctor/test/fixtures/basic.adoc',
         options: const AsciidoctorOptions(
           standalone: true,
           backend: 'docbook',

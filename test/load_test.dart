@@ -25,7 +25,7 @@ import 'support/paths.dart';
 
 /// Joins a fixture [name] to the Ruby fixtures directory (port of
 /// `fixture_path`; tests run with `dart/` as the working directory).
-String fixturePath(String name) => 'test/fixtures/$name';
+String fixturePath(String name) => 'vendor/asciidoctor/test/fixtures/$name';
 
 /// Runs [fn] with a fresh temporary directory, deleted afterwards.
 void withTempDir(void Function(Directory dir) fn) {
@@ -77,8 +77,11 @@ void main() {
         options: const AsciidoctorOptions(safe: SafeMode.safe),
       );
       expect(doc.doctitle(), equals('Document Title'));
-      expect(doc.attr('docfile'), endsWith('/test/fixtures/sample.adoc'));
-      expect(doc.attr('docdir'), endsWith('/test/fixtures'));
+      expect(
+        doc.attr('docfile'),
+        endsWith('/vendor/asciidoctor/test/fixtures/sample.adoc'),
+      );
+      expect(doc.attr('docdir'), endsWith('/vendor/asciidoctor/test/fixtures'));
       expect(doc.attr('docfilesuffix'), equals('.adoc'));
     });
 
@@ -361,9 +364,12 @@ void main() {
       // Ruby asserts exact `File.expand_path` equality; the port pins the
       // stable suffix plus lexical `..` normalization (see `_absolutePath`).
       final docfile = doc.attr('docfile')!;
-      expect(docfile, endsWith('/test/fixtures/sample.adoc'));
+      expect(
+        docfile,
+        endsWith('/vendor/asciidoctor/test/fixtures/sample.adoc'),
+      );
       expect(docfile, isNot(contains('..')));
-      expect(doc.attr('docdir'), endsWith('/test/fixtures'));
+      expect(doc.attr('docdir'), endsWith('/vendor/asciidoctor/test/fixtures'));
       expect(doc.attr('docname'), equals('sample'));
       expect(doc.attr('docfilesuffix'), equals('.adoc'));
     });
@@ -375,8 +381,11 @@ void main() {
         options: const AsciidoctorOptions(safe: SafeMode.safe),
       );
       expect(doc.doctitle(), equals('Document Title'));
-      expect(doc.attr('docfile'), endsWith('/test/fixtures/sample.adoc'));
-      expect(doc.attr('docdir'), endsWith('/test/fixtures'));
+      expect(
+        doc.attr('docfile'),
+        endsWith('/vendor/asciidoctor/test/fixtures/sample.adoc'),
+      );
+      expect(doc.attr('docdir'), endsWith('/vendor/asciidoctor/test/fixtures'));
       expect(doc.attr('docfilesuffix'), equals('.adoc'));
     });
 
@@ -403,7 +412,7 @@ void main() {
       );
       expect(doc.doctitle(), equals('Document Title'));
       expect(doc.attr('docfile'), endsWith('sample-alt-extension.asciidoc'));
-      expect(doc.attr('docdir'), endsWith('/test/fixtures'));
+      expect(doc.attr('docdir'), endsWith('/vendor/asciidoctor/test/fixtures'));
       expect(doc.attr('docfilesuffix'), equals('.asciidoc'));
     });
 

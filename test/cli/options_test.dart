@@ -23,7 +23,8 @@ String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
-        Directory('${dir.path}/test/fixtures').existsSync()) {
+        Directory('${dir.path}/vendor/asciidoctor/test/fixtures')
+            .existsSync()) {
       return posixPath(dir.path);
     }
     final parent = dir.parent;
@@ -38,7 +39,8 @@ String _findRepoRoot() {
 final String repoRoot = _findRepoRoot();
 
 /// An existing oracle fixture used as the input file.
-String get sampleFile => '$repoRoot/test/fixtures/sample.adoc';
+String get sampleFile =>
+    '$repoRoot/vendor/asciidoctor/test/fixtures/sample.adoc';
 
 /// Parses [args] with buffer sinks and a hermetic (empty) environment.
 ///
@@ -207,7 +209,8 @@ void main() {
     });
 
     test('prints message and returns 1 when manpage is not found', () {
-      final manpagePath = '$repoRoot/test/fixtures/no-such-file.1';
+      final manpagePath =
+          '$repoRoot/vendor/asciidoctor/test/fixtures/no-such-file.1';
       final result = parseCli(
         ['-h', 'manpage'],
         environment: {'ASCIIDOCTOR_MANPAGE_PATH': manpagePath},
@@ -938,12 +941,12 @@ void main() {
     });
 
     test('reports a directory input as not a file', () {
-      final result = parseCli(['$repoRoot/test/fixtures']);
+      final result = parseCli(['$repoRoot/vendor/asciidoctor/test/fixtures']);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
         equals(
-          'asciidoctor: FAILED: input path $repoRoot/test/fixtures is a directory, not a file',
+          'asciidoctor: FAILED: input path $repoRoot/vendor/asciidoctor/test/fixtures is a directory, not a file',
         ),
       );
     });
@@ -1011,12 +1014,12 @@ void main() {
       // Option-parsing half of invoker_test 'should convert all files that
       // matches a glob expression'. Parsing runs with an absolute pattern so
       // it is independent of the process workdir.
-      final pattern = '$repoRoot/test/fixtures/ba*.adoc';
+      final pattern = '$repoRoot/vendor/asciidoctor/test/fixtures/ba*.adoc';
       final result = parseCli([pattern]);
       expect(result.exitCode, isNull);
       expect(
         result.options.inputFiles,
-        equals(['$repoRoot/test/fixtures/basic.adoc']),
+        equals(['$repoRoot/vendor/asciidoctor/test/fixtures/basic.adoc']),
       );
     });
 
@@ -1024,10 +1027,8 @@ void main() {
       'expands backslash globs on Windows',
       skip: Platform.isWindows ? null : 'Backslash tilt only runs on Windows.',
       () {
-        final pattern = '$repoRoot/test/fixtures/ba*.adoc'.replaceAll(
-          '/',
-          r'\',
-        );
+        final pattern = '$repoRoot/vendor/asciidoctor/test/fixtures/ba*.adoc'
+            .replaceAll('/', r'\');
         final result = parseCli([pattern]);
         expect(result.exitCode, isNull);
         expect(result.options.inputFiles, hasLength(1));
@@ -1246,7 +1247,7 @@ void main() {
 
     test(
       'reports a missing syntax page',
-      skip: 'PERMANENT: data/reference/syntax.adoc always ships in the checkout; Ruby offers no override to simulate absence.',
+      skip: 'PERMANENT: vendor/asciidoctor/data/reference/syntax.adoc always ships in the checkout; Ruby offers no override to simulate absence.',
       () {},
     );
   });

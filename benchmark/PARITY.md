@@ -8,12 +8,14 @@ upstream `main` (2.1.0.alpha.0) is preserved on the `2.1.0` branch.
 
 ## Corpus
 
-- `test/fixtures/**` (`*.adoc`, `*.asciidoc`, recursive) plus
-  `data/reference/syntax.adoc`: 32 files per backend.
-- `test/parity/**` plus `data/reference/syntax.adoc`: 10 files per backend.
-  These pin the places where 2.0.26 differs from upstream `main` (tilde
-  open blocks, ordered list starts, `link=self`, front matter, table and
-  manpage layout, ...); see [`test/parity/README.md`](../test/parity/README.md).
+- `vendor/asciidoctor/test/fixtures/**` (upstream's fixtures, `*.adoc`,
+  `*.asciidoc`, recursive) plus
+  `vendor/asciidoctor/data/reference/syntax.adoc`: 30 files per backend.
+- `test/parity/**` (documents of our own) plus the syntax reference: 14 files
+  per backend. These pin the places where 2.0.26 differs from upstream
+  `main` (tilde open blocks, ordered list starts, `link=self`, front matter,
+  table and manpage layout, ...) and the differences the corpus check found;
+  see [`test/parity/README.md`](../test/parity/README.md).
 
 ## Method
 
@@ -31,17 +33,17 @@ is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
 native executable (`dart-exe-e2e` job) and against the npm package's CLI on
 Node.js (`npm` job, `tool/parity.sh test/e2e/bin/asciidoctor-node`).
 
-## Verdict (2026-10-04): PASS — 126/126 identical
+## Verdict (2026-10-05): PASS — 132/132 identical
 
 | Corpus | html5 | docbook5 | manpage |
 | --- | --: | --: | --: |
-| fixtures | 32/32 | 32/32 | 32/32 |
-| parity | 10/10 | 10/10 | 10/10 |
+| fixtures | 30/30 | 30/30 | 30/30 |
+| parity | 14/14 | 14/14 | 14/14 |
 
 Warnings on stderr were compared by hand over the parity corpus and match
 too (the harness passes `-q`). The e2e suite (`test/e2e/`, 134 tests) passes
 with no skips against the Dart CLI, the Node.js CLI and the gem. The Node.js
-CLI gives the same 126/126.
+CLI gives the same 132/132.
 
 ## Corpus check (2026-10-04): 17,896 of 17,900 conversions identical
 

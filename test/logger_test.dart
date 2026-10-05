@@ -310,7 +310,7 @@ void main() {
       withManagerLogger(() {
         final memory = MemoryLogger();
         loadFile(
-          'test/fixtures/basic.adoc',
+          'vendor/asciidoctor/test/fixtures/basic.adoc',
           options: AsciidoctorOptions(logger: memory),
         );
         expect(LoggerManager.logger, same(memory));
@@ -329,7 +329,7 @@ void main() {
       withManagerLogger(() {
         final memory = MemoryLogger();
         convertFile(
-          'test/fixtures/basic.adoc',
+          'vendor/asciidoctor/test/fixtures/basic.adoc',
           AsciidoctorOptions(toFile: '/dev/null', logger: memory),
         );
         expect(LoggerManager.logger, same(memory));

@@ -1,6 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND.
 // Generated from `man/asciidoctor.1` and
-// `data/reference/syntax.adoc` (see `tool/embed_data.dart` for the
+// `vendor/asciidoctor/data/reference/syntax.adoc` (see
+// `tool/embed_data.dart` for the
 // escaping rules; concatenation reproduces each file exactly).
 library;
 
@@ -262,7 +263,7 @@ abstract final class HelpTopics {
       'Copyright (C) 2012\\-present Dan Allen, Sarah White, Ryan Waldron, and the individual contributors to Asciidoctor.\n'
       'Use of this software is granted under the terms of the MIT License.';
 
-  /// The `data/reference/syntax.adoc` source, byte-identical.
+  /// The `vendor/asciidoctor/data/reference/syntax.adoc` source, byte-identical.
   static const String syntax =
       '= AsciiDoc Syntax\n'
       ':icons: font\n'

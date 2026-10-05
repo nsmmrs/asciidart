@@ -740,7 +740,7 @@ void main() {
       () {
         // Mirrors `doc.normalize_system_path 'tiger.png', 'images'` in unsafe
         // mode, where the start is joined to the base dir and no jail applies.
-        final baseDir = '$currentPath/test/fixtures/base';
+        final baseDir = '$currentPath/vendor/asciidoctor/test/fixtures/base';
         final expected = '$baseDir/images/tiger.png';
         final actual = resolver.systemPath(
           'tiger.png',

@@ -31,7 +31,8 @@ String _findRepoRoot() {
   var dir = Directory.current;
   while (true) {
     if (File('${dir.path}/pubspec.yaml').existsSync() &&
-        Directory('${dir.path}/test/fixtures').existsSync()) {
+        Directory('${dir.path}/vendor/asciidoctor/test/fixtures')
+            .existsSync()) {
       return posixPath(dir.path);
     }
     final parent = dir.parent;
@@ -43,7 +44,7 @@ String _findRepoRoot() {
 }
 
 /// Repo `test/` dir.
-final String repoTestDir = '$repoRoot/test';
+final String repoTestDir = '$repoRoot/vendor/asciidoctor/test';
 
 /// Oracle fixtures shared with the Ruby suite.
 final String fixtureDir = '$repoTestDir/fixtures';
