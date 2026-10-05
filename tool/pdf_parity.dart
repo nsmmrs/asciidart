@@ -21,7 +21,8 @@
 ///   the tolerance (1 point by default) of the same position, and the
 ///   largest distance;
 /// - structure: the outline (titles, levels and pages), the links
-///   (targets) and the page labels;
+///   (annotations: target and rectangle to the point, in any order: the
+///   order they're written in isn't seen) and the page labels;
 /// - pixels: each page rendered in gray at 36 dpi; the mean difference.
 ///
 /// One line per document, and with `--out`, a `results.tsv` and, for each
@@ -123,11 +124,34 @@ PdfFacts facts(String pdf, Directory scratch) {
         outline.add('$level ${m[1]} ${_unescape(m[2]!)}');
     }
   }
-  final links = [
-    for (final m in RegExp('<a href="([^"]*)"').allMatches(xml))
-      // Internal links name the HTML file pdftohtml would write.
-      _unescape(m[1]!).replaceFirst(RegExp(r'^[^#]*\.html#'), '#'),
-  ];
+  // The link annotations: each one's page, target and rectangle (to the
+  // point), from the file's objects (pdftohtml repeats a link for each
+  // run of text it covers).
+  final qdf = _run('qpdf', [
+    '--qdf',
+    '--object-streams=disable',
+    pdf,
+    '-',
+  ], encoding: latin1);
+  final links = <String>[];
+  for (final m in RegExp(
+    r'\d+ 0 obj\n(.*?)\nendobj',
+    dotAll: true,
+  ).allMatches(qdf)) {
+    final body = m[1]!;
+    if (!body.contains('/Subtype /Link')) continue;
+    final target =
+        RegExp(r'/URI \((.*?)\)').firstMatch(body)?[1] ??
+        RegExp(r'/Dest \((.*?)\)').firstMatch(body)?[1] ??
+        RegExp(r'/D \((.*?)\)').firstMatch(body)?[1] ??
+        '?';
+    final rect = RegExp(r'/Rect \[([^\]]*)\]').firstMatch(body)?[1] ?? '';
+    final corners = [
+      for (final n in rect.trim().split(RegExp(r'\s+')))
+        if (double.tryParse(n) case final v?) v.toStringAsFixed(2),
+    ];
+    links.add('$target ${corners.join(' ')}');
+  }
   final json = _run('qpdf', ['--json', '--json-key=pages', pdf]);
   final labels = [
     for (final m in RegExp(r'"label": (\{[^}]*\}|null)').allMatches(json))
@@ -289,7 +313,43 @@ final class Comparison {
   }
 
   bool get sameOutline => _same(a.outline, b.outline);
-  bool get sameLinks => _same(a.links, b.links);
+
+  /// Whether the links are the same, in any order, their rectangles
+  /// within a point.
+  bool get sameLinks {
+    if (a.links.length != b.links.length) return false;
+    (String, List<double>) split(String link) {
+      final parts = link.split(' ');
+      final count = parts.length >= 5 ? 4 : 0;
+      return (
+        parts.sublist(0, parts.length - count).join(' '),
+        [for (final n in parts.sublist(parts.length - count)) double.parse(n)],
+      );
+    }
+
+    int order((String, List<double>) x, (String, List<double>) y) {
+      final byTarget = x.$1.compareTo(y.$1);
+      if (byTarget != 0) return byTarget;
+      for (var i = 0; i < x.$2.length && i < y.$2.length; i++) {
+        final c = x.$2[i].compareTo(y.$2[i]);
+        if (c != 0) return c;
+      }
+      return 0;
+    }
+
+    final xs = a.links.map(split).toList()..sort(order);
+    final ys = b.links.map(split).toList()..sort(order);
+    for (var i = 0; i < xs.length; i++) {
+      if (xs[i].$1 != ys[i].$1 || xs[i].$2.length != ys[i].$2.length) {
+        return false;
+      }
+      for (var k = 0; k < xs[i].$2.length; k++) {
+        if ((xs[i].$2[k] - ys[i].$2[k]).abs() > 1) return false;
+      }
+    }
+    return true;
+  }
+
   bool get sameLabels => _same(a.labels, b.labels);
 
   static bool _same(List<String> x, List<String> y) =>

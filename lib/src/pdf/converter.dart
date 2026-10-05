@@ -243,6 +243,7 @@ final class PdfConverter extends BuiltInConverter
       kerning: _s('base_font_kerning') != 'none',
     );
     _sections.clear();
+    _floatGroup = _floatNext = null;
     _index = IndexCatalog();
     _indexSlot = null;
     _renderedFootnotes.clear();
@@ -623,6 +624,11 @@ final class PdfConverter extends BuiltInConverter
       prose(text, 'title_page_revision', normalize: false);
     }
   }
+
+  /// The floated image the paragraphs after it wrap around, and the
+  /// paragraph that goes in it next.
+  _FloatGroup? _floatGroup;
+  AbstractBlock? _floatNext;
 
   static const _tocStartAnchor = '__asciidart-toc-start';
   static const _tocEndAnchor = '__asciidart-toc-end';
@@ -1397,6 +1403,34 @@ final class PdfConverter extends BuiltInConverter
     }
     if (node.hasTitle) _caption(node, labeled: false);
     final box = _textBox(content, font, align: align, indent: indent);
+    if (_floatGroup case final group? when _floatNext == node) {
+      final metrics = _lineMetrics(font);
+      final prawnFont = _fonts.font(font.family, font.style);
+      final following = _nextEnclosedBlock(node);
+      group.paragraphs.add(
+        _FloatParagraph(
+          box,
+          _textBox(content, font, align: align, indent: indent, gaps: false),
+          marginBottom: marginBottom,
+          blockMargin: _themeMargin('block', 'bottom', following),
+          paddingTop: metrics.paddingTop,
+          paddingBottom: metrics.paddingBottom,
+          lineLength:
+              font.lineHeight * font.size +
+              metrics.leading +
+              metrics.paddingTop,
+          descender: prawnFont.descenderAt(font.size),
+          anchor: node.id,
+        ),
+      );
+      if (following case final Block block
+          when block.context == BlockContext.paragraph) {
+        _floatNext = block;
+      } else {
+        _floatGroup = _floatNext = null;
+      }
+      return;
+    }
     CustomContent text = box;
     if (firstLine != null) {
       text = FirstLineTextBox(
@@ -2167,6 +2201,40 @@ final class PdfConverter extends BuiltInConverter
     final next = _nextEnclosedBlock(node);
     final margin = next == null ? 0.0 : _themeMargin('block', 'bottom', next);
     final border = node.hasRole('noborder') ? null : _imageBorder();
+    // A floated image followed by a paragraph: the paragraphs after it
+    // wrap around it (the gem's `init_float_box`).
+    final side = floatTo == 'left' || floatTo == 'right' ? floatTo! : null;
+    if (side != null &&
+        next is Block &&
+        next.context == BlockContext.paragraph) {
+      final paragraph = next;
+      final gaps = switch (_theme.value('image_float_gap')) {
+        ThemeList(:final values) => (
+          values.isNotEmpty ? _toPoints(values[0]) : 12.0,
+          values.length > 1 ? _toPoints(values[1]) : 6.0,
+        ),
+        ThemeNumber(:final value) => (value.toDouble(), value.toDouble()),
+        _ => (12.0, 6.0),
+      };
+      final group = _FloatGroup(
+        _ImageContent(
+          graphic,
+          width: _imageWidth(node),
+          align: side,
+          pageWidth: _pageSize(_document).$1,
+          border: border,
+          link: node.attr('link'),
+        ),
+        caption: caption,
+        captionBottom: captionBottom,
+        side: side,
+        gaps: gaps,
+      );
+      _out.add(CustomBox(group, style: BoxStyle(anchor: node.id)));
+      _floatGroup = group;
+      _floatNext = paragraph;
+      return;
+    }
     if (caption != null && !captionBottom) _out.add(caption);
     _out.add(
       CustomBox(
@@ -5947,7 +6015,8 @@ final class _TocEntry implements CustomContent {
 }
 
 /// [items] one below the other, at the bottom of the region when
-/// [bottom] and they fit there (footnotes), else flowing on.
+/// [bottom] and they fit there (footnotes), else flowing on (an item that
+/// doesn't fit split where it breaks).
 final class _Stacked implements CustomContent {
   const new(this.items, {required this.bottom});
 
@@ -5960,76 +6029,245 @@ final class _Stacked implements CustomContent {
     double available, {
     required bool atTop,
   }) {
-    final placements = <(CustomPlacement, double)>[];
+    final placements = <(CustomPlacement, double, double)>[];
     var height = 0.0;
-    var fits = true;
+    List<CustomBox>? rest;
     for (final (i, item) in items.indexed) {
       final margin = item.style.margin;
-      final top = i == 0 && atTop ? 0.0 : margin.top;
+      final fresh = atTop && height == 0;
+      final top = fresh ? 0.0 : margin.top;
       final placed = item.content.place(
-        width,
+        width - margin.horizontal,
         available - height - top,
-        atTop: atTop && height == 0,
+        atTop: fresh,
       );
-      if (placed == null || placed.rest != null) {
-        fits = false;
+      if (placed == null) {
+        rest = items.sublist(i);
         break;
       }
-      placements.add((placed, height + top));
+      placements.add((placed, height + top, margin.left));
+      if (placed.rest case final more?) {
+        height += top + placed.height;
+        rest = [
+          CustomBox(
+            more,
+            style: BoxStyle(margin: EdgeInsets(bottom: margin.bottom)),
+          ),
+          ...items.sublist(i + 1),
+        ];
+        break;
+      }
       height += top + placed.height + margin.bottom;
     }
-    if (!fits) {
-      if (!atTop && placements.isEmpty) return null;
-      // Flowing on: as many whole items as fit here, the rest after.
-      final rest = items.sublist(placements.length);
-      final placedHeight = placements.isEmpty
-          ? 0.0
-          : placements.last.$2 +
-                placements.last.$1.height +
-                items[placements.length - 1].style.margin.bottom;
-      if (placements.isEmpty) {
-        // Nothing fits even at the top: lay the first item out as it can.
-        final first = items.first.content.place(width, available, atTop: true);
-        if (first == null) return null;
-        return CustomPlacement(
-          height: first.height,
-          anchors: first.anchors,
-          rest: rest.length > 1 || first.rest != null
-              ? _Stacked([
-                  if (first.rest case final r?)
-                    CustomBox(r, style: items.first.style),
-                  ...rest.skip(1),
-                ], bottom: false)
-              : null,
-          paint: first.paint,
-        );
-      }
-      return CustomPlacement(
-        height: placedHeight,
-        anchors: [
-          for (final (placed, y) in placements)
-            for (final (name, x, ay) in placed.anchors) (name, x, ay + y),
-        ],
-        rest: _Stacked(rest, bottom: false),
-        paint: (page, x, top) {
-          for (final (placed, y) in placements) {
-            placed.paint(page, x, top - y);
-          }
-        },
-      );
-    }
-    final shift = bottom && available.isFinite
+    if (placements.isEmpty && !atTop) return null;
+    final shift = rest == null && bottom && available.isFinite
         ? math.max(0, available - height - 0.0001)
         : 0.0;
     return CustomPlacement(
       height: height + shift,
       anchors: [
-        for (final (placed, y) in placements)
-          for (final (name, x, ay) in placed.anchors) (name, x, ay + y + shift),
+        for (final (placed, y, x) in placements)
+          for (final (name, ax, ay) in placed.anchors)
+            (name, ax + x, ay + y + shift),
       ],
+      rest: rest == null || rest.isEmpty ? null : _Stacked(rest, bottom: false),
       paint: (page, x, top) {
-        for (final (placed, y) in placements) {
-          placed.paint(page, x, top - shift - y);
+        for (final (placed, y, left) in placements) {
+          placed.paint(page, x + left, top - shift - y);
+        }
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) => 0;
+
+  @override
+  (double, double) intrinsicWidths() => (0, 0);
+}
+
+/// A paragraph after a floated image: its text as it flows, and as it is
+/// set beside the image (no gaps above and below), with what the gem
+/// measures it by.
+final class _FloatParagraph {
+  const new(
+    this.text,
+    this.boxText, {
+    required this.marginBottom,
+    required this.blockMargin,
+    required this.paddingTop,
+    required this.paddingBottom,
+    required this.lineLength,
+    required this.descender,
+    this.anchor,
+  });
+
+  final PrawnTextBox text;
+  final PrawnTextBox boxText;
+  final double marginBottom;
+  final double blockMargin;
+  final double paddingTop;
+  final double paddingBottom;
+  final double lineLength;
+  final double descender;
+  final String? anchor;
+}
+
+/// A floated image and the paragraphs after it, which wrap around it
+/// while they start beside it (the gem's `init_float_box` and
+/// `ink_paragraph_in_float_box`), then flow on below.
+final class _FloatGroup implements CustomContent {
+  new(
+    this.image, {
+    required this.side,
+    required this.gaps,
+    this.caption,
+    this.captionBottom = true,
+  });
+
+  final _ImageContent image;
+  final CustomBox? caption;
+  final bool captionBottom;
+  final String side;
+  final (double, double) gaps;
+  final List<_FloatParagraph> paragraphs = [];
+
+  CustomBox _flowing(_FloatParagraph paragraph) => CustomBox(
+    paragraph.text,
+    style: BoxStyle(
+      margin: EdgeInsets(bottom: paragraph.marginBottom),
+      anchor: paragraph.anchor,
+    ),
+  );
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final regionHeight = available.isFinite ? available : 1000000000.0;
+    final (imageWidth, _) = image._size(width, regionHeight);
+    // The image (with its caption) as it's drawn.
+    final pieces = <(CustomPlacement, double, double)>[];
+    var blockHeight = 0.0;
+    void addCaption() {
+      final box = caption;
+      if (box == null) return;
+      final margin = box.style.margin;
+      final placed = box.content.place(
+        imageWidth,
+        double.infinity,
+        atTop: true,
+      );
+      if (placed == null) return;
+      final x = side == 'right' ? width - imageWidth : 0.0;
+      pieces.add((placed, blockHeight + margin.top, x));
+      blockHeight += margin.top + placed.height + margin.bottom;
+    }
+
+    if (!captionBottom) addCaption();
+    final placedImage = image.place(
+      width,
+      available - blockHeight,
+      atTop: atTop,
+    );
+    if (placedImage == null) return null;
+    pieces.add((placedImage, blockHeight, 0));
+    blockHeight += placedImage.height;
+    if (captionBottom) addCaption();
+    final anchors = <(String, double, double)>[];
+    var cursor = 0.0;
+    var queue = <CustomBox>[];
+    var index = 0;
+    if (imageWidth < width) {
+      final (gapX, gapY) = gaps;
+      final boxLeft = side == 'right' ? 0.0 : imageWidth + gapX;
+      final boxWidth = width - imageWidth - gapX;
+      final boxHeight = math.min(regionHeight, blockHeight + gapY);
+      var inFloat = true;
+      while (inFloat && index < paragraphs.length) {
+        final paragraph = paragraphs[index++];
+        final start = cursor;
+        final limit = math.min(
+          regionHeight - start,
+          boxHeight - start + paragraph.lineLength,
+        );
+        final placed = paragraph.boxText.place(
+          boxWidth,
+          limit - paragraph.paddingTop,
+          atTop: false,
+        );
+        final printed = placed != null && placed.height > 0;
+        if (paragraph.anchor case final id?) anchors.add((id, boxLeft, start));
+        var end = start;
+        if (printed) {
+          pieces.add((placed, start + paragraph.paddingTop, boxLeft));
+          end =
+              start +
+              paragraph.paddingTop +
+              placed.height +
+              paragraph.paddingBottom;
+        }
+        final overflow = placed == null ? paragraph.boxText : placed.rest;
+        final moreParagraphs = index < paragraphs.length;
+        if (overflow == null) {
+          if (moreParagraphs) {
+            cursor = end + paragraph.marginBottom;
+            inFloat = cursor < start + limit;
+          } else if (end < blockHeight) {
+            cursor = blockHeight + paragraph.blockMargin;
+            inFloat = false;
+          } else {
+            cursor = end + paragraph.marginBottom;
+            inFloat = false;
+          }
+        } else {
+          if (!printed && start < boxHeight) end = boxHeight;
+          cursor = end;
+          final text = overflow is PrawnTextBox
+              ? overflow.restyled(paragraph.text.state, paragraph.text.layout)
+              : overflow;
+          queue.add(
+            CustomBox(
+              text,
+              style: BoxStyle(
+                margin: EdgeInsets(bottom: paragraph.marginBottom),
+              ),
+            ),
+          );
+          inFloat = false;
+        }
+      }
+    }
+    queue = [...queue, for (final p in paragraphs.skip(index)) _flowing(p)];
+    if (imageWidth >= width) cursor = blockHeight;
+    CustomContent? rest;
+    if (queue.isNotEmpty) {
+      final flow = _Stacked(
+        queue,
+        bottom: false,
+      ).place(width, available - cursor, atTop: false);
+      if (flow == null) {
+        rest = _Stacked(queue, bottom: false);
+      } else {
+        pieces.add((flow, cursor, 0));
+        cursor += flow.height;
+        rest = flow.rest;
+      }
+    }
+    final height = math.max(cursor, imageWidth >= width ? blockHeight : 0.0);
+    return CustomPlacement(
+      height: height,
+      anchors: [
+        ...anchors,
+        for (final (placed, y, x) in pieces)
+          for (final (name, ax, ay) in placed.anchors) (name, ax + x, ay + y),
+      ],
+      rest: rest,
+      paint: (page, x, top) {
+        for (final (placed, y, left) in pieces) {
+          placed.paint(page, x + left, top - y);
         }
       },
     );
