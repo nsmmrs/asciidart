@@ -181,6 +181,13 @@ final class PdfConverter extends BuiltInConverter
           convertToc(block);
         } else if (context == BlockContext.floatingTitle) {
           convertFloatingTitle(block);
+        } else if (context == BlockContext.pass) {
+          convertPass(block);
+        } else if (context == BlockContext.stem) {
+          convertStem(block);
+        } else if (context == BlockContext.audio ||
+            context == BlockContext.video) {
+          convertMedia(block);
         }
       // Other blocks aren't converted yet: they are left out.
       default:
@@ -3514,6 +3521,120 @@ final class PdfConverter extends BuiltInConverter
       final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
       if (margin > 0) _out.add(SpacerBox(margin));
     }
+  }
+
+  /// Converts the passthrough block [node]: its content as code text
+  /// (the gem's `convert_pass`).
+  void convertPass(Block node) {
+    final font = _themeFont(
+      'code',
+      _font,
+    ).copyWith(color: _c('base_font_color'));
+    _out.add(
+      CustomBox(
+        _textBox(
+          _guardIndentation(node.content() ?? ''),
+          font,
+          align: _baseTextAlign,
+          normalize: false,
+          inlineFormat: false,
+        ),
+        style: BoxStyle(
+          margin: EdgeInsets(
+            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Converts the STEM block [node]: its source in a code block (the
+  /// gem's `convert_stem`, without a math renderer).
+  void convertStem(Block node) {
+    if (node.hasTitle) _caption(node, category: 'code');
+    final font = _themeFont('code', _font);
+    _out.add(
+      BlockBox(
+        [
+          CustomBox(
+            _textBox(
+              _guardIndentation(node.content() ?? ''),
+              font,
+              align: 'left',
+              normalize: false,
+              inlineFormat: false,
+            ),
+          ),
+        ],
+        style: BoxStyle(
+          padding: _padding('code_padding'),
+          margin: EdgeInsets(
+            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          keepTogether: node.hasOption('unbreakable'),
+          anchor: node.id,
+          decoration: _blockDecoration('code'),
+        ),
+      ),
+    );
+  }
+
+  /// Converts the audio or video block [node]: a link to the media (or
+  /// the video's poster image), as the gem's `convert_audio` and
+  /// `convert_video` do.
+  void convertMedia(Block node) {
+    final doc = _document;
+    final target = node.attr('target') ?? '';
+    final audio = node.context == BlockContext.audio;
+    String path;
+    String type;
+    var poster = audio ? null : node.attr('poster');
+    switch (poster) {
+      case 'youtube':
+        path = 'https://www.youtube.com/watch?v=$target';
+        poster = doc.hasAttr('allow-uri-read')
+            ? 'https://img.youtube.com/vi/$target/maxresdefault.jpg'
+            : null;
+        type = 'YouTube video';
+      case 'vimeo':
+        path = 'https://vimeo.com/$target';
+        poster = null;
+        type = 'Vimeo video';
+      default:
+        path = node.mediaUri(target);
+        type = audio ? 'audio' : 'video';
+    }
+    if (poster != null && poster.isNotEmpty) {
+      final saved = {...node.attributes};
+      node.attributes
+        ..['target'] = poster
+        ..['link'] = path;
+      try {
+        convertImage(node);
+      } finally {
+        node.attributes
+          ..clear()
+          ..addAll(saved);
+      }
+      return;
+    }
+    final play = doc.attr('icons') == 'font'
+        ? '<font name="fas">${iconGlyph('fas', 'play') ?? ''}</font>'
+        : '►';
+    _out.add(
+      CustomBox(
+        _textBox(
+          '$play <a href="$path">$path</a> <em>($type)</em>',
+          _font,
+          align: _baseTextAlign,
+          normalize: false,
+        ),
+        style: BoxStyle(anchor: node.id),
+      ),
+    );
+    if (node.hasTitle) _caption(node, labeled: false, bottom: true);
+    final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+    if (margin > 0) _out.add(SpacerBox(margin));
   }
 
   /// [text] with its tabs expanded and its indentation kept: a leading

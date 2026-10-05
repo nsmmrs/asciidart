@@ -45,6 +45,7 @@ void main() {
     'index',
     'inline-images',
     'lists',
+    'media',
     'simple',
     'split',
     'tables',
