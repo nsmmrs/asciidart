@@ -261,8 +261,8 @@ void main() {
       expect(logger.isEmpty, isTrue);
     });
 
-    test('defaults to the WARN level', () {
-      expect(MemoryLogger().level, equals(Severity.warn));
+    test('defaults to the UNKNOWN level', () {
+      expect(MemoryLogger().level, equals(Severity.unknown));
     });
   });
 
@@ -276,8 +276,8 @@ void main() {
       expect(logger.maxSeverity, equals(Severity.warn));
     });
 
-    test('defaults to the WARN level', () {
-      expect(NullLogger().level, equals(Severity.warn));
+    test('defaults to the UNKNOWN level', () {
+      expect(NullLogger().level, equals(Severity.unknown));
     });
   });
 
@@ -351,12 +351,12 @@ void main() {
         final sink = StringBuffer();
         LoggerManager.logger = Logger(sink: sink);
         convertStringToEmbedded(
-          '2. second\n3. third',
+          '1. first\n3. third',
           const AsciidoctorOptions(attributes: {'docfile': 'doc.adoc'}),
         );
         expect(
           sink.toString(),
-          contains('asciidart: WARNING: <stdin>: line 1: list item index'),
+          contains('asciidart: WARNING: <stdin>: line 2: list item index'),
         );
       });
     });

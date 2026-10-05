@@ -337,7 +337,7 @@ TODO
     });
 
     test('versions', () {
-      expect(asciidoctorVersion, '2.0.26');
+      expect(asciidoctorVersion, '2.1.0.alpha.0');
       expect(asciidartVersion, isNotEmpty);
     });
   });

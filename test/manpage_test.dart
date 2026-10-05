@@ -725,14 +725,14 @@ void main() {
       expect(output, contains('.sp\n2. Why?\n.RS 4\nBecause.\n.RE'));
     });
 
-    test('keeps the space before block content without dd text', () {
+    test('drops the space before block content without dd text', () {
       final doc = manDoc();
       final node = ListBlock(doc, BlockContext.dlist);
       final dd = StubListItem(node, '')..append(para(doc, 'description'));
       addDlistPair(node, [StubListItem(node, 'term')], dd);
       expect(
         convOf(doc).convertDlist(node),
-        '.sp\nterm\n.RS 4\n.sp\ndescription\n.RE',
+        '.sp\nterm\n.RS 4\ndescription\n.RE',
       );
     });
 
@@ -940,14 +940,14 @@ void main() {
       expect(output, contains('.  IP " 6." 4.2\n.\\}\nsix\n.RE'));
     });
 
-    test('keeps an empty principal text line before block content', () {
+    test('drops the empty principal text line before block content', () {
       final doc = manDoc();
       final node = ListBlock(doc, BlockContext.olist);
       final item = StubListItem(node, '')..append(para(doc, 'the main text'));
       node.append(item);
       expect(
         convOf(doc).convertOlist(node),
-        endsWith('.\\}\n\n.sp\nthe main text\n.RE'),
+        endsWith('.\\}\nthe main text\n.RE'),
       );
     });
 
@@ -979,14 +979,14 @@ void main() {
       );
     });
 
-    test('keeps an empty principal text line before block content', () {
+    test('drops the empty principal text line before block content', () {
       final doc = manDoc();
       final node = ListBlock(doc, BlockContext.ulist);
       final item = StubListItem(node, '')..append(para(doc, 'the main text'));
       node.append(item);
       expect(
         convOf(doc).convertUlist(node),
-        endsWith('.\\}\n\n.sp\nthe main text\n.RE'),
+        endsWith('.\\}\nthe main text\n.RE'),
       );
     });
 
@@ -1288,9 +1288,9 @@ void main() {
         '.TS\n'
         'allbox tab(:);\n'
         'lt lt.\n'
-        'T{\n.sp\n'
+        'T{\n'
         'a\n'
-        'T}:T{\n.sp\n'
+        'T}:T{\n'
         'b\n'
         'T}\n'
         '.TE\n'
@@ -1310,18 +1310,18 @@ void main() {
         '.TS\n'
         'allbox tab(:);\n'
         'ltB.\n'
-        'T{\n.sp\n'
+        'T{\n'
         'Header\n'
         'T}\n'
         '.T&\n'
         'lt.\n'
-        'T{\n.sp\n'
+        'T{\n'
         'Body 1\n'
         'T}\n'
-        'T{\n.sp\n'
+        'T{\n'
         'Body 2\n'
         'T}\n'
-        'T{\n.sp\n'
+        'T{\n'
         'Footer\n'
         'T}\n'
         '.TE\n'
@@ -1357,20 +1357,20 @@ void main() {
         '.TS\n'
         'allbox tab(:);\n'
         'ltB ltB ltB.\n'
-        'T{\n.sp\n'
+        'T{\n'
         'Name\n'
-        'T}:T{\n.sp\n'
+        'T}:T{\n'
         'Description\n'
-        'T}:T{\n.sp\n'
+        'T}:T{\n'
         'Default\n'
         'T}\n'
         '.T&\n'
         'lt lt lt.\n'
-        'T{\n.sp\n'
+        'T{\n'
         'dim\n'
-        'T}:T{\n.sp\n'
+        'T}:T{\n'
         'dimension of the object\n'
-        'T}:T{\n.sp\n'
+        'T}:T{\n'
         '3\n'
         'T}\n'
         '.TE\n'
@@ -1390,7 +1390,7 @@ void main() {
       table.rows.body.add([cell]);
       expect(
         convOf(doc).convertTable(table),
-        contains('T{\n.sp\nfirst paragraph\n.sp\nsecond paragraph\nT}'),
+        contains('T{\nfirst paragraph\n.sp\nsecond paragraph\nT}'),
       );
     });
 
@@ -1409,9 +1409,9 @@ void main() {
         '.TS\n'
         'allbox tab(:);\n'
         'lt lt.\n'
-        'T{\n.sp\n'
+        'T{\n'
         'a\n'
-        'T}:T{\n.sp\n'
+        'T}:T{\n'
         '.nf\n'
         'b\n'
         'c\\&    _d_\n'
@@ -1435,7 +1435,7 @@ void main() {
       table.rows.body.add([cell]);
       expect(
         convOf(doc).convertTable(table),
-        contains('T{\n.sp\n.sp\nasciidoc body\nT}'),
+        contains('T{\n.sp\nasciidoc body\nT}'),
       );
     });
 
@@ -1451,7 +1451,7 @@ void main() {
         textCell(table, 2, 'c'),
       ]);
       final output = convOf(doc).convertTable(table);
-      expect(output, contains('ltB st st.\nT{\n.sp\nwide cell\nT}\n.T&'));
+      expect(output, contains('ltB st st.\nT{\nwide cell\nT}\n.T&'));
     });
 
     test('inserts placeholders for rowspan cells', () {
@@ -1464,7 +1464,7 @@ void main() {
       table.rows.body.add([textCell(table, 1, 'c')]);
       expect(
         convOf(doc).convertTable(table),
-        contains('T{\n.sp\na\nT}:T{\n.sp\nb\nT}\nT{\n.sp\nT}:T{\n.sp\nc\nT}'),
+        contains('T{\na\nT}:T{\nb\nT}\nT{\nT}:T{\nc\nT}'),
       );
     });
   });

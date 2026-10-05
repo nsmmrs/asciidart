@@ -4,9 +4,13 @@
 
 An AsciiDoc processor written in Dart. It converts AsciiDoc to HTML 5,
 DocBook 5 and man pages, and is meant as a drop-in replacement for
-[Asciidoctor](https://asciidoctor.org) 2.0.26: the same documents,
+[Asciidoctor](https://asciidoctor.org) 2.1 (upstream `main`, 2.1.0.alpha.0): the same documents,
 attributes, command-line options and output. It is a library, a command
 line tool, and (compiled to JavaScript) an npm package.
+
+> This is the `2.1.0` branch: it matches Asciidoctor's development
+> version (upstream `main` at `30fb8cd5`, which reports 2.1.0.alpha.0).
+> The `master` branch matches the 2.0.26 release.
 
 > asciidart is an independent re-implementation, not affiliated with or
 > endorsed by the Asciidoctor project. Report problems
@@ -15,7 +19,7 @@ line tool, and (compiled to JavaScript) an npm package.
 ## Why
 
 - **Compatible, and checked.** Every change is compared byte for byte with
-  the Asciidoctor 2.0.26 gem on all three backends (`tool/parity.sh`, run
+  the Asciidoctor gem built from upstream `main` on all three backends (`tool/parity.sh`, run
   in CI) and over a corpus of about 4,500 real-world documents
   (`tool/corpus_parity.dart`); the command line passes the same end-to-end
   suite as the gem. Where asciidart differs on purpose, the difference is
@@ -129,11 +133,12 @@ asciidoc.convert('Hello, *AsciiDoc*!')
 
 ## Versions
 
-asciidart is compatible with the Asciidoctor **2.0.26** release
-([ADR-0003](adr/0003-target-latest-stable.md)). Documents see
-`{asciidoctor-version}` as 2.0.26 (so `ifdef::asciidoctor[]` and version
-checks keep working) and `{asciidart-version}` as the version of
-asciidart. Compatibility with Asciidoctor 2.1 lives on the `2.1.0` branch.
+On this branch asciidart is compatible with Asciidoctor's development
+version: upstream `main` at `30fb8cd5` (`tool/vendor.sh`), which reports
+**2.1.0.alpha.0**. Documents see `{asciidoctor-version}` as 2.1.0.alpha.0
+and `{asciidart-version}` as the version of asciidart. The `master` branch
+is compatible with the 2.0.26 release
+([ADR-0003](adr/0003-target-latest-stable.md)).
 
 ## Contributing
 

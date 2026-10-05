@@ -150,6 +150,7 @@ const Map<String, String> intrinsicAttributes = <String, String>{
   'brvbar': '&#166;',
   'pp': '&#43;&#43;',
   'cpp': 'C&#43;&#43;',
+  'cxx': 'C&#43;&#43;',
   'amp': '&',
   'lt': '<',
   'gt': '>',

@@ -1,15 +1,20 @@
 # Parity with Asciidoctor
 
-asciidart is compatible with Asciidoctor 2.0.26, and this file is the
+On the `2.1.0` branch, asciidart is compatible with Asciidoctor's
+development version (upstream `main` at `30fb8cd5`, reporting
+2.1.0.alpha.0), and this file is the
 ledger of that claim: the gates below compare it with the gem, and every
 difference that remains is deliberate and listed under
 [Known intentional differences](#known-intentional-differences).
 
 Byte-identical gate (ADR-0001 D4): the asciidart CLI against the
-Asciidoctor **2.0.26** gem, via `tool/differential.dart` (normalization:
-version stamps and timestamps only). `master` targets 2.0.26 per
-[ADR-0003](../adr/0003-target-latest-stable.md); the earlier port of
-upstream `main` (2.1.0.alpha.0) is preserved on the `2.1.0` branch.
+Asciidoctor gem built from upstream `main` at `30fb8cd5`, via
+`tool/differential.dart` (normalization: version stamps and timestamps
+only). `master` targets 2.0.26 per
+[ADR-0003](../adr/0003-target-latest-stable.md); this branch re-implements
+upstream's changes since 2.0.26 on master's architecture (the original
+port of main is tagged `archive/2.1.0-original-port`). The 2.0.26 numbers
+below come from master; this branch's gates run against the main gem.
 
 ## Corpus
 

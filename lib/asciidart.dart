@@ -1,4 +1,4 @@
-/// asciidart: an AsciiDoc processor compatible with Asciidoctor 2.0.26.
+/// asciidart: an AsciiDoc processor compatible with Asciidoctor 2.1.0.alpha.0.
 ///
 /// Start with `asciidoc` (the default configuration) or an `Asciidart`
 /// configured with a safe mode, attributes, `Extension`s, an

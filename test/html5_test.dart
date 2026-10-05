@@ -1227,8 +1227,8 @@ void main() {
       );
       final output = convOf(doc).convert(list)!;
       expect(output, contains('<div class="hdlist">'));
-      expect(output, contains('<col style="width: 20%;">'));
-      expect(output, contains('<col style="width: 80%;">'));
+      expect(output, contains('<col width="20%">'));
+      expect(output, contains('<col width="80%">'));
       expect(output, contains('<td class="hdlist1">'));
       expect(output, contains('A\n<br>\nB'));
       expect(output, contains('<td class="hdlist2">'));
@@ -1555,7 +1555,7 @@ void main() {
       final doc = makeDoc();
       expect(
         convOf(doc).convert(StubBlock(doc, BlockContext.pageBreak)),
-        '<div style="page-break-after: always;"></div>',
+        '<div class="page-break"></div>',
       );
     });
   });
@@ -1569,14 +1569,14 @@ void main() {
       );
     });
 
-    test('thematic break ignores role in xml mode', () {
+    test('thematic break keeps its role in xml mode', () {
       final doc = makeDoc(xml: true);
       final node = StubBlock(
         doc,
         BlockContext.thematicBreak,
         attributes: const {'role': 'heavy'},
       );
-      expect(convOf(doc).convert(node), '<hr/>');
+      expect(convOf(doc).convert(node), '<hr class="heavy"/>');
     });
   });
 
@@ -1645,7 +1645,7 @@ void main() {
       expect(output, contains('<div class="title">Figure 1. Figure</div>'));
     });
 
-    test('image with link=self links to the literal target self', () {
+    test('image with link=self links to the image itself', () {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
@@ -1655,7 +1655,7 @@ void main() {
       );
       expect(
         convOf(doc).convert(node),
-        contains('<a class="image" href="self"><img src="pic.png"'),
+        contains('<a class="image" href="pic.png"><img src="pic.png"'),
       );
     });
 
@@ -1764,7 +1764,7 @@ void main() {
 
     test(
       testOn: 'vm',
-      'inline svg with link=self links to the literal target self',
+      'inline svg with link=self is not linked (it has no source URL)',
       () {
         File('${tmp.path}/fig.svg').writeAsStringSync('<svg><circle/></svg>');
         final doc = svgDoc(const {});
@@ -1780,7 +1780,7 @@ void main() {
         );
         final output = convOf(doc).convert(node)!;
         expect(output, contains('<svg><circle/></svg>'));
-        expect(output, contains('<a class="image" href="self"><svg>'));
+        expect(output, isNot(contains('<a class="image"')));
       },
     );
 
@@ -1894,7 +1894,7 @@ void main() {
       );
     });
 
-    test('wistia poster is not a video service', () {
+    test('wistia poster embeds a Wistia player', () {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
@@ -1908,7 +1908,11 @@ void main() {
       );
       expect(
         convOf(doc).convert(node),
-        contains('<video src="abc#t=5" poster="wistia" controls loop>'),
+        contains(
+          '<iframe src="https://fast.wistia.com/embed/iframe/abc?time=5'
+          '&amp;endVideoBehavior=loop" frameborder="0" allowfullscreen '
+          'class="wistia_embed" name="wistia_embed"></iframe>',
+        ),
       );
     });
 
@@ -1983,8 +1987,8 @@ void main() {
         convOf(doc).convert(table),
         '<table class="tableblock frame-all grid-all stretch">\n'
         '<colgroup>\n'
-        '<col style="width: 50%;">\n'
-        '<col style="width: 50%;">\n'
+        '<col width="50%">\n'
+        '<col width="50%">\n'
         '</colgroup>\n'
         '<thead>\n'
         '<tr>\n'
@@ -2039,7 +2043,7 @@ void main() {
         output,
         contains(
           '<table class="tableblock frame-ends grid-none stripes-even '
-          'left spread" style="width: 50%;">',
+          'left spread" width="50%">',
         ),
       );
       expect(
@@ -2607,7 +2611,7 @@ void main() {
       expect(convOf(doc).convert(node), '<span class="icon">[Star&#93;</span>');
     });
 
-    test('inline image with link, float and role drops the id', () {
+    test('inline image with link, float, role and id', () {
       final doc = makeDoc();
       final node = image(
         doc,
@@ -2622,7 +2626,7 @@ void main() {
       );
       expect(
         convOf(doc).convert(node),
-        '<span class="image left r"><a class="image" href="https://example.org"><img src="pic.png" alt="Pic"></a></span>',
+        '<span id="i1" class="image left r"><a class="image" href="https://example.org"><img src="pic.png" alt="Pic"></a></span>',
       );
     });
 
@@ -2836,8 +2840,6 @@ void main() {
         '<meta http-equiv="X-UA-Compatible" content="IE=edge">\n'
         '<meta name="viewport" content="width=device-width, '
         'initial-scale=1.0">\n'
-        '<meta name="generator" content="Asciidart '
-        '${doc.attr('asciidart-version')}">\n'
         '<title>Doc Title</title>\n'
         '</head>\n'
         '<body class="article">\n'
@@ -2856,17 +2858,10 @@ void main() {
       );
     });
 
-    test('generator meta is kept when reproducible', () {
-      // 2.0.26 only drops the last-updated footer line for `reproducible`;
-      // omitting the generator meta came later (asciidoctor#4143).
+    test('generator meta is left out when reproducible', () {
+      // asciidoctor#4143
       final doc = makeDoc(attributes: const {'reproducible': ''});
-      expect(
-        convOf(doc).convert(doc),
-        contains(
-          '<meta name="generator" content="Asciidart '
-          '${doc.attr('asciidart-version')}">',
-        ),
-      );
+      expect(convOf(doc).convert(doc), isNot(contains('name="generator"')));
     });
 
     test('metadata attributes render meta tags', () {
@@ -2924,7 +2919,7 @@ void main() {
       expect(
         output,
         contains(
-          '<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">',
+          '<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CNoto+Sans+Mono:400,700">',
         ),
       );
       expect(output, contains('asciidoctor.css">'));

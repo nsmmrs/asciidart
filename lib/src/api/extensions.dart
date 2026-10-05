@@ -133,7 +133,7 @@ final class IncludeResolver extends Extension {
       build: (p) {
         String? content;
         p
-          ..onHandles = (target) {
+          ..onHandles = (_, target) {
             content = includes.resolve(
               this,
               target,

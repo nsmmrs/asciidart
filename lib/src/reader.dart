@@ -841,6 +841,8 @@ class PreprocessorReader extends Reader {
       normalize: processLines
           ? _LineNormalization.full
           : _LineNormalization.chomp,
+      include: true,
+      skipFrontMatter: attrs.containsKey('skip-front-matter-option'),
       indent: attrs['indent'],
     );
     if (prepared.isEmpty) {
@@ -978,18 +980,21 @@ class PreprocessorReader extends Reader {
     source: source,
     lines: lines,
     normalize: normalize,
-    condense: true,
+    include: false,
+    skipFrontMatter: _document.attributes.containsKey('skip-front-matter'),
   );
 
-  /// Prepares the [source] text or [lines], skipping front matter when the
-  /// document sets the `skip-front-matter` attribute, dropping trailing
-  /// blank lines when [condense] is set, and adjusting indentation when
-  /// [indent] is set.
+  /// Prepares the [source] text or [lines] of the document, or of an
+  /// [include]: front matter is skipped when [skipFrontMatter] says so
+  /// (and kept in the `front-matter` attribute for the document itself);
+  /// the document drops trailing blank lines, an include adjusts its
+  /// indentation when [indent] is set.
   List<String> _prepareIncludeLines({
+    required bool include,
     String? source,
     List<String>? lines,
     _LineNormalization normalize = _LineNormalization.none,
-    bool condense = false,
+    bool skipFrontMatter = false,
     String? indent,
   }) {
     final result = super._prepareLines(
@@ -998,27 +1003,25 @@ class PreprocessorReader extends Reader {
       normalize: normalize,
     );
 
-    // QUESTION should this work for AsciiDoc table cell content? Currently it
-    // does not.
-    if (_document.attributes.containsKey('skip-front-matter')) {
+    if (skipFrontMatter) {
       final frontMatter = _skipFrontMatter(result);
-      if (frontMatter != null) {
+      if (frontMatter != null && !include) {
         _document.attributes['front-matter'] = frontMatter.join(lf);
       }
     }
 
-    if (condense) {
+    if (include) {
+      if (indent != null) {
+        Parser.adjustIndentation(
+          result,
+          _toInt(indent),
+          _toInt(_document.attr('tabsize')),
+        );
+      }
+    } else {
       while (result.isNotEmpty && result.last.isEmpty) {
         result.removeLast();
       }
-    }
-
-    if (indent != null) {
-      Parser.adjustIndentation(
-        result,
-        _toInt(indent),
-        _toInt(_document.attr('tabsize')),
-      );
     }
 
     return result;
@@ -1388,8 +1391,9 @@ class PreprocessorReader extends Reader {
         // a verbatim context
         var linkTarget = expandedTarget;
         if (linkTarget.contains(' ')) linkTarget = 'pass:c[$linkTarget]';
-        final linkAttrlist = doc.hasAttr('compat-mode') ? '' : 'role=include';
-        return replaceNextLine('link:$linkTarget[$linkAttrlist]');
+        return replaceNextLine(
+          'link:$linkTarget[${_includeLinkAttrlist(attrlist)}]',
+        );
       } else if (_maxdepth != null) {
         final maxdepth = _maxdepth!;
         if (_includeStack.length >= maxdepth.curr) {
@@ -1787,12 +1791,16 @@ class PreprocessorReader extends Reader {
     }
     if (Helpers.isUriish(resolvedTarget) || _remote) {
       if (!doc.hasAttr('allow-uri-read')) {
+        LoggerManager.logger.warn(
+          'cannot include contents of URI: $resolvedTarget '
+          '(allow-uri-read attribute not enabled)',
+          at: cursor(),
+        );
         // FIXME we don't want to use a passthrough or link macro if we're in
         // a verbatim context
         var linkTarget = resolvedTarget;
         if (linkTarget.contains(' ')) linkTarget = 'pass:c[$linkTarget]';
-        final linkAttrlist = doc.hasAttr('compat-mode') ? '' : 'role=include';
-        replaceNextLine('link:$linkTarget[$linkAttrlist]');
+        replaceNextLine('link:$linkTarget[${_includeLinkAttrlist(attrlist)}]');
         return null;
       }
       return _ResolvedInclude(
@@ -1888,7 +1896,7 @@ class PreprocessorReader extends Reader {
     bool incrementLinenos = true,
   ]) {
     final delim = data.isEmpty ? null : data[0];
-    if (delim != '---') return null;
+    if (delim != '---' && delim != '+++') return null;
     final originalData = List<String>.of(data);
     data.removeAt(0);
     final frontMatter = <String>[];
@@ -1958,10 +1966,18 @@ class PreprocessorReader extends Reader {
     final extensions = _includeProcessorExtensions;
     if (extensions == null) return null;
     for (final ext in extensions) {
-      if (ext.handles(target)) return ext;
+      if (ext.handles(_document, target)) return ext;
     }
     return null;
   }
+
+  /// The attribute list of the link an include directive falls back to:
+  /// the directive's own [attrlist], after `role=include` unless in compat
+  /// mode.
+  String _includeLinkAttrlist(String? attrlist) =>
+      _document.hasAttr('compat-mode')
+      ? attrlist ?? ''
+      : 'role=include${attrlist == null ? '' : ',$attrlist'}';
 }
 
 /// A saved include context, restored when the include is exhausted.

@@ -58,7 +58,7 @@ test('reports the versions', async () => {
     globalThis.asciidart.asciidartVersion,
     globalThis.asciidart.asciidoctorVersion,
   ])
-  assert.deepEqual(versions, ['0.1.0', '2.0.26'])
+  assert.deepEqual(versions, ['0.1.0', '2.1.0.alpha.0'])
 })
 
 // doctime-localtime.adoc prints the current time, which can tick between the

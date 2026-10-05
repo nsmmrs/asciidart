@@ -296,7 +296,7 @@ describe('also supported', () => {
   })
 
   test('versions', () => {
-    assert.equal(asciidoctorVersion, '2.0.26')
+    assert.equal(asciidoctorVersion, '2.1.0.alpha.0')
     assert.match(asciidartVersion, /^\d+\.\d+\.\d+/)
   })
 })

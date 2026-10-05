@@ -1027,7 +1027,14 @@ void main() {
             reader.readLine(),
             equals('link:https://example.org/dist/info.adoc[role=include]'),
           );
-          expect(logger.messages, isEmpty);
+          expect(
+            logger.messages.single.message.text,
+            equals(
+              'cannot include contents of URI: '
+              'https://example.org/dist/info.adoc '
+              '(allow-uri-read attribute not enabled)',
+            ),
+          );
         });
       });
 

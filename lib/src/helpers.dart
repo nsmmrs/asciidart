@@ -196,4 +196,25 @@ abstract final class Helpers {
     }
     return result.toString();
   }
+
+  static const Map<String, int> _romanNumerals = {
+    'I': 1,
+    'V': 5,
+    'X': 10,
+    'L': 50,
+    'C': 100,
+    'D': 500,
+    'M': 1000,
+  };
+
+  /// Converts the uppercase Roman numeral [val] to an integer.
+  static int romanToInt(String val) {
+    final values = [for (final c in val.split('')) _romanNumerals[c]!];
+    var result = 0;
+    for (var idx = 0; idx < values.length; idx++) {
+      final succ = idx + 1 < values.length ? values[idx + 1] : null;
+      result += succ != null && succ > values[idx] ? -values[idx] : values[idx];
+    }
+    return result;
+  }
 }

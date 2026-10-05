@@ -1015,10 +1015,12 @@ String subMacros(AbstractNode node, String text) {
         posattrs: posattrs,
         unescapeInput: true,
       );
+      String? id;
       if (!isIcon) {
+        id = attrs['id'];
         doc.registerImage(target);
         if (docAttrs['imagesdir'] case final imagesdir?) {
-          attrs['imagesdir'] = imagesdir;
+          attrs.putIfAbsent('imagesdir', () => imagesdir);
         }
       }
       if (!attrs.containsKey('alt')) {
@@ -1035,6 +1037,7 @@ String subMacros(AbstractNode node, String text) {
           InlineContext.image,
           type: type,
           target: target,
+          id: id,
           attributes: attrs,
         ),
       );
@@ -2023,7 +2026,7 @@ String highlightSource(
   // validate them is not implemented.
   LineNumbersMode? linenumsMode;
   int? startLineNumber;
-  if (node.hasAttr('linenums')) {
+  if (node.hasOption('linenums')) {
     linenumsMode = LineNumbersMode.fromAttribute(
       docAttrs['${syntaxHl.name}-linenums-mode'],
     );

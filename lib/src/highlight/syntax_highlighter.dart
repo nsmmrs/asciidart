@@ -375,7 +375,7 @@ class PrettifyHighlighter extends SyntaxHighlighterBase {
         content: node.content() ?? '',
         language: language,
         nowrap: opts.nowrap,
-        linenums: node.hasAttr('linenums'),
+        linenums: node.hasOption('linenums'),
         start: node.attr('start'),
       );
 

@@ -9,9 +9,9 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 repo=https://github.com/asciidoctor/asciidoctor.git
-# The release this port matches.
+# The 2.0.x release (for its license).
 release=0b99b39c9df884d4aec13bba45f03cdbab505769 # v2.0.26
-# Upstream main at the time of the port, for the two files taken from it.
+# Upstream main, which this branch matches (2.1.0.alpha.0).
 main=30fb8cd5f7145c57274b04524ceaa99812f830e0 # 2026-09-01
 
 check=false
@@ -37,11 +37,10 @@ fetch "$main"
 out="$tmp/out"
 mkdir -p "$out/test" "$out/benchmark/sample-data"
 cp "$tmp/$release/LICENSE" "$out/LICENSE"
-cp -R "$tmp/$release/data" "$out/data"
-cp -R "$tmp/$release/test/fixtures" "$out/test/fixtures"
+cp -R "$tmp/$main/data" "$out/data"
+cp -R "$tmp/$main/test/fixtures" "$out/test/fixtures"
 # A Ruby helper for a Ruby-only test; the port has no use for it.
 rm "$out/test/fixtures/undef-dir-home.rb"
-cp "$tmp/$main/test/fixtures/with-front-matter.adoc" "$out/test/fixtures/"
 cp "$tmp/$main/benchmark/sample-data/mdbasics.adoc" "$out/benchmark/sample-data/"
 
 target="$root/vendor/asciidoctor"

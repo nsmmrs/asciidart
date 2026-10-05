@@ -966,6 +966,18 @@ class Document extends AbstractBlock implements NodeDocument {
   @override
   bool get hasSections => nextSectionIndex > 0;
 
+  /// Whether this is a book with parts: a level-0 section comes before any
+  /// section other than a special one (preface, dedication...).
+  bool get multipart {
+    if (doctype != 'book') return false;
+    for (final block in blocks) {
+      if (block is! Section) continue;
+      if (block.level == 0) return true;
+      if (!block.special) return false;
+    }
+    return false;
+  }
+
   /// Whether the document has footnotes.
   bool get hasFootnotes => catalog.footnotes.isNotEmpty;
 

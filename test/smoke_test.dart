@@ -15,7 +15,7 @@ String get _cliScript =>
 
 void main() {
   test('version reports the matched Asciidoctor release', () {
-    expect(Asciidoctor.version, equals('2.0.26'));
+    expect(Asciidoctor.version, equals('2.1.0.alpha.0'));
   });
 
   test('package version matches pubspec', () {
@@ -29,7 +29,7 @@ void main() {
 
   test('documents expose both versions as attributes', () {
     final doc = load('text');
-    expect(doc.attr('asciidoctor-version'), equals('2.0.26'));
+    expect(doc.attr('asciidoctor-version'), equals('2.1.0.alpha.0'));
     expect(doc.attr('asciidart-version'), equals(Asciidoctor.packageVersion));
   });
 

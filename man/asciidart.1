@@ -41,7 +41,7 @@ A \fIFILE\fP of \fB\-\fP reads the document from standard input and writes the r
 Arguments may be glob patterns (\f(CR*\fP, \f(CR?\fP, \f(CR[...]\fP and \f(CR**\fP), which \fBasciidart\fP expands itself.
 .sp
 \fBasciidart\fP is a re\-implementation of Asciidoctor in Dart.
-It accepts the same documents, attributes and options as the \fBasciidoctor\fP command of Asciidoctor 2.0.26 and produces the same output, except for the deliberate differences listed in the project\(cqs documentation.
+It accepts the same documents, attributes and options as the \fBasciidoctor\fP command of Asciidoctor 2.1.0.alpha.0 and produces the same output, except for the deliberate differences listed in the project\(cqs documentation.
 .sp
 Messages about the document (warnings, errors) go to standard error.
 .SH "OPTIONS"
@@ -117,6 +117,11 @@ The same as \fB\-S safe\fP.
 The directory that relative paths in the document (includes, images) are resolved from.
 The default is the input file\(cqs directory, or the working directory for standard input.
 .RE
+.sp
+\fB\-\-sourcemap\fP
+.RS 4
+Record where each block starts in the source (file and line), for extensions and converters that need it.
+.RE
 .SS "Custom converters"
 .sp
 \fB\-T, \-\-template\-dir\fP=\fIDIR\fP
@@ -132,6 +137,11 @@ Any other name fails once templates are in use.
 .RE
 .SS "Messages"
 .sp
+\fB\-\-log\-level\fP=\fILEVEL\fP
+.RS 4
+Print messages of \fILEVEL\fP or higher: \fBDEBUG\fP, \fBINFO\fP, \fBWARN\fP (the default), \fBERROR\fP or \fBFATAL\fP.
+.RE
+.sp
 \fB\-\-failure\-level\fP=\fILEVEL\fP
 .RS 4
 Exit with status 1 when a message of \fILEVEL\fP or higher is logged: \fBINFO\fP, \fBWARN\fP, \fBERROR\fP or \fBFATAL\fP (the default).
@@ -145,6 +155,7 @@ Print no messages about the document.
 \fB\-v, \-\-verbose\fP
 .RS 4
 Also print messages at the \fBDEBUG\fP and \fBINFO\fP levels.
+\fB\-\-log\-level\fP takes precedence.
 .RE
 .sp
 \fB\-\-trace\fP

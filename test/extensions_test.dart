@@ -664,7 +664,7 @@ class BoilerplateTextIncludeProcessor extends IncludeProcessor {
   new([super.config]);
 
   @override
-  bool handles(String target) => target.endsWith('.txt');
+  bool handles(Document document, String target) => target.endsWith('.txt');
 
   @override
   void process(
@@ -1175,7 +1175,7 @@ void main() {
       expect(extensions.first.instance, isA<SampleIncludeProcessor>());
       final instance = extensions.first.instance as SampleIncludeProcessor;
       expect(instance.onHandles, isNull);
-      expect(instance.handles('include.adoc'), isTrue);
+      expect(instance.handles(emptyDocument(), 'include.adoc'), isTrue);
     });
 
     test('should instantiate docinfo processors', () {
@@ -1388,14 +1388,14 @@ void main() {
               build: (processor) {
                 // test onHandles assigned as callback
                 processor
-                  ..onHandles = ((target) => target == 'skip-me.adoc')
+                  ..onHandles = ((_, target) => target == 'skip-me.adoc')
                   ..onProcess = (doc, reader, target, attributes) {};
               },
             )
             ..includeProcessor(
               build: (processor) {
                 processor
-                  ..onHandles = ((target) => target == 'include-file.adoc')
+                  ..onHandles = ((_, target) => target == 'include-file.adoc')
                   ..onProcess = (doc, reader, target, attributes) {
                     // demonstrates that pushInclude normalizes newlines
                     final lineno = reader.cursorAtPrevLine().lineno;
@@ -1466,7 +1466,7 @@ void main() {
           r.includeProcessor(
             build: (processor) {
               processor
-                ..onHandles = ((target) => target == 'include-file.adoc')
+                ..onHandles = ((_, target) => target == 'include-file.adoc')
                 ..onProcess = (doc, reader, target, attributes) {
                   final content = contentCache.putIfAbsent(
                     'include-file.adoc',

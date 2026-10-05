@@ -13,7 +13,7 @@
 /// examined), order dependence (`-q -v` vs `-v -q`), and Asciidoctor's exact
 /// error strings.
 ///
-/// ## Differences from Asciidoctor 2.0.26
+/// ## Differences from Asciidoctor 2.1.0.alpha.0
 ///
 /// - [CliOptions.parse] returns `null` on success and an `int` exit code on
 ///   early exit or error. It never mutates the [List] it is given.
@@ -57,7 +57,7 @@ import 'package:asciidart/src/version.dart';
 
 /// The CLI usage text.
 ///
-/// Follows the Asciidoctor 2.0.26 `--help` output, except that the `-T`
+/// Follows the Asciidoctor 2.1 `--help` output, except that the `-T`
 /// and `-E` descriptions describe Mustache templates and the Ruby-specific
 /// `--eruby`, `-I`, `-r` and `-w` options are absent.
 const String usageText = '''
@@ -77,21 +77,24 @@ Example: asciidart input.adoc
                                      provided for compatibility with the asciidoc command
     -S, --safe-mode SAFE_MODE        set safe mode level explicitly: [unsafe, safe, server, secure] (default: unsafe)
                                      disables potentially dangerous macros in source files, such as include::[]
+        --sourcemap                  add source location information to each parsed block (default: false)
     -s, --no-header-footer           suppress enclosing document structure and output an embedded document (default: false)
     -n, --section-numbers            auto-number section titles in the HTML backend; disabled by default
     -a, --attribute name[=value]     a document attribute to set in the form of name, name!, or name=value pair
-                                     this attribute takes precedence over the same attribute defined in the source document
+                                     that takes precedence over the same attribute defined in the source document
                                      unless either the name or value ends in @ (i.e., name@=value or name=value@)
+                                     may be specified more than once
     -T, --template-dir DIR           a directory containing custom converter templates (Mustache) that override the built-in converter
                                      may be specified more than once
     -E, --template-engine NAME       template engine to use for the custom converter templates: [mustache, dart]
     -B, --base-dir DIR               base directory containing the document and resources (default: directory of source file)
     -R, --source-dir DIR             source root directory (used for calculating path in destination directory)
     -D, --destination-dir DIR        destination output directory (default: directory of source file)
+        --log-level LEVEL            set minimum level of log messages that get logged: [DEBUG, INFO, WARN, ERROR, FATAL] (default: WARN)
         --failure-level LEVEL        set minimum log level that yields a non-zero exit code: [INFO, WARN, ERROR, FATAL] (default: FATAL)
     -q, --quiet                      silence application log messages (default: false)
         --trace                      include backtrace information when reporting errors (default: false)
-    -v, --verbose                    directs application messages logged at DEBUG or INFO level to STDERR (default: false)
+    -v, --verbose                    show all application log messages, including DEBUG and INFO levels (default: false)
     -t, --timings                    print timings report (default: false)
     -h, --help [TOPIC]               print a help message
                                      show this usage if TOPIC is not specified or recognized
@@ -197,6 +200,9 @@ enum _CliOption {
   /// `-S/--safe-mode SAFE_MODE`.
   safeMode,
 
+  /// `--sourcemap`.
+  sourcemap,
+
   /// `-s/--no-header-footer`.
   noHeaderFooter,
 
@@ -220,6 +226,9 @@ enum _CliOption {
 
   /// `-D/--destination-dir DIR`.
   destinationDir,
+
+  /// `--log-level LEVEL`.
+  logLevel,
 
   /// `--failure-level LEVEL`.
   failureLevel,
@@ -284,6 +293,7 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.outFile, 'o', 'out-file', _Arity.required),
   _Spec(_CliOption.safe, null, 'safe', _Arity.none),
   _Spec(_CliOption.safeMode, 'S', 'safe-mode', _Arity.required, _safeModeNames),
+  _Spec(_CliOption.sourcemap, null, 'sourcemap', _Arity.none),
   _Spec(_CliOption.noHeaderFooter, 's', 'no-header-footer', _Arity.none),
   _Spec(_CliOption.sectionNumbers, 'n', 'section-numbers', _Arity.none),
   _Spec(_CliOption.attribute, 'a', 'attribute', _Arity.required),
@@ -292,6 +302,18 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.baseDir, 'B', 'base-dir', _Arity.required),
   _Spec(_CliOption.sourceDir, 'R', 'source-dir', _Arity.required),
   _Spec(_CliOption.destinationDir, 'D', 'destination-dir', _Arity.required),
+  _Spec(_CliOption.logLevel, null, 'log-level', _Arity.required, [
+    'debug',
+    'DEBUG',
+    'info',
+    'INFO',
+    'warning',
+    'WARNING',
+    'error',
+    'ERROR',
+    'fatal',
+    'FATAL',
+  ]),
   _Spec(_CliOption.failureLevel, null, 'failure-level', _Arity.required, [
     'info',
     'INFO',
@@ -344,6 +366,8 @@ final class CliOptions {
     this.baseDir,
     this.sourceDir,
     this.destinationDir,
+    this.logLevel,
+    this.sourcemap,
     this.jobs = 1,
   }) : attributes = attributes ?? <String, String>{},
        safe = safe ?? SafeMode.unsafe {
@@ -385,6 +409,12 @@ final class CliOptions {
 
   /// Destination directory from `-D/--destination-dir`.
   String? destinationDir;
+
+  /// Minimum logged severity from `--log-level`.
+  Severity? logLevel;
+
+  /// Whether source locations are added to blocks (`--sourcemap`).
+  bool? sourcemap;
 
   /// Minimum severity that yields a non-zero exit code
   /// (from `--failure-level`; default [Severity.fatal]).
@@ -845,6 +875,8 @@ final class CliOptions {
         safe = SafeMode.safe;
       case _CliOption.safeMode:
         safe = _safeModeValue(value!);
+      case _CliOption.sourcemap:
+        sourcemap = true;
       case _CliOption.sectionNumbers:
         _attributeMap['sectnums'] = '';
       case _CliOption.attribute:
@@ -859,6 +891,8 @@ final class CliOptions {
         sourceDir = value;
       case _CliOption.destinationDir:
         destinationDir = value;
+      case _CliOption.logLevel:
+        logLevel = _severityForLevel(value!);
       case _CliOption.failureLevel:
         failureLevel = _severityForLevel(value!);
       case _CliOption.quiet:

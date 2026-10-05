@@ -2,7 +2,7 @@
 ///
 /// Port of `lib/asciidoctor/cli/invoker.rb` (`Asciidoctor::Cli::Invoker`).
 ///
-/// ## Differences from Asciidoctor 2.0.26
+/// ## Differences from Asciidoctor 2.1.0.alpha.0
 ///
 /// - Construction uses named constructors ([Invoker.fromOptions],
 ///   [Invoker.fromArgs]).
@@ -367,20 +367,22 @@ final class Invoker {
   }
 
   /// Applies the verbosity of [options] to the global logger (silenced for
-  /// `-q`, debug level for `-v`) and returns a callback restoring it.
+  /// `-q`, else the `--log-level`, or debug level for `-v`) and returns a
+  /// callback restoring it.
   static void Function() _applyVerbosity(CliOptions options) {
     if (options.verbose == 0) {
       final savedLogger = LoggerManager.logger;
       LoggerManager.logger = NullLogger();
       return () => LoggerManager.logger = savedLogger;
     }
-    if (options.verbose == 2) {
-      final logger = LoggerManager.logger;
-      final savedLevel = logger.level;
-      logger.level = Severity.debug;
-      return () => logger.level = savedLevel;
-    }
-    return () {};
+    // `--log-level` wins over `-v` (lib/asciidoctor/cli/invoker.rb).
+    final level =
+        options.logLevel ?? (options.verbose == 2 ? Severity.debug : null);
+    if (level == null) return () {};
+    final logger = LoggerManager.logger;
+    final savedLevel = logger.level;
+    logger.level = level;
+    return () => logger.level = savedLevel;
   }
 
   /// Adjusts the processor options before each conversion: a custom
@@ -397,6 +399,7 @@ final class Invoker {
       templateEngine: options.templateEngine,
       baseDir: options.baseDir,
       toDir: options.destinationDir,
+      sourcemap: options.sourcemap ?? false,
     );
     return configure?.call(processorOptions) ?? processorOptions;
   }

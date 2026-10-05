@@ -2,7 +2,7 @@
 ///
 /// Port of `lib/asciidoctor/converter/manpage.rb` (complete). Per
 /// `adr/0001-dart-rewrite-goals.md` (D4) every template method produces
-/// output byte-identical to Asciidoctor 2.0.26, including whitespace.
+/// output byte-identical to Asciidoctor 2.1.0.alpha.0, including whitespace.
 ///
 /// ## Framework integration
 ///
@@ -508,11 +508,16 @@ class ManpageConverter extends BuiltInConverter {
         result.add('.sp\n$termText\n.RS 4');
       }
       if (dd != null) {
-        if (dd.hasText) {
+        final hasText = dd.hasText;
+        if (hasText) {
           result.add(_manify(dd.text!, whitespace: _WhitespaceMode.normalize));
         }
         if (dd.hasBlocks) {
-          result.add(dd.content() ?? '');
+          var ddContent = dd.content() ?? '';
+          if (!hasText && ddContent.startsWith('.sp\n')) {
+            ddContent = ddContent.substring(4);
+          }
+          result.add(ddContent);
         }
       }
       result.add('.RE');
@@ -604,10 +609,14 @@ class ManpageConverter extends BuiltInConverter {
       );
       result.add(
         '.sp\n.RS 4\n.ie n \\{\\\n\\h\'-04\' $numeral.\\h\'+01\'\\c\n.\\}\n.el \\{\\\n.  sp -1\n.  IP " $numeral." 4.2\n.\\}'
-        '\n$listText',
+        '${listText.isEmpty ? '' : '\n$listText'}',
       );
       if (listItem.hasBlocks) {
-        result.add(listItem.content() ?? '');
+        var itemContent = listItem.content() ?? '';
+        if (listText.isEmpty && itemContent.startsWith('.sp\n')) {
+          itemContent = itemContent.substring(4);
+        }
+        result.add(itemContent);
       }
       result.add('.RE');
     }
@@ -711,9 +720,9 @@ class ManpageConverter extends BuiltInConverter {
           final headerCell = _headerCellAt(headerRow, cellIndex);
           // add an empty cell as a placeholder if this is a rowspan cell
           if (headerCell.length == 1 && headerCell[0] == '^t') {
-            textRow.add('T{\n.sp\nT}:');
+            textRow.add('T{\nT}:');
           }
-          textRow.add('T{\n.sp\n');
+          textRow.add('T{\n');
           final halignValue = cell.attr('halign', 'left')!;
           final cellHalign = halignValue.isEmpty ? '' : halignValue[0];
           if (tsec == 'body') {
@@ -827,10 +836,14 @@ class ManpageConverter extends BuiltInConverter {
       );
       result.add(
         ".sp\n.RS 4\n.ie n \\{\\\n\\h'-04'\\(bu\\h'+03'\\c\n.\\}\n.el \\{\\\n.  sp -1\n.  IP \\(bu 2.3\n.\\}"
-        '\n$listText',
+        '${listText.isEmpty ? '' : '\n$listText'}',
       );
       if (listItem.hasBlocks) {
-        result.add(listItem.content() ?? '');
+        var itemContent = listItem.content() ?? '';
+        if (listText.isEmpty && itemContent.startsWith('.sp\n')) {
+          itemContent = itemContent.substring(4);
+        }
+        result.add(itemContent);
       }
       result.add('.RE');
     }

@@ -80,6 +80,9 @@ Messages about the document (warnings, errors) go to standard error.
   The directory that relative paths in the document (includes, images) are resolved from.
   The default is the input file's directory, or the working directory for standard input.
 
+*--sourcemap*::
+  Record where each block starts in the source (file and line), for extensions and converters that need it.
+
 === Custom converters
 
 *-T, --template-dir*=_DIR_::
@@ -92,6 +95,9 @@ Messages about the document (warnings, errors) go to standard error.
 
 === Messages
 
+*--log-level*=_LEVEL_::
+  Print messages of _LEVEL_ or higher: *DEBUG*, *INFO*, *WARN* (the default), *ERROR* or *FATAL*.
+
 *--failure-level*=_LEVEL_::
   Exit with status 1 when a message of _LEVEL_ or higher is logged: *INFO*, *WARN*, *ERROR* or *FATAL* (the default).
 
@@ -100,6 +106,7 @@ Messages about the document (warnings, errors) go to standard error.
 
 *-v, --verbose*::
   Also print messages at the *DEBUG* and *INFO* levels.
+  *--log-level* takes precedence.
 
 *--trace*::
   On an unexpected error, print the full stack trace.

@@ -45,8 +45,12 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.4'
-    - name: Install asciidoctor gem (e2e oracle)
-      run: gem install asciidoctor -v 2.0.26 --no-document
+    - name: Install the asciidoctor gem from upstream main (e2e oracle)
+      run: |
+        # Upstream main at the pin in tool/vendor.sh (2.1.0.alpha.0).
+        git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
+        git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
+        (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart)
@@ -72,10 +76,14 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.4'
-    - name: Install asciidoctor gem (parity oracle)
+    - name: Install the asciidoctor gem from upstream main (parity oracle)
       # No optional gems: asciidart highlights with highlight.js only, and
       # Rouge, Pygments and CodeRay behave as when their gems are missing.
-      run: gem install asciidoctor -v 2.0.26 --no-document
+      run: |
+        # Upstream main at the pin in tool/vendor.sh (2.1.0.alpha.0).
+        git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
+        git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
+        (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
@@ -83,7 +91,7 @@ jobs:
         EXE="$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')"
         echo "ASCIIDOCTOR_EXE=$EXE"
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
-    - name: Check byte-identical parity with Asciidoctor 2.0.26
+    - name: Check byte-identical parity with Asciidoctor 2.1.0.alpha.0
       run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidart-linux-')"
   npm:
     strategy:
@@ -126,13 +134,17 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.4'
-    - name: Install asciidoctor gem (parity oracle)
-      run: gem install asciidoctor -v 2.0.26 --no-document
+    - name: Install the asciidoctor gem from upstream main (parity oracle)
+      run: |
+        # Upstream main at the pin in tool/vendor.sh (2.1.0.alpha.0).
+        git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
+        git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
+        (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)
       env:
         ASCIIDOCTOR_EXE: test/e2e/bin/asciidart-node
       run: bats test/e2e/
-    - name: Check byte-identical parity with Asciidoctor 2.0.26 (Node CLI)
+    - name: Check byte-identical parity with Asciidoctor 2.1.0.alpha.0 (Node CLI)
       run: ./tool/parity.sh test/e2e/bin/asciidart-node

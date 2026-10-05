@@ -703,16 +703,16 @@ class IncludeProcessor extends Processor {
 
   /// The handles callback assigned through the registration DSL.
   ///
-  /// It receives the include target.
-  bool Function(String target)? onHandles;
+  /// It receives the document and the include target.
+  bool Function(Document document, String target)? onHandles;
 
-  /// Whether this processor handles the include [target].
+  /// Whether this processor handles the include [target] of [document].
   ///
   /// Runs [onHandles] when assigned through the registration DSL, else
   /// returns true.
-  bool handles(String target) {
+  bool handles(Document document, String target) {
     final handler = onHandles;
-    if (handler != null) return handler(target);
+    if (handler != null) return handler(document, target);
     return true;
   }
 

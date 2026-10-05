@@ -364,6 +364,18 @@ void main() {
       expect(result.out, startsWith('Usage:'));
     });
 
+    test('--log-level sets the minimum logged severity', () {
+      final result = parseCli(['--log-level', 'INFO', sampleFile]);
+      expect(result.exitCode, isNull);
+      expect(result.options.logLevel, equals(Severity.info));
+      expect(parseCli([sampleFile]).options.logLevel, isNull);
+    });
+
+    test('--sourcemap enables source locations', () {
+      expect(parseCli(['--sourcemap', sampleFile]).options.sourcemap, isTrue);
+      expect(parseCli([sampleFile]).options.sourcemap, isNull);
+    });
+
     test('invalid argument message spells attached values without space', () {
       var result = parseCli(['--failure-level=foobar', sampleFile]);
       expect(result.exitCode, equals(1));

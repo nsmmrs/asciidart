@@ -50,8 +50,11 @@ final class HighlightJsHighlighter extends SyntaxHighlighterBase {
     String? style,
   }) {
     // As in the browser: a block without a language, or with one
-    // highlight.js does not know, is not highlighted.
-    if (language == null || !hilite.hasLanguage(language)) {
+    // highlight.js does not know, is not highlighted; nor is a block with
+    // the nohighlight option.
+    if (language == null ||
+        !hilite.hasLanguage(language) ||
+        node.hasOption('nohighlight')) {
       return HighlightResult(escapeSpecialChars(source));
     }
     final html = hilite.highlight(source, language: language).html;
@@ -67,6 +70,7 @@ final class HighlightJsHighlighter extends SyntaxHighlighterBase {
         content: node.content() ?? '',
         language: language,
         nowrap: opts.nowrap,
+        nohighlight: node.hasOption('nohighlight'),
       );
 
   @override
@@ -168,17 +172,23 @@ class HighlightJsAdapter {
   /// Formats converted [content] for client-side highlighting.
   ///
   /// The `<code>` tag carries `language-{language} hljs` (`language-none`
-  /// when [language] is absent). [nowrap] appends the `nowrap` class.
+  /// when [language] is absent). With [nohighlight] (the block's
+  /// `nohighlight` option), the `<pre>` loses its `highlight` class, so the
+  /// browser leaves the block alone. [nowrap] appends the `nowrap` class.
   String format({
     required String content,
     String? language,
     bool nowrap = false,
+    bool nohighlight = false,
   }) => wrapSourceBlock(
     preClass: preClass,
     content: content,
     language: language,
     nowrap: nowrap,
     transform: (pre, code) {
+      if (nohighlight) {
+        pre['class'] = pre['class']!.replaceFirst(' highlight', '');
+      }
       code['class'] = 'language-${language ?? 'none'} hljs';
     },
   );

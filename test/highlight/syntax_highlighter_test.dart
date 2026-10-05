@@ -730,7 +730,7 @@ void main() {
       final highlighter = PrettifyHighlighter();
       final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x')
-        ..setAttr('linenums', '')
+        ..setAttr('linenums-option', '')
         ..setAttr('start', '7');
       expect(
         highlighter.format(block, 'ruby', const FormatOptions()),
@@ -742,7 +742,7 @@ void main() {
     test('numbers prettify lines without a start value', () {
       final highlighter = PrettifyHighlighter();
       final doc = _docWithAttributes(<String, String?>{});
-      final block = _StubBlock(doc, 'x')..setAttr('linenums', '');
+      final block = _StubBlock(doc, 'x')..setAttr('linenums-option', '');
       expect(
         highlighter.format(block, 'ruby', const FormatOptions()),
         '<pre class="prettyprint highlight linenums">'

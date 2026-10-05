@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.1.0 branch
+
+This branch matches Asciidoctor's development version (upstream `main` at
+`30fb8cd5`, 2.1.0.alpha.0) instead of the 2.0.26 release: the CLI's
+`--log-level` and `--sourcemap`; highlight.js `nohighlight`; `linenums` as
+a block option; ordered lists that start at their first marker; empty
+section IDs; the `~~~~` open block; a block style above the title keeping
+it in the body; block attributes overriding `imagesdir`; `cxx`; attribute
+lists in formatted text without `[`; dot-free attribute names; inline image
+IDs; `link=self`; Wistia videos; per-section `toclevels` and multipart
+outlines; table and column widths as attributes; page and thematic break
+classes; no generator meta with `reproducible`; DocBook quote roles; man
+page lists and table cells without spurious `.sp`; front matter with
+`+++`, skipped per include; a warning for URI includes without
+`allow-uri-read`; the main branch's stylesheet and locales. The corpus
+(17,900 conversions) is identical to the gem built from that commit.
+
 ## 0.1.0 (unreleased)
 
 First release of asciidart, an AsciiDoc processor for Dart compatible with

@@ -224,6 +224,7 @@ abstract final class Parser {
         ',===': ('table', <String>{}),
         ':===': ('table', <String>{}),
         '!===': ('table', <String>{}),
+        '~~~~': ('open', <String>{'abstract', 'partintro'}),
         '////': ('comment', <String>{}),
         '```': ('fenced_code', <String>{}),
       };
@@ -240,6 +241,7 @@ abstract final class Parser {
     ',=',
     ':=',
     '!=',
+    '~~',
     '//',
     '``',
   };
@@ -256,6 +258,7 @@ abstract final class Parser {
     ',===': '=',
     ':===': '=',
     '!===': '=',
+    '~~~~': '~',
     '////': '/',
   };
 
@@ -483,7 +486,8 @@ abstract final class Parser {
       blockAttrs,
       docAttrs['leveloffset'],
     );
-    if (implicitDoctitle && blockAttrs.containsKey('title')) {
+    if (implicitDoctitle &&
+        (blockAttrs.containsKey('title') || blockAttrs.containsKey('style'))) {
       docAttrs['authorcount'] = '0';
       return _finalizeHeader(document, blockAttrs, headerValid: false);
     }
@@ -1103,16 +1107,18 @@ abstract final class Parser {
     // Generate an ID if one was not embedded or specified as anchor above
     // section title.
     var id = section.id;
-    var generatedId = false;
-    if (id == null && document.attributes.containsKey('sectids')) {
-      section.id = id = Section.generateId(section.title ?? '', document);
-      generatedId = true;
-    }
     if (id != null) {
-      if (!generatedId && sectTitle.contains(attrRefHead)) {
+      if (id.isEmpty) {
+        // An empty ID ([[]] or [#]) means no ID, not a generated one.
+        section.id = id = null;
+      } else if (sectTitle.contains(attrRefHead)) {
         // Convert title to resolve attributes while in scope.
         final _ = section.title;
       }
+    } else if (document.attributes.containsKey('sectids')) {
+      section.id = id = Section.generateId(section.title ?? '', document);
+    }
+    if (id != null) {
       if (!document.registerRef(id, section)) {
         _logger.warn(
           'id assigned to section already in use: $id',
@@ -1609,7 +1615,9 @@ abstract final class Parser {
           }
           if (blkCtx == 'image') {
             document.registerImage(target);
-            _setOrRemove(attrs, 'imagesdir', docAttrs['imagesdir']);
+            if (docAttrs['imagesdir'] case final imagesdir?) {
+              attrs.putIfAbsent('imagesdir', () => imagesdir);
+            }
             // NOTE style is the value of the first positional
             // attribute in the block attribute line.
             if (!attrs.containsKey('alt')) {
@@ -1729,7 +1737,13 @@ abstract final class Parser {
           block = parseList(reader, BlockContext.ulist, parent, style);
         case _OrderedListStart():
           reader.unshiftLine(thisLine);
-          block = parseList(reader, BlockContext.olist, parent, style);
+          block = parseList(
+            reader,
+            BlockContext.olist,
+            parent,
+            style,
+            start: attrs.remove('start'),
+          );
           if (block.style case final listStyle?) attrs['style'] = listStyle;
         case _DescriptionListStart(match: final dlistMatch):
           reader.unshiftLine(thisLine);
@@ -1950,10 +1964,10 @@ abstract final class Parser {
                 attrs['cloaked-context'] = cloakedContext!;
               }
             }
-            if (!attrs.containsKey('linenums') &&
-                (attrs.containsKey('linenums-option') ||
+            if (!attrs.containsKey('linenums-option') &&
+                (attrs.containsKey('linenums') ||
                     docAttrs.containsKey('source-linenums-option'))) {
-              attrs['linenums'] = '';
+              attrs['linenums-option'] = '';
             }
             if (docAttrs['source-indent'] case final sourceIndent?) {
               attrs.putIfAbsent('indent', () => sourceIndent);
@@ -1994,10 +2008,10 @@ abstract final class Parser {
             attrs['language'] = language;
           }
           attrs['cloaked-context'] = cloakedContext!;
-          if (!attrs.containsKey('linenums') &&
-              (attrs.containsKey('linenums-option') ||
+          if (!attrs.containsKey('linenums-option') &&
+              (attrs.containsKey('linenums') ||
                   docAttrs.containsKey('source-linenums-option'))) {
-            attrs['linenums'] = '';
+            attrs['linenums-option'] = '';
           }
           if (docAttrs['source-indent'] case final sourceIndent?) {
             attrs.putIfAbsent('indent', () => sourceIndent);
@@ -2486,9 +2500,13 @@ abstract final class Parser {
     Reader reader,
     BlockContext listType,
     AbstractBlock parent,
-    String? style,
-  ) {
-    final listBlock = ListBlock(parent, listType);
+    String? style, {
+    String? start,
+  }) {
+    final startNumber = start == null ? null : _toInt(start);
+    final listBlock = startNumber != null && startNumber != 1
+        ? ListBlock(parent, listType, attributes: {'start': '$startNumber'})
+        : ListBlock(parent, listType);
     final listRx = listRxMap[listType]!;
 
     while (reader.hasMoreLines()) {
@@ -2821,16 +2839,29 @@ abstract final class Parser {
           }
         }
       } else if (listType == BlockContext.olist) {
-        final ordinal = listBlock.blocks.length;
+        var ordinal = listBlock.blocks.length;
+        final first = ordinal == 0;
+        var validate = true;
+        if (listBlock.attributes['start'] case final start?) {
+          ordinal += _toInt(start) - 1;
+        } else if (first) {
+          // The first marker sets the start (#2218, #3252).
+          final start = resolveOrderedListStart(trait as String);
+          if (start != 1) {
+            listBlock.attributes['start'] = '$start';
+            ordinal += start - 1;
+            validate = false;
+          }
+        }
         final (resolvedMarker, implicitStyle) = resolveOrderedListMarker(
           trait as String,
           ordinal: ordinal,
-          validate: true,
+          validate: validate,
           reader: reader,
         );
         trait = resolvedMarker;
         listItem.marker = resolvedMarker;
-        if (ordinal == 0 && style == null) {
+        if (first && style == null) {
           // Using list level makes more sense, but we don't track it.
           // Basing style on marker level is compliant with AsciiDoc.py.
           final fallbackIndex = resolvedMarker.length - 1;
@@ -3293,6 +3324,29 @@ abstract final class Parser {
       .ulist => marker,
       .olist => resolveOrderedListMarker(marker).$1,
       _ => '<1>', // colist
+    };
+  }
+
+  /// The number an ordered list starting with [marker] starts at.
+  ///
+  /// Port of `Parser.resolve_ordered_list_start`.
+  static int resolveOrderedListStart(String marker) {
+    if (marker.startsWith('.')) return 1;
+    String? style;
+    for (final candidate in _orderedListStyles) {
+      if (orderedListMarkerRxMap[candidate]!.hasMatch(marker)) {
+        style = candidate;
+        break;
+      }
+    }
+    final chopped = marker.substring(0, marker.length - 1);
+    return switch (style) {
+      'arabic' => _toInt(marker),
+      'loweralpha' => chopped.codeUnitAt(0) - 96,
+      'upperalpha' => chopped.codeUnitAt(0) - 64,
+      'lowerroman' => Helpers.romanToInt(chopped.toUpperCase()),
+      'upperroman' => Helpers.romanToInt(chopped),
+      _ => 1,
     };
   }
 

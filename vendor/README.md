@@ -12,8 +12,8 @@ From [Asciidoctor](https://github.com/asciidoctor/asciidoctor), MIT License
 
 | Path | Upstream revision | Used for |
 | --- | --- | --- |
-| `data/` | v2.0.26 (`0b99b39c`) | the default stylesheets, locale attribute files and syntax reference, embedded in the library |
-| `test/fixtures/` | v2.0.26 (`0b99b39c`), except `with-front-matter.adoc` from main (`30fb8cd5`); upstream's `undef-dir-home.rb` is left out | the documents the tests and the parity gate convert |
+| `data/` | main (`30fb8cd5`) | the default stylesheets, locale attribute files and syntax reference, embedded in the library |
+| `test/fixtures/` | main (`30fb8cd5`); upstream's `undef-dir-home.rb` is left out | the documents the tests and the parity gate convert |
 | `benchmark/sample-data/mdbasics.adoc` | main (`30fb8cd5`) | benchmark input |
 | `LICENSE` | v2.0.26 (`0b99b39c`) | upstream's license |
 

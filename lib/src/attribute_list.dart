@@ -39,13 +39,13 @@ class AttributeList {
     }
   }
 
-  // Attribute name: word char followed by word chars, hyphens or dots
-  // (approx. name token from XML). `\p{Word}` is unknown to Dart's RegExp,
+  // Attribute name: word char followed by word chars or hyphens
+  // (the syntax of a document attribute). `\p{Word}` is unknown to Dart's RegExp,
   // hence the emulation, verified equivalent to upstream over letters, marks,
   // decimal numbers, connector punctuation and join controls (see ADR-0001 D1
   // notes).
   static final RegExp _nameRx = RegExp(
-    '[\\p{Alpha}\\p{M}\\p{Nd}\\p{Pc}\u200C\u200D][\\p{Alpha}\\p{M}\\p{Nd}\\p{Pc}\u200C\u200D.-]*',
+    '[\\p{Alpha}\\p{M}\\p{Nd}\\p{Pc}\u200C\u200D][\\p{Alpha}\\p{M}\\p{Nd}\\p{Pc}\u200C\u200D-]*',
     unicode: true,
   );
   static final RegExp _blankRx = RegExp('[ \t]+');

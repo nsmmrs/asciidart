@@ -84,6 +84,9 @@ Future<void> main(List<String> args) async {
                 .toList(),
         };
   final filter = options.option('filter');
+  final roots = [
+    for (final path in options.rest) Directory(path).absolute.path,
+  ];
   final files = [
     for (final path in options.rest) ..._corpusFiles(path),
   ].where((file) => filter == null || file.contains(filter)).toList()..sort();
@@ -126,8 +129,7 @@ Future<void> main(List<String> args) async {
       counts.update(status, (n) => n + 1, ifAbsent: () => 1);
       results.add('$status\t${item.mode.key}\t${item.file}');
       if (status != 'same') {
-        final name =
-            '${item.mode.key}/${item.file.replaceAll('/', '_').replaceAll(':', '_')}';
+        final name = '${item.mode.key}/${_caseName(item.file, roots)}';
         final caseDir = Directory('${diffs.path}/$name')
           ..createSync(recursive: true);
         File('${caseDir.path}/a.out').writeAsStringSync(a.stdout);
@@ -151,6 +153,23 @@ Future<void> main(List<String> args) async {
       .join(', ');
   stdout.writeln('corpus_parity: $summary');
   exitCode = counts.keys.every((status) => status == 'same') ? 0 : 1;
+}
+
+/// A directory name for the case of [file]: its path below the corpus
+/// [roots], with separators replaced, shortened with a hash if too long for
+/// a file name.
+String _caseName(String file, List<String> roots) {
+  var relative = file;
+  for (final root in roots) {
+    final prefix = root.endsWith('/') ? root : '$root/';
+    if (file.startsWith(prefix)) {
+      relative = file.substring(prefix.length);
+      break;
+    }
+  }
+  final name = relative.replaceAll('/', '_').replaceAll(':', '_');
+  if (name.length <= 200) return name;
+  return '${name.substring(name.length - 180)}-${_fnv1a(name)}';
 }
 
 /// The AsciiDoc files at [path] (a file, or a directory searched

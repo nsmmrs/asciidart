@@ -2,7 +2,7 @@
 ///
 /// Port of `lib/asciidoctor/converter/docbook5.rb`. Per
 /// `adr/0001-dart-rewrite-goals.md` (D4) every template method produces
-/// output byte-identical to Asciidoctor 2.0.26, including whitespace.
+/// output byte-identical to Asciidoctor 2.1.0.alpha.0, including whitespace.
 ///
 /// ## Framework integration
 ///
@@ -105,8 +105,8 @@ const Map<String, (String, String, bool)> _quoteTags =
       'monospaced': ('<literal>', '</literal>', false),
       'emphasis': ('<emphasis>', '</emphasis>', true),
       'strong': ('<emphasis role="strong">', '</emphasis>', true),
-      'double': ('<quote>', '</quote>', true),
-      'single': ('<quote>', '</quote>', true),
+      'double': ('<quote role="double">', '</quote>', true),
+      'single': ('<quote role="single">', '</quote>', true),
       'mark': ('<emphasis role="marked">', '</emphasis>', false),
       'superscript': ('<superscript>', '</superscript>', false),
       'subscript': ('<subscript>', '</subscript>', false),
@@ -497,7 +497,7 @@ class Docbook5Converter extends BuiltInConverter {
     if (node.style == 'source') {
       final attrs = node.attributes;
       final String numberingAttrs;
-      if (attrs.containsKey('linenums')) {
+      if (node.hasOption('linenums')) {
         numberingAttrs = attrs.containsKey('start')
             ? ' linenumbering="numbered" '
                   'startinglinenumber="${parseLeadingInt(attrs['start'])}"'
@@ -942,7 +942,7 @@ class Docbook5Converter extends BuiltInConverter {
       uri = fileref;
     }
     final img =
-        '<inlinemediaobject${_commonAttributes(null, node.role)}>\n'
+        '<inlinemediaobject${_commonAttributes(node.id, node.role)}>\n'
         '<imageobject>\n'
         '<imagedata fileref="$uri"${_imageSizeAttributes(node.attributes)}/>\n'
         '</imageobject>\n'
@@ -950,7 +950,8 @@ class Docbook5Converter extends BuiltInConverter {
         '</inlinemediaobject>';
     final linkHref = node.hasAttr('link') ? node.attr('link') : null;
     if (fileref != null && linkHref != null) {
-      return '<link xl:href="${_s(linkHref)}">$img</link>';
+      final href = linkHref == 'self' ? fileref : linkHref;
+      return '<link xl:href="${_s(href)}">$img</link>';
     }
     return img;
   }

@@ -1878,7 +1878,7 @@ void main() {
         cgWord,
         r'(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control})',
       );
-      expect(quoteAttributeListRxt, r'\[([^\]]+)\]');
+      expect(quoteAttributeListRxt, r'\[([^\[\]]+)\]');
     });
 
     test('anchor and unicode flags', () {

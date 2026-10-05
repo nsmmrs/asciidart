@@ -424,14 +424,16 @@ abstract class AbstractNode {
     if (doc.safe >= SafeMode.secure || !doc.hasAttr('data-uri')) {
       return normalizeWebPath(
         targetImage,
-        start: assetDirKey == null ? null : doc.attr(assetDirKey),
+        start: assetDirKey == null
+            ? null
+            : attr(assetDirKey, null, assetDirKey),
       );
     }
     String? uriTarget;
     if (Helpers.isUriish(targetImage)) {
       uriTarget = Helpers.encodeSpacesInUri(targetImage);
     } else if (assetDirKey != null) {
-      final imagesBase = doc.attr(assetDirKey);
+      final imagesBase = attr(assetDirKey, null, assetDirKey);
       if (imagesBase != null && Helpers.isUriish(imagesBase)) {
         uriTarget = normalizeWebPath(
           targetImage,
@@ -457,7 +459,7 @@ abstract class AbstractNode {
   String mediaUri(String media, [String? assetDirKey = 'imagesdir']) {
     return normalizeWebPath(
       media,
-      start: assetDirKey == null ? null : document!.attr(assetDirKey),
+      start: assetDirKey == null ? null : attr(assetDirKey, null, assetDirKey),
     );
   }
 
@@ -478,7 +480,7 @@ abstract class AbstractNode {
         ? normalizeSystemPath(targetImage)
         : normalizeSystemPath(
             targetImage,
-            start: document!.attr(assetDirKey),
+            start: attr(assetDirKey, null, assetDirKey),
             targetName: 'image',
           );
 
@@ -633,7 +635,7 @@ abstract class AbstractNode {
       }
     }
     if (warnOnFailure) {
-      final docfile = attr('docfile');
+      final docfile = document!.attr('docfile');
       logger.warn(
         '${docfile ?? '<stdin>'}: '
         '${label ?? 'file'} does not exist or cannot be read: $path',
