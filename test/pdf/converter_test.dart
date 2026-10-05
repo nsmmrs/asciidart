@@ -26,7 +26,16 @@ final bool _tools = [
 void main() {
   setUpAll(registerPdf);
 
-  for (final name in ['simple', 'lists', 'blocks', 'blocks2', 'dlists', 'dlists2', 'images', 'split']) {
+  for (final name in [
+    'simple',
+    'lists',
+    'blocks',
+    'blocks2',
+    'dlists',
+    'dlists2',
+    'images',
+    'split',
+  ]) {
     test('$name.adoc converts as the gem converts it', () {
       final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
       addTearDown(() => dir.deleteSync(recursive: true));
