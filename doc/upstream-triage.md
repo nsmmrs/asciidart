@@ -1,0 +1,666 @@
+# Upstream issue triage
+
+The 610 open issues of [asciidoctor/asciidoctor](https://github.com/asciidoctor/asciidoctor/issues) on 2026-10-05, triaged for the `bugfix` branch (step 9 of the roadmap). Every issue that reports a bug (labeled `bug` or `regression`, or reading as one) was tried on both the Ruby CLI (the gem built from upstream `main` at `30fb8cd5`, 2.1.0.alpha.0) and the asciidart CLI of the `2.1.0` branch, which matches it. The rest were sorted by their labels, or, for the 252 unlabeled issues, by reading them.
+
+A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named after the issue, that fails on both CLIs before the fix; `tool/bugfix_check.sh` checks that it passes on asciidart and still fails on the gem. The fixes are listed in [`benchmark/PARITY.md`](../benchmark/PARITY.md#upstream-bugs-fixed-on-the-bugfix-branch).
+
+| Category | Issues |
+|---|---|
+| Fixed on the `bugfix` branch | 25 |
+| Reproduced, deferred | 6 |
+| Does not reproduce on upstream main | 4 |
+| Not a bug (by design or by the spec) | 15 |
+| Ruby API only (no CLI reproduction) | 7 |
+| Spec questions | 21 |
+| Feature requests and improvements | 418 |
+| Documentation | 24 |
+| Questions and support requests | 36 |
+| Duplicates | 5 |
+| Out of scope | 49 |
+
+## Fixed on the `bugfix` branch (25)
+
+- [#4877](https://github.com/asciidoctor/asciidoctor/issues/4877) Section title made only of punctuation gets an empty id — empty id for a punctuation-only section title
+- [#4875](https://github.com/asciidoctor/asciidoctor/issues/4875) manpage backend does not restore fonts correctly after nested inline formatting — man page fonts after nested formatting
+- [#4500](https://github.com/asciidoctor/asciidoctor/issues/4500) Table column alignment error — cell after a colspan takes the wrong column spec
+- [#4419](https://github.com/asciidoctor/asciidoctor/issues/4419) `:imagesdir:` does not like multiple slashes — `X//..` in a path resolves to `X`
+- [#4209](https://github.com/asciidoctor/asciidoctor/issues/4209) Honor overrides of all computed author attributes when author is defined using attribute — assigned author names lost to computed ones
+- [#4076](https://github.com/asciidoctor/asciidoctor/issues/4076) It's possible to generate interleaved nodes for docbook5 output — superscript around a link with `^` interleaves markup
+- [#4075](https://github.com/asciidoctor/asciidoctor/issues/4075) It's possible to generate unterminated xml nodes and quotes for docbook5 output — link text with an embedded icon read as attributes
+- [#3946](https://github.com/asciidoctor/asciidoctor/issues/3946) Problem with em dash following a curvy quote — no em dash after a curved quote
+- [#3788](https://github.com/asciidoctor/asciidoctor/issues/3788) Allow closing square bracket to be escaped in inline anchor shorthand — escaped `]` in anchor shorthand reftext
+- [#3633](https://github.com/asciidoctor/asciidoctor/issues/3633) Inline anchors in section titles are not registered in catalog — inline anchors in section titles not cataloged
+- [#3412](https://github.com/asciidoctor/asciidoctor/issues/3412) Tabs are not expanded in literal table cell if tabsize attribute is set on document — tabs in literal table cells not expanded
+- [#3396](https://github.com/asciidoctor/asciidoctor/issues/3396) Role and footnote lead to paragraph not shown — paragraph starting with a role and ending with a macro vanishes
+- [#3349](https://github.com/asciidoctor/asciidoctor/issues/3349) Tables with colspans generate wrong warnings about number of columns — invalid column spec silently drops a column
+- [#3128](https://github.com/asciidoctor/asciidoctor/issues/3128) Asciidoctor adds stray semicolon after greater-than-sign at end of URL template — stray `;` after a bare URL ending in `>`
+- [#2903](https://github.com/asciidoctor/asciidoctor/issues/2903) footnote on heading numbered incorrectly — footnote in a section title numbered out of order
+- [#2889](https://github.com/asciidoctor/asciidoctor/issues/2889) Wrong aligments in DocBook table cells when using multirow cells. — DocBook: wrong alignment under a rowspan
+- [#2862](https://github.com/asciidoctor/asciidoctor/issues/2862) html5 backend does not escape image URI value for use in an HTML attribute. — quote in image target breaks the src attribute
+- [#2661](https://github.com/asciidoctor/asciidoctor/issues/2661) Crafted attribute values can insert arbitrary passthrough content — quote in image attribute escapes into markup
+- [#2648](https://github.com/asciidoctor/asciidoctor/issues/2648) The list in a table cell is not converted correctly — line comment does not separate lists in AsciiDoc cell
+- [#2496](https://github.com/asciidoctor/asciidoctor/issues/2496) Asciidoctor drops line comments inside a verbatim block inside an AsciiDoc table cell — comment-like line dropped from verbatim block in AsciiDoc cell
+- [#2293](https://github.com/asciidoctor/asciidoctor/issues/2293) Attaching to an ancestor list feature doesn't always select correct list — ancestor list continuation attaches to the wrong item
+- [#2032](https://github.com/asciidoctor/asciidoctor/issues/2032) {leveloffset} produces wrong html headings tags — heading elements beyond h6
+- [#1578](https://github.com/asciidoctor/asciidoctor/issues/1578) dash not replaced following formatted text — no em dash after formatted text
+- [#1558](https://github.com/asciidoctor/asciidoctor/issues/1558) Docbook backend applies incorrect column attributes — DocBook: wrong column style after colspan/rowspan
+- [#989](https://github.com/asciidoctor/asciidoctor/issues/989) Incorrect col spec selected when preceding column spans multiple rows — cells beside a rowspan take the wrong column spec
+
+## Reproduced, deferred (6)
+
+- [#3877](https://github.com/asciidoctor/asciidoctor/issues/3877) ifdef reports undefined variable when variable is defined inside a block — reproduced; attribute entries in a delimited block are set after the reader has evaluated its conditionals, so fixing it means changing when preprocessing runs
+- [#3876](https://github.com/asciidoctor/asciidoctor/issues/3876) The # in links and xrefs is rendered as <mark> — reproduced; constrained `#` matches across a URL and an xref because quotes run before macros; needs URLs protected before the quotes pass
+- [#3087](https://github.com/asciidoctor/asciidoctor/issues/3087) Cannot use {counter:id} in bibliography section to auto-number — reproduced; the reference text of a bibliography entry is cataloged without substitutions, but substituting it there would evaluate `{counter:...}` twice (catalog and conversion)
+- [#2128](https://github.com/asciidoctor/asciidoctor/issues/2128) Smart quotes don't work with italic text — reproduced; constrained emphasis and curved quotes block each other at their boundaries (`_"`x`"_`); same family as #1578 but the boundary rule change is wider
+- [#1678](https://github.com/asciidoctor/asciidoctor/issues/1678) Cannot escape anchor id in xref macro — reproduced; xref IDs with `__` are formatted before the xref macro runs; needs xref targets protected before the quotes pass
+- [#1333](https://github.com/asciidoctor/asciidoctor/issues/1333) Block titles should be interpolated consistently — design question (when block titles are interpolated), no single expected behavior
+
+## Does not reproduce on upstream main (4)
+
+- [#2860](https://github.com/asciidoctor/asciidoctor/issues/2860) Single partintro paragraph is parsed incorrectly — single partintro paragraph is a paragraph on main
+- [#2370](https://github.com/asciidoctor/asciidoctor/issues/2370) Unexpected warning on inline anchor — no warning on main
+- [#1725](https://github.com/asciidoctor/asciidoctor/issues/1725) Wrong link rendering — query string kept on main
+- [#1620](https://github.com/asciidoctor/asciidoctor/issues/1620) Permission denied on stylesdir breaks html build — an unreadable or unwritable stylesdir with linkcss and copycss converts without error on main
+
+## Not a bug (by design or by the spec) (15)
+
+- [#4578](https://github.com/asciidoctor/asciidoctor/issues/4578) Manpage lists have too much space between items — list spacing in man pages follows the DocBook stylesheets (style preference)
+- [#4105](https://github.com/asciidoctor/asciidoctor/issues/4105) Callout descriptions are always autonumbered ignoring the explicit numbers — callout list numbers come from position by design, with a warning for mismatched numbers
+- [#3383](https://github.com/asciidoctor/asciidoctor/issues/3383) Captions: excessive end period — caption punctuation is a style preference (configurable)
+- [#3307](https://github.com/asciidoctor/asciidoctor/issues/3307) “special characters” should be allowed for anchors. — ID character set is defined by the spec
+- [#3297](https://github.com/asciidoctor/asciidoctor/issues/3297) Escaping a left brace doesn't behave consistently — `\` only escapes text that would be substituted; `\{}` is not an attribute reference
+- [#2788](https://github.com/asciidoctor/asciidoctor/issues/2788) [#] and [[]] for assigning block ids work differently — `[[...]]` and `[#...]` accept different ID characters (spec question)
+- [#2561](https://github.com/asciidoctor/asciidoctor/issues/2561) Various issues with counters inside variables and inside tables — an attribute entry in a table cell is text in a normal cell and local to the cell in an AsciiDoc cell
+- [#2495](https://github.com/asciidoctor/asciidoctor/issues/2495) Escaping the [ and confusion with roles — a line in brackets is a block attribute line (spec); `[_x_]` is a valid style
+- [#2117](https://github.com/asciidoctor/asciidoctor/issues/2117) IDs should not be allowed to start with a number — changing generated IDs that start with a digit would break existing links; spec question
+- [#1540](https://github.com/asciidoctor/asciidoctor/issues/1540) Xref does not support slash in the id — same as #868
+- [#1471](https://github.com/asciidoctor/asciidoctor/issues/1471) Passthrough backticks are not passthrough for :: input — `::` makes a description list at block level before inline passthroughs apply (spec)
+- [#1448](https://github.com/asciidoctor/asciidoctor/issues/1448) Escaping double colons — same as #1471
+- [#1421](https://github.com/asciidoctor/asciidoctor/issues/1421) A vertical lines (aka bar or pipe) within included content breaks table — includes are resolved before table parsing; a `|` in included content is a cell separator (documented)
+- [#868](https://github.com/asciidoctor/asciidoctor/issues/868) Id with character '/' is not rendered correctly — `/` is not allowed in an ID (spec); the line is text
+- [#759](https://github.com/asciidoctor/asciidoctor/issues/759) Escape character (\) is rendered when it shouldn't be — `\+` is not an escape where `+` is not markup
+
+## Ruby API only (no CLI reproduction) (7)
+
+- [#4072](https://github.com/asciidoctor/asciidoctor/issues/4072) Wrong handling of escaped string attributes in InlineMacroProcessors — Ruby extension API
+- [#3966](https://github.com/asciidoctor/asciidoctor/issues/3966) source_location.lineno in condition is sometimes wrong — source location API (sourcemap) in conditionals
+- [#3631](https://github.com/asciidoctor/asciidoctor/issues/3631) Issue with apostrophe in the doctitle using Asciidoctor.load — Ruby `Asciidoctor.load` encoding
+- [#3350](https://github.com/asciidoctor/asciidoctor/issues/3350) Section attributes are not attached to a (correct) section block — Ruby API (section attributes)
+- [#2615](https://github.com/asciidoctor/asciidoctor/issues/2615) Load/parse a file once but apply several converters to the same AST — Ruby API (reusing an AST)
+- [#2435](https://github.com/asciidoctor/asciidoctor/issues/2435) to_file option isn't honored when using Asciidoctor.load_file + Document#convert — Ruby API (`load_file` + `convert` options)
+- [#1788](https://github.com/asciidoctor/asciidoctor/issues/1788) Are list item levels detected correctly? — AST levels in AsciidoctorJ
+
+## Spec questions (21)
+
+- [#3908](https://github.com/asciidoctor/asciidoctor/issues/3908) Add support for embedding a PDF in HTML
+- [#3866](https://github.com/asciidoctor/asciidoctor/issues/3866) Cannot create reference to section title using additional IDs
+- [#3854](https://github.com/asciidoctor/asciidoctor/issues/3854) Add support for mailto scheme on bare email address
+- [#3603](https://github.com/asciidoctor/asciidoctor/issues/3603) Create a subdocument (subdoc) macro
+- [#3488](https://github.com/asciidoctor/asciidoctor/issues/3488) Make replacements substitutions less backend specific
+- [#3358](https://github.com/asciidoctor/asciidoctor/issues/3358) Arbitrary header levels like h7, h8, h9, etcl that show on the ToC
+- [#3309](https://github.com/asciidoctor/asciidoctor/issues/3309) Leading em-dashes break hardbreaks option
+- [#3241](https://github.com/asciidoctor/asciidoctor/issues/3241) Level rather than level-offset
+- [#2639](https://github.com/asciidoctor/asciidoctor/issues/2639) Sequential blank lines between lists should separate lists
+- [#2630](https://github.com/asciidoctor/asciidoctor/issues/2630) pass macro not parsed in substituted attribute value
+- [#2483](https://github.com/asciidoctor/asciidoctor/issues/2483) asciidoc/unidoc format version
+- [#1841](https://github.com/asciidoctor/asciidoctor/issues/1841) allow hanging indent for paragraphs added to list item?
+- [#1786](https://github.com/asciidoctor/asciidoctor/issues/1786) Multiple conditions for ifeval
+- [#1532](https://github.com/asciidoctor/asciidoctor/issues/1532) Don't allow backend to be set from document header
+- [#1488](https://github.com/asciidoctor/asciidoctor/issues/1488) glossary term syntax and automatic generation of glossary
+- [#1397](https://github.com/asciidoctor/asciidoctor/issues/1397) Less Cryptic Table Syntax
+- [#1211](https://github.com/asciidoctor/asciidoctor/issues/1211) Is there a way to set margins to be quite wide?
+- [#1070](https://github.com/asciidoctor/asciidoctor/issues/1070) Multiline glossary terms?
+- [#1066](https://github.com/asciidoctor/asciidoctor/issues/1066) Using double-colon in asciidoctor inside quotes
+- [#823](https://github.com/asciidoctor/asciidoctor/issues/823) Output Content Type of Extensions to AsciiDoc
+- [#418](https://github.com/asciidoctor/asciidoctor/issues/418) Emit deprecation warning if two-line section titles are used
+
+## Feature requests and improvements (418)
+
+Requests for new behavior: candidates for asciidart features later, not bugs.
+
+- [#4870](https://github.com/asciidoctor/asciidoctor/issues/4870) Images with link attributes do not generate links in DocBook
+- [#4868](https://github.com/asciidoctor/asciidoctor/issues/4868) Add a stable "include unresolved" role to the unresolved include directive placeholder
+- [#4866](https://github.com/asciidoctor/asciidoctor/issues/4866) Support exporting the keywords document attribute as DocBook <keywordset>
+- [#4863](https://github.com/asciidoctor/asciidoctor/issues/4863) Integrate "AsciiDoc Recommended Practices" into docs.asciidoctor.org
+- [#4853](https://github.com/asciidoctor/asciidoctor/issues/4853) Make Admonitions configurable, collapsible and referrable
+- [#4846](https://github.com/asciidoctor/asciidoctor/issues/4846) Refer to figure number in xref
+- [#4844](https://github.com/asciidoctor/asciidoctor/issues/4844) Proposal: Remove the whitespace after the inline list marker in checklists
+- [#4839](https://github.com/asciidoctor/asciidoctor/issues/4839) Add multirow table header support
+- [#4837](https://github.com/asciidoctor/asciidoctor/issues/4837) Propogate roles on doctitle to h1 tag in HTML output
+- [#4820](https://github.com/asciidoctor/asciidoctor/issues/4820) Add title attribute to admonition image icons
+- [#4817](https://github.com/asciidoctor/asciidoctor/issues/4817) Attribute for collapsible blocks localization
+- [#4791](https://github.com/asciidoctor/asciidoctor/issues/4791) Add option to log to jsonl format
+- [#4788](https://github.com/asciidoctor/asciidoctor/issues/4788) Introduce alias select_by for AbstractBlock#find_by
+- [#4746](https://github.com/asciidoctor/asciidoctor/issues/4746) Add ability for image caption to match width of block image
+- [#4695](https://github.com/asciidoctor/asciidoctor/issues/4695) Don't set default alignment attributes of table cell
+- [#4688](https://github.com/asciidoctor/asciidoctor/issues/4688) Add Accessibility Attributes to btn: and menu: Macros
+- [#4660](https://github.com/asciidoctor/asciidoctor/issues/4660) Bibliography reference anchor should span the entry number/reftext in HTML output
+- [#4637](https://github.com/asciidoctor/asciidoctor/issues/4637) Add manvoldir attribute to set base directory for .so directive in man pages
+- [#4623](https://github.com/asciidoctor/asciidoctor/issues/4623) Print the complete file path when reporting warnings
+- [#4617](https://github.com/asciidoctor/asciidoctor/issues/4617) support for peertube in the video macro
+- [#4613](https://github.com/asciidoctor/asciidoctor/issues/4613) Use .TP macro for description lists in man converter
+- [#4612](https://github.com/asciidoctor/asciidoctor/issues/4612) HTML output should include title-logo-image
+- [#4605](https://github.com/asciidoctor/asciidoctor/issues/4605) Appendix sections should obey sectnums attribute
+- [#4593](https://github.com/asciidoctor/asciidoctor/issues/4593) Add styling for table header and striping in docbook converter
+- [#4548](https://github.com/asciidoctor/asciidoctor/issues/4548) Put reference in its own element (bibliography)
+- [#4546](https://github.com/asciidoctor/asciidoctor/issues/4546) AsciiDoc titles in the semantic HTML 5 converter
+- [#4522](https://github.com/asciidoctor/asciidoctor/issues/4522) Introduce a STEM adapter facility
+- [#4517](https://github.com/asciidoctor/asciidoctor/issues/4517) Conform styling of footnote
+- [#4499](https://github.com/asciidoctor/asciidoctor/issues/4499) Add class in HTML output to each list item that has a checkbox in a checklist
+- [#4392](https://github.com/asciidoctor/asciidoctor/issues/4392) Implement section-signifier similiar to {chapter,part}-signifier
+- [#4386](https://github.com/asciidoctor/asciidoctor/issues/4386) Allow access to the @title AbstractBlock variable without its implicit substitutions.
+- [#4383](https://github.com/asciidoctor/asciidoctor/issues/4383) Allow localization for footnote tooltip
+- [#4380](https://github.com/asciidoctor/asciidoctor/issues/4380) Allow AsciiDoc table cell to be accessed from inner document
+- [#4366](https://github.com/asciidoctor/asciidoctor/issues/4366) Metadata: license
+- [#4349](https://github.com/asciidoctor/asciidoctor/issues/4349) Establish CSS principles to avoid conflicts
+- [#4340](https://github.com/asciidoctor/asciidoctor/issues/4340) Support for multiple indices
+- [#4308](https://github.com/asciidoctor/asciidoctor/issues/4308) Restrict characters permitted in an attribute list on formatted text
+- [#4295](https://github.com/asciidoctor/asciidoctor/issues/4295) AsciiDoc table cells do not allow footnote cross-referencing
+- [#4291](https://github.com/asciidoctor/asciidoctor/issues/4291) tag choice for admonition blocks
+- [#4273](https://github.com/asciidoctor/asciidoctor/issues/4273) Support next-gen image formats like webp etc.
+- [#4246](https://github.com/asciidoctor/asciidoctor/issues/4246) ifeval is not like AsciiDoc.py
+- [#4216](https://github.com/asciidoctor/asciidoctor/issues/4216) Option to hide cross-references with missing target
+- [#4215](https://github.com/asciidoctor/asciidoctor/issues/4215) Allow custom inline attributes
+- [#4211](https://github.com/asciidoctor/asciidoctor/issues/4211) Map align attribute on table to align roles
+- [#4204](https://github.com/asciidoctor/asciidoctor/issues/4204) Use value of image-link document attribute as a default value for the link attribute on images
+- [#4203](https://github.com/asciidoctor/asciidoctor/issues/4203) Honor caret shorthand in value of link attribute on image macros
+- [#4155](https://github.com/asciidoctor/asciidoctor/issues/4155) Add option to configure log level for missing attributes
+- [#4153](https://github.com/asciidoctor/asciidoctor/issues/4153) Pass linenums flag and start value to syntax highlighter that runs on client
+- [#4149](https://github.com/asciidoctor/asciidoctor/issues/4149) Query for dependencies
+- [#4142](https://github.com/asciidoctor/asciidoctor/issues/4142) Short title for TOC
+- [#4138](https://github.com/asciidoctor/asciidoctor/issues/4138) Add support for horizontal style on dlist to man page converter
+- [#4104](https://github.com/asciidoctor/asciidoctor/issues/4104) Transfer known attributes defined on xref macro to HTML output
+- [#4089](https://github.com/asciidoctor/asciidoctor/issues/4089) Auto-generate ID for document if sectids is set
+- [#4071](https://github.com/asciidoctor/asciidoctor/issues/4071) Use semantic constructs for listing blocks
+- [#4057](https://github.com/asciidoctor/asciidoctor/issues/4057) Remove newline characters around paragraph content in new HTML converter
+- [#4031](https://github.com/asciidoctor/asciidoctor/issues/4031) Indicate when an interdocument xref is converted into an internal xref
+- [#4028](https://github.com/asciidoctor/asciidoctor/issues/4028) Configure revision style in the new modern HTML converter
+- [#4027](https://github.com/asciidoctor/asciidoctor/issues/4027) Configure revision table location and title in the new modern HTML converter
+- [#4011](https://github.com/asciidoctor/asciidoctor/issues/4011) Revisit the interpretation of notitle in the new modern HTML converter
+- [#3985](https://github.com/asciidoctor/asciidoctor/issues/3985) Allow include tag to be flagged as optional
+- [#3981](https://github.com/asciidoctor/asciidoctor/issues/3981) Use semantic constructs for sections
+- [#3973](https://github.com/asciidoctor/asciidoctor/issues/3973) Use a rspec based test suite for the upcoming modern HTML converter
+- [#3972](https://github.com/asciidoctor/asciidoctor/issues/3972) Create a transition plan for the upcoming modern HTML converter
+- [#3971](https://github.com/asciidoctor/asciidoctor/issues/3971) Define the backend name for the upcoming modern HTML converter
+- [#3970](https://github.com/asciidoctor/asciidoctor/issues/3970) Use semantic constructs for paragraphs
+- [#3967](https://github.com/asciidoctor/asciidoctor/issues/3967) Use semantic constructs for the author(s) and revision
+- [#3961](https://github.com/asciidoctor/asciidoctor/issues/3961) Add lazy load attribute for images
+- [#3945](https://github.com/asciidoctor/asciidoctor/issues/3945) Difficulty putting a footnote after a curvy quote
+- [#3943](https://github.com/asciidoctor/asciidoctor/issues/3943) Checkboxes not recognized in description list
+- [#3937](https://github.com/asciidoctor/asciidoctor/issues/3937) Support `hyphens: manual` for HTML output?
+- [#3936](https://github.com/asciidoctor/asciidoctor/issues/3936) Deprecate the copycss attribute for future removal
+- [#3935](https://github.com/asciidoctor/asciidoctor/issues/3935) Add `disablePictureInPicture` attribute to video `options` for HTML5 output
+- [#3927](https://github.com/asciidoctor/asciidoctor/issues/3927) Structure and visual issue when a block is just part of a sentence.
+- [#3896](https://github.com/asciidoctor/asciidoctor/issues/3896) Keyboard shortcuts should use U+FEFF (Zero Width No-Break Space) before and after the plus sign
+- [#3893](https://github.com/asciidoctor/asciidoctor/issues/3893) Allow footnotes in footnotes
+- [#3891](https://github.com/asciidoctor/asciidoctor/issues/3891) Global attribute for layout of tables
+- [#3885](https://github.com/asciidoctor/asciidoctor/issues/3885) Documents with a parent document should have the option of preprocessing their content
+- [#3882](https://github.com/asciidoctor/asciidoctor/issues/3882) Tags for SEO?
+- [#3865](https://github.com/asciidoctor/asciidoctor/issues/3865) Remove region tags when including line range
+- [#3857](https://github.com/asciidoctor/asciidoctor/issues/3857) An option to disable admonition icons without disabling inline icons
+- [#3856](https://github.com/asciidoctor/asciidoctor/issues/3856) Assign the style property of a special section in the API to match the sectname
+- [#3855](https://github.com/asciidoctor/asciidoctor/issues/3855) Make the dash used in quote attribution a pseudo-element
+- [#3822](https://github.com/asciidoctor/asciidoctor/issues/3822) create_section does not register the ref
+- [#3791](https://github.com/asciidoctor/asciidoctor/issues/3791) Add support for block image target as data URI
+- [#3770](https://github.com/asciidoctor/asciidoctor/issues/3770) Autonumbering callouts with modified start number
+- [#3752](https://github.com/asciidoctor/asciidoctor/issues/3752) Section numbering part in its own class
+- [#3748](https://github.com/asciidoctor/asciidoctor/issues/3748) Support for in-document SVG content
+- [#3743](https://github.com/asciidoctor/asciidoctor/issues/3743) video block should set the height automatically if the width is set
+- [#3742](https://github.com/asciidoctor/asciidoctor/issues/3742) xref should extract the title from the refered document.
+- [#3736](https://github.com/asciidoctor/asciidoctor/issues/3736) xrefstyle is ignored for docbook backend
+- [#3728](https://github.com/asciidoctor/asciidoctor/issues/3728) Syntax highlighter: add 'integrity' and 'crossorigin' attributes to <script> tags
+- [#3709](https://github.com/asciidoctor/asciidoctor/issues/3709) Honor value of version-label attribute instead of lowercasing it
+- [#3708](https://github.com/asciidoctor/asciidoctor/issues/3708) Attribute declarations should support quoted text
+- [#3702](https://github.com/asciidoctor/asciidoctor/issues/3702) Configure Format of Section Numbers
+- [#3698](https://github.com/asciidoctor/asciidoctor/issues/3698) It should be possible to set the contents of an image (bytes) on an Image node
+- [#3694](https://github.com/asciidoctor/asciidoctor/issues/3694) Add support for set attribute to icon macro
+- [#3684](https://github.com/asciidoctor/asciidoctor/issues/3684) Add a macro for referencing other manpages
+- [#3680](https://github.com/asciidoctor/asciidoctor/issues/3680) Allow setting autowidth columns as default (i.e. use autowidth if no width is specified)
+- [#3679](https://github.com/asciidoctor/asciidoctor/issues/3679) Maybe xref should support the feature which is opened on the blank window.
+- [#3669](https://github.com/asciidoctor/asciidoctor/issues/3669) Introduce a method in the built-in HTML 5 converter to generate the footnotes
+- [#3668](https://github.com/asciidoctor/asciidoctor/issues/3668) Introduce a method in the built-in HTML 5 converter to generate the footer
+- [#3667](https://github.com/asciidoctor/asciidoctor/issues/3667) Introduce method(s) in the built-in HTML 5 converter to generate author(s) and revision infos
+- [#3657](https://github.com/asciidoctor/asciidoctor/issues/3657) media_uri should return a data URI as-is without doing any additional processing
+- [#3632](https://github.com/asciidoctor/asciidoctor/issues/3632) Smart customization of the text in a cross reference
+- [#3607](https://github.com/asciidoctor/asciidoctor/issues/3607) Convert video node to videoobject in the built-in DocBook converter
+- [#3601](https://github.com/asciidoctor/asciidoctor/issues/3601) Support general per-element lang option
+- [#3590](https://github.com/asciidoctor/asciidoctor/issues/3590) Emit warning (including path and name) if docinfo file is not found
+- [#3588](https://github.com/asciidoctor/asciidoctor/issues/3588) Output information for tooling/code editors to manifest file
+- [#3587](https://github.com/asciidoctor/asciidoctor/issues/3587) API to lock document attributes
+- [#3581](https://github.com/asciidoctor/asciidoctor/issues/3581) Pass highlight lines to syntax highlighter that runs on client
+- [#3580](https://github.com/asciidoctor/asciidoctor/issues/3580) Scale image relative to original size, with HTML5?
+- [#3576](https://github.com/asciidoctor/asciidoctor/issues/3576) Show author's name as a link and add social media icon for HTML output
+- [#3573](https://github.com/asciidoctor/asciidoctor/issues/3573) Some log messages lack vital source information.
+- [#3563](https://github.com/asciidoctor/asciidoctor/issues/3563) secure behavior overrides docfile and docdir attributes even if set from API
+- [#3562](https://github.com/asciidoctor/asciidoctor/issues/3562) Consider making built-in block and inline macro handling replaceable
+- [#3534](https://github.com/asciidoctor/asciidoctor/issues/3534) Allow stripping trailing characters from included files
+- [#3514](https://github.com/asciidoctor/asciidoctor/issues/3514) Lists with legal-style numbering
+- [#3498](https://github.com/asciidoctor/asciidoctor/issues/3498) Allow Custom :section-refsig: without Trailing Space
+- [#3486](https://github.com/asciidoctor/asciidoctor/issues/3486) Unable to use separated input and output directories with safe mode
+- [#3479](https://github.com/asciidoctor/asciidoctor/issues/3479) HTML backend: make section numbers stylable
+- [#3468](https://github.com/asciidoctor/asciidoctor/issues/3468) Add max-includes-number parameter
+- [#3467](https://github.com/asciidoctor/asciidoctor/issues/3467) Add Word-Joiner to Prevent Wrapping at Footnote Marker
+- [#3449](https://github.com/asciidoctor/asciidoctor/issues/3449) Upgrade to MathJax 3
+- [#3414](https://github.com/asciidoctor/asciidoctor/issues/3414) Add option to include full path to file in application messages
+- [#3401](https://github.com/asciidoctor/asciidoctor/issues/3401) Convert monospace into code not literal
+- [#3359](https://github.com/asciidoctor/asciidoctor/issues/3359) Support callouts for images (callout list without callout refs)
+- [#3355](https://github.com/asciidoctor/asciidoctor/issues/3355) Support different default xrefstyle for different types of caption objects like sections vs images
+- [#3354](https://github.com/asciidoctor/asciidoctor/issues/3354) Show stem latexmath mathematics captions like figure with an Equation 1: prefix, below equation, and with asciidoctor owned numbering
+- [#3351](https://github.com/asciidoctor/asciidoctor/issues/3351) tags in nested includes
+- [#3345](https://github.com/asciidoctor/asciidoctor/issues/3345) Add on hover anchor link icons to images and tables that have IDs like for section headers
+- [#3337](https://github.com/asciidoctor/asciidoctor/issues/3337) Pass role on cells and rows in HTML converter
+- [#3335](https://github.com/asciidoctor/asciidoctor/issues/3335) Origin of halign and valign attribute values on table cell should be tracked
+- [#3333](https://github.com/asciidoctor/asciidoctor/issues/3333) Add option to drop callouts numbers from verbatim block
+- [#3311](https://github.com/asciidoctor/asciidoctor/issues/3311) Customizable Numerals in Section Numbering
+- [#3299](https://github.com/asciidoctor/asciidoctor/issues/3299) Only consume line comment guard in front of conum in source blocks
+- [#3294](https://github.com/asciidoctor/asciidoctor/issues/3294) A sectanchors-like feature for any kind of anchors.
+- [#3293](https://github.com/asciidoctor/asciidoctor/issues/3293) Allow block attributes to be defined on a table cell
+- [#3267](https://github.com/asciidoctor/asciidoctor/issues/3267) Allow inner blank lines in document header
+- [#3263](https://github.com/asciidoctor/asciidoctor/issues/3263) Make custom inline macro multiline by default
+- [#3253](https://github.com/asciidoctor/asciidoctor/issues/3253) Cross references to items in ordered lists should display the number or label of the item
+- [#3250](https://github.com/asciidoctor/asciidoctor/issues/3250) Output tabstyle in docbook tables
+- [#3191](https://github.com/asciidoctor/asciidoctor/issues/3191) Drop _block suffix from create helper methods on base extension processor class
+- [#3183](https://github.com/asciidoctor/asciidoctor/issues/3183) Allow character references to be used in author name in implicit author line
+- [#3148](https://github.com/asciidoctor/asciidoctor/issues/3148) Allows setting ID prefix namespace scope blocks under any header with automatic resolution from inside the header
+- [#3147](https://github.com/asciidoctor/asciidoctor/issues/3147) Warn on automatically generated ID duplicates
+- [#3135](https://github.com/asciidoctor/asciidoctor/issues/3135) Add a variation of AbstractBlock#find_by that returns the first result
+- [#3127](https://github.com/asciidoctor/asciidoctor/issues/3127) Set rownumber attribute on table cell
+- [#3116](https://github.com/asciidoctor/asciidoctor/issues/3116) Always allow delegate converter to be specified using primary:delegate backend syntax
+- [#3080](https://github.com/asciidoctor/asciidoctor/issues/3080) Honor relative column widths on table even when autowidth option is set
+- [#3069](https://github.com/asciidoctor/asciidoctor/issues/3069) Improvements regarding attributes syntax
+- [#3042](https://github.com/asciidoctor/asciidoctor/issues/3042) Idea to treat blank-line-delimited lists as separate ones, instead of joining
+- [#3037](https://github.com/asciidoctor/asciidoctor/issues/3037) Inline callouts
+- [#2991](https://github.com/asciidoctor/asciidoctor/issues/2991) Auto message in callouts
+- [#2980](https://github.com/asciidoctor/asciidoctor/issues/2980) xref on relative links should be added into the catalog
+- [#2979](https://github.com/asciidoctor/asciidoctor/issues/2979) ListItem (dlist) doesn't quack like an AbstractBlock
+- [#2975](https://github.com/asciidoctor/asciidoctor/issues/2975) Add source file information to warnings
+- [#2949](https://github.com/asciidoctor/asciidoctor/issues/2949) Allow list to be escaped
+- [#2942](https://github.com/asciidoctor/asciidoctor/issues/2942) Allow author initials to be specified explicitly in implicit author line
+- [#2939](https://github.com/asciidoctor/asciidoctor/issues/2939) As a writer, I want to add metadata about the authors
+- [#2899](https://github.com/asciidoctor/asciidoctor/issues/2899) Introduce factory method for creating a Section node
+- [#2892](https://github.com/asciidoctor/asciidoctor/issues/2892) Validator discussion
+- [#2876](https://github.com/asciidoctor/asciidoctor/issues/2876) Split --quiet flag into --quiet and --silent
+- [#2853](https://github.com/asciidoctor/asciidoctor/issues/2853) Numbers formatting, possibly based on document/section language
+- [#2843](https://github.com/asciidoctor/asciidoctor/issues/2843) Add a detail object to Reader that can be set using the Reader#push_include method
+- [#2842](https://github.com/asciidoctor/asciidoctor/issues/2842) Add option to pass a list of reserved IDs to processor
+- [#2833](https://github.com/asciidoctor/asciidoctor/issues/2833) Allow window blank hint (caret) to be placed at end of URL in link macro
+- [#2825](https://github.com/asciidoctor/asciidoctor/issues/2825) Allow the TemplateConverter to use templates defined as Lambda/Closure
+- [#2824](https://github.com/asciidoctor/asciidoctor/issues/2824) Provide an API to replace the default TemplateConverter
+- [#2811](https://github.com/asciidoctor/asciidoctor/issues/2811) Smart quotes when sibling characters are related to an Asciidoc expression
+- [#2801](https://github.com/asciidoctor/asciidoctor/issues/2801) Add support for patching the include processing without having to reimplement it entirely
+- [#2789](https://github.com/asciidoctor/asciidoctor/issues/2789) missing dlist description swallows following section title (was: missing qanda answer breaks leveloffset with no warning)
+- [#2782](https://github.com/asciidoctor/asciidoctor/issues/2782) Unify invisible callout braces
+- [#2755](https://github.com/asciidoctor/asciidoctor/issues/2755) "Component based" block extension
+- [#2749](https://github.com/asciidoctor/asciidoctor/issues/2749) Distinguish subtitle from primary level-0 title in html5 output
+- [#2736](https://github.com/asciidoctor/asciidoctor/issues/2736) Add a small § link on example titles
+- [#2722](https://github.com/asciidoctor/asciidoctor/issues/2722) Warn about broken internal references when verbose mode is not enabled
+- [#2721](https://github.com/asciidoctor/asciidoctor/issues/2721) Promote primary anchor on list items and table cells to ID of node
+- [#2717](https://github.com/asciidoctor/asciidoctor/issues/2717) Automatically add anchors to description list terms (if specified)
+- [#2716](https://github.com/asciidoctor/asciidoctor/issues/2716) Allow attributes to be defined on a list item in an ordered or unordered list
+- [#2695](https://github.com/asciidoctor/asciidoctor/issues/2695) Add TODO comment style
+- [#2662](https://github.com/asciidoctor/asciidoctor/issues/2662) Support for multiple cross references with only one label
+- [#2657](https://github.com/asciidoctor/asciidoctor/issues/2657) Store document errors and warnings on the document itself
+- [#2617](https://github.com/asciidoctor/asciidoctor/issues/2617) Wish for semantic markup for writing man pages
+- [#2594](https://github.com/asciidoctor/asciidoctor/issues/2594) Don't escape character references in attribute value
+- [#2592](https://github.com/asciidoctor/asciidoctor/issues/2592) Allow value of base_dir option (or docdir) to be a URI
+- [#2537](https://github.com/asciidoctor/asciidoctor/issues/2537) Refer to other callouts in callout list: Same rendering
+- [#2512](https://github.com/asciidoctor/asciidoctor/issues/2512) embedding source file name in metadata
+- [#2500](https://github.com/asciidoctor/asciidoctor/issues/2500) Inter-document cross references section title resolution implementation status.
+- [#2472](https://github.com/asciidoctor/asciidoctor/issues/2472) Cross-references for images
+- [#2459](https://github.com/asciidoctor/asciidoctor/issues/2459) Drop open block enclosure in HTML output if open block is anonymous (no ID or roles are set)
+- [#2422](https://github.com/asciidoctor/asciidoctor/issues/2422) Allow preprocessor to run after document header is parsed
+- [#2408](https://github.com/asciidoctor/asciidoctor/issues/2408) Include author, date, and revision info in embedded html5 output
+- [#2383](https://github.com/asciidoctor/asciidoctor/issues/2383) As a Ruby developer (using the Ruby API), I want to add an extension to a group on an existing Registry
+- [#2372](https://github.com/asciidoctor/asciidoctor/issues/2372) Consider ignoring attribute reference preceded by $ or #
+- [#2368](https://github.com/asciidoctor/asciidoctor/issues/2368) Respect the order of tags in include directive
+- [#2360](https://github.com/asciidoctor/asciidoctor/issues/2360) Add substring resolution on tagged includes
+- [#2352](https://github.com/asciidoctor/asciidoctor/issues/2352) Introduce a new type of AsciiDoc table cell
+- [#2337](https://github.com/asciidoctor/asciidoctor/issues/2337) disabling ligatures when not using setext headers?
+- [#2291](https://github.com/asciidoctor/asciidoctor/issues/2291) Add support for relative numbering on numbered blocks (figure, example, etc)
+- [#2280](https://github.com/asciidoctor/asciidoctor/issues/2280) Always add data-value attribute to callout number in HTML output
+- [#2233](https://github.com/asciidoctor/asciidoctor/issues/2233) Store line number information with the line itself to make line number tracking more robust
+- [#2226](https://github.com/asciidoctor/asciidoctor/issues/2226) Add method for importing a node from another document
+- [#2225](https://github.com/asciidoctor/asciidoctor/issues/2225) Built-in attributes :lsquo, :rsquo, :ldquo, :rdquo are not used in HTML5 converter.
+- [#2212](https://github.com/asciidoctor/asciidoctor/issues/2212) Add support for a custom formatting string in the xrefstyle attribute
+- [#2156](https://github.com/asciidoctor/asciidoctor/issues/2156) Add plus minus attribute substitution
+- [#2154](https://github.com/asciidoctor/asciidoctor/issues/2154) Add method for registering additional extension groups with a standalone registry
+- [#2130](https://github.com/asciidoctor/asciidoctor/issues/2130) Support global variables file that's active in the header
+- [#2126](https://github.com/asciidoctor/asciidoctor/issues/2126) Support indexterm zone attribute in docbook5
+- [#2121](https://github.com/asciidoctor/asciidoctor/issues/2121) Add option to IncludeProcessor to control whether attributes are parsed
+- [#2101](https://github.com/asciidoctor/asciidoctor/issues/2101) including sub columns of a csv  file in a table
+- [#2099](https://github.com/asciidoctor/asciidoctor/issues/2099) Add support for width attribute on blocks
+- [#2078](https://github.com/asciidoctor/asciidoctor/issues/2078) Support for counter using Roman numerals
+- [#2077](https://github.com/asciidoctor/asciidoctor/issues/2077) Support for inline conditionals
+- [#2048](https://github.com/asciidoctor/asciidoctor/issues/2048) Support for index ranges and index terms in sections
+- [#2040](https://github.com/asciidoctor/asciidoctor/issues/2040) Allow subs attribute to be specified on outline lists
+- [#2025](https://github.com/asciidoctor/asciidoctor/issues/2025) Add support for section links will full hierarchy
+- [#2021](https://github.com/asciidoctor/asciidoctor/issues/2021) Enable control over substitutions for certain block types globally
+- [#2011](https://github.com/asciidoctor/asciidoctor/issues/2011) Allow anchor to be self-referencing
+- [#1998](https://github.com/asciidoctor/asciidoctor/issues/1998) Automatically add discrete style to headings inside blocks
+- [#1997](https://github.com/asciidoctor/asciidoctor/issues/1997) Add attribute to turn on floating anchors for discrete headings
+- [#1994](https://github.com/asciidoctor/asciidoctor/issues/1994) Influence the *-caption separator.
+- [#1993](https://github.com/asciidoctor/asciidoctor/issues/1993) Influence Section Numbering format
+- [#1985](https://github.com/asciidoctor/asciidoctor/issues/1985) Allow different extensions to be mapped to the same block name, but different contexts
+- [#1963](https://github.com/asciidoctor/asciidoctor/issues/1963) Add force flag to allow output file to override input file
+- [#1959](https://github.com/asciidoctor/asciidoctor/issues/1959) Add support for regular expression preprocessing
+- [#1931](https://github.com/asciidoctor/asciidoctor/issues/1931) If address field in author line starts with https?://, set dedicated attribute
+- [#1903](https://github.com/asciidoctor/asciidoctor/issues/1903) relative links do not work when including the file
+- [#1894](https://github.com/asciidoctor/asciidoctor/issues/1894) Specifying the dimensions of images by other means than pixels or % (for html output)
+- [#1878](https://github.com/asciidoctor/asciidoctor/issues/1878) Problems with docbook output for bibliography
+- [#1877](https://github.com/asciidoctor/asciidoctor/issues/1877) audio and video blocks are using imagesdir, but should have a dedicated attribute
+- [#1866](https://github.com/asciidoctor/asciidoctor/issues/1866) when included in the same wrapper files, inter-doc links not converted to intra-doc links in some cases
+- [#1865](https://github.com/asciidoctor/asciidoctor/issues/1865) conflicting anchor names and Intra/Inter-doc links between multiple included adoc files are not rectified in final document
+- [#1860](https://github.com/asciidoctor/asciidoctor/issues/1860) Multiple RevisionInfo entries are processed as content
+- [#1847](https://github.com/asciidoctor/asciidoctor/issues/1847) Cursor should expose number of lines skipped
+- [#1796](https://github.com/asciidoctor/asciidoctor/issues/1796) Accessing source_location in BlockProcessor
+- [#1781](https://github.com/asciidoctor/asciidoctor/issues/1781) Add support for download attribute to link macro
+- [#1768](https://github.com/asciidoctor/asciidoctor/issues/1768) Implement label in the docbook backend
+- [#1737](https://github.com/asciidoctor/asciidoctor/issues/1737) Create a public API to remove an attribute from `attributes` and `attribute_overrides`
+- [#1735](https://github.com/asciidoctor/asciidoctor/issues/1735) Just a feature suggestion for KaTeX
+- [#1713](https://github.com/asciidoctor/asciidoctor/issues/1713) Add wrapper around HTML tables to make them responsive
+- [#1705](https://github.com/asciidoctor/asciidoctor/issues/1705) Placement of footnotes in tables
+- [#1703](https://github.com/asciidoctor/asciidoctor/issues/1703) Only certain HTML entities are handled by the manpage converter
+- [#1693](https://github.com/asciidoctor/asciidoctor/issues/1693) Support semantic quotation marks
+- [#1690](https://github.com/asciidoctor/asciidoctor/issues/1690) Support for soundcloud
+- [#1688](https://github.com/asciidoctor/asciidoctor/issues/1688) include directive should be able to remove the first part of each included line
+- [#1687](https://github.com/asciidoctor/asciidoctor/issues/1687) Multi-row table headings
+- [#1681](https://github.com/asciidoctor/asciidoctor/issues/1681) Block comments do not work inside a table
+- [#1670](https://github.com/asciidoctor/asciidoctor/issues/1670) Localization for curved quotes
+- [#1664](https://github.com/asciidoctor/asciidoctor/issues/1664) Using semantic role names instead of colors in default stylesheet
+- [#1658](https://github.com/asciidoctor/asciidoctor/issues/1658) Support internationalization and localisation
+- [#1616](https://github.com/asciidoctor/asciidoctor/issues/1616) [suggestion] Control leveloffset with include indent level?
+- [#1601](https://github.com/asciidoctor/asciidoctor/issues/1601) Support RTL in output formats (particularly HTML)
+- [#1588](https://github.com/asciidoctor/asciidoctor/issues/1588) Allow for embedding webfonts with base64-encoded data-uri strings
+- [#1579](https://github.com/asciidoctor/asciidoctor/issues/1579) Attribution (in quote) conversion in DocBook adds newline after <attribution> tag
+- [#1575](https://github.com/asciidoctor/asciidoctor/issues/1575) Asciidoctor core needs an official API to access document level attributes
+- [#1570](https://github.com/asciidoctor/asciidoctor/issues/1570) Consolidate read methods in AbstractNode
+- [#1568](https://github.com/asciidoctor/asciidoctor/issues/1568) 1.6.0 Additional interface properties for converters
+- [#1560](https://github.com/asciidoctor/asciidoctor/issues/1560) Binding between AST block and output (DOM)
+- [#1554](https://github.com/asciidoctor/asciidoctor/issues/1554) Support for <=> and <->
+- [#1541](https://github.com/asciidoctor/asciidoctor/issues/1541) Allow linenum to pull actual line numbers from code
+- [#1539](https://github.com/asciidoctor/asciidoctor/issues/1539) Add label inline macro
+- [#1533](https://github.com/asciidoctor/asciidoctor/issues/1533) Convert footer content before body content
+- [#1514](https://github.com/asciidoctor/asciidoctor/issues/1514) `<foo>`'s `<bar>` is a sentance that doesn't render correctly
+- [#1494](https://github.com/asciidoctor/asciidoctor/issues/1494) List of authors for chapters
+- [#1493](https://github.com/asciidoctor/asciidoctor/issues/1493) Subtitles for Chapters
+- [#1477](https://github.com/asciidoctor/asciidoctor/issues/1477) Passing 'caption'  image attribute to docbook backend
+- [#1475](https://github.com/asciidoctor/asciidoctor/issues/1475) Validate Font Awesome parameters for icons
+- [#1473](https://github.com/asciidoctor/asciidoctor/issues/1473) Add support for "listing" column style
+- [#1470](https://github.com/asciidoctor/asciidoctor/issues/1470) Inconsistent citation labels
+- [#1467](https://github.com/asciidoctor/asciidoctor/issues/1467) Add support in CalloutSourceRx for CSS comments
+- [#1463](https://github.com/asciidoctor/asciidoctor/issues/1463) Add multi source support to video macro
+- [#1451](https://github.com/asciidoctor/asciidoctor/issues/1451) Put default image width and height to output
+- [#1441](https://github.com/asciidoctor/asciidoctor/issues/1441) Support Numbering of Code Listings
+- [#1435](https://github.com/asciidoctor/asciidoctor/issues/1435) Letters for the callouts
+- [#1414](https://github.com/asciidoctor/asciidoctor/issues/1414) Enhnace HTML output using "type" attributes so pandoc better understands it and give better conversions
+- [#1381](https://github.com/asciidoctor/asciidoctor/issues/1381) Attributes reference is not replaced in anchors
+- [#1374](https://github.com/asciidoctor/asciidoctor/issues/1374) Automatic reference import and formatting support?
+- [#1371](https://github.com/asciidoctor/asciidoctor/issues/1371) Interpret non-numeric start values for numbered list
+- [#1370](https://github.com/asciidoctor/asciidoctor/issues/1370) Strip formatting from implicit reftext
+- [#1368](https://github.com/asciidoctor/asciidoctor/issues/1368) Is there a way to manually set section and subsection numbering?
+- [#1363](https://github.com/asciidoctor/asciidoctor/issues/1363) Add opposite to {plus}
+- [#1361](https://github.com/asciidoctor/asciidoctor/issues/1361) Promote the bibref to the list item
+- [#1358](https://github.com/asciidoctor/asciidoctor/issues/1358) Attribute modification callback
+- [#1357](https://github.com/asciidoctor/asciidoctor/issues/1357) Inconsistency between handling of block image and inline image
+- [#1351](https://github.com/asciidoctor/asciidoctor/issues/1351) Sanitize doctitle for plain text output
+- [#1345](https://github.com/asciidoctor/asciidoctor/issues/1345) Auto generate anchors in a list
+- [#1344](https://github.com/asciidoctor/asciidoctor/issues/1344) Backslashes are sometimes interpreted literally
+- [#1341](https://github.com/asciidoctor/asciidoctor/issues/1341) multiline attributes
+- [#1340](https://github.com/asciidoctor/asciidoctor/issues/1340) Dynamic Content Creation \| 2 parse document generation (ADoc -> Semi Processed -> Final format)
+- [#1338](https://github.com/asciidoctor/asciidoctor/issues/1338) Improve method for adding colour to table cells
+- [#1328](https://github.com/asciidoctor/asciidoctor/issues/1328) Include content by document structure
+- [#1326](https://github.com/asciidoctor/asciidoctor/issues/1326) Only substitute attributes in the target of a link macro (was: Corner case for link)
+- [#1324](https://github.com/asciidoctor/asciidoctor/issues/1324) Add option "use-utc" to set dates in UTC
+- [#1316](https://github.com/asciidoctor/asciidoctor/issues/1316) Legal Asciidoctor
+- [#1305](https://github.com/asciidoctor/asciidoctor/issues/1305) Pass through data- attributes
+- [#1292](https://github.com/asciidoctor/asciidoctor/issues/1292) Improve backend table API
+- [#1287](https://github.com/asciidoctor/asciidoctor/issues/1287) One figure containing multiple images.
+- [#1274](https://github.com/asciidoctor/asciidoctor/issues/1274) xhtml backend does not escape attributes properly
+- [#1268](https://github.com/asciidoctor/asciidoctor/issues/1268) DocBook 5: olink Improvement requests
+- [#1267](https://github.com/asciidoctor/asciidoctor/issues/1267) DocBook 5: Complete info for olink attribute
+- [#1263](https://github.com/asciidoctor/asciidoctor/issues/1263) Support xref/href in callouts in html backend
+- [#1257](https://github.com/asciidoctor/asciidoctor/issues/1257) Is there a way to turn a quote into a pull quote?
+- [#1244](https://github.com/asciidoctor/asciidoctor/issues/1244) rendered html5 version should not depend on having a internet connection
+- [#1232](https://github.com/asciidoctor/asciidoctor/issues/1232) Add generic data storage to document
+- [#1231](https://github.com/asciidoctor/asciidoctor/issues/1231) Optionally emit XMP metadata
+- [#1221](https://github.com/asciidoctor/asciidoctor/issues/1221) Backport compact list semantics from EPUB3 converter
+- [#1196](https://github.com/asciidoctor/asciidoctor/issues/1196) Allow multiline [qanda] questions
+- [#1174](https://github.com/asciidoctor/asciidoctor/issues/1174) Add support for en dash
+- [#1168](https://github.com/asciidoctor/asciidoctor/issues/1168) Add a qualifier to be applied to atttributes
+- [#1163](https://github.com/asciidoctor/asciidoctor/issues/1163) Included files are not considered when deciding "last update" time
+- [#1149](https://github.com/asciidoctor/asciidoctor/issues/1149) Enable showtitle by default
+- [#1146](https://github.com/asciidoctor/asciidoctor/issues/1146) Make Raw Content available for titles and content-parts
+- [#1141](https://github.com/asciidoctor/asciidoctor/issues/1141) Support alignment of multiple callout numbers in a single line
+- [#1131](https://github.com/asciidoctor/asciidoctor/issues/1131) Scrub strings to eliminate encoding errors
+- [#1124](https://github.com/asciidoctor/asciidoctor/issues/1124) footnotes per chapter
+- [#1116](https://github.com/asciidoctor/asciidoctor/issues/1116) Image height not works in html
+- [#1114](https://github.com/asciidoctor/asciidoctor/issues/1114) Put id directly on glossterm in DocBook output
+- [#1113](https://github.com/asciidoctor/asciidoctor/issues/1113) Set section number manually something like this ---   :section: 7
+- [#1111](https://github.com/asciidoctor/asciidoctor/issues/1111) Provide a mechanism for loading TeX extensions in MathJax
+- [#1104](https://github.com/asciidoctor/asciidoctor/issues/1104) Support JSON/XML traversal in includes
+- [#1092](https://github.com/asciidoctor/asciidoctor/issues/1092) Allow extensions to be enabled / disabled from an attribute
+- [#1086](https://github.com/asciidoctor/asciidoctor/issues/1086) Returning a Section from Block extensions throws an exception
+- [#1084](https://github.com/asciidoctor/asciidoctor/issues/1084) Introduce public API for parsing attributes
+- [#1077](https://github.com/asciidoctor/asciidoctor/issues/1077) Reference callout numbers in prose
+- [#1061](https://github.com/asciidoctor/asciidoctor/issues/1061) Allow the replacements substitution to be controlled or disabled globally
+- [#1043](https://github.com/asciidoctor/asciidoctor/issues/1043) Enable syntax highlighting for inline code
+- [#1030](https://github.com/asciidoctor/asciidoctor/issues/1030) Add formatting markup to mark text as removed
+- [#994](https://github.com/asciidoctor/asciidoctor/issues/994) Support shorthand for link title
+- [#992](https://github.com/asciidoctor/asciidoctor/issues/992) Promote image transform style classes in FontAwesome to default stylesheet
+- [#991](https://github.com/asciidoctor/asciidoctor/issues/991) Add support for trailing line comments
+- [#979](https://github.com/asciidoctor/asciidoctor/issues/979) Option to allow section numbering to be reset in each part
+- [#974](https://github.com/asciidoctor/asciidoctor/issues/974) Support built-in footer text formats
+- [#973](https://github.com/asciidoctor/asciidoctor/issues/973) Add examples to asciidoctor man page
+- [#957](https://github.com/asciidoctor/asciidoctor/issues/957) Allow icons or glyphs to be used for list item bullets
+- [#953](https://github.com/asciidoctor/asciidoctor/issues/953) mchem
+- [#948](https://github.com/asciidoctor/asciidoctor/issues/948) Allow options to be controlled/disabled globally
+- [#912](https://github.com/asciidoctor/asciidoctor/issues/912) Id values assigned explicitly to a block or section are not validated
+- [#901](https://github.com/asciidoctor/asciidoctor/issues/901) Make AsciiDoctor inception friendly (Respect the escape character \ to escape control characters)
+- [#889](https://github.com/asciidoctor/asciidoctor/issues/889) Allow implicit header row to define column formatting
+- [#881](https://github.com/asciidoctor/asciidoctor/issues/881) Add embed macro
+- [#857](https://github.com/asciidoctor/asciidoctor/issues/857) Allow Image Title to be centered with Image
+- [#855](https://github.com/asciidoctor/asciidoctor/issues/855) Add glob expressions to include directive to include multiple files
+- [#848](https://github.com/asciidoctor/asciidoctor/issues/848) :include: should process files that don't have an AsciiDoc extension
+- [#837](https://github.com/asciidoctor/asciidoctor/issues/837) Don't read entire file when parsing header only
+- [#821](https://github.com/asciidoctor/asciidoctor/issues/821) Introduce style for itemized description list
+- [#820](https://github.com/asciidoctor/asciidoctor/issues/820) When outputting to HTML, the images should have a width and height set automatically if the adoc doesn't set it
+- [#803](https://github.com/asciidoctor/asciidoctor/issues/803) Add a fail fast mode
+- [#797](https://github.com/asciidoctor/asciidoctor/issues/797) Create a ctags export
+- [#791](https://github.com/asciidoctor/asciidoctor/issues/791) Allow macro extensions to mark content for passthrough
+- [#788](https://github.com/asciidoctor/asciidoctor/issues/788) Integrate with gettext to weave in translated text
+- [#787](https://github.com/asciidoctor/asciidoctor/issues/787) Support unicode escape sequences
+- [#784](https://github.com/asciidoctor/asciidoctor/issues/784) Allow incremental subs to be inherited
+- [#775](https://github.com/asciidoctor/asciidoctor/issues/775) Allow extensions to specify a SafeMode to run under
+- [#766](https://github.com/asciidoctor/asciidoctor/issues/766) Table of contents should be contextual, and support nesting
+- [#764](https://github.com/asciidoctor/asciidoctor/issues/764) Add CSS class to list items in the toc that are parent nodes
+- [#761](https://github.com/asciidoctor/asciidoctor/issues/761) Introduce attribute for controlling the location of the MathJax script
+- [#758](https://github.com/asciidoctor/asciidoctor/issues/758) Make math expression delimiters configurable
+- [#754](https://github.com/asciidoctor/asciidoctor/issues/754) Add an attribute to control stripping of blank lines around verbatim content
+- [#744](https://github.com/asciidoctor/asciidoctor/issues/744) Reader#push_include should accept a preprocess option
+- [#725](https://github.com/asciidoctor/asciidoctor/issues/725) Introduce an attribute to control substitution of smart quotes
+- [#702](https://github.com/asciidoctor/asciidoctor/issues/702) Rename *-caption attributes to *-label
+- [#700](https://github.com/asciidoctor/asciidoctor/issues/700) HTML5 backend should support copy to clipboard for code
+- [#699](https://github.com/asciidoctor/asciidoctor/issues/699) Add expandable/collapsable TOC
+- [#692](https://github.com/asciidoctor/asciidoctor/issues/692) Encapsulate document attributes in a facade
+- [#689](https://github.com/asciidoctor/asciidoctor/issues/689) Make hyphens and underscores insignificant in attribute names
+- [#686](https://github.com/asciidoctor/asciidoctor/issues/686) Indentation (leading spaces) should not be significant because it's often used for readability
+- [#682](https://github.com/asciidoctor/asciidoctor/issues/682) docdir should be used, if specified, to resolve include files
+- [#671](https://github.com/asciidoctor/asciidoctor/issues/671) Adding different styles on callouts
+- [#662](https://github.com/asciidoctor/asciidoctor/issues/662) Process implicit author & revision lines in included documents
+- [#659](https://github.com/asciidoctor/asciidoctor/issues/659) Use a consistent attribute naming scheme for resolving assets
+- [#650](https://github.com/asciidoctor/asciidoctor/issues/650) no relative paths in subdocuments
+- [#633](https://github.com/asciidoctor/asciidoctor/issues/633) References to assets should remain consistent when processing documents in nested directories
+- [#623](https://github.com/asciidoctor/asciidoctor/issues/623) Use indentation to define continuation instead of literal paragraph
+- [#598](https://github.com/asciidoctor/asciidoctor/issues/598) Support callouts on imported snippets of text in listing blocks
+- [#578](https://github.com/asciidoctor/asciidoctor/issues/578) Add NodeTransformer and NodeVisitor classes to Extensions package
+- [#576](https://github.com/asciidoctor/asciidoctor/issues/576) strategies for generating section ids
+- [#573](https://github.com/asciidoctor/asciidoctor/issues/573) Add partial helper for rendering fragments in a backend template
+- [#571](https://github.com/asciidoctor/asciidoctor/issues/571) Introduce an IncludeResolver extension
+- [#567](https://github.com/asciidoctor/asciidoctor/issues/567) Allow id, role and options shorthand on inline macros
+- [#566](https://github.com/asciidoctor/asciidoctor/issues/566) Add option to asciidoctor cli to specify a config file
+- [#559](https://github.com/asciidoctor/asciidoctor/issues/559) Introduce an improved footnote syntax
+- [#539](https://github.com/asciidoctor/asciidoctor/issues/539) Support alternate font icon sets
+- [#528](https://github.com/asciidoctor/asciidoctor/issues/528) Support dereferencing attribute values using a dot notation
+- [#520](https://github.com/asciidoctor/asciidoctor/issues/520) Special block to create step-by-step tutorials
+- [#514](https://github.com/asciidoctor/asciidoctor/issues/514) Add elsifdef and elsedef conditional directives
+- [#513](https://github.com/asciidoctor/asciidoctor/issues/513) Add license and copyright to footer, if specified
+- [#512](https://github.com/asciidoctor/asciidoctor/issues/512) Include fragments of a file using a match expression
+- [#509](https://github.com/asciidoctor/asciidoctor/issues/509) Add flag attribute to control case sensitivity of attribute resolution
+- [#503](https://github.com/asciidoctor/asciidoctor/issues/503) Add attributes for reusable, adaptive, and social content
+- [#485](https://github.com/asciidoctor/asciidoctor/issues/485) Detect a console command
+- [#484](https://github.com/asciidoctor/asciidoctor/issues/484) Add document option to enable analytics engine
+- [#483](https://github.com/asciidoctor/asciidoctor/issues/483) Add means to disable glob operation on file name in cli
+- [#464](https://github.com/asciidoctor/asciidoctor/issues/464) asciidoctor TOCs unusable for Kindle books
+- [#458](https://github.com/asciidoctor/asciidoctor/issues/458) Add a block that can represent a file structure
+- [#450](https://github.com/asciidoctor/asciidoctor/issues/450) Output index when using HTML5 backend (like a2x)
+- [#401](https://github.com/asciidoctor/asciidoctor/issues/401) Add additional node traversal methods to Asciidoctor::Block
+- [#400](https://github.com/asciidoctor/asciidoctor/issues/400) Add association between listing or literal block and its callout list
+- [#395](https://github.com/asciidoctor/asciidoctor/issues/395) Add option to move attribute entries to bottom of document
+- [#327](https://github.com/asciidoctor/asciidoctor/issues/327) Add new methods for resolving copycss resolution with Java
+- [#324](https://github.com/asciidoctor/asciidoctor/issues/324) Allow pre/post processing hooks for custom backends
+- [#323](https://github.com/asciidoctor/asciidoctor/issues/323) Embed resources referenced in CSS files when linkcss!
+- [#286](https://github.com/asciidoctor/asciidoctor/issues/286) Asciidoctor.convert() should accept an Asciidoctor::Document object
+- [#281](https://github.com/asciidoctor/asciidoctor/issues/281) Refactor link detection to be more robust
+- [#252](https://github.com/asciidoctor/asciidoctor/issues/252) Add syntax for abbreviations or acronyms
+- [#251](https://github.com/asciidoctor/asciidoctor/issues/251) Add footnotes::[] block macro
+- [#246](https://github.com/asciidoctor/asciidoctor/issues/246) Recognize inline social media handles (i.e., mentions)
+- [#242](https://github.com/asciidoctor/asciidoctor/issues/242) Create a new HTML5 converter that maximizes semantic constructs
+- [#230](https://github.com/asciidoctor/asciidoctor/issues/230) Map roles on literal text to select DocBook tags
+- [#224](https://github.com/asciidoctor/asciidoctor/issues/224) Add support for marking a span of deleted text
+- [#205](https://github.com/asciidoctor/asciidoctor/issues/205) Add an attribute to represent a hard line break
+- [#199](https://github.com/asciidoctor/asciidoctor/issues/199) Add support for twitter cards
+- [#192](https://github.com/asciidoctor/asciidoctor/issues/192) Add procedure steps style for labeled lists
+- [#182](https://github.com/asciidoctor/asciidoctor/issues/182) Guard mode for asciidoctor command
+- [#164](https://github.com/asciidoctor/asciidoctor/issues/164) Create A/B integration tests
+- [#89](https://github.com/asciidoctor/asciidoctor/issues/89) Add macro for inserting code snippets into a document
+- [#82](https://github.com/asciidoctor/asciidoctor/issues/82) Add functional tests to validate end-to-end document output
+- [#61](https://github.com/asciidoctor/asciidoctor/issues/61) Parse inline markup during the parse phase (use recursive descent parser)
+- [#60](https://github.com/asciidoctor/asciidoctor/issues/60) Raise events during parsing
+
+## Documentation (24)
+
+- [#4862](https://github.com/asciidoctor/asciidoctor/issues/4862) Integrate "AsciiDoc Writers Guide" into docs.asciidoctor.org
+- [#4680](https://github.com/asciidoctor/asciidoctor/issues/4680) Disable Wiki and migrate any valuable information
+- [#4515](https://github.com/asciidoctor/asciidoctor/issues/4515) Add high-level program flow documentation
+- [#4347](https://github.com/asciidoctor/asciidoctor/issues/4347) Remove the constraint on substitutions not being applied if the first character is an escaped single quote on attribute list enclosed in single quotes
+- [#4189](https://github.com/asciidoctor/asciidoctor/issues/4189) Document the logging facility (i.e., logger)
+- [#4171](https://github.com/asciidoctor/asciidoctor/issues/4171) Provide a style guide for how to create a custom stylesheet for the modern HTML converter
+- [#3947](https://github.com/asciidoctor/asciidoctor/issues/3947) Write a better installation quick start
+- [#3923](https://github.com/asciidoctor/asciidoctor/issues/3923) Add page to the documentation that introduces the role static site generators play in AsciiDoc processing
+- [#3884](https://github.com/asciidoctor/asciidoctor/issues/3884) Create tutorial for extension writers
+- [#3849](https://github.com/asciidoctor/asciidoctor/issues/3849) Document the Compliance module
+- [#3823](https://github.com/asciidoctor/asciidoctor/issues/3823) ast nodes and extension guide like asciidocotorj
+- [#3302](https://github.com/asciidoctor/asciidoctor/issues/3302) Syntax / quick reference man page
+- [#3242](https://github.com/asciidoctor/asciidoctor/issues/3242) Document how to specify a delegate converter for a synthetic backend
+- [#2804](https://github.com/asciidoctor/asciidoctor/issues/2804) Document how to turn off / disable all kind of captions
+- [#2541](https://github.com/asciidoctor/asciidoctor/issues/2541) CSS classes used by asciidoctor are undocumented and hard to integrate with other solutions
+- [#1992](https://github.com/asciidoctor/asciidoctor/issues/1992) Add option to include revnumber in output filename
+- [#1874](https://github.com/asciidoctor/asciidoctor/issues/1874) multiple anchor preceding section headers will be removed from final output
+- [#1476](https://github.com/asciidoctor/asciidoctor/issues/1476) Setting multiple authors via command line or header
+- [#1407](https://github.com/asciidoctor/asciidoctor/issues/1407) Restructure contributing guide
+- [#1270](https://github.com/asciidoctor/asciidoctor/issues/1270) Document how to access the metadata with the API
+- [#1129](https://github.com/asciidoctor/asciidoctor/issues/1129) Internationalize (i18n) strings emitted by built-in converters
+- [#1058](https://github.com/asciidoctor/asciidoctor/issues/1058) Incorrect transformation of math
+- [#1049](https://github.com/asciidoctor/asciidoctor/issues/1049) include from https not works
+- [#734](https://github.com/asciidoctor/asciidoctor/issues/734) Incorrect html rendering with passthrough
+
+## Questions and support requests (36)
+
+- [#3910](https://github.com/asciidoctor/asciidoctor/issues/3910) xref:, {outfilesuffix}, include:: and attributes - no predictable rendering
+- [#3735](https://github.com/asciidoctor/asciidoctor/issues/3735) Generating and including toc from another file
+- [#3627](https://github.com/asciidoctor/asciidoctor/issues/3627) How to span a heading over multiple lines in the file?
+- [#3596](https://github.com/asciidoctor/asciidoctor/issues/3596) cross-document links without anchor become wrong on include
+- [#3593](https://github.com/asciidoctor/asciidoctor/issues/3593) Is it possible to change NOTE layout (Admonition block)
+- [#3564](https://github.com/asciidoctor/asciidoctor/issues/3564) Could AsciiDoctor render the image tag in the block?
+- [#3496](https://github.com/asciidoctor/asciidoctor/issues/3496) HTML5 Template Vulnerable to CSRF Attacks
+- [#3494](https://github.com/asciidoctor/asciidoctor/issues/3494) Is there a comprehensive reference topic on options for source code blocks?
+- [#3477](https://github.com/asciidoctor/asciidoctor/issues/3477) TOC within a section?
+- [#3474](https://github.com/asciidoctor/asciidoctor/issues/3474) Writing extensions with names: stem, asciimath, latexmath etc.
+- [#3458](https://github.com/asciidoctor/asciidoctor/issues/3458) table argument : [%rotate] or [orientation=landscape] not working
+- [#3452](https://github.com/asciidoctor/asciidoctor/issues/3452) Asciidoctor videos cannot loop between specific start and end timelines of the videos
+- [#3451](https://github.com/asciidoctor/asciidoctor/issues/3451) Rendering Greek letters when no math is needed
+- [#3426](https://github.com/asciidoctor/asciidoctor/issues/3426) Include a CSV and treat it with “stem” style
+- [#3402](https://github.com/asciidoctor/asciidoctor/issues/3402) Attribute substitution interferes with source highlighting
+- [#3385](https://github.com/asciidoctor/asciidoctor/issues/3385) Is it possible to override / replace a default block / block macros with an extension without using a tree preprocessor?
+- [#3377](https://github.com/asciidoctor/asciidoctor/issues/3377) Are optional delimiters for stem blocks supposed to work to write math in a single line?
+- [#3368](https://github.com/asciidoctor/asciidoctor/issues/3368) How to Align Footer Section
+- [#3362](https://github.com/asciidoctor/asciidoctor/issues/3362) id assigned to section already in use: _overview
+- [#3353](https://github.com/asciidoctor/asciidoctor/issues/3353) rakelib project
+- [#3276](https://github.com/asciidoctor/asciidoctor/issues/3276) Inter-documents xref, include and sub-folder
+- [#2646](https://github.com/asciidoctor/asciidoctor/issues/2646) Auto-generated IDs vs Automatic Anchors
+- [#2641](https://github.com/asciidoctor/asciidoctor/issues/2641) How to reset counter of Example?
+- [#2608](https://github.com/asciidoctor/asciidoctor/issues/2608) How to get a document name of the included file?
+- [#2542](https://github.com/asciidoctor/asciidoctor/issues/2542) Set the image height attribute, but it does not work
+- [#2536](https://github.com/asciidoctor/asciidoctor/issues/2536) Extract text information from the AST
+- [#2378](https://github.com/asciidoctor/asciidoctor/issues/2378) Creating document programatically
+- [#1911](https://github.com/asciidoctor/asciidoctor/issues/1911) Document attributes, in a document with a header, are not processed when using the include macro with a leveloffset=1
+- [#1702](https://github.com/asciidoctor/asciidoctor/issues/1702) Documentation about setting document width seems missing
+- [#1692](https://github.com/asciidoctor/asciidoctor/issues/1692) five admonitions only, like the horsemen?
+- [#1609](https://github.com/asciidoctor/asciidoctor/issues/1609) Freestanding table of contents
+- [#1567](https://github.com/asciidoctor/asciidoctor/issues/1567) An image is not rendered correctly through many .adoc files located in different folders
+- [#1564](https://github.com/asciidoctor/asciidoctor/issues/1564) How do I add a role to a table row?
+- [#1485](https://github.com/asciidoctor/asciidoctor/issues/1485) global attribute setting
+- [#1474](https://github.com/asciidoctor/asciidoctor/issues/1474) List of Quotes
+- [#1280](https://github.com/asciidoctor/asciidoctor/issues/1280) Syntax parsing issues when calling partial in Rails
+
+## Duplicates (5)
+
+- [#1434](https://github.com/asciidoctor/asciidoctor/issues/1434) Default start value for section numbering
+- [#1405](https://github.com/asciidoctor/asciidoctor/issues/1405) Caption on centered image is not centered
+- [#1362](https://github.com/asciidoctor/asciidoctor/issues/1362) Certain punctuation is HTML-escaped before converter dispatch
+- [#1225](https://github.com/asciidoctor/asciidoctor/issues/1225) Adds copy/paste option in source blocks
+- [#487](https://github.com/asciidoctor/asciidoctor/issues/487) Add render_partial method to AbstractBlock and use for document template
+
+## Out of scope (49)
+
+Issues about the stylesheet, distribution, Ruby runtime or third-party tooling, which asciidart does not share.
+
+- [#4825](https://github.com/asciidoctor/asciidoctor/issues/4825) Add shadow to image based admonition icons
+- [#4824](https://github.com/asciidoctor/asciidoctor/issues/4824) Make admonition icon images non selectable
+- [#4822](https://github.com/asciidoctor/asciidoctor/issues/4822) Set maximum height for image based admonition icons
+- [#4818](https://github.com/asciidoctor/asciidoctor/issues/4818) Test for hardbreaks is inconclusive
+- [#4800](https://github.com/asciidoctor/asciidoctor/issues/4800) Upgrade minimum Ruby version and remove outdatded patches
+- [#4684](https://github.com/asciidoctor/asciidoctor/issues/4684) Remove use of logger library (stdlib/gem)
+- [#4535](https://github.com/asciidoctor/asciidoctor/issues/4535) Inconsistent style in table cells with some monospaced text
+- [#4531](https://github.com/asciidoctor/asciidoctor/issues/4531) Stylesheet: Avoid gray body text in @media print
+- [#4284](https://github.com/asciidoctor/asciidoctor/issues/4284) Font Awesome should use jsDelivr CDN
+- [#4274](https://github.com/asciidoctor/asciidoctor/issues/4274) Please add support for prefers-color-scheme: dark support in the default stylesheet
+- [#4239](https://github.com/asciidoctor/asciidoctor/issues/4239) Insert icons with CSS
+- [#4237](https://github.com/asciidoctor/asciidoctor/issues/4237) Support for MathML output for HTML backend?
+- [#4124](https://github.com/asciidoctor/asciidoctor/issues/4124) Use CSS variables to manage colors in defaut stylesheet
+- [#4070](https://github.com/asciidoctor/asciidoctor/issues/4070) Add visual regression testing using BackstopJS to the stylesheet build
+- [#4069](https://github.com/asciidoctor/asciidoctor/issues/4069) Add Native Support for Highlight 4 (Supports Language Servers via LSP)
+- [#3980](https://github.com/asciidoctor/asciidoctor/issues/3980) Add `&display=swap` by default to Google Font links.
+- [#3976](https://github.com/asciidoctor/asciidoctor/issues/3976) Upgrade Highlight JS 10.x
+- [#3726](https://github.com/asciidoctor/asciidoctor/issues/3726) Markdown compatibility
+- [#3616](https://github.com/asciidoctor/asciidoctor/issues/3616) nowrap doesn't properly work inside admonitions
+- [#3582](https://github.com/asciidoctor/asciidoctor/issues/3582) Request: distribution package (windows and more)
+- [#3575](https://github.com/asciidoctor/asciidoctor/issues/3575) Propose to add a shorthand for latexmath
+- [#3510](https://github.com/asciidoctor/asciidoctor/issues/3510) Container of an image with float and percent width has a width of 100% of the image
+- [#3508](https://github.com/asciidoctor/asciidoctor/issues/3508) Stylesheet order and precedence in the built-in HTML 5 converter
+- [#3471](https://github.com/asciidoctor/asciidoctor/issues/3471) Allow to specify multiple stylesheets
+- [#3461](https://github.com/asciidoctor/asciidoctor/issues/3461) Add extension point for integrating alternative icons sets/providers
+- [#3447](https://github.com/asciidoctor/asciidoctor/issues/3447) Cell with row span which includes the last row, shouldn't have bottom border
+- [#3446](https://github.com/asciidoctor/asciidoctor/issues/3446) Expand unicode "icons" support in the HTML5 converter
+- [#3430](https://github.com/asciidoctor/asciidoctor/issues/3430) "Official" template project
+- [#3400](https://github.com/asciidoctor/asciidoctor/issues/3400) The padding in the layout tables
+- [#2832](https://github.com/asciidoctor/asciidoctor/issues/2832) Add close hook to Asciidoctor::Logger
+- [#2676](https://github.com/asciidoctor/asciidoctor/issues/2676) Make Asciidoctor::Extensions.register a module_function
+- [#2552](https://github.com/asciidoctor/asciidoctor/issues/2552) academic icons
+- [#2539](https://github.com/asciidoctor/asciidoctor/issues/2539) Provide an API to register inline scripts or styles
+- [#2535](https://github.com/asciidoctor/asciidoctor/issues/2535) Upgrade to FontAwesome 5
+- [#2534](https://github.com/asciidoctor/asciidoctor/issues/2534) Tooltip for html backend
+- [#2493](https://github.com/asciidoctor/asciidoctor/issues/2493) Own settings for mathjax
+- [#2456](https://github.com/asciidoctor/asciidoctor/issues/2456) Add API to print version information
+- [#2396](https://github.com/asciidoctor/asciidoctor/issues/2396) configure optionally mathjax or katex for html output
+- [#2338](https://github.com/asciidoctor/asciidoctor/issues/2338) Right-To-Left support with complex openType shaping
+- [#2006](https://github.com/asciidoctor/asciidoctor/issues/2006) Wrap block title in strong tag for GitHub
+- [#1839](https://github.com/asciidoctor/asciidoctor/issues/1839) Enhancement: Visualise current scroll position in table of contents
+- [#1392](https://github.com/asciidoctor/asciidoctor/issues/1392) ruby(irb) session treeprocessor extension
+- [#1384](https://github.com/asciidoctor/asciidoctor/issues/1384) Request: add ability to define a popout for magnified view of an image.
+- [#1296](https://github.com/asciidoctor/asciidoctor/issues/1296) Asciidoctor aware grep
+- [#1286](https://github.com/asciidoctor/asciidoctor/issues/1286) {counter:___} sequences run independently within blocks with an anchor
+- [#1264](https://github.com/asciidoctor/asciidoctor/issues/1264) When image is centered, caption is not
+- [#930](https://github.com/asciidoctor/asciidoctor/issues/930) Docbook unittests lack docbook xml validation
+- [#928](https://github.com/asciidoctor/asciidoctor/issues/928) Docbook backend does not validate produced XML
+- [#159](https://github.com/asciidoctor/asciidoctor/issues/159) Develop Bug/Exception Handler + Automated Reporting to GitHub

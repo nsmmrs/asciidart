@@ -1,5 +1,10 @@
 # Parity with Asciidoctor
 
+The `bugfix` branch is the `2.1.0` branch plus fixes for bugs Asciidoctor
+still has; every output difference they make is listed under
+[Upstream bugs fixed on the bugfix branch](#upstream-bugs-fixed-on-the-bugfix-branch),
+and everything else below holds as on `2.1.0`.
+
 On the `2.1.0` branch, asciidart is compatible with Asciidoctor's
 development version (upstream `main` at `30fb8cd5`, reporting
 2.1.0.alpha.0), and this file is the
@@ -138,3 +143,59 @@ reproducers of each.
 - The `missing convert handler` warning names the converter by its Dart
   class (`ManpageConverter`) instead of the Ruby one
   (`Asciidoctor::Converter::ManPageConverter`).
+
+## Upstream bugs fixed on the bugfix branch
+
+Bugs reported upstream that the gem built from `main` at `30fb8cd5` still
+has (see the [triage](../doc/upstream-triage.md)). Each has a test in
+[`test/bugfix/`](../test/bugfix/README.md) that fails on that gem and
+passes here; `tool/bugfix_check.sh` checks both, in CI and in the gates.
+Documents that don't hit these cases convert as on `2.1.0`.
+
+- Section IDs: a title made only of punctuation gets the separator (`_`,
+  then `__2`) instead of an empty ID (#4877). A footnote in a section
+  title is numbered where the title is converted, in document order, and
+  is left out of the generated ID (`_h3`, not `_h31`) (#2903).
+- Man pages: a font span nested in another closes by switching back to
+  the outer span's font, and the outer span then closes with `\fR`, so
+  the text after it is roman (#4875).
+- Tables: a cell takes the spec (alignment, style) of the column it is
+  in, counting the columns covered by colspans and by rowspans from rows
+  above, instead of the column at its index in the row (#4500, #989,
+  #1558, #2889); repeated cells in a first row without `cols` number their
+  columns in order (`col_1` to `col_4`, not `col_1`, `col_3`, `col_5`,
+  `col_4`). A record of `cols` that isn't a column spec is warned about
+  (`invalid column spec in cols attribute: 20strong; using a default
+  column`) and stands for a default column instead of being dropped
+  (#3349); when no record is valid, the first row still decides the
+  columns. Tabs in literal cells expand to `tabsize` (#3412). In an
+  AsciiDoc cell, line comments reach the cell's document, so a
+  comment-like line in a verbatim block is kept and a comment separates
+  two lists (#2496, #2648).
+- Paths: a `..` after a doubled slash removes the directory before the
+  slashes (`X//../dir` is `dir`) (#4419).
+- Author attributes: an assigned `firstname`, `middlename`, `lastname` or
+  `authorinitials` (or an indexed one) wins over the one computed from the
+  `author` or `authors` attribute (#4209).
+- Inline: a superscript or subscript treats a bracketed span inside it as
+  one unit, so `^link:fn.html[2^]^` nests the link (#4076). Link text
+  holding an element converted before the link (an embedded icon) is not
+  read as an attribute list unless it has an `=` outside that element's
+  markup (#4075). The anchor shorthand takes `\]` in its reference text
+  (#3788). Anchors in section titles are cataloged, so duplicates are
+  reported and their reference text is used (#3633). `--` between a word
+  and formatted text or a curved quote (on either side) becomes an em dash
+  (#1578, #3946). A bare URL ending with a character reference
+  (`http://<host>:<port>`) keeps its `;` (#3128).
+- Blocks: a line that starts with `[` and ends with `]` is not a block
+  attribute line when a `]` in it closes no `[` (outside double quotes)
+  and a `[` follows, so `[.red]#Bbb# bbb.footnote:[Bbb.]` is a paragraph
+  (#3396); a stray `]` at the end (`[source, xml]]`) still ends an
+  attribute list. A list
+  continuation after empty lines attaches its block one level up from the
+  innermost item per empty line, so one empty line attaches to the parent
+  of the innermost item (#2293).
+- HTML: section and discrete headings deeper than level 5 use `<h6>`
+  (#2032). A quote in an image target or attribute (`src`, `href`,
+  `width`, `title`, float, align, roles) is written as `&quot;` (#2862,
+  #2661).

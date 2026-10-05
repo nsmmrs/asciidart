@@ -1,5 +1,22 @@
 # Changelog
 
+## bugfix branch
+
+The `2.1.0` branch plus fixes for 25 bugs reported upstream that
+Asciidoctor (upstream `main` at `30fb8cd5`) still has, chosen by triaging
+all 610 open upstream issues (`doc/upstream-triage.md`). Each fix has a
+CLI test in `test/bugfix/` that fails on the gem and passes here
+(`tool/bugfix_check.sh`), and the output differences are listed in
+`benchmark/PARITY.md`: section IDs for punctuation-only titles and titles
+with footnotes; nested fonts in man pages; table cells after colspans and
+beside rowspans taking the right column spec, invalid column specs, tabs
+in literal cells and comments in AsciiDoc cells; `X//..` in paths;
+assigned author names; links in superscripts; icons in link text; `\]` in
+anchor reference text; anchors in section titles; em dashes next to
+formatted text and curved quotes; URLs ending in `>`; paragraphs that look
+like attribute lines; ancestor list continuations; headings beyond `<h6>`;
+quotes in image attributes.
+
 ## 2.1.0 branch
 
 This branch matches Asciidoctor's development version (upstream `main` at
