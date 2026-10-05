@@ -543,6 +543,13 @@ class Cell extends AbstractBlock {
         while (text.startsWith(lf)) {
           text = text.substring(1);
         }
+        // Expand tabs as in a literal block (#3412).
+        final tabSize = int.tryParse(document!.attr('tabsize') ?? '') ?? 0;
+        if (tabSize > 0 && text.contains('\t')) {
+          final lines = text.split(lf);
+          Parser.adjustIndentation(lines, -1, tabSize);
+          text = lines.join(lf);
+        }
         cellContent = text;
       } else {
         normalPsv = true;
