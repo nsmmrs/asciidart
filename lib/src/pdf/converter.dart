@@ -259,7 +259,7 @@ final class PdfConverter extends BuiltInConverter
         document.hasAttr('toc') &&
         placement != 'macro' &&
         placement != 'preamble' &&
-        document.sections.isNotEmpty;
+        _sectionsOf(document).isNotEmpty;
     if (tocAtTop) {
       _out.add(const CustomBox(_Nothing(), style: BoxStyle(anchor: 'toc')));
       _toc(document);
@@ -635,16 +635,12 @@ final class PdfConverter extends BuiltInConverter
           ),
         );
         if (entryLevels >= entryLevel) {
-          level(
-            entry.sections.whereType<Section>().toList(),
-            entryLevels,
-            left + indent,
-          );
+          level(_sectionsOf(entry), entryLevels, left + indent);
         }
       }
     }
 
-    level(doc.sections.whereType<Section>().toList(), levels, 0);
+    level(_sectionsOf(doc), levels, 0);
   }
 
   /// [markup] in [style] (as inline markup).
@@ -865,7 +861,7 @@ final class PdfConverter extends BuiltInConverter
     final parentContext = parent.context;
     if (parentContext == BlockContext.listItem ||
         (parentContext == BlockContext.open && parent.style != 'abstract') ||
-        parentContext == BlockContext.section) {
+        (parent is Section && !_isAbstract(parent))) {
       return _nextEnclosedBlock(parent);
     }
     // The last item of a nested list: the next block after the item the
@@ -892,6 +888,10 @@ final class PdfConverter extends BuiltInConverter
   /// Converts [section]: its heading, then its blocks.
   void convertSection(Section section) {
     final sectname = section.sectname;
+    if (_isAbstract(section)) {
+      _abstract(section);
+      return;
+    }
     // The index isn't collected yet: an index section is left out, as
     // the gem leaves out an empty one.
     if (sectname == 'index') return;
@@ -1131,9 +1131,18 @@ final class PdfConverter extends BuiltInConverter
   // Paragraphs.
 
   /// Converts the paragraph [node].
-  void convertParagraph(Block node) {
+  void convertParagraph(Block node) => _paragraph(node);
+
+  /// Adds the paragraph [node], aligned to [textAlign] unless a role
+  /// aligns it, its first line in [firstLine]'s font if given.
+  void _paragraph(Block node, {String? textAlign, _FontState? firstLine}) {
     final roles = node.roles;
-    final align = _alignOf(roles) ?? _baseTextAlign;
+    String? roleAlign;
+    for (final role in roles.reversed) {
+      roleAlign = _alignOf([role]) ?? _s('role_${role}_text_align');
+      if (roleAlign != null) break;
+    }
+    final align = roleAlign ?? textAlign ?? _baseTextAlign;
     var indent = 0.0;
     if (align == 'justify' || align == 'left') {
       final textIndent = (_n('prose_text_indent') ?? 0).toDouble();
@@ -1159,10 +1168,25 @@ final class PdfConverter extends BuiltInConverter
     if (font.transform case final transform? when transform != 'none') {
       content = transformText(content, transform);
     }
+    if (node.hasTitle) _caption(node, labeled: false);
     final box = _textBox(content, font, align: align, indent: indent);
+    CustomContent text = box;
+    if (firstLine != null) {
+      text = FirstLineTextBox(
+        _textBox(
+          content,
+          firstLine,
+          align: align,
+          indent: indent,
+          singleLine: true,
+        ),
+        box.state,
+        box.layout,
+      );
+    }
     _out.add(
       CustomBox(
-        box,
+        text,
         style: BoxStyle(
           margin: EdgeInsets(bottom: marginBottom),
           anchor: node.id,
@@ -1345,6 +1369,10 @@ final class PdfConverter extends BuiltInConverter
 
   /// Converts the open block [node].
   void convertOpen(Block node) {
+    if (node.style == 'abstract') {
+      _abstract(node);
+      return;
+    }
     final children = _collect(() {
       if (node.hasTitle) {
         _caption(
@@ -1360,6 +1388,106 @@ final class PdfConverter extends BuiltInConverter
         children,
         style: BoxStyle(
           keepTogether: node.hasOption('unbreakable'),
+          anchor: node.id,
+        ),
+      ),
+    );
+  }
+
+  /// Whether [section] is an article's abstract (its first section, named
+  /// abstract), which the gem converts as an abstract block.
+  bool _isAbstract(Section section) =>
+      _document.doctype == 'article' &&
+      section.sectname == 'abstract' &&
+      _document.sections.whereType<Section>().firstOrNull == section;
+
+  /// The sections of [node] (an article's abstract isn't one).
+  List<Section> _sectionsOf(AbstractBlock node) => [
+    for (final section in node.blocks.whereType<Section>())
+      if (!_isAbstract(section)) section,
+  ];
+
+  /// Adds the abstract [node] (the gem's `convert_abstract`): its title,
+  /// then its paragraphs in the abstract's font, the first line of the
+  /// first in the theme's first-line style.
+  void _abstract(AbstractBlock node) {
+    final children = _collect(() {
+      if (node.title case final title? when title.isNotEmpty) {
+        final font = _themeFont('abstract_title', _font);
+        final lineHeight =
+            (_n('heading_line_height') ?? _n('base_line_height') ?? 1)
+                .toDouble();
+        _out.add(
+          CustomBox(
+            _textBox(
+              title,
+              font.copyWith(lineHeight: lineHeight),
+              align: _s('abstract_title_text_align') ?? _baseTextAlign,
+            ),
+            style: BoxStyle(
+              margin: EdgeInsets(
+                top: (_n('heading_margin_top') ?? 0).toDouble(),
+                bottom: (_n('heading_margin_bottom') ?? 0).toDouble(),
+              ),
+            ),
+          ),
+        );
+      }
+      _withFont('abstract', () {
+        final align = _s('abstract_text_align') ?? _baseTextAlign;
+        _FontState? firstLine;
+        final style = _s('abstract_first_line_font_style');
+        if (style != null && style != _font.style) {
+          final styles = <String>{
+            if (style == 'normal_italic') 'italic',
+            if (style != 'normal' && style != 'normal_italic') ...{
+              ..._stylesOf(_font),
+              ..._stylesOf(_font.copyWith(style: style)),
+            },
+          };
+          firstLine = _font.copyWith(
+            style: styles.contains('bold')
+                ? styles.contains('italic')
+                      ? 'bold_italic'
+                      : 'bold'
+                : styles.contains('italic')
+                ? 'italic'
+                : 'normal',
+          );
+        }
+        if (_c('abstract_first_line_font_color') case final color?) {
+          firstLine = (firstLine ?? _font).copyWith(color: color);
+        }
+        if (node.blocks.isNotEmpty) {
+          for (final child in node.blocks) {
+            if (child case final Block block
+                when block.context == BlockContext.paragraph) {
+              _paragraph(block, textAlign: align, firstLine: firstLine);
+              firstLine = null;
+            } else {
+              child.convert();
+            }
+          }
+        } else if (node case final Block block
+            when block.contentModel != ContentModel.compound) {
+          if (block.content() case final text?) {
+            _out.add(
+              CustomBox(
+                _textBox(text, _font, align: _alignOf(block.roles) ?? align),
+              ),
+            );
+          }
+        }
+      });
+    });
+    _out.add(
+      BlockBox(
+        children,
+        style: BoxStyle(
+          padding: _padding('abstract_padding'),
+          margin: EdgeInsets(
+            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+          ),
           anchor: node.id,
         ),
       ),
@@ -3514,6 +3642,7 @@ final class PdfConverter extends BuiltInConverter
     bool cell = false,
     bool inlineFormat = true,
     bool gaps = true,
+    bool singleLine = false,
   }) {
     var text = markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -3554,6 +3683,7 @@ final class PdfConverter extends BuiltInConverter
         initialGap: cell || !gaps ? 0 : metrics.paddingTop,
         paddingBottom: cell || !gaps ? 0 : metrics.paddingBottom,
         trailingLineGap: cell,
+        singleLine: singleLine,
         indentFirstLine: indent,
         normalizeLineHeight: normalizeLineHeight,
       ),
@@ -4010,7 +4140,7 @@ final class PdfConverter extends BuiltInConverter
           final d? => LinkTarget.destination(d),
           null => null,
         };
-        final children = section.sections.whereType<Section>().toList();
+        final children = _sectionsOf(section);
         final open = depth < sectionLevels && children.isNotEmpty;
         final item = parent == null
             ? pdf.addOutline(title, target, open: open && expand >= 1)
@@ -4034,12 +4164,7 @@ final class PdfConverter extends BuiltInConverter
         ),
       );
     }
-    level(
-      _document.sections.whereType<Section>().toList(),
-      levels,
-      expand,
-      null,
-    );
+    level(_sectionsOf(_document), levels, expand, null);
   }
 
   static String _roman(int number) {

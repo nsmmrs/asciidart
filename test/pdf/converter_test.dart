@@ -27,6 +27,8 @@ void main() {
   setUpAll(registerPdf);
 
   for (final name in [
+    'abstract',
+    'apos',
     'article-toc',
     'blocks',
     'blocks2',

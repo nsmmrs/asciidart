@@ -64,6 +64,7 @@ final class TextLayout {
     this.paddingBottom = 0,
     this.finalGap = false,
     this.trailingLineGap = false,
+    this.singleLine = false,
     this.indentFirstLine = 0,
     this.normalizeLineHeight = false,
     this.forceJustify = false,
@@ -88,8 +89,25 @@ final class TextLayout {
   /// measures a cell's text).
   final bool trailingLineGap;
 
+  /// Whether only the first line is laid out (the rest is left over, the
+  /// line gap and the leading following the line).
+  final bool singleLine;
+
   /// The indent of the first line.
   final double indentFirstLine;
+
+  /// This layout with no gap above the first line.
+  TextLayout get withoutInitialGap => TextLayout(
+    align: align,
+    leading: leading,
+    paddingBottom: paddingBottom,
+    finalGap: finalGap,
+    trailingLineGap: trailingLineGap,
+    singleLine: singleLine,
+    indentFirstLine: indentFirstLine,
+    normalizeLineHeight: normalizeLineHeight,
+    forceJustify: forceJustify,
+  );
 
   /// Whether each line is at least as tall as the base font.
   final bool normalizeLineHeight;
@@ -135,16 +153,20 @@ final class TextContext {
 
 /// A fragment ready to wrap: its text and its resolved formatting.
 final class _Item {
-  new(this.text, this.format);
+  new(this.text, this.format, {this.defaultColor = false});
 
   String text;
   final _Format format;
+
+  /// Whether the fragment's color is the text's (not its own).
+  final bool defaultColor;
   bool excludeTrailingWhiteSpace = false;
   bool normalizedSoftHyphen = false;
 
-  _Item copy({String? text}) => _Item(text ?? this.text, format)
-    ..excludeTrailingWhiteSpace = excludeTrailingWhiteSpace
-    ..normalizedSoftHyphen = normalizedSoftHyphen;
+  _Item copy({String? text}) =>
+      _Item(text ?? this.text, format, defaultColor: defaultColor)
+        ..excludeTrailingWhiteSpace = excludeTrailingWhiteSpace
+        ..normalizedSoftHyphen = normalizedSoftHyphen;
 }
 
 /// A fragment's formatting with its font resolved.
@@ -232,12 +254,13 @@ final class PrawnTextBox implements CustomContent {
   ) {
     final items = <_Item>[];
     for (final fragment in fragments) {
+      final defaultColor = fragment.color == null;
       final copy = fragment.copy()..color ??= state.color;
       for (final run in _withFallbacks(copy, state, context)) {
         final format = _resolve(run, state, context);
         // One item per line of the fragment (Prawn's `format_array=`).
         for (final m in RegExp('[^\n]+|\n').allMatches(run.text)) {
-          items.add(_Item(m[0]!, format));
+          items.add(_Item(m[0]!, format, defaultColor: defaultColor));
         }
       }
     }
@@ -257,12 +280,41 @@ final class PrawnTextBox implements CustomContent {
   final TextLayout _layout;
   final TextContext _context;
 
+  /// The text's style.
+  TextState get state => _state;
+
+  /// The text's layout.
+  TextLayout get layout => _layout;
+
   /// Whether this is the first piece of the text (its first line is
   /// indented).
   final bool first;
 
   /// Whether there is no text.
   bool get isEmpty => _items.isEmpty;
+
+  /// This (left over) text in [state] and laid out by [layout] (the rest
+  /// of a first line set in another style).
+  PrawnTextBox restyled(TextState state, TextLayout layout) => PrawnTextBox._(
+    [
+      for (final item in _items)
+        () {
+          final fragment = item.format.fragment.copy();
+          if (item.defaultColor) fragment.color = state.color;
+          return _Item(
+            item.text,
+            item.format.image == null
+                ? _resolve(fragment, state, _context)
+                : item.format,
+            defaultColor: item.defaultColor,
+          );
+        }(),
+    ],
+    state,
+    layout,
+    _context,
+    first: false,
+  );
 
   static _Format _resolve(
     Fragment fragment,
@@ -577,7 +629,9 @@ final class PrawnTextBox implements CustomContent {
     final rest = wrap.unconsumed;
     final done = rest.isEmpty;
     var height = gap + wrap.height;
-    if (_layout.finalGap) height += wrap.lineGap + _layout.leading;
+    if (_layout.finalGap || (_layout.singleLine && !done)) {
+      height += wrap.lineGap + _layout.leading;
+    }
     if (_layout.trailingLineGap) height += wrap.lineGap;
     if (done) height += _layout.paddingBottom;
     final anchors = <(String, double, double)>[];
@@ -867,6 +921,7 @@ final class _Wrap {
         _moveBaselineDown();
         _printLine(indent);
         lineNumber++;
+        if (_layout.singleLine) stop = true;
       } else {
         stop = true;
       }
@@ -1231,3 +1286,63 @@ String _lstrip(String text) => text.replaceFirst(_leadingSpace, '');
 String _rstrip(String text) => text.replaceFirst(_trailingSpace, '');
 
 String _strip(String text) => _lstrip(_rstrip(text));
+
+/// Text whose first line is set in another style (the gem's
+/// `text_with_formatted_first_line`): the first line laid out alone, the
+/// rest after it without another gap above.
+final class FirstLineTextBox implements CustomContent {
+  /// [first] (laid out with a single line) followed by its rest in
+  /// [state], laid out by [layout] (without the initial gap right after
+  /// the first line, with it on later pages).
+  const new(this.first, this.state, this.layout);
+
+  /// The text in the first line's style, laid out a single line.
+  final PrawnTextBox first;
+
+  /// The style of the lines after the first.
+  final TextState state;
+
+  /// The layout of the lines after the first.
+  final TextLayout layout;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final head = first.place(width, available, atTop: atTop);
+    if (head == null) return null;
+    final rest = head.rest;
+    if (rest is! PrawnTextBox) return head;
+    final tail = rest.restyled(state, layout.withoutInitialGap);
+    final body = tail.place(width, available - head.height, atTop: false);
+    if (body == null) {
+      return CustomPlacement(
+        height: head.height,
+        anchors: head.anchors,
+        rest: tail,
+        paint: head.paint,
+      );
+    }
+    final next = body.rest;
+    return CustomPlacement(
+      height: head.height + body.height,
+      anchors: [
+        ...head.anchors,
+        for (final (name, x, y) in body.anchors) (name, x, y + head.height),
+      ],
+      rest: next is PrawnTextBox ? next.restyled(state, layout) : next,
+      paint: (page, x, top) {
+        head.paint(page, x, top);
+        body.paint(page, x, top - head.height);
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) => first.minHeight(width);
+
+  @override
+  (double, double) intrinsicWidths() => first.intrinsicWidths();
+}

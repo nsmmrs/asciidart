@@ -1,7 +1,8 @@
 /// Fonts as Prawn 2.4 measures them (the engine asciidoctor-pdf 2.3.27
 /// lays text out with): metrics from TrueType's `OS/2` typographic values
 /// (else `hhea`) or from AFM files, glyph widths truncated to 1000ths of
-/// the em, kerning from the `kern` table alone; and the font catalog of a
+/// the em, kerning from the `kern` table's first subtable alone; and the
+/// font catalog of a
 /// theme, with Prawn's built-in families and the icon fonts.
 library;
 
@@ -95,9 +96,11 @@ final class TrueTypeFont extends PrawnFont {
     int? previous;
     for (final rune in text.runes) {
       if (kerning && previous != null) {
+        // Prawn (through ttfunk) reads the kern table's first subtable.
         final kern = pdf.font.kernTablePair(
           pdf.font.glyphFor(previous),
           pdf.font.glyphFor(rune),
+          subtable: 0,
         );
         if (kern != null) total += kern * _scale;
       }
@@ -256,7 +259,11 @@ final class FontCatalog {
       return TrueTypeFont(
         family,
         'normal',
-        EmbeddedFont.parse(_bundled(path), truncateWidths: true),
+        EmbeddedFont.parse(
+          _bundled(path),
+          truncateWidths: true,
+          kernTableSubtable: 0,
+        ),
       );
     }
     if (_catalog[family] case final styles?) {
@@ -269,7 +276,11 @@ final class FontCatalog {
       return TrueTypeFont(
         family,
         style,
-        EmbeddedFont.parse(_file(path), truncateWidths: true),
+        EmbeddedFont.parse(
+          _file(path),
+          truncateWidths: true,
+          kernTableSubtable: 0,
+        ),
       );
     }
     if (_builtInFamilies[family] case final styles?) {

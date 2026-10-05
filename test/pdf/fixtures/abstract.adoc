@@ -1,0 +1,25 @@
+= Article With Abstract
+:toc:
+
+[abstract]
+== Abstract
+
+This is the abstract of the article, written long enough that its first line, set bold, is followed by more lines in the abstract's italic style.
+
+A second abstract paragraph.
+
+== Introduction
+
+Body text.
+
+[abstract]
+.Block abstract
+--
+An abstract block with a title and enough text to wrap across a couple of lines in the abstract style of the theme.
+--
+
+.A titled paragraph
+Paragraph with a title.
+
+[.text-right]
+Right aligned paragraph.
