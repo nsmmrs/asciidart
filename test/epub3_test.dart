@@ -28,10 +28,17 @@ void main() {
       for (final file in Directory(
         'vendor/asciidoctor-epub3/$dir',
       ).listSync(recursive: true).whereType<File>()) {
-        final path = file.path.substring('vendor/asciidoctor-epub3/'.length);
+        final path = file.path
+            .substring('vendor/asciidoctor-epub3/'.length)
+            .replaceAll(r'\', '/');
+        // A Windows checkout may give text files CRLF line endings.
+        List<int> normalized(List<int>? bytes) => [
+          for (final b in bytes ?? const <int>[])
+            if (b != 0x0d || !RegExp(r'\.(css|tsv|svg)$').hasMatch(path)) b,
+        ];
         expect(
-          Epub3Assets.bytes(path),
-          file.readAsBytesSync(),
+          normalized(Epub3Assets.bytes(path)),
+          normalized(file.readAsBytesSync()),
           reason: '$path (run dart run tool/embed_epub3.dart)',
         );
       }
