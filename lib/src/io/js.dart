@@ -63,6 +63,8 @@ extension type _Fs(JSObject _) implements JSObject {
   external _Stats? statSync(String path, JSObject options);
   external JSUint8Array readFileSync(JSAny pathOrFd);
   external void writeFileSync(String path, String data, String encoding);
+  @JS('writeFileSync')
+  external void writeFileBytesSync(String path, JSUint8Array data);
   external void appendFileSync(String path, String data, String encoding);
   external JSAny? mkdirSync(String path, JSObject options);
   external JSArray<JSString> readdirSync(String path, JSObject options);
@@ -96,6 +98,8 @@ extension type _Stream(JSObject _) implements JSObject {
 
 extension type _Zlib(JSObject _) implements JSObject {
   external JSUint8Array gunzipSync(JSUint8Array bytes);
+  external JSUint8Array deflateRawSync(JSUint8Array bytes);
+  external JSUint8Array inflateRawSync(JSUint8Array bytes);
 }
 
 extension type _Console(JSObject _) implements JSObject {
@@ -234,6 +238,35 @@ void writeString(String path, String contents) {
     path,
     () => host.fs.writeFileSync(path, contents, 'utf8'),
   );
+}
+
+/// Writes [bytes] to the file at [path], replacing it.
+void writeBytes(String path, List<int> bytes) {
+  final host = _host;
+  if (host == null) throw _noFileSystem(path);
+  _guard(
+    'Cannot write file',
+    path,
+    () => host.fs.writeFileBytesSync(path, Uint8List.fromList(bytes).toJS),
+  );
+}
+
+/// [bytes] compressed with raw DEFLATE (no zlib header).
+List<int> deflateRaw(List<int> bytes) {
+  final zlib = _host?.zlib;
+  if (zlib == null) {
+    throw UnsupportedError('deflate is unavailable in this environment');
+  }
+  return zlib.deflateRawSync(Uint8List.fromList(bytes).toJS).toDart;
+}
+
+/// [bytes] (raw DEFLATE) expanded.
+List<int> inflateRaw(List<int> bytes) {
+  final zlib = _host?.zlib;
+  if (zlib == null) {
+    throw UnsupportedError('inflate is unavailable in this environment');
+  }
+  return zlib.inflateRawSync(Uint8List.fromList(bytes).toJS).toDart;
 }
 
 /// Creates the directory at [path] and any missing parents.

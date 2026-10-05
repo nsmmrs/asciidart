@@ -19,3 +19,19 @@ From [Asciidoctor](https://github.com/asciidoctor/asciidoctor), MIT License
 
 Change these files only through `tool/vendor.sh` (after changing its pinned
 revisions); documents of our own belong in `test/parity/`.
+
+## asciidoctor-epub3/
+
+From [asciidoctor-epub3](https://github.com/asciidoctor/asciidoctor-epub3)
+2.3.0, MIT License (`asciidoctor-epub3/LICENSE`, `NOTICE.adoc` lists the
+fonts' and icons' licenses). `tool/vendor_epub3.sh` recreates the directory
+from the gem and the `v2.3.0` tag, and regenerates
+`lib/src/epub3/assets.g.dart`.
+
+| Path | Used for |
+| --- | --- |
+| `styles/*.css` | the gem's SCSS stylesheets, compiled with the gem's Sass engine and options (byte for byte what the gem writes) |
+| `fonts/` | the fonts every EPUB carries (and the scripts' variants) |
+| `fonts/awesome/icons.tsv` | the Font Awesome names and code points, and renamed icons, from the gem's `icons.yml` and `shims.yml` |
+| `images/` | the default avatar and headshot |
+| `test/fixtures/` | the spec fixtures, converted by `tool/epub_parity.dart` |

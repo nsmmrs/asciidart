@@ -85,6 +85,19 @@ jobs:
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
     - name: Check byte-identical parity with Asciidoctor 2.0.26
       run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidart-linux-')"
+    - name: Install asciidoctor-epub3 gem (EPUB oracle)
+      run: gem install asciidoctor-epub3 -v 2.3.0 --no-document
+    - name: Download EPUBCheck
+      run: |
+        curl -sSLo "$RUNNER_TEMP/epubcheck.zip" https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip
+        unzip -q "$RUNNER_TEMP/epubcheck.zip" -d "$RUNNER_TEMP"
+    - name: Check EPUB parity with asciidoctor-epub3 2.3.0
+      run: >-
+        dart run tool/epub_parity.dart
+        --exe-a "$(command -v asciidoctor-epub3)"
+        --exe-b "$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')"
+        --epubcheck "$RUNNER_TEMP/epubcheck-5.4.0/epubcheck.jar"
+        $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc' | sort)
   npm:
     strategy:
       fail-fast: false
