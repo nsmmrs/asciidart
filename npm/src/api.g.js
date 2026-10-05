@@ -329,6 +329,21 @@ export class InlineMacroContext {
   }
 }
 
+export class InlineText {
+  constructor() {
+    throw new TypeError('InlineText objects come from asciidart; they cannot be created with new')
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get html() {
+    return core.InlineText$get$html(this)
+  }
+  get text() {
+    return core.InlineText$get$text(this)
+  }
+}
+
 export class Node {
   constructor() {
     throw new TypeError('Node objects come from asciidart; they cannot be created with new')
@@ -435,6 +450,9 @@ export class Block extends Node {
   get blocks() {
     return core.Block$get$blocks(this)
   }
+  get titleInlines() {
+    return core.Block$get$titleInlines(this)
+  }
   get plainText() {
     return core.Block$get$plainText(this)
   }
@@ -507,6 +525,9 @@ export class Inline extends Node {
   get text() {
     return core.Inline$get$text(this)
   }
+  get children() {
+    return core.Inline$get$children(this)
+  }
   get plainText() {
     return core.Inline$get$plainText(this)
   }
@@ -560,6 +581,9 @@ export class Admonition extends Block {
   }
   get content() {
     return core.Admonition$get$content(this)
+  }
+  get inlines() {
+    return core.Admonition$get$inlines(this)
   }
   get plainText() {
     return core.Admonition$get$plainText(this)
@@ -674,6 +698,9 @@ export class Document extends Block {
   }
   get sourceTitle() {
     return core.Document$get$sourceTitle(this)
+  }
+  get titleInlines() {
+    return core.Document$get$titleInlines(this)
   }
   get headerAttributes() {
     return core.Document$get$headerAttributes(this)
@@ -843,6 +870,9 @@ export class ListItem extends Block {
   get content() {
     return core.ListItem$get$content(this)
   }
+  get inlines() {
+    return core.ListItem$get$inlines(this)
+  }
   get checked() {
     return core.ListItem$get$checked(this)
   }
@@ -864,6 +894,9 @@ export class Listing extends Block {
   get content() {
     return core.Listing$get$content(this)
   }
+  get inlines() {
+    return core.Listing$get$inlines(this)
+  }
   get plainText() {
     return core.Listing$get$plainText(this)
   }
@@ -878,6 +911,9 @@ export class Literal extends Block {
   }
   get content() {
     return core.Literal$get$content(this)
+  }
+  get inlines() {
+    return core.Literal$get$inlines(this)
   }
   get plainText() {
     return core.Literal$get$plainText(this)
@@ -932,15 +968,6 @@ export class OtherBlock extends Block {
   }
 }
 
-export class OtherInline extends Inline {
-  constructor() {
-    throw new TypeError('OtherInline objects come from asciidart; they cannot be created with new')
-  }
-  get context() {
-    return core.OtherInline$get$context(this)
-  }
-}
-
 export class PageBreak extends Block {
   constructor() {
     throw new TypeError('PageBreak objects come from asciidart; they cannot be created with new')
@@ -957,6 +984,9 @@ export class Paragraph extends Block {
   get content() {
     return core.Paragraph$get$content(this)
   }
+  get inlines() {
+    return core.Paragraph$get$inlines(this)
+  }
   get plainText() {
     return core.Paragraph$get$plainText(this)
   }
@@ -971,6 +1001,9 @@ export class Passthrough extends Block {
   }
   get content() {
     return core.Passthrough$get$content(this)
+  }
+  get inlines() {
+    return core.Passthrough$get$inlines(this)
   }
   get plainText() {
     return core.Passthrough$get$plainText(this)
@@ -1040,6 +1073,9 @@ export class Stem extends Block {
   }
   get content() {
     return core.Stem$get$content(this)
+  }
+  get inlines() {
+    return core.Stem$get$inlines(this)
   }
   get plainText() {
     return core.Stem$get$plainText(this)
@@ -1134,6 +1170,9 @@ export class Verse extends Block {
   get content() {
     return core.Verse$get$content(this)
   }
+  get inlines() {
+    return core.Verse$get$inlines(this)
+  }
   get plainText() {
     return core.Verse$get$plainText(this)
   }
@@ -1154,7 +1193,7 @@ export class Video extends Block {
   }
 }
 
-registerClasses({ Asciidart, Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, HtmlDefaults, IncludeRequest, InlineMacroContext, SourceCode, SourceLocation, TableColumn, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, OtherInline, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
+registerClasses({ Asciidart, Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, HtmlDefaults, IncludeRequest, InlineMacroContext, InlineText, SourceCode, SourceLocation, TableColumn, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
 
 export const AdmonitionKind = Object.freeze({
   note: 'note',

@@ -91,6 +91,7 @@ extension AsciidartFiles on Asciidart
   Stream<FileConversion> convertTree(String directory, {required String toDir, Backend backend = Backend.html5, Doctype? doctype, Map<String, String> attributes = const {}})
 final class Admonition extends Block
   AdmonitionKind kind
+  List<InlineContent> inlines
   String content
   String plainText
 final class Asciidart
@@ -198,6 +199,7 @@ final class Document extends Block
   Document document
   List<Author> authors
   List<Diagnostic> diagnostics
+  List<InlineContent> titleInlines
   Map<String, String?> headerAttributes
   String convert({bool? standalone})
   String toHtml({bool? standalone})
@@ -255,6 +257,10 @@ final class InlineMacroContext
   String? text
 final class InlineStem extends Inline
   StemNotation notation
+final class InlineText implements InlineContent
+  String html
+  String text
+  String toString()
 final class Keyboard extends Inline
   List<String> keys
   String plainText
@@ -262,16 +268,19 @@ final class LineBreak extends Inline
 final class Link extends Inline
   String target
 final class ListItem extends Block
+  List<InlineContent> inlines
   String content
   String plainText
   String source
   bool? checked
 final class Listing extends Block with _Text
+  List<InlineContent> inlines
   String content
   String plainText
   String source
   String? language
 final class Literal extends Block with _Text
+  List<InlineContent> inlines
   String content
   String plainText
   String source
@@ -287,14 +296,14 @@ final class OrderedList extends Block
   int start
 final class OtherBlock extends Block
   String context
-final class OtherInline extends Inline
-  String context
 final class PageBreak extends Block
 final class Paragraph extends Block with _Text
+  List<InlineContent> inlines
   String content
   String plainText
   String source
 final class Passthrough extends Block with _Text
+  List<InlineContent> inlines
   String content
   String plainText
   String source
@@ -327,6 +336,7 @@ final class SourceLocation
   int hashCode
   int line
 final class Stem extends Block with _Text
+  List<InlineContent> inlines
   StemNotation notation
   String content
   String plainText
@@ -358,6 +368,7 @@ final class UnorderedList extends Block
   String plainText
   bool isChecklist
 final class Verse extends Block with _Text
+  List<InlineContent> inlines
   String content
   String plainText
   String source
@@ -369,6 +380,7 @@ final class Video extends Block
 sealed class Block extends Node
   Iterable<T> descendants<T extends Node>()
   List<Block> blocks
+  List<InlineContent> titleInlines
   SourceLocation? location
   String convert()
   String plainText
@@ -378,9 +390,12 @@ sealed class Block extends Node
   void append(Block block)
   void remove()
 sealed class Extension
-sealed class Inline extends Node
+sealed class Inline extends Node implements InlineContent
+  List<InlineContent> children
   String plainText
   String? text
+sealed class InlineContent
+  InlineContent()
 sealed class Node
   Attributes attributes
   Document document

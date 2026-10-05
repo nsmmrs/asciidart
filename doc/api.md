@@ -92,8 +92,26 @@ Widget build(Block block) => switch (block) {
 };
 ```
 
-Planned (FEAT-q86s3x): `inlines` on text-bearing blocks, the inline content
-as a typed tree instead of converted HTML.
+Text comes as a typed tree too: `inlines` (on paragraphs, other blocks of
+text, admonitions and list items) and `titleInlines` (on any block) give
+the text and the inline elements in it, nested, so a renderer never parses
+HTML:
+
+```dart
+InlineSpan span(InlineContent content) => switch (content) {
+  InlineText(:final text) => TextSpan(text: text),
+  Formatted(kind: FormattedKind.strong, :final children) =>
+    TextSpan(style: bold, children: children.map(span).toList()),
+  Link(:final target, :final children) =>
+    TextSpan(children: children.map(span).toList(), recognizer: open(target)),
+  final Inline other => TextSpan(text: other.plainText),
+};
+
+final paragraph = RichText(text: TextSpan(children: p.inlines.map(span).toList()));
+```
+
+The output is unchanged by this: elements are found and converted as the
+substitutions run, and the tree records where each one ended up.
 
 ## 5. Customize the HTML for some elements
 

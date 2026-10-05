@@ -18,17 +18,64 @@ Inline _createInline(impl.Inline node) => switch ((node.context, node.type)) {
   (.indexterm, _) => IndexTerm._(node),
 };
 
+/// A piece of inline content: text, or an inline element.
+///
+/// [Block.titleInlines] and the `inlines` of paragraphs, other blocks of
+/// text and list items give the content of a text as a list of these, for
+/// code that renders it without parsing HTML.
+sealed class InlineContent;
+
+/// Text between inline elements.
+final class InlineText implements InlineContent {
+  new _(this.html);
+
+  /// The text as converted for HTML: special characters escaped and
+  /// typographic replacements made (`&amp;`, `&#8212;`).
+  final String html;
+
+  /// The text itself: character references decoded (and the tags of any
+  /// raw HTML passed through left out).
+  String get text => _decode(html);
+
+  @override
+  String toString() => 'InlineText($text)';
+}
+
+/// The public content for the implementation's inline content.
+List<InlineContent> _inlineContent(List<impl.InlineContent> content) => [
+  for (final item in content)
+    switch (item) {
+      impl.InlineText(:final text) => InlineText._(text),
+      impl.InlineElement(:final node, :final children) => _withChildren(
+        _view(node) as Inline,
+        _inlineContent(children),
+      ),
+    },
+];
+
+final Expando<List<InlineContent>> _children = Expando('inline children');
+
+Inline _withChildren(Inline inline, List<InlineContent> children) {
+  _children[inline] = children;
+  return inline;
+}
+
 /// An inline element: formatted text, a link, an inline image, and so on.
 ///
-/// Inline elements reach code through output overrides and macro
-/// extensions. Their [text] is already converted.
-sealed class Inline extends Node {
+/// Inline elements reach code through the `inlines` of blocks, output
+/// overrides and macro extensions. Their [text] is already converted.
+sealed class Inline extends Node implements InlineContent {
   new _(impl.Inline super._node) : super._();
 
   impl.Inline get _inline => _node as impl.Inline;
 
   /// The converted text of the element, if it has text.
   String? get text => _inline.text;
+
+  /// The content of the element's text, for an element from `inlines`
+  /// whose text is part of the text around it (formatted text, a link, a
+  /// line break); empty otherwise.
+  List<InlineContent> get children => _children[this] ?? const [];
 
   @override
   String get plainText => _plain(text ?? '');
@@ -220,13 +267,4 @@ final class IndexTerm extends Inline {
 
   /// Whether the term also appears in the text (`((term))`).
   bool get isVisible => _inline.type == 'visible';
-}
-
-/// An inline element of a kind asciidart does not define, created by an
-/// extension.
-final class OtherInline extends Inline {
-  new _(super._node) : super._();
-
-  /// The element's context, as the extension named it.
-  String get context => _node.contextName;
 }

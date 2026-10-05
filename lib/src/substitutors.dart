@@ -43,6 +43,7 @@ import 'package:asciidart/src/extensions.dart' show MacroAttributes;
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart';
 import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/inline_tree.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/text_case.dart';
@@ -283,6 +284,23 @@ String applySubs(
   List<Sub>? subs = normalSubs,
 ]) {
   if (text.isEmpty || subs == null) return text;
+  return _applySubsInRun(node, text, subs);
+}
+
+/// Applies [subs] to [text] as [applySubs] does, and returns the inline
+/// elements found with the text between them (see [InlineRun.track]).
+List<InlineContent> applySubsTree(
+  AbstractNode node,
+  String text, [
+  List<Sub>? subs = normalSubs,
+]) {
+  if (text.isEmpty || subs == null) {
+    return text.isEmpty ? const [] : [InlineText(text)];
+  }
+  return InlineRun.track(text, () => _applySubsInRun(node, text, subs)).$2;
+}
+
+String _applySubsInRun(AbstractNode node, String text, List<Sub> subs) {
   var subject = text;
 
   List<Passthrough>? passthrus;
@@ -301,6 +319,7 @@ String applySubs(
   }
 
   for (final sub in subs) {
+    InlineRun.advance(subject);
     switch (sub) {
       case Sub.specialcharacters:
         subject = subSpecialchars(subject);
@@ -330,6 +349,8 @@ String applySubs(
   }
 
   if (passthrus != null) {
+    // Placeholders can be inside the markup of inline elements, as in
+    // Asciidoctor, which converts them before restoring passthroughs.
     subject = restorePassthroughs(node, subject);
     if (clearPassthrus) {
       passthrus.clear();
@@ -390,7 +411,8 @@ String applyReftextSubs(AbstractNode node, String text) =>
 /// Port of `Substitutors#sub_specialchars`.
 String subSpecialchars(String text) {
   if (text.contains('>') || text.contains('&') || text.contains('<')) {
-    return text.replaceAllMapped(
+    return InlineRun.replace(
+      text,
       specialCharsRx,
       (match) => specialCharsTr[match.group(0)]!,
     );
@@ -407,7 +429,8 @@ String subQuotes(AbstractNode node, String text) {
   var result = text;
   for (final sub in quoteSubs[compat]!) {
     if (!sub.mayMatch(result)) continue;
-    result = result.replaceAllMapped(
+    result = InlineRun.replace(
+      result,
       sub.pattern,
       (match) =>
           convertQuotedText(node, match as RegExpMatch, sub.type, sub.scope),
@@ -448,7 +471,7 @@ String convertQuotedText(
         text: match.group(3),
         type: resolvedType,
       );
-      return '$unescapedAttrs${quoted.convert()}';
+      return '$unescapedAttrs${InlineRun.emit(quoted)}';
     }
     final attrlist = match.group(2);
     String? id;
@@ -466,7 +489,7 @@ String convertQuotedText(
       id: id,
       attributes: attributes,
     );
-    return '${match.group(1)}${quoted.convert()}';
+    return '${match.group(1)}${InlineRun.emit(quoted)}';
   } else {
     final attrlist = match.group(1);
     String? id;
@@ -476,14 +499,16 @@ String convertQuotedText(
       id = attributes['id'];
       if (resolvedType == 'mark') resolvedType = 'unquoted';
     }
-    return Inline(
-      block,
-      InlineContext.quoted,
-      text: match.group(2),
-      type: resolvedType,
-      id: id,
-      attributes: attributes,
-    ).convert();
+    return InlineRun.emit(
+      Inline(
+        block,
+        InlineContext.quoted,
+        text: match.group(2),
+        type: resolvedType,
+        id: id,
+        attributes: attributes,
+      ),
+    );
   }
 }
 
@@ -513,7 +538,7 @@ String subAttributes(
       AttributeMissing.parse(
         docAttrs['attribute-missing'] ?? Compliance.attributeMissing,
       );
-  final result = text.replaceAllMapped(attributeReferenceRx, (match) {
+  final result = InlineRun.replace(text, attributeReferenceRx, (match) {
     // escaped attribute, return unescaped
     if (match.group(1) == rs || match.group(4) == rs) {
       return '{${match.group(2)}}';
@@ -687,7 +712,8 @@ String subReplacements(String text) {
   var result = text;
   for (final replacement in replacements) {
     if (!result.contains(replacement.guard)) continue;
-    result = result.replaceAllMapped(
+    result = InlineRun.replace(
+      result,
       replacement.pattern,
       (match) => doReplacement(
         match as RegExpMatch,
@@ -766,7 +792,7 @@ String subMacros(AbstractNode node, String text) {
       final config = instance.config;
       final regexp = instance.regexp;
       final hasNamedGroups = _hasNamedGroups(regexp);
-      result = result.replaceAllMapped(regexp, (match) {
+      result = InlineRun.replace(result, regexp, (match) {
         final fullMatch = match.group(0)!;
         // Honor the escape.
         if (fullMatch.startsWith(rs)) return fullMatch.substring(1);
@@ -821,7 +847,7 @@ String subMacros(AbstractNode node, String text) {
         if (inlineSubs != null && replacementText != null) {
           replacement.text = applySubs(node, replacementText, inlineSubs);
         }
-        return replacement.convert();
+        return InlineRun.emit(replacement);
       });
     }
   }
@@ -829,7 +855,7 @@ String subMacros(AbstractNode node, String text) {
   if (docAttrs.containsKey('experimental')) {
     if (foundMacroishShort &&
         (result.contains('kbd:') || result.contains('btn:'))) {
-      result = result.replaceAllMapped(inlineKbdBtnMacroRx, (match) {
+      result = InlineRun.replace(result, inlineKbdBtnMacroRx, (match) {
         // honor the escape
         if (match.group(1) != null) {
           return match.group(0)!.substring(1);
@@ -873,24 +899,28 @@ String subMacros(AbstractNode node, String text) {
           } else {
             keyList = [keys];
           }
-          return Inline(block, InlineContext.kbd, keys: keyList).convert();
+          return InlineRun.emit(
+            Inline(block, InlineContext.kbd, keys: keyList),
+          );
         } else {
           // match.group(2) == 'btn'
-          return Inline(
-            block,
-            InlineContext.button,
-            text: normalizeText(
-              match.group(3)!,
-              normalizeWhitespace: true,
-              unescapeClosingSquareBrackets: true,
+          return InlineRun.emit(
+            Inline(
+              block,
+              InlineContext.button,
+              text: normalizeText(
+                match.group(3)!,
+                normalizeWhitespace: true,
+                unescapeClosingSquareBrackets: true,
+              ),
             ),
-          ).convert();
+          );
         }
       });
     }
 
     if (foundMacroish && result.contains('menu:')) {
-      result = result.replaceAllMapped(inlineMenuMacroRx, (match) {
+      result = InlineRun.replace(result, inlineMenuMacroRx, (match) {
         // honor the escape
         if (match.group(0)!.startsWith(rs)) {
           return match.group(0)!.substring(1);
@@ -929,17 +959,19 @@ String subMacros(AbstractNode node, String text) {
           menuitem = null;
         }
 
-        return Inline(
-          block,
-          InlineContext.menu,
-          attributes: {'menu': menu, 'menuitem': ?menuitem},
-          submenus: submenus,
-        ).convert();
+        return InlineRun.emit(
+          Inline(
+            block,
+            InlineContext.menu,
+            attributes: {'menu': menu, 'menuitem': ?menuitem},
+            submenus: submenus,
+          ),
+        );
       });
     }
 
     if (result.contains('"') && result.contains('&gt;')) {
-      result = result.replaceAllMapped(inlineMenuRx, (match) {
+      result = InlineRun.replace(result, inlineMenuRx, (match) {
         // honor the escape
         if (match.group(0)!.startsWith(rs)) {
           return match.group(0)!.substring(1);
@@ -951,12 +983,14 @@ String subMacros(AbstractNode node, String text) {
         ).map((item) => item.trimAscii()).toList();
         final menu = parts.removeAt(0);
         final menuitem = parts.removeLast();
-        return Inline(
-          block,
-          InlineContext.menu,
-          attributes: {'menu': menu, 'menuitem': menuitem},
-          submenus: parts,
-        ).convert();
+        return InlineRun.emit(
+          Inline(
+            block,
+            InlineContext.menu,
+            attributes: {'menu': menu, 'menuitem': menuitem},
+            submenus: parts,
+          ),
+        );
       });
     }
   }
@@ -964,7 +998,7 @@ String subMacros(AbstractNode node, String text) {
   if (foundMacroish &&
       (result.contains('image:') || result.contains('icon:'))) {
     // image:filename.png[Alt Text]
-    result = result.replaceAllMapped(inlineImageMacroRx, (match) {
+    result = InlineRun.replace(result, inlineImageMacroRx, (match) {
       // honor the escape
       if (match.group(0)!.startsWith(rs)) {
         return match.group(0)!.substring(1);
@@ -995,13 +1029,15 @@ String subMacros(AbstractNode node, String text) {
         attrs['alt'] = defaultAlt;
         attrs['default-alt'] = defaultAlt;
       }
-      return Inline(
-        block,
-        InlineContext.image,
-        type: type,
-        target: target,
-        attributes: attrs,
-      ).convert();
+      return InlineRun.emit(
+        Inline(
+          block,
+          InlineContext.image,
+          type: type,
+          target: target,
+          attributes: attrs,
+        ),
+      );
     });
   }
 
@@ -1011,7 +1047,7 @@ String subMacros(AbstractNode node, String text) {
     // indexterm:[Tigers,Big cats]
     // ((Tigers))
     // indexterm2:[Tigers]
-    result = result.replaceAllMapped(inlineIndextermMacroRx, (match) {
+    result = InlineRun.replace(result, inlineIndextermMacroRx, (match) {
       final macro = match.group(1);
       if (macro == 'indexterm') {
         // honor the escape
@@ -1052,13 +1088,15 @@ String subMacros(AbstractNode node, String text) {
           attrs = <String, String>{};
           terms = splitSimpleCsv(attrlist);
         }
-        return Inline(
-          block,
-          InlineContext.indexterm,
-          attributes: attrs,
-          terms: terms,
-          seeAlso: seeAlso,
-        ).convert();
+        return InlineRun.emit(
+          Inline(
+            block,
+            InlineContext.indexterm,
+            attributes: attrs,
+            terms: terms,
+            seeAlso: seeAlso,
+          ),
+        );
       } else if (macro == 'indexterm2') {
         // honor the escape
         if (match.group(0)!.startsWith(rs)) {
@@ -1082,14 +1120,16 @@ String subMacros(AbstractNode node, String text) {
             seeAlso = _seeAlsoList(parsed.remove('see-also'));
           }
         }
-        return Inline(
-          block,
-          InlineContext.indexterm,
-          text: term,
-          attributes: attrs,
-          type: 'visible',
-          seeAlso: seeAlso,
-        ).convert();
+        return InlineRun.emit(
+          Inline(
+            block,
+            InlineContext.indexterm,
+            text: term,
+            attributes: attrs,
+            type: 'visible',
+            seeAlso: seeAlso,
+          ),
+        );
       } else {
         var enclText = match.group(3)!;
         var visible = false;
@@ -1140,14 +1180,16 @@ String subMacros(AbstractNode node, String text) {
               seeAlso = parts;
             }
           }
-          subbedTerm = Inline(
-            block,
-            InlineContext.indexterm,
-            text: term,
-            attributes: termAttrs,
-            type: 'visible',
-            seeAlso: seeAlso,
-          ).convert();
+          subbedTerm = InlineRun.emit(
+            Inline(
+              block,
+              InlineContext.indexterm,
+              text: term,
+              attributes: termAttrs,
+              type: 'visible',
+              seeAlso: seeAlso,
+            ),
+          );
         } else {
           // (((Tigers,Big cats)))
           var terms = normalizeText(enclText, normalizeWhitespace: true);
@@ -1164,13 +1206,15 @@ String subMacros(AbstractNode node, String text) {
               seeAlso = parts;
             }
           }
-          subbedTerm = Inline(
-            block,
-            InlineContext.indexterm,
-            attributes: attrs,
-            terms: splitSimpleCsv(terms),
-            seeAlso: seeAlso,
-          ).convert();
+          subbedTerm = InlineRun.emit(
+            Inline(
+              block,
+              InlineContext.indexterm,
+              attributes: attrs,
+              terms: splitSimpleCsv(terms),
+              seeAlso: seeAlso,
+            ),
+          );
         }
         return before != null ? '$before$subbedTerm$after' : subbedTerm;
       }
@@ -1219,7 +1263,7 @@ String _subMacrosLinks(
   if (foundColon && result.contains('://')) {
     // inline urls, target[text] (optionally prefixed with link: or
     // enclosed in <>)
-    result = result.replaceAllMapped(inlineLinkRx, (match) {
+    result = InlineRun.replace(result, inlineLinkRx, (match) {
       if (match.group(2) != null && match.group(5) == null) {
         final prefix = match.group(1)!;
         // honor the escapes
@@ -1237,14 +1281,16 @@ String _subMacrosLinks(
         final linkText = docAttrs.containsKey('hide-uri-scheme')
             ? target.replaceFirst(uriSniffRx, '')
             : target;
-        return Inline(
-          block,
-          InlineContext.anchor,
-          text: linkText,
-          type: 'link',
-          target: target,
-          attributes: const {'role': 'bare'},
-        ).convert();
+        return InlineRun.emit(
+          Inline(
+            block,
+            InlineContext.anchor,
+            text: linkText,
+            type: 'link',
+            target: target,
+            attributes: const {'role': 'bare'},
+          ),
+        );
       } else {
         final scheme = match.group(3)!;
         // honor the escape
@@ -1369,14 +1415,14 @@ String _subMacrosLinks(
           id: id,
           attributes: attrs,
         );
-        return '$prefix${anchor.convert()}$suffix';
+        return '$prefix${InlineRun.emit(anchor)}$suffix';
       }
     });
   }
 
   if (foundMacroish && (result.contains('link:') || result.contains('ilto:'))) {
     // inline link macros, link:target[text]
-    result = result.replaceAllMapped(inlineLinkMacroRx, (match) {
+    result = InlineRun.replace(result, inlineLinkMacroRx, (match) {
       // honor the escape
       if (match.group(0)!.startsWith(rs)) {
         return match.group(0)!.substring(1);
@@ -1456,20 +1502,22 @@ String _subMacrosLinks(
 
       // QUESTION should a mailto be registered as an e-mail address?
       doc.registerLink(target);
-      return Inline(
-        block,
-        InlineContext.anchor,
-        text: linkText,
-        type: 'link',
-        target: target,
-        id: id,
-        attributes: attrs,
-      ).convert();
+      return InlineRun.emit(
+        Inline(
+          block,
+          InlineContext.anchor,
+          text: linkText,
+          type: 'link',
+          target: target,
+          id: id,
+          attributes: attrs,
+        ),
+      );
     });
   }
 
   if (result.contains('@')) {
-    result = result.replaceAllMapped(inlineEmailRx, (match) {
+    result = InlineRun.replace(result, inlineEmailRx, (match) {
       // honor the escape
       if (match.group(1) != null) {
         return match.group(1) == rs
@@ -1482,13 +1530,15 @@ String _subMacrosLinks(
       // QUESTION should this be registered as an e-mail address?
       doc.registerLink(target);
 
-      return Inline(
-        block,
-        InlineContext.anchor,
-        text: address,
-        type: 'link',
-        target: target,
-      ).convert();
+      return InlineRun.emit(
+        Inline(
+          block,
+          InlineContext.anchor,
+          text: address,
+          type: 'link',
+          target: target,
+        ),
+      );
     });
   }
 
@@ -1496,21 +1546,25 @@ String _subMacrosLinks(
       node is AbstractBlock &&
       node.context == BlockContext.listItem &&
       node.parent?.style == 'bibliography') {
-    result = result.replaceFirstMapped(
+    result = InlineRun.replace(
+      result,
       inlineBiblioAnchorRx,
-      (match) => Inline(
-        block,
-        InlineContext.anchor,
-        text: match.group(2),
-        type: 'bibref',
-        id: match.group(1),
-      ).convert(),
+      (match) => InlineRun.emit(
+        Inline(
+          block,
+          InlineContext.anchor,
+          text: match.group(2),
+          type: 'bibref',
+          id: match.group(1),
+        ),
+      ),
+      first: true,
     );
   }
 
   if ((foundSquareBracket && result.contains('[[')) ||
       (foundMacroish && result.contains('or:'))) {
-    result = result.replaceAllMapped(inlineAnchorRx, (match) {
+    result = InlineRun.replace(result, inlineAnchorRx, (match) {
       // honor the escape
       if (match.group(1) != null) {
         return match.group(0)!.substring(1);
@@ -1530,20 +1584,17 @@ String _subMacrosLinks(
           reftext = reftext.replaceAll(escRSb, rSb);
         }
       }
-      return Inline(
-        block,
-        InlineContext.anchor,
-        text: reftext,
-        type: 'ref',
-        id: id,
-      ).convert();
+      return InlineRun.emit(
+        Inline(block, InlineContext.anchor, text: reftext, type: 'ref', id: id),
+      );
     });
   }
 
   //if (text.include? ';&l') || (found_macroish && (text.include? 'xref:'))
   if ((result.contains('&') && result.contains(';&l')) ||
       (foundMacroish && result.contains('xref:'))) {
-    result = result.replaceAllMapped(
+    result = InlineRun.replace(
+      result,
       inlineXrefMacroRx,
       (match) => _convertXrefMacro(
         node,
@@ -1557,7 +1608,8 @@ String _subMacrosLinks(
   }
 
   if (foundMacroish && result.contains('tnote')) {
-    result = result.replaceAllMapped(
+    result = InlineRun.replace(
+      result,
       inlineFootnoteMacroRx,
       (match) =>
           _convertFootnoteMacro(node, block, doc, compat, match as RegExpMatch),
@@ -1736,14 +1788,16 @@ String _convertXrefMacro(
   put('path', path);
   put('fragment', fragment);
   put('refid', refid);
-  return Inline(
-    block,
-    InlineContext.anchor,
-    text: linkText,
-    type: 'xref',
-    target: target,
-    attributes: attrs,
-  ).convert();
+  return InlineRun.emit(
+    Inline(
+      block,
+      InlineContext.anchor,
+      text: linkText,
+      type: 'xref',
+      target: target,
+      attributes: attrs,
+    ),
+  );
 }
 
 /// Converts one footnote macro match. Part of [subMacros].
@@ -1834,15 +1888,17 @@ String _convertFootnoteMacro(
   } else {
     return match.group(0)!;
   }
-  return Inline(
-    block,
-    InlineContext.footnote,
-    text: finalContent,
-    attributes: {'index': ?index},
-    id: finalId,
-    target: target,
-    type: type,
-  ).convert();
+  return InlineRun.emit(
+    Inline(
+      block,
+      InlineContext.footnote,
+      text: finalContent,
+      attributes: {'index': ?index},
+      id: finalId,
+      target: target,
+      type: type,
+    ),
+  );
 }
 
 /// Substitutes post replacements (hard line breaks) in [text].
@@ -1857,26 +1913,31 @@ String subPostReplacements(AbstractNode node, String text) {
     final last = lines.removeLast();
     final converted = <String>[
       for (final line in lines)
-        Inline(
-          _blockOf(node),
-          InlineContext.lineBreak,
-          text: line.endsWith(hardLineBreak)
-              ? line.substring(0, line.length - 2)
-              : line,
-          type: 'line',
-        ).convert(),
+        InlineRun.emit(
+          Inline(
+            _blockOf(node),
+            InlineContext.lineBreak,
+            text: line.endsWith(hardLineBreak)
+                ? line.substring(0, line.length - 2)
+                : line,
+            type: 'line',
+          ),
+        ),
       last,
     ];
     return converted.join(lf);
   } else if (text.contains(plus) && text.contains(hardLineBreak)) {
-    return text.replaceAllMapped(
+    return InlineRun.replace(
+      text,
       hardLineBreakRx,
-      (match) => Inline(
-        _blockOf(node),
-        InlineContext.lineBreak,
-        text: match.group(1),
-        type: 'line',
-      ).convert(),
+      (match) => InlineRun.emit(
+        Inline(
+          _blockOf(node),
+          InlineContext.lineBreak,
+          text: match.group(1),
+          type: 'line',
+        ),
+      ),
     );
   } else {
     return text;
@@ -1906,7 +1967,7 @@ String subCallouts(AbstractNode node, String text) {
       ? calloutSourceRxMap[lineComment]
       : calloutSourceRx;
   var autonum = 0;
-  return text.replaceAllMapped(pattern, (match) {
+  return InlineRun.replace(text, pattern, (match) {
     // honor the escape
     if (match.group(2) != null) {
       // use sub since it might be behind a line comment
@@ -1914,14 +1975,16 @@ String subCallouts(AbstractNode node, String text) {
     }
     final numeral = match.group(4) == '.' ? '${++autonum}' : match.group(4)!;
     final guard = match.group(1);
-    return Inline(
-      _blockOf(node),
-      InlineContext.callout,
-      text: numeral,
-      id: doc.callouts.readNextId(),
-      attributes: {'guard': ?guard},
-      xmlCommentGuard: guard == null && match.group(3) == '--',
-    ).convert();
+    return InlineRun.emit(
+      Inline(
+        _blockOf(node),
+        InlineContext.callout,
+        text: numeral,
+        id: doc.callouts.readNextId(),
+        attributes: {'guard': ?guard},
+        xmlCommentGuard: guard == null && match.group(3) == '--',
+      ),
+    );
   });
 }
 
@@ -1987,7 +2050,8 @@ String highlightSource(
   );
   var highlighted = result.html;
   if (_passthroughsOf(node).isNotEmpty) {
-    highlighted = highlighted.replaceAllMapped(
+    highlighted = InlineRun.replace(
+      highlighted,
       highlightedPassSlotRx,
       (match) => '$passStart${match[1]}$passEnd',
     );
@@ -2093,7 +2157,7 @@ typedef PendingCallout = ({
       .split(lf)
       .map((line) {
         lineno++;
-        return line.replaceAllMapped(pattern, (match) {
+        return InlineRun.replace(line, pattern, (match) {
           // honor the escape
           if (match.group(2) != null) {
             // use sub since it might be behind a line comment
@@ -2148,14 +2212,16 @@ String restoreCallouts(
             lineno++;
             final conums = calloutMarks.remove(lineno);
             if (conums == null) return line;
-            String conum(PendingCallout mark) => Inline(
-              block,
-              InlineContext.callout,
-              text: mark.numeral,
-              id: doc.callouts.readNextId(),
-              attributes: {'guard': ?mark.guard},
-              xmlCommentGuard: mark.xmlCommentGuard,
-            ).convert();
+            String conum(PendingCallout mark) => InlineRun.emit(
+              Inline(
+                block,
+                InlineContext.callout,
+                text: mark.numeral,
+                id: doc.callouts.readNextId(),
+                attributes: {'guard': ?mark.guard},
+                xmlCommentGuard: mark.xmlCommentGuard,
+              ),
+            );
             return '$line${conums.map(conum).join(' ')}';
           })
           .join(lf);
@@ -2173,7 +2239,7 @@ String extractPassthroughs(AbstractNode node, String text) {
   final passthrus = _passthroughsOf(node);
   var result = text;
   if (text.contains('++') || text.contains(r'$$') || text.contains('ss:')) {
-    result = result.replaceAllMapped(inlinePassMacroRx, (match) {
+    result = InlineRun.replace(result, inlinePassMacroRx, (match) {
       final boundary = match.group(4);
       if (boundary != null) {
         // $$, ++, or +++
@@ -2274,7 +2340,7 @@ String extractPassthroughs(AbstractNode node, String text) {
   final passEntry = inlinePassRx[compatMode]!;
   if (result.contains(passEntry.delimiter) ||
       (passEntry.endTrim != null && result.contains(passEntry.endTrim!))) {
-    result = result.replaceAllMapped(passEntry.pattern, (match) {
+    result = InlineRun.replace(result, passEntry.pattern, (match) {
       var preceding = match.group(1)!;
       final attrlist = match.group(4) ?? match.group(3);
       final escaped = match.group(5) != null;
@@ -2361,7 +2427,7 @@ String extractPassthroughs(AbstractNode node, String text) {
   // escaped by the former
   if (result.contains(':') &&
       (result.contains('stem:') || result.contains('math:'))) {
-    result = result.replaceAllMapped(inlineStemMacroRx, (match) {
+    result = InlineRun.replace(result, inlineStemMacroRx, (match) {
       // honor the escape
       if (match.group(0)!.startsWith(rs)) {
         return match.group(0)!.substring(1);
@@ -2401,7 +2467,7 @@ String extractPassthroughs(AbstractNode node, String text) {
 /// Port of `Substitutors#restore_passthroughs`.
 String restorePassthroughs(AbstractNode node, String text) {
   final passthrus = _passthroughsOf(node);
-  return text.replaceAllMapped(passSlotRx, (match) {
+  return InlineRun.replace(text, passSlotRx, (match) {
     final slot = int.parse(match.group(1)!);
     final pass = slot < passthrus.length ? passthrus[slot] : null;
     if (pass != null) {
@@ -2409,14 +2475,16 @@ String restorePassthroughs(AbstractNode node, String text) {
       final type = pass.type;
       if (type != null) {
         final attributes = pass.attributes;
-        subbedText = Inline(
-          _blockOf(node),
-          InlineContext.quoted,
-          text: subbedText,
-          type: type,
-          id: attributes?['id'],
-          attributes: attributes,
-        ).convert();
+        subbedText = InlineRun.emit(
+          Inline(
+            _blockOf(node),
+            InlineContext.quoted,
+            text: subbedText,
+            type: type,
+            id: attributes?['id'],
+            attributes: attributes,
+          ),
+        );
       }
       return subbedText.contains(passStart)
           ? restorePassthroughs(node, subbedText)

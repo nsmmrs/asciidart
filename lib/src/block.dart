@@ -6,7 +6,9 @@ library;
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/inline_tree.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
+import 'package:asciidart/src/substitutors.dart' show applySubsTree;
 
 /// The content model of a block of [context] unless it says otherwise.
 ContentModel defaultContentModel(BlockContext context) => switch (context) {
@@ -134,6 +136,18 @@ class Block extends AbstractBlock {
   /// substitutions to the joined lines, and verbatim/raw blocks apply
   /// substitutions per line and strip leading and trailing blank lines.
   /// Returns `null` for the empty and skip models.
+  /// The inline content of this block's text (see [applySubsTree]): its
+  /// lines with its substitutions applied, as elements and text. Empty for
+  /// blocks of child blocks and for empty blocks.
+  ///
+  /// Applies the substitutions, as [content] does.
+  List<InlineContent> contentInlines() => switch (contentModel) {
+    ContentModel.simple ||
+    ContentModel.verbatim ||
+    ContentModel.raw => applySubsTree(this, lines.join(lf), subs),
+    ContentModel.compound || ContentModel.empty || ContentModel.skip => [],
+  };
+
   @override
   String? content() {
     switch (contentModel) {

@@ -61,7 +61,10 @@ Node _create(impl.AbstractNode node) {
 }
 
 /// Strips HTML tags and decodes the character references asciidart emits.
-String _plain(String html) =>
+String _plain(String html) => _decode(html).trim();
+
+/// [html] without tags, with character references decoded.
+String _decode(String html) =>
     html.replaceAll(_tag, '').replaceAllMapped(_reference, (m) {
       final name = m[1]!;
       if (name.startsWith('#x') || name.startsWith('#X')) {
@@ -71,7 +74,7 @@ String _plain(String html) =>
         return String.fromCharCode(int.parse(name.substring(1)));
       }
       return _namedReferences[name] ?? m[0]!;
-    }).trim();
+    });
 
 final RegExp _tag = RegExp('<[^>]*>');
 final RegExp _reference = RegExp('&(#[0-9]+|#[xX][0-9a-fA-F]+|[a-z]+);');
@@ -176,6 +179,11 @@ sealed class Block extends Node {
   /// This block converted to the document's output format.
   String convert() => document._run(() => _block.convert() ?? '');
 
+  /// The block's title as inline content (see [InlineContent]); empty
+  /// without a title. Applies the title substitutions.
+  List<InlineContent> get titleInlines =>
+      document._run(() => _inlineContent(_block.titleInlines()));
+
   @override
   String get plainText => document._run(
     () =>
@@ -196,6 +204,11 @@ mixin _Text on Block {
   /// The converted text: inline markup applied for prose, special
   /// characters escaped for verbatim text.
   String get content => document._run(() => _textBlock.content() ?? '');
+
+  /// The text as inline content (see [InlineContent]): text and the inline
+  /// elements in it, nested. Applies the substitutions, as [content] does.
+  List<InlineContent> get inlines =>
+      document._run(() => _inlineContent(_textBlock.contentInlines()));
 
   @override
   String get plainText => _plain(content);
@@ -230,6 +243,12 @@ final class Document extends Block {
   /// substitutions; `null` when the header has no title.
   @override
   String? get sourceTitle => _doc.header?.sourceTitle;
+
+  /// The document title as inline content (see [InlineContent]); empty
+  /// without a title.
+  @override
+  List<InlineContent> get titleInlines =>
+      _run(() => _inlineContent(_doc.header?.titleInlines() ?? []));
 
   /// The attributes the document header sets, in source order: name to
   /// value, or to `null` for an attribute it unsets (`:name!:`). Unlike
@@ -402,6 +421,16 @@ final class Admonition extends Block {
   /// the converted child blocks for an admonition block.
   String get content =>
       document._run(() => (_node as impl.AbstractBlock).content() ?? '');
+
+  /// The paragraph text of an admonition paragraph as inline content (see
+  /// [InlineContent]); empty for an admonition block. Applies the
+  /// substitutions, as [content] does.
+  List<InlineContent> get inlines => switch (_node) {
+    final impl.Block block => document._run(
+      () => _inlineContent(block.contentInlines()),
+    ),
+    _ => const [],
+  };
 
   @override
   String get plainText => blocks.isEmpty ? _plain(content) : super.plainText;
@@ -653,6 +682,11 @@ final class ListItem extends Block {
 
   /// The text of the item with inline markup converted.
   String get content => document._run(() => _item.text ?? '');
+
+  /// The text of the item as inline content (see [InlineContent]).
+  /// Applies the substitutions, as [content] does.
+  List<InlineContent> get inlines =>
+      document._run(() => _inlineContent(_item.textInlines()));
 
   /// For a checklist item, whether it is checked; otherwise `null`.
   bool? get checked => _node.attributes.containsKey('checkbox')

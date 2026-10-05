@@ -126,7 +126,26 @@ final class Model {
     }
     classes.sort(_bySuperFirst);
     names.addAll([for (final c in classes) c.name!]);
+    // A sealed class without members that classes only implement is a
+    // union of them: a type in TypeScript, nothing at run time.
+    for (final c in [...classes]) {
+      if (!c.isSealed || c.fields.any((f) => f.isPublic)) continue;
+      if (c.methods.any((m) => m.isPublic)) continue;
+      final members = [
+        for (final k in classes)
+          if (k.interfaces.any((t) => t.element == c)) k,
+      ];
+      if (members.isEmpty || classes.any((k) => k.supertype?.element == c)) {
+        continue;
+      }
+      unions[c] = members;
+      classes.remove(c);
+    }
   }
+
+  /// Sealed classes that are unions of the classes implementing them, with
+  /// those classes.
+  final Map<ClassElement, List<ClassElement>> unions = {};
 
   final List<ClassElement> classes = [];
   final List<EnumElement> enums = [];
@@ -796,6 +815,14 @@ final class DtsEmitter {
             "${_jsdoc(_docOf(v), '  ')}  readonly ${v.name}: '${v.name}';\n",
         ])
         ..writeln('};\n');
+    }
+    for (final MapEntry(key: c, value: members) in m.unions.entries) {
+      out
+        ..write(_jsdoc(_docOf(c), ''))
+        ..writeln(
+          'export type ${c.name} = '
+          '${members.map((k) => k.name).join(' | ')};\n',
+        );
     }
     for (final c in m.classes) {
       final sup = m.superOf(c);

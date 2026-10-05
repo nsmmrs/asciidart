@@ -14,7 +14,10 @@ import {
   Section,
   Severity,
   TreeProcessor,
+  Formatted,
+  InlineText,
   type Block,
+  type InlineContent,
   type Diagnostic,
   type Document,
   type SourceCode,
@@ -33,6 +36,15 @@ const sectionTitles: (string | null)[] = sections.map((s) => s.title)
 const render = (block: Block): string =>
   block instanceof Section ? `# ${block.title}\n` : block instanceof Paragraph ? `${block.plainText}\n` : ''
 const markdown: string = doc.blocks.map(render).join('')
+
+const inline = (content: InlineContent): string =>
+  content instanceof InlineText
+    ? content.text
+    : content instanceof Formatted
+      ? `*${content.children.map(inline).join('')}*`
+      : content.plainText
+const firstParagraph = doc.blocks.find((b): b is Paragraph => b instanceof Paragraph)
+const inlineText: string = (firstParagraph?.inlines ?? []).map(inline).join('')
 
 class Upper extends Highlighter {
   highlight(code: SourceCode): string {
@@ -63,7 +75,7 @@ async function main(): Promise<void> {
   for await (const result of ad.convertTree('docs', { toDir: 'build' })) {
     console.log(result.outputPath)
   }
-  console.log(body, page, title, priority, header, sectionTitles, markdown, failed, reported.length)
+  console.log(body, page, title, priority, header, sectionTitles, markdown, inlineText, failed, reported.length)
 }
 
 void main()

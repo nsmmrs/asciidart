@@ -16,7 +16,9 @@ Asciidoctor project.
   `parse`, `parseHeader`, `convert` and asynchronous variants; the default
   configuration `asciidoc`; a sealed tree of typed nodes (`Section`,
   `Paragraph`, `Listing`, `Admonition`, lists, tables, inline elements)
-  with `descendants<T>()` and `plainText`; typed attributes; diagnostics
+  with `descendants<T>()` and `plainText`; inline content as a typed tree
+  (`inlines`, `titleInlines`: text and formatted text, links, images...,
+  nested; ADR-0008); typed attributes; diagnostics
   collected per document; callback-based extensions (`InlineMacro`,
   `BlockMacro`, `CustomBlock`, `IncludeResolver` (may be asynchronous),
   `TreeProcessor`, `Preprocessor`, `Postprocessor`, `Docinfo`).

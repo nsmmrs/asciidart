@@ -26,8 +26,12 @@ import {
   Docinfo,
   Document,
   Highlighter,
+  Formatted,
+  FormattedKind,
   Image,
   IncludeResolver,
+  InlineText,
+  Link,
   InlineImage,
   InlineMacro,
   ListItem,
@@ -146,6 +150,27 @@ describe('4. your own renderer', () => {
       asciidoc.parse(guide).blocks.map(render).join(''),
       '# Install\nRun the installer.\n# Use\n- one\n- two\n'
     )
+  })
+})
+
+describe('4b. inline content as a tree', () => {
+  test('text and elements, nested', () => {
+    const md = (content) =>
+      content instanceof InlineText
+        ? content.text
+        : content instanceof Formatted && content.kind === FormattedKind.strong
+          ? `**${content.children.map(md).join('')}**`
+          : content instanceof Formatted && content.kind === FormattedKind.emphasis
+            ? `_${content.children.map(md).join('')}_`
+            : content instanceof Link
+              ? `[${content.children.map(md).join('')}](${content.target})`
+              : content.plainText
+    const doc = asciidoc.parse('= The *Guide*\n\nRead *the https://example.org[_fine_ manual]* -- now.')
+    assert.equal(
+      doc.blocks[0].inlines.map(md).join(''),
+      'Read **the [_fine_ manual](https://example.org)**\u2009—\u2009now.'
+    )
+    assert.equal(doc.titleInlines.map(md).join(''), 'The **Guide**')
   })
 })
 

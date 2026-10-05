@@ -36,6 +36,7 @@ export 'highlight/unavailable.dart';
 export 'html5.dart';
 export 'http_fetch.dart';
 export 'inline.dart';
+export 'inline_tree.dart';
 export 'io/types.dart';
 export 'job_pool.dart';
 export 'list.dart';

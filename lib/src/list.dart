@@ -6,6 +6,7 @@ library;
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/inline_tree.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/substitutors.dart';
 import 'package:meta/meta.dart';
@@ -146,6 +147,13 @@ class ListItem extends AbstractBlock {
 
   set text(String? value) {
     _text = value;
+  }
+
+  /// The inline content of the text of this list item (see
+  /// [applySubsTree]). Applies the substitutions, as [text] does.
+  List<InlineContent> textInlines() {
+    final t = _text;
+    return t == null ? [] : applySubsTree(this, t, subs);
   }
 
   /// Whether this list item has simple content: no nested blocks, or a

@@ -30,7 +30,6 @@ JSObject wrap(Object o) => switch (o) {
   api.Passthrough() => rt.handle(o, 'Passthrough'),
   api.Paragraph() => rt.handle(o, 'Paragraph'),
   api.PageBreak() => rt.handle(o, 'PageBreak'),
-  api.OtherInline() => rt.handle(o, 'OtherInline'),
   api.OtherBlock() => rt.handle(o, 'OtherBlock'),
   api.OrderedList() => rt.handle(o, 'OrderedList'),
   api.Open() => rt.handle(o, 'Open'),
@@ -71,6 +70,7 @@ JSObject wrap(Object o) => switch (o) {
   api.TableColumn() => rt.handle(o, 'TableColumn'),
   api.SourceLocation() => rt.handle(o, 'SourceLocation'),
   api.SourceCode() => rt.handle(o, 'SourceCode'),
+  api.InlineText() => rt.handle(o, 'InlineText'),
   api.InlineMacroContext() => rt.handle(o, 'InlineMacroContext'),
   api.IncludeRequest() => rt.handle(o, 'IncludeRequest'),
   api.HtmlDefaults() => rt.handle(o, 'HtmlDefaults'),
@@ -1127,6 +1127,22 @@ final class Core {
     }
   }
 
+  JSAny? InlineText$get$html(JSAny? self) {
+    try {
+      return rt.unwrap<api.InlineText>(self).html.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? InlineText$get$text(JSAny? self) {
+    try {
+      return rt.unwrap<api.InlineText>(self).text.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Node$get$parent(JSAny? self) {
     try {
       return ((rt.unwrap<api.Node>(self).parent) == null
@@ -1333,6 +1349,16 @@ final class Core {
     }
   }
 
+  JSAny? Block$get$titleInlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Block>(self).titleInlines) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Block$get$plainText(JSAny? self) {
     try {
       return rt.unwrap<api.Block>(self).plainText.toJS;
@@ -1474,6 +1500,16 @@ final class Core {
     }
   }
 
+  JSAny? Inline$get$children(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Inline>(self).children) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Inline$get$plainText(JSAny? self) {
     try {
       return rt.unwrap<api.Inline>(self).plainText.toJS;
@@ -1550,6 +1586,16 @@ final class Core {
   JSAny? Admonition$get$content(JSAny? self) {
     try {
       return rt.unwrap<api.Admonition>(self).content.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Admonition$get$inlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Admonition>(self).inlines) wrap(x),
+      ]);
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -1722,6 +1768,16 @@ final class Core {
       return ((rt.unwrap<api.Document>(self).sourceTitle) == null
           ? null
           : (rt.unwrap<api.Document>(self).sourceTitle)!.toJS);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Document$get$titleInlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Document>(self).titleInlines) wrap(x),
+      ]);
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -2004,6 +2060,16 @@ final class Core {
     }
   }
 
+  JSAny? ListItem$get$inlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.ListItem>(self).inlines) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? ListItem$get$checked(JSAny? self) {
     try {
       return ((rt.unwrap<api.ListItem>(self).checked) == null
@@ -2048,6 +2114,16 @@ final class Core {
     }
   }
 
+  JSAny? Listing$get$inlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Listing>(self).inlines) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Listing$get$plainText(JSAny? self) {
     try {
       return rt.unwrap<api.Listing>(self).plainText.toJS;
@@ -2067,6 +2143,16 @@ final class Core {
   JSAny? Literal$get$content(JSAny? self) {
     try {
       return rt.unwrap<api.Literal>(self).content.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Literal$get$inlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Literal>(self).inlines) wrap(x),
+      ]);
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -2150,14 +2236,6 @@ final class Core {
     }
   }
 
-  JSAny? OtherInline$get$context(JSAny? self) {
-    try {
-      return rt.unwrap<api.OtherInline>(self).context.toJS;
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
   JSAny? Paragraph$get$source(JSAny? self) {
     try {
       return rt.unwrap<api.Paragraph>(self).source.toJS;
@@ -2169,6 +2247,16 @@ final class Core {
   JSAny? Paragraph$get$content(JSAny? self) {
     try {
       return rt.unwrap<api.Paragraph>(self).content.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Paragraph$get$inlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Paragraph>(self).inlines) wrap(x),
+      ]);
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -2193,6 +2281,16 @@ final class Core {
   JSAny? Passthrough$get$content(JSAny? self) {
     try {
       return rt.unwrap<api.Passthrough>(self).content.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Passthrough$get$inlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Passthrough>(self).inlines) wrap(x),
+      ]);
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -2303,6 +2401,16 @@ final class Core {
   JSAny? Stem$get$content(JSAny? self) {
     try {
       return rt.unwrap<api.Stem>(self).content.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Stem$get$inlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Stem>(self).inlines) wrap(x),
+      ]);
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -2474,6 +2582,16 @@ final class Core {
   JSAny? Verse$get$content(JSAny? self) {
     try {
       return rt.unwrap<api.Verse>(self).content.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Verse$get$inlines(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Verse>(self).inlines) wrap(x),
+      ]);
     } catch (e, s) {
       rt.fail(e, s);
     }

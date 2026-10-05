@@ -288,6 +288,15 @@ export declare const StemNotation: {
 };
 
 /**
+ * A piece of inline content: text, or an inline element.
+ *
+ * {@link Block.titleInlines} and the `inlines` of paragraphs, other blocks of
+ * text and list items give the content of a text as a list of these, for
+ * code that renders it without parsing HTML.
+ */
+export type InlineContent = InlineText | Inline;
+
+/**
  * Parses and converts AsciiDoc with one configuration.
  *
  * An instance holds everything that shapes a conversion: the safe mode,
@@ -665,6 +674,19 @@ export declare class InlineMacroContext {
 }
 
 /**
+ * Text between inline elements.
+ */
+export declare class InlineText {
+  protected constructor();
+  readonly html: string;
+  /**
+   * The text itself: character references decoded (and the tags of any
+   * raw HTML passed through left out).
+   */
+  readonly text: string;
+}
+
+/**
  * A node of a document: the document itself, a block, a list item, a
  * table cell, or an inline element.
  *
@@ -765,6 +787,11 @@ export declare abstract class Block extends Node {
    * The blocks directly inside this one.
    */
   readonly blocks: Block[];
+  /**
+   * The block's title as inline content (see {@link InlineContent}); empty
+   * without a title. Applies the title substitutions.
+   */
+  readonly titleInlines: InlineContent[];
   readonly plainText: string;
   /**
    * Adds {@link block} as the last block inside this one.
@@ -845,8 +872,8 @@ export declare class IncludeResolver extends Extension {
 /**
  * An inline element: formatted text, a link, an inline image, and so on.
  *
- * Inline elements reach code through output overrides and macro
- * extensions. Their {@link text} is already converted.
+ * Inline elements reach code through the `inlines` of blocks, output
+ * overrides and macro extensions. Their {@link text} is already converted.
  */
 export declare abstract class Inline extends Node {
   protected constructor();
@@ -854,6 +881,12 @@ export declare abstract class Inline extends Node {
    * The converted text of the element, if it has text.
    */
   readonly text: string | null;
+  /**
+   * The content of the element's text, for an element from `inlines`
+   * whose text is part of the text around it (formatted text, a link, a
+   * line break); empty otherwise.
+   */
+  readonly children: InlineContent[];
   readonly plainText: string;
 }
 
@@ -920,6 +953,12 @@ export declare class Admonition extends Block {
    * the converted child blocks for an admonition block.
    */
   readonly content: string;
+  /**
+   * The paragraph text of an admonition paragraph as inline content (see
+   * {@link InlineContent}); empty for an admonition block. Applies the
+   * substitutions, as {@link content} does.
+   */
+  readonly inlines: InlineContent[];
   readonly plainText: string;
 }
 
@@ -1037,6 +1076,11 @@ export declare class Document extends Block {
    * substitutions; `null` when the header has no title.
    */
   readonly sourceTitle: string | null;
+  /**
+   * The document title as inline content (see {@link InlineContent}); empty
+   * without a title.
+   */
+  readonly titleInlines: InlineContent[];
   /**
    * The attributes the document header sets, in source order: name to
    * value, or to `null` for an attribute it unsets (`:name!:`). Unlike
@@ -1241,6 +1285,11 @@ export declare class ListItem extends Block {
    */
   readonly content: string;
   /**
+   * The text of the item as inline content (see {@link InlineContent}).
+   * Applies the substitutions, as {@link content} does.
+   */
+  readonly inlines: InlineContent[];
+  /**
    * For a checklist item, whether it is checked; otherwise `null`.
    */
   readonly checked: boolean | null;
@@ -1265,6 +1314,11 @@ export declare class Listing extends Block {
    * characters escaped for verbatim text.
    */
   readonly content: string;
+  /**
+   * The text as inline content (see {@link InlineContent}): text and the inline
+   * elements in it, nested. Applies the substitutions, as {@link content} does.
+   */
+  readonly inlines: InlineContent[];
   readonly plainText: string;
 }
 
@@ -1282,6 +1336,11 @@ export declare class Literal extends Block {
    * characters escaped for verbatim text.
    */
   readonly content: string;
+  /**
+   * The text as inline content (see {@link InlineContent}): text and the inline
+   * elements in it, nested. Applies the substitutions, as {@link content} does.
+   */
+  readonly inlines: InlineContent[];
   readonly plainText: string;
 }
 
@@ -1340,18 +1399,6 @@ export declare class OtherBlock extends Block {
 }
 
 /**
- * An inline element of a kind asciidart does not define, created by an
- * extension.
- */
-export declare class OtherInline extends Inline {
-  protected constructor();
-  /**
-   * The element's context, as the extension named it.
-   */
-  readonly context: string;
-}
-
-/**
  * A page break (`<<<`).
  */
 export declare class PageBreak extends Block {
@@ -1372,6 +1419,11 @@ export declare class Paragraph extends Block {
    * characters escaped for verbatim text.
    */
   readonly content: string;
+  /**
+   * The text as inline content (see {@link InlineContent}): text and the inline
+   * elements in it, nested. Applies the substitutions, as {@link content} does.
+   */
+  readonly inlines: InlineContent[];
   readonly plainText: string;
 }
 
@@ -1389,6 +1441,11 @@ export declare class Passthrough extends Block {
    * characters escaped for verbatim text.
    */
   readonly content: string;
+  /**
+   * The text as inline content (see {@link InlineContent}): text and the inline
+   * elements in it, nested. Applies the substitutions, as {@link content} does.
+   */
+  readonly inlines: InlineContent[];
   readonly plainText: string;
 }
 
@@ -1465,6 +1522,11 @@ export declare class Stem extends Block {
    * characters escaped for verbatim text.
    */
   readonly content: string;
+  /**
+   * The text as inline content (see {@link InlineContent}): text and the inline
+   * elements in it, nested. Applies the substitutions, as {@link content} does.
+   */
+  readonly inlines: InlineContent[];
   readonly plainText: string;
 }
 
@@ -1573,6 +1635,11 @@ export declare class Verse extends Block {
    * characters escaped for verbatim text.
    */
   readonly content: string;
+  /**
+   * The text as inline content (see {@link InlineContent}): text and the inline
+   * elements in it, nested. Applies the substitutions, as {@link content} does.
+   */
+  readonly inlines: InlineContent[];
   readonly plainText: string;
 }
 

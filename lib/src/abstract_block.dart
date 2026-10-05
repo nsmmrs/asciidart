@@ -12,8 +12,10 @@ import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/document.dart' show DocumentAttributeEntry;
 import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/inline_tree.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
+import 'package:asciidart/src/substitutors.dart' show applySubsTree;
 import 'package:meta/meta.dart';
 
 /// Maps ordered-list styles to their HTML marker keywords.
@@ -399,6 +401,14 @@ abstract class AbstractBlock extends AbstractNode {
   String? get title {
     final source = _title;
     return _convertedTitle ??= source == null ? null : applyTitleSubs(source);
+  }
+
+  /// The inline content of the title of this block (see
+  /// `applySubsTree`); empty without a title. Applies the title
+  /// substitutions again.
+  List<InlineContent> titleInlines() {
+    final source = _title;
+    return source == null ? [] : applySubsTree(this, source);
   }
 
   /// Whether this block has a title.

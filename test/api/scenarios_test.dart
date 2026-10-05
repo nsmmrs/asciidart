@@ -157,6 +157,34 @@ void main() {
       _ => '',
     };
 
+    test('inline content as a tree', () {
+      String md(InlineContent content) => switch (content) {
+        InlineText(:final text) => text,
+        Formatted(kind: FormattedKind.strong, :final children) =>
+          '**${children.map(md).join()}**',
+        Formatted(kind: FormattedKind.emphasis, :final children) =>
+          '_${children.map(md).join()}_',
+        Link(:final target, :final children) =>
+          '[${children.map(md).join()}]($target)',
+        final Inline other => other.plainText,
+      };
+      final doc = asciidoc.parse(
+        '= The *Guide*\n\n'
+        'Read *the https://example.org[_fine_ manual]* -- now.\n\n'
+        '* an *item*',
+      );
+      final paragraph = doc.blocks.first as Paragraph;
+      expect(
+        paragraph.inlines.map(md).join(),
+        'Read **the [_fine_ manual](https://example.org)**\u2009—\u2009now.',
+      );
+      final item = doc.descendants<ListItem>().single;
+      expect(item.inlines.map(md).join(), 'an **item**');
+      expect(doc.titleInlines.map(md).join(), 'The **Guide**');
+      // The converted text is the same as before.
+      expect(paragraph.content, contains('<strong>the <a href'));
+    });
+
     test('an exhaustive switch over blocks', () {
       final doc = asciidoc.parse(guide);
       expect(doc.blocks.map(render).join(), '''
