@@ -142,7 +142,8 @@ reproducers of each.
 ## EPUB3 (`-b epub3`)
 
 The native executable converts to EPUB 3 as the asciidoctor-epub3 2.3.0
-gem does (on Asciidoctor 2.0.26), checked file by file by
+gem does on the asciidoctor gem built from upstream `main`
+(2.1.0.alpha.0), checked file by file by
 `tool/epub_parity.dart`: the entries of the EPUB, their order (`mimetype`
 first, stored), and the bytes of every file once the dates that change
 with each run (`dcterms:modified`, `dc:date`) are set aside; the messages
@@ -150,7 +151,10 @@ too. ZIP compression is not compared (zlib versions differ). With
 `--epubcheck`, EPUBCheck must report the same for both EPUBs.
 
 ```sh
-gem install asciidoctor-epub3 -v 2.3.0
+# With the gem built from main installed (see above), so that it isn't
+# replaced by the 2.0 release asciidoctor-epub3 would pull in:
+gem install gepub -v 1.0.17 && gem install mime-types sass
+gem install asciidoctor-epub3 -v 2.3.0 --ignore-dependencies
 dart run tool/epub_parity.dart --exe-a "$(command -v asciidoctor-epub3)" \
   --exe-b dist/asciidart-linux-x64 --epubcheck epubcheck.jar \
   $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc')
@@ -158,9 +162,9 @@ dart run tool/epub_parity.dart --exe-a "$(command -v asciidoctor-epub3)" \
 
 Verdict (2026-10-05): the 72 documents of the gem's spec fixtures
 (`vendor/asciidoctor-epub3/test/fixtures`, run in CI) are identical, with
-the same EPUBCheck reports; so are 499 of a 500-document sample of the
-corpus (the 136 books and 364 other documents), the one left being the
-first difference below.
+the same EPUBCheck reports. On `master` (Asciidoctor 2.0.26), so are 499
+of a 500-document sample of the corpus (the 136 books and 364 other
+documents), the one left being the first difference below.
 
 Intentional differences:
 

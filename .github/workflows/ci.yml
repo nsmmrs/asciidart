@@ -93,13 +93,19 @@ jobs:
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
     - name: Check byte-identical parity with Asciidoctor 2.1.0.alpha.0
       run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidart-linux-')"
-    - name: Install asciidoctor-epub3 gem (EPUB oracle)
-      run: gem install asciidoctor-epub3 -v 2.3.0 --no-document
+    - name: Install asciidoctor-epub3 gem on the main gem (EPUB oracle)
+      # Without its asciidoctor dependency, which would bring in the 2.0
+      # release; the version line shows the Asciidoctor it runs on.
+      run: |
+        gem install --no-document gepub -v 1.0.17
+        gem install --no-document mime-types sass
+        gem install --no-document --ignore-dependencies asciidoctor-epub3 -v 2.3.0
+        asciidoctor-epub3 -v | tee /dev/stderr | grep -q 'using Asciidoctor 2.1.0'
     - name: Download EPUBCheck
       run: |
         curl -sSLo "$RUNNER_TEMP/epubcheck.zip" https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip
         unzip -q "$RUNNER_TEMP/epubcheck.zip" -d "$RUNNER_TEMP"
-    - name: Check EPUB parity with asciidoctor-epub3 2.3.0
+    - name: Check EPUB parity with asciidoctor-epub3 2.3.0 on the main gem
       run: >-
         dart run tool/epub_parity.dart
         --exe-a "$(command -v asciidoctor-epub3)"
