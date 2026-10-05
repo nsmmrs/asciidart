@@ -1,0 +1,10 @@
+= Footnotes
+:doctype: article
+
+A paragraph with a footnote.footnote:[The first footnote text.]
+
+Another paragraph with a named footnote.footnote:disclaimer[A footnote that is reused later and is long enough to wrap across lines in the footnote area at the bottom.]
+
+Reusing the named footnote.footnote:disclaimer[]
+
+A reference to a missing one.footnote:missing[]

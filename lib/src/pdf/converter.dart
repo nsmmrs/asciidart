@@ -221,6 +221,8 @@ final class PdfConverter extends BuiltInConverter
       kerning: _s('base_font_kerning') != 'none',
     );
     _sections.clear();
+    _renderedFootnotes.clear();
+    _footnoteLabels.clear();
     _out = [];
 
     // The document title, on a page of its own or above the content.
@@ -265,6 +267,7 @@ final class PdfConverter extends BuiltInConverter
     }
     if (titlePage) _out.add(_bodyMarker());
     _traverse(document);
+    _footnotes(document);
 
     final (width, height) = _pageSize(document);
     final margins = _pageMargins(document);
@@ -929,6 +932,7 @@ final class PdfConverter extends BuiltInConverter
     }
     _sections.add((section, anchor));
     _traverse(section);
+    if (chapterlike) _footnotes(section);
   }
 
   /// Whether a part has started (an appendix ends it).
@@ -4033,13 +4037,107 @@ final class PdfConverter extends BuiltInConverter
 
   String _inlineFootnote(Inline node) {
     final index = node.attr('index');
-    if (index != null) {
+    final footnote = index == null
+        ? null
+        : _document.footnotes.where((f) => f.index == index).firstOrNull;
+    if (footnote != null) {
       final anchor = node.type == 'xref'
           ? ''
           : '<a id="_footnoteref_$index">$_dummyText</a>';
-      return '<sup class="wj">$anchor[<a anchor="_footnotedef_$index">$index</a>]</sup>';
+      final label = _renderedFootnotes.contains(footnote)
+          ? _footnoteLabels[index] ?? index!
+          : '${(int.tryParse(index!) ?? 0) - _renderedFootnotes.length}';
+      return '<sup class="wj">$anchor[<a anchor="_footnotedef_$index">$label</a>]</sup>';
     }
-    return '<sup class="wj">[${node.text ?? ''}]</sup>';
+    if (node.type == 'xref') {
+      final color = _theme.value('role_unresolved_font_color')?.rubyString;
+      return '<sup class="wj"><font color="$color">[${node.text ?? ''}]</font></sup>';
+    }
+    logger.warn('unknown footnote type: ${node.type}');
+    return '';
+  }
+
+  /// The footnotes already rendered (at the end of earlier chapters).
+  final List<Footnote> _renderedFootnotes = [];
+
+  /// The labels of footnotes rendered at the end of a chapter, for
+  /// references to them later.
+  final Map<String, String> _footnoteLabels = {};
+
+  /// Adds the footnotes of [node] not yet rendered, at the bottom of the
+  /// page by default (the gem's `ink_footnotes`).
+  void _footnotes(AbstractBlock node) {
+    final doc = _document;
+    final footnotes = [
+      for (final footnote in doc.footnotes)
+        if (!_renderedFootnotes.contains(footnote)) footnote,
+    ];
+    if (footnotes.isEmpty) return;
+    if (node is Document || node == doc.blocks.lastOrNull) {
+      final margin = (_n('block_margin_bottom') ?? 0).toDouble();
+      if (margin > 0) _out.add(SpacerBox(margin));
+    }
+    final bottom = _s('footnotes_margin_top') == 'auto';
+    if (!bottom) {
+      final margin = (_n('footnotes_margin_top') ?? 0).toDouble();
+      if (margin > 0) _out.add(SpacerBox(margin));
+    }
+    final items = <CustomBox>[];
+    _withFont('footnotes', () {
+      final saved = _out;
+      _out = items;
+      if (doc.attr('footnotes-title') case final title?) {
+        final font = _themeFont(
+          'footnotes_caption',
+          _themeFont('caption', _font),
+        );
+        items.add(
+          CustomBox(
+            _textBox(title, font, align: _baseTextAlign, normalize: false),
+            style: BoxStyle(
+              margin: EdgeInsets(
+                top:
+                    (_n('footnotes_caption_margin_outside') ??
+                            _n('caption_margin_outside') ??
+                            0)
+                        .toDouble(),
+                bottom:
+                    (_n('footnotes_caption_margin_inside') ??
+                            _n('caption_margin_inside') ??
+                            0)
+                        .toDouble(),
+              ),
+            ),
+          ),
+        );
+      }
+      _out = saved;
+      final spacing = (_n('footnotes_item_spacing') ?? 0).toDouble();
+      final offset = _renderedFootnotes.length;
+      final sectionText = node is Section
+          ? node.xreftext(doc.attr('xrefstyle'))
+          : null;
+      for (final footnote in footnotes) {
+        final index = footnote.index;
+        final label = '${(int.tryParse(index) ?? 0) - offset}';
+        if (sectionText != null) {
+          _footnoteLabels[index] = '$label - $sectionText';
+        }
+        items.add(
+          CustomBox(
+            _textBox(
+              '<a id="_footnotedef_$index">$_dummyText</a>'
+              '[<a anchor="_footnoteref_$index">$label</a>] ${footnote.text}',
+              _font,
+              align: _baseTextAlign,
+            ),
+            style: BoxStyle(margin: EdgeInsets(bottom: spacing)),
+          ),
+        );
+      }
+    });
+    _renderedFootnotes.addAll(footnotes);
+    _out.add(CustomBox(_Stacked(items, bottom: bottom)));
   }
 
   String _inlineKbd(Inline node) {
@@ -4738,4 +4836,100 @@ final class _TocEntry implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => title.intrinsicWidths();
+}
+
+/// [items] one below the other, at the bottom of the region when
+/// [bottom] and they fit there (footnotes), else flowing on.
+final class _Stacked implements CustomContent {
+  const new(this.items, {required this.bottom});
+
+  final List<CustomBox> items;
+  final bool bottom;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final placements = <(CustomPlacement, double)>[];
+    var height = 0.0;
+    var fits = true;
+    for (final (i, item) in items.indexed) {
+      final margin = item.style.margin;
+      final top = i == 0 && atTop ? 0.0 : margin.top;
+      final placed = item.content.place(
+        width,
+        available - height - top,
+        atTop: atTop && height == 0,
+      );
+      if (placed == null || placed.rest != null) {
+        fits = false;
+        break;
+      }
+      placements.add((placed, height + top));
+      height += top + placed.height + margin.bottom;
+    }
+    if (!fits) {
+      if (!atTop && placements.isEmpty) return null;
+      // Flowing on: as many whole items as fit here, the rest after.
+      final rest = items.sublist(placements.length);
+      final placedHeight = placements.isEmpty
+          ? 0.0
+          : placements.last.$2 +
+                placements.last.$1.height +
+                items[placements.length - 1].style.margin.bottom;
+      if (placements.isEmpty) {
+        // Nothing fits even at the top: lay the first item out as it can.
+        final first = items.first.content.place(width, available, atTop: true);
+        if (first == null) return null;
+        return CustomPlacement(
+          height: first.height,
+          anchors: first.anchors,
+          rest: rest.length > 1 || first.rest != null
+              ? _Stacked([
+                  if (first.rest case final r?)
+                    CustomBox(r, style: items.first.style),
+                  ...rest.skip(1),
+                ], bottom: false)
+              : null,
+          paint: first.paint,
+        );
+      }
+      return CustomPlacement(
+        height: placedHeight,
+        anchors: [
+          for (final (placed, y) in placements)
+            for (final (name, x, ay) in placed.anchors) (name, x, ay + y),
+        ],
+        rest: _Stacked(rest, bottom: false),
+        paint: (page, x, top) {
+          for (final (placed, y) in placements) {
+            placed.paint(page, x, top - y);
+          }
+        },
+      );
+    }
+    final shift = bottom && available.isFinite
+        ? math.max(0, available - height - 0.0001)
+        : 0.0;
+    return CustomPlacement(
+      height: height + shift,
+      anchors: [
+        for (final (placed, y) in placements)
+          for (final (name, x, ay) in placed.anchors) (name, x, ay + y + shift),
+      ],
+      paint: (page, x, top) {
+        for (final (placed, y) in placements) {
+          placed.paint(page, x, top - shift - y);
+        }
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) => 0;
+
+  @override
+  (double, double) intrinsicWidths() => (0, 0);
 }
