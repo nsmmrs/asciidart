@@ -4,7 +4,7 @@
 ///
 /// Full port: highlighting itself runs in the browser via `run_prettify.js`,
 /// so everything here is pure string transformation (the `<pre>`/`<code>`
-/// hooks plus the head and footer loader tags). No [SourceLexer] is involved.
+/// hooks plus the head and footer loader tags).
 library;
 
 import 'package:asciidart/src/highlight/highlight.dart';

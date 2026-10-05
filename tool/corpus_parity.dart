@@ -260,6 +260,13 @@ final List<(RegExp, String)> rewordings = [
   ),
   (
     RegExp(
+      "optional gem 'coderay' is not available.*|"
+      'CodeRay syntax highlighting is not available.*',
+    ),
+    'coderay unavailable',
+  ),
+  (
+    RegExp(
       "optional gem 'asciimath' is not available.*|"
       'AsciiMath to MathML conversion is not available.*',
     ),

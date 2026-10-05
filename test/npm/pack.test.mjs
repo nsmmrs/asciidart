@@ -34,7 +34,9 @@ test('npm pack lists the expected files', () => {
     'types/logging.d.cts',
     'types/logging.d.ts',
   ])
-  // The bundle stays well under a megabyte.
+  // The bundle stays under 2.5 MB: about 0.75 MB of asciidart and 1.65 MB
+  // of the 193 highlight.js languages hilite compiles in (631 KB gzipped in
+  // all, 2026-10-05). See the board card on the bundle size.
   const bundle = report.files.find((file) => file.path === 'asciidart.js')
-  assert.ok(bundle.size < 1_000_000, `bundle is ${bundle.size} bytes`)
+  assert.ok(bundle.size < 2_500_000, `bundle is ${bundle.size} bytes`)
 })

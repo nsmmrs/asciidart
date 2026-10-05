@@ -1765,6 +1765,8 @@ void main() {
         final attrs = <String, String?>{
           'docinfo': 'shared',
           'source-highlighter': 'highlight.js',
+          // The footer script loads highlight.js in the browser.
+          'highlightjs-mode': 'client',
           'linkcss': '',
           'copycss': null,
         };

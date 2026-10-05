@@ -1,123 +1,118 @@
-/// Tests for the highlight.js adapter.
+/// highlight.js in asciidart: highlighting at conversion with hilite (the
+/// default), and the browser markup of Asciidoctor with
+/// `highlightjs-mode=client`.
 library;
 
 import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
+String convertWith(
+  String source, [
+  Map<String, String?> attributes = const {},
+]) => convert(
+  source,
+  AsciidoctorOptions(
+    safe: SafeMode.safe,
+    standalone: true,
+    attributes: {'source-highlighter': 'highlight.js', ...attributes},
+  ),
+);
+
+const ruby = '[source,ruby]\n----\nputs "hi" # greet\n----\n';
+
 void main() {
-  const adapter = HighlightJsAdapter();
-  const content = "puts 'Hello, World!'\nputs 1 + 2";
-
-  group('format', () {
-    test('emits the language and hljs hooks', () {
+  group('server-side (default)', () {
+    test('highlights source blocks at conversion', () {
+      final html = convertWith(ruby);
       expect(
-        adapter.format(content: content, language: 'ruby'),
-        '<pre class="highlightjs highlight">'
-        '<code class="language-ruby hljs" data-lang="ruby">'
-        '$content</code></pre>',
-      );
-    });
-
-    test('appends the nowrap class', () {
-      expect(
-        adapter.format(content: content, language: 'ruby', nowrap: true),
-        '<pre class="highlightjs highlight nowrap">'
-        '<code class="language-ruby hljs" data-lang="ruby">'
-        '$content</code></pre>',
-      );
-    });
-
-    test('missing language maps to language-none without data-lang', () {
-      expect(
-        adapter.format(content: content),
-        '<pre class="highlightjs highlight">'
-        '<code class="language-none hljs">$content</code></pre>',
-      );
-    });
-  });
-
-  group('hasDocinfo', () {
-    test('is true for both locations', () {
-      expect(adapter.hasDocinfo(DocinfoLocation.head), isTrue);
-      expect(adapter.hasDocinfo(DocinfoLocation.footer), isTrue);
-    });
-  });
-
-  group('docinfoHead', () {
-    test('links the default theme from the CDN', () {
-      expect(
-        adapter.docinfoHead(selfClosingSlash: '/'),
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/'
-        'highlight.js/9.18.3/styles/github.min.css"/>',
-      );
-    });
-
-    test('honors a custom directory and theme', () {
-      expect(
-        adapter.docinfoHead(
-          highlightjsDir: 'https://x.test/hj',
-          theme: 'monokai',
-          selfClosingSlash: '/',
+        html,
+        contains(
+          '<pre class="highlightjs highlight">'
+          '<code class="language-ruby hljs" data-lang="ruby">'
+          'puts <span class="hljs-string">&quot;hi&quot;</span> '
+          '<span class="hljs-comment"># greet</span></code></pre>',
         ),
-        '<link rel="stylesheet" '
-        'href="https://x.test/hj/styles/monokai.min.css"/>',
       );
     });
 
-    test('omits the slash by default', () {
-      expect(adapter.docinfoHead(), endsWith('.min.css">'));
+    test("links the theme stylesheet only, for hilite's version", () {
+      final html = convertWith(ruby, {'highlightjs-theme': 'monokai'});
+      expect(
+        html,
+        contains(
+          '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/'
+          'highlight.js/11.12.0/styles/monokai.min.css">',
+        ),
+      );
+      expect(html, isNot(contains('<script')));
+    });
+
+    test('honors highlightjsdir', () {
+      final html = convertWith(ruby, {'highlightjsdir': 'hl'});
+      expect(
+        html,
+        contains('<link rel="stylesheet" href="hl/styles/github.min.css">'),
+      );
+    });
+
+    test('leaves blocks without a language, or with an unknown one, alone', () {
+      final html = convertWith(
+        '[source]\n----\na < b\n----\n\n'
+        '[source,nosuchlang]\n----\na < b\n----\n',
+      );
+      expect(
+        html,
+        contains('<code class="language-none hljs">a &lt; b</code>'),
+      );
+      expect(
+        html,
+        contains(
+          '<code class="language-nosuchlang hljs" data-lang="nosuchlang">'
+          'a &lt; b</code>',
+        ),
+      );
+    });
+
+    test('puts callouts at line ends, outside the spans', () {
+      final html = convertWith(
+        '[source,js]\n----\n/* a\nb */ x(); // <1>\ny(); // <2>\n----\n'
+        '<1> one\n<2> two\n',
+      );
+      expect(
+        html,
+        contains(
+          '<span class="hljs-comment">/* a</span>\n'
+          '<span class="hljs-comment">b */</span> ',
+        ),
+      );
+      expect(html, contains('<b class="conum">(1)</b>'));
+      expect(html, contains('<b class="conum">(2)</b>'));
     });
   });
 
-  group('docinfoFooter', () {
-    const cdn = 'https://cdnjs.cloudflare.com/ajax/libs';
-    const bootstrap =
-        '<script>\n'
-        'if (!hljs.initHighlighting.called) {\n'
-        '  hljs.initHighlighting.called = true\n'
-        "  ;[].slice.call(document.querySelectorAll('pre.highlight > "
-        "code[data-lang]')).forEach(function (el) { "
-        'hljs.highlightBlock(el) })\n'
-        '}\n'
-        '</script>';
-
-    test('loads the bundle and bootstraps highlighting', () {
+  group('client-side (highlightjs-mode=client)', () {
+    test('marks up blocks for the browser and loads highlight.js', () {
+      final html = convertWith(ruby, {'highlightjs-mode': 'client'});
       expect(
-        adapter.docinfoFooter(),
-        '<script src="$cdn/highlight.js/9.18.3/highlight.min.js"></script>\n'
-        '$bootstrap',
+        html,
+        contains(
+          '<code class="language-ruby hljs" data-lang="ruby">'
+          'puts "hi" # greet</code>',
+        ),
       );
+      expect(html, contains('highlight.js/9.18.3/styles/github.min.css'));
+      expect(html, contains('highlight.js/9.18.3/highlight.min.js'));
     });
+  });
 
-    test('loads extra languages, left-stripping each entry', () {
-      expect(
-        adapter.docinfoFooter(languagesAttr: 'ruby, python'),
-        '<script src="$cdn/highlight.js/9.18.3/highlight.min.js"></script>\n'
-        '<script src="$cdn/highlight.js/9.18.3/languages/ruby.min.js">'
-        '</script>\n'
-        '<script src="$cdn/highlight.js/9.18.3/languages/python.min.js">'
-        '</script>\n'
-        '$bootstrap',
-      );
-    });
-
-    test('empty languages attribute loads no extra languages', () {
-      expect(
-        adapter.docinfoFooter(languagesAttr: ''),
-        '<script src="$cdn/highlight.js/9.18.3/highlight.min.js"></script>\n'
-        '$bootstrap',
-      );
-    });
-
-    test('trailing empty entries are dropped like Ruby split', () {
-      expect(
-        adapter.docinfoFooter(languagesAttr: 'ruby,'),
-        contains('languages/ruby.min.js'),
-      );
-      expect(
-        adapter.docinfoFooter(languagesAttr: 'ruby,'),
-        isNot(contains('languages/.min.js')),
-      );
-    });
+  test('splitSpansAtLines closes and reopens spans around newlines', () {
+    expect(
+      splitSpansAtLines(
+        '<span class="a">x\n<span class="b">y\nz</span></span>\nw',
+      ),
+      '<span class="a">x</span>\n'
+      '<span class="a"><span class="b">y</span></span>\n'
+      '<span class="a"><span class="b">z</span></span>\nw',
+    );
   });
 }

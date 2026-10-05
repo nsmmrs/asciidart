@@ -34,6 +34,10 @@ Asciidoctor project.
   release it is compatible with; `man/asciidart.1` documents it.
   `init-config` generates a project for a custom command with Dart converter
   functions compiled in.
+- Syntax highlighting with highlight.js at conversion (hilite, a Dart port
+  of highlight.js 11.12.0); `highlightjs-mode=client` gives Asciidoctor's
+  browser-side markup. Rouge, Pygments and CodeRay behave as when their gems
+  are missing.
 - Custom converters: Mustache templates (`-T`, `templateDirs`) and HTML
   overrides in Dart, in place of Ruby's Tilt templates (ADR-0002).
 - `{asciidoctor-version}` (and `asciidoctorVersion` in the API) report

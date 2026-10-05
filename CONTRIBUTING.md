@@ -9,7 +9,7 @@ unless the difference is deliberate and listed in `benchmark/PARITY.md`
 
 - Dart SDK 3.13 or later
 - For the parity gates: Ruby with the gem
-  (`gem install asciidoctor -v 2.0.26 && gem install coderay pygments.rb`)
+  (`gem install asciidoctor -v 2.0.26`, without optional gems)
   and [bats](https://github.com/bats-core/bats-core)
 - For the npm package: Node.js 20.19 or later (and Chromium for the browser
   test)
@@ -49,7 +49,8 @@ dart run tool/corpus_parity.dart --exe-a asciidoctor \
   --exe-b dist/asciidart-linux-x64 --out /tmp/corpus-results /tmp/corpus
 ```
 
-Use a gem install whose only optional gem is CodeRay as `--exe-a`. Every
+Use a gem install without optional gems as `--exe-a`, and run asciidart
+with `-a highlightjs-mode=client` (see `benchmark/PARITY.md`). Every
 difference it finds deserves a reproducer in `test/parity/`.
 
 ## The npm package

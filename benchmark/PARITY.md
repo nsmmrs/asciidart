@@ -16,7 +16,7 @@ upstream `main` (2.1.0.alpha.0) is preserved on the `2.1.0` branch.
 - `vendor/asciidoctor/test/fixtures/**` (upstream's fixtures, `*.adoc`,
   `*.asciidoc`, recursive) plus
   `vendor/asciidoctor/data/reference/syntax.adoc`: 30 files per backend.
-- `test/parity/**` (documents of our own) plus the syntax reference: 14 files
+- `test/parity/**` (documents of our own) plus the syntax reference: 12 files
   per backend. These pin the places where 2.0.26 differs from upstream
   `main` (tilde open blocks, ordered list starts, `link=self`, front matter,
   table and manpage layout, ...) and the differences the corpus check found;
@@ -38,19 +38,19 @@ is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
 native executable (`dart-exe-e2e` job) and against the npm package's CLI on
 Node.js (`npm` job, `tool/parity.sh test/e2e/bin/asciidart-node`).
 
-## Verdict (2026-10-05): PASS — 132/132 identical
+## Verdict (2026-10-05): PASS — 126/126 identical
 
 | Corpus | html5 | docbook5 | manpage |
 | --- | --: | --: | --: |
 | fixtures | 30/30 | 30/30 | 30/30 |
-| parity | 14/14 | 14/14 | 14/14 |
+| parity | 12/12 | 12/12 | 12/12 |
 
 Warnings on stderr were compared by hand over the parity corpus and match
 too (the harness passes `-q`). The e2e suite (`test/e2e/`, 134 tests) passes
 with no skips against the Dart CLI, the Node.js CLI and the gem. The Node.js
-CLI gives the same 132/132.
+CLI gives the same 126/126.
 
-## Corpus check (2026-10-04): 17,896 of 17,900 conversions identical
+## Corpus check (2026-10-05): 17,900 of 17,900 conversions identical
 
 Beyond the gate above, `tool/corpus_parity.dart` compares stdout, warnings
 and exit codes over a large corpus of real documents: the Asciidoctor
@@ -63,20 +63,21 @@ converted as html5, embedded html5, docbook5 and manpage.
 ```sh
 tool/corpus/fetch.sh /tmp/corpus           # pinned in tool/corpus/sources.txt
 dart run tool/corpus_parity.dart --exe-a asciidoctor \
-  --exe-b dist/asciidart-linux-x64 --out /tmp/corpus-results /tmp/corpus
+  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client" \
+  --out /tmp/corpus-results /tmp/corpus
 ```
 
-The reference is the 2.0.26 gem with CodeRay as its only optional gem, the
-one optional library the port implements (with Rouge or Pygments installed,
-the gem highlights where the port cannot). The check found and drove fixes
+The reference is the 2.0.26 gem without optional gems (asciidart provides
+none of Rouge, Pygments, CodeRay or AsciiMath, and behaves as the gem does
+without them), and asciidart runs with `highlightjs-mode=client` so that
+documents using highlight.js compare with the gem's browser markup (see the
+intentional differences). The check found and drove fixes
 for: `cols=""`, `%autowidth` with a width, nested description list items
 with attached blocks, line breaks in AsciiMath blocks, Ruby's ASCII-only
 `\s` and `strip` against Unicode spaces, `\p{Blank}`, full case mapping
 (`ß` → `SS`), a dropped table cell's line number, an empty block anchor
 crash, and the missing "not available" warnings. `test/parity/` keeps
 reproducers of each.
-
-The 4 remaining differences are CodeRay highlighting of Java (see below).
 
 ## Known intentional differences
 
@@ -115,14 +116,20 @@ The 4 remaining differences are CodeRay highlighting of Java (see below).
   extensions are compiled into a custom binary instead (see
   `asciidart init-config`). `-q` silences log messages only, since there
   are no script warnings.
-- Features the port does not implement warn in its own words, once, where
-  the gem names a missing gem: `Rouge syntax highlighting is not available.
-  Functionality disabled.` (likewise Pygments), and `AsciiMath to MathML
-  conversion is not available. Functionality disabled.` for DocBook. The
-  output is the gem's output without those gems.
+- highlight.js is asciidart's syntax highlighter, and highlights at
+  conversion: with `source-highlighter=highlight.js`, source blocks come out
+  highlighted (by hilite, a Dart port of highlight.js 11.12.0, byte for byte
+  what highlight.js produces in the browser), and the page links only the
+  theme's stylesheet (highlight.js 11.12.0 on the CDN, or `highlightjsdir`).
+  The gem's behavior, markup for the browser plus the highlight.js 9.18.3
+  scripts, is `highlightjs-mode=client`. Blocks with callouts have their
+  spans closed at each line end, so the callout numbers sit outside them.
+- Rouge, Pygments and CodeRay are not available: they behave as the gem does
+  without their gems (no highlighting, the highlighter's `<pre>` class kept),
+  and warn in asciidart's words, once: `Rouge syntax highlighting is not
+  available. Functionality disabled.` (likewise Pygments and CodeRay).
+  `AsciiMath to MathML conversion is not available. Functionality disabled.`
+  is the DocBook counterpart for AsciiMath.
 - The `missing convert handler` warning names the converter by its Dart
   class (`ManpageConverter`) instead of the Ruby one
   (`Asciidoctor::Converter::ManPageConverter`).
-- CodeRay highlights only Ruby and plain text: its other scanners are not
-  ported, and a source block in another language with
-  `source-highlighter=coderay` fails the conversion (the gem highlights it).

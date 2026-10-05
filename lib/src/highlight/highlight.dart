@@ -1,25 +1,9 @@
-/// Shared types for the syntax-highlighter adapters.
+/// Shared types for the syntax highlighters: the option vocabulary, the
+/// result of highlighting, and the `Base#format` wrapper of
+/// `lib/asciidoctor/syntax_highlighter.rb`.
 ///
-/// Dart port of the adapter-facing surface of
-/// `lib/asciidoctor/syntax_highlighter.rb` (the `Base#format` wrapper and the
-/// option vocabulary) plus the [SourceLexer] seam behind which the
-/// server-side lexing backends (Rouge, CodeRay, Pygments) hide.
-///
-/// The `SyntaxHighlighter` framework (registry, factory, `Document`
-/// integration) lives in `syntax_highlighter.dart`. The adapters in this
-/// directory are pure string transformers; every value they need from a node or
-/// document arrives as an explicit parameter.
-///
-/// ## The lexer seam
-///
-/// The server-side adapters (`CodeRayAdapter`, `PygmentsAdapter`,
-/// `RougeAdapter`) accept an optional [SourceLexer]. Constructed without
-/// one, they report `canHighlight == false` and throw [UnimplementedError]
-/// from `highlight`. Stylesheet queries degrade like Asciidoctor's adapters
-/// do when their library is unavailable (fallback comment / default style).
-/// CodeRay ships a real backend (`CodeRaySourceLexer`, wired as the factory
-/// default); Rouge and Pygments have no built-in lexer, so they highlight
-/// only when one is supplied. Tests inject fakes (see `test/highlight/`).
+/// The framework (registry, factory, `Document` integration) lives in
+/// `syntax_highlighter.dart`.
 library;
 
 import 'package:asciidart/src/path_resolver.dart';
@@ -80,68 +64,6 @@ enum DocinfoLocation {
   footer,
 }
 
-/// Immutable description of one server-side highlight operation.
-///
-/// This is the request object passed to [SourceLexer.highlight]: the
-/// highlight options (CSS mode, line numbering, first line number,
-/// emphasized lines, style) plus the node-derived values lexing needs
-/// (`mixed`).
-class HighlightRequest {
-  /// Creates an immutable highlight request.
-  const new({
-    required this.source,
-    this.language,
-    this.cssMode = CssMode.classes,
-    this.numberLines,
-    this.startLineNumber = 1,
-    this.highlightLines = const [],
-    this.style,
-    this.mixed = false,
-  });
-
-  /// The raw source text to highlight (callouts already extracted).
-  final String source;
-
-  /// The source language as written on the block, or `null` when absent.
-  ///
-  /// May carry cgi-style options (e.g., `ruby?foo=bar`); resolving those is
-  /// the lexer's job. Implementations must fall back to plain text for
-  /// unknown or absent languages.
-  final String? language;
-
-  /// Whether to emit classes ([CssMode.classes]) or inline styles.
-  final CssMode cssMode;
-
-  /// How to number lines, or `null` to omit line numbers.
-  final LineNumbersMode? numberLines;
-
-  /// The 1-based number of the first line, or `null` for the backend default.
-  ///
-  /// The Pygments adapter passes this through untouched (a `null` value
-  /// takes the non-table path); the
-  /// Rouge and CodeRay adapters coerce `null` to `1`.
-  final int? startLineNumber;
-
-  /// The 1-based line numbers to emphasize. Empty means none.
-  ///
-  /// Passed through to the backend (space-joined for Pygments); the Rouge
-  /// adapter additionally
-  /// applies its own `<span class="hll">` wrapping.
-  final List<int> highlightLines;
-
-  /// The resolved style (theme) name, if the adapter resolves one.
-  ///
-  /// The Rouge and Pygments adapters resolve the requested style (falling
-  /// back to their default) before lexing; CodeRay ignores styles.
-  final String? style;
-
-  /// Whether the block carries the `mixed` option (PHP start-inline hint).
-  ///
-  /// PHP is lexed starting inline unless the block is mixed; the lexer owns
-  /// the language half of that test, the adapter supplies this flag.
-  final bool mixed;
-}
-
 /// The result of one server-side highlight operation.
 ///
 /// [sourceOffset] is the index into [html] where
@@ -157,50 +79,6 @@ class HighlightResult {
 
   /// The callout-restoration offset, or `null` when not applicable.
   final int? sourceOffset;
-}
-
-/// Lexing backend behind the server-side adapters.
-///
-/// Implementations wrap a real lexing library (Rouge, CodeRay, Pygments).
-/// Each server-side adapter documents which members it uses:
-///
-/// * CodeRay uses only [highlight]; its stylesheet is a static asset, so the
-///   style members are never called and may throw [UnimplementedError].
-/// * Pygments uses every member. [highlight] must return the backend's raw
-///   wrapper output (the `<div class="lineno">...` envelope), or `null` when
-///   the backend fails; the adapter applies its post-processing regexes.
-/// * Rouge uses every member. [highlight] must return the delegate-formatted
-///   inner HTML with `\n` line separators and no line decorations; spans must
-///   not cross line boundaries (upstream, `RougeExt` guarantees this via
-///   `token_lines`). The adapter applies line highlighting and numbering.
-///   A `null` response is a backend failure and surfaces as [StateError].
-///
-/// Returning `null` from [stylesheet] mirrors a backend CSS-generation
-/// failure (Pygments reports `/* Failed to load Pygments CSS. */`); returning
-/// `null` from [baseStyle] means the style contributes no `<pre>` inline
-/// style (the adapter then emits no `style` attribute).
-abstract interface class SourceLexer {
-  /// The backend name (`rouge`, `coderay`, or `pygments`).
-  String get name;
-
-  /// Highlights `request.source` and returns the raw backend HTML.
-  ///
-  /// See the interface documentation for the per-adapter output contract.
-  /// Returns `null` when the backend fails (handled per adapter).
-  String? highlight(HighlightRequest request);
-
-  /// Whether [style] names a theme the backend can render.
-  bool styleAvailable(String style);
-
-  /// The inline `<pre>` style for [style], or `null` when there is none.
-  ///
-  /// Rouge derives this from the theme foreground/background
-  /// (e.g., `color: #f8f8f2;background-color: #49483e`); Pygments extracts the
-  /// `pre.pygments { ... }` rule body (e.g., `background: #f8f8f8;`).
-  String? baseStyle(String style);
-
-  /// The full rendered stylesheet for [style], or `null` on failure.
-  String? stylesheet(String style);
 }
 
 /// Wraps converted source in `<pre>` / `<code>` tags.

@@ -3,6 +3,8 @@ description: AsciiDoc processor for Dart, compatible with Asciidoctor 2.0.26. Co
 version: 0.1.0
 repository: https://github.com/nsmmrs/asciidart
 issue_tracker: https://github.com/nsmmrs/asciidart/issues
+# Not publishable while hilite is a git dependency (publish hilite first).
+publish_to: none
 topics:
   - asciidoc
   - documentation
@@ -17,6 +19,11 @@ executables:
 
 dependencies:
   args: ^2.4.0
+  # highlight.js for Dart; not on pub.dev yet, so pinned to a commit.
+  hilite:
+    git:
+      url: https://github.com/nsmmrs/hilite.git
+      ref: ab4473c8131c2947c9ff9170d70621ed27f31411
   meta: ^1.16.0
   mustache_template: ^2.0.6
 

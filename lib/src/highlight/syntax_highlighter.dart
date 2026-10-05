@@ -28,25 +28,19 @@ library;
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/highlight/coderay.dart';
-import 'package:asciidart/src/highlight/coderay_lexer.dart';
 import 'package:asciidart/src/highlight/highlight.dart';
 import 'package:asciidart/src/highlight/highlightjs.dart';
 import 'package:asciidart/src/highlight/html_pipeline.dart';
 import 'package:asciidart/src/highlight/prettify.dart';
-import 'package:asciidart/src/highlight/pygments.dart';
-import 'package:asciidart/src/highlight/rouge.dart';
+import 'package:asciidart/src/highlight/unavailable.dart';
 
 /// The context a highlighter is created in.
 final class HighlighterOptions {
   /// Creates highlighter options.
-  const new({this.document, this.lexer});
+  const new({this.document});
 
   /// The document being converted, if known.
   final Document? document;
-
-  /// The lexing backend the built-in server-side highlighters use, if any.
-  final SourceLexer? lexer;
 }
 
 /// Options for formatting a source block.
@@ -271,28 +265,21 @@ abstract final class SyntaxHighlighter {
       }
     }
 
-    // CodeRay ships a real default backend; rouge and pygments resolve
-    // theirs from the `lexer` option only (no Dart ports of those lexing
-    // libraries exist yet), so they stay unavailable until one is wired.
+    // highlight.js is asciidart's highlighter (hilite); html-pipeline and
+    // prettify only emit markup for tools that highlight later. Rouge,
+    // Pygments and CodeRay behave as without their gems.
     add(
-      (opts) =>
-          CodeRayHighlighter(lexer: opts.lexer ?? const CodeRaySourceLexer()),
-      CodeRayAdapter.registeredNames,
+      (opts) => HighlightJsHighlighter(document: opts.document),
+      HighlightJsAdapter.registeredNames,
     );
-    add((opts) => HighlightJsHighlighter(), HighlightJsAdapter.registeredNames);
     add(
       (opts) => HtmlPipelineHighlighter(),
       HtmlPipelineAdapter.registeredNames,
     );
     add((opts) => PrettifyHighlighter(), PrettifyAdapter.registeredNames);
-    add(
-      (opts) => PygmentsHighlighter(lexer: opts.lexer),
-      PygmentsAdapter.registeredNames,
-    );
-    add(
-      (opts) => RougeHighlighter(lexer: opts.lexer),
-      RougeAdapter.registeredNames,
-    );
+    add((opts) => UnavailableHighlighter.pygments(), const ['pygments']);
+    add((opts) => UnavailableHighlighter.rouge(), const ['rouge']);
+    add((opts) => UnavailableHighlighter.coderay(), const ['coderay']);
   }
 }
 
@@ -348,124 +335,6 @@ class SyntaxHighlighterDefaultFactoryProxy extends SyntaxHighlighterFactory {
   @override
   SyntaxHighlighterFactoryFn? forName(String name) =>
       _registry[name] ?? SyntaxHighlighter.forName(name);
-}
-
-/// Framework binding for the CodeRay adapter.
-///
-/// Server-side highlighter. `format` is inherited from
-/// [SyntaxHighlighterBase].
-class CodeRayHighlighter extends SyntaxHighlighterBase {
-  /// Creates a CodeRay highlighter, optionally with a [lexer] backend.
-  ///
-  /// Without a backend [canHighlight] is `false`, as when Asciidoctor
-  /// cannot load the `coderay` library.
-  new({SourceLexer? lexer}) : adapter = CodeRayAdapter(lexer: lexer);
-
-  /// The bound string-transformer adapter.
-  final CodeRayAdapter adapter;
-
-  @override
-  String get name => CodeRayAdapter.name;
-
-  @override
-  String get preClass => CodeRayAdapter.preClass;
-
-  @override
-  bool get canHighlight => adapter.canHighlight;
-
-  @override
-  HighlightResult highlight(
-    AbstractBlock node,
-    String source,
-    String? language, {
-    Map<int, String>? callouts,
-    CssMode cssMode = CssMode.classes,
-    List<int> highlightLines = const <int>[],
-    LineNumbersMode? numberLines,
-    int? startLineNumber = 1,
-    String? style,
-  }) => adapter.highlight(
-    source: source,
-    language: language,
-    cssMode: cssMode,
-    numberLines: numberLines,
-    startLineNumber: startLineNumber,
-    highlightLines: highlightLines,
-    hasCallouts: callouts != null && callouts.isNotEmpty,
-  );
-
-  @override
-  bool hasDocinfo(String location) => adapter.hasDocinfo(
-    location == 'head' ? DocinfoLocation.head : DocinfoLocation.footer,
-  );
-
-  @override
-  String docinfo(
-    String location,
-    Document node, {
-    required String cdnBaseUrl,
-    required bool linkcss,
-    required String selfClosingTagSlash,
-  }) => adapter.docinfoHead(
-    linkCss: linkcss,
-    stylesDir: node.attr('stylesdir') ?? '',
-    selfClosingSlash: selfClosingTagSlash,
-  );
-
-  @override
-  bool wantsStylesheetFile(Document doc) => adapter.wantsStylesheetFile;
-
-  @override
-  void writeStylesheet(Document doc, String toDir) =>
-      adapter.writeStylesheet(toDir);
-}
-
-/// Framework binding for the highlight.js adapter.
-///
-/// Client-side highlighter: [format] emits the markup hooks and [docinfo]
-/// the loader tags. Highlighting itself runs in the browser, so
-/// [canHighlight] stays `false`.
-class HighlightJsHighlighter extends SyntaxHighlighterBase {
-  /// The bound string-transformer adapter.
-  final HighlightJsAdapter adapter = const HighlightJsAdapter();
-
-  @override
-  String get name => HighlightJsAdapter.name;
-
-  @override
-  String format(AbstractBlock node, String? language, FormatOptions opts) =>
-      adapter.format(
-        content: node.content() ?? '',
-        language: language,
-        nowrap: opts.nowrap,
-      );
-
-  @override
-  bool hasDocinfo(String location) => true;
-
-  @override
-  String docinfo(
-    String location,
-    Document node, {
-    required String cdnBaseUrl,
-    required bool linkcss,
-    required String selfClosingTagSlash,
-  }) {
-    final highlightjsDir = node.attr('highlightjsdir');
-    if (location == 'head') {
-      return adapter.docinfoHead(
-        highlightjsDir: highlightjsDir,
-        theme: node.attr('highlightjs-theme', 'github')!,
-        cdnBaseUrl: cdnBaseUrl,
-        selfClosingSlash: selfClosingTagSlash,
-      );
-    }
-    return adapter.docinfoFooter(
-      highlightjsDir: highlightjsDir,
-      languagesAttr: node.attr('highlightjs-languages'),
-      cdnBaseUrl: cdnBaseUrl,
-    );
-  }
 }
 
 /// Framework binding for the html-pipeline adapter.
@@ -535,162 +404,6 @@ class PrettifyHighlighter extends SyntaxHighlighterBase {
       cdnBaseUrl: cdnBaseUrl,
     );
   }
-}
-
-/// Framework binding for the Pygments adapter.
-///
-/// Server-side highlighter with generated stylesheets.
-class PygmentsHighlighter extends SyntaxHighlighterBase {
-  /// Creates a Pygments highlighter, optionally with a [lexer] backend.
-  ///
-  /// Without a backend [canHighlight] is `false`, as when Asciidoctor
-  /// cannot load the `pygments` library.
-  new({SourceLexer? lexer}) : adapter = PygmentsAdapter(lexer: lexer);
-
-  /// The bound string-transformer adapter.
-  final PygmentsAdapter adapter;
-
-  @override
-  String get name => PygmentsAdapter.name;
-
-  @override
-  bool get canHighlight => adapter.canHighlight;
-
-  @override
-  HighlightResult highlight(
-    AbstractBlock node,
-    String source,
-    String? language, {
-    Map<int, String>? callouts,
-    CssMode cssMode = CssMode.classes,
-    List<int> highlightLines = const <int>[],
-    LineNumbersMode? numberLines,
-    int? startLineNumber = 1,
-    String? style,
-  }) => adapter.highlight(
-    source: source,
-    language: language,
-    cssMode: cssMode,
-    numberLines: numberLines,
-    startLineNumber: startLineNumber,
-    highlightLines: highlightLines,
-    hasCallouts: callouts != null && callouts.isNotEmpty,
-    style: style,
-    mixed: node.hasOption('mixed'),
-  );
-
-  @override
-  String format(AbstractBlock node, String? language, FormatOptions opts) =>
-      adapter.format(
-        content: node.content() ?? '',
-        language: language,
-        nowrap: opts.nowrap,
-        cssMode: opts.cssMode,
-        style: opts.style,
-      );
-
-  @override
-  bool hasDocinfo(String location) => adapter.hasDocinfo(
-    location == 'head' ? DocinfoLocation.head : DocinfoLocation.footer,
-  );
-
-  @override
-  String docinfo(
-    String location,
-    Document node, {
-    required String cdnBaseUrl,
-    required bool linkcss,
-    required String selfClosingTagSlash,
-  }) => adapter.docinfoHead(
-    linkCss: linkcss,
-    stylesDir: node.attr('stylesdir') ?? '',
-    selfClosingSlash: selfClosingTagSlash,
-  );
-
-  @override
-  bool wantsStylesheetFile(Document doc) => adapter.wantsStylesheetFile;
-
-  @override
-  void writeStylesheet(Document doc, String toDir) =>
-      adapter.writeStylesheet(toDir);
-}
-
-/// Framework binding for the Rouge adapter.
-///
-/// Server-side highlighter with theme stylesheets.
-class RougeHighlighter extends SyntaxHighlighterBase {
-  /// Creates a Rouge highlighter, optionally with a [lexer] backend.
-  ///
-  /// Without a backend [canHighlight] is `false`, as when Asciidoctor
-  /// cannot load the `rouge` library.
-  new({SourceLexer? lexer}) : adapter = RougeAdapter(lexer: lexer);
-
-  /// The bound string-transformer adapter.
-  final RougeAdapter adapter;
-
-  @override
-  String get name => RougeAdapter.name;
-
-  @override
-  bool get canHighlight => adapter.canHighlight;
-
-  @override
-  HighlightResult highlight(
-    AbstractBlock node,
-    String source,
-    String? language, {
-    Map<int, String>? callouts,
-    CssMode cssMode = CssMode.classes,
-    List<int> highlightLines = const <int>[],
-    LineNumbersMode? numberLines,
-    int? startLineNumber = 1,
-    String? style,
-  }) => adapter.highlight(
-    source: source,
-    language: language,
-    cssMode: cssMode,
-    numberLines: numberLines,
-    startLineNumber: startLineNumber,
-    highlightLines: highlightLines,
-    hasCallouts: callouts != null && callouts.isNotEmpty,
-    style: style,
-    mixed: node.hasOption('mixed'),
-  );
-
-  @override
-  String format(AbstractBlock node, String? language, FormatOptions opts) =>
-      adapter.format(
-        content: node.content() ?? '',
-        language: language,
-        nowrap: opts.nowrap,
-        cssMode: opts.cssMode,
-        style: opts.style,
-      );
-
-  @override
-  bool hasDocinfo(String location) => adapter.hasDocinfo(
-    location == 'head' ? DocinfoLocation.head : DocinfoLocation.footer,
-  );
-
-  @override
-  String docinfo(
-    String location,
-    Document node, {
-    required String cdnBaseUrl,
-    required bool linkcss,
-    required String selfClosingTagSlash,
-  }) => adapter.docinfoHead(
-    linkCss: linkcss,
-    stylesDir: node.attr('stylesdir') ?? '',
-    selfClosingSlash: selfClosingTagSlash,
-  );
-
-  @override
-  bool wantsStylesheetFile(Document doc) => adapter.wantsStylesheetFile;
-
-  @override
-  void writeStylesheet(Document doc, String toDir) =>
-      adapter.writeStylesheet(toDir);
 }
 
 /// Instantiates a registered [factory] (port of the `Factory#create`

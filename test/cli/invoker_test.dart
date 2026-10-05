@@ -609,11 +609,7 @@ void main() {
             '-a',
             'source-highlighter=coderay',
           ], 'source-block.adoc');
-          final siblings = [
-            outPath,
-            '${tempDir.path}/asciidoctor.css',
-            '${tempDir.path}/coderay-asciidoctor.css',
-          ];
+          final siblings = [outPath, '${tempDir.path}/asciidoctor.css'];
           for (final path in siblings) {
             expect(File(path).existsSync(), isTrue, reason: path);
             final contents = File(path).readAsStringSync();
@@ -621,6 +617,11 @@ void main() {
             expect(contents, isNot(contains('\r')));
             expect(contents.endsWith('\n'), isFalse);
           }
+          // CodeRay is not available (as without its gem): no stylesheet.
+          expect(
+            File('${tempDir.path}/coderay-asciidoctor.css').existsSync(),
+            isFalse,
+          );
         } finally {
           tempDir.deleteSync(recursive: true);
         }

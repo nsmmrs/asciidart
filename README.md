@@ -96,6 +96,20 @@ Ruby's Tilt templates cannot run on Dart. Instead
   in Dart code. `asciidart init-config DIR` generates a project for a
   custom command with such code (and extensions) compiled in.
 
+## Syntax highlighting
+
+`:source-highlighter: highlight.js` highlights source blocks at conversion,
+with [hilite](https://github.com/nsmmrs/hilite) (highlight.js 11.12.0 in
+Dart): the HTML is what highlight.js would produce in the browser, so any
+highlight.js theme styles it (`highlightjs-theme`, default `github`), and
+the page needs no JavaScript. `highlightjs-mode=client` keeps Asciidoctor's
+behavior instead: the browser loads highlight.js and highlights the page.
+
+Rouge, Pygments and CodeRay are not available; with them, source blocks are
+left unhighlighted, as Asciidoctor does when their gem is missing. Custom
+highlighters can be registered through the API (`Asciidart(highlighters:
+...)`).
+
 ## JavaScript and npm
 
 The same core compiles to JavaScript as the npm package

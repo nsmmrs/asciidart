@@ -4644,9 +4644,11 @@ void main() {
         ]);
       });
 
+      // PORT: CodeRay upstream; highlight.js is asciidart's server-side
+      // highlighter.
       test('should resolve specialcharacters sub as highlight for '
-          'source block when source highlighter is coderay', () {
-        final doc = makeDoc(attributes: {'source-highlighter': 'coderay'});
+          'source block when source highlighter is highlight.js', () {
+        final doc = makeDoc(attributes: {'source-highlighter': 'highlight.js'});
         // PORT: bare Document construction skips save_attributes, so
         // resolve the highlighter explicitly (Ruby's `parse: true` does
         // this via the parse path).

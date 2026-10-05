@@ -24,12 +24,9 @@ const source =
     '[source,ruby]\n----\nputs 1\n----\n\n[source,ruby]\n----\n2\n----\n';
 
 void main() {
-  for (final (name, reset) in [
-    ('Rouge', RougeAdapter.resetUnavailableWarning),
-    ('Pygments', PygmentsAdapter.resetUnavailableWarning),
-  ]) {
+  for (final name in ['Rouge', 'Pygments', 'CodeRay']) {
     test('$name warns once that highlighting is not available', () {
-      reset();
+      UnavailableHighlighter.resetWarnings();
       final warnings = warningsOf(() {
         for (var i = 0; i < 2; i++) {
           convert(

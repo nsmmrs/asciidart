@@ -30,9 +30,6 @@ jobs:
       run: dart test
     - name: Check that the public API is closed
       run: dart run tool/api_check.dart
-    - name: Check the package for pub.dev (dry run, nothing is published)
-      if: matrix.os == 'ubuntu-latest'
-      run: dart pub publish --dry-run
   e2e:
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +44,7 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install asciidoctor gem (e2e oracle)
-      run: gem install asciidoctor -v 2.0.26 --no-document && gem install coderay pygments.rb --no-document
+      run: gem install asciidoctor -v 2.0.26 --no-document
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart)
@@ -74,9 +71,9 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install asciidoctor gem (parity oracle)
-      # coderay must be present so the oracle highlights the CodeRay fixtures
-      # the way the Dart port does.
-      run: gem install asciidoctor -v 2.0.26 --no-document && gem install coderay pygments.rb --no-document
+      # No optional gems: asciidart highlights with highlight.js only, and
+      # Rouge, Pygments and CodeRay behave as when their gems are missing.
+      run: gem install asciidoctor -v 2.0.26 --no-document
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
@@ -128,7 +125,7 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install asciidoctor gem (parity oracle)
-      run: gem install asciidoctor -v 2.0.26 --no-document && gem install coderay pygments.rb --no-document
+      run: gem install asciidoctor -v 2.0.26 --no-document
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)

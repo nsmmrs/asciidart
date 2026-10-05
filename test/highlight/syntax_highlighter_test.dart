@@ -3,17 +3,16 @@
 /// fallback, `Document` integration and docinfo aggregation).
 ///
 /// All tests run, including the `Document` integration group (parse and
-/// convert). Adapter behavior itself is covered by the per-adapter suites
-/// in this directory — here the adapters appear only behind
-/// [FakeSourceLexer] to prove the framework plumbing (option routing,
-/// node/document attribute reads). Converted-output assertions route
-/// through the test-only `_assertCss` matcher below.
+/// convert). Converted-output assertions route through the test-only
+/// `_assertCss` matcher below.
 library;
 
 import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
-import 'fake_source_lexer.dart';
+/// A document asking for highlight.js in the browser.
+Document _clientDoc() =>
+    _docWithAttributes(<String, String?>{'highlightjs-mode': 'client'});
 
 /// The CDN root the converter passes to docinfo in these tests.
 const String cdnBaseUrl = 'https://cdnjs.cloudflare.com/ajax/libs';
@@ -405,7 +404,6 @@ void main() {
 
   group('factory selection', () {
     test('creates the registered wrapper for each built-in name', () {
-      expect(SyntaxHighlighter.create('coderay'), isA<CodeRayHighlighter>());
       expect(
         SyntaxHighlighter.create('highlightjs'),
         isA<HighlightJsHighlighter>(),
@@ -419,8 +417,12 @@ void main() {
         isA<HtmlPipelineHighlighter>(),
       );
       expect(SyntaxHighlighter.create('prettify'), isA<PrettifyHighlighter>());
-      expect(SyntaxHighlighter.create('pygments'), isA<PygmentsHighlighter>());
-      expect(SyntaxHighlighter.create('rouge'), isA<RougeHighlighter>());
+      for (final name in ['coderay', 'pygments', 'rouge']) {
+        expect(
+          SyntaxHighlighter.create(name),
+          isA<UnavailableHighlighter>().having((h) => h.name, 'name', name),
+        );
+      }
     });
 
     test('resolves aliases to the canonical name', () {
@@ -439,14 +441,14 @@ void main() {
         seenOpts = opts;
         return _UnavailableHighlighter();
       }, <String>['hlfw-capture']);
-      final lexer = FakeSourceLexer();
+      final doc = _docWithAttributes(<String, String?>{});
       SyntaxHighlighter.create(
         'hlfw-capture',
         'docbook5',
-        HighlighterOptions(lexer: lexer),
+        HighlighterOptions(document: doc),
       );
       expect(seenBackend, 'docbook5');
-      expect(seenOpts!.lexer, same(lexer));
+      expect(seenOpts!.document, same(doc));
     });
 
     test('defaults the backend to html5', () {
@@ -473,18 +475,6 @@ void main() {
         'hlfw-nameless',
       ]);
       expect(() => SyntaxHighlighter.create('hlfw-nameless'), throwsStateError);
-    });
-
-    test('injects the lexer backend from the create options', () {
-      final lexer = FakeSourceLexer();
-      final created = SyntaxHighlighter.create(
-        'rouge',
-        'html5',
-        HighlighterOptions(lexer: lexer),
-      );
-      expect(created, isA<RougeHighlighter>());
-      expect((created! as RougeHighlighter).adapter.lexer, same(lexer));
-      expect(created.canHighlight, isTrue);
     });
 
     test('isolates custom factory registries', () {
@@ -519,7 +509,7 @@ void main() {
         'hlfw-seed': (name, backend, opts) => _UnavailableHighlighter(),
       });
       expect(proxy.create('hlfw-seed'), isA<_UnavailableHighlighter>());
-      expect(proxy.create('rouge'), isA<RougeHighlighter>());
+      expect(proxy.create('rouge'), isA<UnavailableHighlighter>());
     });
 
     test('prefers the seed registry over the globals', () {
@@ -528,7 +518,7 @@ void main() {
       });
       expect(proxy.create('rouge'), isA<_UnavailableHighlighter>());
       // The global registration is untouched.
-      expect(SyntaxHighlighter.create('rouge'), isA<RougeHighlighter>());
+      expect(SyntaxHighlighter.create('rouge'), isA<UnavailableHighlighter>());
     });
   });
 
@@ -538,7 +528,7 @@ void main() {
         'source-highlighter': 'coderay',
       });
       final resolved = SyntaxHighlighter.resolveForDocument(doc);
-      expect(resolved, isA<CodeRayHighlighter>());
+      expect(resolved, isA<UnavailableHighlighter>());
       doc.syntaxHighlighter = resolved;
       expect(doc.syntaxHighlighter, same(resolved));
     });
@@ -631,7 +621,7 @@ void main() {
       );
       expect(
         SyntaxHighlighter.resolveForDocument(doc),
-        isA<RougeHighlighter>(),
+        isA<UnavailableHighlighter>(),
       );
     });
   });
@@ -680,7 +670,7 @@ void main() {
     });
 
     test('wraps content in the base pre/code envelope', () {
-      final highlighter = CodeRayHighlighter();
+      final highlighter = UnavailableHighlighter.coderay();
       final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'puts 1');
       expect(
@@ -691,7 +681,7 @@ void main() {
     });
 
     test('appends nowrap and runs the transform with data-lang last', () {
-      final highlighter = CodeRayHighlighter();
+      final highlighter = UnavailableHighlighter.coderay();
       final doc = _docWithAttributes(<String, String?>{});
       final block = _StubBlock(doc, 'x');
       expect(
@@ -765,146 +755,18 @@ void main() {
         '<pre lang="ruby"><code>puts 1</code></pre>',
       );
     });
-
-    test('attaches the rouge base style in inline-css mode', () {
-      final lexer = FakeSourceLexer(
-        onStyleAvailable: (style) => true,
-        onBaseStyle: (style) => 'color: #f8f8f2;background-color: #49483e',
-      );
-      final highlighter = RougeHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, String?>{});
-      final block = _StubBlock(doc, 'puts 1');
-      expect(
-        highlighter.format(
-          block,
-          'ruby',
-          const FormatOptions(cssMode: CssMode.inline, style: 'monokai'),
-        ),
-        '<pre class="rouge highlight" '
-        'style="color: #f8f8f2;background-color: #49483e">'
-        '<code data-lang="ruby">puts 1</code></pre>',
-      );
-    });
-
-    test('omits the pre style in class mode', () {
-      final lexer = FakeSourceLexer(
-        onStyleAvailable: (style) => true,
-        onBaseStyle: (style) => 'color: #000;',
-      );
-      final highlighter = PygmentsHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, String?>{});
-      final block = _StubBlock(doc, 'x');
-      expect(
-        highlighter.format(block, 'ruby', const FormatOptions()),
-        '<pre class="pygments highlight">'
-        '<code data-lang="ruby">x</code></pre>',
-      );
-    });
   });
 
-  group('highlight wiring', () {
-    test('routes rouge highlight options to the backend', () {
-      final lexer = FakeSourceLexer(
-        onHighlight: (request) => '<span class="nb">puts</span> 1',
-        onStyleAvailable: (style) => style == 'monokai',
-      );
-      final highlighter = RougeHighlighter(lexer: lexer);
-      expect(highlighter.canHighlight, isTrue);
-      final doc = _docWithAttributes(<String, String?>{});
-      final block = _StubBlock(doc, 'puts 1')..setOption('mixed');
-      final result = highlighter.highlight(
-        block,
-        'puts 1',
-        'ruby',
-        highlightLines: <int>[1],
-        style: 'monokai',
-      );
-      expect(
-        result.html,
-        '<span class="hll"><span class="nb">puts</span> 1\n</span>',
-      );
-      final request = lexer.lastRequest!;
-      expect(request.language, 'ruby');
-      expect(request.mixed, isTrue);
-      expect(request.style, 'monokai');
-      expect(request.highlightLines, <int>[1]);
-    });
-
-    test('routes pygments highlight options to the backend', () {
-      final lexer = FakeSourceLexer(
-        onHighlight: (request) => '<div class="lineno"><pre><span class="tok-n">puts</span> 1</pre></div>',
-        onStyleAvailable: (style) => true,
-      );
-      final highlighter = PygmentsHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, String?>{});
-      final block = _StubBlock(doc, 'puts 1');
-      final result = highlighter.highlight(
-        block,
-        'puts 1',
-        'ruby',
-        style: 'colorful',
-      );
-      expect(result.html, '<span class="tok-n">puts</span> 1');
-      final request = lexer.lastRequest!;
-      expect(request.language, 'ruby');
-      expect(request.mixed, isFalse);
-      expect(request.style, 'colorful');
-    });
-
-    test('maps callouts to the coderay table offset', () {
-      const backendHtml =
-          '<table><tr><td class="code"><pre>x</pre></td></tr></table>';
-      final lexer = FakeSourceLexer(onHighlight: (request) => backendHtml);
-      final highlighter = CodeRayHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, String?>{});
-      final block = _StubBlock(doc, 'x');
-      final withCallouts = highlighter.highlight(
-        block,
-        'x',
-        'ruby',
-        numberLines: LineNumbersMode.table,
-        callouts: <int, String>{1: 'callout'},
-      );
-      expect(withCallouts.html, backendHtml);
-      expect(
-        withCallouts.sourceOffset,
-        backendHtml.indexOf('<td class="code"><pre>') +
-            '<td class="code"><pre>'.length,
-      );
-      expect(lexer.lastRequest!.numberLines, LineNumbersMode.table);
-      final withoutCallouts = highlighter.highlight(
-        block,
-        'x',
-        'ruby',
-        numberLines: LineNumbersMode.table,
-      );
-      expect(withoutCallouts.sourceOffset, isNull);
-    });
-
-    test('throws when highlighting without a lexer backend', () {
-      final doc = _docWithAttributes(<String, String?>{});
-      final block = _StubBlock(doc, 'x');
-      expect(CodeRayHighlighter().canHighlight, isFalse);
-      expect(
-        () => CodeRayHighlighter().highlight(block, 'x', 'ruby'),
-        throwsUnimplementedError,
-      );
-      expect(
-        () => PygmentsHighlighter().highlight(block, 'x', 'ruby'),
-        throwsUnimplementedError,
-      );
-      expect(
-        () => RougeHighlighter().highlight(block, 'x', 'ruby'),
-        throwsUnimplementedError,
-      );
-    });
-  });
+  group('highlight wiring', () {});
 
   group('docinfo aggregation', () {
     test('reports docinfo locations per adapter', () {
       final highlightjs = HighlightJsHighlighter();
       expect(highlightjs.hasDocinfo('head'), isTrue);
-      expect(highlightjs.hasDocinfo('footer'), isTrue);
+      expect(highlightjs.hasDocinfo('footer'), isFalse);
+      final client = HighlightJsHighlighter(document: _clientDoc());
+      expect(client.hasDocinfo('head'), isTrue);
+      expect(client.hasDocinfo('footer'), isTrue);
       final prettify = PrettifyHighlighter();
       expect(prettify.hasDocinfo('head'), isTrue);
       expect(prettify.hasDocinfo('footer'), isTrue);
@@ -913,10 +775,25 @@ void main() {
       expect(pipeline.hasDocinfo('footer'), isFalse);
     });
 
-    test('links the highlight.js theme in the head', () {
+    test('links the hilite-matched highlight.js theme in the head', () {
       final doc = _docWithAttributes(<String, String?>{});
       expect(
         HighlightJsHighlighter().docinfo(
+          'head',
+          doc,
+          cdnBaseUrl: cdnBaseUrl,
+          linkcss: false,
+          selfClosingTagSlash: '',
+        ),
+        '<link rel="stylesheet" '
+        'href="$cdnBaseUrl/highlight.js/11.12.0/styles/github.min.css">',
+      );
+    });
+
+    test('links the highlight.js theme in the head in client mode', () {
+      final doc = _clientDoc();
+      expect(
+        HighlightJsHighlighter(document: doc).docinfo(
           'head',
           doc,
           cdnBaseUrl: cdnBaseUrl,
@@ -928,12 +805,13 @@ void main() {
       );
     });
 
-    test('loads highlight.js languages in the footer', () {
+    test('loads highlight.js languages in the footer in client mode', () {
       final doc = _docWithAttributes(<String, String?>{
+        'highlightjs-mode': 'client',
         'highlightjs-languages': 'ruby, python',
       });
       expect(
-        HighlightJsHighlighter().docinfo(
+        HighlightJsHighlighter(document: doc).docinfo(
           'footer',
           doc,
           cdnBaseUrl: cdnBaseUrl,
@@ -1001,60 +879,6 @@ void main() {
         ),
         '<script src="$cdnBaseUrl/prettify/r298/run_prettify.min.js">'
         '</script>',
-      );
-    });
-
-    test('gates server docinfo on highlighted output', () {
-      final lexer = FakeSourceLexer(onHighlight: (request) => 'x');
-      final highlighter = CodeRayHighlighter(lexer: lexer);
-      expect(highlighter.hasDocinfo('head'), isFalse);
-      final doc = _docWithAttributes(<String, String?>{});
-      highlighter.highlight(_StubBlock(doc, 'x'), 'x', 'ruby');
-      expect(highlighter.hasDocinfo('head'), isTrue);
-      expect(highlighter.hasDocinfo('footer'), isFalse);
-      expect(highlighter.wantsStylesheetFile(doc), isTrue);
-    });
-
-    test('links the coderay stylesheet when linkcss is set', () {
-      final lexer = FakeSourceLexer(onHighlight: (request) => 'x');
-      final highlighter = CodeRayHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, String?>{'stylesdir': 'css'});
-      highlighter.highlight(_StubBlock(doc, 'x'), 'x', 'ruby');
-      expect(
-        highlighter.docinfo(
-          'head',
-          doc,
-          cdnBaseUrl: cdnBaseUrl,
-          linkcss: true,
-          selfClosingTagSlash: '/',
-        ),
-        '<link rel="stylesheet" href="css/coderay-asciidoctor.css"/>',
-      );
-    });
-
-    test('embeds the rouge stylesheet for the resolved style', () {
-      final lexer = FakeSourceLexer(
-        onHighlight: (request) => 'x',
-        onStylesheet: (style) => '/* $style */',
-      );
-      final highlighter = RougeHighlighter(lexer: lexer);
-      final doc = _docWithAttributes(<String, String?>{});
-      highlighter.highlight(
-        _StubBlock(doc, 'x'),
-        'x',
-        'ruby',
-        style: 'monokai',
-      );
-      // 'monokai' is unknown to the fake, so the default style wins.
-      expect(
-        highlighter.docinfo(
-          'head',
-          doc,
-          cdnBaseUrl: cdnBaseUrl,
-          linkcss: false,
-          selfClosingTagSlash: '',
-        ),
-        '<style>\n/* github */\n</style>',
       );
     });
   });

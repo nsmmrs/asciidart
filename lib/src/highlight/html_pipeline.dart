@@ -4,7 +4,7 @@
 ///
 /// Full port: the adapter emits `<pre lang="..."><code>` hooks for the
 /// html-pipeline `SyntaxHighlightFilter` to highlight downstream. It carries
-/// no options, no docinfo, and no [SourceLexer].
+/// no options, no docinfo.
 library;
 
 import 'package:asciidart/src/highlight/highlight.dart';

@@ -1,13 +1,139 @@
-/// highlight.js adapter: marks up source blocks for client-side highlighting.
+/// highlight.js: the syntax highlighter of asciidart.
 ///
-/// Dart port of `lib/asciidoctor/syntax_highlighter/highlightjs.rb`.
-///
-/// Full port: highlighting itself runs in the browser, so everything here is
-/// pure string transformation (the `<pre>`/`<code>` hooks plus the head and
-/// footer loader tags). No [SourceLexer] is involved.
+/// By default asciidart highlights source blocks itself, at conversion, with
+/// hilite (highlight.js 11.12.0 in Dart): the output is what highlight.js
+/// would produce in the browser, and the page only links the theme's
+/// stylesheet. With the `highlightjs-mode` attribute set to `client`, it
+/// behaves as Asciidoctor does instead: source blocks get the markup hooks
+/// and the page loads highlight.js, which highlights them in the browser
+/// (port of `lib/asciidoctor/syntax_highlighter/highlightjs.rb`).
 library;
 
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/highlight/highlight.dart';
+import 'package:asciidart/src/highlight/syntax_highlighter.dart';
+import 'package:hilite/hilite.dart' show hilite;
+
+/// The highlight.js release whose themes match hilite's output (its CSS
+/// classes): the version hilite ports.
+const String hiliteHighlightJsVersion = '11.12.0';
+
+/// highlight.js, highlighting at conversion (the default) or in the browser
+/// (`highlightjs-mode=client`).
+final class HighlightJsHighlighter extends SyntaxHighlighterBase {
+  /// The highlighter for [document] (its `highlightjs-mode` decides).
+  new({Document? document})
+    : client = document?.attr('highlightjs-mode') == 'client';
+
+  /// Whether highlighting runs in the browser.
+  final bool client;
+
+  final HighlightJsAdapter _adapter = const HighlightJsAdapter();
+
+  @override
+  String get name => HighlightJsAdapter.name;
+
+  @override
+  bool get canHighlight => !client;
+
+  @override
+  HighlightResult highlight(
+    AbstractBlock node,
+    String source,
+    String? language, {
+    Map<int, String>? callouts,
+    CssMode cssMode = CssMode.classes,
+    List<int> highlightLines = const <int>[],
+    LineNumbersMode? numberLines,
+    int? startLineNumber = 1,
+    String? style,
+  }) {
+    // As in the browser: a block without a language, or with one
+    // highlight.js does not know, is not highlighted.
+    if (language == null || !hilite.hasLanguage(language)) {
+      return HighlightResult(escapeSpecialChars(source));
+    }
+    final html = hilite.highlight(source, language: language).html;
+    // Callouts go at line ends: close the spans a line leaves open.
+    return HighlightResult(
+      callouts == null || callouts.isEmpty ? html : splitSpansAtLines(html),
+    );
+  }
+
+  @override
+  String format(AbstractBlock node, String? language, FormatOptions opts) =>
+      _adapter.format(
+        content: node.content() ?? '',
+        language: language,
+        nowrap: opts.nowrap,
+      );
+
+  @override
+  bool hasDocinfo(String location) => client || location == 'head';
+
+  @override
+  String docinfo(
+    String location,
+    Document node, {
+    required String cdnBaseUrl,
+    required bool linkcss,
+    required String selfClosingTagSlash,
+  }) {
+    final highlightjsDir = node.attr('highlightjsdir');
+    final theme = node.attr('highlightjs-theme', 'github')!;
+    if (!client) {
+      final baseUrl =
+          highlightjsDir ??
+          '$cdnBaseUrl/highlight.js/$hiliteHighlightJsVersion';
+      return '<link rel="stylesheet" href="$baseUrl/styles/$theme.min.css"'
+          '$selfClosingTagSlash>';
+    }
+    if (location == 'head') {
+      return _adapter.docinfoHead(
+        highlightjsDir: highlightjsDir,
+        theme: theme,
+        cdnBaseUrl: cdnBaseUrl,
+        selfClosingSlash: selfClosingTagSlash,
+      );
+    }
+    return _adapter.docinfoFooter(
+      highlightjsDir: highlightjsDir,
+      languagesAttr: node.attr('highlightjs-languages'),
+      cdnBaseUrl: cdnBaseUrl,
+    );
+  }
+}
+
+final RegExp _spanTag = RegExp(r'<span class="[^"]*">|</span>|\n');
+
+/// [html] with every span that crosses a line closed at the line's end and
+/// reopened on the next line, so each line stands alone (as Rouge's output
+/// does), and markup appended to a line lands outside the spans.
+String splitSpansAtLines(String html) {
+  final out = StringBuffer();
+  final open = <String>[];
+  var last = 0;
+  for (final m in _spanTag.allMatches(html)) {
+    out.write(html.substring(last, m.start));
+    last = m.end;
+    final tag = m[0]!;
+    if (tag == '\n') {
+      out
+        ..write('</span>' * open.length)
+        ..write('\n')
+        ..writeAll(open);
+    } else if (tag == '</span>') {
+      open.removeLast();
+      out.write(tag);
+    } else {
+      open.add(tag);
+      out.write(tag);
+    }
+  }
+  out.write(html.substring(last));
+  return out.toString();
+}
 
 /// Syntax-highlighter adapter for highlight.js.
 ///
