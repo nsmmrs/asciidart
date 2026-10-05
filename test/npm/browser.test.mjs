@@ -61,7 +61,13 @@ test('reports the versions', async () => {
   assert.deepEqual(versions, ['0.1.0', '2.0.26'])
 })
 
-for (const name of readdirSync(fixtures).filter((file) => file.endsWith('.adoc')).sort()) {
+// doctime-localtime.adoc prints the current time, which can tick between the
+// two conversions.
+const clockDependent = new Set(['doctime-localtime.adoc'])
+
+for (const name of readdirSync(fixtures)
+  .filter((file) => file.endsWith('.adoc') && !clockDependent.has(file))
+  .sort()) {
   test(`converts ${name} like Node.js`, async () => {
     const source = readFileSync(join(fixtures, name), 'utf8')
     const expected = await convert(source, { safe: 'secure' })
