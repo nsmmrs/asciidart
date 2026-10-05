@@ -1141,13 +1141,13 @@ class Html5Converter extends BuiltInConverter {
   String convertImage(Block node) {
     final target = node.attr('target')!;
     final widthAttr = node.hasAttr('width')
-        ? ' width="${_s(node.attr('width'))}"'
+        ? ' width="${_q(node.attr('width'))}"'
         : '';
     final heightAttr = node.hasAttr('height')
-        ? ' height="${_s(node.attr('height'))}"'
+        ? ' height="${_q(node.attr('height'))}"'
         : '';
     String imgTag(String src) =>
-        '<img src="$src" alt="${_encodeAttributeValue(node.alt)}"'
+        '<img src="${_q(src)}" alt="${_encodeAttributeValue(node.alt)}"'
         '$widthAttr$heightAttr$_voidElementSlash>';
     final String img;
     String? src;
@@ -1163,7 +1163,7 @@ class Html5Converter extends BuiltInConverter {
             : '<span class="alt">${_s(node.alt)}</span>';
         img =
             '<object type="image/svg+xml" '
-            'data="${src = node.imageUri(target)}"$widthAttr$heightAttr>'
+            'data="${_q(src = node.imageUri(target))}"$widthAttr$heightAttr>'
             '$fallback</object>';
       } else {
         img = imgTag(src = node.imageUri(target));
@@ -1178,18 +1178,18 @@ class Html5Converter extends BuiltInConverter {
     if (href != null) {
       final linkConstraintAttrs = _appendLinkConstraintAttrs(node).join();
       wrappedImg =
-          '<a class="image" href="${_s(href)}"$linkConstraintAttrs>$img</a>';
+          '<a class="image" href="${_q(href)}"$linkConstraintAttrs>$img</a>';
     }
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
     final classes = <String>['imageblock'];
     if (node.hasAttr('float')) {
-      classes.add(_s(node.attr('float')));
+      classes.add(_q(node.attr('float')));
     }
     if (node.hasAttr('align')) {
-      classes.add('text-${_s(node.attr('align'))}');
+      classes.add('text-${_q(node.attr('align'))}');
     }
     if (node.role != null) {
-      classes.add(_s(node.role));
+      classes.add(_q(node.role));
     }
     final classAttr = ' class="${classes.join(' ')}"';
     final titleEl = node.hasTitle
@@ -2050,19 +2050,19 @@ class Html5Converter extends BuiltInConverter {
     final type = node.type ?? 'image';
     String imgAttrs() {
       var attrs = node.hasAttr('width')
-          ? ' width="${_s(node.attr('width'))}"'
+          ? ' width="${_q(node.attr('width'))}"'
           : '';
       if (node.hasAttr('height')) {
-        attrs = '$attrs height="${_s(node.attr('height'))}"';
+        attrs = '$attrs height="${_q(node.attr('height'))}"';
       }
       if (node.hasAttr('title')) {
-        attrs = '$attrs title="${_s(node.attr('title'))}"';
+        attrs = '$attrs title="${_q(node.attr('title'))}"';
       }
       return attrs;
     }
 
     String imgTag(String src, String attrs) =>
-        '<img src="$src" alt="${_encodeAttributeValue(_s(node.alt))}"'
+        '<img src="${_q(src)}" alt="${_encodeAttributeValue(_s(node.alt))}"'
         '$attrs$_voidElementSlash>';
 
     final String img;
@@ -2070,17 +2070,17 @@ class Html5Converter extends BuiltInConverter {
     if (type == 'icon') {
       final icons = (node.document! as Document).attr('icons');
       if (icons == 'font') {
-        var iClassAttrVal = 'fa fa-$target';
+        var iClassAttrVal = 'fa fa-${_q(target)}';
         if (node.hasAttr('size')) {
-          iClassAttrVal = '$iClassAttrVal fa-${_s(node.attr('size'))}';
+          iClassAttrVal = '$iClassAttrVal fa-${_q(node.attr('size'))}';
         }
         if (node.hasAttr('flip')) {
-          iClassAttrVal = '$iClassAttrVal fa-flip-${_s(node.attr('flip'))}';
+          iClassAttrVal = '$iClassAttrVal fa-flip-${_q(node.attr('flip'))}';
         } else if (node.hasAttr('rotate')) {
-          iClassAttrVal = '$iClassAttrVal fa-rotate-${_s(node.attr('rotate'))}';
+          iClassAttrVal = '$iClassAttrVal fa-rotate-${_q(node.attr('rotate'))}';
         }
         final attrs = node.hasAttr('title')
-            ? ' title="${_s(node.attr('title'))}"'
+            ? ' title="${_q(node.attr('title'))}"'
             : '';
         img = '<i class="$iClassAttrVal"$attrs></i>';
       } else if (icons != null) {
@@ -2103,7 +2103,7 @@ class Html5Converter extends BuiltInConverter {
               : '<span class="alt">${_s(node.alt)}</span>';
           img =
               '<object type="image/svg+xml" '
-              'data="${src = node.imageUri(target)}"$attrs>'
+              'data="${_q(src = node.imageUri(target))}"$attrs>'
               '$fallback</object>';
         } else {
           img = imgTag(src = node.imageUri(target), attrs);
@@ -2118,17 +2118,17 @@ class Html5Converter extends BuiltInConverter {
     if (href != null) {
       final linkConstraintAttrs = _appendLinkConstraintAttrs(node).join();
       wrappedImg =
-          '<a class="image" href="${_s(href)}"$linkConstraintAttrs>$img</a>';
+          '<a class="image" href="${_q(href)}"$linkConstraintAttrs>$img</a>';
     }
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
     final role = node.role;
     final String classAttrVal;
     if (role != null) {
       classAttrVal = node.hasAttr('float')
-          ? '$type ${_s(node.attr('float'))} ${_s(role)}'
-          : '$type ${_s(role)}';
+          ? '$type ${_q(node.attr('float'))} ${_q(role)}'
+          : '$type ${_q(role)}';
     } else if (node.hasAttr('float')) {
-      classAttrVal = '$type ${_s(node.attr('float'))}';
+      classAttrVal = '$type ${_q(node.attr('float'))}';
     } else {
       classAttrVal = type;
     }
@@ -2296,6 +2296,11 @@ class Html5Converter extends BuiltInConverter {
   /// Escapes double quotes in the attribute [value].
   String _encodeAttributeValue(String value) =>
       value.contains('"') ? value.replaceAll('"', '&quot;') : value;
+
+  /// [value] as the value of an attribute in double quotes, which a quote
+  /// in an image target or attribute would end early, letting the rest of
+  /// the value into the markup (#2862, #2661).
+  String _q(String? value) => _encodeAttributeValue(_s(value));
 
   /// Removes one trailing `%` from [value] (port of `chomp '%'`).
   String _chompPercent(String value) =>
