@@ -1,0 +1,31 @@
+= Lists
+
+== Unordered
+
+* First item with enough text to wrap onto a second line so that we can check the alignment of wrapped item text.
+* Second item
+** Nested item one
+** Nested item two
+*** Deeper item
+* Third item
+
+.Ordered list
+. One
+. Two
+.. Two a
+.. Two b
+. Three
+
+[loweralpha,start=3]
+. Charlie
+. Delta
+
+[%reversed]
+. Three
+. Two
+. One
+
+Paragraph after the lists.
+
+* [ ] unchecked task
+* [x] checked task

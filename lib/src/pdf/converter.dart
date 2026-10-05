@@ -15,6 +15,7 @@ import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/markup.dart';
 import 'package:asciidart/src/pdf/text_box.dart';
@@ -128,6 +129,10 @@ final class PdfConverter extends BuiltInConverter
         convertDocument(document);
       case final Section section:
         convertSection(section);
+      case final ListBlock list when list.context == BlockContext.ulist:
+        convertUlist(list);
+      case final ListBlock list when list.context == BlockContext.olist:
+        convertOlist(list);
       case final Block block:
         final context = block.context;
         if (context == BlockContext.paragraph) {
@@ -329,6 +334,13 @@ final class PdfConverter extends BuiltInConverter
         (parentContext == BlockContext.open && parent.style != 'abstract') ||
         parentContext == BlockContext.section) {
       return _nextEnclosedBlock(parent);
+    }
+    // The last item of a nested list: the next block after the item the
+    // list is in.
+    if (block is ListItem) {
+      if (parent.parent case final ListItem grandparent) {
+        return _nextEnclosedBlock(grandparent);
+      }
     }
     return null;
   }
@@ -582,6 +594,323 @@ final class PdfConverter extends BuiltInConverter
     return index > 0 ? parent.blocks[index - 1] : null;
   }
 
+  // Captions.
+
+  /// The caption of [node] (its title; with [labeled], its captioned
+  /// title) above it (the gem's `ink_caption`, at the top).
+  void _caption(AbstractBlock node, {String? category, bool labeled = true}) {
+    final title = labeled ? node.captionedTitle() : node.title;
+    if (title == null || title.isEmpty) return;
+    final captionKey = category == null ? 'caption' : '${category}_caption';
+    final outside =
+        (_n('${captionKey}_margin_outside') ??
+                _n('caption_margin_outside') ??
+                0)
+            .toDouble();
+    final inside =
+        (_n('${captionKey}_margin_inside') ?? _n('caption_margin_inside') ?? 0)
+            .toDouble();
+    var align =
+        _s('${captionKey}_align') ?? _s('caption_align') ?? _baseTextAlign;
+    if (align == 'inherit') align = _baseTextAlign;
+    var textAlign =
+        _s('${captionKey}_text_align') ?? _s('caption_text_align') ?? align;
+    if (textAlign == 'inherit') textAlign = align;
+    var font = _themeFont('caption', _font);
+    if (category != null) font = _themeFont(captionKey, font);
+    var text = title;
+    if (font.transform case final transform? when transform != 'none') {
+      text = transformText(text, transform);
+    }
+    _out.add(
+      CustomBox(
+        _textBox(
+          text,
+          font,
+          align: textAlign,
+          normalize: false,
+          normalizeLineHeight: true,
+        ),
+        style: BoxStyle(
+          margin: EdgeInsets(top: outside, bottom: inside),
+        ),
+      ),
+    );
+  }
+
+  // Lists.
+
+  /// The list markers in effect, innermost last.
+  final List<_Numeral?> _listNumerals = [];
+  final List<String?> _listBullets = [];
+
+  /// Converts the unordered list [node].
+  void convertUlist(ListBlock node) {
+    String? bullet;
+    if (node.hasOption('checklist')) {
+      bullet = 'checkbox';
+    } else if (node.style case final style?) {
+      bullet = switch (style) {
+        'bibliography' => 'square',
+        'unstyled' || 'no-bullet' => null,
+        'disc' || 'circle' || 'square' || 'none' => style,
+        _ => () {
+          logger.warn('unknown unordered list style: $style');
+          return 'disc';
+        }(),
+      };
+    } else {
+      bullet = switch (_listLevel(node)) {
+        1 => 'disc',
+        2 => 'circle',
+        _ => 'square',
+      };
+    }
+    _listBullets.add(bullet);
+    _list(node);
+    _listBullets.removeLast();
+  }
+
+  /// Converts the ordered list [node].
+  void convertOlist(ListBlock node) {
+    var numeral = switch (node.style) {
+      'loweralpha' => const _Numeral.letters('a'),
+      'upperalpha' => const _Numeral.letters('A'),
+      'lowerroman' => const _Numeral.roman(1, upper: false),
+      'upperroman' => const _Numeral.roman(1, upper: true),
+      'lowergreek' => const _Numeral.letters('\u03b1'),
+      'unstyled' || 'unnumbered' || 'no-bullet' => null,
+      'none' => const _Numeral.none(),
+      _ => const _Numeral.decimal(1),
+    };
+    final start =
+        node.attr('start') ??
+        (node.hasOption('reversed') ? '${node.items.length}' : null);
+    if (numeral case final first?
+        when first.kind != _NumeralKind.none && start != null) {
+      final value = int.tryParse(start.trim()) ?? 0;
+      var current = first;
+      if (value > 1) {
+        for (var i = 0; i < value - 1; i++) {
+          current = current.next;
+        }
+      } else if (value < 1 && current.kind != _NumeralKind.letters) {
+        for (var i = 0; i < (value - 1).abs(); i++) {
+          current = current.previous;
+        }
+      }
+      numeral = current;
+    }
+    _listNumerals.add(numeral);
+    _list(node);
+    _listNumerals.removeLast();
+  }
+
+  int _listLevel(ListBlock node) {
+    var level = 1;
+    var ancestor = node.parent;
+    while (ancestor != null) {
+      if (ancestor case ListBlock(:final context)
+          when context == BlockContext.ulist || context == BlockContext.olist) {
+        level++;
+      }
+      ancestor = ancestor.parent;
+    }
+    return level;
+  }
+
+  void _list(ListBlock node) {
+    if (node.hasTitle) _caption(node, category: 'list', labeled: false);
+    String? align;
+    for (final role in node.roles) {
+      if (role.startsWith('text-') &&
+          const {
+            'justify',
+            'left',
+            'center',
+            'right',
+          }.contains(role.substring(5))) {
+        align = role.substring(5);
+      }
+    }
+    if (align == null && node.style == 'bibliography') align = 'left';
+    align ??= _s('list_text_align');
+    final unmarked =
+        (node.context == BlockContext.ulist && _listBullets.last == null) ||
+        (node.context == BlockContext.olist && _listNumerals.last == null);
+    var indent = (_n('list_indent') ?? 0).toDouble();
+    if (unmarked) {
+      if (node.style == 'unstyled') {
+        indent = 0;
+      } else if (indent > 0) {
+        final font = _fonts.font(_font.family, _font.style);
+        final sample = node.context == BlockContext.ulist ? '\u2022x' : '1.x';
+        indent = math.max(indent - font.widthOf(sample, _font.size), 0);
+      }
+    }
+    final saved = _out;
+    final items = <LayoutBox>[];
+    _out = items;
+    for (final item in node.items) {
+      _listItem(item, node, align);
+    }
+    _out = saved;
+    final nested = node.parent is ListItem;
+    _out.add(
+      BlockBox(
+        items,
+        style: BoxStyle(
+          margin: EdgeInsets(
+            left: indent,
+            bottom: nested
+                ? 0
+                : _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          anchor: node.id,
+        ),
+      ),
+    );
+  }
+
+  void _listItem(ListItem item, ListBlock list, String? align) {
+    String? marker;
+    var markerFamily = _font.family;
+    var markerSize = _font.size;
+    var markerStyle = _font.style;
+    var markerColor = _c('list_marker_font_color') ?? _font.color;
+    var markerLineHeight = _font.lineHeight;
+    void styleFrom(String prefix) {
+      markerColor = _c('${prefix}_font_color') ?? markerColor;
+      markerFamily = _s('${prefix}_font_family') ?? markerFamily;
+      markerSize = (_n('${prefix}_font_size') ?? markerSize).toDouble();
+      markerStyle = _fontStyle(_s('${prefix}_font_style')) ?? markerStyle;
+      markerLineHeight = (_n('${prefix}_line_height') ?? markerLineHeight)
+          .toDouble();
+    }
+
+    if (list.context == BlockContext.olist) {
+      final index = _listNumerals.removeLast();
+      if (index != null) {
+        if (index.kind == _NumeralKind.none) {
+          marker = '';
+          _listNumerals.add(index);
+        } else {
+          final text = index.text;
+          marker =
+              list.style == 'decimal' &&
+                  index.kind == _NumeralKind.decimal &&
+                  index.value.abs() < 10
+              ? '${index.value < 0 ? '-' : ''}0${index.value.abs()}.'
+              : '$text.';
+          _listNumerals.add(
+            list.hasOption('reversed') ? index.previous : index.next,
+          );
+          styleFrom('olist_marker');
+        }
+      } else {
+        _listNumerals.add(null);
+      }
+    } else if (_listBullets.last case final bullet?) {
+      var type = bullet;
+      if (bullet == 'checkbox') {
+        if (item.hasAttr('checkbox')) {
+          type = item.hasAttr('checked') ? 'checked' : 'unchecked';
+          marker =
+              _s('ulist_marker_${type}_content') ??
+              (type == 'checked' ? '\u2611' : '\u2610');
+        }
+      } else {
+        marker =
+            _s('ulist_marker_${type}_content') ??
+            switch (type) {
+              'disc' => '\u2022',
+              'circle' => '\u25e6',
+              'square' => '\u25aa',
+              _ => '',
+            };
+      }
+      if (marker != null) {
+        // Theme keys of the marker type win over the generic ones.
+        styleFrom('ulist_marker');
+        styleFrom('ulist_marker_$type');
+      }
+    }
+
+    final next = _nextEnclosedBlock(item);
+    double? marginBottom = 0;
+    if (item.isCompound) {
+      marginBottom = null;
+    } else if (_nextEnclosedBlockDescending(item) != null) {
+      marginBottom = (_n('list_item_spacing') ?? 0).toDouble();
+    }
+    final text = item.text;
+    final primary = text == null || text.isEmpty
+        ? (item.blocks.isEmpty ? _dummyText : null)
+        : text;
+    final children = <LayoutBox>[];
+    final saved = _out;
+    _out = children;
+    if (primary != null) {
+      final box = _textBox(
+        primary,
+        _font,
+        align: align ?? _baseTextAlign,
+        normalizeLineHeight: true,
+      );
+      final metrics = _lineMetrics(_font);
+      final lineHeight = _font.lineHeight * _font.size;
+      CustomContent content = _MinRoom(
+        box,
+        lineHeight + metrics.leading + metrics.paddingTop,
+      );
+      if (marker != null && marker.isNotEmpty) {
+        final markerFont = _FontState(
+          family: markerFamily,
+          style: markerStyle,
+          size: markerSize,
+          color: markerColor,
+          lineHeight: markerLineHeight,
+          kerning: _font.kerning,
+        );
+        final prawnFont = _fonts.font(markerFamily, markerStyle);
+        final gap = _fonts
+            .font(_font.family, _font.style)
+            .widthOf('x', _font.size);
+        final width = prawnFont.widthOf(
+          marker,
+          markerSize,
+          kerning: _font.kerning,
+        );
+        final markerBox = _textBox(
+          marker.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
+          markerFont,
+          align: 'right',
+          normalize: false,
+          characterSpacing: -0.5,
+        );
+        content = _Marked(content, markerBox, width, -width - gap + 0.5);
+      }
+      children.add(
+        CustomBox(
+          content,
+          style: BoxStyle(
+            margin: EdgeInsets(
+              bottom: marginBottom ?? _themeMargin('prose', 'bottom', next),
+            ),
+          ),
+        ),
+      );
+    }
+    _traverse(item);
+    _out = saved;
+    _out.add(BlockBox(children, style: BoxStyle(anchor: item.id)));
+  }
+
+  /// The next block, descending into [item] first when it has blocks (the
+  /// gem's `next_enclosed_block descend: true`).
+  AbstractBlock? _nextEnclosedBlockDescending(ListItem item) =>
+      item.blocks.isNotEmpty ? item.blocks.first : _nextEnclosedBlock(item);
+
   // Text.
 
   /// A text box of [markup] in [font] (the gem's `typeset_text` with the
@@ -593,6 +922,8 @@ final class PdfConverter extends BuiltInConverter
     double indent = 0,
     Set<String> inheritedStyles = const {},
     bool normalize = true,
+    bool normalizeLineHeight = false,
+    double characterSpacing = 0,
   }) {
     var text = markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -625,6 +956,7 @@ final class PdfConverter extends BuiltInConverter
         size: font.size,
         color: font.color,
         kerning: font.kerning,
+        characterSpacing: characterSpacing,
       ),
       TextLayout(
         align: align,
@@ -632,6 +964,7 @@ final class PdfConverter extends BuiltInConverter
         initialGap: metrics.paddingTop,
         paddingBottom: metrics.paddingBottom,
         indentFirstLine: indent,
+        normalizeLineHeight: normalizeLineHeight,
       ),
       _text,
     );
@@ -988,6 +1321,167 @@ final class _NeedsRoom implements CustomContent {
 
   @override
   double minHeight(double width) => content.minHeight(width) + room;
+
+  @override
+  (double, double) intrinsicWidths() => content.intrinsicWidths();
+}
+
+enum _NumeralKind { decimal, letters, roman, none }
+
+/// A list numeral (the gem's numbering: integers, letters by Ruby's
+/// `String#next`, roman numerals, or none).
+final class _Numeral {
+  const new decimal(this.value)
+    : kind = _NumeralKind.decimal,
+      letters = '',
+      upper = false;
+
+  const new letters(this.letters)
+    : kind = _NumeralKind.letters,
+      value = 0,
+      upper = false;
+
+  const new roman(this.value, {required this.upper})
+    : kind = _NumeralKind.roman,
+      letters = '';
+
+  const new none()
+    : kind = _NumeralKind.none,
+      value = 0,
+      letters = '',
+      upper = false;
+
+  final _NumeralKind kind;
+  final int value;
+  final String letters;
+  final bool upper;
+
+  String get text => switch (kind) {
+    _NumeralKind.decimal => '$value',
+    _NumeralKind.letters => letters,
+    _NumeralKind.roman => value < 1 ? '$value' : _romanOf(value, upper: upper),
+    _NumeralKind.none => '',
+  };
+
+  _Numeral get next => switch (kind) {
+    _NumeralKind.decimal => _Numeral.decimal(value + 1),
+    _NumeralKind.letters => _Numeral.letters(_succ(letters)),
+    _NumeralKind.roman => _Numeral.roman(value + 1, upper: upper),
+    _NumeralKind.none => this,
+  };
+
+  _Numeral get previous => switch (kind) {
+    _NumeralKind.decimal => _Numeral.decimal(value - 1),
+    _NumeralKind.roman => _Numeral.roman(value - 1, upper: upper),
+    _ => this,
+  };
+
+  /// Ruby's `String#succ` for letters (`z` to `aa`) and other characters
+  /// (the next code point).
+  static String _succ(String text) {
+    if (text.isEmpty) return text;
+    final runes = text.runes.toList();
+    var i = runes.length - 1;
+    while (i >= 0) {
+      final c = runes[i];
+      if (c == 0x7a || c == 0x5a) {
+        runes[i] = c - 25;
+        i--;
+        continue;
+      }
+      runes[i] = c + 1;
+      return String.fromCharCodes(runes);
+    }
+    final first = text.runes.first;
+    return String.fromCharCodes([if (first == 0x7a) 0x61 else 0x41, ...runes]);
+  }
+}
+
+String _romanOf(int number, {required bool upper}) {
+  const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+  const letters = [
+    'M',
+    'CM',
+    'D',
+    'CD',
+    'C',
+    'XC',
+    'L',
+    'XL',
+    'X',
+    'IX',
+    'V',
+    'IV',
+    'I',
+  ];
+  final out = StringBuffer();
+  var n = number;
+  for (var i = 0; i < values.length; i++) {
+    while (n >= values[i]) {
+      out.write(letters[i]);
+      n -= values[i];
+    }
+  }
+  return upper ? out.toString() : out.toString().toLowerCase();
+}
+
+/// Content that moves to the next region unless [minimum] points are
+/// left (the gem's `allocate_space_for_list_item`).
+final class _MinRoom implements CustomContent {
+  const new(this.content, this.minimum);
+
+  final CustomContent content;
+  final double minimum;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    if (!atTop && available < minimum) return null;
+    return content.place(width, available, atTop: atTop);
+  }
+
+  @override
+  double minHeight(double width) => content.minHeight(width);
+
+  @override
+  (double, double) intrinsicWidths() => content.intrinsicWidths();
+}
+
+/// Content with a marker drawn beside its first piece: [marker] laid out
+/// [markerWidth] wide, [offset] points from the content's left edge.
+final class _Marked implements CustomContent {
+  const new(this.content, this.marker, this.markerWidth, this.offset);
+
+  final CustomContent content;
+  final CustomContent marker;
+  final double markerWidth;
+  final double offset;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final placed = content.place(width, available, atTop: atTop);
+    if (placed == null) return null;
+    final mark = marker.place(markerWidth, double.infinity, atTop: true);
+    return CustomPlacement(
+      height: placed.height,
+      rest: placed.rest,
+      anchors: placed.anchors,
+      paint: (page, x, top) {
+        mark?.paint(page, x + offset, top);
+        placed.paint(page, x, top);
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) => content.minHeight(width);
 
   @override
   (double, double) intrinsicWidths() => content.intrinsicWidths();

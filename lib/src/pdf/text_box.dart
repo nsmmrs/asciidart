@@ -29,7 +29,11 @@ final class TextState {
     this.style = 'normal',
     this.color,
     this.kerning = true,
+    this.characterSpacing = 0,
   });
+
+  /// The space added between characters (Prawn's `character_spacing`).
+  final double characterSpacing;
 
   /// The font family.
   final String family;
@@ -438,6 +442,7 @@ final class PrawnTextBox implements CustomContent {
                 f.format.font.pdf,
                 f.format.size,
                 wordSpacing: f.wordSpacing,
+                characterSpacing: _state.characterSpacing,
                 kerning: _state.kerning,
               ),
             )
@@ -608,7 +613,10 @@ final class _Wrap {
   double _widthOf(String text, _Format? format) {
     final font = format?.font ?? _baseFont;
     final size = format?.size ?? _state.size;
-    return font.widthOf(text, size, kerning: _state.kerning);
+    final width = font.widthOf(text, size, kerning: _state.kerning);
+    // Prawn 2.4 adds the character spacing between characters.
+    final count = text.runes.length;
+    return count > 1 ? width + _state.characterSpacing * (count - 1) : width;
   }
 
   late final PrawnFont _baseFont = PrawnTextBox._font(
