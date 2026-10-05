@@ -46,6 +46,7 @@ void main() {
     'inline-images',
     'lists',
     'media',
+    'pdf-pages',
     'simple',
     'split',
     'tables',

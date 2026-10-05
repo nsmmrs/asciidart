@@ -235,6 +235,7 @@ final class PdfConverter extends BuiltInConverter
       logger: logger,
     );
     _markup = MarkupTransform(_theme);
+    _cjkLineBreaks = document.attr('scripts') == 'cjk';
     _baseTextAlign = switch (document.attr('text-align')) {
       final align?
           when const {'justify', 'left', 'center', 'right'}.contains(align) =>
@@ -252,6 +253,8 @@ final class PdfConverter extends BuiltInConverter
     _sections.clear();
     _floatGroup = _floatNext = null;
     _hasTitlePage = _frontCover = _backCover = false;
+    _importedPages.clear();
+    _layout = _initialLayout(document);
     _indexSlot = null;
     _renderedFootnotes.clear();
     _bibrefRefs.clear();
@@ -337,7 +340,10 @@ final class PdfConverter extends BuiltInConverter
       themeKey: 'cover_back_image',
       symbols: const ['', '~'],
     );
-    if (backCover != null && backCover.symbol != '~') {
+    if (backCover?.image?.graphic case final ImportedPage page) {
+      _importPage(page, advance: false);
+      _backCover = true;
+    } else if (backCover != null && backCover.symbol != '~') {
       _out.add(const BreakBox.page());
       if (backCover.image case final image?) {
         _out.add(
@@ -365,6 +371,12 @@ final class PdfConverter extends BuiltInConverter
     final templates = {
       for (final layout in const ['portrait', 'landscape'])
         layout: templateFor(layout),
+      for (final MapEntry(:key, value: page) in _importedPages.entries)
+        key: PageTemplate(
+          PdfRect(0, 0, page.intrinsicWidth, page.intrinsicHeight),
+          margins: EdgeInsets.zero,
+          background: (canvas, info) => page.paint(canvas, info.template.size),
+        ),
     };
     final layout = FlowLayout(
       template: templates[_initialLayout(document)],
@@ -985,6 +997,10 @@ final class PdfConverter extends BuiltInConverter
       symbols: const ['', '~'],
     );
     if (cover == null || cover.symbol == '~') return false;
+    if (cover.image?.graphic case final ImportedPage page) {
+      _importPage(page);
+      return true;
+    }
     if (cover.image case final image?) {
       _out.add(
         CustomBox(
@@ -1027,6 +1043,33 @@ final class PdfConverter extends BuiltInConverter
     if (fromTheme) target = _applySubsDiscretely(target, const {});
     final format = attrs['format'] ?? _imageFormat(target);
     final List<int>? bytes;
+    if (format == 'pdf') {
+      // A page of a PDF file: imported as it is, if it exists.
+      final path = fromTheme
+          ? _themeImagePath(target)
+          : relativeToImagesdir
+          ? _imagePath(doc, target)
+          : doc.normalizeSystemPath(target);
+      if (path == null || !io.isFile(path) || !io.isReadable(path)) {
+        final name = key.replaceAll(RegExp('[-_]'), ' ');
+        logger.warn('$name not found or readable: ${path ?? target}');
+        return null;
+      }
+      final page = _pdfPages(path, target)?.elementAtOrNull(
+        math.max((int.tryParse(attrs['page'] ?? '') ?? 1) - 1, 0),
+      );
+      return page == null
+          ? null
+          : (
+              symbol: null,
+              image: _PageImage(
+                page,
+                fit: 'fill',
+                position: 'center',
+                vposition: 'center',
+              ),
+            );
+    }
     if (fromTheme) {
       bytes = _themeImageBytes(target);
     } else if (relativeToImagesdir) {
@@ -1176,10 +1219,13 @@ final class PdfConverter extends BuiltInConverter
     return images;
   }();
 
-  /// The title page's background image, if it has one of its own.
-  late final _PageImage? _titlePageImage = _resolveBackgroundImage(
-    'title-page-background-image',
-  )?.image;
+  /// The title page's background image, if it has one of its own (the
+  /// `none` symbol when it has none, not even the pages' image).
+  late final ({String? symbol, _PageImage? image})? _titlePageImage =
+      _resolveBackgroundImage(
+        'title-page-background-image',
+        symbols: const ['none'],
+      );
 
   /// Paints the background of [page]: the page's background color and
   /// image (the title page's own, if any; none on cover pages; the gem's
@@ -1207,7 +1253,7 @@ final class PdfConverter extends BuiltInConverter
       }
     }
     final image = onTitlePage && _titlePageImage != null
-        ? _titlePageImage
+        ? _titlePageImage.image
         : _pageImages[number.isOdd ? 'recto' : 'verso'];
     if (image != null) {
       _drawPageImage(canvas, image, size: (pageWidth, pageHeight));
@@ -2438,8 +2484,83 @@ final class PdfConverter extends BuiltInConverter
       _out.add(BreakBox.column(force: node.hasOption('always')));
       return;
     }
+    if (layout != null) _layout = layout;
     _out.add(BreakBox.page(template: layout, force: node.hasOption('always')));
   }
+
+  /// The layout of the page being filled (`portrait`, `landscape`).
+  String _layout = 'portrait';
+
+  /// The pages of PDF files that are pages of the document, by the key of
+  /// the page template they're laid out with.
+  final Map<String, ImportedPage> _importedPages = {};
+
+  /// Adds [page] as a page of the document, in place of the current page
+  /// when nothing is on it, with [anchor] at its top; with [advance], the
+  /// content after it starts a new page in the current layout (the gem's
+  /// `import_page`). An imported page has no running content.
+  void _importPage(ImportedPage page, {String? anchor, bool advance = true}) {
+    final key = 'pdf-page-${_importedPages.length + 1}';
+    _importedPages[key] = page;
+    _out
+      ..add(BreakBox.page(template: key))
+      ..add(
+        CustomBox(
+          _Absolute((_) {}, fill: true),
+          style: BoxStyle(anchor: anchor),
+        ),
+      );
+    if (advance) _out.add(BreakBox.page(template: _layout));
+  }
+
+  /// The pages of the PDF file at [path] (referred to as [target]), or
+  /// null (with a warning) when it isn't a PDF file asciidart can read.
+  List<ImportedPage>? _pdfPages(String path, String target) {
+    try {
+      return PdfFile.parse(Uint8List.fromList(io.readBytes(path))).pages;
+    } on PdfFormatException catch (error) {
+      logger.warn('could not insert pdf: $target; ${error.message}');
+      return null;
+    }
+  }
+
+  /// Inserts the pages of the PDF file the block image [node] refers to
+  /// by [target] (its `page`, or its `pages`: numbers and ranges).
+  void _insertPdf(Block node, String target) {
+    final path = Helpers.isUriish(target) ? null : _imagePath(node, target);
+    if (path == null || !io.isFile(path) || !io.isReadable(path)) {
+      logger.warn('pdf to insert not found or not readable: ${path ?? target}');
+      return;
+    }
+    final pages = _pdfPages(path, target) ?? const [];
+    final numbers = switch (node.attr('pages')) {
+      final value? => [
+        for (final entry in value.split(value.contains(',') ? ',' : ';'))
+          if (entry.contains('..'))
+            for (
+              var n = math.max(_rubyInt(entry.split('..').first), 1);
+              n <= math.max(_rubyInt(entry.split('..').skip(1).join('..')), 1);
+              n++
+            )
+              n
+          else
+            _rubyInt(entry),
+      ],
+      null => [math.max(_rubyInt(node.attr('page') ?? '1'), 1)],
+    };
+    for (final (i, number) in numbers.indexed) {
+      if (pages.elementAtOrNull(number - 1) case final page? when number > 0) {
+        _importPage(page, anchor: i == 0 ? node.id : null);
+      } else {
+        _out.add(BreakBox.page(template: _layout));
+      }
+    }
+  }
+
+  /// [text] as Ruby's `to_i` reads it: the leading integer, else 0.
+  static int _rubyInt(String text) =>
+      int.tryParse(RegExp(r'^\s*[-+]?\d+').stringMatch(text)?.trim() ?? '') ??
+      0;
 
   /// Whether the body is set in the theme's page columns.
   bool _inColumns = false;
@@ -2462,41 +2583,51 @@ final class PdfConverter extends BuiltInConverter
   List<int>? _imageBytes(AbstractNode node, String target) {
     _lastImagePath = null;
     final doc = _document;
-    var imagesdir = doc.attr('imagesdir');
-    if (imagesdir == null ||
-        imagesdir.isEmpty ||
-        imagesdir == '.' ||
-        imagesdir == './') {
-      imagesdir = null;
+    final imagesdir = _imagesdir;
+    if (_imagePath(node, target) case final path?) return _readImage(path);
+    final uri = Helpers.isUriish(target)
+        ? target
+        : doc.pathResolver.webPath(target, imagesdir);
+    if (!doc.hasAttr('allow-uri-read')) {
+      logger.warn(
+        'cannot embed remote image: $uri '
+        '(allow-uri-read attribute not enabled)',
+      );
+      return null;
     }
-    final resolver = doc.pathResolver;
+    try {
+      return doc.fetchUri(uri).body;
+    } on Exception catch (error) {
+      logger.warn('could not retrieve remote image: $uri; $error');
+      return null;
+    }
+  }
+
+  /// The document's `imagesdir`, unless it's the document's directory.
+  String? get _imagesdir => switch (_document.attr('imagesdir')) {
+    null || '' || '.' || './' => null,
+    final dir => dir,
+  };
+
+  /// The path of the image [target] of [node] (relative to the
+  /// `imagesdir`), or null when it's a URL.
+  String? _imagePath(AbstractNode node, String target) {
+    final imagesdir = _imagesdir;
+    final resolver = _document.pathResolver;
     final isUrl = Helpers.isUriish(target);
     if (!isUrl && resolver.isAbsolutePath(target)) {
-      return _readImage(resolver.expandPath(resolver.posixify(target)));
+      return resolver.expandPath(resolver.posixify(target));
     }
     if (!isUrl && imagesdir != null && resolver.isAbsolutePath(imagesdir)) {
-      return _readImage(
-        resolver.expandPath('${resolver.posixify(imagesdir)}/$target'),
-      );
+      return resolver.expandPath('${resolver.posixify(imagesdir)}/$target');
     }
     if (isUrl || (imagesdir != null && Helpers.isUriish(imagesdir))) {
-      final uri = isUrl ? target : resolver.webPath(target, imagesdir);
-      if (!doc.hasAttr('allow-uri-read')) {
-        logger.warn(
-          'cannot embed remote image: $uri '
-          '(allow-uri-read attribute not enabled)',
-        );
-        return null;
-      }
-      try {
-        return doc.fetchUri(uri).body;
-      } on Exception catch (error) {
-        logger.warn('could not retrieve remote image: $uri; $error');
-        return null;
-      }
+      return null;
     }
-    return _readImage(
-      node.normalizeSystemPath(target, start: imagesdir, targetName: 'image'),
+    return node.normalizeSystemPath(
+      target,
+      start: imagesdir,
+      targetName: 'image',
     );
   }
 
@@ -2589,17 +2720,22 @@ final class PdfConverter extends BuiltInConverter
     }
   }
 
+  /// [path], relative to the theme's directory.
+  String? _themeImagePath(String path) {
+    final resolver = _document.pathResolver;
+    if (resolver.isAbsolutePath(path)) return path;
+    final dir = _theme.directory;
+    if (dir == null) return null;
+    return resolver.expandPath('${resolver.posixify(dir)}/$path');
+  }
+
   /// Reads the image at [path] relative to the theme's directory (the
   /// gem's `resolve_image_path` with the themesdir).
   List<int>? _themeImageBytes(String path) {
-    final resolver = _document.pathResolver;
-    var resolved = path;
-    if (!resolver.isAbsolutePath(path)) {
-      final dir = _theme.directory;
-      if (dir == null) return null;
-      resolved = resolver.expandPath('${resolver.posixify(dir)}/$path');
+    final resolved = _themeImagePath(path);
+    if (resolved == null || !io.isFile(resolved) || !io.isReadable(resolved)) {
+      return null;
     }
-    if (!io.isFile(resolved) || !io.isReadable(resolved)) return null;
     try {
       final bytes = io.readBytes(resolved);
       _lastImagePath = resolved;
@@ -2636,8 +2772,9 @@ final class PdfConverter extends BuiltInConverter
     List<int>? bytes;
     if (format == 'gif') {
       logger.warn('GIF image format not supported; convert $target to PNG');
-    } else if (format == 'pdf') {
-      logger.warn('inserting the pages of a PDF is not supported: $target');
+    } else if (format == 'pdf' && data == null) {
+      _insertPdf(node, target);
+      return;
     } else if (data != null) {
       try {
         bytes = base64.decode(data[2]!);
@@ -3129,6 +3266,7 @@ final class PdfConverter extends BuiltInConverter
           if (transform != null && transform != 'none') {
             text = transformText(text, transform);
           }
+          if (_cjkLineBreaks) text = _breakCjk(text);
           content = text;
         }
         cells.add(
@@ -4828,6 +4966,7 @@ final class PdfConverter extends BuiltInConverter
   }) {
     var text = markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
+    if (_cjkLineBreaks && !cell) text = _breakCjk(text);
     final nodes = inlineFormat ? parseMarkup(text) : [MarkupText(text)];
     final List<Fragment> fragments;
     final inherited = inheritedStyles.isEmpty
@@ -4873,6 +5012,19 @@ final class PdfConverter extends BuiltInConverter
       _text,
     );
   }
+
+  /// Whether a line may break before any CJK character (the document's
+  /// `scripts` is `cjk`).
+  bool _cjkLineBreaks = false;
+
+  /// [text] with a zero width space before each CJK character.
+  static String _breakCjk(String text) => text.replaceAllMapped(
+    RegExp(
+      r'(?=[\u3000\u30a0-\u30ff\u3040-\u309f\p{Script=Han}\uff00-\uffef])',
+      unicode: true,
+    ),
+    (_) => '\u200b',
+  );
 
   /// The gem's `calc_line_metrics`: the leading of the line height, half
   /// of it above the text (plus the font's line gap) and half below.
