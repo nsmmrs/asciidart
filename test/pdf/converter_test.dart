@@ -41,6 +41,7 @@ void main() {
     'footnotes-book',
     'icons',
     'images',
+    'index',
     'inline-images',
     'lists',
     'simple',

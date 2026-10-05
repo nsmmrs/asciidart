@@ -19,6 +19,7 @@ import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/icons.dart';
+import 'package:asciidart/src/pdf/index.dart';
 import 'package:asciidart/src/pdf/markup.dart';
 import 'package:asciidart/src/pdf/svg_size.dart';
 import 'package:asciidart/src/pdf/text_box.dart';
@@ -231,6 +232,8 @@ final class PdfConverter extends BuiltInConverter
       kerning: _s('base_font_kerning') != 'none',
     );
     _sections.clear();
+    _index = IndexCatalog();
+    _indexSlot = null;
     _renderedFootnotes.clear();
     _footnoteLabels.clear();
     _out = [];
@@ -281,7 +284,18 @@ final class PdfConverter extends BuiltInConverter
       footer: _footer,
     );
     final layout = FlowLayout(template: template, pageLabel: _pageLabel);
-    final result = layout.layout(_out);
+    var result = layout.layout(_out);
+    // The index, once the pages of its terms are known.
+    if (_indexSlot case final slot?) {
+      _bodyStart = (result.anchors[_bodyAnchor]?.page ?? 0) + 1;
+      _anchorPages = {
+        for (final MapEntry(:key, :value) in result.anchors.entries)
+          key: value.page + 1,
+      };
+      _skip = _frontMatter(titlePage: titlePage);
+      _fillIndex(slot);
+      result = layout.layout(_out);
+    }
     _bodyStart = (result.anchors[_bodyAnchor]?.page ?? 0) + 1;
     _anchorPages = {
       for (final MapEntry(:key, :value) in result.anchors.entries)
@@ -954,9 +968,9 @@ final class PdfConverter extends BuiltInConverter
       _abstract(section);
       return;
     }
-    // The index isn't collected yet: an index section is left out, as
-    // the gem leaves out an empty one.
-    if (sectname == 'index') return;
+    // An empty index is left out.
+    final indexSection = sectname == 'index';
+    if (indexSection && _index.isEmpty) return;
     final title = _numberedTitle(section);
     final hlevel = (section.level ?? 0) + 1;
     final align =
@@ -1001,7 +1015,12 @@ final class PdfConverter extends BuiltInConverter
       );
     }
     _sections.add((section, anchor));
-    _traverse(section);
+    if (indexSection) {
+      final slot = _indexSlot = <LayoutBox>[];
+      _out.add(BlockBox(slot));
+    } else {
+      _traverse(section);
+    }
     if (chapterlike) _footnotes(section);
   }
 
@@ -4309,7 +4328,7 @@ final class PdfConverter extends BuiltInConverter
     InlineContext.callout => _inlineCallout(node),
     InlineContext.footnote => _inlineFootnote(node),
     InlineContext.image => _inlineImage(node),
-    InlineContext.indexterm => node.type == 'visible' ? node.text ?? '' : '',
+    InlineContext.indexterm => _inlineIndexterm(node),
     InlineContext.kbd => _inlineKbd(node),
     InlineContext.menu => _inlineMenu(node),
     InlineContext.quoted => _inlineQuoted(node),
@@ -4482,6 +4501,202 @@ final class PdfConverter extends BuiltInConverter
       ).$1;
     }
     return graphic.intrinsicWidth * 0.75;
+  }
+
+  /// The index of the document.
+  IndexCatalog _index = IndexCatalog();
+
+  IndexName _indexName(String markup) => IndexName(_plain(markup), markup);
+
+  /// The index term [node]: an anchor where it's used (and its text, if
+  /// visible), the term stored in the index (the gem's
+  /// `convert_inline_indexterm`).
+  String _inlineIndexterm(Inline node) {
+    final visible = node.type == 'visible';
+    final name = _index.nextAnchor();
+    final anchor =
+        '<a id="$name" type="indexterm"${visible ? ' visible="true"' : ''}>'
+        '$_dummyText</a>';
+    final see = switch (node.attr('see')) {
+      final value? => _indexName(value),
+      null => null,
+    };
+    final seeAlso = [
+      for (final term in node.seeAlso ?? const <String>[]) _indexName(term),
+    ];
+    if (visible) {
+      final text = node.text ?? '';
+      _index.store([_indexName(text)], name, see: see, seeAlso: seeAlso);
+      return '$anchor$text';
+    }
+    _index.store(
+      [for (final term in node.terms ?? const <String>[]) _indexName(term)],
+      name,
+      see: see,
+      seeAlso: seeAlso,
+    );
+    return anchor;
+  }
+
+  /// The boxes of the index section, filled in once the pages of the
+  /// terms are known.
+  List<LayoutBox>? _indexSlot;
+
+  /// Fills the index section (the gem's `convert_index_section`): the
+  /// categories and their terms in the theme's columns.
+  void _fillIndex(List<LayoutBox> slot) {
+    _index
+      ..linkPages((anchor) => _anchorPages[anchor], _pageLabel)
+      ..linkAssociations();
+    final style = _document.attr('index-pagenum-sequence-style');
+    final boxes = _collect(() {
+      final termSpacing = (_n('description_list_term_spacing') ?? 0).toDouble();
+      final needed = termSpacing + 2 * _typesetHeight(_font);
+      final termStyle =
+          _fontStyle(_s('description_list_term_font_style')) ?? _font.style;
+      final proseMargin = (_n('prose_margin_bottom') ?? 0).toDouble();
+      for (final category in _index.categories) {
+        final letter = category.name.text;
+        _out.add(
+          CustomBox(
+            _MinRoom(
+              _textBox(
+                letter,
+                _font.copyWith(style: termStyle),
+                align: 'left',
+                inlineFormat: false,
+              ),
+              needed,
+            ),
+            style: BoxStyle(margin: EdgeInsets(bottom: termSpacing)),
+          ),
+        );
+        for (final term in category.terms) {
+          _indexTerm(term, style);
+        }
+        if (proseMargin > 0) _out.add(SpacerBox(proseMargin));
+      }
+    });
+    final columns = (_n('index_columns') ?? 1).toInt();
+    slot
+      ..clear()
+      ..addAll(
+        columns < 2
+            ? boxes
+            : [
+                ColumnsBox(
+                  boxes,
+                  count: columns,
+                  gap: (_n('index_column_gap') ?? 0).toDouble(),
+                ),
+              ],
+      );
+  }
+
+  /// Adds the entry of index [term] (the gem's `convert_index_term`).
+  void _indexTerm(IndexTerm term, String? style) {
+    final markup = StringBuffer();
+    final seeAlso = <String>[];
+    String link(String anchor, String text) => '<a anchor="$anchor">$text</a>';
+    if (!term.isContainer) {
+      markup.write('<a id="${term.anchor}">$_dummyText</a>');
+    }
+    markup.write(term.name.markup);
+    if (!term.isContainer) {
+      if (term.see case (final target, final name)) {
+        markup
+          ..write(' (see ')
+          ..write(
+            target == null ? name.markup : link(target.anchor, name.markup),
+          )
+          ..write(')');
+      } else {
+        final destinations = term.destinations;
+        final List<String> numbers;
+        switch (style) {
+          case 'page':
+            final seen = <String>{};
+            numbers = [
+              for (final d in destinations)
+                if (seen.add(d.page!)) link(d.anchor, d.page!),
+            ];
+          case 'range':
+            final first = <String, String>{};
+            for (final d in destinations) {
+              first.putIfAbsent(d.page!, () => d.anchor);
+            }
+            numbers = [
+              for (final range in _consolidateRanges(first.keys.toList()))
+                link(first[range.split('-').first]!, range),
+            ];
+          default:
+            numbers = [for (final d in destinations) link(d.anchor, d.page!)];
+        }
+        for (final number in numbers) {
+          markup.write(', $number');
+        }
+        for (final (target, name) in term.seeAlso) {
+          final also = target == null
+              ? name.markup
+              : link(target.anchor, name.markup);
+          seeAlso.add('(see also $also)');
+        }
+      }
+    }
+    final indent = (_n('description_list_description_indent') ?? 0).toDouble();
+    void entry(String text, double left) {
+      _out.add(
+        CustomBox(
+          _textBox(
+            text,
+            _font,
+            align: 'left',
+            normalize: false,
+            indent: -indent * 2,
+          ),
+          style: BoxStyle(margin: EdgeInsets(left: left + indent * 2)),
+        ),
+      );
+    }
+
+    entry(markup.toString(), 0);
+    if (seeAlso.isEmpty && term.isLeaf) return;
+    final nested = _collect(() {
+      for (final item in seeAlso) {
+        entry(item, 0);
+      }
+      for (final subterm in term.terms) {
+        _indexTerm(subterm, style);
+      }
+    });
+    _out.add(
+      BlockBox(
+        nested,
+        style: BoxStyle(margin: EdgeInsets(left: indent)),
+      ),
+    );
+  }
+
+  /// [numbers] with runs of consecutive numbers joined as ranges (the gem's
+  /// `consolidate_ranges`).
+  static List<String> _consolidateRanges(List<String> numbers) {
+    if (numbers.length < 2) return numbers;
+    final ranges = <List<String>>[];
+    String? previous;
+    for (final number in numbers) {
+      if (previous != null &&
+          (int.tryParse(previous) ?? 0) + 1 == (int.tryParse(number) ?? 0)) {
+        if (ranges.last.length == 1) {
+          ranges.last.add(number);
+        } else {
+          ranges.last[1] = number;
+        }
+      } else {
+        ranges.add([number]);
+      }
+      previous = number;
+    }
+    return [for (final range in ranges) range.join('-')];
   }
 
   String _inlineIcon(Inline node) {
