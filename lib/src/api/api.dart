@@ -17,6 +17,7 @@ import 'package:asciidart/src/converter.dart' as impl;
 import 'package:asciidart/src/document.dart' as impl;
 import 'package:asciidart/src/errors.dart' as impl;
 import 'package:asciidart/src/extensions.dart' as impl;
+import 'package:asciidart/src/header_edit.dart' as impl;
 import 'package:asciidart/src/highlight/highlight.dart' as impl;
 import 'package:asciidart/src/highlight/syntax_highlighter.dart' as impl;
 import 'package:asciidart/src/html5.dart' as impl;

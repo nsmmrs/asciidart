@@ -436,6 +436,10 @@ abstract final class Parser {
       document,
       headerOnly: headerOnly,
     );
+    document.bodyStartLine =
+        reader is PreprocessorReader && reader.includeDepth > 0
+        ? null
+        : reader.lineno;
 
     if (!headerOnly) {
       while (reader.hasMoreLines()) {
@@ -3849,6 +3853,13 @@ abstract final class Parser {
             ? attributeEntryRx.firstMatch(reader.peekLine() ?? '')
             : null);
     if (entryMatch == null) return false;
+    // An entry that is plain lines of the document's own source (not in an
+    // include or under a conditional) records where it is.
+    final first =
+        reader is PreprocessorReader &&
+            (reader.includeDepth > 0 || reader.inConditional)
+        ? null
+        : reader.lineno;
     final rawValue = entryMatch.group(2);
     final String value;
     if (rawValue == null || rawValue.isEmpty) {
@@ -3881,7 +3892,13 @@ abstract final class Parser {
       value = rawValue;
     }
 
-    storeAttribute(entryMatch.group(1)!, value, document, attributes);
+    storeAttribute(
+      entryMatch.group(1)!,
+      value,
+      document,
+      attributes,
+      first == null ? null : (first: first, last: reader.lineno),
+    );
     return true;
   }
 
@@ -3895,6 +3912,7 @@ abstract final class Parser {
     String? value, [
     Document? doc,
     BlockAttributes? attrs,
+    ({int first, int last})? lines,
   ]) {
     // TODO move processing of attribute value to utility method.
     var resolvedName = name;
@@ -3940,16 +3958,22 @@ abstract final class Parser {
         final resolved = doc.setAttribute(resolvedName, stringValue);
         if (resolved != null) {
           resolvedValue = resolved;
-          attrs?.addEntry(DocumentAttributeEntry(resolvedName, resolved));
+          attrs?.addEntry(
+            DocumentAttributeEntry(resolvedName, resolved, lines: lines),
+          );
         }
       } else if (!doc.attributeLocked(resolvedName)) {
         // Unlocked attributes are always deleted (and the entry recorded),
         // even when absent.
         doc.deleteAttribute(resolvedName);
-        attrs?.addEntry(DocumentAttributeEntry(resolvedName, null));
+        attrs?.addEntry(
+          DocumentAttributeEntry(resolvedName, null, lines: lines),
+        );
       }
     } else {
-      attrs?.addEntry(DocumentAttributeEntry(resolvedName, resolvedValue));
+      attrs?.addEntry(
+        DocumentAttributeEntry(resolvedName, resolvedValue, lines: lines),
+      );
     }
 
     return (resolvedName, resolvedValue);

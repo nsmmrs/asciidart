@@ -30,6 +30,8 @@ const doc: Document = asciidoc.parse('= Title\n:priority: 2\n\n== Section\n\ntex
 const title: string | null = doc.sourceTitle
 const priority: number | null = doc.attributes.intValue('priority')
 const header: Record<string, string | null> = doc.headerAttributes
+const edited: Document = doc.withAttribute('status', 'done').withoutAttribute('draft')
+const editedSource: string = edited.source
 const sections: Section[] = doc.descendants(Section)
 const sectionTitles: (string | null)[] = sections.map((s) => s.title)
 

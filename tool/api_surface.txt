@@ -197,11 +197,14 @@ final class Document extends Block
   Attributes attributes
   Doctype doctype
   Document document
+  Document withAttribute(String name, String value)
+  Document withoutAttribute(String name)
   List<Author> authors
   List<Diagnostic> diagnostics
   List<InlineContent> titleInlines
   Map<String, String?> headerAttributes
   String convert({bool? standalone})
+  String source
   String toHtml({bool? standalone})
   String? sourceTitle
   String? title

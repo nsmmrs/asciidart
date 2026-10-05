@@ -1089,6 +1089,10 @@ export declare class Document extends Block {
    */
   readonly headerAttributes: Record<string, string | null>;
   /**
+   * The source this document was parsed from.
+   */
+  readonly source: string;
+  /**
    * The authors from the document header.
    */
   readonly authors: Author[];
@@ -1101,6 +1105,25 @@ export declare class Document extends Block {
    */
   readonly diagnostics: Diagnostic[];
   readonly attributes: Attributes;
+  /**
+   * This document with the header attribute {@link name} set to {@link value}: its
+   * {@link source} rewrites only the attribute entry that sets {@link name} last (or,
+   * when the header has none, adds one at the end of the header) and
+   * keeps every other byte as written; the result is that source, parsed
+   * with the same settings as this document. An unset entry (`:name!:`)
+   * becomes a set one.
+   *
+   * Throws an {@link AsciidartException}, and edits nothing, when the source
+   * alone can't make the edit: the header sets {@link name} in an include or
+   * under a preprocessor conditional, or ends inside an include. Throws an
+   * {@link ArgumentError} for a {@link value} of more than one line.
+   */
+  withAttribute(name: string, value: string): Document;
+  /**
+   * This document without the header attribute entries for {@link name}: its
+   * {@link source} drops only their lines. See {@link withAttribute}.
+   */
+  withoutAttribute(name: string): Document;
   /**
    * The document converted to its output format: the body only, or a
    * complete page when {@link standalone} is `true` (default: as parsed).

@@ -705,6 +705,9 @@ export class Document extends Block {
   get headerAttributes() {
     return core.Document$get$headerAttributes(this)
   }
+  get source() {
+    return core.Document$get$source(this)
+  }
   get authors() {
     return core.Document$get$authors(this)
   }
@@ -716,6 +719,12 @@ export class Document extends Block {
   }
   get attributes() {
     return core.Document$get$attributes(this)
+  }
+  withAttribute(...args) {
+    return core.Document$withAttribute(this, ...args)
+  }
+  withoutAttribute(...args) {
+    return core.Document$withoutAttribute(this, ...args)
   }
   convert(...args) {
     return core.Document$convert(this, ...args)
