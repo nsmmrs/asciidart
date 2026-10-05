@@ -74,4 +74,35 @@ void main() {
       expect(comparison.pixels, lessThan(1));
     }, skip: _tools ? false : 'needs poppler and qpdf');
   }
+
+  // The gem's own examples (vendored), converted from where they are. In
+  // the chronicles a footnote reference after a floated image is drawn in
+  // the same place but extracts in another order (the gem's content
+  // stream has it earlier), so the words need only be 99.9% in order.
+  for (final name in ['chronicles-example', 'edge-cases']) {
+    test('the gem\'s $name.adoc converts as the gem converts it', () {
+      final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final out = '${dir.path}/$name.pdf';
+      convertFile(
+        'vendor/asciidoctor-pdf/test/examples/$name.adoc',
+        AsciidoctorOptions(safe: SafeMode.unsafe, backend: 'pdf', toFile: out),
+      );
+      final comparison = Comparison(
+        facts('test/pdf/fixtures/examples/$name-gem.pdf', dir),
+        facts(out, dir),
+      );
+      expect(comparison.a.pages, comparison.b.pages);
+      expect(
+        comparison.text,
+        greaterThanOrEqualTo(0.999),
+        reason: comparison.wordDiff(),
+      );
+      expect(comparison.geometry.$1, 1, reason: comparison.wordDiff());
+      expect(comparison.sameOutline, isTrue);
+      expect(comparison.sameLinks, isTrue);
+      expect(comparison.sameLabels, isTrue);
+      expect(comparison.pixels, lessThan(1));
+    }, skip: _tools ? false : 'needs poppler and qpdf');
+  }
 }
