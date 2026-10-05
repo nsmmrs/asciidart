@@ -837,8 +837,9 @@ class Html5Converter extends BuiltInConverter {
     final body = level == 1
         ? '<div class="sectionbody">\n$content\n</div>'
         : content;
+    final tagName = _headingTag(level);
     return '<div class="sect$level$roleClass">\n'
-        '<h${level + 1}$idAttr>$linkedTitle</h${level + 1}>\n'
+        '<$tagName$idAttr>$linkedTitle</$tagName>\n'
         '$body\n'
         '</div>';
   }
@@ -1119,7 +1120,7 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] floating title.
   String convertFloatingTitle(Block node) {
-    final tagName = 'h${node.level! + 1}';
+    final tagName = _headingTag(node.level!);
     final idAttribute = node.id != null ? ' id="${node.id}"' : '';
     final classes = <String>[];
     if (node.style != null) {
@@ -1130,6 +1131,11 @@ class Html5Converter extends BuiltInConverter {
     }
     return '<$tagName$idAttribute class="${classes.join(' ')}">${_s(node.title)}</$tagName>';
   }
+
+  /// The heading element for a section or discrete heading at [level]:
+  /// HTML has six, so a level pushed further by `leveloffset` uses the
+  /// nearest one (#2032).
+  static String _headingTag(int level) => 'h${(level + 1).clamp(1, 6)}';
 
   /// Converts the [node] image block.
   String convertImage(Block node) {
