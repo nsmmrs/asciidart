@@ -1,0 +1,3832 @@
+{
+ "detect/1c/default.txt": {
+  "language": "1c",
+  "relevance": 81,
+  "secondBest": "php"
+ },
+ "detect/abnf/default.txt": {
+  "language": "abnf",
+  "relevance": 38,
+  "secondBest": "freedesktop"
+ },
+ "detect/accesslog/default.txt": {
+  "language": "accesslog",
+  "relevance": 15,
+  "secondBest": "awk"
+ },
+ "detect/actionscript/default.txt": {
+  "language": "actionscript",
+  "relevance": 47,
+  "secondBest": "typescript"
+ },
+ "detect/ada/default.txt": {
+  "language": "ada",
+  "relevance": 18,
+  "secondBest": "vhdl"
+ },
+ "detect/angelscript/default.txt": {
+  "language": "dart",
+  "relevance": 44,
+  "secondBest": "angelscript"
+ },
+ "detect/apache/default.txt": {
+  "language": "apache",
+  "relevance": 30,
+  "secondBest": "dart"
+ },
+ "detect/applescript/default.txt": {
+  "language": "applescript",
+  "relevance": 20,
+  "secondBest": "gml"
+ },
+ "detect/arcade/default.txt": {
+  "language": "arcade",
+  "relevance": 30,
+  "secondBest": "dart"
+ },
+ "detect/arduino/default.txt": {
+  "language": "dart",
+  "relevance": 35,
+  "secondBest": "arduino"
+ },
+ "detect/armasm/default.txt": {
+  "language": "armasm",
+  "relevance": 53,
+  "secondBest": "x86asm"
+ },
+ "detect/asciidoc/default.txt": {
+  "language": "asciidoc",
+  "relevance": 148,
+  "secondBest": "vhdl"
+ },
+ "detect/aspectj/default.txt": {
+  "language": "dart",
+  "relevance": 58,
+  "secondBest": "aspectj"
+ },
+ "detect/autohotkey/default.txt": {
+  "language": "dart",
+  "relevance": 29,
+  "secondBest": "autohotkey"
+ },
+ "detect/autoit/default.txt": {
+  "language": "autoit",
+  "relevance": 30,
+  "secondBest": "dart"
+ },
+ "detect/avrasm/default.txt": {
+  "language": "avrasm",
+  "relevance": 19,
+  "secondBest": "mipsasm"
+ },
+ "detect/awk/default.txt": {
+  "language": "dart",
+  "relevance": 24,
+  "secondBest": "awk"
+ },
+ "detect/axapta/default.txt": {
+  "language": "axapta",
+  "relevance": 26,
+  "secondBest": "applescript"
+ },
+ "detect/bash/default.txt": {
+  "language": "bash",
+  "relevance": 28,
+  "secondBest": "php"
+ },
+ "detect/basic/default.txt": {
+  "language": "basic",
+  "relevance": 266,
+  "secondBest": "apache"
+ },
+ "detect/bnf/default.txt": {
+  "language": "bnf",
+  "relevance": 55,
+  "secondBest": "vim"
+ },
+ "detect/brainfuck/default.txt": {
+  "language": "brainfuck",
+  "relevance": 38,
+  "secondBest": "inform7"
+ },
+ "detect/cal/default.txt": {
+  "language": "dart",
+  "relevance": 36,
+  "secondBest": "cal"
+ },
+ "detect/capnproto/default.txt": {
+  "language": "capnproto",
+  "relevance": 62,
+  "secondBest": "elixir"
+ },
+ "detect/ceylon/default.txt": {
+  "language": "ceylon",
+  "relevance": 20,
+  "secondBest": "axapta"
+ },
+ "detect/clean/default.txt": {
+  "language": "dart",
+  "relevance": 27,
+  "secondBest": "clean"
+ },
+ "detect/clojure/default.txt": {
+  "language": "dns",
+  "relevance": 28,
+  "secondBest": "clojure"
+ },
+ "detect/clojure-repl/default.txt": {
+  "language": "clojure-repl",
+  "relevance": 9,
+  "secondBest": "freedesktop"
+ },
+ "detect/cmake/default.txt": {
+  "language": "cmake",
+  "relevance": 26,
+  "secondBest": "dart"
+ },
+ "detect/coffeescript/default.txt": {
+  "language": "coffeescript",
+  "relevance": 25,
+  "secondBest": "livescript"
+ },
+ "detect/coq/default.txt": {
+  "language": "coq",
+  "relevance": 47,
+  "secondBest": "dns"
+ },
+ "detect/cos/default.txt": {
+  "language": "cos",
+  "relevance": 52,
+  "secondBest": "stata"
+ },
+ "detect/cpp/default.txt": {
+  "language": "cpp",
+  "relevance": 20,
+  "secondBest": "arduino"
+ },
+ "detect/crmsh/default.txt": {
+  "language": "crmsh",
+  "relevance": 92,
+  "secondBest": "smali"
+ },
+ "detect/crystal/default.txt": {
+  "language": "crystal",
+  "relevance": 24,
+  "secondBest": "ruby"
+ },
+ "detect/csharp/default.txt": {
+  "language": "csharp",
+  "relevance": 23,
+  "secondBest": "dart"
+ },
+ "detect/csp/default.txt": {
+  "language": "csp",
+  "relevance": 22,
+  "secondBest": "gml"
+ },
+ "detect/css/default.txt": {
+  "language": "css",
+  "relevance": 26,
+  "secondBest": "less"
+ },
+ "detect/d/default.txt": {
+  "language": "d",
+  "relevance": 78,
+  "secondBest": "swift"
+ },
+ "detect/dart/default.txt": {
+  "language": "dart",
+  "relevance": 57,
+  "secondBest": "awk"
+ },
+ "detect/delphi/default.txt": {
+  "language": "dart",
+  "relevance": 63,
+  "secondBest": "delphi"
+ },
+ "detect/diff/default.txt": {
+  "language": "diff",
+  "relevance": 47,
+  "secondBest": "asciidoc"
+ },
+ "detect/django/default.txt": {
+  "language": "django",
+  "relevance": 36,
+  "secondBest": "twig"
+ },
+ "detect/dns/default.txt": {
+  "language": "dns",
+  "relevance": 57,
+  "secondBest": "mipsasm"
+ },
+ "detect/dockerfile/default.txt": {
+  "language": "dockerfile",
+  "relevance": 74,
+  "secondBest": "routeros"
+ },
+ "detect/dos/default.txt": {
+  "language": "dos",
+  "relevance": 29,
+  "secondBest": "jboss-cli"
+ },
+ "detect/dsconfig/default.txt": {
+  "language": "dsconfig",
+  "relevance": 103,
+  "secondBest": "apache"
+ },
+ "detect/dts/default.txt": {
+  "language": "dts",
+  "relevance": 46.2,
+  "secondBest": "nix"
+ },
+ "detect/dust/default.txt": {
+  "language": "dust",
+  "relevance": 13,
+  "secondBest": "xml"
+ },
+ "detect/ebnf/default.txt": {
+  "language": "ebnf",
+  "relevance": 56,
+  "secondBest": "arduino"
+ },
+ "detect/elixir/default.txt": {
+  "language": "elixir",
+  "relevance": 52,
+  "secondBest": "ruby"
+ },
+ "detect/elm/default.txt": {
+  "language": "dart",
+  "relevance": 18,
+  "secondBest": "elm"
+ },
+ "detect/erb/default.txt": {
+  "language": "erb",
+  "relevance": 11,
+  "secondBest": "apache"
+ },
+ "detect/erlang/default.txt": {
+  "language": "dart",
+  "relevance": 67,
+  "secondBest": "dns"
+ },
+ "detect/erlang-repl/default.txt": {
+  "language": "erlang-repl",
+  "relevance": 117,
+  "secondBest": "dart"
+ },
+ "detect/excel/default.txt": {
+  "language": "excel",
+  "relevance": 12,
+  "secondBest": "dns"
+ },
+ "detect/fix/default.txt": {
+  "language": "fix",
+  "relevance": 136,
+  "secondBest": "freedesktop"
+ },
+ "detect/flix/default.txt": {
+  "language": "dart",
+  "relevance": 75,
+  "secondBest": "dns"
+ },
+ "detect/fortran/default.txt": {
+  "language": "fortran",
+  "relevance": 38,
+  "secondBest": "irpf90"
+ },
+ "detect/fsharp/default.txt": {
+  "language": "fsharp",
+  "relevance": 46,
+  "secondBest": "rust"
+ },
+ "detect/gams/default.txt": {
+  "language": "dns",
+  "relevance": 51,
+  "secondBest": "gams"
+ },
+ "detect/gauss/default.txt": {
+  "language": "dns",
+  "relevance": 27,
+  "secondBest": "gauss"
+ },
+ "detect/gcode/default.txt": {
+  "language": "dart",
+  "relevance": 73,
+  "secondBest": "tp"
+ },
+ "detect/gherkin/default.txt": {
+  "language": "gherkin",
+  "relevance": 36,
+  "secondBest": "vim"
+ },
+ "detect/glsl/default.txt": {
+  "language": "glsl",
+  "relevance": 40,
+  "secondBest": "dns"
+ },
+ "detect/gml/default.txt": {
+  "language": "gml",
+  "relevance": 28,
+  "secondBest": "dns"
+ },
+ "detect/go/default.txt": {
+  "language": "go",
+  "relevance": 18,
+  "secondBest": "dns"
+ },
+ "detect/go/swift-like.txt": {
+  "language": "dns",
+  "relevance": 24,
+  "secondBest": "go"
+ },
+ "detect/golo/default.txt": {
+  "language": "golo",
+  "relevance": 21,
+  "secondBest": "java"
+ },
+ "detect/gradle/default.txt": {
+  "language": "dart",
+  "relevance": 43,
+  "secondBest": "gradle"
+ },
+ "detect/graphql/default.txt": {
+  "language": "dart",
+  "relevance": 14,
+  "secondBest": "graphql"
+ },
+ "detect/groovy/default.txt": {
+  "language": "groovy",
+  "relevance": 53,
+  "secondBest": "dart"
+ },
+ "detect/haml/default.txt": {
+  "language": "haml",
+  "relevance": 36,
+  "secondBest": "elixir"
+ },
+ "detect/handlebars/default.txt": {
+  "language": "handlebars",
+  "relevance": 19,
+  "secondBest": "django"
+ },
+ "detect/haskell/default.txt": {
+  "language": "haskell",
+  "relevance": 48,
+  "secondBest": "dart"
+ },
+ "detect/haxe/default.txt": {
+  "language": "dart",
+  "relevance": 151,
+  "secondBest": "haxe"
+ },
+ "detect/hsp/default.txt": {
+  "language": "hsp",
+  "relevance": 21,
+  "secondBest": "sqf"
+ },
+ "detect/http/default.txt": {
+  "language": "http",
+  "relevance": 22.07,
+  "secondBest": "nix"
+ },
+ "detect/hy/default.txt": {
+  "language": "dns",
+  "relevance": 81,
+  "secondBest": "hy"
+ },
+ "detect/inform7/default.txt": {
+  "language": "dart",
+  "relevance": 30,
+  "secondBest": "inform7"
+ },
+ "detect/ini/default.txt": {
+  "language": "ini",
+  "relevance": 23,
+  "secondBest": "freedesktop"
+ },
+ "detect/irpf90/default.txt": {
+  "language": "irpf90",
+  "relevance": 67,
+  "secondBest": "fortran"
+ },
+ "detect/isbl/default.txt": {
+  "language": "dart",
+  "relevance": 51,
+  "secondBest": "isbl"
+ },
+ "detect/java/default.txt": {
+  "language": "aspectj",
+  "relevance": 20,
+  "secondBest": "gradle"
+ },
+ "detect/javascript/default.txt": {
+  "language": "dns",
+  "relevance": 20,
+  "secondBest": "javascript"
+ },
+ "detect/javascript/sample1.txt": {
+  "language": "dart",
+  "relevance": 14,
+  "secondBest": "dns"
+ },
+ "detect/javascript/short-plain.txt": {
+  "language": "dns",
+  "relevance": 11,
+  "secondBest": "dart"
+ },
+ "detect/jboss-cli/default.txt": {
+  "language": "jboss-cli",
+  "relevance": 37,
+  "secondBest": "routeros"
+ },
+ "detect/json/default.txt": {
+  "language": "json",
+  "relevance": 17.099999999999998,
+  "secondBest": "actionscript"
+ },
+ "detect/json5/default.txt": {
+  "language": "pgsql",
+  "relevance": 34,
+  "secondBest": "arcade"
+ },
+ "detect/julia/default.txt": {
+  "language": "julia",
+  "relevance": 104,
+  "secondBest": "pony"
+ },
+ "detect/julia-repl/default.txt": {
+  "language": "julia-repl",
+  "relevance": 71,
+  "secondBest": "dns"
+ },
+ "detect/kotlin/default.txt": {
+  "language": "kotlin",
+  "relevance": 39,
+  "secondBest": "dns"
+ },
+ "detect/lasso/default.txt": {
+  "language": "lasso",
+  "relevance": 102,
+  "secondBest": "dns"
+ },
+ "detect/latex/default.txt": {
+  "language": "latex",
+  "relevance": 31,
+  "secondBest": "livescript"
+ },
+ "detect/ldif/default.txt": {
+  "language": "ldif",
+  "relevance": 73,
+  "secondBest": "nestedtext"
+ },
+ "detect/leaf/default.txt": {
+  "language": "leaf",
+  "relevance": 102,
+  "secondBest": "dns"
+ },
+ "detect/less/default.txt": {
+  "language": "less",
+  "relevance": 74,
+  "secondBest": "scss"
+ },
+ "detect/lisp/default.txt": {
+  "language": "lisp",
+  "relevance": 49,
+  "secondBest": "pgsql"
+ },
+ "detect/livecodeserver/default.txt": {
+  "language": "livecodeserver",
+  "relevance": 39,
+  "secondBest": "applescript"
+ },
+ "detect/livescript/default.txt": {
+  "language": "livescript",
+  "relevance": 58,
+  "secondBest": "coffeescript"
+ },
+ "detect/llvm/default.txt": {
+  "language": "llvm",
+  "relevance": 282,
+  "secondBest": "mel"
+ },
+ "detect/lsl/default.txt": {
+  "language": "dns",
+  "relevance": 10,
+  "secondBest": "lsl"
+ },
+ "detect/lua/default.txt": {
+  "language": "lua",
+  "relevance": 65,
+  "secondBest": "dns"
+ },
+ "detect/makefile/default.txt": {
+  "language": "makefile",
+  "relevance": 11,
+  "secondBest": "mipsasm"
+ },
+ "detect/markdown/default.txt": {
+  "language": "markdown",
+  "relevance": 19,
+  "secondBest": "asciidoc"
+ },
+ "detect/mathematica/default.txt": {
+  "language": "dart",
+  "relevance": 95,
+  "secondBest": "mathematica"
+ },
+ "detect/matlab/default.txt": {
+  "language": "dns",
+  "relevance": 59,
+  "secondBest": "dart"
+ },
+ "detect/maxima/default.txt": {
+  "language": "maxima",
+  "relevance": 82,
+  "secondBest": "gml"
+ },
+ "detect/mel/default.txt": {
+  "language": "mel",
+  "relevance": 27,
+  "secondBest": "php"
+ },
+ "detect/mercury/default.txt": {
+  "language": "dns",
+  "relevance": 41,
+  "secondBest": "dart"
+ },
+ "detect/mipsasm/default.txt": {
+  "language": "mipsasm",
+  "relevance": 26,
+  "secondBest": "php"
+ },
+ "detect/mizar/default.txt": {
+  "language": "mizar",
+  "relevance": 74,
+  "secondBest": "dart"
+ },
+ "detect/mojolicious/default.txt": {
+  "language": "mojolicious",
+  "relevance": 62,
+  "secondBest": "bash"
+ },
+ "detect/monkey/default.txt": {
+  "language": "monkey",
+  "relevance": 26,
+  "secondBest": "dns"
+ },
+ "detect/moonscript/default.txt": {
+  "language": "moonscript",
+  "relevance": 38,
+  "secondBest": "coffeescript"
+ },
+ "detect/n1ql/default.txt": {
+  "language": "n1ql",
+  "relevance": 32,
+  "secondBest": "pgsql"
+ },
+ "detect/nestedtext/default.txt": {
+  "language": "nestedtext",
+  "relevance": 28,
+  "secondBest": "dart"
+ },
+ "detect/nginx/default.txt": {
+  "language": "nginx",
+  "relevance": 59,
+  "secondBest": "nsis"
+ },
+ "detect/nim/default.txt": {
+  "language": "nim",
+  "relevance": 35,
+  "secondBest": "pgsql"
+ },
+ "detect/nix/default.txt": {
+  "language": "nix",
+  "relevance": 24.799999999999997,
+  "secondBest": "dart"
+ },
+ "detect/node-repl/default.txt": {
+  "language": "node-repl",
+  "relevance": 10,
+  "secondBest": "ada"
+ },
+ "detect/nsis/default.txt": {
+  "language": "nsis",
+  "relevance": 39,
+  "secondBest": "dart"
+ },
+ "detect/objectivec/default.txt": {
+  "language": "objectivec",
+  "relevance": 17,
+  "secondBest": "dart"
+ },
+ "detect/ocaml/default.txt": {
+  "language": "ocaml",
+  "relevance": 29,
+  "secondBest": "fsharp"
+ },
+ "detect/openscad/default.txt": {
+  "language": "dns",
+  "relevance": 18,
+  "secondBest": "openscad"
+ },
+ "detect/oxygene/default.txt": {
+  "language": "oxygene",
+  "relevance": 131,
+  "secondBest": "delphi"
+ },
+ "detect/parser3/default.txt": {
+  "language": "parser3",
+  "relevance": 61,
+  "secondBest": "perl"
+ },
+ "detect/perl/default.txt": {
+  "language": "perl",
+  "relevance": 96,
+  "secondBest": "bash"
+ },
+ "detect/pf/default.txt": {
+  "language": "pf",
+  "relevance": 132,
+  "secondBest": "routeros"
+ },
+ "detect/pgsql/default.txt": {
+  "language": "pgsql",
+  "relevance": 44,
+  "secondBest": "sql"
+ },
+ "detect/php/default.txt": {
+  "language": "php",
+  "relevance": 80,
+  "secondBest": "zephir"
+ },
+ "detect/php-template/default.txt": {
+  "language": "php-template",
+  "relevance": 19,
+  "secondBest": "php"
+ },
+ "detect/plaintext/default.txt": {
+  "language": "asciidoc",
+  "relevance": 10,
+  "secondBest": "1c"
+ },
+ "detect/pony/default.txt": {
+  "language": "pony",
+  "relevance": 29,
+  "secondBest": "ceylon"
+ },
+ "detect/powershell/default.txt": {
+  "language": "powershell",
+  "relevance": 21,
+  "secondBest": "stylus"
+ },
+ "detect/processing/default.txt": {
+  "language": "dart",
+  "relevance": 19,
+  "secondBest": "dns"
+ },
+ "detect/profile/default.txt": {
+  "language": "profile",
+  "relevance": 37,
+  "secondBest": "apache"
+ },
+ "detect/prolog/default.txt": {
+  "language": "dns",
+  "relevance": 29,
+  "secondBest": "dart"
+ },
+ "detect/properties/default.txt": {
+  "language": "livescript",
+  "relevance": 4,
+  "secondBest": "freedesktop"
+ },
+ "detect/protobuf/default.txt": {
+  "language": "protobuf",
+  "relevance": 25,
+  "secondBest": "dart"
+ },
+ "detect/puppet/default.txt": {
+  "language": "puppet",
+  "relevance": 57.400000000000006,
+  "secondBest": "perl"
+ },
+ "detect/purebasic/default.txt": {
+  "language": "dart",
+  "relevance": 47,
+  "secondBest": "purebasic"
+ },
+ "detect/python/default.txt": {
+  "language": "python",
+  "relevance": 36,
+  "secondBest": "awk"
+ },
+ "detect/python-repl/default.txt": {
+  "language": "python-repl",
+  "relevance": 40,
+  "secondBest": "shell"
+ },
+ "detect/q/default.txt": {
+  "language": "q",
+  "relevance": 29,
+  "secondBest": "pgsql"
+ },
+ "detect/qml/default.txt": {
+  "language": "qml",
+  "relevance": 46,
+  "secondBest": "dart"
+ },
+ "detect/r/default.txt": {
+  "language": "dns",
+  "relevance": 53,
+  "secondBest": "r"
+ },
+ "detect/reasonml/default.txt": {
+  "language": "dns",
+  "relevance": 48,
+  "secondBest": "reasonml"
+ },
+ "detect/rib/default.txt": {
+  "language": "dart",
+  "relevance": 46,
+  "secondBest": "rib"
+ },
+ "detect/roboconf/default.txt": {
+  "language": "roboconf",
+  "relevance": 50,
+  "secondBest": "smali"
+ },
+ "detect/routeros/default.txt": {
+  "language": "routeros",
+  "relevance": 51,
+  "secondBest": "bash"
+ },
+ "detect/rsl/default.txt": {
+  "language": "dart",
+  "relevance": 22,
+  "secondBest": "dns"
+ },
+ "detect/ruby/default.txt": {
+  "language": "ruby",
+  "relevance": 14,
+  "secondBest": "elixir"
+ },
+ "detect/ruby/double-colon.txt": {
+  "language": "dns",
+  "relevance": 7,
+  "secondBest": "ruby"
+ },
+ "detect/ruleslanguage/default.txt": {
+  "language": "ruleslanguage",
+  "relevance": 72,
+  "secondBest": "powershell"
+ },
+ "detect/rust/default.txt": {
+  "language": "rust",
+  "relevance": 25,
+  "secondBest": "dns"
+ },
+ "detect/sas/default.txt": {
+  "language": "sas",
+  "relevance": 48,
+  "secondBest": "markdown"
+ },
+ "detect/scala/default.txt": {
+  "language": "scala",
+  "relevance": 114,
+  "secondBest": "dns"
+ },
+ "detect/scheme/default.txt": {
+  "language": "dns",
+  "relevance": 93,
+  "secondBest": "scheme"
+ },
+ "detect/scilab/default.txt": {
+  "language": "dns",
+  "relevance": 15,
+  "secondBest": "scilab"
+ },
+ "detect/scss/default.txt": {
+  "language": "scss",
+  "relevance": 61,
+  "secondBest": "mel"
+ },
+ "detect/shell/default.txt": {
+  "language": "shell",
+  "relevance": 9,
+  "secondBest": "vhdl"
+ },
+ "detect/smali/default.txt": {
+  "language": "smali",
+  "relevance": 209,
+  "secondBest": "dart"
+ },
+ "detect/smalltalk/default.txt": {
+  "language": "nix",
+  "relevance": 29.2,
+  "secondBest": "smalltalk"
+ },
+ "detect/sml/default.txt": {
+  "language": "dns",
+  "relevance": 22,
+  "secondBest": "sml"
+ },
+ "detect/sqf/default.txt": {
+  "language": "sqf",
+  "relevance": 29,
+  "secondBest": "objectivec"
+ },
+ "detect/sql/default.txt": {
+  "language": "pgsql",
+  "relevance": 32,
+  "secondBest": "sas"
+ },
+ "detect/stan/default.txt": {
+  "language": "stan",
+  "relevance": 64,
+  "secondBest": "dns"
+ },
+ "detect/stata/default.txt": {
+  "language": "stata",
+  "relevance": 53,
+  "secondBest": "pgsql"
+ },
+ "detect/step21/default.txt": {
+  "language": "step21",
+  "relevance": 92,
+  "secondBest": "dns"
+ },
+ "detect/stylus/default.txt": {
+  "language": "stylus",
+  "relevance": 39,
+  "secondBest": "processing"
+ },
+ "detect/subunit/default.txt": {
+  "language": "subunit",
+  "relevance": 180,
+  "secondBest": "apache"
+ },
+ "detect/swift/default.txt": {
+  "language": "swift",
+  "relevance": 29,
+  "secondBest": "csharp"
+ },
+ "detect/taggerscript/default.txt": {
+  "language": "taggerscript",
+  "relevance": 85,
+  "secondBest": "mel"
+ },
+ "detect/tap/default.txt": {
+  "language": "tap",
+  "relevance": 49,
+  "secondBest": "awk"
+ },
+ "detect/tcl/default.txt": {
+  "language": "tcl",
+  "relevance": 76,
+  "secondBest": "ruby"
+ },
+ "detect/thrift/default.txt": {
+  "language": "thrift",
+  "relevance": 32,
+  "secondBest": "dart"
+ },
+ "detect/tp/default.txt": {
+  "language": "tp",
+  "relevance": 305,
+  "secondBest": "prolog"
+ },
+ "detect/twig/default.txt": {
+  "language": "twig",
+  "relevance": 31,
+  "secondBest": "handlebars"
+ },
+ "detect/typescript/default.txt": {
+  "language": "typescript",
+  "relevance": 20,
+  "secondBest": "dart"
+ },
+ "detect/vala/default.txt": {
+  "language": "csharp",
+  "relevance": 68,
+  "secondBest": "vala"
+ },
+ "detect/vbnet/default.txt": {
+  "language": "vbnet",
+  "relevance": 94,
+  "secondBest": "vbscript"
+ },
+ "detect/vbscript/default.txt": {
+  "language": "dns",
+  "relevance": 60,
+  "secondBest": "vbscript"
+ },
+ "detect/vbscript-html/default.txt": {
+  "language": "dart",
+  "relevance": 6,
+  "secondBest": "vbscript-html"
+ },
+ "detect/verilog/default.txt": {
+  "language": "verilog",
+  "relevance": 58,
+  "secondBest": "ada"
+ },
+ "detect/vhdl/default.txt": {
+  "language": "vhdl",
+  "relevance": 58,
+  "secondBest": "ada"
+ },
+ "detect/vim/default.txt": {
+  "language": "vim",
+  "relevance": 26,
+  "secondBest": "stata"
+ },
+ "detect/wasm/default.txt": {
+  "language": "dns",
+  "relevance": 29,
+  "secondBest": "wasm"
+ },
+ "detect/wren/default.txt": {
+  "language": "dart",
+  "relevance": 36,
+  "secondBest": "dns"
+ },
+ "detect/x86asm/default.txt": {
+  "language": "x86asm",
+  "relevance": 57,
+  "secondBest": "llvm"
+ },
+ "detect/xl/default.txt": {
+  "language": "xl",
+  "relevance": 40,
+  "secondBest": "processing"
+ },
+ "detect/xml/default.txt": {
+  "language": "xml",
+  "relevance": 45,
+  "secondBest": "django"
+ },
+ "detect/xml/groovy-julia.txt": {
+  "language": "xml",
+  "relevance": 7,
+  "secondBest": "dart"
+ },
+ "detect/xml/js.txt": {
+  "language": "xml",
+  "relevance": 3,
+  "secondBest": "django"
+ },
+ "detect/xquery/default.txt": {
+  "language": "xquery",
+  "relevance": 98,
+  "secondBest": "bash"
+ },
+ "detect/yaml/default.txt": {
+  "language": "yaml",
+  "relevance": 38,
+  "secondBest": "nestedtext"
+ },
+ "detect/zephir/default.txt": {
+  "language": "zephir",
+  "relevance": 53,
+  "secondBest": "dart"
+ },
+ "markup/1c/default.txt": {
+  "language": "1c",
+  "relevance": 81,
+  "secondBest": "php"
+ },
+ "markup/abnf/default.txt": {
+  "language": "abnf",
+  "relevance": 38,
+  "secondBest": "freedesktop"
+ },
+ "markup/accesslog/default.txt": {
+  "language": "accesslog",
+  "relevance": 60,
+  "secondBest": "awk"
+ },
+ "markup/actionscript/method-call.txt": {
+  "language": "dns",
+  "relevance": 2,
+  "secondBest": "routeros"
+ },
+ "markup/ada/default.txt": {
+  "language": "ada",
+  "relevance": 18,
+  "secondBest": "vhdl"
+ },
+ "markup/angelscript/default.txt": {
+  "language": "dart",
+  "relevance": 45,
+  "secondBest": "angelscript"
+ },
+ "markup/apache/default.txt": {
+  "language": "apache",
+  "relevance": 30,
+  "secondBest": "dart"
+ },
+ "markup/applescript/default.txt": {
+  "language": "applescript",
+  "relevance": 20,
+  "secondBest": "gml"
+ },
+ "markup/arcade/profile.txt": {
+  "language": "arcade",
+  "relevance": 44,
+  "secondBest": "dns"
+ },
+ "markup/arduino/default.txt": {
+  "language": "dart",
+  "relevance": 35,
+  "secondBest": "arduino"
+ },
+ "markup/armasm/default.txt": {
+  "language": "x86asm",
+  "relevance": 47,
+  "secondBest": "avrasm"
+ },
+ "markup/asciidoc/constrained.txt": {
+  "language": "pgsql",
+  "relevance": 50,
+  "secondBest": "asciidoc"
+ },
+ "markup/asciidoc/default.txt": {
+  "language": "asciidoc",
+  "relevance": 269,
+  "secondBest": "vhdl"
+ },
+ "markup/asciidoc/unconstrained.txt": {
+  "language": "pgsql",
+  "relevance": 50,
+  "secondBest": "markdown"
+ },
+ "markup/aspectj/intertype-constructor.txt": {
+  "language": "aspectj",
+  "relevance": 4,
+  "secondBest": "dart"
+ },
+ "markup/aspectj/intertype-method.txt": {
+  "language": "aspectj",
+  "relevance": 10,
+  "secondBest": "dart"
+ },
+ "markup/autohotkey/default.txt": {
+  "language": "dart",
+  "relevance": 29,
+  "secondBest": "autohotkey"
+ },
+ "markup/autoit/default.txt": {
+  "language": "autoit",
+  "relevance": 30,
+  "secondBest": "dart"
+ },
+ "markup/avrasm/default.txt": {
+  "language": "avrasm",
+  "relevance": 19,
+  "secondBest": "mipsasm"
+ },
+ "markup/awk/default.txt": {
+  "language": "dart",
+  "relevance": 24,
+  "secondBest": "awk"
+ },
+ "markup/axapta/default.txt": {
+  "language": "axapta",
+  "relevance": 26,
+  "secondBest": "applescript"
+ },
+ "markup/bash/arithmetic.txt": {
+  "language": "dns",
+  "relevance": 21,
+  "secondBest": "bash"
+ },
+ "markup/bash/escaped-apos.txt": {
+  "language": "bash",
+  "relevance": 4,
+  "secondBest": "vhdl"
+ },
+ "markup/bash/escaped-quote.txt": {
+  "language": "vim",
+  "relevance": 6,
+  "secondBest": "bash"
+ },
+ "markup/bash/no-numbers.txt": {
+  "language": "stan",
+  "relevance": 6,
+  "secondBest": "applescript"
+ },
+ "markup/bash/not-comments.txt": {
+  "language": "jboss-cli",
+  "relevance": 4,
+  "secondBest": "php"
+ },
+ "markup/bash/strings.txt": {
+  "language": "bash",
+  "relevance": 23,
+  "secondBest": "powershell"
+ },
+ "markup/bash/token-containing-keyword.txt": {
+  "language": "dsconfig",
+  "relevance": 14,
+  "secondBest": "pgsql"
+ },
+ "markup/bash/variables.txt": {
+  "language": "bash",
+  "relevance": 5,
+  "secondBest": "ruby"
+ },
+ "markup/basic/default.txt": {
+  "language": "basic",
+  "relevance": 266,
+  "secondBest": "apache"
+ },
+ "markup/bnf/default.txt": {
+  "language": "bnf",
+  "relevance": 55,
+  "secondBest": "vim"
+ },
+ "markup/brainfuck/default.txt": {
+  "language": "brainfuck",
+  "relevance": 38,
+  "secondBest": "inform7"
+ },
+ "markup/c/atomic-types.txt": {
+  "language": "scss",
+  "relevance": 9,
+  "secondBest": "dns"
+ },
+ "markup/c/number-literals.txt": {
+  "language": "maxima",
+  "relevance": 25,
+  "secondBest": "arduino"
+ },
+ "markup/c/preprocessor-define-angle-bracket.txt": {
+  "language": "cpp",
+  "relevance": 13,
+  "secondBest": "arduino"
+ },
+ "markup/c/raw-string-delimiters.txt": {
+  "language": "python",
+  "relevance": 39,
+  "secondBest": "processing"
+ },
+ "markup/cal/default.txt": {
+  "language": "dart",
+  "relevance": 34,
+  "secondBest": "pgsql"
+ },
+ "markup/capnproto/default.txt": {
+  "language": "capnproto",
+  "relevance": 62,
+  "secondBest": "elixir"
+ },
+ "markup/ceylon/nested-comments.txt": {
+  "language": "ceylon",
+  "relevance": 3,
+  "secondBest": "kotlin"
+ },
+ "markup/clean/default.txt": {
+  "language": "dart",
+  "relevance": 27,
+  "secondBest": "clean"
+ },
+ "markup/clojure/character.txt": {
+  "language": "livescript",
+  "relevance": 5,
+  "secondBest": "clojure"
+ },
+ "markup/clojure/comment-macro.txt": {
+  "language": "dns",
+  "relevance": 6,
+  "secondBest": "hy"
+ },
+ "markup/clojure/deps_edn.txt": {
+  "language": "elixir",
+  "relevance": 49,
+  "secondBest": "ruby"
+ },
+ "markup/clojure/globals_definition.txt": {
+  "language": "php",
+  "relevance": 78,
+  "secondBest": "openscad"
+ },
+ "markup/clojure/number.txt": {
+  "language": "subunit",
+  "relevance": 28,
+  "secondBest": "diff"
+ },
+ "markup/clojure/symbols-numbers.txt": {
+  "language": "dns",
+  "relevance": 12,
+  "secondBest": "clojure"
+ },
+ "markup/clojure-repl/prompt.txt": {
+  "language": "excel",
+  "relevance": 10,
+  "secondBest": "abnf"
+ },
+ "markup/cmake/default.txt": {
+  "language": "cmake",
+  "relevance": 34,
+  "secondBest": "dart"
+ },
+ "markup/coffeescript/division.txt": {
+  "language": "freedesktop",
+  "relevance": 15,
+  "secondBest": "ini"
+ },
+ "markup/coffeescript/freeze_bug.txt": {
+  "language": "jboss-cli",
+  "relevance": 84,
+  "secondBest": "mercury"
+ },
+ "markup/coffeescript/function.txt": {
+  "language": "livescript",
+  "relevance": 29,
+  "secondBest": "coffeescript"
+ },
+ "markup/coffeescript/regex.txt": {
+  "language": "ini",
+  "relevance": 34,
+  "secondBest": "freedesktop"
+ },
+ "markup/coq/default.txt": {
+  "language": "coq",
+  "relevance": 47,
+  "secondBest": "dns"
+ },
+ "markup/cos/basic.txt": {
+  "language": "stata",
+  "relevance": 17,
+  "secondBest": "cos"
+ },
+ "markup/cos/embedded.txt": {
+  "language": "dart",
+  "relevance": 11,
+  "secondBest": "arcade"
+ },
+ "markup/cpp/bitwise-keywords.txt": {
+  "language": "abnf",
+  "relevance": 19,
+  "secondBest": "mipsasm"
+ },
+ "markup/cpp/bugs.txt": {
+  "language": "dns",
+  "relevance": 13,
+  "secondBest": "cpp"
+ },
+ "markup/cpp/comments.txt": {
+  "language": "cpp",
+  "relevance": 11,
+  "secondBest": "arduino"
+ },
+ "markup/cpp/expression-keywords.txt": {
+  "language": "cpp",
+  "relevance": 7,
+  "secondBest": "arduino"
+ },
+ "markup/cpp/function-declarations.txt": {
+  "language": "dns",
+  "relevance": 53,
+  "secondBest": "arduino"
+ },
+ "markup/cpp/function-like-keywords.txt": {
+  "language": "dns",
+  "relevance": 17,
+  "secondBest": "cpp"
+ },
+ "markup/cpp/function-params.txt": {
+  "language": "pgsql",
+  "relevance": 11,
+  "secondBest": "cpp"
+ },
+ "markup/cpp/function-title.txt": {
+  "language": "dns",
+  "relevance": 24,
+  "secondBest": "dart"
+ },
+ "markup/cpp/initializers.txt": {
+  "language": "dns",
+  "relevance": 11,
+  "secondBest": "dart"
+ },
+ "markup/cpp/number-literals.txt": {
+  "language": "maxima",
+  "relevance": 33,
+  "secondBest": "pgsql"
+ },
+ "markup/cpp/pointers-returns.txt": {
+  "language": "scss",
+  "relevance": 11,
+  "secondBest": "cpp"
+ },
+ "markup/cpp/preprocessor-define-angle-bracket.txt": {
+  "language": "cpp",
+  "relevance": 18,
+  "secondBest": "arduino"
+ },
+ "markup/cpp/preprocessor.txt": {
+  "language": "arduino",
+  "relevance": 43,
+  "secondBest": "cpp"
+ },
+ "markup/cpp/primitive-types.txt": {
+  "language": "cpp",
+  "relevance": 62,
+  "secondBest": "arduino"
+ },
+ "markup/cpp/raw-string-delimiters.txt": {
+  "language": "python",
+  "relevance": 41,
+  "secondBest": "d"
+ },
+ "markup/cpp/string-literals.txt": {
+  "language": "1c",
+  "relevance": 58,
+  "secondBest": "d"
+ },
+ "markup/cpp/template-complexity.txt": {
+  "language": "angelscript",
+  "relevance": 60,
+  "secondBest": "cpp"
+ },
+ "markup/cpp/truncated-raw-string.txt": {
+  "language": "python",
+  "relevance": 10,
+  "secondBest": "scss"
+ },
+ "markup/crmsh/default.txt": {
+  "language": "crmsh",
+  "relevance": 92,
+  "secondBest": "smali"
+ },
+ "markup/crystal/defs.txt": {
+  "language": "ruby",
+  "relevance": 12,
+  "secondBest": "crystal"
+ },
+ "markup/crystal/integer-division.txt": {
+  "language": "scala",
+  "relevance": 3,
+  "secondBest": "scss"
+ },
+ "markup/crystal/literals.txt": {
+  "language": "haml",
+  "relevance": 34,
+  "secondBest": "ruby"
+ },
+ "markup/crystal/macro.txt": {
+  "language": "crystal",
+  "relevance": 15,
+  "secondBest": "django"
+ },
+ "markup/crystal/operators.txt": {
+  "language": "asciidoc",
+  "relevance": 23,
+  "secondBest": "1c"
+ },
+ "markup/crystal/regexes.txt": {
+  "language": "coffeescript",
+  "relevance": 16,
+  "secondBest": "livescript"
+ },
+ "markup/crystal/toplevel-keywords.txt": {
+  "language": "crystal",
+  "relevance": 8,
+  "secondBest": "arduino"
+ },
+ "markup/csharp/dotted-namespace.txt": {
+  "language": "perl",
+  "relevance": 6,
+  "secondBest": "axapta"
+ },
+ "markup/csharp/floats.txt": {
+  "language": "abnf",
+  "relevance": 10,
+  "secondBest": "apache"
+ },
+ "markup/csharp/functions.txt": {
+  "language": "csharp",
+  "relevance": 24,
+  "secondBest": "cpp"
+ },
+ "markup/csharp/generic_modifiers.txt": {
+  "language": "csharp",
+  "relevance": 32,
+  "secondBest": "d"
+ },
+ "markup/csharp/identifiers.txt": {
+  "language": "dart",
+  "relevance": 8,
+  "secondBest": "java"
+ },
+ "markup/csharp/numbers.txt": {
+  "language": "csharp",
+  "relevance": 11,
+  "secondBest": "java"
+ },
+ "markup/csharp/records.txt": {
+  "language": "csharp",
+  "relevance": 12,
+  "secondBest": "delphi"
+ },
+ "markup/csharp/scoped.txt": {
+  "language": "csharp",
+  "relevance": 6,
+  "secondBest": "d"
+ },
+ "markup/csharp/string-interpolation.txt": {
+  "language": "csharp",
+  "relevance": 26,
+  "secondBest": "fsharp"
+ },
+ "markup/csharp/string-raw.txt": {
+  "language": "julia",
+  "relevance": 30,
+  "secondBest": "ceylon"
+ },
+ "markup/csharp/titles.txt": {
+  "language": "csharp",
+  "relevance": 22,
+  "secondBest": "axapta"
+ },
+ "markup/csharp/try-catch.txt": {
+  "language": "dart",
+  "relevance": 10,
+  "secondBest": "coffeescript"
+ },
+ "markup/csp/default.txt": {
+  "language": "csp",
+  "relevance": 22,
+  "secondBest": "gml"
+ },
+ "markup/css/css_consistency.txt": {
+  "language": "css",
+  "relevance": 143,
+  "secondBest": "less"
+ },
+ "markup/css/hex-colors.txt": {
+  "language": "css",
+  "relevance": 14,
+  "secondBest": "stylus"
+ },
+ "markup/css/pseudo-selector.txt": {
+  "language": "css",
+  "relevance": 25,
+  "secondBest": "less"
+ },
+ "markup/css/pseudo.txt": {
+  "language": "css",
+  "relevance": 12,
+  "secondBest": "stylus"
+ },
+ "markup/css/sample.txt": {
+  "language": "css",
+  "relevance": 65,
+  "secondBest": "scss"
+ },
+ "markup/css/url.txt": {
+  "language": "css",
+  "relevance": 35,
+  "secondBest": "less"
+ },
+ "markup/css/variables.txt": {
+  "language": "css",
+  "relevance": 18,
+  "secondBest": "less"
+ },
+ "markup/d/default.txt": {
+  "language": "d",
+  "relevance": 78,
+  "secondBest": "swift"
+ },
+ "markup/dart/class.txt": {
+  "language": "dart",
+  "relevance": 12,
+  "secondBest": "perl"
+ },
+ "markup/dart/comment-markdown.txt": {
+  "language": "perl",
+  "relevance": 15,
+  "secondBest": "clean"
+ },
+ "markup/dart/function.txt": {
+  "language": "dart",
+  "relevance": 15,
+  "secondBest": "javascript"
+ },
+ "markup/dart/identifiers.txt": {
+  "language": "dns",
+  "relevance": 17,
+  "secondBest": "dart"
+ },
+ "markup/dart/string-interpolation.txt": {
+  "language": "dart",
+  "relevance": 8,
+  "secondBest": "1c"
+ },
+ "markup/delphi/character-string.txt": {
+  "language": "ebnf",
+  "relevance": 18,
+  "secondBest": "delphi"
+ },
+ "markup/delphi/compiler-directive.txt": {
+  "language": "oxygene",
+  "relevance": 24,
+  "secondBest": "delphi"
+ },
+ "markup/delphi/numeric-literal.txt": {
+  "language": "nginx",
+  "relevance": 17,
+  "secondBest": "dart"
+ },
+ "markup/diff/comments.txt": {
+  "language": "asciidoc",
+  "relevance": 31,
+  "secondBest": "diff"
+ },
+ "markup/diff/git-format-patch.txt": {
+  "language": "diff",
+  "relevance": 82,
+  "secondBest": "stylus"
+ },
+ "markup/django/default.txt": {
+  "language": "django",
+  "relevance": 36,
+  "secondBest": "twig"
+ },
+ "markup/dns/caa.txt": {
+  "language": "dns",
+  "relevance": 36,
+  "secondBest": "python"
+ },
+ "markup/dns/default.txt": {
+  "language": "dns",
+  "relevance": 57,
+  "secondBest": "mipsasm"
+ },
+ "markup/dns/txt.txt": {
+  "language": "dns",
+  "relevance": 39,
+  "secondBest": "python"
+ },
+ "markup/dockerfile/default.txt": {
+  "language": "dockerfile",
+  "relevance": 20,
+  "secondBest": "routeros"
+ },
+ "markup/dos/comments.txt": {
+  "language": "dos",
+  "relevance": 22,
+  "secondBest": "maxima"
+ },
+ "markup/dsconfig/default.txt": {
+  "language": "dsconfig",
+  "relevance": 106,
+  "secondBest": "jboss-cli"
+ },
+ "markup/dts/default.txt": {
+  "language": "dts",
+  "relevance": 46.2,
+  "secondBest": "nix"
+ },
+ "markup/dust/default.txt": {
+  "language": "dust",
+  "relevance": 13,
+  "secondBest": "xml"
+ },
+ "markup/ebnf/quote-symbols.txt": {
+  "language": "ebnf",
+  "relevance": 12,
+  "secondBest": "fsharp"
+ },
+ "markup/ebnf/terminators.txt": {
+  "language": "abnf",
+  "relevance": 12,
+  "secondBest": "ini"
+ },
+ "markup/ebnf/underscore-production.txt": {
+  "language": "ini",
+  "relevance": 3,
+  "secondBest": "abnf"
+ },
+ "markup/elixir/char-literal.txt": {
+  "language": "dns",
+  "relevance": 7,
+  "secondBest": "ruby"
+ },
+ "markup/elixir/conditionals.txt": {
+  "language": "elixir",
+  "relevance": 43,
+  "secondBest": "ruby"
+ },
+ "markup/elixir/function-not-regex.txt": {
+  "language": "nestedtext",
+  "relevance": 5,
+  "secondBest": "nix"
+ },
+ "markup/elixir/function-title.txt": {
+  "language": "elixir",
+  "relevance": 21,
+  "secondBest": "ruby"
+ },
+ "markup/elixir/module-references.txt": {
+  "language": "dart",
+  "relevance": 12,
+  "secondBest": "dns"
+ },
+ "markup/elixir/modules.txt": {
+  "language": "elixir",
+  "relevance": 16,
+  "secondBest": "ruby"
+ },
+ "markup/elixir/numbers.txt": {
+  "language": "freedesktop",
+  "relevance": 42,
+  "secondBest": "ini"
+ },
+ "markup/elixir/sigils.txt": {
+  "language": "elixir",
+  "relevance": 93,
+  "secondBest": "livescript"
+ },
+ "markup/elixir/strings.txt": {
+  "language": "ini",
+  "relevance": 30,
+  "secondBest": "awk"
+ },
+ "markup/elixir/uppercase-string-sigil.txt": {
+  "language": "python",
+  "relevance": 26,
+  "secondBest": "awk"
+ },
+ "markup/elm/default.txt": {
+  "language": "dart",
+  "relevance": 18,
+  "secondBest": "elm"
+ },
+ "markup/erb/default.txt": {
+  "language": "erb",
+  "relevance": 11,
+  "secondBest": "apache"
+ },
+ "markup/erlang/char_literal.txt": {
+  "language": "erlang",
+  "relevance": 41,
+  "secondBest": "elixir"
+ },
+ "markup/erlang/doc_attribute.txt": {
+  "language": "ceylon",
+  "relevance": 13,
+  "secondBest": "erlang"
+ },
+ "markup/erlang/maybe.txt": {
+  "language": "dns",
+  "relevance": 8,
+  "secondBest": "lua"
+ },
+ "markup/erlang/numbers.txt": {
+  "language": "ini",
+  "relevance": 34,
+  "secondBest": "freedesktop"
+ },
+ "markup/erlang/sigil.txt": {
+  "language": "julia",
+  "relevance": 52,
+  "secondBest": "python"
+ },
+ "markup/erlang/triple_quote_string.txt": {
+  "language": "ceylon",
+  "relevance": 31,
+  "secondBest": "julia"
+ },
+ "markup/erlang-repl/default.txt": {
+  "language": "erlang-repl",
+  "relevance": 117,
+  "secondBest": "dart"
+ },
+ "markup/excel/comments.txt": {
+  "language": "excel",
+  "relevance": 12,
+  "secondBest": "dns"
+ },
+ "markup/fix/default.txt": {
+  "language": "fix",
+  "relevance": 136,
+  "secondBest": "freedesktop"
+ },
+ "markup/flix/default.txt": {
+  "language": "dart",
+  "relevance": 75,
+  "secondBest": "dns"
+ },
+ "markup/fortran/comments.txt": {
+  "language": "erlang-repl",
+  "relevance": 6,
+  "secondBest": "freedesktop"
+ },
+ "markup/fortran/dot_keywords.txt": {
+  "language": "stylus",
+  "relevance": 15,
+  "secondBest": "fortran"
+ },
+ "markup/fortran/numbers.txt": {
+  "language": "stylus",
+  "relevance": 7,
+  "secondBest": "dns"
+ },
+ "markup/freedesktop/desktop.txt": {
+  "language": "freedesktop",
+  "relevance": 29,
+  "secondBest": "ini"
+ },
+ "markup/freedesktop/nmconnection.txt": {
+  "language": "ini",
+  "relevance": 25,
+  "secondBest": "freedesktop"
+ },
+ "markup/freedesktop/systemd.txt": {
+  "language": "ini",
+  "relevance": 24,
+  "secondBest": "freedesktop"
+ },
+ "markup/fsharp/attributes.txt": {
+  "language": "fsharp",
+  "relevance": 9,
+  "secondBest": "csharp"
+ },
+ "markup/fsharp/bang-keywords.txt": {
+  "language": "dns",
+  "relevance": 4,
+  "secondBest": "csharp"
+ },
+ "markup/fsharp/comments.txt": {
+  "language": "dns",
+  "relevance": 37,
+  "secondBest": "csharp"
+ },
+ "markup/fsharp/computation-expressions.txt": {
+  "language": "dart",
+  "relevance": 26,
+  "secondBest": "fsharp"
+ },
+ "markup/fsharp/fsi-and-preprocessor.txt": {
+  "language": "dts",
+  "relevance": 53,
+  "secondBest": "hsp"
+ },
+ "markup/fsharp/numbers.txt": {
+  "language": "fsharp",
+  "relevance": 15,
+  "secondBest": "maxima"
+ },
+ "markup/fsharp/operators.txt": {
+  "language": "dns",
+  "relevance": 126,
+  "secondBest": "rust"
+ },
+ "markup/fsharp/strings.txt": {
+  "language": "julia",
+  "relevance": 203,
+  "secondBest": "fsharp"
+ },
+ "markup/fsharp/types.txt": {
+  "language": "fsharp",
+  "relevance": 220,
+  "secondBest": "scala"
+ },
+ "markup/gams/default.txt": {
+  "language": "dns",
+  "relevance": 51,
+  "secondBest": "gams"
+ },
+ "markup/gauss/function_defs.txt": {
+  "language": "gauss",
+  "relevance": 14,
+  "secondBest": "tcl"
+ },
+ "markup/gauss/function_refs.txt": {
+  "language": "dns",
+  "relevance": 21,
+  "secondBest": "apache"
+ },
+ "markup/gauss/keywords.txt": {
+  "language": "gauss",
+  "relevance": 9,
+  "secondBest": "apache"
+ },
+ "markup/gcode/default.txt": {
+  "language": "dart",
+  "relevance": 73,
+  "secondBest": "tp"
+ },
+ "markup/gcode/extended.txt": {
+  "language": "dart",
+  "relevance": 76,
+  "secondBest": "mipsasm"
+ },
+ "markup/gherkin/default.txt": {
+  "language": "gherkin",
+  "relevance": 36,
+  "secondBest": "vim"
+ },
+ "markup/gherkin/docstrings.txt": {
+  "language": "gherkin",
+  "relevance": 27,
+  "secondBest": "julia"
+ },
+ "markup/gherkin/keywords.txt": {
+  "language": "dart",
+  "relevance": 40,
+  "secondBest": "gherkin"
+ },
+ "markup/gherkin/negative.txt": {
+  "language": "dart",
+  "relevance": 19,
+  "secondBest": "pgsql"
+ },
+ "markup/gherkin/variables.txt": {
+  "language": "gherkin",
+  "relevance": 13,
+  "secondBest": "livecodeserver"
+ },
+ "markup/glsl/default.txt": {
+  "language": "glsl",
+  "relevance": 40,
+  "secondBest": "dns"
+ },
+ "markup/gml/default.txt": {
+  "language": "gml",
+  "relevance": 28,
+  "secondBest": "dns"
+ },
+ "markup/go/functions.txt": {
+  "language": "go",
+  "relevance": 17,
+  "secondBest": "nim"
+ },
+ "markup/go/numbers.txt": {
+  "language": "go",
+  "relevance": 57,
+  "secondBest": "makefile"
+ },
+ "markup/go/strings.txt": {
+  "language": "go",
+  "relevance": 12,
+  "secondBest": "rust"
+ },
+ "markup/golo/default.txt": {
+  "language": "golo",
+  "relevance": 21,
+  "secondBest": "java"
+ },
+ "markup/gradle/default.txt": {
+  "language": "dart",
+  "relevance": 43,
+  "secondBest": "gradle"
+ },
+ "markup/graphql/default.txt": {
+  "language": "dart",
+  "relevance": 28,
+  "secondBest": "nix"
+ },
+ "markup/groovy/default.txt": {
+  "language": "groovy",
+  "relevance": 55,
+  "secondBest": "dart"
+ },
+ "markup/groovy/numbers.txt": {
+  "language": "apache",
+  "relevance": 7,
+  "secondBest": "abnf"
+ },
+ "markup/groovy/oneoffs.txt": {
+  "language": "gradle",
+  "relevance": 7,
+  "secondBest": "axapta"
+ },
+ "markup/haml/default.txt": {
+  "language": "haml",
+  "relevance": 36,
+  "secondBest": "elixir"
+ },
+ "markup/handlebars/block-expression-variants-as-path-segment.txt": {
+  "language": "handlebars",
+  "relevance": 18,
+  "secondBest": "applescript"
+ },
+ "markup/handlebars/block-expression-variants-in-helper-name.txt": {
+  "language": "handlebars",
+  "relevance": 36,
+  "secondBest": "sqf"
+ },
+ "markup/handlebars/block-expression-variants-in-param.txt": {
+  "language": "handlebars",
+  "relevance": 18,
+  "secondBest": "applescript"
+ },
+ "markup/handlebars/block-parameters-as.txt": {
+  "language": "handlebars",
+  "relevance": 23,
+  "secondBest": "clean"
+ },
+ "markup/handlebars/block-with-param.txt": {
+  "language": "handlebars",
+  "relevance": 7,
+  "secondBest": "twig"
+ },
+ "markup/handlebars/block.txt": {
+  "language": "handlebars",
+  "relevance": 5,
+  "secondBest": "maxima"
+ },
+ "markup/handlebars/built-ins.txt": {
+  "language": "handlebars",
+  "relevance": 40,
+  "secondBest": "bash"
+ },
+ "markup/handlebars/combinations-with-text.txt": {
+  "language": "handlebars",
+  "relevance": 21,
+  "secondBest": "dns"
+ },
+ "markup/handlebars/comments.txt": {
+  "language": "handlebars",
+  "relevance": 6,
+  "secondBest": "twig"
+ },
+ "markup/handlebars/else-variants.txt": {
+  "language": "handlebars",
+  "relevance": 22,
+  "secondBest": "xl"
+ },
+ "markup/handlebars/escaped-mustaches.txt": {
+  "language": "twig",
+  "relevance": 29,
+  "secondBest": "django"
+ },
+ "markup/handlebars/expression-variants.txt": {
+  "language": "handlebars",
+  "relevance": 39,
+  "secondBest": "twig"
+ },
+ "markup/handlebars/hashes.txt": {
+  "language": "handlebars",
+  "relevance": 44,
+  "secondBest": "routeros"
+ },
+ "markup/handlebars/if-else.txt": {
+  "language": "handlebars",
+  "relevance": 13,
+  "secondBest": "kotlin"
+ },
+ "markup/handlebars/literals-in-different-places.txt": {
+  "language": "handlebars",
+  "relevance": 66,
+  "secondBest": "routeros"
+ },
+ "markup/handlebars/literals.txt": {
+  "language": "handlebars",
+  "relevance": 32,
+  "secondBest": "nginx"
+ },
+ "markup/handlebars/partial-call.txt": {
+  "language": "handlebars",
+  "relevance": 4,
+  "secondBest": "crystal"
+ },
+ "markup/handlebars/path-expressions.txt": {
+  "language": "handlebars",
+  "relevance": 19,
+  "secondBest": "stylus"
+ },
+ "markup/handlebars/raw-block.txt": {
+  "language": "handlebars",
+  "relevance": 8,
+  "secondBest": "twig"
+ },
+ "markup/handlebars/simple-expression.txt": {
+  "language": "handlebars",
+  "relevance": 3,
+  "secondBest": "crystal"
+ },
+ "markup/handlebars/sub-expressions.txt": {
+  "language": "handlebars",
+  "relevance": 53,
+  "secondBest": "twig"
+ },
+ "markup/handlebars/triple-mustache.txt": {
+  "language": "handlebars",
+  "relevance": 3,
+  "secondBest": "crystal"
+ },
+ "markup/haskell/char.txt": {
+  "language": "moonscript",
+  "relevance": 20,
+  "secondBest": "rust"
+ },
+ "markup/haskell/gadt.txt": {
+  "language": "haskell",
+  "relevance": 12,
+  "secondBest": "dart"
+ },
+ "markup/haskell/infix.txt": {
+  "language": "autohotkey",
+  "relevance": 6,
+  "secondBest": "swift"
+ },
+ "markup/haskell/inline-comments.txt": {
+  "language": "lua",
+  "relevance": 105,
+  "secondBest": "moonscript"
+ },
+ "markup/haskell/nested-comments.txt": {
+  "language": "elm",
+  "relevance": 3,
+  "secondBest": "haskell"
+ },
+ "markup/haskell/numbers.txt": {
+  "language": "freedesktop",
+  "relevance": 84,
+  "secondBest": "makefile"
+ },
+ "markup/haxe/default.txt": {
+  "language": "dart",
+  "relevance": 189,
+  "secondBest": "haxe"
+ },
+ "markup/hsp/default.txt": {
+  "language": "hsp",
+  "relevance": 21,
+  "secondBest": "sqf"
+ },
+ "markup/http/default.txt": {
+  "language": "http",
+  "relevance": 15.02,
+  "secondBest": "nix"
+ },
+ "markup/http/http3.txt": {
+  "language": "http",
+  "relevance": 27,
+  "secondBest": "apache"
+ },
+ "markup/http/just_headers.txt": {
+  "language": "dart",
+  "relevance": 5,
+  "secondBest": "nix"
+ },
+ "markup/http/response.txt": {
+  "language": "apache",
+  "relevance": 32,
+  "secondBest": "http"
+ },
+ "markup/hy/default.txt": {
+  "language": "dns",
+  "relevance": 81,
+  "secondBest": "hy"
+ },
+ "markup/inform7/default.txt": {
+  "language": "dart",
+  "relevance": 30,
+  "secondBest": "inform7"
+ },
+ "markup/ini/array.txt": {
+  "language": "ini",
+  "relevance": 9,
+  "secondBest": "autohotkey"
+ },
+ "markup/ini/comments.txt": {
+  "language": "ini",
+  "relevance": 14,
+  "secondBest": "pgsql"
+ },
+ "markup/ini/keys.txt": {
+  "language": "ini",
+  "relevance": 70,
+  "secondBest": "nsis"
+ },
+ "markup/ini/tables.txt": {
+  "language": "lua",
+  "relevance": 8,
+  "secondBest": "scheme"
+ },
+ "markup/ini/types.txt": {
+  "language": "ini",
+  "relevance": 65,
+  "secondBest": "freedesktop"
+ },
+ "markup/ini/variable.txt": {
+  "language": "ini",
+  "relevance": 6,
+  "secondBest": "freedesktop"
+ },
+ "markup/irpf90/default.txt": {
+  "language": "irpf90",
+  "relevance": 67,
+  "secondBest": "fortran"
+ },
+ "markup/isbl/default.txt": {
+  "language": "dart",
+  "relevance": 51,
+  "secondBest": "isbl"
+ },
+ "markup/java/annotations.txt": {
+  "language": "less",
+  "relevance": 65,
+  "secondBest": "perl"
+ },
+ "markup/java/arrays.txt": {
+  "language": "dart",
+  "relevance": 16,
+  "secondBest": "prolog"
+ },
+ "markup/java/bugs.txt": {
+  "language": "dart",
+  "relevance": 10,
+  "secondBest": "gauss"
+ },
+ "markup/java/functions.txt": {
+  "language": "dart",
+  "relevance": 12,
+  "secondBest": "swift"
+ },
+ "markup/java/generics.txt": {
+  "language": "dart",
+  "relevance": 41,
+  "secondBest": "typescript"
+ },
+ "markup/java/gh1031.txt": {
+  "language": "perl",
+  "relevance": 12,
+  "secondBest": "angelscript"
+ },
+ "markup/java/numbers.txt": {
+  "language": "x86asm",
+  "relevance": 88,
+  "secondBest": "maxima"
+ },
+ "markup/java/switch.txt": {
+  "language": "dart",
+  "relevance": 32,
+  "secondBest": "livescript"
+ },
+ "markup/java/textblock.txt": {
+  "language": "julia",
+  "relevance": 11,
+  "secondBest": "awk"
+ },
+ "markup/java/titles.txt": {
+  "language": "dart",
+  "relevance": 23,
+  "secondBest": "scala"
+ },
+ "markup/javascript/arrow-function.txt": {
+  "language": "dns",
+  "relevance": 40,
+  "secondBest": "arcade"
+ },
+ "markup/javascript/block-comments.txt": {
+  "language": "actionscript",
+  "relevance": 3,
+  "secondBest": "angelscript"
+ },
+ "markup/javascript/built-in.txt": {
+  "language": "javascript",
+  "relevance": 10,
+  "secondBest": "livescript"
+ },
+ "markup/javascript/class.txt": {
+  "language": "dns",
+  "relevance": 76,
+  "secondBest": "javascript"
+ },
+ "markup/javascript/comments.txt": {
+  "language": "smali",
+  "relevance": 10,
+  "secondBest": "javascript"
+ },
+ "markup/javascript/conventions.txt": {
+  "language": "abnf",
+  "relevance": 8,
+  "secondBest": "processing"
+ },
+ "markup/javascript/default-parameters.txt": {
+  "language": "pf",
+  "relevance": 5,
+  "secondBest": "actionscript"
+ },
+ "markup/javascript/inline-languages.txt": {
+  "language": "javascript",
+  "relevance": 56,
+  "secondBest": "typescript"
+ },
+ "markup/javascript/jsdoc.txt": {
+  "language": "julia",
+  "relevance": 14,
+  "secondBest": "crystal"
+ },
+ "markup/javascript/jsx-fragment.txt": {
+  "language": "scala",
+  "relevance": 13,
+  "secondBest": "javascript"
+ },
+ "markup/javascript/jsx.txt": {
+  "language": "typescript",
+  "relevance": 62,
+  "secondBest": "javascript"
+ },
+ "markup/javascript/keyword-as-part-of-method-name.txt": {
+  "language": "dns",
+  "relevance": 4,
+  "secondBest": "scss"
+ },
+ "markup/javascript/keyword_as_identifier.txt": {
+  "language": "csharp",
+  "relevance": 11,
+  "secondBest": "dart"
+ },
+ "markup/javascript/keywords.txt": {
+  "language": "dns",
+  "relevance": 22,
+  "secondBest": "javascript"
+ },
+ "markup/javascript/method-call.txt": {
+  "language": "dns",
+  "relevance": 6,
+  "secondBest": "awk"
+ },
+ "markup/javascript/modules.txt": {
+  "language": "javascript",
+  "relevance": 21,
+  "secondBest": "qml"
+ },
+ "markup/javascript/numbers.txt": {
+  "language": "java",
+  "relevance": 63,
+  "secondBest": "typescript"
+ },
+ "markup/javascript/object-attr.txt": {
+  "language": "nix",
+  "relevance": 20,
+  "secondBest": "yaml"
+ },
+ "markup/javascript/regex.txt": {
+  "language": "nix",
+  "relevance": 6.6000000000000005,
+  "secondBest": "arcade"
+ },
+ "markup/javascript/seperated-parameters.txt": {
+  "language": "pf",
+  "relevance": 10,
+  "secondBest": "actionscript"
+ },
+ "markup/javascript/shebang.txt": {
+  "language": "javascript",
+  "relevance": 6,
+  "secondBest": "d"
+ },
+ "markup/javascript/template-strings.txt": {
+  "language": "arcade",
+  "relevance": 5,
+  "secondBest": "javascript"
+ },
+ "markup/jboss-cli/default.txt": {
+  "language": "jboss-cli",
+  "relevance": 37,
+  "secondBest": "routeros"
+ },
+ "markup/json/comments.txt": {
+  "language": "json",
+  "relevance": 25.100000000000005,
+  "secondBest": "actionscript"
+ },
+ "markup/json5/default.txt": {
+  "language": "pgsql",
+  "relevance": 34,
+  "secondBest": "arcade"
+ },
+ "markup/julia/default.txt": {
+  "language": "julia",
+  "relevance": 104,
+  "secondBest": "pony"
+ },
+ "markup/julia-repl/default.txt": {
+  "language": "julia-repl",
+  "relevance": 71,
+  "secondBest": "dns"
+ },
+ "markup/kotlin/class.txt": {
+  "language": "angelscript",
+  "relevance": 34,
+  "secondBest": "kotlin"
+ },
+ "markup/kotlin/function.txt": {
+  "language": "kotlin",
+  "relevance": 55,
+  "secondBest": "dns"
+ },
+ "markup/kotlin/nested_comment.txt": {
+  "language": "pgsql",
+  "relevance": 9,
+  "secondBest": "ceylon"
+ },
+ "markup/kotlin/string.txt": {
+  "language": "pony",
+  "relevance": 26,
+  "secondBest": "julia"
+ },
+ "markup/lasso/delimiters.txt": {
+  "language": "php-template",
+  "relevance": 16.2,
+  "secondBest": "xml"
+ },
+ "markup/latex/chars.txt": {
+  "language": "latex",
+  "relevance": 13,
+  "secondBest": "asciidoc"
+ },
+ "markup/latex/comments.txt": {
+  "language": "latex",
+  "relevance": 50,
+  "secondBest": "erlang-repl"
+ },
+ "markup/latex/control_sequences.txt": {
+  "language": "livescript",
+  "relevance": 54,
+  "secondBest": "latex"
+ },
+ "markup/latex/parameters.txt": {
+  "language": "clean",
+  "relevance": 12,
+  "secondBest": "shell"
+ },
+ "markup/latex/verbatim.txt": {
+  "language": "latex",
+  "relevance": 83,
+  "secondBest": "dust"
+ },
+ "markup/ldif/ldapmodify.txt": {
+  "language": "ldif",
+  "relevance": 16,
+  "secondBest": "avrasm"
+ },
+ "markup/ldif/schema.txt": {
+  "language": "ldif",
+  "relevance": 18,
+  "secondBest": "pgsql"
+ },
+ "markup/leaf/default.txt": {
+  "language": "leaf",
+  "relevance": 102,
+  "secondBest": "dns"
+ },
+ "markup/less/css_consistency.txt": {
+  "language": "css",
+  "relevance": 138,
+  "secondBest": "less"
+ },
+ "markup/less/selectors.txt": {
+  "language": "less",
+  "relevance": 9,
+  "secondBest": "stylus"
+ },
+ "markup/lisp/mec.txt": {
+  "language": "dns",
+  "relevance": 5,
+  "secondBest": "lisp"
+ },
+ "markup/lisp/quoted-multiplication.txt": {
+  "language": "dns",
+  "relevance": 10,
+  "secondBest": "scheme"
+ },
+ "markup/livecodeserver/default.txt": {
+  "language": "livecodeserver",
+  "relevance": 39,
+  "secondBest": "applescript"
+ },
+ "markup/livescript/default.txt": {
+  "language": "livescript",
+  "relevance": 58,
+  "secondBest": "coffeescript"
+ },
+ "markup/llvm/c.style.comments.txt": {
+  "language": "llvm",
+  "relevance": 7,
+  "secondBest": "java"
+ },
+ "markup/llvm/default.txt": {
+  "language": "llvm",
+  "relevance": 282,
+  "secondBest": "mel"
+ },
+ "markup/llvm/numbers.txt": {
+  "language": "llvm",
+  "relevance": 15,
+  "secondBest": "java"
+ },
+ "markup/llvm/simple.txt": {
+  "language": "llvm",
+  "relevance": 48,
+  "secondBest": "erlang-repl"
+ },
+ "markup/llvm/string.txt": {
+  "language": "llvm",
+  "relevance": 14,
+  "secondBest": "csharp"
+ },
+ "markup/lsl/default.txt": {
+  "language": "dns",
+  "relevance": 10,
+  "secondBest": "lsl"
+ },
+ "markup/lua/default.txt": {
+  "language": "lua",
+  "relevance": 65,
+  "secondBest": "dns"
+ },
+ "markup/makefile/default.txt": {
+  "language": "makefile",
+  "relevance": 11,
+  "secondBest": "mipsasm"
+ },
+ "markup/markdown/bold_italics.txt": {
+  "language": "markdown",
+  "relevance": 30,
+  "secondBest": "asciidoc"
+ },
+ "markup/markdown/code.txt": {
+  "language": "asciidoc",
+  "relevance": 35,
+  "secondBest": "autohotkey"
+ },
+ "markup/markdown/entity.txt": {
+  "language": "markdown",
+  "relevance": 10,
+  "secondBest": "xml"
+ },
+ "markup/markdown/horizontal_rule.txt": {
+  "language": "dart",
+  "relevance": 15,
+  "secondBest": "pgsql"
+ },
+ "markup/markdown/links.txt": {
+  "language": "less",
+  "relevance": 9,
+  "secondBest": "dns"
+ },
+ "markup/markdown/list.txt": {
+  "language": "kotlin",
+  "relevance": 6,
+  "secondBest": "markdown"
+ },
+ "markup/markdown/sections.txt": {
+  "language": "asciidoc",
+  "relevance": 11,
+  "secondBest": "markdown"
+ },
+ "markup/mathematica/default.txt": {
+  "language": "dart",
+  "relevance": 95,
+  "secondBest": "mathematica"
+ },
+ "markup/matlab/block_comment.txt": {
+  "language": "mercury",
+  "relevance": 21,
+  "secondBest": "erlang"
+ },
+ "markup/matlab/transpose.txt": {
+  "language": "matlab",
+  "relevance": 76,
+  "secondBest": "freedesktop"
+ },
+ "markup/maxima/example.txt": {
+  "language": "gml",
+  "relevance": 37,
+  "secondBest": "maxima"
+ },
+ "markup/maxima/numbers.txt": {
+  "language": "maxima",
+  "relevance": 90,
+  "secondBest": "apache"
+ },
+ "markup/maxima/symbols.txt": {
+  "language": "maxima",
+  "relevance": 42,
+  "secondBest": "mel"
+ },
+ "markup/mel/default.txt": {
+  "language": "mel",
+  "relevance": 27,
+  "secondBest": "php"
+ },
+ "markup/mercury/default.txt": {
+  "language": "dns",
+  "relevance": 41,
+  "secondBest": "dart"
+ },
+ "markup/mipsasm/default.txt": {
+  "language": "mipsasm",
+  "relevance": 26,
+  "secondBest": "php"
+ },
+ "markup/mizar/default.txt": {
+  "language": "mizar",
+  "relevance": 74,
+  "secondBest": "dart"
+ },
+ "markup/mojolicious/default.txt": {
+  "language": "mojolicious",
+  "relevance": 61,
+  "secondBest": "bash"
+ },
+ "markup/monkey/default.txt": {
+  "language": "monkey",
+  "relevance": 26,
+  "secondBest": "dns"
+ },
+ "markup/moonscript/default.txt": {
+  "language": "moonscript",
+  "relevance": 38,
+  "secondBest": "coffeescript"
+ },
+ "markup/n1ql/default.txt": {
+  "language": "n1ql",
+  "relevance": 32,
+  "secondBest": "pgsql"
+ },
+ "markup/nestedtext/default.txt": {
+  "language": "nestedtext",
+  "relevance": 28,
+  "secondBest": "dart"
+ },
+ "markup/nestedtext/lists_of.txt": {
+  "language": "nestedtext",
+  "relevance": 9,
+  "secondBest": "markdown"
+ },
+ "markup/nginx/default.txt": {
+  "language": "nginx",
+  "relevance": 59,
+  "secondBest": "nsis"
+ },
+ "markup/nim/default.txt": {
+  "language": "nim",
+  "relevance": 35,
+  "secondBest": "pgsql"
+ },
+ "markup/nix/default.txt": {
+  "language": "nix",
+  "relevance": 109.00000000000004,
+  "secondBest": "gml"
+ },
+ "markup/node-repl/sample.txt": {
+  "language": "node-repl",
+  "relevance": 10,
+  "secondBest": "lasso"
+ },
+ "markup/nsis/default.txt": {
+  "language": "nsis",
+  "relevance": 101,
+  "secondBest": "dart"
+ },
+ "markup/nsis/variables.txt": {
+  "language": "dart",
+  "relevance": 27,
+  "secondBest": "nsis"
+ },
+ "markup/objectivec/preprocessor.txt": {
+  "language": "cpp",
+  "relevance": 30,
+  "secondBest": "arduino"
+ },
+ "markup/objectivec/string-literals.txt": {
+  "language": "rust",
+  "relevance": 16,
+  "secondBest": "axapta"
+ },
+ "markup/ocaml/literals.txt": {
+  "language": "rust",
+  "relevance": 36,
+  "secondBest": "java"
+ },
+ "markup/ocaml/types.txt": {
+  "language": "ocaml",
+  "relevance": 27,
+  "secondBest": "sml"
+ },
+ "markup/openscad/default.txt": {
+  "language": "dns",
+  "relevance": 18,
+  "secondBest": "openscad"
+ },
+ "markup/oxygene/default.txt": {
+  "language": "oxygene",
+  "relevance": 131,
+  "secondBest": "delphi"
+ },
+ "markup/parser3/default.txt": {
+  "language": "parser3",
+  "relevance": 61,
+  "secondBest": "perl"
+ },
+ "markup/perl/class.txt": {
+  "language": "perl",
+  "relevance": 27,
+  "secondBest": "elixir"
+ },
+ "markup/perl/default.txt": {
+  "language": "perl",
+  "relevance": 100,
+  "secondBest": "bash"
+ },
+ "markup/perl/number.txt": {
+  "language": "gams",
+  "relevance": 35,
+  "secondBest": "perl"
+ },
+ "markup/perl/regex.txt": {
+  "language": "perl",
+  "relevance": 91,
+  "secondBest": "dns"
+ },
+ "markup/pf/default.txt": {
+  "language": "pf",
+  "relevance": 132,
+  "secondBest": "routeros"
+ },
+ "markup/pgsql/clauses.txt": {
+  "language": "pgsql",
+  "relevance": 169,
+  "secondBest": "sql"
+ },
+ "markup/pgsql/clauses2.txt": {
+  "language": "pgsql",
+  "relevance": 501,
+  "secondBest": "sql"
+ },
+ "markup/pgsql/constraints.txt": {
+  "language": "pgsql",
+  "relevance": 54,
+  "secondBest": "gams"
+ },
+ "markup/pgsql/dollar_strings.txt": {
+  "language": "pgsql",
+  "relevance": 22,
+  "secondBest": "powershell"
+ },
+ "markup/pgsql/options.txt": {
+  "language": "routeros",
+  "relevance": 160,
+  "secondBest": "pgsql"
+ },
+ "markup/pgsql/plpgsql.txt": {
+  "language": "pgsql",
+  "relevance": 150,
+  "secondBest": "sql"
+ },
+ "markup/pgsql/sql-commands.txt": {
+  "language": "pgsql",
+  "relevance": 213,
+  "secondBest": "sql"
+ },
+ "markup/pgsql/window-functions.txt": {
+  "language": "pgsql",
+  "relevance": 118,
+  "secondBest": "sql"
+ },
+ "markup/pgsql/xml.txt": {
+  "language": "pgsql",
+  "relevance": 124,
+  "secondBest": "gams"
+ },
+ "markup/php/attributes.txt": {
+  "language": "php",
+  "relevance": 71,
+  "secondBest": "dart"
+ },
+ "markup/php/case.txt": {
+  "language": "autoit",
+  "relevance": 12,
+  "secondBest": "gams"
+ },
+ "markup/php/comments.txt": {
+  "language": "php",
+  "relevance": 26,
+  "secondBest": "php-template"
+ },
+ "markup/php/functions.txt": {
+  "language": "php",
+  "relevance": 73,
+  "secondBest": "dns"
+ },
+ "markup/php/namespace.txt": {
+  "language": "dart",
+  "relevance": 24,
+  "secondBest": "php"
+ },
+ "markup/php/numbers.txt": {
+  "language": "gams",
+  "relevance": 20,
+  "secondBest": "php"
+ },
+ "markup/php/php80.txt": {
+  "language": "php",
+  "relevance": 21,
+  "secondBest": "php-template"
+ },
+ "markup/php/strings.txt": {
+  "language": "php",
+  "relevance": 28,
+  "secondBest": "php-template"
+ },
+ "markup/php/titles.txt": {
+  "language": "php",
+  "relevance": 44,
+  "secondBest": "zephir"
+ },
+ "markup/php-template/default.txt": {
+  "language": "php-template",
+  "relevance": 19,
+  "secondBest": "php"
+ },
+ "markup/plaintext/default.txt": {
+  "language": "asciidoc",
+  "relevance": 10,
+  "secondBest": "1c"
+ },
+ "markup/pony/control-flow.txt": {
+  "language": "stata",
+  "relevance": 29,
+  "secondBest": "sas"
+ },
+ "markup/pony/creator.txt": {
+  "language": "dart",
+  "relevance": 4,
+  "secondBest": "pgsql"
+ },
+ "markup/pony/iterface-trait.txt": {
+  "language": "kotlin",
+  "relevance": 36,
+  "secondBest": "angelscript"
+ },
+ "markup/pony/lambda.txt": {
+  "language": "dns",
+  "relevance": 8,
+  "secondBest": "clojure"
+ },
+ "markup/pony/match.txt": {
+  "language": "sml",
+  "relevance": 15,
+  "secondBest": "livescript"
+ },
+ "markup/pony/method.txt": {
+  "language": "dart",
+  "relevance": 9,
+  "secondBest": "kotlin"
+ },
+ "markup/pony/number-literals.txt": {
+  "language": "maxima",
+  "relevance": 34,
+  "secondBest": "apache"
+ },
+ "markup/pony/objects.txt": {
+  "language": "angelscript",
+  "relevance": 21,
+  "secondBest": "pony"
+ },
+ "markup/pony/prime.txt": {
+  "language": "pgsql",
+  "relevance": 5,
+  "secondBest": "oxygene"
+ },
+ "markup/pony/triple-quote.txt": {
+  "language": "awk",
+  "relevance": 10,
+  "secondBest": "ceylon"
+ },
+ "markup/powershell/apos-herestring.txt": {
+  "language": "vbnet",
+  "relevance": 10,
+  "secondBest": "erlang"
+ },
+ "markup/powershell/classes.txt": {
+  "language": "perl",
+  "relevance": 77,
+  "secondBest": "autoit"
+ },
+ "markup/powershell/flags.txt": {
+  "language": "jboss-cli",
+  "relevance": 9,
+  "secondBest": "mel"
+ },
+ "markup/powershell/misc.txt": {
+  "language": "dart",
+  "relevance": 43,
+  "secondBest": "powershell"
+ },
+ "markup/powershell/quote-herestring.txt": {
+  "language": "vim",
+  "relevance": 12,
+  "secondBest": "stata"
+ },
+ "markup/processing/default.txt": {
+  "language": "dart",
+  "relevance": 19,
+  "secondBest": "dns"
+ },
+ "markup/profile/default.txt": {
+  "language": "profile",
+  "relevance": 37,
+  "secondBest": "apache"
+ },
+ "markup/prolog/default.txt": {
+  "language": "dns",
+  "relevance": 29,
+  "secondBest": "dart"
+ },
+ "markup/properties/syntax.txt": {
+  "language": "makefile",
+  "relevance": 17,
+  "secondBest": "freedesktop"
+ },
+ "markup/protobuf/message-message.txt": {
+  "language": "protobuf",
+  "relevance": 9,
+  "secondBest": "abnf"
+ },
+ "markup/protobuf/rpc.txt": {
+  "language": "dart",
+  "relevance": 5,
+  "secondBest": "dns"
+ },
+ "markup/puppet/default.txt": {
+  "language": "puppet",
+  "relevance": 57.400000000000006,
+  "secondBest": "perl"
+ },
+ "markup/purebasic/default.txt": {
+  "language": "dart",
+  "relevance": 47,
+  "secondBest": "purebasic"
+ },
+ "markup/python/builtins.txt": {
+  "language": "dns",
+  "relevance": 12,
+  "secondBest": "isbl"
+ },
+ "markup/python/class_self.txt": {
+  "language": "oxygene",
+  "relevance": 16,
+  "secondBest": "ruby"
+ },
+ "markup/python/decorators.txt": {
+  "language": "less",
+  "relevance": 82,
+  "secondBest": "ruby"
+ },
+ "markup/python/diacritic_identifiers.txt": {
+  "language": "dns",
+  "relevance": 16,
+  "secondBest": "python"
+ },
+ "markup/python/escaped-quotes.txt": {
+  "language": "awk",
+  "relevance": 256,
+  "secondBest": "python"
+ },
+ "markup/python/f-strings.txt": {
+  "language": "isbl",
+  "relevance": 50,
+  "secondBest": "ceylon"
+ },
+ "markup/python/false_positives.txt": {
+  "language": "abnf",
+  "relevance": 4,
+  "secondBest": "freedesktop"
+ },
+ "markup/python/function-header-comments.txt": {
+  "language": "python",
+  "relevance": 9,
+  "secondBest": "dns"
+ },
+ "markup/python/function-header.txt": {
+  "language": "python",
+  "relevance": 7,
+  "secondBest": "dart"
+ },
+ "markup/python/identifiers.txt": {
+  "language": "angelscript",
+  "relevance": 15,
+  "secondBest": "oxygene"
+ },
+ "markup/python/keywords.txt": {
+  "language": "dns",
+  "relevance": 18,
+  "secondBest": "isbl"
+ },
+ "markup/python/lazy-import.txt": {
+  "language": "python",
+  "relevance": 5,
+  "secondBest": "d"
+ },
+ "markup/python/matrix-multiplication.txt": {
+  "language": "less",
+  "relevance": 14,
+  "secondBest": "swift"
+ },
+ "markup/python/numbers.txt": {
+  "language": "maxima",
+  "relevance": 42,
+  "secondBest": "x86asm"
+ },
+ "markup/python/template-strings.txt": {
+  "language": "python",
+  "relevance": 22,
+  "secondBest": "awk"
+ },
+ "markup/python-repl/sample.txt": {
+  "language": "python-repl",
+  "relevance": 44,
+  "secondBest": "shell"
+ },
+ "markup/q/default.txt": {
+  "language": "q",
+  "relevance": 29,
+  "secondBest": "pgsql"
+ },
+ "markup/qml/default.txt": {
+  "language": "qml",
+  "relevance": 46,
+  "secondBest": "dart"
+ },
+ "markup/r/names.txt": {
+  "language": "r",
+  "relevance": 77,
+  "secondBest": "autohotkey"
+ },
+ "markup/r/numbers.txt": {
+  "language": "apache",
+  "relevance": 36,
+  "secondBest": "jboss-cli"
+ },
+ "markup/r/roxygen.txt": {
+  "language": "r",
+  "relevance": 44,
+  "secondBest": "shell"
+ },
+ "markup/r/strings.txt": {
+  "language": "nix",
+  "relevance": 28,
+  "secondBest": "ada"
+ },
+ "markup/reasonml/comments.txt": {
+  "language": "dns",
+  "relevance": 12,
+  "secondBest": "excel"
+ },
+ "markup/reasonml/functions.txt": {
+  "language": "dns",
+  "relevance": 42,
+  "secondBest": "dart"
+ },
+ "markup/reasonml/literals.txt": {
+  "language": "rust",
+  "relevance": 51,
+  "secondBest": "nginx"
+ },
+ "markup/reasonml/modules.txt": {
+  "language": "dart",
+  "relevance": 19,
+  "secondBest": "dns"
+ },
+ "markup/reasonml/pattern-matching.txt": {
+  "language": "dart",
+  "relevance": 28,
+  "secondBest": "dns"
+ },
+ "markup/reasonml/types.txt": {
+  "language": "reasonml",
+  "relevance": 30,
+  "secondBest": "ocaml"
+ },
+ "markup/rib/default.txt": {
+  "language": "dart",
+  "relevance": 46,
+  "secondBest": "rib"
+ },
+ "markup/roboconf/default.txt": {
+  "language": "roboconf",
+  "relevance": 50,
+  "secondBest": "smali"
+ },
+ "markup/routeros/default.txt": {
+  "language": "routeros",
+  "relevance": 51,
+  "secondBest": "bash"
+ },
+ "markup/rsl/default.txt": {
+  "language": "dart",
+  "relevance": 22,
+  "secondBest": "dns"
+ },
+ "markup/ruby/blocks.txt": {
+  "language": "coq",
+  "relevance": 9,
+  "secondBest": "pgsql"
+ },
+ "markup/ruby/gemfile.txt": {
+  "language": "nginx",
+  "relevance": 5,
+  "secondBest": "1c"
+ },
+ "markup/ruby/heredoc.txt": {
+  "language": "ruby",
+  "relevance": 22,
+  "secondBest": "applescript"
+ },
+ "markup/ruby/numbers.txt": {
+  "language": "maxima",
+  "relevance": 60,
+  "secondBest": "mipsasm"
+ },
+ "markup/ruby/prompt.txt": {
+  "language": "ruby",
+  "relevance": 94,
+  "secondBest": "excel"
+ },
+ "markup/ruby/regexes.txt": {
+  "language": "freedesktop",
+  "relevance": 14,
+  "secondBest": "ini"
+ },
+ "markup/ruby/strings.txt": {
+  "language": "freedesktop",
+  "relevance": 72,
+  "secondBest": "ini"
+ },
+ "markup/ruby/symbols.txt": {
+  "language": "dart",
+  "relevance": 12,
+  "secondBest": "dns"
+ },
+ "markup/ruleslanguage/default.txt": {
+  "language": "ruleslanguage",
+  "relevance": 72,
+  "secondBest": "powershell"
+ },
+ "markup/rust/comments.txt": {
+  "language": "ceylon",
+  "relevance": 3,
+  "secondBest": "maxima"
+ },
+ "markup/rust/extern.txt": {
+  "language": "csharp",
+  "relevance": 8,
+  "secondBest": "rust"
+ },
+ "markup/rust/invoked-keywords.txt": {
+  "language": "dns",
+  "relevance": 20,
+  "secondBest": "rust"
+ },
+ "markup/rust/numbers.txt": {
+  "language": "maxima",
+  "relevance": 10,
+  "secondBest": "apache"
+ },
+ "markup/rust/sample1.txt": {
+  "language": "rust",
+  "relevance": 46,
+  "secondBest": "autohotkey"
+ },
+ "markup/rust/strings.txt": {
+  "language": "clean",
+  "relevance": 43,
+  "secondBest": "awk"
+ },
+ "markup/rust/traits.txt": {
+  "language": "rust",
+  "relevance": 10,
+  "secondBest": "dart"
+ },
+ "markup/rust/types.txt": {
+  "language": "rust",
+  "relevance": 12,
+  "secondBest": "ada"
+ },
+ "markup/rust/variables.txt": {
+  "language": "gauss",
+  "relevance": 6,
+  "secondBest": "clean"
+ },
+ "markup/sas/default.txt": {
+  "language": "sas",
+  "relevance": 48,
+  "secondBest": "markdown"
+ },
+ "markup/scala/case-classes.txt": {
+  "language": "scala",
+  "relevance": 39,
+  "secondBest": "angelscript"
+ },
+ "markup/scala/end.txt": {
+  "language": "scala",
+  "relevance": 34,
+  "secondBest": "pony"
+ },
+ "markup/scala/enum.txt": {
+  "language": "dart",
+  "relevance": 12,
+  "secondBest": "swift"
+ },
+ "markup/scala/export.txt": {
+  "language": "routeros",
+  "relevance": 4,
+  "secondBest": "javascript"
+ },
+ "markup/scala/extension.txt": {
+  "language": "gradle",
+  "relevance": 16,
+  "secondBest": "dart"
+ },
+ "markup/scala/for-do.txt": {
+  "language": "dart",
+  "relevance": 4,
+  "secondBest": "gradle"
+ },
+ "markup/scala/given.txt": {
+  "language": "ebnf",
+  "relevance": 3,
+  "secondBest": "applescript"
+ },
+ "markup/scala/if-then-else.txt": {
+  "language": "crystal",
+  "relevance": 3,
+  "secondBest": "elixir"
+ },
+ "markup/scala/inline.txt": {
+  "language": "scala",
+  "relevance": 28,
+  "secondBest": "kotlin"
+ },
+ "markup/scala/quoted-code.txt": {
+  "language": "csharp",
+  "relevance": 3,
+  "secondBest": "ruby"
+ },
+ "markup/scala/strings.txt": {
+  "language": "pony",
+  "relevance": 11,
+  "secondBest": "awk"
+ },
+ "markup/scala/symbol.txt": {
+  "language": "coq",
+  "relevance": 3,
+  "secondBest": "ruby"
+ },
+ "markup/scala/transparent.txt": {
+  "language": "scala",
+  "relevance": 6,
+  "secondBest": "cpp"
+ },
+ "markup/scala/using-directives.txt": {
+  "language": "scala",
+  "relevance": 10,
+  "secondBest": "powershell"
+ },
+ "markup/scala/using.txt": {
+  "language": "dns",
+  "relevance": 14,
+  "secondBest": "powershell"
+ },
+ "markup/scala/while-do.txt": {
+  "language": "gradle",
+  "relevance": 6,
+  "secondBest": "dart"
+ },
+ "markup/scheme/lambda.txt": {
+  "language": "dns",
+  "relevance": 24,
+  "secondBest": "scheme"
+ },
+ "markup/scheme/quoted.txt": {
+  "language": "dns",
+  "relevance": 10,
+  "secondBest": "scheme"
+ },
+ "markup/scilab/default.txt": {
+  "language": "dns",
+  "relevance": 15,
+  "secondBest": "scilab"
+ },
+ "markup/scss/css_consistency.txt": {
+  "language": "css",
+  "relevance": 138,
+  "secondBest": "less"
+ },
+ "markup/scss/default.txt": {
+  "language": "scss",
+  "relevance": 61,
+  "secondBest": "mel"
+ },
+ "markup/shell/command-continuation.txt": {
+  "language": "shell",
+  "relevance": 22,
+  "secondBest": "routeros"
+ },
+ "markup/shell/plain-prompt.txt": {
+  "language": "node-repl",
+  "relevance": 4,
+  "secondBest": "shell"
+ },
+ "markup/shell/prompt-with-period.txt": {
+  "language": "stylus",
+  "relevance": 3,
+  "secondBest": "bash"
+ },
+ "markup/shell/prompt-with-slash.txt": {
+  "language": "subunit",
+  "relevance": 43,
+  "secondBest": "vim"
+ },
+ "markup/shell/prompt-with-tilde.txt": {
+  "language": "asciidoc",
+  "relevance": 10,
+  "secondBest": "excel"
+ },
+ "markup/shell/simple.txt": {
+  "language": "node-repl",
+  "relevance": 2,
+  "secondBest": "shell"
+ },
+ "markup/shell/single.txt": {
+  "language": "shell",
+  "relevance": 4,
+  "secondBest": "bash"
+ },
+ "markup/smali/default.txt": {
+  "language": "smali",
+  "relevance": 209,
+  "secondBest": "dart"
+ },
+ "markup/smalltalk/default.txt": {
+  "language": "nix",
+  "relevance": 29.2,
+  "secondBest": "smalltalk"
+ },
+ "markup/sml/default.txt": {
+  "language": "dns",
+  "relevance": 22,
+  "secondBest": "sml"
+ },
+ "markup/sqf/default.txt": {
+  "language": "sqf",
+  "relevance": 27,
+  "secondBest": "csharp"
+ },
+ "markup/sql/combos.txt": {
+  "language": "pgsql",
+  "relevance": 79,
+  "secondBest": "dns"
+ },
+ "markup/sql/functions.txt": {
+  "language": "pgsql",
+  "relevance": 17,
+  "secondBest": "sql"
+ },
+ "markup/sql/join.txt": {
+  "language": "apache",
+  "relevance": 40,
+  "secondBest": "dns"
+ },
+ "markup/sql/keywords.txt": {
+  "language": "axapta",
+  "relevance": 6,
+  "secondBest": "csharp"
+ },
+ "markup/sql/numeric-types.txt": {
+  "language": "n1ql",
+  "relevance": 6,
+  "secondBest": "pgsql"
+ },
+ "markup/sql/set-operator.txt": {
+  "language": "apache",
+  "relevance": 7,
+  "secondBest": "n1ql"
+ },
+ "markup/sql/string-types.txt": {
+  "language": "sql",
+  "relevance": 10,
+  "secondBest": "pgsql"
+ },
+ "markup/sql/types.txt": {
+  "language": "sql",
+  "relevance": 79,
+  "secondBest": "livecodeserver"
+ },
+ "markup/sql/values-statement.txt": {
+  "language": "dns",
+  "relevance": 8,
+  "secondBest": "nginx"
+ },
+ "markup/stan/default.txt": {
+  "language": "stan",
+  "relevance": 64,
+  "secondBest": "dns"
+ },
+ "markup/stata/built_ins.txt": {
+  "language": "verilog",
+  "relevance": 11,
+  "secondBest": "dns"
+ },
+ "markup/step21/default.txt": {
+  "language": "step21",
+  "relevance": 92,
+  "secondBest": "dns"
+ },
+ "markup/stylus/css_consistency.txt": {
+  "language": "css",
+  "relevance": 138,
+  "secondBest": "less"
+ },
+ "markup/stylus/default.txt": {
+  "language": "stylus",
+  "relevance": 39,
+  "secondBest": "processing"
+ },
+ "markup/subunit/subunit-errorline.txt": {
+  "language": "subunit",
+  "relevance": 20,
+  "secondBest": "stata"
+ },
+ "markup/subunit/subunit-failureline.txt": {
+  "language": "subunit",
+  "relevance": 40,
+  "secondBest": "bash"
+ },
+ "markup/subunit/subunit-progressline.txt": {
+  "language": "subunit",
+  "relevance": 74,
+  "secondBest": "avrasm"
+ },
+ "markup/subunit/subunit-skipline.txt": {
+  "language": "subunit",
+  "relevance": 30,
+  "secondBest": "bash"
+ },
+ "markup/subunit/subunit-successline.txt": {
+  "language": "subunit",
+  "relevance": 80,
+  "secondBest": "bash"
+ },
+ "markup/subunit/subunit-tagline.txt": {
+  "language": "subunit",
+  "relevance": 50,
+  "secondBest": "avrasm"
+ },
+ "markup/subunit/subunit-testline.txt": {
+  "language": "subunit",
+  "relevance": 100,
+  "secondBest": "mipsasm"
+ },
+ "markup/subunit/subunit-timeline.txt": {
+  "language": "subunit",
+  "relevance": 33,
+  "secondBest": "apache"
+ },
+ "markup/subunit/subunit-uxsuccessline.txt": {
+  "language": "subunit",
+  "relevance": 30,
+  "secondBest": "bash"
+ },
+ "markup/subunit/subunit-xfailline.txt": {
+  "language": "subunit",
+  "relevance": 30,
+  "secondBest": "bash"
+ },
+ "markup/swift/attributes.txt": {
+  "language": "less",
+  "relevance": 212,
+  "secondBest": "perl"
+ },
+ "markup/swift/availability.txt": {
+  "language": "leaf",
+  "relevance": 40,
+  "secondBest": "swift"
+ },
+ "markup/swift/class-func-var.txt": {
+  "language": "perl",
+  "relevance": 32,
+  "secondBest": "livescript"
+ },
+ "markup/swift/distributed-actor-runtime.txt": {
+  "language": "swift",
+  "relevance": 7,
+  "secondBest": "autoit"
+ },
+ "markup/swift/functions.txt": {
+  "language": "swift",
+  "relevance": 87,
+  "secondBest": "angelscript"
+ },
+ "markup/swift/identifiers.txt": {
+  "language": "autoit",
+  "relevance": 3,
+  "secondBest": "awk"
+ },
+ "markup/swift/keywords.txt": {
+  "language": "swift",
+  "relevance": 42,
+  "secondBest": "dart"
+ },
+ "markup/swift/macro.txt": {
+  "language": "leaf",
+  "relevance": 35,
+  "secondBest": "dns"
+ },
+ "markup/swift/numbers.txt": {
+  "language": "maxima",
+  "relevance": 74,
+  "secondBest": "subunit"
+ },
+ "markup/swift/operator-declarations.txt": {
+  "language": "swift",
+  "relevance": 6,
+  "secondBest": "dart"
+ },
+ "markup/swift/operators.txt": {
+  "language": "freedesktop",
+  "relevance": 20,
+  "secondBest": "routeros"
+ },
+ "markup/swift/ownership.txt": {
+  "language": "swift",
+  "relevance": 44,
+  "secondBest": "dns"
+ },
+ "markup/swift/parameterpack.txt": {
+  "language": "swift",
+  "relevance": 22,
+  "secondBest": "dns"
+ },
+ "markup/swift/precedencegroup.txt": {
+  "language": "swift",
+  "relevance": 11,
+  "secondBest": "nix"
+ },
+ "markup/swift/regex.txt": {
+  "language": "clean",
+  "relevance": 141,
+  "secondBest": "swift"
+ },
+ "markup/swift/strings.txt": {
+  "language": "leaf",
+  "relevance": 311,
+  "secondBest": "swift"
+ },
+ "markup/swift/swiftui.txt": {
+  "language": "less",
+  "relevance": 13,
+  "secondBest": "dart"
+ },
+ "markup/swift/tuples.txt": {
+  "language": "dns",
+  "relevance": 38,
+  "secondBest": "dart"
+ },
+ "markup/swift/type-definition.txt": {
+  "language": "perl",
+  "relevance": 89,
+  "secondBest": "angelscript"
+ },
+ "markup/swift/types.txt": {
+  "language": "dart",
+  "relevance": 74,
+  "secondBest": "swift"
+ },
+ "markup/taggerscript/default.txt": {
+  "language": "taggerscript",
+  "relevance": 98,
+  "secondBest": "mel"
+ },
+ "markup/taggerscript/functions.txt": {
+  "language": "taggerscript",
+  "relevance": 26,
+  "secondBest": "dns"
+ },
+ "markup/taggerscript/noop.txt": {
+  "language": "taggerscript",
+  "relevance": 50,
+  "secondBest": "dns"
+ },
+ "markup/tap/basic.txt": {
+  "language": "tap",
+  "relevance": 11,
+  "secondBest": "livecodeserver"
+ },
+ "markup/tap/without-numbers.txt": {
+  "language": "tap",
+  "relevance": 6,
+  "secondBest": "erlang-repl"
+ },
+ "markup/tap/yaml-block.txt": {
+  "language": "erlang-repl",
+  "relevance": 19,
+  "secondBest": "mathematica"
+ },
+ "markup/tcl/default.txt": {
+  "language": "tcl",
+  "relevance": 76,
+  "secondBest": "ruby"
+ },
+ "markup/tcl/variables.txt": {
+  "language": "dns",
+  "relevance": 52,
+  "secondBest": "elixir"
+ },
+ "markup/thrift/default.txt": {
+  "language": "thrift",
+  "relevance": 32,
+  "secondBest": "dart"
+ },
+ "markup/tp/default.txt": {
+  "language": "tp",
+  "relevance": 305,
+  "secondBest": "prolog"
+ },
+ "markup/twig/filter_with_underscore.txt": {
+  "language": "handlebars",
+  "relevance": 5,
+  "secondBest": "twig"
+ },
+ "markup/twig/template_tags.txt": {
+  "language": "django",
+  "relevance": 22,
+  "secondBest": "twig"
+ },
+ "markup/typescript/class.txt": {
+  "language": "scala",
+  "relevance": 32,
+  "secondBest": "typescript"
+ },
+ "markup/typescript/declares.txt": {
+  "language": "scala",
+  "relevance": 15,
+  "secondBest": "perl"
+ },
+ "markup/typescript/decorator-factories.txt": {
+  "language": "less",
+  "relevance": 50,
+  "secondBest": "typescript"
+ },
+ "markup/typescript/functions.txt": {
+  "language": "dns",
+  "relevance": 77,
+  "secondBest": "javascript"
+ },
+ "markup/typescript/generics.txt": {
+  "language": "typescript",
+  "relevance": 77,
+  "secondBest": "arcade"
+ },
+ "markup/typescript/identifiers_that_include_keywords.txt": {
+  "language": "coffeescript",
+  "relevance": 6,
+  "secondBest": "livescript"
+ },
+ "markup/typescript/inline-languages.txt": {
+  "language": "javascript",
+  "relevance": 46,
+  "secondBest": "typescript"
+ },
+ "markup/typescript/jsx.txt": {
+  "language": "dart",
+  "relevance": 26,
+  "secondBest": "typescript"
+ },
+ "markup/typescript/module-id.txt": {
+  "language": "perl",
+  "relevance": 11,
+  "secondBest": "php"
+ },
+ "markup/typescript/namespace_as_identifier.txt": {
+  "language": "actionscript",
+  "relevance": 7,
+  "secondBest": "csharp"
+ },
+ "markup/typescript/nested-templates.txt": {
+  "language": "javascript",
+  "relevance": 8,
+  "secondBest": "typescript"
+ },
+ "markup/typescript/numbers-and-dashes.txt": {
+  "language": "maxima",
+  "relevance": 12,
+  "secondBest": "ceylon"
+ },
+ "markup/typescript/numbers.txt": {
+  "language": "java",
+  "relevance": 36,
+  "secondBest": "rust"
+ },
+ "markup/typescript/satisfies-and-as.txt": {
+  "language": "dart",
+  "relevance": 7,
+  "secondBest": "typescript"
+ },
+ "markup/vala/default.txt": {
+  "language": "csharp",
+  "relevance": 68,
+  "secondBest": "vala"
+ },
+ "markup/vbnet/comments.txt": {
+  "language": "vbnet",
+  "relevance": 15,
+  "secondBest": "dos"
+ },
+ "markup/vbnet/default.txt": {
+  "language": "vbnet",
+  "relevance": 95,
+  "secondBest": "vbscript"
+ },
+ "markup/vbnet/directives.txt": {
+  "language": "vbnet",
+  "relevance": 36,
+  "secondBest": "monkey"
+ },
+ "markup/vbnet/literals.txt": {
+  "language": "apache",
+  "relevance": 40,
+  "secondBest": "mipsasm"
+ },
+ "markup/vbnet/numbers.txt": {
+  "language": "apache",
+  "relevance": 36,
+  "secondBest": "dart"
+ },
+ "markup/vbscript/default.txt": {
+  "language": "dns",
+  "relevance": 60,
+  "secondBest": "vbscript"
+ },
+ "markup/vbscript-html/default.txt": {
+  "language": "dart",
+  "relevance": 6,
+  "secondBest": "vbscript-html"
+ },
+ "markup/verilog/directives.txt": {
+  "language": "verilog",
+  "relevance": 6,
+  "secondBest": "livecodeserver"
+ },
+ "markup/verilog/misc.txt": {
+  "language": "verilog",
+  "relevance": 31,
+  "secondBest": "dns"
+ },
+ "markup/verilog/numbers.txt": {
+  "language": "freedesktop",
+  "relevance": 16,
+  "secondBest": "ini"
+ },
+ "markup/vhdl/default.txt": {
+  "language": "vhdl",
+  "relevance": 58,
+  "secondBest": "ada"
+ },
+ "markup/vim/default.txt": {
+  "language": "vim",
+  "relevance": 26,
+  "secondBest": "stata"
+ },
+ "markup/vim/strings-comments.txt": {
+  "language": "nix",
+  "relevance": 6,
+  "secondBest": "vim"
+ },
+ "markup/wasm/sample.txt": {
+  "language": "wasm",
+  "relevance": 469,
+  "secondBest": "dns"
+ },
+ "markup/wren/attributes.txt": {
+  "language": "leaf",
+  "relevance": 34,
+  "secondBest": "perl"
+ },
+ "markup/wren/default.txt": {
+  "language": "dart",
+  "relevance": 36,
+  "secondBest": "dns"
+ },
+ "markup/x86asm/labels-directives.txt": {
+  "language": "jboss-cli",
+  "relevance": 4,
+  "secondBest": "stylus"
+ },
+ "markup/xl/default.txt": {
+  "language": "xl",
+  "relevance": 40,
+  "secondBest": "processing"
+ },
+ "markup/xml/document-type-variations.txt": {
+  "language": "xml",
+  "relevance": 377,
+  "secondBest": "django"
+ },
+ "markup/xml/namespace.txt": {
+  "language": "xml",
+  "relevance": 18,
+  "secondBest": "django"
+ },
+ "markup/xml/non-ascii-attribute-names.txt": {
+  "language": "xml",
+  "relevance": 6,
+  "secondBest": "django"
+ },
+ "markup/xml/non-ascii-element-names.txt": {
+  "language": "xml",
+  "relevance": 18,
+  "secondBest": "bnf"
+ },
+ "markup/xml/processing.txt": {
+  "language": "xml",
+  "relevance": 40,
+  "secondBest": "django"
+ },
+ "markup/xml/space-attributes.txt": {
+  "language": "stylus",
+  "relevance": 9,
+  "secondBest": "abnf"
+ },
+ "markup/xml/sublanguage_no_relevancy.txt": {
+  "language": "xml",
+  "relevance": 9,
+  "secondBest": "django"
+ },
+ "markup/xml/unquoted-attributes.txt": {
+  "language": "routeros",
+  "relevance": 18,
+  "secondBest": "xml"
+ },
+ "markup/xquery/computed_inbuilt.txt": {
+  "language": "xquery",
+  "relevance": 24,
+  "secondBest": "bash"
+ },
+ "markup/xquery/direct_method.txt": {
+  "language": "bash",
+  "relevance": 21,
+  "secondBest": "nim"
+ },
+ "markup/xquery/function_body.txt": {
+  "language": "xquery",
+  "relevance": 26,
+  "secondBest": "bash"
+ },
+ "markup/xquery/prolog_declarations.txt": {
+  "language": "xquery",
+  "relevance": 73,
+  "secondBest": "typescript"
+ },
+ "markup/yaml/block.txt": {
+  "language": "asciidoc",
+  "relevance": 35,
+  "secondBest": "livecodeserver"
+ },
+ "markup/yaml/inline.txt": {
+  "language": "css",
+  "relevance": 6,
+  "secondBest": "mipsasm"
+ },
+ "markup/yaml/keys.txt": {
+  "language": "nestedtext",
+  "relevance": 19,
+  "secondBest": "nix"
+ },
+ "markup/yaml/numbers.txt": {
+  "language": "apache",
+  "relevance": 39,
+  "secondBest": "yaml"
+ },
+ "markup/yaml/special_chars.txt": {
+  "language": "makefile",
+  "relevance": 16,
+  "secondBest": "nix"
+ },
+ "markup/yaml/string.txt": {
+  "language": "nix",
+  "relevance": 18,
+  "secondBest": "xquery"
+ },
+ "markup/yaml/tag.txt": {
+  "language": "yaml",
+  "relevance": 18,
+  "secondBest": "erlang-repl"
+ },
+ "markup/zephir/default.txt": {
+  "language": "zephir",
+  "relevance": 50,
+  "secondBest": "dart"
+ }
+}

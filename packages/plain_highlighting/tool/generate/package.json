@@ -1,0 +1,9 @@
+{
+  "name": "highlightjs-dart-generator",
+  "private": true,
+  "type": "module",
+  "description": "Generates the Dart language definitions from highlight.js (see ../../README.md).",
+  "dependencies": {
+    "highlight.js": "11.12.0"
+  }
+}

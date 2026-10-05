@@ -1,0 +1,19 @@
+name: hilite
+description: Syntax highlighting for 190+ languages in pure Dart, compatible with highlight.js 11.12.0 (a port, not affiliated with highlight.js).
+version: 0.1.0
+repository: https://github.com/nsmmrs/hilite
+issue_tracker: https://github.com/nsmmrs/hilite/issues
+topics:
+  - syntax-highlighting
+  - highlighting
+  - code
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  meta: ^1.16.0
+
+dev_dependencies:
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0

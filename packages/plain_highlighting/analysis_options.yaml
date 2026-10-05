@@ -1,0 +1,10 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    # Generated from the upstream language definitions (tool/generate.mjs).
+    - lib/src/languages/*.g.dart
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
