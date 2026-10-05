@@ -1,27 +1,11 @@
 /// Top-level constants ported from `lib/asciidoctor.rb`.
 ///
-/// `SCREAMING_SNAKE` names become lowerCamelCase ([maxInt]) and symbolic
-/// values are plain strings (list contexts are `'ulist'` etc.).
-/// [Compliance] mirrors the `SafeMode` port in `abstract_node.dart` as an
-/// `abstract final class` with `static const` members.
-///
-/// Already ported elsewhere (not duplicated here):
-/// - `LF` and `SafeMode` in `abstract_node.dart`
-/// - `CC_*`/`CG_*` and `QuoteAttributeListRxt` in `rx.dart`
-/// - `MeaningfulVersion`/`VERSION` in `version.dart`
-/// - `ORDERED_LIST_KEYWORDS` and `CAPTION_ATTRIBUTE_NAMES` in
-///   `abstract_block.dart` (the latter deliberately omits the unreachable
-///   `'figure'` string key; see the doc comment there)
-///
-/// Deliberately not ported (runtime-environment constants): `RUBY_ENGINE`,
-/// `RUBY_ENGINE_OPAL`, `ROOT_DIR`, `LIB_DIR`, `DATA_DIR`, `USER_HOME`,
-/// `UTF_8`.
+/// Constants shared across the library: defaults, file extensions, the
+/// typographic replacements, the quote patterns and the [Compliance]
+/// settings. Constants used by one file live in that file.
 library;
 
 import 'package:asciidart/src/rx.dart';
-
-/// The null character used for splitting attribute values (`NULL`).
-const String nullChar = '\x00';
 
 /// String for matching the tab character (`TAB`).
 const String tab = '\t';
@@ -39,19 +23,6 @@ const List<int> bomBytesUtf16le = <int>[0xff, 0xfe];
 
 /// Byte array for the UTF-16BE byte order mark (`BOM_BYTES_UTF_16BE`).
 const List<int> bomBytesUtf16be = <int>[0xfe, 0xff];
-
-/// The mode to use when opening a file for reading (`FILE_READ_MODE`).
-///
-/// An IO mode string kept for reference; nothing here uses it.
-const String fileReadMode = 'rb:UTF-8:UTF-8';
-
-/// The mode to use when opening a URI for reading (`URI_READ_MODE`).
-const String uriReadMode = fileReadMode;
-
-/// The mode to use when opening a file for writing (`FILE_WRITE_MODE`).
-///
-/// An IO mode string kept for reference; nothing here uses it.
-const String fileWriteMode = 'wb:UTF-8';
 
 /// The default document type (`DEFAULT_DOCTYPE`).
 const String defaultDoctype = 'article';
@@ -95,169 +66,6 @@ const Map<String, bool> asciidocExtensions = <String, bool>{
   '.txt': true,
 };
 
-/// Setext (two-line) underline characters by section level
-/// (`SETEXT_SECTION_LEVELS`).
-const Map<String, int> setextSectionLevels = <String, int>{
-  '=': 0,
-  '-': 1,
-  '~': 2,
-  '^': 3,
-  '+': 4,
-};
-
-/// Admonition style names (`ADMONITION_STYLES`).
-const Set<String> admonitionStyles = <String>{
-  'NOTE',
-  'TIP',
-  'IMPORTANT',
-  'WARNING',
-  'CAUTION',
-};
-
-/// First letters of the admonition style names (`ADMONITION_STYLE_HEADS`).
-const Set<String> admonitionStyleHeads = <String>{'N', 'T', 'I', 'W', 'C'};
-
-/// Paragraph styles (`PARAGRAPH_STYLES`).
-const Set<String> paragraphStyles = <String>{
-  'comment',
-  'example',
-  'literal',
-  'listing',
-  'normal',
-  'open',
-  'pass',
-  'quote',
-  'sidebar',
-  'source',
-  'verse',
-  'abstract',
-  'partintro',
-};
-
-/// Paragraph styles treated as verbatim content (`VERBATIM_STYLES`).
-const Set<String> verbatimStyles = <String>{
-  'literal',
-  'listing',
-  'source',
-  'verse',
-};
-
-/// The block context and masquerade styles of one [delimitedBlocks] entry.
-///
-/// The block context and the set of styles it can masquerade as.
-class DelimitedBlockInfo {
-  /// Creates an entry with block [context] and accepted [styles].
-  const new(this.context, [this.styles = const <String>{}]);
-
-  /// The block context the delimiter maps to (e.g. `'listing'`).
-  final String context;
-
-  /// The styles that may masquerade as this delimiter.
-  final Set<String> styles;
-}
-
-/// Delimiter lines mapped to their block context and masquerade styles
-/// (`DELIMITED_BLOCKS`).
-const Map<String, DelimitedBlockInfo> delimitedBlocks =
-    <String, DelimitedBlockInfo>{
-      '--': DelimitedBlockInfo('open', <String>{
-        'comment',
-        'example',
-        'literal',
-        'listing',
-        'pass',
-        'quote',
-        'sidebar',
-        'source',
-        'verse',
-        'admonition',
-        'abstract',
-        'partintro',
-      }),
-      '----': DelimitedBlockInfo('listing', <String>{'literal', 'source'}),
-      '....': DelimitedBlockInfo('literal', <String>{'listing', 'source'}),
-      '====': DelimitedBlockInfo('example', <String>{'admonition'}),
-      '****': DelimitedBlockInfo('sidebar'),
-      '____': DelimitedBlockInfo('quote', <String>{'verse'}),
-      '++++': DelimitedBlockInfo('pass', <String>{
-        'stem',
-        'latexmath',
-        'asciimath',
-      }),
-      '|===': DelimitedBlockInfo('table'),
-      ',===': DelimitedBlockInfo('table'),
-      ':===': DelimitedBlockInfo('table'),
-      '!===': DelimitedBlockInfo('table'),
-      '////': DelimitedBlockInfo('comment'),
-      '```': DelimitedBlockInfo('fenced_code'),
-    };
-
-/// First two characters of every [delimitedBlocks] key
-/// (`DELIMITED_BLOCK_HEADS`).
-const Map<String, bool> delimitedBlockHeads = <String, bool>{
-  '--': true,
-  '..': true,
-  '==': true,
-  '**': true,
-  '__': true,
-  '++': true,
-  '|=': true,
-  ',=': true,
-  ':=': true,
-  '!=': true,
-  '//': true,
-  '``': true,
-};
-
-/// Four-character [delimitedBlocks] keys mapped to their last character
-/// (`DELIMITED_BLOCK_TAILS`).
-const Map<String, String> delimitedBlockTails = <String, String>{
-  '----': '-',
-  '....': '.',
-  '====': '=',
-  '****': '*',
-  '____': '_',
-  '++++': '+',
-  '|===': '=',
-  ',===': '=',
-  ':===': '=',
-  '!===': '=',
-  '////': '/',
-};
-
-/// Characters that start a break block and the context each maps to
-/// (`LAYOUT_BREAK_CHARS`).
-const Map<String, String> layoutBreakChars = <String, String>{
-  "'": 'thematic_break',
-  '<': 'page_break',
-};
-
-/// Markdown thematic-break characters (`MARKDOWN_THEMATIC_BREAK_CHARS`).
-const Map<String, String> markdownThematicBreakChars = <String, String>{
-  '-': 'thematic_break',
-  '*': 'thematic_break',
-  '_': 'thematic_break',
-};
-
-/// The union of [layoutBreakChars] and [markdownThematicBreakChars]
-/// (`HYBRID_LAYOUT_BREAK_CHARS`).
-const Map<String, String> hybridLayoutBreakChars = <String, String>{
-  ...layoutBreakChars,
-  ...markdownThematicBreakChars,
-};
-
-/// List contexts that may nest (`NESTABLE_LIST_CONTEXTS`).
-const List<String> nestableListContexts = <String>['ulist', 'olist', 'dlist'];
-
-/// Ordered-list styles (`ORDERED_LIST_STYLES`).
-const List<String> orderedListStyles = <String>[
-  'arabic',
-  'loweralpha',
-  'lowerroman',
-  'upperalpha',
-  'upperroman',
-];
-
 /// Head of an attribute reference (`{name}`) (`ATTR_REF_HEAD`).
 const String attrRefHead = '{';
 
@@ -267,22 +75,10 @@ const String listContinuation = '+';
 /// Hard line break suffix (`HARD_LINE_BREAK`).
 const String hardLineBreak = ' +';
 
-/// Line continuation suffix (`LINE_CONTINUATION`).
-const String lineContinuation = r' \';
-
-/// Legacy line continuation suffix (`LINE_CONTINUATION_LEGACY`).
-const String lineContinuationLegacy = ' +';
-
 /// Block math delimiters by stem type (`BLOCK_MATH_DELIMITERS`).
 const Map<String, List<String>> blockMathDelimiters = <String, List<String>>{
   'asciimath': <String>[r'\$', r'\$'],
   'latexmath': <String>[r'\[', r'\]'],
-};
-
-/// Inline math delimiters by stem type (`INLINE_MATH_DELIMITERS`).
-const Map<String, List<String>> inlineMathDelimiters = <String, List<String>>{
-  'asciimath': <String>[r'\$', r'\$'],
-  'latexmath': <String>[r'\(', r'\)'],
 };
 
 /// Stem type aliases (`STEM_TYPE_ALIASES`).
@@ -294,14 +90,8 @@ const Map<String, String> stemTypeAliases = <String, String>{
   'tex': 'latexmath',
 };
 
-/// Pinned Font Awesome version (`FONT_AWESOME_VERSION`).
-const String fontAwesomeVersion = '4.7.0';
-
 /// Pinned highlight.js version (`HIGHLIGHT_JS_VERSION`).
 const String highlightJsVersion = '9.18.3';
-
-/// Pinned MathJax version (`MATHJAX_VERSION`).
-const String mathJaxVersion = '2.7.9';
 
 /// Default document attributes (`DEFAULT_ATTRIBUTES`).
 const Map<String, String> defaultAttributes = <String, String>{

@@ -5,7 +5,7 @@ library;
 
 import 'dart:math' show min;
 
-import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 
 /// Minimal surface of a block needed by [AttributeList]: single-quoted
 /// values have substitutions applied through [applySubs].

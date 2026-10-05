@@ -38,12 +38,12 @@ import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/extensions.dart' show MacroAttributes;
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart';
 import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/text_case.dart';
 import 'package:meta/meta.dart';
@@ -397,12 +397,6 @@ String subSpecialchars(String text) {
   }
   return text;
 }
-
-/// Substitutes special characters (i.e., encodes XML) in [text].
-///
-/// Port of `Substitutors#sub_specialcharacters` (an alias of
-/// `sub_specialchars`).
-String subSpecialcharacters(String text) => subSpecialchars(text);
 
 /// Substitutes quoted text (emphasis, strong, monospaced, etc.) in [text].
 ///

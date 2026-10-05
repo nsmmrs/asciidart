@@ -19,7 +19,6 @@ import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/callouts.dart';
 import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/extensions.dart';
 import 'package:asciidart/src/helpers.dart';
@@ -27,6 +26,7 @@ import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/reader.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/substitutors.dart';
@@ -139,32 +139,8 @@ enum _ListContinuation implements _ItemLine {
 ///
 /// All members are static; the class cannot be instantiated.
 abstract final class Parser {
-  /// String for matching the tab character. Port of `Parser::TAB`.
-  static const String tab = '\t';
-
   // Values copied from `lib/asciidoctor.rb` (some duplicate
   // `constants.dart`).
-
-  /// Port of `Compliance.block_terminates_paragraph`.
-  static const bool _blockTerminatesParagraph = true;
-
-  /// Port of `Compliance.strict_verbatim_paragraphs`.
-  static const bool _strictVerbatimParagraphs = true;
-
-  /// Port of `Compliance.underline_style_section_titles`.
-  static const bool _underlineStyleSectionTitles = true;
-
-  /// Port of `Compliance.unwrap_standalone_preamble`.
-  static const bool _unwrapStandalonePreamble = true;
-
-  /// Port of `Compliance.attribute_missing`.
-  static const String _attributeMissing = 'skip';
-
-  /// Port of `Compliance.shorthand_property_syntax`.
-  static const bool _shorthandPropertySyntax = true;
-
-  /// Port of `Compliance.markdown_syntax`.
-  static const bool _markdownSyntax = true;
 
   /// Port of `SETEXT_SECTION_LEVELS`.
   static const Map<String, int> _setextSectionLevels = <String, int>{
@@ -318,21 +294,11 @@ abstract final class Parser {
     'upperroman',
   ];
 
-  /// Port of `STEM_TYPE_ALIASES` (default when absent is `'asciimath'`).
-  static const Map<String, String> _stemTypeAliases = <String, String>{
-    'latexmath': 'latexmath',
-    'latex': 'latexmath',
-    'tex': 'latexmath',
-  };
-
   /// Port of `LINE_CONTINUATION`.
   static const String _lineContinuation = r' \';
 
   /// Port of `LINE_CONTINUATION_LEGACY`.
   static const String _lineContinuationLegacy = ' +';
-
-  /// Port of `HARD_LINE_BREAK`.
-  static const String _hardLineBreak = ' +';
 
   /// Port of `Parser::AuthorKeys`.
   static const Set<String> _authorKeys = <String>{
@@ -1028,7 +994,9 @@ abstract final class Parser {
     } else if (preamble != null) {
       // Implies parent == document.
       if (preamble.blocks.isNotEmpty) {
-        if (book || document.blocks.length > 1 || !_unwrapStandalonePreamble) {
+        if (book ||
+            document.blocks.length > 1 ||
+            !Compliance.unwrapStandalonePreamble) {
           if (document.sourcemap) {
             preamble.sourceLocation = preamble.blocks[0].sourceLocation;
           }
@@ -1166,7 +1134,7 @@ abstract final class Parser {
   static int? isNextLineSection(Reader reader, BlockAttributes attributes) {
     final style = attributes['1'];
     if (style != null && (style == 'discrete' || style == 'float')) return null;
-    if (_underlineStyleSectionTitles) {
+    if (Compliance.underlineStyleSectionTitles) {
       final nextLines = reader.peekLines(
         2,
         direct: style != null && style == 'comment',
@@ -1209,7 +1177,7 @@ abstract final class Parser {
   /// Port of `Parser.atx_section_title?`. The level returned is 1 less
   /// than the number of leading markers.
   static int? atxSectionTitle(String line) {
-    final match = _markdownSyntax
+    final match = Compliance.markdownSyntax
         ? (line.startsWith('=') || line.startsWith('#'))
               ? extAtxSectionTitleRx.firstMatch(line)
               : null
@@ -1246,7 +1214,7 @@ abstract final class Parser {
     String sectTitle;
     int sectLevel;
     bool atx;
-    final atxMatch = _markdownSyntax
+    final atxMatch = Compliance.markdownSyntax
         ? (line1.startsWith('=') || line1.startsWith('#'))
               ? extAtxSectionTitleRx.firstMatch(line1)
               : null
@@ -1270,7 +1238,7 @@ abstract final class Parser {
         }
       }
     } else {
-      final line2 = _underlineStyleSectionTitles
+      final line2 = Compliance.underlineStyleSectionTitles
           ? reader.peekLine(direct: true)
           : null;
       final line2ch0 = line2 == null ? null : _firstChar(line2);
@@ -1410,7 +1378,7 @@ abstract final class Parser {
     while (delimitedBlock == null) {
       // Process lines verbatim.
       if (style != null &&
-          _strictVerbatimParagraphs &&
+          Compliance.strictVerbatimParagraphs &&
           _verbatimStyles.contains(style)) {
         blockContext = style;
         cloakedContext = 'paragraph';
@@ -1431,7 +1399,7 @@ abstract final class Parser {
           ch0 = ' ';
           // QUESTION should we test line length?
           final lstripped = trimLeftAscii(thisLine);
-          if (_markdownSyntax &&
+          if (Compliance.markdownSyntax &&
               _markdownThematicBreakChars.keys.any(lstripped.startsWith) &&
               //!thisLine.startsWith('    ') &&
               markdownThematicBreakRx.hasMatch(thisLine)) {
@@ -1450,11 +1418,11 @@ abstract final class Parser {
         } else {
           indented = false;
           ch0 = thisLine.isEmpty ? '' : thisLine[0];
-          const layoutBreakChars = _markdownSyntax
+          const layoutBreakChars = Compliance.markdownSyntax
               ? _hybridLayoutBreakChars
               : _layoutBreakChars;
           if (layoutBreakChars.containsKey(ch0) &&
-              (_markdownSyntax
+              (Compliance.markdownSyntax
                   ? extLayoutBreakRx.hasMatch(thisLine)
                   : uniform(thisLine, ch0, thisLine.length) &&
                         thisLine.length > 2)) {
@@ -1510,7 +1478,8 @@ abstract final class Parser {
                 final expandedTarget = subAttributes(document, target);
                 if (expandedTarget.isEmpty &&
                     AttributeMissing.parse(
-                          docAttrs['attribute-missing'] ?? _attributeMissing,
+                          docAttrs['attribute-missing'] ??
+                              Compliance.attributeMissing,
                         ) ==
                         AttributeMissing.dropLine &&
                     subAttributes(
@@ -1604,7 +1573,8 @@ abstract final class Parser {
                 final expandedTarget = subAttributes(document, target);
                 if (expandedTarget.isEmpty &&
                     AttributeMissing.parse(
-                          docAttrs['attribute-missing'] ?? _attributeMissing,
+                          docAttrs['attribute-missing'] ??
+                              Compliance.attributeMissing,
                         ) ==
                         AttributeMissing.dropLine &&
                     subAttributes(
@@ -1701,7 +1671,7 @@ abstract final class Parser {
         block = parseDescriptionList(reader, dlistMatch, parent);
         break;
       } else if ((style == 'float' || style == 'discrete') &&
-          (_underlineStyleSectionTitles
+          (Compliance.underlineStyleSectionTitles
               ? isSectionTitle(thisLine, reader.peekLine()) != null
               : !indented && atxSectionTitle(thisLine) != null)) {
         reader.unshiftLine(thisLine);
@@ -1832,7 +1802,9 @@ abstract final class Parser {
             lines: lines,
             attributes: attrs,
           );
-        } else if (_markdownSyntax && ch0 == '>' && thisLine.startsWith('> ')) {
+        } else if (Compliance.markdownSyntax &&
+            ch0 == '>' &&
+            thisLine.startsWith('> ')) {
           for (var i = 0; i < lines.length; i++) {
             final line = lines[i];
             lines[i] = line == '>'
@@ -2089,7 +2061,7 @@ abstract final class Parser {
       } else if (bc == 'stem' || bc == 'latexmath' || bc == 'asciimath') {
         if (bc == 'stem') {
           attrs['style'] =
-              _stemTypeAliases[attrs['2'] ?? docAttrs['stem'] ?? ''] ??
+              stemTypeAliases[attrs['2'] ?? docAttrs['stem'] ?? ''] ??
               'asciimath';
         }
         block = buildBlock(
@@ -2221,11 +2193,13 @@ abstract final class Parser {
   }) {
     final bool Function(String)? breakCondition;
     if (breakAtList != null) {
-      breakCondition = _blockTerminatesParagraph
+      breakCondition = Compliance.blockTerminatesParagraph
           ? _startOfBlockOrList
           : _startOfList;
     } else {
-      breakCondition = _blockTerminatesParagraph ? _startOfBlock : null;
+      breakCondition = Compliance.blockTerminatesParagraph
+          ? _startOfBlock
+          : null;
     }
     return reader.readLinesUntil(
       breakOnBlankLines: true,
@@ -2280,7 +2254,7 @@ abstract final class Parser {
         tip = line.substring(0, 4);
       }
       // Special case for fenced code blocks.
-      if (_markdownSyntax && tip.startsWith('`')) {
+      if (Compliance.markdownSyntax && tip.startsWith('`')) {
         if (tipLen == 4) {
           final fullTip = tip;
           tip = tip.substring(0, tip.length - 1);
@@ -3844,7 +3818,7 @@ abstract final class Parser {
       final joined = StringBuffer(first);
       // The accumulator always ends with the last appended line, so the
       // ends-with-break check tracks just that line.
-      var endsWithBreak = first.endsWith(_hardLineBreak);
+      var endsWithBreak = first.endsWith(hardLineBreak);
       while (reader.advance()) {
         var nextLine = trimLeftAscii(reader.peekLine() ?? '');
         if (nextLine.isEmpty) break;
@@ -3857,7 +3831,7 @@ abstract final class Parser {
         joined
           ..write(endsWithBreak ? lf : ' ')
           ..write(nextLine);
-        endsWithBreak = nextLine.endsWith(_hardLineBreak);
+        endsWithBreak = nextLine.endsWith(hardLineBreak);
         if (!keepOpen) break;
       }
       value = joined.toString();
@@ -3951,7 +3925,7 @@ abstract final class Parser {
     final rawStyle = attributes['1'];
     if (rawStyle != null &&
         !rawStyle.contains(' ') &&
-        _shorthandPropertySyntax) {
+        Compliance.shorthandPropertySyntax) {
       String? name;
       var accum = '';
       final parsed = _Shorthand();

@@ -6,7 +6,7 @@ library;
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/substitutors.dart';
 import 'package:meta/meta.dart';
 

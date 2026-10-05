@@ -13,7 +13,6 @@ import 'dart:convert' show Encoding, ascii, latin1, utf8;
 
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/errors.dart';
@@ -22,6 +21,7 @@ import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/parser.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/substitutors.dart' as substitutors;
 import 'package:asciidart/src/text_case.dart';
@@ -171,9 +171,6 @@ class Reader {
     return false;
   }
 
-  /// Alias of [isEmpty].
-  bool get isEof => isEmpty;
-
   /// Whether the next line is empty (or there are no more lines). Does not
   /// consume the line.
   bool isNextLineEmpty() => peekLine().isNullOrEmpty;
@@ -243,9 +240,6 @@ class Reader {
     return lines;
   }
 
-  /// Alias of [readLines].
-  List<String> readlines() => readLines();
-
   /// Gets the remaining lines of source data joined as a string.
   String read() => readLines().join(lf);
 
@@ -258,18 +252,11 @@ class Reader {
     unshift(lineToRestore);
   }
 
-  /// Alias of [unshiftLine].
-  void restoreLine(String lineToRestore) => unshiftLine(lineToRestore);
-
   /// Pushes [linesToRestore] as the next lines to read. The lines are marked
   /// as processed immediately.
   void unshiftLines(List<String> linesToRestore) {
     unshiftAll(linesToRestore);
   }
-
-  /// Alias of [unshiftLines].
-  void restoreLines(List<String> linesToRestore) =>
-      unshiftLines(linesToRestore);
 
   /// Replaces the next line with [replacement]. Returns `true`.
   bool replaceNextLine(String replacement) {

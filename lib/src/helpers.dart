@@ -3,8 +3,8 @@
 /// Port of `lib/asciidoctor/helpers.rb`.
 library;
 
-import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 
 /// Internal helper functions. Except where noted, everything here is internal.

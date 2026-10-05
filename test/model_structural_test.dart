@@ -266,10 +266,7 @@ void main() {
       expect(transliterateSqueeze('a  b', ' .-', '-'), equals('a-b'));
     });
 
-    test('splitWords and debugQuote', () {
-      expect(splitWords('  a  b\tc '), equals(['a', 'b', 'c']));
-      expect(splitWords(''), equals([]));
-      expect(splitWords('   '), equals([]));
+    test('debugQuote', () {
       expect(debugQuote('a"b'), equals(r'"a\"b"'));
       expect(debugQuote(null), equals('null'));
     });

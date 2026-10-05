@@ -40,12 +40,6 @@ String asciiSpace(String pattern) => pattern
 
 void main() {
   group('characters and integers', () {
-    test('nullChar is the null character', () {
-      // Probe: scalar dump (NULL="\u0000").
-      expect(nullChar, equals('\x00'));
-      expect(nullChar.codeUnits, equals(<int>[0]));
-    });
-
     test('tab is the tab character', () {
       // Probe: scalar dump (TAB="\t").
       expect(tab, equals('\t'));
@@ -71,23 +65,6 @@ void main() {
     test('bomBytesUtf16be', () {
       // Probe: scalar dump (BOM_BYTES_UTF_16BE=[254, 255]).
       expect(bomBytesUtf16be, equals(<int>[0xfe, 0xff]));
-    });
-  });
-
-  group('file modes', () {
-    test('fileReadMode', () {
-      // Probe: scalar dump (FILE_READ_MODE="rb:UTF-8:UTF-8").
-      expect(fileReadMode, equals('rb:UTF-8:UTF-8'));
-    });
-
-    test('uriReadMode aliases fileReadMode', () {
-      // Probe: scalar dump (URI_READ_MODE == FILE_READ_MODE).
-      expect(uriReadMode, equals(fileReadMode));
-    });
-
-    test('fileWriteMode', () {
-      // Probe: scalar dump (FILE_WRITE_MODE="wb:UTF-8").
-      expect(fileWriteMode, equals('wb:UTF-8'));
     });
   });
 
@@ -158,250 +135,6 @@ void main() {
         }),
       );
     });
-
-    test('setextSectionLevels', () {
-      // Probe: scalar dump (SETEXT_SECTION_LEVELS={"=" => 0, "-" => 1,
-      // "~" => 2, "^" => 3, "+" => 4}).
-      expect(
-        setextSectionLevels,
-        equals(<String, int>{'=': 0, '-': 1, '~': 2, '^': 3, '+': 4}),
-      );
-    });
-  });
-
-  group('style sets', () {
-    test('admonitionStyles', () {
-      // Probe: scalar dump (ADMONITION_STYLES=["NOTE", "TIP", "IMPORTANT",
-      // "WARNING", "CAUTION"]).
-      expect(
-        admonitionStyles,
-        equals(<String>{'NOTE', 'TIP', 'IMPORTANT', 'WARNING', 'CAUTION'}),
-      );
-    });
-
-    test('admonitionStyleHeads holds the style initials', () {
-      // Probe: scalar dump (ADMONITION_STYLE_HEADS=["N", "T", "I", "W", "C"]).
-      expect(admonitionStyleHeads, equals(<String>{'N', 'T', 'I', 'W', 'C'}));
-      expect(
-        admonitionStyleHeads,
-        equals(admonitionStyles.map((s) => s[0]).toSet()),
-      );
-    });
-
-    test('paragraphStyles', () {
-      // Probe: scalar dump (PARAGRAPH_STYLES=["comment", "example",
-      // "literal", "listing", "normal", "open", "pass", "quote", "sidebar",
-      // "source", "verse", "abstract", "partintro"]).
-      expect(
-        paragraphStyles,
-        equals(<String>{
-          'comment',
-          'example',
-          'literal',
-          'listing',
-          'normal',
-          'open',
-          'pass',
-          'quote',
-          'sidebar',
-          'source',
-          'verse',
-          'abstract',
-          'partintro',
-        }),
-      );
-    });
-
-    test('verbatimStyles', () {
-      // Probe: scalar dump (VERBATIM_STYLES=["literal", "listing",
-      // "source", "verse"]).
-      expect(
-        verbatimStyles,
-        equals(<String>{'literal', 'listing', 'source', 'verse'}),
-      );
-    });
-  });
-
-  group('delimited blocks', () {
-    test('delimitedBlocks maps every delimiter', () {
-      // Probe: table dump (DELIMITED_BLOCKS entries).
-      expect(
-        _blockRecords(delimitedBlocks),
-        equals(<String, Object>{
-          '--': <Object>[
-            'open',
-            <String>{
-              'comment',
-              'example',
-              'literal',
-              'listing',
-              'pass',
-              'quote',
-              'sidebar',
-              'source',
-              'verse',
-              'admonition',
-              'abstract',
-              'partintro',
-            },
-          ],
-          '----': <Object>[
-            'listing',
-            <String>{'literal', 'source'},
-          ],
-          '....': <Object>[
-            'literal',
-            <String>{'listing', 'source'},
-          ],
-          '====': <Object>[
-            'example',
-            <String>{'admonition'},
-          ],
-          '****': <Object>['sidebar', <String>{}],
-          '____': <Object>[
-            'quote',
-            <String>{'verse'},
-          ],
-          '++++': <Object>[
-            'pass',
-            <String>{'stem', 'latexmath', 'asciimath'},
-          ],
-          '|===': <Object>['table', <String>{}],
-          ',===': <Object>['table', <String>{}],
-          ':===': <Object>['table', <String>{}],
-          '!===': <Object>['table', <String>{}],
-          '////': <Object>['comment', <String>{}],
-          '```': <Object>['fenced_code', <String>{}],
-        }),
-      );
-    });
-
-    test('delimitedBlockHeads holds the two-char heads', () {
-      // Probe: table dump (DELIMITED_BLOCK_HEADS={"--" => true,
-      // ".." => true, "==" => true, "**" => true, "__" => true,
-      // "++" => true, "|=" => true, ",=" => true, ":=" => true,
-      // "!=" => true, "//" => true, "``" => true}).
-      expect(
-        delimitedBlockHeads,
-        equals(<String, bool>{
-          '--': true,
-          '..': true,
-          '==': true,
-          '**': true,
-          '__': true,
-          '++': true,
-          '|=': true,
-          ',=': true,
-          ':=': true,
-          '!=': true,
-          '//': true,
-          '``': true,
-        }),
-      );
-      // Derivation invariant mirroring the Ruby `.tap` construction.
-      for (final key in delimitedBlocks.keys) {
-        expect(delimitedBlockHeads[key.substring(0, 2)], isTrue);
-      }
-      expect(
-        delimitedBlockHeads.keys.toSet(),
-        equals(delimitedBlocks.keys.map((k) => k.substring(0, 2)).toSet()),
-      );
-    });
-
-    test('delimitedBlockTails holds the four-char tails', () {
-      // Probe: table dump (DELIMITED_BLOCK_TAILS={"----" => "-",
-      // "...." => ".", "====" => "=", "****" => "*", "____" => "_",
-      // "++++" => "+", "|===" => "=", ",===" => "=", ":===" => "=",
-      // "!==" => "=", "////" => "/"}).
-      expect(
-        delimitedBlockTails,
-        equals(<String, String>{
-          '----': '-',
-          '....': '.',
-          '====': '=',
-          '****': '*',
-          '____': '_',
-          '++++': '+',
-          '|===': '=',
-          ',===': '=',
-          ':===': '=',
-          '!===': '=',
-          '////': '/',
-        }),
-      );
-      // Derivation invariant mirroring the Ruby `.tap` construction.
-      for (final key in delimitedBlocks.keys) {
-        if (key.length == 4) {
-          expect(delimitedBlockTails[key], equals(key[key.length - 1]));
-        } else {
-          expect(delimitedBlockTails.containsKey(key), isFalse);
-        }
-      }
-    });
-  });
-
-  group('break characters', () {
-    test('layoutBreakChars', () {
-      // Probe: table dump (LAYOUT_BREAK_CHARS={"'" => :thematic_break,
-      // "<" => :page_break}).
-      expect(
-        layoutBreakChars,
-        equals(<String, String>{"'": 'thematic_break', '<': 'page_break'}),
-      );
-    });
-
-    test('markdownThematicBreakChars', () {
-      // Probe: table dump (MARKDOWN_THEMATIC_BREAK_CHARS={"-" =>
-      // :thematic_break, "*" => :thematic_break, "_" => :thematic_break}).
-      expect(
-        markdownThematicBreakChars,
-        equals(<String, String>{
-          '-': 'thematic_break',
-          '*': 'thematic_break',
-          '_': 'thematic_break',
-        }),
-      );
-    });
-
-    test('hybridLayoutBreakChars merges both maps', () {
-      // Probe: table dump (HYBRID_LAYOUT_BREAK_CHARS has all five keys).
-      expect(
-        hybridLayoutBreakChars,
-        equals(<String, String>{
-          "'": 'thematic_break',
-          '<': 'page_break',
-          '-': 'thematic_break',
-          '*': 'thematic_break',
-          '_': 'thematic_break',
-        }),
-      );
-      expect(
-        hybridLayoutBreakChars,
-        equals({...layoutBreakChars, ...markdownThematicBreakChars}),
-      );
-    });
-  });
-
-  group('lists', () {
-    test('nestableListContexts', () {
-      // Probe: table dump (NESTABLE_LIST_CONTEXTS=[:ulist, :olist, :dlist]).
-      expect(nestableListContexts, equals(<String>['ulist', 'olist', 'dlist']));
-    });
-
-    test('orderedListStyles', () {
-      // Probe: table dump (ORDERED_LIST_STYLES=[:arabic, :loweralpha,
-      // :lowerroman, :upperalpha, :upperroman]).
-      expect(
-        orderedListStyles,
-        equals(<String>[
-          'arabic',
-          'loweralpha',
-          'lowerroman',
-          'upperalpha',
-          'upperroman',
-        ]),
-      );
-    });
   });
 
   group('markers and continuations', () {
@@ -419,16 +152,6 @@ void main() {
       // Probe: table dump (HARD_LINE_BREAK=" +").
       expect(hardLineBreak, equals(' +'));
     });
-
-    test('lineContinuation', () {
-      // Probe: table dump (LINE_CONTINUATION=" \\").
-      expect(lineContinuation, equals(r' \'));
-    });
-
-    test('lineContinuationLegacy', () {
-      // Probe: table dump (LINE_CONTINUATION_LEGACY=" +").
-      expect(lineContinuationLegacy, equals(' +'));
-    });
   });
 
   group('math', () {
@@ -440,18 +163,6 @@ void main() {
         equals(<String, List<String>>{
           'asciimath': <String>[r'\$', r'\$'],
           'latexmath': <String>[r'\[', r'\]'],
-        }),
-      );
-    });
-
-    test('inlineMathDelimiters', () {
-      // Probe: table dump (INLINE_MATH_DELIMITERS={asciimath: ["\\$", "\\$"],
-      // latexmath: ["\\(", "\\)"]}).
-      expect(
-        inlineMathDelimiters,
-        equals(<String, List<String>>{
-          'asciimath': <String>[r'\$', r'\$'],
-          'latexmath': <String>[r'\(', r'\)'],
         }),
       );
     });
@@ -471,19 +182,9 @@ void main() {
   });
 
   group('pinned versions', () {
-    test('fontAwesomeVersion', () {
-      // Probe: table dump (FONT_AWESOME_VERSION="4.7.0").
-      expect(fontAwesomeVersion, equals('4.7.0'));
-    });
-
     test('highlightJsVersion', () {
       // Probe: table dump (HIGHLIGHT_JS_VERSION="9.18.3").
       expect(highlightJsVersion, equals('9.18.3'));
-    });
-
-    test('mathJaxVersion', () {
-      // Probe: table dump (MATHJAX_VERSION="2.7.9").
-      expect(mathJaxVersion, equals('2.7.9'));
     });
   });
 
@@ -1035,9 +736,3 @@ void main() {
     });
   });
 }
-
-/// Converts [delimitedBlocks]-style entries to comparable records.
-Map<String, Object> _blockRecords(Map<String, DelimitedBlockInfo> blocks) =>
-    blocks.map(
-      (key, info) => MapEntry(key, <Object>[info.context, info.styles]),
-    );

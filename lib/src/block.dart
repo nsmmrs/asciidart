@@ -5,8 +5,8 @@ library;
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 
 /// The content model of a block of [context] unless it says otherwise.
 ContentModel defaultContentModel(BlockContext context) => switch (context) {

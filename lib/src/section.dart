@@ -6,7 +6,7 @@ library;
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart'
     show BlockContext, NodeDocument;
-import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart' show invalidSectionIdCharsRx;
 import 'package:asciidart/src/text_case.dart';
 

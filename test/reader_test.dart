@@ -344,7 +344,7 @@ void main() {
 
       test('isEmpty should return true with empty data', () {
         expect(Reader.fromString(null).isEmpty, isTrue);
-        expect(Reader.fromString(null).isEof, isTrue);
+        expect(Reader.fromString(null).isEmpty, isTrue);
       });
 
       test('isNextLineEmpty should return true with empty data', () {
@@ -377,7 +377,7 @@ void main() {
       test('isEmpty should return false if there are lines remaining', () {
         final reader = Reader(sampleData);
         expect(reader.isEmpty, isFalse);
-        expect(reader.isEof, isFalse);
+        expect(reader.isEmpty, isFalse);
       });
 
       test('isNextLineEmpty should return false if next line is not blank', () {
@@ -485,7 +485,7 @@ void main() {
 
       test('terminate should consume all lines and update line number', () {
         final reader = (Reader(sampleData))..terminate();
-        expect(reader.isEof, isTrue);
+        expect(reader.isEmpty, isTrue);
         expect(reader.lineno, equals(4));
       });
 
@@ -593,7 +593,7 @@ void main() {
           equals(lines.map((line) => line.withoutTrailingNewline()).toList()),
         );
         expect(reader.hasMoreLines(), isFalse);
-        expect(reader.isEof, isTrue);
+        expect(reader.isEmpty, isTrue);
       });
 
       test('Read lines until until blank line', () {
@@ -904,7 +904,7 @@ void main() {
           'content',
           '....',
         ];
-        expect(reader.readlines(), equals(expected));
+        expect(reader.readLines(), equals(expected));
         expect(doc.attributes.containsKey('front-matter'), isFalse);
       });
     });
@@ -2899,7 +2899,7 @@ void main() {
             cursor: Cursor(pseudoDocfile),
             normalize: true,
           );
-          final lines = reader.readlines();
+          final lines = reader.readLines();
           expect(lines, contains('include::grandchild-include.adoc[]'));
           assertMessage(
             logger,
@@ -2923,7 +2923,7 @@ void main() {
             cursor: Cursor(pseudoDocfile),
             normalize: true,
           );
-          final lines = reader.readlines();
+          final lines = reader.readLines();
           expect(lines, contains('first line of child'));
           expect(lines, contains('include::grandchild-include.adoc[]'));
           assertMessage(

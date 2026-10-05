@@ -1,10 +1,10 @@
-/// Small string, number and collection helpers shared by the converter.
+/// The string and number semantics of Ruby that Asciidoctor's output
+/// depends on, where they differ from `dart:core`.
 ///
-/// Several of these deliberately differ from the closest `dart:core` method
-/// so that output stays byte-identical to Asciidoctor: the trimming helpers
-/// only strip ASCII whitespace and NUL, the number parsers accept a leading
-/// numeric prefix and ignore the rest, and the split helper drops trailing
-/// empty fields.
+/// The trimming helpers only strip ASCII whitespace and NUL (Ruby's
+/// `strip`), the number parsers accept a leading numeric prefix and ignore
+/// the rest (`to_i`, `to_f`), the split helper drops trailing empty fields
+/// (`split`), and [formatNumber] prints numbers as Ruby does.
 library;
 
 import 'dart:math' show pow;
@@ -16,30 +16,6 @@ extension NullableStringIsNullOrEmpty on String? {
     final self = this;
     return self == null || self.isEmpty;
   }
-}
-
-/// Null-or-empty test for nullable iterables.
-extension NullableIterableIsNullOrEmpty<T> on Iterable<T>? {
-  /// Whether this iterable is `null` or empty.
-  bool get isNullOrEmpty {
-    final self = this;
-    return self == null || self.isEmpty;
-  }
-}
-
-/// Null-or-empty test for nullable maps.
-extension NullableMapIsNullOrEmpty<K, V> on Map<K, V>? {
-  /// Whether this map is `null` or empty.
-  bool get isNullOrEmpty {
-    final self = this;
-    return self == null || self.isEmpty;
-  }
-}
-
-/// Null test for nullable numbers (a number is never empty).
-extension NullableNumIsNullOrEmpty on num? {
-  /// Whether this number is `null`.
-  bool get isNullOrEmpty => this == null;
 }
 
 /// ASCII-only trimming for strings.
@@ -185,16 +161,6 @@ String transliterateSqueeze(String s, String from, String to) {
     buf.write(out);
   }
   return buf.toString();
-}
-
-final RegExp _whitespaceRun = RegExp(r'[ \t\n\v\f\r]+');
-
-/// Splits [value] on whitespace runs, ignoring leading and trailing
-/// whitespace.
-List<String> splitWords(String value) {
-  final trimmed = value.trim();
-  if (trimmed.isEmpty) return <String>[];
-  return trimmed.split(_whitespaceRun);
 }
 
 /// Renders [value] for `toString` output: `null` stays `null` and strings

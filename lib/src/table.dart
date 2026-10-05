@@ -5,12 +5,12 @@ library;
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/parser.dart';
 import 'package:asciidart/src/reader.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/substitutors.dart';
 import 'package:meta/meta.dart';
 
@@ -580,7 +580,7 @@ class Cell extends AbstractBlock {
         if (unprocessedLine1.contains('::')) {
           final preprocessedLines = PreprocessorReader(parentDoc, [
             unprocessedLine1,
-          ], cursor: innerDocumentCursor).readlines();
+          ], cursor: innerDocumentCursor).readLines();
           if (!(preprocessedLines.isNotEmpty &&
               unprocessedLine1 == preprocessedLines[0] &&
               preprocessedLines.length < 2)) {

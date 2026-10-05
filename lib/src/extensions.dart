@@ -32,13 +32,13 @@ import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/constants.dart';
 import 'package:asciidart/src/context.dart';
-import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/parser.dart';
 import 'package:asciidart/src/reader.dart';
+import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/substitutors.dart' as substitutors;
@@ -531,11 +531,6 @@ abstract class NamedProcessor extends Processor {
     config.positionalAttrs = List<String>.of(names);
   }
 
-  /// Alias of [positionalAttributes].
-  void namePositionalAttributes(List<String> names) {
-    positionalAttributes(names);
-  }
-
   /// Seeds the attributes map with [value].
   void defaultAttributes(Map<String, String> value) {
     config.defaultAttrs = Map<String, String>.of(value);
@@ -835,19 +830,9 @@ class BlockProcessor extends NamedProcessor {
     config.contexts = Set<String>.of(contexts);
   }
 
-  /// Alias of [contexts].
-  void onContexts(Iterable<String> contexts) {
-    this.contexts(contexts);
-  }
-
   /// Binds this processor to the single block [context].
   void onContext(String context) {
     contexts(<String>[context]);
-  }
-
-  /// Alias of [contexts].
-  void bindTo(Iterable<String> contexts) {
-    this.contexts(contexts);
   }
 }
 
@@ -1225,11 +1210,6 @@ class Registry {
     String name,
   ) => _blockMacroExtensions?[name];
 
-  /// Alias of [registeredForBlockMacro].
-  ProcessorExtension<BlockMacroProcessor>? findBlockMacroExtension(
-    String name,
-  ) => _blockMacroExtensions?[name];
-
   /// Registers an [InlineMacroProcessor] with the registry (see [block]).
   ProcessorExtension<InlineMacroProcessor> inlineMacro({
     InlineMacroProcessor? processor,
@@ -1254,11 +1234,6 @@ class Registry {
   /// The [InlineMacroProcessor] extension matching the macro [name], or
   /// `null` if no match is found.
   ProcessorExtension<InlineMacroProcessor>? registeredForInlineMacro(
-    String name,
-  ) => _inlineMacroExtensions?[name];
-
-  /// Alias of [registeredForInlineMacro].
-  ProcessorExtension<InlineMacroProcessor>? findInlineMacroExtension(
     String name,
   ) => _inlineMacroExtensions?[name];
 

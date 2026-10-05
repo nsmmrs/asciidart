@@ -1242,7 +1242,7 @@ void main() {
         registry.registeredForBlockMacro('sample'),
         isA<ProcessorExtension>(),
       );
-      final extension = registry.findBlockMacroExtension('sample');
+      final extension = registry.registeredForBlockMacro('sample');
       expect(extension, isA<ProcessorExtension>());
       expect(extension!.instance, isA<SampleBlockMacro>());
     });
@@ -1256,7 +1256,7 @@ void main() {
         registry.registeredForInlineMacro('sample'),
         isA<ProcessorExtension>(),
       );
-      final extension = registry.findInlineMacroExtension('sample');
+      final extension = registry.registeredForInlineMacro('sample');
       expect(extension, isA<ProcessorExtension>());
       expect(extension!.instance, isA<SampleInlineMacro>());
     });
@@ -1274,9 +1274,7 @@ void main() {
         expect(registry.registeredForBlock('unknown', 'paragraph'), isNull);
         expect(registry.findBlockExtension('unknown'), isNull);
         expect(registry.registeredForBlockMacro('unknown'), isNull);
-        expect(registry.findBlockMacroExtension('unknown'), isNull);
         expect(registry.registeredForInlineMacro('unknown'), isNull);
-        expect(registry.findInlineMacroExtension('unknown'), isNull);
         expect(registry.inlineMacros, isEmpty);
       },
     );
@@ -3203,7 +3201,7 @@ void main() {
       final registry = createCatInSinkBlockMacro();
       final doc = emptyDocument();
       registry.activate(doc);
-      final ext = registry.findBlockMacroExtension('cat_in_sink')!;
+      final ext = registry.registeredForBlockMacro('cat_in_sink')!;
       expect(
         () => ext.instance.process(doc, '', <String, String>{}),
         throwsA(
@@ -3677,8 +3675,6 @@ void main() {
     test('positional and default attribute helpers set config', () {
       final processor = (SampleInlineMacro())..positionalAttributes(['a', 'b']);
       expect(processor.config.positionalAttrs, equals(['a', 'b']));
-      processor.namePositionalAttributes(['x']);
-      expect(processor.config.positionalAttrs, equals(['x']));
       processor.defaultAttributes({'1': 'a', 'foo': 'baz'});
       expect(processor.config.defaultAttrs, equals({'1': 'a', 'foo': 'baz'}));
     });
@@ -3719,10 +3715,6 @@ void main() {
       expect(single.config.contexts, equals({'paragraph'}));
       final bound = (SampleBlock())..onContext('literal');
       expect(bound.config.contexts, equals({'literal'}));
-      bound.onContexts(['sidebar', 'open']);
-      expect(bound.config.contexts, equals({'sidebar', 'open'}));
-      bound.bindTo(['paragraph']);
-      expect(bound.config.contexts, equals({'paragraph'}));
       bound.contexts(['open']);
       expect(bound.config.contexts, equals({'open'}));
     });
@@ -3979,8 +3971,8 @@ void main() {
         processor: SampleBlockMacro(),
         name: 'sample',
       );
-      expect(registry.findBlockMacroExtension('sample'), same(second));
-      expect(registry.findBlockMacroExtension('sample'), isNot(same(first)));
+      expect(registry.registeredForBlockMacro('sample'), same(second));
+      expect(registry.registeredForBlockMacro('sample'), isNot(same(first)));
     });
 
     test('registry groups stay independent from global groups', () {
