@@ -26,9 +26,11 @@ import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/path_resolver.dart';
 import 'package:asciidart/src/remote.dart';
+import 'package:asciidart/src/sub.dart';
 import 'package:asciidart/src/substitutors.dart' as substitutors;
 
 export 'package:asciidart/src/context.dart';
+export 'package:asciidart/src/sub.dart';
 
 /// Line feed. Port of the `LF` constant in `lib/asciidoctor.rb`.
 const String lf = '\n';
@@ -715,10 +717,8 @@ abstract class AbstractNode {
   /// default; `null` applies none) to [text].
   ///
   /// Delegates to `substitutors.applySubs` with this node.
-  String applySubs(
-    String text, [
-    List<String>? subs = substitutors.normalSubs,
-  ]) => substitutors.applySubs(this, text, subs);
+  String applySubs(String text, [List<Sub>? subs = substitutors.normalSubs]) =>
+      substitutors.applySubs(this, text, subs);
 
   /// Applies the substitutions [subs] to [lines] as one multi-line text,
   /// returning the result split back into lines.
@@ -726,7 +726,7 @@ abstract class AbstractNode {
   /// Delegates to `substitutors.applySubsToLines` with this node.
   List<String> applySubsToLines(
     List<String> lines, [
-    List<String>? subs = substitutors.normalSubs,
+    List<Sub>? subs = substitutors.normalSubs,
   ]) => substitutors.applySubsToLines(this, lines, subs);
 
   /// Applies title substitutions to [text].

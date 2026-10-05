@@ -509,12 +509,12 @@ void main() {
     test('hasSub and removeSub', () {
       final doc = FakeDocument();
       final item = ListItem(ListBlock(doc, BlockContext.ulist), 'x');
-      expect(item.hasSub('quotes'), isTrue);
-      expect(item.hasSub('callouts'), isFalse);
-      item.removeSub('quotes');
-      expect(item.hasSub('quotes'), isFalse);
+      expect(item.hasSub(Sub.quotes), isTrue);
+      expect(item.hasSub(Sub.callouts), isFalse);
+      item.removeSub(Sub.quotes);
+      expect(item.hasSub(Sub.quotes), isFalse);
       // The shared default list is untouched (items get a copy).
-      expect(normalSubs, contains('quotes'));
+      expect(normalSubs, contains(Sub.quotes));
     });
 
     test('listMarkerKeyword', () {
@@ -820,18 +820,18 @@ void main() {
         Block(
           doc,
           BlockContext.paragraph,
-          subs: const BlockSubs.defaults(['quotes']),
+          subs: const BlockSubs.defaults([Sub.quotes]),
         ).subs,
-        equals(['quotes']),
+        equals([Sub.quotes]),
       );
       expect(
         Block(
           doc,
           BlockContext.paragraph,
           attributes: {'subs': 'quotes'},
-          subs: const BlockSubs.fixed(['quotes']),
+          subs: const BlockSubs.fixed([Sub.quotes]),
         ).subs,
-        equals(['quotes']),
+        equals([Sub.quotes]),
       );
       expect(
         Block(

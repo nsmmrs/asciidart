@@ -1475,7 +1475,7 @@ class Document extends AbstractBlock implements NodeDocument {
     return substitutors.applySubs(
       this,
       value,
-      substitutors.resolvePassSubs(this, subs) ?? <String>[],
+      substitutors.resolvePassSubs(this, subs) ?? <Sub>[],
     );
   }
 
@@ -1516,18 +1516,18 @@ class Document extends AbstractBlock implements NodeDocument {
   /// From the `docinfosubs` attribute when set, else `['attributes']`
   /// (port of `resolve_docinfo_subs`; document.rb:1146; an empty value
   /// resolves to no subs).
-  List<String> _resolveDocinfoSubs() {
+  List<Sub> _resolveDocinfoSubs() {
     if (attributes.containsKey('docinfosubs')) {
       return substitutors.resolveSubs(
             this,
             attributes['docinfosubs'],
-            'block',
+            SubsScope.block,
             null,
             'docinfo',
           ) ??
-          <String>[];
+          <Sub>[];
     }
-    return <String>['attributes'];
+    return [Sub.attributes];
   }
 
   /// Creates and initializes the converter for [backend].

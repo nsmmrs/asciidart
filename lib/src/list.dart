@@ -114,7 +114,7 @@ class ListItem extends AbstractBlock {
     : _text = text,
       super(parent, BlockContext.listItem) {
     level = parent.level;
-    subs = List<String>.of(normalSubs);
+    subs = List<Sub>.of(normalSubs);
   }
   String? _text;
 

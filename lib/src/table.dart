@@ -600,7 +600,7 @@ class Cell extends AbstractBlock {
         parentDoc.attributes['doctitle'] = parentDoctitle;
       }
       // No substitutions: the empty list applies nothing.
-      subs = <String>[];
+      subs = <Sub>[];
     } else if (literal) {
       contentModel = ContentModel.verbatim;
       subs = basicSubs;

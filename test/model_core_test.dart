@@ -582,10 +582,11 @@ void main() {
 
   group('subs predicates', () {
     test('hasSub and removeSub track the subs list', () {
-      final block = Block(makeDoc(), BlockContext.paragraph)..subs = ['quotes'];
-      expect(block.hasSub('quotes'), isTrue);
-      expect(block.hasSub('macros'), isFalse);
-      block.removeSub('quotes');
+      final block = Block(makeDoc(), BlockContext.paragraph)
+        ..subs = [Sub.quotes];
+      expect(block.hasSub(Sub.quotes), isTrue);
+      expect(block.hasSub(Sub.macros), isFalse);
+      block.removeSub(Sub.quotes);
       expect(block.subs, isEmpty);
     });
   });
@@ -1018,9 +1019,9 @@ void main() {
         Block(
           doc,
           BlockContext.paragraph,
-          subs: const BlockSubs.fixed(['quotes']),
+          subs: const BlockSubs.fixed([Sub.quotes]),
         ).subs,
-        equals(['quotes']),
+        equals([Sub.quotes]),
       );
       expect(
         Block(
@@ -1053,7 +1054,7 @@ void main() {
         equals('a'),
       );
       final quoted = Block(doc, BlockContext.paragraph, source: 'a')
-        ..subs = ['quotes'];
+        ..subs = [Sub.quotes];
       expect(quoted.content(), equals('a'));
     });
   });

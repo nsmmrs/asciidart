@@ -1323,13 +1323,16 @@ class PreprocessorReader extends Reader {
   bool _preprocessIncludeDirective(String target, String? attrlist) {
     final doc = _document;
     var expandedTarget = target;
-    final attrMissing =
-        doc.attributes['attribute-missing'] ?? Compliance.attributeMissing;
+    final attrMissing = AttributeMissing.parse(
+      doc.attributes['attribute-missing'] ?? Compliance.attributeMissing,
+    );
     if (target.contains(attrRefHead) &&
         (expandedTarget = substitutors.subAttributes(
           doc,
           target,
-          attributeMissing: attrMissing == 'warn' ? 'drop-line' : attrMissing,
+          attributeMissing: attrMissing == AttributeMissing.warn
+              ? AttributeMissing.dropLine
+              : attrMissing,
         )).isEmpty) {
       // The re-substitution check is pure (drop-line with ignore severity
       // logs nothing), so it is computed once for the branches below.
@@ -1337,14 +1340,15 @@ class PreprocessorReader extends Reader {
           .subAttributes(
             doc,
             '$target ',
-            attributeMissing: 'drop-line',
-            dropLineSeverity: 'ignore',
+            attributeMissing: AttributeMissing.dropLine,
+            reportDroppedLine: false,
           )
           .isEmpty;
-      final dropReason = attrMissing == 'warn' && droppedDueToMissingAttr
+      final dropReason =
+          attrMissing == AttributeMissing.warn && droppedDueToMissingAttr
           ? 'due to missing attribute'
           : 'because resolved target is blank';
-      if (attrMissing == 'drop-line' && droppedDueToMissingAttr) {
+      if (attrMissing == AttributeMissing.dropLine && droppedDueToMissingAttr) {
         LoggerManager.logger.info(
           'include dropped due to missing attribute: '
           'include::$target[${attrlist ?? ''}]',
@@ -1939,7 +1943,7 @@ class PreprocessorReader extends Reader {
       current = substitutors.subAttributes(
         _document,
         current,
-        attributeMissing: 'drop',
+        attributeMissing: AttributeMissing.drop,
       );
     }
 

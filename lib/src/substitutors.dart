@@ -66,37 +66,37 @@ final Map<bool, RegExp> quotedTextSniffRx = <bool, RegExp>{
 };
 
 /// Substitutions for a bare special-characters pass. Port of `BASIC_SUBS`.
-const List<String> basicSubs = <String>['specialcharacters'];
+const List<Sub> basicSubs = [Sub.specialcharacters];
 
 /// Substitutions for header metadata and attribute assignments.
 /// Port of `HEADER_SUBS`.
-const List<String> headerSubs = <String>['specialcharacters', 'attributes'];
+const List<Sub> headerSubs = [Sub.specialcharacters, Sub.attributes];
 
 /// No substitutions. Port of `NO_SUBS`.
-const List<String> noSubs = <String>[];
+const List<Sub> noSubs = [];
 
 /// The default paragraph substitutions. Port of `NORMAL_SUBS`.
-const List<String> normalSubs = <String>[
-  'specialcharacters',
-  'quotes',
-  'attributes',
-  'replacements',
-  'macros',
-  'post_replacements',
+const List<Sub> normalSubs = [
+  Sub.specialcharacters,
+  Sub.quotes,
+  Sub.attributes,
+  Sub.replacements,
+  Sub.macros,
+  Sub.postReplacements,
 ];
 
 /// Substitutions for reference text. Port of `REFTEXT_SUBS`.
-const List<String> reftextSubs = <String>[
-  'specialcharacters',
-  'quotes',
-  'replacements',
+const List<Sub> reftextSubs = [
+  Sub.specialcharacters,
+  Sub.quotes,
+  Sub.replacements,
 ];
 
 /// Substitutions for verbatim blocks. Port of `VERBATIM_SUBS`.
-const List<String> verbatimSubs = <String>['specialcharacters', 'callouts'];
+const List<Sub> verbatimSubs = [Sub.specialcharacters, Sub.callouts];
 
 /// Named substitution groups. Port of `SUB_GROUPS`.
-const Map<String, List<String>> subGroups = <String, List<String>>{
+const Map<String, List<Sub>> subGroups = {
   'none': noSubs,
   'normal': normalSubs,
   'verbatim': verbatimSubs,
@@ -114,35 +114,6 @@ const Map<String, String> subHints = <String, String>{
   'r': 'replacements',
   'c': 'specialcharacters',
   'v': 'verbatim',
-};
-
-/// Valid substitution names per context. Port of `SUB_OPTIONS`.
-const Map<String, List<String>> subOptions = <String, List<String>>{
-  'block': <String>[
-    'none',
-    'normal',
-    'verbatim',
-    'specialchars',
-    'specialcharacters',
-    'quotes',
-    'attributes',
-    'replacements',
-    'macros',
-    'post_replacements',
-    'callouts',
-  ],
-  'inline': <String>[
-    'none',
-    'normal',
-    'verbatim',
-    'specialchars',
-    'specialcharacters',
-    'quotes',
-    'attributes',
-    'replacements',
-    'macros',
-    'post_replacements',
-  ],
 };
 
 /// Cancel marker for a dropped line. Port of `CAN` (`\u0018`).
@@ -190,7 +161,7 @@ final class Passthrough {
 
   /// The substitutions applied when the text is restored (`null` for
   /// none).
-  final List<String>? subs;
+  final List<Sub>? subs;
 
   /// The quoted text type the restored text is converted as, if any.
   final String? type;
@@ -309,14 +280,14 @@ String _applySubsString(AbstractNode node, String value) =>
 String applySubs(
   AbstractNode node,
   String text, [
-  List<String>? subs = normalSubs,
+  List<Sub>? subs = normalSubs,
 ]) {
   if (text.isEmpty || subs == null) return text;
   var subject = text;
 
   List<Passthrough>? passthrus;
   var clearPassthrus = false;
-  if (subs.contains('macros')) {
+  if (subs.contains(Sub.macros)) {
     subject = extractPassthroughs(node, subject);
     if (_passthroughsOf(node).isNotEmpty) {
       passthrus = _passthroughsOf(node);
@@ -329,34 +300,32 @@ String applySubs(
     }
   }
 
-  for (final type in subs) {
-    switch (type) {
-      case 'specialcharacters':
+  for (final sub in subs) {
+    switch (sub) {
+      case Sub.specialcharacters:
         subject = subSpecialchars(subject);
-      case 'quotes':
+      case Sub.quotes:
         subject = subQuotes(node, subject);
-      case 'attributes':
+      case Sub.attributes:
         if (subject.contains(attrRefHead)) {
           subject = subAttributes(node, subject);
         }
-      case 'replacements':
+      case Sub.replacements:
         subject = subReplacements(subject);
-      case 'macros':
+      case Sub.macros:
         subject = subMacros(node, subject);
-      case 'highlight':
+      case Sub.highlight:
         subject = highlightSource(
           node,
           subject,
-          processCallouts: subs.contains('callouts'),
+          processCallouts: subs.contains(Sub.callouts),
         );
-      case 'callouts':
-        if (!subs.contains('highlight')) {
+      case Sub.callouts:
+        if (!subs.contains(Sub.highlight)) {
           subject = subCallouts(node, subject);
         }
-      case 'post_replacements':
+      case Sub.postReplacements:
         subject = subPostReplacements(node, subject);
-      default:
-        node.logger.warn('unknown substitution type $type');
     }
   }
 
@@ -378,7 +347,7 @@ String applySubs(
 List<String> applySubsToLines(
   AbstractNode node,
   List<String> lines, [
-  List<String>? subs = normalSubs,
+  List<Sub>? subs = normalSubs,
 ]) {
   if (lines.isEmpty || subs == null) return List<String>.of(lines);
   final result = applySubs(
@@ -529,28 +498,27 @@ String convertQuotedText(
 /// If an attribute referenced in the line is missing or undefined, the line
 /// may be dropped based on the `attribute-missing` or `attribute-undefined`
 /// setting, respectively. [attributeMissing] overrides the missing-attribute
-/// handling; [dropLineSeverity] selects the log severity for a dropped line
-/// (`'info'` or `'ignore'`).
+/// handling; [reportDroppedLine] logs a dropped line at info level.
 ///
 /// Port of `Substitutors#sub_attributes`.
 String subAttributes(
   AbstractNode node,
   String text, {
-  String? attributeMissing,
-  String dropLineSeverity = 'info',
+  AttributeMissing? attributeMissing,
+  bool reportDroppedLine = true,
 }) {
   final doc = _documentOf(node);
   final docAttrs = doc.attributes;
   var drop = false;
   var dropLine = false;
-  String? dropLineSeverityResolved;
   var dropEmptyLine = false;
   String? attributeUndefined;
-  String? attributeMissingResolved;
-  String resolveMissing() => attributeMissingResolved ??=
+  AttributeMissing? attributeMissingResolved;
+  AttributeMissing resolveMissing() => attributeMissingResolved ??=
       attributeMissing ??
-      docAttrs['attribute-missing'] ??
-      Compliance.attributeMissing;
+      AttributeMissing.parse(
+        docAttrs['attribute-missing'] ?? Compliance.attributeMissing,
+      );
   final result = text.replaceAllMapped(attributeReferenceRx, (match) {
     // escaped attribute, return unescaped
     if (match.group(1) == rs || match.group(4) == rs) {
@@ -596,13 +564,12 @@ String subAttributes(
     } else {
       final key = downcase(match.group(2)!);
       switch (resolveMissing()) {
-        case 'drop':
+        case AttributeMissing.drop:
           drop = true;
           dropEmptyLine = true;
           return del;
-        case 'drop-line':
-          final severity = dropLineSeverityResolved ??= dropLineSeverity;
-          if (severity == 'info') {
+        case AttributeMissing.dropLine:
+          if (reportDroppedLine) {
             node.logger.info(
               'dropping line containing reference to missing attribute: $key',
             );
@@ -613,10 +580,10 @@ String subAttributes(
           drop = true;
           dropLine = true;
           return can;
-        case 'warn':
+        case AttributeMissing.warn:
           node.logger.warn('skipping reference to missing attribute: $key');
           return match.group(0)!;
-        default: // 'skip'
+        case AttributeMissing.skip:
           return match.group(0)!;
       }
     }
@@ -2258,9 +2225,7 @@ String extractPassthroughs(AbstractNode node, String text) {
           // NOTE we don't look for nested unconstrained pass macros
           return '${rs * (escapeCount - 1)}$boundary${match.group(5)}$boundary';
         }
-        final subs = boundary == '+++'
-            ? <String>[]
-            : List<String>.of(basicSubs);
+        final subs = boundary == '+++' ? <Sub>[] : List<Sub>.of(basicSubs);
 
         final passthruKey = passthrus.length;
         final text = match.group(5)!;
@@ -2471,16 +2436,17 @@ String restorePassthroughs(AbstractNode node, String text) {
 
 /// Resolves the comma-delimited [subs] list against the possible options.
 ///
-/// [type] selects the context (`'block'` or `'inline'`); [defaults] seeds
-/// incremental substitutions; [subject] names the subject in log messages.
-/// Returns the resolved substitutions, or `null` if no subs are found.
+/// [scope] says where the list is written; [defaults] seeds incremental
+/// substitutions; [subject] names the subject in log messages. Returns
+/// the resolved substitutions, or `null` if no subs are found. Names that
+/// are not substitutions allowed in [scope] are dropped with a warning.
 ///
 /// Port of `Substitutors#resolve_subs`.
-List<String>? resolveSubs(
+List<Sub>? resolveSubs(
   AbstractNode node,
   String? subs, [
-  String type = 'block',
-  List<String>? defaults,
+  SubsScope scope = SubsScope.block,
+  List<Sub>? defaults,
   String? subject,
 ]) {
   if (subs == null || subs.isEmpty) return null;
@@ -2506,21 +2472,24 @@ List<String>? resolveSubs(
     }
     final List<String> resolvedKeys;
     // special case to disable callouts for inline subs
-    if (type == 'inline' && (key == 'verbatim' || key == 'v')) {
-      resolvedKeys = basicSubs;
-    } else if (subGroups.containsKey(key)) {
-      resolvedKeys = subGroups[key]!;
-    } else if (type == 'inline' &&
+    if (scope == SubsScope.inline && (key == 'verbatim' || key == 'v')) {
+      resolvedKeys = _names(basicSubs);
+    } else if (subGroups[key] case final group?) {
+      resolvedKeys = _names(group);
+    } else if (scope == SubsScope.inline &&
         key.length == 1 &&
         subHints.containsKey(key)) {
       final resolvedKey = subHints[key]!;
-      resolvedKeys = subGroups[resolvedKey] ?? [resolvedKey];
+      resolvedKeys = switch (subGroups[resolvedKey]) {
+        final group? => _names(group),
+        null => [resolvedKey],
+      };
     } else {
       resolvedKeys = [key];
     }
 
     if (modifierOperation != null) {
-      candidates ??= defaults != null ? List<String>.of(defaults) : <String>[];
+      candidates ??= defaults != null ? _names(defaults) : <String>[];
       switch (modifierOperation) {
         case 'append':
           candidates.addAll(resolvedKeys);
@@ -2539,16 +2508,16 @@ List<String>? resolveSubs(
   if (found == null) return null;
   // weed out invalid options and remove duplicates (order is preserved;
   // first occurrence wins)
-  final options = subOptions[type]!;
-  final resolved = <String>[];
+  final resolved = <Sub>[];
+  final invalid = <String>[];
   for (final candidate in found) {
-    if (options.contains(candidate) && !resolved.contains(candidate)) {
-      resolved.add(candidate);
+    final sub = Sub.tryParse(candidate);
+    if (sub == null || !scope.allows(sub)) {
+      invalid.add(candidate);
+    } else if (!resolved.contains(sub)) {
+      resolved.add(sub);
     }
   }
-  final invalid = found
-      .where((candidate) => !resolved.contains(candidate))
-      .toList();
   if (invalid.isNotEmpty) {
     node.logger.warn(
       'invalid substitution type${invalid.length > 1 ? 's' : ''}'
@@ -2559,24 +2528,26 @@ List<String>? resolveSubs(
   return resolved;
 }
 
+List<String> _names(List<Sub> subs) => [for (final sub in subs) sub.asciidoc];
+
 /// Resolves [subs] for the block type.
 ///
 /// Port of `Substitutors#resolve_block_subs`.
-List<String>? resolveBlockSubs(
+List<Sub>? resolveBlockSubs(
   AbstractNode node,
   String? subs,
-  List<String>? defaults,
+  List<Sub>? defaults,
   String? subject,
-) => resolveSubs(node, subs, 'block', defaults, subject);
+) => resolveSubs(node, subs, SubsScope.block, defaults, subject);
 
 /// Resolves [subs] for the inline type (passthrough macro subject).
 ///
 /// Port of `Substitutors#resolve_pass_subs`.
-List<String>? resolvePassSubs(
+List<Sub>? resolvePassSubs(
   AbstractNode node,
   String? subs, [
   String subject = 'passthrough macro',
-]) => resolveSubs(node, subs, 'inline', null, subject);
+]) => resolveSubs(node, subs, SubsScope.inline, null, subject);
 
 /// Expands all groups in the comma-delimited [subs] and returns the
 /// result, or `null` if no subs are resolved (or [subs] is `none`).
@@ -2584,9 +2555,9 @@ List<String>? resolvePassSubs(
 /// [subject] names the subject in log messages.
 ///
 /// Port of `Substitutors#expand_subs`.
-List<String>? expandSubs(AbstractNode node, String subs, [String? subject]) {
+List<Sub>? expandSubs(AbstractNode node, String subs, [String? subject]) {
   if (subs == 'none') return null;
-  return resolveSubs(node, subs, 'inline', null, subject);
+  return resolveSubs(node, subs, SubsScope.inline, null, subject);
 }
 
 /// Commits the requested substitutions to [node].
@@ -2597,9 +2568,9 @@ List<String>? expandSubs(AbstractNode node, String subs, [String? subject]) {
 /// model. Returns the assigned subs when the content model needs none.
 ///
 /// Port of `Substitutors#commit_subs`.
-List<String>? commitSubs(AbstractBlock node) {
+List<Sub>? commitSubs(AbstractBlock node) {
   final defaultSubs = node is Block ? node.defaultSubs : null;
-  late List<String> effective;
+  late List<Sub> effective;
   if (defaultSubs == null) {
     switch (node.contentModel) {
       case ContentModel.simple:
@@ -2616,7 +2587,7 @@ List<String>? commitSubs(AbstractBlock node) {
         return node.subs;
     }
   } else {
-    effective = List<String>.of(defaultSubs);
+    effective = List<Sub>.of(defaultSubs);
   }
 
   final customSubs = node.attributes['subs'];
@@ -2625,7 +2596,7 @@ List<String>? commitSubs(AbstractBlock node) {
         resolveBlockSubs(node, customSubs, effective, node.context.asciidoc) ??
         [];
   } else {
-    node.subs = List<String>.of(effective);
+    node.subs = List<Sub>.of(effective);
   }
 
   // QUESTION delegate this logic to a method?
@@ -2635,8 +2606,8 @@ List<String>? commitSubs(AbstractBlock node) {
       node.style == 'source' &&
       syntaxHl != null &&
       syntaxHl.canHighlight) {
-    final idx = node.subs.indexOf('specialcharacters');
-    if (idx != -1) node.subs[idx] = 'highlight';
+    final idx = node.subs.indexOf(Sub.specialcharacters);
+    if (idx != -1) node.subs[idx] = Sub.highlight;
   }
 
   return null;

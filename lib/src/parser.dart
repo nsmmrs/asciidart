@@ -549,7 +549,7 @@ abstract final class Parser {
           docAttrs['doctitle'] = doctitleAttrVal = subAttributes(
             document,
             converted,
-            attributeMissing: 'skip',
+            attributeMissing: AttributeMissing.skip,
           );
         }
       }
@@ -967,9 +967,9 @@ abstract final class Parser {
                   newBlock,
                   BlockContext.paragraph,
                   lines: partBlock.lines,
-                ))..defaultSubs = List<String>.of(newBlock.subs);
+                ))..defaultSubs = List<Sub>.of(newBlock.subs);
                 paragraph.attributes.remove('subs');
-                paragraph.subs = List<String>.of(newBlock.subs);
+                paragraph.subs = List<Sub>.of(newBlock.subs);
                 newBlock.append(paragraph);
                 partBlock.lines.clear();
                 newBlock.subs.clear();
@@ -1509,13 +1509,15 @@ abstract final class Parser {
               if (target.contains(attrRefHead)) {
                 final expandedTarget = subAttributes(document, target);
                 if (expandedTarget.isEmpty &&
-                    (docAttrs['attribute-missing'] ?? _attributeMissing) ==
-                        'drop-line' &&
+                    AttributeMissing.parse(
+                          docAttrs['attribute-missing'] ?? _attributeMissing,
+                        ) ==
+                        AttributeMissing.dropLine &&
                     subAttributes(
                       document,
                       '$target ',
-                      attributeMissing: 'drop-line',
-                      dropLineSeverity: 'ignore',
+                      attributeMissing: AttributeMissing.dropLine,
+                      reportDroppedLine: false,
                     ).isEmpty) {
                   attrs.clear();
                   return null;
@@ -1601,13 +1603,15 @@ abstract final class Parser {
               if (target.contains(attrRefHead)) {
                 final expandedTarget = subAttributes(document, target);
                 if (expandedTarget.isEmpty &&
-                    (docAttrs['attribute-missing'] ?? _attributeMissing) ==
-                        'drop-line' &&
+                    AttributeMissing.parse(
+                          docAttrs['attribute-missing'] ?? _attributeMissing,
+                        ) ==
+                        AttributeMissing.dropLine &&
                     subAttributes(
                       document,
                       '$target ',
-                      attributeMissing: 'drop-line',
-                      dropLineSeverity: 'ignore',
+                      attributeMissing: AttributeMissing.dropLine,
+                      reportDroppedLine: false,
                     ).isEmpty) {
                   attrs.clear();
                   return null;
@@ -2192,13 +2196,13 @@ abstract final class Parser {
     //  end
     //end
 
-    if (result.hasSub('callouts')) {
+    if (result.hasSub(Sub.callouts)) {
       // Only simple content-model blocks can carry the callouts sub, so
       // this is always a Block here (lists and tables short-circuit in
       // _commitSubs).
       // No need to sub callouts if none are found when cataloging.
       if (!catalogCallouts((result as Block).source(), document)) {
-        result.removeSub('callouts');
+        result.removeSub(Sub.callouts);
       }
     }
 

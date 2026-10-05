@@ -34,10 +34,10 @@ sealed class BlockSubs {
 
   /// Honors the `subs` attribute, falling back to [defaults] and then to
   /// the built-in substitutions for the block's context.
-  const factory defaults([List<String>? defaults]) = _DefaultSubs;
+  const factory defaults([List<Sub>? defaults]) = _DefaultSubs;
 
   /// Applies exactly [subs] (ignores the `subs` attribute).
-  const factory fixed(List<String> subs) = _FixedSubs;
+  const factory fixed(List<Sub> subs) = _FixedSubs;
 
   /// Resolves the substitutions from [spec], a `subs` attribute value such
   /// as `'+quotes'` or `'normal,-replacements'`.
@@ -51,13 +51,13 @@ final class _NoSubs extends BlockSubs {
 final class _DefaultSubs extends BlockSubs {
   const new([this.defaults]);
 
-  final List<String>? defaults;
+  final List<Sub>? defaults;
 }
 
 final class _FixedSubs extends BlockSubs {
   const new(this.subs);
 
-  final List<String> subs;
+  final List<Sub> subs;
 }
 
 final class _SpecSubs extends BlockSubs {
@@ -101,15 +101,15 @@ class Block extends AbstractBlock {
         return;
       case _NoSubs():
         // Prevent subs from being resolved.
-        defaultSubs = <String>[];
+        defaultSubs = <Sub>[];
         attributes.remove('subs');
       case _DefaultSubs(:final defaults):
         // Subs attribute is honored; falls back to defaults, then to the
         // built-in defaults based on context.
-        defaultSubs = defaults == null ? null : List<String>.of(defaults);
+        defaultSubs = defaults == null ? null : List<Sub>.of(defaults);
       case _FixedSubs(subs: final fixed):
         // Subs attribute is not honored.
-        defaultSubs = List<String>.of(fixed);
+        defaultSubs = List<Sub>.of(fixed);
         attributes.remove('subs');
       case _SpecSubs(:final spec):
         defaultSubs = null;
@@ -126,7 +126,7 @@ class Block extends AbstractBlock {
   ///
   /// Internal: `null` defers to the content model defaults, an empty list
   /// prevents substitutions, and any other value seeds them.
-  List<String>? defaultSubs;
+  List<Sub>? defaultSubs;
 
   /// Returns the converted result of this block, per its content model.
   ///

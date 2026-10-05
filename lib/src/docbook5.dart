@@ -542,12 +542,12 @@ class Docbook5Converter extends BuiltInConverter {
 
   /// Converts the [node] stem block.
   String convertStem(Block node) {
-    final idx = node.subs.indexOf('specialcharacters');
+    final idx = node.subs.indexOf(Sub.specialcharacters);
     final String equation;
     if (idx != -1) {
       node.subs.removeAt(idx);
       equation = _s(node.content());
-      node.subs.insert(idx, 'specialcharacters');
+      node.subs.insert(idx, Sub.specialcharacters);
     } else {
       equation = _s(node.content());
     }

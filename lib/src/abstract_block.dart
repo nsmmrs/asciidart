@@ -146,7 +146,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// The substitutions applied to content in this block.
   ///
   /// Reassigned by `commitSubs`.
-  List<String> subs = <String>[];
+  List<Sub> subs = <Sub>[];
 
   String? _caption;
   String? _title;
@@ -416,11 +416,11 @@ abstract class AbstractBlock extends AbstractNode {
     _title = value;
   }
 
-  /// Whether the substitution [name] is enabled for this block.
-  bool hasSub(String name) => subs.contains(name);
+  /// Whether the substitution [sub] is enabled for this block.
+  bool hasSub(Sub sub) => subs.contains(sub);
 
   /// Removes the substitution [sub] from this block.
-  void removeSub(String sub) {
+  void removeSub(Sub sub) {
     subs.remove(sub);
   }
 

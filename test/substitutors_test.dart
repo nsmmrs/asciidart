@@ -696,7 +696,7 @@ Block blockFromString(
     ..lines = src.isEmpty
         ? <String>[]
         : src.withoutTrailingNewline().split('\n')
-    ..subs = List<String>.of(normalSubs);
+    ..subs = List<Sub>.of(normalSubs);
   return block;
 }
 
@@ -776,15 +776,15 @@ void main() {
       test('should expand subs passed to expand_subs', () {
         final para = blockFromString('{program}\n*bold*\n2 > 1');
         para.document!.attributes['program'] = 'Asciidoctor';
-        expect(expandSubs(para, 'specialchars'), ['specialcharacters']);
+        expect(expandSubs(para, 'specialchars'), [Sub.specialcharacters]);
         expect(expandSubs(para, 'none'), isNull);
         expect(expandSubs(para, 'normal'), [
-          'specialcharacters',
-          'quotes',
-          'attributes',
-          'replacements',
-          'macros',
-          'post_replacements',
+          Sub.specialcharacters,
+          Sub.quotes,
+          Sub.attributes,
+          Sub.replacements,
+          Sub.macros,
+          Sub.postReplacements,
         ]);
       });
 
@@ -2721,7 +2721,7 @@ void main() {
         para.document!.attributes['fn-disclaimer'] = applySubs(
           para,
           'footnote:[Only available with an _active_ subscription.]',
-          ['quotes'],
+          [Sub.quotes],
         );
         contentOf(para);
         final footnotes = (para.document! as Document).footnotes;
@@ -2946,7 +2946,7 @@ void main() {
         Block paraFor(String line) {
           final para = (Block(doc, BlockContext.paragraph))
             ..lines = [line]
-            ..subs = List<String>.of(normalSubs);
+            ..subs = List<Sub>.of(normalSubs);
           return para;
         }
 
@@ -2995,7 +2995,7 @@ void main() {
         Block paraFor(String line) {
           final para = (Block(doc, BlockContext.paragraph))
             ..lines = [line]
-            ..subs = List<String>.of(normalSubs);
+            ..subs = List<Sub>.of(normalSubs);
           return para;
         }
 
@@ -3862,7 +3862,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0].text, '<code>{code}</code>');
-        expect(passthroughs[0].subs, ['specialcharacters']);
+        expect(passthroughs[0].subs, [Sub.specialcharacters]);
       });
 
       test('collect inline double plus passthroughs', () {
@@ -3877,7 +3877,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0].text, '<code>{code}</code>');
-        expect(passthroughs[0].subs, ['specialcharacters']);
+        expect(passthroughs[0].subs, [Sub.specialcharacters]);
       });
 
       test('should not crash if role on passthrough is enclosed in quotes', () {
@@ -3919,7 +3919,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0].text, '<code>\n{code}\n</code>');
-        expect(passthroughs[0].subs, ['specialcharacters']);
+        expect(passthroughs[0].subs, [Sub.specialcharacters]);
       });
 
       test('collect multi-line inline double plus passthroughs', () {
@@ -3934,7 +3934,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0].text, '<code>\n{code}\n</code>');
-        expect(passthroughs[0].subs, ['specialcharacters']);
+        expect(passthroughs[0].subs, [Sub.specialcharacters]);
       });
 
       test('collect passthroughs from inline pass macro', () {
@@ -3951,7 +3951,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0].text, "<code>['code']</code>");
-        expect(passthroughs[0].subs, ['specialcharacters', 'quotes']);
+        expect(passthroughs[0].subs, [Sub.specialcharacters, Sub.quotes]);
       });
 
       test('collect multi-line passthroughs from inline pass macro', () {
@@ -3968,7 +3968,7 @@ void main() {
         );
         expect(passthroughs.length, 1);
         expect(passthroughs[0].text, "<code>['more\ncode']</code>");
-        expect(passthroughs[0].subs, ['specialcharacters', 'quotes']);
+        expect(passthroughs[0].subs, [Sub.specialcharacters, Sub.quotes]);
       });
 
       test('should find and replace placeholder duplicated by '
@@ -3989,7 +3989,7 @@ void main() {
         final result = extractPassthroughs(para, para.source());
         final passthroughs = passthroughsOf(para);
         expect(passthroughs.length, 1);
-        expect(passthroughs[0].subs, ['quotes', 'attributes']);
+        expect(passthroughs[0].subs, [Sub.quotes, Sub.attributes]);
         expect(restorePassthroughs(para, result), '<strong><html5></strong>');
       });
 
@@ -4038,9 +4038,8 @@ void main() {
       test('restore inline passthroughs without subs', () {
         final para = blockFromString('some ${passStart}0$passEnd to study');
         extractPassthroughs(para, '');
-        passthroughsOf(
-          para,
-        ).add(const Passthrough('<code>inline code</code>', subs: <String>[]));
+        passthroughsOf(para)
+            .add(const Passthrough('<code>inline code</code>', subs: <Sub>[]));
         expect(
           restorePassthroughs(para, para.source()),
           'some <code>inline code</code> to study',
@@ -4054,10 +4053,14 @@ void main() {
         );
         extractPassthroughs(para, '');
         passthroughsOf(para).add(
-          const Passthrough('<code>{code}</code>', subs: ['specialcharacters']),
+          const Passthrough(
+            '<code>{code}</code>',
+            subs: [Sub.specialcharacters],
+          ),
         );
-        passthroughsOf(para)
-            .add(const Passthrough('{language}', subs: ['specialcharacters']));
+        passthroughsOf(
+          para,
+        ).add(const Passthrough('{language}', subs: [Sub.specialcharacters]));
         expect(
           restorePassthroughs(para, para.source()),
           'some &lt;code&gt;{code}&lt;/code&gt; to study in the {language} programming language',
@@ -4635,12 +4638,12 @@ void main() {
         block.attributes['subs'] = 'quotes,normal';
         commitSubs(block);
         expect(block.subs, [
-          'quotes',
-          'specialcharacters',
-          'attributes',
-          'replacements',
-          'macros',
-          'post_replacements',
+          Sub.quotes,
+          Sub.specialcharacters,
+          Sub.attributes,
+          Sub.replacements,
+          Sub.macros,
+          Sub.postReplacements,
         ]);
       });
 
@@ -4661,7 +4664,7 @@ void main() {
         block.attributes['subs'] = 'specialcharacters';
         block.attributes['language'] = 'ruby';
         commitSubs(block);
-        expect(block.subs, ['highlight']);
+        expect(block.subs, [Sub.highlight]);
       });
 
       test('should resolve specialcharacters sub as highlight for '
@@ -4684,7 +4687,7 @@ void main() {
         block.attributes['subs'] = 'specialcharacters';
         block.attributes['language'] = 'ruby';
         commitSubs(block);
-        expect(block.subs, ['specialcharacters']);
+        expect(block.subs, [Sub.specialcharacters]);
       });
 
       test(
@@ -4701,7 +4704,7 @@ void main() {
             attributes: {'subs': 'quotes'},
           );
           block.attributes.remove('subs');
-          block.defaultSubs = <String>[];
+          block.defaultSubs = <Sub>[];
           expect(block.subs, isEmpty);
           commitSubs(block);
           expect(block.subs, isEmpty);
@@ -4719,7 +4722,7 @@ void main() {
           attributes: {'subs': 'quotes'},
         );
         block.attributes.remove('subs');
-        block.defaultSubs = <String>[];
+        block.defaultSubs = <Sub>[];
         expect(block.subs, isEmpty);
         commitSubs(block);
         expect(block.subs, isEmpty);
@@ -4735,11 +4738,11 @@ void main() {
           attributes: {'subs': 'quotes'},
         );
         block.attributes.remove('subs');
-        block.defaultSubs = <String>['specialcharacters'];
+        block.defaultSubs = <Sub>[Sub.specialcharacters];
         commitSubs(block);
-        expect(block.subs, ['specialcharacters']);
+        expect(block.subs, [Sub.specialcharacters]);
         commitSubs(block);
-        expect(block.subs, ['specialcharacters']);
+        expect(block.subs, [Sub.specialcharacters]);
       });
 
       test('should use subs from subs attribute if subs option is not '
@@ -4753,7 +4756,7 @@ void main() {
         expect(block.subs, isEmpty);
         // in this case, we have to call commit_subs to resolve the subs
         commitSubs(block);
-        expect(block.subs, ['quotes']);
+        expect(block.subs, [Sub.quotes]);
       });
 
       test('should use subs from subs attribute if subs option passed '
@@ -4767,9 +4770,9 @@ void main() {
           attributes: {'subs': 'quotes'},
         ))..defaultSubs = null;
         commitSubs(block);
-        expect(block.subs, ['quotes']);
+        expect(block.subs, [Sub.quotes]);
         commitSubs(block);
-        expect(block.subs, ['quotes']);
+        expect(block.subs, [Sub.quotes]);
       });
 
       test('should use built-in subs if subs option passed to block '
@@ -4780,21 +4783,21 @@ void main() {
         final block = (Block(doc, BlockContext.paragraph))..defaultSubs = null;
         commitSubs(block);
         expect(block.subs, [
-          'specialcharacters',
-          'quotes',
-          'attributes',
-          'replacements',
-          'macros',
-          'post_replacements',
+          Sub.specialcharacters,
+          Sub.quotes,
+          Sub.attributes,
+          Sub.replacements,
+          Sub.macros,
+          Sub.postReplacements,
         ]);
         commitSubs(block);
         expect(block.subs, [
-          'specialcharacters',
-          'quotes',
-          'attributes',
-          'replacements',
-          'macros',
-          'post_replacements',
+          Sub.specialcharacters,
+          Sub.quotes,
+          Sub.attributes,
+          Sub.replacements,
+          Sub.macros,
+          Sub.postReplacements,
         ]);
       });
     });

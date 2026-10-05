@@ -1586,12 +1586,12 @@ void main() {
               stubbedContent: 'x',
             )
             ..style = 'latexmath'
-            ..subs = ['specialcharacters', 'quotes'];
+            ..subs = [Sub.specialcharacters, Sub.quotes];
       convOf(doc).convert(node);
-      expect(node.subs, ['specialcharacters', 'quotes']);
-      node.subs = ['quotes'];
+      expect(node.subs, [Sub.specialcharacters, Sub.quotes]);
+      node.subs = [Sub.quotes];
       convOf(doc).convert(node);
-      expect(node.subs, ['quotes']);
+      expect(node.subs, [Sub.quotes]);
     });
   });
 
