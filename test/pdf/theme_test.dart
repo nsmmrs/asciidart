@@ -22,12 +22,12 @@ const String fixtures = 'vendor/asciidoctor-pdf/test/spec/fixtures';
 Theme theme(String text) => load(text).$1;
 
 late Directory _dir;
+var _files = 0;
 
 /// A theme file holding [text]; returns its path.
 String themeFile(String text) {
-  final file = File(
-    '${_dir.path}/theme-${DateTime.now().microsecondsSinceEpoch}-theme.yml',
-  )..writeAsStringSync(text);
+  final file = File('${_dir.path}/theme-${_files++}-theme.yml')
+    ..writeAsStringSync(text);
   return file.path;
 }
 
@@ -611,7 +611,7 @@ font:
       expect(t['base_font_color'], const HexColor('000000'));
       expect(t.string('code_font_family'), 'Courier');
       expect(t.string('conum_font_family'), 'Courier');
-      expect(t.directory, File(fixtures).absolute.path);
+      expect(t.directory, File(fixtures).absolute.path.replaceAll(r'\', '/'));
     });
 
     test('code and conum fonts follow codespan; titles follow headings', () {
