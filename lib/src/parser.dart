@@ -2600,6 +2600,9 @@ abstract final class Parser {
       if (match.group(1) != null) {
         id = match.group(1)!;
         reftext = match.group(2);
+        if (reftext != null && reftext.contains(']')) {
+          reftext = reftext.replaceAll(r'\]', ']');
+        }
         if (reftext != null && reftext.contains(attrRefHead)) {
           reftext = subAttributes(document, reftext);
           if (reftext.isEmpty) continue;

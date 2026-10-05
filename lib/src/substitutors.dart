@@ -1580,6 +1580,9 @@ String _subMacrosLinks(
       if (match.group(2) != null) {
         id = match.group(2);
         reftext = match.group(3);
+        if (reftext != null && reftext.contains(rSb)) {
+          reftext = reftext.replaceAll(escRSb, rSb);
+        }
       } else {
         id = match.group(4);
         reftext = match.group(5);

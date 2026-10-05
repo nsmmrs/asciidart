@@ -491,13 +491,14 @@ final RegExp blockTocMacroRx = RegExp(
 // Inline macros.
 
 /// Matches an anchor (i.e., id + optional reference text) in the flow
-/// of text.
+/// of text. In the shorthand form, an escaped `\]` is part of the
+/// reference text (#3788).
 final RegExp inlineAnchorRx = RegExp(
   r'(\\)?(?:\[\[(['
   '${ccAlpha}_:][$ccWord'
-  r'\-:.]*)(?:, *('
+  r'\-:.]*)(?:, *((?:\\\]|'
   '$ccAny'
-  r'+?))? ?\]\]|anchor:(['
+  r')+?))? ?\]\]|anchor:(['
   '${ccAlpha}_:][$ccWord'
   r'\-:.]*)\[(?:\]|('
   '$ccAny'
@@ -509,9 +510,9 @@ final RegExp inlineAnchorRx = RegExp(
 final RegExp inlineAnchorScanRx = RegExp(
   r'(?:^|[^\\\[])\[\[(['
   '${ccAlpha}_:][$ccWord'
-  r'\-:.]*)(?:, *('
+  r'\-:.]*)(?:, *((?:\\\]|'
   '$ccAny'
-  r'+?))? ?\]\]|(?:^|[^\\])anchor:(['
+  r')+?))? ?\]\]|(?:^|[^\\])anchor:(['
   '${ccAlpha}_:][$ccWord'
   r'\-:.]*)\[(?:\]|('
   '$ccAny'
