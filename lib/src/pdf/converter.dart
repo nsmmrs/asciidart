@@ -290,27 +290,46 @@ final class PdfConverter extends BuiltInConverter
     _tocAtTop = tocAtTop;
     _tocDone = false;
     _tocNoHeader = _tocNoFooter = false;
-    if (tocAtTop) {
-      _addToc('toc', breakAfter: titlePage && _s('toc_break_after') != 'auto');
-    }
-    if (titlePage) _out.add(_bodyMarker());
-    final columns = (_n('page_columns') ?? 1).toInt();
-    _inColumns = !book && columns >= 2;
-    if (_inColumns) {
-      final body = _collect(() {
+    // The table of contents and the body, indented by the theme's
+    // section indent (the gem's `indent_section`).
+    final indented = _collect(() {
+      if (tocAtTop) {
+        _addToc(
+          'toc',
+          breakAfter: titlePage && _s('toc_break_after') != 'auto',
+        );
+      }
+      if (titlePage) _out.add(_bodyMarker());
+      final columns = (_n('page_columns') ?? 1).toInt();
+      _inColumns = !book && columns >= 2;
+      if (_inColumns) {
+        final body = _collect(() {
+          _traverse(document);
+          _footnotes(document);
+        });
+        _out.add(
+          ColumnsBox(
+            body,
+            count: columns,
+            gap: (_n('page_column_gap') ?? _rootFontSize).toDouble(),
+          ),
+        );
+      } else {
         _traverse(document);
         _footnotes(document);
-      });
+      }
+    });
+    if (_sectionIndent case (final left, final right)) {
       _out.add(
-        ColumnsBox(
-          body,
-          count: columns,
-          gap: (_n('page_column_gap') ?? _rootFontSize).toDouble(),
+        BlockBox(
+          indented,
+          style: BoxStyle(
+            margin: EdgeInsets(left: left, right: right),
+          ),
         ),
       );
     } else {
-      _traverse(document);
-      _footnotes(document);
+      _out.addAll(indented);
     }
     _backCover = false;
     final backCover = _resolveBackgroundImage(
@@ -322,10 +341,12 @@ final class PdfConverter extends BuiltInConverter
       _out.add(const BreakBox.page());
       if (backCover.image case final image?) {
         _out.add(
-          CustomBox(_Absolute((page) => _drawPageImage(page.canvas, image))),
+          CustomBox(
+            _Absolute((page) => _drawPageImage(page.canvas, image), fill: true),
+          ),
         );
       } else {
-        _out.add(const CustomBox(_Nothing()));
+        _out.add(CustomBox(_Absolute((_) {}, fill: true)));
       }
       _backCover = true;
     }
@@ -354,7 +375,7 @@ final class PdfConverter extends BuiltInConverter
     var result = layout.layout(_out);
     // The index, once the pages of its terms are known.
     if (_indexSlot case final slot?) {
-      _bodyStart = (result.anchors[_bodyAnchor]?.page ?? 0) + 1;
+      _bodyStart = (result.anchors[_bodyAnchor]?.page ?? result.pageCount) + 1;
       _anchorPages = {
         for (final MapEntry(:key, :value) in result.anchors.entries)
           key: value.page + 1,
@@ -363,7 +384,7 @@ final class PdfConverter extends BuiltInConverter
       _fillIndex(slot);
       result = layout.layout(_out);
     }
-    _bodyStart = (result.anchors[_bodyAnchor]?.page ?? 0) + 1;
+    _bodyStart = (result.anchors[_bodyAnchor]?.page ?? result.pageCount) + 1;
     _anchorPages = {
       for (final MapEntry(:key, :value) in result.anchors.entries)
         key: value.page + 1,
@@ -766,6 +787,7 @@ final class PdfConverter extends BuiltInConverter
             _s('heading_text_align') ??
             _baseTextAlign,
         font: font,
+        outdent: true,
       );
     }
     final levels = _tocLevels;
@@ -924,6 +946,32 @@ final class PdfConverter extends BuiltInConverter
     );
   }
 
+  /// The theme's section indent (left and right), if any.
+  (double, double)? get _sectionIndent =>
+      switch (_theme.value('section_indent')) {
+        ThemeNumber(:final value) when value != 0 => (
+          value.toDouble(),
+          value.toDouble(),
+        ),
+        ThemeList(:final values) when values.isNotEmpty => (
+          _toPoints(values[0]),
+          values.length > 1 ? _toPoints(values[1]) : 0.0,
+        ),
+        _ => null,
+      };
+
+  /// [margin] reaching out over the section indent (the gem's
+  /// `outdent_section`).
+  EdgeInsets _outdented(EdgeInsets margin) {
+    final (left, right) = _sectionIndent ?? (0.0, 0.0);
+    return EdgeInsets(
+      top: margin.top,
+      right: margin.right - right,
+      bottom: margin.bottom,
+      left: margin.left - left,
+    );
+  }
+
   /// Whether the document has a front cover, or a back cover, page.
   bool _frontCover = false;
   bool _backCover = false;
@@ -939,10 +987,12 @@ final class PdfConverter extends BuiltInConverter
     if (cover == null || cover.symbol == '~') return false;
     if (cover.image case final image?) {
       _out.add(
-        CustomBox(_Absolute((page) => _drawPageImage(page.canvas, image))),
+        CustomBox(
+          _Absolute((page) => _drawPageImage(page.canvas, image), fill: true),
+        ),
       );
     } else {
-      _out.add(const CustomBox(_Nothing()));
+      _out.add(CustomBox(_Absolute((_) {}, fill: true)));
     }
     _out.add(const BreakBox.page(force: true));
     return true;
@@ -1484,7 +1534,15 @@ final class PdfConverter extends BuiltInConverter
     // An empty index is left out.
     final indexSection = sectname == 'index';
     if (indexSection && _index.isEmpty) return;
-    final title = _numberedTitle(section);
+    var title = _numberedTitle(section);
+    final separator =
+        section.attr('separator') ?? _document.attr('title-separator') ?? '';
+    if (separator.isNotEmpty && title.contains('$separator ')) {
+      final at = title.lastIndexOf('$separator ');
+      title =
+          '${title.substring(0, at)}\n<em class="subtitle">'
+          '${title.substring(at + separator.length + 1)}</em>';
+    }
     final hlevel = (section.level ?? 0) + 1;
     final align =
         _s('heading_h${hlevel}_text_align') ??
@@ -1525,12 +1583,15 @@ final class PdfConverter extends BuiltInConverter
         arrange: !startedNew,
         hasContent: section.blocks.isNotEmpty,
         marks: _sectionMarks(section, part: part),
+        outdent: true,
       );
     }
     _sections.add((section, anchor));
     if (indexSection) {
       final slot = _indexSlot = <LayoutBox>[];
-      _out.add(BlockBox(slot));
+      _out.add(
+        BlockBox(slot, style: BoxStyle(margin: _outdented(EdgeInsets.zero))),
+      );
     } else {
       _traverse(section);
     }
@@ -1576,6 +1637,7 @@ final class PdfConverter extends BuiltInConverter
       anchor: node.id,
       arrange: !last,
       hasContent: !last,
+      outdent: node.parent is Section,
     );
   }
 
@@ -1649,6 +1711,7 @@ final class PdfConverter extends BuiltInConverter
     bool hasContent = false,
     Map<String, String> marks = const {},
     _FontState? font,
+    bool outdent = false,
   }) {
     font ??= _headingFont(level);
     var text = title;
@@ -1659,7 +1722,13 @@ final class PdfConverter extends BuiltInConverter
       if (font.style == 'bold' || font.style == 'bold_italic') 'bold',
       if (font.style == 'italic' || font.style == 'bold_italic') 'italic',
     };
-    final box = _textBox(text, font, align: align, inheritedStyles: styles);
+    final box = _textBox(
+      text,
+      font,
+      align: align,
+      inheritedStyles: styles,
+      normalize: false,
+    );
     final marginTop =
         (_n('heading_h${level}_margin_top') ?? _n('heading_margin_top') ?? 0)
             .toDouble();
@@ -1688,7 +1757,9 @@ final class PdfConverter extends BuiltInConverter
       CustomBox(
         content,
         style: BoxStyle(
-          margin: EdgeInsets(top: marginTop, bottom: marginBottom),
+          margin: outdent
+              ? _outdented(EdgeInsets(top: marginTop, bottom: marginBottom))
+              : EdgeInsets(top: marginTop, bottom: marginBottom),
           anchor: anchor,
           marks: marks,
         ),
@@ -2161,8 +2232,10 @@ final class PdfConverter extends BuiltInConverter
         children,
         style: BoxStyle(
           padding: _padding('abstract_padding'),
-          margin: EdgeInsets(
-            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+          margin: _outdented(
+            EdgeInsets(
+              bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+            ),
           ),
           anchor: node.id,
         ),
@@ -5924,7 +5997,12 @@ final class PdfConverter extends BuiltInConverter
       }
     });
     _renderedFootnotes.addAll(footnotes);
-    _out.add(CustomBox(_Stacked(items, bottom: bottom)));
+    _out.add(
+      CustomBox(
+        _Stacked(items, bottom: bottom),
+        style: BoxStyle(margin: _outdented(EdgeInsets.zero)),
+      ),
+    );
   }
 
   String _inlineKbd(Inline node) {
@@ -6484,18 +6562,23 @@ final class _PageTopGap implements CustomContent {
   (double, double) intrinsicWidths() => content.intrinsicWidths();
 }
 
-/// Content drawn where [paint] draws it, taking no room.
+/// Content drawn where [paint] draws it, taking no room (or, with
+/// [fill], the rest of the region: a cover page).
 final class _Absolute implements CustomContent {
-  const new(this.paint);
+  const new(this.paint, {this.fill = false});
 
   final void Function(PdfPage page) paint;
+  final bool fill;
 
   @override
   CustomPlacement? place(
     double width,
     double available, {
     required bool atTop,
-  }) => CustomPlacement(height: 0, paint: (page, x, top) => paint(page));
+  }) => CustomPlacement(
+    height: fill && available.isFinite ? available : 0,
+    paint: (page, x, top) => paint(page),
+  );
 
   @override
   double minHeight(double width) => 0;
