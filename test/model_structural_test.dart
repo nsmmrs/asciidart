@@ -82,7 +82,8 @@ class FakeLogger extends LoggerBase {
 class FakeDocument extends AbstractBlock implements NodeDocument {
   /// Creates a document with [attributes] (and optional [parent], which a
   /// document-context node ignores, as in Ruby).
-  new({super.attributes, AbstractBlock? parent}) : super(parent, 'document');
+  new({super.attributes, AbstractBlock? parent})
+    : super(parent, BlockContext.document);
 
   /// The document catalog (only `refs` is used here).
   @override
@@ -171,7 +172,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
   /// Mirrors `Document#<<`.
   @override
   void append(AbstractBlock block) {
-    if (block.context == 'section') assignNumeral(block as Section);
+    if (block.context == BlockContext.section) assignNumeral(block as Section);
     super.append(block);
   }
 }
@@ -278,13 +279,13 @@ void main() {
     test('constructor links document and copies attributes', () {
       final doc = FakeDocument();
       final passed = <String, String>{'a': '1'};
-      final block = Block(doc, 'paragraph', attributes: passed);
+      final block = Block(doc, BlockContext.paragraph, attributes: passed);
       expect(block.document, same(doc));
       expect(block.parent, same(doc));
       expect(block.attributes, equals({'a': '1'}));
       passed['a'] = 'mutated';
       expect(block.attributes['a'], equals('1'));
-      expect(block.context, equals('paragraph'));
+      expect(block.contextName, equals('paragraph'));
       expect(block.nodeName, equals('paragraph'));
       expect(block.id, isNull);
     });
@@ -306,7 +307,7 @@ void main() {
 
     test('attr reads node attributes with default', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph', attributes: {'a': '1'});
+      final block = Block(doc, BlockContext.paragraph, attributes: {'a': '1'});
       expect(block.attr('a'), equals('1'));
       expect(block.attr('missing'), isNull);
       expect(block.attr('missing', 'dflt'), equals('dflt'));
@@ -314,7 +315,7 @@ void main() {
 
     test('attr falls back to document attributes', () {
       final doc = FakeDocument(attributes: {'x': 'dx', 'b': 'db'});
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.attr('x', 'dflt', 'x'), equals('dx'));
       expect(block.attr('a', 'dflt', 'b'), equals('db'));
       expect(block.attr('a', 'dflt', 'missing'), equals('dflt'));
@@ -324,13 +325,13 @@ void main() {
     });
 
     test('attr fallback is skipped for parentless nodes', () {
-      final block = Block(null, 'paragraph');
+      final block = Block(null, BlockContext.paragraph);
       expect(block.attr('x', 'dflt', 'x'), equals('dflt'));
     });
 
     test('hasAttr checks presence, value and fallback', () {
       final doc = FakeDocument(attributes: {'x': 'dx'});
-      final block = Block(doc, 'paragraph', attributes: {'a': '1'});
+      final block = Block(doc, BlockContext.paragraph, attributes: {'a': '1'});
       expect(block.hasAttr('a'), isTrue);
       expect(block.hasAttr('missing'), isFalse);
       expect(block.hasAttr('a', '1'), isTrue);
@@ -343,7 +344,7 @@ void main() {
 
     test('setAttr and removeAttr', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.setAttr('a', ''), isTrue);
       expect(block.attributes['a'], equals(''));
       expect(block.setAttr('a', '1', overwrite: false), isFalse);
@@ -356,7 +357,7 @@ void main() {
 
     test('options', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.hasOption('header'), isFalse);
       block
         ..setOption('header')
@@ -367,7 +368,11 @@ void main() {
 
     test('roles', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph', attributes: {'role': 'a b c'});
+      final block = Block(
+        doc,
+        BlockContext.paragraph,
+        attributes: {'role': 'a b c'},
+      );
       expect(block.role, equals('a b c'));
       expect(block.roles, equals(['a', 'b', 'c']));
       expect(block.hasRole(), isTrue);
@@ -375,17 +380,21 @@ void main() {
       expect(block.hasRole('a'), isFalse);
       expect(block.includesRole('b'), isTrue);
       expect(block.includesRole('bc'), isFalse);
-      final plain = Block(doc, 'paragraph');
+      final plain = Block(doc, BlockContext.paragraph);
       expect(plain.roles, equals([]));
       expect(plain.hasRole(), isFalse);
       expect(plain.includesRole('b'), isFalse);
-      final empty = Block(doc, 'paragraph', attributes: {'role': '  '});
+      final empty = Block(
+        doc,
+        BlockContext.paragraph,
+        attributes: {'role': '  '},
+      );
       expect(empty.roles, equals([]));
     });
 
     test('role setter assigns the role', () {
       final doc = FakeDocument();
-      final block = (Block(doc, 'paragraph'))..role = 'a b';
+      final block = (Block(doc, BlockContext.paragraph))..role = 'a b';
       expect(block.attributes['role'], equals('a b'));
       block.role = 'x y';
       expect(block.attributes['role'], equals('x y'));
@@ -393,7 +402,7 @@ void main() {
 
     test('addRole and removeRole', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.addRole('a'), isTrue);
       expect(block.attributes['role'], equals('a'));
       expect(block.addRole('a'), isFalse);
@@ -408,7 +417,7 @@ void main() {
 
     test('updateAttributes merges and returns attributes', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph', attributes: {'a': '1'});
+      final block = Block(doc, BlockContext.paragraph, attributes: {'a': '1'});
       final result = block.updateAttributes({'b': '2'});
       expect(result, same(block.attributes));
       expect(block.attributes, equals({'a': '1', 'b': '2'}));
@@ -416,7 +425,7 @@ void main() {
 
     test('reftext is null when unset; hasReftext', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.reftext, isNull);
       expect(block.hasReftext, isFalse);
       block.setAttr('reftext', 'Text');
@@ -427,7 +436,7 @@ void main() {
       final doc = FakeDocument();
       final a = Section(doc, 1);
       final b = Section(doc, 1);
-      final para = (Block(a, 'paragraph'))..parent = b;
+      final para = (Block(a, BlockContext.paragraph))..parent = b;
       expect(para.parent, same(b));
       expect(para.document, same(doc));
     });
@@ -439,9 +448,9 @@ void main() {
       expect(doc.level, equals(0));
       final section = Section(doc, 1);
       expect(section.level, equals(1));
-      final para = Block(section, 'paragraph');
+      final para = Block(section, BlockContext.paragraph);
       expect(para.level, equals(1));
-      final orphan = Block(null, 'paragraph');
+      final orphan = Block(null, BlockContext.paragraph);
       expect(orphan.level, isNull);
     });
 
@@ -449,7 +458,7 @@ void main() {
       final doc = FakeDocument();
       final section = Section(doc, 1);
       final other = Section(doc, 1);
-      final para = Block(other, 'paragraph');
+      final para = Block(other, BlockContext.paragraph);
       section.append(para);
       expect(para.parent, same(section));
       expect(para.document, same(doc));
@@ -458,14 +467,14 @@ void main() {
       // Appending again keeps the same parent without churn.
       section.append(para);
       expect(para.parent, same(section));
-      expect(Block(doc, 'paragraph').hasBlocks, isFalse);
+      expect(Block(doc, BlockContext.paragraph).hasBlocks, isFalse);
     });
 
     test('sections selects section children', () {
       final doc = FakeDocument();
       final section = Section(doc, 1);
       final child = Section(section, 2);
-      final para = Block(section, 'paragraph');
+      final para = Block(section, BlockContext.paragraph);
       section
         ..append(child)
         ..append(para);
@@ -476,14 +485,15 @@ void main() {
 
     test('context setter refreshes node name', () {
       final doc = FakeDocument();
-      final block = (Block(doc, 'paragraph'))..context = 'sidebar';
-      expect(block.context, equals('sidebar'));
+      final block = Block(doc, BlockContext.paragraph)
+        ..context = BlockContext.sidebar;
+      expect(block.contextName, equals('sidebar'));
       expect(block.nodeName, equals('sidebar'));
     });
 
     test('title accessors convert a set title', () {
       final doc = Document();
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.title, isNull);
       expect(block.hasTitle, isFalse);
       expect(block.sourceTitle, isNull);
@@ -498,7 +508,7 @@ void main() {
 
     test('hasSub and removeSub', () {
       final doc = FakeDocument();
-      final item = ListItem(ListBlock(doc, 'ulist'), 'x');
+      final item = ListItem(ListBlock(doc, BlockContext.ulist), 'x');
       expect(item.hasSub('quotes'), isTrue);
       expect(item.hasSub('callouts'), isFalse);
       item.removeSub('quotes');
@@ -509,7 +519,7 @@ void main() {
 
     test('listMarkerKeyword', () {
       final doc = FakeDocument();
-      final list = (ListBlock(doc, 'olist'))..style = 'lowerroman';
+      final list = (ListBlock(doc, BlockContext.olist))..style = 'lowerroman';
       expect(list.listMarkerKeyword(), equals('i'));
       expect(list.listMarkerKeyword('upperalpha'), equals('A'));
       expect(list.listMarkerKeyword('arabic'), isNull);
@@ -519,7 +529,7 @@ void main() {
 
     test('convert plays back attributes and converts', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph', attributes: {'a': '1'});
+      final block = Block(doc, BlockContext.paragraph, attributes: {'a': '1'});
       final result = block.convert();
       expect(result, equals('<paragraph>'));
       expect(doc.playbacked, equals([block]));
@@ -530,31 +540,31 @@ void main() {
       final doc = FakeDocument();
       final section = Section(doc, 1);
       section
-        ..append(Block(section, 'paragraph'))
-        ..append(Block(section, 'paragraph'));
+        ..append(Block(section, BlockContext.paragraph))
+        ..append(Block(section, BlockContext.paragraph));
       expect(section.content(), equals('<paragraph>\n<paragraph>'));
     });
 
     test('caption, admonition textlabel and captionedTitle', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.caption, isNull);
       block.caption = 'Figure 1. ';
       expect(block.caption, equals('Figure 1. '));
       final admonition = Block(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: {'textlabel': 'NOTE:'},
       );
       expect(admonition.caption, equals('NOTE:'));
       // captionedTitle reads the caption field (not the admonition label).
       expect(block.captionedTitle(), equals('Figure 1. '));
-      expect(Block(doc, 'paragraph').captionedTitle(), equals(''));
+      expect(Block(doc, BlockContext.paragraph).captionedTitle(), equals(''));
     });
 
     test('file and lineno follow the source location', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.file, isNull);
       expect(block.lineno, isNull);
       block.sourceLocation = Cursor('doc.adoc', null, 'doc.adoc', 7);
@@ -564,22 +574,22 @@ void main() {
 
     test('xreftext without title returns null', () {
       final doc = FakeDocument();
-      expect(Block(doc, 'paragraph').xreftext(), isNull);
+      expect(Block(doc, BlockContext.paragraph).xreftext(), isNull);
     });
 
     test('isBlock and isInline', () {
       final doc = FakeDocument();
       expect(doc.isBlock, isTrue);
       expect(doc.isInline, isFalse);
-      expect(Block(doc, 'paragraph').isBlock, isTrue);
+      expect(Block(doc, BlockContext.paragraph).isBlock, isTrue);
     });
 
     test('nextAdjacentBlock walks siblings and lists', () {
       final doc = FakeDocument();
       final section = Section(doc, 1);
       doc.append(section);
-      final list = ListBlock(section, 'dlist');
-      final para = Block(section, 'paragraph');
+      final list = ListBlock(section, BlockContext.dlist);
+      final para = Block(section, BlockContext.paragraph);
       section
         ..append(list)
         ..append(para);
@@ -663,22 +673,23 @@ void main() {
 
     test('assignCaption builds figure captions with counters', () {
       final doc = FakeDocument(attributes: {'figure-caption': 'Figure'});
-      final img = Block(doc, 'image')
+      final img = Block(doc, BlockContext.image)
         ..title = 'Tiger'
-        ..assignCaption(null, 'figure');
+        ..assignCaption(null, figure: true);
       expect(img.caption, equals('Figure 1. '));
       expect(img.numeral, equals('1'));
       // A second captioned figure continues the counter.
-      final img2 = Block(doc, 'image')
+      final img2 = Block(doc, BlockContext.image)
         ..title = 'Lion'
-        ..assignCaption(null, 'figure');
+        ..assignCaption(null, figure: true);
       expect(img2.caption, equals('Figure 2. '));
       // Explicit captions win; untitled blocks stay captionless.
-      final explicit = Block(doc, 'image')
+      final explicit = Block(doc, BlockContext.image)
         ..title = 'T'
         ..assignCaption('Custom. ');
       expect(explicit.caption, equals('Custom. '));
-      final untitled = (Block(doc, 'image'))..assignCaption(null, 'figure');
+      final untitled = Block(doc, BlockContext.image)
+        ..assignCaption(null, figure: true);
       expect(untitled.caption, isNull);
     });
   });
@@ -686,78 +697,114 @@ void main() {
   group('Block', () {
     test('content models default per context', () {
       final doc = FakeDocument();
-      expect(Block(doc, 'paragraph').contentModel, equals('simple'));
-      expect(Block(doc, 'listing').contentModel, equals('verbatim'));
-      expect(Block(doc, 'literal').contentModel, equals('verbatim'));
-      expect(Block(doc, 'image').contentModel, equals('empty'));
-      expect(Block(doc, 'audio').contentModel, equals('empty'));
-      expect(Block(doc, 'video').contentModel, equals('empty'));
-      expect(Block(doc, 'stem').contentModel, equals('raw'));
-      expect(Block(doc, 'pass').contentModel, equals('raw'));
-      expect(Block(doc, 'open').contentModel, equals('compound'));
-      expect(Block(doc, 'page_break').contentModel, equals('empty'));
-      expect(Block(doc, 'thematic_break').contentModel, equals('empty'));
       expect(
-        Block(doc, 'paragraph', contentModel: 'verbatim').contentModel,
-        equals('verbatim'),
+        Block(doc, BlockContext.paragraph).contentModel,
+        equals(ContentModel.simple),
+      );
+      expect(
+        Block(doc, BlockContext.listing).contentModel,
+        equals(ContentModel.verbatim),
+      );
+      expect(
+        Block(doc, BlockContext.literal).contentModel,
+        equals(ContentModel.verbatim),
+      );
+      expect(
+        Block(doc, BlockContext.image).contentModel,
+        equals(ContentModel.empty),
+      );
+      expect(
+        Block(doc, BlockContext.audio).contentModel,
+        equals(ContentModel.empty),
+      );
+      expect(
+        Block(doc, BlockContext.video).contentModel,
+        equals(ContentModel.empty),
+      );
+      expect(
+        Block(doc, BlockContext.stem).contentModel,
+        equals(ContentModel.raw),
+      );
+      expect(
+        Block(doc, BlockContext.pass).contentModel,
+        equals(ContentModel.raw),
+      );
+      expect(
+        Block(doc, BlockContext.open).contentModel,
+        equals(ContentModel.compound),
+      );
+      expect(
+        Block(doc, BlockContext.pageBreak).contentModel,
+        equals(ContentModel.empty),
+      );
+      expect(
+        Block(doc, BlockContext.thematicBreak).contentModel,
+        equals(ContentModel.empty),
+      );
+      expect(
+        Block(
+          doc,
+          BlockContext.paragraph,
+          contentModel: ContentModel.verbatim,
+        ).contentModel,
+        equals(ContentModel.verbatim),
       );
     });
 
     test('source string is prepared into lines; line lists are copied', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph', source: 'a  \nb\t\n');
+      final block = Block(doc, BlockContext.paragraph, source: 'a  \nb\t\n');
       expect(block.lines, equals(['a', 'b']));
       expect(block.source(), equals('a\nb'));
       final input = ['x', 'y'];
-      final listed = Block(doc, 'paragraph', lines: input);
+      final listed = Block(doc, BlockContext.paragraph, lines: input);
       expect(listed.lines, equals(['x', 'y']));
       input.add('mutated');
       expect(listed.lines, equals(['x', 'y']));
-      expect(Block(doc, 'paragraph').lines, equals([]));
-      expect(Block(doc, 'paragraph', source: '').lines, equals([]));
-      expect(Block(doc, 'paragraph').source(), equals(''));
+      expect(Block(doc, BlockContext.paragraph).lines, equals([]));
+      expect(Block(doc, BlockContext.paragraph, source: '').lines, equals([]));
+      expect(Block(doc, BlockContext.paragraph).source(), equals(''));
     });
 
     test('simple content with deferred subs returns raw source', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph', source: 'a<b>\nc');
+      final block = Block(doc, BlockContext.paragraph, source: 'a<b>\nc');
       expect(block.subs, equals([]));
       expect(block.content(), equals('a<b>\nc'));
     });
 
     test('verbatim content strips blank edge lines', () {
       final doc = FakeDocument();
-      final listing = Block(doc, 'listing', source: '\n\ncode\n\n');
+      final listing = Block(doc, BlockContext.listing, source: '\n\ncode\n\n');
       expect(listing.content(), equals('code'));
       // The source preparation rstrips every line up front (verified).
-      final indented = Block(doc, 'literal', source: '  a\n  \n  b  \n\n');
+      final indented = Block(
+        doc,
+        BlockContext.literal,
+        source: '  a\n  \n  b  \n\n',
+      );
       expect(indented.content(), equals('  a\n\n  b'));
-      final single = Block(doc, 'listing', source: 'solo');
+      final single = Block(doc, BlockContext.listing, source: 'solo');
       expect(single.content(), equals('solo'));
-      final blank = Block(doc, 'listing', source: '\n\n');
+      final blank = Block(doc, BlockContext.listing, source: '\n\n');
       expect(blank.content(), equals(''));
     });
 
     test('compound content joins children; empty and unknown models', () {
       final doc = FakeDocument();
-      final open = Block(doc, 'open')..contentModel = 'compound';
-      open.append(Block(open, 'paragraph', source: 'a'));
+      final open = Block(doc, BlockContext.open)
+        ..contentModel = ContentModel.compound;
+      open.append(Block(open, BlockContext.paragraph, source: 'a'));
       expect(open.content(), equals('<paragraph>'));
-      expect(Block(doc, 'image').content(), isNull);
+      expect(Block(doc, BlockContext.image).content(), isNull);
       expect(testLogger.warns, isEmpty);
-      final weird = Block(doc, 'paragraph', contentModel: 'bogus');
-      expect(weird.content(), isNull);
-      expect(
-        testLogger.warns.single.text,
-        contains("unknown content model 'bogus'"),
-      );
     });
 
     test('explicit no subs disables resolution', () {
       final doc = FakeDocument();
       final block = Block(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         attributes: {'subs': 'quotes'},
         subs: const BlockSubs.none(),
       );
@@ -772,7 +819,7 @@ void main() {
       expect(
         Block(
           doc,
-          'paragraph',
+          BlockContext.paragraph,
           subs: const BlockSubs.defaults(['quotes']),
         ).subs,
         equals(['quotes']),
@@ -780,22 +827,25 @@ void main() {
       expect(
         Block(
           doc,
-          'paragraph',
+          BlockContext.paragraph,
           attributes: {'subs': 'quotes'},
           subs: const BlockSubs.fixed(['quotes']),
         ).subs,
         equals(['quotes']),
       );
       expect(
-        Block(doc, 'paragraph', subs: const BlockSubs.spec('normal')).subs,
+        Block(
+          doc,
+          BlockContext.paragraph,
+          subs: const BlockSubs.spec('normal'),
+        ).subs,
         equals(normalSubs),
       );
     });
 
-    test('blockname aliases context; toString shape', () {
+    test('toString shape', () {
       final doc = FakeDocument();
-      final block = Block(doc, 'paragraph', source: 'hi');
-      expect(block.blockname, equals('paragraph'));
+      final block = Block(doc, BlockContext.paragraph, source: 'hi');
       expect(
         block.toString(),
         matches(
@@ -804,8 +854,9 @@ void main() {
           ),
         ),
       );
-      final compound = Block(doc, 'open')..contentModel = 'compound';
-      compound.append(Block(compound, 'paragraph'));
+      final compound = Block(doc, BlockContext.open)
+        ..contentModel = ContentModel.compound;
+      compound.append(Block(compound, BlockContext.paragraph));
       expect(compound.toString(), contains('blocks: 1'));
       expect(compound.toString(), contains('contentModel: compound'));
     });
@@ -814,10 +865,10 @@ void main() {
   group('Inline', () {
     test('construction assigns fields and node name', () {
       final doc = FakeDocument();
-      final para = Block(doc, 'paragraph');
+      final para = Block(doc, BlockContext.paragraph);
       final inline = Inline(
         para,
-        'anchor',
+        InlineContext.anchor,
         text: 'Text',
         id: 'a1',
         type: 'ref',
@@ -827,7 +878,7 @@ void main() {
       expect(inline.id, equals('a1'));
       expect(inline.type, equals('ref'));
       expect(inline.target, equals('t'));
-      expect(inline.context, equals('anchor'));
+      expect(inline.contextName, equals('anchor'));
       expect(inline.nodeName, equals('inline_anchor'));
       expect(inline.document, same(doc));
       expect(inline.isBlock, isFalse);
@@ -837,29 +888,44 @@ void main() {
 
     test('convert', () {
       final doc = FakeDocument();
-      final para = Block(doc, 'paragraph');
-      final inline = Inline(para, 'quoted', text: 'hi', type: 'strong');
+      final para = Block(doc, BlockContext.paragraph);
+      final inline = Inline(
+        para,
+        InlineContext.quoted,
+        text: 'hi',
+        type: 'strong',
+      );
       expect(inline.convert(), equals('<inline_quoted:strong=hi>'));
       expect(doc.converter.converted, equals([inline]));
     });
 
     test('alt returns the alt attribute or empty string', () {
       final doc = FakeDocument();
-      final para = Block(doc, 'paragraph');
-      expect(Inline(para, 'image').alt, equals(''));
+      final para = Block(doc, BlockContext.paragraph);
+      expect(Inline(para, InlineContext.image).alt, equals(''));
       expect(
-        Inline(para, 'image', attributes: {'alt': 'Alt'}).alt,
+        Inline(para, InlineContext.image, attributes: {'alt': 'Alt'}).alt,
         equals('Alt'),
       );
     });
 
     test('reftext nodes: text is the reftext', () {
       final doc = Document();
-      final para = Block(doc, 'paragraph');
-      final ref = Inline(para, 'anchor', text: 'Name', type: 'ref');
-      final bib = Inline(para, 'anchor', text: '[1]', type: 'bibref');
-      final other = Inline(para, 'anchor', text: 'Name', type: 'link');
-      final empty = Inline(para, 'anchor', type: 'ref');
+      final para = Block(doc, BlockContext.paragraph);
+      final ref = Inline(para, InlineContext.anchor, text: 'Name', type: 'ref');
+      final bib = Inline(
+        para,
+        InlineContext.anchor,
+        text: '[1]',
+        type: 'bibref',
+      );
+      final other = Inline(
+        para,
+        InlineContext.anchor,
+        text: 'Name',
+        type: 'link',
+      );
+      final empty = Inline(para, InlineContext.anchor, type: 'ref');
       expect(ref.hasReftext, isTrue);
       expect(bib.hasReftext, isTrue);
       expect(other.hasReftext, isFalse);
@@ -879,7 +945,7 @@ void main() {
         bare.numbered,
         bare.index,
       ], equals([1, false, false, 0]));
-      expect(bare.context, equals('section'));
+      expect(bare.contextName, equals('section'));
       final doc = FakeDocument();
       final top = (Section(doc, 1)..numbered = true);
       expect([
@@ -909,7 +975,7 @@ void main() {
       section.append(Section(section, 2));
       expect(section.hasSections, isTrue);
       // Non-section children do not count.
-      section.append(Block(section, 'paragraph'));
+      section.append(Block(section, BlockContext.paragraph));
       expect(section.sections, hasLength(1));
     });
 
@@ -953,8 +1019,8 @@ void main() {
       final section = (Section(doc, 1)..numbered = true)
         ..title = 'A'
         ..numeral = '1';
-      section.append(Block(section, 'paragraph'));
-      section.append(Block(section, 'paragraph'));
+      section.append(Block(section, BlockContext.paragraph));
+      section.append(Block(section, BlockContext.paragraph));
       expect(
         section.toString(),
         matches(RegExp(r'^Section\(level: 1, title: "1\. A", blocks: 2\)$')),
@@ -1012,9 +1078,9 @@ void main() {
 
     test('taken IDs gain a numeric suffix from index 2', () {
       final doc = FakeDocument();
-      doc.catalog.refs['_foo'] = Block(doc, 'paragraph');
+      doc.catalog.refs['_foo'] = Block(doc, BlockContext.paragraph);
       expect(Section.generateId('Foo', doc), equals('_foo_2'));
-      doc.catalog.refs['_foo_2'] = Block(doc, 'paragraph');
+      doc.catalog.refs['_foo_2'] = Block(doc, BlockContext.paragraph);
       expect(Section.generateId('Foo', doc), equals('_foo_3'));
     });
 
@@ -1035,26 +1101,26 @@ void main() {
   group('List', () {
     test('outline detection and item aliases', () {
       final doc = FakeDocument();
-      final ulist = ListBlock(doc, 'ulist');
-      final olist = ListBlock(doc, 'olist');
+      final ulist = ListBlock(doc, BlockContext.ulist);
+      final olist = ListBlock(doc, BlockContext.olist);
       expect(ulist.isOutline, isTrue);
       expect(olist.isOutline, isTrue);
-      expect(ListBlock(doc, 'dlist').isOutline, isFalse);
-      expect(ListBlock(doc, 'colist').isOutline, isFalse);
+      expect(ListBlock(doc, BlockContext.dlist).isOutline, isFalse);
+      expect(ListBlock(doc, BlockContext.colist).isOutline, isFalse);
       final item = ListItem(ulist, 'x');
       ulist.append(item);
       expect(ulist.items, equals(ulist.blocks));
       expect(ulist.hasItems, isTrue);
-      expect(ListBlock(doc, 'ulist').hasItems, isFalse);
+      expect(ListBlock(doc, BlockContext.ulist).hasItems, isFalse);
     });
 
     test('convert passes through; colist advances callouts', () {
       final doc = FakeDocument();
-      final ulist = ListBlock(doc, 'ulist');
+      final ulist = ListBlock(doc, BlockContext.ulist);
       expect(ulist.convert(), equals('<ulist>'));
       expect(doc.playbacked, hasLength(1));
 
-      final colist = ListBlock(doc, 'colist');
+      final colist = ListBlock(doc, BlockContext.colist);
       expect(doc.callouts.register(1), equals('CO1-1'));
       expect(doc.callouts.calloutIds(1), equals('CO1-1'));
       final result = colist.convert();
@@ -1065,7 +1131,7 @@ void main() {
 
     test('toString shape', () {
       final doc = FakeDocument();
-      final list = ListBlock(doc, 'ulist');
+      final list = ListBlock(doc, BlockContext.ulist);
       list.append(ListItem(list, 'x'));
       expect(
         list.toString(),
@@ -1079,12 +1145,12 @@ void main() {
   group('ListItem', () {
     test('constructor takes level and copies default subs', () {
       final doc = FakeDocument();
-      final list = (ListBlock(doc, 'ulist'))..level = 2;
+      final list = (ListBlock(doc, BlockContext.ulist))..level = 2;
       final item = ListItem(list, 'text');
       expect(item.level, equals(2));
       expect(item.subs, equals(normalSubs));
       expect(item.subs, isNot(same(normalSubs)));
-      expect(item.context, equals('list_item'));
+      expect(item.contextName, equals('list_item'));
       expect(item.list, same(list));
       expect(item.marker, isNull);
       item.marker = '*';
@@ -1093,7 +1159,7 @@ void main() {
 
     test('hasText and text', () {
       final doc = Document();
-      final list = ListBlock(doc, 'ulist');
+      final list = ListBlock(doc, BlockContext.ulist);
       expect(ListItem(list).hasText, isFalse);
       expect(ListItem(list, '').hasText, isFalse);
       final item = ListItem(list, 'a');
@@ -1110,36 +1176,36 @@ void main() {
 
     test('simple and compound content', () {
       final doc = FakeDocument();
-      final list = ListBlock(doc, 'ulist');
+      final list = ListBlock(doc, BlockContext.ulist);
       final bare = ListItem(list, 'x');
       expect(bare.isSimple, isTrue);
       expect(bare.isCompound, isFalse);
       final nested = ListItem(list, 'x');
-      nested.append(ListBlock(nested, 'olist'));
+      nested.append(ListBlock(nested, BlockContext.olist));
       expect(nested.isSimple, isTrue);
       final complex = ListItem(list, 'x');
-      complex.append(Block(complex, 'paragraph'));
+      complex.append(Block(complex, BlockContext.paragraph));
       expect(complex.isSimple, isFalse);
       expect(complex.isCompound, isTrue);
     });
 
     test('foldFirst folds the first block into the text', () {
       final doc = FakeDocument();
-      final list = ListBlock(doc, 'ulist');
+      final list = ListBlock(doc, BlockContext.ulist);
       final folded = (ListItem(list))..subs = [];
-      folded.append(Block(folded, 'paragraph', source: 'cont'));
+      folded.append(Block(folded, BlockContext.paragraph, source: 'cont'));
       folded.foldFirst();
       expect(folded.text, equals('cont'));
       expect(folded.blocks, isEmpty);
       final prefixed = (ListItem(list, 'item'))..subs = [];
-      prefixed.append(Block(prefixed, 'paragraph', source: 'cont'));
+      prefixed.append(Block(prefixed, BlockContext.paragraph, source: 'cont'));
       prefixed.foldFirst();
       expect(prefixed.text, equals('item\ncont'));
     });
 
     test('toString shape', () {
       final doc = FakeDocument();
-      final list = ListBlock(doc, 'ulist');
+      final list = ListBlock(doc, BlockContext.ulist);
       final item = ListItem(list, 'x');
       expect(
         item.toString(),
@@ -1154,7 +1220,7 @@ void main() {
     test('constructor resolves table widths', () {
       final doc = FakeDocument();
       final table = Table(doc, <String, String>{});
-      expect(table.context, equals('table'));
+      expect(table.contextName, equals('table'));
       expect(table.pcwidth, equals(100));
       expect(table.rows.body, isEmpty);
       expect(table.columns, isEmpty);
@@ -1332,7 +1398,7 @@ void main() {
         '  x  \n\n',
         const CellSpec(style: 'literal'),
       );
-      expect(cell.contentModel, equals('simple'));
+      expect(cell.contentModel, equals(ContentModel.simple));
       table.rows.body.add([cell]);
       table
         ..header = TableHeader.undecided
@@ -1342,7 +1408,7 @@ void main() {
       // The row stays in the body, rebuilt as a literal cell.
       final rebuilt = table.rows.body.single.single;
       expect(rebuilt, isNot(same(cell)));
-      expect(rebuilt.contentModel, equals('verbatim'));
+      expect(rebuilt.contentModel, equals(ContentModel.verbatim));
       expect(rebuilt.source(), equals('  x'));
       expect(rebuilt.subs, same(basicSubs));
     });
@@ -1378,7 +1444,7 @@ void main() {
       final table = Table(doc, <String, String>{});
       final column = Column(table, 0);
       expect(column.table, same(table));
-      expect(column.context, equals('table_column'));
+      expect(column.contextName, equals('table_column'));
       expect(column.style, isNull);
       expect(
         column.attributes,
@@ -1445,7 +1511,7 @@ void main() {
       expect(cell.source(), equals('x\ny\n\nz'));
       expect(cell.colspan, equals(2));
       expect(cell.rowspan, equals(3));
-      expect(cell.contentModel, equals('simple'));
+      expect(cell.contentModel, equals(ContentModel.simple));
       expect(cell.subs, same(normalSubs));
       expect(cell.column, same(col));
       // Spans stay out of the attributes; the rest merge in.
@@ -1510,11 +1576,11 @@ void main() {
         '  lit  \n\n',
         const CellSpec(style: 'literal'),
       );
-      expect(cell.contentModel, equals('simple'));
+      expect(cell.contentModel, equals(ContentModel.simple));
       table.header = TableHeader.none;
       final rebuilt = cell.reinitialize(hasHeader: false);
       expect(rebuilt, isNot(same(cell)));
-      expect(rebuilt.contentModel, equals('verbatim'));
+      expect(rebuilt.contentModel, equals(ContentModel.verbatim));
       expect(rebuilt.source(), equals('  lit'));
       expect(rebuilt.subs, same(basicSubs));
       // Explicit header rows just clear the deferred arguments.
@@ -1536,7 +1602,7 @@ void main() {
         const CellSpec(style: 'literal'),
       );
       expect(cell.source(), equals('  lit\n  lines'));
-      expect(cell.contentModel, equals('verbatim'));
+      expect(cell.contentModel, equals(ContentModel.verbatim));
       expect(cell.subs, same(basicSubs));
       final blanky = Cell(col, '\n\nlit', const CellSpec(style: 'literal'));
       expect(blanky.source(), equals('lit'));
@@ -1615,7 +1681,7 @@ void main() {
       final asciidocCol = Column(table, 1, const ColumnSpec(style: 'asciidoc'));
       expect(() => Cell(asciidocCol, 't', null), throwsA(anything));
       // A null-attributes cell on a plain column is a normal cell.
-      expect(Cell(col, 't', null).contentModel, equals('simple'));
+      expect(Cell(col, 't', null).contentModel, equals(ContentModel.simple));
     });
 
     test('asciidoc cell builds a nested document', () {
@@ -1979,14 +2045,21 @@ void main() {
   group('substitution seams', () {
     test('converting titles and texts applies substitutions', () {
       final doc = Document();
-      final block = Block(doc, 'paragraph')..title = 'T';
+      final block = Block(doc, BlockContext.paragraph)..title = 'T';
       expect(block.title, equals('T'));
-      expect(ListItem(ListBlock(doc, 'ulist'), 'x').text, equals('x'));
+      expect(
+        ListItem(ListBlock(doc, BlockContext.ulist), 'x').text,
+        equals('x'),
+      );
       final col = Column(Table(doc, <String, String>{}), 0);
       expect(Cell(col, 'x').text, equals('x'));
-      final withRef = Block(doc, 'paragraph', attributes: {'reftext': 'R'});
+      final withRef = Block(
+        doc,
+        BlockContext.paragraph,
+        attributes: {'reftext': 'R'},
+      );
       expect(withRef.reftext, equals('R'));
-      final withAlt = Block(doc, 'image', attributes: {'alt': 'A'});
+      final withAlt = Block(doc, BlockContext.image, attributes: {'alt': 'A'});
       expect(withAlt.alt, equals('A'));
       expect(block.xreftext('full'), equals('T'));
     });

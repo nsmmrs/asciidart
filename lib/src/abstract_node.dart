@@ -28,6 +28,8 @@ import 'package:asciidart/src/path_resolver.dart';
 import 'package:asciidart/src/remote.dart';
 import 'package:asciidart/src/substitutors.dart' as substitutors;
 
+export 'package:asciidart/src/context.dart';
+
 /// Line feed. Port of the `LF` constant in `lib/asciidoctor.rb`.
 const String lf = '\n';
 
@@ -132,34 +134,21 @@ abstract interface class NodeDocument {
 /// The state and methods on this class are common to all content segments
 /// in an AsciiDoc document. Port of `Asciidoctor::AbstractNode`.
 abstract class AbstractNode {
-  /// Creates a node with [parent] and [context].
+  /// Creates a node with [parent].
   ///
-  /// When [context] is `'document'`, the node refers to itself as its
-  /// document (and must implement [NodeDocument]), ignoring [parent] (which
-  /// stays `null`);
-  /// otherwise the document is taken from [parent] (which may be `null`,
-  /// leaving [document] unset until the node is attached with [parent] or
-  /// `AbstractBlock.append`). [attributes] is copied; [nodeName] overrides
-  /// the default node name, which is [context].
-  new(
-    AbstractBlock? parent,
-    String context, {
-    Map<String, String>? attributes,
-    String? nodeName,
-  }) : _parent = parent,
-       _context = context,
-       _nodeName = nodeName ?? context,
-       attributes = attributes == null
-           ? <String, String>{}
-           : Map<String, String>.of(attributes) {
-    if (context == 'document') {
-      if (this is! NodeDocument) {
-        throw StateError(
-          'A node with context "document" must implement NodeDocument.',
-        );
-      }
+  /// A document refers to itself as its document (and must implement
+  /// [NodeDocument]), ignoring [parent] (which stays `null`); otherwise the
+  /// document is taken from [parent] (which may be `null`, leaving
+  /// [document] unset until the node is attached with [parent] or
+  /// `AbstractBlock.append`). [attributes] is copied.
+  new(AbstractBlock? parent, {Map<String, String>? attributes})
+    : _parent = parent,
+      attributes = attributes == null
+          ? <String, String>{}
+          : Map<String, String>.of(attributes) {
+    if (this case final NodeDocument document) {
       _parent = null;
-      _document = this as NodeDocument;
+      _document = document;
     } else if (parent != null) {
       _document = parent.document;
     }
@@ -171,8 +160,6 @@ abstract class AbstractNode {
   /// The id of this node.
   String? id;
 
-  String _context;
-  String _nodeName;
   AbstractBlock? _parent;
   NodeDocument? _document;
 
@@ -182,20 +169,13 @@ abstract class AbstractNode {
   /// Whether this node is an inline node.
   bool get isInline;
 
-  /// The context (type qualifier) of this node, e.g. `'paragraph'`.
-  String get context => _context;
+  /// The name Asciidoctor gives the kind of this node (its context), e.g.
+  /// `'paragraph'`, as templates and extensions see it.
+  String get contextName;
 
-  /// Reassigns the context and re-derives [nodeName] from it.
-  ///
-  /// Defined here so every subclass shares the same behavior; meant for
-  /// blocks.
-  set context(String value) {
-    _context = value;
-    _nodeName = value;
-  }
-
-  /// The name of this node (the context, except on `Inline` nodes).
-  String get nodeName => _nodeName;
+  /// The name of this node, and its default convert transform: the
+  /// context name, prefixed with `inline_` for inline elements.
+  String get nodeName;
 
   /// The parent block of this node.
   AbstractBlock? get parent => _parent;

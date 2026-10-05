@@ -31,6 +31,7 @@ import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/constants.dart';
+import 'package:asciidart/src/context.dart';
 import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
@@ -44,6 +45,15 @@ import 'package:asciidart/src/substitutors.dart' as substitutors;
 import 'package:asciidart/src/text_case.dart';
 import 'package:meta/meta.dart';
 
+/// How a macro processor receives the attribute list of its macro.
+enum MacroAttributes {
+  /// Parsed into named and positional attributes.
+  parsed,
+
+  /// As written, in the `text` attribute.
+  text,
+}
+
 /// The configuration of a processor.
 ///
 /// Each processor family reads the settings that apply to it: block
@@ -54,6 +64,7 @@ final class ProcessorConfig {
   /// Creates a configuration.
   new({
     this.contentModel,
+    this.macroAttributes = MacroAttributes.parsed,
     List<String>? positionalAttrs,
     Map<String, String>? defaultAttrs,
     Set<String>? contexts,
@@ -65,10 +76,12 @@ final class ProcessorConfig {
        defaultAttrs = defaultAttrs ?? <String, String>{},
        contexts = contexts ?? <String>{'open', 'paragraph'};
 
-  /// How the content of a block or macro is parsed: `compound`, `simple`,
-  /// `verbatim`, `raw`, `empty` or `skip` for blocks; `attributes` or
-  /// `text` for macros. Defaults per processor family.
-  String? contentModel;
+  /// How the content of a block is parsed (block processors). Defaults to
+  /// [ContentModel.compound].
+  ContentModel? contentModel;
+
+  /// How a macro's attribute list is handled (macro processors).
+  MacroAttributes macroAttributes;
 
   /// The names assigned to the positional attributes, in order.
   List<String> positionalAttrs;
@@ -210,15 +223,15 @@ abstract class Processor {
 
   /// Creates a block node and links it to [parent].
   ///
-  /// [context] is the block context (e.g. `'paragraph'`), [source] the raw
-  /// source text, and [attrs] the block attributes. [contentModel] and
-  /// [subs] mirror the corresponding [Block] constructor options.
+  /// [context] is the kind of block, [source] the raw source text, and
+  /// [attrs] the block attributes. [contentModel] and [subs] mirror the
+  /// corresponding [Block] constructor options.
   Block createBlock(
     AbstractBlock parent,
-    String context,
+    BlockContext context,
     String? source,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
   }) => Block(
     parent,
@@ -233,10 +246,10 @@ abstract class Processor {
   /// (see [createBlock]).
   Block createBlockFromLines(
     AbstractBlock parent,
-    String context,
+    BlockContext context,
     List<String> lines,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
   }) => Block(
     parent,
@@ -249,11 +262,11 @@ abstract class Processor {
 
   /// Creates a list node and links it to [parent].
   ///
-  /// [context] is the list context (`'ulist'`, `'olist'`, `'colist'` or
-  /// `'dlist'`) and [attrs] the attributes to set on the list block.
+  /// [context] is the kind of list and [attrs] the attributes to set on
+  /// the list block.
   ListBlock createList(
     AbstractBlock parent,
-    String context, [
+    BlockContext context, [
     Map<String, String>? attrs,
   ]) {
     final list = ListBlock(parent, context);
@@ -274,7 +287,7 @@ abstract class Processor {
   Block createImageBlock(
     AbstractBlock parent,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
   }) {
     final target = attrs['target'];
     if (target == null) {
@@ -291,7 +304,7 @@ abstract class Processor {
     final title = attrs.remove('title');
     final block = createBlock(
       parent,
-      'image',
+      BlockContext.image,
       null,
       attrs,
       contentModel: contentModel,
@@ -299,19 +312,19 @@ abstract class Processor {
     if (title != null) {
       block
         ..title = title
-        ..assignCaption(attrs.remove('caption'), 'figure');
+        ..assignCaption(attrs.remove('caption'), figure: true);
     }
     return block;
   }
 
   /// Creates an inline node with [text] and binds it to [parent].
   ///
-  /// [context] is the inline context (e.g. `'quoted'`, `'anchor'`). For a
-  /// `'quoted'` node the [type] defaults to `'unquoted'`; [target],
-  /// [attributes] and [id] are stored on the node.
+  /// [context] is the kind of inline element. For a quoted node the [type]
+  /// defaults to `'unquoted'`; [target], [attributes] and [id] are stored
+  /// on the node.
   Inline createInline(
     AbstractBlock? parent,
-    String context,
+    InlineContext context,
     String? text, {
     String? type,
     String? target,
@@ -321,7 +334,7 @@ abstract class Processor {
     parent,
     context,
     text: text,
-    type: context == 'quoted' ? (type ?? 'unquoted') : type,
+    type: context == InlineContext.quoted ? (type ?? 'unquoted') : type,
     target: target,
     attributes: attributes,
     id: id,
@@ -377,11 +390,11 @@ abstract class Processor {
     AbstractBlock parent,
     String? source,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
   }) => createBlock(
     parent,
-    'paragraph',
+    BlockContext.paragraph,
     source,
     attrs,
     contentModel: contentModel,
@@ -393,11 +406,11 @@ abstract class Processor {
     AbstractBlock parent,
     String? source,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
   }) => createBlock(
     parent,
-    'open',
+    BlockContext.open,
     source,
     attrs,
     contentModel: contentModel,
@@ -409,11 +422,11 @@ abstract class Processor {
     AbstractBlock parent,
     String? source,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
   }) => createBlock(
     parent,
-    'example',
+    BlockContext.example,
     source,
     attrs,
     contentModel: contentModel,
@@ -425,11 +438,11 @@ abstract class Processor {
     AbstractBlock parent,
     String? source,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
   }) => createBlock(
     parent,
-    'pass',
+    BlockContext.pass,
     source,
     attrs,
     contentModel: contentModel,
@@ -441,11 +454,11 @@ abstract class Processor {
     AbstractBlock parent,
     String? source,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
   }) => createBlock(
     parent,
-    'listing',
+    BlockContext.listing,
     source,
     attrs,
     contentModel: contentModel,
@@ -457,11 +470,11 @@ abstract class Processor {
     AbstractBlock parent,
     String? source,
     Map<String, String> attrs, {
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
   }) => createBlock(
     parent,
-    'literal',
+    BlockContext.literal,
     source,
     attrs,
     contentModel: contentModel,
@@ -478,7 +491,7 @@ abstract class Processor {
     String? id,
   }) => createInline(
     parent,
-    'anchor',
+    InlineContext.anchor,
     text,
     type: type,
     target: target,
@@ -492,8 +505,13 @@ abstract class Processor {
     String? text, {
     String? type,
     Map<String, String>? attributes,
-  }) =>
-      createInline(parent, 'quoted', text, type: type, attributes: attributes);
+  }) => createInline(
+    parent,
+    InlineContext.quoted,
+    text,
+    type: type,
+    attributes: attributes,
+  );
 }
 
 /// An abstract base class for the named (syntax) processor families
@@ -787,7 +805,7 @@ typedef BlockProcessorCallback = AbstractBlock? Function(
 class BlockProcessor extends NamedProcessor {
   /// Creates a block processor with [name] and [config].
   new([super.name, super.config]) {
-    config.contentModel ??= 'compound';
+    config.contentModel ??= ContentModel.compound;
   }
 
   /// The process callback assigned through the registration DSL.
@@ -857,9 +875,7 @@ typedef InlineMacroProcessorCallback = Inline? Function(
 /// attribute (content model `text`).
 abstract class MacroProcessor extends NamedProcessor {
   /// Creates a macro processor with [name] and [config].
-  new([super.name, super.config]) {
-    config.contentModel ??= 'attributes';
-  }
+  new([super.name, super.config]);
 
   /// Declares how the macro attribute list maps to named attributes (see
   /// [NamedProcessor.resolveAttributes]) and selects the `attributes`
@@ -867,13 +883,13 @@ abstract class MacroProcessor extends NamedProcessor {
   @override
   void resolveAttributes([List<String> specs = const <String>[]]) {
     super.resolveAttributes(specs);
-    config.contentModel = 'attributes';
+    config.macroAttributes = MacroAttributes.parsed;
   }
 
   /// Passes the raw attribute list through as the `text` attribute
   /// instead of parsing it.
   void passAttributesAsText() {
-    config.contentModel = 'text';
+    config.macroAttributes = MacroAttributes.text;
   }
 }
 

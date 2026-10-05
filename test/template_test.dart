@@ -210,7 +210,7 @@ void main() {
       final doc = parseDoc('content');
       final inline = Inline(
         doc,
-        'quoted',
+        InlineContext.quoted,
         text: '<em>x</em>',
         type: 'emphasis',
       );

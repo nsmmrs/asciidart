@@ -284,33 +284,29 @@ abstract final class Parser {
   };
 
   /// Port of `LAYOUT_BREAK_CHARS`.
-  static const Map<String, String> _layoutBreakChars = <String, String>{
-    "'": 'thematic_break',
-    '<': 'page_break',
+  static const Map<String, BlockContext> _layoutBreakChars = {
+    "'": BlockContext.thematicBreak,
+    '<': BlockContext.pageBreak,
   };
 
   /// Port of `MARKDOWN_THEMATIC_BREAK_CHARS`.
-  static const Map<String, String> _markdownThematicBreakChars =
-      <String, String>{
-        '-': 'thematic_break',
-        '*': 'thematic_break',
-        '_': 'thematic_break',
-      };
+  static const Map<String, BlockContext> _markdownThematicBreakChars = {
+    '-': BlockContext.thematicBreak,
+    '*': BlockContext.thematicBreak,
+    '_': BlockContext.thematicBreak,
+  };
 
   /// Port of `HYBRID_LAYOUT_BREAK_CHARS`.
-  static const Map<String, String> _hybridLayoutBreakChars = <String, String>{
-    "'": 'thematic_break',
-    '<': 'page_break',
-    '-': 'thematic_break',
-    '*': 'thematic_break',
-    '_': 'thematic_break',
+  static const Map<String, BlockContext> _hybridLayoutBreakChars = {
+    ..._layoutBreakChars,
+    ..._markdownThematicBreakChars,
   };
 
   /// Port of `NESTABLE_LIST_CONTEXTS`.
-  static const List<String> _nestableListContexts = <String>[
-    'ulist',
-    'olist',
-    'dlist',
+  static const List<BlockContext> _nestableListContexts = [
+    BlockContext.ulist,
+    BlockContext.olist,
+    BlockContext.dlist,
   ];
 
   /// Port of `ORDERED_LIST_STYLES` (match order is significant).
@@ -813,7 +809,7 @@ abstract final class Parser {
     // Check if we are at the start of processing the document.
     var hasHeader = false;
     final parentDocument = parent is Document ? parent : null;
-    if (parent.context == 'document' &&
+    if (parent.context == BlockContext.document &&
         parent.blocks.isEmpty &&
         ((hasHeader = parentDocument?.hasHeader ?? false) ||
             _takeInvalidHeader(attrs) ||
@@ -823,8 +819,8 @@ abstract final class Parser {
       if (hasHeader || (book && attrs['1'] != 'abstract')) {
         intro = preamble = Block(
           document,
-          'preamble',
-          contentModel: 'compound',
+          BlockContext.preamble,
+          contentModel: ContentModel.compound,
         );
         if (book && document.hasAttr('preface-title')) {
           preamble.title = document.attr('preface-title');
@@ -944,31 +940,32 @@ abstract final class Parser {
               if (newBlock.style != 'partintro') {
                 // If this is already a normal open block, simply add the
                 // partintro style.
-                if (newBlock.style == 'open' && newBlock.context == 'open') {
+                if (newBlock.style == 'open' &&
+                    newBlock.context == BlockContext.open) {
                   newBlock.style = 'partintro';
                 } else {
                   final newIntro = Block(
                     section,
-                    'open',
-                    contentModel: 'compound',
+                    BlockContext.open,
+                    contentModel: ContentModel.compound,
                   );
                   newBlock.parent = newIntro;
                   newIntro.style = 'partintro';
                   section.blocks.add(newIntro);
                   intro = newIntro;
                 }
-              } else if (newBlock.contentModel == 'simple') {
+              } else if (newBlock.contentModel == ContentModel.simple) {
                 // If this is a [partintro] paragraph, convert it to a
                 // [partintro] open block w/ single paragraph. (Only a
                 // Block can have the simple model; lists and tables
                 // never reach this branch.)
                 final partBlock = newBlock as Block;
-                newBlock.contentModel = 'compound';
+                newBlock.contentModel = ContentModel.compound;
                 // Give the paragraph the open block's resolved subs as a
                 // fixed list.
                 final paragraph = (Block(
                   newBlock,
-                  'paragraph',
+                  BlockContext.paragraph,
                   lines: partBlock.lines,
                 ))..defaultSubs = List<String>.of(newBlock.subs);
                 paragraph.attributes.remove('subs');
@@ -980,23 +977,24 @@ abstract final class Parser {
             } else if (section.blocks.length == 1) {
               final firstBlock = section.blocks[0];
               // Open the [partintro] open block for appending.
-              if (intro == null && firstBlock.contentModel == 'compound') {
+              if (intro == null &&
+                  firstBlock.contentModel == ContentModel.compound) {
                 _logger.error(
                   'illegal block content outside of partintro block',
                   at: blockCursor,
                 );
-              } else if (firstBlock.contentModel != 'compound') {
+              } else if (firstBlock.contentModel != ContentModel.compound) {
                 // Rebuild [partintro] paragraph as an open block.
                 final newIntro = Block(
                   section,
-                  'open',
-                  contentModel: 'compound',
+                  BlockContext.open,
+                  contentModel: ContentModel.compound,
                 );
                 newBlock.parent = newIntro;
                 newIntro.style = 'partintro';
                 if (firstBlock.style == 'partintro') {
                   firstBlock
-                    ..context = 'paragraph'
+                    ..context = BlockContext.paragraph
                     ..style = null;
                 }
                 section.blocks.removeAt(0);
@@ -1016,7 +1014,8 @@ abstract final class Parser {
     }
 
     if (part) {
-      if (section.blocks.isEmpty || section.blocks.last.context != 'section') {
+      if (section.blocks.isEmpty ||
+          section.blocks.last.context != BlockContext.section) {
         _logger.error(
           'invalid part, must have at least one section (e.g., chapter, '
           'appendix, etc.)',
@@ -1327,7 +1326,7 @@ abstract final class Parser {
     AbstractBlock parent, {
     BlockAttributes? attributes,
     bool textOnly = false,
-    String? listType,
+    BlockContext? listType,
     bool parseMetadata = true,
   }) {
     // Skip ahead to the block content; bail if we've reached the end of
@@ -1438,7 +1437,11 @@ abstract final class Parser {
               markdownThematicBreakRx.hasMatch(thisLine)) {
             // NOTE we're letting break lines (horizontal rule, page_break,
             // etc) have attributes.
-            block = Block(parent, 'thematic_break', contentModel: 'empty');
+            block = Block(
+              parent,
+              BlockContext.thematicBreak,
+              contentModel: ContentModel.empty,
+            );
             break;
           }
         } else if (thisLine.startsWith(tab)) {
@@ -1460,7 +1463,7 @@ abstract final class Parser {
             block = Block(
               parent,
               layoutBreakChars[ch0]!,
-              contentModel: 'empty',
+              contentModel: ContentModel.empty,
             );
             break;
             // NOTE very rare that a text-only line will end in ] (e.g.,
@@ -1478,7 +1481,11 @@ abstract final class Parser {
               final blkCtx = mediaMatch.group(1)!;
               var target = mediaMatch.group(2)!;
               final blkAttrs = mediaMatch.group(3);
-              block = Block(parent, blkCtx, contentModel: 'empty');
+              block = Block(
+                parent,
+                BlockContext.parse(blkCtx),
+                contentModel: ContentModel.empty,
+              );
               if (blkAttrs != null) {
                 final List<String?> posattrs;
                 if (blkCtx == 'video') {
@@ -1539,7 +1546,7 @@ abstract final class Parser {
                   blockTitle = attrs.remove('title');
                   block
                     ..title = blockTitle
-                    ..assignCaption(attrs.remove('caption'), 'figure');
+                    ..assignCaption(attrs.remove('caption'), figure: true);
                 }
               }
               attrs['target'] = target;
@@ -1549,7 +1556,11 @@ abstract final class Parser {
                 ? blockTocMacroRx.firstMatch(thisLine)
                 : null;
             if (tocMatch != null) {
-              block = Block(parent, 'toc', contentModel: 'empty');
+              block = Block(
+                parent,
+                BlockContext.toc,
+                contentModel: ContentModel.empty,
+              );
               final tocAttrs = tocMatch.group(1);
               if (tocAttrs != null) {
                 parseAttributes(
@@ -1605,7 +1616,7 @@ abstract final class Parser {
                 }
               }
               final extConfig = macroExtension.instance.config;
-              if (extConfig.contentModel == 'attributes') {
+              if (extConfig.macroAttributes == MacroAttributes.parsed) {
                 if (content != null) {
                   parseAttributes(
                     document,
@@ -1674,11 +1685,11 @@ abstract final class Parser {
             parent.sectname == 'bibliography') {
           attrs['style'] = style = 'bibliography';
         }
-        block = parseList(reader, 'ulist', parent, style);
+        block = parseList(reader, BlockContext.ulist, parent, style);
         break;
       } else if (orderedListRx.hasMatch(thisLine)) {
         reader.unshiftLine(thisLine);
-        block = parseList(reader, 'olist', parent, style);
+        block = parseList(reader, BlockContext.olist, parent, style);
         if (block.style case final listStyle?) attrs['style'] = listStyle;
         break;
       } else if (dlistMatch != null) {
@@ -1692,8 +1703,11 @@ abstract final class Parser {
         reader.unshiftLine(thisLine);
         final floatTitle = parseSectionTitle(reader, document, attrs['id']);
         if (floatTitle.reftext case final reftext?) attrs['reftext'] = reftext;
-        block = (Block(parent, 'floating_title', contentModel: 'empty'))
-          ..title = floatTitle.title;
+        block = (Block(
+          parent,
+          BlockContext.floatingTitle,
+          contentModel: ContentModel.empty,
+        ))..title = floatTitle.title;
         attrs.remove('title');
         block.id =
             floatTitle.id ??
@@ -1751,20 +1765,20 @@ abstract final class Parser {
           skipLineComments: textOnly_,
         );
         adjustIndentation(lines);
-        if (textOnly_ || contentAdjacent == 'dlist') {
+        if (textOnly_ || contentAdjacent == BlockContext.dlist) {
           // This block gets folded into the list item text.
           block = Block(
             parent,
-            'paragraph',
-            contentModel: 'simple',
+            BlockContext.paragraph,
+            contentModel: ContentModel.simple,
             lines: lines,
             attributes: attrs,
           );
         } else {
           block = Block(
             parent,
-            'literal',
-            contentModel: 'verbatim',
+            BlockContext.literal,
+            contentModel: ContentModel.verbatim,
             lines: lines,
             attributes: attrs,
           );
@@ -1791,8 +1805,8 @@ abstract final class Parser {
           if (indented && style == 'normal') adjustIndentation(lines);
           block = Block(
             parent,
-            'paragraph',
-            contentModel: 'simple',
+            BlockContext.paragraph,
+            contentModel: ContentModel.simple,
             lines: lines,
             attributes: attrs,
           );
@@ -1809,8 +1823,8 @@ abstract final class Parser {
           );
           block = Block(
             parent,
-            'admonition',
-            contentModel: 'simple',
+            BlockContext.admonition,
+            contentModel: ContentModel.simple,
             lines: lines,
             attributes: attrs,
           );
@@ -1837,7 +1851,7 @@ abstract final class Parser {
           // FIXME Reader needs to be created w/ line info
           block = buildBlock(
             'quote',
-            'compound',
+            ContentModel.compound,
             null,
             parent,
             Reader(lines),
@@ -1868,8 +1882,8 @@ abstract final class Parser {
           attrs['style'] = 'quote';
           block = Block(
             parent,
-            'quote',
-            contentModel: 'simple',
+            BlockContext.quote,
+            contentModel: ContentModel.simple,
             lines: lines,
             attributes: attrs,
           );
@@ -1886,8 +1900,8 @@ abstract final class Parser {
           if (indented && style == 'normal') adjustIndentation(lines);
           block = Block(
             parent,
-            'paragraph',
-            contentModel: 'simple',
+            BlockContext.paragraph,
+            contentModel: ContentModel.simple,
             lines: lines,
             attributes: attrs,
           );
@@ -1936,7 +1950,7 @@ abstract final class Parser {
         }
         block = buildBlock(
           'listing',
-          'verbatim',
+          ContentModel.verbatim,
           terminator,
           parent,
           reader,
@@ -1980,7 +1994,7 @@ abstract final class Parser {
         terminator = terminator!.substring(0, 3);
         block = buildBlock(
           'listing',
-          'verbatim',
+          ContentModel.verbatim,
           terminator,
           parent,
           reader,
@@ -2005,7 +2019,14 @@ abstract final class Parser {
         }
         block = parseTable(tableReader, parent, attrs);
       } else if (bc == 'sidebar') {
-        block = buildBlock(bc, 'compound', terminator, parent, reader, attrs);
+        block = buildBlock(
+          bc,
+          ContentModel.compound,
+          terminator,
+          parent,
+          reader,
+          attrs,
+        );
       } else if (bc == 'admonition') {
         final admonitionName = downcase(style!);
         attrs['name'] = admonitionName;
@@ -2015,26 +2036,47 @@ abstract final class Parser {
           'textlabel',
           caption ?? docAttrs['$admonitionName-caption'],
         );
-        block = buildBlock(bc, 'compound', terminator, parent, reader, attrs);
+        block = buildBlock(
+          bc,
+          ContentModel.compound,
+          terminator,
+          parent,
+          reader,
+          attrs,
+        );
       } else if (bc == 'open' || bc == 'abstract' || bc == 'partintro') {
         block = buildBlock(
           'open',
-          'compound',
+          ContentModel.compound,
           terminator,
           parent,
           reader,
           attrs,
         );
       } else if (bc == 'literal') {
-        block = buildBlock(bc, 'verbatim', terminator, parent, reader, attrs);
+        block = buildBlock(
+          bc,
+          ContentModel.verbatim,
+          terminator,
+          parent,
+          reader,
+          attrs,
+        );
       } else if (bc == 'example') {
         if (attrs.containsKey('collapsible-option')) attrs['caption'] = '';
-        block = buildBlock(bc, 'compound', terminator, parent, reader, attrs);
+        block = buildBlock(
+          bc,
+          ContentModel.compound,
+          terminator,
+          parent,
+          reader,
+          attrs,
+        );
       } else if (bc == 'quote' || bc == 'verse') {
         _rekey(attrs, [null, 'attribution', 'citetitle']);
         block = buildBlock(
           bc,
-          bc == 'verse' ? 'verbatim' : 'compound',
+          bc == 'verse' ? ContentModel.verbatim : ContentModel.compound,
           terminator,
           parent,
           reader,
@@ -2046,11 +2088,25 @@ abstract final class Parser {
               _stemTypeAliases[attrs['2'] ?? docAttrs['stem'] ?? ''] ??
               'asciimath';
         }
-        block = buildBlock('stem', 'raw', terminator, parent, reader, attrs);
+        block = buildBlock(
+          'stem',
+          ContentModel.raw,
+          terminator,
+          parent,
+          reader,
+          attrs,
+        );
       } else if (bc == 'pass') {
-        block = buildBlock(bc, 'raw', terminator, parent, reader, attrs);
+        block = buildBlock(
+          bc,
+          ContentModel.raw,
+          terminator,
+          parent,
+          reader,
+          attrs,
+        );
       } else if (bc == 'comment') {
-        buildBlock(bc, 'skip', terminator, parent, reader, attrs);
+        buildBlock(bc, ContentModel.skip, terminator, parent, reader, attrs);
         attrs.clear();
         return null;
       } else {
@@ -2066,7 +2122,7 @@ abstract final class Parser {
         }
         final extConfig = blockExtension.instance.config;
         final contentModel = extConfig.contentModel;
-        if (contentModel != 'skip') {
+        if (contentModel != ContentModel.skip) {
           final positionalAttrs = extConfig.positionalAttrs;
           if (positionalAttrs.isNotEmpty) {
             _rekey(attrs, [null, ...positionalAttrs]);
@@ -2080,7 +2136,7 @@ abstract final class Parser {
         }
         final customBlock = buildBlock(
           bc,
-          contentModel ?? 'compound',
+          contentModel ?? ContentModel.compound,
           terminator,
           parent,
           reader,
@@ -2104,7 +2160,7 @@ abstract final class Parser {
     // (though we need to handle all cases)
     if (attrs.containsKey('title')) {
       result.title = blockTitle = attrs.remove('title');
-      if (captionAttributeNames.containsKey(result.context)) {
+      if (captionAttributeName(result.context) != null) {
         result.assignCaption(attrs.remove('caption'));
       }
     }
@@ -2155,7 +2211,7 @@ abstract final class Parser {
   /// Port of `Parser.read_paragraph_lines`.
   static List<String> readParagraphLines(
     Reader reader,
-    String? breakAtList, {
+    BlockContext? breakAtList, {
     bool skipLineComments = false,
     bool skipProcessing = false,
   }) {
@@ -2260,7 +2316,7 @@ abstract final class Parser {
   /// `skip` model (or when the extension returns `null` or the parent).
   static AbstractBlock? buildBlock(
     String blockContext,
-    String contentModel,
+    ContentModel contentModel,
     String? terminator,
     AbstractBlock parent,
     Reader reader,
@@ -2269,13 +2325,13 @@ abstract final class Parser {
     bool readerPrepared = false,
   }) {
     final bool skipProcessing;
-    final String parseAsContentModel;
-    if (contentModel == 'skip') {
+    final ContentModel parseAsContentModel;
+    if (contentModel == ContentModel.skip) {
       skipProcessing = true;
-      parseAsContentModel = 'simple';
-    } else if (contentModel == 'raw') {
+      parseAsContentModel = ContentModel.simple;
+    } else if (contentModel == ContentModel.raw) {
       skipProcessing = false;
-      parseAsContentModel = 'simple';
+      parseAsContentModel = ContentModel.simple;
     } else {
       skipProcessing = false;
       parseAsContentModel = contentModel;
@@ -2285,13 +2341,13 @@ abstract final class Parser {
     List<String>? lines;
     Reader? blockReader;
     if (terminator == null && !readerPrepared) {
-      if (parseAsContentModel == 'verbatim') {
+      if (parseAsContentModel == ContentModel.verbatim) {
         lines = reader.readLinesUntil(
           breakOnBlankLines: true,
           breakOnListContinuation: true,
         );
       } else {
-        if (model == 'compound') model = 'simple';
+        if (model == ContentModel.compound) model = ContentModel.simple;
         // TODO we could also skip processing if we're able to detect
         // reader is a BlockReader.
         lines = readParagraphLines(
@@ -2303,7 +2359,7 @@ abstract final class Parser {
         // QUESTION check for empty lines after grabbing lines for simple
         // content model?
       }
-    } else if (parseAsContentModel != 'compound') {
+    } else if (parseAsContentModel != ContentModel.compound) {
       lines = reader.readLinesUntil(
         terminator: terminator,
         skipProcessing: skipProcessing,
@@ -2325,7 +2381,7 @@ abstract final class Parser {
       );
     }
 
-    if (model == 'verbatim') {
+    if (model == ContentModel.verbatim) {
       final tabSize = _toInt(
         attributes['tabsize'] ?? _docOf(parent).attributes['tabsize'],
       );
@@ -2335,7 +2391,7 @@ abstract final class Parser {
       } else if (tabSize > 0) {
         adjustIndentation(lines!, -1, tabSize);
       }
-    } else if (model == 'skip') {
+    } else if (model == ContentModel.skip) {
       // QUESTION should we still invoke process method if extension is
       // specified?
       return null;
@@ -2362,16 +2418,16 @@ abstract final class Parser {
       // compound. It's up to the extension to decide which one to use. The
       // extension can consult the cloaked-context attribute to determine
       // if the input is a paragraph or delimited block.
-      if (block.contentModel == 'compound' &&
+      if (block.contentModel == ContentModel.compound &&
           block is Block &&
           block.lines.isNotEmpty) {
-        model = 'compound';
+        model = ContentModel.compound;
         blockReader = Reader(block.lines);
       }
     } else {
       block = Block(
         parent,
-        blockContext,
+        BlockContext.parse(blockContext),
         contentModel: model,
         lines: lines,
         attributes: attributes,
@@ -2380,7 +2436,7 @@ abstract final class Parser {
 
     // Reader is confined within boundaries of a delimited block, so look
     // for blocks until there are no more lines.
-    if (model == 'compound') parseBlocks(blockReader!, block);
+    if (model == ContentModel.compound) parseBlocks(blockReader!, block);
 
     return block;
   }
@@ -2408,7 +2464,7 @@ abstract final class Parser {
   /// Port of `Parser.parse_list`.
   static ListBlock parseList(
     Reader reader,
-    String listType,
+    BlockContext listType,
     AbstractBlock parent,
     String? style,
   ) {
@@ -2485,7 +2541,7 @@ abstract final class Parser {
     }
     if (!document.registerRef(
       id,
-      Inline(node, 'anchor', text: ref, type: 'ref', id: id),
+      Inline(node, InlineContext.anchor, text: ref, type: 'ref', id: id),
     )) {
       _logger.warn('id assigned to anchor already in use: $id', at: location);
     }
@@ -2528,7 +2584,7 @@ abstract final class Parser {
       }
       if (!document.registerRef(
         id,
-        Inline(block, 'anchor', text: reftext, type: 'ref', id: id),
+        Inline(block, InlineContext.anchor, text: reftext, type: 'ref', id: id),
       )) {
         final mark = reader.cursorAtMark();
         final pre = text.substring(0, match.start);
@@ -2558,7 +2614,7 @@ abstract final class Parser {
       id,
       Inline(
         node,
-        'anchor',
+        InlineContext.anchor,
         text: reftext == null ? null : '[$reftext]',
         type: 'bibref',
         id: id,
@@ -2579,7 +2635,7 @@ abstract final class Parser {
     RegExpMatch match,
     AbstractBlock parent,
   ) {
-    final listBlock = ListBlock(parent, 'dlist');
+    final listBlock = ListBlock(parent, BlockContext.dlist);
     // Detects a description list item that uses the same delimiter
     // (::, :::, :::: or ;;).
     final siblingPattern = descriptionListSiblingRx[match.group(2)!]!;
@@ -2614,7 +2670,7 @@ abstract final class Parser {
     AbstractBlock parent,
     Callouts callouts,
   ) {
-    final listBlock = ListBlock(parent, 'colist');
+    final listBlock = ListBlock(parent, BlockContext.colist);
     var nextIndex = 1;
     var autonum = 0;
     RegExpMatch? match = firstMatch;
@@ -2672,7 +2728,7 @@ abstract final class Parser {
   ]) {
     var trait = siblingTrait;
     final listType = listBlock.context;
-    final dlist = listType == 'dlist';
+    final dlist = listType == BlockContext.dlist;
     late final ListItem listItem;
     ListItem? listTerm;
     var hasText = false;
@@ -2710,7 +2766,7 @@ abstract final class Parser {
       if (_docOf(listBlock).sourcemap) {
         listItem.sourceLocation = reader.cursor();
       }
-      if (listType == 'ulist') {
+      if (listType == BlockContext.ulist) {
         listItem.marker = trait as String;
         if (itemText.startsWith('[')) {
           if (style != null && style == 'bibliography') {
@@ -2744,7 +2800,7 @@ abstract final class Parser {
             listItem.text = itemText.substring(4);
           }
         }
-      } else if (listType == 'olist') {
+      } else if (listType == BlockContext.olist) {
         final ordinal = listBlock.blocks.length;
         final (resolvedMarker, implicitStyle) = resolveOrderedListMarker(
           trait as String,
@@ -2852,7 +2908,7 @@ abstract final class Parser {
 
       if (contentAdjacent &&
           listItem.blocks.isNotEmpty &&
-          listItem.blocks[0].context == 'paragraph') {
+          listItem.blocks[0].context == BlockContext.paragraph) {
         listItem.foldFirst();
       }
     }
@@ -2873,7 +2929,7 @@ abstract final class Parser {
   /// Port of `Parser.read_lines_for_list_item`.
   static ({List<String> lines, Set<int> placeholders}) readLinesForListItem(
     Reader reader,
-    String listType, {
+    BlockContext listType, {
     Pattern? siblingTrait,
     bool hasText = true,
   }) {
@@ -2893,7 +2949,7 @@ abstract final class Parser {
     // line; it gets associated with the outermost block.
     int? detachedContinuation;
 
-    final dlist = listType == 'dlist';
+    final dlist = listType == BlockContext.dlist;
     var hasText_ = hasText;
 
     String? pendingLine;
@@ -3037,11 +3093,14 @@ abstract final class Parser {
         } else {
           final nested = _findNestedList(
             thisLine.text,
-            withinNestedList ? const ['dlist'] : _nestableListContexts,
+            withinNestedList
+                ? const [BlockContext.dlist]
+                : _nestableListContexts,
           );
           if (nested != null) {
             withinNestedList = true;
-            if (nested.$1 == 'dlist' && nested.$2.group(3).isNullOrEmpty) {
+            if (nested.$1 == BlockContext.dlist &&
+                nested.$2.group(3).isNullOrEmpty) {
               // Get greedy again.
               hasText_ = false;
             }
@@ -3089,7 +3148,8 @@ abstract final class Parser {
           if (nested != null) {
             buffer.add(_TextLine(current));
             withinNestedList = true;
-            if (nested.$1 == 'dlist' && nested.$2.group(3).isNullOrEmpty) {
+            if (nested.$1 == BlockContext.dlist &&
+                nested.$2.group(3).isNullOrEmpty) {
               // Get greedy again.
               hasText_ = false;
             }
@@ -3144,11 +3204,14 @@ abstract final class Parser {
           hasText_ = true;
           final nested = _findNestedList(
             text,
-            withinNestedList ? const ['dlist'] : _nestableListContexts,
+            withinNestedList
+                ? const [BlockContext.dlist]
+                : _nestableListContexts,
           );
           if (nested != null) {
             withinNestedList = true;
-            if (nested.$1 == 'dlist' && nested.$2.group(3).isNullOrEmpty) {
+            if (nested.$1 == BlockContext.dlist &&
+                nested.$2.group(3).isNullOrEmpty) {
               // Get greedy again.
               hasText_ = false;
             }
@@ -3191,9 +3254,9 @@ abstract final class Parser {
   /// Finds the first list context in [contexts] matching [line].
   ///
   /// Returns the context and match, or `null` when nothing matches.
-  static (String, RegExpMatch)? _findNestedList(
+  static (BlockContext, RegExpMatch)? _findNestedList(
     String line,
-    List<String> contexts,
+    List<BlockContext> contexts,
   ) {
     for (final context in contexts) {
       final match = listRxMap[context]!.firstMatch(line);
@@ -3205,11 +3268,12 @@ abstract final class Parser {
   /// Resolves the 0-index marker for a list item.
   ///
   /// Port of `Parser.resolve_list_marker`.
-  static String resolveListMarker(String listType, String marker) {
-    if (listType == 'ulist') return marker;
-    if (listType == 'olist') return resolveOrderedListMarker(marker).$1;
-    // 'colist'
-    return '<1>';
+  static String resolveListMarker(BlockContext listType, String marker) {
+    return switch (listType) {
+      .ulist => marker,
+      .olist => resolveOrderedListMarker(marker).$1,
+      _ => '<1>', // colist
+    };
   }
 
   /// Resolves the 0-index marker for an ordered list item.
@@ -3282,7 +3346,7 @@ abstract final class Parser {
   /// marker or (for description lists) the sibling pattern.
   static bool isSiblingListItem(
     String line,
-    String listType,
+    BlockContext listType,
     Pattern? siblingTrait,
   ) {
     if (siblingTrait == null) return false;

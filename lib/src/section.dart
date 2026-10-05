@@ -4,7 +4,8 @@
 library;
 
 import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart' show NodeDocument;
+import 'package:asciidart/src/abstract_node.dart'
+    show BlockContext, NodeDocument;
 import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/rx.dart' show invalidSectionIdCharsRx;
 import 'package:asciidart/src/text_case.dart';
@@ -25,7 +26,7 @@ class Section extends AbstractBlock implements NodeSection {
   /// parent, else to 1.
   new([AbstractBlock? parent, int? level])
     : numbered = false,
-      super(parent, 'section') {
+      super(parent, BlockContext.section) {
     if (parent is Section) {
       this.level = level ?? (parent.level! + 1);
       special = parent.special;
@@ -133,7 +134,7 @@ class Section extends AbstractBlock implements NodeSection {
   /// Port of `Asciidoctor::Section#<<`.
   @override
   void append(AbstractBlock block) {
-    if (block.context == 'section') assignNumeral(block as Section);
+    if (block.context == BlockContext.section) assignNumeral(block as Section);
     super.append(block);
   }
 

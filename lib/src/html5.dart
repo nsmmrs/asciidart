@@ -6,9 +6,9 @@
 ///
 /// ## Framework integration
 ///
-/// Each transform is a handler registered with [ConverterBase.handle] (see
-/// `converter.dart`); `convert` itself is inherited from [ConverterBase],
-/// which warns and returns `null` for unregistered transforms. The
+/// [BuiltInConverter] dispatches each node to `convertBlock` or
+/// `convertInline` below, by its kind; a kind with no conversion here (list
+/// items, table cells) warns and produces nothing. The
 /// converter registers itself explicitly with `Converter.registerFor`.
 ///
 /// Syntax highlighting goes through the document's [SyntaxHighlighterBase].
@@ -128,8 +128,8 @@ const Set<String> _defaultStylesheetKeys = <String>{'', 'DEFAULT'};
 ///
 /// Port of `Asciidoctor::Converter::Html5Converter`. Each `convert*`
 /// method corresponds to Asciidoctor's `convert_*` method of the same name
-/// and is registered with [handle] below (see the library docs).
-class Html5Converter extends ConverterBase {
+/// and is dispatched to by `convertBlock` and `convertInline` below.
+class Html5Converter extends BuiltInConverter {
   /// Creates a converter for [backend] with constructor options [opts].
   ///
   /// An `xml` [ConverterOptions.htmlsyntax] selects XML mode (void
@@ -145,78 +145,73 @@ class Html5Converter extends ConverterBase {
       outfilesuffix: '.html',
       supportsTemplates: true,
     );
-    handle(
-      'inline_quoted',
-      (node, [opts]) => convertInlineQuoted(node as Inline),
-    );
-    handle('paragraph', (node, [opts]) => convertParagraph(node as Block));
-    handle(
-      'inline_anchor',
-      (node, [opts]) => convertInlineAnchor(node as Inline) ?? '',
-    );
-    handle('section', (node, [opts]) => convertSection(node as Section));
-    handle('listing', (node, [opts]) => convertListing(node as Block));
-    handle('literal', (node, [opts]) => convertLiteral(node as Block));
-    handle('ulist', (node, [opts]) => convertUlist(node as ListBlock));
-    handle('olist', (node, [opts]) => convertOlist(node as ListBlock));
-    handle('dlist', (node, [opts]) => convertDlist(node as ListBlock));
-    handle('admonition', (node, [opts]) => convertAdmonition(node as Block));
-    handle('colist', (node, [opts]) => convertColist(node as ListBlock));
-    handle('embedded', (node, [opts]) => convertEmbedded(node as Document));
-    handle('example', (node, [opts]) => convertExample(node as Block));
-    handle(
-      'floating_title',
-      (node, [opts]) => convertFloatingTitle(node as Block),
-    );
-    handle('image', (node, [opts]) => convertImage(node as Block));
-    handle(
-      'inline_break',
-      (node, [opts]) => convertInlineBreak(node as Inline),
-    );
-    handle(
-      'inline_button',
-      (node, [opts]) => convertInlineButton(node as Inline),
-    );
-    handle(
-      'inline_callout',
-      (node, [opts]) => convertInlineCallout(node as Inline),
-    );
-    handle(
-      'inline_footnote',
-      (node, [opts]) => convertInlineFootnote(node as Inline) ?? '',
-    );
-    handle(
-      'inline_image',
-      (node, [opts]) => convertInlineImage(node as Inline),
-    );
-    handle(
-      'inline_indexterm',
-      (node, [opts]) => convertInlineIndexterm(node as Inline),
-    );
-    handle('inline_kbd', (node, [opts]) => convertInlineKbd(node as Inline));
-    handle('inline_menu', (node, [opts]) => convertInlineMenu(node as Inline));
-    handle('open', (node, [opts]) => convertOpen(node as Block));
-    handle('page_break', (node, [opts]) => convertPageBreak(node as Block));
-    handle('preamble', (node, [opts]) => convertPreamble(node as Block));
-    handle('quote', (node, [opts]) => convertQuote(node as Block));
-    handle('sidebar', (node, [opts]) => convertSidebar(node as Block));
-    handle('stem', (node, [opts]) => convertStem(node as Block));
-    handle('table', (node, [opts]) => convertTable(node as Table));
-    handle(
-      'thematic_break',
-      (node, [opts]) => convertThematicBreak(node as Block),
-    );
-    handle('verse', (node, [opts]) => convertVerse(node as Block));
-    handle('video', (node, [opts]) => convertVideo(node as Block));
-    handle('document', (node, [opts]) => convertDocument(node as Document));
-    handle('toc', (node, [opts]) => convertToc(node as Block));
-    handle('pass', (node, [opts]) => contentOnly(node));
-    handle('audio', (node, [opts]) => convertAudio(node as Block));
-    handle(
-      'outline',
-      (node, [opts]) => convertOutline(node as AbstractBlock, opts) ?? '',
-    );
   }
+
+  @override
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+      switch (node.context) {
+        .admonition => convertAdmonition(node as Block),
+        .audio => convertAudio(node as Block),
+        .colist => convertColist(node as ListBlock),
+        .dlist => convertDlist(node as ListBlock),
+        .document => convertDocument(node as Document),
+        .example => convertExample(node as Block),
+        .floatingTitle => convertFloatingTitle(node as Block),
+        .image => convertImage(node as Block),
+        .listing => convertListing(node as Block),
+        .literal => convertLiteral(node as Block),
+        .olist => convertOlist(node as ListBlock),
+        .open => convertOpen(node as Block),
+        .pageBreak => convertPageBreak(node as Block),
+        .paragraph => convertParagraph(node as Block),
+        .pass => contentOnly(node),
+        .preamble => convertPreamble(node as Block),
+        .quote => convertQuote(node as Block),
+        .section => convertSection(node as Section),
+        .sidebar => convertSidebar(node as Block),
+        .stem => convertStem(node as Block),
+        .table => convertTable(node as Table),
+        .thematicBreak => convertThematicBreak(node as Block),
+        .toc => convertToc(node as Block),
+        .ulist => convertUlist(node as ListBlock),
+        .verse => convertVerse(node as Block),
+        .video => convertVideo(node as Block),
+        .listItem || .tableCell => missing(node.nodeName),
+      };
+
+  @override
+  bool handlesBlock(BlockContext context) => switch (context) {
+    .listItem || .tableCell => false,
+    _ => true,
+  };
+
+  @override
+  String? convertInline(Inline node) => switch (node.context) {
+    .anchor => convertInlineAnchor(node) ?? '',
+    .lineBreak => convertInlineBreak(node),
+    .button => convertInlineButton(node),
+    .callout => convertInlineCallout(node),
+    .footnote => convertInlineFootnote(node) ?? '',
+    .image => convertInlineImage(node),
+    .indexterm => convertInlineIndexterm(node),
+    .kbd => convertInlineKbd(node),
+    .menu => convertInlineMenu(node),
+    .quoted => convertInlineQuoted(node),
+  };
+
+  @override
+  Set<String> get transforms => const {'embedded', 'outline'};
+
+  @override
+  String? convertTransform(
+    AbstractNode node,
+    String transform,
+    ConvertOptions? opts,
+  ) => switch (transform) {
+    'embedded' => convertEmbedded(node as Document),
+    'outline' => convertOutline(node as AbstractBlock, opts) ?? '',
+    _ => missing(transform),
+  };
 
   @override
   String get converterName => 'Html5Converter';
@@ -1362,7 +1357,7 @@ class Html5Converter extends ConverterBase {
     }
     if (style == 'partintro' &&
         (node.level! > 0 ||
-            node.parent!.context != 'section' ||
+            node.parent!.context != BlockContext.section ||
             (node.document! as Document).doctype != 'book')) {
       logger.error(
         'partintro block can only be used when doctype is book and '

@@ -40,6 +40,7 @@ import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/constants.dart';
 import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/extensions.dart' show MacroAttributes;
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart';
 import 'package:asciidart/src/inline.dart';
@@ -480,7 +481,7 @@ String convertQuotedText(
     if (unescapedAttrs != null) {
       final quoted = Inline(
         block,
-        'quoted',
+        InlineContext.quoted,
         text: match.group(3),
         type: resolvedType,
       );
@@ -496,7 +497,7 @@ String convertQuotedText(
     }
     final quoted = Inline(
       block,
-      'quoted',
+      InlineContext.quoted,
       text: match.group(3),
       type: resolvedType,
       id: id,
@@ -514,7 +515,7 @@ String convertQuotedText(
     }
     return Inline(
       block,
-      'quoted',
+      InlineContext.quoted,
       text: match.group(2),
       type: resolvedType,
       id: id,
@@ -820,7 +821,7 @@ String subMacros(AbstractNode node, String text) {
         final attributes = <String, String>{...config.defaultAttrs};
         if (content != null) {
           if (content.isEmpty) {
-            if (config.contentModel != 'attributes') {
+            if (config.macroAttributes == MacroAttributes.text) {
               attributes['text'] = content;
             }
           } else {
@@ -831,7 +832,7 @@ String subMacros(AbstractNode node, String text) {
             );
             // QUESTION should we store the unparsed attrlist in the
             // attrlist key?
-            if (config.contentModel == 'attributes') {
+            if (config.macroAttributes == MacroAttributes.parsed) {
               parseAttributes(
                 node,
                 normalized,
@@ -911,12 +912,12 @@ String subMacros(AbstractNode node, String text) {
           } else {
             keyList = [keys];
           }
-          return Inline(block, 'kbd', keys: keyList).convert();
+          return Inline(block, InlineContext.kbd, keys: keyList).convert();
         } else {
           // match.group(2) == 'btn'
           return Inline(
             block,
-            'button',
+            InlineContext.button,
             text: normalizeText(
               match.group(3)!,
               normalizeWhitespace: true,
@@ -969,7 +970,7 @@ String subMacros(AbstractNode node, String text) {
 
         return Inline(
           block,
-          'menu',
+          InlineContext.menu,
           attributes: {'menu': menu, 'menuitem': ?menuitem},
           submenus: submenus,
         ).convert();
@@ -991,7 +992,7 @@ String subMacros(AbstractNode node, String text) {
         final menuitem = parts.removeLast();
         return Inline(
           block,
-          'menu',
+          InlineContext.menu,
           attributes: {'menu': menu, 'menuitem': menuitem},
           submenus: parts,
         ).convert();
@@ -1035,7 +1036,7 @@ String subMacros(AbstractNode node, String text) {
       }
       return Inline(
         block,
-        'image',
+        InlineContext.image,
         type: type,
         target: target,
         attributes: attrs,
@@ -1092,7 +1093,7 @@ String subMacros(AbstractNode node, String text) {
         }
         return Inline(
           block,
-          'indexterm',
+          InlineContext.indexterm,
           attributes: attrs,
           terms: terms,
           seeAlso: seeAlso,
@@ -1122,7 +1123,7 @@ String subMacros(AbstractNode node, String text) {
         }
         return Inline(
           block,
-          'indexterm',
+          InlineContext.indexterm,
           text: term,
           attributes: attrs,
           type: 'visible',
@@ -1180,7 +1181,7 @@ String subMacros(AbstractNode node, String text) {
           }
           subbedTerm = Inline(
             block,
-            'indexterm',
+            InlineContext.indexterm,
             text: term,
             attributes: termAttrs,
             type: 'visible',
@@ -1204,7 +1205,7 @@ String subMacros(AbstractNode node, String text) {
           }
           subbedTerm = Inline(
             block,
-            'indexterm',
+            InlineContext.indexterm,
             attributes: attrs,
             terms: splitSimpleCsv(terms),
             seeAlso: seeAlso,
@@ -1277,7 +1278,7 @@ String _subMacrosLinks(
             : target;
         return Inline(
           block,
-          'anchor',
+          InlineContext.anchor,
           text: linkText,
           type: 'link',
           target: target,
@@ -1400,7 +1401,7 @@ String _subMacrosLinks(
         doc.registerLink(target);
         final anchor = Inline(
           block,
-          'anchor',
+          InlineContext.anchor,
           text: linkText,
           type: 'link',
           target: target,
@@ -1496,7 +1497,7 @@ String _subMacrosLinks(
       doc.registerLink(target);
       return Inline(
         block,
-        'anchor',
+        InlineContext.anchor,
         text: linkText,
         type: 'link',
         target: target,
@@ -1522,7 +1523,7 @@ String _subMacrosLinks(
 
       return Inline(
         block,
-        'anchor',
+        InlineContext.anchor,
         text: address,
         type: 'link',
         target: target,
@@ -1531,13 +1532,14 @@ String _subMacrosLinks(
   }
 
   if (foundSquareBracket &&
-      node.context == 'list_item' &&
+      node is AbstractBlock &&
+      node.context == BlockContext.listItem &&
       node.parent?.style == 'bibliography') {
     result = result.replaceFirstMapped(
       inlineBiblioAnchorRx,
       (match) => Inline(
         block,
-        'anchor',
+        InlineContext.anchor,
         text: match.group(2),
         type: 'bibref',
         id: match.group(1),
@@ -1569,7 +1571,7 @@ String _subMacrosLinks(
       }
       return Inline(
         block,
-        'anchor',
+        InlineContext.anchor,
         text: reftext,
         type: 'ref',
         id: id,
@@ -1775,7 +1777,7 @@ String _convertXrefMacro(
   put('refid', refid);
   return Inline(
     block,
-    'anchor',
+    InlineContext.anchor,
     text: linkText,
     type: 'xref',
     target: target,
@@ -1873,7 +1875,7 @@ String _convertFootnoteMacro(
   }
   return Inline(
     block,
-    'footnote',
+    InlineContext.footnote,
     text: finalContent,
     attributes: {'index': ?index},
     id: finalId,
@@ -1896,7 +1898,7 @@ String subPostReplacements(AbstractNode node, String text) {
       for (final line in lines)
         Inline(
           _blockOf(node),
-          'break',
+          InlineContext.lineBreak,
           text: line.endsWith(hardLineBreak)
               ? line.substring(0, line.length - 2)
               : line,
@@ -1910,7 +1912,7 @@ String subPostReplacements(AbstractNode node, String text) {
       hardLineBreakRx,
       (match) => Inline(
         _blockOf(node),
-        'break',
+        InlineContext.lineBreak,
         text: match.group(1),
         type: 'line',
       ).convert(),
@@ -1953,7 +1955,7 @@ String subCallouts(AbstractNode node, String text) {
     final guard = match.group(1);
     return Inline(
       _blockOf(node),
-      'callout',
+      InlineContext.callout,
       text: numeral,
       id: doc.callouts.readNextId(),
       attributes: {'guard': ?guard},
@@ -2187,7 +2189,7 @@ String restoreCallouts(
             if (conums == null) return line;
             String conum(PendingCallout mark) => Inline(
               block,
-              'callout',
+              InlineContext.callout,
               text: mark.numeral,
               id: doc.callouts.readNextId(),
               attributes: {'guard': ?mark.guard},
@@ -2450,7 +2452,7 @@ String restorePassthroughs(AbstractNode node, String text) {
         final attributes = pass.attributes;
         subbedText = Inline(
           _blockOf(node),
-          'quoted',
+          InlineContext.quoted,
           text: subbedText,
           type: type,
           id: attributes?['id'],
@@ -2600,15 +2602,17 @@ List<String>? commitSubs(AbstractBlock node) {
   late List<String> effective;
   if (defaultSubs == null) {
     switch (node.contentModel) {
-      case 'simple':
+      case ContentModel.simple:
         effective = normalSubs;
-      case 'verbatim':
-        effective = node.context == 'verse' ? normalSubs : verbatimSubs;
-      case 'raw':
+      case ContentModel.verbatim:
+        effective = node.context == BlockContext.verse
+            ? normalSubs
+            : verbatimSubs;
+      case ContentModel.raw:
         // TODO make pass subs a compliance setting; AsciiDoc.py performs
         // :attributes and :macros on a pass block
-        effective = node.context == 'stem' ? basicSubs : noSubs;
-      default:
+        effective = node.context == BlockContext.stem ? basicSubs : noSubs;
+      case ContentModel.compound || ContentModel.empty || ContentModel.skip:
         return node.subs;
     }
   } else {
@@ -2618,7 +2622,8 @@ List<String>? commitSubs(AbstractBlock node) {
   final customSubs = node.attributes['subs'];
   if (customSubs != null) {
     node.subs =
-        resolveBlockSubs(node, customSubs, effective, node.context) ?? [];
+        resolveBlockSubs(node, customSubs, effective, node.context.asciidoc) ??
+        [];
   } else {
     node.subs = List<String>.of(effective);
   }
@@ -2626,7 +2631,7 @@ List<String>? commitSubs(AbstractBlock node) {
   // QUESTION delegate this logic to a method?
   final doc = node.document;
   final syntaxHl = doc is Document ? doc.syntaxHighlighter : null;
-  if (node.context == 'listing' &&
+  if (node.context == BlockContext.listing &&
       node.style == 'source' &&
       syntaxHl != null &&
       syntaxHl.canHighlight) {

@@ -6,11 +6,10 @@
 ///
 /// ## Framework integration
 ///
-/// Each transform is a handler registered with [ConverterBase.handle] (see
-/// `converter.dart`); [ManpageConverter.convert] itself is inherited from
-/// [ConverterBase], which warns and returns `null` for unregistered
-/// transforms. The converter registers itself explicitly with
-/// [Converter.register].
+/// [BuiltInConverter] dispatches each node to `convertBlock` or
+/// `convertInline` below, by its kind; a kind with no conversion here
+/// (audio, list items, table cells) warns and produces nothing. The
+/// converter registers itself explicitly with [Converter.register].
 ///
 /// The converter only consumes already-substituted strings (`content`,
 /// `title`, `text`, `alt`, `captioned_title`, `xreftext`).
@@ -214,8 +213,8 @@ enum _WhitespaceMode {
 ///
 /// Port of `Asciidoctor::Converter::ManPageConverter`. Each `convert*`
 /// method corresponds to Asciidoctor's `convert_*` method of the same name
-/// and is registered with [handle] below (see the library docs).
-class ManpageConverter extends ConverterBase {
+/// and is dispatched to by `convertBlock` and `convertInline` below.
+class ManpageConverter extends BuiltInConverter {
   /// Creates a converter for [backend] with constructor options [opts].
   new(super.backend, [super.opts]) {
     backendTraits = BackendTraits(
@@ -224,73 +223,71 @@ class ManpageConverter extends ConverterBase {
       outfilesuffix: '.man',
       supportsTemplates: true,
     );
-    handle('document', (node, [opts]) => convertDocument(node as Document));
-    handle('embedded', (node, [opts]) => convertEmbedded(node as Document));
-    handle('section', (node, [opts]) => convertSection(node as Section));
-    handle('admonition', (node, [opts]) => convertAdmonition(node as Block));
-    handle('colist', (node, [opts]) => convertColist(node as ListBlock));
-    handle('dlist', (node, [opts]) => convertDlist(node as ListBlock));
-    handle('example', (node, [opts]) => convertExample(node as Block));
-    handle(
-      'floating_title',
-      (node, [opts]) => convertFloatingTitle(node as Block),
-    );
-    handle('image', (node, [opts]) => convertImage(node as Block));
-    handle('listing', (node, [opts]) => convertListing(node as Block));
-    handle('literal', (node, [opts]) => convertLiteral(node as Block));
-    handle('sidebar', (node, [opts]) => convertSidebar(node as Block));
-    handle('olist', (node, [opts]) => convertOlist(node as ListBlock));
-    handle('open', (node, [opts]) => convertOpen(node as Block));
-    handle('page_break', (node, [opts]) => convertPageBreak(node as Block));
-    handle('paragraph', (node, [opts]) => convertParagraph(node as Block));
-    handle('pass', (node, [opts]) => contentOnly(node));
-    handle('preamble', (node, [opts]) => contentOnly(node));
-    handle('quote', (node, [opts]) => convertQuote(node as Block));
-    handle('stem', (node, [opts]) => convertStem(node as Block));
-    handle('table', (node, [opts]) => convertTable(node as Table));
-    handle(
-      'thematic_break',
-      (node, [opts]) => convertThematicBreak(node as Block),
-    );
-    handle('toc', (node, [opts]) => skip(node));
-    handle('ulist', (node, [opts]) => convertUlist(node as ListBlock));
-    handle('verse', (node, [opts]) => convertVerse(node as Block));
-    handle('video', (node, [opts]) => convertVideo(node as Block));
-    handle(
-      'inline_anchor',
-      (node, [opts]) => convertInlineAnchor(node as Inline),
-    );
-    handle(
-      'inline_break',
-      (node, [opts]) => convertInlineBreak(node as Inline),
-    );
-    handle(
-      'inline_button',
-      (node, [opts]) => convertInlineButton(node as Inline),
-    );
-    handle(
-      'inline_callout',
-      (node, [opts]) => convertInlineCallout(node as Inline),
-    );
-    handle(
-      'inline_footnote',
-      (node, [opts]) => convertInlineFootnote(node as Inline),
-    );
-    handle(
-      'inline_image',
-      (node, [opts]) => convertInlineImage(node as Inline),
-    );
-    handle(
-      'inline_indexterm',
-      (node, [opts]) => convertInlineIndexterm(node as Inline),
-    );
-    handle('inline_kbd', (node, [opts]) => convertInlineKbd(node as Inline));
-    handle('inline_menu', (node, [opts]) => convertInlineMenu(node as Inline));
-    handle(
-      'inline_quoted',
-      (node, [opts]) => convertInlineQuoted(node as Inline),
-    );
   }
+
+  @override
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+      switch (node.context) {
+        .admonition => convertAdmonition(node as Block),
+        .colist => convertColist(node as ListBlock),
+        .dlist => convertDlist(node as ListBlock),
+        .document => convertDocument(node as Document),
+        .example => convertExample(node as Block),
+        .floatingTitle => convertFloatingTitle(node as Block),
+        .image => convertImage(node as Block),
+        .listing => convertListing(node as Block),
+        .literal => convertLiteral(node as Block),
+        .olist => convertOlist(node as ListBlock),
+        .open => convertOpen(node as Block),
+        .pageBreak => convertPageBreak(node as Block),
+        .paragraph => convertParagraph(node as Block),
+        .pass => contentOnly(node),
+        .preamble => contentOnly(node),
+        .quote => convertQuote(node as Block),
+        .section => convertSection(node as Section),
+        .sidebar => convertSidebar(node as Block),
+        .stem => convertStem(node as Block),
+        .table => convertTable(node as Table),
+        .thematicBreak => convertThematicBreak(node as Block),
+        .toc => null,
+        .ulist => convertUlist(node as ListBlock),
+        .verse => convertVerse(node as Block),
+        .video => convertVideo(node as Block),
+        .audio || .listItem || .tableCell => missing(node.nodeName),
+      };
+
+  @override
+  bool handlesBlock(BlockContext context) => switch (context) {
+    .audio || .listItem || .tableCell => false,
+    _ => true,
+  };
+
+  @override
+  String? convertInline(Inline node) => switch (node.context) {
+    .anchor => convertInlineAnchor(node),
+    .lineBreak => convertInlineBreak(node),
+    .button => convertInlineButton(node),
+    .callout => convertInlineCallout(node),
+    .footnote => convertInlineFootnote(node),
+    .image => convertInlineImage(node),
+    .indexterm => convertInlineIndexterm(node),
+    .kbd => convertInlineKbd(node),
+    .menu => convertInlineMenu(node),
+    .quoted => convertInlineQuoted(node),
+  };
+
+  @override
+  Set<String> get transforms => const {'embedded'};
+
+  @override
+  String? convertTransform(
+    AbstractNode node,
+    String transform,
+    ConvertOptions? opts,
+  ) => switch (transform) {
+    'embedded' => convertEmbedded(node as Document),
+    _ => missing(transform),
+  };
 
   @override
   String get converterName => 'ManpageConverter';
@@ -929,7 +926,7 @@ class ManpageConverter extends ConverterBase {
             if (outer && resolved != null) {
               text = resolved;
               if (ref is AbstractBlock &&
-                  ref.context == 'section' &&
+                  ref.context == BlockContext.section &&
                   ref.level! < 2 &&
                   text == ref.title) {
                 text = _uppercasePcdata(text);
@@ -1176,7 +1173,7 @@ class ManpageConverter extends ConverterBase {
   /// Returns the converted content of [node], enclosing simple content in
   /// a `.sp` paragraph.
   String _encloseContent(Block node) {
-    if (node.contentModel == 'compound') return _s(node.content());
+    if (node.contentModel == ContentModel.compound) return _s(node.content());
     return '.sp\n'
         '${_manify(node.content()!, whitespace: _WhitespaceMode.normalize)}';
   }

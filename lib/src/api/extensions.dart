@@ -347,7 +347,7 @@ final class InlineMacroContext {
   Inline link(String url, {String? text}) => _view(
     _processor.createInline(
       _parent,
-      'anchor',
+      impl.InlineContext.anchor,
       text ?? url,
       type: 'link',
       target: url,
@@ -355,15 +355,20 @@ final class InlineMacroContext {
   ) as Inline;
 
   /// [html], output as is.
-  Inline html(String html) =>
-      _view(_processor.createInline(_parent, 'quoted', html, type: 'unquoted'))
-          as Inline;
+  Inline html(String html) => _view(
+    _processor.createInline(
+      _parent,
+      impl.InlineContext.quoted,
+      html,
+      type: 'unquoted',
+    ),
+  ) as Inline;
 
   /// [text] (already converted HTML) with [kind] formatting.
   Inline formatted(String text, FormattedKind kind) => _view(
     _processor.createInline(
       _parent,
-      'quoted',
+      impl.InlineContext.quoted,
       text,
       type: switch (kind) {
         FormattedKind.monospace => 'monospaced',

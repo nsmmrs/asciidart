@@ -1,9 +1,11 @@
-/// Converter framework: registration, factories and the dispatch base class.
+/// Converter framework: registration, factories and the dispatch base
+/// classes.
 ///
-/// Port of `lib/asciidoctor/converter.rb` (framework only): the registry,
-/// the factory types and the [ConverterBase] dispatch machinery the backend
-/// converters (`html5`, `docbook5`, `manpage`) and the template converter
-/// build on.
+/// The backend converters (`html5`, `docbook5`, `manpage`) extend
+/// [BuiltInConverter], which dispatches on the kind of node with exhaustive
+/// switches. The template and composite converters extend [ConverterBase],
+/// which dispatches on transform names registered with
+/// [ConverterBase.handle], as templates are found by name.
 ///
 /// ## Explicit registration
 ///
@@ -11,11 +13,7 @@
 /// (there is no lazy loading by backend name):
 ///
 /// ```dart
-/// class Html5Converter extends ConverterBase {
-///   Html5Converter(super.backend, [super.opts]) {
-///     handle('paragraph', (node, [opts]) => '<p>...</p>');
-///   }
-///
+/// class Html5Converter extends BuiltInConverter {
 ///   /// Registers this converter for [backends]. Called by document
 ///   /// initialization; idempotent.
 ///   static void registerFor([List<String> backends = const ['html5']]) {
@@ -31,16 +29,17 @@
 ///
 /// ## Method dispatch
 ///
-/// [ConverterBase] dispatches each transform (`paragraph`, `inline_quoted`,
-/// ...) to a handler registered through [ConverterBase.handle];
-/// [ConverterBase.handles] reports whether a transform is registered, which
-/// is what `CompositeConverter` relies on.
+/// [Converter.handles] reports whether a converter converts a transform
+/// (`paragraph`, `inline_quoted`, `embedded`, ...), which is what
+/// `CompositeConverter` relies on to put templates in front of a built-in
+/// converter.
 library;
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/constants.dart';
 import 'package:asciidart/src/document.dart' show Document;
+import 'package:asciidart/src/inline.dart' show Inline;
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/template.dart'
     show TemplateRegistry, buildTemplateChain;
@@ -238,7 +237,8 @@ Converter _templateChain(
 /// instantiated each time a document is processed. Implementing a custom
 /// converter entails extending [Converter] (and overriding [convert]) or
 /// extending [ConverterBase] (and registering per-transform handlers), then
-/// registering the converter for one or more backends with [register].
+/// registering the converter for one or more backends with [register]. The
+/// built-in converters extend [BuiltInConverter].
 ///
 /// This class also hosts the global (static) converter registry.
 abstract class Converter implements NodeConverter {
@@ -265,8 +265,8 @@ abstract class Converter implements NodeConverter {
   /// Reports whether this converter can convert [transform].
   ///
   /// Used by the `CompositeConverter` to select which converter handles a
-  /// node. Returns `true` by default; [ConverterBase] overrides it to
-  /// report registered handlers.
+  /// node. Returns `true` by default; [ConverterBase] and
+  /// [BuiltInConverter] override it to report what they convert.
   bool handles(String transform) => true;
 
   BackendTraits? _backendTraits;
@@ -515,6 +515,85 @@ abstract class ConverterBase extends Converter {
 
   /// Skips conversion of [node] (produces nothing).
   String? skip(AbstractNode node) => null;
+}
+
+/// Base class of the built-in converters (HTML, DocBook, man page).
+///
+/// [convert] dispatches on the kind of node to [convertBlock] and
+/// [convertInline], whose switches are exhaustive: a new kind of node is a
+/// compile error until every converter decides what to do with it. Kinds a
+/// converter leaves to their parent (list items, table cells) go to
+/// [missing], and [handlesBlock] and [handlesInline] report them.
+abstract class BuiltInConverter extends Converter {
+  /// Creates a converter for [backend] with constructor options [opts].
+  new(super.backend, [super.opts]);
+
+  /// The name of this converter in diagnostics, spelled out so that it
+  /// survives minification.
+  String get converterName;
+
+  /// Converts [node] according to its kind.
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts);
+
+  /// Converts the inline element [node] according to its kind.
+  String? convertInline(Inline node);
+
+  /// Converts [node] with a transform that is not a node name
+  /// (`'embedded'`, `'outline'`), or reports it [missing].
+  String? convertTransform(
+    AbstractNode node,
+    String transform,
+    ConvertOptions? opts,
+  ) => missing(transform);
+
+  /// Whether [convertBlock] converts blocks of [context].
+  bool handlesBlock(BlockContext context) => true;
+
+  /// Whether [convertInline] converts inline elements of [context].
+  bool handlesInline(InlineContext context) => true;
+
+  /// The transforms [convertTransform] handles.
+  Set<String> get transforms => const {};
+
+  @override
+  String? convert(
+    AbstractNode node, [
+    String? transform,
+    ConvertOptions? opts,
+  ]) {
+    if (transform != null && transform != node.nodeName) {
+      return convertTransform(node, transform, opts);
+    }
+    return switch (node) {
+      final Inline inline => convertInline(inline),
+      final AbstractBlock block => convertBlock(block, opts),
+      _ => missing(node.nodeName),
+    };
+  }
+
+  @override
+  bool handles(String transform) {
+    if (transforms.contains(transform)) return true;
+    if (transform.startsWith('inline_')) {
+      final context = InlineContext.tryParse(transform.substring(7));
+      return context != null && handlesInline(context);
+    }
+    final context = BlockContext.tryParse(transform);
+    return context != null && handlesBlock(context);
+  }
+
+  /// Warns that this converter has no handler for [transform] and
+  /// produces nothing.
+  String? missing(String transform) {
+    logger.warn(
+      'missing convert handler for $transform node in $backend backend '
+      '($converterName)',
+    );
+    return null;
+  }
+
+  /// Converts [node] using only its converted content.
+  String? contentOnly(AbstractBlock node) => node.content();
 }
 
 /// Converts [node], optionally guided by conversion [opts], or returns

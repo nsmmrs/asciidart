@@ -1,22 +1,21 @@
 part of 'api.dart';
 
 Inline _createInline(impl.Inline node) => switch ((node.context, node.type)) {
-  ('anchor', 'xref') => CrossReference._(node),
-  ('anchor', 'ref') => InlineAnchor._(node),
-  ('anchor', 'bibref') => BibliographyAnchor._(node),
-  ('anchor', _) => Link._(node),
-  ('quoted', 'asciimath' || 'latexmath') => InlineStem._(node),
-  ('quoted', _) => Formatted._(node),
-  ('footnote', _) => Footnote._(node),
-  ('image', 'icon') => Icon._(node),
-  ('image', _) => InlineImage._(node),
-  ('kbd', _) => Keyboard._(node),
-  ('button', _) => Button._(node),
-  ('menu', _) => Menu._(node),
-  ('break', _) => LineBreak._(node),
-  ('callout', _) => Callout._(node),
-  ('indexterm', _) => IndexTerm._(node),
-  _ => OtherInline._(node),
+  (.anchor, 'xref') => CrossReference._(node),
+  (.anchor, 'ref') => InlineAnchor._(node),
+  (.anchor, 'bibref') => BibliographyAnchor._(node),
+  (.anchor, _) => Link._(node),
+  (.quoted, 'asciimath' || 'latexmath') => InlineStem._(node),
+  (.quoted, _) => Formatted._(node),
+  (.footnote, _) => Footnote._(node),
+  (.image, 'icon') => Icon._(node),
+  (.image, _) => InlineImage._(node),
+  (.kbd, _) => Keyboard._(node),
+  (.button, _) => Button._(node),
+  (.menu, _) => Menu._(node),
+  (.lineBreak, _) => LineBreak._(node),
+  (.callout, _) => Callout._(node),
+  (.indexterm, _) => IndexTerm._(node),
 };
 
 /// An inline element: formatted text, a link, an inline image, and so on.
@@ -229,5 +228,5 @@ final class OtherInline extends Inline {
   new _(super._node) : super._();
 
   /// The element's context, as the extension named it.
-  String get context => _node.context;
+  String get context => _node.contextName;
 }

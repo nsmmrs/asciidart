@@ -318,7 +318,7 @@ StubBlock para(
   String? title,
 ]) => StubBlock(
   parent,
-  'paragraph',
+  BlockContext.paragraph,
   attributes: Map<String, String>.of(attributes),
   stubbedContent: text,
   stubTitle: title,
@@ -461,11 +461,11 @@ void main() {
       late Inline xref;
       final block = StubBlock(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         contentFn: () => convOf(doc).convert(xref)!,
       );
       doc.append(block);
-      xref = Inline(block, 'anchor', type: 'xref');
+      xref = Inline(block, InlineContext.anchor, type: 'xref');
       final output = convOf(doc).convert(doc)!;
       expect(output, contains('xml:lang="en" xml:id="__article-root__">\n'));
       expect(output, contains('<xref linkend="__article-root__"/>'));
@@ -768,8 +768,8 @@ void main() {
       setDocHeader(doc, 'Doc Title');
       final abstract = StubBlock(
         doc,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
       doc.append(abstract);
@@ -795,11 +795,15 @@ void main() {
         plainSubs: true,
       );
       setDocHeader(doc, 'Doc Title');
-      final preamble = Block(doc, 'preamble', contentModel: 'compound');
+      final preamble = Block(
+        doc,
+        BlockContext.preamble,
+        contentModel: ContentModel.compound,
+      );
       final abstract = StubBlock(
         preamble,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
       preamble.append(abstract);
@@ -896,8 +900,8 @@ void main() {
       final doc = makeDoc();
       final abstract = StubBlock(
         doc,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
       doc.append(abstract);
@@ -913,8 +917,8 @@ void main() {
       final doc = (makeDoc())..converter = Docbook5Converter('docbook45');
       final abstract = StubBlock(
         doc,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
       doc.append(abstract);
@@ -1011,9 +1015,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: const {'name': 'NOTE'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'Be careful',
       );
       expect(
@@ -1026,9 +1030,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: const {'name': 'TIP'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'Useful',
         stubTitle: 'Take note',
       );
@@ -1042,9 +1046,9 @@ void main() {
       final doc = makeDoc();
       final node = Block(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: const {'name': 'WARNING'},
-        contentModel: 'compound',
+        contentModel: ContentModel.compound,
       );
       node.append(para(node, 'first'));
       node.append(para(node, 'second'));
@@ -1061,7 +1065,7 @@ void main() {
   group('convertColist', () {
     test('callout list', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'colist');
+      final list = ListBlock(doc, BlockContext.colist);
       final item = StubListItem(list, 'About this line')
         ..attributes['coids'] = 'CO1-1';
       list.append(item);
@@ -1077,7 +1081,11 @@ void main() {
 
     test('callout list with title and nested blocks', () {
       final doc = makeDoc();
-      final list = StubListBlock(doc, 'colist', stubTitle: 'Callouts');
+      final list = StubListBlock(
+        doc,
+        BlockContext.colist,
+        stubTitle: 'Callouts',
+      );
       final item = StubListItem(list, 'About this line')
         ..attributes['coids'] = 'CO1-1 CO1-2';
       item.append(para(item, 'Extra detail'));
@@ -1097,7 +1105,7 @@ void main() {
 
   group('convertDlist', () {
     ListBlock dlist(Document doc, {String? style, String? title, String? id}) {
-      final list = StubListBlock(doc, 'dlist', stubTitle: title)
+      final list = StubListBlock(doc, BlockContext.dlist, stubTitle: title)
         ..style = style
         ..id = id;
       final terms = [StubListItem(list, 'term')];
@@ -1169,7 +1177,7 @@ void main() {
 
     test('term without description', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'dlist');
+      final list = ListBlock(doc, BlockContext.dlist);
       list.entries.add(DlistEntry([StubListItem(list, 'lonely')]));
       expect(
         convOf(doc).convert(list),
@@ -1185,7 +1193,7 @@ void main() {
 
     test('description with nested blocks', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'dlist');
+      final list = ListBlock(doc, BlockContext.dlist);
       final dd = StubListItem(list)..text = null;
       dd.append(para(dd, 'nested'));
       list.entries.add(DlistEntry([StubListItem(list, 'term')], dd));
@@ -1251,8 +1259,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'example',
-        contentModel: 'compound',
+        BlockContext.example,
+        contentModel: ContentModel.compound,
         stubTitle: 'Example',
         childContent: true,
       );
@@ -1270,8 +1278,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'example',
-        contentModel: 'simple',
+        BlockContext.example,
+        contentModel: ContentModel.simple,
         stubbedContent: 'content',
       );
       expect(
@@ -1284,8 +1292,11 @@ void main() {
   group('convertFloatingTitle', () {
     test('floating title', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'floating_title', stubTitle: 'Floating')
-        ..level = 2;
+      final node = StubBlock(
+        doc,
+        BlockContext.floatingTitle,
+        stubTitle: 'Floating',
+      )..level = 2;
       expect(
         convOf(doc).convert(node),
         '<bridgehead renderas="sect2">Floating</bridgehead>',
@@ -1297,7 +1308,7 @@ void main() {
       final node =
           StubBlock(
               doc,
-              'floating_title',
+              BlockContext.floatingTitle,
               attributes: const {'role': 'small'},
               stubTitle: 'Floating',
             )
@@ -1315,7 +1326,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {'target': 'diagram.png'},
         stubAlt: 'Diagram',
       );
@@ -1336,7 +1347,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {
           'target': 'diagram.png',
           'align': 'center',
@@ -1364,7 +1375,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {'target': 'diagram.png', 'scaledwidth': '50%'},
       );
       final output = convOf(doc).convert(node)!;
@@ -1378,7 +1389,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {'target': 'diagram.png', 'scale': '80'},
       );
       final output = convOf(doc).convert(node)!;
@@ -1394,8 +1405,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'listing',
-        contentModel: 'verbatim',
+        BlockContext.listing,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'listing block',
       );
       expect(convOf(doc).convert(node), '<screen>listing block</screen>');
@@ -1405,8 +1416,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'listing',
-        contentModel: 'verbatim',
+        BlockContext.listing,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'listing block',
         stubTitle: 'title',
       );
@@ -1425,9 +1436,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'listing',
+        BlockContext.listing,
         attributes: const {'language': 'ruby'},
-        contentModel: 'verbatim',
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'puts 1',
       )..style = 'source';
       expect(
@@ -1440,9 +1451,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'listing',
+        BlockContext.listing,
         attributes: const {'language': 'ruby', 'linenums': '', 'start': '3'},
-        contentModel: 'verbatim',
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'puts 1',
       )..style = 'source';
       expect(
@@ -1455,8 +1466,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'listing',
-        contentModel: 'verbatim',
+        BlockContext.listing,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'code',
         stubTitle: 'title',
       )..style = 'source';
@@ -1477,8 +1488,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'literal',
-        contentModel: 'verbatim',
+        BlockContext.literal,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'literal',
       );
       expect(
@@ -1491,8 +1502,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'literal',
-        contentModel: 'verbatim',
+        BlockContext.literal,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'literal',
         stubTitle: 'title',
       );
@@ -1513,8 +1524,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'stem',
-        contentModel: 'raw',
+        BlockContext.stem,
+        contentModel: ContentModel.raw,
         stubbedContent: 'x^2',
       )..style = 'latexmath';
       expect(
@@ -1532,8 +1543,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'stem',
-        contentModel: 'raw',
+        BlockContext.stem,
+        contentModel: ContentModel.raw,
         stubbedContent: 'x^2',
       )..style = 'asciimath';
       expect(
@@ -1548,8 +1559,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'stem',
-        contentModel: 'raw',
+        BlockContext.stem,
+        contentModel: ContentModel.raw,
         stubbedContent: 'x^2',
         stubTitle: 'Equation',
       )..style = 'latexmath';
@@ -1568,7 +1579,12 @@ void main() {
     test('specialcharacters sub is restored after conversion', () {
       final doc = makeDoc();
       final node =
-          StubBlock(doc, 'stem', contentModel: 'raw', stubbedContent: 'x')
+          StubBlock(
+              doc,
+              BlockContext.stem,
+              contentModel: ContentModel.raw,
+              stubbedContent: 'x',
+            )
             ..style = 'latexmath'
             ..subs = ['specialcharacters', 'quotes'];
       convOf(doc).convert(node);
@@ -1582,7 +1598,7 @@ void main() {
   group('convertOlist', () {
     test('ordered list', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'olist');
+      final list = ListBlock(doc, BlockContext.olist);
       list.append(StubListItem(list, 'first'));
       list.append(StubListItem(list, 'second'));
       expect(
@@ -1603,7 +1619,7 @@ void main() {
       final list =
           StubListBlock(
               doc,
-              'olist',
+              BlockContext.olist,
               attributes: const {'start': '3'},
               stubTitle: 'Steps',
             )
@@ -1624,7 +1640,7 @@ void main() {
 
     test('item with id, role and nested blocks', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'olist');
+      final list = ListBlock(doc, BlockContext.olist);
       final item = StubListItem(list, 'first')
         ..attributes['role'] = 'lead'
         ..id = 'item1';
@@ -1647,8 +1663,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
       expect(
@@ -1659,12 +1675,15 @@ void main() {
 
     test('abstract in partintro is wrapped in info', () {
       final doc = makeDoc();
-      final partintro = StubBlock(doc, 'open', contentModel: 'compound')
-        ..style = 'partintro';
+      final partintro = StubBlock(
+        doc,
+        BlockContext.open,
+        contentModel: ContentModel.compound,
+      )..style = 'partintro';
       final abstract = StubBlock(
         partintro,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'Abstract text',
       )..style = 'abstract';
       partintro.append(abstract);
@@ -1679,8 +1698,8 @@ void main() {
         final doc = makeDoc(options: const AsciidoctorOptions(doctype: 'book'));
         final node = StubBlock(
           doc,
-          'open',
-          contentModel: 'simple',
+          BlockContext.open,
+          contentModel: ContentModel.simple,
           stubbedContent: 'Abstract text',
         )..style = 'abstract';
         doc.append(node);
@@ -1696,9 +1715,10 @@ void main() {
     test('partintro in book part', () {
       final doc = makeDoc(options: const AsciidoctorOptions(doctype: 'book'));
       final part = StubSection(parent: doc, level: 0)..sectname = 'part';
-      final node = Block(part, 'open', contentModel: 'compound')
-        ..style = 'partintro'
-        ..level = 0;
+      final node =
+          Block(part, BlockContext.open, contentModel: ContentModel.compound)
+            ..style = 'partintro'
+            ..level = 0;
       node.append(para(node, 'intro'));
       expect(
         convOf(doc).convert(node),
@@ -1711,8 +1731,8 @@ void main() {
         final doc = makeDoc();
         final node = StubBlock(
           doc,
-          'open',
-          contentModel: 'simple',
+          BlockContext.open,
+          contentModel: ContentModel.simple,
           stubbedContent: 'intro',
         )..style = 'partintro';
         expect(convOf(doc).convert(node), '');
@@ -1728,8 +1748,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'content',
         stubTitle: 'Title',
       );
@@ -1741,7 +1761,11 @@ void main() {
 
     test('open block with id and compound content uses para', () {
       final doc = makeDoc();
-      final node = Block(doc, 'open', contentModel: 'compound')..id = 'open1';
+      final node = Block(
+        doc,
+        BlockContext.open,
+        contentModel: ContentModel.compound,
+      )..id = 'open1';
       node.append(para(node, 'content'));
       expect(
         convOf(doc).convert(node),
@@ -1753,9 +1777,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'open',
+        BlockContext.open,
         attributes: const {'role': 'lead'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'content',
       );
       expect(
@@ -1768,8 +1792,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'content',
       );
       expect(convOf(doc).convert(node), '<simpara>content</simpara>');
@@ -1779,7 +1803,11 @@ void main() {
   group('convertPageBreak', () {
     test('page break', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'page_break', contentModel: 'empty');
+      final node = StubBlock(
+        doc,
+        BlockContext.pageBreak,
+        contentModel: ContentModel.empty,
+      );
       expect(
         convOf(doc).convert(node),
         '<simpara><?asciidoc-pagebreak?></simpara>',
@@ -1809,9 +1837,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         attributes: const {'role': 'lead'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'content',
         stubReftext: 'Intro',
       )..id = 'intro';
@@ -1825,8 +1853,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'paragraph',
-        contentModel: 'simple',
+        BlockContext.paragraph,
+        contentModel: ContentModel.simple,
         stubbedContent: 'content',
         stubReftext: 'See <b>this  thing</b>',
       )..id = 'intro';
@@ -1840,8 +1868,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'paragraph',
-        contentModel: 'simple',
+        BlockContext.paragraph,
+        contentModel: ContentModel.simple,
         stubbedContent: 'content',
         stubReftext: 'Say "hi"',
       )..id = 'intro';
@@ -1855,14 +1883,22 @@ void main() {
   group('convertPreamble', () {
     test('preamble passes content through', () {
       final doc = makeDoc();
-      final node = Block(doc, 'preamble', contentModel: 'compound');
+      final node = Block(
+        doc,
+        BlockContext.preamble,
+        contentModel: ContentModel.compound,
+      );
       node.append(para(node, 'content'));
       expect(convOf(doc).convert(node), '<simpara>content</simpara>');
     });
 
     test('preamble in book uses preface', () {
       final doc = makeDoc(options: const AsciidoctorOptions(doctype: 'book'));
-      final node = Block(doc, 'preamble', contentModel: 'compound');
+      final node = Block(
+        doc,
+        BlockContext.preamble,
+        contentModel: ContentModel.compound,
+      );
       node.append(para(node, 'content'));
       expect(
         convOf(doc).convert(node),
@@ -1876,8 +1912,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'quote',
-        contentModel: 'simple',
+        BlockContext.quote,
+        contentModel: ContentModel.simple,
         stubbedContent: 'quoted',
       );
       expect(
@@ -1890,9 +1926,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'quote',
+        BlockContext.quote,
         attributes: const {'attribution': 'Author', 'citetitle': 'Work'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'quoted',
         stubTitle: 'Quote',
       );
@@ -1913,9 +1949,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'quote',
+        BlockContext.quote,
         attributes: const {'role': 'epigraph'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'quoted',
       );
       expect(
@@ -1930,8 +1966,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'sidebar',
-        contentModel: 'compound',
+        BlockContext.sidebar,
+        contentModel: ContentModel.compound,
         stubTitle: 'Side',
         childContent: true,
       );
@@ -2136,7 +2172,7 @@ void main() {
   group('convertUlist', () {
     test('unordered list', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'ulist');
+      final list = ListBlock(doc, BlockContext.ulist);
       list.append(StubListItem(list, 'first'));
       list.append(StubListItem(list, 'second'));
       expect(
@@ -2154,7 +2190,7 @@ void main() {
 
     test('unordered list with mark and title', () {
       final doc = makeDoc();
-      final list = StubListBlock(doc, 'ulist', stubTitle: 'Items')
+      final list = StubListBlock(doc, BlockContext.ulist, stubTitle: 'Items')
         ..style = 'square';
       list.append(StubListItem(list, 'first'));
       expect(
@@ -2170,7 +2206,7 @@ void main() {
 
     test('bibliography list', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'ulist')..style = 'bibliography';
+      final list = ListBlock(doc, BlockContext.ulist)..style = 'bibliography';
       list.append(StubListItem(list, 'Doe. Work.'));
       expect(
         convOf(doc).convert(list),
@@ -2186,7 +2222,7 @@ void main() {
       final doc = makeDoc();
       final list = ListBlock(
         doc,
-        'ulist',
+        BlockContext.ulist,
         attributes: const {'checklist-option': ''},
       );
       final done = StubListItem(list, 'Done')
@@ -2212,8 +2248,8 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'verse',
-        contentModel: 'verbatim',
+        BlockContext.verse,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'line one\nline two',
       );
       expect(
@@ -2226,9 +2262,9 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'verse',
+        BlockContext.verse,
         attributes: const {'role': 'epigraph', 'attribution': 'Author'},
-        contentModel: 'verbatim',
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'quoted',
       );
       expect(
@@ -2246,17 +2282,17 @@ void main() {
   group('skipped and delegated transforms', () {
     test('audio, video and toc are skipped', () {
       final doc = makeDoc();
-      expect(convOf(doc).convert(StubBlock(doc, 'audio')), isNull);
-      expect(convOf(doc).convert(StubBlock(doc, 'video')), isNull);
-      expect(convOf(doc).convert(StubBlock(doc, 'toc')), isNull);
+      expect(convOf(doc).convert(StubBlock(doc, BlockContext.audio)), isNull);
+      expect(convOf(doc).convert(StubBlock(doc, BlockContext.video)), isNull);
+      expect(convOf(doc).convert(StubBlock(doc, BlockContext.toc)), isNull);
     });
 
     test('pass returns content only', () {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'pass',
-        contentModel: 'raw',
+        BlockContext.pass,
+        contentModel: ContentModel.raw,
         stubbedContent: '<custom/>',
       );
       expect(convOf(doc).convert(node), '<custom/>');
@@ -2268,7 +2304,7 @@ void main() {
       final doc = makeDoc();
       final node = StubInline(
         para(doc),
-        'anchor',
+        InlineContext.anchor,
         id: 'here',
         type: 'ref',
         stubReftext: 'Here',
@@ -2281,7 +2317,12 @@ void main() {
 
     test('ref anchor without reftext uses bracketed id', () {
       final doc = makeDoc();
-      final node = StubInline(para(doc), 'anchor', id: 'here', type: 'ref');
+      final node = StubInline(
+        para(doc),
+        InlineContext.anchor,
+        id: 'here',
+        type: 'ref',
+      );
       expect(
         convOf(doc).convert(node),
         '<anchor xml:id="here" xreflabel="[here]"/>',
@@ -2292,7 +2333,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'anchor',
+        InlineContext.anchor,
         text: 'See',
         attributes: const {'path': 'other.xml'},
         type: 'xref',
@@ -2308,7 +2349,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'anchor',
+        InlineContext.anchor,
         attributes: const {'path': 'other.xml'},
         type: 'xref',
         target: 'other.xml',
@@ -2323,7 +2364,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'anchor',
+        InlineContext.anchor,
         attributes: const {'refid': 'sec1'},
         type: 'xref',
       );
@@ -2334,7 +2375,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'anchor',
+        InlineContext.anchor,
         text: 'Section',
         attributes: const {'refid': 'sec1'},
         type: 'xref',
@@ -2344,7 +2385,7 @@ void main() {
 
     test('xref without refid generates document id', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'anchor', type: 'xref');
+      final node = Inline(para(doc), InlineContext.anchor, type: 'xref');
       expect(convOf(doc).convert(node), '<xref linkend="__article-root__"/>');
       expect(doc.id, '__article-root__');
     });
@@ -2353,7 +2394,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'anchor',
+        InlineContext.anchor,
         text: 'Example',
         type: 'link',
         target: 'https://example.org',
@@ -2368,7 +2409,7 @@ void main() {
       final doc = makeDoc();
       final node = StubInline(
         para(doc),
-        'anchor',
+        InlineContext.anchor,
         id: 'doe2020',
         type: 'bibref',
         stubReftext: 'Doe',
@@ -2383,7 +2424,7 @@ void main() {
       final doc = makeDoc();
       final node = StubInline(
         para(doc),
-        'anchor',
+        InlineContext.anchor,
         id: 'doe2020',
         type: 'bibref',
       );
@@ -2396,7 +2437,7 @@ void main() {
     test('unknown anchor type warns and returns null', () {
       usingMemoryLogger((logger) {
         final doc = makeDoc();
-        final node = Inline(para(doc), 'anchor', type: 'bogus');
+        final node = Inline(para(doc), InlineContext.anchor, type: 'bogus');
         expect(convOf(doc).convert(node), isNull);
         expect(logger.warns.single, 'unknown anchor type: :bogus');
       });
@@ -2406,7 +2447,7 @@ void main() {
   group('convertInlineBreak', () {
     test('line break', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'break', text: 'x');
+      final node = Inline(para(doc), InlineContext.lineBreak, text: 'x');
       expect(convOf(doc).convert(node), 'x<?asciidoc-br?>');
     });
   });
@@ -2414,7 +2455,7 @@ void main() {
   group('convertInlineButton', () {
     test('button', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'button', text: 'OK');
+      final node = Inline(para(doc), InlineContext.button, text: 'OK');
       expect(convOf(doc).convert(node), '<guibutton>OK</guibutton>');
     });
   });
@@ -2422,7 +2463,7 @@ void main() {
   group('convertInlineCallout', () {
     test('callout', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'callout', id: 'CO1-1');
+      final node = Inline(para(doc), InlineContext.callout, id: 'CO1-1');
       expect(convOf(doc).convert(node), '<co xml:id="CO1-1"/>');
     });
   });
@@ -2430,13 +2471,23 @@ void main() {
   group('convertInlineFootnote', () {
     test('footnote reference', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'footnote', type: 'xref', target: 'fn1');
+      final node = Inline(
+        para(doc),
+        InlineContext.footnote,
+        type: 'xref',
+        target: 'fn1',
+      );
       expect(convOf(doc).convert(node), '<footnoteref linkend="fn1"/>');
     });
 
     test('footnote', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'footnote', text: 'note', id: 'fn1');
+      final node = Inline(
+        para(doc),
+        InlineContext.footnote,
+        text: 'note',
+        id: 'fn1',
+      );
       expect(
         convOf(doc).convert(node),
         '<footnote xml:id="fn1"><simpara>note</simpara></footnote>',
@@ -2449,7 +2500,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'image',
+        InlineContext.image,
         attributes: const {'alt': 'Alt'},
         target: 'img.png',
       );
@@ -2466,7 +2517,12 @@ void main() {
 
     test('icon image', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'image', type: 'icon', target: 'note');
+      final node = Inline(
+        para(doc),
+        InlineContext.image,
+        type: 'icon',
+        target: 'note',
+      );
       final output = convOf(doc).convert(node)!;
       expect(
         output,
@@ -2478,7 +2534,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'image',
+        InlineContext.image,
         attributes: const {
           'alt': 'Alt',
           'width': '100',
@@ -2496,7 +2552,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'image',
+        InlineContext.image,
         attributes: const {'link': 'self'},
         target: 'img.png',
       );
@@ -2510,7 +2566,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'indexterm',
+        InlineContext.indexterm,
         text: 'cats',
         type: 'visible',
       );
@@ -2522,7 +2578,7 @@ void main() {
 
     test('single term', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'indexterm', terms: ['cats']);
+      final node = Inline(para(doc), InlineContext.indexterm, terms: ['cats']);
       expect(
         convOf(doc).convert(node),
         '<indexterm>\n<primary>cats</primary>\n</indexterm>',
@@ -2531,7 +2587,11 @@ void main() {
 
     test('two terms', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'indexterm', terms: ['cats', 'big']);
+      final node = Inline(
+        para(doc),
+        InlineContext.indexterm,
+        terms: ['cats', 'big'],
+      );
       expect(
         convOf(doc).convert(node),
         '<indexterm>\n<primary>cats</primary><secondary>big</secondary>\n</indexterm>',
@@ -2542,7 +2602,7 @@ void main() {
       final doc = makeDoc(attributes: const {'indexterm-promotion-option': ''});
       final node = Inline(
         para(doc),
-        'indexterm',
+        InlineContext.indexterm,
         terms: ['cats', 'big', 'lions'],
       );
       expect(
@@ -2561,7 +2621,11 @@ void main() {
 
     test('two terms with promotion', () {
       final doc = makeDoc(attributes: const {'indexterm-promotion-option': ''});
-      final node = Inline(para(doc), 'indexterm', terms: ['cats', 'big']);
+      final node = Inline(
+        para(doc),
+        InlineContext.indexterm,
+        terms: ['cats', 'big'],
+      );
       expect(
         convOf(doc).convert(node),
         '<indexterm>\n'
@@ -2577,7 +2641,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'indexterm',
+        InlineContext.indexterm,
         attributes: const {'see': 'felines'},
         terms: ['cats'],
       );
@@ -2591,7 +2655,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'indexterm',
+        InlineContext.indexterm,
         terms: ['cats'],
         seeAlso: ['dogs', 'birds'],
       );
@@ -2609,13 +2673,13 @@ void main() {
   group('convertInlineKbd', () {
     test('single key', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'kbd', keys: ['Enter']);
+      final node = Inline(para(doc), InlineContext.kbd, keys: ['Enter']);
       expect(convOf(doc).convert(node), '<keycap>Enter</keycap>');
     });
 
     test('key combination', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'kbd', keys: ['Ctrl', 'S']);
+      final node = Inline(para(doc), InlineContext.kbd, keys: ['Ctrl', 'S']);
       expect(
         convOf(doc).convert(node),
         '<keycombo><keycap>Ctrl</keycap><keycap>S</keycap></keycombo>',
@@ -2628,7 +2692,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'menu',
+        InlineContext.menu,
         attributes: const {'menu': 'File'},
         submenus: <String>[],
       );
@@ -2639,7 +2703,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'menu',
+        InlineContext.menu,
         attributes: const {'menu': 'File', 'menuitem': 'Open'},
         submenus: <String>[],
       );
@@ -2653,7 +2717,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'menu',
+        InlineContext.menu,
         attributes: const {'menu': 'File', 'menuitem': 'doc.adoc'},
         submenus: ['Recent'],
       );
@@ -2678,7 +2742,12 @@ void main() {
         'subscript': ['<subscript>', '</subscript>'],
       };
       for (final entry in cases.entries) {
-        final node = Inline(para(doc), 'quoted', text: 'x', type: entry.key);
+        final node = Inline(
+          para(doc),
+          InlineContext.quoted,
+          text: 'x',
+          type: entry.key,
+        );
         expect(
           convOf(doc).convert(node),
           '${entry.value[0]}x${entry.value[1]}',
@@ -2691,7 +2760,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'quoted',
+        InlineContext.quoted,
         text: 'x',
         attributes: const {'role': 'red'},
         type: 'emphasis',
@@ -2706,7 +2775,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'quoted',
+        InlineContext.quoted,
         text: 'x',
         attributes: const {'role': 'red'},
         type: 'monospaced',
@@ -2718,7 +2787,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
-        'quoted',
+        InlineContext.quoted,
         text: 'x',
         id: 'q1',
         type: 'strong',
@@ -2731,13 +2800,23 @@ void main() {
 
     test('unknown quoted type passes text through', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'quoted', text: 'x', type: 'bogus');
+      final node = Inline(
+        para(doc),
+        InlineContext.quoted,
+        text: 'x',
+        type: 'bogus',
+      );
       expect(convOf(doc).convert(node), 'x');
     });
 
     test('asciimath falls back to mathphrase', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'quoted', text: 'x^2', type: 'asciimath');
+      final node = Inline(
+        para(doc),
+        InlineContext.quoted,
+        text: 'x^2',
+        type: 'asciimath',
+      );
       expect(
         convOf(doc).convert(node),
         '<inlineequation><mathphrase><![CDATA[x^2]]></mathphrase></inlineequation>',
@@ -2746,7 +2825,12 @@ void main() {
 
     test('latexmath passes source to alt and mathphrase', () {
       final doc = makeDoc();
-      final node = Inline(para(doc), 'quoted', text: 'x^2', type: 'latexmath');
+      final node = Inline(
+        para(doc),
+        InlineContext.quoted,
+        text: 'x^2',
+        type: 'latexmath',
+      );
       expect(
         convOf(doc).convert(node),
         '<inlineequation><alt><![CDATA[x^2]]></alt><mathphrase><![CDATA[x^2]]></mathphrase></inlineequation>',

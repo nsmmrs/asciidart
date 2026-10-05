@@ -26,16 +26,14 @@ const Map<String, String> orderedListKeywords = <String, String>{
   'upperroman': 'I',
 };
 
-/// Maps block contexts to the document attribute holding their caption prefix.
-///
-/// Port of `CAPTION_ATTRIBUTE_NAMES` in `lib/asciidoctor.rb`. The upstream
-/// map also has a `'figure'` entry that block-context lookups never reach,
-/// so it is left out here; explicit `'figure'` lookups are handled in
-/// `AbstractBlock.assignCaption`.
-const Map<String, String> captionAttributeNames = <String, String>{
-  'example': 'example-caption',
-  'listing': 'listing-caption',
-  'table': 'table-caption',
+/// The document attribute holding the caption prefix of blocks of
+/// [context], if they have one (figures are handled by
+/// `AbstractBlock.assignCaption`).
+String? captionAttributeName(BlockContext context) => switch (context) {
+  .example => 'example-caption',
+  .listing => 'listing-caption',
+  .table => 'table-caption',
+  _ => null,
 };
 
 /// Controls [AbstractBlock.findBy] traversal from a [FindByFilter].
@@ -95,8 +93,11 @@ abstract interface class NodeSection {
 /// Port of `Asciidoctor::AbstractBlock`.
 abstract class AbstractBlock extends AbstractNode {
   /// Creates a block with [parent] and [context].
-  new(super.parent, super.context, {super.attributes}) {
-    if (context == 'document' || context == 'section') {
+  new(super.parent, this.context, {super.attributes}) {
+    if (context == BlockContext.document && this is! NodeDocument) {
+      throw StateError('A document block must implement NodeDocument.');
+    }
+    if (context == BlockContext.document || context == BlockContext.section) {
       level = _nextSectionIndex = 0;
       _nextSectionOrdinal = 1;
     } else if (parent != null) {
@@ -106,12 +107,23 @@ abstract class AbstractBlock extends AbstractNode {
     }
   }
 
+  /// The kind of this block.
+  ///
+  /// Reassignable: the parser turns a block into another kind when its
+  /// style says so.
+  BlockContext context;
+
+  @override
+  String get contextName => context.asciidoc;
+
+  @override
+  String get nodeName => context.asciidoc;
+
   /// The child blocks of this block (compound content model only).
   final List<AbstractBlock> blocks = <AbstractBlock>[];
 
-  /// The type of content this block accepts and how it should be converted:
-  /// `'compound'`, `'simple'`, `'verbatim'`, `'raw'` or `'empty'`.
-  String contentModel = 'compound';
+  /// The type of content this block accepts and how it is converted.
+  ContentModel contentModel = ContentModel.compound;
 
   /// The level of this section (or of the section this block belongs to).
   int? level;
@@ -195,7 +207,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// every block-level node in the tree is returned. [traverseDocuments]
   /// lets table cells descend into nested documents.
   List<AbstractBlock> findBy({
-    String? context,
+    BlockContext? context,
     String? style,
     String? role,
     String? id,
@@ -219,23 +231,6 @@ abstract class AbstractBlock extends AbstractNode {
     return result;
   }
 
-  /// Alias of [findBy].
-  List<AbstractBlock> query({
-    String? context,
-    String? style,
-    String? role,
-    String? id,
-    bool traverseDocuments = false,
-    FindByFilter? filter,
-  }) => findBy(
-    context: context,
-    style: style,
-    role: role,
-    id: id,
-    traverseDocuments: traverseDocuments,
-    filter: filter,
-  );
-
   /// Performs the work for [findBy] without handling [_TraversalStopped].
   ///
   /// Internal: public so subclasses in other libraries (and their traversal
@@ -243,7 +238,7 @@ abstract class AbstractBlock extends AbstractNode {
   @internal
   List<AbstractBlock> findByInternal({
     required List<AbstractBlock> result,
-    String? context,
+    BlockContext? context,
     String? style,
     String? role,
     String? id,
@@ -297,7 +292,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// honoring [traverseDocuments]).
   void traverseChildren({
     required List<AbstractBlock> result,
-    String? context,
+    BlockContext? context,
     String? style,
     String? role,
     String? id,
@@ -306,7 +301,7 @@ abstract class AbstractBlock extends AbstractNode {
   }) {
     for (final child in blocks) {
       // Optimization: sections never hide inside non-section blocks.
-      if (context == 'section' && child.context != 'section') continue;
+      if (context == BlockContext.section && child is! NodeSection) continue;
       child.findByInternal(
         context: context,
         style: style,
@@ -326,12 +321,12 @@ abstract class AbstractBlock extends AbstractNode {
   /// list item advances to the first term of the next entry. Returns `null`
   /// at the end of the document.
   AbstractBlock? nextAdjacentBlock() {
-    if (context == 'document') return null;
+    if (context == BlockContext.document) return null;
     final p = parent;
     if (p == null) {
       throw StateError('Cannot find the adjacent block of a detached node.');
     }
-    if (p.context == 'dlist' && context == 'list_item') {
+    if (p.context == BlockContext.dlist && context == BlockContext.listItem) {
       return p.nextAdjacentDlistBlock(this) ?? p.nextAdjacentBlock();
     }
     final siblings = p.blocks;
@@ -355,7 +350,7 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// The child sections of this block.
   List<AbstractBlock> get sections =>
-      blocks.where((child) => child.context == 'section').toList();
+      blocks.where((child) => child.context == BlockContext.section).toList();
 
   /// The converted alt text for this block image.
   ///
@@ -381,7 +376,7 @@ abstract class AbstractBlock extends AbstractNode {
   ///
   /// On admonition blocks this routes to the `textlabel` attribute.
   String? get caption =>
-      context == 'admonition' ? attributes['textlabel'] : _caption;
+      context == BlockContext.admonition ? attributes['textlabel'] : _caption;
 
   /// Sets the caption of this block.
   set caption(String? value) {
@@ -469,7 +464,7 @@ abstract class AbstractBlock extends AbstractNode {
   String? _captionPrefix() {
     final number = numeral;
     if (number == null) return null;
-    final attrName = captionAttributeNames[context];
+    final attrName = captionAttributeName(context);
     if (attrName == null) return null;
     final prefix = document!.attributes[attrName];
     if (prefix == null) return null;
@@ -486,11 +481,11 @@ abstract class AbstractBlock extends AbstractNode {
   /// Generates and assigns a caption to this block, unless already assigned.
   ///
   /// When [value] (or the document's `caption` attribute) is set, it becomes
-  /// the caption. Otherwise, when the [captionContext] (default [context])
-  /// resolves a caption prefix on the document, a `'<prefix> <number>. '`
-  /// caption is built and the block takes the next `<context>-number`.
-  void assignCaption(String? value, [String? captionContext]) {
-    final targetContext = captionContext ?? context;
+  /// the caption. Otherwise, when the document has a caption prefix for
+  /// this kind of block (for figures with [figure], else per [context]), a
+  /// `'<prefix> <number>. '` caption is built and the block takes the next
+  /// number of its kind.
+  void assignCaption(String? value, {bool figure = false}) {
     if (_caption != null || _title == null) return;
     final assigned = value ?? document!.attributes['caption'];
     if (assigned != null) {
@@ -498,19 +493,11 @@ abstract class AbstractBlock extends AbstractNode {
       return;
     }
     // NOTE the caption stays null, so assignment remains re-runnable.
-    //
-    // Only an explicitly passed 'figure' caption context (the parser passes
-    // it for titled images) uses the figure caption; a block whose context
-    // merely is 'figure' does not, as in Asciidoctor.
-    final attrName = targetContext == 'figure' && captionContext != null
-        ? 'figure-caption'
-        : captionAttributeNames[targetContext];
+    final attrName = figure ? 'figure-caption' : captionAttributeName(context);
     final prefix = attrName == null ? null : document!.attributes[attrName];
     if (attrName != null && prefix != null) {
-      numeral = document!.incrementAndStoreCounter(
-        '$targetContext-number',
-        this,
-      );
+      final kind = figure ? 'figure' : context.asciidoc;
+      numeral = document!.incrementAndStoreCounter('$kind-number', this);
       _caption = '$prefix $numeral. ';
     }
   }
@@ -557,7 +544,7 @@ abstract class AbstractBlock extends AbstractNode {
     _nextSectionIndex = 0;
     _nextSectionOrdinal = 1;
     for (final child in blocks) {
-      if (child.context == 'section') {
+      if (child.context == BlockContext.section) {
         assignNumeral(child);
         child.reindexSections();
       }

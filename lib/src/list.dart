@@ -35,7 +35,8 @@ class ListBlock extends AbstractBlock {
   bool get hasItems => blocks.isNotEmpty || entries.isNotEmpty;
 
   /// Whether this list is an outline list (unordered or ordered).
-  bool get isOutline => context == 'ulist' || context == 'olist';
+  bool get isOutline =>
+      context == BlockContext.ulist || context == BlockContext.olist;
 
   /// The style the parser derived from the first ordered list marker, if
   /// any.
@@ -57,7 +58,7 @@ class ListBlock extends AbstractBlock {
   /// Port of `Asciidoctor::List#convert`.
   @override
   String? convert() {
-    if (context == 'colist') {
+    if (context == BlockContext.colist) {
       final result = super.convert();
       document!.callouts.nextList();
       return result;
@@ -84,8 +85,8 @@ class ListBlock extends AbstractBlock {
 
   @override
   String toString() =>
-      'ListBlock(context: $context, style: ${debugQuote(style)}, '
-      'items: ${context == 'dlist' ? entries.length : blocks.length})';
+      'ListBlock(context: ${context.asciidoc}, style: ${debugQuote(style)}, '
+      'items: ${context == .dlist ? entries.length : blocks.length})';
 }
 
 /// One entry of a description list: one or more terms and an optional
@@ -111,7 +112,7 @@ class ListItem extends AbstractBlock {
   /// Creates a list item with [parent] (the [ListBlock]) and [text].
   new(AbstractBlock parent, [String? text])
     : _text = text,
-      super(parent, 'list_item') {
+      super(parent, BlockContext.listItem) {
     level = parent.level;
     subs = List<String>.of(normalSubs);
   }
@@ -172,6 +173,6 @@ class ListItem extends AbstractBlock {
 
   @override
   String toString() =>
-      'ListItem(listContext: ${(parent!).context}, '
+      'ListItem(listContext: ${parent!.contextName}, '
       'text: ${debugQuote(_text)}, blocks: ${blocks.length})';
 }

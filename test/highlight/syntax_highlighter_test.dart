@@ -44,7 +44,11 @@ class _StubBlock extends Block {
     AbstractBlock? parent,
     this.stubbedContent, [
     Map<String, String>? attributes,
-  ]) : super(parent, 'listing', attributes: attributes ?? <String, String>{});
+  ]) : super(
+         parent,
+         BlockContext.listing,
+         attributes: attributes ?? <String, String>{},
+       );
 
   /// The value [content] returns.
   final String stubbedContent;

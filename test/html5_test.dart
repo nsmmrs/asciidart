@@ -344,7 +344,7 @@ StubBlock para(
   String? title,
 }) => StubBlock(
   doc,
-  'paragraph',
+  BlockContext.paragraph,
   attributes: Map<String, String>.of(attributes),
   stubbedContent: text,
   stubTitle: title,
@@ -765,7 +765,7 @@ void main() {
   group('convertListing', () {
     test('plain listing honors prewrap', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'listing', stubbedContent: 'line');
+      final node = StubBlock(doc, BlockContext.listing, stubbedContent: 'line');
       expect(
         convOf(doc).convert(node),
         '<div class="listingblock">\n'
@@ -779,7 +779,7 @@ void main() {
     test('listing without prewrap gets nowrap class', () {
       final doc = makeDoc();
       doc.attributes.remove('prewrap');
-      final node = StubBlock(doc, 'listing', stubbedContent: 'line');
+      final node = StubBlock(doc, BlockContext.listing, stubbedContent: 'line');
       expect(
         convOf(doc).convert(node),
         contains('<pre class="nowrap">line</pre>'),
@@ -790,7 +790,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'listing',
+        BlockContext.listing,
         attributes: const {'nowrap-option': ''},
         stubbedContent: 'line',
       );
@@ -804,7 +804,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'listing',
+        BlockContext.listing,
         attributes: const {'language': 'ruby'},
         stubbedContent: 'puts "hi"',
       )..style = 'source';
@@ -824,7 +824,7 @@ void main() {
       doc.syntaxHighlighter = hl;
       final node = StubBlock(
         doc,
-        'listing',
+        BlockContext.listing,
         attributes: const {'language': 'ruby'},
         stubbedContent: 'puts "hi"',
       )..style = 'source';
@@ -839,7 +839,7 @@ void main() {
       final node =
           StubBlock(
               doc,
-              'listing',
+              BlockContext.listing,
               attributes: const {'language': 'ruby'},
               stubbedContent: 'x',
               stubTitle: 'Example',
@@ -856,7 +856,11 @@ void main() {
   group('convertLiteral', () {
     test('literal block', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'literal', stubbedContent: '  spaced');
+      final node = StubBlock(
+        doc,
+        BlockContext.literal,
+        stubbedContent: '  spaced',
+      );
       expect(
         convOf(doc).convert(node),
         '<div class="literalblock">\n'
@@ -871,7 +875,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'literal',
+        BlockContext.literal,
         stubbedContent: 'x',
         stubTitle: 'T',
       )..id = 'l1';
@@ -887,7 +891,7 @@ void main() {
   group('convertStem', () {
     test('latexmath stem is wrapped in display delimiters', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'stem', stubbedContent: 'E=mc^2')
+      final node = StubBlock(doc, BlockContext.stem, stubbedContent: 'E=mc^2')
         ..style = 'latexmath';
       expect(
         convOf(doc).convert(node),
@@ -902,11 +906,11 @@ void main() {
 
     test('already-delimited stem is not wrapped twice', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'stem', stubbedContent: r'\(x\)')
+      final node = StubBlock(doc, BlockContext.stem, stubbedContent: r'\(x\)')
         ..style = 'latexmath';
       // Block delimiters differ from the inline ones, so wrapping applies.
       expect(convOf(doc).convert(node), contains(r'\[\(x\)\]'));
-      final node2 = StubBlock(doc, 'stem', stubbedContent: r'\[x\]')
+      final node2 = StubBlock(doc, BlockContext.stem, stubbedContent: r'\[x\]')
         ..style = 'latexmath';
       expect(convOf(doc).convert(node2), contains(r'\[x\]'));
       expect(convOf(doc).convert(node2), isNot(contains(r'\[\[x\]')));
@@ -914,7 +918,7 @@ void main() {
 
     test('asciimath stem splits blank-line breaks', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'stem', stubbedContent: 'a\n\nb')
+      final node = StubBlock(doc, BlockContext.stem, stubbedContent: 'a\n\nb')
         ..style = 'asciimath';
       expect(
         convOf(doc).convert(node),
@@ -931,13 +935,13 @@ void main() {
 
     test('empty stem renders empty equation', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'stem')..style = 'latexmath';
+      final node = StubBlock(doc, BlockContext.stem)..style = 'latexmath';
       expect(convOf(doc).convert(node), contains(r'\[\]'));
     });
 
     test('null stem content renders empty equation', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'stem', stubbedContent: null)
+      final node = StubBlock(doc, BlockContext.stem, stubbedContent: null)
         ..style = 'latexmath';
       expect(
         convOf(doc).convert(node),
@@ -951,7 +955,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: const {'name': 'note', 'textlabel': 'Note'},
         stubbedContent: '<div class="paragraph">\n<p>Hi</p>\n</div>',
       );
@@ -976,7 +980,7 @@ void main() {
       final doc = makeDoc(attributes: const {'icons': 'font'});
       final node = StubBlock(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: const {'name': 'tip', 'textlabel': 'Tip'},
         stubbedContent: 'x',
       );
@@ -990,7 +994,7 @@ void main() {
       final doc = makeDoc(attributes: const {'icons': ''});
       final node = StubBlock(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: const {'name': 'note', 'textlabel': 'Note'},
         stubbedContent: 'x',
       );
@@ -1004,7 +1008,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: const {
           'name': 'warning',
           'textlabel': 'Warning',
@@ -1027,7 +1031,7 @@ void main() {
   group('convertUlist', () {
     test('basic bullet list', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'ulist')..style = 'bullet';
+      final list = ListBlock(doc, BlockContext.ulist)..style = 'bullet';
       list
         ..blocks.add(StubListItem(list, 'One'))
         ..blocks.add(StubListItem(list, 'Two'));
@@ -1046,7 +1050,7 @@ void main() {
       final doc = makeDoc();
       final list = ListBlock(
         doc,
-        'ulist',
+        BlockContext.ulist,
         attributes: const {'checklist-option': ''},
       )..style = 'bullet';
       final done = StubListItem(list, 'Done')
@@ -1064,7 +1068,7 @@ void main() {
       final doc = makeDoc(attributes: const {'icons': 'font'});
       final list = ListBlock(
         doc,
-        'ulist',
+        BlockContext.ulist,
         attributes: const {'checklist-option': ''},
       );
       final done = StubListItem(list, 'Done')
@@ -1080,7 +1084,7 @@ void main() {
       final doc = makeDoc();
       final list = ListBlock(
         doc,
-        'ulist',
+        BlockContext.ulist,
         attributes: const {'checklist-option': '', 'interactive-option': ''},
       );
       final done = StubListItem(list, 'Done')
@@ -1098,7 +1102,7 @@ void main() {
       final doc = makeDoc(xml: true);
       final list = ListBlock(
         doc,
-        'ulist',
+        BlockContext.ulist,
         attributes: const {'checklist-option': '', 'interactive-option': ''},
       );
       final todo = StubListItem(list, 'Todo')..attributes['checkbox'] = '';
@@ -1111,7 +1115,7 @@ void main() {
 
     test('item with id, role and nested blocks', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'ulist');
+      final list = ListBlock(doc, BlockContext.ulist);
       final item = StubListItem(list, 'Text')
         ..id = 'i1'
         ..attributes['role'] = 'r';
@@ -1129,8 +1133,11 @@ void main() {
   group('convertOlist', () {
     test('ordered list with type and start', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'olist', attributes: const {'start': '3'})
-        ..style = 'loweralpha';
+      final list = ListBlock(
+        doc,
+        BlockContext.olist,
+        attributes: const {'start': '3'},
+      )..style = 'loweralpha';
       list.blocks.add(StubListItem(list, 'One'));
       expect(
         convOf(doc).convert(list),
@@ -1146,7 +1153,7 @@ void main() {
       final doc = makeDoc();
       final list = ListBlock(
         doc,
-        'olist',
+        BlockContext.olist,
         attributes: const {'reversed-option': ''},
       )..style = 'arabic';
       list.blocks.add(StubListItem(list, 'One'));
@@ -1160,7 +1167,7 @@ void main() {
       final doc = makeDoc(xml: true);
       final list = ListBlock(
         doc,
-        'olist',
+        BlockContext.olist,
         attributes: const {'reversed-option': ''},
       )..style = 'arabic';
       list.blocks.add(StubListItem(list, 'One'));
@@ -1174,7 +1181,7 @@ void main() {
   group('convertDlist', () {
     test('labeled list', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'dlist');
+      final list = ListBlock(doc, BlockContext.dlist);
       final term = StubListItem(list, 'Term');
       final def = StubListItem(list, 'Definition');
       list.entries.add(DlistEntry([term], def));
@@ -1193,7 +1200,7 @@ void main() {
 
     test('qanda list', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'dlist')..style = 'qanda';
+      final list = ListBlock(doc, BlockContext.dlist)..style = 'qanda';
       list.entries.add(
         DlistEntry([
           StubListItem(list, 'Question'),
@@ -1209,7 +1216,7 @@ void main() {
       final doc = makeDoc();
       final list = ListBlock(
         doc,
-        'dlist',
+        BlockContext.dlist,
         attributes: const {'labelwidth': '20%', 'itemwidth': '80%'},
       )..style = 'horizontal';
       list.entries.add(
@@ -1229,7 +1236,7 @@ void main() {
 
     test('term without description renders no dd', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'dlist');
+      final list = ListBlock(doc, BlockContext.dlist);
       list.entries.add(DlistEntry([StubListItem(list, 'Lonely')]));
       final output = convOf(doc).convert(list)!;
       expect(output, contains('<dt class="hdlist1">Lonely</dt>'));
@@ -1240,7 +1247,7 @@ void main() {
   group('convertColist', () {
     test('callout list without icons renders an ol', () {
       final doc = makeDoc();
-      final list = ListBlock(doc, 'colist');
+      final list = ListBlock(doc, BlockContext.colist);
       list.blocks.add(StubListItem(list, 'First'));
       expect(
         convOf(doc).convert(list),
@@ -1254,7 +1261,7 @@ void main() {
 
     test('callout list with font icons renders a table', () {
       final doc = makeDoc(attributes: const {'icons': 'font'});
-      final list = ListBlock(doc, 'colist');
+      final list = ListBlock(doc, BlockContext.colist);
       list.blocks.add(StubListItem(list, 'First'));
       final output = convOf(doc).convert(list)!;
       expect(output, contains('<table>'));
@@ -1266,7 +1273,7 @@ void main() {
 
     test('callout list with image icons renders img labels', () {
       final doc = makeDoc(attributes: const {'icons': ''});
-      final list = ListBlock(doc, 'colist');
+      final list = ListBlock(doc, BlockContext.colist);
       list.blocks.add(StubListItem(list, 'First'));
       expect(
         convOf(doc).convert(list),
@@ -1278,7 +1285,7 @@ void main() {
   group('convertExample', () {
     test('example block', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'example', stubbedContent: 'Body');
+      final node = StubBlock(doc, BlockContext.example, stubbedContent: 'Body');
       expect(
         convOf(doc).convert(node),
         '<div class="exampleblock">\n'
@@ -1293,7 +1300,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'example',
+        BlockContext.example,
         stubbedContent: 'Body',
         stubTitle: 'Sample',
       )..caption = 'Example 1. ';
@@ -1307,7 +1314,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'example',
+        BlockContext.example,
         attributes: const {'collapsible-option': ''},
         stubbedContent: 'Body',
         stubTitle: 'More',
@@ -1327,7 +1334,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'example',
+        BlockContext.example,
         attributes: const {'collapsible-option': '', 'open-option': ''},
         stubbedContent: 'Body',
       );
@@ -1343,7 +1350,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'open',
+        BlockContext.open,
         attributes: const {'role': 'r'},
         stubbedContent: 'Body',
       )..style = 'custom';
@@ -1359,7 +1366,7 @@ void main() {
 
     test('abstract block renders quoteblock', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'open', stubbedContent: 'Abs')
+      final node = StubBlock(doc, BlockContext.open, stubbedContent: 'Abs')
         ..style = 'abstract'
         ..parent = doc;
       expect(
@@ -1375,7 +1382,7 @@ void main() {
     test('abstract block in doctitleless book is dropped with warning', () {
       usingMemoryLogger((logger) {
         final doc = makeDoc(options: const AsciidoctorOptions(doctype: 'book'));
-        final node = StubBlock(doc, 'open', stubbedContent: 'Abs')
+        final node = StubBlock(doc, BlockContext.open, stubbedContent: 'Abs')
           ..style = 'abstract'
           ..parent = doc;
         expect(convOf(doc).convert(node), '');
@@ -1387,7 +1394,7 @@ void main() {
     test('misplaced partintro is dropped with error', () {
       usingMemoryLogger((logger) {
         final doc = makeDoc();
-        final node = StubBlock(doc, 'open', stubbedContent: 'x')
+        final node = StubBlock(doc, BlockContext.open, stubbedContent: 'x')
           ..style = 'partintro'
           ..parent = doc;
         expect(convOf(doc).convert(node), '');
@@ -1403,7 +1410,11 @@ void main() {
   group('convertPreamble', () {
     test('preamble wraps content in sectionbody', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'preamble', stubbedContent: 'Intro');
+      final node = StubBlock(
+        doc,
+        BlockContext.preamble,
+        stubbedContent: 'Intro',
+      );
       expect(
         convOf(doc).convert(node),
         '<div id="preamble">\n'
@@ -1419,7 +1430,11 @@ void main() {
         attributes: const {'toc-placement': 'preamble', 'toc': ''},
       );
       doc.append(StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
-      final node = StubBlock(doc, 'preamble', stubbedContent: 'Intro');
+      final node = StubBlock(
+        doc,
+        BlockContext.preamble,
+        stubbedContent: 'Intro',
+      );
       final output = convOf(doc).convert(node)!;
       expect(output, contains('<div id="toc" class="toc">'));
       expect(output, contains('<div id="toctitle">Table of Contents</div>'));
@@ -1430,7 +1445,7 @@ void main() {
   group('convertQuote', () {
     test('quote block', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'quote', stubbedContent: 'Quoted');
+      final node = StubBlock(doc, BlockContext.quote, stubbedContent: 'Quoted');
       expect(
         convOf(doc).convert(node),
         '<div class="quoteblock">\n'
@@ -1445,7 +1460,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'quote',
+        BlockContext.quote,
         attributes: const {'attribution': 'Author', 'citetitle': 'Source'},
         stubbedContent: 'Quoted',
       );
@@ -1461,7 +1476,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'quote',
+        BlockContext.quote,
         attributes: const {'attribution': 'Author'},
         stubbedContent: 'Quoted',
       );
@@ -1475,7 +1490,11 @@ void main() {
   group('convertVerse', () {
     test('verse block', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'verse', stubbedContent: 'Line 1\nLine 2');
+      final node = StubBlock(
+        doc,
+        BlockContext.verse,
+        stubbedContent: 'Line 1\nLine 2',
+      );
       expect(
         convOf(doc).convert(node),
         '<div class="verseblock">\n'
@@ -1488,7 +1507,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'verse',
+        BlockContext.verse,
         attributes: const {'attribution': 'Poet'},
         stubbedContent: 'Verse',
       );
@@ -1504,7 +1523,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'sidebar',
+        BlockContext.sidebar,
         stubbedContent: 'Aside',
         stubTitle: 'Side',
       );
@@ -1523,9 +1542,10 @@ void main() {
   group('convertFloatingTitle', () {
     test('floating title', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'floating_title', stubTitle: 'Float')
-        ..style = 'float'
-        ..level = 1;
+      final node =
+          StubBlock(doc, BlockContext.floatingTitle, stubTitle: 'Float')
+            ..style = 'float'
+            ..level = 1;
       expect(convOf(doc).convert(node), '<h2 class="float">Float</h2>');
     });
   });
@@ -1534,7 +1554,7 @@ void main() {
     test('page break', () {
       final doc = makeDoc();
       expect(
-        convOf(doc).convert(StubBlock(doc, 'page_break')),
+        convOf(doc).convert(StubBlock(doc, BlockContext.pageBreak)),
         '<div style="page-break-after: always;"></div>',
       );
     });
@@ -1543,14 +1563,17 @@ void main() {
   group('convertThematicBreak', () {
     test('thematic break', () {
       final doc = makeDoc();
-      expect(convOf(doc).convert(StubBlock(doc, 'thematic_break')), '<hr>');
+      expect(
+        convOf(doc).convert(StubBlock(doc, BlockContext.thematicBreak)),
+        '<hr>',
+      );
     });
 
     test('thematic break ignores role in xml mode', () {
       final doc = makeDoc(xml: true);
       final node = StubBlock(
         doc,
-        'thematic_break',
+        BlockContext.thematicBreak,
         attributes: const {'role': 'heavy'},
       );
       expect(convOf(doc).convert(node), '<hr/>');
@@ -1560,7 +1583,11 @@ void main() {
   group('convertPass', () {
     test('pass returns content only', () {
       final doc = makeDoc();
-      final node = StubBlock(doc, 'pass', stubbedContent: '<b>raw</b>');
+      final node = StubBlock(
+        doc,
+        BlockContext.pass,
+        stubbedContent: '<b>raw</b>',
+      );
       expect(convOf(doc).convert(node), '<b>raw</b>');
     });
   });
@@ -1570,7 +1597,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {'target': 'pic.png', 'alt': 'Pic'},
         stubAlt: 'Pic',
       );
@@ -1589,7 +1616,7 @@ void main() {
       final node =
           StubBlock(
               doc,
-              'image',
+              BlockContext.image,
               attributes: const {
                 'target': 'pic.png',
                 'alt': 'Pic',
@@ -1622,7 +1649,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {'target': 'pic.png', 'alt': 'Pic', 'link': 'self'},
         stubAlt: 'Pic',
       );
@@ -1636,7 +1663,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {'target': 'pic.png'},
         stubAlt: 'say "hi"',
       );
@@ -1652,7 +1679,7 @@ void main() {
       );
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {
           'target': 'fig.svg',
           'fallback': 'fig.png',
@@ -1700,7 +1727,7 @@ void main() {
       File('${tmp.path}/fig.svg')
           .writeAsStringSync('<?xml version="1.0"?>\n<svg><circle/></svg>');
       final doc = svgDoc(const {});
-      final node = StubBlock(doc, 'image');
+      final node = StubBlock(doc, BlockContext.image);
       expect(
         convOf(doc).readSvgContents(node, 'fig.svg'),
         '<svg><circle/></svg>',
@@ -1714,7 +1741,7 @@ void main() {
       final doc = svgDoc(const {});
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {'width': '100', 'height': '50'},
       );
       expect(
@@ -1728,7 +1755,7 @@ void main() {
       final doc = svgDoc(const {});
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: const {'target': 'fig.svg', 'inline-option': ''},
         stubAlt: 'Fig',
       );
@@ -1743,7 +1770,7 @@ void main() {
         final doc = svgDoc(const {});
         final node = StubBlock(
           doc,
-          'image',
+          BlockContext.image,
           attributes: const {
             'target': 'fig.svg',
             'inline-option': '',
@@ -1759,7 +1786,7 @@ void main() {
 
     test(testOn: 'vm', 'missing svg returns null', () {
       final doc = svgDoc(const {});
-      final node = StubBlock(doc, 'image');
+      final node = StubBlock(doc, BlockContext.image);
       expect(convOf(doc).readSvgContents(node, 'nope.svg'), isNull);
     });
   });
@@ -1769,7 +1796,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'audio',
+        BlockContext.audio,
         attributes: const {'target': 'podcast.mp3'},
       );
       expect(
@@ -1788,7 +1815,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'audio',
+        BlockContext.audio,
         attributes: const {
           'target': 'podcast.mp3',
           'start': '10',
@@ -1810,7 +1837,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'video',
+        BlockContext.video,
         attributes: const {
           'target': '12345',
           'poster': 'vimeo',
@@ -1832,7 +1859,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'video',
+        BlockContext.video,
         attributes: const {
           'target': 'abc123/PLxyz',
           'poster': 'youtube',
@@ -1851,7 +1878,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'video',
+        BlockContext.video,
         attributes: const {
           'target': 'abc123',
           'poster': 'youtube',
@@ -1871,7 +1898,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'video',
+        BlockContext.video,
         attributes: const {
           'target': 'abc',
           'poster': 'wistia',
@@ -1889,7 +1916,7 @@ void main() {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
-        'video',
+        BlockContext.video,
         attributes: const {
           'target': 'movie.mp4',
           'poster': 'poster.png',
@@ -2148,7 +2175,7 @@ void main() {
       final doc = makeDoc(attributes: const {'toc': ''});
       doc.append(StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
       expect(
-        convOf(doc).convert(StubBlock(doc, 'toc')),
+        convOf(doc).convert(StubBlock(doc, BlockContext.toc)),
         '<!-- toc disabled -->',
       );
     });
@@ -2159,7 +2186,7 @@ void main() {
       );
       doc.append(StubSection(parent: doc, level: 1, stubTitle: 'S')..id = 's');
       expect(
-        convOf(doc).convert(StubBlock(doc, 'toc')),
+        convOf(doc).convert(StubBlock(doc, BlockContext.toc)),
         '<div id="toc" class="toc">\n'
         '<div id="toctitle" class="title">Table of Contents</div>\n'
         '<ul class="sectlevel1">\n<li><a href="#s">S</a></li>\n</ul>\n'
@@ -2179,7 +2206,7 @@ void main() {
       doc.append(parent);
       final node = StubBlock(
         doc,
-        'toc',
+        BlockContext.toc,
         attributes: const {'levels': '1', 'role': 'manual'},
         stubTitle: 'Contents',
       )..id = 'mytoc';
@@ -2204,7 +2231,7 @@ void main() {
       Map<String, String> attributes = const <String, String>{},
     }) => Inline(
       para(doc, ''),
-      'anchor',
+      InlineContext.anchor,
       text: text,
       type: type,
       target: target,
@@ -2354,7 +2381,7 @@ void main() {
       final doc = makeDoc();
       final node = StubInline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'bibref',
         id: 'b1',
         stubReftext: 'Ref',
@@ -2399,13 +2426,13 @@ void main() {
   group('convertInlineBreak', () {
     test('line break', () {
       final doc = makeDoc();
-      final node = Inline(para(doc, ''), 'break', text: 'x');
+      final node = Inline(para(doc, ''), InlineContext.lineBreak, text: 'x');
       expect(convOf(doc).convert(node), 'x<br>');
     });
 
     test('line break in xml mode', () {
       final doc = makeDoc(xml: true);
-      final node = Inline(para(doc, ''), 'break', text: 'x');
+      final node = Inline(para(doc, ''), InlineContext.lineBreak, text: 'x');
       expect(convOf(doc).convert(node), 'x<br/>');
     });
   });
@@ -2413,7 +2440,7 @@ void main() {
   group('convertInlineButton', () {
     test('button', () {
       final doc = makeDoc();
-      final node = Inline(para(doc, ''), 'button', text: 'OK');
+      final node = Inline(para(doc, ''), InlineContext.button, text: 'OK');
       expect(convOf(doc).convert(node), '<b class="button">OK</b>');
     });
   });
@@ -2421,7 +2448,7 @@ void main() {
   group('convertInlineCallout', () {
     test('font icon callout', () {
       final doc = makeDoc(attributes: const {'icons': 'font'});
-      final node = Inline(para(doc, ''), 'callout', text: '1');
+      final node = Inline(para(doc, ''), InlineContext.callout, text: '1');
       expect(
         convOf(doc).convert(node),
         '<i class="conum" data-value="1"></i><b>(1)</b>',
@@ -2430,7 +2457,7 @@ void main() {
 
     test('image callout', () {
       final doc = makeDoc(attributes: const {'icons': ''});
-      final node = Inline(para(doc, ''), 'callout', text: '1');
+      final node = Inline(para(doc, ''), InlineContext.callout, text: '1');
       expect(
         convOf(doc).convert(node),
         '<img src="./images/icons/callouts/1.png" alt="1">',
@@ -2441,7 +2468,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'callout',
+        InlineContext.callout,
         text: '1',
         xmlCommentGuard: true,
       );
@@ -2455,7 +2482,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'callout',
+        InlineContext.callout,
         text: '1',
         attributes: const {'guard': '-->'},
       );
@@ -2468,7 +2495,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'footnote',
+        InlineContext.footnote,
         attributes: const {'index': '1'},
       )..id = 'f1';
       expect(
@@ -2481,7 +2508,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'footnote',
+        InlineContext.footnote,
         type: 'xref',
         attributes: const {'index': '2'},
       );
@@ -2493,7 +2520,12 @@ void main() {
 
     test('unresolved footnote xref', () {
       final doc = makeDoc();
-      final node = Inline(para(doc, ''), 'footnote', text: 'f', type: 'xref');
+      final node = Inline(
+        para(doc, ''),
+        InlineContext.footnote,
+        text: 'f',
+        type: 'xref',
+      );
       expect(
         convOf(doc).convert(node),
         '<sup class="footnoteref red" title="Unresolved footnote reference.">[f]</sup>',
@@ -2502,7 +2534,7 @@ void main() {
 
     test('footnote without index renders nothing', () {
       final doc = makeDoc();
-      final node = Inline(para(doc, ''), 'footnote', text: 'f');
+      final node = Inline(para(doc, ''), InlineContext.footnote, text: 'f');
       expect(convOf(doc).convert(node), isEmpty);
     });
   });
@@ -2516,7 +2548,7 @@ void main() {
       Map<String, String> attributes = const <String, String>{},
     }) => Inline(
       para(doc, ''),
-      'image',
+      InlineContext.image,
       type: type,
       target: target,
       id: id,
@@ -2619,7 +2651,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'indexterm',
+        InlineContext.indexterm,
         text: 'cats',
         type: 'visible',
       );
@@ -2628,7 +2660,7 @@ void main() {
 
     test('hidden index term renders nothing', () {
       final doc = makeDoc();
-      final node = Inline(para(doc, ''), 'indexterm', text: 'cats');
+      final node = Inline(para(doc, ''), InlineContext.indexterm, text: 'cats');
       expect(convOf(doc).convert(node), '');
     });
   });
@@ -2636,13 +2668,17 @@ void main() {
   group('convertInlineKbd', () {
     test('single key', () {
       final doc = makeDoc();
-      final node = Inline(para(doc, ''), 'kbd', keys: ['Ctrl']);
+      final node = Inline(para(doc, ''), InlineContext.kbd, keys: ['Ctrl']);
       expect(convOf(doc).convert(node), '<kbd>Ctrl</kbd>');
     });
 
     test('key sequence', () {
       final doc = makeDoc();
-      final node = Inline(para(doc, ''), 'kbd', keys: ['Ctrl', 'S']);
+      final node = Inline(
+        para(doc, ''),
+        InlineContext.kbd,
+        keys: ['Ctrl', 'S'],
+      );
       expect(
         convOf(doc).convert(node),
         '<span class="keyseq"><kbd>Ctrl</kbd>+<kbd>S</kbd></span>',
@@ -2655,7 +2691,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'menu',
+        InlineContext.menu,
         attributes: const {'menu': 'File'},
         submenus: <String>[],
       );
@@ -2666,7 +2702,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'menu',
+        InlineContext.menu,
         attributes: const {'menu': 'File', 'menuitem': 'Open'},
         submenus: <String>[],
       );
@@ -2680,7 +2716,7 @@ void main() {
       final doc = makeDoc(attributes: const {'icons': 'font'});
       final node = Inline(
         para(doc, ''),
-        'menu',
+        InlineContext.menu,
         attributes: const {'menu': 'File', 'menuitem': 'Go'},
         submenus: ['New', 'Project'],
       );
@@ -2716,7 +2752,7 @@ void main() {
         final doc = makeDoc();
         final node = Inline(
           para(doc, ''),
-          'quoted',
+          InlineContext.quoted,
           text: 'x',
           type: entry.key,
         );
@@ -2732,7 +2768,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'quoted',
+        InlineContext.quoted,
         text: 'x',
         type: 'strong',
         attributes: const {'role': 'r'},
@@ -2744,7 +2780,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'quoted',
+        InlineContext.quoted,
         text: 'x',
         type: 'double',
         attributes: const {'role': 'r'},
@@ -2759,7 +2795,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'quoted',
+        InlineContext.quoted,
         text: 'x',
         type: 'mark',
         id: 'm1',
@@ -2771,7 +2807,7 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         para(doc, ''),
-        'quoted',
+        InlineContext.quoted,
         text: 'x',
         type: 'single',
         id: 'q1',

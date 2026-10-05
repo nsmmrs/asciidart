@@ -16,9 +16,9 @@ Node _create(impl.AbstractNode node) {
   if (node is impl.ListItem) return ListItem._(node);
   if (node is impl.ListBlock) {
     return switch (node.context) {
-      'ulist' => UnorderedList._(node),
-      'olist' => OrderedList._(node),
-      'colist' => CalloutList._(node),
+      .ulist => UnorderedList._(node),
+      .olist => OrderedList._(node),
+      .colist => CalloutList._(node),
       _ => DescriptionList._(node),
     };
   }
@@ -26,26 +26,35 @@ Node _create(impl.AbstractNode node) {
   if (node is impl.Cell) return TableCell._(node);
   if (node is impl.AbstractBlock) {
     return switch (node.context) {
-      'paragraph' => Paragraph._(node),
-      'listing' => Listing._(node),
-      'literal' => Literal._(node),
-      'admonition' => Admonition._(node),
-      'example' => Example._(node),
-      'sidebar' => Sidebar._(node),
-      'quote' => Quote._(node),
-      'verse' => Verse._(node),
-      'open' => Open._(node),
-      'pass' => Passthrough._(node),
-      'stem' => Stem._(node),
-      'image' => Image._(node),
-      'audio' => Audio._(node),
-      'video' => Video._(node),
-      'thematic_break' => ThematicBreak._(node),
-      'page_break' => PageBreak._(node),
-      'toc' => TableOfContents._(node),
-      'preamble' => Preamble._(node),
-      'floating_title' => DiscreteHeading._(node),
-      _ => OtherBlock._(node),
+      .paragraph => Paragraph._(node),
+      .listing => Listing._(node),
+      .literal => Literal._(node),
+      .admonition => Admonition._(node),
+      .example => Example._(node),
+      .sidebar => Sidebar._(node),
+      .quote => Quote._(node),
+      .verse => Verse._(node),
+      .open => Open._(node),
+      .pass => Passthrough._(node),
+      .stem => Stem._(node),
+      .image => Image._(node),
+      .audio => Audio._(node),
+      .video => Video._(node),
+      .thematicBreak => ThematicBreak._(node),
+      .pageBreak => PageBreak._(node),
+      .toc => TableOfContents._(node),
+      .preamble => Preamble._(node),
+      .floatingTitle => DiscreteHeading._(node),
+      // Kinds with their own classes, matched above.
+      .document ||
+      .section ||
+      .listItem ||
+      .ulist ||
+      .olist ||
+      .dlist ||
+      .colist ||
+      .table ||
+      .tableCell => OtherBlock._(node),
     };
   }
   throw StateError('no public view for ${node.runtimeType}');
@@ -111,7 +120,7 @@ sealed class Node {
   String get plainText;
 
   @override
-  String toString() => 'Node(${_node.context})';
+  String toString() => 'Node(${_node.contextName})';
 }
 
 /// A block: a section, paragraph, list, table, delimited block, and so on.
@@ -547,7 +556,7 @@ final class OtherBlock extends Block {
   new _(super._node) : super._();
 
   /// The block's context, as the extension named it.
-  String get context => _node.context;
+  String get context => _node.contextName;
 }
 
 /// An unordered (`*`) list, including checklists.

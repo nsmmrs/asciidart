@@ -107,7 +107,13 @@ class StubBlock extends Block {
 /// A bare node that is neither block nor inline content (for `contentOnly`).
 class BareNode extends AbstractNode {
   /// Creates a bare node with node name `'bare'`.
-  new() : super(null, 'bare');
+  new() : super(null);
+
+  @override
+  String get contextName => 'bare';
+
+  @override
+  String get nodeName => 'bare';
 
   @override
   bool get isBlock => false;
@@ -828,7 +834,7 @@ void main() {
         final logger = FakeLogger();
         useLogger(logger);
         final converter = FakeBaseConverter('fizzbuzz');
-        final node = Block(null, 'paragraph');
+        final node = Block(null, BlockContext.paragraph);
         expect(converter.convert(node), isNull);
         expect(logger.warns, hasLength(1));
         expect(
@@ -912,7 +918,10 @@ void main() {
           traits.filetype,
           traits.outfilesuffix,
         ), equals(('text', 'text', '.fb')));
-        expect(converter.convert(Block(null, 'paragraph')), 'fake content');
+        expect(
+          converter.convert(Block(null, BlockContext.paragraph)),
+          'fake content',
+        );
       });
 
       test('should be able to register converter for backend name', () {
@@ -1104,7 +1113,10 @@ void main() {
         expect(Converter.forBackend('reg-explicit'), isNot(same(catchAll)));
         expect(Converter.registeredBackends, isNot(contains('*')));
         final converter = Converter.create('catchall-foobaz')!;
-        expect(converter.convert(Block(null, 'paragraph')), 'foobaz content');
+        expect(
+          converter.convert(Block(null, BlockContext.paragraph)),
+          'foobaz content',
+        );
       });
 
       test('should use catch all converter from custom factory only if no '
@@ -1381,7 +1393,7 @@ void main() {
             },
           },
         );
-        final node = Block(null, 'paragraph');
+        final node = Block(null, BlockContext.paragraph);
         expect(converter.handles('paragraph'), isTrue);
         expect(converter.handles('sidebar'), isFalse);
         expect(converter.convert(node), '<p>hi</p>');
@@ -1400,7 +1412,7 @@ void main() {
             },
           },
         );
-        final node = Block(null, 'paragraph');
+        final node = Block(null, BlockContext.paragraph);
         expect(converter.convert(node), 'ok');
         expect(
           converter.convert(
@@ -1420,7 +1432,7 @@ void main() {
           {'custom': (node, [opts]) => 'custom!'},
         );
         expect(
-          converter.convert(Block(null, 'paragraph'), 'custom'),
+          converter.convert(Block(null, BlockContext.paragraph), 'custom'),
           'custom!',
         );
       });
@@ -1428,12 +1440,16 @@ void main() {
       test('base contentOnly converts block content', () {
         final converter = FakeBaseConverter('seam-content-only');
         expect(
-          converter.contentOnly(StubBlock(null, 'sidebar', '<aside/>')),
+          converter.contentOnly(
+            StubBlock(null, BlockContext.sidebar, '<aside/>'),
+          ),
           '<aside/>',
         );
         // Inline has no content in 2.0.26 (the alias came with #3220).
         expect(
-          () => converter.contentOnly(Inline(null, 'quoted', text: 'hi')),
+          () => converter.contentOnly(
+            Inline(null, InlineContext.quoted, text: 'hi'),
+          ),
           throwsArgumentError,
         );
         expect(() => converter.contentOnly(BareNode()), throwsArgumentError);
@@ -1441,7 +1457,7 @@ void main() {
 
       test('base skip returns null', () {
         final converter = FakeBaseConverter('seam-skip');
-        expect(converter.skip(Block(null, 'paragraph')), isNull);
+        expect(converter.skip(Block(null, BlockContext.paragraph)), isNull);
       });
     });
 
@@ -1463,8 +1479,14 @@ void main() {
         final second = sidebarConverter('seam-composite');
         final composite = CompositeConverter('seam-composite', [first, second]);
         expect(composite.converters, [same(first), same(second)]);
-        expect(composite.convert(Block(null, 'paragraph')), '<p>first</p>');
-        expect(composite.convert(StubBlock(null, 'sidebar', '')), '<aside/>');
+        expect(
+          composite.convert(Block(null, BlockContext.paragraph)),
+          '<p>first</p>',
+        );
+        expect(
+          composite.convert(StubBlock(null, BlockContext.sidebar, '')),
+          '<aside/>',
+        );
       });
 
       test('passes the transform and opts through to the delegate', () {
@@ -1486,7 +1508,7 @@ void main() {
         final composite2 = CompositeConverter('seam-passthrough', [recording]);
         expect(
           composite.convert(
-            Block(null, 'paragraph'),
+            Block(null, BlockContext.paragraph),
             'paragraph',
             const ConvertOptions(sectnumlevels: 2),
           ),
@@ -1494,7 +1516,7 @@ void main() {
         );
         expect(seenOpts, equals(const ConvertOptions(sectnumlevels: 2)));
         composite2.convert(
-          Block(null, 'paragraph'),
+          Block(null, BlockContext.paragraph),
           'paragraph',
           const ConvertOptions(sectnumlevels: 2),
         );
@@ -1545,7 +1567,7 @@ void main() {
           ),
         );
         expect(
-          () => composite.convert(StubBlock(null, 'table', '')),
+          () => composite.convert(StubBlock(null, BlockContext.table, '')),
           throwsStateError,
         );
       });

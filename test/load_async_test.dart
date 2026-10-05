@@ -198,7 +198,7 @@ void main() {
         ..writeAsStringSync('include::${server.base}/inc.adoc[]\n');
 
       final doc = await loadFileAsync(input.path, options: remoteOptions());
-      expect(doc.blocks.single.context, equals('paragraph'));
+      expect(doc.blocks.single.contextName, equals('paragraph'));
 
       final output = StringBuffer();
       await convertFileAsync(input.path, remoteOptions(), output);

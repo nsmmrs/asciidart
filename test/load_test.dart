@@ -240,7 +240,7 @@ void main() {
     test('converts block to output format when convert is called', () {
       final doc = load('paragraph text');
       expect(doc.blocks, hasLength(1));
-      expect(doc.blocks[0].context, equals('paragraph'));
+      expect(doc.blocks[0].contextName, equals('paragraph'));
       expect(
         doc.blocks[0].convert(),
         equals('<div class="paragraph">\n<p>paragraph text</p>\n</div>'),

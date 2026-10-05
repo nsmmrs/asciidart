@@ -189,7 +189,7 @@ class Table extends AbstractBlock {
   /// `'rotate-option'`); the computed values land on this table's own
   /// attributes.
   new(AbstractBlock? parent, Map<String, String> attributes)
-    : super(parent, 'table') {
+    : super(parent, BlockContext.table) {
     final pcwidth = attributes['width'];
     if (pcwidth != null) {
       var intval = parseLeadingInt(pcwidth);
@@ -378,18 +378,23 @@ class Table extends AbstractBlock {
 ///
 /// Port of `Asciidoctor::Table::Column`.
 class Column extends AbstractNode {
-  /// Creates a column of [table] at 0-based [index] from [spec], recording
-  /// the column number, width and alignments in [attributes].
-  new(Table? table, int index, [ColumnSpec spec = const ColumnSpec()])
+  /// Creates a column of the table [parent] at 0-based [index] from [spec],
+  /// recording the column number, width and alignments in [attributes].
+  new(Table? super.parent, int index, [ColumnSpec spec = const ColumnSpec()])
     : colnumber = index + 1,
-      style = spec.style,
-      super(table, 'table_column') {
+      style = spec.style {
     attributes['colnumber'] = '$colnumber';
     width = spec.width;
     attributes['halign'] = spec.halign ?? 'left';
     attributes['valign'] = spec.valign ?? 'top';
     if (spec.style case final style?) attributes['style'] = style;
   }
+
+  @override
+  String get contextName => 'table_column';
+
+  @override
+  String get nodeName => 'table_column';
 
   /// The 1-based column number.
   final int colnumber;
@@ -469,7 +474,7 @@ class Cell extends AbstractBlock {
     CellSpec? spec = const CellSpec(),
     Cursor? cursor,
   ]) : _column = column,
-       super(column?.table, 'table_cell') {
+       super(column?.table, BlockContext.tableCell) {
     var cellContent = cellText;
     if (document!.sourcemap) {
       // Store a copy of the cursor as the source location. The copy
@@ -597,7 +602,7 @@ class Cell extends AbstractBlock {
       // No substitutions: the empty list applies nothing.
       subs = <String>[];
     } else if (literal) {
-      contentModel = 'verbatim';
+      contentModel = ContentModel.verbatim;
       subs = basicSubs;
     } else {
       if (normalPsv) {
@@ -607,7 +612,7 @@ class Cell extends AbstractBlock {
           catalogInlineAnchor(cellContent, cursor);
         }
       }
-      contentModel = 'simple';
+      contentModel = ContentModel.simple;
       subs = normalSubs;
     }
     _text = cellContent;
@@ -709,7 +714,7 @@ class Cell extends AbstractBlock {
             (para) => styled
                 ? Inline(
                     parent,
-                    'quoted',
+                    InlineContext.quoted,
                     text: para,
                     type: cellStyle,
                   ).convert()
@@ -721,7 +726,12 @@ class Cell extends AbstractBlock {
     if (subbedText.isEmpty) return <String>[];
     if (styled) {
       return <String>[
-        Inline(parent, 'quoted', text: subbedText, type: cellStyle).convert(),
+        Inline(
+          parent,
+          InlineContext.quoted,
+          text: subbedText,
+          type: cellStyle,
+        ).convert(),
       ];
     }
     return <String>[subbedText];

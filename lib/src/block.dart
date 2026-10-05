@@ -8,21 +8,17 @@ import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/core_ext.dart';
 import 'package:asciidart/src/helpers.dart';
 
-/// Default content models by block context.
-///
-/// Port of `Block::DEFAULT_CONTENT_MODEL`. Contexts missing from this map
-/// default to `'simple'`, mirroring the `Hash` default.
-const Map<String, String> defaultContentModels = <String, String>{
-  'audio': 'empty',
-  'image': 'empty',
-  'listing': 'verbatim',
-  'literal': 'verbatim',
-  'stem': 'raw',
-  'open': 'compound',
-  'page_break': 'empty',
-  'pass': 'raw',
-  'thematic_break': 'empty',
-  'video': 'empty',
+/// The content model of a block of [context] unless it says otherwise.
+ContentModel defaultContentModel(BlockContext context) => switch (context) {
+  .audio ||
+  .image ||
+  .pageBreak ||
+  .thematicBreak ||
+  .video => ContentModel.empty,
+  .listing || .literal => ContentModel.verbatim,
+  .stem || .pass => ContentModel.raw,
+  .open => ContentModel.compound,
+  _ => ContentModel.simple,
 };
 
 /// How a new [Block] resolves its substitutions.
@@ -76,9 +72,8 @@ final class _SpecSubs extends BlockSubs {
 class Block extends AbstractBlock {
   /// Creates a block with [parent] and [context].
   ///
-  /// [contentModel] selects how [lines] are processed (`'compound'`,
-  /// `'simple'`, `'verbatim'`, `'raw'` or `'empty'`), defaulting per
-  /// [defaultContentModels] (`'simple'` when the context is unknown).
+  /// [contentModel] selects how [lines] are processed, defaulting per
+  /// [defaultContentModel].
   /// [source] is the raw source text, or [lines] the source lines (only
   /// one may be given). [subs] resolves the substitutions eagerly (see
   /// [BlockSubs]); leaving it out defers resolution.
@@ -86,7 +81,7 @@ class Block extends AbstractBlock {
     super.parent,
     super.context, {
     super.attributes,
-    String? contentModel,
+    ContentModel? contentModel,
     BlockSubs? subs,
     String? source,
     List<String>? lines,
@@ -96,8 +91,7 @@ class Block extends AbstractBlock {
            : source == null || source.isEmpty
            ? <String>[]
            : Helpers.prepareSourceString(source) {
-    this.contentModel =
-        contentModel ?? defaultContentModels[context] ?? 'simple';
+    this.contentModel = contentModel ?? defaultContentModel(context);
     switch (subs) {
       case null:
         // Defer subs resolution; the subs attribute is honored later.
@@ -134,25 +128,20 @@ class Block extends AbstractBlock {
   /// prevents substitutions, and any other value seeds them.
   List<String>? defaultSubs;
 
-  /// The context of this block. Alias of [AbstractNode.context].
-  String get blockname => context;
-
   /// Returns the converted result of this block, per its content model.
   ///
   /// Compound blocks convert their children, simple blocks apply
   /// substitutions to the joined lines, and verbatim/raw blocks apply
   /// substitutions per line and strip leading and trailing blank lines.
-  /// Returns `null` for the `'empty'` model (logging a warning for any
-  /// other unknown model).
+  /// Returns `null` for the empty and skip models.
   @override
   String? content() {
     switch (contentModel) {
-      case 'compound':
+      case ContentModel.compound:
         return super.content();
-      case 'simple':
+      case ContentModel.simple:
         return applySubs(lines.join(lf), subs);
-      case 'verbatim':
-      case 'raw':
+      case ContentModel.verbatim || ContentModel.raw:
         // QUESTION could we use strip here instead of popping empty lines?
         // maybe apply_subs can know how to strip whitespace?
         final result = applySubsToLines(lines, subs);
@@ -164,10 +153,7 @@ class Block extends AbstractBlock {
           result.removeLast();
         }
         return result.join(lf);
-      default:
-        if (contentModel != 'empty') {
-          logger.warn("unknown content model '$contentModel' for block: $this");
-        }
+      case ContentModel.empty || ContentModel.skip:
         return null;
     }
   }
@@ -177,10 +163,11 @@ class Block extends AbstractBlock {
 
   @override
   String toString() {
-    final summary = contentModel == 'compound'
+    final summary = contentModel == ContentModel.compound
         ? 'blocks: ${blocks.length}'
         : 'lines: ${lines.length}';
-    return 'Block(context: $context, contentModel: $contentModel, '
+    return 'Block(context: ${context.asciidoc}, '
+        'contentModel: ${contentModel.name}, '
         'style: ${debugQuote(style)}, $summary)';
   }
 }

@@ -241,7 +241,7 @@ StubBlock para(
   String? title,
 }) => StubBlock(
   doc,
-  'paragraph',
+  BlockContext.paragraph,
   attributes: Map<String, String>.of(attributes),
   stubbedContent: text,
   stubTitle: title,
@@ -290,7 +290,13 @@ String linkText(
   String target, [
   String? text,
 ]) => conv.convertInlineAnchor(
-  Inline(parent, 'anchor', type: 'link', target: target, text: text ?? target),
+  Inline(
+    parent,
+    InlineContext.anchor,
+    type: 'link',
+    target: target,
+    text: text ?? target,
+  ),
 )!;
 
 void main() {
@@ -317,7 +323,7 @@ void main() {
       final doc = manDoc();
       final node = para(doc, 'hello');
       expect(convOf(doc).convert(node), '.sp\nhello');
-      final br = Block(doc, 'page_break');
+      final br = Block(doc, BlockContext.pageBreak);
       expect(convOf(doc).convert(br), '.bp');
     });
   });
@@ -549,10 +555,15 @@ void main() {
       final conv = convOf(doc);
       final parent = para(doc, '');
       final quoted = conv.convertInlineQuoted(
-        Inline(parent, 'quoted', type: 'double', text: 'Main'),
+        Inline(parent, InlineContext.quoted, type: 'double', text: 'Main'),
       )!;
       final italic = conv.convertInlineQuoted(
-        Inline(parent, 'quoted', type: 'emphasis', text: '&lt;Options&gt;'),
+        Inline(
+          parent,
+          InlineContext.quoted,
+          type: 'emphasis',
+          text: '&lt;Options&gt;',
+        ),
       )!;
       // Simulate the substituted title the parser would produce.
       final node = StubSection(
@@ -571,7 +582,7 @@ void main() {
       final conv = convOf(doc);
       final parent = para(doc, '');
       final mono = conv.convertInlineQuoted(
-        Inline(parent, 'quoted', type: 'monospaced', text: 'show'),
+        Inline(parent, InlineContext.quoted, type: 'monospaced', text: 'show'),
       )!;
       final node = StubSection(parent: doc, level: 1, stubTitle: '$mono option')
         ..sectname = 'section';
@@ -596,9 +607,9 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: {'textlabel': 'Note', 'style': 'NOTE'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'Watch out.',
       );
       expect(
@@ -624,9 +635,9 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'admonition',
+        BlockContext.admonition,
         attributes: {'textlabel': 'Warning', 'style': 'WARNING'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'Watch out.',
         stubTitle: 'Be careful',
       );
@@ -638,7 +649,7 @@ void main() {
   group('colist', () {
     test('generates a callout list with formatting commands', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'colist');
+      final node = ListBlock(doc, BlockContext.colist);
       node.append(StubListItem(node, 'Installs the asciidoctor gem'));
       expect(
         convOf(doc).convertColist(node),
@@ -654,7 +665,7 @@ void main() {
 
     test('numbers items sequentially', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'colist');
+      final node = ListBlock(doc, BlockContext.colist);
       node
         ..append(StubListItem(node, 'first'))
         ..append(StubListItem(node, 'second'));
@@ -665,7 +676,11 @@ void main() {
 
     test('emits the title when set', () {
       final doc = manDoc();
-      final node = StubListBlock(doc, 'colist', stubTitle: 'Callouts');
+      final node = StubListBlock(
+        doc,
+        BlockContext.colist,
+        stubTitle: 'Callouts',
+      );
       expect(convOf(doc).convertColist(node), startsWith('.sp\n.B Callouts'));
     });
   });
@@ -673,7 +688,7 @@ void main() {
   group('dlist', () {
     test('converts terms and descriptions', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'dlist');
+      final node = ListBlock(doc, BlockContext.dlist);
       addDlistPair(node, [
         StubListItem(node, '--help'),
       ], StubListItem(node, 'Output a usage message and exit.'));
@@ -685,7 +700,7 @@ void main() {
 
     test('joins multiple terms with commas', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'dlist');
+      final node = ListBlock(doc, BlockContext.dlist);
       addDlistPair(node, [
         StubListItem(node, '-V'),
         StubListItem(node, '--version'),
@@ -698,7 +713,7 @@ void main() {
 
     test('numbers qanda questions', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'dlist')..style = 'qanda';
+      final node = ListBlock(doc, BlockContext.dlist)..style = 'qanda';
       addDlistPair(node, [
         StubListItem(node, 'What?'),
       ], StubListItem(node, 'That.'));
@@ -712,7 +727,7 @@ void main() {
 
     test('keeps the space before block content without dd text', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'dlist');
+      final node = ListBlock(doc, BlockContext.dlist);
       final dd = StubListItem(node, '')..append(para(doc, 'description'));
       addDlistPair(node, [StubListItem(node, 'term')], dd);
       expect(
@@ -723,7 +738,7 @@ void main() {
 
     test('emits the title when set', () {
       final doc = manDoc();
-      final node = StubListBlock(doc, 'dlist', stubTitle: 'Options');
+      final node = StubListBlock(doc, BlockContext.dlist, stubTitle: 'Options');
       expect(convOf(doc).convertDlist(node), startsWith('.sp\n.B Options'));
     });
   });
@@ -733,8 +748,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'example',
-        contentModel: 'compound',
+        BlockContext.example,
+        contentModel: ContentModel.compound,
         stubbedContent: '.sp\nexample body',
         stubTitle: 'Title here',
       )..caption = 'Example 1. ';
@@ -748,8 +763,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'example',
-        contentModel: 'simple',
+        BlockContext.example,
+        contentModel: ContentModel.simple,
         stubbedContent: 'example body',
       );
       expect(
@@ -762,8 +777,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'sidebar',
-        contentModel: 'compound',
+        BlockContext.sidebar,
+        contentModel: ContentModel.compound,
         stubbedContent: '.sp\nsidebar body',
         stubTitle: 'Title here',
       );
@@ -777,7 +792,7 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'floating_title',
+        BlockContext.floatingTitle,
         stubTitle: 'A floating title',
       );
       expect(convOf(doc).convertFloatingTitle(node), '.SS "A floating title"');
@@ -789,7 +804,7 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: {'target': 'signs-point-to-yes.jpg'},
         stubAlt: 'signs point to yes',
       );
@@ -800,7 +815,7 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'image',
+        BlockContext.image,
         attributes: {'target': 'rainbow.jpg'},
         stubTitle: 'Figure - one',
         stubAlt: 'That&#8217;s a double rainbow++!',
@@ -817,8 +832,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'listing',
-        contentModel: 'verbatim',
+        BlockContext.listing,
+        contentModel: ContentModel.verbatim,
         stubbedContent: r'$ gem install x',
       );
       expect(
@@ -831,8 +846,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'listing',
-        contentModel: 'verbatim',
+        BlockContext.listing,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'x',
         stubTitle: 'Install',
       )..caption = 'Listing 1. ';
@@ -846,8 +861,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'literal',
-        contentModel: 'verbatim',
+        BlockContext.literal,
+        contentModel: ContentModel.verbatim,
         stubbedContent: '  ,---.          ,-----.\n  |Bob|          |Alice|',
       );
       expect(
@@ -863,8 +878,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'literal',
-        contentModel: 'verbatim',
+        BlockContext.literal,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'a\tb',
       );
       expect(
@@ -877,8 +892,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'literal',
-        contentModel: 'verbatim',
+        BlockContext.literal,
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'x',
         stubTitle: 'Output',
       );
@@ -892,7 +907,7 @@ void main() {
   group('olist', () {
     test('converts ordered items', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'olist');
+      final node = ListBlock(doc, BlockContext.olist);
       node.append(StubListItem(node, 'five'));
       expect(
         convOf(doc).convertOlist(node),
@@ -912,7 +927,11 @@ void main() {
 
     test('honors the start attribute', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'olist', attributes: {'start': '5'});
+      final node = ListBlock(
+        doc,
+        BlockContext.olist,
+        attributes: {'start': '5'},
+      );
       node
         ..append(StubListItem(node, 'five'))
         ..append(StubListItem(node, 'six'));
@@ -923,7 +942,7 @@ void main() {
 
     test('keeps an empty principal text line before block content', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'olist');
+      final node = ListBlock(doc, BlockContext.olist);
       final item = StubListItem(node, '')..append(para(doc, 'the main text'));
       node.append(item);
       expect(
@@ -934,7 +953,7 @@ void main() {
 
     test('emits the title when set', () {
       final doc = manDoc();
-      final node = StubListBlock(doc, 'olist', stubTitle: 'Steps');
+      final node = StubListBlock(doc, BlockContext.olist, stubTitle: 'Steps');
       expect(convOf(doc).convertOlist(node), startsWith('.sp\n.B Steps'));
     });
   });
@@ -942,7 +961,7 @@ void main() {
   group('ulist', () {
     test('converts unordered items', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'ulist');
+      final node = ListBlock(doc, BlockContext.ulist);
       node.append(StubListItem(node, 'one'));
       expect(
         convOf(doc).convertUlist(node),
@@ -962,7 +981,7 @@ void main() {
 
     test('keeps an empty principal text line before block content', () {
       final doc = manDoc();
-      final node = ListBlock(doc, 'ulist');
+      final node = ListBlock(doc, BlockContext.ulist);
       final item = StubListItem(node, '')..append(para(doc, 'the main text'));
       node.append(item);
       expect(
@@ -973,7 +992,7 @@ void main() {
 
     test('emits the title when set', () {
       final doc = manDoc();
-      final node = StubListBlock(doc, 'ulist', stubTitle: 'Items');
+      final node = StubListBlock(doc, BlockContext.ulist, stubTitle: 'Items');
       expect(convOf(doc).convertUlist(node), startsWith('.sp\n.B Items'));
     });
   });
@@ -983,8 +1002,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'abstract text',
       )..style = 'abstract';
       expect(convOf(doc).convertOpen(node), '.sp\nabstract text');
@@ -994,8 +1013,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'open',
-        contentModel: 'simple',
+        BlockContext.open,
+        contentModel: ContentModel.simple,
         stubbedContent: 'partintro text',
       )..style = 'partintro';
       expect(convOf(doc).convertOpen(node), '.sp\npartintro text');
@@ -1005,8 +1024,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'open',
-        contentModel: 'compound',
+        BlockContext.open,
+        contentModel: ContentModel.compound,
         stubbedContent: '.sp\nopen text',
       );
       expect(convOf(doc).convertOpen(node), '.sp\nopen text');
@@ -1014,7 +1033,10 @@ void main() {
 
     test('converts a page break', () {
       final doc = manDoc();
-      expect(convOf(doc).convertPageBreak(Block(doc, 'page_break')), '.bp');
+      expect(
+        convOf(doc).convertPageBreak(Block(doc, BlockContext.pageBreak)),
+        '.bp',
+      );
     });
 
     test('converts a paragraph', () {
@@ -1053,8 +1075,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'pass',
-        contentModel: 'raw',
+        BlockContext.pass,
+        contentModel: ContentModel.raw,
         stubbedContent: 'raw text',
       );
       expect(convOf(doc).convert(node), 'raw text');
@@ -1064,8 +1086,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'preamble',
-        contentModel: 'compound',
+        BlockContext.preamble,
+        contentModel: ContentModel.compound,
         stubbedContent: '.sp\npreamble text',
       );
       expect(convOf(doc).convert(node), '.sp\npreamble text');
@@ -1073,7 +1095,7 @@ void main() {
 
     test('toc is skipped', () {
       final doc = manDoc();
-      expect(convOf(doc).convert(Block(doc, 'toc')), isNull);
+      expect(convOf(doc).convert(Block(doc, BlockContext.toc)), isNull);
     });
   });
 
@@ -1082,9 +1104,9 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'quote',
+        BlockContext.quote,
         attributes: {'attribution': 'James Baldwin'},
-        contentModel: 'compound',
+        contentModel: ContentModel.compound,
         stubbedContent:
             '.sp\nNot everything that is faced can be changed.\n'
             'But nothing can be changed until it is faced.',
@@ -1111,8 +1133,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'quote',
-        contentModel: 'simple',
+        BlockContext.quote,
+        contentModel: ContentModel.simple,
         stubbedContent: 'quoted',
         stubTitle: 'A quote',
       );
@@ -1126,9 +1148,9 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'quote',
+        BlockContext.quote,
         attributes: {'citetitle': 'Book', 'attribution': 'Author'},
-        contentModel: 'simple',
+        contentModel: ContentModel.simple,
         stubbedContent: 'quoted',
       );
       expect(
@@ -1144,12 +1166,12 @@ void main() {
       final conv = convOf(doc);
       final parent = para(doc, '');
       String q(String type, String text) => conv.convertInlineQuoted(
-        Inline(parent, 'quoted', type: type, text: text),
+        Inline(parent, InlineContext.quoted, type: type, text: text),
       )!;
       final node = StubBlock(
         doc,
-        'verse',
-        contentModel: 'verbatim',
+        BlockContext.verse,
+        contentModel: ContentModel.verbatim,
         stubbedContent:
             '${q('emphasis', 'command')} [${q('emphasis', 'OPTION')}]&#8230; '
             '${q('emphasis', 'FILE')}&#8230;',
@@ -1168,9 +1190,9 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'verse',
+        BlockContext.verse,
         attributes: {'attribution': 'Poet'},
-        contentModel: 'verbatim',
+        contentModel: ContentModel.verbatim,
         stubbedContent: 'a line',
         stubTitle: 'A poem',
       );
@@ -1187,8 +1209,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'stem',
-        contentModel: 'raw',
+        BlockContext.stem,
+        contentModel: ContentModel.raw,
         stubbedContent: r'\[x^2\]',
       )..style = 'latexmath';
       expect(convOf(doc).convertStem(node), '.sp\nx^2 (latexmath)');
@@ -1198,8 +1220,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'stem',
-        contentModel: 'raw',
+        BlockContext.stem,
+        contentModel: ContentModel.raw,
         stubbedContent: r'\$x^2\$',
       )..style = 'asciimath';
       expect(convOf(doc).convertStem(node), '.sp\nx^2 (asciimath)');
@@ -1209,8 +1231,8 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'stem',
-        contentModel: 'raw',
+        BlockContext.stem,
+        contentModel: ContentModel.raw,
         stubbedContent: 'x^2',
         stubTitle: 'Equation',
       )..style = 'latexmath';
@@ -1224,7 +1246,11 @@ void main() {
   group('video and thematic break', () {
     test('converts a video block', () {
       final doc = manDoc();
-      final node = StubBlock(doc, 'video', attributes: {'target': 'vid.mp4'});
+      final node = StubBlock(
+        doc,
+        BlockContext.video,
+        attributes: {'target': 'vid.mp4'},
+      );
       expect(convOf(doc).convertVideo(node), '.sp\n<vid.mp4> (video)');
     });
 
@@ -1232,7 +1258,7 @@ void main() {
       final doc = manDoc();
       final node = StubBlock(
         doc,
-        'video',
+        BlockContext.video,
         attributes: {'target': 'vid.mp4', 'start': '10', 'end': '20'},
         stubTitle: 'Clip',
       );
@@ -1245,7 +1271,8 @@ void main() {
     test('converts a thematic break', () {
       final doc = manDoc();
       expect(
-        convOf(doc).convertThematicBreak(Block(doc, 'thematic_break')),
+        convOf(doc)
+            .convertThematicBreak(Block(doc, BlockContext.thematicBreak)),
         ".sp\n.ce\n\\l'\\n(.lu*25u/100u\\(ap'",
       );
     });
@@ -1447,7 +1474,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'link',
         target: 'http://asciidoc.org',
         text: 'AsciiDoc',
@@ -1462,7 +1489,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'link',
         target: 'http://asciidoc.org',
         text: 'http://asciidoc.org',
@@ -1477,7 +1504,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'link',
         target: 'http://example.org',
         text: 'say "hi"',
@@ -1492,7 +1519,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'link',
         target: 'mailto:doc@example.org',
         text: 'Contact the doc',
@@ -1508,7 +1535,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'link',
         target: 'mailto:doc@example.org',
         text: 'doc@example.org',
@@ -1523,7 +1550,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'xref',
         target: '#sec',
         text: 'Section',
@@ -1538,7 +1565,7 @@ void main() {
       registerRef(doc, 'sec-options', section);
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'xref',
         target: '#sec-options',
         attributes: {'refid': 'sec-options'},
@@ -1553,7 +1580,7 @@ void main() {
       registerRef(doc, 'sec-foo-bar', section);
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'xref',
         target: '#sec-foo-bar',
         attributes: {'refid': 'sec-foo-bar'},
@@ -1565,7 +1592,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'xref',
         target: '#missing',
         attributes: {'refid': 'missing'},
@@ -1578,13 +1605,13 @@ void main() {
       final parent = para(doc, '');
       expect(
         convOf(doc).convertInlineAnchor(
-          Inline(parent, 'anchor', type: 'ref', target: 'a'),
+          Inline(parent, InlineContext.anchor, type: 'ref', target: 'a'),
         ),
         '',
       );
       expect(
         convOf(doc).convertInlineAnchor(
-          Inline(parent, 'anchor', type: 'bibref', target: 'b'),
+          Inline(parent, InlineContext.anchor, type: 'bibref', target: 'b'),
         ),
         '',
       );
@@ -1595,7 +1622,7 @@ void main() {
         final doc = manDoc();
         final node = Inline(
           para(doc, ''),
-          'anchor',
+          InlineContext.anchor,
           type: 'weird',
           target: 't',
           text: 'x',
@@ -1648,13 +1675,17 @@ void main() {
   group('other inlines', () {
     test('converts inline breaks', () {
       final doc = manDoc();
-      final node = Inline(para(doc, ''), 'break', text: 'Before break.');
+      final node = Inline(
+        para(doc, ''),
+        InlineContext.lineBreak,
+        text: 'Before break.',
+      );
       expect(convOf(doc).convertInlineBreak(node), 'Before break.\n${escFs}br');
     });
 
     test('converts inline buttons', () {
       final doc = manDoc();
-      final node = Inline(para(doc, ''), 'button', text: 'Save');
+      final node = Inline(para(doc, ''), InlineContext.button, text: 'Save');
       expect(
         convOf(doc).convertInlineButton(node),
         '<${escBs}fB>[${escBs}0Save${escBs}0]</${escBs}fP>',
@@ -1663,7 +1694,7 @@ void main() {
 
     test('converts inline callouts', () {
       final doc = manDoc();
-      final node = Inline(para(doc, ''), 'callout', text: '1');
+      final node = Inline(para(doc, ''), InlineContext.callout, text: '1');
       expect(
         convOf(doc).convertInlineCallout(node),
         '<${escBs}fB>(1)</${escBs}fP>',
@@ -1674,7 +1705,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'footnote',
+        InlineContext.footnote,
         attributes: {'index': '1'},
       );
       expect(convOf(doc).convertInlineFootnote(node), '[1]');
@@ -1684,7 +1715,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'footnote',
+        InlineContext.footnote,
         type: 'xref',
         text: 'does-not-exist',
       );
@@ -1693,7 +1724,7 @@ void main() {
 
     test('returns null for footnotes without index or xref', () {
       final doc = manDoc();
-      final node = Inline(para(doc, ''), 'footnote');
+      final node = Inline(para(doc, ''), InlineContext.footnote);
       expect(convOf(doc).convertInlineFootnote(node), isNull);
     });
 
@@ -1701,7 +1732,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'image',
+        InlineContext.image,
         attributes: {'alt': 'signs point to yes'},
       );
       expect(convOf(doc).convertInlineImage(node), '[signs point to yes]');
@@ -1711,7 +1742,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'image',
+        InlineContext.image,
         attributes: {
           'alt': 'signs point to yes',
           'link': 'https://example.org/ball',
@@ -1727,7 +1758,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'indexterm',
+        InlineContext.indexterm,
         type: 'visible',
         text: 'term',
       );
@@ -1736,13 +1767,13 @@ void main() {
 
     test('hides non-visible index terms', () {
       final doc = manDoc();
-      final node = Inline(para(doc, ''), 'indexterm', text: 'term');
+      final node = Inline(para(doc, ''), InlineContext.indexterm, text: 'term');
       expect(convOf(doc).convertInlineIndexterm(node), '');
     });
 
     test('converts a single key', () {
       final doc = manDoc();
-      final node = Inline(para(doc, ''), 'kbd', keys: ['Enter']);
+      final node = Inline(para(doc, ''), InlineContext.kbd, keys: ['Enter']);
       expect(
         convOf(doc).convertInlineKbd(node),
         '<${escBs}f(CR>Enter</${escBs}fP>',
@@ -1751,7 +1782,11 @@ void main() {
 
     test('joins key sequences with plus', () {
       final doc = manDoc();
-      final node = Inline(para(doc, ''), 'kbd', keys: ['Ctrl', 's']);
+      final node = Inline(
+        para(doc, ''),
+        InlineContext.kbd,
+        keys: ['Ctrl', 's'],
+      );
       expect(
         convOf(doc).convertInlineKbd(node),
         '<${escBs}f(CR>Ctrl${escBs}0+${escBs}0s</${escBs}fP>',
@@ -1762,7 +1797,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'menu',
+        InlineContext.menu,
         attributes: {'menu': 'File'},
         submenus: <String>[],
       );
@@ -1776,7 +1811,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'menu',
+        InlineContext.menu,
         attributes: {'menu': 'File', 'menuitem': 'New Tab'},
         submenus: <String>[],
       );
@@ -1791,7 +1826,7 @@ void main() {
       final doc = manDoc();
       final node = Inline(
         para(doc, ''),
-        'menu',
+        InlineContext.menu,
         attributes: {'menu': 'View', 'menuitem': 'Zoom In'},
         submenus: ['Zoom'],
       );
@@ -1809,7 +1844,7 @@ void main() {
       final conv = convOf(doc);
       final parent = para(doc, '');
       String? q(String type) => conv.convertInlineQuoted(
-        Inline(parent, 'quoted', type: type, text: 'text'),
+        Inline(parent, InlineContext.quoted, type: type, text: 'text'),
       );
       expect(q('emphasis'), '<${escBs}fI>text</${escBs}fP>');
       expect(q('strong'), '<${escBs}fB>text</${escBs}fP>');
@@ -1919,7 +1954,7 @@ void main() {
       final conv = convOf(doc);
       final parent = para(doc, '');
       String q(String type, String text) => conv.convertInlineQuoted(
-        Inline(parent, 'quoted', type: type, text: text),
+        Inline(parent, InlineContext.quoted, type: type, text: text),
       )!;
       final node = para(
         doc,
@@ -1938,7 +1973,7 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final br = conv.convertInlineBreak(
-        Inline(para(doc, ''), 'break', text: 'Before break.'),
+        Inline(para(doc, ''), InlineContext.lineBreak, text: 'Before break.'),
       );
       expect(
         conv.convertParagraph(para(doc, '$br\nAfter break.')),
@@ -1961,14 +1996,16 @@ void main() {
       final doc = manDoc();
       final conv = convOf(doc);
       final parent = para(doc, '');
-      final btn = conv.convertInlineButton(Inline(parent, 'button', text: 'S'));
+      final btn = conv.convertInlineButton(
+        Inline(parent, InlineContext.button, text: 'S'),
+      );
       final kbd = conv.convertInlineKbd(
-        Inline(parent, 'kbd', keys: ['Ctrl', 's']),
+        Inline(parent, InlineContext.kbd, keys: ['Ctrl', 's']),
       );
       final menu = conv.convertInlineMenu(
         Inline(
           parent,
-          'menu',
+          InlineContext.menu,
           attributes: {'menu': 'File', 'menuitem': 'New'},
           submenus: <String>[],
         ),
@@ -1989,7 +2026,7 @@ void main() {
       final link = conv.convertInlineAnchor(
         Inline(
           parent,
-          'anchor',
+          InlineContext.anchor,
           type: 'link',
           target: 'http://asciidoc.org',
           text: 'AsciiDoc',
@@ -2008,7 +2045,7 @@ void main() {
       final link = conv.convertInlineAnchor(
         Inline(
           parent,
-          'anchor',
+          InlineContext.anchor,
           type: 'link',
           target: 'http://asciidoc.org',
           text: 'AsciiDoc',
@@ -2027,7 +2064,7 @@ void main() {
       final link = conv.convertInlineAnchor(
         Inline(
           parent,
-          'anchor',
+          InlineContext.anchor,
           type: 'link',
           target: 'http://asciidoc.org',
           text: 'AsciiDoc',
@@ -2046,7 +2083,7 @@ void main() {
       final link = conv.convertInlineAnchor(
         Inline(
           parent,
-          'anchor',
+          InlineContext.anchor,
           type: 'link',
           target: 'http://asciidoc.org',
           text: 'AsciiDoc',
@@ -2066,7 +2103,13 @@ void main() {
       final conv = convOf(doc);
       final parent = para(doc, '');
       String link(String target, String text) => conv.convertInlineAnchor(
-        Inline(parent, 'anchor', type: 'link', target: target, text: text),
+        Inline(
+          parent,
+          InlineContext.anchor,
+          type: 'link',
+          target: target,
+          text: text,
+        ),
       )!;
       final first = link('http://clisp.sf.net', 'CLISP');
       final second = link('http://ccl.clozure.com', 'Clozure CL');
@@ -2086,10 +2129,16 @@ void main() {
       final conv = convOf(doc);
       final parent = para(doc, '');
       final mono = conv.convertInlineQuoted(
-        Inline(parent, 'quoted', type: 'monospaced', text: 'cat'),
+        Inline(parent, InlineContext.quoted, type: 'monospaced', text: 'cat'),
       )!;
       final link = conv.convertInlineAnchor(
-        Inline(parent, 'anchor', type: 'link', target: 'cat', text: mono),
+        Inline(
+          parent,
+          InlineContext.anchor,
+          type: 'link',
+          target: 'cat',
+          text: mono,
+        ),
       )!;
       expect(
         conv.convertParagraph(para(doc, 'Enter the $link command.')),
@@ -2104,7 +2153,7 @@ void main() {
       final mto = conv.convertInlineAnchor(
         Inline(
           parent,
-          'anchor',
+          InlineContext.anchor,
           type: 'link',
           target: 'mailto:doc@example.org',
           text: 'Contact the doc',
@@ -2174,7 +2223,7 @@ void main() {
       final link = conv.convertInlineAnchor(
         Inline(
           para(doc, ''),
-          'anchor',
+          InlineContext.anchor,
           type: 'link',
           target: 'https://example.org',
           text: 'example site',
@@ -2195,7 +2244,7 @@ void main() {
       final link = conv.convertInlineAnchor(
         Inline(
           parent,
-          'anchor',
+          InlineContext.anchor,
           type: 'link',
           target: 'https://example.org',
           text: 'example site',
@@ -2263,7 +2312,7 @@ void main() {
       registerRef(doc, 'sec-options', section);
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'xref',
         target: '#sec-options',
         attributes: {'refid': 'sec-options'},
@@ -2280,7 +2329,7 @@ void main() {
       registerRef(doc, 'a', sectionA);
       final node = Inline(
         para(doc, ''),
-        'anchor',
+        InlineContext.anchor,
         type: 'xref',
         target: '#a',
         attributes: {'refid': 'a'},

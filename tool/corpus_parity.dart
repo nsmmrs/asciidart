@@ -50,6 +50,12 @@ Future<void> main(List<String> args) async {
           'default modes; repeatable.',
     )
     ..addOption('filter', help: 'Only files whose path contains this text.')
+    ..addOption(
+      'cache-a',
+      help:
+          'Directory caching the reference results, keyed by command, '
+          'arguments, file, size and modification time.',
+    )
     ..addFlag('help', abbr: 'h', negatable: false);
   final ArgResults options;
   try {
@@ -88,6 +94,8 @@ Future<void> main(List<String> args) async {
   final exeB = _command(options.option('exe-b')!);
   final timeout = Duration(seconds: int.parse(options.option('timeout')!));
   final jobs = int.parse(options.option('jobs')!);
+  final cacheA = options.option('cache-a');
+  if (cacheA != null) Directory(cacheA).createSync(recursive: true);
 
   final cases = [
     for (final file in files)
@@ -107,7 +115,11 @@ Future<void> main(List<String> args) async {
       final args = [...item.mode.value, '-o', '-', _basename(item.file)];
       final dir = File(item.file).parent.path;
       final (a, b) = await (
-        _run(exeA, args, dir, timeout),
+        cacheA == null
+            ? _run(exeA, args, dir, timeout)
+            : _cached(cacheA, exeA, args, item.file, () {
+                return _run(exeA, args, dir, timeout);
+              }),
         _run(exeB, args, dir, timeout),
       ).wait;
       final status = _compare(a, b);
@@ -176,6 +188,57 @@ List<String> _command(String text) {
 }
 
 typedef _Result = ({int exitCode, String stdout, String stderr});
+
+/// The result of [run] for [file], from the cache in [dir] when present.
+Future<_Result> _cached(
+  String dir,
+  List<String> command,
+  List<String> args,
+  String file,
+  Future<_Result> Function() run,
+) async {
+  final stat = File(file).statSync();
+  final key = _fnv1a(
+    [
+      ...command,
+      ...args,
+      file,
+      '${stat.size}',
+      '${stat.modified}',
+    ].join('\u0000'),
+  );
+  final entry = File('$dir/$key.json');
+  if (entry.existsSync()) {
+    final json = jsonDecode(entry.readAsStringSync()) as Map<String, Object?>;
+    return (
+      exitCode: json['exitCode']! as int,
+      stdout: json['stdout']! as String,
+      stderr: json['stderr']! as String,
+    );
+  }
+  final result = await run();
+  entry.writeAsStringSync(
+    jsonEncode({
+      'exitCode': result.exitCode,
+      'stdout': result.stdout,
+      'stderr': result.stderr,
+    }),
+  );
+  return result;
+}
+
+/// A 64-bit hash of [text] in hex: two 32-bit FNV-1a hashes with
+/// different offsets.
+String _fnv1a(String text) {
+  var low = 0x811c9dc5;
+  var high = 0x050c5d1f;
+  for (final unit in utf8.encode(text)) {
+    low = ((low ^ unit) * 0x01000193) & 0xffffffff;
+    high = ((high ^ unit) * 0x01000193) & 0xffffffff;
+  }
+  return high.toRadixString(16).padLeft(8, '0') +
+      low.toRadixString(16).padLeft(8, '0');
+}
 
 Future<_Result> _run(
   List<String> command,

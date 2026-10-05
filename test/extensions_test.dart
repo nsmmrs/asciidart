@@ -753,7 +753,7 @@ class UppercaseBlock extends BlockProcessor {
             ProcessorConfig(
               contexts: {'paragraph'},
               positionalAttrs: ['chars'],
-              contentModel: 'simple',
+              contentModel: ContentModel.simple,
             ),
       );
 
@@ -796,7 +796,7 @@ class SnippetMacro extends BlockMacroProcessor {
     parent,
     '<script src="http://example.com/$target.js?_mode=${attributes['mode']}"></script>',
     {},
-    contentModel: 'raw',
+    contentModel: ContentModel.raw,
   );
 }
 
@@ -843,14 +843,14 @@ class TemperatureMacro extends InlineMacroProcessor {
       case 'C':
         return createInline(
           parent,
-          'quoted',
+          InlineContext.quoted,
           '${c.toStringAsFixed(precision)} &#176;C',
           type: 'unquoted',
         );
       case 'F':
         return createInline(
           parent,
-          'quoted',
+          InlineContext.quoted,
           '${(c * 1.8 + 32).toStringAsFixed(precision)} &#176;F',
           type: 'unquoted',
         );
@@ -932,7 +932,10 @@ Registry createSantaListBlockMacro() {
           // Adapted: Ruby blocks tolerate the unused third argument;
           // Dart closures must declare it.
           processor.onProcess = (parent, target, _) {
-            final list = processor.createList(parent, target);
+            final list = processor.createList(
+              parent,
+              BlockContext.parse(target),
+            );
             final guillaume = (processor.createListItem(list, 'Guillaume'))
               ..addRole('friendly')
               ..id = 'santa-list-guillaume';
@@ -1058,7 +1061,7 @@ void main() {
                 processor
                   ..name = 'whisper'
                   ..onContext('paragraph')
-                  ..config.contentModel = 'simple';
+                  ..config.contentModel = ContentModel.simple;
                 processor.onProcess = (parent, reader, attributes) {
                   return processor.createParagraph(
                     parent,
@@ -1562,7 +1565,7 @@ void main() {
           registry.treeProcessor(
             build: (processor) {
               processor.onProcess = (doc) {
-                final ex = doc.findBy(context: 'example')[0];
+                final ex = doc.findBy(context: BlockContext.example)[0];
                 oldTitle = ex.title;
                 ex.title = 'New block title';
                 return null;
@@ -1575,7 +1578,7 @@ void main() {
       final doc = documentFromString(input);
       expect(oldTitle, equals('Old block title'));
       expect(
-        doc.findBy(context: 'example')[0].title,
+        doc.findBy(context: BlockContext.example)[0].title,
         equals('New block title'),
       );
     });
@@ -1773,7 +1776,7 @@ void main() {
                   parent,
                   reader.readLines().join('\n'),
                   <String, String>{},
-                  contentModel: 'compound',
+                  contentModel: ContentModel.compound,
                 );
               };
             },
@@ -1840,7 +1843,7 @@ void main() {
             name: 'log',
             build: (processor) {
               processor
-                ..config.contentModel = 'text'
+                ..config.macroAttributes = MacroAttributes.text
                 ..onProcess = (parent, target, attrs) {
                   parent.logger.info(attrs['text']!);
                   return null;
@@ -1949,7 +1952,7 @@ void main() {
           ),
         );
         expect(doc.blocks.length, equals(1));
-        expect(doc.blocks[0].context, equals('paragraph'));
+        expect(doc.blocks[0].contextName, equals('paragraph'));
         output = doc.convert();
         assertMessage(
           logger,
@@ -2002,7 +2005,7 @@ void main() {
                   parent,
                   '<!-- custom toc goes here -->',
                   <String, String>{},
-                  contentModel: 'raw',
+                  contentModel: ContentModel.raw,
                 );
               };
             },
@@ -2152,7 +2155,7 @@ void main() {
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInline(
                   parent,
-                  'quoted',
+                  InlineContext.quoted,
                   attrs['text'],
                   type: 'unquoted',
                   attributes: {'role': 'line-through'},
@@ -2178,11 +2181,11 @@ void main() {
             build: (processor) {
               processor
                 ..config.format = 'short'
-                ..config.contentModel = 'text';
+                ..config.macroAttributes = MacroAttributes.text;
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInline(
                   parent,
-                  'quoted',
+                  InlineContext.quoted,
                   attrs['text'],
                   type: 'unquoted',
                   attributes: {'role': 'line-through'},
@@ -2205,7 +2208,7 @@ void main() {
               processor
                 ..name = 'label'
                 ..config.format = 'short'
-                ..config.contentModel = 'text'
+                ..config.macroAttributes = MacroAttributes.text
                 ..onProcess = (parent, target, attrs) {
                   return processor.createInlinePass(
                     parent,
@@ -2459,7 +2462,7 @@ void main() {
               processor.onProcess = (parent, target, attrs) {
                 return processor.createInline(
                   parent,
-                  'quoted',
+                  InlineContext.quoted,
                   '*$target*',
                   type: 'emphasis',
                 );
@@ -2596,7 +2599,7 @@ void main() {
               processor
                 ..name = 'skip-me'
                 ..onContext('paragraph')
-                ..config.contentModel = 'raw'
+                ..config.contentModel = ContentModel.raw
                 ..onProcess = (parent, reader, attrs) => null;
             },
           );
@@ -2625,7 +2628,7 @@ void main() {
               processor
                 ..name = 'ignore'
                 ..onContext('paragraph')
-                ..config.contentModel = 'skip'
+                ..config.contentModel = ContentModel.skip
                 ..onProcess = (parent, reader, attrs) {
                   processMethodCalled = true;
                   return null;
@@ -2656,7 +2659,7 @@ void main() {
               processor
                 ..name = 'foo'
                 ..onContext('paragraph')
-                ..config.contentModel = 'raw'
+                ..config.contentModel = ContentModel.raw
                 ..onProcess = (parent, reader, attrs) {
                   final originalAttrs = Map<String, String>.of(attrs);
                   attrs.remove('title');
@@ -2686,7 +2689,7 @@ void main() {
                 ..name = 'lst'
                 ..onContext('paragraph');
               processor.onProcess = (parent, reader, attrs) {
-                final list = processor.createList(parent, 'ulist');
+                final list = processor.createList(parent, BlockContext.ulist);
                 for (final line in reader.readLines()) {
                   list.append(processor.createListItem(list, line));
                 }
@@ -2700,7 +2703,7 @@ void main() {
       final doc = documentFromString(input);
       expect(doc.blocks.length, equals(3));
       final list = doc.blocks[1] as ListBlock;
-      expect(list.context, equals('ulist'));
+      expect(list.contextName, equals('ulist'));
       expect(list.items.length, equals(3));
       expect(list.items[0].text, equals('a'));
       assertCss('li', doc.convert(), 3);
@@ -2736,11 +2739,11 @@ void main() {
       final doc = documentFromString(input);
       expect(doc.blocks.length, equals(1));
       final sect = doc.blocks[0] as Section;
-      expect(sect.context, equals('section'));
+      expect(sect.contextName, equals('section'));
       expect(sect.title, equals('Section Title'));
       expect(sect.blocks.length, equals(2));
-      expect(sect.blocks[0].context, equals('paragraph'));
-      expect(sect.blocks[1].context, equals('paragraph'));
+      expect(sect.blocks[0].contextName, equals('paragraph'));
+      expect(sect.blocks[1].contextName, equals('paragraph'));
       assertCss('p', doc.convert(), 2);
     });
 
@@ -2767,7 +2770,7 @@ void main() {
       final doc = documentFromString(input);
       expect(doc.blocks.length, equals(3));
       final table = doc.blocks[1];
-      expect(table.context, equals('table'));
+      expect(table.contextName, equals('table'));
       assertCss('td', doc.convert(), 3);
     });
 
@@ -2793,7 +2796,7 @@ void main() {
       final doc = documentFromString(input);
       expect(doc.blocks.length, equals(3));
       for (final block in doc.blocks) {
-        expect(block.context, equals('paragraph'));
+        expect(block.contextName, equals('paragraph'));
       }
       expect((doc.blocks[0] as Block).source(), equals('a'));
       assertCss('p', doc.convert(), 3);
@@ -2817,7 +2820,7 @@ void main() {
         const input = 'para::text[]\n';
         final doc = documentFromString(input);
         expect(doc.blocks.length, equals(1));
-        expect(doc.blocks[0].context, equals('paragraph'));
+        expect(doc.blocks[0].contextName, equals('paragraph'));
         expect((doc.blocks[0] as Block).source(), equals('text'));
         assertCss('p', doc.convert(), 1);
       },
@@ -2910,7 +2913,7 @@ void main() {
                 final level = sectAttrs.remove('level');
                 final noId = sectAttrs['id'] == 'false';
                 if (noId) sectAttrs.remove('id');
-                final current = parent.context == 'preamble'
+                final current = parent.context == BlockContext.preamble
                     ? parent.parent!
                     : parent;
                 sect = processor.createSection(
@@ -3301,7 +3304,7 @@ void main() {
             name: 'no_alt',
             build: (processor) {
               processor.onProcess = (parent, target, attrs) {
-                return processor.createBlock(parent, 'image', null, {
+                return processor.createBlock(parent, BlockContext.image, null, {
                   'target': 'picture.jpg',
                 });
               };
@@ -3326,7 +3329,7 @@ void main() {
                 processor.onProcess = (parent, target, attrs) {
                   return processor.createInline(
                     parent,
-                    'image',
+                    InlineContext.image,
                     null,
                     target: 'picture.jpg',
                   );
@@ -3476,7 +3479,7 @@ void main() {
 
     test('createSection throws for a detached parent', () {
       final processor = SampleBlock();
-      final orphan = Block(null, 'open');
+      final orphan = Block(null, BlockContext.open);
       expect(
         () => processor.createSection(orphan, 'Title', <String, String>{}),
         throwsStateError,
@@ -3488,13 +3491,13 @@ void main() {
       final doc = emptyDocument();
       final block = processor.createBlock(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         'hello',
         <String, String>{},
       );
       expect(block, isA<Block>());
-      expect(block.context, equals('paragraph'));
-      expect(block.contentModel, equals('simple'));
+      expect(block.contextName, equals('paragraph'));
+      expect(block.contentModel, equals(ContentModel.simple));
       expect(block.lines, equals(['hello']));
       expect(block.parent, same(doc));
     });
@@ -3502,9 +3505,9 @@ void main() {
     test('createList and createListItem link nodes together', () {
       final processor = SampleBlock();
       final doc = emptyDocument();
-      final list = processor.createList(doc, 'ulist');
+      final list = processor.createList(doc, BlockContext.ulist);
       expect(list, isA<ListBlock>());
-      expect(list.context, equals('ulist'));
+      expect(list.contextName, equals('ulist'));
       final item = (processor.createListItem(list, 'Guillaume'))
         ..addRole('friendly')
         ..id = 'item-1';
@@ -3568,19 +3571,19 @@ void main() {
     test('createInline defaults quoted nodes to unquoted', () {
       final processor = SampleInlineMacro();
       final doc = emptyDocument();
-      final quoted = processor.createInline(doc, 'quoted', '*hi*');
+      final quoted = processor.createInline(doc, InlineContext.quoted, '*hi*');
       expect(quoted.type, equals('unquoted'));
       expect(quoted.text, equals('*hi*'));
       final explicit = processor.createInline(
         doc,
-        'quoted',
+        InlineContext.quoted,
         '*hi*',
         type: 'emphasis',
       );
       expect(explicit.type, equals('emphasis'));
       final anchor = processor.createInline(
         doc,
-        'anchor',
+        InlineContext.anchor,
         'text',
         type: 'link',
         target: 'https://example.com',
@@ -3594,34 +3597,34 @@ void main() {
       final doc = emptyDocument();
       final attrs = <String, String>{};
       expect(
-        processor.createParagraph(doc, 'x', attrs).context,
+        processor.createParagraph(doc, 'x', attrs).contextName,
         equals('paragraph'),
       );
       expect(
-        processor.createOpenBlock(doc, 'x', attrs).context,
+        processor.createOpenBlock(doc, 'x', attrs).contextName,
         equals('open'),
       );
       expect(
-        processor.createExampleBlock(doc, 'x', attrs).context,
+        processor.createExampleBlock(doc, 'x', attrs).contextName,
         equals('example'),
       );
       expect(
-        processor.createPassBlock(doc, 'x', attrs).context,
+        processor.createPassBlock(doc, 'x', attrs).contextName,
         equals('pass'),
       );
       expect(
-        processor.createListingBlock(doc, 'x', attrs).context,
+        processor.createListingBlock(doc, 'x', attrs).contextName,
         equals('listing'),
       );
       expect(
-        processor.createLiteralBlock(doc, 'x', attrs).context,
+        processor.createLiteralBlock(doc, 'x', attrs).contextName,
         equals('literal'),
       );
       final anchor = processor.createAnchor(doc, 'text', target: 't');
-      expect(anchor.context, equals('anchor'));
+      expect(anchor.contextName, equals('anchor'));
       expect(anchor.target, equals('t'));
       final pass = processor.createInlinePass(doc, '<b>hi</b>');
-      expect(pass.context, equals('quoted'));
+      expect(pass.contextName, equals('quoted'));
       expect(pass.type, equals('unquoted'));
     });
 
@@ -3659,7 +3662,7 @@ void main() {
       final parent = processor.parseSource(doc, 'content');
       expect(parent, same(doc));
       expect(doc.blocks.length, equals(1));
-      expect(doc.blocks[0].context, equals('paragraph'));
+      expect(doc.blocks[0].contextName, equals('paragraph'));
     });
   });
 
@@ -3667,8 +3670,8 @@ void main() {
     test('named and content model helpers set config', () {
       final processor = (SampleBlock())..name = 'shout';
       expect(processor.name, equals('shout'));
-      processor.config.contentModel = 'simple';
-      expect(processor.config.contentModel, equals('simple'));
+      processor.config.contentModel = ContentModel.simple;
+      expect(processor.config.contentModel, equals(ContentModel.simple));
     });
 
     test('positional and default attribute helpers set config', () {
@@ -3685,12 +3688,12 @@ void main() {
         ..resolveAttributes(['1:units', 'precision=1']);
       expect(processor.config.positionalAttrs, equals(['units']));
       expect(processor.config.defaultAttrs, equals({'precision': '1'}));
-      expect(processor.config.contentModel, equals('attributes'));
+      expect(processor.config.macroAttributes, equals(MacroAttributes.parsed));
     });
 
     test('passAttributesAsText selects the text content model', () {
       final processor = (SampleBlockMacro())..passAttributesAsText();
-      expect(processor.config.contentModel, equals('text'));
+      expect(processor.config.macroAttributes, equals(MacroAttributes.text));
     });
 
     test('resolveAttributes with no arguments resets both lists', () {
@@ -3699,7 +3702,7 @@ void main() {
         ..resolveAttributes();
       expect(processor.config.positionalAttrs, isEmpty);
       expect(processor.config.defaultAttrs, isEmpty);
-      expect(processor.config.contentModel, equals('attributes'));
+      expect(processor.config.macroAttributes, equals(MacroAttributes.parsed));
     });
 
     test('resolveAttributes handles @ indices and offset slots', () {
@@ -3711,7 +3714,7 @@ void main() {
     test('block contexts normalize and bind', () {
       final implied = SampleBlock();
       expect(implied.config.contexts, equals({'open', 'paragraph'}));
-      expect(implied.config.contentModel, equals('compound'));
+      expect(implied.config.contentModel, equals(ContentModel.compound));
       final single = SampleBlock('x', ProcessorConfig(contexts: {'paragraph'}));
       expect(single.config.contexts, equals({'paragraph'}));
       final bound = (SampleBlock())..onContext('literal');
@@ -3725,8 +3728,14 @@ void main() {
     });
 
     test('macro processors default to the attributes content model', () {
-      expect(SampleBlockMacro().config.contentModel, equals('attributes'));
-      expect(SampleInlineMacro().config.contentModel, equals('attributes'));
+      expect(
+        SampleBlockMacro().config.macroAttributes,
+        equals(MacroAttributes.parsed),
+      );
+      expect(
+        SampleInlineMacro().config.macroAttributes,
+        equals(MacroAttributes.parsed),
+      );
     });
 
     test('prefer marks the processor as preferred', () {
@@ -3747,7 +3756,7 @@ void main() {
       expect(upper.name, equals('yell'));
       expect(upper.config.contexts, equals({'paragraph'}));
       expect(upper.config.positionalAttrs, equals(['chars']));
-      expect(upper.config.contentModel, equals('simple'));
+      expect(upper.config.contentModel, equals(ContentModel.simple));
       final temperature = TemperatureMacro();
       expect(temperature.name, equals('degrees'));
       expect(temperature.config.positionalAttrs, equals(['units']));

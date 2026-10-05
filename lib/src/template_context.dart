@@ -82,7 +82,7 @@ Map<String, Object?> buildTemplateContext(
     'roles': node.roles,
     'title': node is AbstractBlock ? node.title : null,
     'caption': node is AbstractBlock ? node.caption : null,
-    'context': node.context,
+    'context': node.contextName,
     'node_name': node.nodeName,
     'attributes': Map<String, Object?>.of(node.attributes),
     'attr': _attrLambda(node),
@@ -147,7 +147,7 @@ Map<String, Object?>? _documentOf(AbstractNode node) {
 /// Description-list pairs flatten to `{'terms': [...], 'description': ...}`.
 List<Map<String, Object?>>? _itemsOf(AbstractNode node) {
   if (node is! ListBlock) return null;
-  if (node.context == 'dlist') {
+  if (node.context == BlockContext.dlist) {
     return <Map<String, Object?>>[
       for (final entry in node.entries) _flattenDlistEntry(entry),
     ];
@@ -166,7 +166,7 @@ List<Map<String, Object?>>? _itemsOf(AbstractNode node) {
 /// flattened children never re-enter their own ancestors.
 List<Map<String, Object?>>? _sectionsOf(AbstractNode node) {
   if (node is! AbstractBlock) return null;
-  if (node.context != 'document' && node.context != 'section') return null;
+  if (node.context != .document && node.context != .section) return null;
   return <Map<String, Object?>>[
     for (final section in node.sections) buildTemplateContext(section),
   ];

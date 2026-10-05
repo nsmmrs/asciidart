@@ -15,7 +15,7 @@ class Inline extends AbstractNode {
   /// parameters, so [text] is named.
   new(
     super.parent,
-    super.context, {
+    this.context, {
     this.text,
     super.attributes,
     String? id,
@@ -26,9 +26,18 @@ class Inline extends AbstractNode {
     this.terms,
     this.seeAlso,
     this.xmlCommentGuard = false,
-  }) : super(nodeName: 'inline_$context') {
+  }) {
     this.id = id;
   }
+
+  /// The kind of this inline element.
+  final InlineContext context;
+
+  @override
+  String get contextName => context.asciidoc;
+
+  @override
+  String get nodeName => context.nodeName;
 
   /// The keys of a keyboard shortcut (the `kbd` macro).
   final List<String>? keys;

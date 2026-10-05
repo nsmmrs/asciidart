@@ -692,7 +692,7 @@ Block blockFromString(
     doctype: doctype,
     catalogAssets: catalogAssets,
   );
-  final block = (Block(doc, 'paragraph'))
+  final block = (Block(doc, BlockContext.paragraph))
     ..lines = src.isEmpty
         ? <String>[]
         : src.withoutTrailingNewline().split('\n')
@@ -2742,7 +2742,7 @@ void main() {
           '_install',
           Inline(
             doc,
-            'anchor',
+            InlineContext.anchor,
             text: 'Install',
             type: 'ref',
             target: '_install',
@@ -2763,7 +2763,7 @@ void main() {
           '_install',
           Inline(
             doc,
-            'anchor',
+            InlineContext.anchor,
             text: 'Install',
             type: 'ref',
             target: '_install',
@@ -2944,7 +2944,7 @@ void main() {
         final doc = makeDoc();
         doc.attributes['fn-notable-text'] = 'footnote:id[about this text]';
         Block paraFor(String line) {
-          final para = (Block(doc, 'paragraph'))
+          final para = (Block(doc, BlockContext.paragraph))
             ..lines = [line]
             ..subs = List<String>.of(normalSubs);
           return para;
@@ -2993,7 +2993,7 @@ void main() {
         // wave; the paragraph outputs are asserted exactly.
         final doc = makeDoc();
         Block paraFor(String line) {
-          final para = (Block(doc, 'paragraph'))
+          final para = (Block(doc, BlockContext.paragraph))
             ..lines = [line]
             ..subs = List<String>.of(normalSubs);
           return para;
@@ -4631,7 +4631,7 @@ void main() {
         // PORT: `empty_document parse: true` is just a document here;
         // commit_subs needs no parsed content.
         final doc = makeDoc();
-        final block = Block(doc, 'paragraph');
+        final block = Block(doc, BlockContext.paragraph);
         block.attributes['subs'] = 'quotes,normal';
         commitSubs(block);
         expect(block.subs, [
@@ -4653,8 +4653,11 @@ void main() {
         // resolve the highlighter explicitly (Ruby's `parse: true` does
         // this via the parse path).
         doc.syntaxHighlighter = SyntaxHighlighter.resolveForDocument(doc);
-        final block = (Block(doc, 'listing', contentModel: 'verbatim'))
-          ..style = 'source';
+        final block = (Block(
+          doc,
+          BlockContext.listing,
+          contentModel: ContentModel.verbatim,
+        ))..style = 'source';
         block.attributes['subs'] = 'specialcharacters';
         block.attributes['language'] = 'ruby';
         commitSubs(block);
@@ -4673,8 +4676,11 @@ void main() {
       test('should not replace specialcharacters sub with highlight '
           'for source block when source highlighter is not set', () {
         final doc = makeDoc();
-        final block = (Block(doc, 'listing', contentModel: 'verbatim'))
-          ..style = 'source';
+        final block = (Block(
+          doc,
+          BlockContext.listing,
+          contentModel: ContentModel.verbatim,
+        ))..style = 'source';
         block.attributes['subs'] = 'specialcharacters';
         block.attributes['language'] = 'ruby';
         commitSubs(block);
@@ -4689,7 +4695,11 @@ void main() {
           // effects (clear subs attr, prevent resolution) and call the
           // ported top-level commitSubs directly.
           final doc = makeDoc();
-          final block = Block(doc, 'paragraph', attributes: {'subs': 'quotes'});
+          final block = Block(
+            doc,
+            BlockContext.paragraph,
+            attributes: {'subs': 'quotes'},
+          );
           block.attributes.remove('subs');
           block.defaultSubs = <String>[];
           expect(block.subs, isEmpty);
@@ -4703,7 +4713,11 @@ void main() {
         // PORT: same constructor emulation as above (empty list seeds
         // defaultSubs).
         final doc = makeDoc();
-        final block = Block(doc, 'paragraph', attributes: {'subs': 'quotes'});
+        final block = Block(
+          doc,
+          BlockContext.paragraph,
+          attributes: {'subs': 'quotes'},
+        );
         block.attributes.remove('subs');
         block.defaultSubs = <String>[];
         expect(block.subs, isEmpty);
@@ -4715,7 +4729,11 @@ void main() {
         // PORT: same constructor emulation as above (list seeds
         // defaultSubs and is resolved eagerly).
         final doc = makeDoc();
-        final block = Block(doc, 'paragraph', attributes: {'subs': 'quotes'});
+        final block = Block(
+          doc,
+          BlockContext.paragraph,
+          attributes: {'subs': 'quotes'},
+        );
         block.attributes.remove('subs');
         block.defaultSubs = <String>['specialcharacters'];
         commitSubs(block);
@@ -4727,7 +4745,11 @@ void main() {
       test('should use subs from subs attribute if subs option is not '
           'passed to block constructor', () {
         final doc = makeDoc();
-        final block = Block(doc, 'paragraph', attributes: {'subs': 'quotes'});
+        final block = Block(
+          doc,
+          BlockContext.paragraph,
+          attributes: {'subs': 'quotes'},
+        );
         expect(block.subs, isEmpty);
         // in this case, we have to call commit_subs to resolve the subs
         commitSubs(block);
@@ -4739,8 +4761,11 @@ void main() {
         // PORT: same constructor emulation as above (`default` honors
         // the subs attribute eagerly).
         final doc = makeDoc();
-        final block = (Block(doc, 'paragraph', attributes: {'subs': 'quotes'}))
-          ..defaultSubs = null;
+        final block = (Block(
+          doc,
+          BlockContext.paragraph,
+          attributes: {'subs': 'quotes'},
+        ))..defaultSubs = null;
         commitSubs(block);
         expect(block.subs, ['quotes']);
         commitSubs(block);
@@ -4752,7 +4777,7 @@ void main() {
         // PORT: same constructor emulation as above (`default` falls
         // back to the context built-ins eagerly).
         final doc = makeDoc();
-        final block = (Block(doc, 'paragraph'))..defaultSubs = null;
+        final block = (Block(doc, BlockContext.paragraph))..defaultSubs = null;
         commitSubs(block);
         expect(block.subs, [
           'specialcharacters',

@@ -1491,11 +1491,11 @@ void main() {
         expect(doc.doctitle(), equals('AsciiDoc Home Page'));
         expect(doc.doctitle(), equals('AsciiDoc Home Page'));
         expect(doc.header, isNotNull);
-        expect(doc.header!.context, equals('section'));
+        expect(doc.header!.contextName, equals('section'));
         expect(doc.header!.sectname, equals('header'));
         expect(doc.blocks.length, equals(14));
-        expect(doc.blocks[0].context, equals('preamble'));
-        expect(doc.blocks[1].context, equals('section'));
+        expect(doc.blocks[0].contextName, equals('preamble'));
+        expect(doc.blocks[1].contextName, equals('section'));
 
         // Verify compat-mode is set when atx-style doctitle is used.
         final result = doc.blocks[0].convert();
@@ -2290,7 +2290,7 @@ void main() {
         expect(doc.doctitle(), equals('Document Title'));
         expect(doc.hasHeader, isTrue);
         expect(doc.blocks.length, equals(1));
-        expect(doc.blocks[0].context, equals('paragraph'));
+        expect(doc.blocks[0].contextName, equals('paragraph'));
         expect(doc.blocks[0].title, equals('Block title'));
       });
 
@@ -3358,7 +3358,7 @@ void main() {
         final doc = emptyDocument();
         final ref = Inline(
           doc,
-          'anchor',
+          InlineContext.anchor,
           text: 'Foo Bar',
           type: 'ref',
           target: 'foobar',
@@ -3373,14 +3373,17 @@ void main() {
         final doc = emptyDocument();
         final ref = Inline(
           doc,
-          'anchor',
+          InlineContext.anchor,
           text: '[tigers]',
           type: 'ref',
           target: 'tigers',
         );
         expect(doc.registerRef('tigers', ref), isTrue);
         expect(
-          doc.registerRef('tigers', Inline(doc, 'anchor', type: 'ref')),
+          doc.registerRef(
+            'tigers',
+            Inline(doc, InlineContext.anchor, type: 'ref'),
+          ),
           isFalse,
         );
         expect(doc.catalog.refs['tigers'], same(ref));
@@ -4007,7 +4010,7 @@ void main() {
             "*asciidoctor* ['OPTION']... 'FILE'..\n";
         final doc = documentFromString(input);
         final synopsisSection = doc.blocks.first as Section;
-        expect(synopsisSection.context, equals('section'));
+        expect(synopsisSection.contextName, equals('section'));
         expect(synopsisSection.special, isTrue);
         expect(synopsisSection.sectname, equals('synopsis'));
       });

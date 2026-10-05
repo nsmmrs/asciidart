@@ -6,9 +6,9 @@
 ///
 /// ## Framework integration
 ///
-/// Each transform is a handler registered with [ConverterBase.handle] (see
-/// `converter.dart`); `convert` itself is inherited from [ConverterBase],
-/// which warns and returns `null` for unregistered transforms. The
+/// [BuiltInConverter] dispatches each node to `convertBlock` or
+/// `convertInline` below, by its kind; a kind with no conversion here (list
+/// items, table cells) warns and produces nothing. The
 /// converter registers itself explicitly with `Converter.registerFor`.
 ///
 /// Notes:
@@ -119,8 +119,8 @@ const (String, String, bool) _defaultQuoteTags = ('', '', true);
 ///
 /// Port of `Asciidoctor::Converter::DocBook5Converter`. Each `convert*`
 /// method corresponds to Asciidoctor's `convert_*` method of the same name
-/// and is registered with [handle] below (see the library docs).
-class Docbook5Converter extends ConverterBase {
+/// and is dispatched to by `convertBlock` and `convertInline` below.
+class Docbook5Converter extends BuiltInConverter {
   /// Creates a converter for [backend] with constructor options [opts].
   new(super.backend, [super.opts]) {
     backendTraits = BackendTraits(
@@ -129,74 +129,72 @@ class Docbook5Converter extends ConverterBase {
       outfilesuffix: '.xml',
       supportsTemplates: true,
     );
-    handle('document', (node, [opts]) => convertDocument(node as Document));
-    handle('embedded', (node, [opts]) => convertEmbedded(node as Document));
-    handle('section', (node, [opts]) => convertSection(node as Section));
-    handle('admonition', (node, [opts]) => convertAdmonition(node as Block));
-    handle('audio', (node, [opts]) => skip(node));
-    handle('colist', (node, [opts]) => convertColist(node as ListBlock));
-    handle('dlist', (node, [opts]) => convertDlist(node as ListBlock));
-    handle('example', (node, [opts]) => convertExample(node as Block));
-    handle(
-      'floating_title',
-      (node, [opts]) => convertFloatingTitle(node as Block),
-    );
-    handle('image', (node, [opts]) => convertImage(node as Block));
-    handle('listing', (node, [opts]) => convertListing(node as Block));
-    handle('literal', (node, [opts]) => convertLiteral(node as Block));
-    handle('pass', (node, [opts]) => contentOnly(node));
-    handle('stem', (node, [opts]) => convertStem(node as Block));
-    handle('olist', (node, [opts]) => convertOlist(node as ListBlock));
-    handle('open', (node, [opts]) => convertOpen(node as Block));
-    handle('page_break', (node, [opts]) => convertPageBreak(node as Block));
-    handle('paragraph', (node, [opts]) => convertParagraph(node as Block));
-    handle('preamble', (node, [opts]) => convertPreamble(node as Block));
-    handle('quote', (node, [opts]) => convertQuote(node as Block));
-    handle('sidebar', (node, [opts]) => convertSidebar(node as Block));
-    handle('table', (node, [opts]) => convertTable(node as Table));
-    handle(
-      'thematic_break',
-      (node, [opts]) => convertThematicBreak(node as Block),
-    );
-    handle('toc', (node, [opts]) => skip(node));
-    handle('ulist', (node, [opts]) => convertUlist(node as ListBlock));
-    handle('verse', (node, [opts]) => convertVerse(node as Block));
-    handle('video', (node, [opts]) => skip(node));
-    handle(
-      'inline_anchor',
-      (node, [opts]) => convertInlineAnchor(node as Inline),
-    );
-    handle(
-      'inline_break',
-      (node, [opts]) => convertInlineBreak(node as Inline),
-    );
-    handle(
-      'inline_button',
-      (node, [opts]) => convertInlineButton(node as Inline),
-    );
-    handle(
-      'inline_callout',
-      (node, [opts]) => convertInlineCallout(node as Inline),
-    );
-    handle(
-      'inline_footnote',
-      (node, [opts]) => convertInlineFootnote(node as Inline),
-    );
-    handle(
-      'inline_image',
-      (node, [opts]) => convertInlineImage(node as Inline),
-    );
-    handle(
-      'inline_indexterm',
-      (node, [opts]) => convertInlineIndexterm(node as Inline),
-    );
-    handle('inline_kbd', (node, [opts]) => convertInlineKbd(node as Inline));
-    handle('inline_menu', (node, [opts]) => convertInlineMenu(node as Inline));
-    handle(
-      'inline_quoted',
-      (node, [opts]) => convertInlineQuoted(node as Inline),
-    );
   }
+
+  @override
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+      switch (node.context) {
+        .admonition => convertAdmonition(node as Block),
+        .audio => null,
+        .colist => convertColist(node as ListBlock),
+        .dlist => convertDlist(node as ListBlock),
+        .document => convertDocument(node as Document),
+        .example => convertExample(node as Block),
+        .floatingTitle => convertFloatingTitle(node as Block),
+        .image => convertImage(node as Block),
+        .listing => convertListing(node as Block),
+        .literal => convertLiteral(node as Block),
+        .olist => convertOlist(node as ListBlock),
+        .open => convertOpen(node as Block),
+        .pageBreak => convertPageBreak(node as Block),
+        .paragraph => convertParagraph(node as Block),
+        .pass => contentOnly(node),
+        .preamble => convertPreamble(node as Block),
+        .quote => convertQuote(node as Block),
+        .section => convertSection(node as Section),
+        .sidebar => convertSidebar(node as Block),
+        .stem => convertStem(node as Block),
+        .table => convertTable(node as Table),
+        .thematicBreak => convertThematicBreak(node as Block),
+        .toc => null,
+        .ulist => convertUlist(node as ListBlock),
+        .verse => convertVerse(node as Block),
+        .video => null,
+        .listItem || .tableCell => missing(node.nodeName),
+      };
+
+  @override
+  bool handlesBlock(BlockContext context) => switch (context) {
+    .listItem || .tableCell => false,
+    _ => true,
+  };
+
+  @override
+  String? convertInline(Inline node) => switch (node.context) {
+    .anchor => convertInlineAnchor(node),
+    .lineBreak => convertInlineBreak(node),
+    .button => convertInlineButton(node),
+    .callout => convertInlineCallout(node),
+    .footnote => convertInlineFootnote(node),
+    .image => convertInlineImage(node),
+    .indexterm => convertInlineIndexterm(node),
+    .kbd => convertInlineKbd(node),
+    .menu => convertInlineMenu(node),
+    .quoted => convertInlineQuoted(node),
+  };
+
+  @override
+  Set<String> get transforms => const {'embedded'};
+
+  @override
+  String? convertTransform(
+    AbstractNode node,
+    String transform,
+    ConvertOptions? opts,
+  ) => switch (transform) {
+    'embedded' => convertEmbedded(node as Document),
+    _ => missing(transform),
+  };
 
   @override
   String get converterName => 'Docbook5Converter';
@@ -626,9 +624,9 @@ class Docbook5Converter extends ConverterBase {
             '<abstract>\n${_titleTag(node)}${_encloseContent(node)}\n</abstract>';
         if (backend == 'docbook5' &&
             !node.hasOption('root') &&
-            (parent!.context == 'open'
+            (parent!.context == BlockContext.open
                 ? parent.style == 'partintro'
-                : parent.context == 'section' &&
+                : parent.context == BlockContext.section &&
                       (parent as Section).sectname == 'partintro') &&
             node == parent.blocks[0]) {
           result = '<info>\n$result\n</info>';
@@ -637,7 +635,7 @@ class Docbook5Converter extends ConverterBase {
       case 'partintro':
         final doc = node.document! as Document;
         if (node.level == 0 &&
-            node.parent!.context == 'section' &&
+            node.parent!.context == BlockContext.section &&
             doc.doctype == 'book') {
           return '<partintro${_nodeAttributes(node)}>\n'
               '${_titleTag(node)}${_encloseContent(node)}\n'
@@ -653,13 +651,13 @@ class Docbook5Converter extends ConverterBase {
         final reftext = id != null ? node.reftext : null;
         final role = node.role;
         if (node.hasTitle) {
-          final spacer = node.contentModel == 'compound' ? lf : '';
+          final spacer = node.contentModel == ContentModel.compound ? lf : '';
           return '<formalpara${_commonAttributes(id, role, reftext)}>\n'
               '<title>${_s(node.title)}</title>\n'
               '<para>$spacer${_s(node.content())}$spacer</para>\n'
               '</formalpara>';
         } else if (id != null || role != null) {
-          if (node.contentModel == 'compound') {
+          if (node.contentModel == ContentModel.compound) {
             return '<para${_commonAttributes(id, role, reftext)}>\n'
                 '${_s(node.content())}\n'
                 '</para>';
@@ -1228,10 +1226,10 @@ class Docbook5Converter extends ConverterBase {
   AbstractBlock? _findRootAbstract(Document doc) {
     if (!doc.hasBlocks) return null;
     var firstBlock = doc.blocks[0];
-    if (firstBlock.context == 'preamble') {
+    if (firstBlock.context == BlockContext.preamble) {
       if (firstBlock.blocks.isEmpty) return null;
       firstBlock = firstBlock.blocks[0];
-    } else if (firstBlock.context == 'section') {
+    } else if (firstBlock.context == BlockContext.section) {
       final sect = firstBlock as Section;
       if (sect.sectname == 'abstract') return firstBlock;
       if (sect.sectname != 'preface' || firstBlock.blocks.isEmpty) {
@@ -1239,7 +1237,8 @@ class Docbook5Converter extends ConverterBase {
       }
       firstBlock = firstBlock.blocks[0];
     }
-    return firstBlock.style == 'abstract' && firstBlock.context == 'open'
+    return firstBlock.style == 'abstract' &&
+            firstBlock.context == BlockContext.open
         ? firstBlock
         : null;
   }
@@ -1274,7 +1273,8 @@ class Docbook5Converter extends ConverterBase {
   // FIXME this should be handled through a template mechanism
   /// The converted content of [node], wrapped in `<simpara>` unless the
   /// content model is compound.
-  String _encloseContent(Block node) => node.contentModel == 'compound'
+  String _encloseContent(Block node) =>
+      node.contentModel == ContentModel.compound
       ? _s(node.content())
       : '<simpara>${_s(node.content())}</simpara>';
 

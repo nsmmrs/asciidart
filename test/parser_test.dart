@@ -293,7 +293,7 @@ void main() {
       final doc = load('[#keep]\n[[]]\n--\nBlock content\n--\n');
       final block = doc.blocks.single;
       expect(block.id, isNull);
-      expect(block.blocks.single.context, equals('paragraph'));
+      expect(block.blocks.single.contextName, equals('paragraph'));
     });
 
     test('parse author first', () {

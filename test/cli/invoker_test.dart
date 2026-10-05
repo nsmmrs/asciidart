@@ -340,7 +340,7 @@ void main() {
       expect(doc.attr('outfilesuffix'), equals('.html'));
       expect(doc.attr('doctype'), equals('article'));
       expect(doc.hasBlocks, isTrue);
-      expect(doc.blocks.first.context, equals('preamble'));
+      expect(doc.blocks.first.contextName, equals('preamble'));
       final output = invoker.readOutput();
       expect(output, isNotEmpty);
       expect(output, contains('<html'));

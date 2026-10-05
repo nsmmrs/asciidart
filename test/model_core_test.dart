@@ -82,7 +82,7 @@ class FakeDocument extends AbstractBlock implements NodeDocument {
     this.compatMode = false,
   }) : baseDir = baseDir ?? currentPath,
        pathResolver = pathResolver ?? PathResolver(),
-       super(null, 'document');
+       super(null, BlockContext.document);
 
   @override
   int safe;
@@ -161,7 +161,7 @@ class FakeSection extends AbstractBlock implements NodeSection {
     this.numbered = false,
     this.chapterNumbering = false,
     this.sectname,
-  }) : super(parent, 'section');
+  }) : super(parent, BlockContext.section);
 
   @override
   int index = 0;
@@ -238,7 +238,7 @@ void main() {
   group('construction', () {
     test('document node refers to itself with no parent', () {
       final doc = makeDoc();
-      expect(doc.context, equals('document'));
+      expect(doc.contextName, equals('document'));
       expect(doc.nodeName, equals('document'));
       expect(doc.document, same(doc));
       expect(doc.parent, isNull);
@@ -248,25 +248,28 @@ void main() {
     });
 
     test('document context without NodeDocument throws StateError', () {
-      expect(() => Block(null, 'document'), throwsA(isA<StateError>()));
+      expect(
+        () => Block(null, BlockContext.document),
+        throwsA(isA<StateError>()),
+      );
     });
 
     test('block takes document and level from parent', () {
       final doc = makeDoc();
-      final block = Block(doc, 'paragraph', source: 'a');
-      expect(block.context, equals('paragraph'));
+      final block = Block(doc, BlockContext.paragraph, source: 'a');
+      expect(block.contextName, equals('paragraph'));
       expect(block.nodeName, equals('paragraph'));
       expect(block.document, same(doc));
       expect(block.parent, same(doc));
       expect(block.level, equals(0));
       expect(block.lines, equals(['a']));
-      expect(block.contentModel, equals('simple'));
+      expect(block.contentModel, equals(ContentModel.simple));
       expect(block.isBlock, isTrue);
       expect(block.isInline, isFalse);
     });
 
     test('detached block has null document and level', () {
-      final block = Block(null, 'paragraph', source: 'z');
+      final block = Block(null, BlockContext.paragraph, source: 'z');
       expect(block.document, isNull);
       expect(block.parent, isNull);
       expect(block.level, isNull);
@@ -274,7 +277,11 @@ void main() {
 
     test('attributes map is copied, not aliased', () {
       final source = <String, String>{'a': '1'};
-      final block = Block(makeDoc(), 'paragraph', attributes: source);
+      final block = Block(
+        makeDoc(),
+        BlockContext.paragraph,
+        attributes: source,
+      );
       expect(block.attributes, equals({'a': '1'}));
       expect(block.attributes, isNot(same(source)));
       source['a'] = 'changed';
@@ -282,20 +289,21 @@ void main() {
     });
 
     test('id starts unset', () {
-      expect(Block(makeDoc(), 'paragraph').id, isNull);
-      expect(Inline(makeDoc(), 'quoted', text: 'x').id, isNull);
+      expect(Block(makeDoc(), BlockContext.paragraph).id, isNull);
+      expect(Inline(makeDoc(), InlineContext.quoted, text: 'x').id, isNull);
     });
 
     test('section context starts at level zero', () {
       final section = FakeSection(makeDoc());
-      expect(section.context, equals('section'));
+      expect(section.contextName, equals('section'));
       expect(section.level, equals(0));
     });
 
     test('parent setter re-points document', () {
       final doc = makeDoc();
-      final open = Block(doc, 'open')..contentModel = 'compound';
-      final detached = (Block(null, 'paragraph'))..parent = open;
+      final open = Block(doc, BlockContext.open)
+        ..contentModel = ContentModel.compound;
+      final detached = (Block(null, BlockContext.paragraph))..parent = open;
       expect(detached.parent, same(open));
       expect(detached.document, same(doc));
     });
@@ -309,7 +317,7 @@ void main() {
       doc = makeDoc();
       doc.attributes['x'] = 'doc-x';
       doc.attributes['y'] = 'doc-y';
-      block = Block(doc, 'paragraph', attributes: {'x': 'node-x'});
+      block = Block(doc, BlockContext.paragraph, attributes: {'x': 'node-x'});
     });
 
     test('reads node attribute, default, and fallbacks', () {
@@ -359,7 +367,7 @@ void main() {
     test('hasOption, setOption, and enabledOptions', () {
       final block = Block(
         makeDoc(),
-        'paragraph',
+        BlockContext.paragraph,
         attributes: {'a-option': '', '-option': ''},
       );
       expect(block.hasOption('a'), isTrue);
@@ -373,7 +381,7 @@ void main() {
 
   group('roles', () {
     test('roles splits blank runs and empties', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(block.roles, isEmpty);
       expect(block.role, isNull);
       block.attributes['role'] = 'a  b';
@@ -385,26 +393,33 @@ void main() {
     });
 
     test('hasRole checks presence and equality', () {
-      final block = Block(makeDoc(), 'paragraph', attributes: {'role': 'a b'});
+      final block = Block(
+        makeDoc(),
+        BlockContext.paragraph,
+        attributes: {'role': 'a b'},
+      );
       expect(block.hasRole(), isTrue);
       expect(block.hasRole('a b'), isTrue);
       expect(block.hasRole('a'), isFalse);
-      expect(Block(makeDoc(), 'paragraph').hasRole(), isFalse);
+      expect(Block(makeDoc(), BlockContext.paragraph).hasRole(), isFalse);
     });
 
     test('includesRole matches whole names only', () {
       final block = Block(
         makeDoc(),
-        'paragraph',
+        BlockContext.paragraph,
         attributes: {'role': 'thumb lead'},
       );
       expect(block.includesRole('thumb'), isTrue);
       expect(block.includesRole('hum'), isFalse);
-      expect(Block(makeDoc(), 'paragraph').includesRole('x'), isFalse);
+      expect(
+        Block(makeDoc(), BlockContext.paragraph).includesRole('x'),
+        isFalse,
+      );
     });
 
     test('role setter assigns and removes the role', () {
-      final block = (Block(makeDoc(), 'paragraph'))..role = 'solo';
+      final block = (Block(makeDoc(), BlockContext.paragraph))..role = 'solo';
       expect(block.role, equals('solo'));
       block.role = 'a b';
       expect(block.roles, equals(['a', 'b']));
@@ -413,7 +428,7 @@ void main() {
     });
 
     test('addRole and removeRole report changes', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(block.addRole('x'), isTrue);
       expect(block.role, equals('x'));
       expect(block.addRole('x'), isFalse);
@@ -427,7 +442,7 @@ void main() {
     });
 
     test('addRole to an empty role prefixes a blank', () {
-      final block = (Block(makeDoc(), 'paragraph'))..role = '';
+      final block = (Block(makeDoc(), BlockContext.paragraph))..role = '';
       expect(block.addRole('x'), isTrue);
       expect(block.role, equals(' x'));
     });
@@ -435,21 +450,25 @@ void main() {
 
   group('reftext', () {
     test('hasReftext tracks the attribute', () {
-      expect(Block(makeDoc(), 'paragraph').hasReftext, isFalse);
+      expect(Block(makeDoc(), BlockContext.paragraph).hasReftext, isFalse);
       expect(
-        Block(makeDoc(), 'paragraph', attributes: {'reftext': 'R'}).hasReftext,
+        Block(
+          makeDoc(),
+          BlockContext.paragraph,
+          attributes: {'reftext': 'R'},
+        ).hasReftext,
         isTrue,
       );
     });
 
     test('reftext without text returns null', () {
-      expect(Block(makeDoc(), 'paragraph').reftext, isNull);
+      expect(Block(makeDoc(), BlockContext.paragraph).reftext, isNull);
     });
 
     test('reftext with text applies reftext substitutions', () {
       final block = Block(
         Document(),
-        'paragraph',
+        BlockContext.paragraph,
         attributes: {'reftext': 'R *x*'},
       );
       expect(block.reftext, equals('R <strong>x</strong>'));
@@ -459,7 +478,7 @@ void main() {
   group('convert', () {
     test('convert plays back attributes and delegates', () {
       final doc = makeDoc();
-      final block = Block(doc, 'paragraph', source: 'hi');
+      final block = Block(doc, BlockContext.paragraph, source: 'hi');
       final result = block.convert();
       expect(result, equals('<paragraph>'));
       expect(doc.converter.converted, equals([block]));
@@ -468,50 +487,36 @@ void main() {
 
     test('compound content joins converted children', () {
       final doc = makeDoc();
-      final open = Block(doc, 'open');
-      open.append(Block(open, 'paragraph', source: 'a *b*'));
+      final open = Block(doc, BlockContext.open);
+      open.append(Block(open, BlockContext.paragraph, source: 'a *b*'));
       doc.converter.handler = (node) => '[${node.nodeName}]';
       expect(open.content(), equals('[paragraph]'));
     });
 
     test('empty content model returns null silently', () {
-      final block = Block(makeDoc(), 'image');
+      final block = Block(makeDoc(), BlockContext.image);
       expect(block.content(), isNull);
       expect(testLogger.warns, isEmpty);
-    });
-
-    test('unknown content model warns and returns null', () {
-      final block = Block(makeDoc(), 'image')..contentModel = 'bogus';
-      expect(block.content(), isNull);
-      expect(testLogger.warns, hasLength(1));
-      final message = testLogger.warns.single;
-      expect(
-        message,
-        equals(
-          "unknown content model 'bogus' for block: "
-          'Block(context: image, contentModel: bogus, style: null, lines: 0)',
-        ),
-      );
     });
   });
 
   group('tree', () {
     test('append reparents children in order', () {
       final doc = makeDoc();
-      final open = Block(doc, 'open');
-      final first = Block(doc, 'paragraph', source: 'x');
+      final open = Block(doc, BlockContext.open);
+      final first = Block(doc, BlockContext.paragraph, source: 'x');
       open.append(first);
       expect(first.parent, same(open));
       expect(first.document, same(doc));
       expect(open.blocks, equals([first]));
-      final second = Block(doc, 'paragraph', source: 'y');
+      final second = Block(doc, BlockContext.paragraph, source: 'y');
       open.append(second);
       expect(open.blocks, equals([first, second]));
     });
 
     test('re-appending appends again', () {
-      final open = Block(makeDoc(), 'open');
-      final child = Block(open, 'paragraph');
+      final open = Block(makeDoc(), BlockContext.open);
+      final child = Block(open, BlockContext.paragraph);
       open
         ..append(child)
         ..append(child);
@@ -521,13 +526,13 @@ void main() {
 
     test('hasBlocks and sections filter children', () {
       final doc = makeDoc();
-      final open = Block(doc, 'open');
+      final open = Block(doc, BlockContext.open);
       expect(open.hasBlocks, isFalse);
       expect(open.hasSections, isFalse);
       expect(open.sections, isEmpty);
       final section = FakeSection(open);
       open
-        ..append(Block(open, 'paragraph'))
+        ..append(Block(open, BlockContext.paragraph))
         ..append(section);
       expect(open.hasBlocks, isTrue);
       expect(open.hasSections, isFalse);
@@ -535,13 +540,14 @@ void main() {
     });
 
     test('context setter re-derives the node name', () {
-      final block = (Block(makeDoc(), 'paragraph'))..context = 'sidebar';
-      expect(block.context, equals('sidebar'));
+      final block = Block(makeDoc(), BlockContext.paragraph)
+        ..context = BlockContext.sidebar;
+      expect(block.contextName, equals('sidebar'));
       expect(block.nodeName, equals('sidebar'));
     });
 
     test('file and lineno read the source location', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(block.file, isNull);
       expect(block.lineno, isNull);
       block.sourceLocation = Cursor('doc.adoc', null, 'doc.adoc', 12);
@@ -552,13 +558,13 @@ void main() {
 
   group('title', () {
     test('unset title reads null', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(block.title, isNull);
       expect(block.hasTitle, isFalse);
     });
 
     test('set title applies title substitutions', () {
-      final block = Block(Document(), 'example')..title = 'T *em*';
+      final block = Block(Document(), BlockContext.example)..title = 'T *em*';
       expect(block.hasTitle, isTrue);
       expect(block.title, equals('T <strong>em</strong>'));
       block.title = null;
@@ -567,13 +573,16 @@ void main() {
     });
 
     test('captionedTitle without caption or title is empty', () {
-      expect(Block(makeDoc(), 'paragraph').captionedTitle(), equals(''));
+      expect(
+        Block(makeDoc(), BlockContext.paragraph).captionedTitle(),
+        equals(''),
+      );
     });
   });
 
   group('subs predicates', () {
     test('hasSub and removeSub track the subs list', () {
-      final block = Block(makeDoc(), 'paragraph')..subs = ['quotes'];
+      final block = Block(makeDoc(), BlockContext.paragraph)..subs = ['quotes'];
       expect(block.hasSub('quotes'), isTrue);
       expect(block.hasSub('macros'), isFalse);
       block.removeSub('quotes');
@@ -583,11 +592,15 @@ void main() {
 
   group('alt', () {
     test('block alt without text is empty', () {
-      expect(Block(makeDoc(), 'image').alt, equals(''));
+      expect(Block(makeDoc(), BlockContext.image).alt, equals(''));
     });
 
     test('block alt with text encodes special characters', () {
-      final block = Block(Document(), 'image', attributes: {'alt': 'A & B'});
+      final block = Block(
+        Document(),
+        BlockContext.image,
+        attributes: {'alt': 'A & B'},
+      );
       expect(block.alt, equals('A &amp; B'));
     });
   });
@@ -596,22 +609,23 @@ void main() {
     test('admonition caption routes to textlabel', () {
       final admonition = Block(
         makeDoc(),
-        'admonition',
+        BlockContext.admonition,
         attributes: {'textlabel': 'Look!'},
       )..caption = 'ignored';
       expect(admonition.caption, equals('Look!'));
-      final note = Block(makeDoc(), 'example')..caption = 'Example 1. ';
+      final note = Block(makeDoc(), BlockContext.example)
+        ..caption = 'Example 1. ';
       expect(note.caption, equals('Example 1. '));
-      expect(Block(makeDoc(), 'example').caption, isNull);
+      expect(Block(makeDoc(), BlockContext.example).caption, isNull);
     });
   });
 
   group('listMarkerKeyword', () {
     test('maps styles and explicit types', () {
-      final block = Block(makeDoc(), 'open');
+      final block = Block(makeDoc(), BlockContext.open);
       expect(block.listMarkerKeyword('lowerroman'), equals('i'));
       expect(block.listMarkerKeyword(), isNull);
-      expect(Block(makeDoc(), 'olist').listMarkerKeyword(), isNull);
+      expect(Block(makeDoc(), BlockContext.olist).listMarkerKeyword(), isNull);
       block.style = 'upperalpha';
       expect(block.listMarkerKeyword(), equals('A'));
     });
@@ -628,14 +642,14 @@ void main() {
       doc = makeDoc();
       section = FakeSection(doc);
       doc.append(section);
-      first = Block(section, 'paragraph', source: 'one');
-      second = Block(section, 'paragraph', source: 'two');
+      first = Block(section, BlockContext.paragraph, source: 'one');
+      second = Block(section, BlockContext.paragraph, source: 'two');
       section
         ..append(first)
         ..append(second);
       image = Block(
         section,
-        'image',
+        BlockContext.image,
         attributes: {'target': 'a.png', 'role': 'thumb'},
       )..id = 'fig1';
       section.append(image);
@@ -643,18 +657,24 @@ void main() {
 
     test('matches everything, contexts, roles, and ids', () {
       expect(doc.findBy(), hasLength(5));
-      expect(doc.findBy(context: 'paragraph'), equals([first, second]));
+      expect(
+        doc.findBy(context: BlockContext.paragraph),
+        equals([first, second]),
+      );
       expect(doc.findBy(role: 'thumb'), equals([image]));
-      expect(doc.findBy(id: 'fig1').map((n) => n.context), equals(['image']));
-      expect(doc.findBy(context: 'paragraph', style: 'x'), isEmpty);
+      expect(
+        doc.findBy(id: 'fig1').map((n) => n.contextName),
+        equals(['image']),
+      );
+      expect(doc.findBy(context: BlockContext.paragraph, style: 'x'), isEmpty);
     });
 
     test('filter runs only on matching nodes', () {
       final visits = <String>[];
       doc.findBy(
-        context: 'paragraph',
+        context: BlockContext.paragraph,
         filter: (node) {
-          visits.add(node.context);
+          visits.add(node.contextName);
           return FindByVerdict.accept;
         },
       );
@@ -663,17 +683,17 @@ void main() {
 
     test('prune, reject, and stop verdicts', () {
       final pruned = doc.findBy(
-        filter: (node) => node.context == 'section'
+        filter: (node) => node.context == BlockContext.section
             ? FindByVerdict.prune
             : FindByVerdict.accept,
       );
-      expect(pruned.map((n) => n.context), equals(['document', 'section']));
+      expect(pruned.map((n) => n.contextName), equals(['document', 'section']));
       final rejected = doc.findBy(
-        filter: (node) => node.context == 'section'
+        filter: (node) => node.context == BlockContext.section
             ? FindByVerdict.reject
             : FindByVerdict.accept,
       );
-      expect(rejected.map((n) => n.context), equals(['document']));
+      expect(rejected.map((n) => n.contextName), equals(['document']));
       var visits = 0;
       final stopped = doc.findBy(
         filter: (node) {
@@ -694,25 +714,21 @@ void main() {
 
     test('false filter still visits children', () {
       final found = doc.findBy(
-        context: 'paragraph',
+        context: BlockContext.paragraph,
         filter: (node) =>
             node != first ? FindByVerdict.accept : FindByVerdict.skip,
       );
       expect(found, equals([second]));
     });
 
-    test('query aliases findBy', () {
-      expect(doc.query(context: 'section'), equals([section]));
-    });
-
     test('section search skips non-section subtrees', () {
-      final open = Block(doc, 'open');
+      final open = Block(doc, BlockContext.open);
       doc.append(open);
       final nested = FakeSection(open);
       open.append(nested);
       var visits = 0;
       final found = doc.findBy(
-        context: 'section',
+        context: BlockContext.section,
         filter: (_) {
           visits += 1;
           return FindByVerdict.accept;
@@ -730,9 +746,9 @@ void main() {
       final doc = makeDoc();
       final section = FakeSection(doc);
       doc.append(section);
-      final first = Block(section, 'paragraph', source: 'one');
-      final second = Block(section, 'paragraph', source: 'two');
-      final image = Block(section, 'image');
+      final first = Block(section, BlockContext.paragraph, source: 'one');
+      final second = Block(section, BlockContext.paragraph, source: 'two');
+      final image = Block(section, BlockContext.image);
       section
         ..append(first)
         ..append(second)
@@ -745,17 +761,20 @@ void main() {
     });
 
     test('detached node throws StateError', () {
-      expect(Block(null, 'paragraph').nextAdjacentBlock, throwsStateError);
+      expect(
+        Block(null, BlockContext.paragraph).nextAdjacentBlock,
+        throwsStateError,
+      );
     });
   });
 
   group('xreftext', () {
     test('without title or reftext returns null', () {
-      expect(Block(makeDoc(), 'paragraph').xreftext(), isNull);
+      expect(Block(makeDoc(), BlockContext.paragraph).xreftext(), isNull);
     });
 
     test('short style with title and bare caption chomps', () {
-      final block = Block(makeDoc(), 'example')
+      final block = Block(makeDoc(), BlockContext.example)
         ..title = 'NoCap'
         ..caption = 'Ex. ';
       expect(block.xreftext('short'), equals('Ex'));
@@ -763,7 +782,7 @@ void main() {
 
     test('short style with numeral resolves the prefix', () {
       final doc = makeDoc(attributes: {'example-caption': 'Example'});
-      final block = Block(doc, 'example')
+      final block = Block(doc, BlockContext.example)
         ..title = 'T'
         ..caption = 'Example 1. '
         ..numeral = '1';
@@ -771,13 +790,13 @@ void main() {
     });
 
     test('basic style and plain call read the title', () {
-      final block = Block(Document(), 'example')..title = 'NoCap';
+      final block = Block(Document(), BlockContext.example)..title = 'NoCap';
       expect(block.xreftext('weird'), equals('NoCap'));
       expect(block.xreftext(), equals('NoCap'));
     });
 
     test('full style combines caption and title', () {
-      final block = Block(Document(), 'example')
+      final block = Block(Document(), BlockContext.example)
         ..title = 'T'
         ..caption = 'Example 1. ';
       // Ruby: `%(#{caption.chomp '. '}, #{quoted_title})`.
@@ -787,7 +806,7 @@ void main() {
     test('explicit reftext wins over the title', () {
       final block = Block(
         Document(),
-        'paragraph',
+        BlockContext.paragraph,
         attributes: {'reftext': 'R *em*'},
       );
       expect(block.xreftext(), equals('R <strong>em</strong>'));
@@ -796,22 +815,23 @@ void main() {
 
   group('assignCaption', () {
     test('skips captioned and untitled blocks', () {
-      final captioned = Block(makeDoc(), 'example')
+      final captioned = Block(makeDoc(), BlockContext.example)
         ..title = 'T'
         ..caption = 'Keep. '
         ..assignCaption(null);
       expect(captioned.caption, equals('Keep. '));
-      final untitled = (Block(makeDoc(), 'example'))..assignCaption(null);
+      final untitled = (Block(makeDoc(), BlockContext.example))
+        ..assignCaption(null);
       expect(untitled.caption, isNull);
     });
 
     test('explicit value wins over the document caption', () {
       final doc = makeDoc(attributes: {'caption': 'Doc. '});
-      final valued = Block(doc, 'example')
+      final valued = Block(doc, BlockContext.example)
         ..title = 'T'
         ..assignCaption('Given. ');
       expect(valued.caption, equals('Given. '));
-      final fallback = Block(doc, 'example')
+      final fallback = Block(doc, BlockContext.example)
         ..title = 'T'
         ..assignCaption(null);
       expect(fallback.caption, equals('Doc. '));
@@ -819,7 +839,7 @@ void main() {
 
     test('auto caption numbers from the document', () {
       final doc = makeDoc(attributes: {'example-caption': 'Example'});
-      final block = Block(doc, 'example')
+      final block = Block(doc, BlockContext.example)
         ..title = 'T *em*'
         ..assignCaption(null);
       expect(block.caption, equals('Example 1. '));
@@ -828,17 +848,6 @@ void main() {
       expect(doc.storedCounters, hasLength(1));
       expect(doc.storedCounters.single.name, equals('example-number'));
       expect(doc.storedCounters.single.value, equals('1'));
-    });
-
-    test('figure context never auto captions', () {
-      // Ruby's caption map holds 'figure' as a string key that context
-      // (symbol) lookups never match.
-      final doc = makeDoc(attributes: {'figure-caption': 'Figure'});
-      final figure = Block(doc, 'figure')
-        ..title = 'T'
-        ..assignCaption(null);
-      expect(figure.caption, isNull);
-      expect(figure.numeral, isNull);
     });
   });
 
@@ -886,7 +895,7 @@ void main() {
 
     test('non-section argument throws', () {
       expect(
-        () => doc.assignNumeral(Block(doc, 'paragraph')),
+        () => doc.assignNumeral(Block(doc, BlockContext.paragraph)),
         throwsA(isA<TypeError>()),
       );
     });
@@ -924,43 +933,53 @@ void main() {
       };
       for (final entry in expected.entries) {
         expect(
-          Block(makeDoc(), entry.key).contentModel,
-          equals(entry.value),
+          Block(makeDoc(), BlockContext.parse(entry.key)).contentModel,
+          equals(ContentModel.parse(entry.value)),
           reason: entry.key,
         );
       }
       expect(
-        Block(makeDoc(), 'paragraph', contentModel: 'verbatim').contentModel,
-        equals('verbatim'),
+        Block(
+          makeDoc(),
+          BlockContext.paragraph,
+          contentModel: ContentModel.verbatim,
+        ).contentModel,
+        equals(ContentModel.verbatim),
       );
     });
 
     test('lines come from strings, lists, or nothing', () {
       final doc = makeDoc();
-      expect(Block(doc, 'paragraph').lines, isEmpty);
-      expect(Block(doc, 'paragraph', source: '').lines, isEmpty);
-      expect(Block(doc, 'paragraph', lines: <String>[]).lines, isEmpty);
-      expect(Block(doc, 'paragraph', source: 'a\nb').lines, equals(['a', 'b']));
+      expect(Block(doc, BlockContext.paragraph).lines, isEmpty);
+      expect(Block(doc, BlockContext.paragraph, source: '').lines, isEmpty);
+      expect(
+        Block(doc, BlockContext.paragraph, lines: <String>[]).lines,
+        isEmpty,
+      );
+      expect(
+        Block(doc, BlockContext.paragraph, source: 'a\nb').lines,
+        equals(['a', 'b']),
+      );
       final input = ['x'];
-      final fromList = Block(doc, 'paragraph', lines: input);
+      final fromList = Block(doc, BlockContext.paragraph, lines: input);
       expect(fromList.lines, equals(['x']));
       expect(fromList.lines, isNot(same(input)));
     });
 
     test('source joins lines', () {
       expect(
-        Block(makeDoc(), 'paragraph', source: 'a\nb').source(),
+        Block(makeDoc(), BlockContext.paragraph, source: 'a\nb').source(),
         equals('a\nb'),
       );
-      expect(Block(makeDoc(), 'paragraph').source(), equals(''));
-    });
-
-    test('blockname aliases context', () {
-      expect(Block(makeDoc(), 'listing').blockname, equals('listing'));
+      expect(Block(makeDoc(), BlockContext.paragraph).source(), equals(''));
     });
 
     test('toString summarizes the block', () {
-      final text = Block(makeDoc(), 'paragraph', lines: ['a', 'b']).toString();
+      final text = Block(
+        makeDoc(),
+        BlockContext.paragraph,
+        lines: ['a', 'b'],
+      ).toString();
       expect(
         text,
         equals(
@@ -968,8 +987,8 @@ void main() {
           'style: null, lines: 2)',
         ),
       );
-      final compound = Block(makeDoc(), 'open')..style = 's';
-      compound.append(Block(compound, 'paragraph'));
+      final compound = Block(makeDoc(), BlockContext.open)..style = 's';
+      compound.append(Block(compound, BlockContext.paragraph));
       expect(compound.toString(), contains('blocks: 1'));
       expect(compound.toString(), contains('style: "s"'));
     });
@@ -977,7 +996,7 @@ void main() {
 
   group('subs wiring', () {
     test('absent subs defers resolution', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(block.defaultSubs, isNull);
       expect(block.subs, isEmpty);
     });
@@ -985,7 +1004,7 @@ void main() {
     test('no subs prevents resolution', () {
       final block = Block(
         makeDoc(),
-        'paragraph',
+        BlockContext.paragraph,
         attributes: {'subs': 'quotes'},
         subs: const BlockSubs.none(),
       );
@@ -996,15 +1015,27 @@ void main() {
     test('given subs resolve eagerly via commitSubs', () {
       final doc = Document();
       expect(
-        Block(doc, 'paragraph', subs: const BlockSubs.fixed(['quotes'])).subs,
+        Block(
+          doc,
+          BlockContext.paragraph,
+          subs: const BlockSubs.fixed(['quotes']),
+        ).subs,
         equals(['quotes']),
       );
       expect(
-        Block(doc, 'paragraph', subs: const BlockSubs.defaults()).subs,
+        Block(
+          doc,
+          BlockContext.paragraph,
+          subs: const BlockSubs.defaults(),
+        ).subs,
         equals(normalSubs),
       );
       expect(
-        Block(doc, 'paragraph', subs: const BlockSubs.spec('normal')).subs,
+        Block(
+          doc,
+          BlockContext.paragraph,
+          subs: const BlockSubs.spec('normal'),
+        ).subs,
         equals(normalSubs),
       );
     });
@@ -1013,9 +1044,16 @@ void main() {
       final doc = Document();
       // Deferred (empty) subs are vacuous in Ruby: the source passes
       // through, with blank edge lines stripped for verbatim blocks.
-      expect(Block(doc, 'paragraph', source: 'a').content(), equals('a'));
-      expect(Block(doc, 'listing', source: 'a').content(), equals('a'));
-      final quoted = Block(doc, 'paragraph', source: 'a')..subs = ['quotes'];
+      expect(
+        Block(doc, BlockContext.paragraph, source: 'a').content(),
+        equals('a'),
+      );
+      expect(
+        Block(doc, BlockContext.listing, source: 'a').content(),
+        equals('a'),
+      );
+      final quoted = Block(doc, BlockContext.paragraph, source: 'a')
+        ..subs = ['quotes'];
       expect(quoted.content(), equals('a'));
     });
   });
@@ -1025,14 +1063,14 @@ void main() {
       final doc = makeDoc();
       final node = Inline(
         doc,
-        'quoted',
+        InlineContext.quoted,
         text: 'x',
         type: 'strong',
         target: 't',
         id: 'i',
       );
       expect(node.nodeName, equals('inline_quoted'));
-      expect(node.context, equals('quoted'));
+      expect(node.contextName, equals('quoted'));
       expect(node.text, equals('x'));
       expect(node.type, equals('strong'));
       expect(node.target, equals('t'));
@@ -1044,7 +1082,12 @@ void main() {
 
     test('convert delegates without playback', () {
       final doc = makeDoc();
-      final node = Inline(doc, 'quoted', text: 'hi', type: 'strong');
+      final node = Inline(
+        doc,
+        InlineContext.quoted,
+        text: 'hi',
+        type: 'strong',
+      );
       expect(node.convert(), equals('<inline_quoted>'));
       expect(doc.converter.converted, equals([node]));
       expect(doc.playedBack, isEmpty);
@@ -1052,38 +1095,53 @@ void main() {
 
     test('alt reads the attribute or defaults empty', () {
       expect(
-        Inline(makeDoc(), 'image', attributes: {'alt': 'A'}).alt,
+        Inline(makeDoc(), InlineContext.image, attributes: {'alt': 'A'}).alt,
         equals('A'),
       );
-      expect(Inline(makeDoc(), 'image').alt, equals(''));
+      expect(Inline(makeDoc(), InlineContext.image).alt, equals(''));
     });
 
     test('reference nodes carry reftext in text', () {
-      final ref = Inline(Document(), 'anchor', text: 'T', type: 'ref');
+      final ref = Inline(
+        Document(),
+        InlineContext.anchor,
+        text: 'T',
+        type: 'ref',
+      );
       expect(ref.hasReftext, isTrue);
       expect(ref.reftext, equals('T'));
       expect(
-        Inline(makeDoc(), 'anchor', text: 'T', type: 'bibref').hasReftext,
+        Inline(
+          makeDoc(),
+          InlineContext.anchor,
+          text: 'T',
+          type: 'bibref',
+        ).hasReftext,
         isTrue,
       );
       expect(
-        Inline(makeDoc(), 'quoted', text: 'T', type: 'strong').hasReftext,
+        Inline(
+          makeDoc(),
+          InlineContext.quoted,
+          text: 'T',
+          type: 'strong',
+        ).hasReftext,
         isFalse,
       );
-      final untexted = Inline(makeDoc(), 'anchor', type: 'ref');
+      final untexted = Inline(makeDoc(), InlineContext.anchor, type: 'ref');
       expect(untexted.hasReftext, isFalse);
       expect(untexted.reftext, isNull);
       expect(untexted.xreftext(), isNull);
     });
 
     test('xreftext without text returns null', () {
-      expect(Inline(makeDoc(), 'image').xreftext(), isNull);
+      expect(Inline(makeDoc(), InlineContext.image).xreftext(), isNull);
     });
   });
 
   group('paths', () {
     test('normalizeSystemPath jails to the base directory', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(
         block.normalizeSystemPath('x/../y.txt'),
         equals('${fixtureDir.path}/y.txt'),
@@ -1096,14 +1154,14 @@ void main() {
         baseDir: fixtureDir.path,
         pathResolver: PathResolver(onWarn: pathWarnings.add),
       );
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       final resolved = block.normalizeSystemPath('../y.txt');
       expect(resolved, equals('${fixtureDir.path}/y.txt'));
       expect(pathWarnings, hasLength(1));
     });
 
     test('normalizeSystemPath without recovery throws SecurityError', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(
         () => block.normalizeSystemPath('../y.txt', recover: false),
         throwsA(isA<SecurityError>()),
@@ -1112,7 +1170,7 @@ void main() {
 
     test('normalizeSystemPath below safe joins the start', () {
       final doc = makeDoc(safe: SafeMode.unsafe);
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(
         block.normalizeSystemPath('y.txt', start: 'sub'),
         equals('${fixtureDir.path}/sub/y.txt'),
@@ -1124,7 +1182,7 @@ void main() {
     });
 
     test('normalizeWebPath joins and preserves URIs', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(
         block.normalizeWebPath('a.png', start: 'img'),
         equals('img/a.png'),
@@ -1136,7 +1194,7 @@ void main() {
     });
 
     test('normalizeAssetPath roots at the base directory', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(
         block.normalizeAssetPath('img/a.png'),
         equals('${fixtureDir.path}/img/a.png'),
@@ -1146,14 +1204,14 @@ void main() {
 
   group('read', () {
     test('readAsset reads raw and normalized', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       final path = '${fixtureDir.path}/norm.txt';
       expect(block.readAsset(path), equals('line1  \nline2\n'));
       expect(block.readAsset(path, normalize: true), equals('line1\nline2'));
     });
 
     test('readAsset warns on failure when asked', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       final missing = '${fixtureDir.path}/nope';
       expect(block.readAsset(missing), isNull);
       expect(testLogger.warns, isEmpty);
@@ -1165,7 +1223,7 @@ void main() {
     });
 
     test('readContents reads files relative to start', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(
         block.readContents('img/a.png', start: fixtureDir.path, label: 'pic'),
         equals('PNGDATA'),
@@ -1173,7 +1231,7 @@ void main() {
     });
 
     test('readContents warns for empty contents when asked', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       final target = '${fixtureDir.path}/img/empty.txt';
       expect(
         block.readContents(
@@ -1190,7 +1248,7 @@ void main() {
     });
 
     test('readContents of missing file warns and returns null', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(
         block.readContents('img/nope.txt', start: fixtureDir.path),
         isNull,
@@ -1199,7 +1257,7 @@ void main() {
     });
 
     test('readContents of URI without allow-uri-read warns', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       const uri = 'https://example.com/x.adoc';
       expect(block.readContents(uri), isNull);
       expect(
@@ -1215,7 +1273,7 @@ void main() {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
       final block = UriBlock(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         response: (body: utf8.encode('a  \nb\n'), contentType: 'text/plain'),
       );
       const uri = 'https://example.com/x.adoc';
@@ -1228,7 +1286,7 @@ void main() {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
       final block = (UriBlock(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         response: (body: utf8.encode('x'), contentType: 'text/plain'),
       ))..readContents('b.adoc', start: 'https://example.com/a/');
       expect(block.fetchedUris.single, equals('https://example.com/a/b.adoc'));
@@ -1238,7 +1296,7 @@ void main() {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
       final block = UriBlock(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         fetchError: Exception('refused'),
       );
       const uri = 'https://example.com/x.adoc';
@@ -1251,7 +1309,7 @@ void main() {
 
     test('without a URI reader, remote content warns as unreadable', () {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.readContents('https://example.com/x.adoc'), isNull);
       expect(
         testLogger.warns.single,
@@ -1265,14 +1323,14 @@ void main() {
 
   group('uris', () {
     test('imageUri and mediaUri resolve web paths', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(block.imageUri('a.png'), equals('a.png'));
       expect(block.mediaUri('v.mp4', null), equals('v.mp4'));
     });
 
     test('iconUri builds from name, icon, and icontype', () {
       final doc = makeDoc(attributes: {'iconsdir': 'icons', 'icontype': 'svg'});
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(block.iconUri('note'), equals('icons/note.svg'));
       block.setAttr('icon', 'custom');
       expect(block.iconUri('note'), equals('icons/custom.svg'));
@@ -1282,7 +1340,7 @@ void main() {
 
     test('data-uri images embed file bytes', () {
       final doc = makeDoc(attributes: {'data-uri': ''});
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(
         block.imageUri('img/a.png', null),
         equals('data:image/png;base64,UE5HREFUQQ=='),
@@ -1295,7 +1353,7 @@ void main() {
 
     test('missing embedded image warns with empty payload', () {
       final doc = makeDoc(attributes: {'data-uri': ''});
-      final block = Block(doc, 'paragraph');
+      final block = Block(doc, BlockContext.paragraph);
       expect(
         block.imageUri('img/nope.png', null),
         equals('data:image/png;base64,'),
@@ -1313,7 +1371,7 @@ void main() {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
       final block = UriBlock(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         response: (body: utf8.encode('IMGBYTES'), contentType: 'image/png'),
       );
       expect(
@@ -1326,7 +1384,7 @@ void main() {
       final doc = makeDoc(attributes: {'allow-uri-read': ''});
       final block = UriBlock(
         doc,
-        'paragraph',
+        BlockContext.paragraph,
         fetchError: Exception('refused'),
       );
       const uri = 'http://127.0.0.1:1/nope.png';
@@ -1340,7 +1398,7 @@ void main() {
 
   group('misc', () {
     test('logger is shared and replaceable', () {
-      final block = Block(makeDoc(), 'paragraph');
+      final block = Block(makeDoc(), BlockContext.paragraph);
       expect(block.logger, same(testLogger));
       expect(LoggerManager.logger, same(testLogger));
     });

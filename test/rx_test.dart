@@ -833,10 +833,13 @@ void main() {
     });
 
     test('listRxMap', () {
-      expect(identical(listRxMap['ulist'], unorderedListRx), isTrue);
-      expect(identical(listRxMap['olist'], orderedListRx), isTrue);
-      expect(identical(listRxMap['dlist'], descriptionListRx), isTrue);
-      expect(identical(listRxMap['colist'], calloutListRx), isTrue);
+      expect(identical(listRxMap[BlockContext.ulist], unorderedListRx), isTrue);
+      expect(identical(listRxMap[BlockContext.olist], orderedListRx), isTrue);
+      expect(
+        identical(listRxMap[BlockContext.dlist], descriptionListRx),
+        isTrue,
+      );
+      expect(identical(listRxMap[BlockContext.colist], calloutListRx), isTrue);
     });
   });
 

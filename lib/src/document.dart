@@ -384,7 +384,7 @@ class Document extends AbstractBlock implements NodeDocument {
     AsciidoctorOptions options,
     Document? parentDoc,
     Cursor? cursor,
-  ) : super(null, 'document') {
+  ) : super(null, BlockContext.document) {
     final attrOverrides = <String, _Override>{};
     String? parentDoctype;
 
@@ -1129,7 +1129,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// child is a section.
   @override
   void append(AbstractBlock block) {
-    if (block.context == 'section') assignNumeral(block);
+    if (block.context == BlockContext.section) assignNumeral(block);
     super.append(block);
   }
 
@@ -1253,7 +1253,8 @@ class Document extends AbstractBlock implements NodeDocument {
     if (doctype == 'inline') {
       final block = blocks.isNotEmpty ? blocks[0] : header;
       if (block != null) {
-        if (block.contentModel == 'compound' || block.contentModel == 'empty') {
+        if (block.contentModel == ContentModel.compound ||
+            block.contentModel == ContentModel.empty) {
           logger.warn(
             'no inline candidate; use the inline doctype to convert a single '
             'paragragh, verbatim, or raw block',

@@ -17,6 +17,8 @@
 ///   [hardLineBreakRx] follows the default pattern (R5).
 library;
 
+import 'package:asciidart/src/context.dart';
+
 // Character class fragments (mirror the CC_*/CG_* constants).
 
 /// Any character, including newlines (`CC_ALL`).
@@ -427,11 +429,11 @@ class CalloutRxMap {
 }
 
 /// A Map of regexps for lists used for dynamic access.
-final Map<String, RegExp> listRxMap = {
-  'ulist': unorderedListRx,
-  'olist': orderedListRx,
-  'dlist': descriptionListRx,
-  'colist': calloutListRx,
+final Map<BlockContext, RegExp> listRxMap = {
+  BlockContext.ulist: unorderedListRx,
+  BlockContext.olist: orderedListRx,
+  BlockContext.dlist: descriptionListRx,
+  BlockContext.colist: calloutListRx,
 };
 
 // Tables.
