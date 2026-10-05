@@ -110,7 +110,13 @@ final class PdfConverter extends BuiltInConverter
   late FontCatalog _fonts;
   late TextContext _text;
   late MarkupTransform _markup;
-  late _FontState _font;
+  _FontState _font = const _FontState(
+    family: 'Helvetica',
+    style: 'normal',
+    size: 12,
+    color: null,
+    lineHeight: 1,
+  );
   late double _rootFontSize;
   late String _baseTextAlign;
   late List<LayoutBox> _out;
@@ -172,6 +178,8 @@ final class PdfConverter extends BuiltInConverter
           convertImage(block);
         } else if (context == BlockContext.toc) {
           convertToc(block);
+        } else if (context == BlockContext.floatingTitle) {
+          convertFloatingTitle(block);
         }
       // Other blocks aren't converted yet: they are left out.
       default:
@@ -191,12 +199,14 @@ final class PdfConverter extends BuiltInConverter
   /// Converts [document] to PDF bytes (kept for [write]); returns nothing.
   String convertDocument(Document document) {
     _document = document;
+    _promotePreface(document);
     for (final name in const ['outline', 'outline-title', 'pagenums']) {
       if (document.attributeUnspecified(name)) {
         document.attributes[name] = '';
       }
     }
     _theme = _prepareTheme(_loadTheme(document));
+    _ready = true;
     _fonts = FontCatalog(
       _theme,
       fontsDir: document
@@ -235,6 +245,7 @@ final class PdfConverter extends BuiltInConverter
     _index = IndexCatalog();
     _indexSlot = null;
     _renderedFootnotes.clear();
+    _bibrefRefs.clear();
     _footnoteLabels.clear();
     _out = [];
 
@@ -326,6 +337,39 @@ final class PdfConverter extends BuiltInConverter
     _outline(pdf, pages, result);
     _bytes = pdf.save();
     return '';
+  }
+
+  /// Makes the titled preamble of a book a preface section (the gem's
+  /// `promote_preface_block`).
+  static void _promotePreface(Document doc) {
+    final blocks = doc.blocks;
+    if (doc.doctype != 'book' || blocks.length < 2) return;
+    final preamble = blocks[0];
+    final next = blocks[1];
+    final title = preamble.sourceTitle;
+    if (preamble.context != BlockContext.preamble ||
+        title == null ||
+        title.isEmpty ||
+        preamble.blocks.firstOrNull?.style == 'abstract' ||
+        next is! Section) {
+      return;
+    }
+    final preface = Section(doc, next.level)
+      ..special = true
+      ..sectname = 'preface'
+      ..title = title;
+    preface
+      ..setAttr('style', 'preface')
+      ..id = Section.generateId(preface.title ?? title, doc);
+    final first = preamble.blocks.firstOrNull;
+    if (first != null && first.hasOption('notitle')) {
+      preface.setOption('notitle');
+      if (first.context == BlockContext.paragraph && first.role == null) {
+        first.setAttr('role', 'lead');
+      }
+    }
+    [...preamble.blocks].forEach(preface.append);
+    blocks[0] = preface;
   }
 
   /// [theme] with the defaults the converter assumes (the gem's
@@ -814,10 +858,13 @@ final class PdfConverter extends BuiltInConverter
   }
 
   Theme _loadTheme(Document document) {
-    final name = document.attr('pdf-theme');
+    var name = document.attr('pdf-theme');
     final dir = document
         .attr('pdf-themesdir')
         ?.replaceAll('{docdir}', document.attr('docdir') ?? '');
+    if (name == null && (document.attr('media') ?? 'screen') != 'screen') {
+      name = 'default-for-print';
+    }
     try {
       return ThemeLoader(logger: logger).load(name, dir);
     } on ThemeException catch (error) {
@@ -1046,6 +1093,26 @@ final class PdfConverter extends BuiltInConverter
     return {for (var k = level; k <= 6; k++) 'section-$k': index};
   }
 
+  /// Converts the discrete heading [node] (the gem's
+  /// `convert_floating_title`): a heading kept with what follows it.
+  void convertFloatingTitle(Block node) {
+    final hlevel = (node.level ?? 0) + 1;
+    final align =
+        _alignOf(node.roles) ??
+        _s('heading_h${hlevel}_text_align') ??
+        _s('heading_text_align') ??
+        _baseTextAlign;
+    final last = node.parent?.blocks.lastOrNull == node;
+    _heading(
+      node.title ?? '',
+      level: hlevel,
+      align: align,
+      anchor: node.id,
+      arrange: !last,
+      hasContent: !last,
+    );
+  }
+
   /// The section title as the gem numbers it (`numbered_title formal:
   /// true`).
   String _numberedTitle(Section section, {bool formal = true}) {
@@ -1217,7 +1284,12 @@ final class PdfConverter extends BuiltInConverter
 
   /// Adds the paragraph [node], aligned to [textAlign] unless a role
   /// aligns it, its first line in [firstLine]'s font if given.
-  void _paragraph(Block node, {String? textAlign, _FontState? firstLine}) {
+  void _paragraph(
+    Block node, {
+    String? textAlign,
+    _FontState? firstLine,
+    String? firstLineTransform,
+  }) {
     final roles = node.roles;
     String? roleAlign;
     for (final role in roles.reversed) {
@@ -1264,6 +1336,7 @@ final class PdfConverter extends BuiltInConverter
         ),
         box.state,
         box.layout,
+        transform: firstLineTransform,
       );
     }
     _out.add(
@@ -1540,12 +1613,21 @@ final class PdfConverter extends BuiltInConverter
         if (_c('abstract_first_line_font_color') case final color?) {
           firstLine = (firstLine ?? _font).copyWith(color: color);
         }
+        var transform = _s('abstract_first_line_text_transform');
+        if (transform == 'none') transform = null;
+        if (transform != null) firstLine ??= _font;
         if (node.blocks.isNotEmpty) {
           for (final child in node.blocks) {
             if (child case final Block block
                 when block.context == BlockContext.paragraph) {
-              _paragraph(block, textAlign: align, firstLine: firstLine);
+              _paragraph(
+                block,
+                textAlign: align,
+                firstLine: firstLine,
+                firstLineTransform: transform,
+              );
               firstLine = null;
+              transform = null;
             } else {
               child.convert();
             }
@@ -1553,9 +1635,27 @@ final class PdfConverter extends BuiltInConverter
         } else if (node case final Block block
             when block.contentModel != ContentModel.compound) {
           if (block.content() case final text?) {
+            final textAlign = _alignOf(block.roles) ?? align;
+            final indent = (textAlign == 'justify' || textAlign == 'left')
+                ? (_n('prose_text_indent') ?? 0).toDouble()
+                : 0.0;
+            final box = _textBox(text, _font, align: textAlign, indent: indent);
             _out.add(
               CustomBox(
-                _textBox(text, _font, align: _alignOf(block.roles) ?? align),
+                firstLine == null
+                    ? box
+                    : FirstLineTextBox(
+                        _textBox(
+                          text,
+                          firstLine,
+                          align: textAlign,
+                          indent: indent,
+                          singleLine: true,
+                        ),
+                        box.state,
+                        box.layout,
+                        transform: transform,
+                      ),
               ),
             );
           }
@@ -2837,9 +2937,27 @@ final class PdfConverter extends BuiltInConverter
       align: 'left',
       normalize: false,
     );
+    CustomContent content = box;
+    if (node.hasOption('autofit') || _document.hasAttr('autofit-option')) {
+      final minimum =
+          _theme.value('code_font_size_min') ??
+          _theme.value('base_font_size_min');
+      content = AutofitTextBox(
+        box,
+        minimum: switch (minimum) {
+          ThemeNumber(:final value) => value.toDouble(),
+          ThemeString(:final value) => resolveFontSize(
+            value,
+            font.size,
+            _rootFontSize,
+          ),
+          _ => null,
+        },
+      );
+    }
     _out.add(
       BlockBox(
-        [CustomBox(box)],
+        [CustomBox(content)],
         style: BoxStyle(
           padding: _padding('code_padding'),
           margin: EdgeInsets(
@@ -4320,7 +4438,25 @@ final class PdfConverter extends BuiltInConverter
   // Inline elements.
 
   @override
-  String? convertInline(Inline node) => switch (node.context) {
+  String? convertInline(Inline node) {
+    // Inline content may be converted while the document is parsed (a
+    // section title, for its id), before the document is converted: the
+    // theme is loaded then (the gem's `load_theme`).
+    if (!_ready) {
+      if (node.document case final Document doc) {
+        _document = doc;
+        _theme = _prepareTheme(_loadTheme(doc));
+        _fonts = FontCatalog(_theme);
+        _ready = true;
+      }
+    }
+    return _convertInline(node);
+  }
+
+  /// Whether the theme (and the state inline conversions use) is loaded.
+  bool _ready = false;
+
+  String? _convertInline(Inline node) => switch (node.context) {
     InlineContext.anchor => _inlineAnchor(node),
     InlineContext.lineBreak => '${node.text ?? ''}<br>',
     InlineContext.button =>
@@ -4335,6 +4471,7 @@ final class PdfConverter extends BuiltInConverter
   };
 
   String _inlineAnchor(Inline node) {
+    final doc = _document;
     final target = node.target ?? '';
     switch (node.type) {
       case 'link':
@@ -4343,42 +4480,103 @@ final class PdfConverter extends BuiltInConverter
             : '';
         final role = node.role;
         final classAttr = role != null ? ' class="$role"' : '';
-        return '$anchor<a href="$target"$classAttr>${node.text ?? ''}</a>';
+        final media = doc.attr('media') ?? 'screen';
+        final text = node.text ?? '';
+        var bare = target;
+        if (media != 'screen' && target.startsWith('mailto:')) {
+          bare = target.substring(7);
+          if (bare == text) node.addRole('bare');
+          if (!doc.hasAttr('hide-uri-scheme')) bare = target;
+        }
+        final roles = node.attr('role')?.split(' ') ?? const <String>[];
+        if (roles.contains('bare')) {
+          return '$anchor<a href="$target"$classAttr>'
+              '${_breakableUri(text)}</a>';
+        }
+        if (doc.hasAttr('show-link-uri') ||
+            (media != 'screen' && doc.attributeUnspecified('show-link-uri'))) {
+          if (doc.hasAttr('hide-uri-scheme')) {
+            final boundary = bare.indexOf('://');
+            if (boundary >= 0) bare = bare.substring(boundary + 3);
+          }
+          return '$anchor<a href="$target"$classAttr>$text</a> '
+              '[<font size="0.85em">${_breakableUri(bare)}</font>&#93;';
+        }
+        return '$anchor<a href="$target"$classAttr>$text</a>';
       case 'xref':
         if (node.attributes['path'] case final path?) {
           return '<a href="$target">${node.text ?? path}</a>';
         }
         if (node.attributes['refid'] case final refid?) {
           var text = node.text;
-          if (text == null) {
-            text = switch (_document.catalog.refs[refid]) {
-              final AbstractBlock block => block.xreftext(
-                node.attr('xrefstyle'),
-              ),
-              final Inline inline => inline.xreftext(node.attr('xrefstyle')),
-              _ => null,
-            };
-            if (text != null && text.contains('<a')) {
-              text = text.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
+          String? anchor;
+          if (text == null && !_resolvingXref) {
+            _resolvingXref = true;
+            try {
+              final ref = doc.catalog.refs[refid];
+              final style = node.attr('xrefstyle', null, 'xrefstyle');
+              text = switch (ref) {
+                final AbstractBlock block => block.xreftext(style),
+                final Inline inline => inline.xreftext(style),
+                _ => null,
+              };
+              if (text != null && text.contains('<a')) {
+                text = text.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
+              }
+              if (ref case final Inline inline
+                  when inline.type == 'bibref' && _bibrefRefs.add(refid)) {
+                anchor = '<a id="_bibref_ref_$refid">$_dummyText</a>';
+              }
+            } finally {
+              _resolvingXref = false;
             }
           }
-          return '<a anchor="$refid">${text ?? '[$refid]'}</a>'.replaceAll(
-            ']',
-            '&#93;',
-          );
+          return '${anchor ?? ''}<a anchor="$refid">${text ?? '[$refid]'}</a>'
+              .replaceAll(']', '&#93;');
         }
-        return '<a anchor="${_document.attr('pdf-anchor') ?? ''}">'
+        return '<a anchor="${doc.attr('pdf-anchor') ?? ''}">'
             '${node.text ?? '[^top&#93;'}</a>';
       case 'ref':
         return '<a id="${node.id}">$_dummyText</a>';
       case 'bibref':
-        final id = node.id;
-        final reftext = '[${node.reftext ?? id}]';
+        final id = node.id ?? '';
+        var reftext = '[${node.reftext ?? id}]';
+        if (_bibrefRefs.contains(id)) {
+          reftext = '<a anchor="_bibref_ref_$id">$reftext</a>';
+        }
         return '<a id="$id">$_dummyText</a>$reftext';
       default:
         logger.warn('unknown anchor type: ${node.type}');
         return '';
     }
+  }
+
+  /// Whether an xref's text is being resolved (an xref in a reference's
+  /// own text then shows its refid).
+  bool _resolvingXref = false;
+
+  /// The bibliography entries referenced (they link back to the first
+  /// reference).
+  final Set<String> _bibrefRefs = {};
+
+  /// [uri] with a zero-width space after each `/`, `?`, `&` and `#` of its
+  /// address so it can break there (the gem's `breakable_uri`).
+  static String _breakableUri(String uri) {
+    final boundary = uri.indexOf('://');
+    final scheme = boundary < 0 ? '' : uri.substring(0, boundary + 3);
+    var address = boundary < 0 ? uri : uri.substring(boundary + 3);
+    if (address.isEmpty) return uri;
+    address = address.replaceAllMapped(
+      RegExp(r'(?:/|\?|&amp;|#)(?!$)'),
+      (match) => '${match[0]}​',
+    );
+    // At least two characters after a break.
+    if (address.length >= 2 && address[address.length - 2] == '​') {
+      address =
+          address.substring(0, address.length - 2) +
+          address.substring(address.length - 1);
+    }
+    return '$scheme$address';
   }
 
   String _inlineCallout(Inline node) {

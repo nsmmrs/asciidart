@@ -965,19 +965,51 @@ final class MarkupTransform {
 
 /// [text] transformed by a theme `text_transform` (`uppercase`,
 /// `lowercase`, `capitalize`, `smallcaps`, `none`).
-String transformText(String text, String transform) => switch (transform) {
-  'uppercase' => text.toUpperCase(),
-  'lowercase' => text.toLowerCase(),
-  'capitalize' => text.replaceAllMapped(
-    RegExp(r'(^|\s)(\S)'),
-    (m) => '${m[1]}${m[2]!.toUpperCase()}',
-  ),
-  'smallcaps' => _smallCaps(text),
-  _ => text,
-};
+String transformText(String text, String transform) {
+  // Only the text between tags and character references changes.
+  String pcdata(RegExp filter, String Function(String) change) =>
+      text.replaceAllMapped(
+        filter,
+        (match) => match[2] != null ? change(match[2]!) : match[1]!,
+      );
+  final markup = _xmlMarkup.hasMatch(text);
+  switch (transform) {
+    case 'uppercase':
+      return markup
+          ? pcdata(_pcdataFilter, (t) => t.toUpperCase())
+          : text.toUpperCase();
+    case 'lowercase':
+      return text.contains('<')
+          ? pcdata(_tagFilter, (t) => t.toLowerCase())
+          : text.toLowerCase();
+    case 'capitalize':
+      return markup
+          ? pcdata(_pcdataFilter, _capitalizeWords)
+          : _capitalizeWords(text);
+    case 'smallcaps':
+      return markup ? pcdata(_pcdataFilter, _smallCaps) : _smallCaps(text);
+    default:
+      return text;
+  }
+}
 
+final RegExp _xmlMarkup = RegExp(r'&#?[a-z\d]+;|<');
+final RegExp _pcdataFilter = RegExp(r'(&#?[a-z\d]+;|<[^>]+>)|([^&<]+)');
+final RegExp _tagFilter = RegExp('(<[^>]+>)|([^<]+)');
+
+/// Each run of visible characters with its first character upper case
+/// and the rest lower case (Ruby's `capitalize`).
+String _capitalizeWords(String text) =>
+    text.replaceAllMapped(RegExp(r'[^\s\x00-\x1f\x7f]+'), (match) {
+      final word = match[0]!;
+      final first = String.fromCharCode(word.runes.first);
+      return first.toUpperCase() + word.substring(first.length).toLowerCase();
+    });
+
+// The gem's small capitals (ғ, ǫ and s, more widely supported, in place of
+// ꜰ, ꞯ and ꜱ; o and x as they are).
 const String _smallCapsFrom = 'abcdefghijklmnopqrstuvwxyz';
-const String _smallCapsTo = 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘꞯʀꜱᴛᴜᴠᴡxʏᴢ';
+const String _smallCapsTo = 'ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴoᴘǫʀsᴛᴜᴠᴡxʏᴢ';
 
 String _smallCaps(String text) {
   final out = StringBuffer();

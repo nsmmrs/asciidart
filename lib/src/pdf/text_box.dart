@@ -65,6 +65,7 @@ final class TextLayout {
     this.finalGap = false,
     this.trailingLineGap = false,
     this.singleLine = false,
+    this.shrinkToFit = false,
     this.indentFirstLine = 0,
     this.normalizeLineHeight = false,
     this.forceJustify = false,
@@ -93,6 +94,10 @@ final class TextLayout {
   /// line gap and the leading following the line).
   final bool singleLine;
 
+  /// Whether the font size shrinks (half a point at a time, to 5) until
+  /// all the text fits (Prawn's `overflow: :shrink_to_fit`).
+  final bool shrinkToFit;
+
   /// The indent of the first line.
   final double indentFirstLine;
 
@@ -104,6 +109,7 @@ final class TextLayout {
     finalGap: finalGap,
     trailingLineGap: trailingLineGap,
     singleLine: singleLine,
+    shrinkToFit: shrinkToFit,
     indentFirstLine: indentFirstLine,
     normalizeLineHeight: normalizeLineHeight,
     forceJustify: forceJustify,
@@ -594,6 +600,79 @@ final class PrawnTextBox implements CustomContent {
 
   @override
   CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    if (!_layout.shrinkToFit) return _place(width, available, atTop: atTop);
+    var box = this;
+    var size = _state.size;
+    while (true) {
+      final placed = box._place(width, available, atTop: atTop);
+      if (placed == null || placed.rest == null || size <= 5) return placed;
+      size = math.max(size - 0.5, 5);
+      box = box.resized(size);
+    }
+  }
+
+  /// This text at font [size] (the fragments of their own size keep it;
+  /// the layout, its leading included, stays as it is).
+  PrawnTextBox resized(double size) {
+    final state = TextState(
+      family: _state.family,
+      size: size,
+      style: _state.style,
+      color: _state.color,
+      kerning: _state.kerning,
+      characterSpacing: _state.characterSpacing,
+    );
+    return PrawnTextBox._(
+      [
+        for (final item in _items)
+          _Item(
+            item.text,
+            item.format.image == null
+                ? _resolve(item.format.fragment, state, _context)
+                : item.format,
+            defaultColor: item.defaultColor,
+          ),
+      ],
+      state,
+      _layout,
+      _context,
+      first: first,
+    );
+  }
+
+  /// The fragments of the first line of the text laid out [width] wide,
+  /// and the text left over (null when it all fits on the line).
+  (List<Fragment>, PrawnTextBox?) splitFirstLine(double width) {
+    _arrangeImages(width);
+    final wrap = _Wrap(
+      [for (final item in _items) item.copy()],
+      _state,
+      _layout,
+      _context,
+      width,
+      double.infinity,
+      firstPiece: first,
+    );
+    final lines = wrap.run();
+    final fragments = [
+      if (lines.isNotEmpty)
+        for (final printed in lines.first.fragments)
+          printed.format.fragment.copy(text: printed.text),
+    ];
+    final rest = wrap.unconsumed;
+    return (
+      fragments,
+      rest.isEmpty
+          ? null
+          : PrawnTextBox._(rest, _state, _layout, _context, first: false),
+    );
+  }
+
+  CustomPlacement? _place(
     double width,
     double available, {
     required bool atTop,
@@ -1294,10 +1373,14 @@ final class FirstLineTextBox implements CustomContent {
   /// [first] (laid out with a single line) followed by its rest in
   /// [state], laid out by [layout] (without the initial gap right after
   /// the first line, with it on later pages).
-  const new(this.first, this.state, this.layout);
+  const new(this.first, this.state, this.layout, {this.transform});
 
   /// The text in the first line's style, laid out a single line.
   final PrawnTextBox first;
+
+  /// The text transform of the first line, applied once the line is
+  /// broken (the line then shrinks to fit), if any.
+  final String? transform;
 
   /// The style of the lines after the first.
   final TextState state;
@@ -1311,7 +1394,9 @@ final class FirstLineTextBox implements CustomContent {
     double available, {
     required bool atTop,
   }) {
-    final head = first.place(width, available, atTop: atTop);
+    final head = transform == null
+        ? first.place(width, available, atTop: atTop)
+        : _transformedFirstLine(width, available, atTop: atTop);
     if (head == null) return null;
     final rest = head.rest;
     if (rest is! PrawnTextBox) return head;
@@ -1340,9 +1425,87 @@ final class FirstLineTextBox implements CustomContent {
     );
   }
 
+  /// The first line with its text transformed: broken as it is, then
+  /// shrunk to fit (justified when more follows and the text justifies).
+  CustomPlacement? _transformedFirstLine(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final (fragments, rest) = first.splitFirstLine(width);
+    final line = first.layout;
+    final more = rest != null;
+    final box = PrawnTextBox(
+      [
+        for (final fragment in fragments)
+          fragment.copy(text: transformText(fragment.text, transform!)),
+      ],
+      first.state,
+      TextLayout(
+        align: line.align,
+        leading: line.leading,
+        initialGap: line.initialGap,
+        paddingBottom: more ? 0 : line.paddingBottom,
+        finalGap: more || line.finalGap,
+        singleLine: true,
+        shrinkToFit: true,
+        indentFirstLine: line.indentFirstLine,
+        normalizeLineHeight: line.normalizeLineHeight,
+        forceJustify:
+            more &&
+            line.align == 'justify' &&
+            fragments.lastOrNull?.text != '\n',
+      ),
+      first._context,
+    );
+    final placed = box.place(width, available, atTop: atTop);
+    if (placed == null || !more) return placed;
+    return CustomPlacement(
+      height: placed.height,
+      anchors: placed.anchors,
+      rest: rest,
+      paint: placed.paint,
+    );
+  }
+
   @override
   double minHeight(double width) => first.minHeight(width);
 
   @override
   (double, double) intrinsicWidths() => first.intrinsicWidths();
+}
+
+/// Text set smaller when its longest line is wider than the room (the
+/// gem's `autofit` option: `compute_autofit_font_size`), no smaller than
+/// [minimum].
+final class AutofitTextBox implements CustomContent {
+  /// [text], shrunk to fit.
+  const new(this.text, {this.minimum});
+
+  /// The text at its own size.
+  final PrawnTextBox text;
+
+  /// The least font size, if any.
+  final double? minimum;
+
+  PrawnTextBox _fitted(double width) {
+    final widest = text.intrinsicWidths().$2;
+    if (widest <= width) return text;
+    var size = (width * text.state.size / widest * 10000).truncate() / 10000;
+    if (minimum case final least? when size < least) size = least;
+    return text.resized(size);
+  }
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) => _fitted(width).place(width, available, atTop: atTop);
+
+  @override
+  double minHeight(double width) => _fitted(width).minHeight(width);
+
+  @override
+  (double, double) intrinsicWidths() => text.intrinsicWidths();
 }
