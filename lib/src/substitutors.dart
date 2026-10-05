@@ -734,9 +734,13 @@ String subReplacements(String text) {
 /// Port of `Substitutors#do_replacement`.
 String doReplacement(RegExpMatch match, String replacement, String restore) {
   final captured = match.group(0)!;
-  if (captured.contains(rs)) {
+  // A leading capture that starts the match may hold a backslash of its
+  // own (the man page's closing font markup); the escape follows it.
+  final group1 = restore == 'none' ? '' : match.group(1)!;
+  final lead = captured.startsWith(group1) ? group1 : '';
+  if (captured.indexOf(rs, lead.length) != -1) {
     // we have to use sub since we aren't sure it's the first char
-    return captured.replaceFirst(rs, '');
+    return '$lead${captured.substring(lead.length).replaceFirst(rs, '')}';
   }
   switch (restore) {
     case 'none':

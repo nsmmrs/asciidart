@@ -477,11 +477,15 @@ final List<Replacement> replacements = <Replacement>[
     'none',
     '--',
   ),
+  // Between words; the end of formatted text or a closing curved quote
+  // counts as the end of a word, and the start of either as the start of
+  // one (#1578, #3946).
   Replacement(
     RegExp(
       '($cgWord'
-      r')\\?--(?='
-      '$cgWord)',
+      r'|</[^>]+>|&#82(?:17|21);)\\?--(?='
+      '$cgWord'
+      '|<[^/!]|&#82(?:16|20);)',
       unicode: true,
     ),
     '&#8212;&#8203;',

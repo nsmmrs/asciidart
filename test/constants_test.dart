@@ -561,8 +561,9 @@ void main() {
           r'\\?\(TM\)',
           // Ruby: (?: |\n|^|\\)--(?: |\n|$)
           r'(?: |\n|^|\\)--(?: |\n|$)',
-          // Ruby: (\p{Word})\\?--(?=\p{Word})
-          '($cgWord)\\\\?--(?=$cgWord)',
+          // Ruby: (\p{Word})\\?--(?=\p{Word}), with formatted text and
+          // curved quotes as word boundaries (bugfix #1578, #3946)
+          '($cgWord|</[^>]+>|&#82(?:17|21);)\\\\?--(?=$cgWord|<[^/!]|&#82(?:16|20);)',
           // Ruby: \\?\.\.\.
           r'\\?\.\.\.',
           // Ruby: \\?`'
@@ -588,7 +589,7 @@ void main() {
       expect(
         replacements[4].pattern.pattern,
         equals(
-          r'((?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))\\?--(?=(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))',
+          r'((?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control})|</[^>]+>|&#82(?:17|21);)\\?--(?=(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control})|<[^/!]|&#82(?:16|20);)',
         ),
       );
       expect(
