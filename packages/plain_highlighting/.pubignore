@@ -1,0 +1,13 @@
+# pub reads this instead of .gitignore, so the .gitignore entries repeat.
+.dart_tool/
+build/
+doc/api/
+pubspec.lock
+node_modules/
+# Upstream's tests and the reference results are for this repository's
+# tests, not for users of the package.
+vendor/highlight.js/test/
+test/reference/
+test/markup_test.dart
+test/detect_test.dart
+benchmark/
