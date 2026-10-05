@@ -1285,6 +1285,171 @@ abstract final class Parser {
     );
   }
 
+  /// What [line], the first line of a block and not a delimiter line,
+  /// starts, in the order Asciidoctor checks: a verbatim-styled paragraph,
+  /// a break, a block macro, a list, a discrete heading, a styled
+  /// paragraph, else a paragraph. Also says whether the line is indented,
+  /// its first character, and the [style] left (an unknown paragraph style
+  /// is dropped, with a debug message).
+  static ({_LineStart start, bool indented, String ch0, String? style})
+  _classifyLine(
+    String line,
+    Reader reader, {
+    required String? style,
+    required bool textOnly,
+    required Registry? extensions,
+  }) {
+    if (style != null &&
+        Compliance.strictVerbatimParagraphs &&
+        _verbatimStyles.contains(style)) {
+      return (
+        start: const _VerbatimParagraph(),
+        indented: false,
+        ch0: '',
+        style: style,
+      );
+    }
+    final bool indented;
+    String? ch0;
+    if (textOnly) {
+      indented = line.startsWith(' ') || line.startsWith(tab);
+    } else if (line.startsWith(' ')) {
+      indented = true;
+      ch0 = ' ';
+      // QUESTION should we test line length?
+      final lstripped = trimLeftAscii(line);
+      if (Compliance.markdownSyntax &&
+          _markdownThematicBreakChars.keys.any(lstripped.startsWith) &&
+          markdownThematicBreakRx.hasMatch(line)) {
+        return (
+          start: const _LayoutBreak(BlockContext.thematicBreak),
+          indented: true,
+          ch0: ' ',
+          style: style,
+        );
+      }
+    } else if (line.startsWith(tab)) {
+      indented = true;
+      ch0 = tab;
+    } else {
+      indented = false;
+      final first = ch0 = line.isEmpty ? '' : line[0];
+      const layoutBreakChars = Compliance.markdownSyntax
+          ? _hybridLayoutBreakChars
+          : _layoutBreakChars;
+      if (layoutBreakChars[first] case final context?
+          when Compliance.markdownSyntax
+              ? extLayoutBreakRx.hasMatch(line)
+              : uniform(line, first, line.length) && line.length > 2) {
+        return (
+          start: _LayoutBreak(context),
+          indented: false,
+          ch0: first,
+          style: style,
+        );
+        // NOTE very rare that a text-only line will end in ] (e.g., inline
+        // macro), so check that first.
+      } else if (line.endsWith(']') && line.contains('::')) {
+        final mediaMatch =
+            first == 'i' ||
+                line.startsWith('video:') ||
+                line.startsWith('audio:')
+            ? blockMediaMacroRx.firstMatch(line)
+            : null;
+        if (mediaMatch != null) {
+          return (
+            start: _MediaMacro(mediaMatch),
+            indented: false,
+            ch0: first,
+            style: style,
+          );
+        }
+        final tocMatch = first == 't' && line.startsWith('toc:')
+            ? blockTocMacroRx.firstMatch(line)
+            : null;
+        if (tocMatch != null) {
+          return (
+            start: _TocMacro(tocMatch),
+            indented: false,
+            ch0: first,
+            style: style,
+          );
+        }
+        // Custom block macros (lib/asciidoctor/parser.rb:648-679); an
+        // unknown one is a paragraph.
+        if (customBlockMacroRx.firstMatch(line) case final macroMatch?) {
+          final extension = (extensions?.hasBlockMacros ?? false)
+              ? extensions!.registeredForBlockMacro(macroMatch.group(1)!)
+              : null;
+          if (extension != null) {
+            return (
+              start: _CustomBlockMacro(macroMatch, extension),
+              indented: false,
+              ch0: first,
+              style: style,
+            );
+          }
+          if (_logger.isDebugEnabled) {
+            _logger.debug(
+              'unknown name for block macro: ${macroMatch.group(1)}',
+              at: reader.cursorAtMark(),
+            );
+          }
+        }
+      }
+    }
+
+    final first = ch0 ?? (line.isEmpty ? '' : line[0]);
+    ({_LineStart start, bool indented, String ch0, String? style}) starts(
+      _LineStart start,
+    ) => (start: start, indented: indented, ch0: first, style: style);
+
+    if (!indented && first == '<') {
+      if (calloutListRx.firstMatch(line) case final match?) {
+        return starts(_CalloutListStart(match));
+      }
+    }
+    if (unorderedListRx.hasMatch(line)) {
+      return starts(const _UnorderedListStart());
+    }
+    if (orderedListRx.hasMatch(line)) return starts(const _OrderedListStart());
+    if (line.contains('::') || line.contains(';;')) {
+      if (descriptionListRx.firstMatch(line) case final match?) {
+        return starts(_DescriptionListStart(match));
+      }
+    }
+    if ((style == 'float' || style == 'discrete') &&
+        (Compliance.underlineStyleSectionTitles
+            ? isSectionTitle(line, reader.peekLine()) != null
+            : !indented && atxSectionTitle(line) != null)) {
+      return starts(const _DiscreteHeadingStart());
+    }
+    // FIXME create another set for "passthrough" styles
+    if (style != null && style != 'normal') {
+      if (_paragraphStyles.contains(style)) {
+        return starts(_StyledParagraph(style));
+      } else if (_admonitionStyles.contains(style)) {
+        return starts(const _StyledParagraph('admonition'));
+        // lib/asciidoctor/parser.rb:737-741
+      } else if ((extensions?.hasBlocks ?? false) &&
+          extensions!.registeredForBlock(style, 'paragraph') != null) {
+        return starts(_StyledParagraph(style));
+      }
+      if (_logger.isDebugEnabled) {
+        _logger.debug(
+          'unknown style for paragraph: $style',
+          at: reader.cursorAtMark(),
+        );
+      }
+    }
+    return (
+      start: const _ParagraphStart(),
+      indented: indented,
+      ch0: first,
+      style: style == 'normal' ? style : null,
+    );
+  }
+
   /// Parses and returns the next [Block] at the current location of [reader].
   ///
   /// Port of `Parser.next_block`. Returns `null` when no block is found
@@ -1331,7 +1496,6 @@ abstract final class Parser {
     // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:528-530).
     final extensions = document.extensions;
     final blockExtensions = extensions?.hasBlocks ?? false;
-    final blockMacroExtensions = extensions?.hasBlockMacros ?? false;
 
     // QUESTION should we introduce a parsing context object?
     reader.mark();
@@ -1375,546 +1539,461 @@ abstract final class Parser {
     // This loop is used for flow control; it only executes once, and only
     // when delimitedBlock is not set. Break once a block is found or at
     // end of loop. Returns null if the line should be dropped.
-    while (delimitedBlock == null) {
-      // Process lines verbatim.
-      if (style != null &&
-          Compliance.strictVerbatimParagraphs &&
-          _verbatimStyles.contains(style)) {
-        blockContext = style;
-        cloakedContext = 'paragraph';
-        reader.unshiftLine(thisLine);
-        // Advance to block parsing.
-        break;
-      }
-
-      // Process lines normally.
-      final bool indented;
-      String? ch0;
-      if (textOnly_) {
-        indented = thisLine.startsWith(' ') || thisLine.startsWith(tab);
-      } else {
-        // NOTE move this declaration up if we need it when textOnly is true.
-        if (thisLine.startsWith(' ')) {
-          indented = true;
-          ch0 = ' ';
-          // QUESTION should we test line length?
-          final lstripped = trimLeftAscii(thisLine);
-          if (Compliance.markdownSyntax &&
-              _markdownThematicBreakChars.keys.any(lstripped.startsWith) &&
-              //!thisLine.startsWith('    ') &&
-              markdownThematicBreakRx.hasMatch(thisLine)) {
-            // NOTE we're letting break lines (horizontal rule, page_break,
-            // etc) have attributes.
-            block = Block(
-              parent,
-              BlockContext.thematicBreak,
-              contentModel: ContentModel.empty,
+    if (delimitedBlock == null) {
+      final line = _classifyLine(
+        thisLine,
+        reader,
+        style: style,
+        textOnly: textOnly_,
+        extensions: extensions,
+      );
+      style = line.style;
+      final indented = line.indented;
+      final ch0 = line.ch0;
+      switch (line.start) {
+        case _VerbatimParagraph():
+          blockContext = style;
+          cloakedContext = 'paragraph';
+          reader.unshiftLine(thisLine);
+        case _LayoutBreak(:final context):
+          // NOTE we're letting break lines (horizontal rule, page_break,
+          // etc) have attributes.
+          block = Block(parent, context, contentModel: ContentModel.empty);
+        case _MediaMacro(match: final mediaMatch):
+          final blkCtx = mediaMatch.group(1)!;
+          var target = mediaMatch.group(2)!;
+          final blkAttrs = mediaMatch.group(3);
+          block = Block(
+            parent,
+            BlockContext.parse(blkCtx),
+            contentModel: ContentModel.empty,
+          );
+          if (blkAttrs != null) {
+            final List<String?> posattrs;
+            if (blkCtx == 'video') {
+              posattrs = ['poster', 'width', 'height'];
+            } else if (blkCtx == 'audio') {
+              posattrs = [];
+            } else {
+              // 'image'
+              posattrs = ['alt', 'width', 'height'];
+            }
+            parseAttributes(
+              document,
+              blkAttrs,
+              posattrs: posattrs,
+              subInput: true,
+              into: attrs,
             );
-            break;
           }
-        } else if (thisLine.startsWith(tab)) {
-          indented = true;
-          ch0 = tab;
-        } else {
-          indented = false;
-          ch0 = thisLine.isEmpty ? '' : thisLine[0];
-          const layoutBreakChars = Compliance.markdownSyntax
-              ? _hybridLayoutBreakChars
-              : _layoutBreakChars;
-          if (layoutBreakChars.containsKey(ch0) &&
-              (Compliance.markdownSyntax
-                  ? extLayoutBreakRx.hasMatch(thisLine)
-                  : uniform(thisLine, ch0, thisLine.length) &&
-                        thisLine.length > 2)) {
-            // NOTE we're letting break lines (horizontal rule, page_break,
-            // etc) have attributes.
-            block = Block(
-              parent,
-              layoutBreakChars[ch0]!,
-              contentModel: ContentModel.empty,
+          // Style doesn't have special meaning for media macros.
+          if (attrs.containsKey('style')) attrs.remove('style');
+          if (target.contains(attrRefHead)) {
+            final expandedTarget = subAttributes(document, target);
+            if (expandedTarget.isEmpty &&
+                AttributeMissing.parse(
+                      docAttrs['attribute-missing'] ??
+                          Compliance.attributeMissing,
+                    ) ==
+                    AttributeMissing.dropLine &&
+                subAttributes(
+                  document,
+                  '$target ',
+                  attributeMissing: AttributeMissing.dropLine,
+                  reportDroppedLine: false,
+                ).isEmpty) {
+              attrs.clear();
+              return null;
+            }
+            target = expandedTarget;
+          }
+          if (blkCtx == 'image') {
+            document.registerImage(target);
+            _setOrRemove(attrs, 'imagesdir', docAttrs['imagesdir']);
+            // NOTE style is the value of the first positional
+            // attribute in the block attribute line.
+            if (!attrs.containsKey('alt')) {
+              attrs['alt'] =
+                  style ??
+                  (attrs['default-alt'] = Helpers.basename(
+                    target,
+                    dropExtension: true,
+                  ).replaceAll('_', ' ').replaceAll('-', ' '));
+            }
+            final scaledwidth = attrs.remove('scaledwidth');
+            if (scaledwidth != null && scaledwidth.isNotEmpty) {
+              // NOTE assume % units if not specified.
+              attrs['scaledwidth'] = trailingDigitsRx.hasMatch(scaledwidth)
+                  ? '$scaledwidth%'
+                  : scaledwidth;
+            }
+            if (attrs.containsKey('title')) {
+              blockTitle = attrs.remove('title');
+              block
+                ..title = blockTitle
+                ..assignCaption(attrs.remove('caption'), figure: true);
+            }
+          }
+          attrs['target'] = target;
+        case _TocMacro(match: final tocMatch):
+          block = Block(
+            parent,
+            BlockContext.toc,
+            contentModel: ContentModel.empty,
+          );
+          final tocAttrs = tocMatch.group(1);
+          if (tocAttrs != null) {
+            parseAttributes(
+              document,
+              tocAttrs,
+              posattrs: [],
+              subInput: true,
+              into: attrs,
             );
-            break;
-            // NOTE very rare that a text-only line will end in ] (e.g.,
-            // inline macro), so check that first.
-          } else if (thisLine.endsWith(']') && thisLine.contains('::')) {
-            //if (this_line.start_with? 'image', 'video', 'audio') &&
-            //    BlockMediaMacroRx =~ this_line
-            final mediaMatch =
-                (ch0 == 'i' ||
-                    thisLine.startsWith('video:') ||
-                    thisLine.startsWith('audio:'))
-                ? blockMediaMacroRx.firstMatch(thisLine)
-                : null;
-            if (mediaMatch != null) {
-              final blkCtx = mediaMatch.group(1)!;
-              var target = mediaMatch.group(2)!;
-              final blkAttrs = mediaMatch.group(3);
+          }
+        case _CustomBlockMacro(match: final macroMatch, :final extension):
+          final macroExtension = extension;
+          final content = macroMatch.group(3);
+          var target = macroMatch.group(2)!;
+          if (target.contains(attrRefHead)) {
+            final expandedTarget = subAttributes(document, target);
+            if (expandedTarget.isEmpty &&
+                AttributeMissing.parse(
+                      docAttrs['attribute-missing'] ??
+                          Compliance.attributeMissing,
+                    ) ==
+                    AttributeMissing.dropLine &&
+                subAttributes(
+                  document,
+                  '$target ',
+                  attributeMissing: AttributeMissing.dropLine,
+                  reportDroppedLine: false,
+                ).isEmpty) {
+              attrs.clear();
+              return null;
+            } else {
+              target = expandedTarget;
+            }
+          }
+          final extConfig = macroExtension.instance.config;
+          if (extConfig.macroAttributes == MacroAttributes.parsed) {
+            if (content != null) {
+              parseAttributes(
+                document,
+                content,
+                posattrs: extConfig.positionalAttrs,
+                subInput: true,
+                into: attrs,
+              );
+            }
+          } else {
+            attrs['text'] = content ?? '';
+          }
+          extConfig.defaultAttrs.forEach(
+            (key, value) => attrs.putIfAbsent(key, () => value),
+          );
+          final macroBlock = macroExtension.instance.process(
+            parent,
+            target,
+            attrs,
+          );
+          if (macroBlock != null && !identical(macroBlock, parent)) {
+            // The extension result owns the attribute set from here on
+            // (the attribute entries carry over).
+            final entries = attrs.attributeEntries;
+            attrs
+              ..clear()
+              ..addAll(macroBlock.attributes)
+              ..attributeEntries = entries;
+            block = macroBlock;
+          } else {
+            attrs.clear();
+            return null;
+          }
+        case _CalloutListStart(match: final calloutMatch):
+          reader.unshiftLine(thisLine);
+          block = parseCalloutList(
+            reader,
+            calloutMatch,
+            parent,
+            document.callouts,
+          );
+          attrs['style'] = 'arabic';
+        case _UnorderedListStart():
+          reader.unshiftLine(thisLine);
+          if (style == null &&
+              parent is Section &&
+              parent.sectname == 'bibliography') {
+            attrs['style'] = style = 'bibliography';
+          }
+          block = parseList(reader, BlockContext.ulist, parent, style);
+        case _OrderedListStart():
+          reader.unshiftLine(thisLine);
+          block = parseList(reader, BlockContext.olist, parent, style);
+          if (block.style case final listStyle?) attrs['style'] = listStyle;
+        case _DescriptionListStart(match: final dlistMatch):
+          reader.unshiftLine(thisLine);
+          block = parseDescriptionList(reader, dlistMatch, parent);
+        case _DiscreteHeadingStart():
+          reader.unshiftLine(thisLine);
+          final floatTitle = parseSectionTitle(reader, document, attrs['id']);
+          if (floatTitle.reftext case final reftext?) {
+            attrs['reftext'] = reftext;
+          }
+          block = (Block(
+            parent,
+            BlockContext.floatingTitle,
+            contentModel: ContentModel.empty,
+          ))..title = floatTitle.title;
+          attrs.remove('title');
+          block.id =
+              floatTitle.id ??
+              (docAttrs.containsKey('sectids')
+                  ? Section.generateId(block.title ?? '', document)
+                  : null);
+          block.level = floatTitle.level;
+        case _StyledParagraph(:final context):
+          blockContext = context;
+          cloakedContext = 'paragraph';
+          reader.unshiftLine(thisLine);
+        case _ParagraphStart():
+          reader.unshiftLine(thisLine);
+
+          // A literal paragraph: contiguous lines starting with at least one
+          // whitespace character.
+          // NOTE style can only be null or "normal" at this point.
+          if (indented && style == null) {
+            final contentAdjacent = skipped == 0 ? listType : null;
+            final lines = readParagraphLines(
+              reader,
+              contentAdjacent,
+              skipLineComments: textOnly_,
+            );
+            adjustIndentation(lines);
+            if (textOnly_ || contentAdjacent == BlockContext.dlist) {
+              // This block gets folded into the list item text.
               block = Block(
                 parent,
-                BlockContext.parse(blkCtx),
-                contentModel: ContentModel.empty,
+                BlockContext.paragraph,
+                contentModel: ContentModel.simple,
+                lines: lines,
+                attributes: attrs,
               );
-              if (blkAttrs != null) {
-                final List<String?> posattrs;
-                if (blkCtx == 'video') {
-                  posattrs = ['poster', 'width', 'height'];
-                } else if (blkCtx == 'audio') {
-                  posattrs = [];
-                } else {
-                  // 'image'
-                  posattrs = ['alt', 'width', 'height'];
-                }
-                parseAttributes(
-                  document,
-                  blkAttrs,
-                  posattrs: posattrs,
-                  subInput: true,
-                  into: attrs,
-                );
-              }
-              // Style doesn't have special meaning for media macros.
-              if (attrs.containsKey('style')) attrs.remove('style');
-              if (target.contains(attrRefHead)) {
-                final expandedTarget = subAttributes(document, target);
-                if (expandedTarget.isEmpty &&
-                    AttributeMissing.parse(
-                          docAttrs['attribute-missing'] ??
-                              Compliance.attributeMissing,
-                        ) ==
-                        AttributeMissing.dropLine &&
-                    subAttributes(
-                      document,
-                      '$target ',
-                      attributeMissing: AttributeMissing.dropLine,
-                      reportDroppedLine: false,
-                    ).isEmpty) {
-                  attrs.clear();
-                  return null;
-                }
-                target = expandedTarget;
-              }
-              if (blkCtx == 'image') {
-                document.registerImage(target);
-                _setOrRemove(attrs, 'imagesdir', docAttrs['imagesdir']);
-                // NOTE style is the value of the first positional
-                // attribute in the block attribute line.
-                if (!attrs.containsKey('alt')) {
-                  attrs['alt'] =
-                      style ??
-                      (attrs['default-alt'] = Helpers.basename(
-                        target,
-                        dropExtension: true,
-                      ).replaceAll('_', ' ').replaceAll('-', ' '));
-                }
-                final scaledwidth = attrs.remove('scaledwidth');
-                if (scaledwidth != null && scaledwidth.isNotEmpty) {
-                  // NOTE assume % units if not specified.
-                  attrs['scaledwidth'] = trailingDigitsRx.hasMatch(scaledwidth)
-                      ? '$scaledwidth%'
-                      : scaledwidth;
-                }
-                if (attrs.containsKey('title')) {
-                  blockTitle = attrs.remove('title');
-                  block
-                    ..title = blockTitle
-                    ..assignCaption(attrs.remove('caption'), figure: true);
-                }
-              }
-              attrs['target'] = target;
-              break;
-            }
-            final tocMatch = ch0 == 't' && thisLine.startsWith('toc:')
-                ? blockTocMacroRx.firstMatch(thisLine)
-                : null;
-            if (tocMatch != null) {
+            } else {
               block = Block(
                 parent,
-                BlockContext.toc,
-                contentModel: ContentModel.empty,
+                BlockContext.literal,
+                contentModel: ContentModel.verbatim,
+                lines: lines,
+                attributes: attrs,
               );
-              final tocAttrs = tocMatch.group(1);
-              if (tocAttrs != null) {
-                parseAttributes(
-                  document,
-                  tocAttrs,
-                  posattrs: [],
-                  subInput: true,
-                  into: attrs,
-                );
-              }
-              break;
             }
-            // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:648-679):
-            // custom block macros, including the unknown-macro debug probe.
-            final macroMatch = customBlockMacroRx.firstMatch(thisLine);
-            ProcessorExtension<BlockMacroProcessor>? macroExtension;
-            var reportUnknownBlockMacro = false;
-            if (macroMatch != null) {
-              if (blockMacroExtensions) {
-                macroExtension = extensions!.registeredForBlockMacro(
-                  macroMatch.group(1)!,
-                );
-                if (macroExtension == null) {
-                  reportUnknownBlockMacro = _logger.isDebugEnabled;
-                }
-              } else {
-                reportUnknownBlockMacro = _logger.isDebugEnabled;
-              }
-            }
-            if (reportUnknownBlockMacro) {
-              _logger.debug(
-                'unknown name for block macro: ${macroMatch!.group(1)}',
-                at: reader.cursorAtMark(),
-              );
-            } else if (macroExtension != null) {
-              final content = macroMatch!.group(3);
-              var target = macroMatch.group(2)!;
-              if (target.contains(attrRefHead)) {
-                final expandedTarget = subAttributes(document, target);
-                if (expandedTarget.isEmpty &&
-                    AttributeMissing.parse(
-                          docAttrs['attribute-missing'] ??
-                              Compliance.attributeMissing,
-                        ) ==
-                        AttributeMissing.dropLine &&
-                    subAttributes(
-                      document,
-                      '$target ',
-                      attributeMissing: AttributeMissing.dropLine,
-                      reportDroppedLine: false,
-                    ).isEmpty) {
-                  attrs.clear();
-                  return null;
-                } else {
-                  target = expandedTarget;
-                }
-              }
-              final extConfig = macroExtension.instance.config;
-              if (extConfig.macroAttributes == MacroAttributes.parsed) {
-                if (content != null) {
-                  parseAttributes(
-                    document,
-                    content,
-                    posattrs: extConfig.positionalAttrs,
-                    subInput: true,
-                    into: attrs,
-                  );
-                }
-              } else {
-                attrs['text'] = content ?? '';
-              }
-              extConfig.defaultAttrs.forEach(
-                (key, value) => attrs.putIfAbsent(key, () => value),
-              );
-              final macroBlock = macroExtension.instance.process(
+          } else {
+            // A normal paragraph: contiguous non-blank/non-continuation lines
+            // (left-indented or normal style).
+            final lines = readParagraphLines(
+              reader,
+              skipped == 0 ? listType : null,
+              skipLineComments: true,
+            );
+            final admonitionMatch =
+                _admonitionStyleHeads.contains(ch0) && thisLine.contains(':')
+                ? admonitionParagraphRx.firstMatch(thisLine)
+                : null;
+            // NOTE don't check indented here since it's extremely rare
+            //if text_only || indented
+            if (textOnly_) {
+              // If [normal] is used over an indented paragraph, shift content
+              // to left margin.
+              // QUESTION do we even need to shift since whitespace is
+              // normalized by XML in this case?
+              if (indented && style == 'normal') adjustIndentation(lines);
+              block = Block(
                 parent,
-                target,
+                BlockContext.paragraph,
+                contentModel: ContentModel.simple,
+                lines: lines,
+                attributes: attrs,
+              );
+            } else if (admonitionMatch != null) {
+              lines[0] = thisLine.substring(admonitionMatch.end);
+              final admonitionStyle = attrs['style'] = admonitionMatch.group(
+                1,
+              )!;
+              final admonitionName = downcase(admonitionStyle);
+              attrs['name'] = admonitionName;
+              final caption = attrs.remove('caption');
+              _setOrRemove(
                 attrs,
+                'textlabel',
+                caption ?? docAttrs['$admonitionName-caption'],
               );
-              if (macroBlock != null && !identical(macroBlock, parent)) {
-                // The extension result owns the attribute set from here on
-                // (the attribute entries carry over).
-                final entries = attrs.attributeEntries;
-                attrs
-                  ..clear()
-                  ..addAll(macroBlock.attributes)
-                  ..attributeEntries = entries;
-                block = macroBlock;
-                break;
-              } else {
-                attrs.clear();
-                return null;
+              block = Block(
+                parent,
+                BlockContext.admonition,
+                contentModel: ContentModel.simple,
+                lines: lines,
+                attributes: attrs,
+              );
+            } else if (Compliance.markdownSyntax &&
+                ch0 == '>' &&
+                thisLine.startsWith('> ')) {
+              for (var i = 0; i < lines.length; i++) {
+                final line = lines[i];
+                lines[i] = line == '>'
+                    ? line.substring(1)
+                    : line.startsWith('> ')
+                    ? line.substring(2)
+                    : line;
               }
+              String? creditLine;
+              if (lines.isNotEmpty && lines.last.startsWith('-- ')) {
+                final popped = lines.removeLast();
+                creditLine = popped.substring(3);
+                while (lines.isNotEmpty && lines.last.isEmpty) {
+                  lines.removeLast();
+                }
+              }
+              attrs['style'] = 'quote';
+              // NOTE will only detect discrete (aka free-floating) headings
+              // TODO could assume a discrete heading when inside a block
+              // context
+              // FIXME Reader needs to be created w/ line info
+              block = buildBlock(
+                'quote',
+                ContentModel.compound,
+                null,
+                parent,
+                Reader(lines),
+                attrs,
+                readerPrepared: true,
+              )!;
+              if (creditLine != null) {
+                final parts = _splitLimit(block.applySubs(creditLine), ', ', 2);
+                final attribution = parts[0];
+                final citetitle = parts.length > 1 ? parts[1] : null;
+                attrs['attribution'] = attribution;
+                if (citetitle != null) attrs['citetitle'] = citetitle;
+              }
+            } else if (ch0 == '"' &&
+                lines.length > 1 &&
+                lines.last.startsWith('-- ') &&
+                lines[lines.length - 2].endsWith('"')) {
+              lines[0] = thisLine.substring(1); // strip leading quote
+              final popped = lines.removeLast();
+              final creditLine = popped.substring(3);
+              while (lines.isNotEmpty && lines.last.isEmpty) {
+                lines.removeLast();
+              }
+              final stripped = lines.removeLast();
+              lines.add(
+                stripped.substring(0, stripped.length - 1),
+              ); // strip trailing quote
+              attrs['style'] = 'quote';
+              block = Block(
+                parent,
+                BlockContext.quote,
+                contentModel: ContentModel.simple,
+                lines: lines,
+                attributes: attrs,
+              );
+              final parts = _splitLimit(block.applySubs(creditLine), ', ', 2);
+              final attribution = parts[0];
+              final citetitle = parts.length > 1 ? parts[1] : null;
+              attrs['attribution'] = attribution;
+              if (citetitle != null) attrs['citetitle'] = citetitle;
+            } else {
+              // If [normal] is used over an indented paragraph, shift content
+              // to left margin.
+              // QUESTION do we even need to shift since whitespace is
+              // normalized by XML in this case?
+              if (indented && style == 'normal') adjustIndentation(lines);
+              block = Block(
+                parent,
+                BlockContext.paragraph,
+                contentModel: ContentModel.simple,
+                lines: lines,
+                attributes: attrs,
+              );
             }
+
+            catalogInlineAnchors(lines.join(lf), block, document, reader);
           }
-        }
       }
-
-      // Haven't found anything yet, continue.
-      ch0 ??= thisLine.isEmpty ? '' : thisLine[0];
-      final calloutMatch = !indented && ch0 == '<'
-          ? calloutListRx.firstMatch(thisLine)
-          : null;
-      final dlistMatch =
-          (thisLine.contains('::') || thisLine.contains(';;')) &&
-              calloutMatch == null &&
-              !unorderedListRx.hasMatch(thisLine) &&
-              !orderedListRx.hasMatch(thisLine)
-          ? descriptionListRx.firstMatch(thisLine)
-          : null;
-      if (calloutMatch != null) {
-        reader.unshiftLine(thisLine);
-        block = parseCalloutList(
-          reader,
-          calloutMatch,
-          parent,
-          document.callouts,
-        );
-        attrs['style'] = 'arabic';
-        break;
-      } else if (unorderedListRx.hasMatch(thisLine)) {
-        reader.unshiftLine(thisLine);
-        if (style == null &&
-            parent is Section &&
-            parent.sectname == 'bibliography') {
-          attrs['style'] = style = 'bibliography';
-        }
-        block = parseList(reader, BlockContext.ulist, parent, style);
-        break;
-      } else if (orderedListRx.hasMatch(thisLine)) {
-        reader.unshiftLine(thisLine);
-        block = parseList(reader, BlockContext.olist, parent, style);
-        if (block.style case final listStyle?) attrs['style'] = listStyle;
-        break;
-      } else if (dlistMatch != null) {
-        reader.unshiftLine(thisLine);
-        block = parseDescriptionList(reader, dlistMatch, parent);
-        break;
-      } else if ((style == 'float' || style == 'discrete') &&
-          (Compliance.underlineStyleSectionTitles
-              ? isSectionTitle(thisLine, reader.peekLine()) != null
-              : !indented && atxSectionTitle(thisLine) != null)) {
-        reader.unshiftLine(thisLine);
-        final floatTitle = parseSectionTitle(reader, document, attrs['id']);
-        if (floatTitle.reftext case final reftext?) attrs['reftext'] = reftext;
-        block = (Block(
-          parent,
-          BlockContext.floatingTitle,
-          contentModel: ContentModel.empty,
-        ))..title = floatTitle.title;
-        attrs.remove('title');
-        block.id =
-            floatTitle.id ??
-            (docAttrs.containsKey('sectids')
-                ? Section.generateId(block.title ?? '', document)
-                : null);
-        block.level = floatTitle.level;
-        break;
-
-        // FIXME create another set for "passthrough" styles
-        // FIXME make this more DRY!
-      } else if (style != null && style != 'normal') {
-        if (_paragraphStyles.contains(style)) {
-          blockContext = style;
-          cloakedContext = 'paragraph';
-          reader.unshiftLine(thisLine);
-          // Advance to block parsing.
-          break;
-        } else if (_admonitionStyles.contains(style)) {
-          blockContext = 'admonition';
-          cloakedContext = 'paragraph';
-          reader.unshiftLine(thisLine);
-          // Advance to block parsing.
-          break;
-          // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:737-741).
-        } else if (blockExtensions &&
-            extensions!.registeredForBlock(style, 'paragraph') != null) {
-          blockContext = style;
-          cloakedContext = 'paragraph';
-          reader.unshiftLine(thisLine);
-          // Advance to block parsing.
-          break;
-        } else {
-          if (_logger.isDebugEnabled) {
-            _logger.debug(
-              'unknown style for paragraph: $style',
-              at: reader.cursorAtMark(),
-            );
-          }
-          style = null;
-          // Continue to process paragraph.
-        }
-      }
-
-      reader.unshiftLine(thisLine);
-
-      // A literal paragraph: contiguous lines starting with at least one
-      // whitespace character.
-      // NOTE style can only be null or "normal" at this point.
-      if (indented && style == null) {
-        final contentAdjacent = skipped == 0 ? listType : null;
-        final lines = readParagraphLines(
-          reader,
-          contentAdjacent,
-          skipLineComments: textOnly_,
-        );
-        adjustIndentation(lines);
-        if (textOnly_ || contentAdjacent == BlockContext.dlist) {
-          // This block gets folded into the list item text.
-          block = Block(
-            parent,
-            BlockContext.paragraph,
-            contentModel: ContentModel.simple,
-            lines: lines,
-            attributes: attrs,
-          );
-        } else {
-          block = Block(
-            parent,
-            BlockContext.literal,
-            contentModel: ContentModel.verbatim,
-            lines: lines,
-            attributes: attrs,
-          );
-        }
-      } else {
-        // A normal paragraph: contiguous non-blank/non-continuation lines
-        // (left-indented or normal style).
-        final lines = readParagraphLines(
-          reader,
-          skipped == 0 ? listType : null,
-          skipLineComments: true,
-        );
-        final admonitionMatch =
-            _admonitionStyleHeads.contains(ch0) && thisLine.contains(':')
-            ? admonitionParagraphRx.firstMatch(thisLine)
-            : null;
-        // NOTE don't check indented here since it's extremely rare
-        //if text_only || indented
-        if (textOnly_) {
-          // If [normal] is used over an indented paragraph, shift content
-          // to left margin.
-          // QUESTION do we even need to shift since whitespace is
-          // normalized by XML in this case?
-          if (indented && style == 'normal') adjustIndentation(lines);
-          block = Block(
-            parent,
-            BlockContext.paragraph,
-            contentModel: ContentModel.simple,
-            lines: lines,
-            attributes: attrs,
-          );
-        } else if (admonitionMatch != null) {
-          lines[0] = thisLine.substring(admonitionMatch.end);
-          final admonitionStyle = attrs['style'] = admonitionMatch.group(1)!;
-          final admonitionName = downcase(admonitionStyle);
-          attrs['name'] = admonitionName;
-          final caption = attrs.remove('caption');
-          _setOrRemove(
-            attrs,
-            'textlabel',
-            caption ?? docAttrs['$admonitionName-caption'],
-          );
-          block = Block(
-            parent,
-            BlockContext.admonition,
-            contentModel: ContentModel.simple,
-            lines: lines,
-            attributes: attrs,
-          );
-        } else if (Compliance.markdownSyntax &&
-            ch0 == '>' &&
-            thisLine.startsWith('> ')) {
-          for (var i = 0; i < lines.length; i++) {
-            final line = lines[i];
-            lines[i] = line == '>'
-                ? line.substring(1)
-                : line.startsWith('> ')
-                ? line.substring(2)
-                : line;
-          }
-          String? creditLine;
-          if (lines.isNotEmpty && lines.last.startsWith('-- ')) {
-            final popped = lines.removeLast();
-            creditLine = popped.substring(3);
-            while (lines.isNotEmpty && lines.last.isEmpty) {
-              lines.removeLast();
-            }
-          }
-          attrs['style'] = 'quote';
-          // NOTE will only detect discrete (aka free-floating) headings
-          // TODO could assume a discrete heading when inside a block context
-          // FIXME Reader needs to be created w/ line info
-          block = buildBlock(
-            'quote',
-            ContentModel.compound,
-            null,
-            parent,
-            Reader(lines),
-            attrs,
-            readerPrepared: true,
-          )!;
-          if (creditLine != null) {
-            final parts = _splitLimit(block.applySubs(creditLine), ', ', 2);
-            final attribution = parts[0];
-            final citetitle = parts.length > 1 ? parts[1] : null;
-            attrs['attribution'] = attribution;
-            if (citetitle != null) attrs['citetitle'] = citetitle;
-          }
-        } else if (ch0 == '"' &&
-            lines.length > 1 &&
-            lines.last.startsWith('-- ') &&
-            lines[lines.length - 2].endsWith('"')) {
-          lines[0] = thisLine.substring(1); // strip leading quote
-          final popped = lines.removeLast();
-          final creditLine = popped.substring(3);
-          while (lines.isNotEmpty && lines.last.isEmpty) {
-            lines.removeLast();
-          }
-          final stripped = lines.removeLast();
-          lines.add(
-            stripped.substring(0, stripped.length - 1),
-          ); // strip trailing quote
-          attrs['style'] = 'quote';
-          block = Block(
-            parent,
-            BlockContext.quote,
-            contentModel: ContentModel.simple,
-            lines: lines,
-            attributes: attrs,
-          );
-          final parts = _splitLimit(block.applySubs(creditLine), ', ', 2);
-          final attribution = parts[0];
-          final citetitle = parts.length > 1 ? parts[1] : null;
-          attrs['attribution'] = attribution;
-          if (citetitle != null) attrs['citetitle'] = citetitle;
-        } else {
-          // If [normal] is used over an indented paragraph, shift content
-          // to left margin.
-          // QUESTION do we even need to shift since whitespace is
-          // normalized by XML in this case?
-          if (indented && style == 'normal') adjustIndentation(lines);
-          block = Block(
-            parent,
-            BlockContext.paragraph,
-            contentModel: ContentModel.simple,
-            lines: lines,
-            attributes: attrs,
-          );
-        }
-
-        catalogInlineAnchors(lines.join(lf), block, document, reader);
-      }
-
-      break; // forbid loop from executing more than once
     }
 
     // Either delimited block or styled paragraph.
     if (block == null) {
       final bc = blockContext!;
-      if (bc == 'listing' || bc == 'source') {
-        String? language;
-        if (bc != 'source') {
-          language = attrs.containsKey('1')
-              ? null
-              : attrs['2'] ?? docAttrs['source-language'];
-        }
-        if (bc == 'source' || language != null) {
-          if (language != null) {
-            // :listing with language
-            attrs['style'] = 'source';
-            attrs['language'] = language;
-            _rekey(attrs, [null, null, 'linenums']);
-          } else {
-            // :source
-            _rekey(attrs, [null, 'language', 'linenums']);
-            if (docAttrs['source-language'] case final sourceLanguage?) {
-              attrs.putIfAbsent('language', () => sourceLanguage);
+      final kind = _BlockKind.of(bc);
+      switch (kind) {
+        case _BlockKind.listing || _BlockKind.source:
+          String? language;
+          if (kind != _BlockKind.source) {
+            language = attrs.containsKey('1')
+                ? null
+                : attrs['2'] ?? docAttrs['source-language'];
+          }
+          if (kind == _BlockKind.source || language != null) {
+            if (language != null) {
+              // :listing with language
+              attrs['style'] = 'source';
+              attrs['language'] = language;
+              _rekey(attrs, [null, null, 'linenums']);
+            } else {
+              // :source
+              _rekey(attrs, [null, 'language', 'linenums']);
+              if (docAttrs['source-language'] case final sourceLanguage?) {
+                attrs.putIfAbsent('language', () => sourceLanguage);
+              }
+              if (cloakedContext != 'listing') {
+                attrs['cloaked-context'] = cloakedContext!;
+              }
             }
-            if (cloakedContext != 'listing') {
-              attrs['cloaked-context'] = cloakedContext!;
+            if (!attrs.containsKey('linenums') &&
+                (attrs.containsKey('linenums-option') ||
+                    docAttrs.containsKey('source-linenums-option'))) {
+              attrs['linenums'] = '';
+            }
+            if (docAttrs['source-indent'] case final sourceIndent?) {
+              attrs.putIfAbsent('indent', () => sourceIndent);
             }
           }
+          block = buildBlock(
+            'listing',
+            ContentModel.verbatim,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.fencedCode:
+          attrs['style'] = 'source';
+          String? language;
+          final ll = thisLine.length;
+          if (ll > 3) {
+            final info = thisLine.substring(3);
+            language = info;
+            final commaIdx = info.indexOf(',');
+            if (commaIdx >= 0) {
+              if (commaIdx > 0) {
+                language = info.substring(0, commaIdx).trimAscii();
+                if (commaIdx < ll - 4) attrs['linenums'] = '';
+              } else if (ll > 4) {
+                attrs['linenums'] = '';
+              }
+            } else {
+              language = trimLeftAscii(info);
+            }
+          }
+          if (language == null || language.isEmpty) {
+            if (docAttrs['source-language'] case final sourceLanguage?) {
+              attrs['language'] = sourceLanguage;
+            }
+          } else {
+            attrs['language'] = language;
+          }
+          attrs['cloaked-context'] = cloakedContext!;
           if (!attrs.containsKey('linenums') &&
               (attrs.containsKey('linenums-option') ||
                   docAttrs.containsKey('source-linenums-option'))) {
@@ -1923,207 +2002,170 @@ abstract final class Parser {
           if (docAttrs['source-indent'] case final sourceIndent?) {
             attrs.putIfAbsent('indent', () => sourceIndent);
           }
-        }
-        block = buildBlock(
-          'listing',
-          ContentModel.verbatim,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'fenced_code') {
-        attrs['style'] = 'source';
-        String? language;
-        final ll = thisLine.length;
-        if (ll > 3) {
-          final info = thisLine.substring(3);
-          language = info;
-          final commaIdx = info.indexOf(',');
-          if (commaIdx >= 0) {
-            if (commaIdx > 0) {
-              language = info.substring(0, commaIdx).trimAscii();
-              if (commaIdx < ll - 4) attrs['linenums'] = '';
-            } else if (ll > 4) {
-              attrs['linenums'] = '';
-            }
-          } else {
-            language = trimLeftAscii(info);
-          }
-        }
-        if (language == null || language.isEmpty) {
-          if (docAttrs['source-language'] case final sourceLanguage?) {
-            attrs['language'] = sourceLanguage;
-          }
-        } else {
-          attrs['language'] = language;
-        }
-        attrs['cloaked-context'] = cloakedContext!;
-        if (!attrs.containsKey('linenums') &&
-            (attrs.containsKey('linenums-option') ||
-                docAttrs.containsKey('source-linenums-option'))) {
-          attrs['linenums'] = '';
-        }
-        if (docAttrs['source-indent'] case final sourceIndent?) {
-          attrs.putIfAbsent('indent', () => sourceIndent);
-        }
-        terminator = terminator!.substring(0, 3);
-        block = buildBlock(
-          'listing',
-          ContentModel.verbatim,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'table') {
-        final blockCursor = reader.cursor();
-        final tableReader = Reader(
-          reader.readLinesUntil(
-            terminator: terminator,
-            skipLineComments: true,
-            context: 'table',
-            cursorAtMark: true,
-          ),
-          cursor: blockCursor,
-        );
-        // NOTE it's very rare that format is set when using a format hint
-        // char, so short-circuit.
-        if (!terminator!.startsWith('|') && !terminator.startsWith('!')) {
-          // NOTE infer dsv once all other format hint chars are ruled out.
-          attrs['format'] ??= terminator.startsWith(',') ? 'csv' : 'dsv';
-        }
-        block = parseTable(tableReader, parent, attrs);
-      } else if (bc == 'sidebar') {
-        block = buildBlock(
-          bc,
-          ContentModel.compound,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'admonition') {
-        final admonitionName = downcase(style!);
-        attrs['name'] = admonitionName;
-        final caption = attrs.remove('caption');
-        _setOrRemove(
-          attrs,
-          'textlabel',
-          caption ?? docAttrs['$admonitionName-caption'],
-        );
-        block = buildBlock(
-          bc,
-          ContentModel.compound,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'open' || bc == 'abstract' || bc == 'partintro') {
-        block = buildBlock(
-          'open',
-          ContentModel.compound,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'literal') {
-        block = buildBlock(
-          bc,
-          ContentModel.verbatim,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'example') {
-        if (attrs.containsKey('collapsible-option')) attrs['caption'] = '';
-        block = buildBlock(
-          bc,
-          ContentModel.compound,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'quote' || bc == 'verse') {
-        _rekey(attrs, [null, 'attribution', 'citetitle']);
-        block = buildBlock(
-          bc,
-          bc == 'verse' ? ContentModel.verbatim : ContentModel.compound,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'stem' || bc == 'latexmath' || bc == 'asciimath') {
-        if (bc == 'stem') {
-          attrs['style'] =
-              stemTypeAliases[attrs['2'] ?? docAttrs['stem'] ?? ''] ??
-              'asciimath';
-        }
-        block = buildBlock(
-          'stem',
-          ContentModel.raw,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'pass') {
-        block = buildBlock(
-          bc,
-          ContentModel.raw,
-          terminator,
-          parent,
-          reader,
-          attrs,
-        );
-      } else if (bc == 'comment') {
-        buildBlock(bc, ContentModel.skip, terminator, parent, reader, attrs);
-        attrs.clear();
-        return null;
-      } else {
-        // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:905-923):
-        // custom block contexts handled by a registered extension.
-        ProcessorExtension<BlockProcessor>? blockExtension;
-        if (blockExtensions) {
-          blockExtension = extensions!.registeredForBlock(bc, cloakedContext!);
-        }
-        if (blockExtension == null) {
-          // This should only happen if there's a misconfiguration.
-          throw StateError('Unsupported block type $bc at ${reader.cursor()}');
-        }
-        final extConfig = blockExtension.instance.config;
-        final contentModel = extConfig.contentModel;
-        if (contentModel != ContentModel.skip) {
-          final positionalAttrs = extConfig.positionalAttrs;
-          if (positionalAttrs.isNotEmpty) {
-            _rekey(attrs, [null, ...positionalAttrs]);
-          }
-          extConfig.defaultAttrs.forEach(
-            (key, value) => attrs.putIfAbsent(key, () => value),
+          terminator = terminator!.substring(0, 3);
+          block = buildBlock(
+            'listing',
+            ContentModel.verbatim,
+            terminator,
+            parent,
+            reader,
+            attrs,
           );
-          // QUESTION should we clone the extension for each cloaked
-          // context and set in config?
-          attrs['cloaked-context'] = cloakedContext!;
-        }
-        final customBlock = buildBlock(
-          bc,
-          contentModel ?? ContentModel.compound,
-          terminator,
-          parent,
-          reader,
-          attrs,
-          extension: blockExtension,
-        );
-        if (customBlock == null) {
+        case _BlockKind.table:
+          final blockCursor = reader.cursor();
+          final tableReader = Reader(
+            reader.readLinesUntil(
+              terminator: terminator,
+              skipLineComments: true,
+              context: 'table',
+              cursorAtMark: true,
+            ),
+            cursor: blockCursor,
+          );
+          // NOTE it's very rare that format is set when using a format hint
+          // char, so short-circuit.
+          if (!terminator!.startsWith('|') && !terminator.startsWith('!')) {
+            // NOTE infer dsv once all other format hint chars are ruled out.
+            attrs['format'] ??= terminator.startsWith(',') ? 'csv' : 'dsv';
+          }
+          block = parseTable(tableReader, parent, attrs);
+        case _BlockKind.sidebar:
+          block = buildBlock(
+            bc,
+            ContentModel.compound,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.admonition:
+          final admonitionName = downcase(style!);
+          attrs['name'] = admonitionName;
+          final caption = attrs.remove('caption');
+          _setOrRemove(
+            attrs,
+            'textlabel',
+            caption ?? docAttrs['$admonitionName-caption'],
+          );
+          block = buildBlock(
+            bc,
+            ContentModel.compound,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.open || _BlockKind.abstract || _BlockKind.partintro:
+          block = buildBlock(
+            'open',
+            ContentModel.compound,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.literal:
+          block = buildBlock(
+            bc,
+            ContentModel.verbatim,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.example:
+          if (attrs.containsKey('collapsible-option')) attrs['caption'] = '';
+          block = buildBlock(
+            bc,
+            ContentModel.compound,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.quote || _BlockKind.verse:
+          _rekey(attrs, [null, 'attribution', 'citetitle']);
+          block = buildBlock(
+            bc,
+            kind == _BlockKind.verse
+                ? ContentModel.verbatim
+                : ContentModel.compound,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.stem || _BlockKind.latexmath || _BlockKind.asciimath:
+          if (kind == _BlockKind.stem) {
+            attrs['style'] =
+                stemTypeAliases[attrs['2'] ?? docAttrs['stem'] ?? ''] ??
+                'asciimath';
+          }
+          block = buildBlock(
+            'stem',
+            ContentModel.raw,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.pass:
+          block = buildBlock(
+            bc,
+            ContentModel.raw,
+            terminator,
+            parent,
+            reader,
+            attrs,
+          );
+        case _BlockKind.comment:
+          buildBlock(bc, ContentModel.skip, terminator, parent, reader, attrs);
           attrs.clear();
           return null;
-        }
-        block = customBlock;
+        case null:
+          // Port of `Parser.next_block` (lib/asciidoctor/parser.rb:905-923):
+          // custom block contexts handled by a registered extension.
+          ProcessorExtension<BlockProcessor>? blockExtension;
+          if (blockExtensions) {
+            blockExtension = extensions!.registeredForBlock(
+              bc,
+              cloakedContext!,
+            );
+          }
+          if (blockExtension == null) {
+            // This should only happen if there's a misconfiguration.
+            throw StateError(
+              'Unsupported block type $bc at ${reader.cursor()}',
+            );
+          }
+          final extConfig = blockExtension.instance.config;
+          final contentModel = extConfig.contentModel;
+          if (contentModel != ContentModel.skip) {
+            final positionalAttrs = extConfig.positionalAttrs;
+            if (positionalAttrs.isNotEmpty) {
+              _rekey(attrs, [null, ...positionalAttrs]);
+            }
+            extConfig.defaultAttrs.forEach(
+              (key, value) => attrs.putIfAbsent(key, () => value),
+            );
+            // QUESTION should we clone the extension for each cloaked
+            // context and set in config?
+            attrs['cloaked-context'] = cloakedContext!;
+          }
+          final customBlock = buildBlock(
+            bc,
+            contentModel ?? ContentModel.compound,
+            terminator,
+            parent,
+            reader,
+            attrs,
+            extension: blockExtension,
+          );
+          if (customBlock == null) {
+            attrs.clear();
+            return null;
+          }
+          block = customBlock;
       }
     }
 
@@ -4441,4 +4483,111 @@ final class _Shorthand {
       style = value;
     }
   }
+}
+
+/// What the first line of a block starts, when it is not a delimiter line.
+sealed class _LineStart {
+  const new();
+}
+
+/// A paragraph in a verbatim style (`[listing]`, `[literal]`, ...).
+final class _VerbatimParagraph extends _LineStart {
+  const new();
+}
+
+/// A thematic or page break.
+final class _LayoutBreak extends _LineStart {
+  const new(this.context);
+  final BlockContext context;
+}
+
+/// A block image, video or audio macro.
+final class _MediaMacro extends _LineStart {
+  const new(this.match);
+  final RegExpMatch match;
+}
+
+/// A table of contents macro (`toc::[]`).
+final class _TocMacro extends _LineStart {
+  const new(this.match);
+  final RegExpMatch match;
+}
+
+/// A block macro a registered extension handles.
+final class _CustomBlockMacro extends _LineStart {
+  const new(this.match, this.extension);
+  final RegExpMatch match;
+  final ProcessorExtension<BlockMacroProcessor> extension;
+}
+
+/// The first item of a callout list.
+final class _CalloutListStart extends _LineStart {
+  const new(this.match);
+  final RegExpMatch match;
+}
+
+/// The first item of an unordered list.
+final class _UnorderedListStart extends _LineStart {
+  const new();
+}
+
+/// The first item of an ordered list.
+final class _OrderedListStart extends _LineStart {
+  const new();
+}
+
+/// The first entry of a description list.
+final class _DescriptionListStart extends _LineStart {
+  const new(this.match);
+  final RegExpMatch match;
+}
+
+/// A discrete heading (a section title styled `discrete` or `float`).
+final class _DiscreteHeadingStart extends _LineStart {
+  const new();
+}
+
+/// A paragraph whose style makes it another kind of block ([context]: an
+/// admonition, a quote, a block an extension handles...).
+final class _StyledParagraph extends _LineStart {
+  const new(this.context);
+  final String context;
+}
+
+/// A paragraph: literal when indented, else normal (including admonition,
+/// quoted and Markdown-quote paragraphs).
+final class _ParagraphStart extends _LineStart {
+  const new();
+}
+
+/// The kinds of blocks the parser builds itself, by the name a delimiter,
+/// a style or a paragraph gives them; any other name is a block an
+/// extension builds.
+enum _BlockKind {
+  abstract,
+  admonition,
+  asciimath,
+  comment,
+  example,
+  fencedCode,
+  latexmath,
+  listing,
+  literal,
+  open,
+  partintro,
+  pass,
+  quote,
+  sidebar,
+  source,
+  stem,
+  table,
+  verse;
+
+  static final Map<String, _BlockKind> _byName = {
+    for (final kind in values)
+      kind == fencedCode ? 'fenced_code' : kind.name: kind,
+  };
+
+  /// The kind named [name], or `null` for a block an extension builds.
+  static _BlockKind? of(String name) => _byName[name];
 }
