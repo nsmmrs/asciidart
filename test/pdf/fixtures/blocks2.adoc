@@ -1,0 +1,56 @@
+= More Blocks
+:doctype: article
+
+Opening paragraph.
+
+.An example
+====
+Example content paragraph one.
+
+Example paragraph two.
+====
+
+.A sidebar title
+****
+Sidebar content with some text that is long enough to wrap onto the next line in the sidebar block.
+
+* a list item
+* another
+****
+
+[quote,Abraham Lincoln,Gettysburg Address]
+____
+Four score and seven years ago our fathers brought forth on this continent a new nation, conceived in Liberty.
+____
+
+____
+A quote without attribution.
+____
+
+[verse,Carl Sandburg,Fog]
+____
+The fog comes
+on little cat feet.
+
+  It sits looking
+over harbor and city
+____
+
+'''
+
+Paragraph after the thematic break.
+
+[#anchored]
+.Open block title
+--
+An open block paragraph.
+--
+
+<<<
+
+On a new page.
+
+[%always]
+<<<
+
+Last.

@@ -145,7 +145,18 @@ final class PdfConverter extends BuiltInConverter
         } else if (context == BlockContext.preamble) {
           convertPreamble(block);
         } else if (context == BlockContext.open) {
-          _traverse(block);
+          convertOpen(block);
+        } else if (context == BlockContext.example) {
+          convertExample(block);
+        } else if (context == BlockContext.sidebar) {
+          convertSidebar(block);
+        } else if (context == BlockContext.quote ||
+            context == BlockContext.verse) {
+          convertQuote(block);
+        } else if (context == BlockContext.thematicBreak) {
+          convertThematicBreak(block);
+        } else if (context == BlockContext.pageBreak) {
+          convertPageBreak(block);
         }
       // Other blocks aren't converted yet: they are left out.
       default:
@@ -623,9 +634,12 @@ final class PdfConverter extends BuiltInConverter
   BoxDecoration? _blockDecoration(
     String category, {
     ThemeColor? background,
+    bool noBorder = false,
     BoxDecoration? extra,
   }) {
-    final widthValue = _theme.value('${category}_border_width');
+    final widthValue = noBorder
+        ? null
+        : _theme.value('${category}_border_width');
     var borderWidth = switch (widthValue) {
       ThemeNumber(:final value) => value.toDouble(),
       ThemeList(:final values) when values.isNotEmpty => _toPoints(values[0]),
@@ -727,6 +741,246 @@ final class PdfConverter extends BuiltInConverter
       _out = saved;
     }
     return boxes;
+  }
+
+  /// A block of [children] with the padding, the background and the
+  /// border of theme [category], [node]'s anchor, and the block margin
+  /// below it.
+  void _framed(
+    AbstractBlock node,
+    String category,
+    List<LayoutBox> children, {
+    bool noBorder = false,
+    BoxDecoration? extra,
+  }) {
+    _out.add(
+      BlockBox(
+        children,
+        style: BoxStyle(
+          padding: _padding('${category}_padding'),
+          margin: EdgeInsets(
+            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          keepTogether: node.hasOption('unbreakable'),
+          anchor: node.id,
+          decoration: _blockDecoration(
+            category,
+            noBorder: noBorder,
+            extra: extra,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Converts the open block [node].
+  void convertOpen(Block node) {
+    final children = _collect(() {
+      if (node.hasTitle) {
+        _caption(
+          node,
+          category: node.style == 'table-container' ? 'table' : null,
+          labeled: false,
+        );
+      }
+      _traverse(node);
+    });
+    _out.add(
+      BlockBox(
+        children,
+        style: BoxStyle(
+          keepTogether: node.hasOption('unbreakable'),
+          anchor: node.id,
+        ),
+      ),
+    );
+  }
+
+  /// Converts the example block [node].
+  void convertExample(Block node) {
+    final captionBelow = _s('example_caption_end') == 'bottom';
+    if (!captionBelow && node.hasTitle) _caption(node, category: 'example');
+    final children = _collect(
+      () => _withFont('example', () => _traverse(node)),
+    );
+    if (!captionBelow) {
+      _framed(node, 'example', children);
+      return;
+    }
+    _out.add(
+      BlockBox(
+        children,
+        style: BoxStyle(
+          padding: _padding('example_padding'),
+          keepTogether: node.hasOption('unbreakable'),
+          anchor: node.id,
+          decoration: _blockDecoration('example'),
+        ),
+      ),
+    );
+    if (node.hasTitle) _caption(node, category: 'example');
+    final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+    if (margin > 0) _out.add(SpacerBox(margin));
+  }
+
+  /// Converts the sidebar [node].
+  void convertSidebar(Block node) {
+    final children = _collect(() {
+      if (node.title case final title? when title.isNotEmpty) {
+        final font = _themeFont('sidebar_title', _font);
+        final lineHeight =
+            (_n('heading_line_height') ?? _n('base_line_height') ?? 1)
+                .toDouble();
+        var text = title;
+        if (font.transform case final transform? when transform != 'none') {
+          text = transformText(text, transform);
+        }
+        _out.add(
+          CustomBox(
+            _textBox(
+              text,
+              font.copyWith(lineHeight: lineHeight),
+              align:
+                  _s('sidebar_title_text_align') ??
+                  _s('heading_text_align') ??
+                  _baseTextAlign,
+            ),
+            style: BoxStyle(
+              margin: EdgeInsets(
+                bottom: (_n('heading_margin_bottom') ?? 0).toDouble(),
+              ),
+            ),
+          ),
+        );
+      }
+      _withFont('sidebar', () => _traverse(node));
+    });
+    _framed(node, 'sidebar', children);
+  }
+
+  /// Converts the quote or verse block [node].
+  void convertQuote(Block node) {
+    final category = node.context == BlockContext.quote ? 'quote' : 'verse';
+    final leftWidth = (_n('${category}_border_left_width') ?? 0).toDouble();
+    final leftColor = leftWidth > 0
+        ? _c('${category}_border_color') ?? _c('base_border_color')
+        : null;
+    final hasLeft = leftWidth > 0 && pdfColorOf(leftColor) != null;
+    String? escape(String? text) =>
+        text?.replaceAllMapped(RegExp(r'&(?!#?\w+;)'), (_) => '&amp;');
+    final attribution = escape(node.attr('attribution'));
+    final citeTitle = attribution == null
+        ? null
+        : escape(node.attr('citetitle'));
+    if (node.hasTitle) _caption(node, category: category);
+    final children = _collect(() {
+      _withFont(category, () {
+        if (category == 'quote') {
+          _traverse(node);
+        } else {
+          _out.add(
+            CustomBox(
+              _textBox(
+                _guardIndentation(node.content() ?? ''),
+                _font,
+                align: _alignOf(node.roles) ?? 'left',
+                normalize: false,
+              ),
+            ),
+          );
+        }
+      });
+      if (attribution != null) {
+        final margin = (_n('block_margin_bottom') ?? 0).toDouble();
+        if (margin > 0) _out.add(SpacerBox(margin));
+        _withFont('${category}_cite', () {
+          final parts = [attribution, ?citeTitle].join(', ');
+          _out.add(
+            CustomBox(
+              _textBox('— $parts', _font, align: 'left', normalize: false),
+            ),
+          );
+        });
+      }
+    });
+    _framed(
+      node,
+      category,
+      children,
+      noBorder: hasLeft,
+      extra: hasLeft
+          ? (page, rect, {required first, required last}) {
+              page.canvas
+                ..save()
+                ..setStrokeColor(pdfColorOf(leftColor)!)
+                ..setLineWidth(leftWidth)
+                ..moveTo(rect.left + leftWidth * 0.5, rect.top)
+                ..lineTo(rect.left + leftWidth * 0.5, rect.bottom)
+                ..stroke()
+                ..restore();
+            }
+          : null,
+    );
+  }
+
+  /// Converts the thematic break [node].
+  void convertThematicBreak(Block node) {
+    final padding = _edgeValues(
+      _theme.value('thematic_break_padding') ??
+          ThemeList([
+            ThemeNumber(_n('thematic_break_margin_top') ?? 0),
+            const ThemeNumber(0),
+          ]),
+    );
+    final color = pdfColorOf(_c('thematic_break_border_color'));
+    final width = (_n('thematic_break_border_width') ?? 0.5).toDouble();
+    final style = _s('thematic_break_border_style') ?? 'solid';
+    _out.add(
+      BlockBox(
+        const [],
+        style: BoxStyle(
+          padding: EdgeInsets(
+            top: padding[0],
+            right: padding[1],
+            bottom: padding[2],
+            left: padding[3],
+          ),
+          margin: EdgeInsets(
+            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          decoration: color == null
+              ? null
+              : (page, rect, {required first, required last}) {
+                  final y = rect.top - padding[0];
+                  final left = rect.left + padding[3];
+                  final right = rect.right - padding[1];
+                  final canvas = page.canvas
+                    ..save()
+                    ..setStrokeColor(color);
+                  void rule(double at, double lineWidth) => canvas
+                    ..setLineWidth(lineWidth)
+                    ..moveTo(left, at)
+                    ..lineTo(right, at)
+                    ..stroke();
+                  if (style == 'double') {
+                    final single = width / 3;
+                    rule(y + single, single);
+                    rule(y - single, single);
+                  } else {
+                    if (style == 'dashed') canvas.dash([width * 4]);
+                    if (style == 'dotted') canvas.dash([width]);
+                    rule(y, width);
+                  }
+                  canvas.restore();
+                },
+        ),
+      ),
+    );
+  }
+
+  /// Converts the page break [node].
+  void convertPageBreak(Block node) {
+    _out.add(BreakBox.page(force: node.hasOption('always')));
   }
 
   // Admonitions.
