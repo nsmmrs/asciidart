@@ -1082,6 +1082,35 @@ class ManpageConverter extends BuiltInConverter {
     }
   }
 
+  /// [text] with the mock macro boundaries unwrapped, restoring fonts
+  /// along the way.
+  ///
+  /// A font span closes with `\fP`, which returns to the previous font;
+  /// roff remembers only one, so in a span nested in another (`` `a __b__
+  /// c` ``) it would leave the rest of the outer span, and after it the
+  /// text that follows, in the wrong font (#4875). A nested span closes by
+  /// switching back to the font of the span around it, and an outer span
+  /// that had others in it closes with `\fR`.
+  String _unmockMacros(String text) {
+    final fonts = <({String font, bool nested})>[];
+    return text.replaceAllMapped(_mockMacroRx, (match) {
+      final macro = match.group(1)!;
+      if (macro.startsWith('${_escBs}f')) {
+        if (!match.group(0)!.startsWith('</')) {
+          fonts.add((font: macro, nested: false));
+        } else if (fonts.isNotEmpty) {
+          final closed = fonts.removeLast();
+          if (fonts.isNotEmpty) {
+            fonts.last = (font: fonts.last.font, nested: true);
+            return fonts.last.font;
+          }
+          if (closed.nested) return '${_escBs}fR';
+        }
+      }
+      return macro;
+    });
+  }
+
   /// Converts HTML entity references back to their original form, escapes
   /// special man characters and strips trailing whitespace.
   ///
@@ -1158,12 +1187,7 @@ class ManpageConverter extends BuiltInConverter {
     // mock boundary (NOTE Dart's replaceAll takes the replacement
     // literally — `$1` would not interpolate — so this uses
     // replaceAllMapped; verified by probe)
-    if (result.contains(_escBs)) {
-      result = result.replaceAllMapped(
-        _mockMacroRx,
-        (match) => match.group(1)!,
-      );
-    }
+    if (result.contains(_escBs)) result = _unmockMacros(result);
     // unescape troff backslash (NOTE update if more escapes are added)
     result = result.replaceAll(_escBs, r'\');
     // unescape full stop in troff commands (NOTE must take place after
