@@ -32,8 +32,10 @@ mkdir -p "$out"
 (cd "$root" && dart pub get >/dev/null)
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
-dart compile js -O2 --no-source-maps \
+dart compile js ${DART2JS_FLAGS:--O2} --no-source-maps \
   -o "$tmp/core.js" "$root/lib/src/js/entry.dart" >/dev/null
+# Keep the core working when bundlers rename its functions.
+node "$root/tool/npm_pin_names.mjs" "$tmp/core.js" >/dev/null
 cp -R "$root/npm/." "$out/"
 rm "$out/preamble.js"
 cat "$root/npm/preamble.js" "$tmp/core.js" > "$out/asciidart.js"
