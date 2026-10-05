@@ -13,6 +13,7 @@
 library;
 
 import 'dart:collection' show MapBase;
+import 'dart:math' as math;
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
@@ -3236,13 +3237,16 @@ abstract final class Parser {
         }
       } else if (prevLine != null && prevLine.text.isEmpty) {
         var current = thisLine.text;
+        var emptyLines = 1;
         // Advance to the next line of content.
         if (current.isEmpty) {
           // Stop reading if we reach eof.
-          if (reader.skipBlankLines() == null) {
+          final skipped = reader.skipBlankLines();
+          if (skipped == null) {
             pendingLine = null;
             break;
           }
+          emptyLines += 1 + skipped;
           final advanced = reader.readLine();
           if (advanced == null) {
             pendingLine = null;
@@ -3257,8 +3261,21 @@ abstract final class Parser {
         }
 
         if (current == listContinuation) {
-          detachedContinuation = buffer.length;
-          buffer.add(_ListContinuation.active);
+          // Each empty line before the continuation moves up one level
+          // from the innermost item: with fewer than the nested lists open
+          // in this item, the block belongs to an item of a nested list,
+          // which reads the same empty lines and continuation when its
+          // own lines are read (#2293).
+          if (emptyLines < _openNestedLists(buffer, detachedContinuation)) {
+            buffer
+              ..addAll([
+                for (var i = 1; i < emptyLines; i++) const _TextLine(''),
+              ])
+              ..add(_ListContinuation.active);
+          } else {
+            detachedContinuation = buffer.length;
+            buffer.add(_ListContinuation.active);
+          }
         } else if (hasText_) {
           // Has_text only relevant for dlist, which is more greedy until
           // it has text for an item; has_text is always true for all other
@@ -3375,6 +3392,50 @@ abstract final class Parser {
           if (identical(buffer[i], _ListContinuation.placeholder)) i,
       },
     );
+  }
+
+  /// How many nested lists are open at the end of [buffer], the lines read
+  /// so far for a list item, after the continuation at [detached] (which
+  /// closed the lists before it): the depth of the innermost item. A
+  /// continuation after empty lines closes as many of them.
+  static int _openNestedLists(List<_ItemLine> buffer, int? detached) {
+    final markers = <String>[];
+    String? terminator;
+    for (var i = (detached ?? -1) + 1; i < buffer.length; i++) {
+      if (buffer[i] is _ListContinuation && terminator == null) {
+        var emptyLines = 0;
+        for (var j = i - 1; j >= 0; j--) {
+          final previous = buffer[j];
+          if (previous is! _TextLine || previous.text.isNotEmpty) break;
+          emptyLines += 1;
+        }
+        markers.length = math.max(0, markers.length - emptyLines);
+      } else if (buffer[i] case _TextLine(:final text)) {
+        if (terminator != null) {
+          if (text == terminator) terminator = null;
+          continue;
+        }
+        if (isDelimitedBlock(text) case final block?) {
+          terminator = block.terminator;
+          continue;
+        }
+        if (_findNestedList(text, _nestableListContexts) case (
+          final context,
+          final match,
+        )) {
+          final marker = context == BlockContext.dlist
+              ? '${context.name}${match.group(2)}'
+              : '${context.name}${resolveListMarker(context, match.group(1)!)}';
+          final at = markers.indexOf(marker);
+          if (at == -1) {
+            markers.add(marker);
+          } else {
+            markers.removeRange(at + 1, markers.length);
+          }
+        }
+      }
+    }
+    return markers.length;
   }
 
   /// Finds the first list context in [contexts] matching [line].
