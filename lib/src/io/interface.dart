@@ -33,6 +33,15 @@ DateTime modificationTime(String path) => _unsupported();
 /// Writes [contents] to the file at [path] as UTF-8, replacing it.
 void writeString(String path, String contents) => _unsupported();
 
+/// Writes [bytes] to the file at [path], replacing it.
+void writeBytes(String path, List<int> bytes) => _unsupported();
+
+/// [bytes] compressed with raw DEFLATE (no zlib header).
+List<int> deflateRaw(List<int> bytes) => _unsupported();
+
+/// [bytes] (raw DEFLATE) expanded.
+List<int> inflateRaw(List<int> bytes) => _unsupported();
+
 /// Creates the directory at [path] and any missing parents.
 void createDirectories(String path) => _unsupported();
 

@@ -2,6 +2,9 @@ MIT License
 
 Copyright (C) 2012-present Dan Allen, Sarah White, Ryan Waldron, and the
 individual contributors to Asciidoctor.
+Copyright (c) 2014-2021 OpenDevise Inc. and the Asciidoctor Project (the
+EPUB3 backend, a port of asciidoctor-epub3; the fonts, icons and images it
+embeds are under the licenses in vendor/asciidoctor-epub3/NOTICE.adoc).
 Copyright (c) 2026 Noah Summers.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

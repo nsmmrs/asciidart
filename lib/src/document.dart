@@ -1324,6 +1324,12 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Writes [output] to [sink], followed by a newline (nothing is written
   /// when [output] is empty).
   void writeTo(String output, StringSink sink) {
+    if (converter is PackagingConverter) {
+      throw AsciidoctorException(
+        'the $backend backend writes a file of its own and cannot write to '
+        'standard output; give an output file (-o FILE)',
+      );
+    }
     _timings?.start('write');
     if (output.isNotEmpty) {
       sink
@@ -1337,6 +1343,11 @@ class Document extends AbstractBlock implements NodeDocument {
   /// the manpage converter produces.
   void writeFile(String output, String path) {
     _timings?.start('write');
+    if (converter case final PackagingConverter packaging) {
+      packaging.write(path);
+      _timings?.record('write');
+      return;
+    }
     io.writeString(path, output);
     // Only when the converter itself writes alternate pages (the manpage
     // converter, not a template or composite chain).

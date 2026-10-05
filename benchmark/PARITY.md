@@ -144,6 +144,53 @@ reproducers of each.
   class (`ManpageConverter`) instead of the Ruby one
   (`Asciidoctor::Converter::ManPageConverter`).
 
+## EPUB3 (`-b epub3`)
+
+The native executable converts to EPUB 3 as the asciidoctor-epub3 2.3.0
+gem does on the asciidoctor gem built from upstream `main`
+(2.1.0.alpha.0), checked file by file by
+`tool/epub_parity.dart`: the entries of the EPUB, their order (`mimetype`
+first, stored), and the bytes of every file once the dates that change
+with each run (`dcterms:modified`, `dc:date`) are set aside; the messages
+too. ZIP compression is not compared (zlib versions differ). With
+`--epubcheck`, EPUBCheck must report the same for both EPUBs.
+
+```sh
+# With the gem built from main installed (see above), so that it isn't
+# replaced by the 2.0 release asciidoctor-epub3 would pull in:
+gem install gepub -v 1.0.17 && gem install mime-types sass
+gem install asciidoctor-epub3 -v 2.3.0 --ignore-dependencies
+dart run tool/epub_parity.dart --exe-a "$(command -v asciidoctor-epub3)" \
+  --exe-b dist/asciidart-linux-x64 --epubcheck epubcheck.jar \
+  $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc')
+```
+
+Verdict (2026-10-05): the 72 documents of the gem's spec fixtures
+(`vendor/asciidoctor-epub3/test/fixtures`, run in CI) are identical, with
+the same EPUBCheck reports. On `master` (Asciidoctor 2.0.26), so are 499
+of a 500-document sample of the corpus (the 136 books and 364 other
+documents), the one left being the first difference below.
+
+Intentional differences:
+
+- A preamble whose only block is a list becomes the abstract, as in the
+  gem, but its list is written as a list: the gem writes a dump of Ruby
+  objects there (Asciidoctor's `List#content` is the array of items).
+- AsciiMath stays text, as in the gem without the asciimath gem, and the
+  warning says so in asciidart's words (`AsciiMath to MathML conversion is
+  not available. Functionality disabled.`); likewise the highlighters.
+- A custom theme (`epub3-stylesdir`) is read as compiled CSS (`epub3.css`,
+  `epub3-css3-only.css`): the gem compiles SCSS, for which asciidart has no
+  compiler.
+- `revdate` is read in the forms Asciidoctor and documents use (ISO 8601,
+  `2026-01-31`, `31 January 2026`, `January 31, 2026`...); Ruby's
+  `Time.parse` reads more, so a date in another form is reported as not
+  parseable and the document date is used.
+- Writing to standard output (`-o -`) is refused with a message; the gem
+  fails with an internal error.
+- The EPUB3 backend is in the native executable only, not in the npm
+  package (see [ADR-0009](../adr/0009-epub3-backend.md)).
+
 ## Upstream bugs fixed on the bugfix branch
 
 Bugs reported upstream that the gem built from `main` at `30fb8cd5` still

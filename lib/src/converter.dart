@@ -352,6 +352,14 @@ abstract class Converter implements NodeConverter {
   }
 }
 
+/// A converter whose output is a file of its own format (a package such
+/// as an EPUB) rather than the text [Converter.convert] returns: it writes
+/// that file itself once the document is converted.
+abstract interface class PackagingConverter {
+  /// Writes the output of the converted document to [path].
+  void write(String path);
+}
+
 /// Registers and instantiates [Converter]s for backend names.
 ///
 /// `ConverterFactory()` proxies the global registry, while

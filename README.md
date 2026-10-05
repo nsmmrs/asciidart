@@ -3,7 +3,8 @@
 [![CI](https://github.com/nsmmrs/asciidart/actions/workflows/ci.yml/badge.svg)](https://github.com/nsmmrs/asciidart/actions/workflows/ci.yml)
 
 An AsciiDoc processor written in Dart. It converts AsciiDoc to HTML 5,
-DocBook 5 and man pages, and is meant as a drop-in replacement for
+DocBook 5, man pages and (with the native executable) EPUB 3, and is meant
+as a drop-in replacement for
 [Asciidoctor](https://asciidoctor.org) 2.1 (upstream `main`, 2.1.0.alpha.0): the same documents,
 attributes, command-line options and output. It is a library, a command
 line tool, and (compiled to JavaScript) an npm package.
@@ -25,7 +26,9 @@ line tool, and (compiled to JavaScript) an npm package.
   in CI) and over a corpus of about 4,500 real-world documents
   (`tool/corpus_parity.dart`); the command line passes the same end-to-end
   suite as the gem. Where asciidart differs on purpose, the difference is
-  listed in [`benchmark/PARITY.md`](benchmark/PARITY.md).
+  listed in [`benchmark/PARITY.md`](benchmark/PARITY.md). EPUB 3 output
+  matches the asciidoctor-epub3 2.3.0 gem file by file
+  (`tool/epub_parity.dart`).
 - **Fast.** The compiled command converts a document 5–10x faster than the
   `asciidoctor` gem end to end, and about 2x faster in process
   ([`benchmark/BASELINE.md`](benchmark/BASELINE.md)).
