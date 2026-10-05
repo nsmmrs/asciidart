@@ -608,8 +608,9 @@ final class PrawnTextBox implements CustomContent {
     var box = this;
     var size = _state.size;
     while (true) {
-      final placed = box._place(width, available, atTop: atTop);
-      if (placed == null || placed.rest == null || size <= 5) return placed;
+      final last = size <= 5;
+      final placed = box._place(width, available, atTop: atTop, quiet: !last);
+      if (last || (placed != null && placed.rest == null)) return placed;
       size = math.max(size - 0.5, 5);
       box = box.resized(size);
     }
@@ -676,6 +677,7 @@ final class PrawnTextBox implements CustomContent {
     double width,
     double available, {
     required bool atTop,
+    bool quiet = false,
   }) {
     if (_items.isEmpty) {
       return CustomPlacement(
@@ -696,7 +698,7 @@ final class PrawnTextBox implements CustomContent {
     );
     final lines = wrap.run();
     if (lines.isEmpty) {
-      if (!atTop) return null;
+      if (!atTop || quiet) return null;
       // Nothing fits even on a fresh page: the gem reports it and drops
       // the text.
       _context.logger.error(

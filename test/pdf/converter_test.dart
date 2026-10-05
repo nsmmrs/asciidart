@@ -35,6 +35,7 @@ void main() {
     'book',
     'book1',
     'book2',
+    'covers',
     'dlists',
     'dlists2',
     'footnotes',

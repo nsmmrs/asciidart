@@ -244,7 +244,7 @@ final class PdfConverter extends BuiltInConverter
     );
     _sections.clear();
     _floatGroup = _floatNext = null;
-    _index = IndexCatalog();
+    _hasTitlePage = _frontCover = _backCover = false;
     _indexSlot = null;
     _renderedFootnotes.clear();
     _bibrefRefs.clear();
@@ -254,12 +254,14 @@ final class PdfConverter extends BuiltInConverter
     // The document title, on a page of its own or above the content.
     final book = document.doctype == 'book';
     final titlePage = book || document.hasAttr('title-page');
+    _frontCover = _cover('front');
     if (titlePage &&
         document.hasHeader &&
         !document.notitle &&
         _theme['title_page'] is! ThemeBool) {
       _titlePage(document);
       _out.add(const BreakBox.page());
+      _hasTitlePage = true;
     }
     if (!titlePage) _out.add(_bodyMarker());
     if (!titlePage && document.hasHeader && !document.notitle) {
@@ -287,6 +289,23 @@ final class PdfConverter extends BuiltInConverter
     if (titlePage) _out.add(_bodyMarker());
     _traverse(document);
     _footnotes(document);
+    _backCover = false;
+    final backCover = _resolveBackgroundImage(
+      'back-cover-image',
+      themeKey: 'cover_back_image',
+      symbols: const ['', '~'],
+    );
+    if (backCover != null && backCover.symbol != '~') {
+      _out.add(const BreakBox.page());
+      if (backCover.image case final image?) {
+        _out.add(
+          CustomBox(_Absolute((page) => _drawPageImage(page.canvas, image))),
+        );
+      } else {
+        _out.add(const CustomBox(_Nothing()));
+      }
+      _backCover = true;
+    }
 
     final (width, height) = _pageSize(document);
     final margins = _pageMargins(document);
@@ -295,6 +314,7 @@ final class PdfConverter extends BuiltInConverter
       margins: margins,
       header: _header,
       footer: _footer,
+      background: _pageBackground,
     );
     final layout = FlowLayout(template: template, pageLabel: _pageLabel);
     var result = layout.layout(_out);
@@ -323,14 +343,7 @@ final class PdfConverter extends BuiltInConverter
     };
     _skip = _frontMatter(titlePage: titlePage);
     final pdf = PdfDocument(
-      info: PdfInfo(
-        title: document.doctitle(sanitize: true),
-        author: document.attr('authors'),
-        subject: document.attr('subject'),
-        keywords: document.attr('keywords'),
-        creator: document.attr('authors'),
-        producer: 'asciidart',
-      ),
+      info: _info(document),
       pageMode: PageMode.useOutlines,
       displayTitle: true,
       language: document.attr('lang'),
@@ -852,6 +865,267 @@ final class PdfConverter extends BuiltInConverter
     return page == null ? '?' : _pageLabel(page);
   }
 
+  /// The document's title, or its untitled label when it has no header
+  /// (the gem's `resolve_doctitle`).
+  static String? _resolveDoctitle(Document doc) =>
+      doc.hasHeader ? doc.doctitle() : doc.attr('untitled-label');
+
+  /// The information of the PDF (the gem's `build_pdf_info`; the producer
+  /// is asciidart unless the document names one).
+  PdfInfo _info(Document doc) {
+    String? plain(String? text) => text == null ? null : _plain(text);
+    final String? author;
+    if (doc.attributeLocked('author') && !doc.attributeLocked('authors')) {
+      author = doc.attr('author');
+    } else {
+      author = doc.attr('authors') ?? doc.attr('author');
+    }
+    return PdfInfo(
+      title: plain(_resolveDoctitle(doc)),
+      author: plain(author),
+      subject: plain(doc.attr('subject')),
+      keywords: plain(doc.attr('keywords')),
+      creator: plain(doc.attr('publisher') ?? author) ?? '',
+      producer: plain(doc.attr('producer')) ?? 'asciidart',
+    );
+  }
+
+  /// Whether the document has a front cover, or a back cover, page.
+  bool _frontCover = false;
+  bool _backCover = false;
+
+  /// Adds the [face] (`front`) cover, if any: a page of its own with the
+  /// cover image (the gem's `ink_cover_page`).
+  bool _cover(String face) {
+    final cover = _resolveBackgroundImage(
+      '$face-cover-image',
+      themeKey: 'cover_${face}_image',
+      symbols: const ['', '~'],
+    );
+    if (cover == null || cover.symbol == '~') return false;
+    if (cover.image case final image?) {
+      _out.add(
+        CustomBox(_Absolute((page) => _drawPageImage(page.canvas, image))),
+      );
+    } else {
+      _out.add(const CustomBox(_Nothing()));
+    }
+    _out.add(const BreakBox.page(force: true));
+    return true;
+  }
+
+  /// The page background image of [key] (an attribute, else the theme's
+  /// [themeKey]): a symbolic value of [symbols], or the image and how it
+  /// sits on the page; null when there's none (the gem's
+  /// `resolve_background_image`).
+  ({String? symbol, _PageImage? image})? _resolveBackgroundImage(
+    String key, {
+    String? themeKey,
+    List<String> symbols = const [],
+  }) {
+    final doc = _document;
+    final fromDocument = doc.attr(key);
+    final value = fromDocument ?? _s(themeKey ?? key.replaceAll('-', '_'));
+    if (value == null) return null;
+    if (symbols.contains(value)) return (symbol: value, image: null);
+    if (value == 'none') return null;
+    var target = value;
+    var attrs = <String, String>{};
+    var relativeToImagesdir = false;
+    if (_imageMacroOf(value, const ['alt', 'width'])
+        case (final macroTarget, final macroAttrs)?) {
+      target = macroTarget;
+      attrs = macroAttrs;
+      relativeToImagesdir = true;
+    }
+    target = target.replaceAll('{page-layout}', 'portrait');
+    final fromTheme = fromDocument == null;
+    if (fromTheme) target = _applySubsDiscretely(target, const {});
+    final format = attrs['format'] ?? _imageFormat(target);
+    final List<int>? bytes;
+    if (fromTheme) {
+      bytes = _themeImageBytes(target);
+    } else if (relativeToImagesdir) {
+      bytes = _imageBytes(doc, target);
+    } else {
+      final resolver = doc.pathResolver;
+      final path = doc.normalizeSystemPath(target);
+      bytes = io.isFile(path) && io.isReadable(path)
+          ? io.readBytes(path)
+          : null;
+      if (bytes != null) _lastImagePath = resolver.posixify(path);
+    }
+    if (bytes == null) {
+      final name = key.replaceAll(RegExp('[-_]'), ' ');
+      logger.warn('$name not found or readable: $target');
+      return null;
+    }
+    final (graphic, problem) = _graphicOf(bytes, format, path: _lastImagePath);
+    if (graphic == null) {
+      final name = key.replaceAll('-', ' ');
+      logger.warn('could not embed $name: $target; $problem');
+      return null;
+    }
+    var fit = attrs['fit'] ?? 'contain';
+    if (format == 'svg' && fit == 'fill') fit = 'contain';
+    var (position, vposition) = ('center', 'center');
+    if (attrs['position'] case final value?) {
+      if (_backgroundPosition(value) case final resolved?) {
+        (position, vposition) = resolved;
+      }
+    }
+    final (pageWidth, _) = _pageSize(doc);
+    return (
+      symbol: null,
+      image: _PageImage(
+        graphic,
+        fit: fit,
+        width: _imageWidthOf(
+          (name) => attrs[name],
+          fallback: false,
+        ).resolve(pageWidth, pageWidth),
+        position: position,
+        vposition: vposition,
+      ),
+    );
+  }
+
+  /// The horizontal and vertical position of the background position
+  /// [value] (`left top`, `center`...), or null (the gem's
+  /// `resolve_background_position`).
+  static (String, String)? _backgroundPosition(String value) {
+    if (value.contains(' ')) {
+      String? h;
+      String? v;
+      var center = false;
+      for (final keyword in value.split(' ').take(2)) {
+        switch (keyword) {
+          case 'left' || 'right':
+            h = keyword;
+          case 'top' || 'bottom':
+            v = keyword;
+          case 'center':
+            center = true;
+        }
+      }
+      if (center) return (h ?? 'center', v ?? 'center');
+      if (h != null && v != null) return (h, v);
+      return null;
+    }
+    return switch (value) {
+      'left' || 'right' || 'center' => (value, 'center'),
+      'top' || 'bottom' => ('center', value),
+      _ => null,
+    };
+  }
+
+  /// Draws [image] on a page by its fit and position.
+  void _drawPageImage(PdfCanvas canvas, _PageImage image) {
+    final (pageWidth, pageHeight) = _pageSize(_document);
+    final graphic = image.graphic;
+    final (naturalWidth, naturalHeight) = switch (graphic) {
+      final SvgImage svg => prawnSvgSize(
+        svg,
+        null,
+        null,
+        pageWidth,
+        pageHeight,
+      ),
+      final other => (other.intrinsicWidth, other.intrinsicHeight),
+    };
+    final ratio = naturalHeight / naturalWidth;
+    (double, double) contain() =>
+        naturalWidth / naturalHeight > pageWidth / pageHeight
+        ? (pageWidth, pageWidth * ratio)
+        : (pageHeight / ratio, pageHeight);
+    final (w, h) = switch (image.fit) {
+      'none' =>
+        image.width == null
+            ? (naturalWidth, naturalHeight)
+            : (image.width!, image.width! * ratio),
+      'scale-down' =>
+        naturalWidth > pageWidth || naturalHeight > pageHeight
+            ? contain()
+            : (naturalWidth, naturalHeight),
+      'cover' =>
+        pageWidth * ratio < pageHeight
+            ? (pageHeight / ratio, pageHeight)
+            : (pageWidth, pageWidth * ratio),
+      'fill' => (pageWidth, pageHeight),
+      _ => contain(),
+    };
+    final left = switch (image.position) {
+      'left' => 0.0,
+      'right' => pageWidth - w,
+      _ => (pageWidth - w) / 2,
+    };
+    final top = switch (image.vposition) {
+      'top' => pageHeight,
+      'bottom' => h,
+      _ => pageHeight - (pageHeight - h) / 2,
+    };
+    final rect = PdfRect(left, top - h, w, h);
+    switch (graphic) {
+      case final PdfImage raster:
+        canvas.image(raster, rect);
+      case final other:
+        canvas.save();
+        other.paint(canvas, rect);
+        canvas.restore();
+    }
+  }
+
+  /// The page background images, by side (`recto`, `verso`).
+  late final Map<String, _PageImage?> _pageImages = () {
+    final both = _resolveBackgroundImage('page-background-image')?.image;
+    final images = <String, _PageImage?>{'recto': both, 'verso': both};
+    for (final side in const ['recto', 'verso']) {
+      if (_resolveBackgroundImage('page-background-image-$side')
+          case final resolved?) {
+        images[side] = resolved.image;
+      }
+    }
+    return images;
+  }();
+
+  /// The title page's background image, if it has one of its own.
+  late final _PageImage? _titlePageImage = _resolveBackgroundImage(
+    'title-page-background-image',
+  )?.image;
+
+  /// Paints the background of [page]: the page's background color and
+  /// image (the title page's own, if any; none on cover pages; the gem's
+  /// `init_page`).
+  void _pageBackground(PdfCanvas canvas, PageInfo page) {
+    final number = page.number;
+    if ((_frontCover && number == 1) || (_backCover && number == page.count)) {
+      return;
+    }
+    final titlePageNumber = _frontCover ? 2 : 1;
+    final onTitlePage = _hasTitlePage && number == titlePageNumber;
+    final background =
+        (onTitlePage ? _c('title_page_background_color') : null) ??
+        _c('page_background_color');
+    final (pageWidth, pageHeight) = _pageSize(_document);
+    if (background != const HexColor('FFFFFF')) {
+      if (_color(background) case final color?) {
+        canvas
+          ..save()
+          ..setFillColor(color)
+          ..rect(PdfRect(0, 0, pageWidth, pageHeight))
+          ..fill()
+          ..restore();
+      }
+    }
+    final image = onTitlePage && _titlePageImage != null
+        ? _titlePageImage
+        : _pageImages[number.isOdd ? 'recto' : 'verso'];
+    if (image != null) _drawPageImage(canvas, image);
+  }
+
+  /// Whether the document has a title page.
+  bool _hasTitlePage = false;
+
   static const _bodyAnchor = '__asciidart-body';
 
   /// Marks where the body starts (after the title page and the table of
@@ -870,16 +1144,19 @@ final class PdfConverter extends BuiltInConverter
           bodyOffset + math.max(value.toInt() - 1, 0),
         _ => bodyOffset,
       };
+      final numbering = startAt('page_numbering_start_at');
       return (
         offset(startAt('running_content_start_at')),
-        offset(startAt('page_numbering_start_at')),
+        numbering is ThemeString && numbering.value == 'cover' && _frontCover
+            ? 0
+            : offset(numbering),
       );
     }
     final hasTitlePage =
         _document.hasHeader &&
         !_document.notitle &&
         _theme['title_page'] is! ThemeBool;
-    const zero = 0;
+    final zero = _frontCover ? 1 : 0;
     final first = hasTitlePage ? zero + 1 : zero;
     final tocAtTop = _tocAtTop;
     String resolve(ThemeValue? value, void Function(int) integer) {
@@ -889,6 +1166,8 @@ final class PdfConverter extends BuiltInConverter
           return 'body';
         case final other?:
           return switch (other.rubyString) {
+            'cover' when _frontCover => 'cover',
+            'cover' => hasTitlePage ? 'title' : 'toc',
             'title' when !hasTitlePage => 'toc',
             'toc' when !tocAtTop => 'body',
             'after-toc' => 'body',
@@ -909,6 +1188,7 @@ final class PdfConverter extends BuiltInConverter
       startAt('page_numbering_start_at'),
       (v) => numberingBody = v,
     );
+    if (numbering == 'cover') numberingBody = 0;
     var skips = switch ((running, numbering)) {
       ('title', 'title') => (zero, zero),
       ('title', 'toc') => (zero, first),
@@ -3004,11 +3284,20 @@ final class PdfConverter extends BuiltInConverter
     final ruleWidth = (_n('admonition_column_rule_width') ?? 0).toDouble();
     final ruleColor =
         _c('admonition_column_rule_color') ?? _c('base_border_color');
+    final labelText = label.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
     final labelBox = _textBox(
-      label.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
+      labelText,
       labelFont.copyWith(lineHeight: 1),
       align: labelAlign,
       normalize: false,
+    );
+    // The label shrinks to fit the block (the gem's shrink_to_fit).
+    final fittedLabel = _textBox(
+      labelText,
+      labelFont.copyWith(lineHeight: 1),
+      align: labelAlign,
+      normalize: false,
+      shrinkToFit: true,
     );
     final ruleX = lpad.left + labelWidth + lpad.right;
     void decorate(
@@ -3049,10 +3338,15 @@ final class PdfConverter extends BuiltInConverter
         glyph?.paint(page, rect.left + lpad.left, rect.top - offset);
         return;
       }
-      final placed = labelBox.place(labelWidth, double.infinity, atTop: true);
-      if (placed == null) return;
-      final offset = math.max(0, (rect.height - placed.height) * 0.5);
-      placed.paint(page, rect.left + lpad.left, rect.top - offset);
+      final whole = labelBox.place(labelWidth, double.infinity, atTop: true);
+      if (whole == null) return;
+      final offset = math.max<double>(0, (rect.height - whole.height) * 0.5);
+      final placed = fittedLabel.place(
+        labelWidth,
+        rect.height - offset,
+        atTop: true,
+      );
+      placed?.paint(page, rect.left + lpad.left, rect.top - offset);
     }
 
     final children = _collect(() {
@@ -4087,6 +4381,7 @@ final class PdfConverter extends BuiltInConverter
     bool inlineFormat = true,
     bool gaps = true,
     bool singleLine = false,
+    bool shrinkToFit = false,
   }) {
     var text = markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -4128,6 +4423,7 @@ final class PdfConverter extends BuiltInConverter
         paddingBottom: cell || !gaps ? 0 : metrics.paddingBottom,
         trailingLineGap: cell,
         singleLine: singleLine,
+        shrinkToFit: shrinkToFit,
         indentFirstLine: indent,
         normalizeLineHeight: normalizeLineHeight,
       ),
@@ -4212,6 +4508,7 @@ final class PdfConverter extends BuiltInConverter
     if (page.count < _bodyStart) return const [];
     final number = page.number;
     if (number <= _skip.$1) return const [];
+    if (_backCover && number == page.count) return const [];
     if (_tocPages case (final first, final last)
         when number >= first &&
             number <= last &&
@@ -4523,7 +4820,12 @@ final class PdfConverter extends BuiltInConverter
     final doc = _document;
     final book = doc.doctype == 'book';
     final attributes = <String, String>{};
-    final title = doc.partitionedTitle(separator: doc.attr('title-separator'));
+    final title = doc.hasHeader
+        ? doc.partitionedTitle(separator: doc.attr('title-separator'))
+        : DocumentTitle(
+            doc.attr('untitled-label') ?? '',
+            separator: doc.attr('title-separator'),
+          );
     if (title != null) {
       attributes['doctitle'] = title.combined;
       attributes['document-title'] = title.main;
@@ -4634,7 +4936,9 @@ final class PdfConverter extends BuiltInConverter
   /// `outlinelevels`) and the page labels (the gem's `add_outline`).
   void _outline(PdfDocument pdf, List<PdfPage> pages, LayoutResult result) {
     final frontMatter = _skip.$2;
-    for (var n = 0; n < pages.length; n++) {
+    // The back cover is added after the labels (it continues the last).
+    final labeled = _backCover ? pages.length - 1 : pages.length;
+    for (var n = 0; n < labeled; n++) {
       pdf.labelPages(
         n,
         PageLabel(
@@ -4666,14 +4970,16 @@ final class PdfConverter extends BuiltInConverter
       return PdfDestination.xyz(pages[position.page], left: 0, top: position.y);
     }
 
-    if (pages.isNotEmpty) {
+    final titlePage = _frontCover ? 1 : 0;
+    if (pages.length > titlePage) {
       var title = _document.attr('outline-title') ?? '';
-      if (title.isEmpty) title = _document.doctitle(sanitize: true) ?? '';
+      if (title.isEmpty) title = _resolveDoctitle(_document) ?? '';
       if (title.isNotEmpty) {
+        final page = pages[titlePage];
         pdf.addOutline(
           _plain(title),
           LinkTarget.destination(
-            PdfDestination.xyz(pages.first, left: 0, top: pages.first.height),
+            PdfDestination.xyz(page, left: 0, top: page.height),
           ),
         );
       }
@@ -4796,6 +5102,7 @@ final class PdfConverter extends BuiltInConverter
         _document = doc;
         _theme = _prepareTheme(_loadTheme(doc));
         _fonts = FontCatalog(_theme);
+        _markup = MarkupTransform(_theme);
         _ready = true;
       }
     }
@@ -5045,8 +5352,9 @@ final class PdfConverter extends BuiltInConverter
     return graphic.intrinsicWidth * 0.75;
   }
 
-  /// The index of the document.
-  IndexCatalog _index = IndexCatalog();
+  /// The index of the document (terms in titles are stored while the
+  /// document is parsed).
+  final IndexCatalog _index = IndexCatalog();
 
   IndexName _indexName(String markup) => IndexName(_plain(markup), markup);
 
@@ -6278,4 +6586,21 @@ final class _FloatGroup implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => (0, 0);
+}
+
+/// A page-sized image: how it fits the page and where it sits.
+final class _PageImage {
+  const new(
+    this.graphic, {
+    required this.fit,
+    required this.position,
+    required this.vposition,
+    this.width,
+  });
+
+  final Graphic graphic;
+  final String fit;
+  final double? width;
+  final String position;
+  final String vposition;
 }

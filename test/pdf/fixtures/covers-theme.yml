@@ -1,0 +1,5 @@
+extends: default
+page:
+  background_color: FAFAF0
+title_page:
+  background_color: E0E8FF

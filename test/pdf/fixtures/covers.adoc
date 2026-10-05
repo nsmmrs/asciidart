@@ -1,0 +1,16 @@
+= Book With Covers
+:doctype: book
+:pdf-theme: covers-theme.yml
+:pdf-themesdir: {docdir}
+:front-cover-image: image:wolpertinger.jpg[]
+:back-cover-image: image:sample-logo.jpg[fit=none]
+:imagesdir: images
+:page-background-image: image:box.svg[fit=none,position=bottom right]
+
+== Chapter
+
+Some text on a page with a background image.
+
+== Second
+
+More.
