@@ -833,7 +833,8 @@ class TableParserContext {
     buffer = '';
     _cellspecs = <CellSpec>[];
     _cellOpen = false;
-    _activeRowspans = <int>[0];
+    _spannedColumns = [<int>{}];
+    _position = 0;
     _columnVisits = 0;
     _currentRow = <Cell>[];
     _linenum = -1;
@@ -893,7 +894,13 @@ class TableParserContext {
   late final Cursor _startCursor;
   List<CellSpec> _cellspecs = <CellSpec>[];
   bool _cellOpen = false;
-  List<int> _activeRowspans = <int>[0];
+
+  /// The columns covered by cells spanning rows from above, for the current
+  /// row and the ones after it.
+  List<Set<int>> _spannedColumns = [<int>{}];
+
+  /// The column of the current row the next cell goes in.
+  int _position = 0;
   int _columnVisits = 0;
   List<Cell> _currentRow = <Cell>[];
   int _linenum = -1;
@@ -1028,9 +1035,11 @@ class TableParserContext {
     for (var i = 1; i <= repeat; i++) {
       // TODO make column resolving an operation.
       late final Column? column;
+      late final int start;
       if (_colcount == -1) {
         final t = table!;
-        column = Column(t, t.columns.length + i - 1);
+        start = t.columns.length;
+        column = Column(t, start);
         t.columns.add(column);
         final colspan = cellspec?.colspan;
         if (colspan != null) {
@@ -1043,7 +1052,15 @@ class TableParserContext {
           }
         }
       } else {
-        column = table!.columns[_currentRow.length];
+        // The next column no cell covers: after the cells before it in the
+        // row, with their colspans, and around those spanning rows from
+        // above (#4500, #989).
+        while (_spannedColumns.first.contains(_position)) {
+          _position += 1;
+        }
+        final columns = table!.columns;
+        start = _position < columns.length ? _position : columns.length - 1;
+        column = columns[start];
       }
 
       final cursorBeforeMark = _reader.cursorBeforeMark();
@@ -1051,8 +1068,9 @@ class TableParserContext {
       _reader.mark();
       final rowspan = cell.rowspan;
       if (rowspan != null && rowspan != 1) {
-        _activateRowspan(rowspan, cell.colspan ?? 1);
+        _activateRowspan(rowspan, start, cell.colspan ?? 1);
       }
+      _position = start + (cell.colspan ?? 1);
       _columnVisits += cell.colspan ?? 1;
       _currentRow.add(cell);
       final rowStatus = _endOfRow();
@@ -1088,18 +1106,20 @@ class TableParserContext {
     // first row.
     if (_colcount == -1) _colcount = _columnVisits;
     _columnVisits = 0;
+    _position = 0;
     _currentRow = <Cell>[];
-    _activeRowspans.removeAt(0);
-    if (_activeRowspans.isEmpty) _activeRowspans.add(0);
+    _spannedColumns.removeAt(0);
+    if (_spannedColumns.isEmpty) _spannedColumns.add(<int>{});
   }
 
-  /// Activates a rowspan of [rowspan] rows over [colspan] columns.
-  void _activateRowspan(int rowspan, int colspan) {
+  /// Covers the [colspan] columns from [start] in the [rowspan] - 1 rows
+  /// after the current one.
+  void _activateRowspan(int rowspan, int start, int colspan) {
     for (var i = 1; i <= rowspan - 1; i++) {
-      while (_activeRowspans.length <= i) {
-        _activeRowspans.add(0);
+      while (_spannedColumns.length <= i) {
+        _spannedColumns.add(<int>{});
       }
-      _activeRowspans[i] += colspan;
+      _spannedColumns[i].addAll([for (var c = 0; c < colspan; c++) start + c]);
     }
   }
 
@@ -1109,7 +1129,8 @@ class TableParserContext {
       _colcount == -1 ? 0 : _effectiveColumnVisits.compareTo(_colcount);
 
   /// The effective column visits: cells plus active rowspans.
-  int get _effectiveColumnVisits => _columnVisits + _activeRowspans[0];
+  int get _effectiveColumnVisits =>
+      _columnVisits + _spannedColumns.first.length;
 
   /// Advances to the next line (which may come after the parser begins
   /// processing the next line if the last cell had wrapped content).
