@@ -121,6 +121,31 @@ final class _TextLine implements _ItemLine {
   final String text;
 }
 
+/// The reader of a table's lines. It drops line comments as it reaches
+/// them, as the reader of a block does, except while an AsciiDoc cell is
+/// being read ([keepComments]), whose document handles them (#2496,
+/// #2648).
+final class _TableReader extends Reader {
+  new(super.lines, {super.cursor});
+
+  bool Function() keepComments = () => false;
+
+  @override
+  bool hasMoreLines() => peekLine() != null;
+
+  @override
+  bool get isEmpty => peekLine() == null;
+
+  @override
+  String? processLine(String line) {
+    if (line.startsWith('//') && !line.startsWith('///') && !keepComments()) {
+      shift();
+      return null;
+    }
+    return super.processLine(line);
+  }
+}
+
 /// A list continuation line inside a list-item buffer.
 enum _ListContinuation implements _ItemLine {
   /// A live list continuation (`'+'`).
@@ -2047,10 +2072,9 @@ abstract final class Parser {
           );
         case _BlockKind.table:
           final blockCursor = reader.cursor();
-          final tableReader = Reader(
+          final tableReader = _TableReader(
             reader.readLinesUntil(
               terminator: terminator,
-              skipLineComments: true,
               context: 'table',
               cursorAtMark: true,
             ),
@@ -3484,6 +3508,9 @@ abstract final class Parser {
       implicitHeader = true;
     }
     final parserCtx = TableParserContext(tableReader, table, attributes);
+    if (tableReader is _TableReader) {
+      tableReader.keepComments = () => parserCtx.readingAsciiDocCell;
+    }
     final format = parserCtx.format!;
     var loopIdx = -1;
     int? implicitHeaderBoundary;

@@ -974,6 +974,21 @@ class TableParserContext {
   /// Whether the current cell is still open.
   bool get isCellOpen => _cellOpen;
 
+  /// Whether the cell being read is an AsciiDoc cell (by its spec or its
+  /// column), whose line comments are part of its content: they may sit in
+  /// a verbatim block or separate two lists (#2496, #2648).
+  bool get readingAsciiDocCell {
+    if (format != 'psv' || _cellspecs.isEmpty) return false;
+    if (_cellspecs.first.style case final style?) return style == 'asciidoc';
+    final columns = table!.columns;
+    if (_colcount == -1) return false;
+    var position = _position;
+    while (_spannedColumns.first.contains(position)) {
+      position += 1;
+    }
+    return position < columns.length && columns[position].style == 'asciidoc';
+  }
+
   /// Whether the current cell has been marked as closed.
   bool get isCellClosed => !_cellOpen;
 
