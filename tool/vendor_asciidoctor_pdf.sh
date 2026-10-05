@@ -12,7 +12,8 @@
 # Icons 3, PaymentFont), with their licenses and maps of icon names to
 # code points written here (icons/<set>.tsv): Font Awesome's from the
 # fonts' own glyph names, Foundation Icons' and PaymentFont's from their
-# projects' MIT-licensed style sheets (prawn-icon's own files are not
+# projects' MIT-licensed style sheets, the Font Awesome 4 names from Font
+# Awesome's shims (icons/fa.tsv; prawn-icon's own files are not
 # vendored); and from the v2.3.27 tag the spec suite (spec/*.rb,
 # spec/spec_helper, spec/fixtures; not the reference PNGs) and the
 # examples, which tool/pdf_parity.dart converts with the gem and with
@@ -50,6 +51,8 @@ curl -sSfL -o "$tmp/fi.css" \
   https://raw.githubusercontent.com/zurb/foundation-icon-fonts/master/foundation-icons.css
 curl -sSfL -o "$tmp/pf.css" \
   https://raw.githubusercontent.com/AlexanderPoellmann/PaymentFont/master/css/paymentfont.css
+curl -sSfL -o "$tmp/v4-shims.js" \
+  https://raw.githubusercontent.com/FortAwesome/Font-Awesome/5.15.1/js-packages/%40fortawesome/fontawesome-free/js/v4-shims.js
 python3 - "$out/icons" "$tmp" "$icon_dir/data/fonts" <<'PY'
 import re, sys
 from fontTools.ttLib import TTFont
@@ -80,6 +83,15 @@ for name in ('fi', 'pf'):
         # written for the gem may use either.
         entries['gpb'] = entries['gbp']
     write(name, entries)
+# Font Awesome 4 names (the deprecated fa set) to Font Awesome 5 icons,
+# from Font Awesome 5.15.1's shims (prawn-icon's own map differs for a
+# few names).
+import json
+shims = json.loads(re.search(r'var shims = (\[\[.*?\]\]);',
+                             open(f'{tmp}/v4-shims.js').read(), re.S).group(1))
+with open(f'{icons}/fa.tsv', 'w') as f:
+    for old, prefix, name in sorted(shims):
+        f.write(f'{old}\t{prefix or "fas"}-{name or old}\n')
 PY
 
 git init -q "$tmp/repo"

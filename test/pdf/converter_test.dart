@@ -37,6 +37,7 @@ void main() {
     'dlists2',
     'footnotes',
     'footnotes-book',
+    'icons',
     'images',
     'lists',
     'simple',

@@ -18,6 +18,7 @@ import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
+import 'package:asciidart/src/pdf/icons.dart';
 import 'package:asciidart/src/pdf/markup.dart';
 import 'package:asciidart/src/pdf/text_box.dart';
 import 'package:asciidart/src/pdf/theme.dart';
@@ -2424,10 +2425,17 @@ final class PdfConverter extends BuiltInConverter
     if (labelFont.transform case final transform? when transform != 'none') {
       label = transformText(label, transform);
     }
-    var labelWidth = _fonts
-        .font(labelFont.family, labelFont.style)
-        .widthOf(label, labelFont.size, kerning: labelFont.kerning);
+    // A font icon in place of the text label.
+    final icon = _document.attr('icons') == 'font' && !node.hasAttr('icon')
+        ? _admonitionIcon(type)
+        : null;
+    var labelWidth = icon != null
+        ? icon.size * 1.5
+        : _fonts
+              .font(labelFont.family, labelFont.style)
+              .widthOf(label, labelFont.size, kerning: labelFont.kerning);
     if (minWidth != null && minWidth > labelWidth) labelWidth = minWidth;
+    final iconColor = icon?.color ?? _font.color;
     final cpad = _padding('admonition_padding');
     final lpad = _theme.value('admonition_label_padding') == null
         ? cpad
@@ -2460,6 +2468,26 @@ final class PdfConverter extends BuiltInConverter
           ..restore();
       }
       if (!first) return;
+      if (icon != null) {
+        final size = math.min(rect.height, icon.size);
+        final glyph = _textBox(
+          icon.glyph,
+          _FontState(
+            family: icon.set,
+            style: 'normal',
+            size: size,
+            color: iconColor,
+            lineHeight: 1,
+            kerning: _font.kerning,
+          ),
+          align: labelAlign,
+          normalize: false,
+          gaps: false,
+        ).place(labelWidth, double.infinity, atTop: true);
+        final offset = math.max(0, (rect.height - size) * 0.5);
+        glyph?.paint(page, rect.left + lpad.left, rect.top - offset);
+        return;
+      }
       final placed = labelBox.place(labelWidth, double.infinity, atTop: true);
       if (placed == null) return;
       final offset = math.max(0, (rect.height - placed.height) * 0.5);
@@ -2491,6 +2519,89 @@ final class PdfConverter extends BuiltInConverter
         ),
       ),
     );
+  }
+
+  /// The admonition icons of the gem, by type: icon, color and size.
+  static const Map<String, (String, String, double)> _admonitionIcons = {
+    'caution': ('fas-fire', 'BF3400', 24),
+    'important': ('fas-exclamation-circle', 'BF0000', 24),
+    'note': ('fas-info-circle', '19407C', 24),
+    'tip': ('far-lightbulb', '111111', 24),
+    'warning': ('fas-exclamation-triangle', 'BF6900', 24),
+  };
+
+  /// The font icon of admonitions of [type] (the gem's
+  /// `admonition_icon_data`): its set, glyph, color and size.
+  ({String set, String glyph, ThemeColor? color, double size})? _admonitionIcon(
+    String type,
+  ) {
+    final defaults = _admonitionIcons[type];
+    var name = defaults?.$1;
+    ThemeColor? color = switch (defaults?.$2) {
+      final hex? => HexColor(hex),
+      null => null,
+    };
+    var size = defaults?.$3 ?? 24;
+    if (_theme.value('admonition_icon_$type') case ThemeMap(:final entries)) {
+      if (entries['name'] case final value?) {
+        name = value.rubyString;
+        if (!iconSets.any((set) => name!.startsWith('$set-')) &&
+            !name.startsWith('fa-')) {
+          name = 'fa-$name';
+        }
+      }
+      if (themeColor(entries['stroke_color']) case final value?) {
+        color = value;
+      }
+      if (entries['size'] case ThemeNumber(:final value)) {
+        size = value.toDouble();
+      }
+    }
+    name ??= _admonitionIcons['note']!.$1;
+    final (set, _, glyph) = _resolveIcon(name, null);
+    if (glyph == null) return null;
+    return (set: set, glyph: glyph, color: color, size: size);
+  }
+
+  /// The set, name and glyph of icon [name] (`<set>-<name>`, a name of
+  /// the `fa` set, or in [explicitSet]); the glyph is null when there's no
+  /// such icon.
+  (String, String, String?) _resolveIcon(String name, String? explicitSet) {
+    var iconName = name;
+    var set = explicitSet ?? _document.attr('icon-set') ?? 'fa';
+    final explicit = explicitSet != null;
+    String? glyph;
+    if (set == 'fa' || !iconSets.contains(set)) {
+      set = 'fa';
+      final bare = iconName.startsWith('fa-')
+          ? iconName.substring(3)
+          : iconName;
+      if (legacyIcon(bare) case final remapped?) {
+        final dash = remapped.indexOf('-');
+        set = remapped.substring(0, dash);
+        iconName = remapped.substring(dash + 1);
+        glyph = iconGlyph(set, iconName);
+      } else {
+        for (final candidate in fontAwesomeSets) {
+          if (iconGlyph(candidate, iconName) case final found?) {
+            set = candidate;
+            glyph = found;
+            break;
+          }
+        }
+      }
+    } else {
+      glyph = iconGlyph(set, iconName);
+    }
+    if (glyph == null &&
+        !explicit &&
+        iconSets.any((prefix) => iconName.startsWith('$prefix-'))) {
+      final dash = iconName.indexOf('-');
+      set = iconName.substring(0, dash);
+      iconName = iconName.substring(dash + 1);
+      glyph = iconGlyph(set, iconName);
+    }
+    return (set, iconName, glyph);
   }
 
   // Code.
@@ -3969,7 +4080,8 @@ final class PdfConverter extends BuiltInConverter
       '<button>${(_s('button_content') ?? '%s').replaceFirst('%s', node.text ?? '')}</button>',
     InlineContext.callout => _inlineCallout(node),
     InlineContext.footnote => _inlineFootnote(node),
-    InlineContext.image => '[${node.alt}&#93;',
+    InlineContext.image =>
+      node.type == 'icon' ? _inlineIcon(node) : '[${node.alt}&#93;',
     InlineContext.indexterm => node.type == 'visible' ? node.text ?? '' : '',
     InlineContext.kbd => _inlineKbd(node),
     InlineContext.menu => _inlineMenu(node),
@@ -4033,6 +4145,43 @@ final class PdfConverter extends BuiltInConverter
       result = '<font color="${color.rubyString}">$result</font>';
     }
     return result;
+  }
+
+  String _inlineIcon(Inline node) {
+    final icons = _document.attr('icons');
+    final alt = node.attr('alt') ?? '';
+    if (icons != 'font') {
+      if (icons != null) {
+        logger.warn('image icons are not supported yet: ${node.target ?? ''}');
+        return '[${node.target ?? ''}&#93;';
+      }
+      return '[$alt&#93;';
+    }
+    var name = node.target ?? '';
+    String? set;
+    if (name.contains('@')) {
+      final at = name.indexOf('@');
+      set = name.substring(at + 1);
+      name = name.substring(0, at);
+    } else {
+      set = node.attr('set');
+    }
+    final (resolvedSet, iconName, glyph) = _resolveIcon(name, set);
+    if (glyph == null) {
+      logger.warn(
+        '$iconName is not a valid icon name in the $resolvedSet icon set',
+      );
+      return '[$alt&#93;';
+    }
+    final size = switch (node.attr('size')) {
+      null => '',
+      'lg' => ' size="1.333em"',
+      'fw' => ' width="1em"',
+      final value => ' size="${value.replaceFirst('x', 'em')}"',
+    };
+    final role = node.role;
+    final classAttr = role == null ? '' : ' class="$role"';
+    return '<font name="$resolvedSet"$size$classAttr>$glyph</font>';
   }
 
   String _inlineFootnote(Inline node) {
