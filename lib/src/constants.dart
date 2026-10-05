@@ -324,13 +324,16 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
     ),
     '#',
   ),
+  // A bracketed span inside is one unit, so the `^` or `~` of a macro's
+  // text (`^link:fn.html[2^]^`) doesn't end the span, which would leave the
+  // macro's markup across its end (#4076).
   QuoteSub(
     'superscript',
     'unconstrained',
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt'
-      r')?\^([^ \t\n\v\f\r]+?)\^',
+      r')?\^((?:\[[^ \t\n\v\f\r\]]*\]|[^ \t\n\v\f\r])+?)\^',
     ),
     '^',
   ),
@@ -340,7 +343,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt'
-      r')?~([^ \t\n\v\f\r]+?)~',
+      r')?~((?:\[[^ \t\n\v\f\r\]]*\]|[^ \t\n\v\f\r])+?)~',
     ),
     '~',
   ),

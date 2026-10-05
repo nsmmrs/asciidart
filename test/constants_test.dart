@@ -354,10 +354,11 @@ void main() {
             '\\\\?(?:$quoteAttributeListRxt)?##($ccAll+?)##',
             // Ruby: (^|[^\p{Word}&;:}])(?:\[...\])?#(\S|\S.*?\S)#(?!\p{Word})
             '(^|[^$ccWord&;:}])(?:$quoteAttributeListRxt)?#(\\S|\\S$ccAll*?\\S)#(?!$cgWord)',
-            // Ruby: \\?(?:\[([^\[\]]+)\])?\^(\S+?)\^
-            '\\\\?(?:$quoteAttributeListRxt)?\\^(\\S+?)\\^',
-            // Ruby: \\?(?:\[([^\[\]]+)\])?~(\S+?)~
-            '\\\\?(?:$quoteAttributeListRxt)?~(\\S+?)~',
+            // Ruby: \\?(?:\[([^\[\]]+)\])?\^(\S+?)\^, with a bracketed
+            // span as one unit (bugfix #4076)
+            '\\\\?(?:$quoteAttributeListRxt)?\\^((?:\\[[^ \\t\\n\\v\\f\\r\\]]*\\]|\\S)+?)\\^',
+            // Ruby: \\?(?:\[([^\[\]]+)\])?~(\S+?)~, likewise
+            '\\\\?(?:$quoteAttributeListRxt)?~((?:\\[[^ \\t\\n\\v\\f\\r\\]]*\\]|\\S)+?)~',
           ].map(asciiSpace),
         ),
       );
