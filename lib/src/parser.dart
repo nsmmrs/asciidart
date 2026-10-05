@@ -1161,6 +1161,37 @@ abstract final class Parser {
     return section;
   }
 
+  /// Whether [line] is a block attribute line (or block anchor line).
+  static bool _isBlockAttributeLine(String line) =>
+      line.startsWith('[') &&
+      blockAttributeLineRx.hasMatch(line) &&
+      _closesBrackets(line.substring(1, line.length - 1));
+
+  /// Whether [attrlist], the text of a line that looks like a block
+  /// attribute list, can be one: a line of text that starts with formatted
+  /// text with a role and ends with a macro (`[.red]#Bbb# bbb.footnote:[Ccc.]`)
+  /// looks like one, but a `]` in it closes no `[` and is followed by the
+  /// `[` of the macro whose `]` ends the line; it is a paragraph (#3396).
+  /// Brackets in double-quoted values don't count, and a stray `]` at the
+  /// end (`[source, xml]]`) keeps the line an attribute list, as before.
+  static bool _closesBrackets(String attrlist) {
+    if (!attrlist.contains(']')) return true;
+    var depth = 0;
+    var quoted = false;
+    final units = attrlist.codeUnits;
+    for (var i = 0; i < units.length; i++) {
+      switch (units[i]) {
+        case 0x22: // "
+          quoted = !quoted;
+        case 0x5B when !quoted: // [
+          depth += 1;
+        case 0x5D when !quoted: // ]
+          if ((depth -= 1) < 0) return !attrlist.contains('[', i + 1);
+      }
+    }
+    return true;
+  }
+
   /// The converted title of [section] that its ID is generated from.
   ///
   /// A footnote in the title is left out: converting the title here, in
@@ -2313,8 +2344,7 @@ abstract final class Parser {
 
   /// Whether [line] starts a block (port of `StartOfBlockProc`).
   static bool _startOfBlock(String line) =>
-      (line.startsWith('[') && blockAttributeLineRx.hasMatch(line)) ||
-      isDelimitedBlock(line) != null;
+      _isBlockAttributeLine(line) || isDelimitedBlock(line) != null;
 
   /// Whether [line] starts a list (port of `StartOfListProc`).
   static bool _startOfList(String line) => anyListRx.hasMatch(line);
@@ -2323,7 +2353,7 @@ abstract final class Parser {
   /// (port of `StartOfBlockOrListProc`).
   static bool _startOfBlockOrList(String line) =>
       isDelimitedBlock(line) != null ||
-      (line.startsWith('[') && blockAttributeLineRx.hasMatch(line)) ||
+      _isBlockAttributeLine(line) ||
       anyListRx.hasMatch(line);
 
   /// Determines whether [line] is the start of a known delimited block.
@@ -3120,8 +3150,7 @@ abstract final class Parser {
       } else if (dlist &&
           continuation != 'active' &&
           thisLine is _TextLine &&
-          thisLine.text.startsWith('[') &&
-          blockAttributeLineRx.hasMatch(thisLine.text)) {
+          _isBlockAttributeLine(thisLine.text)) {
         // BlockAttributeLineRx only breaks dlist if ensuing line is not a
         // list item.
         final blockAttributeLines = <String>[thisLine.text];
@@ -3131,9 +3160,7 @@ abstract final class Parser {
           if (nextLine == null) break;
           if (isDelimitedBlock(nextLine) != null) {
             interrupt = true;
-          } else if (nextLine.isEmpty ||
-              (nextLine.startsWith('[') &&
-                  blockAttributeLineRx.hasMatch(nextLine))) {
+          } else if (nextLine.isEmpty || _isBlockAttributeLine(nextLine)) {
             blockAttributeLines.add(reader.readLine()!);
             continue;
           } else if (anyListRx.hasMatch(nextLine) &&
@@ -3185,7 +3212,7 @@ abstract final class Parser {
           continuation = 'inactive';
         } else if (thisLine.text case final text
             when (text.startsWith('.') && blockTitleRx.hasMatch(text)) ||
-                (text.startsWith('[') && blockAttributeLineRx.hasMatch(text)) ||
+                _isBlockAttributeLine(text) ||
                 (text.startsWith(':') && attributeEntryRx.hasMatch(text))) {
           // Let block metadata play out until we find the block.
           buffer.add(thisLine);
@@ -3879,7 +3906,7 @@ abstract final class Parser {
         }
       } else if (nextLine.endsWith(']')) {
         final attrMatch = blockAttributeListRx.firstMatch(nextLine);
-        if (attrMatch != null) {
+        if (attrMatch != null && _closesBrackets(attrMatch.group(1)!)) {
           final currentStyle = attributes['1'];
           // Extract id, role, and options from first positional attribute
           // and remove, if present.
