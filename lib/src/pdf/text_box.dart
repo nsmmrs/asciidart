@@ -447,7 +447,7 @@ final class PrawnTextBox implements CustomContent {
     _imagesArranged = true;
     final images = _context.images;
     if (images == null) return;
-    Object? last;
+    int? last;
     for (var i = 0; i < _items.length; i++) {
       final item = _items[i];
       final fragment = item.format.fragment;
