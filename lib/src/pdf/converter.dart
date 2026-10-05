@@ -294,8 +294,24 @@ final class PdfConverter extends BuiltInConverter
       _addToc('toc', breakAfter: titlePage && _s('toc_break_after') != 'auto');
     }
     if (titlePage) _out.add(_bodyMarker());
-    _traverse(document);
-    _footnotes(document);
+    final columns = (_n('page_columns') ?? 1).toInt();
+    _inColumns = !book && columns >= 2;
+    if (_inColumns) {
+      final body = _collect(() {
+        _traverse(document);
+        _footnotes(document);
+      });
+      _out.add(
+        ColumnsBox(
+          body,
+          count: columns,
+          gap: (_n('page_column_gap') ?? _rootFontSize).toDouble(),
+        ),
+      );
+    } else {
+      _traverse(document);
+      _footnotes(document);
+    }
     _backCover = false;
     final backCover = _resolveBackgroundImage(
       'back-cover-image',
@@ -314,16 +330,27 @@ final class PdfConverter extends BuiltInConverter
       _backCover = true;
     }
 
-    final (width, height) = _pageSize(document);
-    final margins = _pageMargins(document);
-    final template = PageTemplate(
-      PdfRect(0, 0, width, height),
-      margins: margins,
-      header: _header,
-      footer: _footer,
-      background: _pageBackground,
+    PageTemplate templateFor(String layout) {
+      final (width, height) = _layoutSize(document, layout);
+      return PageTemplate(
+        PdfRect(0, 0, width, height),
+        margins: _marginsFor(document, layout),
+        header: _header,
+        footer: _footer,
+        background: _pageBackground,
+      );
+    }
+
+    final templates = {
+      for (final layout in const ['portrait', 'landscape'])
+        layout: templateFor(layout),
+    };
+    final layout = FlowLayout(
+      template: templates[_initialLayout(document)],
+      templates: templates,
+      keepTemplate: true,
+      pageLabel: _pageLabel,
     );
-    final layout = FlowLayout(template: template, pageLabel: _pageLabel);
     var result = layout.layout(_out);
     // The index, once the pages of its terms are known.
     if (_indexSlot case final slot?) {
@@ -1027,8 +1054,12 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// Draws [image] on a page by its fit and position.
-  void _drawPageImage(PdfCanvas canvas, _PageImage image) {
-    final (pageWidth, pageHeight) = _pageSize(_document);
+  void _drawPageImage(
+    PdfCanvas canvas,
+    _PageImage image, {
+    (double, double)? size,
+  }) {
+    final (pageWidth, pageHeight) = size ?? _pageSize(_document);
     final graphic = image.graphic;
     final (naturalWidth, naturalHeight) = switch (graphic) {
       final SvgImage svg => prawnSvgSize(
@@ -1113,7 +1144,8 @@ final class PdfConverter extends BuiltInConverter
     final background =
         (onTitlePage ? _c('title_page_background_color') : null) ??
         _c('page_background_color');
-    final (pageWidth, pageHeight) = _pageSize(_document);
+    final pageWidth = page.template.size.width;
+    final pageHeight = page.template.size.height;
     if (background != const HexColor('FFFFFF')) {
       if (_color(background) case final color?) {
         canvas
@@ -1127,7 +1159,9 @@ final class PdfConverter extends BuiltInConverter
     final image = onTitlePage && _titlePageImage != null
         ? _titlePageImage
         : _pageImages[number.isOdd ? 'recto' : 'verso'];
-    if (image != null) _drawPageImage(canvas, image);
+    if (image != null) {
+      _drawPageImage(canvas, image, size: (pageWidth, pageHeight));
+    }
   }
 
   /// Whether the document has a title page.
@@ -1239,19 +1273,85 @@ final class PdfConverter extends BuiltInConverter
     }
   }
 
-  (double, double) _pageSize(Document document) {
-    final value = document.attr('pdf-page-size') ?? _s('page_size') ?? 'A4';
-    var (w, h) = _pageSizes[value.toUpperCase()] ?? _pageSizes['A4']!;
-    final custom = RegExp(
-      r'^\[?\s*([\d.]+(?:in|cm|mm|p[txc])?)\s*,\s*([\d.]+(?:in|cm|mm|p[txc])?)\s*\]?$',
-    ).firstMatch(value);
-    if (custom != null) {
-      w = strToPoints(custom[1]!);
-      h = strToPoints(custom[2]!);
-    }
+  /// The page size of the initial layout (the gem's page size: a named
+  /// size, `[w, h]` or `w x h`; turned for landscape).
+  (double, double) _pageSize(Document document) =>
+      _layoutSize(document, _initialLayout(document));
+
+  /// The initial page layout (`portrait` or `landscape`).
+  String _initialLayout(Document document) {
     final layout = document.attr('pdf-page-layout') ?? _s('page_layout');
-    if (layout == 'landscape') return (math.max(w, h), math.min(w, h));
-    return (w, h);
+    return layout == 'landscape' ? 'landscape' : 'portrait';
+  }
+
+  static const _measurement = r'\d+(?:\.\d+)?(?:in|cm|mm|p[txc])?';
+
+  /// The page size of [layout].
+  (double, double) _layoutSize(Document document, String layout) {
+    double? dimension(String text) {
+      final match = RegExp(r'^(\d+(?:\.\d+)?)(in|mm|cm|p[txc])?$')
+          .firstMatch(text.trim());
+      if (match == null) return null;
+      final points = strToPoints(text.trim());
+      final truncated = (points * 10000).truncate() / 10000;
+      return truncated > 0 ? truncated : null;
+    }
+
+    (double, double)? size;
+    final attr = document.attr('pdf-page-size');
+    final match = attr == null
+        ? null
+        : RegExp(
+            '^(?:\\[($_measurement), ?($_measurement)\\]|'
+            '($_measurement)(?: x |x)($_measurement)|\\S+)\$',
+          ).firstMatch(attr);
+    if (match != null) {
+      final w = match[1] ?? match[3];
+      final h = match[2] ?? match[4];
+      if (w != null && h != null) {
+        final (dw, dh) = (dimension(w), dimension(h));
+        if (dw != null && dh != null) size = (dw, dh);
+      } else {
+        size = _pageSizes[match[0]!.toUpperCase()];
+      }
+    } else {
+      switch (_theme.value('page_size')) {
+        case ThemeList(:final values) when values.isNotEmpty:
+          double? of(ThemeValue value) => switch (value) {
+            ThemeNumber(:final value) when value > 0 => value.toDouble(),
+            final other => dimension(other.rubyString),
+          };
+          final w = of(values[0]);
+          final h = of(values.length > 1 ? values[1] : values[0]);
+          if (w != null && h != null) size = (w, h);
+        case final ThemeValue value:
+          size = _pageSizes[value.rubyString.toUpperCase()];
+        case null:
+          break;
+      }
+    }
+    final (w, h) = size ?? _pageSizes['A4']!;
+    return layout == 'landscape' ? (h, w) : (w, h);
+  }
+
+  /// The page margins of [layout]: the theme's (or `pdf-page-margin`),
+  /// the rotated margins for the layout that isn't the initial one.
+  EdgeInsets _marginsFor(Document document, String layout) {
+    if (layout != _initialLayout(document)) {
+      final rotated = document.attr('pdf-page-margin-rotated') != null
+          ? ThemeString(document.attr('pdf-page-margin-rotated')!)
+          : _theme.value('page_margin_rotated');
+      if (rotated != null) {
+        final values = _edgeValues(rotated);
+        return EdgeInsets(
+          top: values[0],
+          right: values[1],
+          bottom: values[2],
+          left: values[3],
+        );
+      }
+    }
+    return _pageMargins(document);
   }
 
   EdgeInsets _pageMargins(Document document) {
@@ -2254,8 +2354,22 @@ final class PdfConverter extends BuiltInConverter
 
   /// Converts the page break [node].
   void convertPageBreak(Block node) {
-    _out.add(BreakBox.page(force: node.hasOption('always')));
+    const layouts = {'portrait', 'landscape'};
+    var layout = node.attr('page-layout');
+    if (layout == null || layout.isEmpty) {
+      layout = node.roles.where(layouts.contains).lastOrNull;
+    } else if (!layouts.contains(layout)) {
+      layout = null;
+    }
+    if (_inColumns && node.hasRole('column') && layout == null) {
+      _out.add(BreakBox.column(force: node.hasOption('always')));
+      return;
+    }
+    _out.add(BreakBox.page(template: layout, force: node.hasOption('always')));
   }
+
+  /// Whether the body is set in the theme's page columns.
+  bool _inColumns = false;
 
   // Images.
 
@@ -4639,8 +4753,9 @@ final class PdfConverter extends BuiltInConverter
     final virtual = number - _skip.$2;
     final label = _pageLabel(number);
     final side = virtual.isOdd ? 'recto' : 'verso';
-    final (pageWidth, pageHeight) = _pageSize(doc);
-    final margins = _pageMargins(doc);
+    final pageWidth = page.template.size.width;
+    final pageHeight = page.template.size.height;
+    final margins = page.template.margins;
     final pageMargin = [
       margins.top,
       margins.right,
