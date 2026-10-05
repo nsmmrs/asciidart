@@ -1115,7 +1115,7 @@ abstract final class Parser {
         final _ = section.title;
       }
     } else if (document.attributes.containsKey('sectids')) {
-      section.id = id = Section.generateId(section.title ?? '', document);
+      section.id = id = Section.generateId(_idSource(section), document);
     }
     final titleCursor = reader.cursorAtLine(reader.lineno - (atx ? 1 : 2));
     if (id != null) {
@@ -1134,6 +1134,23 @@ abstract final class Parser {
     reader.skipBlankLines();
 
     return section;
+  }
+
+  /// The converted title of [section] that its ID is generated from.
+  ///
+  /// A footnote in the title is left out: converting the title here, in
+  /// the parser, would number the footnote before those of the blocks
+  /// above it, and its number would end up in the ID (#2903). Such a title
+  /// is converted again, in order, for output.
+  static String _idSource(Section section) {
+    final source = section.sourceTitle ?? '';
+    if (!source.contains('footnote')) return section.title ?? '';
+    final document = (section.document! as Document)..deferFootnotes = true;
+    try {
+      return section.applyTitleSubs(source);
+    } finally {
+      document.deferFootnotes = false;
+    }
   }
 
   /// Checks if the next line on [reader] is a section title.

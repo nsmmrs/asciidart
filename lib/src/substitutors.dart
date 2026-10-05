@@ -1818,6 +1818,7 @@ String _convertFootnoteMacro(
   if (match.group(0)!.startsWith(rs)) {
     return match.group(0)!.substring(1);
   }
+  if (doc.deferFootnotes) return '';
 
   String? id;
   String? content;

@@ -895,6 +895,13 @@ class Document extends AbstractBlock implements NodeDocument {
     return true;
   }
 
+  /// Whether footnote macros convert to nothing, without being numbered:
+  /// set while a section title is converted only to generate its ID, so
+  /// its footnotes are numbered where the title is converted for output.
+  ///
+  /// Internal: set by the parser.
+  bool deferFootnotes = false;
+
   /// Registers [footnote] in the document catalog.
   void registerFootnote(Footnote footnote) {
     catalog.footnotes.add(footnote);
