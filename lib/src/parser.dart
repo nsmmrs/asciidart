@@ -567,12 +567,11 @@ abstract final class Parser {
         namesOnly: true,
         multiple: false,
       );
-      if (docAttrs.containsKey('authorinitials')) {
-        authorMetadata.remove('authorinitials');
-      }
+      _keepAssignedNames(authorMetadata, docAttrs, const {});
       docAttrs.addAll(authorMetadata);
     } else if (docAttrs['authors'] case final authors?) {
       final authorMetadata = processAuthors(authors, namesOnly: true);
+      _keepAssignedNames(authorMetadata, docAttrs, const {});
       docAttrs.addAll(authorMetadata);
     } else {
       docAttrs['authorcount'] = '0';
@@ -4096,7 +4095,6 @@ abstract final class Parser {
     Map<String, String>? authorMetadata;
     String? authorcount;
     String? implicitAuthor;
-    String? implicitAuthorinitials;
     String? implicitAuthors;
     if (reader.hasMoreLines() && !reader.isNextLineEmpty()) {
       implicitAuthorMetadata = processAuthors(reader.readLine()!);
@@ -4112,7 +4110,6 @@ abstract final class Parser {
             }
           });
           implicitAuthor = docAttrs['author'];
-          implicitAuthorinitials = docAttrs['authorinitials'];
           implicitAuthors = docAttrs['authors'];
         }
       }
@@ -4174,13 +4171,12 @@ abstract final class Parser {
           namesOnly: true,
           multiple: false,
         );
-        if (docAttrs['authorinitials'] != implicitAuthorinitials) {
-          authorMetadata.remove('authorinitials');
-        }
+        _keepAssignedNames(authorMetadata, docAttrs, implicitAuthorMetadata);
       } else if (docAttrs.containsKey('authors') &&
           docAttrs['authors'] != implicitAuthors) {
         // Allow multiple, process as names only.
         authorMetadata = processAuthors(docAttrs['authors']!, namesOnly: true);
+        _keepAssignedNames(authorMetadata, docAttrs, implicitAuthorMetadata);
       } else {
         final authors = <String?>[];
         var authorIdx = 1;
@@ -4257,6 +4253,28 @@ abstract final class Parser {
       ...?authorMetadata,
     };
   }
+
+  /// Drops from [computed] (the names computed from an `author` or
+  /// `authors` attribute) the ones the document assigns itself
+  /// (`firstname`, `lastname_2`, ...), which win over the computed ones as
+  /// they do over an implicit author line; [implicit] holds the names from
+  /// that line, which are not assignments (#4209).
+  static void _keepAssignedNames(
+    Map<String, String> computed,
+    Map<String, String> docAttrs,
+    Map<String, String> implicit,
+  ) {
+    computed.removeWhere(
+      (key, _) =>
+          _authorNameKeyRx.hasMatch(key) &&
+          docAttrs.containsKey(key) &&
+          docAttrs[key] != implicit[key],
+    );
+  }
+
+  static final RegExp _authorNameKeyRx = RegExp(
+    r'^(?:firstname|middlename|lastname|authorinitials)(?:_\d+)?$',
+  );
 
   /// Parses the author line into a map of author metadata.
   ///

@@ -2905,14 +2905,12 @@ void main() {
         );
         expect(doc.attr('author'), equals('Doc Writer'));
         expect(doc.attr('author_1'), equals('Doc Writer'));
-        // FIXME this should be supported, but isn't yet
-        //expect(doc.attr('authorinitials'), equals('DOC'));
-        expect(doc.attr('authorinitials'), equals('DW'));
+        // The assigned initials win (bugfix #4209; upstream's FIXME).
+        expect(doc.attr('authorinitials'), equals('DOC'));
         expect(doc.attr('author_2'), equals('Other Author'));
         expect(doc.attr('authorcount'), equals('2'));
         final output = doc.convert();
-        //assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
-        assertXpath('//p[text()="Writer, Doc (DW)"]', output, 1);
+        assertXpath('//p[text()="Writer, Doc (DOC)"]', output, 1);
       });
 
       test('should set authorcount to 0 if document has no header', () {
