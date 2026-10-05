@@ -1,0 +1,18 @@
+= A Simple Document
+Author Name
+
+This is the preamble paragraph, which introduces the document and goes on for long enough to wrap onto a second line of text in the PDF.
+
+== First Section
+
+A paragraph with *bold*, _italic_, `mono` and a https://example.org[link]. Another sentence follows so that this paragraph wraps onto at least two lines in the output.
+
+Second paragraph of the first section.
+
+=== A Subsection
+
+Text of the subsection.
+
+== Second Section
+
+Final paragraph.

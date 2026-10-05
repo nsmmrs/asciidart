@@ -1,0 +1,320 @@
+/// Fonts as Prawn 2.4 measures them (the engine asciidoctor-pdf 2.3.27
+/// lays text out with): metrics from TrueType's `OS/2` typographic values
+/// (else `hhea`) or from AFM files, glyph widths truncated to 1000ths of
+/// the em, kerning from the `kern` table alone; and the font catalog of a
+/// theme, with Prawn's built-in families and the icon fonts.
+library;
+
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/path_resolver.dart';
+import 'package:asciidart/src/pdf/assets.g.dart';
+import 'package:asciidart/src/pdf/theme.dart';
+import 'package:libpdf/libpdf.dart';
+
+/// A font with Prawn's metrics; [pdf] draws it.
+sealed class PrawnFont {
+  const new _(this.family, this.style);
+
+  /// The family name (as the theme names it).
+  final String family;
+
+  /// The style: `normal`, `bold`, `italic` or `bold_italic`.
+  final String style;
+
+  /// The font that draws the text.
+  PdfFont get pdf;
+
+  /// The ascender, in 1000ths of the em.
+  num get ascender;
+
+  /// The descender (negative), in 1000ths of the em.
+  num get descender;
+
+  /// The line gap, in 1000ths of the em.
+  num get lineGap;
+
+  /// The ascender at [size] points.
+  double ascenderAt(double size) => ascender / 1000 * size;
+
+  /// The descender at [size] points, as Prawn gives it (positive).
+  double descenderAt(double size) => -descender / 1000 * size;
+
+  /// The line gap at [size] points.
+  double lineGapAt(double size) => lineGap / 1000 * size;
+
+  /// The line height at [size] points: ascender, descender and line gap.
+  double heightAt(double size) =>
+      (ascender - descender + lineGap) / 1000 * size;
+
+  /// The width of [text] at [size] points.
+  double widthOf(String text, double size, {bool kerning = true});
+
+  /// Whether the font has a glyph for [codePoint].
+  bool hasGlyph(int codePoint);
+}
+
+/// A TrueType (or OpenType) font.
+final class TrueTypeFont extends PrawnFont {
+  /// The font of [pdf] in [family] and [style].
+  new(super.family, super.style, this.pdf) : super._() {
+    final font = pdf.font;
+    _scale = 1000 / font.unitsPerEm;
+    int pick(int? typo, int hhea) => typo != null && typo != 0 ? typo : hhea;
+    ascender = (pick(font.typoAscender, font.ascender) * _scale).truncate();
+    descender = (pick(font.typoDescender, font.descender) * _scale).truncate();
+    lineGap = (pick(font.typoLineGap, font.lineGap) * _scale).truncate();
+  }
+
+  @override
+  final EmbeddedFont pdf;
+
+  late final double _scale;
+
+  @override
+  late final int ascender;
+
+  @override
+  late final int descender;
+
+  @override
+  late final int lineGap;
+
+  final Map<int, int> _widths = {};
+
+  /// The width of [codePoint]'s glyph, in 1000ths of the em (truncated,
+  /// as Prawn keeps it); NUL and line feeds are 0 wide.
+  int widthOfCode(int codePoint) {
+    if (codePoint == 0 || codePoint == 10) return 0;
+    return _widths[codePoint] ??=
+        (pdf.font.advance(pdf.font.glyphFor(codePoint)) * _scale).truncate();
+  }
+
+  @override
+  double widthOf(String text, double size, {bool kerning = true}) {
+    var total = 0.0;
+    int? previous;
+    for (final rune in text.runes) {
+      if (kerning && previous != null) {
+        final kern = pdf.font.kernTablePair(
+          pdf.font.glyphFor(previous),
+          pdf.font.glyphFor(rune),
+        );
+        if (kern != null) total += kern * _scale;
+      }
+      total += widthOfCode(rune);
+      previous = rune;
+    }
+    return total * size / 1000;
+  }
+
+  @override
+  bool hasGlyph(int codePoint) => pdf.font.glyphFor(codePoint) > 0;
+}
+
+/// One of the 14 standard fonts, from its AFM file.
+final class AfmFont extends PrawnFont {
+  /// The standard font [pdf] in [family] and [style].
+  new(super.family, super.style, this.pdf) : super._();
+
+  @override
+  final StandardFont pdf;
+
+  @override
+  double get ascender => pdf.ascender;
+
+  @override
+  double get descender => pdf.descender;
+
+  @override
+  double get lineGap {
+    final box = pdf.boundingBox;
+    return (box[3] - box[1]) - (ascender - descender);
+  }
+
+  final Map<(int, int), double> _kerns = {};
+
+  @override
+  double widthOf(String text, double size, {bool kerning = true}) {
+    final width = pdf.widthOf(text, size, kerning: false);
+    if (!kerning) return width;
+    var kern = 0.0;
+    int? previous;
+    for (final rune in text.runes) {
+      if (previous != null) kern += _kern(previous, rune);
+      previous = rune;
+    }
+    return width + kern * size / 1000;
+  }
+
+  /// The kerning Prawn applies between [left] and [right], in 1000ths of
+  /// the em. Prawn keys its pairs by the last WinAnsi code of each glyph
+  /// name, so a space (32) or a hyphen-minus (45) is never kerned, while a
+  /// no-break space (160) and a soft hyphen (173) are kerned as `space`
+  /// and `hyphen`.
+  double _kern(int left, int right) => _kerns[(left, right)] ??= () {
+    int? named(int code) => switch (code) {
+      0x20 || 0x2d => null,
+      0xa0 => 0x20,
+      0xad => 0x2d,
+      _ => code,
+    };
+    final a = named(left);
+    final b = named(right);
+    if (a == null || b == null) return 0.0;
+    final pair = String.fromCharCodes([a, b]);
+    return pdf.widthOf(pair, 1000) - pdf.widthOf(pair, 1000, kerning: false);
+  }();
+
+  @override
+  bool hasGlyph(int codePoint) => pdf.covers(codePoint);
+}
+
+/// Prawn's built-in families, by style.
+const Map<String, Map<String, String>> _builtInFamilies = {
+  'Courier': {
+    'normal': 'Courier',
+    'bold': 'Courier-Bold',
+    'italic': 'Courier-Oblique',
+    'bold_italic': 'Courier-BoldOblique',
+  },
+  'Times-Roman': {
+    'normal': 'Times-Roman',
+    'bold': 'Times-Bold',
+    'italic': 'Times-Italic',
+    'bold_italic': 'Times-BoldItalic',
+  },
+  'Helvetica': {
+    'normal': 'Helvetica',
+    'bold': 'Helvetica-Bold',
+    'italic': 'Helvetica-Oblique',
+    'bold_italic': 'Helvetica-BoldOblique',
+  },
+  'Symbol': {'normal': 'Symbol'},
+  'ZapfDingbats': {'normal': 'ZapfDingbats'},
+};
+
+/// The icon font families (prawn-icon's sets) and their files.
+const Map<String, String> iconFontFiles = {
+  'fas': 'icons/fas/fa-solid.ttf',
+  'far': 'icons/far/fa-regular.ttf',
+  'fab': 'icons/fab/fa-brands.ttf',
+  'fi': 'icons/fi/foundation-icons.ttf',
+  'pf': 'icons/pf/paymentfont-webfont.ttf',
+};
+
+/// A font file that couldn't be found or read.
+final class FontException implements Exception {
+  /// An exception with [message].
+  const new(this.message);
+
+  /// What went wrong.
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// The fonts of one conversion: the theme's catalog, Prawn's built-in
+/// families and the icon fonts, loaded (and subset) once each.
+final class FontCatalog {
+  /// The catalog of [theme], its font files looked up in [fontsDir] (a
+  /// list separated by `;` or `,`, `GEM_FONTS_DIR` naming the bundled
+  /// fonts; by default the theme's directory, then the bundled fonts).
+  new(Theme theme, {String? fontsDir})
+    : _catalog = theme.fontCatalog?.families ?? const {},
+      _dirs = [
+        for (final dir
+            in (fontsDir ??
+                    (theme.directory == null
+                        ? 'GEM_FONTS_DIR'
+                        : '${theme.directory};GEM_FONTS_DIR'))
+                .split(RegExp('[;,]')))
+          if (dir.isEmpty) 'GEM_FONTS_DIR' else dir,
+      ];
+
+  final Map<String, Map<String, String>> _catalog;
+  final List<String> _dirs;
+  final Map<(String, String), PrawnFont> _fonts = {};
+  static final Map<String, List<int>> _files = {};
+
+  /// Whether [family] is known.
+  bool hasFamily(String family) =>
+      _catalog.containsKey(family) ||
+      _builtInFamilies.containsKey(family) ||
+      iconFontFiles.containsKey(family);
+
+  /// The font of [family] in [style]; throws [FontException] for a family
+  /// or style the catalog lacks.
+  PrawnFont font(String family, [String style = 'normal']) =>
+      _fonts[(family, style)] ??= _load(family, style);
+
+  /// Every font loaded, to write them into the document.
+  Iterable<PrawnFont> get loaded => _fonts.values;
+
+  PrawnFont _load(String family, String style) {
+    if (iconFontFiles[family] case final path?) {
+      return TrueTypeFont(
+        family,
+        'normal',
+        EmbeddedFont.parse(_bundled(path), truncateWidths: true),
+      );
+    }
+    if (_catalog[family] case final styles?) {
+      final path = styles[style];
+      if (path == null) {
+        throw FontException(
+          'font style $style not found for font family $family',
+        );
+      }
+      return TrueTypeFont(
+        family,
+        style,
+        EmbeddedFont.parse(_file(path), truncateWidths: true),
+      );
+    }
+    if (_builtInFamilies[family] case final styles?) {
+      final name = styles[style] ?? styles['normal']!;
+      return AfmFont(family, style, StandardFont.named(name));
+    }
+    throw FontException('font family $family not found');
+  }
+
+  List<int> _bundled(String path) => _files[path] ??=
+      PdfAssets.bytes(path) ?? (throw FontException('$path not found'));
+
+  List<int> _file(String path) {
+    if (path.startsWith('GEM_FONTS_DIR/')) {
+      return _bundled('data/fonts/${path.substring(14)}');
+    }
+    for (final dir in _dirs) {
+      if (dir == 'GEM_FONTS_DIR') {
+        final bundled = PdfAssets.bytes('data/fonts/$path');
+        if (bundled != null) return _files[path] ??= bundled;
+        continue;
+      }
+      final resolved = PathResolver().systemPath(path, start: dir);
+      if (io.isFile(resolved)) {
+        return _files[resolved] ??= io.readBytes(resolved);
+      }
+    }
+    throw FontException(
+      PathResolver().isAbsolutePath(path)
+          ? '$path not found'
+          : '$path not found in ${_dirs.join(' or ')}',
+    );
+  }
+}
+
+/// [size] (points, or relative: `1.2em`, `80%`, `1.5rem`) in points, for
+/// a current size of [current] and a root size of [root].
+double resolveFontSize(String size, double current, double root) {
+  final number =
+      double.tryParse(
+        RegExp(r'^\s*[+-]?(?:\d+(?:\.\d+)?|\.\d+)').stringMatch(size) ?? '',
+      ) ??
+      0;
+  if (size.endsWith('rem')) return root * number;
+  if (size.endsWith('em')) return current * number;
+  if (size.endsWith('%')) return current * number / 100;
+  return number;
+}
