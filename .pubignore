@@ -14,7 +14,7 @@ node_modules/
 # the README, CHANGELOG, LICENSE and pubspec.yaml. The data/ and man/ files
 # are embedded in lib/ (lib/src/data.g.dart, lib/src/cli/help_topics.g.dart).
 /.github/
-/.lane/
+/lane.json
 /adr/
 /benchmark/
 /data/
