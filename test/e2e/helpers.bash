@@ -45,6 +45,20 @@ assert_contains() {
   fi
 }
 
+# Assert that file $1 contains the fixed string $2 as a whole, which may span
+# lines (grep -F would match any one of its lines).
+assert_contains_text() {
+  local file="$1" fragment="$2" content
+  content="$(cat -- "$file")"
+  if [[ "$content" != *"$fragment"* ]]; then
+    echo "expected $file to contain:"
+    printf '%s\n' "$fragment"
+    echo 'actual content:'
+    printf '%s\n' "$content"
+    return 1
+  fi
+}
+
 # Assert that file $1 does not contain the fixed string $2.
 assert_not_contains() {
   local file="$1" fragment="$2"
