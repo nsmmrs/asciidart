@@ -198,8 +198,10 @@ final class Document extends Block
   Document document
   List<Author> authors
   List<Diagnostic> diagnostics
+  Map<String, String?> headerAttributes
   String convert({bool? standalone})
   String toHtml({bool? standalone})
+  String? sourceTitle
   String? title
 final class Example extends Block
 final class FileConversion
@@ -370,6 +372,7 @@ sealed class Block extends Node
   SourceLocation? location
   String convert()
   String plainText
+  String? sourceTitle
   String? style
   String? title (settable)
   void append(Block block)

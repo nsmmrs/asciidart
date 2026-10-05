@@ -632,6 +632,12 @@ abstract final class Parser {
     BlockAttributes blockAttrs, {
     bool headerValid = true,
   }) {
+    // The entries above the title come before those of the header proper.
+    final entries = [
+      ...?blockAttrs.attributeEntries,
+      ...?document.headerAttributeEntries,
+    ];
+    document.headerAttributeEntries = entries.isEmpty ? null : entries;
     blockAttrs.attributeEntries = null;
     document.finalizeHeader();
     if (!headerValid) blockAttrs.invalidHeader = true;
@@ -3941,8 +3947,11 @@ abstract final class Parser {
     bool retrieve = true,
   }) {
     final docAttrs = document?.attributes;
+    // Records the header attribute entries (for
+    // Document.headerAttributeEntries); recording changes nothing else.
+    final entries = BlockAttributes();
     // NOTE this will discard any comment lines, but not skip blank lines.
-    processAttributeEntries(reader, document);
+    processAttributeEntries(reader, document, entries);
 
     Map<String, String> implicitAuthorMetadata;
     Map<String, String>? revMetadata;
@@ -3972,7 +3981,7 @@ abstract final class Parser {
       _setOrRemove(implicitAuthorMetadata, 'authorcount', authorcount);
 
       // NOTE this will discard any comment lines, but not skip blank lines.
-      processAttributeEntries(reader, document);
+      processAttributeEntries(reader, document, entries);
 
       if (reader.hasMoreLines() && !reader.isNextLineEmpty()) {
         final revLine = reader.readLine()!;
@@ -4009,7 +4018,7 @@ abstract final class Parser {
       }
 
       // NOTE this will discard any comment lines, but not skip blank lines.
-      processAttributeEntries(reader, document);
+      processAttributeEntries(reader, document, entries);
 
       reader.skipBlankLines();
     } else {
@@ -4097,6 +4106,12 @@ abstract final class Parser {
       }
     }
 
+    if (document != null && entries.attributeEntries != null) {
+      document.headerAttributeEntries = [
+        ...?document.headerAttributeEntries,
+        ...?entries.attributeEntries,
+      ];
+    }
     if (!retrieve) return <String, String>{};
     return <String, String>{
       ...implicitAuthorMetadata,

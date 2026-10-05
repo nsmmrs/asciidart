@@ -127,6 +127,10 @@ sealed class Block extends Node {
   String? get title => _block.title;
   set title(String? value) => _block.title = value;
 
+  /// The title of this block as written in the source; `null` when it has
+  /// none.
+  String? get sourceTitle => _block.sourceTitle;
+
   /// The style of this block (the first positional attribute, such as
   /// `source` or `quote`), if any.
   String? get style => _block.style;
@@ -212,6 +216,21 @@ final class Document extends Block {
   /// with inline markup converted; `null` when it has none.
   @override
   String? get title => _run(_doc.doctitle);
+
+  /// The document title as written in the header (`= Title`), before
+  /// substitutions; `null` when the header has no title.
+  @override
+  String? get sourceTitle => _doc.header?.sourceTitle;
+
+  /// The attributes the document header sets, in source order: name to
+  /// value, or to `null` for an attribute it unsets (`:name!:`). Unlike
+  /// [attributes], this leaves out the built-in attributes and those given
+  /// through the API.
+  Map<String, String?> get headerAttributes => {
+    for (final entry
+        in _doc.headerAttributeEntries ?? const <impl.DocumentAttributeEntry>[])
+      entry.name: entry.negate ? null : entry.value,
+  };
 
   /// The authors from the document header.
   List<Author> get authors => [

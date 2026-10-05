@@ -84,6 +84,15 @@ void main() {
       expect(doc.toHtml(), contains('<strong>bold</strong>'));
     });
 
+    test('the header as written', () {
+      final doc = asciidoc.parseHeader(
+        "= Don't -- (C) *stop*\n:status: doing\n:draft!:\n\nbody",
+      );
+      expect(doc.sourceTitle, "Don't -- (C) *stop*");
+      expect(doc.title, contains('&#8217;'));
+      expect(doc.headerAttributes, {'status': 'doing', 'draft': null});
+    });
+
     test('parseHeader reads the header only', () {
       final doc = asciidoc.parseHeader(card);
       expect(doc.attributes['status'], 'doing');

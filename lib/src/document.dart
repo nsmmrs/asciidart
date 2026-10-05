@@ -744,6 +744,12 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Written by the parser once the header is parsed.
   Section? header;
 
+  /// The attribute entries of the document header, in source order (`null`
+  /// before the header is parsed or when it has none).
+  ///
+  /// Written by the parser when it finishes the header.
+  List<DocumentAttributeEntry>? headerAttributeEntries;
+
   /// The base directory for converting this document.
   @override
   late final String baseDir;
