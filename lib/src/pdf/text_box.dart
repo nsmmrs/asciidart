@@ -62,6 +62,7 @@ final class TextLayout {
     this.initialGap = 0,
     this.paddingBottom = 0,
     this.finalGap = false,
+    this.trailingLineGap = false,
     this.indentFirstLine = 0,
     this.normalizeLineHeight = false,
     this.forceJustify = false,
@@ -81,6 +82,10 @@ final class TextLayout {
 
   /// Whether the line gap and the leading follow the last line too.
   final bool finalGap;
+
+  /// Whether the line gap alone follows the last line (as prawn-table
+  /// measures a cell's text).
+  final bool trailingLineGap;
 
   /// The indent of the first line.
   final double indentFirstLine;
@@ -378,6 +383,7 @@ final class PrawnTextBox implements CustomContent {
     final done = rest.isEmpty;
     var height = gap + wrap.height;
     if (_layout.finalGap) height += wrap.lineGap + _layout.leading;
+    if (_layout.trailingLineGap) height += wrap.lineGap;
     if (done) height += _layout.paddingBottom;
     final anchors = <(String, double, double)>[];
     for (final line in lines) {

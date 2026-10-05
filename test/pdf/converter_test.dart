@@ -27,14 +27,17 @@ void main() {
   setUpAll(registerPdf);
 
   for (final name in [
-    'simple',
-    'lists',
     'blocks',
     'blocks2',
     'dlists',
     'dlists2',
     'images',
+    'lists',
+    'simple',
     'split',
+    'tables',
+    'tables2',
+    'tables3',
   ]) {
     test('$name.adoc converts as the gem converts it', () {
       final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
