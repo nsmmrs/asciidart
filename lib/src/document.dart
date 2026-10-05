@@ -1223,6 +1223,28 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Whether the attribute [name] is locked (assigned via the API).
   bool attributeLocked(String name) => _attributeOverrides.containsKey(name);
 
+  /// Whether attribute [name] was neither set nor unset, by the document
+  /// or by the API (a converter's default then applies).
+  @internal
+  bool attributeUnspecified(String name) {
+    if (attributeLocked(name) || _attributesModified.contains(name)) {
+      return false;
+    }
+    if (parentDocument case final parent?) {
+      return parent.attributeUnspecified(name);
+    }
+    for (final MapEntry(:key, :value) in options.attributes.entries) {
+      if (key == name) return false;
+      if (value == '@') {
+        if (key == '!$name' || key == '$name!') return false;
+      } else if (key.endsWith('@')) {
+        final bare = key.substring(0, key.length - 1);
+        if (bare == name || bare == '!$name' || bare == '$name!') return false;
+      }
+    }
+    return true;
+  }
+
   /// Assigns [value] to the attribute [name] in the document header.
   ///
   /// The assignment is visible when the header attributes are restored

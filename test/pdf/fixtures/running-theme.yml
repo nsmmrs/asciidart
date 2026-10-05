@@ -1,0 +1,27 @@
+extends: default
+header:
+  height: 0.75in
+  line_height: 1
+  vertical_align: middle
+  font_size: 9
+  border_width: 0.5
+  border_color: CCCCCC
+  recto:
+    left:
+      content: '{section-or-chapter-title}'
+    right:
+      content: '{document-title} | {page-number} of {page-count}'
+  verso:
+    left:
+      content: '*{chapter-title}*'
+    center:
+      content: _{part-title}_
+    right:
+      content: '{section-title}'
+footer:
+  columns: <40% =20% >40%
+  recto:
+    left:
+      content: '{doctitle}'
+    center:
+      content: '{page-number}'

@@ -186,7 +186,12 @@ final class PdfConverter extends BuiltInConverter
   /// Converts [document] to PDF bytes (kept for [write]); returns nothing.
   String convertDocument(Document document) {
     _document = document;
-    _theme = _loadTheme(document);
+    for (final name in const ['outline', 'outline-title', 'pagenums']) {
+      if (document.attributeUnspecified(name)) {
+        document.attributes[name] = '';
+      }
+    }
+    _theme = _prepareTheme(_loadTheme(document));
     _fonts = FontCatalog(
       _theme,
       fontsDir: document
@@ -218,9 +223,17 @@ final class PdfConverter extends BuiltInConverter
     _sections.clear();
     _out = [];
 
-    // The document title, unless the title is a page of its own.
+    // The document title, on a page of its own or above the content.
     final book = document.doctype == 'book';
     final titlePage = book || document.hasAttr('title-page');
+    if (titlePage &&
+        document.hasHeader &&
+        !document.notitle &&
+        _theme['title_page'] is! ThemeBool) {
+      _titlePage(document);
+      _out.add(const BreakBox.page());
+    }
+    if (!titlePage) _out.add(_bodyMarker());
     if (!titlePage && document.hasHeader && !document.notitle) {
       final title = document.doctitle();
       if (title != null) {
@@ -231,6 +244,26 @@ final class PdfConverter extends BuiltInConverter
         );
       }
     }
+    final placement = document.attr('toc-placement');
+    final tocAtTop =
+        document.hasAttr('toc') &&
+        placement != 'macro' &&
+        placement != 'preamble' &&
+        document.sections.isNotEmpty;
+    if (tocAtTop) {
+      _out.add(const CustomBox(_Nothing(), style: BoxStyle(anchor: 'toc')));
+      _toc(document);
+      _out.add(
+        const CustomBox(_Nothing(), style: BoxStyle(anchor: _tocEndAnchor)),
+      );
+      if (titlePage && _s('toc_break_after') != 'auto') {
+        _out.add(const BreakBox.page());
+      } else {
+        final margin = (_n('block_margin_bottom') ?? 0).toDouble();
+        if (margin > 0) _out.add(SpacerBox(margin));
+      }
+    }
+    if (titlePage) _out.add(_bodyMarker());
     _traverse(document);
 
     final (width, height) = _pageSize(document);
@@ -238,10 +271,27 @@ final class PdfConverter extends BuiltInConverter
     final template = PageTemplate(
       PdfRect(0, 0, width, height),
       margins: margins,
+      header: _header,
       footer: _footer,
     );
-    final layout = FlowLayout(template: template);
+    final layout = FlowLayout(template: template, pageLabel: _pageLabel);
     final result = layout.layout(_out);
+    _bodyStart = (result.anchors[_bodyAnchor]?.page ?? 0) + 1;
+    _anchorPages = {
+      for (final MapEntry(:key, :value) in result.anchors.entries)
+        key: value.page + 1,
+    };
+    _tocPages = switch ((
+      result.anchors['toc'],
+      result.anchors[_tocEndAnchor],
+    )) {
+      (final start?, final end?) when tocAtTop => (
+        start.page + 1,
+        end.page + 1,
+      ),
+      _ => null,
+    };
+    _skip = _frontMatter(titlePage: titlePage);
     final pdf = PdfDocument(
       info: PdfInfo(
         title: document.doctitle(sanitize: true),
@@ -259,6 +309,425 @@ final class PdfConverter extends BuiltInConverter
     _outline(pdf, pages, result);
     _bytes = pdf.save();
     return '';
+  }
+
+  /// [theme] with the defaults the converter assumes (the gem's
+  /// `prepare_theme`).
+  static Theme _prepareTheme(Theme theme) {
+    void fallback(String key, ThemeValue value) {
+      switch (theme[key]) {
+        case null || ThemeNull() || ThemeBool(value: false):
+          theme[key] = value;
+        case _:
+          break;
+      }
+    }
+
+    if (theme['base_border_color'] case ThemeString(value: 'transparent')) {
+      theme['base_border_color'] = const ThemeNull();
+    }
+    final borderColor = switch (theme['base_border_color']) {
+      null || ThemeNull() => const ThemeString('000000'),
+      final color => color,
+    };
+    fallback('base_font_color', const ThemeString('000000'));
+    fallback('base_font_family', const ThemeString('Helvetica'));
+    fallback('base_font_style', const ThemeString('normal'));
+    fallback('page_numbering_start_at', const ThemeString('body'));
+    fallback('running_content_start_at', const ThemeString('body'));
+    fallback('heading_chapter_break_before', const ThemeString('always'));
+    fallback('heading_part_break_before', const ThemeString('always'));
+    for (final key in [
+      'heading_margin_page_top',
+      'heading_margin_top',
+      'heading_margin_bottom',
+      'prose_text_indent',
+      'prose_text_indent_inner',
+      'prose_margin_bottom',
+      'block_margin_bottom',
+      'list_indent',
+      'list_item_spacing',
+      'description_list_term_spacing',
+      'description_list_description_indent',
+      'image_border_width',
+      'callout_list_margin_top_after_code',
+      'footnotes_item_spacing',
+      'toc_indent',
+      'toc_hanging_indent',
+    ]) {
+      fallback(key, const ThemeNumber(0));
+    }
+    fallback('table_border_color', borderColor);
+    fallback('table_border_width', const ThemeNumber(0.5));
+    fallback('thematic_break_border_color', borderColor);
+    fallback('code_linenum_font_color', const ThemeString('999999'));
+    fallback('role_unresolved_font_color', const ThemeString('FF0000'));
+    fallback('footnotes_margin_top', const ThemeString('auto'));
+    fallback('index_columns', const ThemeNumber(2));
+    fallback('index_column_gap', theme['base_font_size'] ?? const ThemeNull());
+    fallback('kbd_separator', const ThemeString('+'));
+    fallback('title_page_authors_delimiter', const ThemeString(', '));
+    fallback('title_page_revision_delimiter', const ThemeString(', '));
+    return theme;
+  }
+
+  /// The distance from the top of the content area that the title page
+  /// value [value] gives (the gem's `resolve_top` on a new page).
+  double _titlePageTop(ThemeValue value) {
+    final (_, pageHeight) = _pageSize(_document);
+    final margins = _pageMargins(_document);
+    final contentHeight = pageHeight - margins.vertical;
+    switch (value) {
+      case ThemeNumber(:final value):
+        return value.toDouble();
+      case final other:
+        final text = other.rubyString;
+        if (text.endsWith('vh')) {
+          final top = pageHeight * (1 - _toF(text) / 100);
+          return pageHeight - margins.top - top;
+        }
+        if (text.endsWith('%')) return contentHeight * _toF(text) / 100;
+        return strToPoints(text);
+    }
+  }
+
+  /// Adds the title page of [doc]: the title, subtitle, authors and
+  /// revision (the gem's `ink_title_page`; logos aren't drawn yet).
+  void _titlePage(Document doc) {
+    final align = _s('title_page_text_align') ?? _baseTextAlign;
+    final base = _themeFont('title_page', _font);
+    var offset = 0.0;
+    void gap(double points) {
+      if (points != 0) offset += points;
+    }
+
+    void prose(String text, String category, {bool normalize = true}) {
+      var font = _themeFont(category, base);
+      var content = text;
+      if (font.transform case final transform? when transform != 'none') {
+        content = transformText(content, transform);
+      }
+      final left = (_n('${category}_margin_left') ?? 0).toDouble();
+      final right = (_n('${category}_margin_right') ?? 0).toDouble();
+      _out.add(
+        BlockBox(
+          [
+            CustomBox(
+              _textBox(content, font, align: align, normalize: normalize),
+            ),
+          ],
+          style: BoxStyle(
+            padding: EdgeInsets(top: offset),
+            margin: EdgeInsets(left: left, right: right),
+          ),
+        ),
+      );
+      offset = 0;
+      font = base;
+    }
+
+    if (_theme['title_page_title_top'] case final top?) {
+      offset = _titlePageTop(top);
+    }
+    final title = doc.partitionedTitle(separator: doc.attr('title-separator'));
+    if (_s('title_page_title_display') != 'none' && title != null) {
+      gap((_n('title_page_title_margin_top') ?? 0).toDouble());
+      prose(title.main, 'title_page_title');
+      gap((_n('title_page_title_margin_bottom') ?? 0).toDouble());
+    }
+    final subtitle = title?.subtitle;
+    if (_s('title_page_subtitle_display') != 'none' && subtitle != null) {
+      gap((_n('title_page_subtitle_margin_top') ?? 0).toDouble());
+      prose(subtitle, 'title_page_subtitle');
+      gap((_n('title_page_subtitle_margin_bottom') ?? 0).toDouble());
+    }
+    if (_s('title_page_authors_display') != 'none' && doc.hasAttr('authors')) {
+      gap((_n('title_page_authors_margin_top') ?? 0).toDouble());
+      final generic = _s('title_page_authors_content');
+      final templates = {
+        'name_only': _s('title_page_authors_content_name_only') ?? generic,
+        'with_email': _s('title_page_authors_content_with_email') ?? generic,
+        'with_url': _s('title_page_authors_content_with_url') ?? generic,
+      };
+      final names = [
+        for (final author in doc.authors)
+          () {
+            final email = author.email;
+            final key = email == null
+                ? 'name_only'
+                : email.startsWith('mailto:')
+                ? 'with_email'
+                : email.contains('://')
+                ? 'with_url'
+                : 'with_email';
+            final template = templates[key];
+            if (template == null) return author.name ?? '';
+            return template
+                .replaceAll('{author}', author.name ?? '')
+                .replaceAll('{email}', email ?? '')
+                .replaceAll('{url}', email ?? '')
+                .replaceAll('{firstname}', author.firstname ?? '')
+                .replaceAll('{lastname}', author.lastname ?? '')
+                .replaceAll('{authorinitials}', author.initials ?? '');
+          }(),
+      ];
+      prose(
+        names.join(_s('title_page_authors_delimiter') ?? ', '),
+        'title_page_authors',
+      );
+      gap((_n('title_page_authors_margin_bottom') ?? 0).toDouble());
+    }
+    final revision = [
+      if (doc.attr('revnumber') case final number?)
+        '${doc.attr('version-label') ?? ''} $number',
+      ?doc.attr('revdate'),
+    ];
+    if (_s('title_page_revision_display') != 'none' && revision.isNotEmpty) {
+      gap((_n('title_page_revision_margin_top') ?? 0).toDouble());
+      var text = revision.join(_s('title_page_revision_delimiter') ?? ', ');
+      if (doc.attr('revremark') case final remark?) text = '$text: $remark';
+      prose(text, 'title_page_revision', normalize: false);
+    }
+  }
+
+  static const _tocEndAnchor = '__asciidart-toc-end';
+
+  /// The page (1-based) of each anchor, once laid out.
+  Map<String, int> _anchorPages = const {};
+
+  /// The number of levels the table of contents lists (the gem's
+  /// `resolve_toclevels`).
+  int get _tocLevels {
+    final levels = int.tryParse(_document.attr('toclevels') ?? '2') ?? 0;
+    if (levels >= 1) return levels;
+    return _document.doctype == 'book' &&
+            _document.sections.whereType<Section>().any(
+              (s) => s.sectname == 'part',
+            )
+        ? 0
+        : 1;
+  }
+
+  /// Adds the table of contents of [doc] (the gem's `ink_toc`).
+  void _toc(Document doc) {
+    final title = doc.attr('toc-title');
+    if (title != null && title.isNotEmpty) {
+      final font = _themeFont('toc_title', _headingFont(2));
+      _heading(
+        title,
+        level: 2,
+        align:
+            _s('toc_title_text_align') ??
+            _s('heading_h2_text_align') ??
+            _s('heading_text_align') ??
+            _baseTextAlign,
+        font: font,
+      );
+    }
+    final levels = _tocLevels;
+    if (levels < 0) return;
+    final toc = _themeFont('toc', _font);
+    var dotStyle = _fontStyle(_s('toc_dot_leader_font_style')) ?? 'normal';
+    final dotSize = (_n('toc_dot_leader_font_size') ?? toc.size).toDouble();
+    final dotFont = toc.copyWith(
+      style: dotStyle,
+      size: dotSize,
+      color: _c('toc_dot_leader_font_color') ?? toc.color,
+    );
+    final dotLevels = switch (_theme['toc_dot_leader_levels']) {
+      ThemeString(value: 'none') => const <int>{},
+      ThemeString(value: 'all') || null => null,
+      final value => {
+        for (final part in value.rubyString.split(RegExp(r'\s+')))
+          ?int.tryParse(part),
+      },
+    };
+    final dotText = _s('toc_dot_leader_content') ?? '. ';
+    final dotPrawn = _fonts.font(dotFont.family, dotFont.style);
+    final dotWidth = dotText.isEmpty
+        ? 0.0
+        : dotPrawn.widthOf(dotText, dotSize, kerning: dotFont.kerning);
+    final spacerSize = dotSize * 0.25;
+    final spacerWidth = dotPrawn.widthOf(' ', spacerSize, kerning: false);
+    dotStyle = dotFont.style;
+    final margin = (_n('toc_margin_top') ?? 0).toDouble();
+    if (margin > 0) _out.add(SpacerBox(margin));
+    final indent = (_n('toc_indent') ?? 0).toDouble();
+    void level(List<Section> entries, int levels, double left) {
+      for (final entry in entries) {
+        final entryLevel = (entry.level ?? 0) + 1;
+        final entryLevels =
+            int.tryParse(entry.attr('toclevels') ?? '') ?? levels;
+        if (entryLevels < entryLevel - 1) continue;
+        if (entry.hasOption('notitle') &&
+            entry == doc.blocks.lastOrNull &&
+            entry.blocks.isEmpty) {
+          continue;
+        }
+        var title = _numberedTitle(entry, formal: false);
+        if (title.isEmpty) continue;
+        final font = _themeFont('toc_h$entryLevel', toc);
+        title = title.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
+        if (font.transform case final transform? when transform != 'none') {
+          title = transformText(title, transform);
+        }
+        final anchor = _sectionAnchor(entry);
+        final placeholder = _fonts
+            .font(font.family, font.style)
+            .widthOf('0' * 3, font.size, kerning: font.kerning);
+        final showDots =
+            dotWidth > 0 &&
+            (dotLevels == null || dotLevels.contains(entryLevel - 1));
+        _out.add(
+          CustomBox(
+            _TocEntry(
+              _textBox(
+                anchor == null ? title : '<a anchor="$anchor">$title</a>',
+                font,
+                align: _baseTextAlign,
+                normalize: false,
+                normalizeLineHeight: true,
+              ),
+              placeholder,
+              (width, startDots) {
+                final label = anchor == null ? '?' : _anchorLabel(anchor);
+                final prawn = _fonts.font(font.family, font.style);
+                final labelWidth = prawn.widthOf(
+                  label,
+                  font.size,
+                  kerning: font.kerning,
+                );
+                final number = anchor == null
+                    ? label
+                    : '<a anchor="$anchor">$label</a>';
+                final String markup;
+                if (showDots) {
+                  final dots = math.max(
+                    ((width - startDots - spacerWidth - labelWidth) / dotWidth)
+                        .floor(),
+                    0,
+                  );
+                  final dotColor = dotFont.color?.rubyString;
+                  markup =
+                      '<font name="${dotFont.family}" size="$dotSize"'
+                      '${dotColor == null ? '' : ' color="$dotColor"'}>'
+                      '${_styled(dotText * dots, dotStyle)}</font>'
+                      '<font size="$spacerSize"> </font>'
+                      '${_styled(number, font.style)}';
+                } else {
+                  markup = number;
+                }
+                return _textBox(markup, font, align: 'right', normalize: false);
+              },
+            ),
+            style: BoxStyle(margin: EdgeInsets(left: left)),
+          ),
+        );
+        if (entryLevels >= entryLevel) {
+          level(
+            entry.sections.whereType<Section>().toList(),
+            entryLevels,
+            left + indent,
+          );
+        }
+      }
+    }
+
+    level(doc.sections.whereType<Section>().toList(), levels, 0);
+  }
+
+  /// [markup] in [style] (as inline markup).
+  static String _styled(String markup, String style) => switch (style) {
+    'bold' => '<strong>$markup</strong>',
+    'italic' => '<em>$markup</em>',
+    'bold_italic' => '<strong><em>$markup</em></strong>',
+    _ => markup,
+  };
+
+  /// The anchor of [section] (its id, or the one made up for it).
+  String? _sectionAnchor(Section section) {
+    if (section.id case final id?) return id;
+    for (final (s, anchor) in _sections) {
+      if (s == section) return anchor;
+    }
+    return '__section-${section.hashCode}';
+  }
+
+  /// The page label of [anchor]'s page, or `?`.
+  String _anchorLabel(String anchor) {
+    final page = _anchorPages[anchor];
+    return page == null ? '?' : _pageLabel(page);
+  }
+
+  static const _bodyAnchor = '__asciidart-body';
+
+  /// Marks where the body starts (after the title page and the table of
+  /// contents of a book).
+  static CustomBox _bodyMarker() =>
+      const CustomBox(_Nothing(), style: BoxStyle(anchor: _bodyAnchor));
+
+  /// The pages before the running content and the page numbers start
+  /// (the gem's `num_front_matter_pages`, without covers).
+  (int, int) _frontMatter({required bool titlePage}) {
+    final bodyOffset = _bodyStart - 1;
+    ThemeValue? startAt(String key) => _theme[key];
+    if (!titlePage) {
+      int offset(ThemeValue? value) => switch (value) {
+        ThemeNumber(:final value) =>
+          bodyOffset + math.max(value.toInt() - 1, 0),
+        _ => bodyOffset,
+      };
+      return (
+        offset(startAt('running_content_start_at')),
+        offset(startAt('page_numbering_start_at')),
+      );
+    }
+    final hasTitlePage =
+        _document.hasHeader &&
+        !_document.notitle &&
+        _theme['title_page'] is! ThemeBool;
+    const zero = 0;
+    final first = hasTitlePage ? zero + 1 : zero;
+    final tocAtTop = _tocPages != null;
+    String resolve(ThemeValue? value, void Function(int) integer) {
+      switch (value) {
+        case ThemeNumber(:final value):
+          integer(bodyOffset + math.max(value.toInt() - 1, 0));
+          return 'body';
+        case final other?:
+          return switch (other.rubyString) {
+            'title' when !hasTitlePage => 'toc',
+            'toc' when !tocAtTop => 'body',
+            'after-toc' => 'body',
+            final setting => setting,
+          };
+        case null:
+          return 'body';
+      }
+    }
+
+    var runningBody = bodyOffset;
+    var numberingBody = bodyOffset;
+    final running = resolve(
+      startAt('running_content_start_at'),
+      (v) => runningBody = v,
+    );
+    final numbering = resolve(
+      startAt('page_numbering_start_at'),
+      (v) => numberingBody = v,
+    );
+    final skips = switch ((running, numbering)) {
+      ('title', 'title') => (zero, zero),
+      ('title', 'toc') => (zero, first),
+      ('title', _) => (zero, numberingBody),
+      ('toc', 'title') => (first, zero),
+      ('toc', 'toc') => (first, first),
+      ('toc', _) => (first, numberingBody),
+      (_, 'title') => (runningBody, zero),
+      (_, 'toc') => (runningBody, first),
+      _ => (runningBody, numberingBody),
+    };
+    return skips;
   }
 
   Theme _loadTheme(Document document) {
@@ -411,31 +880,82 @@ final class PdfConverter extends BuiltInConverter
 
   /// Converts [section]: its heading, then its blocks.
   void convertSection(Section section) {
+    final sectname = section.sectname;
+    // The index isn't collected yet: an index section is left out, as
+    // the gem leaves out an empty one.
+    if (sectname == 'index') return;
     final title = _numberedTitle(section);
     final hlevel = (section.level ?? 0) + 1;
     final align =
         _s('heading_h${hlevel}_text_align') ??
         _s('heading_text_align') ??
         _baseTextAlign;
-    final anchor = section.id;
+    final anchor = section.id ?? '__section-${section.hashCode}';
     final hidden = section.hasOption('notitle');
-    if (!hidden) {
+    final part = sectname == 'part';
+    final chapterlike =
+        !part &&
+        (sectname == 'chapter' ||
+            (_document.doctype == 'book' && section.level == 1));
+    var startedNew = false;
+    if (part) {
+      if (_s('heading_part_break_before') == 'always') startedNew = true;
+    } else if (chapterlike) {
+      final parent = section.parent;
+      final firstOfPart =
+          parent is Section &&
+          parent.sectname == 'part' &&
+          parent.blocks.whereType<Section>().firstOrNull == section;
+      final partAfter = _s('heading_part_break_after');
+      if ((_s('heading_chapter_break_before') == 'always' &&
+              !(partAfter == 'avoid' && firstOfPart)) ||
+          (partAfter == 'always' && firstOfPart)) {
+        startedNew = true;
+      }
+    }
+    if (startedNew) _out.add(const BreakBox.page());
+    if (hidden) {
+      _out.add(CustomBox(const _Nothing(), style: BoxStyle(anchor: anchor)));
+    } else {
       _heading(
         title,
         level: hlevel,
         align: align,
         anchor: anchor,
-        arrange: true,
+        arrange: !startedNew,
         hasContent: section.blocks.isNotEmpty,
+        marks: _sectionMarks(section, part: part),
       );
     }
-    if (anchor != null) _sections.add((section, anchor));
+    _sections.add((section, anchor));
     _traverse(section);
+  }
+
+  /// Whether a part has started (an appendix ends it).
+  bool _inPart = false;
+
+  /// The running marks a section's heading sets (for the running
+  /// content): a part or chapter of a book, else a section, by the
+  /// levels it counts for.
+  Map<String, String> _sectionMarks(Section section, {required bool part}) {
+    final index = '${_sections.length}';
+    final level = section.level ?? 1;
+    if (_document.doctype == 'book' && (part || level == 1)) {
+      if (part) {
+        _inPart = true;
+        return {'part': index};
+      }
+      return {
+        'chapter': index,
+        if (section.sectname == 'appendix' && _inPart) 'part': '',
+      };
+    }
+    return {for (var k = level; k <= 6; k++) 'section-$k': index};
   }
 
   /// The section title as the gem numbers it (`numbered_title formal:
   /// true`).
-  String _numberedTitle(Section section) {
+  String _numberedTitle(Section section, {bool formal = true}) {
     final title = section.title ?? '';
     final level = section.level ?? 0;
     final doc = _document;
@@ -445,6 +965,7 @@ final class PdfConverter extends BuiltInConverter
         final numbered = level == 0
             ? '${section.sectnum('.', ':')} $title'
             : '${section.sectnum()} $title';
+        if (!formal) return numbered;
         final signifier = level == 0
             ? doc.attributes['part-signifier'] ?? 'Part'
             : doc.attributes['chapter-signifier'] ?? 'Chapter';
@@ -500,8 +1021,10 @@ final class PdfConverter extends BuiltInConverter
     String? anchor,
     bool arrange = false,
     bool hasContent = false,
+    Map<String, String> marks = const {},
+    _FontState? font,
   }) {
-    final font = _headingFont(level);
+    font ??= _headingFont(level);
     var text = title;
     if (font.transform case final transform? when transform != 'none') {
       text = transformText(text, transform);
@@ -529,12 +1052,19 @@ final class PdfConverter extends BuiltInConverter
       if (below > 0) below += marginBottom;
       content = _NeedsRoom(box, below);
     }
+    final pageTop =
+        (_n('heading_h${level}_margin_page_top') ??
+                _n('heading_margin_page_top') ??
+                0)
+            .toDouble();
+    if (pageTop > 0) content = _PageTopGap(content, pageTop);
     _out.add(
       CustomBox(
         content,
         style: BoxStyle(
           margin: EdgeInsets(top: marginTop, bottom: marginBottom),
           anchor: anchor,
+          marks: marks,
         ),
       ),
     );
@@ -2861,6 +3391,7 @@ final class PdfConverter extends BuiltInConverter
     double characterSpacing = 0,
     bool cell = false,
     bool inlineFormat = true,
+    bool gaps = true,
   }) {
     var text = markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -2898,8 +3429,8 @@ final class PdfConverter extends BuiltInConverter
       TextLayout(
         align: align,
         leading: metrics.leading,
-        initialGap: cell ? 0 : metrics.paddingTop,
-        paddingBottom: cell ? 0 : metrics.paddingBottom,
+        initialGap: cell || !gaps ? 0 : metrics.paddingTop,
+        paddingBottom: cell || !gaps ? 0 : metrics.paddingBottom,
         trailingLineGap: cell,
         indentFirstLine: indent,
         normalizeLineHeight: normalizeLineHeight,
@@ -2924,42 +3455,370 @@ final class PdfConverter extends BuiltInConverter
 
   // Running content.
 
-  List<LayoutBox> _footer(PageInfo page) {
-    final side = page.number.isOdd ? 'recto' : 'verso';
-    final height = (_n('footer_height') ?? 0).toDouble();
-    if (height == 0) return const [];
-    final columns = <(String, String)>[
-      for (final position in ['left', 'center', 'right'])
-        if (_s('footer_${side}_${position}_content') case final content?)
-          (position, content),
+  /// The pages before the running content starts, and before the page
+  /// numbers start (the gem's `num_front_matter_pages`).
+  (int, int) _skip = (0, 0);
+
+  /// The page the body starts on (1-based).
+  int _bodyStart = 1;
+
+  /// The pages of the table of contents (1-based, inclusive), if any.
+  (int, int)? _tocPages;
+
+  /// The label of page [number]: its number after the front matter, else
+  /// its number in lower-case roman numerals.
+  String _pageLabel(int number) {
+    final virtual = number - _skip.$2;
+    return virtual < 1 ? _roman(number).toLowerCase() : '$virtual';
+  }
+
+  List<LayoutBox> _header(PageInfo page) => _running('header', page);
+
+  List<LayoutBox> _footer(PageInfo page) => _running('footer', page);
+
+  /// The four sides of the margin theme value [value], `inherit` taking
+  /// [inherit]'s values on the left and right (the gem's
+  /// `expand_margin_value`).
+  List<double> _trimValues(ThemeValue? value, List<double> inherit) {
+    const inherited = [
+      ThemeNumber(0),
+      ThemeString('inherit'),
+      ThemeNumber(0),
+      ThemeString('inherit'),
     ];
-    if (columns.isEmpty) return const [];
-    final size = (_n('footer_font_size') ?? _rootFontSize).toDouble();
-    final font = _font.copyWith(
-      size: size,
-      color: _c('footer_font_color') ?? _font.color,
-      lineHeight: (_n('footer_line_height') ?? 1).toDouble(),
+    final raw = switch (value) {
+      ThemeList(:final values) => values,
+      null => inherited,
+      final one => [one],
+    };
+    final four = switch (raw.length) {
+      1 => [raw[0], raw[0], raw[0], raw[0]],
+      2 => [raw[0], raw[1], raw[0], raw[1]],
+      3 => [raw[0], raw[1], raw[2], raw[1]],
+      _ => raw.sublist(0, 4),
+    };
+    return [
+      for (final (i, v) in four.indexed)
+        if (i.isOdd && v is ThemeString && v.value == 'inherit')
+          inherit[i]
+        else
+          _toPoints(v),
+    ];
+  }
+
+  /// The header or footer ([periphery]) of [page] (the gem's
+  /// `ink_running_content`), drawn where the gem draws it.
+  List<LayoutBox> _running(String periphery, PageInfo page) {
+    final doc = _document;
+    if (periphery == 'header' ? doc.noheader : doc.nofooter) return const [];
+    final height = (_n('${periphery}_height') ?? 0).toDouble();
+    if (height == 0) return const [];
+    if (page.count < _bodyStart) return const [];
+    final number = page.number;
+    if (number <= _skip.$1) return const [];
+    final virtual = number - _skip.$2;
+    final label = _pageLabel(number);
+    final side = virtual.isOdd ? 'recto' : 'verso';
+    final (pageWidth, pageHeight) = _pageSize(doc);
+    final margins = _pageMargins(doc);
+    final pageMargin = [
+      margins.top,
+      margins.right,
+      margins.bottom,
+      margins.left,
+    ];
+    final trimMargin = _trimValues(
+      _theme.value('${periphery}_${side}_margin') ??
+          _theme.value('${periphery}_margin'),
+      pageMargin,
     );
-    final padding = _edgeValues(_theme.value('footer_padding'));
-    final boxes = <LayoutBox>[];
-    for (final (position, content) in columns) {
-      final text = content
-          .replaceAll('{page-number}', page.label)
-          .replaceAll('{page-count}', '${page.count}');
-      boxes.add(
-        CustomBox(
-          _textBox(text, font, align: position),
-          style: BoxStyle(
-            margin: EdgeInsets(left: padding[3], right: padding[1]),
-          ),
-        ),
+    final contentMargin = _trimValues(
+      _theme.value('${periphery}_${side}_content_margin') ??
+          _theme.value('${periphery}_content_margin'),
+      [for (var i = 0; i < 4; i++) pageMargin[i] - trimMargin[i]],
+    );
+    final paddingValue =
+        _theme.value('${periphery}_${side}_padding') ??
+        _theme.value('${periphery}_padding');
+    final padding = paddingValue == null
+        ? contentMargin
+        : [
+            for (final (i, v) in _edgeValues(paddingValue).indexed)
+              v + contentMargin[i],
+          ];
+    final baseFont = _themeFont(periphery, _font);
+    final metrics = _lineMetrics(baseFont);
+    final borderWidth = (_n('${periphery}_border_width') ?? 0).toDouble();
+    final top = periphery == 'header'
+        ? pageHeight - trimMargin[0]
+        : height + trimMargin[2];
+    final left = trimMargin[3];
+    final width = pageWidth - left - trimMargin[1];
+    final contentLeft = left + padding[3];
+    final contentWidth = width - padding[1] - padding[3];
+    final contentHeight = height - padding[0] - padding[2] - borderWidth * 0.5;
+    final proseHeight =
+        contentHeight - metrics.paddingTop - metrics.paddingBottom;
+    final contentOffset = periphery == 'footer' ? borderWidth * 0.5 : 0.0;
+    var valign = _s('${periphery}_vertical_align') ?? 'middle';
+    if (valign == 'middle') valign = 'center';
+
+    // The columns: their alignment, width and left edge.
+    final columns = <String, (String, double, double)>{};
+    final spec =
+        _theme.value('${periphery}_${side}_columns') ??
+        _theme.value('${periphery}_columns');
+    if (spec != null) {
+      final parts = spec.rubyString.replaceAll(',', ' ').split(RegExp(r'\s+'))
+        ..removeWhere((p) => p.isEmpty);
+      final specs = switch (parts.length) {
+        0 ||
+        1 => {'left': '0', 'center': parts.firstOrNull ?? '100', 'right': '0'},
+        2 => {'left': parts[0], 'center': '0', 'right': parts[1]},
+        _ => {'left': parts[0], 'center': parts[1], 'right': parts[2]},
+      };
+      var total = 0.0;
+      final relative = <String, (String, double)>{};
+      for (final MapEntry(key: position, :value) in specs.entries) {
+        final first = value.isEmpty ? '' : value[0];
+        final (align, amount) = int.tryParse(first) != null
+            ? ('left', _toF(value))
+            : (
+                switch (first) {
+                  '=' => 'center',
+                  '>' => 'right',
+                  _ => 'left',
+                },
+                _toF(value.substring(1)),
+              );
+        total += amount;
+        relative[position] = (align, amount);
+      }
+      final widths = {
+        for (final MapEntry(key: position, value: (align, amount))
+            in relative.entries)
+          position: (align, total == 0 ? 0.0 : amount / total * contentWidth),
+      };
+      final leftWidth = widths['left']!.$2;
+      final centerWidth = widths['center']!.$2;
+      columns['left'] = (widths['left']!.$1, leftWidth, 0);
+      columns['center'] = (widths['center']!.$1, centerWidth, leftWidth);
+      columns['right'] = (
+        widths['right']!.$1,
+        widths['right']!.$2,
+        leftWidth + centerWidth,
+      );
+    } else {
+      for (final position in const ['left', 'center', 'right']) {
+        columns[position] = (position, contentWidth, 0);
+      }
+    }
+
+    // The attributes the content refers to.
+    final attributes = _runningAttributes(periphery, page, label);
+    final pieces = <void Function(PdfPage page)>[];
+    final background = _color(_c('${periphery}_background_color'));
+    final borderColor = borderWidth > 0
+        ? pdfColorOf(_c('${periphery}_border_color') ?? _c('base_border_color'))
+        : null;
+    if (background != null || (borderWidth > 0 && borderColor != null)) {
+      pieces.add((pdfPage) {
+        final canvas = pdfPage.canvas;
+        if (background != null) {
+          canvas
+            ..save()
+            ..setFillColor(background)
+            ..rect(PdfRect(left, top - height, width, height))
+            ..fill()
+            ..restore();
+        }
+        if (borderWidth > 0 && borderColor != null) {
+          final y = periphery == 'header' ? top - height : top;
+          canvas
+            ..save()
+            ..setStrokeColor(borderColor)
+            ..setLineWidth(borderWidth);
+          switch (_s('${periphery}_border_style')) {
+            case 'dashed':
+              canvas.dash([borderWidth * 4]);
+            case 'dotted':
+              canvas.dash([borderWidth]);
+          }
+          canvas
+            ..moveTo(left, y)
+            ..lineTo(left + width, y)
+            ..stroke()
+            ..restore();
+        }
+      });
+    }
+    for (final position in const ['left', 'center', 'right']) {
+      final template = _s('${periphery}_${side}_${position}_content');
+      if (template == null || template.isEmpty) continue;
+      final (align, columnWidth, x) = columns[position]!;
+      if (columnWidth <= 0) continue;
+      final font = _themeFont('${periphery}_${side}_$position', baseFont);
+      String? content;
+      if (template == '{page-number}') {
+        content = doc.hasAttr('pagenums') ? label : null;
+      } else {
+        content = _applySubsDiscretely(template, attributes);
+        if (font.transform case final transform? when transform != 'none') {
+          content = transformText(content, transform);
+        }
+      }
+      if (content == null || content.isEmpty) continue;
+      final prawnFont = _fonts.font(font.family, font.style);
+      final box = _textBox(
+        content,
+        font.copyWith(lineHeight: baseFont.lineHeight),
+        align: align,
+        gaps: false,
+      );
+      var y = top - padding[0] - contentOffset;
+      if (valign == 'center') y -= prawnFont.descenderAt(font.size) * 0.5;
+      final placed = box.place(columnWidth, proseHeight, atTop: true);
+      if (placed == null) continue;
+      final shift = switch (valign) {
+        'center' =>
+          (proseHeight - placed.height - prawnFont.descenderAt(font.size)) *
+              0.5,
+        'bottom' => proseHeight - placed.height,
+        _ => 0.0,
+      };
+      pieces.add(
+        (pdfPage) => placed.paint(pdfPage, contentLeft + x, y - shift),
       );
     }
-    final margins = _pageMargins(_document);
+    if (pieces.isEmpty) return const [];
     return [
-      SpacerBox(margins.bottom - height + padding[0]),
-      ColumnsBox(boxes, count: 1, gap: 0),
+      CustomBox(
+        _Absolute((pdfPage) {
+          for (final piece in pieces) {
+            piece(pdfPage);
+          }
+        }),
+      ),
     ];
+  }
+
+  static PdfColor? _color(ThemeColor? value) =>
+      value is TransparentColor ? null : pdfColorOf(value);
+
+  /// The attributes the running content of [page] refers to: the
+  /// document's, with the page number, the page count and the titles of
+  /// the part, chapter and section the page is in.
+  Map<String, String> _runningAttributes(
+    String periphery,
+    PageInfo page,
+    String label,
+  ) {
+    final doc = _document;
+    final book = doc.doctype == 'book';
+    final attributes = <String, String>{};
+    final title = doc.partitionedTitle(separator: doc.attr('title-separator'));
+    if (title != null) {
+      attributes['doctitle'] = title.combined;
+      attributes['document-title'] = title.main;
+      if (title.subtitle case final subtitle?) {
+        attributes['document-subtitle'] = subtitle;
+      }
+    }
+    attributes['page-count'] = '${page.count - _skip.$2}';
+    if (doc.hasAttr('pagenums')) attributes['page-number'] = label;
+    String titleOf(String? mark) {
+      final index = int.tryParse(mark ?? '');
+      if (index == null || index >= _sections.length) return '';
+      return _numberedTitle(_sections[index].$1);
+    }
+
+    final sectlevels = (_n('${periphery}_sectlevels') ?? 2).toInt();
+    final partMark = page.mark('part');
+    var chapterMark = page.mark('chapter');
+    var sectionMark = page.mark('section-$sectlevels');
+    // A part ends the chapter before it, and a part or a chapter the
+    // section before it.
+    final partIndex = int.tryParse(partMark ?? '') ?? -1;
+    final chapterIndex = int.tryParse(chapterMark ?? '') ?? -1;
+    final sectionIndex = int.tryParse(sectionMark ?? '') ?? -1;
+    final partStarted = partMark != null && partMark.isNotEmpty;
+    if (partStarted && chapterIndex < partIndex) chapterMark = null;
+    if (sectionIndex < math.max(partStarted ? partIndex : -1, chapterIndex)) {
+      sectionMark = null;
+    }
+    final part = titleOf(partMark);
+    String chapter;
+    String section;
+    final toc = _tocPages;
+    if (toc != null && page.number >= toc.$1 && page.number <= toc.$2) {
+      final tocTitle = doc.attr('toc-title') ?? '';
+      if (book) {
+        chapter = tocTitle;
+        section = '';
+      } else {
+        chapter = '';
+        section = sectionMark == null ? tocTitle : titleOf(sectionMark);
+      }
+    } else if (book && chapterMark == null && !partStarted) {
+      chapter = page.number < _bodyStart
+          ? doc.doctitle() ?? ''
+          : doc.attr('preface-title') ??
+                (doc.attributes.containsKey('preface-title') ? '' : 'Preface');
+      section = titleOf(sectionMark);
+    } else {
+      chapter = titleOf(chapterMark);
+      section = titleOf(sectionMark);
+    }
+    attributes['part-title'] = part;
+    attributes['chapter-title'] = chapter;
+    attributes['section-title'] = section;
+    attributes['section-or-chapter-title'] = section.isNotEmpty
+        ? section
+        : chapter;
+    return attributes;
+  }
+
+  static final RegExp _attributeReference = RegExp(
+    r'(?<!\\)\{(\w+(?:-\w+)*)\}',
+  );
+
+  /// [value] with the document's normal substitutions, with [attributes]
+  /// set and missing attributes skipped, dropping each line with a
+  /// reference that didn't resolve (the gem's `apply_subs_discretely`).
+  String _applySubsDiscretely(String value, Map<String, String> attributes) {
+    final doc = _document;
+    final docAttributes = doc.attributes;
+    final saved = <String, String?>{
+      for (final key in [...attributes.keys, 'attribute-missing'])
+        key: docAttributes[key],
+    };
+    docAttributes
+      ..addAll(attributes)
+      ..['attribute-missing'] = 'skip';
+    final escaped = value.contains(r'\{');
+    var text = escaped ? value.replaceAll(r'\{', r'\\\{') : value;
+    final before = text;
+    try {
+      text = doc.applySubs(text);
+    } finally {
+      for (final MapEntry(:key, :value) in saved.entries) {
+        if (value == null) {
+          docAttributes.remove(key);
+        } else {
+          docAttributes[key] = value;
+        }
+      }
+    }
+    if (text.contains('{')) {
+      text = text
+          .split('\n')
+          .where((line) {
+            final match = _attributeReference.firstMatch(line);
+            return match == null || !before.contains('{${match[1]}}');
+          })
+          .join('\n');
+    }
+    return escaped ? text.replaceAll(r'\{', '{') : text;
   }
 
   // The outline.
@@ -2967,7 +3826,7 @@ final class PdfConverter extends BuiltInConverter
   /// The outline (the document title, then the sections to
   /// `outlinelevels`) and the page labels (the gem's `add_outline`).
   void _outline(PdfDocument pdf, List<PdfPage> pages, LayoutResult result) {
-    const frontMatter = 0;
+    final frontMatter = _skip.$2;
     for (var n = 0; n < pages.length; n++) {
       pdf.labelPages(
         n,
@@ -2977,7 +3836,7 @@ final class PdfConverter extends BuiltInConverter
         ),
       );
     }
-    if (!_document.hasAttr('outline') && !_outlineDefault) return;
+    if (!_document.hasAttr('outline')) return;
     var levels = int.tryParse(_document.attr('toclevels') ?? '') ?? 2;
     var expand = levels;
     final setting = _document.attr('outlinelevels');
@@ -3038,6 +3897,21 @@ final class PdfConverter extends BuiltInConverter
       }
     }
 
+    // The table of contents, as the first section (the gem's
+    // `insert_toc_section`).
+    final tocTitle = _document.attr('toc-title') ?? '';
+    if (_tocPages case (final first, _)
+        when tocTitle.isNotEmpty &&
+            _document.sections.isNotEmpty &&
+            first <= pages.length) {
+      final page = pages[first - 1];
+      pdf.addOutline(
+        _plain(tocTitle),
+        LinkTarget.destination(
+          PdfDestination.xyz(page, left: 0, top: page.height),
+        ),
+      );
+    }
     level(
       _document.sections.whereType<Section>().toList(),
       levels,
@@ -3045,9 +3919,6 @@ final class PdfConverter extends BuiltInConverter
       null,
     );
   }
-
-  /// Whether the outline is on when the document doesn't say (it is).
-  bool get _outlineDefault => true;
 
   static String _roman(int number) {
     const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
@@ -3761,4 +4632,110 @@ final class _Widened implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => content.intrinsicWidths();
+}
+
+/// [content] with a [gap] above it at the top of a page (a heading's
+/// `margin_page_top`).
+final class _PageTopGap implements CustomContent {
+  const new(this.content, this.gap);
+
+  final CustomContent content;
+  final double gap;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    if (!atTop) return content.place(width, available, atTop: atTop);
+    final placed = content.place(width, available - gap, atTop: true);
+    if (placed == null) return null;
+    return CustomPlacement(
+      height: placed.height + gap,
+      rest: placed.rest,
+      anchors: [for (final (name, x, y) in placed.anchors) (name, x, y + gap)],
+      paint: (page, x, top) => placed.paint(page, x, top - gap),
+    );
+  }
+
+  @override
+  double minHeight(double width) => content.minHeight(width);
+
+  @override
+  (double, double) intrinsicWidths() => content.intrinsicWidths();
+}
+
+/// Content drawn where [paint] draws it, taking no room.
+final class _Absolute implements CustomContent {
+  const new(this.paint);
+
+  final void Function(PdfPage page) paint;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) => CustomPlacement(height: 0, paint: (page, x, top) => paint(page));
+
+  @override
+  double minHeight(double width) => 0;
+
+  @override
+  (double, double) intrinsicWidths() => (0, 0);
+}
+
+/// An entry of the table of contents: its title (as wide as the room
+/// less a [placeholder] for the page number), then a dot leader and the
+/// page number on its last line, made by [leader] for the width and where
+/// the dots start.
+final class _TocEntry implements CustomContent {
+  const new(this.title, this.placeholder, this.leader);
+
+  final PrawnTextBox title;
+  final double placeholder;
+  final CustomContent Function(double width, double startDots) leader;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final room = width - placeholder;
+    final placed = title.place(room, available, atTop: atTop);
+    if (placed == null) return null;
+    if (placed.rest case final PrawnTextBox rest) {
+      return CustomPlacement(
+        height: placed.height,
+        anchors: placed.anchors,
+        rest: _TocEntry(rest, placeholder, leader),
+        paint: placed.paint,
+      );
+    }
+    final last = title.lastFragment(room);
+    return CustomPlacement(
+      height: placed.height,
+      anchors: placed.anchors,
+      paint: (page, x, top) {
+        placed.paint(page, x, top);
+        if (last == null) return;
+        final dots = leader(width, last.right);
+        final line = dots.place(width, double.infinity, atTop: true);
+        if (line == null) return;
+        // On the title's last line: the same line as its first, or the
+        // top of its last fragment.
+        final multiline = last.top - last.firstTop > 1;
+        final offset = multiline ? last.top - last.firstTop : 0.0;
+        line.paint(page, x, top - offset);
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) => title.minHeight(width - placeholder);
+
+  @override
+  (double, double) intrinsicWidths() => title.intrinsicWidths();
 }

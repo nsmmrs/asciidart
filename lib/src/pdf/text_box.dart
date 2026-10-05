@@ -346,6 +346,36 @@ final class PrawnTextBox implements CustomContent {
     return (least, math.max(most, line));
   }
 
+  /// The right edge and the top of the last fragment of the text laid
+  /// out [width] wide, relative to the box's left and top, with the top
+  /// of its first line; null for no text.
+  ({double right, double top, double firstTop})? lastFragment(double width) {
+    if (_items.isEmpty) return null;
+    final gap = _layout.initialGap;
+    final lines = _Wrap(
+      [for (final item in _items) item.copy()],
+      _state,
+      _layout,
+      _context,
+      width,
+      double.infinity,
+      firstPiece: first,
+    ).run();
+    final printed = [
+      for (final line in lines)
+        for (final f in line.fragments)
+          if (!f.format.fragment.isMarker) f,
+    ];
+    if (printed.isEmpty) return null;
+    final last = printed.last;
+    final head = printed.first;
+    return (
+      right: last.left + last.width,
+      top: gap + last.baseline - last.ascender,
+      firstTop: gap + head.baseline - head.ascender,
+    );
+  }
+
   @override
   CustomPlacement? place(
     double width,

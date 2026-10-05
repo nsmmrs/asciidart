@@ -27,8 +27,12 @@ void main() {
   setUpAll(registerPdf);
 
   for (final name in [
+    'article-toc',
     'blocks',
     'blocks2',
+    'book',
+    'book1',
+    'book2',
     'dlists',
     'dlists2',
     'images',
