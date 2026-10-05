@@ -3490,7 +3490,14 @@ abstract final class Parser {
 
     var explicitColspecs = false;
     if (attributes.containsKey('cols')) {
-      final colspecs = parseColspecs(attributes['cols']!);
+      final colspecs = parseColspecs(
+        attributes['cols']!,
+        onInvalid: (record) => _logger.warn(
+          'invalid column spec in cols attribute: $record; '
+          'using a default column',
+          at: tableReader.cursor(),
+        ),
+      );
       if (colspecs.isNotEmpty) {
         table.createColumns(colspecs);
         explicitColspecs = true;
@@ -3664,7 +3671,15 @@ abstract final class Parser {
   /// Parses the column specs for a table.
   ///
   /// Port of `Parser.parse_colspecs`.
-  static List<ColumnSpec> parseColspecs(String records) {
+  ///
+  /// A record that isn't a column spec is reported to [onInvalid] and
+  /// stands for a default column, so the column count stays as written
+  /// (#3349); when no record is valid, there are no specs, and the first
+  /// row decides the columns, as before.
+  static List<ColumnSpec> parseColspecs(
+    String records, {
+    void Function(String record)? onInvalid,
+  }) {
     var input = records;
     if (input.contains(' ')) input = input.replaceAll(' ', '');
     // Check for deprecated syntax: single number, equal column spread.
@@ -3677,6 +3692,7 @@ abstract final class Parser {
     if (input.isEmpty) return specs;
     // NOTE Dart split keeps trailing empty records, like split with -1.
     final parts = input.contains(',') ? input.split(',') : input.split(';');
+    var invalid = 0;
     for (final record in parts) {
       if (record.isEmpty) {
         specs.add(const ColumnSpec());
@@ -3713,10 +3729,14 @@ abstract final class Parser {
           } else {
             specs.add(spec);
           }
+        } else {
+          onInvalid?.call(record);
+          specs.add(const ColumnSpec());
+          invalid += 1;
         }
       }
     }
-    return specs;
+    return invalid == parts.length ? <ColumnSpec>[] : specs;
   }
 
   /// Parses the cell specs for the current cell.
