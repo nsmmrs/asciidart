@@ -334,7 +334,7 @@ final class PrawnTextBox implements CustomContent {
       final size = item.format.size;
       for (final segment in _tokenize(item.text)) {
         final width = font.widthOf(segment, size, kerning: _state.kerning);
-        if (segment.trim().isNotEmpty) least = math.max(least, width);
+        if (_strip(segment).isNotEmpty) least = math.max(least, width);
         line += width;
       }
     }
@@ -793,7 +793,7 @@ final class _Wrap {
     if ((_lineFull || _paragraphFinished) &&
         _lineEmptyNow &&
         _output.isEmpty &&
-        fragment.trim().isNotEmpty) {
+        _strip(fragment).isNotEmpty) {
       throw const _CannotFit();
     }
     _updateLastString(_output, remaining, normalized: true);
@@ -857,7 +857,7 @@ final class _Wrap {
     // Omit trailing whitespace from the line width.
     for (final item in _consumed.reversed) {
       if (item.text == '\n') break;
-      if (item.text.trim().isEmpty && _consumed.length > 1) {
+      if (_strip(item.text).isEmpty && _consumed.length > 1) {
         item.excludeTrailingWhiteSpace = true;
       } else {
         item.excludeTrailingWhiteSpace = true;
@@ -868,7 +868,7 @@ final class _Wrap {
     for (final item in _consumed) {
       var text = item.text.replaceAll(_zwsp, '');
       if (item.excludeTrailingWhiteSpace) {
-        text = text.trimRight();
+        text = _rstrip(text);
         if (item.normalizedSoftHyphen && text.isNotEmpty) {
           text =
               text.substring(0, text.length - 1).replaceAll(_shy, '') +
@@ -915,9 +915,6 @@ final class _Wrap {
         RegExp(r'^\s*[+-]?(?:\d+(?:\.\d+)?|\.\d+)').stringMatch(text) ?? '',
       ) ??
       0;
-
-  static String _lstrip(String text) =>
-      text.replaceFirst(RegExp(r'^[\s\x00]+'), '');
 
   // Wrap.
 
@@ -994,3 +991,14 @@ final class _Wrap {
 final class _CannotFit implements Exception {
   const new();
 }
+
+// Ruby's whitespace (for strip and its kin): ASCII whitespace and NUL,
+// never a no-break space.
+final RegExp _leadingSpace = RegExp(r'^[\t\n\v\f\r \x00]+');
+final RegExp _trailingSpace = RegExp(r'[\t\n\v\f\r \x00]+$');
+
+String _lstrip(String text) => text.replaceFirst(_leadingSpace, '');
+
+String _rstrip(String text) => text.replaceFirst(_trailingSpace, '');
+
+String _strip(String text) => _lstrip(_rstrip(text));

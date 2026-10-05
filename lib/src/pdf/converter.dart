@@ -137,6 +137,11 @@ final class PdfConverter extends BuiltInConverter
         final context = block.context;
         if (context == BlockContext.paragraph) {
           convertParagraph(block);
+        } else if (context == BlockContext.admonition) {
+          convertAdmonition(block);
+        } else if (context == BlockContext.listing ||
+            context == BlockContext.literal) {
+          convertCode(block);
         } else if (context == BlockContext.preamble) {
           convertPreamble(block);
         } else if (context == BlockContext.open) {
@@ -314,9 +319,18 @@ final class PdfConverter extends BuiltInConverter
 
   // Traversal.
 
+  /// Converts the blocks of [node], or the text of a block without any
+  /// (an admonition paragraph, say) as prose.
   void _traverse(AbstractBlock node) {
-    for (final block in node.blocks) {
-      block.convert();
+    if (node.blocks.isNotEmpty) {
+      for (final block in node.blocks) {
+        block.convert();
+      }
+    } else if (node is Block && node.contentModel != ContentModel.compound) {
+      if (node.content() case final text?) {
+        final align = _alignOf(node.roles) ?? _baseTextAlign;
+        _out.add(CustomBox(_textBox(text, _font, align: align)));
+      }
     }
   }
 
@@ -538,18 +552,7 @@ final class PdfConverter extends BuiltInConverter
   /// Converts the paragraph [node].
   void convertParagraph(Block node) {
     final roles = node.roles;
-    var align = _baseTextAlign;
-    for (final role in roles) {
-      if (role.startsWith('text-') &&
-          const {
-            'justify',
-            'left',
-            'center',
-            'right',
-          }.contains(role.substring(5))) {
-        align = role.substring(5);
-      }
-    }
+    final align = _alignOf(roles) ?? _baseTextAlign;
     var indent = 0.0;
     if (align == 'justify' || align == 'left') {
       final textIndent = (_n('prose_text_indent') ?? 0).toDouble();
@@ -587,11 +590,298 @@ final class PdfConverter extends BuiltInConverter
     );
   }
 
+  /// The text alignment a `text-<align>` role among [roles] selects (the
+  /// last one wins).
+  static String? _alignOf(List<String> roles) {
+    for (final role in roles.reversed) {
+      if (role.startsWith('text-') &&
+          const {
+            'justify',
+            'left',
+            'center',
+            'right',
+          }.contains(role.substring(5))) {
+        return role.substring(5);
+      }
+    }
+    return null;
+  }
+
   AbstractBlock? _previousSibling(AbstractBlock node) {
     final parent = node.parent;
     if (parent is! AbstractBlock) return null;
     final index = parent.blocks.indexOf(node);
     return index > 0 ? parent.blocks[index - 1] : null;
+  }
+
+  // Blocks with a background and a border.
+
+  /// The decoration of a block of theme [category] (the gem's
+  /// `theme_fill_and_stroke_block`): its background and border, the
+  /// border centered on the block's edge, with a dashed line where a split
+  /// block continues; [extra] paints more.
+  BoxDecoration? _blockDecoration(
+    String category, {
+    ThemeColor? background,
+    BoxDecoration? extra,
+  }) {
+    final widthValue = _theme.value('${category}_border_width');
+    var borderWidth = switch (widthValue) {
+      ThemeNumber(:final value) => value.toDouble(),
+      ThemeList(:final values) when values.isNotEmpty => _toPoints(values[0]),
+      _ => 0.0,
+    };
+    final sideWidths = widthValue is ThemeList;
+    var fill = background ?? _c('${category}_background_color');
+    if (fill is TransparentColor) fill = null;
+    if (borderWidth <= 0 && fill == null) return extra;
+    final stroke = _c('${category}_border_color') ?? _c('base_border_color');
+    final pageBackground =
+        _c('page_background_color') ?? const HexColor('FFFFFF');
+    final radius = sideWidths
+        ? 0.0
+        : (_n('${category}_border_radius') ?? 0).toDouble();
+    final dashRadius = radius + borderWidth;
+    final PdfColor? gapColor;
+    final double shift;
+    if (borderWidth > 0) {
+      if (stroke == pageBackground) {
+        (gapColor, shift) = (pdfColorOf(pageBackground), borderWidth * 0.5);
+      } else if (fill != null && fill != stroke) {
+        (gapColor, shift) = (pdfColorOf(fill), 0.0);
+      } else {
+        (gapColor, shift) = (pdfColorOf(pageBackground), 0.0);
+      }
+    } else {
+      borderWidth = 0.5;
+      (gapColor, shift) = (pdfColorOf(pageBackground), borderWidth * 0.5);
+    }
+    final hasStroke = (_n('${category}_border_width') ?? 0) > 0 || sideWidths;
+    return (page, rect, {required first, required last}) {
+      final canvas = page.canvas..save();
+      if (pdfColorOf(fill) case final color?) {
+        canvas.setFillColor(color);
+        radius > 0 ? canvas.roundedRect(rect, radius) : canvas.rect(rect);
+        canvas.fill();
+      }
+      if (hasStroke) {
+        if (pdfColorOf(stroke) case final color?) {
+          canvas
+            ..setStrokeColor(color)
+            ..setLineWidth(borderWidth);
+          radius > 0 ? canvas.roundedRect(rect, radius) : canvas.rect(rect);
+          canvas.stroke();
+        }
+      }
+      // A dashed line where the block continues from or to another page.
+      void dashed(double y) {
+        if (gapColor == null) return;
+        canvas
+          ..save()
+          ..setStrokeColor(gapColor)
+          ..setLineWidth(borderWidth * 1.2)
+          ..dash([borderWidth * 1.2 * 4])
+          ..moveTo(rect.left + dashRadius, y)
+          ..lineTo(rect.right - dashRadius, y)
+          ..stroke()
+          ..restore();
+      }
+
+      if (!first) dashed(rect.top - shift);
+      if (!last) dashed(rect.bottom + shift);
+      canvas.restore();
+      extra?.call(page, rect, first: first, last: last);
+    };
+  }
+
+  /// The padding of theme [key] as edge insets.
+  EdgeInsets _padding(String key) {
+    final values = _edgeValues(_theme.value(key) ?? const ThemeNumber(0));
+    return EdgeInsets(
+      top: values[0],
+      right: values[1],
+      bottom: values[2],
+      left: values[3],
+    );
+  }
+
+  /// Runs [body] with the font of theme [category] in effect.
+  void _withFont(String category, void Function() body) {
+    final saved = _font;
+    _font = _themeFont(category, _font);
+    try {
+      body();
+    } finally {
+      _font = saved;
+    }
+  }
+
+  /// The boxes [body] adds.
+  List<LayoutBox> _collect(void Function() body) {
+    final saved = _out;
+    final boxes = <LayoutBox>[];
+    _out = boxes;
+    try {
+      body();
+    } finally {
+      _out = saved;
+    }
+    return boxes;
+  }
+
+  // Admonitions.
+
+  /// Converts the admonition [node] (with a text label).
+  void convertAdmonition(Block node) {
+    final type = node.attr('name') ?? 'note';
+    final labelAlign = _s('admonition_label_text_align') ?? 'center';
+    final minWidth = _n('admonition_label_min_width')?.toDouble();
+    var labelFont = _themeFont('admonition_label', _font);
+    labelFont = _themeFont('admonition_label_$type', labelFont);
+    var label = _plain(node.caption ?? '');
+    if (labelFont.transform case final transform? when transform != 'none') {
+      label = transformText(label, transform);
+    }
+    var labelWidth = _fonts
+        .font(labelFont.family, labelFont.style)
+        .widthOf(label, labelFont.size, kerning: labelFont.kerning);
+    if (minWidth != null && minWidth > labelWidth) labelWidth = minWidth;
+    final cpad = _padding('admonition_padding');
+    final lpad = _theme.value('admonition_label_padding') == null
+        ? cpad
+        : _padding('admonition_label_padding');
+    final ruleWidth = (_n('admonition_column_rule_width') ?? 0).toDouble();
+    final ruleColor =
+        _c('admonition_column_rule_color') ?? _c('base_border_color');
+    final labelBox = _textBox(
+      label.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
+      labelFont.copyWith(lineHeight: 1),
+      align: labelAlign,
+      normalize: false,
+    );
+    final ruleX = lpad.left + labelWidth + lpad.right;
+    void decorate(
+      PdfPage page,
+      PdfRect rect, {
+      required bool first,
+      required bool last,
+    }) {
+      final canvas = page.canvas;
+      if (ruleWidth > 0 && pdfColorOf(ruleColor) != null) {
+        canvas
+          ..save()
+          ..setStrokeColor(pdfColorOf(ruleColor)!)
+          ..setLineWidth(ruleWidth)
+          ..moveTo(rect.left + ruleX, rect.top)
+          ..lineTo(rect.left + ruleX, rect.bottom)
+          ..stroke()
+          ..restore();
+      }
+      if (!first) return;
+      final placed = labelBox.place(labelWidth, double.infinity, atTop: true);
+      if (placed == null) return;
+      final offset = math.max(0, (rect.height - placed.height) * 0.5);
+      placed.paint(page, rect.left + lpad.left, rect.top - offset);
+    }
+
+    final children = _collect(() {
+      if (node.hasTitle) {
+        _caption(node, category: 'admonition', labeled: false);
+      }
+      _withFont('admonition', () => _traverse(node));
+    });
+    _out.add(
+      BlockBox(
+        children,
+        style: BoxStyle(
+          padding: EdgeInsets(
+            top: cpad.top,
+            right: cpad.right,
+            bottom: cpad.bottom,
+            left: lpad.left + labelWidth + lpad.right + cpad.left,
+          ),
+          margin: EdgeInsets(
+            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          keepTogether: node.hasOption('unbreakable'),
+          anchor: node.id,
+          decoration: _blockDecoration('admonition', extra: decorate),
+        ),
+      ),
+    );
+  }
+
+  // Code.
+
+  /// Converts the listing or literal block [node] (without syntax
+  /// highlighting).
+  void convertCode(Block node) {
+    final font = _themeFont('code', _font);
+    final source = _guardIndentation(node.content() ?? '');
+    final captionBelow = _s('code_caption_end') == 'bottom';
+    if (!captionBelow && node.hasTitle) _caption(node, category: 'code');
+    final box = _textBox(
+      source,
+      font.copyWith(color: _c('code_font_color') ?? font.color),
+      align: 'left',
+      normalize: false,
+    );
+    _out.add(
+      BlockBox(
+        [CustomBox(box)],
+        style: BoxStyle(
+          padding: _padding('code_padding'),
+          margin: EdgeInsets(
+            bottom: captionBelow
+                ? 0
+                : _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          keepTogether: node.hasOption('unbreakable'),
+          anchor: node.id,
+          decoration: _blockDecoration('code'),
+        ),
+      ),
+    );
+    if (captionBelow && node.hasTitle) {
+      _caption(node, category: 'code');
+      final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+      if (margin > 0) _out.add(SpacerBox(margin));
+    }
+  }
+
+  /// [text] with its tabs expanded and its indentation kept: a leading
+  /// space of each line becomes a no-break space (the gem's
+  /// `guard_indentation`).
+  static String _guardIndentation(String text) {
+    var result = _expandTabs(text);
+    if (result.isEmpty) return result;
+    if (result.startsWith(' ')) result = '\u00a0${result.substring(1)}';
+    return result.replaceAll('\n ', '\n\u00a0');
+  }
+
+  /// [text] with tabs expanded to the next multiple of 4 columns (the
+  /// gem's `expand_tabs`).
+  static String _expandTabs(String text) {
+    if (!text.contains('\t')) return text;
+    return text
+        .split('\n')
+        .map((line) {
+          if (!line.contains('\t')) return line;
+          final out = StringBuffer();
+          var column = 0;
+          for (final char in line.split('')) {
+            if (char == '\t') {
+              final spaces = 4 - column % 4;
+              out.write(' ' * spaces);
+              column += spaces;
+            } else {
+              out.write(char);
+              column++;
+            }
+          }
+          return out.toString();
+        })
+        .join('\n');
   }
 
   // Captions.

@@ -1,0 +1,50 @@
+= Blocks Test
+:doctype: article
+
+Intro paragraph before the blocks.
+
+NOTE: This is a simple note admonition with enough text to wrap onto a second line when rendered in the default theme of the gem.
+
+TIP: A short tip.
+
+.Important things
+[IMPORTANT]
+====
+An admonition with a title and two paragraphs.
+
+The second paragraph.
+====
+
+WARNING: Watch out.
+
+CAUTION: Be careful.
+
+A paragraph between.
+
+----
+A listing block
+  with indentation
+	and a tab
+----
+
+.A titled listing
+----
+def hello
+  puts "hello"
+end
+----
+
+....
+A literal block
+   indented line
+....
+
+ A literal paragraph
+ with two lines.
+
+[source,ruby]
+----
+puts 'source block without highlighter'
+----
+
+Closing paragraph.
