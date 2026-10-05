@@ -48,6 +48,9 @@ void main() {
     'tables',
     'tables2',
     'tables3',
+    'toc-book-macro',
+    'toc-macro',
+    'toc-preamble',
   ]) {
     test('$name.adoc converts as the gem converts it', () {
       final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');

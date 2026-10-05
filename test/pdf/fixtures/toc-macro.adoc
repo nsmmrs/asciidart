@@ -1,0 +1,14 @@
+= Article TOC Macro
+:toc: macro
+
+Intro paragraph.
+
+toc::[]
+
+== First
+
+Content.
+
+== Second
+
+More content.

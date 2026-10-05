@@ -169,6 +169,8 @@ final class PdfConverter extends BuiltInConverter
           convertPageBreak(block);
         } else if (context == BlockContext.image) {
           convertImage(block);
+        } else if (context == BlockContext.toc) {
+          convertToc(block);
         }
       // Other blocks aren't converted yet: they are left out.
       default:
@@ -260,18 +262,11 @@ final class PdfConverter extends BuiltInConverter
         placement != 'macro' &&
         placement != 'preamble' &&
         _sectionsOf(document).isNotEmpty;
+    _tocAtTop = tocAtTop;
+    _tocDone = false;
+    _tocNoHeader = _tocNoFooter = false;
     if (tocAtTop) {
-      _out.add(const CustomBox(_Nothing(), style: BoxStyle(anchor: 'toc')));
-      _toc(document);
-      _out.add(
-        const CustomBox(_Nothing(), style: BoxStyle(anchor: _tocEndAnchor)),
-      );
-      if (titlePage && _s('toc_break_after') != 'auto') {
-        _out.add(const BreakBox.page());
-      } else {
-        final margin = (_n('block_margin_bottom') ?? 0).toDouble();
-        if (margin > 0) _out.add(SpacerBox(margin));
-      }
+      _addToc('toc', breakAfter: titlePage && _s('toc_break_after') != 'auto');
     }
     if (titlePage) _out.add(_bodyMarker());
     _traverse(document);
@@ -293,13 +288,10 @@ final class PdfConverter extends BuiltInConverter
         key: value.page + 1,
     };
     _tocPages = switch ((
-      result.anchors['toc'],
+      result.anchors[_tocStartAnchor],
       result.anchors[_tocEndAnchor],
     )) {
-      (final start?, final end?) when tocAtTop => (
-        start.page + 1,
-        end.page + 1,
-      ),
+      (final start?, final end?) => (start.page + 1, end.page + 1),
       _ => null,
     };
     _skip = _frontMatter(titlePage: titlePage);
@@ -501,7 +493,64 @@ final class PdfConverter extends BuiltInConverter
     }
   }
 
+  static const _tocStartAnchor = '__asciidart-toc-start';
   static const _tocEndAnchor = '__asciidart-toc-end';
+
+  /// Whether the table of contents is at the top (after the title).
+  bool _tocAtTop = false;
+
+  /// Whether the table of contents has been added (there's only one).
+  bool _tocDone = false;
+
+  /// Whether the pages of the table of contents have no header, or no
+  /// footer (a toc macro's options).
+  bool _tocNoHeader = false;
+  bool _tocNoFooter = false;
+
+  /// Adds the table of contents at [anchor] (the gem's `allocate_toc`):
+  /// then a page break when [breakAfter], else the block margin.
+  void _addToc(String anchor, {required bool breakAfter}) {
+    _tocDone = true;
+    _out
+      ..add(CustomBox(const _Nothing(), style: BoxStyle(anchor: anchor)))
+      ..add(
+        const CustomBox(_Nothing(), style: BoxStyle(anchor: _tocStartAnchor)),
+      );
+    _toc(_document);
+    _out.add(
+      const CustomBox(_Nothing(), style: BoxStyle(anchor: _tocEndAnchor)),
+    );
+    if (breakAfter) {
+      _out.add(const BreakBox.page());
+    } else {
+      final margin = (_n('block_margin_bottom') ?? 0).toDouble();
+      if (margin > 0) _out.add(SpacerBox(margin));
+    }
+  }
+
+  /// Converts the toc macro [node], or the table of contents after the
+  /// preamble (with [placement] `preamble`), when the document places it
+  /// there (the gem's `convert_toc`).
+  void convertToc(AbstractBlock node, {String placement = 'macro'}) {
+    final doc = _document;
+    if (_tocDone ||
+        doc.attr('toc-placement') != placement ||
+        !doc.hasAttr('toc') ||
+        _sectionsOf(doc).isEmpty) {
+      return;
+    }
+    final book = doc.doctype == 'book';
+    if (book) _out.add(const BreakBox.page());
+    final macro = placement == 'macro';
+    _addToc(
+      macro ? node.id ?? 'toc' : _tocStartAnchor,
+      breakAfter: book || doc.hasAttr('title-page'),
+    );
+    if (macro) {
+      _tocNoHeader = node.hasOption('noheader');
+      _tocNoFooter = node.hasOption('nofooter');
+    }
+  }
 
   /// The page (1-based) of each anchor, once laid out.
   Map<String, int> _anchorPages = const {};
@@ -695,7 +744,7 @@ final class PdfConverter extends BuiltInConverter
         _theme['title_page'] is! ThemeBool;
     const zero = 0;
     final first = hasTitlePage ? zero + 1 : zero;
-    final tocAtTop = _tocPages != null;
+    final tocAtTop = _tocAtTop;
     String resolve(ThemeValue? value, void Function(int) integer) {
       switch (value) {
         case ThemeNumber(:final value):
@@ -723,7 +772,7 @@ final class PdfConverter extends BuiltInConverter
       startAt('page_numbering_start_at'),
       (v) => numberingBody = v,
     );
-    final skips = switch ((running, numbering)) {
+    var skips = switch ((running, numbering)) {
       ('title', 'title') => (zero, zero),
       ('title', 'toc') => (zero, first),
       ('title', _) => (zero, numberingBody),
@@ -734,6 +783,19 @@ final class PdfConverter extends BuiltInConverter
       (_, 'toc') => (runningBody, first),
       _ => (runningBody, numberingBody),
     };
+    // A table of contents placed elsewhere starts them by its pages.
+    if (_tocPages case (final start, final end) when !tocAtTop) {
+      String? setting(String key) => startAt(key)?.rubyString;
+      int skip(String key, int value) => switch (setting(key)) {
+        'toc' => start - 1,
+        'after-toc' => end,
+        _ => value,
+      };
+      skips = (
+        skip('running_content_start_at', skips.$1),
+        skip('page_numbering_start_at', skips.$2),
+      );
+    }
     return skips;
   }
 
@@ -1097,6 +1159,7 @@ final class PdfConverter extends BuiltInConverter
     _traverse(node);
     final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
     if (margin > 0) _out.add(SpacerBox(margin));
+    convertToc(node, placement: 'preamble');
   }
 
   /// The font of theme [category] over [inherited] (the gem's
@@ -3768,6 +3831,12 @@ final class PdfConverter extends BuiltInConverter
     if (page.count < _bodyStart) return const [];
     final number = page.number;
     if (number <= _skip.$1) return const [];
+    if (_tocPages case (final first, final last)
+        when number >= first &&
+            number <= last &&
+            (periphery == 'header' ? _tocNoHeader : _tocNoFooter)) {
+      return const [];
+    }
     final virtual = number - _skip.$2;
     final label = _pageLabel(number);
     final side = virtual.isOdd ? 'recto' : 'verso';
@@ -4123,6 +4192,46 @@ final class PdfConverter extends BuiltInConverter
         );
       }
     }
+    // The table of contents, as a section of its own (the gem's
+    // `insert_toc_section`): first, or after the section its macro is in.
+    final tocTitle = _document.attr('toc-title') ?? '';
+    final tocNode = _document.attr('toc-placement') == 'macro'
+        ? _document.findBy(context: BlockContext.toc).firstOrNull
+        : null;
+    final tocAfter = switch (tocNode?.parent) {
+      final Section section => section,
+      _ => null,
+    };
+    void addToc(PdfOutlineItem? parent) {
+      final pages_ = _tocPages;
+      if (pages_ == null ||
+          tocTitle.isEmpty ||
+          _sectionsOf(_document).isEmpty ||
+          pages_.$1 > pages.length) {
+        return;
+      }
+      final anchor = tocNode == null
+          ? null
+          : result.anchors[tocNode.id ?? 'toc'];
+      final PdfDestination destination;
+      if (anchor != null) {
+        destination = PdfDestination.xyz(
+          pages[anchor.page],
+          left: 0,
+          top: anchor.y,
+        );
+      } else {
+        final page = pages[pages_.$1 - 1];
+        destination = PdfDestination.xyz(page, left: 0, top: page.height);
+      }
+      final target = LinkTarget.destination(destination);
+      if (parent == null) {
+        pdf.addOutline(_plain(tocTitle), target);
+      } else {
+        parent.add(_plain(tocTitle), target);
+      }
+    }
+
     void level(
       List<Section> sections,
       int levels,
@@ -4146,24 +4255,11 @@ final class PdfConverter extends BuiltInConverter
             ? pdf.addOutline(title, target, open: open && expand >= 1)
             : parent.add(title, target, open: open && expand >= 1);
         if (open) level(children, sectionLevels, expand - 1, item);
+        if (section == tocAfter) addToc(parent);
       }
     }
 
-    // The table of contents, as the first section (the gem's
-    // `insert_toc_section`).
-    final tocTitle = _document.attr('toc-title') ?? '';
-    if (_tocPages case (final first, _)
-        when tocTitle.isNotEmpty &&
-            _document.sections.isNotEmpty &&
-            first <= pages.length) {
-      final page = pages[first - 1];
-      pdf.addOutline(
-        _plain(tocTitle),
-        LinkTarget.destination(
-          PdfDestination.xyz(page, left: 0, top: page.height),
-        ),
-      );
-    }
+    if (tocAfter == null) addToc(null);
     level(_sectionsOf(_document), levels, expand, null);
   }
 
