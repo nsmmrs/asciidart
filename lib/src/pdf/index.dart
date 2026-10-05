@@ -3,6 +3,9 @@
 /// used and the terms it refers to.
 library;
 
+import 'dart:convert';
+
+import 'package:libpdf/libpdf.dart' show md5;
 import 'package:meta/meta.dart';
 
 /// A name in the index: its text (for sorting) and its inline markup.
@@ -95,9 +98,11 @@ final class IndexCategory extends IndexGroup {
 /// A term of the index.
 final class IndexTerm extends IndexGroup {
   /// The term [name].
-  new(super.name) : anchor = '__indextermdef-${_sequence++}';
+  new(super.name)
+    : anchor = '__indextermdef-${_hex(md5(utf8.encode(name.text)))}';
 
-  static int _sequence = 0;
+  static String _hex(List<int> bytes) =>
+      [for (final byte in bytes) byte.toRadixString(16).padLeft(2, '0')].join();
 
   /// The anchor of its entry in the index.
   final String anchor;
