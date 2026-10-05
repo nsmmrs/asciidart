@@ -1327,6 +1327,10 @@ String _subMacrosLinks(
               return match.group(0)!;
           }
           switch (match.group(8)) {
+            // the ; that ends a character reference (`<port>` became
+            // `&lt;port&gt;`) is part of the URL (#3128)
+            case ';' when _endsWithCharRefName.hasMatch(target):
+              break;
             case ';':
               target = target.substring(0, target.length - 1);
               if (target.endsWith(')')) {
@@ -2875,6 +2879,9 @@ List<String> splitSimpleCsv(String str) {
     ).map((item) => item.trimAscii()).toList();
   }
 }
+
+/// Matches a URL that ends with a character reference (`&gt;`).
+final RegExp _endsWithCharRefName = RegExp(r'&(?:[a-z]+|#\d+);$');
 
 /// Matches the markup of an element the substitutions already converted.
 final RegExp _convertedMarkupRx = RegExp('<[^>]*>');
