@@ -367,7 +367,9 @@ final class PdfConverter extends BuiltInConverter
           ]
         : <AbstractBlock?>[...parent.blocks];
     final index = siblings.indexOf(block);
-    if (index >= 0 && index < siblings.length - 1) {
+    // A block made up by the converter, not among its parent's: none.
+    if (index < 0) return null;
+    if (index < siblings.length - 1) {
       if (block.context == BlockContext.open &&
           block.style == 'table-container') {
         return _nextEnclosedBlock(parent);
@@ -1401,7 +1403,6 @@ final class PdfConverter extends BuiltInConverter
       }
     }
 
-    final next = _nextEnclosedBlock(item);
     double? marginBottom = 0;
     if (item.isCompound) {
       marginBottom = null;
@@ -1429,38 +1430,26 @@ final class PdfConverter extends BuiltInConverter
         lineHeight + metrics.leading + metrics.paddingTop,
       );
       if (marker != null && marker.isNotEmpty) {
-        final markerFont = _FontState(
-          family: markerFamily,
-          style: markerStyle,
-          size: markerSize,
-          color: markerColor,
-          lineHeight: markerLineHeight,
-          kerning: _font.kerning,
-        );
-        final prawnFont = _fonts.font(markerFamily, markerStyle);
-        final gap = _fonts
-            .font(_font.family, _font.style)
-            .widthOf('x', _font.size);
-        final width = prawnFont.widthOf(
+        content = _withMarker(
+          content,
           marker,
-          markerSize,
-          kerning: _font.kerning,
+          _FontState(
+            family: markerFamily,
+            style: markerStyle,
+            size: markerSize,
+            color: markerColor,
+            lineHeight: markerLineHeight,
+            kerning: _font.kerning,
+          ),
         );
-        final markerBox = _textBox(
-          marker.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
-          markerFont,
-          align: 'right',
-          normalize: false,
-          characterSpacing: -0.5,
-        );
-        content = _Marked(content, markerBox, width, -width - gap + 0.5);
       }
       children.add(
         CustomBox(
           content,
           style: BoxStyle(
             margin: EdgeInsets(
-              bottom: marginBottom ?? _themeMargin('prose', 'bottom', next),
+              bottom:
+                  marginBottom ?? (_n('prose_margin_bottom') ?? 0).toDouble(),
             ),
           ),
         ),
@@ -1473,10 +1462,15 @@ final class PdfConverter extends BuiltInConverter
 
   /// Converts the description list [node].
   void convertDlist(ListBlock node) {
-    if (node.style == 'horizontal') {
-      _horizontalDlist(node);
-    } else {
-      _dlist(node);
+    switch (node.style) {
+      case 'horizontal':
+        _horizontalDlist(node);
+      case 'qanda':
+        _qanda(node);
+      case 'unordered' || 'ordered':
+        _dlistAsList(node, ordered: node.style == 'ordered');
+      default:
+        _dlist(node);
     }
   }
 
@@ -1796,6 +1790,155 @@ final class PdfConverter extends BuiltInConverter
         ),
       ),
     );
+  }
+
+  /// [content] with [marker] in [markerFont] beside its first line, right
+  /// aligned in front of it, a space apart.
+  CustomContent _withMarker(
+    CustomContent content,
+    String marker,
+    _FontState markerFont,
+  ) {
+    final gap = _fonts.font(_font.family, _font.style).widthOf('x', _font.size);
+    final width = _fonts
+        .font(markerFont.family, markerFont.style)
+        .widthOf(marker, markerFont.size, kerning: _font.kerning);
+    final markerBox = _textBox(
+      marker.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
+      markerFont,
+      align: 'right',
+      normalize: false,
+      characterSpacing: -0.5,
+    );
+    return _Marked(content, markerBox, width, -width - gap + 0.5);
+  }
+
+  /// Converts the question and answer list [node].
+  void _qanda(ListBlock node) {
+    final boxes = _collect(() {
+      if (node.hasTitle) _caption(node, category: 'list', labeled: false);
+      final align = _alignOf(node.roles) ?? _s('list_text_align');
+      final termSpacing = (_n('description_list_term_spacing') ?? 0).toDouble();
+      final metrics = _lineMetrics(_font);
+      final minRoom =
+          _font.lineHeight * _font.size + metrics.leading + metrics.paddingTop;
+      final markerFont = _font.copyWith(
+        color: _c('list_marker_font_color') ?? _font.color,
+      );
+      for (final (i, DlistEntry(:terms, description: desc))
+          in node.entries.indexed) {
+        double? descMargin = 0;
+        if (desc != null) {
+          if (desc.isCompound) {
+            descMargin = null;
+          } else if (_nextEnclosedBlockDescending(desc) != null) {
+            descMargin = (_n('list_item_spacing') ?? 0).toDouble();
+          }
+        }
+        final children = _collect(() {
+          for (final (t, term) in terms.indexed) {
+            CustomContent box = _textBox(
+              '<em>${term.text ?? ''}</em>',
+              _font,
+              align: align ?? _baseTextAlign,
+              normalizeLineHeight: true,
+            );
+            if (t == 0) {
+              box = _MinRoom(
+                _withMarker(box, '${i + 1}.', markerFont),
+                minRoom,
+              );
+            }
+            _out.add(
+              CustomBox(
+                box,
+                style: BoxStyle(margin: EdgeInsets(bottom: termSpacing)),
+              ),
+            );
+          }
+          if (desc == null) return;
+          if (desc.text case final text? when desc.hasText) {
+            _out.add(
+              CustomBox(
+                _textBox(
+                  text,
+                  _font,
+                  align: align ?? _baseTextAlign,
+                  normalizeLineHeight: true,
+                ),
+                style: BoxStyle(
+                  margin: EdgeInsets(
+                    bottom:
+                        descMargin ??
+                        (_n('prose_margin_bottom') ?? 0).toDouble(),
+                  ),
+                ),
+              ),
+            );
+          }
+          _traverse(desc);
+        });
+        _out.add(BlockBox(children));
+      }
+    });
+    _out.add(
+      BlockBox(
+        boxes,
+        style: BoxStyle(
+          margin: EdgeInsets(
+            left: (_n('list_indent') ?? 0).toDouble(),
+            bottom: node.parent is ListItem
+                ? 0
+                : _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+          ),
+          anchor: node.id,
+        ),
+      ),
+    );
+  }
+
+  /// Converts the description list [node] as an unordered or ordered
+  /// list of its terms (in bold) and descriptions.
+  void _dlistAsList(ListBlock node, {required bool ordered}) {
+    final parent = node.parent;
+    if (parent is! AbstractBlock) return;
+    final list = ListBlock(
+      parent,
+      ordered ? BlockContext.olist : BlockContext.ulist,
+    );
+    final stack = node.hasRole('stack');
+    final stop = node.attr('subject-stop') ?? (stack ? null : ':');
+    for (final DlistEntry(:terms, description: desc) in node.entries) {
+      final subject = terms.first.text ?? '';
+      final ListItem item;
+      if (desc != null) {
+        final punctuated = RegExp(r'[.!?;:]$').hasMatch(_plain(subject));
+        final description = desc.hasText
+            ? '${stack ? '<br>' : ' '}${desc.text ?? ''}'
+            : '';
+        item = ListItem(
+          list,
+          '<strong>$subject${punctuated ? '' : stop ?? ''}</strong>'
+          '$description',
+        )..subs = [];
+        [...desc.blocks].forEach(item.append);
+      } else {
+        item = ListItem(list, '<strong>$subject</strong>')..subs = [];
+      }
+      list.append(item);
+    }
+    if (ordered) {
+      _listNumerals.add(const _Numeral.decimal(1));
+    } else {
+      _listBullets.add('disc');
+    }
+    final boxes = _collect(() => _list(list));
+    if (ordered) {
+      _listNumerals.removeLast();
+    } else {
+      _listBullets.removeLast();
+    }
+    _out.add(BlockBox(boxes, style: BoxStyle(anchor: node.id)));
   }
 
   /// The next block, descending into [item] first when it has blocks (the
