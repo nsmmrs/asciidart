@@ -80,7 +80,7 @@ void main() {
   // the same place but extracts in another order (the gem's content
   // stream has it earlier), so the words need only be 99.9% in order.
   for (final name in ['chronicles-example', 'edge-cases']) {
-    test('the gem\'s $name.adoc converts as the gem converts it', () {
+    test("the gem's $name.adoc converts as the gem converts it", () {
       final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
       addTearDown(() => dir.deleteSync(recursive: true));
       final out = '${dir.path}/$name.pdf';
