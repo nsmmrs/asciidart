@@ -66,7 +66,8 @@ final class MultiRegex {
     return ModeMatch(
       s,
       match.start,
-      [for (var g = i; g <= match.groupCount; g++) match.group(g)],
+      match,
+      i,
       type: data.type,
       rule: data.rule,
       position: data.position,

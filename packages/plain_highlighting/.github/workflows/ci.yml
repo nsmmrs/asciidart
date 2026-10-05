@@ -31,12 +31,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+      - uses: dart-lang/setup-dart@v1
       - run: npm ci
         working-directory: tool/generate
       - name: Generated files are up to date
         run: |
           node tool/generate/generate.mjs
           node tool/generate/reference.mjs
+          dart format lib/src/languages > /dev/null
           git diff --exit-code
       - name: vendor/ matches the pinned release
         run: tool/vendor.sh --check

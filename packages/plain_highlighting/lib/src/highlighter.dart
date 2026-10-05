@@ -8,7 +8,6 @@ import 'package:hilite/src/js_string.dart';
 import 'package:hilite/src/logger.dart' as logger;
 import 'package:hilite/src/mode.dart';
 import 'package:hilite/src/mode_compiler.dart';
-import 'package:hilite/src/regex.dart' as regex;
 import 'package:hilite/src/token_tree.dart';
 import 'package:hilite/src/utils.dart';
 
@@ -335,10 +334,10 @@ final class Engine {
       return top = Frame(mode, top);
     }
 
-    Frame? endOfMode(Frame? frame, ModeMatch match, String matchPlusRemainder) {
+    Frame? endOfMode(Frame? frame, ModeMatch match) {
       if (frame == null) return null;
       final mode = frame.mode;
-      var matched = regex.startsWith(mode.endRe, matchPlusRemainder);
+      var matched = _endsAt(mode, codeToHighlight, match.index);
       if (matched) {
         final onEnd = mode.onEnd;
         if (onEnd != null) {
@@ -356,7 +355,7 @@ final class Engine {
       }
       // Even if on:end ignores the match, a parent mode may still end.
       if (mode.endsWithParent ?? false) {
-        return endOfMode(frame.parent, match, matchPlusRemainder);
+        return endOfMode(frame.parent, match);
       }
       return null;
     }
@@ -397,8 +396,7 @@ final class Engine {
 
     Object doEndMatch(ModeMatch match) {
       final lexeme = match[0]!;
-      final matchPlusRemainder = codeToHighlight.substring(match.index);
-      final endMode = endOfMode(top, match, matchPlusRemainder);
+      final endMode = endOfMode(top, match);
       if (endMode == null) return _noMatch;
       final origin = top.mode;
       final endScope = origin.endScope;
@@ -543,6 +541,25 @@ final class Engine {
     }
   }
 }
+
+/// Whether the end of [mode] matches [code] at [index]: upstream runs the
+/// end pattern on `code.substring(index)` and checks for a match at its
+/// start. That copy is free in JavaScript but not in Dart, so a pattern
+/// whose result cannot depend on the text before [index] (no `^`, `\b`,
+/// `\B` or lookbehind) is matched in place instead.
+bool _endsAt(Mode mode, String code, int index) {
+  final re = mode.endRe;
+  if (re == null) return false;
+  final source = re.pattern;
+  if (source == r'\B|\b') return true; // the default end matches anywhere
+  if (_contextFree[source] ??= !source.contains(_startContext)) {
+    return re.matchAsPrefix(code, index) != null;
+  }
+  return re.matchAsPrefix(code.substring(index)) != null;
+}
+
+final Map<String, bool> _contextFree = {};
+final RegExp _startContext = RegExp(r'\^|\\[bB]|\(\?<[=!]');
 
 bool _truthyScope(ScopeSpec? scope) => switch (scope) {
   null => false,

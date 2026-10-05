@@ -175,18 +175,32 @@ enum MatchType {
   illegal,
 }
 
-/// A match handed to callbacks (`on:begin`, `on:end`): the rule's own
-/// groups, where group 0 is the whole match.
+/// A match of a mode's rules: the matched text and its groups, as
+/// upstream's enhanced `RegExp` match after `match.splice(0, i)` (group 0
+/// is the whole match of the rule that matched, then that rule's groups).
+///
+/// A view of the regular expression's match: the combined expression of a
+/// mode can have hundreds of groups, so they are not copied.
 final class ModeMatch {
-  /// The match at [index] in [input] with [groups].
+  /// A view of a regular expression match, from the group of the rule that
+  /// matched.
   new(
     this.input,
     this.index,
-    this.groups, {
+    this._match,
+    this._offset, {
     this.type,
     this.rule,
     this.position = 0,
   });
+
+  /// A match of groups listed in [groups] (for tests and callers outside
+  /// the matcher).
+  new of(this.input, this.index, List<String?> groups, {this.type, this.rule})
+    : _match = null,
+      _offset = 0,
+      _groups = groups,
+      position = 0;
 
   /// The text that was searched.
   final String input;
@@ -194,24 +208,30 @@ final class ModeMatch {
   /// Where the match starts in [input].
   final int index;
 
-  /// The groups of the match; group 0 is the whole match, and a group that
-  /// did not participate is `null`.
-  final List<String?> groups;
+  final RegExpMatch? _match;
+  final int _offset;
+  List<String?>? _groups;
 
-  /// How the match was found, when it comes from a mode's matcher.
+  /// What kind of rule matched.
   final MatchType? type;
 
-  /// The mode whose `begin` matched (for [MatchType.begin]).
+  /// The mode whose `begin` matched, for [MatchType.begin].
   final Mode? rule;
 
-  /// The index of the rule among its matcher's rules.
+  /// The position of the rule among the matcher's rules.
   final int position;
 
-  /// Group [i] (`match[i]`).
-  String? operator [](int i) => i < groups.length ? groups[i] : null;
+  /// Group [i] (0 is the whole match), or `null`.
+  String? operator [](int i) {
+    final groups = _groups;
+    if (groups != null) return i < groups.length ? groups[i] : null;
+    final match = _match!;
+    final g = _offset + i;
+    return g <= match.groupCount ? match.group(g) : null;
+  }
 
-  /// The number of groups, the whole match included (`match.length`).
-  int get length => groups.length;
+  /// The number of groups, including group 0.
+  int get length => _groups?.length ?? (_match!.groupCount - _offset + 1);
 }
 
 /// Lets a callback ignore the match it was called for, and keep state for
