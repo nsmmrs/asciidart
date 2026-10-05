@@ -2895,9 +2895,16 @@ final class PdfConverter extends BuiltInConverter
     final captionTop = (_s('table_caption_end') ?? 'top') == 'top';
     final unbreakable = node.hasOption('unbreakable');
     final boxes = _collect(() => _withFont('table', () => _table(node)));
-    final caption = node.hasTitle
-        ? _captionBox(node, category: 'table', bottom: !captionTop)
+    if (boxes.isEmpty) return;
+    var caption = node.hasTitle
+        ? _captionBox(
+            node,
+            category: 'table',
+            bottom: !captionTop,
+            blockAlign: _tableAlign,
+          )
         : null;
+    if (caption != null) caption = _fitCaption(caption, _tableWidth);
     final next = _nextEnclosedBlock(node);
     final margin = next == null ? 0.0 : _themeMargin('block', 'bottom', next);
     _out.add(
@@ -2910,6 +2917,75 @@ final class PdfConverter extends BuiltInConverter
         ),
       ),
     );
+  }
+
+  /// The width of the table converted last, for the room it's given, and
+  /// its alignment (for its caption).
+  double Function(double width) _tableWidth = _fullWidth;
+  String _tableAlign = 'left';
+
+  static double _fullWidth(double width) => width;
+
+  /// The table [caption] no wider than the table (the theme's
+  /// `table_caption_max_width`, `fit-content` by default; the gem's
+  /// `ink_caption` with a block width).
+  CustomBox _fitCaption(
+    CustomBox caption,
+    double Function(double width) tableWidth,
+  ) {
+    final setting = _s('table_caption_max_width') ?? 'fit-content';
+    if (setting == 'none') return caption;
+    var align = _s('table_caption_align') ?? _s('caption_align');
+    if (align == 'inherit') align = _tableAlign;
+    align ??= _baseTextAlign;
+    final blockAlign = _tableAlign;
+    (double, double) indents(double width) {
+      var left = 0.0;
+      var right = 0.0;
+      double maxWidth;
+      var by = blockAlign;
+      if (setting.startsWith('fit-content')) {
+        final block = tableWidth(width);
+        final percent = RegExp(r'^fit-content\((\d+(?:\.\d+)?)%?\)$')
+            .firstMatch(setting);
+        if (percent != null) {
+          final delta = block - block * _toF(percent[1]!) / 100;
+          if (delta > 0) {
+            switch (align) {
+              case 'right':
+                left += delta;
+              case 'center':
+                left += delta / 2;
+                right += delta / 2;
+              default:
+                right += delta;
+            }
+          }
+        }
+        maxWidth = block;
+      } else if (setting.endsWith('%')) {
+        maxWidth = math.min(_toF(setting) / 100 * width, width);
+        by = align!;
+      } else {
+        maxWidth = math.min(_toF(setting), width);
+        by = align!;
+      }
+      final remainder = width - maxWidth;
+      if (remainder > 0) {
+        switch (by) {
+          case 'right':
+            left += remainder;
+          case 'center':
+            left += remainder / 2;
+            right += remainder / 2;
+          default:
+            right += remainder;
+        }
+      }
+      return (left, right);
+    }
+
+    return CustomBox(_Indented(caption.content, indents), style: caption.style);
   }
 
   void _table(Table node) {
@@ -3022,7 +3098,21 @@ final class PdfConverter extends BuiltInConverter
             );
           case 'asciidoc':
             if (cell.innerDocument case final inner?) {
-              blocks = _collect(() => _traverse(inner));
+              // Paragraphs alone follow the cell's alignment.
+              final halign = cell.attr('halign');
+              final savedAlign = _baseTextAlign;
+              if ((halign == 'center' || halign == 'right') &&
+                  inner.blocks.isNotEmpty &&
+                  inner.blocks.every(
+                    (b) => b.context == BlockContext.paragraph,
+                  )) {
+                _baseTextAlign = halign!;
+              }
+              try {
+                blocks = _collect(() => _traverse(inner));
+              } finally {
+                _baseTextAlign = savedAlign;
+              }
             }
         }
         final List<double> padding;
@@ -3062,10 +3152,11 @@ final class PdfConverter extends BuiltInConverter
       logger.warn('no rows found in table');
       grid.add([
         for (var c = 0; c < math.max(numCols, 1); c++)
+          // prawn-table's own cell: its default padding.
           _TableCellData(
             text: '',
             font: bodyFont,
-            padding: bodyPadding,
+            padding: const [5, 5, 5, 5],
             colspan: 1,
             rowspan: 1,
             align: 'left',
@@ -3227,6 +3318,40 @@ final class PdfConverter extends BuiltInConverter
       tableRows[r].add(_tableCell(data, font, background, sides));
     }
 
+    // A column with no width can't hold its text: prawn-table gives up
+    // on the table (the gem reports it and leaves the table out).
+    if (!node.hasOption('autowidth')) {
+      final (pageWidth, _) = _pageSize(_document);
+      final contentWidth =
+          (pageWidth - _pageMargins(_document).horizontal) * node.pcwidth / 100;
+      for (final (_, c, data) in placed) {
+        final column = node.columns.elementAtOrNull(c);
+        if (column == null || data.colspan != 1 || data.blocks != null) {
+          continue;
+        }
+        // The room for the text (with prawn-table's point of tolerance)
+        // and the widest character it must hold.
+        final room =
+            (column.pcwidth ?? 0) / 100 * contentWidth -
+            data.padding[1] -
+            data.padding[3] +
+            1;
+        final font = _fonts.font(data.font.family, data.font.style);
+        final widest = [
+          for (final rune in _plain(data.text).runes)
+            if (rune > 32)
+              font.widthOf(String.fromCharCode(rune), data.font.size),
+        ].fold<double>(0, math.max);
+        if (widest > room) {
+          logger.error(
+            'cannot fit contents of table cell into specified column width',
+          );
+          _out.clear();
+          return;
+        }
+      }
+    }
+
     // Column widths: by the columns' percentages, or (autowidth) by
     // prawn-table's natural widths.
     final List<ColumnWidth> columns;
@@ -3250,6 +3375,15 @@ final class PdfConverter extends BuiltInConverter
           ),
       ];
     }
+    // The table's width, for its caption.
+    _tableWidth = (width) => [
+      for (final column in columns)
+        switch (column) {
+          ComputedColumnWidth(width: final of) => of(width),
+          FixedColumnWidth(:final points) => points,
+          _ => 0.0,
+        },
+    ].fold<double>(0, (a, b) => a + b);
     final alignAttr = node.attr('align');
     final align =
         (alignAttr != null &&
@@ -3260,6 +3394,7 @@ final class PdfConverter extends BuiltInConverter
                   .lastOrNull) ??
         _s('table_align') ??
         'left';
+    _tableAlign = align;
     _out.add(
       TableBox(
         [for (final cells in tableRows) TableRow(cells)],
@@ -6922,4 +7057,39 @@ final class _PageImage {
   final double? width;
   final String position;
   final String vposition;
+}
+
+/// [content] indented by [indents] (left and right) for the width it's
+/// given.
+final class _Indented implements CustomContent {
+  const new(this.content, this.indents);
+
+  final CustomContent content;
+  final (double, double) Function(double width) indents;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final (left, right) = indents(width);
+    final placed = content.place(width - left - right, available, atTop: atTop);
+    if (placed == null) return null;
+    return CustomPlacement(
+      height: placed.height,
+      rest: placed.rest,
+      anchors: [for (final (name, x, y) in placed.anchors) (name, x + left, y)],
+      paint: (page, x, top) => placed.paint(page, x + left, top),
+    );
+  }
+
+  @override
+  double minHeight(double width) {
+    final (left, right) = indents(width);
+    return content.minHeight(width - left - right);
+  }
+
+  @override
+  (double, double) intrinsicWidths() => content.intrinsicWidths();
 }
