@@ -3,7 +3,7 @@
 /// On Node.js, the built-in modules this file uses (`fs`, `zlib`) come from
 /// `process.getBuiltinModule`, so the compiled bundle never imports
 /// `node:*` modules and stays safe for bundlers; an embedder can also
-/// supply them as `globalThis.asciidoctorDartHost` (`{fs, process, zlib}`).
+/// supply them as `globalThis.asciidartHost` (`{fs, process, zlib}`).
 /// Without them (in a browser), there is no file system: files read as
 /// missing, the working directory is `/`, the environment is empty, and
 /// output goes to the console.
@@ -19,7 +19,7 @@ import 'package:asciidart/src/errors.dart';
 import 'package:asciidart/src/io/types.dart';
 import 'package:asciidart/src/remote.dart';
 
-@JS('globalThis.asciidoctorDartHost')
+@JS('globalThis.asciidartHost')
 external _Host? get _injectedHost;
 
 @JS('globalThis.process')
@@ -51,7 +51,7 @@ extension type _NodeProcess(JSObject _) implements JSObject {
   external JSObject? getBuiltinModule(String id);
 }
 
-/// The Node.js built-ins: injected as `globalThis.asciidoctorDartHost`, or
+/// The Node.js built-ins: injected as `globalThis.asciidartHost`, or
 /// found through `process.getBuiltinModule`.
 extension type _Host(JSObject _) implements JSObject {
   external _Fs get fs;

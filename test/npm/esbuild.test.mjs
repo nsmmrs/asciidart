@@ -12,7 +12,7 @@ test('esbuild bundles the package for the browser', async () => {
     const entry = join(dir, 'consumer.js')
     writeFileSync(
       entry,
-      "import { convert } from 'asciidart'\nconvert('*hi*').then(console.log)\n"
+      "import { asciidoc } from 'asciidart'\nconsole.log(asciidoc.convert('*hi*'))\n"
     )
     const result = await build({
       entryPoints: [entry],

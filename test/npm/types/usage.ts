@@ -1,63 +1,69 @@
-// Compiled with tsc --noEmit: typical uses of the API must type-check.
+// Compiled with tsc --noEmit: the scenarios of doc/api.md must type-check.
 import {
-  ConverterBase,
-  ConverterFactory,
-  convert,
-  Extensions,
-  Html5Converter,
-  load,
-  MemoryLogger,
-  LoggerManager,
+  Admonition,
+  Asciidart,
+  asciidoc,
+  Backend,
+  BlockKind,
+  CustomBlock,
+  Highlighter,
+  IncludeResolver,
+  InlineMacro,
+  Paragraph,
   SafeMode,
-  type AbstractNode,
+  Section,
+  Severity,
+  TreeProcessor,
+  type Block,
+  type Diagnostic,
   type Document,
-  type Section,
+  type SourceCode,
 } from 'asciidart'
 
+const body: string = asciidoc.convert('Hello, *World*!')
+const page: string = asciidoc.convert('= T', { standalone: true, backend: Backend.html5, attributes: { icons: 'font' } })
+
+const doc: Document = asciidoc.parse('= Title\n:priority: 2\n\n== Section\n\ntext')
+const title: string | null = doc.sourceTitle
+const priority: number | null = doc.attributes.intValue('priority')
+const header: Record<string, string | null> = doc.headerAttributes
+const sections: Section[] = doc.descendants(Section)
+const sectionTitles: (string | null)[] = sections.map((s) => s.title)
+
+const render = (block: Block): string =>
+  block instanceof Section ? `# ${block.title}\n` : block instanceof Paragraph ? `${block.plainText}\n` : ''
+const markdown: string = doc.blocks.map(render).join('')
+
+class Upper extends Highlighter {
+  highlight(code: SourceCode): string {
+    return code.source.toUpperCase()
+  }
+}
+
+const reported: Diagnostic[] = []
+const ad = new Asciidart({
+  safe: SafeMode.server,
+  html: (node, defaults) =>
+    node instanceof Admonition ? `<aside>${defaults.content(node)}</aside>` : defaults.render(node),
+  extensions: [
+    new InlineMacro('issue', (m) => m.link(`https://example.org/${m.target}`, { text: `#${m.target}` })),
+    new CustomBlock('shout', (b) => b.paragraph(b.source.toUpperCase()), { on: [BlockKind.paragraph] }),
+    new IncludeResolver(async (r) => (r.target === 'remote' ? 'From far.' : null)),
+    new TreeProcessor((d) => {
+      d.title = d.title ?? 'Untitled'
+    }),
+  ],
+  highlighters: { upper: new Upper() },
+  onDiagnostic: (d) => reported.push(d),
+})
+
 async function main(): Promise<void> {
-  const doc: Document = await load('= Title\n\n== Section\n\ntext', { safe: 'safe', attributes: { icons: 'font' } })
-  const sections: Section[] = doc.getSections()
-  const title: string | undefined = sections[0]?.getTitle()
-  const html: string | Document = await convert('*hi*', { standalone: false, safe: SafeMode.SERVER })
-  const found = doc.findBy({ context: 'paragraph' }, (block) => block.getRole() !== 'skip')
-  console.log(title, html, found.length, doc.getRevisionInfo().getNumber())
-
-  const logger = MemoryLogger.create()
-  LoggerManager.setLogger(logger)
-  console.log(logger.getMessages().map((message) => message.getText()))
-
-  Extensions.register(function () {
-    this.inlineMacro('emoji', function () {
-      this.positionalAttributes('size')
-      this.process(function (parent, target, attrs) {
-        return this.createInline(parent, 'quoted', `:${target}:${attrs.size ?? ''}`, { type: 'strong' })
-      })
-    })
-    this.treeProcessor(function () {
-      this.process((tree) => {
-        tree.setAttribute('processed', '')
-      })
-    })
-  })
-  const registry = Extensions.create()
-  registry.block('shout', function () {
-    this.onContext('paragraph')
-    this.process((parent, reader) => this.createBlock(parent, 'paragraph', reader.getLines().map((l) => l.toUpperCase())))
-  })
-  await convert('[shout]\nhi', { extension_registry: registry })
-
-  class TextConverter extends ConverterBase {
-    convert_paragraph(node: AbstractNode): string {
-      return String(node.getAttribute('text', ''))
-    }
+  const remote: Document = await ad.parseAsync('include::remote[]')
+  const failed = remote.diagnostics.some((d) => d.severity === Severity.warning)
+  for await (const result of ad.convertTree('docs', { toDir: 'build' })) {
+    console.log(result.outputPath)
   }
-  ConverterFactory.register(TextConverter, 'text')
-  class Custom extends Html5Converter {
-    convert_paragraph(node: AbstractNode): string | undefined {
-      return `<p class="custom">${this.convertBuiltIn(node)}</p>`
-    }
-  }
-  await convert('para', { converter: new Custom() })
+  console.log(body, page, title, priority, header, sectionTitles, markdown, failed, reported.length)
 }
 
 void main()

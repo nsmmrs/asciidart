@@ -1,277 +1,277 @@
-// The facade's extension and converter APIs, and the behavior of facade
-// nodes under util.inspect and deep equality.
+// The JavaScript projection of the Dart API: the scenarios of doc/api.md
+// (test/api/scenarios_test.dart in Dart), plus what JavaScript adds:
+// identity, instanceof, inspection, errors and promises.
 
 import assert from 'node:assert/strict'
-import { afterEach, describe, test } from 'node:test'
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { describe, test } from 'node:test'
 import { inspect } from 'node:util'
 
 import {
-  ConverterBase,
-  ConverterFactory,
-  convert,
-  deriveBackendTraits,
-  Extensions,
+  Admonition,
+  AdmonitionKind,
+  Asciidart,
+  AsciidartException,
+  asciidartVersion,
+  asciidoc,
+  asciidoctorVersion,
+  Backend,
   Block,
-  Html5Converter,
-  load,
-  PreprocessorReader,
-  Reader,
+  BlockKind,
+  BlockMacro,
+  CustomBlock,
+  DiagnosticCode,
+  Docinfo,
+  Document,
+  Highlighter,
+  Image,
+  IncludeResolver,
+  InlineImage,
+  InlineMacro,
+  ListItem,
+  Listing,
+  Node,
+  Paragraph,
+  Postprocessor,
+  Preprocessor,
+  SafeMode,
+  Section,
+  TreeProcessor,
+  UnorderedList,
 } from 'asciidart'
 
-afterEach(() => {
-  Extensions.unregisterAll()
-  ConverterFactory.unregisterAll()
-})
+const guide = `= Guide
 
-describe('nodes', () => {
-  test('inspecting a node stays small', async () => {
-    const doc = await load('[#intro]\nHello\n\n* one\n* two\n')
-    assert.equal(inspect(doc.blocks[0]), 'Block <paragraph#intro>')
-    assert.ok(inspect(doc, { depth: 1000 }).length < 200)
-  })
+== Install
 
-  test('a failed assertion on nodes reports quickly', async () => {
-    const doc = await load('* one\n* two\n* three\n')
-    const items = doc.blocks[0].getItems()
-    assert.throws(() => assert.deepEqual(items, 'text'), /Expected values/)
-  })
+Run the installer.
 
-  test('arrays from the core are plain arrays', async () => {
-    const doc = await load('para\n\n* one\n* two\n')
-    for (const array of [
-      doc.blocks[0].applySubs(['*a*']),
-      doc.blocks[0].getRoles(),
-      doc.blocks[0].getSubstitutions(),
-      doc.getAuthors(),
-      doc.findBy({ context: 'list_item' }),
-    ]) {
-      assert.deepEqual(Object.getOwnPropertySymbols(array), [])
-    }
-    assert.deepEqual(doc.blocks[0].applySubs(['*a*']), ['<strong>a</strong>'])
-  })
+[source,java]
+----
+class Main {}
+----
 
-  test('the content of a list is its items', async () => {
-    const doc = await load('* one\n* two\n')
-    const list = doc.blocks[0]
-    assert.deepEqual(await list.content(), list.getItems())
-  })
-})
+== Use
 
-describe('substitutions', () => {
-  test('applySubs with the normal, named and no substitutions', async () => {
-    const doc = await load('para')
-    const para = doc.blocks[0]
-    assert.equal(para.applySubs('*a* & b'), '<strong>a</strong> &amp; b')
-    assert.equal(para.applySubs('*a* & b', ['specialcharacters']), '*a* &amp; b')
-    assert.equal(para.applySubs('*a* & b', 'quotes'), '<strong>a</strong> & b')
-    assert.equal(para.applySubs('*a*', null), '*a*')
-    assert.deepEqual(para.applySubs(['*a*', '_b_']), ['<strong>a</strong>', '<em>b</em>'])
-  })
+NOTE: Read the docs.
 
-  test('the single substitutions', async () => {
-    const para = (await load('para', { attributes: { name: 'value' } })).blocks[0]
-    assert.equal(para.subQuotes('*a*'), '<strong>a</strong>')
-    assert.equal(para.subSpecialchars('<a>'), '&lt;a&gt;')
-    assert.equal(para.subAttributes('{name}'), 'value')
-    assert.equal(para.subReplacements('(C)'), '&#169;')
-    assert.equal(para.subMacros('https://example.org[x]'), '<a href="https://example.org">x</a>')
-    assert.deepEqual(para.expandSubs('normal'), [
-      'specialcharacters',
-      'quotes',
-      'attributes',
-      'replacements',
-      'macros',
-      'post_replacements',
-    ])
-    assert.deepEqual(para.resolvePassSubs('q'), ['quotes'])
-  })
-})
+* one
+* two
+`
 
-describe('readers and factories', () => {
-  test('a reader constructed from lines', () => {
-    const reader = new Reader(['one', '', 'two'])
-    assert.deepEqual(reader.peekLines(2), ['one', ''])
-    assert.equal(reader.readLine(), 'one')
-    assert.ok(reader.isNextLineEmpty())
-    reader.skipBlankLines()
-    assert.deepEqual(reader.readLinesUntil({ terminator: 'none' }), ['two'])
-    assert.ok(reader.empty())
-  })
-
-  test('a preprocessor reader resolves directives', async () => {
-    const doc = await load('', { attributes: { flag: '' } })
-    const reader = new PreprocessorReader(doc, ['ifdef::flag[]', 'yes', 'endif::[]', 'after'])
-    assert.deepEqual(reader.readLines(), ['yes', 'after'])
-  })
-
-  test('Block.create, list and item predicates, role setter', async () => {
-    const doc = await load('* one\n* two\n')
-    const block = Block.create(doc, 'paragraph', { source: 'made', attributes: { role: 'r' } })
-    assert.equal(block.getSource(), 'made')
-    block.role = 'changed'
-    assert.equal(block.getRole(), 'changed')
-    const list = doc.blocks[0]
-    assert.ok(list.outline())
-    assert.ok(list.getItems()[0].simple())
-    assert.ok(!list.getItems()[0].compound())
-  })
-})
-
-describe('extensions', () => {
-  test('a global group with a DSL inline macro', async () => {
-    Extensions.register(function () {
-      this.inlineMacro('emoji', function () {
-        this.process((parent, target) =>
-          this.createInline(parent, 'quoted', `:${target}:`, { type: 'strong' })
-        )
-      })
-    })
+describe('1. render AsciiDoc to HTML', () => {
+  test('convert returns the body, synchronously', () => {
     assert.equal(
-      await convert('Hi emoji:wave[]', { standalone: false }),
-      '<div class="paragraph">\n<p>Hi <strong>:wave:</strong></p>\n</div>'
+      asciidoc.convert('Hello, *World*!'),
+      '<div class="paragraph">\n<p>Hello, <strong>World</strong>!</p>\n</div>'
     )
   })
 
-  test('a block processor reading its lines', async () => {
-    const registry = Extensions.create()
-    registry.block(function () {
-      this.named('shout')
-      this.onContext('paragraph')
-      this.process((parent, reader) =>
-        this.createBlock(parent, 'paragraph', reader.getLines().map((l) => l.toUpperCase()))
-      )
-    })
-    const html = await convert('[shout]\nquiet words', { extension_registry: registry })
-    assert.match(html, /<p>QUIET WORDS<\/p>/)
-  })
-
-  test('node methods inside a processor return values directly', async () => {
-    let title
-    Extensions.register(function () {
-      this.treeProcessor(function () {
-        this.process((doc) => {
-          title = doc.blocks[0].convert()
-        })
-      })
-    })
-    await convert('Some *text*.')
-    assert.match(title, /<strong>text<\/strong>/)
-  })
-
-  test('preprocessor, include processor, docinfo and postprocessor', async () => {
-    const registry = Extensions.create(function () {
-      this.preprocessor(function () {
-        this.process((doc, reader) => {
-          assert.ok(reader instanceof Reader)
-          reader.unshiftLine('first line')
-          return reader
-        })
-      })
-      this.includeProcessor(function () {
-        this.handles((target) => target.endsWith('.virtual'))
-        this.process((doc, reader, target) => {
-          reader.pushInclude(['included from ' + target], target, target, 1, {})
-        })
-      })
-      this.docinfoProcessor(function () {
-        this.atLocation('head')
-        this.process(() => '<meta name="x" content="y">')
-      })
-      this.postprocessor(function () {
-        this.process((doc, output) => output.replace('</body>', '<!-- post --></body>'))
-      })
-    })
-    const html = await convert('include::a.virtual[]', {
-      extension_registry: registry,
-      standalone: true,
-      safe: 'safe',
-    })
-    assert.match(html, /<p>first line\nincluded from a.virtual<\/p>/)
-    assert.match(html, /<meta name="x" content="y">/)
-    assert.match(html, /<!-- post --><\/body>/)
-  })
-
-  test('a processor returning a promise is rejected', async () => {
-    Extensions.register(function () {
-      this.treeProcessor(function () {
-        this.process(async () => {})
-      })
-    })
-    await assert.rejects(convert('text'), /asynchronous extensions are not supported/)
-  })
-
-  test('an error thrown by a processor reaches the caller', async () => {
-    const failure = new TypeError('bad input')
-    Extensions.register(function () {
-      this.treeProcessor(function () {
-        this.process(() => {
-          throw failure
-        })
-      })
-    })
-    await assert.rejects(convert('text'), (error) => error === failure)
-  })
-
-  test('a registry with allow-uri-read keeps its processors', async () => {
-    const registry = Extensions.create()
-    registry.postprocessor(function () {
-      this.process((doc, output) => output + '!')
-    })
-    const options = { extension_registry: registry, attributes: { 'allow-uri-read': '' } }
-    assert.equal(await convert('text', options), '<div class="paragraph">\n<p>text</p>\n</div>!')
-  })
-
-  test('groups are listed and unregistered by name', () => {
-    Extensions.register('one', function () {})
-    Extensions.register('two', function () {})
-    assert.deepEqual(Object.keys(Extensions.getGroups()).sort(), ['one', 'two'])
-    Extensions.unregister('one')
-    assert.deepEqual(Object.keys(Extensions.getGroups()), ['two'])
+  test('standalone pages, attributes and backends', () => {
+    const page = asciidoc.convert('= T\n\nNOTE: x', { standalone: true, attributes: { icons: 'font' } })
+    assert.match(page, /^<!DOCTYPE html>/)
+    assert.match(page, /<i class="fa icon-note"/)
+    assert.equal(asciidoc.convert('text', { backend: Backend.docbook5 }), '<simpara>text</simpara>')
   })
 })
 
-describe('converters', () => {
-  test('a ConverterBase subclass registered for a new backend', async () => {
-    class TextConverter extends ConverterBase {
-      constructor(backend, opts) {
-        super(backend, opts)
-        this.outfilesuffix = '.txt'
-      }
+describe('2. read metadata, then render', () => {
+  test('typed attributes, the title as written, the header', () => {
+    const doc = asciidoc.parse("= Don't stop\n:status: doing\n:priority: 2\n:labels: a, b\n\nThe *body*.")
+    assert.ok(doc instanceof Document)
+    assert.equal(doc.sourceTitle, "Don't stop")
+    assert.equal(doc.attributes.get('status'), 'doing')
+    assert.equal(doc.attributes.intValue('priority'), 2)
+    assert.deepEqual(doc.attributes.listValue('labels'), ['a', 'b'])
+    assert.deepEqual(doc.headerAttributes, { status: 'doing', priority: '2', labels: 'a, b' })
+    assert.match(doc.toHtml(), /<strong>body<\/strong>/)
+    assert.equal(asciidoc.parseHeader('= T\n:x: y\n\nbody').blocks.length, 0)
+  })
+})
 
-      convert_document(node) {
-        return node.getContent()
-      }
+describe('3. walk and query the tree', () => {
+  const doc = asciidoc.parse(guide)
 
-      convert_embedded(node) {
-        return node.getContent()
-      }
-
-      convert_paragraph(node) {
-        return `[${node.getContent()}]`
-      }
-    }
-    ConverterFactory.register(TextConverter, 'text')
-    assert.equal(ConverterFactory.for('text'), TextConverter)
-    assert.equal(await convert('one\n\ntwo', { backend: 'text' }), '[one]\n[two]')
+  test('descendants by class, with instanceof and identity', () => {
+    const sections = doc.descendants(Section)
+    assert.deepEqual(sections.map((s) => s.title), ['Install', 'Use'])
+    assert.ok(sections[0] instanceof Section)
+    assert.ok(sections[0] instanceof Block)
+    assert.ok(sections[0] instanceof Node)
+    assert.ok(!(sections[0] instanceof Paragraph))
+    assert.equal(sections[0], doc.descendants(Section)[0])
+    assert.equal(sections[0].parent, doc)
+    assert.equal(doc.descendants(Listing)[0].language, 'java')
+    assert.equal(doc.descendants(Admonition)[0].kind, AdmonitionKind.note)
+    assert.deepEqual(doc.descendants(ListItem).map((i) => i.plainText), ['one', 'two'])
+    assert.ok(doc.descendants().length > 5)
   })
 
-  test('an Html5Converter subclass overriding one transform', async () => {
-    class Custom extends Html5Converter {
-      convert_paragraph(node) {
-        return `<p class="custom">${node.getContent()}</p>`
-      }
-    }
-    const html = await convert('para\n\n----\ncode\n----', { converter: new Custom() })
-    assert.match(html, /<p class="custom">para<\/p>/)
-    assert.match(html, /<div class="listingblock">/)
+  test('diagnostics', () => {
+    const broken = asciidoc.parse('See <<nowhere>>.')
+    broken.convert()
+    assert.ok(broken.diagnostics.some((d) => d.code === DiagnosticCode.unknownReference))
   })
 
-  test('backend traits', () => {
-    assert.deepEqual(deriveBackendTraits('html5'), {
-      basebackend: 'html',
-      filetype: 'html',
-      outfilesuffix: '.html',
-      htmlsyntax: 'html',
+  test('arrays from the core are plain arrays, and inspection stays small', () => {
+    const blocks = doc.blocks
+    assert.equal(Object.getPrototypeOf(blocks), Array.prototype)
+    assert.deepEqual(Object.getOwnPropertySymbols(blocks), [])
+    // Projected objects have no own properties: their members live on the
+    // class, and the Dart object behind them out of reach.
+    assert.deepEqual(Reflect.ownKeys(doc), [])
+    assert.ok(inspect(doc, { depth: 1000, showHidden: true }).length < 20000)
+    // Assertion messages ignore the inspect hook; they must not walk the
+    // Dart heap either.
+    assert.throws(
+      () => assert.deepEqual(blocks, 'text'),
+      (error) => error.message.length < 20000
+    )
+  })
+})
+
+describe('4. your own renderer', () => {
+  test('a switch over classes', () => {
+    const render = (block) =>
+      block instanceof Section
+        ? `# ${block.title}\n${block.blocks.map(render).join('')}`
+        : block instanceof Paragraph
+          ? `${block.plainText}\n`
+          : block instanceof UnorderedList
+            ? block.items.map((i) => `- ${i.plainText}\n`).join('')
+            : ''
+    assert.equal(
+      asciidoc.parse(guide).blocks.map(render).join(''),
+      '# Install\nRun the installer.\n# Use\n- one\n- two\n'
+    )
+  })
+})
+
+describe('5. customize the HTML', () => {
+  test('override some nodes, keep the rest', () => {
+    const ad = new Asciidart({
+      html: (node, defaults) =>
+        node instanceof Admonition
+          ? `<aside class="${node.kind}">${defaults.content(node)}</aside>`
+          : node instanceof InlineImage
+            ? defaults.render(node).replace('<img', '<img loading="lazy"')
+            : defaults.render(node),
     })
+    const html = ad.convert('NOTE: *Hi*\n\nimage:a.png[] text')
+    assert.match(html, /<aside class="note"><strong>Hi<\/strong><\/aside>/)
+    assert.match(html, /<img loading="lazy" src="a.png"/)
+  })
+})
+
+describe('6. extensions', () => {
+  test('every kind', () => {
+    const ad = new Asciidart({
+      extensions: [
+        new InlineMacro('issue', (m) => m.link(`https://example.org/${m.target}`, { text: `#${m.target}` })),
+        new BlockMacro('hello', (m) => m.html(`<p>hello ${m.target}</p>`)),
+        new CustomBlock('shout', (b) => b.paragraph(b.source.toUpperCase()), { on: [BlockKind.paragraph] }),
+        new IncludeResolver((r) => (r.target === 'db:intro' ? 'Included *text*.' : null)),
+        new TreeProcessor((doc) => {
+          for (const image of doc.descendants(Image)) image.target = `https://cdn.example.org/${image.target}`
+        }),
+        new Preprocessor((lines) => lines.map((l) => l.replace('TODO', 'done'))),
+        new Postprocessor((output) => `${output}\n<!-- end -->`),
+        new Docinfo(() => '<meta name="x-test">'),
+      ],
+    })
+    const html = ad.convert('issue:7[]\n\nhello::world[]\n\n[shout]\nquiet please\n\ninclude::db:intro[]\n\nimage::a.png[]\n\nTODO\n')
+    assert.match(html, /<a href="https:\/\/example.org\/7">#7<\/a>/)
+    assert.match(html, /<p>hello world<\/p>/)
+    assert.match(html, /QUIET PLEASE/)
+    assert.match(html, /Included <strong>text<\/strong>\./)
+    assert.match(html, /src="https:\/\/cdn.example.org\/a.png"/)
+    assert.match(html, /<p>done<\/p>/)
+    assert.match(html, /<!-- end -->$/)
+    assert.match(ad.convert('x', { standalone: true }), /<meta name="x-test">/)
+  })
+
+  test('an asynchronous include resolver', async () => {
+    const ad = new Asciidart({
+      extensions: [new IncludeResolver(async (r) => (r.target === 'remote' ? 'From *far*.' : null))],
+    })
+    const doc = await ad.parseAsync('include::remote[]')
+    assert.match(doc.toHtml(), /From <strong>far<\/strong>\./)
+    assert.throws(() => ad.parse('include::remote[]'), AsciidartException)
+  })
+})
+
+describe('7. fail on warnings', () => {
+  test('diagnostics have severities and locations, and onDiagnostic sees them', () => {
+    const reported = []
+    const ad = new Asciidart({ onDiagnostic: (d) => reported.push(d) })
+    const doc = ad.parse('== A\n\n==== B\n', { path: 'docs/index.adoc' })
+    const warnings = doc.diagnostics.filter((d) => d.severity === 'warning')
+    assert.equal(warnings[0].code, DiagnosticCode.sectionOutOfSequence)
+    assert.equal(warnings[0].location.line, 3)
+    assert.equal(reported.length, doc.diagnostics.length)
+  })
+})
+
+describe('8. files', () => {
+  test('convertFile, convertTree and parseFile', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'asciidart-npm-'))
+    try {
+      mkdirSync(join(dir, 'docs', 'guide'), { recursive: true })
+      writeFileSync(join(dir, 'docs', 'index.adoc'), '= Home\n\nhi')
+      writeFileSync(join(dir, 'docs', 'guide', 'start.adoc'), '= Start\n\ngo')
+      writeFileSync(join(dir, 'docs', '_partial.adoc'), 'skip')
+      const ad = new Asciidart({ safe: SafeMode.unsafe })
+      const doc = await ad.convertFile(join(dir, 'docs', 'index.adoc'))
+      assert.equal(doc.title, 'Home')
+      assert.match(readFileSync(join(dir, 'docs', 'index.html'), 'utf8'), /hi/)
+      const outputs = []
+      for await (const result of ad.convertTree(join(dir, 'docs'), { toDir: join(dir, 'build') })) {
+        outputs.push(result.outputPath.slice(join(dir, 'build').length + 1))
+      }
+      assert.deepEqual(outputs, ['guide/start.html', 'index.html'])
+      assert.equal((await ad.parseFile(join(dir, 'docs', 'index.adoc'))).title, 'Home')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('also supported', () => {
+  test('a highlighter implemented in JavaScript', () => {
+    class Upper extends Highlighter {
+      highlight(code) {
+        return code.source.toUpperCase()
+      }
+
+      get head() {
+        return '<style>.upper{}</style>'
+      }
+    }
+    const ad = new Asciidart({ highlighters: { upper: new Upper() }, attributes: { 'source-highlighter': 'upper' } })
+    const html = ad.convert('[source,txt]\n----\nabc\n----', { standalone: true })
+    assert.match(html, /ABC/)
+    assert.match(html, /<style>\.upper\{\}<\/style>/)
+  })
+
+  test('errors from JavaScript callbacks reach the caller unchanged', () => {
+    const mine = new RangeError('mine')
+    const ad = new Asciidart({ extensions: [new InlineMacro('boom', () => { throw mine })] })
+    assert.throws(() => ad.convert('boom:x[]'), (error) => error === mine)
+  })
+
+  test('wrong argument types fail with a TypeError', () => {
+    assert.throws(() => asciidoc.convert(42), TypeError)
+    assert.throws(() => new Asciidart({ safe: 'nope' }), Error)
+  })
+
+  test('nodes are not constructible', () => {
+    assert.throws(() => new Section(), TypeError)
+  })
+
+  test('versions', () => {
+    assert.equal(asciidoctorVersion, '2.0.26')
+    assert.match(asciidartVersion, /^\d+\.\d+\.\d+/)
   })
 })

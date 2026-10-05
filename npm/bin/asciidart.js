@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The asciidart command: the Asciidoctor CLI on Node.js.
+// The asciidart command on Node.js.
 import process from 'node:process'
 import '../asciidart.js'
 
@@ -10,4 +10,4 @@ process.stdout.on('error', (error) => {
   throw error
 })
 
-process.exitCode = await globalThis.asciidoctorDart.runCli(process.argv.slice(2))
+process.exitCode = await globalThis.asciidartCore.runCli(process.argv.slice(2))

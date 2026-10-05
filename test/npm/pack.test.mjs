@@ -21,18 +21,11 @@ test('npm pack lists the expected files', () => {
     'node.cjs',
     'node.js',
     'package.json',
-    'src/api.js',
-    'src/bridge.js',
-    'src/constants.js',
-    'src/converters.js',
-    'src/extensions.js',
+    'src/api.g.js',
+    'src/core.js',
     'src/index.js',
-    'src/logging.js',
-    'src/nodes.js',
     'types/index.d.cts',
     'types/index.d.ts',
-    'types/logging.d.cts',
-    'types/logging.d.ts',
   ])
   // The bundle stays under 2.5 MB: about 0.75 MB of asciidart and 1.65 MB
   // of the 193 highlight.js languages hilite compiles in (631 KB gzipped in

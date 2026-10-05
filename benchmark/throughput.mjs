@@ -38,27 +38,32 @@ const median = (samples) => {
 }
 
 async function time(label, convert, backend) {
-  const options = { safe: 'safe', backend, doctype: 'book', standalone: true }
-  for (let i = 0; i < warmup; i++) await convert(corpus, options)
+  for (let i = 0; i < warmup; i++) await convert(corpus, backend)
   const samples = []
   for (let i = 0; i < iterations; i++) {
     const start = performance.now()
-    await convert(corpus, options)
+    await convert(corpus, backend)
     samples.push(performance.now() - start)
   }
   console.log(`${label} ${backend}: ${median(samples).toFixed(1)} ms`)
 }
 
-// The corpus repeats ids; silence the warnings so that only conversion is timed.
-const quiet = (api) => {
-  api.LoggerManager.setLogger(new api.NullLogger())
-  return api.convert
-}
-
-const implementations = [['asciidart', quiet(await import('../build/npm/node.js'))]]
+// asciidart collects diagnostics on the document rather than printing them.
+const asciidart = await import('../build/npm/node.js')
+const ad = new asciidart.Asciidart({ safe: asciidart.SafeMode.safe })
+const implementations = [
+  ['asciidart', (source, backend) => ad.convert(source, { backend, doctype: 'book', standalone: true })],
+]
 if (values.ajs) {
+  // The corpus repeats ids; silence the warnings so that only conversion is
+  // timed.
   const { pathToFileURL } = await import('node:url')
-  implementations.push(['asciidoctor.js', quiet(await import(pathToFileURL(values.ajs).href))])
+  const ajs = await import(pathToFileURL(values.ajs).href)
+  ajs.LoggerManager.setLogger(new ajs.NullLogger())
+  implementations.push([
+    'asciidoctor.js',
+    (source, backend) => ajs.convert(source, { safe: 'safe', backend, doctype: 'book', standalone: true }),
+  ])
 }
 
 console.log(`corpus: ${corpus.length} chars, node ${process.version}`)

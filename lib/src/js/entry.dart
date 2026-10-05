@@ -1,15 +1,16 @@
-/// The entry point of the npm package's compiled bundle.
+/// The entry point of the npm package's compiled core.
 ///
-/// Running the bundle installs the bridge the JavaScript facade calls into
-/// as `globalThis.asciidoctorDart`. On Node.js, the package's wrapper first
-/// injects the Node.js built-ins as `globalThis.asciidoctorDartHost` (see
-/// `io/js.dart`).
+/// Running the bundle installs the projection of the public API
+/// (`api.g.dart`) as `globalThis.asciidartCore`, which `npm/src/core.js`
+/// initializes and the generated `npm/src/api.g.js` calls into.
 library;
 
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:asciidart/src/js/bridge.dart';
+import 'package:asciidart/src/cli/run.dart' show runCliCode;
+import 'package:asciidart/src/js/api.g.dart';
+import 'package:asciidart/src/js/runtime.dart';
 
 /// The real global object (the bundle's own `self` shadows it; see
 /// `npm/preamble.js`).
@@ -17,5 +18,14 @@ import 'package:asciidart/src/js/bridge.dart';
 external JSObject get _global;
 
 void main() {
-  _global.setProperty('asciidoctorDart'.toJS, createApiBridge());
+  final core = createJSInteropWrapper<Core>(Core())
+    ..setProperty('init'.toJS, initRuntime.toJS)
+    ..setProperty(
+      'runCli'.toJS,
+      ((JSArray<JSString> args) => promise(
+        runCliCode([for (final a in args.toDart) a.toDart]),
+        (code) => code.toJS,
+      )).toJS,
+    );
+  _global.setProperty('asciidartCore'.toJS, core);
 }

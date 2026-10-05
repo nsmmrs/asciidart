@@ -30,6 +30,8 @@ jobs:
       run: dart test
     - name: Check that the public API is closed
       run: dart run tool/api_check.dart
+    - name: Check that the JavaScript projection is up to date
+      run: dart run tool/generate_js.dart --check
   e2e:
     runs-on: ubuntu-latest
     steps:

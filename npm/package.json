@@ -1,7 +1,7 @@
 {
   "name": "asciidart",
   "version": "0.1.0",
-  "description": "AsciiDoc processor written in Dart, compiled to JavaScript: converts AsciiDoc to HTML 5, DocBook 5 and man pages compatibly with Asciidoctor 2.0.26, behind an Asciidoctor.js-style API.",
+  "description": "AsciiDoc processor written in Dart, compiled to JavaScript: converts AsciiDoc to HTML 5, DocBook 5 and man pages compatibly with Asciidoctor 2.0.26.",
   "keywords": [
     "asciidoc",
     "asciidoctor",

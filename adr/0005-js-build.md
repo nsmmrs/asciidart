@@ -1,6 +1,7 @@
 # ADR-0005: JavaScript Build (npm package `asciidart`)
 
-**Status:** Final — scope decided with the user on 2026-10-04: runtimes
+**Status:** Superseded in part by ADR-0007 (decisions 3–7: the API).
+Scope decided with the user on 2026-10-04: runtimes
 Node.js and the browser, an API at parity with Asciidoctor.js 4.1, and a CLI
 bin named `asciidart`. The package is built and tested but not
 published (ADR-0001 deferred stages; publishing is its own lane card).

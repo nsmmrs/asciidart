@@ -115,12 +115,16 @@ highlighters can be registered through the API (`Asciidart(highlighters:
 The same core compiles to JavaScript as the npm package
 [`asciidart`](npm/README.md), with TypeScript types and an `asciidart`
 command. It runs on Node.js 20.19+ and in browsers
-([ADR-0005](adr/0005-js-build.md)).
+([ADR-0005](adr/0005-js-build.md)). Its API is generated from the Dart
+API, with the same names and shapes
+([ADR-0007](adr/0007-js-projection.md)):
 
 ```js
-import { convert } from 'asciidart'
+import { asciidoc, Section } from 'asciidart'
 
-const html = await convert('Hello, *AsciiDoc*!')
+const doc = asciidoc.parse('= Title\n\n== Section\n\ntext')
+doc.descendants(Section).map((s) => s.title) // ['Section']
+asciidoc.convert('Hello, *AsciiDoc*!')
 ```
 
 ## Versions

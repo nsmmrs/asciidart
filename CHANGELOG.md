@@ -48,4 +48,6 @@ Asciidoctor project.
 - The compiled command converts 5–10x faster than the gem end to end, and
   about 2x faster in process (`benchmark/BASELINE.md`).
 - The same core builds as the npm package `asciidart` for Node.js and
-  browsers, with an Asciidoctor.js 4.1-style API (ADR-0005).
+  browsers (ADR-0005). Its API is generated from the Dart API, with the
+  same names and shapes, plus TypeScript declarations
+  (`tool/generate_js.dart`, ADR-0007).

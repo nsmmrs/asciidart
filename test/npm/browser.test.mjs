@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { after, before, test } from 'node:test'
 import { build } from 'esbuild'
 import { chromium } from 'playwright-core'
-import { convert } from 'asciidart'
+import { Asciidart, SafeMode } from 'asciidart'
 
 const fixtures = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor', 'test', 'fixtures')
 const executablePath = process.env.CHROMIUM_PATH ?? '/usr/bin/chromium'
@@ -20,7 +20,7 @@ before(async () => {
   const bundle = await build({
     stdin: {
       contents:
-        "import * as asciidoctor from 'asciidart'\nglobalThis.asciidoctor = asciidoctor\n",
+        "import * as asciidart from 'asciidart'\nglobalThis.asciidart = asciidart\n",
       resolveDir: import.meta.dirname,
     },
     bundle: true,
@@ -44,7 +44,7 @@ before(async () => {
   const errors = []
   page.on('pageerror', (error) => errors.push(error))
   await page.goto(`http://127.0.0.1:${server.address().port}/`)
-  await page.waitForFunction(() => globalThis.asciidoctor !== undefined)
+  await page.waitForFunction(() => globalThis.asciidart !== undefined)
   assert.deepEqual(errors, [])
 })
 
@@ -55,8 +55,8 @@ after(async () => {
 
 test('reports the versions', async () => {
   const versions = await page.evaluate(() => [
-    globalThis.asciidoctor.getVersion(),
-    globalThis.asciidoctor.getCoreVersion(),
+    globalThis.asciidart.asciidartVersion,
+    globalThis.asciidart.asciidoctorVersion,
   ])
   assert.deepEqual(versions, ['0.1.0', '2.0.26'])
 })
@@ -64,15 +64,16 @@ test('reports the versions', async () => {
 // doctime-localtime.adoc prints the current time, which can tick between the
 // two conversions.
 const clockDependent = new Set(['doctime-localtime.adoc'])
+const secure = new Asciidart({ safe: SafeMode.secure })
 
 for (const name of readdirSync(fixtures)
   .filter((file) => file.endsWith('.adoc') && !clockDependent.has(file))
   .sort()) {
   test(`converts ${name} like Node.js`, async () => {
     const source = readFileSync(join(fixtures, name), 'utf8')
-    const expected = await convert(source, { safe: 'secure' })
+    const expected = secure.convert(source)
     const actual = await page.evaluate(
-      (input) => globalThis.asciidoctor.convert(input, { safe: 'secure' }),
+      (input) => new globalThis.asciidart.Asciidart({ safe: 'secure' }).convert(input),
       source
     )
     assert.equal(actual, expected)
@@ -81,7 +82,7 @@ for (const name of readdirSync(fixtures)
 
 test('includes behave as missing files without a file system', async () => {
   const output = await page.evaluate(() =>
-    globalThis.asciidoctor.convert('include::other.adoc[]', { safe: 'safe' })
+    new globalThis.asciidart.Asciidart({ safe: 'safe' }).convert('include::other.adoc[]')
   )
   assert.match(output, /Unresolved directive in &lt;stdin&gt; - include::other\.adoc\[\]/)
 })

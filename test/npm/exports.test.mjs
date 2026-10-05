@@ -13,7 +13,7 @@ const require = createRequire(import.meta.url)
 function declaredValues(file) {
   const source = readFileSync(file, 'utf8')
   const names = new Set()
-  for (const [, name] of source.matchAll(/^export (?:declare )?(?:class|function|const|namespace) (\w+)/gm)) {
+  for (const [, name] of source.matchAll(/^export (?:declare )?(?:(?:abstract )?class|function|const|namespace) (\w+)/gm)) {
     names.add(name)
   }
   for (const [, list] of source.matchAll(/^export \{([^}]*)\} from '[^']+'/gm)) {
