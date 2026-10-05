@@ -10,6 +10,7 @@ import 'dart:typed_data';
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
@@ -432,6 +433,77 @@ final class PdfConverter extends BuiltInConverter
     return theme;
   }
 
+  /// Draws the logo of the title page, if any, where the theme puts it
+  /// (it takes no room; the gem's logo in `ink_title_page`).
+  void _titleLogo(Document doc, String titleAlign) {
+    if (_s('title_page_logo_display') == 'none') return;
+    final fromDocument = doc.attr('title-logo-image');
+    final value = fromDocument ?? _s('title_page_logo_image');
+    if (value == null) return;
+    var target = value;
+    var attrs = <String, String>{};
+    if (_imageMacroOf(value, const ['alt', 'width', 'height'])
+        case (final macroTarget, final macroAttrs)?) {
+      target = macroTarget;
+      attrs = {...macroAttrs};
+    }
+    final format = _imageFormat(target);
+    if (format == 'pdf') {
+      logger.error(
+        'PDF format not supported for title page logo image: $target',
+      );
+      return;
+    }
+    const aligns = {'left', 'center', 'right'};
+    final align =
+        [
+          attrs.remove('align'),
+          _s('title_page_logo_align'),
+          titleAlign,
+        ].whereType<String>().where(aligns.contains).firstOrNull ??
+        'left';
+    final bytes = fromDocument != null
+        ? _imageBytes(doc, target)
+        : _themeImageBytes(target);
+    if (bytes == null) return;
+    final (graphic, problem) = _graphicOf(bytes, format, path: _lastImagePath);
+    if (graphic == null) {
+      logger.warn('could not embed image: $target; $problem');
+      return;
+    }
+    final topValue = switch (attrs['top']) {
+      final top? => ThemeString(top),
+      null => _theme['title_page_logo_top'],
+    };
+    final top = topValue == null ? 0.0 : _titlePageTop(topValue);
+    final left = (_n('title_page_logo_margin_left') ?? 0).toDouble();
+    final right = (_n('title_page_logo_margin_right') ?? 0).toDouble();
+    final (pageWidth, pageHeight) = _pageSize(doc);
+    final margins = _pageMargins(doc);
+    final content = _ImageContent(
+      graphic,
+      width: _imageWidthOf((name) => attrs[name]),
+      align: align,
+      pageWidth: pageWidth,
+    );
+    _out.add(
+      CustomBox(
+        _Absolute((page) {
+          final placed = content.place(
+            pageWidth - margins.horizontal - left - right,
+            double.infinity,
+            atTop: true,
+          );
+          placed?.paint(
+            page,
+            margins.left + left,
+            pageHeight - margins.top - top,
+          );
+        }),
+      ),
+    );
+  }
+
   /// The distance from the top of the content area that the title page
   /// value [value] gives (the gem's `resolve_top` on a new page).
   double _titlePageTop(ThemeValue value) {
@@ -456,6 +528,7 @@ final class PdfConverter extends BuiltInConverter
   /// revision (the gem's `ink_title_page`; logos aren't drawn yet).
   void _titlePage(Document doc) {
     final align = _s('title_page_text_align') ?? _baseTextAlign;
+    _titleLogo(doc, align);
     final base = _themeFont('title_page', _font);
     var offset = 0.0;
     void gap(double points) {
@@ -1879,6 +1952,7 @@ final class PdfConverter extends BuiltInConverter
   /// The bytes of the image [target] of [node], or null (with a warning)
   /// when they can't be read.
   List<int>? _imageBytes(AbstractNode node, String target) {
+    _lastImagePath = null;
     final doc = _document;
     var imagesdir = doc.attr('imagesdir');
     if (imagesdir == null ||
@@ -1918,16 +1992,113 @@ final class PdfConverter extends BuiltInConverter
     );
   }
 
+  /// The local path of the image read last (SVG images refer to files
+  /// relative to it).
+  String? _lastImagePath;
+
   List<int>? _readImage(String path) {
     if (io.isFile(path) && io.isReadable(path)) {
       try {
-        return io.readBytes(path);
+        final bytes = io.readBytes(path);
+        _lastImagePath = path;
+        return bytes;
       } on Exception {
         // Reported below.
       }
     }
     logger.warn('image to embed not found or not readable: $path');
     return null;
+  }
+
+  static final RegExp _imageMacro = RegExp(r'^image:{1,2}(.*?)\[(.*?)\]$');
+
+  /// The target and the attributes of [value] when it's an image macro
+  /// (a theme's logo or running content image).
+  static (String, Map<String, String>)? _imageMacroOf(
+    String value,
+    List<String> positional,
+  ) {
+    if (!value.contains(':')) return null;
+    final match = _imageMacro.firstMatch(value);
+    if (match == null) return null;
+    return (match[1]!, AttributeList(match[2]!).parse(positional));
+  }
+
+  /// [bytes] as an image of [format], or null (with why) when they aren't
+  /// one.
+  (Graphic?, String?) _graphicOf(
+    List<int> bytes,
+    String format, {
+    String? path,
+  }) {
+    try {
+      return (
+        format == 'svg'
+            ? SvgImage.parse(
+                utf8.decode(bytes, allowMalformed: true),
+                pixelSize: 1,
+                images: path == null
+                    ? null
+                    : (href) => _svgResource(href, path),
+              )
+            : PdfImage.parse(Uint8List.fromList(bytes)),
+        null,
+      );
+    } on FormatException catch (error) {
+      return (null, error.message);
+    }
+  }
+
+  /// The file an SVG image at [svgPath] refers to by [href]: relative to
+  /// the image, inside the document's directory unless the safe mode
+  /// allows any (prawn-svg's file requests); a URI with allow-uri-read.
+  Uint8List? _svgResource(String href, String svgPath) {
+    final doc = _document;
+    if (Helpers.isUriish(href) && !href.startsWith('file:')) {
+      if (!doc.hasAttr('allow-uri-read')) return null;
+      try {
+        return Uint8List.fromList(doc.fetchUri(href).body);
+      } on Exception {
+        return null;
+      }
+    }
+    final resolver = doc.pathResolver;
+    var path = href.startsWith('file://') ? href.substring(7) : href;
+    final slash = svgPath.lastIndexOf('/');
+    final base = slash < 0 ? '.' : svgPath.substring(0, slash);
+    path = resolver.isAbsolutePath(path)
+        ? resolver.expandPath(path)
+        : resolver.expandPath('$base/$path');
+    if (doc.safe >= SafeMode.safe) {
+      final root = resolver.expandPath(doc.baseDir);
+      if (path != root && !path.startsWith('$root/')) return null;
+    }
+    if (!io.isFile(path) || !io.isReadable(path)) return null;
+    try {
+      return Uint8List.fromList(io.readBytes(path));
+    } on Exception {
+      return null;
+    }
+  }
+
+  /// Reads the image at [path] relative to the theme's directory (the
+  /// gem's `resolve_image_path` with the themesdir).
+  List<int>? _themeImageBytes(String path) {
+    final resolver = _document.pathResolver;
+    var resolved = path;
+    if (!resolver.isAbsolutePath(path)) {
+      final dir = _theme.directory;
+      if (dir == null) return null;
+      resolved = resolver.expandPath('${resolver.posixify(dir)}/$path');
+    }
+    if (!io.isFile(resolved) || !io.isReadable(resolved)) return null;
+    try {
+      final bytes = io.readBytes(resolved);
+      _lastImagePath = resolved;
+      return bytes;
+    } on Exception {
+      return null;
+    }
   }
 
   /// Converts the block image [node].
@@ -1970,15 +2141,14 @@ final class PdfConverter extends BuiltInConverter
     }
     Graphic? graphic;
     if (bytes != null) {
-      try {
-        graphic = format == 'svg'
-            ? SvgImage.parse(
-                utf8.decode(bytes, allowMalformed: true),
-                pixelSize: 1,
-              )
-            : PdfImage.parse(Uint8List.fromList(bytes));
-      } on FormatException catch (error) {
-        logger.warn('could not embed image: $target; ${error.message}');
+      final (parsed, problem) = _graphicOf(
+        bytes,
+        format,
+        path: data == null ? _lastImagePath : null,
+      );
+      graphic = parsed;
+      if (problem != null) {
+        logger.warn('could not embed image: $target; $problem');
       }
     }
     if (graphic == null) {
@@ -2036,9 +2206,15 @@ final class PdfConverter extends BuiltInConverter
 
   /// The width [node] asks of its image (the gem's
   /// `resolve_explicit_width`, with the theme's `image_width` fallback).
-  _ImageWidth _imageWidth(AbstractNode node, {bool fallback = true}) {
+  _ImageWidth _imageWidth(AbstractNode node, {bool fallback = true}) =>
+      _imageWidthOf(node.attr, fallback: fallback);
+
+  _ImageWidth _imageWidthOf(
+    String? Function(String name) attr, {
+    bool fallback = true,
+  }) {
     _ImageWidth percent(String value) => _ImageWidth.percent(_toF(value) / 100);
-    if (node.attr('pdfwidth') case final width?) {
+    if (attr('pdfwidth') case final width?) {
       if (width.endsWith('%')) return percent(width);
       if (width.endsWith('iw')) {
         return _ImageWidth.scale(
@@ -2052,10 +2228,10 @@ final class PdfConverter extends BuiltInConverter
       }
       return _ImageWidth.points(strToPoints(width));
     }
-    if (node.attr('scale') case final scale?) {
+    if (attr('scale') case final scale?) {
       return _ImageWidth.scale(_toF(scale) / 100);
     }
-    if (node.attr('scaledwidth') case final width?) {
+    if (attr('scaledwidth') case final width?) {
       return width.endsWith('%')
           ? percent(width)
           : _ImageWidth.points(strToPoints(width));
@@ -2075,7 +2251,7 @@ final class PdfConverter extends BuiltInConverter
       case null:
         break;
     }
-    if (node.attr('width') case final width?) {
+    if (attr('width') case final width?) {
       if (width.endsWith('%')) {
         return _ImageWidth.percent(_toF(width) / 100, constrain: true);
       }
@@ -4111,10 +4287,50 @@ final class PdfConverter extends BuiltInConverter
       });
     }
     for (final position in const ['left', 'center', 'right']) {
-      final template = _s('${periphery}_${side}_${position}_content');
+      var template = _s('${periphery}_${side}_${position}_content');
       if (template == null || template.isEmpty) continue;
       final (align, columnWidth, x) = columns[position]!;
       if (columnWidth <= 0) continue;
+      if (_imageMacroOf(template, const ['alt', 'width'])
+          case (final rawTarget, final attrs)?) {
+        final target = _applySubsDiscretely(rawTarget, const {});
+        final format = attrs['format'] ?? _imageFormat(target);
+        final bytes = _themeImageBytes(target);
+        final graphic = bytes == null
+            ? null
+            : _graphicOf(bytes, format, path: _lastImagePath).$1;
+        if (graphic != null) {
+          final boxLeft = contentLeft + x;
+          final boxTop = top - padding[0] - contentOffset;
+          final imageValign = switch (_s('${periphery}_image_vertical_align')) {
+            null => valign,
+            'middle' => 'center',
+            final other => other,
+          };
+          pieces.add(
+            (pdfPage) => _runningImage(
+              pdfPage,
+              graphic,
+              attrs,
+              PdfRect(
+                boxLeft,
+                boxTop - contentHeight,
+                columnWidth,
+                contentHeight,
+              ),
+              align,
+              imageValign,
+            ),
+          );
+          continue;
+        }
+        // Not readable: the macro's text reports it and shows the alt text.
+        final attrlist = template.substring(
+          template.indexOf('[') + 1,
+          template.length - 1,
+        );
+        template = 'image:$target[$attrlist]';
+      }
       final font = _themeFont('${periphery}_${side}_$position', baseFont);
       String? content;
       if (template == '{page-number}') {
@@ -4158,6 +4374,71 @@ final class PdfConverter extends BuiltInConverter
         }),
       ),
     ];
+  }
+
+  /// Draws the running content image [graphic] in [box] (its width from
+  /// [attrs], else fit to the box), aligned (the gem's image in
+  /// `ink_running_content`).
+  void _runningImage(
+    PdfPage page,
+    Graphic graphic,
+    Map<String, String> attrs,
+    PdfRect box,
+    String align,
+    String valign,
+  ) {
+    final width = _imageWidthOf(
+      (name) => attrs[name],
+      fallback: false,
+    ).resolve(box.width, _pageSize(_document).$1);
+    final (naturalWidth, naturalHeight) = switch (graphic) {
+      final SvgImage svg => prawnSvgSize(
+        svg,
+        null,
+        null,
+        box.width,
+        box.height,
+      ),
+      final other => (other.intrinsicWidth, other.intrinsicHeight),
+    };
+    final ratio = naturalHeight / naturalWidth;
+    double w;
+    double h;
+    if (width != null) {
+      (w, h) = (width, width * ratio);
+    } else if (naturalWidth / naturalHeight > box.width / box.height) {
+      (w, h) = (box.width, box.width * ratio);
+    } else {
+      (w, h) = (box.height / ratio, box.height);
+    }
+    final left = switch (align) {
+      'center' => box.left + (box.width - w) / 2,
+      'right' => box.right - w,
+      _ => box.left,
+    };
+    final top = switch (valign) {
+      'center' => box.top - (box.height - h) / 2,
+      'bottom' => box.bottom + h,
+      _ => box.top,
+    };
+    final rect = PdfRect(left, top - h, w, h);
+    final canvas = page.canvas;
+    switch (graphic) {
+      case final PdfImage image:
+        canvas.image(image, rect);
+      case final other:
+        canvas.save();
+        other.paint(canvas, rect);
+        canvas.restore();
+    }
+    if (attrs['link'] case final link?) {
+      page.link(
+        rect,
+        link.startsWith('#')
+            ? LinkTarget.named(link.substring(1))
+            : LinkTarget.uri(link),
+      );
+    }
   }
 
   static PdfColor? _color(ThemeColor? value) =>
@@ -4626,16 +4907,11 @@ final class PdfConverter extends BuiltInConverter
       Graphic? graphic;
       String? problem;
       if (bytes != null) {
-        try {
-          graphic = format == 'svg'
-              ? SvgImage.parse(
-                  utf8.decode(bytes, allowMalformed: true),
-                  pixelSize: 1,
-                )
-              : PdfImage.parse(Uint8List.fromList(bytes));
-        } on FormatException catch (error) {
-          problem = error.message;
-        }
+        (graphic, problem) = _graphicOf(
+          bytes,
+          format,
+          path: data == null ? _lastImagePath : null,
+        );
       }
       if (bytes == null) {
         image = '[$alt&#93;';
