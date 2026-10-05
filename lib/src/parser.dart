@@ -1117,14 +1117,18 @@ abstract final class Parser {
     } else if (document.attributes.containsKey('sectids')) {
       section.id = id = Section.generateId(section.title ?? '', document);
     }
+    final titleCursor = reader.cursorAtLine(reader.lineno - (atx ? 1 : 2));
     if (id != null) {
       if (!document.registerRef(id, section)) {
         _logger.warn(
           'id assigned to section already in use: $id',
-          at: reader.cursorAtLine(reader.lineno - (atx ? 1 : 2)),
+          at: titleCursor,
         );
       }
     }
+    // Anchors in the title are registered like those in a paragraph
+    // (#3633).
+    catalogInlineAnchors(sectTitle, section, document, reader, at: titleCursor);
 
     _applyAttributes(section, attrs);
     reader.skipBlankLines();
@@ -2591,8 +2595,9 @@ abstract final class Parser {
     String text,
     AbstractBlock block,
     Document document,
-    Reader reader,
-  ) {
+    Reader reader, {
+    Cursor? at,
+  }) {
     if (!text.contains('[[') && !text.contains('or:')) return;
     for (final match in inlineAnchorScanRx.allMatches(text)) {
       final String id;
@@ -2626,7 +2631,7 @@ abstract final class Parser {
         id,
         Inline(block, InlineContext.anchor, text: reftext, type: 'ref', id: id),
       )) {
-        final mark = reader.cursorAtMark();
+        final mark = at ?? reader.cursorAtMark();
         final pre = text.substring(0, match.start);
         final offset =
             '\n'.allMatches(pre).length +
