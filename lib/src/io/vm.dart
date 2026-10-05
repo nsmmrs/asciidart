@@ -48,6 +48,16 @@ DateTime modificationTime(String path) =>
 void writeString(String path, String contents) =>
     _guard(() => io.File(path).writeAsStringSync(contents));
 
+/// Writes [bytes] to the file at [path], replacing it.
+void writeBytes(String path, List<int> bytes) =>
+    _guard(() => io.File(path).writeAsBytesSync(bytes));
+
+/// [bytes] compressed with raw DEFLATE (no zlib header).
+List<int> deflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).encode(bytes);
+
+/// [bytes] (raw DEFLATE) expanded.
+List<int> inflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).decode(bytes);
+
 /// Creates the directory at [path] and any missing parents.
 void createDirectories(String path) =>
     _guard(() => io.Directory(path).createSync(recursive: true));

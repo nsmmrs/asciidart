@@ -200,3 +200,17 @@ now the 2.0.26 copy.
 
 The AOT binary stays ahead of Ruby on every cell (5.2x–10.3x end to end)
 and ahead of Ruby + YJIT in process on every backend.
+
+## EPUB3 (2026-10-05)
+
+End to end, `-b epub3 -o <tmpfile> <doc>`, median of 11 after 3 warmups,
+same machine and corpus: the asciidoctor-epub3 2.3.0 gem (on Asciidoctor
+2.0.26) against the native executable. The gem compiles its stylesheets
+and packs the fonts on every run.
+
+| Doc | asciidoctor-epub3 | asciidart | Speedup |
+| --- | --: | --: | --: |
+| small | 399.0 ms | 39.3 ms | 10.2x |
+| medium | 403.5 ms | 40.8 ms | 9.9x |
+| large | 405.0 ms | 44.2 ms | 9.2x |
+

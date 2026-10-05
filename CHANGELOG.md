@@ -37,7 +37,9 @@ Asciidoctor project.
   (`inlines`, `titleInlines`: text and formatted text, links, images...,
   nested; ADR-0008); typed attributes; source-preserving edits of header
   attributes (`withAttribute`, `withoutAttribute`: only the entry's lines
-  change); diagnostics
+  change); an EPUB 3 backend in the native executable (`-b epub3`), the
+  same EPUB as the asciidoctor-epub3 2.3.0 gem file by file (ADR-0009);
+  diagnostics
   collected per document; callback-based extensions (`InlineMacro`,
   `BlockMacro`, `CustomBlock`, `IncludeResolver` (may be asynchronous),
   `TreeProcessor`, `Preprocessor`, `Postprocessor`, `Docinfo`).

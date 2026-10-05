@@ -8,6 +8,8 @@ analyzer:
     - lib/src/data.g.dart
     - lib/src/cli/help_topics.g.dart
     - lib/src/case_mapping.g.dart
+    # The embedded asciidoctor-epub3 assets (tool/embed_epub3.dart).
+    - lib/src/epub3/assets.g.dart
     # The JavaScript projection, from tool/generate_js.dart.
     - lib/src/js/api.g.dart
   language:
