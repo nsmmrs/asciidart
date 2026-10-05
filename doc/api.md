@@ -63,8 +63,20 @@ final body = doc.toHtml(); // render the same parse
 `asciidoc.parseHeader(source)` stops after the document header, for reading
 metadata cheaply.
 
-Planned (FEAT-q7q980): `doc.withAttribute('status', 'done').source`
-rewrites only that header line of the source.
+To change the metadata, edit the header: `withAttribute` and
+`withoutAttribute` return the document parsed again from a source that
+differs only in the attribute's entry, so everything else stays as written
+(layout, comments, the order of the entries):
+
+```dart
+final done = doc.withAttribute('status', 'done');
+file.writeAsStringSync(done.source); // `:status: done`, the rest untouched
+```
+
+A missing attribute gets an entry at the end of the header. An edit the
+source alone can't make (the entry is in an include or under a
+preprocessor conditional) throws an `AsciidartException` and changes
+nothing.
 
 ## 3. Walk and query the tree
 

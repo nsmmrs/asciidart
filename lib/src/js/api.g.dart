@@ -1794,6 +1794,14 @@ final class Core {
     }
   }
 
+  JSAny? Document$get$source(JSAny? self) {
+    try {
+      return rt.unwrap<api.Document>(self).source.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Document$get$authors(JSAny? self) {
     try {
       return rt.jsArray([
@@ -1825,6 +1833,26 @@ final class Core {
   JSAny? Document$get$attributes(JSAny? self) {
     try {
       return wrap(rt.unwrap<api.Document>(self).attributes);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Document$withAttribute(JSAny? self, JSAny? name, JSAny? value) {
+    try {
+      return wrap(
+        rt
+            .unwrap<api.Document>(self)
+            .withAttribute(rt.str(name), rt.str(value)),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Document$withoutAttribute(JSAny? self, JSAny? name) {
+    try {
+      return wrap(rt.unwrap<api.Document>(self).withoutAttribute(rt.str(name)));
     } catch (e, s) {
       rt.fail(e, s);
     }

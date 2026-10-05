@@ -180,10 +180,15 @@ final class Asciidart {
       (options) => impl.load(source, options: options),
     );
     final options = optionsFor(includes);
-    return await _document(
-      (collector) =>
-          collector.run(() => impl.loadAsync(source, options: options)),
-    );
+    return (await _document(
+        (collector) =>
+            collector.run(() => impl.loadAsync(source, options: options)),
+      ))
+      .._origin = (
+        source: source,
+        // The includes are settled: an edited source parses without waiting.
+        parse: (edited) => _parse(edited, options),
+      );
   }
 
   /// Like [convert], waiting for [IncludeResolver]s that return a `Future`,
@@ -256,7 +261,9 @@ final class Asciidart {
     final doc = _guard(
       () => collector.run(() => impl.load(source, options: options)),
     );
-    return (_view(doc) as Document).._collector = collector;
+    return (_view(doc) as Document)
+      .._collector = collector
+      .._origin = (source: source, parse: (edited) => _parse(edited, options));
   }
 
   impl.AsciidoctorOptions _options(

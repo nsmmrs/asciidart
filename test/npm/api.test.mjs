@@ -93,6 +93,19 @@ describe('2. read metadata, then render', () => {
     assert.match(doc.toHtml(), /<strong>body<\/strong>/)
     assert.equal(asciidoc.parseHeader('= T\n:x: y\n\nbody').blocks.length, 0)
   })
+
+  test('edit a header attribute, keeping the rest as written', () => {
+    const source = '= T\n:status: doing\n// note\n:priority:  2\n\nbody\n'
+    const edited = asciidoc.parse(source).withAttribute('status', 'done')
+    assert.ok(edited instanceof Document)
+    assert.equal(edited.source, source.replace(':status: doing', ':status: done'))
+    assert.equal(edited.attributes.get('status'), 'done')
+    assert.equal(edited.withoutAttribute('priority').source, '= T\n:status: done\n// note\n\nbody\n')
+    assert.throws(
+      () => asciidoc.parse('= T\nifdef::x[]\n:status: a\nendif::[]\n\nb').withAttribute('status', 'b'),
+      AsciidartException,
+    )
+  })
 })
 
 describe('3. walk and query the tree', () => {

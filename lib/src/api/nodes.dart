@@ -222,6 +222,17 @@ final class Document extends Block {
 
   _Collector? _collector;
 
+  /// The source this document was parsed from, and how to parse an edited
+  /// version of it the same way.
+  ({String source, Document Function(String source) parse})? _origin;
+
+  ({String source, Document Function(String source) parse}) get _edits =>
+      _origin ??
+      (throw StateError(
+        'only a document returned by parse, parseHeader or parseAsync can '
+        'be edited',
+      ));
+
   R _run<R>(R Function() body) {
     final parentDocument = _doc.parentDocument;
     if (parentDocument != null) {
@@ -259,6 +270,36 @@ final class Document extends Block {
         in _doc.headerAttributeEntries ?? const <impl.DocumentAttributeEntry>[])
       entry.name: entry.negate ? null : entry.value,
   };
+
+  /// The source this document was parsed from.
+  String get source => _edits.source;
+
+  /// This document with the header attribute [name] set to [value]: its
+  /// [source] rewrites only the attribute entry that sets [name] last (or,
+  /// when the header has none, adds one at the end of the header) and
+  /// keeps every other byte as written; the result is that source, parsed
+  /// with the same settings as this document. An unset entry (`:name!:`)
+  /// becomes a set one.
+  ///
+  /// Throws an [AsciidartException], and edits nothing, when the source
+  /// alone can't make the edit: the header sets [name] in an include or
+  /// under a preprocessor conditional, or ends inside an include. Throws an
+  /// [ArgumentError] for a [value] of more than one line.
+  Document withAttribute(String name, String value) {
+    final (:source, :parse) = _edits;
+    final edited = _guard(
+      () => impl.setHeaderAttribute(_doc, source, name, value),
+    );
+    return identical(edited, source) ? this : parse(edited);
+  }
+
+  /// This document without the header attribute entries for [name]: its
+  /// [source] drops only their lines. See [withAttribute].
+  Document withoutAttribute(String name) {
+    final (:source, :parse) = _edits;
+    final edited = _guard(() => impl.removeHeaderAttribute(_doc, source, name));
+    return identical(edited, source) ? this : parse(edited);
+  }
 
   /// The authors from the document header.
   List<Author> get authors => [
