@@ -1361,7 +1361,7 @@ String _subMacrosLinks(
             linkText = linkText.replaceAll(escRSb, rSb);
             newLinkText = linkText;
           }
-          if (!compat && linkText.contains('=')) {
+          if (!compat && _holdsAttributes(linkText)) {
             // NOTE if an equals sign (=) is present, extract attributes
             // from link text
             final extracted = extractAttributesFromText(node, linkText, '');
@@ -1463,7 +1463,7 @@ String _subMacrosLinks(
               }
             }
           }
-        } else if (!compat && linkText.contains('=')) {
+        } else if (!compat && _holdsAttributes(linkText)) {
           // NOTE if an equals sign (=) is present, extract attributes
           // from link text
           final extracted = extractAttributesFromText(node, linkText, '');
@@ -1657,7 +1657,7 @@ String _convertXrefMacro(
       }
       // NOTE if an equals sign (=) is present, extract attributes from
       // link text
-      if (!compat && linkText.contains('=')) {
+      if (!compat && _holdsAttributes(linkText)) {
         final extracted = extractAttributesFromText(node, linkText);
         linkText = extracted.text;
         attrs = extracted.attributes;
@@ -2867,3 +2867,15 @@ List<String> splitSimpleCsv(String str) {
     ).map((item) => item.trimAscii()).toList();
   }
 }
+
+/// Matches the markup of an element the substitutions already converted.
+final RegExp _convertedMarkupRx = RegExp('<[^>]*>');
+
+/// Whether the text of a link or cross reference holds attributes: it has
+/// an equals sign outside the markup of the elements converted in it
+/// already (an icon's `<img src="data:...">` is not an attribute list:
+/// #4075).
+bool _holdsAttributes(String text) =>
+    text.contains('=') &&
+    (!text.contains('<') ||
+        text.replaceAll(_convertedMarkupRx, '').contains('='));
