@@ -20,6 +20,7 @@ import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/icons.dart';
 import 'package:asciidart/src/pdf/markup.dart';
+import 'package:asciidart/src/pdf/svg_size.dart';
 import 'package:asciidart/src/pdf/text_box.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:asciidart/src/section.dart';
@@ -200,10 +201,16 @@ final class PdfConverter extends BuiltInConverter
           ?.replaceAll('{docdir}', document.attr('docdir') ?? ''),
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
+    final (_, pageHeight) = _pageSize(document);
+    _inlineGraphics.clear();
+    _imageProblems.clear();
     _text = TextContext(
       fonts: _fonts,
       rootSize: _rootFontSize,
       fallbacks: _theme.fontFallbacks,
+      images: (src, format) =>
+          (_inlineGraphics[src], _imageProblems[src] ?? 'not an image'),
+      boundsHeight: pageHeight - _pageMargins(document).vertical,
       logger: logger,
     );
     _markup = MarkupTransform(_theme);
@@ -1719,7 +1726,7 @@ final class PdfConverter extends BuiltInConverter
 
   /// The width [node] asks of its image (the gem's
   /// `resolve_explicit_width`, with the theme's `image_width` fallback).
-  _ImageWidth _imageWidth(AbstractNode node) {
+  _ImageWidth _imageWidth(AbstractNode node, {bool fallback = true}) {
     _ImageWidth percent(String value) => _ImageWidth.percent(_toF(value) / 100);
     if (node.attr('pdfwidth') case final width?) {
       if (width.endsWith('%')) return percent(width);
@@ -1743,7 +1750,7 @@ final class PdfConverter extends BuiltInConverter
           ? percent(width)
           : _ImageWidth.points(strToPoints(width));
     }
-    switch (_theme.value('image_width')) {
+    switch (fallback ? _theme.value('image_width') : null) {
       case ThemeNumber(:final value):
         return _ImageWidth.points(value.toDouble());
       case final ThemeValue value:
@@ -4080,8 +4087,7 @@ final class PdfConverter extends BuiltInConverter
       '<button>${(_s('button_content') ?? '%s').replaceFirst('%s', node.text ?? '')}</button>',
     InlineContext.callout => _inlineCallout(node),
     InlineContext.footnote => _inlineFootnote(node),
-    InlineContext.image =>
-      node.type == 'icon' ? _inlineIcon(node) : '[${node.alt}&#93;',
+    InlineContext.image => _inlineImage(node),
     InlineContext.indexterm => node.type == 'visible' ? node.text ?? '' : '',
     InlineContext.kbd => _inlineKbd(node),
     InlineContext.menu => _inlineMenu(node),
@@ -4145,6 +4151,116 @@ final class PdfConverter extends BuiltInConverter
       result = '<font color="${color.rubyString}">$result</font>';
     }
     return result;
+  }
+
+  /// The images inline images refer to, by the `src` of their `<img>`.
+  final Map<String, Graphic> _inlineGraphics = {};
+
+  /// The inline image [node] as an `<img>` (the gem's
+  /// `convert_inline_image`), or its alt text when it can't be read.
+  String _inlineImage(Inline node) {
+    final String image;
+    if (node.type == 'icon') {
+      image = _inlineIcon(node);
+    } else {
+      final target = node.target ?? '';
+      final alt = node.attr('alt') ?? '';
+      final data = _dataUri.firstMatch(target);
+      final format = data != null
+          ? switch (data[1]!) {
+              'jpg' => 'jpeg',
+              'svg+xml' => 'svg',
+              final other => other,
+            }
+          : node.attr('format') ?? _imageFormat(target);
+      List<int>? bytes;
+      if (format == 'gif') {
+        logger.warn('GIF image format not supported; convert $target to PNG');
+      } else if (data != null) {
+        try {
+          bytes = base64.decode(data[2]!);
+        } on FormatException {
+          bytes = null;
+        }
+      } else {
+        bytes = _imageBytes(node, target);
+      }
+      Graphic? graphic;
+      String? problem;
+      if (bytes != null) {
+        try {
+          graphic = format == 'svg'
+              ? SvgImage.parse(
+                  utf8.decode(bytes, allowMalformed: true),
+                  pixelSize: 1,
+                )
+              : PdfImage.parse(Uint8List.fromList(bytes));
+        } on FormatException catch (error) {
+          problem = error.message;
+        }
+      }
+      if (bytes == null) {
+        image = '[$alt&#93;';
+      } else {
+        final src = target.replaceAll('"', '%22');
+        if (graphic != null) _inlineGraphics[src] = graphic;
+        if (problem != null) _imageProblems[src] = problem;
+        final role = node.role;
+        final classAttr = role == null ? '' : ' class="$role"';
+        final fit = node.attr('fit');
+        final fitAttr = fit == null ? '' : ' fit="$fit"';
+        final intrinsic = graphic == null ? 0.0 : _intrinsicWidth(graphic);
+        final width = _imageWidth(node, fallback: false);
+        String widthValue;
+        switch (width.kind) {
+          case _ImageWidthKind.scale:
+            widthValue = '${intrinsic * width.value}';
+          case _ImageWidthKind.percent:
+            widthValue = '${_rubyFloat(width.value * 100)}%';
+            if (node.parent?.context == BlockContext.tableCell) {
+              widthValue += '$intrinsic';
+            }
+          case _ImageWidthKind.natural:
+            widthValue = '$intrinsic';
+          case _ImageWidthKind.points || _ImageWidthKind.viewport:
+            widthValue = '${width.value}';
+        }
+        final escapedAlt = alt.replaceAll('"', '&quot;');
+        image =
+            '<img src="$src" format="$format" alt="$escapedAlt" '
+            'width="$widthValue"$classAttr$fitAttr>';
+      }
+    }
+    if (node.attr('link') case final link? when link.isNotEmpty) {
+      return link.startsWith('#')
+          ? '<a anchor="${link.substring(1)}">$image</a>'
+          : '<a href="$link">$image</a>';
+    }
+    return image;
+  }
+
+  /// Why the inline images that couldn't be read couldn't, by `src`.
+  final Map<String, String> _imageProblems = {};
+
+  /// [value] as Ruby writes a float (`50.0`).
+  static String _rubyFloat(double value) =>
+      value == value.roundToDouble() ? '${value.toInt()}.0' : '$value';
+
+  /// The width of [graphic] as the gem measures it (pixels at 0.75pt, SVG
+  /// by prawn-svg's sizing in the content area).
+  double _intrinsicWidth(Graphic graphic) {
+    if (graphic case final SvgImage svg) {
+      final (width, height) = _pageSize(_document);
+      final margins = _pageMargins(_document);
+      return prawnSvgSize(
+        svg,
+        null,
+        null,
+        width - margins.horizontal,
+        height - margins.vertical,
+      ).$1;
+    }
+    return graphic.intrinsicWidth * 0.75;
   }
 
   String _inlineIcon(Inline node) {
@@ -4654,9 +4770,9 @@ final class _ImageContent implements CustomContent {
     final asked = width.resolve(available, pageWidth);
     switch (graphic) {
       case final SvgImage svg:
-        var (w, h) = _svgSize(svg, asked, null, available, height);
+        var (w, h) = prawnSvgSize(svg, asked, null, available, height);
         if (width.kind == _ImageWidthKind.scale) {
-          (w, h) = _svgSize(
+          (w, h) = prawnSvgSize(
             svg,
             math.min(available, w * width.value),
             null,
@@ -4666,7 +4782,7 @@ final class _ImageContent implements CustomContent {
         } else if (asked == null &&
             svg.rootAttribute('width') != null &&
             w > available) {
-          (w, h) = _svgSize(svg, available, null, available, height);
+          (w, h) = prawnSvgSize(svg, available, null, available, height);
         }
         return (w, h);
       case final other:
@@ -4678,73 +4794,6 @@ final class _ImageContent implements CustomContent {
                 : math.min(available, natural));
         return (w, other.intrinsicHeight * w / other.intrinsicWidth);
     }
-  }
-
-  /// The size prawn-svg gives [svg] (its `DocumentSizing`): the root's
-  /// width and height (user units are points), the [requestedWidth] or
-  /// [requestedHeight] scaling it.
-  static (double, double) _svgSize(
-    SvgImage svg,
-    double? requestedWidth,
-    double? requestedHeight,
-    double boundsWidth,
-    double boundsHeight,
-  ) {
-    final containerWidth = requestedWidth ?? boundsWidth;
-    final containerHeight = requestedHeight ?? boundsHeight;
-    double? pixels(String? value, double axis) {
-      if (value == null) return null;
-      final number =
-          double.tryParse(
-            RegExp(r'^\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?')
-                    .stringMatch(value)
-                    ?.trim() ??
-                '',
-          ) ??
-          0;
-      final unit = RegExp(r'\d(em|ex|pc|cm|mm|in)$').firstMatch(value)?[1];
-      return switch (unit) {
-        'em' => number * 16,
-        'ex' => number * 8,
-        'pc' => number * 15,
-        'cm' => number / 2.54 * 72,
-        'mm' => number / 25.4 * 72,
-        'in' => number * 72,
-        _ => value.endsWith('%') ? number * axis / 100 : number,
-      };
-    }
-
-    var outputWidth =
-        pixels(svg.rootAttribute('width'), containerWidth) ?? requestedWidth;
-    var outputHeight =
-        pixels(svg.rootAttribute('height'), containerHeight) ?? requestedHeight;
-    final viewBox = svg
-        .rootAttribute('viewBox')
-        ?.trim()
-        .split(RegExp(r'(?:\s+,?\s*|,\s*)'))
-        .map((v) => double.tryParse(v) ?? 0)
-        .toList();
-    if (viewBox != null &&
-        viewBox.length >= 4 &&
-        viewBox[2] > 0 &&
-        viewBox[3] > 0) {
-      if (outputWidth == null && outputHeight == null) {
-        outputWidth = containerWidth;
-      }
-      outputWidth ??= outputHeight! * viewBox[2] / viewBox[3];
-      outputHeight ??= outputWidth * viewBox[3] / viewBox[2];
-    } else {
-      outputWidth ??= containerWidth;
-      outputHeight ??= containerHeight;
-    }
-    if (requestedWidth != null && outputWidth > 0) {
-      outputHeight *= requestedWidth / outputWidth;
-      outputWidth = requestedWidth;
-    } else if (requestedHeight != null && outputHeight > 0) {
-      outputWidth *= requestedHeight / outputHeight;
-      outputHeight = requestedHeight;
-    }
-    return (outputWidth, outputHeight);
   }
 
   @override
@@ -4766,7 +4815,7 @@ final class _ImageContent implements CustomContent {
       if (!atTop) return null;
       if (room > 0) {
         if (graphic case final SvgImage svg) {
-          (w, h) = _svgSize(svg, null, room, width, regionHeight);
+          (w, h) = prawnSvgSize(svg, null, room, width, regionHeight);
         } else {
           w = w * room / h;
           h = room;

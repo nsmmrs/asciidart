@@ -12,6 +12,7 @@ import 'dart:math' as math;
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/markup.dart';
+import 'package:asciidart/src/pdf/svg_size.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:libpdf/libpdf.dart';
 
@@ -105,8 +106,17 @@ final class TextContext {
     required this.fonts,
     required this.rootSize,
     this.fallbacks = const [],
+    this.images,
+    this.boundsHeight = double.infinity,
     LoggerBase? logger,
   }) : logger = logger ?? LoggerManager.logger;
+
+  /// Reads the inline image at a path in a format, or returns null (with
+  /// the reason) when it can't.
+  final (Graphic?, String?) Function(String path, String? format)? images;
+
+  /// The height of the content area (the most an inline image may be).
+  final double boundsHeight;
 
   /// The fonts.
   final FontCatalog fonts;
@@ -139,16 +149,43 @@ final class _Item {
 
 /// A fragment's formatting with its font resolved.
 final class _Format {
-  new(this.fragment, this.font, this.size);
+  new(this.fragment, this.font, this.size, {this.image});
 
   final Fragment fragment;
   final PrawnFont font;
   final double size;
 
+  /// The inline image the fragment is, once arranged.
+  final _Image? image;
+
   bool get subscript =>
       fragment.styles?.contains(FragmentStyle.subscript) ?? false;
   bool get superscript =>
       fragment.styles?.contains(FragmentStyle.superscript) ?? false;
+}
+
+/// An inline image arranged on a line: the room it takes, the size it is
+/// drawn at, and the metrics it gives its line.
+final class _Image {
+  const new(
+    this.graphic, {
+    required this.width,
+    required this.height,
+    required this.drawWidth,
+    required this.drawHeight,
+    this.ascender,
+    this.descender,
+    this.lineHeightIncreased = false,
+  });
+
+  final Graphic graphic;
+  final double width;
+  final double height;
+  final double drawWidth;
+  final double drawHeight;
+  final double? ascender;
+  final double? descender;
+  final bool lineHeightIncreased;
 }
 
 /// A fragment as printed on a line.
@@ -163,9 +200,11 @@ final class _Printed {
   double left = 0;
   double baseline = 0;
 
-  double get ascender =>
-      format.fragment.isMarker ? 0 : format.font.ascenderAt(format.size);
-  double get descender => format.font.descenderAt(format.size);
+  double get ascender => format.fragment.isMarker
+      ? 0
+      : format.image?.ascender ?? format.font.ascenderAt(format.size);
+  double get descender =>
+      format.image?.descender ?? format.font.descenderAt(format.size);
   double get yOffset => format.subscript
       ? -descender
       : format.superscript
@@ -346,11 +385,136 @@ final class PrawnTextBox implements CustomContent {
     return (least, math.max(most, line));
   }
 
+  bool _imagesArranged = false;
+
+  /// Sizes the inline images for [width] points of room, once (the gem's
+  /// `InlineImageArranger`): each becomes a placeholder as wide as the
+  /// image, raising its line when the image is taller than the text.
+  void _arrangeImages(double width) {
+    if (_imagesArranged) return;
+    _imagesArranged = true;
+    final images = _context.images;
+    if (images == null) return;
+    Object? last;
+    for (var i = 0; i < _items.length; i++) {
+      final item = _items[i];
+      final fragment = item.format.fragment;
+      final path = fragment.imagePath;
+      if (path == null || item.format.image != null) continue;
+      final id = fragment.objectId;
+      if (id != null && id == last) {
+        _items.removeAt(i--);
+        continue;
+      }
+      last = id;
+      final (graphic, problem) = images(path, fragment.imageFormat);
+      if (graphic == null) {
+        _context.logger.warn('could not embed image: $path; $problem');
+        continue;
+      }
+      _items[i] = _arrangeImage(item, graphic, width);
+    }
+  }
+
+  _Item _arrangeImage(_Item item, Graphic graphic, double available) {
+    final fragment = item.format.fragment;
+    final spec = fragment.imageWidth ?? '100%';
+    double? width;
+    double? scale;
+    if (spec == 'auto') {
+      width = null;
+    } else if (spec.startsWith('auto*')) {
+      scale = _Wrap._toF(spec.substring(5));
+    } else {
+      final pct = spec.indexOf('%');
+      if (pct >= 0 && pct + 1 < spec.length) {
+        width = math.min(
+          available,
+          _Wrap._toF(spec.substring(0, pct)) /
+              100 *
+              _Wrap._toF(spec.substring(pct + 1)),
+        );
+      } else {
+        width = math.min(
+          available,
+          pct >= 0 ? _Wrap._toF(spec) / 100 * available : _Wrap._toF(spec),
+        );
+      }
+    }
+    final lineFont = PrawnTextBox._font(_state.family, _state.style, _context);
+    final lineHeight = lineFont.heightAt(_state.size);
+    final boundsHeight = _context.boundsHeight;
+    final maxHeight = switch (fragment.imageFit) {
+      'line' => math.min(boundsHeight, lineHeight),
+      _ => boundsHeight,
+    };
+    double height;
+    double drawWidth;
+    double drawHeight;
+    if (graphic case final SvgImage svg) {
+      var (w, h) = prawnSvgSize(svg, width, null, available, boundsHeight);
+      if (h > maxHeight) {
+        (w, h) = prawnSvgSize(svg, null, maxHeight, available, boundsHeight);
+        width = w;
+      } else if (width != null) {
+        width = w;
+      } else {
+        width = w * (scale ?? 1);
+        if (width > available) width = available;
+      }
+      (drawWidth, drawHeight, height) = (w, h, h);
+    } else {
+      final ratio = graphic.intrinsicHeight / graphic.intrinsicWidth;
+      if (width == null) {
+        width = graphic.intrinsicWidth * 0.75 * (scale ?? 1);
+        if (width > available) width = available;
+      }
+      height = width * ratio;
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height / ratio;
+      }
+      (drawWidth, drawHeight) = (width, height);
+    }
+    double? ascender;
+    double? descender;
+    var size = item.format.size;
+    var increased = false;
+    if (height > lineHeight * 1.5) {
+      descender = lineFont.descenderAt(_state.size);
+      ascender = height - descender;
+      if (height == boundsHeight) {
+        ascender -= _layout.leading / 2 + lineFont.lineGapAt(_state.size);
+      }
+      size = height * (_state.size / lineHeight);
+      increased = true;
+    }
+    return _Item(
+      '\u2063',
+      _Format(
+        fragment,
+        item.format.font,
+        size,
+        image: _Image(
+          graphic,
+          width: width,
+          height: height,
+          drawWidth: drawWidth,
+          drawHeight: drawHeight,
+          ascender: ascender,
+          descender: descender,
+          lineHeightIncreased: increased,
+        ),
+      ),
+    );
+  }
+
   /// The right edge and the top of the last fragment of the text laid
   /// out [width] wide, relative to the box's left and top, with the top
   /// of its first line; null for no text.
   ({double right, double top, double firstTop})? lastFragment(double width) {
     if (_items.isEmpty) return null;
+    _arrangeImages(width);
     final gap = _layout.initialGap;
     final lines = _Wrap(
       [for (final item in _items) item.copy()],
@@ -388,6 +552,7 @@ final class PrawnTextBox implements CustomContent {
         paint: (page, x, top) {},
       );
     }
+    _arrangeImages(width);
     final gap = _layout.initialGap;
     final wrap = _Wrap(
       [for (final item in _items) item.copy()],
@@ -462,7 +627,30 @@ final class PrawnTextBox implements CustomContent {
             if (gapWidth > 0) textX += gapWidth * (align == 'center' ? 0.5 : 1);
           }
         }
-        if (f.text.isNotEmpty) {
+        if (f.format.image case final image?) {
+          // The gem's `InlineImageRenderer`: centered in the fragment, or
+          // standing on the descender of a raised line.
+          final top = image.lineHeightIncreased
+              ? baseline - f.descender + image.height
+              : baseline +
+                    f.ascender -
+                    (f.ascender + f.descender - image.height) / 2;
+          final imageLeft = left + (f.width - image.width) / 2;
+          final rect = PdfRect(
+            imageLeft,
+            top - image.drawHeight,
+            image.drawWidth,
+            image.drawHeight,
+          );
+          switch (image.graphic) {
+            case final PdfImage raster:
+              canvas.image(raster, rect);
+            case final other:
+              canvas.save();
+              other.paint(canvas, rect);
+              canvas.restore();
+          }
+        } else if (f.text.isNotEmpty) {
           canvas.save();
           if (_pdfColor(fragment.color) case final color?) {
             canvas
@@ -925,11 +1113,15 @@ final class _Wrap {
       );
       _fragments.add(printed);
       final font = format.font;
+      final image = format.image;
       _maxLineHeight = math.max(_maxLineHeight, font.heightAt(format.size));
-      _maxDescender = math.max(_maxDescender, font.descenderAt(format.size));
+      _maxDescender = math.max(
+        _maxDescender,
+        image?.descender ?? font.descenderAt(format.size),
+      );
       _maxAscender = math.max(
         _maxAscender,
-        isMarker ? 0 : font.ascenderAt(format.size),
+        isMarker ? 0 : image?.ascender ?? font.ascenderAt(format.size),
       );
     }
     _spaceCount = _fragments.fold(0, (sum, f) => sum + f.spaces);
@@ -937,6 +1129,7 @@ final class _Wrap {
 
   double _fragmentWidth(String text, _Format format) {
     final fragment = format.fragment;
+    if (format.image case final image?) return image.width;
     var width = switch (fragment.width) {
       final String fixed when fixed.endsWith('em') => _toF(fixed) * format.size,
       final String fixed => strToPoints(fixed),
