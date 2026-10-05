@@ -875,6 +875,10 @@ class PreprocessorReader extends Reader {
   /// The current include depth (size of the include stack).
   int get includeDepth => _includeStack.length;
 
+  /// Whether the current line is under a preprocessor conditional
+  /// (`ifdef`, `ifndef`, `ifeval`).
+  bool get inConditional => _conditionalStack.isNotEmpty;
+
   /// The relative max include depth when pushing an include would exceed
   /// it, else `null` (also when includes are disabled; see
   /// [includesEnabled]).

@@ -91,8 +91,15 @@ class DocumentAttributeEntry {
   /// Creates an entry assigning [value] to [name].
   ///
   /// [negate] defaults to whether [value] is `null` (an unset marker).
-  new(this.name, this.value, {bool? negate})
+  new(this.name, this.value, {bool? negate, this.lines})
     : negate = negate ?? (value == null);
+
+  /// Where the entry is in the source of the document, when it is plain
+  /// lines of that source: the 1-based first and last line (a value
+  /// continued over several lines), or `null` for an entry read from an
+  /// include, under a preprocessor conditional, or not from the source at
+  /// all.
+  final ({int first, int last})? lines;
 
   /// The attribute name.
   final String name;
@@ -749,6 +756,11 @@ class Document extends AbstractBlock implements NodeDocument {
   ///
   /// Written by the parser when it finishes the header.
   List<DocumentAttributeEntry>? headerAttributeEntries;
+
+  /// The 1-based line of the source where the body starts (after the
+  /// header and the empty lines after it), or `null` when the header ended
+  /// inside an include.
+  int? bodyStartLine;
 
   /// The base directory for converting this document.
   @override

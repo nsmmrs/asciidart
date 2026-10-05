@@ -99,6 +99,12 @@ void main() {
       expect(doc.blocks, isEmpty);
     });
 
+    test('edit a header attribute, keeping the rest as written', () {
+      final doc = asciidoc.parse(card).withAttribute('status', 'done');
+      expect(doc.attributes['status'], 'done');
+      expect(doc.source, card.replaceFirst(':status: doing', ':status: done'));
+    });
+
     test('authors', () {
       final doc = asciidoc.parse('= T\nAda Lovelace <ada@example.org>\n\nx');
       expect(doc.authors.single.name, 'Ada Lovelace');
