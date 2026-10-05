@@ -4,15 +4,16 @@
 /// breaks and running content are libpdf's box tree.
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/context.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
@@ -161,6 +162,8 @@ final class PdfConverter extends BuiltInConverter
           convertThematicBreak(block);
         } else if (context == BlockContext.pageBreak) {
           convertPageBreak(block);
+        } else if (context == BlockContext.image) {
+          convertImage(block);
         }
       // Other blocks aren't converted yet: they are left out.
       default:
@@ -1005,6 +1008,277 @@ final class PdfConverter extends BuiltInConverter
     _out.add(BreakBox.page(force: node.hasOption('always')));
   }
 
+  // Images.
+
+  static final RegExp _dataUri = RegExp(
+    r'^data:image/(png|jpe?g|gif|pdf|bmp|tiff|svg\+xml);base64,(.*)$',
+  );
+
+  /// The format of the image [target] (its extension, lower case).
+  static String _imageFormat(String target) {
+    final name = target.split('/').last;
+    final dot = name.lastIndexOf('.');
+    return dot <= 0 ? '' : name.substring(dot + 1).toLowerCase();
+  }
+
+  /// The bytes of the image [target] of [node], or null (with a warning)
+  /// when they can't be read.
+  List<int>? _imageBytes(AbstractNode node, String target) {
+    final doc = _document;
+    var imagesdir = doc.attr('imagesdir');
+    if (imagesdir == null ||
+        imagesdir.isEmpty ||
+        imagesdir == '.' ||
+        imagesdir == './') {
+      imagesdir = null;
+    }
+    final resolver = doc.pathResolver;
+    final isUrl = Helpers.isUriish(target);
+    if (!isUrl && resolver.isAbsolutePath(target)) {
+      return _readImage(resolver.expandPath(resolver.posixify(target)));
+    }
+    if (!isUrl && imagesdir != null && resolver.isAbsolutePath(imagesdir)) {
+      return _readImage(
+        resolver.expandPath('${resolver.posixify(imagesdir)}/$target'),
+      );
+    }
+    if (isUrl || (imagesdir != null && Helpers.isUriish(imagesdir))) {
+      final uri = isUrl ? target : resolver.webPath(target, imagesdir);
+      if (!doc.hasAttr('allow-uri-read')) {
+        logger.warn(
+          'cannot embed remote image: $uri '
+          '(allow-uri-read attribute not enabled)',
+        );
+        return null;
+      }
+      try {
+        return doc.fetchUri(uri).body;
+      } on Exception catch (error) {
+        logger.warn('could not retrieve remote image: $uri; $error');
+        return null;
+      }
+    }
+    return _readImage(
+      node.normalizeSystemPath(target, start: imagesdir, targetName: 'image'),
+    );
+  }
+
+  List<int>? _readImage(String path) {
+    if (io.isFile(path) && io.isReadable(path)) {
+      try {
+        return io.readBytes(path);
+      } on Exception {
+        // Reported below.
+      }
+    }
+    logger.warn('image to embed not found or not readable: $path');
+    return null;
+  }
+
+  /// Converts the block image [node].
+  void convertImage(Block node) {
+    final target = node.attr('target') ?? '';
+    final data = _dataUri.firstMatch(target);
+    final format = data != null
+        ? switch (data[1]!) {
+            'jpg' => 'jpeg',
+            'svg+xml' => 'svg',
+            final other => other,
+          }
+        : node.attr('format') ?? _imageFormat(target);
+    const blockAligns = {'left', 'center', 'right'};
+    final floatTo = node.attr('float');
+    final String align;
+    if (floatTo != null && blockAligns.contains(floatTo)) {
+      align = floatTo;
+    } else if (node.attr('align') case final value?) {
+      align = blockAligns.contains(value) ? value : 'left';
+    } else {
+      align =
+          node.roles.reversed.where(blockAligns.contains).firstOrNull ??
+          _s('image_align') ??
+          'left';
+    }
+    List<int>? bytes;
+    if (format == 'gif') {
+      logger.warn('GIF image format not supported; convert $target to PNG');
+    } else if (format == 'pdf') {
+      logger.warn('inserting the pages of a PDF is not supported: $target');
+    } else if (data != null) {
+      try {
+        bytes = base64.decode(data[2]!);
+      } on FormatException {
+        bytes = null;
+      }
+    } else {
+      bytes = _imageBytes(node, target);
+    }
+    Graphic? graphic;
+    if (bytes != null) {
+      try {
+        graphic = format == 'svg'
+            ? SvgImage.parse(
+                utf8.decode(bytes, allowMalformed: true),
+                pixelSize: 1,
+              )
+            : PdfImage.parse(Uint8List.fromList(bytes));
+      } on FormatException catch (error) {
+        logger.warn('could not embed image: $target; ${error.message}');
+      }
+    }
+    if (graphic == null) {
+      _imageAlt(node, target, align);
+      return;
+    }
+    final captionBottom = (_s('image_caption_end') ?? 'bottom') == 'bottom';
+    final caption = node.hasTitle
+        ? _captionBox(
+            node,
+            category: 'image',
+            bottom: captionBottom,
+            blockAlign: align,
+          )
+        : null;
+    final next = _nextEnclosedBlock(node);
+    final margin = next == null ? 0.0 : _themeMargin('block', 'bottom', next);
+    final border = node.hasRole('noborder') ? null : _imageBorder();
+    if (caption != null && !captionBottom) _out.add(caption);
+    _out.add(
+      CustomBox(
+        _ImageContent(
+          graphic,
+          width: _imageWidth(node),
+          align: align,
+          pageWidth: _pageSize(_document).$1,
+          caption: captionBottom ? caption : null,
+          border: border,
+          link: node.attr('link'),
+        ),
+        style: BoxStyle(
+          anchor: node.id,
+          margin: EdgeInsets(
+            bottom: caption != null && captionBottom ? 0 : margin,
+          ),
+        ),
+      ),
+    );
+    if (caption != null && captionBottom) {
+      _out.add(caption);
+      if (margin > 0) _out.add(SpacerBox(margin));
+    }
+  }
+
+  /// [text] as a number, as Ruby's `to_f` reads it (its leading number,
+  /// else 0).
+  static double _toF(String text) =>
+      double.tryParse(
+        RegExp(r'^\s*[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?')
+                .stringMatch(text)
+                ?.trim() ??
+            '',
+      ) ??
+      0;
+
+  /// The width [node] asks of its image (the gem's
+  /// `resolve_explicit_width`, with the theme's `image_width` fallback).
+  _ImageWidth _imageWidth(AbstractNode node) {
+    _ImageWidth percent(String value) => _ImageWidth.percent(_toF(value) / 100);
+    if (node.attr('pdfwidth') case final width?) {
+      if (width.endsWith('%')) return percent(width);
+      if (width.endsWith('iw')) {
+        return _ImageWidth.scale(
+          _toF(width.substring(0, width.length - 2)) / 100,
+        );
+      }
+      if (width.endsWith('vw')) {
+        return _ImageWidth.viewport(
+          _toF(width.substring(0, width.length - 2)) / 100,
+        );
+      }
+      return _ImageWidth.points(strToPoints(width));
+    }
+    if (node.attr('scale') case final scale?) {
+      return _ImageWidth.scale(_toF(scale) / 100);
+    }
+    if (node.attr('scaledwidth') case final width?) {
+      return width.endsWith('%')
+          ? percent(width)
+          : _ImageWidth.points(strToPoints(width));
+    }
+    switch (_theme.value('image_width')) {
+      case ThemeNumber(:final value):
+        return _ImageWidth.points(value.toDouble());
+      case final ThemeValue value:
+        final width = value.rubyString;
+        if (width.endsWith('%')) return percent(width);
+        if (width.endsWith('vw')) {
+          return _ImageWidth.viewport(
+            _toF(width.substring(0, width.length - 2)) / 100,
+          );
+        }
+        return _ImageWidth.points(strToPoints(width));
+      case null:
+        break;
+    }
+    if (node.attr('width') case final width?) {
+      if (width.endsWith('%')) {
+        return _ImageWidth.percent(_toF(width) / 100, constrain: true);
+      }
+      if (RegExp(r'^\d+$').hasMatch(width)) {
+        return _ImageWidth.points(_toF(width) * 0.75, constrain: true);
+      }
+    }
+    return const _ImageWidth.natural();
+  }
+
+  /// The border the theme draws around images, if any.
+  _Border? _imageBorder() {
+    final width = switch (_theme.value('image_border_width')) {
+      ThemeNumber(:final value) => value.toDouble(),
+      ThemeList(:final values) =>
+        values.map(_toPoints).fold<double>(0, math.max),
+      _ => 0.0,
+    };
+    if (width <= 0) return null;
+    final color = pdfColorOf(
+      _c('image_border_color') ?? _c('base_border_color'),
+    );
+    if (color == null) return null;
+    return _Border(
+      width,
+      color,
+      (_n('image_border_radius') ?? 0).toDouble(),
+      fitWidth: _s('image_border_fit') == 'auto',
+    );
+  }
+
+  /// The text that stands in for the image [node] that can't be embedded
+  /// (the gem's `on_image_error`).
+  void _imageAlt(Block node, String target, String align) {
+    final template =
+        _s('image_alt_content') ??
+        '%{link}[%{alt}]%{/link} | <em>%{target}</em>';
+    if (template.isNotEmpty) {
+      final link = node.attr('link');
+      final text = template
+          .replaceAll('%{link}', link == null ? '' : '<a href="$link">')
+          .replaceAll('%{/link}', link == null ? '' : '</a>')
+          .replaceAll('%{alt}', node.attr('alt') ?? '')
+          .replaceAll('%{target}', target);
+      _withFont('image_alt', () {
+        _out.add(
+          CustomBox(
+            _textBox(text, _font, align: align, normalize: false),
+            style: BoxStyle(anchor: node.id),
+          ),
+        );
+      });
+      if (node.hasTitle) _caption(node, category: 'image', bottom: true);
+      final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+      if (margin > 0) _out.add(SpacerBox(margin));
+    }
+  }
+
   // Admonitions.
 
   /// Converts the admonition [node] (with a text label).
@@ -1165,9 +1439,37 @@ final class PdfConverter extends BuiltInConverter
 
   /// The caption of [node] (its title; with [labeled], its captioned
   /// title) above it (the gem's `ink_caption`, at the top).
-  void _caption(AbstractBlock node, {String? category, bool labeled = true}) {
+  void _caption(
+    AbstractBlock node, {
+    String? category,
+    bool labeled = true,
+    bool bottom = false,
+    String? blockAlign,
+  }) {
+    _out.add(
+      _captionBox(
+        node,
+        category: category,
+        labeled: labeled,
+        bottom: bottom,
+        blockAlign: blockAlign,
+      ),
+    );
+  }
+
+  /// The caption of [node] (see [_caption]), or nothing for a node without
+  /// a title.
+  CustomBox _captionBox(
+    AbstractBlock node, {
+    String? category,
+    bool labeled = true,
+    bool bottom = false,
+    String? blockAlign,
+  }) {
     final title = labeled ? node.captionedTitle() : node.title;
-    if (title == null || title.isEmpty) return;
+    if (title == null || title.isEmpty) {
+      return const CustomBox(_Nothing());
+    }
     final captionKey = category == null ? 'caption' : '${category}_caption';
     final outside =
         (_n('${captionKey}_margin_outside') ??
@@ -1179,7 +1481,7 @@ final class PdfConverter extends BuiltInConverter
             .toDouble();
     var align =
         _s('${captionKey}_align') ?? _s('caption_align') ?? _baseTextAlign;
-    if (align == 'inherit') align = _baseTextAlign;
+    if (align == 'inherit') align = blockAlign ?? _baseTextAlign;
     var textAlign =
         _s('${captionKey}_text_align') ?? _s('caption_text_align') ?? align;
     if (textAlign == 'inherit') textAlign = align;
@@ -1189,18 +1491,18 @@ final class PdfConverter extends BuiltInConverter
     if (font.transform case final transform? when transform != 'none') {
       text = transformText(text, transform);
     }
-    _out.add(
-      CustomBox(
-        _textBox(
-          text,
-          font,
-          align: textAlign,
-          normalize: false,
-          normalizeLineHeight: true,
-        ),
-        style: BoxStyle(
-          margin: EdgeInsets(top: outside, bottom: inside),
-        ),
+    return CustomBox(
+      _textBox(
+        text,
+        font,
+        align: textAlign,
+        normalize: false,
+        normalizeLineHeight: true,
+      ),
+      style: BoxStyle(
+        margin: bottom
+            ? EdgeInsets(top: inside, bottom: outside)
+            : EdgeInsets(top: outside, bottom: inside),
       ),
     );
   }
@@ -2532,4 +2834,272 @@ final class _Marked implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => content.intrinsicWidths();
+}
+
+/// Nothing: no room taken, nothing drawn.
+final class _Nothing implements CustomContent {
+  const new();
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) => CustomPlacement(height: 0, paint: (page, x, top) {});
+
+  @override
+  double minHeight(double width) => 0;
+
+  @override
+  (double, double) intrinsicWidths() => (0, 0);
+}
+
+/// How wide an image is asked to be.
+enum _ImageWidthKind { natural, points, percent, scale, viewport }
+
+/// The width asked of an image: its own, [value] points, a [value]
+/// fraction of the available width or of the page's, or its own scaled by
+/// [value]; [constrain]ed to the available width.
+final class _ImageWidth {
+  const new natural()
+    : kind = _ImageWidthKind.natural,
+      value = 0,
+      constrain = false;
+
+  const new points(this.value, {this.constrain = false})
+    : kind = _ImageWidthKind.points;
+
+  const new percent(this.value, {this.constrain = false})
+    : kind = _ImageWidthKind.percent;
+
+  const new scale(this.value) : kind = _ImageWidthKind.scale, constrain = false;
+
+  const new viewport(this.value)
+    : kind = _ImageWidthKind.viewport,
+      constrain = false;
+
+  final _ImageWidthKind kind;
+  final double value;
+  final bool constrain;
+
+  /// The width in points for [available] points and a page [pageWidth]
+  /// wide, or null for the image's own (or a scale).
+  double? resolve(double available, double pageWidth) {
+    final width = switch (kind) {
+      _ImageWidthKind.points => value,
+      _ImageWidthKind.percent => value * available,
+      _ImageWidthKind.viewport => value * pageWidth,
+      _ImageWidthKind.natural || _ImageWidthKind.scale => null,
+    };
+    return width != null && constrain ? math.min(width, available) : width;
+  }
+}
+
+/// A border around an image.
+final class _Border {
+  const new(this.width, this.color, this.radius, {required this.fitWidth});
+
+  final double width;
+  final PdfColor color;
+  final double radius;
+
+  /// Whether the border spans the available width, not the image's.
+  final bool fitWidth;
+}
+
+/// A block image sized and placed as asciidoctor-pdf places it: no wider
+/// than the available width, moved to the next page when it doesn't fit
+/// (with its [caption] below it), else shrunk to fit.
+final class _ImageContent implements CustomContent {
+  const new(
+    this.graphic, {
+    required this.width,
+    required this.align,
+    required this.pageWidth,
+    this.caption,
+    this.border,
+    this.link,
+  });
+
+  final Graphic graphic;
+  final _ImageWidth width;
+  final String align;
+  final double pageWidth;
+  final CustomBox? caption;
+  final _Border? border;
+  final String? link;
+
+  /// The image's size for [available] points of width (and [height] of
+  /// region, for SVG sizes in percent).
+  (double, double) _size(double available, double height) {
+    final asked = width.resolve(available, pageWidth);
+    switch (graphic) {
+      case final SvgImage svg:
+        var (w, h) = _svgSize(svg, asked, null, available, height);
+        if (width.kind == _ImageWidthKind.scale) {
+          (w, h) = _svgSize(
+            svg,
+            math.min(available, w * width.value),
+            null,
+            available,
+            height,
+          );
+        } else if (asked == null &&
+            svg.rootAttribute('width') != null &&
+            w > available) {
+          (w, h) = _svgSize(svg, available, null, available, height);
+        }
+        return (w, h);
+      case final other:
+        final natural = other.intrinsicWidth * 0.75;
+        final w =
+            asked ??
+            (width.kind == _ImageWidthKind.scale
+                ? natural * width.value
+                : math.min(available, natural));
+        return (w, other.intrinsicHeight * w / other.intrinsicWidth);
+    }
+  }
+
+  /// The size prawn-svg gives [svg] (its `DocumentSizing`): the root's
+  /// width and height (user units are points), the [requestedWidth] or
+  /// [requestedHeight] scaling it.
+  static (double, double) _svgSize(
+    SvgImage svg,
+    double? requestedWidth,
+    double? requestedHeight,
+    double boundsWidth,
+    double boundsHeight,
+  ) {
+    final containerWidth = requestedWidth ?? boundsWidth;
+    final containerHeight = requestedHeight ?? boundsHeight;
+    double? pixels(String? value, double axis) {
+      if (value == null) return null;
+      final number =
+          double.tryParse(
+            RegExp(r'^\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?')
+                    .stringMatch(value)
+                    ?.trim() ??
+                '',
+          ) ??
+          0;
+      final unit = RegExp(r'\d(em|ex|pc|cm|mm|in)$').firstMatch(value)?[1];
+      return switch (unit) {
+        'em' => number * 16,
+        'ex' => number * 8,
+        'pc' => number * 15,
+        'cm' => number / 2.54 * 72,
+        'mm' => number / 25.4 * 72,
+        'in' => number * 72,
+        _ => value.endsWith('%') ? number * axis / 100 : number,
+      };
+    }
+
+    var outputWidth =
+        pixels(svg.rootAttribute('width'), containerWidth) ?? requestedWidth;
+    var outputHeight =
+        pixels(svg.rootAttribute('height'), containerHeight) ?? requestedHeight;
+    final viewBox = svg
+        .rootAttribute('viewBox')
+        ?.trim()
+        .split(RegExp(r'(?:\s+,?\s*|,\s*)'))
+        .map((v) => double.tryParse(v) ?? 0)
+        .toList();
+    if (viewBox != null &&
+        viewBox.length >= 4 &&
+        viewBox[2] > 0 &&
+        viewBox[3] > 0) {
+      if (outputWidth == null && outputHeight == null) {
+        outputWidth = containerWidth;
+      }
+      outputWidth ??= outputHeight! * viewBox[2] / viewBox[3];
+      outputHeight ??= outputWidth * viewBox[3] / viewBox[2];
+    } else {
+      outputWidth ??= containerWidth;
+      outputHeight ??= containerHeight;
+    }
+    if (requestedWidth != null && outputWidth > 0) {
+      outputHeight *= requestedWidth / outputWidth;
+      outputWidth = requestedWidth;
+    } else if (requestedHeight != null && outputHeight > 0) {
+      outputWidth *= requestedHeight / outputHeight;
+      outputHeight = requestedHeight;
+    }
+    return (outputWidth, outputHeight);
+  }
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final captionHeight = switch (caption) {
+      final CustomBox box? =>
+        (box.content.place(width, double.infinity, atTop: true)?.height ?? 0) +
+            box.style.margin.vertical,
+      null => 0.0,
+    };
+    final regionHeight = available.isFinite ? available : 1000000000.0;
+    var (w, h) = _size(width, regionHeight);
+    final room = available - captionHeight;
+    if (h > room + 1e-6) {
+      if (!atTop) return null;
+      if (room > 0) {
+        if (graphic case final SvgImage svg) {
+          (w, h) = _svgSize(svg, null, room, width, regionHeight);
+        } else {
+          w = w * room / h;
+          h = room;
+        }
+      }
+    }
+    final left = switch (align) {
+      'center' => (width - w) * 0.5,
+      'right' => width - w,
+      _ => 0.0,
+    };
+    return CustomPlacement(
+      height: h,
+      paint: (page, x, top) {
+        final rect = PdfRect(x + left, top - h, w, h);
+        final canvas = page.canvas;
+        switch (graphic) {
+          case final PdfImage image:
+            canvas.image(image, rect);
+          case final other:
+            canvas.save();
+            other.paint(canvas, rect);
+            canvas.restore();
+        }
+        if (border case final border?) {
+          final frame = border.fitWidth ? PdfRect(x, top - h, width, h) : rect;
+          canvas
+            ..save()
+            ..setStrokeColor(border.color)
+            ..setLineWidth(border.width);
+          border.radius > 0
+              ? canvas.roundedRect(frame, border.radius)
+              : canvas.rect(frame);
+          canvas
+            ..stroke()
+            ..restore();
+        }
+        if (link case final link?) {
+          page.link(
+            rect,
+            link.startsWith('#')
+                ? LinkTarget.named(link.substring(1))
+                : LinkTarget.uri(link),
+          );
+        }
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) => 0;
+
+  @override
+  (double, double) intrinsicWidths() => (0, graphic.intrinsicWidth);
 }
