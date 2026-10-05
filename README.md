@@ -40,30 +40,32 @@ dependencies:
 import 'package:asciidart/asciidart.dart';
 
 void main() {
-  print(convert('Hello, *World*!')); // <div class="paragraph">...
+  print(asciidoc.convert('Hello, *World*!')); // <div class="paragraph">...
 
-  final doc = load(
-    '= Title\n\n== Section\n\ntext',
-    options: const AsciidoctorOptions(safe: SafeMode.safe),
-  );
-  print(doc.doctitle()); // Title
+  final doc = asciidoc.parse('= Title\n:status: draft\n\n== Section\n\ntext');
+  print('${doc.title} (${doc.attributes['status']})'); // Title (draft)
+  for (final section in doc.descendants<Section>()) {
+    print(section.title); // Section
+  }
 }
 ```
 
-The public libraries:
+An `Asciidart` object holds a configuration (safe mode, attributes,
+extensions, an HTML override, highlighters) and `asciidoc` is the default
+one. A parsed `Document` is a sealed tree of typed nodes, and its
+`diagnostics` list what was reported while parsing and converting it.
+[`doc/api.md`](doc/api.md) walks through the common uses: rendering,
+reading metadata, querying the tree, custom renderers, HTML overrides,
+extensions, diagnostics and files.
 
 | Import | Contents |
 | --- | --- |
-| `package:asciidart/asciidart.dart` | `load`, `convert`, `convertFile` and their async variants, `AsciidoctorOptions`, the document tree, logging |
-| `package:asciidart/extensions.dart` | `Extensions`, `Registry` and the processor kinds |
-| `package:asciidart/converter.dart` | converters, the converter factory, function and Mustache templates |
-| `package:asciidart/syntax_highlighter.dart` | the syntax highlighter API |
+| `package:asciidart/asciidart.dart` | parsing, converting, the document tree, extensions, overrides, diagnostics (no file system access: runs on the web and in Flutter) |
+| `package:asciidart/io.dart` | `parseFile`, `convertFile` and `convertTree` |
 | `package:asciidart/cli.dart` | `runCli`, for building your own command |
 
-`example/asciidart_example.dart` shows a tree walk, an extension and a
-custom converter. Remote content (`allow-uri-read`) needs the async API
-(`loadAsync`, `convertAsync`, ...), which fetches what the document
-includes before converting.
+Everything else is private. `tool/api_surface.txt` records the public API,
+and CI fails when it changes unnoticed.
 
 ## Command line
 
@@ -90,8 +92,9 @@ Ruby's Tilt templates cannot run on Dart. Instead
 
 - `-T DIR` loads Mustache templates (`paragraph.mustache`, ...) on top of
   the built-in converter.
-- Dart functions override transforms in code. `asciidart init-config DIR`
-  generates a project for a custom command with your functions compiled in.
+- An HTML override (`Asciidart(html: ...)`) replaces the HTML of any node
+  in Dart code. `asciidart init-config DIR` generates a project for a
+  custom command with such code (and extensions) compiled in.
 
 ## JavaScript and npm
 

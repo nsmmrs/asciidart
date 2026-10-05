@@ -1,0 +1,390 @@
+Asciidart get asciidoc
+Future<void> runCli(List<String> args, {Asciidart? asciidart})
+String get asciidartVersion
+String get asciidoctorVersion
+abstract class Highlighter
+  Highlighter()
+  String highlight(SourceCode code)
+  String? footer
+  String? head
+enum AdmonitionKind
+  static AdmonitionKind caution
+  static AdmonitionKind important
+  static AdmonitionKind note
+  static AdmonitionKind tip
+  static AdmonitionKind warning
+  static List<AdmonitionKind> values
+enum Backend
+  static Backend docbook5
+  static Backend html5
+  static Backend manpage
+  static Backend xhtml5
+  static List<Backend> values
+enum BlockKind
+  static BlockKind example
+  static BlockKind listing
+  static BlockKind literal
+  static BlockKind open
+  static BlockKind paragraph
+  static BlockKind passthrough
+  static BlockKind quote
+  static BlockKind sidebar
+  static List<BlockKind> values
+enum DiagnosticCode
+  static DiagnosticCode duplicateId
+  static DiagnosticCode includeNotFound
+  static DiagnosticCode listNumbering
+  static DiagnosticCode missingAsset
+  static DiagnosticCode missingAttribute
+  static DiagnosticCode other
+  static DiagnosticCode sectionOutOfSequence
+  static DiagnosticCode tableStructure
+  static DiagnosticCode unknownReference
+  static DiagnosticCode unterminatedBlock
+  static List<DiagnosticCode> values
+enum DocinfoLocation
+  static DocinfoLocation footer
+  static DocinfoLocation head
+  static List<DocinfoLocation> values
+enum Doctype
+  static Doctype article
+  static Doctype book
+  static Doctype inline
+  static Doctype manpage
+  static List<Doctype> values
+enum FormattedKind
+  static FormattedKind doubleQuoted
+  static FormattedKind emphasis
+  static FormattedKind mark
+  static FormattedKind monospace
+  static FormattedKind singleQuoted
+  static FormattedKind strong
+  static FormattedKind subscript
+  static FormattedKind superscript
+  static FormattedKind unquoted
+  static List<FormattedKind> values
+enum SafeMode
+  static List<SafeMode> values
+  static SafeMode safe
+  static SafeMode secure
+  static SafeMode server
+  static SafeMode unsafe
+enum Severity implements Comparable<Severity>
+  bool <(Severity other)
+  bool <=(Severity other)
+  bool >(Severity other)
+  bool >=(Severity other)
+  int compareTo(Severity other)
+  static List<Severity> values
+  static Severity debug
+  static Severity error
+  static Severity fatal
+  static Severity info
+  static Severity warning
+enum StemNotation
+  static List<StemNotation> values
+  static StemNotation asciimath
+  static StemNotation latexmath
+extension AsciidartFiles on Asciidart
+  Future<Document> convertFile(String path, {String? toFile, String? toDir, bool mkdirs = false, Backend backend = Backend.html5, Doctype? doctype, bool standalone = true, Map<String, String> attributes = const {}})
+  Future<Document> parseFile(String path, {Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  Stream<FileConversion> convertTree(String directory, {required String toDir, Backend backend = Backend.html5, Doctype? doctype, Map<String, String> attributes = const {}})
+final class Admonition extends Block
+  AdmonitionKind kind
+  String content
+  String plainText
+final class Asciidart
+  Asciidart({SafeMode safe = SafeMode.secure, Map<String, String> attributes = const {}, List<Extension> extensions = const [], String Function(Node, HtmlDefaults)? html, List<String> templateDirs = const [], Map<String, Highlighter> highlighters = const {}, String? baseDir, void Function(Diagnostic)? onDiagnostic})
+  Document parse(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  Document parseHeader(String source, {String? path, Map<String, String> attributes = const {}})
+  Future<Document> parseAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  Future<String> convertAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  List<Extension> extensions
+  List<String> templateDirs
+  Map<String, Highlighter> highlighters
+  Map<String, String> attributes
+  SafeMode safe
+  String Function(Node, HtmlDefaults)? html
+  String convert(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  String? baseDir
+  void Function(Diagnostic)? onDiagnostic
+final class AsciidartException implements Exception
+  String message
+  String toString()
+final class Attributes
+  Iterable<String> names
+  List<String> listValue(String name)
+  Map<String, String> toMap()
+  String toString()
+  String? [](String name)
+  String? remove(String name)
+  bool has(String name)
+  int? intValue(String name)
+  void []=(String name, String value)
+final class Audio extends Block
+  String target (settable)
+final class Author
+  String toString()
+  String? email
+  String? firstName
+  String? lastName
+  String? middleName
+  String? name
+final class BibliographyAnchor extends Inline
+  String anchorId
+final class BlockMacro extends Extension
+  Block? Function(BlockMacroContext) process
+  BlockMacro(String name, Block? Function(BlockMacroContext) process)
+  String name
+final class BlockMacroContext with _BlockFactory
+  Attributes attributes
+  Block asciidoc(String source)
+  Block html(String html)
+  Block image(String target, {String? alt, String? title})
+  Block listing(String source, {String? language})
+  Block paragraph(String text, {Map<String, String> attributes = const {}})
+  Block parent
+  Document document
+  String target
+final class Button extends Inline
+final class Callout extends Inline
+  int number
+final class CalloutList extends Block
+  List<ListItem> items
+  String plainText
+final class CrossReference extends Inline
+  String refid
+  String target
+  String? path
+final class CustomBlock extends Extension
+  Block? Function(CustomBlockContext) process
+  CustomBlock(String name, Block? Function(CustomBlockContext) process, {Set<BlockKind> on = const {BlockKind.open, BlockKind.paragraph}})
+  Set<BlockKind> on
+  String name
+final class CustomBlockContext with _BlockFactory
+  Attributes attributes
+  Block asciidoc(String source)
+  Block html(String html)
+  Block image(String target, {String? alt, String? title})
+  Block listing(String source, {String? language})
+  Block paragraph(String text, {Map<String, String> attributes = const {}})
+  Block parent
+  Document document
+  List<String> lines
+  String source
+final class DescriptionList extends Block
+  List<DescriptionListEntry> entries
+  String plainText
+final class DescriptionListEntry
+  List<ListItem> terms
+  ListItem? description
+final class Diagnostic
+  DiagnosticCode code
+  Severity severity
+  SourceLocation? location
+  String message
+  String toString()
+final class DiscreteHeading extends Block
+  String plainText
+  String title
+  int level
+final class Docinfo extends Extension
+  Docinfo(String? Function(Document) content, {DocinfoLocation location = DocinfoLocation.head})
+  DocinfoLocation location
+  String? Function(Document) content
+final class Document extends Block
+  Attributes attributes
+  Doctype doctype
+  Document document
+  List<Author> authors
+  List<Diagnostic> diagnostics
+  String convert({bool? standalone})
+  String toHtml({bool? standalone})
+  String? title
+final class Example extends Block
+final class FileConversion
+  Document document
+  String inputPath
+  String outputPath
+final class Footnote extends Inline
+  bool isReference
+  int? number
+final class Formatted extends Inline
+  FormattedKind kind
+final class HtmlDefaults
+  String content(Block block)
+  String render(Node node)
+final class Icon extends Inline
+  String name
+final class Image extends Block
+  String alt
+  String plainText
+  String target (settable)
+  String? height
+  String? link
+  String? width
+final class IncludeRequest
+  Document document
+  String target
+final class IncludeResolver extends Extension
+  FutureOr<String?> Function(IncludeRequest) resolve
+  IncludeResolver(FutureOr<String?> Function(IncludeRequest) resolve)
+final class IndexTerm extends Inline
+  List<String> terms
+  bool isVisible
+final class InlineAnchor extends Inline
+  String anchorId
+final class InlineImage extends Inline
+  String alt
+  String plainText
+  String target
+final class InlineMacro extends Extension
+  Inline? Function(InlineMacroContext) process
+  InlineMacro(String name, Inline? Function(InlineMacroContext) process)
+  String name
+final class InlineMacroContext
+  Attributes attributes
+  Block parent
+  Document document
+  Inline formatted(String text, FormattedKind kind)
+  Inline html(String html)
+  Inline link(String url, {String? text})
+  String target
+  String? text
+final class InlineStem extends Inline
+  StemNotation notation
+final class Keyboard extends Inline
+  List<String> keys
+  String plainText
+final class LineBreak extends Inline
+final class Link extends Inline
+  String target
+final class ListItem extends Block
+  String content
+  String plainText
+  String source
+  bool? checked
+final class Listing extends Block with _Text
+  String content
+  String plainText
+  String source
+  String? language
+final class Literal extends Block with _Text
+  String content
+  String plainText
+  String source
+final class Menu extends Inline
+  List<String> submenus
+  String menu
+  String plainText
+  String? item
+final class Open extends Block
+final class OrderedList extends Block
+  List<ListItem> items
+  String plainText
+  int start
+final class OtherBlock extends Block
+  String context
+final class OtherInline extends Inline
+  String context
+final class PageBreak extends Block
+final class Paragraph extends Block with _Text
+  String content
+  String plainText
+  String source
+final class Passthrough extends Block with _Text
+  String content
+  String plainText
+  String source
+final class Postprocessor extends Extension
+  Postprocessor(String Function(String, Document) process)
+  String Function(String, Document) process
+final class Preamble extends Block
+final class Preprocessor extends Extension
+  List<String> Function(List<String>, Document) process
+  Preprocessor(List<String> Function(List<String>, Document) process)
+final class Quote extends Block
+  String plainText
+  String? attribution
+  String? citation
+final class Section extends Block
+  String sectionName
+  String title
+  String? number
+  bool isSpecial
+  int level
+final class Sidebar extends Block
+final class SourceCode
+  List<int> highlightLines
+  String source
+  String? language
+final class SourceLocation
+  String toString()
+  String? path
+  bool ==(Object other)
+  int hashCode
+  int line
+final class Stem extends Block with _Text
+  StemNotation notation
+  String content
+  String plainText
+  String source
+final class Table extends Block
+  List<List<TableCell>> body
+  List<List<TableCell>> foot
+  List<List<TableCell>> head
+  List<TableColumn> columns
+  String plainText
+final class TableCell extends Block
+  List<Block> blocks
+  String content
+  String plainText
+  String source
+  int colspan
+  int rowspan
+final class TableColumn
+  String? style
+  int number
+  num? width
+final class TableOfContents extends Block
+final class ThematicBreak extends Block
+final class TreeProcessor extends Extension
+  TreeProcessor(void Function(Document) process)
+  void Function(Document) process
+final class UnorderedList extends Block
+  List<ListItem> items
+  String plainText
+  bool isChecklist
+final class Verse extends Block with _Text
+  String content
+  String plainText
+  String source
+  String? attribution
+  String? citation
+final class Video extends Block
+  String target (settable)
+  String? service
+sealed class Block extends Node
+  Iterable<T> descendants<T extends Node>()
+  List<Block> blocks
+  SourceLocation? location
+  String convert()
+  String plainText
+  String? style
+  String? title (settable)
+  void append(Block block)
+  void remove()
+sealed class Extension
+sealed class Inline extends Node
+  String plainText
+  String? text
+sealed class Node
+  Attributes attributes
+  Document document
+  List<String> roles
+  Node? parent
+  String plainText
+  String toString()
+  String? id (settable)
+  bool hasOption(String name)
+typedef HtmlOverride = String Function(Node, HtmlDefaults)

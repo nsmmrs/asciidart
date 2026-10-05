@@ -10,12 +10,23 @@ Asciidoctor project.
   byte-identical to the Asciidoctor 2.0.26 gem on every backend, checked in
   CI by `tool/parity.sh` over the fixture and parity corpora; the end-to-end
   CLI suite (134 tests) passes against both asciidart and the gem.
-- Public libraries: `asciidart.dart` (`load`, `convert`, `convertFile`,
-  typed `AsciidoctorOptions`, the document tree, logging), `extensions.dart`,
-  `converter.dart`, `syntax_highlighter.dart` and `cli.dart`. The API is
-  statically typed throughout (ADR-0004).
-- Async variants (`loadAsync`, `convertAsync`, ...) fetch remote content for
-  `allow-uri-read` (includes and data-URI images), honoring `cache-uri`.
+- A small, typed public API designed from usage scenarios
+  (`doc/api.md`): an `Asciidart` configuration (safe mode, attributes,
+  extensions, an HTML override, highlighters, Mustache templates) with
+  `parse`, `parseHeader`, `convert` and asynchronous variants; the default
+  configuration `asciidoc`; a sealed tree of typed nodes (`Section`,
+  `Paragraph`, `Listing`, `Admonition`, lists, tables, inline elements)
+  with `descendants<T>()` and `plainText`; typed attributes; diagnostics
+  collected per document; callback-based extensions (`InlineMacro`,
+  `BlockMacro`, `CustomBlock`, `IncludeResolver` (may be asynchronous),
+  `TreeProcessor`, `Preprocessor`, `Postprocessor`, `Docinfo`).
+  `package:asciidart/asciidart.dart` has no file system access and runs on
+  the web; `package:asciidart/io.dart` adds `parseFile`, `convertFile` and
+  `convertTree`; `package:asciidart/cli.dart` runs the command line with a
+  configuration compiled in. Everything else is private;
+  `tool/api_surface.txt` records the public API and CI checks it.
+- Remote content (`allow-uri-read`): `parseAsync` and `convertAsync` fetch
+  includes and data-URI images, honoring `cache-uri`.
 - The `asciidart` command takes the options of the gem's `asciidoctor`
   command, except the Ruby-specific `-r`, `-I`, `--eruby` and `-w`.
   Messages start with `asciidart:` and read like a Dart tool's
@@ -23,12 +34,13 @@ Asciidoctor project.
   release it is compatible with; `man/asciidart.1` documents it.
   `init-config` generates a project for a custom command with Dart converter
   functions compiled in.
-- Custom converters: Mustache templates (`-T`) and Dart functions, in place
-  of Ruby's Tilt templates (ADR-0002).
-- `Asciidoctor.version` and `{asciidoctor-version}` report 2.0.26, so
-  documents written for Asciidoctor keep working; `Asciidoctor.packageVersion`
-  and `{asciidart-version}` report asciidart's version, which also appears
-  in the HTML generator meta tag and the man page header.
+- Custom converters: Mustache templates (`-T`, `templateDirs`) and HTML
+  overrides in Dart, in place of Ruby's Tilt templates (ADR-0002).
+- `{asciidoctor-version}` (and `asciidoctorVersion` in the API) report
+  2.0.26, so documents written for Asciidoctor keep working;
+  `{asciidart-version}` (`asciidartVersion`) reports asciidart's version,
+  which also appears in the HTML generator meta tag and the man page
+  header.
 - The compiled command converts 5–10x faster than the gem end to end, and
   about 2x faster in process (`benchmark/BASELINE.md`).
 - The same core builds as the npm package `asciidart` for Node.js and

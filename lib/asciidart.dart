@@ -1,73 +1,114 @@
-/// asciidart, an AsciiDoc processor compatible with Asciidoctor 2.0.26:
-/// converts AsciiDoc to HTML 5, DocBook 5 and man pages.
+/// asciidart: an AsciiDoc processor compatible with Asciidoctor 2.0.26.
 ///
-/// Start with `convert` (a string to a string) or `load` (a string to a
-/// `Document` you can inspect and convert). `convertFile` and `loadFile` do
-/// the same for files, and `convertToTarget` writes converted source to a
-/// file. `AsciidoctorOptions` configures them all. The related libraries
-/// cover the rest of the API:
+/// Start with `asciidoc` (the default configuration) or an `Asciidart`
+/// configured with a safe mode, attributes, `Extension`s, an
+/// `HtmlOverride` or `Highlighter`s:
 ///
-/// - `package:asciidart/extensions.dart`: preprocessors, tree processors,
-///   block and inline macros, include and docinfo processors.
-/// - `package:asciidart/converter.dart`: custom converters, Mustache
-///   templates and Dart transform functions.
-/// - `package:asciidart/syntax_highlighter.dart`: custom source
-///   highlighters.
-/// - `package:asciidart/cli.dart`: the `asciidart` command line, for
-///   building a custom CLI binary.
+/// ```dart
+/// import 'package:asciidart/asciidart.dart';
+///
+/// void main() {
+///   print(asciidoc.convert('Hello, *World*!'));
+///
+///   final doc = asciidoc.parse('= Title\n\n== Section\n\ntext');
+///   for (final section in doc.descendants<Section>()) {
+///     print(section.title);
+///   }
+/// }
+/// ```
+///
+/// A parsed `Document` is a sealed tree of `Node`s, and its
+/// `Document.diagnostics` list what was reported while parsing and
+/// converting it. `package:asciidart/io.dart` reads and writes files;
+/// `package:asciidart/cli.dart` runs the command line. `doc/api.md` in the
+/// repository walks through the common uses.
 library;
 
-export 'src/abstract_block.dart'
-    show AbstractBlock, FindByFilter, FindByVerdict, NodeSection;
-export 'src/abstract_node.dart'
-    show AbstractNode, NodeConverter, NodeDocument, SafeMode;
-export 'src/block.dart' show Block, BlockSubs;
-export 'src/callouts.dart' show Callout, Callouts;
-export 'src/constants.dart' show Compliance;
-export 'src/cursor.dart' show Cursor;
-export 'src/document.dart'
+export 'src/api/api.dart'
     show
-        Catalog,
+        Admonition,
+        AdmonitionKind,
+        Asciidart,
+        AsciidartException,
+        Attributes,
+        Audio,
+        Author,
+        Backend,
+        BibliographyAnchor,
+        Block,
+        BlockKind,
+        BlockMacro,
+        BlockMacroContext,
+        Button,
+        Callout,
+        CalloutList,
+        CrossReference,
+        CustomBlock,
+        CustomBlockContext,
+        DescriptionList,
+        DescriptionListEntry,
+        Diagnostic,
+        DiagnosticCode,
+        DiscreteHeading,
+        Docinfo,
+        DocinfoLocation,
+        Doctype,
         Document,
-        DocumentAttributeEntry,
-        DocumentAuthor,
-        DocumentTitle,
+        Example,
+        Extension,
         Footnote,
-        ImageReference;
-export 'src/errors.dart' show AsciidoctorException;
-export 'src/http_fetch.dart' show fetchHttp;
-export 'src/inline.dart' show Inline;
-export 'src/list.dart' show DlistEntry, ListBlock, ListItem;
-export 'src/load.dart'
-    show
-        convert,
-        convertAsync,
-        convertFile,
-        convertFileAsync,
-        convertToTarget,
-        convertToTargetAsync,
-        load,
-        loadAsync,
-        loadFile,
-        loadFileAsync;
-export 'src/logging.dart'
-    show
-        BasicFormatter,
-        DefaultFormatter,
-        LogMessage,
-        Logger,
-        LoggerBase,
-        LoggerFormatter,
-        LoggerManager,
-        MemoryLogMessage,
-        MemoryLogger,
-        NullLogger,
-        Severity;
-export 'src/options.dart' show AsciidoctorOptions;
-export 'src/path_resolver.dart' show PathResolver, SecurityError;
-export 'src/remote.dart' show RemoteResource, UriFetcher, UriReader;
-export 'src/section.dart' show Section;
-export 'src/table.dart'
-    show Cell, CellSpec, Column, ColumnSpec, Table, TableHeader, TableRows;
-export 'src/timings.dart' show Timings;
-export 'src/version.dart' show Asciidoctor;
+        Formatted,
+        FormattedKind,
+        Highlighter,
+        HtmlDefaults,
+        HtmlOverride,
+        Icon,
+        Image,
+        IncludeRequest,
+        IncludeResolver,
+        IndexTerm,
+        Inline,
+        InlineAnchor,
+        InlineImage,
+        InlineMacro,
+        InlineMacroContext,
+        InlineStem,
+        Keyboard,
+        LineBreak,
+        Link,
+        ListItem,
+        Listing,
+        Literal,
+        Menu,
+        Node,
+        Open,
+        OrderedList,
+        OtherBlock,
+        OtherInline,
+        PageBreak,
+        Paragraph,
+        Passthrough,
+        Postprocessor,
+        Preamble,
+        Preprocessor,
+        Quote,
+        SafeMode,
+        Section,
+        Severity,
+        Sidebar,
+        SourceCode,
+        SourceLocation,
+        Stem,
+        StemNotation,
+        Table,
+        TableCell,
+        TableColumn,
+        TableOfContents,
+        ThematicBreak,
+        TreeProcessor,
+        UnorderedList,
+        Verse,
+        Video,
+        asciidartVersion,
+        asciidoc,
+        asciidoctorVersion;

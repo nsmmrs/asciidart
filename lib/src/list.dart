@@ -127,6 +127,10 @@ class ListItem extends AbstractBlock {
   /// Whether the text of this list item is not blank.
   bool get hasText => _text != null && _text!.isNotEmpty;
 
+  /// The text of this list item as written, before substitutions.
+  @internal
+  String? get sourceText => _text;
+
   /// The text of this list item with substitutions applied.
   ///
   /// By default the normal substitutions are applied; altering [subs]

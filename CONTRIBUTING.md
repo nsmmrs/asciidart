@@ -24,7 +24,7 @@ dart pub get
 dart analyze --fatal-infos .
 dart format --output=none --set-exit-if-changed .
 dart test                   # the library and CLI tests
-dart run tool/api_check.dart  # the public API stays closed
+dart run tool/api_check.dart  # the public API is closed and matches tool/api_surface.txt
 ```
 
 Parity with the gem, on a built executable:
@@ -70,9 +70,12 @@ The browser test looks for Chromium at `/usr/bin/chromium`; set
 
 ## Layout
 
-- `lib/asciidart.dart`, `extensions.dart`, `converter.dart`,
-  `syntax_highlighter.dart`, `cli.dart`: the public libraries
-  (`export ... show` lists only).
+- `lib/asciidart.dart`, `io.dart`, `cli.dart`: the public libraries
+  (`export ... show` lists only), backed by `lib/src/api/`, a typed layer
+  over the implementation. The supported API is described in
+  `doc/api.md`; a change to it updates `tool/api_surface.txt`
+  (`dart run tool/api_check.dart --update`) and `test/api/`, which uses
+  only the public libraries.
 - `lib/src/`: the implementation (still mostly one Dart file per
   Asciidoctor source file, `parser.dart` for `parser.rb`, ...), plus the CLI
   in `lib/src/cli/`.

@@ -1,4 +1,4 @@
-/// Reusable command-line entrypoint for the Dart port of Asciidoctor.
+/// Reusable command-line entrypoint of asciidart.
 ///
 /// The `bin/asciidart.dart` main delegates here, and XMonad-style custom
 /// binaries (ADR-0002 T6, see `init_config.dart`) call [runCli] after
@@ -12,17 +12,20 @@ import 'package:asciidart/src/cli/diagnostics.dart';
 import 'package:asciidart/src/cli/init_config.dart';
 import 'package:asciidart/src/cli/invoker.dart';
 import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/options.dart';
 
-/// Runs the Asciidoctor CLI, reporting through the process exit code.
+/// Runs the asciidart CLI, reporting through the process exit code.
 ///
-/// Library entrypoint for custom binaries: register transforms on
-/// `TemplateRegistry.global` (from `package:asciidart/converter.dart`),
-/// then `await runCli(args)`.
+/// [configure] adjusts the processor options of every conversion (a custom
+/// command's extensions and overrides).
 ///
 /// A first argument of `init-config` runs the project scaffold instead
 /// of converting (see [runInitConfig]); everything else behaves exactly
 /// like the stock CLI.
-Future<void> runCli(List<String> args) async {
+Future<void> runCli(
+  List<String> args, {
+  AsciidoctorOptions Function(AsciidoctorOptions options)? configure,
+}) async {
   // A failed stdout also completes its done future with the error. A
   // reader that went away (`asciidart ... | head`) ends the run quietly;
   // any other write failure is reported.
@@ -36,7 +39,7 @@ Future<void> runCli(List<String> args) async {
       },
     ),
   );
-  io.exitCode = await runCliCode(args);
+  io.exitCode = await runCliCode(args, configure: configure);
 }
 
 /// Runs the Asciidoctor CLI, returning the process exit code.
@@ -50,12 +53,14 @@ Future<int> runCliCode(
   List<String> args, {
   StringSink? out,
   StringSink? err,
+  AsciidoctorOptions Function(AsciidoctorOptions options)? configure,
 }) async {
   if (args.isNotEmpty && args.first == 'init-config') {
     return runInitConfig(args.sublist(1), out: out, err: err);
   }
   try {
-    final invoker = Invoker.fromArgs(args, out: out, err: err);
+    final invoker = Invoker.fromArgs(args, out: out, err: err)
+      ..configure = configure;
     if (out != null) invoker.redirectStreams(out, err);
     await invoker.invokeAsync();
     return invoker.code;

@@ -9,6 +9,8 @@
 /// `WARNING`, `FATAL` → `FAILED`) behave as in Asciidoctor.
 library;
 
+import 'dart:async' show Zone, runZoned;
+
 import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/io.dart' as io;
 
@@ -360,8 +362,18 @@ class NullLogger extends LoggerBase {
 abstract final class LoggerManager {
   static LoggerBase? _logger;
 
-  /// The global logger, created on first access (a [Logger] on stderr).
-  static LoggerBase get logger => _logger ??= Logger();
+  static final Object _zoneKey = Object();
+
+  /// The logger in effect: the one [scoped] installed for the current zone,
+  /// else the global logger, created on first access (a [Logger] on
+  /// stderr).
+  static LoggerBase get logger =>
+      (Zone.current[_zoneKey] as LoggerBase?) ?? (_logger ??= Logger());
+
+  /// Runs [body] with [logger] in effect for everything it runs, including
+  /// its asynchronous continuations, without touching the global logger.
+  static R scoped<R>(LoggerBase logger, R Function() body) =>
+      runZoned(body, zoneValues: {_zoneKey: logger});
 
   /// Replaces the global logger, or resets it to a default stderr [Logger]
   /// when [newLogger] is `null`.

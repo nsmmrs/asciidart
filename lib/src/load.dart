@@ -22,7 +22,7 @@ import 'package:asciidart/src/helpers.dart' show Helpers;
 import 'package:asciidart/src/html5.dart' show Html5Converter;
 import 'package:asciidart/src/http_fetch.dart' show fetchHttp;
 import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/logging.dart' show LoggerManager;
+import 'package:asciidart/src/logging.dart' show LoggerManager, NullLogger;
 import 'package:asciidart/src/options.dart';
 import 'package:asciidart/src/path_resolver.dart' show PathResolver;
 import 'package:asciidart/src/remote.dart';
@@ -265,8 +265,15 @@ Future<UriReader> _prefetch(
       final missing = <String>{};
       final Document doc;
       try {
-        doc = _load(input, options.forDiscovery((uri) => read(uri, missing)));
-        if (convert) doc.convert();
+        // Silent even under a scoped logger (see LoggerManager.scoped).
+        doc = LoggerManager.scoped(NullLogger(), () {
+          final doc = _load(
+            input,
+            options.forDiscovery((uri) => read(uri, missing)),
+          );
+          if (convert) doc.convert();
+          return doc;
+        });
       } on Object {
         // The real run reports the failure.
         break;

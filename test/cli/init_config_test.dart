@@ -55,7 +55,7 @@ Directory generateScaffold([List<String> extraArgs = const <String>[]]) {
 
 void main() {
   group('runInitConfig', () {
-    test('generates a pubspec, transforms stub, main and README', () {
+    test('generates a pubspec, configuration, main and README', () {
       final dir = generateScaffold();
       final name = dir.path
           .split(Platform.pathSeparator)
@@ -67,16 +67,13 @@ void main() {
       expect(pubspec, contains('asciidart: $scaffoldAsciidartConstraint'));
       expect(pubspec, contains('sdk: $scaffoldSdkConstraint'));
 
-      final transforms = File('${dir.path}/lib/transforms.dart')
-          .readAsStringSync();
-      expect(transforms, contains('void registerTransforms'));
-      expect(transforms, contains("registerFunction('paragraph'"));
+      final config = File('${dir.path}/lib/config.dart').readAsStringSync();
+      expect(config, contains('final asciidart = Asciidart('));
 
       final main = File('${dir.path}/bin/main.dart').readAsStringSync();
       expect(main, contains("import 'package:asciidart/cli.dart';"));
-      expect(main, contains("import 'package:$name/transforms.dart';"));
-      expect(main, contains('registerTransforms();'));
-      expect(main, contains('await runCli(args);'));
+      expect(main, contains("import 'package:$name/config.dart';"));
+      expect(main, contains('runCli(args, asciidart: asciidart)'));
 
       final readme = File('${dir.path}/README.md').readAsStringSync();
       expect(readme, contains('dart compile exe bin/main.dart'));
@@ -94,10 +91,7 @@ void main() {
       final pubspec = File('$target/pubspec.yaml').readAsStringSync();
       expect(pubspec, contains('name: my_custom_config'));
       final main = File('$target/bin/main.dart').readAsStringSync();
-      expect(
-        main,
-        contains("import 'package:my_custom_config/transforms.dart';"),
-      );
+      expect(main, contains("import 'package:my_custom_config/config.dart';"));
     });
 
     test('refuses to overwrite without --force, overwrites with it', () {
@@ -216,7 +210,7 @@ void main() {
           reason: 'stdout: ${result.stdout}\nstderr: ${result.stderr}',
         );
         expect(File('${dir.path}/pubspec.yaml').existsSync(), isTrue);
-        expect(File('${dir.path}/lib/transforms.dart').existsSync(), isTrue);
+        expect(File('${dir.path}/lib/config.dart').existsSync(), isTrue);
         expect(File('${dir.path}/bin/main.dart').existsSync(), isTrue);
       },
       timeout: const Timeout(Duration(minutes: 3)),
@@ -252,6 +246,27 @@ void main() {
           reason: 'analyze failed:\n${analyze.stdout}\n${analyze.stderr}',
         );
         expect(analyze.stdout as String, contains('No issues found!'));
+
+        // The configuration applies to every conversion, on worker isolates
+        // (-j) too.
+        File('${dir.path}/a.adoc').writeAsStringSync('See issue:7[].');
+        File('${dir.path}/b.adoc').writeAsStringSync('Plain.');
+        final run = await Process.run('dart', [
+          'run',
+          'bin/main.dart',
+          '-j',
+          '2',
+          'a.adoc',
+          'b.adoc',
+        ], workingDirectory: dir.path);
+        expect(run.exitCode, equals(0), reason: '${run.stderr}');
+        final a = File('${dir.path}/a.html').readAsStringSync();
+        expect(a, contains('<a href="https://example.org/issues/7">#7</a>'));
+        expect(a, contains('<div class="paragraph custom">'));
+        expect(
+          File('${dir.path}/b.html').readAsStringSync(),
+          contains('<div class="paragraph custom">'),
+        );
       },
       timeout: const Timeout(Duration(minutes: 3)),
     );

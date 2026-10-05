@@ -3,7 +3,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/asciidart.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// `dart test` runs with the package root as the working directory, while

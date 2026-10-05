@@ -1,8 +1,5 @@
-/// The `asciidoctor` command line as a library.
-///
-/// Call `runCli` from your own `main` to build a custom binary, for example
-/// one that registers extensions or transform functions first (see
-/// `asciidart init-config`).
+/// The `asciidart` command line, for building a custom command with
+/// extensions and overrides compiled in (see `runCli`).
 library;
 
-export 'src/cli/run.dart' show runCli;
+export 'src/api/cli.dart' show runCli;

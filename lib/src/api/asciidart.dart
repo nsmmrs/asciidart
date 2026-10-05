@@ -1,0 +1,359 @@
+part of 'api.dart';
+
+/// The output formats.
+enum Backend {
+  /// HTML 5 (the default).
+  html5,
+
+  /// HTML 5 written as XML (XHTML).
+  xhtml5,
+
+  /// DocBook 5.
+  docbook5,
+
+  /// A man page (troff).
+  manpage,
+}
+
+/// How much a document may reach outside itself.
+enum SafeMode {
+  /// No restrictions: includes and assets may come from anywhere.
+  unsafe(impl.SafeMode.unsafe),
+
+  /// Includes and assets only from below the base directory.
+  safe(impl.SafeMode.safe),
+
+  /// Like [safe], and the document may not set attributes that change how
+  /// it is processed (such as `docinfo`).
+  server(impl.SafeMode.server),
+
+  /// Like [server], and no file is read at all: `include::` directives
+  /// become links. The default for the API.
+  secure(impl.SafeMode.secure);
+
+  new(this._level);
+
+  final int _level;
+}
+
+/// Parses and converts AsciiDoc with one configuration.
+///
+/// An instance holds everything that shapes a conversion: the safe mode,
+/// attributes, extensions, output overrides and highlighters. It keeps no
+/// state between documents, so one instance can be used for any number of
+/// them, and two instances never affect each other.
+///
+/// ```dart
+/// final ad = Asciidart(attributes: {'icons': 'font'});
+/// final html = ad.convert('NOTE: Hello');
+/// ```
+final class Asciidart {
+  /// Creates a configuration.
+  ///
+  /// [attributes] apply to every document (and win over the document's own
+  /// assignments, as `-a` does on the command line, unless the value ends
+  /// in `@`); a key ending in `!` unsets the attribute. [html] overrides
+  /// the HTML of individual nodes. [templateDirs] holds Mustache templates
+  /// that replace the built-in HTML of the nodes they name, as `-T` does.
+  /// [highlighters] adds syntax highlighters, by the `source-highlighter`
+  /// value that selects them. [baseDir] is where relative paths in
+  /// documents are resolved from (default: the document's directory, or
+  /// the working directory). [onDiagnostic] sees every message as it is
+  /// reported, including those of [convert], which returns only the
+  /// output.
+  const new({
+    this.safe = SafeMode.secure,
+    this.attributes = const {},
+    this.extensions = const [],
+    this.html,
+    this.templateDirs = const [],
+    this.highlighters = const {},
+    this.baseDir,
+    this.onDiagnostic,
+  });
+
+  /// How much documents may reach outside themselves.
+  final SafeMode safe;
+
+  /// Attributes applied to every document.
+  final Map<String, String> attributes;
+
+  /// The extensions in effect.
+  final List<Extension> extensions;
+
+  /// Overrides the HTML of individual nodes.
+  final HtmlOverride? html;
+
+  /// Directories of Mustache templates.
+  final List<String> templateDirs;
+
+  /// Syntax highlighters, by name.
+  final Map<String, Highlighter> highlighters;
+
+  /// Where relative paths in documents are resolved from.
+  final String? baseDir;
+
+  /// Called with every diagnostic as it is reported.
+  final void Function(Diagnostic diagnostic)? onDiagnostic;
+
+  /// Parses [source] into a [Document].
+  ///
+  /// [path] names the source (for messages, and as the base for relative
+  /// paths); [backend], [doctype] and [standalone] set what the document
+  /// is parsed for, as some attributes depend on them; [attributes] add to
+  /// the instance's attributes.
+  Document parse(
+    String source, {
+    String? path,
+    Backend backend = Backend.html5,
+    Doctype? doctype,
+    bool standalone = false,
+    Map<String, String> attributes = const {},
+  }) => _parse(
+    source,
+    _options(
+      _Includes(async: false),
+      path: path,
+      backend: backend,
+      doctype: doctype,
+      standalone: standalone,
+      attributes: attributes,
+    ),
+  );
+
+  /// Parses only the header of [source] (title, authors, attributes) into a
+  /// [Document] without blocks; much faster than [parse] for reading
+  /// metadata.
+  Document parseHeader(
+    String source, {
+    String? path,
+    Map<String, String> attributes = const {},
+  }) => _parse(
+    source,
+    _options(
+      _Includes(async: false),
+      path: path,
+      attributes: attributes,
+      headerOnly: true,
+    ),
+  );
+
+  /// Converts [source]: the body only, or a complete document when
+  /// [standalone] is `true`.
+  String convert(
+    String source, {
+    String? path,
+    Backend backend = Backend.html5,
+    Doctype? doctype,
+    bool standalone = false,
+    Map<String, String> attributes = const {},
+  }) => parse(
+    source,
+    path: path,
+    backend: backend,
+    doctype: doctype,
+    standalone: standalone,
+    attributes: attributes,
+  ).convert();
+
+  /// Like [parse], waiting for [IncludeResolver]s that return a `Future`,
+  /// and fetching remote content (includes, and assets read from a URI)
+  /// when the `allow-uri-read` attribute is set.
+  Future<Document> parseAsync(
+    String source, {
+    String? path,
+    Backend backend = Backend.html5,
+    Doctype? doctype,
+    bool standalone = false,
+    Map<String, String> attributes = const {},
+  }) async {
+    impl.AsciidoctorOptions optionsFor(_Includes includes) => _options(
+      includes,
+      path: path,
+      backend: backend,
+      doctype: doctype,
+      standalone: standalone,
+      attributes: attributes,
+    );
+    final includes = await _settleIncludes(
+      optionsFor,
+      (options) => impl.load(source, options: options),
+    );
+    final options = optionsFor(includes);
+    return await _document(
+      (collector) =>
+          collector.run(() => impl.loadAsync(source, options: options)),
+    );
+  }
+
+  /// Like [convert], waiting for [IncludeResolver]s that return a `Future`,
+  /// and fetching remote content when the `allow-uri-read` attribute is
+  /// set.
+  Future<String> convertAsync(
+    String source, {
+    String? path,
+    Backend backend = Backend.html5,
+    Doctype? doctype,
+    bool standalone = false,
+    Map<String, String> attributes = const {},
+  }) async {
+    impl.AsciidoctorOptions optionsFor(_Includes includes) => _options(
+      includes,
+      path: path,
+      backend: backend,
+      doctype: doctype,
+      standalone: standalone,
+      attributes: attributes,
+    );
+    final includes = await _settleIncludes(
+      optionsFor,
+      (options) => impl.load(source, options: options),
+    );
+    final options = optionsFor(includes);
+    return await _guardAsync(
+      () =>
+          _Collector(onDiagnostic)
+              .run(() => impl.convertAsync(source, options)),
+    );
+  }
+
+  /// Runs silent parses (with [load]) until every [IncludeResolver] future
+  /// the document needs has completed, and returns the resolved content.
+  Future<_Includes> _settleIncludes(
+    impl.AsciidoctorOptions Function(_Includes includes) optionsFor,
+    void Function(impl.AsciidoctorOptions options) load,
+  ) async {
+    final includes = _Includes(async: true);
+    if (!extensions.any((e) => e is IncludeResolver)) return includes;
+    const maxPasses = 32;
+    for (var pass = 0; pass < maxPasses; pass++) {
+      final options = optionsFor(includes);
+      try {
+        impl.LoggerManager.scoped(impl.NullLogger(), () => load(options));
+        // The real parse reports the failure.
+        // ignore: avoid_catches_without_on_clauses
+      } catch (_) {
+        break;
+      }
+      if (!includes.hasPending) break;
+      await includes.settle();
+    }
+    return includes;
+  }
+
+  /// The public document for what [load] returns, with the diagnostics
+  /// collected while loading.
+  Future<Document> _document(
+    Future<impl.Document> Function(_Collector collector) load,
+  ) async {
+    final collector = _Collector(onDiagnostic);
+    final doc = await _guardAsync(() => load(collector));
+    return (_view(doc) as Document).._collector = collector;
+  }
+
+  Document _parse(String source, impl.AsciidoctorOptions options) {
+    final collector = _Collector(onDiagnostic);
+    final doc = _guard(
+      () => collector.run(() => impl.load(source, options: options)),
+    );
+    return (_view(doc) as Document).._collector = collector;
+  }
+
+  impl.AsciidoctorOptions _options(
+    _Includes includes, {
+    String? path,
+    Backend backend = Backend.html5,
+    Doctype? doctype,
+    bool? standalone,
+    Map<String, String> attributes = const {},
+    bool headerOnly = false,
+  }) {
+    final override = html;
+    final docfile = path == null ? null : _absolute(path);
+    final directory = docfile == null ? null : _directoryOf(docfile);
+    return impl.AsciidoctorOptions(
+      safe: safe._level,
+      backend: backend.name,
+      doctype: doctype?.name,
+      attributes: {
+        if (docfile != null && directory != null) ...{
+          'docfile': docfile,
+          'docdir': directory,
+        },
+        ...this.attributes,
+        ...attributes,
+      },
+      standalone: standalone,
+      baseDir: baseDir ?? directory,
+      sourcemap: true,
+      parseHeaderOnly: headerOnly,
+      templateDirs: templateDirs,
+      converterFactory: override == null ? null : _overrideFactory(override),
+      extensions: extensions.isEmpty
+          ? null
+          : (registry) {
+              for (final extension in extensions) {
+                extension._register(registry, includes);
+              }
+            },
+      syntaxHighlighters: highlighters.isEmpty
+          ? null
+          : {
+              for (final MapEntry(key: name, value: highlighter)
+                  in highlighters.entries)
+                name: (_, _, _) => _HighlighterAdapter(name, highlighter),
+            },
+    );
+  }
+}
+
+/// [path] made absolute against the working directory, where the platform
+/// has one (not in a browser).
+String _absolute(String path) {
+  if (path.startsWith('/') || RegExp(r'^[A-Za-z]:[/\\]').hasMatch(path)) {
+    return path;
+  }
+  try {
+    return '${impl.currentDirectory}/$path';
+    // Browsers have no working directory: keep the path as given.
+    // ignore: avoid_catches_without_on_clauses
+  } catch (_) {
+    return path;
+  }
+}
+
+/// The directory part of [path] (`.` when it has none).
+String _directoryOf(String path) {
+  final slash = path.lastIndexOf(RegExp(r'[/\\]'));
+  if (slash < 0) return '.';
+  return slash == 0 ? path.substring(0, 1) : path.substring(0, slash);
+}
+
+/// The default configuration: `secure` safe mode, no attributes, no
+/// extensions.
+const Asciidart asciidoc = Asciidart();
+
+/// The version of asciidart.
+const String asciidartVersion = impl.Asciidoctor.packageVersion;
+
+/// The Asciidoctor release asciidart is compatible with.
+const String asciidoctorVersion = impl.Asciidoctor.version;
+
+/// The command line's processor [options] with [asciidart]'s configuration
+/// added: its extensions, output override and highlighters, its attributes
+/// and template directories under those of the command line.
+///
+/// Used by `runCli` in `package:asciidart/cli.dart`; not exported.
+impl.AsciidoctorOptions configureCli(
+  Asciidart asciidart,
+  impl.AsciidoctorOptions options,
+) {
+  final mine = asciidart._options(_Includes(async: false));
+  return options.copyWith(
+    attributes: {...asciidart.attributes, ...options.attributes},
+    templateDirs: [...asciidart.templateDirs, ...options.templateDirs],
+    converterFactory: mine.converterFactory,
+    extensions: mine.extensions,
+    syntaxHighlighters: mine.syntaxHighlighters,
+  );
+}

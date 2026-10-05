@@ -383,17 +383,23 @@ final class Invoker {
     return () {};
   }
 
+  /// Adjusts the processor options before each conversion: a custom
+  /// command's configuration (extensions, output overrides, highlighters).
+  AsciidoctorOptions Function(AsciidoctorOptions options)? configure;
+
   /// The processor options for [options], before output targets.
-  static AsciidoctorOptions _processorOptions(CliOptions options) =>
-      AsciidoctorOptions(
-        safe: options.safe,
-        standalone: options.standalone,
-        attributes: options.attributes ?? const <String, String?>{},
-        templateDirs: options.templateDirs ?? const <String>[],
-        templateEngine: options.templateEngine,
-        baseDir: options.baseDir,
-        toDir: options.destinationDir,
-      );
+  AsciidoctorOptions _processorOptions(CliOptions options) {
+    final processorOptions = AsciidoctorOptions(
+      safe: options.safe,
+      standalone: options.standalone,
+      attributes: options.attributes ?? const <String, String?>{},
+      templateDirs: options.templateDirs ?? const <String>[],
+      templateEngine: options.templateEngine,
+      baseDir: options.baseDir,
+      toDir: options.destinationDir,
+    );
+    return configure?.call(processorOptions) ?? processorOptions;
+  }
 
   /// Mirrors the input file's position below the `-R` source directory
   /// ([absSrcdir]) in the destination directory.

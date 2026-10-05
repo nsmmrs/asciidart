@@ -2,17 +2,16 @@
 // ignore_for_file: avoid_print
 
 import 'package:asciidart/asciidart.dart';
-import 'package:asciidart/converter.dart';
-import 'package:asciidart/extensions.dart';
 
 Future<void> main() async {
-  // Convert a string to an HTML fragment.
-  print(convert('Hello, *World*!'));
+  // Convert a string to HTML (the body only).
+  print(asciidoc.convert('Hello, *World*!'));
 
-  // Load a document and walk its tree.
+  // Parse a document, read its metadata and walk its tree.
   const source = '''
 = Release Notes
 :revnumber: 0.1.0
+:labels: fast, faithful
 
 == Features
 
@@ -23,57 +22,36 @@ Future<void> main() async {
 
 Nothing yet.
 ''';
-  final doc = load(
-    source,
-    options: const AsciidoctorOptions(safe: SafeMode.safe),
-  );
-  print('${doc.doctitle()} (${doc.attr('revnumber')})');
-  for (final section in doc.sections) {
-    print('- ${section.title}: ${section.blocks.length} block(s)');
+  final doc = asciidoc.parse(source);
+  print('${doc.title} ${doc.attributes['revnumber']}');
+  print(doc.attributes.listValue('labels'));
+  for (final section in doc.descendants<Section>()) {
+    print('- ${section.title}: ${section.plainText.split('\n').join(', ')}');
   }
 
-  // An inline macro extension: emoji:wave[] becomes <strong>:wave:</strong>.
-  final extensions = Extensions.create(
-    build: (registry) {
-      registry.inlineMacro(
-        name: 'emoji',
-        build: (processor) {
-          processor.onProcess = (parent, target, attributes) => processor
-              .createInline(parent, 'quoted', ':$target:', type: 'strong');
-        },
-      );
+  // A configuration with an extension and an HTML override.
+  final ad = Asciidart(
+    extensions: [
+      // issue:42[] links to the issue tracker.
+      InlineMacro(
+        'issue',
+        (m) => m.link(
+          'https://github.com/nsmmrs/asciidart/issues/${m.target}',
+          text: '#${m.target}',
+        ),
+      ),
+    ],
+    html: (node, defaults) => switch (node) {
+      final Admonition a =>
+        '<aside class="${a.kind.name}">${defaults.content(a)}</aside>',
+      _ => defaults.render(node),
     },
   );
-  print(
-    convert(
-      'Hi emoji:wave[]',
-      AsciidoctorOptions(extensionRegistry: extensions),
-    ),
-  );
+  print(ad.convert('See issue:42[].\n\nNOTE: Overridden.'));
 
-  // Override one transform of the HTML converter with a Dart function.
-  final templates = TemplateRegistry()
-    ..registerFunction(
-      'paragraph',
-      (node, [opts]) => '<p class="custom">${(node as Block).content()}</p>',
-    );
-  final converter = TemplateConverter(
-    'html5',
-    const ConverterOptions(),
-    templates,
-  ).withFallback(Html5Converter('html5'));
-  print(
-    convert(
-      'Custom paragraph.\n\n----\nlisting\n----',
-      AsciidoctorOptions(converter: converter),
-    ),
-  );
-
-  // Remote content: the async API fetches what a document includes once
-  // allow-uri-read is set (here nothing is remote, so nothing is fetched).
-  final html = await convertAsync(
-    'Fetched on demand.',
-    const AsciidoctorOptions(attributes: {'allow-uri-read': ''}),
-  );
-  print(html);
+  // Diagnostics are part of the result.
+  final broken = asciidoc.parse('See <<missing>>.')..convert();
+  for (final d in broken.diagnostics) {
+    print('${d.severity.name}: ${d.message}');
+  }
 }
