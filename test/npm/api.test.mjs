@@ -16,7 +16,7 @@ import {
   load,
   PreprocessorReader,
   Reader,
-} from 'asciidoctor-dart'
+} from 'asciidart'
 
 afterEach(() => {
   Extensions.unregisterAll()

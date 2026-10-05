@@ -3,8 +3,8 @@ library;
 
 import 'dart:isolate';
 
-import 'package:asciidoctor/src/cli/parallel.dart';
-import 'package:asciidoctor/src/job_pool.dart';
+import 'package:asciidart/src/cli/parallel.dart';
+import 'package:asciidart/src/job_pool.dart';
 
 /// Worker isolate entry point for conversion jobs.
 void conversionWorkerMain(SendPort mainPort) =>

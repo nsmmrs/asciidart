@@ -16,7 +16,7 @@ library;
 
 import 'dart:io' show Directory, File;
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// A single backslash, mirroring the `BACKSLASH` constant in the Ruby suite.

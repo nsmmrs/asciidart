@@ -2,7 +2,7 @@
 ///
 /// The byte-for-byte tests guard the `help_topics.g.dart` contract: each
 /// embedded constant must round-trip to the exact bytes of its source file
-/// (`man/asciidoctor.1`, `vendor/asciidoctor/data/reference/syntax.adoc`). The fallback tests
+/// (`man/asciidart.1`, `vendor/asciidoctor/data/reference/syntax.adoc`). The fallback tests
 /// prove `-h manpage`/`-h syntax` succeed with no checkout files visible.
 @TestOn('vm')
 library;
@@ -10,7 +10,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Finds the repository checkout by walking up to the `man` directory.
@@ -54,10 +54,10 @@ final String repoRoot = findRepoRoot();
 
 void main() {
   group('HelpTopics', () {
-    test('embedded manpage equals man/asciidoctor.1 byte-for-byte', () {
+    test('embedded manpage equals man/asciidart.1 byte-for-byte', () {
       expect(
         utf8.encode(HelpTopics.manpage),
-        orderedEquals(File('$repoRoot/man/asciidoctor.1').readAsBytesSync()),
+        orderedEquals(File('$repoRoot/man/asciidart.1').readAsBytesSync()),
       );
     });
 
@@ -83,8 +83,8 @@ void main() {
           getCurrentDirectory: () => tmp,
         );
         expect(result.exitCode, equals(0));
-        expect(result.out, contains('.TH "ASCIIDOCTOR"'));
-        expect(result.out, contains('Manual: Asciidoctor Manual'));
+        expect(result.out, contains('.TH "ASCIIDART"'));
+        expect(result.out, contains('Manual: asciidart Manual'));
       } finally {
         tmp.deleteSync(recursive: true);
       }

@@ -13,14 +13,14 @@ library;
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/extensions.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/js/convert.dart';
-import 'package:asciidoctor/src/js/nodes.dart';
-import 'package:asciidoctor/src/reader.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/extensions.dart';
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/js/convert.dart';
+import 'package:asciidart/src/js/nodes.dart';
+import 'package:asciidart/src/reader.dart';
 
 final Expando<JSObject> _readerViews = Expando<JSObject>('ReaderBridge');
 final Expando<JSObject> _registryViews = Expando<JSObject>('RegistryBridge');

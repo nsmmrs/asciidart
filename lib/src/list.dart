@@ -3,11 +3,11 @@
 /// Port of `lib/asciidoctor/list.rb` (complete).
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/substitutors.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/substitutors.dart';
 import 'package:meta/meta.dart';
 
 /// Methods for managing AsciiDoc lists (ordered, unordered and description

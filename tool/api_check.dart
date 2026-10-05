@@ -1,4 +1,4 @@
-/// Checks that the public API is closed: every `package:asciidoctor` type
+/// Checks that the public API is closed: every `package:asciidart` type
 /// that appears in an exported signature (supertypes, constructor and
 /// method parameters, return types, fields, typedefs) is itself exported by
 /// one of the public libraries. Exits nonzero and lists the offenders
@@ -19,7 +19,7 @@ import 'package:analyzer/dart/element/type.dart';
 // Resolved relative to this file: tool/ -> repository root.
 final String repo = File.fromUri(Platform.script).parent.parent.path;
 const publicLibs = [
-  'asciidoctor.dart',
+  'asciidart.dart',
   'extensions.dart',
   'converter.dart',
   'syntax_highlighter.dart',
@@ -49,7 +49,7 @@ Future<void> main() async {
   final missing = <String, Set<String>>{};
   void checkElement(Element e, String where) {
     final uri = e.library?.uri.toString() ?? '';
-    if (!uri.startsWith('package:asciidoctor/')) return;
+    if (!uri.startsWith('package:asciidart/')) return;
     if (e.name == null || e.name!.startsWith('_')) return;
     if (exported.contains(e)) return;
     missing

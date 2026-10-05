@@ -3,9 +3,9 @@
 /// Port of `lib/asciidoctor/helpers.rb`.
 library;
 
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/rx.dart';
 
 /// Internal helper functions. Except where noted, everything here is internal.
 abstract final class Helpers {

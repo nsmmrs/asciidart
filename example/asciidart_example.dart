@@ -1,9 +1,9 @@
 // Examples print their results to the console.
 // ignore_for_file: avoid_print
 
-import 'package:asciidoctor/asciidoctor.dart';
-import 'package:asciidoctor/converter.dart';
-import 'package:asciidoctor/extensions.dart';
+import 'package:asciidart/asciidart.dart';
+import 'package:asciidart/converter.dart';
+import 'package:asciidart/extensions.dart';
 
 Future<void> main() async {
   // Convert a string to an HTML fragment.

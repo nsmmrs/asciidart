@@ -22,7 +22,7 @@
 /// only when one is supplied. Tests inject fakes (see `test/highlight/`).
 library;
 
-import 'package:asciidoctor/src/path_resolver.dart';
+import 'package:asciidart/src/path_resolver.dart';
 
 /// Selects whether highlighted HTML references stylesheet classes or carries
 /// inline styles.

@@ -1,7 +1,7 @@
 {
-  "name": "asciidoctor-dart",
+  "name": "asciidart",
   "version": "0.1.0",
-  "description": "Unofficial port of Asciidoctor 2.0.26 compiled from Dart to JavaScript: converts AsciiDoc to HTML 5, DocBook 5 and man pages with output identical to the Ruby original, behind an Asciidoctor.js-style API.",
+  "description": "AsciiDoc processor written in Dart, compiled to JavaScript: converts AsciiDoc to HTML 5, DocBook 5 and man pages compatibly with Asciidoctor 2.0.26, behind an Asciidoctor.js-style API.",
   "keywords": [
     "asciidoc",
     "asciidoctor",
@@ -13,9 +13,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nsmmrs/asciidoctor-dart.git"
+    "url": "git+https://github.com/nsmmrs/asciidart.git"
   },
-  "bugs": "https://github.com/nsmmrs/asciidoctor-dart/issues",
+  "bugs": "https://github.com/nsmmrs/asciidart/issues",
   "type": "module",
   "exports": {
     ".": {
@@ -37,10 +37,10 @@
   "main": "./node.cjs",
   "types": "./types/index.d.cts",
   "bin": {
-    "asciidoctor-dart": "bin/asciidoctor-dart.js"
+    "asciidart": "bin/asciidart.js"
   },
   "files": [
-    "asciidoctor-dart.js",
+    "asciidart.js",
     "browser.js",
     "node.cjs",
     "node.js",

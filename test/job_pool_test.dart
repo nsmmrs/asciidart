@@ -8,7 +8,7 @@ library;
 
 import 'dart:isolate';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// A fake job: an `id`, a value `n` to double and a delay before replying.

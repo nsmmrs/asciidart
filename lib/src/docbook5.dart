@@ -20,18 +20,18 @@
 ///   when its optional `asciimath` gem is not installed.
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/attribute_list.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/converter.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/list.dart';
-import 'package:asciidoctor/src/rx.dart';
-import 'package:asciidoctor/src/section.dart';
-import 'package:asciidoctor/src/table.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/attribute_list.dart';
+import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/converter.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/rx.dart';
+import 'package:asciidart/src/section.dart';
+import 'package:asciidart/src/table.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
 /// `null` renders as the empty string instead of `'null'`.

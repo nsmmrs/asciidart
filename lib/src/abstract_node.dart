@@ -17,16 +17,16 @@ library;
 
 import 'dart:convert' show base64Encode, utf8;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/callouts.dart';
-import 'package:asciidoctor/src/document.dart' show Catalog;
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/path_resolver.dart';
-import 'package:asciidoctor/src/remote.dart';
-import 'package:asciidoctor/src/substitutors.dart' as substitutors;
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/callouts.dart';
+import 'package:asciidart/src/document.dart' show Catalog;
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/path_resolver.dart';
+import 'package:asciidart/src/remote.dart';
+import 'package:asciidart/src/substitutors.dart' as substitutors;
 
 /// Line feed. Port of the `LF` constant in `lib/asciidoctor.rb`.
 const String lf = '\n';

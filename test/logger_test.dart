@@ -6,7 +6,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'support/doc_helpers.dart';
@@ -76,7 +76,7 @@ void main() {
         await logger.close();
         expect(
           File(path).readAsStringSync(),
-          equals('existing\nasciidoctor: WARNING: appended\n'),
+          equals('existing\nasciidart: WARNING: appended\n'),
         );
       } finally {
         dir.deleteSync(recursive: true);
@@ -87,9 +87,9 @@ void main() {
       expect(Logger(level: Severity.debug).level, equals(Severity.debug));
     });
 
-    test('defaults to the asciidoctor progname and the WARN level', () {
+    test('defaults to the asciidart progname and the WARN level', () {
       final logger = Logger();
-      expect(logger.progname, equals('asciidoctor'));
+      expect(logger.progname, equals('asciidart'));
       expect(logger.level, equals(Severity.warn));
       expect(logger.formatter, isA<BasicFormatter>());
     });
@@ -104,9 +104,9 @@ void main() {
       expect(
         output,
         equals(
-          'asciidoctor: WARNING: this is a call\n'
-          'asciidoctor: ERROR: an error\n'
-          'asciidoctor: FAILED: fatal\n',
+          'asciidart: WARNING: this is a call\n'
+          'asciidart: ERROR: an error\n'
+          'asciidart: FAILED: fatal\n',
         ),
       );
     });
@@ -120,9 +120,7 @@ void main() {
       });
       expect(
         output,
-        equals(
-          'asciidoctor: WARNING: file.adoc: line 5: Asciidoctor was here\n',
-        ),
+        equals('asciidart: WARNING: file.adoc: line 5: Asciidoctor was here\n'),
       );
     });
 
@@ -153,7 +151,7 @@ void main() {
       final output = logTo(
         (logger) => logger.add(Severity.unknown, const LogMessage('any')),
       );
-      expect(output, equals('asciidoctor: ANY: any\n'));
+      expect(output, equals('asciidart: ANY: any\n'));
     });
 
     test(
@@ -358,7 +356,7 @@ void main() {
         );
         expect(
           sink.toString(),
-          contains('asciidoctor: WARNING: <stdin>: line 1: list item index'),
+          contains('asciidart: WARNING: <stdin>: line 1: list item index'),
         );
       });
     });

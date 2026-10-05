@@ -15,8 +15,8 @@ test('npm pack lists the expected files', () => {
   assert.deepEqual(files, [
     'LICENSE',
     'README.md',
-    'asciidoctor-dart.js',
-    'bin/asciidoctor-dart.js',
+    'asciidart.js',
+    'bin/asciidart.js',
     'browser.js',
     'node.cjs',
     'node.js',
@@ -35,6 +35,6 @@ test('npm pack lists the expected files', () => {
     'types/logging.d.ts',
   ])
   // The bundle stays well under a megabyte.
-  const bundle = report.files.find((file) => file.path === 'asciidoctor-dart.js')
+  const bundle = report.files.find((file) => file.path === 'asciidart.js')
   assert.ok(bundle.size < 1_000_000, `bundle is ${bundle.size} bytes`)
 })

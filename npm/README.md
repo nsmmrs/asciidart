@@ -1,18 +1,18 @@
-# asciidoctor-dart
+# asciidart
 
-An unofficial port of [Asciidoctor](https://asciidoctor.org) 2.0.26,
-written in Dart and compiled to JavaScript. It converts AsciiDoc to HTML 5,
-DocBook 5 and man pages with output identical to the Ruby original, behind
-an API shaped after [Asciidoctor.js](https://github.com/asciidoctor/asciidoctor.js)
-4.1. It is not affiliated with the Asciidoctor project.
+asciidart, an AsciiDoc processor written in Dart, compiled to JavaScript.
+It converts AsciiDoc to HTML 5, DocBook 5 and man pages compatibly with
+[Asciidoctor](https://asciidoctor.org) 2.0.26, behind an API shaped after
+[Asciidoctor.js](https://github.com/asciidoctor/asciidoctor.js) 4.1. It is
+not affiliated with or endorsed by the Asciidoctor project.
 
 It runs on Node.js (20.19 or later) and in browsers, ships TypeScript
-types, and provides the `asciidoctor-dart` command.
+types, and provides the `asciidart` command.
 
 ## Usage
 
 ```js
-import { convert, load } from 'asciidoctor-dart'
+import { convert, load } from 'asciidart'
 
 const html = await convert('Hello, *AsciiDoc*!')
 
@@ -21,12 +21,12 @@ console.log(doc.getTitle(), doc.getBlocks().length)
 console.log(await doc.convert())
 ```
 
-`require('asciidoctor-dart')` works too. Options use the Asciidoctor.js
+`require('asciidart')` works too. Options use the Asciidoctor.js
 names (`safe`, `backend`, `doctype`, `attributes`, `standalone`, `to_file`,
 `base_dir`, ...).
 
 ```console
-$ npx asciidoctor-dart -o - document.adoc
+$ npx asciidart -o - document.adoc
 ```
 
 The command takes the options of the `asciidoctor` command.
@@ -34,7 +34,7 @@ The command takes the options of the `asciidoctor` command.
 ## Extensions
 
 ```js
-import { convert, Extensions } from 'asciidoctor-dart'
+import { convert, Extensions } from 'asciidart'
 
 const registry = Extensions.create(function () {
   this.inlineMacro('emoji', function () {
@@ -55,7 +55,7 @@ Asciidoctor.js DSL or as classes.
 ## Converters
 
 ```js
-import { convert, Html5Converter } from 'asciidoctor-dart'
+import { convert, Html5Converter } from 'asciidart'
 
 class Custom extends Html5Converter {
   convert_paragraph(node) {
@@ -84,7 +84,7 @@ values directly (`await` still works).
   there is no file access, so includes and templates need Node.js.
 
 The same code is available for Dart as the `asciidoctor` package
-([repository](https://github.com/nsmmrs/asciidoctor-dart)).
+([repository](https://github.com/nsmmrs/asciidart)).
 
 ## License
 

@@ -7,22 +7,22 @@ import 'dart:convert';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/cli/diagnostics.dart';
-import 'package:asciidoctor/src/cli/run.dart';
-import 'package:asciidoctor/src/converter.dart';
-import 'package:asciidoctor/src/docbook5.dart';
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/extensions.dart';
-import 'package:asciidoctor/src/html5.dart';
-import 'package:asciidoctor/src/js/convert.dart';
-import 'package:asciidoctor/src/js/extensions.dart' as ext;
-import 'package:asciidoctor/src/js/nodes.dart';
-import 'package:asciidoctor/src/load.dart';
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/manpage.dart';
-import 'package:asciidoctor/src/options.dart';
-import 'package:asciidoctor/src/version.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/cli/diagnostics.dart';
+import 'package:asciidart/src/cli/run.dart';
+import 'package:asciidart/src/converter.dart';
+import 'package:asciidart/src/docbook5.dart';
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/extensions.dart';
+import 'package:asciidart/src/html5.dart';
+import 'package:asciidart/src/js/convert.dart';
+import 'package:asciidart/src/js/extensions.dart' as ext;
+import 'package:asciidart/src/js/nodes.dart';
+import 'package:asciidart/src/load.dart';
+import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/manpage.dart';
+import 'package:asciidart/src/options.dart';
+import 'package:asciidart/src/version.dart';
 
 @JS('Error')
 external JSFunction get _errorConstructor;

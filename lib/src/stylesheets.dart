@@ -7,8 +7,8 @@
 /// strings are identical: file contents with trailing whitespace stripped.
 library;
 
-import 'package:asciidoctor/src/data.g.dart';
-import 'package:asciidoctor/src/io.dart' as io;
+import 'package:asciidart/src/data.g.dart';
+import 'package:asciidart/src/io.dart' as io;
 
 /// A utility class for working with the built-in stylesheets.
 ///

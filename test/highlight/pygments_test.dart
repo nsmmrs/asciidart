@@ -3,7 +3,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'fake_source_lexer.dart';

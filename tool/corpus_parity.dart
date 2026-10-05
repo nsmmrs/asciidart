@@ -4,7 +4,7 @@
 ///
 /// ```sh
 /// dart run tool/corpus_parity.dart --exe-a asciidoctor \
-///   --exe-b dist/asciidoctor-linux-x64 --out /tmp/parity DIR...
+///   --exe-b dist/asciidart-linux-x64 --out /tmp/parity DIR...
 /// ```
 ///
 /// Each conversion runs in the directory of its input, so relative includes
@@ -219,14 +219,26 @@ String _compare(_Result a, _Result b) {
   }
   final parts = [
     if (a.exitCode != b.exitCode) 'exit',
-    if (a.stdout != b.stdout) 'stdout',
+    if (_normalizeStdout(a.stdout) != _normalizeStdout(b.stdout)) 'stdout',
     if (_normalizeStderr(a.stderr) != _normalizeStderr(b.stderr)) 'stderr',
   ];
   return parts.isEmpty ? 'same' : parts.join('+');
 }
 
+/// The generator stamp asciidart writes as `Asciidart <version>` where the
+/// gem writes `Asciidoctor <version>` (HTML meta tag, man page header).
+final RegExp _generatorStamp = RegExp(
+  r'(<meta name="generator" content="|\.\\" Generator: )'
+  '(?:Asciidoctor|Asciidart) [^"\n]*',
+);
+
+/// [stdout] with the generator stamp made canonical.
+String _normalizeStdout(String stdout) =>
+    stdout.replaceAllMapped(_generatorStamp, (m) => '${m[1]}GENERATOR');
+
+/// A log line, from the gem (`asciidoctor:`) or asciidart (`asciidart:`).
 final RegExp _logLine = RegExp(
-  '^asciidoctor: (DEBUG|INFO|WARNING|ERROR|FATAL): ',
+  '^(?:asciidoctor|asciidart): (DEBUG|INFO|WARNING|ERROR|FATAL): ',
 );
 
 /// Messages the port words differently on purpose (benchmark/PARITY.md):
@@ -273,7 +285,7 @@ String _normalizeStderr(String stderr) {
       if (line.isNotEmpty) failed = true;
       continue;
     }
-    var text = line;
+    var text = line.replaceFirst(RegExp('^asciidart: '), 'asciidoctor: ');
     for (final (pattern, replacement) in rewordings) {
       text = text.replaceAllMapped(
         pattern,

@@ -2,7 +2,7 @@
 /// behind them is missing; the wording is the port's own.
 library;
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 List<String> warningsOf(void Function() body) {

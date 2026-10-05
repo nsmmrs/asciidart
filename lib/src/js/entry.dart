@@ -9,7 +9,7 @@ library;
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:asciidoctor/src/js/bridge.dart';
+import 'package:asciidart/src/js/bridge.dart';
 
 /// The real global object (the bundle's own `self` shadows it; see
 /// `npm/preamble.js`).

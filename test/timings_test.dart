@@ -5,7 +5,7 @@
 /// via `ruby -Ilib -e` probes (see the wave report).
 library;
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 void main() {

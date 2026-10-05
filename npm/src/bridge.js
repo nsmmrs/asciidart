@@ -49,8 +49,8 @@ export function bridge() {
   const core = globalThis.asciidoctorDart
   if (!core) {
     throw new Error(
-      'asciidoctor-dart: the compiled core is not loaded; import the package ' +
-        'entry point (asciidoctor-dart) rather than its src/ modules'
+      'asciidart: the compiled core is not loaded; import the package ' +
+        'entry point (asciidart) rather than its src/ modules'
     )
   }
   if (!loggingInstalled) {

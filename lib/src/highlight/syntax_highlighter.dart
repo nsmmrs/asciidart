@@ -26,16 +26,16 @@
 ///
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/highlight/coderay.dart';
-import 'package:asciidoctor/src/highlight/coderay_lexer.dart';
-import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/highlight/highlightjs.dart';
-import 'package:asciidoctor/src/highlight/html_pipeline.dart';
-import 'package:asciidoctor/src/highlight/prettify.dart';
-import 'package:asciidoctor/src/highlight/pygments.dart';
-import 'package:asciidoctor/src/highlight/rouge.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/highlight/coderay.dart';
+import 'package:asciidart/src/highlight/coderay_lexer.dart';
+import 'package:asciidart/src/highlight/highlight.dart';
+import 'package:asciidart/src/highlight/highlightjs.dart';
+import 'package:asciidart/src/highlight/html_pipeline.dart';
+import 'package:asciidart/src/highlight/prettify.dart';
+import 'package:asciidart/src/highlight/pygments.dart';
+import 'package:asciidart/src/highlight/rouge.dart';
 
 /// The context a highlighter is created in.
 final class HighlighterOptions {

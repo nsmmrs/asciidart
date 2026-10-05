@@ -3,15 +3,15 @@
 /// Port of `lib/asciidoctor/table.rb` (complete).
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/parser.dart';
-import 'package:asciidoctor/src/reader.dart';
-import 'package:asciidoctor/src/substitutors.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/parser.dart';
+import 'package:asciidart/src/reader.dart';
+import 'package:asciidart/src/substitutors.dart';
 import 'package:meta/meta.dart';
 
 /// Scans for a leading, non-escaped anchor (id + optional reference text).

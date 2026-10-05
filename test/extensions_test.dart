@@ -14,8 +14,8 @@
 /// counterpart and are not ported.
 library;
 
-import 'package:asciidoctor/src/internal.dart';
-import 'package:asciidoctor/src/load.dart' as api;
+import 'package:asciidart/src/internal.dart';
+import 'package:asciidart/src/load.dart' as api;
 import 'package:test/test.dart';
 
 import 'support/doc_helpers.dart';

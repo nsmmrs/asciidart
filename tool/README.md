@@ -29,7 +29,7 @@ Later this same harness compares the gem exe against the Dart exe:
 ```sh
 dart run tool/differential.dart \
   --exe-a "asciidoctor" \
-  --exe-b "build/asciidoctor"
+  --exe-b "build/asciidart"
 ```
 
 ## Options

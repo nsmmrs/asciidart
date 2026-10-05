@@ -4,9 +4,9 @@ library;
 import 'dart:convert';
 import 'dart:io' as io;
 
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/io/types.dart';
-import 'package:asciidoctor/src/remote.dart';
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/io/types.dart';
+import 'package:asciidart/src/remote.dart';
 
 /// Runs [body], turning a `dart:io` file system failure into an
 /// [IoException].

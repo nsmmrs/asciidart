@@ -9,7 +9,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Reads the repository `data/` file at [relativePath].

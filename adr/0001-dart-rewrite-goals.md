@@ -1,6 +1,6 @@
 # ADR-0001: Dart Rewrite Project Goals
 
-**Status:** Final — accepted by user (see acceptance quote).
+**Status:** Final — accepted by user (see acceptance quote). The "identical output" bar is superseded by the compatibility ledger of [ADR-0006](0006-asciidart.md).
 
 ## Context (researched, not asked)
 
@@ -15,7 +15,7 @@
 - Built-in backends: html5, docbook5, manpage. PDF/EPUB3 are separate gems.
 - Distribution model: dart-sass (canonical Dart implementation; pub package +
   standalone native exes + npm JS build).
-- Execution tracker: lane board `asciidoctor-dart` (EPIC-ckgkd2 + 15 cards).
+- Execution tracker: lane board `asciidart` (EPIC-ckgkd2 + 15 cards).
 
 ## Decisions
 
@@ -95,5 +95,5 @@ the new phase-0 gate alongside the differential harness.
   package name/scope and repo-split timing stay open as lane-board
   follow-ups (TASK-bpvxxh, TASK-n1447f); each needs its own decision
   before any future publishing step. The JS bundle became the npm package
-  `asciidoctor-dart`: see [ADR-0005](0005-js-build.md).
+  `asciidart`: see [ADR-0005](0005-js-build.md).
 - **Acceptance quote:** "accept" — chat, 2026-10-03 07:28 UTC.

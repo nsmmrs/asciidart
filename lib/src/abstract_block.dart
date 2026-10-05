@@ -8,12 +8,12 @@
 /// below declares the slice of `Section` this file consumes.
 library;
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/cursor.dart';
-import 'package:asciidoctor/src/document.dart' show DocumentAttributeEntry;
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/rx.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/cursor.dart';
+import 'package:asciidart/src/document.dart' show DocumentAttributeEntry;
+import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/rx.dart';
 import 'package:meta/meta.dart';
 
 /// Maps ordered-list styles to their HTML marker keywords.

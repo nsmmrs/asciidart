@@ -6,9 +6,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidoctor/src/highlight/coderay.dart';
-import 'package:asciidoctor/src/highlight/coderay_lexer.dart';
-import 'package:asciidoctor/src/highlight/highlight.dart';
+import 'package:asciidart/src/highlight/coderay.dart';
+import 'package:asciidart/src/highlight/coderay_lexer.dart';
+import 'package:asciidart/src/highlight/highlight.dart';
 
 Future<void> main() async {
   final input = await stdin.transform(utf8.decoder).join();

@@ -12,7 +12,7 @@ import {
   type AbstractNode,
   type Document,
   type Section,
-} from 'asciidoctor-dart'
+} from 'asciidart'
 
 async function main(): Promise<void> {
   const doc: Document = await load('= Title\n\n== Section\n\ntext', { safe: 'safe', attributes: { icons: 'font' } })

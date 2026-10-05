@@ -4,7 +4,7 @@
 /// attributes under `'1'`, `'2'`, ... and the attribute entries alongside.
 library;
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Creates an unparsed document (port of `empty_document`).

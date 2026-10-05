@@ -50,11 +50,11 @@
 /// the one place where values are `Object?`.
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/converter.dart' show ConvertOptions;
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/list.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/converter.dart' show ConvertOptions;
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/list.dart';
 import 'package:mustache_template/mustache_template.dart' show LambdaContext;
 
 /// Computes one custom helper value for [node] on every render.

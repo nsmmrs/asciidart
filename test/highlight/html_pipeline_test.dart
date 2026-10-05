@@ -1,7 +1,7 @@
 /// Tests for the html-pipeline adapter.
 library;
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 void main() {

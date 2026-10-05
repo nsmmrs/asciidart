@@ -1,5 +1,5 @@
 {
-  "name": "asciidoctor-dart-npm-tests",
+  "name": "asciidart-npm-tests",
   "private": true,
   "type": "module",
   "description": "Tests of the npm package built by tool/build-npm.sh (build/npm).",
@@ -9,7 +9,7 @@
     "lint": "publint ../../build/npm && attw --pack ../../build/npm"
   },
   "dependencies": {
-    "asciidoctor-dart": "file:../../build/npm"
+    "asciidart": "file:../../build/npm"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

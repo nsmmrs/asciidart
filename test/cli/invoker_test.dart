@@ -16,7 +16,7 @@ library;
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 import '../support/paths.dart';
@@ -122,7 +122,7 @@ Future<ProcessResult> runCli(
 }) {
   return Process.run(
     Platform.resolvedExecutable,
-    ['bin/asciidoctor.dart', ...args],
+    ['bin/asciidart.dart', ...args],
     workingDirectory: repoRoot,
     environment: environment,
   );
@@ -172,8 +172,10 @@ void main() {
   group('version and usage', () {
     test('displays version and exits', () {
       const expected =
-          'Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]\n'
-          'Runtime Environment (asciidoctor-dart ';
+          'Asciidart ${Asciidoctor.packageVersion} '
+          '(compatible with Asciidoctor ${Asciidoctor.version}) '
+          '[https://github.com/nsmmrs/asciidart]\n'
+          'Runtime Environment (';
       for (final flag in ['--version', '-V']) {
         final invoker = invokeCliToBuffer([flag]);
         expect(invoker.code, equals(0));
@@ -273,7 +275,7 @@ void main() {
     test('--help exits 0 and prints usage to stdout', () async {
       final result = await runCli(['--help']);
       expect(result.exitCode, equals(0));
-      expect(result.stdout as String, contains('Usage: asciidoctor'));
+      expect(result.stdout as String, contains('Usage: asciidart'));
       expect(result.stderr as String, isEmpty);
     });
 
@@ -315,7 +317,7 @@ void main() {
       final input = File('${dir.path}/big.adoc')
         ..writeAsStringSync('paragraph text\n\n' * 20000);
       const pipeline =
-          r'set -o pipefail; "$0" bin/asciidoctor.dart -o - "$1" '
+          r'set -o pipefail; "$0" bin/asciidart.dart -o - "$1" '
           '| head -c 1 >/dev/null';
       final result = await Process.run('bash', [
         '-c',

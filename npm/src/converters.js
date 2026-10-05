@@ -39,7 +39,7 @@ export function adapt(converter) {
       const result = converter.convert(wrap(view), transform)
       if (result && typeof result.then === 'function') {
         throw new Error(
-          'asciidoctor-dart: a converter returned a promise; asynchronous converters are not supported'
+          'asciidart: a converter returned a promise; asynchronous converters are not supported'
         )
       }
       return result == null ? null : String(result)
@@ -75,7 +75,7 @@ export class ConverterBase {
     const name = transform ?? node.getNodeName()
     const method = this[`convert_${name}`]
     if (typeof method !== 'function') {
-      throw new Error(`asciidoctor-dart: no convert_${name} method in ${this.constructor.name}`)
+      throw new Error(`asciidart: no convert_${name} method in ${this.constructor.name}`)
     }
     return opts == null ? method.call(this, node) : method.call(this, node, opts)
   }

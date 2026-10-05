@@ -9,8 +9,8 @@
 /// `WARNING`, `FATAL` → `FAILED`) behave as in Asciidoctor.
 library;
 
-import 'package:asciidoctor/src/cursor.dart';
-import 'package:asciidoctor/src/io.dart' as io;
+import 'package:asciidart/src/cursor.dart';
+import 'package:asciidart/src/io.dart' as io;
 
 /// Severity levels for log messages.
 ///
@@ -250,7 +250,7 @@ class Logger extends LoggerBase {
   final bool _ownsSink;
 
   /// The program name stamped on every record.
-  String progname = 'asciidoctor';
+  String progname = 'asciidart';
 
   /// The record formatter.
   LoggerFormatter formatter;

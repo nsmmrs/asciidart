@@ -1,4 +1,4 @@
 // The Node.js entry point (import).
-import './asciidoctor-dart.js'
+import './asciidart.js'
 
 export * from './src/index.js'

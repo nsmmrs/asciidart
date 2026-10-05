@@ -3,7 +3,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/asciidoctor.dart';
+import 'package:asciidart/asciidart.dart';
 import 'package:test/test.dart';
 
 /// `dart test` runs with the package root as the working directory, while
@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 /// entry point against the current directory.
 String get _cliScript =>
     '${Directory.current.path}${Platform.pathSeparator}bin'
-    '${Platform.pathSeparator}asciidoctor.dart';
+    '${Platform.pathSeparator}asciidart.dart';
 
 void main() {
   test('version reports the matched Asciidoctor release', () {
@@ -30,10 +30,7 @@ void main() {
   test('documents expose both versions as attributes', () {
     final doc = load('text');
     expect(doc.attr('asciidoctor-version'), equals('2.0.26'));
-    expect(
-      doc.attr('asciidoctor-dart-version'),
-      equals(Asciidoctor.packageVersion),
-    );
+    expect(doc.attr('asciidart-version'), equals(Asciidoctor.packageVersion));
   });
 
   test('CLI --version exits 0 and prints version', () async {
@@ -45,13 +42,11 @@ void main() {
     expect(
       result.stdout as String,
       startsWith(
-        'Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]',
+        'Asciidart ${Asciidoctor.packageVersion} '
+        '(compatible with Asciidoctor ${Asciidoctor.version})',
       ),
     );
-    expect(
-      result.stdout as String,
-      contains('(asciidoctor-dart ${Asciidoctor.packageVersion}; Dart '),
-    );
+    expect(result.stdout as String, contains('Runtime Environment (Dart '));
   });
 
   test('CLI --help exits 0', () async {

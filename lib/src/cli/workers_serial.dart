@@ -1,7 +1,7 @@
 /// `-j` conversion jobs without isolates (see `workers.dart`).
 library;
 
-import 'package:asciidoctor/src/cli/parallel.dart';
+import 'package:asciidart/src/cli/parallel.dart';
 
 /// Converts [requests] one after another, returning the responses in
 /// request order; [workerCount] has no effect without isolates.

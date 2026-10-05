@@ -5,9 +5,9 @@ library;
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:asciidoctor/src/abstract_node.dart' show SafeMode;
-import 'package:asciidoctor/src/cursor.dart';
-import 'package:asciidoctor/src/errors.dart';
+import 'package:asciidart/src/abstract_node.dart' show SafeMode;
+import 'package:asciidart/src/cursor.dart';
+import 'package:asciidart/src/errors.dart';
 
 @JS('Object.keys')
 external JSArray<JSString> _keys(JSObject object);

@@ -52,7 +52,7 @@ jobs:
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart)
       env:
-        ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-dart
+        ASCIIDOCTOR_EXE: test/e2e/bin/asciidart
       run: bats test/e2e/
     - name: Run e2e CLI tests (Ruby oracle)
       env:
@@ -81,11 +81,11 @@ jobs:
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
       run: |
-        EXE="$(pwd)/dist/$(ls dist | grep '^asciidoctor-linux-')"
+        EXE="$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')"
         echo "ASCIIDOCTOR_EXE=$EXE"
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
     - name: Check byte-identical parity with Asciidoctor 2.0.26
-      run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidoctor-linux-')"
+      run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidart-linux-')"
   npm:
     strategy:
       fail-fast: false
@@ -133,7 +133,7 @@ jobs:
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)
       env:
-        ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-node
+        ASCIIDOCTOR_EXE: test/e2e/bin/asciidart-node
       run: bats test/e2e/
     - name: Check byte-identical parity with Asciidoctor 2.0.26 (Node CLI)
-      run: ./tool/parity.sh test/e2e/bin/asciidoctor-node
+      run: ./tool/parity.sh test/e2e/bin/asciidart-node

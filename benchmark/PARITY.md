@@ -1,8 +1,13 @@
-# Differential Parity Verdict
+# Parity with Asciidoctor
 
-Byte-identical gate (ADR-0001 D4): the Dart CLI against the Asciidoctor
-**2.0.26** gem, via `tool/differential.dart` (normalization: version stamps
-and timestamps only). `master` targets 2.0.26 per
+asciidart is compatible with Asciidoctor 2.0.26, and this file is the
+ledger of that claim: the gates below compare it with the gem, and every
+difference that remains is deliberate and listed under
+[Known intentional differences](#known-intentional-differences).
+
+Byte-identical gate (ADR-0001 D4): the asciidart CLI against the
+Asciidoctor **2.0.26** gem, via `tool/differential.dart` (normalization:
+version stamps and timestamps only). `master` targets 2.0.26 per
 [ADR-0003](../adr/0003-target-latest-stable.md); the earlier port of
 upstream `main` (2.1.0.alpha.0) is preserved on the `2.1.0` branch.
 
@@ -24,14 +29,14 @@ From the repository root, with the gem on `PATH`
 
 ```sh
 tool/build-exes.sh
-tool/parity.sh dist/asciidoctor-linux-x64
+tool/parity.sh dist/asciidart-linux-x64
 ```
 
 `tool/parity.sh` runs both corpora on html5, docbook5 and manpage. Each file
 is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
 `SOURCE_DATE_EPOCH=0`. CI runs the same script on every push, against the
 native executable (`dart-exe-e2e` job) and against the npm package's CLI on
-Node.js (`npm` job, `tool/parity.sh test/e2e/bin/asciidoctor-node`).
+Node.js (`npm` job, `tool/parity.sh test/e2e/bin/asciidart-node`).
 
 ## Verdict (2026-10-05): PASS — 132/132 identical
 
@@ -58,7 +63,7 @@ converted as html5, embedded html5, docbook5 and manpage.
 ```sh
 tool/corpus/fetch.sh /tmp/corpus           # pinned in tool/corpus/sources.txt
 dart run tool/corpus_parity.dart --exe-a asciidoctor \
-  --exe-b dist/asciidoctor-linux-x64 --out /tmp/corpus-results /tmp/corpus
+  --exe-b dist/asciidart-linux-x64 --out /tmp/corpus-results /tmp/corpus
 ```
 
 The reference is the 2.0.26 gem with CodeRay as its only optional gem, the
@@ -75,12 +80,22 @@ The 4 remaining differences are CodeRay highlighting of Java (see below).
 
 ## Known intentional differences
 
-- Fatal errors are reported as one `asciidoctor: FAILED: <message>` line in
+- asciidart names itself: the HTML generator meta tag and the man page
+  header say `Asciidart <version>` (`{asciidart-version}`) instead of
+  `Asciidoctor 2.0.26`; `--version` prints `Asciidart <version> (compatible
+  with Asciidoctor 2.0.26) [https://github.com/nsmmrs/asciidart]` and a
+  runtime line naming the Dart runtime; `--help` shows `asciidart` in its
+  usage lines; `-h manpage` prints asciidart(1); and messages start with
+  `asciidart:` (`asciidart: WARNING: ...`) instead of `asciidoctor:`. The
+  `asciidoctor` and `asciidoctor-version` attributes keep their values, so
+  documents see the same thing as under the gem. The parity tools treat
+  either name as the same stamp or prefix.
+- Fatal errors are reported as one `asciidart: FAILED: <message>` line in
   plain wording, without Ruby exception classes, gem names or `Processing
-  aborted.` (for example `asciidoctor: FAILED: failed to load <stdin>:
+  aborted.` (for example `asciidart: FAILED: failed to load <stdin>:
   missing converter for backend 'pdf'`). Log messages (warnings, errors)
   keep Asciidoctor's wording. Library callers catch `AsciidoctorException`.
-- A reader that closes stdout early (`asciidoctor -o - doc.adoc | head`)
+- A reader that closes stdout early (`asciidart -o - doc.adoc | head`)
   ends the run quietly with exit code 0; the gem reports a broken pipe.
 - Remote content (`allow-uri-read`) is read by the CLI and by the
   asynchronous API (`convertAsync`, `loadAsync`, ...), which fetch it over
@@ -98,7 +113,7 @@ The 4 remaining differences are CodeRay highlighting of Java (see below).
 - The Ruby-only options `-r/--require`, `-I/--load-path`, `--eruby` and
   `-w/--warnings` do not exist here and are rejected as unknown options;
   extensions are compiled into a custom binary instead (see
-  `asciidoctor init-config`). `-q` silences log messages only, since there
+  `asciidart init-config`). `-q` silences log messages only, since there
   are no script warnings.
 - Features the port does not implement warn in its own words, once, where
   the gem names a missing gem: `Rouge syntax highlighting is not available.

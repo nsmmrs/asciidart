@@ -1,6 +1,6 @@
 /// Generates `lib/src/data.g.dart` from the vendored `data/` directory
 /// (`vendor/asciidoctor/data`), and
-/// `lib/src/cli/help_topics.g.dart` from `man/asciidoctor.1` and
+/// `lib/src/cli/help_topics.g.dart` from `man/asciidart.1` and
 /// `vendor/asciidoctor/data/reference/syntax.adoc`.
 ///
 /// The Dart port embeds `data/locale/*.adoc` and `data/stylesheets/*` as
@@ -120,14 +120,14 @@ void main() {
 /// The `-h` topic files embedded in `help_topics.g.dart`, as
 /// (constant name, path relative to the repository root).
 const List<(String, String)> _helpTopics = [
-  ('manpage', 'man/asciidoctor.1'),
+  ('manpage', 'man/asciidart.1'),
   ('syntax', 'vendor/asciidoctor/data/reference/syntax.adoc'),
 ];
 
 void _writeHelpTopics(Directory repoRoot) {
   final out = StringBuffer()
     ..writeln('// GENERATED CODE - DO NOT MODIFY BY HAND.')
-    ..writeln('// Generated from `man/asciidoctor.1` and')
+    ..writeln('// Generated from `man/asciidart.1` and')
     ..writeln('// `vendor/asciidoctor/data/reference/syntax.adoc` (see')
     ..writeln('// `tool/embed_data.dart` for the')
     ..writeln('// escaping rules; concatenation reproduces each file exactly).')

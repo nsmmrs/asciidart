@@ -1,4 +1,4 @@
-// Types of asciidoctor-dart: the Asciidoctor.js 4.1 API over the Dart
+// Types of asciidart: the Asciidoctor.js 4.1 API over the Dart
 // port of Asciidoctor 2.0.26.
 
 import type { LoggerLike } from './logging.js'

@@ -16,17 +16,17 @@ library;
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/js/convert.dart';
-import 'package:asciidoctor/src/js/extensions.dart' show wrapRegistry;
-import 'package:asciidoctor/src/list.dart';
-import 'package:asciidoctor/src/section.dart';
-import 'package:asciidoctor/src/substitutors.dart' as subs_lib;
-import 'package:asciidoctor/src/table.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/js/convert.dart';
+import 'package:asciidart/src/js/extensions.dart' show wrapRegistry;
+import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/section.dart';
+import 'package:asciidart/src/substitutors.dart' as subs_lib;
+import 'package:asciidart/src/table.dart';
 
 final Expando<JSObject> _wrappers = Expando<JSObject>('NodeBridge');
 

@@ -79,14 +79,14 @@ Same corpus × backend matrix, same method (3 warmup + 21 timed CLI
 end-to-end iterations per cell, median reported), timed back-to-back via
 `benchmark/bench-exe.rb --exe ...` so Ruby, Dart VM, and AOT share one
 harness. Ruby re-run fresh in the same session (matches the baseline
-band above); Dart VM = `dart run bin/asciidoctor.dart` (JIT,
+band above); Dart VM = `dart run bin/asciidart.dart` (JIT,
 per-spawn startup); AOT = `tool/build-exes.sh` output
-(`asciidoctor-linux-x64`, Dart SDK 3.13.5).
+(`asciidart-linux-x64`, Dart SDK 3.13.5).
 
 ```sh
 ruby benchmark/bench-exe.rb --exe 'asciidoctor'
-ruby benchmark/bench-exe.rb --exe 'dart run bin/asciidoctor.dart'
-ruby benchmark/bench-exe.rb --exe /tmp/dist/asciidoctor-linux-x64
+ruby benchmark/bench-exe.rb --exe 'dart run bin/asciidart.dart'
+ruby benchmark/bench-exe.rb --exe /tmp/dist/asciidart-linux-x64
 ```
 
 | Doc \\ backend | Ruby html5 | Dart VM html5 | AOT html5 | Ruby docbook5 | Dart VM docbook5 | AOT docbook5 |
@@ -125,7 +125,7 @@ tool/build-npm.sh && node benchmark/throughput.mjs --ajs PATH/TO/core/src/index.
 
 | Impl | html5 | docbook5 | manpage |
 | --- | --: | --: | --: |
-| asciidoctor-dart (dart2js, Node.js) | 43.4 ms | 40.2 ms | 44.8 ms |
+| asciidart (dart2js, Node.js) | 43.4 ms | 40.2 ms | 44.8 ms |
 | Asciidoctor.js 4.1.0 (Node.js) | 49.5 ms | 46.9 ms | 55.5 ms |
 | Dart AOT (for reference, below) | 40.0 ms | 40.2 ms | 52.2 ms |
 

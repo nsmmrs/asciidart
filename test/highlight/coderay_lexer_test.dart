@@ -13,7 +13,7 @@
 /// adapter passes when the block has no `highlight` attribute.)
 library;
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Highlights [source] as Ruby through the real lexer backend.

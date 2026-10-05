@@ -1,0 +1,153 @@
+= asciidart(1)
+Noah Summers
+:doctype: manpage
+:release-version: 0.1.0
+:man manual: asciidart Manual
+:man source: asciidart {release-version}
+ifdef::backend-manpage[:!author:]
+
+== Name
+
+asciidart - convert AsciiDoc documents to HTML, DocBook and man pages
+
+== Synopsis
+
+*asciidart* [_OPTION_]... _FILE_...
+
+*asciidart init-config* [_DIR_] [*-f*]
+
+== Description
+
+*asciidart* reads each AsciiDoc _FILE_ and writes the converted document next to it, under the same name with the extension of the output format (for example, _guide.adoc_ becomes _guide.html_).
+A _FILE_ of *-* reads the document from standard input and writes the result to standard output.
+Arguments may be glob patterns (`+*+`, `+?+`, `+[...]+` and `+**+`), which *asciidart* expands itself.
+
+*asciidart* is a re-implementation of Asciidoctor in Dart.
+It accepts the same documents, attributes and options as the *asciidoctor* command of Asciidoctor {asciidoctor-version} and produces the same output, except for the deliberate differences listed in the project's documentation.
+
+Messages about the document (warnings, errors) go to standard error.
+
+== Options
+
+=== Output
+
+*-b, --backend*=_BACKEND_::
+  The output format: *html5* (the default), *xhtml5*, *docbook5* or *manpage*.
+
+*-d, --doctype*=_DOCTYPE_::
+  How to interpret the document's structure: *article* (the default), *book*, *manpage* or *inline*.
+
+*-e, --embedded*::
+  Write only the converted body, without the surrounding page (for HTML: no _<html>_, _<head>_ or footer).
+  Useful for inserting the result into another page.
+
+*-s, --no-header-footer*::
+  The same as *-e*.
+
+*-o, --out-file*=_FILE_::
+  Write the output to _FILE_ instead of the derived name.
+  Use *-* to write to standard output.
+
+*-D, --destination-dir*=_DIR_::
+  Write output files to _DIR_.
+  Combined with *-R*, the input's folder structure below the source directory is recreated below _DIR_.
+
+*-R, --source-dir*=_DIR_::
+  The root of the input files, used with *-D* to compute where each output file goes.
+
+*-n, --section-numbers*::
+  Number the section titles.
+  The same as *-a sectnums*.
+
+=== Document attributes
+
+*-a, --attribute*=_NAME_[=_VALUE_]::
+  Set the document attribute _NAME_, overriding any value the document assigns.
+  _NAME_ alone sets it to an empty value; _NAME_*!* unsets it.
+  End the name or the value with *@* (_NAME_@=_VALUE_ or _NAME_=_VALUE_@) to let the document override it instead.
+  May be given more than once.
+
+=== Safety
+
+*-S, --safe-mode*=_MODE_::
+  How much the document may reach outside itself: *unsafe* (the default for this command), *safe*, *server* or *secure*.
+  The stricter modes restrict include directives, file access outside the base directory and remote content.
+
+*--safe*::
+  The same as *-S safe*.
+
+*-B, --base-dir*=_DIR_::
+  The directory that relative paths in the document (includes, images) are resolved from.
+  The default is the input file's directory, or the working directory for standard input.
+
+=== Custom converters
+
+*-T, --template-dir*=_DIR_::
+  Override how individual elements are converted with the Mustache templates in _DIR_.
+  May be given more than once; later directories take precedence.
+
+*-E, --template-engine*=_NAME_::
+  The template engine for *-T*: *mustache*, or *dart* for converter functions compiled into a custom binary (see *Custom binaries*).
+  Any other name fails once templates are in use.
+
+=== Messages
+
+*--failure-level*=_LEVEL_::
+  Exit with status 1 when a message of _LEVEL_ or higher is logged: *INFO*, *WARN*, *ERROR* or *FATAL* (the default).
+
+*-q, --quiet*::
+  Print no messages about the document.
+
+*-v, --verbose*::
+  Also print messages at the *DEBUG* and *INFO* levels.
+
+*--trace*::
+  On an unexpected error, print the full stack trace.
+
+*-t, --timings*::
+  Print how long reading, parsing and converting each file took.
+
+=== Information
+
+*-h, --help* [_TOPIC_]::
+  Print the option summary.
+  With _TOPIC_ *syntax*, print an overview of the AsciiDoc syntax; with *manpage*, print this manual page as troff source (view it with *asciidart -h manpage | man -l -*).
+
+*-V, --version*::
+  Print the version of *asciidart*, the Asciidoctor release it is compatible with, and the runtime.
+  *-v* does the same when it is the only argument.
+
+== Custom binaries
+
+*asciidart init-config* [_DIR_] creates a small Dart project in _DIR_ (the working directory by default) whose program registers Dart functions as converters and then runs this command line.
+Compile it with *dart compile exe* to get a custom *asciidart* with those conversions built in.
+*-f* overwrites existing files.
+
+== Environment
+
+*SOURCE_DATE_EPOCH*::
+  When set to an integer number of seconds since the Unix epoch, it replaces the current time and the input files' modification times in the document's date attributes, for reproducible output.
+
+*ASCIIDART_MANPAGE_PATH*::
+  The file *-h manpage* prints instead of the built-in manual page (plain or gzip-compressed).
+
+== Exit Status
+
+*0*::
+  The documents were converted (and no message reached the *--failure-level*).
+
+*1*::
+  Something failed: an invalid option, a missing or unreadable input file, a document that could not be converted, or a message at or above the *--failure-level*.
+
+== Bugs
+
+Report problems at https://github.com/nsmmrs/asciidart/issues.
+
+== See Also
+
+*asciidoctor*(1), the Ruby implementation whose behavior *asciidart* follows: https://asciidoctor.org
+
+== Copying
+
+Copyright \(C) 2026 Noah Summers.
+*asciidart* is free software under the MIT License; it includes data files from Asciidoctor, Copyright \(C) 2012-present Dan Allen, Sarah White, Ryan Waldron, and the individual contributors to Asciidoctor, also under the MIT License.

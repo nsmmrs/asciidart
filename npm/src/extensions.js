@@ -488,7 +488,7 @@ function resolve(Kind, arg, name) {
   } else if (arg instanceof Processor || (arg && typeof arg === 'object')) {
     processor = arg
   } else {
-    throw new TypeError(`asciidoctor-dart: invalid ${Kind.name} registration`)
+    throw new TypeError(`asciidart: invalid ${Kind.name} registration`)
   }
   if (name != null) processor.name = String(name)
   const process =
@@ -497,7 +497,7 @@ function resolve(Kind, arg, name) {
       ? processor.process
       : undefined)
   if (!process) {
-    throw new Error(`asciidoctor-dart: no process function for the ${Kind.name}`)
+    throw new Error(`asciidart: no process function for the ${Kind.name}`)
   }
   return { processor, process }
 }
@@ -741,7 +741,7 @@ function asBuild(fn) {
   if (fn && typeof fn.activate === 'function') {
     return fromCore((view) => fn.activate(Registry.wrap(view)))
   }
-  throw new TypeError('asciidoctor-dart: an extension group must be a function')
+  throw new TypeError('asciidart: an extension group must be a function')
 }
 
 /** An extension group: a class whose `activate(registry)` registers processors. */

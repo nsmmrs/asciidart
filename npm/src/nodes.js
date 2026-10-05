@@ -58,7 +58,7 @@ export function fromCore(fn) {
 // The property of the error that carries one thrown by JavaScript code
 // through the core: dart2js turns some errors (TypeError, RangeError) into
 // its own when the core catches them, but leaves a plain Error alone.
-const CARRIED = Symbol.for('asciidoctor-dart.carried')
+const CARRIED = Symbol.for('asciidart.carried')
 
 function carrier(error) {
   if (error?.[CARRIED] !== undefined) return error
@@ -379,7 +379,7 @@ export class AbstractNode {
   }
 
   setParent() {
-    throw new Error('asciidoctor-dart: setParent is not supported')
+    throw new Error('asciidart: setParent is not supported')
   }
 
   getDocument() {

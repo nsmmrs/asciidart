@@ -37,14 +37,14 @@
 /// is what `CompositeConverter` relies on.
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/constants.dart';
-import 'package:asciidoctor/src/document.dart' show Document;
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/template.dart'
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/constants.dart';
+import 'package:asciidart/src/document.dart' show Document;
+import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/template.dart'
     show TemplateRegistry, buildTemplateChain;
-import 'package:asciidoctor/src/template_loader.dart'
+import 'package:asciidart/src/template_loader.dart'
     show FileTemplateLoader, TemplateCache, validateTemplateEngine;
 
 /// Trailing digits stripped from a backend name to derive its base backend.

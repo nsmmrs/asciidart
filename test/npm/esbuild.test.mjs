@@ -7,12 +7,12 @@ import { test } from 'node:test'
 import { build } from 'esbuild'
 
 test('esbuild bundles the package for the browser', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'asciidoctor-dart-esbuild-'))
+  const dir = mkdtempSync(join(tmpdir(), 'asciidart-esbuild-'))
   try {
     const entry = join(dir, 'consumer.js')
     writeFileSync(
       entry,
-      "import { convert } from 'asciidoctor-dart'\nconvert('*hi*').then(console.log)\n"
+      "import { convert } from 'asciidart'\nconvert('*hi*').then(console.log)\n"
     )
     const result = await build({
       entryPoints: [entry],

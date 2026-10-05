@@ -1,4 +1,4 @@
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Returns `[fullMatch, group1, ...]` for the first match of [rx] in

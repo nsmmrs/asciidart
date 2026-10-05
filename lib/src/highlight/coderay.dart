@@ -11,9 +11,9 @@
 /// never consulted.
 library;
 
-import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/stylesheets.dart';
+import 'package:asciidart/src/highlight/highlight.dart';
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/stylesheets.dart';
 
 /// Syntax-highlighter adapter for CodeRay.
 ///

@@ -33,18 +33,18 @@
 ///   ([_logPossibleInvalidReference]); the default logger drops them.
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/attribute_list.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/constants.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/rx.dart';
-import 'package:asciidoctor/src/text_case.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/attribute_list.dart';
+import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/constants.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/highlight/highlight.dart';
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/rx.dart';
+import 'package:asciidart/src/text_case.dart';
 import 'package:meta/meta.dart';
 
 /// Matches XML special characters. Port of `SpecialCharsRx`.

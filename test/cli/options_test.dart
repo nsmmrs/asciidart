@@ -13,7 +13,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 import '../support/paths.dart';
@@ -45,7 +45,7 @@ String get sampleFile =>
 /// Parses [args] with buffer sinks and a hermetic (empty) environment.
 ///
 /// Returns the options, the exit code (`null` on success) and the captured
-/// output. Pass [environment] to control `ASCIIDOCTOR_MANPAGE_PATH`.
+/// output. Pass [environment] to control `ASCIIDART_MANPAGE_PATH`.
 ({CliOptions options, int? exitCode, String out, String err}) parseCli(
   List<String> args, {
   Map<String, String>? environment,
@@ -141,11 +141,11 @@ void main() {
       expect(
         lines.take(6).toList(),
         equals([
-          'Usage: asciidoctor [OPTION]... FILE...',
+          'Usage: asciidart [OPTION]... FILE...',
           convertLine,
           outputLine,
           'Application log messages are printed to STDERR.',
-          'Example: asciidoctor input.adoc',
+          'Example: asciidart input.adoc',
           '',
         ]),
       );
@@ -174,13 +174,11 @@ void main() {
     test('dumps man page when help topic is manpage', () {
       final result = parseCli(
         ['-h', 'manpage'],
-        environment: {
-          'ASCIIDOCTOR_MANPAGE_PATH': '$repoRoot/man/asciidoctor.1',
-        },
+        environment: {'ASCIIDART_MANPAGE_PATH': '$repoRoot/man/asciidart.1'},
       );
       expect(result.exitCode, equals(0));
-      expect(result.out, contains('Manual: Asciidoctor Manual'));
-      expect(result.out, contains('.TH "ASCIIDOCTOR"'));
+      expect(result.out, contains('Manual: asciidart Manual'));
+      expect(result.out, contains('.TH "ASCIIDART"'));
     });
 
     test('dumps man page via the checkout lookup by default', () {
@@ -188,21 +186,21 @@ void main() {
       // the sources; the Dart port searches upward from the workdir.
       final result = parseCli(['-h', 'manpage']);
       expect(result.exitCode, equals(0));
-      expect(result.out, contains('.TH "ASCIIDOCTOR"'));
+      expect(result.out, contains('.TH "ASCIIDART"'));
     });
 
     test('reads a gzipped man page override', () {
       final tmp = createTempDir('manpage');
       try {
-        final source = File('$repoRoot/man/asciidoctor.1').readAsBytesSync();
-        final gzPath = '${tmp.path}/asciidoctor.1.gz';
+        final source = File('$repoRoot/man/asciidart.1').readAsBytesSync();
+        final gzPath = '${tmp.path}/asciidart.1.gz';
         File(gzPath).writeAsBytesSync(gzip.encode(source));
         final result = parseCli(
           ['-h', 'manpage'],
-          environment: {'ASCIIDOCTOR_MANPAGE_PATH': gzPath},
+          environment: {'ASCIIDART_MANPAGE_PATH': gzPath},
         );
         expect(result.exitCode, equals(0));
-        expect(result.out, contains('.TH "ASCIIDOCTOR"'));
+        expect(result.out, contains('.TH "ASCIIDART"'));
       } finally {
         tmp.deleteSync(recursive: true);
       }
@@ -213,12 +211,12 @@ void main() {
           '$repoRoot/vendor/asciidoctor/test/fixtures/no-such-file.1';
       final result = parseCli(
         ['-h', 'manpage'],
-        environment: {'ASCIIDOCTOR_MANPAGE_PATH': manpagePath},
+        environment: {'ASCIIDART_MANPAGE_PATH': manpagePath},
       );
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: FAILED: manual page not found: $manpagePath'),
+        equals('asciidart: FAILED: manual page not found: $manpagePath'),
       );
     });
 
@@ -232,7 +230,7 @@ void main() {
     test('accepts attached and equals help topics', () {
       var result = parseCli(['-hmanpage']);
       expect(result.exitCode, equals(0));
-      expect(result.out, contains('.TH "ASCIIDOCTOR"'));
+      expect(result.out, contains('.TH "ASCIIDART"'));
 
       result = parseCli(['--help=syntax']);
       expect(result.exitCode, equals(0));
@@ -284,7 +282,9 @@ void main() {
       // Option-parsing half of invoker_test 'should display version and
       // exit' (invocation asserted nothing more).
       const expected =
-          'Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]\n'
+          'Asciidart ${Asciidoctor.packageVersion} '
+          '(compatible with Asciidoctor ${Asciidoctor.version}) '
+          '[https://github.com/nsmmrs/asciidart]\n'
           'Runtime Environment (';
       for (final flag in ['--version', '-V']) {
         final result = parseCli([flag]);
@@ -297,13 +297,16 @@ void main() {
     test('prints version for lone -v', () {
       final result = parseCli(['-v']);
       expect(result.exitCode, equals(0));
-      expect(result.out, startsWith('Asciidoctor ${Asciidoctor.version} ['));
+      expect(
+        result.out,
+        startsWith('Asciidart ${Asciidoctor.packageVersion} ('),
+      );
     });
 
     test('version short-circuits before later invalid options', () {
       final result = parseCli(['-V', '--foobar']);
       expect(result.exitCode, equals(0));
-      expect(result.out, startsWith('Asciidoctor '));
+      expect(result.out, startsWith('Asciidart '));
     });
 
     test('printVersion writes two lines and returns 0', () {
@@ -313,15 +316,13 @@ void main() {
       expect(lines, hasLength(3));
       expect(
         lines[0],
-        equals('Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]'),
-      );
-      expect(
-        lines[1],
-        startsWith(
-          'Runtime Environment (asciidoctor-dart '
-          '${Asciidoctor.packageVersion}; Dart ',
+        equals(
+          'Asciidart ${Asciidoctor.packageVersion} '
+          '(compatible with Asciidoctor ${Asciidoctor.version}) '
+          '[https://github.com/nsmmrs/asciidart]',
         ),
       );
+      expect(lines[1], startsWith('Runtime Environment (Dart '));
     });
   });
 
@@ -329,20 +330,14 @@ void main() {
     test('returns 1 when invalid option present', () {
       final result = parseCli(['--foobar']);
       expect(result.exitCode, equals(1));
-      expect(
-        result.err.trim(),
-        equals('asciidoctor: invalid option: --foobar'),
-      );
+      expect(result.err.trim(), equals('asciidart: invalid option: --foobar'));
       expect(result.out, startsWith('Usage:'));
     });
 
     test('invalid option message keeps equals values', () {
       final result = parseCli(['--foo=bar', sampleFile]);
       expect(result.exitCode, equals(1));
-      expect(
-        result.err.trim(),
-        equals('asciidoctor: invalid option: --foo=bar'),
-      );
+      expect(result.err.trim(), equals('asciidart: invalid option: --foo=bar'));
     });
 
     test('invalid short in a cluster reports the remainder', () {
@@ -350,13 +345,13 @@ void main() {
       // (still invalid) to exercise the remainder reporting.
       final result = parseCli(['-qzunk', sampleFile]);
       expect(result.exitCode, equals(1));
-      expect(result.err.trim(), equals('asciidoctor: invalid option: -zunk'));
+      expect(result.err.trim(), equals('asciidart: invalid option: -zunk'));
     });
 
     test('unknown short option fails', () {
       final result = parseCli(['-z', sampleFile]);
       expect(result.exitCode, equals(1));
-      expect(result.err.trim(), equals('asciidoctor: invalid option: -z'));
+      expect(result.err.trim(), equals('asciidart: invalid option: -z'));
     });
 
     test('returns 1 when option has invalid argument', () {
@@ -364,7 +359,7 @@ void main() {
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: invalid argument: -d chapter'),
+        equals('asciidart: invalid argument: -d chapter'),
       );
       expect(result.out, startsWith('Usage:'));
     });
@@ -378,14 +373,14 @@ void main() {
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: invalid argument: -dchapter'),
+        equals('asciidart: invalid argument: -dchapter'),
       );
 
       result = parseCli(['-Schapter', sampleFile]);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: invalid argument: -Schapter'),
+        equals('asciidart: invalid argument: -Schapter'),
       );
     });
 
@@ -394,7 +389,7 @@ void main() {
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: invalid argument: --doct chapter'),
+        equals('asciidart: invalid argument: --doct chapter'),
       );
     });
 
@@ -416,28 +411,28 @@ void main() {
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: ambiguous argument: --safe-mode s'),
+        equals('asciidart: ambiguous argument: --safe-mode s'),
       );
 
       result = parseCli(['--safe-mode=s', sampleFile]);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: ambiguous argument: --safe-mode=s'),
+        equals('asciidart: ambiguous argument: --safe-mode=s'),
       );
 
       result = parseCli(['--safe-mode', 's', sampleFile]);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: ambiguous argument: --safe-mode s'),
+        equals('asciidart: ambiguous argument: --safe-mode s'),
       );
 
       result = parseCli(['--failure-level=', sampleFile]);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: ambiguous argument: --failure-level='),
+        equals('asciidart: ambiguous argument: --failure-level='),
       );
     });
 
@@ -446,7 +441,7 @@ void main() {
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: option missing argument: -b'),
+        equals('asciidart: option missing argument: -b'),
       );
       expect(result.out, startsWith('Usage:'));
     });
@@ -456,28 +451,28 @@ void main() {
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: option missing argument: --backend'),
+        equals('asciidart: option missing argument: --backend'),
       );
 
       result = parseCli(['--back']);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: option missing argument: --back'),
+        equals('asciidart: option missing argument: --back'),
       );
 
       result = parseCli(['-qb']);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: option missing argument: -b'),
+        equals('asciidart: option missing argument: -b'),
       );
 
       result = parseCli(['-a']);
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: option missing argument: -a'),
+        equals('asciidart: option missing argument: -a'),
       );
     });
 
@@ -551,7 +546,7 @@ void main() {
       test('rejects ${args[0]}', () {
         final result = parseCli([...args, sampleFile]);
         expect(result.exitCode, equals(1));
-        expect(result.err, startsWith('asciidoctor: invalid option: '));
+        expect(result.err, startsWith('asciidart: invalid option: '));
       });
     }
   });
@@ -927,7 +922,7 @@ void main() {
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: FAILED: input file nope1.adoc is missing'),
+        equals('asciidart: FAILED: input file nope1.adoc is missing'),
       );
     });
 
@@ -936,7 +931,7 @@ void main() {
       expect(result.exitCode, equals(1));
       expect(
         result.err.trim(),
-        equals('asciidoctor: FAILED: input file  is missing'),
+        equals('asciidart: FAILED: input file  is missing'),
       );
     });
 
@@ -946,7 +941,7 @@ void main() {
       expect(
         result.err.trim(),
         equals(
-          'asciidoctor: FAILED: input path $repoRoot/vendor/asciidoctor/test/fixtures is a directory, not a file',
+          'asciidart: FAILED: input path $repoRoot/vendor/asciidoctor/test/fixtures is a directory, not a file',
         ),
       );
     });
@@ -964,7 +959,7 @@ void main() {
           expect(result.exitCode, equals(1));
           expect(
             result.err.trim(),
-            equals('asciidoctor: FAILED: input file $path is not readable'),
+            equals('asciidart: FAILED: input file $path is not readable'),
           );
         } finally {
           Process.runSync('chmod', ['644', '${tmp.path}/input.adoc']);
@@ -988,9 +983,9 @@ void main() {
       expect(
         result.err,
         equals(
-          'asciidoctor: WARNING: extra arguments detected '
+          'asciidart: WARNING: extra arguments detected '
           "(unparsed arguments: '-', '-') or incorrect usage of stdin\n"
-          'asciidoctor: WARNING: extra arguments detected '
+          'asciidart: WARNING: extra arguments detected '
           "(unparsed arguments: '-', '-') or incorrect usage of stdin\n",
         ),
       );
@@ -1000,14 +995,14 @@ void main() {
       final result = parseCli([sampleFile, '-']);
       expect(result.exitCode, isNull);
       expect(result.options.inputFiles, equals([sampleFile]));
-      expect(result.err, contains('asciidoctor: WARNING: extra arguments'));
+      expect(result.err, contains('asciidart: WARNING: extra arguments'));
     });
 
     test('stops option parsing at --', () {
       final result = parseCli(['--', '-h']);
       expect(result.exitCode, isNull);
       expect(result.options.inputFiles, equals([]));
-      expect(result.err, contains('asciidoctor: WARNING: extra arguments'));
+      expect(result.err, contains('asciidart: WARNING: extra arguments'));
     });
 
     test('expands relative globs like Dir.glob', () {

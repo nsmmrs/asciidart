@@ -38,8 +38,9 @@ setup() {
 @test "help manpage topic dumps the man page" {
   run --separate-stderr -- "$EXE" -h manpage
   [ "$status" -eq 0 ]
-  assert_output_contains '.TH "ASCIIDOCTOR"'
-  assert_output_contains 'Manual: Asciidoctor Manual'
+  # The page is asciidoctor(1) or asciidart(1), depending on the CLI.
+  assert_output_contains '.TH "ASCIID'
+  assert_output_contains ' Manual'
 }
 
 @test "help syntax topic shows the syntax reference" {
@@ -53,7 +54,7 @@ setup() {
   run --separate-stderr -- "$EXE" -V
   [ "$status" -eq 0 ]
   assert_output_contains 'Asciidoctor '
-  assert_output_contains '[https://asciidoctor.org]'
+  assert_output_contains '[https://'
   assert_output_contains 'Runtime Environment'
 }
 
@@ -61,7 +62,7 @@ setup() {
   run --separate-stderr -- "$EXE" --version
   [ "$status" -eq 0 ]
   assert_output_contains 'Asciidoctor '
-  assert_output_contains '[https://asciidoctor.org]'
+  assert_output_contains '[https://'
   assert_output_contains 'Runtime Environment'
 }
 

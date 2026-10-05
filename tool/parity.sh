@@ -6,7 +6,7 @@
 # html5, docbook5 and manpage backends. Exits nonzero on any difference.
 #
 # Usage: tool/parity.sh DART_EXE [RUBY_EXE]
-#   DART_EXE  the Dart CLI to check (e.g. build/asciidoctor)
+#   DART_EXE  the Dart CLI to check (e.g. build/asciidart)
 #   RUBY_EXE  the reference CLI (default: asciidoctor, the gem on PATH)
 set -euo pipefail
 

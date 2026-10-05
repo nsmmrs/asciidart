@@ -21,8 +21,8 @@
 /// `systemPath` is `system_path`, ...).
 library;
 
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/io.dart' as io;
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/io.dart' as io;
 
 /// Raised when a path breaches the jail and recovery is disabled.
 ///
@@ -98,7 +98,7 @@ class PathResolver {
   ///
   /// A per-instance callback keeps path resolution decoupled from the
   /// global logger. Defaults to writing
-  /// `asciidoctor: WARNING: <message>` lines to stderr.
+  /// `asciidart: WARNING: <message>` lines to stderr.
   void Function(String message) onWarn;
 
   final Map<String, ({List<String> segments, String? root})> _partitionPathSys =
@@ -107,7 +107,7 @@ class PathResolver {
       {};
 
   static void _defaultWarn(String message) {
-    io.standardError.writeln('asciidoctor: WARNING: $message');
+    io.standardError.writeln('asciidart: WARNING: $message');
   }
 
   static String _resolveWorkingDir(String? workingDir, String fileSeparator) {

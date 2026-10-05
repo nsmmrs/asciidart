@@ -15,9 +15,9 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/io/types.dart';
-import 'package:asciidoctor/src/remote.dart';
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/io/types.dart';
+import 'package:asciidart/src/remote.dart';
 
 @JS('globalThis.asciidoctorDartHost')
 external _Host? get _injectedHost;

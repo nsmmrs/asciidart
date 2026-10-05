@@ -13,20 +13,20 @@ library;
 
 import 'dart:convert' show utf8;
 
-import 'package:asciidoctor/src/abstract_node.dart' show SafeMode;
-import 'package:asciidoctor/src/constants.dart' show defaultStylesheetKeys;
-import 'package:asciidoctor/src/docbook5.dart' show Docbook5Converter;
-import 'package:asciidoctor/src/document.dart' show Document;
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/helpers.dart' show Helpers;
-import 'package:asciidoctor/src/html5.dart' show Html5Converter;
-import 'package:asciidoctor/src/http_fetch.dart' show fetchHttp;
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/logging.dart' show LoggerManager;
-import 'package:asciidoctor/src/options.dart';
-import 'package:asciidoctor/src/path_resolver.dart' show PathResolver;
-import 'package:asciidoctor/src/remote.dart';
-import 'package:asciidoctor/src/stylesheets.dart' show Stylesheets;
+import 'package:asciidart/src/abstract_node.dart' show SafeMode;
+import 'package:asciidart/src/constants.dart' show defaultStylesheetKeys;
+import 'package:asciidart/src/docbook5.dart' show Docbook5Converter;
+import 'package:asciidart/src/document.dart' show Document;
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/helpers.dart' show Helpers;
+import 'package:asciidart/src/html5.dart' show Html5Converter;
+import 'package:asciidart/src/http_fetch.dart' show fetchHttp;
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/logging.dart' show LoggerManager;
+import 'package:asciidart/src/options.dart';
+import 'package:asciidart/src/path_resolver.dart' show PathResolver;
+import 'package:asciidart/src/remote.dart';
+import 'package:asciidart/src/stylesheets.dart' show Stylesheets;
 import 'package:meta/meta.dart';
 
 /// Parses the AsciiDoc [source] (an empty document when `null`) into a

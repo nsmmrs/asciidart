@@ -55,7 +55,7 @@ const quiet = (api) => {
   return api.convert
 }
 
-const implementations = [['asciidoctor-dart', quiet(await import('../build/npm/node.js'))]]
+const implementations = [['asciidart', quiet(await import('../build/npm/node.js'))]]
 if (values.ajs) {
   const { pathToFileURL } = await import('node:url')
   implementations.push(['asciidoctor.js', quiet(await import(pathToFileURL(values.ajs).href))])

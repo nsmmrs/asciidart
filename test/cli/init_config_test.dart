@@ -12,8 +12,8 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/cli/init_config.dart';
-import 'package:asciidoctor/src/cli/run.dart';
+import 'package:asciidart/src/cli/init_config.dart';
+import 'package:asciidart/src/cli/run.dart';
 import 'package:test/test.dart';
 
 /// Finds this package's root (the directory holding its pubspec).
@@ -22,13 +22,13 @@ String findPackageRoot() {
   while (true) {
     final pubspec = File('${dir.path}/pubspec.yaml');
     if (pubspec.existsSync() &&
-        pubspec.readAsStringSync().contains('name: asciidoctor')) {
+        pubspec.readAsStringSync().contains('name: asciidart')) {
       return dir.path;
     }
     final parent = dir.parent;
     if (parent.path == dir.path) {
       throw StateError(
-        'asciidoctor package root not found above ${Directory.current.path}',
+        'asciidart package root not found above ${Directory.current.path}',
       );
     }
     dir = parent;
@@ -64,7 +64,7 @@ void main() {
           .replaceAll('-', '_');
       final pubspec = File('${dir.path}/pubspec.yaml').readAsStringSync();
       expect(pubspec, contains('name: $name'));
-      expect(pubspec, contains('asciidoctor: $scaffoldAsciidoctorConstraint'));
+      expect(pubspec, contains('asciidart: $scaffoldAsciidartConstraint'));
       expect(pubspec, contains('sdk: $scaffoldSdkConstraint'));
 
       final transforms = File('${dir.path}/lib/transforms.dart')
@@ -73,7 +73,7 @@ void main() {
       expect(transforms, contains("registerFunction('paragraph'"));
 
       final main = File('${dir.path}/bin/main.dart').readAsStringSync();
-      expect(main, contains("import 'package:asciidoctor/cli.dart';"));
+      expect(main, contains("import 'package:asciidart/cli.dart';"));
       expect(main, contains("import 'package:$name/transforms.dart';"));
       expect(main, contains('registerTransforms();'));
       expect(main, contains('await runCli(args);'));
@@ -137,7 +137,7 @@ void main() {
         runInitConfig(['--help'], out: out, err: StringBuffer()),
         equals(0),
       );
-      expect(out.toString(), contains('Usage: asciidoctor init-config'));
+      expect(out.toString(), contains('Usage: asciidart init-config'));
     });
 
     test('scaffold constraints match this package', () {
@@ -150,7 +150,7 @@ void main() {
         r'^version: (\S+)$',
         multiLine: true,
       ).firstMatch(pubspec)![1]!;
-      expect(scaffoldAsciidoctorConstraint, equals('^$version'));
+      expect(scaffoldAsciidartConstraint, equals('^$version'));
       final sdk = RegExp(
         r'^\s+sdk: (\S+)$',
         multiLine: true,
@@ -207,7 +207,7 @@ void main() {
         final dir = makeTempDir('init-config-test');
         final result = await Process.run('dart', [
           'run',
-          '${findPackageRoot()}/bin/asciidoctor.dart',
+          '${findPackageRoot()}/bin/asciidart.dart',
           'init-config',
         ], workingDirectory: dir.path);
         expect(
@@ -230,7 +230,7 @@ void main() {
         pubspec.writeAsStringSync(
           '${pubspec.readAsStringSync()}\n'
           'dependency_overrides:\n'
-          '  asciidoctor:\n'
+          '  asciidart:\n'
           '    path: ${findPackageRoot()}\n',
         );
         final pubGet = await Process.run('dart', [

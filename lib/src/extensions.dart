@@ -27,21 +27,21 @@
 /// [TreeProcessor.onProcess]).
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/attribute_list.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/constants.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/list.dart';
-import 'package:asciidoctor/src/parser.dart';
-import 'package:asciidoctor/src/reader.dart';
-import 'package:asciidoctor/src/rx.dart';
-import 'package:asciidoctor/src/section.dart';
-import 'package:asciidoctor/src/substitutors.dart' as substitutors;
-import 'package:asciidoctor/src/text_case.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/attribute_list.dart';
+import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/constants.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/parser.dart';
+import 'package:asciidart/src/reader.dart';
+import 'package:asciidart/src/rx.dart';
+import 'package:asciidart/src/section.dart';
+import 'package:asciidart/src/substitutors.dart' as substitutors;
+import 'package:asciidart/src/text_case.dart';
 import 'package:meta/meta.dart';
 
 /// The configuration of a processor.

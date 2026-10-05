@@ -3,10 +3,10 @@
 /// Port of `lib/asciidoctor/block.rb`.
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/helpers.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/helpers.dart';
 
 /// Default content models by block context.
 ///

@@ -582,7 +582,9 @@ String _cappedDiff(
 
 final _absolutePrefix = RegExp(r'^(?:[A-Za-z]:)?[\\/]+');
 
-final _versionStamp = RegExp('Asciidoctor [0-9][0-9A-Za-z.+_~-]*');
+final _versionStamp = RegExp(
+  '(?:Asciidoctor|Asciidart) [0-9][0-9A-Za-z.+_~-]*',
+);
 final _lastUpdated = RegExp(
   r'Last updated \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}',
 );
@@ -593,7 +595,8 @@ final _manThDate = RegExp(r'''(\.TH("[^"\n]*"\s+){2}")\d{4}-\d{2}-\d{2}(")''');
 /// implementations built at different versions or times compare equal:
 ///
 /// * line endings (`\r\n` and `\r` become `\n`),
-/// * `Asciidoctor <version>` stamps (HTML generator meta, manpage header),
+/// * `Asciidoctor <version>` and `Asciidart <version>` stamps (HTML
+///   generator meta, manpage header),
 /// * the HTML footer `Last updated <datetime>` line,
 /// * the manpage `Date:` header and `.TH` date field.
 ///

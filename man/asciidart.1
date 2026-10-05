@@ -1,0 +1,210 @@
+'\" t
+.\"     Title: asciidart
+.\"    Author: Noah Summers
+.\" Generator: Asciidart 0.1.0
+.\"      Date: 2026-10-05
+.\"    Manual: asciidart Manual
+.\"    Source: asciidart 0.1.0
+.\"  Language: English
+.\"
+.TH "ASCIIDART" "1" "2026-10-05" "asciidart 0.1.0" "asciidart Manual"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+asciidart \- convert AsciiDoc documents to HTML, DocBook and man pages
+.SH "SYNOPSIS"
+.sp
+\fBasciidart\fP [\fIOPTION\fP].\|.\|. \fIFILE\fP.\|.\|.
+.sp
+\fBasciidart init\-config\fP [\fIDIR\fP] [\fB\-f\fP]
+.SH "DESCRIPTION"
+.sp
+\fBasciidart\fP reads each AsciiDoc \fIFILE\fP and writes the converted document next to it, under the same name with the extension of the output format (for example, \fIguide.adoc\fP becomes \fIguide.html\fP).
+A \fIFILE\fP of \fB\-\fP reads the document from standard input and writes the result to standard output.
+Arguments may be glob patterns (\f(CR*\fP, \f(CR?\fP, \f(CR[...]\fP and \f(CR**\fP), which \fBasciidart\fP expands itself.
+.sp
+\fBasciidart\fP is a re\-implementation of Asciidoctor in Dart.
+It accepts the same documents, attributes and options as the \fBasciidoctor\fP command of Asciidoctor 2.0.26 and produces the same output, except for the deliberate differences listed in the project\(cqs documentation.
+.sp
+Messages about the document (warnings, errors) go to standard error.
+.SH "OPTIONS"
+.SS "Output"
+.sp
+\fB\-b, \-\-backend\fP=\fIBACKEND\fP
+.RS 4
+The output format: \fBhtml5\fP (the default), \fBxhtml5\fP, \fBdocbook5\fP or \fBmanpage\fP.
+.RE
+.sp
+\fB\-d, \-\-doctype\fP=\fIDOCTYPE\fP
+.RS 4
+How to interpret the document\(cqs structure: \fBarticle\fP (the default), \fBbook\fP, \fBmanpage\fP or \fBinline\fP.
+.RE
+.sp
+\fB\-e, \-\-embedded\fP
+.RS 4
+Write only the converted body, without the surrounding page (for HTML: no \fI<html>\fP, \fI<head>\fP or footer).
+Useful for inserting the result into another page.
+.RE
+.sp
+\fB\-s, \-\-no\-header\-footer\fP
+.RS 4
+The same as \fB\-e\fP.
+.RE
+.sp
+\fB\-o, \-\-out\-file\fP=\fIFILE\fP
+.RS 4
+Write the output to \fIFILE\fP instead of the derived name.
+Use \fB\-\fP to write to standard output.
+.RE
+.sp
+\fB\-D, \-\-destination\-dir\fP=\fIDIR\fP
+.RS 4
+Write output files to \fIDIR\fP.
+Combined with \fB\-R\fP, the input\(cqs folder structure below the source directory is recreated below \fIDIR\fP.
+.RE
+.sp
+\fB\-R, \-\-source\-dir\fP=\fIDIR\fP
+.RS 4
+The root of the input files, used with \fB\-D\fP to compute where each output file goes.
+.RE
+.sp
+\fB\-n, \-\-section\-numbers\fP
+.RS 4
+Number the section titles.
+The same as \fB\-a sectnums\fP.
+.RE
+.SS "Document attributes"
+.sp
+\fB\-a, \-\-attribute\fP=\fINAME\fP[=\fIVALUE\fP]
+.RS 4
+Set the document attribute \fINAME\fP, overriding any value the document assigns.
+\fINAME\fP alone sets it to an empty value; \fINAME\fP*!* unsets it.
+End the name or the value with \fB@\fP (\fINAME\fP@=\fIVALUE\fP or \fINAME\fP=\fIVALUE\fP@) to let the document override it instead.
+May be given more than once.
+.RE
+.SS "Safety"
+.sp
+\fB\-S, \-\-safe\-mode\fP=\fIMODE\fP
+.RS 4
+How much the document may reach outside itself: \fBunsafe\fP (the default for this command), \fBsafe\fP, \fBserver\fP or \fBsecure\fP.
+The stricter modes restrict include directives, file access outside the base directory and remote content.
+.RE
+.sp
+\fB\-\-safe\fP
+.RS 4
+The same as \fB\-S safe\fP.
+.RE
+.sp
+\fB\-B, \-\-base\-dir\fP=\fIDIR\fP
+.RS 4
+The directory that relative paths in the document (includes, images) are resolved from.
+The default is the input file\(cqs directory, or the working directory for standard input.
+.RE
+.SS "Custom converters"
+.sp
+\fB\-T, \-\-template\-dir\fP=\fIDIR\fP
+.RS 4
+Override how individual elements are converted with the Mustache templates in \fIDIR\fP.
+May be given more than once; later directories take precedence.
+.RE
+.sp
+\fB\-E, \-\-template\-engine\fP=\fINAME\fP
+.RS 4
+The template engine for \fB\-T\fP: \fBmustache\fP, or \fBdart\fP for converter functions compiled into a custom binary (see \fBCustom binaries\fP).
+Any other name fails once templates are in use.
+.RE
+.SS "Messages"
+.sp
+\fB\-\-failure\-level\fP=\fILEVEL\fP
+.RS 4
+Exit with status 1 when a message of \fILEVEL\fP or higher is logged: \fBINFO\fP, \fBWARN\fP, \fBERROR\fP or \fBFATAL\fP (the default).
+.RE
+.sp
+\fB\-q, \-\-quiet\fP
+.RS 4
+Print no messages about the document.
+.RE
+.sp
+\fB\-v, \-\-verbose\fP
+.RS 4
+Also print messages at the \fBDEBUG\fP and \fBINFO\fP levels.
+.RE
+.sp
+\fB\-\-trace\fP
+.RS 4
+On an unexpected error, print the full stack trace.
+.RE
+.sp
+\fB\-t, \-\-timings\fP
+.RS 4
+Print how long reading, parsing and converting each file took.
+.RE
+.SS "Information"
+.sp
+\fB\-h, \-\-help\fP [\fITOPIC\fP]
+.RS 4
+Print the option summary.
+With \fITOPIC\fP \fBsyntax\fP, print an overview of the AsciiDoc syntax; with \fBmanpage\fP, print this manual page as troff source (view it with \fBasciidart \-h manpage | man \-l \-\fP).
+.RE
+.sp
+\fB\-V, \-\-version\fP
+.RS 4
+Print the version of \fBasciidart\fP, the Asciidoctor release it is compatible with, and the runtime.
+\fB\-v\fP does the same when it is the only argument.
+.RE
+.SH "CUSTOM BINARIES"
+.sp
+\fBasciidart init\-config\fP [\fIDIR\fP] creates a small Dart project in \fIDIR\fP (the working directory by default) whose program registers Dart functions as converters and then runs this command line.
+Compile it with \fBdart compile exe\fP to get a custom \fBasciidart\fP with those conversions built in.
+\fB\-f\fP overwrites existing files.
+.SH "ENVIRONMENT"
+.sp
+\fBSOURCE_DATE_EPOCH\fP
+.RS 4
+When set to an integer number of seconds since the Unix epoch, it replaces the current time and the input files\*(Aq modification times in the document\(cqs date attributes, for reproducible output.
+.RE
+.sp
+\fBASCIIDART_MANPAGE_PATH\fP
+.RS 4
+The file \fB\-h manpage\fP prints instead of the built\-in manual page (plain or gzip\-compressed).
+.RE
+.SH "EXIT STATUS"
+.sp
+\fB0\fP
+.RS 4
+The documents were converted (and no message reached the \fB\-\-failure\-level\fP).
+.RE
+.sp
+\fB1\fP
+.RS 4
+Something failed: an invalid option, a missing or unreadable input file, a document that could not be converted, or a message at or above the \fB\-\-failure\-level\fP.
+.RE
+.SH "BUGS"
+.sp
+Report problems at \c
+.URL "https://github.com/nsmmrs/asciidart/issues" "" "."
+.SH "SEE ALSO"
+.sp
+\fBasciidoctor\fP(1), the Ruby implementation whose behavior \fBasciidart\fP follows: \c
+.URL "https://asciidoctor.org" "" ""
+.SH "COPYING"
+.sp
+Copyright (C) 2026 Noah Summers.
+\fBasciidart\fP is free software under the MIT License; it includes data files from Asciidoctor, Copyright (C) 2012\-present Dan Allen, Sarah White, Ryan Waldron, and the individual contributors to Asciidoctor, also under the MIT License.

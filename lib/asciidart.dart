@@ -1,5 +1,5 @@
-/// Unofficial Dart port of Asciidoctor 2.0.26: converts AsciiDoc to HTML 5,
-/// DocBook 5 and man pages.
+/// asciidart, an AsciiDoc processor compatible with Asciidoctor 2.0.26:
+/// converts AsciiDoc to HTML 5, DocBook 5 and man pages.
 ///
 /// Start with `convert` (a string to a string) or `load` (a string to a
 /// `Document` you can inspect and convert). `convertFile` and `loadFile` do
@@ -7,13 +7,13 @@
 /// file. `AsciidoctorOptions` configures them all. The related libraries
 /// cover the rest of the API:
 ///
-/// - `package:asciidoctor/extensions.dart`: preprocessors, tree processors,
+/// - `package:asciidart/extensions.dart`: preprocessors, tree processors,
 ///   block and inline macros, include and docinfo processors.
-/// - `package:asciidoctor/converter.dart`: custom converters, Mustache
+/// - `package:asciidart/converter.dart`: custom converters, Mustache
 ///   templates and Dart transform functions.
-/// - `package:asciidoctor/syntax_highlighter.dart`: custom source
+/// - `package:asciidart/syntax_highlighter.dart`: custom source
 ///   highlighters.
-/// - `package:asciidoctor/cli.dart`: the `asciidoctor` command line, for
+/// - `package:asciidart/cli.dart`: the `asciidart` command line, for
 ///   building a custom CLI binary.
 library;
 

@@ -1,8 +1,8 @@
-# ADR-0005: JavaScript Build (npm package `asciidoctor-dart`)
+# ADR-0005: JavaScript Build (npm package `asciidart`)
 
 **Status:** Final — scope decided with the user on 2026-10-04: runtimes
 Node.js and the browser, an API at parity with Asciidoctor.js 4.1, and a CLI
-bin named `asciidoctor-dart`. The package is built and tested but not
+bin named `asciidart`. The package is built and tested but not
 published (ADR-0001 deferred stages; publishing is its own lane card).
 
 ## Context
@@ -64,7 +64,7 @@ converter classes.
    extension reaches the caller as the same object; errors raised by the
    core reject with a JS `Error` (`name` `AsciidoctorError` for document
    errors) carrying the core's message.
-8. **The CLI is the Dart CLI.** `asciidoctor-dart` runs `runCli` from the
+8. **The CLI is the Dart CLI.** `asciidart` runs `runCli` from the
    bundle; the e2e suite and the parity gate run against it in CI.
 
 ## Gaps

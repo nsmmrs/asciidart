@@ -12,7 +12,7 @@
 # override the filename label (best-effort for macOS/Windows naming; produce
 # those artifacts by running this script on the respective host).
 #
-# Output: <output-dir>/asciidoctor-<os>-<arch>[.exe] plus SHA256SUMS.
+# Output: <output-dir>/asciidart-<os>-<arch>[.exe] plus SHA256SUMS.
 set -euo pipefail
 
 OUTPUT_DIR="dist"
@@ -30,7 +30,7 @@ Build a standalone release executable for the Dart Asciidoctor CLI with
 override the filename label (best-effort for macOS/Windows naming; produce
 those artifacts by running this script on the respective host).
 
-Output: <output-dir>/asciidoctor-<os>-<arch>[.exe] plus SHA256SUMS.
+Output: <output-dir>/asciidart-<os>-<arch>[.exe] plus SHA256SUMS.
 EOF
 }
 
@@ -73,7 +73,7 @@ EXT=""
 [ "$OS" = "windows" ] && EXT=".exe"
 
 mkdir -p "$OUTPUT_DIR"
-OUT="$OUTPUT_DIR/asciidoctor-$OS-$ARCH$EXT"
+OUT="$OUTPUT_DIR/asciidart-$OS-$ARCH$EXT"
 
 command -v dart >/dev/null || { echo "error: 'dart' is not on PATH" >&2; exit 1; }
 
@@ -81,10 +81,10 @@ echo "==> dart pub get"
 dart pub get
 
 echo "==> dart compile exe -> $OUT"
-dart compile exe bin/asciidoctor.dart -o "$OUT"
+dart compile exe bin/asciidart.dart -o "$OUT"
 
 echo "==> sha256sum"
-(cd "$OUTPUT_DIR" && sha256sum asciidoctor-* > SHA256SUMS)
+(cd "$OUTPUT_DIR" && sha256sum asciidart-* > SHA256SUMS)
 cat "$OUTPUT_DIR/SHA256SUMS"
 
 echo "built: $OUT"

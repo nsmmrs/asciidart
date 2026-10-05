@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the npm package (asciidoctor-dart) into build/npm.
+# Build the npm package (asciidart) into build/npm.
 #
 # Compiles the Dart core to one JavaScript bundle with dart2js and assembles
 # it with the checked-in package sources (npm/) and the license. Release
@@ -36,11 +36,11 @@ dart compile js -O2 --no-source-maps \
   -o "$tmp/core.js" "$root/lib/src/js/entry.dart" >/dev/null
 cp -R "$root/npm/." "$out/"
 rm "$out/preamble.js"
-cat "$root/npm/preamble.js" "$tmp/core.js" > "$out/asciidoctor-dart.js"
+cat "$root/npm/preamble.js" "$tmp/core.js" > "$out/asciidart.js"
 cp "$root/LICENSE" "$out/LICENSE"
 # CommonJS copies of the type declarations, for require().
 for decl in "$out"/types/*.d.ts; do
   sed "s#'\./\([a-z]*\)\.js'#'./\1.cjs'#g" "$decl" > "${decl%.d.ts}.d.cts"
 done
-chmod +x "$out/bin/asciidoctor-dart.js"
-echo "build-npm: built asciidoctor-dart $version in $out"
+chmod +x "$out/bin/asciidart.js"
+echo "build-npm: built asciidart $version in $out"

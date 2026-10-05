@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { after, before, test } from 'node:test'
 import { build } from 'esbuild'
 import { chromium } from 'playwright-core'
-import { convert } from 'asciidoctor-dart'
+import { convert } from 'asciidart'
 
 const fixtures = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor', 'test', 'fixtures')
 const executablePath = process.env.CHROMIUM_PATH ?? '/usr/bin/chromium'
@@ -20,7 +20,7 @@ before(async () => {
   const bundle = await build({
     stdin: {
       contents:
-        "import * as asciidoctor from 'asciidoctor-dart'\nglobalThis.asciidoctor = asciidoctor\n",
+        "import * as asciidoctor from 'asciidart'\nglobalThis.asciidoctor = asciidoctor\n",
       resolveDir: import.meta.dirname,
     },
     bundle: true,

@@ -20,32 +20,32 @@ library;
 
 import 'dart:convert' show utf8;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/callouts.dart';
-import 'package:asciidoctor/src/constants.dart';
-import 'package:asciidoctor/src/converter.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/docbook5.dart';
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/extensions.dart';
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
-import 'package:asciidoctor/src/html5.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/manpage.dart';
-import 'package:asciidoctor/src/options.dart';
-import 'package:asciidoctor/src/parser.dart';
-import 'package:asciidoctor/src/path_resolver.dart';
-import 'package:asciidoctor/src/reader.dart';
-import 'package:asciidoctor/src/remote.dart';
-import 'package:asciidoctor/src/rx.dart';
-import 'package:asciidoctor/src/section.dart';
-import 'package:asciidoctor/src/substitutors.dart' as substitutors;
-import 'package:asciidoctor/src/text_case.dart';
-import 'package:asciidoctor/src/timings.dart';
-import 'package:asciidoctor/src/version.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/callouts.dart';
+import 'package:asciidart/src/constants.dart';
+import 'package:asciidart/src/converter.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/docbook5.dart';
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/extensions.dart';
+import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/highlight/syntax_highlighter.dart';
+import 'package:asciidart/src/html5.dart';
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/manpage.dart';
+import 'package:asciidart/src/options.dart';
+import 'package:asciidart/src/parser.dart';
+import 'package:asciidart/src/path_resolver.dart';
+import 'package:asciidart/src/reader.dart';
+import 'package:asciidart/src/remote.dart';
+import 'package:asciidart/src/rx.dart';
+import 'package:asciidart/src/section.dart';
+import 'package:asciidart/src/substitutors.dart' as substitutors;
+import 'package:asciidart/src/text_case.dart';
+import 'package:asciidart/src/timings.dart';
+import 'package:asciidart/src/version.dart';
 import 'package:meta/meta.dart';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.
@@ -509,7 +509,7 @@ class Document extends AbstractBlock implements NodeDocument {
 
     attrOverrides['asciidoctor'] = const _SetValue('');
     attrOverrides['asciidoctor-version'] = const _SetValue(Asciidoctor.version);
-    attrOverrides['asciidoctor-dart-version'] = const _SetValue(
+    attrOverrides['asciidart-version'] = const _SetValue(
       Asciidoctor.packageVersion,
     );
 

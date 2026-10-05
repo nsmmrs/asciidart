@@ -9,15 +9,15 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 import '../support/paths.dart';
 
 /// GNU make's `-j` validation message (verified against make 4.4.1), with the
-/// `asciidoctor: ` prefix the CLI reports it with.
+/// `asciidart: ` prefix the CLI reports it with.
 const String jobsError =
-    "asciidoctor: the '-j' option requires a positive "
+    "asciidart: the '-j' option requires a positive "
     'integer argument';
 
 /// Parses [args] with buffer sinks and a hermetic (empty) environment.
@@ -213,10 +213,7 @@ void main() {
       test('-j without a value reports a missing argument', () {
         final result = parseJobs(['-j']);
         expect(result.exitCode, equals(1));
-        expect(
-          result.err,
-          equals('asciidoctor: option missing argument: -j\n'),
-        );
+        expect(result.err, equals('asciidart: option missing argument: -j\n'));
         expect(result.out, equals(usageText));
       });
 
@@ -537,7 +534,7 @@ void main() {
       expect(par.err, equals(seq.err));
       expect(
         par.err,
-        contains('asciidoctor: FAILED: failed to load ${inputs[1]}: '),
+        contains('asciidart: FAILED: failed to load ${inputs[1]}: '),
       );
       expect(par.err, contains('Use --trace to show backtrace'));
       // The file before the failure converts in both modes.

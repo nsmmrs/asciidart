@@ -16,7 +16,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// The troff leader marker (mirrors the private `_esc` in `manpage.dart`).
@@ -224,7 +224,7 @@ Document manDoc({
     'manpurpose': 'does stuff',
     'authors': 'Author Name',
     'author': 'Author Name',
-    'asciidoctor-version': '2.1.0.alpha.0',
+    'asciidart-version': '9.9.9',
     ...attributes,
   },
   options: options,
@@ -329,7 +329,7 @@ void main() {
           '\'\\" t\n'
           '.\\"     Title: command\n'
           '.\\"    Author: Author Name\n'
-          '.\\" Generator: Asciidoctor 2.1.0.alpha.0\n'
+          '.\\" Generator: Asciidart 9.9.9\n'
           '.\\"      Date: 2026-10-03\n'
           '.\\"    Manual: Command Manual\n'
           '.\\"    Source: Command 1.2.3\n'

@@ -11,23 +11,23 @@ library;
 
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/constants.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/cursor.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/errors.dart';
-import 'package:asciidoctor/src/extensions.dart';
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/parser.dart';
-import 'package:asciidoctor/src/rx.dart';
-import 'package:asciidoctor/src/substitutors.dart' as substitutors;
-import 'package:asciidoctor/src/text_case.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/constants.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/cursor.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/errors.dart';
+import 'package:asciidart/src/extensions.dart';
+import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/parser.dart';
+import 'package:asciidart/src/rx.dart';
+import 'package:asciidart/src/substitutors.dart' as substitutors;
+import 'package:asciidart/src/text_case.dart';
 import 'package:meta/meta.dart';
 
-export 'package:asciidoctor/src/cursor.dart' show Cursor;
+export 'package:asciidart/src/cursor.dart' show Cursor;
 
 /// How source lines are normalized during preparation.
 enum _LineNormalization {

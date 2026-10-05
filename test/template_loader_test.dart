@@ -9,7 +9,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Finds the enclosing repository checkout directory.
@@ -392,7 +392,7 @@ void main() {
       final dir = _makeTemplateDir({'paragraph.mustache': 'x'});
       final invoker = _invoke(['-T', dir.path, '-E', 'haml', '-o', '-']);
       expect(invoker.code, equals(1));
-      expect(invoker.readError(), contains('asciidoctor: FAILED'));
+      expect(invoker.readError(), contains('asciidart: FAILED'));
       expect(invoker.readError(), contains('haml'));
       expect(invoker.readError(), contains('Use --trace to show backtrace'));
     });

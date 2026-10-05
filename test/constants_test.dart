@@ -27,7 +27,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// [pattern] with Ruby's ASCII-only `\S` spelled out as the port writes it

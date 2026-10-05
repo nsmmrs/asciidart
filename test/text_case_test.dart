@@ -1,4 +1,4 @@
-import 'package:asciidoctor/src/text_case.dart';
+import 'package:asciidart/src/text_case.dart';
 import 'package:test/test.dart';
 
 void main() {

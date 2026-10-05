@@ -24,18 +24,18 @@ library;
 
 import 'dart:math' show min;
 
-import 'package:asciidoctor/src/cli/diagnostics.dart';
-import 'package:asciidoctor/src/cli/options.dart';
-import 'package:asciidoctor/src/cli/parallel.dart';
-import 'package:asciidoctor/src/cli/workers.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/load.dart';
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/options.dart';
-import 'package:asciidoctor/src/path_resolver.dart';
-import 'package:asciidoctor/src/remote.dart';
-import 'package:asciidoctor/src/timings.dart';
+import 'package:asciidart/src/cli/diagnostics.dart';
+import 'package:asciidart/src/cli/options.dart';
+import 'package:asciidart/src/cli/parallel.dart';
+import 'package:asciidart/src/cli/workers.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/load.dart';
+import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/options.dart';
+import 'package:asciidart/src/path_resolver.dart';
+import 'package:asciidart/src/remote.dart';
+import 'package:asciidart/src/timings.dart';
 
 /// Runs the Asciidoctor processor from parsed command-line options.
 ///

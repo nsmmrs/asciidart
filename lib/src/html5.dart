@@ -14,22 +14,22 @@
 /// Syntax highlighting goes through the document's [SyntaxHighlighterBase].
 library;
 
-import 'package:asciidoctor/src/abstract_block.dart';
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/block.dart';
-import 'package:asciidoctor/src/converter.dart';
-import 'package:asciidoctor/src/core_ext.dart';
-import 'package:asciidoctor/src/document.dart';
-import 'package:asciidoctor/src/helpers.dart';
-import 'package:asciidoctor/src/highlight/highlight.dart' show CssMode;
-import 'package:asciidoctor/src/highlight/syntax_highlighter.dart';
-import 'package:asciidoctor/src/inline.dart';
-import 'package:asciidoctor/src/list.dart';
-import 'package:asciidoctor/src/rx.dart';
-import 'package:asciidoctor/src/section.dart';
-import 'package:asciidoctor/src/stylesheets.dart';
-import 'package:asciidoctor/src/table.dart';
-import 'package:asciidoctor/src/text_case.dart';
+import 'package:asciidart/src/abstract_block.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/converter.dart';
+import 'package:asciidart/src/core_ext.dart';
+import 'package:asciidart/src/document.dart';
+import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
+import 'package:asciidart/src/highlight/syntax_highlighter.dart';
+import 'package:asciidart/src/inline.dart';
+import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/rx.dart';
+import 'package:asciidart/src/section.dart';
+import 'package:asciidart/src/stylesheets.dart';
+import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/text_case.dart';
 
 /// Renders [value] for interpolation into output: `null` renders as the
 /// empty string.
@@ -289,8 +289,8 @@ class Html5Converter extends ConverterBase {
         '<meta http-equiv="X-UA-Compatible" content="IE=edge"$slash>\n'
         '<meta name="viewport" content="width=device-width, '
         'initial-scale=1.0"$slash>\n'
-        '<meta name="generator" content="Asciidoctor '
-        '${_s(node.attr('asciidoctor-version'))}"$slash>',
+        '<meta name="generator" content="Asciidart '
+        '${_s(node.attr('asciidart-version'))}"$slash>',
       );
     if (node.hasAttr('app-name')) {
       result.add(

@@ -1,4 +1,4 @@
-// The public API of asciidoctor-dart, shaped after Asciidoctor.js 4.1
+// The public API of asciidart, shaped after Asciidoctor.js 4.1
 // (@asciidoctor/core). Import the package entry point, which loads the
 // compiled core first.
 

@@ -27,11 +27,11 @@
 ///   `template_loader.dart`).
 /// - The `manpage`/`syntax` help topics are read from the nearest checkout
 ///   found by searching upward from the working directory, falling back to
-///   the embedded copies. The `ASCIIDOCTOR_MANPAGE_PATH` override and the
+///   the embedded copies. The `ASCIIDART_MANPAGE_PATH` override and the
 ///   `man -w` fallback keep Asciidoctor's precedence and messages.
 /// - Near-miss suggestions for invalid long options (`Did you mean? ...`)
 ///   are not printed; Asciidoctor's suggestions depend on the Ruby version
-///   it runs on. The `asciidoctor: invalid option: ...` line is the same.
+///   it runs on. The `asciidart: invalid option: ...` line is the same.
 /// - Input readability is approximated with permission bits
 ///   (`mode & 0o444`, i.e. `0x124`) instead of an access check, so a
 ///   superuser may see `is not readable` where Asciidoctor would proceed.
@@ -41,17 +41,19 @@
 ///   (`{a,b}`) is not supported; such patterns fall back to the
 ///   missing-file path. (Shells normally expand braces before the program
 ///   runs, so this rarely matters.)
-/// - The `Runtime Environment` line in [CliOptions.printVersion] names this
-///   package and the Dart VM; the encoding quadruplet is always UTF-8.
+/// - [CliOptions.printVersion] names asciidart and its version first, then
+///   the Asciidoctor release it is compatible with; the `Runtime Environment`
+///   line names the Dart runtime, and its encoding quadruplet is always
+///   UTF-8.
 library;
 
 import 'dart:convert';
 
-import 'package:asciidoctor/src/abstract_node.dart';
-import 'package:asciidoctor/src/cli/help_topics.g.dart';
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/logging.dart';
-import 'package:asciidoctor/src/version.dart';
+import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/cli/help_topics.g.dart';
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/version.dart';
 
 /// The CLI usage text.
 ///
@@ -59,11 +61,11 @@ import 'package:asciidoctor/src/version.dart';
 /// and `-E` descriptions describe Mustache templates and the Ruby-specific
 /// `--eruby`, `-I`, `-r` and `-w` options are absent.
 const String usageText = '''
-Usage: asciidoctor [OPTION]... FILE...
+Usage: asciidart [OPTION]... FILE...
 Convert the AsciiDoc input FILE(s) to the backend output format (e.g., HTML 5, DocBook 5, etc.)
 Unless specified otherwise, the output is written to a file whose name is derived from the input file.
 Application log messages are printed to STDERR.
-Example: asciidoctor input.adoc
+Example: asciidart input.adoc
 
     -b, --backend BACKEND            set backend output format: [html5, xhtml5, docbook5, manpage] (default: html5)
                                      additional backends are supported via extended converters (e.g., pdf, epub3)
@@ -94,7 +96,7 @@ Example: asciidoctor input.adoc
     -h, --help [TOPIC]               print a help message
                                      show this usage if TOPIC is not specified or recognized
                                      show an overview of the AsciiDoc syntax if TOPIC is syntax
-                                     dump the Asciidoctor man page (in troff/groff format) if TOPIC is manpage
+                                     dump the asciidart man page (in troff/groff format) if TOPIC is manpage
     -V, --version                    display the version and runtime environment (or -v if no other flags or arguments)
 ''';
 
@@ -134,7 +136,7 @@ final class NeedlessCliArgumentException implements Exception {
 /// Raised internally for values outside an option's candidate list.
 ///
 /// Port of `OptionParser::InvalidArgument`. Caught inside [CliOptions.parse],
-/// which prints `asciidoctor: <message>` plus the usage text and returns 1.
+/// which prints `asciidart: <message>` plus the usage text and returns 1.
 final class _InvalidCliArgument implements Exception {
   /// Creates an error with [message]
   /// (e.g. `invalid argument: -d chapter`).
@@ -436,7 +438,7 @@ final class CliOptions {
   /// [out] and [err] receive STDOUT and STDERR output (defaulting to the
   /// process streams); [environment] supplies environment variables
   /// (defaulting to the process environment) and is consulted only for
-  /// `ASCIIDOCTOR_MANPAGE_PATH`.
+  /// `ASCIIDART_MANPAGE_PATH`.
   ///
   /// Throws [AmbiguousCliOptionException] for abbreviated long options
   /// matching several options and [NeedlessCliArgumentException] for
@@ -498,7 +500,7 @@ final class CliOptions {
         if (file.startsWith('-')) {
           // Warn, but don't panic; there may be enough to proceed.
           errSink.writeln(
-            'asciidoctor: WARNING: extra arguments detected '
+            'asciidart: WARNING: extra arguments detected '
             '(unparsed arguments: $unparsed) '
             'or incorrect usage of stdin',
           );
@@ -525,7 +527,7 @@ final class CliOptions {
       if (file == '-') continue;
       if (io.isDirectory(file)) {
         errSink.writeln(
-          'asciidoctor: FAILED: input path $file is a directory, not a file',
+          'asciidart: FAILED: input path $file is a directory, not a file',
         );
         return 1;
       }
@@ -534,12 +536,12 @@ final class CliOptions {
         // library docs). Never open the file: opening a fifo would block.
         if (!io.isReadable(file)) {
           errSink.writeln(
-            'asciidoctor: FAILED: input file $file is not readable',
+            'asciidart: FAILED: input file $file is not readable',
           );
           return 1;
         }
       } else {
-        errSink.writeln('asciidoctor: FAILED: input file $file is missing');
+        errSink.writeln('asciidart: FAILED: input file $file is missing');
         return 1;
       }
     }
@@ -556,14 +558,17 @@ final class CliOptions {
 
   /// Prints the version and runtime environment to [out] (default STDOUT).
   ///
-  /// Port of `Options#print_version`; the runtime line also names this
-  /// package and its version. Always returns 0.
+  /// Prints asciidart's version, the Asciidoctor release it is compatible
+  /// with, and the runtime environment. Always returns 0.
   int printVersion([StringSink? out]) {
     (out ?? io.standardOutput)
-      ..writeln('Asciidoctor ${Asciidoctor.version} [https://asciidoctor.org]')
       ..writeln(
-        'Runtime Environment (asciidoctor-dart ${Asciidoctor.packageVersion}; '
-        '${io.runtimeName}) '
+        'Asciidart ${Asciidoctor.packageVersion} '
+        '(compatible with Asciidoctor ${Asciidoctor.version}) '
+        '[https://github.com/nsmmrs/asciidart]',
+      )
+      ..writeln(
+        'Runtime Environment (${io.runtimeName}) '
         '(lc:UTF-8 fs:UTF-8 in:UTF-8 ex:UTF-8)',
       );
     return 0;
@@ -577,7 +582,7 @@ final class CliOptions {
     Map<String, String> env,
   ) {
     switch (topic) {
-      // Use `asciidoctor -h manpage | man -l -` to view with man pager.
+      // Use `asciidart -h manpage | man -l -` to view with man pager.
       case 'manpage':
         return _showManpage(outSink, errSink, env);
       case 'syntax':
@@ -608,17 +613,15 @@ final class CliOptions {
     StringSink errSink,
     Map<String, String> env,
   ) {
-    final override = env['ASCIIDOCTOR_MANPAGE_PATH'];
+    final override = env['ASCIIDART_MANPAGE_PATH'];
     if (override != null) {
       if (io.isFile(override)) {
         _putsManpage(outSink, override);
       } else {
-        errSink.writeln(
-          'asciidoctor: FAILED: manual page not found: $override',
-        );
+        errSink.writeln('asciidart: FAILED: manual page not found: $override');
         return 1;
       }
-    } else if (_findCheckoutFile(['man', 'asciidoctor.1']) case final path?) {
+    } else if (_findCheckoutFile(['man', 'asciidart.1']) case final path?) {
       _putsManpage(outSink, path);
     } else if (HelpTopics.manpage.isNotEmpty) {
       // A standalone executable run outside the checkout has no files to
@@ -627,14 +630,14 @@ final class CliOptions {
       return 0;
     } else {
       // A failing `man -w` call counts as no result.
-      var resolved = io.commandOutput('man', ['-w', 'asciidoctor']) ?? '';
+      var resolved = io.commandOutput('man', ['-w', 'asciidart']) ?? '';
       if (resolved.endsWith('\n')) {
         resolved = resolved.substring(0, resolved.length - 1);
       }
       if (resolved.isEmpty) {
         errSink.writeln(
-          'asciidoctor: FAILED: manual page not found; '
-          'try `man asciidoctor`',
+          'asciidart: FAILED: manual page not found; '
+          'try `man asciidart`',
         );
         return 1;
       } else if (resolved.endsWith('.gz')) {
@@ -667,7 +670,7 @@ final class CliOptions {
     }
     final spec = _resolveLong(name, token);
     if (spec == null) {
-      errSink.writeln('asciidoctor: invalid option: $token');
+      errSink.writeln('asciidart: invalid option: $token');
       outSink.write(usageText);
       return (nextIndex: index + 1, exitCode: 1);
     }
@@ -707,7 +710,7 @@ final class CliOptions {
           // Required arguments consume the next token unconditionally, even
           // `--` or an option-looking token.
           if (index + 1 >= args.length) {
-            errSink.writeln('asciidoctor: option missing argument: $token');
+            errSink.writeln('asciidart: option missing argument: $token');
             outSink.write(usageText);
             return (nextIndex: index + 1, exitCode: 1);
           }
@@ -717,11 +720,11 @@ final class CliOptions {
           return (nextIndex: index + 2, exitCode: exitCode);
       }
     } on _InvalidCliArgument catch (e) {
-      errSink.writeln('asciidoctor: ${e.message}');
+      errSink.writeln('asciidart: ${e.message}');
       outSink.write(usageText);
       return (nextIndex: args.length, exitCode: 1);
     } on _AmbiguousCliArgument catch (e) {
-      errSink.writeln('asciidoctor: ${e.message}');
+      errSink.writeln('asciidart: ${e.message}');
       outSink.write(usageText);
       return (nextIndex: args.length, exitCode: 1);
     }
@@ -752,7 +755,7 @@ final class CliOptions {
       // Report the unconsumed remainder of the cluster.
       final rest = '-${token.substring(j)}';
       if (spec == null) {
-        errSink.writeln('asciidoctor: invalid option: $rest');
+        errSink.writeln('asciidart: invalid option: $rest');
         outSink.write(usageText);
         return (nextIndex: nextIndex, exitCode: 1);
       }
@@ -796,7 +799,7 @@ final class CliOptions {
               return (nextIndex: nextIndex, exitCode: exitCode);
             }
             if (nextIndex >= args.length) {
-              errSink.writeln('asciidoctor: option missing argument: -$char');
+              errSink.writeln('asciidart: option missing argument: -$char');
               outSink.write(usageText);
               return (nextIndex: nextIndex, exitCode: 1);
             }
@@ -807,11 +810,11 @@ final class CliOptions {
             return (nextIndex: nextIndex, exitCode: exitCode);
         }
       } on _InvalidCliArgument catch (e) {
-        errSink.writeln('asciidoctor: ${e.message}');
+        errSink.writeln('asciidart: ${e.message}');
         outSink.write(usageText);
         return (nextIndex: args.length, exitCode: 1);
       } on _AmbiguousCliArgument catch (e) {
-        errSink.writeln('asciidoctor: ${e.message}');
+        errSink.writeln('asciidart: ${e.message}');
         outSink.write(usageText);
         return (nextIndex: args.length, exitCode: 1);
       }

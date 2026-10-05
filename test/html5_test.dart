@@ -16,7 +16,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidoctor/src/internal.dart';
+import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Records log messages for assertions.
@@ -2800,8 +2800,8 @@ void main() {
         '<meta http-equiv="X-UA-Compatible" content="IE=edge">\n'
         '<meta name="viewport" content="width=device-width, '
         'initial-scale=1.0">\n'
-        '<meta name="generator" content="Asciidoctor '
-        '${doc.attr('asciidoctor-version')}">\n'
+        '<meta name="generator" content="Asciidart '
+        '${doc.attr('asciidart-version')}">\n'
         '<title>Doc Title</title>\n'
         '</head>\n'
         '<body class="article">\n'
@@ -2827,8 +2827,8 @@ void main() {
       expect(
         convOf(doc).convert(doc),
         contains(
-          '<meta name="generator" content="Asciidoctor '
-          '${doc.attr('asciidoctor-version')}">',
+          '<meta name="generator" content="Asciidart '
+          '${doc.attr('asciidart-version')}">',
         ),
       );
     });

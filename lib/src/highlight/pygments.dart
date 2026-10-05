@@ -10,9 +10,9 @@
 /// in which case the adapter falls back to escaped source.
 library;
 
-import 'package:asciidoctor/src/highlight/highlight.dart';
-import 'package:asciidoctor/src/io.dart' as io;
-import 'package:asciidoctor/src/logging.dart';
+import 'package:asciidart/src/highlight/highlight.dart';
+import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/logging.dart';
 import 'package:meta/meta.dart';
 
 /// Syntax-highlighter adapter for Pygments.
