@@ -23,7 +23,8 @@
 /// - structure: the outline (titles, levels and pages), the links
 ///   (annotations: target and rectangle to the point, in any order: the
 ///   order they're written in isn't seen) and the page labels;
-/// - pixels: each page rendered in gray at 36 dpi; the mean difference.
+/// - pixels: each page rendered in gray at 36 dpi; the mean difference;
+///   colors: rendered in color, the share of pixels that differ clearly.
 ///
 /// One line per document, and with `--out`, a `results.tsv` and, for each
 /// document that differs, the word differences. With `--strict`, exits 1
@@ -54,6 +55,7 @@ final class PdfFacts {
     required this.links,
     required this.labels,
     required this.rasters,
+    required this.colors,
   });
 
   final int pages;
@@ -70,6 +72,9 @@ final class PdfFacts {
 
   /// Each page in gray at 36 dpi (PGM).
   final List<Uint8List> rasters;
+
+  /// Each page in color at 36 dpi (PPM).
+  final List<Uint8List> colors;
 }
 
 String _run(String executable, List<String> args, {Encoding? encoding}) {
@@ -158,6 +163,7 @@ PdfFacts facts(String pdf, Directory scratch) {
       m[1]!.replaceAll(RegExp(r'\s+'), ' '),
   ];
   final rasters = <Uint8List>[];
+  final colors = <Uint8List>[];
   for (var p = 1; p <= pages; p++) {
     final out = '${scratch.path}/${pdf.hashCode}-$p';
     _run('pdftoppm', [
@@ -173,6 +179,18 @@ PdfFacts facts(String pdf, Directory scratch) {
       out,
     ]);
     rasters.add(File('$out.pgm').readAsBytesSync());
+    _run('pdftoppm', [
+      '-r',
+      '36',
+      '-f',
+      '$p',
+      '-l',
+      '$p',
+      '-singlefile',
+      pdf,
+      out,
+    ]);
+    colors.add(File('$out.ppm').readAsBytesSync());
   }
   return PdfFacts(
     pages: pages,
@@ -181,6 +199,7 @@ PdfFacts facts(String pdf, Directory scratch) {
     links: links,
     labels: labels,
     rasters: rasters,
+    colors: colors,
   );
 }
 
@@ -312,6 +331,51 @@ final class Comparison {
     return count == 0 ? 0 : sum / count;
   }
 
+  /// The share of pixels whose color differs clearly (by more than 64 in
+  /// a channel from each pixel around it) on the page where it's largest
+  /// (all of a page one file lacks): what the mean gray difference
+  /// misses, like text in another color.
+  double get colors {
+    var worst = 0.0;
+    for (var p = 0; p < math.max(a.colors.length, b.colors.length); p++) {
+      if (p >= a.colors.length || p >= b.colors.length) return 1;
+      final (wa, ha, sa) = _samples(a.colors[p], channels: 3);
+      final (wb, hb, sb) = _samples(b.colors[p], channels: 3);
+      if (wa != wb || ha != hb) return 1;
+      // A pixel changed when no pixel next to it (or itself) in the other
+      // rendering has its color: edges a fraction of a point apart don't
+      // count.
+      bool near(Uint8List x, Uint8List y, int px, int py) {
+        final i = (py * wa + px) * 3;
+        for (var dy = -1; dy <= 1; dy++) {
+          for (var dx = -1; dx <= 1; dx++) {
+            final qx = px + dx;
+            final qy = py + dy;
+            if (qx < 0 || qy < 0 || qx >= wa || qy >= ha) continue;
+            final j = (qy * wa + qx) * 3;
+            if ((x[i] - y[j]).abs() <= 64 &&
+                (x[i + 1] - y[j + 1]).abs() <= 64 &&
+                (x[i + 2] - y[j + 2]).abs() <= 64) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      // The last row and column are partly off the page, where clipping
+      // blends them differently: left out.
+      var changed = 0;
+      for (var py = 0; py < ha - 1; py++) {
+        for (var px = 0; px < wa - 1; px++) {
+          if (!near(sa, sb, px, py) || !near(sb, sa, px, py)) changed++;
+        }
+      }
+      worst = math.max(worst, changed / (wa * ha));
+    }
+    return worst;
+  }
+
   bool get sameOutline => _same(a.outline, b.outline);
 
   /// Whether the links are the same, in any order, their rectangles
@@ -364,7 +428,8 @@ final class Comparison {
       sameOutline &&
       sameLinks &&
       sameLabels &&
-      pixels < 1;
+      pixels < 1 &&
+      colors < 0.001;
 
   /// The word differences, as a unified-style listing.
   String wordDiff() {
@@ -412,18 +477,19 @@ final class Comparison {
         'outline ${sameOutline ? 'same' : 'differs'}, '
         'links ${sameLinks ? 'same' : 'differs'}, '
         'labels ${sameLabels ? 'same' : 'differs'}, '
-        'pixels ${pixels.toStringAsFixed(2)}';
+        'pixels ${pixels.toStringAsFixed(2)}, '
+        'colors ${pct(colors)}';
   }
 }
 
-(int, int, Uint8List) _samples(Uint8List pgm) {
-  final header = latin1.decode(pgm.sublist(0, 20)).split(RegExp(r'\s+'));
+(int, int, Uint8List) _samples(Uint8List image, {int channels = 1}) {
+  final header = latin1.decode(image.sublist(0, 20)).split(RegExp(r'\s+'));
   final width = int.parse(header[1]);
   final height = int.parse(header[2]);
   return (
     width,
     height,
-    Uint8List.sublistView(pgm, pgm.length - width * height),
+    Uint8List.sublistView(image, image.length - width * height * channels),
   );
 }
 
@@ -456,7 +522,7 @@ void main(List<String> args) {
       : (Directory(outDir)..createSync(recursive: true));
   final results = StringBuffer(
     'document\tpages_a\tpages_b\ttext\tgeometry\tmax_pt\toutline\tlinks\t'
-    'labels\tpixels\n',
+    'labels\tpixels\tcolors\n',
   );
   var allSame = true;
   try {
@@ -517,6 +583,7 @@ void main(List<String> args) {
           comparison.sameLinks,
           comparison.sameLabels,
           comparison.pixels.toStringAsFixed(2),
+          comparison.colors.toStringAsFixed(4),
         ].join('\t'),
       );
       if (!comparison.same) {

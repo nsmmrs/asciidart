@@ -132,6 +132,7 @@ final class TextContext {
     this.fallbacks = const [],
     this.images,
     this.boundsHeight = double.infinity,
+    this.decorationWidth = 1,
     LoggerBase? logger,
   }) : logger = logger ?? LoggerManager.logger;
 
@@ -141,6 +142,10 @@ final class TextContext {
 
   /// The height of the content area (the most an inline image may be).
   final double boundsHeight;
+
+  /// The width of underlines and strike-throughs that don't set one (the
+  /// theme's `base_text_decoration_width`).
+  final double decorationWidth;
 
   /// The fonts.
   final FontCatalog fonts;
@@ -815,7 +820,10 @@ final class PrawnTextBox implements CustomContent {
               : y + f.ascender * 0.3;
           canvas
             ..save()
-            ..setLineWidth((fragment.textDecorationWidth ?? 1).toDouble());
+            ..setLineWidth(
+              (fragment.textDecorationWidth ?? _context.decorationWidth)
+                  .toDouble(),
+            );
           if (_pdfColor(fragment.textDecorationColor ?? fragment.color)
               case final color?) {
             canvas.setStrokeColor(color);

@@ -76,6 +76,7 @@ void main() {
       expect(comparison.sameLinks, isTrue);
       expect(comparison.sameLabels, isTrue);
       expect(comparison.pixels, lessThan(1));
+      expect(comparison.colors, lessThan(0.001));
     }, skip: _tools ? false : 'needs poppler and qpdf');
   }
 
@@ -107,6 +108,7 @@ void main() {
       expect(comparison.sameLinks, isTrue);
       expect(comparison.sameLabels, isTrue);
       expect(comparison.pixels, lessThan(1));
+      expect(comparison.colors, lessThan(0.001));
     }, skip: _tools ? false : 'needs poppler and qpdf');
   }
 }

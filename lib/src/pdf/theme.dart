@@ -255,20 +255,31 @@ final class Theme {
   /// null for the bundled themes, whose files are embedded.
   String? directory;
 
+  /// The keys looked up in any theme, while not null (to tell the keys
+  /// the converter honors: `tool/pdf_theme_keys.dart`).
+  @internal
+  static Set<String>? lookups;
+
   /// The value of [key] (null when the key is not set).
-  ThemeValue? operator [](String key) => _values[key];
+  ThemeValue? operator [](String key) {
+    lookups?.add(key);
+    return _values[key];
+  }
 
   /// Sets [key] to [value].
   void operator []=(String key, ThemeValue value) => _values[key] = value;
 
   /// Whether [key] is set (to anything, null included).
-  bool has(String key) => _values.containsKey(key);
+  bool has(String key) {
+    lookups?.add(key);
+    return _values.containsKey(key);
+  }
 
   /// The keys, in the order they were set.
   Iterable<String> get keys => _values.keys;
 
   /// The value of [key] unless it is unset or null.
-  ThemeValue? value(String key) => switch (_values[key]) {
+  ThemeValue? value(String key) => switch (this[key]) {
     null || ThemeNull() => null,
     final v => v,
   };

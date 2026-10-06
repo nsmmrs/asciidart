@@ -232,6 +232,7 @@ final class PdfConverter extends BuiltInConverter
       images: (src, format) =>
           (_inlineGraphics[src], _imageProblems[src] ?? 'not an image'),
       boundsHeight: pageHeight - _pageMargins(document).vertical,
+      decorationWidth: (_n('base_text_decoration_width') ?? 1).toDouble(),
       logger: logger,
     );
     _markup = MarkupTransform(_theme);
@@ -901,9 +902,12 @@ final class PdfConverter extends BuiltInConverter
           CustomBox(
             _TocEntry(
               _textBox(
-                anchor == null ? title : '<a anchor="$anchor">$title</a>',
+                title,
                 font,
                 align: _baseTextAlign,
+                inherit: (_decoration('toc', entryLevel) ?? Fragment(''))
+                  ..anchor = anchor
+                  ..color = font.color,
                 normalize: false,
                 normalizeLineHeight: true,
               ),
@@ -916,9 +920,14 @@ final class PdfConverter extends BuiltInConverter
                   font.size,
                   kerning: font.kerning,
                 );
+                // Linked, in the entry's color (not the link color).
+                final color = font.color?.rubyString;
+                final colored = color == null
+                    ? label
+                    : '<font color="$color">$label</font>';
                 final number = anchor == null
                     ? label
-                    : '<a anchor="$anchor">$label</a>';
+                    : '<a anchor="$anchor">$colored</a>';
                 final String markup;
                 if (showDots) {
                   final dots = math.max(
@@ -5116,6 +5125,7 @@ final class PdfConverter extends BuiltInConverter
     required String align,
     double indent = 0,
     Set<String> inheritedStyles = const {},
+    Fragment? inherit,
     bool normalize = true,
     bool normalizeLineHeight = false,
     double characterSpacing = 0,
@@ -5130,10 +5140,11 @@ final class PdfConverter extends BuiltInConverter
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
     final nodes = inlineFormat ? parseMarkup(text) : [MarkupText(text)];
     final List<Fragment> fragments;
-    final inherited = inheritedStyles.isEmpty
+    final inherited = inheritedStyles.isEmpty && inherit == null
         ? null
-        : (Fragment('')
+        : ((inherit?.copy() ?? Fragment(''))
             ..styles = {
+              ...?inherit?.styles,
               for (final style in inheritedStyles)
                 if (style == 'bold')
                   FragmentStyle.bold
@@ -5186,6 +5197,26 @@ final class PdfConverter extends BuiltInConverter
     ),
     (_) => '\u200b',
   );
+
+  /// The underline or strike-through of theme [category] (of heading
+  /// [level], when given, before the category's), as a fragment to inherit
+  /// from; null when it has none (the gem's `apply_text_decoration`).
+  Fragment? _decoration(String category, [int? level]) {
+    String key(String name) =>
+        level != null && _theme.value('${category}_h${level}_$name') != null
+        ? '${category}_h${level}_$name'
+        : '${category}_$name';
+    final style = switch (_s(key('text_decoration'))) {
+      'underline' => FragmentStyle.underline,
+      'line-through' => FragmentStyle.strikethrough,
+      _ => null,
+    };
+    if (style == null) return null;
+    return Fragment('')
+      ..styles = {style}
+      ..textDecorationColor = _c(key('text_decoration_color'))
+      ..textDecorationWidth = _n(key('text_decoration_width'));
+  }
 
   /// The gem's `calc_line_metrics`: the leading of the line height, half
   /// of it above the text (plus the font's line gap) and half below.
