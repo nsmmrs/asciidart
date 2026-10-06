@@ -192,6 +192,8 @@ heading's `_heading_font_family`, `_heading_font_size`,
 `_heading_margin_bottom` (`[.html-note]` and
 `section: { role: { html-note: { background-color: F5F5FF } } }`). It
 stays a section: it is numbered, and listed in the contents.
+`_vertical_align: middle` (or `bottom`) sets a section that starts a page
+and fits on it in the middle (at the bottom) of the page: a dedication.
 
 A part on a page of its own is asciidoctor-pdf's
 `heading_part_break_after: always`; a title lower on its page,

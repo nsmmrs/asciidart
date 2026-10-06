@@ -2374,6 +2374,13 @@ final class PdfConverter extends BuiltInConverter
               ),
             ),
             decoration: _blockDecoration(category),
+            // In the middle or at the bottom of its page, when it starts
+            // the page and fits on it (a dedication).
+            verticalAlign: switch (_s('${category}_vertical_align')) {
+              'middle' || 'center' => VerticalAlign.middle,
+              'bottom' => VerticalAlign.bottom,
+              _ => null,
+            },
           ),
         ),
       );

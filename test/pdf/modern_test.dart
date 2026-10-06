@@ -899,6 +899,28 @@ base:
         isNot(contains(fill)),
       );
     });
+
+    test('sits in the middle of its page (vertical_align)', () {
+      double top(String pdf, String word) => double.parse(
+        RegExp(
+          'yMin="([\\d.]+)" xMax="[\\d.]+" yMax="[\\d.]+">$word<',
+        ).firstMatch(
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String,
+        )![1]!,
+      );
+      const dedication =
+          '= Doc\n:doctype: book\n\n'
+          '[dedication.middle%notitle]\n== Dedication\n\nTo you.\n\n'
+          '== Chap\n\nText.\n';
+      final pdf = _pdf(
+        dedication,
+        theme: 'section_role_middle_vertical_align: middle\n',
+      );
+      // A Letter page (792 points high): the line near its middle.
+      expect(top(pdf, 'To'), closeTo(396, 40));
+      final plain = _pdf(dedication.replaceFirst('.middle', ''));
+      expect(top(plain, 'To'), lessThan(100));
+    });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 
   group('floating images', () {
