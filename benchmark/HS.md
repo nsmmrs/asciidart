@@ -108,7 +108,10 @@ the front matter (copyright page, dedication, foreword) as `[colophon]`,
 contents after the foreword; section numbers turned on again after each
 chapter's unnumbered HTML Notes (the old site built chapters one by one);
 chapter 7's first sections at section level; the Opportunity boxes
-without a label; chapter 9's closing quote in small capitals.
+without a label; chapter 9's closing quote in small capitals; a stray
+callout in chapter 6; `page-path` on each part and chapter; the site's
+docinfo (colors, footer, the Typst site's color customizer); `build.sh`
+for each format, as the Typst edition's justfile.
 
 | Typst edition | AsciiDoc | Status |
 | --- | --- | --- |
@@ -135,8 +138,8 @@ without a label; chapter 9's closing quote in small capitals.
 | Index terms keep the emphasis around them whole | `(((...)))` | Done |
 | No space before a paragraph that starts with an index term | `(((...)))` | Done |
 | Website: a page per front matter part, part and chapter, previous and next | `multipage_html5` | Done |
-| Website: the same URLs (`/hypermedia-a-reintroduction/`) and a full contents | Sections | FEAT-95fvvy |
-| Website: landing page, footer, stylesheet, color customizer | Docinfo, `stylesheet` | FEAT-95fvvy, FEAT-y6ndrm |
+| Website: the same URLs (`/hypermedia-a-reintroduction/`) and a full contents | `page-path` on each part and chapter, `multipage-toclevels` | Done |
+| Website: footer, colors, color customizer | `docinfo=shared` (the edition's own script, as the Typst site's) | Done |
 | Website and EPUB: listings highlighted | `source-highlighter=highlight.js` (the EPUB packs the theme) | Done |
 | EPUB: cover, rights, ISBN, editor | `front-cover-image`, `copyright`, `isbn`, `editor` | ISBN and editor: FEAT-9b8gpj |
 
