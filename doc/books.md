@@ -57,6 +57,16 @@ The PDF lists page numbers; HTML, the website and EPUB link to each
 section the term is used in. `Document.index` gives the same entries to
 programs (`doc/api.md`).
 
+## Footnotes
+
+`footnote:[...]` notes are at the bottom of the page in the PDF
+(`doc/pdf.md`), at the end of the page on the website, and pop up in
+EPUB readers. Their markers are templates (ADR-0010), `{{number}}` the
+number: `:footnote-reference-template: {{number}}` (the default is
+`[{{number}}]`) and `:footnote-label-template: {{number}}.{sp}` (HTML and
+EPUB; `footnotes_reference_content` and `footnotes_label_content` in a
+PDF theme). The number stays a link to the note and back.
+
 ## Callouts
 
 ```asciidoc

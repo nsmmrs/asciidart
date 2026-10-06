@@ -26,6 +26,7 @@ import 'package:asciidart/src/highlight/syntax_highlighter.dart';
 import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/section.dart';
@@ -520,7 +521,7 @@ class Html5Converter extends BuiltInConverter {
       for (final footnote in node.footnotes) {
         result.add(
           '<div class="footnote" id="_footnotedef_${_s(footnote.index)}">\n'
-          '<a href="#_footnoteref_${_s(footnote.index)}">${_s(footnote.index)}</a>. ${_s(footnote.text)}\n'
+          '${_footnoteLabel(node, footnote)}${_s(footnote.text)}\n'
           '</div>',
         );
       }
@@ -663,7 +664,7 @@ class Html5Converter extends BuiltInConverter {
       for (final footnote in node.footnotes) {
         result.add(
           '<div class="footnote" id="_footnotedef_${_s(footnote.index)}">\n'
-          '<a href="#_footnoteref_${_s(footnote.index)}">${_s(footnote.index)}</a>. ${_s(footnote.text)}\n'
+          '${_footnoteLabel(node, footnote)}${_s(footnote.text)}\n'
           '</div>',
         );
       }
@@ -1983,15 +1984,41 @@ class Html5Converter extends BuiltInConverter {
     return '${_s(node.attributes['guard'])}$marker';
   }
 
+  /// The label before footnote [footnote] in the list of [document]'s
+  /// footnotes: `footnote-label-template` (ADR-0010), `1. ` by default, the
+  /// number a link back to the reference.
+  static String _footnoteLabel(Document document, Footnote footnote) =>
+      renderNumbered(
+        document.attr('footnote-label-template') ?? '{{number}}. ',
+        _s(footnote.index),
+        (n) => '<a href="#_footnoteref_${_s(footnote.index)}">$n</a>',
+      );
+
   /// Converts the [node] inline footnote.
   String? convertInlineFootnote(Inline node) {
     final index = node.attr('index');
     if (index != null) {
+      // The marker: `footnote-reference-template` (ADR-0010), `[1]` by
+      // default, the number the link.
+      final template =
+          node.document?.attr('footnote-reference-template') ?? '[{{number}}]';
       if (node.type == 'xref') {
-        return '<sup class="footnoteref">[<a class="footnote" href="#_footnotedef_${_s(index)}" title="View footnote.">${_s(index)}</a>]</sup>';
+        final marker = renderNumbered(
+          template,
+          _s(index),
+          (n) =>
+              '<a class="footnote" href="#_footnotedef_${_s(index)}" title="View footnote.">$n</a>',
+        );
+        return '<sup class="footnoteref">$marker</sup>';
       }
       final idAttr = node.id != null ? ' id="_footnote_${node.id}"' : '';
-      return '<sup class="footnote"$idAttr>[<a id="_footnoteref_${_s(index)}" class="footnote" href="#_footnotedef_${_s(index)}" title="View footnote.">${_s(index)}</a>]</sup>';
+      final marker = renderNumbered(
+        template,
+        _s(index),
+        (n) =>
+            '<a id="_footnoteref_${_s(index)}" class="footnote" href="#_footnotedef_${_s(index)}" title="View footnote.">$n</a>',
+      );
+      return '<sup class="footnote"$idAttr>$marker</sup>';
     }
     if (node.type == 'xref') {
       return '<sup class="footnoteref red" title="Unresolved footnote reference.">[${_s(node.text)}]</sup>';

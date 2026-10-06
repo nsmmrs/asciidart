@@ -29,6 +29,7 @@ import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
 import 'package:asciidart/src/xml_balance.dart';
@@ -593,7 +594,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
       for (final footnote in footnotes) {
         lines.add(
           '<aside id="note-${footnote.index}" epub:type="footnote">\n'
-          '<p>${footnote.text}</p>\n'
+          '<p>${_noteLabel(document, footnote)}${footnote.text}</p>\n'
           '</aside>',
         );
       }
@@ -1515,13 +1516,26 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     );
   }
 
+  /// The label before footnote [footnote]'s text: `footnote-label-template`
+  /// (ADR-0010) when [document] sets it, none by default (as the gem).
+  static String _noteLabel(Document document, Footnote footnote) =>
+      switch (document.attr('footnote-label-template')) {
+        final template? => renderNumbered(template, footnote.index, (n) => n),
+        null => '',
+      };
+
   /// Converts the [node] inline footnote.
   String? convertInlineFootnote(Inline node) {
     final index = node.attr('index');
     if (index != null) {
       final idAttr = node.id != null ? ' id="${node.id}"' : '';
-      return '<sup class="noteref">[<a$idAttr href="#note-$index" '
-          'epub:type="noteref">$index</a>]</sup>';
+      // `footnote-reference-template` (ADR-0010), `[1]` by default.
+      final marker = renderNumbered(
+        node.document?.attr('footnote-reference-template') ?? '[{{number}}]',
+        index,
+        (n) => '<a$idAttr href="#note-$index" epub:type="noteref">$n</a>',
+      );
+      return '<sup class="noteref">$marker</sup>';
     }
     if (node.type == 'xref') {
       return '<mark class="noteref" title="Unresolved note reference">'

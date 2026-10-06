@@ -809,6 +809,19 @@ base:
       expect(notes(_pdf(twoChapters)).last, ['[1] Fourth.']);
     });
 
+    test('markers from templates', () {
+      final pdf = _pdf(
+        twoChapters,
+        theme:
+            "footnotes_reference_content: '{{number}}'\n"
+            "footnotes_label_content: '{{number}}. '\n",
+      );
+      expect(notes(pdf), isEmpty);
+      final text = _pages(pdf)[1].join('\n');
+      expect(text, contains('1. First.'));
+      expect(text, isNot(contains('[1]')));
+    });
+
     test("may show links' URIs (show-link-uri=footnote)", () {
       const source =
           '= Doc\n:show-link-uri: footnote\n\n'

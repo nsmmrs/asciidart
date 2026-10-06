@@ -20,6 +20,7 @@ import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/highlight_style.dart';
@@ -33,7 +34,6 @@ import 'package:asciidart/src/pdf/theme.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
 import 'package:libpdf/libpdf.dart';
-import 'package:mustache_template/mustache.dart' show Template;
 
 /// The NUL character the gem puts in empty anchors (zero width).
 const String _dummyText = '\u0000';
@@ -2444,20 +2444,10 @@ final class PdfConverter extends BuiltInConverter
   static String _escapeMarkup(String text) =>
       text.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
 
-  /// The parsed Mustache templates of the theme, by their source.
-  final Map<String, Template> _templates = {};
-
   /// [source], a Mustache template (ADR-0010), rendered with [values]
   /// (an empty value counts as none, for optional parts).
   String _render(String source, Map<String, String?> values) =>
-      (_templates[source] ??= Template(
-        source,
-        lenient: true,
-        htmlEscapeValues: false,
-      )).renderString({
-        for (final MapEntry(:key, :value) in values.entries)
-          if (value != null && value.isNotEmpty) key: value,
-      });
+      renderTemplate(source, values);
 
   /// Whether a part has started (an appendix ends it).
   bool _inPart = false;
@@ -8100,9 +8090,31 @@ final class PdfConverter extends BuiltInConverter
         : rendered
         ? _footnoteLabels[index] ?? index
         : '${(int.tryParse(index) ?? 0) - _renderedFootnotes.length}';
-    return '<sup class="wj">$anchor[<a anchor="_footnotedef_$index"'
-        '${_footnoteLabelKey(index)}>$label</a>]</sup>';
+    // `footnotes_reference_content` (modern engine, ADR-0010): `[1]` by
+    // default, raised, the number the link.
+    final template =
+        (_engine == PdfEngine.modern
+            ? _s('footnotes_reference_content')
+            : null) ??
+        '[{{number}}]';
+    final marker = renderNumbered(
+      template,
+      label,
+      (n) =>
+          '<a anchor="_footnotedef_$index"${_footnoteLabelKey(index)}>$n</a>',
+    );
+    return '<sup class="wj">$anchor$marker</sup>';
   }
+
+  /// The label before footnote [index]'s note, numbered [label]:
+  /// `footnotes_label_content` (modern engine, ADR-0010), `[1] ` by
+  /// default, the number a link back to the reference.
+  String _footnoteNoteLabel(String index, String label) => renderNumbered(
+    (_engine == PdfEngine.modern ? _s('footnotes_label_content') : null) ??
+        '[{{number}}] ',
+    label,
+    (n) => '<a anchor="_footnoteref_$index"${_footnoteLabelKey(index)}>$n</a>',
+  );
 
   /// How footnotes are numbered: from 1 in each `chapter` (the gem's),
   /// on each `page` (modern engine, footnotes at the bottom of the page)
@@ -8244,8 +8256,7 @@ final class PdfConverter extends BuiltInConverter
           _notes['_footnoteref_$index'] = CustomBox(
             _textBox(
               '<a id="_footnotedef_$index">$_dummyText</a>'
-              '[<a anchor="_footnoteref_$index"${_footnoteLabelKey(index)}>'
-              '$label</a>] ${footnote.text}',
+              '${_footnoteNoteLabel(index, label)}${footnote.text}',
               _font,
               align: _baseTextAlign,
               hyphenate: true,
@@ -8313,7 +8324,7 @@ final class PdfConverter extends BuiltInConverter
           CustomBox(
             _textBox(
               '<a id="_footnotedef_$index">$_dummyText</a>'
-              '[<a anchor="_footnoteref_$index">$label</a>] ${footnote.text}',
+              '${_footnoteNoteLabel(index, label)}${footnote.text}',
               _font,
               align: _baseTextAlign,
               hyphenate: true,
