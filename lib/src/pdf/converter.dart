@@ -4026,7 +4026,13 @@ final class PdfConverter extends BuiltInConverter
     // to the top of the next page when they don't fit, the text after them
     // filling the room; when they fit, to the top or bottom of the page
     // (`top`, `bottom`, `auto`: the nearer), or they stay (`next`).
-    final float = _engine == PdfEngine.modern
+    // An image in a list, a table or a sidebar stays there.
+    final parent = node.parent;
+    final topLevel =
+        parent is Section ||
+        parent is Document ||
+        parent?.context == BlockContext.preamble;
+    final float = _engine == PdfEngine.modern && topLevel
         ? switch (_s('image_placement')) {
             'auto' => FloatPlacement.auto,
             'top' => FloatPlacement.top,

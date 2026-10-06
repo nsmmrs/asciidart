@@ -909,6 +909,21 @@ base:
       ]);
     });
 
+    test('stay in a sidebar', () {
+      final inSidebar = [
+        '= Doc\n:doctype: book\n\n== Chap\n',
+        '****\nBefore the image.\n',
+        '.The figure\nimage::data:image/svg+xml;base64,$svg[pdfwidth=50%]\n',
+        'After the image.\n****\n',
+      ].join('\n');
+      expect(_pages(_pdf(inSidebar, theme: 'image_placement: bottom\n'))[1], [
+        'Chap',
+        'Before the image.',
+        'Figure 1. The figure',
+        'After the image.',
+      ]);
+    });
+
     test('stay in place without image_placement: auto', () {
       final text = pages(_pdf(book));
       expect(text[2], contains('After the image.'));
