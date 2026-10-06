@@ -1919,6 +1919,7 @@ final class PdfConverter extends BuiltInConverter
       font,
       align: align,
       inheritedStyles: styles,
+      inherit: _decoration('heading', level),
       normalize: false,
     );
     final marginTop =
@@ -1945,18 +1946,69 @@ final class PdfConverter extends BuiltInConverter
                 0)
             .toDouble();
     if (pageTop > 0) content = _PageTopGap(content, pageTop);
+    final margin = outdent
+        ? _outdented(EdgeInsets(top: marginTop, bottom: marginBottom))
+        : EdgeInsets(top: marginTop, bottom: marginBottom);
+    // The padding and border of the level (the gem's `pad_box` and
+    // `theme_fill_and_stroke_bounds`).
+    final category = 'heading_h$level';
+    final padding = _theme.value('${category}_padding');
+    final border =
+        _theme.value('${category}_border_width') != null &&
+            (_c('${category}_border_color') ?? _c('base_border_color')) != null
+        ? _headingBorder(category)
+        : null;
+    if (padding == null && border == null) {
+      _out.add(
+        CustomBox(
+          content,
+          style: BoxStyle(margin: margin, anchor: anchor, marks: marks),
+        ),
+      );
+      return;
+    }
     _out.add(
-      CustomBox(
-        content,
+      BlockBox(
+        [CustomBox(content)],
         style: BoxStyle(
-          margin: outdent
-              ? _outdented(EdgeInsets(top: marginTop, bottom: marginBottom))
-              : EdgeInsets(top: marginTop, bottom: marginBottom),
+          margin: margin,
+          padding: _padding('${category}_padding'),
           anchor: anchor,
           marks: marks,
+          decoration: border,
         ),
       ),
     );
+  }
+
+  /// The border of heading theme [category] (`heading_h2`...), around the
+  /// heading and its padding.
+  BoxDecoration _headingBorder(String category) {
+    final widthValue = _theme.value('${category}_border_width');
+    final width = switch (widthValue) {
+      ThemeNumber(:final value) => value.toDouble(),
+      _ => 0.0,
+    };
+    final widths = _sideWidths(widthValue);
+    final color = pdfColorOf(
+      _c('${category}_border_color') ?? _c('base_border_color'),
+    );
+    final style = _s('${category}_border_style');
+    final radius = widths == null
+        ? (_n('${category}_border_radius') ?? 0).toDouble()
+        : 0.0;
+    return (page, rect, {required first, required last}) {
+      if (color == null || (width <= 0 && widths == null)) return;
+      _strokeBounds(
+        page.canvas,
+        rect,
+        color,
+        width: width,
+        widths: widths,
+        style: style,
+        radius: radius,
+      );
+    };
   }
 
   // The preamble.
@@ -2186,11 +2238,15 @@ final class PdfConverter extends BuiltInConverter
       }
       if (hasStroke) {
         if (pdfColorOf(stroke) case final color?) {
-          canvas
-            ..setStrokeColor(color)
-            ..setLineWidth(borderWidth);
-          radius > 0 ? canvas.roundedRect(rect, radius) : canvas.rect(rect);
-          canvas.stroke();
+          _strokeBounds(
+            canvas,
+            rect,
+            color,
+            width: borderWidth,
+            widths: _sideWidths(widthValue),
+            style: _s('${category}_border_style'),
+            radius: radius,
+          );
         }
       }
       // A dashed line where the block continues from or to another page.
@@ -2212,6 +2268,244 @@ final class PdfConverter extends BuiltInConverter
       canvas.restore();
       extra?.call(page, rect, first: first, last: last);
     };
+  }
+
+  /// The widths of a border's sides (top, right, bottom, left) from theme
+  /// [value]: one width for all, or two (top and bottom, then sides), or
+  /// four; null for one width for all.
+  List<double>? _sideWidths(ThemeValue? value) => switch (value) {
+    ThemeList(:final values) => switch ([
+      for (final v in values)
+        if (v is ThemeNull) 0.0 else _toPoints(v),
+    ]) {
+      [final a, final b] => [a, b, a, b],
+      [final a, final b, final c, final d, ...] => [a, b, c, d],
+      [final a, final b, final c] => [a, b, c, b],
+      [final a] => [a, a, a, a],
+      _ => null,
+    },
+    _ => null,
+  };
+
+  /// Strokes the border of [rect] in [color] (the gem's
+  /// `fill_and_stroke_bounds`): [width] all around, or [widths] side by
+  /// side (top, right, bottom, left), in [style] (`solid`, `dashed`,
+  /// `dotted`, `double`) with corners of [radius].
+  static void _strokeBounds(
+    PdfCanvas canvas,
+    PdfRect rect,
+    PdfColor color, {
+    double width = 0.5,
+    List<double>? widths,
+    String? style,
+    double radius = 0,
+  }) {
+    if (widths case [final top, final right, final bottom, final left]) {
+      if (top > 0) {
+        _horizontalRule(
+          canvas,
+          color,
+          rect.left - left * 0.5,
+          rect.right - right * 0.5,
+          rect.top,
+          top,
+          style,
+        );
+      }
+      if (right > 0) {
+        _verticalRule(
+          canvas,
+          color,
+          rect.right,
+          rect.top + top * 0.5,
+          rect.bottom - bottom * 0.5,
+          right,
+          style,
+        );
+      }
+      if (bottom > 0) {
+        _horizontalRule(
+          canvas,
+          color,
+          rect.left - left * 0.5,
+          rect.right - right * 0.5,
+          rect.bottom,
+          bottom,
+          style,
+        );
+      }
+      if (left > 0) {
+        _verticalRule(
+          canvas,
+          color,
+          rect.left,
+          rect.top + top * 0.5,
+          rect.bottom - bottom * 0.5,
+          left,
+          style,
+        );
+      }
+      return;
+    }
+    void outline(PdfRect r) => _roundedRectangle(canvas, r, radius);
+    canvas
+      ..save()
+      ..setStrokeColor(color);
+    switch (style) {
+      case 'dashed':
+        canvas
+          ..setLineWidth(width)
+          ..dash([width * 4]);
+      case 'dotted':
+        canvas
+          ..setLineWidth(width)
+          ..dash([width]);
+      case 'double':
+        final single = width / 3;
+        final inset = single * 2;
+        canvas.setLineWidth(single);
+        outline(rect);
+        canvas.stroke();
+        outline(
+          PdfRect(
+            rect.left + inset,
+            rect.bottom + inset,
+            rect.width - inset * 2,
+            rect.height - inset * 2,
+          ),
+        );
+        canvas
+          ..stroke()
+          ..restore();
+        return;
+      default:
+        canvas.setLineWidth(width);
+    }
+    outline(rect);
+    canvas
+      ..stroke()
+      ..restore();
+  }
+
+  /// Adds [rect] with corners of [radius] to [canvas]'s path as Prawn
+  /// draws it (`rounded_rectangle`): from the top left corner, clockwise,
+  /// so that a dash pattern starts where Prawn's does.
+  static void _roundedRectangle(PdfCanvas canvas, PdfRect rect, double radius) {
+    const kappa = 4 * (1.4142135623730951 - 1) / 3;
+    final points = [
+      (rect.left, rect.top),
+      (rect.right, rect.top),
+      (rect.right, rect.bottom),
+      (rect.left, rect.bottom),
+    ];
+    // The point [distance] before the end [to] of the line from [from].
+    (double, double) onLine(
+      double distance,
+      (double, double) from,
+      (double, double) to,
+    ) {
+      final (x0, y0) = from;
+      final (x1, y1) = to;
+      final length = math.sqrt(math.pow(x1 - x0, 2) + math.pow(y1 - y0, 2));
+      final p = length == 0 ? 1.0 : (length - distance) / length;
+      return (x0 + p * (x1 - x0), y0 + p * (y1 - y0));
+    }
+
+    final (startX, startY) = onLine(radius, points[1], points[0]);
+    canvas.moveTo(startX, startY);
+    for (var i = 0; i < 4; i++) {
+      final a = points[i];
+      final corner = points[(i + 1) % 4];
+      final b = points[(i + 2) % 4];
+      final (x1, y1) = onLine(radius, a, corner);
+      final (bx1, by1) = onLine(radius - radius * kappa, a, corner);
+      final (x2, y2) = onLine(radius, b, corner);
+      final (bx2, by2) = onLine(radius - radius * kappa, b, corner);
+      canvas
+        ..lineTo(x1, y1)
+        ..curveTo(bx1, by1, bx2, by2, x2, y2);
+    }
+    canvas.closePath();
+  }
+
+  /// Strokes a horizontal rule from [x1] to [x2] at [y] (the gem's
+  /// `stroke_horizontal_rule`).
+  static void _horizontalRule(
+    PdfCanvas canvas,
+    PdfColor color,
+    double x1,
+    double x2,
+    double y,
+    double width,
+    String? style,
+  ) {
+    canvas
+      ..save()
+      ..setStrokeColor(color);
+    switch (style) {
+      case 'dashed':
+        canvas
+          ..setLineWidth(width)
+          ..dash([width * 4]);
+      case 'dotted':
+        canvas
+          ..setLineWidth(width)
+          ..dash([width]);
+      case 'double':
+        final single = width / 3;
+        canvas
+          ..setLineWidth(single)
+          ..moveTo(x1, y + single)
+          ..lineTo(x2, y + single)
+          ..stroke()
+          ..moveTo(x1, y - single)
+          ..lineTo(x2, y - single)
+          ..stroke()
+          ..restore();
+        return;
+      default:
+        canvas.setLineWidth(width);
+    }
+    canvas
+      ..moveTo(x1, y)
+      ..lineTo(x2, y)
+      ..stroke()
+      ..restore();
+  }
+
+  /// Strokes a vertical rule at [x] from [top] to [bottom] (the gem's
+  /// `stroke_vertical_rule`).
+  static void _verticalRule(
+    PdfCanvas canvas,
+    PdfColor color,
+    double x,
+    double top,
+    double bottom,
+    double width,
+    String? style,
+  ) {
+    canvas
+      ..save()
+      ..setLineWidth(width)
+      ..setStrokeColor(color);
+    var at = x;
+    switch (style) {
+      case 'dashed':
+        canvas.dash([width * 4]);
+      case 'dotted':
+        canvas.dash([width]);
+      case 'double':
+        canvas
+          ..moveTo(at - width, top)
+          ..lineTo(at - width, bottom)
+          ..stroke();
+        at += width;
+    }
+    canvas
+      ..moveTo(at, top)
+      ..lineTo(at, bottom)
+      ..stroke()
+      ..restore();
   }
 
   /// The padding of theme [key] as edge insets.
@@ -3113,11 +3407,11 @@ final class PdfConverter extends BuiltInConverter
 
   /// The border the theme draws around images, if any.
   _Border? _imageBorder() {
-    final width = switch (_theme.value('image_border_width')) {
+    final widthValue = _theme.value('image_border_width');
+    final widths = _sideWidths(widthValue);
+    final width = switch (widthValue) {
       ThemeNumber(:final value) => value.toDouble(),
-      ThemeList(:final values) =>
-        values.map(_toPoints).fold<double>(0, math.max),
-      _ => 0.0,
+      _ => widths?.fold<double>(0, math.max) ?? 0.0,
     };
     if (width <= 0) return null;
     final color = pdfColorOf(
@@ -3127,7 +3421,9 @@ final class PdfConverter extends BuiltInConverter
     return _Border(
       width,
       color,
-      (_n('image_border_radius') ?? 0).toDouble(),
+      widths == null ? (_n('image_border_radius') ?? 0).toDouble() : 0,
+      widths: widths,
+      style: _s('image_border_style'),
       fitWidth: _s('image_border_fit') == 'auto',
     );
   }
@@ -3937,6 +4233,14 @@ final class PdfConverter extends BuiltInConverter
       shrinkToFit: true,
     );
     final ruleX = lpad.left + labelWidth + lpad.right;
+    // How far down the label is: in the middle, at the top or at the
+    // bottom (`admonition_label_vertical_align`).
+    final labelValign = _s('admonition_label_vertical_align') ?? 'middle';
+    double labelOffset(double room, double height) => switch (labelValign) {
+      'top' => 0,
+      'bottom' => math.max(0, room - height),
+      _ => math.max(0, (room - height) * 0.5),
+    };
     void decorate(
       PdfPage page,
       PdfRect rect, {
@@ -3944,15 +4248,18 @@ final class PdfConverter extends BuiltInConverter
       required bool last,
     }) {
       final canvas = page.canvas;
-      if (ruleWidth > 0 && pdfColorOf(ruleColor) != null) {
-        canvas
-          ..save()
-          ..setStrokeColor(pdfColorOf(ruleColor)!)
-          ..setLineWidth(ruleWidth)
-          ..moveTo(rect.left + ruleX, rect.top)
-          ..lineTo(rect.left + ruleX, rect.bottom)
-          ..stroke()
-          ..restore();
+      if (ruleWidth > 0) {
+        if (pdfColorOf(ruleColor) case final color?) {
+          _verticalRule(
+            canvas,
+            color,
+            rect.left + ruleX,
+            rect.top,
+            rect.bottom,
+            ruleWidth,
+            _s('admonition_column_rule_style'),
+          );
+        }
       }
       if (!first) return;
       if (icon != null) {
@@ -3971,13 +4278,13 @@ final class PdfConverter extends BuiltInConverter
           normalize: false,
           gaps: false,
         ).place(labelWidth, double.infinity, atTop: true);
-        final offset = math.max(0, (rect.height - size) * 0.5);
+        final offset = labelOffset(rect.height, size);
         glyph?.paint(page, rect.left + lpad.left, rect.top - offset);
         return;
       }
       final whole = labelBox.place(labelWidth, double.infinity, atTop: true);
       if (whole == null) return;
-      final offset = math.max<double>(0, (rect.height - whole.height) * 0.5);
+      final offset = labelOffset(rect.height, whole.height);
       final placed = fittedLabel.place(
         labelWidth,
         rect.height - offset,
@@ -4358,11 +4665,16 @@ final class PdfConverter extends BuiltInConverter
     if (font.transform case final transform? when transform != 'none') {
       text = transformText(text, transform);
     }
+    // A background behind the text, as wide as the block's room.
+    final background = pdfColorOf(
+      _c('${captionKey}_background_color') ?? _c('caption_background_color'),
+    );
     return CustomBox(
       _textBox(
         text,
         font,
         align: textAlign,
+        inherit: _decoration('caption'),
         normalize: false,
         normalizeLineHeight: true,
       ),
@@ -4370,6 +4682,14 @@ final class PdfConverter extends BuiltInConverter
         margin: bottom
             ? EdgeInsets(top: inside, bottom: outside)
             : EdgeInsets(top: outside, bottom: inside),
+        decoration: background == null
+            ? null
+            : (page, rect, {required first, required last}) => page.canvas
+                ..save()
+                ..setFillColor(background)
+                ..rect(rect)
+                ..fill()
+                ..restore(),
       ),
     );
   }
@@ -6818,11 +7138,24 @@ final class _ImageWidth {
 
 /// A border around an image.
 final class _Border {
-  const new(this.width, this.color, this.radius, {required this.fitWidth});
+  const new(
+    this.width,
+    this.color,
+    this.radius, {
+    required this.fitWidth,
+    this.widths,
+    this.style,
+  });
 
   final double width;
   final PdfColor color;
   final double radius;
+
+  /// The widths side by side (top, right, bottom, left), if they differ.
+  final List<double>? widths;
+
+  /// The line style (`dashed`...).
+  final String? style;
 
   /// Whether the border spans the available width, not the image's.
   final bool fitWidth;
@@ -6928,16 +7261,15 @@ final class _ImageContent implements CustomContent {
         }
         if (border case final border?) {
           final frame = border.fitWidth ? PdfRect(x, top - h, width, h) : rect;
-          canvas
-            ..save()
-            ..setStrokeColor(border.color)
-            ..setLineWidth(border.width);
-          border.radius > 0
-              ? canvas.roundedRect(frame, border.radius)
-              : canvas.rect(frame);
-          canvas
-            ..stroke()
-            ..restore();
+          PdfConverter._strokeBounds(
+            canvas,
+            frame,
+            border.color,
+            width: border.width,
+            widths: border.widths,
+            style: border.style,
+            radius: border.radius,
+          );
         }
         if (link case final link?) {
           page.link(

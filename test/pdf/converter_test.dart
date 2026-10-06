@@ -53,6 +53,7 @@ void main() {
     'tables',
     'tables2',
     'tables3',
+    'theme-keys',
     'toc-book-macro',
     'toc-macro',
     'toc-preamble',
