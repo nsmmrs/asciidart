@@ -30,7 +30,15 @@ asciidart -b docbook5 -o book.xml book.adoc
   writes `hypermedia-a-reintroduction/index.html`, linked as the
   directory, so a site keeps its URLs); `multipage-toclevels` lists the
   pages' sections on the home page; docinfo (`docinfo=shared`) is on
-  every page, for a site's own header, footer and scripts.
+  every page, for a site's own header, footer and scripts. A `toc::[]`
+  macro takes the list of pages wherever it is (a contents page of its
+  own: `[#contents,page-path=book/contents/]`), leaving the home page to
+  the header and the preamble (a cover). The previous, up and next links
+  read `multipage-nav-previous-template` (`&#8592; {{title}}`), `-up-`
+  and `-next-template`, or are laid out by a `multipage_nav.mustache`
+  template in a `-T` directory (`previous`, `up`, `next`, each with
+  `href`, `title` and `label`). The contents' section lists have the
+  class `multipage-sections`, for a stylesheet that shows or hides them.
 - **EPUB 3**: passes EPUBCheck; code wraps on small screens
   (`ebook-code-overflow=scroll` keeps lines whole). Its metadata takes
   an ISBN (`:isbn: 979-8-9909918-0-4`) and editors (`:editor: William

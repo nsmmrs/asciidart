@@ -11,7 +11,10 @@ import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/html5.dart';
 import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/section.dart';
+import 'package:asciidart/src/template_loader.dart';
+import 'package:mustache_template/mustache_template.dart' show Template;
 
 /// A page of the site: a section of its own, the page it belongs to
 /// ([up]; the root page when null), its file (relative to the root
@@ -49,6 +52,23 @@ class MultipageHtml5Converter extends Html5Converter
   /// The root page's file name.
   String _rootFile = 'index.html';
 
+  /// The list of pages a `toc::[]` macro shows, when the document has one.
+  String? _contents;
+
+  @override
+  String convertToc(Block node) {
+    final contents = _contents;
+    if (contents == null) return super.convertToc(node);
+    final doc = node.document! as Document;
+    final title = node.hasTitle ? node.title! : doc.attr('toc-title') ?? '';
+    final id = node.id ?? 'toc';
+    final role = doc.attr('toc-class') ?? 'toc';
+    return '<div id="$id" class="$role">\n'
+        '<div id="${id}title">$title</div>\n'
+        '$contents\n'
+        '</div>';
+  }
+
   @override
   void beginIndex(Document document) {
     // Once, for the whole document (each page is converted as a document
@@ -61,6 +81,7 @@ class MultipageHtml5Converter extends Html5Converter
   @override
   String convertDocument(Document node) {
     if (node.parentDocument != null) return super.convertEmbedded(node);
+    _document = node;
     super.beginIndex(node);
     pages.clear();
     _rootFile = switch (node.attr('outfile')) {
@@ -90,20 +111,20 @@ class MultipageHtml5Converter extends Html5Converter
       // The root page: the header, what comes before the first page, and
       // the list of pages (in place of the table of contents).
       node.attributes.remove('toc');
+      final contents = _list(
+        tree,
+        node,
+        'multipage-toc',
+        levels: int.tryParse(node.attr('multipage-toclevels') ?? '') ?? 0,
+      );
+      // A `toc::[]` macro (on a page of its own, say) takes the list of
+      // pages; else it ends the home page.
+      final hasMacro = node.findBy(context: BlockContext.toc).isNotEmpty;
+      _contents = hasMacro ? contents : null;
       node.blocks
         ..clear()
         ..addAll(blocks.where((block) => block is! Section))
-        ..add(
-          _raw(
-            node,
-            _list(
-              tree,
-              node,
-              'multipage-toc',
-              levels: int.tryParse(node.attr('multipage-toclevels') ?? '') ?? 0,
-            ),
-          ),
-        );
+        ..addAll([if (!hasMacro) _raw(node, contents)]);
       footnotes.clear();
       final root = (file: _rootFile, title: node.doctitle() ?? '');
       ({String file, String title}) link(_Page page) =>
@@ -238,7 +259,7 @@ class MultipageHtml5Converter extends Html5Converter
       ];
       if (listed.isEmpty) return '';
       return [
-        '\n<ul>',
+        '\n<ul class="multipage-sections">',
         for (final section in listed)
           [
             '<li><a href="${page.href}#${section.id}">${_title(section)}</a>',
@@ -274,14 +295,7 @@ class MultipageHtml5Converter extends Html5Converter
     required ({String file, String title})? up,
     required ({String file, String title})? next,
   }) {
-    String a(String kind, ({String file, String title}) page, String text) =>
-        '<a class="$kind" rel="$kind" href="${page.file}">$text</a>';
-    final links = [
-      if (previous != null) a('prev', previous, '&#8592; ${previous.title}'),
-      if (up != null) a('up', up, '&#8593; ${up.title}'),
-      if (next != null) a('next', next, '${next.title} &#8594;'),
-    ];
-    final nav = '<nav class="multipage-nav">\n${links.join('\n')}\n</nav>';
+    final nav = _navigation(previous: previous, up: up, next: next);
     var result = html
         .replaceFirst('<div id="content"', '$nav\n<div id="content"')
         .replaceFirstMapped(
@@ -297,6 +311,66 @@ class MultipageHtml5Converter extends Html5Converter
     }
     return result;
   }
+
+  /// The links to the [previous], enclosing ([up]) and [next] pages: the
+  /// `multipage_nav.mustache` template of a `-T` directory (with
+  /// `previous`, `up` and `next`, each `href`, `title` and `label`), or
+  /// the default markup; each link's text from the
+  /// `multipage-nav-<kind>-template` attribute (ADR-0010; `{{title}}`).
+  String _navigation({
+    required ({String file, String title})? previous,
+    required ({String file, String title})? up,
+    required ({String file, String title})? next,
+  }) {
+    final document = _document;
+    String label(String kind, String fallback, String title) => renderTemplate(
+      document?.attr('multipage-nav-$kind-template') ?? fallback,
+      {'title': title},
+    );
+    Map<String, String>? link(
+      String kind,
+      String fallback,
+      ({String file, String title})? page,
+    ) => page == null
+        ? null
+        : {
+            'href': page.file,
+            'title': page.title,
+            'label': label(kind, fallback, page.title),
+          };
+    final context = {
+      'previous': ?link('previous', '&#8592; {{title}}', previous),
+      'up': ?link('up', '&#8593; {{title}}', up),
+      'next': ?link('next', '{{title}} &#8594;', next),
+    };
+    if (_navTemplate case final template?) {
+      return template.renderString(context).trimRight();
+    }
+    String a(String rel, Map<String, String> page) =>
+        '<a class="$rel" rel="$rel" href="${page['href']}">${page['label']}</a>';
+    final links = [
+      if (context['previous'] case final page?) a('prev', page),
+      if (context['up'] case final page?) a('up', page),
+      if (context['next'] case final page?) a('next', page),
+    ];
+    return '<nav class="multipage-nav">\n${links.join('\n')}\n</nav>';
+  }
+
+  /// The document being converted.
+  Document? _document;
+
+  /// The `multipage_nav.mustache` template of the `-T` directories.
+  late final Template? _navTemplate = switch (opts.templateDirs.isEmpty
+      ? null
+      : FileTemplateLoader(templateDirs: opts.templateDirs)
+            .load()['multipage_nav']) {
+    final String source => Template(
+      source,
+      lenient: true,
+      htmlEscapeValues: false,
+    ),
+    null => null,
+  };
 
   /// [pages] with each link to an id on another page (`href="#id"`)
   /// pointing to that page (by its path in [hrefs]).

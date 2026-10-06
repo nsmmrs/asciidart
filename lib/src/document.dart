@@ -23,6 +23,7 @@ import 'dart:convert' show utf8;
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/callouts.dart';
+import 'package:asciidart/src/composite.dart';
 import 'package:asciidart/src/constants.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/docbook5.dart';
@@ -1355,10 +1356,19 @@ class Document extends AbstractBlock implements NodeDocument {
     return output;
   }
 
+  /// The converter that writes a file of its own (an EPUB, a website),
+  /// also behind templates (a composite chain).
+  PackagingConverter? get _packaging => switch (converter) {
+    final PackagingConverter packaging => packaging,
+    final CompositeConverter composite =>
+      composite.converters.whereType<PackagingConverter>().firstOrNull,
+    _ => null,
+  };
+
   /// Writes [output] to [sink], followed by a newline (nothing is written
   /// when [output] is empty).
   void writeTo(String output, StringSink sink) {
-    if (converter is PackagingConverter) {
+    if (_packaging != null) {
       throw AsciidoctorException(
         'the $backend backend writes a file of its own and cannot write to '
         'standard output; give an output file (-o FILE)',
@@ -1377,7 +1387,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// the manpage converter produces.
   void writeFile(String output, String path) {
     _timings?.start('write');
-    if (converter case final PackagingConverter packaging) {
+    if (_packaging case final packaging?) {
       packaging.write(path);
       _timings?.record('write');
       return;

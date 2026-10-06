@@ -283,4 +283,59 @@ void main() {
       );
     }
   });
+
+  test('a toc macro on a page of its own takes the list of pages', () {
+    final site = _site(
+      _book
+          .replaceFirst(':toc:', ':toc: macro')
+          .replaceFirst(
+            '= Part One',
+            '[#contents,page-path=contents/]\n== Contents\n\ntoc::[]\n\n= Part One',
+          ),
+    );
+    // The home page: the header and preamble alone.
+    expect(site['book.html'], isNot(contains('multipage-toc')));
+    expect(
+      site['contents/index.html'],
+      contains('<nav class="multipage-toc">'),
+    );
+    expect(site['contents/index.html'], contains('href="../_chapter_a.html"'));
+  });
+
+  test('navigation labels from templates', () {
+    final site = _site(
+      _book,
+      attributes: {
+        'multipage-nav-previous-template': 'Previous: {{title}}',
+        'multipage-nav-next-template': 'Next: {{title}}',
+      },
+    );
+    expect(site['_chapter_b.html'], contains('>Previous: 1. Chapter A</a>'));
+    expect(site['_chapter_a.html'], contains('>Next: 2. Chapter B</a>'));
+  });
+
+  test('navigation from a multipage_nav template', () {
+    final dir = Directory.systemTemp.createTempSync('multipage_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final templates = Directory('${dir.path}/templates')..createSync();
+    File('${templates.path}/multipage_nav.mustache').writeAsStringSync(
+      '<footer>{{#next}}<a href="{{href}}">Next: {{title}}</a>{{/next}}'
+      '</footer>',
+    );
+    final input = File('${dir.path}/book.adoc')..writeAsStringSync(_book);
+    convertFile(
+      input.path,
+      AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'multipage_html5',
+        templateDirs: [templates.path],
+        attributes: const {'reproducible': ''},
+      ),
+    );
+    final page = File('${dir.path}/_chapter_a.html').readAsStringSync();
+    expect(
+      page,
+      contains('<footer><a href="_chapter_b.html">Next: 2. Chapter B</a>'),
+    );
+  });
 }
