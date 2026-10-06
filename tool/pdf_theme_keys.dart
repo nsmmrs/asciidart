@@ -36,7 +36,8 @@ void main(List<String> args) {
         ..sort((a, b) => a.path.compareTo(b.path));
   for (final document in documents) {
     final opts = File(document.path.replaceFirst(RegExp(r'\.adoc$'), '.opts'));
-    final attributes = <String, String?>{};
+    // The compatibility mode, whose keys are asciidoctor-pdf's.
+    final attributes = <String, String?>{'pdf-compat': ''};
     String? doctype;
     if (opts.existsSync()) {
       final lines = opts.readAsLinesSync();

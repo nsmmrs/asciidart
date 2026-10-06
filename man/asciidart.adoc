@@ -32,8 +32,9 @@ Messages about the document (warnings, errors) go to standard error.
 === Output
 
 *-b, --backend*=_BACKEND_::
-  The output format: *html5* (the default), *xhtml5*, *docbook5*, *manpage* or *epub3*.
+  The output format: *html5* (the default), *xhtml5*, *docbook5*, *manpage*, *epub3* or *pdf*.
   *epub3* writes an EPUB 3 file (as asciidoctor-epub3 does), so it needs an output file rather than standard output; it is available in the native executable, not in the npm package.
+  *pdf* writes a PDF file with asciidart's own layout, reading asciidoctor-pdf's YAML themes (*pdf-theme*, *pdf-themesdir*, *pdf-fontsdir*); set the *pdf-compat* attribute (*-a pdf-compat*) to lay the document out as asciidoctor-pdf 2.3.27 does. Like *epub3*, it needs an output file and the native executable.
 
 *-d, --doctype*=_DOCTYPE_::
   How to interpret the document's structure: *article* (the default), *book*, *manpage* or *inline*.

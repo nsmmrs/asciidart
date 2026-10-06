@@ -3,7 +3,8 @@
 [![CI](https://github.com/nsmmrs/asciidart/actions/workflows/ci.yml/badge.svg)](https://github.com/nsmmrs/asciidart/actions/workflows/ci.yml)
 
 An AsciiDoc processor written in Dart. It converts AsciiDoc to HTML 5,
-DocBook 5, man pages and (with the native executable) EPUB 3, and is meant
+DocBook 5, man pages and (with the native executable) EPUB 3 and PDF, and
+is meant
 as a drop-in replacement for
 [Asciidoctor](https://asciidoctor.org) 2.0.26: the same documents,
 attributes, command-line options and output. It is a library, a command
@@ -23,6 +24,12 @@ line tool, and (compiled to JavaScript) an npm package.
   listed in [`benchmark/PARITY.md`](benchmark/PARITY.md). EPUB 3 output
   matches the asciidoctor-epub3 2.3.0 gem file by file
   (`tool/epub_parity.dart`).
+- **PDF without Ruby or a browser.** `-b pdf` draws with libpdf, a
+  pure-Dart PDF library, and reads asciidoctor-pdf's YAML themes. With
+  `-a pdf-compat`, the layout is asciidoctor-pdf 2.3.27's: 763 of the 797
+  documents of that gem's spec suite convert the same
+  (`tool/pdf_parity.dart`). By default, asciidart lays books out with its
+  own typesetting, which is being built out for print-quality books.
 - **Fast.** The compiled command converts a document 5–10x faster than the
   `asciidoctor` gem end to end, and about 2x faster in process
   ([`benchmark/BASELINE.md`](benchmark/BASELINE.md)).

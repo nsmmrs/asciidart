@@ -1,4 +1,5 @@
-// The PDF converter against asciidoctor-pdf 2.3.27: each document in
+// The PDF converter in its asciidoctor-pdf compatibility mode
+// (`pdf-compat`) against asciidoctor-pdf 2.3.27: each document in
 // fixtures/ was converted by the gem (SOURCE_DATE_EPOCH=0) into
 // fixtures/<name>-gem.pdf; asciidart's conversion must put the same words
 // in the same places, with the same outline, links and page labels.
@@ -66,7 +67,12 @@ void main() {
       final out = '${dir.path}/$name.pdf';
       convertFile(
         'test/pdf/fixtures/$name.adoc',
-        AsciidoctorOptions(safe: SafeMode.unsafe, backend: 'pdf', toFile: out),
+        AsciidoctorOptions(
+          safe: SafeMode.unsafe,
+          backend: 'pdf',
+          toFile: out,
+          attributes: const {'pdf-compat': ''},
+        ),
       );
       final comparison = Comparison(
         facts('test/pdf/fixtures/$name-gem.pdf', dir),
@@ -89,7 +95,12 @@ void main() {
     final out = '${dir.path}/theme-keys2.pdf';
     convertFile(
       'test/pdf/fixtures/theme-keys2.adoc',
-      AsciidoctorOptions(safe: SafeMode.unsafe, backend: 'pdf', toFile: out),
+      AsciidoctorOptions(
+        safe: SafeMode.unsafe,
+        backend: 'pdf',
+        toFile: out,
+        attributes: const {'pdf-compat': ''},
+      ),
     );
     final qdf =
         Process.runSync('qpdf', [
@@ -122,7 +133,12 @@ void main() {
       final out = '${dir.path}/$name.pdf';
       convertFile(
         'vendor/asciidoctor-pdf/test/examples/$name.adoc',
-        AsciidoctorOptions(safe: SafeMode.unsafe, backend: 'pdf', toFile: out),
+        AsciidoctorOptions(
+          safe: SafeMode.unsafe,
+          backend: 'pdf',
+          toFile: out,
+          attributes: const {'pdf-compat': ''},
+        ),
       );
       final comparison = Comparison(
         facts('test/pdf/fixtures/examples/$name-gem.pdf', dir),

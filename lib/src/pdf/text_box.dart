@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/markup.dart';
 import 'package:asciidart/src/pdf/svg_size.dart';
@@ -134,6 +135,7 @@ final class TextContext {
     this.images,
     this.boundsHeight = double.infinity,
     this.decorationWidth = 1,
+    this.engine = PdfEngine.modern,
     LoggerBase? logger,
   }) : logger = logger ?? LoggerManager.logger;
 
@@ -147,6 +149,9 @@ final class TextContext {
   /// The width of underlines and strike-throughs that don't set one (the
   /// theme's `base_text_decoration_width`).
   final double decorationWidth;
+
+  /// The layout engine (which wraps lines as Prawn does, or optimally).
+  final PdfEngine engine;
 
   /// The fonts.
   final FontCatalog fonts;

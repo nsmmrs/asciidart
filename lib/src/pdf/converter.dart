@@ -18,6 +18,8 @@ import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/logging.dart';
+import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/icons.dart';
 import 'package:asciidart/src/pdf/index.dart';
@@ -209,6 +211,7 @@ final class PdfConverter extends BuiltInConverter
     // The gem converts the title for the document information before its
     // PDF state exists (and the title keeps that conversion).
     _document = document;
+    _engine = PdfEngine.of(document, logger);
     document.doctitle();
     _converting = true;
     _promotePreface(document);
@@ -237,6 +240,7 @@ final class PdfConverter extends BuiltInConverter
           (_inlineGraphics[src], _imageProblems[src] ?? 'not an image'),
       boundsHeight: pageHeight - _pageMargins(document).vertical,
       decorationWidth: (_n('base_text_decoration_width') ?? 1).toDouble(),
+      engine: _engine,
       logger: logger,
     );
     _markup = MarkupTransform(_theme);
@@ -6487,6 +6491,7 @@ final class PdfConverter extends BuiltInConverter
     if (!_ready) {
       if (node.document case final Document doc) {
         _document = doc;
+        _engine = PdfEngine.of(doc, NullLogger());
         _theme = _prepareTheme(_loadTheme(doc));
         _fonts = FontCatalog(_theme);
         _markup = MarkupTransform(_theme);
@@ -6498,6 +6503,9 @@ final class PdfConverter extends BuiltInConverter
 
   /// Whether the theme (and the state inline conversions use) is loaded.
   bool _ready = false;
+
+  /// The layout engine the document asks for (`pdf-compat`).
+  PdfEngine _engine = PdfEngine.modern;
 
   /// Whether the document is being converted (rather than parsed: inline
   /// content converted for a title's id, which the gem converts before
