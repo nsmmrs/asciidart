@@ -71,6 +71,8 @@ final class TextLayout {
     this.indentFirstLine = 0,
     this.normalizeLineHeight = false,
     this.forceJustify = false,
+    this.orphans = 1,
+    this.widows = 1,
   });
 
   /// `left`, `center`, `right` or `justify`.
@@ -115,6 +117,8 @@ final class TextLayout {
     indentFirstLine: indentFirstLine,
     normalizeLineHeight: normalizeLineHeight,
     forceJustify: forceJustify,
+    orphans: orphans,
+    widows: widows,
   );
 
   /// Whether each line is at least as tall as the base font.
@@ -122,6 +126,14 @@ final class TextLayout {
 
   /// Whether the last line is justified too.
   final bool forceJustify;
+
+  /// The fewest lines the text leaves at the bottom of a region when it
+  /// goes on in the next (1: no rule).
+  final int orphans;
+
+  /// The fewest lines the text takes to the top of the next region when
+  /// it goes on there (1: no rule).
+  final int widows;
 }
 
 /// What the text needs from the conversion: fonts, the root font size,
@@ -135,7 +147,7 @@ final class TextContext {
     this.images,
     this.boundsHeight = double.infinity,
     this.decorationWidth = 1,
-    this.engine = PdfEngine.modern,
+    this.engine = PdfEngine.asciidoctorPdf,
     LoggerBase? logger,
   }) : logger = logger ?? LoggerManager.logger;
 
@@ -586,7 +598,7 @@ final class PrawnTextBox implements CustomContent {
     if (_items.isEmpty) return null;
     _arrangeImages(width);
     final gap = _layout.initialGap;
-    final lines = _Wrap(
+    final lines = _wrapOf(
       [for (final item in _items) item.copy()],
       _state,
       _layout,
@@ -661,7 +673,7 @@ final class PrawnTextBox implements CustomContent {
   /// and the text left over (null when it all fits on the line).
   (List<Fragment>, PrawnTextBox?) splitFirstLine(double width) {
     _arrangeImages(width);
-    final wrap = _Wrap(
+    final wrap = _wrapOf(
       [for (final item in _items) item.copy()],
       _state,
       _layout,
@@ -699,7 +711,7 @@ final class PrawnTextBox implements CustomContent {
     }
     _arrangeImages(width);
     final gap = _layout.initialGap;
-    final wrap = _Wrap(
+    var wrap = _wrapOf(
       [for (final item in _items) item.copy()],
       _state,
       _layout,
@@ -708,7 +720,42 @@ final class PrawnTextBox implements CustomContent {
       available - gap,
       firstPiece: first,
     );
-    final lines = wrap.run();
+    var lines = wrap.run();
+    // Widows and orphans: split no fewer than `orphans` lines here and
+    // `widows` there, else fewer lines here, or none.
+    if (lines.isNotEmpty &&
+        wrap.unconsumed.isNotEmpty &&
+        (_layout.orphans > 1 || _layout.widows > 1)) {
+      final total = _wrapOf(
+        [for (final item in _items) item.copy()],
+        _state,
+        _layout,
+        _context,
+        width,
+        double.infinity,
+        firstPiece: first,
+      ).run().length;
+      final remaining = total - lines.length;
+      var keep = lines.length;
+      if (remaining < _layout.widows) keep -= _layout.widows - remaining;
+      if (keep < _layout.orphans) {
+        if (!atTop) return null;
+        keep = lines.length;
+      }
+      if (keep != lines.length) {
+        wrap = _wrapOf(
+          [for (final item in _items) item.copy()],
+          _state,
+          _layout,
+          _context,
+          width,
+          available - gap,
+          firstPiece: first,
+          maxLines: keep,
+        );
+        lines = wrap.run();
+      }
+    }
     if (lines.isEmpty) {
       if (!atTop || quiet) return null;
       // Nothing fits even on a fresh page: the gem reports it and drops
@@ -929,8 +976,41 @@ List<String> _tokenize(String text) => [
   for (final m in _tokens.allMatches(text)) m[0]!,
 ];
 
+/// The wrap of [items] for [context]'s engine: the optimal wrap for
+/// justified text in the modern engine, else Prawn's.
+_Wrap _wrapOf(
+  List<_Item> items,
+  TextState state,
+  TextLayout layout,
+  TextContext context,
+  double width,
+  double height, {
+  required bool firstPiece,
+  int? maxLines,
+}) => context.engine == PdfEngine.modern && layout.align == 'justify'
+    ? _OptimalWrap(
+        items,
+        state,
+        layout,
+        context,
+        width,
+        height,
+        firstPiece: firstPiece,
+        maxLines: maxLines,
+      )
+    : _Wrap(
+        items,
+        state,
+        layout,
+        context,
+        width,
+        height,
+        firstPiece: firstPiece,
+        maxLines: maxLines,
+      );
+
 /// Prawn's `LineWrap`, `Arranger` and `Wrap` over the items of one piece.
-final class _Wrap {
+base class _Wrap {
   new(
     this._unconsumed,
     this._state,
@@ -939,7 +1019,11 @@ final class _Wrap {
     this._width,
     this._height, {
     required this.firstPiece,
+    this.maxLines,
   });
+
+  /// The most lines to set (all that fit when null).
+  final int? maxLines;
 
   final List<_Item> _unconsumed;
   final TextState _state;
@@ -1003,6 +1087,7 @@ final class _Wrap {
     var stop = false;
     var lineNumber = 0;
     while (!stop) {
+      if (maxLines case final most? when lineNumber >= most) break;
       final indent = lineNumber == 0 && firstPiece
           ? _layout.indentFirstLine
           : 0.0;
@@ -1326,10 +1411,15 @@ final class _Wrap {
   }
 
   void _printLine(double indent) {
+    // Justified, but not the last line of a paragraph, unless it is
+    // wider than the room (the optimal wrap shrinks spaces to fit a line;
+    // Prawn's wrap never fills a line past the room).
     final justify =
         _layout.align == 'justify' &&
         _spaceCount > 0 &&
-        (_layout.forceJustify || !_paragraphFinished);
+        (_layout.forceJustify ||
+            !_paragraphFinished ||
+            _accumulatedWidth > _width - indent + 0.0001);
     final wordSpacing = justify
         ? (_width - indent - _accumulatedWidth) / _spaceCount
         : 0.0;
@@ -1537,4 +1627,173 @@ String destinationName(String anchor) {
       byte.toRadixString(16).padLeft(2, '0'),
   ];
   return '0x${hex.join()}';
+}
+
+/// The modern engine's wrap of justified text: the breaks that make the
+/// paragraph's spacing most even (Knuth and Plass's total fit, through
+/// libpdf's breaker), over the same items, and the lines then set as
+/// Prawn's wrap sets them (justified by word spacing).
+final class _OptimalWrap extends _Wrap {
+  new(
+    super._unconsumed,
+    super._state,
+    super._layout,
+    super._context,
+    super._width,
+    super._height, {
+    required super.firstPiece,
+    super.maxLines,
+  });
+
+  /// A stand-in for the content of the breaker's items (it reads only
+  /// their widths).
+  static final TextRun _content = TextRun(
+    '',
+    PdfTextStyle(StandardFont.helvetica, 10),
+  );
+
+  @override
+  List<_Line> run() {
+    _source = [..._unconsumed];
+    // The pieces: the items' tokens (newlines are items of their own).
+    final pieces = <(int, String)>[];
+    for (final (i, item) in _unconsumed.indexed) {
+      if (item.text == '\n') {
+        pieces.add((i, '\n'));
+      } else {
+        for (final token in _tokenize(item.text)) {
+          pieces.add((i, token));
+        }
+      }
+    }
+    final indent = firstPiece ? _layout.indentFirstLine : 0.0;
+    double widthOf(int line) => line == 0 ? _width - indent : _width;
+    // The breaker's items, and the piece each comes from.
+    final items = <LineItem>[];
+    final from = <int>[];
+    void add(LineItem item, int piece) {
+      items.add(item);
+      from.add(piece);
+    }
+
+    for (final (p, (i, token)) in pieces.indexed) {
+      final format = _unconsumed[i].format;
+      if (token == '\n') {
+        add(const GlueItem.fill(), p);
+        add(const PenaltyItem(0, PenaltyItem.forced), p);
+        continue;
+      }
+      if (RegExp('^[ \t$_zwsp]+\$').hasMatch(token)) {
+        final spaces = token.replaceAll(_zwsp, '');
+        if (spaces.isEmpty) {
+          add(const PenaltyItem(0, 0), p);
+        } else {
+          final width = _widthOf(spaces, format);
+          add(GlueItem(null, spaces, width, width / 2, width / 3), p);
+        }
+        continue;
+      }
+      final shy = token.endsWith(_shy);
+      final word = shy ? token.substring(0, token.length - 1) : token;
+      if (word.isNotEmpty) {
+        final width = format.fragment.isMarker
+            ? 0.0
+            : word == _unconsumed[i].text
+            ? _fragmentWidth(word, format)
+            : _widthOf(word, format);
+        if (width > _width && word.runes.length > 1) {
+          // Longer than a line: breakable between any two characters, at
+          // a cost.
+          final runes = word.runes.toList();
+          for (var k = 0; k < runes.length; k++) {
+            if (k > 0) add(const PenaltyItem(0, 900), p);
+            final char = String.fromCharCode(runes[k]);
+            add(BoxItem(_content, char, _widthOf(char, format)), p);
+          }
+        } else {
+          add(BoxItem(_content, word, width), p);
+        }
+      }
+      if (shy) {
+        add(PenaltyItem(_widthOf('-', format), 50, flagged: true), p);
+      } else if (word.endsWith('-')) {
+        add(const PenaltyItem(0, 50, flagged: true), p);
+      }
+    }
+    add(const GlueItem.fill(), pieces.length);
+    add(const PenaltyItem(0, PenaltyItem.forced), pieces.length);
+    final breaks = const KnuthPlassLineBreaker().breakItems(items, widthOf);
+
+    // The pieces of each line: up to the piece its break is in (a space
+    // or a newline ends the line it breaks), then on from the next.
+    final lines = <(int, int)>[];
+    var start = 0;
+    for (final at in breaks) {
+      final item = items[at];
+      final piece = from[at];
+      final end = switch (item) {
+        // A break at a space or a newline: the line takes it (trailing
+        // spaces are left out of its width; a newline is its end).
+        GlueItem() || PenaltyItem() when piece < pieces.length => piece + 1,
+        _ => math.min(piece + 1, pieces.length),
+      };
+      if (end > start || lines.isEmpty) lines.add((start, end));
+      start = end;
+    }
+
+    // Each line set as Prawn's wrap sets it.
+    var lineNumber = 0;
+    for (final (first, end) in lines) {
+      if (maxLines case final most? when lineNumber >= most) break;
+      _consumed = _items(pieces, first, end);
+      final rest = _items(pieces, end, pieces.length);
+      _unconsumed
+        ..clear()
+        ..addAll(rest);
+      _newline = end > first && pieces[end - 1].$2 == '\n';
+      _accumulated = 0;
+      _fragments = [];
+      _maxLineHeight = 0;
+      _maxDescender = 0;
+      _maxAscender = 0;
+      _finalizeLine();
+      if (!_enoughHeight()) break;
+      _moveBaselineDown();
+      _printLine(lineNumber == 0 ? indent : 0);
+      lineNumber++;
+      if (_layout.singleLine) break;
+    }
+    if (lineNumber == lines.length) _unconsumed.clear();
+    return _lines;
+  }
+
+  /// The pieces [first] to [end] (exclusive) as items: consecutive pieces
+  /// of an item make one, with the item's formatting.
+  List<_Item> _items(List<(int, String)> pieces, int first, int end) {
+    final result = <_Item>[];
+    int? current;
+    final text = StringBuffer();
+    void flush() {
+      if (current == null) return;
+      result.add(
+        _source[current].copy(text: text.toString())
+          ..normalizedSoftHyphen = true,
+      );
+      text.clear();
+    }
+
+    for (var p = first; p < end; p++) {
+      final (i, token) = pieces[p];
+      if (i != current) {
+        flush();
+        current = i;
+      }
+      text.write(token);
+    }
+    flush();
+    return result;
+  }
+
+  /// The items as they were before the wrap (its list changes).
+  List<_Item> _source = const [];
 }

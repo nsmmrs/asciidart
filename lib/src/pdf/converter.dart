@@ -2280,7 +2280,18 @@ final class PdfConverter extends BuiltInConverter
       content = transformText(content, transform);
     }
     if (node.hasTitle) _caption(node, labeled: false);
-    final box = _textBox(content, font, align: align, indent: indent);
+    // The modern engine keeps a paragraph's lines together at page
+    // breaks: no fewer than prose_orphans at the bottom of a page and
+    // prose_widows at the top of the next (2 each by default).
+    final modern = _engine == PdfEngine.modern;
+    final box = _textBox(
+      content,
+      font,
+      align: align,
+      indent: indent,
+      orphans: modern ? (_n('prose_orphans') ?? 2).toInt() : 1,
+      widows: modern ? (_n('prose_widows') ?? 2).toInt() : 1,
+    );
     if (_floatGroup case final group? when _floatNext == node) {
       final metrics = _lineMetrics(font);
       final prawnFont = _fonts.font(font.family, font.style);
@@ -5682,6 +5693,8 @@ final class PdfConverter extends BuiltInConverter
     bool gaps = true,
     bool singleLine = false,
     bool shrinkToFit = false,
+    int orphans = 1,
+    int widows = 1,
   }) {
     var text = markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -5728,6 +5741,8 @@ final class PdfConverter extends BuiltInConverter
         shrinkToFit: shrinkToFit,
         indentFirstLine: indent,
         normalizeLineHeight: normalizeLineHeight,
+        orphans: orphans,
+        widows: widows,
       ),
       _text,
     );
