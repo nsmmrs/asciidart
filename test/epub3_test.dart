@@ -306,12 +306,12 @@ A ((Tiger)) again.(((Wolves)))
       expect(xhtml, contains(' and elsewhere.'));
     });
 
-    test('emphasis cut by an index term is balanced', () {
+    test('emphasis around an index term stays whole', () {
       final xhtml = chapter(
         '((("_hyperscript", "event filter")))\n'
         'We can use an _event filter_ syntax in +_hyperscript+ here.',
       );
-      expect(xhtml, isNot(contains('filter</em>')));
+      expect(xhtml, contains('We can use an <em>event filter</em> syntax'));
     });
 
     test('code may scroll instead of wrapping', () {
