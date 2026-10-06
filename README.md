@@ -29,7 +29,9 @@ line tool, and (compiled to JavaScript) an npm package.
   `-a pdf-compat`, the layout is asciidoctor-pdf 2.3.27's: 763 of the 797
   documents of that gem's spec suite convert the same
   (`tool/pdf_parity.dart`). By default, asciidart lays books out with its
-  own typesetting, which is being built out for print-quality books.
+  own typesetting: optimal line breaking, hyphenation, widows and orphans,
+  ligatures, listings that never lose a line, and table styles by role
+  ([`doc/pdf.md`](doc/pdf.md)).
 - **Fast.** The compiled command converts a document 5–10x faster than the
   `asciidoctor` gem end to end, and about 2x faster in process
   ([`benchmark/BASELINE.md`](benchmark/BASELINE.md)).

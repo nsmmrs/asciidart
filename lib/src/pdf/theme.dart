@@ -260,6 +260,18 @@ final class Theme {
   @internal
   static Set<String>? lookups;
 
+  /// This theme with the keys under [prefix] (`table_role_wide_`) copied
+  /// over those under [target] (`table_`); this theme when there are none.
+  Theme overlaid(String prefix, String target) {
+    final overrides = {
+      for (final MapEntry(:key, :value) in _values.entries)
+        if (key.startsWith(prefix))
+          '$target${key.substring(prefix.length)}': value,
+    };
+    if (overrides.isEmpty) return this;
+    return Theme._({..._values, ...overrides}, directory);
+  }
+
   /// The value of [key] (null when the key is not set).
   ThemeValue? operator [](String key) {
     lookups?.add(key);

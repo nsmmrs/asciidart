@@ -60,7 +60,10 @@ Asciidoctor project.
   when code is copied (marked content with an empty ActualText) and link
   to their callout list items, which link back. Blank pages (before a
   recto start) carry no running content unless
-  `running_content_on_blank_pages` is true. With `-a pdf-compat` the layout is the gem's, and
+  `running_content_on_blank_pages` is true. Tables with a role take the
+  theme's `table_role_<role>_*` keys, and a cell whose text is a phrase
+  with a role, `table_cell_role_<role>_*`. `base_line_breaking: greedy`
+  breaks lines one at a time. `doc/pdf.md` lists every setting. With `-a pdf-compat` the layout is the gem's, and
   `hyphens` and `base_hyphens` hyphenate as the gem does with text-hyphen.
   In that mode, 763 of the 797 documents of the gem's spec suite convert the same (words,
   positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),

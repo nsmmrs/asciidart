@@ -158,6 +158,7 @@ final class TextContext {
     this.boundsHeight = double.infinity,
     this.decorationWidth = 1,
     this.engine = PdfEngine.asciidoctorPdf,
+    this.optimalLineBreaking = true,
     LoggerBase? logger,
   }) : logger = logger ?? LoggerManager.logger;
 
@@ -174,6 +175,10 @@ final class TextContext {
 
   /// The layout engine (which wraps lines as Prawn does, or optimally).
   final PdfEngine engine;
+
+  /// Whether the modern engine breaks justified text where its spacing is
+  /// most even (else line by line, as Prawn does).
+  final bool optimalLineBreaking;
 
   /// The fonts.
   final FontCatalog fonts;
@@ -1114,7 +1119,10 @@ _Wrap _wrapOf(
   required bool firstPiece,
   double? continuedIndent,
   int? maxLines,
-}) => context.engine == PdfEngine.modern && layout.align == 'justify'
+}) =>
+    context.engine == PdfEngine.modern &&
+        context.optimalLineBreaking &&
+        layout.align == 'justify'
     ? _OptimalWrap(
         items,
         state,

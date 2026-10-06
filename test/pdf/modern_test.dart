@@ -98,6 +98,14 @@ void main() {
       expect(_words(optimal), _words(greedy));
     });
 
+    test('the theme may ask for line-by-line breaking', () {
+      final greedy = _pages(
+        _pdf(_paragraph, theme: 'base_line_breaking: greedy\n'),
+      ).first;
+      expect(greedy, hasLength(5));
+      expect(greedy.last, 'REST.');
+    });
+
     test('lines stay within the column', () {
       final pdf = _pdf('$_paragraph\n\n$_paragraph $_paragraph');
       final bbox =
@@ -527,6 +535,53 @@ base:
         _pdf(book, theme: 'running_content_on_blank_pages: true\n'),
       );
       expect(themed[3], '2');
+    });
+  }, skip: _tools ? false : 'needs poppler');
+
+  group('table styles', () {
+    /// The box of [word] in [pdf] (y down from the top).
+    ({double xMin, double xMax, double height}) box(String pdf, String word) {
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      final m = RegExp(
+        r'xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" '
+        'yMax="([\\d.]+)">$word<',
+      ).firstMatch(bbox)!;
+      return (
+        xMin: double.parse(m[1]!),
+        xMax: double.parse(m[3]!),
+        height: double.parse(m[4]!) - double.parse(m[2]!),
+      );
+    }
+
+    test('a table role takes its keys from the theme once', () {
+      final pdf = _pdf(
+        '|===\n|Plain\n|===\n\n[.big]\n|===\n|Styled\n|===\n',
+        theme: 'table_role_big_font_size: 16\n',
+      );
+      expect(box(pdf, 'Styled').height, greaterThan(box(pdf, 'Plain').height));
+      // The compatibility mode doesn't read the key.
+      final compat = _pdf(
+        '|===\n|Plain\n|===\n\n[.big]\n|===\n|Styled\n|===\n',
+        compat: true,
+        theme: 'table_role_big_font_size: 16\n',
+      );
+      expect(
+        box(compat, 'Styled').height,
+        closeTo(box(compat, 'Plain').height, 0.01),
+      );
+    });
+
+    test("a cell whose text has a role takes that role's cell keys", () {
+      final pdf = _pdf(
+        '[cols="1,1"]\n|===\n|[.paid]#Paid# |Open\n|===\n',
+        theme: 'table_cell_role_paid_text_align: right\n',
+      );
+      final paid = box(pdf, 'Paid');
+      final open = box(pdf, 'Open');
+      // Right-aligned in the first column: it ends near the second's
+      // start; the second starts at its left.
+      expect(open.xMin - paid.xMax, lessThan(20));
     });
   }, skip: _tools ? false : 'needs poppler');
 }

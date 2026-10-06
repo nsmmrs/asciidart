@@ -292,6 +292,7 @@ final class PdfConverter extends BuiltInConverter
       boundsHeight: pageHeight - _pageMargins(document).vertical,
       decorationWidth: (_n('base_text_decoration_width') ?? 1).toDouble(),
       engine: _engine,
+      optimalLineBreaking: _s('base_line_breaking') != 'greedy',
       logger: logger,
     );
     _markup = MarkupTransform(theme: _theme, invertEmphasis: _invertEmphasis);
@@ -3771,6 +3772,29 @@ final class PdfConverter extends BuiltInConverter
   /// Converts the table [node] (the gem's `convert_table`, prawn-table's
   /// layout on libpdf's tables).
   void convertTable(Table node) {
+    // The modern engine styles a table with a role by the theme's
+    // table_role_<role>_* keys, over its table_* keys.
+    if (_engine == PdfEngine.modern && node.roles.isNotEmpty) {
+      final saved = _theme;
+      for (final role in node.roles) {
+        _theme = _theme.overlaid(
+          'table_role_${role.replaceAll('-', '_')}_',
+          'table_',
+        );
+      }
+      if (!identical(_theme, saved)) {
+        try {
+          _convertTable(node);
+        } finally {
+          _theme = saved;
+        }
+        return;
+      }
+    }
+    _convertTable(node);
+  }
+
+  void _convertTable(Table node) {
     final captionTop = (_s('table_caption_end') ?? 'top') == 'top';
     final unbreakable = node.hasOption('unbreakable');
     final outside = _font;
@@ -3963,6 +3987,7 @@ final class PdfConverter extends BuiltInConverter
         ThemeColor? background;
         String? transform;
         var inline = true;
+        var cellAlign = cell.attr('halign') ?? 'left';
         String? content;
         List<LayoutBox>? blocks;
         switch (cell.style) {
@@ -4036,6 +4061,17 @@ final class PdfConverter extends BuiltInConverter
           text = _hyphenated(text, cell.attr('halign') ?? 'left');
           if (_cjkLineBreaks) text = _breakCjk(text);
           content = text;
+          // The modern engine styles a cell whose whole text has a role
+          // (`[.paid]#Paid#`) by the theme's table_cell_role_<role>_*
+          // keys.
+          if (_engine == PdfEngine.modern) {
+            if (_cellRole(text) case final role?) {
+              final key = 'table_cell_role_${role.replaceAll('-', '_')}';
+              background = _c('${key}_background_color') ?? background;
+              font = _themeFont(key, font);
+              cellAlign = _s('${key}_text_align') ?? cellAlign;
+            }
+          }
         }
         cells.add(
           _TableCellData(
@@ -4046,7 +4082,7 @@ final class PdfConverter extends BuiltInConverter
             background: background,
             colspan: cell.colspan ?? 1,
             rowspan: cell.rowspan ?? 1,
-            align: cell.attr('halign') ?? 'left',
+            align: cellAlign,
             valign: cell.attr('valign') ?? 'top',
             inlineFormat: inline,
           ),
@@ -6925,6 +6961,16 @@ final class PdfConverter extends BuiltInConverter
           '<a anchor="${_calloutItem(id)}">$result</a>';
     }
     return result;
+  }
+
+  /// The role of a table cell's text that is a single phrase with one
+  /// (`<span class="paid">Paid</span>`), if any.
+  static String? _cellRole(String text) {
+    final m = RegExp(
+      r'^<span class="([\w-]+)">((?:(?!</?span[ >]).)*)</span>$',
+      dotAll: true,
+    ).firstMatch(text);
+    return m?[1];
   }
 
   /// The destination of the callout list item for the callout [id].
