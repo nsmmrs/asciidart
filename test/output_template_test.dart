@@ -49,6 +49,20 @@ void main() {
       expect(html, contains('<div class="title">Figure 1 — A picture</div>'));
     });
 
+    test('leave cross references their word and number', () {
+      final html = asciidoc.convert(
+        ':xrefstyle: short\n'
+        ':figure-caption-template: pass:[{{caption}} {{number}}: ]\n\n'
+        'See <<pic>> and xref:pic[xrefstyle=full].\n\n'
+        '[#pic]\n.A picture\nimage::pic.png[]\n',
+      );
+      expect(html, contains('<a href="#pic">Figure 1</a>'));
+      expect(
+        html,
+        contains('<a href="#pic">Figure 1, &#8220;A picture&#8221;</a>'),
+      );
+    });
+
     test("are Asciidoctor's without a template", () {
       final html = asciidoc.convert(
         ':listing-caption: Listing\n\n.A route\n----\ncode\n----\n',

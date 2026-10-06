@@ -384,6 +384,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// Sets the caption of this block.
   set caption(String? value) {
     _caption = value;
+    _captionLabel = null;
   }
 
   /// The title of this block with the caption prepended.
@@ -458,11 +459,11 @@ abstract class AbstractBlock extends AbstractNode {
           if (fullPrefix != null) {
             return '$fullPrefix, $quotedTitle';
           }
-          return '${_chompDotSpace(_caption!)}, $quotedTitle';
+          return '${_captionLabel ?? _chompDotSpace(_caption!)}, $quotedTitle';
         case 'short':
           final shortPrefix = _captionPrefix();
           if (shortPrefix != null) return shortPrefix;
-          return _chompDotSpace(_caption!);
+          return _captionLabel ?? _chompDotSpace(_caption!);
         default: // 'basic'
           return title;
       }
@@ -482,9 +483,11 @@ abstract class AbstractBlock extends AbstractNode {
     return '$prefix $number';
   }
 
+  /// The caption's word and number (`Figure 3`), when [assignCaption]
+  /// numbered this block.
+  String? _captionLabel;
+
   /// Removes one trailing `'. '` from [caption], if present.
-  ///
-  /// Removes one trailing `'. '`.
   static String _chompDotSpace(String caption) => caption.endsWith('. ')
       ? caption.substring(0, caption.length - 2)
       : caption;
@@ -511,13 +514,18 @@ abstract class AbstractBlock extends AbstractNode {
       numeral = document!.incrementAndStoreCounter('$kind-number', this);
       // asciidart's `<kind>-caption-template` (ADR-0010): the caption from
       // a template of `{{caption}}` and `{{number}}`.
-      _caption = switch (document!.attributes['$attrName-template']) {
-        final String template => renderTemplate(template, {
-          'caption': prefix,
-          'number': '$numeral',
-        }),
-        null => '$prefix $numeral. ',
-      };
+      switch (document!.attributes['$attrName-template']) {
+        case final String template:
+          _caption = renderTemplate(template, {
+            'caption': prefix,
+            'number': '$numeral',
+          });
+          // A cross reference names the block by its caption word and
+          // number, whatever the template made of them.
+          _captionLabel = '$prefix $numeral';
+        case null:
+          _caption = '$prefix $numeral. ';
+      }
     }
   }
 

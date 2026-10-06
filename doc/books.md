@@ -94,7 +94,8 @@ format:
 
 (`pass:[...]` keeps the trailing space, which AsciiDoc trims from an
 attribute's value; `{sp}` at the end does too.) Cross references keep
-their text (`Listing 36`).
+their text: `Listing 36` with `:xrefstyle: short`, a figure's or an
+image's too.
 
 ## Callouts
 
