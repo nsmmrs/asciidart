@@ -141,7 +141,7 @@ for each format, as the Typst edition's justfile.
 | Website: the same URLs (`/hypermedia-a-reintroduction/`) and a full contents | `page-path` on each part and chapter, `multipage-toclevels` | Done |
 | Website: footer, colors, color customizer | `docinfo=shared` (the edition's own script, as the Typst site's) | Done |
 | Website and EPUB: listings highlighted | `source-highlighter=highlight.js` (the EPUB packs the theme) | Done |
-| EPUB: cover, rights, ISBN, editor | `front-cover-image`, `copyright`, `isbn`, `editor` | ISBN and editor: FEAT-9b8gpj |
+| EPUB: cover, rights, ISBN, editor | `front-cover-image`, `copyright`, `isbn`, `editor` | Done |
 
 Not in scope: the Markdown export and the Kindle file, which the Typst
 edition makes with pandoc and calibre; the same tools read asciidart's
