@@ -134,7 +134,7 @@ edition's justfile. Every feature is the AsciiDoc's own or asciidart's
 | Listings: "Listing N" captions, callouts | Titles, `listing-caption`, callouts | Done |
 | Listings highlighted | `source-highlighter=highlight.js` | Done |
 | Figures: "Figure N" captions below, centered | `image_caption_*` theme keys | Done |
-| Figures float to the next page when they don't fit, the text filling in | `image_placement: auto` | Done (to the top of the next page; Typst also to the bottom) |
+| Figures at the top or bottom of their page, or the next page's top when they don't fit, the text filling in | `image_placement: auto` | Done |
 | Footnotes at the bottom of the page | `footnote:[]` (the modern engine's default) | Done (numbered per chapter, Typst per page) |
 | Links show their URL in a footnote | `:show-link-uri: footnote` | Done |
 | Justified, hyphenated, first-line indents | Modern engine, `prose` theme keys | Done |
