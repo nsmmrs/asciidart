@@ -280,6 +280,7 @@ final class PdfConverter extends BuiltInConverter
           .attr('pdf-fontsdir')
           ?.replaceAll('{docdir}', document.attr('docdir') ?? ''),
       shaping: _shaping,
+      synthesizeFaces: _engine == PdfEngine.modern,
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
     final (_, pageHeight) = _pageSize(document);

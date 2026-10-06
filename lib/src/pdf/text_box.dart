@@ -1019,6 +1019,8 @@ final class PrawnTextBox implements CustomContent {
                 kerning: _state.kerning,
                 ligatures: f.format.font.ligates,
                 features: f.format.features,
+                skew: f.format.font.slanted ? 0.2 : 0,
+                embolden: f.format.font.emboldened ? f.format.size / 40 : 0,
               ),
             )
             ..restore();

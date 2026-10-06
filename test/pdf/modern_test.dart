@@ -862,6 +862,31 @@ base:
     });
   }, skip: _tools ? false : 'needs poppler');
 
+  group('a family without an italic or bold face', () {
+    const theme =
+        'font:\n  catalog:\n    merge: true\n    Upright:\n'
+        '      normal: yrsa-regular-latin.ttf\n'
+        'base_font_family: Upright\n';
+    const source = 'Plain, _slanted_ and *stroked*.\n';
+
+    test('has them made from its regular face', () {
+      final pdf = _pdf(source, theme: theme);
+      final content = _content(pdf);
+      expect(content, contains('1 0 0.2 1 '));
+      expect(content, contains(' w\n2 Tr'));
+      expect(
+        _pages(pdf).first.join(' '),
+        contains('Plain, slanted and stroked.'),
+      );
+    });
+
+    test('has its regular face in the compatibility mode', () {
+      final content = _content(_pdf(source, theme: theme, compat: true));
+      expect(content, isNot(contains('1 0 0.2 1 ')));
+      expect(content, isNot(contains('2 Tr')));
+    });
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a
     // one-page chapter leaves a blank verso page before the next.

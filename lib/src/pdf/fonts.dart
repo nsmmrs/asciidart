@@ -70,6 +70,14 @@ sealed class PrawnFont {
 
   /// Whether text in the font is ligated (never in a fixed-pitch font).
   bool get ligates => shaping.ligates && !fixedPitch;
+
+  /// Whether the face is slanted when drawn (an italic made from an
+  /// upright face the family has).
+  bool get slanted => false;
+
+  /// Whether the face is stroked when drawn (a bold made from a regular
+  /// face the family has).
+  bool get emboldened => false;
 }
 
 /// How text becomes glyphs, for measuring and drawing it.
@@ -93,7 +101,30 @@ enum Shaping {
 final class TrueTypeFont extends PrawnFont {
   /// The font of [pdf] in [family] and [style].
   new(super.family, super.style, this.pdf, [this.shaping = Shaping.prawn])
-    : super._() {
+    : slanted = false,
+      emboldened = false,
+      super._() {
+    _metrics();
+  }
+
+  /// [style] made from [base], a face of the same family: slanted for an
+  /// italic, stroked for a bold.
+  new synthetic(TrueTypeFont base, String style)
+    : pdf = base.pdf,
+      shaping = base.shaping,
+      slanted = style.contains('italic') && !base.style.contains('italic'),
+      emboldened = style.contains('bold') && !base.style.contains('bold'),
+      super._(base.family, style) {
+    _metrics();
+  }
+
+  @override
+  final bool slanted;
+
+  @override
+  final bool emboldened;
+
+  void _metrics() {
     final font = pdf.font;
     _scale = 1000 / font.unitsPerEm;
     int pick(int? typo, int hhea) => typo != null && typo != 0 ? typo : hhea;
@@ -333,20 +364,28 @@ final class FontCatalog {
   /// list separated by `;` or `,`, `GEM_FONTS_DIR` naming the bundled
   /// fonts; by default the theme's directory, then the bundled fonts),
   /// text in them shaped by [shaping].
-  new(Theme theme, {String? fontsDir, this.shaping = Shaping.prawn})
-    : _catalog = theme.fontCatalog?.families ?? const {},
-      _dirs = [
-        for (final dir
-            in (fontsDir ??
-                    (theme.directory == null
-                        ? 'GEM_FONTS_DIR'
-                        : '${theme.directory};GEM_FONTS_DIR'))
-                .split(RegExp('[;,]')))
-          if (dir.isEmpty) 'GEM_FONTS_DIR' else dir,
-      ];
+  new(
+    Theme theme, {
+    String? fontsDir,
+    this.shaping = Shaping.prawn,
+    this.synthesizeFaces = false,
+  }) : _catalog = theme.fontCatalog?.families ?? const {},
+       _dirs = [
+         for (final dir
+             in (fontsDir ??
+                     (theme.directory == null
+                         ? 'GEM_FONTS_DIR'
+                         : '${theme.directory};GEM_FONTS_DIR'))
+                 .split(RegExp('[;,]')))
+           if (dir.isEmpty) 'GEM_FONTS_DIR' else dir,
+       ];
 
   /// How text in the fonts becomes glyphs.
   final Shaping shaping;
+
+  /// Whether a style the catalog lacks for a family is made from one it
+  /// has (an italic slanted, a bold stroked), rather than an error.
+  final bool synthesizeFaces;
 
   final Map<String, Map<String, String>> _catalog;
   final List<String> _dirs;
@@ -415,6 +454,18 @@ final class FontCatalog {
     }
     if (_catalog[family] case final styles?) {
       final path = styles[style];
+      if (path == null && synthesizeFaces && styles.isNotEmpty) {
+        // The nearest face the family has: of a bold italic, the bold,
+        // then the italic; else the normal one.
+        final base = [
+          if (style == 'bold_italic') ...['bold', 'italic'],
+          'normal',
+          ...styles.keys,
+        ].firstWhere(styles.containsKey);
+        if (font(family, base) case final TrueTypeFont face) {
+          return TrueTypeFont.synthetic(face, style);
+        }
+      }
       if (path == null) {
         throw FontException(
           'font style $style not found for font family $family',
