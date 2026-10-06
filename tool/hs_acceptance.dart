@@ -190,13 +190,25 @@ Future<void> main(List<String> args) async {
   // The index and the page numbers.
   final layout = _run('pdftotext', ['-layout', pdf, '-']).stdout as String;
   final indexAt = layout.lastIndexOf(RegExp(r'\n\s*Index\s*\n'));
-  final entries = indexAt < 0
-      ? 0
-      : RegExp(r'[^\s,], \d+').allMatches(layout.substring(indexAt)).length;
+  final indexText = indexAt < 0 ? '' : layout.substring(indexAt);
+  // A term then its numbers: after a comma, or in a column.
+  final entries = RegExp(r'[^\s,](?:,| {2,}) *\d+').allMatches(indexText);
   row(
     'PDF index with page numbers',
-    indexAt >= 0 && entries > 20,
-    '$entries entries with page numbers',
+    entries.length > 20,
+    '${entries.length} entries with page numbers',
+  );
+  final repeats = [
+    for (final m in RegExp(r'\d+(?:, \d+)+').allMatches(indexText))
+      if (m[0]!.split(', ').toSet().length < m[0]!.split(', ').length) m[0]!,
+  ];
+  row(
+    'PDF index lists each page once',
+    indexAt >= 0 && repeats.isEmpty,
+    repeats.isEmpty
+        ? 'no page listed twice for a term'
+        : '${repeats.length} terms with a page twice: '
+              '${repeats.take(3).join('; ')}',
   );
   final roman =
       labels.isNotEmpty && RegExp(r'^[ivxlc]+$').hasMatch(labels.first);

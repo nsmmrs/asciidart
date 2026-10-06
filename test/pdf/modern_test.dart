@@ -612,6 +612,20 @@ base:
       expect(index(_pdf(book, compat: true)), contains('alpha, 1, 1, 2'));
     });
 
+    test('is set in the index font', () {
+      double height(String pdf) {
+        final bbox =
+            Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+        final m = RegExp(
+          r'yMin="([\d.]+)" xMax="[\d.]+" yMax="([\d.]+)">hypermedia,<',
+        ).firstMatch(bbox)!;
+        return double.parse(m[2]!) - double.parse(m[1]!);
+      }
+
+      final small = _pdf(book, theme: 'index_font_size: 6\n');
+      expect(height(small), lessThan(height(_pdf(book)) * 0.7));
+    });
+
     test('may set the page numbers in a column, without letters', () {
       final pdf = _pdf(
         book,

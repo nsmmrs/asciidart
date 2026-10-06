@@ -84,6 +84,7 @@ text. In HTML, the same cells can be styled with CSS:
 | --- | --- | --- |
 | `index_pagenum_text_align` | `left` | `right` sets each entry's page numbers in a column at the right, in tabular figures, as books do; `left` follows the term with them. |
 | `index_category_headings` | `true` | `false` leaves out the letter heading above each group of terms. |
+| `index_font_family`, `_font_size`, `_font_color`, `_font_style` | the base font | The index's font. |
 
 Each page is listed once (`hypermedia, 13, 20`); the
 `index-pagenum-sequence-style` attribute chooses otherwise as in

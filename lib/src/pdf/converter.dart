@@ -7392,36 +7392,46 @@ final class PdfConverter extends BuiltInConverter
     final headings =
         _engine != PdfEngine.modern ||
         _theme.value('index_category_headings') != const ThemeBool(false);
-    final boxes = _collect(() {
-      final termSpacing = (_n('description_list_term_spacing') ?? 0).toDouble();
-      final needed = termSpacing + 2 * _typesetHeight(_font);
-      final termStyle =
-          _fontStyle(_s('description_list_term_font_style')) ?? _font.style;
-      final proseMargin = (_n('prose_margin_bottom') ?? 0).toDouble();
-      for (final category in _index.categories) {
-        final letter = category.name.text;
-        if (headings) {
-          _out.add(
-            CustomBox(
-              _MinRoom(
-                _textBox(
-                  letter,
-                  _font.copyWith(style: termStyle),
-                  align: 'left',
-                  inlineFormat: false,
+    // The modern engine reads the index's font keys (`index_font_family`,
+    // `_size`, `_color`, `_style`); the gem has none.
+    final saved = _font;
+    if (_engine == PdfEngine.modern) _font = _themeFont('index', _font);
+    final List<LayoutBox> boxes;
+    try {
+      boxes = _collect(() {
+        final termSpacing = (_n('description_list_term_spacing') ?? 0)
+            .toDouble();
+        final needed = termSpacing + 2 * _typesetHeight(_font);
+        final termStyle =
+            _fontStyle(_s('description_list_term_font_style')) ?? _font.style;
+        final proseMargin = (_n('prose_margin_bottom') ?? 0).toDouble();
+        for (final category in _index.categories) {
+          final letter = category.name.text;
+          if (headings) {
+            _out.add(
+              CustomBox(
+                _MinRoom(
+                  _textBox(
+                    letter,
+                    _font.copyWith(style: termStyle),
+                    align: 'left',
+                    inlineFormat: false,
+                  ),
+                  needed,
                 ),
-                needed,
+                style: BoxStyle(margin: EdgeInsets(bottom: termSpacing)),
               ),
-              style: BoxStyle(margin: EdgeInsets(bottom: termSpacing)),
-            ),
-          );
+            );
+          }
+          for (final term in category.terms) {
+            _indexTerm(term, style);
+          }
+          if (proseMargin > 0) _out.add(SpacerBox(proseMargin));
         }
-        for (final term in category.terms) {
-          _indexTerm(term, style);
-        }
-        if (proseMargin > 0) _out.add(SpacerBox(proseMargin));
-      }
-    });
+      });
+    } finally {
+      _font = saved;
+    }
     final columns = (_n('index_columns') ?? 1).toInt();
     slot
       ..clear()
