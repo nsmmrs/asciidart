@@ -126,7 +126,7 @@ edition's justfile. Every feature is the AsciiDoc's own or asciidart's
 | Contents: no dot leaders, four levels | `toc` theme keys, `toclevels` | Done |
 | Part openers alone on a recto page, no running content | `:media: prepress`, `heading_part_break_after: always` | Done |
 | Chapter openers: sunk, a gray "Chapter N" line, no running content | `heading_h2_padding`, `heading_h2_label_display: block` | Done |
-| Running heads: `14 · I Hypermedia Concepts`, `3. A Web 1.0 Application · 71` | `header` theme keys, `header_title_style: toc` | Done (`14 · I: Hypermedia Concepts`) |
+| Running heads: `14 · I Hypermedia Concepts`, `3. A Web 1.0 Application · 71` | `header` theme keys, `header_title_style: numeral` | Done |
 | Introduction unnumbered; numbers to four levels | `:sectnums!:` around it, `sectnumlevels` | Done |
 | HTML Notes boxed, and in the contents | `[.html-note]` sections, `section_role_html-note_*` theme keys | Done |
 | Sidebars: a gray fill, rules above and below, sans | `sidebar` theme keys | Done |
