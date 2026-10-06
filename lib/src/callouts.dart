@@ -57,6 +57,9 @@ class Callouts {
     return id;
   }
 
+  /// The ids of the callouts a callout list item explains.
+  final Set<String> explained = {};
+
   /// Space-separated list of callout ids for list item [liOrdinal].
   String calloutIds(int liOrdinal) => currentList
       .where((item) => item.ordinal == liOrdinal)

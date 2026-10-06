@@ -6955,7 +6955,7 @@ final class PdfConverter extends BuiltInConverter
         (modern ? _font.color?.rubyString : null);
     if (color != null) result = '<font color="$color">$result</font>';
     final id = node.id;
-    if (modern && id != null) {
+    if (modern && id != null && _document.callouts.explained.contains(id)) {
       result =
           '<a id="$id">$_dummyText</a>'
           '<a anchor="${_calloutItem(id)}">$result</a>';

@@ -62,6 +62,15 @@ void main() {
     );
   });
 
+  test('a marker no item explains is not a link', () {
+    final html = _html(
+      '----\na <1>\nb <2>\n----\n<1> One.\n',
+      attributes: {'callout-links': ''},
+    );
+    expect(html, contains('b <b class="conum">(2)</b>'));
+    expect(html, contains('href="#CO1-1-item"'));
+  });
+
   group('lint', () {
     List<String> messages(String source, Map<String, String> attributes) {
       final logger = MemoryLogger();

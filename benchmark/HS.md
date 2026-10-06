@@ -30,27 +30,30 @@ the modern engine: justified paragraphs broken where their spacing is
 most even and hyphenated (US English patterns; code spans stay whole),
 no widows or orphans, Yrsa's ligatures and GPOS kerning, emphasis
 upright inside italic text, and a first-line indent of 1em on each
-paragraph that follows another, with no space between them. The book isn't
+paragraph that follows another, with no space between them. HTML, EPUB and the website (`multipage_html5`) are built with
+`callout-links`. The book isn't
 vendored: its `book/` directory isn't under its repository's license.
 
 ## Latest run (2026-10-06)
 
 | Check | Result | Detail |
 | --- | --- | --- |
-| PDF build | pass | 3235 ms, 2149 KB, 10 errors, 4 warnings |
-| HTML build | pass | 177 ms, 1048 KB, 6 errors, 5 warnings |
-| EPUB 3 build | pass | 331 ms, 1855 KB, 6 errors, 5 warnings |
-| DocBook 5 build | pass | 166 ms, 894 KB, 6 errors, 4 warnings |
+| PDF build | pass | 4209 ms, 2149 KB, 10 errors, 4 warnings |
+| HTML build | pass | 247 ms, 1048 KB, 6 errors, 5 warnings |
+| EPUB 3 build | pass | 427 ms, 1855 KB, 6 errors, 5 warnings |
+| DocBook 5 build | pass | 229 ms, 894 KB, 6 errors, 4 warnings |
+| Multi-page HTML build | pass | 231 ms, 31 KB, 6 errors, 5 warnings |
 | PDF byte-stable across runs | pass | SOURCE_DATE_EPOCH=0 |
 | PDF has each listing line once (#122) | pass | 600 distinct lines of 24+ characters: 0 missing, 0 repeated |
 | PDF crops no text (#106) | pass | 0 words past the page edge, 0 past the margin |
 | PDF index with page numbers | pass | 324 entries with page numbers |
 | PDF front matter roman, body arabic from 1 | pass | first labels i 1 2 3 4 5; "1" on page 2 |
-| PDF time for the whole book | pass | 3235 ms for 339 pages |
+| PDF time for the whole book | pass | 4209 ms for 339 pages |
 | HTML index with links | pass | 356 links to uses |
-| HTML callouts linked both ways (callout-links) | pass | 503 markers, 489 items |
+| Multi-page HTML links resolve | pass | 21 pages, 1508 links, 0 broken |
+| HTML callouts linked both ways (callout-links) | pass | 502 markers, 489 items |
 | DocBook 5 validates (RELAX NG 5.0) | FAIL | 9 errors; /home/nes/.cache/asciidart-work/hs-out/HypermediaSystems.xml:9469: parser error : Opening and ending tag mismatch: emphasis line 9469 and primary |
-| EPUBCheck passes | FAIL | 29 errors; ERROR(RSC-005): /home/nes/.cache/asciidart-work/hs-out/HypermediaSystems.epub/EPUB/nav.xhtml(12,27): Error while parsing file: Heading elements must contain text |
+| EPUBCheck passes | FAIL | 28 errors; ERROR(RSC-005): /home/nes/.cache/asciidart-work/hs-out/HypermediaSystems.epub/EPUB/nav.xhtml(12,27): Error while parsing file: Heading elements must contain text |
 
 Errors in the builds are the sources' own, and Asciidoctor reports them
 too: nested sections in an introduction, and emphasis marks around

@@ -2737,6 +2737,7 @@ abstract final class Parser {
         );
       } else {
         listItem.attributes['coids'] = coids;
+        callouts.explained.addAll(coids.split(' '));
       }
       nextIndex += 1;
     }

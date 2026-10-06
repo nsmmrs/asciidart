@@ -73,6 +73,11 @@ Asciidoctor project.
   link to each section a term is used in (Asciidoctor renders it empty;
   `index-html!` keeps its output). `Document.index` gives the same as typed
   `IndexLetter` and `IndexEntry` values.
+- A `multipage_html5` backend (native executable): a book as a website,
+  one page per part and chapter (`multipage-level` for deeper sections),
+  a home page listing them, previous, up and next links, cross references,
+  the TOC, the index and callout links rewritten across pages, footnotes
+  on the page they are on.
 - `callout-links`: callouts and their list items linked both ways in HTML
   and EPUB, markers kept out of copied code, and warnings for callouts no
   list item explains.

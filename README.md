@@ -32,6 +32,9 @@ line tool, and (compiled to JavaScript) an npm package.
   own typesetting: optimal line breaking, hyphenation, widows and orphans,
   ligatures, listings that never lose a line, and table styles by role
   ([`doc/pdf.md`](doc/pdf.md)).
+- **Books as websites and indexes everywhere.** `-b multipage_html5`
+  writes one linked page per chapter; an `[index]` section lists the index
+  terms in HTML and EPUB too; `-a callout-links` links callouts both ways.
 - **Fast.** The compiled command converts a document 5–10x faster than the
   `asciidoctor` gem end to end, and about 2x faster in process
   ([`benchmark/BASELINE.md`](benchmark/BASELINE.md)).

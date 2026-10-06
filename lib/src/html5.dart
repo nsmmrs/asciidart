@@ -260,7 +260,7 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] document to a standalone HTML page.
   String convertDocument(Document node) {
-    _beginIndex(node);
+    beginIndex(node);
     final slash = _voidElementSlash;
     final br = '<br$slash>';
     var assetUriScheme = node.attr('asset-uri-scheme', 'https')!;
@@ -628,7 +628,7 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] document to embedded HTML (no header/footer).
   String convertEmbedded(Document node) {
-    _beginIndex(node);
+    beginIndex(node);
     final result = <String>[];
     if (node.doctype == 'manpage') {
       // QUESTION should notitle control the manual page title?
@@ -2101,7 +2101,7 @@ class Html5Converter extends BuiltInConverter {
   }
 
   /// Starts cataloging the index terms of [document] (a top-level one).
-  static void _beginIndex(Document document) {
+  void beginIndex(Document document) {
     if (document.parentDocument == null) {
       document.catalog.index.begin(document);
     }

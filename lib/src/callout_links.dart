@@ -4,14 +4,20 @@
 /// copied, and each item links back to its first marker.
 library;
 
+import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/list.dart';
 
 /// [marker], with `callout-links` set, as a link to its callout list item
-/// that copying leaves out.
+/// (when one explains it) that copying leaves out.
 String calloutLink(Inline node, String marker) {
   final id = node.id;
-  if (id == null || !node.document!.hasAttr('callout-links')) return marker;
+  final document = node.document! as Document;
+  if (id == null ||
+      !document.hasAttr('callout-links') ||
+      !document.callouts.explained.contains(id)) {
+    return marker;
+  }
   return '<a id="$id" class="conum-link" href="#$id-item" '
       'style="user-select:none">$marker</a>';
 }

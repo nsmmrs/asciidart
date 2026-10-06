@@ -76,7 +76,14 @@ Future<void> main(List<String> args) async {
       '${outDir.path}/HypermediaSystems.epub',
     ),
     'DocBook 5': (['-b', 'docbook5'], '${outDir.path}/HypermediaSystems.xml'),
+    'Multi-page HTML': (
+      ['-b', 'multipage_html5', '-a', 'callout-links'],
+      '${outDir.path}/site/index.html',
+    ),
   };
+  Directory('${outDir.path}/site')
+    ..createSync(recursive: true)
+    ..listSync().forEach((entry) => entry.deleteSync(recursive: true));
   final timings = <String, Duration>{};
   for (final MapEntry(key: name, value: (options, file)) in builds.entries) {
     final (result, time) = _convert(exe, sources, options, file);
@@ -190,6 +197,39 @@ Future<void> main(List<String> args) async {
   final html = File(builds['HTML']!.$2).readAsStringSync();
   final indexLinks = RegExp('href="#_indexterm_').allMatches(html).length;
   row('HTML index with links', indexLinks > 0, '$indexLinks links to uses');
+
+  // The website: every link between its pages resolves.
+  final site = {
+    for (final file in Directory('${outDir.path}/site').listSync())
+      if (file is File && file.path.endsWith('.html'))
+        file.uri.pathSegments.last: file.readAsStringSync(),
+  };
+  final siteIds = {
+    for (final MapEntry(key: name, value: page) in site.entries)
+      name: {for (final m in RegExp(r'\sid="([^"]+)"').allMatches(page)) m[1]!},
+  };
+  var siteLinks = 0;
+  final broken = <String>[];
+  for (final MapEntry(key: name, value: page) in site.entries) {
+    for (final m in RegExp(
+      '<a [^>]*?href="([^"#:]*)(?:#([^"]*))?"',
+    ).allMatches(page)) {
+      final target = m[1]!.isEmpty ? name : m[1]!;
+      if (!target.endsWith('.html')) continue;
+      siteLinks++;
+      final id = m[2];
+      if (!site.containsKey(target) ||
+          (id != null && !siteIds[target]!.contains(id))) {
+        broken.add('$name -> $target${id == null ? '' : '#$id'}');
+      }
+    }
+  }
+  row(
+    'Multi-page HTML links resolve',
+    site.length > 1 && broken.isEmpty,
+    '${site.length} pages, $siteLinks links, ${broken.length} broken'
+        '${broken.isEmpty ? '' : ': ${broken.take(3).join(', ')}'}',
+  );
   final calloutLinks = RegExp('class="conum-link"').allMatches(html).length;
   final calloutBacks = RegExp('class="conum-back"').allMatches(html).length;
   row(
