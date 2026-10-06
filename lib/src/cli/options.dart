@@ -93,6 +93,7 @@ Example: asciidart input.adoc
         --trace                      include backtrace information when reporting errors (default: false)
     -v, --verbose                    directs application messages logged at DEBUG or INFO level to STDERR (default: false)
     -t, --timings                    print timings report (default: false)
+        --progress                   report each phase of a conversion as it finishes, with its time (default: false)
     -h, --help [TOPIC]               print a help message
                                      show this usage if TOPIC is not specified or recognized
                                      show an overview of the AsciiDoc syntax if TOPIC is syntax
@@ -236,6 +237,9 @@ enum _CliOption {
   /// `-t/--timings`.
   timings,
 
+  /// `--progress` (specific to this port).
+  progress,
+
   /// `-j/--jobs N` (specific to this port).
   jobs,
 
@@ -306,6 +310,7 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.trace, null, 'trace', _Arity.none),
   _Spec(_CliOption.verbose, 'v', 'verbose', _Arity.none),
   _Spec(_CliOption.timings, 't', 'timings', _Arity.none),
+  _Spec(_CliOption.progress, null, 'progress', _Arity.none),
   _Spec(_CliOption.jobs, 'j', 'jobs', _Arity.required),
   _Spec(_CliOption.help, 'h', 'help', _Arity.optional),
   _Spec(_CliOption.version, 'V', 'version', _Arity.none),
@@ -395,6 +400,10 @@ final class CliOptions {
 
   /// Whether a timings report is printed (`-t/--timings`).
   bool timings = false;
+
+  /// Whether each phase of a conversion is reported as it finishes
+  /// (`--progress`).
+  bool progress = false;
 
   /// Worker count from `-j/--jobs N` (default 1: sequential conversion).
   ///
@@ -869,6 +878,8 @@ final class CliOptions {
         verbose = 2;
       case _CliOption.timings:
         timings = true;
+      case _CliOption.progress:
+        progress = true;
       case _CliOption.jobs:
         jobs = _parseJobsValue(value!);
       case _CliOption.help:

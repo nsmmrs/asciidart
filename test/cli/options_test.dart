@@ -856,6 +856,11 @@ void main() {
       expect(result.options.verbose, equals(0));
     });
 
+    test('enables progress with --progress', () {
+      expect(parseCli(['--progress', sampleFile]).options.progress, isTrue);
+      expect(parseCli([sampleFile]).options.progress, isFalse);
+    });
+
     test('enables timings when -t flag is specified', () {
       final result = parseCli(['-t', sampleFile]);
       expect(result.exitCode, isNull);

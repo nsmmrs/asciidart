@@ -13,6 +13,7 @@ import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/converter.dart';
+import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/inline.dart';
@@ -525,6 +526,9 @@ final class PdfConverter extends BuiltInConverter
       language: document.attr('lang'),
     );
     final pages = result.render(pdf, destinationName: destinationName);
+    logger.info(
+      'laid out ${pages.length} ${pages.length == 1 ? 'page' : 'pages'}',
+    );
     _outline(pdf, pages, result);
     if (pages.isNotEmpty) {
       final first = pages.first;
@@ -1869,7 +1873,13 @@ final class PdfConverter extends BuiltInConverter
   void _traverse(AbstractBlock node) {
     if (node.blocks.isNotEmpty) {
       for (final block in node.blocks) {
-        block.convert();
+        final saved = _at;
+        _at = block.sourceLocation ?? saved;
+        try {
+          block.convert();
+        } finally {
+          _at = saved;
+        }
       }
     } else if (node is Block && node.contentModel != ContentModel.compound) {
       if (node.content() case final text?) {
@@ -4291,6 +4301,7 @@ final class PdfConverter extends BuiltInConverter
             logger.warn(
               'table column ${c + 1} is too narrow for its text; '
               'the text overflows it',
+              at: node.sourceLocation,
             );
             break;
           }
@@ -5911,10 +5922,16 @@ final class PdfConverter extends BuiltInConverter
         widows: widows,
         wrapIndent: wrapIndent,
         wrapMarker: wrapMarker,
+        at: _engine == PdfEngine.modern ? _at : null,
       ),
       _text,
     );
   }
+
+  /// Where the block being converted starts in the source (with the
+  /// sourcemap the PDF backend turns on), for the modern engine's
+  /// messages.
+  Cursor? _at;
 
   /// Hyphenates words (soft hyphens where they may break), or null.
   PatternHyphenator? _hyphenator;

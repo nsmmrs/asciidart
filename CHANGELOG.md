@@ -83,6 +83,8 @@ Asciidoctor project.
   emphasis in literals, invalid image widths, an empty TOC title, links
   from a website's root): the Hypermedia Systems book validates against
   the DocBook 5.0 schema and passes EPUBCheck.
+- `--progress` reports each phase of a conversion as it finishes; the
+  modern PDF engine's layout warnings name the source line of the block.
 - `callout-links`: callouts and their list items linked both ways in HTML
   and EPUB, markers kept out of copied code, and warnings for callouts no
   list item explains.

@@ -110,6 +110,10 @@ Messages about the document (warnings, errors) go to standard error.
 *-t, --timings*::
   Print how long reading, parsing and converting each file took.
 
+*--progress*::
+  Report each phase of a conversion (reading, parsing, converting, writing) as it finishes, with its time.
+  With *-v*, the PDF backend also reports how many pages it laid out.
+
 === Information
 
 *-h, --help* [_TOPIC_]::

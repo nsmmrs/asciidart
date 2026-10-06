@@ -427,9 +427,16 @@ base:
           logger: logger,
         );
         expect(compact(pdf), contains('Wxyz'));
-        expect(logger.messages.map((m) => m.message.text), [
+        final warnings = [
+          for (final m in logger.messages)
+            if (m.severity == Severity.warn) m.message,
+        ];
+        expect(warnings.map((m) => m.text), [
           'table column 1 is too narrow for its text; the text overflows it',
         ]);
+        // The table's line (after the header attribute and a blank line,
+        // its attribute list is line 3, its delimiter line 4).
+        expect(warnings.single.sourceLocation?.lineno, 4);
       },
     );
 

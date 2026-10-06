@@ -10,6 +10,7 @@ library;
 import 'dart:convert';
 import 'dart:math' as math;
 
+import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
@@ -75,6 +76,7 @@ final class TextLayout {
     this.widows = 1,
     this.wrapIndent,
     this.wrapMarker = false,
+    this.at,
   });
 
   /// `left`, `center`, `right` or `justify`.
@@ -144,6 +146,9 @@ final class TextLayout {
   /// Whether a line that wraps is marked with a return arrow past its
   /// end (for code).
   final bool wrapMarker;
+
+  /// Where the text's block starts in the source, for messages.
+  final Cursor? at;
 }
 
 /// What the text needs from the conversion: fonts, the root font size,
@@ -843,6 +848,7 @@ final class PrawnTextBox implements CustomContent {
       _context.logger.error(
         'cannot fit formatted text on page: '
         '${_items.map((i) => i.text).join()}',
+        at: _layout.at,
       );
       return CustomPlacement(height: 0, paint: (page, x, top) {});
     }

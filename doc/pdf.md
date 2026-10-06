@@ -84,3 +84,10 @@ text. In HTML, the same cells can be styled with CSS:
 
 A column too narrow for even one character keeps its text (set past its
 edge, with a warning), where the gem leaves the table out.
+
+### Messages
+
+Layout warnings name the file and line of the block they are about
+(`doc.adoc: line 6: table column 1 is too narrow for its text`): `-b pdf`
+keeps every block's source location. `--progress` reports each phase of
+a conversion as it finishes, and `-v` how many pages were laid out.
