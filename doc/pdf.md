@@ -86,6 +86,12 @@ A caption stays with the block it is above. Callout markers aren't part
 of the text when code is copied, and link to their callout list item,
 which links back.
 
+### Images
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `image_placement` | `here` | `auto`: an image (with its caption) that doesn't fit the rest of the page goes to the top of the next page, and the text after it fills the room, as figures float in books; never past a heading or a page break. |
+
 ### Tables
 
 | Key | What it does |

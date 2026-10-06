@@ -545,7 +545,8 @@ base:
         '== Chapter Two\n\nText.\n';
     const theme =
         'footer:\n  recto: &both\n    right:\n'
-        "      content: 'P[{part-numeral}] C[{chapter-numeral}] {page-number}'\n"
+        '      content: '
+        "'P[{part-numeral}] C[{chapter-numeral}] {page-number}'\n"
         '  verso: *both\n'
         // Each chapter here is a page: its opener.
         'running_content_on_openers: true\n';
@@ -560,7 +561,7 @@ base:
     ];
 
     for (final compat in [false, true]) {
-      test('are the part\'s and the chapter\'s'
+      test("are the part's and the chapter's"
           '${compat ? ' (compatibility mode)' : ''}', () {
         final pages = footers(_pdf(book, theme: theme, compat: compat));
         // A line that refers to a numeral the page hasn't (the contents,
@@ -749,7 +750,7 @@ base:
       expect(pages[2], contains('[1] The first note.'));
     });
 
-    test('may show links\' URIs (show-link-uri=footnote)', () {
+    test("may show links' URIs (show-link-uri=footnote)", () {
       const source =
           '= Doc\n:show-link-uri: footnote\n\n'
           'See https://htmx.org[htmx] and https://example.org.\n';
@@ -827,6 +828,39 @@ base:
       );
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
+  group('floating images', () {
+    final svg = base64.encode(
+      utf8.encode(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" '
+        'viewBox="0 0 400 300"><rect width="400" height="300"/></svg>',
+      ),
+    );
+    final book = [
+      '= Doc\n:doctype: book\n\n== Chap\n',
+      for (var i = 1; i <= 14; i++)
+        'Paragraph $i with some words in it to fill a line or two.\n',
+      '.The figure\nimage::data:image/svg+xml;base64,$svg[pdfwidth=100%]\n',
+      'After the image.\n\n== Next\n\nNext chapter.\n',
+    ].join('\n');
+
+    /// The text of each page, its lines joined.
+    List<String> pages(String pdf) =>
+        _pages(pdf).map((lines) => lines.join('\n')).toList();
+
+    test("go to the next page when they don't fit, the text filling in", () {
+      final text = pages(_pdf(book, theme: 'image_placement: auto\n'));
+      expect(text[1], contains('After the image.'));
+      expect(text[2], startsWith('Figure 1. The figure'));
+      // The next chapter after the figure, on its own page.
+      expect(text[3], startsWith('Next'));
+    });
+
+    test('stay in place without image_placement: auto', () {
+      final text = pages(_pdf(book));
+      expect(text[2], contains('After the image.'));
+    });
+  }, skip: _tools ? false : 'needs poppler');
 
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a

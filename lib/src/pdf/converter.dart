@@ -2527,11 +2527,18 @@ final class PdfConverter extends BuiltInConverter
             (_c('${category}_border_color') ?? _c('base_border_color')) != null
         ? _headingBorder(category)
         : null;
+    // Floating images wait for no heading: it follows them.
+    final barrier = _engine == PdfEngine.modern;
     if (padding == null && border == null) {
       _out.add(
         CustomBox(
           content,
-          style: BoxStyle(margin: margin, anchor: anchor, marks: marks),
+          style: BoxStyle(
+            margin: margin,
+            anchor: anchor,
+            marks: marks,
+            floatBarrier: barrier,
+          ),
         ),
       );
       return;
@@ -2545,6 +2552,7 @@ final class PdfConverter extends BuiltInConverter
           anchor: anchor,
           marks: marks,
           decoration: border,
+          floatBarrier: barrier,
         ),
       ),
     );
@@ -3924,29 +3932,47 @@ final class PdfConverter extends BuiltInConverter
       _floatNext = paragraph;
       return;
     }
-    if (caption != null && !captionBottom) _out.add(caption);
-    _out.add(
-      CustomBox(
-        _ImageContent(
-          graphic,
-          width: _imageWidth(node),
-          align: align,
-          pageWidth: _pageSize(_document).$1,
-          caption: captionBottom ? caption : null,
-          border: border,
-          link: node.attr('link'),
-        ),
-        style: BoxStyle(
-          anchor: node.id,
-          margin: EdgeInsets(
-            bottom: caption != null && captionBottom ? 0 : margin,
+    // `image_placement: auto` (modern engine): the image and its caption
+    // float, to the top of the next page when they don't fit, the text
+    // after them filling the room.
+    final floating =
+        _engine == PdfEngine.modern && _s('image_placement') == 'auto';
+    final shown = graphic;
+    final figure = _collect(() {
+      if (caption != null && !captionBottom) _out.add(caption);
+      _out.add(
+        CustomBox(
+          _ImageContent(
+            shown,
+            width: _imageWidth(node),
+            align: align,
+            pageWidth: _pageSize(_document).$1,
+            caption: captionBottom ? caption : null,
+            border: border,
+            link: node.attr('link'),
+          ),
+          style: BoxStyle(
+            anchor: node.id,
+            margin: EdgeInsets(
+              bottom: caption != null && captionBottom ? 0 : margin,
+            ),
           ),
         ),
-      ),
-    );
-    if (caption != null && captionBottom) {
-      _out.add(caption);
-      if (margin > 0) _out.add(SpacerBox(margin));
+      );
+      if (caption != null && captionBottom) {
+        _out.add(caption);
+        if (margin > 0) _out.add(SpacerBox(margin));
+      }
+    });
+    if (floating) {
+      _out.add(
+        BlockBox(
+          figure,
+          style: const BoxStyle(keepTogether: true, floating: true),
+        ),
+      );
+    } else {
+      _out.addAll(figure);
     }
   }
 
