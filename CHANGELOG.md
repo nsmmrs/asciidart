@@ -43,7 +43,9 @@ Asciidoctor project.
     man pages.
 
   By default the layout is asciidart's own: justified paragraphs are
-  broken where their spacing is most even (Knuth and Plass) and
+  broken as Typst's optimizer breaks them (its costs: even spacing, few
+  hyphens, no lone word on the last line), other text one line at a
+  time, never inside a word at a style change, and
   hyphenated in the document's language (hyph-utf8's patterns, 72
   languages; `:hyphens!:` turns it off; code spans stay whole), and a
   paragraph leaves at least two lines on either side of a page break
@@ -62,8 +64,8 @@ Asciidoctor project.
   recto start) carry no running content unless
   `running_content_on_blank_pages` is true. Tables with a role take the
   theme's `table_role_<role>_*` keys, and a cell whose text is a phrase
-  with a role, `table_cell_role_<role>_*`. `base_line_breaking: greedy`
-  breaks lines one at a time. `doc/pdf.md` lists every setting. With `-a pdf-compat` the layout is the gem's, and
+  with a role, `table_cell_role_<role>_*`. `base_line_breaking: optimal`
+  optimizes ragged text too, `greedy` breaks any text one line at a time. `doc/pdf.md` lists every setting. With `-a pdf-compat` the layout is the gem's, and
   `hyphens` and `base_hyphens` hyphenate as the gem does with text-hyphen.
   In that mode, 763 of the 797 documents of the gem's spec suite convert the same (words,
   positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),

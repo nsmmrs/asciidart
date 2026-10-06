@@ -300,7 +300,11 @@ final class PdfConverter extends BuiltInConverter
       boundsHeight: pageHeight - _pageMargins(document).vertical,
       decorationWidth: (_n('base_text_decoration_width') ?? 1).toDouble(),
       engine: _engine,
-      optimalLineBreaking: _s('base_line_breaking') != 'greedy',
+      lineBreaking: switch (_s('base_line_breaking')) {
+        'optimal' => LineBreaking.optimal,
+        'greedy' => LineBreaking.greedy,
+        _ => LineBreaking.auto,
+      },
       labels: (key) => _layoutLabels[key],
       logger: logger,
     );

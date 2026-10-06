@@ -4,3 +4,4 @@ page:
   margin: 15
 base:
   font-size: 11
+  line-breaking: optimal

@@ -31,7 +31,7 @@ newline is `\n` in a double-quoted YAML string.
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `base_line_breaking` | `optimal` | `optimal` breaks justified text where its spacing is most even over the whole paragraph (Knuth and Plass); `greedy` fills one line at a time, as Prawn does. |
+| `base_line_breaking` | `auto` | How lines break, as Typst breaks them: `auto` breaks justified text where the lines' costs are least (Typst's optimizer: even spacing, few hyphens, no lone word on the last line) and other text one line at a time; `optimal` optimizes any text (ragged lines balanced); `greedy` fills one line at a time. A style change inside a word is never a break. |
 | `prose_orphans` | `2` | The fewest lines of a paragraph left at the bottom of a page. |
 | `prose_widows` | `2` | The fewest lines of a paragraph carried to the top of the next page. |
 | `prose_text_indent` | `0` | The indent of every paragraph's first line. Numbers are points; `1.5em` is relative to the paragraph's font size, `2rem` to the base font size. |

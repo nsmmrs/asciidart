@@ -168,7 +168,7 @@ final class TextContext {
     this.boundsHeight = double.infinity,
     this.decorationWidth = 1,
     this.engine = PdfEngine.asciidoctorPdf,
-    this.optimalLineBreaking = true,
+    this.lineBreaking = LineBreaking.auto,
     this.labels,
     LoggerBase? logger,
   }) : logger = logger ?? LoggerManager.logger;
@@ -191,9 +191,8 @@ final class TextContext {
   /// The layout engine (which wraps lines as Prawn does, or optimally).
   final PdfEngine engine;
 
-  /// Whether the modern engine breaks justified text where its spacing is
-  /// most even (else line by line, as Prawn does).
-  final bool optimalLineBreaking;
+  /// How the modern engine breaks lines.
+  final LineBreaking lineBreaking;
 
   /// The fonts.
   final FontCatalog fonts;
@@ -1187,8 +1186,9 @@ List<String> _tokenize(String text) => [
   for (final m in _tokens.allMatches(text)) m[0]!,
 ];
 
-/// The wrap of [items] for [context]'s engine: the optimal wrap for
-/// justified text in the modern engine, else Prawn's.
+/// The wrap of [items] for [context]'s engine: the modern engine's (whole
+/// words, Typst's breaking), else Prawn's (also for code, whose wrapped
+/// lines go on with a hanging indent).
 _Wrap _wrapOf(
   List<_Item> items,
   TextState state,
@@ -1199,10 +1199,7 @@ _Wrap _wrapOf(
   required bool firstPiece,
   double? continuedIndent,
   int? maxLines,
-}) =>
-    context.engine == PdfEngine.modern &&
-        context.optimalLineBreaking &&
-        layout.align == 'justify'
+}) => context.engine == PdfEngine.modern && layout.wrapIndent == null
     ? _OptimalWrap(
         items,
         state,
@@ -1224,6 +1221,19 @@ _Wrap _wrapOf(
         continuedIndent: continuedIndent,
         maxLines: maxLines,
       );
+
+/// How the modern engine breaks a paragraph's lines (`base_line_breaking`).
+enum LineBreaking {
+  /// Optimally when justified, else one line at a time (as Typst does).
+  auto,
+
+  /// Where the lines' costs are least (Typst's optimizer), however the
+  /// text is aligned.
+  optimal,
+
+  /// One line at a time, each as full as it goes.
+  greedy,
+}
 
 /// Prawn's `LineWrap`, `Arranger` and `Wrap` over the items of one piece.
 base class _Wrap {
@@ -1888,10 +1898,10 @@ String destinationName(String anchor) {
   return '0x${hex.join()}';
 }
 
-/// The modern engine's wrap of justified text: the breaks that make the
-/// paragraph's spacing most even (Knuth and Plass's total fit, through
-/// libpdf's breaker), over the same items, and the lines then set as
-/// Prawn's wrap sets them (justified by word spacing).
+/// The modern engine's wrap: the breaks Typst's optimizer would choose
+/// (libpdf's TypstLineBreaker: the lines' costs, as Knuth and Plass's total
+/// fit), over the same items, and the lines then set as Prawn's wrap sets
+/// them (justified by word spacing when justified).
 final class _OptimalWrap extends _Wrap {
   new(
     super._unconsumed,
@@ -1990,7 +2000,20 @@ final class _OptimalWrap extends _Wrap {
     }
     add(const GlueItem.fill(), pieces.length);
     add(const PenaltyItem(0, PenaltyItem.forced), pieces.length);
-    final breaks = const KnuthPlassLineBreaker().breakItems(items, widthOf);
+    // Typst's breaking: optimal (its costs; ragged lines that don't
+    // shrink) or one line at a time.
+    final justify = _layout.align == 'justify';
+    final breaker = switch (_context.lineBreaking) {
+      LineBreaking.optimal => TypstLineBreaker(
+        justify: justify,
+        fontSize: _state.size,
+      ),
+      LineBreaking.auto when justify => TypstLineBreaker(
+        fontSize: _state.size,
+      ),
+      _ => const FirstFitLineBreaker(),
+    };
+    final breaks = breaker.breakItems(items, widthOf);
 
     // The pieces of each line: up to the piece its break is in (a space
     // or a newline ends the line it breaks), then on from the next.
