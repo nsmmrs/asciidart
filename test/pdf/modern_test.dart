@@ -596,6 +596,56 @@ base:
     }
   }, skip: _tools ? false : 'needs poppler');
 
+  group('index', () {
+    const book =
+        '= Doc\n:doctype: book\n\n== Chap\n\n'
+        '((alpha)) and ((alpha)) and ((hypermedia)).\n\n<<<\n\n'
+        'More ((alpha)).\n\n[index]\n== Index\n';
+
+    /// The index's lines (the last page's).
+    List<String> index(String pdf) =>
+        _pages(pdf).lastWhere((page) => page.isNotEmpty);
+
+    test('lists each page once', () {
+      expect(index(_pdf(book)), contains('alpha, 1, 2'));
+      // The gem lists a page for each use.
+      expect(index(_pdf(book, compat: true)), contains('alpha, 1, 1, 2'));
+    });
+
+    test('may set the page numbers in a column, without letters', () {
+      final pdf = _pdf(
+        book,
+        theme:
+            'index_pagenum_text_align: right\n'
+            'index_category_headings: false\n',
+      );
+      final lines = index(pdf);
+      expect(lines, isNot(contains('A')));
+      expect(lines, isNot(contains('H')));
+      expect(
+        lines.any((l) => RegExp(r'^alpha\s{4,}1, 2$').hasMatch(l)),
+        isTrue,
+      );
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      // The words of each line (by its top), and where the line ends.
+      final lineWords = <String, List<String>>{};
+      final lineEnds = <String, double>{};
+      for (final m in RegExp(
+        r'yMin="([\d.]+)" xMax="([\d.]+)"[^>]*>([^<]*)<',
+      ).allMatches(bbox)) {
+        (lineWords[m[1]!] ??= []).add(m[3]!);
+        lineEnds[m[1]!] = double.parse(m[2]!);
+      }
+      double end(String term) =>
+          lineEnds[lineWords.entries
+              .lastWhere((e) => e.value.first == term)
+              .key]!;
+      // Both entries' numbers end at the column's right edge.
+      expect(end('alpha'), closeTo(end('hypermedia'), 0.01));
+    });
+  }, skip: _tools ? false : 'needs poppler');
+
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a
     // one-page chapter leaves a blank verso page before the next.

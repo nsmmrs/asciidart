@@ -78,6 +78,18 @@ AsciiDoc has no syntax for a cell's role, so a cell takes the role of its
 text. In HTML, the same cells can be styled with CSS:
 `td:has(> p > span.paid:only-child) { background: #dfd; }`.
 
+### Index
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `index_pagenum_text_align` | `left` | `right` sets each entry's page numbers in a column at the right, in tabular figures, as books do; `left` follows the term with them. |
+| `index_category_headings` | `true` | `false` leaves out the letter heading above each group of terms. |
+
+Each page is listed once (`hypermedia, 13, 20`); the
+`index-pagenum-sequence-style` attribute chooses otherwise as in
+asciidoctor-pdf (`range` joins consecutive pages, `term` lists a page for
+each use, which is asciidoctor-pdf's default).
+
 ### Pages
 
 | Key | Default | What it does |

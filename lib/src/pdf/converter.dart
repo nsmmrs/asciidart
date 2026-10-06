@@ -6072,6 +6072,7 @@ final class PdfConverter extends BuiltInConverter
     double? wrapIndent,
     bool wrapMarker = false,
     bool hyphenate = false,
+    Set<String> features = const {},
   }) {
     var text = hyphenate ? _hyphenated(markup, align) : markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -6107,7 +6108,7 @@ final class PdfConverter extends BuiltInConverter
         color: font.color,
         kerning: font.kerning,
         characterSpacing: characterSpacing,
-        features: _baseFeatures,
+        features: {..._baseFeatures, ...features},
       ),
       TextLayout(
         align: align,
@@ -6549,9 +6550,10 @@ final class PdfConverter extends BuiltInConverter
         content = _applySubsDiscretely(
           template,
           attributes,
-          unset: const {'part-numeral', 'chapter-numeral'}.difference(
-            attributes.keys.toSet(),
-          ),
+          unset: const {
+            'part-numeral',
+            'chapter-numeral',
+          }.difference(attributes.keys.toSet()),
           dropLines: true,
         );
         if (font.transform case final transform? when transform != 'none') {
@@ -7381,7 +7383,15 @@ final class PdfConverter extends BuiltInConverter
     _index
       ..linkPages((anchor) => _anchorPages[anchor], _pageLabel)
       ..linkAssociations();
-    final style = _document.attr('index-pagenum-sequence-style');
+    // The modern engine lists each page once unless the document asks
+    // otherwise; the gem lists a page for each use.
+    final style =
+        _document.attr('index-pagenum-sequence-style') ??
+        (_engine == PdfEngine.modern ? 'page' : null);
+    // `index_category_headings: false` leaves out the letter headings.
+    final headings =
+        _engine != PdfEngine.modern ||
+        _theme.value('index_category_headings') != const ThemeBool(false);
     final boxes = _collect(() {
       final termSpacing = (_n('description_list_term_spacing') ?? 0).toDouble();
       final needed = termSpacing + 2 * _typesetHeight(_font);
@@ -7390,20 +7400,22 @@ final class PdfConverter extends BuiltInConverter
       final proseMargin = (_n('prose_margin_bottom') ?? 0).toDouble();
       for (final category in _index.categories) {
         final letter = category.name.text;
-        _out.add(
-          CustomBox(
-            _MinRoom(
-              _textBox(
-                letter,
-                _font.copyWith(style: termStyle),
-                align: 'left',
-                inlineFormat: false,
+        if (headings) {
+          _out.add(
+            CustomBox(
+              _MinRoom(
+                _textBox(
+                  letter,
+                  _font.copyWith(style: termStyle),
+                  align: 'left',
+                  inlineFormat: false,
+                ),
+                needed,
               ),
-              needed,
+              style: BoxStyle(margin: EdgeInsets(bottom: termSpacing)),
             ),
-            style: BoxStyle(margin: EdgeInsets(bottom: termSpacing)),
-          ),
-        );
+          );
+        }
         for (final term in category.terms) {
           _indexTerm(term, style);
         }
@@ -7429,6 +7441,12 @@ final class PdfConverter extends BuiltInConverter
   /// Adds the entry of index [term] (the gem's `convert_index_term`).
   void _indexTerm(IndexTerm term, String? style) {
     final markup = StringBuffer();
+    // `index_pagenum_text_align: right` (modern engine): the page numbers
+    // in a column at the right, in tabular figures, as books set them.
+    final column =
+        _engine == PdfEngine.modern &&
+        _s('index_pagenum_text_align') == 'right';
+    String? pagenums;
     final seeAlso = <String>[];
     // Linked only on screen (the gem's `media`).
     final screen = (_document.attr('media') ?? 'screen') == 'screen';
@@ -7472,8 +7490,12 @@ final class PdfConverter extends BuiltInConverter
           default:
             numbers = [for (final d in destinations) link(d.anchor, d.page!)];
         }
-        for (final number in numbers) {
-          markup.write(', $number');
+        if (column) {
+          pagenums = numbers.join(', ');
+        } else {
+          for (final number in numbers) {
+            markup.write(', $number');
+          }
         }
         for (final (target, name) in term.seeAlso) {
           final also = target == null
@@ -7484,22 +7506,35 @@ final class PdfConverter extends BuiltInConverter
       }
     }
     final indent = (_n('description_list_description_indent') ?? 0).toDouble();
-    void entry(String text, double left) {
+    void entry(String text, double left, [String? numbers]) {
+      final box = _textBox(
+        text,
+        _font,
+        align: 'left',
+        normalize: false,
+        indent: -indent * 2,
+      );
       _out.add(
         CustomBox(
-          _textBox(
-            text,
-            _font,
-            align: 'left',
-            normalize: false,
-            indent: -indent * 2,
-          ),
+          numbers == null
+              ? box
+              : _IndexRow(
+                  box,
+                  _textBox(
+                    numbers,
+                    _font,
+                    align: 'right',
+                    normalize: false,
+                    features: const {'tnum'},
+                  ),
+                  gap: _font.size,
+                ),
           style: BoxStyle(margin: EdgeInsets(left: left + indent * 2)),
         ),
       );
     }
 
-    entry(markup.toString(), 0);
+    entry(markup.toString(), 0, pagenums);
     if (seeAlso.isEmpty && term.isLeaf) return;
     final nested = _collect(() {
       for (final item in seeAlso) {
@@ -8342,6 +8377,65 @@ final class _TocEntry implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => title.intrinsicWidths();
+}
+
+/// An index entry with its page numbers in a column: the [term] at the
+/// left, the [numbers] right-aligned at the right (as wide as they are,
+/// up to half the width), [gap] apart, both from the top.
+final class _IndexRow implements CustomContent {
+  const new(this.term, this.numbers, {required this.gap});
+
+  final PrawnTextBox term;
+  final PrawnTextBox numbers;
+  final double gap;
+
+  double _numbersWidth(double width) =>
+      math.min(numbers.intrinsicWidths().$2, width / 2);
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final numbersWidth = _numbersWidth(width);
+    final room = atTop ? double.infinity : available;
+    final left = term.place(width - numbersWidth - gap, room, atTop: atTop);
+    final right = numbers.place(numbersWidth, room, atTop: atTop);
+    // An entry isn't split: it moves on whole.
+    if (left == null || right == null) return null;
+    if (left.rest != null || right.rest != null) return null;
+    final height = math.max(left.height, right.height);
+    if (!atTop && height > available) return null;
+    final offset = width - numbersWidth;
+    return CustomPlacement(
+      height: height,
+      anchors: [
+        ...left.anchors,
+        for (final (name, ax, ay) in right.anchors) (name, ax + offset, ay),
+      ],
+      paint: (page, x, top) {
+        left.paint(page, x, top);
+        right.paint(page, x + offset, top);
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) {
+    final numbersWidth = _numbersWidth(width);
+    return math.max(
+      term.minHeight(width - numbersWidth - gap),
+      numbers.minHeight(numbersWidth),
+    );
+  }
+
+  @override
+  (double, double) intrinsicWidths() {
+    final (termMin, termMax) = term.intrinsicWidths();
+    final (numbersMin, numbersMax) = numbers.intrinsicWidths();
+    return (termMin + gap + numbersMin, termMax + gap + numbersMax);
+  }
 }
 
 /// [items] one below the other, at the bottom of the region when
