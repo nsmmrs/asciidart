@@ -126,7 +126,7 @@ without a label; chapter 9's closing quote in small capitals.
 | Listings: "Listing N" captions, callouts | Titles, `listing-caption`, callouts | Done |
 | Listings highlighted | `source-highlighter=highlight.js` | Done |
 | Figures: "Figure N" captions below, centered | `image_caption_*` theme keys | Done |
-| Figures float to the top or bottom of a page | Images | FEAT-9dmbh2 |
+| Figures float to the next page when they don't fit, the text filling in | `image_placement: auto` | Done (to the top of the next page; Typst also to the bottom) |
 | Footnotes at the bottom of the page | `footnote:[]` (the modern engine's default) | Done (numbered per chapter, Typst per page) |
 | Links show their URL in a footnote | `:show-link-uri: footnote` | Done |
 | Justified, hyphenated, first-line indents | Modern engine, `prose` theme keys | Done |
@@ -137,7 +137,7 @@ without a label; chapter 9's closing quote in small capitals.
 | Website: a page per front matter part, part and chapter, previous and next | `multipage_html5` | Done |
 | Website: the same URLs (`/hypermedia-a-reintroduction/`) and a full contents | Sections | FEAT-95fvvy |
 | Website: landing page, footer, stylesheet, color customizer | Docinfo, `stylesheet` | FEAT-95fvvy, FEAT-y6ndrm |
-| Website and EPUB: listings highlighted | `source-highlighter=highlight.js` | Done |
+| Website and EPUB: listings highlighted | `source-highlighter=highlight.js` (the EPUB packs the theme) | Done |
 | EPUB: cover, rights, ISBN, editor | `front-cover-image`, `copyright`, `isbn`, `editor` | ISBN and editor: FEAT-9b8gpj |
 
 Not in scope: the Markdown export and the Kindle file, which the Typst
