@@ -3,6 +3,7 @@ page:
   size: [180pt, 2000pt]
 base:
   text-align: justify
+  leading: 5
 prose:
   text-indent-inner: 14
   margin-bottom: 5

@@ -46,6 +46,9 @@ sealed class PrawnFont {
   /// The line gap at [size] points.
   double lineGapAt(double size) => lineGap / 1000 * size;
 
+  /// The height of capital letters at [size] points.
+  double capHeightAt(double size) => pdf.capHeight / 1000 * size;
+
   /// The line height at [size] points: ascender, descender and line gap.
   double heightAt(double size) =>
       (ascender - descender + lineGap) / 1000 * size;

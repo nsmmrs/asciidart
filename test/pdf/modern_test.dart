@@ -969,6 +969,55 @@ base:
     );
   }, skip: _tools ? false : 'needs poppler');
 
+  test("base_leading: Typst's lines, cap height plus leading apart", () {
+    List<double> tops(String pdf) => [
+      for (final m in RegExp(r'<line xMin="[\d.]+" yMin="([\d.]+)"').allMatches(
+        Process.runSync('pdftotext', ['-bbox-layout', pdf, '-']).stdout
+            as String,
+      ))
+        double.parse(m[1]!),
+    ];
+    final source = '${'word ' * 60}\n';
+    final a = tops(_pdf(source, theme: 'base_leading: 4\n'));
+    final b = tops(_pdf(source, theme: 'base_leading: 10\n'));
+    // Six points more leading: six points more between lines.
+    expect((b[1] - b[0]) - (a[1] - a[0]), closeTo(6, 0.01));
+    expect((b[2] - b[1]) - (a[2] - a[1]), closeTo(6, 0.01));
+  }, skip: _tools ? false : 'needs poppler');
+
+  test('title_page_title_skew: the title slanted as one block', () {
+    final pdf = _pdf(
+      '= Several Long Words Make Two Lines\n:doctype: book\n\n== One\n\n'
+      'Text.\n',
+      theme:
+          'title_page_title_font_size: 60\ntitle_page_title_skew: 10\n'
+          'title_page_text_align: left\n',
+    );
+    final words = {
+      for (final m
+          in RegExp(r'xMin="([\d.]+)" yMin="([\d.]+)"[^>]*>(Several|Words)<')
+              .allMatches(
+                Process.runSync('pdftotext', [
+                      '-f',
+                      '1',
+                      '-l',
+                      '1',
+                      '-bbox',
+                      pdf,
+                      '-',
+                    ]).stdout
+                    as String,
+              ))
+        m[3]!: (double.parse(m[1]!), double.parse(m[2]!)),
+    };
+    // On two lines, the upper one further right by tan(10°) times the
+    // distance between them.
+    final (x1, y1) = words['Several']!;
+    final (x2, y2) = words['Words']!;
+    expect(y2, greaterThan(y1));
+    expect(x1 - x2, closeTo(0.17633 * (y2 - y1), 0.5));
+  }, skip: _tools ? false : 'needs poppler');
+
   group('floating images', () {
     final svg = base64.encode(
       utf8.encode(

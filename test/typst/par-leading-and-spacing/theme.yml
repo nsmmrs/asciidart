@@ -1,3 +1,5 @@
 extends: ./../base-theme.yml
 prose:
   margin-bottom: 10
+base:
+  leading: 2

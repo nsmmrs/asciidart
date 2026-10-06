@@ -865,11 +865,24 @@ final class PdfConverter extends BuiltInConverter
       }
       final left = (_n('${category}_margin_left') ?? 0).toDouble();
       final right = (_n('${category}_margin_right') ?? 0).toDouble();
+      // The modern engine: the text sheared as a block, by an angle in
+      // degrees leaning right (`<category>_skew`, as Typst's skew).
+      final degrees = _engine == PdfEngine.modern
+          ? _n('${category}_skew')
+          : null;
       _out.add(
         BlockBox(
           [
             CustomBox(
-              _textBox(content, font, align: align, normalize: normalize),
+              _textBox(
+                content,
+                font,
+                align: align,
+                normalize: normalize,
+                skew: degrees == null
+                    ? null
+                    : math.tan(degrees.toDouble() * math.pi / 180),
+              ),
             ),
           ],
           style: BoxStyle(
@@ -6487,6 +6500,7 @@ final class PdfConverter extends BuiltInConverter
     bool wrapMarker = false,
     bool hyphenate = false,
     Set<String> features = const {},
+    double? skew,
   }) {
     var text = hyphenate ? _hyphenated(markup, align) : markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -6539,6 +6553,7 @@ final class PdfConverter extends BuiltInConverter
         wrapIndent: wrapIndent,
         wrapMarker: wrapMarker,
         at: _engine == PdfEngine.modern ? _at : null,
+        skew: skew,
       ),
       _text,
     );
@@ -6644,6 +6659,24 @@ final class PdfConverter extends BuiltInConverter
     _FontState font,
   ) {
     final prawnFont = _fonts.font(font.family, font.style);
+    // The modern engine with `base_leading`: Typst's model. Each line's box
+    // runs from its cap height to its baseline, the leading between boxes;
+    // a text's first line has its cap height at the top, its last line
+    // ends at its baseline (the space between blocks from baseline to cap
+    // height).
+    if (_engine == PdfEngine.modern) {
+      if (_length('base_leading', font.size) case final typst?) {
+        final ascender = prawnFont.ascenderAt(font.size);
+        final descender = prawnFont.descenderAt(font.size);
+        final lineGap = prawnFont.lineGapAt(font.size);
+        final cap = prawnFont.capHeightAt(font.size);
+        return (
+          leading: cap + typst - (ascender + descender + lineGap),
+          paddingTop: cap - ascender,
+          paddingBottom: -descender,
+        );
+      }
+    }
     final leading = font.lineHeight * font.size - font.size;
     return (
       leading: leading,

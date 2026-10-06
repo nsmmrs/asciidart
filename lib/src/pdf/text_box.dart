@@ -82,7 +82,14 @@ final class TextLayout {
     this.wrapIndent,
     this.wrapMarker = false,
     this.at,
+    this.skew,
   });
+
+  /// The text sheared as one block about its last baseline (Typst's skew
+  /// of a heading): each glyph slanted by this ratio (the tangent of the
+  /// angle, positive leaning right), each line shifted right by it times
+  /// its height above the last line's baseline.
+  final double? skew;
 
   /// `left`, `center`, `right` or `justify`.
   final String align;
@@ -963,12 +970,25 @@ final class PrawnTextBox implements CustomContent {
     double width,
   ) {
     final canvas = page.canvas;
+    final skew = _layout.skew;
+    final lastBaseline = skew == null
+        ? 0.0
+        : lines
+              .lastWhere(
+                (l) => l.fragments.isNotEmpty,
+                orElse: () => lines.last,
+              )
+              .fragments
+              .fold<double>(0, (most, f) => math.max(most, f.baseline));
     for (final line in lines) {
       if (line.wrapped) _wrapArrow(canvas, line, x + width, top);
       for (final f in line.fragments) {
         final fragment = f.format.fragment;
         if (fragment.isMarker) continue;
-        final left = x + f.left;
+        final left =
+            x +
+            f.left +
+            (skew == null ? 0 : skew * (lastBaseline - f.baseline));
         final baseline = top - f.baseline;
         final y = baseline + f.yOffset;
         final callbacks = fragment.callbacks ?? const [];
@@ -1037,7 +1057,7 @@ final class PrawnTextBox implements CustomContent {
                 kerning: _state.kerning,
                 ligatures: f.format.font.ligates,
                 features: f.format.features,
-                skew: f.format.font.slanted ? 0.2 : 0,
+                skew: skew ?? (f.format.font.slanted ? 0.2 : 0),
                 embolden: f.format.font.emboldened ? f.format.size / 40 : 0,
               ),
             )
@@ -1928,6 +1948,8 @@ final class _OptimalWrap extends _Wrap {
     // Spaces at the start of a line are left out, also after zero-width
     // markers (an index term's anchor before the first word).
     final pieces = <(int, String)>[];
+    // The pieces a word longer than a line may break before.
+    final charBreaks = <int>{};
     var lineStart = true;
     for (final (i, item) in _unconsumed.indexed) {
       if (item.text == '\n') {
@@ -1939,6 +1961,21 @@ final class _OptimalWrap extends _Wrap {
             if (lineStart) continue;
           } else if (!item.format.fragment.isMarker) {
             lineStart = false;
+          }
+          // A word longer than a line: a piece per character, so that the
+          // line can break between them (at a cost).
+          final word = token.endsWith(_shy)
+              ? token.substring(0, token.length - 1)
+              : token;
+          if (!item.format.fragment.isMarker &&
+              word.runes.length > 1 &&
+              !RegExp('^[ \t$_zwsp]+\$').hasMatch(word) &&
+              _widthOf(word, item.format) > _width) {
+            for (final (k, rune) in token.runes.indexed) {
+              if (k > 0) charBreaks.add(pieces.length);
+              pieces.add((i, String.fromCharCode(rune)));
+            }
+            continue;
           }
           pieces.add((i, token));
         }
@@ -1973,24 +2010,16 @@ final class _OptimalWrap extends _Wrap {
       }
       final shy = token.endsWith(_shy);
       final word = shy ? token.substring(0, token.length - 1) : token;
+      // A character of a word longer than a line: a costly break before
+      // it (see the pieces).
+      if (charBreaks.contains(p)) add(const PenaltyItem(0, 900), p);
       if (word.isNotEmpty) {
         final width = format.fragment.isMarker
             ? 0.0
             : word == _unconsumed[i].text
             ? _fragmentWidth(word, format)
             : _widthOf(word, format);
-        if (width > _width && word.runes.length > 1) {
-          // Longer than a line: breakable between any two characters, at
-          // a cost.
-          final runes = word.runes.toList();
-          for (var k = 0; k < runes.length; k++) {
-            if (k > 0) add(const PenaltyItem(0, 900), p);
-            final char = String.fromCharCode(runes[k]);
-            add(BoxItem(_content, char, _widthOf(char, format)), p);
-          }
-        } else {
-          add(BoxItem(_content, word, width), p);
-        }
+        add(BoxItem(_content, word, width), p);
       }
       if (shy) {
         add(PenaltyItem(_widthOf('-', format), 50, flagged: true), p);
@@ -2008,9 +2037,7 @@ final class _OptimalWrap extends _Wrap {
         justify: justify,
         fontSize: _state.size,
       ),
-      LineBreaking.auto when justify => TypstLineBreaker(
-        fontSize: _state.size,
-      ),
+      LineBreaking.auto when justify => TypstLineBreaker(fontSize: _state.size),
       _ => const FirstFitLineBreaker(),
     };
     final breaks = breaker.breakItems(items, widthOf);

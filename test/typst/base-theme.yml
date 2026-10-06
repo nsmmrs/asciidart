@@ -22,10 +22,12 @@ font:
       bold: DejaVuSansMono-Bold.ttf
       italic: DejaVuSansMono-Oblique.ttf
       bold_italic: DejaVuSansMono-BoldOblique.ttf
+# Typst's paragraphs: leading 0.65em (its model: base_leading), spacing
+# 1.2em between paragraphs.
 base:
   font-family: Libertinus Serif
   font-size: 10
-  line-height: 1
+  leading: 0.65em
   text-align: left
 prose:
-  margin-bottom: 0
+  margin-bottom: 12
