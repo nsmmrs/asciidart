@@ -148,6 +148,37 @@ edition's justfile. Every feature is the AsciiDoc's own or asciidart's
 | Website and EPUB: listings highlighted | `source-highlighter=highlight.js` (the EPUB packs the theme) | Done |
 | EPUB: cover, rights, ISBN, editor | `front-cover-image`, `copyright`, `isbn`, `editor` | Done |
 
+### Spacing against the Typst edition
+
+`tool/hs/spacing.dart TYPST.pdf ASCIIDOC.pdf` measures the distance (in
+points, from a line's top to the next one's) between the same passages
+in both editions. With the edited edition's theme (the per-element
+`<category>_margin_*` keys), the AsciiDoc edition has 319 pages to the
+Typst edition's 316. What is left: the Typst authors rewrapped their code
+to 73 columns (fewer listing lines wrap there), and listings without a
+caption sit 1.5 points lower.
+
+| Probe | Typst | AsciiDoc | Difference |
+| --- | --- | --- | --- |
+| paragraph to paragraph (line pitch) | 15.1 | 15.1 | -0.0 |
+| paragraph to section heading | 25.0 | 26.4 | +1.3 |
+| section heading to quote | 19.7 | 20.4 | +0.7 |
+| quote to its attribution | 33.5 | 34.4 | +0.9 |
+| quote attribution to paragraph | 19.9 | 20.5 | +0.6 |
+| paragraph to definition term | 21.1 | 21.1 | -0.0 |
+| definition to paragraph | 21.1 | 21.1 | -0.0 |
+| paragraph to listing caption | 21.6 | 19.0 | -2.6 |
+| paragraph to code (no caption) | 21.8 | 23.3 | +1.5 |
+| listing caption to code | 14.2 | 13.8 | -0.4 |
+| code line pitch | 11.3 | 11.4 | +0.1 |
+| code to callout list | 18.4 | 18.5 | +0.1 |
+| callout list item to item | 15.1 | 15.1 | -0.0 |
+| callout list to paragraph | 15.1 | 15.1 | -0.0 |
+| bullet item to item | 15.1 | 15.1 | -0.0 |
+| sidebar title to text | 15.9 | 17.5 | +1.6 |
+| paragraph to sidebar | 47.4 | 47.4 | -0.0 |
+| subsection heading to paragraph | 16.9 | 16.9 | -0.0 |
+
 Not in scope: the Markdown export and the Kindle file, which the Typst
 edition makes with pandoc and calibre; the same tools read asciidart's
 DocBook and EPUB.
