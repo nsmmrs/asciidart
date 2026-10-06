@@ -169,8 +169,13 @@ final class TextContext {
     this.decorationWidth = 1,
     this.engine = PdfEngine.asciidoctorPdf,
     this.optimalLineBreaking = true,
+    this.labels,
     LoggerBase? logger,
   }) : logger = logger ?? LoggerManager.logger;
+
+  /// The text of the label of a fragment's key ([Fragment.label]), as the
+  /// layout has it now (null keeps the fragment's text).
+  final String? Function(String key)? labels;
 
   /// Reads the inline image at a path in a format, or returns null (with
   /// the reason) when it can't.
@@ -562,8 +567,21 @@ final class PrawnTextBox implements CustomContent {
     return placed.height;
   }
 
+  /// The items whose text is a label the layout gives ([Fragment.label]):
+  /// their text as it is now.
+  void _relabel() {
+    final labels = _context.labels;
+    if (labels == null) return;
+    for (final item in _items) {
+      if (item.format.fragment.label case final key?) {
+        if (labels(key) case final text?) item.text = text;
+      }
+    }
+  }
+
   @override
   (double, double) intrinsicWidths() {
+    _relabel();
     // The widest unbreakable segment, and the widest line unwrapped.
     var least = 0.0;
     var most = 0.0;
@@ -596,6 +614,7 @@ final class PrawnTextBox implements CustomContent {
   /// `InlineImageArranger`): each becomes a placeholder as wide as the
   /// image, raising its line when the image is taller than the text.
   void _arrangeImages(double width) {
+    _relabel();
     if (_imagesArranged) return;
     _imagesArranged = true;
     final images = _context.images;

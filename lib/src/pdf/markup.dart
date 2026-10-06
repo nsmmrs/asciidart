@@ -305,6 +305,10 @@ final class Fragment {
   /// leave out (a callout marker; class `artifact`).
   bool artifact = false;
 
+  /// The key of a label the layout gives the fragment's text (a footnote
+  /// reference's number on its page; `label` attribute of a link).
+  String? label;
+
   /// The OpenType features the fragment is set with in the modern engine
   /// (`smcp`, `onum`...), from its roles.
   Set<String>? features;
@@ -351,6 +355,7 @@ final class Fragment {
     ..callbacks = callbacks == null ? null : [...callbacks!]
     ..wj = wj
     ..artifact = artifact
+    ..label = label
     ..features = features == null ? null : {...features!}
     ..imagePath = imagePath
     ..imageFormat = imageFormat
@@ -868,6 +873,7 @@ final class MarkupTransform {
       case 'a':
         var visible = true;
         if (attrs.isNotEmpty) {
+          if (attrs['label'] case final value?) result.label = value;
           if (attrs['anchor'] case final value?) {
             result.anchor = value;
           } else if (attrs['href'] case final value?) {

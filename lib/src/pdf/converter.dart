@@ -300,6 +300,7 @@ final class PdfConverter extends BuiltInConverter
       decorationWidth: (_n('base_text_decoration_width') ?? 1).toDouble(),
       engine: _engine,
       optimalLineBreaking: _s('base_line_breaking') != 'greedy',
+      labels: (key) => _layoutLabels[key],
       logger: logger,
     );
     _markup = MarkupTransform(theme: _theme, invertEmphasis: _invertEmphasis);
@@ -378,6 +379,7 @@ final class PdfConverter extends BuiltInConverter
     _tocDone = false;
     _tocNoHeader = _tocNoFooter = false;
     _notes.clear();
+    _layoutLabels.clear();
     // The table of contents and the body, indented by the theme's
     // section indent (the gem's `indent_section`).
     final indented = _collect(() {
@@ -524,6 +526,15 @@ final class PdfConverter extends BuiltInConverter
       _fillIndex(slot);
       result = layout.layout(_out);
       measure();
+    }
+    // Footnotes numbered on each page: numbered from where their
+    // references are, then laid out again until the numbers stay.
+    if (_footnoteNumbering == 'page') {
+      for (var pass = 0; pass < 3; pass++) {
+        if (!_numberFootnotesByPage(result)) break;
+        result = layout.layout(_out);
+        measure();
+      }
     }
     // How the document opens (the gem's `PageModes`).
     final (pageMode, nonFullScreen) = switch (document.attr('pdf-page-mode') ??
@@ -7953,10 +7964,67 @@ final class PdfConverter extends BuiltInConverter
     final anchor = anchored
         ? '<a id="_footnoteref_$index">$_dummyText</a>'
         : '';
-    final label = rendered
+    final label = _footnoteNumbering == 'document'
+        ? index
+        : rendered
         ? _footnoteLabels[index] ?? index
         : '${(int.tryParse(index) ?? 0) - _renderedFootnotes.length}';
-    return '<sup class="wj">$anchor[<a anchor="_footnotedef_$index">$label</a>]</sup>';
+    return '<sup class="wj">$anchor[<a anchor="_footnotedef_$index"'
+        '${_footnoteLabelKey(index)}>$label</a>]</sup>';
+  }
+
+  /// How footnotes are numbered: from 1 in each `chapter` (the gem's),
+  /// on each `page` (modern engine, footnotes at the bottom of the page)
+  /// or through the `document` (`footnotes_numbering`).
+  String get _footnoteNumbering {
+    if (_engine != PdfEngine.modern) return 'chapter';
+    return switch (_s('footnotes_numbering')) {
+      'page' when _pageFootnotes => 'page',
+      'document' => 'document',
+      _ => 'chapter',
+    };
+  }
+
+  /// The `label` attribute that has the layout number footnote [index]'s
+  /// reference and note on their page (when footnotes are numbered so).
+  String _footnoteLabelKey(String index) =>
+      _footnoteNumbering == 'page' ? ' label="fn$index"' : '';
+
+  /// The texts of the labels the layout gives (a footnote's number on its
+  /// page, `fn<index>`), from the layout before.
+  final Map<String, String> _layoutLabels = {};
+
+  /// Numbers each page's footnote references from 1, in reading order,
+  /// from [result]'s anchors; whether any number changed.
+  bool _numberFootnotesByPage(LayoutResult result) {
+    final references =
+        [
+          for (final MapEntry(:key, :value) in result.anchors.entries)
+            if (key.startsWith('_footnoteref_'))
+              (key.substring('_footnoteref_'.length), value),
+        ]..sort((a, b) {
+          final (_, p) = a;
+          final (_, q) = b;
+          if (p.page != q.page) return p.page.compareTo(q.page);
+          if ((p.y - q.y).abs() > 0.5) return q.y.compareTo(p.y);
+          return p.x.compareTo(q.x);
+        });
+    var changed = false;
+    var page = -1;
+    var number = 0;
+    for (final (index, position) in references) {
+      if (position.page != page) {
+        page = position.page;
+        number = 0;
+      }
+      number++;
+      final key = 'fn$index';
+      if (_layoutLabels[key] != '$number') {
+        _layoutLabels[key] = '$number';
+        changed = true;
+      }
+    }
+    return changed;
   }
 
   /// The footnotes already rendered (at the end of earlier chapters).
@@ -8036,14 +8104,17 @@ final class PdfConverter extends BuiltInConverter
             : null;
         for (final footnote in footnotes) {
           final index = footnote.index;
-          final label = '${(int.tryParse(index) ?? 0) - offset}';
+          final label = _footnoteNumbering == 'document'
+              ? index
+              : '${(int.tryParse(index) ?? 0) - offset}';
           if (sectionText != null) {
             _footnoteLabels[index] = '$label - $sectionText';
           }
           _notes['_footnoteref_$index'] = CustomBox(
             _textBox(
               '<a id="_footnotedef_$index">$_dummyText</a>'
-              '[<a anchor="_footnoteref_$index">$label</a>] ${footnote.text}',
+              '[<a anchor="_footnoteref_$index"${_footnoteLabelKey(index)}>'
+              '$label</a>] ${footnote.text}',
               _font,
               align: _baseTextAlign,
               hyphenate: true,
@@ -8101,7 +8172,9 @@ final class PdfConverter extends BuiltInConverter
           : null;
       for (final footnote in footnotes) {
         final index = footnote.index;
-        final label = '${(int.tryParse(index) ?? 0) - offset}';
+        final label = _footnoteNumbering == 'document'
+            ? index
+            : '${(int.tryParse(index) ?? 0) - offset}';
         if (sectionText != null) {
           _footnoteLabels[index] = '$label - $sectionText';
         }

@@ -773,6 +773,43 @@ base:
       expect(pages[2], contains('[1] The first note.'));
     });
 
+    const twoChapters =
+        '= Doc\n:doctype: book\n\n== One\n\n'
+        'A.footnote:[First.] B.footnote:[Second.]\n\n<<<\n\n'
+        'C.footnote:[Third.]\n\n== Two\n\nD.footnote:[Fourth.]\n';
+
+    /// The footnote labels on each page with any, as their notes show them.
+    List<List<String>> notes(String pdf) => [
+      for (final page in _pages(pdf))
+        if (page.any((l) => RegExp(r'^\[\d+\] \w').hasMatch(l)))
+          [
+            for (final l in page)
+              if (RegExp(r'^\[\d+\] \w').hasMatch(l)) l,
+          ],
+    ];
+
+    test('may be numbered on each page', () {
+      final pdf = _pdf(twoChapters, theme: 'footnotes_numbering: page\n');
+      expect(notes(pdf), [
+        ['[1] First.', '[2] Second.'],
+        ['[1] Third.'],
+        ['[1] Fourth.'],
+      ]);
+      // The references have the same numbers.
+      expect(_pages(pdf)[1][1], matches(RegExp(r'^\[1\]\s+\[2\]$')));
+    });
+
+    test('may be numbered through the document', () {
+      final pdf = _pdf(twoChapters, theme: 'footnotes_numbering: document\n');
+      expect(notes(pdf), [
+        ['[1] First.', '[2] Second.'],
+        ['[3] Third.'],
+        ['[4] Fourth.'],
+      ]);
+      // From 1 in each chapter by default, as in the gem.
+      expect(notes(_pdf(twoChapters)).last, ['[1] Fourth.']);
+    });
+
     test("may show links' URIs (show-link-uri=footnote)", () {
       const source =
           '= Doc\n:show-link-uri: footnote\n\n'
