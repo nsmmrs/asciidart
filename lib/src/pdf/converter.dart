@@ -3504,13 +3504,27 @@ final class PdfConverter extends BuiltInConverter
         }
       });
       if (attribution != null) {
-        final margin = (_n('block_margin_bottom') ?? 0).toDouble();
+        // The modern engine's `<category>_cite_margin_top` and
+        // `<category>_cite_text_align`; the gem's block margin, at the left.
+        final modern = _engine == PdfEngine.modern;
+        final margin =
+            ((modern ? _n('${category}_cite_margin_top') : null) ??
+                    _n('block_margin_bottom') ??
+                    0)
+                .toDouble();
         if (margin > 0) _out.add(SpacerBox(margin));
         _withFont('${category}_cite', () {
           final parts = [attribution, ?citeTitle].join(', ');
           _out.add(
             CustomBox(
-              _textBox('— $parts', _font, align: 'left', normalize: false),
+              _textBox(
+                '— $parts',
+                _font,
+                align:
+                    (modern ? _s('${category}_cite_text_align') : null) ??
+                    'left',
+                normalize: false,
+              ),
             ),
           );
         });

@@ -930,6 +930,26 @@ base:
       expect(top(spaced, 'code') - top(plain, 'code'), closeTo(14, 0.01));
     });
 
+    test("a quote's attribution: its own space above, aligned right", () {
+      const quote = '[quote, Ted Nelson]\n____\nQuoted.\n____\n';
+      double left(String pdf, String word) {
+        final bbox =
+            Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+        return double.parse(
+          RegExp('xMin="([\\d.]+)"[^>]*>$word<').firstMatch(bbox)![1]!,
+        );
+      }
+
+      final plain = _pdf(quote);
+      final styled = _pdf(
+        quote,
+        theme: 'quote_cite_margin_top: 2\nquote_cite_text_align: right\n',
+      );
+      // The default theme: 12 points above it.
+      expect(top(plain, 'Nelson') - top(styled, 'Nelson'), closeTo(10, 0.01));
+      expect(left(styled, 'Nelson'), greaterThan(left(plain, 'Nelson') + 200));
+    });
+
     test("are the gem's in the compatibility mode", () {
       final plain = _pdf(source, compat: true);
       final spaced = _pdf(

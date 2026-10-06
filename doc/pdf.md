@@ -45,6 +45,10 @@ collapse to the larger, as in CSS. Above the first block after a heading,
 what the heading's margin below leaves; none at the start of another
 container, or at the top of a page.
 
+A quote's attribution has its own space above (`quote_cite_margin_top`,
+`verse_cite_margin_top`; `block_margin_bottom` by default) and alignment
+(`quote_cite_text_align: right`).
+
 ### Hyphenation
 
 Justified text is hyphenated in the document's language (`lang`, else
