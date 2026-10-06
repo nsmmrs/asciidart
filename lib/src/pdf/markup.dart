@@ -305,6 +305,10 @@ final class Fragment {
   /// leave out (a callout marker; class `artifact`).
   bool artifact = false;
 
+  /// The OpenType features the fragment is set with in the modern engine
+  /// (`smcp`, `onum`...), from its roles.
+  Set<String>? features;
+
   /// An inline image: its path, format, width and fit.
   String? imagePath;
 
@@ -347,12 +351,27 @@ final class Fragment {
     ..callbacks = callbacks == null ? null : [...callbacks!]
     ..wj = wj
     ..artifact = artifact
+    ..features = features == null ? null : {...features!}
     ..imagePath = imagePath
     ..imageFormat = imageFormat
     ..imageWidth = imageWidth
     ..imageFit = imageFit
     ..objectId = objectId;
 }
+
+/// The OpenType features of the CSS `font-variant` and
+/// `font-variant-numeric` values the theme's roles may name.
+const Map<String, String> _features = {
+  'small-caps': 'smcp',
+  'oldstyle-nums': 'onum',
+  'lining-nums': 'lnum',
+  'tabular-nums': 'tnum',
+  'proportional-nums': 'pnum',
+};
+
+/// The OpenType feature of [value], a CSS `font-variant` or
+/// `font-variant-numeric` value, if it names one.
+String? fontFeature(String? value) => _features[value];
 
 /// The formatting a tag, class or role gives (the gem's theme settings).
 final class FragmentSettings {
@@ -421,9 +440,15 @@ final class FragmentSettings {
   /// What draws the fragment besides its text.
   List<FragmentCallback>? callbacks;
 
+  /// The OpenType features (modern engine).
+  Set<String>? features;
+
   /// Applies the settings to [fragment] (the gem's `update_fragment`).
   void applyTo(Fragment fragment) {
     if (color != null) fragment.color = color;
+    if (features case final add?) {
+      fragment.features = {...?fragment.features, ...add};
+    }
     if (font != null) fragment.font = font;
     if (size != null) fragment.size = size;
     if (styles != null || clearStyles) {
@@ -618,6 +643,11 @@ final class MarkupTransform {
           target.textDecorationWidth = theme.number(key);
         case 'text_transform':
           target.textTransform = theme.string(key);
+        case 'font_variant' || 'font_variant_numeric':
+          // The modern engine's OpenType features, as CSS names them.
+          if (_features[theme.string(key)] case final feature?) {
+            (target.features ??= {}).add(feature);
+          }
         case 'font_style' || 'text_decoration':
           styled.add(role);
       }

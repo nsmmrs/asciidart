@@ -12,3 +12,7 @@ pyftsubset Yrsa-Regular.ttf --unicodes=U+0020-007E \
 ```
 
 The modern PDF engine's tests set text in them (ligatures, GPOS kerning).
+
+`notoserif-features.ttf` is Noto Serif 2.015 (© 2022 The Noto Project
+Authors, SIL Open Font License 1.1), subset to Basic Latin with its
+`onum`, `smcp`, `liga` and `kern` features (as in libpdf's test fonts).

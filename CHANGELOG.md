@@ -83,6 +83,9 @@ Asciidoctor project.
   emphasis in literals, invalid image widths, an empty TOC title, links
   from a website's root): the Hypermedia Systems book validates against
   the DocBook 5.0 schema and passes EPUBCheck.
+- Old-style numerals and small capitals from the font's OpenType
+  features (`base_font_variant_numeric: oldstyle-nums`,
+  `role_<role>_font_variant: small-caps`), in the modern PDF engine.
 - Print: `pdf-standard=PDF/X-4` with an output intent
   (`pdf-output-intent`, the printer's ICC profile), a bleed from the
   theme (`page_bleed`), and a layout report of the blocks that break

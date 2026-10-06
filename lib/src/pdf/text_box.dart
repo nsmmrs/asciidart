@@ -34,7 +34,12 @@ final class TextState {
     this.color,
     this.kerning = true,
     this.characterSpacing = 0,
+    this.features = const {},
   });
+
+  /// The OpenType features the text is set with (the modern engine's:
+  /// `onum` for old-style numerals...).
+  final Set<String> features;
 
   /// The space added between characters (Prawn's `character_spacing`).
   final double characterSpacing;
@@ -220,11 +225,25 @@ final class _Item {
 
 /// A fragment's formatting with its font resolved.
 final class _Format {
-  new(this.fragment, this.font, this.size, {this.image});
+  new(
+    this.fragment,
+    this.font,
+    this.size, {
+    this.image,
+    this.features = const {},
+    this.smallCapitals = false,
+  });
 
   final Fragment fragment;
   final PrawnFont font;
   final double size;
+
+  /// The OpenType features the text is set with.
+  final Set<String> features;
+
+  /// Whether the text is set in capitals, smaller, for small capitals the
+  /// font lacks.
+  final bool smallCapitals;
 
   /// The inline image the fragment is, once arranged.
   final _Image? image;
@@ -310,7 +329,8 @@ final class PrawnTextBox implements CustomContent {
       final copy = fragment.copy()..color ??= state.color;
       for (final run in _withFallbacks(copy, state, context)) {
         final format = _resolve(run, state, context);
-        final text = format.font.normalize(run.text);
+        var text = format.font.normalize(run.text);
+        if (format.smallCapitals) text = text.toUpperCase();
         // One item per line of the fragment (Prawn's `format_array=`).
         for (final m in RegExp('[^\n]+|\n').allMatches(text)) {
           items.add(_Item(m[0]!, format, defaultColor: defaultColor));
@@ -374,7 +394,32 @@ final class PrawnTextBox implements CustomContent {
     first: false,
   );
 
+  /// The format of [fragment] in [state]: its font and size, and in the
+  /// modern engine its OpenType features (small capitals the font lacks
+  /// set as smaller capitals).
   static _Format _resolve(
+    Fragment fragment,
+    TextState state,
+    TextContext context,
+  ) {
+    final format = _resolveStyle(fragment, state, context);
+    if (context.engine != PdfEngine.modern) return format;
+    final features = {...state.features, ...?fragment.features};
+    if (features.isEmpty || format.image != null) return format;
+    final font = format.font;
+    final hasSmcp = font is TrueTypeFont && font.pdf.font.hasFeature('smcp');
+    final fake = features.contains('smcp') && !hasSmcp;
+    if (fake) features.remove('smcp');
+    return _Format(
+      fragment,
+      font,
+      fake ? format.size * 0.8 : format.size,
+      features: features,
+      smallCapitals: fake,
+    );
+  }
+
+  static _Format _resolveStyle(
     Fragment fragment,
     TextState state,
     TextContext context,
@@ -532,7 +577,12 @@ final class PrawnTextBox implements CustomContent {
       final font = item.format.font;
       final size = item.format.size;
       for (final segment in _tokenize(item.text)) {
-        final width = font.widthOf(segment, size, kerning: _state.kerning);
+        final width = font.widthOf(
+          segment,
+          size,
+          kerning: _state.kerning,
+          features: item.format.features,
+        );
         if (_strip(segment).isNotEmpty) least = math.max(least, width);
         line += width;
       }
@@ -724,6 +774,7 @@ final class PrawnTextBox implements CustomContent {
       color: _state.color,
       kerning: _state.kerning,
       characterSpacing: _state.characterSpacing,
+      features: _state.features,
     );
     return PrawnTextBox._(
       [
@@ -914,6 +965,7 @@ final class PrawnTextBox implements CustomContent {
               f.text,
               f.format.size,
               kerning: _state.kerning,
+              features: f.format.features,
             );
             final gapWidth = fragment.width != null
                 ? f.width - natural
@@ -966,6 +1018,7 @@ final class PrawnTextBox implements CustomContent {
                 characterSpacing: _state.characterSpacing,
                 kerning: _state.kerning,
                 ligatures: f.format.font.ligates,
+                features: f.format.features,
               ),
             )
             ..restore();
@@ -1219,7 +1272,12 @@ base class _Wrap {
   double _widthOf(String text, _Format? format) {
     final font = format?.font ?? _baseFont;
     final size = format?.size ?? _state.size;
-    final width = font.widthOf(text, size, kerning: _state.kerning);
+    final width = font.widthOf(
+      text,
+      size,
+      kerning: _state.kerning,
+      features: format?.features ?? _state.features,
+    );
     // Prawn 2.4 adds the character spacing between characters.
     final count = text.runes.length;
     return count > 1 ? width + _state.characterSpacing * (count - 1) : width;

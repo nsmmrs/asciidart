@@ -50,8 +50,14 @@ sealed class PrawnFont {
   double heightAt(double size) =>
       (ascender - descender + lineGap) / 1000 * size;
 
-  /// The width of [text] at [size] points.
-  double widthOf(String text, double size, {bool kerning = true});
+  /// The width of [text] at [size] points, with the OpenType [features]
+  /// (an embedded font's that it has).
+  double widthOf(
+    String text,
+    double size, {
+    bool kerning = true,
+    Set<String> features = const {},
+  });
 
   /// Whether the font has a glyph for [codePoint].
   bool hasGlyph(int codePoint);
@@ -124,10 +130,20 @@ final class TrueTypeFont extends PrawnFont {
   }
 
   @override
-  double widthOf(String text, double size, {bool kerning = true}) {
-    if (shaping != Shaping.prawn) {
+  double widthOf(
+    String text,
+    double size, {
+    bool kerning = true,
+    Set<String> features = const {},
+  }) {
+    if (shaping != Shaping.prawn || features.isNotEmpty) {
       var width = 0.0;
-      final glyphs = pdf.shape(text, kerning: kerning, ligatures: ligates);
+      final glyphs = pdf.shape(
+        text,
+        kerning: kerning,
+        ligatures: ligates,
+        features: features,
+      );
       for (final (i, glyph) in glyphs.indexed) {
         width += glyph.advance;
         if (i < glyphs.length - 1) width += glyph.kerning;
@@ -186,7 +202,12 @@ final class AfmFont extends PrawnFont {
   final Map<(int, int), double> _kerns = {};
 
   @override
-  double widthOf(String text, double size, {bool kerning = true}) {
+  double widthOf(
+    String text,
+    double size, {
+    bool kerning = true,
+    Set<String> features = const {},
+  }) {
     if (shaping != Shaping.prawn) {
       return pdf.widthOf(text, size, kerning: kerning);
     }

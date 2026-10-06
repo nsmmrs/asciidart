@@ -1795,6 +1795,12 @@ final class PdfConverter extends BuiltInConverter
   /// each starts in the source.
   Map<String, (AbstractBlock, Cursor?)>? _reportTags;
 
+  /// The OpenType features all text is set with in the modern engine:
+  /// the theme's `base_font_variant_numeric` (`oldstyle-nums`...).
+  late final Set<String> _baseFeatures = _engine == PdfEngine.modern
+      ? {?fontFeature(_s('base_font_variant_numeric'))}
+      : const {};
+
   /// How far the modern engine's sheets run past the page for print
   /// (`page_bleed`): null for no print boxes, unless the document is
   /// PDF/X, which needs them.
@@ -6091,6 +6097,7 @@ final class PdfConverter extends BuiltInConverter
         color: font.color,
         kerning: font.kerning,
         characterSpacing: characterSpacing,
+        features: _baseFeatures,
       ),
       TextLayout(
         align: align,

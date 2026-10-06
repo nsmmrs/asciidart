@@ -679,4 +679,78 @@ base:
       );
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
+  group('numerals and small capitals', () {
+    const noto = '''
+font:
+  catalog:
+    Noto:
+      normal: notoserif-features.ttf
+      italic: notoserif-features.ttf
+      bold: notoserif-features.ttf
+      bold_italic: notoserif-features.ttf
+base:
+  font-family: Noto
+''';
+
+    /// The glyph codes the pages of [pdf] show, in order.
+    List<String> codes(String pdf) {
+      final qdf =
+          Process.runSync('qpdf', [
+                '--qdf',
+                '--object-streams=disable',
+                pdf,
+                '-',
+              ], stdoutEncoding: latin1).stdout
+              as String;
+      return [
+        for (final array in RegExp(r'\[([^\]]*)\]\s*TJ').allMatches(qdf))
+          for (final hex in RegExp('<([0-9a-fA-F]*)>').allMatches(array[1]!))
+            hex[1]!,
+      ];
+    }
+
+    test('old-style numerals by the theme', () {
+      const source = ':nofooter:\n\nIn 2026.';
+      final lining = codes(_pdf(source, theme: noto));
+      final oldstyle = codes(
+        _pdf(
+          source,
+          theme: '${noto}base_font_variant_numeric: oldstyle-nums\n',
+        ),
+      );
+      expect(oldstyle, isNot(lining));
+      // The same text either way.
+      expect(
+        _pages(
+          _pdf(
+            source,
+            theme: '${noto}base_font_variant_numeric: oldstyle-nums\n',
+          ),
+        ).first,
+        ['In 2026.'],
+      );
+    });
+
+    test('small capitals by a role', () {
+      const source = ':nofooter:\n\nSome [.sc]#Small Caps# here.';
+      const theme = '${noto}role_sc_font_variant: small-caps\n';
+      expect(
+        codes(_pdf(source, theme: theme)),
+        isNot(codes(_pdf(source, theme: noto))),
+      );
+      expect(_pages(_pdf(source, theme: theme)).first, [
+        'Some Small Caps here.',
+      ]);
+    });
+
+    test('small capitals a font lacks are smaller capitals', () {
+      // The default theme's Noto Serif subset has no smcp.
+      final pdf = _pdf(
+        ':nofooter:\n\nSome [.sc]#Small Caps# here.',
+        theme: 'role_sc_font_variant: small-caps\n',
+      );
+      expect(_pages(pdf).first, ['Some SMALL CAPS here.']);
+    });
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }
