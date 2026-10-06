@@ -32,7 +32,8 @@ newline is `\n` in a double-quoted YAML string.
 | Key | Default | What it does |
 | --- | --- | --- |
 | `base_line_breaking` | `auto` | How lines break, as Typst breaks them: `auto` breaks justified text where the lines' costs are least (Typst's optimizer: even spacing, few hyphens, no lone word on the last line) and other text one line at a time; `optimal` optimizes any text (ragged lines balanced); `greedy` fills one line at a time. A style change inside a word is never a break. |
-| `base_leading` | none | Typst's lines: each line's box from its cap height to its baseline, this space between boxes (`0.6em`, or points); a text's first line has its cap height at the top and its last line ends at its baseline, so the margins between blocks are Typst's spacing. In place of `base_line_height`. |
+| `base_leading` | none | Typst's lines: each line's box from its cap height to its baseline, this space between boxes (`0.6em`, or points); a text's first line has its cap height at the top and its last line ends at its baseline, so the margins between blocks are Typst's spacing. In place of `base_line_height`; a category's own (`title_page_title_leading`, `code_leading`...) for its text. |
+| `base_overhang` | `false` | Punctuation and dashes at the end of a justified line hang into the margin, as Typst's `overhang` (the line stretches into a part of the character's width: 0.55 of a hyphen, 0.8 of a period or comma, 0.3 of a colon, 0.2 of a dash). |
 | `prose_orphans` | `2` | The fewest lines of a paragraph left at the bottom of a page. |
 | `prose_widows` | `2` | The fewest lines of a paragraph carried to the top of the next page. |
 | `prose_text_indent` | `0` | The indent of every paragraph's first line. Numbers are points; `1.5em` is relative to the paragraph's font size, `2rem` to the base font size. |
@@ -67,6 +68,7 @@ A quote's attribution has its own space above (`quote_cite_margin_top`,
 | `description_list_term_display` | `block` | `inline` runs a term in before its description, in the term's font, the lines after the first hanging by `description_list_description_indent`. |
 | `olist_marker_font_variant_numeric` | none | An ordered list's numbers in old-style (`oldstyle-nums`) or other figures (with `olist_marker_font_family`, `_font_color`...). |
 | `title_page_authors_delimiter` | `, ` | Its spaces are kept as written: `'    '` sets the authors in a row with a gap (asciidoctor-pdf collapses them to one). |
+| `list_body_indent` | none | Typst's lists: the marker at `list_indent`, the text this far after the widest marker (else the text at `list_indent`, the marker a space before it, as asciidoctor-pdf). |
 | `title_page_title_skew` (also `_subtitle_`, `_authors_`, `_revision_`) | none | Degrees the text leans right, sheared as one block about its last baseline, as Typst's `skew` (the upper lines further right), in place of a slanted face. |
 
 ### Hyphenation
@@ -197,7 +199,9 @@ heading's `_heading_font_family`, `_heading_font_size`,
 `section: { role: { html-note: { background-color: F5F5FF } } }`). It
 stays a section: it is numbered, and listed in the contents.
 `_vertical_align: middle` (or `bottom`) sets a section that starts a page
-and fits on it in the middle (at the bottom) of the page: a dedication.
+and fits on it in the middle (at the bottom) of the page: a dedication. Any other key of the theme
+under the role's (`section_role_<role>_prose_margin_bottom`) takes the place
+of that key (`prose_margin_bottom`) inside the section.
 
 A part on a page of its own is asciidoctor-pdf's
 `heading_part_break_after: always`; a title lower on its page,

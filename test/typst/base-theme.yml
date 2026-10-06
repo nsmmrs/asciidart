@@ -28,6 +28,7 @@ base:
   font-family: Libertinus Serif
   font-size: 10
   leading: 0.65em
+  overhang: true
   text-align: left
 prose:
   margin-bottom: 12

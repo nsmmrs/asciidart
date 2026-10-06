@@ -83,7 +83,13 @@ final class TextLayout {
     this.wrapMarker = false,
     this.at,
     this.skew,
+    this.overhang = false,
   });
+
+  /// Whether punctuation and dashes at a line's end hang into the margin,
+  /// as Typst's `overhang` (a fraction of the character's width the line
+  /// may stretch into or move by).
+  final bool overhang;
 
   /// The text sheared as one block about its last baseline (Typst's skew
   /// of a heading): each glyph slanted by this ratio (the tangent of the
@@ -1699,6 +1705,27 @@ base class _Wrap {
     }
   }
 
+  /// How far the line's last character may hang past its end (Typst's
+  /// amounts: of the character's width, 0.55 for a hyphen, 0.2 for an en
+  /// or em dash, 0.8 for a period or comma, 0.3 for a colon or semicolon).
+  double _overhang() {
+    for (final f in _fragments.reversed) {
+      final text = f.text.trimRight();
+      if (text.isEmpty || text == '\n') continue;
+      final char = String.fromCharCode(text.runes.last);
+      final factor = switch (char) {
+        '\u2013' || '\u2014' => 0.2,
+        '-' || '\u00ad' => 0.55,
+        '.' || ',' => 0.8,
+        ':' || ';' => 0.3,
+        _ => 0.0,
+      };
+      if (factor == 0) return 0;
+      return factor * f.format.font.widthOf(char, f.format.size);
+    }
+    return 0;
+  }
+
   void _printLine(double indent) {
     // Justified, but not the last line of a paragraph, unless it is
     // wider than the room (the optimal wrap shrinks spaces to fit a line;
@@ -1709,8 +1736,9 @@ base class _Wrap {
         (_layout.forceJustify ||
             !_paragraphFinished ||
             _accumulatedWidth > _width - indent + 0.0001);
+    final hang = _layout.overhang ? _overhang() : 0.0;
     final wordSpacing = justify
-        ? (_width - indent - _accumulatedWidth) / _spaceCount
+        ? (_width - indent + hang - _accumulatedWidth) / _spaceCount
         : 0.0;
     final printed = <_Printed>[];
     for (final f in _fragments) {
@@ -1726,7 +1754,7 @@ base class _Wrap {
       );
     }
     final lineWidth = printed.fold<double>(0, (sum, f) => sum + f.width);
-    final available = _width - indent;
+    final available = _width - indent + hang;
     final offset = switch (_layout.align) {
       'center' => available * 0.5 - lineWidth * 0.5,
       'right' => available - lineWidth,
@@ -2024,7 +2052,9 @@ final class _OptimalWrap extends _Wrap {
       if (shy) {
         add(PenaltyItem(_widthOf('-', format), 50, flagged: true), p);
       } else if (word.endsWith('-')) {
-        add(const PenaltyItem(0, 50, flagged: true), p);
+        // After a hyphen of the text: an ordinary break, as Typst has it
+        // (the breaker counts the dash for two lines ending in one).
+        add(const PenaltyItem(0, 0), p);
       }
     }
     add(const GlueItem.fill(), pieces.length);

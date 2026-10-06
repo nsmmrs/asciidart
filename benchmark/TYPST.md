@@ -53,12 +53,12 @@ Each has a card under EPIC-n7s6v0.
 | hyphenate-pt-repeat-hyphen | 3, 3 | 2 of 3 | 3.38 | 0.00 | +0.00 | 1, 1 |
 | justify | 6, 6 | 6 of 6 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | justify-avoid-runts | 5, 5 | 2 of 5 | 2.50 | 0.00 | +0.00 | 1, 1 |
-| justify-knuth-story-optimized | 21, 21 | 21 of 21 | 2.22 | 0.00 | -0.03 | 1, 1 |
-| justify-knuth-story-simple | 24, 24 | 24 of 24 | 2.22 | 0.00 | -0.03 | 1, 1 |
-| justify-knuth-story-simple-hyphens | 22, 22 | 22 of 22 | 2.22 | 0.00 | -0.03 | 1, 1 |
+| justify-knuth-story-optimized | 21, 21 | 21 of 21 | 0.00 | 0.00 | -0.03 | 1, 1 |
+| justify-knuth-story-simple | 24, 24 | 24 of 24 | 0.00 | 0.00 | -0.03 | 1, 1 |
+| justify-knuth-story-simple-hyphens | 22, 22 | 22 of 22 | 0.00 | 0.00 | -0.03 | 1, 1 |
 | justify-manual-linebreak | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
-| justify-no-leading-spaces | 3, 3 | 3 of 3 | 2.11 | 0.00 | +0.00 | 1, 1 |
-| justify-shrink-last-line | 1, 1 | 1 of 1 | 1.76 | 0.00 | +0.00 | 1, 1 |
+| justify-no-leading-spaces | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| justify-shrink-last-line | 1, 1 | 1 of 1 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | justify-without-justifiables | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-hyphen-nbsp | 2, 2 | 2 of 2 | 0.11 | 0.00 | +0.00 | 1, 1 |
 | linebreak-manual | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
@@ -68,7 +68,7 @@ Each has a card under EPIC-n7s6v0.
 | linebreak-overflow-double | 2, 4 | 0 of 2 | 77.62 | 0.00 | +0.00 | 1, 1 |
 | linebreak-shape-run | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-simple-without-justify | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |
-| par-basic | 19, 19 | 19 of 19 | 0.92 | 0.00 | +0.00 | 3, 3 |
+| par-basic | 19, 19 | 19 of 19 | 0.00 | 0.00 | +0.00 | 3, 3 |
 | par-leading-and-spacing | 5, 5 | 5 of 5 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-metadata-after-trimmed-space | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-spacing-and-first-line-indent | 4, 4 | 4 of 4 | 0.00 | 0.00 | -0.00 | 1, 1 |

@@ -102,6 +102,7 @@ final class _FontState {
     required this.lineHeight,
     this.kerning = true,
     this.transform,
+    this.leadingKey,
   });
 
   final String family;
@@ -111,6 +112,10 @@ final class _FontState {
   final double lineHeight;
   final bool kerning;
   final String? transform;
+
+  /// The theme key of the text's Typst leading (`<category>_leading`), when
+  /// its category or one it inherits from sets one (else `base_leading`).
+  final String? leadingKey;
 
   _FontState copyWith({
     String? family,
@@ -128,6 +133,7 @@ final class _FontState {
     lineHeight: lineHeight ?? this.lineHeight,
     kerning: kerning ?? this.kerning,
     transform: transform ?? this.transform,
+    leadingKey: leadingKey,
   );
 }
 
@@ -2372,12 +2378,17 @@ final class PdfConverter extends BuiltInConverter
     } else {
       final category = 'section_role_$boxed';
       final saved = _headingRole;
+      final savedTheme = _theme;
       _headingRole = category;
+      // Inside the section, its role's keys in place of the theme's
+      // (section_role_<role>_prose_margin_bottom for prose_margin_bottom).
+      _theme = _theme.overlaid('${category}_', '');
       final List<LayoutBox> children;
       try {
         children = _collect(() => _withFont(category, content));
       } finally {
         _headingRole = saved;
+        _theme = savedTheme;
       }
       _out.add(
         BlockBox(
@@ -2763,6 +2774,9 @@ final class PdfConverter extends BuiltInConverter
         _ => inherited.kerning,
       },
       transform: _s('${category}_text_transform') ?? inherited.transform,
+      leadingKey: _theme.value('${category}_leading') != null
+          ? '${category}_leading'
+          : inherited.leadingKey,
     );
   }
 
@@ -5705,9 +5719,23 @@ final class PdfConverter extends BuiltInConverter
     final saved = _out;
     final items = <LayoutBox>[];
     _out = items;
+    // Typst's lists (the modern engine's list_body_indent): the markers at
+    // list_indent, the text after the widest marker and the body indent.
+    final bodyIndent = _engine == PdfEngine.modern
+        ? _length('list_body_indent', _font.size)
+        : null;
+    final savedBodyIndent = _listBodyIndent;
+    final savedMarkerWidth = _listMarkerWidth;
+    _listBodyIndent = bodyIndent;
+    _listMarkerWidth = 0;
     for (final item in node.items) {
       _listItem(item, node, align);
     }
+    if (bodyIndent != null && !unmarked) {
+      indent += _listMarkerWidth + bodyIndent;
+    }
+    _listBodyIndent = savedBodyIndent;
+    _listMarkerWidth = savedMarkerWidth;
     _out = saved;
     final nested = node.parent is ListItem;
     _out.add(
@@ -6313,6 +6341,12 @@ final class PdfConverter extends BuiltInConverter
     );
   }
 
+  /// The body indent of the list being converted (Typst's lists), if any.
+  double? _listBodyIndent;
+
+  /// The widest marker of the list being converted.
+  double _listMarkerWidth = 0;
+
   /// [content] with [marker] in [markerFont] beside its first line, right
   /// aligned in front of it, a space apart.
   CustomContent _withMarker(
@@ -6338,6 +6372,10 @@ final class PdfConverter extends BuiltInConverter
       characterSpacing: -0.5,
       features: features,
     );
+    if (_listBodyIndent case final bodyIndent?) {
+      _listMarkerWidth = math.max(_listMarkerWidth, width);
+      return _Marked(content, markerBox, width, -width - bodyIndent);
+    }
     return _Marked(content, markerBox, width, -width - gap + 0.5);
   }
 
@@ -6504,6 +6542,11 @@ final class PdfConverter extends BuiltInConverter
   }) {
     var text = hyphenate ? _hyphenated(markup, align) : markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
+    // The modern engine: variation selectors take no room (they choose a
+    // glyph's form, which the fonts here don't vary).
+    if (_engine == PdfEngine.modern) {
+      text = text.replaceAll(RegExp('[\ufe00-\ufe0f]'), '');
+    }
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
     final nodes = inlineFormat ? parseMarkup(text) : [MarkupText(text)];
     final List<Fragment> fragments;
@@ -6554,6 +6597,7 @@ final class PdfConverter extends BuiltInConverter
         wrapMarker: wrapMarker,
         at: _engine == PdfEngine.modern ? _at : null,
         skew: skew,
+        overhang: _engine == PdfEngine.modern && _s('base_overhang') == 'true',
       ),
       _text,
     );
@@ -6665,7 +6709,8 @@ final class PdfConverter extends BuiltInConverter
     // ends at its baseline (the space between blocks from baseline to cap
     // height).
     if (_engine == PdfEngine.modern) {
-      if (_length('base_leading', font.size) case final typst?) {
+      if (_length(font.leadingKey ?? 'base_leading', font.size)
+          case final typst?) {
         final ascender = prawnFont.ascenderAt(font.size);
         final descender = prawnFont.descenderAt(font.size);
         final lineGap = prawnFont.lineGapAt(font.size);

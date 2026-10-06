@@ -1018,6 +1018,77 @@ base:
     expect(x1 - x2, closeTo(0.17633 * (y2 - y1), 0.5));
   }, skip: _tools ? false : 'needs poppler');
 
+  group("Typst's text keys", () {
+    List<(double, double, double, String)> words(String pdf) => [
+      for (final m
+          in RegExp(
+            r'xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="[\d.]+">([^<]*)<',
+          ).allMatches(
+            Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String,
+          ))
+        (double.parse(m[1]!), double.parse(m[2]!), double.parse(m[3]!), m[4]!),
+    ];
+
+    test('base_overhang: a line ending in a comma hangs into the margin', () {
+      const source =
+          'Lorem ipsum dolor sit amet consectetur adipiscing elit sed do, '
+          'eiusmod tempor incididunt ut labore et dolore magna aliqua ut '
+          'enim ad minim veniam quis nostrud exercitation ullamco laboris.\n';
+      // The right edge of the line that ends in a comma, if one does.
+      double? commaEdge(String pdf) {
+        final all = words(pdf);
+        for (final (i, w) in all.indexed) {
+          final last = i + 1 == all.length || all[i + 1].$2 != w.$2;
+          if (last && w.$4.endsWith(',')) return w.$3;
+        }
+        return null;
+      }
+
+      // A width at which a line ends with the comma.
+      for (final width in [300, 310, 320, 330, 340, 350, 360]) {
+        final theme =
+            'page_size: [${width + 72}, 600]\npage_margin: 36\n'
+            'base_text_align: justify\n';
+        final plain = commaEdge(_pdf(source, theme: theme));
+        if (plain == null) continue;
+        final hung = commaEdge(
+          _pdf(source, theme: '${theme}base_overhang: true\n'),
+        )!;
+        expect(hung, greaterThan(plain + 1));
+        return;
+      }
+      fail('no width put the comma at a line end');
+    });
+
+    test('list_body_indent: the marker at the indent, the text after it', () {
+      final pdf = _pdf(
+        '* one\n* two\n',
+        theme: 'page_margin: 50\nlist_indent: 20\nlist_body_indent: 10\n',
+      );
+      final all = words(pdf);
+      final bullet = all.firstWhere((w) => w.$4 == '•');
+      final one = all.firstWhere((w) => w.$4 == 'one');
+      expect(bullet.$1, closeTo(70, 0.01));
+      expect(one.$1 - bullet.$3, closeTo(10, 0.01));
+    });
+
+    test("a section role's keys over the theme's inside the section", () {
+      const source =
+          '= Doc\n:doctype: book\n\n== A\n\nOne.\n\nTwo.\n\n'
+          '[.airy]\n== B\n\nThree.\n\nFour.\n';
+      final pdf = _pdf(
+        source,
+        theme:
+            'prose_margin_bottom: 0\n'
+            'section_role_airy_prose_margin_bottom: 30\n',
+      );
+      double top(String word) => words(pdf).firstWhere((w) => w.$4 == word).$2;
+      final plain = top('Two.') - top('One.');
+      final airy = top('Four.') - top('Three.');
+      expect(airy - plain, closeTo(30, 0.5));
+    });
+  }, skip: _tools ? false : 'needs poppler');
+
   group('floating images', () {
     final svg = base64.encode(
       utf8.encode(
