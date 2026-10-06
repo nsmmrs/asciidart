@@ -1894,12 +1894,21 @@ final class _OptimalWrap extends _Wrap {
   List<_Line> run() {
     _source = [..._unconsumed];
     // The pieces: the items' tokens (newlines are items of their own).
+    // Spaces at the start of a line are left out, also after zero-width
+    // markers (an index term's anchor before the first word).
     final pieces = <(int, String)>[];
+    var lineStart = true;
     for (final (i, item) in _unconsumed.indexed) {
       if (item.text == '\n') {
         pieces.add((i, '\n'));
+        lineStart = true;
       } else {
         for (final token in _tokenize(item.text)) {
+          if (RegExp('^[ \t]+\$').hasMatch(token)) {
+            if (lineStart) continue;
+          } else if (!item.format.fragment.isMarker) {
+            lineStart = false;
+          }
           pieces.add((i, token));
         }
       }

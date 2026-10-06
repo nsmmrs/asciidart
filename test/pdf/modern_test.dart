@@ -107,6 +107,19 @@ void main() {
       expect(greedy.last, 'REST.');
     });
 
+    test('a paragraph that starts with an index term starts at the margin', () {
+      final pdf = _pdf(
+        '(((hypermedia client)))\n(((web browser)))\nAnd, finally.\n\n'
+        'Plain.\n\n[index]\n== Index\n',
+      );
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      double left(String word) => double.parse(
+        RegExp('xMin="([\\d.]+)"[^>]*>$word<').firstMatch(bbox)![1]!,
+      );
+      expect(left('And,'), left('Plain.'));
+    });
+
     test('lines stay within the column', () {
       final pdf = _pdf('$_paragraph\n\n$_paragraph $_paragraph');
       final bbox =
