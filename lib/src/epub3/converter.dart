@@ -22,6 +22,8 @@ import 'package:asciidart/src/epub3/book.dart';
 import 'package:asciidart/src/epub3/dates.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
+import 'package:asciidart/src/highlight/highlightjs.dart';
+import 'package:asciidart/src/highlight/hljs_styles.g.dart';
 import 'package:asciidart/src/highlight/syntax_highlighter.dart';
 import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
@@ -535,7 +537,16 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     final lines = <String>[head];
 
     final syntaxHl = document.syntaxHighlighter;
-    if (syntaxHl != null && syntaxHl.hasDocinfo('head')) {
+    if (syntaxHl is HighlightJsHighlighter) {
+      // highlight.js: the code highlighted already, its theme's stylesheet
+      // in the EPUB (asciidart's; the gem links them outside it).
+      if (syntaxHl.canHighlight) {
+        lines.add(
+          '<link rel="stylesheet" type="text/css" '
+          'href="styles/highlightjs.css"/>',
+        );
+      }
+    } else if (syntaxHl != null && syntaxHl.hasDocinfo('head')) {
       lines.add(
         syntaxHl.docinfo(
           'head',
@@ -580,7 +591,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
     lines.add('</section>');
 
-    if (syntaxHl != null && syntaxHl.hasDocinfo('footer')) {
+    if (syntaxHl != null &&
+        syntaxHl is! HighlightJsHighlighter &&
+        syntaxHl.hasDocinfo('footer')) {
       lines.add(
         syntaxHl.docinfo(
           'footer',
@@ -1639,6 +1652,16 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
       for (final name in ['epub3', 'epub3-css3-only']) {
         book.addItem('styles/$name.css').setText(_asset('styles/$name.css'));
       }
+    }
+
+    if (doc.syntaxHighlighter case final HighlightJsHighlighter highlighter
+        when highlighter.canHighlight) {
+      book
+          .addItem('styles/highlightjs.css')
+          .setText(
+            highlightJsStyles[doc.attr('highlightjs-theme')] ??
+                highlightJsStyles['github']!,
+          );
     }
 
     var fontCss = _asset('styles/epub3-fonts.css');

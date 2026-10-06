@@ -1,4 +1,4 @@
-/// Generates `lib/src/pdf/hljs_styles.g.dart` from
+/// Generates `lib/src/highlight/hljs_styles.g.dart` from
 /// `vendor/highlight.js-styles`: each highlight.js theme's stylesheet, by
 /// name, for the PDF backend's syntax highlighting. Run from the
 /// repository root (`tool/vendor_hljs_styles.sh` runs it):
@@ -49,7 +49,7 @@ void main() {
   }
   out.writeln('};');
   File(
-    '${root.path}/lib/src/pdf/hljs_styles.g.dart',
+    '${root.path}/lib/src/highlight/hljs_styles.g.dart',
   ).writeAsStringSync(out.toString());
   stdout.writeln('embed_hljs_styles: ${files.length} themes');
 }

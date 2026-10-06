@@ -60,4 +60,4 @@ hilite ports), BSD-3-Clause (`highlight.js-styles/LICENSE`): the minified
 stylesheets of its `styles/` directory, which the modern PDF engine reads
 for the colors of highlighted code (`highlightjs-theme`).
 `tool/vendor_hljs_styles.sh` recreates the directory from the npm package
-and regenerates `lib/src/pdf/hljs_styles.g.dart`.
+and regenerates `lib/src/highlight/hljs_styles.g.dart`.

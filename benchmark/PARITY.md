@@ -121,7 +121,11 @@ reproducers of each.
   number of pixels or a percentage (another value is left out), an empty
   `toc-title` gives the navigation Asciidoctor's default title, and a
   link to a path from a website's root goes to its id in the book, or is
-  text. EPUB parity compares the gem's chapters with these repairs made.
+  text. With `source-highlighter=highlight.js`, an EPUB's code is
+  highlighted at conversion and the theme's stylesheet is in the EPUB
+  (`styles/highlightjs.css`), where the gem links highlight.js's
+  stylesheet and scripts outside it (`test/divergences/epub_output.bats`).
+  EPUB parity compares the gem's chapters with these repairs made.
   `ebook-code-overflow=scroll` makes code lines scroll rather than wrap.
 - Quotes (emphasis, strong, monospace...) pair around an index term,
   never into it: in `(((_hyperscript, event filter))) an _event filter_`
