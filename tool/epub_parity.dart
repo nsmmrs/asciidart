@@ -17,8 +17,13 @@
 /// must match too, the program name and intentional rewordings aside.
 ///
 /// With `--epubcheck EPUBCHECK.jar`, both EPUBs are also validated, and
-/// EPUBCheck must report the same messages for both (asciidart adds no
-/// error of its own; the fixtures have some on purpose).
+/// EPUBCheck must report nothing for asciidart's that it doesn't for the
+/// gem's (asciidart adds no error of its own; the fixtures have some on
+/// purpose, and asciidart repairs some: below).
+///
+/// asciidart repairs XHTML the gem writes invalid (benchmark/PARITY.md):
+/// the gem's chapters are compared with those repairs made (tags
+/// balanced, an image width that isn't a number of pixels left out).
 ///
 /// Exits 1 when any pair differs; the differences are written to stdout.
 library;
@@ -27,6 +32,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:asciidart/src/epub3/zip.dart';
+import 'package:asciidart/src/xml_balance.dart';
 
 import 'corpus_parity.dart' show rewordings;
 
@@ -74,7 +80,10 @@ void main(List<String> args) {
         if (epubcheck != null) {
           final checkA = _epubcheck(epubcheck, a.epub!);
           final checkB = _epubcheck(epubcheck, b.epub!);
-          if (checkA != checkB) {
+          final added = checkB
+              .split('\n')
+              .where((line) => line.isNotEmpty && !checkA.contains(line));
+          if (added.isNotEmpty) {
             if (same) stdout.writeln('FAIL $doc');
             stdout.writeln(
               '  EPUBCheck reports differ:\n    A: $checkA\n    B: $checkB',
@@ -183,8 +192,11 @@ bool _compare(String pathA, String pathB, {String? label}) {
     final other = byName[entry.name];
     if (other == null) continue;
     if (_same(entry.bytes, other)) continue;
-    final textA = _normalize(entry.bytes);
+    var textA = _normalize(entry.bytes);
     final textB = _normalize(other);
+    if (textA != null && entry.name.endsWith('.xhtml')) {
+      textA = _repaired(textA);
+    }
     if (textA != null && textA == textB) continue;
     problems.add('${entry.name} differs${_firstDifference(textA, textB)}');
   }
@@ -195,6 +207,14 @@ bool _compare(String pathA, String pathB, {String? label}) {
   }
   return false;
 }
+
+/// [xhtml] (a chapter of the gem's) with asciidart's repairs.
+String _repaired(String xhtml) => balanceXml(
+  xhtml.replaceAllMapped(
+    RegExp('(<img [^>]*?) width="([^"]*)"'),
+    (m) => RegExp(r'^\d+$').hasMatch(m[2]!) ? m[0]! : m[1]!,
+  ),
+);
 
 bool _same(List<int> a, List<int> b) {
   if (a.length != b.length) return false;

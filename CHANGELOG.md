@@ -78,6 +78,11 @@ Asciidoctor project.
   a home page listing them, previous, up and next links, cross references,
   the TOC, the index and callout links rewritten across pages, footnotes
   on the page they are on.
+- Valid DocBook and EPUB where Asciidoctor's output isn't (unbalanced
+  emphasis around index terms, section styles DocBook has no element for,
+  emphasis in literals, invalid image widths, an empty TOC title, links
+  from a website's root): the Hypermedia Systems book validates against
+  the DocBook 5.0 schema and passes EPUBCheck.
 - `callout-links`: callouts and their list items linked both ways in HTML
   and EPUB, markers kept out of copied code, and warnings for callouts no
   list item explains.

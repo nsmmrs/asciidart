@@ -29,6 +29,7 @@ import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/xml_balance.dart';
 
 String _s(String? value) => value ?? '';
 
@@ -350,11 +351,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     EpubItem? tocItem;
     if (node.hasAttr('toc')) {
       tocItem = book.addOrderedItem('toc.xhtml', id: 'toc');
-      landmarks.add((
-        type: 'toc',
-        href: tocItem.href,
-        title: _s(node.attr('toc-title')),
-      ));
+      landmarks.add((type: 'toc', href: tocItem.href, title: _tocTitle(node)));
     }
 
     final List<AbstractBlock> tocItems;
@@ -534,7 +531,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '<head>\n'
         '<title>$chapterTitle</title>\n'
         '$_stylesheetLinks\n'
-        '$iconCssHead$_readingSystemScript';
+        '$iconCssHead${_codeOverflowCss(document)}$_readingSystemScript';
     final lines = <String>[head];
 
     final syntaxHl = document.syntaxHighlighter;
@@ -599,7 +596,8 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
     lines.add('</body>\n</html>');
 
-    chapterItem.setText(lines.join(_lf));
+    // Well-formed, where AsciiDoc markup leaves it broken (asciidart's).
+    chapterItem.setText(balanceXml(lines.join(_lf)));
     if (_epubProperties[node]?.contains('svg') ?? false) {
       chapterItem.addProperty('svg');
     }
@@ -1246,11 +1244,13 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     if (node.attr('scaledwidth') case final scaledwidth?) {
       attrs.add('style="width: $scaledwidth"');
     } else if (node.attr('width') case final width?) {
-      attrs.add(
-        RegExp(r'^\d+%$').hasMatch(width)
-            ? 'style="width: $width"'
-            : 'width="$width"',
-      );
+      // XHTML takes a number of pixels (asciidart leaves out any other
+      // value, which the gem writes and EPUBCheck rejects).
+      if (RegExp(r'^\d+%$').hasMatch(width)) {
+        attrs.add('style="width: $width"');
+      } else if (RegExp(r'^\d+$').hasMatch(width)) {
+        attrs.add('width="$width"');
+      }
     }
     return attrs;
   }
@@ -1332,6 +1332,24 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '</div>$titleElement\n'
         '</figure>';
   }
+
+  /// With `ebook-code-overflow=scroll` (asciidart's), code lines keep
+  /// their length and scroll sideways rather than wrap (the stylesheet's
+  /// default).
+  static String _codeOverflowCss(Document document) =>
+      document.attr('ebook-code-overflow') == 'scroll'
+      ? '<style>\npre { white-space: pre; overflow-wrap: normal; '
+            'overflow-x: auto; }\n</style>\n'
+      : '';
+
+  /// The title of the table of contents: `toc-title`, or Asciidoctor's
+  /// default when the document empties it (an empty heading and landmark
+  /// aren't valid EPUB).
+  static String _tocTitle(Document document) =>
+      switch (document.attr('toc-title')) {
+        final String title when title.isNotEmpty => title,
+        _ => 'Table of Contents',
+      };
 
   /// An index term: its text when visible, and where the document has an
   /// index, an anchor the index links to.
@@ -1435,7 +1453,20 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
       case 'ref':
         return '<a id="${_s(node.target ?? node.id)}"></a>';
       case 'link':
-        return '<a href="${_s(node.target)}" class="link">${_s(node.text)}</a>';
+        final target = _s(node.target);
+        // A path from a website's root (`/chapter/#id`) means nothing in
+        // the book: it goes to the id when the book has it, else it is
+        // text (asciidart's; the gem's link leaves the container).
+        if (target.startsWith('/') && !target.startsWith('//')) {
+          final hash = target.indexOf('#');
+          final id = hash < 0 ? null : target.substring(hash + 1);
+          final ref = id == null ? null : _doc(node).catalog.refs[id];
+          final chapter = ref == null ? null : _enclosingChapter(ref);
+          final file = chapter == null ? null : chapterFilename(chapter);
+          if (file == null) return _s(node.text);
+          return '<a href="$file.xhtml#$id" class="link">${_s(node.text)}</a>';
+        }
+        return '<a href="$target" class="link">${_s(node.text)}</a>';
       case 'bibref':
         var reftext = node.reftext;
         if (reftext != null) {
@@ -1842,7 +1873,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '<section class="chapter">\n'
         '<header class="chapter-header">\n'
         '<h1 class="chapter-title"><small class="subtitle">'
-        '${_s(doc.attr('toc-title'))}</small></h1>\n'
+        '${_tocTitle(doc)}</small></h1>\n'
         '</header>\n'
         '<nav epub:type="toc" id="toc">';
     final lines = <String>[

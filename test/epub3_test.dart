@@ -261,6 +261,70 @@ A ((Tiger)) again.(((Wolves)))
     );
   });
 
+  group("valid where the gem's EPUB is not", () {
+    /// The chapter of a one-chapter book of [body] (with [attributes]).
+    String chapter(String body, {Map<String, String> attributes = const {}}) {
+      final dir = Directory.systemTemp.createTempSync('epub3_test.');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final input = File('${dir.path}/doc.adoc')
+        ..writeAsStringSync('= Doc\n:toc-title:\n\n$body\n');
+      convertFile(
+        input.path,
+        AsciidoctorOptions(
+          safe: SafeMode.safe,
+          backend: 'epub3',
+          attributes: {'reproducible': '', ...attributes},
+        ),
+      );
+      final files = unzipText(File('${dir.path}/doc.epub').readAsBytesSync());
+      return '${files['EPUB/_doc.xhtml']}\n${files['EPUB/nav.xhtml']}';
+    }
+
+    test('an image width is a number of pixels or a style', () {
+      final xhtml = chapter(
+        'image::a.png[A, server responds]\n\nimage::b.png[B, 40%]\n\n'
+        'image::c.png[C, 120]',
+      );
+      expect(xhtml, isNot(contains('width="server responds"')));
+      expect(xhtml, contains('style="width: 40%"'));
+      expect(xhtml, contains('width="120"'));
+    });
+
+    test('an empty toc-title gives the navigation a title', () {
+      expect(
+        chapter('Text.'),
+        contains('<small class="subtitle">Table of Contents</small>'),
+      );
+    });
+
+    test('a path from a website root goes to its id, or is text', () {
+      final xhtml = chapter(
+        '[[here]]\nTarget.\n\n'
+        'See link:/a/#here[the target] and link:/b/#gone[elsewhere].',
+      );
+      expect(xhtml, contains('<a href="_doc.xhtml#here" class="link">'));
+      expect(xhtml, contains(' and elsewhere.'));
+    });
+
+    test('emphasis cut by an index term is balanced', () {
+      final xhtml = chapter(
+        '((("_hyperscript", "event filter")))\n'
+        'We can use an _event filter_ syntax in +_hyperscript+ here.',
+      );
+      expect(xhtml, isNot(contains('filter</em>')));
+    });
+
+    test('code may scroll instead of wrapping', () {
+      expect(
+        chapter(
+          '----\ncode\n----',
+          attributes: {'ebook-code-overflow': 'scroll'},
+        ),
+        contains('pre { white-space: pre;'),
+      );
+    });
+  });
+
   test('epub3 cannot write to standard output', () async {
     final dir = Directory.systemTemp.createTempSync('epub3_test.');
     addTearDown(() => dir.deleteSync(recursive: true));

@@ -32,6 +32,7 @@ import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/xml_balance.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
 /// `null` renders as the empty string instead of `'null'`.
@@ -112,6 +113,26 @@ const Map<String, (String, String, bool)> _quoteTags =
       'subscript': ('<subscript>', '</subscript>', false),
     };
 
+/// [xml] with each `<literal>`'s content as DocBook allows it
+/// (asciidart's; Asciidoctor nests emphasis and quotes there): an emphasis
+/// becomes a phrase with its role, a quote its quotation marks.
+String _literals(String xml) {
+  if (!xml.contains('<literal>')) return xml;
+  return xml.replaceAllMapped(RegExp(r'<literal>([\s\S]*?)</literal>'), (m) {
+    final text = m[1]!;
+    if (!text.contains('<emphasis') && !text.contains('<quote>')) return m[0]!;
+    final content = text
+        .replaceAllMapped(
+          RegExp('<emphasis(?: role="([^"]*)")?>'),
+          (e) => '<phrase role="${e[1] ?? 'emphasis'}">',
+        )
+        .replaceAll('</emphasis>', '</phrase>')
+        .replaceAll('<quote>', '&#8220;')
+        .replaceAll('</quote>', '&#8221;');
+    return '<literal>$content</literal>';
+  });
+}
+
 /// Default quote tags for unknown quoted-text types.
 const (String, String, bool) _defaultQuoteTags = ('', '', true);
 
@@ -138,7 +159,7 @@ class Docbook5Converter extends BuiltInConverter {
         .audio => null,
         .colist => convertColist(node as ListBlock),
         .dlist => convertDlist(node as ListBlock),
-        .document => convertDocument(node as Document),
+        .document => _literals(balanceXml(convertDocument(node as Document))),
         .example => convertExample(node as Block),
         .floatingTitle => convertFloatingTitle(node as Block),
         .image => convertImage(node as Block),
@@ -192,7 +213,7 @@ class Docbook5Converter extends BuiltInConverter {
     String transform,
     ConvertOptions? opts,
   ) => switch (transform) {
-    'embedded' => convertEmbedded(node as Document),
+    'embedded' => _literals(balanceXml(convertEmbedded(node as Document))),
     _ => missing(transform),
   };
 
@@ -334,7 +355,7 @@ class Docbook5Converter extends BuiltInConverter {
           (sectname == null ? null : _manpageSectionTags[sectname]) ??
           _s(sectname);
     } else {
-      tagName = _s(node.sectname);
+      tagName = _sectionTag(node);
     }
     final titleEl =
         node.special &&
@@ -344,6 +365,29 @@ class Docbook5Converter extends BuiltInConverter {
     return '<$tagName${_nodeAttributes(node)}>\n'
         '$titleEl${_s(node.content())}\n'
         '</$tagName>';
+  }
+
+  /// The DocBook elements a section may be (asciidart's: a section style
+  /// with no element of its own, such as `introduction`, gives an element
+  /// no DocBook schema allows in Asciidoctor).
+  static const Set<String> _sectionTags = {
+    'abstract', 'appendix', 'article', 'bibliography', 'chapter', //
+    'colophon', 'dedication', 'glossary', 'index', 'part', 'partintro',
+    'preface', 'section',
+  };
+
+  /// The element of the section [node]: its name, or the chapter or
+  /// section it is when DocBook has no such element there.
+  static String _sectionTag(Section node) {
+    final sectname = _s(node.sectname);
+    // A part introduction is one only in a part.
+    if (sectname == 'partintro' &&
+        !(node.parent is Section && (node.parent! as Section).level == 0)) {
+      return 'section';
+    }
+    if (_sectionTags.contains(sectname)) return sectname;
+    final book = (node.document! as Document).doctype == 'book';
+    return book && node.level == 1 ? 'chapter' : 'section';
   }
 
   /// Converts the [node] admonition block.

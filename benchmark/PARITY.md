@@ -110,6 +110,18 @@ reproducers of each.
   top of `lib/src/cli/options.dart`).
 - Dart-only features (Mustache templates, `init-config`, `-j/--jobs`) have
   no Ruby counterpart.
+- DocBook and EPUB output is valid XML where Asciidoctor's isn't
+  (`test/divergences/xml_output.bats` reproduces each case on both
+  CLIs): tags are balanced (emphasis that opens inside an index term and
+  closes after it); a section style DocBook has no element for
+  (`[introduction]`) gives a chapter or section, and `[partintro]`
+  outside a part a section; emphasis and quotes inside a `<literal>`
+  become phrases and quotation marks. In EPUB, an image width is a
+  number of pixels or a percentage (another value is left out), an empty
+  `toc-title` gives the navigation Asciidoctor's default title, and a
+  link to a path from a website's root goes to its id in the book, or is
+  text. EPUB parity compares the gem's chapters with these repairs made.
+  `ebook-code-overflow=scroll` makes code lines scroll rather than wrap.
 - `callout-links` (off by default) links callouts and their list items
   both ways in HTML and EPUB, keeps markers out of copied code, and warns
   about callouts no list item explains (`no callout list item for <3>`,
