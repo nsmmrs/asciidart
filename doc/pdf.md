@@ -179,7 +179,7 @@ its pages: `[colophon%notitle%noheader%nofooter]` for a copyright page.
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `heading_h<n>_content` | the numbered title | A template for the heading's text, with `{{title}}`, `{{numbered-title}}`, `{{number}}` (`1.2.`, a part's `I`), `{{numeral}}` (`1`, `I`) and `{{signifier}}` (`Chapter`, `Part`). A chapter's label on a line of its own, in gray: `"{{#numeral}}<font color='#8C8C8C'>{{signifier}} {{numeral}}</font>\n{{/numeral}}{{title}}"`. |
+| `heading_h<n>_content` | the numbered title | A template for the heading's text, with `{{title}}`, `{{numbered-title}}`, `{{number}}` (`1.2.`, a part's `I`), `{{numeral}}` (`1`, `I`) and `{{signifier}}` (`Chapter`, `Part`). A chapter's label on a line of its own, in gray: `"{{#numeral}}<font color=\"#8C8C8C\">{{signifier}} {{numeral}}</font>\n{{/numeral}}{{title}}"` (markup attributes in double quotes). |
 
 A section with a role the theme styles is set in a box, as a sidebar is:
 `section_role_<role>_background_color`, `_border_color`, `_border_width`
