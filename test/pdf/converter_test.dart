@@ -47,6 +47,7 @@ void main() {
     'lists',
     'media',
     'pdf-pages',
+    'prepress',
     'simple',
     'split',
     'tables',

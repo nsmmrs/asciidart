@@ -252,7 +252,7 @@ final class PdfConverter extends BuiltInConverter
     );
     _sections.clear();
     _floatGroup = _floatNext = null;
-    _hasTitlePage = _frontCover = _backCover = false;
+    _hasTitlePage = _frontCover = _backCover = _noCover = false;
     _importedPages.clear();
     _layout = _initialLayout(document);
     _indexSlot = null;
@@ -263,12 +263,22 @@ final class PdfConverter extends BuiltInConverter
 
     // The document title, on a page of its own or above the content.
     final book = document.doctype == 'book';
+    final media = document.attr('media') ?? 'screen';
+    _ppbook = media == 'prepress' && book;
+    _folio = switch (document.attr('pdf-folio-placement') ??
+        (media == 'prepress' ? 'physical' : 'virtual')) {
+      'physical' => (physical: true, inverted: false),
+      'physical-inverted' => (physical: true, inverted: true),
+      'virtual-inverted' => (physical: false, inverted: true),
+      _ => (physical: false, inverted: false),
+    };
     final titlePage = book || document.hasAttr('title-page');
     _frontCover = _cover('front');
     if (titlePage &&
         document.hasHeader &&
         !document.notitle &&
         _theme['title_page'] is! ThemeBool) {
+      if (_ppbook) _out.add(const BreakBox.page(side: PageSide.recto));
       _titlePage(document);
       _out.add(const BreakBox.page());
       _hasTitlePage = true;
@@ -297,10 +307,21 @@ final class PdfConverter extends BuiltInConverter
     // section indent (the gem's `indent_section`).
     final indented = _collect(() {
       if (tocAtTop) {
+        if (_ppbook) _out.add(const BreakBox.page(side: PageSide.recto));
         _addToc(
           'toc',
           breakAfter: titlePage && _s('toc_break_after') != 'auto',
         );
+      }
+      if (_ppbook && !_firstBlockOf(document).hasOption('nonfacing')) {
+        _out
+          ..add(
+            const CustomBox(
+              _Nothing(),
+              style: BoxStyle(anchor: _beforeBodyAnchor),
+            ),
+          )
+          ..add(const BreakBox.page(side: PageSide.recto));
       }
       if (titlePage) _out.add(_bodyMarker());
       final columns = (_n('page_columns') ?? 1).toInt();
@@ -383,32 +404,42 @@ final class PdfConverter extends BuiltInConverter
       templates: templates,
       keepTemplate: true,
       pageLabel: _pageLabel,
+      templateForPage: media == 'prepress'
+          ? (template, number) => _sidedTemplate(
+              template,
+              number,
+              sided: _sidedLayouts(document).map((l) => templates[l]!).toSet(),
+              cover: number == 1 && _hasTitlePage && !_frontCover && !_noCover,
+            )
+          : null,
     );
     var result = layout.layout(_out);
-    // The index, once the pages of its terms are known.
-    if (_indexSlot case final slot?) {
+    // Where the body, the table of contents and each anchor are, and the
+    // front matter they make.
+    void measure() {
       _bodyStart = (result.anchors[_bodyAnchor]?.page ?? result.pageCount) + 1;
+      _blankBeforeBody = _blankBefore(result);
       _anchorPages = {
         for (final MapEntry(:key, :value) in result.anchors.entries)
           key: value.page + 1,
       };
+      _tocPages = switch ((
+        result.anchors[_tocStartAnchor],
+        result.anchors[_tocEndAnchor],
+      )) {
+        (final start?, final end?) => (start.page + 1, end.page + 1),
+        _ => null,
+      };
       _skip = _frontMatter(titlePage: titlePage);
+    }
+
+    measure();
+    // The index, once the pages of its terms are known.
+    if (_indexSlot case final slot?) {
       _fillIndex(slot);
       result = layout.layout(_out);
+      measure();
     }
-    _bodyStart = (result.anchors[_bodyAnchor]?.page ?? result.pageCount) + 1;
-    _anchorPages = {
-      for (final MapEntry(:key, :value) in result.anchors.entries)
-        key: value.page + 1,
-    };
-    _tocPages = switch ((
-      result.anchors[_tocStartAnchor],
-      result.anchors[_tocEndAnchor],
-    )) {
-      (final start?, final end?) => (start.page + 1, end.page + 1),
-      _ => null,
-    };
-    _skip = _frontMatter(titlePage: titlePage);
     final pdf = PdfDocument(
       info: _info(document),
       pageMode: PageMode.useOutlines,
@@ -757,8 +788,16 @@ final class PdfConverter extends BuiltInConverter
       return;
     }
     final book = doc.doctype == 'book';
-    if (book) _out.add(const BreakBox.page());
     final macro = placement == 'macro';
+    if (book) {
+      _out.add(
+        BreakBox.page(
+          side: _ppbook && !(macro && node.hasOption('nonfacing'))
+              ? PageSide.recto
+              : null,
+        ),
+      );
+    }
     _addToc(
       macro ? node.id ?? 'toc' : _tocStartAnchor,
       breakAfter: book || doc.hasAttr('title-page'),
@@ -996,6 +1035,7 @@ final class PdfConverter extends BuiltInConverter
       themeKey: 'cover_${face}_image',
       symbols: const ['', '~'],
     );
+    if (cover?.symbol == '~') _noCover = true;
     if (cover == null || cover.symbol == '~') return false;
     if (cover.image?.graphic case final ImportedPage page) {
       _importPage(page);
@@ -1254,7 +1294,7 @@ final class PdfConverter extends BuiltInConverter
     }
     final image = onTitlePage && _titlePageImage != null
         ? _titlePageImage.image
-        : _pageImages[number.isOdd ? 'recto' : 'verso'];
+        : _pageImages[_sideOf(number)];
     if (image != null) {
       _drawPageImage(canvas, image, size: (pageWidth, pageHeight));
     }
@@ -1262,6 +1302,91 @@ final class PdfConverter extends BuiltInConverter
 
   /// Whether the document has a title page.
   bool _hasTitlePage = false;
+
+  /// Whether the front cover is `~`: none, and the first page takes the
+  /// margins of a recto page.
+  bool _noCover = false;
+
+  static const _beforeBodyAnchor = '__asciidart-before-body';
+
+  /// Whether a blank page was put before the body to start it on a recto
+  /// page (a running content or page numbering start can then be on it).
+  bool _blankBeforeBody = false;
+
+  /// Whether [result] has a blank page before the body.
+  bool _blankBefore(LayoutResult result) =>
+      switch (result.anchors[_beforeBodyAnchor]?.page) {
+        final page? => page + 1 < _bodyStart,
+        null => false,
+      };
+
+  /// Whether the document is a book for print (`media=prepress`): its
+  /// title page, table of contents, body, chapters and parts start on
+  /// recto pages.
+  bool _ppbook = false;
+
+  /// What decides whether a page is a recto or a verso page for its
+  /// running content and background: its physical page number or its
+  /// page number; and whether the sides are inverted
+  /// (`pdf-folio-placement`).
+  ({bool physical, bool inverted}) _folio = (physical: false, inverted: false);
+
+  /// The side (`recto`, `verso`) of page [number] by the folio placement.
+  String _sideOf(int number) =>
+      number.isOdd != _folio.inverted ? 'recto' : 'verso';
+
+  /// The first block of [document], or of its preamble.
+  static AbstractBlock _firstBlockOf(Document document) {
+    final first = document.blocks.firstOrNull;
+    if (first is Block && first.context == BlockContext.preamble) {
+      return first.blocks.firstOrNull ?? first;
+    }
+    return first ?? document;
+  }
+
+  /// The layouts whose pages get recto and verso margins: the initial
+  /// one, and the other one unless it has margins of its own
+  /// (`page_margin_rotated`).
+  List<String> _sidedLayouts(Document document) {
+    final initial = _initialLayout(document);
+    final rotated =
+        document.attr('pdf-page-margin-rotated') != null ||
+        _theme.value('page_margin_rotated') != null;
+    final other = initial == 'portrait' ? 'landscape' : 'portrait';
+    return [initial, if (!rotated) other];
+  }
+
+  /// [template] for page [number] with `media=prepress`: one of the
+  /// [sided] templates gets the theme's inner and outer margins on the
+  /// side of the binding and the side away from it (the first page keeps
+  /// its margins when it's the [cover], a title page).
+  PageTemplate _sidedTemplate(
+    PageTemplate template,
+    int number, {
+    required Set<PageTemplate> sided,
+    required bool cover,
+  }) {
+    if (cover || !sided.contains(template)) return template;
+    final outer = _n('page_margin_outer')?.toDouble();
+    final inner = _n('page_margin_inner')?.toDouble();
+    if (outer == null && inner == null) return template;
+    final m = template.margins;
+    final recto = number.isOdd;
+    return PageTemplate(
+      template.size,
+      margins: EdgeInsets(
+        top: m.top,
+        bottom: m.bottom,
+        left: (recto ? inner : outer) ?? m.left,
+        right: (recto ? outer : inner) ?? m.right,
+      ),
+      columns: template.columns,
+      columnGap: template.columnGap,
+      header: template.header,
+      footer: template.footer,
+      background: template.background,
+    );
+  }
 
   static const _bodyAnchor = '__asciidart-body';
 
@@ -1278,7 +1403,7 @@ final class PdfConverter extends BuiltInConverter
     if (!titlePage) {
       int offset(ThemeValue? value) => switch (value) {
         ThemeNumber(:final value) =>
-          bodyOffset + math.max(value.toInt() - 1, 0),
+          bodyOffset + math.max(value.toInt() - 1, _blankBeforeBody ? -1 : 0),
         _ => bodyOffset,
       };
       final numbering = startAt('page_numbering_start_at');
@@ -1299,7 +1424,9 @@ final class PdfConverter extends BuiltInConverter
     String resolve(ThemeValue? value, void Function(int) integer) {
       switch (value) {
         case ThemeNumber(:final value):
-          integer(bodyOffset + math.max(value.toInt() - 1, 0));
+          integer(
+            bodyOffset + math.max(value.toInt() - 1, _blankBeforeBody ? -1 : 0),
+          );
           return 'body';
         case final other?:
           return switch (other.rubyString) {
@@ -1342,7 +1469,7 @@ final class PdfConverter extends BuiltInConverter
       String? setting(String key) => startAt(key)?.rubyString;
       int skip(String key, int value) => switch (setting(key)) {
         'toc' => start - 1,
-        'after-toc' => end,
+        'after-toc' => _ppbook && end.isOdd ? end + 1 : end,
         _ => value,
       };
       skips = (
@@ -1617,7 +1744,15 @@ final class PdfConverter extends BuiltInConverter
         startedNew = true;
       }
     }
-    if (startedNew) _out.add(const BreakBox.page());
+    if (startedNew) {
+      _out.add(
+        BreakBox.page(
+          side: _ppbook && !section.hasOption('nonfacing')
+              ? PageSide.recto
+              : null,
+        ),
+      );
+    }
     if (hidden) {
       _out.add(CustomBox(const _Nothing(), style: BoxStyle(anchor: anchor)));
     } else {
@@ -5112,7 +5247,7 @@ final class PdfConverter extends BuiltInConverter
     }
     final virtual = number - _skip.$2;
     final label = _pageLabel(number);
-    final side = virtual.isOdd ? 'recto' : 'verso';
+    final side = _sideOf(_folio.physical ? number : virtual);
     final pageWidth = page.template.size.width;
     final pageHeight = page.template.size.height;
     final margins = page.template.margins;
@@ -6043,8 +6178,11 @@ final class PdfConverter extends BuiltInConverter
   void _indexTerm(IndexTerm term, String? style) {
     final markup = StringBuffer();
     final seeAlso = <String>[];
-    String link(String anchor, String text) => '<a anchor="$anchor">$text</a>';
-    if (!term.isContainer) {
+    // Linked only on screen (the gem's `media`).
+    final screen = (_document.attr('media') ?? 'screen') == 'screen';
+    String link(String anchor, String text) =>
+        screen ? '<a anchor="$anchor">$text</a>' : text;
+    if (!term.isContainer && screen) {
       markup.write('<a id="${term.anchor}">$_dummyText</a>');
     }
     markup.write(term.name.markup);
@@ -6060,6 +6198,10 @@ final class PdfConverter extends BuiltInConverter
         final destinations = term.destinations;
         final List<String> numbers;
         switch (style) {
+          case _ when !screen:
+            numbers = _consolidateRanges([
+              ...{for (final d in destinations) d.page!},
+            ]);
           case 'page':
             final seen = <String>{};
             numbers = [
