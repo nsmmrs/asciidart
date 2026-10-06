@@ -29,8 +29,7 @@ String renderNumbered(
   String Function(String number) link,
 ) {
   const token = '\u0000number\u0000';
-  return renderTemplate(template, {'number': token}).replaceAll(
-    token,
-    link(number),
-  );
+  return renderTemplate(template, {
+    'number': token,
+  }).replaceAll(token, link(number));
 }

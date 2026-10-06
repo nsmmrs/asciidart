@@ -1949,6 +1949,8 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     var lines = <String>[];
     for (final item in items) {
       if ((item.level ?? 0) > levels) continue;
+      // asciidart's `notoc` option: a section left out of the contents.
+      if (item.hasOption('notoc')) continue;
       final chapterFile = chapterFilename(item);
       final String itemLabel;
       final String itemHref;

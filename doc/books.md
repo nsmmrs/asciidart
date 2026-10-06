@@ -102,6 +102,12 @@ each links to its explanation, which links back. In HTML and EPUB,
 `-a callout-links` does the same, and reports markers no explanation
 matches (and explanations no marker does) with their line.
 
+## Contents
+
+A section with the `notoc` option stays out of the contents (the PDF's,
+HTML's, the website's list of pages and the EPUB's navigation) while it
+stays a section: `[colophon%notitle%notoc]` for a copyright page.
+
 ## Print and web in one source
 
 Each backend sets `backend-<name>`, so content can be for one output:

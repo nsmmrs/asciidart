@@ -1134,6 +1134,8 @@ final class PdfConverter extends BuiltInConverter
     final indent = (_n('toc_indent') ?? 0).toDouble();
     void level(List<Section> entries, int levels, double left) {
       for (final entry in entries) {
+        // asciidart's `notoc` option: a section left out of the contents.
+        if (entry.hasOption('notoc')) continue;
         final entryLevel = (entry.level ?? 0) + 1;
         final entryLevels =
             int.tryParse(entry.attr('toclevels') ?? '') ?? levels;

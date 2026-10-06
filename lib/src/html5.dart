@@ -695,6 +695,8 @@ class Html5Converter extends BuiltInConverter {
     final result = <String>['<ul class="sectlevel${sections[0].level}">'];
     for (final child in sections) {
       final section = child as Section;
+      // asciidart's `notoc` option: a section left out of the contents.
+      if (section.hasOption('notoc')) continue;
       final slevel = section.level!;
       final String stitle;
       if (section.caption != null) {

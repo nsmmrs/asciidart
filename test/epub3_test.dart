@@ -325,6 +325,28 @@ A ((Tiger)) again.(((Wolves)))
     });
   });
 
+  test('a section with notoc is left out of the navigation', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync(
+        '= Book\n:doctype: book\n\n[colophon%notoc]\n== Copyright\n\nText.\n\n'
+        '== Chapter\n\nText.\n',
+      );
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    expect(files['EPUB/nav.xhtml'], contains('Chapter'));
+    expect(files['EPUB/nav.xhtml'], isNot(contains('Copyright')));
+    expect(files.keys, contains('EPUB/_copyright.xhtml'));
+  });
+
   test('an ISBN and editors in the metadata', () {
     final dir = Directory.systemTemp.createTempSync('epub3_test.');
     addTearDown(() => dir.deleteSync(recursive: true));

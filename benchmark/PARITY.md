@@ -140,6 +140,8 @@ reproducers of each.
   `<kind>-caption-template` a caption's number (`listing`, `figure`,
   `table`, `example`, `appendix`) in every backend; without them the
   output is Asciidoctor's.
+- A section with the `notoc` option is left out of the contents (HTML,
+  PDF, EPUB, the website's list); Asciidoctor has no such option.
 - `callout-links` (off by default) links callouts and their list items
   both ways in HTML and EPUB, keeps markers out of copied code, and warns
   about callouts no list item explains (`no callout list item for <3>`,

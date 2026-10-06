@@ -1104,6 +1104,15 @@ base:
     expect(four, greaterThan(one * 3));
   }, skip: _tools ? false : 'needs poppler');
 
+  test('a section with notoc is left out of the contents', () {
+    const book =
+        '= Book\n:doctype: book\n:toc:\n\n'
+        '[colophon%notoc]\n== Copyright\n\nText.\n\n== Chapter\n\nText.\n';
+    final contents = _pages(_pdf(book))[1].join('\n');
+    expect(contents, contains('Chapter'));
+    expect(contents, isNot(contains('Copyright')));
+  }, skip: _tools ? false : 'needs poppler');
+
   test('the contents may list titles without numbers', () {
     const book =
         '= Book\n:doctype: book\n:toc:\n:sectnums:\n\n== One\n\nText.\n';

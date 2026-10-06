@@ -251,7 +251,8 @@ class MultipageHtml5Converter extends Html5Converter
 
     String items(List<_Page> pages) => [
       '<ul>',
-      for (final page in pages)
+      // asciidart's `notoc` option: a page left out of the list.
+      for (final page in pages.where((p) => !p.section.hasOption('notoc')))
         [
           '<li><a href="${page.href}">${_title(page.section)}</a>',
           if (levels > 0) sections(page, page.section),
