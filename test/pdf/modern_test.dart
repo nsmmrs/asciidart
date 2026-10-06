@@ -609,6 +609,49 @@ base:
         });
       }
 
+      if (!compat) {
+        test('top-title: the part or chapter in effect at the top', () {
+          final pdf = _pdf(
+            book,
+            theme:
+                'footer:\n  recto: &both\n    right:\n'
+                "      content: '{{#top-numeral}}{{top-numeral}}. "
+                "{{/top-numeral}}T[{{top-title}}] {page-number}'\n"
+                '  verso: *both\n'
+                'running_content_on_openers: true\n',
+          );
+          final lines = [
+            for (final page in _pages(pdf))
+              for (final line in page)
+                if (line.contains('T[')) line.replaceAll(RegExp(r'\s+'), ' '),
+          ];
+          // An opener still shows what came before it.
+          expect(lines, [
+            'T[Book] 1',
+            '2 T[Preface] 2',
+            'T[Part I: Part One] 3',
+            '4 1. T[Chapter 1. Chapter One] 4',
+          ]);
+        });
+
+        test('a section role keeps running content on its opener', () {
+          final pdf = _pdf(
+            '= Book\n:doctype: book\n\n[preface.front]\n== Preface\n\n'
+            'Before.\n\n== Chapter\n\nText.\n',
+            theme:
+                'footer:\n  recto: &both\n    right:\n'
+                "      content: 'F {page-number}'\n"
+                '  verso: *both\n'
+                'section:\n  role:\n    front:\n'
+                '      running_content_on_openers: true\n',
+          );
+          final pages = _pages(pdf);
+          // (The title page first.)
+          expect(pages[1].join(' '), contains(RegExp(r'F ?1')));
+          expect(pages[2].join(' '), isNot(contains('F')));
+        });
+      }
+
       test('go with titles without numbers (title_style: basic)'
           '${compat ? ' (compatibility mode)' : ''}', () {
         final pages = footers(

@@ -1082,10 +1082,20 @@ final class PdfConverter extends BuiltInConverter
   Set<int> _openerPages = const {};
 
   /// Whether [section] is a part or chapter of a book whose title is set.
-  bool _opensPages(Section section) =>
-      _document.doctype == 'book' &&
-      (section.sectname == 'part' || section.level == 1) &&
-      !section.hasOption('notitle');
+  bool _opensPages(Section section) {
+    if (_document.doctype != 'book' ||
+        !(section.sectname == 'part' || section.level == 1) ||
+        section.hasOption('notitle')) {
+      return false;
+    }
+    // A styled role may keep the running content on its first page
+    // (section_role_<role>_running_content_on_openers: a foreword set as
+    // an ordinary heading).
+    final role = _boxedRole(section);
+    return role == null ||
+        _theme.value('section_role_${role}_running_content_on_openers') !=
+            const ThemeBool(true);
+  }
 
   /// The number of levels the table of contents lists (the gem's
   /// `resolve_toclevels`).
@@ -7288,6 +7298,28 @@ final class PdfConverter extends BuiltInConverter
     attributes['section-or-chapter-title'] = section.isNotEmpty
         ? section
         : chapter;
+    // As Typst's headers see it, at the page's top: the last part or
+    // chapter that started before the page, else the document's title.
+    // (A section without a shown title, a dedication, has no heading.)
+    int shown(String? mark) => switch (int.tryParse(mark ?? '')) {
+      final index?
+          when index < _sections.length &&
+              !_sections[index].$1.hasOption('notitle') =>
+        index,
+      _ => -1,
+    };
+    final topPart = shown(page.topMark('part'));
+    final topChapter = shown(page.topMark('chapter'));
+    if (topChapter > topPart) {
+      attributes['top-title'] = titleOf('$topChapter');
+      if (numeralOf('$topChapter') case final numeral?) {
+        attributes['top-numeral'] = numeral;
+      }
+    } else if (topPart >= 0) {
+      attributes['top-title'] = titleOf('$topPart');
+    } else {
+      attributes['top-title'] = doc.doctitle() ?? '';
+    }
     return attributes;
   }
 

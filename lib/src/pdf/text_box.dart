@@ -2082,8 +2082,7 @@ final class _OptimalWrap extends _Wrap {
           width = 0;
         } else if (identical(wordFormat, format) && wordSoFar.isNotEmpty) {
           width =
-              _widthOf('$wordSoFar$word', format) -
-              _widthOf(wordSoFar, format);
+              _widthOf('$wordSoFar$word', format) - _widthOf(wordSoFar, format);
         } else {
           width = word == _unconsumed[i].text
               ? _fragmentWidth(word, format)

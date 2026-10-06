@@ -172,12 +172,16 @@ each use, which is asciidoctor-pdf's default).
 | --- | --- | --- |
 | `running_content_on_blank_pages` | `false` | A blank page (the verso before a chapter that starts on a recto page) has no header or footer unless this is `true`. |
 | `running_content_on_openers` | `false` | A page that opens a part or chapter has no header or footer unless this is `true`. |
+| `section_role_<role>_running_content_on_openers` | | `true` keeps the running content on the first page of a part or chapter with that role (a foreword set as an ordinary heading). |
 | `header_title_style`, `footer_title_style` | `document` | As in asciidoctor-pdf (`document`, `toc`, `basic`). |
 
 Running content may be a template: `'{{#chapter-numeral}}{{chapter-numeral}}. {{/chapter-numeral}}{{chapter-title}} · {page-number}'`
 writes `3. A Web 1.0 Application · 71`, and on an unnumbered chapter's
 pages `Introduction · 15` (the numeral part left out, where a line that
-refers to a missing `{attribute}` is dropped). With `title_style: basic`,
+refers to a missing `{attribute}` is dropped). `{{top-title}}` and
+`{{top-numeral}}` are what Typst's headers see: the last part or chapter
+that started before the page (on a page where a chapter starts, the one
+before it), else the document's title. With `title_style: basic`,
 the titles come without their numbers.
 
 A part or chapter with the `noheader` or `nofooter` option (as
