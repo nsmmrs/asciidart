@@ -40,8 +40,10 @@ asciidart -b docbook5 -o book.xml book.adoc
   `href`, `title`, `basic-title` (without its number), `number` and
   `label`). The list's entries read
   `multipage-toc-entry-template` (`{{title}}`, `{{basic-title}}`,
-  `{{number}}`), and its section lists have the class
-  `multipage-sections`, for a stylesheet that shows or hides them.
+  `{{number}}`), each with the section's kind and roles as its class
+  (`chapter`, `part`, `chapter introduction`), and its section lists
+  have the class `multipage-sections`, for a stylesheet that shows or
+  hides them.
   `multipage-page-toclevels` puts a page's own sections at its top, as
   a table of contents (`toc-title`), or in a `multipage_toc.mustache`
   template (`title`, and `entries`: the list).

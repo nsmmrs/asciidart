@@ -310,7 +310,10 @@ class MultipageHtml5Converter extends Html5Converter
       // asciidart's `notoc` option: a page left out of the list.
       for (final page in pages.where((p) => !p.section.hasOption('notoc')))
         [
-          '<li><a href="${page.href}">${_entry(document, page.section)}</a>',
+          // The section's kind and roles, for a stylesheet (chapters
+          // numbered by a counter, say).
+          '<li class="${_classes(page.section)}">',
+          '<a href="${page.href}">${_entry(document, page.section)}</a>',
           if (levels > 0) sections(page, page.section),
           if (page.children.isNotEmpty) '\n${items(page.children)}\n',
           '</li>',
@@ -319,6 +322,10 @@ class MultipageHtml5Converter extends Html5Converter
     ].join('\n');
     return '<nav class="$role">\n${items(pages)}\n</nav>';
   }
+
+  /// [section]'s kind (`chapter`, `part`...) and roles.
+  static String _classes(Section section) =>
+      [section.sectname, ...section.roles].nonNulls.join(' ');
 
   /// [html] (a page titled [title], the root when null) with links to the
   /// [previous], enclosing ([up]) and [next] pages above and below its

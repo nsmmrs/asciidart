@@ -395,4 +395,16 @@ void main() {
       ),
     );
   });
+
+  test("the list's entries have the section's kind and roles", () {
+    final root = _site(
+      _book.replaceFirst('== Chapter B', '[.late]\n== Chapter B'),
+    )['book.html']!;
+    expect(root, contains('<li class="part"><a href="_part_one.html">'));
+    expect(root, contains('<li class="chapter"><a href="_chapter_a.html">'));
+    expect(
+      root,
+      contains('<li class="chapter late"><a href="_chapter_b.html">'),
+    );
+  });
 }
