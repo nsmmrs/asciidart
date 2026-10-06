@@ -591,10 +591,12 @@ void main() {
       );
       setDocHeader(doc, 'Doc Title');
       final output = convOf(doc).convert(doc)!;
+      // The year first, as DocBook 5.0 wants (Asciidoctor writes it
+      // after the holder; benchmark/PARITY.md).
       expect(
         output,
         contains(
-          '<copyright>\n<holder>Acme Corp</holder>\n<year>2020</year>\n</copyright>\n',
+          '<copyright>\n<year>2020</year>\n<holder>Acme Corp</holder>\n</copyright>\n',
         ),
       );
     });
@@ -608,7 +610,7 @@ void main() {
       final output = convOf(doc).convert(doc)!;
       expect(
         output,
-        contains('<holder>Acme</holder>\n<year>2019-2020</year>\n'),
+        contains('<year>2019-2020</year>\n<holder>Acme</holder>\n'),
       );
     });
 
@@ -619,8 +621,12 @@ void main() {
       );
       setDocHeader(doc, 'Doc Title');
       final output = convOf(doc).convert(doc)!;
-      expect(output, contains('<copyright>\n<holder>Acme Corp</holder>\n'));
-      expect(output, isNot(contains('<year>')));
+      // A legal notice: a copyright needs a year in DocBook 5.0.
+      expect(
+        output,
+        contains('<legalnotice>\n<simpara>Acme Corp</simpara>\n</legalnotice>'),
+      );
+      expect(output, isNot(contains('<copyright>')));
     });
 
     test('orgname', () {

@@ -48,8 +48,7 @@ void main() {
     out.writeln("  '$name': '$css',");
   }
   out.writeln('};');
-  File(
-    '${root.path}/lib/src/highlight/hljs_styles.g.dart',
-  ).writeAsStringSync(out.toString());
+  File('${root.path}/lib/src/highlight/hljs_styles.g.dart')
+      .writeAsStringSync(out.toString());
   stdout.writeln('embed_hljs_styles: ${files.length} themes');
 }
