@@ -42,6 +42,7 @@ void main() {
     'dlists2',
     'footnotes',
     'footnotes-book',
+    'hyphens',
     'icons',
     'images',
     'index',

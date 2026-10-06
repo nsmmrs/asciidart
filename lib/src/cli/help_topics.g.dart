@@ -66,7 +66,7 @@ abstract final class HelpTopics {
       '.RS 4\n'
       'The output format: \\fBhtml5\\fP (the default), \\fBxhtml5\\fP, \\fBdocbook5\\fP, \\fBmanpage\\fP, \\fBepub3\\fP or \\fBpdf\\fP.\n'
       '\\fBepub3\\fP writes an EPUB 3 file (as asciidoctor\\-epub3 does), so it needs an output file rather than standard output; it is available in the native executable, not in the npm package.\n'
-      '\\fBpdf\\fP writes a PDF file with asciidart\\(cqs own layout, reading asciidoctor\\-pdf\\(cqs YAML themes (\\fBpdf\\-theme\\fP, \\fBpdf\\-themesdir\\fP, \\fBpdf\\-fontsdir\\fP); set the \\fBpdf\\-compat\\fP attribute (\\fB\\-a pdf\\-compat\\fP) to lay the document out as asciidoctor\\-pdf 2.3.27 does. Like \\fBepub3\\fP, it needs an output file and the native executable.\n'
+      '\\fBpdf\\fP writes a PDF file with asciidart\\(cqs own layout, reading asciidoctor\\-pdf\\(cqs YAML themes (\\fBpdf\\-theme\\fP, \\fBpdf\\-themesdir\\fP, \\fBpdf\\-fontsdir\\fP); justified text is hyphenated in the document\\(cqs language (\\fB\\-a hyphens!\\fP turns it off). Set the \\fBpdf\\-compat\\fP attribute (\\fB\\-a pdf\\-compat\\fP) to lay the document out as asciidoctor\\-pdf 2.3.27 does. Like \\fBepub3\\fP, it needs an output file and the native executable.\n'
       '.RE\n'
       '.sp\n'
       '\\fB\\-d, \\-\\-doctype\\fP=\\fIDOCTYPE\\fP\n'

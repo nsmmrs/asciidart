@@ -187,10 +187,10 @@ gem's YAML themes unchanged, and it draws with libpdf, asciidart's own PDF
 library. Prawn's line wrapping and asciidoctor-pdf's page rules are
 imitated in asciidart; no Prawn code is ported.
 
-Since the Hypermedia Systems roadmap (lane EPIC-xj1gxj),
-`-b pdf` is planned to default to a modern layout engine. This
-compatibility mode will then be selected with `-a pdf-compat`, and
-everything in this section describes that mode.
+Since the Hypermedia Systems roadmap (lane EPIC-xj1gxj), `-b pdf`
+defaults to asciidart's own layout (optimal line breaking, hyphenation,
+widows and orphans). This compatibility mode is selected with
+`-a pdf-compat`, and everything in this section describes that mode.
 
 `tool/pdf_parity.dart` compares two PDFs on what a reader sees, not on
 their bytes:
@@ -202,7 +202,7 @@ their bytes:
 - the rendered pages: the mean gray difference, and the share of pixels
   whose color differs from every pixel around them, on the worst page.
 
-The converter tests (`test/pdf/converter_test.dart`) hold 31 fixtures and
+The converter tests (`test/pdf/converter_test.dart`) hold 32 fixtures and
 the gem's chronicles and edge-cases examples to all of these, against PDFs
 the gem made (`SOURCE_DATE_EPOCH=0`).
 
@@ -249,7 +249,6 @@ count. Of the other 34:
   - Index entries in some arrangements (`index-005`, `index-007`).
   - A footnote reference in a table cell (`footnote-025`).
   - An abstract's first line with a theme override (`abstract-018`).
-  - Hyphenation (`hyphens-006`; the gem's spec installs text-hyphen).
   - An inline icon image (`icon-001`).
   - `heading_min_height_after: auto` with an image (`section-060`).
   - `cover_page-005`; `admonition-011`.
@@ -261,9 +260,6 @@ that the converter never reads over the corpus. Most come from the corpus,
 not from asciidart: it never sets a header, for instance, and the header
 keys are read whenever a theme gives the header a height. Not supported:
 
-- `base_hyphens`, and the `hyphens` attribute: the gem needs the optional
-  text-hyphen gem; asciidart behaves as when it isn't installed (on the
-  roadmap).
 - `code_highlight_background_color`, `code_line_gap`: options of the gem's
   Rouge formatter. asciidart highlights with hilite (colors from a
   highlight.js theme).
@@ -284,8 +280,14 @@ keys are read whenever a theme gives the header a height. Not supported:
   without Rouge, as in the corpus, neither highlights.
 - Optional gems behave as not installed: asciidoctor-mathematical (STEM
   stays source text), prawn-gmagick (GIF and other formats are reported),
-  rghost (`optimize`), text-hyphen. PDF pages as images, covers and
+  rghost (`optimize`). PDF pages as images, covers and
   backgrounds (prawn-templates) are supported natively, through libpdf's
   PDF reader.
+- Hyphenation (`hyphens`, `base_hyphens`) is built in, the gem's with
+  the optional text-hyphen gem installed (as the corpus is converted, and
+  as the gem's spec suite runs). The patterns are hyph-utf8's, for 72
+  languages (`vendor/hyph-utf8`): text-hyphen's US English patterns may
+  be used for non-commercial purposes only. The two sets break some words
+  differently (`hyphens-006`: "vi-cious").
 - The parity tool compares what a reader sees; object order, compression
   and IDs differ.

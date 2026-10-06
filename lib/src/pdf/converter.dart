@@ -21,6 +21,7 @@ import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
+import 'package:asciidart/src/pdf/hyphenate.dart';
 import 'package:asciidart/src/pdf/icons.dart';
 import 'package:asciidart/src/pdf/index.dart';
 import 'package:asciidart/src/pdf/markup.dart';
@@ -34,8 +35,10 @@ import 'package:libpdf/libpdf.dart';
 /// The NUL character the gem puts in empty anchors (zero width).
 const String _dummyText = '\u0000';
 
-/// Page sizes by name, in points (Prawn's table, the common ones).
+/// Page sizes by name, in points (Prawn's table).
 const Map<String, (double, double)> _pageSizes = {
+  '4A0': (4767.87, 6740.79),
+  '2A0': (3370.39, 4767.87),
   'A0': (2383.94, 3370.39),
   'A1': (1683.78, 2383.94),
   'A2': (1190.55, 1683.78),
@@ -43,13 +46,47 @@ const Map<String, (double, double)> _pageSizes = {
   'A4': (595.28, 841.89),
   'A5': (419.53, 595.28),
   'A6': (297.64, 419.53),
+  'A7': (209.76, 297.64),
+  'A8': (147.4, 209.76),
+  'A9': (104.88, 147.4),
+  'A10': (73.7, 104.88),
+  'B0': (2834.65, 4008.19),
+  'B1': (2004.09, 2834.65),
+  'B2': (1417.32, 2004.09),
+  'B3': (1000.63, 1417.32),
   'B4': (708.66, 1000.63),
   'B5': (498.9, 708.66),
-  'LETTER': (612.0, 792.0),
-  'LEGAL': (612.0, 1008.0),
-  'TABLOID': (792.0, 1224.0),
+  'B6': (354.33, 498.9),
+  'B7': (249.45, 354.33),
+  'B8': (175.75, 249.45),
+  'B9': (124.72, 175.75),
+  'B10': (87.87, 124.72),
+  'C0': (2599.37, 3676.54),
+  'C1': (1836.85, 2599.37),
+  'C2': (1298.27, 1836.85),
+  'C3': (918.43, 1298.27),
+  'C4': (649.13, 918.43),
+  'C5': (459.21, 649.13),
+  'C6': (323.15, 459.21),
+  'C7': (229.61, 323.15),
+  'C8': (161.57, 229.61),
+  'C9': (113.39, 161.57),
+  'C10': (79.37, 113.39),
+  'RA0': (2437.8, 3458.27),
+  'RA1': (1729.13, 2437.8),
+  'RA2': (1218.9, 1729.13),
+  'RA3': (864.57, 1218.9),
+  'RA4': (609.45, 864.57),
+  'SRA0': (2551.18, 3628.35),
+  'SRA1': (1814.17, 2551.18),
+  'SRA2': (1275.59, 1814.17),
+  'SRA3': (907.09, 1275.59),
+  'SRA4': (637.8, 907.09),
   'EXECUTIVE': (521.86, 756.0),
   'FOLIO': (612.0, 936.0),
+  'LEGAL': (612.0, 1008.0),
+  'LETTER': (612.0, 792.0),
+  'TABLOID': (792.0, 1224.0),
 };
 
 /// The font settings in effect (the gem's `theme_font` state).
@@ -245,6 +282,7 @@ final class PdfConverter extends BuiltInConverter
     );
     _markup = MarkupTransform(_theme);
     _cjkLineBreaks = document.attr('scripts') == 'cjk';
+    _resolveHyphenation(document);
     _baseTextAlign = switch (document.attr('text-align')) {
       final align?
           when const {'justify', 'left', 'center', 'right'}.contains(align) =>
@@ -1821,7 +1859,9 @@ final class PdfConverter extends BuiltInConverter
     } else if (node is Block && node.contentModel != ContentModel.compound) {
       if (node.content() case final text?) {
         final align = _alignOf(node.roles) ?? _baseTextAlign;
-        _out.add(CustomBox(_textBox(text, _font, align: align)));
+        _out.add(
+          CustomBox(_textBox(text, _font, align: align, hyphenate: true)),
+        );
       }
     }
   }
@@ -2279,6 +2319,7 @@ final class PdfConverter extends BuiltInConverter
     if (font.transform case final transform? when transform != 'none') {
       content = transformText(content, transform);
     }
+    content = _hyphenated(content, align);
     if (node.hasTitle) _caption(node, labeled: false);
     // The modern engine keeps a paragraph's lines together at page
     // breaks: no fewer than prose_orphans at the bottom of a page and
@@ -2901,7 +2942,13 @@ final class PdfConverter extends BuiltInConverter
             final indent = (textAlign == 'justify' || textAlign == 'left')
                 ? (_n('prose_text_indent') ?? 0).toDouble()
                 : 0.0;
-            final box = _textBox(text, _font, align: textAlign, indent: indent);
+            final box = _textBox(
+              text,
+              _font,
+              align: textAlign,
+              indent: indent,
+              hyphenate: true,
+            );
             _out.add(
               CustomBox(
                 firstLine == null
@@ -2913,6 +2960,7 @@ final class PdfConverter extends BuiltInConverter
                           align: textAlign,
                           indent: indent,
                           singleLine: true,
+                          hyphenate: true,
                         ),
                         box.state,
                         box.layout,
@@ -3029,6 +3077,7 @@ final class PdfConverter extends BuiltInConverter
                 _font,
                 align: _alignOf(node.roles) ?? 'left',
                 normalize: false,
+                hyphenate: true,
               ),
             ),
           );
@@ -3873,9 +3922,12 @@ final class PdfConverter extends BuiltInConverter
         grid.add([
           for (final cell in row)
             _TableCellData(
-              text: transform == null || transform == 'none'
-                  ? cell.text.trim()
-                  : transformText(cell.text.trim(), transform),
+              text: _hyphenated(
+                transform == null || transform == 'none'
+                    ? cell.text.trim()
+                    : transformText(cell.text.trim(), transform),
+                cell.attr('halign') ?? 'left',
+              ),
               font: font,
               padding: padding,
               background: headBackground,
@@ -3967,6 +4019,7 @@ final class PdfConverter extends BuiltInConverter
           if (transform != null && transform != 'none') {
             text = transformText(text, transform);
           }
+          text = _hyphenated(text, cell.attr('halign') ?? 'left');
           if (_cjkLineBreaks) text = _breakCjk(text);
           content = text;
         }
@@ -4483,6 +4536,11 @@ final class PdfConverter extends BuiltInConverter
       required bool last,
     }) {
       final canvas = page.canvas;
+      // On a page the block continues past, the label's room and the
+      // rule reach the page's bottom margin, as in the gem (whose label
+      // box is as high as the cursor is).
+      final bottom = last ? rect.bottom : _pageMargins(_document).bottom;
+      final room = rect.top - bottom;
       if (ruleWidth > 0) {
         if (pdfColorOf(ruleColor) case final color?) {
           _verticalRule(
@@ -4490,7 +4548,7 @@ final class PdfConverter extends BuiltInConverter
             color,
             rect.left + ruleX,
             rect.top,
-            rect.bottom,
+            bottom,
             ruleWidth,
             _s('admonition_column_rule_style'),
           );
@@ -4498,7 +4556,7 @@ final class PdfConverter extends BuiltInConverter
       }
       if (!first) return;
       if (icon != null) {
-        final size = math.min(rect.height, icon.size);
+        final size = math.min(room, icon.size);
         final glyph = _textBox(
           icon.glyph,
           _FontState(
@@ -4513,18 +4571,14 @@ final class PdfConverter extends BuiltInConverter
           normalize: false,
           gaps: false,
         ).place(labelWidth, double.infinity, atTop: true);
-        final offset = labelOffset(rect.height, size);
+        final offset = labelOffset(room, size);
         glyph?.paint(page, rect.left + lpad.left, rect.top - offset);
         return;
       }
       final whole = labelBox.place(labelWidth, double.infinity, atTop: true);
       if (whole == null) return;
-      final offset = labelOffset(rect.height, whole.height);
-      final placed = fittedLabel.place(
-        labelWidth,
-        rect.height - offset,
-        atTop: true,
-      );
+      final offset = labelOffset(room, whole.height);
+      final placed = fittedLabel.place(labelWidth, room - offset, atTop: true);
       placed?.paint(page, rect.left + lpad.left, rect.top - offset);
     }
 
@@ -4912,6 +4966,7 @@ final class PdfConverter extends BuiltInConverter
         inherit: _decoration('caption'),
         normalize: false,
         normalizeLineHeight: true,
+        hyphenate: true,
       ),
       style: BoxStyle(
         margin: bottom
@@ -5161,6 +5216,7 @@ final class PdfConverter extends BuiltInConverter
         _font,
         align: align ?? _baseTextAlign,
         normalizeLineHeight: true,
+        hyphenate: true,
       );
       final metrics = _lineMetrics(_font);
       final lineHeight = _font.lineHeight * _font.size;
@@ -5249,6 +5305,7 @@ final class PdfConverter extends BuiltInConverter
             _font,
             align: _baseTextAlign,
             normalizeLineHeight: true,
+            hyphenate: true,
           ),
           style: BoxStyle(margin: EdgeInsets(bottom: marginBottom)),
         ),
@@ -5479,6 +5536,7 @@ final class PdfConverter extends BuiltInConverter
                 _font,
                 align: align ?? _baseTextAlign,
                 normalizeLineHeight: true,
+                hyphenate: true,
               );
               _out.add(
                 CustomBox(
@@ -5593,6 +5651,7 @@ final class PdfConverter extends BuiltInConverter
                   _font,
                   align: align ?? _baseTextAlign,
                   normalizeLineHeight: true,
+                  hyphenate: true,
                 ),
                 style: BoxStyle(
                   margin: EdgeInsets(
@@ -5695,8 +5754,9 @@ final class PdfConverter extends BuiltInConverter
     bool shrinkToFit = false,
     int orphans = 1,
     int widows = 1,
+    bool hyphenate = false,
   }) {
-    var text = markup;
+    var text = hyphenate ? _hyphenated(markup, align) : markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
     final nodes = inlineFormat ? parseMarkup(text) : [MarkupText(text)];
@@ -5746,6 +5806,57 @@ final class PdfConverter extends BuiltInConverter
       ),
       _text,
     );
+  }
+
+  /// Hyphenates words (soft hyphens where they may break), or null.
+  PatternHyphenator? _hyphenator;
+
+  /// Whether every text that may be hyphenated is (the `hyphens`
+  /// attribute or the theme's `base_hyphens`), rather than justified text
+  /// alone (the modern engine's default).
+  bool _hyphenateAll = false;
+
+  /// Sets the hyphenation of [document]: as the gem does when the
+  /// `hyphens` attribute (a language, or empty for the document's `lang`)
+  /// or, when the attribute is unspecified, the theme's `base_hyphens`
+  /// asks for it; in the modern engine, of justified text in the
+  /// document's language otherwise, unless `hyphens` is unset.
+  void _resolveHyphenation(Document document) {
+    _hyphenator = null;
+    _hyphenateAll = false;
+    final unspecified = document.attributeUnspecified('hyphens');
+    var asked = document.attr('hyphens');
+    if (asked == null && unspecified) {
+      asked = switch (_theme.value('base_hyphens')) {
+        ThemeString(:final value) => value,
+        ThemeBool(:final value) when value => '',
+        _ => null,
+      };
+    }
+    final explicit = asked != null;
+    if (!explicit && (_engine != PdfEngine.modern || !unspecified)) return;
+    var language = asked ?? '';
+    if (language.isEmpty) language = document.attr('lang') ?? '';
+    if (language.isEmpty || language == 'en') language = 'en_us';
+    final hyphenator = hyphenatorFor(language);
+    if (hyphenator == null) {
+      if (explicit) {
+        logger.warn('no hyphenation patterns for $language; not hyphenating');
+      }
+      return;
+    }
+    _hyphenator = hyphenator;
+    _hyphenateAll = explicit;
+  }
+
+  /// [markup] with soft hyphens where its words may break, when text set
+  /// with [align] is hyphenated (the gem's `hyphenate_text`).
+  String _hyphenated(String markup, String align) {
+    final hyphenator = _hyphenator;
+    if (hyphenator == null || (!_hyphenateAll && align != 'justify')) {
+      return markup;
+    }
+    return hyphenateMarkup(markup, hyphenator);
   }
 
   /// Whether a line may break before any CJK character (the document's
@@ -7140,6 +7251,7 @@ final class PdfConverter extends BuiltInConverter
               '[<a anchor="_footnoteref_$index">$label</a>] ${footnote.text}',
               _font,
               align: _baseTextAlign,
+              hyphenate: true,
             ),
             style: BoxStyle(margin: EdgeInsets(bottom: spacing)),
           ),

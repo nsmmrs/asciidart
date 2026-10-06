@@ -1,0 +1,362 @@
+{
+  "af": {
+    "name": "Afrikaans",
+    "left": 1,
+    "right": 2
+  },
+  "as": {
+    "name": "Assamese",
+    "left": 2,
+    "right": 3
+  },
+  "be": {
+    "name": "Belarusian",
+    "left": 2,
+    "right": 2
+  },
+  "bg": {
+    "name": "Bulgarian",
+    "left": 2,
+    "right": 2
+  },
+  "bn": {
+    "name": "Bengali",
+    "left": 2,
+    "right": 3
+  },
+  "ca": {
+    "name": "Catalan",
+    "left": 2,
+    "right": 2
+  },
+  "cop": {
+    "name": "Coptic",
+    "left": 1,
+    "right": 1
+  },
+  "cu": {
+    "name": "Church Slavonic",
+    "left": 1,
+    "right": 2
+  },
+  "cy": {
+    "name": "Welsh",
+    "left": 2,
+    "right": 3
+  },
+  "da": {
+    "name": "Danish",
+    "left": 2,
+    "right": 2
+  },
+  "de-1901": {
+    "name": "German, traditional spelling",
+    "left": 2,
+    "right": 2
+  },
+  "de-1996": {
+    "name": "German, reformed spelling",
+    "left": 2,
+    "right": 2
+  },
+  "de-ch-1901": {
+    "name": "German, traditional Swiss spelling",
+    "left": 2,
+    "right": 2
+  },
+  "el-monoton": {
+    "name": "Modern Greek, monotonic spelling",
+    "left": 1,
+    "right": 1
+  },
+  "el-polyton": {
+    "name": "Modern Greek, polytonic spelling",
+    "left": 1,
+    "right": 1
+  },
+  "en-gb": {
+    "name": "English, British spelling",
+    "left": 2,
+    "right": 3
+  },
+  "en-us": {
+    "name": "English, American spelling",
+    "left": 2,
+    "right": 3
+  },
+  "eo": {
+    "name": "Esperanto",
+    "left": 2,
+    "right": 2
+  },
+  "es": {
+    "name": "Spanish",
+    "left": 2,
+    "right": 2
+  },
+  "et": {
+    "name": "Estonian",
+    "left": 2,
+    "right": 3
+  },
+  "eu": {
+    "name": "Basque",
+    "left": 2,
+    "right": 2
+  },
+  "fi-x-school": {
+    "name": "Finnish, school hyphenation",
+    "left": 2,
+    "right": 3
+  },
+  "fi": {
+    "name": "Finnish",
+    "left": 2,
+    "right": 2
+  },
+  "fr": {
+    "name": "French",
+    "left": 2,
+    "right": 2
+  },
+  "fur": {
+    "name": "Friulan",
+    "left": 2,
+    "right": 2
+  },
+  "ga": {
+    "name": "Irish",
+    "left": 2,
+    "right": 3
+  },
+  "gl": {
+    "name": "Galician",
+    "left": 2,
+    "right": 2
+  },
+  "grc": {
+    "name": "Ancient Greek",
+    "left": 1,
+    "right": 1
+  },
+  "gu": {
+    "name": "Gujarati",
+    "left": 2,
+    "right": 3
+  },
+  "hi": {
+    "name": "Hindi",
+    "left": 2,
+    "right": 3
+  },
+  "hr": {
+    "name": "Croatian",
+    "left": 2,
+    "right": 2
+  },
+  "hsb": {
+    "name": "Upper Sorbian",
+    "left": 2,
+    "right": 2
+  },
+  "ia": {
+    "name": "Interlingua",
+    "left": 2,
+    "right": 2
+  },
+  "is": {
+    "name": "Icelandic",
+    "left": 2,
+    "right": 2
+  },
+  "it": {
+    "name": "Italian",
+    "left": 2,
+    "right": 2
+  },
+  "ka": {
+    "name": "Georgian",
+    "left": 1,
+    "right": 2
+  },
+  "kk": {
+    "name": "Kazakh",
+    "left": 2,
+    "right": 2
+  },
+  "kmr": {
+    "name": "Kurmanji, Northern Kurdish",
+    "left": 2,
+    "right": 2
+  },
+  "kn": {
+    "name": "Kannada",
+    "left": 2,
+    "right": 3
+  },
+  "la-x-classic": {
+    "name": "Classical Latin",
+    "left": 2,
+    "right": 2
+  },
+  "la": {
+    "name": "Latin",
+    "left": 2,
+    "right": 2
+  },
+  "lt": {
+    "name": "Lithuanian",
+    "left": 2,
+    "right": 3
+  },
+  "ml": {
+    "name": "Malayalam",
+    "left": 2,
+    "right": 3
+  },
+  "mn-cyrl": {
+    "name": "Mongolian, Cyrillic script",
+    "left": 2,
+    "right": 2
+  },
+  "mr": {
+    "name": "Marathi",
+    "left": 2,
+    "right": 3
+  },
+  "mul-ethi": {
+    "name": "Multiple languages using the Ethiopic script",
+    "left": 2,
+    "right": 3
+  },
+  "nb": {
+    "name": "Norwegian Bokmål, bokmål, norsk bokmål",
+    "left": 2,
+    "right": 2
+  },
+  "nl": {
+    "name": "Dutch",
+    "left": 2,
+    "right": 2
+  },
+  "nn": {
+    "name": "Norwegian Nynorsk, nynorsk",
+    "left": 2,
+    "right": 2
+  },
+  "oc": {
+    "name": "Occitan",
+    "left": 2,
+    "right": 2
+  },
+  "or": {
+    "name": "Odia, Oriya",
+    "left": 2,
+    "right": 3
+  },
+  "pa": {
+    "name": "Panjabi, Punjabi",
+    "left": 2,
+    "right": 3
+  },
+  "pi": {
+    "name": "Pāli",
+    "left": 1,
+    "right": 2
+  },
+  "pl": {
+    "name": "Polish",
+    "left": 2,
+    "right": 2
+  },
+  "pms": {
+    "name": "Piedmontese",
+    "left": 2,
+    "right": 2
+  },
+  "pt": {
+    "name": "Portuguese",
+    "left": 2,
+    "right": 3
+  },
+  "rm": {
+    "name": "Romansh",
+    "left": 2,
+    "right": 2
+  },
+  "ru": {
+    "name": "Russian",
+    "left": 2,
+    "right": 2
+  },
+  "sa": {
+    "name": "Sanskrit",
+    "left": 1,
+    "right": 3
+  },
+  "sh-cyrl": {
+    "name": "Serbocroatian, Cyrillic script",
+    "left": 2,
+    "right": 3
+  },
+  "sh-latn": {
+    "name": "Serbocroatian, Latin script",
+    "left": 2,
+    "right": 2
+  },
+  "sk": {
+    "name": "Slovak",
+    "left": 2,
+    "right": 3
+  },
+  "sl": {
+    "name": "Slovenian",
+    "left": 2,
+    "right": 2
+  },
+  "sq": {
+    "name": "Albanian",
+    "left": 2,
+    "right": 2
+  },
+  "sv": {
+    "name": "Swedish",
+    "left": 2,
+    "right": 2
+  },
+  "ta": {
+    "name": "Tamil",
+    "left": 2,
+    "right": 3
+  },
+  "te": {
+    "name": "Telugu",
+    "left": 2,
+    "right": 3
+  },
+  "th": {
+    "name": "Thai",
+    "left": 2,
+    "right": 3
+  },
+  "tk": {
+    "name": "Turkmen",
+    "left": 2,
+    "right": 2
+  },
+  "tr": {
+    "name": "Turkish",
+    "left": 2,
+    "right": 2
+  },
+  "uk": {
+    "name": "Ukrainian",
+    "left": 2,
+    "right": 2
+  },
+  "zh-latn-pinyin": {
+    "name": "Mandarin Chinese, pinyin transliteration",
+    "left": 1,
+    "right": 2
+  }
+}

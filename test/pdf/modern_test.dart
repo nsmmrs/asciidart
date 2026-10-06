@@ -16,8 +16,9 @@ final bool _tools = _has('pdftotext');
 late Directory _dir;
 var _count = 0;
 
-/// [source] converted to PDF (in the compatibility mode with [compat]).
-String _pdf(String source, {bool compat = false}) {
+/// [source] converted to PDF (in the compatibility mode with [compat]),
+/// its messages logged to [logger].
+String _pdf(String source, {bool compat = false, LoggerBase? logger}) {
   final input = File('${_dir.path}/d${_count++}.adoc')
     ..writeAsStringSync(source);
   final out = '${input.path}.pdf';
@@ -28,6 +29,7 @@ String _pdf(String source, {bool compat = false}) {
       backend: 'pdf',
       toFile: out,
       attributes: {if (compat) 'pdf-compat': ''},
+      logger: logger,
     ),
   );
   return out;
@@ -45,6 +47,12 @@ List<List<String>> _pages(String pdf) => [
           line.trim(),
     ],
 ];
+
+/// The words of [lines], those hyphenated at a line end joined.
+List<String> _words(List<String> lines) => lines
+    .join('\n')
+    .replaceAll(RegExp('[-\u00ad]\n'), '')
+    .split(RegExp(r'\s+'));
 
 const _paragraph =
     'Hypermedia is a concept extending the idea of hypertext by allowing '
@@ -70,10 +78,7 @@ void main() {
       expect(greedy, hasLength(5));
       expect(greedy.last, 'REST.');
       expect(optimal, hasLength(4));
-      expect(
-        optimal.join(' ').split(RegExp(r'\s+')),
-        greedy.join(' ').split(RegExp(r'\s+')),
-      );
+      expect(_words(optimal), _words(greedy));
     });
 
     test('lines stay within the column', () {
@@ -115,5 +120,58 @@ void main() {
         reason: 'filler $filler: $after line(s) at the top',
       );
     }
+  }, skip: _tools ? false : 'needs poppler');
+
+  group('hyphenation', () {
+    // Long words in a narrow column (a quarter-width table cell),
+    // justified.
+    String narrow(String header) =>
+        '$header\n[cols="1,3"]\n|===\na|[.text-justify]\n'
+        '$_paragraph\n| \n|===\n';
+
+    /// Whether a line of [pdf] ends with a hyphen that isn't in the
+    /// source (the soft hyphen's glyph, as Prawn draws it).
+    bool hyphenated(String pdf) => _pages(pdf).any(
+      (page) => page.any(
+        (line) => line
+            .split(RegExp(r'\s+'))
+            .any(
+              (word) =>
+                  word.endsWith('\u00ad') ||
+                  word.endsWith('-') && !_paragraph.contains(word),
+            ),
+      ),
+    );
+
+    test('breaks justified words in the modern engine', () {
+      final pdf = _pdf(narrow(''));
+      expect(hyphenated(pdf), isTrue);
+      // The words are whole again with the hyphens at line ends joined.
+      expect(
+        _words(_pages(pdf).expand((page) => page).toList()).join(' '),
+        contains('representational state transfer'),
+      );
+    });
+
+    test('is off with hyphens unset', () {
+      expect(hyphenated(_pdf(narrow(':hyphens!:\n'))), isFalse);
+    });
+
+    test('is asked for in the compatibility mode, as in the gem', () {
+      expect(hyphenated(_pdf(narrow(''), compat: true)), isFalse);
+      expect(hyphenated(_pdf(narrow(':hyphens:\n'), compat: true)), isTrue);
+    });
+
+    test('reports a language without patterns', () {
+      final logger = MemoryLogger();
+      expect(
+        hyphenated(_pdf(narrow(':hyphens: tlh\n'), logger: logger)),
+        isFalse,
+      );
+      expect(
+        logger.messages.map((m) => m.message.text),
+        contains('no hyphenation patterns for tlh; not hyphenating'),
+      );
+    });
   }, skip: _tools ? false : 'needs poppler');
 }

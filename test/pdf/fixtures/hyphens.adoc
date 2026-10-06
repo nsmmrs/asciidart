@@ -1,0 +1,25 @@
+= Hyphenation in a Narrow Column
+:hyphens:
+:pdf-page-size: A7
+:nofooter:
+
+A paragraph of considerably long words: internationalization, representational, characteristically, disproportionately. And so on.footnote:[Footnotes are hyphenated as well, unbelievably.]
+
+* List items, extraordinarily, break similarly.
+* Notwithstanding https://example.org/unhyphenatable-bare-link[] links.
+
+Terminology:: Descriptions hyphenate correspondingly.
+
+.A caption mentioning accountability
+|===
+|Header cells, considerably |Body
+|Uncharacteristically lengthy content |text
+|===
+
+NOTE: Admonitions are traversed differently, nevertheless.
+
+[verse]
+____
+Verses, consequently,
+break correspondingly.
+____

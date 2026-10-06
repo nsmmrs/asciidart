@@ -42,7 +42,14 @@ Asciidoctor project.
   - `media=prepress` books (recto starts and inner and outer margins) and
     man pages.
 
-  763 of the 797 documents of the gem's spec suite convert the same (words,
+  By default the layout is asciidart's own: justified paragraphs are
+  broken where their spacing is most even (Knuth and Plass) and
+  hyphenated in the document's language (hyph-utf8's patterns, 72
+  languages; `:hyphens!:` turns it off), and a paragraph leaves at least
+  two lines on either side of a page break (`prose_orphans`,
+  `prose_widows`). With `-a pdf-compat` the layout is the gem's, and
+  `hyphens` and `base_hyphens` hyphenate as the gem does with text-hyphen.
+  In that mode, 763 of the 797 documents of the gem's spec suite convert the same (words,
   positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),
   6 to 15 times faster than the gem (`benchmark/BASELINE.md`).
 - Remote content (`allow-uri-read`): `parseAsync` and `convertAsync` fetch
