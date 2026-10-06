@@ -123,7 +123,7 @@ edition's justfile. Every feature is the AsciiDoc's own or asciidart's
 | Title page: the title in Jaro, upper case, slanted | Document title, `title_page` theme keys (`font_style: italic`: Jaro has no italic, the modern engine slants it) | Done |
 | Copyright and dedication pages without a heading or running content | `[colophon%notitle%noheader%nofooter]`, `[dedication%...]` | Done |
 | Foreword (page 1), then the contents | `[preface]`, `toc::[]`, `page_numbering_start_at: 4` | Done |
-| Contents: no dot leaders, four levels | `toc` theme keys, `toclevels` | Done |
+| Contents: no dot leaders, no numbers, four levels | `toc` theme keys, `toc_numbered: false`, `toclevels` | Done |
 | Part openers alone on a recto page, no running content | `:media: prepress`, `heading_part_break_after: always` | Done |
 | Chapter openers: sunk, a gray "Chapter N" line, no running content | `heading_h2_padding`, `heading_h2_label_display: block` | Done |
 | Running heads: `14 · I Hypermedia Concepts`, `3. A Web 1.0 Application · 71` | `header` theme keys, `header_title_style: numeral` | Done |
@@ -132,6 +132,11 @@ edition's justfile. Every feature is the AsciiDoc's own or asciidart's
 | Sidebars: a gray fill, rules above and below, sans | `sidebar` theme keys | Done |
 | "Opportunity" boxes: a blue fill, rules, a bold title, no label | `[IMPORTANT]` with a title, `:important-caption:` empty, `admonition` theme keys | Done |
 | Listings: "Listing N" captions, callouts | Titles, `listing-caption`, callouts | Done |
+| Callout markers `[1]` in bold gray old-style sans; explanations a numbered list | `conum_glyphs: '[%d]'`, `conum_font_*`, `callout_list_marker_content: '%d.'` | Done |
+| Definition terms run in, hanging indent | `description_list_term_display: inline` | Done |
+| Ordered list numbers in old-style sans | `olist_marker_font_family`, `olist_marker_font_variant_numeric` | Done |
+| Quote attributions at the right | `quote_cite_text_align: right` | Done |
+| Spacing: lists, figures, quotes, sidebars, definition lists each their own | `<category>_margin_top`, `<category>_margin_bottom` | Done (319 pages to 316) |
 | Listings highlighted | `source-highlighter=highlight.js` | Done |
 | Figures: "Figure N" captions below, centered | `image_caption_*` theme keys | Done |
 | Figures at the top or bottom of their page, or the next page's top when they don't fit, the text filling in | `image_placement: auto` | Done |
@@ -155,8 +160,8 @@ points, from a line's top to the next one's) between the same passages
 in both editions. With the edited edition's theme (the per-element
 `<category>_margin_*` keys), the AsciiDoc edition has 319 pages to the
 Typst edition's 316. What is left: the Typst authors rewrapped their code
-to 73 columns (fewer listing lines wrap there), and listings without a
-caption sit 1.5 points lower.
+to 73 columns (fewer listing lines wrap there), a listing's caption sits
+2.6 points higher, a sidebar's text 1.6 points lower.
 
 | Probe | Typst | AsciiDoc | Difference |
 | --- | --- | --- | --- |
