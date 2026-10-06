@@ -2192,7 +2192,17 @@ final class PdfConverter extends BuiltInConverter
       );
     }
     if (hidden) {
-      _out.add(CustomBox(const _Nothing(), style: BoxStyle(anchor: anchor)));
+      // No heading, but the section still names its pages' running
+      // content.
+      _out.add(
+        CustomBox(
+          const _Nothing(),
+          style: BoxStyle(
+            anchor: anchor,
+            marks: _sectionMarks(section, part: part),
+          ),
+        ),
+      );
     } else {
       _heading(
         title,

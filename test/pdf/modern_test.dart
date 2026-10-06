@@ -546,6 +546,21 @@ base:
         expect(pages, ['P[I] C[1] 3', 'P[I] C[2] 4']);
       });
 
+      test('name a chapter whose title is hidden'
+          '${compat ? ' (compatibility mode)' : ''}', () {
+        final pages = footers(
+          _pdf(
+            '= Book\n:doctype: book\n\n[colophon%notitle]\n== Copy\n\nText.\n',
+            theme: theme.replaceFirst(
+              'P[{part-numeral}] C[{chapter-numeral}] {page-number}',
+              'P[{chapter-title}]',
+            ),
+            compat: compat,
+          ),
+        );
+        expect(pages, ['P[Copy]']);
+      });
+
       test('go with titles without numbers (title_style: basic)'
           '${compat ? ' (compatibility mode)' : ''}', () {
         final pages = footers(
