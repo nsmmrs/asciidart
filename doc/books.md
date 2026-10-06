@@ -24,7 +24,12 @@ asciidart -b docbook5 -o book.xml book.adoc
 - **Website** (`multipage_html5`): a page per part and chapter
   (`multipage-level` for deeper sections), previous, up and next links,
   and every link (cross references, the table of contents, the index,
-  callouts) rewritten across pages.
+  callouts) rewritten across pages. A page is named after its section's
+  id, or its `page-path` (`[#ch01,page-path=hypermedia-a-reintroduction/]`
+  writes `hypermedia-a-reintroduction/index.html`, linked as the
+  directory, so a site keeps its URLs); `multipage-toclevels` lists the
+  pages' sections on the home page; docinfo (`docinfo=shared`) is on
+  every page, for a site's own header, footer and scripts.
 - **EPUB 3**: passes EPUBCheck; code wraps on small screens
   (`ebook-code-overflow=scroll` keeps lines whole).
 - **DocBook 5**: valid against the DocBook 5.0 schema, for tools that

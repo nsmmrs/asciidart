@@ -14,12 +14,15 @@ import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/section.dart';
 
 /// A page of the site: a section of its own, the page it belongs to
-/// ([up]; the root page when null), and its file name.
+/// ([up]; the root page when null), its file (relative to the root
+/// page's directory) and the path links to it go to (the directory of an
+/// `index.html`).
 final class _Page {
-  new(this.section, this.file, this.up);
+  new(this.section, this.file, this.up, {String? href}) : href = href ?? file;
 
   final Section section;
   final String file;
+  final String href;
   final _Page? up;
   final List<_Page> children = [];
 }
@@ -70,7 +73,7 @@ class MultipageHtml5Converter extends Html5Converter
     void collect(AbstractBlock parent, _Page? up, List<_Page> into) {
       for (final child in parent.blocks) {
         if (child is! Section || child.level! > level) continue;
-        final page = _Page(child, '${child.id}${node.outfilesuffix}', up);
+        final page = _pageOf(child, node.outfilesuffix ?? '.html', up);
         into.add(page);
         order.add(page);
         collect(child, page, page.children);
@@ -90,11 +93,21 @@ class MultipageHtml5Converter extends Html5Converter
       node.blocks
         ..clear()
         ..addAll(blocks.where((block) => block is! Section))
-        ..add(_raw(node, _list(tree, node, 'multipage-toc')));
+        ..add(
+          _raw(
+            node,
+            _list(
+              tree,
+              node,
+              'multipage-toc',
+              levels: int.tryParse(node.attr('multipage-toclevels') ?? '') ?? 0,
+            ),
+          ),
+        );
       footnotes.clear();
       final root = (file: _rootFile, title: node.doctitle() ?? '');
       ({String file, String title}) link(_Page page) =>
-          (file: page.file, title: _title(page.section));
+          (file: page.href, title: _title(page.section));
       html[_rootFile] = _withNavigation(
         super.convertDocument(node),
         title: null,
@@ -144,8 +157,33 @@ class MultipageHtml5Converter extends Html5Converter
         ..clear()
         ..addAll(attributes);
     }
-    pages.addAll(_relinked(html));
+    final hrefs = {for (final page in order) page.file: page.href};
+    pages.addAll(_rebased(_relinked(html, hrefs)));
     return pages[_rootFile]!;
+  }
+
+  /// The page of [section] (under [up]): its file is its id, or its
+  /// `page-path` (`part/one/`, a directory, gives `part/one/index.html`,
+  /// linked as the directory).
+  _Page _pageOf(Section section, String suffix, _Page? up) {
+    final path = section.attr('page-path')?.replaceFirst(RegExp('^/+'), '');
+    if (path == null || path.isEmpty) {
+      return _Page(section, '${section.id}$suffix', up);
+    }
+    if (path.split('/').any((segment) => segment == '..' || segment == '.')) {
+      logger.warn(
+        'page-path must stay in the site: $path (the page is named after '
+        'its id)',
+      );
+      return _Page(section, '${section.id}$suffix', up);
+    }
+    if (path.endsWith('/')) {
+      return _Page(section, '${path}index$suffix', up, href: path);
+    }
+    final file = path.substring(path.lastIndexOf('/') + 1).contains('.')
+        ? path
+        : '$path$suffix';
+    return _Page(section, file, up);
   }
 
   /// Writes the root page to [path] and the other pages beside it.
@@ -154,6 +192,9 @@ class MultipageHtml5Converter extends Html5Converter
     final slash = path.lastIndexOf(RegExp(r'[/\\]'));
     final dir = slash < 0 ? '' : path.substring(0, slash + 1);
     for (final MapEntry(key: file, value: html) in pages.entries) {
+      if (file.contains('/')) {
+        io.createDirectories('$dir${file.substring(0, file.lastIndexOf('/'))}');
+      }
       io.writeString(
         file == _rootFile ? path : '$dir$file',
         html.endsWith('\n') ? html : '$html\n',
@@ -179,13 +220,41 @@ class MultipageHtml5Converter extends Html5Converter
     );
   }
 
-  /// The pages of [pages] (and theirs) as a nested list.
-  String _list(List<_Page> pages, Document document, String role) {
+  /// The pages of [pages] (and theirs) as a nested list, with each page's
+  /// sections down to section level [levels] (`multipage-toclevels`).
+  String _list(
+    List<_Page> pages,
+    Document document,
+    String role, {
+    int levels = 0,
+  }) {
+    String sections(_Page page, AbstractBlock parent) {
+      final listed = [
+        for (final child in parent.blocks)
+          if (child is Section &&
+              child.level! <= levels &&
+              !page.children.any((c) => identical(c.section, child)))
+            child,
+      ];
+      if (listed.isEmpty) return '';
+      return [
+        '\n<ul>',
+        for (final section in listed)
+          [
+            '<li><a href="${page.href}#${section.id}">${_title(section)}</a>',
+            sections(page, section),
+            '</li>',
+          ].join(),
+        '</ul>\n',
+      ].join('\n');
+    }
+
     String items(List<_Page> pages) => [
       '<ul>',
       for (final page in pages)
         [
-          '<li><a href="${page.file}">${_title(page.section)}</a>',
+          '<li><a href="${page.href}">${_title(page.section)}</a>',
+          if (levels > 0) sections(page, page.section),
           if (page.children.isNotEmpty) '\n${items(page.children)}\n',
           '</li>',
         ].join(),
@@ -229,8 +298,11 @@ class MultipageHtml5Converter extends Html5Converter
   }
 
   /// [pages] with each link to an id on another page (`href="#id"`)
-  /// pointing to that page.
-  static Map<String, String> _relinked(Map<String, String> pages) {
+  /// pointing to that page (by its path in [hrefs]).
+  static Map<String, String> _relinked(
+    Map<String, String> pages,
+    Map<String, String> hrefs,
+  ) {
     final idRx = RegExp(r'\sid="([^"]+)"');
     final ids = <String, Set<String>>{
       for (final MapEntry(key: file, value: html) in pages.entries)
@@ -249,8 +321,41 @@ class MultipageHtml5Converter extends Html5Converter
           final id = m[2]!;
           if (ids[file]!.contains(id)) return m[0]!;
           final target = home[id];
-          return target == null ? m[0]! : '${m[1]}$target#$id"';
+          return target == null
+              ? m[0]!
+              : '${m[1]}${hrefs[target] ?? target}#$id"';
         }),
     };
   }
+
+  /// [pages] with the relative URLs of the pages in subdirectories
+  /// (`page-path`) made relative to them: links, images, stylesheets and
+  /// scripts written for the root page's directory.
+  static Map<String, String> _rebased(Map<String, String> pages) => {
+    for (final MapEntry(key: file, value: html) in pages.entries)
+      file: switch ('/'.allMatches(file).length) {
+        0 => html,
+        final depth => html.replaceAllMapped(_tagRx, (tag) {
+          return tag[0]!.replaceAllMapped(_urlAttributeRx, (m) {
+            final url = m[2]!;
+            if (url.isEmpty || _absoluteRx.hasMatch(url)) return m[0]!;
+            return '${m[1]}${'../' * depth}$url"';
+          });
+        }),
+      },
+  };
+
+  /// The tags whose `href` or `src` load or link a resource (in code,
+  /// tags are escaped: none is found there).
+  static final RegExp _tagRx = RegExp(
+    r'<(?:a|img|link|script|source|video|audio|iframe|object|embed)\s[^>]*>',
+  );
+
+  static final RegExp _urlAttributeRx = RegExp(
+    r'(\s(?:href|src|poster|data)=")([^"]*)"',
+  );
+
+  /// A URL that isn't relative to the page's directory: in the page, from
+  /// the site's root, or with a scheme.
+  static final RegExp _absoluteRx = RegExp(r'^(?:#|/|\?|[a-zA-Z][\w+.-]*:)');
 }

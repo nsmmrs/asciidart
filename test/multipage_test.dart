@@ -55,10 +55,32 @@ Map<String, String> _site(
     ),
   );
   return {
-    for (final file in dir.listSync().whereType<File>())
+    for (final file in dir.listSync(recursive: true).whereType<File>())
       if (file.path.endsWith('.html'))
-        file.uri.pathSegments.last: file.readAsStringSync(),
+        file.path.substring(dir.path.length + 1): file.readAsStringSync(),
   };
+}
+
+/// The page of [site] a link [href] on page [from] goes to, with its
+/// fragment: the link resolved against the page's directory (a directory
+/// is its `index.html`).
+(String, String?) _resolve(String from, String href) {
+  final hash = href.indexOf('#');
+  final path = hash < 0 ? href : href.substring(0, hash);
+  final fragment = hash < 0 ? null : href.substring(hash + 1);
+  if (path.isEmpty) return (from, fragment);
+  final segments = from.split('/')..removeLast();
+  for (final segment in path.split('/')) {
+    if (segment == '..') {
+      segments.removeLast();
+    } else if (segment.isNotEmpty && segment != '.') {
+      segments.add(segment);
+    }
+  }
+  final file = path.endsWith('/')
+      ? [...segments, 'index.html'].join('/')
+      : segments.join('/');
+  return (file, fragment);
 }
 
 void main() {
@@ -156,5 +178,109 @@ void main() {
       contains('<nav class="multipage-children">'),
     );
     expect(site['_chapter_a.html'], isNot(contains('Text in A1.')));
+  });
+
+  group('page-path', () {
+    final source = _book
+        .replaceFirst(
+          '== Chapter A',
+          '[#_chapter_a,page-path=chapters/a/]\n== Chapter A',
+        )
+        .replaceFirst('= Part One', '[page-path=part/one.html]\n= Part One')
+        .replaceFirst(
+          'Text in A1.',
+          'Text in A1.\n\nimage::pic.png[A picture]',
+        );
+
+    test('names the page and its directory', () {
+      final site = _site(source);
+      expect(
+        site.keys,
+        containsAll(['chapters/a/index.html', 'part/one.html']),
+      );
+      expect(site['book.html'], contains('<a href="chapters/a/">'));
+      expect(site['book.html'], contains('<a href="part/one.html">'));
+    });
+
+    test('every link resolves from the page it is on', () {
+      final site = _site(source);
+      var links = 0;
+      for (final MapEntry(key: file, value: html) in site.entries) {
+        for (final m in RegExp('<a [^>]*?href="([^"]*)"').allMatches(html)) {
+          final href = m[1]!;
+          if (href.contains(':')) continue;
+          final (target, id) = _resolve(file, href);
+          links++;
+          expect(site, contains(target), reason: '$file links to $href');
+          if (id != null) {
+            expect(
+              site[target],
+              contains('id="$id"'),
+              reason: '$file links to $href',
+            );
+          }
+        }
+      }
+      expect(links, greaterThan(10));
+      // Resources too.
+      expect(
+        site['chapters/a/index.html'],
+        contains('<img src="../../pic.png" alt="A picture">'),
+      );
+      expect(
+        site['chapters/a/index.html'],
+        contains('href="../../_chapter_b.html"'),
+      );
+    });
+
+    test('stays in the site', () {
+      final site = _site(
+        _book.replaceFirst('== Chapter A', '[page-path=../a/]\n== Chapter A'),
+      );
+      expect(site.keys, contains('_chapter_a.html'));
+    });
+  });
+
+  test('multipage-toclevels lists the sections of each page', () {
+    final root = _site(
+      _book,
+      attributes: {'multipage-toclevels': '2'},
+    )['book.html']!;
+    expect(root, contains('<a href="_chapter_a.html#_section_a1">'));
+    expect(_site(_book)['book.html'], isNot(contains('#_section_a1')));
+  });
+
+  test('docinfo is on every page', () {
+    final dir = Directory.systemTemp.createTempSync('multipage_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    File('${dir.path}/docinfo-footer.html')
+        .writeAsStringSync('<script src="customizer.js"></script>\n');
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync(
+        _book.replaceFirst('== Chapter A', '[page-path=a/]\n== Chapter A'),
+      );
+    convertFile(
+      input.path,
+      AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'multipage_html5',
+        attributes: const {'docinfo': 'shared-footer'},
+      ),
+    );
+    for (final file in dir.listSync(recursive: true).whereType<File>()) {
+      if (!file.path.endsWith('.html') || file.path.contains('docinfo')) {
+        continue;
+      }
+      final html = file.readAsStringSync();
+      expect(
+        html,
+        contains(
+          file.path.endsWith('a/index.html')
+              ? '<script src="../customizer.js">'
+              : '<script src="customizer.js">',
+        ),
+        reason: file.path,
+      );
+    }
   });
 }
