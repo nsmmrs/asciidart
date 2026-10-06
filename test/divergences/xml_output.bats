@@ -29,3 +29,15 @@ EOF2
   printf '%s\n' "$output" > actual.xml
   xmllint --noout actual.xml
 }
+
+# A section style DocBook has no element for ([introduction]) became that
+# element (<introduction>), which no DocBook schema allows: asciidart
+# writes the chapter or section it is. Fails on the gem.
+@test "a section style DocBook has no element for gives a chapter" {
+  printf '= Book\n:doctype: book\n\n[introduction]\n== Introduction\n\nText.\n' > input.adoc
+  run -- "$EXE" -s -b docbook5 -o - input.adoc
+  [ "$status" -eq 0 ]
+  printf '%s\n' "$output" > actual.xml
+  grep -q '<chapter xml:id="_introduction">' actual.xml
+  ! grep -q '<introduction' actual.xml
+}
