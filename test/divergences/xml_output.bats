@@ -41,3 +41,15 @@ EOF2
   grep -q '<chapter xml:id="_introduction">' actual.xml
   ! grep -q '<introduction' actual.xml
 }
+
+# [partintro] on a section that isn't in a part gave <partintro> there,
+# where DocBook doesn't allow it: asciidart writes a section. Fails on the
+# gem.
+@test "a part introduction outside a part gives a section" {
+  printf '= Book\n:doctype: book\n\n== Chapter\n\n[partintro]\n=== Intro\n\nText.\n' > input.adoc
+  run -- "$EXE" -s -b docbook5 -o - input.adoc
+  [ "$status" -eq 0 ]
+  printf '%s\n' "$output" > actual.xml
+  grep -q '<section xml:id="_intro">' actual.xml
+  ! grep -q '<partintro' actual.xml
+}
