@@ -127,7 +127,8 @@ reproducers of each.
   stylesheet and scripts outside it (`test/divergences/epub_output.bats`).
   EPUB parity compares the gem's chapters with these repairs made. The
   `isbn` and `editor` attributes (which the gem ignores) add an ISBN
-  identifier and editors to an EPUB's metadata.
+  identifier and editors to an EPUB's metadata, and
+  `epub-unique-identifier: isbn` makes the ISBN its unique identifier.
   `ebook-code-overflow=scroll` makes code lines scroll rather than wrap.
 - Quotes (emphasis, strong, monospace...) pair around an index term,
   never into it: in `(((_hyperscript, event filter))) an _event filter_`

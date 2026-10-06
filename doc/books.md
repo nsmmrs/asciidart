@@ -46,7 +46,8 @@ asciidart -b docbook5 -o book.xml book.adoc
   (`ebook-code-overflow=scroll` keeps lines whole). Its metadata takes
   an ISBN (`:isbn: 979-8-9909918-0-4`) and editors (`:editor: William
   Talcott`, several separated by semicolons) besides the authors and the
-  `copyright`.
+  `copyright`; `:epub-unique-identifier: isbn` makes the ISBN the EPUB's
+  unique identifier (the uuid stays, as another).
 - **DocBook 5**: valid against the DocBook 5.0 schema, for tools that
   read it (Pandoc, publishers' pipelines).
 

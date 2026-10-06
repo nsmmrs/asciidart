@@ -255,14 +255,22 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     _extract = node.hasAttr('ebook-extract');
     _epubcheckPath = node.attr('ebook-epubcheck-path');
 
+    final uuid = _s(node.hasAttr('uuid') ? node.attr('uuid') : node.id);
+    final isbn = node.attr('isbn')?.replaceAll(RegExp(r'[\s-]'), '');
+    // asciidart's `epub-unique-identifier`: which of the book's identifiers
+    // is the unique one (`uuid`, the gem's; `isbn`).
+    final isbnUnique =
+        node.attr('epub-unique-identifier') == 'isbn' &&
+        isbn != null &&
+        isbn.isNotEmpty;
     final book = _book = EpubBook()
-      ..language(_s(node.attr('lang', 'en')), id: 'pub-language')
-      ..primaryIdentifier(
-        _s(node.hasAttr('uuid') ? node.attr('uuid') : node.id),
-        'pub-identifier',
-        'uuid',
-      )
-      ..addTitle(_sanitizeDoctitle(node, _Spec.plainText), id: 'pub-title');
+      ..language(_s(node.attr('lang', 'en')), id: 'pub-language');
+    if (isbnUnique) {
+      book.primaryIdentifier('urn:isbn:$isbn', 'pub-identifier', 'isbn');
+    } else {
+      book.primaryIdentifier(uuid, 'pub-identifier', 'uuid');
+    }
+    book.addTitle(_sanitizeDoctitle(node, _Spec.plainText), id: 'pub-title');
 
     final authorcount = _toInt(node.attr('authorcount', '1'));
     for (var idx = 1; idx <= authorcount; idx++) {
@@ -271,9 +279,10 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     }
     // asciidart's: an ISBN (`isbn`) besides the uuid, and editors
     // (`editor`, names separated by semicolons).
-    if (node.attr('isbn')?.replaceAll(RegExp(r'[\s-]'), '') case final isbn?
-        when isbn.isNotEmpty) {
-      book.addIdentifier(_s('urn:isbn:$isbn'), 'pub-isbn', 'isbn');
+    if (isbnUnique) {
+      book.addIdentifier(uuid, 'pub-uuid', 'uuid');
+    } else if (isbn != null && isbn.isNotEmpty) {
+      book.addIdentifier('urn:isbn:$isbn', 'pub-isbn', 'isbn');
     }
     for (final editor in (node.attr('editor') ?? '').split(';')) {
       if (editor.trim().isNotEmpty) {

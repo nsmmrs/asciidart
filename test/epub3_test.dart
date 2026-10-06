@@ -325,6 +325,38 @@ A ((Tiger)) again.(((Wolves)))
     });
   });
 
+  test('the ISBN as the unique identifier', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync(
+        '= Book\n:uuid: 0000\n:isbn: 979-8-9909918-0-4\n'
+        ':epub-unique-identifier: isbn\n\n== One\n\nText.\n',
+      );
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    final opf = files['EPUB/package.opf']!;
+    expect(opf, contains('unique-identifier="pub-identifier"'));
+    expect(
+      opf,
+      contains(
+        '<dc:identifier id="pub-identifier">urn:isbn:9798990991804</dc:identifier>',
+      ),
+    );
+    expect(opf, contains('<dc:identifier id="pub-uuid">0000</dc:identifier>'));
+    expect(
+      files['EPUB/toc.ncx'],
+      contains('<meta name="dtb:uid" content="urn:isbn:9798990991804"/>'),
+    );
+  });
+
   test('a section with notoc is left out of the navigation', () {
     final dir = Directory.systemTemp.createTempSync('epub3_test.');
     addTearDown(() => dir.deleteSync(recursive: true));
