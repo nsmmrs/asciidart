@@ -308,8 +308,10 @@ void main() {
       attributes: {
         'multipage-nav-previous-template': 'Previous: {{title}}',
         'multipage-nav-next-template': 'Next: {{title}}',
+        'multipage-nav-up-template': 'Up: {{basic-title}}',
       },
     );
+    expect(site['_chapter_b.html'], contains('>Up: Part One</a>'));
     expect(site['_chapter_b.html'], contains('>Previous: 1. Chapter A</a>'));
     expect(site['_chapter_a.html'], contains('>Next: 2. Chapter B</a>'));
   });

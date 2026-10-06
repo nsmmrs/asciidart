@@ -34,10 +34,11 @@ asciidart -b docbook5 -o book.xml book.adoc
   macro takes the list of pages wherever it is (a contents page of its
   own: `[#contents,page-path=book/contents/]`), leaving the home page to
   the header and the preamble (a cover). The previous, up and next links
-  read `multipage-nav-previous-template` (`&#8592; {{title}}`), `-up-`
-  and `-next-template`, or are laid out by a `multipage_nav.mustache`
+  read `multipage-nav-previous-template` (`&#8592; {{title}}`; also
+  `{{basic-title}}` and `{{number}}`), `-up-` and `-next-template`, or are laid out by a `multipage_nav.mustache`
   template in a `-T` directory (`previous`, `up`, `next`, each with
-  `href`, `title` and `label`). The contents' section lists have the
+  `href`, `title`, `basic-title` (without its number), `number` and
+  `label`). The contents' section lists have the
   class `multipage-sections`, for a stylesheet that shows or hides them.
 - **EPUB 3**: passes EPUBCheck; code wraps on small screens
   (`ebook-code-overflow=scroll` keeps lines whole). Its metadata takes

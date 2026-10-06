@@ -16,6 +16,10 @@ import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/template_loader.dart';
 import 'package:mustache_template/mustache_template.dart' show Template;
 
+/// A link to a page: its path, its title (numbered, as the list of pages
+/// has it), its title alone and its number (when numbered).
+typedef _Link = ({String file, String title, String basic, String? number});
+
 /// A page of the site: a section of its own, the page it belongs to
 /// ([up]; the root page when null), its file (relative to the root
 /// page's directory) and the path links to it go to (the directory of an
@@ -126,9 +130,18 @@ class MultipageHtml5Converter extends Html5Converter
         ..addAll(blocks.where((block) => block is! Section))
         ..addAll([if (!hasMacro) _raw(node, contents)]);
       footnotes.clear();
-      final root = (file: _rootFile, title: node.doctitle() ?? '');
-      ({String file, String title}) link(_Page page) =>
-          (file: page.href, title: _title(page.section));
+      final root = (
+        file: _rootFile,
+        title: node.doctitle() ?? '',
+        basic: node.doctitle() ?? '',
+        number: null,
+      );
+      _Link link(_Page page) => (
+        file: page.href,
+        title: _title(page.section),
+        basic: _plainTitle(page.section.title ?? ''),
+        number: page.section.numbered ? page.section.sectnum() : null,
+      );
       html[_rootFile] = _withNavigation(
         super.convertDocument(node),
         title: null,
@@ -231,6 +244,10 @@ class MultipageHtml5Converter extends Html5Converter
     subs: const BlockSubs.none(),
   );
 
+  /// [title] as plain HTML (its links left out).
+  static String _plainTitle(String title) =>
+      title.replaceAll(RegExp('<a [^>]*>|</a>'), '');
+
   /// The title of [section] as the list of pages shows it (with its
   /// number, when sections are numbered), as plain HTML.
   static String _title(Section section) {
@@ -291,9 +308,9 @@ class MultipageHtml5Converter extends Html5Converter
   String _withNavigation(
     String html, {
     required String? title,
-    required ({String file, String title})? previous,
-    required ({String file, String title})? up,
-    required ({String file, String title})? next,
+    required _Link? previous,
+    required _Link? up,
+    required _Link? next,
   }) {
     final nav = _navigation(previous: previous, up: up, next: next);
     var result = html
@@ -314,29 +331,29 @@ class MultipageHtml5Converter extends Html5Converter
 
   /// The links to the [previous], enclosing ([up]) and [next] pages: the
   /// `multipage_nav.mustache` template of a `-T` directory (with
-  /// `previous`, `up` and `next`, each `href`, `title` and `label`), or
-  /// the default markup; each link's text from the
-  /// `multipage-nav-<kind>-template` attribute (ADR-0010; `{{title}}`).
+  /// `previous`, `up` and `next`, each `href`, `title`, `basic-title`,
+  /// `number` and `label`), or the default markup; each link's text from
+  /// the `multipage-nav-<kind>-template` attribute (ADR-0010; `{{title}}`,
+  /// `{{basic-title}}`, `{{number}}`).
   String _navigation({
-    required ({String file, String title})? previous,
-    required ({String file, String title})? up,
-    required ({String file, String title})? next,
+    required _Link? previous,
+    required _Link? up,
+    required _Link? next,
   }) {
     final document = _document;
-    String label(String kind, String fallback, String title) => renderTemplate(
+    String label(String kind, String fallback, _Link page) => renderTemplate(
       document?.attr('multipage-nav-$kind-template') ?? fallback,
-      {'title': title},
+      {'title': page.title, 'basic-title': page.basic, 'number': page.number},
     );
-    Map<String, String>? link(
-      String kind,
-      String fallback,
-      ({String file, String title})? page,
-    ) => page == null
+    Map<String, String>? link(String kind, String fallback, _Link? page) =>
+        page == null
         ? null
         : {
             'href': page.file,
             'title': page.title,
-            'label': label(kind, fallback, page.title),
+            'basic-title': page.basic,
+            'number': ?page.number,
+            'label': label(kind, fallback, page),
           };
     final context = {
       'previous': ?link('previous', '&#8592; {{title}}', previous),
