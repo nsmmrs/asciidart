@@ -4,10 +4,17 @@
 // authors had to fix by hand.
 //
 // Usage: dart run tool/hs_acceptance.dart [--exe PATH] [--out DIR]
-//            [--report FILE]
+//            [--report FILE] [--source DIR]
+//
+// With --source, DIR is an edited copy of the sources (the AsciiDoc
+// edition brought to the Typst edition's features: a master file
+// HypermediaSystems.adoc at its root that sets its own PDF theme), built
+// as it is; without it, the book as published, with tool/hs/hs-theme.yml.
 //
 // With --report, the results table replaces the one in FILE (such as
-// benchmark/HS.md), the rest kept; a new FILE has the table alone.
+// benchmark/HS.md) under "## Latest run (date)" ("## Latest run, edited
+// edition (date)" with --source), the rest kept; the section is added
+// when FILE has none.
 //
 // The sources (bigskysoftware/hypermedia-systems-old, whose book/ isn't
 // under its repository's license) are cloned at a pinned commit into
@@ -33,6 +40,7 @@ Future<void> main(List<String> args) async {
   var exe = 'dist/asciidart-linux-x64';
   var out = '$_cache/hs-out';
   String? report;
+  String? source;
   for (var i = 0; i < args.length; i++) {
     switch (args[i]) {
       case '--exe':
@@ -41,10 +49,12 @@ Future<void> main(List<String> args) async {
         out = args[++i];
       case '--report':
         report = args[++i];
+      case '--source':
+        source = args[++i];
     }
   }
   exe = File(exe).absolute.path;
-  final sources = _sources();
+  final sources = source == null ? _sources() : Directory(source).absolute;
   final tools = _tools();
   final outDir = Directory(out)..createSync(recursive: true);
   final theme = File('tool/hs/hs-theme.yml').absolute.path;
@@ -58,12 +68,14 @@ Future<void> main(List<String> args) async {
   final pdfArgs = [
     '-b',
     'pdf',
-    '-a',
-    'hypermedia-systems-pdf',
-    '-a',
-    'pdf-theme=$theme',
-    '-a',
-    'pdf-fontsdir=${sources.path}/fonts;GEM_FONTS_DIR',
+    if (source == null) ...[
+      '-a',
+      'hypermedia-systems-pdf',
+      '-a',
+      'pdf-theme=$theme',
+      '-a',
+      'pdf-fontsdir=${sources.path}/fonts;GEM_FONTS_DIR',
+    ],
   ];
   final builds = {
     'PDF': (pdfArgs, '${outDir.path}/HypermediaSystems.pdf'),
@@ -108,16 +120,25 @@ Future<void> main(List<String> args) async {
   // split listings across), none cropped.
   final listings = _listingLines(sources);
   // Layout mode: the default joins a word hyphenated across lines. Each
-  // page's last line (the theme's footer) is left out: a listing line
-  // wrapped across a page break goes on after it.
+  // page's running content (a header or footer line with its page number)
+  // is left out: a listing line wrapped across a page break goes on after
+  // it.
+  final labels = _labels(pdf);
   final text = _normalize(
     [
-      for (final page
-          in (_run('pdftotext', ['-layout', pdf, '-']).stdout as String).split(
-            '\f',
-          ))
-        _withoutLastLine(page),
-    ].join('\n'),
+          for (final (i, page)
+              in (_run('pdftotext', ['-layout', pdf, '-']).stdout as String)
+                  .split('\f')
+                  .indexed)
+            _withoutRunningContent(page, i < labels.length ? labels[i] : ''),
+        ]
+        .join('\n')
+        // A word hyphenated at a line end (its hyphen a soft hyphen in the
+        // text) whole again.
+        .replaceAllMapped(
+          RegExp(r'(\p{L})\u00AD\n\s*(\p{Ll})', unicode: true),
+          (m) => '${m[1]}${m[2]}',
+        ),
   );
   // The HTML's callout markers left out, as the PDF's are, and its index
   // (whose links are labeled with section titles; the PDF's, with page
@@ -128,7 +149,8 @@ Future<void> main(List<String> args) async {
           .readAsStringSync()
           .replaceAll(RegExp(r'<b class="conum">\(\d+\)</b>'), '')
           .replaceAll(
-            RegExp(r'<div class="index">[\s\S]*?</ul>\n</div>\n</div>'),
+            // The index is the last section: up to the footer.
+            RegExp(r'<div class="index">[\s\S]*?(?=<div id="footer"|$)'),
             '',
           ),
     ),
@@ -176,7 +198,6 @@ Future<void> main(List<String> args) async {
     indexAt >= 0 && entries > 20,
     '$entries entries with page numbers',
   );
-  final labels = _labels(pdf);
   final roman =
       labels.isNotEmpty && RegExp(r'^[ivxlc]+$').hasMatch(labels.first);
   final body = labels.indexOf('1');
@@ -281,7 +302,13 @@ Future<void> main(List<String> args) async {
     table.writeln('| $check | $result | ${detail.replaceAll('|', r'\|')} |');
   }
   stdout.write(table);
-  if (report != null) _writeReport(File(report), table.toString());
+  if (report != null) {
+    _writeReport(
+      File(report),
+      table.toString(),
+      source == null ? 'Latest run' : 'Latest run, edited edition',
+    );
+  }
 }
 
 /// The sources at the pinned commit, with the master file at the root of
@@ -369,38 +396,50 @@ Map<String, int> _listingLines(Directory sources) {
 
 /// Writes [table] into [file] in place of the table there (and the date
 /// of the `## Latest run` heading), or alone into a new file.
-void _writeReport(File file, String table) {
+void _writeReport(File file, String table, String heading) {
+  final today = DateTime.now().toIso8601String().substring(0, 10);
+  final section = '## $heading ($today)';
   if (!file.existsSync()) {
-    file.writeAsStringSync(table);
+    file.writeAsStringSync('$section\n\n$table');
     return;
   }
   final lines = file.readAsLinesSync();
-  final start = lines.indexWhere((line) => line.startsWith('| Check |'));
+  final at = lines.indexWhere((line) => line.startsWith('## $heading ('));
+  final start = at < 0
+      ? -1
+      : lines.indexWhere((line) => line.startsWith('| Check |'), at);
   if (start < 0) {
-    file.writeAsStringSync('${lines.join('\n')}\n\n$table');
+    file.writeAsStringSync('${lines.join('\n')}\n\n$section\n\n$table');
     return;
   }
   var end = start;
   while (end < lines.length && lines[end].startsWith('|')) {
     end++;
   }
-  final today = DateTime.now().toIso8601String().substring(0, 10);
   final kept = [
-    for (final line in lines.sublist(0, start))
-      if (line.startsWith('## Latest run ('))
-        '## Latest run ($today)'
-      else
-        line,
+    ...lines.sublist(0, at),
+    section,
+    ...lines.sublist(at + 1, start),
     table.trimRight(),
     ...lines.sublist(end),
   ];
   file.writeAsStringSync('${kept.join('\n')}\n');
 }
 
-/// [page] without its last line that has text.
-String _withoutLastLine(String page) {
-  final lines = page.trimRight().split('\n');
-  if (lines.isNotEmpty) lines.removeLast();
+/// [page] without its running content: the first and the last line with
+/// text, when they have the page's [label] (its number) as a word.
+String _withoutRunningContent(String page, String label) {
+  final lines = page.trimRight().split('\n')
+    ..removeWhere((line) => line.trim().isEmpty);
+  final number = RegExp('(^|\\s)${RegExp.escape(label)}(\\s|\$)');
+  if (label.isNotEmpty) {
+    if (lines.isNotEmpty && number.hasMatch(lines.last.trim())) {
+      lines.removeLast();
+    }
+    if (lines.isNotEmpty && number.hasMatch(lines.first.trim())) {
+      lines.removeAt(0);
+    }
+  }
   return lines.join('\n');
 }
 
