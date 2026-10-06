@@ -516,6 +516,38 @@ base:
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 
+  group('running content numerals', () {
+    // Parts and chapters numbered, a preface and the contents not.
+    const book =
+        '= Book\n:doctype: book\n:sectnums:\n:partnums:\n:toc:\n\n'
+        '[preface]\n== Preface\n\nBefore.\n\n'
+        '= Part One\n\n== Chapter One\n\nText.\n\n'
+        '== Chapter Two\n\nText.\n';
+    const theme =
+        'footer:\n  recto: &both\n    right:\n'
+        "      content: 'P[{part-numeral}] C[{chapter-numeral}] {page-number}'\n"
+        '  verso: *both\n';
+
+    /// The footer of each page that has one.
+    List<String> footers(String pdf) => [
+      for (final page
+          in (Process.runSync('pdftotext', ['-layout', pdf, '-']).stdout
+                  as String)
+              .split('\f'))
+        if (RegExp(r'P\[.*\d+$').firstMatch(page.trim()) case final m?) m[0]!,
+    ];
+
+    for (final compat in [false, true]) {
+      test('are the part\'s and the chapter\'s'
+          '${compat ? ' (compatibility mode)' : ''}', () {
+        final pages = footers(_pdf(book, theme: theme, compat: compat));
+        // A line that refers to a numeral the page hasn't (the contents,
+        // the preface, the part's own page) is left out, as in the gem.
+        expect(pages, ['P[I] C[1] 3', 'P[I] C[2] 4']);
+      });
+    }
+  }, skip: _tools ? false : 'needs poppler');
+
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a
     // one-page chapter leaves a blank verso page before the next.

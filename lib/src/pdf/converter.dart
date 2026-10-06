@@ -6536,7 +6536,14 @@ final class PdfConverter extends BuiltInConverter
       if (template == '{page-number}') {
         content = doc.hasAttr('pagenums') ? label : null;
       } else {
-        content = _applySubsDiscretely(template, attributes, dropLines: true);
+        content = _applySubsDiscretely(
+          template,
+          attributes,
+          unset: const {'part-numeral', 'chapter-numeral'}.difference(
+            attributes.keys.toSet(),
+          ),
+          dropLines: true,
+        );
         if (font.transform case final transform? when transform != 'none') {
           content = transformText(content, transform);
         }
@@ -6676,6 +6683,14 @@ final class PdfConverter extends BuiltInConverter
       return _numberedTitle(_sections[index].$1);
     }
 
+    // The numeral of a numbered part or chapter (none for a preface, the
+    // table of contents, an unnumbered section).
+    String? numeralOf(String? mark) {
+      final index = int.tryParse(mark ?? '');
+      if (index == null || index >= _sections.length) return null;
+      return _sections[index].$1.numeral;
+    }
+
     final sectlevels = (_n('${periphery}_sectlevels') ?? 2).toInt();
     final partMark = page.mark('part');
     var chapterMark = page.mark('chapter');
@@ -6692,6 +6707,7 @@ final class PdfConverter extends BuiltInConverter
     }
     final part = titleOf(partMark);
     String chapter;
+    String? chapterNumeral;
     String section;
     final toc = _tocPages;
     if (toc != null && page.number >= toc.$1 && page.number <= toc.$2) {
@@ -6711,10 +6727,17 @@ final class PdfConverter extends BuiltInConverter
       section = titleOf(sectionMark);
     } else {
       chapter = titleOf(chapterMark);
+      chapterNumeral = numeralOf(chapterMark);
       section = titleOf(sectionMark);
     }
     attributes['part-title'] = part;
+    if (numeralOf(partMark) case final numeral?) {
+      attributes['part-numeral'] = numeral;
+    }
     attributes['chapter-title'] = chapter;
+    if (chapterNumeral case final numeral?) {
+      attributes['chapter-numeral'] = numeral;
+    }
     attributes['section-title'] = section;
     attributes['section-or-chapter-title'] = section.isNotEmpty
         ? section
