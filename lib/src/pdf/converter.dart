@@ -463,7 +463,7 @@ final class PdfConverter extends BuiltInConverter
       displayTitle: true,
       language: document.attr('lang'),
     );
-    final pages = result.render(pdf);
+    final pages = result.render(pdf, destinationName: destinationName);
     _outline(pdf, pages, result);
     if (pages.isNotEmpty) {
       final first = pages.first;
@@ -6015,7 +6015,7 @@ final class PdfConverter extends BuiltInConverter
       page.link(
         rect,
         link.startsWith('#')
-            ? LinkTarget.named(link.substring(1))
+            ? LinkTarget.named(destinationName(link.substring(1)))
             : LinkTarget.uri(link),
       );
     }
@@ -6163,7 +6163,7 @@ final class PdfConverter extends BuiltInConverter
       );
     }
     if (!_document.hasAttr('outline')) return;
-    var levels = int.tryParse(_document.attr('toclevels') ?? '') ?? 2;
+    var levels = _tocLevels;
     var expand = levels;
     final setting = _document.attr('outlinelevels');
     if (setting != null) {
@@ -6187,9 +6187,13 @@ final class PdfConverter extends BuiltInConverter
 
     final titlePage = _frontCover ? 1 : 0;
     if (pages.length > titlePage) {
-      var title = _document.attr('outline-title') ?? '';
-      if (title.isEmpty) title = _resolveDoctitle(_document) ?? '';
-      if (title.isNotEmpty) {
+      // An outline title, or the document title for an empty one; none
+      // when the attribute is unset.
+      var title = _document.attr('outline-title');
+      if (title != null && title.isEmpty) {
+        title = _resolveDoctitle(_document) ?? '';
+      }
+      if (title != null && title.isNotEmpty) {
         final page = pages[titlePage];
         pdf.addOutline(
           _plain(title),
@@ -6250,6 +6254,11 @@ final class PdfConverter extends BuiltInConverter
             int.tryParse(section.attr('outlinelevels') ?? '') ?? levels;
         final depth = section.level ?? 1;
         if (sectionLevels < depth) continue;
+        if (section.hasOption('notitle') &&
+            section == _document.blocks.lastOrNull &&
+            section.blocks.isEmpty) {
+          continue;
+        }
         final title = _plain(_numberedTitle(section));
         if (title.isEmpty) continue;
         final target = switch (destination(section)) {
@@ -6298,11 +6307,37 @@ final class PdfConverter extends BuiltInConverter
     return out.toString();
   }
 
-  /// [markup] as plain text (tags dropped, references resolved).
-  String _plain(String markup) {
-    final nodes = parseMarkup(markup);
-    if (nodes == null) return markup;
-    return _markup.apply(nodes).map((f) => f.text).join();
+  /// [markup] as plain text: tags dropped (with an image's alt text),
+  /// character references resolved (unknown named ones as `?`), spaces
+  /// trimmed and squeezed (the gem's `sanitize`).
+  static String _plain(String markup) {
+    var text = markup;
+    if (text.contains('<')) text = text.replaceAll(RegExp('<[^>]+>\x00?'), '');
+    if (text.contains('&')) {
+      text = text.replaceAllMapped(
+        RegExp(
+          r'&(?:amp;)?(?:([a-z][a-z]+\d{0,2})|#(?:(\d\d\d{0,4})|x([0-9a-fA-F]{2,4})));',
+        ),
+        (m) {
+          if (m[1] case final name?) {
+            return switch (name) {
+              'amp' => '&',
+              'apos' => "'",
+              'gt' => '>',
+              'lt' => '<',
+              'nbsp' => ' ',
+              'quot' => '"',
+              _ => '?',
+            };
+          }
+          final code = m[2] != null
+              ? int.parse(m[2]!)
+              : int.parse(m[3]!, radix: 16);
+          return String.fromCharCode(code);
+        },
+      );
+    }
+    return text.trim().replaceAll(RegExp(' {2,}'), ' ');
   }
 
   // Inline elements.
@@ -7382,7 +7417,7 @@ final class _ImageContent implements CustomContent {
           page.link(
             rect,
             link.startsWith('#')
-                ? LinkTarget.named(link.substring(1))
+                ? LinkTarget.named(destinationName(link.substring(1)))
                 : LinkTarget.uri(link),
           );
         }

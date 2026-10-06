@@ -7,6 +7,7 @@
 /// left on the page and it places the lines that fit.
 library;
 
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:asciidart/src/logging.dart';
@@ -843,7 +844,7 @@ final class PrawnTextBox implements CustomContent {
         if (fragment.link case final link?) {
           page.link(box, LinkTarget.uri(link));
         } else if (fragment.anchor case final anchor?) {
-          page.link(box, LinkTarget.named(anchor));
+          page.link(box, LinkTarget.named(destinationName(anchor)));
         }
       }
     }
@@ -1518,4 +1519,16 @@ final class AutofitTextBox implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => text.intrinsicWidths();
+}
+
+/// The name of the PDF destination of [anchor]: the anchor itself when
+/// it's ASCII, else `0x` and its UTF-8 bytes in hexadecimal (the gem's
+/// `derive_anchor_from_id`).
+String destinationName(String anchor) {
+  if (anchor.codeUnits.every((unit) => unit < 0x80)) return anchor;
+  final hex = [
+    for (final byte in utf8.encode(anchor))
+      byte.toRadixString(16).padLeft(2, '0'),
+  ];
+  return '0x${hex.join()}';
 }

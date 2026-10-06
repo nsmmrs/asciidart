@@ -28,7 +28,7 @@ dependencies:
   libpdf:
     git:
       url: https://github.com/nsmmrs/libpdf.git
-      ref: 9ada24184438c2c0ff17becd078b022fc1da6e67
+      ref: a8396ec708673081df8aab261f11ace48ea9f451
   meta: ^1.16.0
   mustache_template: ^2.0.6
   yaml: ^3.1.4
