@@ -943,7 +943,16 @@ final class PdfConverter extends BuiltInConverter
     if (levels < 0) return;
     final toc = _themeFont('toc', _font);
     var dotStyle = _fontStyle(_s('toc_dot_leader_font_style')) ?? 'normal';
-    final dotSize = (_n('toc_dot_leader_font_size') ?? toc.size).toDouble();
+    final dotSize = switch (_theme.value('toc_dot_leader_font_size')) {
+      ThemeNumber(:final value) => value.toDouble(),
+      ThemeString(:final value) => resolveFontSize(
+        value,
+        toc.size,
+        _rootFontSize,
+      ),
+      _ => toc.size,
+    };
+    final hanging = (_n('toc_hanging_indent') ?? 0).toDouble();
     final dotFont = toc.copyWith(
       style: dotStyle,
       size: dotSize,
@@ -996,10 +1005,13 @@ final class PdfConverter extends BuiltInConverter
         _out.add(
           CustomBox(
             _TocEntry(
+              hanging: hanging,
+              // Prawn's alignment (the gem passes none).
               _textBox(
                 title,
                 font,
-                align: _baseTextAlign,
+                align: 'left',
+                indent: -hanging,
                 inherit: (_decoration('toc', entryLevel) ?? Fragment(''))
                   ..anchor = anchor
                   ..color = font.color,
@@ -7657,11 +7669,15 @@ final class _Absolute implements CustomContent {
 /// page number on its last line, made by [leader] for the width and where
 /// the dots start.
 final class _TocEntry implements CustomContent {
-  const new(this.title, this.placeholder, this.leader);
+  const new(this.title, this.placeholder, this.leader, {this.hanging = 0});
 
   final PrawnTextBox title;
   final double placeholder;
   final CustomContent Function(double width, double startDots) leader;
+
+  /// How much the lines after the first are indented (the title is set
+  /// that much in, its first line as much out).
+  final double hanging;
 
   @override
   CustomPlacement? place(
@@ -7669,15 +7685,15 @@ final class _TocEntry implements CustomContent {
     double available, {
     required bool atTop,
   }) {
-    final room = width - placeholder;
+    final room = width - placeholder - hanging;
     final placed = title.place(room, available, atTop: atTop);
     if (placed == null) return null;
     if (placed.rest case final PrawnTextBox rest) {
       return CustomPlacement(
         height: placed.height,
         anchors: placed.anchors,
-        rest: _TocEntry(rest, placeholder, leader),
-        paint: placed.paint,
+        rest: _TocEntry(rest, placeholder, leader, hanging: hanging),
+        paint: (page, x, top) => placed.paint(page, x + hanging, top),
       );
     }
     final last = title.lastFragment(room);
@@ -7685,9 +7701,9 @@ final class _TocEntry implements CustomContent {
       height: placed.height,
       anchors: placed.anchors,
       paint: (page, x, top) {
-        placed.paint(page, x, top);
+        placed.paint(page, x + hanging, top);
         if (last == null) return;
-        final dots = leader(width, last.right);
+        final dots = leader(width, last.right + hanging);
         final line = dots.place(width, double.infinity, atTop: true);
         if (line == null) return;
         // On the title's last line: the same line as its first, or the
