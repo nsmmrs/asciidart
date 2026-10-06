@@ -584,6 +584,29 @@ base:
         expect(pages, ['P[Copy]']);
       });
 
+      if (!compat) {
+        test('go with titles after their numerals (title_style: numeral)', () {
+          final pages = footers(
+            _pdf(
+              book,
+              theme: theme
+                  .replaceFirst(
+                    'footer:\n',
+                    'footer:\n  title_style: numeral\n',
+                  )
+                  .replaceFirst(
+                    '{page-number}',
+                    '{page-number} {part-title} / {chapter-title}',
+                  ),
+            ),
+          );
+          expect(pages, [
+            'P[I] C[1] 3 I Part One / 1. Chapter One',
+            'P[I] C[2] 4 I Part One / 2. Chapter Two',
+          ]);
+        });
+      }
+
       test('go with titles without numbers (title_style: basic)'
           '${compat ? ' (compatibility mode)' : ''}', () {
         final pages = footers(

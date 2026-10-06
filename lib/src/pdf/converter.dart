@@ -2365,6 +2365,25 @@ final class PdfConverter extends BuiltInConverter
   /// (its `<category>_heading_*` keys replace the heading's), if any.
   String? _headingRole;
 
+  /// [section]'s title after its numeral and a space, when it is
+  /// numbered: a part's roman numeral (`I Hypermedia Concepts`), another
+  /// section's number as its heading has it (`3. A Web 1.0 Application`).
+  String _numeralTitle(Section section) {
+    final title = section.title ?? '';
+    final sectnumlevels =
+        int.tryParse(_document.attr('sectnumlevels') ?? '') ?? 3;
+    if (!section.numbered ||
+        section.caption != null ||
+        (section.level ?? 0) > sectnumlevels ||
+        section.numeral == null) {
+      return title;
+    }
+    final number = section.sectname == 'part'
+        ? section.numeral!
+        : section.sectnum();
+    return '$number $title';
+  }
+
   /// The title of a numbered part or chapter of a book with its label
   /// ("Part I", "Chapter 1") on a line of its own above it, when the
   /// theme sets `heading_h<n>_label_display: block` (modern engine): the
@@ -6941,7 +6960,9 @@ final class PdfConverter extends BuiltInConverter
     attributes['page-count'] = '${page.count - _skip.$2}';
     if (doc.hasAttr('pagenums')) attributes['page-number'] = label;
     // `<periphery>_title_style`: `document` (the default) as headings are
-    // titled, `toc` as the contents list them, `basic` without numbers.
+    // titled, `toc` as the contents list them, `basic` without numbers;
+    // the modern engine's `numeral`: the numeral, a space and the title
+    // (`I Hypermedia Concepts`, `3. A Web 1.0 Application`).
     final titleStyle = _s('${periphery}_title_style');
     String titleOf(String? mark) {
       final index = int.tryParse(mark ?? '');
@@ -6950,6 +6971,7 @@ final class PdfConverter extends BuiltInConverter
       return switch (titleStyle) {
         'basic' => section.title ?? '',
         'toc' => _numberedTitle(section, formal: false),
+        'numeral' when _engine == PdfEngine.modern => _numeralTitle(section),
         _ => _numberedTitle(section),
       };
     }

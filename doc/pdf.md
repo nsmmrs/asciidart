@@ -143,6 +143,7 @@ each use, which is asciidoctor-pdf's default).
 | --- | --- | --- |
 | `running_content_on_blank_pages` | `false` | A blank page (the verso before a chapter that starts on a recto page) has no header or footer unless this is `true`. |
 | `running_content_on_openers` | `false` | A page that opens a part or chapter has no header or footer unless this is `true`. |
+| `header_title_style`, `footer_title_style` | `document` | As in asciidoctor-pdf (`document`, `toc`, `basic`), and `numeral`: a numbered part or chapter as its numeral and its title (`I Hypermedia Concepts`, `3. A Web 1.0 Application`), an unnumbered one as its title. |
 
 A part or chapter with the `noheader` or `nofooter` option (as
 asciidoctor-pdf reads them on the `toc` macro) has no header or footer on
