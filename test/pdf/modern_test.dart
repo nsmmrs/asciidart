@@ -539,7 +539,9 @@ base:
     const theme =
         'footer:\n  recto: &both\n    right:\n'
         "      content: 'P[{part-numeral}] C[{chapter-numeral}] {page-number}'\n"
-        '  verso: *both\n';
+        '  verso: *both\n'
+        // Each chapter here is a page: its opener.
+        'running_content_on_openers: true\n';
 
     /// The footer of each page that has one.
     List<String> footers(String pdf) => [
@@ -657,6 +659,61 @@ base:
               .key]!;
       // Both entries' numbers end at the column's right edge.
       expect(end('alpha'), closeTo(end('hypermedia'), 0.01));
+    });
+  }, skip: _tools ? false : 'needs poppler');
+
+  group('openers', () {
+    const book =
+        '= Book\n:doctype: book\n:sectnums:\n:partnums:\n\n'
+        '[colophon%notitle%nofooter]\n== Copy\n\nCopyright.\n\n'
+        '= Part One\n\n== Chapter One\n\nText.\n\n<<<\n\nMore text.\n';
+    const footer =
+        'footer:\n  recto: &both\n    right:\n'
+        "      content: 'F{page-number}'\n  verso: *both\n";
+
+    /// The text of each page.
+    List<String> pages(String pdf) =>
+        (Process.runSync('pdftotext', ['-layout', pdf, '-']).stdout as String)
+            .split('\f')
+            .map((page) => page.trim())
+            .where((page) => page.isNotEmpty)
+            .toList();
+
+    test('have no running content, nor pages with nofooter', () {
+      final text = pages(_pdf(book, theme: footer));
+      // The title page; the copyright page; the part; the chapter's
+      // opening page; its second page, the only one with a footer.
+      expect(text, hasLength(5));
+      expect(text[1], 'Copyright.');
+      expect(text[2], isNot(contains('F')));
+      expect(text[3], isNot(contains('F')));
+      expect(text[4], endsWith('F4'));
+    });
+
+    test('have it when the theme says so', () {
+      final text = pages(
+        _pdf(book, theme: '${footer}running_content_on_openers: true\n'),
+      );
+      expect(text[3], endsWith('F3'));
+      // The compatibility mode: the gem's pages, nofooter on a section
+      // ignored.
+      final compat = pages(_pdf(book, theme: footer, compat: true));
+      expect(compat[1], endsWith('F1'));
+      expect(compat[3], endsWith('F3'));
+    });
+
+    test('may set the label on a line of its own', () {
+      final text = pages(
+        _pdf(
+          book,
+          theme:
+              'heading_h1_label_display: block\n'
+              'heading_h2_label_display: block\n',
+        ),
+      );
+      expect(text[2], 'Part I\nPart One');
+      expect(text[3], startsWith('Chapter 1\nChapter One'));
+      expect(pages(_pdf(book))[3], startsWith('Chapter 1. Chapter One'));
     });
   }, skip: _tools ? false : 'needs poppler');
 

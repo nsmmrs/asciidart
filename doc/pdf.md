@@ -96,6 +96,22 @@ each use, which is asciidoctor-pdf's default).
 | Key | Default | What it does |
 | --- | --- | --- |
 | `running_content_on_blank_pages` | `false` | A blank page (the verso before a chapter that starts on a recto page) has no header or footer unless this is `true`. |
+| `running_content_on_openers` | `false` | A page that opens a part or chapter has no header or footer unless this is `true`. |
+
+A part or chapter with the `noheader` or `nofooter` option (as
+asciidoctor-pdf reads them on the `toc` macro) has no header or footer on
+its pages: `[colophon%notitle%noheader%nofooter]` for a copyright page.
+
+### Headings
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `heading_h1_label_display`, `heading_h2_label_display` | `inline` | `block` sets a part's or chapter's label ("Part I", "Chapter 1") on a line of its own above its title, without the period. |
+| `heading_h1_label_font_color`, `_font_size`, `_font_family`, `_font_style` (and `h2`) | the heading's | The label's font. |
+
+A part on a page of its own is asciidoctor-pdf's
+`heading_part_break_after: always`; a title lower on its page,
+`heading_h2_padding: [3in, 0, 0, 0]`.
 
 A column too narrow for even one character keeps its text (set past its
 edge, with a warning), where the gem leaves the table out.

@@ -503,6 +503,10 @@ final class PdfConverter extends BuiltInConverter
         _ => null,
       };
       _skip = _frontMatter(titlePage: titlePage);
+      _openerPages = {
+        for (final (section, anchor) in _sections)
+          if (_opensPages(section)) ?_anchorPages[anchor],
+      };
     }
 
     measure();
@@ -1022,6 +1026,16 @@ final class PdfConverter extends BuiltInConverter
 
   /// The page (1-based) of each anchor, once laid out.
   Map<String, int> _anchorPages = const {};
+
+  /// The pages a part or chapter title opens (none has running content
+  /// in the modern engine, unless `running_content_on_openers` is true).
+  Set<int> _openerPages = const {};
+
+  /// Whether [section] is a part or chapter of a book whose title is set.
+  bool _opensPages(Section section) =>
+      _document.doctype == 'book' &&
+      (section.sectname == 'part' || section.level == 1) &&
+      !section.hasOption('notitle');
 
   /// The number of levels the table of contents lists (the gem's
   /// `resolve_toclevels`).
@@ -2145,7 +2159,7 @@ final class PdfConverter extends BuiltInConverter
     // An empty index is left out.
     final indexSection = sectname == 'index';
     if (indexSection && _index.isEmpty) return;
-    var title = _numberedTitle(section);
+    var title = _labeledTitle(section) ?? _numberedTitle(section);
     final separator =
         section.attr('separator') ?? _document.attr('title-separator') ?? '';
     if (separator.isNotEmpty && title.contains('$separator ')) {
@@ -2225,6 +2239,50 @@ final class PdfConverter extends BuiltInConverter
       _traverse(section);
     }
     if (chapterlike) _footnotes(section);
+  }
+
+  /// The title of a numbered part or chapter of a book with its label
+  /// ("Part I", "Chapter 1") on a line of its own above it, when the
+  /// theme sets `heading_h<n>_label_display: block` (modern engine): the
+  /// label in the `heading_h<n>_label_font_*` keys.
+  String? _labeledTitle(Section section) {
+    if (_engine != PdfEngine.modern || _document.doctype != 'book') {
+      return null;
+    }
+    final level = section.level ?? 0;
+    final category = 'heading_h${level + 1}_label';
+    if (level > 1 || _s('${category}_display') != 'block') return null;
+    final sectnumlevels =
+        int.tryParse(_document.attr('sectnumlevels') ?? '') ?? 3;
+    if (!section.numbered ||
+        section.caption != null ||
+        level > sectnumlevels ||
+        section.numeral == null) {
+      return null;
+    }
+    final signifier = level == 0
+        ? _document.attributes['part-signifier'] ?? 'Part'
+        : _document.attributes['chapter-signifier'] ?? 'Chapter';
+    var label = signifier.isEmpty
+        ? section.numeral!
+        : '$signifier ${section.numeral}';
+    final attributes = [
+      if (_c('${category}_font_color') case final HexColor color)
+        'color="#${color.hex}"',
+      if (_theme.value('${category}_font_size') case final size?)
+        'size="${size.rubyString}"',
+      if (_s('${category}_font_family') case final family?) 'name="$family"',
+    ];
+    if (attributes.isNotEmpty) {
+      label = '<font ${attributes.join(' ')}>$label</font>';
+    }
+    label = switch (_fontStyle(_s('${category}_font_style'))) {
+      'bold' => '<strong>$label</strong>',
+      'italic' => '<em>$label</em>',
+      'bold_italic' => '<strong><em>$label</em></strong>',
+      _ => label,
+    };
+    return '$label\n${section.title ?? ''}';
   }
 
   /// Whether a part has started (an appendix ends it).
@@ -6316,6 +6374,18 @@ final class PdfConverter extends BuiltInConverter
             (periphery == 'header' ? _tocNoHeader : _tocNoFooter)) {
       return const [];
     }
+    if (_engine == PdfEngine.modern) {
+      // A page that opens a part or chapter, unless the theme says
+      // otherwise; the pages of a part or chapter with the `noheader` or
+      // `nofooter` option (as the gem reads it on the toc macro).
+      if (_openerPages.contains(number) &&
+          _theme.value('running_content_on_openers') != const ThemeBool(true)) {
+        return const [];
+      }
+      if (_pageSection(page)?.hasOption('no$periphery') ?? false) {
+        return const [];
+      }
+    }
     final virtual = number - _skip.$2;
     final label = _pageLabel(number);
     final side = _sideOf(_folio.physical ? number : virtual);
@@ -6662,6 +6732,21 @@ final class PdfConverter extends BuiltInConverter
 
   static PdfColor? _color(ThemeColor? value) =>
       value is TransparentColor ? null : pdfColorOf(value);
+
+  /// The part or chapter [page] is in (a chapter before the part it is
+  /// in), if any.
+  Section? _pageSection(PageInfo page) {
+    Section? at(String? mark) {
+      final index = int.tryParse(mark ?? '');
+      return index == null || index >= _sections.length
+          ? null
+          : _sections[index].$1;
+    }
+
+    final part = int.tryParse(page.mark('part') ?? '') ?? -1;
+    final chapter = int.tryParse(page.mark('chapter') ?? '') ?? -1;
+    return chapter > part ? at(page.mark('chapter')) : at(page.mark('part'));
+  }
 
   /// The attributes the running content of [page] refers to: the
   /// document's, with the page number, the page count and the titles of
