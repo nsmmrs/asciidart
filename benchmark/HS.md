@@ -142,7 +142,7 @@ the dedication as its. Every feature is the AsciiDoc's own or asciidart's
 | Definition terms run in, hanging indent | `description_list_term_display: inline` | Done |
 | Ordered list numbers in old-style sans | `olist_marker_font_family`, `olist_marker_font_variant_numeric` | Done |
 | Quote attributions at the right | `quote_cite_text_align: right` | Done |
-| Spacing: lists, figures, quotes, sidebars, definition lists each their own | `<category>_margin_top`, `<category>_margin_bottom`, `sidebar_title_margin_bottom` | Done (317 pages to 316) |
+| Spacing: lists, figures, quotes, sidebars, definition lists each their own | `<category>_margin_top`, `<category>_margin_bottom`, `sidebar_title_margin_bottom` | Done (317 pages to 320) |
 | Listings highlighted | `source-highlighter=highlight.js` | Done |
 | Figures: "Figure N:" captions below, centered; referred to by number | `image_caption_*` theme keys, `figure-caption-template`, `:xrefstyle: short` | Done |
 | Figures at the top or bottom of their page, or the next page's top when they don't fit, the text filling in | `image_placement: auto` | Done |
@@ -169,9 +169,18 @@ the dedication as its. Every feature is the AsciiDoc's own or asciidart's
 
 `tool/hs/spacing.dart TYPST.pdf ASCIIDOC.pdf` measures the distance (in
 points, from a line's top to the next one's) between the same passages
-in both editions. With the edited edition's theme (the per-element
-`<category>_margin_*` keys), the AsciiDoc edition has 317 pages to the
-Typst edition's 316, every probe within half a point.
+in both editions. The Typst edition is built as its README says (Typst
+0.14.2, `typst compile --font-path fonts`, with Libertinus), but its code
+font, Berkeley Mono, is commercial and not in its repository: the
+reference here sets code and ASCII art in DejaVu Sans Mono instead
+(`mono-font` changed in a copy of the sources). Without a monospace font
+Typst falls back to a proportional one and breaks the diagrams.
+
+With the edited edition's theme (the per-element `<category>_margin_*`
+keys), every probe of the text is within a tenth of a point. The probes
+of code differ by up to 2.5 points, and the page count (317 to 320), but
+they measure the stand-in font, not Berkeley Mono, whose metrics aren't
+available.
 
 | Probe | Typst | AsciiDoc | Difference |
 | --- | --- | --- | --- |
@@ -183,9 +192,9 @@ Typst edition's 316, every probe within half a point.
 | paragraph to definition term | 21.1 | 21.1 | -0.0 |
 | definition to paragraph | 21.1 | 21.1 | -0.0 |
 | paragraph to listing caption | 21.6 | 21.6 | +0.0 |
-| paragraph to code (no caption) | 21.8 | 21.8 | -0.0 |
-| listing caption to code | 14.2 | 13.8 | -0.4 |
-| code line pitch | 11.3 | 11.4 | +0.1 |
+| paragraph to code (no caption) | 22.7 | 21.8 | -0.9 |
+| listing caption to code | 16.3 | 13.8 | -2.5 |
+| code line pitch | 12.2 | 11.4 | -0.8 |
 | code to callout list | 18.4 | 18.5 | +0.1 |
 | callout list item to item | 15.1 | 15.1 | -0.0 |
 | callout list to paragraph | 15.1 | 15.1 | -0.0 |
