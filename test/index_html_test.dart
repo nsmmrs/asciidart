@@ -86,11 +86,15 @@ void main() {
 
   test('a term with markup cut open is listed as text', () {
     final html = _html(
-      'Some text.(((pass:[<em>]Kept)))\n'
-      '_Some (((emph_ term))) text._\n\n[index]\n== Index\n',
+      'Some text.(((pass:[<em>]Kept)))\n\n[index]\n== Index\n',
     );
     expect(html, contains('<span class="index-term">Kept</span>'));
-    expect(html, contains('<span class="index-term">emph term</span>'));
+  });
+
+  test('emphasis around a term stays whole', () {
+    final html = _html('_Some (((emph_ term))) text._\n\n[index]\n== Index\n');
+    expect(html, contains('<span class="index-term">emph_ term</span>'));
+    expect(html, contains('<em>Some <a id="_indexterm_1"></a> text.</em>'));
   });
 
   test('is unchanged from Asciidoctor without an index section', () {

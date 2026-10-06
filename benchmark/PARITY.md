@@ -122,6 +122,12 @@ reproducers of each.
   link to a path from a website's root goes to its id in the book, or is
   text. EPUB parity compares the gem's chapters with these repairs made.
   `ebook-code-overflow=scroll` makes code lines scroll rather than wrap.
+- Quotes (emphasis, strong, monospace...) pair around an index term,
+  never into it: in `(((_hyperscript, event filter))) an _event filter_`
+  the emphasis is `event filter` and the term `_hyperscript`, where
+  Asciidoctor pairs the underscores across the term, prints a stray tag
+  and splits the term (`test/divergences/index_terms.bats`). The term's
+  own text is quoted alone.
 - `callout-links` (off by default) links callouts and their list items
   both ways in HTML and EPUB, keeps markers out of copied code, and warns
   about callouts no list item explains (`no callout list item for <3>`,
