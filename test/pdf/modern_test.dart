@@ -1102,6 +1102,33 @@ base:
     expect(plain, isNot(contains('1. One')));
   }, skip: _tools ? false : 'needs poppler');
 
+  test('callout markers may be text', () {
+    const source =
+        '[source,ruby]\n----\nputs 1 # <1>\nputs 2 # <2>\n----\n'
+        '<1> One.\n<2> Two.\n';
+    const theme =
+        "conum_glyphs: '[%d]'\n"
+        "callout_list_marker_content: '%d.'\n"
+        'conum_font_style: bold\n';
+    final text = _pages(_pdf(source, theme: theme)).first.join('\n');
+    expect(text, contains('1. One.'));
+    expect(text, contains('2. Two.'));
+    // The markers in the code are left out of its text: count the glyphs
+    // drawn. Each `[1]` is three where a circled number is one; each
+    // `1.` in the list two.
+    int glyphs(String pdf) => [
+      for (final array in RegExp(
+        r'\[([^\]]*)\]\s*TJ',
+      ).allMatches(_content(pdf)))
+        for (final hex in RegExp('<([0-9a-fA-F]*)>').allMatches(array[1]!))
+          hex[1]!.length ~/ 4,
+    ].fold(0, (a, b) => a + b);
+    expect(
+      glyphs(_pdf(source, theme: theme)) - glyphs(_pdf(source)),
+      2 * 2 + 2 * 1,
+    );
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a
     // one-page chapter leaves a blank verso page before the next.

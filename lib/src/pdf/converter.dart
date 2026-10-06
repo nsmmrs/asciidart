@@ -6063,10 +6063,27 @@ final class PdfConverter extends BuiltInConverter
     };
   }();
 
-  /// The glyph of callout [number] (empty when the theme has none).
-  String _conumGlyph(int number) => number >= 1 && number <= _conumGlyphs.length
-      ? _conumGlyphs[number - 1]
-      : '';
+  /// The glyph of callout [number] (empty when the theme has none). In
+  /// the modern engine, `conum_glyphs` may be a text with `%d` for the
+  /// number (`[%d]`), and a callout list's markers have their own
+  /// (`callout_list_marker_content`: `%d.`).
+  String _conumGlyph(int number, {bool list = false}) {
+    if (_conumTemplate(list: list) case final template?) {
+      return template.replaceAll('%d', '$number');
+    }
+    return number >= 1 && number <= _conumGlyphs.length
+        ? _conumGlyphs[number - 1]
+        : '';
+  }
+
+  /// The text template of callout markers (or of a callout list's
+  /// markers, with [list]), in the modern engine.
+  String? _conumTemplate({bool list = false}) {
+    if (_engine != PdfEngine.modern) return null;
+    final template =
+        (list ? _s('callout_list_marker_content') : null) ?? _s('conum_glyphs');
+    return template != null && template.contains('%d') ? template : null;
+  }
 
   /// Converts the callout list [node].
   void convertColist(ListBlock node) {
@@ -6092,7 +6109,7 @@ final class PdfConverter extends BuiltInConverter
         );
         final prawnFont = _fonts.font(conumFont.family, conumFont.style);
         for (final (i, item) in node.items.indexed) {
-          final glyph = _conumGlyph(i + 1);
+          final glyph = _conumGlyph(i + 1, list: true);
           final markerWidth = prawnFont.widthOf(
             '${glyph}x',
             conumFont.size,
@@ -7541,7 +7558,12 @@ final class PdfConverter extends BuiltInConverter
   }
 
   String _inlineCallout(Inline node) {
-    final glyph = _conumGlyph(int.tryParse(node.text ?? '') ?? 0);
+    var glyph = _conumGlyph(int.tryParse(node.text ?? '') ?? 0);
+    // A marker as text: in its own style and figures.
+    if (_conumTemplate() != null) {
+      glyph =
+          '<span class="conum-text">${glyph.replaceAll('&', '&amp;').replaceAll('<', '&lt;')}</span>';
+    }
     final family = _s('conum_font_family');
     final modern = _engine == PdfEngine.modern;
     // The modern engine leaves the marker out of copied code, and links

@@ -610,6 +610,13 @@ final class MarkupTransform {
         size: s('menu_font_size'),
         styles: toStyles(s('menu_font_style')),
       ),
+      // A callout marker as text (the modern engine's `conum_glyphs`
+      // template): its style and figures.
+      'conum-text': FragmentSettings(styles: toStyles(s('conum_font_style')))
+        ..features = switch (_features[s('conum_font_variant_numeric')]) {
+          final String feature => {feature},
+          null => null,
+        },
     };
     final styled = <String>{};
     for (final key in theme.keys) {

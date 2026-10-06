@@ -114,7 +114,10 @@ block's background stays the PDF theme's.
 
 A caption stays with the block it is above. Callout markers aren't part
 of the text when code is copied, and link to their callout list item,
-which links back.
+which links back. They may be text rather than circled numbers:
+`conum_glyphs: '[%d]'` (`%d` the number), in `conum_font_style` and
+`conum_font_variant_numeric` (`oldstyle-nums`), and a callout list's
+markers their own (`callout_list_marker_content: '%d.'`).
 
 ### Images
 
