@@ -113,11 +113,11 @@ without a label; chapter 9's closing quote in small capitals.
 | Typst edition | AsciiDoc | Status |
 | --- | --- | --- |
 | Title page: the title in Jaro, upper case, slanted | Document title, `title_page` theme keys | Slant: FEAT-fq3c90 |
-| Copyright and dedication pages without a heading or running content | `[colophon%notitle]`, `[dedication%notitle]` | Running content: FEAT-gvbvv4 |
-| Foreword, then the contents | `[preface]`, `toc::[]` | Done |
+| Copyright and dedication pages without a heading or running content | `[colophon%notitle%noheader%nofooter]`, `[dedication%...]` | Done |
+| Foreword (page 1), then the contents | `[preface]`, `toc::[]`, `page_numbering_start_at: 4` | Done |
 | Contents: no dot leaders, four levels | `toc` theme keys, `toclevels` | Done |
-| Part openers alone on a recto page, no running content | Parts | FEAT-gvbvv4 |
-| Chapter openers: sunk, a gray "Chapter N" line, no running content | Chapters | FEAT-gvbvv4 |
+| Part openers alone on a recto page, no running content | `:media: prepress`, `heading_part_break_after: always` | Done |
+| Chapter openers: sunk, a gray "Chapter N" line, no running content | `heading_h2_padding`, `heading_h2_label_display: block` | Done |
 | Running heads: `14 · I Hypermedia Concepts`, `3. A Web 1.0 Application · 71` | `header` theme keys, `header_title_style: toc` | Done (`14 · I: Hypermedia Concepts`) |
 | Introduction unnumbered; numbers to four levels | `:sectnums!:` around it, `sectnumlevels` | Done |
 | HTML Notes boxed, and in the contents | `[.html-note]` sections | FEAT-t089sr |
