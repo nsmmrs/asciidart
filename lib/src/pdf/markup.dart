@@ -521,8 +521,13 @@ Set<FragmentStyle>? toStyles(String? fontStyle, [String? textDecoration]) {
 final class MarkupTransform {
   /// A transform with the settings of [theme] (built-in defaults when
   /// null).
-  new({Theme? theme, this.invertEmphasis = false})
+  new({Theme? theme, this.invertEmphasis = false, this.keepIndexSpace = false})
     : _settings = theme == null ? _defaults() : _fromTheme(theme);
+
+  /// Whether the space before a concealed index term stays when no space
+  /// follows the term (`When (((HTML)))HTML`: the modern engine's), rather
+  /// than being dropped always (the gem's).
+  final bool keepIndexSpace;
 
   final Map<String, FragmentSettings> _settings;
 
@@ -709,6 +714,17 @@ final class MarkupTransform {
   static double _round5(double value) =>
       (value * 100000).roundToDouble() / 100000;
 
+  /// Whether the node after [node] in [nodes] starts with a space (or
+  /// there is none).
+  static bool _spaceAfter(List<MarkupNode> nodes, MarkupNode node) {
+    final at = nodes.indexOf(node);
+    if (at + 1 >= nodes.length) return true;
+    return switch (nodes[at + 1]) {
+      MarkupText(:final value) => value.startsWith(RegExp(r'\s')),
+      _ => false,
+    };
+  }
+
   /// The fragments of [nodes], inheriting [inherited].
   List<Fragment> apply(
     List<MarkupNode> nodes, [
@@ -746,7 +762,8 @@ final class MarkupTransform {
               fragment.type == 'indexterm' &&
               attributes['visible'] == null &&
               previousIsText &&
-              fragments.last.text.endsWith(' ')) {
+              fragments.last.text.endsWith(' ') &&
+              !(keepIndexSpace && !_spaceAfter(nodes, node))) {
             final last = fragments.last;
             last.text = last.text.substring(0, last.text.length - 1);
           }

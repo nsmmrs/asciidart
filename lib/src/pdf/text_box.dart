@@ -615,10 +615,11 @@ final class PrawnTextBox implements CustomContent {
   @override
   double minHeight(double width) {
     // The modern engine needs room for the lines the text may leave at
-    // the bottom of a region (its orphans), not for all of it.
+    // the bottom of a region (its orphans), not for all of it; all of a
+    // text too short to split (fewer lines than its orphans and widows).
     if (_context.engine == PdfEngine.modern && _items.isNotEmpty) {
       _arrangeImages(width);
-      final wrap = _wrapOf(
+      _Wrap wrapped(int maxLines) => _wrapOf(
         [for (final item in _items) item.copy()],
         _state,
         _layout,
@@ -627,9 +628,16 @@ final class PrawnTextBox implements CustomContent {
         double.infinity,
         firstPiece: first,
         continuedIndent: continuedIndent,
-        maxLines: math.max(1, _layout.orphans),
+        maxLines: maxLines,
       );
-      if (wrap.run().isEmpty) return 0;
+      final orphans = math.max(1, _layout.orphans);
+      final unsplit = math.max(orphans, orphans + _layout.widows - 1);
+      final whole = wrapped(unsplit);
+      if (whole.run().isEmpty) return 0;
+      if (whole.unconsumed.isEmpty || unsplit == orphans) {
+        return _layout.initialGap + whole.height;
+      }
+      final wrap = wrapped(orphans)..run();
       return _layout.initialGap + wrap.height;
     }
     final placed = place(width, double.infinity, atTop: true);
@@ -1678,6 +1686,7 @@ base class _Wrap {
       }
     }
     _fragments = [];
+    var blankTop = 0.0;
     for (final item in _consumed) {
       var text = item.text.replaceAll(_zwsp, '');
       if (item.excludeTrailingWhiteSpace) {
@@ -1704,8 +1713,14 @@ base class _Wrap {
       final font = format.font;
       final image = format.image;
       if (_layout.capLines) {
-        // (A line break or spaces alone: no height, as Typst's.)
-        final top = isMarker || (image == null && text.trim().isEmpty)
+        // (A line break or spaces count only on a line without other
+        // text: an empty line is as tall as its font's cap height, as
+        // Typst's.)
+        if (!isMarker && image == null && text.trim().isEmpty) {
+          blankTop = math.max(blankTop, font.capHeightAt(format.size));
+          continue;
+        }
+        final top = isMarker
             ? 0.0
             : image?.ascender ?? font.capHeightAt(format.size);
         _maxLineHeight = math.max(_maxLineHeight, top);
@@ -1721,6 +1736,9 @@ base class _Wrap {
           isMarker ? 0 : image?.ascender ?? font.ascenderAt(format.size),
         );
       }
+    }
+    if (_layout.capLines && _maxLineHeight == 0 && blankTop > 0) {
+      _maxLineHeight = _maxAscender = blankTop;
     }
     _spaceCount = _fragments.fold(0, (sum, f) => sum + f.spaces);
   }

@@ -316,7 +316,11 @@ final class PdfConverter extends BuiltInConverter
       labels: (key) => _layoutLabels[key],
       logger: logger,
     );
-    _markup = MarkupTransform(theme: _theme, invertEmphasis: _invertEmphasis);
+    _markup = MarkupTransform(
+      theme: _theme,
+      invertEmphasis: _invertEmphasis,
+      keepIndexSpace: _engine == PdfEngine.modern,
+    );
     _cjkLineBreaks = document.attr('scripts') == 'cjk';
     _resolveHyphenation(document);
     _reportTags =
@@ -2192,6 +2196,13 @@ final class PdfConverter extends BuiltInConverter
   /// The block after [block] in reading order, looking out of the
   /// containers it ends (the gem's `next_enclosed_block`).
   AbstractBlock? _nextEnclosedBlock(AbstractBlock block) {
+    final next = _nextEnclosed(block);
+    // (Past a paragraph of index terms alone, in the modern engine.)
+    if (next != null && _roomless(next)) return _nextEnclosedBlock(next);
+    return next;
+  }
+
+  AbstractBlock? _nextEnclosed(AbstractBlock block) {
     if (block is Document) return null;
     final parent = block.parent;
     if (parent is! AbstractBlock) return null;
@@ -2287,6 +2298,22 @@ final class PdfConverter extends BuiltInConverter
     }
     final above = _n('${_spacingCategory(following)}_margin_top') ?? 0;
     return math.max(own, above.toDouble());
+  }
+
+  /// The block before [node] in the flow: its previous sibling, past
+  /// images that float out of it (`image_placement`, modern engine), as
+  /// Typst's floating figures leave a paragraph after a paragraph.
+  AbstractBlock? _flowPrevious(AbstractBlock node) {
+    var previous = _previousSibling(node);
+    final floating =
+        _engine == PdfEngine.modern &&
+        const {'auto', 'top', 'bottom'}.contains(_s('image_placement'));
+    while (floating &&
+        previous != null &&
+        previous.context == BlockContext.image) {
+      previous = _previousSibling(previous);
+    }
+    return previous;
   }
 
   /// The space above [section]'s heading (its box's, for a section role
@@ -2700,6 +2727,14 @@ final class PdfConverter extends BuiltInConverter
                 0)
             .toDouble();
     CustomContent content = box;
+    // The modern engine's `heading_min_height_after: auto`: the heading
+    // stays with what starts after it (as much of it as may start a page:
+    // a paragraph's first lines), as Typst's sticky headings.
+    final sticky =
+        arrange &&
+        hasContent &&
+        _engine == PdfEngine.modern &&
+        _theme.value('heading_min_height_after') == const ThemeString('auto');
     if (arrange) {
       final minAfter = _theme.value('heading_min_height_after');
       var below = switch (minAfter) {
@@ -2727,8 +2762,12 @@ final class PdfConverter extends BuiltInConverter
             (_c('${category}_border_color') ?? _c('base_border_color')) != null
         ? _headingBorder(category)
         : null;
-    // Floating images wait for no heading: it follows them.
-    final barrier = _engine == PdfEngine.modern;
+    // Floating images wait for no heading: it follows them (unless
+    // `heading_float_barrier` is false: Typst's headings pass floats
+    // waiting for the next page).
+    final barrier =
+        _engine == PdfEngine.modern &&
+        _theme.value('heading_float_barrier') != const ThemeBool(false);
     // In the middle or at the bottom of its page, when it starts the page
     // (a part's title, as Typst's align(horizon) sets it).
     final verticalAlign = _engine != PdfEngine.modern
@@ -2747,6 +2786,7 @@ final class PdfConverter extends BuiltInConverter
             anchor: anchor,
             marks: marks,
             floatBarrier: barrier,
+            keepWithNext: sticky,
           ),
         ),
       );
@@ -2763,6 +2803,7 @@ final class PdfConverter extends BuiltInConverter
           decoration: border,
           floatBarrier: barrier,
           verticalAlign: verticalAlign,
+          keepWithNext: sticky,
         ),
       ),
     );
@@ -2879,7 +2920,7 @@ final class PdfConverter extends BuiltInConverter
       if (textIndent > 0) {
         indent = textIndent;
       } else if (inner > 0 &&
-          _previousSibling(node)?.context == BlockContext.paragraph) {
+          _flowPrevious(node)?.context == BlockContext.paragraph) {
         indent = inner;
       }
     }
@@ -2906,6 +2947,28 @@ final class PdfConverter extends BuiltInConverter
       }
     }
     var content = node.content() ?? '';
+    // The modern engine: a paragraph of concealed index terms alone takes
+    // no room (their anchors where it is), as Typst's index entries.
+    if (_engine == PdfEngine.modern && !node.hasTitle) {
+      final terms = RegExp('<a id="([^"]+)" type="indexterm">$_dummyText</a>')
+          .allMatches(content)
+          .toList();
+      if (terms.isNotEmpty &&
+          content
+              .replaceAll(
+                RegExp('<a id="[^"]+" type="indexterm">$_dummyText</a>'),
+                '',
+              )
+              .trim()
+              .isEmpty) {
+        for (final term in terms) {
+          _out.add(
+            CustomBox(const _Nothing(), style: BoxStyle(anchor: term[1])),
+          );
+        }
+        return;
+      }
+    }
     if (font.transform case final transform? when transform != 'none') {
       content = transformText(content, transform);
     }
@@ -2997,9 +3060,26 @@ final class PdfConverter extends BuiltInConverter
   AbstractBlock? _previousSibling(AbstractBlock node) {
     final parent = node.parent;
     if (parent is! AbstractBlock) return null;
-    final index = parent.blocks.indexOf(node);
+    var index = parent.blocks.indexOf(node);
+    // (In the modern engine, past paragraphs of index terms alone: they
+    // take no room.)
+    while (index > 0 && _roomless(parent.blocks[index - 1])) {
+      index--;
+    }
     return index > 0 ? parent.blocks[index - 1] : null;
   }
+
+  /// Whether [block] is a paragraph of concealed index terms alone, which
+  /// the modern engine sets in no room.
+  bool _roomless(AbstractBlock block) =>
+      _engine == PdfEngine.modern &&
+      block.context == BlockContext.paragraph &&
+      !block.hasTitle &&
+      block is Block &&
+      block.lines.isNotEmpty &&
+      block.lines.every(
+        (line) => RegExp(r'^\s*(\(\(\(.*?\)\)\)\s*)+$').hasMatch(line),
+      );
 
   // Blocks with a background and a border.
 
@@ -3645,7 +3725,12 @@ final class PdfConverter extends BuiltInConverter
           ),
         );
       }
-      _withFont('sidebar', () => _traverse(node));
+      // (The modern engine: `sidebar_*` keys for the blocks inside it,
+      // `sidebar_prose_margin_bottom`...)
+      _withFont(
+        'sidebar',
+        () => _withBaseKeys('sidebar', () => _traverse(node)),
+      );
     });
     _framed(node, 'sidebar', children);
   }
@@ -4087,6 +4172,16 @@ final class PdfConverter extends BuiltInConverter
           _s('image_align') ??
           'left';
     }
+    // A text file (ASCII art) in the modern engine: its text, as it is,
+    // in the code font (or `image_text_*`), the block as wide as its
+    // longest line and aligned as an image, as Typst sets an asciiart
+    // figure.
+    if (_engine == PdfEngine.modern && format == 'txt' && data == null) {
+      if (_imageBytes(node, target) case final bytes?) {
+        _textImage(node, utf8.decode(bytes, allowMalformed: true), align);
+        return;
+      }
+    }
     List<int>? bytes;
     if (format == 'gif') {
       logger.warn('GIF image format not supported; convert $target to PNG');
@@ -4147,7 +4242,7 @@ final class PdfConverter extends BuiltInConverter
       );
     }
     final next = _nextEnclosedBlock(node);
-    final margin = _marginBelow(node, next: next);
+    var margin = _marginBelow(node, next: next);
     final border = node.hasRole('noborder') ? null : _imageBorder();
     // A floated image followed by a paragraph: the paragraphs after it
     // wrap around it (the gem's `init_float_box`).
@@ -4203,6 +4298,9 @@ final class PdfConverter extends BuiltInConverter
           }
         : null;
     final shown = graphic;
+    // A floating image: no margin of its own, its clearance
+    // (`image_float_clearance`) between it and the text instead.
+    if (float != null && float != FloatPlacement.next) margin = 0;
     final figure = _collect(() {
       if (caption != null && !captionBottom) _out.add(caption);
       _out.add(
@@ -4231,11 +4329,91 @@ final class PdfConverter extends BuiltInConverter
     });
     if (float != null) {
       _out.add(
-        BlockBox(figure, style: BoxStyle(keepTogether: true, float: float)),
+        BlockBox(
+          figure,
+          style: BoxStyle(
+            keepTogether: true,
+            float: float,
+            floatClearance: _imageFloatClearance,
+          ),
+        ),
       );
     } else {
       _out.addAll(figure);
     }
+  }
+
+  /// The space between a floating image and the text
+  /// (`image_float_clearance`, modern engine).
+  double get _imageFloatClearance =>
+      _length('image_float_clearance', _font.size) ?? 0;
+
+  /// The image [node] that is the [text] of a text file (see
+  /// [convertImage]): kept whole, captioned and floated as an image is.
+  void _textImage(Block node, String text, String align) {
+    final font = _themeFont('image_text', _themeFont('code', _font));
+    // Every line kept, the empty one after a final line break too (as
+    // Typst's raw text keeps it).
+    final box = _textBox(
+      _guardIndentation(text.endsWith('\n') ? '$text\u00a0' : text),
+      font,
+      align: 'left',
+      normalize: false,
+      inlineFormat: false,
+    );
+    final captionBottom = (_s('image_caption_end') ?? 'bottom') == 'bottom';
+    final caption = node.hasTitle
+        ? _captionBox(
+            node,
+            category: 'image',
+            bottom: captionBottom,
+            blockAlign: align,
+          )
+        : null;
+    var margin = _marginBelow(node, next: _nextEnclosedBlock(node));
+    final parent = node.parent;
+    final topLevel =
+        parent is Section ||
+        parent is Document ||
+        parent?.context == BlockContext.preamble;
+    // The block's own `placement` attribute, else the theme's.
+    final placement = node.attr('placement') ?? _s('image_placement');
+    final float = topLevel
+        ? switch (placement) {
+            'auto' => FloatPlacement.auto,
+            'top' => FloatPlacement.top,
+            'bottom' => FloatPlacement.bottom,
+            'next' => FloatPlacement.next,
+            _ => null,
+          }
+        : null;
+    if (float != null && float != FloatPlacement.next) margin = 0;
+    final figure = [
+      if (caption != null && !captionBottom) caption,
+      CustomBox(
+        _Aligned(box, align: align),
+        style: BoxStyle(
+          anchor: node.id,
+          margin: EdgeInsets(
+            bottom: caption != null && captionBottom ? 0 : margin,
+          ),
+        ),
+      ),
+      if (caption != null && captionBottom) ...[
+        caption,
+        if (margin > 0) SpacerBox(margin),
+      ],
+    ];
+    _out.add(
+      BlockBox(
+        figure,
+        style: BoxStyle(
+          keepTogether: true,
+          float: float,
+          floatClearance: _imageFloatClearance,
+        ),
+      ),
+    );
   }
 
   /// [text] as a number, as Ruby's `to_f` reads it (its leading number,
@@ -5659,6 +5837,14 @@ final class PdfConverter extends BuiltInConverter
     if (font.transform case final transform? when transform != 'none') {
       text = transformText(text, transform);
     }
+    // The modern engine's `<category>_caption_indent`: set in from the
+    // left (a code block's caption over its padded code, as Typst's
+    // figure inset).
+    final indent = _engine == PdfEngine.modern
+        ? _length('${captionKey}_indent', font.size) ??
+              _length('caption_indent', font.size) ??
+              0.0
+        : 0.0;
     // A background behind the text, as wide as the block's room.
     final background = pdfColorOf(
       _c('${captionKey}_background_color') ?? _c('caption_background_color'),
@@ -5675,8 +5861,8 @@ final class PdfConverter extends BuiltInConverter
       ),
       style: BoxStyle(
         margin: bottom
-            ? EdgeInsets(top: inside, bottom: outside)
-            : EdgeInsets(top: outside, bottom: inside),
+            ? EdgeInsets(top: inside, bottom: outside, left: indent)
+            : EdgeInsets(top: outside, bottom: inside, left: indent),
         // A caption above its block stays with it in the modern engine.
         keepWithNext: !bottom && _engine == PdfEngine.modern,
         decoration: background == null
@@ -5787,6 +5973,10 @@ final class PdfConverter extends BuiltInConverter
       }
     }
     if (align == null && node.style == 'bibliography') align = 'left';
+    // (An ordered list's own, `olist_text_align`, in the modern engine.)
+    if (_engine == PdfEngine.modern && node.context == BlockContext.olist) {
+      align ??= _s('olist_text_align');
+    }
     align ??= _s('list_text_align');
     final unmarked =
         (node.context == BlockContext.ulist && _listBullets.last == null) ||
@@ -5806,13 +5996,21 @@ final class PdfConverter extends BuiltInConverter
     _out = items;
     // Typst's lists (the modern engine's list_body_indent): the markers at
     // list_indent, the text after the widest marker and the body indent.
+    // An ordered list's own (`olist_body_indent`; `olist_marker_width`,
+    // its numbers in boxes that wide at their left: Typst's enums).
+    final ordered = node.context == BlockContext.olist;
     final bodyIndent = _engine == PdfEngine.modern
-        ? _length('list_body_indent', _font.size)
+        ? (ordered ? _length('olist_body_indent', _font.size) : null) ??
+              _length('list_body_indent', _font.size)
         : null;
     final savedBodyIndent = _listBodyIndent;
     final savedMarkerWidth = _listMarkerWidth;
+    final savedMarkerBox = _listMarkerBox;
     _listBodyIndent = bodyIndent;
     _listMarkerWidth = 0;
+    _listMarkerBox = _engine == PdfEngine.modern && ordered
+        ? _length('olist_marker_width', _font.size)
+        : null;
     for (final item in node.items) {
       _listItem(item, node, align);
     }
@@ -5821,6 +6019,7 @@ final class PdfConverter extends BuiltInConverter
     }
     _listBodyIndent = savedBodyIndent;
     _listMarkerWidth = savedMarkerWidth;
+    _listMarkerBox = savedMarkerBox;
     _out = saved;
     final nested = node.parent is ListItem;
     _out.add(
@@ -5945,12 +6144,18 @@ final class PdfConverter extends BuiltInConverter
       );
     }
     if (primary != null) {
+      // The modern engine keeps an item's text from leaving a lone line on
+      // either side of a page break, as a paragraph's (`prose_orphans`,
+      // `prose_widows`).
+      final modern = _engine == PdfEngine.modern;
       final box = _textBox(
         primary,
         _font,
         align: align ?? _baseTextAlign,
         normalizeLineHeight: true,
         hyphenate: true,
+        orphans: modern ? (_n('prose_orphans') ?? 2).toInt() : 1,
+        widows: modern ? (_n('prose_widows') ?? 2).toInt() : 1,
       );
       final metrics = _lineMetrics(_font);
       final lineHeight = _font.lineHeight * _font.size;
@@ -5997,14 +6202,15 @@ final class PdfConverter extends BuiltInConverter
     }
   }
 
-  /// Runs [body] with the modern engine's `<category>_base_*` keys in
-  /// place of the base keys (`quote_base_justify_width: widest`: a block
-  /// Typst sizes to its content justifies its lines to the widest).
+  /// Runs [body] with the modern engine's `<category>_*` keys in place of
+  /// the theme's (`quote_base_justify_width: widest`: a block Typst sizes
+  /// to its content justifies its lines to the widest; `quote_list_*`
+  /// for the lists in a quote), as a section role's.
   void _withBaseKeys(String category, void Function() body) {
     if (_engine != PdfEngine.modern) return body();
     final savedAlign = _baseTextAlign;
     final savedTheme = _theme;
-    _theme = _theme.overlaid('${category}_base_', 'base_');
+    _theme = _theme.overlaid('${category}_', '');
     if (_s('${category}_base_text_align') case final align?) {
       _baseTextAlign = align;
     }
@@ -6175,6 +6381,10 @@ final class PdfConverter extends BuiltInConverter
           indent: -hang,
           normalizeLineHeight: true,
           hyphenate: true,
+          // (Kept from leaving a lone line at a page break, as a
+          // paragraph.)
+          orphans: (_n('prose_orphans') ?? 2).toInt(),
+          widows: (_n('prose_widows') ?? 2).toInt(),
         ),
         style: BoxStyle(
           margin: EdgeInsets(
@@ -6350,17 +6560,35 @@ final class PdfConverter extends BuiltInConverter
             conumFont.lineHeight * conumFont.size +
             metrics.leading +
             metrics.paddingTop;
-        final markerFont = conumFont.copyWith(
-          color: _c('callout_list_marker_font_color') ?? conumFont.color,
-        );
+        // The modern engine's `callout_list_marker_*` font keys, over the
+        // conum's.
+        final markerFont = _engine == PdfEngine.modern
+            ? _themeFont('callout_list_marker', conumFont)
+            : conumFont.copyWith(
+                color: _c('callout_list_marker_font_color') ?? conumFont.color,
+              );
+        final markerFeatures = _engine == PdfEngine.modern
+            ? {?fontFeature(_s('callout_list_marker_font_variant_numeric'))}
+            : const <String>{};
         final prawnFont = _fonts.font(conumFont.family, conumFont.style);
+        // A marker box as wide as `callout_list_marker_width` (modern
+        // engine; Typst's enum numbers in a box 1em wide), its marker
+        // aligned in it by `callout_list_marker_text_align`.
+        final fixedWidth = _engine == PdfEngine.modern
+            ? _length('callout_list_marker_width', markerFont.size)
+            : null;
+        final markerAlign = _engine == PdfEngine.modern
+            ? _s('callout_list_marker_text_align') ?? 'center'
+            : 'center';
         for (final (i, item) in node.items.indexed) {
           final glyph = _conumGlyph(i + 1, list: true);
-          final markerWidth = prawnFont.widthOf(
-            '${glyph}x',
-            conumFont.size,
-            kerning: conumFont.kerning,
-          );
+          final markerWidth =
+              fixedWidth ??
+              prawnFont.widthOf(
+                '${glyph}x',
+                conumFont.size,
+                kerning: conumFont.kerning,
+              );
           // In the modern engine, the item is the destination of its
           // markers, and its glyph links back to the first.
           final coids = _engine == PdfEngine.modern
@@ -6382,8 +6610,9 @@ final class PdfConverter extends BuiltInConverter
           final marker = _textBox(
             markerMarkup,
             markerFont,
-            align: 'center',
+            align: markerAlign,
             normalize: false,
+            features: markerFeatures,
           );
           final last = i == node.items.length - 1;
           final text = item.text;
@@ -6445,6 +6674,10 @@ final class PdfConverter extends BuiltInConverter
           margin: EdgeInsets(
             top: marginTop,
             bottom: _marginBelow(node, fallback: 'prose'),
+            // (`callout_list_indent`, modern engine.)
+            left: _engine == PdfEngine.modern
+                ? _length('callout_list_indent', _font.size) ?? 0
+                : 0,
           ),
           anchor: node.id,
         ),
@@ -6458,6 +6691,10 @@ final class PdfConverter extends BuiltInConverter
   /// The widest marker of the list being converted.
   double _listMarkerWidth = 0;
 
+  /// The width of the boxes the markers of the list being converted are
+  /// set in, at their left, if fixed (`olist_marker_width`).
+  double? _listMarkerBox;
+
   /// [content] with [marker] in [markerFont] beside its first line, right
   /// aligned in front of it, a space apart.
   CustomContent _withMarker(
@@ -6467,20 +6704,23 @@ final class PdfConverter extends BuiltInConverter
     Set<String> features = const {},
   }) {
     final gap = _fonts.font(_font.family, _font.style).widthOf('x', _font.size);
-    final width = _fonts
-        .font(markerFont.family, markerFont.style)
-        .widthOf(
-          marker,
-          markerFont.size,
-          kerning: _font.kerning,
-          features: {..._baseFeatures, ...features},
-        );
+    final fixed = _listMarkerBox;
+    final width =
+        fixed ??
+        _fonts
+            .font(markerFont.family, markerFont.style)
+            .widthOf(
+              marker,
+              markerFont.size,
+              kerning: _font.kerning,
+              features: {..._baseFeatures, ...features},
+            );
     final markerBox = _textBox(
       marker.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
       markerFont,
-      align: 'right',
+      align: fixed == null ? 'right' : 'left',
       normalize: false,
-      characterSpacing: -0.5,
+      characterSpacing: fixed == null ? -0.5 : 0,
       features: features,
     );
     if (_listBodyIndent case final bodyIndent?) {
@@ -6659,6 +6899,9 @@ final class PdfConverter extends BuiltInConverter
       text = text.replaceAll(RegExp('[\ufe00-\ufe0f]'), '');
     }
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
+    if (_engine == PdfEngine.modern && text.contains('://')) {
+      text = _breakUrls(text, markup: inlineFormat);
+    }
     final nodes = inlineFormat ? parseMarkup(text) : [MarkupText(text)];
     final List<Fragment> fragments;
     final inherited = inheritedStyles.isEmpty && inherit == null
@@ -7684,6 +7927,7 @@ final class PdfConverter extends BuiltInConverter
         _markup = MarkupTransform(
           theme: _theme,
           invertEmphasis: _invertEmphasis,
+          keepIndexSpace: _engine == PdfEngine.modern,
         );
         _ready = true;
       }
@@ -7844,9 +8088,91 @@ final class PdfConverter extends BuiltInConverter
   /// reference).
   final Set<String> _bibrefRefs = {};
 
+  /// [text] (markup when [markup]) with a zero-width space where each URL
+  /// in it may break, as Typst breaks a link (typst-layout's
+  /// `linebreak_link`): after its `://`, then where a run of letters or of
+  /// digits begins, and between two other characters, but never after an
+  /// opening bracket; a run of 16 characters or more anywhere in it. The
+  /// modern engine's, in place of the gem's breaks after `/`, `?`, `&`
+  /// and `#`.
+  static String _breakUrls(String text, {bool markup = true}) {
+    final out = StringBuffer();
+    // The text between tags only (an href stays whole).
+    final pieces = markup
+        ? RegExp('<[^>]*>|[^<]+').allMatches(text).map((m) => m[0]!)
+        : [text];
+    for (final piece in pieces) {
+      if (piece.startsWith('<') || !piece.contains('://')) {
+        out.write(piece);
+        continue;
+      }
+      out.write(
+        piece.replaceAllMapped(_urlRx, (m) {
+          final link = m[2]!;
+          return '${m[1]}​${_linkBreaks(link)}';
+        }),
+      );
+    }
+    return out.toString();
+  }
+
+  /// A URL's scheme and `://`, then its address (Typst's `link_prefix`:
+  /// the characters a link takes, trailing punctuation left out).
+  static final RegExp _urlRx = RegExp(
+    '([a-zA-Z][a-zA-Z0-9+.-]*://)'
+    r"((?:[0-9A-Za-z!#$%*+,\-./:;=?@_~'\[\]()]|&amp;)*"
+    r'(?:[0-9A-Za-z#$%*+\-/=@_~\[\]()]|&amp;))',
+  );
+
+  /// [link] (the part after `://`) with a zero-width space at each of
+  /// Typst's break opportunities.
+  static String _linkBreaks(String link) {
+    int classOf(String c) => RegExp(r'\p{L}', unicode: true).hasMatch(c)
+        ? 0
+        : RegExp(r'\p{N}', unicode: true).hasMatch(c)
+        ? 1
+        : c == '(' || c == '['
+        ? 2
+        : 3;
+    // Entities count as one character.
+    final chars = RegExp(
+      '&amp;|.',
+      dotAll: true,
+    ).allMatches(link).map((m) => m[0]!).toList();
+    final out = StringBuffer();
+    var offset = 0;
+    var previous = 3;
+    for (var end = 0; end < chars.length; end++) {
+      final c = chars[end];
+      final current = classOf(c);
+      if (end > 0 &&
+          previous != 2 &&
+          (current == 3 ? previous == 3 : current != previous)) {
+        final piece = chars.sublist(offset, end);
+        if (piece.join().replaceAll('&amp;', '&').length < 16) {
+          out
+            ..writeAll(piece)
+            ..write('​');
+        } else {
+          for (final p in piece) {
+            out
+              ..write(p)
+              ..write('​');
+          }
+        }
+        offset = end;
+      }
+      previous = current;
+    }
+    out.writeAll(chars.sublist(offset));
+    return out.toString();
+  }
+
   /// [uri] with a zero-width space after each `/`, `?`, `&` and `#` of its
-  /// address so it can break there (the gem's `breakable_uri`).
-  static String _breakableUri(String uri) {
+  /// address so it can break there (the gem's `breakable_uri`; the
+  /// modern engine breaks URLs as Typst does, [_breakUrls]).
+  String _breakableUri(String uri) {
+    if (_engine == PdfEngine.modern) return uri;
     final boundary = uri.indexOf('://');
     final scheme = boundary < 0 ? '' : uri.substring(0, boundary + 3);
     var address = boundary < 0 ? uri : uri.substring(boundary + 3);
@@ -8958,6 +9284,45 @@ final class _Border {
 
   /// Whether the border spans the available width, not the image's.
   final bool fitWidth;
+}
+
+/// [content] as wide as it needs (its widest line), at the left, in the
+/// middle or at the right of the room ([align]).
+final class _Aligned implements CustomContent {
+  const new(this.content, {this.align = 'left'});
+
+  final CustomContent content;
+  final String align;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final wide = math.min(width, content.intrinsicWidths().$2);
+    final placed = content.place(wide, available, atTop: atTop);
+    if (placed == null) return null;
+    final offset = switch (align) {
+      'center' => (width - wide) / 2,
+      'right' => width - wide,
+      _ => 0.0,
+    };
+    return CustomPlacement(
+      height: placed.height,
+      anchors: [
+        for (final (name, x, y) in placed.anchors) (name, x + offset, y),
+      ],
+      rest: placed.rest == null ? null : _Aligned(placed.rest!, align: align),
+      paint: (page, x, top) => placed.paint(page, x + offset, top),
+    );
+  }
+
+  @override
+  double minHeight(double width) => content.minHeight(width);
+
+  @override
+  (double, double) intrinsicWidths() => content.intrinsicWidths();
 }
 
 /// A block image sized and placed as asciidoctor-pdf places it: no wider

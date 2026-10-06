@@ -61,10 +61,12 @@ none of its space below goes to the next page.
 
 A quote's attribution has its own space above (`quote_cite_margin_top`,
 `verse_cite_margin_top`; `block_margin_bottom` by default) and alignment
-(`quote_cite_text_align: right`). Inside a quote or a description list,
-`quote_base_*` and `description_list_base_*` keys stand for the base keys
-(`quote_base_justify_width: widest`: its lines justified to the widest,
-as Typst sets a quote or terms, blocks sized to their content). A sidebar's title has its own space below
+(`quote_cite_text_align: right`). Inside a quote, a sidebar or a
+description list, its category's keys stand for the theme's, as a section
+role's do (`sidebar_prose_margin_bottom`):
+`quote_base_justify_width: widest` (its lines justified to the widest, as
+Typst sets a quote or terms, blocks sized to their content),
+`quote_list_margin_top` for the lists in a quote. A sidebar's title has its own space below
 (`sidebar_title_margin_bottom`; `heading_margin_bottom` by default).
 
 ### Contents, lists, title page
@@ -80,6 +82,11 @@ its own, and the section listed in itself, as Typst's outline under a
 | `toc_entry_spacing` | the leading under `base_leading`, else none | The space between contents entries (under Typst's model each entry is a paragraph). |
 | `description_list_term_display` | `block` | `inline` runs a term in before its description, in the term's font, the lines after the first hanging by `description_list_description_indent`. |
 | `description_list_term_gap` | an en space | With `inline` terms, the space after the term (`0.6em`, as Typst's terms separator). |
+| `image_float_clearance` | none | The space between a floating image (`image_placement`) and the text: below it at the top of a page, above it at the bottom (`1.5em`, Typst's). |
+| `olist_text_align` | `list_text_align` | An ordered list's text alignment (Typst's enums are justified, its lists not). |
+| `olist_body_indent`, `olist_marker_width` | `list_body_indent`, the marker's | An ordered list's space between its numbers and its text, and the boxes its numbers are set in, at their left (Typst's enum: `0`, `1em`). |
+| `callout_list_indent`, `callout_list_marker_width`, `callout_list_marker_text_align` | none, the marker's, `center` | A callout list set in, its markers in boxes that wide, aligned so (Typst's enum: `12`, `1em`, `left`); `callout_list_marker_font_*` (family, size, style, color, `_variant_numeric`) style them. |
+| `caption_indent`, `<category>_caption_indent` | none | A caption set in from the left (`code_caption_indent: 12`: over a code block's padded code, as Typst's figure inset). |
 | `olist_marker_font_variant_numeric` | none | An ordered list's numbers in old-style (`oldstyle-nums`) or other figures (with `olist_marker_font_family`, `_font_color`...). |
 | `title_page_authors_delimiter` | `, ` | Its spaces are kept as written: `'    '` sets the authors in a row with a gap (asciidoctor-pdf collapses them to one). |
 | `list_body_indent` | none | Typst's lists: the marker at `list_indent`, the text this far after the widest marker (else the text at `list_indent`, the marker a space before it, as asciidoctor-pdf). |
@@ -209,6 +216,7 @@ its pages: `[colophon%notitle%noheader%nofooter]` for a copyright page.
 | Key | Default | What it does |
 | --- | --- | --- |
 | `heading_h<n>_content` | the numbered title | A template for the heading's text, with `{{title}}`, `{{numbered-title}}`, `{{number}}` (`1.2.`, a part's `I`), `{{numeral}}` (`1`, `I`) and `{{signifier}}` (`Chapter`, `Part`). A chapter's label on a line of its own, in gray: `"{{#numeral}}<font color=\"#8C8C8C\">{{signifier}} {{numeral}}</font>\n{{/numeral}}{{title}}"` (markup attributes in double quotes). |
+| `heading_float_barrier` | `true` | A heading starts after the floating images waiting for the next page; `false` lets it pass them, as Typst's do. |
 | `heading_h<n>_leading` | the base leading | Under `base_leading`, the space between the heading's lines (a part's title: `5`). |
 | `heading_h<n>_vertical_align` | `top` | `middle` or `bottom`: a heading that starts its page (a part's title page) in the middle or at the bottom of it, as Typst's `align(horizon)`. |
 

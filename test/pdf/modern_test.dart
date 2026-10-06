@@ -1801,6 +1801,61 @@ base:
       );
     });
 
+    test('a text file as an image: its text, preformatted', () {
+      File('${_dir.path}/art.txt').writeAsStringSync('+--+\n|  |  X\n+--+\n');
+      final pdf = _pdf(
+        '= Doc\n\n.Art\nimage::art.txt[]\n',
+        theme: 'image_align: center\n',
+      );
+      final art = words(pdf);
+      expect(art.map((w) => w.$1), containsAllInOrder(['+--+', '|', 'X']));
+      // The block centered, its lines at its left: the X keeps its column.
+      final top = art.firstWhere((w) => w.$1 == '+--+');
+      final x = art.firstWhere((w) => w.$1 == 'X');
+      expect(top.$3, greaterThan(200));
+      expect(x.$3 - top.$3, greaterThan(20));
+      expect(art.map((w) => w.$1), contains('Art'));
+    });
+
+    test('heading_min_height_after: auto keeps a heading with its text', () {
+      // A heading near the bottom, a three-line paragraph after it (too
+      // short to split): both on the next page.
+      final filler = [for (var i = 0; i < 42; i++) 'Filler $i.\n'].join('\n');
+      final source =
+          '= Doc\n\n$filler\n== Heading\n\n${'Long words here. ' * 24}\n';
+      final kept = _pdf(source, theme: 'heading_min_height_after: auto\n');
+      final heading = word(kept, 'Heading');
+      final text = word(kept, 'Long');
+      expect(heading.$2, text.$2);
+    });
+
+    test('a concealed index term keeps the space before it', () {
+      final pdf = _pdf('When (((HTML)))HTML was.\n');
+      expect(_pages(pdf).first.join(' '), contains('When HTML was.'));
+    });
+
+    test('a URL breaks where Typst breaks a link', () {
+      final pdf = _pdf(
+        '${'word ' * 12}https://example.org/2016/01/18/a-long-path-here.html\n',
+      );
+      final lines = _pages(pdf).first;
+      // Broken inside the address, after a slash before a digit (where
+      // the gem's breaks after every slash would too, but not before the
+      // hyphen's word: 'a-long' stays whole).
+      expect(lines.first, endsWith('/01/'));
+      expect(lines[1], startsWith('18/a-long'));
+    });
+
+    test('<category>_caption_indent sets a caption in', () {
+      const source = '= Doc\n\n.Code\n----\nx\n----\n';
+      final plain = word(_pdf(source), 'Code').$3;
+      final set = word(
+        _pdf(source, theme: 'code_caption_indent: 12\n'),
+        'Code',
+      );
+      expect(set.$3 - plain, closeTo(12, 0.01));
+    });
+
     test('<category>_box_decoration_break: clone', () {
       final source = '= Doc\n\n****\n${'Line of text.\n\n' * 80}****\n';
       final open = _pdf(source, theme: 'sidebar_padding: 30\n');

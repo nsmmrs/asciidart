@@ -64,6 +64,8 @@ List<_Word> _words(String pdf, int page) {
             '-',
           ]).stdout
           as String;
+  // Callout markers left out: asciidart marks them as artifacts (not in
+  // the text), Typst doesn't.
   return [
     for (final m in RegExp(
       r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)</word>',
@@ -80,5 +82,5 @@ List<_Word> _words(String pdf, int page) {
         right: double.parse(m[3]!),
         bottom: double.parse(m[4]!),
       ),
-  ];
+  ].where((w) => !RegExp(r'^\[\d+\]$').hasMatch(w.text)).toList();
 }
