@@ -113,9 +113,15 @@ chapter's unnumbered HTML Notes (the old site built chapters one by one);
 chapter 7's first sections at section level; the Opportunity boxes
 without a label; chapter 9's closing quote in small capitals; a stray
 callout in chapter 6; `page-path` on each part and chapter; the site's
-docinfo (colors, footer, the Typst site's color customizer); the
+docinfo (footer, the Typst site's color customizer); the
 EPUB's ISBN, editor and cover; `build.sh` for each format, as the Typst
-edition's justfile. Every feature is the AsciiDoc's own or asciidart's
+edition's justfile. Then the Typst edition's text: its listings (rewrapped
+to 73 columns, its callout changes), its later wording (a word-level merge
+that keeps this edition's markup and index terms), its chapter titles and
+figure references by number; and its look: caption, footnote and website
+navigation templates (ADR-0010), the website's and the EPUB's stylesheets
+after the Typst edition's, its anchors as section ids, the title page and
+the dedication as its. Every feature is the AsciiDoc's own or asciidart's
 (each in `doc/pdf.md` or `doc/books.md`); none is a workaround.
 
 | Typst edition | AsciiDoc | Status |
@@ -123,24 +129,24 @@ edition's justfile. Every feature is the AsciiDoc's own or asciidart's
 | Title page: the title in Jaro, upper case, slanted | Document title, `title_page` theme keys (`font_style: italic`: Jaro has no italic, the modern engine slants it) | Done |
 | Copyright and dedication pages without a heading or running content | `[colophon%notitle%noheader%nofooter]`, `[dedication%...]` | Done |
 | Foreword (page 1), then the contents | `[preface]`, `toc::[]`, `page_numbering_start_at: 4` | Done |
-| Contents: no dot leaders, no numbers, four levels | `toc` theme keys, `toc_numbered: false`, `toclevels` | Done |
+| Contents: no dot leaders, no numbers, four levels | `toc` theme keys, `toc_entry_content: '{{title}}'`, `toclevels` | Done |
 | Part openers alone on a recto page, no running content | `:media: prepress`, `heading_part_break_after: always` | Done |
-| Chapter openers: sunk, a gray "Chapter N" line, no running content | `heading_h2_padding`, `heading_h2_label_display: block` | Done |
-| Running heads: `14 · I Hypermedia Concepts`, `3. A Web 1.0 Application · 71` | `header` theme keys, `header_title_style: numeral` | Done |
+| Chapter openers: sunk, a gray "Chapter N" line, no running content | `heading_h2_padding`, `heading_h2_content` (a template) | Done |
+| Running heads: `14 · I Hypermedia Concepts`, `3. A Web 1.0 Application · 71` | `header` theme keys, `{{#part-numeral}}...{{/part-numeral}}` templates | Done |
 | Introduction unnumbered; numbers to four levels | `:sectnums!:` around it, `sectnumlevels` | Done |
 | HTML Notes boxed, and in the contents | `[.html-note]` sections, `section_role_html-note_*` theme keys | Done |
 | Sidebars: a gray fill, rules above and below, sans | `sidebar` theme keys | Done |
 | "Opportunity" boxes: a blue fill, rules, a bold title, no label | `[IMPORTANT]` with a title, `:important-caption:` empty, `admonition` theme keys | Done |
-| Listings: "Listing N" captions, callouts | Titles, `listing-caption`, callouts | Done |
-| Callout markers `[1]` in bold gray old-style sans; explanations a numbered list | `conum_glyphs: '[%d]'`, `conum_font_*`, `callout_list_marker_content: '%d.'` | Done |
+| Listings: "Listing N:" captions, callouts | Titles, `listing-caption-template: pass:[{{caption}} {{number}}: ]`, callouts | Done |
+| Callout markers `[1]` in bold gray old-style sans; explanations a numbered list | `conum_glyphs: '[{{number}}]'`, `conum_font_*`, `callout_list_marker_content: '{{number}}.'` | Done |
 | Definition terms run in, hanging indent | `description_list_term_display: inline` | Done |
 | Ordered list numbers in old-style sans | `olist_marker_font_family`, `olist_marker_font_variant_numeric` | Done |
 | Quote attributions at the right | `quote_cite_text_align: right` | Done |
-| Spacing: lists, figures, quotes, sidebars, definition lists each their own | `<category>_margin_top`, `<category>_margin_bottom` | Done (319 pages to 316) |
+| Spacing: lists, figures, quotes, sidebars, definition lists each their own | `<category>_margin_top`, `<category>_margin_bottom`, `sidebar_title_margin_bottom` | Done (317 pages to 316) |
 | Listings highlighted | `source-highlighter=highlight.js` | Done |
-| Figures: "Figure N" captions below, centered | `image_caption_*` theme keys | Done |
+| Figures: "Figure N:" captions below, centered; referred to by number | `image_caption_*` theme keys, `figure-caption-template`, `:xrefstyle: short` | Done |
 | Figures at the top or bottom of their page, or the next page's top when they don't fit, the text filling in | `image_placement: auto` | Done |
-| Footnotes at the bottom of the page, numbered per page | `footnote:[]` (the modern engine's default), `footnotes_numbering: page` | Done |
+| Footnotes at the bottom of the page, numbered per page, a superscript number | `footnote:[]` (the modern engine's default), `footnotes_numbering: page`, `footnotes_reference_content`, `footnotes_label_content`, `footnote-reference-template` | Done |
 | Links show their URL in a footnote | `:show-link-uri: footnote` | Done |
 | Justified, hyphenated, first-line indents | Modern engine, `prose` theme keys | Done |
 | Small capitals | `[.sc]#...#`, `role_sc_font_variant` | Done |
@@ -150,37 +156,41 @@ edition's justfile. Every feature is the AsciiDoc's own or asciidart's
 | Website: a page per front matter part, part and chapter, previous and next | `multipage_html5` | Done |
 | Website: the same URLs (`/hypermedia-a-reintroduction/`) and a full contents | `page-path` on each part and chapter, `multipage-toclevels` | Done |
 | Website: footer, colors, color customizer | `docinfo=shared` (the edition's own script, as the Typst site's) | Done |
+| Website: the Typst site's stylesheet (fonts, layout, dark mode), a Contents box on each page, a contents page with numbered chapters, no section numbers | `stylesheet`, `linkcss`, `multipage-page-toclevels`, `multipage_toc.mustache`, the list's classes (`chapter introduction`), `-a sectnums!` | Done |
+| Website: "Previous: Title", "Next: Title" | `multipage_nav.mustache` with `{{basic-title}}` | Done |
+| Website: the Typst site's anchors (`#what-is-hypermedia-`) | `:idprefix:`, `:idseparator: -`, explicit ids where punctuation differs | Done (246 of 257; the rest are titles repeated in other chapters) |
 | Website and EPUB: listings highlighted | `source-highlighter=highlight.js` (the EPUB packs the theme) | Done |
-| EPUB: cover, rights, ISBN, editor | `front-cover-image`, `copyright`, `isbn`, `editor` | Done |
+| EPUB: cover, rights, ISBN (its identifier), editor | `front-cover-image`, `copyright`, `isbn`, `epub-unique-identifier: isbn`, `editor` | Done |
+| EPUB: pandoc's stylesheet, no section numbers | `epub3-stylesdir`, `-a sectnums!` | Done |
+| Title page: the title large, on two lines, at the inner margin | `title_page_title_font_size`, `_line_height`, `_margin_left` | Done |
+| Dedication: three lines in the middle of the page | `section_role_<role>_vertical_align: middle`, `role_<role>_text_indent`, `role_<role>_margin_bottom` | Done |
 
 ### Spacing against the Typst edition
 
 `tool/hs/spacing.dart TYPST.pdf ASCIIDOC.pdf` measures the distance (in
 points, from a line's top to the next one's) between the same passages
 in both editions. With the edited edition's theme (the per-element
-`<category>_margin_*` keys), the AsciiDoc edition has 319 pages to the
-Typst edition's 316. What is left: the Typst authors rewrapped their code
-to 73 columns (fewer listing lines wrap there), a listing's caption sits
-2.6 points higher, a sidebar's text 1.6 points lower.
+`<category>_margin_*` keys), the AsciiDoc edition has 317 pages to the
+Typst edition's 316, every probe within half a point.
 
 | Probe | Typst | AsciiDoc | Difference |
 | --- | --- | --- | --- |
 | paragraph to paragraph (line pitch) | 15.1 | 15.1 | -0.0 |
-| paragraph to section heading | 25.0 | 26.4 | +1.3 |
-| section heading to quote | 19.7 | 20.4 | +0.7 |
-| quote to its attribution | 33.5 | 34.4 | +0.9 |
-| quote attribution to paragraph | 19.9 | 20.5 | +0.6 |
+| paragraph to section heading | 25.0 | 25.1 | +0.0 |
+| section heading to quote | 19.7 | 19.7 | -0.0 |
+| quote to its attribution | 33.5 | 33.5 | +0.0 |
+| quote attribution to paragraph | 19.9 | 19.9 | -0.0 |
 | paragraph to definition term | 21.1 | 21.1 | -0.0 |
 | definition to paragraph | 21.1 | 21.1 | -0.0 |
-| paragraph to listing caption | 21.6 | 19.0 | -2.6 |
-| paragraph to code (no caption) | 21.8 | 23.3 | +1.5 |
+| paragraph to listing caption | 21.6 | 21.6 | +0.0 |
+| paragraph to code (no caption) | 21.8 | 21.8 | -0.0 |
 | listing caption to code | 14.2 | 13.8 | -0.4 |
 | code line pitch | 11.3 | 11.4 | +0.1 |
 | code to callout list | 18.4 | 18.5 | +0.1 |
 | callout list item to item | 15.1 | 15.1 | -0.0 |
 | callout list to paragraph | 15.1 | 15.1 | -0.0 |
 | bullet item to item | 15.1 | 15.1 | -0.0 |
-| sidebar title to text | 15.9 | 17.5 | +1.6 |
+| sidebar title to text | 15.9 | 15.9 | -0.0 |
 | paragraph to sidebar | 47.4 | 47.4 | -0.0 |
 | subsection heading to paragraph | 16.9 | 16.9 | -0.0 |
 
@@ -192,20 +202,20 @@ DocBook and EPUB.
 
 | Check | Result | Detail |
 | --- | --- | --- |
-| PDF build | pass | 10422 ms, 2340 KB, 0 errors, 0 warnings |
-| HTML build | pass | 1039 ms, 1295 KB, 0 errors, 0 warnings |
-| EPUB 3 build | pass | 1533 ms, 2738 KB, 0 errors, 0 warnings |
-| DocBook 5 build | pass | 631 ms, 902 KB, 0 errors, 0 warnings |
-| Multi-page HTML build | pass | 1076 ms, 43 KB, 0 errors, 0 warnings |
+| PDF build | pass | 12465 ms, 2319 KB, 0 errors, 0 warnings |
+| HTML build | pass | 1049 ms, 1293 KB, 0 errors, 0 warnings |
+| EPUB 3 build | pass | 1644 ms, 2735 KB, 0 errors, 0 warnings |
+| DocBook 5 build | pass | 539 ms, 901 KB, 0 errors, 0 warnings |
+| Multi-page HTML build | pass | 1147 ms, 5 KB, 0 errors, 0 warnings |
 | PDF byte-stable across runs | pass | SOURCE_DATE_EPOCH=0 |
-| PDF has each listing line once (#122) | pass | 600 distinct lines of 24+ characters: 0 missing, 0 repeated |
+| PDF has each listing line once (#122) | pass | 644 distinct lines of 24+ characters: 0 missing, 0 repeated |
 | PDF crops no text (#106) | pass | 0 words past the page edge, 0 past the margin |
 | PDF index with page numbers | pass | 329 entries with page numbers |
 | PDF index lists each page once | pass | no page listed twice for a term |
 | PDF front matter roman, body arabic from 1 | pass | first labels i ii iii iv 1 2; "1" on page 5 |
-| PDF time for the whole book | pass | 10422 ms for 337 pages |
+| PDF time for the whole book | pass | 12465 ms for 317 pages |
 | HTML index with links | pass | 356 links to uses |
-| Multi-page HTML links resolve | pass | 24 pages, 1627 links, 0 broken |
-| HTML callouts linked both ways (callout-links) | pass | 502 markers, 489 items |
+| Multi-page HTML links resolve | pass | 25 pages, 2031 links, 0 broken |
+| HTML callouts linked both ways (callout-links) | pass | 495 markers, 489 items |
 | DocBook 5 validates (RELAX NG 5.0) | pass | valid |
 | EPUBCheck passes | pass | no errors |

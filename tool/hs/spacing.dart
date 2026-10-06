@@ -46,8 +46,8 @@ const _probes = <(String, String, String)>[
   ),
   (
     'paragraph to listing caption',
-    'Consider a simple anchor tag',
-    'A simple hyperlink',
+    'Here is what the code looks like for this handler',
+    'A handler for server-side search',
   ),
   (
     'paragraph to code (no caption)',
