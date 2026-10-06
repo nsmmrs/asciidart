@@ -101,7 +101,7 @@ dart run tool/hs_acceptance.dart --exe build/asciidart \
   --source ~/Work/ports/hypermedia-systems-asciidart --report benchmark/HS.md
 ```
 
-The edits so far: a master file at the root that sets its PDF theme
+The edits: a master file at the root that sets its PDF theme
 (after `lib/style.typ`, with Libertinus and Jaro) and generates the index;
 the front matter (copyright page, dedication, foreword) as `[colophon]`,
 `[dedication]` and `[preface]` sections, the first two `%notitle`; the
@@ -110,8 +110,10 @@ chapter's unnumbered HTML Notes (the old site built chapters one by one);
 chapter 7's first sections at section level; the Opportunity boxes
 without a label; chapter 9's closing quote in small capitals; a stray
 callout in chapter 6; `page-path` on each part and chapter; the site's
-docinfo (colors, footer, the Typst site's color customizer); `build.sh`
-for each format, as the Typst edition's justfile.
+docinfo (colors, footer, the Typst site's color customizer); the
+EPUB's ISBN, editor and cover; `build.sh` for each format, as the Typst
+edition's justfile. Every feature is the AsciiDoc's own or asciidart's
+(each in `doc/pdf.md` or `doc/books.md`); none is a workaround.
 
 | Typst edition | AsciiDoc | Status |
 | --- | --- | --- |
