@@ -35,6 +35,9 @@ line tool, and (compiled to JavaScript) an npm package.
 - **Books as websites and indexes everywhere.** `-b multipage_html5`
   writes one linked page per chapter; an `[index]` section lists the index
   terms in HTML and EPUB too; `-a callout-links` links callouts both ways.
+  [`doc/books.md`](doc/books.md) shows one source becoming a print PDF, a
+  website, an EPUB and DocBook, and how to move from asciidoctor-pdf or a
+  browser-based print pipeline.
 - **Fast.** The compiled command converts a document 5–10x faster than the
   `asciidoctor` gem end to end, and about 2x faster in process
   ([`benchmark/BASELINE.md`](benchmark/BASELINE.md)).
