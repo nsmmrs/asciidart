@@ -115,7 +115,7 @@ for each format, as the Typst edition's justfile.
 
 | Typst edition | AsciiDoc | Status |
 | --- | --- | --- |
-| Title page: the title in Jaro, upper case, slanted | Document title, `title_page` theme keys | Slant: FEAT-fq3c90 |
+| Title page: the title in Jaro, upper case, slanted | Document title, `title_page` theme keys (`font_style: italic`: Jaro has no italic, the modern engine slants it) | Done |
 | Copyright and dedication pages without a heading or running content | `[colophon%notitle%noheader%nofooter]`, `[dedication%...]` | Done |
 | Foreword (page 1), then the contents | `[preface]`, `toc::[]`, `page_numbering_start_at: 4` | Done |
 | Contents: no dot leaders, four levels | `toc` theme keys, `toclevels` | Done |
