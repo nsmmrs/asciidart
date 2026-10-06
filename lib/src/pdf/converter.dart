@@ -2786,10 +2786,22 @@ final class PdfConverter extends BuiltInConverter
     }
     final next = _nextEnclosedBlock(node);
     final innerMargin = _n('prose_margin_inner');
-    final marginBottom =
+    var marginBottom =
         innerMargin != null && next?.context == BlockContext.paragraph
         ? innerMargin.toDouble()
         : _marginBelow(node, next: next, fallback: 'prose');
+    // The modern engine: a role's indent and space below in place of the
+    // prose's (`role_<role>_text_indent`, `role_<role>_margin_bottom`).
+    if (_engine == PdfEngine.modern) {
+      for (final role in roles) {
+        if (_length('role_${role}_text_indent', font.size) case final value?) {
+          indent = value;
+        }
+        if (_n('role_${role}_margin_bottom') case final value?) {
+          marginBottom = value.toDouble();
+        }
+      }
+    }
     var content = node.content() ?? '';
     if (font.transform case final transform? when transform != 'none') {
       content = transformText(content, transform);

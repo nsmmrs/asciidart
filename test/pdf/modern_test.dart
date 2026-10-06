@@ -923,6 +923,36 @@ base:
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 
+  test("a paragraph role's indent and space below", () {
+    double left(String pdf, String word) => double.parse(
+      RegExp(
+        'xMin="([\\d.]+)" yMin="[\\d.]+" xMax="[\\d.]+" yMax="[\\d.]+">$word<',
+      ).firstMatch(
+        Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String,
+      )![1]!,
+    );
+    const source = '= Doc\n\nFirst.\n\n[.flat]\nSecond.\n\nThird.\n';
+    const theme = 'prose_text_indent_inner: 20\nprose_margin_bottom: 0\n';
+    final plain = _pdf(source, theme: theme);
+    final flat = _pdf(
+      source,
+      theme: '${theme}role_flat_text_indent: 0\nrole_flat_margin_bottom: 30\n',
+    );
+    expect(left(plain, 'Second.'), closeTo(left(plain, 'First.') + 20, 1));
+    expect(left(flat, 'Second.'), closeTo(left(flat, 'First.'), 1));
+    // The space below it: 30 points more before the next.
+    double top(String pdf, String word) => double.parse(
+      RegExp('yMin="([\\d.]+)" xMax="[\\d.]+" yMax="[\\d.]+">$word<')
+          .firstMatch(
+            Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String,
+          )![1]!,
+    );
+    expect(
+      top(flat, 'Third.') - top(flat, 'Second.'),
+      closeTo(top(plain, 'Third.') - top(plain, 'Second.') + 30, 1),
+    );
+  }, skip: _tools ? false : 'needs poppler');
+
   group('floating images', () {
     final svg = base64.encode(
       utf8.encode(
