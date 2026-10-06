@@ -231,11 +231,13 @@ Future<void> main(List<String> args) async {
   final indexLinks = RegExp('href="#_indexterm_').allMatches(html).length;
   row('HTML index with links', indexLinks > 0, '$indexLinks links to uses');
 
-  // The website: every link between its pages resolves.
+  // The website: every link between its pages resolves (pages may be in
+  // directories of their own: `page-path`).
+  final siteDir = '${outDir.path}/site';
   final site = {
-    for (final file in Directory('${outDir.path}/site').listSync())
+    for (final file in Directory(siteDir).listSync(recursive: true))
       if (file is File && file.path.endsWith('.html'))
-        file.uri.pathSegments.last: file.readAsStringSync(),
+        file.path.substring(siteDir.length + 1): file.readAsStringSync(),
   };
   final siteIds = {
     for (final MapEntry(key: name, value: page) in site.entries)
@@ -247,7 +249,9 @@ Future<void> main(List<String> args) async {
     for (final m in RegExp(
       '<a [^>]*?href="([^"#:]*)(?:#([^"]*))?"',
     ).allMatches(page)) {
-      final target = m[1]!.isEmpty ? name : m[1]!;
+      final path = m[1]!;
+      if (path.startsWith('/')) continue;
+      final target = _resolvePage(name, path);
       if (!target.endsWith('.html')) continue;
       siteLinks++;
       final id = m[2];
@@ -436,6 +440,23 @@ void _writeReport(File file, String table, String heading) {
     ...lines.sublist(end),
   ];
   file.writeAsStringSync('${kept.join('\n')}\n');
+}
+
+/// The page a link to [path] on page [from] goes to (both relative to
+/// the site's root; a directory is its `index.html`).
+String _resolvePage(String from, String path) {
+  if (path.isEmpty) return from;
+  final segments = from.split('/')..removeLast();
+  for (final segment in path.split('/')) {
+    if (segment == '..') {
+      if (segments.isNotEmpty) segments.removeLast();
+    } else if (segment.isNotEmpty && segment != '.') {
+      segments.add(segment);
+    }
+  }
+  return path.endsWith('/')
+      ? [...segments, 'index.html'].join('/')
+      : segments.join('/');
 }
 
 /// [page] without its running content: the first and the last line with
