@@ -1666,4 +1666,152 @@ base:
       expect(_pages(pdf).first, ['Some SMALL CAPS here.']);
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
+  group('Typst parity keys', () {
+    /// Each word of [pdf] with its box: (page, left, top, right, bottom).
+    List<(String, int, double, double, double, double)> words(String pdf) {
+      final xml =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      final out = <(String, int, double, double, double, double)>[];
+      var page = -1;
+      for (final m in RegExp(
+        r'<page |<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" '
+        r'yMax="([\d.]+)">([^<]*)</word>',
+      ).allMatches(xml)) {
+        if (m[0] == '<page ') {
+          page++;
+          continue;
+        }
+        out.add((
+          m[5]!,
+          page,
+          double.parse(m[1]!),
+          double.parse(m[2]!),
+          double.parse(m[3]!),
+          double.parse(m[4]!),
+        ));
+      }
+      return out;
+    }
+
+    (String, int, double, double, double, double) word(String pdf, String w) =>
+        words(pdf).firstWhere((x) => x.$1 == w);
+
+    test('a toc macro that opens a section is its contents', () {
+      final pdf = _pdf(
+        '= Book\n:doctype: book\n:toc: macro\n\n[preface]\n== Before\n\n'
+        'Text.\n\n[#contents]\n== Contents\n\ntoc::[]\n\n== Chapter\n\n'
+        'Text.\n',
+      );
+      final pages = _pages(pdf);
+      final page = pages.indexWhere((p) => p.contains('Contents'));
+      // The heading, then the entries on its page: the section listed
+      // too, no title of the toc's own.
+      expect(pages[page].join(' '), contains('Before'));
+      expect(pages[page].where((l) => l.startsWith('Contents')), hasLength(2));
+      expect(pages.expand((p) => p).join(' '), isNot(contains('Table of')));
+    });
+
+    test('toc_entry_spacing: the space between entries', () {
+      const source =
+          '= Book\n:doctype: book\n:toc:\n\n== One\n\nA.\n\n== Two\n\nB.\n';
+      double gap(String pdf) =>
+          words(pdf).where((w) => w.$1 == 'Two').first.$4 -
+          words(pdf).where((w) => w.$1 == 'One').first.$4;
+      final plain = _pdf(source, theme: 'base_leading: 0.6em\n');
+      final spaced = _pdf(
+        source,
+        theme: 'base_leading: 0.6em\ntoc_entry_spacing: 20\n',
+      );
+      expect(gap(spaced) - gap(plain), greaterThan(5));
+    });
+
+    test('heading_h1_vertical_align: a part title in the middle', () {
+      final pdf = _pdf(
+        '= Book\n:doctype: book\n\n= Part\n\n== Chapter\n\nText.\n',
+        theme: 'heading_h1_vertical_align: middle\n',
+      );
+      final part = word(pdf, 'Part');
+      // A Letter or A4 page: the title near its middle.
+      expect(part.$4, greaterThan(300));
+      expect(part.$4, lessThan(500));
+    });
+
+    test("a section's heading margin collapses with the space above", () {
+      const source = '= Doc\n\nText.\n\n== Section\n\nMore.\n';
+      double gap(String pdf) => word(pdf, 'Section').$4 - word(pdf, 'Text.').$4;
+      final a = _pdf(source, theme: 'heading_margin_top: 4\n');
+      final b = _pdf(source, theme: 'heading_margin_top: 8\n');
+      // Below the block's own space (12, the default): no difference.
+      expect(gap(b) - gap(a), closeTo(0, 0.01));
+      final c = _pdf(source, theme: 'heading_margin_top: 30\n');
+      expect(gap(c) - gap(a), closeTo(18, 0.01));
+    });
+
+    test('footnotes_indent and footnotes_label_gap', () {
+      const source = '= Doc\n\nText.footnote:[A note here.]\n';
+      final plain = word(_pdf(source), 'note');
+      final set = word(
+        _pdf(source, theme: 'footnotes_indent: 20\nfootnotes_label_gap: 5\n'),
+        'note',
+      );
+      expect(set.$3 - plain.$3, closeTo(25, 0.5));
+    });
+
+    test('base_typographic_scripts: superscripts in the superior figures', () {
+      const fonts =
+          'font:\n  catalog:\n    merge: true\n    Scripts:\n'
+          '      normal: libertinus-scripts.otf\n'
+          'base_font_family: Scripts\n';
+      const source = 'Text^2^ and more.\n';
+      final raised = _content(_pdf(source, theme: fonts));
+      final typographic = _content(
+        _pdf(source, theme: '${fonts}base_typographic_scripts: true\n'),
+      );
+      // Smaller and raised, or at the text's size on its baseline.
+      expect(raised, contains('/F1 6.1215 Tf'));
+      expect(typographic, isNot(contains('6.1215 Tf')));
+      final baselines = {
+        for (final m in RegExp(r'[\d.]+ ([\d.]+) Td').allMatches(typographic))
+          m[1]!,
+      };
+      expect(baselines.where((y) => double.parse(y) > 700), hasLength(1));
+    });
+
+    test('description_list_term_gap: the space after a run-in term', () {
+      const source = 'Term:: Description here.\n';
+      const inline = 'description_list_term_display: inline\n';
+      final en = word(_pdf(source, theme: inline), 'Description').$3;
+      final wide = word(
+        _pdf(source, theme: '${inline}description_list_term_gap: 30\n'),
+        'Description',
+      ).$3;
+      expect(wide, greaterThan(en + 20));
+    });
+
+    test('a highlighted token that runs over lines keeps its indentation', () {
+      final pdf = _pdf(
+        ':source-highlighter: highlight.js\n\n[source,html]\n----\n'
+        '<button onclick="one\n                two\nthree">\n----\n',
+      );
+      // Sixteen spaces in: further in than the line after.
+      expect(
+        word(pdf, 'two').$3 - word(pdf, 'three&quot;&gt;').$3,
+        greaterThan(50),
+      );
+    });
+
+    test('<category>_box_decoration_break: clone', () {
+      final source = '= Doc\n\n****\n${'Line of text.\n\n' * 80}****\n';
+      final open = _pdf(source, theme: 'sidebar_padding: 30\n');
+      final cloned = _pdf(
+        source,
+        theme: 'sidebar_padding: 30\nsidebar_box_decoration_break: clone\n',
+      );
+      double secondPageTop(String pdf) =>
+          words(pdf).where((w) => w.$2 == 1).first.$4;
+      // The second page's piece starts below its own padding.
+      expect(secondPageTop(cloned) - secondPageTop(open), closeTo(30, 0.5));
+    });
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }

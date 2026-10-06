@@ -34,6 +34,7 @@ newline is `\n` in a double-quoted YAML string.
 | `base_line_breaking` | `auto` | How lines break, as Typst breaks them: `auto` breaks justified text where the lines' costs are least (Typst's optimizer: even spacing, few hyphens, no lone word on the last line) and other text one line at a time; `optimal` optimizes any text (ragged lines balanced); `greedy` fills one line at a time. A style change inside a word is never a break. |
 | `base_leading` | none | Typst's lines: each line's box from its cap height to its baseline, this space between boxes (`0.6em`, or points); a text's first line has its cap height at the top and its last line ends at its baseline, so the margins between blocks are Typst's spacing. In place of `base_line_height`; a category's own (`title_page_title_leading`, `code_leading`...) for its text. |
 | `base_overhang` | `false` | Punctuation and dashes at the end of a justified line hang into the margin, as Typst's `overhang` (the line stretches into a part of the character's width: 0.55 of a hyphen, 0.8 of a period or comma, 0.3 of a colon, 0.2 of a dash). |
+| `base_typographic_scripts` | `false` | Superscripts and subscripts (footnote references) in the font's own glyphs for them (its `sups` and `subs` features) at the text's size, when it has them for every character, as Typst's `super` and `sub`; else smaller and raised as usual. |
 | `base_justify_width` | room | `widest`: justified lines are set to the width of the paragraph's widest line (an overfull line shrunk to the room), as Typst sets a paragraph in a block sized to its content (its `show par: it => block(it)` rule; in a section role: `section_role_<role>_base_justify_width`). |
 | `prose_orphans` | `2` | The fewest lines of a paragraph left at the bottom of a page. |
 | `prose_widows` | `2` | The fewest lines of a paragraph carried to the top of the next page. |
@@ -52,21 +53,33 @@ categories `prose` (paragraphs), `code` (listing and literal blocks),
 `thematic_break`, `pass` and `stem`. Below a block, the space is its own
 or `block_margin_bottom` (asciidoctor-pdf's one setting for all blocks),
 and at least the space the next block wants above it: adjacent margins
-collapse to the larger, as in CSS. Above the first block after a heading,
-what the heading's margin below leaves; none at the start of another
-container, or at the top of a page.
+collapse to the larger, as in CSS, also with the space above the next
+section's heading. Above the first block after a heading, what the
+heading's margin below leaves; none at the start of another container,
+or at the top of a page. A block that ends with a page break ends there:
+none of its space below goes to the next page.
 
 A quote's attribution has its own space above (`quote_cite_margin_top`,
 `verse_cite_margin_top`; `block_margin_bottom` by default) and alignment
-(`quote_cite_text_align: right`). A sidebar's title has its own space below
+(`quote_cite_text_align: right`). Inside a quote or a description list,
+`quote_base_*` and `description_list_base_*` keys stand for the base keys
+(`quote_base_justify_width: widest`: its lines justified to the widest,
+as Typst sets a quote or terms, blocks sized to their content). A sidebar's title has its own space below
 (`sidebar_title_margin_bottom`; `heading_margin_bottom` by default).
 
 ### Contents, lists, title page
 
+A `toc::[]` macro that opens a section (its first block) is that
+section's contents: under its heading, on its page, without a title of
+its own, and the section listed in itself, as Typst's outline under a
+`= Contents` heading.
+
 | Key | Default | What it does |
 | --- | --- | --- |
 | `toc_entry_content` | the numbered title | A template for each contents entry: `'{{title}}'` lists titles without their numbers (also `{{number}}`, `{{numbered-title}}`). |
+| `toc_entry_spacing` | the leading under `base_leading`, else none | The space between contents entries (under Typst's model each entry is a paragraph). |
 | `description_list_term_display` | `block` | `inline` runs a term in before its description, in the term's font, the lines after the first hanging by `description_list_description_indent`. |
+| `description_list_term_gap` | an en space | With `inline` terms, the space after the term (`0.6em`, as Typst's terms separator). |
 | `olist_marker_font_variant_numeric` | none | An ordered list's numbers in old-style (`oldstyle-nums`) or other figures (with `olist_marker_font_family`, `_font_color`...). |
 | `title_page_authors_delimiter` | `, ` | Its spaces are kept as written: `'    '` sets the authors in a row with a gap (asciidoctor-pdf collapses them to one). |
 | `list_body_indent` | none | Typst's lists: the marker at `list_indent`, the text this far after the widest marker (else the text at `list_indent`, the marker a space before it, as asciidoctor-pdf). |
@@ -112,6 +125,9 @@ document); one that doesn't fit goes on at the bottom of the next page.
 | `footnotes_reference_content` (theme) | `[{{number}}]` | A template for a reference, raised in the text; the number links to the note. `'{{number}}'` gives a plain superscript number. |
 | `footnotes_label_content` (theme) | `[{{number}}] ` | A template for the label before a note; the number links back to the reference. |
 | `footnotes_margin_top` (theme) | the font size | The space between the text and the rule. |
+| `footnotes_indent` (theme) | none | How far each note's first line is set in (`1em`: of the notes' size, as Typst's). |
+| `footnotes_label_gap` (theme) | none | The space after a note's label (`0.05em`, as Typst's). |
+| `footnotes_item_spacing` (theme) | none | The space above each note (at least half the notes' size between the rule and the first). Under `base_leading` the rule takes no room. |
 | `:show-link-uri: footnote` | | A link's URI in a footnote (print books), not after the link text in brackets (`show-link-uri` set, or print media). A bare link shows its URI already. |
 
 ### Listings
@@ -193,6 +209,8 @@ its pages: `[colophon%notitle%noheader%nofooter]` for a copyright page.
 | Key | Default | What it does |
 | --- | --- | --- |
 | `heading_h<n>_content` | the numbered title | A template for the heading's text, with `{{title}}`, `{{numbered-title}}`, `{{number}}` (`1.2.`, a part's `I`), `{{numeral}}` (`1`, `I`) and `{{signifier}}` (`Chapter`, `Part`). A chapter's label on a line of its own, in gray: `"{{#numeral}}<font color=\"#8C8C8C\">{{signifier}} {{numeral}}</font>\n{{/numeral}}{{title}}"` (markup attributes in double quotes). |
+| `heading_h<n>_leading` | the base leading | Under `base_leading`, the space between the heading's lines (a part's title: `5`). |
+| `heading_h<n>_vertical_align` | `top` | `middle` or `bottom`: a heading that starts its page (a part's title page) in the middle or at the bottom of it, as Typst's `align(horizon)`. |
 
 A section with a role the theme styles is set in a box, as a sidebar is:
 `section_role_<role>_background_color`, `_border_color`, `_border_width`

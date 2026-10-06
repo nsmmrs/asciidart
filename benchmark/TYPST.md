@@ -48,6 +48,7 @@ Each has a card under EPIC-n7s6v0.
 
 | Case | Lines (Typst, asciidart) | Broken alike | Edges | Line tops | First line | Pages |
 | --- | --- | --- | --- | --- | --- | --- |
+| hs-justify-indent | 6, 6 | 6 of 6 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | hyphenate-between-shape-runs | 2, 2 | 0 of 2 | 22.65 | 0.00 | +0.00 | 1, 1 |
 | hyphenate-es-repeat-hyphen | 5, 5 | 1 of 5 | 15.49 | 0.00 | +0.00 | 1, 1 |
 | hyphenate-pt-repeat-hyphen | 3, 3 | 2 of 3 | 3.38 | 0.00 | +0.00 | 1, 1 |

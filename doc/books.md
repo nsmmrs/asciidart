@@ -102,6 +102,18 @@ attribute's value; `{sp}` at the end does too.) Cross references keep
 their text: `Listing 36` with `:xrefstyle: short`, a figure's or an
 image's too.
 
+A book whose every code block is a numbered listing, titled or not (as
+Typst numbers every figure, showing a caption only where it has one),
+counts the untitled ones too with `<kind>-numbering: all`
+(`listing-numbering`, `figure-numbering`, `table-numbering`,
+`example-numbering`): they show no caption, but the titled ones after
+them are numbered past them. A block with the `unnumbered` option
+(`[source%unnumbered,bash]`) isn't counted.
+
+```asciidoc
+:listing-numbering: all
+```
+
 ## Callouts
 
 ```asciidoc

@@ -1636,6 +1636,8 @@ abstract final class Parser {
               block
                 ..title = blockTitle
                 ..assignCaption(attrs.remove('caption'), figure: true);
+            } else {
+              block.assignCaption(null, figure: true);
             }
           }
           attrs['target'] = target;
@@ -2185,6 +2187,9 @@ abstract final class Parser {
       if (captionAttributeName(result.context) != null) {
         result.assignCaption(attrs.remove('caption'));
       }
+    } else if (captionAttributeName(result.context) != null) {
+      // Untitled: numbered all the same with `<kind>-numbering: all`.
+      result.assignCaption(null);
     }
     // TODO eventually remove the style attribute from the attributes hash
     //block.style = attributes.delete 'style'

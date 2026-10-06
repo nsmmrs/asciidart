@@ -311,6 +311,8 @@ final class PdfConverter extends BuiltInConverter
         'greedy' => LineBreaking.greedy,
         _ => LineBreaking.auto,
       },
+      typographicScripts:
+          _theme.value('base_typographic_scripts') == const ThemeBool(true),
       labels: (key) => _layoutLabels[key],
       logger: logger,
     );
@@ -1023,14 +1025,14 @@ final class PdfConverter extends BuiltInConverter
 
   /// Adds the table of contents at [anchor] (the gem's `allocate_toc`):
   /// then a page break when [breakAfter], else the block margin.
-  void _addToc(String anchor, {required bool breakAfter}) {
+  void _addToc(String anchor, {required bool breakAfter, bool titled = true}) {
     _tocDone = true;
     _out
       ..add(CustomBox(const _Nothing(), style: BoxStyle(anchor: anchor)))
       ..add(
         const CustomBox(_Nothing(), style: BoxStyle(anchor: _tocStartAnchor)),
       );
-    _toc(_document);
+    _toc(_document, titled: titled);
     _out.add(
       const CustomBox(_Nothing(), style: BoxStyle(anchor: _tocEndAnchor)),
     );
@@ -1055,7 +1057,16 @@ final class PdfConverter extends BuiltInConverter
     }
     final book = doc.doctype == 'book';
     final macro = placement == 'macro';
-    if (book) {
+    // In the modern engine, a toc macro that opens a section is that
+    // section's contents: on its page, under its heading (no title of
+    // its own), the section listed as any other (a Contents chapter).
+    final parent = node.parent;
+    final ownsSection =
+        _engine == PdfEngine.modern &&
+        macro &&
+        parent is Section &&
+        parent.blocks.firstOrNull == node;
+    if (book && !ownsSection) {
       _out.add(
         BreakBox.page(
           side: _ppbook && !(macro && node.hasOption('nonfacing'))
@@ -1067,6 +1078,7 @@ final class PdfConverter extends BuiltInConverter
     _addToc(
       macro ? node.id ?? 'toc' : _tocStartAnchor,
       breakAfter: book || doc.hasAttr('title-page'),
+      titled: !ownsSection,
     );
     if (macro) {
       _tocNoHeader = node.hasOption('noheader');
@@ -1111,9 +1123,9 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// Adds the table of contents of [doc] (the gem's `ink_toc`).
-  void _toc(Document doc) {
+  void _toc(Document doc, {bool titled = true}) {
     final title = doc.attr('toc-title');
-    if (title != null && title.isNotEmpty) {
+    if (titled && title != null && title.isNotEmpty) {
       final font = _themeFont('toc_title', _headingFont(2));
       _heading(
         title,
@@ -1165,6 +1177,10 @@ final class PdfConverter extends BuiltInConverter
     final margin = (_n('toc_margin_top') ?? 0).toDouble();
     if (margin > 0) _out.add(SpacerBox(margin));
     final indent = (_n('toc_indent') ?? 0).toDouble();
+    // Under Typst's model (base_leading) each entry is a paragraph of its
+    // own: the entries the leading apart (toc_entry_spacing).
+    final gap = (_n('toc_entry_spacing') ?? _typstLeading(toc) ?? 0).toDouble();
+    var first = true;
     void level(List<Section> entries, int levels, double left) {
       for (final entry in entries) {
         // asciidart's `notoc` option: a section left out of the contents.
@@ -1258,9 +1274,12 @@ final class PdfConverter extends BuiltInConverter
                 return _textBox(markup, font, align: 'right', normalize: false);
               },
             ),
-            style: BoxStyle(margin: EdgeInsets(left: left)),
+            style: BoxStyle(
+              margin: EdgeInsets(left: left, top: first ? 0 : gap),
+            ),
           ),
         );
+        first = false;
         if (entryLevels >= entryLevel) {
           level(_sectionsOf(entry), entryLevels, left + indent);
         }
@@ -2261,9 +2280,31 @@ final class PdfConverter extends BuiltInConverter
     if (_engine != PdfEngine.modern || following == null) return base;
     final own =
         _n('${_spacingCategory(node)}_margin_bottom')?.toDouble() ?? base;
-    if (following is Section) return own;
+    // A section's heading: the larger of the two, the heading's margin
+    // above taking its part.
+    if (following is Section) {
+      return math.max(0, own - _sectionMarginTop(following));
+    }
     final above = _n('${_spacingCategory(following)}_margin_top') ?? 0;
     return math.max(own, above.toDouble());
+  }
+
+  /// The space above [section]'s heading (its box's, for a section role
+  /// the theme styles).
+  double _sectionMarginTop(Section section) {
+    if (section.hasOption('notitle')) return 0;
+    final level = (section.level ?? 0) + 1;
+    if (_boxedRole(section) case final role?) {
+      final category = 'section_role_$role';
+      return ((_n('${category}_margin_top') ?? 0) +
+              (_n('${category}_heading_margin_top') ??
+                  _n('heading_h${level}_margin_top') ??
+                  _n('heading_margin_top') ??
+                  0))
+          .toDouble();
+    }
+    return (_n('heading_h${level}_margin_top') ?? _n('heading_margin_top') ?? 0)
+        .toDouble();
   }
 
   /// The space above [node] in the modern engine (`<category>_margin_top`)
@@ -2405,6 +2446,7 @@ final class PdfConverter extends BuiltInConverter
           children,
           style: BoxStyle(
             padding: _padding('${category}_padding'),
+            cloneEdges: _cloneEdges(category),
             margin: _outdented(
               EdgeInsets(
                 top: (_n('${category}_margin_top') ?? 0).toDouble(),
@@ -2604,6 +2646,12 @@ final class PdfConverter extends BuiltInConverter
         _ => _font.kerning,
       },
       transform: h('text_transform'),
+      // Under Typst's model: the level's leading (heading_h<n>_leading).
+      leadingKey: [
+        if (role != null) '${role}_heading_h${level}_leading',
+        'heading_h${level}_leading',
+        'heading_leading',
+      ].where((key) => _theme.value(key) != null).firstOrNull,
     );
   }
 
@@ -2681,7 +2729,16 @@ final class PdfConverter extends BuiltInConverter
         : null;
     // Floating images wait for no heading: it follows them.
     final barrier = _engine == PdfEngine.modern;
-    if (padding == null && border == null) {
+    // In the middle or at the bottom of its page, when it starts the page
+    // (a part's title, as Typst's align(horizon) sets it).
+    final verticalAlign = _engine != PdfEngine.modern
+        ? null
+        : switch (_s('${category}_vertical_align')) {
+            'middle' || 'center' => VerticalAlign.middle,
+            'bottom' => VerticalAlign.bottom,
+            _ => null,
+          };
+    if (padding == null && border == null && verticalAlign == null) {
       _out.add(
         CustomBox(
           content,
@@ -2705,6 +2762,7 @@ final class PdfConverter extends BuiltInConverter
           marks: marks,
           decoration: border,
           floatBarrier: barrier,
+          verticalAlign: verticalAlign,
         ),
       ),
     );
@@ -3303,6 +3361,14 @@ final class PdfConverter extends BuiltInConverter
     return boxes;
   }
 
+  /// Whether each piece of a block of theme [category] split across pages
+  /// has its padding and border at its top and bottom (the modern
+  /// engine's `<category>_box_decoration_break: clone`, as CSS's; Typst's
+  /// breakable blocks have their inset so).
+  bool _cloneEdges(String category) =>
+      _engine == PdfEngine.modern &&
+      _s('${category}_box_decoration_break') == 'clone';
+
   /// A block of [children] with the padding, the background and the
   /// border of theme [category], [node]'s anchor, and the block margin
   /// below it.
@@ -3320,6 +3386,7 @@ final class PdfConverter extends BuiltInConverter
           padding: _padding('${category}_padding'),
           margin: EdgeInsets(bottom: _marginBelow(node)),
           keepTogether: node.hasOption('unbreakable'),
+          cloneEdges: _cloneEdges(category),
           anchor: node.id,
           decoration: _blockDecoration(
             category,
@@ -3601,7 +3668,7 @@ final class PdfConverter extends BuiltInConverter
     final children = _collect(() {
       _withFont(category, () {
         if (category == 'quote') {
-          _traverse(node);
+          _withBaseKeys(category, () => _traverse(node));
         } else {
           _out.add(
             CustomBox(
@@ -5321,6 +5388,12 @@ final class PdfConverter extends BuiltInConverter
     // modern engine colors the tokens as the `highlightjs-theme` does
     // (github by default); the gem leaves them as text.
     if (_engine == PdfEngine.modern && source.contains('<span class="hljs-')) {
+      // A line's indentation inside a token (a string that runs over
+      // lines) kept as well: its first space a no-break one.
+      source = source.replaceAllMapped(
+        RegExp(r'(^|\n)((?:<[^>]*>)+) '),
+        (m) => '${m[1]}${m[2]}\u00a0',
+      );
       final theme = _document.attr('highlightjs-theme') ?? 'github';
       if (_highlightStyles.putIfAbsent(theme, () => HighlightStyle.named(theme))
           case final style?) {
@@ -5920,7 +5993,26 @@ final class PdfConverter extends BuiltInConverter
       case 'unordered' || 'ordered':
         _dlistAsList(node, ordered: node.style == 'ordered');
       default:
-        _dlist(node);
+        _withBaseKeys('description_list', () => _dlist(node));
+    }
+  }
+
+  /// Runs [body] with the modern engine's `<category>_base_*` keys in
+  /// place of the base keys (`quote_base_justify_width: widest`: a block
+  /// Typst sizes to its content justifies its lines to the widest).
+  void _withBaseKeys(String category, void Function() body) {
+    if (_engine != PdfEngine.modern) return body();
+    final savedAlign = _baseTextAlign;
+    final savedTheme = _theme;
+    _theme = _theme.overlaid('${category}_base_', 'base_');
+    if (_s('${category}_base_text_align') case final align?) {
+      _baseTextAlign = align;
+    }
+    try {
+      body();
+    } finally {
+      _baseTextAlign = savedAlign;
+      _theme = savedTheme;
     }
   }
 
@@ -6067,10 +6159,17 @@ final class PdfConverter extends BuiltInConverter
       text = '<font name="${termFont.family}">$text</font>';
     }
     final blocks = _collect(() => _traverse(desc));
+    // The space after the term: an en space, or as wide as
+    // `description_list_term_gap` (0.6em, as Typst's terms separator).
+    final gap = switch (_theme.value('description_list_term_gap')) {
+      ThemeNumber(:final value) => '<font width="$value">&nbsp;</font>',
+      ThemeString(:final value) => '<font width="$value">&nbsp;</font>',
+      _ => '&#8194;',
+    };
     _out.add(
       CustomBox(
         _textBox(
-          '$text&#8194;${desc.text}',
+          '$text$gap${desc.text}',
           _font,
           align: _baseTextAlign,
           indent: -hang,
@@ -8345,8 +8444,11 @@ final class PdfConverter extends BuiltInConverter
     );
     final length = _s('footnotes_separator_length') ?? '33.33%';
     final spacing = (_n('footnotes_item_spacing') ?? 0).toDouble();
+    // Under Typst's model (base_leading) the rule takes no room: drawn
+    // on its line, the space above and below it from there.
+    final flat = _typstLeading(_font) != null;
     return DrawingBox(
-      width,
+      flat ? 0 : width,
       (canvas, rect) {
         if (color == null || width <= 0) return;
         final long = length.endsWith('%')
@@ -8358,8 +8460,8 @@ final class PdfConverter extends BuiltInConverter
           ..save()
           ..setStrokeColor(color)
           ..setLineWidth(width)
-          ..moveTo(rect.left, rect.top - width / 2)
-          ..lineTo(rect.left + long, rect.top - width / 2)
+          ..moveTo(rect.left, rect.top - (flat ? 0 : width / 2))
+          ..lineTo(rect.left + long, rect.top - (flat ? 0 : width / 2))
           ..stroke()
           ..restore();
       },
@@ -8369,7 +8471,8 @@ final class PdfConverter extends BuiltInConverter
             final num margin => margin.toDouble(),
             null => _font.size,
           },
-          bottom: math.max(spacing, _font.size / 2),
+          // (Each note has the item spacing above it.)
+          bottom: math.max(spacing, _font.size / 2) - spacing,
         ),
       ),
     );
@@ -8388,6 +8491,17 @@ final class PdfConverter extends BuiltInConverter
     if (_pageFootnotes) {
       _withFont('footnotes', () {
         final spacing = (_n('footnotes_item_spacing') ?? 0).toDouble();
+        // How far each note's first line is set in (footnotes_indent, an
+        // em of the notes' size), and the space after its label
+        // (footnotes_label_gap): a no-break space that wide.
+        final indent = _length('footnotes_indent', _font.size) ?? 0;
+        final gapWidth = _length('footnotes_label_gap', _font.size) ?? 0;
+        final space = _fonts
+            .font(_font.family, _font.style)
+            .widthOf('\u00a0', 1, kerning: false);
+        final gap = gapWidth > 0 && space > 0
+            ? '<font size="${gapWidth / space}">\u00a0</font>'
+            : '';
         final offset = _renderedFootnotes.length;
         final sectionText = node is Section
             ? node.xreftext(doc.attr('xrefstyle'))
@@ -8403,12 +8517,13 @@ final class PdfConverter extends BuiltInConverter
           _notes['_footnoteref_$index'] = CustomBox(
             _textBox(
               '<a id="_footnotedef_$index">$_dummyText</a>'
-              '${_footnoteNoteLabel(index, label)}${footnote.text}',
+              '${_footnoteNoteLabel(index, label)}$gap${footnote.text}',
               _font,
               align: _baseTextAlign,
+              indent: indent,
               hyphenate: true,
             ),
-            style: BoxStyle(margin: EdgeInsets(bottom: spacing)),
+            style: BoxStyle(margin: EdgeInsets(top: spacing)),
           );
         }
       });

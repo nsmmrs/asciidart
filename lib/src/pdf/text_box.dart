@@ -195,9 +195,16 @@ final class TextContext {
     this.decorationWidth = 1,
     this.engine = PdfEngine.asciidoctorPdf,
     this.lineBreaking = LineBreaking.auto,
+    this.typographicScripts = false,
     this.labels,
     LoggerBase? logger,
   }) : logger = logger ?? LoggerManager.logger;
+
+  /// Whether the modern engine sets superscripts and subscripts in the
+  /// font's own glyphs for them (its `sups` and `subs` features) at the
+  /// text's size, when it has them for every character (as Typst's
+  /// `super` and `sub` do), rather than smaller and shifted.
+  final bool typographicScripts;
 
   /// The text of the label of a fragment's key ([Fragment.label]), as the
   /// layout has it now (null keeps the fragment's text).
@@ -262,11 +269,16 @@ final class _Format {
     this.image,
     this.features = const {},
     this.smallCapitals = false,
+    this.typographic = false,
   });
 
   final Fragment fragment;
   final PrawnFont font;
   final double size;
+
+  /// Whether a superscript or subscript is set in the font's glyphs for
+  /// it (on the baseline, at the text's size).
+  final bool typographic;
 
   /// The OpenType features the text is set with.
   final Set<String> features;
@@ -325,7 +337,9 @@ final class _Printed {
       : format.image?.ascender ?? format.font.ascenderAt(format.size);
   double get descender =>
       format.image?.descender ?? format.font.descenderAt(format.size);
-  double get yOffset => format.subscript
+  double get yOffset => format.typographic
+      ? 0
+      : format.subscript
       ? -descender
       : format.superscript
       ? 0.85 * ascender
@@ -434,6 +448,13 @@ final class PrawnTextBox implements CustomContent {
   ) {
     final format = _resolveStyle(fragment, state, context);
     if (context.engine != PdfEngine.modern) return format;
+    if (context.typographicScripts &&
+        (format.superscript || format.subscript)) {
+      if (_typographic(format, format.superscript ? 'sups' : 'subs')
+          case final typographic?) {
+        return typographic;
+      }
+    }
     final features = {...state.features, ...?fragment.features};
     if (features.isEmpty || format.image != null) return format;
     final font = format.font;
@@ -448,6 +469,30 @@ final class PrawnTextBox implements CustomContent {
       smallCapitals: fake,
     );
   }
+
+  /// [format], a superscript or subscript, in its font's glyphs for it
+  /// ([feature]) at the size around it, when the font has one for each
+  /// character; else null.
+  static _Format? _typographic(_Format format, String feature) {
+    final font = format.font;
+    if (font is! TrueTypeFont || format.image != null) return null;
+    final open = font.pdf.font;
+    final substitutions = open.singleSubstitutions(feature);
+    if (substitutions.isEmpty) return null;
+    for (final rune in format.fragment.text.runes) {
+      if (!substitutions.containsKey(open.glyphFor(rune))) return null;
+    }
+    return _Format(
+      format.fragment,
+      font,
+      format.size / _scriptScale,
+      features: {feature},
+      typographic: true,
+    );
+  }
+
+  /// How much smaller a superscript or subscript is set than its text.
+  static const _scriptScale = 0.583;
 
   static _Format _resolveStyle(
     Fragment fragment,
@@ -503,7 +548,7 @@ final class PrawnTextBox implements CustomContent {
     };
     if (styles.contains(FragmentStyle.subscript) ||
         styles.contains(FragmentStyle.superscript)) {
-      size *= 0.583;
+      size *= _scriptScale;
     }
     return size;
   }

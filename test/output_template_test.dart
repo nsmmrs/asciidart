@@ -70,6 +70,27 @@ void main() {
       expect(html, contains('<div class="title">Listing 1. A route</div>'));
     });
 
+    test('count untitled blocks with <kind>-numbering: all', () {
+      const source =
+          ':listing-caption: Listing\n\n----\nuntitled\n----\n\n'
+          'image::a.png[]\n\n.A route\n----\ncode\n----\n\n'
+          '.A picture\nimage::pic.png[]\n';
+      final counted = asciidoc.convert(
+        ':listing-numbering: all\n:figure-numbering: all\n$source',
+      );
+      expect(counted, contains('<div class="title">Listing 2. A route</div>'));
+      expect(counted, contains('<div class="title">Figure 2. A picture</div>'));
+      // The untitled ones without a caption.
+      expect('class="title"'.allMatches(counted), hasLength(2));
+      final plain = asciidoc.convert(source);
+      expect(plain, contains('<div class="title">Listing 1. A route</div>'));
+      final skipped = asciidoc.convert(
+        ':listing-numbering: all\n'
+        '${source.replaceFirst('----\nuntitled', '[%unnumbered]\n----\nuntitled')}',
+      );
+      expect(skipped, contains('<div class="title">Listing 1. A route</div>'));
+    });
+
     test('of appendices too', () {
       final html = asciidoc.convert(
         '= Book\n:doctype: book\n'

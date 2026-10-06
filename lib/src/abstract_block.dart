@@ -500,7 +500,11 @@ abstract class AbstractBlock extends AbstractNode {
   /// `'<prefix> <number>. '` caption is built and the block takes the next
   /// number of its kind.
   void assignCaption(String? value, {bool figure = false}) {
-    if (_caption != null || _title == null) return;
+    if (_caption != null) return;
+    if (_title == null) {
+      _countUntitled(figure: figure);
+      return;
+    }
     final assigned = value ?? document!.attributes['caption'];
     if (assigned != null) {
       _caption = assigned;
@@ -527,6 +531,21 @@ abstract class AbstractBlock extends AbstractNode {
           _caption = '$prefix $numeral. ';
       }
     }
+  }
+
+  /// asciidart's `<kind>-numbering: all` (`listing-numbering`,
+  /// `figure-numbering`...): a block without a title takes a number too,
+  /// without a caption, so the numbers of those with one count it (as
+  /// Typst numbers every figure, captioned or not), unless it has the
+  /// `unnumbered` option.
+  void _countUntitled({required bool figure}) {
+    final attrName = figure ? 'figure-caption' : captionAttributeName(context);
+    if (attrName == null || document!.attributes[attrName] == null) return;
+    final kind = figure ? 'figure' : context.asciidoc;
+    if (document!.attributes['$kind-numbering'] != 'all') return;
+    // (Not one with the `unnumbered` option: a bare code block.)
+    if (hasOption('unnumbered')) return;
+    numeral = document!.incrementAndStoreCounter('$kind-number', this);
   }
 
   /// Assigns the next index (0-based) and numeral to [section].
