@@ -92,8 +92,8 @@ Asciidoctor project.
   content and with their label on a line of their own
   (`heading_h2_label_display`), `noheader` and `nofooter` on a section,
   floating images (`image_placement: auto`), sections with a styled role
-  in a box (`section_role_<role>_*`),
-  an index with each page once and page numbers in a column
+  in a box (`section_role_<role>_*`), an index with each page once and
+  page numbers in a column
   (`index_pagenum_text_align`, `index_category_headings`, `index_font_*`),
   and source code highlighted by hilite in a highlight.js theme
   (`source-highlighter=highlight.js`, `highlightjs-theme`).
