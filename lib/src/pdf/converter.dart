@@ -6677,10 +6677,18 @@ final class PdfConverter extends BuiltInConverter
     }
     attributes['page-count'] = '${page.count - _skip.$2}';
     if (doc.hasAttr('pagenums')) attributes['page-number'] = label;
+    // `<periphery>_title_style`: `document` (the default) as headings are
+    // titled, `toc` as the contents list them, `basic` without numbers.
+    final titleStyle = _s('${periphery}_title_style');
     String titleOf(String? mark) {
       final index = int.tryParse(mark ?? '');
       if (index == null || index >= _sections.length) return '';
-      return _numberedTitle(_sections[index].$1);
+      final section = _sections[index].$1;
+      return switch (titleStyle) {
+        'basic' => section.title ?? '',
+        'toc' => _numberedTitle(section, formal: false),
+        _ => _numberedTitle(section),
+      };
     }
 
     // The numeral of a numbered part or chapter (none for a preface, the

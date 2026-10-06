@@ -534,7 +534,7 @@ base:
           in (Process.runSync('pdftotext', ['-layout', pdf, '-']).stdout
                   as String)
               .split('\f'))
-        if (RegExp(r'P\[.*\d+$').firstMatch(page.trim()) case final m?) m[0]!,
+        if (RegExp(r'P\[.*$').firstMatch(page.trim()) case final m?) m[0]!,
     ];
 
     for (final compat in [false, true]) {
@@ -544,6 +544,26 @@ base:
         // A line that refers to a numeral the page hasn't (the contents,
         // the preface, the part's own page) is left out, as in the gem.
         expect(pages, ['P[I] C[1] 3', 'P[I] C[2] 4']);
+      });
+
+      test('go with titles without numbers (title_style: basic)'
+          '${compat ? ' (compatibility mode)' : ''}', () {
+        final pages = footers(
+          _pdf(
+            book,
+            theme: theme
+                .replaceFirst('footer:\n', 'footer:\n  title_style: basic\n')
+                .replaceFirst(
+                  '{page-number}',
+                  '{page-number} {part-title} / {chapter-title}',
+                ),
+            compat: compat,
+          ),
+        );
+        expect(pages, [
+          'P[I] C[1] 3 Part One / Chapter One',
+          'P[I] C[2] 4 Part One / Chapter Two',
+        ]);
       });
     }
   }, skip: _tools ? false : 'needs poppler');
