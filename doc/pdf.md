@@ -54,6 +54,7 @@ A quote's attribution has its own space above (`quote_cite_margin_top`,
 | Key | Default | What it does |
 | --- | --- | --- |
 | `toc_numbered` | `true` | `false` lists the contents' titles without their section numbers. |
+| `description_list_term_display` | `block` | `inline` runs a term in before its description, in the term's font, the lines after the first hanging by `description_list_description_indent`. |
 | `olist_marker_font_variant_numeric` | none | An ordered list's numbers in old-style (`oldstyle-nums`) or other figures (with `olist_marker_font_family`, `_font_color`...). |
 | `title_page_authors_delimiter` | `, ` | Its spaces are kept as written: `'    '` sets the authors in a row with a gap (asciidoctor-pdf collapses them to one). |
 

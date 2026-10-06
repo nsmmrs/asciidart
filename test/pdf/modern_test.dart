@@ -1102,6 +1102,34 @@ base:
     expect(plain, isNot(contains('1. One')));
   }, skip: _tools ? false : 'needs poppler');
 
+  test('a definition term may run in before its description', () {
+    const source =
+        'Hypermedia Control:: A hypermedia control is an element in a '
+        'hypermedia that describes (or controls) some sort of interaction, '
+        'often with a remote server, by encoding information about that '
+        'interaction directly and completely within itself.\n';
+    final pdf = _pdf(
+      source,
+      theme:
+          'description_list_term_display: inline\n'
+          'description_list_description_indent: 20\n',
+    );
+    final lines = _pages(pdf).first;
+    expect(lines.first, startsWith('Hypermedia Control A hypermedia control'));
+    final bbox =
+        Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+    final lefts = [
+      for (final m in RegExp(r'<line xMin="([\d.]+)"').allMatches(
+        Process.runSync('pdftotext', ['-bbox-layout', pdf, '-']).stdout
+            as String,
+      ))
+        double.parse(m[1]!),
+    ];
+    // The lines after the first hang 20 points in.
+    expect(lefts[1] - lefts[0], closeTo(20, 0.5));
+    expect(bbox, contains('>Control<'));
+  }, skip: _tools ? false : 'needs poppler');
+
   test('callout markers may be text', () {
     const source =
         '[source,ruby]\n----\nputs 1 # <1>\nputs 2 # <2>\n----\n'

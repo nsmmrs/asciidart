@@ -5905,8 +5905,18 @@ final class PdfConverter extends BuiltInConverter
       final proseHeight = _typesetHeight(_font);
       final indent = (_n('description_list_description_indent') ?? 0)
           .toDouble();
+      // `description_list_term_display: inline` (modern engine): a term
+      // run in before its description, the lines after the first hanging
+      // by the description indent.
+      final runIn =
+          _engine == PdfEngine.modern &&
+          _s('description_list_term_display') == 'inline';
       for (final DlistEntry(:terms, description: desc) in node.entries) {
         final hasText = desc != null && desc.hasText;
+        if (runIn && hasText && terms.length == 1) {
+          _runInEntry(terms.single, desc, termFont, indent);
+          continue;
+        }
         final lines = terms.length + (hasText ? 1 : 0);
         final need =
             lines * termHeight +
@@ -5949,6 +5959,56 @@ final class PdfConverter extends BuiltInConverter
         ),
       ),
     );
+  }
+
+  /// Adds a description list entry with its [term] run in before its
+  /// description [desc]: one paragraph whose lines after the first hang
+  /// by [hang], then the description's blocks, as far in.
+  void _runInEntry(
+    ListItem term,
+    ListItem desc,
+    _FontState termFont,
+    double hang,
+  ) {
+    var text = term.text ?? '';
+    if (termFont.transform case final transform? when transform != 'none') {
+      text = transformText(text, transform);
+    }
+    final styles = _stylesOf(termFont);
+    if (styles.contains('italic')) text = '<em>$text</em>';
+    if (styles.contains('bold')) text = '<strong>$text</strong>';
+    if (termFont.family != _font.family) {
+      text = '<font name="${termFont.family}">$text</font>';
+    }
+    final blocks = _collect(() => _traverse(desc));
+    _out.add(
+      CustomBox(
+        _textBox(
+          '$text&#8194;${desc.text}',
+          _font,
+          align: _baseTextAlign,
+          indent: -hang,
+          normalizeLineHeight: true,
+          hyphenate: true,
+        ),
+        style: BoxStyle(
+          margin: EdgeInsets(
+            left: hang,
+            bottom: blocks.isEmpty
+                ? 0
+                : (_n('prose_margin_bottom') ?? 0).toDouble(),
+          ),
+        ),
+      ),
+    );
+    if (blocks.isNotEmpty) {
+      _out.add(
+        BlockBox(
+          blocks,
+          style: BoxStyle(margin: EdgeInsets(left: hang)),
+        ),
+      );
+    }
   }
 
   /// A description list with its terms in a column beside the
