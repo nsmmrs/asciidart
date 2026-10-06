@@ -887,6 +887,60 @@ base:
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 
+  group('space around blocks', () {
+    const source =
+        '= Doc\n:doctype: book\n\n== Chap\n\nBefore.\n\n'
+        '----\ncode\n----\n\nAfter.\n\n____\nQuoted.\n____\n\nLast.\n';
+
+    /// The top of [word] on the first page with text.
+    double top(String pdf, String word) {
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      return double.parse(
+        RegExp('yMin="([\\d.]+)"[^>]*>$word<').firstMatch(bbox)![1]!,
+      );
+    }
+
+    // The default theme: 12 points below each block.
+    test('each kind of block has its own space below', () {
+      final plain = _pdf(source);
+      final spaced = _pdf(source, theme: 'code_margin_bottom: 30\n');
+      // After the code: 18 points further down; above it, as before.
+      expect(top(spaced, 'code'), closeTo(top(plain, 'code'), 0.01));
+      expect(top(spaced, 'After.') - top(plain, 'After.'), closeTo(18, 0.01));
+    });
+
+    test('space above collapses with the space below the block before', () {
+      final plain = _pdf(source);
+      // 20 above the code, after a paragraph's 12 below: 20, not 32.
+      final spaced = _pdf(source, theme: 'code_margin_top: 20\n');
+      expect(top(spaced, 'code') - top(plain, 'code'), closeTo(8, 0.01));
+      // Less than the space below the block before: nothing changes.
+      final less = _pdf(source, theme: 'quote_margin_top: 6\n');
+      expect(top(less, 'Quoted.'), closeTo(top(plain, 'Quoted.'), 0.01));
+    });
+
+    test('after a heading, what its margin below leaves', () {
+      const first = '= Doc\n:doctype: book\n\n== Chap\n\n----\ncode\n----\n';
+      final plain = _pdf(first, theme: 'heading_margin_bottom: 6\n');
+      final spaced = _pdf(
+        first,
+        theme: 'heading_margin_bottom: 6\ncode_margin_top: 20\n',
+      );
+      expect(top(spaced, 'code') - top(plain, 'code'), closeTo(14, 0.01));
+    });
+
+    test("are the gem's in the compatibility mode", () {
+      final plain = _pdf(source, compat: true);
+      final spaced = _pdf(
+        source,
+        theme: 'code_margin_bottom: 30\ncode_margin_top: 20\n',
+        compat: true,
+      );
+      expect(top(spaced, 'After.'), closeTo(top(plain, 'After.'), 0.01));
+    });
+  }, skip: _tools ? false : 'needs poppler');
+
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a
     // one-page chapter leaves a blank verso page before the next.

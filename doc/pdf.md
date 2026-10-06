@@ -31,6 +31,20 @@ of the document.
 | `prose_text_indent_inner` | `0` | The indent of the first line of a paragraph that follows another paragraph only (not the first after a heading, a list or a block), as books set it. |
 | `prose_margin_inner` | none | The space between two paragraphs; `0` with `prose_text_indent_inner` for indented, unspaced paragraphs. |
 
+### Space around blocks
+
+Each kind of block has its own space above and below:
+`<category>_margin_top` and `<category>_margin_bottom`, for the
+categories `prose` (paragraphs), `code` (listing and literal blocks),
+`image`, `media`, `table`, `quote`, `verse`, `sidebar`, `example`,
+`admonition`, `list`, `description_list`, `callout_list`, `open`,
+`thematic_break`, `pass` and `stem`. Below a block, the space is its own
+or `block_margin_bottom` (asciidoctor-pdf's one setting for all blocks),
+and at least the space the next block wants above it: adjacent margins
+collapse to the larger, as in CSS. Above the first block after a heading,
+what the heading's margin below leaves; none at the start of another
+container, or at the top of a page.
+
 ### Hyphenation
 
 Justified text is hyphenated in the document's language (`lang`, else

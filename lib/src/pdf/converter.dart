@@ -177,6 +177,10 @@ final class PdfConverter extends BuiltInConverter
 
   @override
   String? convertBlock(AbstractBlock node, ConvertOptions? opts) {
+    if (node is! Document && node is! Section) {
+      final above = _marginAbove(node);
+      if (above > 0) _out.add(SpacerBox(above));
+    }
     switch (node) {
       case final Document document:
         convertDocument(document);
@@ -2152,6 +2156,70 @@ final class PdfConverter extends BuiltInConverter
     return (_n('${key}_margin_$side') ?? 0).toDouble();
   }
 
+  /// The theme category whose `_margin_top` and `_margin_bottom` keys
+  /// space [node] in the modern engine (`code` for a listing, `list` for
+  /// a list...).
+  static String _spacingCategory(AbstractBlock node) => switch (node.context) {
+    BlockContext.paragraph => 'prose',
+    BlockContext.listing || BlockContext.literal => 'code',
+    BlockContext.image => 'image',
+    BlockContext.audio || BlockContext.video => 'media',
+    BlockContext.table => 'table',
+    BlockContext.quote => 'quote',
+    BlockContext.verse => 'verse',
+    BlockContext.sidebar => 'sidebar',
+    BlockContext.example => 'example',
+    BlockContext.admonition => 'admonition',
+    BlockContext.ulist || BlockContext.olist => 'list',
+    BlockContext.dlist => 'description_list',
+    BlockContext.colist => 'callout_list',
+    BlockContext.open => 'open',
+    BlockContext.thematicBreak => 'thematic_break',
+    BlockContext.pass => 'pass',
+    BlockContext.stem => 'stem',
+    _ => 'block',
+  };
+
+  /// The space below [node], followed by [next] (the next enclosed block
+  /// by default): the gem's margin ([fallback]'s), or in the modern engine
+  /// the block's own `<category>_margin_bottom`, and at least the next
+  /// block's `<category>_margin_top` (adjacent margins collapse to the
+  /// larger, as in CSS). None at the end of a container.
+  double _marginBelow(
+    AbstractBlock node, {
+    AbstractBlock? next,
+    String fallback = 'block',
+  }) {
+    final following = next ?? _nextEnclosedBlock(node);
+    final base = _themeMargin(fallback, 'bottom', following);
+    if (_engine != PdfEngine.modern || following == null) return base;
+    final own =
+        _n('${_spacingCategory(node)}_margin_bottom')?.toDouble() ?? base;
+    if (following is Section) return own;
+    final above = _n('${_spacingCategory(following)}_margin_top') ?? 0;
+    return math.max(own, above.toDouble());
+  }
+
+  /// The space above [node] in the modern engine (`<category>_margin_top`)
+  /// that the block before it hasn't given: none after a block (whose
+  /// space below collapses with it) or at the start of a container but a
+  /// section, after a heading what its margin below leaves.
+  double _marginAbove(AbstractBlock node) {
+    if (_engine != PdfEngine.modern) return 0;
+    final above = _n('${_spacingCategory(node)}_margin_top')?.toDouble();
+    if (above == null || above <= 0) return 0;
+    if (_previousSibling(node) != null) return 0;
+    final parent = node.parent;
+    if (parent is! Section) return 0;
+    final level = (parent.level ?? 0) + 1;
+    final heading =
+        (_n('heading_h${level}_margin_bottom') ??
+                _n('heading_margin_bottom') ??
+                0)
+            .toDouble();
+    return math.max(0, above - heading);
+  }
+
   // Sections.
 
   /// Converts [section]: its heading, then its blocks.
@@ -2269,11 +2337,7 @@ final class PdfConverter extends BuiltInConverter
             margin: _outdented(
               EdgeInsets(
                 top: (_n('${category}_margin_top') ?? 0).toDouble(),
-                bottom: _themeMargin(
-                  'block',
-                  'bottom',
-                  _nextEnclosedBlock(section),
-                ),
+                bottom: _marginBelow(section),
               ),
             ),
             decoration: _blockDecoration(category),
@@ -2602,7 +2666,7 @@ final class PdfConverter extends BuiltInConverter
       blocks.first.setAttr('role', 'lead');
     }
     _traverse(node);
-    final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+    final margin = _marginBelow(node);
     if (margin > 0) _out.add(SpacerBox(margin));
     convertToc(node, placement: 'preamble');
   }
@@ -2676,7 +2740,7 @@ final class PdfConverter extends BuiltInConverter
     final marginBottom =
         innerMargin != null && next?.context == BlockContext.paragraph
         ? innerMargin.toDouble()
-        : _themeMargin('prose', 'bottom', next);
+        : _marginBelow(node, next: next, fallback: 'prose');
     var content = node.content() ?? '';
     if (font.transform case final transform? when transform != 'none') {
       content = transformText(content, transform);
@@ -3148,9 +3212,7 @@ final class PdfConverter extends BuiltInConverter
         children,
         style: BoxStyle(
           padding: _padding('${category}_padding'),
-          margin: EdgeInsets(
-            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
-          ),
+          margin: EdgeInsets(bottom: _marginBelow(node)),
           keepTogether: node.hasOption('unbreakable'),
           anchor: node.id,
           decoration: _blockDecoration(
@@ -3339,11 +3401,7 @@ final class PdfConverter extends BuiltInConverter
         children,
         style: BoxStyle(
           padding: _padding('abstract_padding'),
-          margin: _outdented(
-            EdgeInsets(
-              bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
-            ),
-          ),
+          margin: _outdented(EdgeInsets(bottom: _marginBelow(node))),
           anchor: node.id,
         ),
       ),
@@ -3373,7 +3431,7 @@ final class PdfConverter extends BuiltInConverter
       ),
     );
     if (node.hasTitle) _caption(node, category: 'example');
-    final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+    final margin = _marginBelow(node);
     if (margin > 0) _out.add(SpacerBox(margin));
   }
 
@@ -3500,9 +3558,7 @@ final class PdfConverter extends BuiltInConverter
             bottom: padding[2],
             left: padding[3],
           ),
-          margin: EdgeInsets(
-            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
-          ),
+          margin: EdgeInsets(bottom: _marginBelow(node)),
           decoration: color == null
               ? null
               : (page, rect, {required first, required last}) {
@@ -3897,7 +3953,7 @@ final class PdfConverter extends BuiltInConverter
       );
     }
     final next = _nextEnclosedBlock(node);
-    final margin = next == null ? 0.0 : _themeMargin('block', 'bottom', next);
+    final margin = _marginBelow(node, next: next);
     final border = node.hasRole('noborder') ? null : _imageBorder();
     // A floated image followed by a paragraph: the paragraphs after it
     // wrap around it (the gem's `init_float_box`).
@@ -4092,7 +4148,7 @@ final class PdfConverter extends BuiltInConverter
         );
       });
       if (node.hasTitle) _caption(node, category: 'image', bottom: true);
-      final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+      final margin = _marginBelow(node);
       if (margin > 0) _out.add(SpacerBox(margin));
     }
   }
@@ -4185,7 +4241,7 @@ final class PdfConverter extends BuiltInConverter
       );
     }
     final next = _nextEnclosedBlock(node);
-    final margin = next == null ? 0.0 : _themeMargin('block', 'bottom', next);
+    final margin = _marginBelow(node, next: next);
     _out.add(
       BlockBox(
         [if (captionTop) ?caption, ...boxes, if (!captionTop) ?caption],
@@ -5023,9 +5079,7 @@ final class PdfConverter extends BuiltInConverter
             bottom: cpad.bottom,
             left: lpad.left + labelWidth + lpad.right + cpad.left,
           ),
-          margin: EdgeInsets(
-            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
-          ),
+          margin: EdgeInsets(bottom: _marginBelow(node)),
           keepTogether: node.hasOption('unbreakable'),
           anchor: node.id,
           decoration: _blockDecoration('admonition', extra: decorate),
@@ -5178,11 +5232,7 @@ final class PdfConverter extends BuiltInConverter
         [CustomBox(content)],
         style: BoxStyle(
           padding: _padding('code_padding'),
-          margin: EdgeInsets(
-            bottom: captionBelow
-                ? 0
-                : _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
-          ),
+          margin: EdgeInsets(bottom: captionBelow ? 0 : _marginBelow(node)),
           keepTogether: node.hasOption('unbreakable'),
           anchor: node.id,
           decoration: _blockDecoration('code'),
@@ -5191,7 +5241,7 @@ final class PdfConverter extends BuiltInConverter
     );
     if (captionBelow && node.hasTitle) {
       _caption(node, category: 'code');
-      final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+      final margin = _marginBelow(node);
       if (margin > 0) _out.add(SpacerBox(margin));
     }
   }
@@ -5215,11 +5265,7 @@ final class PdfConverter extends BuiltInConverter
           normalize: false,
           inlineFormat: false,
         ),
-        style: BoxStyle(
-          margin: EdgeInsets(
-            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
-          ),
-        ),
+        style: BoxStyle(margin: EdgeInsets(bottom: _marginBelow(node))),
       ),
     );
   }
@@ -5244,9 +5290,7 @@ final class PdfConverter extends BuiltInConverter
         ],
         style: BoxStyle(
           padding: _padding('code_padding'),
-          margin: EdgeInsets(
-            bottom: _themeMargin('block', 'bottom', _nextEnclosedBlock(node)),
-          ),
+          margin: EdgeInsets(bottom: _marginBelow(node)),
           keepTogether: node.hasOption('unbreakable'),
           anchor: node.id,
           decoration: _blockDecoration('code'),
@@ -5309,7 +5353,7 @@ final class PdfConverter extends BuiltInConverter
       ),
     );
     if (node.hasTitle) _caption(node, labeled: false, bottom: true);
-    final margin = _themeMargin('block', 'bottom', _nextEnclosedBlock(node));
+    final margin = _marginBelow(node);
     if (margin > 0) _out.add(SpacerBox(margin));
   }
 
@@ -5560,9 +5604,7 @@ final class PdfConverter extends BuiltInConverter
         style: BoxStyle(
           margin: EdgeInsets(
             left: indent,
-            bottom: nested
-                ? 0
-                : _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+            bottom: nested ? 0 : _marginBelow(node, fallback: 'prose'),
           ),
           anchor: node.id,
         ),
@@ -5815,7 +5857,7 @@ final class PdfConverter extends BuiltInConverter
           margin: EdgeInsets(
             bottom: node.parent is ListItem
                 ? 0
-                : _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+                : _marginBelow(node, fallback: 'prose'),
           ),
           anchor: node.id,
         ),
@@ -5901,7 +5943,7 @@ final class PdfConverter extends BuiltInConverter
           margin: EdgeInsets(
             bottom: node.parent is ListItem
                 ? 0
-                : _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+                : _marginBelow(node, fallback: 'prose'),
           ),
           anchor: node.id,
         ),
@@ -6053,7 +6095,7 @@ final class PdfConverter extends BuiltInConverter
         style: BoxStyle(
           margin: EdgeInsets(
             top: marginTop,
-            bottom: _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+            bottom: _marginBelow(node, fallback: 'prose'),
           ),
           anchor: node.id,
         ),
@@ -6159,7 +6201,7 @@ final class PdfConverter extends BuiltInConverter
             left: (_n('list_indent') ?? 0).toDouble(),
             bottom: node.parent is ListItem
                 ? 0
-                : _themeMargin('prose', 'bottom', _nextEnclosedBlock(node)),
+                : _marginBelow(node, fallback: 'prose'),
           ),
           anchor: node.id,
         ),
