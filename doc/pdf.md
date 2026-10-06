@@ -128,6 +128,16 @@ its pages: `[colophon%notitle%noheader%nofooter]` for a copyright page.
 | `heading_h1_label_display`, `heading_h2_label_display` | `inline` | `block` sets a part's or chapter's label ("Part I", "Chapter 1") on a line of its own above its title, without the period. |
 | `heading_h1_label_font_color`, `_font_size`, `_font_family`, `_font_style` (and `h2`) | the heading's | The label's font. |
 
+A section with a role the theme styles is set in a box, as a sidebar is:
+`section_role_<role>_background_color`, `_border_color`, `_border_width`
+(one width, or one per side), `_border_radius`, `_padding`, `_margin_top`,
+`_font_family`, `_font_size`, `_font_color` and `_font_style`, and its
+heading's `_heading_font_family`, `_heading_font_size`,
+`_heading_font_color`, `_heading_font_style`, `_heading_margin_top` and
+`_heading_margin_bottom` (`[.html-note]` and
+`section: { role: { html-note: { background-color: F5F5FF } } }`). It
+stays a section: it is numbered, and listed in the contents.
+
 A part on a page of its own is asciidoctor-pdf's
 `heading_part_break_after: always`; a title lower on its page,
 `heading_h2_padding: [3in, 0, 0, 0]`.

@@ -66,6 +66,13 @@ List<List<String>> _pages(String pdf) => [
     ],
 ];
 
+/// The content of [pdf], uncompressed (its drawing operators readable).
+String _content(String pdf) {
+  final out = '$pdf.qdf';
+  Process.runSync('qpdf', ['--qdf', '--object-streams=disable', pdf, out]);
+  return latin1.decode(File(out).readAsBytesSync());
+}
+
 /// The words of [lines], those hyphenated at a line end joined.
 List<String> _words(List<String> lines) => lines
     .join('\n')
@@ -761,25 +768,18 @@ base:
         '[source,python]\n----\ndef index(): # <1>\n    return 1\n----\n'
         '<1> A function.\n';
 
-    /// The page content of [pdf], uncompressed.
-    String content(String pdf) {
-      final out = '$pdf.qdf';
-      Process.runSync('qpdf', ['--qdf', '--object-streams=disable', pdf, out]);
-      return latin1.decode(File(out).readAsBytesSync());
-    }
-
     // GitHub's keyword color, #d73a49.
     const keyword = '0.84314 0.22745 0.28627 rg';
 
     test('colors the tokens as the highlight.js theme does', () {
-      expect(content(_pdf(source)), contains(keyword));
+      expect(_content(_pdf(source)), contains(keyword));
       final text = _pages(_pdf(source)).first.join('\n');
       expect(text, contains('def index():'));
       expect(text, contains('A function.'));
     });
 
     test('in the theme highlightjs-theme names', () {
-      final monokai = content(
+      final monokai = _content(
         _pdf(source.replaceFirst('\n\n', '\n:highlightjs-theme: monokai\n\n')),
       );
       expect(monokai, isNot(contains(keyword)));
@@ -788,7 +788,43 @@ base:
     });
 
     test('not in the compatibility mode, as in the gem', () {
-      expect(content(_pdf(source, compat: true)), isNot(contains(keyword)));
+      expect(_content(_pdf(source, compat: true)), isNot(contains(keyword)));
+    });
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
+  group('a section with a styled role', () {
+    const source =
+        '= Doc\n:doctype: book\n\n== Chap\n\nText.\n\n'
+        '[.html-note]\n=== Notes\n\nIn the box.\n';
+    const theme =
+        'section_role_html_note_background_color: F5F5FF\n'
+        'section_role_html_note_padding: 12\n'
+        'section_role_html_note_font_size: 7\n'
+        'section_role_html_note_heading_font_size: 8\n';
+    // The fill, #F5F5FF.
+    const fill = '0.96078 0.96078 1 rg';
+
+    double height(String pdf, String word) {
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      final m = RegExp(
+        'yMin="([\\d.]+)" xMax="[\\d.]+" yMax="([\\d.]+)">$word<',
+      ).firstMatch(bbox)!;
+      return double.parse(m[2]!) - double.parse(m[1]!);
+    }
+
+    test('is set in a box, in its own fonts', () {
+      final pdf = _pdf(source, theme: theme);
+      expect(_content(pdf), contains(fill));
+      expect(height(pdf, 'box.'), lessThan(height(pdf, 'Text.') * 0.8));
+      expect(height(pdf, 'Notes'), lessThan(height(pdf, 'Chap') * 0.6));
+    });
+
+    test('is a section as before in the compatibility mode', () {
+      expect(
+        _content(_pdf(source, theme: theme, compat: true)),
+        isNot(contains(fill)),
+      );
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 

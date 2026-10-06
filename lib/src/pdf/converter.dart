@@ -2209,41 +2209,96 @@ final class PdfConverter extends BuiltInConverter
         ),
       );
     }
-    if (hidden) {
-      // No heading, but the section still names its pages' running
-      // content.
+    // A section with a role the theme styles (`section_role_<role>_*`,
+    // modern engine): its heading and content in a box, as a sidebar.
+    final boxed = _boxedRole(section);
+    void content() {
+      if (hidden) {
+        // No heading, but the section still names its pages' running
+        // content.
+        _out.add(
+          CustomBox(
+            const _Nothing(),
+            style: BoxStyle(
+              anchor: anchor,
+              marks: _sectionMarks(section, part: part),
+            ),
+          ),
+        );
+      } else {
+        _heading(
+          title,
+          level: hlevel,
+          align: align,
+          anchor: anchor,
+          arrange: !startedNew,
+          hasContent: section.blocks.isNotEmpty,
+          marks: _sectionMarks(section, part: part),
+          outdent: true,
+        );
+      }
+      _sections.add((section, anchor));
+      if (indexSection) {
+        final slot = _indexSlot = <LayoutBox>[];
+        _out.add(
+          BlockBox(slot, style: BoxStyle(margin: _outdented(EdgeInsets.zero))),
+        );
+      } else {
+        _traverse(section);
+      }
+    }
+
+    if (boxed == null) {
+      content();
+    } else {
+      final category = 'section_role_$boxed';
+      final saved = _headingRole;
+      _headingRole = category;
+      final List<LayoutBox> children;
+      try {
+        children = _collect(() => _withFont(category, content));
+      } finally {
+        _headingRole = saved;
+      }
       _out.add(
-        CustomBox(
-          const _Nothing(),
+        BlockBox(
+          children,
           style: BoxStyle(
-            anchor: anchor,
-            marks: _sectionMarks(section, part: part),
+            padding: _padding('${category}_padding'),
+            margin: _outdented(
+              EdgeInsets(
+                top: (_n('${category}_margin_top') ?? 0).toDouble(),
+                bottom: _themeMargin(
+                  'block',
+                  'bottom',
+                  _nextEnclosedBlock(section),
+                ),
+              ),
+            ),
+            decoration: _blockDecoration(category),
           ),
         ),
       );
-    } else {
-      _heading(
-        title,
-        level: hlevel,
-        align: align,
-        anchor: anchor,
-        arrange: !startedNew,
-        hasContent: section.blocks.isNotEmpty,
-        marks: _sectionMarks(section, part: part),
-        outdent: true,
-      );
-    }
-    _sections.add((section, anchor));
-    if (indexSection) {
-      final slot = _indexSlot = <LayoutBox>[];
-      _out.add(
-        BlockBox(slot, style: BoxStyle(margin: _outdented(EdgeInsets.zero))),
-      );
-    } else {
-      _traverse(section);
     }
     if (chapterlike) _footnotes(section);
   }
+
+  /// The role of [section] the theme styles as a box (it has keys
+  /// `section_role_<role>_...`; a hyphen in the role is an underscore
+  /// there, as in other theme keys), in the modern engine.
+  String? _boxedRole(Section section) {
+    if (_engine != PdfEngine.modern) return null;
+    for (final role in section.roles) {
+      final name = role.replaceAll('-', '_');
+      final prefix = 'section_role_${name}_';
+      if (_theme.keys.any((key) => key.startsWith(prefix))) return name;
+    }
+    return null;
+  }
+
+  /// The theme category of the boxed section whose heading is being set
+  /// (its `<category>_heading_*` keys replace the heading's), if any.
+  String? _headingRole;
 
   /// The title of a numbered part or chapter of a book with its label
   /// ("Part I", "Chapter 1") on a line of its own above it, when the
@@ -2359,8 +2414,13 @@ final class PdfConverter extends BuiltInConverter
   /// The font of heading level [level] (the gem's `theme_font :heading,
   /// level:`).
   _FontState _headingFont(int level) {
-    String? h(String key) => _s('heading_h${level}_$key') ?? _s('heading_$key');
+    final role = _headingRole;
+    String? h(String key) =>
+        (role == null ? null : _s('${role}_heading_$key')) ??
+        _s('heading_h${level}_$key') ??
+        _s('heading_$key');
     final sizeValue =
+        (role == null ? null : _theme.value('${role}_heading_font_size')) ??
         _theme.value('heading_h${level}_font_size') ??
         _theme.value('heading_font_size');
     final size = switch (sizeValue) {
@@ -2377,6 +2437,7 @@ final class PdfConverter extends BuiltInConverter
       style: _fontStyle(h('font_style')) ?? 'normal',
       size: size,
       color:
+          (role == null ? null : _c('${role}_heading_font_color')) ??
           _c('heading_h${level}_font_color') ??
           _c('heading_font_color') ??
           _font.color,
@@ -2425,11 +2486,16 @@ final class PdfConverter extends BuiltInConverter
       inherit: _decoration('heading', level),
       normalize: false,
     );
+    final role = _headingRole;
     final marginTop =
-        (_n('heading_h${level}_margin_top') ?? _n('heading_margin_top') ?? 0)
+        ((role == null ? null : _n('${role}_heading_margin_top')) ??
+                _n('heading_h${level}_margin_top') ??
+                _n('heading_margin_top') ??
+                0)
             .toDouble();
     final marginBottom =
-        (_n('heading_h${level}_margin_bottom') ??
+        ((role == null ? null : _n('${role}_heading_margin_bottom')) ??
+                _n('heading_h${level}_margin_bottom') ??
                 _n('heading_margin_bottom') ??
                 0)
             .toDouble();
