@@ -25,6 +25,9 @@ sealed class PrawnFont {
   /// The font that draws the text.
   PdfFont get pdf;
 
+  /// [text] as the font can draw it (the same, but for a built-in font).
+  String normalize(String text) => text;
+
   /// The ascender, in 1000ths of the em.
   num get ascender;
 
@@ -170,6 +173,39 @@ final class AfmFont extends PrawnFont {
 
   @override
   bool hasGlyph(int codePoint) => pdf.covers(codePoint);
+
+  /// The characters Windows-1252 lacks that become others.
+  static const Map<int, String> _fallbackChars = {
+    0x200b: '',
+    0x202f: '\u00a0',
+    0x2009: ' ',
+    0x2063: '\u00ad',
+    0x25e6: '-',
+    0x25aa: '\u00b7',
+  };
+
+  /// [text] in the characters of Windows-1252: some others replaced by
+  /// look-alikes, and when any other is left, each character Windows-1252
+  /// lacks replaced by `¬` (asciidoctor-pdf's AFM font
+  /// `normalize_encoding`).
+  @override
+  String normalize(String text) {
+    if (pdf.name == 'Symbol' || pdf.name == 'ZapfDingbats') return text;
+    final out = StringBuffer();
+    for (final rune in text.runes) {
+      if (rune < 0x80 || pdf.covers(rune)) {
+        out.writeCharCode(rune);
+      } else if (_fallbackChars[rune] case final replacement?) {
+        out.write(replacement);
+      } else {
+        return String.fromCharCodes([
+          for (final rune in text.runes)
+            if (rune < 0x80 || pdf.covers(rune)) rune else 0xac,
+        ]);
+      }
+    }
+    return out.toString();
+  }
 }
 
 /// Prawn's built-in families, by style.

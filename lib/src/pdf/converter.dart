@@ -585,6 +585,13 @@ final class PdfConverter extends BuiltInConverter
       target = macroTarget;
       attrs = {...macroAttrs};
     }
+    if (fromDocument == null) {
+      target = _applySubsDiscretely(
+        target,
+        const {},
+        subs: const [Sub.attributes],
+      );
+    }
     final format = _imageFormat(target);
     if (format == 'pdf') {
       logger.error(
@@ -603,11 +610,16 @@ final class PdfConverter extends BuiltInConverter
     final bytes = fromDocument != null
         ? _imageBytes(doc, target)
         : _themeImageBytes(target);
-    if (bytes == null) return;
-    final (graphic, problem) = _graphicOf(bytes, format, path: _lastImagePath);
-    if (graphic == null) {
+    final (graphic, problem) = bytes == null
+        ? (null, null)
+        : _graphicOf(bytes, format, path: _lastImagePath);
+    if (bytes == null && fromDocument == null) {
+      logger.warn(
+        'image to embed not found or not readable: '
+        '${_themeImagePath(target) ?? target}',
+      );
+    } else if (graphic == null && problem != null) {
       logger.warn('could not embed image: $target; $problem');
-      return;
     }
     final topValue = switch (attrs['top']) {
       final top? => ThemeString(top),
@@ -618,12 +630,37 @@ final class PdfConverter extends BuiltInConverter
     final right = (_n('title_page_logo_margin_right') ?? 0).toDouble();
     final (pageWidth, pageHeight) = _pageSize(doc);
     final margins = _pageMargins(doc);
-    final content = _ImageContent(
-      graphic,
-      width: _imageWidthOf((name) => attrs[name]),
-      align: align,
-      pageWidth: pageWidth,
-    );
+    // An image that can't be embedded: its alt text in its place (the
+    // gem's `on_image_error`).
+    final CustomContent content;
+    if (graphic == null) {
+      final path = fromDocument != null
+          ? _imagePath(doc, target) ?? target
+          : _themeImagePath(target) ?? target;
+      final template =
+          _s('image_alt_content') ??
+          '%{link}[%{alt}]%{/link} | <em>%{target}</em>';
+      if (template.isEmpty) return;
+      final link = attrs['link'];
+      final text = template
+          .replaceAll('%{link}', link == null ? '' : '<a href="$link">')
+          .replaceAll('%{/link}', link == null ? '' : '</a>')
+          .replaceAll('%{alt}', attrs['alt'] ?? '')
+          .replaceAll('%{target}', path);
+      content = _textBox(
+        text,
+        _themeFont('image_alt', _font),
+        align: align,
+        normalize: false,
+      );
+    } else {
+      content = _ImageContent(
+        graphic,
+        width: _imageWidthOf((name) => attrs[name]),
+        align: align,
+        pageWidth: pageWidth,
+      );
+    }
     _out.add(
       CustomBox(
         _Absolute((page) {
@@ -721,26 +758,57 @@ final class PdfConverter extends BuiltInConverter
         'with_email': _s('title_page_authors_content_with_email') ?? generic,
         'with_url': _s('title_page_authors_content_with_url') ?? generic,
       };
+      // Each author's content, with the author's attributes in effect
+      // (the gem's `with_author`): `url` is the email as a mailto: link,
+      // or the URL in its place.
       final names = [
-        for (final author in doc.authors)
+        for (final (i, author) in doc.authors.indexed)
           () {
-            final email = author.email;
-            final key = email == null
+            final attributes = <String, String>{};
+            final unset = <String>{'url'};
+            String? email;
+            if (i == 0) {
+              email = doc.attr('email');
+            } else {
+              for (final (name, value) in [
+                ('author', author.name),
+                ('authorinitials', author.initials),
+                ('firstname', author.firstname),
+                ('middlename', author.middlename),
+                ('lastname', author.lastname),
+                ('email', author.email),
+              ]) {
+                if (value == null) {
+                  unset.add(name);
+                } else {
+                  attributes[name] = value;
+                }
+              }
+              email = author.email;
+            }
+            String? url;
+            if (email != null) {
+              url = email.contains('@') ? 'mailto:$email' : email;
+              attributes['url'] = url;
+              unset.remove('url');
+            }
+            final key = url == null
                 ? 'name_only'
-                : email.startsWith('mailto:')
+                : url.startsWith('mailto:')
                 ? 'with_email'
-                : email.contains('://')
-                ? 'with_url'
-                : 'with_email';
+                : 'with_url';
             final template = templates[key];
-            if (template == null) return author.name ?? '';
-            return template
-                .replaceAll('{author}', author.name ?? '')
-                .replaceAll('{email}', email ?? '')
-                .replaceAll('{url}', email ?? '')
-                .replaceAll('{firstname}', author.firstname ?? '')
-                .replaceAll('{lastname}', author.lastname ?? '')
-                .replaceAll('{authorinitials}', author.initials ?? '');
+            if (template == null) {
+              return i == 0
+                  ? doc.attr('author') ?? ''
+                  : attributes['author'] ?? '';
+            }
+            return _applySubsDiscretely(
+              template,
+              attributes,
+              unset: unset,
+              dropLines: true,
+            );
           }(),
       ];
       prose(
@@ -1114,7 +1182,13 @@ final class PdfConverter extends BuiltInConverter
     }
     target = target.replaceAll('{page-layout}', 'portrait');
     final fromTheme = fromDocument == null;
-    if (fromTheme) target = _applySubsDiscretely(target, const {});
+    if (fromTheme) {
+      target = _applySubsDiscretely(
+        target,
+        const {},
+        subs: const [Sub.attributes],
+      );
+    }
     final format = attrs['format'] ?? _imageFormat(target);
     final List<int>? bytes;
     if (format == 'pdf') {
@@ -4972,6 +5046,21 @@ final class PdfConverter extends BuiltInConverter
     final children = <LayoutBox>[];
     final saved = _out;
     _out = children;
+    final markerFont = _FontState(
+      family: markerFamily,
+      style: markerStyle,
+      size: markerSize,
+      color: markerColor,
+      lineHeight: markerLineHeight,
+      kerning: _font.kerning,
+    );
+    if (primary == null && marker != null && marker.isNotEmpty) {
+      // No text: the marker is where the first block starts (the gem
+      // floats it at the cursor).
+      children.add(
+        CustomBox(_withMarker(const _Nothing(), marker, markerFont)),
+      );
+    }
     if (primary != null) {
       final box = _textBox(
         primary,
@@ -4986,18 +5075,7 @@ final class PdfConverter extends BuiltInConverter
         lineHeight + metrics.leading + metrics.paddingTop,
       );
       if (marker != null && marker.isNotEmpty) {
-        content = _withMarker(
-          content,
-          marker,
-          _FontState(
-            family: markerFamily,
-            style: markerStyle,
-            size: markerSize,
-            color: markerColor,
-            lineHeight: markerLineHeight,
-            kerning: _font.kerning,
-          ),
-        );
+        content = _withMarker(content, marker, markerFont);
       }
       children.add(
         CustomBox(
@@ -5873,7 +5951,11 @@ final class PdfConverter extends BuiltInConverter
       previous = position;
       if (_imageMacroOf(template, const ['alt', 'width'])
           case (final rawTarget, final attrs)?) {
-        final target = _applySubsDiscretely(rawTarget, const {});
+        final target = _applySubsDiscretely(
+          rawTarget,
+          const {},
+          subs: const [Sub.attributes],
+        );
         final format = attrs['format'] ?? _imageFormat(target);
         final bytes = _themeImageBytes(target);
         final graphic = bytes == null
@@ -5916,7 +5998,7 @@ final class PdfConverter extends BuiltInConverter
       if (template == '{page-number}') {
         content = doc.hasAttr('pagenums') ? label : null;
       } else {
-        content = _applySubsDiscretely(template, attributes);
+        content = _applySubsDiscretely(template, attributes, dropLines: true);
         if (font.transform case final transform? when transform != 'none') {
           content = transformText(content, transform);
         }
@@ -6106,16 +6188,24 @@ final class PdfConverter extends BuiltInConverter
     r'(?<!\\)\{(\w+(?:-\w+)*)\}',
   );
 
-  /// [value] with the document's normal substitutions, with [attributes]
-  /// set and missing attributes skipped, dropping each line with a
-  /// reference that didn't resolve (the gem's `apply_subs_discretely`).
-  String _applySubsDiscretely(String value, Map<String, String> attributes) {
+  /// [value] with the document's normal substitutions (or [subs]), with
+  /// [attributes] set, those of [unset] removed and missing attributes
+  /// skipped; with [dropLines], each line with a reference that didn't
+  /// resolve is dropped (the gem's `apply_subs_discretely`).
+  String _applySubsDiscretely(
+    String value,
+    Map<String, String> attributes, {
+    Set<String> unset = const {},
+    List<Sub>? subs,
+    bool dropLines = false,
+  }) {
     final doc = _document;
     final docAttributes = doc.attributes;
     final saved = <String, String?>{
-      for (final key in [...attributes.keys, 'attribute-missing'])
+      for (final key in [...attributes.keys, ...unset, 'attribute-missing'])
         key: docAttributes[key],
     };
+    unset.forEach(docAttributes.remove);
     docAttributes
       ..addAll(attributes)
       ..['attribute-missing'] = 'skip';
@@ -6123,7 +6213,7 @@ final class PdfConverter extends BuiltInConverter
     var text = escaped ? value.replaceAll(r'\{', r'\\\{') : value;
     final before = text;
     try {
-      text = doc.applySubs(text);
+      text = subs == null ? doc.applySubs(text) : doc.applySubs(text, subs);
     } finally {
       for (final MapEntry(:key, :value) in saved.entries) {
         if (value == null) {
@@ -6133,7 +6223,7 @@ final class PdfConverter extends BuiltInConverter
         }
       }
     }
-    if (text.contains('{')) {
+    if (dropLines && text.contains('{')) {
       text = text
           .split('\n')
           .where((line) {

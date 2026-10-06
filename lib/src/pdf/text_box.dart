@@ -270,8 +270,9 @@ final class PrawnTextBox implements CustomContent {
       final copy = fragment.copy()..color ??= state.color;
       for (final run in _withFallbacks(copy, state, context)) {
         final format = _resolve(run, state, context);
+        final text = format.font.normalize(run.text);
         // One item per line of the fragment (Prawn's `format_array=`).
-        for (final m in RegExp('[^\n]+|\n').allMatches(run.text)) {
+        for (final m in RegExp('[^\n]+|\n').allMatches(text)) {
           items.add(_Item(m[0]!, format, defaultColor: defaultColor));
         }
       }
