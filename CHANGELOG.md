@@ -51,7 +51,12 @@ Asciidoctor project.
   pairs and set with its standard ligatures (`base_font_ligatures: none`
   turns them off), emphasis inside italic text is upright
   (`base_emphasis_inversion`), and paragraph indents may be given in
-  `em` or `rem`. With `-a pdf-compat` the layout is the gem's, and
+  `em` or `rem`. Listings split only between lines, leaving at least two
+  on either side of a page break (`code_orphans`, `code_widows`); a line
+  too long for the block wraps with a return arrow past its end and a
+  hanging indent (`code_wrap_marker`, `code_wrap_indent`); a caption
+  stays with its block; and text in a column too narrow for a single
+  character is set anyway rather than dropped. With `-a pdf-compat` the layout is the gem's, and
   `hyphens` and `base_hyphens` hyphenate as the gem does with text-hyphen.
   In that mode, 763 of the 797 documents of the gem's spec suite convert the same (words,
   positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),

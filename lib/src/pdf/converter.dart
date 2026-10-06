@@ -4249,6 +4249,15 @@ final class PdfConverter extends BuiltInConverter
               font.widthOf(String.fromCharCode(rune), data.font.size),
         ].fold<double>(0, math.max);
         if (widest > room) {
+          // The modern engine keeps the table, the text set past the
+          // column's edge where it must be.
+          if (_engine == PdfEngine.modern) {
+            logger.warn(
+              'table column ${c + 1} is too narrow for its text; '
+              'the text overflows it',
+            );
+            break;
+          }
           logger.error(
             'cannot fit contents of table cell into specified column width',
           );
@@ -4716,11 +4725,23 @@ final class PdfConverter extends BuiltInConverter
     _withFont('code', () => source = _guardIndentation(node.content() ?? ''));
     final captionBelow = _s('code_caption_end') == 'bottom';
     if (!captionBelow && node.hasTitle) _caption(node, category: 'code');
+    // The modern engine splits a listing between lines, leaving at least
+    // code_orphans and code_widows lines on either side (2 each), and
+    // marks a line that wraps, going on with a hanging indent
+    // (code_wrap_indent, 1em; code_wrap_marker: none leaves the arrow
+    // out).
+    final modern = _engine == PdfEngine.modern;
     final box = _textBox(
       source,
       font.copyWith(color: _c('code_font_color') ?? font.color),
       align: 'left',
       normalize: false,
+      orphans: modern ? (_n('code_orphans') ?? 2).toInt() : 1,
+      widows: modern ? (_n('code_widows') ?? 2).toInt() : 1,
+      wrapIndent: modern
+          ? _length('code_wrap_indent', font.size) ?? font.size
+          : null,
+      wrapMarker: modern && _s('code_wrap_marker') != 'none',
     );
     CustomContent content = box;
     if (node.hasOption('autofit') || _document.hasAttr('autofit-option')) {
@@ -4986,6 +5007,8 @@ final class PdfConverter extends BuiltInConverter
         margin: bottom
             ? EdgeInsets(top: inside, bottom: outside)
             : EdgeInsets(top: outside, bottom: inside),
+        // A caption above its block stays with it in the modern engine.
+        keepWithNext: !bottom && _engine == PdfEngine.modern,
         decoration: background == null
             ? null
             : (page, rect, {required first, required last}) => page.canvas
@@ -5768,6 +5791,8 @@ final class PdfConverter extends BuiltInConverter
     bool shrinkToFit = false,
     int orphans = 1,
     int widows = 1,
+    double? wrapIndent,
+    bool wrapMarker = false,
     bool hyphenate = false,
   }) {
     var text = hyphenate ? _hyphenated(markup, align) : markup;
@@ -5817,6 +5842,8 @@ final class PdfConverter extends BuiltInConverter
         normalizeLineHeight: normalizeLineHeight,
         orphans: orphans,
         widows: widows,
+        wrapIndent: wrapIndent,
+        wrapMarker: wrapMarker,
       ),
       _text,
     );

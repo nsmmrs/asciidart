@@ -73,6 +73,8 @@ final class TextLayout {
     this.forceJustify = false,
     this.orphans = 1,
     this.widows = 1,
+    this.wrapIndent,
+    this.wrapMarker = false,
   });
 
   /// `left`, `center`, `right` or `justify`.
@@ -134,6 +136,14 @@ final class TextLayout {
   /// The fewest lines the text takes to the top of the next region when
   /// it goes on there (1: no rule).
   final int widows;
+
+  /// How far past a line's own indentation the lines it wraps onto start
+  /// (a hanging indent for code), or null to start them at the left.
+  final double? wrapIndent;
+
+  /// Whether a line that wraps is marked with a return arrow past its
+  /// end (for code).
+  final bool wrapMarker;
 }
 
 /// What the text needs from the conversion: fonts, the root font size,
@@ -269,6 +279,9 @@ final class _Line {
   new(this.fragments);
 
   final List<_Printed> fragments;
+
+  /// Whether the line wraps: the text of its line goes on in the next.
+  bool wrapped = false;
 }
 
 /// Text laid out as Prawn does, as libpdf custom content.
@@ -303,6 +316,7 @@ final class PrawnTextBox implements CustomContent {
     this._layout,
     this._context, {
     required this.first,
+    this.continuedIndent,
   });
 
   final List<_Item> _items;
@@ -319,6 +333,10 @@ final class PrawnTextBox implements CustomContent {
   /// Whether this is the first piece of the text (its first line is
   /// indented).
   final bool first;
+
+  /// The indent of the first line when it goes on with a line that
+  /// wrapped at the end of the text before (see [TextLayout.wrapIndent]).
+  final double? continuedIndent;
 
   /// Whether there is no text.
   bool get isEmpty => _items.isEmpty;
@@ -466,6 +484,24 @@ final class PrawnTextBox implements CustomContent {
 
   @override
   double minHeight(double width) {
+    // The modern engine needs room for the lines the text may leave at
+    // the bottom of a region (its orphans), not for all of it.
+    if (_context.engine == PdfEngine.modern && _items.isNotEmpty) {
+      _arrangeImages(width);
+      final wrap = _wrapOf(
+        [for (final item in _items) item.copy()],
+        _state,
+        _layout,
+        _context,
+        width,
+        double.infinity,
+        firstPiece: first,
+        continuedIndent: continuedIndent,
+        maxLines: math.max(1, _layout.orphans),
+      );
+      if (wrap.run().isEmpty) return 0;
+      return _layout.initialGap + wrap.height;
+    }
     final placed = place(width, double.infinity, atTop: true);
     if (placed == null) return 0;
     return placed.height;
@@ -633,6 +669,7 @@ final class PrawnTextBox implements CustomContent {
       width,
       double.infinity,
       firstPiece: first,
+      continuedIndent: continuedIndent,
     ).run();
     final printed = [
       for (final line in lines)
@@ -708,6 +745,7 @@ final class PrawnTextBox implements CustomContent {
       width,
       double.infinity,
       firstPiece: first,
+      continuedIndent: continuedIndent,
     );
     final lines = wrap.run();
     final fragments = [
@@ -720,7 +758,14 @@ final class PrawnTextBox implements CustomContent {
       fragments,
       rest.isEmpty
           ? null
-          : PrawnTextBox._(rest, _state, _layout, _context, first: false),
+          : PrawnTextBox._(
+              rest,
+              _state,
+              _layout,
+              _context,
+              first: false,
+              continuedIndent: wrap.continuedIndent,
+            ),
     );
   }
 
@@ -746,6 +791,7 @@ final class PrawnTextBox implements CustomContent {
       width,
       available - gap,
       firstPiece: first,
+      continuedIndent: continuedIndent,
     );
     var lines = wrap.run();
     // Widows and orphans: split no fewer than `orphans` lines here and
@@ -761,6 +807,7 @@ final class PrawnTextBox implements CustomContent {
         width,
         double.infinity,
         firstPiece: first,
+        continuedIndent: continuedIndent,
       ).run().length;
       final remaining = total - lines.length;
       var keep = lines.length;
@@ -778,6 +825,7 @@ final class PrawnTextBox implements CustomContent {
           width,
           available - gap,
           firstPiece: first,
+          continuedIndent: continuedIndent,
           maxLines: keep,
         );
         lines = wrap.run();
@@ -815,14 +863,28 @@ final class PrawnTextBox implements CustomContent {
       anchors: anchors,
       rest: done
           ? null
-          : PrawnTextBox._(rest, _state, _layout, _context, first: false),
-      paint: (page, x, top) => _paint(page, lines, x, top - gap),
+          : PrawnTextBox._(
+              rest,
+              _state,
+              _layout,
+              _context,
+              first: false,
+              continuedIndent: wrap.continuedIndent,
+            ),
+      paint: (page, x, top) => _paint(page, lines, x, top - gap, width),
     );
   }
 
-  void _paint(PdfPage page, List<_Line> lines, double x, double top) {
+  void _paint(
+    PdfPage page,
+    List<_Line> lines,
+    double x,
+    double top,
+    double width,
+  ) {
     final canvas = page.canvas;
     for (final line in lines) {
+      if (line.wrapped) _wrapArrow(canvas, line, x + width, top);
       for (final f in line.fragments) {
         final fragment = f.format.fragment;
         if (fragment.isMarker) continue;
@@ -931,6 +993,38 @@ final class PrawnTextBox implements CustomContent {
     }
   }
 
+  /// A return arrow just past [right], beside [line] (which wraps), in
+  /// the line's text color and size: drawn rather than set in a font, so
+  /// that no font needs the glyph and the text extracts unchanged.
+  void _wrapArrow(PdfCanvas canvas, _Line line, double right, double top) {
+    final printed = [
+      for (final f in line.fragments)
+        if (!f.format.fragment.isMarker) f,
+    ];
+    if (printed.isEmpty) return;
+    final last = printed.last;
+    final size = last.format.size;
+    final baseline = top - last.baseline;
+    final left = right + size * 0.2;
+    final bend = baseline + size * 0.2;
+    canvas
+      ..save()
+      ..setStrokeColor(
+        _pdfColor(last.format.fragment.color) ?? const PdfColor.gray(0),
+      )
+      ..setLineWidth(size * 0.06)
+      ..setLineCap(LineCap.round)
+      ..setLineJoin(LineJoin.round)
+      ..moveTo(left + size * 0.55, baseline + size * 0.6)
+      ..lineTo(left + size * 0.55, bend)
+      ..lineTo(left + size * 0.05, bend)
+      ..moveTo(left + size * 0.25, bend + size * 0.2)
+      ..lineTo(left + size * 0.05, bend)
+      ..lineTo(left + size * 0.25, bend - size * 0.2)
+      ..stroke()
+      ..restore();
+  }
+
   void _background(
     PdfCanvas canvas,
     Fragment fragment,
@@ -1014,6 +1108,7 @@ _Wrap _wrapOf(
   double width,
   double height, {
   required bool firstPiece,
+  double? continuedIndent,
   int? maxLines,
 }) => context.engine == PdfEngine.modern && layout.align == 'justify'
     ? _OptimalWrap(
@@ -1034,6 +1129,7 @@ _Wrap _wrapOf(
         width,
         height,
         firstPiece: firstPiece,
+        continuedIndent: continuedIndent,
         maxLines: maxLines,
       );
 
@@ -1047,11 +1143,17 @@ base class _Wrap {
     this._width,
     this._height, {
     required this.firstPiece,
+    this.continuedIndent,
     this.maxLines,
   });
 
   /// The most lines to set (all that fit when null).
   final int? maxLines;
+
+  /// The indent of lines that go on with a line that wrapped (see
+  /// [TextLayout.wrapIndent]): from the start when the text goes on with
+  /// one, else null; after [run], for the text left over.
+  double? continuedIndent;
 
   final List<_Item> _unconsumed;
   final TextState _state;
@@ -1118,7 +1220,7 @@ base class _Wrap {
       if (maxLines case final most? when lineNumber >= most) break;
       final indent = lineNumber == 0 && firstPiece
           ? _layout.indentFirstLine
-          : 0.0;
+          : continuedIndent ?? 0.0;
       try {
         _wrapLine(_width - indent);
       } on _CannotFit {
@@ -1129,6 +1231,7 @@ base class _Wrap {
       if (_enoughHeight()) {
         _moveBaselineDown();
         _printLine(indent);
+        _markWrap(indent);
         lineNumber++;
         if (_layout.singleLine) stop = true;
       } else {
@@ -1137,6 +1240,27 @@ base class _Wrap {
       stop = stop || _unconsumed.isEmpty;
     }
     return _lines;
+  }
+
+  /// Marks the line just printed when it wraps (its text goes on in the
+  /// next), and sets the indent of the lines it wraps onto: the line's
+  /// own indentation (its leading no-break spaces) and the layout's
+  /// [TextLayout.wrapIndent], at most half the width.
+  void _markWrap(double indent) {
+    final wrapIndent = _layout.wrapIndent;
+    if (wrapIndent == null && !_layout.wrapMarker) return;
+    if (_paragraphFinished) {
+      continuedIndent = null;
+      return;
+    }
+    _lines.last.wrapped = _layout.wrapMarker;
+    if (wrapIndent == null || continuedIndent != null) return;
+    var own = 0.0;
+    if (_lines.last.fragments.firstOrNull case final first?) {
+      final leading = RegExp('^[\u00a0 ]*').stringMatch(first.text) ?? '';
+      if (leading.isNotEmpty) own = _widthOf(leading, first.format);
+    }
+    continuedIndent = math.min(indent + own + wrapIndent, _width / 2);
   }
 
   // LineWrap.
@@ -1257,6 +1381,16 @@ base class _Wrap {
         } else {
           break;
         }
+      }
+      // Prawn drops the rest of the text when not even a character fits
+      // the line; the modern engine sets one anyway, past the edge.
+      if (_output.isEmpty &&
+          _lineEmptyNow &&
+          segment.isNotEmpty &&
+          _context.engine == PdfEngine.modern) {
+        final char = String.fromCharCode(segment.runes.first);
+        _accumulated += format.font.widthOf(char, format.size, kerning: false);
+        _output = char;
       }
     }
     _lineFull = true;

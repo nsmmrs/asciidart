@@ -319,4 +319,140 @@ base:
         ? false
         : 'needs poppler and qpdf',
   );
+
+  group('fragmentation', () {
+    /// The text of [pdf], every page in order, without whitespace (in
+    /// layout mode, which keeps hyphens at line ends).
+    String compact(String pdf) =>
+        (Process.runSync('pdftotext', ['-layout', pdf, '-']).stdout as String)
+            .replaceAll(RegExp(r'\s+'), '');
+
+    /// A listing of [lines] lines of distinct text, some indented, one
+    /// in [long] lines far wider than the page.
+    List<String> listing(int n, int lines, {int long = 0}) => [
+      for (var i = 0; i < lines; i++)
+        [
+          '${'  ' * (i % 3)}listing$n line$i = call(argument$i);',
+          if (long > 0 && i % long == long - 1) ' // ${'wide$n-$i ' * 24}',
+        ].join(),
+    ];
+
+    test('every listing line appears once, in order, within the margin', () {
+      final listings = [
+        for (var n = 0; n < 16; n++)
+          listing(n, 3 + (n * 7) % 37, long: n.isEven ? 5 : 0),
+      ];
+      final source = StringBuffer(':nofooter:\n\n');
+      for (final (n, lines) in listings.indexed) {
+        source
+          ..write('Paragraph $n before the listing. ' * (1 + n % 4))
+          ..write('\n\n');
+        if (n % 3 == 0) source.write('.Listing $n\n');
+        source.write('----\n${lines.join('\n')}\n----\n\n');
+      }
+      final pdf = _pdf(source.toString());
+      final text = compact(pdf);
+      for (final (n, lines) in listings.indexed) {
+        final whole = lines.join().replaceAll(RegExp(r'\s+'), '');
+        expect(whole.allMatches(text).length, 1, reason: 'listing $n');
+      }
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      const right = 595.28 - 48.24;
+      for (final m in RegExp(r'xMax="([\d.]+)"').allMatches(bbox)) {
+        expect(double.parse(m[1]!), lessThanOrEqualTo(right + 0.5));
+      }
+    });
+
+    test('a listing leaves neither a widow nor an orphan', () {
+      final code = listing(0, 12).join('\n');
+      for (var filler = 40; filler < 52; filler++) {
+        final source = [
+          ':nofooter:\n\n',
+          for (var i = 0; i < filler; i++) 'Filler line $i. +\n',
+          'Filler end.\n\n----\n$code\n----\n',
+        ].join();
+        final pages = _pages(_pdf(source));
+        if (pages.length < 2) continue;
+        bool ofListing(String line) => line.contains('listing0');
+        final before = pages[0].where(ofListing).length;
+        final after = pages[1].where(ofListing).length;
+        expect(
+          before == 0 || before >= 2,
+          isTrue,
+          reason: 'filler $filler: $before line(s) at the bottom',
+        );
+        expect(
+          after == 0 || after >= 2,
+          isTrue,
+          reason: 'filler $filler: $after line(s) at the top',
+        );
+      }
+    });
+
+    test('a caption stays with its listing', () {
+      final code = listing(0, 30).join('\n');
+      for (var filler = 40; filler < 50; filler++) {
+        final source = [
+          ':nofooter:\n\n',
+          for (var i = 0; i < filler; i++) 'Filler line $i. +\n',
+          'Filler end.\n\n.The caption\n----\n$code\n----\n',
+        ].join();
+        for (final page in _pages(_pdf(source))) {
+          final caption = page.indexWhere((l) => l.contains('The caption'));
+          if (caption < 0) continue;
+          expect(
+            caption + 1 < page.length && page[caption + 1].contains('listing0'),
+            isTrue,
+            reason: 'filler $filler: the caption ends its page',
+          );
+        }
+      }
+    });
+
+    test(
+      'text in a column too narrow for a character is kept, with a warning',
+      () {
+        final logger = MemoryLogger();
+        final pdf = _pdf(
+          ':nofooter:\n\n[cols="1,400"]\n|===\n|Wxyz |\n|===\n',
+          logger: logger,
+        );
+        expect(compact(pdf), contains('Wxyz'));
+        expect(logger.messages.map((m) => m.message.text), [
+          'table column 1 is too narrow for its text; the text overflows it',
+        ]);
+      },
+    );
+
+    test('a wrapped line goes on with a hanging indent', () {
+      final pdf = _pdf(
+        ':nofooter:\n\n----\n    start ${'word ' * 40}end\nnext\n----\n',
+      );
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      final words = [
+        for (final m in RegExp(
+          r'xMin="([\d.]+)" yMin="([\d.]+)"[^>]*>([^<]*)<',
+        ).allMatches(bbox))
+          (double.parse(m[1]!), double.parse(m[2]!), m[3]!),
+      ];
+      final start = words.firstWhere((w) => w.$3 == 'start');
+      final next = words.firstWhere((w) => w.$3 == 'next');
+      // The first word of each line after the first of the source line.
+      final continued = <double>[];
+      double? lastY;
+      for (final w in words) {
+        if (w.$2 <= start.$2 || w.$2 >= next.$2) continue;
+        if (w.$2 != lastY) continued.add(w.$1);
+        lastY = w.$2;
+      }
+      expect(continued, isNotEmpty);
+      // The default theme's code font size is 10.5... at 0.8: 8.4; 1em.
+      for (final x in continued) {
+        expect(x, greaterThan(start.$1));
+      }
+      expect(next.$1, lessThan(start.$1));
+    });
+  }, skip: _tools ? false : 'needs poppler');
 }
