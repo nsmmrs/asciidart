@@ -328,6 +328,7 @@ final class PdfConverter extends BuiltInConverter
       _inColumns = !book && columns >= 2;
       if (_inColumns) {
         final body = _collect(() {
+          _manNameSection(document);
           _traverse(document);
           _footnotes(document);
         });
@@ -339,6 +340,7 @@ final class PdfConverter extends BuiltInConverter
           ),
         );
       } else {
+        _manNameSection(document);
         _traverse(document);
         _footnotes(document);
       }
@@ -2301,6 +2303,30 @@ final class PdfConverter extends BuiltInConverter
       _document.doctype == 'article' &&
       section.sectname == 'abstract' &&
       _document.sections.whereType<Section>().firstOrNull == section;
+
+  /// Adds the name section of a man page, made from its `manname` and
+  /// `manpurpose` (the gem's `generate_manname_section`).
+  void _manNameSection(Document doc) {
+    if (doc.doctype != 'manpage' || !doc.hasAttr('manpurpose')) return;
+    var title = doc.attr('manname-title') ?? 'Name';
+    final next = doc.blocks.whereType<Section>().firstOrNull?.title;
+    if (next != null && next.toUpperCase() == next) {
+      title = title.toUpperCase();
+    }
+    final section = Section(doc, 1)
+      ..sectname = 'section'
+      ..id = doc.attr('manname-id')
+      ..title = title;
+    section.append(
+      Block(
+        section,
+        BlockContext.paragraph,
+        source: '${doc.attr('manname')} - ${doc.attr('manpurpose')}',
+        subs: const BlockSubs.spec('normal'),
+      ),
+    );
+    convertSection(section);
+  }
 
   /// The sections of [node] (an article's abstract isn't one).
   List<Section> _sectionsOf(AbstractBlock node) => [
