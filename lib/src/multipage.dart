@@ -244,6 +244,19 @@ class MultipageHtml5Converter extends Html5Converter
     subs: const BlockSubs.none(),
   );
 
+  /// [section]'s entry in the list of pages: its numbered title, or the
+  /// `multipage-toc-entry-template` (ADR-0010; `{{title}}`,
+  /// `{{basic-title}}`, `{{number}}`).
+  static String _entry(Document document, Section section) =>
+      switch (document.attr('multipage-toc-entry-template')) {
+        final template? => renderTemplate(template, {
+          'title': _title(section),
+          'basic-title': _plainTitle(section.title ?? ''),
+          'number': section.numbered ? section.sectnum() : null,
+        }),
+        null => _title(section),
+      };
+
   /// [title] as plain HTML (its links left out).
   static String _plainTitle(String title) =>
       title.replaceAll(RegExp('<a [^>]*>|</a>'), '');
@@ -279,7 +292,9 @@ class MultipageHtml5Converter extends Html5Converter
         '\n<ul class="multipage-sections">',
         for (final section in listed)
           [
-            '<li><a href="${page.href}#${section.id}">${_title(section)}</a>',
+            '<li><a href="${page.href}#${section.id}">',
+            _entry(document, section),
+            '</a>',
             sections(page, section),
             '</li>',
           ].join(),
@@ -292,7 +307,7 @@ class MultipageHtml5Converter extends Html5Converter
       // asciidart's `notoc` option: a page left out of the list.
       for (final page in pages.where((p) => !p.section.hasOption('notoc')))
         [
-          '<li><a href="${page.href}">${_title(page.section)}</a>',
+          '<li><a href="${page.href}">${_entry(document, page.section)}</a>',
           if (levels > 0) sections(page, page.section),
           if (page.children.isNotEmpty) '\n${items(page.children)}\n',
           '</li>',

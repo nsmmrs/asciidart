@@ -340,4 +340,12 @@ void main() {
       contains('<footer><a href="_chapter_b.html">Next: 2. Chapter B</a>'),
     );
   });
+
+  test('list entries from a template', () {
+    final root = _site(
+      _book,
+      attributes: {'multipage-toc-entry-template': '{{basic-title}}'},
+    )['book.html']!;
+    expect(root, contains('<a href="_chapter_a.html">Chapter A</a>'));
+  });
 }
