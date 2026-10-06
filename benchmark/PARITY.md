@@ -237,7 +237,9 @@ count. Of the other 34:
     fonts with Identity-H, where `.notdef` can't stand for several
     characters): `table-118`, `font-004`, `font-005`, `admonition-009`.
   - `footnote-027` and `source-069` differ in reading order only.
-- *Not done yet* (21):
+- *Hyphenation patterns* (1): `hyphens-006` breaks a word the gem's
+  patterns don't (see Intentional differences).
+- *Not done yet* (20):
   - Footnotes inside AsciiDoc table cells (`table-081`, `table-082`); a
     page break inside an AsciiDoc cell (`table-098`).
   - Autowidth tables: vertical alignment (`table-086`), inline images

@@ -3,6 +3,7 @@
 @TestOn('vm')
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:asciidart/src/internal.dart';
@@ -16,19 +17,35 @@ final bool _tools = _has('pdftotext');
 late Directory _dir;
 var _count = 0;
 
-/// [source] converted to PDF (in the compatibility mode with [compat]),
-/// its messages logged to [logger].
-String _pdf(String source, {bool compat = false, LoggerBase? logger}) {
+/// [source] converted to PDF (in the compatibility mode with [compat];
+/// with the theme [theme], YAML extending the default theme, its fonts
+/// in the test fonts), its messages logged to [logger].
+String _pdf(
+  String source, {
+  bool compat = false,
+  String? theme,
+  LoggerBase? logger,
+}) {
   final input = File('${_dir.path}/d${_count++}.adoc')
     ..writeAsStringSync(source);
   final out = '${input.path}.pdf';
+  final themeFile = theme == null
+      ? null
+      : (File('${input.path}-theme.yml')
+          ..writeAsStringSync('extends: default\n$theme'));
   convertFile(
     input.path,
     AsciidoctorOptions(
       safe: SafeMode.unsafe,
       backend: 'pdf',
       toFile: out,
-      attributes: {if (compat) 'pdf-compat': ''},
+      attributes: {
+        if (compat) 'pdf-compat': '',
+        if (themeFile != null) ...{
+          'pdf-theme': themeFile.path,
+          'pdf-fontsdir': '${Directory.current.path}/test/pdf/fixtures/fonts',
+        },
+      },
       logger: logger,
     ),
   );
@@ -153,6 +170,16 @@ void main() {
       );
     });
 
+    test('leaves code spans whole', () {
+      const code =
+          '`representational` `characteristically` `internationalization` '
+          '`disproportionately` `incomprehensibilities`';
+      final pdf = _pdf(
+        '[cols="1,3"]\n|===\na|[.text-justify]\n$code $code\n| \n|===\n',
+      );
+      expect(hyphenated(pdf), isFalse);
+    });
+
     test('is off with hyphens unset', () {
       expect(hyphenated(_pdf(narrow(':hyphens!:\n'))), isFalse);
     });
@@ -174,4 +201,122 @@ void main() {
       );
     });
   }, skip: _tools ? false : 'needs poppler');
+
+  group(
+    'typography',
+    () {
+      // Yrsa, which has standard ligatures (fi) and GPOS kerning.
+      const yrsa = '''
+font:
+  catalog:
+    Yrsa:
+      normal: yrsa-regular-latin.ttf
+      italic: yrsa-italic-latin.ttf
+      bold: yrsa-regular-latin.ttf
+      bold_italic: yrsa-italic-latin.ttf
+base:
+  font-family: Yrsa
+''';
+
+      /// The glyphs the pages of [pdf] show (2 bytes each in a CID font).
+      int glyphs(String pdf) {
+        final qdf =
+            Process.runSync('qpdf', [
+                  '--qdf',
+                  '--object-streams=disable',
+                  pdf,
+                  '-',
+                ], stdoutEncoding: latin1).stdout
+                as String;
+        var count = 0;
+        for (final array in RegExp(r'\[([^\]]*)\]\s*TJ').allMatches(qdf)) {
+          for (final hex in RegExp('<([0-9a-fA-F]*)>').allMatches(array[1]!)) {
+            count += hex[1]!.length ~/ 4;
+          }
+        }
+        return count;
+      }
+
+      test('standard ligatures, unless the theme turns them off', () {
+        const text = 'The official office files.';
+        final ligated = glyphs(_pdf(text, theme: yrsa));
+        final plain = glyphs(
+          _pdf(text, theme: '${yrsa}base_font_ligatures: none\n'),
+        );
+        expect(ligated, lessThan(plain));
+        // The same text either way.
+        expect(
+          _pages(_pdf(text, theme: yrsa)).first,
+          _pages(_pdf(text, theme: '${yrsa}base_font_ligatures: none\n')).first,
+        );
+      });
+
+      /// The fonts [pdf] uses, by PostScript name (without the subset tag).
+      Set<String> fonts(String pdf) => {
+        for (final line
+            in (Process.runSync('pdffonts', [pdf]).stdout as String)
+                .split('\n')
+                .skip(2))
+          if (line.trim().isNotEmpty) line.split(' ').first.split('+').last,
+      };
+
+      test('emphasis inside italic text is upright', () {
+        const source =
+            ':nofooter:\n\npass:[<em>Outer <em>inner</em> outer.</em>]';
+        expect(fonts(_pdf(source)), {'NotoSerif-Italic', 'NotoSerif'});
+        // The compatibility mode sets it all in italic, as the gem does.
+        expect(fonts(_pdf(source, compat: true)), {'NotoSerif-Italic'});
+        expect(fonts(_pdf(source, theme: 'base_emphasis_inversion: false\n')), {
+          'NotoSerif-Italic',
+        });
+      });
+
+      test('emphasis in an italic block is upright', () {
+        const source =
+            ':nofooter:\n\n[verse]\n____\nAn _emphasized_ word.\n____\n';
+        const theme = 'verse_font_style: italic\n';
+        expect(fonts(_pdf(source, theme: theme)), {
+          'NotoSerif-Italic',
+          'NotoSerif',
+        });
+      });
+
+      test('first-line indents skip the first paragraph after a heading or '
+          'a block', () {
+        const theme = 'prose_text_indent_inner: 24\nprose_margin_inner: 0\n';
+        final pdf = _pdf(
+          '== Heading\n\nFirst paragraph.\n\nSecond paragraph.\n\n'
+          '* item\n\nAfter the list.\n\nAnd another.\n',
+          theme: theme,
+        );
+        final bbox =
+            Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+        double x(String word) => double.parse(
+          RegExp('xMin="([\\d.]+)"[^>]*>$word<').firstMatch(bbox)![1]!,
+        );
+        const margin = 48.24;
+        expect(x('First'), closeTo(margin, 0.01));
+        expect(x('Second'), closeTo(margin + 24, 0.01));
+        expect(x('After'), closeTo(margin, 0.01));
+        expect(x('And'), closeTo(margin + 24, 0.01));
+      });
+
+      test('an indent may be given in ems', () {
+        // The default theme's base font size is 10.5.
+        final pdf = _pdf(
+          'First paragraph.\n\nSecond paragraph.\n',
+          theme: 'prose_text_indent_inner: 2em\n',
+        );
+        final bbox =
+            Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+        final x = double.parse(
+          RegExp(r'xMin="([\d.]+)"[^>]*>Second<').firstMatch(bbox)![1]!,
+        );
+        expect(x, closeTo(48.24 + 21, 0.01));
+      });
+    },
+    skip: _tools && _has('qpdf') && _has('pdffonts')
+        ? false
+        : 'needs poppler and qpdf',
+  );
 }

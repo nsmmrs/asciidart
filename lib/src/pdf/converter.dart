@@ -239,6 +239,19 @@ final class PdfConverter extends BuiltInConverter
 
   String? _s(String key) => _theme.string(key);
   num? _n(String key) => _theme.number(key);
+
+  /// [key] as a length in points: a number, or in the modern engine also
+  /// a multiple of [emSize] (`1.5em`) or of the root font size (`2rem`).
+  double? _length(String key, double emSize) => switch (_theme.value(key)) {
+    ThemeNumber(:final value) => value.toDouble(),
+    ThemeString(:final value) when _engine == PdfEngine.modern =>
+      switch (RegExp(r'^(\d+(?:\.\d+)?|\.\d+)(r?em)$').firstMatch(value)) {
+        final m? =>
+          double.parse(m[1]!) * (m[2] == 'em' ? emSize : _rootFontSize),
+        null => null,
+      },
+    _ => null,
+  };
   ThemeColor? _c(String key) => themeColor(_theme.value(key));
 
   // The document.
@@ -264,6 +277,7 @@ final class PdfConverter extends BuiltInConverter
       fontsDir: document
           .attr('pdf-fontsdir')
           ?.replaceAll('{docdir}', document.attr('docdir') ?? ''),
+      shaping: _shaping,
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
     final (_, pageHeight) = _pageSize(document);
@@ -280,7 +294,7 @@ final class PdfConverter extends BuiltInConverter
       engine: _engine,
       logger: logger,
     );
-    _markup = MarkupTransform(_theme);
+    _markup = MarkupTransform(theme: _theme, invertEmphasis: _invertEmphasis);
     _cjkLineBreaks = document.attr('scripts') == 'cjk';
     _resolveHyphenation(document);
     _baseTextAlign = switch (document.attr('text-align')) {
@@ -2294,10 +2308,14 @@ final class PdfConverter extends BuiltInConverter
       if (roleAlign != null) break;
     }
     final align = roleAlign ?? textAlign ?? _baseTextAlign;
+    var font = _font;
+    for (final role in roles) {
+      font = _themeFont('role_$role', font);
+    }
     var indent = 0.0;
     if (align == 'justify' || align == 'left') {
-      final textIndent = (_n('prose_text_indent') ?? 0).toDouble();
-      final inner = (_n('prose_text_indent_inner') ?? 0).toDouble();
+      final textIndent = _length('prose_text_indent', font.size) ?? 0;
+      final inner = _length('prose_text_indent_inner', font.size) ?? 0;
       if (textIndent > 0) {
         indent = textIndent;
       } else if (inner > 0 &&
@@ -2311,10 +2329,6 @@ final class PdfConverter extends BuiltInConverter
         innerMargin != null && next?.context == BlockContext.paragraph
         ? innerMargin.toDouble()
         : _themeMargin('prose', 'bottom', next);
-    var font = _font;
-    for (final role in roles) {
-      font = _themeFont('role_$role', font);
-    }
     var content = node.content() ?? '';
     if (font.transform case final transform? when transform != 'none') {
       content = transformText(content, transform);
@@ -5850,13 +5864,18 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// [markup] with soft hyphens where its words may break, when text set
-  /// with [align] is hyphenated (the gem's `hyphenate_text`).
+  /// with [align] is hyphenated (the gem's `hyphenate_text`; the modern
+  /// engine leaves code spans whole).
   String _hyphenated(String markup, String align) {
     final hyphenator = _hyphenator;
     if (hyphenator == null || (!_hyphenateAll && align != 'justify')) {
       return markup;
     }
-    return hyphenateMarkup(markup, hyphenator);
+    return hyphenateMarkup(
+      markup,
+      hyphenator,
+      skipCode: _engine == PdfEngine.modern,
+    );
   }
 
   /// Whether a line may break before any CJK character (the document's
@@ -6651,8 +6670,11 @@ final class PdfConverter extends BuiltInConverter
         _document = doc;
         _engine = PdfEngine.of(doc, NullLogger());
         _theme = _prepareTheme(_loadTheme(doc));
-        _fonts = FontCatalog(_theme);
-        _markup = MarkupTransform(_theme);
+        _fonts = FontCatalog(_theme, shaping: _shaping);
+        _markup = MarkupTransform(
+          theme: _theme,
+          invertEmphasis: _invertEmphasis,
+        );
         _ready = true;
       }
     }
@@ -6664,6 +6686,27 @@ final class PdfConverter extends BuiltInConverter
 
   /// The layout engine the document asks for (`pdf-compat`).
   PdfEngine _engine = PdfEngine.modern;
+
+  /// Whether emphasis is set against its surroundings (upright in italic
+  /// text): in the modern engine, unless the theme's
+  /// `base_emphasis_inversion` is false.
+  bool get _invertEmphasis =>
+      _engine == PdfEngine.modern &&
+      switch (_theme.value('base_emphasis_inversion')) {
+        ThemeBool(:final value) => value,
+        ThemeString(value: 'false' || 'none') => false,
+        _ => true,
+      };
+
+  /// How text becomes glyphs: as Prawn shapes it, or in the modern engine
+  /// as OpenType does (GPOS kerning, and the standard ligatures unless the
+  /// theme's `base_font_ligatures` is `none`).
+  Shaping get _shaping => switch (_engine) {
+    PdfEngine.asciidoctorPdf => Shaping.prawn,
+    PdfEngine.modern when _s('base_font_ligatures') == 'none' =>
+      Shaping.opentype,
+    PdfEngine.modern => Shaping.ligatures,
+  };
 
   /// Whether the document is being converted (rather than parsed: inline
   /// content converted for a title's id, which the gem converts before

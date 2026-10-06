@@ -55,12 +55,39 @@ sealed class PrawnFont {
 
   /// Whether the font has a glyph for [codePoint].
   bool hasGlyph(int codePoint);
+
+  /// Whether the font's characters are all as wide (it isn't ligated).
+  bool get fixedPitch;
+
+  /// How text in the font becomes glyphs.
+  Shaping get shaping;
+
+  /// Whether text in the font is ligated (never in a fixed-pitch font).
+  bool get ligates => shaping.ligates && !fixedPitch;
+}
+
+/// How text becomes glyphs, for measuring and drawing it.
+enum Shaping {
+  /// As Prawn shapes it: a glyph per character, kerned by the font's kern
+  /// table (its first subtable), or by the AFM pairs as Prawn reads them.
+  prawn,
+
+  /// As libpdf shapes it: kerned by the font's GPOS pairs (or its kern
+  /// table).
+  opentype,
+
+  /// As libpdf shapes it, with the font's standard ligatures (`liga`).
+  ligatures;
+
+  /// Whether the font's standard ligatures are used.
+  bool get ligates => this == ligatures;
 }
 
 /// A TrueType (or OpenType) font.
 final class TrueTypeFont extends PrawnFont {
   /// The font of [pdf] in [family] and [style].
-  new(super.family, super.style, this.pdf) : super._() {
+  new(super.family, super.style, this.pdf, [this.shaping = Shaping.prawn])
+    : super._() {
     final font = pdf.font;
     _scale = 1000 / font.unitsPerEm;
     int pick(int? typo, int hhea) => typo != null && typo != 0 ? typo : hhea;
@@ -71,6 +98,9 @@ final class TrueTypeFont extends PrawnFont {
 
   @override
   final EmbeddedFont pdf;
+
+  @override
+  final Shaping shaping;
 
   late final double _scale;
 
@@ -95,6 +125,15 @@ final class TrueTypeFont extends PrawnFont {
 
   @override
   double widthOf(String text, double size, {bool kerning = true}) {
+    if (shaping != Shaping.prawn) {
+      var width = 0.0;
+      final glyphs = pdf.shape(text, kerning: kerning, ligatures: ligates);
+      for (final (i, glyph) in glyphs.indexed) {
+        width += glyph.advance;
+        if (i < glyphs.length - 1) width += glyph.kerning;
+      }
+      return width * size / 1000;
+    }
     var total = 0.0;
     int? previous;
     for (final rune in text.runes) {
@@ -115,15 +154,22 @@ final class TrueTypeFont extends PrawnFont {
 
   @override
   bool hasGlyph(int codePoint) => pdf.font.glyphFor(codePoint) > 0;
+
+  @override
+  bool get fixedPitch => pdf.font.isFixedPitch;
 }
 
 /// One of the 14 standard fonts, from its AFM file.
 final class AfmFont extends PrawnFont {
   /// The standard font [pdf] in [family] and [style].
-  new(super.family, super.style, this.pdf) : super._();
+  new(super.family, super.style, this.pdf, [this.shaping = Shaping.prawn])
+    : super._();
 
   @override
   final StandardFont pdf;
+
+  @override
+  final Shaping shaping;
 
   @override
   double get ascender => pdf.ascender;
@@ -141,6 +187,9 @@ final class AfmFont extends PrawnFont {
 
   @override
   double widthOf(String text, double size, {bool kerning = true}) {
+    if (shaping != Shaping.prawn) {
+      return pdf.widthOf(text, size, kerning: kerning);
+    }
     final width = pdf.widthOf(text, size, kerning: false);
     if (!kerning) return width;
     var kern = 0.0;
@@ -173,6 +222,9 @@ final class AfmFont extends PrawnFont {
 
   @override
   bool hasGlyph(int codePoint) => pdf.covers(codePoint);
+
+  @override
+  bool get fixedPitch => pdf.name.startsWith('Courier');
 
   /// The characters Windows-1252 lacks that become others.
   static const Map<int, String> _fallbackChars = {
@@ -258,8 +310,9 @@ final class FontException implements Exception {
 final class FontCatalog {
   /// The catalog of [theme], its font files looked up in [fontsDir] (a
   /// list separated by `;` or `,`, `GEM_FONTS_DIR` naming the bundled
-  /// fonts; by default the theme's directory, then the bundled fonts).
-  new(Theme theme, {String? fontsDir})
+  /// fonts; by default the theme's directory, then the bundled fonts),
+  /// text in them shaped by [shaping].
+  new(Theme theme, {String? fontsDir, this.shaping = Shaping.prawn})
     : _catalog = theme.fontCatalog?.families ?? const {},
       _dirs = [
         for (final dir
@@ -270,6 +323,9 @@ final class FontCatalog {
                 .split(RegExp('[;,]')))
           if (dir.isEmpty) 'GEM_FONTS_DIR' else dir,
       ];
+
+  /// How text in the fonts becomes glyphs.
+  final Shaping shaping;
 
   final Map<String, Map<String, String>> _catalog;
   final List<String> _dirs;
@@ -334,15 +390,7 @@ final class FontCatalog {
 
   PrawnFont _load(String family, String style) {
     if (iconFontFiles[family] case final path?) {
-      return TrueTypeFont(
-        family,
-        'normal',
-        EmbeddedFont.parse(
-          _bundled(path),
-          truncateWidths: true,
-          kernTableSubtable: 0,
-        ),
-      );
+      return TrueTypeFont(family, 'normal', _embedded(_bundled(path)), shaping);
     }
     if (_catalog[family] case final styles?) {
       final path = styles[style];
@@ -351,22 +399,20 @@ final class FontCatalog {
           'font style $style not found for font family $family',
         );
       }
-      return TrueTypeFont(
-        family,
-        style,
-        EmbeddedFont.parse(
-          _file(path),
-          truncateWidths: true,
-          kernTableSubtable: 0,
-        ),
-      );
+      return TrueTypeFont(family, style, _embedded(_file(path)), shaping);
     }
     if (_builtInFamilies[family] case final styles?) {
       final name = styles[style] ?? styles['normal']!;
-      return AfmFont(family, style, StandardFont.named(name));
+      return AfmFont(family, style, StandardFont.named(name), shaping);
     }
     throw FontException('font family $family not found');
   }
+
+  /// The font in [bytes]: as Prawn reads it (widths truncated, kerned by
+  /// the kern table's first subtable), or as OpenType has it.
+  EmbeddedFont _embedded(List<int> bytes) => shaping == Shaping.prawn
+      ? EmbeddedFont.parse(bytes, truncateWidths: true, kernTableSubtable: 0)
+      : EmbeddedFont.parse(bytes);
 
   List<int> _bundled(String path) => _files[path] ??=
       PdfAssets.bytes(path) ?? (throw FontException('$path not found'));

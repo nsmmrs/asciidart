@@ -45,9 +45,13 @@ Asciidoctor project.
   By default the layout is asciidart's own: justified paragraphs are
   broken where their spacing is most even (Knuth and Plass) and
   hyphenated in the document's language (hyph-utf8's patterns, 72
-  languages; `:hyphens!:` turns it off), and a paragraph leaves at least
-  two lines on either side of a page break (`prose_orphans`,
-  `prose_widows`). With `-a pdf-compat` the layout is the gem's, and
+  languages; `:hyphens!:` turns it off; code spans stay whole), and a
+  paragraph leaves at least two lines on either side of a page break
+  (`prose_orphans`, `prose_widows`). Text is kerned by the font's GPOS
+  pairs and set with its standard ligatures (`base_font_ligatures: none`
+  turns them off), emphasis inside italic text is upright
+  (`base_emphasis_inversion`), and paragraph indents may be given in
+  `em` or `rem`. With `-a pdf-compat` the layout is the gem's, and
   `hyphens` and `base_hyphens` hyphenate as the gem does with text-hyphen.
   In that mode, 763 of the 797 documents of the gem's spec suite convert the same (words,
   positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),

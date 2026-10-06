@@ -8,7 +8,7 @@ import 'package:asciidart/src/pdf/theme.dart';
 import 'package:test/test.dart';
 
 List<Fragment> format(String text, [Theme? theme]) =>
-    MarkupTransform(theme).apply(parseMarkup(text)!);
+    MarkupTransform(theme: theme).apply(parseMarkup(text)!);
 
 void main() {
   group('parse', () {

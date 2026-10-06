@@ -212,6 +212,10 @@ enum FragmentStyle {
 
   /// Normal (clears bold and italic when merged).
   normal,
+
+  /// Emphasized, as the modern engine sets emphasis: italic in upright
+  /// text, upright in italic text (nested emphasis toggles it).
+  emphasis,
 }
 
 /// What draws a fragment besides its text.
@@ -482,10 +486,14 @@ Set<FragmentStyle>? toStyles(String? fontStyle, [String? textDecoration]) {
 final class MarkupTransform {
   /// A transform with the settings of [theme] (built-in defaults when
   /// null).
-  new([Theme? theme])
+  new({Theme? theme, this.invertEmphasis = false})
     : _settings = theme == null ? _defaults() : _fromTheme(theme);
 
   final Map<String, FragmentSettings> _settings;
+
+  /// Whether emphasis is set against its surroundings
+  /// ([FragmentStyle.emphasis]) rather than always in italic.
+  final bool invertEmphasis;
 
   static Map<String, FragmentSettings> _defaults() => {
     'button': FragmentSettings(font: 'Courier', styles: {FragmentStyle.bold}),
@@ -770,6 +778,10 @@ final class MarkupTransform {
     switch (tag) {
       case 'strong':
         styles.add(FragmentStyle.bold);
+      case 'em' when invertEmphasis:
+        if (!styles.remove(FragmentStyle.emphasis)) {
+          styles.add(FragmentStyle.emphasis);
+        }
       case 'em':
         styles.add(FragmentStyle.italic);
       case 'button' || 'code' || 'kbd' || 'mark' || 'menu':

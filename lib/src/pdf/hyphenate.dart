@@ -65,20 +65,33 @@ const String _softHyphen = '­';
 
 /// [markup] (inline markup: tags and character references) with soft
 /// hyphens where [hyphenator] may break its words, but in bare links
-/// (asciidoctor-pdf's `hyphenate_words_pcdata`).
-String hyphenateMarkup(String markup, PatternHyphenator hyphenator) {
+/// (asciidoctor-pdf's `hyphenate_words_pcdata`), and with [skipCode] but
+/// in code spans.
+String hyphenateMarkup(
+  String markup,
+  PatternHyphenator hyphenator, {
+  bool skipCode = false,
+}) {
   String words(String text) => text.replaceAllMapped(
     RegExp(r'[\p{L}\p{M}\p{N}\p{Pc}]+', unicode: true),
     (m) => _hyphenateWord(m[0]!, hyphenator),
   );
   if (!markup.contains('<') && !markup.contains('&')) return words(markup);
-  var skipping = false;
+  var inLink = false;
+  var inCode = 0;
   return markup.replaceAllMapped(RegExp(r'(&#?[a-z\d]+;|<[^>]+>)|([^&<]+)'), (
     m,
   ) {
-    if (m[2] case final text?) return skipping ? text : words(text);
+    if (m[2] case final text?) {
+      return inLink || inCode > 0 ? text : words(text);
+    }
     final tag = m[1]!;
-    skipping = skipping
+    if (skipCode && (tag == '<code>' || tag.startsWith('<code '))) {
+      inCode++;
+    } else if (skipCode && tag == '</code>' && inCode > 0) {
+      inCode--;
+    }
+    inLink = inLink
         ? tag != '</a>'
         : tag.startsWith('<a ') && RegExp(' class="bare[" ]').hasMatch(tag);
     return tag;

@@ -352,8 +352,26 @@ final class PrawnTextBox implements CustomContent {
     TextContext context,
   ) {
     final styles = fragment.styles ?? const {};
-    final bold = styles.contains(FragmentStyle.bold);
-    final italic = styles.contains(FragmentStyle.italic);
+    var bold = styles.contains(FragmentStyle.bold);
+    var italic = styles.contains(FragmentStyle.italic);
+    if (styles.contains(FragmentStyle.emphasis)) {
+      // Against its surroundings: the fragment's other styles and the
+      // state's.
+      bold = bold || state.style.contains('bold');
+      italic = !(italic || state.style.contains('italic'));
+      final style = bold && italic
+          ? 'bold_italic'
+          : bold
+          ? 'bold'
+          : italic
+          ? 'italic'
+          : 'normal';
+      return _Format(
+        fragment,
+        _font(fragment.font ?? state.family, style, context),
+        _sizeOf(fragment, styles, state, context),
+      );
+    }
     final style = bold && italic
         ? 'bold_italic'
         : bold
@@ -367,6 +385,15 @@ final class PrawnTextBox implements CustomContent {
     } else {
       font = _font(state.family, state.style, context);
     }
+    return _Format(fragment, font, _sizeOf(fragment, styles, state, context));
+  }
+
+  static double _sizeOf(
+    Fragment fragment,
+    Set<FragmentStyle> styles,
+    TextState state,
+    TextContext context,
+  ) {
     var size = switch (fragment.size) {
       null => state.size,
       final s => resolveFontSize(s, state.size, context.rootSize),
@@ -375,7 +402,7 @@ final class PrawnTextBox implements CustomContent {
         styles.contains(FragmentStyle.superscript)) {
       size *= 0.583;
     }
-    return _Format(fragment, font, size);
+    return size;
   }
 
   static PrawnFont _font(String family, String style, TextContext context) {
@@ -862,6 +889,7 @@ final class PrawnTextBox implements CustomContent {
                 wordSpacing: f.wordSpacing,
                 characterSpacing: _state.characterSpacing,
                 kerning: _state.kerning,
+                ligatures: f.format.font.ligates,
               ),
             )
             ..restore();

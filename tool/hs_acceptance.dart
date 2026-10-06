@@ -6,6 +6,9 @@
 // Usage: dart run tool/hs_acceptance.dart [--exe PATH] [--out DIR]
 //            [--report FILE]
 //
+// With --report, the results table replaces the one in FILE (such as
+// benchmark/HS.md), the rest kept; a new FILE has the table alone.
+//
 // The sources (bigskysoftware/hypermedia-systems-old, whose book/ isn't
 // under its repository's license) are cloned at a pinned commit into
 // ~/.cache/asciidart-work/hs-old and never vendored; EPUBCheck and the
@@ -214,7 +217,7 @@ Future<void> main(List<String> args) async {
     table.writeln('| $check | $result | ${detail.replaceAll('|', r'\|')} |');
   }
   stdout.write(table);
-  if (report != null) File(report).writeAsStringSync(table.toString());
+  if (report != null) _writeReport(File(report), table.toString());
 }
 
 /// The sources at the pinned commit, with the master file at the root of
@@ -298,6 +301,36 @@ Map<String, int> _listingLines(Directory sources) {
     }
   }
   return counts;
+}
+
+/// Writes [table] into [file] in place of the table there (and the date
+/// of the `## Latest run` heading), or alone into a new file.
+void _writeReport(File file, String table) {
+  if (!file.existsSync()) {
+    file.writeAsStringSync(table);
+    return;
+  }
+  final lines = file.readAsLinesSync();
+  final start = lines.indexWhere((line) => line.startsWith('| Check |'));
+  if (start < 0) {
+    file.writeAsStringSync('${lines.join('\n')}\n\n$table');
+    return;
+  }
+  var end = start;
+  while (end < lines.length && lines[end].startsWith('|')) {
+    end++;
+  }
+  final today = DateTime.now().toIso8601String().substring(0, 10);
+  final kept = [
+    for (final line in lines.sublist(0, start))
+      if (line.startsWith('## Latest run ('))
+        '## Latest run ($today)'
+      else
+        line,
+    table.trimRight(),
+    ...lines.sublist(end),
+  ];
+  file.writeAsStringSync('${kept.join('\n')}\n');
 }
 
 /// [page] without its last line that has text.
