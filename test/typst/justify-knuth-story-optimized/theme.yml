@@ -1,0 +1,6 @@
+extends: ./../base-theme.yml
+page:
+  size: [152pt, 2000pt]
+base:
+  text-align: justify
+  font-family: New Computer Modern

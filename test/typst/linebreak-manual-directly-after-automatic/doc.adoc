@@ -1,0 +1,2 @@
+Hard break directly after +
+normal break.
