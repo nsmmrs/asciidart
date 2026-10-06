@@ -22,6 +22,7 @@ import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
+import 'package:asciidart/src/pdf/highlight_style.dart';
 import 'package:asciidart/src/pdf/hyphenate.dart';
 import 'package:asciidart/src/pdf/icons.dart';
 import 'package:asciidart/src/pdf/index.dart';
@@ -5031,6 +5032,16 @@ final class PdfConverter extends BuiltInConverter
     final font = _themeFont('code', _font);
     var source = '';
     _withFont('code', () => source = _guardIndentation(node.content() ?? ''));
+    // Highlighted by hilite (`source-highlighter=highlight.js`): the
+    // modern engine colors the tokens as the `highlightjs-theme` does
+    // (github by default); the gem leaves them as text.
+    if (_engine == PdfEngine.modern && source.contains('<span class="hljs-')) {
+      final theme = _document.attr('highlightjs-theme') ?? 'github';
+      if (_highlightStyles.putIfAbsent(theme, () => HighlightStyle.named(theme))
+          case final style?) {
+        source = style.markup(source);
+      }
+    }
     final captionBelow = _s('code_caption_end') == 'bottom';
     if (!captionBelow && node.hasTitle) _caption(node, category: 'code');
     // The modern engine splits a listing between lines, leaving at least
@@ -5091,6 +5102,9 @@ final class PdfConverter extends BuiltInConverter
       if (margin > 0) _out.add(SpacerBox(margin));
     }
   }
+
+  /// The highlight.js themes read, by name.
+  final Map<String, HighlightStyle?> _highlightStyles = {};
 
   /// Converts the passthrough block [node]: its content as code text
   /// (the gem's `convert_pass`).

@@ -76,6 +76,12 @@ at the bottom of the next page.
 | `code_wrap_indent` | `1em` | How far past its own indentation a code line that is too long goes on, on the next line. |
 | `code_wrap_marker` | arrow | `none` leaves out the return arrow drawn past the end of a line that wraps. |
 
+With `source-highlighter=highlight.js`, source blocks are highlighted by
+hilite (the highlighter the HTML backends use) and their tokens set in the
+colors, weights and styles of the highlight.js theme `highlightjs-theme`
+names (`github` by default; any of highlight.js 11.12.0's themes). The
+block's background stays the PDF theme's.
+
 A caption stays with the block it is above. Callout markers aren't part
 of the text when code is copied, and link to their callout list item,
 which links back.

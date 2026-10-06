@@ -755,6 +755,43 @@ base:
     });
   }, skip: _tools ? false : 'needs poppler');
 
+  group('syntax highlighting', () {
+    const source =
+        '= Doc\n:source-highlighter: highlight.js\n\n'
+        '[source,python]\n----\ndef index(): # <1>\n    return 1\n----\n'
+        '<1> A function.\n';
+
+    /// The page content of [pdf], uncompressed.
+    String content(String pdf) {
+      final out = '$pdf.qdf';
+      Process.runSync('qpdf', ['--qdf', '--object-streams=disable', pdf, out]);
+      return latin1.decode(File(out).readAsBytesSync());
+    }
+
+    // GitHub's keyword color, #d73a49.
+    const keyword = '0.84314 0.22745 0.28627 rg';
+
+    test('colors the tokens as the highlight.js theme does', () {
+      expect(content(_pdf(source)), contains(keyword));
+      final text = _pages(_pdf(source)).first.join('\n');
+      expect(text, contains('def index():'));
+      expect(text, contains('A function.'));
+    });
+
+    test('in the theme highlightjs-theme names', () {
+      final monokai = content(
+        _pdf(source.replaceFirst('\n\n', '\n:highlightjs-theme: monokai\n\n')),
+      );
+      expect(monokai, isNot(contains(keyword)));
+      // Monokai's keyword color, #f92672.
+      expect(monokai, contains('0.97647 0.14902 0.44706 rg'));
+    });
+
+    test('not in the compatibility mode, as in the gem', () {
+      expect(content(_pdf(source, compat: true)), isNot(contains(keyword)));
+    });
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a
     // one-page chapter leaves a blank verso page before the next.

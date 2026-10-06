@@ -86,6 +86,15 @@ Asciidoctor project.
 - Old-style numerals and small capitals from the font's OpenType
   features (`base_font_variant_numeric: oldstyle-nums`,
   `role_<role>_font_variant: small-caps`), in the modern PDF engine.
+- Books in the modern PDF engine: footnotes at the bottom of the page
+  (`footnotes_placement`), links' URIs as footnotes
+  (`show-link-uri=footnote`), chapter and part openers without running
+  content and with their label on a line of their own
+  (`heading_h2_label_display`), `noheader` and `nofooter` on a section,
+  an index with each page once and page numbers in a column
+  (`index_pagenum_text_align`, `index_category_headings`, `index_font_*`),
+  and source code highlighted by hilite in a highlight.js theme
+  (`source-highlighter=highlight.js`, `highlightjs-theme`).
 - Print: `pdf-standard=PDF/X-4` with an output intent
   (`pdf-output-intent`, the printer's ICC profile), a bleed from the
   theme (`page_bleed`), and a layout report of the blocks that break

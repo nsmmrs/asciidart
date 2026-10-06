@@ -53,3 +53,11 @@ the icon fonts of prawn-icon 3.0.0, the gem's icon dependency) and the
 | `test/spec/` | the spec suite (`*.rb`, `spec_helper/`, `fixtures/`; not the reference PNGs) |
 | `test/examples/` | the example documents |
 
+## highlight.js-styles/
+
+The themes of [highlight.js](https://highlightjs.org) 11.12.0 (the release
+hilite ports), BSD-3-Clause (`highlight.js-styles/LICENSE`): the minified
+stylesheets of its `styles/` directory, which the modern PDF engine reads
+for the colors of highlighted code (`highlightjs-theme`).
+`tool/vendor_hljs_styles.sh` recreates the directory from the npm package
+and regenerates `lib/src/pdf/hljs_styles.g.dart`.
