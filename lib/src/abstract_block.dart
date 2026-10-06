@@ -13,6 +13,7 @@ import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/document.dart' show DocumentAttributeEntry;
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/inline_tree.dart';
+import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/substitutors.dart' show applySubsTree;
@@ -508,7 +509,15 @@ abstract class AbstractBlock extends AbstractNode {
     if (attrName != null && prefix != null) {
       final kind = figure ? 'figure' : context.asciidoc;
       numeral = document!.incrementAndStoreCounter('$kind-number', this);
-      _caption = '$prefix $numeral. ';
+      // asciidart's `<kind>-caption-template` (ADR-0010): the caption from
+      // a template of `{{caption}}` and `{{number}}`.
+      _caption = switch (document!.attributes['$attrName-template']) {
+        final String template => renderTemplate(template, {
+          'caption': prefix,
+          'number': '$numeral',
+        }),
+        null => '$prefix $numeral. ',
+      };
     }
   }
 
@@ -527,9 +536,17 @@ abstract class AbstractBlock extends AbstractNode {
     if (sectname == 'appendix') {
       section.numeral = document!.counter('appendix-number', 'A');
       final caption = document!.attributes['appendix-caption'];
-      section.caption = caption == null
-          ? '${section.numeral}. '
-          : '$caption ${section.numeral}: ';
+      section.caption =
+          switch (document!.attributes['appendix-caption-template']) {
+            final String template => renderTemplate(template, {
+              'caption': caption,
+              'number': '${section.numeral}',
+            }),
+            null =>
+              caption == null
+                  ? '${section.numeral}. '
+                  : '$caption ${section.numeral}: ',
+          };
     } else if (sectname == 'chapter' || target.chapterNumbering) {
       section.numeral = document!.counter('chapter-number', '1');
     } else {

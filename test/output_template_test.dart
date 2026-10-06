@@ -36,4 +36,33 @@ void main() {
       expect(html, contains('(<a href="#_footnoteref_1">1</a>) A note.'));
     });
   });
+
+  group('caption numbers', () {
+    test('come from <kind>-caption-template', () {
+      final html = asciidoc.convert(
+        ':listing-caption: Listing\n'
+        ':listing-caption-template: pass:[{{caption}} {{number}}: ]\n'
+        ':figure-caption-template: {{caption}} {{number}} —{sp}\n\n'
+        '.A route\n----\ncode\n----\n\n.A picture\nimage::pic.png[]\n',
+      );
+      expect(html, contains('<div class="title">Listing 1: A route</div>'));
+      expect(html, contains('<div class="title">Figure 1 — A picture</div>'));
+    });
+
+    test("are Asciidoctor's without a template", () {
+      final html = asciidoc.convert(
+        ':listing-caption: Listing\n\n.A route\n----\ncode\n----\n',
+      );
+      expect(html, contains('<div class="title">Listing 1. A route</div>'));
+    });
+
+    test('of appendices too', () {
+      final html = asciidoc.convert(
+        '= Book\n:doctype: book\n'
+        ':appendix-caption-template: pass:[{{caption}} {{number}} — ]\n\n'
+        '[appendix]\n== Extra\n\nText.\n',
+      );
+      expect(html, contains('Appendix A — Extra'));
+    });
+  });
 }

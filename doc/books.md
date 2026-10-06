@@ -67,6 +67,23 @@ number: `:footnote-reference-template: {{number}}` (the default is
 EPUB; `footnotes_reference_content` and `footnotes_label_content` in a
 PDF theme). The number stays a link to the note and back.
 
+## Caption numbers
+
+A caption's number comes from a template (ADR-0010) where the book
+wants it otherwise than `Listing 36. `: `<kind>-caption-template` for
+`listing`, `figure`, `table`, `example` and `appendix`, with
+`{{caption}}` (the word: `listing-caption`) and `{{number}}`, in every
+format:
+
+```asciidoc
+:listing-caption: Listing
+:listing-caption-template: pass:[{{caption}} {{number}}: ]
+```
+
+(`pass:[...]` keeps the trailing space, which AsciiDoc trims from an
+attribute's value; `{sp}` at the end does too.) Cross references keep
+their text (`Listing 36`).
+
 ## Callouts
 
 ```asciidoc

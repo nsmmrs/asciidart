@@ -136,8 +136,10 @@ reproducers of each.
   and splits the term (`test/divergences/index_terms.bats`). The term's
   own text is quoted alone.
 - Generated text from templates (ADR-0010): `footnote-reference-template`
-  and `footnote-label-template` set the footnote markers in HTML and EPUB;
-  without them the output is Asciidoctor's.
+  and `footnote-label-template` set the footnote markers in HTML and EPUB,
+  `<kind>-caption-template` a caption's number (`listing`, `figure`,
+  `table`, `example`, `appendix`) in every backend; without them the
+  output is Asciidoctor's.
 - `callout-links` (off by default) links callouts and their list items
   both ways in HTML and EPUB, keeps markers out of copied code, and warns
   about callouts no list item explains (`no callout list item for <3>`,
