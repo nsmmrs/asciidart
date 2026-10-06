@@ -647,7 +647,7 @@ base:
           );
           final pages = _pages(pdf);
           // (The title page first.)
-          expect(pages[1].join(' '), contains(RegExp(r'F ?1')));
+          expect(pages[1].join(' '), contains(RegExp('F ?1')));
           expect(pages[2].join(' '), isNot(contains('F')));
         });
       }

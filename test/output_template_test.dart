@@ -84,10 +84,11 @@ void main() {
       expect('class="title"'.allMatches(counted), hasLength(2));
       final plain = asciidoc.convert(source);
       expect(plain, contains('<div class="title">Listing 1. A route</div>'));
-      final skipped = asciidoc.convert(
-        ':listing-numbering: all\n'
-        '${source.replaceFirst('----\nuntitled', '[%unnumbered]\n----\nuntitled')}',
+      final unnumbered = source.replaceFirst(
+        '----\nuntitled',
+        '[%unnumbered]\n----\nuntitled',
       );
+      final skipped = asciidoc.convert(':listing-numbering: all\n$unnumbered');
       expect(skipped, contains('<div class="title">Listing 1. A route</div>'));
     });
 
