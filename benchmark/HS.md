@@ -41,17 +41,18 @@ license.
 
 | Check | Result | Detail |
 | --- | --- | --- |
-| PDF build | pass | 3266 ms, 2149 KB, 10 errors, 4 warnings |
-| HTML build | pass | 186 ms, 1048 KB, 6 errors, 5 warnings |
-| EPUB 3 build | pass | 376 ms, 1855 KB, 6 errors, 5 warnings |
-| DocBook 5 build | pass | 209 ms, 894 KB, 6 errors, 4 warnings |
-| Multi-page HTML build | pass | 198 ms, 31 KB, 6 errors, 5 warnings |
+| PDF build | pass | 8774 ms, 2147 KB, 6 errors, 4 warnings |
+| HTML build | pass | 401 ms, 1048 KB, 6 errors, 5 warnings |
+| EPUB 3 build | pass | 910 ms, 1855 KB, 6 errors, 5 warnings |
+| DocBook 5 build | pass | 492 ms, 894 KB, 6 errors, 4 warnings |
+| Multi-page HTML build | pass | 459 ms, 31 KB, 6 errors, 5 warnings |
 | PDF byte-stable across runs | pass | SOURCE_DATE_EPOCH=0 |
 | PDF has each listing line once (#122) | pass | 600 distinct lines of 24+ characters: 0 missing, 0 repeated |
 | PDF crops no text (#106) | pass | 0 words past the page edge, 0 past the margin |
-| PDF index with page numbers | pass | 324 entries with page numbers |
+| PDF index with page numbers | pass | 331 entries with page numbers |
+| PDF index lists each page once | pass | no page listed twice for a term |
 | PDF front matter roman, body arabic from 1 | pass | first labels i 1 2 3 4 5; "1" on page 2 |
-| PDF time for the whole book | pass | 3266 ms for 339 pages |
+| PDF time for the whole book | pass | 8774 ms for 339 pages |
 | HTML index with links | pass | 356 links to uses |
 | Multi-page HTML links resolve | pass | 21 pages, 1508 links, 0 broken |
 | HTML callouts linked both ways (callout-links) | pass | 502 markers, 489 items |
@@ -59,8 +60,10 @@ license.
 | EPUBCheck passes | pass | no errors |
 
 Errors in the builds are the sources' own, and Asciidoctor reports them
-too: nested sections in an introduction, and emphasis marks around
-`_hyperscript` that don't pair up.
+too: nested sections in an introduction. (Emphasis marks around
+`_hyperscript` used to pair across index terms; they no longer do.)
+Timings in both tables are from a busy machine (a load average of 25);
+on an idle one the whole PDF takes about 3 seconds.
 
 Where Asciidoctor's output for these sources is invalid, asciidart's
 isn't: emphasis cut open by index terms is balanced, `[introduction]`
@@ -153,19 +156,20 @@ DocBook and EPUB.
 
 | Check | Result | Detail |
 | --- | --- | --- |
-| PDF build | pass | 10775 ms, 2250 KB, 0 errors, 0 warnings |
-| HTML build | pass | 514 ms, 1083 KB, 0 errors, 1 warnings |
-| EPUB 3 build | pass | 1072 ms, 1872 KB, 0 errors, 2 warnings |
-| DocBook 5 build | pass | 648 ms, 902 KB, 0 errors, 0 warnings |
-| Multi-page HTML build | pass | 571 ms, 32 KB, 0 errors, 1 warnings |
+| PDF build | pass | 10422 ms, 2340 KB, 0 errors, 0 warnings |
+| HTML build | pass | 1039 ms, 1295 KB, 0 errors, 0 warnings |
+| EPUB 3 build | pass | 1533 ms, 2738 KB, 0 errors, 0 warnings |
+| DocBook 5 build | pass | 631 ms, 902 KB, 0 errors, 0 warnings |
+| Multi-page HTML build | pass | 1076 ms, 43 KB, 0 errors, 0 warnings |
 | PDF byte-stable across runs | pass | SOURCE_DATE_EPOCH=0 |
 | PDF has each listing line once (#122) | pass | 600 distinct lines of 24+ characters: 0 missing, 0 repeated |
 | PDF crops no text (#106) | pass | 0 words past the page edge, 0 past the margin |
 | PDF index with page numbers | pass | 329 entries with page numbers |
-| PDF front matter roman, body arabic from 1 | pass | first labels i 1 2 3 4 5; "1" on page 2 |
-| PDF time for the whole book | pass | 10775 ms for 323 pages |
+| PDF index lists each page once | pass | no page listed twice for a term |
+| PDF front matter roman, body arabic from 1 | pass | first labels i ii iii iv 1 2; "1" on page 5 |
+| PDF time for the whole book | pass | 10422 ms for 337 pages |
 | HTML index with links | pass | 356 links to uses |
-| Multi-page HTML links resolve | pass | 24 pages, 1529 links, 0 broken |
+| Multi-page HTML links resolve | pass | 24 pages, 1627 links, 0 broken |
 | HTML callouts linked both ways (callout-links) | pass | 502 markers, 489 items |
 | DocBook 5 validates (RELAX NG 5.0) | pass | valid |
 | EPUBCheck passes | pass | no errors |
