@@ -118,7 +118,7 @@ without a label; chapter 9's closing quote in small capitals.
 | Contents: no dot leaders, four levels | `toc` theme keys, `toclevels` | Done |
 | Part openers alone on a recto page, no running content | Parts | FEAT-gvbvv4 |
 | Chapter openers: sunk, a gray "Chapter N" line, no running content | Chapters | FEAT-gvbvv4 |
-| Running heads: `14 · I Hypermedia Concepts`, `3. A Web 1.0 Application · 71` | `header` theme keys with `{part-numeral}`, `{chapter-numeral}` | BUG-lrx6ls |
+| Running heads: `14 · I Hypermedia Concepts`, `3. A Web 1.0 Application · 71` | `header` theme keys, `header_title_style: toc` | Done (`14 · I: Hypermedia Concepts`) |
 | Introduction unnumbered; numbers to four levels | `:sectnums!:` around it, `sectnumlevels` | Done |
 | HTML Notes boxed, and in the contents | `[.html-note]` sections | FEAT-t089sr |
 | Sidebars: a gray fill, rules above and below, sans | `sidebar` theme keys | Done |
@@ -131,9 +131,9 @@ without a label; chapter 9's closing quote in small capitals.
 | Links show their URL in a footnote | Links | FEAT-12l36c |
 | Justified, hyphenated, first-line indents | Modern engine, `prose` theme keys | Done |
 | Small capitals | `[.sc]#...#`, `role_sc_font_variant` | Done |
-| Index: two columns, no letter headings, page numbers in a column, each page once | `[index]` | BUG-t4qgsg |
+| Index: two columns in sans, no letter headings, page numbers in a column, each page once | `[index]`, `index_pagenum_text_align: right`, `index_category_headings: false`, `index_font_*` | Done |
 | Index terms keep the emphasis around them whole | `(((...)))` | Done |
-| No space before a paragraph that starts with an index term | `(((...)))` | BUG-d9vcxt |
+| No space before a paragraph that starts with an index term | `(((...)))` | Done |
 | Website: a page per front matter part, part and chapter, previous and next | `multipage_html5` | Done |
 | Website: the same URLs (`/hypermedia-a-reintroduction/`) and a full contents | Sections | FEAT-95fvvy |
 | Website: landing page, footer, stylesheet, color customizer | Docinfo, `stylesheet` | FEAT-95fvvy, FEAT-y6ndrm |
