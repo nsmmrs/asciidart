@@ -953,6 +953,22 @@ base:
     );
   }, skip: _tools ? false : 'needs poppler');
 
+  test("a sidebar title's own space below", () {
+    double top(String pdf, String word) => double.parse(
+      RegExp('yMin="([\\d.]+)" xMax="[\\d.]+" yMax="[\\d.]+">$word<')
+          .firstMatch(
+            Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String,
+          )![1]!,
+    );
+    const source = '= Doc\n\n.Aside\n****\nInside.\n****\n';
+    final plain = _pdf(source);
+    final spaced = _pdf(source, theme: 'sidebar_title_margin_bottom: 30\n');
+    expect(
+      top(spaced, 'Inside.') - top(spaced, 'Aside'),
+      greaterThan(top(plain, 'Inside.') - top(plain, 'Aside') + 15),
+    );
+  }, skip: _tools ? false : 'needs poppler');
+
   group('floating images', () {
     final svg = base64.encode(
       utf8.encode(

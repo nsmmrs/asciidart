@@ -55,7 +55,8 @@ container, or at the top of a page.
 
 A quote's attribution has its own space above (`quote_cite_margin_top`,
 `verse_cite_margin_top`; `block_margin_bottom` by default) and alignment
-(`quote_cite_text_align: right`).
+(`quote_cite_text_align: right`). A sidebar's title has its own space below
+(`sidebar_title_margin_bottom`; `heading_margin_bottom` by default).
 
 ### Contents, lists, title page
 

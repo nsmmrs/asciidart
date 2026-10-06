@@ -2790,14 +2790,16 @@ final class PdfConverter extends BuiltInConverter
         innerMargin != null && next?.context == BlockContext.paragraph
         ? innerMargin.toDouble()
         : _marginBelow(node, next: next, fallback: 'prose');
-    // The modern engine: a role's indent and space below in place of the
-    // prose's (`role_<role>_text_indent`, `role_<role>_margin_bottom`).
+    // The modern engine: a role's indent, and space before the next block,
+    // in place of the prose's (`role_<role>_text_indent`,
+    // `role_<role>_margin_bottom`).
     if (_engine == PdfEngine.modern) {
       for (final role in roles) {
         if (_length('role_${role}_text_indent', font.size) case final value?) {
           indent = value;
         }
-        if (_n('role_${role}_margin_bottom') case final value?) {
+        if (_n('role_${role}_margin_bottom') case final value?
+            when next != null) {
           marginBottom = value.toDouble();
         }
       }
@@ -3520,7 +3522,14 @@ final class PdfConverter extends BuiltInConverter
             ),
             style: BoxStyle(
               margin: EdgeInsets(
-                bottom: (_n('heading_margin_bottom') ?? 0).toDouble(),
+                // The modern engine: the title's own space below first.
+                bottom:
+                    ((_engine == PdfEngine.modern
+                                ? _n('sidebar_title_margin_bottom')
+                                : null) ??
+                            _n('heading_margin_bottom') ??
+                            0)
+                        .toDouble(),
               ),
             ),
           ),
