@@ -53,3 +53,13 @@ EOF2
   grep -q '<section xml:id="_intro">' actual.xml
   ! grep -q '<partintro' actual.xml
 }
+
+# Emphasis inside monospace gave <emphasis> inside <literal>, which
+# DocBook doesn't allow: asciidart writes a phrase. Fails on the gem.
+@test "emphasis inside monospace gives a phrase in the literal" {
+  printf 'Some `a _b_ c` here.\n' > input.adoc
+  run -- "$EXE" -s -b docbook5 -o - input.adoc
+  [ "$status" -eq 0 ]
+  printf '%s\n' "$output" > actual.xml
+  grep -q '<literal>a <phrase role="emphasis">b</phrase> c</literal>' actual.xml
+}
