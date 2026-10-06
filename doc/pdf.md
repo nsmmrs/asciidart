@@ -84,6 +84,7 @@ its own, and the section listed in itself, as Typst's outline under a
 | `description_list_term_gap` | an en space | With `inline` terms, the space after the term (`0.6em`, as Typst's terms separator). |
 | `image_float_clearance` | none | The space between a floating image (`image_placement`) and the text: below it at the top of a page, above it at the bottom (`1.5em`, Typst's). |
 | `olist_text_align` | `list_text_align` | An ordered list's text alignment (Typst's enums are justified, its lists not). |
+| `callout_list_text_align` | `list_text_align` | A callout list's text alignment. |
 | `olist_body_indent`, `olist_marker_width` | `list_body_indent`, the marker's | An ordered list's space between its numbers and its text, and the boxes its numbers are set in, at their left (Typst's enum: `0`, `1em`). |
 | `callout_list_indent`, `callout_list_marker_width`, `callout_list_marker_text_align` | none, the marker's, `center` | A callout list set in, its markers in boxes that wide, aligned so (Typst's enum: `12`, `1em`, `left`); `callout_list_marker_font_*` (family, size, style, color, `_variant_numeric`) style them. |
 | `caption_indent`, `<category>_caption_indent` | none | A caption set in from the left (`code_caption_indent: 12`: over a code block's padded code, as Typst's figure inset). |

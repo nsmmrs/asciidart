@@ -2230,7 +2230,11 @@ final class PdfConverter extends BuiltInConverter
     final parentContext = parent.context;
     if (parentContext == BlockContext.listItem ||
         (parentContext == BlockContext.open && parent.style != 'abstract') ||
-        (parent is Section && !_isAbstract(parent))) {
+        (parent is Section &&
+            !_isAbstract(parent) &&
+            // (A section in a box of its own, its role's: the end of the
+            // box ends it.)
+            _boxedRole(parent) == null)) {
       return _nextEnclosedBlock(parent);
     }
     // The last item of a nested list: the next block after the item the
@@ -2429,6 +2433,22 @@ final class PdfConverter extends BuiltInConverter
           ),
         );
       } else {
+        // The modern engine: a section that starts its parent's, its
+        // heading right after the parent's, the spaces between them
+        // collapse.
+        final parent = section.parent;
+        final collapse =
+            _engine == PdfEngine.modern &&
+                !startedNew &&
+                parent is Section &&
+                parent.blocks.firstOrNull == section &&
+                !parent.hasOption('notitle') &&
+                _boxedRole(parent) == null
+            ? (_n('heading_h${(parent.level ?? 0) + 1}_margin_bottom') ??
+                      _n('heading_margin_bottom') ??
+                      0)
+                  .toDouble()
+            : 0.0;
         _heading(
           title,
           level: hlevel,
@@ -2438,6 +2458,7 @@ final class PdfConverter extends BuiltInConverter
           hasContent: section.blocks.isNotEmpty,
           marks: _sectionMarks(section, part: part),
           outdent: true,
+          collapse: collapse,
         );
       }
       _sections.add((section, anchor));
@@ -2695,6 +2716,7 @@ final class PdfConverter extends BuiltInConverter
     Map<String, String> marks = const {},
     _FontState? font,
     bool outdent = false,
+    double collapse = 0,
   }) {
     font ??= _headingFont(level);
     var text = title;
@@ -2714,12 +2736,17 @@ final class PdfConverter extends BuiltInConverter
       normalize: false,
     );
     final role = _headingRole;
-    final marginTop =
-        ((role == null ? null : _n('${role}_heading_margin_top')) ??
-                _n('heading_h${level}_margin_top') ??
-                _n('heading_margin_top') ??
-                0)
-            .toDouble();
+    // (Right after another heading, the larger of its space below and
+    // this one's above: [collapse] is that space below.)
+    final marginTop = math.max<double>(
+      0,
+      ((role == null ? null : _n('${role}_heading_margin_top')) ??
+                  _n('heading_h${level}_margin_top') ??
+                  _n('heading_margin_top') ??
+                  0)
+              .toDouble() -
+          collapse,
+    );
     final marginBottom =
         ((role == null ? null : _n('${role}_heading_margin_bottom')) ??
                 _n('heading_h${level}_margin_bottom') ??
@@ -5450,7 +5477,10 @@ final class PdfConverter extends BuiltInConverter
       if (node.hasTitle) {
         _caption(node, category: 'admonition', labeled: false);
       }
-      _withFont('admonition', () => _traverse(node));
+      _withFont(
+        'admonition',
+        () => _withBaseKeys('admonition', () => _traverse(node)),
+      );
     });
     _out.add(
       BlockBox(
@@ -6161,7 +6191,10 @@ final class PdfConverter extends BuiltInConverter
       final lineHeight = _font.lineHeight * _font.size;
       CustomContent content = _MinRoom(
         box,
-        lineHeight + metrics.leading + metrics.paddingTop,
+        // (Under Typst's model, a line is as tall as its cap height.)
+        _typstLeading(_font) != null
+            ? _fonts.font(_font.family, _font.style).capHeightAt(_font.size)
+            : lineHeight + metrics.leading + metrics.paddingTop,
       );
       if (marker != null && marker.isNotEmpty) {
         content = _withMarker(
@@ -6298,7 +6331,13 @@ final class PdfConverter extends BuiltInConverter
       for (final DlistEntry(:terms, description: desc) in node.entries) {
         final hasText = desc != null && desc.hasText;
         if (runIn && hasText && terms.length == 1) {
-          _runInEntry(terms.single, desc, termFont, indent);
+          _runInEntry(
+            terms.single,
+            desc,
+            termFont,
+            indent,
+            last: identical(node.entries.last.description, desc),
+          );
           continue;
         }
         final lines = terms.length + (hasText ? 1 : 0);
@@ -6352,8 +6391,9 @@ final class PdfConverter extends BuiltInConverter
     ListItem term,
     ListItem desc,
     _FontState termFont,
-    double hang,
-  ) {
+    double hang, {
+    bool last = false,
+  }) {
     var text = term.text ?? '';
     if (termFont.transform case final transform? when transform != 'none') {
       text = transformText(text, transform);
@@ -6403,6 +6443,12 @@ final class PdfConverter extends BuiltInConverter
           style: BoxStyle(margin: EdgeInsets(left: hang)),
         ),
       );
+    }
+    // The entries apart as paragraphs (Typst's terms: the paragraph
+    // spacing between items).
+    if (!last) {
+      final spacing = (_n('prose_margin_bottom') ?? 0).toDouble();
+      if (spacing > 0) _out.add(SpacerBox(spacing));
     }
   }
 
@@ -6551,7 +6597,10 @@ final class PdfConverter extends BuiltInConverter
     final spacing =
         (_n('callout_list_item_spacing') ?? _n('list_item_spacing') ?? 0)
             .toDouble();
-    final align = _alignOf(node.roles) ?? _s('list_text_align');
+    final align =
+        _alignOf(node.roles) ??
+        (_engine == PdfEngine.modern ? _s('callout_list_text_align') : null) ??
+        _s('list_text_align');
     final items = _collect(() {
       _withFont('callout_list', () {
         final conumFont = _themeFont('conum', _font);
@@ -6641,7 +6690,13 @@ final class PdfConverter extends BuiltInConverter
                 CustomBox(
                   _MinRoom(
                     _Marked(box, marker, markerWidth, -markerWidth),
-                    minRoom,
+                    // (Under Typst's model, a line is as tall as its cap
+                    // height.)
+                    _typstLeading(_font) != null
+                        ? _fonts
+                              .font(_font.family, _font.style)
+                              .capHeightAt(_font.size)
+                        : minRoom,
                   ),
                   style: BoxStyle(
                     margin: EdgeInsets(bottom: last ? 0 : spacing),
@@ -6901,6 +6956,10 @@ final class PdfConverter extends BuiltInConverter
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
     if (_engine == PdfEngine.modern && text.contains('://')) {
       text = _breakUrls(text, markup: inlineFormat);
+    }
+    // (Prose: preformatted text, set as it is, keeps its lines.)
+    if (_engine == PdfEngine.modern && normalize && text.contains('/')) {
+      text = _breakAfterSlashes(text, markup: inlineFormat);
     }
     final nodes = inlineFormat ? parseMarkup(text) : [MarkupText(text)];
     final List<Fragment> fragments;
@@ -8114,6 +8173,23 @@ final class PdfConverter extends BuiltInConverter
       );
     }
     return out.toString();
+  }
+
+  /// [text] (markup when [markup]) with a zero-width space after each
+  /// slash that isn't before a digit, a space or another slash: where the
+  /// Unicode line breaking algorithm (UAX #14, a slash's class SY) lets a
+  /// line break, as Typst breaks `and/or` and `/contacts/new`.
+  static String _breakAfterSlashes(String text, {bool markup = true}) {
+    final pieces = markup
+        ? RegExp('<[^>]*>|[^<]+').allMatches(text).map((m) => m[0]!)
+        : [text];
+    return pieces
+        .map(
+          (piece) => piece.startsWith('<') && markup
+              ? piece
+              : piece.replaceAll(RegExp(r'/(?=[^\s\d/\u200b])'), '/\u200b'),
+        )
+        .join();
   }
 
   /// A URL's scheme and `://`, then its address (Typst's `link_prefix`:

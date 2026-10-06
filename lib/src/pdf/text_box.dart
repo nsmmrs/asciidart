@@ -2127,6 +2127,16 @@ final class _OptimalWrap extends _Wrap {
           add(const PenaltyItem(0, 0), p);
         } else {
           final width = _widthOf(spaces, format);
+          // No break after an opening bracket or before a closing one or
+          // other punctuation, spaces between or not (UAX #14's LB14 and
+          // LB13, as Typst breaks: `{{ x }}` stays whole).
+          final before = p > 0 ? pieces[p - 1].$2 : '';
+          final after = p + 1 < pieces.length ? pieces[p + 1].$2 : '';
+          if ((before.isNotEmpty &&
+                  '([{'.contains(before[before.length - 1])) ||
+              (after.isNotEmpty && ')]}!?,.:;/'.contains(after[0]))) {
+            add(const PenaltyItem(0, PenaltyItem.never), p);
+          }
           add(GlueItem(null, spaces, width, width / 2, width / 3), p);
         }
         continue;

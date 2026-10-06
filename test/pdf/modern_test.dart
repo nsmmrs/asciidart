@@ -1856,6 +1856,51 @@ base:
       expect(set.$3 - plain, closeTo(12, 0.01));
     });
 
+    test('lines break after a slash, not next to a bracket (UAX #14)', () {
+      // A narrow page: the words must break.
+      const theme =
+          'page_size: [200, 400]\npage_margin: 10\nbase_text_align: left\n';
+      final slash = _pdf(
+        'Here somewhereoverthe/rainbowwaywayuphigh.\n',
+        theme: theme,
+      );
+      expect(
+        _pages(slash).first.any((l) => l.endsWith('somewhereoverthe/')),
+        isTrue,
+        reason: '${_pages(slash).first}',
+      );
+      final braces = _pdf(
+        'Words words words words words words {{ request.args }} more.\n',
+        theme: theme,
+      );
+      final lines = _pages(braces).first;
+      expect(lines.any((l) => l.endsWith('{{')), isFalse, reason: '$lines');
+    });
+
+    test('olist_marker_width and olist_body_indent: numbers in boxes', () {
+      const source = '. One\n. Two\n';
+      final pdf = _pdf(
+        source,
+        theme: 'list_indent: 0\nolist_marker_width: 30\nolist_body_indent: 0\n',
+      );
+      final one = word(pdf, 'One');
+      final number = word(pdf, '1.');
+      // The number at the left of its box, the text 30 points on.
+      expect(one.$3 - number.$3, closeTo(30, 0.5));
+    });
+
+    test('callout_list_indent and _marker_width', () {
+      const source = '----\ncode <1>\n----\n<1> Explained.\n';
+      final pdf = _pdf(
+        source,
+        theme:
+            'callout_list_indent: 20\ncallout_list_marker_width: 30\n'
+            'callout_list_marker_text_align: left\n',
+      );
+      final text = word(pdf, 'Explained.');
+      expect(text.$3 - 48.24, closeTo(50, 0.5));
+    });
+
     test('<category>_box_decoration_break: clone', () {
       final source = '= Doc\n\n****\n${'Line of text.\n\n' * 80}****\n';
       final open = _pdf(source, theme: 'sidebar_padding: 30\n');
