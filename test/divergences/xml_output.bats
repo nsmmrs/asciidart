@@ -63,3 +63,26 @@ EOF2
   printf '%s\n' "$output" > actual.xml
   grep -q '<literal>a <phrase role="emphasis">b</phrase> c</literal>' actual.xml
 }
+
+# The copyright (`:copyright: Holder 2023`) gave <copyright> with the
+# holder before the year, and with no year when the attribute has none:
+# DocBook 5.0 wants one or more years first, so neither validates.
+# asciidart writes the year first, and a copyright without a year as a
+# legal notice. Found by the Hypermedia Systems acceptance run. Fails on
+# the gem.
+@test "a copyright gives its year before its holder" {
+  printf '= Book\n:copyright: Jane Doe 2023\n\nText.\n' > input.adoc
+  run -- "$EXE" -b docbook5 -o - input.adoc
+  [ "$status" -eq 0 ]
+  printf '%s\n' "$output" > actual.xml
+  tr -d '\n' < actual.xml | grep -q '<copyright><year>2023</year><holder>Jane Doe</holder></copyright>'
+}
+
+@test "a copyright without a year gives a legal notice" {
+  printf '= Book\n:copyright: (C) Jane Doe, CC BY\n\nText.\n' > input.adoc
+  run -- "$EXE" -b docbook5 -o - input.adoc
+  [ "$status" -eq 0 ]
+  printf '%s\n' "$output" > actual.xml
+  tr -d '\n' < actual.xml | grep -q '<legalnotice><simpara>(C) Jane Doe, CC BY</simpara></legalnotice>'
+  ! grep -q '<copyright>' actual.xml
+}
