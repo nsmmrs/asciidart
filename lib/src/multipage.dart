@@ -165,6 +165,9 @@ class MultipageHtml5Converter extends Html5Converter
             _raw(section, _list(page.children, node, 'multipage-children')),
           );
         }
+        if (_pageContents(node, section) case final contents?) {
+          section.blocks.insert(0, _raw(section, contents));
+        }
         node.blocks
           ..clear()
           ..add(section);
@@ -388,20 +391,47 @@ class MultipageHtml5Converter extends Html5Converter
     return '<nav class="multipage-nav">\n${links.join('\n')}\n</nav>';
   }
 
+  /// The contents of [section]'s page, at its top: its own sections, down
+  /// `multipage-page-toclevels` levels (none by default), in the
+  /// `multipage_toc.mustache` template of a `-T` directory (with `title`,
+  /// the `toc-title`, and `entries`, the list) or in a table of contents'
+  /// markup.
+  String? _pageContents(Document document, Section section) {
+    final levels =
+        int.tryParse(document.attr('multipage-page-toclevels') ?? '') ?? 0;
+    // (Sections with pages of their own are no longer among its blocks.)
+    if (levels < 1 || section.sections.isEmpty) return null;
+    final entries = convertOutline(
+      section,
+      ConvertOptions(toclevels: section.level! + levels),
+    );
+    if (entries == null) return null;
+    final title = document.attr('toc-title') ?? 'Table of Contents';
+    if (_templates['multipage_toc'] case final template?) {
+      return template.renderString({
+        'title': title,
+        'entries': entries,
+      }).trimRight();
+    }
+    return '<div id="toc" class="toc">\n<div id="toctitle">$title</div>\n'
+        '$entries\n</div>';
+  }
+
   /// The document being converted.
   Document? _document;
 
   /// The `multipage_nav.mustache` template of the `-T` directories.
-  late final Template? _navTemplate = switch (opts.templateDirs.isEmpty
-      ? null
-      : FileTemplateLoader(templateDirs: opts.templateDirs)
-            .load()['multipage_nav']) {
-    final String source => Template(
-      source,
-      lenient: true,
-      htmlEscapeValues: false,
-    ),
-    null => null,
+  Template? get _navTemplate => _templates['multipage_nav'];
+
+  /// The website's templates (`multipage_nav`, `multipage_toc`) in the
+  /// `-T` directories.
+  late final Map<String, Template> _templates = {
+    if (opts.templateDirs.isNotEmpty)
+      for (final MapEntry(:key, :value) in FileTemplateLoader(
+        templateDirs: opts.templateDirs,
+      ).load().entries)
+        if (key.startsWith('multipage_'))
+          key: Template(value, lenient: true, htmlEscapeValues: false),
   };
 
   /// [pages] with each link to an id on another page (`href="#id"`)

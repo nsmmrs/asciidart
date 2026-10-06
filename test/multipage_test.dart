@@ -348,4 +348,51 @@ void main() {
     )['book.html']!;
     expect(root, contains('<a href="_chapter_a.html">Chapter A</a>'));
   });
+
+  test("multipage-page-toclevels lists a page's own sections at its top", () {
+    final site = _site(_book, attributes: {'multipage-page-toclevels': '1'});
+    final page = site['_chapter_a.html']!;
+    expect(
+      page,
+      contains(
+        '<div id="toc" class="toc">\n<div id="toctitle">Table of Contents'
+        '</div>\n<ul class="sectlevel2">\n'
+        '<li><a href="#_section_a1">1.1. Section A1</a></li>',
+      ),
+    );
+    expect(page.indexOf('id="toctitle"'), lessThan(page.indexOf('Text in A1')));
+    // A page without sections of its own has none.
+    expect(site['_chapter_b.html'], isNot(contains('id="toctitle"')));
+  });
+
+  test("a page's contents from a multipage_toc template", () {
+    final dir = Directory.systemTemp.createTempSync('multipage_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final templates = Directory('${dir.path}/templates')..createSync();
+    File('${templates.path}/multipage_toc.mustache').writeAsStringSync(
+      '<details><summary>{{title}}</summary>{{entries}}</details>',
+    );
+    final input = File('${dir.path}/book.adoc')..writeAsStringSync(_book);
+    convertFile(
+      input.path,
+      AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'multipage_html5',
+        templateDirs: [templates.path],
+        attributes: const {
+          'reproducible': '',
+          'multipage-page-toclevels': '2',
+          'toc-title': 'Contents',
+        },
+      ),
+    );
+    final page = File('${dir.path}/_chapter_a.html').readAsStringSync();
+    expect(
+      page,
+      contains(
+        '<details><summary>Contents</summary><ul class="sectlevel2">\n'
+        '<li><a href="#_section_a1">1.1. Section A1</a></li>\n</ul></details>',
+      ),
+    );
+  });
 }

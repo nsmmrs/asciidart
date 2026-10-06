@@ -42,6 +42,9 @@ asciidart -b docbook5 -o book.xml book.adoc
   `multipage-toc-entry-template` (`{{title}}`, `{{basic-title}}`,
   `{{number}}`), and its section lists have the class
   `multipage-sections`, for a stylesheet that shows or hides them.
+  `multipage-page-toclevels` puts a page's own sections at its top, as
+  a table of contents (`toc-title`), or in a `multipage_toc.mustache`
+  template (`title`, and `entries`: the list).
 - **EPUB 3**: passes EPUBCheck; code wraps on small screens
   (`ebook-code-overflow=scroll` keeps lines whole). Its metadata takes
   an ISBN (`:isbn: 979-8-9909918-0-4`) and editors (`:editor: William
