@@ -125,7 +125,9 @@ reproducers of each.
   highlighted at conversion and the theme's stylesheet is in the EPUB
   (`styles/highlightjs.css`), where the gem links highlight.js's
   stylesheet and scripts outside it (`test/divergences/epub_output.bats`).
-  EPUB parity compares the gem's chapters with these repairs made.
+  EPUB parity compares the gem's chapters with these repairs made. The
+  `isbn` and `editor` attributes (which the gem ignores) add an ISBN
+  identifier and editors to an EPUB's metadata.
   `ebook-code-overflow=scroll` makes code lines scroll rather than wrap.
 - Quotes (emphasis, strong, monospace...) pair around an index term,
   never into it: in `(((_hyperscript, event filter))) an _event filter_`

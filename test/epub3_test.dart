@@ -325,6 +325,47 @@ A ((Tiger)) again.(((Wolves)))
     });
   });
 
+  test('an ISBN and editors in the metadata', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync(
+        '= Book\nAda Lovelace\n:uuid: 0000\n:isbn: 979-8-9909918-0-4\n'
+        ':editor: William Talcott; Jane Doe\n\n== One\n\nText.\n',
+      );
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final opf = unzipText(
+      File('${dir.path}/book.epub').readAsBytesSync(),
+    )['EPUB/package.opf']!;
+    expect(
+      opf,
+      contains(
+        '<dc:identifier id="pub-isbn">urn:isbn:9798990991804</dc:identifier>\n'
+        '    <meta property="identifier-type" refines="#pub-isbn">isbn</meta>',
+      ),
+    );
+    // The uuid stays the unique identifier.
+    expect(opf, contains('unique-identifier="pub-identifier"'));
+    expect(
+      opf,
+      contains(
+        '<dc:contributor id="contributor1">William Talcott</dc:contributor>',
+      ),
+    );
+    expect(
+      opf,
+      contains('<meta property="role" refines="#contributor1">edt</meta>'),
+    );
+    expect(opf, contains('Jane Doe</dc:contributor>'));
+  });
+
   test('epub3 cannot write to standard output', () async {
     final dir = Directory.systemTemp.createTempSync('epub3_test.');
     addTearDown(() => dir.deleteSync(recursive: true));

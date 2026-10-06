@@ -31,7 +31,10 @@ asciidart -b docbook5 -o book.xml book.adoc
   pages' sections on the home page; docinfo (`docinfo=shared`) is on
   every page, for a site's own header, footer and scripts.
 - **EPUB 3**: passes EPUBCheck; code wraps on small screens
-  (`ebook-code-overflow=scroll` keeps lines whole).
+  (`ebook-code-overflow=scroll` keeps lines whole). Its metadata takes
+  an ISBN (`:isbn: 979-8-9909918-0-4`) and editors (`:editor: William
+  Talcott`, several separated by semicolons) besides the authors and the
+  `copyright`.
 - **DocBook 5**: valid against the DocBook 5.0 schema, for tools that
   read it (Pandoc, publishers' pipelines).
 

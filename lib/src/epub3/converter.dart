@@ -268,6 +268,17 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
       final author = node.attr(idx == 1 ? 'author' : 'author_$idx');
       if (author != null && author.isNotEmpty) book.addCreator(author);
     }
+    // asciidart's: an ISBN (`isbn`) besides the uuid, and editors
+    // (`editor`, names separated by semicolons).
+    if (node.attr('isbn')?.replaceAll(RegExp(r'[\s-]'), '') case final isbn?
+        when isbn.isNotEmpty) {
+      book.addIdentifier(_s('urn:isbn:$isbn'), 'pub-isbn', 'isbn');
+    }
+    for (final editor in (node.attr('editor') ?? '').split(';')) {
+      if (editor.trim().isNotEmpty) {
+        book.addContributor(_s(editor.trim()), role: 'edt');
+      }
+    }
 
     var publisher = node.attr('publisher');
     if (publisher == null || publisher.isEmpty) {
