@@ -499,4 +499,34 @@ base:
       ]);
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
+  group('blank pages', () {
+    // A prepress book: each chapter starts on a recto page, so a
+    // one-page chapter leaves a blank verso page before the next.
+    const book =
+        '= Book\n:doctype: book\n:media: prepress\n\n'
+        '== One\n\nFirst chapter.\n\n== Two\n\nSecond chapter.\n';
+
+    /// The text of each page of [pdf], the page number included.
+    List<String> pages(String pdf) =>
+        (Process.runSync('pdftotext', ['-layout', pdf, '-']).stdout as String)
+            .split('\f')
+            .map((page) => page.trim())
+            .toList();
+
+    // Pages: the title page, a blank one before the body (never with
+    // running content), chapter One, a blank verso, chapter Two.
+    test('carry no running content', () {
+      expect(pages(_pdf(book))[3], isEmpty);
+      // The compatibility mode numbers it, as the gem does.
+      expect(pages(_pdf(book, compat: true))[3], '2');
+    });
+
+    test('carry it when the theme says so', () {
+      final themed = pages(
+        _pdf(book, theme: 'running_content_on_blank_pages: true\n'),
+      );
+      expect(themed[3], '2');
+    });
+  }, skip: _tools ? false : 'needs poppler');
 }

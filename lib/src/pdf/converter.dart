@@ -6047,6 +6047,14 @@ final class PdfConverter extends BuiltInConverter
     final number = page.number;
     if (number <= _skip.$1) return const [];
     if (_backCover && number == page.count) return const [];
+    // The modern engine leaves blank pages (before a recto start, say)
+    // blank, unless running_content_on_blank_pages is true.
+    if (page.isEmpty &&
+        _engine == PdfEngine.modern &&
+        _theme.value('running_content_on_blank_pages') !=
+            const ThemeBool(true)) {
+      return const [];
+    }
     if (_tocPages case (final first, final last)
         when number >= first &&
             number <= last &&

@@ -58,7 +58,9 @@ Asciidoctor project.
   stays with its block; and text in a column too narrow for a single
   character is set anyway rather than dropped. Callout markers are left out
   when code is copied (marked content with an empty ActualText) and link
-  to their callout list items, which link back. With `-a pdf-compat` the layout is the gem's, and
+  to their callout list items, which link back. Blank pages (before a
+  recto start) carry no running content unless
+  `running_content_on_blank_pages` is true. With `-a pdf-compat` the layout is the gem's, and
   `hyphens` and `base_hyphens` hyphenate as the gem does with text-hyphen.
   In that mode, 763 of the 797 documents of the gem's spec suite convert the same (words,
   positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),
