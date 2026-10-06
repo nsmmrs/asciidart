@@ -717,6 +717,44 @@ base:
     });
   }, skip: _tools ? false : 'needs poppler');
 
+  group('footnotes', () {
+    const book =
+        '= Doc\n:doctype: book\n\n== One\n\n'
+        'First page.footnote:[The first note.]\n\n<<<\n\n'
+        'Second page.footnote:[The second note.]\n\nLast words.\n';
+
+    test('are at the bottom of the page of their reference', () {
+      final pages = _pages(_pdf(book));
+      expect(pages[1], ['One', '[1]', 'First page.', '[1] The first note.']);
+      // Below the text that follows the reference.
+      expect(pages[2], [
+        '[2]',
+        'Second page.',
+        'Last words.',
+        '[2] The second note.',
+      ]);
+    });
+
+    test('may go at the end of the chapter, as in the gem', () {
+      final pages = _pages(_pdf(book, theme: 'footnotes_placement: end\n'));
+      expect(pages[1], ['One', '[1]', 'First page.']);
+      expect(pages[2].last, '[2] The second note.');
+      expect(pages[2], contains('[1] The first note.'));
+    });
+
+    test('may show links\' URIs (show-link-uri=footnote)', () {
+      const source =
+          '= Doc\n:show-link-uri: footnote\n\n'
+          'See https://htmx.org[htmx] and https://example.org.\n';
+      final text = _pages(_pdf(source)).first.join('\n');
+      expect(text, contains('[1] https://htmx.org'));
+      // A bare link shows its URI already.
+      expect(text, isNot(contains('[2]')));
+      final compat = _pages(_pdf(source, compat: true)).first.join('\n');
+      expect(compat, contains('htmx [https://htmx.org]'));
+    });
+  }, skip: _tools ? false : 'needs poppler');
+
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a
     // one-page chapter leaves a blank verso page before the next.

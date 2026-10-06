@@ -371,6 +371,7 @@ final class PdfConverter extends BuiltInConverter
     _tocAtTop = tocAtTop;
     _tocDone = false;
     _tocNoHeader = _tocNoFooter = false;
+    _notes.clear();
     // The table of contents and the body, indented by the theme's
     // section indent (the gem's `indent_section`).
     final indented = _collect(() {
@@ -476,6 +477,8 @@ final class PdfConverter extends BuiltInConverter
       templates: templates,
       keepTemplate: true,
       pageLabel: _pageLabel,
+      notes: _notes,
+      noteSeparator: _notes.isEmpty ? null : _footnoteSeparator(),
       templateForPage: media == 'prepress'
           ? (template, number) => _sidedTemplate(
               template,
@@ -7188,6 +7191,24 @@ final class PdfConverter extends BuiltInConverter
           return '$anchor<a href="$target"$classAttr>'
               '${_breakableUri(text)}</a>';
         }
+        // `show-link-uri=footnote` (modern engine): the URI in a footnote,
+        // as print books set it.
+        if (doc.attr('show-link-uri') == 'footnote' && _pageFootnotes) {
+          if (doc.hasAttr('hide-uri-scheme')) {
+            final boundary = bare.indexOf('://');
+            if (boundary >= 0) bare = bare.substring(boundary + 3);
+          }
+          final index = doc.counter('footnote-number');
+          doc.registerFootnote(
+            Footnote(
+              index,
+              null,
+              '<a href="$target">${_breakableUri(bare)}</a>',
+            ),
+          );
+          return '$anchor<a href="$target"$classAttr>$text</a>'
+              '${_footnoteReference(index)}';
+        }
         if (doc.hasAttr('show-link-uri') ||
             (media != 'screen' && doc.attributeUnspecified('show-link-uri'))) {
           if (doc.hasAttr('hide-uri-scheme')) {
@@ -7712,13 +7733,11 @@ final class PdfConverter extends BuiltInConverter
         ? null
         : _document.footnotes.where((f) => f.index == index).firstOrNull;
     if (footnote != null) {
-      final anchor = node.type == 'xref'
-          ? ''
-          : '<a id="_footnoteref_$index">$_dummyText</a>';
-      final label = _renderedFootnotes.contains(footnote)
-          ? _footnoteLabels[index] ?? index!
-          : '${(int.tryParse(index!) ?? 0) - _renderedFootnotes.length}';
-      return '<sup class="wj">$anchor[<a anchor="_footnotedef_$index">$label</a>]</sup>';
+      return _footnoteReference(
+        index!,
+        anchored: node.type != 'xref',
+        rendered: _renderedFootnotes.contains(footnote),
+      );
     }
     if (node.type == 'xref') {
       final color = _theme.value('role_unresolved_font_color')?.rubyString;
@@ -7728,6 +7747,22 @@ final class PdfConverter extends BuiltInConverter
     return '';
   }
 
+  /// The reference to footnote [index]: its number in brackets, raised,
+  /// linked to the footnote ([anchored]: the footnote links back to it).
+  String _footnoteReference(
+    String index, {
+    bool anchored = true,
+    bool rendered = false,
+  }) {
+    final anchor = anchored
+        ? '<a id="_footnoteref_$index">$_dummyText</a>'
+        : '';
+    final label = rendered
+        ? _footnoteLabels[index] ?? index
+        : '${(int.tryParse(index) ?? 0) - _renderedFootnotes.length}';
+    return '<sup class="wj">$anchor[<a anchor="_footnotedef_$index">$label</a>]</sup>';
+  }
+
   /// The footnotes already rendered (at the end of earlier chapters).
   final List<Footnote> _renderedFootnotes = [];
 
@@ -7735,8 +7770,60 @@ final class PdfConverter extends BuiltInConverter
   /// references to them later.
   final Map<String, String> _footnoteLabels = {};
 
+  /// The footnotes set at the bottom of the page their reference is on,
+  /// by the reference's anchor (modern engine).
+  final Map<String, LayoutBox> _notes = {};
+
+  /// Whether footnotes go at the bottom of the page their reference is on
+  /// (the modern engine's default, `footnotes_placement: page`), rather
+  /// than at the end of the chapter or document (`end`, the gem's).
+  bool get _pageFootnotes =>
+      _engine == PdfEngine.modern &&
+      (_s('footnotes_placement') ?? 'page') == 'page';
+
+  /// The rule above the footnotes at the bottom of a page: a third of the
+  /// column long (`footnotes_separator_length`), `footnotes_separator_width`
+  /// thick, `footnotes_margin_top` below the text.
+  LayoutBox _footnoteSeparator() {
+    final width = (_n('footnotes_separator_width') ?? 0.5).toDouble();
+    final color = pdfColorOf(
+      _c('footnotes_separator_color') ?? _c('base_border_color'),
+    );
+    final length = _s('footnotes_separator_length') ?? '33.33%';
+    final spacing = (_n('footnotes_item_spacing') ?? 0).toDouble();
+    return DrawingBox(
+      width,
+      (canvas, rect) {
+        if (color == null || width <= 0) return;
+        final long = length.endsWith('%')
+            ? rect.width *
+                  (double.tryParse(length.replaceAll('%', '')) ?? 0) /
+                  100
+            : _toPoints(ThemeString(length));
+        canvas
+          ..save()
+          ..setStrokeColor(color)
+          ..setLineWidth(width)
+          ..moveTo(rect.left, rect.top - width / 2)
+          ..lineTo(rect.left + long, rect.top - width / 2)
+          ..stroke()
+          ..restore();
+      },
+      style: BoxStyle(
+        margin: EdgeInsets(
+          top: switch (_n('footnotes_margin_top')) {
+            final num margin => margin.toDouble(),
+            null => _font.size,
+          },
+          bottom: math.max(spacing, _font.size / 2),
+        ),
+      ),
+    );
+  }
+
   /// Adds the footnotes of [node] not yet rendered, at the bottom of the
-  /// page by default (the gem's `ink_footnotes`).
+  /// page by default (the gem's `ink_footnotes`); in the modern engine,
+  /// each at the bottom of the page its reference is on.
   void _footnotes(AbstractBlock node) {
     final doc = _document;
     final footnotes = [
@@ -7744,6 +7831,34 @@ final class PdfConverter extends BuiltInConverter
         if (!_renderedFootnotes.contains(footnote)) footnote,
     ];
     if (footnotes.isEmpty) return;
+    if (_pageFootnotes) {
+      _withFont('footnotes', () {
+        final spacing = (_n('footnotes_item_spacing') ?? 0).toDouble();
+        final offset = _renderedFootnotes.length;
+        final sectionText = node is Section
+            ? node.xreftext(doc.attr('xrefstyle'))
+            : null;
+        for (final footnote in footnotes) {
+          final index = footnote.index;
+          final label = '${(int.tryParse(index) ?? 0) - offset}';
+          if (sectionText != null) {
+            _footnoteLabels[index] = '$label - $sectionText';
+          }
+          _notes['_footnoteref_$index'] = CustomBox(
+            _textBox(
+              '<a id="_footnotedef_$index">$_dummyText</a>'
+              '[<a anchor="_footnoteref_$index">$label</a>] ${footnote.text}',
+              _font,
+              align: _baseTextAlign,
+              hyphenate: true,
+            ),
+            style: BoxStyle(margin: EdgeInsets(bottom: spacing)),
+          );
+        }
+      });
+      _renderedFootnotes.addAll(footnotes);
+      return;
+    }
     if (node is Document || node == doc.blocks.lastOrNull) {
       final margin = (_n('block_margin_bottom') ?? 0).toDouble();
       if (margin > 0) _out.add(SpacerBox(margin));

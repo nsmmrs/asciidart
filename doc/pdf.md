@@ -54,6 +54,19 @@ US English), with the hyph-utf8 patterns for 72 languages
 
 Text is kerned by the font's OpenType (GPOS) pairs.
 
+### Footnotes
+
+Footnotes are at the bottom of the page their reference is on, under a
+short rule, numbered from 1 in each chapter; one that doesn't fit goes on
+at the bottom of the next page.
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `footnotes_placement` (theme) | `page` | `end` sets them at the end of each chapter (or of the document), as asciidoctor-pdf does. |
+| `footnotes_separator_width`, `_color`, `_length` (theme) | `0.5`, the base border color, `33.33%` | The rule above them. |
+| `footnotes_margin_top` (theme) | the font size | The space between the text and the rule. |
+| `:show-link-uri: footnote` | | A link's URI in a footnote (print books), not after the link text in brackets (`show-link-uri` set, or print media). A bare link shows its URI already. |
+
 ### Listings
 
 | Key | Default | What it does |
