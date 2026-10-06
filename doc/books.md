@@ -18,9 +18,10 @@ asciidart -b docbook5 -o book.xml book.adoc
 
 - **PDF**: asciidart's own typesetting (`doc/pdf.md`): optimal line
   breaking, hyphenation, widows and orphans, first-line indents,
-  listings that never lose a line, a generated index with page numbers,
-  roman then arabic page numbers, running heads, PDF/X-4 for the
-  printer.
+  listings that never lose a line, highlighted code, footnotes at the
+  bottom of the page, floating figures, chapter openers, a generated
+  index with page numbers, roman then arabic page numbers, running heads,
+  PDF/X-4 for the printer.
 - **Website** (`multipage_html5`): a page per part and chapter
   (`multipage-level` for deeper sections), previous, up and next links,
   and every link (cross references, the table of contents, the index,
@@ -132,3 +133,29 @@ source:
 Move the print CSS's choices into a theme (`extends: default`, then page
 size and margins, fonts, `prose`, `code`, running content); `doc/pdf.md`
 and asciidoctor-pdf's theming guide document the keys.
+
+## From Typst
+
+The Hypermedia Systems book moved from AsciiDoc to Typst; its Typst
+edition's features in AsciiDoc (`benchmark/HS.md` checks the whole book):
+
+| Typst | AsciiDoc |
+| --- | --- |
+| `#index[term]`, `#indexed[term]` | `(((term)))`, `((term))` |
+| `#figure(caption: [...], ...)` | `.Title` above the listing or image (`listing-caption`, `figure-caption`) |
+| `#set figure(placement: auto)` | `image_placement: auto` (theme) |
+| `#footnote[...]` | `footnote:[...]`, at the bottom of the page |
+| `#show link: ... footnote(it.dest)` | `:show-link-uri: footnote` |
+| `#smallcaps[...]` | `[.sc]#...#` and `role_sc_font_variant: small-caps` |
+| `#quote(block: true, attribution: [...])` | `[quote, Author, Source]` |
+| A boxed note in the contents (`html-note`) | A section with a role, `section_role_<role>_*` (theme) |
+| `#important[Title][...]` | `[IMPORTANT]` with a `.Title`, `:important-caption:` empty |
+| `@label`, `<label>` | `<<id>>`, `[#id]` |
+| `set page(header: ...)` | `header_recto_*`, `header_verso_*` (theme), `{part-title}`, `{chapter-title}` |
+| `pagebreak(to: "odd")` before chapters | `:media: prepress` |
+| A chapter's label above its title | `heading_h2_label_display: block` (theme) |
+| `#make-index()` in two columns | `[index]`, `index_columns`, `index_pagenum_text_align: right` (theme) |
+| `#show raw: ...` highlighting | `:source-highlighter: highlight.js` |
+| pandoc for the EPUB | `-b epub3` (`isbn`, `editor`, `front-cover-image`) |
+| A site generator (muteferrika) | `-b multipage_html5`, `page-path`, docinfo |
+
