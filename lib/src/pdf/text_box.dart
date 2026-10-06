@@ -84,7 +84,20 @@ final class TextLayout {
     this.at,
     this.skew,
     this.overhang = false,
+    this.capLines = false,
+    this.justifyWidest = false,
   });
+
+  /// Whether justified lines are set to the width of the paragraph's
+  /// widest line (overfull lines shrunk to the room) rather than to the
+  /// room, as Typst sets a paragraph in a block sized to its content (its
+  /// pages' `show par: it => block(it)` rule).
+  final bool justifyWidest;
+
+  /// Typst's lines: each line's box from its tallest cap height to its
+  /// baseline ([leading] is the space between boxes), the first line's
+  /// cap height at the top and the last ending at its baseline.
+  final bool capLines;
 
   /// Whether punctuation and dashes at a line's end hang into the margin,
   /// as Typst's `overhang` (a fraction of the character's width the line
@@ -1645,15 +1658,24 @@ base class _Wrap {
       _fragments.add(printed);
       final font = format.font;
       final image = format.image;
-      _maxLineHeight = math.max(_maxLineHeight, font.heightAt(format.size));
-      _maxDescender = math.max(
-        _maxDescender,
-        image?.descender ?? font.descenderAt(format.size),
-      );
-      _maxAscender = math.max(
-        _maxAscender,
-        isMarker ? 0 : image?.ascender ?? font.ascenderAt(format.size),
-      );
+      if (_layout.capLines) {
+        // (A line break or spaces alone: no height, as Typst's.)
+        final top = isMarker || (image == null && text.trim().isEmpty)
+            ? 0.0
+            : image?.ascender ?? font.capHeightAt(format.size);
+        _maxLineHeight = math.max(_maxLineHeight, top);
+        _maxAscender = math.max(_maxAscender, top);
+      } else {
+        _maxLineHeight = math.max(_maxLineHeight, font.heightAt(format.size));
+        _maxDescender = math.max(
+          _maxDescender,
+          image?.descender ?? font.descenderAt(format.size),
+        );
+        _maxAscender = math.max(
+          _maxAscender,
+          isMarker ? 0 : image?.ascender ?? font.ascenderAt(format.size),
+        );
+      }
     }
     _spaceCount = _fragments.fold(0, (sum, f) => sum + f.spaces);
   }
@@ -1705,6 +1727,10 @@ base class _Wrap {
     }
   }
 
+  /// The width justified lines are set to, when not the room
+  /// ([TextLayout.justifyWidest]).
+  double? _justifyTo;
+
   /// How far the line's last character may hang past its end (Typst's
   /// amounts: of the character's width, 0.55 for a hyphen, 0.2 for an en
   /// or em dash, 0.8 for a period or comma, 0.3 for a colon or semicolon).
@@ -1737,8 +1763,9 @@ base class _Wrap {
             !_paragraphFinished ||
             _accumulatedWidth > _width - indent + 0.0001);
     final hang = _layout.overhang ? _overhang() : 0.0;
+    final measure = math.min(_justifyTo ?? _width, _width);
     final wordSpacing = justify
-        ? (_width - indent + hang - _accumulatedWidth) / _spaceCount
+        ? (measure - indent + hang - _accumulatedWidth) / _spaceCount
         : 0.0;
     final printed = <_Printed>[];
     for (final f in _fragments) {
@@ -2019,14 +2046,19 @@ final class _OptimalWrap extends _Wrap {
       from.add(piece);
     }
 
+    // The word the pieces so far belong to, and its format.
+    var wordSoFar = '';
+    _Format? wordFormat;
     for (final (p, (i, token)) in pieces.indexed) {
       final format = _unconsumed[i].format;
       if (token == '\n') {
+        wordSoFar = '';
         add(const GlueItem.fill(), p);
         add(const PenaltyItem(0, PenaltyItem.forced), p);
         continue;
       }
       if (RegExp('^[ \t$_zwsp]+\$').hasMatch(token)) {
+        wordSoFar = '';
         final spaces = token.replaceAll(_zwsp, '');
         if (spaces.isEmpty) {
           add(const PenaltyItem(0, 0), p);
@@ -2042,11 +2074,24 @@ final class _OptimalWrap extends _Wrap {
       // it (see the pieces).
       if (charBreaks.contains(p)) add(const PenaltyItem(0, 900), p);
       if (word.isNotEmpty) {
-        final width = format.fragment.isMarker
-            ? 0.0
-            : word == _unconsumed[i].text
-            ? _fragmentWidth(word, format)
-            : _widthOf(word, format);
+        // A piece of a word broken into pieces (at its hyphenation
+        // points): its width within the word, kerning to the piece before
+        // it included, so the pieces add up to the word.
+        final double width;
+        if (format.fragment.isMarker) {
+          width = 0;
+        } else if (identical(wordFormat, format) && wordSoFar.isNotEmpty) {
+          width =
+              _widthOf('$wordSoFar$word', format) -
+              _widthOf(wordSoFar, format);
+        } else {
+          width = word == _unconsumed[i].text
+              ? _fragmentWidth(word, format)
+              : _widthOf(word, format);
+        }
+        if (!identical(wordFormat, format)) wordSoFar = '';
+        wordSoFar += word;
+        wordFormat = format;
         add(BoxItem(_content, word, width), p);
       }
       if (shy) {
@@ -2087,6 +2132,35 @@ final class _OptimalWrap extends _Wrap {
       };
       if (end > start || lines.isEmpty) lines.add((start, end));
       start = end;
+    }
+
+    // Justified to the widest line: each line's natural width (without
+    // the spaces it ends with, with a hyphen it adds).
+    if (_layout.justifyWidest) {
+      var widest = 0.0;
+      var start = 0;
+      for (final (n, at) in breaks.indexed) {
+        var end = at;
+        while (end > start && items[end - 1] is GlueItem) {
+          end--;
+        }
+        var natural = n == 0 ? indent : 0.0;
+        for (var k = start; k < end; k++) {
+          if (items[k] is! PenaltyItem) natural += items[k].width;
+        }
+        if (items[at] case PenaltyItem(flagged: true, :final width)) {
+          natural += width;
+        }
+        widest = math.max(widest, natural);
+        start = at + 1;
+        while (start < items.length &&
+            (items[start] is GlueItem ||
+                (items[start] is PenaltyItem &&
+                    !(items[start] as PenaltyItem).isForced))) {
+          start++;
+        }
+      }
+      _justifyTo = widest;
     }
 
     // Each line set as Prawn's wrap sets it.

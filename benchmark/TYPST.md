@@ -53,9 +53,9 @@ Each has a card under EPIC-n7s6v0.
 | hyphenate-pt-repeat-hyphen | 3, 3 | 2 of 3 | 3.38 | 0.00 | +0.00 | 1, 1 |
 | justify | 6, 6 | 6 of 6 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | justify-avoid-runts | 5, 5 | 2 of 5 | 2.50 | 0.00 | +0.00 | 1, 1 |
-| justify-knuth-story-optimized | 21, 21 | 21 of 21 | 0.00 | 0.00 | -0.03 | 1, 1 |
-| justify-knuth-story-simple | 24, 24 | 24 of 24 | 0.00 | 0.00 | -0.03 | 1, 1 |
-| justify-knuth-story-simple-hyphens | 22, 22 | 22 of 22 | 0.00 | 0.00 | -0.03 | 1, 1 |
+| justify-knuth-story-optimized | 21, 21 | 21 of 21 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| justify-knuth-story-simple | 24, 24 | 24 of 24 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| justify-knuth-story-simple-hyphens | 22, 22 | 22 of 22 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | justify-manual-linebreak | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | justify-no-leading-spaces | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | justify-shrink-last-line | 1, 1 | 1 of 1 | 0.00 | 0.00 | +0.00 | 1, 1 |

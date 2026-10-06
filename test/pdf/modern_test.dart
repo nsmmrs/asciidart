@@ -110,8 +110,12 @@ void main() {
       final greedy = _pages(
         _pdf(_paragraph, theme: 'base_line_breaking: greedy\n'),
       ).first;
-      expect(greedy, hasLength(5));
-      expect(greedy.last, 'REST.');
+      final optimal = _pages(_pdf(_paragraph)).first;
+      // Each line as full as it goes, hyphenated where a word no longer
+      // fits (here the optimal breaks too; tool/typst_parity.dart's
+      // simple-breaking cases check it line by line against Typst's).
+      expect(greedy, hasLength(4));
+      expect(_words(greedy), _words(optimal));
     });
 
     test('a paragraph that starts with an index term starts at the margin', () {

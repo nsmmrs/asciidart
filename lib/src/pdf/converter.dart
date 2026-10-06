@@ -2829,8 +2829,10 @@ final class PdfConverter extends BuiltInConverter
         if (_length('role_${role}_text_indent', font.size) case final value?) {
           indent = value;
         }
-        if (_n('role_${role}_margin_bottom') case final value?
-            when next != null) {
+        final parent = node.parent;
+        final last =
+            parent is! AbstractBlock || identical(parent.blocks.last, node);
+        if (_n('role_${role}_margin_bottom') case final value? when !last) {
           marginBottom = value.toDouble();
         }
       }
@@ -6598,6 +6600,9 @@ final class PdfConverter extends BuiltInConverter
         at: _engine == PdfEngine.modern ? _at : null,
         skew: skew,
         overhang: _engine == PdfEngine.modern && _s('base_overhang') == 'true',
+        capLines: _typstLeading(font) != null,
+        justifyWidest:
+            _engine == PdfEngine.modern && _s('base_justify_width') == 'widest',
       ),
       _text,
     );
@@ -6697,6 +6702,12 @@ final class PdfConverter extends BuiltInConverter
       ..textDecorationWidth = _n(key('text_decoration_width'));
   }
 
+  /// The Typst leading of [font]'s text (`<category>_leading`, else
+  /// `base_leading`), in the modern engine.
+  double? _typstLeading(_FontState font) => _engine == PdfEngine.modern
+      ? _length(font.leadingKey ?? 'base_leading', font.size)
+      : null;
+
   /// The gem's `calc_line_metrics`: the leading of the line height, half
   /// of it above the text (plus the font's line gap) and half below.
   ({double leading, double paddingTop, double paddingBottom}) _lineMetrics(
@@ -6709,17 +6720,9 @@ final class PdfConverter extends BuiltInConverter
     // ends at its baseline (the space between blocks from baseline to cap
     // height).
     if (_engine == PdfEngine.modern) {
-      if (_length(font.leadingKey ?? 'base_leading', font.size)
-          case final typst?) {
-        final ascender = prawnFont.ascenderAt(font.size);
-        final descender = prawnFont.descenderAt(font.size);
-        final lineGap = prawnFont.lineGapAt(font.size);
-        final cap = prawnFont.capHeightAt(font.size);
-        return (
-          leading: cap + typst - (ascender + descender + lineGap),
-          paddingTop: cap - ascender,
-          paddingBottom: -descender,
-        );
+      if (_typstLeading(font) case final typst?) {
+        // The text box sets the lines on their cap heights (capLines).
+        return (leading: typst, paddingTop: 0.0, paddingBottom: 0.0);
       }
     }
     final leading = font.lineHeight * font.size - font.size;
