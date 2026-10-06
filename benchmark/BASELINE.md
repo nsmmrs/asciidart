@@ -214,3 +214,17 @@ and packs the fonts on every run.
 | medium | 403.5 ms | 40.8 ms | 9.9x |
 | large | 405.0 ms | 44.2 ms | 9.2x |
 
+## PDF (2026-10-06)
+
+End to end, `-b pdf -o <tmpfile> <doc>`, median of 11 after 3 warmups,
+same machine: the asciidoctor-pdf 2.3.27 gem (on Asciidoctor 2.0.26)
+against the native executable. The corpus is the three documents above
+and the gem's chronicles example (9 pages with images, tables, an index,
+running content).
+
+| Doc | asciidoctor-pdf | asciidart | Speedup |
+| --- | --: | --: | --: |
+| small | 336.0 ms | 22.6 ms | 14.9x |
+| medium | 396.7 ms | 33.6 ms | 11.8x |
+| large | 496.3 ms | 47.2 ms | 10.5x |
+| chronicles | 690.1 ms | 101.8 ms | 6.8x |

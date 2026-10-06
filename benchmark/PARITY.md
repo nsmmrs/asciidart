@@ -177,3 +177,115 @@ Intentional differences:
 - The EPUB3 backend is in the native executable only, not in the npm
   package (see [ADR-0009](../adr/0009-epub3-backend.md)).
 
+
+## PDF (`-b pdf`)
+
+The PDF backend converts as the asciidoctor-pdf 2.3.27 gem does (on
+Asciidoctor 2.0.26, with its default dependencies: Prawn 2.4.0,
+prawn-svg 0.34.2, prawn-table, prawn-icon; no optional gems). It reads the
+gem's YAML themes unchanged, and it draws with libpdf, asciidart's own PDF
+library. Prawn's line wrapping and asciidoctor-pdf's page rules are
+imitated in asciidart; no Prawn code is ported.
+
+Since the Hypermedia Systems roadmap (lane EPIC-xj1gxj),
+`-b pdf` is planned to default to a modern layout engine. This
+compatibility mode will then be selected with `-a pdf-compat`, and
+everything in this section describes that mode.
+
+`tool/pdf_parity.dart` compares two PDFs on what a reader sees, not on
+their bytes:
+
+- the words, in order (`pdftotext`);
+- where each word is, to the point (`pdftotext -bbox`);
+- the outline, the link annotations (target and rectangle) and the page
+  labels;
+- the rendered pages: the mean gray difference, and the share of pixels
+  whose color differs from every pixel around them, on the worst page.
+
+The converter tests (`test/pdf/converter_test.dart`) hold 31 fixtures and
+the gem's chronicles and edge-cases examples to all of these, against PDFs
+the gem made (`SOURCE_DATE_EPOCH=0`).
+
+### Corpus check (2026-10-06): 763 of 797 documents the same
+
+`tool/pdf_spec_corpus.dart` extracts the documents of the gem's own spec
+suite: every `to_pdf` heredoc, with the options the spec converts it with
+(doctype, attributes, footer, inline theme). That gives 797 documents
+covering every feature the gem tests. Each is converted by the gem and by
+asciidart and compared as above:
+
+```sh
+dart run tool/pdf_spec_corpus.dart ~/.cache/asciidart-work/pdfcorpus
+dart run tool/pdf_parity.dart --exe-a <gem wrapper> --exe-b <asciidart wrapper> \
+  --out <dir> ~/.cache/asciidart-work/pdfcorpus/*.adoc
+```
+
+The wrappers read each document's `.opts`. 763 documents match on every
+count. Of the other 34:
+
+- *The gem fails, or both do* (4): `font-002` (a font that isn't in the
+  catalog) and `page-040`, `page-042`, `page-043`.
+- *Gem bugs, not copied* (3):
+  - A front cover that is a missing PDF page turns every later page into
+    US Letter (`cover_page-021`, `cover_page-024`); asciidart keeps the
+    theme's page size.
+  - A broken SVG page background moves the body text to x = 0
+    (`page-041`).
+- *Text extraction only, the pages identical* (6):
+  - A character the font has no glyph for is drawn as `.notdef`. The gem's
+    PDF maps it to the character, asciidart's doesn't (libpdf writes CID
+    fonts with Identity-H, where `.notdef` can't stand for several
+    characters): `table-118`, `font-004`, `font-005`, `admonition-009`.
+  - `footnote-027` and `source-069` differ in reading order only.
+- *Not done yet* (21):
+  - Footnotes inside AsciiDoc table cells (`table-081`, `table-082`); a
+    page break inside an AsciiDoc cell (`table-098`).
+  - Autowidth tables: vertical alignment (`table-086`), inline images
+    (`table-033`, `table-034`, `table-035`), and `table-100`.
+  - Title page background images in two placements (`title_page-026`,
+    `title_page-027`).
+  - An SVG image in a centered document title (`image-005`).
+  - The dot leader of a TOC entry ending in a code span (`toc-003`).
+  - Index entries in some arrangements (`index-005`, `index-007`).
+  - A footnote reference in a table cell (`footnote-025`).
+  - An abstract's first line with a theme override (`abstract-018`).
+  - Hyphenation (`hyphens-006`; the gem's spec installs text-hyphen).
+  - An inline icon image (`icon-001`).
+  - `heading_min_height_after: auto` with an image (`section-060`).
+  - `cover_page-005`; `admonition-011`.
+
+### Theme keys
+
+`tool/pdf_theme_keys.dart` lists the keys of the theming guide (2.3.27)
+that the converter never reads over the corpus. Most come from the corpus,
+not from asciidart: it never sets a header, for instance, and the header
+keys are read whenever a theme gives the header a height. Not supported:
+
+- `base_hyphens`, and the `hyphens` attribute: the gem needs the optional
+  text-hyphen gem; asciidart behaves as when it isn't installed (on the
+  roadmap).
+- `code_highlight_background_color`, `code_line_gap`: options of the gem's
+  Rouge formatter. asciidart highlights with hilite (colors from a
+  highlight.js theme).
+- `block_anchor_top`: only moves where a block's destination points.
+- `abstract_text_decoration`, `abstract_title_text_decoration`,
+  `base_text_decoration`, `callout_list_text_align`: documented, but the
+  gem doesn't read them either.
+
+### Intentional differences
+
+- The non-full-screen page mode (`page_mode: fullscreen ...`) is written in
+  the viewer preferences, where ISO 32000 puts it; the gem writes it in the
+  catalog, where viewers ignore it.
+- Fonts are embedded as CID fonts (Identity-H) with subsets of TrueType
+  and CFF outlines; Prawn embeds simple fonts. Text extracts the same,
+  except for `.notdef` (above).
+- Source highlighting uses hilite rather than Rouge; when the gem is run
+  without Rouge, as in the corpus, neither highlights.
+- Optional gems behave as not installed: asciidoctor-mathematical (STEM
+  stays source text), prawn-gmagick (GIF and other formats are reported),
+  rghost (`optimize`), text-hyphen. PDF pages as images, covers and
+  backgrounds (prawn-templates) are supported natively, through libpdf's
+  PDF reader.
+- The parity tool compares what a reader sees; object order, compression
+  and IDs differ.

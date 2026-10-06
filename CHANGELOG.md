@@ -31,6 +31,20 @@ Asciidoctor project.
   `convertTree`; `package:asciidart/cli.dart` runs the command line with a
   configuration compiled in. Everything else is private;
   `tool/api_surface.txt` records the public API and CI checks it.
+- A PDF backend (`-b pdf`, native executable) that converts as the
+  asciidoctor-pdf 2.3.27 gem does and reads its YAML themes unchanged, drawn
+  with libpdf (asciidart's own pure-Dart PDF library; no Prawn code). It
+  covers:
+  - title pages, covers and backgrounds (PDF pages included);
+  - running content;
+  - tables, images (raster and SVG), icons and admonitions;
+  - the table of contents, the index, footnotes and outlines;
+  - `media=prepress` books (recto starts and inner and outer margins) and
+    man pages.
+
+  763 of the 797 documents of the gem's spec suite convert the same (words,
+  positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),
+  6 to 15 times faster than the gem (`benchmark/BASELINE.md`).
 - Remote content (`allow-uri-read`): `parseAsync` and `convertAsync` fetch
   includes and data-URI images, honoring `cache-uri`.
 - The `asciidart` command takes the options of the gem's `asciidoctor`
