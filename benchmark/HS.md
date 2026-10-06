@@ -127,8 +127,8 @@ without a label; chapter 9's closing quote in small capitals.
 | Listings highlighted | `source-highlighter` | FEAT-b3tlsh |
 | Figures: "Figure N" captions below, centered | `image_caption_*` theme keys | Done |
 | Figures float to the top or bottom of a page | Images | FEAT-9dmbh2 |
-| Footnotes at the bottom of the page | `footnote:[]` | FEAT-12l36c |
-| Links show their URL in a footnote | Links | FEAT-12l36c |
+| Footnotes at the bottom of the page | `footnote:[]` (the modern engine's default) | Done (numbered per chapter, Typst per page) |
+| Links show their URL in a footnote | `:show-link-uri: footnote` | Done |
 | Justified, hyphenated, first-line indents | Modern engine, `prose` theme keys | Done |
 | Small capitals | `[.sc]#...#`, `role_sc_font_variant` | Done |
 | Index: two columns in sans, no letter headings, page numbers in a column, each page once | `[index]`, `index_pagenum_text_align: right`, `index_category_headings: false`, `index_font_*` | Done |
