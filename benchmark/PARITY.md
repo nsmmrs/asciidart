@@ -116,7 +116,8 @@ reproducers of each.
   closes after it); a section style DocBook has no element for
   (`[introduction]`) gives a chapter or section, and `[partintro]`
   outside a part a section; emphasis and quotes inside a `<literal>`
-  become phrases and quotation marks. In EPUB, an image width is a
+  become phrases and quotation marks; the copyright's year comes before
+  its holder, and a copyright without a year is a legal notice. In EPUB, an image width is a
   number of pixels or a percentage (another value is left out), an empty
   `toc-title` gives the navigation Asciidoctor's default title, and a
   link to a path from a website's root goes to its id in the book, or is

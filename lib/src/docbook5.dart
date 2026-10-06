@@ -114,9 +114,29 @@ const Map<String, (String, String, bool)> _quoteTags =
     };
 
 /// [xml] (DocBook) as asciidart repairs what Asciidoctor writes invalid
-/// there: tags balanced, and literals' content as DocBook allows it (the
-/// section elements are chosen as they are written).
-String repairDocbook(String xml) => _literals(balanceXml(xml));
+/// there: tags balanced, literals' content as DocBook allows it, and the
+/// copyright's year first (the section elements are chosen as they are
+/// written).
+String repairDocbook(String xml) => _copyright(_literals(balanceXml(xml)));
+
+final RegExp _copyrightTagRx = RegExp(
+  r'<copyright>\n<holder>([^<]*)</holder>\n(?:<year>([^<]*)</year>\n)?</copyright>',
+);
+
+/// [xml] with the document's copyright as DocBook 5.0 allows it: the
+/// year before the holder, and a copyright with no year (which `copyright`
+/// can't hold) as a legal notice.
+String _copyright(String xml) {
+  if (!xml.contains('<copyright>')) return xml;
+  return xml.replaceFirstMapped(_copyrightTagRx, (m) {
+    final holder = m[1]!;
+    return switch (m[2]) {
+      final String year =>
+        '<copyright>\n<year>$year</year>\n<holder>$holder</holder>\n</copyright>',
+      null => '<legalnotice>\n<simpara>$holder</simpara>\n</legalnotice>',
+    };
+  });
+}
 
 /// [xml] with each `<literal>`'s content as DocBook allows it
 /// (asciidart's; Asciidoctor nests emphasis and quotes there): an emphasis
