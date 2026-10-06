@@ -4022,11 +4022,19 @@ final class PdfConverter extends BuiltInConverter
       _floatNext = paragraph;
       return;
     }
-    // `image_placement: auto` (modern engine): the image and its caption
-    // float, to the top of the next page when they don't fit, the text
-    // after them filling the room.
-    final floating =
-        _engine == PdfEngine.modern && _s('image_placement') == 'auto';
+    // `image_placement` (modern engine): the image and its caption float,
+    // to the top of the next page when they don't fit, the text after them
+    // filling the room; when they fit, to the top or bottom of the page
+    // (`top`, `bottom`, `auto`: the nearer), or they stay (`next`).
+    final float = _engine == PdfEngine.modern
+        ? switch (_s('image_placement')) {
+            'auto' => FloatPlacement.auto,
+            'top' => FloatPlacement.top,
+            'bottom' => FloatPlacement.bottom,
+            'next' => FloatPlacement.next,
+            _ => null,
+          }
+        : null;
     final shown = graphic;
     final figure = _collect(() {
       if (caption != null && !captionBottom) _out.add(caption);
@@ -4054,12 +4062,9 @@ final class PdfConverter extends BuiltInConverter
         if (margin > 0) _out.add(SpacerBox(margin));
       }
     });
-    if (floating) {
+    if (float != null) {
       _out.add(
-        BlockBox(
-          figure,
-          style: const BoxStyle(keepTogether: true, floating: true),
-        ),
+        BlockBox(figure, style: BoxStyle(keepTogether: true, float: float)),
       );
     } else {
       _out.addAll(figure);

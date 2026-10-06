@@ -111,7 +111,7 @@ which links back.
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `image_placement` | `here` | `auto`: an image (with its caption) that doesn't fit the rest of the page goes to the top of the next page, and the text after it fills the room, as figures float in books; never past a heading or a page break. |
+| `image_placement` | `here` | An image (with its caption) floats, as figures do in books: when it doesn't fit the rest of the page, to the top of the next page, the text after it filling the room; when it fits, to the top (`top`) or the bottom (`bottom`) of its page, or the nearer of the two (`auto`), the text flowing around it, or it stays (`next`). Never past a heading or a page break. |
 
 ### Tables
 

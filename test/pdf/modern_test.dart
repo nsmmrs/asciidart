@@ -879,6 +879,36 @@ base:
       expect(text[3], startsWith('Next'));
     });
 
+    test('may go to the bottom or the top of the page they fit on', () {
+      final short = [
+        '= Doc\n:doctype: book\n\n== Chap\n',
+        'Before the image.\n',
+        '.The figure\nimage::data:image/svg+xml;base64,$svg[pdfwidth=50%]\n',
+        'After the image.\n',
+      ].join('\n');
+      List<String> lines(String placement) =>
+          _pages(_pdf(short, theme: 'image_placement: $placement\n'))[1];
+      expect(lines('bottom'), [
+        'Chap',
+        'Before the image.',
+        'After the image.',
+        'Figure 1. The figure',
+      ]);
+      expect(lines('top'), [
+        'Figure 1. The figure',
+        'Chap',
+        'Before the image.',
+        'After the image.',
+      ]);
+      // In place where it fits.
+      expect(lines('next'), [
+        'Chap',
+        'Before the image.',
+        'Figure 1. The figure',
+        'After the image.',
+      ]);
+    });
+
     test('stay in place without image_placement: auto', () {
       final text = pages(_pdf(book));
       expect(text[2], contains('After the image.'));
