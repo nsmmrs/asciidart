@@ -206,7 +206,11 @@ final class PdfConverter extends BuiltInConverter
 
   /// Converts [document] to PDF bytes (kept for [write]); returns nothing.
   String convertDocument(Document document) {
+    // The gem converts the title for the document information before its
+    // PDF state exists (and the title keeps that conversion).
     _document = document;
+    document.doctitle();
+    _converting = true;
     _promotePreface(document);
     for (final name in const ['outline', 'outline-title', 'pagenums']) {
       if (document.attributeUnspecified(name)) {
@@ -223,8 +227,8 @@ final class PdfConverter extends BuiltInConverter
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
     final (_, pageHeight) = _pageSize(document);
-    _inlineGraphics.clear();
-    _imageProblems.clear();
+    // The inline images (and why some can't be) are kept: titles are
+    // converted while the document is parsed, before this.
     _text = TextContext(
       fonts: _fonts,
       rootSize: _rootFontSize,
@@ -3485,6 +3489,7 @@ final class PdfConverter extends BuiltInConverter
   _ImageWidth _imageWidthOf(
     String? Function(String name) attr, {
     bool fallback = true,
+    bool vw = true,
   }) {
     _ImageWidth percent(String value) => _ImageWidth.percent(_toF(value) / 100);
     if (attr('pdfwidth') case final width?) {
@@ -3494,7 +3499,7 @@ final class PdfConverter extends BuiltInConverter
           _toF(width.substring(0, width.length - 2)) / 100,
         );
       }
-      if (width.endsWith('vw')) {
+      if (vw && width.endsWith('vw')) {
         return _ImageWidth.viewport(
           _toF(width.substring(0, width.length - 2)) / 100,
         );
@@ -6452,6 +6457,11 @@ final class PdfConverter extends BuiltInConverter
   /// Whether the theme (and the state inline conversions use) is loaded.
   bool _ready = false;
 
+  /// Whether the document is being converted (rather than parsed: inline
+  /// content converted for a title's id, which the gem converts before
+  /// its PDF state exists).
+  bool _converting = false;
+
   String? _convertInline(Inline node) => switch (node.context) {
     InlineContext.anchor => _inlineAnchor(node),
     InlineContext.lineBreak => '${node.text ?? ''}<br>',
@@ -6639,9 +6649,14 @@ final class PdfConverter extends BuiltInConverter
         final fit = node.attr('fit');
         final fitAttr = fit == null ? '' : ' fit="$fit"';
         final intrinsic = graphic == null ? 0.0 : _intrinsicWidth(graphic);
-        final width = _imageWidth(node, fallback: false);
+        final width = _imageWidthOf(node.attr, fallback: false, vw: false);
         String widthValue;
         switch (width.kind) {
+          // Converted while the document is parsed (a title, for its id),
+          // the gem defers a scale to the arranger, which takes it as a
+          // factor rather than a percentage.
+          case _ImageWidthKind.scale when !_converting:
+            widthValue = '${intrinsic * width.value * 100}';
           case _ImageWidthKind.scale:
             widthValue = '${intrinsic * width.value}';
           case _ImageWidthKind.percent:

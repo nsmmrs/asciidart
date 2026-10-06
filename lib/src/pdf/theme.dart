@@ -961,7 +961,14 @@ String resolveMeasurementValues(String text) {
 double strToPoints(String text) {
   final m = RegExp(r'(\d+|\d*\.\d+)(in|mm|cm|p[txc])?$').firstMatch(text);
   if (m != null) return toPoints(double.parse(m[1]!), m[2]);
-  return double.tryParse(text) ?? 0;
+  // Ruby's `to_f`: the number the text starts with (`12ft` is 12).
+  return double.tryParse(
+        RegExp(r'^\s*[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?')
+                .stringMatch(text)
+                ?.trim() ??
+            '',
+      ) ??
+      0;
 }
 
 /// [path] made absolute against [base] (the working directory when null).
