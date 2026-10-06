@@ -1066,6 +1066,42 @@ base:
     });
   }, skip: _tools ? false : 'needs poppler');
 
+  test("the title page's author delimiter keeps its spaces", () {
+    const book = '= Book\nAda One; Bob Two\n:doctype: book\n\n== C\n\nText.\n';
+    double gap(String pdf) {
+      final bbox =
+          Process.runSync('pdftotext', [
+                '-f',
+                '1',
+                '-l',
+                '1',
+                '-bbox',
+                pdf,
+                '-',
+              ]).stdout
+              as String;
+      double at(String word, String side) => double.parse(
+        RegExp('$side="([\\d.]+)"[^>]*>$word<').firstMatch(bbox)![1]!,
+      );
+      return at('Bob', 'xMin') - at('One', 'xMax');
+    }
+
+    const theme = "title_page_authors_delimiter: '    '\n";
+    final four = gap(_pdf(book, theme: theme));
+    final one = gap(_pdf(book, theme: theme, compat: true));
+    expect(four, greaterThan(one * 3));
+  }, skip: _tools ? false : 'needs poppler');
+
+  test('the contents may list titles without numbers', () {
+    const book =
+        '= Book\n:doctype: book\n:toc:\n:sectnums:\n\n== One\n\nText.\n';
+    String contents(String pdf) => _pages(pdf)[1].join('\n');
+    expect(contents(_pdf(book)), contains('1. One'));
+    final plain = contents(_pdf(book, theme: 'toc_numbered: false\n'));
+    expect(plain, contains('One'));
+    expect(plain, isNot(contains('1. One')));
+  }, skip: _tools ? false : 'needs poppler');
+
   group('blank pages', () {
     // A prepress book: each chapter starts on a recto page, so a
     // one-page chapter leaves a blank verso page before the next.
@@ -1259,6 +1295,20 @@ base:
             hex[1]!,
       ];
     }
+
+    test("an ordered list's numbers in old-style figures", () {
+      const source = ':nofooter:\n\n. One\n. Two\n';
+      final lining = codes(_pdf(source, theme: noto));
+      final oldstyle = codes(
+        _pdf(
+          source,
+          theme: '${noto}olist_marker_font_variant_numeric: oldstyle-nums\n',
+        ),
+      );
+      // The numbers change, the items' text doesn't.
+      expect(oldstyle, isNot(lining));
+      expect(oldstyle.length, lining.length);
+    });
 
     test('old-style numerals by the theme', () {
       const source = ':nofooter:\n\nIn 2026.';

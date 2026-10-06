@@ -954,7 +954,13 @@ final class PdfConverter extends BuiltInConverter
           }(),
       ];
       prose(
-        names.join(_s('title_page_authors_delimiter') ?? ', '),
+        names.join(switch (_s('title_page_authors_delimiter') ?? ', ') {
+          // The modern engine keeps the delimiter's spaces as they are (a
+          // gap between names in a row); the gem collapses them.
+          final delimiter when _engine == PdfEngine.modern =>
+            delimiter.replaceAll(RegExp(' (?= )'), '&#160;'),
+          final delimiter => delimiter,
+        }),
         'title_page_authors',
       );
       gap((_n('title_page_authors_margin_bottom') ?? 0).toDouble());
@@ -1136,7 +1142,12 @@ final class PdfConverter extends BuiltInConverter
             entry.blocks.isEmpty) {
           continue;
         }
-        var title = _numberedTitle(entry, formal: false);
+        // `toc_numbered: false` (modern engine): titles without numbers.
+        var title =
+            _engine == PdfEngine.modern &&
+                _theme.value('toc_numbered') == const ThemeBool(false)
+            ? entry.title ?? ''
+            : _numberedTitle(entry, formal: false);
         if (title.isEmpty) continue;
         final font = _themeFont('toc_h$entryLevel', toc);
         title = title.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
@@ -5674,7 +5685,15 @@ final class PdfConverter extends BuiltInConverter
     var markerStyle = _font.style;
     var markerColor = _c('list_marker_font_color') ?? _font.color;
     var markerLineHeight = _font.lineHeight;
+    // The modern engine's `<prefix>_font_variant_numeric` (old-style
+    // figures for an ordered list's numbers).
+    final markerFeatures = <String>{};
     void styleFrom(String prefix) {
+      if (_engine == PdfEngine.modern) {
+        if (fontFeature(_s('${prefix}_font_variant_numeric')) case final f?) {
+          markerFeatures.add(f);
+        }
+      }
       markerColor = _c('${prefix}_font_color') ?? markerColor;
       markerFamily = _s('${prefix}_font_family') ?? markerFamily;
       markerSize = (_n('${prefix}_font_size') ?? markerSize).toDouble();
@@ -5756,7 +5775,14 @@ final class PdfConverter extends BuiltInConverter
       // No text: the marker is where the first block starts (the gem
       // floats it at the cursor).
       children.add(
-        CustomBox(_withMarker(const _Nothing(), marker, markerFont)),
+        CustomBox(
+          _withMarker(
+            const _Nothing(),
+            marker,
+            markerFont,
+            features: markerFeatures,
+          ),
+        ),
       );
     }
     if (primary != null) {
@@ -5774,7 +5800,12 @@ final class PdfConverter extends BuiltInConverter
         lineHeight + metrics.leading + metrics.paddingTop,
       );
       if (marker != null && marker.isNotEmpty) {
-        content = _withMarker(content, marker, markerFont);
+        content = _withMarker(
+          content,
+          marker,
+          markerFont,
+          features: markerFeatures,
+        );
       }
       children.add(
         CustomBox(
@@ -6163,18 +6194,25 @@ final class PdfConverter extends BuiltInConverter
   CustomContent _withMarker(
     CustomContent content,
     String marker,
-    _FontState markerFont,
-  ) {
+    _FontState markerFont, {
+    Set<String> features = const {},
+  }) {
     final gap = _fonts.font(_font.family, _font.style).widthOf('x', _font.size);
     final width = _fonts
         .font(markerFont.family, markerFont.style)
-        .widthOf(marker, markerFont.size, kerning: _font.kerning);
+        .widthOf(
+          marker,
+          markerFont.size,
+          kerning: _font.kerning,
+          features: {..._baseFeatures, ...features},
+        );
     final markerBox = _textBox(
       marker.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
       markerFont,
       align: 'right',
       normalize: false,
       characterSpacing: -0.5,
+      features: features,
     );
     return _Marked(content, markerBox, width, -width - gap + 0.5);
   }

@@ -49,6 +49,14 @@ A quote's attribution has its own space above (`quote_cite_margin_top`,
 `verse_cite_margin_top`; `block_margin_bottom` by default) and alignment
 (`quote_cite_text_align: right`).
 
+### Contents, lists, title page
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `toc_numbered` | `true` | `false` lists the contents' titles without their section numbers. |
+| `olist_marker_font_variant_numeric` | none | An ordered list's numbers in old-style (`oldstyle-nums`) or other figures (with `olist_marker_font_family`, `_font_color`...). |
+| `title_page_authors_delimiter` | `, ` | Its spaces are kept as written: `'    '` sets the authors in a row with a gap (asciidoctor-pdf collapses them to one). |
+
 ### Hyphenation
 
 Justified text is hyphenated in the document's language (`lang`, else
