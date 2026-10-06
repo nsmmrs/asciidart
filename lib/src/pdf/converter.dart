@@ -7133,6 +7133,11 @@ final class PdfConverter extends BuiltInConverter
     }
     final String quoted;
     if (node.role case final roles?) {
+      // Spaces kept: each but the last of a run gets a zero width space
+      // after it, which isn't collapsed.
+      if (node.hasRole('pre-wrap') && inner.contains('  ')) {
+        inner = inner.replaceAll(RegExp(' (?= )'), ' \u200b');
+      }
       quoted = isTag
           ? '${open.substring(0, open.length - 1)} class="$roles">$inner$close'
           : '<span class="$roles">$open$inner$close</span>';
