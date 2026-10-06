@@ -251,6 +251,48 @@ final class FontCatalog {
   PrawnFont font(String family, [String style = 'normal']) =>
       _fonts[(family, style)] ??= _load(family, style);
 
+  /// The font SVG text of [family] (a name, any case, or a generic
+  /// family) gets, in the style nearest to [bold] and [italic]; null when
+  /// the catalog has no such family (prawn-svg's font registry).
+  PdfFont? svgFont(String family, {required bool bold, required bool italic}) {
+    String? named(String name) {
+      final lower = name.toLowerCase();
+      for (final key in [..._catalog.keys, ..._builtInFamilies.keys]) {
+        if (key.toLowerCase() == lower) return key;
+      }
+      return null;
+    }
+
+    final name = family.replaceAll(RegExp(r'\s{2,}'), ' ');
+    final found =
+        named(name) ??
+        switch (name.toLowerCase()) {
+          'serif' || 'cursive' || 'fantasy' => 'Times-Roman',
+          'sans-serif' => 'Helvetica',
+          'monospace' => 'Courier',
+          _ => null,
+        };
+    if (found == null) return null;
+    final styles = (_catalog[found] ?? _builtInFamilies[found])!;
+    final wanted = bold && italic
+        ? 'bold_italic'
+        : bold
+        ? 'bold'
+        : italic
+        ? 'italic'
+        : 'normal';
+    final style = styles.containsKey(wanted)
+        ? wanted
+        : styles.containsKey('normal')
+        ? 'normal'
+        : styles.keys.first;
+    try {
+      return font(found, style).pdf;
+    } on FontException {
+      return null;
+    }
+  }
+
   /// Every font loaded, to write them into the document.
   Iterable<PrawnFont> get loaded => _fonts.values;
 

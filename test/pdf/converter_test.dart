@@ -5,6 +5,7 @@
 @TestOn('vm')
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:asciidart/src/internal.dart';
@@ -54,6 +55,7 @@ void main() {
     'tables2',
     'tables3',
     'theme-keys',
+    'theme-keys2',
     'toc-book-macro',
     'toc-macro',
     'toc-preamble',
@@ -80,6 +82,34 @@ void main() {
       expect(comparison.colors, lessThan(0.001));
     }, skip: _tools ? false : 'needs poppler and qpdf');
   }
+
+  test('the page mode and the initial zoom come from the theme', () {
+    final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final out = '${dir.path}/theme-keys2.pdf';
+    convertFile(
+      'test/pdf/fixtures/theme-keys2.adoc',
+      AsciidoctorOptions(safe: SafeMode.unsafe, backend: 'pdf', toFile: out),
+    );
+    final qdf =
+        Process.runSync('qpdf', [
+              '--qdf',
+              '--object-streams=disable',
+              out,
+              '-',
+            ], stdoutEncoding: latin1).stdout
+            as String;
+    expect(qdf, contains('/PageMode /FullScreen'));
+    // In the viewer preferences, where ISO 32000 puts it (the gem writes
+    // it in the catalog).
+    expect(
+      qdf,
+      matches(
+        RegExp('/ViewerPreferences <<[^>]*/NonFullScreenPageMode /UseThumbs'),
+      ),
+    );
+    expect(qdf, matches(RegExp(r'/OpenAction \[\s*\d+ 0 R\s*/FitH\s+841.89')));
+  }, skip: _tools ? false : 'needs poppler and qpdf');
 
   // The gem's own examples (vendored), converted from where they are. In
   // the chronicles a footnote reference after a floated image is drawn in

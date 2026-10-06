@@ -254,6 +254,7 @@ final class PdfConverter extends BuiltInConverter
     _sections.clear();
     _floatGroup = _floatNext = null;
     _hasTitlePage = _frontCover = _backCover = _noCover = false;
+    _runningBackgrounds.clear();
     _importedPages.clear();
     _layout = _initialLayout(document);
     _indexSlot = null;
@@ -389,6 +390,7 @@ final class PdfConverter extends BuiltInConverter
         header: _header,
         footer: _footer,
         background: _pageBackground,
+        foreground: _pageForeground,
       );
     }
 
@@ -443,14 +445,35 @@ final class PdfConverter extends BuiltInConverter
       result = layout.layout(_out);
       measure();
     }
+    // How the document opens (the gem's `PageModes`).
+    final (pageMode, nonFullScreen) = switch (document.attr('pdf-page-mode') ??
+        _s('page_mode')) {
+      'fullscreen' ||
+      'fullscreen outline' => (PageMode.fullScreen, PageMode.useOutlines),
+      'fullscreen none' => (PageMode.fullScreen, PageMode.useNone),
+      'fullscreen thumbs' => (PageMode.fullScreen, PageMode.useThumbs),
+      'none' => (PageMode.useNone, null),
+      'thumbs' => (PageMode.useThumbs, null),
+      _ => (PageMode.useOutlines, null),
+    };
     final pdf = PdfDocument(
       info: _info(document),
-      pageMode: PageMode.useOutlines,
+      pageMode: pageMode,
+      nonFullScreenPageMode: nonFullScreen,
       displayTitle: true,
       language: document.attr('lang'),
     );
     final pages = result.render(pdf);
     _outline(pdf, pages, result);
+    if (pages.isNotEmpty) {
+      final first = pages.first;
+      pdf.openAction = switch (_s('page_initial_zoom')) {
+        'Fit' => PdfDestination.fit(first),
+        'FitV' => PdfDestination.fitHeight(first, left: 0),
+        'FitH' => PdfDestination.fitWidth(first, top: pages.last.height),
+        _ => null,
+      };
+    }
     _bytes = pdf.save();
     return '';
   }
@@ -1311,6 +1334,28 @@ final class PdfConverter extends BuiltInConverter
     }
   }
 
+  /// The image over every page but the front cover and the pages of PDF
+  /// files (the theme's `page_foreground_image`).
+  late final _PageImage? _foregroundImage = _resolveBackgroundImage(
+    'page-foreground-image',
+  )?.image;
+
+  /// Paints the foreground of [page] (the gem's `stamp_foreground_image`).
+  void _pageForeground(PdfCanvas canvas, PageInfo page) {
+    if (_frontCover && page.number == 1) return;
+    if (_foregroundImage case final image?) {
+      _drawPageImage(
+        canvas,
+        image,
+        size: (page.template.size.width, page.template.size.height),
+      );
+    }
+  }
+
+  /// The background images of the running content, by periphery
+  /// (`header`, `footer`).
+  final Map<String, _PageImage?> _runningBackgrounds = {};
+
   /// Whether the document has a title page.
   bool _hasTitlePage = false;
 
@@ -1396,6 +1441,7 @@ final class PdfConverter extends BuiltInConverter
       header: template.header,
       footer: template.footer,
       background: template.background,
+      foreground: template.foreground,
     );
   }
 
@@ -3140,6 +3186,12 @@ final class PdfConverter extends BuiltInConverter
             ? SvgImage.parse(
                 utf8.decode(bytes, allowMalformed: true),
                 pixelSize: 1,
+                fonts: _fonts.svgFont,
+                defaultFontFamily: 'sans-serif',
+                fallbackFontFamily:
+                    _s('svg_fallback_font_family') ??
+                    _s('svg_font_family') ??
+                    _s('base_font_family'),
                 images: path == null
                     ? null
                     : (href) => _svgResource(href, path),
@@ -3497,7 +3549,10 @@ final class PdfConverter extends BuiltInConverter
   void convertTable(Table node) {
     final captionTop = (_s('table_caption_end') ?? 'top') == 'top';
     final unbreakable = node.hasOption('unbreakable');
-    final boxes = _collect(() => _withFont('table', () => _table(node)));
+    final outside = _font;
+    final boxes = _collect(
+      () => _withFont('table', () => _table(node, outside: outside)),
+    );
     if (boxes.isEmpty) return;
     var caption = node.hasTitle
         ? _captionBox(
@@ -3591,7 +3646,10 @@ final class PdfConverter extends BuiltInConverter
     return CustomBox(_Indented(caption.content, indents), style: caption.style);
   }
 
-  void _table(Table node) {
+  /// Lays out the table [node] in the table's font; AsciiDoc cells use the
+  /// font [outside] the table when the theme's `table_asciidoc_cell_style`
+  /// is `initial`.
+  void _table(Table node, {required _FontState outside}) {
     final rows = node.rows;
     final numRows = rows.head.length + rows.body.length + rows.foot.length;
     final numCols = node.columns.length;
@@ -3711,10 +3769,15 @@ final class PdfConverter extends BuiltInConverter
                   )) {
                 _baseTextAlign = halign!;
               }
+              final savedFont = _font;
+              if (_s('table_asciidoc_cell_style') == 'initial') {
+                _font = outside;
+              }
               try {
                 blocks = _collect(() => _traverse(inner));
               } finally {
                 _baseTextAlign = savedAlign;
+                _font = savedFont;
               }
             }
         }
@@ -5740,30 +5803,70 @@ final class PdfConverter extends BuiltInConverter
             ..restore();
         }
         if (borderWidth > 0 && borderColor != null) {
-          final y = periphery == 'header' ? top - height : top;
-          canvas
-            ..save()
-            ..setStrokeColor(borderColor)
-            ..setLineWidth(borderWidth);
-          switch (_s('${periphery}_border_style')) {
-            case 'dashed':
-              canvas.dash([borderWidth * 4]);
-            case 'dotted':
-              canvas.dash([borderWidth]);
-          }
-          canvas
-            ..moveTo(left, y)
-            ..lineTo(left + width, y)
-            ..stroke()
-            ..restore();
+          _horizontalRule(
+            canvas,
+            borderColor,
+            left,
+            left + width,
+            periphery == 'header' ? top - height : top,
+            borderWidth,
+            _s('${periphery}_border_style'),
+          );
         }
       });
     }
+    // The background image, in the middle of the running content's area.
+    if (_runningBackgrounds.putIfAbsent(
+          periphery,
+          () => _resolveBackgroundImage('${periphery}_background_image')?.image,
+        )
+        case final image?) {
+      pieces.add((pdfPage) {
+        final canvas = pdfPage.canvas
+          ..save()
+          ..translate(left, top - height);
+        _drawPageImage(canvas, image, size: (width, height));
+        canvas.restore();
+      });
+    }
+    // Rules between columns, a spacing apart (the gem leaves the spacing
+    // out of each column after the first, and half of it out of the
+    // first).
+    final ruleWidth = (_n('${periphery}_column_rule_width') ?? 0).toDouble();
+    final ruleColor = ruleWidth > 0
+        ? pdfColorOf(_c('${periphery}_column_rule_color'))
+        : null;
+    final ruleSpacing = (_n('${periphery}_column_rule_spacing') ?? 0)
+        .toDouble();
+    final ruleStyle = _s('${periphery}_column_rule_style');
+    String? previous;
     for (final position in const ['left', 'center', 'right']) {
       var template = _s('${periphery}_${side}_${position}_content');
       if (template == null || template.isEmpty) continue;
-      final (align, columnWidth, x) = columns[position]!;
+      var (align, columnWidth, x) = columns[position]!;
       if (columnWidth <= 0) continue;
+      if (ruleColor != null && columnWidth < contentWidth) {
+        if (previous != null) {
+          final ruleX = contentLeft + x;
+          final ruleTop = top - padding[0] - contentOffset;
+          pieces.add(
+            (pdfPage) => _verticalRule(
+              pdfPage.canvas,
+              ruleColor,
+              ruleX,
+              ruleTop,
+              ruleTop - contentHeight,
+              ruleWidth,
+              ruleStyle,
+            ),
+          );
+          x += ruleSpacing * 0.5;
+          columnWidth -= ruleSpacing;
+        } else {
+          columnWidth -= ruleSpacing * 0.5;
+        }
+      }
+      previous = position;
       if (_imageMacroOf(template, const ['alt', 'width'])
           case (final rawTarget, final attrs)?) {
         final target = _applySubsDiscretely(rawTarget, const {});
