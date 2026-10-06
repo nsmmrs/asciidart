@@ -1932,7 +1932,11 @@ final class PdfConverter extends BuiltInConverter
                   _n('heading_line_height') ??
                   _font.lineHeight)
               .toDouble(),
-      kerning: _font.kerning,
+      kerning: switch (h('font_kerning')) {
+        'normal' => true,
+        'none' => false,
+        _ => _font.kerning,
+      },
       transform: h('text_transform'),
     );
   }
