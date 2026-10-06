@@ -301,6 +301,10 @@ final class Fragment {
   /// Whether the fragment joins the next one without a break (`wj`).
   bool wj = false;
 
+  /// Whether the fragment is decoration that text extraction and copying
+  /// leave out (a callout marker; class `artifact`).
+  bool artifact = false;
+
   /// An inline image: its path, format, width and fit.
   String? imagePath;
 
@@ -342,6 +346,7 @@ final class Fragment {
     ..width = width
     ..callbacks = callbacks == null ? null : [...callbacks!]
     ..wj = wj
+    ..artifact = artifact
     ..imagePath = imagePath
     ..imageFormat = imageFormat
     ..imageWidth = imageWidth
@@ -889,6 +894,7 @@ final class MarkupTransform {
     for (final className in (attrs['class'] ?? '').split(' ')) {
       if (className.isEmpty) continue;
       if (className == 'wj') result.wj = true;
+      if (className == 'artifact') result.artifact = true;
       final settings = _settings[className];
       if (settings == null) continue;
       settings.applyTo(result);

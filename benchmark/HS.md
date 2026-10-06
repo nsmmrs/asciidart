@@ -37,19 +37,20 @@ vendored: its `book/` directory isn't under its repository's license.
 
 | Check | Result | Detail |
 | --- | --- | --- |
-| PDF build | pass | 3095 ms, 2098 KB, 10 errors, 4 warnings |
-| HTML build | pass | 163 ms, 959 KB, 6 errors, 4 warnings |
-| EPUB 3 build | pass | 310 ms, 1846 KB, 6 errors, 4 warnings |
-| DocBook 5 build | pass | 153 ms, 894 KB, 6 errors, 4 warnings |
+| PDF build | pass | 3235 ms, 2149 KB, 10 errors, 4 warnings |
+| HTML build | pass | 177 ms, 1048 KB, 6 errors, 5 warnings |
+| EPUB 3 build | pass | 331 ms, 1855 KB, 6 errors, 5 warnings |
+| DocBook 5 build | pass | 166 ms, 894 KB, 6 errors, 4 warnings |
 | PDF byte-stable across runs | pass | SOURCE_DATE_EPOCH=0 |
-| PDF has each listing line once (#122) | FAIL | 600 distinct lines of 24+ characters: 1 missing, 0 repeated; missing: "Delete Selected Contacts" |
+| PDF has each listing line once (#122) | pass | 600 distinct lines of 24+ characters: 0 missing, 0 repeated |
 | PDF crops no text (#106) | pass | 0 words past the page edge, 0 past the margin |
 | PDF index with page numbers | pass | 324 entries with page numbers |
 | PDF front matter roman, body arabic from 1 | pass | first labels i 1 2 3 4 5; "1" on page 2 |
-| PDF time for the whole book | pass | 3095 ms for 339 pages |
+| PDF time for the whole book | pass | 3235 ms for 339 pages |
 | HTML index with links | pass | 356 links to uses |
+| HTML callouts linked both ways (callout-links) | pass | 503 markers, 489 items |
 | DocBook 5 validates (RELAX NG 5.0) | FAIL | 9 errors; /home/nes/.cache/asciidart-work/hs-out/HypermediaSystems.xml:9469: parser error : Opening and ending tag mismatch: emphasis line 9469 and primary |
-| EPUBCheck passes | FAIL | 28 errors; ERROR(RSC-005): /home/nes/.cache/asciidart-work/hs-out/HypermediaSystems.epub/EPUB/nav.xhtml(12,27): Error while parsing file: Heading elements must contain text |
+| EPUBCheck passes | FAIL | 29 errors; ERROR(RSC-005): /home/nes/.cache/asciidart-work/hs-out/HypermediaSystems.epub/EPUB/nav.xhtml(12,27): Error while parsing file: Heading elements must contain text |
 
 Errors in the builds are the sources' own, and Asciidoctor reports them
 too: nested sections in an introduction, and emphasis marks around

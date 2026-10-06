@@ -14,6 +14,7 @@ import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/callout_links.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/epub3/assets.g.dart';
@@ -1018,8 +1019,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     var i = 0;
     for (final item in node.items) {
       lines.add(
-        '<li><i class="conum" data-value="${i + 1}">'
-        '${String.fromCharCode(num)}</i> ${_s(item.text)}'
+        '<li>${calloutBack(item, '<i class="conum" data-value="${i + 1}">'
+        '${String.fromCharCode(num)}</i>')} '
+        '${calloutItemAnchors(item)}${_s(item.text)}'
         '${item.hasBlocks ? _s(item.content()) : ''}</li>',
       );
       num += 1;
@@ -1451,8 +1453,11 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   /// Converts the [node] inline callout.
   String convertInlineCallout(Inline node) {
     final number = _toInt(_s(node.text));
-    return '<i class="conum" data-value="$number">'
-        '${String.fromCharCode(_calloutStart + number - 1)}</i>';
+    return calloutLink(
+      node,
+      '<i class="conum" data-value="$number">'
+      '${String.fromCharCode(_calloutStart + number - 1)}</i>',
+    );
   }
 
   /// Converts the [node] inline footnote.

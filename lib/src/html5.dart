@@ -17,6 +17,7 @@ library;
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/callout_links.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
@@ -932,8 +933,8 @@ class Html5Converter extends BuiltInConverter {
         }
         result.add(
           '<tr>\n'
-          '<td>$numLabel</td>\n'
-          '<td>${_s(listItem.text)}${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}</td>\n'
+          '<td>${calloutBack(listItem, numLabel)}</td>\n'
+          '<td>${calloutItemAnchors(listItem)}${_s(listItem.text)}${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}</td>\n'
           '</tr>',
         );
       }
@@ -944,7 +945,7 @@ class Html5Converter extends BuiltInConverter {
         final listItem = item;
         result.add(
           '<li>\n'
-          '<p>${_s(listItem.text)}</p>${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}\n'
+          '<p>${calloutItemAnchors(listItem)}${_s(listItem.text)}${calloutBackArrow(listItem)}</p>${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}\n'
           '</li>',
         );
       }
@@ -1965,16 +1966,21 @@ class Html5Converter extends BuiltInConverter {
   /// Converts the [node] inline callout.
   String convertInlineCallout(Inline node) {
     if (node.document!.hasAttr('icons', 'font')) {
-      return '<i class="conum" data-value="${_s(node.text)}"></i><b>(${_s(node.text)})</b>';
+      return calloutLink(
+        node,
+        '<i class="conum" data-value="${_s(node.text)}"></i><b>(${_s(node.text)})</b>',
+      );
     }
     if (node.document!.hasAttr('icons')) {
       final src = node.iconUri('callouts/${_s(node.text)}');
-      return '<img src="$src" alt="${_s(node.text)}"$_voidElementSlash>';
+      return calloutLink(
+        node,
+        '<img src="$src" alt="${_s(node.text)}"$_voidElementSlash>',
+      );
     }
-    if (node.xmlCommentGuard) {
-      return '&lt;!--<b class="conum">(${_s(node.text)})</b>--&gt;';
-    }
-    return '${_s(node.attributes['guard'])}<b class="conum">(${_s(node.text)})</b>';
+    final marker = calloutLink(node, '<b class="conum">(${_s(node.text)})</b>');
+    if (node.xmlCommentGuard) return '&lt;!--$marker--&gt;';
+    return '${_s(node.attributes['guard'])}$marker';
   }
 
   /// Converts the [node] inline footnote.

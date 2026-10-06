@@ -1194,7 +1194,19 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// Restores the attributes to the previously saved state (the header).
   void restoreAttributes() {
-    if (parentDocument == null) callouts.rewind();
+    if (parentDocument == null) {
+      // asciidart's lint (with callout-links): callouts after the last
+      // callout list, which no list explains.
+      if (hasAttr('callout-links')) {
+        for (final callout in callouts.currentList) {
+          logger.warn(
+            'no callout list for <${callout.ordinal}>',
+            at: callout.at,
+          );
+        }
+      }
+      callouts.rewind();
+    }
     final saved = _headerAttributes!;
     attributes
       ..clear()

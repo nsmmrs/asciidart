@@ -3,17 +3,23 @@
 /// Port of `lib/asciidoctor/callouts.rb`.
 library;
 
+import 'package:asciidart/src/cursor.dart';
+
 /// A single registered callout: the 1-based [ordinal] of its list item and
 /// its unique [id] (e.g. `CO1-1`).
 class Callout {
-  /// Creates a callout for list item [ordinal] with unique [id].
-  const new({required this.ordinal, required this.id});
+  /// Creates a callout for list item [ordinal] with unique [id], in the
+  /// block at [at].
+  const new({required this.ordinal, required this.id, this.at});
 
   /// 1-based ordinal of the list item this callout is associated with.
   final int ordinal;
 
   /// Unique id of this callout.
   final String id;
+
+  /// Where the block with the callout starts, if known.
+  final Cursor? at;
 }
 
 /// Maintains a catalog of callouts and their associations.
@@ -32,9 +38,9 @@ class Callouts {
   /// Generates a unique id for this callout based on the index of the next
   /// callout list in the document and the index of this callout since the
   /// end of the last callout list. Returns the unique id of this callout.
-  String register(int liOrdinal) {
+  String register(int liOrdinal, {Cursor? at}) {
     final id = _generateNextCalloutId();
-    currentList.add(Callout(ordinal: liOrdinal, id: id));
+    currentList.add(Callout(ordinal: liOrdinal, id: id, at: at));
     _coIndex++;
     return id;
   }

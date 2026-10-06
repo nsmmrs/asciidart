@@ -455,4 +455,48 @@ base:
       expect(next.$1, lessThan(start.$1));
     });
   }, skip: _tools ? false : 'needs poppler');
+
+  group('callouts', () {
+    const source =
+        ':nofooter:\n\n----\nconst a = 1; // <1>\nconst b = 2; // <2>\n'
+        'const c = 3; // <1>\n----\n<1> First.\n<2> Second.\n';
+
+    String qdf(String pdf) =>
+        Process.runSync('qpdf', [
+              '--qdf',
+              '--object-streams=disable',
+              pdf,
+              '-',
+            ], stdoutEncoding: latin1).stdout
+            as String;
+
+    test('markers are left out of the copied code', () {
+      final modern = _pages(_pdf(source)).first;
+      expect(modern.take(3), ['const a = 1;', 'const b = 2;', 'const c = 3;']);
+      // The compatibility mode copies them, as the gem's PDF does.
+      final compat = _pages(_pdf(source, compat: true)).first;
+      expect(compat.first, 'const a = 1; ①');
+    });
+
+    test('markers link to their items and items back', () {
+      final pdf = qdf(_pdf(source));
+      final names = {
+        for (final m in RegExp(
+          r'^\s*\((CO[^)]*)\)',
+          multiLine: true,
+        ).allMatches(pdf))
+          m[1]!,
+      };
+      expect(names, {
+        'CO1-1', 'CO1-2', 'CO1-3', //
+        'CO1-1-item', 'CO1-2-item', 'CO1-3-item',
+      });
+      final links = [
+        for (final m in RegExp(r'/Dest \(([^)]*)\)').allMatches(pdf)) m[1]!,
+      ]..sort();
+      expect(links, [
+        'CO1-1', 'CO1-1-item', 'CO1-2', 'CO1-2-item', 'CO1-3-item', //
+      ]);
+    });
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }

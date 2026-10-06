@@ -5555,17 +5555,44 @@ final class PdfConverter extends BuiltInConverter
             conumFont.size,
             kerning: conumFont.kerning,
           );
+          // In the modern engine, the item is the destination of its
+          // markers, and its glyph links back to the first.
+          final coids = _engine == PdfEngine.modern
+              ? (item.attr('coids') ?? '')
+                    .split(' ')
+                    .where((id) => id.isNotEmpty)
+                    .toList()
+              : const <String>[];
+          var markerMarkup = glyph
+              .replaceAll('&', '&amp;')
+              .replaceAll('<', '&lt;');
+          if (coids.isNotEmpty) {
+            if (markerFont.color case final color?) {
+              markerMarkup =
+                  '<font color="${color.rubyString}">$markerMarkup</font>';
+            }
+            markerMarkup = '<a anchor="${coids.first}">$markerMarkup</a>';
+          }
           final marker = _textBox(
-            glyph.replaceAll('&', '&amp;').replaceAll('<', '&lt;'),
+            markerMarkup,
             markerFont,
             align: 'center',
             normalize: false,
           );
           final last = i == node.items.length - 1;
           final text = item.text;
-          final primary = text == null || text.isEmpty
+          var primary = text == null || text.isEmpty
               ? (item.blocks.isEmpty ? _dummyText : null)
               : text;
+          // (An item of blocks alone is the destination of its first
+          // marker only.)
+          if (primary != null && coids.isNotEmpty) {
+            final destinations = [
+              for (final id in coids)
+                '<a id="${_calloutItem(id)}">$_dummyText</a>',
+            ];
+            primary = '${destinations.join()}$primary';
+          }
           final children = _collect(() {
             if (primary != null) {
               final box = _textBox(
@@ -5594,7 +5621,11 @@ final class PdfConverter extends BuiltInConverter
               children,
               style: BoxStyle(
                 margin: EdgeInsets(left: markerWidth),
-                anchor: item.id,
+                anchor:
+                    item.id ??
+                    (primary == null && coids.isNotEmpty
+                        ? _calloutItem(coids.first)
+                        : null),
               ),
             ),
           );
@@ -6866,14 +6897,30 @@ final class PdfConverter extends BuiltInConverter
   String _inlineCallout(Inline node) {
     final glyph = _conumGlyph(int.tryParse(node.text ?? '') ?? 0);
     final family = _s('conum_font_family');
+    final modern = _engine == PdfEngine.modern;
+    // The modern engine leaves the marker out of copied code, and links
+    // it to its callout list item (which links back).
+    final shown = modern ? '<span class="artifact">$glyph</span>' : glyph;
     var result = family == null || family == _font.family
-        ? glyph
-        : '<font name="$family">$glyph</font>';
-    if (_theme.value('conum_font_color') case final color?) {
-      result = '<font color="${color.rubyString}">$result</font>';
+        ? shown
+        : '<font name="$family">$shown</font>';
+    // The marker keeps its color as a link (the text's, when the theme
+    // gives it none).
+    final color =
+        _theme.value('conum_font_color')?.rubyString ??
+        (modern ? _font.color?.rubyString : null);
+    if (color != null) result = '<font color="$color">$result</font>';
+    final id = node.id;
+    if (modern && id != null) {
+      result =
+          '<a id="$id">$_dummyText</a>'
+          '<a anchor="${_calloutItem(id)}">$result</a>';
     }
     return result;
   }
+
+  /// The destination of the callout list item for the callout [id].
+  static String _calloutItem(String id) => '$id-item';
 
   /// The images inline images refer to, by the `src` of their `<img>`.
   final Map<String, Graphic> _inlineGraphics = {};

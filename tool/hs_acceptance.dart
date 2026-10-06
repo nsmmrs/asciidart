@@ -67,8 +67,14 @@ Future<void> main(List<String> args) async {
   ];
   final builds = {
     'PDF': (pdfArgs, '${outDir.path}/HypermediaSystems.pdf'),
-    'HTML': (['-b', 'html5'], '${outDir.path}/HypermediaSystems.html'),
-    'EPUB 3': (['-b', 'epub3'], '${outDir.path}/HypermediaSystems.epub'),
+    'HTML': (
+      ['-b', 'html5', '-a', 'callout-links'],
+      '${outDir.path}/HypermediaSystems.html',
+    ),
+    'EPUB 3': (
+      ['-b', 'epub3', '-a', 'callout-links'],
+      '${outDir.path}/HypermediaSystems.epub',
+    ),
     'DocBook 5': (['-b', 'docbook5'], '${outDir.path}/HypermediaSystems.xml'),
   };
   final timings = <String, Duration>{};
@@ -106,8 +112,19 @@ Future<void> main(List<String> args) async {
         _withoutLastLine(page),
     ].join('\n'),
   );
+  // The HTML's callout markers left out, as the PDF's are, and its index
+  // (whose links are labeled with section titles; the PDF's, with page
+  // numbers).
   final htmlText = _normalize(
-    _htmlText(File(builds['HTML']!.$2).readAsStringSync()),
+    _htmlText(
+      File(builds['HTML']!.$2)
+          .readAsStringSync()
+          .replaceAll(RegExp(r'<b class="conum">\(\d+\)</b>'), '')
+          .replaceAll(
+            RegExp(r'<div class="index">[\s\S]*?</ul>\n</div>\n</div>'),
+            '',
+          ),
+    ),
   );
   var dropped = 0;
   var repeated = 0;
@@ -173,6 +190,13 @@ Future<void> main(List<String> args) async {
   final html = File(builds['HTML']!.$2).readAsStringSync();
   final indexLinks = RegExp('href="#_indexterm_').allMatches(html).length;
   row('HTML index with links', indexLinks > 0, '$indexLinks links to uses');
+  final calloutLinks = RegExp('class="conum-link"').allMatches(html).length;
+  final calloutBacks = RegExp('class="conum-back"').allMatches(html).length;
+  row(
+    'HTML callouts linked both ways (callout-links)',
+    calloutLinks > 0 && calloutBacks > 0,
+    '$calloutLinks markers, $calloutBacks items',
+  );
 
   // Validity.
   final docbook = _run('xmllint', [

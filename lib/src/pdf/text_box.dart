@@ -940,6 +940,9 @@ final class PrawnTextBox implements CustomContent {
               ..setFillColor(color)
               ..setStrokeColor(color);
           }
+          if (fragment.artifact) {
+            canvas.beginMarkedContent('Span', actualText: '');
+          }
           canvas
             ..text(
               f.text,
@@ -955,6 +958,7 @@ final class PrawnTextBox implements CustomContent {
               ),
             )
             ..restore();
+          if (fragment.artifact) canvas.endMarkedContent();
         }
         final styles = fragment.styles ?? const {};
         if (styles.contains(FragmentStyle.underline) ||

@@ -110,6 +110,11 @@ reproducers of each.
   top of `lib/src/cli/options.dart`).
 - Dart-only features (Mustache templates, `init-config`, `-j/--jobs`) have
   no Ruby counterpart.
+- `callout-links` (off by default) links callouts and their list items
+  both ways in HTML and EPUB, keeps markers out of copied code, and warns
+  about callouts no list item explains (`no callout list item for <3>`,
+  `no callout list for <1>`). The modern PDF engine always does the
+  first two.
 - `--help` and `-h manpage` describe `-T` and `-E` as they work in this
   build (Mustache templates) instead of mentioning tilt and gems.
 - The Ruby-only options `-r/--require`, `-I/--load-path`, `--eruby` and

@@ -229,6 +229,38 @@ A ((Tiger)) again.(((Wolves)))
     );
   });
 
+  test('callout-links links callouts and their items both ways', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/doc.adoc')
+      ..writeAsStringSync('= Doc\n\n----\na <1>\n----\n<1> One.\n');
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': '', 'callout-links': ''},
+      ),
+    );
+    final chapter = unzipText(
+      File('${dir.path}/doc.epub').readAsBytesSync(),
+    )['EPUB/_doc.xhtml']!;
+    expect(
+      chapter,
+      contains(
+        '<a id="CO1-1" class="conum-link" href="#CO1-1-item" '
+        'style="user-select:none"><i class="conum" data-value="1">',
+      ),
+    );
+    expect(
+      chapter,
+      contains(
+        '<li><a href="#CO1-1"><i class="conum" data-value="1">\u2460</i></a> '
+        '<a id="CO1-1-item"></a>One.',
+      ),
+    );
+  });
+
   test('epub3 cannot write to standard output', () async {
     final dir = Directory.systemTemp.createTempSync('epub3_test.');
     addTearDown(() => dir.deleteSync(recursive: true));
