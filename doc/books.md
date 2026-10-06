@@ -57,6 +57,10 @@ const a = 1; // <1>
 <1> Explained here.
 ```
 
+Numbers needn't be kept in step by hand: `<.>` markers and `<.>` list
+items are numbered in order (standard AsciiDoc, so other tools read the
+source the same way).
+
 In the PDF, the markers aren't part of the code when it is copied, and
 each links to its explanation, which links back. In HTML and EPUB,
 `-a callout-links` does the same, and reports markers no explanation
