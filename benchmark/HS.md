@@ -124,7 +124,7 @@ without a label; chapter 9's closing quote in small capitals.
 | Sidebars: a gray fill, rules above and below, sans | `sidebar` theme keys | Done |
 | "Opportunity" boxes: a blue fill, rules, a bold title, no label | `[IMPORTANT]` with a title, `:important-caption:` empty, `admonition` theme keys | Done |
 | Listings: "Listing N" captions, callouts | Titles, `listing-caption`, callouts | Done |
-| Listings highlighted | `source-highlighter` | FEAT-b3tlsh |
+| Listings highlighted | `source-highlighter=highlight.js` | Done |
 | Figures: "Figure N" captions below, centered | `image_caption_*` theme keys | Done |
 | Figures float to the top or bottom of a page | Images | FEAT-9dmbh2 |
 | Footnotes at the bottom of the page | `footnote:[]` (the modern engine's default) | Done (numbered per chapter, Typst per page) |
