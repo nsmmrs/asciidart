@@ -90,7 +90,7 @@ Asciidoctor project.
   (`footnotes_placement`), links' URIs as footnotes
   (`show-link-uri=footnote`), chapter and part openers without running
   content and with their label on a line of their own
-  (`heading_h2_label_display`), `noheader` and `nofooter` on a section,
+  (`heading_h2_content`, a template), `noheader` and `nofooter` on a section,
   floating images (`image_placement: auto`), sections with a styled role
   in a box (`section_role_<role>_*`), an index with each page once and
   page numbers in a column

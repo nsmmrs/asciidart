@@ -66,7 +66,8 @@ way").
    (FEAT-3x6f9c): `heading_h<n>_label_display` by `heading_h<n>_content`,
    `header_title_style: numeral` by running content with optional parts,
    `toc_numbered` by `toc_entry_content`, `conum_glyphs: '[%d]'` and
-   `callout_list_marker_content: '%d.'` by `{{number}}` templates. Layout
+   `callout_list_marker_content: '%d.'` by `{{number}}` templates (the
+   title page's authors already have the gem's templates). Layout
    (placement, spacing, alignment) stays in keyed values: a template is
    for text.
 
@@ -84,7 +85,7 @@ template (✓ already configurable):
 | Chapter and part headings with their labels | `Chapter 1. Title` | PDF key (FEAT-3x6f9c) |
 | Running heads | `{chapter-title}` | PDF key, optional parts (FEAT-3x6f9c) |
 | Contents entries | `1.1. Title` | PDF key (FEAT-3x6f9c) |
-| Title page authors | `A, B` | PDF key (FEAT-3x6f9c) |
+| Title page authors | `A, B` | ✓ gem keys (`title_page_authors_content`, `_delimiter`) |
 | Website navigation, home page, contents page | `← Title` | attribute and Mustache (FEAT-bkg33y) |
 | List bullets, menu caret, kbd separator | `•`, ` › `, `+` | ✓ gem keys |
 | Chapter and part signifiers, caption words | `Chapter`, `Listing` | ✓ attributes |

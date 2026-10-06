@@ -33,6 +33,7 @@ import 'package:asciidart/src/pdf/theme.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
 import 'package:libpdf/libpdf.dart';
+import 'package:mustache_template/mustache.dart' show Template;
 
 /// The NUL character the gem puts in empty anchors (zero width).
 const String _dummyText = '\u0000';
@@ -1142,12 +1143,20 @@ final class PdfConverter extends BuiltInConverter
             entry.blocks.isEmpty) {
           continue;
         }
-        // `toc_numbered: false` (modern engine): titles without numbers.
-        var title =
-            _engine == PdfEngine.modern &&
-                _theme.value('toc_numbered') == const ThemeBool(false)
-            ? entry.title ?? ''
-            : _numberedTitle(entry, formal: false);
+        // The modern engine's `toc_entry_content` template (ADR-0010):
+        // `title`, `numbered-title`, `number`.
+        var title = _numberedTitle(entry, formal: false);
+        if (_engine == PdfEngine.modern) {
+          if (_s('toc_entry_content') case final template?) {
+            title = _render(template, {
+              'title': entry.title,
+              'numbered-title': title,
+              'number': _isNumbered(entry)
+                  ? (entry.sectname == 'part' ? entry.numeral : entry.sectnum())
+                  : null,
+            });
+          }
+        }
         if (title.isEmpty) continue;
         final font = _themeFont('toc_h$entryLevel', toc);
         title = title.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
@@ -2254,7 +2263,7 @@ final class PdfConverter extends BuiltInConverter
     // An empty index is left out.
     final indexSection = sectname == 'index';
     if (indexSection && _index.isEmpty) return;
-    var title = _labeledTitle(section) ?? _numberedTitle(section);
+    var title = _headingText(section);
     final separator =
         section.attr('separator') ?? _document.attr('title-separator') ?? '';
     if (separator.isNotEmpty && title.contains('$separator ')) {
@@ -2387,68 +2396,68 @@ final class PdfConverter extends BuiltInConverter
   /// (its `<category>_heading_*` keys replace the heading's), if any.
   String? _headingRole;
 
-  /// [section]'s title after its numeral and a space, when it is
-  /// numbered: a part's roman numeral (`I Hypermedia Concepts`), another
-  /// section's number as its heading has it (`3. A Web 1.0 Application`).
-  String _numeralTitle(Section section) {
-    final title = section.title ?? '';
-    final sectnumlevels =
-        int.tryParse(_document.attr('sectnumlevels') ?? '') ?? 3;
-    if (!section.numbered ||
-        section.caption != null ||
-        (section.level ?? 0) > sectnumlevels ||
-        section.numeral == null) {
-      return title;
-    }
-    final number = section.sectname == 'part'
-        ? section.numeral!
-        : section.sectnum();
-    return '$number $title';
+  /// The text of [section]'s heading: its numbered title, or in the
+  /// modern engine the theme's `heading_h<n>_content` template (ADR-0010)
+  /// with `title`, `numbered-title`, `number` (`1.2.`, a part's `I`),
+  /// `numeral` (`1`, `I`) and `signifier` (`Chapter`, `Part`); a label
+  /// on a line of its own, in gray: see doc/pdf.md.
+  String _headingText(Section section) {
+    final numbered = _numberedTitle(section);
+    if (_engine != PdfEngine.modern) return numbered;
+    final level = (section.level ?? 0) + 1;
+    final template = _s('heading_h${level}_content');
+    if (template == null) return numbered;
+    final isNumbered = _isNumbered(section);
+    final part = section.sectname == 'part';
+    final signifier = !isNumbered || _document.doctype != 'book'
+        ? null
+        : part
+        ? _document.attributes['part-signifier'] ?? 'Part'
+        : section.level == 1
+        ? _document.attributes['chapter-signifier'] ?? 'Chapter'
+        : null;
+    return _render(template, {
+      'title': section.title ?? '',
+      'numbered-title': numbered,
+      'number': isNumbered
+          ? (part ? section.numeral : section.sectnum())
+          : null,
+      'numeral': isNumbered ? section.numeral : null,
+      'signifier': signifier == null || signifier.isEmpty
+          ? null
+          : _escapeMarkup(signifier),
+    });
   }
 
-  /// The title of a numbered part or chapter of a book with its label
-  /// ("Part I", "Chapter 1") on a line of its own above it, when the
-  /// theme sets `heading_h<n>_label_display: block` (modern engine): the
-  /// label in the `heading_h<n>_label_font_*` keys.
-  String? _labeledTitle(Section section) {
-    if (_engine != PdfEngine.modern || _document.doctype != 'book') {
-      return null;
-    }
-    final level = section.level ?? 0;
-    final category = 'heading_h${level + 1}_label';
-    if (level > 1 || _s('${category}_display') != 'block') return null;
+  /// Whether [section] shows a number (numbered, no caption of its own,
+  /// within `sectnumlevels`).
+  bool _isNumbered(Section section) {
     final sectnumlevels =
         int.tryParse(_document.attr('sectnumlevels') ?? '') ?? 3;
-    if (!section.numbered ||
-        section.caption != null ||
-        level > sectnumlevels ||
-        section.numeral == null) {
-      return null;
-    }
-    final signifier = level == 0
-        ? _document.attributes['part-signifier'] ?? 'Part'
-        : _document.attributes['chapter-signifier'] ?? 'Chapter';
-    var label = signifier.isEmpty
-        ? section.numeral!
-        : '$signifier ${section.numeral}';
-    final attributes = [
-      if (_c('${category}_font_color') case final HexColor color)
-        'color="#${color.hex}"',
-      if (_theme.value('${category}_font_size') case final size?)
-        'size="${size.rubyString}"',
-      if (_s('${category}_font_family') case final family?) 'name="$family"',
-    ];
-    if (attributes.isNotEmpty) {
-      label = '<font ${attributes.join(' ')}>$label</font>';
-    }
-    label = switch (_fontStyle(_s('${category}_font_style'))) {
-      'bold' => '<strong>$label</strong>',
-      'italic' => '<em>$label</em>',
-      'bold_italic' => '<strong><em>$label</em></strong>',
-      _ => label,
-    };
-    return '$label\n${section.title ?? ''}';
+    return section.numbered &&
+        section.caption == null &&
+        (section.level ?? 0) <= sectnumlevels &&
+        section.numeral != null;
   }
+
+  /// [text] escaped for the text markup.
+  static String _escapeMarkup(String text) =>
+      text.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
+
+  /// The parsed Mustache templates of the theme, by their source.
+  final Map<String, Template> _templates = {};
+
+  /// [source], a Mustache template (ADR-0010), rendered with [values]
+  /// (an empty value counts as none, for optional parts).
+  String _render(String source, Map<String, String?> values) =>
+      (_templates[source] ??= Template(
+        source,
+        lenient: true,
+        htmlEscapeValues: false,
+      )).renderString({
+        for (final MapEntry(:key, :value) in values.entries)
+          if (value != null && value.isNotEmpty) key: value,
+      });
 
   /// Whether a part has started (an appendix ends it).
   bool _inPart = false;
@@ -6129,20 +6138,21 @@ final class PdfConverter extends BuiltInConverter
   /// (`callout_list_marker_content`: `%d.`).
   String _conumGlyph(int number, {bool list = false}) {
     if (_conumTemplate(list: list) case final template?) {
-      return template.replaceAll('%d', '$number');
+      return _render(template, {'number': '$number'});
     }
     return number >= 1 && number <= _conumGlyphs.length
         ? _conumGlyphs[number - 1]
         : '';
   }
 
-  /// The text template of callout markers (or of a callout list's
-  /// markers, with [list]), in the modern engine.
+  /// The template of callout markers (or of a callout list's markers,
+  /// with [list]) in the modern engine (ADR-0010): `conum_glyphs` (or
+  /// `callout_list_marker_content`) with `{{number}}`.
   String? _conumTemplate({bool list = false}) {
     if (_engine != PdfEngine.modern) return null;
     final template =
         (list ? _s('callout_list_marker_content') : null) ?? _s('conum_glyphs');
-    return template != null && template.contains('%d') ? template : null;
+    return template != null && template.contains('{{') ? template : null;
   }
 
   /// Converts the callout list [node].
@@ -6939,8 +6949,12 @@ final class PdfConverter extends BuiltInConverter
       if (template == '{page-number}') {
         content = doc.hasAttr('pagenums') ? label : null;
       } else {
+        // A Mustache template (ADR-0010; optional parts) first, then the
+        // gem's attribute references.
         content = _applySubsDiscretely(
-          template,
+          _engine == PdfEngine.modern && template.contains('{{')
+              ? _render(template, attributes)
+              : template,
           attributes,
           unset: const {
             'part-numeral',
@@ -7097,9 +7111,7 @@ final class PdfConverter extends BuiltInConverter
     attributes['page-count'] = '${page.count - _skip.$2}';
     if (doc.hasAttr('pagenums')) attributes['page-number'] = label;
     // `<periphery>_title_style`: `document` (the default) as headings are
-    // titled, `toc` as the contents list them, `basic` without numbers;
-    // the modern engine's `numeral`: the numeral, a space and the title
-    // (`I Hypermedia Concepts`, `3. A Web 1.0 Application`).
+    // titled, `toc` as the contents list them, `basic` without numbers.
     final titleStyle = _s('${periphery}_title_style');
     String titleOf(String? mark) {
       final index = int.tryParse(mark ?? '');
@@ -7108,7 +7120,6 @@ final class PdfConverter extends BuiltInConverter
       return switch (titleStyle) {
         'basic' => section.title ?? '',
         'toc' => _numberedTitle(section, formal: false),
-        'numeral' when _engine == PdfEngine.modern => _numeralTitle(section),
         _ => _numberedTitle(section),
       };
     }

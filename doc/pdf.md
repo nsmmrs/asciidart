@@ -20,6 +20,13 @@ Every setting has a default. Each one is a key of the theme (as written
 in the YAML, `prose_orphans` is `prose: { orphans: 2 }`) or an attribute
 of the document.
 
+Text the engine generates (a heading's label, a running head, a contents
+entry, a callout marker) comes from templates where a book may want it
+otherwise: Mustache templates (ADR-0010), `{{name}}` for a value and
+`{{#name}}...{{/name}}` for a part written only when the value is set. A
+template may hold the text markup (`<font>`, `<strong>`, `<sup>`); a
+newline is `\n` in a double-quoted YAML string.
+
 ### Paragraphs
 
 | Key | Default | What it does |
@@ -53,7 +60,7 @@ A quote's attribution has its own space above (`quote_cite_margin_top`,
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `toc_numbered` | `true` | `false` lists the contents' titles without their section numbers. |
+| `toc_entry_content` | the numbered title | A template for each contents entry: `'{{title}}'` lists titles without their numbers (also `{{number}}`, `{{numbered-title}}`). |
 | `description_list_term_display` | `block` | `inline` runs a term in before its description, in the term's font, the lines after the first hanging by `description_list_description_indent`. |
 | `olist_marker_font_variant_numeric` | none | An ordered list's numbers in old-style (`oldstyle-nums`) or other figures (with `olist_marker_font_family`, `_font_color`...). |
 | `title_page_authors_delimiter` | `, ` | Its spaces are kept as written: `'    '` sets the authors in a row with a gap (asciidoctor-pdf collapses them to one). |
@@ -116,9 +123,9 @@ block's background stays the PDF theme's.
 A caption stays with the block it is above. Callout markers aren't part
 of the text when code is copied, and link to their callout list item,
 which links back. They may be text rather than circled numbers:
-`conum_glyphs: '[%d]'` (`%d` the number), in `conum_font_style` and
+`conum_glyphs: '[{{number}}]'` (a template), in `conum_font_style` and
 `conum_font_variant_numeric` (`oldstyle-nums`), and a callout list's
-markers their own (`callout_list_marker_content: '%d.'`).
+markers their own (`callout_list_marker_content: '{{number}}.'`).
 
 ### Images
 
@@ -156,7 +163,13 @@ each use, which is asciidoctor-pdf's default).
 | --- | --- | --- |
 | `running_content_on_blank_pages` | `false` | A blank page (the verso before a chapter that starts on a recto page) has no header or footer unless this is `true`. |
 | `running_content_on_openers` | `false` | A page that opens a part or chapter has no header or footer unless this is `true`. |
-| `header_title_style`, `footer_title_style` | `document` | As in asciidoctor-pdf (`document`, `toc`, `basic`), and `numeral`: a numbered part or chapter as its numeral and its title (`I Hypermedia Concepts`, `3. A Web 1.0 Application`), an unnumbered one as its title. |
+| `header_title_style`, `footer_title_style` | `document` | As in asciidoctor-pdf (`document`, `toc`, `basic`). |
+
+Running content may be a template: `'{{#chapter-numeral}}{{chapter-numeral}}. {{/chapter-numeral}}{{chapter-title}} · {page-number}'`
+writes `3. A Web 1.0 Application · 71`, and on an unnumbered chapter's
+pages `Introduction · 15` (the numeral part left out, where a line that
+refers to a missing `{attribute}` is dropped). With `title_style: basic`,
+the titles come without their numbers.
 
 A part or chapter with the `noheader` or `nofooter` option (as
 asciidoctor-pdf reads them on the `toc` macro) has no header or footer on
@@ -166,8 +179,7 @@ its pages: `[colophon%notitle%noheader%nofooter]` for a copyright page.
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `heading_h1_label_display`, `heading_h2_label_display` | `inline` | `block` sets a part's or chapter's label ("Part I", "Chapter 1") on a line of its own above its title, without the period. |
-| `heading_h1_label_font_color`, `_font_size`, `_font_family`, `_font_style` (and `h2`) | the heading's | The label's font. |
+| `heading_h<n>_content` | the numbered title | A template for the heading's text, with `{{title}}`, `{{numbered-title}}`, `{{number}}` (`1.2.`, a part's `I`), `{{numeral}}` (`1`, `I`) and `{{signifier}}` (`Chapter`, `Part`). A chapter's label on a line of its own, in gray: `"{{#numeral}}<font color='#8C8C8C'>{{signifier}} {{numeral}}</font>\n{{/numeral}}{{title}}"`. |
 
 A section with a role the theme styles is set in a box, as a sidebar is:
 `section_role_<role>_background_color`, `_border_color`, `_border_width`

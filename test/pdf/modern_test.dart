@@ -585,25 +585,23 @@ base:
       });
 
       if (!compat) {
-        test('go with titles after their numerals (title_style: numeral)', () {
-          final pages = footers(
-            _pdf(
-              book,
-              theme: theme
-                  .replaceFirst(
-                    'footer:\n',
-                    'footer:\n  title_style: numeral\n',
-                  )
-                  .replaceFirst(
-                    '{page-number}',
-                    '{page-number} {part-title} / {chapter-title}',
-                  ),
-            ),
+        test('a Mustache template, its numeral part optional', () {
+          final pdf = _pdf(
+            book,
+            theme:
+                'footer:\n  title_style: basic\n  recto: &both\n    right:\n'
+                "      content: '{{#chapter-numeral}}{{chapter-numeral}}. "
+                "{{/chapter-numeral}}{{chapter-title}} · {page-number}'\n"
+                '  verso: *both\n'
+                'running_content_on_openers: true\n',
           );
-          expect(pages, [
-            'P[I] C[1] 3 I Part One / 1. Chapter One',
-            'P[I] C[2] 4 I Part One / 2. Chapter Two',
-          ]);
+          final lines = [
+            for (final page in _pages(pdf))
+              if (page.isNotEmpty) page.last,
+          ];
+          // The preface has no numeral: its title alone, the line kept.
+          expect(lines, contains('Preface · 1'));
+          expect(lines, contains('1. Chapter One · 3'));
         });
       }
 
@@ -733,13 +731,14 @@ base:
       expect(compat[3], endsWith('F3'));
     });
 
-    test('may set the label on a line of its own', () {
+    test('may set the label on a line of its own (a template)', () {
       final text = pages(
         _pdf(
           book,
           theme:
-              'heading_h1_label_display: block\n'
-              'heading_h2_label_display: block\n',
+              'heading_h1_content: "{{signifier}} {{numeral}}\\n{{title}}"\n'
+              'heading_h2_content: "{{#numeral}}{{signifier}} {{numeral}}'
+              '\\n{{/numeral}}{{title}}"\n',
         ),
       );
       expect(text[2], 'Part I\nPart One');
@@ -1097,7 +1096,9 @@ base:
         '= Book\n:doctype: book\n:toc:\n:sectnums:\n\n== One\n\nText.\n';
     String contents(String pdf) => _pages(pdf)[1].join('\n');
     expect(contents(_pdf(book)), contains('1. One'));
-    final plain = contents(_pdf(book, theme: 'toc_numbered: false\n'));
+    final plain = contents(
+      _pdf(book, theme: "toc_entry_content: '{{title}}'\n"),
+    );
     expect(plain, contains('One'));
     expect(plain, isNot(contains('1. One')));
   }, skip: _tools ? false : 'needs poppler');
@@ -1135,8 +1136,8 @@ base:
         '[source,ruby]\n----\nputs 1 # <1>\nputs 2 # <2>\n----\n'
         '<1> One.\n<2> Two.\n';
     const theme =
-        "conum_glyphs: '[%d]'\n"
-        "callout_list_marker_content: '%d.'\n"
+        "conum_glyphs: '[{{number}}]'\n"
+        "callout_list_marker_content: '{{number}}.'\n"
         'conum_font_style: bold\n';
     final text = _pages(_pdf(source, theme: theme)).first.join('\n');
     expect(text, contains('1. One.'));
