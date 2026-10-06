@@ -61,7 +61,7 @@ Map<String, String> _site(
   };
 }
 
-/// The page of [site] a link [href] on page [from] goes to, with its
+/// The page of the site a link [href] on page [from] goes to, with its
 /// fragment: the link resolved against the page's directory (a directory
 /// is its `index.html`).
 (String, String?) _resolve(String from, String href) {
@@ -261,10 +261,10 @@ void main() {
       );
     convertFile(
       input.path,
-      AsciidoctorOptions(
+      const AsciidoctorOptions(
         safe: SafeMode.safe,
         backend: 'multipage_html5',
-        attributes: const {'docinfo': 'shared-footer'},
+        attributes: {'docinfo': 'shared-footer'},
       ),
     );
     for (final file in dir.listSync(recursive: true).whereType<File>()) {
