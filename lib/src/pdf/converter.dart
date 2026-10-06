@@ -482,8 +482,40 @@ final class PdfConverter extends BuiltInConverter
         _ => null,
       };
     }
-    _bytes = pdf.save();
+    // The same document makes the same bytes: the file identifier comes
+    // from the content, the dates from the document's local date and time
+    // (SOURCE_DATE_EPOCH, when set), as the gem dates it.
+    _bytes = pdf.save(
+      options: PdfWriterOptions(
+        deterministic: true,
+        creationDate: _dateTime(document.attr('localdatetime')),
+      ),
+    );
     return '';
+  }
+
+  /// [value] (`2026-10-06 04:38:31 +0000`, or `UTC` for the offset) as a
+  /// date and time; the current time when it isn't one.
+  static DateTime _dateTime(String? value) {
+    final m = RegExp(
+      r'^(\d{4})-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)(?: (UTC|[+-]\d{4}))?',
+    ).firstMatch(value ?? '');
+    if (m == null) return DateTime.now().toUtc();
+    final local = DateTime.utc(
+      int.parse(m[1]!),
+      int.parse(m[2]!),
+      int.parse(m[3]!),
+      int.parse(m[4]!),
+      int.parse(m[5]!),
+      int.parse(m[6]!),
+    );
+    final offset = m[7];
+    if (offset == null || offset == 'UTC') return local;
+    final minutes =
+        (int.parse(offset.substring(1, 3)) * 60 +
+            int.parse(offset.substring(3))) *
+        (offset.startsWith('-') ? -1 : 1);
+    return local.subtract(Duration(minutes: minutes));
   }
 
   /// Makes the titled preamble of a book a preface section (the gem's
