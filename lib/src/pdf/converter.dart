@@ -299,6 +299,10 @@ final class PdfConverter extends BuiltInConverter
     _markup = MarkupTransform(theme: _theme, invertEmphasis: _invertEmphasis);
     _cjkLineBreaks = document.attr('scripts') == 'cjk';
     _resolveHyphenation(document);
+    _reportTags =
+        _engine == PdfEngine.modern && document.hasAttr('pdf-layout-report')
+        ? {}
+        : null;
     _baseTextAlign = switch (document.attr('text-align')) {
       final align?
           when const {'justify', 'left', 'center', 'right'}.contains(align) =>
@@ -453,6 +457,7 @@ final class PdfConverter extends BuiltInConverter
         footer: _footer,
         background: _pageBackground,
         foreground: _pageForeground,
+        bleed: _bleed,
       );
     }
 
@@ -518,14 +523,30 @@ final class PdfConverter extends BuiltInConverter
       'thumbs' => (PageMode.useThumbs, null),
       _ => (PageMode.useOutlines, null),
     };
+    final standard = _pdfStandard(document);
+    final info = _info(document);
     final pdf = PdfDocument(
-      info: _info(document),
+      info: standard == null
+          ? info
+          : PdfInfo(
+              title: info.title,
+              author: info.author,
+              subject: info.subject,
+              keywords: info.keywords,
+              creator: info.creator,
+              producer: info.producer,
+              trapped: false,
+              pdfxVersion: 'PDF/X-4',
+            ),
       pageMode: pageMode,
       nonFullScreenPageMode: nonFullScreen,
       displayTitle: true,
       language: document.attr('lang'),
     );
+    if (standard != null) pdf.outputIntents.add(standard);
     final pages = result.render(pdf, destinationName: destinationName);
+    if (standard != null) _preflight(standard);
+    _layoutReport(document, result);
     logger.info(
       'laid out ${pages.length} ${pages.length == 1 ? 'page' : 'pages'}',
     );
@@ -1501,10 +1522,19 @@ final class PdfConverter extends BuiltInConverter
     final pageHeight = page.template.size.height;
     if (background != const HexColor('FFFFFF')) {
       if (_color(background) case final color?) {
+        // Into the bleed, when there is one.
+        final bleed = page.template.bleed ?? 0;
         canvas
           ..save()
           ..setFillColor(color)
-          ..rect(PdfRect(0, 0, pageWidth, pageHeight))
+          ..rect(
+            PdfRect(
+              -bleed,
+              -bleed,
+              pageWidth + 2 * bleed,
+              pageHeight + 2 * bleed,
+            ),
+          )
           ..fill()
           ..restore();
       }
@@ -1625,7 +1655,157 @@ final class PdfConverter extends BuiltInConverter
       footer: template.footer,
       background: template.background,
       foreground: template.foreground,
+      bleed: template.bleed,
     );
+  }
+
+  /// The output intent of a PDF/X-4 document (`pdf-standard=PDF/X-4`,
+  /// with `pdf-output-intent` the ICC profile of the printing condition
+  /// and `pdf-output-condition` its identifier), or null for a plain PDF.
+  PdfOutputIntent? _pdfStandard(Document document) {
+    final standard = document.attr('pdf-standard');
+    if (standard == null) return null;
+    if (standard.toUpperCase() != 'PDF/X-4') {
+      logger.warn(
+        'unknown pdf-standard: $standard (PDF/X-4 is available); '
+        'writing a plain PDF',
+      );
+      return null;
+    }
+    final target = document.attr('pdf-output-intent');
+    if (target == null || target.isEmpty) {
+      logger.error(
+        'PDF/X-4 needs the ICC profile of the printing condition: set '
+        'pdf-output-intent to its file; writing a plain PDF',
+      );
+      return null;
+    }
+    final path = document.normalizeSystemPath(target);
+    if (!io.isFile(path) || !io.isReadable(path)) {
+      logger.error(
+        'output intent profile not found or not readable: $target; '
+        'writing a plain PDF',
+      );
+      return null;
+    }
+    final intent = PdfOutputIntent(
+      io.readBytes(path),
+      identifier: document.attr('pdf-output-condition') ?? 'Custom',
+      info: target.split('/').last,
+    );
+    if (intent.components == null) {
+      logger.error('not an ICC profile: $target; writing a plain PDF');
+      return null;
+    }
+    return intent;
+  }
+
+  /// Reports what keeps the document from conforming to PDF/X-4 with
+  /// [intent]: fonts not embedded, a profile that isn't for output, RGB
+  /// colors with a CMYK printing condition.
+  void _preflight(PdfOutputIntent intent) {
+    for (final font in _fonts.loaded) {
+      if (font is AfmFont) {
+        logger.error(
+          'PDF/X-4 needs every font embedded: ${font.family} is a built-in '
+          'PDF font; give the theme a font file for it',
+        );
+      }
+    }
+    if (intent.deviceClass != 'prtr') {
+      logger.warn(
+        'the output intent profile is not an output (printer) profile '
+        '(${intent.deviceClass}), as PDF/X-4 asks',
+      );
+    }
+    if (intent.components == 4) {
+      logger.warn(
+        'the text, lines and images are in RGB and the printing condition '
+        'in CMYK: PDF/X-4 asks for colors the output intent can describe; '
+        'use an RGB output profile, or convert the PDF',
+      );
+    }
+  }
+
+  /// Writes the layout report (`pdf-layout-report`, a file next to the
+  /// PDF): each block that breaks across pages, with where it starts in
+  /// the source, for proofreading.
+  void _layoutReport(Document document, LayoutResult result) {
+    final tags = _reportTags;
+    if (tags == null) return;
+    final lines = <String>[];
+    for (final MapEntry(key: tag, value: (block, at)) in tags.entries) {
+      final pages = result.tagPages[tag];
+      if (pages == null || pages.first == pages.last) continue;
+      final where = at == null
+          ? ''
+          : '${at.path ?? at.file ?? ''}: line ${at.lineno}: ';
+      lines.add(
+        '$where${block.context.name} on pages ${_pageLabel(pages.first)}'
+        '-${_pageLabel(pages.last)}',
+      );
+    }
+    final target = document.attr('pdf-layout-report')!;
+    final dir = document.attr('outdir') ?? document.attr('docdir') ?? '.';
+    final path = target.startsWith('/') ? target : '$dir/$target';
+    io.writeString(path, lines.isEmpty ? '' : '${lines.join('\n')}\n');
+    logger.info(
+      'layout report: ${lines.length} '
+      '${lines.length == 1 ? 'block breaks' : 'blocks break'} across pages '
+      '($path)',
+    );
+  }
+
+  /// Tags the box [block] added last (after any caption) after [before],
+  /// for the layout report.
+  void _tagLast(int before, AbstractBlock block) {
+    final tags = _reportTags!;
+    for (var i = _out.length - 1; i >= before; i--) {
+      final tag = 'b${tags.length}';
+      final tagged = switch (_out[i]) {
+        BlockBox(:final children, :final style) => BlockBox(
+          children,
+          style: style.withTag(tag),
+        ),
+        CustomBox(:final content, :final style) => CustomBox(
+          content,
+          style: style.withTag(tag),
+        ),
+        TableBox(:final rows, :final columns, :final style) && final table =>
+          TableBox(
+            rows,
+            columns: columns,
+            headerRows: table.headerRows,
+            width: table.width,
+            shrinkToContent: table.shrinkToContent,
+            align: table.align,
+            stripes: table.stripes,
+            style: style.withTag(tag),
+          ),
+        _ => null,
+      };
+      if (tagged == null) continue;
+      _out[i] = tagged;
+      tags[tag] = (block, block.sourceLocation ?? _at);
+      return;
+    }
+  }
+
+  /// With `pdf-layout-report`, the blocks tagged for the report, and where
+  /// each starts in the source.
+  Map<String, (AbstractBlock, Cursor?)>? _reportTags;
+
+  /// How far the modern engine's sheets run past the page for print
+  /// (`page_bleed`): null for no print boxes, unless the document is
+  /// PDF/X, which needs them.
+  double? get _bleed {
+    if (_engine != PdfEngine.modern) return null;
+    final bleed = switch (_theme.value('page_bleed')) {
+      ThemeNumber(:final value) => value.toDouble(),
+      ThemeString(:final value) => strToPoints(value),
+      _ => null,
+    };
+    return bleed ?? (_document.hasAttr('pdf-standard') ? 0 : null);
   }
 
   static const _bodyAnchor = '__asciidart-body';
@@ -1875,10 +2055,14 @@ final class PdfConverter extends BuiltInConverter
       for (final block in node.blocks) {
         final saved = _at;
         _at = block.sourceLocation ?? saved;
+        final before = _out.length;
         try {
           block.convert();
         } finally {
           _at = saved;
+        }
+        if (_reportTags != null && block is! Section) {
+          _tagLast(before, block);
         }
       }
     } else if (node is Block && node.contentModel != ContentModel.compound) {

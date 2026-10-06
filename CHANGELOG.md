@@ -83,6 +83,10 @@ Asciidoctor project.
   emphasis in literals, invalid image widths, an empty TOC title, links
   from a website's root): the Hypermedia Systems book validates against
   the DocBook 5.0 schema and passes EPUBCheck.
+- Print: `pdf-standard=PDF/X-4` with an output intent
+  (`pdf-output-intent`, the printer's ICC profile), a bleed from the
+  theme (`page_bleed`), and a layout report of the blocks that break
+  across pages (`pdf-layout-report`), with preflight messages.
 - `--progress` reports each phase of a conversion as it finishes; the
   modern PDF engine's layout warnings name the source line of the block.
 - `callout-links`: callouts and their list items linked both ways in HTML

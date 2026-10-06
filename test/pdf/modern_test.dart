@@ -5,6 +5,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:asciidart/src/internal.dart';
 import 'package:asciidart/src/pdf/pdf.dart';
@@ -591,4 +592,91 @@ base:
       expect(open.xMin - paid.xMax, lessThan(20));
     });
   }, skip: _tools ? false : 'needs poppler');
+
+  group('print', () {
+    /// An ICC header: an output (printer) profile for [space].
+    String profile(String space) {
+      final file = File('${_dir.path}/${space.trim()}.icc')
+        ..writeAsBytesSync(Uint8List(132)..setAll(12, 'prtr$space'.codeUnits));
+      return file.path;
+    }
+
+    String qdf(String pdf) =>
+        Process.runSync('qpdf', [
+              '--qdf',
+              '--object-streams=disable',
+              pdf,
+              '-',
+            ], stdoutEncoding: latin1).stdout
+            as String;
+
+    const book = '= Print\n:doctype: book\n\n== One\n\nText.\n';
+
+    test('PDF/X-4: an output intent, the identification, print boxes', () {
+      final logger = MemoryLogger();
+      final pdf = _pdf(
+        ':pdf-standard: PDF/X-4\n:pdf-output-intent: ${profile('RGB ')}\n'
+        '$book',
+        logger: logger,
+      );
+      final text = qdf(pdf);
+      expect(text, startsWith('%PDF-1.6'));
+      expect(text, contains('/S /GTS_PDFX'));
+      expect(text, contains('/N 3'));
+      expect(text, contains('/Trapped /False'));
+      expect(text, contains('/TrimBox'));
+      expect([
+        for (final m in logger.messages)
+          if (m.severity == Severity.warn) m,
+      ], isEmpty);
+    });
+
+    test('PDF/X-4 with a CMYK condition warns of the RGB content', () {
+      final logger = MemoryLogger();
+      _pdf(
+        ':pdf-standard: PDF/X-4\n:pdf-output-intent: ${profile('CMYK')}\n'
+        '$book',
+        logger: logger,
+      );
+      expect(
+        logger.messages.map((m) => m.message.text),
+        contains(startsWith('the text, lines and images are in RGB')),
+      );
+    });
+
+    test('PDF/X-4 without a profile is a plain PDF, with an error', () {
+      final logger = MemoryLogger();
+      final pdf = _pdf(':pdf-standard: PDF/X-4\n$book', logger: logger);
+      expect(qdf(pdf), isNot(contains('/OutputIntents')));
+      expect(
+        logger.messages.map((m) => m.message.text),
+        contains(startsWith('PDF/X-4 needs the ICC profile')),
+      );
+    });
+
+    test('a bleed grows the sheet past the trimmed page', () {
+      final pdf = _pdf(book, theme: 'page_bleed: 9\n');
+      final boxes = Process.runSync('pdfinfo', ['-box', pdf]).stdout as String;
+      expect(boxes, matches(RegExp(r'MediaBox:\s+-9\.00\s+-9\.00')));
+      expect(boxes, matches(RegExp(r'TrimBox:\s+0\.00\s+0\.00')));
+    });
+
+    test('the layout report lists the blocks that break across pages', () {
+      final source = StringBuffer(':pdf-layout-report: report.txt\n\n');
+      for (var i = 0; i < 40; i++) {
+        source.write('Paragraph $i.\n\n');
+      }
+      source.write(
+        '----\n${[for (var i = 0; i < 40; i++) 'line $i'].join('\n')}\n----\n',
+      );
+      final pdf = _pdf(source.toString());
+      final report = File('${File(pdf).parent.path}/report.txt');
+      expect(
+        report.readAsStringSync(),
+        matches(
+          RegExp(r'^d\d+\.adoc: line 83: listing on pages (\d+)-(?!\1)\d+\n$'),
+        ),
+      );
+    });
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }

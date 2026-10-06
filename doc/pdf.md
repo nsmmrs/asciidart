@@ -85,6 +85,22 @@ text. In HTML, the same cells can be styled with CSS:
 A column too narrow for even one character keeps its text (set past its
 edge, with a warning), where the gem leaves the table out.
 
+### Print
+
+| Setting | What it does |
+| --- | --- |
+| `page_bleed` (theme) | How far backgrounds run past the page for trimming (`0.125in`): the page is the `TrimBox`, the sheet (`MediaBox`, `BleedBox`) grows by the bleed on every side. |
+| `-a pdf-standard=PDF/X-4` | Writes PDF/X-4: PDF 1.6, an output intent, `Trapped`, the PDF/X identification in the information and XMP, a `TrimBox` on every page. |
+| `-a pdf-output-intent=FILE` | The ICC profile of the printing condition (the printer gives it); PDF/X-4 needs one. |
+| `-a pdf-output-condition=NAME` | The printing condition's identifier (`Custom` by default). |
+| `-a pdf-layout-report=FILE` | Writes, next to the PDF, each block that breaks across pages, with its source line and pages (`book.adoc: line 66: listing on pages 2-3`), for proofreading. |
+
+Preflight messages report what keeps a PDF/X-4 from conforming: a font
+that isn't embedded (a built-in PDF font in the theme), a profile that
+isn't an output profile, and content in RGB with a CMYK printing
+condition (asciidart's colors are RGB: use an RGB output profile, or
+convert the PDF to the printer's CMYK).
+
 ### Messages
 
 Layout warnings name the file and line of the block they are about
