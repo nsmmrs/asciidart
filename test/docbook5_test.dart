@@ -2837,4 +2837,31 @@ void main() {
       );
     });
   });
+
+  group('literals (asciidart: DocBook allows no emphasis in them)', () {
+    test('an emphasis or a quote in a literal becomes a phrase or marks', () {
+      expect(
+        repairDocbook(
+          '<literal>a <emphasis>b</emphasis> "<quote>q</quote>"</literal>',
+        ),
+        '<literal>a <phrase role="emphasis">b</phrase> "&#8220;q&#8221;"</literal>',
+      );
+    });
+
+    test('a literal in a literal, an emphasis around both', () {
+      expect(
+        repairDocbook(
+          '<literal><emphasis role="strong">bold <literal>m</literal> text'
+          '</emphasis></literal>',
+        ),
+        '<literal><phrase role="strong">bold <literal>m</literal> text'
+        '</phrase></literal>',
+      );
+    });
+
+    test('an emphasis outside a literal is left alone', () {
+      const xml = '<emphasis>a <literal>b</literal> c</emphasis>';
+      expect(repairDocbook(xml), xml);
+    });
+  });
 }

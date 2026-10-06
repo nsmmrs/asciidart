@@ -113,25 +113,59 @@ const Map<String, (String, String, bool)> _quoteTags =
       'subscript': ('<subscript>', '</subscript>', false),
     };
 
+/// [xml] (DocBook) as asciidart repairs what Asciidoctor writes invalid
+/// there: tags balanced, and literals' content as DocBook allows it (the
+/// section elements are chosen as they are written).
+String repairDocbook(String xml) => _literals(balanceXml(xml));
+
 /// [xml] with each `<literal>`'s content as DocBook allows it
 /// (asciidart's; Asciidoctor nests emphasis and quotes there): an emphasis
-/// becomes a phrase with its role, a quote its quotation marks.
+/// opened in a literal becomes a phrase with its role, a quote its
+/// quotation marks. Literals may nest.
 String _literals(String xml) {
   if (!xml.contains('<literal>')) return xml;
-  return xml.replaceAllMapped(RegExp(r'<literal>([\s\S]*?)</literal>'), (m) {
-    final text = m[1]!;
-    if (!text.contains('<emphasis') && !text.contains('<quote>')) return m[0]!;
-    final content = text
-        .replaceAllMapped(
-          RegExp('<emphasis(?: role="([^"]*)")?>'),
-          (e) => '<phrase role="${e[1] ?? 'emphasis'}">',
-        )
-        .replaceAll('</emphasis>', '</phrase>')
-        .replaceAll('<quote>', '&#8220;')
-        .replaceAll('</quote>', '&#8221;');
-    return '<literal>$content</literal>';
-  });
+  final out = StringBuffer();
+  var depth = 0;
+  // The elements opened in a literal: true for an emphasis, false for a
+  // quote.
+  final opened = <bool>[];
+  var last = 0;
+  var changed = false;
+  for (final m in _literalTagRx.allMatches(xml)) {
+    final closing = m[1] == '/';
+    final name = m[2]!;
+    String? replacement;
+    switch (name) {
+      case 'literal':
+        depth += closing ? -1 : 1;
+      case 'emphasis' when !closing && depth > 0:
+        opened.add(true);
+        replacement = '<phrase role="${m[3] ?? 'emphasis'}">';
+      case 'quote' when !closing && depth > 0:
+        opened.add(false);
+        replacement = '&#8220;';
+      case 'emphasis' || 'quote'
+          when closing &&
+              opened.isNotEmpty &&
+              opened.last == (name == 'emphasis'):
+        opened.removeLast();
+        replacement = name == 'emphasis' ? '</phrase>' : '&#8221;';
+    }
+    if (replacement == null) continue;
+    out
+      ..write(xml.substring(last, m.start))
+      ..write(replacement);
+    last = m.end;
+    changed = true;
+  }
+  if (!changed) return xml;
+  out.write(xml.substring(last));
+  return out.toString();
 }
+
+final RegExp _literalTagRx = RegExp(
+  '<(/?)(literal|emphasis|quote)(?: role="([^"]*)")?>',
+);
 
 /// Default quote tags for unknown quoted-text types.
 const (String, String, bool) _defaultQuoteTags = ('', '', true);
@@ -159,7 +193,7 @@ class Docbook5Converter extends BuiltInConverter {
         .audio => null,
         .colist => convertColist(node as ListBlock),
         .dlist => convertDlist(node as ListBlock),
-        .document => _literals(balanceXml(convertDocument(node as Document))),
+        .document => repairDocbook(convertDocument(node as Document)),
         .example => convertExample(node as Block),
         .floatingTitle => convertFloatingTitle(node as Block),
         .image => convertImage(node as Block),
@@ -213,7 +247,7 @@ class Docbook5Converter extends BuiltInConverter {
     String transform,
     ConvertOptions? opts,
   ) => switch (transform) {
-    'embedded' => _literals(balanceXml(convertEmbedded(node as Document))),
+    'embedded' => repairDocbook(convertEmbedded(node as Document)),
     _ => missing(transform),
   };
 

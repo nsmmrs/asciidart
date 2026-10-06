@@ -23,6 +23,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:asciidart/src/docbook5.dart' show repairDocbook;
 
 /// The modes run by default: name and extra arguments.
 const Map<String, List<String>> defaultModes = {
@@ -122,7 +123,7 @@ Future<void> main(List<String> args) async {
               }),
         _run(exeB, args, dir, timeout),
       ).wait;
-      final status = _compare(a, b);
+      final status = _compare(a, b, docbook: item.mode.key == 'docbook5');
       counts.update(status, (n) => n + 1, ifAbsent: () => 1);
       results.add('$status\t${item.mode.key}\t${item.file}');
       if (status != 'same') {
@@ -274,15 +275,18 @@ Future<_Result> _run(
   return (exitCode: code, stdout: await out, stderr: await err);
 }
 
-/// The comparison of the two runs: `same`, or the parts that differ.
-String _compare(_Result a, _Result b) {
+/// The comparison of the two runs: `same`, or the parts that differ. The
+/// gem's [docbook] output is compared with asciidart's repairs made
+/// (`repairDocbook`: benchmark/PARITY.md).
+String _compare(_Result a, _Result b, {bool docbook = false}) {
+  final stdoutA = docbook ? repairDocbook(a.stdout) : a.stdout;
   if (a.exitCode == -1 || b.exitCode == -1) {
     final which = [if (a.exitCode == -1) 'a', if (b.exitCode == -1) 'b'];
     return 'timeout-${which.join()}';
   }
   final parts = [
     if (a.exitCode != b.exitCode) 'exit',
-    if (_normalizeStdout(a.stdout) != _normalizeStdout(b.stdout)) 'stdout',
+    if (_normalizeStdout(stdoutA) != _normalizeStdout(b.stdout)) 'stdout',
     if (_normalizeStderr(a.stderr) != _normalizeStderr(b.stderr)) 'stderr',
   ];
   return parts.isEmpty ? 'same' : parts.join('+');
