@@ -16,6 +16,9 @@ image::svg-text.svg[]
 
 Some text.
 
+.A caption for a narrow image that would otherwise run the whole width
+image::sample-logo.jpg[pdfwidth=40%,align=center]
+
 <<<
 
 More text.

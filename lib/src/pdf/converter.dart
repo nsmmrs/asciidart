@@ -3411,7 +3411,7 @@ final class PdfConverter extends BuiltInConverter
       return;
     }
     final captionBottom = (_s('image_caption_end') ?? 'bottom') == 'bottom';
-    final caption = node.hasTitle
+    var caption = node.hasTitle
         ? _captionBox(
             node,
             category: 'image',
@@ -3419,6 +3419,25 @@ final class PdfConverter extends BuiltInConverter
             blockAlign: align,
           )
         : null;
+    // No wider than the theme's image_caption_max_width says (a floated
+    // image's caption is in the float's box, as wide as the image).
+    final captionMaxWidth = _s('image_caption_max_width');
+    final floated = floatTo == 'left' || floatTo == 'right';
+    if (caption != null && captionMaxWidth != null && !floated) {
+      final sizing = _ImageContent(
+        graphic,
+        width: _imageWidth(node),
+        align: align,
+        pageWidth: _pageSize(_document).$1,
+      );
+      caption = _fitCaption(
+        caption,
+        (width) => sizing._size(width, double.infinity).$1,
+        setting: captionMaxWidth,
+        captionKey: 'image_caption',
+        blockAlign: align,
+      );
+    }
     final next = _nextEnclosedBlock(node);
     final margin = next == null ? 0.0 : _themeMargin('block', 'bottom', next);
     final border = node.hasRole('noborder') ? null : _imageBorder();
@@ -3657,7 +3676,15 @@ final class PdfConverter extends BuiltInConverter
             blockAlign: _tableAlign,
           )
         : null;
-    if (caption != null) caption = _fitCaption(caption, _tableWidth);
+    if (caption != null) {
+      caption = _fitCaption(
+        caption,
+        _tableWidth,
+        setting: _s('table_caption_max_width') ?? 'fit-content',
+        captionKey: 'table_caption',
+        blockAlign: _tableAlign,
+      );
+    }
     final next = _nextEnclosedBlock(node);
     final margin = next == null ? 0.0 : _themeMargin('block', 'bottom', next);
     _out.add(
@@ -3679,19 +3706,22 @@ final class PdfConverter extends BuiltInConverter
 
   static double _fullWidth(double width) => width;
 
-  /// The table [caption] no wider than the table (the theme's
-  /// `table_caption_max_width`, `fit-content` by default; the gem's
-  /// `ink_caption` with a block width).
+  /// The [caption] of a block as wide as [tableWidth] gives for the room
+  /// no wider than [setting] says (`fit-content`, `fit-content(N%)`, a
+  /// percentage or a width; the gem's `ink_caption` with a block width);
+  /// [captionKey] is its theme category (`table_caption`...), [blockAlign]
+  /// the block's alignment.
   CustomBox _fitCaption(
     CustomBox caption,
-    double Function(double width) tableWidth,
-  ) {
-    final setting = _s('table_caption_max_width') ?? 'fit-content';
-    if (setting == 'none') return caption;
-    var align = _s('table_caption_align') ?? _s('caption_align');
-    if (align == 'inherit') align = _tableAlign;
+    double Function(double width) tableWidth, {
+    required String? setting,
+    required String captionKey,
+    required String blockAlign,
+  }) {
+    if (setting == null || setting == 'none') return caption;
+    var align = _s('${captionKey}_align') ?? _s('caption_align');
+    if (align == 'inherit') align = blockAlign;
     align ??= _baseTextAlign;
-    final blockAlign = _tableAlign;
     (double, double) indents(double width) {
       var left = 0.0;
       var right = 0.0;

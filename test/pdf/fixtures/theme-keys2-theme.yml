@@ -43,3 +43,7 @@ header:
       content: '{page-number}'
     right:
       content: '{document-title}'
+image:
+  caption:
+    max-width: fit-content
+    align: inherit
