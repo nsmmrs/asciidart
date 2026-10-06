@@ -31,6 +31,7 @@ import 'package:asciidart/src/extensions.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/syntax_highlighter.dart';
 import 'package:asciidart/src/html5.dart';
+import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/manpage.dart';
@@ -247,7 +248,8 @@ final class Catalog {
       links = <String>[],
       images = <ImageReference>[],
       callouts = Callouts(),
-      includes = <String, bool>{};
+      includes = <String, bool>{},
+      _parent = null;
 
   /// Creates a catalog for a nested document: everything is shared with
   /// [parent] except the footnotes.
@@ -257,7 +259,8 @@ final class Catalog {
       links = parent.links,
       images = parent.images,
       callouts = parent.callouts,
-      includes = parent.includes;
+      includes = parent.includes,
+      _parent = parent;
 
   /// Referenceable nodes (blocks, sections and anchors) by id.
   final Map<String, AbstractNode> refs;
@@ -277,6 +280,22 @@ final class Catalog {
   /// The included files, by path without extension; `false` marks a
   /// partial include.
   final Map<String, bool> includes;
+
+  final Catalog? _parent;
+
+  IndexCatalog _index = IndexCatalog();
+
+  /// The index terms, cataloged by the HTML-based converters (a nested
+  /// document's are its parent's).
+  IndexCatalog get index => _parent?.index ?? _index;
+
+  set index(IndexCatalog catalog) {
+    if (_parent case final parent?) {
+      parent.index = catalog;
+    } else {
+      _index = catalog;
+    }
+  }
 }
 
 /// An attribute override from the API before it is applied: a value, an

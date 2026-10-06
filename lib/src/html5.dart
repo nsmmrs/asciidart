@@ -22,6 +22,7 @@ import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
 import 'package:asciidart/src/highlight/syntax_highlighter.dart';
+import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
@@ -258,6 +259,7 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] document to a standalone HTML page.
   String convertDocument(Document node) {
+    _beginIndex(node);
     final slash = _voidElementSlash;
     final br = '<br$slash>';
     var assetUriScheme = node.attr('asset-uri-scheme', 'https')!;
@@ -625,6 +627,7 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] document to embedded HTML (no header/footer).
   String convertEmbedded(Document node) {
+    _beginIndex(node);
     final result = <String>[];
     if (node.doctype == 'manpage') {
       // QUESTION should notitle control the manual page title?
@@ -814,7 +817,10 @@ class Html5Converter extends BuiltInConverter {
       return '<h1$idAttr class="sect0$roleClass">$linkedTitle</h1>\n'
           '${_s(node.content())}';
     }
-    final content = _s(node.content());
+    var content = _s(node.content());
+    if (_indexOf(node) case final index when index.isNotEmpty) {
+      content = content.isEmpty ? index : '$content\n$index';
+    }
     final body = level == 1
         ? '<div class="sectionbody">\n$content\n</div>'
         : content;
@@ -2076,8 +2082,37 @@ class Html5Converter extends BuiltInConverter {
   }
 
   /// Converts the [node] inline index term.
-  String convertInlineIndexterm(Inline node) =>
-      node.type == 'visible' ? _s(node.text) : '';
+  String convertInlineIndexterm(Inline node) {
+    final visible = node.type == 'visible';
+    // Where the document has an index, each use gets an anchor the index
+    // links to (Asciidoctor renders the index section empty).
+    final anchor = (node.document! as Document).catalog.index.add(
+      node,
+      visible ? [_s(node.text)] : node.terms ?? const [],
+    );
+    final target = anchor == null ? '' : '<a id="$anchor"></a>';
+    return visible ? '$target${_s(node.text)}' : target;
+  }
+
+  /// Starts cataloging the index terms of [document] (a top-level one).
+  static void _beginIndex(Document document) {
+    if (document.parentDocument == null) {
+      document.catalog.index.begin(document);
+    }
+  }
+
+  /// The index of [node]'s document as HTML, when [node] is its index
+  /// section and the terms were cataloged; else empty.
+  static String _indexOf(Section node) {
+    final document = node.document! as Document;
+    final index = document.catalog.index;
+    if (node.sectname != 'index' || !index.isActive) return '';
+    return indexHtml(
+      index,
+      level: node.level!,
+      label: (section) => indexUseLabel(section, document),
+    );
+  }
 
   /// Converts the [node] inline keyboard shortcut.
   String convertInlineKbd(Inline node) {

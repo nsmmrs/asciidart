@@ -61,6 +61,11 @@ Asciidoctor project.
   In that mode, 763 of the 797 documents of the gem's spec suite convert the same (words,
   positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),
   6 to 15 times faster than the gem (`benchmark/BASELINE.md`).
+- The index in HTML and EPUB: an `[index]` section lists the document's
+  index terms by letter, with subterms, see and see-also references, and a
+  link to each section a term is used in (Asciidoctor renders it empty;
+  `index-html!` keeps its output). `Document.index` gives the same as typed
+  `IndexLetter` and `IndexEntry` values.
 - Remote content (`allow-uri-read`): `parseAsync` and `convertAsync` fetch
   includes and data-URI images, honoring `cache-uri`.
 - The `asciidart` command takes the options of the gem's `asciidoctor`

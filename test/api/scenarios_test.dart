@@ -346,6 +346,36 @@ TODO
       expect(asciidoctorVersion, '2.0.26');
       expect(asciidartVersion, isNotEmpty);
     });
+
+    test('the index', () {
+      final doc = asciidoc.parse('''
+= Guide
+
+== Install
+
+Run the ((installer)).(((Setup, Linux)))
+
+== Use
+
+The ((installer)) again.
+indexterm:[Upgrades, see=Setup]
+''');
+      final index = doc.index;
+      expect([for (final letter in index) letter.letter], ['I', 'S', 'U']);
+      final installer = index[0].entries.single;
+      expect(installer.term, 'installer');
+      expect(
+        [for (final use in installer.uses) use.plainText],
+        ['Run the installer.', 'The installer again.'],
+      );
+      final setup = index[1].entries.single;
+      expect(setup.uses, isEmpty);
+      expect(setup.subentries.single.term, 'Linux');
+      expect(index[2].entries.single.see, 'Setup');
+      // Collecting the index adds no messages, and converting is unchanged.
+      expect(doc.diagnostics, isEmpty);
+      expect(doc.convert(), isNot(contains('_indexterm')));
+    });
   });
 }
 

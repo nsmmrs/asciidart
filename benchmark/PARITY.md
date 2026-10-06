@@ -63,15 +63,16 @@ converted as html5, embedded html5, docbook5 and manpage.
 ```sh
 tool/corpus/fetch.sh /tmp/corpus           # pinned in tool/corpus/sources.txt
 dart run tool/corpus_parity.dart --exe-a asciidoctor \
-  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client" \
+  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client -a index-html!" \
   --out /tmp/corpus-results /tmp/corpus
 ```
 
 The reference is the 2.0.26 gem without optional gems (asciidart provides
 none of Rouge, Pygments, CodeRay or AsciiMath, and behaves as the gem does
 without them), and asciidart runs with `highlightjs-mode=client` so that
-documents using highlight.js compare with the gem's browser markup (see the
-intentional differences). The check found and drove fixes
+documents using highlight.js compare with the gem's browser markup, and
+with `index-html!` so that documents with an index section compare with
+the gem's empty one (see the intentional differences). The check found and drove fixes
 for: `cols=""`, `%autowidth` with a width, nested description list items
 with attached blocks, line breaks in AsciiMath blocks, Ruby's ASCII-only
 `\s` and `strip` against Unicode spaces, `\p{Blank}`, full case mapping
@@ -124,6 +125,13 @@ reproducers of each.
   The gem's behavior, markup for the browser plus the highlight.js 9.18.3
   scripts, is `highlightjs-mode=client`. Blocks with callouts have their
   spans closed at each line end, so the callout numbers sit outside them.
+- An `[index]` section lists the document's index terms in HTML and EPUB
+  (Asciidoctor and asciidoctor-epub3 render it empty, Asciidoctor issue
+  #450): a heading per letter, the terms with their subterms, a link to
+  each section a term is used in, and its see and see-also references.
+  Each use gets an anchor (`<a id="_indexterm_N"></a>`) where the term is.
+  Only documents with an index section change; `index-html!` turns it
+  off.
 - Rouge, Pygments and CodeRay are not available: they behave as the gem does
   without their gems (no highlighting, the highlighter's `<pre>` class kept),
   and warn in asciidart's words, once: `Rouge syntax highlighting is not

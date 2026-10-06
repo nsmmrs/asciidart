@@ -66,6 +66,8 @@ export 'src/api/api.dart'
         Image,
         IncludeRequest,
         IncludeResolver,
+        IndexEntry,
+        IndexLetter,
         IndexTerm,
         Inline,
         InlineAnchor,

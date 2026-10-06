@@ -22,6 +22,7 @@ import 'package:asciidart/src/epub3/dates.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
 import 'package:asciidart/src/highlight/syntax_highlighter.dart';
+import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
@@ -171,7 +172,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     .callout => convertInlineCallout(node),
     .footnote => convertInlineFootnote(node),
     .image => convertInlineImage(node),
-    .indexterm => node.type == 'visible' ? _s(node.text) : '',
+    .indexterm => _indexterm(node),
     .kbd => convertInlineKbd(node),
     .menu => convertInlineMenu(node),
     .quoted => convertInlineQuoted(node),
@@ -244,6 +245,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
   /// Converts the document: builds the book.
   String convertDocument(Document node) {
+    if (node.parentDocument == null) node.catalog.index.begin(node);
     _validate = node.hasAttr('ebook-validate');
     _extract = node.hasAttr('ebook-extract');
     _epubcheckPath = node.attr('ebook-epubcheck-path');
@@ -497,7 +499,8 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     if (document.doctype != 'book') _markLastParagraph(node);
 
     _xrefsSeen.clear();
-    final content = _s(node.content());
+    var content = _s(node.content());
+    if (node is Section) content = _withIndex(node, content, node);
 
     final String iconCssHead;
     if (_iconNames.isEmpty) {
@@ -623,7 +626,11 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         : ' epub:type="${_s(sectname)}"';
     final divClasses = ['sect$level', ?node.role];
     final title = numberedTitle(node);
-    final content = _s(node.content());
+    final content = _withIndex(
+      node,
+      _s(node.content()),
+      _enclosingChapter(node),
+    );
     return '<section class="${divClasses.join(' ')}" title=${_xmlAttr(title)}'
         '$epubTypeAttr>\n'
         '<h$hlevel id="${_s(node.id)}">$title</h$hlevel>'
@@ -1322,6 +1329,40 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '<img src="$target"${_prependSpace(imgAttrs.join(' '))} />\n'
         '</div>$titleElement\n'
         '</figure>';
+  }
+
+  /// An index term: its text when visible, and where the document has an
+  /// index, an anchor the index links to.
+  String _indexterm(Inline node) {
+    final visible = node.type == 'visible';
+    final anchor = _doc(node).catalog.index
+        .add(node, visible ? [_s(node.text)] : node.terms ?? const []);
+    final target = anchor == null ? '' : '<a id="$anchor"></a>';
+    return visible ? '$target${_s(node.text)}' : target;
+  }
+
+  /// [content] of the section [node], followed by the document's index
+  /// when [node] is its index section (in the chapter [chapter]).
+  String _withIndex(Section node, String content, AbstractNode? chapter) {
+    final document = _doc(node);
+    final index = document.catalog.index;
+    if (node.sectname != 'index' || !index.isActive) return content;
+    final here = chapter == null ? null : chapterFilename(chapter);
+    final html = indexHtml(
+      index,
+      level: node.level ?? 1,
+      label: (section) => indexUseLabel(section, document),
+      href: (use) {
+        final file = switch (_enclosingChapter(use.node)) {
+          final AbstractNode chapter => chapterFilename(chapter),
+          null => null,
+        };
+        return file == null || file == here
+            ? '#${use.anchor}'
+            : '$file.xhtml#${use.anchor}';
+      },
+    );
+    return content.isEmpty ? html : '$content\n$html';
   }
 
   /// The chapter [start] is in (through the table cell an AsciiDoc cell's

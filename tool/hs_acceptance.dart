@@ -171,7 +171,7 @@ Future<void> main(List<String> args) async {
 
   // HTML index.
   final html = File(builds['HTML']!.$2).readAsStringSync();
-  final indexLinks = RegExp('href="#__indexterm').allMatches(html).length;
+  final indexLinks = RegExp('href="#_indexterm_').allMatches(html).length;
   row('HTML index with links', indexLinks > 0, '$indexLinks links to uses');
 
   // Validity.

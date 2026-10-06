@@ -181,6 +181,54 @@ NOTE: Watch out.
     );
   });
 
+  test('an index section links to the chapters that use each term', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync('''
+= The Book
+:doctype: book
+:uuid: 0000
+
+== Cats
+
+The ((Tiger)) is big.
+
+== Dogs
+
+A ((Tiger)) again.(((Wolves)))
+
+[index]
+== Index
+''');
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    expect(
+      files['EPUB/_cats.xhtml'],
+      contains('<a id="_indexterm_1"></a>Tiger'),
+    );
+    final index = files['EPUB/_index.xhtml']!;
+    expect(
+      index,
+      contains(
+        '<span class="index-term">Tiger</span>: '
+        '<a href="_cats.xhtml#_indexterm_1">Cats</a>, '
+        '<a href="_dogs.xhtml#_indexterm_2">Dogs</a>',
+      ),
+    );
+    expect(
+      index,
+      contains('Wolves</span>: <a href="_dogs.xhtml#_indexterm_3">'),
+    );
+  });
+
   test('epub3 cannot write to standard output', () async {
     final dir = Directory.systemTemp.createTempSync('epub3_test.');
     addTearDown(() => dir.deleteSync(recursive: true));
