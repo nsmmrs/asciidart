@@ -66,7 +66,7 @@ Asciidoctor project.
   theme's `table_role_<role>_*` keys, and a cell whose text is a phrase
   with a role, `table_cell_role_<role>_*`. `base_line_breaking: optimal`
   optimizes ragged text too, `greedy` breaks any text one line at a time. `doc/pdf.md` lists every setting. With `asciidoctor-compat` (or
-  `-a pdf-compat`) the settings default to asciidoctor-pdf's look: 793 of
+  `-a pdf-compat`) the settings default to asciidoctor-pdf's look: 792 of
   the 797 documents of the gem's spec suite look the same, page image
   against page image (`benchmark/PARITY.md`), 6 to 15 times faster than
   the gem (`benchmark/BASELINE.md`). `hyphens` and `base_hyphens`
@@ -91,6 +91,10 @@ Asciidoctor project.
   `manpage`, `pdf`): an attribute, the `ASCIIDART_COMPAT` environment
   variable, `compat:` in a project's `asciidart.yml` or in
   `~/.config/asciidart/config.yml`.
+- Math in the PDF: AsciiMath is typeset (ADR-0014), inline at the
+  text's size and in display style in STEM blocks, by libpdf's math layout
+  (the OpenType MATH table's rules) in the bundled Noto Sans Math or the
+  theme's `math_font_family`; copied, a formula gives its source.
 - Old-style numerals and small capitals from the font's OpenType
   features (`base_font_variant_numeric: oldstyle-nums`,
   `role_<role>_font_variant: small-caps`), in the modern PDF engine.

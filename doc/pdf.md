@@ -204,6 +204,25 @@ which links back. They may be text rather than circled numbers:
 `conum_font_variant_numeric` (`oldstyle-nums`), and a callout list's
 markers their own (`callout_list_marker_content: '{{number}}.'`).
 
+### Math
+
+AsciiMath (`stem:[]`, `asciimath:[]`, `[stem]` blocks with `:stem:` or
+`:stem: asciimath`) is typeset: converted to MathML (the same as the
+DocBook and EPUB backends', ADR-0014), then laid out by libpdf's math
+layout in a font with an OpenType `MATH` table, by its rules (scripts,
+fractions, radicals, limits, accents, delimiters that grow with what they
+enclose, larger operators in display style). Inline formulas stand on the
+baseline at the text's size, in its color; a block is in display style.
+Copied, a formula gives its AsciiMath source. LaTeX math
+(`latexmath:[]`) is shown as its source, with a warning, until it is
+typeset too.
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `math_font_family` | Noto Sans Math (bundled) | The font formulas are set in: a family of the font catalog whose font has a `MATH` table (STIX Two Math, Libertinus Math, New Computer Modern Math...). A character it lacks comes from the base font. |
+| `stem_font_size`, `stem_font_color` | the base font's | A STEM block's size and color. |
+| `stem_text_align` | `center` | Where a STEM block's formula goes: `left`, `center`, `right`. A formula wider than the room is scaled down to fit it. |
+
 ### Images
 
 | Key | Default | What it does |

@@ -182,7 +182,7 @@ asciidart reads asciidoctor-pdf themes unchanged. Two ways to switch:
   in `asciidart.yml`, or `-a pdf-compat`; "From Asciidoctor" below) sets
   pages as asciidoctor-pdf 2.3.27 does: its default theme, margins that
   add, one line at a time, no hyphenation unless asked, footnotes at the
-  end (793 of the 797 documents of its own test suite look the same;
+  end (792 of the 797 documents of its own test suite look the same;
   `benchmark/PARITY.md`). Hyphenation (`hyphens`) works without the
   text-hyphen gem.
 - **Better pages**: without it, asciidart keeps your theme and improves

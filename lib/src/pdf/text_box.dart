@@ -14,6 +14,7 @@ import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/markup.dart';
+import 'package:asciidart/src/pdf/math.dart';
 import 'package:asciidart/src/pdf/svg_size.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:libpdf/libpdf.dart';
@@ -309,6 +310,7 @@ final class _Image {
     this.ascender,
     this.descender,
     this.lineHeightIncreased = false,
+    this.mathDepth,
   });
 
   final Graphic graphic;
@@ -319,6 +321,9 @@ final class _Image {
   final double? ascender;
   final double? descender;
   final bool lineHeightIncreased;
+
+  /// A formula's depth below the baseline (it stands on the baseline).
+  final double? mathDepth;
 }
 
 /// A fragment as printed on a line.
@@ -743,6 +748,30 @@ final class TextBox implements CustomContent {
 
   _Item _arrangeImage(_Item item, Graphic graphic, double available) {
     final fragment = item.format.fragment;
+    // A formula: at the text's size, its depth below the baseline, the
+    // line as tall as it needs.
+    if (graphic case final InlineMath formula) {
+      final box = formula.at(item.format.size);
+      final lineFont = TextBox._font(_state.family, _state.style, _context);
+      return _Item(
+        '\u2063',
+        _Format(
+          fragment,
+          item.format.font,
+          item.format.size,
+          image: _Image(
+            graphic,
+            width: box.width,
+            height: box.height + box.depth,
+            drawWidth: box.width,
+            drawHeight: box.height + box.depth,
+            ascender: math.max(box.height, lineFont.ascenderAt(_state.size)),
+            descender: math.max(box.depth, lineFont.descenderAt(_state.size)),
+            mathDepth: box.depth,
+          ),
+        ),
+      );
+    }
     final spec = fragment.imageWidth ?? '100%';
     double? width;
     double? scale;
@@ -1109,7 +1138,9 @@ final class TextBox implements CustomContent {
         if (f.format.image case final image?) {
           // The gem's `InlineImageRenderer`: centered in the fragment, or
           // standing on the descender of a raised line.
-          final top = image.lineHeightIncreased
+          final top = image.mathDepth != null
+              ? baseline - image.mathDepth! + image.height
+              : image.lineHeightIncreased
               ? baseline - f.descender + image.height
               : baseline +
                     f.ascender -
@@ -1124,6 +1155,22 @@ final class TextBox implements CustomContent {
           switch (image.graphic) {
             case final PdfImage raster:
               canvas.image(raster, rect);
+            case final InlineMath formula:
+              // In the text's color; copied as its source.
+              canvas
+                ..save()
+                ..beginMarkedContent('Span', actualText: formula.source);
+              if (_pdfColor(fragment.color) case final color?) {
+                canvas
+                  ..setFillColor(color)
+                  ..setStrokeColor(color);
+              }
+              formula
+                  .at(f.format.size)
+                  .paintAt(canvas, rect.left, rect.bottom + image.mathDepth!);
+              canvas
+                ..endMarkedContent()
+                ..restore();
             case final other:
               canvas.save();
               other.paint(canvas, rect);

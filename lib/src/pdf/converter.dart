@@ -21,14 +21,17 @@ import 'package:asciidart/src/index_catalog.dart' show indexHasCategoryHeadings;
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/math/asciimath.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/page_map.dart';
+import 'package:asciidart/src/pdf/assets.g.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/highlight_style.dart';
 import 'package:asciidart/src/pdf/hyphenate.dart';
 import 'package:asciidart/src/pdf/icons.dart';
 import 'package:asciidart/src/pdf/index.dart';
 import 'package:asciidart/src/pdf/markup.dart';
+import 'package:asciidart/src/pdf/math.dart';
 import 'package:asciidart/src/pdf/svg_size.dart';
 import 'package:asciidart/src/pdf/text_box.dart';
 import 'package:asciidart/src/pdf/theme.dart';
@@ -5837,9 +5840,38 @@ final class PdfConverter extends BuiltInConverter
     );
   }
 
-  /// Converts the STEM block [node]: its source in a code block (the
-  /// gem's `convert_stem`, without a math renderer).
+  /// Converts the STEM block [node]: AsciiMath typeset in display style
+  /// (ADR-0014), centered (`stem_text_align`); LaTeX, for now, as its
+  /// source in a code block (the gem's `convert_stem` without a math
+  /// renderer).
   void convertStem(Block node) {
+    if (node.style == 'asciimath' || node.attr('style') == 'asciimath') {
+      final source = _unescapeXml(node.content() ?? '');
+      if (_mathOf(source) case final formula?) {
+        if (node.hasTitle) _caption(node, category: 'code');
+        final box = _math!.layout(
+          formula,
+          size: _themeFont('stem', _font).size,
+          display: true,
+        );
+        _out.add(
+          CustomBox(
+            _DisplayMath(
+              box,
+              source,
+              align: _s('stem_text_align') ?? 'center',
+              color: _color(_themeFont('stem', _font).color),
+            ),
+            style: BoxStyle(
+              margin: EdgeInsets(bottom: _marginBelow(node)),
+              keepTogether: true,
+              anchor: node.id,
+            ),
+          ),
+        );
+        return;
+      }
+    }
     _warnMathAsSource();
     if (node.hasTitle) _caption(node, category: 'code');
     final font = _themeFont('code', _font);
@@ -5868,6 +5900,81 @@ final class PdfConverter extends BuiltInConverter
   }
 
   bool _warnedMath = false;
+
+  /// The math layout: in the theme's `math_font_family` (a font with an
+  /// OpenType `MATH` table), else Noto Sans Math (bundled); a character
+  /// the font lacks in the base font. Null when no math font loads.
+  late final MathLayout? _math = () {
+    EmbeddedFont? fontOf(String family) {
+      try {
+        final face = _fonts.font(family);
+        if (face.pdf case final EmbeddedFont font
+            when font.font.hasTable('MATH')) {
+          return font;
+        }
+      } on FontException {
+        // Reported below.
+      }
+      return null;
+    }
+
+    final family = _s('math_font_family');
+    var font = family == null ? null : fontOf(family);
+    if (family != null && font == null) {
+      logger.warn(
+        'theme key math_font_family: $family is not a font with a MATH '
+        'table; using Noto Sans Math',
+      );
+    }
+    font ??= switch (PdfAssets.bytes('data/fonts/notosansmath-regular.ttf')) {
+      final bytes? => EmbeddedFont.parse(bytes),
+      null => null,
+    };
+    if (font == null) return null;
+    final base = _fonts.font(_font.family, _font.style).pdf;
+    return MathLayout(
+      font,
+      fallbacks: [if (base case final EmbeddedFont text) text],
+    );
+  }();
+
+  /// The formula of the AsciiMath [source] (its MathML), or null when it
+  /// can't be set (no math font, or MathML the layout can't read).
+  MathNode? _mathOf(String source) {
+    if (_math == null) return null;
+    try {
+      return parseMathML(asciimathToMathml(source));
+    } on MathMLException catch (error) {
+      logger.warn('could not typeset math: $source ($error)');
+      return null;
+    }
+  }
+
+  var _mathCount = 0;
+
+  /// The image markup of the inline AsciiMath [text] (escaped as the
+  /// text is), its formula registered as an inline graphic, or null.
+  String? _inlineMath(String text) {
+    final source = _unescapeXml(text);
+    final formula = _mathOf(source);
+    if (formula == null) return null;
+    final src = 'math:${_mathCount++}';
+    _inlineGraphics[src] = InlineMath(formula, _math!, source: source);
+    return '<img src="$src" format="math" alt="${_escapeXml(source)}">';
+  }
+
+  static String _unescapeXml(String text) => text
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#8217;', "'")
+      .replaceAll('&amp;', '&');
+
+  static String _escapeXml(String text) => text
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
 
   /// Says once per document, in the modern engine, that math is set as
   /// its source (ADR-0014: the PDF lays out no math yet).
@@ -9313,6 +9420,9 @@ final class PdfConverter extends BuiltInConverter
       ThemeList(:final values) => [for (final v in values) v.rubyString],
       _ => const ['&#8220;', '&#8221;', '&#8216;', '&#8217;'],
     };
+    if (node.type == 'asciimath') {
+      if (_inlineMath(node.text ?? '') case final image?) return image;
+    }
     switch (node.type) {
       case 'emphasis':
         (open, close) = ('<em>', '</em>');
@@ -9921,6 +10031,60 @@ final class _Absolute implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => (0, 0);
+}
+
+/// A formula set on its own (a STEM block): aligned in the room, scaled
+/// down to fit it when wider, copied as its [source].
+final class _DisplayMath implements CustomContent {
+  const new(this.box, this.source, {required this.align, this.color});
+
+  final MathBox box;
+  final String source;
+  final String align;
+  final PdfColor? color;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final scale = box.width > width ? width / box.width : 1.0;
+    final height = (box.height + box.depth) * scale;
+    if (height > available + 1e-6 && !atTop) return null;
+    final left = switch (align) {
+      'left' => 0.0,
+      'right' => width - box.width * scale,
+      _ => (width - box.width * scale) / 2,
+    };
+    return CustomPlacement(
+      height: height,
+      paint: (page, x, top) {
+        final canvas = page.canvas
+          ..save()
+          ..beginMarkedContent('Span', actualText: source);
+        if (color case final color?) {
+          canvas
+            ..setFillColor(color)
+            ..setStrokeColor(color);
+        }
+        box.paint(
+          canvas,
+          PdfRect(x + left, top - height, box.width * scale, height),
+        );
+        canvas
+          ..endMarkedContent()
+          ..restore();
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) =>
+      (box.height + box.depth) * (box.width > width ? width / box.width : 1.0);
+
+  @override
+  (double, double) intrinsicWidths() => (box.width, box.width);
 }
 
 /// An entry of the table of contents: its title (as wide as the room

@@ -5,6 +5,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:asciidart/src/internal.dart';
@@ -2171,10 +2172,11 @@ base:
       expect(_pages(house).first.join(' '), contains('SMALL CAPS'));
     });
 
-    test('math shown as source says so, once', () {
+    test('AsciiMath is typeset, LaTeX math shown as source says so', () {
       final logger = MemoryLogger();
-      _pdf(
-        ':stem:\n\nInline stem:[x^2] and stem:[y].\n\n[stem]\n++++\nz\n++++\n',
+      final pdf = _pdf(
+        ':stem:\n\nInline stem:[x^2] and stem:[y].\n\n[stem]\n++++\n'
+        'sum_(i=1)^n i\n++++\n\nAnd latexmath:[z].\n',
         logger: logger,
       );
       expect(
@@ -2182,6 +2184,59 @@ base:
             .map((m) => m.message.text)
             .where((m) => m.startsWith('math')),
         ['math is shown as its source in the PDF (not typeset yet)'],
+      );
+      // Set in the math font, copied as their source.
+      final fonts = Process.runSync('pdffonts', [pdf]).stdout as String;
+      expect(fonts, contains('NotoSansMath'));
+      final text = _pages(pdf).first.join(' ');
+      expect(text, contains('x^2'));
+      expect(text, contains('sum_(i=1)^n i'));
+    });
+
+    test('inline math stands on the baseline, its depth below', () {
+      double? bottom(String pdf, String word) => switch (RegExp(
+        'yMax="([\\d.]+)"[^>]*>${RegExp.escape(word)}<',
+      ).firstMatch(
+        Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String,
+      )) {
+        final m? => double.parse(m[1]!),
+        null => null,
+      };
+      final plain = _pdf(':stem:\n\nBefore after.\n');
+      final math = _pdf(':stem:\n\nBefore stem:[a/b] after.\n');
+      // The line's text where it was: a fraction no taller than the line
+      // leaves the baseline alone.
+      expect(bottom(math, 'Before'), closeTo(bottom(plain, 'Before')!, 0.5));
+    });
+
+    test('a display formula is centered, larger than inline', () {
+      final pdf = _pdf(':stem:\n\n[stem]\n++++\nsum_(i=1)^n i\n++++\n');
+      final content = _content(pdf);
+      // The display sum (a larger variant than the text's) is drawn.
+      expect(content, contains('Tf'));
+      final info = Process.runSync('pdfinfo', [pdf]).stdout as String;
+      final width = double.parse(
+        RegExp(r'Page size:\s+([\d.]+)').firstMatch(info)![1]!,
+      );
+      final xs = [
+        for (final m in RegExp(r'([\d.]+) ([\d.]+) Td').allMatches(content))
+          double.parse(m[1]!),
+      ];
+      expect(xs, isNotEmpty);
+      // Not at the left margin.
+      expect(xs.reduce(math.min), greaterThan(width / 4));
+    });
+
+    test('math_font_family must name a font with a MATH table', () {
+      final logger = MemoryLogger();
+      _pdf(
+        ':stem:\n\nstem:[x]\n',
+        theme: 'math_font_family: Noto Serif\n',
+        logger: logger,
+      );
+      expect(
+        logger.messages.map((m) => m.message.text),
+        contains(contains('is not a font with a MATH table')),
       );
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');

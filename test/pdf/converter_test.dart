@@ -37,6 +37,9 @@ void main() {
     // A URL broken after its dots and slashes rather than inside a word,
     // and a word longer than the line broken a character later.
     'hyphens': 0.1,
+    // An AsciiMath block typeset, which the gem (without
+    // asciidoctor-mathematical) shows as its source (ADR-0014).
+    'media': 0.02,
   };
 
   /// [pdf] (asciidart's) against [gem]'s: pages, outline, labels and look.

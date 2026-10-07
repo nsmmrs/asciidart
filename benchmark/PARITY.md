@@ -287,7 +287,7 @@ Two tools compare the PDF files of the gem and asciidart:
   outline, the link annotations and the page labels, and the mean gray
   difference of the pages.
 
-### Look check (2026-10-07): 793 of 797 documents look the same
+### Look check (2026-10-07): 792 of 797 documents look the same
 
 ADR-0015 asks of the default engine with `asciidoctor-compat` (pdf) that
 its pages look like asciidoctor-pdf's, not that they be the same bytes.
@@ -304,16 +304,18 @@ dart run tool/pdf_look.dart --gem <gem wrapper> \
   --cache <gem pages> --out <dir> [--pairs] ~/.cache/asciidart-work/pdfcorpus/*.adoc
 ```
 
-793 documents look the same (748 before the look's defaults,
+792 documents look the same (748 before the look's defaults,
 `doc/pdf.md`, and the fixes the check found: title logos fitted to the
 page, autowidth columns as wide as their images, words longer than a line
 across index terms broken, a heading kept with a whole unbreakable block,
-a broken background image reported, not a failure). The other 4:
+a broken background image reported, not a failure). The other 5:
 
 - *The gem fails* (1): `font-002` (a font that isn't in the catalog).
 - *A gem quirk, not copied* (1): `table-098`, a page break inside an
   AsciiDoc table cell: the gem drops the cell's text after it and moves
   the rest to a new page.
+- *Math typeset* (1): `stem-002`, an AsciiMath formula the gem (without
+  asciidoctor-mathematical) shows as its source (ADR-0014).
 - *Within 0.6%* (2): `table-118` (CJK text with a fallback font) and
   `hyphens-006` (a word the gem's patterns don't break).
 

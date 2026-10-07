@@ -27,7 +27,7 @@ line tool, and (compiled to JavaScript) an npm package.
 - **PDF without Ruby or a browser.** `-b pdf` draws with libpdf, a
   pure-Dart PDF library, and reads asciidoctor-pdf's YAML themes. With
   `asciidoctor-compat`, the pages look as asciidoctor-pdf 2.3.27 sets them:
-  793 of the 797 documents of that gem's spec suite look the same
+  792 of the 797 documents of that gem's spec suite look the same
   (`tool/pdf_look.dart`). By default, asciidart lays books out with its
   own typesetting: optimal line breaking, hyphenation, widows and orphans,
   ligatures, listings that never lose a line, and table styles by role
@@ -168,4 +168,5 @@ implementation by Dan Allen, Sarah White, Ryan Waldron and the Asciidoctor
 contributors, with byte-identical output as the bar. MIT licensed (see
 [LICENSE](LICENSE)). The stylesheets, locale data and test fixtures taken
 from Asciidoctor live under [`vendor/`](vendor/README.md), with their
-license.
+license. The PDF backend bundles Noto Sans Math for formulas
+(`data/pdf-fonts`, SIL Open Font License 1.1, with its license).
