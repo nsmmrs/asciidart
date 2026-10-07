@@ -10,6 +10,7 @@
 library;
 
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
+import 'dart:math' as math;
 
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/constants.dart';
@@ -638,6 +639,29 @@ class PreprocessorReader extends Reader {
        _includes = document.catalog.includes,
        super(const <String>[]) {
     _init(lines: lines, normalize: normalize);
+  }
+
+  /// A preprocessor reader for the content of a delimited block that
+  /// [outer] read without preprocessing it ([lines], which start at
+  /// [cursor]): its directives run as the block's content is parsed, after
+  /// the attribute entries before them (asciidoctor#3877). Includes in it
+  /// count toward [outer]'s include depth.
+  new nested(PreprocessorReader outer, List<String> lines, {super.cursor})
+    : _document = outer._document,
+      _sourcemap = outer._sourcemap,
+      _includes = outer._includes,
+      super(const <String>[]) {
+    final depth = outer._includeStack.length;
+    _maxdepth = switch (outer._maxdepth) {
+      final max? => _MaxDepth(
+        math.max(0, max.abs - depth),
+        math.max(0, max.curr - depth),
+        max.rel,
+      ),
+      null => null,
+    };
+    _sourceLines = lines;
+    _lines = lines.reversed.toList();
   }
 
   /// Initializes the preprocessor reader for [document] with the AsciiDoc

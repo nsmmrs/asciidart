@@ -6,8 +6,8 @@ A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named
 
 | Category | Issues |
 |---|---|
-| Fixed on the `bugfix` branch | 25 |
-| Reproduced, deferred | 6 |
+| Fixed on the `bugfix` branch | 26 |
+| Reproduced, deferred | 5 |
 | Does not reproduce on upstream main | 4 |
 | Not a bug (by design or by the spec) | 15 |
 | Ruby API only (no CLI reproduction) | 7 |
@@ -18,8 +18,9 @@ A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named
 | Duplicates | 5 |
 | Out of scope | 49 |
 
-## Fixed on the `bugfix` branch (25)
+## Fixed on the `bugfix` branch (26)
 
+- [#3877](https://github.com/asciidoctor/asciidoctor/issues/3877) ifdef reports undefined variable when variable is defined inside a block — attribute entries in a block not seen by its ifdef, ifndef and include directives
 - [#4877](https://github.com/asciidoctor/asciidoctor/issues/4877) Section title made only of punctuation gets an empty id — empty id for a punctuation-only section title
 - [#4875](https://github.com/asciidoctor/asciidoctor/issues/4875) manpage backend does not restore fonts correctly after nested inline formatting — man page fonts after nested formatting
 - [#4500](https://github.com/asciidoctor/asciidoctor/issues/4500) Table column alignment error — cell after a colspan takes the wrong column spec
@@ -46,9 +47,8 @@ A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named
 - [#1558](https://github.com/asciidoctor/asciidoctor/issues/1558) Docbook backend applies incorrect column attributes — DocBook: wrong column style after colspan/rowspan
 - [#989](https://github.com/asciidoctor/asciidoctor/issues/989) Incorrect col spec selected when preceding column spans multiple rows — cells beside a rowspan take the wrong column spec
 
-## Reproduced, deferred (6)
+## Reproduced, deferred (5)
 
-- [#3877](https://github.com/asciidoctor/asciidoctor/issues/3877) ifdef reports undefined variable when variable is defined inside a block — reproduced; attribute entries in a delimited block are set after the reader has evaluated its conditionals, so fixing it means changing when preprocessing runs
 - [#3876](https://github.com/asciidoctor/asciidoctor/issues/3876) The # in links and xrefs is rendered as <mark> — reproduced; constrained `#` matches across a URL and an xref because quotes run before macros; needs URLs protected before the quotes pass
 - [#3087](https://github.com/asciidoctor/asciidoctor/issues/3087) Cannot use {counter:id} in bibliography section to auto-number — reproduced; the reference text of a bibliography entry is cataloged without substitutions, but substituting it there would evaluate `{counter:...}` twice (catalog and conversion)
 - [#2128](https://github.com/asciidoctor/asciidoctor/issues/2128) Smart quotes don't work with italic text — reproduced; constrained emphasis and curved quotes block each other at their boundaries (`_"`x`"_`); same family as #1578 but the boundary rule change is wider

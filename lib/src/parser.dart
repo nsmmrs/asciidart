@@ -2490,6 +2490,22 @@ abstract final class Parser {
       );
     } else if (readerPrepared) {
       blockReader = reader;
+    } else if (reader case final PreprocessorReader outer
+        when !skipProcessing) {
+      // The block's lines as written: their directives run as its content
+      // is parsed, in document order with its attribute entries
+      // (asciidoctor#3877).
+      final blockCursor = reader.cursor();
+      blockReader = PreprocessorReader.nested(
+        outer,
+        reader.readLinesUntil(
+          terminator: terminator,
+          skipProcessing: true,
+          context: blockContext,
+          cursorAtMark: true,
+        ),
+        cursor: blockCursor,
+      );
     } else {
       final blockCursor = reader.cursor();
       blockReader = Reader(

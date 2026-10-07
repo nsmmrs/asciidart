@@ -320,6 +320,12 @@ Documents that don't hit these cases convert as on `2.1.0`.
   and formatted text or a curved quote (on either side) becomes an em dash
   (#1578, #3946). A bare URL ending with a character reference
   (`http://<host>:<port>`) keeps its `;` (#3128).
+- Preprocessor: the directives inside a delimited block (`ifdef`,
+  `ifndef`, `ifeval`, `include`) run as its content is parsed, after the
+  attribute entries before them in the block, so `ifdef` sees an attribute
+  set or unset earlier in the same block and an include target may use it
+  (#3877). An include inside a block counts toward the include depth of
+  the file it is in.
 - Blocks: a line that starts with `[` and ends with `]` is not a block
   attribute line when a `]` in it closes no `[` (outside double quotes)
   and a `[` follows, so `[.red]#Bbb# bbb.footnote:[Bbb.]` is a paragraph
