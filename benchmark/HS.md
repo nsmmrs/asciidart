@@ -242,6 +242,35 @@ Not in scope: the Markdown export and the Kindle file, which the Typst
 edition makes with pandoc and calibre; the same tools read asciidart's
 DocBook and EPUB.
 
+### Build time against Typst (2026-10-07)
+
+The golden build (`build.sh pdf-golden`, 316 pages) against the Typst
+edition compiled by Typst 0.15.1 from its sources, on the same machine
+(12 cores), each the median of three runs:
+
+| | Before | After |
+| --- | --- | --- |
+| asciidart (native executable) | 10.1 s | 3.8 s |
+| Typst 0.15.1 | 3.9 s | 3.9 s |
+
+Typst spreads its work over the cores (8 s of user time and 4 s of
+system time for the 3.9 s); asciidart works on one. What `tool/profile.dart`
+(CPU samples from the VM) found and what changed, each change keeping the
+PDF the same, byte for byte until the last, page image for page image
+after it:
+
+- The line breaker computed a hyphenation's cost (the letters on each
+  side) for every line that could end there; it is the same for all, so
+  it is computed once (libpdf).
+- Patterns built inside the line wrapping's loops are built once; the
+  tokenizer and the trimming of spaces, which ran for every piece of
+  text, are written out as scans (checked against the patterns on 200,000
+  random strings).
+- A word's width is shaped once per font and features, not at each
+  measurement.
+- Streams are compressed, and PNG data read, with the Dart VM's native
+  zlib rather than libpdf's Dart one (`PdfWriterOptions.zlib`).
+
 ## Latest run, edited edition (2026-10-06)
 
 | Check | Result | Detail |

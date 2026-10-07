@@ -58,6 +58,17 @@ List<int> deflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).encode(bytes);
 /// [bytes] (raw DEFLATE) expanded.
 List<int> inflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).decode(bytes);
 
+/// Whether [zlibEncode] and [zlibDecode] are the platform's own (faster
+/// than the PDF library's).
+bool get hasNativeZlib => true;
+
+/// [bytes] compressed in zlib format at [level] (1-9).
+List<int> zlibEncode(List<int> bytes, int level) =>
+    io.ZLibCodec(level: level).encode(bytes);
+
+/// [bytes] (zlib format) expanded.
+List<int> zlibDecode(List<int> bytes) => io.ZLibCodec().decode(bytes);
+
 /// Creates the directory at [path] and any missing parents.
 void createDirectories(String path) =>
     _guard(() => io.Directory(path).createSync(recursive: true));

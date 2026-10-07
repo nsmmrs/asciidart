@@ -620,6 +620,7 @@ final class PdfConverter extends BuiltInConverter
       options: PdfWriterOptions(
         deterministic: true,
         creationDate: _dateTime(document.attr('localdatetime')),
+        zlib: io.hasNativeZlib ? const _NativeZlib() : null,
       ),
     );
     return '';
@@ -10068,6 +10069,18 @@ final class _Absolute implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => (0, 0);
+}
+
+/// The platform's zlib (the Dart VM's), faster than libpdf's own.
+final class _NativeZlib implements ZlibCodec {
+  const new();
+
+  @override
+  Uint8List encode(List<int> data, int level) =>
+      Uint8List.fromList(io.zlibEncode(data, level));
+
+  @override
+  Uint8List decode(List<int> data) => Uint8List.fromList(io.zlibDecode(data));
 }
 
 /// A formula set on its own (a STEM block): aligned in the room, scaled

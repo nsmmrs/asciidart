@@ -383,7 +383,7 @@ final class TextBox implements CustomContent {
         var text = format.font.normalize(run.text);
         if (format.smallCapitals) text = text.toUpperCase();
         // One item per line of the fragment (Prawn's `format_array=`).
-        for (final m in RegExp('[^\n]+|\n').allMatches(text)) {
+        for (final m in _linesRx.allMatches(text)) {
           items.add(_Item(m[0]!, format, defaultColor: defaultColor));
         }
       }
@@ -1337,16 +1337,75 @@ PdfColor? pdfColorOf(ThemeColor? color) => _pdfColor(color);
 /// zero width space), the soft hyphen and the hyphen.
 const String _breakChars = ' \t$_zwsp$_shy-';
 
-final RegExp _tokens = RegExp(
-  '[^$_breakChars]+$_shy|[^$_breakChars]+-+|[^$_breakChars]+|'
-  '[ \t$_zwsp]+|-+[^$_breakChars]*|$_shy',
-);
-
 final RegExp _wordDivision = RegExp('[\t\n\v\r $_zwsp$_shy-]');
 
-List<String> _tokenize(String text) => [
-  for (final m in _tokens.allMatches(text)) m[0]!,
-];
+/// [text]'s tokens (scanned by hand: line breaking tokenizes every piece
+/// of text, often): a word (a run without [_breakChars]) with the soft
+/// hyphen or the hyphens after it, a run of spaces, tabs and zero width
+/// spaces, hyphens with the word after them, a soft hyphen.
+List<String> _tokenize(String text) {
+  final tokens = <String>[];
+  final n = text.length;
+  var i = 0;
+  while (i < n) {
+    final c = text.codeUnitAt(i);
+    final start = i;
+    if (c == _shyUnit) {
+      i++;
+    } else if (c == 0x20 || c == 0x09 || c == _zwspUnit) {
+      while (i < n && _isSpaceUnit(text.codeUnitAt(i))) {
+        i++;
+      }
+    } else if (c == 0x2d) {
+      while (i < n && text.codeUnitAt(i) == 0x2d) {
+        i++;
+      }
+      while (i < n && !_isBreakUnit(text.codeUnitAt(i))) {
+        i++;
+      }
+    } else {
+      while (i < n && !_isBreakUnit(text.codeUnitAt(i))) {
+        i++;
+      }
+      if (i < n && text.codeUnitAt(i) == _shyUnit) {
+        i++;
+      } else {
+        while (i < n && text.codeUnitAt(i) == 0x2d) {
+          i++;
+        }
+      }
+    }
+    tokens.add(text.substring(start, i));
+  }
+  return tokens;
+}
+
+const int _shyUnit = 0xad;
+const int _zwspUnit = 0x200b;
+
+bool _isSpaceUnit(int c) => c == 0x20 || c == 0x09 || c == _zwspUnit;
+
+bool _isBreakUnit(int c) => _isSpaceUnit(c) || c == _shyUnit || c == 0x2d;
+
+/// Whether [text] is nothing but spaces, tabs and zero width spaces (and
+/// not empty).
+bool _isBlank(String text) {
+  if (text.isEmpty) return false;
+  for (var i = 0; i < text.length; i++) {
+    if (!_isSpaceUnit(text.codeUnitAt(i))) return false;
+  }
+  return true;
+}
+
+/// Whether [text] is nothing but spaces and tabs (and not empty).
+bool _isSpaces(String text) {
+  if (text.isEmpty) return false;
+  for (var i = 0; i < text.length; i++) {
+    final c = text.codeUnitAt(i);
+    if (c != 0x20 && c != 0x09) return false;
+  }
+  return true;
+}
 
 /// The wrap of [items] for [context]'s engine: the modern engine's (whole
 /// words, Typst's breaking), else Prawn's (also for code, whose wrapped
@@ -1530,7 +1589,7 @@ base class _Wrap {
     if (wrapIndent == null || continuedIndent != null) return;
     var own = 0.0;
     if (_lines.last.fragments.firstOrNull case final first?) {
-      final leading = RegExp('^[\u00a0 ]*').stringMatch(first.text) ?? '';
+      final leading = _leadingSpacesRx.stringMatch(first.text) ?? '';
       if (leading.isNotEmpty) own = _widthOf(leading, first.format);
     }
     continuedIndent = math.min(indent + own + wrapIndent, _width / 2);
@@ -1710,8 +1769,7 @@ base class _Wrap {
     _previousEndedWithBreakable =
         _previousFragment.isNotEmpty &&
         _breakChars.contains(_previousFragment[_previousFragment.length - 1]);
-    final lastWord =
-        RegExp('[^$_breakChars]*\$').stringMatch(_previousFragment) ?? '';
+    final lastWord = _trailingWordRx.stringMatch(_previousFragment) ?? '';
     _previousWithoutLastWord = _previousFragment.substring(
       0,
       _previousFragment.length - lastWord.length,
@@ -1955,12 +2013,26 @@ final class _CannotFit implements Exception {
 
 // Ruby's whitespace (for strip and its kin): ASCII whitespace and NUL,
 // never a no-break space.
-final RegExp _leadingSpace = RegExp(r'^[\t\n\v\f\r \x00]+');
-final RegExp _trailingSpace = RegExp(r'[\t\n\v\f\r \x00]+$');
 
-String _lstrip(String text) => text.replaceFirst(_leadingSpace, '');
+/// [text] without the ASCII whitespace and NULs at its start.
+String _lstrip(String text) {
+  var start = 0;
+  while (start < text.length && _isStripUnit(text.codeUnitAt(start))) {
+    start++;
+  }
+  return start == 0 ? text : text.substring(start);
+}
 
-String _rstrip(String text) => text.replaceFirst(_trailingSpace, '');
+/// [text] without the ASCII whitespace and NULs at its end.
+String _rstrip(String text) {
+  var end = text.length;
+  while (end > 0 && _isStripUnit(text.codeUnitAt(end - 1))) {
+    end--;
+  }
+  return end == text.length ? text : text.substring(0, end);
+}
+
+bool _isStripUnit(int c) => c == 0x20 || (c >= 0x09 && c <= 0x0d) || c == 0;
 
 String _strip(String text) => _lstrip(_rstrip(text));
 
@@ -2148,8 +2220,7 @@ final class _OptimalWrap extends _Wrap {
   /// its parts), as a word in one item is split: the line may break
   /// before any of its characters ([charBreaks], at a cost).
   void _splitLongRuns(List<(int, String)> pieces, Set<int> charBreaks) {
-    bool isSpace((int, String) piece) =>
-        piece.$2 == '\n' || RegExp('^[ \t$_zwsp]+\$').hasMatch(piece.$2);
+    bool isSpace((int, String) piece) => piece.$2 == '\n' || _isBlank(piece.$2);
     bool isMarker((int, String) piece) =>
         _unconsumed[piece.$1].format.fragment.isMarker;
     final split = <(int, String)>[];
@@ -2207,7 +2278,7 @@ final class _OptimalWrap extends _Wrap {
         lineStart = true;
       } else {
         for (final token in _tokenize(item.text)) {
-          if (RegExp('^[ \t]+\$').hasMatch(token)) {
+          if (_isSpaces(token)) {
             if (lineStart) continue;
           } else if (!item.format.fragment.isMarker) {
             lineStart = false;
@@ -2219,7 +2290,7 @@ final class _OptimalWrap extends _Wrap {
               : token;
           if (!item.format.fragment.isMarker &&
               word.runes.length > 1 &&
-              !RegExp('^[ \t$_zwsp]+\$').hasMatch(word) &&
+              !_isBlank(word) &&
               _widthOf(word, item.format) > _width) {
             for (final (k, rune) in token.runes.indexed) {
               if (k > 0) charBreaks.add(pieces.length);
@@ -2253,7 +2324,7 @@ final class _OptimalWrap extends _Wrap {
         add(const PenaltyItem(0, PenaltyItem.forced), p);
         continue;
       }
-      if (RegExp('^[ \t$_zwsp]+\$').hasMatch(token)) {
+      if (_isBlank(token)) {
         wordSoFar = '';
         final spaces = token.replaceAll(_zwsp, '');
         if (spaces.isEmpty) {
@@ -2429,3 +2500,8 @@ final class _OptimalWrap extends _Wrap {
   /// The items as they were before the wrap (its list changes).
   List<_Item> _source = const [];
 }
+
+// Patterns the line wrapping uses for every piece of text, built once.
+final RegExp _linesRx = RegExp('[^\n]+|\n');
+final RegExp _leadingSpacesRx = RegExp('^[\u00a0 ]*');
+final RegExp _trailingWordRx = RegExp('[^$_breakChars]*\$');
