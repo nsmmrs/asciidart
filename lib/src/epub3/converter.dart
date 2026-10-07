@@ -1938,7 +1938,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
       );
       final fonts = FontIndex.current;
       for (final (name, path) in fontFiles) {
-        book.addItem(name).setBytes(fonts.bytes(path));
+        book.addItem(name).setBytes(fonts.fontBytes(path));
       }
     }
   }

@@ -24,9 +24,10 @@ enum Backend {
   bool get makesFile => this == pdf || this == epub3;
 }
 
-/// A font given to a conversion as bytes: a TrueType or OpenType file and
-/// its name (`Inter-Regular.ttf`). PDFs and EPUBs find it as they find
-/// installed fonts, by the file's name, then by the family it names.
+/// A font given to a conversion as bytes: a TrueType, OpenType, WOFF or
+/// WOFF2 file and its name (`Inter-Regular.ttf`). PDFs and EPUBs find it
+/// as they find installed fonts, by the file's name, then by the family it
+/// names.
 final class FontFile {
   /// The font file [name] with [bytes].
   const new(this.name, this.bytes);
@@ -84,7 +85,8 @@ final class Asciidart {
   /// the working directory). [onDiagnostic] sees every message as it is
   /// reported, including those of [convert], which returns only the
   /// output. [fonts] are found by PDFs and EPUBs before the installed
-  /// fonts.
+  /// fonts; in a browser, so are the page's web fonts ([pageFonts]) and
+  /// the [localFonts] families of the visitor's fonts.
   const new({
     this.safe = SafeMode.secure,
     this.attributes = const {},
@@ -95,6 +97,8 @@ final class Asciidart {
     this.baseDir,
     this.onDiagnostic,
     this.fonts = const [],
+    this.pageFonts = true,
+    this.localFonts = const [],
   });
 
   /// How much documents may reach outside themselves.
@@ -124,6 +128,21 @@ final class Asciidart {
   /// Fonts given as bytes, found before the installed ones.
   final List<FontFile> fonts;
 
+  /// In a browser, whether the asynchronous conversions to PDF and EPUB
+  /// find the page's web fonts (after [fonts]): the sources of its
+  /// `@font-face` rules, fetched again (usually from the browser's cache;
+  /// they must be same-origin or allow CORS), by the families the fonts
+  /// name. Elsewhere it does nothing.
+  final bool pageFonts;
+
+  /// In a browser, the families taken from the visitor's installed fonts
+  /// for the asynchronous conversions to PDF and EPUB, through the Local
+  /// Font Access API: Chromium-based browsers only, on HTTPS, after the
+  /// visitor allows it (the conversion must start from a click or a key
+  /// press for the browser to ask). Elsewhere it does nothing (the Dart VM
+  /// and Node.js find installed fonts in the font folders).
+  final List<String> localFonts;
+
   /// Loads the code of [backend]. On the Dart VM every backend is there;
   /// on JavaScript the PDF and EPUB backends load the first time an
   /// asynchronous conversion needs them, and [convertToBytes] needs them
@@ -131,10 +150,27 @@ final class Asciidart {
   Future<void> loadBackend(Backend backend) =>
       file_backends.loadFileBackend(backend.name);
 
-  /// [body] with [fonts] found before the installed fonts.
-  T _withFonts<T>(T Function() body) => impl.FontIndex.withFonts({
+  /// [body] with [fonts], then [more], found before the installed fonts.
+  T _withFonts<T>(
+    T Function() body, [
+    List<(String, List<int>)> more = const [],
+  ]) => impl.FontIndex.withFonts({
     for (final font in fonts) font.name: font.bytes,
+    for (final (name, bytes) in more)
+      if (!fonts.any((font) => font.name == name)) name: bytes,
   }, body);
+
+  /// [body] with [fonts], and for [backend]s that make files, the page's
+  /// and the visitor's fonts asked for ([pageFonts], [localFonts]).
+  Future<T> _withAllFonts<T>(Backend backend, Future<T> Function() body) async {
+    final more = backend.makesFile
+        ? await file_backends.platformFonts(
+            page: pageFonts,
+            localFamilies: localFonts,
+          )
+        : const <(String, List<int>)>[];
+    return await _withFonts(body, more);
+  }
 
   /// Throws unless [backend] makes a file.
   static void _requireFile(Backend backend) {
@@ -188,7 +224,7 @@ final class Asciidart {
   }) async {
     _requireFile(backend);
     await loadBackend(backend);
-    return await _withFonts(() async {
+    return await _withAllFonts(backend, () async {
       final document = await parseAsync(
         source,
         path: path,

@@ -11,7 +11,9 @@ import 'dart:js_interop_unsafe';
 import 'package:asciidart/src/api/file_backends_js.dart';
 import 'package:asciidart/src/cli/run.dart' show runCliCode;
 import 'package:asciidart/src/js/api.g.dart';
+import 'package:asciidart/src/js/page_fonts.dart';
 import 'package:asciidart/src/js/runtime.dart';
+import 'package:asciidart/src/web_fonts.dart';
 
 /// The real global object (the bundle's own `self` shadows it; see
 /// `npm/preamble.js`).
@@ -27,13 +29,20 @@ void main() {
         _runCli([for (final a in args.toDart) a.toDart]),
         (code) => code.toJS,
       )).toJS,
+    )
+    // The browser entry point gives the page's fonts (npm/src/page_fonts.js).
+    ..setProperty(
+      'setFontSource'.toJS,
+      ((JSFunction source) => fontSource = source).toJS,
     );
   _global.setProperty('asciidartCore'.toJS, core);
 }
 
 /// Runs the command line with [args], loading the part of the bundle of a
-/// backend that makes files (`-b pdf`, `--backend=epub3`) first.
+/// backend that makes files (`-b pdf`, `--backend=epub3`) first, and for
+/// `doctor`, the web font decoder's (to read installed WOFF fonts).
 Future<int> _runCli(List<String> args) async {
+  if (args.firstOrNull == 'doctor') await loadWebFontDecoder();
   for (final (i, arg) in args.indexed) {
     final backend = switch (arg) {
       '-b' || '--backend' when i + 1 < args.length => args[i + 1],

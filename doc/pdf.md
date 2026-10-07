@@ -2,9 +2,10 @@
 
 `asciidart -b pdf` writes a PDF with asciidart's own PDF library, libpdf,
 and reads asciidoctor-pdf's YAML themes unchanged (`pdf-theme`,
-`pdf-themesdir`, `pdf-fontsdir`). It needs an output file and the native
-executable, and sets text in the fonts installed on the machine
-(`asciidart doctor` installs the built-in themes'; see [Fonts](#fonts)).
+`pdf-themesdir`, `pdf-fontsdir`). It needs an output file, and sets text
+in the fonts installed on the machine (`asciidart doctor` installs the
+built-in themes'; see [Fonts](#fonts)). The API makes PDFs too, on the Dart
+VM, on Node.js and in a browser (see `doc/api.md`).
 
 It lays documents out with asciidart's own typesetting, described below.
 With `asciidoctor-compat` (or `-a pdf-compat`), its settings default to
@@ -159,6 +160,11 @@ names the built-in themes' fonts wherever they are installed, M PLUS 1
 Code and M PLUS 1p (their successors on Google Fonts) stand in for
 asciidoctor-pdf's M+ 1mn and M+ 1p, and a `font_family` that isn't in the
 catalog names any installed family (`base_font_family: Inter`).
+
+WOFF and WOFF2 fonts are found like TrueType and OpenType ones (and
+embedded as the fonts they wrap). Through the API, fonts can also be given
+as bytes, and in a browser the page's web fonts are used too (see
+`doc/api.md`).
 
 A font that isn't installed is replaced by a built-in PDF font (Courier
 for a monospace family, Times for a serif one, else Helvetica), with one

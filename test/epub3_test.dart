@@ -92,6 +92,18 @@ void main() {
       expect(files['EPUB/_one.xhtml'], contains(r'content: "\f004"'));
     });
 
+    test('an installed WOFF2 font is embedded as the font it wraps', () {
+      FontIndex.installed = FontIndex([
+        'test/fixtures/fonts',
+      ], cacheFile: '${dir.path}/cache.tsv');
+      epub(attributes: {'epub-embed-fonts': ''});
+      final font = readZip(
+        File('${dir.path}/book.epub').readAsBytesSync(),
+        (b) => ZLibCodec(raw: true).decode(b),
+      ).firstWhere((e) => e.name == 'EPUB/fonts/notoserif-regular-latin.ttf');
+      expect(font.bytes.take(4), [0, 1, 0, 0]);
+    });
+
     test("a font asked for that isn't installed is left out, said once", () {
       FontIndex.installed = FontIndex([
         '${dir.path}/none',

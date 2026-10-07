@@ -72,6 +72,36 @@ for await (const result of ad.convertTree('docs', { toDir: 'build' })) {
 }
 ```
 
+## PDFs and EPUBs
+
+`convertToBytesAsync` makes a PDF or an EPUB, as a `Uint8Array`. Their
+code is a part of the package loaded the first time it's needed, so pages
+that only make HTML don't download it. (`loadBackend` loads it ahead, and
+`convertToBytes` is the synchronous version once it is loaded.)
+
+```js
+const pdf = await new Asciidart().convertToBytesAsync(source, { backend: 'pdf' })
+```
+
+Text is set in the fonts the theme names, found by family:
+
+- `fonts: [new FontFile('Inter-Regular.ttf', bytes), ...]` gives fonts
+  directly (TrueType, OpenType, WOFF or WOFF2). They are searched first.
+- In a browser, the page's own web fonts are found next (`pageFonts`, on
+  by default). Their `@font-face` sources are fetched again, usually from
+  the browser's cache, so they must be same-origin or allow CORS.
+- `localFonts: ['Inter']` takes those families from the visitor's
+  installed fonts. This uses the Local Font Access API, so it works only
+  in Chromium-based browsers, over HTTPS, and after the visitor allows it.
+  The browser only asks when the conversion starts from a click or a key
+  press.
+- On Node.js, the installed fonts are found in the system's and the
+  user's font folders. `npx asciidart doctor` installs the default
+  themes' fonts.
+
+A font that can't be found is replaced by a built-in PDF font, with a
+warning.
+
 ## Command line
 
 ```console

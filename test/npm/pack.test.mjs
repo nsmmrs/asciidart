@@ -28,6 +28,7 @@ test('npm pack lists the expected files', () => {
     'src/api.g.js',
     'src/core.js',
     'src/index.js',
+    'src/page_fonts.js',
     'types/index.d.cts',
     'types/index.d.ts',
   ])

@@ -65,6 +65,23 @@ void main() {
     );
   });
 
+  test('fonts given as WOFF and WOFF2', () {
+    final diagnostics = <Diagnostic>[];
+    final pdf = Asciidart(
+      fonts: [
+        for (final name in [
+          'notoserif-regular-ascii.woff2',
+          'notoserif-bold-ascii.woff',
+        ])
+          FontFile(name, File('test/fixtures/fonts/$name').readAsBytesSync()),
+      ],
+      onDiagnostic: diagnostics.add,
+    ).convertToBytes('Hello *bold*\n', backend: Backend.pdf, attributes: _date);
+    expect(latin1.decode(pdf.sublist(0, 5)), '%PDF-');
+    final messages = [for (final d in diagnostics) d.message];
+    expect(messages, isNot(contains(contains('not installed'))));
+  });
+
   test('the asynchronous conversion makes the same bytes', () async {
     final ad = Asciidart(fonts: _vendoredFonts());
     final sync = ad.convertToBytes(

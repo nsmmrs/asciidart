@@ -10,6 +10,13 @@ import 'package:asciidart/src/pdf/pdf.dart';
 Future<void> loadFileBackend(String backend) async =>
     registerFileBackend(backend);
 
+/// The fonts of the platform that aren't installed in font folders: none
+/// on the Dart VM (in a browser, the page's and the visitor's).
+Future<List<(String, List<int>)>> platformFonts({
+  required bool page,
+  required List<String> localFamilies,
+}) async => const [];
+
 /// Registers [backend]'s converter.
 void registerFileBackend(String backend) {
   switch (backend) {

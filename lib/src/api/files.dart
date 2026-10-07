@@ -47,7 +47,8 @@ extension AsciidartFiles on Asciidart {
       (options) => impl.loadFile(path, options: options),
     );
     final options = optionsFor(includes);
-    return await _withFonts(
+    return await _withAllFonts(
+      backend,
       () => _document(
         (collector) =>
             collector.run(() => impl.loadFileAsync(path, options: options)),
@@ -86,7 +87,8 @@ extension AsciidartFiles on Asciidart {
       (options) => impl.loadFile(path, options: options),
     );
     final options = optionsFor(includes);
-    return await _withFonts(
+    return await _withAllFonts(
+      backend,
       () => _document(
         (collector) =>
             collector.run(() => impl.convertFileAsync(path, options)),

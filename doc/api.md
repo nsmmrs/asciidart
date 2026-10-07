@@ -205,6 +205,26 @@ directory (as `convertTree` into `build/` does) needs `SafeMode.unsafe`, as
 in Asciidoctor. `convertTree` skips files and folders whose names start
 with `_` or `.` (partials meant to be included).
 
+## 9. PDFs and EPUBs
+
+```dart
+final pdf = await Asciidart(
+  fonts: [FontFile('Inter-Regular.ttf', interBytes)],
+).convertToBytesAsync(source, backend: Backend.pdf);
+```
+
+`convertToBytes` and `convertToBytesAsync` make a PDF or an EPUB as bytes;
+`convertFile` writes one. Text is set in the fonts the theme names, found
+by file name, then by family. They are searched in this order:
+
+- the `fonts` given (TrueType, OpenType, WOFF or WOFF2);
+- in a browser, the page's web fonts (`pageFonts`) and the `localFonts`
+  families of the visitor's installed fonts;
+- the installed fonts.
+
+On JavaScript, the PDF and EPUB code loads on demand: the asynchronous
+methods load it, and `loadBackend` loads it ahead for `convertToBytes`.
+
 ## Also supported
 
 - **Remote content.** `parseAsync` and `convertAsync` fetch what a document

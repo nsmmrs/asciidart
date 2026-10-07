@@ -75,6 +75,29 @@ void main() {
     expect(cache.readAsStringSync(), contains('Noto Serif'));
   });
 
+  test('reads WOFF and WOFF2 fonts, and decodes them', () {
+    final fonts = index(['test/fixtures/fonts']);
+    final regular = fonts.find('Noto Serif')!;
+    expect(regular.fileName, 'notoserif-regular-ascii.woff2');
+    final bold = fonts.find('Noto Serif', bold: true)!;
+    expect(bold.fileName, 'notoserif-bold-ascii.woff');
+    expect((bold.bold, bold.italic), (true, false));
+    // The cache keeps them like any font.
+    expect(
+      File('${tmp.path}/cache/fonts.tsv').readAsStringSync(),
+      contains('notoserif-bold-ascii.woff\t'),
+    );
+    expect(index(['test/fixtures/fonts']).find('Noto Serif'), isNotNull);
+    // The font they wrap: a TrueType font.
+    expect(fonts.fontBytes(regular.path).take(4), [0, 1, 0, 0]);
+    expect(
+      FontIndex.familyOf(
+        File('test/fixtures/fonts/notoserif-bold-ascii.woff').readAsBytesSync(),
+      ),
+      'Noto Serif',
+    );
+  });
+
   test('skips folders that are missing and files that are not fonts', () {
     final dir = Directory('${tmp.path}/odd')..createSync();
     File('${dir.path}/broken.ttf').writeAsStringSync('not a font');

@@ -7,7 +7,9 @@
 /// file's family, style, weight and width come from its `name` and `OS/2`
 /// tables, read without loading the font, and are kept in a cache file
 /// (by path, size and modification time) so that later runs only look at
-/// what changed.
+/// what changed. WOFF and WOFF2 fonts are decoded to be read (on
+/// JavaScript, once the decoder's part of the bundle is loaded: until then
+/// they are passed over).
 library;
 
 import 'dart:async';
@@ -15,6 +17,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:asciidart/src/io.dart' as io;
+import 'package:asciidart/src/web_fonts.dart';
 import 'package:meta/meta.dart';
 
 /// A font found in the font folders (one font of a file: a collection
@@ -119,6 +122,31 @@ final class FontIndex {
   /// memory).
   List<int> bytes(String path) => _memory[path] ?? io.readBytes(path);
 
+  /// The TrueType or OpenType font at [path]: its [bytes], decoded when
+  /// it is a WOFF or WOFF2 font.
+  List<int> fontBytes(String path) {
+    final data = bytes(path);
+    return _isWebFont(data) ? _decodeWebFont(data) : data;
+  }
+
+  static bool _isWebFont(List<int> b) =>
+      b.length >= 4 &&
+      b[0] == 0x77 && // w
+      b[1] == 0x4f && // O
+      b[2] == 0x46 && // F
+      (b[3] == 0x46 || b[3] == 0x32); // F, 2
+
+  static Uint8List _decodeWebFont(List<int> bytes) {
+    final decode = webFontDecoder;
+    if (decode == null) {
+      throw StateError('the WOFF and WOFF2 decoder is not loaded');
+    }
+    return decode(bytes);
+  }
+
+  /// Whether WOFF or WOFF2 files were passed over, the decoder not loaded.
+  bool _passedOverWebFonts = false;
+
   /// The family of the (first) font in [bytes], or null when they are not
   /// a font.
   static String? familyOf(List<int> bytes) {
@@ -141,7 +169,12 @@ final class FontIndex {
   /// The installed fonts ([FontIndex.machine]), looked at once per process.
   // (One index for the process, built when first needed.)
   // ignore: prefer_constructors_over_static_methods
-  static FontIndex get installed => _installed ??= FontIndex.machine();
+  static FontIndex get installed => switch (_installed) {
+    // Built before the web font decoder was loaded: built again.
+    final index? when !index._passedOverWebFonts || webFontDecoder == null =>
+      index,
+    _ => _installed = FontIndex.machine(),
+  };
   static FontIndex? _installed;
 
   /// Replaces the installed fonts (null: the folders again).
@@ -232,7 +265,17 @@ final class FontIndex {
   static String _key(String family) =>
       family.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
 
-  static const _extensions = {'.ttf', '.otf', '.ttc', '.otc'};
+  static const _extensions = {
+    '.ttf',
+    '.otf',
+    '.ttc',
+    '.otc',
+    '.woff',
+    '.woff2',
+  };
+
+  static bool _isWebFontFile(String path) =>
+      RegExp(r'\.woff2?$', caseSensitive: false).hasMatch(path);
 
   List<String> _walk() {
     final found = <String>[];
@@ -270,7 +313,13 @@ final class FontIndex {
     final lines = <String>[];
     final fonts = <InstalledFont>[];
     var changed = false;
+    var read = 0;
+    final decoding = webFontDecoder != null;
     for (final path in files) {
+      if (!decoding && _isWebFontFile(path)) {
+        _passedOverWebFonts = true;
+        continue;
+      }
       if (_memory[path] case final bytes?) {
         final data = bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
         fonts.addAll(_parse(path, _rangesOf(data)));
@@ -284,6 +333,7 @@ final class FontIndex {
       } on Exception {
         continue;
       }
+      read++;
       final stamp = '$path\t$size\t$modified';
       var entries = cached[stamp];
       if (entries == null) {
@@ -307,7 +357,7 @@ final class FontIndex {
         if (_fromLine(line) case final font?) fonts.add(font);
       }
     }
-    if (changed || cached.length != files.length) _writeCache(lines);
+    if (changed || cached.length != read) _writeCache(lines);
     return fonts;
   }
 
@@ -365,6 +415,15 @@ final class FontIndex {
     try {
       final header = read(0, 12);
       if (header.length < 12) return const [];
+      if (_isWebFont(header)) {
+        // The tables are compressed: the whole font, decoded.
+        if (webFontDecoder == null) return const [];
+        final length = _u32(header, 8);
+        final decoded = _decodeWebFont(read(0, length));
+        return _isWebFont(decoded)
+            ? const []
+            : _parse(path, _rangesOf(decoded));
+      }
       final offsets = <int>[];
       if (_tag(header, 0) == 'ttcf') {
         final count = _u32(header, 8).clamp(0, 256);

@@ -198,6 +198,16 @@ Asciidoctor project.
   Google Fonts and their projects into the user's font folder. An EPUB
   embeds fonts only with `-a epub-embed-fonts`. The executable is 18.9 MB
   instead of 31.5.
+- PDFs and EPUBs through the API and on JavaScript: `convertToBytes`,
+  `convertToBytesAsync` and `convertFile` with `Backend.pdf` or
+  `Backend.epub3`. Fonts can be given as bytes (`fonts`). The npm package
+  loads the PDF and EPUB code on demand, so pages that only make HTML
+  don't download it, and its command makes PDFs and EPUBs as the native
+  one does. On Node.js, installed fonts come from the font folders. In a
+  browser, the page's web fonts are used (`pageFonts`), and so are the
+  visitor's installed fonts of the families asked for (`localFonts`,
+  through Local Font Access). WOFF and WOFF2 fonts work everywhere fonts
+  do.
 - Speed on every core (ADR-0016): the work a PDF or EPUB doesn't need in
   order (PNG images, compression) runs on the physical cores (`-a
   jobs=N`, `1` for none), with the same bytes at any number of workers;

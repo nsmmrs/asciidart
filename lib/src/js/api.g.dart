@@ -223,6 +223,24 @@ final class Core {
     }
   }
 
+  JSAny? Asciidart$get$pageFonts(JSAny? self) {
+    try {
+      return rt.unwrap<api.Asciidart>(self).pageFonts.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Asciidart$get$localFonts(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Asciidart>(self).localFonts) x.toJS,
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Asciidart$loadBackend(JSAny? self, JSAny? backend) {
     try {
       return rt.promise(
@@ -2943,6 +2961,15 @@ final class Core {
               ? [
                   for (final x in rt.list(rt.option(options, 'fonts')))
                     rt.unwrap<api.FontFile>(x),
+                ]
+              : const [],
+          pageFonts: rt.hasOption(options, 'pageFonts')
+              ? rt.boolean(rt.option(options, 'pageFonts'))
+              : true,
+          localFonts: rt.hasOption(options, 'localFonts')
+              ? [
+                  for (final x in rt.list(rt.option(options, 'localFonts')))
+                    rt.str(x),
                 ]
               : const [],
         ),

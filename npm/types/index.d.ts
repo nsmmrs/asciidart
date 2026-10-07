@@ -332,9 +332,10 @@ export declare class Asciidart {
    * the working directory). {@link onDiagnostic} sees every message as it is
    * reported, including those of {@link convert}, which returns only the
    * output. {@link fonts} are found by PDFs and EPUBs before the installed
-   * fonts.
+   * fonts; in a browser, so are the page's web fonts ({@link pageFonts}) and
+   * the {@link localFonts} families of the visitor's fonts.
    */
-  constructor(options?: { safe?: SafeMode; attributes?: Record<string, string>; extensions?: Extension[]; html?: ((node: Node, defaults: HtmlDefaults) => string) | null; templateDirs?: string[]; highlighters?: Record<string, Highlighter>; baseDir?: string | null; onDiagnostic?: ((diagnostic: Diagnostic) => void) | null; fonts?: FontFile[] });
+  constructor(options?: { safe?: SafeMode; attributes?: Record<string, string>; extensions?: Extension[]; html?: ((node: Node, defaults: HtmlDefaults) => string) | null; templateDirs?: string[]; highlighters?: Record<string, Highlighter>; baseDir?: string | null; onDiagnostic?: ((diagnostic: Diagnostic) => void) | null; fonts?: FontFile[]; pageFonts?: boolean; localFonts?: string[] });
   readonly safe: SafeMode;
   readonly attributes: Record<string, string>;
   readonly extensions: Extension[];
@@ -344,6 +345,8 @@ export declare class Asciidart {
   readonly baseDir: string | null;
   readonly onDiagnostic: ((diagnostic: Diagnostic) => void) | null;
   readonly fonts: FontFile[];
+  readonly pageFonts: boolean;
+  readonly localFonts: string[];
   /**
    * Loads the code of {@link backend}. On the Dart VM every backend is there;
    * on JavaScript the PDF and EPUB backends load the first time an
@@ -624,9 +627,10 @@ export declare class FileConversion {
 }
 
 /**
- * A font given to a conversion as bytes: a TrueType or OpenType file and
- * its name (`Inter-Regular.ttf`). PDFs and EPUBs find it as they find
- * installed fonts, by the file's name, then by the family it names.
+ * A font given to a conversion as bytes: a TrueType, OpenType, WOFF or
+ * WOFF2 file and its name (`Inter-Regular.ttf`). PDFs and EPUBs find it
+ * as they find installed fonts, by the file's name, then by the family it
+ * names.
  */
 export declare class FontFile {
   /**

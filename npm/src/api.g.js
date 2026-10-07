@@ -38,6 +38,12 @@ export class Asciidart {
   get fonts() {
     return core.Asciidart$get$fonts(this)
   }
+  get pageFonts() {
+    return core.Asciidart$get$pageFonts(this)
+  }
+  get localFonts() {
+    return core.Asciidart$get$localFonts(this)
+  }
   loadBackend(...args) {
     return core.Asciidart$loadBackend(this, ...args)
   }

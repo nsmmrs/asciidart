@@ -98,7 +98,7 @@ final class Admonition extends Block
   String content
   String plainText
 final class Asciidart
-  Asciidart({SafeMode safe = SafeMode.secure, Map<String, String> attributes = const {}, List<Extension> extensions = const [], String Function(Node, HtmlDefaults)? html, List<String> templateDirs = const [], Map<String, Highlighter> highlighters = const {}, String? baseDir, void Function(Diagnostic)? onDiagnostic, List<FontFile> fonts = const []})
+  Asciidart({SafeMode safe = SafeMode.secure, Map<String, String> attributes = const {}, List<Extension> extensions = const [], String Function(Node, HtmlDefaults)? html, List<String> templateDirs = const [], Map<String, Highlighter> highlighters = const {}, String? baseDir, void Function(Diagnostic)? onDiagnostic, List<FontFile> fonts = const [], bool pageFonts = true, List<String> localFonts = const []})
   Document parse(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
   Document parseHeader(String source, {String? path, Map<String, String> attributes = const {}})
   Future<Document> parseAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
@@ -107,6 +107,7 @@ final class Asciidart
   Future<void> loadBackend(Backend backend)
   List<Extension> extensions
   List<FontFile> fonts
+  List<String> localFonts
   List<String> templateDirs
   Map<String, Highlighter> highlighters
   Map<String, String> attributes
@@ -115,6 +116,7 @@ final class Asciidart
   String convert(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
   String? baseDir
   Uint8List convertToBytes(String source, {required Backend backend, String? path, Doctype? doctype, Map<String, String> attributes = const {}})
+  bool pageFonts
   void Function(Diagnostic)? onDiagnostic
 final class AsciidartException implements Exception
   String message

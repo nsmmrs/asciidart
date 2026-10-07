@@ -10,11 +10,14 @@ import { chromium } from 'playwright-core'
 import { Asciidart, FontFile, SafeMode } from 'asciidart'
 
 const fixtures = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor', 'test', 'fixtures')
+const webFonts = join(import.meta.dirname, '..', 'fixtures', 'fonts')
 const executablePath = process.env.CHROMIUM_PATH ?? '/usr/bin/chromium'
 
 let server
 let browser
 let page
+// Another origin, for a cross-origin style sheet and its fonts (CORS).
+let otherServer
 
 before(async () => {
   const bundle = await build({
@@ -33,12 +36,52 @@ before(async () => {
     if (request.url === '/bundle.js') {
       response.writeHead(200, { 'content-type': 'text/javascript' })
       response.end(script)
+    } else if (request.url === '/fonts.html') {
+      // A page with web fonts: one sheet imported for a medium, one of
+      // another origin, whose rules can't be read (only fetched again).
+      response.writeHead(200, { 'content-type': 'text/html' })
+      response.end(
+        '<!doctype html><style>@import url(/regular.css) screen;</style>' +
+          `<link rel="stylesheet" href="http://localhost:${otherServer.address().port}/bold.css">` +
+          '<script type="module" src="/bundle.js"></script>'
+      )
+    } else if (request.url === '/regular.css') {
+      response.writeHead(200, { 'content-type': 'text/css' })
+      response.end(
+        '@font-face{font-family:"Page Serif";unicode-range:U+0400-045F;' +
+          'src:url(/missing-cyrillic.woff2) format("woff2")}' +
+          '@font-face{font-family:"Page Serif";unicode-range:U+0000-00FF;' +
+          'src:url(/fonts/notoserif-regular-ascii.woff2) format("woff2")}'
+      )
+    } else if (request.url.startsWith('/fonts/')) {
+      response.writeHead(200, { 'content-type': 'font/woff2' })
+      response.end(readFileSync(join(webFonts, request.url.slice(7))))
+    } else if (request.url.startsWith('/missing')) {
+      response.writeHead(404)
+      response.end()
     } else {
       response.writeHead(200, { 'content-type': 'text/html' })
       response.end('<!doctype html><script type="module" src="/bundle.js"></script>')
     }
   })
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+  otherServer = createServer((request, response) => {
+    const headers = { 'access-control-allow-origin': '*' }
+    if (request.url === '/bold.css') {
+      response.writeHead(200, { ...headers, 'content-type': 'text/css' })
+      response.end(
+        '@font-face{font-family:"Page Serif";font-weight:bold;' +
+          'src:local("Nothing"),url(fonts/notoserif-bold-ascii.woff) format("woff")}'
+      )
+    } else if (request.url.startsWith('/fonts/')) {
+      response.writeHead(200, { ...headers, 'content-type': 'font/woff' })
+      response.end(readFileSync(join(webFonts, request.url.slice(7))))
+    } else {
+      response.writeHead(404, headers)
+      response.end()
+    }
+  })
+  await new Promise((resolve) => otherServer.listen(0, 'localhost', resolve))
   browser = await chromium.launch({ executablePath })
   page = await browser.newPage()
   const errors = []
@@ -51,6 +94,7 @@ before(async () => {
 after(async () => {
   await browser?.close()
   server?.close()
+  otherServer?.close()
 })
 
 test('reports the versions', async () => {
@@ -103,4 +147,37 @@ test('makes a PDF in the browser like Node.js, its part loaded on demand', async
     { font: Array.from(regular), attributes }
   )
   assert.deepEqual(Uint8Array.from(actual), expected)
+})
+
+test("makes a PDF in the page's web fonts (WOFF2 and WOFF), like Node.js given them", async () => {
+  const fontsPage = await browser.newPage()
+  await fontsPage.goto(`http://127.0.0.1:${server.address().port}/fonts.html`)
+  await fontsPage.waitForFunction(() => globalThis.asciidart !== undefined)
+  const source = 'Hello, *page* fonts.'
+  const attributes = { localdatetime: '2020-01-01 00:00:00 +0000' }
+  const convert = (pageFonts) =>
+    fontsPage.evaluate(
+      async ({ source, attributes, pageFonts }) => {
+        const { Asciidart } = globalThis.asciidart
+        const messages = []
+        const ad = new Asciidart({ pageFonts, onDiagnostic: (d) => messages.push(d.message) })
+        const pdf = await ad.convertToBytesAsync(source, { backend: 'pdf', attributes })
+        return { pdf: Array.from(pdf), messages }
+      },
+      { source, attributes, pageFonts }
+    )
+  const withPageFonts = await convert(true)
+  assert.deepEqual(
+    withPageFonts.messages.filter((m) => m.includes('not installed')),
+    []
+  )
+  const expected = await new Asciidart({
+    fonts: ['notoserif-regular-ascii.woff2', 'notoserif-bold-ascii.woff'].map(
+      (name) => new FontFile(name, readFileSync(join(webFonts, name)))
+    ),
+  }).convertToBytesAsync(source, { backend: 'pdf', attributes })
+  assert.deepEqual(Uint8Array.from(withPageFonts.pdf), expected)
+  const without = await convert(false)
+  assert.ok(without.messages.some((m) => m.includes('Noto Serif is not installed')))
+  await fontsPage.close()
 })
