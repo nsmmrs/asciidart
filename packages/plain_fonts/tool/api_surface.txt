@@ -1,0 +1,105 @@
+List<String> fontDirectoriesFor(FontPlatform os, Map<String, String> environment)
+Set<int> glyphClosure(OpenTypeFont font, Iterable<int> used)
+String cacheDirectoryFor(FontPlatform os, Map<String, String> environment)
+Uint8List assembleFont(Map<String, Uint8List> tables, {int sfntVersion = 0x00010000})
+Uint8List decodeWebFont(List<int> bytes)
+Uint8List subsetTrueType(OpenTypeFont font, Set<int> glyphs)
+Uint8List? subsetCff(Uint8List cff, Set<int>? glyphs)
+abstract interface class FontFiles
+  ({DateTime modified, int size}) stat(String path)
+  FontFiles()
+  List<({bool isDirectory, bool isFile, String name, String path})> list(String directory)
+  List<String> fontDirectories
+  List<int> read(String path)
+  List<int> readRange(String path, int offset, int length)
+  String? cacheDirectory
+  bool isDirectory(String path)
+  static FontFiles platform
+  void write(String path, String contents)
+bool isWebFont(List<int> bytes)
+enum FontPlatform
+  static FontPlatform linux
+  static FontPlatform macos
+  static FontPlatform windows
+  static List<FontPlatform> values
+final class FontFilesException implements Exception
+  FontFilesException(String message, String path)
+  String message
+  String path
+  String toString()
+final class FontFormatException implements Exception
+  FontFormatException(String message)
+  String message
+  String toString()
+final class FontIndex
+  FontFiles fileSystem
+  FontIndex(List<String> directories, {String? cacheFile, Map<String, List<int>> memory = const {}, FontFiles? fileSystem})
+  FontIndex.system({List<String> before = const [], String? cacheFile, Map<String, List<int>> memory = const {}, FontFiles? fileSystem})
+  Future<void> loadWebFontDecoder()
+  InstalledFont? find(String family, {bool bold = false, bool italic = false})
+  List<InstalledFont> fonts
+  List<String> directories
+  List<String> files
+  List<int> bytes(String path)
+  List<int> fontBytes(String path)
+  String? cacheFile
+  String? familyOf(List<int> bytes)
+  String? fileNamed(String name)
+  bool hasFamily(String family)
+  bool isInMemory(String path)
+  bool passedOverWebFonts
+  static bool decodesWebFonts
+final class InstalledFont
+  InstalledFont({required String path, required int index, required String family, required String legacyFamily, required String subfamily, required int weight, required int width, required bool italic})
+  String family
+  String fileName
+  String legacyFamily
+  String path
+  String subfamily
+  bool bold
+  bool italic
+  int index
+  int weight
+  int width
+final class OpenTypeFont
+  (int, int, int, int) glyphBounds(int glyph)
+  Iterable<String> tableTags
+  List<int> bbox (settable)
+  List<int> components(int glyph)
+  Map<int, List<(List<int>, int)>> ligatures
+  Map<int, int> characterMap
+  Map<int, int> singleSubstitutions(String feature)
+  OpenTypeFont.parse(List<int> bytes, {int index = 0})
+  String postScriptName (settable)
+  String? familyName (settable)
+  Uint8List bytes
+  Uint8List glyphData(int glyph)
+  Uint8List? table(String tag)
+  bool embeddingRestricted
+  bool hasFeature(String feature)
+  bool hasKernTable
+  bool hasTable(String tag)
+  bool isFixedPitch (settable)
+  bool isTrueType
+  double italicAngle (settable)
+  int advance(int glyph)
+  int ascender (settable)
+  int descender (settable)
+  int fontCount(List<int> bytes)
+  int fsType (settable)
+  int glyphFor(int codePoint)
+  int indexToLocFormat (settable)
+  int kerning(int left, int right)
+  int lineGap (settable)
+  int numGlyphs (settable)
+  int unitsPerEm (settable)
+  int weightClass (settable)
+  int? capHeight (settable)
+  int? kernTablePair(int left, int right, {int? subtable})
+  int? typoAscender (settable)
+  int? typoDescender (settable)
+  int? typoLineGap (settable)
+  int? underlinePosition (settable)
+  int? underlineThickness (settable)
+  int? xHeight (settable)
+typedef FontFolderEntry = ({bool isDirectory, bool isFile, String name, String path})

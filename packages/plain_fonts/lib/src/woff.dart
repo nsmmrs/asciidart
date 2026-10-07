@@ -4,9 +4,8 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:libpdf/src/flate.dart';
-import 'package:libpdf/src/fonts/brotli.dart';
-import 'package:libpdf/src/fonts/opentype.dart';
+import 'package:compression/compression.dart';
+import 'package:fonts/src/opentype.dart';
 
 /// Whether [bytes] are a WOFF or WOFF2 font.
 bool isWebFont(List<int> bytes) =>

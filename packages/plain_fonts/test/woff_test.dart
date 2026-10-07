@@ -1,16 +1,16 @@
-// Brotli streams and WOFF/WOFF2 fonts, checked against what the reference
-// tools make of them: fixtures (made as test/fonts/README.md says), and,
-// where brotli and woff2_compress/woff2_decompress are installed, round
-// trips of every test font and of random data through them.
+// WOFF/WOFF2 fonts, checked against what the reference tools make of them:
+// fixtures (made as test/fonts/README.md says), and, where
+// woff2_compress/woff2_decompress are installed, round trips of every test
+// font through them.
 @TestOn('vm')
 library;
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:crypto/crypto.dart';
+import 'package:fonts/fonts.dart';
 import 'package:test/test.dart';
 
 bool _has(String tool) =>
@@ -38,9 +38,6 @@ Map<String, Uint8List> _tables(Uint8List bytes) {
 List<int> _head(Uint8List head) => [...head]
   ..fillRange(8, 12, 0)
   ..[16] &= ~0x08;
-
-String _hex(List<int> bytes) =>
-    [for (final b in bytes) b.toRadixString(16).padLeft(2, '0')].join();
 
 /// Expects the font [got] to have [want]'s tables, but for those named in
 /// [except], and the head table's checksum adjustment.
@@ -75,92 +72,6 @@ void _expectChecksum(Uint8List font) {
 Uint8List _read(String path) => File(path).readAsBytesSync();
 
 void main() {
-  group('Brotli', () {
-    final words = _read('test/brotli/words.txt');
-    test('static dictionary words and their transforms', () {
-      expect(brotliDecode(_read('test/brotli/words.txt.br')), words);
-    });
-
-    test('a small window, and a fast quality', () {
-      final repeated = [for (var i = 0; i < 40; i++) ...words];
-      expect(brotliDecode(_read('test/brotli/words-x40-w10.br')), repeated);
-      expect(brotliDecode(_read('test/brotli/words-x40-q1.br')), repeated);
-    });
-
-    test('empty and one-byte streams', () {
-      expect(brotliDecode([0x3f]), isEmpty);
-      expect(brotliDecode([0x0f, 0x00, 0x80, 0x78, 0x03]), [0x78]);
-    });
-
-    test('malformed streams throw FormatExceptions', () {
-      final stream = _read('test/brotli/words.txt.br');
-      expect(
-        () => brotliDecode(stream.sublist(0, stream.length ~/ 2)),
-        throwsFormatException,
-      );
-      final random = Random(1);
-      for (var i = 0; i < 300; i++) {
-        final bytes = [...stream];
-        bytes[random.nextInt(bytes.length)] ^= 1 << random.nextInt(8);
-        try {
-          brotliDecode(bytes);
-        } on FormatException {
-          // Expected (unless the flip still makes a stream).
-        }
-      }
-    });
-
-    test(
-      'decodes what the brotli tool makes, at every quality',
-      () {
-        final tmp = Directory.systemTemp.createTempSync('brotli_test.');
-        addTearDown(() => tmp.deleteSync(recursive: true));
-        final random = Random(2);
-        final inputs = {
-          'words': utf8.encode(
-            [
-              for (var i = 0; i < 3000; i++)
-                const ['the', 'The', 'time', 'world', 'Hello', '"', '.'][random
-                    .nextInt(7)],
-            ].join(' '),
-          ),
-          'random': [for (var i = 0; i < 70000; i++) random.nextInt(256)],
-          'font': _read('test/fonts/notoserif-regular-latin.ttf'),
-        };
-        for (final MapEntry(key: name, value: data) in inputs.entries) {
-          final input = File('${tmp.path}/$name')..writeAsBytesSync(data);
-          for (final (quality, window) in [
-            (0, 16),
-            (2, 10),
-            (5, 18),
-            (9, 22),
-            (11, 24),
-          ]) {
-            final output = '${input.path}.$quality.br';
-            final run = Process.runSync('brotli', [
-              '-f',
-              '-q',
-              '$quality',
-              '-w',
-              '$window',
-              '-o',
-              output,
-              input.path,
-            ]);
-            expect(run.exitCode, 0, reason: '${run.stderr}');
-            expect(
-              brotliDecode(_read(output)),
-              data,
-              reason: '$name at quality $quality',
-            );
-          }
-        }
-      },
-      skip: _has('brotli') ? false : 'brotli is not installed',
-      tags: ['pdf-tools'],
-    );
-  });
-
   group('WOFF', () {
     final original = _read('test/fonts/notoserif-features.ttf');
 
@@ -187,8 +98,14 @@ void main() {
         _expectTables(font, original, except: {'glyf', 'loca'});
         final tables = _tables(font);
         // What woff2_decompress makes of them.
-        expect(_hex(md5(tables['glyf']!)), '50826e51c81f3e990040338be187aa78');
-        expect(_hex(md5(tables['loca']!)), '3cb8921037db03f76bfb7e836b96653c');
+        expect(
+          md5.convert(tables['glyf']!).toString(),
+          '50826e51c81f3e990040338be187aa78',
+        );
+        expect(
+          md5.convert(tables['loca']!).toString(),
+          '3cb8921037db03f76bfb7e836b96653c',
+        );
         _expectChecksum(font);
       }
     });
@@ -199,7 +116,7 @@ void main() {
       _expectChecksum(font);
     });
 
-    test('OpenTypeFont and EmbeddedFont read web fonts', () {
+    test('OpenTypeFont reads web fonts', () {
       final woff2 = OpenTypeFont.parse(
         _read('test/fonts/notoserif-features.woff2'),
       );
@@ -208,8 +125,9 @@ void main() {
       expect(woff2.numGlyphs, ttf.numGlyphs);
       expect(woff2.unitsPerEm, ttf.unitsPerEm);
       expect(
-        EmbeddedFont.parse(_read('test/fonts/notoserif-features.woff')).name,
-        EmbeddedFont.parse(original).name,
+        OpenTypeFont.parse(_read('test/fonts/notoserif-features.woff'))
+            .postScriptName,
+        ttf.postScriptName,
       );
     });
 
@@ -257,7 +175,7 @@ void main() {
       skip: _has('woff2_compress') && _has('woff2_decompress')
           ? false
           : 'woff2_compress and woff2_decompress are not installed',
-      tags: ['pdf-tools'],
+      tags: ['tools'],
     );
   });
 }

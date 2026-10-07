@@ -6,7 +6,7 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:libpdf/src/fonts/woff.dart';
+import 'package:fonts/src/woff.dart';
 
 /// A font file that could not be read.
 final class FontFormatException implements Exception {

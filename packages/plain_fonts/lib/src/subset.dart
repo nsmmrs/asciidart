@@ -6,7 +6,7 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:libpdf/src/fonts/opentype.dart';
+import 'package:fonts/src/opentype.dart';
 
 /// The glyphs to keep for [used]: `.notdef`, [used], and the components
 /// of TrueType composite glyphs, recursively (CFF glyphs have none).
