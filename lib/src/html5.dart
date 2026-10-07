@@ -2231,10 +2231,12 @@ class Html5Converter extends BuiltInConverter {
   }
 
   /// The cover of [node] (its `front-cover-image`: a path or an
-  /// `image:cover.png[]` macro), or null.
+  /// `image:cover.png[]` macro), or null (also with `asciidoctor-compat`:
+  /// Asciidoctor's HTML has none).
   String? _cover(Document node) {
     final value = node.attr('front-cover-image');
     if (value == null || value.trim().isEmpty) return null;
+    if (asciidoctorCompat(node, CompatFormat.html)) return null;
     final macro = RegExp(r'^image:{1,2}(.*?)\[(.*)\]$').firstMatch(value);
     final target = macro?[1] ?? value.trim();
     final alt = switch (macro?[2]) {

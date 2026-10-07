@@ -63,7 +63,7 @@ converted as html5, embedded html5, docbook5 and manpage.
 ```sh
 tool/corpus/fetch.sh /tmp/corpus           # pinned in tool/corpus/sources.txt
 dart run tool/corpus_parity.dart --exe-a asciidoctor \
-  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client -a index-html! -a stylesheet=asciidoctor" \
+  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client -a index-html! -a asciidoctor-compat=true@" \
   --out /tmp/corpus-results /tmp/corpus
 ```
 
@@ -73,8 +73,12 @@ none of Rouge, Pygments or CodeRay, and behaves as the gem does without
 them), and asciidart runs with `highlightjs-mode=client` so that
 documents using highlight.js compare with the gem's browser markup, and
 with `index-html!` so that documents with an index section compare with
-the gem's empty one, and with `stylesheet=asciidoctor` so that a page
-embeds Asciidoctor's stylesheet alone (see the intentional differences). The check found and drove fixes
+the gem's empty one, and with `asciidoctor-compat` (ADR-0015; a default
+the document may override, as `@` makes it) so that a page embeds
+Asciidoctor's stylesheet alone and no cover (see the intentional
+differences). What asciidart adds to a block with the `unbreakable`
+option (the class in HTML, `<?dbfo keep-together="always"?>` in DocBook)
+is removed from both outputs before they are compared. The check found and drove fixes
 for: `cols=""`, `%autowidth` with a width, nested description list items
 with attached blocks, line breaks in AsciiMath blocks, Ruby's ASCII-only
 `\s` and `strip` against Unicode spaces, `\p{Blank}`, full case mapping

@@ -299,9 +299,18 @@ final RegExp _generatorStamp = RegExp(
   '(?:Asciidoctor|Asciidart) [^"\n]*',
 );
 
-/// [stdout] with the generator stamp made canonical.
-String _normalizeStdout(String stdout) =>
-    stdout.replaceAllMapped(_generatorStamp, (m) => '${m[1]}GENERATOR');
+/// [stdout] with the generator stamp made canonical, and without what
+/// asciidart adds to a block with the `unbreakable` option (the class in
+/// HTML, `<?dbfo keep-together?>` in DocBook: ADR-0012), on both sides
+/// alike.
+String _normalizeStdout(String stdout) => stdout
+    .replaceAllMapped(_generatorStamp, (m) => '${m[1]}GENERATOR')
+    .replaceAll('<?dbfo keep-together="always"?>', '')
+    .replaceAll(' class="unbreakable"', '')
+    .replaceAllMapped(
+      RegExp('( class="[^"]*?) unbreakable"'),
+      (m) => '${m[1]}"',
+    );
 
 /// A log line, from the gem (`asciidoctor:`) or asciidart (`asciidart:`).
 final RegExp _logLine = RegExp(

@@ -261,6 +261,16 @@ void main() {
     expect(html('false'), contains(house));
     expect(epubCss('epub3'), isNot(contains(house)));
     expect(epubCss('html,pdf'), contains(house));
+    // Nor a cover, which Asciidoctor's HTML hasn't.
+    expect(
+      File(
+        convertWith(
+          'html5',
+          '= Doc\n:front-cover-image: cover.png\n:asciidoctor-compat: html\n\nText.\n',
+        ),
+      ).readAsStringSync(),
+      isNot(contains('id="cover"')),
+    );
   });
 
   test("EPUB: the print edition's pages from the PDF's page map", () {
