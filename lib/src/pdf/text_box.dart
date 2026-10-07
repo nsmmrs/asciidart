@@ -2533,54 +2533,73 @@ final RegExp _trailingWordRx = RegExp('[^$_breakChars]*\$');
 /// The breaks found for each paragraph's items, by breaker and widths.
 final Map<_BreakKey, List<int>> _breaks = {};
 
+/// A line item as a break key compares it: its kind (0 a box, 1 glue, 2
+/// a penalty), text and measures (a penalty's cost as its second).
+typedef _ItemKey = (
+  int kind,
+  String text,
+  double width,
+  double stretch,
+  double shrink,
+  bool flagged,
+);
+
 /// What a paragraph's line breaks depend on: the breaker and its costs,
 /// the first line's width and the others', and each item (its kind, text
 /// and measures).
 @immutable
 final class _BreakKey {
   new(ItemLineBreaker breaker, double first, double rest, List<LineItem> items)
-    : this._(_valuesOf(breaker, first, rest, items));
-
-  new _(this._values) : _hash = Object.hashAll(_values);
-
-  static List<Object?> _valuesOf(
-    ItemLineBreaker breaker,
-    double first,
-    double rest,
-    List<LineItem> items,
-  ) => [
-    switch (breaker) {
-      TypstLineBreaker(
-        :final justify,
-        :final fontSize,
-        :final hyphenationCost,
-        :final runtCost,
-      ) =>
-        'typst $justify $fontSize $hyphenationCost $runtCost',
-      _ => breaker.runtimeType.toString(),
-    },
-    first,
-    rest,
-    for (final item in items)
-      ...switch (item) {
-        BoxItem(:final text, :final width) => [0, text, width],
-        GlueItem(:final text, :final width, :final stretch, :final shrink) => [
-          1,
-          text,
-          width,
-          stretch,
-          shrink,
+    : this._(
+        switch (breaker) {
+          TypstLineBreaker(
+            :final justify,
+            :final fontSize,
+            :final hyphenationCost,
+            :final runtCost,
+          ) =>
+            'typst $justify $fontSize $hyphenationCost $runtCost',
+          _ => breaker.runtimeType.toString(),
+        },
+        first,
+        rest,
+        [
+          for (final item in items)
+            switch (item) {
+              BoxItem(:final text, :final width) => (
+                0,
+                text,
+                width,
+                0,
+                0,
+                false,
+              ),
+              GlueItem(
+                :final text,
+                :final width,
+                :final stretch,
+                :final shrink,
+              ) =>
+                (1, text, width, stretch, shrink, false),
+              PenaltyItem(:final width, :final penalty, :final flagged) => (
+                2,
+                '',
+                width,
+                penalty,
+                0,
+                flagged,
+              ),
+            },
         ],
-        PenaltyItem(:final width, :final penalty, :final flagged) => [
-          2,
-          width,
-          penalty,
-          flagged,
-        ],
-      },
-  ];
+      );
 
-  final List<Object?> _values;
+  new _(this._breaker, this._first, this._rest, this._items)
+    : _hash = Object.hash(_breaker, _first, _rest, Object.hashAll(_items));
+
+  final String _breaker;
+  final double _first;
+  final double _rest;
+  final List<_ItemKey> _items;
   final int _hash;
 
   @override
@@ -2588,12 +2607,16 @@ final class _BreakKey {
 
   @override
   bool operator ==(Object other) {
-    if (other is! _BreakKey || other._hash != _hash) return false;
-    final a = _values;
-    final b = other._values;
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
+    if (other is! _BreakKey ||
+        other._hash != _hash ||
+        other._breaker != _breaker ||
+        other._first != _first ||
+        other._rest != _rest ||
+        other._items.length != _items.length) {
+      return false;
+    }
+    for (var i = 0; i < _items.length; i++) {
+      if (other._items[i] != _items[i]) return false;
     }
     return true;
   }
