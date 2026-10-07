@@ -4,10 +4,11 @@
 ///
 /// ```sh
 /// dart run tool/profile.dart [--top N] [--period MICROS] [--callers NAME]
-///     [--] ARGS...
+///     [--script FILE.dart] [--] ARGS...
 /// ```
 ///
-/// ARGS are the CLI's (run from the current directory). Two tables: by
+/// ARGS are the CLI's (run from the current directory), or with
+/// `--script` another program's. Two tables: by
 /// self time (the function on top of the stack) and by inclusive time (the
 /// function anywhere on the stack), each with the share of all samples;
 /// with `--callers NAME` (repeatable), the callers (outside its library and
@@ -27,6 +28,7 @@ Future<void> main(List<String> args) async {
   var top = 40;
   var period = 250;
   final callersOf = <String>[];
+  String? scriptPath;
   final cliArgs = <String>[];
   for (var i = 0; i < args.length; i++) {
     switch (args[i]) {
@@ -36,6 +38,8 @@ Future<void> main(List<String> args) async {
         period = int.parse(args[++i]);
       case '--callers':
         callersOf.add(args[++i]);
+      case '--script':
+        scriptPath = args[++i];
       case '--':
         cliArgs.addAll(args.sublist(i + 1));
         i = args.length;
