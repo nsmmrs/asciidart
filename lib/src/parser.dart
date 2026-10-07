@@ -2933,12 +2933,18 @@ abstract final class Parser {
           if (style != null && style == 'bibliography') {
             final biblioMatch = inlineBiblioAnchorRx.firstMatch(itemText);
             if (biblioMatch != null) {
-              catalogInlineBiblioAnchor(
-                biblioMatch.group(1)!,
-                biblioMatch.group(2),
-                listItem,
-                reader,
-              );
+              final id = biblioMatch.group(1)!;
+              var reftext = biblioMatch.group(2);
+              // Its attribute references substituted once, here, as an
+              // inline anchor's are; the entry shows the same text, so a
+              // counter counts once (asciidoctor#3087).
+              if (reftext != null && reftext.contains(attrRefHead)) {
+                reftext = subAttributes(_docOf(listBlock), reftext);
+                listItem.text =
+                    '[[[$id,$reftext]]]'
+                    '${itemText.substring(biblioMatch.end)}';
+              }
+              catalogInlineBiblioAnchor(id, reftext, listItem, reader);
             }
           } else if (itemText.startsWith('[[')) {
             final anchorMatch = leadingInlineAnchorRx.firstMatch(itemText);

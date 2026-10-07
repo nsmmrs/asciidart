@@ -315,7 +315,10 @@ Documents that don't hit these cases convert as on `2.1.0`.
   holding an element converted before the link (an embedded icon) is not
   read as an attribute list unless it has an `=` outside that element's
   markup (#4075). The anchor shorthand takes `\]` in its reference text
-  (#3788). Anchors in section titles are cataloged, so duplicates are
+  (#3788). A bibliography entry's reference text has its attribute
+  references substituted once, where the entry is, so
+  `[[[gof,{counter:ref}]]]` numbers the entry and its cross references
+  alike (#3087). Anchors in section titles are cataloged, so duplicates are
   reported and their reference text is used (#3633). `--` between a word
   and formatted text or a curved quote (on either side) becomes an em dash
   (#1578, #3946). Curved quotes and emphasis nest at each other's
