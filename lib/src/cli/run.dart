@@ -9,6 +9,7 @@ library;
 import 'dart:async';
 
 import 'package:asciidart/src/cli/diagnostics.dart';
+import 'package:asciidart/src/cli/doctor.dart';
 import 'package:asciidart/src/cli/init_config.dart';
 import 'package:asciidart/src/cli/invoker.dart';
 import 'package:asciidart/src/io.dart' as io;
@@ -20,8 +21,9 @@ import 'package:asciidart/src/options.dart';
 /// command's extensions and overrides).
 ///
 /// A first argument of `init-config` runs the project scaffold instead
-/// of converting (see [runInitConfig]); everything else behaves exactly
-/// like the stock CLI.
+/// of converting (see [runInitConfig]), and `doctor` checks and installs
+/// the default themes' fonts (see [runDoctor]); everything else behaves
+/// exactly like the stock CLI.
 Future<void> runCli(
   List<String> args, {
   AsciidoctorOptions Function(AsciidoctorOptions options)? configure,
@@ -57,6 +59,9 @@ Future<int> runCliCode(
 }) async {
   if (args.isNotEmpty && args.first == 'init-config') {
     return runInitConfig(args.sublist(1), out: out, err: err);
+  }
+  if (args.isNotEmpty && args.first == 'doctor') {
+    return await runDoctor(args.sublist(1), out: out, err: err);
   }
   try {
     final invoker = Invoker.fromArgs(args, out: out, err: err)

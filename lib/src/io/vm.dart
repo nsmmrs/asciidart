@@ -122,6 +122,13 @@ String get cacheDirectory {
   return env['XDG_CACHE_HOME'] ?? '$home/.cache';
 }
 
+/// Whether standard input is a terminal (someone can answer a question).
+bool get hasTerminal => io.stdin.hasTerminal;
+
+/// A line read from standard input, without its line break; null at its
+/// end.
+String? readLine() => io.stdin.readLineSync();
+
 /// The physical cores of the machine (allocation-heavy work scales worse
 /// on the second thread of a core): the distinct cores Linux lists, the
 /// count macOS reports, else every logical processor.

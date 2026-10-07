@@ -282,6 +282,14 @@ String get userFontDirectory =>
 String get cacheDirectory =>
     throw UnsupportedError('a cache folder is not available on JavaScript');
 
+/// Whether standard input is a terminal: no question is asked on
+/// JavaScript.
+bool get hasTerminal => false;
+
+/// Not available on JavaScript.
+String? readLine() =>
+    throw UnsupportedError('reading a line is not available on JavaScript');
+
 /// The physical cores of the machine: one (the JavaScript build runs
 /// everything serially).
 int get physicalCores => 1;

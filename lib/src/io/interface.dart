@@ -57,6 +57,13 @@ String get userFontDirectory => _unsupported();
 /// The folder for this user's caches.
 String get cacheDirectory => _unsupported();
 
+/// Whether standard input is a terminal (someone can answer a question).
+bool get hasTerminal => false;
+
+/// A line read from standard input, without its line break; null at its
+/// end.
+String? readLine() => _unsupported();
+
 /// The physical cores of the machine.
 int get physicalCores => 1;
 

@@ -71,6 +71,15 @@ final class FontIndex {
   /// subfolders), their headers cached in [cacheFile] when given.
   new(this.directories, {this.cacheFile});
 
+  /// The machine's fonts: `ASCIIDART_FONT_PATH`'s folders, then
+  /// [extraDirectories], then the user's and the system's font folders.
+  new machine()
+    : this([
+        ...fontPath,
+        ...extraDirectories,
+        ...io.fontDirectories,
+      ], cacheFile: _defaultCacheFile());
+
   /// The folders searched, in order.
   final List<String> directories;
 
@@ -79,13 +88,10 @@ final class FontIndex {
 
   /// The installed fonts: `ASCIIDART_FONT_PATH`'s folders, then
   /// [extraDirectories], then the user's and the system's font folders.
+  /// The installed fonts ([FontIndex.machine]), looked at once per process.
   // (One index for the process, built when first needed.)
   // ignore: prefer_constructors_over_static_methods
-  static FontIndex get installed => _installed ??= FontIndex([
-    ...fontPath,
-    ...extraDirectories,
-    ...io.fontDirectories,
-  ], cacheFile: _defaultCacheFile());
+  static FontIndex get installed => _installed ??= FontIndex.machine();
   static FontIndex? _installed;
 
   /// Replaces the installed fonts (null: the folders again).
