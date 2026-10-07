@@ -441,7 +441,7 @@ Future<int> runDoctor(
         return 64;
     }
   }
-  final fonts = (index ?? FontIndex.machine)();
+  final fonts = (index ?? Fonts.machine)();
   final missing = <(NeededFont, List<FontStyle>)>[];
   output.writeln("The fonts of asciidart's built-in PDF themes:");
   for (final font in neededFonts) {

@@ -5,7 +5,7 @@ library;
 
 import 'package:asciidart/src/epub3/epub3.dart' deferred as epub3;
 import 'package:asciidart/src/pdf/pdf.dart' deferred as pdf;
-import 'package:asciidart/src/web_fonts.dart';
+import 'package:fonts/fonts.dart' show FontIndex;
 
 export 'package:asciidart/src/js/page_fonts.dart' show platformFonts;
 
@@ -14,7 +14,7 @@ final Set<String> _loaded = {};
 /// Loads [backend]'s part of the bundle and registers its converter (and
 /// the web font decoder's part: installed and given fonts may be WOFF).
 Future<void> loadFileBackend(String backend) async {
-  await loadWebFontDecoder();
+  await FontIndex.loadWebFontDecoder();
   switch (backend) {
     case 'pdf':
       await pdf.loadLibrary();

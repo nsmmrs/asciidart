@@ -19,7 +19,7 @@ const List<String> vendoredFontDirectories = [
 
 /// Puts the vendored fonts on this process's font path, before the
 /// machine's fonts.
-void useVendoredFonts() => FontIndex.extraDirectories = vendoredFontDirectories;
+void useVendoredFonts() => Fonts.extraDirectories = vendoredFontDirectories;
 
 /// [environment] for a child process (the asciidart executable) with
 /// `ASCIIDART_FONT_PATH` naming the vendored fonts, unless this process's

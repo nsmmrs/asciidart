@@ -13,7 +13,7 @@ import 'package:asciidart/src/cli/run.dart' show runCliCode;
 import 'package:asciidart/src/js/api.g.dart';
 import 'package:asciidart/src/js/page_fonts.dart';
 import 'package:asciidart/src/js/runtime.dart';
-import 'package:asciidart/src/web_fonts.dart';
+import 'package:fonts/fonts.dart' show FontIndex;
 
 /// The real global object (the bundle's own `self` shadows it; see
 /// `npm/preamble.js`).
@@ -42,7 +42,7 @@ void main() {
 /// backend that makes files (`-b pdf`, `--backend=epub3`) first, and for
 /// `doctor`, the web font decoder's (to read installed WOFF fonts).
 Future<int> _runCli(List<String> args) async {
-  if (args.firstOrNull == 'doctor') await loadWebFontDecoder();
+  if (args.firstOrNull == 'doctor') await FontIndex.loadWebFontDecoder();
   for (final (i, arg) in args.indexed) {
     final backend = switch (arg) {
       '-b' || '--backend' when i + 1 < args.length => args[i + 1],

@@ -7,6 +7,8 @@ import 'dart:io' as io;
 import 'package:asciidart/src/errors.dart';
 import 'package:asciidart/src/io/types.dart';
 import 'package:asciidart/src/remote.dart';
+import 'package:fonts/fonts.dart'
+    show FontPlatform, cacheDirectoryFor, fontDirectoriesFor;
 
 /// Runs [body], turning a `dart:io` file system failure into an
 /// [IoException].
@@ -72,39 +74,16 @@ List<int> readFileRange(String path, int offset, int length) => _guard(() {
   }
 });
 
-/// The folders fonts are installed in, the user's first: on Linux
-/// `$XDG_DATA_HOME/fonts`, `~/.fonts` and `fonts` in each of
-/// `$XDG_DATA_DIRS`; on macOS the user's, the local and the system
-/// `Library/Fonts`; on Windows the user's and the system's.
-List<String> get fontDirectories {
-  final env = io.Platform.environment;
-  final home = env['HOME'] ?? env['USERPROFILE'] ?? '';
-  if (io.Platform.isMacOS) {
-    return [
-      '$home/Library/Fonts',
-      '/Library/Fonts',
-      '/System/Library/Fonts',
-      '/System/Library/Fonts/Supplemental',
-      '/Network/Library/Fonts',
-    ];
-  }
-  if (io.Platform.isWindows) {
-    return [
-      if (env['LOCALAPPDATA'] case final local?)
-        '$local\\Microsoft\\Windows\\Fonts',
-      '${env['WINDIR'] ?? env['SystemRoot'] ?? r'C:\Windows'}\\Fonts',
-    ];
-  }
-  final dataHome = env['XDG_DATA_HOME'] ?? '$home/.local/share';
-  final dataDirs = (env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share')
-      .split(':')
-      .where((dir) => dir.isNotEmpty);
-  return [
-    '$dataHome/fonts',
-    '$home/.fonts',
-    for (final dir in dataDirs) '$dir/fonts',
-  ];
-}
+/// The folders fonts are installed in, the user's first (see the fonts
+/// package's `fontDirectoriesFor`).
+List<String> get fontDirectories =>
+    fontDirectoriesFor(_fontPlatform, io.Platform.environment);
+
+FontPlatform get _fontPlatform => io.Platform.isMacOS
+    ? FontPlatform.macos
+    : io.Platform.isWindows
+    ? FontPlatform.windows
+    : FontPlatform.linux;
 
 /// The folder fonts are installed in for this user alone (no
 /// administrator rights needed): the first of [fontDirectories].
@@ -112,15 +91,8 @@ String get userFontDirectory => fontDirectories.first;
 
 /// The folder for this user's caches: `$XDG_CACHE_HOME` (`~/.cache`) on
 /// Linux, `~/Library/Caches` on macOS, `%LOCALAPPDATA%` on Windows.
-String get cacheDirectory {
-  final env = io.Platform.environment;
-  final home = env['HOME'] ?? env['USERPROFILE'] ?? '';
-  if (io.Platform.isMacOS) return '$home/Library/Caches';
-  if (io.Platform.isWindows) {
-    return env['LOCALAPPDATA'] ?? '$home\\AppData\\Local';
-  }
-  return env['XDG_CACHE_HOME'] ?? '$home/.cache';
-}
+String get cacheDirectory =>
+    cacheDirectoryFor(_fontPlatform, io.Platform.environment);
 
 /// Whether standard input is a terminal (someone can answer a question).
 bool get hasTerminal => io.stdin.hasTerminal;

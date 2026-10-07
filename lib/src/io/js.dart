@@ -18,6 +18,8 @@ import 'dart:typed_data';
 import 'package:asciidart/src/errors.dart';
 import 'package:asciidart/src/io/types.dart';
 import 'package:asciidart/src/remote.dart';
+import 'package:fonts/fonts.dart'
+    show FontPlatform, cacheDirectoryFor, fontDirectoriesFor;
 
 @JS('globalThis.asciidartHost')
 external _Host? get _injectedHost;
@@ -313,36 +315,17 @@ List<int> readFileRange(String path, int offset, int length) {
 /// The folders fonts are installed in, the user's first, on Node.js (as
 /// on the Dart VM); none in a browser.
 List<String> get fontDirectories {
-  final process = _host?.process;
-  if (process == null) return const [];
-  final env = environment;
-  final home = env['HOME'] ?? env['USERPROFILE'] ?? '';
-  switch (process.platform) {
-    case 'darwin':
-      return [
-        '$home/Library/Fonts',
-        '/Library/Fonts',
-        '/System/Library/Fonts',
-        '/System/Library/Fonts/Supplemental',
-        '/Network/Library/Fonts',
-      ];
-    case 'win32':
-      return [
-        if (env['LOCALAPPDATA'] case final local?)
-          '$local\\Microsoft\\Windows\\Fonts',
-        '${env['WINDIR'] ?? env['SystemRoot'] ?? r'C:\Windows'}\\Fonts',
-      ];
-  }
-  final dataHome = env['XDG_DATA_HOME'] ?? '$home/.local/share';
-  final dataDirs = (env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share')
-      .split(':')
-      .where((dir) => dir.isNotEmpty);
-  return [
-    '$dataHome/fonts',
-    '$home/.fonts',
-    for (final dir in dataDirs) '$dir/fonts',
-  ];
+  final os = _fontPlatform;
+  return os == null ? const [] : fontDirectoriesFor(os, environment);
 }
+
+/// The operating system Node.js runs on, or null in a browser.
+FontPlatform? get _fontPlatform => switch (_host?.process.platform) {
+  null => null,
+  'darwin' => FontPlatform.macos,
+  'win32' => FontPlatform.windows,
+  _ => FontPlatform.linux,
+};
 
 /// The folder fonts are installed in for this user alone (Node.js).
 String get userFontDirectory {
@@ -355,17 +338,11 @@ String get userFontDirectory {
 
 /// The folder for this user's caches (Node.js).
 String get cacheDirectory {
-  final process = _host?.process;
-  if (process == null) {
+  final os = _fontPlatform;
+  if (os == null) {
     throw UnsupportedError('a cache folder is not available in a browser');
   }
-  final env = environment;
-  final home = env['HOME'] ?? env['USERPROFILE'] ?? '';
-  return switch (process.platform) {
-    'darwin' => '$home/Library/Caches',
-    'win32' => env['LOCALAPPDATA'] ?? '$home\\AppData\\Local',
-    _ => env['XDG_CACHE_HOME'] ?? '$home/.cache',
-  };
+  return cacheDirectoryFor(os, environment);
 }
 
 /// Whether standard input is a terminal (Node.js).

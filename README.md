@@ -30,9 +30,12 @@ line tool, and (compiled to JavaScript) an npm package.
   listed in [`benchmark/PARITY.md`](benchmark/PARITY.md). EPUB 3 output
   matches the asciidoctor-epub3 2.3.0 gem file by file
   (`tool/epub_parity.dart`).
-- **PDF without Ruby or a browser.** `-b pdf` draws with libpdf, a
-  pure-Dart PDF library, and reads asciidoctor-pdf's YAML themes. Fonts
-  are yours: a theme names any installed font, and `asciidart doctor`
+- **PDF without Ruby or a browser.** `-b pdf` draws with
+  [libpdf](https://github.com/nsmmrs/libpdf), a pure-Dart PDF library (its
+  fonts and compression come from the
+  [fonts](https://github.com/nsmmrs/fonts) and
+  [compression](https://github.com/nsmmrs/compression) packages), and reads
+  asciidoctor-pdf's YAML themes. Fonts are yours: a theme names any installed font, and `asciidart doctor`
   installs the built-in themes' (Noto, M PLUS and the icon fonts). With
   `asciidoctor-compat`, the pages look as asciidoctor-pdf 2.3.27 sets them:
   792 of the 797 documents of that gem's spec suite look the same

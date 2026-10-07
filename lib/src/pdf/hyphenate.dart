@@ -6,7 +6,8 @@ library;
 import 'dart:convert';
 
 import 'package:asciidart/src/pdf/hyphenation.g.dart';
-import 'package:libpdf/libpdf.dart' show PatternHyphenator, zlibDecode;
+import 'package:compression/compression.dart' show zlibDecode;
+import 'package:libpdf/libpdf.dart' show PatternHyphenator;
 
 /// Language tags read as another tag of the patterns.
 const Map<String, String> _aliases = {

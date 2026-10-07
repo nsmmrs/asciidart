@@ -32,12 +32,12 @@ void main() {
   setUp(() {
     tmp = Directory.systemTemp.createTempSync('asciidart-bytes.');
     // A machine without fonts: what the conversions find, they were given.
-    FontIndex.installed = FontIndex([
+    Fonts.installed = FontIndex([
       '${tmp.path}/no-fonts',
     ], cacheFile: '${tmp.path}/cache.tsv');
   });
   tearDown(() {
-    FontIndex.installed = null;
+    Fonts.installed = null;
     tmp.deleteSync(recursive: true);
   });
 

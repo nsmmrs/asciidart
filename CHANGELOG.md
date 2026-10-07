@@ -207,7 +207,9 @@ Asciidoctor project.
   browser, the page's web fonts are used (`pageFonts`), and so are the
   visitor's installed fonts of the families asked for (`localFonts`,
   through Local Font Access). WOFF and WOFF2 fonts work everywhere fonts
-  do.
+  do. Font reading and the installed-font index live in the fonts package
+  (github.com/nsmmrs/fonts) and compression in the compression package
+  (github.com/nsmmrs/compression), which libpdf uses too.
 - Speed on every core (ADR-0016): the work a PDF or EPUB doesn't need in
   order (PNG images, compression) runs on the physical cores (`-a
   jobs=N`, `1` for none), with the same bytes at any number of workers;

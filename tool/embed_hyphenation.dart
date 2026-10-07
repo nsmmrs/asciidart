@@ -11,7 +11,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:libpdf/libpdf.dart' show zlibEncode;
+import 'package:compression/compression.dart' show zlibEncode;
 
 void main() {
   final root = File(Platform.script.toFilePath()).parent.parent;

@@ -30,8 +30,8 @@ void main() {
     late Directory dir;
     setUp(() => dir = Directory.systemTemp.createTempSync('epub3_fonts.'));
     tearDown(() {
-      FontIndex.installed = null;
-      FontIndex.extraDirectories = const [];
+      Fonts.installed = null;
+      Fonts.extraDirectories = const [];
       dir.deleteSync(recursive: true);
     });
 
@@ -93,7 +93,7 @@ void main() {
     });
 
     test('an installed WOFF2 font is embedded as the font it wraps', () {
-      FontIndex.installed = FontIndex([
+      Fonts.installed = FontIndex([
         'test/fixtures/fonts',
       ], cacheFile: '${dir.path}/cache.tsv');
       epub(attributes: {'epub-embed-fonts': ''});
@@ -105,7 +105,7 @@ void main() {
     });
 
     test("a font asked for that isn't installed is left out, said once", () {
-      FontIndex.installed = FontIndex([
+      Fonts.installed = FontIndex([
         '${dir.path}/none',
       ], cacheFile: '${dir.path}/cache.tsv');
       final logger = MemoryLogger();

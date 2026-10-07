@@ -16,12 +16,12 @@ void main() {
   setUp(() {
     dir = Directory.systemTemp.createTempSync('missing_fonts_test.');
     // No fonts at all.
-    FontIndex.installed = FontIndex([
+    Fonts.installed = FontIndex([
       '${dir.path}/fonts',
     ], cacheFile: '${dir.path}/cache.tsv');
   });
   tearDown(() {
-    FontIndex.installed = null;
+    Fonts.installed = null;
     dir.deleteSync(recursive: true);
   });
 

@@ -362,7 +362,7 @@ final class FontCatalog {
     this.synthesizeFaces = false,
     FontIndex? installed,
     void Function(String message)? warn,
-  }) : _installed = installed ?? FontIndex.current,
+  }) : _installed = installed ?? Fonts.current,
        _warn = warn ?? _ignore,
        _catalog = theme.fontCatalog?.families ?? const {},
        _dirs = [

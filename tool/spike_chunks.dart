@@ -138,8 +138,8 @@ Future<(int, int, int)> _processes(int count) async {
 Report work(int index, int count, [String? fontPath]) {
   final watch = Stopwatch()..start();
   final path = fontPath ?? _fontPath;
-  FontIndex.extraDirectories = path.isEmpty
-      ? FontIndex.fontPath
+  Fonts.extraDirectories = path.isEmpty
+      ? Fonts.fontPath
       : path.split(Platform.isWindows ? ';' : ':');
   registerPdf();
   FlowLayout? flow;

@@ -154,7 +154,7 @@ final class Asciidart {
   T _withFonts<T>(
     T Function() body, [
     List<(String, List<int>)> more = const [],
-  ]) => impl.FontIndex.withFonts({
+  ]) => impl.Fonts.withFonts({
     for (final font in fonts) font.name: font.bytes,
     for (final (name, bytes) in more)
       if (!fonts.any((font) => font.name == name)) name: bytes,
