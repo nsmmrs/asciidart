@@ -333,6 +333,11 @@ Documents that don't hit these cases convert as on `2.1.0`.
   still apply, an escaped mark still loses its backslash, and a target
   that is a title (`<<Section *One*>>`) is formatted to match it as
   before.
+- Block titles: the counters (`{counter:name}`, `{counter2:name}`) and
+  `{set:name:value}` in a block's title are evaluated once, where the
+  title is written, in document order, not when the title is first used,
+  which a cross reference converted before the block may be (#1333). A
+  title with a passthrough is interpolated as before.
 - Preprocessor: the directives inside a delimited block (`ifdef`,
   `ifndef`, `ifeval`, `include`) run as its content is parsed, after the
   attribute entries before them in the block, so `ifdef` sees an attribute

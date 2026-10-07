@@ -1717,7 +1717,10 @@ abstract final class Parser {
                   : scaledwidth;
             }
             if (attrs.containsKey('title')) {
-              blockTitle = attrs.remove('title');
+              blockTitle = _evaluateTitleDirectives(
+                block,
+                attrs.remove('title')!,
+              );
               block
                 ..title = blockTitle
                 ..assignCaption(attrs.remove('caption'), figure: true);
@@ -2273,7 +2276,10 @@ abstract final class Parser {
     // FIXME title and caption should be assigned when block is constructed
     // (though we need to handle all cases)
     if (attrs.containsKey('title')) {
-      result.title = blockTitle = attrs.remove('title');
+      result.title = blockTitle = _evaluateTitleDirectives(
+        result,
+        attrs.remove('title')!,
+      );
       if (captionAttributeName(result.context) != null) {
         result.assignCaption(attrs.remove('caption'));
       }
@@ -2747,6 +2753,30 @@ abstract final class Parser {
       }
     }
   }
+
+  /// [title] (of [block]) with its counters (`{counter:name}`,
+  /// `{counter2:name}`) and `{set:name:value}` evaluated where the title
+  /// is written, in document order, rather than when the title is first
+  /// converted, which a cross reference to the block may do first
+  /// (asciidoctor#1333). A title with a passthrough is left as written.
+  static String _evaluateTitleDirectives(AbstractBlock block, String title) {
+    if (!title.contains('{counter') && !title.contains('{set:')) return title;
+    if (title.contains('+') ||
+        title.contains(r'$$') ||
+        title.contains('pass:')) {
+      return title;
+    }
+    return title.replaceAllMapped(
+      _titleDirectiveRx,
+      (match) => match[1] != null
+          ? match[0]!
+          : subAttributes(block, match[2]!, reportDroppedLine: false),
+    );
+  }
+
+  static final RegExp _titleDirectiveRx = RegExp(
+    r'(\\)?(\{(?:counter2?|set):[^}\n]*\})',
+  );
 
   /// Catalogs the bibliography inline anchor at the start of a list item.
   ///

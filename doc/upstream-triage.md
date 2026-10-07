@@ -6,8 +6,8 @@ A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named
 
 | Category | Issues |
 |---|---|
-| Fixed on the `bugfix` branch | 30 |
-| Reproduced, deferred | 1 |
+| Fixed on the `bugfix` branch | 31 |
+| Reproduced, deferred | 0 |
 | Does not reproduce on upstream main | 4 |
 | Not a bug (by design or by the spec) | 15 |
 | Ruby API only (no CLI reproduction) | 7 |
@@ -18,8 +18,9 @@ A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named
 | Duplicates | 5 |
 | Out of scope | 49 |
 
-## Fixed on the `bugfix` branch (30)
+## Fixed on the `bugfix` branch (31)
 
+- [#1333](https://github.com/asciidoctor/asciidoctor/issues/1333) Block titles should be interpolated consistently — decided with the user: a block title's counters and `{set:...}` are evaluated once, where it is written
 - [#3087](https://github.com/asciidoctor/asciidoctor/issues/3087) Cannot use {counter:id} in bibliography section to auto-number — a bibliography entry's reference text not substituted (counters)
 - [#2128](https://github.com/asciidoctor/asciidoctor/issues/2128) Smart quotes don't work with italic text — curved quotes and emphasis blocking each other
 - [#1678](https://github.com/asciidoctor/asciidoctor/issues/1678) Cannot escape anchor id in xref macro — an xref ID with `__` formatted
@@ -51,9 +52,8 @@ A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named
 - [#1558](https://github.com/asciidoctor/asciidoctor/issues/1558) Docbook backend applies incorrect column attributes — DocBook: wrong column style after colspan/rowspan
 - [#989](https://github.com/asciidoctor/asciidoctor/issues/989) Incorrect col spec selected when preceding column spans multiple rows — cells beside a rowspan take the wrong column spec
 
-## Reproduced, deferred (1)
+## Reproduced, deferred (0)
 
-- [#1333](https://github.com/asciidoctor/asciidoctor/issues/1333) Block titles should be interpolated consistently — design question (when block titles are interpolated), no single expected behavior
 
 ## Does not reproduce on upstream main (4)
 
