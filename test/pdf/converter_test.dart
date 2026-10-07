@@ -20,13 +20,10 @@ import '../../tool/pdf_parity.dart';
 
 bool _has(String tool) => Process.runSync('which', [tool]).exitCode == 0;
 
-final bool _tools = [
-  'pdftotext',
-  'pdftohtml',
-  'pdfinfo',
-  'pdftoppm',
-  'qpdf',
-].every(_has);
+/// The tools, with Poppler's pdftotext (Git for Windows ships xpdf's).
+final bool _tools =
+    ['pdftotext', 'pdftohtml', 'pdfinfo', 'pdftoppm', 'qpdf'].every(_has) &&
+    '${Process.runSync('pdftotext', ['-v']).stderr}'.contains('Poppler');
 
 void main() {
   setUpAll(registerPdf);

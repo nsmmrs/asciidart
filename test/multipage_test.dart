@@ -57,7 +57,8 @@ Map<String, String> _site(
   return {
     for (final file in dir.listSync(recursive: true).whereType<File>())
       if (file.path.endsWith('.html'))
-        file.path.substring(dir.path.length + 1): file.readAsStringSync(),
+        file.path.substring(dir.path.length + 1).replaceAll(r'\', '/'): file
+            .readAsStringSync(),
   };
 }
 
@@ -275,7 +276,7 @@ void main() {
       expect(
         html,
         contains(
-          file.path.endsWith('a/index.html')
+          file.path.replaceAll(r'\', '/').endsWith('a/index.html')
               ? '<script src="../customizer.js">'
               : '<script src="customizer.js">',
         ),
