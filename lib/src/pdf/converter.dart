@@ -25,6 +25,7 @@ import 'package:asciidart/src/math/asciimath.dart';
 import 'package:asciidart/src/math/latex.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/page_map.dart';
+import 'package:asciidart/src/parallel.dart';
 import 'package:asciidart/src/pdf/assets.g.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/highlight_style.dart';
@@ -185,6 +186,11 @@ final class PdfConverter extends BuiltInConverter
   /// The work on other cores the save waits for.
   final List<Future<void>> _awaiting = [];
 
+  /// The workers the converted document's work runs on, when it is
+  /// awaited (the `jobs` attribute: the physical cores by default, `1`
+  /// for none).
+  Parallel? _parallel;
+
   /// The PDF the last converted document made.
   Uint8List? get bytes => _bytes ??= _save?.call();
 
@@ -305,6 +311,9 @@ final class PdfConverter extends BuiltInConverter
     _phases = document.timings;
     _bytes = _save = null;
     _awaiting.clear();
+    _parallel = workersAwaited
+        ? Parallel.forAttribute(document.attr('jobs'))
+        : null;
     _phase('pdf walk');
     _theme = _prepareTheme(_loadTheme(document));
     _ready = true;
@@ -670,10 +679,9 @@ final class PdfConverter extends BuiltInConverter
     _save = () {
       _phase('pdf save');
       final bytes = pdf.save(
-        options: PdfWriterOptions(
-          deterministic: true,
+        options: _writerOptions(
+          nativeZlib: io.hasNativeZlib,
           creationDate: creationDate,
-          zlib: io.hasNativeZlib ? const _NativeZlib() : null,
         ),
       );
       _phase(null);
@@ -681,6 +689,17 @@ final class PdfConverter extends BuiltInConverter
     };
     return '';
   }
+
+  /// The options the PDF is saved with ([nativeZlib]: the platform's
+  /// zlib, as on the Dart VM).
+  static PdfWriterOptions _writerOptions({
+    required bool nativeZlib,
+    DateTime? creationDate,
+  }) => PdfWriterOptions(
+    deterministic: true,
+    creationDate: creationDate,
+    zlib: nativeZlib ? const _NativeZlib() : null,
+  );
 
   /// The timings the PDF's phases are recorded in (`--progress`), if any.
   Timings? _phases;
@@ -4299,7 +4318,7 @@ final class PdfConverter extends BuiltInConverter
                     ? null
                     : (href) => _svgResource(href, path),
               )
-            : PdfImage.parse(Uint8List.fromList(bytes)),
+            : _encodingElsewhere(Uint8List.fromList(bytes)),
         null,
       );
     } on FormatException catch (error) {
@@ -4307,6 +4326,27 @@ final class PdfConverter extends BuiltInConverter
     } on ImageFormatException catch (error) {
       return (null, error.message);
     }
+  }
+
+  /// The image in [bytes], its samples encoded on another core when the
+  /// conversion is awaited and writing it encodes them (a PNG with alpha,
+  /// say): the worker gets the file's bytes and gives back the streams
+  /// the save would make (or nothing, and the save makes them).
+  PdfImage _encodingElsewhere(Uint8List bytes) {
+    final image = PdfImage.parse(bytes);
+    final parallel = _parallel;
+    if (parallel == null || image is! PngImage || !image.reencodes) {
+      return image;
+    }
+    _awaiting.add(
+      parallel
+          .submit(_PngEncoding(bytes, nativeZlib: io.hasNativeZlib))
+          .then<void>(
+            (payload) => image.payload = payload,
+            onError: (Object _) {},
+          ),
+    );
+    return image;
   }
 
   /// The file an SVG image at [svgPath] refers to by [href]: relative to
@@ -10147,6 +10187,20 @@ final class _Absolute implements CustomContent {
 }
 
 /// The platform's zlib (the Dart VM's), faster than libpdf's own.
+/// A PNG image's samples encoded as the PDF is saved with
+/// ([PngImage.encode]), from the file's [bytes].
+final class _PngEncoding extends Job<PngPayload> {
+  const new(this.bytes, {required this.nativeZlib});
+
+  final Uint8List bytes;
+  final bool nativeZlib;
+
+  @override
+  PngPayload run() =>
+      PngImage.parse(bytes)
+          .encode(PdfConverter._writerOptions(nativeZlib: nativeZlib));
+}
+
 final class _NativeZlib implements ZlibCodec {
   const new();
 

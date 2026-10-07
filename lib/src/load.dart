@@ -25,6 +25,7 @@ import 'package:asciidart/src/http_fetch.dart' show fetchHttp;
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/logging.dart' show LoggerManager, NullLogger;
 import 'package:asciidart/src/options.dart';
+import 'package:asciidart/src/parallel.dart';
 import 'package:asciidart/src/path_resolver.dart' show PathResolver;
 import 'package:asciidart/src/remote.dart';
 import 'package:asciidart/src/stylesheets.dart' show Stylesheets;
@@ -431,7 +432,9 @@ Future<Document> _convertFinishing(
   AsciidoctorOptions options,
   StringSink? output,
 ) async {
-  final (doc, write) = _converted(input, options, output);
+  final (doc, write) = awaitingWorkers(
+    () => _converted(input, options, output),
+  );
   await doc.finish();
   write();
   return doc;

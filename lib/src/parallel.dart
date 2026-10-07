@@ -59,6 +59,17 @@ abstract interface class Parallel {
   Future<R> submit<R>(Job<R> job);
 }
 
+/// Runs [body] as a conversion whose caller awaits its work on other
+/// cores before writing (`Document.finish`): only there do converters
+/// submit jobs (the synchronous path would only do the work twice).
+T awaitingWorkers<T>(T Function() body) =>
+    runZoned(body, zoneValues: {_awaiting: true});
+
+/// Whether the conversion under way is awaited (see [awaitingWorkers]).
+bool get workersAwaited => Zone.current[_awaiting] == true;
+
+final Object _awaiting = Object();
+
 /// A job that failed on a worker: its error and stack trace, as text.
 final class JobFailure implements Exception {
   /// A failure with [message], thrown at [stack].
