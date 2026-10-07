@@ -1,0 +1,6 @@
+The typst.typ file of each case is a test of Typst's test suite
+(https://github.com/typst/typst, v0.14.2, tests/suite), as its first
+comment names it:
+
+Copyright 2023 Typst GmbH and contributors. Licensed under the Apache
+License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).

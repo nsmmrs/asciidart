@@ -1,0 +1,34 @@
+# The Typst test runner's defaults (tests/src/world.rs): a page 120pt wide
+# with 10pt margins (its height is unbounded there: tall enough here),
+# 10pt text in Libertinus Serif, Typst's default font. Fonts from
+# typst/typst-assets (pdf-fontsdir, set by tool/typst_parity.dart).
+page:
+  size: [120pt, 2000pt]
+  margin: 10
+font:
+  catalog:
+    Libertinus Serif:
+      normal: LibertinusSerif-Regular.otf
+      bold: LibertinusSerif-Bold.otf
+      italic: LibertinusSerif-Italic.otf
+      bold_italic: LibertinusSerif-BoldItalic.otf
+    New Computer Modern:
+      normal: NewCM10-Regular.otf
+      bold: NewCM10-Bold.otf
+      italic: NewCM10-Italic.otf
+      bold_italic: NewCM10-BoldItalic.otf
+    DejaVu Sans Mono:
+      normal: DejaVuSansMono.ttf
+      bold: DejaVuSansMono-Bold.ttf
+      italic: DejaVuSansMono-Oblique.ttf
+      bold_italic: DejaVuSansMono-BoldOblique.ttf
+# Typst's paragraphs: leading 0.65em (its model: base_leading), spacing
+# 1.2em between paragraphs.
+base:
+  font-family: Libertinus Serif
+  font-size: 10
+  leading: 0.65em
+  overhang: true
+  text-align: left
+prose:
+  margin-bottom: 12

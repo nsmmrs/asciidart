@@ -14,6 +14,7 @@ library;
 import 'dart:convert' show utf8;
 
 import 'package:asciidart/src/abstract_node.dart' show SafeMode;
+import 'package:asciidart/src/compat.dart';
 import 'package:asciidart/src/constants.dart' show defaultStylesheetKeys;
 import 'package:asciidart/src/docbook5.dart' show Docbook5Converter;
 import 'package:asciidart/src/document.dart' show Document;
@@ -526,10 +527,11 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
       (stylesdir != null && Helpers.isUriish(stylesdir))) {
     return;
   }
-  final stylesheet = doc.attr('stylesheet');
+  final stylesheet = htmlStylesheetKey(doc);
   var copyAsciidoctorStylesheet = false;
   var copyUserStylesheet = false;
-  if (defaultStylesheetKeys.contains(stylesheet)) {
+  if (defaultStylesheetKeys.contains(stylesheet) ||
+      stylesheet == Stylesheets.classicStylesheetKey) {
     copyAsciidoctorStylesheet = true;
   } else if (stylesheet != null && !Helpers.isUriish(stylesheet)) {
     copyUserStylesheet = true;
@@ -556,7 +558,7 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
   }
 
   if (copyAsciidoctorStylesheet) {
-    Stylesheets.instance.writePrimaryStylesheet(stylesoutdir);
+    Stylesheets.instance.writePrimaryStylesheet(stylesoutdir, stylesheet);
   } else if (copyUserStylesheet) {
     final copycss = doc.attr('copycss');
     final String stylesheetSrc;

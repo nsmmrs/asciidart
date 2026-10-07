@@ -1,0 +1,35 @@
+= The Book Title: A Subtitle
+Author Name <author@example.org>; Second Author
+v1.2, 2024-01-15: First release
+:doctype: book
+:toc:
+
+[preface]
+== Preface
+
+Preface text paragraph.
+
+== First Chapter
+
+Chapter intro paragraph.
+
+=== A Section
+
+Section content paragraph one.
+
+=== Another Section
+
+Section content.
+
+==== Deeper
+
+Deeper content.
+
+== Second Chapter
+
+Second chapter content.
+
+[appendix]
+== An Appendix
+
+Appendix content.

@@ -2989,9 +2989,11 @@ void main() {
           input,
           const AsciidoctorOptions(backend: 'docbook5'),
         );
-        assertXpath('/article/info/copyright', output, 1);
+        // asciidart: a legal notice, since DocBook 5.0 wants a year in a
+        // copyright (benchmark/PARITY.md).
+        assertXpath('/article/info/copyright', output, 0);
         assertXpath(
-          '/article/info/copyright/holder[text()="ACME, Inc."]',
+          '/article/info/legalnotice/simpara[text()="ACME, Inc."]',
           output,
           1,
         );

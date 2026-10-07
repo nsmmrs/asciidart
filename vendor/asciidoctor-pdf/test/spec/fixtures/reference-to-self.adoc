@@ -1,0 +1,12 @@
+= Reference to Self Example
+:doctype: book
+
+first page of content
+
+<<<
+
+xref:reference-to-self.adoc[go to top]
+
+<<<
+
+xref:reference-to-self.adoc[]

@@ -1,0 +1,21 @@
+= Media
+:icons: font
+
+++++
+<b>raw</b> passthrough
+  indented
+++++
+
+[stem]
+++++
+sqrt(4) = 2
+++++
+
+.An audio clip
+audio::sound.mp3[]
+
+video::movie.mp4[]
+
+video::abc123[youtube]
+
+Last.

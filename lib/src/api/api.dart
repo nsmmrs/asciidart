@@ -21,6 +21,7 @@ import 'package:asciidart/src/header_edit.dart' as impl;
 import 'package:asciidart/src/highlight/highlight.dart' as impl;
 import 'package:asciidart/src/highlight/syntax_highlighter.dart' as impl;
 import 'package:asciidart/src/html5.dart' as impl;
+import 'package:asciidart/src/index_catalog.dart' as impl;
 import 'package:asciidart/src/inline.dart' as impl;
 import 'package:asciidart/src/inline_tree.dart' as impl;
 import 'package:asciidart/src/io.dart' as impl;

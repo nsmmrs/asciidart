@@ -296,6 +296,45 @@ export class IncludeRequest {
   }
 }
 
+export class IndexEntry {
+  constructor() {
+    throw new TypeError('IndexEntry objects come from asciidart; they cannot be created with new')
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get term() {
+    return core.IndexEntry$get$term(this)
+  }
+  get uses() {
+    return core.IndexEntry$get$uses(this)
+  }
+  get see() {
+    return core.IndexEntry$get$see(this)
+  }
+  get seeAlso() {
+    return core.IndexEntry$get$seeAlso(this)
+  }
+  get subentries() {
+    return core.IndexEntry$get$subentries(this)
+  }
+}
+
+export class IndexLetter {
+  constructor() {
+    throw new TypeError('IndexLetter objects come from asciidart; they cannot be created with new')
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get letter() {
+    return core.IndexLetter$get$letter(this)
+  }
+  get entries() {
+    return core.IndexLetter$get$entries(this)
+  }
+}
+
 export class InlineMacroContext {
   constructor() {
     throw new TypeError('InlineMacroContext objects come from asciidart; they cannot be created with new')
@@ -716,6 +755,9 @@ export class Document extends Block {
   }
   get diagnostics() {
     return core.Document$get$diagnostics(this)
+  }
+  get index() {
+    return core.Document$get$index(this)
   }
   get attributes() {
     return core.Document$get$attributes(this)
@@ -1202,7 +1244,7 @@ export class Video extends Block {
   }
 }
 
-registerClasses({ Asciidart, Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, HtmlDefaults, IncludeRequest, InlineMacroContext, InlineText, SourceCode, SourceLocation, TableColumn, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
+registerClasses({ Asciidart, Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, SourceCode, SourceLocation, TableColumn, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
 
 export const AdmonitionKind = Object.freeze({
   note: 'note',

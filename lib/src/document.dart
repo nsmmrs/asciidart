@@ -23,6 +23,7 @@ import 'dart:convert' show utf8;
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/callouts.dart';
+import 'package:asciidart/src/composite.dart';
 import 'package:asciidart/src/constants.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/docbook5.dart';
@@ -31,6 +32,7 @@ import 'package:asciidart/src/extensions.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/syntax_highlighter.dart';
 import 'package:asciidart/src/html5.dart';
+import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/manpage.dart';
@@ -247,7 +249,8 @@ final class Catalog {
       links = <String>[],
       images = <ImageReference>[],
       callouts = Callouts(),
-      includes = <String, bool>{};
+      includes = <String, bool>{},
+      _parent = null;
 
   /// Creates a catalog for a nested document: everything is shared with
   /// [parent] except the footnotes.
@@ -257,7 +260,8 @@ final class Catalog {
       links = parent.links,
       images = parent.images,
       callouts = parent.callouts,
-      includes = parent.includes;
+      includes = parent.includes,
+      _parent = parent;
 
   /// Referenceable nodes (blocks, sections and anchors) by id.
   final Map<String, AbstractNode> refs;
@@ -277,6 +281,22 @@ final class Catalog {
   /// The included files, by path without extension; `false` marks a
   /// partial include.
   final Map<String, bool> includes;
+
+  final Catalog? _parent;
+
+  IndexCatalog _index = IndexCatalog();
+
+  /// The index terms, cataloged by the HTML-based converters (a nested
+  /// document's are its parent's).
+  IndexCatalog get index => _parent?.index ?? _index;
+
+  set index(IndexCatalog catalog) {
+    if (_parent case final parent?) {
+      parent.index = catalog;
+    } else {
+      _index = catalog;
+    }
+  }
 }
 
 /// An attribute override from the API before it is applied: a value, an
@@ -1187,7 +1207,19 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// Restores the attributes to the previously saved state (the header).
   void restoreAttributes() {
-    if (parentDocument == null) callouts.rewind();
+    if (parentDocument == null) {
+      // asciidart's lint (with callout-links): callouts after the last
+      // callout list, which no list explains.
+      if (hasAttr('callout-links')) {
+        for (final callout in callouts.currentList) {
+          logger.warn(
+            'no callout list for <${callout.ordinal}>',
+            at: callout.at,
+          );
+        }
+      }
+      callouts.rewind();
+    }
     final saved = _headerAttributes!;
     attributes
       ..clear()
@@ -1234,6 +1266,28 @@ class Document extends AbstractBlock implements NodeDocument {
 
   /// Whether the attribute [name] is locked (assigned via the API).
   bool attributeLocked(String name) => _attributeOverrides.containsKey(name);
+
+  /// Whether attribute [name] was neither set nor unset, by the document
+  /// or by the API (a converter's default then applies).
+  @internal
+  bool attributeUnspecified(String name) {
+    if (attributeLocked(name) || _attributesModified.contains(name)) {
+      return false;
+    }
+    if (parentDocument case final parent?) {
+      return parent.attributeUnspecified(name);
+    }
+    for (final MapEntry(:key, :value) in options.attributes.entries) {
+      if (key == name) return false;
+      if (value == '@') {
+        if (key == '!$name' || key == '$name!') return false;
+      } else if (key.endsWith('@')) {
+        final bare = key.substring(0, key.length - 1);
+        if (bare == name || bare == '!$name' || bare == '$name!') return false;
+      }
+    }
+    return true;
+  }
 
   /// Assigns [value] to the attribute [name] in the document header.
   ///
@@ -1314,10 +1368,19 @@ class Document extends AbstractBlock implements NodeDocument {
     return output;
   }
 
+  /// The converter that writes a file of its own (an EPUB, a website),
+  /// also behind templates (a composite chain).
+  PackagingConverter? get _packaging => switch (converter) {
+    final PackagingConverter packaging => packaging,
+    final CompositeConverter composite =>
+      composite.converters.whereType<PackagingConverter>().firstOrNull,
+    _ => null,
+  };
+
   /// Writes [output] to [sink], followed by a newline (nothing is written
   /// when [output] is empty).
   void writeTo(String output, StringSink sink) {
-    if (converter is PackagingConverter) {
+    if (_packaging != null) {
       throw AsciidoctorException(
         'the $backend backend writes a file of its own and cannot write to '
         'standard output; give an output file (-o FILE)',
@@ -1336,7 +1399,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// the manpage converter produces.
   void writeFile(String output, String path) {
     _timings?.start('write');
-    if (converter case final PackagingConverter packaging) {
+    if (_packaging case final packaging?) {
       packaging.write(path);
       _timings?.record('write');
       return;

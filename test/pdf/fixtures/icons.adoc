@@ -1,0 +1,14 @@
+= Icons
+:icons: font
+
+NOTE: A note with an icon.
+
+TIP: A tip with an icon and a longer text that wraps onto the next line of the admonition block content.
+
+WARNING: Warning.
+
+CAUTION: Caution.
+
+IMPORTANT: Important.
+
+Inline icons: icon:heart[] icon:fab-github[] icon:far-envelope[2x] icon:check-square-o[] icon:cc-visa@pf[] icon:bogus-icon[] icon:fire[set=fas].

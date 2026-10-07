@@ -1,0 +1,28 @@
+= More Theme Keys
+Author Name
+v2.0, 2026-10-05: Another remark
+:doctype: book
+:imagesdir: images
+:pdf-theme: theme-keys2-theme.yml
+:pdf-themesdir: {docdir}
+
+== First Chapter
+
+[#svg]
+.SVG text in an unknown font
+image::svg-text.svg[]
+
+=== A Section
+
+Some text.
+
+.A caption for a narrow image that would otherwise run the whole width
+image::sample-logo.jpg[pdfwidth=40%,align=center]
+
+<<<
+
+More text.
+
+== Second Chapter
+
+The end.

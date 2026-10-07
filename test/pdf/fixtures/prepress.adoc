@@ -1,0 +1,27 @@
+= A Book for Print
+Author Name
+:doctype: book
+:media: prepress
+:toc:
+
+[preface]
+== Preface
+
+Each chapter starts on a recto page, after a blank page when needed.
+The margins are wider on the side of the binding.
+
+== First Chapter
+
+The ((first)) chapter, about (((fruit, apples))) apples.
+
+== Second Chapter
+
+The ((second)) chapter, about (((fruit, bananas))) bananas.
+
+[%nonfacing]
+== Facing Either Way
+
+A chapter that starts on the next page, whatever its side.
+
+[index]
+== Index

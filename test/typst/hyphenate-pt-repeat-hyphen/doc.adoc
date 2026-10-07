@@ -1,0 +1,4 @@
+:lang: pt
+:hyphens: pt
+
+Alguma coisa no arco-da-velha é algo que está muito longe.

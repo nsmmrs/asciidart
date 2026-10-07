@@ -15,9 +15,9 @@
 ///
 /// * Role checks use [AbstractNode.includesRole] (membership);
 ///   [AbstractNode.hasRole] tests equality.
-/// * AsciiMath: there is no AsciiMath-to-MathML converter here, so stem and
-///   quoted `asciimath` nodes always produce the output Asciidoctor gives
-///   when its optional `asciimath` gem is not installed.
+/// * AsciiMath: stem and quoted `asciimath` nodes are MathML, from
+///   asciidart's port of the `asciimath` gem (ADR-0014), as Asciidoctor
+///   writes them with the gem installed.
 library;
 
 import 'package:asciidart/src/abstract_block.dart';
@@ -28,10 +28,13 @@ import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/math/asciimath.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/unbreakable.dart';
+import 'package:asciidart/src/xml_balance.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
 /// `null` renders as the empty string instead of `'null'`.
@@ -112,6 +115,80 @@ const Map<String, (String, String, bool)> _quoteTags =
       'subscript': ('<subscript>', '</subscript>', false),
     };
 
+/// [xml] (DocBook) as asciidart repairs what Asciidoctor writes invalid
+/// there: tags balanced, literals' content as DocBook allows it, and the
+/// copyright's year first (the section elements are chosen as they are
+/// written).
+String repairDocbook(String xml) => _copyright(_literals(balanceXml(xml)));
+
+final RegExp _copyrightTagRx = RegExp(
+  r'<copyright>\n<holder>([^<]*)</holder>\n(?:<year>([^<]*)</year>\n)?</copyright>',
+);
+
+/// [xml] with the document's copyright as DocBook 5.0 allows it: the
+/// year before the holder, and a copyright with no year (which `copyright`
+/// can't hold) as a legal notice.
+String _copyright(String xml) {
+  if (!xml.contains('<copyright>')) return xml;
+  return xml.replaceFirstMapped(_copyrightTagRx, (m) {
+    final holder = m[1]!;
+    return switch (m[2]) {
+      final String year =>
+        '<copyright>\n<year>$year</year>\n<holder>$holder</holder>\n</copyright>',
+      null => '<legalnotice>\n<simpara>$holder</simpara>\n</legalnotice>',
+    };
+  });
+}
+
+/// [xml] with each `<literal>`'s content as DocBook allows it
+/// (asciidart's; Asciidoctor nests emphasis and quotes there): an emphasis
+/// opened in a literal becomes a phrase with its role, a quote its
+/// quotation marks. Literals may nest.
+String _literals(String xml) {
+  if (!xml.contains('<literal>')) return xml;
+  final out = StringBuffer();
+  var depth = 0;
+  // The elements opened in a literal: true for an emphasis, false for a
+  // quote.
+  final opened = <bool>[];
+  var last = 0;
+  var changed = false;
+  for (final m in _literalTagRx.allMatches(xml)) {
+    final closing = m[1] == '/';
+    final name = m[2]!;
+    String? replacement;
+    switch (name) {
+      case 'literal':
+        depth += closing ? -1 : 1;
+      case 'emphasis' when !closing && depth > 0:
+        opened.add(true);
+        replacement = '<phrase role="${m[3] ?? 'emphasis'}">';
+      case 'quote' when !closing && depth > 0:
+        opened.add(false);
+        replacement = '&#8220;';
+      case 'emphasis' || 'quote'
+          when closing &&
+              opened.isNotEmpty &&
+              opened.last == (name == 'emphasis'):
+        opened.removeLast();
+        replacement = name == 'emphasis' ? '</phrase>' : '&#8221;';
+    }
+    if (replacement == null) continue;
+    out
+      ..write(xml.substring(last, m.start))
+      ..write(replacement);
+    last = m.end;
+    changed = true;
+  }
+  if (!changed) return xml;
+  out.write(xml.substring(last));
+  return out.toString();
+}
+
+final RegExp _literalTagRx = RegExp(
+  '<(/?)(literal|emphasis|quote)(?: role="([^"]*)")?>',
+);
+
 /// Default quote tags for unknown quoted-text types.
 const (String, String, bool) _defaultQuoteTags = ('', '', true);
 
@@ -132,13 +209,25 @@ class Docbook5Converter extends BuiltInConverter {
   }
 
   @override
-  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) {
+    final out = _convertBlock(node, opts);
+    // `%unbreakable` (ADR-0012).
+    return out != null &&
+            node.hasOption('unbreakable') &&
+            marksUnbreakable(node.nodeName) &&
+            // (A table has the instruction already, as in Asciidoctor.)
+            node.context != BlockContext.table
+        ? withKeepTogether(out)
+        : out;
+  }
+
+  String? _convertBlock(AbstractBlock node, ConvertOptions? opts) =>
       switch (node.context) {
         .admonition => convertAdmonition(node as Block),
         .audio => null,
         .colist => convertColist(node as ListBlock),
         .dlist => convertDlist(node as ListBlock),
-        .document => convertDocument(node as Document),
+        .document => repairDocbook(convertDocument(node as Document)),
         .example => convertExample(node as Block),
         .floatingTitle => convertFloatingTitle(node as Block),
         .image => convertImage(node as Block),
@@ -192,7 +281,7 @@ class Docbook5Converter extends BuiltInConverter {
     String transform,
     ConvertOptions? opts,
   ) => switch (transform) {
-    'embedded' => convertEmbedded(node as Document),
+    'embedded' => repairDocbook(convertEmbedded(node as Document)),
     _ => missing(transform),
   };
 
@@ -334,7 +423,18 @@ class Docbook5Converter extends BuiltInConverter {
           (sectname == null ? null : _manpageSectionTags[sectname]) ??
           _s(sectname);
     } else {
-      tagName = _s(node.sectname);
+      tagName = _sectionTag(node);
+    }
+    // A book's chapter that holds only a `toc::[]` macro is its contents:
+    // DocBook's <toc>, which processors fill in (a chapter with nothing in
+    // it isn't valid DocBook).
+    if (tagName == 'chapter' &&
+        node.parent is Document &&
+        node.blocks.length == 1 &&
+        node.blocks.first.context == BlockContext.toc) {
+      return '<toc${_nodeAttributes(node)}>\n'
+          '<title>${_s(node.title)}</title>\n'
+          '</toc>';
     }
     final titleEl =
         node.special &&
@@ -344,6 +444,29 @@ class Docbook5Converter extends BuiltInConverter {
     return '<$tagName${_nodeAttributes(node)}>\n'
         '$titleEl${_s(node.content())}\n'
         '</$tagName>';
+  }
+
+  /// The DocBook elements a section may be (asciidart's: a section style
+  /// with no element of its own, such as `introduction`, gives an element
+  /// no DocBook schema allows in Asciidoctor).
+  static const Set<String> _sectionTags = {
+    'abstract', 'appendix', 'article', 'bibliography', 'chapter', //
+    'colophon', 'dedication', 'glossary', 'index', 'part', 'partintro',
+    'preface', 'section',
+  };
+
+  /// The element of the section [node]: its name, or the chapter or
+  /// section it is when DocBook has no such element there.
+  static String _sectionTag(Section node) {
+    final sectname = _s(node.sectname);
+    // A part introduction is one only in a part.
+    if (sectname == 'partintro' &&
+        !(node.parent is Section && (node.parent! as Section).level == 0)) {
+      return 'section';
+    }
+    if (_sectionTags.contains(sectname)) return sectname;
+    final book = (node.document! as Document).doctype == 'book';
+    return book && node.level == 1 ? 'chapter' : 'section';
   }
 
   /// Converts the [node] admonition block.
@@ -471,22 +594,56 @@ class Docbook5Converter extends BuiltInConverter {
     final alignAttribute = node.hasAttr('align')
         ? ' align="${_s(node.attr('align'))}"'
         : '';
-    final mediaobject =
-        '<mediaobject>\n'
-        '<imageobject>\n'
-        '<imagedata fileref="${node.imageUri(node.attr('target')!)}"${_imageSizeAttributes(node.attributes)}$alignAttribute/>\n'
-        '</imageobject>\n'
-        '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
-        '</mediaobject>';
+    // A text file (ASCII art): its text, in the media object's text
+    // object (asciidart's own output).
+    final text = _textImage(node);
+    final mediaobject = text != null
+        ? '<mediaobject>\n'
+              '<textobject><literallayout class="monospaced">$text'
+              '</literallayout></textobject>\n'
+              '</mediaobject>'
+        : '<mediaobject>\n'
+              '<imageobject>\n'
+              '<imagedata fileref="${node.imageUri(node.attr('target')!)}"${_imageSizeAttributes(node.attributes)}$alignAttribute/>\n'
+              '</imageobject>\n'
+              '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
+              '</mediaobject>';
+    // An image's placement (asciidart's `placement` attribute) as DocBook
+    // XSL's floatstyle: at the top of a page, or never floated.
+    final floatstyle = switch (node.attr('placement')) {
+      'top' || 'auto' => ' floatstyle="before"',
+      'none' || 'here' => ' floatstyle="none"',
+      _ => '',
+    };
     if (node.hasTitle) {
-      return '<figure${_nodeAttributes(node)}>\n'
+      return '<figure${_nodeAttributes(node)}$floatstyle>\n'
           '<title>${_s(node.title)}</title>\n'
           '$mediaobject\n'
           '</figure>';
     }
-    return '<informalfigure${_nodeAttributes(node)}>\n'
+    return '<informalfigure${_nodeAttributes(node)}$floatstyle>\n'
         '$mediaobject\n'
         '</informalfigure>';
+  }
+
+  /// The text of image [node] when its target is a text file
+  /// (`image::diagram.txt[]`, or `format=txt`), escaped; else null.
+  String? _textImage(Block node) {
+    final target = _s(node.attr('target'));
+    final isText =
+        node.attr('format') == 'txt' ||
+        (!node.hasAttr('format') && target.toLowerCase().endsWith('.txt'));
+    if (!isText || node.document!.safe >= SafeMode.secure) return null;
+    return node
+        .readContents(
+          target,
+          start: node.document!.attr('imagesdir'),
+          label: 'text image',
+        )
+        ?.replaceAll(RegExp(r'\r?\n$'), '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
   }
 
   /// Converts the [node] listing block.
@@ -553,11 +710,10 @@ class Docbook5Converter extends BuiltInConverter {
     }
     final String equationData;
     if (node.style == 'asciimath') {
-      // NOTE fop requires jeuclid to process mathml markup. There is no
-      // AsciiMath-to-MathML converter here, so this always produces what
-      // Asciidoctor emits without its optional asciimath gem.
-      _warnAsciimathUnavailable();
-      equationData = '<mathphrase><![CDATA[$equation]]></mathphrase>';
+      // NOTE fop requires jeuclid to process mathml markup. MathML from
+      // asciidart's port of the asciimath gem (ADR-0014), as Asciidoctor
+      // writes it with the gem installed.
+      equationData = _mathml(equation);
     } else {
       // Unhandled math; pass source to alt and required mathphrase element;
       // dblatex will process alt as LaTeX math.
@@ -1004,28 +1160,19 @@ class Docbook5Converter extends BuiltInConverter {
     return '<menuchoice><guimenu>$menu</guimenu> <guisubmenu>${submenus.join('</guisubmenu> <guisubmenu>')}</guisubmenu> <guimenuitem>${_s(node.attr('menuitem'))}</guimenuitem></menuchoice>';
   }
 
-  bool _asciimathWarned = false;
-
-  /// Warns, once per converter (so once per document), that AsciiMath is
-  /// left as text, as Asciidoctor does when it cannot convert AsciiMath.
-  void _warnAsciimathUnavailable() {
-    if (_asciimathWarned) return;
-    _asciimathWarned = true;
-    logger.warn(
-      'AsciiMath to MathML conversion is not available. '
-      'Functionality disabled.',
-    );
-  }
+  /// [asciimath] as DocBook's MathML (`mml:` prefixed).
+  static String _mathml(String asciimath) => asciimathToMathml(
+    asciimath,
+    prefix: 'mml:',
+    attributes: const {'xmlns:mml': 'http://www.w3.org/1998/Math/MathML'},
+  );
 
   /// Converts the [node] inline quoted text.
   String convertInlineQuoted(Inline node) {
     final type = node.type;
     if (type == 'asciimath') {
-      // NOTE fop requires jeuclid to process mathml markup. There is no
-      // AsciiMath-to-MathML converter here, so this always produces what
-      // Asciidoctor emits without its optional asciimath gem.
-      _warnAsciimathUnavailable();
-      return '<inlineequation><mathphrase><![CDATA[${_s(node.text)}]]></mathphrase></inlineequation>';
+      // NOTE fop requires jeuclid to process mathml markup (ADR-0014).
+      return '<inlineequation>${_mathml(_s(node.text))}</inlineequation>';
     } else if (type == 'latexmath') {
       // Unhandled math; pass source to alt and required mathphrase element;
       // dblatex will process alt as LaTeX math.
@@ -1145,6 +1292,15 @@ class Docbook5Converter extends BuiltInConverter {
         : (doc.hasAttr('reproducible') ? null : doc.attr('docdate'));
     if (date != null) {
       result.add('<date>${_s(date)}</date>');
+    }
+    // The book's ISBN and editors (asciidart's `isbn` and `editor`, as the
+    // EPUB's metadata has them).
+    if (doc.attr('isbn') case final isbn? when isbn.isNotEmpty) {
+      result.add('<biblioid class="isbn">${_s(isbn)}</biblioid>');
+    }
+    for (final editor in (doc.attr('editor') ?? '').split(';')) {
+      if (editor.trim().isEmpty) continue;
+      result.add('<editor><personname>${editor.trim()}</personname></editor>');
     }
     if (doc.hasAttr('copyright')) {
       final match = _copyrightRx.firstMatch(doc.attr('copyright')!);

@@ -1,0 +1,3 @@
+:hyphens:
+
+It's a __Tree__beard.

@@ -1,0 +1,86 @@
+= Long Table
+:doctype: article
+
+Lead.
+
+Another paragraph to shift the rows by one line.
+
+.Long one
+[%header,cols="1,3,1",stripes=even]
+|===
+|N |Text |Code
+|0 |Row 0 text with more words to wrap around the column width a bit |`c0`
+|1 |Row 1 text |`c1`
+|2 |Row 2 text |`c2`
+|3 |Row 3 text |`c3`
+|4 |Row 4 text |`c4`
+|5 |Row 5 text |`c5`
+|6 |Row 6 text |`c6`
+|7 |Row 7 text with more words to wrap around the column width a bit |`c7`
+|8 |Row 8 text |`c8`
+|9 |Row 9 text |`c9`
+|10 |Row 10 text |`c10`
+|11 |Row 11 text |`c11`
+|12 |Row 12 text |`c12`
+|13 |Row 13 text |`c13`
+|14 |Row 14 text with more words to wrap around the column width a bit |`c14`
+|15 |Row 15 text |`c15`
+|16 |Row 16 text |`c16`
+|17 |Row 17 text |`c17`
+|18 |Row 18 text |`c18`
+|19 |Row 19 text |`c19`
+|20 |Row 20 text |`c20`
+|21 |Row 21 text with more words to wrap around the column width a bit |`c21`
+|22 |Row 22 text |`c22`
+|23 |Row 23 text |`c23`
+|24 |Row 24 text |`c24`
+|25 |Row 25 text |`c25`
+|26 |Row 26 text |`c26`
+|27 |Row 27 text |`c27`
+|28 |Row 28 text with more words to wrap around the column width a bit |`c28`
+|29 |Row 29 text |`c29`
+|30 |Row 30 text |`c30`
+|31 |Row 31 text |`c31`
+|32 |Row 32 text |`c32`
+|33 |Row 33 text |`c33`
+|34 |Row 34 text |`c34`
+|35 |Row 35 text with more words to wrap around the column width a bit |`c35`
+|36 |Row 36 text |`c36`
+|37 |Row 37 text |`c37`
+|38 |Row 38 text |`c38`
+|39 |Row 39 text |`c39`
+|40 |Row 40 text |`c40`
+|41 |Row 41 text |`c41`
+|42 |Row 42 text with more words to wrap around the column width a bit |`c42`
+|43 |Row 43 text |`c43`
+|44 |Row 44 text |`c44`
+|45 |Row 45 text |`c45`
+|46 |Row 46 text |`c46`
+|47 |Row 47 text |`c47`
+|48 |Row 48 text |`c48`
+|49 |Row 49 text with more words to wrap around the column width a bit |`c49`
+|50 |Row 50 text |`c50`
+|51 |Row 51 text |`c51`
+|52 |Row 52 text |`c52`
+|53 |Row 53 text |`c53`
+|54 |Row 54 text |`c54`
+|55 |Row 55 text |`c55`
+|56 |Row 56 text with more words to wrap around the column width a bit |`c56`
+|57 |Row 57 text |`c57`
+|58 |Row 58 text |`c58`
+|59 |Row 59 text |`c59`
+|===
+
+[cols="1,1,1"]
+|===
+.3+^.^|middle center |a ^.>|bottom
+|b |c
+.>|d |e
+|===
+
+[cols="1,1",grid=none,frame=none]
+|===
+|no |grid
+|===
+
+End.

@@ -263,6 +263,14 @@ final class EpubBook {
   void addCreator(String value, {String role = 'aut'}) =>
       _add('creator', value).refine('role', role);
 
+  /// Adds a contributor with [role] (a MARC relator: `edt`, an editor).
+  void addContributor(String value, {required String role}) =>
+      _add('contributor', value).refine('role', role);
+
+  /// Adds an identifier of [type] besides the primary one.
+  void addIdentifier(String value, String id, String type) =>
+      _add('identifier', value, id: id).refine('identifier-type', type);
+
   /// Sets the publisher, description, source or rights ([name]).
   void setText(String name, String value) {
     _clear(name);

@@ -2,12 +2,12 @@
 .\"     Title: asciidart
 .\"    Author: Noah Summers
 .\" Generator: Asciidart 0.1.0
-.\"      Date: 2026-10-05
+.\"      Date: 2026-10-07
 .\"    Manual: asciidart Manual
 .\"    Source: asciidart 0.1.0
 .\"  Language: English
 .\"
-.TH "ASCIIDART" "1" "2026-10-05" "asciidart 0.1.0" "asciidart Manual"
+.TH "ASCIIDART" "1" "2026-10-07" "asciidart 0.1.0" "asciidart Manual"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -49,8 +49,10 @@ Messages about the document (warnings, errors) go to standard error.
 .sp
 \fB\-b, \-\-backend\fP=\fIBACKEND\fP
 .RS 4
-The output format: \fBhtml5\fP (the default), \fBxhtml5\fP, \fBdocbook5\fP, \fBmanpage\fP or \fBepub3\fP.
+The output format: \fBhtml5\fP (the default), \fBxhtml5\fP, \fBdocbook5\fP, \fBmanpage\fP, \fBepub3\fP, \fBpdf\fP or \fBmultipage_html5\fP.
 \fBepub3\fP writes an EPUB 3 file (as asciidoctor\-epub3 does), so it needs an output file rather than standard output; it is available in the native executable, not in the npm package.
+\fBpdf\fP writes a PDF file with asciidart\(cqs own layout, reading asciidoctor\-pdf\(cqs YAML themes (\fBpdf\-theme\fP, \fBpdf\-themesdir\fP, \fBpdf\-fontsdir\fP); justified text is hyphenated in the document\(cqs language (\fB\-a hyphens!\fP turns it off). Set the \fBpdf\-compat\fP attribute (\fB\-a pdf\-compat\fP) to lay the document out as asciidoctor\-pdf 2.3.27 does. Like \fBepub3\fP, it needs an output file and the native executable.
+\fBmultipage_html5\fP writes a website: the output file is the home page (the header, the preamble and a list of the pages), and each part and chapter (each section up to \fBmultipage\-level\fP) is a page of its own beside it, named after its id (or its \fBpage\-path\fP attribute: \fBpage\-path=part/one/\fP writes \fBpart/one/index.html\fP), with links to the previous, enclosing and next pages; links reach across pages. \fBmultipage\-toclevels\fP lists each page\(cqs sections on the home page down to that level. Like \fBepub3\fP, it needs an output file and the native executable.
 .RE
 .sp
 \fB\-d, \-\-doctype\fP=\fIDOCTYPE\fP
@@ -168,6 +170,12 @@ On an unexpected error, print the full stack trace.
 .RS 4
 Print how long reading, parsing and converting each file took.
 .RE
+.sp
+\fB\-\-progress\fP
+.RS 4
+Report each phase of a conversion (reading, parsing, converting, writing) as it finishes, with its time.
+With \fB\-v\fP, the PDF backend also reports how many pages it laid out.
+.RE
 .SS "Information"
 .sp
 \fB\-h, \-\-help\fP [\fITOPIC\fP]
@@ -191,6 +199,13 @@ Compile it with \fBdart compile exe\fP to get a custom \fBasciidart\fP with thos
 \fBSOURCE_DATE_EPOCH\fP
 .RS 4
 When set to an integer number of seconds since the Unix epoch, it replaces the current time and the input files\*(Aq modification times in the document\(cqs date attributes, for reproducible output.
+.RE
+.sp
+\fBASCIIDART_COMPAT\fP
+.RS 4
+The default of the \fBasciidoctor\-compat\fP attribute: \fBtrue\fP, \fBfalse\fP, or a comma\-separated list of formats (\fBhtml\fP, \fBepub\fP, \fBdocbook\fP, \fBmanpage\fP, \fBpdf\fP) whose output keeps Asciidoctor\(cqs look.
+Without it, \fBcompat:\fP in the nearest \fBasciidart.yml\fP in the input\(cqs directory or one above it, then in \fB$XDG_CONFIG_HOME/asciidart/config.yml\fP (\fB~/.config/asciidart/config.yml\fP), gives the default.
+An \fB\-a asciidoctor\-compat\fP option or the document\(cqs own attribute entry wins.
 .RE
 .sp
 \fBASCIIDART_MANPAGE_PATH\fP

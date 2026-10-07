@@ -336,8 +336,89 @@ final class Document extends Block {
     return convert(standalone: standalone);
   }
 
+  /// The document's index: the terms its index terms (`(((...)))`,
+  /// `((...))`, `indexterm:[]`, `indexterm2:[]`) name, by letter, each
+  /// with where it is used, whether or not the document has an `[index]`
+  /// section. Collected by converting the document (its messages are left
+  /// out of [diagnostics]).
+  ///
+  /// Throws a [StateError] when the document was parsed for a backend
+  /// other than HTML.
+  List<IndexLetter> get index {
+    if (_doc.attributes['basebackend'] != 'html') {
+      throw StateError(
+        'the document was parsed for the ${_doc.attributes['backend']} '
+        'backend; parse it with Backend.html5 to get its index',
+      );
+    }
+    final catalog = impl.IndexCatalog(always: true);
+    final saved = _doc.catalog.index;
+    _doc.catalog.index = catalog;
+    try {
+      _guard(
+        () => impl.LoggerManager.scoped(
+          impl.NullLogger(),
+          () => _doc.convert(standalone: false),
+        ),
+      );
+    } finally {
+      _doc.catalog.index = saved;
+    }
+    IndexEntry entry(impl.IndexEntry source) => IndexEntry._(
+      source.text,
+      [
+        for (final use in source.uses)
+          if (use.node case final impl.AbstractBlock block) _blockView(block),
+      ],
+      source.see,
+      List.unmodifiable(source.seeAlso),
+      [for (final sub in source.subentries) entry(sub)],
+    );
+    return [
+      for (final letter in catalog.letters)
+        IndexLetter._(letter.letter, [
+          for (final source in letter.entries) entry(source),
+        ]),
+    ];
+  }
+
   @override
   Attributes get attributes => Attributes._(_doc.attributes);
+}
+
+/// The terms of a document's index under one letter (see
+/// [Document.index]).
+final class IndexLetter {
+  const new _(this.letter, this.entries);
+
+  /// The letter, upper case; `@` for terms that don't start with a letter.
+  final String letter;
+
+  /// The terms, in index order: case-insensitively, then by character.
+  final List<IndexEntry> entries;
+}
+
+/// A term of a document's index (see [Document.index]).
+final class IndexEntry {
+  const new _(this.term, this.uses, this.see, this.seeAlso, this.subentries);
+
+  /// The term, as plain text.
+  final String term;
+
+  /// The blocks the term is used in (the paragraph, list item, table
+  /// cell or section whose text names it), in document order, once per
+  /// use; empty for a term that only groups its subterms.
+  final List<Block> uses;
+
+  /// The term it refers to instead (`see`), if any.
+  final String? see;
+
+  /// The terms it refers to as well (`see-also`).
+  final List<String> seeAlso;
+
+  /// Its subterms (secondary under a primary term, tertiary under a
+  /// secondary one), in index order.
+  final List<IndexEntry> subentries;
 }
 
 /// An author named in a document header.

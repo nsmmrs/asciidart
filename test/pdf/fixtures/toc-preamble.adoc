@@ -1,0 +1,12 @@
+= Article TOC Preamble
+:toc: preamble
+
+Preamble paragraph.
+
+== First
+
+Content.
+
+== Second
+
+More.

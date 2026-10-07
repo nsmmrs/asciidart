@@ -1,0 +1,99 @@
+# A book set the way Typst sets one (doc/typst-look.md), with the fonts
+# asciidart bundles: Typst's line model and spacing, floating figures,
+# sticky headings, footnotes per page, numbered lists as enums, and the
+# index as one list. Convert with:
+#
+#   asciidart -b pdf -a pdf-theme=example/themes/book-typst-like-theme.yml book.adoc
+#
+# Every value is a choice among others; doc/typst-look.md gives each
+# key's range.
+extends: default
+font:
+  catalog:
+    merge: true
+    Noto Sans:
+      normal: GEM_FONTS_DIR/notosans-regular-subset.ttf
+      bold: GEM_FONTS_DIR/notosans-bold-subset.ttf
+      italic: GEM_FONTS_DIR/notosans-italic-subset.ttf
+      bold_italic: GEM_FONTS_DIR/notosans-bold_italic-subset.ttf
+page:
+  size: A4
+  margin: [2.5cm, 2.5cm, 2.5cm, 2.5cm]
+base:
+  font-family: Noto Serif
+  font-size: 11
+  # Lines from cap height to baseline, 0.65em apart (par.leading).
+  leading: 0.65em
+  text-align: justify
+  overhang: 1
+  typographic-scripts: true
+prose:
+  # Paragraphs 1.2em apart (par.spacing), no indent.
+  margin-bottom: 13.2
+heading:
+  font-family: Noto Sans
+  font-style: bold
+  font-color: #000000
+  min-height-after: auto
+  float-barrier: false
+  # Level 3 and below: 1.44em above, 0.75em below (of 11pt).
+  margin-top: 15.84
+  margin-bottom: 8.25
+  h3-content: '{{#number}}{{number}}<font width="0.3em">&nbsp;</font>{{/number}}{{title}}'
+codespan:
+  font-family: M+ 1mn
+  font-size: 0.8em
+code:
+  font-family: M+ 1mn
+  font-size: 0.8em
+  wrap-indent: 0
+  wrap-marker: none
+  background-color: transparent
+  border-width: 0
+  padding: [0, 11]
+image:
+  placement: auto
+  float-clearance: 16.5
+  caption:
+    end: bottom
+    text-align: center
+    margin-inside: 7.15
+list:
+  indent: 0
+  body-indent: 5.5
+olist:
+  marker-width: 11
+  body-indent: 5.5
+ulist:
+  marker:
+    nesting: ulist
+description-list:
+  term-display: inline
+  term-gap: 0.6em
+  description-indent: 22
+footnotes:
+  numbering: page
+  font-size: 0.85em
+  leading: 0.5em
+  indent: 1em
+  item-spacing: 5.5
+  margin-top: 11
+  separator-length: 30%
+  separator-width: 0.5
+  reference-content: '{{number}}'
+  label-content: '<sup>{{number}}</sup>'
+table:
+  border-color: '#000000'
+  border-width: 1
+  grid-color: '#000000'
+  grid-width: 1
+  cell-padding: 5
+  stripes: none
+index:
+  columns: 2
+  pagenum-text-align: right
+  category-headings: false
+  sort: code-point
+  item-spacing: 5
+  subterm-indent: 1em
+  hanging-indent: 2em

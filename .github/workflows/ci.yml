@@ -91,6 +91,10 @@ jobs:
         EXE="$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')"
         echo "ASCIIDOCTOR_EXE=$EXE"
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
+    - name: Run divergence tests (asciidart differs from the gem on purpose)
+      run: |
+        EXE="$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')"
+        ASCIIDOCTOR_EXE="$EXE" bats test/divergences/
     - name: Check byte-identical parity with Asciidoctor 2.1.0.alpha.0
       run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidart-linux-')"
     - name: Install asciidoctor-epub3 gem on the main gem (EPUB oracle)

@@ -1,0 +1,106 @@
+= Split Test
+
+Lead paragraph.
+
+[NOTE]
+====
+Admonition paragraph 0 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 1 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 2 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 3 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 4 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 5 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 6 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 7 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 8 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 9 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 10 with some words to make it wrap across the full width of the content area of the page.
+
+Admonition paragraph 11 with some words to make it wrap across the full width of the content area of the page.
+
+====
+
+----
+line 000 of the long listing <b>&amp; stuff</b>
+line 001 of the long listing <b>&amp; stuff</b>
+line 002 of the long listing <b>&amp; stuff</b>
+line 003 of the long listing <b>&amp; stuff</b>
+line 004 of the long listing <b>&amp; stuff</b>
+line 005 of the long listing <b>&amp; stuff</b>
+line 006 of the long listing <b>&amp; stuff</b>
+line 007 of the long listing <b>&amp; stuff</b>
+line 008 of the long listing <b>&amp; stuff</b>
+line 009 of the long listing <b>&amp; stuff</b>
+line 010 of the long listing <b>&amp; stuff</b>
+line 011 of the long listing <b>&amp; stuff</b>
+line 012 of the long listing <b>&amp; stuff</b>
+line 013 of the long listing <b>&amp; stuff</b>
+line 014 of the long listing <b>&amp; stuff</b>
+line 015 of the long listing <b>&amp; stuff</b>
+line 016 of the long listing <b>&amp; stuff</b>
+line 017 of the long listing <b>&amp; stuff</b>
+line 018 of the long listing <b>&amp; stuff</b>
+line 019 of the long listing <b>&amp; stuff</b>
+line 020 of the long listing <b>&amp; stuff</b>
+line 021 of the long listing <b>&amp; stuff</b>
+line 022 of the long listing <b>&amp; stuff</b>
+line 023 of the long listing <b>&amp; stuff</b>
+line 024 of the long listing <b>&amp; stuff</b>
+line 025 of the long listing <b>&amp; stuff</b>
+line 026 of the long listing <b>&amp; stuff</b>
+line 027 of the long listing <b>&amp; stuff</b>
+line 028 of the long listing <b>&amp; stuff</b>
+line 029 of the long listing <b>&amp; stuff</b>
+line 030 of the long listing <b>&amp; stuff</b>
+line 031 of the long listing <b>&amp; stuff</b>
+line 032 of the long listing <b>&amp; stuff</b>
+line 033 of the long listing <b>&amp; stuff</b>
+line 034 of the long listing <b>&amp; stuff</b>
+line 035 of the long listing <b>&amp; stuff</b>
+line 036 of the long listing <b>&amp; stuff</b>
+line 037 of the long listing <b>&amp; stuff</b>
+line 038 of the long listing <b>&amp; stuff</b>
+line 039 of the long listing <b>&amp; stuff</b>
+line 040 of the long listing <b>&amp; stuff</b>
+line 041 of the long listing <b>&amp; stuff</b>
+line 042 of the long listing <b>&amp; stuff</b>
+line 043 of the long listing <b>&amp; stuff</b>
+line 044 of the long listing <b>&amp; stuff</b>
+line 045 of the long listing <b>&amp; stuff</b>
+line 046 of the long listing <b>&amp; stuff</b>
+line 047 of the long listing <b>&amp; stuff</b>
+line 048 of the long listing <b>&amp; stuff</b>
+line 049 of the long listing <b>&amp; stuff</b>
+line 050 of the long listing <b>&amp; stuff</b>
+line 051 of the long listing <b>&amp; stuff</b>
+line 052 of the long listing <b>&amp; stuff</b>
+line 053 of the long listing <b>&amp; stuff</b>
+line 054 of the long listing <b>&amp; stuff</b>
+line 055 of the long listing <b>&amp; stuff</b>
+line 056 of the long listing <b>&amp; stuff</b>
+line 057 of the long listing <b>&amp; stuff</b>
+line 058 of the long listing <b>&amp; stuff</b>
+line 059 of the long listing <b>&amp; stuff</b>
+line 060 of the long listing <b>&amp; stuff</b>
+line 061 of the long listing <b>&amp; stuff</b>
+line 062 of the long listing <b>&amp; stuff</b>
+line 063 of the long listing <b>&amp; stuff</b>
+line 064 of the long listing <b>&amp; stuff</b>
+line 065 of the long listing <b>&amp; stuff</b>
+line 066 of the long listing <b>&amp; stuff</b>
+line 067 of the long listing <b>&amp; stuff</b>
+line 068 of the long listing <b>&amp; stuff</b>
+line 069 of the long listing <b>&amp; stuff</b>
+----
+
+Closing.

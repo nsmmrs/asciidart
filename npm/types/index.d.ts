@@ -636,6 +636,28 @@ export declare class IncludeRequest {
 }
 
 /**
+ * A term of a document's index (see {@link Document.index}).
+ */
+export declare class IndexEntry {
+  protected constructor();
+  readonly term: string;
+  readonly uses: Block[];
+  readonly see: string | null;
+  readonly seeAlso: string[];
+  readonly subentries: IndexEntry[];
+}
+
+/**
+ * The terms of a document's index under one letter (see
+ * {@link Document.index}).
+ */
+export declare class IndexLetter {
+  protected constructor();
+  readonly letter: string;
+  readonly entries: IndexEntry[];
+}
+
+/**
  * What an {@link InlineMacro} receives: the target and attributes of the macro,
  * and ways to create the inline element that replaces it.
  */
@@ -1104,6 +1126,17 @@ export declare class Document extends Block {
    * The messages reported while parsing and converting this document.
    */
   readonly diagnostics: Diagnostic[];
+  /**
+   * The document's index: the terms its index terms (`(((...)))`,
+   * `((...))`, `indexterm:[]`, `indexterm2:[]`) name, by letter, each
+   * with where it is used, whether or not the document has an `{@link index}`
+   * section. Collected by converting the document (its messages are left
+   * out of {@link diagnostics}).
+   *
+   * Throws a {@link StateError} when the document was parsed for a backend
+   * other than HTML.
+   */
+  readonly index: IndexLetter[];
   readonly attributes: Attributes;
   /**
    * This document with the header attribute {@link name} set to {@link value}: its

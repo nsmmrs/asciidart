@@ -17,19 +17,24 @@ library;
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/callout_links.dart';
+import 'package:asciidart/src/compat.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
 import 'package:asciidart/src/highlight/syntax_highlighter.dart';
+import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/stylesheets.dart';
 import 'package:asciidart/src/table.dart';
 import 'package:asciidart/src/text_case.dart';
+import 'package:asciidart/src/unbreakable.dart';
 
 /// Renders [value] for interpolation into output: `null` renders as the
 /// empty string.
@@ -148,7 +153,17 @@ class Html5Converter extends BuiltInConverter {
   }
 
   @override
-  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) {
+    final out = _convertBlock(node, opts);
+    // `%unbreakable` (ADR-0012).
+    return out != null &&
+            node.hasOption('unbreakable') &&
+            marksUnbreakable(node.nodeName)
+        ? withUnbreakableClass(out)
+        : out;
+  }
+
+  String? _convertBlock(AbstractBlock node, ConvertOptions? opts) =>
       switch (node.context) {
         .admonition => convertAdmonition(node as Block),
         .audio => convertAudio(node as Block),
@@ -258,6 +273,7 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] document to a standalone HTML page.
   String convertDocument(Document node) {
+    beginIndex(node);
     final slash = _voidElementSlash;
     final br = '<br$slash>';
     var assetUriScheme = node.attr('asset-uri-scheme', 'https')!;
@@ -348,7 +364,9 @@ class Html5Converter extends BuiltInConverter {
     );
 
     late final stylesdir = node.attr('stylesdir');
-    if (_defaultStylesheetKeys.contains(node.attr('stylesheet'))) {
+    final stylesheetKey = htmlStylesheetKey(node);
+    if (_defaultStylesheetKeys.contains(stylesheetKey) ||
+        stylesheetKey == Stylesheets.classicStylesheetKey) {
       final webfonts = node.attr('webfonts');
       if (webfonts != null) {
         result.add(
@@ -364,7 +382,7 @@ class Html5Converter extends BuiltInConverter {
         result.add('<link rel="stylesheet" href="$href"$slash>');
       } else {
         result.add(
-          '<style>\n${Stylesheets.instance.primaryStylesheetData}\n</style>',
+          '<style>\n${Stylesheets.instance.dataFor(stylesheetKey)}\n</style>',
         );
       }
     } else if (node.hasAttr('stylesheet')) {
@@ -410,6 +428,15 @@ class Html5Converter extends BuiltInConverter {
       result.add('');
     }
 
+    // `:hyphens:` (asciidart's, as the PDF and EPUB read it): the text
+    // hyphenated by the browser, in the document's language.
+    if (node.hasAttr('hyphens')) {
+      result.add(
+        '<style>#content p,#content li,#content dd,#footnotes .footnote'
+        '{-webkit-hyphens:auto;hyphens:auto}</style>',
+      );
+    }
+
     final docinfoContent = node.docinfo();
     if (docinfoContent.isNotEmpty) {
       result.add(docinfoContent);
@@ -442,6 +469,10 @@ class Html5Converter extends BuiltInConverter {
     }
 
     if (!node.noheader) {
+      // The book's cover (`front-cover-image`, as the PDF, EPUB and
+      // DocBook have it): first, on the page with the header (the
+      // website's home page).
+      if (_cover(node) case final cover?) result.add(cover);
       result.add('<div id="header"$maxWidthAttr>');
       if (node.doctype == 'manpage') {
         result.add('<h1>${_s(node.doctitle())} Manual Page</h1>');
@@ -522,7 +553,7 @@ class Html5Converter extends BuiltInConverter {
       for (final footnote in node.footnotes) {
         result.add(
           '<div class="footnote" id="_footnotedef_${_s(footnote.index)}">\n'
-          '<a href="#_footnoteref_${_s(footnote.index)}">${_s(footnote.index)}</a>. ${_s(footnote.text)}\n'
+          '${_footnoteLabel(node, footnote)}${_s(footnote.text)}\n'
           '</div>',
         );
       }
@@ -630,6 +661,7 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] document to embedded HTML (no header/footer).
   String convertEmbedded(Document node) {
+    beginIndex(node);
     final result = <String>[];
     if (node.doctype == 'manpage') {
       // QUESTION should notitle control the manual page title?
@@ -664,7 +696,7 @@ class Html5Converter extends BuiltInConverter {
       for (final footnote in node.footnotes) {
         result.add(
           '<div class="footnote" id="_footnotedef_${_s(footnote.index)}">\n'
-          '<a href="#_footnoteref_${_s(footnote.index)}">${_s(footnote.index)}</a>. ${_s(footnote.text)}\n'
+          '${_footnoteLabel(node, footnote)}${_s(footnote.text)}\n'
           '</div>',
         );
       }
@@ -702,6 +734,8 @@ class Html5Converter extends BuiltInConverter {
     final result = <String>['<ul class="sectlevel$sectlevel">'];
     for (final child in sections) {
       final section = child as Section;
+      // asciidart's `notoc` option: a section left out of the contents.
+      if (section.hasOption('notoc')) continue;
       final slevel = section.level!;
       final stoclevels = section.hasAttr('toclevels')
           ? parseLeadingInt(section.attr('toclevels'))
@@ -833,7 +867,10 @@ class Html5Converter extends BuiltInConverter {
       return '<h1$idAttr class="sect0$roleClass">$linkedTitle</h1>\n'
           '${_s(node.content())}';
     }
-    final content = _s(node.content());
+    var content = _s(node.content());
+    if (_indexOf(node) case final index when index.isNotEmpty) {
+      content = content.isEmpty ? index : '$content\n$index';
+    }
     final body = level == 1
         ? '<div class="sectionbody">\n$content\n</div>'
         : content;
@@ -945,8 +982,8 @@ class Html5Converter extends BuiltInConverter {
         }
         result.add(
           '<tr>\n'
-          '<td>$numLabel</td>\n'
-          '<td>${_s(listItem.text)}${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}</td>\n'
+          '<td>${calloutBack(listItem, numLabel)}</td>\n'
+          '<td>${calloutItemAnchors(listItem)}${_s(listItem.text)}${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}</td>\n'
           '</tr>',
         );
       }
@@ -957,7 +994,7 @@ class Html5Converter extends BuiltInConverter {
         final listItem = item;
         result.add(
           '<li>\n'
-          '<p>${_s(listItem.text)}</p>${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}\n'
+          '<p>${calloutItemAnchors(listItem)}${_s(listItem.text)}${calloutBackArrow(listItem)}</p>${listItem.hasBlocks ? '$lf${_s(listItem.content())}' : ''}\n'
           '</li>',
         );
       }
@@ -1143,9 +1180,15 @@ class Html5Converter extends BuiltInConverter {
     String imgTag(String src) =>
         '<img src="$src" alt="${_encodeAttributeValue(node.alt)}"'
         '$widthAttr$heightAttr$_voidElementSlash>';
+    // A text file (ASCII art) shown as its text: what the PDF sets, and
+    // what a browser can't show as an image (asciidart's own output;
+    // Asciidoctor writes an <img>).
+    final text = _textImage(node, target);
     final String img;
     String? src;
-    if ((node.hasAttr('format', 'svg') || target.contains('.svg')) &&
+    if (text != null) {
+      img = '<pre>$text</pre>';
+    } else if ((node.hasAttr('format', 'svg') || target.contains('.svg')) &&
         node.document!.safe < SafeMode.secure) {
       if (node.hasOption('inline')) {
         img =
@@ -1175,7 +1218,7 @@ class Html5Converter extends BuiltInConverter {
           '<a class="image" href="${_s(href)}"$linkConstraintAttrs>$img</a>';
     }
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
-    final classes = <String>['imageblock'];
+    final classes = <String>['imageblock', if (text != null) 'text'];
     if (node.hasAttr('float')) {
       classes.add(_s(node.attr('float')));
     }
@@ -2010,27 +2053,58 @@ class Html5Converter extends BuiltInConverter {
   /// Converts the [node] inline callout.
   String convertInlineCallout(Inline node) {
     if (node.document!.hasAttr('icons', 'font')) {
-      return '<i class="conum" data-value="${_s(node.text)}"></i><b>(${_s(node.text)})</b>';
+      return calloutLink(
+        node,
+        '<i class="conum" data-value="${_s(node.text)}"></i><b>(${_s(node.text)})</b>',
+      );
     }
     if (node.document!.hasAttr('icons')) {
       final src = node.iconUri('callouts/${_s(node.text)}');
-      return '<img src="$src" alt="${_s(node.text)}"$_voidElementSlash>';
+      return calloutLink(
+        node,
+        '<img src="$src" alt="${_s(node.text)}"$_voidElementSlash>',
+      );
     }
-    if (node.xmlCommentGuard) {
-      return '&lt;!--<b class="conum">(${_s(node.text)})</b>--&gt;';
-    }
-    return '${_s(node.attributes['guard'])}<b class="conum">(${_s(node.text)})</b>';
+    final marker = calloutLink(node, '<b class="conum">(${_s(node.text)})</b>');
+    if (node.xmlCommentGuard) return '&lt;!--$marker--&gt;';
+    return '${_s(node.attributes['guard'])}$marker';
   }
+
+  /// The label before footnote [footnote] in the list of [document]'s
+  /// footnotes: `footnote-label-template` (ADR-0010), `1. ` by default, the
+  /// number a link back to the reference.
+  static String _footnoteLabel(Document document, Footnote footnote) =>
+      renderNumbered(
+        document.attr('footnote-label-template') ?? '{{number}}. ',
+        _s(footnote.index),
+        (n) => '<a href="#_footnoteref_${_s(footnote.index)}">$n</a>',
+      );
 
   /// Converts the [node] inline footnote.
   String? convertInlineFootnote(Inline node) {
     final index = node.attr('index');
     if (index != null) {
+      // The marker: `footnote-reference-template` (ADR-0010), `[1]` by
+      // default, the number the link.
+      final template =
+          node.document?.attr('footnote-reference-template') ?? '[{{number}}]';
       if (node.type == 'xref') {
-        return '<sup class="footnoteref">[<a class="footnote" href="#_footnotedef_${_s(index)}" title="View footnote.">${_s(index)}</a>]</sup>';
+        final marker = renderNumbered(
+          template,
+          _s(index),
+          (n) =>
+              '<a class="footnote" href="#_footnotedef_${_s(index)}" title="View footnote.">$n</a>',
+        );
+        return '<sup class="footnoteref">$marker</sup>';
       }
       final idAttr = node.id != null ? ' id="_footnote_${node.id}"' : '';
-      return '<sup class="footnote"$idAttr>[<a id="_footnoteref_${_s(index)}" class="footnote" href="#_footnotedef_${_s(index)}" title="View footnote.">${_s(index)}</a>]</sup>';
+      final marker = renderNumbered(
+        template,
+        _s(index),
+        (n) =>
+            '<a id="_footnoteref_${_s(index)}" class="footnote" href="#_footnotedef_${_s(index)}" title="View footnote.">$n</a>',
+      );
+      return '<sup class="footnote"$idAttr>$marker</sup>';
     }
     if (node.type == 'xref') {
       return '<sup class="footnoteref red" title="Unresolved footnote reference.">[${_s(node.text)}]</sup>';
@@ -2130,8 +2204,39 @@ class Html5Converter extends BuiltInConverter {
   }
 
   /// Converts the [node] inline index term.
-  String convertInlineIndexterm(Inline node) =>
-      node.type == 'visible' ? _s(node.text) : '';
+  String convertInlineIndexterm(Inline node) {
+    final visible = node.type == 'visible';
+    // Where the document has an index, each use gets an anchor the index
+    // links to (Asciidoctor renders the index section empty).
+    final anchor = (node.document! as Document).catalog.index.add(
+      node,
+      visible ? [_s(node.text)] : node.terms ?? const [],
+    );
+    final target = anchor == null ? '' : '<a id="$anchor"></a>';
+    return visible ? '$target${_s(node.text)}' : target;
+  }
+
+  /// Starts cataloging the index terms of [document] (a top-level one).
+  void beginIndex(Document document) {
+    if (document.parentDocument == null) {
+      document.catalog.index.begin(document);
+    }
+  }
+
+  /// The index of [node]'s document as HTML, when [node] is its index
+  /// section and the terms were cataloged; else empty.
+  static String _indexOf(Section node) {
+    final document = node.document! as Document;
+    final index = document.catalog.index;
+    if (node.sectname != 'index' || !index.isActive) return '';
+    return indexHtml(
+      index,
+      level: node.level!,
+      label: (section) => indexUseLabel(section, document),
+      codePoint: indexInCodePointOrder(document),
+      headings: indexHasCategoryHeadings(document),
+    );
+  }
 
   /// Converts the [node] inline keyboard shortcut.
   String convertInlineKbd(Inline node) {
@@ -2177,6 +2282,49 @@ class Html5Converter extends BuiltInConverter {
       return '<span class="${_s(node.role)}">$open${_s(node.text)}$close</span>';
     }
     return '$open${_s(node.text)}$close';
+  }
+
+  /// The cover of [node] (its `front-cover-image`: a path or an
+  /// `image:cover.png[]` macro), or null (also with `asciidoctor-compat`:
+  /// Asciidoctor's HTML has none).
+  String? _cover(Document node) {
+    final value = node.attr('front-cover-image');
+    if (value == null || value.trim().isEmpty) return null;
+    if (asciidoctorCompat(node, CompatFormat.html)) return null;
+    final macro = RegExp(r'^image:{1,2}(.*?)\[(.*)\]$').firstMatch(value);
+    final target = macro?[1] ?? value.trim();
+    final alt = switch (macro?[2]) {
+      final String attrs when attrs.trim().isNotEmpty =>
+        attrs.split(',').first.trim(),
+      _ => 'Cover',
+    };
+    return '<div id="cover" class="imageblock cover">\n'
+        '<div class="content">\n'
+        '<img src="${node.imageUri(target)}" '
+        'alt="${_encodeAttributeValue(alt)}"$_voidElementSlash>\n'
+        '</div>\n'
+        '</div>';
+  }
+
+  /// The text of image [node]'s [target] when it is a text file
+  /// (`image::diagram.txt[]`, or `format=txt`), escaped for HTML; null for
+  /// any other image, or a text file that can't be read.
+  String? _textImage(Block node, String target) {
+    final isText =
+        node.attr('format') == 'txt' ||
+        (!node.hasAttr('format') && target.toLowerCase().endsWith('.txt'));
+    if (!isText || node.document!.safe >= SafeMode.secure) return null;
+    final text = node.readContents(
+      target,
+      start: node.document!.attr('imagesdir'),
+      label: 'text image',
+    );
+    if (text == null) return null;
+    return text
+        .replaceAll(RegExp(r'\r?\n$'), '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
   }
 
   /// Reads the SVG at [target] for inlining into the output.

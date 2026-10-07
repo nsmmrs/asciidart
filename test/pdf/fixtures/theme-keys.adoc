@@ -1,0 +1,65 @@
+= Theme Keys
+Author Name
+v1.0, 2026-10-05: The remark
+:pdf-theme: theme-keys-theme.yml
+:pdf-themesdir: {docdir}
+:doctype: book
+:toc:
+:imagesdir: images
+:experimental:
+
+== Chapter One
+
+[abstract]
+.Abstract
+A summary.
+
+=== Section Three
+
+Text with a btn:[Button], `code span`, and a https://example.org[link].
+See <<target>>.
+
+[#target]
+NOTE: An admonition with a border.
+
+.A listing
+----
+some code
+----
+
+.An example
+====
+Example content.
+====
+
+.A quote
+[quote,Someone]
+____
+Quoted words.
+____
+
+.A sidebar
+****
+Sidebar content.
+****
+
+[verse]
+____
+A verse
+of words.
+____
+
+.An image
+image::sample-logo.jpg[Tux,100]
+
+.A table
+[cols="1a,1"]
+|===
+|* AsciiDoc cell
+* with a list
+|plain cell
+|===
+
+== Chapter Two
+
+More text.

@@ -1644,6 +1644,8 @@ abstract final class Parser {
               block
                 ..title = blockTitle
                 ..assignCaption(attrs.remove('caption'), figure: true);
+            } else {
+              block.assignCaption(null, figure: true);
             }
           }
           attrs['target'] = target;
@@ -2199,6 +2201,9 @@ abstract final class Parser {
       if (captionAttributeName(result.context) != null) {
         result.assignCaption(attrs.remove('caption'));
       }
+    } else if (captionAttributeName(result.context) != null) {
+      // Untitled: numbered all the same with `<kind>-numbering: all`.
+      result.assignCaption(null);
     }
     // TODO eventually remove the style attribute from the attributes hash
     //block.style = attributes.delete 'style'
@@ -2233,7 +2238,11 @@ abstract final class Parser {
       // this is always a Block here (lists and tables short-circuit in
       // _commitSubs).
       // No need to sub callouts if none are found when cataloging.
-      if (!catalogCallouts((result as Block).source(), document)) {
+      if (!catalogCallouts(
+        (result as Block).source(),
+        document,
+        at: reader.cursorAtMark(),
+      )) {
         result.removeSub(Sub.callouts);
       }
     }
@@ -2550,14 +2559,17 @@ abstract final class Parser {
   /// Catalogs any callouts found in [text], but doesn't process them.
   ///
   /// Port of `Parser.catalog_callouts`. Returns whether callouts were found.
-  static bool catalogCallouts(String text, Document document) {
+  static bool catalogCallouts(String text, Document document, {Cursor? at}) {
     if (!_mayContainCallout(text)) return false;
     var found = false;
     var autonum = 0;
     for (final match in calloutScanRx.allMatches(text)) {
       if (!match.group(0)!.startsWith(r'\')) {
         final num = match.group(2)!;
-        document.callouts.register(num == '.' ? ++autonum : int.parse(num));
+        document.callouts.register(
+          num == '.' ? ++autonum : int.parse(num),
+          at: at,
+        );
       }
       // We have to mark as found even if it's escaped so it can be
       // unescaped.
@@ -2748,10 +2760,22 @@ abstract final class Parser {
         );
       } else {
         listItem.attributes['coids'] = coids;
+        callouts.explained.addAll(coids.split(' '));
       }
       nextIndex += 1;
     }
 
+    // asciidart's lint (with callout-links): a callout no item explains.
+    if (parent.document!.hasAttr('callout-links')) {
+      for (final callout in callouts.currentList) {
+        if (callout.ordinal > listBlock.items.length) {
+          _logger.warn(
+            'no callout list item for <${callout.ordinal}>',
+            at: callout.at,
+          );
+        }
+      }
+    }
     callouts.nextList();
     return listBlock;
   }

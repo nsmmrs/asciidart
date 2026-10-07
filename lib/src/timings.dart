@@ -15,10 +15,14 @@ import 'package:asciidart/src/io.dart' as io;
 /// `double` seconds from a monotonic clock ([Stopwatch], mirroring
 /// `Process.clock_gettime(Process::CLOCK_MONOTONIC)`).
 class Timings {
-  /// Creates timings with no recorded phases.
-  new() {
+  /// Creates timings with no recorded phases; [onRecord] hears of each
+  /// phase as it finishes (asciidart's `--progress`).
+  new({this.onRecord}) {
     _stopwatch.start();
   }
+
+  /// Called with each phase and its seconds as the phase is recorded.
+  final void Function(String phase, double seconds)? onRecord;
 
   final Stopwatch _stopwatch = Stopwatch();
   final Map<String, double> _log = {};
@@ -47,7 +51,9 @@ class Timings {
     if (startTime == null) {
       throw StateError('cannot record timing for "$key": no timer was started');
     }
-    return _log[key] = _now - startTime;
+    final seconds = _log[key] = _now - startTime;
+    onRecord?.call(key, seconds);
+    return seconds;
   }
 
   /// Returns the total recorded seconds for [key1]..[key4], or `null` when

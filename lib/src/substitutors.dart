@@ -123,6 +123,33 @@ const String can = '\u0018';
 /// Delete marker for a dropped empty line. Port of `DEL` (`\u007f`).
 const String del = '\u007f';
 
+/// [text] with its quoted text substituted, each index term on its own
+/// (asciidart's: Asciidoctor lets a mark inside a term, as in
+/// `_hyperscript`, pair with one after it): a term's marks pair only
+/// within it, and quoted text may still enclose a whole term.
+String _subQuotesKeepingIndexterms(AbstractNode node, String text) {
+  if (!(text.contains('((') && text.contains('))')) &&
+      !text.contains('dexterm')) {
+    return subQuotes(node, text);
+  }
+  final terms = <String>[];
+  final masked = text.replaceAllMapped(inlineIndextermMacroRx, (match) {
+    final term = match[0]!;
+    if (term.startsWith(r'\')) return term;
+    terms.add(subQuotes(node, term));
+    return '$_termStart${terms.length - 1}$_termEnd';
+  });
+  if (terms.isEmpty) return subQuotes(node, text);
+  return subQuotes(node, masked).replaceAllMapped(
+    RegExp('$_termStart(\\d+)$_termEnd'),
+    (match) => terms[int.parse(match[1]!)],
+  );
+}
+
+/// The ends of an index term's placeholder while quotes are substituted.
+const String _termStart = '\u0098';
+const String _termEnd = '\u0099';
+
 /// Start of a guarded passthrough placeholder (`\u0096`). Port of `PASS_START`.
 const String passStart = '\u0096';
 
@@ -324,7 +351,7 @@ String _applySubsInRun(AbstractNode node, String text, List<Sub> subs) {
       case Sub.specialcharacters:
         subject = subSpecialchars(subject);
       case Sub.quotes:
-        subject = subQuotes(node, subject);
+        subject = _subQuotesKeepingIndexterms(node, subject);
       case Sub.attributes:
         if (subject.contains(attrRefHead)) {
           subject = subAttributes(node, subject);
