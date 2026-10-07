@@ -71,8 +71,12 @@ Mark terms where they are discussed: `((term))` shows the term,
 ```
 
 The PDF lists page numbers; HTML, the website and EPUB link to each
-section the term is used in. `Document.index` gives the same entries to
-programs (`doc/api.md`).
+section the term is used in (the EPUB's marked up as an EPUB index).
+`:index-sort: code-point` orders the terms by code point (capitals
+first) instead of alphabetically, and `:index-category-headings!:` leaves
+out the letter above each group, in every format (a PDF theme's
+`index_sort` and `index_category_headings` take precedence).
+`Document.index` gives the same entries to programs (`doc/api.md`).
 
 ## Footnotes
 

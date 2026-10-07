@@ -34,6 +34,29 @@ String _html(String source, {Map<String, String> attributes = const {}}) =>
     );
 
 void main() {
+  test('index-sort: code-point and index-category-headings!', () {
+    const source =
+        '= Book\n:doctype: book\n\n== One\n\n((htmx)) ((HTTP)) ((Alpine))\n\n'
+        '[index]\n== Index\n';
+    List<String> terms(String html) => [
+      for (final m in RegExp(
+        '<span class="index-term">([^<]*)</span>',
+      ).allMatches(html))
+        m[1]!,
+    ];
+    // The index's order: case-insensitive, by letter.
+    final letter = _html(source);
+    expect(terms(letter), ['Alpine', 'htmx', 'HTTP']);
+    expect(letter, contains('<h3>A</h3>'));
+    // Code point order, one list.
+    final codePoint = _html(
+      source,
+      attributes: {'index-sort': 'code-point', 'index-category-headings!': ''},
+    );
+    expect(terms(codePoint), ['Alpine', 'HTTP', 'htmx']);
+    expect(codePoint, isNot(contains('<h3>')));
+  });
+
   test('a term indexed in a section title is in the index', () {
     final html = _html(
       '= Book\n:doctype: book\n\n== Chapter ((Gadget))\n\nText.\n\n'

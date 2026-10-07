@@ -461,6 +461,10 @@ class Html5Converter extends BuiltInConverter {
     }
 
     if (!node.noheader) {
+      // The book's cover (`front-cover-image`, as the PDF, EPUB and
+      // DocBook have it): first, on the page with the header (the
+      // website's home page).
+      if (_cover(node) case final cover?) result.add(cover);
       result.add('<div id="header"$maxWidthAttr>');
       if (node.doctype == 'manpage') {
         result.add('<h1>${_s(node.doctitle())} Manual Page</h1>');
@@ -2172,6 +2176,8 @@ class Html5Converter extends BuiltInConverter {
       index,
       level: node.level!,
       label: (section) => indexUseLabel(section, document),
+      codePoint: indexInCodePointOrder(document),
+      headings: indexHasCategoryHeadings(document),
     );
   }
 
@@ -2219,6 +2225,26 @@ class Html5Converter extends BuiltInConverter {
       return '<span class="${_s(node.role)}">$open${_s(node.text)}$close</span>';
     }
     return '$open${_s(node.text)}$close';
+  }
+
+  /// The cover of [node] (its `front-cover-image`: a path or an
+  /// `image:cover.png[]` macro), or null.
+  String? _cover(Document node) {
+    final value = node.attr('front-cover-image');
+    if (value == null || value.trim().isEmpty) return null;
+    final macro = RegExp(r'^image:{1,2}(.*?)\[(.*)\]$').firstMatch(value);
+    final target = macro?[1] ?? value.trim();
+    final alt = switch (macro?[2]) {
+      final String attrs when attrs.trim().isNotEmpty =>
+        attrs.split(',').first.trim(),
+      _ => 'Cover',
+    };
+    return '<div id="cover" class="imageblock cover">\n'
+        '<div class="content">\n'
+        '<img src="${node.imageUri(target)}" '
+        'alt="${_encodeAttributeValue(alt)}"$_voidElementSlash>\n'
+        '</div>\n'
+        '</div>';
   }
 
   /// The text of image [node]'s [target] when it is a text file

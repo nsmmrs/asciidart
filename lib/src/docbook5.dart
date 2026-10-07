@@ -1301,6 +1301,15 @@ class Docbook5Converter extends BuiltInConverter {
     if (date != null) {
       result.add('<date>${_s(date)}</date>');
     }
+    // The book's ISBN and editors (asciidart's `isbn` and `editor`, as the
+    // EPUB's metadata has them).
+    if (doc.attr('isbn') case final isbn? when isbn.isNotEmpty) {
+      result.add('<biblioid class="isbn">${_s(isbn)}</biblioid>');
+    }
+    for (final editor in (doc.attr('editor') ?? '').split(';')) {
+      if (editor.trim().isEmpty) continue;
+      result.add('<editor><personname>${editor.trim()}</personname></editor>');
+    }
     if (doc.hasAttr('copyright')) {
       final match = _copyrightRx.firstMatch(doc.attr('copyright')!);
       result

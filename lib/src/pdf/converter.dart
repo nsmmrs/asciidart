@@ -16,6 +16,7 @@ import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
+import 'package:asciidart/src/index_catalog.dart' show indexHasCategoryHeadings;
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
@@ -582,6 +583,9 @@ final class PdfConverter extends BuiltInConverter
               producer: info.producer,
               trapped: false,
               pdfxVersion: 'PDF/X-4',
+              identifier: info.identifier,
+              contributors: info.contributors,
+              rights: info.rights,
             ),
       pageMode: pageMode,
       nonFullScreenPageMode: nonFullScreen,
@@ -1342,6 +1346,22 @@ final class PdfConverter extends BuiltInConverter
       keywords: plain(doc.attr('keywords')),
       creator: plain(doc.attr('publisher') ?? author) ?? '',
       producer: plain(doc.attr('producer')) ?? 'asciidart',
+      // The book's ISBN, editors and copyright in the XMP metadata, as
+      // the EPUB's OPF has them (modern engine).
+      identifier: _engine == PdfEngine.modern
+          ? switch (doc.attr('isbn')) {
+              final String isbn when isbn.trim().isNotEmpty =>
+                'urn:isbn:${isbn.replaceAll(RegExp(r'[\s-]'), '')}',
+              _ => null,
+            }
+          : null,
+      contributors: _engine == PdfEngine.modern
+          ? [
+              for (final editor in (doc.attr('editor') ?? '').split(';'))
+                if (editor.trim().isNotEmpty) plain(editor.trim())!,
+            ]
+          : const [],
+      rights: _engine == PdfEngine.modern ? plain(doc.attr('copyright')) : null,
     );
   }
 
@@ -8660,7 +8680,10 @@ final class PdfConverter extends BuiltInConverter
     // `index_category_headings: false` leaves out the letter headings.
     final headings =
         _engine != PdfEngine.modern ||
-        _theme.value('index_category_headings') != const ThemeBool(false);
+        switch (_theme.value('index_category_headings')) {
+          ThemeBool(:final value) => value,
+          _ => indexHasCategoryHeadings(_document),
+        };
     // The modern engine reads the index's font keys (`index_font_family`,
     // `_size`, `_color`, `_style`); the gem has none.
     final saved = _font;
@@ -8678,7 +8701,8 @@ final class PdfConverter extends BuiltInConverter
         // list, keyed by its terms joined with commas, in code point
         // order (as Typst's in-dexter index).
         if (_engine == PdfEngine.modern &&
-            _choice('index_sort', const ['letter', 'code-point']) ==
+            (_choice('index_sort', const ['letter', 'code-point']) ??
+                    _document.attr('index-sort')) ==
                 'code-point') {
           _flatIndex(style);
           return;

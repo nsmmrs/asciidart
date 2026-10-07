@@ -12,7 +12,7 @@ feature the format has no use for.
 | Feature | PDF | HTML | Website | EPUB 3 | DocBook 5 |
 | --- | --- | --- | --- | --- | --- |
 | Index (`[index]`, `((term))`) | page numbers | links to sections, by letter | its own page, links across pages | links, by letter, as an EPUB index (`epub:type`, a landmark) | `<indexterm>`, `<index/>` |
-| Index order and layout (`index_sort`) | theme keys | **gap:** by letter only | **gap:** by letter only | **gap:** by letter only | the processor's |
+| Index order and headings (`index-sort`, `index-category-headings`) | the attributes, or theme keys (and a flat Typst-like list) | the attributes | the attributes | the attributes | the processor's |
 | Contents (`:toc:`, `toc::[]` in a section) | yes | yes | a page of its own | navigation; `toc::[]` lists the contents there | a chapter of `toc::[]` alone is `<toc>` |
 | `%notoc` sections | yes | yes | yes | yes | n/a |
 | Footnotes | bottom of the page | end of the page | end of each page | pop-up notes | `<footnote>` |
@@ -28,9 +28,9 @@ feature the format has no use for.
 | Section roles (a boxed `[.html-note]`) | theme `section_role_<role>_*` | class (CSS) | class | class | `role` |
 | Source highlighting | hilite | hilite | hilite | hilite | `language` |
 | Math (`stem:[]`) | **gap:** shown as source | MathJax | MathJax | **gap:** shown as source (asciidoctor-epub3 writes MathML for AsciiMath) | `<mathphrase>` |
-| Cover (`front-cover-image`) | cover page | **gap:** none | **gap:** none on the home page | cover | `<cover>` |
+| Cover (`front-cover-image`) | cover page | before the header | on the home page | cover | `<cover>` |
 | Title page, dedication, colophon | yes | headings | pages | pages, with landmarks | `<dedication>`, `<colophon>` |
-| Book metadata (`isbn`, `editor`, `copyright`) | **gap:** not in the PDF's metadata | `<meta>` (author, copyright) | same | OPF | **gap:** not in `<info>` |
+| Book metadata (`isbn`, `editor`, `copyright`) | XMP (`dc:identifier`, `dc:contributor`, `dc:rights`) | `<meta>` (author, copyright) | same | OPF | `<info>` (`biblioid`, `editor`, `copyright`) |
 | Running heads, page numbers | yes | n/a | n/a | **gap:** a `page-list` mapping to the print pages (optional) | n/a |
 | Page paths (`page-path`) | n/a | n/a | yes | n/a | n/a |
 | Show link URIs (`show-link-uri`) | footnote or after | n/a | n/a | n/a | n/a |

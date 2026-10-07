@@ -2132,5 +2132,20 @@ base:
       );
       expect(_pages('${input.path}.pdf').expand((p) => p), contains('Index'));
     });
+
+    test("the book's ISBN, editors and copyright in the XMP metadata", () {
+      final pdf = _pdf(
+        '= Book\nAnn Author\n:isbn: 978-0-00-000000-0\n'
+        ':editor: Ed One; Ed Two\n'
+        ':copyright: 2026 Ann Author\n\nText.\n',
+      );
+      final bytes = latin1.decode(File(pdf).readAsBytesSync());
+      expect(
+        bytes,
+        contains('<dc:identifier>urn:isbn:9780000000000</dc:identifier>'),
+      );
+      expect(bytes, contains('<rdf:li>Ed One</rdf:li><rdf:li>Ed Two</rdf:li>'));
+      expect(bytes, contains('2026 Ann Author</rdf:li></rdf:Alt></dc:rights>'));
+    });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }

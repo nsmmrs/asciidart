@@ -7,12 +7,14 @@ import 'dart:io';
 
 import 'package:asciidart/src/epub3/epub3.dart';
 import 'package:asciidart/src/internal.dart';
+import 'package:asciidart/src/multipage.dart';
 import 'package:test/test.dart';
 
 import 'epub3_test.dart' show unzipText;
 
 void main() {
   setUpAll(registerEpub3);
+  setUpAll(MultipageHtml5Converter.register);
   late Directory dir;
   setUp(() {
     dir = Directory.systemTemp.createTempSync('format_parity_test.');
@@ -155,5 +157,63 @@ void main() {
       File(convertWith('html5', '= Doc\n\nText.\n')).readAsStringSync(),
       isNot(contains('hyphens:auto')),
     );
+  });
+
+  test('DocBook: the ISBN and editors in the info', () {
+    final xml = File(
+      convertWith(
+        'docbook5',
+        '= Book\nAnn Author\n:isbn: 978-0-00-000000-0\n'
+            ':editor: Ed One; Ed Two\n\nText.\n',
+      ),
+    ).readAsStringSync();
+    expect(
+      xml,
+      contains('<biblioid class="isbn">978-0-00-000000-0</biblioid>'),
+    );
+    expect(xml, contains('<editor><personname>Ed One</personname></editor>'));
+    expect(xml, contains('<editor><personname>Ed Two</personname></editor>'));
+  });
+
+  test("the cover on the HTML page and the website's home page only", () {
+    const source =
+        '= Book\n:doctype: book\n'
+        ':front-cover-image: image:cover.png[A cover]\n\n== One\n\nText.\n';
+    final html = File(convertWith('html5', source)).readAsStringSync();
+    expect(
+      html,
+      contains(
+        '<div id="cover" class="imageblock cover">\n<div class="content">\n'
+        '<img src="cover.png" alt="A cover">',
+      ),
+    );
+    expect(html.indexOf('id="cover"'), lessThan(html.indexOf('id="header"')));
+    final input = File('${dir.path}/site.adoc')..writeAsStringSync(source);
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'multipage_html5',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    expect(
+      File('${dir.path}/site.html').readAsStringSync(),
+      contains('id="cover"'),
+    );
+    final pages = dir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where(
+          (f) =>
+              f.path.endsWith('.html') &&
+              !f.path.endsWith('site.html') &&
+              !f.path.endsWith('doc.html'),
+        )
+        .toList();
+    expect(pages, isNotEmpty);
+    for (final page in pages) {
+      expect(page.readAsStringSync(), isNot(contains('id="cover"')));
+    }
   });
 }

@@ -185,7 +185,11 @@ reproducers of each.
   is DocBook's `floatstyle`; a block with `%unbreakable` has the class
   `unbreakable` in HTML and EPUB and DocBook XSL's keep-together
   instruction; `:hyphens:` adds a `hyphens: auto` style to HTML and EPUB.
-  `--help` lists the backends asciidart has built in.
+  `--help` lists the backends asciidart has built in. `index-sort:
+  code-point` and `index-category-headings!` set the HTML and EPUB
+  index's order and letter headings; `front-cover-image` is shown before
+  the header of an HTML page (the website's home page); DocBook's `<info>`
+  has the `isbn` (`biblioid`) and `editor` attributes.
 - Rouge, Pygments and CodeRay are not available: they behave as the gem does
   without their gems (no highlighting, the highlighter's `<pre>` class kept),
   and warn in asciidart's words, once: `Rouge syntax highlighting is not
