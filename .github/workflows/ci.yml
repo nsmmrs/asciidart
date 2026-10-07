@@ -73,9 +73,11 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install asciidoctor gem (parity oracle)
-      # No optional gems: asciidart highlights with highlight.js only, and
-      # Rouge, Pygments and CodeRay behave as when their gems are missing.
-      run: gem install asciidoctor -v 2.0.26 --no-document
+      # With asciimath, whose conversion asciidart ports (AsciiMath becomes
+      # MathML in DocBook, ADR-0014). No other optional gems: asciidart
+      # highlights with highlight.js only, and Rouge, Pygments and CodeRay
+      # behave as when their gems are missing.
+      run: gem install asciidoctor:2.0.26 asciimath:2.0.6 --no-document
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
@@ -144,7 +146,8 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install asciidoctor gem (parity oracle)
-      run: gem install asciidoctor -v 2.0.26 --no-document
+      # With asciimath, as for the native executable's parity.
+      run: gem install asciidoctor:2.0.26 asciimath:2.0.6 --no-document
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)

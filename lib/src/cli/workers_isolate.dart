@@ -11,10 +11,7 @@ import 'package:asciidart/src/parallel.dart';
 /// serially: the files are the parallel work).
 void conversionWorkerMain(SendPort mainPort) {
   Parallel.nested = true;
-  serveJobs<ConversionRequest, ConversionResponse>(
-    mainPort,
-    runConversionJob,
-  );
+  serveJobs<ConversionRequest, ConversionResponse>(mainPort, runConversionJob);
 }
 
 /// Converts [requests] on [workerCount] worker isolates, returning the
