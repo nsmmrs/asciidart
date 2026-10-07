@@ -1,0 +1,14 @@
+= Inline Images
+:imagesdir: images
+
+A paragraph with a small image:red.png[Red] inline, and a svg image:box.svg[Box,width=40] too.
+
+A tall image image:tall.png[Tall,height=80,width=17] raises the line it is on, as images taller than the text do.
+
+Scaled image:red.png[Scaled,scale=50] and fitted image:big.png[Fit,fit=line] and percent image:big.png[Pct,pdfwidth=20%].
+
+A linked image:red.png[Linked,link=https://example.org] and a missing image:nope.png[Nope] image.
+
+|===
+|Cell with image:red.png[Cell,width=50%] image
+|===

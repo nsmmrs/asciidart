@@ -1,0 +1,49 @@
+extends: default
+page:
+  foreground-image: image:images/red.png[width=40]
+  mode: fullscreen thumbs
+  initial-zoom: FitH
+svg:
+  fallback-font-family: M+ 1mn
+block:
+  anchor-top: -12
+title-page:
+  revision:
+    margin-bottom: 30
+header:
+  height: 0.75in
+  line-height: 1
+  border-color: #DDDDDD
+  border-width: 0.25
+  border-style: dashed
+  font-color: #AA0000
+  font-size: 9
+  font-style: italic
+  text-transform: uppercase
+  vertical-align: bottom
+  padding: [0, 0, 4, 0]
+  columns: <40% =20% >40%
+  column-rule-width: 0.5
+  column-rule-color: #000000
+  column-rule-style: dotted
+  column-rule-spacing: 6
+  title-style: basic
+  sectlevels: 1
+  recto:
+    left:
+      content: '{document-title}'
+    center:
+      content: '{page-number}'
+    right:
+      content: '{section-or-chapter-title}'
+  verso:
+    left:
+      content: '{section-or-chapter-title}'
+    center:
+      content: '{page-number}'
+    right:
+      content: '{document-title}'
+image:
+  caption:
+    max-width: fit-content
+    align: inherit

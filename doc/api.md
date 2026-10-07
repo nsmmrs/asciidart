@@ -216,4 +216,10 @@ with `_` or `.` (partials meant to be included).
 - **Custom commands.** `runCli(args, asciidart: Asciidart(...))` runs the
   `asciidart` command line with extensions and overrides compiled in;
   `asciidart init-config` generates such a project.
+- **The index.** `doc.index` lists the terms a document's index terms
+  (`(((...)))`, `((...))`, `indexterm:[]`, `indexterm2:[]`) name, by
+  letter: each `IndexEntry` has its `term`, the blocks it is `uses`d in,
+  `see` and `seeAlso`, and its `subentries`. In HTML and EPUB, an
+  `[index]` section renders it, linked to each use (`index-html!` turns
+  that off; Asciidoctor renders the section empty).
 - **Errors.** Problems that stop a conversion throw `AsciidartException`.

@@ -73,15 +73,22 @@ converted as html5, embedded html5, docbook5 and manpage.
 ```sh
 tool/corpus/fetch.sh /tmp/corpus           # pinned in tool/corpus/sources.txt
 dart run tool/corpus_parity.dart --exe-a asciidoctor \
-  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client" \
+  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client -a index-html! -a asciidoctor-compat=true@" \
   --out /tmp/corpus-results /tmp/corpus
 ```
 
-The reference is the 2.0.26 gem without optional gems (asciidart provides
-none of Rouge, Pygments, CodeRay or AsciiMath, and behaves as the gem does
-without them), and asciidart runs with `highlightjs-mode=client` so that
-documents using highlight.js compare with the gem's browser markup (see the
-intentional differences). The check found and drove fixes
+The reference is the 2.0.26 gem with the `asciimath` gem (asciidart has
+its own port, ADR-0014) and no other optional gems (asciidart provides
+none of Rouge, Pygments or CodeRay, and behaves as the gem does without
+them), and asciidart runs with `highlightjs-mode=client` so that
+documents using highlight.js compare with the gem's browser markup, and
+with `index-html!` so that documents with an index section compare with
+the gem's empty one, and with `asciidoctor-compat` (ADR-0015; a default
+the document may override, as `@` makes it) so that a page embeds
+Asciidoctor's stylesheet alone and no cover (see the intentional
+differences). What asciidart adds to a block with the `unbreakable`
+option (the class in HTML, `<?dbfo keep-together="always"?>` in DocBook)
+is removed from both outputs before they are compared. The check found and drove fixes
 for: `cols=""`, `%autowidth` with a width, nested description list items
 with attached blocks, line breaks in AsciiMath blocks, Ruby's ASCII-only
 `\s` and `strip` against Unicode spaces, `\p{Blank}`, full case mapping
@@ -119,6 +126,44 @@ reproducers of each.
   top of `lib/src/cli/options.dart`).
 - Dart-only features (Mustache templates, `init-config`, `-j/--jobs`) have
   no Ruby counterpart.
+- DocBook and EPUB output is valid XML where Asciidoctor's isn't
+  (`test/divergences/xml_output.bats` reproduces each case on both
+  CLIs): tags are balanced (emphasis that opens inside an index term and
+  closes after it); a section style DocBook has no element for
+  (`[introduction]`) gives a chapter or section, and `[partintro]`
+  outside a part a section; emphasis and quotes inside a `<literal>`
+  become phrases and quotation marks; the copyright's year comes before
+  its holder, and a copyright without a year is a legal notice. In EPUB, an image width is a
+  number of pixels or a percentage (another value is left out), an empty
+  `toc-title` gives the navigation Asciidoctor's default title, and a
+  link to a path from a website's root goes to its id in the book, or is
+  text. With `source-highlighter=highlight.js`, an EPUB's code is
+  highlighted at conversion and the theme's stylesheet is in the EPUB
+  (`styles/highlightjs.css`), where the gem links highlight.js's
+  stylesheet and scripts outside it (`test/divergences/epub_output.bats`).
+  EPUB parity compares the gem's chapters with these repairs made. The
+  `isbn` and `editor` attributes (which the gem ignores) add an ISBN
+  identifier and editors to an EPUB's metadata, and
+  `epub-unique-identifier: isbn` makes the ISBN its unique identifier.
+  `ebook-code-overflow=scroll` makes code lines scroll rather than wrap.
+- Quotes (emphasis, strong, monospace...) pair around an index term,
+  never into it: in `(((_hyperscript, event filter))) an _event filter_`
+  the emphasis is `event filter` and the term `_hyperscript`, where
+  Asciidoctor pairs the underscores across the term, prints a stray tag
+  and splits the term (`test/divergences/index_terms.bats`). The term's
+  own text is quoted alone.
+- Generated text from templates (ADR-0010): `footnote-reference-template`
+  and `footnote-label-template` set the footnote markers in HTML and EPUB,
+  `<kind>-caption-template` a caption's number (`listing`, `figure`,
+  `table`, `example`, `appendix`) in every backend; without them the
+  output is Asciidoctor's.
+- A section with the `notoc` option is left out of the contents (HTML,
+  PDF, EPUB, the website's list); Asciidoctor has no such option.
+- `callout-links` (off by default) links callouts and their list items
+  both ways in HTML and EPUB, keeps markers out of copied code, and warns
+  about callouts no list item explains (`no callout list item for <3>`,
+  `no callout list for <1>`). The modern PDF engine always does the
+  first two.
 - `--help` and `-h manpage` describe `-T` and `-E` as they work in this
   build (Mustache templates) instead of mentioning tilt and gems.
 - The Ruby-only options `-r/--require`, `-I/--load-path`, `--eruby` and
@@ -134,12 +179,53 @@ reproducers of each.
   The gem's behavior, markup for the browser plus the highlight.js 9.18.3
   scripts, is `highlightjs-mode=client`. Blocks with callouts have their
   spans closed at each line end, so the callout numbers sit outside them.
+- The default HTML stylesheet (embedded, or written as `asciidoctor.css`
+  with `linkcss`) is Asciidoctor's followed by asciidart's house rules
+  (ADR-0011, `doc/style.md`): a narrower measure, near-black headings,
+  tables with rows only, and the classes asciidart's own features use
+  (`small-caps`, `unbreakable`, text images, the index's columns, the
+  cover). The markup is Asciidoctor's. `-a stylesheet=asciidoctor`
+  embeds (or writes) Asciidoctor's stylesheet alone. Likewise an EPUB's
+  `styles/epub3.css` is asciidoctor-epub3's followed by the house rules
+  (`-a epub3-stylesheet=asciidoctor-epub3` for its alone; EPUB parity
+  passes it), and the modern PDF engine's default theme is asciidart's
+  (`-a pdf-theme=default` for asciidoctor-pdf's).
+- An `[index]` section lists the document's index terms in HTML and EPUB
+  (Asciidoctor and asciidoctor-epub3 render it empty, Asciidoctor issue
+  #450): a heading per letter, the terms with their subterms, a link to
+  each section a term is used in, and its see and see-also references.
+  Each use gets an anchor (`<a id="_indexterm_N"></a>`) where the term is.
+  Only documents with an index section change; `index-html!` turns it
+  off. In an EPUB the index is marked up with the EPUB Indexes vocabulary
+  (`epub:type="index"`, `index-entry`, `index-term`, `index-locator`...)
+  and has a landmark; a term in a section title is indexed too.
+- An EPUB's landmarks name the front and back matter (dedication,
+  colophon, acknowledgments, index) and its "Start of Content" is the
+  first chapter after the front matter, where asciidoctor-epub3's is the
+  first chapter (`test/divergences/epub_output.bats`); EPUB parity
+  compares navigation documents without their landmarks.
+- Where Asciidoctor has no output for a book feature, asciidart writes
+  its own (ADR-0012, `doc/formats.md`): a text file shown as an image
+  (`image::art.txt[]`) is its text in every backend (Asciidoctor writes an
+  `<img>` no browser shows); `toc::[]` lists the contents in an EPUB; a
+  chapter of `toc::[]` alone is DocBook's `<toc>`; an image's `placement`
+  is DocBook's `floatstyle`; a block with `%unbreakable` has the class
+  `unbreakable` in HTML and EPUB and DocBook XSL's keep-together
+  instruction; `:hyphens:` adds a `hyphens: auto` style to HTML and EPUB.
+  `--help` lists the backends asciidart has built in. `index-sort:
+  code-point` and `index-category-headings!` set the HTML and EPUB
+  index's order and letter headings; `front-cover-image` is shown before
+  the header of an HTML page (the website's home page); DocBook's `<info>`
+  has the `isbn` (`biblioid`) and `editor` attributes.
 - Rouge, Pygments and CodeRay are not available: they behave as the gem does
   without their gems (no highlighting, the highlighter's `<pre>` class kept),
   and warn in asciidart's words, once: `Rouge syntax highlighting is not
   available. Functionality disabled.` (likewise Pygments and CodeRay).
-  `AsciiMath to MathML conversion is not available. Functionality disabled.`
-  is the DocBook counterpart for AsciiMath.
+  AsciiMath is converted to MathML in DocBook and EPUB by asciidart's port
+  of the `asciimath` gem 2.0.6 (ADR-0014), as Asciidoctor and
+  asciidoctor-epub3 do with that gem installed; the parity references
+  install it too. An EPUB content document with MathML declares the
+  `mathml` property (the gem doesn't; EPUBCheck requires it).
 - The `missing convert handler` warning names the converter by its Dart
   class (`ManpageConverter`) instead of the Ruby one
   (`Asciidoctor::Converter::ManPageConverter`).
@@ -176,9 +262,9 @@ Intentional differences:
 - A preamble whose only block is a list becomes the abstract, as in the
   gem, but its list is written as a list: the gem writes a dump of Ruby
   objects there (Asciidoctor's `List#content` is the array of items).
-- AsciiMath stays text, as in the gem without the asciimath gem, and the
-  warning says so in asciidart's words (`AsciiMath to MathML conversion is
-  not available. Functionality disabled.`); likewise the highlighters.
+- AsciiMath is MathML, as in the gem with the asciimath gem (asciidart's
+  port, ADR-0014), and its content document declares `mathml`; the
+  highlighters asciidart lacks warn in its own words.
 - A custom theme (`epub3-stylesdir`) is read as compiled CSS (`epub3.css`,
   `epub3-css3-only.css`): the gem compiles SCSS, for which asciidart has no
   compiler.
@@ -246,3 +332,161 @@ Documents that don't hit these cases convert as on `2.1.0`.
   (#2032). A quote in an image target or attribute (`src`, `href`,
   `width`, `title`, float, align, roles) is written as `&quot;` (#2862,
   #2661).
+
+## PDF (`-b pdf`)
+
+The PDF backend reads asciidoctor-pdf 2.3.27's YAML themes unchanged and
+draws with libpdf, asciidart's own PDF library. It has one layout engine,
+asciidart's own (`doc/pdf.md`). With `asciidoctor-compat` (or
+`-a pdf-compat`; ADR-0015), its settings default to asciidoctor-pdf's
+look: the goal is pages that look as the gem's do (on Asciidoctor 2.0.26,
+with its default dependencies: Prawn 2.4.0, prawn-svg 0.34.2,
+prawn-table, prawn-icon; no optional gems), not the same bytes. No Prawn
+code is ported.
+
+Two tools compare the PDF files of the gem and asciidart:
+
+- `tool/pdf_look.dart`: page images, blurred, the share of pixels that
+  differ (the look check below; `test/pdf/converter_test.dart` holds 32
+  fixtures and the gem's chronicles and edge-cases examples to it,
+  against PDFs the gem made, with `SOURCE_DATE_EPOCH=0`, along with their
+  page counts, outlines and page labels);
+- `tool/pdf_parity.dart`: what a reader extracts: the words in order
+  (`pdftotext`), where each is to the point (`pdftotext -bbox`), the
+  outline, the link annotations and the page labels, and the mean gray
+  difference of the pages.
+
+### Look check (2026-10-07): 792 of 797 documents look the same
+
+ADR-0015 asks of the default engine with `asciidoctor-compat` (pdf) that
+its pages look like asciidoctor-pdf's, not that they be the same bytes.
+`tool/pdf_look.dart` renders the gem's pages of the same 797 documents
+once (gray, 50 dpi, cached), then converts each with asciidart, renders
+its pages and compares them blurred (a 5-pixel box; a pixel differs when
+the grays differ by more than 10%). A document looks the same when no
+page differs on more than 0.5% of its pixels (a line of body text one
+point off is about 1%).
+
+```sh
+dart run tool/pdf_look.dart --gem <gem wrapper> \
+  --exe "<asciidart wrapper with -a asciidoctor-compat=pdf>" \
+  --cache <gem pages> --out <dir> [--pairs] ~/.cache/asciidart-work/pdfcorpus/*.adoc
+```
+
+792 documents look the same (748 before the look's defaults,
+`doc/pdf.md`, and the fixes the check found: title logos fitted to the
+page, autowidth columns as wide as their images, words longer than a line
+across index terms broken, a heading kept with a whole unbreakable block,
+a broken background image reported, not a failure). The other 5:
+
+- *The gem fails* (1): `font-002` (a font that isn't in the catalog).
+- *A gem quirk, not copied* (1): `table-098`, a page break inside an
+  AsciiDoc table cell: the gem drops the cell's text after it and moves
+  the rest to a new page.
+- *Math typeset* (1): `stem-002`, an AsciiMath formula the gem (without
+  asciidoctor-mathematical) shows as its source (ADR-0014).
+- *Within 0.6%* (2): `table-118` (CJK text with a fallback font) and
+  `hyphens-006` (a word the gem's patterns don't break).
+
+### Corpus check (2026-10-06, the engine since removed): 763 of 797 documents the same
+
+Until ADR-0015, a second layout engine imitated asciidoctor-pdf and
+Prawn line by line (`-a pdf-compat`); this check held it to the gem's
+words and positions. It was removed once the look check above passed.
+The record of that check:
+
+
+`tool/pdf_spec_corpus.dart` extracts the documents of the gem's own spec
+suite: every `to_pdf` heredoc, with the options the spec converts it with
+(doctype, attributes, footer, inline theme). That gives 797 documents
+covering every feature the gem tests. Each is converted by the gem and by
+asciidart and compared as above:
+
+```sh
+dart run tool/pdf_spec_corpus.dart ~/.cache/asciidart-work/pdfcorpus
+dart run tool/pdf_parity.dart --exe-a <gem wrapper> --exe-b <asciidart wrapper> \
+  --out <dir> ~/.cache/asciidart-work/pdfcorpus/*.adoc
+```
+
+The wrappers read each document's `.opts`. 763 documents match on every
+count. Of the other 34:
+
+- *The gem fails, or both do* (4): `font-002` (a font that isn't in the
+  catalog) and `page-040`, `page-042`, `page-043`.
+- *Gem bugs, not copied* (3):
+  - A front cover that is a missing PDF page turns every later page into
+    US Letter (`cover_page-021`, `cover_page-024`); asciidart keeps the
+    theme's page size.
+  - A broken SVG page background moves the body text to x = 0
+    (`page-041`).
+- *Text extraction only, the pages identical* (6):
+  - A character the font has no glyph for is drawn as `.notdef`. The gem's
+    PDF maps it to the character, asciidart's doesn't (libpdf writes CID
+    fonts with Identity-H, where `.notdef` can't stand for several
+    characters): `table-118`, `font-004`, `font-005`, `admonition-009`.
+  - `footnote-027` and `source-069` differ in reading order only.
+- *Hyphenation patterns* (1): `hyphens-006` breaks a word the gem's
+  patterns don't (see Intentional differences).
+- *Not done yet* (20):
+  - Footnotes inside AsciiDoc table cells (`table-081`, `table-082`); a
+    page break inside an AsciiDoc cell (`table-098`).
+  - Autowidth tables: vertical alignment (`table-086`), inline images
+    (`table-033`, `table-034`, `table-035`), and `table-100`.
+  - Title page background images in two placements (`title_page-026`,
+    `title_page-027`).
+  - An SVG image in a centered document title (`image-005`).
+  - The dot leader of a TOC entry ending in a code span (`toc-003`).
+  - Index entries in some arrangements (`index-005`, `index-007`).
+  - A footnote reference in a table cell (`footnote-025`).
+  - An abstract's first line with a theme override (`abstract-018`).
+  - An inline icon image (`icon-001`).
+  - `heading_min_height_after: auto` with an image (`section-060`).
+  - `cover_page-005`; `admonition-011`.
+
+### Theme keys
+
+`tool/pdf_theme_keys.dart` lists the keys of the theming guide (2.3.27)
+that the converter never reads over the corpus. Most come from the corpus,
+not from asciidart: it never sets a header, for instance, and the header
+keys are read whenever a theme gives the header a height. Not supported:
+
+- `code_highlight_background_color`, `code_line_gap`: options of the gem's
+  Rouge formatter. asciidart highlights with hilite (colors from a
+  highlight.js theme).
+- `block_anchor_top`: only moves where a block's destination points.
+- `abstract_text_decoration`, `abstract_title_text_decoration`,
+  `base_text_decoration`, `callout_list_text_align`: documented, but the
+  gem doesn't read them either.
+
+### Intentional differences
+
+- The non-full-screen page mode (`page_mode: fullscreen ...`) is written in
+  the viewer preferences, where ISO 32000 puts it; the gem writes it in the
+  catalog, where viewers ignore it.
+- Fonts are embedded as CID fonts (Identity-H) with subsets of TrueType
+  and CFF outlines; Prawn embeds simple fonts. Text extracts the same,
+  except for `.notdef` (above).
+- Source highlighting uses hilite rather than Rouge; with
+  `source-highlighter` set, asciidart highlights where the gem without
+  Rouge (as in the corpus) doesn't.
+- With `asciidoctor-compat`, what the gem gets wrong or lacks stays
+  fixed: a family without an italic or bold face has one made from its
+  regular (slanted, stroked); the index lists a page once, not once per
+  use; callout markers are left out of copied code; `nofooter` on a
+  section is honored; URLs break after their dots and slashes rather than
+  inside a word; a word longer than the line breaks at the line's end
+  even across index terms; a title logo, an autowidth column's image and
+  a heading kept with an unbreakable block are set as the gem means to.
+- Optional gems behave as not installed: asciidoctor-mathematical (STEM
+  stays source text), prawn-gmagick (GIF and other formats are reported),
+  rghost (`optimize`). PDF pages as images, covers and
+  backgrounds (prawn-templates) are supported natively, through libpdf's
+  PDF reader.
+- Hyphenation (`hyphens`, `base_hyphens`) is built in, the gem's with
+  the optional text-hyphen gem installed (as the corpus is converted, and
+  as the gem's spec suite runs). The patterns are hyph-utf8's, for 72
+  languages (`vendor/hyph-utf8`): text-hyphen's US English patterns may
+  be used for non-commercial purposes only. The two sets break some words
+  differently (`hyphens-006`: "vi-cious").
+- The parity tool compares what a reader sees; object order, compression
+  and IDs differ.

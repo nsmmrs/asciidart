@@ -72,6 +72,8 @@ JSObject wrap(Object o) => switch (o) {
   api.SourceCode() => rt.handle(o, 'SourceCode'),
   api.InlineText() => rt.handle(o, 'InlineText'),
   api.InlineMacroContext() => rt.handle(o, 'InlineMacroContext'),
+  api.IndexLetter() => rt.handle(o, 'IndexLetter'),
+  api.IndexEntry() => rt.handle(o, 'IndexEntry'),
   api.IncludeRequest() => rt.handle(o, 'IncludeRequest'),
   api.HtmlDefaults() => rt.handle(o, 'HtmlDefaults'),
   api.FileConversion() => rt.handle(o, 'FileConversion'),
@@ -1043,6 +1045,72 @@ final class Core {
     }
   }
 
+  JSAny? IndexEntry$get$term(JSAny? self) {
+    try {
+      return rt.unwrap<api.IndexEntry>(self).term.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? IndexEntry$get$uses(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.IndexEntry>(self).uses) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? IndexEntry$get$see(JSAny? self) {
+    try {
+      return ((rt.unwrap<api.IndexEntry>(self).see) == null
+          ? null
+          : (rt.unwrap<api.IndexEntry>(self).see)!.toJS);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? IndexEntry$get$seeAlso(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.IndexEntry>(self).seeAlso) x.toJS,
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? IndexEntry$get$subentries(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.IndexEntry>(self).subentries) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? IndexLetter$get$letter(JSAny? self) {
+    try {
+      return rt.unwrap<api.IndexLetter>(self).letter.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? IndexLetter$get$entries(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.IndexLetter>(self).entries) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? InlineMacroContext$get$target(JSAny? self) {
     try {
       return rt.unwrap<api.InlineMacroContext>(self).target.toJS;
@@ -1824,6 +1892,16 @@ final class Core {
     try {
       return rt.jsArray([
         for (final x in rt.unwrap<api.Document>(self).diagnostics) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Document$get$index(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Document>(self).index) wrap(x),
       ]);
     } catch (e, s) {
       rt.fail(e, s);

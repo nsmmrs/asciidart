@@ -4,6 +4,8 @@
 # Runs tool/differential.dart over the fixture corpus (plus
 # vendor/asciidoctor/data/reference/syntax.adoc) and the parity corpus in test/parity, on the
 # html5, docbook5 and manpage backends. Exits nonzero on any difference.
+# asciidart runs with asciidoctor-compat (ADR-0015: Asciidoctor's
+# stylesheet, not the house style), as a default a document may override.
 #
 # Usage: tool/parity.sh DART_EXE [RUBY_EXE]
 #   DART_EXE  the Dart CLI to check (e.g. build/asciidart)
@@ -24,7 +26,8 @@ for corpus in vendor/asciidoctor/test/fixtures test/parity; do
     echo "== $corpus ($backend)"
     dart run "$root/tool/differential.dart" --root "$root" -q \
       --corpus-dir "$corpus" --backend "$backend" \
-      --exe-a "$ruby_exe" --exe-b "$dart_exe" || status=1
+      --exe-a "$ruby_exe" --exe-b "$dart_exe -a asciidoctor-compat=true@" \
+      || status=1
   done
 done
 exit "$status"

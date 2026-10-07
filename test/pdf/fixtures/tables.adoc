@@ -1,0 +1,68 @@
+= Tables
+:doctype: article
+
+Intro paragraph.
+
+.A simple table
+[cols="1,2,1"]
+|===
+|Name |Description |Value
+
+|First
+|A description that is long enough to wrap onto a second line in the column.
+|1
+
+|Second
+|Short.
+|22
+
+|Third
+|Another
+|333
+|===
+
+[%header%footer,cols="2,1"]
+|===
+|Item |Price
+|Apple |1.00
+|Banana |0.50
+|Total |1.50
+|===
+
+[%autowidth]
+|===
+|a |bb |ccc
+|dddd |e |ff
+|===
+
+[cols="1,1",frame=ends,grid=rows]
+|===
+|Left aligned |Right
+2+|Spanning two columns
+|x |y
+|===
+
+[cols="1e,1s,1m,1h"]
+|===
+|emphasis |strong |monospace |header
+|e2 |s2 |m2 |h2
+|===
+
+[cols="^1,>1,1",options=header]
+|===
+|Center |Right |Default
+|c |r |d
+|===
+
+[cols="1a,1l"]
+|===
+a|
+* list in a cell
+* second
+
+Para in a cell.
+|literal  cell
+   with spaces
+|===
+
+After the tables.

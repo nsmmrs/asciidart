@@ -177,6 +177,25 @@ void main() {
       },
     );
 
+    test('--progress reports each phase as it finishes', () async {
+      final dir = makeTempDir('progress-test');
+      final input = File('${dir.path}/doc.adoc')..writeAsStringSync('Text.\n');
+      final err = StringBuffer();
+      final code = await runCliCode(
+        ['--progress', input.path],
+        out: StringBuffer(),
+        err: err,
+      );
+      expect(code, equals(0));
+      for (final phase in ['parse', 'convert', 'write']) {
+        expect(
+          err.toString(),
+          matches(RegExp('asciidart: .*doc.adoc: $phase done in \\d+ ms')),
+        );
+      }
+      expect(err.toString(), isNot(contains('Total time')));
+    });
+
     test('returns 1 and reports uncaught errors', () async {
       // A conversion failure under `--trace` rethrows, exercising the
       // uncaught-exception path: message plus backtrace on the error sink,

@@ -1,0 +1,31 @@
+= More Lists
+:doctype: article
+
+[qanda]
+What is Asciidoctor?::
+  An implementation of the AsciiDoc processor in Ruby.
+What is the answer to the Ultimate Question?:: 42
+Is this a compound answer?::
++
+First paragraph of the answer.
++
+Second paragraph.
+
+[unordered]
+Apples:: Red or green fruit.
+Bananas?:: Yellow fruit.
+Cherries::
+
+[ordered.stack]
+First:: The first thing.
+Second:: The second thing.
+
+* A list
+** with a nested
++
+compound item paragraph.
+* last item
++
+also compound.
+
+Final paragraph.

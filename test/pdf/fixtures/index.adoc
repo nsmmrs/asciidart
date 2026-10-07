@@ -1,0 +1,22 @@
+= Book With Index
+:doctype: book
+
+== Animals
+
+The ((cat)) is a small animal.
+(((animals, mammals, cat)))
+The ((dog)) barks.
+indexterm:[Zebra,see=Horse]
+indexterm:[Horse,see-also="Pony, Donkey"]
+((Pony)) rides.
+
+== More
+
+Another ((cat)) mention and ((Apple)) and ((_emphasized_ term)) and ((2nd thing)).
+
+<<<
+
+The ((cat)) again on a new page and ((dog)) too.
+
+[index]
+== Index

@@ -23,19 +23,37 @@ class Stylesheets {
   /// The shared [Stylesheets] instance (created lazily on first access).
   static final Stylesheets instance = Stylesheets();
 
+  /// The value of the `stylesheet` attribute that names Asciidoctor's
+  /// stylesheet as it is, without asciidart's house rules (ADR-0011).
+  static const String classicStylesheetKey = 'asciidoctor';
+
   String? _primaryStylesheetData;
+  String? _classicStylesheetData;
 
   /// The file name of the primary stylesheet.
   String get primaryStylesheetName => defaultStylesheetName;
 
-  /// Reads the contents of the default Asciidoctor stylesheet.
-  String get primaryStylesheetData => _primaryStylesheetData ??= _rstrip(
+  /// The default stylesheet: Asciidoctor's, then asciidart's house rules
+  /// (doc/style.md).
+  String get primaryStylesheetData => _primaryStylesheetData ??=
+      '$classicStylesheetData\n'
+      '${_rstrip(EmbeddedData.file('stylesheets/asciidart-house.css'))}';
+
+  /// Asciidoctor's default stylesheet, as it is (`stylesheet=asciidoctor`).
+  String get classicStylesheetData => _classicStylesheetData ??= _rstrip(
     EmbeddedData.file('stylesheets/asciidoctor-default.css'),
   );
 
-  /// Writes the primary stylesheet to [targetDir].
-  void writePrimaryStylesheet([String targetDir = '.']) {
-    io.writeString('$targetDir/$primaryStylesheetName', primaryStylesheetData);
+  /// The built-in stylesheet for a `stylesheet` attribute of [key]: the
+  /// classic one for [classicStylesheetKey], else the default.
+  String dataFor(String? key) => key == classicStylesheetKey
+      ? classicStylesheetData
+      : primaryStylesheetData;
+
+  /// Writes the built-in stylesheet for a `stylesheet` attribute of [key] to
+  /// [targetDir].
+  void writePrimaryStylesheet([String targetDir = '.', String? key]) {
+    io.writeString('$targetDir/$primaryStylesheetName', dataFor(key));
   }
 }
 

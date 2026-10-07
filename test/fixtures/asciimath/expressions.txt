@@ -1,0 +1,113 @@
+x^2
+a_1
+a_1^2
+sum_(i=1)^n i^3=((n(n+1))/2)^2
+int_0^1 f(x)dx
+sqrt(x)
+root(3)(x)
+frac(a)(b)
+a/b
+(a+b)/(c+d)
+[[a,b],[c,d]]
+((1,2),(3,4))
+((a,b),(c))
+((a+b,c),(d))
+{(x,x>0),(-x,x<=0):}
+|x|
+abs(x)
+norm(vec v)
+floor(x)+ceil(y)
+lim_(x->oo) 1/x
+"text here" + x
+text(abc)
+alpha+beta=gamma
+phi varphi Phi
+bb(A) bbb(R) cc(F) tt(x) fr(g) sf(s) rm(d)
+hat x bar y vec z dot a ddot b
+ul(x) ubrace(1+2) obrace(3+4)
+stackrel(def)(=) overset(a)(b) underset(c)(d)
+color(red)(x) color(#ff0000)(y) color(#0f0)(z)
+cancel(x)
+tilde x
+a xx b ** c *** d
+AA x EE y
+x in A !in B sub C sup D
+a < b <= c >= d > e
+x -> y |-> z => w <=> v
+del f / del x grad f
++- -+ oo O/
+... cdots vdots ddots
+a mod b
+sin x cos y tan z log w ln v
+dy/dx
+2.5 + 30
+-x
+f(x) g(y)
+(:a,b:)
+<<a>>
+{a}
+[a)
+(a]
+()
+x_
+x^
+^2
+_1
+1/
+/2
+"unclosed
+text(unclosed
+|x
+x|
+:}
+{:a:}
+a,b,c
+(a,b,c)
+[a,b]
+((a,b,c),(d,e,f),(g,h,i))
+[(a,b),(c,d)]
+((a),(b))
+(x)
+((x))
+sqrt(sqrt(x))
+x^(2n)
+e^(i pi)+1=0
+a_(i,j)
+lim_(n->oo)(1+1/n)^n=e
+int_a^b f(x) dx = F(b)-F(a)
+prod_(k=1)^n k
+bigcup_i A_i nnn
+CC NN QQ RR ZZ
+x' f''
+angle ABC triangle
+:. :'
+a quad b qquad c
+\ x
+a//b
+a\\b
+setminus
+-: div
+|>< ><| |><|
+o+ ox o.
+^^ ^^^ vv vvv nn uu uuu
+-< -<= >- >-=
+-= ~ ~= ~~ prop
+and or not if implies iff
+_|_ TT |-- |==
+|__ x __| |~ y ~|
+diamond square frown
+uarr darr rarr larr harr rArr lArr hArr
+>-> ->> >->> mapsto
+epsi varepsilon vartheta
+ii(x) bii(y) bcc(z) bfr(w) bsf(v) sfi(u) sfbi(t)
+overarc(AB) overparen(CD)
+mathbf(x) mathbb(N) mathcal(L) mathtt(c) mathfrak(g) mathsf(s)
+ü + é
+x_1 ^2
+1/2/3
+a^b^c
+a_b_c
+sqrt
+frac(a)
+color(blue)
+"a" "b"

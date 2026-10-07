@@ -1,0 +1,10 @@
+= Book Footnotes
+:doctype: book
+
+== One
+
+Chapter text.footnote:[Chapter one note.] And more.footnote:shared[Shared note.]
+
+== Two
+
+Second chapter.footnote:[Chapter two note.] Again the shared.footnote:shared[]

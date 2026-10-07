@@ -705,6 +705,10 @@ class Cell extends AbstractBlock {
     _text = value;
   }
 
+  /// The text of this cell as written, before substitutions.
+  @internal
+  String? get sourceText => _text;
+
   /// The paragraphs of this cell's text with substitutions and the cell
   /// style applied (empty when the text is empty). Not for AsciiDoc-style
   /// cells.

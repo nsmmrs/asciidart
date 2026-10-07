@@ -1,0 +1,37 @@
+= Description Lists
+:doctype: article
+
+First term:: The description of the first term, long enough that it wraps onto a second line of the page.
+Second term::
+Alternate term:: A description for two terms.
+
+Term with blocks::
++
+A paragraph attached to the description.
++
+* a nested list item
+* another one
+
+Last term:: Last description.
+
+.Horizontal list
+[horizontal]
+CPU:: The brain of the computer.
+Hard drive:: Permanent storage for operating system and/or user files.
+RAM:: Temporarily stores information the CPU uses during operation.
+
+A paragraph between.
+
+[source,ruby]
+----
+require 'sinatra' # <1>
+
+get '/hi' do # <2>
+  "Hello World!" # <3>
+end
+----
+<1> Library import
+<2> URL mapping
+<3> Content for response, which is long enough to wrap onto a second line in the callout list item.
+
+Closing paragraph.

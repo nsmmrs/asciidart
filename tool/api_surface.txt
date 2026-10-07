@@ -201,6 +201,7 @@ final class Document extends Block
   Document withoutAttribute(String name)
   List<Author> authors
   List<Diagnostic> diagnostics
+  List<IndexLetter> index
   List<InlineContent> titleInlines
   Map<String, String?> headerAttributes
   String convert({bool? standalone})
@@ -236,6 +237,15 @@ final class IncludeRequest
 final class IncludeResolver extends Extension
   FutureOr<String?> Function(IncludeRequest) resolve
   IncludeResolver(FutureOr<String?> Function(IncludeRequest) resolve)
+final class IndexEntry
+  List<Block> uses
+  List<IndexEntry> subentries
+  List<String> seeAlso
+  String term
+  String? see
+final class IndexLetter
+  List<IndexEntry> entries
+  String letter
 final class IndexTerm extends Inline
   List<String> terms
   bool isVisible

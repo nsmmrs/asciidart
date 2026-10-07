@@ -153,14 +153,14 @@ final class Invoker {
 
       if (stdinInput) {
         final input = stdinSource != null ? stdinSource() : _readStdin();
-        final timings = showTimings ? Timings() : null;
+        final timings = _timings(options, '-', err);
         documents.add(
           convertToTarget(input, opts.copyWith(timings: timings), sink),
         );
-        timings?.printReport(err, '-');
+        if (showTimings) timings?.printReport(err, '-');
       } else {
         for (final infile in infiles) {
-          final timings = showTimings ? Timings() : null;
+          final timings = _timings(options, infile, err);
           documents.add(
             convertFile(
               infile,
@@ -172,7 +172,7 @@ final class Invoker {
               sink,
             ),
           );
-          timings?.printReport(err, infile);
+          if (showTimings) timings?.printReport(err, infile);
         }
       }
       final maxSeverity = LoggerManager.logger.maxSeverity;
@@ -364,6 +364,21 @@ final class Invoker {
     } finally {
       restoreLogger();
     }
+  }
+
+  /// The timings of converting [subject], when `-t` or `--progress` asks
+  /// for them; with `--progress`, each phase is reported to [err] as it
+  /// finishes.
+  static Timings? _timings(CliOptions options, String subject, StringSink err) {
+    if (!options.timings && !options.progress) return null;
+    return Timings(
+      onRecord: options.progress
+          ? (phase, seconds) => err.writeln(
+              'asciidart: $subject: $phase done in '
+              '${(seconds * 1000).round()} ms',
+            )
+          : null,
+    );
   }
 
   /// Applies the verbosity of [options] to the global logger (silenced for

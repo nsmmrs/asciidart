@@ -1,0 +1,17 @@
+/*! asciidart house style (doc/style.md, ADR-0011): rules after Asciidoctor's stylesheet */
+@media screen{#header,#content,#footnotes,#footer{max-width:42em}}
+h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{color:#191919;font-weight:600}
+#header>h1:first-child{color:#191919}
+table.grid-all>*>tr>*{border-width:1px 0}
+table.frame-all{border-width:1px 0}
+table.tableblock>thead>tr>th{border-bottom:1px solid #191919}
+.listingblock pre,.literalblock pre{border:0}
+.small-caps{font-variant:small-caps;font-feature-settings:"smcp"}
+.unbreakable{break-inside:avoid;page-break-inside:avoid}
+.imageblock.text pre{display:inline-block;margin:0;padding:0;background:none;text-align:left;font-size:.875em;line-height:1.25;white-space:pre}
+.index .index-letter{break-inside:avoid}
+.index ul.index-terms{list-style:none;margin-left:0}
+.index ul.index-terms ul.index-terms{margin-left:1.25em}
+@media screen and (min-width:48em){.index{columns:2;column-gap:2em}}
+#cover{text-align:center;margin:2em auto}
+#cover img{max-width:100%;max-height:85vh}

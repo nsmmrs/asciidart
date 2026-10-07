@@ -1,0 +1,11 @@
+/*! asciidart house style (doc/style.md, ADR-0011): rules after asciidoctor-epub3's */
+body a:link{color:#2156A5}
+h1,h2,h3,h4,h5,h6{color:#191919}
+.small-caps{font-variant:small-caps;font-feature-settings:"smcp"}
+.unbreakable{-webkit-column-break-inside:avoid;page-break-inside:avoid;break-inside:avoid}
+figure.image.text{text-align:center}
+figure.image.text pre{display:inline-block;margin:0;padding:0;border:0;background:none;text-align:left;font-size:0.75em;line-height:1.2;white-space:pre}
+div.index ul.index-terms{list-style:none;margin-left:0 !important}
+div.index ul.index-terms ul.index-terms{margin-left:1.25em !important}
+div.index ul.index-terms>li::before{content:none}
+nav.toc ol{list-style-type:none}

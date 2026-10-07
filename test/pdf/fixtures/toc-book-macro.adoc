@@ -1,0 +1,19 @@
+= Book TOC Macro
+:doctype: book
+:toc: macro
+
+[preface]
+== Preface
+
+Preface text.
+
+[%nofooter]
+toc::[]
+
+== Chapter One
+
+Text.
+
+== Chapter Two
+
+Text.

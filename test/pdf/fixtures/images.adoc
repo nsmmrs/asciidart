@@ -1,0 +1,30 @@
+= Images
+:doctype: article
+:imagesdir: images
+
+Before the images.
+
+.A small PNG
+image::red.png[Red]
+
+image::big.png[Big,align=center]
+
+.An SVG with a size
+image::box.svg[Box]
+
+image::vb.svg[ViewBox only]
+
+image::wide.svg[Wide,role=right]
+
+image::gray.jpg[Gray,pdfwidth=50%]
+
+image::red.png[Scaled,scale=200]
+
+image::box.svg[Box width,width=100]
+
+[#tall-one]
+image::tall.png[Tall]
+
+image::missing.png[Missing image]
+
+After.

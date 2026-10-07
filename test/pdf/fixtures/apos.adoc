@@ -1,0 +1,8 @@
+= T
+
+The abstract's italic style.
+
+[.lead]
+The abstract's italic style.
+
+_The abstract's italic style._

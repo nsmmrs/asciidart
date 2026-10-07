@@ -50,6 +50,7 @@ library;
 import 'dart:convert';
 
 import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/cli/compat_config.dart';
 import 'package:asciidart/src/cli/help_topics.g.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/logging.dart';
@@ -67,8 +68,8 @@ Unless specified otherwise, the output is written to a file whose name is derive
 Application log messages are printed to STDERR.
 Example: asciidart input.adoc
 
-    -b, --backend BACKEND            set backend output format: [html5, xhtml5, docbook5, manpage] (default: html5)
-                                     additional backends are supported via extended converters (e.g., pdf, epub3)
+    -b, --backend BACKEND            set backend output format: [html5, xhtml5, multipage_html5, docbook5, epub3, pdf, manpage] (default: html5)
+                                     additional backends are supported via extended converters
     -d, --doctype DOCTYPE            document type to use when converting document: [article, book, manpage, inline] (default: article)
     -e, --embedded                   suppress enclosing document structure and output an embedded document (default: false)
     -o, --out-file FILE              output file (default: based on path of input file); use - to output to STDOUT
@@ -96,6 +97,7 @@ Example: asciidart input.adoc
         --trace                      include backtrace information when reporting errors (default: false)
     -v, --verbose                    show all application log messages, including DEBUG and INFO levels (default: false)
     -t, --timings                    print timings report (default: false)
+        --progress                   report each phase of a conversion as it finishes, with its time (default: false)
     -h, --help [TOPIC]               print a help message
                                      show this usage if TOPIC is not specified or recognized
                                      show an overview of the AsciiDoc syntax if TOPIC is syntax
@@ -245,6 +247,9 @@ enum _CliOption {
   /// `-t/--timings`.
   timings,
 
+  /// `--progress` (specific to this port).
+  progress,
+
   /// `-j/--jobs N` (specific to this port).
   jobs,
 
@@ -328,6 +333,7 @@ const List<_Spec> _specs = [
   _Spec(_CliOption.trace, null, 'trace', _Arity.none),
   _Spec(_CliOption.verbose, 'v', 'verbose', _Arity.none),
   _Spec(_CliOption.timings, 't', 'timings', _Arity.none),
+  _Spec(_CliOption.progress, null, 'progress', _Arity.none),
   _Spec(_CliOption.jobs, 'j', 'jobs', _Arity.required),
   _Spec(_CliOption.help, 'h', 'help', _Arity.optional),
   _Spec(_CliOption.version, 'V', 'version', _Arity.none),
@@ -425,6 +431,10 @@ final class CliOptions {
 
   /// Whether a timings report is printed (`-t/--timings`).
   bool timings = false;
+
+  /// Whether each phase of a conversion is reported as it finishes
+  /// (`--progress`).
+  bool progress = false;
 
   /// Worker count from `-j/--jobs N` (default 1: sequential conversion).
   ///
@@ -577,6 +587,7 @@ final class CliOptions {
     }
 
     inputFiles = infiles;
+    _defaultCompat(infiles.firstOrNull ?? '-', env, errSink);
 
     if (attributes != null && attributes!.isEmpty) attributes = null;
 
@@ -903,6 +914,8 @@ final class CliOptions {
         verbose = 2;
       case _CliOption.timings:
         timings = true;
+      case _CliOption.progress:
+        progress = true;
       case _CliOption.jobs:
         jobs = _parseJobsValue(value!);
       case _CliOption.help:
@@ -911,6 +924,33 @@ final class CliOptions {
         return printVersion(outSink);
     }
     return null;
+  }
+
+  /// Sets `asciidoctor-compat` from the environment or a configuration
+  /// file (see [resolveCompat]) when the command line doesn't, as a
+  /// default the document may override (ADR-0015). The project
+  /// configuration is looked for from the directory of [infile].
+  void _defaultCompat(
+    String infile,
+    Map<String, String> env,
+    StringSink errSink,
+  ) {
+    const name = 'asciidoctor-compat';
+    final given = attributes?.keys ?? const <String>[];
+    if (given.any((key) => key.replaceAll(RegExp(r'^!|[!@]$'), '') == name)) {
+      return;
+    }
+    final slash = infile.replaceAll(r'\', '/').lastIndexOf('/');
+    final value = resolveCompat(
+      env: env,
+      startDir: infile == '-' || slash < 0
+          ? io.currentDirectory
+          : slash == 0
+          ? '/'
+          : infile.substring(0, slash),
+      warn: (message) => errSink.writeln('asciidart: WARNING: $message'),
+    );
+    if (value != null) _attributeMap[name] = '$value@';
   }
 
   /// The attribute map, recreating it when [parse] already nulled it.

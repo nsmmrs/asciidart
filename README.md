@@ -3,7 +3,8 @@
 [![CI](https://github.com/nsmmrs/asciidart/actions/workflows/ci.yml/badge.svg)](https://github.com/nsmmrs/asciidart/actions/workflows/ci.yml)
 
 An AsciiDoc processor written in Dart. It converts AsciiDoc to HTML 5,
-DocBook 5, man pages and (with the native executable) EPUB 3, and is meant
+DocBook 5, man pages and (with the native executable) EPUB 3 and PDF, and
+is meant
 as a drop-in replacement for
 [Asciidoctor](https://asciidoctor.org) 2.1 (upstream `main`, 2.1.0.alpha.0): the same documents,
 attributes, command-line options and output. It is a library, a command
@@ -29,6 +30,20 @@ line tool, and (compiled to JavaScript) an npm package.
   listed in [`benchmark/PARITY.md`](benchmark/PARITY.md). EPUB 3 output
   matches the asciidoctor-epub3 2.3.0 gem file by file
   (`tool/epub_parity.dart`).
+- **PDF without Ruby or a browser.** `-b pdf` draws with libpdf, a
+  pure-Dart PDF library, and reads asciidoctor-pdf's YAML themes. With
+  `asciidoctor-compat`, the pages look as asciidoctor-pdf 2.3.27 sets them:
+  792 of the 797 documents of that gem's spec suite look the same
+  (`tool/pdf_look.dart`). By default, asciidart lays books out with its
+  own typesetting: optimal line breaking, hyphenation, widows and orphans,
+  ligatures, listings that never lose a line, and table styles by role
+  ([`doc/pdf.md`](doc/pdf.md)).
+- **Books as websites and indexes everywhere.** `-b multipage_html5`
+  writes one linked page per chapter; an `[index]` section lists the index
+  terms in HTML and EPUB too; `-a callout-links` links callouts both ways.
+  [`doc/books.md`](doc/books.md) shows one source becoming a print PDF, a
+  website, an EPUB and DocBook, and how to move from asciidoctor-pdf or a
+  browser-based print pipeline.
 - **Fast.** The compiled command converts a document 5–10x faster than the
   `asciidoctor` gem end to end, and about 2x faster in process
   ([`benchmark/BASELINE.md`](benchmark/BASELINE.md)).
@@ -163,4 +178,5 @@ implementation by Dan Allen, Sarah White, Ryan Waldron and the Asciidoctor
 contributors, with byte-identical output as the bar. MIT licensed (see
 [LICENSE](LICENSE)). The stylesheets, locale data and test fixtures taken
 from Asciidoctor live under [`vendor/`](vendor/README.md), with their
-license.
+license. The PDF backend bundles Noto Sans Math for formulas
+(`data/pdf-fonts`, SIL Open Font License 1.1, with its license).

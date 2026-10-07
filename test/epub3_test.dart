@@ -181,6 +181,332 @@ NOTE: Watch out.
     );
   });
 
+  test('a term indexed in a chapter title: indexed, its anchor in the '
+      'heading only', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync('''
+= The Book
+:doctype: book
+:uuid: 0000
+
+== Chapter ((Gadget))
+
+Text.
+
+[index]
+== Index
+''');
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    final chapter = files['EPUB/_chapter_gadget.xhtml']!;
+    expect(chapter, contains('<title>Chapter Gadget</title>'));
+    expect(chapter, contains('title="Chapter Gadget"'));
+    expect(RegExp('id="_indexterm_1"').allMatches(chapter), hasLength(1));
+    expect(
+      files['EPUB/_index.xhtml'],
+      contains('_chapter_gadget.xhtml#_indexterm_1'),
+    );
+  });
+
+  test('a toc macro lists the contents where it is', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync('''
+= The Book
+:doctype: book
+:uuid: 0000
+
+[#contents]
+== Contents
+
+toc::[]
+
+== Cats
+
+Text.
+''');
+    final logger = MemoryLogger();
+    convertFile(
+      input.path,
+      AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: const {'reproducible': ''},
+        logger: logger,
+      ),
+    );
+    expect(logger.messages, isEmpty);
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    expect(
+      files['EPUB/contents.xhtml'],
+      contains(
+        '<nav class="toc">\n<ol>\n<li><a href="contents.xhtml">'
+        'Contents</a></li>\n<li><a href="_cats.xhtml">Cats</a></li>\n'
+        '</ol>\n</nav>',
+      ),
+    );
+  });
+
+  test('an index section links to the chapters that use each term', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync('''
+= The Book
+:doctype: book
+:uuid: 0000
+
+== Cats
+
+The ((Tiger)) is big.
+
+== Dogs
+
+A ((Tiger)) again.(((Wolves)))
+
+[index]
+== Index
+''');
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    expect(
+      files['EPUB/_cats.xhtml'],
+      contains('<a id="_indexterm_1"></a>Tiger'),
+    );
+    final index = files['EPUB/_index.xhtml']!;
+    // Marked up as an EPUB index, and a landmark.
+    expect(index, contains('<div class="index" epub:type="index">'));
+    expect(
+      files['EPUB/nav.xhtml'],
+      contains('<a epub:type="index" href="_index.xhtml">Index</a>'),
+    );
+    expect(
+      index,
+      contains(
+        '<span class="index-term" epub:type="index-term">Tiger</span>: '
+        '<a epub:type="index-locator" href="_cats.xhtml#_indexterm_1">Cats'
+        '</a>, '
+        '<a epub:type="index-locator" href="_dogs.xhtml#_indexterm_2">Dogs'
+        '</a>',
+      ),
+    );
+    expect(
+      index,
+      contains(
+        'Wolves</span>: '
+        '<a epub:type="index-locator" href="_dogs.xhtml#_indexterm_3">',
+      ),
+    );
+  });
+
+  test('callout-links links callouts and their items both ways', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/doc.adoc')
+      ..writeAsStringSync('= Doc\n\n----\na <1>\n----\n<1> One.\n');
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': '', 'callout-links': ''},
+      ),
+    );
+    final chapter = unzipText(
+      File('${dir.path}/doc.epub').readAsBytesSync(),
+    )['EPUB/_doc.xhtml']!;
+    expect(
+      chapter,
+      contains(
+        '<a id="CO1-1" class="conum-link" href="#CO1-1-item" '
+        'style="user-select:none"><i class="conum" data-value="1">',
+      ),
+    );
+    expect(
+      chapter,
+      contains(
+        '<li><a href="#CO1-1"><i class="conum" data-value="1">\u2460</i></a> '
+        '<a id="CO1-1-item"></a>One.',
+      ),
+    );
+  });
+
+  group("valid where the gem's EPUB is not", () {
+    /// The chapter of a one-chapter book of [body] (with [attributes]).
+    String chapter(String body, {Map<String, String> attributes = const {}}) {
+      final dir = Directory.systemTemp.createTempSync('epub3_test.');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final input = File('${dir.path}/doc.adoc')
+        ..writeAsStringSync('= Doc\n:toc-title:\n\n$body\n');
+      convertFile(
+        input.path,
+        AsciidoctorOptions(
+          safe: SafeMode.safe,
+          backend: 'epub3',
+          attributes: {'reproducible': '', ...attributes},
+        ),
+      );
+      final files = unzipText(File('${dir.path}/doc.epub').readAsBytesSync());
+      return '${files['EPUB/_doc.xhtml']}\n${files['EPUB/nav.xhtml']}';
+    }
+
+    test('an image width is a number of pixels or a style', () {
+      final xhtml = chapter(
+        'image::a.png[A, server responds]\n\nimage::b.png[B, 40%]\n\n'
+        'image::c.png[C, 120]',
+      );
+      expect(xhtml, isNot(contains('width="server responds"')));
+      expect(xhtml, contains('style="width: 40%"'));
+      expect(xhtml, contains('width="120"'));
+    });
+
+    test('an empty toc-title gives the navigation a title', () {
+      expect(
+        chapter('Text.'),
+        contains('<small class="subtitle">Table of Contents</small>'),
+      );
+    });
+
+    test('a path from a website root goes to its id, or is text', () {
+      final xhtml = chapter(
+        '[[here]]\nTarget.\n\n'
+        'See link:/a/#here[the target] and link:/b/#gone[elsewhere].',
+      );
+      expect(xhtml, contains('<a href="_doc.xhtml#here" class="link">'));
+      expect(xhtml, contains(' and elsewhere.'));
+    });
+
+    test('emphasis around an index term stays whole', () {
+      final xhtml = chapter(
+        '((("_hyperscript", "event filter")))\n'
+        'We can use an _event filter_ syntax in +_hyperscript+ here.',
+      );
+      expect(xhtml, contains('We can use an <em>event filter</em> syntax'));
+    });
+
+    test('code may scroll instead of wrapping', () {
+      expect(
+        chapter(
+          '----\ncode\n----',
+          attributes: {'ebook-code-overflow': 'scroll'},
+        ),
+        contains('pre { white-space: pre;'),
+      );
+    });
+  });
+
+  test('the ISBN as the unique identifier', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync(
+        '= Book\n:uuid: 0000\n:isbn: 979-8-9909918-0-4\n'
+        ':epub-unique-identifier: isbn\n\n== One\n\nText.\n',
+      );
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    final opf = files['EPUB/package.opf']!;
+    expect(opf, contains('unique-identifier="pub-identifier"'));
+    expect(
+      opf,
+      contains(
+        '<dc:identifier id="pub-identifier">urn:isbn:9798990991804</dc:identifier>',
+      ),
+    );
+    expect(opf, contains('<dc:identifier id="pub-uuid">0000</dc:identifier>'));
+    expect(
+      files['EPUB/toc.ncx'],
+      contains('<meta name="dtb:uid" content="urn:isbn:9798990991804"/>'),
+    );
+  });
+
+  test('a section with notoc is left out of the navigation', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync(
+        '= Book\n:doctype: book\n\n[colophon%notoc]\n== Copyright\n\nText.\n\n'
+        '== Chapter\n\nText.\n',
+      );
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    expect(files['EPUB/nav.xhtml'], contains('Chapter'));
+    expect(files['EPUB/nav.xhtml'], isNot(contains('Copyright')));
+    expect(files.keys, contains('EPUB/_copyright.xhtml'));
+  });
+
+  test('an ISBN and editors in the metadata', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync(
+        '= Book\nAda Lovelace\n:uuid: 0000\n:isbn: 979-8-9909918-0-4\n'
+        ':editor: William Talcott; Jane Doe\n\n== One\n\nText.\n',
+      );
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final opf = unzipText(
+      File('${dir.path}/book.epub').readAsBytesSync(),
+    )['EPUB/package.opf']!;
+    expect(
+      opf,
+      contains(
+        '<dc:identifier id="pub-isbn">urn:isbn:9798990991804</dc:identifier>\n'
+        '    <meta property="identifier-type" refines="#pub-isbn">isbn</meta>',
+      ),
+    );
+    // The uuid stays the unique identifier.
+    expect(opf, contains('unique-identifier="pub-identifier"'));
+    expect(
+      opf,
+      contains(
+        '<dc:contributor id="contributor1">William Talcott</dc:contributor>',
+      ),
+    );
+    expect(
+      opf,
+      contains('<meta property="role" refines="#contributor1">edt</meta>'),
+    );
+    expect(opf, contains('Jane Doe</dc:contributor>'));
+  });
+
   test('epub3 cannot write to standard output', () async {
     final dir = Directory.systemTemp.createTempSync('epub3_test.');
     addTearDown(() => dir.deleteSync(recursive: true));

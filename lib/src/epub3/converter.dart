@@ -9,24 +9,36 @@
 library;
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/callout_links.dart';
+import 'package:asciidart/src/compat.dart';
 import 'package:asciidart/src/converter.dart';
+import 'package:asciidart/src/data.g.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/epub3/assets.g.dart';
 import 'package:asciidart/src/epub3/book.dart';
 import 'package:asciidart/src/epub3/dates.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
+import 'package:asciidart/src/highlight/highlightjs.dart';
+import 'package:asciidart/src/highlight/hljs_styles.g.dart';
 import 'package:asciidart/src/highlight/syntax_highlighter.dart';
+import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/math/asciimath.dart';
+import 'package:asciidart/src/output_template.dart';
+import 'package:asciidart/src/page_map.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/unbreakable.dart';
+import 'package:asciidart/src/xml_balance.dart';
 
 String _s(String? value) => value ?? '';
 
@@ -127,7 +139,89 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   String get converterName => 'Epub3Converter';
 
   @override
-  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) {
+    final out = _convertBlock(node, opts);
+    // `%unbreakable` (ADR-0012).
+    final marked =
+        out != null &&
+            node.hasOption('unbreakable') &&
+            marksUnbreakable(node.nodeName) &&
+            // (A listing is a `coalesce` figure already, as in
+            // asciidoctor-epub3.)
+            node.context != BlockContext.listing
+        ? withUnbreakableClass(out)
+        : out;
+    return marked == null ? null : _withPageBreaks(node, marked);
+  }
+
+  /// The print edition's pages (`epub-page-map`, the PDF's
+  /// `pdf-page-map`): their labels, and the pages of each block by where
+  /// it starts in the source.
+  PageMap? _pageMap;
+
+  /// The last print page marked, and the page list (href, label).
+  int _lastPage = 0;
+  final List<(String, String)> _pageList = [];
+
+  /// The chapter file being converted.
+  String? _chapterFile;
+
+  void _loadPageMap(Document doc) {
+    final target = doc.attr('epub-page-map');
+    if (target == null || target.isEmpty) return;
+    final docdir = _s(doc.attr('docdir', '.'));
+    final path = target.startsWith('/')
+        ? target
+        : _join(docdir.isEmpty ? '.' : docdir, target);
+    if (!io.isReadable(path)) {
+      logger.warn('epub-page-map: $path not found or not readable');
+      return;
+    }
+    final map = PageMap.parse(utf8.decode(io.readBytes(path)));
+    if (map == null) {
+      logger.warn('epub-page-map: $path is not a page map');
+    }
+    _pageMap = map;
+  }
+
+  /// [html] (block [node]) with the print pages that start before it
+  /// marked before it, and those that start inside it after it
+  /// (`epub-page-map`: a block's pages; ADR-0012).
+  String _withPageBreaks(AbstractBlock node, String html) {
+    final map = _pageMap;
+    final at = node.sourceLocation;
+    if (map == null ||
+        at == null ||
+        !marksUnbreakable(node.nodeName) ||
+        _chapterFile == null) {
+      return html;
+    }
+    final pages = map.blocks['${at.path ?? at.file ?? ''}:${at.lineno}'];
+    if (pages == null) return html;
+    final (first, last) = pages;
+    String markers(int from, int to) {
+      final out = StringBuffer();
+      for (var page = from; page <= to; page++) {
+        if (page < 1 || page > map.labels.length) continue;
+        final label = map.labels[page - 1];
+        final id = 'page-${label.replaceAll(RegExp('[^A-Za-z0-9_-]'), '-')}';
+        _pageList.add(('$_chapterFile#$id', label));
+        out.write(
+          '<span epub:type="pagebreak" role="doc-pagebreak" id="$id" '
+          'aria-label="$label"></span>',
+        );
+      }
+      return out.toString();
+    }
+
+    final before = markers(_lastPage + 1, first);
+    _lastPage = math.max(_lastPage, first);
+    final after = markers(_lastPage + 1, last);
+    _lastPage = math.max(_lastPage, last);
+    return '$before$html$after';
+  }
+
+  String? _convertBlock(AbstractBlock node, ConvertOptions? opts) =>
       switch (node.context) {
         .admonition => convertAdmonition(node as Block),
         .audio => convertAudio(node as Block),
@@ -154,12 +248,13 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         .ulist => convertUlist(node as ListBlock),
         .verse => convertVerse(node as Block),
         .video => convertVideo(node as Block),
-        .toc || .listItem || .tableCell => _missing(node.nodeName),
+        .toc => convertToc(node as Block),
+        .listItem || .tableCell => _missing(node.nodeName),
       };
 
   @override
   bool handlesBlock(BlockContext context) => switch (context) {
-    .toc || .listItem || .tableCell => false,
+    .listItem || .tableCell => false,
     _ => true,
   };
 
@@ -171,7 +266,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     .callout => convertInlineCallout(node),
     .footnote => convertInlineFootnote(node),
     .image => convertInlineImage(node),
-    .indexterm => node.type == 'visible' ? _s(node.text) : '',
+    .indexterm => _indexterm(node),
     .kbd => convertInlineKbd(node),
     .menu => convertInlineMenu(node),
     .quoted => convertInlineQuoted(node),
@@ -244,23 +339,45 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
   /// Converts the document: builds the book.
   String convertDocument(Document node) {
+    if (node.parentDocument == null) node.catalog.index.begin(node);
+    _loadPageMap(node);
     _validate = node.hasAttr('ebook-validate');
     _extract = node.hasAttr('ebook-extract');
     _epubcheckPath = node.attr('ebook-epubcheck-path');
 
+    final uuid = _s(node.hasAttr('uuid') ? node.attr('uuid') : node.id);
+    final isbn = node.attr('isbn')?.replaceAll(RegExp(r'[\s-]'), '');
+    // asciidart's `epub-unique-identifier`: which of the book's identifiers
+    // is the unique one (`uuid`, the gem's; `isbn`).
+    final isbnUnique =
+        node.attr('epub-unique-identifier') == 'isbn' &&
+        isbn != null &&
+        isbn.isNotEmpty;
     final book = _book = EpubBook()
-      ..language(_s(node.attr('lang', 'en')), id: 'pub-language')
-      ..primaryIdentifier(
-        _s(node.hasAttr('uuid') ? node.attr('uuid') : node.id),
-        'pub-identifier',
-        'uuid',
-      )
-      ..addTitle(_sanitizeDoctitle(node, _Spec.plainText), id: 'pub-title');
+      ..language(_s(node.attr('lang', 'en')), id: 'pub-language');
+    if (isbnUnique) {
+      book.primaryIdentifier('urn:isbn:$isbn', 'pub-identifier', 'isbn');
+    } else {
+      book.primaryIdentifier(uuid, 'pub-identifier', 'uuid');
+    }
+    book.addTitle(_sanitizeDoctitle(node, _Spec.plainText), id: 'pub-title');
 
     final authorcount = _toInt(node.attr('authorcount', '1'));
     for (var idx = 1; idx <= authorcount; idx++) {
       final author = node.attr(idx == 1 ? 'author' : 'author_$idx');
       if (author != null && author.isNotEmpty) book.addCreator(author);
+    }
+    // asciidart's: an ISBN (`isbn`) besides the uuid, and editors
+    // (`editor`, names separated by semicolons).
+    if (isbnUnique) {
+      book.addIdentifier(uuid, 'pub-uuid', 'uuid');
+    } else if (isbn != null && isbn.isNotEmpty) {
+      book.addIdentifier('urn:isbn:$isbn', 'pub-isbn', 'isbn');
+    }
+    for (final editor in (node.attr('editor') ?? '').split(';')) {
+      if (editor.trim().isNotEmpty) {
+        book.addContributor(_s(editor.trim()), role: 'edt');
+      }
     }
 
     var publisher = node.attr('publisher');
@@ -347,11 +464,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     EpubItem? tocItem;
     if (node.hasAttr('toc')) {
       tocItem = book.addOrderedItem('toc.xhtml', id: 'toc');
-      landmarks.add((
-        type: 'toc',
-        href: tocItem.href,
-        title: _s(node.attr('toc-title')),
-      ));
+      landmarks.add((type: 'toc', href: tocItem.href, title: _tocTitle(node)));
     }
 
     final List<AbstractBlock> tocItems;
@@ -366,18 +479,48 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     _addCoverPage(node, 'back-cover');
 
     if (tocItems.isNotEmpty) {
+      // The first chapter after the front matter (a dedication, a
+      // colophon, a preface...), else the first.
+      const front = {
+        'abstract',
+        'acknowledgments',
+        'colophon',
+        'dedication',
+        'preface',
+      };
+      final body = tocItems.firstWhere(
+        (item) => !front.contains(item is Section ? item.sectname : item.style),
+        orElse: () => tocItems[0],
+      );
       landmarks.add((
         type: 'bodymatter',
-        href: '${_s(chapterFilename(tocItems[0]))}.xhtml',
+        href: '${_s(chapterFilename(body))}.xhtml',
         title: 'Start of Content',
       ));
     }
 
     for (final item in tocItems) {
-      final style = item.style;
+      // (A section left out of the contents is left out here too.)
+      if (item.hasOption('notoc')) continue;
+      // (A special section by its section name: `[index]`, `[colophon]`;
+      // the front and back matter as landmarks too.)
+      final style = switch (item) {
+        Section(:final sectname?)
+            when const {
+              'index',
+              'colophon',
+              'dedication',
+              'acknowledgments',
+            }.contains(sectname) =>
+          sectname,
+        _ => item.style,
+      };
       if (const [
+        'acknowledgments',
         'appendix',
         'bibliography',
+        'colophon',
+        'dedication',
         'glossary',
         'index',
         'preface',
@@ -497,7 +640,11 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     if (document.doctype != 'book') _markLastParagraph(node);
 
     _xrefsSeen.clear();
-    final content = _s(node.content());
+    final savedChapter = _chapterFile;
+    _chapterFile = '$filename.xhtml';
+    var content = _s(node.content());
+    _chapterFile = savedChapter;
+    if (node is Section) content = _withIndex(node, content, node);
 
     final String iconCssHead;
     if (_iconNames.isEmpty) {
@@ -519,6 +666,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
               '</h1>\n</header>'
         : '';
 
+    // The index's anchors in the title belong to the heading alone (the
+    // title element allows no markup; an id must be unique).
+    chapterTitle = chapterTitle.replaceAll(_indexAnchorRx, '');
     final lang = _s(document.attr('lang', 'en'));
     final head =
         "<?xml version='1.0' encoding='utf-8'?>\n"
@@ -530,11 +680,21 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '<head>\n'
         '<title>$chapterTitle</title>\n'
         '$_stylesheetLinks\n'
-        '$iconCssHead$_readingSystemScript';
+        '$iconCssHead${_codeOverflowCss(document)}'
+        '${_hyphensCss(document)}$_readingSystemScript';
     final lines = <String>[head];
 
     final syntaxHl = document.syntaxHighlighter;
-    if (syntaxHl != null && syntaxHl.hasDocinfo('head')) {
+    if (syntaxHl is HighlightJsHighlighter) {
+      // highlight.js: the code highlighted already, its theme's stylesheet
+      // in the EPUB (asciidart's; the gem links them outside it).
+      if (syntaxHl.canHighlight) {
+        lines.add(
+          '<link rel="stylesheet" type="text/css" '
+          'href="styles/highlightjs.css"/>',
+        );
+      }
+    } else if (syntaxHl != null && syntaxHl.hasDocinfo('head')) {
       lines.add(
         syntaxHl.docinfo(
           'head',
@@ -570,7 +730,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
       for (final footnote in footnotes) {
         lines.add(
           '<aside id="note-${footnote.index}" epub:type="footnote">\n'
-          '<p>${footnote.text}</p>\n'
+          '<p>${_noteLabel(document, footnote)}${footnote.text}</p>\n'
           '</aside>',
         );
       }
@@ -579,7 +739,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
     lines.add('</section>');
 
-    if (syntaxHl != null && syntaxHl.hasDocinfo('footer')) {
+    if (syntaxHl != null &&
+        syntaxHl is! HighlightJsHighlighter &&
+        syntaxHl.hasDocinfo('footer')) {
       lines.add(
         syntaxHl.docinfo(
           'footer',
@@ -595,7 +757,12 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
     lines.add('</body>\n</html>');
 
-    chapterItem.setText(lines.join(_lf));
+    // Well-formed, where AsciiDoc markup leaves it broken (asciidart's).
+    final text = balanceXml(lines.join(_lf));
+    chapterItem.setText(text);
+    // MathML in a content document is declared (EPUB 3; the gem doesn't,
+    // and EPUBCheck reports it).
+    if (text.contains('<mml:math')) chapterItem.addProperty('mathml');
     if (_epubProperties[node]?.contains('svg') ?? false) {
       chapterItem.addProperty('svg');
     }
@@ -623,7 +790,11 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         : ' epub:type="${_s(sectname)}"';
     final divClasses = ['sect$level', ?node.role];
     final title = numberedTitle(node);
-    final content = _s(node.content());
+    final content = _withIndex(
+      node,
+      _s(node.content()),
+      _enclosingChapter(node),
+    );
     return '<section class="${divClasses.join(' ')}" title=${_xmlAttr(title)}'
         '$epubTypeAttr>\n'
         '<h$hlevel id="${_s(node.id)}">$title</h$hlevel>'
@@ -795,24 +966,21 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '</figure>';
   }
 
-  /// STEM blocks are listings: the gem converts AsciiMath to MathML only
-  /// with the asciimath gem, which has no counterpart here (and says so,
-  /// once).
+  /// A STEM block: AsciiMath as MathML (asciidart's port of the
+  /// asciimath gem, ADR-0014, as the gem writes it with asciimath
+  /// installed), other math as a listing.
   String convertStem(Block node) {
-    if (node.style == 'asciimath') _warnAsciimathUnavailable();
-    return convertListing(node);
-  }
-
-  bool _asciimathWarned = false;
-
-  /// Warns, once per converter, that AsciiMath stays text.
-  void _warnAsciimathUnavailable() {
-    if (_asciimathWarned) return;
-    _asciimathWarned = true;
-    logger.warn(
-      'AsciiMath to MathML conversion is not available. '
-      'Functionality disabled.',
-    );
+    if (node.style != 'asciimath') return convertListing(node);
+    final idAttr = node.id != null ? ' id="${node.id}"' : '';
+    final titleElement = node.hasTitle
+        ? '<figcaption>${node.captionedTitle()}</figcaption>'
+        : '';
+    return '<figure$idAttr class="${_prependSpace(node.role)}">\n'
+        '$titleElement\n'
+        '<div class="content">\n'
+        '${asciimathToMathml(_s(node.content()), prefix: 'mml:')}\n'
+        '</div>\n'
+        '</figure>';
   }
 
   /// Converts the [node] literal block.
@@ -1011,8 +1179,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     var i = 0;
     for (final item in node.items) {
       lines.add(
-        '<li><i class="conum" data-value="${i + 1}">'
-        '${String.fromCharCode(num)}</i> ${_s(item.text)}'
+        '<li>${calloutBack(item, '<i class="conum" data-value="${i + 1}">'
+        '${String.fromCharCode(num)}</i>')} '
+        '${calloutItemAnchors(item)}${_s(item.text)}'
         '${item.hasBlocks ? _s(item.content()) : ''}</li>',
       );
       num += 1;
@@ -1237,11 +1406,13 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     if (node.attr('scaledwidth') case final scaledwidth?) {
       attrs.add('style="width: $scaledwidth"');
     } else if (node.attr('width') case final width?) {
-      attrs.add(
-        RegExp(r'^\d+%$').hasMatch(width)
-            ? 'style="width: $width"'
-            : 'width="$width"',
-      );
+      // XHTML takes a number of pixels (asciidart leaves out any other
+      // value, which the gem writes and EPUBCheck rejects).
+      if (RegExp(r'^\d+%$').hasMatch(width)) {
+        attrs.add('style="width: $width"');
+      } else if (RegExp(r'^\d+$').hasMatch(width)) {
+        attrs.add('width="$width"');
+      }
     }
     return attrs;
   }
@@ -1309,12 +1480,22 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
   /// Converts the [node] image block.
   String convertImage(Block node) {
-    final target = node.imageUri(_s(node.attr('target')));
-    _registerMediaFile(node, target, 'image');
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
     final titleElement = node.hasTitle
         ? '\n<figcaption>${node.captionedTitle()}</figcaption>'
         : '';
+    // A text file (ASCII art) as its text, not an image a reader can't
+    // show (asciidart's own output; the file isn't packed).
+    if (_textImage(node) case final text?) {
+      return '<figure$idAttr class="image text${_prependSpace(node.role)}'
+          '${_prependSpace(node.attr('float'))}">\n'
+          '<div class="content">\n'
+          '<pre>$text</pre>\n'
+          '</div>$titleElement\n'
+          '</figure>';
+    }
+    final target = node.imageUri(_s(node.attr('target')));
+    _registerMediaFile(node, target, 'image');
     final imgAttrs = _imageAttrs(node, node.alt);
     return '<figure$idAttr class="image${_prependSpace(node.role)}'
         '${_prependSpace(node.attr('float'))}">\n'
@@ -1322,6 +1503,104 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '<img src="$target"${_prependSpace(imgAttrs.join(' '))} />\n'
         '</div>$titleElement\n'
         '</figure>';
+  }
+
+  /// A `toc::[]` macro (asciidart's): the book's contents where it is, as
+  /// the navigation document lists them (to `toclevels`, or the macro's
+  /// `levels`), linked to the chapters.
+  String convertToc(Block node) {
+    final doc = _doc(node);
+    final levels = _nonNegative(
+      _toInt(node.attr('levels') ?? doc.attr('toclevels', '1')),
+    );
+    final items = doc.doctype == 'book' ? doc.sections : <AbstractBlock>[doc];
+    final list = _navLevel(items, levels, _NavState());
+    if (list.isEmpty) return '';
+    return '<nav class="toc"${node.id == null ? '' : ' id="${node.id}"'}>\n'
+        '$list\n'
+        '</nav>';
+  }
+
+  /// The text of image [node] when its target is a text file
+  /// (`image::diagram.txt[]`, or `format=txt`), escaped; else null.
+  String? _textImage(Block node) {
+    final target = _s(node.attr('target'));
+    final isText =
+        node.attr('format') == 'txt' ||
+        (!node.hasAttr('format') && target.toLowerCase().endsWith('.txt'));
+    if (!isText) return null;
+    final text = node.readContents(
+      target,
+      start: node.document!.attr('imagesdir'),
+      label: 'text image',
+    );
+    return text
+        ?.replaceAll(RegExp(r'\r?\n$'), '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+  }
+
+  /// With `:hyphens:` (as the PDF reads it), the text hyphenated by the
+  /// reading system, in the book's language.
+  static String _hyphensCss(Document document) => document.hasAttr('hyphens')
+      ? '<style>\nbody p, li, dd { -webkit-hyphens: auto; hyphens: auto; }\n'
+            '</style>\n'
+      : '';
+
+  /// With `ebook-code-overflow=scroll` (asciidart's), code lines keep
+  /// their length and scroll sideways rather than wrap (the stylesheet's
+  /// default).
+  static String _codeOverflowCss(Document document) =>
+      document.attr('ebook-code-overflow') == 'scroll'
+      ? '<style>\npre { white-space: pre; overflow-wrap: normal; '
+            'overflow-x: auto; }\n</style>\n'
+      : '';
+
+  /// The title of the table of contents: `toc-title`, or Asciidoctor's
+  /// default when the document empties it (an empty heading and landmark
+  /// aren't valid EPUB).
+  static String _tocTitle(Document document) =>
+      switch (document.attr('toc-title')) {
+        final String title when title.isNotEmpty => title,
+        _ => 'Table of Contents',
+      };
+
+  /// An index term: its text when visible, and where the document has an
+  /// index, an anchor the index links to.
+  String _indexterm(Inline node) {
+    final visible = node.type == 'visible';
+    final anchor = _doc(node).catalog.index
+        .add(node, visible ? [_s(node.text)] : node.terms ?? const []);
+    final target = anchor == null ? '' : '<a id="$anchor"></a>';
+    return visible ? '$target${_s(node.text)}' : target;
+  }
+
+  /// [content] of the section [node], followed by the document's index
+  /// when [node] is its index section (in the chapter [chapter]).
+  String _withIndex(Section node, String content, AbstractNode? chapter) {
+    final document = _doc(node);
+    final index = document.catalog.index;
+    if (node.sectname != 'index' || !index.isActive) return content;
+    final here = chapter == null ? null : chapterFilename(chapter);
+    final html = indexHtml(
+      index,
+      level: node.level ?? 1,
+      epub: true,
+      codePoint: indexInCodePointOrder(document),
+      headings: indexHasCategoryHeadings(document),
+      label: (section) => indexUseLabel(section, document),
+      href: (use) {
+        final file = switch (_enclosingChapter(use.node)) {
+          final AbstractNode chapter => chapterFilename(chapter),
+          null => null,
+        };
+        return file == null || file == here
+            ? '#${use.anchor}'
+            : '$file.xhtml#${use.anchor}';
+      },
+    );
+    return content.isEmpty ? html : '$content\n$html';
   }
 
   /// The chapter [start] is in (through the table cell an AsciiDoc cell's
@@ -1392,7 +1671,20 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
       case 'ref':
         return '<a id="${_s(node.target ?? node.id)}"></a>';
       case 'link':
-        return '<a href="${_s(node.target)}" class="link">${_s(node.text)}</a>';
+        final target = _s(node.target);
+        // A path from a website's root (`/chapter/#id`) means nothing in
+        // the book: it goes to the id when the book has it, else it is
+        // text (asciidart's; the gem's link leaves the container).
+        if (target.startsWith('/') && !target.startsWith('//')) {
+          final hash = target.indexOf('#');
+          final id = hash < 0 ? null : target.substring(hash + 1);
+          final ref = id == null ? null : _doc(node).catalog.refs[id];
+          final chapter = ref == null ? null : _enclosingChapter(ref);
+          final file = chapter == null ? null : chapterFilename(chapter);
+          if (file == null) return _s(node.text);
+          return '<a href="$file.xhtml#$id" class="link">${_s(node.text)}</a>';
+        }
+        return '<a href="$target" class="link">${_s(node.text)}</a>';
       case 'bibref':
         var reftext = node.reftext;
         if (reftext != null) {
@@ -1410,17 +1702,33 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   /// Converts the [node] inline callout.
   String convertInlineCallout(Inline node) {
     final number = _toInt(_s(node.text));
-    return '<i class="conum" data-value="$number">'
-        '${String.fromCharCode(_calloutStart + number - 1)}</i>';
+    return calloutLink(
+      node,
+      '<i class="conum" data-value="$number">'
+      '${String.fromCharCode(_calloutStart + number - 1)}</i>',
+    );
   }
+
+  /// The label before footnote [footnote]'s text: `footnote-label-template`
+  /// (ADR-0010) when [document] sets it, none by default (as the gem).
+  static String _noteLabel(Document document, Footnote footnote) =>
+      switch (document.attr('footnote-label-template')) {
+        final template? => renderNumbered(template, footnote.index, (n) => n),
+        null => '',
+      };
 
   /// Converts the [node] inline footnote.
   String? convertInlineFootnote(Inline node) {
     final index = node.attr('index');
     if (index != null) {
       final idAttr = node.id != null ? ' id="${node.id}"' : '';
-      return '<sup class="noteref">[<a$idAttr href="#note-$index" '
-          'epub:type="noteref">$index</a>]</sup>';
+      // `footnote-reference-template` (ADR-0010), `[1]` by default.
+      final marker = renderNumbered(
+        node.document?.attr('footnote-reference-template') ?? '[{{number}}]',
+        index,
+        (n) => '<a$idAttr href="#note-$index" epub:type="noteref">$n</a>',
+      );
+      return '<sup class="noteref">$marker</sup>';
     }
     if (node.type == 'xref') {
       return '<mark class="noteref" title="Unresolved note reference">'
@@ -1490,8 +1798,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   String convertInlineQuoted(Inline node) {
     final type = _s(node.type);
     final (open, close, isTag) = _quoteTags[type] ?? ('', '', false);
-    if (type == 'asciimath') _warnAsciimathUnavailable();
-    final content = _s(node.text);
+    final content = type == 'asciimath'
+        ? asciimathToMathml(_s(node.text), prefix: 'mml:')
+        : _s(node.text);
     if (type == 'monospaced' || type == 'asciimath' || type == 'latexmath') {
       node.addRole('literal');
     }
@@ -1559,9 +1868,28 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         }
       }
     } else {
+      // asciidoctor-epub3's stylesheet, then asciidart's house rules
+      // (ADR-0011), unless the document asks for asciidoctor-epub3's alone
+      // (`epub3-stylesheet=asciidoctor-epub3`).
+      final classic =
+          doc.attr('epub3-stylesheet') == 'asciidoctor-epub3' ||
+          asciidoctorCompat(doc, CompatFormat.epub);
       for (final name in ['epub3', 'epub3-css3-only']) {
-        book.addItem('styles/$name.css').setText(_asset('styles/$name.css'));
+        final css = _asset('styles/$name.css');
+        book
+            .addItem('styles/$name.css')
+            .setText(name == 'epub3' && !classic ? '$css\n$_houseRules' : css);
       }
+    }
+
+    if (doc.syntaxHighlighter case final HighlightJsHighlighter highlighter
+        when highlighter.canHighlight) {
+      book
+          .addItem('styles/highlightjs.css')
+          .setText(
+            highlightJsStyles[doc.attr('highlightjs-theme')] ??
+                highlightJsStyles['github']!,
+          );
     }
 
     var fontCss = _asset('styles/epub3-fonts.css');
@@ -1595,6 +1923,10 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   }
 
   static String _asset(String path) => Epub3Assets.text(path) ?? '';
+
+  /// asciidart's house rules for the EPUB (doc/style.md).
+  static String get _houseRules =>
+      EmbeddedData.file('stylesheets/asciidart-epub3-house.css');
 
   /// Adds the cover page [name] (`front-cover`, `back-cover`) for the
   /// `<name>-image` attribute.
@@ -1796,7 +2128,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '<section class="chapter">\n'
         '<header class="chapter-header">\n'
         '<h1 class="chapter-title"><small class="subtitle">'
-        '${_s(doc.attr('toc-title'))}</small></h1>\n'
+        '${_tocTitle(doc)}</small></h1>\n'
         '</header>\n'
         '<nav epub:type="toc" id="toc">';
     final lines = <String>[
@@ -1815,6 +2147,16 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         );
       }
       lines.add('\n</ol>\n</nav>');
+      // The print edition's pages (`epub-page-map`).
+      if (_pageList.isNotEmpty) {
+        lines.add(
+          '\n<nav epub:type="page-list" id="page-list" hidden="hidden">\n<ol>',
+        );
+        for (final (href, label) in _pageList) {
+          lines.add('<li><a href="$href">$label</a></li>');
+        }
+        lines.add('\n</ol>\n</nav>');
+      }
     }
     lines.add('\n</section>\n</body>\n</html>');
     return lines.join(_lf);
@@ -1824,6 +2166,8 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     var lines = <String>[];
     for (final item in items) {
       if ((item.level ?? 0) > levels) continue;
+      // asciidart's `notoc` option: a section left out of the contents.
+      if (item.hasOption('notoc')) continue;
       final chapterFile = chapterFilename(item);
       final String itemLabel;
       final String itemHref;
@@ -1989,6 +2333,9 @@ String _fromHtmlSpecialChars(String value) =>
         _ => '&',
       };
     });
+
+/// An anchor the index links to, in converted text.
+final RegExp _indexAnchorRx = RegExp(r'<a id="_indexterm_\d+"></a>');
 
 /// [value] as a quoted XML attribute value (Ruby's `encode xml: :attr`).
 String _xmlAttr(String value) {

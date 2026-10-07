@@ -1,0 +1,80 @@
+extends: default
+base:
+  text-decoration-width: 0.75
+heading:
+  text-decoration: underline
+  text-decoration-color: #FF0000
+  h2:
+    border-color: #0000FF
+    border-style: dashed
+    border-width: [0, 0, 1, 0]
+    padding: [0, 0, 4, 0]
+  h3:
+    font-kerning: none
+    text-decoration: line-through
+caption:
+  background-color: #EEEEEE
+  text-decoration: underline
+toc:
+  text-decoration: underline
+  text-decoration-color: #00AA00
+abstract:
+  title:
+    text-decoration: underline
+admonition:
+  border-color: #FF0000
+  border-width: 1
+  border-radius: 4
+  border-style: dotted
+  column-rule-style: double
+  column-rule-width: 3
+  label:
+    vertical-align: top
+code:
+  border-style: dashed
+example:
+  border-style: double
+  border-width: 3
+quote:
+  border-style: dotted
+  border-radius: 3
+sidebar:
+  border-style: dashed
+  border-width: 1
+verse:
+  border-style: dotted
+block:
+  anchor-top: -12
+button:
+  border-color: #FF0000
+  border-offset: 2
+  border-radius: 3
+  border-width: 0.5
+codespan:
+  border-color: #00FF00
+  border-radius: 2
+  border-width: 0.5
+link:
+  border-offset: 1
+image:
+  border-color: #0000FF
+  border-width: 2
+  border-style: dashed
+  border-radius: 5
+  border-fit: auto
+title-page:
+  revision:
+    margin-bottom: 30
+page:
+  mode: fullscreen
+  initial-zoom: FitH
+footer:
+  title-style: basic
+  recto:
+    right:
+      content: '{section-or-chapter-title}'
+  verso:
+    left:
+      content: '{section-or-chapter-title}'
+table:
+  asciidoc-cell-style: initial

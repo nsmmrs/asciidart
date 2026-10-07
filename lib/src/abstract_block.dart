@@ -13,6 +13,7 @@ import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/document.dart' show DocumentAttributeEntry;
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/inline_tree.dart';
+import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/substitutors.dart' show applySubsTree;
@@ -383,6 +384,7 @@ abstract class AbstractBlock extends AbstractNode {
   /// Sets the caption of this block.
   set caption(String? value) {
     _caption = value;
+    _captionLabel = null;
   }
 
   /// The title of this block with the caption prepended.
@@ -457,11 +459,11 @@ abstract class AbstractBlock extends AbstractNode {
           if (fullPrefix != null) {
             return '$fullPrefix, $quotedTitle';
           }
-          return '${_chompDotSpace(_caption!)}, $quotedTitle';
+          return '${_captionLabel ?? _chompDotSpace(_caption!)}, $quotedTitle';
         case 'short':
           final shortPrefix = _captionPrefix();
           if (shortPrefix != null) return shortPrefix;
-          return _chompDotSpace(_caption!);
+          return _captionLabel ?? _chompDotSpace(_caption!);
         default: // 'basic'
           return title;
       }
@@ -481,9 +483,11 @@ abstract class AbstractBlock extends AbstractNode {
     return '$prefix $number';
   }
 
+  /// The caption's word and number (`Figure 3`), when [assignCaption]
+  /// numbered this block.
+  String? _captionLabel;
+
   /// Removes one trailing `'. '` from [caption], if present.
-  ///
-  /// Removes one trailing `'. '`.
   static String _chompDotSpace(String caption) => caption.endsWith('. ')
       ? caption.substring(0, caption.length - 2)
       : caption;
@@ -496,7 +500,11 @@ abstract class AbstractBlock extends AbstractNode {
   /// `'<prefix> <number>. '` caption is built and the block takes the next
   /// number of its kind.
   void assignCaption(String? value, {bool figure = false}) {
-    if (_caption != null || _title == null) return;
+    if (_caption != null) return;
+    if (_title == null) {
+      _countUntitled(figure: figure);
+      return;
+    }
     final assigned = value ?? document!.attributes['caption'];
     if (assigned != null) {
       _caption = assigned;
@@ -508,8 +516,36 @@ abstract class AbstractBlock extends AbstractNode {
     if (attrName != null && prefix != null) {
       final kind = figure ? 'figure' : context.asciidoc;
       numeral = document!.incrementAndStoreCounter('$kind-number', this);
-      _caption = '$prefix $numeral. ';
+      // asciidart's `<kind>-caption-template` (ADR-0010): the caption from
+      // a template of `{{caption}}` and `{{number}}`.
+      switch (document!.attributes['$attrName-template']) {
+        case final String template:
+          _caption = renderTemplate(template, {
+            'caption': prefix,
+            'number': '$numeral',
+          });
+          // A cross reference names the block by its caption word and
+          // number, whatever the template made of them.
+          _captionLabel = '$prefix $numeral';
+        case null:
+          _caption = '$prefix $numeral. ';
+      }
     }
+  }
+
+  /// asciidart's `<kind>-numbering: all` (`listing-numbering`,
+  /// `figure-numbering`...): a block without a title takes a number too,
+  /// without a caption, so the numbers of those with one count it (as
+  /// Typst numbers every figure, captioned or not), unless it has the
+  /// `unnumbered` option.
+  void _countUntitled({required bool figure}) {
+    final attrName = figure ? 'figure-caption' : captionAttributeName(context);
+    if (attrName == null || document!.attributes[attrName] == null) return;
+    final kind = figure ? 'figure' : context.asciidoc;
+    if (document!.attributes['$kind-numbering'] != 'all') return;
+    // (Not one with the `unnumbered` option: a bare code block.)
+    if (hasOption('unnumbered')) return;
+    numeral = document!.incrementAndStoreCounter('$kind-number', this);
   }
 
   /// Assigns the next index (0-based) and numeral to [section].
@@ -527,9 +563,17 @@ abstract class AbstractBlock extends AbstractNode {
     if (sectname == 'appendix') {
       section.numeral = document!.counter('appendix-number', 'A');
       final caption = document!.attributes['appendix-caption'];
-      section.caption = caption == null
-          ? '${section.numeral}. '
-          : '$caption ${section.numeral}: ';
+      section.caption =
+          switch (document!.attributes['appendix-caption-template']) {
+            final String template => renderTemplate(template, {
+              'caption': caption,
+              'number': '${section.numeral}',
+            }),
+            null =>
+              caption == null
+                  ? '${section.numeral}. '
+                  : '$caption ${section.numeral}: ',
+          };
     } else if (sectname == 'chapter' || target.chapterNumbering) {
       section.numeral = document!.counter('chapter-number', '1');
     } else {
