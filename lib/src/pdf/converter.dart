@@ -655,6 +655,7 @@ final class PdfConverter extends BuiltInConverter
     if (standard != null) pdf.outputIntents.add(standard);
     _phase('pdf render');
     final pages = result.render(pdf, destinationName: destinationName);
+    _compressingElsewhere(pages);
     if (standard != null) _preflight(standard);
     _layoutReport(document, result);
     _pageMap(document, result, pages.length);
@@ -4347,6 +4348,23 @@ final class PdfConverter extends BuiltInConverter
           ),
     );
     return image;
+  }
+
+  /// The content streams of [pages] compressed on other cores, when the
+  /// conversion is awaited.
+  void _compressingElsewhere(List<PdfPage> pages) {
+    final parallel = _parallel;
+    if (parallel == null) return;
+    for (final page in pages) {
+      _awaiting.add(
+        parallel
+            .submit(_StreamEncoding(page.content, nativeZlib: io.hasNativeZlib))
+            .then<void>(
+              (payload) => page.contentPayload = payload,
+              onError: (Object _) {},
+            ),
+      );
+    }
   }
 
   /// The file an SVG image at [svgPath] refers to by [href]: relative to
@@ -10199,6 +10217,18 @@ final class _PngEncoding extends Job<PngPayload> {
   PngPayload run() =>
       PngImage.parse(bytes)
           .encode(PdfConverter._writerOptions(nativeZlib: nativeZlib));
+}
+
+/// A stream's [data] encoded as the PDF is saved with ([encodeStream]).
+final class _StreamEncoding extends Job<StreamPayload> {
+  const new(this.data, {required this.nativeZlib});
+
+  final Uint8List data;
+  final bool nativeZlib;
+
+  @override
+  StreamPayload run() =>
+      encodeStream(data, PdfConverter._writerOptions(nativeZlib: nativeZlib));
 }
 
 final class _NativeZlib implements ZlibCodec {
