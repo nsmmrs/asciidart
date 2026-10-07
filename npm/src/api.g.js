@@ -35,6 +35,18 @@ export class Asciidart {
   get onDiagnostic() {
     return core.Asciidart$get$onDiagnostic(this)
   }
+  get fonts() {
+    return core.Asciidart$get$fonts(this)
+  }
+  loadBackend(...args) {
+    return core.Asciidart$loadBackend(this, ...args)
+  }
+  convertToBytes(...args) {
+    return core.Asciidart$convertToBytes(this, ...args)
+  }
+  convertToBytesAsync(...args) {
+    return core.Asciidart$convertToBytesAsync(this, ...args)
+  }
   parse(...args) {
     return core.Asciidart$parse(this, ...args)
   }
@@ -260,6 +272,21 @@ export class FileConversion {
   }
   get document() {
     return core.FileConversion$get$document(this)
+  }
+}
+
+export class FontFile {
+  constructor(...args) {
+    return core.FontFile(...args)
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get name() {
+    return core.FontFile$get$name(this)
+  }
+  get bytes() {
+    return core.FontFile$get$bytes(this)
   }
 }
 
@@ -1244,7 +1271,7 @@ export class Video extends Block {
   }
 }
 
-registerClasses({ Asciidart, Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, SourceCode, SourceLocation, TableColumn, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
+registerClasses({ Asciidart, Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, FontFile, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, SourceCode, SourceLocation, TableColumn, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
 
 export const AdmonitionKind = Object.freeze({
   note: 'note',
@@ -1259,6 +1286,8 @@ export const Backend = Object.freeze({
   xhtml5: 'xhtml5',
   docbook5: 'docbook5',
   manpage: 'manpage',
+  pdf: 'pdf',
+  epub3: 'epub3',
 })
 
 export const BlockKind = Object.freeze({

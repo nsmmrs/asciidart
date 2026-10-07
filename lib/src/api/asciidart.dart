@@ -13,6 +13,29 @@ enum Backend {
 
   /// A man page (troff).
   manpage,
+
+  /// A PDF file (see [Asciidart.convertToBytes]).
+  pdf,
+
+  /// An EPUB 3 file (see [Asciidart.convertToBytes]).
+  epub3;
+
+  /// Whether the output is a file of its own format (bytes, not text).
+  bool get makesFile => this == pdf || this == epub3;
+}
+
+/// A font given to a conversion as bytes: a TrueType or OpenType file and
+/// its name (`Inter-Regular.ttf`). PDFs and EPUBs find it as they find
+/// installed fonts, by the file's name, then by the family it names.
+final class FontFile {
+  /// The font file [name] with [bytes].
+  const new(this.name, this.bytes);
+
+  /// The file's name.
+  final String name;
+
+  /// The file's contents.
+  final List<int> bytes;
 }
 
 /// How much a document may reach outside itself.
@@ -60,7 +83,8 @@ final class Asciidart {
   /// documents are resolved from (default: the document's directory, or
   /// the working directory). [onDiagnostic] sees every message as it is
   /// reported, including those of [convert], which returns only the
-  /// output.
+  /// output. [fonts] are found by PDFs and EPUBs before the installed
+  /// fonts.
   const new({
     this.safe = SafeMode.secure,
     this.attributes = const {},
@@ -70,6 +94,7 @@ final class Asciidart {
     this.highlighters = const {},
     this.baseDir,
     this.onDiagnostic,
+    this.fonts = const [],
   });
 
   /// How much documents may reach outside themselves.
@@ -96,6 +121,89 @@ final class Asciidart {
   /// Called with every diagnostic as it is reported.
   final void Function(Diagnostic diagnostic)? onDiagnostic;
 
+  /// Fonts given as bytes, found before the installed ones.
+  final List<FontFile> fonts;
+
+  /// Loads the code of [backend]. On the Dart VM every backend is there;
+  /// on JavaScript the PDF and EPUB backends load the first time an
+  /// asynchronous conversion needs them, and [convertToBytes] needs them
+  /// loaded.
+  Future<void> loadBackend(Backend backend) =>
+      file_backends.loadFileBackend(backend.name);
+
+  /// [body] with [fonts] found before the installed fonts.
+  T _withFonts<T>(T Function() body) => impl.FontIndex.withFonts({
+    for (final font in fonts) font.name: font.bytes,
+  }, body);
+
+  /// Throws unless [backend] makes a file.
+  static void _requireFile(Backend backend) {
+    if (!backend.makesFile) {
+      throw ArgumentError.value(backend, 'backend', 'makes text: use convert');
+    }
+  }
+
+  /// Converts [source] to a file of [backend]'s format, a PDF or an EPUB:
+  /// the file's bytes. [path] names the source (for messages, and as the
+  /// base for relative paths, images included); [attributes] add to the
+  /// instance's.
+  ///
+  /// On JavaScript the backend must have been loaded ([loadBackend], or
+  /// any [convertToBytesAsync]).
+  Uint8List convertToBytes(
+    String source, {
+    required Backend backend,
+    String? path,
+    Doctype? doctype,
+    Map<String, String> attributes = const {},
+  }) {
+    _requireFile(backend);
+    file_backends.registerFileBackend(backend.name);
+    return _withFonts(() {
+      final document = parse(
+        source,
+        path: path,
+        backend: backend,
+        doctype: doctype,
+        standalone: true,
+        attributes: attributes,
+      );
+      return document._run(() {
+        document._doc.convert();
+        return document._doc.outputBytes ?? Uint8List(0);
+      });
+    });
+  }
+
+  /// Like [convertToBytes], loading the backend when it isn't, waiting for
+  /// [IncludeResolver]s that return a `Future`, fetching remote content
+  /// when the `allow-uri-read` attribute is set, and doing the work that
+  /// doesn't depend on order (images, compression) on other cores.
+  Future<Uint8List> convertToBytesAsync(
+    String source, {
+    required Backend backend,
+    String? path,
+    Doctype? doctype,
+    Map<String, String> attributes = const {},
+  }) async {
+    _requireFile(backend);
+    await loadBackend(backend);
+    return await _withFonts(() async {
+      final document = await parseAsync(
+        source,
+        path: path,
+        backend: backend,
+        doctype: doctype,
+        standalone: true,
+        attributes: attributes,
+      );
+      final doc = document._doc;
+      document._run(() => impl.awaitingWorkers(doc.convert));
+      await doc.finish();
+      return document._run<Uint8List>(() => doc.outputBytes ?? Uint8List(0));
+    });
+  }
+
   /// Parses [source] into a [Document].
   ///
   /// [path] names the source (for messages, and as the base for relative
@@ -109,17 +217,20 @@ final class Asciidart {
     Doctype? doctype,
     bool standalone = false,
     Map<String, String> attributes = const {},
-  }) => _parse(
-    source,
-    _options(
-      _Includes(async: false),
-      path: path,
-      backend: backend,
-      doctype: doctype,
-      standalone: standalone,
-      attributes: attributes,
-    ),
-  );
+  }) {
+    if (backend.makesFile) file_backends.registerFileBackend(backend.name);
+    return _parse(
+      source,
+      _options(
+        _Includes(async: false),
+        path: path,
+        backend: backend,
+        doctype: doctype,
+        standalone: standalone,
+        attributes: attributes,
+      ),
+    );
+  }
 
   /// Parses only the header of [source] (title, authors, attributes) into a
   /// [Document] without blocks; much faster than [parse] for reading
@@ -139,7 +250,8 @@ final class Asciidart {
   );
 
   /// Converts [source]: the body only, or a complete document when
-  /// [standalone] is `true`.
+  /// [standalone] is `true`. [backend] makes text ([convertToBytes] makes
+  /// PDFs and EPUBs).
   String convert(
     String source, {
     String? path,
@@ -147,14 +259,23 @@ final class Asciidart {
     Doctype? doctype,
     bool standalone = false,
     Map<String, String> attributes = const {},
-  }) => parse(
-    source,
-    path: path,
-    backend: backend,
-    doctype: doctype,
-    standalone: standalone,
-    attributes: attributes,
-  ).convert();
+  }) {
+    if (backend.makesFile) {
+      throw ArgumentError.value(
+        backend,
+        'backend',
+        'makes a file: use convertToBytes',
+      );
+    }
+    return parse(
+      source,
+      path: path,
+      backend: backend,
+      doctype: doctype,
+      standalone: standalone,
+      attributes: attributes,
+    ).convert();
+  }
 
   /// Like [parse], waiting for [IncludeResolver]s that return a `Future`,
   /// and fetching remote content (includes, and assets read from a URI)
@@ -167,6 +288,7 @@ final class Asciidart {
     bool standalone = false,
     Map<String, String> attributes = const {},
   }) async {
+    if (backend.makesFile) await loadBackend(backend);
     impl.AsciidoctorOptions optionsFor(_Includes includes) => _options(
       includes,
       path: path,
@@ -202,6 +324,13 @@ final class Asciidart {
     bool standalone = false,
     Map<String, String> attributes = const {},
   }) async {
+    if (backend.makesFile) {
+      throw ArgumentError.value(
+        backend,
+        'backend',
+        'makes a file: use convertToBytesAsync',
+      );
+    }
     impl.AsciidoctorOptions optionsFor(_Includes includes) => _options(
       includes,
       path: path,

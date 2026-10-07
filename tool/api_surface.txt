@@ -15,9 +15,12 @@ enum AdmonitionKind
   static AdmonitionKind warning
   static List<AdmonitionKind> values
 enum Backend
+  bool makesFile
   static Backend docbook5
+  static Backend epub3
   static Backend html5
   static Backend manpage
+  static Backend pdf
   static Backend xhtml5
   static List<Backend> values
 enum BlockKind
@@ -95,12 +98,15 @@ final class Admonition extends Block
   String content
   String plainText
 final class Asciidart
-  Asciidart({SafeMode safe = SafeMode.secure, Map<String, String> attributes = const {}, List<Extension> extensions = const [], String Function(Node, HtmlDefaults)? html, List<String> templateDirs = const [], Map<String, Highlighter> highlighters = const {}, String? baseDir, void Function(Diagnostic)? onDiagnostic})
+  Asciidart({SafeMode safe = SafeMode.secure, Map<String, String> attributes = const {}, List<Extension> extensions = const [], String Function(Node, HtmlDefaults)? html, List<String> templateDirs = const [], Map<String, Highlighter> highlighters = const {}, String? baseDir, void Function(Diagnostic)? onDiagnostic, List<FontFile> fonts = const []})
   Document parse(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
   Document parseHeader(String source, {String? path, Map<String, String> attributes = const {}})
   Future<Document> parseAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
   Future<String> convertAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  Future<Uint8List> convertToBytesAsync(String source, {required Backend backend, String? path, Doctype? doctype, Map<String, String> attributes = const {}})
+  Future<void> loadBackend(Backend backend)
   List<Extension> extensions
+  List<FontFile> fonts
   List<String> templateDirs
   Map<String, Highlighter> highlighters
   Map<String, String> attributes
@@ -108,6 +114,7 @@ final class Asciidart
   String Function(Node, HtmlDefaults)? html
   String convert(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
   String? baseDir
+  Uint8List convertToBytes(String source, {required Backend backend, String? path, Doctype? doctype, Map<String, String> attributes = const {}})
   void Function(Diagnostic)? onDiagnostic
 final class AsciidartException implements Exception
   String message
@@ -214,6 +221,10 @@ final class FileConversion
   Document document
   String inputPath
   String outputPath
+final class FontFile
+  FontFile(String name, List<int> bytes)
+  List<int> bytes
+  String name
 final class Footnote extends Inline
   bool isReference
   int? number

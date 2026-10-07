@@ -10,6 +10,7 @@
 /// what changed.
 library;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -68,8 +69,16 @@ final class InstalledFont {
 /// family and style.
 final class FontIndex {
   /// The fonts in [directories] (searched in order, with their
-  /// subfolders), their headers cached in [cacheFile] when given.
-  new(this.directories, {this.cacheFile});
+  /// subfolders), their headers cached in [cacheFile] when given; the
+  /// fonts in [memory] (file names and their bytes) come first.
+  new(
+    this.directories, {
+    this.cacheFile,
+    Map<String, List<int>> memory = const {},
+  }) : _memory = {
+         for (final MapEntry(:key, :value) in memory.entries)
+           '$_memoryPrefix$key': value,
+       };
 
   /// The machine's fonts: `ASCIIDART_FONT_PATH`'s folders, then
   /// [extraDirectories], then the user's and the system's font folders.
@@ -79,6 +88,39 @@ final class FontIndex {
         ...extraDirectories,
         ...io.fontDirectories,
       ], cacheFile: _defaultCacheFile());
+
+  /// The fonts given as bytes, by their paths (`memory:/name`).
+  final Map<String, List<int>> _memory;
+
+  static const String _memoryPrefix = 'memory:/';
+
+  /// The index of the fonts in force: those given to [withFonts] around
+  /// the work under way, else the [installed] ones.
+  static FontIndex get current => switch (Zone.current[_zoneKey]) {
+    final FontIndex index => index,
+    _ => installed,
+  };
+
+  static final Object _zoneKey = Object();
+
+  /// Runs [body] with [fonts] (file names and their bytes) found before
+  /// the installed ones ([current]).
+  static T withFonts<T>(Map<String, List<int>> fonts, T Function() body) {
+    if (fonts.isEmpty) return body();
+    final index = FontIndex(
+      installed.directories,
+      cacheFile: installed.cacheFile,
+      memory: fonts,
+    );
+    return runZoned(body, zoneValues: {_zoneKey: index});
+  }
+
+  /// The bytes of the font file at [path] (a file, or one given in
+  /// memory).
+  List<int> bytes(String path) => _memory[path] ?? io.readBytes(path);
+
+  /// Whether the font at [path] was given as bytes.
+  bool isInMemory(String path) => _memory.containsKey(path);
 
   /// The folders searched, in order.
   final List<String> directories;
@@ -130,7 +172,7 @@ final class FontIndex {
   List<InstalledFont>? _fonts;
 
   /// The font files, folder by folder, in order.
-  List<String> get files => _files ??= _walk();
+  List<String> get files => _files ??= [..._memory.keys, ..._walk()];
 
   /// The first font file named [name] (any case).
   String? fileNamed(String name) {
@@ -221,6 +263,11 @@ final class FontIndex {
     final fonts = <InstalledFont>[];
     var changed = false;
     for (final path in files) {
+      if (_memory[path] case final bytes?) {
+        final data = bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+        fonts.addAll(_parse(path, _rangesOf(data)));
+        continue;
+      }
       final int size;
       final int modified;
       try {
@@ -234,7 +281,7 @@ final class FontIndex {
       if (entries == null) {
         changed = true;
         entries = [
-          for (final font in _parse(path))
+          for (final font in _parse(path, _rangesIn(path)))
             [
               stamp,
               font.index,
@@ -306,14 +353,14 @@ final class FontIndex {
   }
 
   /// The fonts of the file at [path], read from its headers.
-  static List<InstalledFont> _parse(String path) {
+  static List<InstalledFont> _parse(String path, _Ranges read) {
     try {
-      final header = _bytes(path, 0, 12);
+      final header = read(0, 12);
       if (header.length < 12) return const [];
       final offsets = <int>[];
       if (_tag(header, 0) == 'ttcf') {
         final count = _u32(header, 8).clamp(0, 256);
-        final table = _bytes(path, 12, 4 * count);
+        final table = read(12, 4 * count);
         for (var i = 0; i + 4 <= table.length; i += 4) {
           offsets.add(_u32(table, i));
         }
@@ -322,15 +369,20 @@ final class FontIndex {
       }
       return [
         for (final (index, offset) in offsets.indexed)
-          ?_parseFont(path, index, offset),
+          ?_parseFont(path, read, index, offset),
       ];
     } on Exception {
       return const [];
     }
   }
 
-  static InstalledFont? _parseFont(String path, int index, int offset) {
-    final head = _bytes(path, offset, 12);
+  static InstalledFont? _parseFont(
+    String path,
+    _Ranges read,
+    int index,
+    int offset,
+  ) {
+    final head = read(offset, 12);
     if (head.length < 12) return null;
     final version = _u32(head, 0);
     if (version != 0x00010000 &&
@@ -340,11 +392,11 @@ final class FontIndex {
       return null;
     }
     final count = _u16(head, 4);
-    final records = _bytes(path, offset + 12, 16 * count);
+    final records = read(offset + 12, 16 * count);
     Uint8List? table(String tag) {
       for (var i = 0; i + 16 <= records.length; i += 16) {
         if (_tag(records, i) == tag) {
-          return _bytes(path, _u32(records, i + 8), _u32(records, i + 12));
+          return read(_u32(records, i + 8), _u32(records, i + 12));
         }
       }
       return null;
@@ -411,9 +463,21 @@ final class FontIndex {
     return unicode ?? mac;
   }
 
-  static Uint8List _bytes(String path, int offset, int length) => length <= 0
+  /// Reads ranges of the file at [path].
+  static _Ranges _rangesIn(String path) =>
+      (offset, length) => length <= 0
       ? Uint8List(0)
       : Uint8List.fromList(io.readFileRange(path, offset, length));
+
+  /// Reads ranges of [data].
+  static _Ranges _rangesOf(Uint8List data) => (offset, length) {
+    final start = offset.clamp(0, data.length);
+    return Uint8List.sublistView(
+      data,
+      start,
+      (offset + length).clamp(start, data.length),
+    );
+  };
 
   static int _u16(Uint8List b, int at) =>
       at + 2 > b.length ? 0 : (b[at] << 8) | b[at + 1];
@@ -425,6 +489,9 @@ final class FontIndex {
   static String _tag(Uint8List b, int at) =>
       at + 4 > b.length ? '' : String.fromCharCodes(b.sublist(at, at + 4));
 }
+
+/// Reads [length] bytes from [offset] (fewer at the end).
+typedef _Ranges = Uint8List Function(int offset, int length);
 
 String _baseName(String path) {
   final slash = path.lastIndexOf(RegExp(r'[/\\]'));

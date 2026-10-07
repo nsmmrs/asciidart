@@ -200,6 +200,9 @@ final class PdfConverter extends BuiltInConverter
   Uint8List? get bytes => _bytes ??= _save?.call();
 
   @override
+  Uint8List? get output => bytes;
+
+  @override
   Future<void> finish() async {
     await Future.wait(_awaiting);
     _awaiting.clear();

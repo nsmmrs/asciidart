@@ -32,7 +32,7 @@ export declare const AdmonitionKind: {
 /**
  * The output formats.
  */
-export type Backend = 'html5' | 'xhtml5' | 'docbook5' | 'manpage';
+export type Backend = 'html5' | 'xhtml5' | 'docbook5' | 'manpage' | 'pdf' | 'epub3';
 export declare const Backend: {
   /**
    * HTML 5 (the default).
@@ -50,6 +50,14 @@ export declare const Backend: {
    * A man page (troff).
    */
   readonly manpage: 'manpage';
+  /**
+   * A PDF file (see {@link Asciidart.convertToBytes}).
+   */
+  readonly pdf: 'pdf';
+  /**
+   * An EPUB 3 file (see {@link Asciidart.convertToBytes}).
+   */
+  readonly epub3: 'epub3';
 };
 
 /**
@@ -323,9 +331,10 @@ export declare class Asciidart {
    * documents are resolved from (default: the document's directory, or
    * the working directory). {@link onDiagnostic} sees every message as it is
    * reported, including those of {@link convert}, which returns only the
-   * output.
+   * output. {@link fonts} are found by PDFs and EPUBs before the installed
+   * fonts.
    */
-  constructor(options?: { safe?: SafeMode; attributes?: Record<string, string>; extensions?: Extension[]; html?: ((node: Node, defaults: HtmlDefaults) => string) | null; templateDirs?: string[]; highlighters?: Record<string, Highlighter>; baseDir?: string | null; onDiagnostic?: ((diagnostic: Diagnostic) => void) | null });
+  constructor(options?: { safe?: SafeMode; attributes?: Record<string, string>; extensions?: Extension[]; html?: ((node: Node, defaults: HtmlDefaults) => string) | null; templateDirs?: string[]; highlighters?: Record<string, Highlighter>; baseDir?: string | null; onDiagnostic?: ((diagnostic: Diagnostic) => void) | null; fonts?: FontFile[] });
   readonly safe: SafeMode;
   readonly attributes: Record<string, string>;
   readonly extensions: Extension[];
@@ -334,6 +343,31 @@ export declare class Asciidart {
   readonly highlighters: Record<string, Highlighter>;
   readonly baseDir: string | null;
   readonly onDiagnostic: ((diagnostic: Diagnostic) => void) | null;
+  readonly fonts: FontFile[];
+  /**
+   * Loads the code of {@link backend}. On the Dart VM every backend is there;
+   * on JavaScript the PDF and EPUB backends load the first time an
+   * asynchronous conversion needs them, and {@link convertToBytes} needs them
+   * loaded.
+   */
+  loadBackend(backend: Backend): Promise<void>;
+  /**
+   * Converts {@link source} to a file of {@link backend}'s format, a PDF or an EPUB:
+   * the file's bytes. {@link path} names the source (for messages, and as the
+   * base for relative paths, images included); {@link attributes} add to the
+   * instance's.
+   *
+   * On JavaScript the backend must have been loaded ({@link loadBackend}, or
+   * any {@link convertToBytesAsync}).
+   */
+  convertToBytes(source: string, options: { backend: Backend; path?: string | null; doctype?: Doctype | null; attributes?: Record<string, string> }): Uint8Array;
+  /**
+   * Like {@link convertToBytes}, loading the backend when it isn't, waiting for
+   * {@link IncludeResolver}s that return a `Future`, fetching remote content
+   * when the `allow-uri-read` attribute is set, and doing the work that
+   * doesn't depend on order (images, compression) on other cores.
+   */
+  convertToBytesAsync(source: string, options: { backend: Backend; path?: string | null; doctype?: Doctype | null; attributes?: Record<string, string> }): Promise<Uint8Array>;
   /**
    * Parses {@link source} into a {@link Document}.
    *
@@ -351,7 +385,8 @@ export declare class Asciidart {
   parseHeader(source: string, options?: { path?: string | null; attributes?: Record<string, string> }): Document;
   /**
    * Converts {@link source}: the body only, or a complete document when
-   * {@link standalone} is `true`.
+   * {@link standalone} is `true`. {@link backend} makes text ({@link convertToBytes} makes
+   * PDFs and EPUBs).
    */
   convert(source: string, options?: { path?: string | null; backend?: Backend; doctype?: Doctype | null; standalone?: boolean; attributes?: Record<string, string> }): string;
   /**
@@ -378,8 +413,9 @@ export declare class Asciidart {
    * Converts the AsciiDoc file at {@link path} and writes the result: to
    * {@link toFile} when given (relative to {@link toDir}, if any), else into {@link toDir},
    * else next to the input file, named after it with the extension of the
-   * output format. {@link mkdirs} creates missing output directories. The
-   * output is a complete document unless {@link standalone} is `false`.
+   * output format (a PDF or an EPUB too). {@link mkdirs} creates missing output
+   * directories. The output is a complete document unless {@link standalone} is
+   * `false`.
    *
    * Returns the converted document, with its diagnostics.
    */
@@ -588,6 +624,20 @@ export declare class FileConversion {
 }
 
 /**
+ * A font given to a conversion as bytes: a TrueType or OpenType file and
+ * its name (`Inter-Regular.ttf`). PDFs and EPUBs find it as they find
+ * installed fonts, by the file's name, then by the family it names.
+ */
+export declare class FontFile {
+  /**
+   * The font file {@link name} with {@link bytes}.
+   */
+  constructor(name: string, bytes: Uint8Array);
+  readonly name: string;
+  readonly bytes: Uint8Array;
+}
+
+/**
  * A syntax highlighter, registered with {@link Asciidart.new} under the name the
  * `source-highlighter` attribute selects.
  */
@@ -754,7 +804,7 @@ export declare class SourceCode {
   protected constructor();
   readonly source: string;
   readonly language: string | null;
-  readonly highlightLines: number[];
+  readonly highlightLines: Uint8Array;
 }
 
 /**

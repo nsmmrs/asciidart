@@ -1936,8 +1936,9 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
             '</platform>\n'
             '</display_options>',
       );
+      final fonts = FontIndex.current;
       for (final (name, path) in fontFiles) {
-        book.addItem(name).setBytes(io.readBytes(path));
+        book.addItem(name).setBytes(fonts.bytes(path));
       }
     }
   }
@@ -1991,7 +1992,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
   /// file's name, then by the rule's family and style. A rule whose font
   /// isn't installed is left out, said once.
   (String, List<(String, String)>) _embeddableFonts(String css) {
-    final installed = FontIndex.installed;
+    final installed = FontIndex.current;
     final kept = <String>[];
     final files = <(String, String)>[];
     for (final rule in RegExp(r'@font-face\{[^}]*\}').allMatches(css)) {
@@ -2354,6 +2355,9 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
     }
     return lines.join(_lf);
   }
+
+  @override
+  Uint8List? get output => _book == null ? null : Uint8List.fromList(package());
 
   /// The EPUB file for the last converted document.
   List<int> package() => (_book ?? (throw StateError('no document converted')))

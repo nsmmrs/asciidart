@@ -271,6 +271,13 @@ String _jsName(MethodElement m) => _projectedOperators[m.name] ?? m.name!;
 String coreName(ClassElement c, String name, [String? accessor]) =>
     accessor == null ? '${c.name}\$$name' : '${c.name}\$$accessor\$$name';
 
+/// Whether [t] is bytes: `Uint8List`, or `List<int>` (a font file's, say),
+/// both a `Uint8Array` in JavaScript.
+bool _isBytes(DartType t) =>
+    t is InterfaceType &&
+    (t.element.name == 'Uint8List' ||
+        (t.isDartCoreList && t.typeArguments.single.isDartCoreInt));
+
 bool _nullable(DartType t) =>
     t.nullabilitySuffix == NullabilitySuffix.question ||
     t is DynamicType ||
@@ -569,6 +576,7 @@ api.${c.name} unwrap${c.name}(JSAny? value) {
       return guard('#.toJS');
     }
     if (t.isDartCoreBool) return guard('#.toJS');
+    if (_isBytes(t)) return guard('rt.jsBytes(#)');
     if (t is InterfaceType) {
       final e = t.element;
       if (e is EnumElement) return guard('#.name.toJS');
@@ -624,6 +632,7 @@ api.${c.name} unwrap${c.name}(JSAny? value) {
     if (t.isDartCoreInt) return guard('rt.integer($expr)');
     if (t.isDartCoreDouble || t.isDartCoreNum) return guard('rt.number($expr)');
     if (t.isDartCoreBool) return guard('rt.boolean($expr)');
+    if (_isBytes(t)) return guard('rt.bytes($expr)');
     if (t is InterfaceType) {
       final e = t.element;
       if (e is EnumElement) {
@@ -917,6 +926,7 @@ final class DtsEmitter {
       return 'number';
     }
     if (t.isDartCoreBool) return 'boolean';
+    if (_isBytes(t)) return 'Uint8Array';
     if (t is TypeParameterType) return t.element.name!;
     if (t is InterfaceType) {
       final e = t.element;

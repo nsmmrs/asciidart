@@ -34,6 +34,7 @@ extension AsciidartFiles on Asciidart {
     bool standalone = false,
     Map<String, String> attributes = const {},
   }) async {
+    if (backend.makesFile) await loadBackend(backend);
     impl.AsciidoctorOptions optionsFor(_Includes includes) => _options(
       includes,
       backend: backend,
@@ -46,17 +47,20 @@ extension AsciidartFiles on Asciidart {
       (options) => impl.loadFile(path, options: options),
     );
     final options = optionsFor(includes);
-    return await _document(
-      (collector) =>
-          collector.run(() => impl.loadFileAsync(path, options: options)),
+    return await _withFonts(
+      () => _document(
+        (collector) =>
+            collector.run(() => impl.loadFileAsync(path, options: options)),
+      ),
     );
   }
 
   /// Converts the AsciiDoc file at [path] and writes the result: to
   /// [toFile] when given (relative to [toDir], if any), else into [toDir],
   /// else next to the input file, named after it with the extension of the
-  /// output format. [mkdirs] creates missing output directories. The
-  /// output is a complete document unless [standalone] is `false`.
+  /// output format (a PDF or an EPUB too). [mkdirs] creates missing output
+  /// directories. The output is a complete document unless [standalone] is
+  /// `false`.
   ///
   /// Returns the converted document, with its diagnostics.
   Future<Document> convertFile(
@@ -69,6 +73,7 @@ extension AsciidartFiles on Asciidart {
     bool standalone = true,
     Map<String, String> attributes = const {},
   }) async {
+    if (backend.makesFile) await loadBackend(backend);
     impl.AsciidoctorOptions optionsFor(_Includes includes) => _options(
       includes,
       backend: backend,
@@ -81,8 +86,11 @@ extension AsciidartFiles on Asciidart {
       (options) => impl.loadFile(path, options: options),
     );
     final options = optionsFor(includes);
-    return await _document(
-      (collector) => collector.run(() => impl.convertFileAsync(path, options)),
+    return await _withFonts(
+      () => _document(
+        (collector) =>
+            collector.run(() => impl.convertFileAsync(path, options)),
+      ),
     );
   }
 

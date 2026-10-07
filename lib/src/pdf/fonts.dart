@@ -362,7 +362,7 @@ final class FontCatalog {
     this.synthesizeFaces = false,
     FontIndex? installed,
     void Function(String message)? warn,
-  }) : _installed = installed ?? FontIndex.installed,
+  }) : _installed = installed ?? FontIndex.current,
        _warn = warn ?? _ignore,
        _catalog = theme.fontCatalog?.families ?? const {},
        _dirs = [
@@ -563,7 +563,11 @@ final class FontCatalog {
   EmbeddedFont _parse(String path, {int index = 0}) =>
       EmbeddedFont.parse(_bytes(path), index: index);
 
-  List<int> _bytes(String path) => _files[path] ??= io.readBytes(path);
+  /// (Files are read once per process; fonts given as bytes belong to
+  /// their conversion.)
+  List<int> _bytes(String path) => _installed.isInMemory(path)
+      ? _installed.bytes(path)
+      : _files[path] ??= _installed.bytes(path);
 
   /// The file a catalog [path] names: in the font folders given (the
   /// theme's), else installed under the same name; null when there is

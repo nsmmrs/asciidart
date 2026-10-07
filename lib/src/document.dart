@@ -19,6 +19,7 @@
 library;
 
 import 'dart:convert' show utf8;
+import 'dart:typed_data';
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
@@ -1388,6 +1389,11 @@ class Document extends AbstractBlock implements NodeDocument {
       composite.converters.whereType<PackagingConverter>().firstOrNull,
     _ => null,
   };
+
+  /// The converted document as one file's bytes (a PDF, an EPUB), or null
+  /// when its backend writes text or several files.
+  @internal
+  Uint8List? get outputBytes => _packaging?.output;
 
   /// Waits for the work the conversion left to other cores (ADR-0016:
   /// a PDF's images and streams), so that writing doesn't do it here; the

@@ -3,6 +3,8 @@
 /// `multipage-level`), with navigation, and links that reach across pages.
 library;
 
+import 'dart:typed_data';
+
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/context.dart';
@@ -222,6 +224,10 @@ class MultipageHtml5Converter extends Html5Converter
         : '$path$suffix';
     return _Page(section, file, up);
   }
+
+  /// The website is several files: none to give as one.
+  @override
+  Uint8List? get output => null;
 
   /// Writes the root page to [path] and the other pages beside it.
   @override

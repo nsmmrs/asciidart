@@ -56,6 +56,7 @@ export 'src/api/api.dart'
         Document,
         Example,
         Extension,
+        FontFile,
         Footnote,
         Formatted,
         FormattedKind,

@@ -9,14 +9,19 @@
 library;
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:asciidart/src/abstract_block.dart' as impl;
 import 'package:asciidart/src/abstract_node.dart' as impl;
+import 'package:asciidart/src/api/file_backends.dart'
+    if (dart.library.js_interop) 'package:asciidart/src/api/file_backends_js.dart'
+    as file_backends;
 import 'package:asciidart/src/block.dart' as impl;
 import 'package:asciidart/src/converter.dart' as impl;
 import 'package:asciidart/src/document.dart' as impl;
 import 'package:asciidart/src/errors.dart' as impl;
 import 'package:asciidart/src/extensions.dart' as impl;
+import 'package:asciidart/src/font_index.dart' as impl;
 import 'package:asciidart/src/header_edit.dart' as impl;
 import 'package:asciidart/src/highlight/highlight.dart' as impl;
 import 'package:asciidart/src/highlight/syntax_highlighter.dart' as impl;
@@ -29,6 +34,7 @@ import 'package:asciidart/src/list.dart' as impl;
 import 'package:asciidart/src/load.dart' as impl;
 import 'package:asciidart/src/logging.dart' as impl;
 import 'package:asciidart/src/options.dart' as impl;
+import 'package:asciidart/src/parallel.dart' as impl;
 import 'package:asciidart/src/reader.dart' as impl;
 import 'package:asciidart/src/section.dart' as impl;
 import 'package:asciidart/src/table.dart' as impl;

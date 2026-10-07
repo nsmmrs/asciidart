@@ -10,6 +10,7 @@ library;
 import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
+import 'dart:typed_data';
 
 import 'package:asciidart/asciidart.dart' show AsciidartException;
 import 'package:asciidart/src/cli/diagnostics.dart' show describe;
@@ -114,6 +115,23 @@ List<JSAny?> list(JSAny? value) {
   if (value.isA<JSArray>()) return (value! as JSArray<JSAny?>).toDart;
   _throwTypeError('expected an array, got ${_describeJs(value)}');
 }
+
+/// The bytes [value] holds: a `Uint8Array` (or another typed array, an
+/// `ArrayBuffer`, an array of numbers).
+Uint8List bytes(JSAny? value) {
+  if (value.isA<JSUint8Array>()) return (value! as JSUint8Array).toDart;
+  if (value.isA<JSArrayBuffer>()) {
+    return (value! as JSArrayBuffer).toDart.asUint8List();
+  }
+  if (value.isA<JSArray>()) {
+    return Uint8List.fromList([for (final x in list(value)) integer(x)]);
+  }
+  _throwTypeError('expected a Uint8Array, got ${_describeJs(value)}');
+}
+
+/// [bytes] as a `Uint8Array`.
+JSUint8Array jsBytes(List<int> bytes) =>
+    (bytes is Uint8List ? bytes : Uint8List.fromList(bytes)).toJS;
 
 @JS('Object.keys')
 external JSArray<JSString> _keys(JSObject o);

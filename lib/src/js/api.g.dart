@@ -76,6 +76,7 @@ JSObject wrap(Object o) => switch (o) {
   api.IndexEntry() => rt.handle(o, 'IndexEntry'),
   api.IncludeRequest() => rt.handle(o, 'IncludeRequest'),
   api.HtmlDefaults() => rt.handle(o, 'HtmlDefaults'),
+  api.FontFile() => rt.handle(o, 'FontFile'),
   api.FileConversion() => rt.handle(o, 'FileConversion'),
   api.Diagnostic() => rt.handle(o, 'Diagnostic'),
   api.DescriptionListEntry() => rt.handle(o, 'DescriptionListEntry'),
@@ -207,6 +208,115 @@ final class Core {
               _f(rt.unwrap<api.Diagnostic>(a0));
               return null;
             })()).toJS)((rt.unwrap<api.Asciidart>(self).onDiagnostic)!));
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Asciidart$get$fonts(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Asciidart>(self).fonts) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Asciidart$loadBackend(JSAny? self, JSAny? backend) {
+    try {
+      return rt.promise(
+        rt
+            .unwrap<api.Asciidart>(self)
+            .loadBackend(api.Backend.values.byName(rt.str(backend))),
+        (x) => (() {
+          x;
+          return null;
+        })(),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Asciidart$convertToBytes(
+    JSAny? self,
+    JSAny? source, [
+    JSAny? options,
+  ]) {
+    try {
+      return rt.jsBytes(
+        rt
+            .unwrap<api.Asciidart>(self)
+            .convertToBytes(
+              rt.str(source),
+              backend: api.Backend.values.byName(
+                rt.str(rt.option(options, 'backend')),
+              ),
+              path: rt.hasOption(options, 'path')
+                  ? (rt.isMissing(rt.option(options, 'path'))
+                        ? null
+                        : rt.str(rt.option(options, 'path')))
+                  : null,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Asciidart$convertToBytesAsync(
+    JSAny? self,
+    JSAny? source, [
+    JSAny? options,
+  ]) {
+    try {
+      return rt.promise(
+        rt
+            .unwrap<api.Asciidart>(self)
+            .convertToBytesAsync(
+              rt.str(source),
+              backend: api.Backend.values.byName(
+                rt.str(rt.option(options, 'backend')),
+              ),
+              path: rt.hasOption(options, 'path')
+                  ? (rt.isMissing(rt.option(options, 'path'))
+                        ? null
+                        : rt.str(rt.option(options, 'path')))
+                  : null,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+        (x) => rt.jsBytes(x),
+      );
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -1007,6 +1117,22 @@ final class Core {
     }
   }
 
+  JSAny? FontFile$get$name(JSAny? self) {
+    try {
+      return rt.unwrap<api.FontFile>(self).name.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? FontFile$get$bytes(JSAny? self) {
+    try {
+      return rt.jsBytes(rt.unwrap<api.FontFile>(self).bytes);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? HtmlDefaults$render(JSAny? self, JSAny? node) {
     try {
       return rt
@@ -1303,9 +1429,7 @@ final class Core {
 
   JSAny? SourceCode$get$highlightLines(JSAny? self) {
     try {
-      return rt.jsArray([
-        for (final x in rt.unwrap<api.SourceCode>(self).highlightLines) x.toJS,
-      ]);
+      return rt.jsBytes(rt.unwrap<api.SourceCode>(self).highlightLines);
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -2815,8 +2939,23 @@ final class Core {
                         rt.invoke(f, [wrap(a0)]);
                       })(rt.fn(rt.option(options, 'onDiagnostic'))))
               : null,
+          fonts: rt.hasOption(options, 'fonts')
+              ? [
+                  for (final x in rt.list(rt.option(options, 'fonts')))
+                    rt.unwrap<api.FontFile>(x),
+                ]
+              : const [],
         ),
       );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  @JSExport('FontFile')
+  JSAny? new$FontFile(JSAny? name, JSAny? bytes) {
+    try {
+      return wrap(api.FontFile(rt.str(name), rt.bytes(bytes)));
     } catch (e, s) {
       rt.fail(e, s);
     }

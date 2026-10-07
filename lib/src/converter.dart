@@ -35,6 +35,8 @@
 /// converter.
 library;
 
+import 'dart:typed_data';
+
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/constants.dart';
@@ -359,6 +361,10 @@ abstract class Converter implements NodeConverter {
 abstract interface class PackagingConverter {
   /// Writes the output of the converted document to [path].
   void write(String path);
+
+  /// The output of the converted document as one file's bytes, or null
+  /// when it is several files (a website).
+  Uint8List? get output;
 }
 
 /// A [PackagingConverter] whose output may wait for work on other cores
