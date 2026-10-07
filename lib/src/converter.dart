@@ -45,6 +45,7 @@ import 'package:asciidart/src/template.dart'
     show TemplateRegistry, buildTemplateChain;
 import 'package:asciidart/src/template_loader.dart'
     show FileTemplateLoader, TemplateCache, validateTemplateEngine;
+import 'package:meta/meta.dart';
 
 /// Trailing digits stripped from a backend name to derive its base backend.
 final RegExp _trailingDigits = RegExp(r'\d+$');
@@ -358,6 +359,15 @@ abstract class Converter implements NodeConverter {
 abstract interface class PackagingConverter {
   /// Writes the output of the converted document to [path].
   void write(String path);
+}
+
+/// A [PackagingConverter] whose output may wait for work on other cores
+/// (ADR-0016): [finish] awaits it; [PackagingConverter.write] does it
+/// itself when it wasn't awaited.
+@internal
+abstract interface class FinishingConverter implements PackagingConverter {
+  /// Waits for the work the converted document's output needs.
+  Future<void> finish();
 }
 
 /// Registers and instantiates [Converter]s for backend names.

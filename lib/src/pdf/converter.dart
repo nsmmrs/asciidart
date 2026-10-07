@@ -25,6 +25,7 @@ import 'package:asciidart/src/math/asciimath.dart';
 import 'package:asciidart/src/math/latex.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/page_map.dart';
+import 'package:asciidart/src/parallel.dart';
 import 'package:asciidart/src/pdf/assets.g.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/highlight_style.dart';
@@ -38,7 +39,9 @@ import 'package:asciidart/src/pdf/text_box.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/timings.dart';
 import 'package:libpdf/libpdf.dart';
+import 'package:meta/meta.dart';
 
 /// The NUL character the gem puts in empty anchors (zero width).
 const String _dummyText = '\u0000';
@@ -144,7 +147,7 @@ final class _FontState {
 
 /// The PDF converter.
 final class PdfConverter extends BuiltInConverter
-    implements PackagingConverter {
+    implements FinishingConverter {
   /// The converter for [backend].
   new(super.backend, [super.opts]) {
     backendTraits = BackendTraits(
@@ -177,12 +180,36 @@ final class PdfConverter extends BuiltInConverter
   late Document _document;
   final List<(Section, String)> _sections = [];
 
+  /// Saves the converted document (once its work on other cores is
+  /// done, or doing it here).
+  Uint8List Function()? _save;
+
+  /// The work on other cores the save waits for.
+  final List<Future<void>> _awaiting = [];
+
+  /// The workers the converted document's work runs on, when it is
+  /// awaited (the `jobs` attribute: the physical cores by default, `1`
+  /// for none).
+  Parallel? _parallel;
+
+  /// Called (by tools measuring the work, `tool/spike_chunks.dart`) with
+  /// the layout and the boxes the walk made, instead of laying them out.
+  @internal
+  static void Function(FlowLayout layout, List<LayoutBox> content)? onWalked;
+
   /// The PDF the last converted document made.
-  Uint8List? get bytes => _bytes;
+  Uint8List? get bytes => _bytes ??= _save?.call();
+
+  @override
+  Future<void> finish() async {
+    await Future.wait(_awaiting);
+    _awaiting.clear();
+    bytes;
+  }
 
   @override
   void write(String path) {
-    final bytes = _bytes;
+    final bytes = this.bytes;
     if (bytes == null) throw StateError('no document converted');
     io.writeBytes(path, bytes);
   }
@@ -287,6 +314,13 @@ final class PdfConverter extends BuiltInConverter
         document.attributes[name] = '';
       }
     }
+    _phases = document.timings;
+    _bytes = _save = null;
+    _awaiting.clear();
+    _parallel = workersAwaited
+        ? Parallel.forAttribute(document.attr('jobs'))
+        : null;
+    _phase('pdf walk');
     _theme = _prepareTheme(_loadTheme(document));
     _ready = true;
     _fonts = FontCatalog(
@@ -521,6 +555,12 @@ final class PdfConverter extends BuiltInConverter
             )
           : null,
     );
+    if (onWalked case final walked?) {
+      _phase(null);
+      walked(layout, _out);
+      return '';
+    }
+    _phase('pdf layout');
     var result = layout.layout(_out);
     // Where the body, the table of contents and each anchor are, and the
     // front matter they make.
@@ -548,19 +588,47 @@ final class PdfConverter extends BuiltInConverter
     measure();
     // The index, once the pages of its terms are known.
     if (_indexSlot case final slot?) {
+      _phase('pdf layout (index)');
       _fillIndex(slot);
-      result = layout.layout(_out);
+      // (Laid out again from the top-level box holding the index on.)
+      final at = _out.indexWhere(
+        (box) => box is BlockBox && identical(box.children, slot),
+      );
+      result = layout.layout(
+        _out,
+        reuse: at < 0 ? null : result,
+        unchangedBefore: at < 0 ? 0 : at,
+      );
       measure();
     }
     // Footnotes numbered on each page: numbered from where their
     // references are, then laid out again until the numbers stay.
     if (_footnoteNumbering == 'page') {
       for (var pass = 0; pass < 3; pass++) {
-        if (!_numberFootnotesByPage(result)) break;
-        result = layout.layout(_out);
+        final changed = _numberFootnotesByPage(result);
+        if (changed.isEmpty) break;
+        _phase('pdf layout (footnotes)');
+        // Laid out again from the first page with a new number on, the
+        // runs of pages without one kept (unless a reference without an
+        // anchor has one: where it is isn't known).
+        final pages = {
+          for (final index in changed) ...[
+            ...result.anchorPages('_footnoteref_$index'),
+            ...result.anchorPages('_footnotedef_$index'),
+          ],
+        };
+        result = layout.layout(
+          _out,
+          reuse: result,
+          unchangedBefore: result.boundaryBefore(pages.reduce(math.min)),
+          changedPages: changed.any(_unanchoredFootnotes.contains)
+              ? null
+              : pages,
+        );
         measure();
       }
     }
+    _unanchoredFootnotes.clear();
     // How the document opens (the gem's `PageModes`).
     final (pageMode, nonFullScreen) = switch (document.attr('pdf-page-mode') ??
         _s('page_mode')) {
@@ -596,7 +664,9 @@ final class PdfConverter extends BuiltInConverter
       language: document.attr('lang'),
     );
     if (standard != null) pdf.outputIntents.add(standard);
+    _phase('pdf render');
     final pages = result.render(pdf, destinationName: destinationName);
+    _compressingElsewhere(pages);
     if (standard != null) _preflight(standard);
     _layoutReport(document, result);
     _pageMap(document, result, pages.length);
@@ -616,13 +686,45 @@ final class PdfConverter extends BuiltInConverter
     // The same document makes the same bytes: the file identifier comes
     // from the content, the dates from the document's local date and time
     // (SOURCE_DATE_EPOCH, when set), as the gem dates it.
-    _bytes = pdf.save(
-      options: PdfWriterOptions(
-        deterministic: true,
-        creationDate: _dateTime(document.attr('localdatetime')),
-      ),
-    );
+    _phase(null);
+    final creationDate = _dateTime(document.attr('localdatetime'));
+    _save = () {
+      _phase('pdf save');
+      final bytes = pdf.save(
+        options: _writerOptions(
+          nativeZlib: io.hasNativeZlib,
+          creationDate: creationDate,
+        ),
+      );
+      _phase(null);
+      return bytes;
+    };
     return '';
+  }
+
+  /// The options the PDF is saved with ([nativeZlib]: the platform's
+  /// zlib, as on the Dart VM).
+  static PdfWriterOptions _writerOptions({
+    required bool nativeZlib,
+    DateTime? creationDate,
+  }) => PdfWriterOptions(
+    deterministic: true,
+    creationDate: creationDate,
+    zlib: nativeZlib ? const _NativeZlib() : null,
+  );
+
+  /// The timings the PDF's phases are recorded in (`--progress`), if any.
+  Timings? _phases;
+  String? _runningPhase;
+
+  /// Ends the running phase (recording its time) and starts [name], if
+  /// given.
+  void _phase(String? name) {
+    final timings = _phases;
+    if (timings == null) return;
+    if (_runningPhase case final running?) timings.record(running);
+    _runningPhase = name;
+    if (name != null) timings.start(name);
   }
 
   /// [value] (`2026-10-06 04:38:31 +0000`, or `UTC` for the offset) as a
@@ -4228,13 +4330,51 @@ final class PdfConverter extends BuiltInConverter
                     ? null
                     : (href) => _svgResource(href, path),
               )
-            : PdfImage.parse(Uint8List.fromList(bytes)),
+            : _encodingElsewhere(Uint8List.fromList(bytes)),
         null,
       );
     } on FormatException catch (error) {
       return (null, error.message);
     } on ImageFormatException catch (error) {
       return (null, error.message);
+    }
+  }
+
+  /// The image in [bytes], its samples encoded on another core when the
+  /// conversion is awaited and writing it encodes them (a PNG with alpha,
+  /// say): the worker gets the file's bytes and gives back the streams
+  /// the save would make (or nothing, and the save makes them).
+  PdfImage _encodingElsewhere(Uint8List bytes) {
+    final image = PdfImage.parse(bytes);
+    final parallel = _parallel;
+    if (parallel == null || image is! PngImage || !image.reencodes) {
+      return image;
+    }
+    _awaiting.add(
+      parallel
+          .submit(_PngEncoding(bytes, nativeZlib: io.hasNativeZlib))
+          .then<void>(
+            (payload) => image.payload = payload,
+            onError: (Object _) {},
+          ),
+    );
+    return image;
+  }
+
+  /// The content streams of [pages] compressed on other cores, when the
+  /// conversion is awaited.
+  void _compressingElsewhere(List<PdfPage> pages) {
+    final parallel = _parallel;
+    if (parallel == null) return;
+    for (final page in pages) {
+      _awaiting.add(
+        parallel
+            .submit(_StreamEncoding(page.content, nativeZlib: io.hasNativeZlib))
+            .then<void>(
+              (payload) => page.contentPayload = payload,
+              onError: (Object _) {},
+            ),
+      );
     }
   }
 
@@ -9146,6 +9286,7 @@ final class PdfConverter extends BuiltInConverter
     final anchor = anchored
         ? '<a id="_footnoteref_$index">$_dummyText</a>'
         : '';
+    if (!anchored) _unanchoredFootnotes.add(index);
     final label = _footnoteNumbering == 'document'
         ? index
         : rendered
@@ -9203,9 +9344,13 @@ final class PdfConverter extends BuiltInConverter
   /// page, `fn<index>`), from the layout before.
   final Map<String, String> _layoutLabels = {};
 
+  /// The footnotes with a reference without an anchor (a footnote
+  /// referred to again by its id).
+  final Set<String> _unanchoredFootnotes = {};
+
   /// Numbers each page's footnote references from 1, in reading order,
-  /// from [result]'s anchors; whether any number changed.
-  bool _numberFootnotesByPage(LayoutResult result) {
+  /// from [result]'s anchors; the footnotes whose numbers changed.
+  Set<String> _numberFootnotesByPage(LayoutResult result) {
     final references =
         [
           for (final MapEntry(:key, :value) in result.anchors.entries)
@@ -9218,7 +9363,7 @@ final class PdfConverter extends BuiltInConverter
           if ((p.y - q.y).abs() > 0.5) return q.y.compareTo(p.y);
           return p.x.compareTo(q.x);
         });
-    var changed = false;
+    final changed = <String>{};
     var page = -1;
     var number = 0;
     for (final (index, position) in references) {
@@ -9230,7 +9375,7 @@ final class PdfConverter extends BuiltInConverter
       final key = 'fn$index';
       if (_layoutLabels[key] != '$number') {
         _layoutLabels[key] = '$number';
-        changed = true;
+        changed.add(index);
       }
     }
     return changed;
@@ -10068,6 +10213,44 @@ final class _Absolute implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => (0, 0);
+}
+
+/// The platform's zlib (the Dart VM's), faster than libpdf's own.
+/// A PNG image's samples encoded as the PDF is saved with
+/// ([PngImage.encode]), from the file's [bytes].
+final class _PngEncoding extends Job<PngPayload> {
+  const new(this.bytes, {required this.nativeZlib});
+
+  final Uint8List bytes;
+  final bool nativeZlib;
+
+  @override
+  PngPayload run() =>
+      PngImage.parse(bytes)
+          .encode(PdfConverter._writerOptions(nativeZlib: nativeZlib));
+}
+
+/// A stream's [data] encoded as the PDF is saved with ([encodeStream]).
+final class _StreamEncoding extends Job<StreamPayload> {
+  const new(this.data, {required this.nativeZlib});
+
+  final Uint8List data;
+  final bool nativeZlib;
+
+  @override
+  StreamPayload run() =>
+      encodeStream(data, PdfConverter._writerOptions(nativeZlib: nativeZlib));
+}
+
+final class _NativeZlib implements ZlibCodec {
+  const new();
+
+  @override
+  Uint8List encode(List<int> data, int level) =>
+      Uint8List.fromList(io.zlibEncode(data, level));
+
+  @override
+  Uint8List decode(List<int> data) => Uint8List.fromList(io.zlibDecode(data));
 }
 
 /// A formula set on its own (a STEM block): aligned in the room, scaled

@@ -347,6 +347,26 @@ isn't an output profile, and content in RGB with a CMYK printing
 condition (asciidart's colors are RGB: use an RGB output profile, or
 convert the PDF to the printer's CMYK).
 
+### Cores
+
+The work that doesn't depend on the order of the pages runs on the
+machine's other cores while the document is walked and laid out: PNG
+images with transparency (or interlaced) are encoded again, and the
+pages' content streams compressed. Object numbers, page numbers and the
+order of everything in the file are decided on the main isolate, so the
+PDF is the same, byte for byte, with any number of workers (ADR-0016;
+`tool/jobs_check.dart` checks it on the PDF fixtures, the gem's examples
+and a book).
+
+| Setting | What it does |
+| --- | --- |
+| `-a jobs=N` | Uses N workers; `1` for none. By default, one for each physical core. |
+
+The command line and the asynchronous API (`convertFileAsync`,
+`convertToTargetAsync`) use them; the synchronous API converts on one
+core, as do the files of a `-j` batch (each on a core of its own) and
+JavaScript. An EPUB compresses its files on the workers the same way.
+
 ### Messages
 
 Layout warnings name the file and line of the block they are about

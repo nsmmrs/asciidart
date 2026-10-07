@@ -113,84 +113,134 @@ final class Invoker {
   void invoke({String Function()? stdinSource}) {
     final options = _options;
     if (options == null) return;
-
     final err = _err ?? io.standardError;
+    // NOTE trace is consumed here (it is not a processor option).
+    final restoreLogger = _applyVerbosity(options);
+    final conversions = _conversions(options, err, stdinSource);
+    try {
+      for (final conversion in conversions) {
+        conversion.done(conversion.convert());
+      }
+      _checkSeverity(options);
+    } catch (e) {
+      if (io.isBrokenPipe(e)) rethrow;
+      _code = 1;
+      if (options.trace) rethrow;
+      _reportFailure(err, e);
+    } finally {
+      restoreLogger();
+    }
+  }
+
+  /// Like [invoke], awaiting the work each conversion runs on other cores
+  /// (ADR-0016) before writing its output.
+  Future<void> _invokeFinishing({String Function()? stdinSource}) async {
+    final options = _options;
+    if (options == null) return;
+    final err = _err ?? io.standardError;
+    final restoreLogger = _applyVerbosity(options);
+    final conversions = _conversions(options, err, stdinSource);
+    try {
+      for (final conversion in conversions) {
+        conversion.done(await conversion.finishing());
+      }
+      _checkSeverity(options);
+    } catch (e) {
+      if (io.isBrokenPipe(e)) rethrow;
+      _code = 1;
+      if (options.trace) rethrow;
+      _reportFailure(err, e);
+    } finally {
+      restoreLogger();
+    }
+  }
+
+  /// The conversions [invoke] runs, in order (set up as they are reached):
+  /// each converts (or converts awaiting its work on other cores), and is
+  /// done with its document.
+  Iterable<_Conversion> _conversions(
+    CliOptions options,
+    StringSink err,
+    String Function()? stdinSource,
+  ) sync* {
     final infiles = options.inputFiles ?? <String>[];
     var outfile = options.outputFile;
     final sourceDir = options.sourceDir;
     final absSrcdirPosix = sourceDir == null ? null : _expandPath(sourceDir);
     final showTimings = options.timings;
-    // NOTE trace is consumed here (it is not a processor option).
-    final restoreLogger = _applyVerbosity(options);
     final baseOptions = _processorOptions(options)
         .copyWith(uriReader: _uriReader);
 
-    try {
-      var stdinInput = false;
-      if (infiles.length == 1) {
-        final infile0 = infiles[0];
-        if (infile0 == '-') {
-          outfile ??= infile0;
-          stdinInput = true;
-        } else if (_isPipe(infile0)) {
-          outfile ??= '-';
-        }
+    var stdinInput = false;
+    if (infiles.length == 1) {
+      final infile0 = infiles[0];
+      if (infile0 == '-') {
+        outfile ??= infile0;
+        stdinInput = true;
+      } else if (_isPipe(infile0)) {
+        outfile ??= '-';
       }
+    }
 
-      StringSink? sink;
-      var opts = baseOptions;
-      if (outfile == '-') {
-        final out = _out;
-        if (out == null) {
-          sink = io.standardOutput;
-        } else {
-          sink = out;
-        }
+    StringSink? sink;
+    var opts = baseOptions;
+    if (outfile == '-') {
+      final out = _out;
+      if (out == null) {
+        sink = io.standardOutput;
       } else {
-        // An explicit output file, or one derived from the input file.
-        opts = opts.copyWith(mkdirs: true, toFile: outfile);
+        sink = out;
       }
+    } else {
+      // An explicit output file, or one derived from the input file.
+      opts = opts.copyWith(mkdirs: true, toFile: outfile);
+    }
 
-      if (stdinInput) {
-        final input = stdinSource != null ? stdinSource() : _readStdin();
-        final timings = _timings(options, '-', err);
-        documents.add(
-          convertToTarget(input, opts.copyWith(timings: timings), sink),
+    void Function(Document) done(Timings? timings, String subject) =>
+        (document) {
+          documents.add(document);
+          if (showTimings) timings?.printReport(err, subject);
+        };
+
+    if (stdinInput) {
+      final input = stdinSource != null ? stdinSource() : _readStdin();
+      final timings = _timings(options, '-', err);
+      final targetOptions = opts.copyWith(timings: timings);
+      yield (
+        convert: () => convertToTarget(input, targetOptions, sink),
+        finishing: () => convertToTargetFinishing(input, targetOptions, sink),
+        done: done(timings, '-'),
+      );
+    } else {
+      for (final infile in infiles) {
+        final timings = _timings(options, infile, err);
+        final fileOptions = _withSourceDir(
+          opts,
+          infile,
+          absSrcdirPosix,
+        ).copyWith(timings: timings);
+        yield (
+          convert: () => convertFile(infile, fileOptions, sink),
+          finishing: () => convertFileFinishing(infile, fileOptions, sink),
+          done: done(timings, infile),
         );
-        if (showTimings) timings?.printReport(err, '-');
-      } else {
-        for (final infile in infiles) {
-          final timings = _timings(options, infile, err);
-          documents.add(
-            convertFile(
-              infile,
-              _withSourceDir(
-                opts,
-                infile,
-                absSrcdirPosix,
-              ).copyWith(timings: timings),
-              sink,
-            ),
-          );
-          if (showTimings) timings?.printReport(err, infile);
-        }
       }
-      final maxSeverity = LoggerManager.logger.maxSeverity;
-      if (maxSeverity != null &&
-          maxSeverity.value >= options.failureLevel.value) {
-        _code = 1;
-      }
-    } catch (e) {
-      if (io.isBrokenPipe(e)) rethrow;
-      _code = 1;
-      if (options.trace) rethrow;
-      err
-        ..writeln(failureLine(e))
-        ..writeln('  Use --trace to show backtrace');
-    } finally {
-      restoreLogger();
     }
   }
+
+  /// Sets the exit [code] to 1 when the worst message logged reaches the
+  /// failure level.
+  void _checkSeverity(CliOptions options) {
+    final maxSeverity = LoggerManager.logger.maxSeverity;
+    if (maxSeverity != null &&
+        maxSeverity.value >= options.failureLevel.value) {
+      _code = 1;
+    }
+  }
+
+  static void _reportFailure(StringSink err, Object error) => err
+    ..writeln(failureLine(error))
+    ..writeln('  Use --trace to show backtrace');
 
   /// Converts the input files, fanning out to worker isolates when `-j` asks.
   ///
@@ -236,7 +286,7 @@ final class Invoker {
       }
       _uriReader = cachedUriReader(cache);
     }
-    invoke(stdinSource: source);
+    await _invokeFinishing(stdinSource: source);
   }
 
   /// The reader for remote content fetched by [invokeAsync].
@@ -487,3 +537,11 @@ String _dirname(String path) {
   if (slash <= 0) return path;
   return path.substring(0, slash);
 }
+
+/// A conversion [Invoker.invoke] runs: how to convert (or convert awaiting
+/// the work on other cores), and what to do with the document.
+typedef _Conversion = ({
+  Document Function() convert,
+  Future<Document> Function() finishing,
+  void Function(Document document) done,
+});

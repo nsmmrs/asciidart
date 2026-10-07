@@ -242,6 +242,69 @@ Not in scope: the Markdown export and the Kindle file, which the Typst
 edition makes with pandoc and calibre; the same tools read asciidart's
 DocBook and EPUB.
 
+### Build time against Typst (2026-10-07)
+
+The golden build (`build.sh pdf-golden`, 316 pages) against the Typst
+edition compiled by Typst 0.15.1 from its sources, on the same machine
+(12 cores), each the median of three runs:
+
+| | Before | After |
+| --- | --- | --- |
+| asciidart (native executable) | 10.1 s | 3.8 s |
+| Typst 0.15.1 | 3.9 s | 3.9 s |
+
+Typst spreads its work over the cores (8 s of user time and 4 s of
+system time for the 3.9 s); asciidart works on one. What `tool/profile.dart`
+(CPU samples from the VM) found and what changed, each change keeping the
+PDF the same, byte for byte until the last, page image for page image
+after it:
+
+- The line breaker computed a hyphenation's cost (the letters on each
+  side) for every line that could end there; it is the same for all, so
+  it is computed once (libpdf).
+- Patterns built inside the line wrapping's loops are built once; the
+  tokenizer and the trimming of spaces, which ran for every piece of
+  text, are written out as scans (checked against the patterns on 200,000
+  random strings).
+- A word's width is shaped once per font and features, not at each
+  measurement.
+- Streams are compressed, and PNG data read, with the Dart VM's native
+  zlib rather than libpdf's Dart one (`PdfWriterOptions.zlib`).
+
+### Using every core (2026-10-07)
+
+The same build on the `multicore` branch (ADR-0016), median of five runs
+on a quiet machine (6 cores, 12 threads); each step keeps the PDF the
+same, byte for byte, at 1, 2, 6 and 12 workers (`tool/jobs_check.dart`):
+
+| | Wall time | CPU time |
+| --- | --- | --- |
+| asciidart before the branch | 3.82 s | 4.26 s |
+| asciidart, one core (`-a jobs=1`) | 2.83 s | |
+| asciidart, physical cores (default, 6) | 2.08 s | 3.75 s |
+| asciidart, 12 workers | 2.07 s | |
+| Typst 0.15.1 | 3.72 s | 11.77 s |
+
+What changed:
+
+- Work done more than once is done once: a paragraph's line breaks are
+  kept for the widths it is broken at again; the index is filled in by
+  laying out again from the last clean page before it (557 → 9 ms), and
+  page-numbered footnotes from the first page whose numbers changed,
+  taking back the runs of pages where none did (605 → 123 ms).
+- PNG images with transparency are encoded on other cores from the
+  moment the walk reads them (the save: 1078 → 156 ms), and the pages'
+  content streams are compressed there once they are painted (156 →
+  56 ms).
+- hilite's first auto-detection, which compiles every grammar (one
+  listing is an HTTP response with an HTML body), takes 103 ms instead of
+  180.
+
+Laying out chapters on several workers was measured before being built
+(`tool/spike_chunks.dart`) and isn't: every worker would repeat the parse
+and the walk, which slow down 1.5–3x as workers are added, as processes
+as much as isolates (ADR-0016, "Measured").
+
 ## Latest run, edited edition (2026-10-06)
 
 | Check | Result | Detail |

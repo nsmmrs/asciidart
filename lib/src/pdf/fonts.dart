@@ -165,19 +165,29 @@ final class TrueTypeFont extends FontFace {
     bool kerning = true,
     Set<String> features = const {},
   }) {
-    var width = 0.0;
-    final glyphs = pdf.shape(
-      text,
-      kerning: kerning,
-      ligatures: ligates,
-      features: features,
-    );
-    for (final (i, glyph) in glyphs.indexed) {
-      width += glyph.advance;
-      if (i < glyphs.length - 1) width += glyph.kerning;
-    }
-    return width * size / 1000;
+    // Shaped once per text (line breaking measures the same words again
+    // and again), in 1000ths of the em.
+    final key = features.isEmpty
+        ? (kerning ? text : '\u0000$text')
+        : '${kerning ? '' : '\u0000'}${features.join(',')}\u0001$text';
+    final units = _unitWidths[key] ??= () {
+      var width = 0.0;
+      final glyphs = pdf.shape(
+        text,
+        kerning: kerning,
+        ligatures: ligates,
+        features: features,
+      );
+      for (final (i, glyph) in glyphs.indexed) {
+        width += glyph.advance;
+        if (i < glyphs.length - 1) width += glyph.kerning;
+      }
+      return width;
+    }();
+    return units * size / 1000;
   }
+
+  final Map<String, double> _unitWidths = {};
 
   @override
   bool hasGlyph(int codePoint) => pdf.font.glyphFor(codePoint) > 0;

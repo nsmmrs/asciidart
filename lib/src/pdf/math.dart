@@ -22,8 +22,7 @@ final class InlineMath implements Graphic {
   final Map<double, MathBox> _boxes = {};
 
   /// The formula laid out at [size] points.
-  MathBox at(double size) =>
-      _boxes[size] ??= layout.layout(node, size: size);
+  MathBox at(double size) => _boxes[size] ??= layout.layout(node, size: size);
 
   @override
   double get intrinsicWidth => at(10).width;

@@ -42,6 +42,19 @@ List<int> deflateRaw(List<int> bytes) => _unsupported();
 /// [bytes] (raw DEFLATE) expanded.
 List<int> inflateRaw(List<int> bytes) => _unsupported();
 
+/// The physical cores of the machine.
+int get physicalCores => 1;
+
+/// Whether [zlibEncode] and [zlibDecode] are the platform's own (faster
+/// than the PDF library's).
+bool get hasNativeZlib => false;
+
+/// [bytes] compressed in zlib format at [level] (1-9).
+List<int> zlibEncode(List<int> bytes, int level) => _unsupported();
+
+/// [bytes] (zlib format) expanded.
+List<int> zlibDecode(List<int> bytes) => _unsupported();
+
 /// Creates the directory at [path] and any missing parents.
 void createDirectories(String path) => _unsupported();
 
