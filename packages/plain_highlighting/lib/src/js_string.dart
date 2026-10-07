@@ -33,6 +33,7 @@ bool _hasSpecial(String text) {
   }
   return false;
 }
+
 final RegExp _cased = RegExp(r'^\p{Cased}$', unicode: true);
 final RegExp _caseIgnorable = RegExp(r'^\p{Case_Ignorable}$', unicode: true);
 
