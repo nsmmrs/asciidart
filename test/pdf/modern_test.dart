@@ -14,7 +14,11 @@ import 'package:test/test.dart';
 
 bool _has(String tool) => Process.runSync('which', [tool]).exitCode == 0;
 
-final bool _tools = _has('pdftotext');
+/// Poppler's pdftotext (Git for Windows ships xpdf's, whose text and
+/// `-bbox` output differ).
+final bool _tools =
+    _has('pdftotext') &&
+    '${Process.runSync('pdftotext', ['-v']).stderr}'.contains('Poppler');
 
 late Directory _dir;
 var _count = 0;
