@@ -9,6 +9,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
@@ -139,7 +140,8 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   String? convertBlock(AbstractBlock node, ConvertOptions? opts) {
     final out = _convertBlock(node, opts);
     // `%unbreakable` (ADR-0012).
-    return out != null &&
+    final marked =
+        out != null &&
             node.hasOption('unbreakable') &&
             marksUnbreakable(node.nodeName) &&
             // (A listing is a `coalesce` figure already, as in
@@ -147,6 +149,87 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
             node.context != BlockContext.listing
         ? withUnbreakableClass(out)
         : out;
+    return marked == null ? null : _withPageBreaks(node, marked);
+  }
+
+  /// The print edition's pages (`epub-page-map`, the PDF's
+  /// `pdf-page-map`): their labels, and the pages of each block by where
+  /// it starts in the source.
+  ({List<String> labels, Map<String, (int, int)> blocks})? _pageMap;
+
+  /// The last print page marked, and the page list (href, label).
+  int _lastPage = 0;
+  final List<(String, String)> _pageList = [];
+
+  /// The chapter file being converted.
+  String? _chapterFile;
+
+  void _loadPageMap(Document doc) {
+    final target = doc.attr('epub-page-map');
+    if (target == null || target.isEmpty) return;
+    final docdir = _s(doc.attr('docdir', '.'));
+    final path = target.startsWith('/')
+        ? target
+        : _join(docdir.isEmpty ? '.' : docdir, target);
+    if (!io.isReadable(path)) {
+      logger.warn('epub-page-map: $path not found or not readable');
+      return;
+    }
+    try {
+      final json =
+          jsonDecode(utf8.decode(io.readBytes(path))) as Map<String, Object?>;
+      _pageMap = (
+        labels: [for (final l in json['labels']! as List<Object?>) '$l'],
+        blocks: {
+          for (final b in json['blocks']! as List<Object?>)
+            if (b case {
+              'at': final String at,
+              'first': final int first,
+              'last': final int last,
+            })
+              at: (first, last),
+        },
+      );
+    } on Object catch (error) {
+      logger.warn('epub-page-map: $path is not a page map ($error)');
+    }
+  }
+
+  /// [html] (block [node]) with the print pages that start before it
+  /// marked before it, and those that start inside it after it
+  /// (`epub-page-map`: a block's pages; ADR-0012).
+  String _withPageBreaks(AbstractBlock node, String html) {
+    final map = _pageMap;
+    final at = node.sourceLocation;
+    if (map == null ||
+        at == null ||
+        !marksUnbreakable(node.nodeName) ||
+        _chapterFile == null) {
+      return html;
+    }
+    final pages = map.blocks['${at.path ?? at.file ?? ''}:${at.lineno}'];
+    if (pages == null) return html;
+    final (first, last) = pages;
+    String markers(int from, int to) {
+      final out = StringBuffer();
+      for (var page = from; page <= to; page++) {
+        if (page < 1 || page > map.labels.length) continue;
+        final label = map.labels[page - 1];
+        final id = 'page-${label.replaceAll(RegExp('[^A-Za-z0-9_-]'), '-')}';
+        _pageList.add(('$_chapterFile#$id', label));
+        out.write(
+          '<span epub:type="pagebreak" role="doc-pagebreak" id="$id" '
+          'aria-label="$label"></span>',
+        );
+      }
+      return out.toString();
+    }
+
+    final before = markers(_lastPage + 1, first);
+    _lastPage = math.max(_lastPage, first);
+    final after = markers(_lastPage + 1, last);
+    _lastPage = math.max(_lastPage, last);
+    return '$before$html$after';
   }
 
   String? _convertBlock(AbstractBlock node, ConvertOptions? opts) =>
@@ -268,6 +351,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   /// Converts the document: builds the book.
   String convertDocument(Document node) {
     if (node.parentDocument == null) node.catalog.index.begin(node);
+    _loadPageMap(node);
     _validate = node.hasAttr('ebook-validate');
     _extract = node.hasAttr('ebook-extract');
     _epubcheckPath = node.attr('ebook-epubcheck-path');
@@ -567,7 +651,10 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     if (document.doctype != 'book') _markLastParagraph(node);
 
     _xrefsSeen.clear();
+    final savedChapter = _chapterFile;
+    _chapterFile = '$filename.xhtml';
     var content = _s(node.content());
+    _chapterFile = savedChapter;
     if (node is Section) content = _withIndex(node, content, node);
 
     final String iconCssHead;
@@ -2069,6 +2156,16 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         );
       }
       lines.add('\n</ol>\n</nav>');
+      // The print edition's pages (`epub-page-map`).
+      if (_pageList.isNotEmpty) {
+        lines.add(
+          '\n<nav epub:type="page-list" id="page-list" hidden="hidden">\n<ol>',
+        );
+        for (final (href, label) in _pageList) {
+          lines.add('<li><a href="$href">$label</a></li>');
+        }
+        lines.add('\n</ol>\n</nav>');
+      }
     }
     lines.add('\n</section>\n</body>\n</html>');
     return lines.join(_lf);

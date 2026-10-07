@@ -78,6 +78,21 @@ out the letter above each group, in every format (a PDF theme's
 `index_sort` and `index_category_headings` take precedence).
 `Document.index` gives the same entries to programs (`doc/api.md`).
 
+## Print pages in the EPUB
+
+An EPUB can carry the print edition's page numbers, so readers (and
+accessibility tools) can go to "page 42" as in the paper book: build the
+PDF with a page map, then the EPUB with it.
+
+```sh
+asciidart -b pdf -a pdf-page-map=book.pages.json book.adoc
+asciidart -b epub3 -a epub-page-map=book.pages.json book.adoc
+```
+
+The EPUB marks each page where its first block starts (a page that starts
+inside a paragraph is marked after that paragraph) and lists the pages in
+its navigation (`page-list`).
+
 ## Footnotes
 
 `footnote:[...]` notes are at the bottom of the page in the PDF

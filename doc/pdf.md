@@ -295,6 +295,7 @@ edge, with a warning), where the gem leaves the table out.
 | `-a pdf-output-intent=FILE` | The ICC profile of the printing condition (the printer gives it); PDF/X-4 needs one. |
 | `-a pdf-output-condition=NAME` | The printing condition's identifier (`Custom` by default). |
 | `-a pdf-layout-report=FILE` | Writes, next to the PDF, each block that breaks across pages, with its source line and pages (`book.adoc: line 66: listing on pages 2-3`), for proofreading. |
+| `-a pdf-page-map=FILE` | Writes, next to the PDF, a JSON map of its pages: their labels, and each block's source line with the pages it is on. An EPUB of the same source reads it (`epub-page-map`) to mark the print edition's pages. |
 
 Preflight messages report what keeps a PDF/X-4 from conforming: a font
 that isn't embedded (a built-in PDF font in the theme), a profile that

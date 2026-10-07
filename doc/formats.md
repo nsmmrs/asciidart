@@ -31,7 +31,7 @@ feature the format has no use for.
 | Cover (`front-cover-image`) | cover page | before the header | on the home page | cover | `<cover>` |
 | Title page, dedication, colophon | yes | headings | pages | pages, with landmarks | `<dedication>`, `<colophon>` |
 | Book metadata (`isbn`, `editor`, `copyright`) | XMP (`dc:identifier`, `dc:contributor`, `dc:rights`) | `<meta>` (author, copyright) | same | OPF | `<info>` (`biblioid`, `editor`, `copyright`) |
-| Running heads, page numbers | yes | n/a | n/a | **gap:** a `page-list` mapping to the print pages (optional) | n/a |
+| Running heads, page numbers | yes | n/a | n/a | the print pages' markers and `page-list`, from the PDF's page map (`epub-page-map`) | n/a |
 | Page paths (`page-path`) | n/a | n/a | yes | n/a | n/a |
 | Show link URIs (`show-link-uri`) | footnote or after | n/a | n/a | n/a | n/a |
 | Help text lists the backend | yes | yes | yes | yes | yes |

@@ -329,7 +329,9 @@ final class PdfConverter extends BuiltInConverter
     _cjkLineBreaks = document.attr('scripts') == 'cjk';
     _resolveHyphenation(document);
     _reportTags =
-        _engine == PdfEngine.modern && document.hasAttr('pdf-layout-report')
+        _engine == PdfEngine.modern &&
+            (document.hasAttr('pdf-layout-report') ||
+                document.hasAttr('pdf-page-map'))
         ? {}
         : null;
     _baseTextAlign = switch (document.attr('text-align')) {
@@ -596,6 +598,7 @@ final class PdfConverter extends BuiltInConverter
     final pages = result.render(pdf, destinationName: destinationName);
     if (standard != null) _preflight(standard);
     _layoutReport(document, result);
+    _pageMap(document, result, pages.length);
     logger.info(
       'laid out ${pages.length} ${pages.length == 1 ? 'page' : 'pages'}',
     );
@@ -1868,7 +1871,8 @@ final class PdfConverter extends BuiltInConverter
   /// the source, for proofreading.
   void _layoutReport(Document document, LayoutResult result) {
     final tags = _reportTags;
-    if (tags == null) return;
+    final target = document.attr('pdf-layout-report');
+    if (tags == null || target == null) return;
     final lines = <String>[];
     for (final MapEntry(key: tag, value: (block, at)) in tags.entries) {
       final pages = result.tagPages[tag];
@@ -1881,7 +1885,6 @@ final class PdfConverter extends BuiltInConverter
         '-${_pageLabel(pages.last)}',
       );
     }
-    final target = document.attr('pdf-layout-report')!;
     final dir = document.attr('outdir') ?? document.attr('docdir') ?? '.';
     final path = target.startsWith('/') ? target : '$dir/$target';
     io.writeString(path, lines.isEmpty ? '' : '${lines.join('\n')}\n');
@@ -1890,6 +1893,33 @@ final class PdfConverter extends BuiltInConverter
       '${lines.length == 1 ? 'block breaks' : 'blocks break'} across pages '
       '($path)',
     );
+  }
+
+  /// Writes the page map (`pdf-page-map`, a JSON file next to the PDF):
+  /// the page labels, and for each block, where it starts in the source
+  /// and the pages it is on, so an EPUB of the same source can mark the
+  /// print edition's pages (`epub-page-map`, ADR-0012).
+  void _pageMap(Document document, LayoutResult result, int pageCount) {
+    final tags = _reportTags;
+    final target = document.attr('pdf-page-map');
+    if (tags == null || target == null) return;
+    final blocks = <Map<String, Object>>[];
+    for (final MapEntry(key: tag, value: (_, at)) in tags.entries) {
+      final pages = result.tagPages[tag];
+      if (pages == null || at == null) continue;
+      blocks.add({
+        'at': '${at.path ?? at.file ?? ''}:${at.lineno}',
+        'first': pages.first,
+        'last': pages.last,
+      });
+    }
+    final map = {
+      'labels': [for (var i = 1; i <= pageCount; i++) _pageLabel(i)],
+      'blocks': blocks,
+    };
+    final dir = document.attr('outdir') ?? document.attr('docdir') ?? '.';
+    final path = target.startsWith('/') ? target : '$dir/$target';
+    io.writeString(path, '${const JsonEncoder.withIndent(' ').convert(map)}\n');
   }
 
   /// Tags the box [block] added last (after any caption) after [before],

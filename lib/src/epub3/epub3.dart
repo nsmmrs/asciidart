@@ -30,7 +30,10 @@ void registerEpub3() {
 void _setUp(Registry registry) {
   final document = registry.document;
   if (document == null || document.backend != 'epub3') return;
+  // (Blocks keep where they start in the source: `epub-page-map` finds
+  // their print pages by it.)
   document
+    ..sourcemap = true
     ..setAttribute('listing-caption', 'Listing')
     ..setAttribute('ebook-format', 'epub3')
     ..setAttribute('ebook-format-epub3')

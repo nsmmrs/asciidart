@@ -3,11 +3,13 @@
 @TestOn('vm')
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:asciidart/src/epub3/epub3.dart';
 import 'package:asciidart/src/internal.dart';
 import 'package:asciidart/src/multipage.dart';
+import 'package:asciidart/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
 import 'epub3_test.dart' show unzipText;
@@ -15,6 +17,7 @@ import 'epub3_test.dart' show unzipText;
 void main() {
   setUpAll(registerEpub3);
   setUpAll(MultipageHtml5Converter.register);
+  setUpAll(registerPdf);
   late Directory dir;
   setUp(() {
     dir = Directory.systemTemp.createTempSync('format_parity_test.');
@@ -239,5 +242,47 @@ void main() {
       css('= Doc\n:epub3-stylesheet: asciidoctor-epub3\n\nText.\n'),
       isNot(contains('asciidart house style')),
     );
+  });
+
+  test("EPUB: the print edition's pages from the PDF's page map", () {
+    final source = StringBuffer('= Book\n:doctype: book\n\n== One\n\n');
+    for (var i = 0; i < 40; i++) {
+      source
+        ..write('Paragraph $i, long enough to take a few lines. ' * 4)
+        ..write('\n\n');
+    }
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync(source.toString());
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'pdf',
+        attributes: {'pdf-page-map': 'book.pages.json'},
+      ),
+    );
+    final map = jsonDecode(
+      File('${dir.path}/book.pages.json').readAsStringSync(),
+    ) as Map<String, Object?>;
+    expect((map['labels']! as List).length, greaterThan(2));
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'epub-page-map': 'book.pages.json', 'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    final chapter = files['EPUB/_one.xhtml']!;
+    expect(
+      chapter,
+      contains('<span epub:type="pagebreak" role="doc-pagebreak" id="page-2"'),
+    );
+    expect(
+      files['EPUB/nav.xhtml'],
+      contains('<nav epub:type="page-list" id="page-list" hidden="hidden">'),
+    );
+    expect(files['EPUB/nav.xhtml'], contains('href="_one.xhtml#page-2">2</a>'));
   });
 }
