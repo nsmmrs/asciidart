@@ -47,8 +47,9 @@ Future<void> main(List<String> args) async {
         cliArgs.add(args[i]);
     }
   }
-  final script = File.fromUri(Platform.script.resolve('../bin/asciidart.dart'))
-      .path;
+  final script =
+      scriptPath ??
+      File.fromUri(Platform.script.resolve('../bin/asciidart.dart')).path;
   final process = await Process.start(Platform.resolvedExecutable, [
     '--observe=0',
     '--disable-service-auth-codes',
