@@ -41,6 +41,7 @@ import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
 import 'package:asciidart/src/timings.dart';
 import 'package:libpdf/libpdf.dart';
+import 'package:meta/meta.dart';
 
 /// The NUL character the gem puts in empty anchors (zero width).
 const String _dummyText = '\u0000';
@@ -190,6 +191,11 @@ final class PdfConverter extends BuiltInConverter
   /// awaited (the `jobs` attribute: the physical cores by default, `1`
   /// for none).
   Parallel? _parallel;
+
+  /// Called (by tools measuring the work, `tool/spike_chunks.dart`) with
+  /// the layout and the boxes the walk made, instead of laying them out.
+  @internal
+  static void Function(FlowLayout layout, List<LayoutBox> content)? onWalked;
 
   /// The PDF the last converted document made.
   Uint8List? get bytes => _bytes ??= _save?.call();
@@ -549,6 +555,11 @@ final class PdfConverter extends BuiltInConverter
             )
           : null,
     );
+    if (onWalked case final walked?) {
+      _phase(null);
+      walked(layout, _out);
+      return '';
+    }
     _phase('pdf layout');
     var result = layout.layout(_out);
     // Where the body, the table of contents and each anchor are, and the

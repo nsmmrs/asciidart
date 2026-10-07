@@ -68,3 +68,40 @@ compile). On JavaScript, `dart:isolate` doesn't run at all.
   can happen elsewhere.
 - Every change on the branch passes the byte-identity harness before it
   is committed.
+
+## Measured (2026-10-07)
+
+What the epic built, on the Hypermedia Systems PDF (6 cores, 12
+threads; `tool/jobs_check.dart`, byte-identical at 1, 2, 6 and 12
+workers, results shuffled):
+
+| Step | HS PDF |
+|---|---|
+| master (3d1b837) | 3.78 s |
+| line breaks kept, index and footnote passes resumed from clean pages | 2.90 s |
+| PNG images encoded on the pool during the walk and layout | 2.29 s |
+| page content streams compressed on the pool | 2.19 s |
+
+Chapter-chunk workers were measured before being built
+(`tool/spike_chunks.dart`: each worker parses and walks the book, then
+lays out every Nth chunk between page breaks):
+
+| Workers | Isolates: wall, peak MB, slowest walk | Processes: wall, peak MB (sum), slowest walk |
+|---|---|---|
+| 1 | 1360 ms, 147, 734 ms | 1388 ms, 148, 695 ms |
+| 2 | 1196 ms, 200, 794 ms | 1198 ms, 322, 773 ms |
+| 4 | 1341 ms, 287, 1069 ms | 1293 ms, 948, 975 ms |
+| 6 | 1503 ms, 330, 1288 ms | 1432 ms, 1854, 1131 ms |
+| 12 | 2227 ms, 602, 2075 ms | 2297 ms, 7020, 1692 ms |
+
+Every worker repeats the parse and the walk (about half of its work),
+and that walk slows down 1.5–3x as workers are added, processes as much
+as isolates: the limit here is the machine's memory bandwidth and clock,
+not the shared heap. Processes take 4–12x the memory. The best case
+(two workers) gains about 10% over laying everything out on one core,
+before the stitching a real implementation needs (page offsets, labels,
+the index, footnote numbers, painting, glyph use). Chapter-chunk workers
+are therefore not built; the work that remains on the main isolate
+(parse and walk 0.7 s, layout 0.75 s, painting 0.25 s) is a matter for
+serial speed. If a different machine changes the numbers, the spike
+tool measures it again.
