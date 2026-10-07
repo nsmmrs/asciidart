@@ -54,8 +54,8 @@ compile). On JavaScript, `dart:isolate` doesn't run at all.
    constraint. Jobs are pulled by idle workers, not dealt in advance.
 
 6. **Defaults.** Workers: the physical cores (allocation-heavy work
-   scales worse on SMT siblings); `-a pdf-jobs=N` (or `--jobs`) to set,
-   `1` for none. A document converted with in-process extensions, or
+   scales worse on SMT siblings); the `jobs` attribute sets them (`-a
+   jobs=4`, `1` for none). A document converted with in-process extensions, or
    inside an outer `-j` batch, runs serially (workers wouldn't have the
    extensions; nested pools oversubscribe the cores).
 

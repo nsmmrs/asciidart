@@ -38,6 +38,7 @@ import 'package:asciidart/src/pdf/text_box.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/timings.dart';
 import 'package:libpdf/libpdf.dart';
 
 /// The NUL character the gem puts in empty anchors (zero width).
@@ -287,6 +288,8 @@ final class PdfConverter extends BuiltInConverter
         document.attributes[name] = '';
       }
     }
+    _phases = document.timings;
+    _phase('pdf walk');
     _theme = _prepareTheme(_loadTheme(document));
     _ready = true;
     _fonts = FontCatalog(
@@ -521,6 +524,7 @@ final class PdfConverter extends BuiltInConverter
             )
           : null,
     );
+    _phase('pdf layout');
     var result = layout.layout(_out);
     // Where the body, the table of contents and each anchor are, and the
     // front matter they make.
@@ -548,6 +552,7 @@ final class PdfConverter extends BuiltInConverter
     measure();
     // The index, once the pages of its terms are known.
     if (_indexSlot case final slot?) {
+      _phase('pdf layout (index)');
       _fillIndex(slot);
       result = layout.layout(_out);
       measure();
@@ -557,6 +562,7 @@ final class PdfConverter extends BuiltInConverter
     if (_footnoteNumbering == 'page') {
       for (var pass = 0; pass < 3; pass++) {
         if (!_numberFootnotesByPage(result)) break;
+        _phase('pdf layout (footnotes)');
         result = layout.layout(_out);
         measure();
       }
@@ -596,6 +602,7 @@ final class PdfConverter extends BuiltInConverter
       language: document.attr('lang'),
     );
     if (standard != null) pdf.outputIntents.add(standard);
+    _phase('pdf render');
     final pages = result.render(pdf, destinationName: destinationName);
     if (standard != null) _preflight(standard);
     _layoutReport(document, result);
@@ -616,6 +623,7 @@ final class PdfConverter extends BuiltInConverter
     // The same document makes the same bytes: the file identifier comes
     // from the content, the dates from the document's local date and time
     // (SOURCE_DATE_EPOCH, when set), as the gem dates it.
+    _phase('pdf save');
     _bytes = pdf.save(
       options: PdfWriterOptions(
         deterministic: true,
@@ -623,7 +631,22 @@ final class PdfConverter extends BuiltInConverter
         zlib: io.hasNativeZlib ? const _NativeZlib() : null,
       ),
     );
+    _phase(null);
     return '';
+  }
+
+  /// The timings the PDF's phases are recorded in (`--progress`), if any.
+  Timings? _phases;
+  String? _runningPhase;
+
+  /// Ends the running phase (recording its time) and starts [name], if
+  /// given.
+  void _phase(String? name) {
+    final timings = _phases;
+    if (timings == null) return;
+    if (_runningPhase case final running?) timings.record(running);
+    _runningPhase = name;
+    if (name != null) timings.start(name);
   }
 
   /// [value] (`2026-10-06 04:38:31 +0000`, or `UTC` for the offset) as a

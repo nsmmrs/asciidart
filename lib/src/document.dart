@@ -830,6 +830,11 @@ class Document extends AbstractBlock implements NodeDocument {
   _docinfoProcessorExtensions =
       <String, List<ProcessorExtension<DocinfoProcessor>>>{};
   Timings? _timings;
+
+  /// The phase timings of this conversion (`--timings`, `--progress`), if
+  /// any: a converter records its own phases in them.
+  @internal
+  Timings? get timings => _timings;
   bool _parsed = false;
   Map<String?, String>? _reftexts;
 
