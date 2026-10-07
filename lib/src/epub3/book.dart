@@ -409,11 +409,19 @@ final class EpubBook {
   }
 
   /// The EPUB file: [files] zipped, `mimetype` stored, the rest
-  /// compressed with [deflate] when given.
-  List<int> zip({List<int> Function(List<int> bytes)? deflate}) {
+  /// compressed with [deflate] when given (those in [deflated] already
+  /// are).
+  List<int> zip({
+    List<int> Function(List<int> bytes)? deflate,
+    Map<String, List<int>> deflated = const {},
+  }) {
     final zip = ZipWriter();
     for (final MapEntry(key: path, value: bytes) in files().entries) {
-      zip.add(path, bytes, deflate: path == 'mimetype' ? null : deflate);
+      if (path == 'mimetype') {
+        zip.add(path, bytes);
+      } else {
+        zip.add(path, bytes, deflate: deflate, deflated: deflated[path]);
+      }
     }
     return zip.finish();
   }

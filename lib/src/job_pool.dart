@@ -11,10 +11,12 @@
 /// the handshake reply and then answers each job exactly once. A worker that
 /// dies or never replies stalls its [JobPool.runOrdered] caller.
 ///
-/// Jobs are dispatched round-robin over the workers and responses are
-/// reordered by index, so results always come back in input order regardless
-/// of completion order. The pool spawns its isolates once (amortized over the
-/// CLI run) and reuses them across [JobPool.runOrdered] calls.
+/// Each worker starts with one job and takes the next one waiting when it
+/// replies (a long file doesn't hold up the files dealt after it), and
+/// responses are reordered by index, so results always come back in input
+/// order regardless of completion order. The pool spawns its isolates once
+/// (amortized over the CLI run) and reuses them across [JobPool.runOrdered]
+/// calls.
 library;
 
 import 'dart:async';
@@ -137,18 +139,25 @@ final class IsolateJobPool<Req, Res> implements JobPool<Req, Res> {
     try {
       final results = List<Res?>.filled(requests.length, null);
       var remaining = requests.length;
+      var next = 0;
+      // The worker each job went to, by index.
+      final workers = <int, SendPort>{};
+      void send(SendPort worker) {
+        if (next >= requests.length) return;
+        workers[next] = worker;
+        worker.send(_JobFrame<Req>(next, requests[next], replies.sendPort));
+        next++;
+      }
+
       final done = Completer<void>();
       final subscription = replies.listen((message) {
         if (message case _ReplyFrame<Res>(:final index, :final response)) {
           results[index] = response;
+          if (workers.remove(index) case final worker?) send(worker);
           if (--remaining == 0) done.complete();
         }
       });
-      for (var i = 0; i < requests.length; i++) {
-        _workerPorts[i % _workerPorts.length].send(
-          _JobFrame<Req>(i, requests[i], replies.sendPort),
-        );
-      }
+      _workerPorts.forEach(send);
       await done.future;
       await subscription.cancel();
       return [for (final result in results) result as Res];

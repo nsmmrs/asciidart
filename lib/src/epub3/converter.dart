@@ -10,6 +10,7 @@ library;
 
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
@@ -35,6 +36,7 @@ import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/math/asciimath.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/page_map.dart';
+import 'package:asciidart/src/parallel.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
 import 'package:asciidart/src/unbreakable.dart';
@@ -106,7 +108,7 @@ const Map<String, (String, String, bool)> _quoteTags = {
 final Expando<Cell> _parentCell = Expando<Cell>('epub3 parent cell');
 
 /// The EPUB3 converter.
-class Epub3Converter extends BuiltInConverter implements PackagingConverter {
+class Epub3Converter extends BuiltInConverter implements FinishingConverter {
   /// Creates the converter for [backend].
   new(super.backend, [super.opts]) {
     backendTraits = BackendTraits(
@@ -127,6 +129,13 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   final List<String> _iconNames = [];
 
   EpubBook? _book;
+
+  /// The workers the book's files are compressed on, when the conversion
+  /// is awaited (the `jobs` attribute: the physical cores by default).
+  Parallel? _parallel;
+
+  /// The book's files compressed on other cores, by path.
+  Map<String, List<int>> _deflated = const {};
 
   bool _validate = false;
   bool _extract = false;
@@ -353,6 +362,10 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         node.attr('epub-unique-identifier') == 'isbn' &&
         isbn != null &&
         isbn.isNotEmpty;
+    _deflated = const {};
+    _parallel = workersAwaited
+        ? Parallel.forAttribute(node.attr('jobs'))
+        : null;
     final book = _book = EpubBook()
       ..language(_s(node.attr('lang', 'en')), id: 'pub-language');
     if (isbnUnique) {
@@ -2246,7 +2259,30 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
   /// The EPUB file for the last converted document.
   List<int> package() => (_book ?? (throw StateError('no document converted')))
-      .zip(deflate: io.deflateRaw);
+      .zip(deflate: io.deflateRaw, deflated: _deflated);
+
+  /// Compresses the book's files on other cores, when the conversion is
+  /// awaited.
+  @override
+  Future<void> finish() async {
+    final book = _book;
+    final parallel = _parallel;
+    if (book == null || parallel == null) return;
+    final files = book.files();
+    final deflated = <String, List<int>>{};
+    await Future.wait([
+      for (final MapEntry(key: path, value: bytes) in files.entries)
+        if (path != 'mimetype')
+          parallel
+              .submit(_Deflate(Uint8List.fromList(bytes)))
+              .then<void>(
+                (result) => deflated[path] = result,
+                // (Compressed when packaged, then.)
+                onError: (Object _) {},
+              ),
+    ]);
+    _deflated = deflated;
+  }
 
   /// Writes the EPUB to [path] (see [package]); also extracts it next to
   /// [path] with `ebook-extract`, and checks it with EPUBCheck with
@@ -2459,3 +2495,13 @@ final ({Map<String, String> icons, Map<String, String> shims}) _iconMap = () {
   }
   return (icons: icons, shims: shims);
 }();
+
+/// Raw DEFLATE of [bytes], as the book's files are compressed.
+final class _Deflate extends Job<List<int>> {
+  const new(this.bytes);
+
+  final Uint8List bytes;
+
+  @override
+  List<int> run() => io.deflateRaw(bytes);
+}
