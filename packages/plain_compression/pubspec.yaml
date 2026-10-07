@@ -1,0 +1,20 @@
+name: compression
+description: >-
+  DEFLATE, zlib and Brotli in pure Dart: compression that writes the same
+  bytes on the Dart VM and on the web, and a Brotli decoder (RFC 7932).
+version: 0.1.0-dev
+repository: https://github.com/nsmmrs/compression
+issue_tracker: https://github.com/nsmmrs/compression/issues
+topics:
+  - compression
+  - deflate
+  - zlib
+  - brotli
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  analyzer: ^14.4.0
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0

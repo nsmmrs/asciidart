@@ -1,4 +1,4 @@
-/// Generates `lib/src/fonts/brotli_data.g.dart`: the data a Brotli
+/// Generates `lib/src/brotli_data.g.dart`: the data a Brotli
 /// decoder needs (RFC 7932): the static dictionary (zlib-compressed, as it
 /// is 122,784 bytes), the 121 word transforms and the context lookup
 /// table, from the google/brotli sources at a pinned release (MIT
@@ -13,7 +13,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:libpdf/libpdf.dart' show zlibEncode;
+import 'package:compression/compression.dart' show zlibEncode;
 
 /// google/brotli v1.2.0.
 const _commit = '028fb5a23661f123017c060daa546b55cf4bde29';
@@ -137,10 +137,10 @@ Future<void> main() async {
     out.writeln('  ${lookup.sublist(i, i + 16).join(', ')},');
   }
   out.writeln('];');
-  const path = 'lib/src/fonts/brotli_data.g.dart';
+  const path = 'lib/src/brotli_data.g.dart';
   File(path).writeAsStringSync('$out');
   await Process.run(Platform.resolvedExecutable, ['format', path]);
-  stdout.writeln('generate_brotli: wrote lib/src/fonts/brotli_data.g.dart');
+  stdout.writeln('generate_brotli: wrote lib/src/brotli_data.g.dart');
 }
 
 /// The numbers in [text].

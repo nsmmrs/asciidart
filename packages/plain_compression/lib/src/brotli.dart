@@ -1,10 +1,10 @@
-/// A Brotli decoder (RFC 7932), for WOFF2 fonts.
+/// A Brotli decoder (RFC 7932).
 library;
 
 import 'dart:typed_data';
 
-import 'package:libpdf/src/flate.dart';
-import 'package:libpdf/src/fonts/brotli_data.g.dart';
+import 'package:compression/src/brotli_data.g.dart';
+import 'package:compression/src/flate.dart';
 
 /// Expands the Brotli stream [data]; throws a [FormatException] when it is
 /// malformed.
