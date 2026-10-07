@@ -235,7 +235,7 @@ before a parenthesis, a heading that lost its `<progress>`, a callout
 turned into a bullet, lists and code blocks set differently because of
 how pandoc converted them, the contents page listed in the index. The
 port's source has the intended content since (2026-10-07, ADR-0013), so
-17 of the 316 pages differ from the Typst build: the pages of those
+19 of the 316 pages differ from the Typst build: the pages of those
 places and the pages after them in their chapters, the index's.
 
 Not in scope: the Markdown export and the Kindle file, which the Typst

@@ -44,7 +44,7 @@ Each has a card under EPIC-n7s6v0.
   where Typst's do, to a hundredth of a point (a line of a bolder font
   than its paragraph's aside: Typst takes that line's cap height).
 
-## Latest run (2026-10-06)
+## Latest run (2026-10-07)
 
 | Case | Lines (Typst, asciidart) | Broken alike | Edges | Line tops | First line | Pages |
 | --- | --- | --- | --- | --- | --- | --- |
