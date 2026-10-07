@@ -94,7 +94,10 @@ void main() {
 
   test('finds font files by name, in any case, through subfolders', () {
     final fonts = index();
-    expect(slashed(fonts.fileNamed('MPLUS1P.TTF')), '$dir/sub/mplus1p.ttf');
+    expect(
+      slashed(fonts.fileNamed('MPLUS1P.TTF')),
+      slashed('$dir/sub/mplus1p.ttf'),
+    );
     expect(fonts.fileNamed('nothing.ttf'), isNull);
   });
 
@@ -136,7 +139,7 @@ void main() {
   test('skips folders that are missing and files that are not fonts', () {
     File('$dir/broken.ttf').writeAsStringSync('not a font');
     final fonts = index(['${tmp.path}/missing', dir]);
-    expect(fonts.files.map(slashed), contains('$dir/broken.ttf'));
+    expect(fonts.files.map(slashed), contains(slashed('$dir/broken.ttf')));
     expect(fonts.fonts.where((f) => f.fileName == 'broken.ttf'), isEmpty);
     expect(fonts.hasFamily('Noto Serif'), isTrue);
   });

@@ -4,8 +4,8 @@ TrueType, OpenType, WOFF and WOFF2 fonts in pure Dart:
 
 - **Reading fonts.** `OpenTypeFont.parse` reads metrics, character maps,
   glyph outlines and bounds, kerning (`kern` and GPOS pairs), OpenType
-  substitutions (single, multiple, ligatures), names and the MATH table,
-  from a font file, a collection, or a WOFF or WOFF2 font.
+  substitutions (single, multiple, ligatures) and names, from a font
+  file, a collection, or a WOFF or WOFF2 font.
 - **Web fonts.** `decodeWebFont` gives the TrueType or OpenType font a
   WOFF or WOFF2 font wraps, its WOFF2 table transforms undone as the
   reference decoder does.

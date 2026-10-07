@@ -1,7 +1,7 @@
 /// fonts: TrueType and OpenType fonts in pure Dart.
 ///
 /// Reading them (`OpenTypeFont`: metrics, character maps, outlines,
-/// kerning, OpenType substitutions, the MATH table), the WOFF and WOFF2 web
+/// kerning, OpenType substitutions), the WOFF and WOFF2 web
 /// fonts that wrap them (`decodeWebFont`), subsetting for embedding, and
 /// the fonts installed on a machine (`FontIndex`: by file name, or by
 /// family and style), on the Dart VM, on Node.js and given as bytes.
