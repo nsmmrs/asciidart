@@ -271,6 +271,40 @@ after it:
 - Streams are compressed, and PNG data read, with the Dart VM's native
   zlib rather than libpdf's Dart one (`PdfWriterOptions.zlib`).
 
+### Using every core (2026-10-07)
+
+The same build on the `multicore` branch (ADR-0016), median of five runs
+on a quiet machine (6 cores, 12 threads); each step keeps the PDF the
+same, byte for byte, at 1, 2, 6 and 12 workers (`tool/jobs_check.dart`):
+
+| | Wall time | CPU time |
+| --- | --- | --- |
+| asciidart before the branch | 3.82 s | 4.26 s |
+| asciidart, one core (`-a jobs=1`) | 2.83 s | |
+| asciidart, physical cores (default, 6) | 2.08 s | 3.75 s |
+| asciidart, 12 workers | 2.07 s | |
+| Typst 0.15.1 | 3.72 s | 11.77 s |
+
+What changed:
+
+- Work done more than once is done once: a paragraph's line breaks are
+  kept for the widths it is broken at again; the index is filled in by
+  laying out again from the last clean page before it (557 → 9 ms), and
+  page-numbered footnotes from the first page whose numbers changed,
+  taking back the runs of pages where none did (605 → 123 ms).
+- PNG images with transparency are encoded on other cores from the
+  moment the walk reads them (the save: 1078 → 156 ms), and the pages'
+  content streams are compressed there once they are painted (156 →
+  56 ms).
+- hilite's first auto-detection, which compiles every grammar (one
+  listing is an HTTP response with an HTML body), takes 103 ms instead of
+  180.
+
+Laying out chapters on several workers was measured before being built
+(`tool/spike_chunks.dart`) and isn't: every worker would repeat the parse
+and the walk, which slow down 1.5–3x as workers are added, as processes
+as much as isolates (ADR-0016, "Measured").
+
 ## Latest run, edited edition (2026-10-06)
 
 | Check | Result | Detail |
