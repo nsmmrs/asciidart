@@ -1928,5 +1928,156 @@ base:
       // The second page's piece starts below its own padding.
       expect(secondPageTop(cloned) - secondPageTop(open), closeTo(30, 0.5));
     });
+
+    test('base_text_align_last: a justified paragraph ends centered', () {
+      const source =
+          ':nofooter:\n\nWords enough to fill the first line of this paragraph '
+          'and to go on to a second line, then words enough to go on to a '
+          'third line as well, which ends short.\n';
+      const justify = 'base_text_align: justify\n';
+      final left = _pdf(source, theme: justify);
+      final centered = _pdf(
+        source,
+        theme: '${justify}base_text_align_last: center\n',
+      );
+      // The first line as it was; the last one moved right.
+      expect(word(centered, 'Words').$3, word(left, 'Words').$3);
+      expect(
+        word(centered, 'short.').$3 - word(left, 'short.').$3,
+        greaterThan(50),
+      );
+    });
+
+    test('table_base_*: the base keys of an AsciiDoc cell', () {
+      const cell =
+          'Words enough to fill the first line of this cell and to go on to '
+          'a second line, which ends short.';
+      const source =
+          ':nofooter:\n\n[cols="a,1"]\n|===\n|$cell |x\n|===\n\n'
+          'Body words enough to fill the first line of this paragraph and '
+          'to go on to a second line, which ends.\n';
+      const justify = 'base_text_align: justify\n';
+      final plain = _pdf(source, theme: justify);
+      final cells = _pdf(
+        source,
+        theme: '${justify}table_base_text_align_last: center\n',
+      );
+      expect(
+        word(cells, 'short.').$3 - word(plain, 'short.').$3,
+        greaterThan(5),
+      );
+      // Outside the table, the base keys as they are.
+      expect(word(cells, 'ends.').$3, word(plain, 'ends.').$3);
+    });
+
+    test('olist_role_<role>_*: an ordered list with the role', () {
+      const source = ':nofooter:\n\n. One\n\n[.plain]\n. Two\n';
+      final pdf = _pdf(
+        source,
+        theme:
+            'list_body_indent: 0\nolist_marker_width: 40\n'
+            'olist_role_plain_marker_width: auto\n',
+      );
+      // The plain list's text right after its number.
+      double right(String w) =>
+          words(pdf).firstWhere((x) => x.$1.endsWith(w)).$5;
+      expect(right('One') - right('Two'), greaterThan(20));
+    });
+
+    test('ulist_marker_nesting: ulist counts bullet lists alone', () {
+      const source = ':nofooter:\n\n. One\n* Inner\n';
+      String bullets(String pdf) => _pages(pdf).first.join('\n');
+      expect(bullets(_pdf(source, theme: '')), contains('◦'));
+      final own = _pdf(source, theme: 'ulist_marker_nesting: ulist\n');
+      expect(bullets(own), contains('•'));
+      expect(bullets(own), isNot(contains('◦')));
+    });
+
+    test('code_role_<role>_*: a code block with the role', () {
+      const source =
+          ':nofooter:\n\n----\nfirst\n----\n\n[.bare]\n----\nsecond\n----\n';
+      final pdf = _pdf(
+        source,
+        theme:
+            'code_padding: [0, 20]\ncode_border_width: 0\n'
+            'code_role_bare_padding: 0\n',
+      );
+      expect(word(pdf, 'first').$3 - word(pdf, 'second').$3, closeTo(20, 0.5));
+    });
+
+    test('index_sort: code-point, one list keyed by the joined terms', () {
+      const source =
+          '= Book\n:doctype: book\n\n== Chapter\n\n'
+          '(((HTTP, cookies)))\n(((HTTP methods)))\n(((Alpha)))\n'
+          'Text.\n\n[index]\n== Index\n';
+      List<String> entries(String pdf) => [
+        for (final line in _pages(pdf).lastWhere((p) => p.contains('Index')))
+          if (line != 'Index') line.split(RegExp(r',? \d')).first,
+      ];
+      final flat = _pdf(
+        source,
+        theme: 'index_sort: code-point\nindex_category_headings: false\n',
+      );
+      // `HTTP methods` before `HTTP, cookies`: a space before a comma.
+      expect(entries(flat), ['Alpha', 'HTTP methods', 'HTTP', 'cookies']);
+      final grouped = _pdf(source, theme: 'index_category_headings: false\n');
+      expect(
+        entries(grouped).indexOf('HTTP'),
+        lessThan(entries(grouped).indexOf('HTTP methods')),
+      );
+    });
+
+    test('toc_index_terms: the contents page in the index too', () {
+      const source =
+          '= Doc\n:toc:\n\n<<<\n\n== The ((Gadget))\n\nText.\n\n'
+          '[index]\n== Index\n';
+      String entry(String pdf) =>
+          _pages(pdf).expand((p) => p).lastWhere((l) => l.startsWith('Gadget'));
+      expect(entry(_pdf(source, theme: '')), matches(RegExp(r'^Gadget, 2$')));
+      expect(
+        entry(_pdf(source, theme: 'toc_index_terms: true\n')),
+        matches(RegExp(r'^Gadget, 1, 2$')),
+      );
+    });
+
+    test('in print, index-pagenum-sequence-style: page lists each page', () {
+      const body =
+          '(((Widget)))\nOne.\n\n<<<\n\n(((Widget)))\nTwo.\n\n'
+          '[index]\n== Index\n';
+      String entry(String pdf) =>
+          _pages(pdf).expand((p) => p).lastWhere((l) => l.startsWith('Widget'));
+      expect(entry(_pdf('= Doc\n:media: print\n\n$body')), 'Widget, 1-2');
+      expect(
+        entry(
+          _pdf(
+            '= Doc\n:media: print\n:index-pagenum-sequence-style: page\n\n'
+            '$body',
+          ),
+        ),
+        'Widget, 1, 2',
+      );
+    });
+
+    test('a floating image leaves the spaces around it as they were', () {
+      final svg = base64.encode(
+        utf8.encode(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100" '
+          'viewBox="0 0 400 100"><rect width="400" height="100"/></svg>',
+        ),
+      );
+      const before = '= Doc\n:doctype: book\n\n== Chap\n\nBefore.\n\n';
+      const after = '=== Section\n\nAfter.\n';
+      double gap(String pdf) =>
+          word(pdf, 'Section').$4 - word(pdf, 'Before.').$4;
+      const theme = 'image_placement: top\n';
+      final plain = _pdf('$before$after', theme: theme);
+      final floated = _pdf(
+        '$before.Fig\nimage::data:image/svg+xml;base64,$svg[pdfwidth=50%]\n\n'
+        '$after',
+        theme: theme,
+      );
+      // The paragraph's space before the heading, not before the image.
+      expect(gap(floated), closeTo(gap(plain), 0.01));
+    });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }

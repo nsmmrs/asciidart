@@ -36,12 +36,14 @@ newline is `\n` in a double-quoted YAML string.
 | `base_overhang` | `false` | Punctuation and dashes at the end of a justified line hang into the margin, as Typst's `overhang` (the line stretches into a part of the character's width: 0.55 of a hyphen, 0.8 of a period or comma, 0.3 of a colon, 0.2 of a dash). |
 | `base_typographic_scripts` | `false` | Superscripts and subscripts (footnote references) in the font's own glyphs for them (its `sups` and `subs` features) at the text's size, when it has them for every character, as Typst's `super` and `sub`; else smaller and raised as usual. |
 | `base_justify_width` | room | `widest`: justified lines are set to the width of the paragraph's widest line (an overfull line shrunk to the room), as Typst sets a paragraph in a block sized to its content (its `show par: it => block(it)` rule; in a section role: `section_role_<role>_base_justify_width`). |
+| `base_text_align_last` | `left` | Where a justified paragraph's last line goes (`center`, `right`), as CSS's `text-align-last`; Typst's alignment of a justified paragraph (`table_base_text_align_last: center` for Typst's centered table cells). |
 | `prose_orphans` | `2` | The fewest lines of a paragraph left at the bottom of a page. |
 | `prose_widows` | `2` | The fewest lines of a paragraph carried to the top of the next page. |
 | `prose_text_indent` | `0` | The indent of every paragraph's first line. Numbers are points; `1.5em` is relative to the paragraph's font size, `2rem` to the base font size. |
 | `prose_text_indent_inner` | `0` | The indent of the first line of a paragraph that follows another paragraph only (not the first after a heading, a list or a block), as books set it. |
 | `prose_margin_inner` | none | The space between two paragraphs; `0` with `prose_text_indent_inner` for indented, unspaced paragraphs. |
 | `role_<role>_text_indent`, `role_<role>_margin_bottom` | the prose's | A paragraph with the role: its first line's indent (`0` for none) and the space below it (`[.dedication]` paragraphs, unindented and spaced). |
+| `role_<role>_margin_top`, `role_<role>_margin_bottom` | the block's | Any block with the role: the space above and below it, in place of its category's. |
 
 ### Space around blocks
 
@@ -80,12 +82,15 @@ its own, and the section listed in itself, as Typst's outline under a
 | --- | --- | --- |
 | `toc_entry_content` | the numbered title | A template for each contents entry: `'{{title}}'` lists titles without their numbers (also `{{number}}`, `{{numbered-title}}`). |
 | `toc_entry_spacing` | the leading under `base_leading`, else none | The space between contents entries (under Typst's model each entry is a paragraph). |
+| `toc_index_terms` | `false` | `true` indexes the terms in a section title again where the contents list it, so the contents page appears in the index too, as Typst's outline does when it sets the headings again. |
 | `description_list_term_display` | `block` | `inline` runs a term in before its description, in the term's font, the lines after the first hanging by `description_list_description_indent`. |
 | `description_list_term_gap` | an en space | With `inline` terms, the space after the term (`0.6em`, as Typst's terms separator). |
 | `image_float_clearance` | none | The space between a floating image (`image_placement`) and the text: below it at the top of a page, above it at the bottom (`1.5em`, Typst's). |
 | `olist_text_align` | `list_text_align` | An ordered list's text alignment (Typst's enums are justified, its lists not). |
 | `callout_list_text_align` | `list_text_align` | A callout list's text alignment. |
 | `olist_body_indent`, `olist_marker_width` | `list_body_indent`, the marker's | An ordered list's space between its numbers and its text, and the boxes its numbers are set in, at their left (Typst's enum: `0`, `1em`). |
+| `olist_role_<role>_<key>` | none | For an ordered list with the role (`[.plain]`), replaces `olist_<key>` (`olist_role_plain_marker_width: auto` sets its numbers at their own width). |
+| `ulist_marker_nesting` | `all` | `ulist`: a bullet list's marker follows its level among bullet lists alone, as Typst's lists (a list in a numbered list's item keeps the first marker). |
 | `callout_list_indent`, `callout_list_marker_width`, `callout_list_marker_text_align` | none, the marker's, `center` | A callout list set in, its markers in boxes that wide, aligned so (Typst's enum: `12`, `1em`, `left`); `callout_list_marker_font_*` (family, size, style, color, `_variant_numeric`) style them. |
 | `caption_indent`, `<category>_caption_indent` | none | A caption set in from the left (`code_caption_indent: 12`: over a code block's padded code, as Typst's figure inset). |
 | `olist_marker_font_variant_numeric` | none | An ordered list's numbers in old-style (`oldstyle-nums`) or other figures (with `olist_marker_font_family`, `_font_color`...). |
@@ -146,6 +151,7 @@ document); one that doesn't fit goes on at the bottom of the next page.
 | `code_widows` | `2` | The fewest lines of a listing carried to the top of the next page. |
 | `code_wrap_indent` | `1em` | How far past its own indentation a code line that is too long goes on, on the next line. |
 | `code_wrap_marker` | arrow | `none` leaves out the return arrow drawn past the end of a line that wraps. |
+| `code_role_<role>_<key>` | none | For a code block with the role (`[source.bare]`), replaces `code_<key>` (`code_role_bare_padding: 0`); its margins come from `role_<role>_margin_top` and `_bottom`. |
 
 With `code_wrap_indent: 0` and `code_wrap_marker: none`, a long code line wraps as Typst wraps raw text: at the line breaking algorithm's opportunities (spaces, after a slash), as many words on a line as fit, the next line at the left.
 
@@ -166,13 +172,14 @@ markers their own (`callout_list_marker_content: '{{number}}.'`).
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `image_placement` | `here` | An image (with its caption) floats, as figures do in books: when it doesn't fit the rest of the page, to the top of the next page, the text after it filling the room; when it fits, to the top (`top`) or the bottom (`bottom`) of its page, or the nearer of the two (`auto`), the text flowing around it, or it stays (`next`). Never past a heading or a page break; an image in a list, table, sidebar or other block stays there. |
+| `image_placement` | `here` | An image (with its caption) floats, as figures do in books: when it doesn't fit the rest of the page, to the top of the next page, the text after it filling the room; when it fits, to the top (`top`) or the bottom (`bottom`) of its page, or the nearer of the two (`auto`), the text flowing around it, or it stays (`next`). Never past a heading or a page break; an image in a list, table, sidebar or other block stays there. An image's own `placement` attribute chooses for it (`image::x.png[placement=bottom]`; `none` keeps it in the flow). |
 
 ### Tables
 
 | Key | What it does |
 | --- | --- |
 | `table_role_<role>_<key>` | For a table with the role (`[.wide]`), replaces `table_<key>`: every table with the role is styled once, in the theme. |
+| `table_base_<key>` | In the modern engine, the base keys inside an AsciiDoc cell (`table_base_text_align_last: center`). |
 | `table_cell_role_<role>_background_color`, `_font_color`, `_font_style`, `_font_size`, `_font_family`, `_text_align` | Style a cell whose whole text is a phrase with the role (`\|[.paid]#Paid#`). |
 
 AsciiDoc has no syntax for a cell's role, so a cell takes the role of its
@@ -186,11 +193,16 @@ text. In HTML, the same cells can be styled with CSS:
 | `index_pagenum_text_align` | `left` | `right` sets each entry's page numbers in a column at the right, in tabular figures, as books do; `left` follows the term with them. |
 | `index_category_headings` | `true` | `false` leaves out the letter heading above each group of terms. |
 | `index_font_family`, `_font_size`, `_font_color`, `_font_style` | the base font | The index's font. |
+| `index_sort` | (by letter) | `code-point` lists every term in one list, as Typst's in-dexter index does: each entry is keyed by its term and its parents' terms joined with commas, and the keys are sorted by code point (`HTTP methods` before `HTTP, cookies`). A subterm's entry shows the terms after the first, under a line with the first when the entry before it starts with another term. |
+| `index_item_spacing` | `0` | The space after each entry (`code-point` index). |
+| `index_subterm_indent` | `0` | How far a subterm's entry is indented (`code-point` index; a length, such as `1em`). |
+| `index_hanging_indent` | twice `description_list_description_indent` | How far an entry's wrapped lines are indented (`code-point` index). |
 
 Each page is listed once (`hypermedia, 13, 20`); the
 `index-pagenum-sequence-style` attribute chooses otherwise as in
 asciidoctor-pdf (`range` joins consecutive pages, `term` lists a page for
-each use, which is asciidoctor-pdf's default).
+each use, which is asciidoctor-pdf's default). With `media` other than
+`screen`, consecutive pages are joined, unless the attribute is `page`.
 
 ### Pages
 

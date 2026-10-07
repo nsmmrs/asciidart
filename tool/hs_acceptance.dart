@@ -161,10 +161,14 @@ Future<void> main(List<String> args) async {
   // Without spaces: a line wrapped across two lines still counts.
   final compactPdf = text.replaceAll(' ', '');
   final compactHtml = htmlText.replaceAll(' ', '');
+  // The PDF's diagrams drawn as text (`image::x.txt[]`), which the HTML
+  // shows as SVG: their lines aren't the listings'.
+  final compactDiagrams = _textImages(sources).replaceAll(' ', '');
   for (final line in listings.keys) {
     final compact = line.replaceAll(' ', '');
     final count = _count(compactHtml, compact);
-    final found = _count(compactPdf, compact);
+    final found =
+        _count(compactPdf, compact) - _count(compactDiagrams, compact);
     if (found < count) {
       dropped++;
       if (examples.length < 3) examples.add('missing: "$line"');
@@ -409,6 +413,31 @@ Map<String, int> _listingLines(Directory sources) {
   }
   return counts;
 }
+
+/// The text of the images the PDF draws as text (`image::x.txt[]`),
+/// normalized as the PDF's text.
+String _textImages(Directory sources) {
+  final document = loadFile(
+    '${sources.path}/HypermediaSystems.adoc',
+    options: AsciidoctorOptions(
+      safe: SafeMode.unsafe,
+      // (As the PDF build reads it: `ifdef::backend-pdf[]`.)
+      attributes: const {'hypermedia-systems-pdf': '', 'backend-pdf': ''},
+      logger: MemoryLogger(),
+    ),
+  );
+  return [
+    for (final block in document.findBy(context: BlockContext.image))
+      if (block.attr('target') case final target? when target.endsWith('.txt'))
+        if (File(_resolve(sources.path, block.imageUri(target))) case final file
+            when file.existsSync())
+          _normalize(file.readAsStringSync()),
+  ].join('\n');
+}
+
+/// [path] against the directory [base], unless absolute.
+String _resolve(String base, String path) =>
+    path.startsWith('/') ? path : '$base/$path';
 
 /// Writes [table] into [file] in place of the table there (and the date
 /// of the `## Latest run` heading), or alone into a new file.

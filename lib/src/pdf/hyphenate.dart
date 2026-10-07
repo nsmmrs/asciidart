@@ -71,10 +71,17 @@ String hyphenateMarkup(
   String markup,
   PatternHyphenator hyphenator, {
   bool skipCode = false,
+  bool lettersOnly = false,
 }) {
+  // With [lettersOnly] (Typst's rule): a word as Unicode word boundaries
+  // (UAX #29) have it, letters, digits and underscores joined by an
+  // apostrophe or a period between them, hyphenated only when it is all
+  // letters (not `_hyperscript`, `html5` or `don’t`).
   String words(String text) => text.replaceAllMapped(
-    RegExp(r'[\p{L}\p{M}\p{N}\p{Pc}]+', unicode: true),
-    (m) => _hyphenateWord(m[0]!, hyphenator),
+    lettersOnly ? _uaxWord : _word,
+    (m) => lettersOnly && !_letters.hasMatch(m[0]!)
+        ? m[0]!
+        : _hyphenateWord(m[0]!, hyphenator),
   );
   if (!markup.contains('<') && !markup.contains('&')) return words(markup);
   var inLink = false;
@@ -97,6 +104,15 @@ String hyphenateMarkup(
     return tag;
   });
 }
+
+final RegExp _word = RegExp(r'[\p{L}\p{M}\p{N}\p{Pc}]+', unicode: true);
+
+final RegExp _uaxWord = RegExp(
+  r"[\p{L}\p{M}\p{N}\p{Pc}]+(?:['’.:·][\p{L}\p{M}\p{N}\p{Pc}]+)*",
+  unicode: true,
+);
+
+final RegExp _letters = RegExp(r'^[\p{L}\p{M}]+$', unicode: true);
 
 String _hyphenateWord(String word, PatternHyphenator hyphenator) {
   final points = hyphenator.hyphenate(word);

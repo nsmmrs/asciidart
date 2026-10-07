@@ -203,6 +203,39 @@ available.
 | paragraph to sidebar | 47.4 | 47.4 | -0.0 |
 | subsection heading to paragraph | 16.9 | 16.9 | -0.0 |
 
+### Page by page against the golden build
+
+The Hypermedia Systems team shared a build of the Typst edition (Typst
+0.15.1, 316 Letter pages) that embeds every font it uses, Berkeley Mono
+included. Its fonts were extracted for local comparison builds (the port's
+`scripts/extract-golden-fonts.py`: the TrueType subsets get a cmap rebuilt
+from their ToUnicode maps and the PDF's own glyph widths), and its pages
+rasterized once (`pdftoppm -gray -r 100`). The port's
+`scripts/pagediff.sh` converts the edited edition with those fonts
+(`build.sh pdf-golden`), rasterizes the same pages and compares each pair
+with ImageMagick: the pixels that differ by more than 15% once both images
+are blurred by a pixel (the same glyphs embedded by Typst and by libpdf
+rasterize a little differently at their edges, which the blur absorbs;
+anything moved by half a pixel still shows). A page passes under 0.1% of
+its pixels. `tool/hs/page_lines.dart` compares the words' positions
+exactly.
+
+Result: 316 pages against 316, every page under the threshold (the largest
+0.095%; 251 pages under 0.02%). The text, line breaks, page breaks, figure
+placement, footnotes, running heads, contents and index are the golden
+build's.
+
+The golden PDF and the fonts taken from it are licensed for this
+comparison only: neither is committed anywhere.
+
+Where the Typst edition's output comes from a quirk of its sources, the
+AsciiDoc copies it so the pages match: index terms written without the
+space before a parenthesis (`Content Security Policy(CSP)`, as in-dexter
+joins the term's text nodes), the contents pages listed for the three
+headings that carry an index term, a heading's wording ("What About The
+Element?"), a callout's text kept as a bullet. Each is a one-line change
+in the AsciiDoc to undo.
+
 Not in scope: the Markdown export and the Kindle file, which the Typst
 edition makes with pandoc and calibre; the same tools read asciidart's
 DocBook and EPUB.
@@ -211,20 +244,20 @@ DocBook and EPUB.
 
 | Check | Result | Detail |
 | --- | --- | --- |
-| PDF build | pass | 12465 ms, 2319 KB, 0 errors, 0 warnings |
-| HTML build | pass | 1049 ms, 1293 KB, 0 errors, 0 warnings |
-| EPUB 3 build | pass | 1644 ms, 2735 KB, 0 errors, 0 warnings |
-| DocBook 5 build | pass | 539 ms, 901 KB, 0 errors, 0 warnings |
-| Multi-page HTML build | pass | 1147 ms, 5 KB, 0 errors, 0 warnings |
+| PDF build | pass | 20978 ms, 2136 KB, 0 errors, 0 warnings |
+| HTML build | pass | 926 ms, 1290 KB, 0 errors, 0 warnings |
+| EPUB 3 build | pass | 1461 ms, 2735 KB, 0 errors, 0 warnings |
+| DocBook 5 build | pass | 507 ms, 901 KB, 0 errors, 0 warnings |
+| Multi-page HTML build | pass | 966 ms, 5 KB, 0 errors, 0 warnings |
 | PDF byte-stable across runs | pass | SOURCE_DATE_EPOCH=0 |
-| PDF has each listing line once (#122) | pass | 644 distinct lines of 24+ characters: 0 missing, 0 repeated |
-| PDF crops no text (#106) | pass | 0 words past the page edge, 0 past the margin |
-| PDF index with page numbers | pass | 329 entries with page numbers |
+| PDF has each listing line once (#122) | pass | 641 distinct lines of 24+ characters: 0 missing, 0 repeated |
+| PDF crops no text (#106) | pass | 0 words past the page edge, 297 past the margin |
+| PDF index with page numbers | pass | 319 entries with page numbers |
 | PDF index lists each page once | pass | no page listed twice for a term |
 | PDF front matter roman, body arabic from 1 | pass | first labels i ii iii iv 1 2; "1" on page 5 |
-| PDF time for the whole book | pass | 12465 ms for 317 pages |
-| HTML index with links | pass | 356 links to uses |
-| Multi-page HTML links resolve | pass | 25 pages, 2031 links, 0 broken |
-| HTML callouts linked both ways (callout-links) | pass | 495 markers, 489 items |
+| PDF time for the whole book | pass | 20978 ms for 314 pages |
+| HTML index with links | pass | 347 links to uses |
+| Multi-page HTML links resolve | pass | 25 pages, 2013 links, 0 broken |
+| HTML callouts linked both ways (callout-links) | pass | 491 markers, 488 items |
 | DocBook 5 validates (RELAX NG 5.0) | pass | valid |
 | EPUBCheck passes | pass | no errors |

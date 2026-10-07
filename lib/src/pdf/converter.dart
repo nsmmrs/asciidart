@@ -1214,7 +1214,19 @@ final class PdfConverter extends BuiltInConverter
         }
         if (title.isEmpty) continue;
         final font = _themeFont('toc_h$entryLevel', toc);
-        title = title.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
+        // (`toc_index_terms: true`, modern engine: the terms indexed in a
+        // title indexed in the contents too.)
+        final reindex =
+            _engine == PdfEngine.modern &&
+            _theme.value('toc_index_terms') == const ThemeBool(true);
+        title = reindex
+            ? _reindexed(title).replaceAllMapped(
+                RegExp(
+                  r'(<a id="[^"]+" type="indexterm"[^>]*>[^<]*</a>)|<(?:a\b[^>]*|/a)>',
+                ),
+                (m) => m[1] ?? '',
+              )
+            : title.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
         if (font.transform case final transform? when transform != 'none') {
           title = transformText(title, transform);
         }
@@ -2290,17 +2302,39 @@ final class PdfConverter extends BuiltInConverter
     AbstractBlock? next,
     String fallback = 'block',
   }) {
-    final following = next ?? _nextEnclosedBlock(node);
+    var following = next ?? _nextEnclosedBlock(node);
     final base = _themeMargin(fallback, 'bottom', following);
     if (_engine != PdfEngine.modern || following == null) return base;
+    // Past images that float out of the flow, to the block that follows
+    // in it (a paragraph's space before a heading).
+    if (_floatsOut(following) && !_floatsOut(node)) {
+      following = _flowNext(following);
+      if (following == null) return 0;
+    }
+    // (A role's `role_<role>_margin_bottom` and `_margin_top` before its
+    // category's.)
+    double? roleMargin(AbstractBlock block, String side) {
+      for (final role in block.roles.reversed) {
+        if (_n('role_${role}_margin_$side') case final value?) {
+          return value.toDouble();
+        }
+      }
+      return null;
+    }
+
     final own =
-        _n('${_spacingCategory(node)}_margin_bottom')?.toDouble() ?? base;
+        roleMargin(node, 'bottom') ??
+        _n('${_spacingCategory(node)}_margin_bottom')?.toDouble() ??
+        base;
     // A section's heading: the larger of the two, the heading's margin
     // above taking its part.
     if (following is Section) {
       return math.max(0, own - _sectionMarginTop(following));
     }
-    final above = _n('${_spacingCategory(following)}_margin_top') ?? 0;
+    final above =
+        roleMargin(following, 'top') ??
+        _n('${_spacingCategory(following)}_margin_top') ??
+        0;
     return math.max(own, above.toDouble());
   }
 
@@ -2309,22 +2343,36 @@ final class PdfConverter extends BuiltInConverter
   /// Typst's floating figures leave a paragraph after a paragraph.
   AbstractBlock? _flowPrevious(AbstractBlock node) {
     var previous = _previousSibling(node);
-    final floating =
-        _engine == PdfEngine.modern &&
-        const {'auto', 'top', 'bottom'}.contains(_s('image_placement'));
-    // (Images float only at the top level: not in a sidebar, a list...)
-    final parent = node.parent;
-    final topLevel =
-        parent is Section ||
-        parent is Document ||
-        parent?.context == BlockContext.preamble;
-    while (floating &&
-        topLevel &&
-        previous != null &&
-        previous.context == BlockContext.image) {
+    while (previous != null && _floatsOut(previous)) {
       previous = _previousSibling(previous);
     }
     return previous;
+  }
+
+  /// The block after [node] in the flow: the next enclosed block, past
+  /// images that float out of it.
+  AbstractBlock? _flowNext(AbstractBlock node) {
+    var next = _nextEnclosedBlock(node);
+    while (next != null && _floatsOut(next)) {
+      next = _nextEnclosedBlock(next);
+    }
+    return next;
+  }
+
+  /// Whether [block] is an image that floats out of the flow
+  /// (`image_placement`, modern engine).
+  bool _floatsOut(AbstractBlock block) {
+    if (_engine != PdfEngine.modern ||
+        block.context != BlockContext.image ||
+        block.attr('placement') == 'none' ||
+        !const {'auto', 'top', 'bottom'}.contains(_s('image_placement'))) {
+      return false;
+    }
+    // (Images float only at the top level: not in a sidebar, a list...)
+    final parent = block.parent;
+    return parent is Section ||
+        parent is Document ||
+        parent?.context == BlockContext.preamble;
   }
 
   /// The space above [section]'s heading (its box's, for a section role
@@ -2958,7 +3006,7 @@ final class PdfConverter extends BuiltInConverter
         indent = inner;
       }
     }
-    final next = _nextEnclosedBlock(node);
+    final next = _flowNext(node);
     final innerMargin = _n('prose_margin_inner');
     var marginBottom =
         innerMargin != null && next?.context == BlockContext.paragraph
@@ -2995,11 +3043,14 @@ final class PdfConverter extends BuiltInConverter
               )
               .trim()
               .isEmpty) {
-        for (final term in terms) {
-          _out.add(
-            CustomBox(const _Nothing(), style: BoxStyle(anchor: term[1])),
-          );
-        }
+        // (They go with the block after them, as Typst attaches tags to
+        // the content that follows.)
+        _out.add(
+          BlockBox([
+            for (final term in terms)
+              CustomBox(const _Nothing(), style: BoxStyle(anchor: term[1])),
+          ], style: const BoxStyle(keepWithNext: true)),
+        );
         return;
       }
     }
@@ -4322,8 +4373,10 @@ final class PdfConverter extends BuiltInConverter
         parent is Section ||
         parent is Document ||
         parent?.context == BlockContext.preamble;
+    // (The block's own `placement` attribute first: `none` keeps it where
+    // it is, as Typst's figure placement.)
     final float = _engine == PdfEngine.modern && topLevel
-        ? switch (_s('image_placement')) {
+        ? switch (node.attr('placement') ?? _s('image_placement')) {
             'auto' => FloatPlacement.auto,
             'top' => FloatPlacement.top,
             'bottom' => FloatPlacement.bottom,
@@ -4874,11 +4927,23 @@ final class PdfConverter extends BuiltInConverter
               if (_s('table_asciidoc_cell_style') == 'initial') {
                 _font = outside;
               }
+              // The modern engine's `table_base_*` keys: the base keys of
+              // the cells' blocks (`table_base_text_align_last`...).
+              final savedTheme = _theme;
+              if (_engine == PdfEngine.modern) {
+                _theme = _theme.overlaid('table_base_', 'base_');
+                // A cell's own alignment comes first.
+                if (_s('table_base_text_align') case final align?
+                    when _baseTextAlign == savedAlign) {
+                  _baseTextAlign = align;
+                }
+              }
               try {
                 blocks = _collect(() => _traverse(inner));
               } finally {
                 _baseTextAlign = savedAlign;
                 _font = savedFont;
+                _theme = savedTheme;
               }
             }
         }
@@ -5596,6 +5661,29 @@ final class PdfConverter extends BuiltInConverter
   /// Converts the listing or literal block [node] (without syntax
   /// highlighting).
   void convertCode(Block node) {
+    // The modern engine styles a block with a role by the theme's
+    // code_role_<role>_* keys, over its code_* keys.
+    if (_engine == PdfEngine.modern && node.roles.isNotEmpty) {
+      final saved = _theme;
+      for (final role in node.roles) {
+        _theme = _theme.overlaid(
+          'code_role_${role.replaceAll('-', '_')}_',
+          'code_',
+        );
+      }
+      if (!identical(_theme, saved)) {
+        try {
+          _convertCode(node);
+        } finally {
+          _theme = saved;
+        }
+        return;
+      }
+    }
+    _convertCode(node);
+  }
+
+  void _convertCode(Block node) {
     final font = _themeFont('code', _font);
     var source = '';
     _withFont('code', () => source = _guardIndentation(node.content() ?? ''));
@@ -5943,7 +6031,14 @@ final class PdfConverter extends BuiltInConverter
         }(),
       };
     } else {
-      bullet = switch (_listLevel(node)) {
+      // (`ulist_marker_nesting: ulist`, modern engine: the level among
+      // unordered lists alone, as Typst's list markers.)
+      final own =
+          _engine == PdfEngine.modern && _s('ulist_marker_nesting') == 'ulist';
+      bullet = switch (_listLevel(
+        node,
+        only: own ? BlockContext.ulist : null,
+      )) {
         1 => 'disc',
         2 => 'circle',
         _ => 'square',
@@ -5956,6 +6051,29 @@ final class PdfConverter extends BuiltInConverter
 
   /// Converts the ordered list [node].
   void convertOlist(ListBlock node) {
+    // The modern engine styles an ordered list with a role by the theme's
+    // olist_role_<role>_* keys, over its olist_* keys.
+    if (_engine == PdfEngine.modern && node.roles.isNotEmpty) {
+      final saved = _theme;
+      for (final role in node.roles) {
+        _theme = _theme.overlaid(
+          'olist_role_${role.replaceAll('-', '_')}_',
+          'olist_',
+        );
+      }
+      if (!identical(_theme, saved)) {
+        try {
+          _convertOlist(node);
+        } finally {
+          _theme = saved;
+        }
+        return;
+      }
+    }
+    _convertOlist(node);
+  }
+
+  void _convertOlist(ListBlock node) {
     var numeral = switch (node.style) {
       'loweralpha' => const _Numeral.letters('a'),
       'upperalpha' => const _Numeral.letters('A'),
@@ -5989,12 +6107,15 @@ final class PdfConverter extends BuiltInConverter
     _listNumerals.removeLast();
   }
 
-  int _listLevel(ListBlock node) {
+  /// [node]'s nesting among lists (among lists of context [only]).
+  int _listLevel(ListBlock node, {BlockContext? only}) {
     var level = 1;
     var ancestor = node.parent;
     while (ancestor != null) {
       if (ancestor case ListBlock(:final context)
-          when context == BlockContext.ulist || context == BlockContext.olist) {
+          when only == null
+              ? context == BlockContext.ulist || context == BlockContext.olist
+              : context == only) {
         level++;
       }
       ancestor = ancestor.parent;
@@ -6694,12 +6815,16 @@ final class PdfConverter extends BuiltInConverter
           }
           final children = _collect(() {
             if (primary != null) {
+              final modern = _engine == PdfEngine.modern;
               final box = _textBox(
                 primary,
                 _font,
                 align: align ?? _baseTextAlign,
                 normalizeLineHeight: true,
                 hyphenate: true,
+                // (No lone line at a page break, as a paragraph's.)
+                orphans: modern ? (_n('prose_orphans') ?? 2).toInt() : 1,
+                widows: modern ? (_n('prose_widows') ?? 2).toInt() : 1,
               );
               _out.add(
                 CustomBox(
@@ -7029,6 +7154,9 @@ final class PdfConverter extends BuiltInConverter
         capLines: _typstLeading(font) != null,
         justifyWidest:
             _engine == PdfEngine.modern && _s('base_justify_width') == 'widest',
+        alignLast: _engine == PdfEngine.modern
+            ? _s('base_text_align_last')
+            : null,
       ),
       _text,
     );
@@ -7092,6 +7220,7 @@ final class PdfConverter extends BuiltInConverter
       markup,
       hyphenator,
       skipCode: _engine == PdfEngine.modern,
+      lettersOnly: _engine == PdfEngine.modern,
     );
   }
 
@@ -8183,6 +8312,9 @@ final class PdfConverter extends BuiltInConverter
       out.write(
         piece.replaceAllMapped(_urlRx, (m) {
           final link = m[2]!;
+          // Only from a line break opportunity after the `://` (none
+          // before a digit, UAX #14's SY × NU: `http://0.0.0.0` is text).
+          if (link.startsWith(RegExp(r'\d'))) return m[0]!;
           return '${m[1]}​${_linkBreaks(link)}';
         }),
       );
@@ -8193,7 +8325,9 @@ final class PdfConverter extends BuiltInConverter
   /// [text] (markup when [markup]) with a zero-width space after each
   /// slash that isn't before a digit, a space or another slash: where the
   /// Unicode line breaking algorithm (UAX #14, a slash's class SY) lets a
-  /// line break, as Typst breaks `and/or` and `/contacts/new`.
+  /// line break, as Typst breaks `and/or` and `/contacts/new`; and after
+  /// each `?` and `!` before a letter or a digit (class EX, as Typst
+  /// breaks `/contacts?rows_only`).
   static String _breakAfterSlashes(String text, {bool markup = true}) {
     final pieces = markup
         ? RegExp('<[^>]*>|[^<]+').allMatches(text).map((m) => m[0]!)
@@ -8202,7 +8336,12 @@ final class PdfConverter extends BuiltInConverter
         .map(
           (piece) => piece.startsWith('<') && markup
               ? piece
-              : piece.replaceAll(RegExp(r'/(?=[^\s\d/\u200b])'), '/\u200b'),
+              : piece
+                    .replaceAll(RegExp(r'/(?=[^\s\d/\u200b])'), '/\u200b')
+                    .replaceAllMapped(
+                      RegExp(r'[?!](?=[\p{L}\p{N}])', unicode: true),
+                      (m) => '${m[0]}\u200b',
+                    ),
         )
         .join();
   }
@@ -8456,19 +8595,34 @@ final class PdfConverter extends BuiltInConverter
     final seeAlso = [
       for (final term in node.seeAlso ?? const <String>[]) _indexName(term),
     ];
-    if (visible) {
-      final text = node.text ?? '';
-      _index.store([_indexName(text)], name, see: see, seeAlso: seeAlso);
-      return '$anchor$text';
-    }
-    _index.store(
-      [for (final term in node.terms ?? const <String>[]) _indexName(term)],
-      name,
-      see: see,
-      seeAlso: seeAlso,
-    );
-    return anchor;
+    final names = visible
+        ? [_indexName(node.text ?? '')]
+        : [for (final term in node.terms ?? const <String>[]) _indexName(term)];
+    _index.store(names, name, see: see, seeAlso: seeAlso);
+    _indexUses[name] = (names, see, seeAlso);
+    return visible ? '$anchor${node.text ?? ''}' : anchor;
   }
+
+  /// The term each index anchor stores, to store it again where the text
+  /// is set again (`toc_index_terms`).
+  final Map<String, (List<IndexName>, IndexName?, List<IndexName>)> _indexUses =
+      {};
+
+  /// [markup] (a title in the contents) with each index term's anchor
+  /// replaced by a new one, the term stored again at it: the contents
+  /// page listed in the index too (`toc_index_terms: true`, as Typst's
+  /// in-dexter finds a heading's terms in its outline).
+  String _reindexed(String markup) => markup.replaceAllMapped(
+    RegExp('<a id="([^"]+)" type="indexterm"([^>]*)>$_dummyText</a>'),
+    (m) {
+      final use = _indexUses[m[1]];
+      if (use == null) return '';
+      final (names, see, seeAlso) = use;
+      final name = _index.nextAnchor();
+      _index.store(names, name, see: see, seeAlso: seeAlso);
+      return '<a id="$name" type="indexterm"${m[2]}>$_dummyText</a>';
+    },
+  );
 
   /// The boxes of the index section, filled in once the pages of the
   /// terms are known.
@@ -8502,6 +8656,13 @@ final class PdfConverter extends BuiltInConverter
         final termStyle =
             _fontStyle(_s('description_list_term_font_style')) ?? _font.style;
         final proseMargin = (_n('prose_margin_bottom') ?? 0).toDouble();
+        // `index_sort: code-point` (modern engine): every term in one
+        // list, keyed by its terms joined with commas, in code point
+        // order (as Typst's in-dexter index).
+        if (_engine == PdfEngine.modern && _s('index_sort') == 'code-point') {
+          _flatIndex(style);
+          return;
+        }
         for (final category in _index.categories) {
           final letter = category.name.text;
           if (headings) {
@@ -8545,8 +8706,62 @@ final class PdfConverter extends BuiltInConverter
       );
   }
 
-  /// Adds the entry of index [term] (the gem's `convert_index_term`).
-  void _indexTerm(IndexTerm term, String? style) {
+  /// The index as one list (`index_sort: code-point`): each term with an
+  /// entry of its own keyed by its terms and its parents' joined with
+  /// commas, the keys in code point order; a subterm's entry its terms
+  /// after the first, indented (`index_subterm_indent`), under a line
+  /// with the first when the entry before has another; each entry
+  /// followed by `index_item_spacing`.
+  void _flatIndex(String? style) {
+    final entries = <(List<IndexName>, IndexTerm)>[];
+    void walk(IndexTerm term, List<IndexName> parents) {
+      final names = [...parents, term.name];
+      if (!term.isContainer) entries.add((names, term));
+      for (final subterm in term.terms) {
+        walk(subterm, names);
+      }
+    }
+
+    for (final category in _index.categories) {
+      for (final term in category.terms) {
+        walk(term, const []);
+      }
+    }
+    String key(List<IndexName> names) => names.map((n) => n.text).join(', ');
+    entries.sort((a, b) => key(a.$1).compareTo(key(b.$1)));
+    final spacing = _length('index_item_spacing', _font.size) ?? 0;
+    final subtermIndent = _length('index_subterm_indent', _font.size) ?? 0;
+    String? previous;
+    for (final (names, term) in entries) {
+      if (names.length > 1 && names.first.text != previous) {
+        _indexTerm(term, style, flat: (names.first.markup, 0, false));
+        if (spacing > 0) _out.add(SpacerBox(spacing));
+      }
+      _indexTerm(
+        term,
+        style,
+        flat: names.length == 1
+            ? (term.name.markup, 0, true)
+            : (
+                names.skip(1).map((n) => n.markup).join(', '),
+                subtermIndent,
+                true,
+              ),
+      );
+      if (spacing > 0) _out.add(SpacerBox(spacing));
+      previous = names.first.text;
+    }
+  }
+
+  /// Adds the entry of index [term] (the gem's `convert_index_term`); in
+  /// a flat index ([flat]), with the given name and first line's indent,
+  /// and its page numbers if asked (else the name alone), without its
+  /// subterms.
+  void _indexTerm(
+    IndexTerm term,
+    String? style, {
+    (String, double, bool)? flat,
+  }) {
     final markup = StringBuffer();
     // `index_pagenum_text_align: right` (modern engine): the page numbers
     // in a column at the right, in tabular figures, as books set them.
@@ -8559,11 +8774,12 @@ final class PdfConverter extends BuiltInConverter
     final screen = (_document.attr('media') ?? 'screen') == 'screen';
     String link(String anchor, String text) =>
         screen ? '<a anchor="$anchor">$text</a>' : text;
-    if (!term.isContainer && screen) {
+    final pages = flat == null || flat.$3;
+    if (!term.isContainer && screen && pages) {
       markup.write('<a id="${term.anchor}">$_dummyText</a>');
     }
-    markup.write(term.name.markup);
-    if (!term.isContainer) {
+    markup.write(flat?.$1 ?? term.name.markup);
+    if (!term.isContainer && pages) {
       if (term.see case (final target, final name)) {
         markup
           ..write(' (see ')
@@ -8575,6 +8791,15 @@ final class PdfConverter extends BuiltInConverter
         final destinations = term.destinations;
         final List<String> numbers;
         switch (style) {
+          // (In print, ranges, unless the document asks for each page in
+          // the modern engine: `index-pagenum-sequence-style: page`.)
+          case _
+              when !screen &&
+                  _engine == PdfEngine.modern &&
+                  _document.attr('index-pagenum-sequence-style') == 'page':
+            numbers = [
+              ...{for (final d in destinations) d.page!},
+            ];
           case _ when !screen:
             numbers = _consolidateRanges([
               ...{for (final d in destinations) d.page!},
@@ -8613,13 +8838,18 @@ final class PdfConverter extends BuiltInConverter
       }
     }
     final indent = (_n('description_list_description_indent') ?? 0).toDouble();
+    // (A flat index's lines after the first: `index_hanging_indent`.)
+    final hanging = flat == null
+        ? indent * 2
+        : _length('index_hanging_indent', _font.size) ?? indent * 2;
+    final first = flat?.$2 ?? 0;
     void entry(String text, double left, [String? numbers]) {
       final box = _textBox(
         text,
         _font,
         align: 'left',
         normalize: false,
-        indent: -indent * 2,
+        indent: first - hanging,
       );
       _out.add(
         CustomBox(
@@ -8636,12 +8866,18 @@ final class PdfConverter extends BuiltInConverter
                   ),
                   gap: _font.size,
                 ),
-          style: BoxStyle(margin: EdgeInsets(left: left + indent * 2)),
+          style: BoxStyle(margin: EdgeInsets(left: left + hanging)),
         ),
       );
     }
 
     entry(markup.toString(), 0, pagenums);
+    if (flat != null) {
+      for (final item in seeAlso) {
+        entry(item, first);
+      }
+      return;
+    }
     if (seeAlso.isEmpty && term.isLeaf) return;
     final nested = _collect(() {
       for (final item in seeAlso) {

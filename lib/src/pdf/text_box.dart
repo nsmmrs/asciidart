@@ -86,7 +86,13 @@ final class TextLayout {
     this.overhang = false,
     this.capLines = false,
     this.justifyWidest = false,
+    this.alignLast,
   });
+
+  /// Where a justified paragraph's lines that aren't justified (its last
+  /// line) go: `center` or `right`, as CSS's `text-align-last` (Typst's
+  /// alignment of a justified paragraph); left when null.
+  final String? alignLast;
 
   /// Whether justified lines are set to the width of the paragraph's
   /// widest line (overfull lines shrunk to the room) rather than to the
@@ -1834,9 +1840,17 @@ base class _Wrap {
             _accumulatedWidth > _width - indent + 0.0001);
     final hang = _layout.overhang ? _overhang() : 0.0;
     final measure = math.min(_justifyTo ?? _width, _width);
-    final wordSpacing = justify
+    var wordSpacing = justify
         ? (measure - indent + hang - _accumulatedWidth) / _spaceCount
         : 0.0;
+    // A last line justified for being too wide only shrinks (as Typst's:
+    // with what hangs past the room it may fit as it is).
+    if (justify &&
+        !_layout.forceJustify &&
+        _paragraphFinished &&
+        wordSpacing > 0) {
+      wordSpacing = 0;
+    }
     final printed = <_Printed>[];
     for (final f in _fragments) {
       if (f.text == '\n') break;
@@ -1852,7 +1866,7 @@ base class _Wrap {
     }
     final lineWidth = printed.fold<double>(0, (sum, f) => sum + f.width);
     final available = _width - indent + hang;
-    final offset = switch (_layout.align) {
+    final offset = switch (justify ? 'justify' : _lineAlign) {
       'center' => available * 0.5 - lineWidth * 0.5,
       'right' => available - lineWidth,
       _ => 0.0,
@@ -1869,6 +1883,10 @@ base class _Wrap {
   }
 
   double get _accumulatedWidth => _fragments.fold(0, (sum, f) => sum + f.width);
+
+  /// The alignment of a line set unjustified.
+  String get _lineAlign =>
+      _layout.align == 'justify' ? _layout.alignLast ?? 'left' : _layout.align;
 }
 
 /// A character wider than the line (Prawn's `CannotFit`).
