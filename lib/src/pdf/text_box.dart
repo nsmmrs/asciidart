@@ -83,7 +83,7 @@ final class TextLayout {
     this.wrapMarker = false,
     this.at,
     this.skew,
-    this.overhang = false,
+    this.overhang = 0,
     this.capLines = false,
     this.justifyWidest = false,
     this.alignLast,
@@ -105,10 +105,10 @@ final class TextLayout {
   /// cap height at the top and the last ending at its baseline.
   final bool capLines;
 
-  /// Whether punctuation and dashes at a line's end hang into the margin,
-  /// as Typst's `overhang` (a fraction of the character's width the line
-  /// may stretch into or move by).
-  final bool overhang;
+  /// How far punctuation and dashes at a line's end hang into the margin:
+  /// a factor of the fraction of each character's width the line may
+  /// stretch into (0, none; 1, Typst's `overhang` amounts).
+  final double overhang;
 
   /// The text sheared as one block about its last baseline (Typst's skew
   /// of a heading): each glyph slanted by this ratio (the tangent of the
@@ -1838,7 +1838,7 @@ base class _Wrap {
         (_layout.forceJustify ||
             !_paragraphFinished ||
             _accumulatedWidth > _width - indent + 0.0001);
-    final hang = _layout.overhang ? _overhang() : 0.0;
+    final hang = _layout.overhang > 0 ? _layout.overhang * _overhang() : 0.0;
     final measure = math.min(_justifyTo ?? _width, _width);
     var wordSpacing = justify
         ? (measure - indent + hang - _accumulatedWidth) / _spaceCount

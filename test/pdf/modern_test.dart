@@ -1102,6 +1102,11 @@ base:
           _pdf(source, theme: '${theme}base_overhang: true\n'),
         )!;
         expect(hung, greaterThan(plain + 1));
+        // An amount scales it: half as far.
+        final half = commaEdge(
+          _pdf(source, theme: '${theme}base_overhang: 0.5\n'),
+        )!;
+        expect(half - plain, closeTo((hung - plain) / 2, 0.05));
         return;
       }
       fail('no width put the comma at a line end');
@@ -2027,19 +2032,6 @@ base:
       );
     });
 
-    test('toc_index_terms: the contents page in the index too', () {
-      const source =
-          '= Doc\n:toc:\n\n<<<\n\n== The ((Gadget))\n\nText.\n\n'
-          '[index]\n== Index\n';
-      String entry(String pdf) =>
-          _pages(pdf).expand((p) => p).lastWhere((l) => l.startsWith('Gadget'));
-      expect(entry(_pdf(source, theme: '')), matches(RegExp(r'^Gadget, 2$')));
-      expect(
-        entry(_pdf(source, theme: 'toc_index_terms: true\n')),
-        matches(RegExp(r'^Gadget, 1, 2$')),
-      );
-    });
-
     test('in print, index-pagenum-sequence-style: page lists each page', () {
       const body =
           '(((Widget)))\nOne.\n\n<<<\n\n(((Widget)))\nTwo.\n\n'
@@ -2078,6 +2070,54 @@ base:
       );
       // The paragraph's space before the heading, not before the image.
       expect(gap(floated), closeTo(gap(plain), 0.01));
+    });
+
+    test('an unknown value of a key with a set of values is reported', () {
+      final logger = MemoryLogger();
+      _pdf(
+        ':nofooter:\n\nText.\n',
+        theme: 'base_line_breaking: optimum\nindex_sort: letter\n',
+        logger: logger,
+      );
+      final messages = logger.messages.map((m) => m.message.text).toList();
+      expect(
+        messages,
+        contains(
+          'theme key base_line_breaking: unknown value optimum; expected '
+          'one of auto, optimal, greedy',
+        ),
+      );
+      // A value in the set is not.
+      expect(messages.where((m) => m.contains('index_sort')), isEmpty);
+    });
+
+    test('the example Typst-like theme converts a book without warnings', () {
+      final input = File('${_dir.path}/typst-like.adoc')
+        ..writeAsStringSync(
+          '= Book\n:doctype: book\n\n== One\n\n'
+          'Text.footnote:[A note.] ((Term))\n\n. First\n. Second\n\n'
+          '[index]\n== Index\n',
+        );
+      final logger = MemoryLogger();
+      convertFile(
+        input.path,
+        AsciidoctorOptions(
+          safe: SafeMode.unsafe,
+          backend: 'pdf',
+          toFile: '${input.path}.pdf',
+          attributes: {
+            'pdf-theme':
+                '${Directory.current.path}/example/themes/'
+                'book-typst-like-theme.yml',
+          },
+          logger: logger,
+        ),
+      );
+      expect(
+        logger.messages.where((m) => m.severity.index >= Severity.warn.index),
+        isEmpty,
+      );
+      expect(_pages('${input.path}.pdf').expand((p) => p), contains('Index'));
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }

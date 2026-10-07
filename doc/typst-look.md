@@ -10,6 +10,8 @@ does the same, and the values that make sense besides.
 
 asciidart's defaults are not Typst's (ADR-0011). Lengths are points
 unless they say `em` (of the element's font size) or `%`.
+`example/themes/book-typst-like-theme.yml` uses these keys together, with
+the fonts asciidart bundles.
 
 ## Lines and paragraphs
 
@@ -18,7 +20,7 @@ unless they say `em` (of the element's font size) or `%`.
 | `base_leading` | `par(leading)`, with lines measured from the cap height to the baseline (`top-edge`, `bottom-edge`) | `0.65em` (the Hypermedia Systems book: `0.6em`) | `0.3em`–`1em`; unset, lines use asciidoctor-pdf's `base_line_height` model |
 | `<category>_leading` | a `par(leading)` set for one element | as `base_leading` | as `base_leading` |
 | `base_line_breaking` | `par(linebreaks)` | `auto` | `auto`, `optimal`, `greedy` |
-| `base_overhang` | `text(overhang)` | `true` | `true`, `false` |
+| `base_overhang` | `text(overhang)` | `1` (`true`) | `0`–`1` |
 | `base_typographic_scripts` | `super(typographic: true)`, `sub(...)` | `true` | `true`, `false` |
 | `base_justify_width` | a paragraph in a block sized to its content | `widest` (in quotes, terms, sidebars) | `room` (default), `widest` |
 | `base_text_align_last` | the alignment of a justified paragraph | `center` (Typst's centered table cells) | `left`, `center`, `right` |
@@ -110,7 +112,6 @@ unless they say `em` (of the element's font size) or `%`.
 | `toc::[]` as a section's first block | `outline()` under a `= Contents` heading | | |
 | `toc_entry_content` | the outline's entries | `'{{title}}'` | any template |
 | `toc_entry_spacing` | each entry a paragraph | the leading | any length |
-| `toc_index_terms` | the outline sets each heading again, its index markers with it | `true` | `false` (default), `true` |
 | `index_sort` | in-dexter's one list of joined keys | `code-point` | by letter (default), `code-point` |
 | `index_item_spacing`, `index_subterm_indent`, `index_hanging_indent` | in-dexter's `v(5pt)`, `h(1em)`, `hanging-indent: 2em` | `5`, `1em`, `2em` | any lengths |
 | `index_pagenum_text_align`, `index_category_headings` | the page numbers in a column, no letters | `right`, `false` | `left`, `right`; `true`, `false` |
@@ -126,7 +127,10 @@ any book:
 
 - Line breaks follow UAX #14: after a slash, a `?` or a `!` before a
   letter, never beside an opening or closing bracket; a URL breaks as
-  Typst breaks a link, and not at all when its host starts with a digit.
+  Typst breaks a link (after `://`, where a run of letters or of digits
+  starts, between two other characters; Typst itself doesn't break a URL
+  whose host starts with a digit, an accident of its implementation that
+  asciidart doesn't copy).
 - Only words of letters are hyphenated; a hyphen's cost counts letters.
 - A last line justified only because it is too wide only shrinks.
 - An anchor takes no width; a paragraph of index terms alone takes no

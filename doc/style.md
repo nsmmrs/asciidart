@@ -18,7 +18,7 @@ too).
 | Element | Rule | PDF (theme `asciidart`) | HTML and website | EPUB |
 | --- | --- | --- | --- | --- |
 | Text face | a serif with real italics and small capitals | Noto Serif | Noto Serif | Noto Serif |
-| Heading and label face | a sans, bold | M+ 1p | Open Sans, 600 | M+ 1p |
+| Heading and label face | a sans, bold | Noto Sans | Open Sans, 600 | M+ 1p |
 | Code face | a monospace, a little smaller than the text | M+ 1mn, 0.9 of the text | Droid Sans Mono, 0.9em | M+ 1mn |
 | Text size | 10–12 pt in print, 16–20 px on screen | 10.5 pt | 1.0625rem (17 px) | the reader's |
 | Line spacing | 120–145% in print, about 160% on screen | 1.4 | 1.6 | 1.5 |
@@ -29,9 +29,9 @@ too).
 | Text color | not pure black on screen | #1F1F1F | Asciidoctor's | asciidoctor-epub3's |
 | Color | for links and labels only | links #2156A5 | links #2156A5 | links #2156A5 |
 | Code blocks | a light tint, no border, room around | #F7F7F8, no border, 9 pt padding | #F7F7F8 (Asciidoctor's), no border | asciidoctor-epub3's |
-| Notes and warnings | a label in the heading face, a rule beside the text | label in M+ 1p bold, a rule in the label's color | Asciidoctor's | asciidoctor-epub3's |
+| Notes and warnings | a label in the heading face, a rule beside the text | label in Noto Sans bold, a rule in the label's color | Asciidoctor's | asciidoctor-epub3's |
 | Tables | horizontal rules only, a heavier one under the header | 0.5 pt rows, 1 pt under the head, no columns, no stripes | rows only | asciidoctor-epub3's |
-| Captions | smaller, in the heading face | M+ 1p, 0.9 of the text, #555555 | Asciidoctor's | asciidoctor-epub3's |
+| Captions | smaller, in the heading face | Noto Sans, 0.9 of the text, #555555 | Asciidoctor's | asciidoctor-epub3's |
 | Small capitals | from the font, never shrunk capitals | `small-caps` role: `smcp` | `small-caps` role: `font-variant: small-caps` | same |
 | Keep together | `%unbreakable` | kept on one page | `break-inside: avoid` in print | `break-inside: avoid` |
 | Footnotes | at the foot of the page in print | page bottom (modern engine) | end of the page | pop-ups |

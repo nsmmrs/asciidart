@@ -306,7 +306,11 @@ final class PdfConverter extends BuiltInConverter
       boundsHeight: pageHeight - _pageMargins(document).vertical,
       decorationWidth: (_n('base_text_decoration_width') ?? 1).toDouble(),
       engine: _engine,
-      lineBreaking: switch (_s('base_line_breaking')) {
+      lineBreaking: switch (_choice('base_line_breaking', const [
+        'auto',
+        'optimal',
+        'greedy',
+      ])) {
         'optimal' => LineBreaking.optimal,
         'greedy' => LineBreaking.greedy,
         _ => LineBreaking.auto,
@@ -1214,19 +1218,7 @@ final class PdfConverter extends BuiltInConverter
         }
         if (title.isEmpty) continue;
         final font = _themeFont('toc_h$entryLevel', toc);
-        // (`toc_index_terms: true`, modern engine: the terms indexed in a
-        // title indexed in the contents too.)
-        final reindex =
-            _engine == PdfEngine.modern &&
-            _theme.value('toc_index_terms') == const ThemeBool(true);
-        title = reindex
-            ? _reindexed(title).replaceAllMapped(
-                RegExp(
-                  r'(<a id="[^"]+" type="indexterm"[^>]*>[^<]*</a>)|<(?:a\b[^>]*|/a)>',
-                ),
-                (m) => m[1] ?? '',
-              )
-            : title.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
+        title = title.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
         if (font.transform case final transform? when transform != 'none') {
           title = transformText(title, transform);
         }
@@ -2364,8 +2356,11 @@ final class PdfConverter extends BuiltInConverter
   bool _floatsOut(AbstractBlock block) {
     if (_engine != PdfEngine.modern ||
         block.context != BlockContext.image ||
-        block.attr('placement') == 'none' ||
-        !const {'auto', 'top', 'bottom'}.contains(_s('image_placement'))) {
+        !const {
+          'auto',
+          'top',
+          'bottom',
+        }.contains(block.attr('placement') ?? _imagePlacement)) {
       return false;
     }
     // (Images float only at the top level: not in a sidebar, a list...)
@@ -2559,7 +2554,10 @@ final class PdfConverter extends BuiltInConverter
             decoration: _blockDecoration(category),
             // In the middle or at the bottom of its page, when it starts
             // the page and fits on it (a dedication).
-            verticalAlign: switch (_s('${category}_vertical_align')) {
+            verticalAlign: switch (_choice(
+              '${category}_vertical_align',
+              _alignsV,
+            )) {
               'middle' || 'center' => VerticalAlign.middle,
               'bottom' => VerticalAlign.bottom,
               _ => null,
@@ -2854,7 +2852,7 @@ final class PdfConverter extends BuiltInConverter
     // (a part's title, as Typst's align(horizon) sets it).
     final verticalAlign = _engine != PdfEngine.modern
         ? null
-        : switch (_s('${category}_vertical_align')) {
+        : switch (_choice('${category}_vertical_align', _alignsV)) {
             'middle' || 'center' => VerticalAlign.middle,
             'bottom' => VerticalAlign.bottom,
             _ => null,
@@ -3532,7 +3530,8 @@ final class PdfConverter extends BuiltInConverter
   /// breakable blocks have their inset so).
   bool _cloneEdges(String category) =>
       _engine == PdfEngine.modern &&
-      _s('${category}_box_decoration_break') == 'clone';
+      _choice('${category}_box_decoration_break', const ['slice', 'clone']) ==
+          'clone';
 
   /// A block of [children] with the padding, the background and the
   /// border of theme [category], [node]'s anchor, and the block margin
@@ -4376,7 +4375,7 @@ final class PdfConverter extends BuiltInConverter
     // (The block's own `placement` attribute first: `none` keeps it where
     // it is, as Typst's figure placement.)
     final float = _engine == PdfEngine.modern && topLevel
-        ? switch (node.attr('placement') ?? _s('image_placement')) {
+        ? switch (node.attr('placement') ?? _imagePlacement) {
             'auto' => FloatPlacement.auto,
             'top' => FloatPlacement.top,
             'bottom' => FloatPlacement.bottom,
@@ -4464,7 +4463,7 @@ final class PdfConverter extends BuiltInConverter
         parent is Document ||
         parent?.context == BlockContext.preamble;
     // The block's own `placement` attribute, else the theme's.
-    final placement = node.attr('placement') ?? _s('image_placement');
+    final placement = node.attr('placement') ?? _imagePlacement;
     final float = topLevel
         ? switch (placement) {
             'auto' => FloatPlacement.auto,
@@ -5714,7 +5713,9 @@ final class PdfConverter extends BuiltInConverter
     final wrapIndent = modern
         ? _length('code_wrap_indent', font.size) ?? font.size
         : null;
-    final wrapMarker = modern && _s('code_wrap_marker') != 'none';
+    final wrapMarker =
+        modern &&
+        _choice('code_wrap_marker', const ['arrow', 'none']) != 'none';
     // Without a hanging indent or a marker, a long line wraps as Typst
     // wraps raw text: at the line breaking algorithm's breaks (after a
     // slash too), as many words on a line as fit.
@@ -6034,7 +6035,8 @@ final class PdfConverter extends BuiltInConverter
       // (`ulist_marker_nesting: ulist`, modern engine: the level among
       // unordered lists alone, as Typst's list markers.)
       final own =
-          _engine == PdfEngine.modern && _s('ulist_marker_nesting') == 'ulist';
+          _engine == PdfEngine.modern &&
+          _choice('ulist_marker_nesting', const ['all', 'ulist']) == 'ulist';
       bullet = switch (_listLevel(
         node,
         only: own ? BlockContext.ulist : null,
@@ -6462,7 +6464,8 @@ final class PdfConverter extends BuiltInConverter
       // by the description indent.
       final runIn =
           _engine == PdfEngine.modern &&
-          _s('description_list_term_display') == 'inline';
+          _choice('description_list_term_display', const ['block', 'inline']) ==
+              'inline';
       for (final DlistEntry(:terms, description: desc) in node.entries) {
         final hasText = desc != null && desc.hasText;
         if (runIn && hasText && terms.length == 1) {
@@ -7150,17 +7153,57 @@ final class PdfConverter extends BuiltInConverter
         wrapMarker: wrapMarker,
         at: _engine == PdfEngine.modern ? _at : null,
         skew: skew,
-        overhang: _engine == PdfEngine.modern && _s('base_overhang') == 'true',
+        overhang: _engine == PdfEngine.modern ? _overhangAmount() : 0,
         capLines: _typstLeading(font) != null,
         justifyWidest:
-            _engine == PdfEngine.modern && _s('base_justify_width') == 'widest',
+            _engine == PdfEngine.modern &&
+            _choice('base_justify_width', const ['room', 'widest']) == 'widest',
         alignLast: _engine == PdfEngine.modern
-            ? _s('base_text_align_last')
+            ? _choice('base_text_align_last', const ['left', 'center', 'right'])
             : null,
       ),
       _text,
     );
   }
+
+  /// The value of theme key [key] when it is one of [values] (the modern
+  /// engine's keys with a set of values); another value is reported once
+  /// and read as unset. The compatibility mode reads the key as it is.
+  String? _choice(String key, List<String> values) {
+    final value = _s(key);
+    if (_engine != PdfEngine.modern || value == null) return value;
+    if (values.contains(value)) return value;
+    if (_reportedChoices.add(key)) {
+      logger.warn(
+        'theme key $key: unknown value $value; expected one of '
+        '${values.join(', ')}',
+      );
+    }
+    return null;
+  }
+
+  final Set<String> _reportedChoices = {};
+
+  static const _alignsV = ['top', 'middle', 'center', 'bottom'];
+
+  /// The theme's `image_placement`.
+  String? get _imagePlacement => _choice('image_placement', const [
+    'here',
+    'auto',
+    'top',
+    'bottom',
+    'next',
+  ]);
+
+  /// How far punctuation hangs into the margin (`base_overhang`): `true`
+  /// is 1 (the fractions of each character's width `_overhang` names),
+  /// `false` 0, a number scales them.
+  double _overhangAmount() => switch (_theme.value('base_overhang')) {
+    ThemeBool(:final value) => value ? 1 : 0,
+    ThemeNumber(:final value) => math.max(0, value.toDouble()),
+    ThemeString(value: 'true') => 1,
+    _ => 0,
+  };
 
   /// Where the block being converted starts in the source (with the
   /// sourcemap the PDF backend turns on), for the modern engine's
@@ -8312,9 +8355,6 @@ final class PdfConverter extends BuiltInConverter
       out.write(
         piece.replaceAllMapped(_urlRx, (m) {
           final link = m[2]!;
-          // Only from a line break opportunity after the `://` (none
-          // before a digit, UAX #14's SY × NU: `http://0.0.0.0` is text).
-          if (link.startsWith(RegExp(r'\d'))) return m[0]!;
           return '${m[1]}​${_linkBreaks(link)}';
         }),
       );
@@ -8599,30 +8639,8 @@ final class PdfConverter extends BuiltInConverter
         ? [_indexName(node.text ?? '')]
         : [for (final term in node.terms ?? const <String>[]) _indexName(term)];
     _index.store(names, name, see: see, seeAlso: seeAlso);
-    _indexUses[name] = (names, see, seeAlso);
     return visible ? '$anchor${node.text ?? ''}' : anchor;
   }
-
-  /// The term each index anchor stores, to store it again where the text
-  /// is set again (`toc_index_terms`).
-  final Map<String, (List<IndexName>, IndexName?, List<IndexName>)> _indexUses =
-      {};
-
-  /// [markup] (a title in the contents) with each index term's anchor
-  /// replaced by a new one, the term stored again at it: the contents
-  /// page listed in the index too (`toc_index_terms: true`, as Typst's
-  /// in-dexter finds a heading's terms in its outline).
-  String _reindexed(String markup) => markup.replaceAllMapped(
-    RegExp('<a id="([^"]+)" type="indexterm"([^>]*)>$_dummyText</a>'),
-    (m) {
-      final use = _indexUses[m[1]];
-      if (use == null) return '';
-      final (names, see, seeAlso) = use;
-      final name = _index.nextAnchor();
-      _index.store(names, name, see: see, seeAlso: seeAlso);
-      return '<a id="$name" type="indexterm"${m[2]}>$_dummyText</a>';
-    },
-  );
 
   /// The boxes of the index section, filled in once the pages of the
   /// terms are known.
@@ -8659,7 +8677,9 @@ final class PdfConverter extends BuiltInConverter
         // `index_sort: code-point` (modern engine): every term in one
         // list, keyed by its terms joined with commas, in code point
         // order (as Typst's in-dexter index).
-        if (_engine == PdfEngine.modern && _s('index_sort') == 'code-point') {
+        if (_engine == PdfEngine.modern &&
+            _choice('index_sort', const ['letter', 'code-point']) ==
+                'code-point') {
           _flatIndex(style);
           return;
         }
@@ -8767,7 +8787,7 @@ final class PdfConverter extends BuiltInConverter
     // in a column at the right, in tabular figures, as books set them.
     final column =
         _engine == PdfEngine.modern &&
-        _s('index_pagenum_text_align') == 'right';
+        _choice('index_pagenum_text_align', const ['left', 'right']) == 'right';
     String? pagenums;
     final seeAlso = <String>[];
     // Linked only on screen (the gem's `media`).
@@ -9020,7 +9040,11 @@ final class PdfConverter extends BuiltInConverter
   /// or through the `document` (`footnotes_numbering`).
   String get _footnoteNumbering {
     if (_engine != PdfEngine.modern) return 'chapter';
-    return switch (_s('footnotes_numbering')) {
+    return switch (_choice('footnotes_numbering', const [
+      'chapter',
+      'page',
+      'document',
+    ])) {
       'page' when _pageFootnotes => 'page',
       'document' => 'document',
       _ => 'chapter',
@@ -9085,7 +9109,8 @@ final class PdfConverter extends BuiltInConverter
   /// than at the end of the chapter or document (`end`, the gem's).
   bool get _pageFootnotes =>
       _engine == PdfEngine.modern &&
-      (_s('footnotes_placement') ?? 'page') == 'page';
+      (_choice('footnotes_placement', const ['page', 'end']) ?? 'page') ==
+          'page';
 
   /// The rule above the footnotes at the bottom of a page: a third of the
   /// column long (`footnotes_separator_length`), `footnotes_separator_width`

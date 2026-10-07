@@ -64,9 +64,9 @@ website, EPUB and PDF has one visual style; technical publishers' books
    tables with horizontal rules only; small capitals from the font; real
    superscript footnote markers where the format allows.
 
-6. **The fonts are the ones asciidart already bundles** (Noto Serif, M+ 1p
-   and M+ 1mn in the PDF and EPUB; the web fonts the HTML stylesheet
-   already loads). Choosing other faces is a theme's job; bundling more
+6. **The fonts are the ones asciidart already bundles** (Noto Serif, Noto
+   Sans and M+ 1mn in the PDF; Noto Serif, M+ 1p and M+ 1mn in the EPUB;
+   the web fonts the HTML stylesheet already loads). Choosing other faces is a theme's job; bundling more
    fonts is not part of this decision.
 
 ## Consequences
