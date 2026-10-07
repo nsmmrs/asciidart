@@ -63,7 +63,7 @@ converted as html5, embedded html5, docbook5 and manpage.
 ```sh
 tool/corpus/fetch.sh /tmp/corpus           # pinned in tool/corpus/sources.txt
 dart run tool/corpus_parity.dart --exe-a asciidoctor \
-  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client -a index-html!" \
+  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client -a index-html! -a stylesheet=asciidoctor" \
   --out /tmp/corpus-results /tmp/corpus
 ```
 
@@ -72,7 +72,8 @@ none of Rouge, Pygments, CodeRay or AsciiMath, and behaves as the gem does
 without them), and asciidart runs with `highlightjs-mode=client` so that
 documents using highlight.js compare with the gem's browser markup, and
 with `index-html!` so that documents with an index section compare with
-the gem's empty one (see the intentional differences). The check found and drove fixes
+the gem's empty one, and with `stylesheet=asciidoctor` so that a page
+embeds Asciidoctor's stylesheet alone (see the intentional differences). The check found and drove fixes
 for: `cols=""`, `%autowidth` with a width, nested description list items
 with attached blocks, line breaks in AsciiMath blocks, Ruby's ASCII-only
 `\s` and `strip` against Unicode spaces, `\p{Blank}`, full case mapping
@@ -163,6 +164,17 @@ reproducers of each.
   The gem's behavior, markup for the browser plus the highlight.js 9.18.3
   scripts, is `highlightjs-mode=client`. Blocks with callouts have their
   spans closed at each line end, so the callout numbers sit outside them.
+- The default HTML stylesheet (embedded, or written as `asciidoctor.css`
+  with `linkcss`) is Asciidoctor's followed by asciidart's house rules
+  (ADR-0011, `doc/style.md`): a narrower measure, near-black headings,
+  tables with rows only, and the classes asciidart's own features use
+  (`small-caps`, `unbreakable`, text images, the index's columns, the
+  cover). The markup is Asciidoctor's. `-a stylesheet=asciidoctor`
+  embeds (or writes) Asciidoctor's stylesheet alone. Likewise an EPUB's
+  `styles/epub3.css` is asciidoctor-epub3's followed by the house rules
+  (`-a epub3-stylesheet=asciidoctor-epub3` for its alone; EPUB parity
+  passes it), and the modern PDF engine's default theme is asciidart's
+  (`-a pdf-theme=default` for asciidoctor-pdf's).
 - An `[index]` section lists the document's index terms in HTML and EPUB
   (Asciidoctor and asciidoctor-epub3 render it empty, Asciidoctor issue
   #450): a heading per letter, the terms with their subterms, a link to

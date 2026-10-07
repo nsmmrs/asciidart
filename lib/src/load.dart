@@ -529,7 +529,8 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
   final stylesheet = doc.attr('stylesheet');
   var copyAsciidoctorStylesheet = false;
   var copyUserStylesheet = false;
-  if (defaultStylesheetKeys.contains(stylesheet)) {
+  if (defaultStylesheetKeys.contains(stylesheet) ||
+      stylesheet == Stylesheets.classicStylesheetKey) {
     copyAsciidoctorStylesheet = true;
   } else if (stylesheet != null && !Helpers.isUriish(stylesheet)) {
     copyUserStylesheet = true;
@@ -556,7 +557,7 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
   }
 
   if (copyAsciidoctorStylesheet) {
-    Stylesheets.instance.writePrimaryStylesheet(stylesoutdir);
+    Stylesheets.instance.writePrimaryStylesheet(stylesoutdir, stylesheet);
   } else if (copyUserStylesheet) {
     final copycss = doc.attr('copycss');
     final String stylesheetSrc;

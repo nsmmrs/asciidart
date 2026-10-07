@@ -16,6 +16,7 @@ import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/callout_links.dart';
 import 'package:asciidart/src/converter.dart';
+import 'package:asciidart/src/data.g.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/epub3/assets.g.dart';
 import 'package:asciidart/src/epub3/book.dart';
@@ -1788,8 +1789,15 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         }
       }
     } else {
+      // asciidoctor-epub3's stylesheet, then asciidart's house rules
+      // (ADR-0011), unless the document asks for asciidoctor-epub3's alone
+      // (`epub3-stylesheet=asciidoctor-epub3`).
+      final classic = doc.attr('epub3-stylesheet') == 'asciidoctor-epub3';
       for (final name in ['epub3', 'epub3-css3-only']) {
-        book.addItem('styles/$name.css').setText(_asset('styles/$name.css'));
+        final css = _asset('styles/$name.css');
+        book
+            .addItem('styles/$name.css')
+            .setText(name == 'epub3' && !classic ? '$css\n$_houseRules' : css);
       }
     }
 
@@ -1834,6 +1842,10 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   }
 
   static String _asset(String path) => Epub3Assets.text(path) ?? '';
+
+  /// asciidart's house rules for the EPUB (doc/style.md).
+  static String get _houseRules =>
+      EmbeddedData.file('stylesheets/asciidart-epub3-house.css');
 
   /// Adds the cover page [name] (`front-cover`, `back-cover`) for the
   /// `<name>-image` attribute.

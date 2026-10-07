@@ -138,7 +138,19 @@ String _epubcheck(String jar, String epub) {
   if (file.existsSync()) file.deleteSync();
   final result = Process.runSync(
     exe,
-    ['-b', 'epub3', '-a', 'reproducible', '-o', out, doc],
+    // (asciidoctor-epub3's stylesheet alone in asciidart's EPUB, ADR-0011;
+    // the gem ignores the attribute.)
+    [
+      '-b',
+      'epub3',
+      '-a',
+      'reproducible',
+      '-a',
+      'epub3-stylesheet=asciidoctor-epub3',
+      '-o',
+      out,
+      doc,
+    ],
     environment: {'TZ': 'UTC', 'SOURCE_DATE_EPOCH': '0'},
     workingDirectory: File(doc).parent.path,
   );

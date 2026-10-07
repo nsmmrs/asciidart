@@ -45,7 +45,10 @@ String _pdf(
         if (themeFile != null) ...{
           'pdf-theme': themeFile.path,
           'pdf-fontsdir': '${Directory.current.path}/test/pdf/fixtures/fonts',
-        },
+        } else
+          // asciidoctor-pdf's theme, which these tests were written for
+          // (the house theme has its own tests).
+          'pdf-theme': 'default',
       },
       logger: logger,
     ),
@@ -2146,6 +2149,38 @@ base:
       );
       expect(bytes, contains('<rdf:li>Ed One</rdf:li><rdf:li>Ed Two</rdf:li>'));
       expect(bytes, contains('2026 Ann Author</rdf:li></rdf:Alt></dc:rights>'));
+    });
+
+    test("the house theme by default, asciidoctor-pdf's by name", () {
+      String convert(Map<String, String> attributes) {
+        final input = File('${_dir.path}/house${_count++}.adoc')
+          ..writeAsStringSync(
+            '= Doc\n\n== Section\n\nText with [.small-caps]#Small Caps#.\n',
+          );
+        convertFile(
+          input.path,
+          AsciidoctorOptions(
+            safe: SafeMode.unsafe,
+            backend: 'pdf',
+            toFile: '${input.path}.pdf',
+            attributes: attributes,
+          ),
+        );
+        return '${input.path}.pdf';
+      }
+
+      String fonts(String pdf) =>
+          Process.runSync('pdffonts', [pdf]).stdout as String;
+      final house = convert(const {});
+      // Headings in the sans (doc/style.md).
+      expect(fonts(house), contains('NotoSans'));
+      expect(
+        fonts(convert(const {'pdf-theme': 'default'})),
+        isNot(contains('NotoSans')),
+      );
+      // The small-caps role (Noto Serif's subset has no smcp: smaller
+      // capitals).
+      expect(_pages(house).first.join(' '), contains('SMALL CAPS'));
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }

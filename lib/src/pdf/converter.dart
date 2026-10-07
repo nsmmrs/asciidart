@@ -2047,7 +2047,12 @@ final class PdfConverter extends BuiltInConverter
     final dir = document
         .attr('pdf-themesdir')
         ?.replaceAll('{docdir}', document.attr('docdir') ?? '');
-    if (name == null && (document.attr('media') ?? 'screen') != 'screen') {
+    // The modern engine's default is asciidart's house theme (ADR-0011);
+    // the compatibility mode's, asciidoctor-pdf's.
+    if (name == null && _engine == PdfEngine.modern) {
+      name = 'asciidart';
+    } else if (name == null &&
+        (document.attr('media') ?? 'screen') != 'screen') {
       name = 'default-for-print';
     }
     try {

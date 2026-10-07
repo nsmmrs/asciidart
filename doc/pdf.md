@@ -16,6 +16,12 @@ There are two layout engines:
 
 ## The modern engine
 
+Its default theme is asciidart's house theme (`asciidart`, `doc/style.md`):
+asciidoctor-pdf's default with a shorter measure, more open lines,
+headings in the sans, code in a tint and tables with rows only.
+`-a pdf-theme=default` is asciidoctor-pdf's theme; a theme of your own
+`extends: asciidart` or `extends: default`.
+
 Every setting has a default. Each one is a key of the theme (as written
 in the YAML, `prose_orphans` is `prose: { orphans: 2 }`) or an attribute
 of the document. `doc/typst-look.md` lists the keys that set a book as

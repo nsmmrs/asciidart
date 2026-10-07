@@ -216,4 +216,28 @@ void main() {
       expect(page.readAsStringSync(), isNot(contains('id="cover"')));
     }
   });
+
+  test("HTML: the house stylesheet by default, Asciidoctor's by name", () {
+    const house = 'asciidart house style';
+    expect(
+      File(convertWith('html5', '= Doc\n\nText.\n')).readAsStringSync(),
+      contains(house),
+    );
+    final classic = File(
+      convertWith('html5', '= Doc\n:stylesheet: asciidoctor\n\nText.\n'),
+    ).readAsStringSync();
+    expect(classic, contains('Asciidoctor default stylesheet'));
+    expect(classic, isNot(contains(house)));
+  });
+
+  test("EPUB: the house rules after asciidoctor-epub3's, or its alone", () {
+    String css(String source) => unzipText(
+      File(convertWith('epub3', source)).readAsBytesSync(),
+    )['EPUB/styles/epub3.css']!;
+    expect(css('= Doc\n\nText.\n'), contains('asciidart house style'));
+    expect(
+      css('= Doc\n:epub3-stylesheet: asciidoctor-epub3\n\nText.\n'),
+      isNot(contains('asciidart house style')),
+    );
+  });
 }

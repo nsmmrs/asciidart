@@ -358,7 +358,9 @@ class Html5Converter extends BuiltInConverter {
     );
 
     late final stylesdir = node.attr('stylesdir');
-    if (_defaultStylesheetKeys.contains(node.attr('stylesheet'))) {
+    final stylesheetKey = node.attr('stylesheet');
+    if (_defaultStylesheetKeys.contains(stylesheetKey) ||
+        stylesheetKey == Stylesheets.classicStylesheetKey) {
       final webfonts = node.attr('webfonts');
       if (webfonts != null) {
         result.add(
@@ -374,7 +376,7 @@ class Html5Converter extends BuiltInConverter {
         result.add('<link rel="stylesheet" href="$href"$slash>');
       } else {
         result.add(
-          '<style>\n${Stylesheets.instance.primaryStylesheetData}\n</style>',
+          '<style>\n${Stylesheets.instance.dataFor(stylesheetKey)}\n</style>',
         );
       }
     } else if (node.hasAttr('stylesheet')) {

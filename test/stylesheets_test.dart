@@ -15,9 +15,17 @@ import 'package:test/test.dart';
 /// Reads the repository `data/` file at [relativePath].
 ///
 /// Tests run with the package root (`dart/`) as the working directory.
-List<int> readDataFile(String relativePath) =>
-    File('${Directory.current.path}/vendor/asciidoctor/data/$relativePath')
-        .readAsBytesSync();
+/// asciidart's own files (`data/`, the house stylesheet) before
+/// Asciidoctor's (`vendor/asciidoctor/data/`).
+List<int> readDataFile(String relativePath) {
+  final own = File('${Directory.current.path}/data/$relativePath');
+  return (own.existsSync()
+          ? own
+          : File(
+              '${Directory.current.path}/vendor/asciidoctor/data/$relativePath',
+            ))
+      .readAsBytesSync();
+}
 
 /// Mirrors Ruby's `String#rstrip` for building expectations independently of
 /// the helper under test.
@@ -32,11 +40,13 @@ void main() {
       expect(
         keys.where((key) => key.startsWith('stylesheets/')),
         orderedEquals([
+          'stylesheets/asciidart-epub3-house.css',
+          'stylesheets/asciidart-house.css',
           'stylesheets/asciidoctor-default.css',
           'stylesheets/coderay-asciidoctor.css',
         ]),
       );
-      expect(keys, hasLength(38));
+      expect(keys, hasLength(40));
     });
 
     test('embedded bytes equal the data files byte-for-byte', () {
@@ -80,12 +90,24 @@ void main() {
       expect(Stylesheets.defaultStylesheetName, equals('asciidoctor.css'));
     });
 
-    test('primary stylesheet data is the embedded file rstripped', () {
+    test('the classic stylesheet is the embedded file rstripped', () {
       final raw = utf8.decode(
         readDataFile('stylesheets/asciidoctor-default.css'),
       );
       expect(raw, endsWith('\n'));
-      expect(stylesheets.primaryStylesheetData, equals(rstrip(raw)));
+      expect(stylesheets.classicStylesheetData, equals(rstrip(raw)));
+      expect(stylesheets.dataFor('asciidoctor'), equals(rstrip(raw)));
+    });
+
+    test('the default stylesheet is the classic one, then the house rules', () {
+      final house = utf8.decode(
+        readDataFile('stylesheets/asciidart-house.css'),
+      );
+      expect(
+        stylesheets.primaryStylesheetData,
+        equals('${stylesheets.classicStylesheetData}\n${rstrip(house)}'),
+      );
+      expect(stylesheets.dataFor(''), stylesheets.primaryStylesheetData);
       expect(stylesheets.primaryStylesheetData, isNot(endsWith('\n')));
     });
 
@@ -94,6 +116,11 @@ void main() {
       final written = File('${tempDir.path}/asciidoctor.css')
           .readAsStringSync();
       expect(written, equals(stylesheets.primaryStylesheetData));
+      stylesheets.writePrimaryStylesheet(tempDir.path, 'asciidoctor');
+      expect(
+        File('${tempDir.path}/asciidoctor.css').readAsStringSync(),
+        equals(stylesheets.classicStylesheetData),
+      );
     });
   });
 }

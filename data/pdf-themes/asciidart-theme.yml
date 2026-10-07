@@ -1,0 +1,92 @@
+# asciidart's house style for the modern PDF engine (doc/style.md,
+# ADR-0011): asciidoctor-pdf's default theme, with a measure of about 75
+# characters, more open lines, headings in the sans, code in a tint, tables
+# with rows only. The modern engine uses it unless pdf-theme names another;
+# pdf-theme=default is asciidoctor-pdf's.
+extends: default
+font:
+  catalog:
+    merge: true
+    Noto Sans:
+      normal: GEM_FONTS_DIR/notosans-regular-subset.ttf
+      bold: GEM_FONTS_DIR/notosans-bold-subset.ttf
+      italic: GEM_FONTS_DIR/notosans-italic-subset.ttf
+      bold_italic: GEM_FONTS_DIR/notosans-bold_italic-subset.ttf
+page:
+  # About 75 characters of 10.5pt Noto Serif on A4 or Letter.
+  margin: [0.75in, 1.5in, 0.875in, 1.5in]
+  margin_inner: 1.75in
+  margin_outer: 1.25in
+base:
+  font_color: 1F1F1F
+  font_size: 10.5
+  # 140%: Practical Typography's 120-145%, open for a serif with a large
+  # x-height.
+  line_height: 1.4
+link:
+  font_color: 2156A5
+prose:
+  margin_bottom: 6
+heading:
+  font_family: Noto Sans
+  font_style: bold
+  font_color: 191919
+  h1_font_size: 26
+  h2_font_size: 20
+  h3_font_size: 14
+  h4_font_size: 12
+  h5_font_size: 11
+  h6_font_size: 10.5
+  margin_top: 16
+  margin_bottom: 6
+  min_height_after: auto
+  line_height: 1.2
+title_page:
+  title:
+    font_color: 191919
+  subtitle:
+    font_color: 444444
+caption:
+  font_family: Noto Sans
+  font_style: normal
+  font_size: 9.5
+  font_color: 555555
+code:
+  font_size: 9.5
+  font_color: 1F1F1F
+  background_color: F7F7F8
+  border_width: 0
+  border_radius: 2
+  padding: 9
+  line_height: 1.35
+codespan:
+  font_color: 1F1F1F
+  font_size: 0.9em
+sidebar:
+  background_color: F7F7F8
+  border_width: 0
+  title:
+    font_family: Noto Sans
+    font_color: 191919
+admonition:
+  column_rule_width: 2
+  column_rule_color: CCCCCC
+  label:
+    font_family: Noto Sans
+    font_style: bold
+    font_color: 444444
+table:
+  border_color: 191919
+  border_width: [1, 0]
+  grid_color: DDDDDD
+  grid_width: [0.5, 0]
+  head:
+    font_family: Noto Sans
+    border_bottom_width: 1
+    border_bottom_color: 191919
+    background_color: transparent
+  body:
+    stripe_background_color: transparent
+role:
+  small-caps:
+    font_variant: small-caps

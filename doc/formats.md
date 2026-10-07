@@ -24,7 +24,7 @@ feature the format has no use for.
 | Keep together (`%unbreakable`) | yes | class `unbreakable` (the house stylesheet: `break-inside: avoid`) | same | same | `<?dbfo keep-together="always"?>` |
 | Hyphenation (`:hyphens:`) | patterns, 72 languages | CSS `hyphens: auto` | same | same | n/a |
 | Roles for text (`[.sc]#...#`) | theme `role_<role>_*` | CSS (the author's) | CSS | CSS | `role` attribute |
-| Built-in roles (`small-caps`, `big`, `small`, colors) | **gap:** `small-caps` needs a theme key | colors, sizes; **gap:** no `small-caps` | same | same | `role` attribute |
+| Built-in roles (`small-caps`, `big`, `small`, colors) | `small-caps` in the house theme (`role_small-caps_font_variant`) | colors, sizes; `small-caps` in the house stylesheet | same | same | `role` attribute |
 | Section roles (a boxed `[.html-note]`) | theme `section_role_<role>_*` | class (CSS) | class | class | `role` |
 | Source highlighting | hilite | hilite | hilite | hilite | `language` |
 | Math (`stem:[]`) | **gap:** shown as source | MathJax | MathJax | **gap:** shown as source (asciidoctor-epub3 writes MathML for AsciiMath) | `<mathphrase>` |
