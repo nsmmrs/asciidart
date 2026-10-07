@@ -1,5 +1,5 @@
 // The browser build converts like the Node.js build (proven identical to
-// Asciidoctor 2.0.26 by the parity gates), in headless Chromium.
+// Asciidoctor by the parity gates), in headless Chromium.
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:http'

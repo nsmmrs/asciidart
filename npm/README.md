@@ -2,7 +2,8 @@
 
 asciidart is an AsciiDoc processor written in Dart and compiled to
 JavaScript. It converts AsciiDoc to HTML 5, DocBook 5 and man pages
-compatibly with [Asciidoctor](https://asciidoctor.org) 2.0.26, and is not
+compatibly with [Asciidoctor](https://asciidoctor.org) (its development
+version, 2.1.0.alpha.0, with fixes for bugs it still has), and is not
 affiliated with or endorsed by the Asciidoctor project.
 
 It runs on Node.js (20.19 or later) and in browsers, ships TypeScript
@@ -81,7 +82,7 @@ The command takes the options of the `asciidoctor` command.
 
 ## Coming from Asciidoctor.js
 
-The output follows Asciidoctor 2.0.26. The API is not Asciidoctor.js's:
+The output follows Asciidoctor (2.1.0.alpha.0, plus bug fixes). The API is not Asciidoctor.js's:
 properties replace `get*` methods, extensions are classes taking a
 function, and an `html` override replaces converter classes. Callbacks are
 synchronous, except an `IncludeResolver`. Errors thrown by your callbacks

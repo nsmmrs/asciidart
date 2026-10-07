@@ -10,11 +10,11 @@ as a drop-in replacement for
 attributes, command-line options and output. It is a library, a command
 line tool, and (compiled to JavaScript) an npm package.
 
-> This is the `bugfix` branch: the `2.1.0` branch, which matches
-> Asciidoctor's development version (upstream `main` at `30fb8cd5`, which
-> reports 2.1.0.alpha.0), plus fixes for bugs Asciidoctor still has
-> ([PARITY.md](benchmark/PARITY.md#upstream-bugs-fixed-on-the-bugfix-branch)).
-> The `master` branch matches the 2.0.26 release.
+> asciidart follows Asciidoctor's development version (upstream `main` at
+> `30fb8cd5`, which reports 2.1.0.alpha.0) and fixes bugs Asciidoctor still
+> has ([PARITY.md](benchmark/PARITY.md#upstream-bugs-fixed)). The tag
+> `asciidoctor-2.0.26-parity` marks the last commit that matched the
+> 2.0.26 release byte for byte ([ADR-0017](adr/0017-follow-main-fix-bugs.md)).
 
 > asciidart is an independent re-implementation, not affiliated with or
 > endorsed by the Asciidoctor project. Report problems
@@ -153,15 +153,14 @@ asciidoc.convert('Hello, *AsciiDoc*!')
 
 ## Versions
 
-On this branch asciidart is compatible with Asciidoctor's development
-version: upstream `main` at `30fb8cd5` (`tool/vendor.sh`), which reports
-**2.1.0.alpha.0**. Documents see `{asciidoctor-version}` as 2.1.0.alpha.0
-and `{asciidart-version}` as the version of asciidart. Documents that hit
-one of the upstream bugs fixed here convert differently (the fixes are
-listed in [PARITY.md](benchmark/PARITY.md#upstream-bugs-fixed-on-the-bugfix-branch)).
-The `master` branch
-is compatible with the 2.0.26 release
-([ADR-0003](adr/0003-target-latest-stable.md)).
+asciidart is compatible with Asciidoctor's development version: upstream
+`main` at `30fb8cd5` (`tool/vendor.sh`), which reports **2.1.0.alpha.0**.
+Documents see `{asciidoctor-version}` as 2.1.0.alpha.0 and
+`{asciidart-version}` as the version of asciidart. Documents that hit one
+of the upstream bugs fixed here convert differently (the fixes are listed
+in [PARITY.md](benchmark/PARITY.md#upstream-bugs-fixed)). For output
+identical to the 2.0.26 release, use the tag `asciidoctor-2.0.26-parity`
+([ADR-0017](adr/0017-follow-main-fix-bugs.md)).
 
 ## Contributing
 

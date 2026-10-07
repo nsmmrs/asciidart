@@ -1,12 +1,12 @@
 # Upstream issue triage
 
-The 610 open issues of [asciidoctor/asciidoctor](https://github.com/asciidoctor/asciidoctor/issues) on 2026-10-05, triaged for the `bugfix` branch (step 9 of the roadmap). Every issue that reports a bug (labeled `bug` or `regression`, or reading as one) was tried on both the Ruby CLI (the gem built from upstream `main` at `30fb8cd5`, 2.1.0.alpha.0) and the asciidart CLI of the `2.1.0` branch, which matches it. The rest were sorted by their labels, or, for the 252 unlabeled issues, by reading them.
+The 610 open issues of [asciidoctor/asciidoctor](https://github.com/asciidoctor/asciidoctor/issues) on 2026-10-05, triaged for fixing (step 9 of the roadmap; the fixes were made on a `bugfix` branch, merged into `master` on 2026-10-07). Every issue that reports a bug (labeled `bug` or `regression`, or reading as one) was tried on both the Ruby CLI (the gem built from upstream `main` at `30fb8cd5`, 2.1.0.alpha.0) and the asciidart CLI of the time, which matched it. The rest were sorted by their labels, or, for the 252 unlabeled issues, by reading them.
 
-A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named after the issue, that fails on both CLIs before the fix; `tool/bugfix_check.sh` checks that it passes on asciidart and still fails on the gem. The fixes are listed in [`benchmark/PARITY.md`](../benchmark/PARITY.md#upstream-bugs-fixed-on-the-bugfix-branch).
+A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named after the issue, that fails on both CLIs before the fix; `tool/bugfix_check.sh` checks that it passes on asciidart and still fails on the gem. The fixes are listed in [`benchmark/PARITY.md`](../benchmark/PARITY.md#upstream-bugs-fixed).
 
 | Category | Issues |
 |---|---|
-| Fixed on the `bugfix` branch | 31 |
+| Fixed | 31 |
 | Reproduced, deferred | 0 |
 | Does not reproduce on upstream main | 4 |
 | Not a bug (by design or by the spec) | 15 |
@@ -18,7 +18,7 @@ A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named
 | Duplicates | 5 |
 | Out of scope | 49 |
 
-## Fixed on the `bugfix` branch (31)
+## Fixed (31)
 
 - [#1333](https://github.com/asciidoctor/asciidoctor/issues/1333) Block titles should be interpolated consistently — decided with the user: a block title's counters and `{set:...}` are evaluated once, where it is written
 - [#3087](https://github.com/asciidoctor/asciidoctor/issues/3087) Cannot use {counter:id} in bibliography section to auto-number — a bibliography entry's reference text not substituted (counters)

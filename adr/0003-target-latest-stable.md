@@ -1,6 +1,8 @@
 # ADR-0003: Target the Latest Stable Asciidoctor Release
 
-**Status:** Final — accepted by user 2026-10-04.
+**Status:** Superseded by [ADR-0017](0017-follow-main-fix-bugs.md) on
+2026-10-07 (accepted by user 2026-10-04). The last commit made under it is
+tagged `asciidoctor-2.0.26-parity`.
 
 ## Context
 

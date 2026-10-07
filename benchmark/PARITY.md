@@ -1,25 +1,23 @@
 # Parity with Asciidoctor
 
-The `bugfix` branch is the `2.1.0` branch plus fixes for bugs Asciidoctor
-still has; every output difference they make is listed under
-[Upstream bugs fixed on the bugfix branch](#upstream-bugs-fixed-on-the-bugfix-branch),
-and everything else below holds as on `2.1.0`.
-
-On the `2.1.0` branch, asciidart is compatible with Asciidoctor's
-development version (upstream `main` at `30fb8cd5`, reporting
-2.1.0.alpha.0), and this file is the
-ledger of that claim: the gates below compare it with the gem, and every
+asciidart is compatible with Asciidoctor's development version (upstream
+`main` at `30fb8cd5`, reporting 2.1.0.alpha.0), and fixes bugs Asciidoctor
+still has; every output difference the fixes make is listed under
+[Upstream bugs fixed](#upstream-bugs-fixed). This file is the ledger of
+that claim: the gates below compare it with the gem, and every
 difference that remains is deliberate and listed under
 [Known intentional differences](#known-intentional-differences).
 
 Byte-identical gate (ADR-0001 D4): the asciidart CLI against the
 Asciidoctor gem built from upstream `main` at `30fb8cd5`, via
 `tool/differential.dart` (normalization: version stamps and timestamps
-only). `master` targets 2.0.26 per
-[ADR-0003](../adr/0003-target-latest-stable.md); this branch re-implements
-upstream's changes since 2.0.26 on master's architecture (the original
-port of main is tagged `archive/2.1.0-original-port`). The 2.0.26 numbers
-below come from master; this branch's gates run against the main gem.
+only). Until 2026-10-07 `master` targeted 2.0.26
+([ADR-0003](../adr/0003-target-latest-stable.md)); the last commit that
+matched it is tagged `asciidoctor-2.0.26-parity`, and the 2.0.26 numbers
+below come from it. Upstream's changes since 2.0.26 were re-implemented on
+that architecture (the original port of main is tagged
+`archive/2.1.0-original-port`), and the gates now run against the gem built
+from main ([ADR-0017](../adr/0017-follow-main-fix-bugs.md)).
 
 ## Corpus
 
@@ -253,7 +251,7 @@ dart run tool/epub_parity.dart --exe-a "$(command -v asciidoctor-epub3)" \
 
 Verdict (2026-10-05): the 72 documents of the gem's spec fixtures
 (`vendor/asciidoctor-epub3/test/fixtures`, run in CI) are identical, with
-the same EPUBCheck reports. On `master` (Asciidoctor 2.0.26), so are 499
+the same EPUBCheck reports. At `asciidoctor-2.0.26-parity` (Asciidoctor 2.0.26), so are 499
 of a 500-document sample of the corpus (the 136 books and 364 other
 documents), the one left being the first difference below.
 
@@ -277,13 +275,13 @@ Intentional differences:
 - The EPUB3 backend is in the native executable only, not in the npm
   package (see [ADR-0009](../adr/0009-epub3-backend.md)).
 
-## Upstream bugs fixed on the bugfix branch
+## Upstream bugs fixed
 
 Bugs reported upstream that the gem built from `main` at `30fb8cd5` still
 has (see the [triage](../doc/upstream-triage.md)). Each has a test in
 [`test/bugfix/`](../test/bugfix/README.md) that fails on that gem and
 passes here; `tool/bugfix_check.sh` checks both, in CI and in the gates.
-Documents that don't hit these cases convert as on `2.1.0`.
+Documents that don't hit these cases convert as with the gem.
 
 - Section IDs: a title made only of punctuation gets the separator (`_`,
   then `__2`) instead of an empty ID (#4877). A footnote in a section

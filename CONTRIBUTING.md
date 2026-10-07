@@ -1,16 +1,19 @@
 # Contributing
 
 The bar for every change is unchanged output: asciidart must convert
-documents exactly as the Asciidoctor 2.0.26 gem does (ADR-0001, ADR-0003),
+documents exactly as the Asciidoctor gem built from the vendored upstream
+commit (`main` at `30fb8cd5`, `tool/vendor.sh`) does (ADR-0001, ADR-0017),
 unless the difference is deliberate and listed in `benchmark/PARITY.md`
-(diagnostics, for one, read like a Dart tool's).
+(a fixed upstream bug, with its test in `test/bugfix/`; diagnostics, which
+read like a Dart tool's).
 
 ## Setup
 
 - Dart SDK 3.13 or later
-- For the parity gates: Ruby with the gem
-  (`gem install asciidoctor -v 2.0.26`, without optional gems)
-  and [bats](https://github.com/bats-core/bats-core)
+- For the parity gates: Ruby with the gem built from upstream `main` at
+  `30fb8cd5` (`gem build asciidoctor.gemspec` in a checkout of that commit,
+  as CI does) and the asciimath gem, no other optional gems, and
+  [bats](https://github.com/bats-core/bats-core)
 - For the npm package: Node.js 20.19 or later (and Chromium for the browser
   test)
 
