@@ -27,7 +27,7 @@ feature the format has no use for.
 | Built-in roles (`small-caps`, `big`, `small`, colors) | `small-caps` in the house theme (`role_small-caps_font_variant`) | colors, sizes; `small-caps` in the house stylesheet | same | same | `role` attribute |
 | Section roles (a boxed `[.html-note]`) | theme `section_role_<role>_*` | class (CSS) | class | class | `role` |
 | Source highlighting | hilite | hilite | hilite | hilite | `language` |
-| Math (`stem:[]`) | AsciiMath typeset (OpenType MATH); LaTeX as source, with a warning (EPIC-ntsq8n) | MathJax | MathJax | MathML for AsciiMath; LaTeX as source | MathML for AsciiMath; LaTeX in `<alt>` |
+| Math (`stem:[]`) | AsciiMath and LaTeX typeset (OpenType MATH) | MathJax | MathJax | MathML for AsciiMath; LaTeX as source | MathML for AsciiMath; LaTeX in `<alt>` |
 | Cover (`front-cover-image`) | cover page | before the header | on the home page | cover | `<cover>` |
 | Title page, dedication, colophon | yes | headings | pages | pages, with landmarks | `<dedication>`, `<colophon>` |
 | Book metadata (`isbn`, `editor`, `copyright`) | XMP (`dc:identifier`, `dc:contributor`, `dc:rights`) | `<meta>` (author, copyright) | same | OPF | `<info>` (`biblioid`, `editor`, `copyright`) |

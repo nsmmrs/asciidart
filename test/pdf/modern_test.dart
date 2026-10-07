@@ -2172,18 +2172,17 @@ base:
       expect(_pages(house).first.join(' '), contains('SMALL CAPS'));
     });
 
-    test('AsciiMath is typeset, LaTeX math shown as source says so', () {
+    test('AsciiMath and LaTeX math are typeset', () {
       final logger = MemoryLogger();
       final pdf = _pdf(
         ':stem:\n\nInline stem:[x^2] and stem:[y].\n\n[stem]\n++++\n'
-        'sum_(i=1)^n i\n++++\n\nAnd latexmath:[z].\n',
+        'sum_(i=1)^n i\n++++\n\nAnd latexmath:[\\frac{a}{b}].\n\n'
+        '[latexmath]\n++++\n\\sqrt{2}\n++++\n',
         logger: logger,
       );
       expect(
-        logger.messages
-            .map((m) => m.message.text)
-            .where((m) => m.startsWith('math')),
-        ['math is shown as its source in the PDF (not typeset yet)'],
+        logger.messages.where((m) => m.severity.index >= Severity.warn.index),
+        isEmpty,
       );
       // Set in the math font, copied as their source.
       final fonts = Process.runSync('pdffonts', [pdf]).stdout as String;
@@ -2191,6 +2190,19 @@ base:
       final text = _pages(pdf).first.join(' ');
       expect(text, contains('x^2'));
       expect(text, contains('sum_(i=1)^n i'));
+      expect(text, contains(r'\frac{a}{b}'));
+      expect(text, contains(r'\sqrt{2}'));
+    });
+
+    test('an unknown LaTeX command is shown and reported', () {
+      final logger = MemoryLogger();
+      _pdf(':stem: latexmath\n\nstem:[\\foo x]\n', logger: logger);
+      expect(
+        logger.messages
+            .where((m) => m.severity == Severity.warn)
+            .map((m) => m.message.text),
+        [r'unknown LaTeX math command \foo, shown as written: \foo x'],
+      );
     });
 
     test('inline math stands on the baseline, its depth below', () {

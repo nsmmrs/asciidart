@@ -22,6 +22,7 @@ import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/math/asciimath.dart';
+import 'package:asciidart/src/math/latex.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/page_map.dart';
 import 'package:asciidart/src/pdf/assets.g.dart';
@@ -5845,9 +5846,11 @@ final class PdfConverter extends BuiltInConverter
   /// source in a code block (the gem's `convert_stem` without a math
   /// renderer).
   void convertStem(Block node) {
-    if (node.style == 'asciimath' || node.attr('style') == 'asciimath') {
+    final style = node.style ?? node.attr('style');
+    if (style == 'asciimath' || style == 'latexmath') {
       final source = _unescapeXml(node.content() ?? '');
-      if (_mathOf(source) case final formula?) {
+      final latex = style == 'latexmath';
+      if (_mathOf(source, latex: latex, display: true) case final formula?) {
         if (node.hasTitle) _caption(node, category: 'code');
         final box = _math!.layout(
           formula,
@@ -5938,25 +5941,56 @@ final class PdfConverter extends BuiltInConverter
     );
   }();
 
-  /// The formula of the AsciiMath [source] (its MathML), or null when it
-  /// can't be set (no math font, or MathML the layout can't read).
-  MathNode? _mathOf(String source) {
+  /// The formula of the AsciiMath (or with [latex], LaTeX) [source] (its
+  /// MathML), or null when it can't be set (no math font, or MathML the
+  /// layout can't read). A LaTeX command it doesn't know is reported.
+  MathNode? _mathOf(String source, {bool latex = false, bool display = false}) {
     if (_math == null) return null;
+    final unknown = <String>{};
     try {
-      return parseMathML(asciimathToMathml(source));
+      final mathml = latex
+          ? latexToMathml(_stripDelimiters(source), unknown: unknown)
+          : asciimathToMathml(source);
+      if (unknown.isNotEmpty) {
+        logger.warn(
+          'unknown LaTeX math command${unknown.length == 1 ? '' : 's'} '
+          '${unknown.join(', ')}, shown as written: $source',
+        );
+      }
+      return parseMathML(mathml);
     } on MathMLException catch (error) {
       logger.warn('could not typeset math: $source ($error)');
       return null;
     }
   }
 
+  /// LaTeX math without the `\(...\)`, `\[...\]` or `$...$` around it
+  /// (Asciidoctor keeps them in `latexmath` content).
+  static String _stripDelimiters(String source) {
+    final text = source.trim();
+    for (final (open, close) in const [
+      (r'\(', r'\)'),
+      (r'\[', r'\]'),
+      (r'$$', r'$$'),
+      (r'$', r'$'),
+    ]) {
+      if (text.length >= open.length + close.length &&
+          text.startsWith(open) &&
+          text.endsWith(close)) {
+        return text.substring(open.length, text.length - close.length);
+      }
+    }
+    return text;
+  }
+
   var _mathCount = 0;
 
-  /// The image markup of the inline AsciiMath [text] (escaped as the
-  /// text is), its formula registered as an inline graphic, or null.
-  String? _inlineMath(String text) {
+  /// The image markup of the inline AsciiMath (or with [latex], LaTeX)
+  /// [text] (escaped as the text is), its formula registered as an inline
+  /// graphic, or null.
+  String? _inlineMath(String text, {bool latex = false}) {
     final source = _unescapeXml(text);
-    final formula = _mathOf(source);
+    final formula = _mathOf(source, latex: latex);
     if (formula == null) return null;
     final src = 'math:${_mathCount++}';
     _inlineGraphics[src] = InlineMath(formula, _math!, source: source);
@@ -9420,8 +9454,11 @@ final class PdfConverter extends BuiltInConverter
       ThemeList(:final values) => [for (final v in values) v.rubyString],
       _ => const ['&#8220;', '&#8221;', '&#8216;', '&#8217;'],
     };
-    if (node.type == 'asciimath') {
-      if (_inlineMath(node.text ?? '') case final image?) return image;
+    if (node.type == 'asciimath' || node.type == 'latexmath') {
+      final latex = node.type == 'latexmath';
+      if (_inlineMath(node.text ?? '', latex: latex) case final image?) {
+        return image;
+      }
     }
     switch (node.type) {
       case 'emphasis':

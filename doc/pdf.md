@@ -213,9 +213,17 @@ layout in a font with an OpenType `MATH` table, by its rules (scripts,
 fractions, radicals, limits, accents, delimiters that grow with what they
 enclose, larger operators in display style). Inline formulas stand on the
 baseline at the text's size, in its color; a block is in display style.
-Copied, a formula gives its AsciiMath source. LaTeX math
-(`latexmath:[]`) is shown as its source, with a warning, until it is
-typeset too.
+Copied, a formula gives its source.
+
+LaTeX math (`latexmath:[]`, `:stem: latexmath`) is typeset the same way,
+converted to MathML by asciidart: math mode as documents use it (KaTeX's
+and MathJax's common commands: `\frac`, `\sqrt[n]`, `\left`...`\right`,
+scripts and limits, Greek and symbols, function names and
+`\operatorname`, accents and braces, `\text` and the `\math...`
+alphabets, `\color`, `\boxed`, spaces, the `matrix` environments,
+`cases`, `array`, `aligned`). A command it doesn't know is shown as
+written, and reported. Parentheses written plainly keep their size, as in
+TeX; `\left` and `\right` grow them.
 
 | Key | Default | What it does |
 | --- | --- | --- |

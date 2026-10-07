@@ -91,7 +91,7 @@ Asciidoctor project.
   `manpage`, `pdf`): an attribute, the `ASCIIDART_COMPAT` environment
   variable, `compat:` in a project's `asciidart.yml` or in
   `~/.config/asciidart/config.yml`.
-- Math in the PDF: AsciiMath is typeset (ADR-0014), inline at the
+- Math in the PDF: AsciiMath and LaTeX math are typeset (ADR-0014), inline at the
   text's size and in display style in STEM blocks, by libpdf's math layout
   (the OpenType MATH table's rules) in the bundled Noto Sans Math or the
   theme's `math_font_family`; copied, a formula gives its source.
