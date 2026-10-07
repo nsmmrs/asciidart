@@ -25,8 +25,16 @@ String concat(List<String> args) => args.join();
 String either(List<String> args, {bool capture = false}) =>
     '(${capture ? '' : '?:'}${args.join('|')})';
 
-/// The number of capture groups in [re].
-int countMatchGroups(String re) => RegExp('$re|').firstMatch('')!.groupCount;
+/// The number of capture groups in [re] (counted as
+/// [rewriteBackreferences] counts them, without compiling [re]).
+int countMatchGroups(String re) {
+  var count = 0;
+  for (final match in _backrefRe.allMatches(re)) {
+    final whole = match[0]!;
+    if (whole == '(' || _namedGroupStart.hasMatch(whole)) count++;
+  }
+  return count;
+}
 
 /// Whether [lexeme] starts with a match of [re].
 bool startsWith(RegExp? re, String lexeme) =>
@@ -63,16 +71,13 @@ String rewriteBackreferences(List<String> regexps, {required String joinWith}) {
       .map((regex) {
         numCaptures += 1;
         final offset = numCaptures;
-        var re = regex;
         final out = StringBuffer();
-        while (re.isNotEmpty) {
-          final match = _backrefRe.firstMatch(re);
-          if (match == null) {
-            out.write(re);
-            break;
-          }
-          out.write(re.substring(0, match.start));
-          re = re.substring(match.end);
+        var from = 0;
+        // (The tokens in order, as matching the rest each time finds
+        // them: the pattern has no anchors and matches no empty string.)
+        for (final match in _backrefRe.allMatches(regex)) {
+          out.write(regex.substring(from, match.start));
+          from = match.end;
           final whole = match[0]!;
           final backref = match[1];
           if (whole.startsWith(r'\') && backref != null) {
@@ -85,6 +90,7 @@ String rewriteBackreferences(List<String> regexps, {required String joinWith}) {
             }
           }
         }
+        out.write(regex.substring(from));
         return '($out)';
       })
       .join(joinWith);

@@ -8,7 +8,7 @@ library;
 /// `i` + U+0307, and a capital sigma at the end of a word becomes `ς`.
 String jsLowerCase(String text) {
   final lower = text.toLowerCase();
-  if (!text.contains(_special)) return lower;
+  if (!_hasSpecial(text)) return lower;
   final out = StringBuffer();
   final runes = text.runes.toList();
   for (var i = 0; i < runes.length; i++) {
@@ -24,7 +24,15 @@ String jsLowerCase(String text) {
   return out.toString();
 }
 
-final RegExp _special = RegExp('[\u0130\u03a3]');
+/// Whether [text] has a capital I with a dot above or a capital sigma,
+/// which JavaScript lower-cases differently.
+bool _hasSpecial(String text) {
+  for (var i = 0; i < text.length; i++) {
+    final unit = text.codeUnitAt(i);
+    if (unit == 0x130 || unit == 0x3a3) return true;
+  }
+  return false;
+}
 final RegExp _cased = RegExp(r'^\p{Cased}$', unicode: true);
 final RegExp _caseIgnorable = RegExp(r'^\p{Case_Ignorable}$', unicode: true);
 
