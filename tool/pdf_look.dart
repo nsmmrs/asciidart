@@ -29,6 +29,8 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'vendored_fonts.dart';
+
 /// A gray page image.
 final class Gray {
   const new(this.width, this.height, this.pixels);
@@ -174,7 +176,11 @@ Future<String?> _run(
   final result = await Process.run(
     executable,
     args,
-    environment: {'SOURCE_DATE_EPOCH': '0', 'TZ': 'UTC', ...env},
+    environment: withVendoredFonts({
+      'SOURCE_DATE_EPOCH': '0',
+      'TZ': 'UTC',
+      ...env,
+    }),
   );
   if (result.exitCode != 0) {
     return '$executable failed (${result.exitCode}): '

@@ -22,6 +22,8 @@ library;
 
 import 'dart:io';
 
+import 'vendored_fonts.dart';
+
 /// A document to convert: a name, its directory, its arguments.
 typedef Doc = ({String name, String dir, List<String> args});
 
@@ -96,10 +98,10 @@ Future<void> main(List<String> args) async {
             exe,
             ['-b', backend, '-a', 'jobs=$n', '-o', target, ...doc.args],
             workingDirectory: doc.dir,
-            environment: {
+            environment: withVendoredFonts({
               'SOURCE_DATE_EPOCH': '0',
               if (shuffled) 'ASCIIDART_JOBS_SHUFFLE': '1',
-            },
+            }),
           );
           times.add(watch.elapsedMicroseconds / 1e6);
           final file = File(target);

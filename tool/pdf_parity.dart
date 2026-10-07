@@ -36,6 +36,8 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'vendored_fonts.dart';
+
 /// A word on a page: its text and box (points, y down from the top).
 typedef Word = ({
   int page,
@@ -540,7 +542,7 @@ void main(List<String> args) {
       for (final (n, input) in inputs.indexed) {
         final a = '${scratch.path}/$n-a.pdf';
         final b = '${scratch.path}/$n-b.pdf';
-        final env = {'SOURCE_DATE_EPOCH': '0', 'TZ': 'UTC'};
+        final env = withVendoredFonts({'SOURCE_DATE_EPOCH': '0', 'TZ': 'UTC'});
         for (final (exe, target, backend) in [
           (exeA, a, <String>[]),
           (exeB, b, ['-b', 'pdf']),

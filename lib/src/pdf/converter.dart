@@ -26,7 +26,6 @@ import 'package:asciidart/src/math/latex.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/page_map.dart';
 import 'package:asciidart/src/parallel.dart';
-import 'package:asciidart/src/pdf/assets.g.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/highlight_style.dart';
 import 'package:asciidart/src/pdf/hyphenate.dart';
@@ -330,6 +329,7 @@ final class PdfConverter extends BuiltInConverter
           ?.replaceAll('{docdir}', document.attr('docdir') ?? ''),
       shaping: _shaping,
       synthesizeFaces: true,
+      warn: logger.warn,
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
     final (_, pageHeight) = _pageSize(document);
@@ -5803,8 +5803,24 @@ final class PdfConverter extends BuiltInConverter
     }
     name ??= _admonitionIcons['note']!.$1;
     final (set, _, glyph) = _resolveIcon(name, null);
-    if (glyph == null) return null;
+    if (glyph == null || !_iconsInstalled(set)) return null;
     return (set: set, glyph: glyph, color: color, size: size);
+  }
+
+  /// The icon sets whose font was found missing (said once each).
+  final Set<String> _missingIcons = {};
+
+  /// Whether the font of icon set [set] is installed; when it isn't, says
+  /// so once (its icons are then shown as their text).
+  bool _iconsInstalled(String set) {
+    if (_fonts.hasIcons(set)) return true;
+    if (_missingIcons.add(set)) {
+      logger.warn(
+        'the $set icon font is not installed: its icons are shown as text '
+        '(`asciidart doctor` installs it)',
+      );
+    }
+    return false;
   }
 
   /// The set, name and glyph of icon [name] (`<set>-<name>`, a name of
@@ -6045,7 +6061,7 @@ final class PdfConverter extends BuiltInConverter
   bool _warnedMath = false;
 
   /// The math layout: in the theme's `math_font_family` (a font with an
-  /// OpenType `MATH` table), else Noto Sans Math (bundled); a character
+  /// OpenType `MATH` table), else Noto Sans Math (installed); a character
   /// the font lacks in the base font. Null when no math font loads.
   late final MathLayout? _math = () {
     EmbeddedFont? fontOf(String family) {
@@ -6069,11 +6085,19 @@ final class PdfConverter extends BuiltInConverter
         'table; using Noto Sans Math',
       );
     }
-    font ??= switch (PdfAssets.bytes('data/fonts/notosansmath-regular.ttf')) {
-      final bytes? => EmbeddedFont.parse(bytes),
-      null => null,
-    };
-    if (font == null) return null;
+    font ??= _fonts.hasFamily('Noto Sans Math')
+        ? fontOf('Noto Sans Math')
+        : null;
+    if (font == null) {
+      if (!_warnedMath) {
+        _warnedMath = true;
+        logger.warn(
+          'math is shown as its source in the PDF: no math font is '
+          'installed (`asciidart doctor` installs Noto Sans Math)',
+        );
+      }
+      return null;
+    }
     final base = _fonts.font(_font.family, _font.style).pdf;
     return MathLayout(
       font,
@@ -6197,7 +6221,7 @@ final class PdfConverter extends BuiltInConverter
       }
       return;
     }
-    final play = doc.attr('icons') == 'font'
+    final play = doc.attr('icons') == 'font' && _iconsInstalled('fas')
         ? '<font name="fas">${iconGlyph('fas', 'play') ?? ''}</font>'
         : '►';
     _out.add(
@@ -8481,7 +8505,7 @@ final class PdfConverter extends BuiltInConverter
       if (node.document case final Document doc) {
         _document = doc;
         _theme = _prepareTheme(_loadTheme(doc));
-        _fonts = FontCatalog(_theme, shaping: _shaping);
+        _fonts = FontCatalog(_theme, shaping: _shaping, warn: logger.warn);
         _markup = MarkupTransform(
           theme: _theme,
           invertEmphasis: _invertEmphasis,
@@ -9245,6 +9269,7 @@ final class PdfConverter extends BuiltInConverter
       );
       return '[$alt&#93;';
     }
+    if (!_iconsInstalled(resolvedSet)) return '[$alt&#93;';
     final size = switch (node.attr('size')) {
       null => '',
       'lg' => ' size="1.333em"',

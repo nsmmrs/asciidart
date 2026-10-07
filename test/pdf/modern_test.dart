@@ -12,6 +12,8 @@ import 'package:asciidart/src/internal.dart';
 import 'package:asciidart/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
+import '../vendored_fonts.dart';
+
 bool _has(String tool) => Process.runSync('which', [tool]).exitCode == 0;
 
 /// Poppler's pdftotext (Git for Windows ships xpdf's, whose text and
@@ -108,6 +110,7 @@ const _paragraph =
     'introduced the term representational state transfer, or REST.';
 
 void main() {
+  setUpAll(useVendoredFonts);
   setUpAll(() {
     registerPdf();
     _dir = Directory.systemTemp.createTempSync('asciidart-modern.');

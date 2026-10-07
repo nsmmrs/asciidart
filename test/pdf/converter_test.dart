@@ -18,6 +18,8 @@ import 'package:test/test.dart';
 import '../../tool/pdf_look.dart' show pageDifferences;
 import '../../tool/pdf_parity.dart';
 
+import '../vendored_fonts.dart';
+
 bool _has(String tool) => Process.runSync('which', [tool]).exitCode == 0;
 
 /// The tools, with Poppler's pdftotext (Git for Windows ships xpdf's).
@@ -26,6 +28,7 @@ final bool _tools =
     '${Process.runSync('pdftotext', ['-v']).stderr}'.contains('Poppler');
 
 void main() {
+  setUpAll(useVendoredFonts);
   setUpAll(registerPdf);
 
   /// What differs, by fixture, beyond the 0.5% a page may: the largest

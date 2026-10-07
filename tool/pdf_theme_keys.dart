@@ -16,7 +16,10 @@ import 'package:asciidart/src/internal.dart';
 import 'package:asciidart/src/pdf/pdf.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 
+import 'vendored_fonts.dart';
+
 void main(List<String> args) {
+  useVendoredFonts();
   if (args.length != 2) {
     stderr.writeln('usage: pdf_theme_keys.dart THEME_DOCS_DIR CORPUS_DIR');
     exitCode = 64;

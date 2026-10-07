@@ -10,6 +10,8 @@ import 'package:asciidart/src/internal.dart';
 import 'package:asciidart/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
+import '../vendored_fonts.dart';
+
 /// A [width] by [height] RGBA PNG, its colors and alpha varying.
 Uint8List _png(int width, int height, {int seed = 0}) {
   final raw = BytesBuilder();
@@ -52,6 +54,7 @@ int _crc(List<int> bytes) {
 }
 
 void main() {
+  setUpAll(useVendoredFonts);
   setUpAll(registerPdf);
 
   test('images encoded on workers make the serial bytes', () async {

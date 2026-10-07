@@ -13,6 +13,8 @@ import 'package:asciidart/src/multipage.dart';
 import 'package:asciidart/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
+import 'vendored_fonts.dart';
+
 const _source = '''
 = Cond
 :doctype: book
@@ -68,6 +70,7 @@ Set<String> _markers(String backend) {
 }
 
 void main() {
+  setUpAll(useVendoredFonts);
   setUpAll(() {
     registerPdf();
     registerEpub3();

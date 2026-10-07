@@ -10,8 +10,15 @@ import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:test/test.dart';
 
+import '../vendored_fonts.dart';
+
 void main() {
-  final catalog = FontCatalog(ThemeLoader().load());
+  final warnings = <String>[];
+  late FontCatalog catalog;
+  setUpAll(() {
+    useVendoredFonts();
+    catalog = FontCatalog(ThemeLoader().load(), warn: warnings.add);
+  });
   double round(double v) => (v * 1e6).roundToDouble() / 1e6;
 
   test('ascender, descender, line gap and height', () {
@@ -99,7 +106,18 @@ void main() {
   });
 
   test('icon fonts and unknown families', () {
+    expect(catalog.hasIcons('fas'), isTrue);
     expect(catalog.font('fas').hasGlyph(0xf015), isTrue);
-    expect(() => catalog.font('Nope'), throwsA(isA<FontException>()));
+    // A family that isn't installed: a built-in font, said once.
+    expect(catalog.font('Nope'), isA<AfmFont>());
+    catalog.font('Nope');
+    expect(warnings, hasLength(1));
+    expect(
+      warnings.single,
+      'font family Nope is not installed: using Helvetica for Nope (normal); '
+      "`asciidart doctor` installs the default themes' fonts",
+    );
+    expect(catalog.font('Some Serif', 'bold'), isA<AfmFont>());
+    expect(warnings.last, contains('using Times-Bold'));
   });
 }

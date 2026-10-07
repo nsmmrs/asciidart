@@ -18,19 +18,28 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:asciidart/src/font_index.dart';
 import 'package:asciidart/src/internal.dart';
 import 'package:asciidart/src/pdf/pdf.dart';
 import 'package:libpdf/libpdf.dart';
 
+import 'vendored_fonts.dart';
+
 final String _home = Platform.environment['HOME'] ?? '';
 final String _port = '$_home/Work/ports/hypermedia-systems-asciidart';
 final String _fonts = '$_home/.cache/asciidart-work/hs-golden/fonts';
+
+/// The vendored fonts' folders, separated as `PATH` is.
+String _fontPath = '';
 
 /// A worker's report: milliseconds to the end of the walk and in all, the
 /// pages it laid out and its peak resident memory in MB.
 typedef Report = ({int walk, int total, int pages, int rss});
 
 Future<void> main(List<String> args) async {
+  // (The vendored fonts, found from the repository, before moving to the
+  // book's folder.)
+  _fontPath = withVendoredFonts()['ASCIIDART_FONT_PATH']!;
   Directory.current = _port;
   if (args case ['worker', final index, final count]) {
     final report = work(int.parse(index), int.parse(count));
@@ -80,9 +89,11 @@ Future<void> main(List<String> args) async {
 /// [count] workers as isolates: the wall time, the process's peak memory
 /// and the slowest walk.
 Future<(int, int, int)> _isolates(int count) async {
+  // (Isolates start with their own globals: the font path goes along.)
+  final fontPath = _fontPath;
   final watch = Stopwatch()..start();
   final reports = await Future.wait([
-    for (var i = 0; i < count; i++) Isolate.run(() => work(i, count)),
+    for (var i = 0; i < count; i++) Isolate.run(() => work(i, count, fontPath)),
   ]);
   return (
     watch.elapsedMilliseconds,
@@ -97,7 +108,11 @@ Future<(int, int, int)> _processes(int count) async {
   final watch = Stopwatch()..start();
   final results = await Future.wait([
     for (var i = 0; i < count; i++)
-      Process.run(Platform.resolvedExecutable, ['worker', '$i', '$count']),
+      Process.run(
+        Platform.resolvedExecutable,
+        ['worker', '$i', '$count'],
+        environment: {'ASCIIDART_FONT_PATH': _fontPath},
+      ),
   ]);
   final reports = [
     for (final result in results)
@@ -120,8 +135,12 @@ Future<(int, int, int)> _processes(int count) async {
 
 /// Worker [index] of [count]: loads and walks the book, then lays out
 /// every [count]th chunk from [index].
-Report work(int index, int count) {
+Report work(int index, int count, [String? fontPath]) {
   final watch = Stopwatch()..start();
+  final path = fontPath ?? _fontPath;
+  FontIndex.extraDirectories = path.isEmpty
+      ? FontIndex.fontPath
+      : path.split(Platform.isWindows ? ';' : ':');
   registerPdf();
   FlowLayout? flow;
   var content = const <LayoutBox>[];

@@ -14,7 +14,10 @@ import 'package:test/test.dart';
 
 import 'epub3_test.dart' show unzipText;
 
+import 'vendored_fonts.dart';
+
 void main() {
+  setUpAll(useVendoredFonts);
   setUpAll(registerEpub3);
   setUpAll(MultipageHtml5Converter.register);
   setUpAll(registerPdf);

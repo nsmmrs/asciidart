@@ -5,9 +5,9 @@
 /// standard families and the icon fonts.
 library;
 
+import 'package:asciidart/src/font_index.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/path_resolver.dart';
-import 'package:asciidart/src/pdf/assets.g.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:libpdf/libpdf.dart';
 
@@ -292,13 +292,44 @@ const Map<String, Map<String, String>> _builtInFamilies = {
   'ZapfDingbats': {'normal': 'ZapfDingbats'},
 };
 
-/// The icon font families (prawn-icon's sets) and their files.
-const Map<String, String> iconFontFiles = {
-  'fas': 'icons/fas/fa-solid.ttf',
-  'far': 'icons/far/fa-regular.ttf',
-  'fab': 'icons/fab/fa-brands.ttf',
-  'fi': 'icons/fi/foundation-icons.ttf',
-  'pf': 'icons/pf/paymentfont-webfont.ttf',
+/// The icon font families (prawn-icon's sets): their files' names (the
+/// gem's, then the project's own) and the family the font names itself,
+/// bold for Font Awesome's solid style.
+const Map<String, ({List<String> files, String family, bool bold})> iconFonts =
+    {
+      'fas': (
+        files: ['fa-solid.ttf', 'fa-solid-900.ttf'],
+        family: 'Font Awesome 5 Free',
+        bold: true,
+      ),
+      'far': (
+        files: ['fa-regular.ttf', 'fa-regular-400.ttf'],
+        family: 'Font Awesome 5 Free',
+        bold: false,
+      ),
+      'fab': (
+        files: ['fa-brands.ttf', 'fa-brands-400.ttf'],
+        family: 'Font Awesome 5 Brands',
+        bold: false,
+      ),
+      'fi': (
+        files: ['foundation-icons.ttf'],
+        family: 'fontcustom',
+        bold: false,
+      ),
+      'pf': (
+        files: ['paymentfont-webfont.ttf'],
+        family: 'paymentfont-webfont',
+        bold: false,
+      ),
+    };
+
+/// Families the default themes name whose fonts are published today under
+/// another name (M+ 1mn's successor is M PLUS 1 Code).
+const Map<String, List<String>> _familyAliases = {
+  'm+ 1mn': ['M PLUS 1 Code'],
+  'm+ 1p': ['M PLUS 1p'],
+  'm+ 1p fallback': ['M+ 1p', 'M PLUS 1p'],
 };
 
 /// A font file that couldn't be found or read.
@@ -317,15 +348,23 @@ final class FontException implements Exception {
 /// families and the icon fonts, loaded (and subset) once each.
 final class FontCatalog {
   /// The catalog of [theme], its font files looked up in [fontsDir] (a
-  /// list separated by `;` or `,`, `GEM_FONTS_DIR` naming the bundled
-  /// fonts; by default the theme's directory, then the bundled fonts),
-  /// text in them shaped by [shaping].
+  /// list separated by `;` or `,`, `GEM_FONTS_DIR` naming the default
+  /// fonts wherever they are installed; by default the theme's directory,
+  /// then the installed fonts), text in them shaped by [shaping]. A font
+  /// that can't be found is looked up among the [installed] fonts by its
+  /// file's name, then by its family; one that isn't installed either is
+  /// replaced by a built-in PDF font (Times, Helvetica or Courier), with a
+  /// message to [warn].
   new(
     Theme theme, {
     String? fontsDir,
     this.shaping = Shaping.opentype,
     this.synthesizeFaces = false,
-  }) : _catalog = theme.fontCatalog?.families ?? const {},
+    FontIndex? installed,
+    void Function(String message)? warn,
+  }) : _installed = installed ?? FontIndex.installed,
+       _warn = warn ?? _ignore,
+       _catalog = theme.fontCatalog?.families ?? const {},
        _dirs = [
          for (final dir
              in (fontsDir ??
@@ -345,14 +384,24 @@ final class FontCatalog {
 
   final Map<String, Map<String, String>> _catalog;
   final List<String> _dirs;
+  final FontIndex _installed;
+  final void Function(String message) _warn;
+  final Set<String> _warned = {};
+
+  static void _ignore(String message) {}
   final Map<(String, String), FontFace> _fonts = {};
   static final Map<String, List<int>> _files = {};
 
-  /// Whether [family] is known.
+  /// Whether [family] is known (in the catalog, built in, an icon set or
+  /// installed).
   bool hasFamily(String family) =>
       _catalog.containsKey(family) ||
       _builtInFamilies.containsKey(family) ||
-      iconFontFiles.containsKey(family);
+      iconFonts.containsKey(family) ||
+      _installed.hasFamily(family);
+
+  /// Whether the font of icon set [set] (`fas`, `fi`...) is installed.
+  bool hasIcons(String set) => _iconFile(set) != null;
 
   /// The font of [family] in [style]; throws [FontException] for a family
   /// or style the catalog lacks.
@@ -405,8 +454,11 @@ final class FontCatalog {
   Iterable<FontFace> get loaded => _fonts.values;
 
   FontFace _load(String family, String style) {
-    if (iconFontFiles[family] case final path?) {
-      return TrueTypeFont(family, 'normal', _embedded(_bundled(path)), shaping);
+    if (iconFonts.containsKey(family)) {
+      final path =
+          _iconFile(family) ??
+          (throw FontException('the $family icon font is not installed'));
+      return TrueTypeFont(family, 'normal', _parse(path), shaping);
     }
     if (_catalog[family] case final styles?) {
       final path = styles[style];
@@ -427,41 +479,111 @@ final class FontCatalog {
           'font style $style not found for font family $family',
         );
       }
-      return TrueTypeFont(family, style, _embedded(_file(path)), shaping);
+      if (_file(path) case final file?) {
+        return TrueTypeFont(family, style, _parse(file), shaping);
+      }
+      return _installedFace(family, style) ??
+          _fallback(
+            family,
+            style,
+            path.startsWith('GEM_FONTS_DIR/')
+                ? 'font family $family is not installed'
+                : '$path not found',
+          );
     }
     if (_builtInFamilies[family] case final styles?) {
       final name = styles[style] ?? styles['normal']!;
       return AfmFont(family, style, StandardFont.named(name), shaping);
     }
-    throw FontException('font family $family not found');
+    return _installedFace(family, style) ??
+        _fallback(family, style, 'font family $family is not installed');
   }
 
-  /// The font in [bytes].
-  EmbeddedFont _embedded(List<int> bytes) => EmbeddedFont.parse(bytes);
-
-  List<int> _bundled(String path) => _files[path] ??=
-      PdfAssets.bytes(path) ?? (throw FontException('$path not found'));
-
-  List<int> _file(String path) {
-    if (path.startsWith('GEM_FONTS_DIR/')) {
-      return _bundled('data/fonts/${path.substring(14)}');
+  /// The face of [family] in [style] among the installed fonts (by the
+  /// family or one of its aliases), made from the nearest style the
+  /// family has when the catalog allows it.
+  FontFace? _installedFace(String family, String style) {
+    final bold = style == 'bold' || style == 'bold_italic';
+    final italic = style == 'italic' || style == 'bold_italic';
+    for (final name in [family, ...?_familyAliases[family.toLowerCase()]]) {
+      final found = _installed.find(name, bold: bold, italic: italic);
+      if (found == null) continue;
+      final face = TrueTypeFont(
+        family,
+        found.bold == bold && found.italic == italic ? style : _styleOf(found),
+        _parse(found.path, index: found.index),
+        shaping,
+      );
+      if (face.style == style || !synthesizeFaces) return face;
+      return TrueTypeFont.synthetic(face, style);
     }
-    for (final dir in _dirs) {
-      if (dir == 'GEM_FONTS_DIR') {
-        final bundled = PdfAssets.bytes('data/fonts/$path');
-        if (bundled != null) return _files[path] ??= bundled;
-        continue;
-      }
-      final resolved = PathResolver().systemPath(path, start: dir);
-      if (io.isFile(resolved)) {
-        return _files[resolved] ??= io.readBytes(resolved);
+    return null;
+  }
+
+  static String _styleOf(InstalledFont font) =>
+      switch ((font.bold, font.italic)) {
+        (true, true) => 'bold_italic',
+        (true, false) => 'bold',
+        (false, true) => 'italic',
+        (false, false) => 'normal',
+      };
+
+  /// A built-in PDF font in place of [family] (Courier for a monospace
+  /// family, Times for a serif one, else Helvetica), said once per family
+  /// and style.
+  FontFace _fallback(String family, String style, String why) {
+    final lower = family.toLowerCase();
+    final builtIn = RegExp('mono|code|1mn|courier|consol').hasMatch(lower)
+        ? 'Courier'
+        : RegExp('serif|times').hasMatch(lower) && !lower.contains('sans')
+        ? 'Times-Roman'
+        : 'Helvetica';
+    final styles = _builtInFamilies[builtIn]!;
+    final name = styles[style] ?? styles['normal']!;
+    if (_warned.add('$family/$style')) {
+      _warn(
+        '$why: using $name for $family ($style); `asciidart doctor` installs '
+        "the default themes' fonts",
+      );
+    }
+    return AfmFont(family, style, StandardFont.named(name), shaping);
+  }
+
+  /// The installed file of icon set [set], by its names, then its family.
+  String? _iconFile(String set) {
+    final icons = iconFonts[set];
+    if (icons == null) return null;
+    for (final name in icons.files) {
+      if (_installed.fileNamed(name) case final path?) return path;
+    }
+    return _installed.find(icons.family, bold: icons.bold)?.path;
+  }
+
+  /// The font in the file at [path] ([index] in a collection).
+  EmbeddedFont _parse(String path, {int index = 0}) =>
+      EmbeddedFont.parse(_bytes(path), index: index);
+
+  List<int> _bytes(String path) => _files[path] ??= io.readBytes(path);
+
+  /// The file a catalog [path] names: in the font folders given (the
+  /// theme's), else installed under the same name; null when there is
+  /// none. `GEM_FONTS_DIR/` names the default fonts, wherever installed.
+  String? _file(String path) {
+    final gem = path.startsWith('GEM_FONTS_DIR/');
+    final name = _baseName(gem ? path.substring(14) : path);
+    if (!gem) {
+      for (final dir in _dirs) {
+        if (dir == 'GEM_FONTS_DIR') continue;
+        final resolved = PathResolver().systemPath(path, start: dir);
+        if (io.isFile(resolved)) return resolved;
       }
     }
-    throw FontException(
-      PathResolver().isAbsolutePath(path)
-          ? '$path not found'
-          : '$path not found in ${_dirs.join(' or ')}',
-    );
+    return _installed.fileNamed(name);
+  }
+
+  static String _baseName(String path) {
+    final slash = path.lastIndexOf(RegExp(r'[/\\]'));
+    return slash < 0 ? path : path.substring(slash + 1);
   }
 }
 
