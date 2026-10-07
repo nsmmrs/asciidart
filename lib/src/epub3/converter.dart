@@ -16,6 +16,7 @@ import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/callout_links.dart';
+import 'package:asciidart/src/compat.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/data.g.dart';
 import 'package:asciidart/src/document.dart';
@@ -1870,7 +1871,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
       // asciidoctor-epub3's stylesheet, then asciidart's house rules
       // (ADR-0011), unless the document asks for asciidoctor-epub3's alone
       // (`epub3-stylesheet=asciidoctor-epub3`).
-      final classic = doc.attr('epub3-stylesheet') == 'asciidoctor-epub3';
+      final classic =
+          doc.attr('epub3-stylesheet') == 'asciidoctor-epub3' ||
+          asciidoctorCompat(doc, CompatFormat.epub);
       for (final name in ['epub3', 'epub3-css3-only']) {
         final css = _asset('styles/$name.css');
         book

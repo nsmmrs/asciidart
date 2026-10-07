@@ -2178,6 +2178,15 @@ base:
         fonts(convert(const {'pdf-theme': 'default'})),
         isNot(contains('NotoSans')),
       );
+      // asciidoctor-compat names asciidoctor-pdf's theme (ADR-0015).
+      expect(
+        fonts(convert(const {'asciidoctor-compat': 'pdf'})),
+        isNot(contains('NotoSans')),
+      );
+      expect(
+        fonts(convert(const {'asciidoctor-compat': 'html'})),
+        contains('NotoSans'),
+      );
       // The small-caps role (Noto Serif's subset has no smcp: smaller
       // capitals).
       expect(_pages(house).first.join(' '), contains('SMALL CAPS'));

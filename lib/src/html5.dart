@@ -18,6 +18,7 @@ import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/block.dart';
 import 'package:asciidart/src/callout_links.dart';
+import 'package:asciidart/src/compat.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/helpers.dart';
@@ -358,7 +359,7 @@ class Html5Converter extends BuiltInConverter {
     );
 
     late final stylesdir = node.attr('stylesdir');
-    final stylesheetKey = node.attr('stylesheet');
+    final stylesheetKey = htmlStylesheetKey(node);
     if (_defaultStylesheetKeys.contains(stylesheetKey) ||
         stylesheetKey == Stylesheets.classicStylesheetKey) {
       final webfonts = node.attr('webfonts');

@@ -85,6 +85,11 @@ Asciidoctor project.
   emphasis in literals, invalid image widths, an empty TOC title, links
   from a website's root): the Hypermedia Systems book validates against
   the DocBook 5.0 schema and passes EPUBCheck.
+- `asciidoctor-compat` (ADR-0015) keeps Asciidoctor's look while
+  migrating, for every format or a list (`html`, `epub`, `docbook`,
+  `manpage`, `pdf`): an attribute, the `ASCIIDART_COMPAT` environment
+  variable, `compat:` in a project's `asciidart.yml` or in
+  `~/.config/asciidart/config.yml`.
 - Old-style numerals and small capitals from the font's OpenType
   features (`base_font_variant_numeric: oldstyle-nums`,
   `role_<role>_font_variant: small-caps`), in the modern PDF engine.

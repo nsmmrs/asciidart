@@ -12,6 +12,7 @@ import 'package:asciidart/src/abstract_block.dart';
 import 'package:asciidart/src/abstract_node.dart';
 import 'package:asciidart/src/attribute_list.dart';
 import 'package:asciidart/src/block.dart';
+import 'package:asciidart/src/compat.dart';
 import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/document.dart';
@@ -2077,9 +2078,9 @@ final class PdfConverter extends BuiltInConverter
     final dir = document
         .attr('pdf-themesdir')
         ?.replaceAll('{docdir}', document.attr('docdir') ?? '');
-    // The modern engine's default is asciidart's house theme (ADR-0011);
-    // the compatibility mode's, asciidoctor-pdf's.
-    if (name == null && _engine == PdfEngine.modern) {
+    // The default is asciidart's house theme (ADR-0011); with
+    // asciidoctor-compat (ADR-0015), asciidoctor-pdf's.
+    if (name == null && !asciidoctorCompat(document, CompatFormat.pdf)) {
       name = 'asciidart';
     } else if (name == null &&
         (document.attr('media') ?? 'screen') != 'screen') {

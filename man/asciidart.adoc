@@ -135,6 +135,11 @@ Compile it with *dart compile exe* to get a custom *asciidart* with those conver
 *SOURCE_DATE_EPOCH*::
   When set to an integer number of seconds since the Unix epoch, it replaces the current time and the input files' modification times in the document's date attributes, for reproducible output.
 
+*ASCIIDART_COMPAT*::
+  The default of the *asciidoctor-compat* attribute: *true*, *false*, or a comma-separated list of formats (*html*, *epub*, *docbook*, *manpage*, *pdf*) whose output keeps Asciidoctor's look.
+  Without it, *compat:* in the nearest *asciidart.yml* in the input's directory or one above it, then in *$XDG_CONFIG_HOME/asciidart/config.yml* (*~/.config/asciidart/config.yml*), gives the default.
+  An *-a asciidoctor-compat* option or the document's own attribute entry wins.
+
 *ASCIIDART_MANPAGE_PATH*::
   The file *-h manpage* prints instead of the built-in manual page (plain or gzip-compressed).
 

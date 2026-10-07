@@ -8,10 +8,12 @@ Bringhurst's *The Elements of Typographic Style*, and, for code, notes and
 figures, the conventions of technical publishers' books. The markup is
 Asciidoctor's; only the PDF theme and the stylesheets change.
 
-The classic looks are a setting away: `-a stylesheet=asciidoctor` (HTML,
-website), `-a epub3-stylesheet=asciidoctor-epub3` (EPUB), `-a
-pdf-theme=default` (PDF; `-a pdf-compat` for asciidoctor-pdf's layout
-too).
+The classic looks are one setting away: `asciidoctor-compat` (an
+attribute, `ASCIIDART_COMPAT`, or `compat:` in `asciidart.yml`; ADR-0015
+and `doc/books.md`), for every format or a list. Each format also has its
+own: `-a stylesheet=asciidoctor` (HTML, website), `-a
+epub3-stylesheet=asciidoctor-epub3` (EPUB), `-a pdf-theme=default` (PDF;
+`-a pdf-compat` for asciidoctor-pdf's layout too).
 
 ## Values
 

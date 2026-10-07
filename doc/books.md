@@ -201,13 +201,42 @@ The HTML is Asciidoctor's, element for element. Its look by default is
 asciidart's house style (`doc/style.md`, ADR-0011): Asciidoctor's
 stylesheet followed by a few rules (a measure of about 80 characters,
 near-black headings, tables with rows only), the same style as the PDF,
-the website and the EPUB. To keep Asciidoctor's look exactly:
+the website and the EPUB.
 
-```sh
-asciidart -a stylesheet=asciidoctor book.adoc          # HTML, the website
-asciidart -b epub3 -a epub3-stylesheet=asciidoctor-epub3 book.adoc
-asciidart -b pdf -a pdf-theme=default book.adoc        # or -a pdf-compat
+To keep Asciidoctor's look while migrating, turn on
+`asciidoctor-compat` (ADR-0015), for every format or a list of them:
+
+```yaml
+# asciidart.yml, in the project (the nearest one above the document)
+compat: true            # or: compat: [html, pdf]
 ```
+
+The same setting, from the first place that gives it:
+
+| Where | Example |
+| --- | --- |
+| The command line or the document | `-a asciidoctor-compat=html,pdf`, `:asciidoctor-compat:` |
+| The environment | `ASCIIDART_COMPAT=true` |
+| The project | `compat:` in `asciidart.yml`, in the document's directory or one above it |
+| The user | `compat:` in `~/.config/asciidart/config.yml` (`$XDG_CONFIG_HOME`) |
+
+The value is `true` (every format), `false`, or formats: `html` (HTML
+pages and the website), `epub`, `docbook`, `manpage`, `pdf`; backend
+names work too (`html5`, `epub3`...). A value from the environment or a
+file is a default: the document's own `:asciidoctor-compat:` (or
+`:asciidoctor-compat!:`) wins.
+
+| Format | With `asciidoctor-compat` |
+| --- | --- |
+| HTML, website | Asciidoctor's stylesheet alone |
+| EPUB | asciidoctor-epub3's stylesheet alone |
+| DocBook, man pages | no change: the output is Asciidoctor's already |
+| PDF | asciidoctor-pdf's default theme when the document names none |
+
+Bug fixes and repairs (valid XHTML in the EPUB, its landmarks, the
+index in every format) stay in every case. Each format's own setting
+still works alone: `-a stylesheet=asciidoctor`, `-a
+epub3-stylesheet=asciidoctor-epub3`, `-a pdf-theme=default`.
 
 ## From HTML and a browser (Paged.js)
 

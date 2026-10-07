@@ -50,6 +50,7 @@ library;
 import 'dart:convert';
 
 import 'package:asciidart/src/abstract_node.dart';
+import 'package:asciidart/src/cli/compat_config.dart';
 import 'package:asciidart/src/cli/help_topics.g.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/logging.dart';
@@ -556,6 +557,7 @@ final class CliOptions {
     }
 
     inputFiles = infiles;
+    _defaultCompat(infiles.firstOrNull ?? '-', env, errSink);
 
     if (attributes != null && attributes!.isEmpty) attributes = null;
 
@@ -888,6 +890,33 @@ final class CliOptions {
         return printVersion(outSink);
     }
     return null;
+  }
+
+  /// Sets `asciidoctor-compat` from the environment or a configuration
+  /// file (see [resolveCompat]) when the command line doesn't, as a
+  /// default the document may override (ADR-0015). The project
+  /// configuration is looked for from the directory of [infile].
+  void _defaultCompat(
+    String infile,
+    Map<String, String> env,
+    StringSink errSink,
+  ) {
+    const name = 'asciidoctor-compat';
+    final given = attributes?.keys ?? const <String>[];
+    if (given.any((key) => key.replaceAll(RegExp(r'^!|[!@]$'), '') == name)) {
+      return;
+    }
+    final slash = infile.replaceAll(r'\', '/').lastIndexOf('/');
+    final value = resolveCompat(
+      env: env,
+      startDir: infile == '-' || slash < 0
+          ? io.currentDirectory
+          : slash == 0
+          ? '/'
+          : infile.substring(0, slash),
+      warn: (message) => errSink.writeln('asciidart: WARNING: $message'),
+    );
+    if (value != null) _attributeMap[name] = '$value@';
   }
 
   /// The attribute map, recreating it when [parse] already nulled it.

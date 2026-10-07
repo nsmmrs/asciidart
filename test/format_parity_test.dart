@@ -244,6 +244,25 @@ void main() {
     );
   });
 
+  test('asciidoctor-compat: the classic stylesheets of the formats named', () {
+    const house = 'asciidart house style';
+    String html(String compat) => File(
+      convertWith('html5', '= Doc\n:asciidoctor-compat: $compat\n\nText.\n'),
+    ).readAsStringSync();
+    String epubCss(String compat) => unzipText(
+      File(
+        convertWith('epub3', '= Doc\n:asciidoctor-compat: $compat\n\nText.\n'),
+      ).readAsBytesSync(),
+    )['EPUB/styles/epub3.css']!;
+    expect(html('html'), isNot(contains(house)));
+    expect(html('true'), isNot(contains(house)));
+    expect(html(''), isNot(contains(house)));
+    expect(html('pdf, epub'), contains(house));
+    expect(html('false'), contains(house));
+    expect(epubCss('epub3'), isNot(contains(house)));
+    expect(epubCss('html,pdf'), contains(house));
+  });
+
   test("EPUB: the print edition's pages from the PDF's page map", () {
     final source = StringBuffer('= Book\n:doctype: book\n\n== One\n\n');
     for (var i = 0; i < 40; i++) {
