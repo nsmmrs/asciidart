@@ -18,14 +18,18 @@ There are two layout engines:
 
 Every setting has a default. Each one is a key of the theme (as written
 in the YAML, `prose_orphans` is `prose: { orphans: 2 }`) or an attribute
-of the document.
+of the document. `doc/typst-look.md` lists the keys that set a book as
+Typst sets it, with the values that do.
 
 Text the engine generates (a heading's label, a running head, a contents
 entry, a callout marker) comes from templates where a book may want it
 otherwise: Mustache templates (ADR-0010), `{{name}}` for a value and
 `{{#name}}...{{/name}}` for a part written only when the value is set. A
 template may hold the text markup (`<font>`, `<strong>`, `<sup>`); a
-newline is `\n` in a double-quoted YAML string.
+newline is `\n` in a double-quoted YAML string. `<font width="0.3em">&nbsp;</font>`
+sets a space of that width (a length, `em` of the text's size), which the
+line breaker never stretches: a fixed gap between a heading's number and
+its title.
 
 ### Paragraphs
 
@@ -68,8 +72,17 @@ description list, its category's keys stand for the theme's, as a section
 role's do (`sidebar_prose_margin_bottom`):
 `quote_base_justify_width: widest` (its lines justified to the widest, as
 Typst sets a quote or terms, blocks sized to their content),
-`quote_list_margin_top` for the lists in a quote. A sidebar's title has its own space below
-(`sidebar_title_margin_bottom`; `heading_margin_bottom` by default).
+`quote_list_margin_top` for the lists in a quote. An admonition's keys
+stand in the same way (`admonition_prose_margin_bottom`). A sidebar's
+title has its own space below (`sidebar_title_margin_bottom`;
+`heading_margin_bottom` by default).
+
+A framed block split across pages (a sidebar, an example, a quote, a
+section with a styled role) is open where it breaks: its border and
+padding at the start of its first piece and the end of its last, as
+asciidoctor-pdf does. `<category>_box_decoration_break: clone` gives every
+piece its padding and border at both ends instead, as CSS's
+`box-decoration-break: clone` (and Typst's breakable blocks).
 
 ### Contents, lists, title page
 
@@ -173,6 +186,15 @@ markers their own (`callout_list_marker_content: '{{number}}.'`).
 | Key | Default | What it does |
 | --- | --- | --- |
 | `image_placement` | `here` | An image (with its caption) floats, as figures do in books: when it doesn't fit the rest of the page, to the top of the next page, the text after it filling the room; when it fits, to the top (`top`) or the bottom (`bottom`) of its page, or the nearer of the two (`auto`), the text flowing around it, or it stays (`next`). Never past a heading or a page break; an image in a list, table, sidebar or other block stays there. An image's own `placement` attribute chooses for it (`image::x.png[placement=bottom]`; `none` keeps it in the flow). |
+| `image_text_font_family`, `_font_size`, `_font_color`, `_leading` | the code font's | The font of a text file shown as an image (below). |
+
+An image whose target is a text file (`image::diagram.txt[]`, ASCII art)
+is set as its text: every line as it is, in the code font (or
+`image_text_*`), the block as wide as its longest line and aligned,
+captioned and floated as an image. A book can show a picture in HTML and
+the text in print with an attribute:
+`:diagram-ext: svg` and `ifdef::backend-pdf[:diagram-ext: txt]`, then
+`image::diagram/http-get.{diagram-ext}[]`.
 
 ### Tables
 
@@ -232,6 +254,7 @@ its pages: `[colophon%notitle%noheader%nofooter]` for a copyright page.
 | --- | --- | --- |
 | `heading_h<n>_content` | the numbered title | A template for the heading's text, with `{{title}}`, `{{numbered-title}}`, `{{number}}` (`1.2.`, a part's `I`), `{{numeral}}` (`1`, `I`) and `{{signifier}}` (`Chapter`, `Part`). A chapter's label on a line of its own, in gray: `"{{#numeral}}<font color=\"#8C8C8C\">{{signifier}} {{numeral}}</font>\n{{/numeral}}{{title}}"` (markup attributes in double quotes). |
 | `heading_float_barrier` | `true` | A heading starts after the floating images waiting for the next page; `false` lets it pass them, as Typst's do. |
+| `heading_min_height_after` | asciidoctor-pdf's | `auto`: a heading moves to the next page unless the block after it can start under it (as much of it as may start a page: a paragraph's first `prose_orphans` lines), as Typst's sticky headings; a length works as in asciidoctor-pdf. |
 | `heading_h<n>_leading` | the base leading | Under `base_leading`, the space between the heading's lines (a part's title: `5`). |
 | `heading_h<n>_vertical_align` | `top` | `middle` or `bottom`: a heading that starts its page (a part's title page) in the middle or at the bottom of it, as Typst's `align(horizon)`. |
 

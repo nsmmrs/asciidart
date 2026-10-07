@@ -228,13 +228,15 @@ build's.
 The golden PDF and the fonts taken from it are licensed for this
 comparison only: neither is committed anywhere.
 
-Where the Typst edition's output comes from a quirk of its sources, the
-AsciiDoc copies it so the pages match: index terms written without the
-space before a parenthesis (`Content Security Policy(CSP)`, as in-dexter
-joins the term's text nodes), the contents pages listed for the three
-headings that carry an index term, a heading's wording ("What About The
-Element?"), a callout's text kept as a bullet. Each is a one-line change
-in the AsciiDoc to undo.
+The page-for-page match copied a few defects of the Typst build on
+purpose (tags `hs-golden-parity-2026-10-06` in asciidart and libpdf,
+`golden-parity-2026-10-06` in the port): index terms that lost the space
+before a parenthesis, a heading that lost its `<progress>`, a callout
+turned into a bullet, lists and code blocks set differently because of
+how pandoc converted them, the contents page listed in the index. The
+port's source has the intended content since (2026-10-07, ADR-0013), so
+17 of the 316 pages differ from the Typst build: the pages of those
+places and the pages after them in their chapters, the index's.
 
 Not in scope: the Markdown export and the Kindle file, which the Typst
 edition makes with pandoc and calibre; the same tools read asciidart's

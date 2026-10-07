@@ -216,7 +216,7 @@ edition's features in AsciiDoc (`benchmark/HS.md` checks the whole book):
 | `@label`, `<label>` | `<<id>>`, `[#id]` |
 | `set page(header: ...)` | `header_recto_*`, `header_verso_*` (theme), `{part-title}`, `{chapter-title}` |
 | `pagebreak(to: "odd")` before chapters | `:media: prepress` |
-| A chapter's label above its title | `heading_h2_label_display: block` (theme) |
+| A chapter's label above its title | `heading_h2_content` (theme): a template with `{{signifier}}`, `{{numeral}}` and `{{title}}` |
 | `#make-index()` in two columns | `[index]`, `index_columns`, `index_pagenum_text_align: right` (theme) |
 | `#show raw: ...` highlighting | `:source-highlighter: highlight.js` |
 | pandoc for the EPUB | `-b epub3` (`isbn`, `editor`, `front-cover-image`) |
