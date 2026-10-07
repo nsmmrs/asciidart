@@ -554,19 +554,45 @@ final class PdfConverter extends BuiltInConverter
     if (_indexSlot case final slot?) {
       _phase('pdf layout (index)');
       _fillIndex(slot);
-      result = layout.layout(_out);
+      // (Laid out again from the top-level box holding the index on.)
+      final at = _out.indexWhere(
+        (box) => box is BlockBox && identical(box.children, slot),
+      );
+      result = layout.layout(
+        _out,
+        reuse: at < 0 ? null : result,
+        unchangedBefore: at < 0 ? 0 : at,
+      );
       measure();
     }
     // Footnotes numbered on each page: numbered from where their
     // references are, then laid out again until the numbers stay.
     if (_footnoteNumbering == 'page') {
       for (var pass = 0; pass < 3; pass++) {
-        if (!_numberFootnotesByPage(result)) break;
+        final changed = _numberFootnotesByPage(result);
+        if (changed.isEmpty) break;
         _phase('pdf layout (footnotes)');
-        result = layout.layout(_out);
+        // Laid out again from the first page with a new number on, the
+        // runs of pages without one kept (unless a reference without an
+        // anchor has one: where it is isn't known).
+        final pages = {
+          for (final index in changed) ...[
+            ...result.anchorPages('_footnoteref_$index'),
+            ...result.anchorPages('_footnotedef_$index'),
+          ],
+        };
+        result = layout.layout(
+          _out,
+          reuse: result,
+          unchangedBefore: result.boundaryBefore(pages.reduce(math.min)),
+          changedPages: changed.any(_unanchoredFootnotes.contains)
+              ? null
+              : pages,
+        );
         measure();
       }
     }
+    _unanchoredFootnotes.clear();
     // How the document opens (the gem's `PageModes`).
     final (pageMode, nonFullScreen) = switch (document.attr('pdf-page-mode') ??
         _s('page_mode')) {
@@ -9170,6 +9196,7 @@ final class PdfConverter extends BuiltInConverter
     final anchor = anchored
         ? '<a id="_footnoteref_$index">$_dummyText</a>'
         : '';
+    if (!anchored) _unanchoredFootnotes.add(index);
     final label = _footnoteNumbering == 'document'
         ? index
         : rendered
@@ -9227,9 +9254,13 @@ final class PdfConverter extends BuiltInConverter
   /// page, `fn<index>`), from the layout before.
   final Map<String, String> _layoutLabels = {};
 
+  /// The footnotes with a reference without an anchor (a footnote
+  /// referred to again by its id).
+  final Set<String> _unanchoredFootnotes = {};
+
   /// Numbers each page's footnote references from 1, in reading order,
-  /// from [result]'s anchors; whether any number changed.
-  bool _numberFootnotesByPage(LayoutResult result) {
+  /// from [result]'s anchors; the footnotes whose numbers changed.
+  Set<String> _numberFootnotesByPage(LayoutResult result) {
     final references =
         [
           for (final MapEntry(:key, :value) in result.anchors.entries)
@@ -9242,7 +9273,7 @@ final class PdfConverter extends BuiltInConverter
           if ((p.y - q.y).abs() > 0.5) return q.y.compareTo(p.y);
           return p.x.compareTo(q.x);
         });
-    var changed = false;
+    final changed = <String>{};
     var page = -1;
     var number = 0;
     for (final (index, position) in references) {
@@ -9254,7 +9285,7 @@ final class PdfConverter extends BuiltInConverter
       final key = 'fn$index';
       if (_layoutLabels[key] != '$number') {
         _layoutLabels[key] = '$number';
-        changed = true;
+        changed.add(index);
       }
     }
     return changed;
