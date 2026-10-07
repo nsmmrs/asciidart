@@ -77,13 +77,16 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install the asciidoctor gem from upstream main (parity oracle)
-      # No optional gems: asciidart highlights with highlight.js only, and
-      # Rouge, Pygments and CodeRay behave as when their gems are missing.
+      # With asciimath, whose conversion asciidart ports (AsciiMath becomes
+      # MathML in DocBook, ADR-0014). No other optional gems: asciidart
+      # highlights with highlight.js only, and Rouge, Pygments and CodeRay
+      # behave as when their gems are missing.
       run: |
         # Upstream main at the pin in tool/vendor.sh (2.1.0.alpha.0).
         git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
         git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
         (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
+        gem install --no-document asciimath:2.0.6
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
@@ -163,6 +166,7 @@ jobs:
         git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
         git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
         (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
+        gem install --no-document asciimath:2.0.6
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)
