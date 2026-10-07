@@ -16,16 +16,22 @@ void main() {
   setUp(() => tmp = Directory.systemTemp.createTempSync('font_index_test.'));
   tearDown(() => tmp.deleteSync(recursive: true));
 
+  /// [path] with `/` between its parts (Windows lists them with `\`).
+  String? slashed(String? path) => path?.replaceAll(r'\', '/');
+
   FontIndex index([List<String> dirs = const [_fonts, _icons]]) =>
       FontIndex(dirs, cacheFile: '${tmp.path}/cache/fonts.tsv');
 
   test('finds font files by name, in any case, through subfolders', () {
     final fonts = index();
     expect(
-      fonts.fileNamed('NotoSerif-Regular-Subset.TTF'),
+      slashed(fonts.fileNamed('NotoSerif-Regular-Subset.TTF')),
       '$_fonts/notoserif-regular-subset.ttf',
     );
-    expect(fonts.fileNamed('fa-solid.ttf'), '$_icons/fas/fa-solid.ttf');
+    expect(
+      slashed(fonts.fileNamed('fa-solid.ttf')),
+      '$_icons/fas/fa-solid.ttf',
+    );
     expect(fonts.fileNamed('nothing.ttf'), isNull);
   });
 
@@ -73,7 +79,10 @@ void main() {
     final dir = Directory('${tmp.path}/odd')..createSync();
     File('${dir.path}/broken.ttf').writeAsStringSync('not a font');
     final fonts = index(['${tmp.path}/missing', dir.path, _fonts]);
-    expect(fonts.files, contains('${dir.path}/broken.ttf'));
+    expect(
+      fonts.files.map(slashed),
+      contains(slashed('${dir.path}/broken.ttf')),
+    );
     expect(fonts.fonts.where((f) => f.fileName == 'broken.ttf'), isEmpty);
     expect(fonts.hasFamily('Noto Serif'), isTrue);
   });
