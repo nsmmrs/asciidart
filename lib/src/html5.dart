@@ -33,6 +33,7 @@ import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/stylesheets.dart';
 import 'package:asciidart/src/table.dart';
 import 'package:asciidart/src/text_case.dart';
+import 'package:asciidart/src/unbreakable.dart';
 
 /// Renders [value] for interpolation into output: `null` renders as the
 /// empty string.
@@ -151,7 +152,17 @@ class Html5Converter extends BuiltInConverter {
   }
 
   @override
-  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) {
+    final out = _convertBlock(node, opts);
+    // `%unbreakable` (ADR-0012).
+    return out != null &&
+            node.hasOption('unbreakable') &&
+            marksUnbreakable(node.nodeName)
+        ? withUnbreakableClass(out)
+        : out;
+  }
+
+  String? _convertBlock(AbstractBlock node, ConvertOptions? opts) =>
       switch (node.context) {
         .admonition => convertAdmonition(node as Block),
         .audio => convertAudio(node as Block),
@@ -407,6 +418,15 @@ class Html5Converter extends BuiltInConverter {
       syntaxHlDocinfoHeadIdx = result.length;
       // Placeholder; replaced with (or removed for) the head docinfo below.
       result.add('');
+    }
+
+    // `:hyphens:` (asciidart's, as the PDF and EPUB read it): the text
+    // hyphenated by the browser, in the document's language.
+    if (node.hasAttr('hyphens')) {
+      result.add(
+        '<style>#content p,#content li,#content dd,#footnotes .footnote'
+        '{-webkit-hyphens:auto;hyphens:auto}</style>',
+      );
     }
 
     final docinfoContent = node.docinfo();

@@ -869,6 +869,19 @@ base:
       expect(text, isNot(contains('[1]')));
     });
 
+    test("markers from the document's templates, as in HTML", () {
+      final pdf = _pdf(
+        twoChapters.replaceFirst(
+          '= Doc\n',
+          '= Doc\n:footnote-reference-template: {{number}}\n'
+              ':footnote-label-template: {{number}}.{sp}\n',
+        ),
+      );
+      final text = _pages(pdf)[1].join('\n');
+      expect(text, contains('1. First.'));
+      expect(text, isNot(contains('[1]')));
+    });
+
     test("may show links' URIs (show-link-uri=footnote)", () {
       const source =
           '= Doc\n:show-link-uri: footnote\n\n'

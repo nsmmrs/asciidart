@@ -291,17 +291,28 @@ A ((Tiger)) again.(((Wolves)))
       contains('<a id="_indexterm_1"></a>Tiger'),
     );
     final index = files['EPUB/_index.xhtml']!;
+    // Marked up as an EPUB index, and a landmark.
+    expect(index, contains('<div class="index" epub:type="index">'));
+    expect(
+      files['EPUB/nav.xhtml'],
+      contains('<a epub:type="index" href="_index.xhtml">Index</a>'),
+    );
     expect(
       index,
       contains(
-        '<span class="index-term">Tiger</span>: '
-        '<a href="_cats.xhtml#_indexterm_1">Cats</a>, '
-        '<a href="_dogs.xhtml#_indexterm_2">Dogs</a>',
+        '<span class="index-term" epub:type="index-term">Tiger</span>: '
+        '<a epub:type="index-locator" href="_cats.xhtml#_indexterm_1">Cats'
+        '</a>, '
+        '<a epub:type="index-locator" href="_dogs.xhtml#_indexterm_2">Dogs'
+        '</a>',
       ),
     );
     expect(
       index,
-      contains('Wolves</span>: <a href="_dogs.xhtml#_indexterm_3">'),
+      contains(
+        'Wolves</span>: '
+        '<a epub:type="index-locator" href="_dogs.xhtml#_indexterm_3">',
+      ),
     );
   });
 

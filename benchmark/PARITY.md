@@ -169,7 +169,23 @@ reproducers of each.
   each section a term is used in, and its see and see-also references.
   Each use gets an anchor (`<a id="_indexterm_N"></a>`) where the term is.
   Only documents with an index section change; `index-html!` turns it
-  off.
+  off. In an EPUB the index is marked up with the EPUB Indexes vocabulary
+  (`epub:type="index"`, `index-entry`, `index-term`, `index-locator`...)
+  and has a landmark; a term in a section title is indexed too.
+- An EPUB's landmarks name the front and back matter (dedication,
+  colophon, acknowledgments, index) and its "Start of Content" is the
+  first chapter after the front matter, where asciidoctor-epub3's is the
+  first chapter (`test/divergences/epub_output.bats`); EPUB parity
+  compares navigation documents without their landmarks.
+- Where Asciidoctor has no output for a book feature, asciidart writes
+  its own (ADR-0012, `doc/formats.md`): a text file shown as an image
+  (`image::art.txt[]`) is its text in every backend (Asciidoctor writes an
+  `<img>` no browser shows); `toc::[]` lists the contents in an EPUB; a
+  chapter of `toc::[]` alone is DocBook's `<toc>`; an image's `placement`
+  is DocBook's `floatstyle`; a block with `%unbreakable` has the class
+  `unbreakable` in HTML and EPUB and DocBook XSL's keep-together
+  instruction; `:hyphens:` adds a `hyphens: auto` style to HTML and EPUB.
+  `--help` lists the backends asciidart has built in.
 - Rouge, Pygments and CodeRay are not available: they behave as the gem does
   without their gems (no highlighting, the highlighter's `<pre>` class kept),
   and warn in asciidart's words, once: `Rouge syntax highlighting is not

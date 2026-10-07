@@ -40,3 +40,17 @@ setup() {
   grep -lq 'hljs-keyword' book/EPUB/styles/*.css
   grep -q 'class="hljs-keyword"' book/EPUB/*.xhtml
 }
+
+# The landmarks' "Start of Content" (bodymatter) is the first chapter in
+# asciidoctor-epub3 2.3.0, even when that chapter is the dedication or a
+# preface; readers that jump to the start of the content land in the
+# front matter. It is the first chapter after the front matter. Fails on
+# the gem.
+@test "the bodymatter landmark is the first chapter after the front matter" {
+  printf '= Doc\n:doctype: book\n\n[dedication]\n== For You\n\nHi.\n\n== One\n\nText.\n' > input.adoc
+  run --separate-stderr -- "$EPUB" -b epub3 -o out.epub input.adoc
+  [ "$status" -eq 0 ]
+  mkdir book
+  (cd book && unzip -q ../out.epub)
+  grep -q 'epub:type="bodymatter" href="_one.xhtml"' book/EPUB/nav.xhtml
+}

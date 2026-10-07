@@ -9009,11 +9009,13 @@ final class PdfConverter extends BuiltInConverter
         : rendered
         ? _footnoteLabels[index] ?? index
         : '${(int.tryParse(index) ?? 0) - _renderedFootnotes.length}';
-    // `footnotes_reference_content` (modern engine, ADR-0010): `[1]` by
-    // default, raised, the number the link.
+    // `footnotes_reference_content` (modern engine, ADR-0010), else the
+    // document's `footnote-reference-template` (every format's, ADR-0012):
+    // `[1]` by default, raised, the number the link.
     final template =
         (_engine == PdfEngine.modern
-            ? _s('footnotes_reference_content')
+            ? _s('footnotes_reference_content') ??
+                  _document.attr('footnote-reference-template')
             : null) ??
         '[{{number}}]';
     final marker = renderNumbered(
@@ -9026,10 +9028,14 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// The label before footnote [index]'s note, numbered [label]:
-  /// `footnotes_label_content` (modern engine, ADR-0010), `[1] ` by
-  /// default, the number a link back to the reference.
+  /// `footnotes_label_content` (modern engine, ADR-0010), else the
+  /// document's `footnote-label-template`, `[1] ` by default, the number a
+  /// link back to the reference.
   String _footnoteNoteLabel(String index, String label) => renderNumbered(
-    (_engine == PdfEngine.modern ? _s('footnotes_label_content') : null) ??
+    (_engine == PdfEngine.modern
+            ? _s('footnotes_label_content') ??
+                  _document.attr('footnote-label-template')
+            : null) ??
         '[{{number}}] ',
     label,
     (n) => '<a anchor="_footnoteref_$index"${_footnoteLabelKey(index)}>$n</a>',

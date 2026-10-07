@@ -193,9 +193,15 @@ bool _compare(String pathA, String pathB, {String? label}) {
     if (other == null) continue;
     if (_same(entry.bytes, other)) continue;
     var textA = _normalize(entry.bytes);
-    final textB = _normalize(other);
+    var textB = _normalize(other);
     if (textA != null && entry.name.endsWith('.xhtml')) {
       textA = _repaired(textA);
+    }
+    // asciidart's landmarks (the front and back matter, the index, the
+    // body after the front matter: ADR-0012) differ on purpose.
+    if (entry.name.endsWith('nav.xhtml')) {
+      textA = textA?.replaceAll(_landmarks, '');
+      textB = textB?.replaceAll(_landmarks, '');
     }
     if (textA != null && textA == textB) continue;
     problems.add('${entry.name} differs${_firstDifference(textA, textB)}');
@@ -207,6 +213,9 @@ bool _compare(String pathA, String pathB, {String? label}) {
   }
   return false;
 }
+
+/// The navigation document's landmarks.
+final RegExp _landmarks = RegExp(r'<nav epub:type="landmarks"[\s\S]*?</nav>');
 
 /// [xhtml] (a chapter of the gem's) with asciidart's repairs.
 String _repaired(String xhtml) => balanceXml(

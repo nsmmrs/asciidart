@@ -32,6 +32,7 @@ import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/unbreakable.dart';
 import 'package:asciidart/src/xml_balance.dart';
 
 String _s(String? value) => value ?? '';
@@ -133,7 +134,20 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   String get converterName => 'Epub3Converter';
 
   @override
-  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) {
+    final out = _convertBlock(node, opts);
+    // `%unbreakable` (ADR-0012).
+    return out != null &&
+            node.hasOption('unbreakable') &&
+            marksUnbreakable(node.nodeName) &&
+            // (A listing is a `coalesce` figure already, as in
+            // asciidoctor-epub3.)
+            node.context != BlockContext.listing
+        ? withUnbreakableClass(out)
+        : out;
+  }
+
+  String? _convertBlock(AbstractBlock node, ConvertOptions? opts) =>
       switch (node.context) {
         .admonition => convertAdmonition(node as Block),
         .audio => convertAudio(node as Block),
@@ -390,18 +404,48 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     _addCoverPage(node, 'back-cover');
 
     if (tocItems.isNotEmpty) {
+      // The first chapter after the front matter (a dedication, a
+      // colophon, a preface...), else the first.
+      const front = {
+        'abstract',
+        'acknowledgments',
+        'colophon',
+        'dedication',
+        'preface',
+      };
+      final body = tocItems.firstWhere(
+        (item) => !front.contains(item is Section ? item.sectname : item.style),
+        orElse: () => tocItems[0],
+      );
       landmarks.add((
         type: 'bodymatter',
-        href: '${_s(chapterFilename(tocItems[0]))}.xhtml',
+        href: '${_s(chapterFilename(body))}.xhtml',
         title: 'Start of Content',
       ));
     }
 
     for (final item in tocItems) {
-      final style = item.style;
+      // (A section left out of the contents is left out here too.)
+      if (item.hasOption('notoc')) continue;
+      // (A special section by its section name: `[index]`, `[colophon]`;
+      // the front and back matter as landmarks too.)
+      final style = switch (item) {
+        Section(:final sectname?)
+            when const {
+              'index',
+              'colophon',
+              'dedication',
+              'acknowledgments',
+            }.contains(sectname) =>
+          sectname,
+        _ => item.style,
+      };
       if (const [
+        'acknowledgments',
         'appendix',
         'bibliography',
+        'colophon',
+        'dedication',
         'glossary',
         'index',
         'preface',
@@ -558,7 +602,8 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '<head>\n'
         '<title>$chapterTitle</title>\n'
         '$_stylesheetLinks\n'
-        '$iconCssHead${_codeOverflowCss(document)}$_readingSystemScript';
+        '$iconCssHead${_codeOverflowCss(document)}'
+        '${_hyphensCss(document)}$_readingSystemScript';
     final lines = <String>[head];
 
     final syntaxHl = document.syntaxHighlighter;
@@ -1417,6 +1462,13 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         .replaceAll('>', '&gt;');
   }
 
+  /// With `:hyphens:` (as the PDF reads it), the text hyphenated by the
+  /// reading system, in the book's language.
+  static String _hyphensCss(Document document) => document.hasAttr('hyphens')
+      ? '<style>\nbody p, li, dd { -webkit-hyphens: auto; hyphens: auto; }\n'
+            '</style>\n'
+      : '';
+
   /// With `ebook-code-overflow=scroll` (asciidart's), code lines keep
   /// their length and scroll sideways rather than wrap (the stylesheet's
   /// default).
@@ -1455,6 +1507,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     final html = indexHtml(
       index,
       level: node.level ?? 1,
+      epub: true,
       label: (section) => indexUseLabel(section, document),
       href: (use) {
         final file = switch (_enclosingChapter(use.node)) {
@@ -2176,10 +2229,10 @@ String _fromHtmlSpecialChars(String value) =>
       };
     });
 
-/// [value] as a quoted XML attribute value (Ruby's `encode xml: :attr`).
 /// An anchor the index links to, in converted text.
 final RegExp _indexAnchorRx = RegExp(r'<a id="_indexterm_\d+"></a>');
 
+/// [value] as a quoted XML attribute value (Ruby's `encode xml: :attr`).
 String _xmlAttr(String value) {
   final escaped = value
       .replaceAll('&', '&amp;')

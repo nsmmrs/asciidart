@@ -148,7 +148,7 @@ document); one that doesn't fit goes on at the bottom of the next page.
 | `footnotes_placement` (theme) | `page` | `end` sets them at the end of each chapter (or of the document), as asciidoctor-pdf does. |
 | `footnotes_numbering` (theme) | `chapter` | From 1 in each `chapter` (asciidoctor-pdf's), on each `page` (footnotes at the bottom of the page: references and notes numbered where they land), or through the whole `document`. |
 | `footnotes_separator_width`, `_color`, `_length` (theme) | `0.5`, the base border color, `33.33%` | The rule above them. |
-| `footnotes_reference_content` (theme) | `[{{number}}]` | A template for a reference, raised in the text; the number links to the note. `'{{number}}'` gives a plain superscript number. |
+| `footnotes_reference_content` (theme) | `[{{number}}]` | A template for a reference, raised in the text; the number links to the note. `'{{number}}'` gives a plain superscript number. Without the key, the document's `footnote-reference-template` (as in HTML and EPUB); likewise `footnote-label-template` for the label. |
 | `footnotes_label_content` (theme) | `[{{number}}] ` | A template for the label before a note; the number links back to the reference. |
 | `footnotes_margin_top` (theme) | the font size | The space between the text and the rule. |
 | `footnotes_indent` (theme) | none | How far each note's first line is set in (a length, `1em` of the notes' size). |

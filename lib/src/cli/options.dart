@@ -67,8 +67,8 @@ Unless specified otherwise, the output is written to a file whose name is derive
 Application log messages are printed to STDERR.
 Example: asciidart input.adoc
 
-    -b, --backend BACKEND            set backend output format: [html5, xhtml5, docbook5, manpage] (default: html5)
-                                     additional backends are supported via extended converters (e.g., pdf, epub3)
+    -b, --backend BACKEND            set backend output format: [html5, xhtml5, multipage_html5, docbook5, epub3, pdf, manpage] (default: html5)
+                                     additional backends are supported via extended converters
     -d, --doctype DOCTYPE            document type to use when converting document: [article, book, manpage, inline] (default: article)
     -e, --embedded                   suppress enclosing document structure and output an embedded document (default: false)
     -o, --out-file FILE              output file (default: based on path of input file); use - to output to STDOUT

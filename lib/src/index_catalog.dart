@@ -194,14 +194,17 @@ List<IndexEntry> _sorted(Iterable<IndexEntry> entries) =>
 /// The index of [catalog] as HTML, for an `[index]` section at [level]:
 /// a heading per letter, then the terms, each with a link to every
 /// section it is used in (labeled by [label]) and its see and see-also
-/// references.
+/// references. With [epub], marked up with the EPUB Indexes vocabulary
+/// (`epub:type="index-entry"`...), as an EPUB's reading systems read it.
 String indexHtml(
   IndexCatalog catalog, {
   required int level,
   required String Function(Section? section) label,
   String Function(IndexUse use)? href,
+  bool epub = false,
 }) {
   final hrefOf = href ?? (use) => '#${use.anchor}';
+  String type(String value) => epub ? ' epub:type="$value"' : '';
   final ids = <IndexEntry, String>{};
   var next = 0;
   void name(Iterable<IndexEntry> entries) {
@@ -219,30 +222,42 @@ String indexHtml(
     final IndexEntry entry => '<a href="#${ids[entry]}">$term</a>',
     null => term,
   };
+  String xref(String term, String kind) =>
+      switch (catalog.primary(_plain(term))) {
+        final IndexEntry entry =>
+          '<a${type('index-xref-$kind')} href="#${ids[entry]}">$term</a>',
+        null => term,
+      };
+  String seeAlso(String term) => epub ? xref(term, 'related') : reference(term);
   final heading = 'h${(level + 2).clamp(2, 6)}';
-  final out = StringBuffer('<div class="index">\n');
+  final out = StringBuffer('<div class="index"${type('index')}>\n');
   void write(List<IndexEntry> entries) {
-    out.write('<ul class="index-terms">\n');
+    out.write('<ul class="index-terms"${type('index-entry-list')}>\n');
     for (final entry in entries) {
       out.write(
-        '<li id="${ids[entry]}"><span class="index-term">'
+        '<li id="${ids[entry]}"${type('index-entry')}>'
+        '<span class="index-term"${type('index-term')}>'
         '${_balanced(entry.markup) ? entry.markup : _escape(entry.text)}</span>',
       );
+      String locator(IndexUse use) =>
+          '<a${type('index-locator')} href="${hrefOf(use)}">'
+          '${label(use.section)}</a>';
       // One link per section, to the term's first use there.
       final sections = <Section?>{};
       final links = [
         for (final use in entry.uses)
-          if (sections.add(use.section))
-            '<a href="${hrefOf(use)}">${label(use.section)}</a>',
+          if (sections.add(use.section)) locator(use),
       ];
       if (entry.see case final see?) {
-        out.write(', <em>see</em> ${reference(see)}');
+        out.write(
+          ', <em>see</em> ${epub ? xref(see, 'preferred') : reference(see)}',
+        );
       } else {
         if (links.isNotEmpty) out.write(': ${links.join(', ')}');
         if (entry.seeAlso.isNotEmpty) {
           out.write(
             '; <em>see also</em> '
-            '${[for (final term in entry.seeAlso) reference(term)].join(', ')}',
+            '${[for (final term in entry.seeAlso) seeAlso(term)].join(', ')}',
           );
         }
       }
@@ -257,7 +272,7 @@ String indexHtml(
 
   for (final letter in letters) {
     out.write(
-      '<div class="index-letter">\n'
+      '<div class="index-letter"${type('index-group')}>\n'
       '<$heading>${letter.letter}</$heading>\n',
     );
     write(letter.entries);

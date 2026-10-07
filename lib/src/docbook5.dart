@@ -32,6 +32,7 @@ import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
+import 'package:asciidart/src/unbreakable.dart';
 import 'package:asciidart/src/xml_balance.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
@@ -207,7 +208,19 @@ class Docbook5Converter extends BuiltInConverter {
   }
 
   @override
-  String? convertBlock(AbstractBlock node, ConvertOptions? opts) =>
+  String? convertBlock(AbstractBlock node, ConvertOptions? opts) {
+    final out = _convertBlock(node, opts);
+    // `%unbreakable` (ADR-0012).
+    return out != null &&
+            node.hasOption('unbreakable') &&
+            marksUnbreakable(node.nodeName) &&
+            // (A table has the instruction already, as in Asciidoctor.)
+            node.context != BlockContext.table
+        ? withKeepTogether(out)
+        : out;
+  }
+
+  String? _convertBlock(AbstractBlock node, ConvertOptions? opts) =>
       switch (node.context) {
         .admonition => convertAdmonition(node as Block),
         .audio => null,

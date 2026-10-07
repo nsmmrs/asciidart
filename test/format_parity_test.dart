@@ -106,4 +106,54 @@ void main() {
     expect(xml, contains('<figure floatstyle="before">'));
     expect(xml, contains('<informalfigure floatstyle="none">'));
   });
+
+  group('%unbreakable', () {
+    const source =
+        '= Doc\n\n[%unbreakable]\n----\ncode\n----\n\n'
+        '[%unbreakable]\n.Side\n****\nText.\n****\n';
+
+    test('HTML: the class unbreakable', () {
+      final html = File(convertWith('html5', source)).readAsStringSync();
+      expect(html, contains('<div class="listingblock unbreakable">'));
+      expect(html, contains('<div class="sidebarblock unbreakable">'));
+    });
+
+    test('EPUB: the class unbreakable', () {
+      final files = unzipText(
+        File(convertWith('epub3', source)).readAsBytesSync(),
+      );
+      expect(files.values.join(), contains('unbreakable'));
+    });
+
+    test('DocBook: the keep-together instruction', () {
+      final xml = File(convertWith('docbook5', source)).readAsStringSync();
+      expect(
+        RegExp(r'<\?dbfo keep-together="always"\?>').allMatches(xml),
+        hasLength(2),
+      );
+    });
+  });
+
+  test(':hyphens: hyphenates the text in HTML and EPUB', () {
+    const source = '= Doc\n:hyphens:\n\nText.\n';
+    expect(
+      File(convertWith('html5', source)).readAsStringSync(),
+      contains('hyphens:auto'),
+    );
+    final files = unzipText(
+      File(convertWith('epub3', source)).readAsBytesSync(),
+    );
+    expect(
+      files.entries
+          .where((e) => e.key.endsWith('.xhtml') && e.value.contains('Text.'))
+          .single
+          .value,
+      contains('hyphens: auto'),
+    );
+    // Without it, the stylesheets' own.
+    expect(
+      File(convertWith('html5', '= Doc\n\nText.\n')).readAsStringSync(),
+      isNot(contains('hyphens:auto')),
+    );
+  });
 }
