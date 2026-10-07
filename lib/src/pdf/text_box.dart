@@ -18,6 +18,7 @@ import 'package:asciidart/src/pdf/math.dart';
 import 'package:asciidart/src/pdf/svg_size.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:libpdf/libpdf.dart';
+import 'package:meta/meta.dart';
 
 const String _zwsp = '​';
 const String _shy = '­';
@@ -625,30 +626,50 @@ final class TextBox implements CustomContent {
     // text too short to split (fewer lines than its orphans and widows).
     if (_items.isNotEmpty) {
       _arrangeImages(width);
-      _Wrap wrapped(int maxLines) => _wrapOf(
-        [for (final item in _items) item.copy()],
-        _state,
-        _layout,
-        _context,
-        width,
-        double.infinity,
-        firstPiece: first,
-        continuedIndent: continuedIndent,
-        maxLines: maxLines,
-      );
-      final orphans = math.max(1, _layout.orphans);
-      final unsplit = math.max(orphans, orphans + _layout.widows - 1);
-      final whole = wrapped(unsplit);
-      if (whole.run().isEmpty) return 0;
-      if (whole.unconsumed.isEmpty || unsplit == orphans) {
-        return _layout.initialGap + whole.height;
-      }
-      final wrap = wrapped(orphans)..run();
-      return _layout.initialGap + wrap.height;
+      // (The same for the same width and labels: kept.)
+      final key = (width, _labelState());
+      if (_minHeights[key] case final height?) return height;
+      return _minHeights[key] = _minHeight(width);
     }
     final placed = place(width, double.infinity, atTop: true);
     if (placed == null) return 0;
     return placed.height;
+  }
+
+  final Map<(double, String), double> _minHeights = {};
+  final Map<(double, String), int> _lineCounts = {};
+
+  /// The texts of the items whose text is a label (after [_relabel]): what
+  /// a layout of the same items at the same width may differ by.
+  String _labelState() => _context.labels == null
+      ? ''
+      : [
+          for (final item in _items)
+            if (item.format.fragment.label != null) item.text,
+        ].join('\u0000');
+
+  /// The least height [minHeight] computes (not kept).
+  double _minHeight(double width) {
+    _Wrap wrapped(int maxLines) => _wrapOf(
+      [for (final item in _items) item.copy()],
+      _state,
+      _layout,
+      _context,
+      width,
+      double.infinity,
+      firstPiece: first,
+      continuedIndent: continuedIndent,
+      maxLines: maxLines,
+    );
+    final orphans = math.max(1, _layout.orphans);
+    final unsplit = math.max(orphans, orphans + _layout.widows - 1);
+    final whole = wrapped(unsplit);
+    if (whole.run().isEmpty) return 0;
+    if (whole.unconsumed.isEmpty || unsplit == orphans) {
+      return _layout.initialGap + whole.height;
+    }
+    final wrap = wrapped(orphans)..run();
+    return _layout.initialGap + wrap.height;
   }
 
   /// The items whose text is a label the layout gives ([Fragment.label]):
@@ -1009,7 +1030,7 @@ final class TextBox implements CustomContent {
     if (lines.isNotEmpty &&
         wrap.unconsumed.isNotEmpty &&
         (_layout.orphans > 1 || _layout.widows > 1)) {
-      final total = _wrapOf(
+      final total = _lineCounts[(width, _labelState())] ??= _wrapOf(
         [for (final item in _items) item.copy()],
         _state,
         _layout,
@@ -2396,7 +2417,10 @@ final class _OptimalWrap extends _Wrap {
       LineBreaking.auto when justify => TypstLineBreaker(fontSize: _state.size),
       _ => const FirstFitLineBreaker(),
     };
-    final breaks = breaker.breakItems(items, widthOf);
+    // The same paragraph is broken at the same width again and again (as
+    // pages are tried and the book laid out again): its breaks are kept.
+    final key = _BreakKey(breaker, widthOf(0), widthOf(1), items);
+    final breaks = _breaks[key] ??= breaker.breakItems(items, widthOf);
 
     // The pieces of each line: up to the piece its break is in (a space
     // or a newline ends the line it breaks), then on from the next.
@@ -2505,3 +2529,72 @@ final class _OptimalWrap extends _Wrap {
 final RegExp _linesRx = RegExp('[^\n]+|\n');
 final RegExp _leadingSpacesRx = RegExp('^[\u00a0 ]*');
 final RegExp _trailingWordRx = RegExp('[^$_breakChars]*\$');
+
+/// The breaks found for each paragraph's items, by breaker and widths.
+final Map<_BreakKey, List<int>> _breaks = {};
+
+/// What a paragraph's line breaks depend on: the breaker and its costs,
+/// the first line's width and the others', and each item (its kind, text
+/// and measures).
+@immutable
+final class _BreakKey {
+  new(ItemLineBreaker breaker, double first, double rest, List<LineItem> items)
+    : this._(_valuesOf(breaker, first, rest, items));
+
+  new _(this._values) : _hash = Object.hashAll(_values);
+
+  static List<Object?> _valuesOf(
+    ItemLineBreaker breaker,
+    double first,
+    double rest,
+    List<LineItem> items,
+  ) => [
+    switch (breaker) {
+      TypstLineBreaker(
+        :final justify,
+        :final fontSize,
+        :final hyphenationCost,
+        :final runtCost,
+      ) =>
+        'typst $justify $fontSize $hyphenationCost $runtCost',
+      _ => breaker.runtimeType.toString(),
+    },
+    first,
+    rest,
+    for (final item in items)
+      ...switch (item) {
+        BoxItem(:final text, :final width) => [0, text, width],
+        GlueItem(:final text, :final width, :final stretch, :final shrink) => [
+          1,
+          text,
+          width,
+          stretch,
+          shrink,
+        ],
+        PenaltyItem(:final width, :final penalty, :final flagged) => [
+          2,
+          width,
+          penalty,
+          flagged,
+        ],
+      },
+  ];
+
+  final List<Object?> _values;
+  final int _hash;
+
+  @override
+  int get hashCode => _hash;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! _BreakKey || other._hash != _hash) return false;
+    final a = _values;
+    final b = other._values;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+}
