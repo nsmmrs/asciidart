@@ -318,7 +318,9 @@ Documents that don't hit these cases convert as on `2.1.0`.
   (#3788). Anchors in section titles are cataloged, so duplicates are
   reported and their reference text is used (#3633). `--` between a word
   and formatted text or a curved quote (on either side) becomes an em dash
-  (#1578, #3946). A bare URL ending with a character reference
+  (#1578, #3946). Curved quotes and emphasis nest at each other's
+  edges: `_"`text`"_` is emphasized curved quotes and `"`_text_`"`
+  curved quotes around emphasis, single ones too (#2128). A bare URL ending with a character reference
   (`http://<host>:<port>`) keeps its `;` (#3128).
 - Formatting marks inside a URL (bare or a link's), a link or e-mail
   macro's target or a cross reference's target (an ID or a path, without

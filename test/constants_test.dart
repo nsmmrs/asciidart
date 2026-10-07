@@ -338,18 +338,21 @@ void main() {
             '\\\\?(?:$quoteAttributeListRxt)?\\*\\*($ccAll+?)\\*\\*',
             // Ruby: (^|[^\p{Word};:}])(?:\[...\\])?\*(\S|\S.*?\S)\*(?!\p{Word})
             '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?\\*(\\S|\\S$ccAll*?\\S)\\*(?!$cgWord)',
-            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?"`(\S|\S.*?\S)`"(?!\p{Word})
-            '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?"`(\\S|\\S$ccAll*?\\S)`"(?!$cgWord)',
-            // Ruby: (^|[^\p{Word};:`}])(?:\[...\])?'`(\S|\S.*?\S)`'(?!\p{Word})
-            "(^|[^$ccWord;:`}])(?:$quoteAttributeListRxt)?'`(\\S|\\S$ccAll*?\\S)`'(?!$cgWord)",
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?"`(\S|\S.*?\S)`"(?!\p{Word}),
+            // an underscore allowed on either side (bugfix #2128)
+            '(^|_|[^$ccWord;:}])(?:$quoteAttributeListRxt)?"`(\\S|\\S$ccAll*?\\S)`"(?!(?!_)$cgWord)',
+            // Ruby: (^|[^\p{Word};:`}])(?:\[...\])?'`(\S|\S.*?\S)`'(?!\p{Word}),
+            // likewise (bugfix #2128)
+            "(^|_|[^$ccWord;:`}])(?:$quoteAttributeListRxt)?'`(\\S|\\S$ccAll*?\\S)`'(?!(?!_)$cgWord)",
             // Ruby: \\?(?:\[([^\[\]]+)\])?``(.+?)``
             '\\\\?(?:$quoteAttributeListRxt)?``($ccAll+?)``',
             // Ruby: (^|[^\p{Word};:"'`}])(?:\[...\])?`(\S|\S.*?\S)`(?![\p{Word}"'`])
             "(^|[^$ccWord;:\"'`}])(?:$quoteAttributeListRxt)?`(\\S|\\S$ccAll*?\\S)`(?![$ccWord\"'`])",
             // Ruby: \\?(?:\[([^\[\]]+)\])?__(.+?)__
             '\\\\?(?:$quoteAttributeListRxt)?__($ccAll+?)__',
-            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?_(\S|\S.*?\S)_(?!\p{Word})
-            '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?_(\\S|\\S$ccAll*?\\S)_(?!$cgWord)',
+            // Ruby: (^|[^\p{Word};:}])(?:\[...\])?_(\S|\S.*?\S)_(?!\p{Word}),
+            // also after a curved quote's reference (bugfix #2128)
+            '(^|&#82(?:16|20);|[^$ccWord;:}])(?:$quoteAttributeListRxt)?_(\\S|\\S$ccAll*?\\S)_(?!$cgWord)',
             // Ruby: \\?(?:\[([^\[\]]+)\])?##(.+?)##
             '\\\\?(?:$quoteAttributeListRxt)?##($ccAll+?)##',
             // Ruby: (^|[^\p{Word}&;:}])(?:\[...\])?#(\S|\S.*?\S)#(?!\p{Word})

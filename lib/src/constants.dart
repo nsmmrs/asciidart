@@ -228,14 +228,15 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
     ),
     '*',
   ),
+  // Curved quotes may stand inside an emphasis's underscores (#2128).
   QuoteSub(
     'double',
     'constrained',
     RegExp(
-      '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
+      '(^|_|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?"`([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
-      r'*?[^ \t\n\v\f\r])`"(?!'
+      r'*?[^ \t\n\v\f\r])`"(?!(?!_)'
       '$cgWord)',
       multiLine: true,
       unicode: true,
@@ -247,10 +248,10 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
     'single',
     'constrained',
     RegExp(
-      '(^|[^$ccWord;:`}])(?:$quoteAttributeListRxt'
+      '(^|_|[^$ccWord;:`}])(?:$quoteAttributeListRxt'
       r")?'`([^ \t\n\v\f\r]|[^ \t\n\v\f\r]"
       '$ccAll'
-      r"*?[^ \t\n\v\f\r])`'(?!"
+      r"*?[^ \t\n\v\f\r])`'(?!(?!_)"
       '$cgWord)',
       multiLine: true,
       unicode: true,
@@ -287,11 +288,13 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
     ),
     '__',
   ),
+  // Emphasis may start right after a curved quote, converted by then to
+  // its character reference (#2128).
   QuoteSub(
     'emphasis',
     'constrained',
     RegExp(
-      '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
+      '(^|&#82(?:16|20);|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?_([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
       r'*?[^ \t\n\v\f\r])_(?!'
