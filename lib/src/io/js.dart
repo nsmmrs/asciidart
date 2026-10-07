@@ -260,6 +260,28 @@ List<int> deflateRaw(List<int> bytes) {
   return zlib.deflateRawSync(Uint8List.fromList(bytes).toJS).toDart;
 }
 
+/// The size of the file at [path], in bytes.
+int fileSize(String path) => readBytes(path).length;
+
+/// [length] bytes of the file at [path] from [offset] (fewer at its end).
+List<int> readFileRange(String path, int offset, int length) {
+  final bytes = readBytes(path);
+  final start = offset.clamp(0, bytes.length);
+  return bytes.sublist(start, (offset + length).clamp(start, bytes.length));
+}
+
+/// No installed fonts: the JavaScript build has no backend that uses
+/// them.
+List<String> get fontDirectories => const [];
+
+/// Not available on JavaScript.
+String get userFontDirectory =>
+    throw UnsupportedError('font folders are not available on JavaScript');
+
+/// Not available on JavaScript.
+String get cacheDirectory =>
+    throw UnsupportedError('a cache folder is not available on JavaScript');
+
 /// The physical cores of the machine: one (the JavaScript build runs
 /// everything serially).
 int get physicalCores => 1;

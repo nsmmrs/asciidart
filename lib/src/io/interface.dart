@@ -42,6 +42,21 @@ List<int> deflateRaw(List<int> bytes) => _unsupported();
 /// [bytes] (raw DEFLATE) expanded.
 List<int> inflateRaw(List<int> bytes) => _unsupported();
 
+/// The size of the file at [path], in bytes.
+int fileSize(String path) => _unsupported();
+
+/// [length] bytes of the file at [path] from [offset] (fewer at its end).
+List<int> readFileRange(String path, int offset, int length) => _unsupported();
+
+/// The folders fonts are installed in, the user's first.
+List<String> get fontDirectories => const [];
+
+/// The folder fonts are installed in for this user alone.
+String get userFontDirectory => _unsupported();
+
+/// The folder for this user's caches.
+String get cacheDirectory => _unsupported();
+
 /// The physical cores of the machine.
 int get physicalCores => 1;
 

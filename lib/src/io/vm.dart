@@ -58,6 +58,70 @@ List<int> deflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).encode(bytes);
 /// [bytes] (raw DEFLATE) expanded.
 List<int> inflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).decode(bytes);
 
+/// The size of the file at [path], in bytes.
+int fileSize(String path) => _guard(() => io.File(path).lengthSync());
+
+/// [length] bytes of the file at [path] from [offset] (fewer at its end).
+List<int> readFileRange(String path, int offset, int length) => _guard(() {
+  final file = io.File(path).openSync();
+  try {
+    file.setPositionSync(offset);
+    return file.readSync(length);
+  } finally {
+    file.closeSync();
+  }
+});
+
+/// The folders fonts are installed in, the user's first: on Linux
+/// `$XDG_DATA_HOME/fonts`, `~/.fonts` and `fonts` in each of
+/// `$XDG_DATA_DIRS`; on macOS the user's, the local and the system
+/// `Library/Fonts`; on Windows the user's and the system's.
+List<String> get fontDirectories {
+  final env = io.Platform.environment;
+  final home = env['HOME'] ?? env['USERPROFILE'] ?? '';
+  if (io.Platform.isMacOS) {
+    return [
+      '$home/Library/Fonts',
+      '/Library/Fonts',
+      '/System/Library/Fonts',
+      '/System/Library/Fonts/Supplemental',
+      '/Network/Library/Fonts',
+    ];
+  }
+  if (io.Platform.isWindows) {
+    return [
+      if (env['LOCALAPPDATA'] case final local?)
+        '$local\\Microsoft\\Windows\\Fonts',
+      '${env['WINDIR'] ?? env['SystemRoot'] ?? r'C:\Windows'}\\Fonts',
+    ];
+  }
+  final dataHome = env['XDG_DATA_HOME'] ?? '$home/.local/share';
+  final dataDirs = (env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share')
+      .split(':')
+      .where((dir) => dir.isNotEmpty);
+  return [
+    '$dataHome/fonts',
+    '$home/.fonts',
+    for (final dir in dataDirs) '$dir/fonts',
+  ];
+}
+
+/// The folder fonts are installed in for this user alone (no
+/// administrator rights needed): the first of [fontDirectories].
+String get userFontDirectory => fontDirectories.first;
+
+/// The folder for this user's caches: `$XDG_CACHE_HOME` (`~/.cache`) on
+/// Linux, `~/Library/Caches` on macOS, `%LOCALAPPDATA%` on Windows.
+String get cacheDirectory {
+  final env = io.Platform.environment;
+  final home = env['HOME'] ?? env['USERPROFILE'] ?? '';
+  if (io.Platform.isMacOS) return '$home/Library/Caches';
+  if (io.Platform.isWindows) {
+    return env['LOCALAPPDATA'] ?? '$home\\AppData\\Local';
+  }
+  return env['XDG_CACHE_HOME'] ?? '$home/.cache';
+}
+
 /// The physical cores of the machine (allocation-heavy work scales worse
 /// on the second thread of a core): the distinct cores Linux lists, the
 /// count macOS reports, else every logical processor.
