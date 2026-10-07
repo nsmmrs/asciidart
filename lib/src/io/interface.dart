@@ -42,6 +42,9 @@ List<int> deflateRaw(List<int> bytes) => _unsupported();
 /// [bytes] (raw DEFLATE) expanded.
 List<int> inflateRaw(List<int> bytes) => _unsupported();
 
+/// The physical cores of the machine.
+int get physicalCores => 1;
+
 /// Whether [zlibEncode] and [zlibDecode] are the platform's own (faster
 /// than the PDF library's).
 bool get hasNativeZlib => false;

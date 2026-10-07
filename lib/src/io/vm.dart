@@ -58,6 +58,41 @@ List<int> deflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).encode(bytes);
 /// [bytes] (raw DEFLATE) expanded.
 List<int> inflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).decode(bytes);
 
+/// The physical cores of the machine (allocation-heavy work scales worse
+/// on the second thread of a core): the distinct cores Linux lists, the
+/// count macOS reports, else every logical processor.
+final int physicalCores = _physicalCores();
+
+int _physicalCores() {
+  final logical = io.Platform.numberOfProcessors;
+  try {
+    if (io.Platform.isLinux) {
+      final cores = <String>{};
+      for (final cpu in io.Directory('/sys/devices/system/cpu').listSync()) {
+        if (!RegExp(r'/cpu\d+$').hasMatch(cpu.path)) continue;
+        final topology = '${cpu.path}/topology';
+        final package = io.File('$topology/physical_package_id');
+        final core = io.File('$topology/core_id');
+        if (!package.existsSync() || !core.existsSync()) continue;
+        cores.add(
+          '${package.readAsStringSync().trim()} '
+          '${core.readAsStringSync().trim()}',
+        );
+      }
+      if (cores.isNotEmpty && cores.length <= logical) return cores.length;
+    } else if (io.Platform.isMacOS) {
+      final result = io.Process.runSync('sysctl', ['-n', 'hw.physicalcpu']);
+      if (int.tryParse('${result.stdout}'.trim()) case final cores?
+          when cores > 0 && cores <= logical) {
+        return cores;
+      }
+    }
+  } on Exception {
+    // The logical processors, then.
+  }
+  return logical;
+}
+
 /// Whether [zlibEncode] and [zlibDecode] are the platform's own (faster
 /// than the PDF library's).
 bool get hasNativeZlib => true;

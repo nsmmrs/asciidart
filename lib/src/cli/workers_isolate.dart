@@ -5,13 +5,17 @@ import 'dart:isolate';
 
 import 'package:asciidart/src/cli/parallel.dart';
 import 'package:asciidart/src/job_pool.dart';
+import 'package:asciidart/src/parallel.dart';
 
-/// Worker isolate entry point for conversion jobs.
-void conversionWorkerMain(SendPort mainPort) =>
-    serveJobs<ConversionRequest, ConversionResponse>(
-      mainPort,
-      runConversionJob,
-    );
+/// Worker isolate entry point for conversion jobs (each converted
+/// serially: the files are the parallel work).
+void conversionWorkerMain(SendPort mainPort) {
+  Parallel.nested = true;
+  serveJobs<ConversionRequest, ConversionResponse>(
+    mainPort,
+    runConversionJob,
+  );
+}
 
 /// Converts [requests] on [workerCount] worker isolates, returning the
 /// responses in request order.

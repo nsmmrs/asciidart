@@ -145,7 +145,7 @@ final class _FontState {
 
 /// The PDF converter.
 final class PdfConverter extends BuiltInConverter
-    implements PackagingConverter {
+    implements FinishingConverter {
   /// The converter for [backend].
   new(super.backend, [super.opts]) {
     backendTraits = BackendTraits(
@@ -178,12 +178,26 @@ final class PdfConverter extends BuiltInConverter
   late Document _document;
   final List<(Section, String)> _sections = [];
 
+  /// Saves the converted document (once its work on other cores is
+  /// done, or doing it here).
+  Uint8List Function()? _save;
+
+  /// The work on other cores the save waits for.
+  final List<Future<void>> _awaiting = [];
+
   /// The PDF the last converted document made.
-  Uint8List? get bytes => _bytes;
+  Uint8List? get bytes => _bytes ??= _save?.call();
+
+  @override
+  Future<void> finish() async {
+    await Future.wait(_awaiting);
+    _awaiting.clear();
+    bytes;
+  }
 
   @override
   void write(String path) {
-    final bytes = _bytes;
+    final bytes = this.bytes;
     if (bytes == null) throw StateError('no document converted');
     io.writeBytes(path, bytes);
   }
@@ -289,6 +303,8 @@ final class PdfConverter extends BuiltInConverter
       }
     }
     _phases = document.timings;
+    _bytes = _save = null;
+    _awaiting.clear();
     _phase('pdf walk');
     _theme = _prepareTheme(_loadTheme(document));
     _ready = true;
@@ -649,15 +665,20 @@ final class PdfConverter extends BuiltInConverter
     // The same document makes the same bytes: the file identifier comes
     // from the content, the dates from the document's local date and time
     // (SOURCE_DATE_EPOCH, when set), as the gem dates it.
-    _phase('pdf save');
-    _bytes = pdf.save(
-      options: PdfWriterOptions(
-        deterministic: true,
-        creationDate: _dateTime(document.attr('localdatetime')),
-        zlib: io.hasNativeZlib ? const _NativeZlib() : null,
-      ),
-    );
     _phase(null);
+    final creationDate = _dateTime(document.attr('localdatetime'));
+    _save = () {
+      _phase('pdf save');
+      final bytes = pdf.save(
+        options: PdfWriterOptions(
+          deterministic: true,
+          creationDate: creationDate,
+          zlib: io.hasNativeZlib ? const _NativeZlib() : null,
+        ),
+      );
+      _phase(null);
+      return bytes;
+    };
     return '';
   }
 

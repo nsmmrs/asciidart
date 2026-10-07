@@ -1370,6 +1370,16 @@ class Document extends AbstractBlock implements NodeDocument {
     _ => null,
   };
 
+  /// Waits for the work the conversion left to other cores (ADR-0016:
+  /// a PDF's images and streams), so that writing doesn't do it here; the
+  /// synchronous writing does it itself otherwise.
+  @internal
+  Future<void> finish() async {
+    if (_packaging case final FinishingConverter converter) {
+      await converter.finish();
+    }
+  }
+
   /// Writes [output] to [sink], followed by a newline (nothing is written
   /// when [output] is empty).
   void writeTo(String output, StringSink sink) {
