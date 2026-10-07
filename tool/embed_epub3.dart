@@ -1,5 +1,5 @@
 /// Generates `lib/src/epub3/assets.g.dart` from `vendor/asciidoctor-epub3`:
-/// the stylesheets, fonts, images and icon map the EPUB3 backend writes
+/// the stylesheets, images and icon map the EPUB3 backend writes
 /// into every EPUB, embedded so the backend never reads files of its own at
 /// conversion time. Run from the repository root (`tool/vendor_epub3.sh`
 /// runs it):
@@ -24,7 +24,12 @@ void main() {
     for (final dir in ['styles', 'fonts', 'images'])
       ...Directory('${vendor.path}/$dir')
           .listSync(recursive: true)
-          .whereType<File>(),
+          .whereType<File>()
+          // Not the fonts: the EPUB embeds installed ones when asked
+          // (`epub-embed-fonts`); the icon font's name map stays.
+          .where(
+            (file) => !RegExp(r'\.(ttf|otf)$|LICENSE').hasMatch(file.path),
+          ),
   ]..sort((a, b) => a.path.compareTo(b.path));
 
   final out = StringBuffer()

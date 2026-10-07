@@ -1,7 +1,8 @@
 /// The fonts vendored with asciidoctor-pdf (its Noto and M+ subsets and
-/// prawn-icon's icon fonts) and Noto Sans Math, which the tools' and the
-/// tests' PDFs are set in, so that they don't depend on the fonts
-/// installed on the machine. Paths are relative to the repository.
+/// prawn-icon's icon fonts), Noto Sans Math and asciidoctor-epub3's fonts,
+/// which the tools' and the tests' PDFs and EPUBs are set in, so that they
+/// don't depend on the fonts installed on the machine. Paths are relative
+/// to the repository.
 library;
 
 import 'dart:io';
@@ -13,6 +14,7 @@ const List<String> vendoredFontDirectories = [
   'vendor/asciidoctor-pdf/data/fonts',
   'vendor/asciidoctor-pdf/icons',
   'data/pdf-fonts',
+  'vendor/asciidoctor-epub3/fonts',
 ];
 
 /// Puts the vendored fonts on this process's font path, before the

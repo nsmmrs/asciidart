@@ -12,8 +12,11 @@ import 'package:asciidart/src/epub3/book.dart';
 import 'package:asciidart/src/epub3/dates.dart';
 import 'package:asciidart/src/epub3/epub3.dart';
 import 'package:asciidart/src/epub3/zip.dart';
+import 'package:asciidart/src/font_index.dart';
 import 'package:asciidart/src/internal.dart';
 import 'package:test/test.dart';
+
+import 'vendored_fonts.dart';
 
 Map<String, String> unzipText(List<int> epub) => {
   for (final entry in readZip(epub, (b) => ZLibCodec(raw: true).decode(b)))
@@ -23,7 +26,92 @@ Map<String, String> unzipText(List<int> epub) => {
 void main() {
   setUpAll(registerEpub3);
 
-  test('the embedded assets are the vendored files', () {
+  group('fonts', () {
+    late Directory dir;
+    setUp(() => dir = Directory.systemTemp.createTempSync('epub3_fonts.'));
+    tearDown(() {
+      FontIndex.installed = null;
+      FontIndex.extraDirectories = const [];
+      dir.deleteSync(recursive: true);
+    });
+
+    Map<String, String> epub({Map<String, String> attributes = const {}}) {
+      final input = File('${dir.path}/book.adoc')
+        ..writeAsStringSync(
+          '= Book\n:doctype: book\n:icons: font\n\n== One\n\n'
+          'NOTE: icon:heart[] and `code`.\n',
+        );
+      convertFile(
+        input.path,
+        AsciidoctorOptions(
+          safe: SafeMode.safe,
+          backend: 'epub3',
+          attributes: {'reproducible': '', ...attributes},
+        ),
+      );
+      return unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    }
+
+    test("none embedded unless asked for: the reader's apply", () {
+      useVendoredFonts();
+      final files = epub();
+      expect(files.keys.where((k) => k.contains('/fonts/')), isEmpty);
+      expect(files['EPUB/styles/epub3-fonts.css'], isNot(contains('@font')));
+      expect(
+        files.keys,
+        isNot(contains('META-INF/com.apple.ibooks.display-options.xml')),
+      );
+      // Icons in the text's font: no glyph that would show as a box.
+      expect(
+        files['EPUB/styles/epub3.css'],
+        contains('aside.admonition::before,p.last::after{content:none}'),
+      );
+      expect(
+        files['EPUB/_one.xhtml'],
+        contains('.i-heart::before { content: "[heart]"; }'),
+      );
+    });
+
+    test('with epub-embed-fonts, the installed fonts the stylesheet names', () {
+      useVendoredFonts();
+      final files = epub(attributes: {'epub-embed-fonts': ''});
+      expect(
+        files.keys,
+        containsAll([
+          'EPUB/fonts/notoserif-regular-latin.ttf',
+          'EPUB/fonts/mplus1mn-regular-ascii-conums.ttf',
+          'EPUB/fonts/awesome/fa-solid-900.ttf',
+          'EPUB/fonts/assorted-icons.ttf',
+          'META-INF/com.apple.ibooks.display-options.xml',
+        ]),
+      );
+      expect(
+        RegExp('@font-face').allMatches(files['EPUB/styles/epub3-fonts.css']!),
+        hasLength(13),
+      );
+      expect(files['EPUB/_one.xhtml'], contains(r'content: "\f004"'));
+    });
+
+    test("a font asked for that isn't installed is left out, said once", () {
+      FontIndex.installed = FontIndex([
+        '${dir.path}/none',
+      ], cacheFile: '${dir.path}/cache.tsv');
+      final logger = MemoryLogger();
+      final saved = LoggerManager.logger;
+      LoggerManager.logger = logger;
+      addTearDown(() => LoggerManager.logger = saved);
+      final files = epub(attributes: {'epub-embed-fonts': ''});
+      expect(files.keys.where((k) => k.contains('/fonts/')), isEmpty);
+      expect(files['EPUB/styles/epub3-fonts.css'], isEmpty);
+      final warnings = [for (final m in logger.messages) '${m.message}'];
+      expect(
+        warnings.where((m) => m.contains('font Noto Serif is not installed')),
+        hasLength(1),
+      );
+    });
+  });
+
+  test('the embedded assets are the vendored files, but not the fonts', () {
     for (final dir in ['styles', 'fonts', 'images']) {
       for (final file in Directory(
         'vendor/asciidoctor-epub3/$dir',
@@ -31,6 +119,11 @@ void main() {
         final path = file.path
             .substring('vendor/asciidoctor-epub3/'.length)
             .replaceAll(r'\', '/');
+        // The fonts aren't embedded (the installed ones are, when asked).
+        if (RegExp(r'\.(ttf|otf)$|LICENSE').hasMatch(path)) {
+          expect(Epub3Assets.bytes(path), isNull, reason: path);
+          continue;
+        }
         // A Windows checkout may give text files CRLF line endings.
         List<int> normalized(List<int>? bytes) => [
           for (final b in bytes ?? const <int>[])
@@ -152,7 +245,6 @@ NOTE: Watch out.
         'EPUB/toc.ncx',
         'EPUB/package.opf',
         'EPUB/styles/epub3.css',
-        'EPUB/fonts/notoserif-regular-latin.ttf',
         'META-INF/container.xml',
       ]),
     );

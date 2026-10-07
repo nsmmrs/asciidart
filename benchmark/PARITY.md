@@ -188,6 +188,15 @@ reproducers of each.
   (`-a epub3-stylesheet=asciidoctor-epub3` for its alone; EPUB parity
   passes it), and the modern PDF engine's default theme is asciidart's
   (`-a pdf-theme=default` for asciidoctor-pdf's).
+- An EPUB embeds no fonts unless asked (`-a epub-embed-fonts`):
+  asciidoctor-epub3 embeds its Noto Serif, M+ and icon font subsets in
+  every EPUB, where asciidart lets the reading system's fonts apply and
+  shows the stylesheet's font icons as text (no admonition or
+  end-of-chapter icon, a quotation mark and a caret in the text's font,
+  `[name]` for an inline icon). With the attribute, the fonts the
+  stylesheet names are embedded from the installed ones (by the gem's file
+  names, then by family; `asciidart doctor` installs them); EPUB parity
+  passes it, with the gem's fonts on the font path.
 - An `[index]` section lists the document's index terms in HTML and EPUB
   (Asciidoctor and asciidoctor-epub3 render it empty, Asciidoctor issue
   #450): a heading per letter, the terms with their subterms, a link to
@@ -237,7 +246,9 @@ gem does on the asciidoctor gem built from upstream `main`
 first, stored), and the bytes of every file once the dates that change
 with each run (`dcterms:modified`, `dc:date`) are set aside; the messages
 too. ZIP compression is not compared (zlib versions differ). With
-`--epubcheck`, EPUBCheck must report the same for both EPUBs.
+`--epubcheck`, EPUBCheck must report the same for both EPUBs. asciidart
+runs with `-a epub-embed-fonts` and asciidoctor-epub3's fonts on its font
+path, so that it embeds the fonts the gem embeds.
 
 ```sh
 # With the gem built from main installed (see above), so that it isn't

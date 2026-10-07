@@ -36,6 +36,8 @@ import 'package:asciidart/src/xml_balance.dart';
 
 import 'corpus_parity.dart' show rewordings;
 
+import 'vendored_fonts.dart';
+
 final RegExp _volatile = RegExp(
   '<meta property="dcterms:modified">[^<]*</meta>|<dc:date>[^<]*</dc:date>',
 );
@@ -147,11 +149,15 @@ String _epubcheck(String jar, String epub) {
       'reproducible',
       '-a',
       'epub3-stylesheet=asciidoctor-epub3',
+      // (The gem's fonts, as the gem embeds them: asciidart embeds the
+      // installed fonts only when asked, here the vendored ones.)
+      '-a',
+      'epub-embed-fonts',
       '-o',
       out,
       doc,
     ],
-    environment: {'TZ': 'UTC', 'SOURCE_DATE_EPOCH': '0'},
+    environment: withVendoredFonts({'TZ': 'UTC', 'SOURCE_DATE_EPOCH': '0'}),
     workingDirectory: File(doc).parent.path,
   );
   final messages = (result.stderr as String)

@@ -24,6 +24,7 @@ import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/epub3/assets.g.dart';
 import 'package:asciidart/src/epub3/book.dart';
 import 'package:asciidart/src/epub3/dates.dart';
+import 'package:asciidart/src/font_index.dart';
 import 'package:asciidart/src/helpers.dart';
 import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
 import 'package:asciidart/src/highlight/highlightjs.dart';
@@ -363,6 +364,8 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         isbn != null &&
         isbn.isNotEmpty;
     _deflated = const {};
+    _embedFonts = node.hasAttr('epub-embed-fonts');
+    _missingFonts.clear();
     _parallel = workersAwaited
         ? Parallel.forAttribute(node.attr('jobs'))
         : null;
@@ -665,7 +668,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
     } else {
       final defs = [
         for (final name in _iconNames)
-          '.i-$name::before { content: "${_iconUnicode(name)}"; }',
+          '.i-$name::before { content: "${_iconContent(name)}"; }',
       ].join(_lf);
       iconCssHead = '<style>\n$defs\n</style>\n';
     }
@@ -1891,7 +1894,13 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         final css = _asset('styles/$name.css');
         book
             .addItem('styles/$name.css')
-            .setText(name == 'epub3' && !classic ? '$css\n$_houseRules' : css);
+            .setText(
+              [
+                css,
+                if (name == 'epub3' && !classic) _houseRules,
+                if (!_embedFonts) _withoutIconFonts[name],
+              ].nonNulls.join('\n'),
+            );
       }
     }
 
@@ -1910,13 +1919,13 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
     if (scripts != 'latin') {
       fontCss = fontCss.replaceAll(RegExp(r'(?<=-)latin(?=\.ttf\))'), scripts);
     }
-    final fontFiles = [
-      for (final match in RegExp(
-        r'url\(\.\./([^)]+?\.ttf)\)',
-      ).allMatches(fontCss))
-        match[1]!,
-    ];
-    book.addItem('styles/epub3-fonts.css').setText(fontCss);
+    if (!_embedFonts) {
+      // The reader's fonts (`epub-embed-fonts` embeds the stylesheet's).
+      book.addItem('styles/epub3-fonts.css').setText(_noFontsCss);
+      return;
+    }
+    final (css, fontFiles) = _embeddableFonts(fontCss);
+    book.addItem('styles/epub3-fonts.css').setText(css);
     if (fontFiles.isNotEmpty) {
       book.addOptionalFile(
         'META-INF/com.apple.ibooks.display-options.xml',
@@ -1927,13 +1936,102 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
             '</platform>\n'
             '</display_options>',
       );
-      for (final fontFile in fontFiles) {
-        final bytes = Epub3Assets.bytes(fontFile);
-        final item = book.addItem(fontFile);
-        if (bytes != null) item.setBytes(bytes);
+      for (final (name, path) in fontFiles) {
+        book.addItem(name).setBytes(io.readBytes(path));
       }
     }
   }
+
+  /// Whether the stylesheet's fonts are embedded (`epub-embed-fonts`):
+  /// otherwise the book names fonts and the reading system chooses.
+  bool _embedFonts = false;
+
+  /// The stylesheet of the fonts when none is embedded.
+  static const String _noFontsCss =
+      "/* No fonts are embedded: the reading system's apply (the "
+      'epub-embed-fonts attribute embeds them). */\n';
+
+  /// What shows icon [name]: its glyph (a CSS escape) when the icon font
+  /// is embedded, else its name in brackets.
+  String _iconContent(String name) =>
+      _embedFonts ? _iconUnicode(name) : '[$name]';
+
+  /// Rules that show the stylesheet's font icons as text when no icon font
+  /// is embedded (a box would show in their place): no admonition or
+  /// end-of-chapter icon, a quotation mark and a caret in the text's font.
+  static const Map<String, String> _withoutIconFonts = {
+    'epub3':
+        '/* No icon font is embedded. */\n'
+        'aside.admonition::before,p.last::after{content:none}'
+        'blockquote>p:first-of-type::before{font-family:inherit;'
+        r'content:"\201C"}'
+        r'.menuseq .caret::before{font-family:inherit;content:"\203A"}',
+    'epub3-css3-only':
+        '/* No icon font is embedded. */\n'
+        '.icon{font-family:inherit !important}',
+  };
+
+  /// Families the stylesheet names whose fonts may be installed under
+  /// other names (M+ 1mn's successor M PLUS 1 Code; Font Awesome 5's solid
+  /// style for 6's).
+  static const Map<String, List<(String, bool)>> _fontAliases = {
+    'm+ 1p': [('M PLUS 1p', false)],
+    'm+ 1p light': [('M+ 1p', false), ('M PLUS 1p', false)],
+    'm+ 1p bold': [('M+ 1p', true), ('M PLUS 1p', true)],
+    'm+ 1mn': [('M PLUS 1 Code', false)],
+    'font awesome 6 free solid': [
+      ('Font Awesome 6 Free', true),
+      ('Font Awesome 5 Free', true),
+    ],
+    'fonticons': [('Font Awesome 6 Free', true), ('Font Awesome 5 Free', true)],
+  };
+
+  /// The rules of [css] (`@font-face` rules) whose fonts are installed,
+  /// and each embedded file's name in the book and installed path: by the
+  /// file's name, then by the rule's family and style. A rule whose font
+  /// isn't installed is left out, said once.
+  (String, List<(String, String)>) _embeddableFonts(String css) {
+    final installed = FontIndex.installed;
+    final kept = <String>[];
+    final files = <(String, String)>[];
+    for (final rule in RegExp(r'@font-face\{[^}]*\}').allMatches(css)) {
+      final text = rule[0]!;
+      final url = RegExp(r'url\(\.\./([^)]+)\)').firstMatch(text)?[1];
+      final family = RegExp('font-family:"([^"]+)"').firstMatch(text)?[1];
+      if (url == null || family == null) continue;
+      final bold = RegExp('font-weight:(bold|[6-9]00)').hasMatch(text);
+      final italic = text.contains('font-style:italic');
+      final name = url.substring(url.lastIndexOf('/') + 1);
+      var path = installed.fileNamed(name);
+      for (final (alias, aliasBold) in [
+        (family, bold),
+        ...?_fontAliases[family.toLowerCase()],
+      ]) {
+        if (path != null) break;
+        final font = installed.find(
+          alias,
+          bold: aliasBold || bold,
+          italic: italic,
+        );
+        if (font != null && font.italic == italic) path = font.path;
+      }
+      if (path == null) {
+        if (_missingFonts.add(family)) {
+          logger.warn(
+            'font $family is not installed: not embedded in the EPUB '
+            "(`asciidart doctor` installs the default themes' fonts)",
+          );
+        }
+        continue;
+      }
+      kept.add(text);
+      files.add((url, path));
+    }
+    return (kept.join(), files);
+  }
+
+  /// The families found missing (said once each).
+  final Set<String> _missingFonts = {};
 
   static String _asset(String path) => Epub3Assets.text(path) ?? '';
 
