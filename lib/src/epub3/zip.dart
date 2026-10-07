@@ -18,16 +18,19 @@ final class ZipWriter {
   static const int _dosDate = (1 << 5) | 1;
 
   /// Adds the file [name] with [bytes], compressed with [deflate] (raw
-  /// DEFLATE, no zlib header) when given and stored otherwise.
+  /// DEFLATE, no zlib header) when given (or already, as [deflated]) and
+  /// stored otherwise.
   void add(
     String name,
     List<int> bytes, {
     List<int> Function(List<int> bytes)? deflate,
+    List<int>? deflated,
   }) {
     final nameBytes = utf8.encode(name);
     final crc = crc32(bytes);
-    final compressed = deflate == null ? bytes : deflate(bytes);
-    final method = deflate == null ? 0 : 8;
+    final compress = deflate != null || deflated != null;
+    final compressed = deflated ?? deflate?.call(bytes) ?? bytes;
+    final method = compress ? 8 : 0;
     final offset = _out.length;
     // UTF-8 names (general purpose flag bit 11), as the gem's rubyzip with
     // unicode_names does for names outside ASCII.

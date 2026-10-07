@@ -176,6 +176,14 @@ Print how long reading, parsing and converting each file took.
 Report each phase of a conversion (reading, parsing, converting, writing) as it finishes, with its time.
 With \fB\-v\fP, the PDF backend also reports how many pages it laid out.
 .RE
+.SS "Cores"
+.sp
+\fB\-j, \-\-jobs\fP \fIN\fP
+.RS 4
+Convert several input files at once, on \fIN\fP workers; the output files, the messages and the exit status are those of converting them one after another.
+Each file is then converted on one core.
+Within one document, the PDF and EPUB backends use the machine\(cqs physical cores for the work that doesn\(cqt depend on order (images, compression) and keep the output the same, byte for byte; \fB\-a jobs=\fP\fIN\fP sets how many (\fB1\fP for none).
+.RE
 .SS "Information"
 .sp
 \fB\-h, \-\-help\fP [\fITOPIC\fP]
@@ -206,6 +214,11 @@ When set to an integer number of seconds since the Unix epoch, it replaces the c
 The default of the \fBasciidoctor\-compat\fP attribute: \fBtrue\fP, \fBfalse\fP, or a comma\-separated list of formats (\fBhtml\fP, \fBepub\fP, \fBdocbook\fP, \fBmanpage\fP, \fBpdf\fP) whose output keeps Asciidoctor\(cqs look.
 Without it, \fBcompat:\fP in the nearest \fBasciidart.yml\fP in the input\(cqs directory or one above it, then in \fB$XDG_CONFIG_HOME/asciidart/config.yml\fP (\fB~/.config/asciidart/config.yml\fP), gives the default.
 An \fB\-a asciidoctor\-compat\fP option or the document\(cqs own attribute entry wins.
+.RE
+.sp
+\fBASCIIDART_JOBS_SHUFFLE\fP
+.RS 4
+When \fB1\fP, work done on other cores is handed back in a random order (for checking that the output doesn\(cqt depend on it).
 .RE
 .sp
 \fBASCIIDART_MANPAGE_PATH\fP

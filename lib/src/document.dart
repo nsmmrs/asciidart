@@ -830,6 +830,11 @@ class Document extends AbstractBlock implements NodeDocument {
   _docinfoProcessorExtensions =
       <String, List<ProcessorExtension<DocinfoProcessor>>>{};
   Timings? _timings;
+
+  /// The phase timings of this conversion (`--timings`, `--progress`), if
+  /// any: a converter records its own phases in them.
+  @internal
+  Timings? get timings => _timings;
   bool _parsed = false;
   Map<String?, String>? _reftexts;
 
@@ -1383,6 +1388,16 @@ class Document extends AbstractBlock implements NodeDocument {
       composite.converters.whereType<PackagingConverter>().firstOrNull,
     _ => null,
   };
+
+  /// Waits for the work the conversion left to other cores (ADR-0016:
+  /// a PDF's images and streams), so that writing doesn't do it here; the
+  /// synchronous writing does it itself otherwise.
+  @internal
+  Future<void> finish() async {
+    if (_packaging case final FinishingConverter converter) {
+      await converter.finish();
+    }
+  }
 
   /// Writes [output] to [sink], followed by a newline (nothing is written
   /// when [output] is empty).

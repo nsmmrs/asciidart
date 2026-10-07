@@ -121,6 +121,13 @@ Messages about the document (warnings, errors) go to standard error.
   Report each phase of a conversion (reading, parsing, converting, writing) as it finishes, with its time.
   With *-v*, the PDF backend also reports how many pages it laid out.
 
+=== Cores
+
+*-j, --jobs* _N_::
+  Convert several input files at once, on _N_ workers; the output files, the messages and the exit status are those of converting them one after another.
+  Each file is then converted on one core.
+  Within one document, the PDF and EPUB backends use the machine's physical cores for the work that doesn't depend on order (images, compression) and keep the output the same, byte for byte; **-a jobs=**__N__ sets how many (*1* for none).
+
 === Information
 
 *-h, --help* [_TOPIC_]::
@@ -146,6 +153,9 @@ Compile it with *dart compile exe* to get a custom *asciidart* with those conver
   The default of the *asciidoctor-compat* attribute: *true*, *false*, or a comma-separated list of formats (*html*, *epub*, *docbook*, *manpage*, *pdf*) whose output keeps Asciidoctor's look.
   Without it, *compat:* in the nearest *asciidart.yml* in the input's directory or one above it, then in *$XDG_CONFIG_HOME/asciidart/config.yml* (*~/.config/asciidart/config.yml*), gives the default.
   An *-a asciidoctor-compat* option or the document's own attribute entry wins.
+
+*ASCIIDART_JOBS_SHUFFLE*::
+  When *1*, work done on other cores is handed back in a random order (for checking that the output doesn't depend on it).
 
 *ASCIIDART_MANPAGE_PATH*::
   The file *-h manpage* prints instead of the built-in manual page (plain or gzip-compressed).

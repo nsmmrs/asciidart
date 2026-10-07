@@ -260,6 +260,22 @@ List<int> deflateRaw(List<int> bytes) {
   return zlib.deflateRawSync(Uint8List.fromList(bytes).toJS).toDart;
 }
 
+/// The physical cores of the machine: one (the JavaScript build runs
+/// everything serially).
+int get physicalCores => 1;
+
+/// Whether [zlibEncode] and [zlibDecode] are the platform's own: not on
+/// JavaScript (where the PDF backend doesn't run).
+bool get hasNativeZlib => false;
+
+/// [bytes] compressed in zlib format at [level] (1-9).
+List<int> zlibEncode(List<int> bytes, int level) =>
+    throw UnsupportedError('zlib is unavailable in this environment');
+
+/// [bytes] (zlib format) expanded.
+List<int> zlibDecode(List<int> bytes) =>
+    throw UnsupportedError('zlib is unavailable in this environment');
+
 /// [bytes] (raw DEFLATE) expanded.
 List<int> inflateRaw(List<int> bytes) {
   final zlib = _host?.zlib;

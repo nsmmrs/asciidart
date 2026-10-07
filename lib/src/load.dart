@@ -25,6 +25,7 @@ import 'package:asciidart/src/http_fetch.dart' show fetchHttp;
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/logging.dart' show LoggerManager, NullLogger;
 import 'package:asciidart/src/options.dart';
+import 'package:asciidart/src/parallel.dart';
 import 'package:asciidart/src/path_resolver.dart' show PathResolver;
 import 'package:asciidart/src/remote.dart';
 import 'package:asciidart/src/stylesheets.dart' show Stylesheets;
@@ -105,12 +106,17 @@ Document convertToTarget(
   AsciidoctorOptions options = const AsciidoctorOptions(),
   StringSink? output,
 ]) {
+  _checkTarget(options, output);
+  return _convert(_Input.text(source), options, output);
+}
+
+/// Throws when neither [output] nor a target option is given.
+void _checkTarget(AsciidoctorOptions options, StringSink? output) {
   if (output == null && options.toFile == null && options.toDir == null) {
     throw ArgumentError(
       'convertToTarget needs an output sink or a toFile or toDir option',
     );
   }
-  return _convert(_Input.text(source), options, output);
 }
 
 /// Like [load], reading remote content with [fetch].
@@ -175,7 +181,11 @@ Future<Document> convertFileAsync(
 ]) async {
   _probeReadable(path);
   final reader = await _prefetch(_Input.file(path), options, fetch);
-  return convertFile(path, options.copyWith(uriReader: reader), output);
+  return await convertFileFinishing(
+    path,
+    options.copyWith(uriReader: reader),
+    output,
+  );
 }
 
 /// Like [convertToTarget], reading remote content with [fetch] (see
@@ -187,7 +197,36 @@ Future<Document> convertToTargetAsync(
   UriFetcher fetch = fetchHttp,
 ]) async {
   final reader = await _prefetch(_Input.text(source), options, fetch);
-  return convertToTarget(source, options.copyWith(uriReader: reader), output);
+  return await convertToTargetFinishing(
+    source,
+    options.copyWith(uriReader: reader),
+    output,
+  );
+}
+
+/// Like [convertFile], awaiting the work the conversion runs on other
+/// cores (ADR-0016) before writing; the remote content is read as
+/// [options] says (no fetching).
+@internal
+Future<Document> convertFileFinishing(
+  String path, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+  StringSink? output,
+]) {
+  _probeReadable(path);
+  return _convertFinishing(_Input.file(path), options, output);
+}
+
+/// Like [convertToTarget], awaiting the work the conversion runs on other
+/// cores (see [convertFileFinishing]).
+@internal
+Future<Document> convertToTargetFinishing(
+  String? source, [
+  AsciidoctorOptions options = const AsciidoctorOptions(),
+  StringSink? output,
+]) {
+  _checkTarget(options, output);
+  return _convertFinishing(_Input.text(source), options, output);
 }
 
 /// Fetches the remote content that converting the AsciiDoc file at [path]
@@ -381,12 +420,39 @@ Document _convert(
   AsciidoctorOptions options,
   StringSink? output,
 ) {
+  final (doc, write) = _converted(input, options, output);
+  write();
+  return doc;
+}
+
+/// Like [_convert], awaiting what the conversion left to finish on other
+/// cores (ADR-0016) before writing.
+Future<Document> _convertFinishing(
+  _Input input,
+  AsciidoctorOptions options,
+  StringSink? output,
+) async {
+  final (doc, write) = awaitingWorkers(
+    () => _converted(input, options, output),
+  );
+  await doc.finish();
+  write();
+  return doc;
+}
+
+/// The document [input] converted as [_convert] converts it, and how to
+/// write it.
+(Document, void Function()) _converted(
+  _Input input,
+  AsciidoctorOptions options,
+  StringSink? output,
+) {
   final toDir = options.toDir;
   final mkdirs = options.mkdirs;
   final toFile = options.toFile;
 
   if (toFile == '/dev/null' && output == null) {
-    return _load(input, options.withTargets());
+    return (_load(input, options.withTargets()), () {});
   }
 
   final inputFile = input.file;
@@ -504,14 +570,18 @@ Document _convert(
   }
 
   if (output != null) {
-    doc.writeTo(doc.convert(), output);
-    return doc;
+    final converted = doc.convert();
+    return (doc, () => doc.writeTo(converted, output));
   }
 
   final converted = doc.convert(outfile: outfile, outdir: outdir);
-  doc.writeFile(converted, outfile!);
-  _copyStylesheets(doc, outdir!, mkdirs: mkdirs);
-  return doc;
+  return (
+    doc,
+    () {
+      doc.writeFile(converted, outfile!);
+      _copyStylesheets(doc, outdir!, mkdirs: mkdirs);
+    },
+  );
 }
 
 /// Copies the stylesheets a document written to [outdir] links to, when

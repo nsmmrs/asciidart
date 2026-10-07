@@ -18,6 +18,7 @@ import 'package:asciidart/src/pdf/math.dart';
 import 'package:asciidart/src/pdf/svg_size.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:libpdf/libpdf.dart';
+import 'package:meta/meta.dart';
 
 const String _zwsp = '​';
 const String _shy = '­';
@@ -383,7 +384,7 @@ final class TextBox implements CustomContent {
         var text = format.font.normalize(run.text);
         if (format.smallCapitals) text = text.toUpperCase();
         // One item per line of the fragment (Prawn's `format_array=`).
-        for (final m in RegExp('[^\n]+|\n').allMatches(text)) {
+        for (final m in _linesRx.allMatches(text)) {
           items.add(_Item(m[0]!, format, defaultColor: defaultColor));
         }
       }
@@ -625,30 +626,50 @@ final class TextBox implements CustomContent {
     // text too short to split (fewer lines than its orphans and widows).
     if (_items.isNotEmpty) {
       _arrangeImages(width);
-      _Wrap wrapped(int maxLines) => _wrapOf(
-        [for (final item in _items) item.copy()],
-        _state,
-        _layout,
-        _context,
-        width,
-        double.infinity,
-        firstPiece: first,
-        continuedIndent: continuedIndent,
-        maxLines: maxLines,
-      );
-      final orphans = math.max(1, _layout.orphans);
-      final unsplit = math.max(orphans, orphans + _layout.widows - 1);
-      final whole = wrapped(unsplit);
-      if (whole.run().isEmpty) return 0;
-      if (whole.unconsumed.isEmpty || unsplit == orphans) {
-        return _layout.initialGap + whole.height;
-      }
-      final wrap = wrapped(orphans)..run();
-      return _layout.initialGap + wrap.height;
+      // (The same for the same width and labels: kept.)
+      final key = (width, _labelState());
+      if (_minHeights[key] case final height?) return height;
+      return _minHeights[key] = _minHeight(width);
     }
     final placed = place(width, double.infinity, atTop: true);
     if (placed == null) return 0;
     return placed.height;
+  }
+
+  final Map<(double, String), double> _minHeights = {};
+  final Map<(double, String), int> _lineCounts = {};
+
+  /// The texts of the items whose text is a label (after [_relabel]): what
+  /// a layout of the same items at the same width may differ by.
+  String _labelState() => _context.labels == null
+      ? ''
+      : [
+          for (final item in _items)
+            if (item.format.fragment.label != null) item.text,
+        ].join('\u0000');
+
+  /// The least height [minHeight] computes (not kept).
+  double _minHeight(double width) {
+    _Wrap wrapped(int maxLines) => _wrapOf(
+      [for (final item in _items) item.copy()],
+      _state,
+      _layout,
+      _context,
+      width,
+      double.infinity,
+      firstPiece: first,
+      continuedIndent: continuedIndent,
+      maxLines: maxLines,
+    );
+    final orphans = math.max(1, _layout.orphans);
+    final unsplit = math.max(orphans, orphans + _layout.widows - 1);
+    final whole = wrapped(unsplit);
+    if (whole.run().isEmpty) return 0;
+    if (whole.unconsumed.isEmpty || unsplit == orphans) {
+      return _layout.initialGap + whole.height;
+    }
+    final wrap = wrapped(orphans)..run();
+    return _layout.initialGap + wrap.height;
   }
 
   /// The items whose text is a label the layout gives ([Fragment.label]):
@@ -1009,7 +1030,7 @@ final class TextBox implements CustomContent {
     if (lines.isNotEmpty &&
         wrap.unconsumed.isNotEmpty &&
         (_layout.orphans > 1 || _layout.widows > 1)) {
-      final total = _wrapOf(
+      final total = _lineCounts[(width, _labelState())] ??= _wrapOf(
         [for (final item in _items) item.copy()],
         _state,
         _layout,
@@ -1337,16 +1358,75 @@ PdfColor? pdfColorOf(ThemeColor? color) => _pdfColor(color);
 /// zero width space), the soft hyphen and the hyphen.
 const String _breakChars = ' \t$_zwsp$_shy-';
 
-final RegExp _tokens = RegExp(
-  '[^$_breakChars]+$_shy|[^$_breakChars]+-+|[^$_breakChars]+|'
-  '[ \t$_zwsp]+|-+[^$_breakChars]*|$_shy',
-);
-
 final RegExp _wordDivision = RegExp('[\t\n\v\r $_zwsp$_shy-]');
 
-List<String> _tokenize(String text) => [
-  for (final m in _tokens.allMatches(text)) m[0]!,
-];
+/// [text]'s tokens (scanned by hand: line breaking tokenizes every piece
+/// of text, often): a word (a run without [_breakChars]) with the soft
+/// hyphen or the hyphens after it, a run of spaces, tabs and zero width
+/// spaces, hyphens with the word after them, a soft hyphen.
+List<String> _tokenize(String text) {
+  final tokens = <String>[];
+  final n = text.length;
+  var i = 0;
+  while (i < n) {
+    final c = text.codeUnitAt(i);
+    final start = i;
+    if (c == _shyUnit) {
+      i++;
+    } else if (c == 0x20 || c == 0x09 || c == _zwspUnit) {
+      while (i < n && _isSpaceUnit(text.codeUnitAt(i))) {
+        i++;
+      }
+    } else if (c == 0x2d) {
+      while (i < n && text.codeUnitAt(i) == 0x2d) {
+        i++;
+      }
+      while (i < n && !_isBreakUnit(text.codeUnitAt(i))) {
+        i++;
+      }
+    } else {
+      while (i < n && !_isBreakUnit(text.codeUnitAt(i))) {
+        i++;
+      }
+      if (i < n && text.codeUnitAt(i) == _shyUnit) {
+        i++;
+      } else {
+        while (i < n && text.codeUnitAt(i) == 0x2d) {
+          i++;
+        }
+      }
+    }
+    tokens.add(text.substring(start, i));
+  }
+  return tokens;
+}
+
+const int _shyUnit = 0xad;
+const int _zwspUnit = 0x200b;
+
+bool _isSpaceUnit(int c) => c == 0x20 || c == 0x09 || c == _zwspUnit;
+
+bool _isBreakUnit(int c) => _isSpaceUnit(c) || c == _shyUnit || c == 0x2d;
+
+/// Whether [text] is nothing but spaces, tabs and zero width spaces (and
+/// not empty).
+bool _isBlank(String text) {
+  if (text.isEmpty) return false;
+  for (var i = 0; i < text.length; i++) {
+    if (!_isSpaceUnit(text.codeUnitAt(i))) return false;
+  }
+  return true;
+}
+
+/// Whether [text] is nothing but spaces and tabs (and not empty).
+bool _isSpaces(String text) {
+  if (text.isEmpty) return false;
+  for (var i = 0; i < text.length; i++) {
+    final c = text.codeUnitAt(i);
+    if (c != 0x20 && c != 0x09) return false;
+  }
+  return true;
+}
 
 /// The wrap of [items] for [context]'s engine: the modern engine's (whole
 /// words, Typst's breaking), else Prawn's (also for code, whose wrapped
@@ -1530,7 +1610,7 @@ base class _Wrap {
     if (wrapIndent == null || continuedIndent != null) return;
     var own = 0.0;
     if (_lines.last.fragments.firstOrNull case final first?) {
-      final leading = RegExp('^[\u00a0 ]*').stringMatch(first.text) ?? '';
+      final leading = _leadingSpacesRx.stringMatch(first.text) ?? '';
       if (leading.isNotEmpty) own = _widthOf(leading, first.format);
     }
     continuedIndent = math.min(indent + own + wrapIndent, _width / 2);
@@ -1710,8 +1790,7 @@ base class _Wrap {
     _previousEndedWithBreakable =
         _previousFragment.isNotEmpty &&
         _breakChars.contains(_previousFragment[_previousFragment.length - 1]);
-    final lastWord =
-        RegExp('[^$_breakChars]*\$').stringMatch(_previousFragment) ?? '';
+    final lastWord = _trailingWordRx.stringMatch(_previousFragment) ?? '';
     _previousWithoutLastWord = _previousFragment.substring(
       0,
       _previousFragment.length - lastWord.length,
@@ -1955,12 +2034,26 @@ final class _CannotFit implements Exception {
 
 // Ruby's whitespace (for strip and its kin): ASCII whitespace and NUL,
 // never a no-break space.
-final RegExp _leadingSpace = RegExp(r'^[\t\n\v\f\r \x00]+');
-final RegExp _trailingSpace = RegExp(r'[\t\n\v\f\r \x00]+$');
 
-String _lstrip(String text) => text.replaceFirst(_leadingSpace, '');
+/// [text] without the ASCII whitespace and NULs at its start.
+String _lstrip(String text) {
+  var start = 0;
+  while (start < text.length && _isStripUnit(text.codeUnitAt(start))) {
+    start++;
+  }
+  return start == 0 ? text : text.substring(start);
+}
 
-String _rstrip(String text) => text.replaceFirst(_trailingSpace, '');
+/// [text] without the ASCII whitespace and NULs at its end.
+String _rstrip(String text) {
+  var end = text.length;
+  while (end > 0 && _isStripUnit(text.codeUnitAt(end - 1))) {
+    end--;
+  }
+  return end == text.length ? text : text.substring(0, end);
+}
+
+bool _isStripUnit(int c) => c == 0x20 || (c >= 0x09 && c <= 0x0d) || c == 0;
 
 String _strip(String text) => _lstrip(_rstrip(text));
 
@@ -2148,8 +2241,7 @@ final class _OptimalWrap extends _Wrap {
   /// its parts), as a word in one item is split: the line may break
   /// before any of its characters ([charBreaks], at a cost).
   void _splitLongRuns(List<(int, String)> pieces, Set<int> charBreaks) {
-    bool isSpace((int, String) piece) =>
-        piece.$2 == '\n' || RegExp('^[ \t$_zwsp]+\$').hasMatch(piece.$2);
+    bool isSpace((int, String) piece) => piece.$2 == '\n' || _isBlank(piece.$2);
     bool isMarker((int, String) piece) =>
         _unconsumed[piece.$1].format.fragment.isMarker;
     final split = <(int, String)>[];
@@ -2207,7 +2299,7 @@ final class _OptimalWrap extends _Wrap {
         lineStart = true;
       } else {
         for (final token in _tokenize(item.text)) {
-          if (RegExp('^[ \t]+\$').hasMatch(token)) {
+          if (_isSpaces(token)) {
             if (lineStart) continue;
           } else if (!item.format.fragment.isMarker) {
             lineStart = false;
@@ -2219,7 +2311,7 @@ final class _OptimalWrap extends _Wrap {
               : token;
           if (!item.format.fragment.isMarker &&
               word.runes.length > 1 &&
-              !RegExp('^[ \t$_zwsp]+\$').hasMatch(word) &&
+              !_isBlank(word) &&
               _widthOf(word, item.format) > _width) {
             for (final (k, rune) in token.runes.indexed) {
               if (k > 0) charBreaks.add(pieces.length);
@@ -2253,7 +2345,7 @@ final class _OptimalWrap extends _Wrap {
         add(const PenaltyItem(0, PenaltyItem.forced), p);
         continue;
       }
-      if (RegExp('^[ \t$_zwsp]+\$').hasMatch(token)) {
+      if (_isBlank(token)) {
         wordSoFar = '';
         final spaces = token.replaceAll(_zwsp, '');
         if (spaces.isEmpty) {
@@ -2325,7 +2417,10 @@ final class _OptimalWrap extends _Wrap {
       LineBreaking.auto when justify => TypstLineBreaker(fontSize: _state.size),
       _ => const FirstFitLineBreaker(),
     };
-    final breaks = breaker.breakItems(items, widthOf);
+    // The same paragraph is broken at the same width again and again (as
+    // pages are tried and the book laid out again): its breaks are kept.
+    final key = _BreakKey(breaker, widthOf(0), widthOf(1), items);
+    final breaks = _breaks[key] ??= breaker.breakItems(items, widthOf);
 
     // The pieces of each line: up to the piece its break is in (a space
     // or a newline ends the line it breaks), then on from the next.
@@ -2428,4 +2523,101 @@ final class _OptimalWrap extends _Wrap {
 
   /// The items as they were before the wrap (its list changes).
   List<_Item> _source = const [];
+}
+
+// Patterns the line wrapping uses for every piece of text, built once.
+final RegExp _linesRx = RegExp('[^\n]+|\n');
+final RegExp _leadingSpacesRx = RegExp('^[\u00a0 ]*');
+final RegExp _trailingWordRx = RegExp('[^$_breakChars]*\$');
+
+/// The breaks found for each paragraph's items, by breaker and widths.
+final Map<_BreakKey, List<int>> _breaks = {};
+
+/// A line item as a break key compares it: its kind (0 a box, 1 glue, 2
+/// a penalty), text and measures (a penalty's cost as its second).
+typedef _ItemKey = (
+  int kind,
+  String text,
+  double width,
+  double stretch,
+  double shrink,
+  bool flagged,
+);
+
+/// What a paragraph's line breaks depend on: the breaker and its costs,
+/// the first line's width and the others', and each item (its kind, text
+/// and measures).
+@immutable
+final class _BreakKey {
+  new(ItemLineBreaker breaker, double first, double rest, List<LineItem> items)
+    : this._(
+        switch (breaker) {
+          TypstLineBreaker(
+            :final justify,
+            :final fontSize,
+            :final hyphenationCost,
+            :final runtCost,
+          ) =>
+            'typst $justify $fontSize $hyphenationCost $runtCost',
+          _ => breaker.runtimeType.toString(),
+        },
+        first,
+        rest,
+        [
+          for (final item in items)
+            switch (item) {
+              BoxItem(:final text, :final width) => (
+                0,
+                text,
+                width,
+                0,
+                0,
+                false,
+              ),
+              GlueItem(
+                :final text,
+                :final width,
+                :final stretch,
+                :final shrink,
+              ) =>
+                (1, text, width, stretch, shrink, false),
+              PenaltyItem(:final width, :final penalty, :final flagged) => (
+                2,
+                '',
+                width,
+                penalty,
+                0,
+                flagged,
+              ),
+            },
+        ],
+      );
+
+  new _(this._breaker, this._first, this._rest, this._items)
+    : _hash = Object.hash(_breaker, _first, _rest, Object.hashAll(_items));
+
+  final String _breaker;
+  final double _first;
+  final double _rest;
+  final List<_ItemKey> _items;
+  final int _hash;
+
+  @override
+  int get hashCode => _hash;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! _BreakKey ||
+        other._hash != _hash ||
+        other._breaker != _breaker ||
+        other._first != _first ||
+        other._rest != _rest ||
+        other._items.length != _items.length) {
+      return false;
+    }
+    for (var i = 0; i < _items.length; i++) {
+      if (other._items[i] != _items[i]) return false;
+    }
+    return true;
+  }
 }

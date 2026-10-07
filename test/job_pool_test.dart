@@ -26,6 +26,15 @@ void _delayWorker(SendPort mainPort) =>
       return (id: request.id, doubled: request.n * 2);
     });
 
+/// Fake worker that keeps its isolate busy for `delayMs` (one job at a
+/// time).
+void _busyWorker(SendPort mainPort) =>
+    serveJobs<_Request, _Response>(mainPort, (request) {
+      final watch = Stopwatch()..start();
+      while (watch.elapsedMilliseconds < request.delayMs) {}
+      return (id: request.id, doubled: request.n * 2);
+    });
+
 /// Builds a fake request with the given [id], value [n] and [delayMs].
 _Request _request(String id, int n, int delayMs) =>
     (id: id, n: n, delayMs: delayMs);
@@ -54,6 +63,26 @@ void main() {
   });
 
   group('IsolateJobPool.runOrdered', () {
+    test('idle workers take the next job', () async {
+      final pool = await IsolateJobPool.spawn<_Request, _Response>(
+        size: 2,
+        entryPoint: _busyWorker,
+      );
+      try {
+        final watch = Stopwatch()..start();
+        final responses = await pool.runOrdered([
+          _request('long', 0, 600),
+          for (var i = 1; i <= 5; i++) _request('short$i', i, 100),
+        ]);
+        // Dealt in turn, the long job's worker would also get two short
+        // ones (800 ms); pulled, the other worker takes all five (600 ms).
+        expect(watch.elapsedMilliseconds, lessThan(750));
+        expect(responses.map((r) => r.id).first, 'long');
+      } finally {
+        await pool.close();
+      }
+    });
+
     test('empty request list returns empty', () async {
       final pool = await _spawn(2);
       try {

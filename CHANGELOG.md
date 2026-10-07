@@ -192,6 +192,13 @@ Asciidoctor project.
   header.
 - The compiled command converts 5–10x faster than the gem end to end, and
   about 2x faster in process (`benchmark/BASELINE.md`).
+- Speed on every core (ADR-0016): the work a PDF or EPUB doesn't need in
+  order (PNG images, compression) runs on the physical cores (`-a
+  jobs=N`, `1` for none), with the same bytes at any number of workers;
+  the index and page-numbered footnotes lay out again only from the
+  pages they change; line breaks are kept per paragraph. The Hypermedia
+  Systems PDF takes 2.1 s, from 3.8 s (Typst 0.15.1: 3.7 s); `-j` batches
+  give each worker the next file as it finishes one.
 - The same core builds as the npm package `asciidart` for Node.js and
   browsers (ADR-0005). Its API is generated from the Dart API, with the
   same names and shapes, plus TypeScript declarations
