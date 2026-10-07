@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { after, before, test } from 'node:test'
 import { build } from 'esbuild'
 import { chromium } from 'playwright-core'
-import { Asciidart, SafeMode } from 'asciidart'
+import { Asciidart, FontFile, SafeMode } from 'asciidart'
 
 const fixtures = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor', 'test', 'fixtures')
 const executablePath = process.env.CHROMIUM_PATH ?? '/usr/bin/chromium'
@@ -85,4 +85,22 @@ test('includes behave as missing files without a file system', async () => {
     new globalThis.asciidart.Asciidart({ safe: 'safe' }).convert('include::other.adoc[]')
   )
   assert.match(output, /Unresolved directive in &lt;stdin&gt; - include::other\.adoc\[\]/)
+})
+
+test('makes a PDF in the browser like Node.js, its part loaded on demand', async () => {
+  const fonts = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor-pdf', 'data', 'fonts')
+  const regular = readFileSync(join(fonts, 'notoserif-regular-subset.ttf'))
+  const attributes = { localdatetime: '2020-01-01 00:00:00 +0000' }
+  const expected = await new Asciidart({
+    fonts: [new FontFile('notoserif-regular-subset.ttf', regular)],
+  }).convertToBytesAsync('Hello, browser.', { backend: 'pdf', attributes })
+  const actual = await page.evaluate(
+    async ({ font, attributes }) => {
+      const { Asciidart, FontFile } = globalThis.asciidart
+      const ad = new Asciidart({ fonts: [new FontFile('notoserif-regular-subset.ttf', new Uint8Array(font))] })
+      return Array.from(await ad.convertToBytesAsync('Hello, browser.', { backend: 'pdf', attributes }))
+    },
+    { font: Array.from(regular), attributes }
+  )
+  assert.deepEqual(Uint8Array.from(actual), expected)
 })

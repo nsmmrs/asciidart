@@ -11,3 +11,8 @@ self.scheduleImmediate =
     : function (callback) {
         setTimeout(callback, 0);
       };
+// dart2js reads `self.trustedTypes` when it loads a part on demand; on a
+// window that is an accessor, which throws when called on this object.
+// The package loads the parts itself (no script URL is used), so it has
+// none. (Defined, not assigned: a window's is a getter.)
+Object.defineProperty(self, 'trustedTypes', { value: undefined, writable: true });

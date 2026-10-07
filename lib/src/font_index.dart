@@ -119,6 +119,14 @@ final class FontIndex {
   /// memory).
   List<int> bytes(String path) => _memory[path] ?? io.readBytes(path);
 
+  /// The family of the (first) font in [bytes], or null when they are not
+  /// a font.
+  static String? familyOf(List<int> bytes) {
+    final data = bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+    final fonts = _parse('', _rangesOf(data));
+    return fonts.isEmpty ? null : fonts.first.family;
+  }
+
   /// Whether the font at [path] was given as bytes.
   bool isInMemory(String path) => _memory.containsKey(path);
 

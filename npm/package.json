@@ -46,7 +46,8 @@
     "node.js",
     "bin/",
     "src/",
-    "types/"
+    "types/",
+    "parts/"
   ],
   "engines": {
     "node": ">=20.19"

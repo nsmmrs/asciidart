@@ -36,9 +36,45 @@ dart compile js ${DART2JS_FLAGS:--O2} --no-source-maps \
   -o "$tmp/core.js" "$root/lib/src/js/entry.dart" >/dev/null
 # Keep the core working when bundlers rename its functions.
 node "$root/tool/npm_pin_names.mjs" "$tmp/core.js" >/dev/null
+# Let the core load its parts where it has no script of its own.
+node "$root/tool/npm_current_script.mjs" "$tmp/core.js" >/dev/null
 cp -R "$root/npm/." "$out/"
 rm "$out/preamble.js"
-cat "$root/npm/preamble.js" "$tmp/core.js" > "$out/asciidart.js"
+# The parts of the core that load on demand (the PDF and EPUB backends):
+# each an ES module whose function runs the part, loaded by a hook with a
+# literal import() per part, so that bundlers split them out too.
+mkdir -p "$out/parts"
+loader="$tmp/loader.js"
+{
+  echo '// The table the core and its parts share their code through (a global'
+  echo '// in a script, a variable of this module here).'
+  echo 'var $__dart_deferred_initializers__ ='
+  echo '  (self.$__dart_deferred_initializers__ = {})'
+  echo '// Loads the parts of the core compiled to load on demand.'
+  echo 'self.dartDeferredLibraryLoader = function (uri, onLoad, onError) {'
+  echo "  var name = uri.slice(uri.lastIndexOf('/') + 1).replace(/\\?.*\$/, '')"
+  echo '  var parts = {'
+  for part in "$tmp"/core.js_*.part.js; do
+    [ -e "$part" ] || continue
+    base="$(basename "$part")"
+    n="${base#core.js_}"; n="${n%.part.js}"
+    {
+      echo 'export default function (self, $__dart_deferred_initializers__) {'
+      cat "$part"
+      echo '}'
+    } > "$out/parts/part-$n.js"
+    echo "    '$base': function () { return import('./parts/part-$n.js') },"
+  done
+  echo '  }'
+  echo '  var part = parts[name]'
+  echo "  if (!part) return onError(new Error('asciidart: no part ' + name))"
+  echo '  part().then(function (module) {'
+  echo '    module.default(self, $__dart_deferred_initializers__)'
+  echo '    onLoad()'
+  echo '  }, onError)'
+  echo '};'
+} > "$loader"
+cat "$root/npm/preamble.js" "$loader" "$tmp/core.js" > "$out/asciidart.js"
 cp "$root/LICENSE" "$out/LICENSE"
 # CommonJS copies of the type declarations, for require().
 for decl in "$out"/types/*.d.ts; do

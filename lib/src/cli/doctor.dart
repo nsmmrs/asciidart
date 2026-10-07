@@ -19,7 +19,6 @@ import 'package:asciidart/src/font_index.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/remote.dart';
 import 'package:asciidart/src/sha256.dart';
-import 'package:libpdf/libpdf.dart' show OpenTypeFont;
 
 /// Usage text for `doctor` (printed by `--help` and on misuse).
 const String doctorUsage = '''
@@ -597,13 +596,7 @@ Future<List<(String, List<int>)>> _fetchFont(
 }
 
 /// The family name of the font in [bytes], or null when it isn't one.
-String? _familyOf(List<int> bytes) {
-  try {
-    return OpenTypeFont.parse(bytes).familyName;
-  } on Exception {
-    return null;
-  }
-}
+String? _familyOf(List<int> bytes) => FontIndex.familyOf(bytes);
 
 /// [file]'s contents, checked against its digest.
 Future<List<int>> _pinned(
