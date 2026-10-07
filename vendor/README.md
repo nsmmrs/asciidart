@@ -31,7 +31,7 @@ from the gem and the `v2.3.0` tag, and regenerates
 | Path | Used for |
 | --- | --- |
 | `styles/*.css` | the gem's SCSS stylesheets, compiled with the gem's Sass engine and options (byte for byte what the gem writes) |
-| `fonts/` | the fonts every EPUB carries (and the scripts' variants) |
+| `fonts/` | the fonts the gem embeds in every EPUB (and the scripts' variants); asciidart embeds installed fonts only with `epub-embed-fonts`, and the tests and EPUB parity put these on the font path |
 | `fonts/awesome/icons.tsv` | the Font Awesome names and code points, and renamed icons, from the gem's `icons.yml` and `shims.yml` |
 | `images/` | the default avatar and headshot |
 | `test/fixtures/` | the spec fixtures, converted by `tool/epub_parity.dart` |
@@ -47,8 +47,8 @@ the icon fonts of prawn-icon 3.0.0, the gem's icon dependency) and the
 | Path | Used for |
 | --- | --- |
 | `data/themes/` | the bundled themes (`base`, `default`, `default-sans`...) |
-| `data/fonts/` | the bundled fonts (Noto Serif, Noto Sans, M+ 1mn, M+ 1p fallback, Noto Emoji subsets; `LICENSE-*` and `ABOUT-*` give their licenses and sources) and `fa-legacy-mapping.yml` |
-| `icons/<set>/` | the icon fonts: Font Awesome Free 5.15.1 (`fas`, `far`, `fab`), Foundation Icons 3 (`fi`), PaymentFont (`pf`), each with its license |
+| `data/fonts/` | the gem's fonts (Noto Serif, Noto Sans, M+ 1mn, M+ 1p fallback, Noto Emoji subsets; `LICENSE-*` and `ABOUT-*` give their licenses and sources) and `fa-legacy-mapping.yml`; not compiled in: the tests set their PDFs in them |
+| `icons/<set>/` | the icon fonts: Font Awesome Free 5.15.1 (`fas`, `far`, `fab`), Foundation Icons 3 (`fi`), PaymentFont (`pf`), each with its license; used by the tests, as `asciidart doctor` installs them for users |
 | `icons/<set>.tsv` | icon names and code points: Font Awesome's from the fonts' glyph names, Foundation Icons' and PaymentFont's from their projects' MIT-licensed style sheets |
 | `test/spec/` | the spec suite (`*.rb`, `spec_helper/`, `fixtures/`; not the reference PNGs) |
 | `test/examples/` | the example documents |

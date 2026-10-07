@@ -190,6 +190,14 @@ Asciidoctor project.
   header.
 - The compiled command converts 5–10x faster than the gem end to end, and
   about 2x faster in process (`benchmark/BASELINE.md`).
+- Fonts are the machine's, not compiled in: the PDF backend finds a
+  theme's fonts among the installed ones (by file name, then by family;
+  `ASCIIDART_FONT_PATH` adds folders), falls back to the built-in PDF
+  fonts with a warning when one is missing, and `asciidart doctor`
+  checks the built-in themes' fonts and downloads the missing ones from
+  Google Fonts and their projects into the user's font folder. An EPUB
+  embeds fonts only with `-a epub-embed-fonts`. The executable is 18.9 MB
+  instead of 31.5.
 - Speed on every core (ADR-0016): the work a PDF or EPUB doesn't need in
   order (PNG images, compression) runs on the physical cores (`-a
   jobs=N`, `1` for none), with the same bytes at any number of workers;

@@ -3,7 +3,8 @@
 `asciidart -b pdf` writes a PDF with asciidart's own PDF library, libpdf,
 and reads asciidoctor-pdf's YAML themes unchanged (`pdf-theme`,
 `pdf-themesdir`, `pdf-fontsdir`). It needs an output file and the native
-executable.
+executable, and sets text in the fonts installed on the machine
+(`asciidart doctor` installs the built-in themes'; see [Fonts](#fonts)).
 
 It lays documents out with asciidart's own typesetting, described below.
 With `asciidoctor-compat` (or `-a pdf-compat`), its settings default to
@@ -147,6 +148,29 @@ US English), with the hyph-utf8 patterns for 72 languages
 | `:hyphens: de` (or `base_hyphens: de`) | Hyphenates all text in that language. A language without patterns is reported. |
 
 ### Fonts
+
+asciidart compiles no fonts in: a theme names the fonts it wants, and they
+come from the machine. A `font_catalog` file is looked up in
+`pdf-fontsdir` (by default the theme's folder), then among the installed
+fonts, those of the folders in `ASCIIDART_FONT_PATH` (separated as `PATH`
+is) and then this user's and the system's font folders: by the file's
+name, then by the family and style its catalog entry gives. `GEM_FONTS_DIR`
+names the built-in themes' fonts wherever they are installed, M PLUS 1
+Code and M PLUS 1p (their successors on Google Fonts) stand in for
+asciidoctor-pdf's M+ 1mn and M+ 1p, and a `font_family` that isn't in the
+catalog names any installed family (`base_font_family: Inter`).
+
+A font that isn't installed is replaced by a built-in PDF font (Courier
+for a monospace family, Times for a serif one, else Helvetica), with one
+warning; an icon set whose font is missing shows its icons as text, and
+math with no math font installed is shown as its source.
+
+`asciidart doctor` lists the fonts of the built-in themes (Noto Serif,
+Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math and
+the Font Awesome, Foundation and Payment icon fonts), where they are
+found, and offers to download the missing ones from their official
+sources into this user's font folder (`--yes` without asking, `--check`
+to only check).
 
 | Key | Default | What it does |
 | --- | --- | --- |

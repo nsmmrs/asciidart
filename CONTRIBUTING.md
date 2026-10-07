@@ -41,6 +41,15 @@ ASCIIDOCTOR_EXE="$PWD/dist/asciidart-linux-x64" bats test/e2e/
 `ASCIIDOCTOR_EXE=test/e2e/bin/asciidoctor-ruby bats test/e2e/` runs the
 same suite against the gem; both must pass.
 
+The tests and tools set PDFs and EPUBs in the fonts vendored with
+asciidoctor-pdf and asciidoctor-epub3 (`tool/vendored_fonts.dart`), so
+their output doesn't depend on the fonts installed. To run the executable
+on the same fonts by hand, put their folders in `ASCIIDART_FONT_PATH`:
+
+```sh
+export ASCIIDART_FONT_PATH=$PWD/vendor/asciidoctor-pdf/data/fonts:$PWD/vendor/asciidoctor-pdf/icons:$PWD/data/pdf-fonts:$PWD/vendor/asciidoctor-epub3/fonts
+```
+
 ## Corpus check
 
 A wider comparison with the gem over thousands of real documents (stdout,

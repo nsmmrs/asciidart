@@ -16,6 +16,8 @@ asciidart - convert AsciiDoc documents to HTML, DocBook and man pages
 
 *asciidart init-config* [_DIR_] [*-f*]
 
+*asciidart doctor* [*-y*] [*-c*]
+
 == Description
 
 *asciidart* reads each AsciiDoc _FILE_ and writes the converted document next to it, under the same name with the extension of the output format (for example, _guide.adoc_ becomes _guide.html_).
@@ -138,6 +140,13 @@ Messages about the document (warnings, errors) go to standard error.
   Print the version of *asciidart*, the Asciidoctor release it is compatible with, and the runtime.
   *-v* does the same when it is the only argument.
 
+== Fonts
+
+asciidart compiles no fonts in: PDFs are set in the fonts installed on the machine that their theme names, and an EPUB embeds installed fonts only with *-a epub-embed-fonts*.
+*asciidart doctor* lists the fonts of the built-in PDF themes (Noto Serif, Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math, and the Font Awesome, Foundation and Payment icon fonts) and where they are found, and offers to download the missing ones from their official sources (Google Fonts, the projects' repositories) into this user's font folder.
+*-y* (*--yes*) installs them without asking; *-c* (*--check*) only checks, and exits with status 1 when fonts are missing.
+A font a theme names that isn't installed is replaced by a built-in PDF font (Times, Helvetica or Courier), with a warning.
+
 == Custom binaries
 
 *asciidart init-config* [_DIR_] creates a small Dart project in _DIR_ (the working directory by default) whose program registers Dart functions as converters and then runs this command line.
@@ -153,6 +162,9 @@ Compile it with *dart compile exe* to get a custom *asciidart* with those conver
   The default of the *asciidoctor-compat* attribute: *true*, *false*, or a comma-separated list of formats (*html*, *epub*, *docbook*, *manpage*, *pdf*) whose output keeps Asciidoctor's look.
   Without it, *compat:* in the nearest *asciidart.yml* in the input's directory or one above it, then in *$XDG_CONFIG_HOME/asciidart/config.yml* (*~/.config/asciidart/config.yml*), gives the default.
   An *-a asciidoctor-compat* option or the document's own attribute entry wins.
+
+*ASCIIDART_FONT_PATH*::
+  Folders searched for fonts before this user's and the system's font folders, separated as in *PATH*.
 
 *ASCIIDART_JOBS_SHUFFLE*::
   When *1*, work done on other cores is handed back in a random order (for checking that the output doesn't depend on it).

@@ -31,7 +31,9 @@ line tool, and (compiled to JavaScript) an npm package.
   matches the asciidoctor-epub3 2.3.0 gem file by file
   (`tool/epub_parity.dart`).
 - **PDF without Ruby or a browser.** `-b pdf` draws with libpdf, a
-  pure-Dart PDF library, and reads asciidoctor-pdf's YAML themes. With
+  pure-Dart PDF library, and reads asciidoctor-pdf's YAML themes. Fonts
+  are yours: a theme names any installed font, and `asciidart doctor`
+  installs the built-in themes' (Noto, M PLUS and the icon fonts). With
   `asciidoctor-compat`, the pages look as asciidoctor-pdf 2.3.27 sets them:
   792 of the 797 documents of that gem's spec suite look the same
   (`tool/pdf_look.dart`). By default, asciidart lays books out with its
@@ -177,5 +179,6 @@ implementation by Dan Allen, Sarah White, Ryan Waldron and the Asciidoctor
 contributors, with byte-identical output as the bar. MIT licensed (see
 [LICENSE](LICENSE)). The stylesheets, locale data and test fixtures taken
 from Asciidoctor live under [`vendor/`](vendor/README.md), with their
-license. The PDF backend bundles Noto Sans Math for formulas
-(`data/pdf-fonts`, SIL Open Font License 1.1, with its license).
+license. asciidart ships no fonts: `asciidart doctor` downloads the
+built-in themes' fonts (SIL Open Font License 1.1 and MIT) from their
+projects, with their licenses.

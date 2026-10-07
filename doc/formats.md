@@ -35,3 +35,14 @@ feature the format has no use for.
 | Page paths (`page-path`) | n/a | n/a | yes | n/a | n/a |
 | Show link URIs (`show-link-uri`) | footnote or after | n/a | n/a | n/a | n/a |
 | Help text lists the backend | yes | yes | yes | yes | yes |
+
+## Fonts
+
+No format's fonts are compiled into asciidart. The PDF uses the fonts its
+theme names from those installed on the machine (`doc/pdf.md`, Fonts);
+`asciidart doctor` installs the built-in themes'. An EPUB embeds no fonts
+unless `-a epub-embed-fonts` is set: its stylesheet names Noto Serif, M+
+1p and M+ 1mn and the reading system's fonts apply (its font icons are
+shown as text); with the attribute, the fonts it names are embedded from
+the installed ones. HTML and the website name their stylesheet's fonts,
+as Asciidoctor's do.
