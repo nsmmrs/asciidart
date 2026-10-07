@@ -5,14 +5,9 @@ and reads asciidoctor-pdf's YAML themes unchanged (`pdf-theme`,
 `pdf-themesdir`, `pdf-fontsdir`). It needs an output file and the native
 executable.
 
-There are two layout engines:
-
-- **Modern** (the default): asciidart's own typesetting, described
-  below.
-- **Compatibility** (`-a pdf-compat`): the layout of asciidoctor-pdf
-  2.3.27, Prawn's line wrapping included. `benchmark/PARITY.md` records how
-  closely it matches the gem. The keys below are not read in this mode,
-  except `base_hyphens` and the `hyphens` attribute, which the gem has.
+It lays documents out with asciidart's own typesetting, described below.
+With `asciidoctor-compat` (or `-a pdf-compat`), its settings default to
+asciidoctor-pdf's look instead (next section; ADR-0015).
 
 ## asciidoctor-pdf's look
 

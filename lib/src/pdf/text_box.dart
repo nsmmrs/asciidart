@@ -3,7 +3,7 @@
 /// word joiners), each line as tall as its tallest fragment, baselines
 /// placed with the leading and the gaps asciidoctor-pdf passes,
 /// justification by word spacing, font fallback per glyph. A
-/// [PrawnTextBox] is libpdf custom content: the layout gives it the room
+/// [TextBox] is libpdf custom content: the layout gives it the room
 /// left on the page and it places the lines that fit.
 library;
 
@@ -12,7 +12,6 @@ import 'dart:math' as math;
 
 import 'package:asciidart/src/cursor.dart';
 import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/markup.dart';
 import 'package:asciidart/src/pdf/svg_size.dart';
@@ -199,7 +198,6 @@ final class TextContext {
     this.images,
     this.boundsHeight = double.infinity,
     this.decorationWidth = 1,
-    this.engine = PdfEngine.asciidoctorPdf,
     this.lineBreaking = LineBreaking.auto,
     this.typographicScripts = false,
     this.labels,
@@ -226,9 +224,6 @@ final class TextContext {
   /// The width of underlines and strike-throughs that don't set one (the
   /// theme's `base_text_decoration_width`).
   final double decorationWidth;
-
-  /// The layout engine (which wraps lines as Prawn does, or optimally).
-  final PdfEngine engine;
 
   /// How the modern engine breaks lines.
   final LineBreaking lineBreaking;
@@ -279,7 +274,7 @@ final class _Format {
   });
 
   final Fragment fragment;
-  final PrawnFont font;
+  final FontFace font;
   final double size;
 
   /// Whether a superscript or subscript is set in the font's glyphs for
@@ -363,8 +358,9 @@ final class _Line {
   bool wrapped = false;
 }
 
-/// Text laid out as Prawn does, as libpdf custom content.
-final class PrawnTextBox implements CustomContent {
+/// Text laid out in lines (Typst's line breaking, or for code one line at
+/// a time with a hanging indent), as libpdf custom content.
+final class TextBox implements CustomContent {
   /// The text of [fragments] (from the markup) starting from [state],
   /// laid out by [layout].
   factory(
@@ -387,7 +383,7 @@ final class PrawnTextBox implements CustomContent {
         }
       }
     }
-    return PrawnTextBox._(items, state, layout, context, first: true);
+    return TextBox._(items, state, layout, context, first: true);
   }
 
   new _(
@@ -423,7 +419,7 @@ final class PrawnTextBox implements CustomContent {
 
   /// This (left over) text in [state] and laid out by [layout] (the rest
   /// of a first line set in another style).
-  PrawnTextBox restyled(TextState state, TextLayout layout) => PrawnTextBox._(
+  TextBox restyled(TextState state, TextLayout layout) => TextBox._(
     [
       for (final item in _items)
         () {
@@ -453,7 +449,6 @@ final class PrawnTextBox implements CustomContent {
     TextContext context,
   ) {
     final format = _resolveStyle(fragment, state, context);
-    if (context.engine != PdfEngine.modern) return format;
     if (context.typographicScripts &&
         (format.superscript || format.subscript)) {
       if (_typographic(format, format.superscript ? 'sups' : 'subs')
@@ -533,7 +528,7 @@ final class PrawnTextBox implements CustomContent {
         : italic
         ? 'italic'
         : 'normal';
-    final PrawnFont font;
+    final FontFace font;
     if (fragment.font != null || style != 'normal') {
       font = _font(fragment.font ?? state.family, style, context);
     } else {
@@ -559,7 +554,7 @@ final class PrawnTextBox implements CustomContent {
     return size;
   }
 
-  static PrawnFont _font(String family, String style, TextContext context) {
+  static FontFace _font(String family, String style, TextContext context) {
     try {
       return context.fonts.font(family, style);
     } on FontException {
@@ -623,7 +618,7 @@ final class PrawnTextBox implements CustomContent {
     // The modern engine needs room for the lines the text may leave at
     // the bottom of a region (its orphans), not for all of it; all of a
     // text too short to split (fewer lines than its orphans and widows).
-    if (_context.engine == PdfEngine.modern && _items.isNotEmpty) {
+    if (_items.isNotEmpty) {
       _arrangeImages(width);
       _Wrap wrapped(int maxLines) => _wrapOf(
         [for (final item in _items) item.copy()],
@@ -771,7 +766,7 @@ final class PrawnTextBox implements CustomContent {
         );
       }
     }
-    final lineFont = PrawnTextBox._font(_state.family, _state.style, _context);
+    final lineFont = TextBox._font(_state.family, _state.style, _context);
     final lineHeight = lineFont.heightAt(_state.size);
     final boundsHeight = _context.boundsHeight;
     final maxHeight = switch (fragment.imageFit) {
@@ -891,7 +886,7 @@ final class PrawnTextBox implements CustomContent {
 
   /// This text at font [size] (the fragments of their own size keep it;
   /// the layout, its leading included, stays as it is).
-  PrawnTextBox resized(double size) {
+  TextBox resized(double size) {
     final state = TextState(
       family: _state.family,
       size: size,
@@ -901,7 +896,7 @@ final class PrawnTextBox implements CustomContent {
       characterSpacing: _state.characterSpacing,
       features: _state.features,
     );
-    return PrawnTextBox._(
+    return TextBox._(
       [
         for (final item in _items)
           _Item(
@@ -921,7 +916,7 @@ final class PrawnTextBox implements CustomContent {
 
   /// The fragments of the first line of the text laid out [width] wide,
   /// and the text left over (null when it all fits on the line).
-  (List<Fragment>, PrawnTextBox?) splitFirstLine(double width) {
+  (List<Fragment>, TextBox?) splitFirstLine(double width) {
     _arrangeImages(width);
     final wrap = _wrapOf(
       [for (final item in _items) item.copy()],
@@ -944,7 +939,7 @@ final class PrawnTextBox implements CustomContent {
       fragments,
       rest.isEmpty
           ? null
-          : PrawnTextBox._(
+          : TextBox._(
               rest,
               _state,
               _layout,
@@ -1050,7 +1045,7 @@ final class PrawnTextBox implements CustomContent {
       anchors: anchors,
       rest: done
           ? null
-          : PrawnTextBox._(
+          : TextBox._(
               rest,
               _state,
               _layout,
@@ -1319,7 +1314,7 @@ _Wrap _wrapOf(
   required bool firstPiece,
   double? continuedIndent,
   int? maxLines,
-}) => context.engine == PdfEngine.modern && layout.wrapIndent == null
+}) => layout.wrapIndent == null
     ? _OptimalWrap(
         items,
         state,
@@ -1423,9 +1418,7 @@ base class _Wrap {
   double _widthOf(String given, _Format? format) {
     // The modern engine: an anchor's placeholder takes no room (some fonts
     // give their .notdef glyph a width).
-    final text = _context.engine == PdfEngine.modern
-        ? given.replaceAll(_nul, '')
-        : given;
+    final text = given.replaceAll(_nul, '');
     if (text.isEmpty && given.isNotEmpty) return 0;
     final font = format?.font ?? _baseFont;
     final size = format?.size ?? _state.size;
@@ -1440,7 +1433,7 @@ base class _Wrap {
     return count > 1 ? width + _state.characterSpacing * (count - 1) : width;
   }
 
-  late final PrawnFont _baseFont = PrawnTextBox._font(
+  late final FontFace _baseFont = TextBox._font(
     _state.family,
     _state.style,
     _context,
@@ -1617,10 +1610,7 @@ base class _Wrap {
       }
       // Prawn drops the rest of the text when not even a character fits
       // the line; the modern engine sets one anyway, past the edge.
-      if (_output.isEmpty &&
-          _lineEmptyNow &&
-          segment.isNotEmpty &&
-          _context.engine == PdfEngine.modern) {
+      if (_output.isEmpty && _lineEmptyNow && segment.isNotEmpty) {
         final char = String.fromCharCode(segment.runes.first);
         _accumulated += format.font.widthOf(char, format.size, kerning: false);
         _output = char;
@@ -1937,7 +1927,7 @@ final class FirstLineTextBox implements CustomContent {
   const new(this.first, this.state, this.layout, {this.transform});
 
   /// The text in the first line's style, laid out a single line.
-  final PrawnTextBox first;
+  final TextBox first;
 
   /// The text transform of the first line, applied once the line is
   /// broken (the line then shrinks to fit), if any.
@@ -1960,7 +1950,7 @@ final class FirstLineTextBox implements CustomContent {
         : _transformedFirstLine(width, available, atTop: atTop);
     if (head == null) return null;
     final rest = head.rest;
-    if (rest is! PrawnTextBox) return head;
+    if (rest is! TextBox) return head;
     final tail = rest.restyled(state, layout.withoutInitialGap);
     final body = tail.place(width, available - head.height, atTop: false);
     if (body == null) {
@@ -1978,7 +1968,7 @@ final class FirstLineTextBox implements CustomContent {
         ...head.anchors,
         for (final (name, x, y) in body.anchors) (name, x, y + head.height),
       ],
-      rest: next is PrawnTextBox ? next.restyled(state, layout) : next,
+      rest: next is TextBox ? next.restyled(state, layout) : next,
       paint: (page, x, top) {
         head.paint(page, x, top);
         body.paint(page, x, top - head.height);
@@ -1996,7 +1986,7 @@ final class FirstLineTextBox implements CustomContent {
     final (fragments, rest) = first.splitFirstLine(width);
     final line = first.layout;
     final more = rest != null;
-    final box = PrawnTextBox(
+    final box = TextBox(
       [
         for (final fragment in fragments)
           fragment.copy(text: transformText(fragment.text, transform!)),
@@ -2044,12 +2034,12 @@ final class AutofitTextBox implements CustomContent {
   const new(this.text, {this.minimum});
 
   /// The text at its own size.
-  final PrawnTextBox text;
+  final TextBox text;
 
   /// The least font size, if any.
   final double? minimum;
 
-  PrawnTextBox _fitted(double width) {
+  TextBox _fitted(double width) {
     final widest = text.intrinsicWidths().$2;
     if (widest <= width) return text;
     var size = (width * text.state.size / widest * 10000).truncate() / 10000;

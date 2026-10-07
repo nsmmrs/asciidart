@@ -26,9 +26,9 @@ line tool, and (compiled to JavaScript) an npm package.
   (`tool/epub_parity.dart`).
 - **PDF without Ruby or a browser.** `-b pdf` draws with libpdf, a
   pure-Dart PDF library, and reads asciidoctor-pdf's YAML themes. With
-  `-a pdf-compat`, the layout is asciidoctor-pdf 2.3.27's: 763 of the 797
-  documents of that gem's spec suite convert the same
-  (`tool/pdf_parity.dart`). By default, asciidart lays books out with its
+  `asciidoctor-compat`, the pages look as asciidoctor-pdf 2.3.27 sets them:
+  793 of the 797 documents of that gem's spec suite look the same
+  (`tool/pdf_look.dart`). By default, asciidart lays books out with its
   own typesetting: optimal line breaking, hyphenation, widows and orphans,
   ligatures, listings that never lose a line, and table styles by role
   ([`doc/pdf.md`](doc/pdf.md)).

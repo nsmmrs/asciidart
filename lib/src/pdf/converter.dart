@@ -1,6 +1,6 @@
 /// The PDF backend (`-b pdf`): converts documents as asciidoctor-pdf
 /// 2.3.27 does, with its themes, into libpdf boxes laid out on pages. Text
-/// is set by a Prawn-compatible text box ([PrawnTextBox]); blocks, page
+/// is set by a Prawn-compatible text box ([TextBox]); blocks, page
 /// breaks and running content are libpdf's box tree.
 library;
 
@@ -21,10 +21,8 @@ import 'package:asciidart/src/index_catalog.dart' show indexHasCategoryHeadings;
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
-import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/page_map.dart';
-import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/highlight_style.dart';
 import 'package:asciidart/src/pdf/hyphenate.dart';
@@ -260,12 +258,12 @@ final class PdfConverter extends BuiltInConverter
   /// a multiple of [emSize] (`1.5em`) or of the root font size (`2rem`).
   double? _length(String key, double emSize) => switch (_theme.value(key)) {
     ThemeNumber(:final value) => value.toDouble(),
-    ThemeString(:final value) when _engine == PdfEngine.modern =>
-      switch (RegExp(r'^(\d+(?:\.\d+)?|\.\d+)(r?em)$').firstMatch(value)) {
-        final m? =>
-          double.parse(m[1]!) * (m[2] == 'em' ? emSize : _rootFontSize),
-        null => null,
-      },
+    ThemeString(:final value) => switch (RegExp(
+      r'^(\d+(?:\.\d+)?|\.\d+)(r?em)$',
+    ).firstMatch(value)) {
+      final m? => double.parse(m[1]!) * (m[2] == 'em' ? emSize : _rootFontSize),
+      null => null,
+    },
     _ => null,
   };
   ThemeColor? _c(String key) => themeColor(_theme.value(key));
@@ -277,7 +275,6 @@ final class PdfConverter extends BuiltInConverter
     // The gem converts the title for the document information before its
     // PDF state exists (and the title keeps that conversion).
     _document = document;
-    _engine = PdfEngine.of(document, logger);
     document.doctitle();
     _converting = true;
     _promotePreface(document);
@@ -294,7 +291,7 @@ final class PdfConverter extends BuiltInConverter
           .attr('pdf-fontsdir')
           ?.replaceAll('{docdir}', document.attr('docdir') ?? ''),
       shaping: _shaping,
-      synthesizeFaces: _engine == PdfEngine.modern,
+      synthesizeFaces: true,
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
     final (_, pageHeight) = _pageSize(document);
@@ -308,7 +305,6 @@ final class PdfConverter extends BuiltInConverter
           (_inlineGraphics[src], _imageProblems[src] ?? 'not an image'),
       boundsHeight: pageHeight - _pageMargins(document).vertical,
       decorationWidth: (_n('base_text_decoration_width') ?? 1).toDouble(),
-      engine: _engine,
       lineBreaking: switch (_choice('base_line_breaking', const [
         'auto',
         'optimal',
@@ -326,14 +322,13 @@ final class PdfConverter extends BuiltInConverter
     _markup = MarkupTransform(
       theme: _theme,
       invertEmphasis: _invertEmphasis,
-      keepIndexSpace: _engine == PdfEngine.modern,
+      keepIndexSpace: true,
     );
     _cjkLineBreaks = document.attr('scripts') == 'cjk';
     _resolveHyphenation(document);
     _reportTags =
-        _engine == PdfEngine.modern &&
-            (document.hasAttr('pdf-layout-report') ||
-                document.hasAttr('pdf-page-map'))
+        (document.hasAttr('pdf-layout-report') ||
+            document.hasAttr('pdf-page-map'))
         ? {}
         : null;
     _baseTextAlign = switch (document.attr('text-align')) {
@@ -893,9 +888,7 @@ final class PdfConverter extends BuiltInConverter
       final right = (_n('${category}_margin_right') ?? 0).toDouble();
       // The modern engine: the text sheared as a block, by an angle in
       // degrees leaning right (`<category>_skew`, as Typst's skew).
-      final degrees = _engine == PdfEngine.modern
-          ? _n('${category}_skew')
-          : null;
+      final degrees = _n('${category}_skew');
       _out.add(
         BlockBox(
           [
@@ -998,13 +991,14 @@ final class PdfConverter extends BuiltInConverter
           }(),
       ];
       prose(
-        names.join(switch (_s('title_page_authors_delimiter') ?? ', ') {
-          // The modern engine keeps the delimiter's spaces as they are (a
-          // gap between names in a row); the gem collapses them.
-          final delimiter when _engine == PdfEngine.modern =>
-            delimiter.replaceAll(RegExp(' (?= )'), '&#160;'),
-          final delimiter => delimiter,
-        }),
+        // The delimiter's spaces as they are (a gap between names in a
+        // row; the gem collapses them).
+        names.join(
+          (_s('title_page_authors_delimiter') ?? ', ').replaceAll(
+            RegExp(' (?= )'),
+            '&#160;',
+          ),
+        ),
         'title_page_authors',
       );
       gap((_n('title_page_authors_margin_bottom') ?? 0).toDouble());
@@ -1081,7 +1075,6 @@ final class PdfConverter extends BuiltInConverter
     // unless `toc_macro_in_section` is false.
     final parent = node.parent;
     final ownsSection =
-        _engine == PdfEngine.modern &&
         _theme.value('toc_macro_in_section') != const ThemeBool(false) &&
         macro &&
         parent is Section &&
@@ -1217,17 +1210,16 @@ final class PdfConverter extends BuiltInConverter
         // The modern engine's `toc_entry_content` template (ADR-0010):
         // `title`, `numbered-title`, `number`.
         var title = _numberedTitle(entry, formal: false);
-        if (_engine == PdfEngine.modern) {
-          if (_s('toc_entry_content') case final template?) {
-            title = _render(template, {
-              'title': entry.title,
-              'numbered-title': title,
-              'number': _isNumbered(entry)
-                  ? (entry.sectname == 'part' ? entry.numeral : entry.sectnum())
-                  : null,
-            });
-          }
+        if (_s('toc_entry_content') case final template?) {
+          title = _render(template, {
+            'title': entry.title,
+            'numbered-title': title,
+            'number': _isNumbered(entry)
+                ? (entry.sectname == 'part' ? entry.numeral : entry.sectnum())
+                : null,
+          });
         }
+
         if (title.isEmpty) continue;
         final font = _themeFont('toc_h$entryLevel', toc);
         title = title.replaceAll(RegExp(r'<(?:a\b[^>]*|/a)>'), '');
@@ -1356,20 +1348,16 @@ final class PdfConverter extends BuiltInConverter
       producer: plain(doc.attr('producer')) ?? 'asciidart',
       // The book's ISBN, editors and copyright in the XMP metadata, as
       // the EPUB's OPF has them (modern engine).
-      identifier: _engine == PdfEngine.modern
-          ? switch (doc.attr('isbn')) {
-              final String isbn when isbn.trim().isNotEmpty =>
-                'urn:isbn:${isbn.replaceAll(RegExp(r'[\s-]'), '')}',
-              _ => null,
-            }
-          : null,
-      contributors: _engine == PdfEngine.modern
-          ? [
-              for (final editor in (doc.attr('editor') ?? '').split(';'))
-                if (editor.trim().isNotEmpty) plain(editor.trim())!,
-            ]
-          : const [],
-      rights: _engine == PdfEngine.modern ? plain(doc.attr('copyright')) : null,
+      identifier: switch (doc.attr('isbn')) {
+        final String isbn when isbn.trim().isNotEmpty =>
+          'urn:isbn:${isbn.replaceAll(RegExp(r'[\s-]'), '')}',
+        _ => null,
+      },
+      contributors: [
+        for (final editor in (doc.attr('editor') ?? '').split(';'))
+          if (editor.trim().isNotEmpty) plain(editor.trim())!,
+      ],
+      rights: plain(doc.attr('copyright')),
     );
   }
 
@@ -1967,15 +1955,14 @@ final class PdfConverter extends BuiltInConverter
 
   /// The OpenType features all text is set with in the modern engine:
   /// the theme's `base_font_variant_numeric` (`oldstyle-nums`...).
-  late final Set<String> _baseFeatures = _engine == PdfEngine.modern
-      ? {?fontFeature(_s('base_font_variant_numeric'))}
-      : const {};
+  late final Set<String> _baseFeatures = {
+    ?fontFeature(_s('base_font_variant_numeric')),
+  };
 
   /// How far the modern engine's sheets run past the page for print
   /// (`page_bleed`): null for no print boxes, unless the document is
   /// PDF/X, which needs them.
   double? get _bleed {
-    if (_engine != PdfEngine.modern) return null;
     final bleed = switch (_theme.value('page_bleed')) {
       ThemeNumber(:final value) => value.toDouble(),
       ThemeString(:final value) => strToPoints(value),
@@ -2117,6 +2104,8 @@ final class PdfConverter extends BuiltInConverter
     'footnotes_placement': ThemeString('end'),
     'toc_macro_in_section': ThemeBool(false),
     'running_content_on_openers': ThemeBool(true),
+    'running_content_on_blank_pages': ThemeBool(true),
+    'base_emphasis_inversion': ThemeBool(false),
   };
 
   /// The page size of the initial layout (the gem's page size: a named
@@ -2435,8 +2424,7 @@ final class PdfConverter extends BuiltInConverter
   /// Whether [block] is an image that floats out of the flow
   /// (`image_placement`, modern engine).
   bool _floatsOut(AbstractBlock block) {
-    if (_engine != PdfEngine.modern ||
-        block.context != BlockContext.image ||
+    if (block.context != BlockContext.image ||
         !const {
           'auto',
           'top',
@@ -2654,7 +2642,6 @@ final class PdfConverter extends BuiltInConverter
   /// `section_role_<role>_...`; a hyphen in the role is an underscore
   /// there, as in other theme keys), in the modern engine.
   String? _boxedRole(Section section) {
-    if (_engine != PdfEngine.modern) return null;
     for (final role in section.roles) {
       final name = role.replaceAll('-', '_');
       final prefix = 'section_role_${name}_';
@@ -2674,7 +2661,6 @@ final class PdfConverter extends BuiltInConverter
   /// on a line of its own, in gray: see doc/pdf.md.
   String _headingText(Section section) {
     final numbered = _numberedTitle(section);
-    if (_engine != PdfEngine.modern) return numbered;
     final level = (section.level ?? 0) + 1;
     final template = _s('heading_h${level}_content');
     if (template == null) return numbered;
@@ -2894,7 +2880,6 @@ final class PdfConverter extends BuiltInConverter
     final sticky =
         arrange &&
         hasContent &&
-        _engine == PdfEngine.modern &&
         _theme.value('heading_min_height_after') == const ThemeString('auto');
     if (arrange) {
       final minAfter = _theme.value('heading_min_height_after');
@@ -2927,17 +2912,17 @@ final class PdfConverter extends BuiltInConverter
     // `heading_float_barrier` is false: Typst's headings pass floats
     // waiting for the next page).
     final barrier =
-        _engine == PdfEngine.modern &&
         _theme.value('heading_float_barrier') != const ThemeBool(false);
     // In the middle or at the bottom of its page, when it starts the page
     // (a part's title, as Typst's align(horizon) sets it).
-    final verticalAlign = _engine != PdfEngine.modern
-        ? null
-        : switch (_choice('${category}_vertical_align', _alignsV)) {
-            'middle' || 'center' => VerticalAlign.middle,
-            'bottom' => VerticalAlign.bottom,
-            _ => null,
-          };
+    final verticalAlign = switch (_choice(
+      '${category}_vertical_align',
+      _alignsV,
+    )) {
+      'middle' || 'center' => VerticalAlign.middle,
+      'bottom' => VerticalAlign.bottom,
+      _ => null,
+    };
     if (padding == null && border == null && verticalAlign == null) {
       _out.add(
         CustomBox(
@@ -3094,23 +3079,22 @@ final class PdfConverter extends BuiltInConverter
     // The modern engine: a role's indent, and space before the next block,
     // in place of the prose's (`role_<role>_text_indent`,
     // `role_<role>_margin_bottom`).
-    if (_engine == PdfEngine.modern) {
-      for (final role in roles) {
-        if (_length('role_${role}_text_indent', font.size) case final value?) {
-          indent = value;
-        }
-        final parent = node.parent;
-        final last =
-            parent is! AbstractBlock || identical(parent.blocks.last, node);
-        if (_n('role_${role}_margin_bottom') case final value? when !last) {
-          marginBottom = value.toDouble();
-        }
+    for (final role in roles) {
+      if (_length('role_${role}_text_indent', font.size) case final value?) {
+        indent = value;
+      }
+      final parent = node.parent;
+      final last =
+          parent is! AbstractBlock || identical(parent.blocks.last, node);
+      if (_n('role_${role}_margin_bottom') case final value? when !last) {
+        marginBottom = value.toDouble();
       }
     }
+
     var content = node.content() ?? '';
     // The modern engine: a paragraph of concealed index terms alone takes
     // no room (their anchors where it is), as Typst's index entries.
-    if (_engine == PdfEngine.modern && !node.hasTitle) {
+    if (!node.hasTitle) {
       final terms = RegExp('<a id="([^"]+)" type="indexterm">$_dummyText</a>')
           .allMatches(content)
           .toList();
@@ -3141,14 +3125,13 @@ final class PdfConverter extends BuiltInConverter
     // The modern engine keeps a paragraph's lines together at page
     // breaks: no fewer than prose_orphans at the bottom of a page and
     // prose_widows at the top of the next (2 each by default).
-    final modern = _engine == PdfEngine.modern;
     final box = _textBox(
       content,
       font,
       align: align,
       indent: indent,
-      orphans: modern ? (_n('prose_orphans') ?? 2).toInt() : 1,
-      widows: modern ? (_n('prose_widows') ?? 2).toInt() : 1,
+      orphans: (_n('prose_orphans') ?? 2).toInt(),
+      widows: (_n('prose_widows') ?? 2).toInt(),
     );
     if (_floatGroup case final group? when _floatNext == node) {
       final metrics = _lineMetrics(font);
@@ -3236,7 +3219,6 @@ final class PdfConverter extends BuiltInConverter
   /// Whether [block] is a paragraph of concealed index terms alone, which
   /// the modern engine sets in no room.
   bool _roomless(AbstractBlock block) =>
-      _engine == PdfEngine.modern &&
       block.context == BlockContext.paragraph &&
       !block.hasTitle &&
       block is Block &&
@@ -3610,9 +3592,8 @@ final class PdfConverter extends BuiltInConverter
   /// engine's `<category>_box_decoration_break: clone`, as CSS's; Typst's
   /// breakable blocks have their inset so).
   bool _cloneEdges(String category) =>
-      _engine == PdfEngine.modern &&
       _choice('${category}_box_decoration_break', const ['slice', 'clone']) ==
-          'clone';
+      'clone';
 
   /// A block of [children] with the padding, the background and the
   /// border of theme [category], [node]'s anchor, and the block margin
@@ -3879,9 +3860,7 @@ final class PdfConverter extends BuiltInConverter
               margin: EdgeInsets(
                 // The modern engine: the title's own space below first.
                 bottom:
-                    ((_engine == PdfEngine.modern
-                                ? _n('sidebar_title_margin_bottom')
-                                : null) ??
+                    ((_n('sidebar_title_margin_bottom')) ??
                             _n('heading_margin_bottom') ??
                             0)
                         .toDouble(),
@@ -3936,9 +3915,8 @@ final class PdfConverter extends BuiltInConverter
       if (attribution != null) {
         // The modern engine's `<category>_cite_margin_top` and
         // `<category>_cite_text_align`; the gem's block margin, at the left.
-        final modern = _engine == PdfEngine.modern;
         final margin =
-            ((modern ? _n('${category}_cite_margin_top') : null) ??
+            ((_n('${category}_cite_margin_top')) ??
                     _n('block_margin_bottom') ??
                     0)
                 .toDouble();
@@ -3950,9 +3928,7 @@ final class PdfConverter extends BuiltInConverter
               _textBox(
                 '— $parts',
                 _font,
-                align:
-                    (modern ? _s('${category}_cite_text_align') : null) ??
-                    'left',
+                align: (_s('${category}_cite_text_align')) ?? 'left',
                 normalize: false,
               ),
             ),
@@ -4343,7 +4319,7 @@ final class PdfConverter extends BuiltInConverter
     // in the code font (or `image_text_*`), the block as wide as its
     // longest line and aligned as an image, as Typst sets an asciiart
     // figure.
-    if (_engine == PdfEngine.modern && format == 'txt' && data == null) {
+    if (format == 'txt' && data == null) {
       if (_imageBytes(node, target) case final bytes?) {
         _textImage(node, utf8.decode(bytes, allowMalformed: true), align);
         return;
@@ -4457,7 +4433,7 @@ final class PdfConverter extends BuiltInConverter
         parent?.context == BlockContext.preamble;
     // (The block's own `placement` attribute first: `none` keeps it where
     // it is, as Typst's figure placement.)
-    final float = _engine == PdfEngine.modern && topLevel
+    final float = topLevel
         ? switch (node.attr('placement') ?? _imagePlacement) {
             'auto' => FloatPlacement.auto,
             'top' => FloatPlacement.top,
@@ -4747,7 +4723,7 @@ final class PdfConverter extends BuiltInConverter
   void convertTable(Table node) {
     // The modern engine styles a table with a role by the theme's
     // table_role_<role>_* keys, over its table_* keys.
-    if (_engine == PdfEngine.modern && node.roles.isNotEmpty) {
+    if (node.roles.isNotEmpty) {
       final saved = _theme;
       for (final role in node.roles) {
         _theme = _theme.overlaid(
@@ -5012,14 +4988,13 @@ final class PdfConverter extends BuiltInConverter
               // The modern engine's `table_base_*` keys: the base keys of
               // the cells' blocks (`table_base_text_align_last`...).
               final savedTheme = _theme;
-              if (_engine == PdfEngine.modern) {
-                _theme = _theme.overlaid('table_base_', 'base_');
-                // A cell's own alignment comes first.
-                if (_s('table_base_text_align') case final align?
-                    when _baseTextAlign == savedAlign) {
-                  _baseTextAlign = align;
-                }
+              _theme = _theme.overlaid('table_base_', 'base_');
+              // A cell's own alignment comes first.
+              if (_s('table_base_text_align') case final align?
+                  when _baseTextAlign == savedAlign) {
+                _baseTextAlign = align;
               }
+
               try {
                 blocks = _collect(() => _traverse(inner));
               } finally {
@@ -5049,13 +5024,11 @@ final class PdfConverter extends BuiltInConverter
           // The modern engine styles a cell whose whole text has a role
           // (`[.paid]#Paid#`) by the theme's table_cell_role_<role>_*
           // keys.
-          if (_engine == PdfEngine.modern) {
-            if (_cellRole(text) case final role?) {
-              final key = 'table_cell_role_${role.replaceAll('-', '_')}';
-              background = _c('${key}_background_color') ?? background;
-              font = _themeFont(key, font);
-              cellAlign = _s('${key}_text_align') ?? cellAlign;
-            }
+          if (_cellRole(text) case final role?) {
+            final key = 'table_cell_role_${role.replaceAll('-', '_')}';
+            background = _c('${key}_background_color') ?? background;
+            font = _themeFont(key, font);
+            cellAlign = _s('${key}_text_align') ?? cellAlign;
           }
         }
         cells.add(
@@ -5272,19 +5245,12 @@ final class PdfConverter extends BuiltInConverter
         if (widest > room) {
           // The modern engine keeps the table, the text set past the
           // column's edge where it must be.
-          if (_engine == PdfEngine.modern) {
-            logger.warn(
-              'table column ${c + 1} is too narrow for its text; '
-              'the text overflows it',
-              at: node.sourceLocation,
-            );
-            break;
-          }
-          logger.error(
-            'cannot fit contents of table cell into specified column width',
+          logger.warn(
+            'table column ${c + 1} is too narrow for its text; '
+            'the text overflows it',
+            at: node.sourceLocation,
           );
-          _out.clear();
-          return;
+          break;
         }
       }
     }
@@ -5745,7 +5711,7 @@ final class PdfConverter extends BuiltInConverter
   void convertCode(Block node) {
     // The modern engine styles a block with a role by the theme's
     // code_role_<role>_* keys, over its code_* keys.
-    if (_engine == PdfEngine.modern && node.roles.isNotEmpty) {
+    if (node.roles.isNotEmpty) {
       final saved = _theme;
       for (final role in node.roles) {
         _theme = _theme.overlaid(
@@ -5772,7 +5738,7 @@ final class PdfConverter extends BuiltInConverter
     // Highlighted by hilite (`source-highlighter=highlight.js`): the
     // modern engine colors the tokens as the `highlightjs-theme` does
     // (github by default); the gem leaves them as text.
-    if (_engine == PdfEngine.modern && source.contains('<span class="hljs-')) {
+    if (source.contains('<span class="hljs-')) {
       // A line's indentation inside a token (a string that runs over
       // lines) kept as well: its first space a no-break one.
       source = source.replaceAllMapped(
@@ -5792,25 +5758,21 @@ final class PdfConverter extends BuiltInConverter
     // marks a line that wraps, going on with a hanging indent
     // (code_wrap_indent, 1em; code_wrap_marker: none leaves the arrow
     // out).
-    final modern = _engine == PdfEngine.modern;
-    final wrapIndent = modern
-        ? _length('code_wrap_indent', font.size) ?? font.size
-        : null;
+    final wrapIndent = _length('code_wrap_indent', font.size) ?? font.size;
     final wrapMarker =
-        modern &&
         _choice('code_wrap_marker', const ['arrow', 'none']) != 'none';
     // Without a hanging indent or a marker, a long line wraps as Typst
     // wraps raw text: at the line breaking algorithm's breaks (after a
     // slash too), as many words on a line as fit.
-    final plainWrap = modern && wrapIndent == 0 && !wrapMarker;
+    final plainWrap = wrapIndent == 0 && !wrapMarker;
     if (plainWrap) source = _breakAfterSlashes(source);
     final box = _textBox(
       source,
       font.copyWith(color: _c('code_font_color') ?? font.color),
       align: 'left',
       normalize: false,
-      orphans: modern ? (_n('code_orphans') ?? 2).toInt() : 1,
-      widows: modern ? (_n('code_widows') ?? 2).toInt() : 1,
+      orphans: (_n('code_orphans') ?? 2).toInt(),
+      widows: (_n('code_widows') ?? 2).toInt(),
       wrapIndent: plainWrap ? null : wrapIndent,
       wrapMarker: wrapMarker,
     );
@@ -5910,7 +5872,7 @@ final class PdfConverter extends BuiltInConverter
   /// Says once per document, in the modern engine, that math is set as
   /// its source (ADR-0014: the PDF lays out no math yet).
   void _warnMathAsSource() {
-    if (_warnedMath || _engine != PdfEngine.modern) return;
+    if (_warnedMath) return;
     _warnedMath = true;
     logger.warn('math is shown as its source in the PDF (not typeset yet)');
   }
@@ -6067,11 +6029,10 @@ final class PdfConverter extends BuiltInConverter
     // The modern engine's `<category>_caption_indent`: set in from the
     // left (a code block's caption over its padded code, as Typst's
     // figure inset).
-    final indent = _engine == PdfEngine.modern
-        ? _length('${captionKey}_indent', font.size) ??
-              _length('caption_indent', font.size) ??
-              0.0
-        : 0.0;
+    final indent =
+        _length('${captionKey}_indent', font.size) ??
+        _length('caption_indent', font.size) ??
+        0.0;
     // A background behind the text, as wide as the block's room.
     final background = pdfColorOf(
       _c('${captionKey}_background_color') ?? _c('caption_background_color'),
@@ -6091,7 +6052,7 @@ final class PdfConverter extends BuiltInConverter
             ? EdgeInsets(top: inside, bottom: outside, left: indent)
             : EdgeInsets(top: outside, bottom: inside, left: indent),
         // A caption above its block stays with it in the modern engine.
-        keepWithNext: !bottom && _engine == PdfEngine.modern,
+        keepWithNext: !bottom,
         decoration: background == null
             ? null
             : (page, rect, {required first, required last}) => page.canvas
@@ -6129,7 +6090,6 @@ final class PdfConverter extends BuiltInConverter
       // (`ulist_marker_nesting: ulist`, modern engine: the level among
       // unordered lists alone, as Typst's list markers.)
       final own =
-          _engine == PdfEngine.modern &&
           _choice('ulist_marker_nesting', const ['all', 'ulist']) == 'ulist';
       bullet = switch (_listLevel(
         node,
@@ -6149,7 +6109,7 @@ final class PdfConverter extends BuiltInConverter
   void convertOlist(ListBlock node) {
     // The modern engine styles an ordered list with a role by the theme's
     // olist_role_<role>_* keys, over its olist_* keys.
-    if (_engine == PdfEngine.modern && node.roles.isNotEmpty) {
+    if (node.roles.isNotEmpty) {
       final saved = _theme;
       for (final role in node.roles) {
         _theme = _theme.overlaid(
@@ -6235,7 +6195,7 @@ final class PdfConverter extends BuiltInConverter
     }
     if (align == null && node.style == 'bibliography') align = 'left';
     // (An ordered list's own, `olist_text_align`, in the modern engine.)
-    if (_engine == PdfEngine.modern && node.context == BlockContext.olist) {
+    if (node.context == BlockContext.olist) {
       align ??= _s('olist_text_align');
     }
     align ??= _s('list_text_align');
@@ -6260,18 +6220,15 @@ final class PdfConverter extends BuiltInConverter
     // An ordered list's own (`olist_body_indent`; `olist_marker_width`,
     // its numbers in boxes that wide at their left: Typst's enums).
     final ordered = node.context == BlockContext.olist;
-    final bodyIndent = _engine == PdfEngine.modern
-        ? (ordered ? _length('olist_body_indent', _font.size) : null) ??
-              _length('list_body_indent', _font.size)
-        : null;
+    final bodyIndent =
+        (ordered ? _length('olist_body_indent', _font.size) : null) ??
+        _length('list_body_indent', _font.size);
     final savedBodyIndent = _listBodyIndent;
     final savedMarkerWidth = _listMarkerWidth;
     final savedMarkerBox = _listMarkerBox;
     _listBodyIndent = bodyIndent;
     _listMarkerWidth = 0;
-    _listMarkerBox = _engine == PdfEngine.modern && ordered
-        ? _length('olist_marker_width', _font.size)
-        : null;
+    _listMarkerBox = ordered ? _length('olist_marker_width', _font.size) : null;
     for (final item in node.items) {
       _listItem(item, node, align);
     }
@@ -6308,11 +6265,10 @@ final class PdfConverter extends BuiltInConverter
     // figures for an ordered list's numbers).
     final markerFeatures = <String>{};
     void styleFrom(String prefix) {
-      if (_engine == PdfEngine.modern) {
-        if (fontFeature(_s('${prefix}_font_variant_numeric')) case final f?) {
-          markerFeatures.add(f);
-        }
+      if (fontFeature(_s('${prefix}_font_variant_numeric')) case final f?) {
+        markerFeatures.add(f);
       }
+
       markerColor = _c('${prefix}_font_color') ?? markerColor;
       markerFamily = _s('${prefix}_font_family') ?? markerFamily;
       markerSize = (_n('${prefix}_font_size') ?? markerSize).toDouble();
@@ -6408,15 +6364,14 @@ final class PdfConverter extends BuiltInConverter
       // The modern engine keeps an item's text from leaving a lone line on
       // either side of a page break, as a paragraph's (`prose_orphans`,
       // `prose_widows`).
-      final modern = _engine == PdfEngine.modern;
       final box = _textBox(
         primary,
         _font,
         align: align ?? _baseTextAlign,
         normalizeLineHeight: true,
         hyphenate: true,
-        orphans: modern ? (_n('prose_orphans') ?? 2).toInt() : 1,
-        widows: modern ? (_n('prose_widows') ?? 2).toInt() : 1,
+        orphans: (_n('prose_orphans') ?? 2).toInt(),
+        widows: (_n('prose_widows') ?? 2).toInt(),
       );
       final metrics = _lineMetrics(_font);
       final lineHeight = _font.lineHeight * _font.size;
@@ -6471,7 +6426,6 @@ final class PdfConverter extends BuiltInConverter
   /// to its content justifies its lines to the widest; `quote_list_*`
   /// for the lists in a quote), as a section role's.
   void _withBaseKeys(String category, void Function() body) {
-    if (_engine != PdfEngine.modern) return body();
     final savedAlign = _baseTextAlign;
     final savedTheme = _theme;
     _theme = _theme.overlaid('${category}_', '');
@@ -6557,9 +6511,8 @@ final class PdfConverter extends BuiltInConverter
       // run in before its description, the lines after the first hanging
       // by the description indent.
       final runIn =
-          _engine == PdfEngine.modern &&
           _choice('description_list_term_display', const ['block', 'inline']) ==
-              'inline';
+          'inline';
       for (final DlistEntry(:terms, description: desc) in node.entries) {
         final hasText = desc != null && desc.hasText;
         if (runIn && hasText && terms.length == 1) {
@@ -6814,7 +6767,6 @@ final class PdfConverter extends BuiltInConverter
   /// with [list]) in the modern engine (ADR-0010): `conum_glyphs` (or
   /// `callout_list_marker_content`) with `{{number}}`.
   String? _conumTemplate({bool list = false}) {
-    if (_engine != PdfEngine.modern) return null;
     final template =
         (list ? _s('callout_list_marker_content') : null) ?? _s('conum_glyphs');
     return template != null && template.contains('{{') ? template : null;
@@ -6832,7 +6784,7 @@ final class PdfConverter extends BuiltInConverter
             .toDouble();
     final align =
         _alignOf(node.roles) ??
-        (_engine == PdfEngine.modern ? _s('callout_list_text_align') : null) ??
+        (_s('callout_list_text_align')) ??
         _s('list_text_align');
     final items = _collect(() {
       _withFont('callout_list', () {
@@ -6844,24 +6796,19 @@ final class PdfConverter extends BuiltInConverter
             metrics.paddingTop;
         // The modern engine's `callout_list_marker_*` font keys, over the
         // conum's.
-        final markerFont = _engine == PdfEngine.modern
-            ? _themeFont('callout_list_marker', conumFont)
-            : conumFont.copyWith(
-                color: _c('callout_list_marker_font_color') ?? conumFont.color,
-              );
-        final markerFeatures = _engine == PdfEngine.modern
-            ? {?fontFeature(_s('callout_list_marker_font_variant_numeric'))}
-            : const <String>{};
+        final markerFont = _themeFont('callout_list_marker', conumFont);
+        final markerFeatures = {
+          ?fontFeature(_s('callout_list_marker_font_variant_numeric')),
+        };
         final prawnFont = _fonts.font(conumFont.family, conumFont.style);
         // A marker box as wide as `callout_list_marker_width` (modern
         // engine; Typst's enum numbers in a box 1em wide), its marker
         // aligned in it by `callout_list_marker_text_align`.
-        final fixedWidth = _engine == PdfEngine.modern
-            ? _length('callout_list_marker_width', markerFont.size)
-            : null;
-        final markerAlign = _engine == PdfEngine.modern
-            ? _s('callout_list_marker_text_align') ?? 'center'
-            : 'center';
+        final fixedWidth = _length(
+          'callout_list_marker_width',
+          markerFont.size,
+        );
+        final markerAlign = _s('callout_list_marker_text_align') ?? 'center';
         for (final (i, item) in node.items.indexed) {
           final glyph = _conumGlyph(i + 1, list: true);
           final markerWidth =
@@ -6873,12 +6820,10 @@ final class PdfConverter extends BuiltInConverter
               );
           // In the modern engine, the item is the destination of its
           // markers, and its glyph links back to the first.
-          final coids = _engine == PdfEngine.modern
-              ? (item.attr('coids') ?? '')
-                    .split(' ')
-                    .where((id) => id.isNotEmpty)
-                    .toList()
-              : const <String>[];
+          final coids = (item.attr('coids') ?? '')
+              .split(' ')
+              .where((id) => id.isNotEmpty)
+              .toList();
           var markerMarkup = glyph
               .replaceAll('&', '&amp;')
               .replaceAll('<', '&lt;');
@@ -6912,7 +6857,6 @@ final class PdfConverter extends BuiltInConverter
           }
           final children = _collect(() {
             if (primary != null) {
-              final modern = _engine == PdfEngine.modern;
               final box = _textBox(
                 primary,
                 _font,
@@ -6920,8 +6864,8 @@ final class PdfConverter extends BuiltInConverter
                 normalizeLineHeight: true,
                 hyphenate: true,
                 // (No lone line at a page break, as a paragraph's.)
-                orphans: modern ? (_n('prose_orphans') ?? 2).toInt() : 1,
-                widows: modern ? (_n('prose_widows') ?? 2).toInt() : 1,
+                orphans: (_n('prose_orphans') ?? 2).toInt(),
+                widows: (_n('prose_widows') ?? 2).toInt(),
               );
               _out.add(
                 CustomBox(
@@ -6967,9 +6911,7 @@ final class PdfConverter extends BuiltInConverter
             top: marginTop,
             bottom: _marginBelow(node, fallback: 'prose'),
             // (`callout_list_indent`, modern engine.)
-            left: _engine == PdfEngine.modern
-                ? _length('callout_list_indent', _font.size) ?? 0
-                : 0,
+            left: _length('callout_list_indent', _font.size) ?? 0,
           ),
           anchor: node.id,
         ),
@@ -7160,7 +7102,7 @@ final class PdfConverter extends BuiltInConverter
 
   /// A text box of [markup] in [font] (the gem's `typeset_text` with the
   /// line metrics of the font's line height).
-  PrawnTextBox _textBox(
+  TextBox _textBox(
     String markup,
     _FontState font, {
     required String align,
@@ -7187,15 +7129,14 @@ final class PdfConverter extends BuiltInConverter
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
     // The modern engine: variation selectors take no room (they choose a
     // glyph's form, which the fonts here don't vary).
-    if (_engine == PdfEngine.modern) {
-      text = text.replaceAll(RegExp('[\ufe00-\ufe0f]'), '');
-    }
+    text = text.replaceAll(RegExp('[\ufe00-\ufe0f]'), '');
+
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
-    if (_engine == PdfEngine.modern && text.contains('://')) {
+    if (text.contains('://')) {
       text = _breakUrls(text, markup: inlineFormat);
     }
     // (Prose: preformatted text, set as it is, keeps its lines.)
-    if (_engine == PdfEngine.modern && normalize && text.contains('/')) {
+    if (normalize && text.contains('/')) {
       text = _breakAfterSlashes(text, markup: inlineFormat);
     }
     final nodes = inlineFormat ? parseMarkup(text) : [MarkupText(text)];
@@ -7220,7 +7161,7 @@ final class PdfConverter extends BuiltInConverter
       fragments = _markup.apply(nodes, null, inherited);
     }
     final metrics = _lineMetrics(font);
-    return PrawnTextBox(
+    return TextBox(
       fragments,
       TextState(
         family: font.family,
@@ -7245,27 +7186,28 @@ final class PdfConverter extends BuiltInConverter
         widows: widows,
         wrapIndent: wrapIndent,
         wrapMarker: wrapMarker,
-        at: _engine == PdfEngine.modern ? _at : null,
+        at: _at,
         skew: skew,
-        overhang: _engine == PdfEngine.modern ? _overhangAmount() : 0,
+        overhang: _overhangAmount(),
         capLines: _typstLeading(font) != null,
         justifyWidest:
-            _engine == PdfEngine.modern &&
             _choice('base_justify_width', const ['room', 'widest']) == 'widest',
-        alignLast: _engine == PdfEngine.modern
-            ? _choice('base_text_align_last', const ['left', 'center', 'right'])
-            : null,
+        alignLast: _choice('base_text_align_last', const [
+          'left',
+          'center',
+          'right',
+        ]),
       ),
       _text,
     );
   }
 
-  /// The value of theme key [key] when it is one of [values] (the modern
-  /// engine's keys with a set of values); another value is reported once
-  /// and read as unset. The compatibility mode reads the key as it is.
+  /// The value of theme key [key] when it is one of [values] (the keys
+  /// with a set of values); another value is reported once and read as
+  /// unset.
   String? _choice(String key, List<String> values) {
     final value = _s(key);
-    if (_engine != PdfEngine.modern || value == null) return value;
+    if (value == null) return value;
     if (values.contains(value)) return value;
     if (_reportedChoices.add(key)) {
       logger.warn(
@@ -7332,7 +7274,7 @@ final class PdfConverter extends BuiltInConverter
       };
     }
     final explicit = asked != null;
-    if (!explicit && (_engine != PdfEngine.modern || !unspecified)) return;
+    if (!explicit && (!unspecified)) return;
     var language = asked ?? '';
     if (language.isEmpty) language = document.attr('lang') ?? '';
     if (language.isEmpty || language == 'en') language = 'en_us';
@@ -7358,8 +7300,8 @@ final class PdfConverter extends BuiltInConverter
     return hyphenateMarkup(
       markup,
       hyphenator,
-      skipCode: _engine == PdfEngine.modern,
-      lettersOnly: _engine == PdfEngine.modern,
+      skipCode: true,
+      lettersOnly: true,
     );
   }
 
@@ -7398,9 +7340,8 @@ final class PdfConverter extends BuiltInConverter
 
   /// The Typst leading of [font]'s text (`<category>_leading`, else
   /// `base_leading`), in the modern engine.
-  double? _typstLeading(_FontState font) => _engine == PdfEngine.modern
-      ? _length(font.leadingKey ?? 'base_leading', font.size)
-      : null;
+  double? _typstLeading(_FontState font) =>
+      _length(font.leadingKey ?? 'base_leading', font.size);
 
   /// The gem's `calc_line_metrics`: the leading of the line height, half
   /// of it above the text (plus the font's line gap) and half below.
@@ -7413,12 +7354,11 @@ final class PdfConverter extends BuiltInConverter
     // a text's first line has its cap height at the top, its last line
     // ends at its baseline (the space between blocks from baseline to cap
     // height).
-    if (_engine == PdfEngine.modern) {
-      if (_typstLeading(font) case final typst?) {
-        // The text box sets the lines on their cap heights (capLines).
-        return (leading: typst, paddingTop: 0.0, paddingBottom: 0.0);
-      }
+    if (_typstLeading(font) case final typst?) {
+      // The text box sets the lines on their cap heights (capLines).
+      return (leading: typst, paddingTop: 0.0, paddingBottom: 0.0);
     }
+
     final leading = font.lineHeight * font.size - font.size;
     return (
       leading: leading,
@@ -7494,7 +7434,6 @@ final class PdfConverter extends BuiltInConverter
     // The modern engine leaves blank pages (before a recto start, say)
     // blank, unless running_content_on_blank_pages is true.
     if (page.isEmpty &&
-        _engine == PdfEngine.modern &&
         _theme.value('running_content_on_blank_pages') !=
             const ThemeBool(true)) {
       return const [];
@@ -7505,18 +7444,17 @@ final class PdfConverter extends BuiltInConverter
             (periphery == 'header' ? _tocNoHeader : _tocNoFooter)) {
       return const [];
     }
-    if (_engine == PdfEngine.modern) {
-      // A page that opens a part or chapter, unless the theme says
-      // otherwise; the pages of a part or chapter with the `noheader` or
-      // `nofooter` option (as the gem reads it on the toc macro).
-      if (_openerPages.contains(number) &&
-          _theme.value('running_content_on_openers') != const ThemeBool(true)) {
-        return const [];
-      }
-      if (_pageSection(page)?.hasOption('no$periphery') ?? false) {
-        return const [];
-      }
+    // A page that opens a part or chapter, unless the theme says
+    // otherwise; the pages of a part or chapter with the `noheader` or
+    // `nofooter` option (as the gem reads it on the toc macro).
+    if (_openerPages.contains(number) &&
+        _theme.value('running_content_on_openers') != const ThemeBool(true)) {
+      return const [];
     }
+    if (_pageSection(page)?.hasOption('no$periphery') ?? false) {
+      return const [];
+    }
+
     final virtual = number - _skip.$2;
     final label = _pageLabel(number);
     final side = _sideOf(_folio.physical ? number : virtual);
@@ -7751,9 +7689,7 @@ final class PdfConverter extends BuiltInConverter
         // A Mustache template (ADR-0010; optional parts) first, then the
         // gem's attribute references.
         content = _applySubsDiscretely(
-          _engine == PdfEngine.modern && template.contains('{{')
-              ? _render(template, attributes)
-              : template,
+          template.contains('{{') ? _render(template, attributes) : template,
           attributes,
           unset: const {
             'part-numeral',
@@ -8263,13 +8199,12 @@ final class PdfConverter extends BuiltInConverter
     if (!_ready) {
       if (node.document case final Document doc) {
         _document = doc;
-        _engine = PdfEngine.of(doc, NullLogger());
         _theme = _prepareTheme(_loadTheme(doc));
         _fonts = FontCatalog(_theme, shaping: _shaping);
         _markup = MarkupTransform(
           theme: _theme,
           invertEmphasis: _invertEmphasis,
-          keepIndexSpace: _engine == PdfEngine.modern,
+          keepIndexSpace: true,
         );
         _ready = true;
       }
@@ -8280,40 +8215,30 @@ final class PdfConverter extends BuiltInConverter
   /// Whether the theme (and the state inline conversions use) is loaded.
   bool _ready = false;
 
-  /// The layout engine the document asks for (`pdf-compat`).
-  PdfEngine _engine = PdfEngine.modern;
-
   /// Whether adjacent margins collapse to the larger, as in CSS (the
   /// modern engine, unless the theme's `block_margin_collapse` is false),
   /// rather than add, as asciidoctor-pdf's do.
-  bool get _collapseMargins =>
-      _engine == PdfEngine.modern &&
-      switch (_theme.value('block_margin_collapse')) {
-        ThemeBool(:final value) => value,
-        ThemeString(value: 'false' || 'none') => false,
-        _ => true,
-      };
+  bool get _collapseMargins => switch (_theme.value('block_margin_collapse')) {
+    ThemeBool(:final value) => value,
+    ThemeString(value: 'false' || 'none') => false,
+    _ => true,
+  };
 
   /// Whether emphasis is set against its surroundings (upright in italic
   /// text): in the modern engine, unless the theme's
   /// `base_emphasis_inversion` is false.
-  bool get _invertEmphasis =>
-      _engine == PdfEngine.modern &&
-      switch (_theme.value('base_emphasis_inversion')) {
-        ThemeBool(:final value) => value,
-        ThemeString(value: 'false' || 'none') => false,
-        _ => true,
-      };
-
-  /// How text becomes glyphs: as Prawn shapes it, or in the modern engine
-  /// as OpenType does (GPOS kerning, and the standard ligatures unless the
-  /// theme's `base_font_ligatures` is `none`).
-  Shaping get _shaping => switch (_engine) {
-    PdfEngine.asciidoctorPdf => Shaping.prawn,
-    PdfEngine.modern when _s('base_font_ligatures') == 'none' =>
-      Shaping.opentype,
-    PdfEngine.modern => Shaping.ligatures,
+  bool get _invertEmphasis => switch (_theme.value('base_emphasis_inversion')) {
+    ThemeBool(:final value) => value,
+    ThemeString(value: 'false' || 'none') => false,
+    _ => true,
   };
+
+  /// How text becomes glyphs: as OpenType shapes it (GPOS kerning, and
+  /// the standard ligatures unless the theme's `base_font_ligatures` is
+  /// `none`).
+  Shaping get _shaping => _s('base_font_ligatures') == 'none'
+      ? Shaping.opentype
+      : Shaping.ligatures;
 
   /// Whether the document is being converted (rather than parsed: inline
   /// content converted for a title's id, which the gem converts before
@@ -8355,7 +8280,7 @@ final class PdfConverter extends BuiltInConverter
         final roles = node.attr('role')?.split(' ') ?? const <String>[];
         if (roles.contains('bare')) {
           return '$anchor<a href="$target"$classAttr>'
-              '${_breakableUri(text)}</a>';
+              '$text</a>';
         }
         // `show-link-uri=footnote` (modern engine): the URI in a footnote,
         // as print books set it.
@@ -8366,11 +8291,7 @@ final class PdfConverter extends BuiltInConverter
           }
           final index = doc.counter('footnote-number');
           doc.registerFootnote(
-            Footnote(
-              index,
-              null,
-              '<a href="$target">${_breakableUri(bare)}</a>',
-            ),
+            Footnote(index, null, '<a href="$target">$bare</a>'),
           );
           return '$anchor<a href="$target"$classAttr>$text</a>'
               '${_footnoteReference(index)}';
@@ -8382,7 +8303,7 @@ final class PdfConverter extends BuiltInConverter
             if (boundary >= 0) bare = bare.substring(boundary + 3);
           }
           return '$anchor<a href="$target"$classAttr>$text</a> '
-              '[<font size="0.85em">${_breakableUri(bare)}</font>&#93;';
+              '[<font size="0.85em">$bare</font>&#93;';
         }
         return '$anchor<a href="$target"$classAttr>$text</a>';
       case 'xref':
@@ -8545,28 +8466,6 @@ final class PdfConverter extends BuiltInConverter
     return out.toString();
   }
 
-  /// [uri] with a zero-width space after each `/`, `?`, `&` and `#` of its
-  /// address so it can break there (the gem's `breakable_uri`; the
-  /// modern engine breaks URLs as Typst does, [_breakUrls]).
-  String _breakableUri(String uri) {
-    if (_engine == PdfEngine.modern) return uri;
-    final boundary = uri.indexOf('://');
-    final scheme = boundary < 0 ? '' : uri.substring(0, boundary + 3);
-    var address = boundary < 0 ? uri : uri.substring(boundary + 3);
-    if (address.isEmpty) return uri;
-    address = address.replaceAllMapped(
-      RegExp(r'(?:/|\?|&amp;|#)(?!$)'),
-      (match) => '${match[0]}​',
-    );
-    // At least two characters after a break.
-    if (address.length >= 2 && address[address.length - 2] == '​') {
-      address =
-          address.substring(0, address.length - 2) +
-          address.substring(address.length - 1);
-    }
-    return '$scheme$address';
-  }
-
   String _inlineCallout(Inline node) {
     var glyph = _conumGlyph(int.tryParse(node.text ?? '') ?? 0);
     // A marker as text: in its own style and figures.
@@ -8575,21 +8474,19 @@ final class PdfConverter extends BuiltInConverter
           '<span class="conum-text">${glyph.replaceAll('&', '&amp;').replaceAll('<', '&lt;')}</span>';
     }
     final family = _s('conum_font_family');
-    final modern = _engine == PdfEngine.modern;
     // The modern engine leaves the marker out of copied code, and links
     // it to its callout list item (which links back).
-    final shown = modern ? '<span class="artifact">$glyph</span>' : glyph;
+    final shown = '<span class="artifact">$glyph</span>';
     var result = family == null || family == _font.family
         ? shown
         : '<font name="$family">$shown</font>';
     // The marker keeps its color as a link (the text's, when the theme
     // gives it none).
     final color =
-        _theme.value('conum_font_color')?.rubyString ??
-        (modern ? _font.color?.rubyString : null);
+        _theme.value('conum_font_color')?.rubyString ?? _font.color?.rubyString;
     if (color != null) result = '<font color="$color">$result</font>';
     final id = node.id;
-    if (modern && id != null && _document.callouts.explained.contains(id)) {
+    if (id != null && _document.callouts.explained.contains(id)) {
       result =
           '<a id="$id">$_dummyText</a>'
           '<a anchor="${_calloutItem(id)}">$result</a>';
@@ -8761,20 +8658,16 @@ final class PdfConverter extends BuiltInConverter
       ..linkAssociations();
     // The modern engine lists each page once unless the document asks
     // otherwise; the gem lists a page for each use.
-    final style =
-        _document.attr('index-pagenum-sequence-style') ??
-        (_engine == PdfEngine.modern ? 'page' : null);
+    final style = _document.attr('index-pagenum-sequence-style') ?? 'page';
     // `index_category_headings: false` leaves out the letter headings.
-    final headings =
-        _engine != PdfEngine.modern ||
-        switch (_theme.value('index_category_headings')) {
-          ThemeBool(:final value) => value,
-          _ => indexHasCategoryHeadings(_document),
-        };
+    final headings = switch (_theme.value('index_category_headings')) {
+      ThemeBool(:final value) => value,
+      _ => indexHasCategoryHeadings(_document),
+    };
     // The modern engine reads the index's font keys (`index_font_family`,
     // `_size`, `_color`, `_style`); the gem has none.
     final saved = _font;
-    if (_engine == PdfEngine.modern) _font = _themeFont('index', _font);
+    _font = _themeFont('index', _font);
     final List<LayoutBox> boxes;
     try {
       boxes = _collect(() {
@@ -8787,10 +8680,9 @@ final class PdfConverter extends BuiltInConverter
         // `index_sort: code-point` (modern engine): every term in one
         // list, keyed by its terms joined with commas, in code point
         // order (as Typst's in-dexter index).
-        if (_engine == PdfEngine.modern &&
-            (_choice('index_sort', const ['letter', 'code-point']) ??
-                    _document.attr('index-sort')) ==
-                'code-point') {
+        if ((_choice('index_sort', const ['letter', 'code-point']) ??
+                _document.attr('index-sort')) ==
+            'code-point') {
           _flatIndex(style);
           return;
         }
@@ -8897,7 +8789,6 @@ final class PdfConverter extends BuiltInConverter
     // `index_pagenum_text_align: right` (modern engine): the page numbers
     // in a column at the right, in tabular figures, as books set them.
     final column =
-        _engine == PdfEngine.modern &&
         _choice('index_pagenum_text_align', const ['left', 'right']) == 'right';
     String? pagenums;
     final seeAlso = <String>[];
@@ -8926,7 +8817,6 @@ final class PdfConverter extends BuiltInConverter
           // the modern engine: `index-pagenum-sequence-style: page`.)
           case _
               when !screen &&
-                  _engine == PdfEngine.modern &&
                   _document.attr('index-pagenum-sequence-style') == 'page':
             numbers = [
               ...{for (final d in destinations) d.page!},
@@ -9124,10 +9014,8 @@ final class PdfConverter extends BuiltInConverter
     // document's `footnote-reference-template` (every format's, ADR-0012):
     // `[1]` by default, raised, the number the link.
     final template =
-        (_engine == PdfEngine.modern
-            ? _s('footnotes_reference_content') ??
-                  _document.attr('footnote-reference-template')
-            : null) ??
+        (_s('footnotes_reference_content') ??
+            _document.attr('footnote-reference-template')) ??
         '[{{number}}]';
     final marker = renderNumbered(
       template,
@@ -9143,10 +9031,8 @@ final class PdfConverter extends BuiltInConverter
   /// document's `footnote-label-template`, `[1] ` by default, the number a
   /// link back to the reference.
   String _footnoteNoteLabel(String index, String label) => renderNumbered(
-    (_engine == PdfEngine.modern
-            ? _s('footnotes_label_content') ??
-                  _document.attr('footnote-label-template')
-            : null) ??
+    (_s('footnotes_label_content') ??
+            _document.attr('footnote-label-template')) ??
         '[{{number}}] ',
     label,
     (n) => '<a anchor="_footnoteref_$index"${_footnoteLabelKey(index)}>$n</a>',
@@ -9156,7 +9042,6 @@ final class PdfConverter extends BuiltInConverter
   /// on each `page` (modern engine, footnotes at the bottom of the page)
   /// or through the `document` (`footnotes_numbering`).
   String get _footnoteNumbering {
-    if (_engine != PdfEngine.modern) return 'chapter';
     return switch (_choice('footnotes_numbering', const [
       'chapter',
       'page',
@@ -9225,9 +9110,8 @@ final class PdfConverter extends BuiltInConverter
   /// (the modern engine's default, `footnotes_placement: page`), rather
   /// than at the end of the chapter or document (`end`, the gem's).
   bool get _pageFootnotes =>
-      _engine == PdfEngine.modern &&
       (_choice('footnotes_placement', const ['page', 'end']) ?? 'page') ==
-          'page';
+      'page';
 
   /// The rule above the footnotes at the bottom of a page: a third of the
   /// column long (`footnotes_separator_length`), `footnotes_separator_width`
@@ -10046,7 +9930,7 @@ final class _Absolute implements CustomContent {
 final class _TocEntry implements CustomContent {
   const new(this.title, this.placeholder, this.leader, {this.hanging = 0});
 
-  final PrawnTextBox title;
+  final TextBox title;
   final double placeholder;
   final CustomContent Function(double width, double startDots) leader;
 
@@ -10063,7 +9947,7 @@ final class _TocEntry implements CustomContent {
     final room = width - placeholder - hanging;
     final placed = title.place(room, available, atTop: atTop);
     if (placed == null) return null;
-    if (placed.rest case final PrawnTextBox rest) {
+    if (placed.rest case final TextBox rest) {
       return CustomPlacement(
         height: placed.height,
         anchors: placed.anchors,
@@ -10103,8 +9987,8 @@ final class _TocEntry implements CustomContent {
 final class _IndexRow implements CustomContent {
   const new(this.term, this.numbers, {required this.gap});
 
-  final PrawnTextBox term;
-  final PrawnTextBox numbers;
+  final TextBox term;
+  final TextBox numbers;
   final double gap;
 
   double _numbersWidth(double width) =>
@@ -10244,8 +10128,8 @@ final class _FloatParagraph {
     this.anchor,
   });
 
-  final PrawnTextBox text;
-  final PrawnTextBox boxText;
+  final TextBox text;
+  final TextBox boxText;
   final double marginBottom;
   final double blockMargin;
   final double paddingTop;
@@ -10367,7 +10251,7 @@ final class _FloatGroup implements CustomContent {
         } else {
           if (!printed && start < boxHeight) end = boxHeight;
           cursor = end;
-          final text = overflow is PrawnTextBox
+          final text = overflow is TextBox
               ? overflow.restyled(paragraph.text.state, paragraph.text.layout)
               : overflow;
           queue.add(

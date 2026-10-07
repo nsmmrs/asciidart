@@ -13,7 +13,7 @@ attribute, `ASCIIDART_COMPAT`, or `compat:` in `asciidart.yml`; ADR-0015
 and `doc/books.md`), for every format or a list. Each format also has its
 own: `-a stylesheet=asciidoctor` (HTML, website), `-a
 epub3-stylesheet=asciidoctor-epub3` (EPUB), `-a pdf-theme=default` (PDF;
-`-a pdf-compat` for asciidoctor-pdf's layout too).
+`-a pdf-compat` for asciidoctor-pdf's page rules too).
 
 ## Values
 

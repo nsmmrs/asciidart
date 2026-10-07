@@ -9,9 +9,10 @@
 /// ```
 ///
 /// The gem's PDF of each document and its pages (gray PGM images at
-/// `--dpi`, 50 by default) are made once and kept in `--cache`; a later
-/// run converts only with asciidart (`-o FILE DOC`, `SOURCE_DATE_EPOCH=0`,
-/// `TZ=UTC`; the wrapper passes `-b pdf`), renders its pages and compares. Both page images are
+/// `--dpi`, 50 by default) are made once and kept in `--cache` (a PDF
+/// already there is only rendered); a later run converts only with
+/// asciidart (`-o FILE DOC`, `SOURCE_DATE_EPOCH=0`, `TZ=UTC`; the wrapper
+/// passes `-b pdf`), renders its pages and compares. Both page images are
 /// blurred (a 5-pixel box, so a line set a point to the side isn't a
 /// difference) and a pixel differs when the blurred grays differ by more
 /// than 10%. A page's difference is the share of its pixels that differ;
@@ -116,6 +117,30 @@ double difference(Gray a, Gray b, {int threshold = 26}) {
   return differ / (width * height);
 }
 
+/// The difference ([difference]) of each page of the PDF files [a] and
+/// [b] (rendered at [dpi] into [dir]); a page one has and the other
+/// hasn't differs completely (1).
+List<double> pageDifferences(String a, String b, String dir, {int dpi = 50}) {
+  List<Gray> pages(String pdf, String name) {
+    final out = Directory('$dir/$name')..createSync(recursive: true);
+    Process.runSync('pdftoppm', ['-gray', '-r', '$dpi', pdf, '${out.path}/p']);
+    return [
+      for (final file in _pages(out.path))
+        Gray.parse(file.readAsBytesSync()).blurred(2),
+    ];
+  }
+
+  final pagesA = pages(a, 'a');
+  final pagesB = pages(b, 'b');
+  return [
+    for (var i = 0; i < math.max(pagesA.length, pagesB.length); i++)
+      if (i < pagesA.length && i < pagesB.length)
+        difference(pagesA[i], pagesB[i])
+      else
+        1,
+  ];
+}
+
 /// The result for one document.
 typedef Look = ({
   String name,
@@ -194,10 +219,13 @@ Future<Look> _look(
   final gemPdf = '$cache/$name.pdf';
   final gemDir = '$cache/$name';
   var gemPages = _pages(gemDir);
-  if (!File(gemPdf).existsSync() || gemPages.isEmpty) {
-    final error = await _run(gem, ['-o', gemPdf, doc]);
-    if (error != null || !File(gemPdf).existsSync()) {
-      return failed('the gem: ${error ?? 'no PDF'}');
+  if (gemPages.isEmpty) {
+    // (A PDF already in the cache is only rendered.)
+    if (!File(gemPdf).existsSync()) {
+      final error = await _run(gem, ['-o', gemPdf, doc]);
+      if (error != null || !File(gemPdf).existsSync()) {
+        return failed('the gem: ${error ?? 'no PDF'}');
+      }
     }
     try {
       gemPages = await _render(gemPdf, gemDir, dpi);

@@ -266,7 +266,8 @@ void main() {
       File(
         convertWith(
           'html5',
-          '= Doc\n:front-cover-image: cover.png\n:asciidoctor-compat: html\n\nText.\n',
+          '= Doc\n:front-cover-image: cover.png\n'
+              ':asciidoctor-compat: html\n\nText.\n',
         ),
       ).readAsStringSync(),
       isNot(contains('id="cover"')),

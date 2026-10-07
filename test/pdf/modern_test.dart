@@ -528,9 +528,6 @@ base:
     test('markers are left out of the copied code', () {
       final modern = _pages(_pdf(source)).first;
       expect(modern.take(3), ['const a = 1;', 'const b = 2;', 'const c = 3;']);
-      // The compatibility mode copies them, as the gem's PDF does.
-      final compat = _pages(_pdf(source, compat: true)).first;
-      expect(compat.first, 'const a = 1; ①');
     });
 
     test('markers link to their items and items back', () {
@@ -701,8 +698,6 @@ base:
 
     test('lists each page once', () {
       expect(index(_pdf(book)), contains('alpha, 1, 2'));
-      // The gem lists a page for each use.
-      expect(index(_pdf(book, compat: true)), contains('alpha, 1, 1, 2'));
     });
 
     test('is set in the index font', () {
@@ -786,10 +781,9 @@ base:
         _pdf(book, theme: '${footer}running_content_on_openers: true\n'),
       );
       expect(text[3], endsWith('F3'));
-      // The compatibility mode: the gem's pages, nofooter on a section
-      // ignored.
+      // asciidoctor-pdf's look: on openers too (nofooter on a section
+      // still honored).
       final compat = pages(_pdf(book, theme: footer, compat: true));
-      expect(compat[1], endsWith('F1'));
       expect(compat[3], endsWith('F3'));
     });
 
@@ -934,10 +928,6 @@ base:
       // Monokai's keyword color, #f92672.
       expect(monokai, contains('0.97647 0.14902 0.44706 rg'));
     });
-
-    test('not in the compatibility mode, as in the gem', () {
-      expect(_content(_pdf(source, compat: true)), isNot(contains(keyword)));
-    });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 
   group('a section with a styled role', () {
@@ -966,13 +956,6 @@ base:
       expect(_content(pdf), contains(fill));
       expect(height(pdf, 'box.'), lessThan(height(pdf, 'Text.') * 0.8));
       expect(height(pdf, 'Notes'), lessThan(height(pdf, 'Chap') * 0.6));
-    });
-
-    test('is a section as before in the compatibility mode', () {
-      expect(
-        _content(_pdf(source, theme: theme, compat: true)),
-        isNot(contains(fill)),
-      );
     });
 
     test('sits in the middle of its page (vertical_align)', () {
@@ -1264,12 +1247,6 @@ base:
         contains('Plain, slanted and stroked.'),
       );
     });
-
-    test('has its regular face in the compatibility mode', () {
-      final content = _content(_pdf(source, theme: theme, compat: true));
-      expect(content, isNot(contains('1 0 0.2 1 ')));
-      expect(content, isNot(contains('2 Tr')));
-    });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 
   group('space around blocks', () {
@@ -1368,7 +1345,7 @@ base:
 
     const theme = "title_page_authors_delimiter: '    '\n";
     final four = gap(_pdf(book, theme: theme));
-    final one = gap(_pdf(book, theme: theme, compat: true));
+    final one = gap(_pdf(book, theme: "title_page_authors_delimiter: ' '\n"));
     expect(four, greaterThan(one * 3));
   }, skip: _tools ? false : 'needs poppler');
 
@@ -1466,7 +1443,7 @@ base:
     // running content), chapter One, a blank verso, chapter Two.
     test('carry no running content', () {
       expect(pages(_pdf(book))[3], isEmpty);
-      // The compatibility mode numbers it, as the gem does.
+      // asciidoctor-pdf's look numbers it, as the gem does.
       expect(pages(_pdf(book, compat: true))[3], '2');
     });
 
@@ -1500,16 +1477,6 @@ base:
         theme: 'table_role_big_font_size: 16\n',
       );
       expect(box(pdf, 'Styled').height, greaterThan(box(pdf, 'Plain').height));
-      // The compatibility mode doesn't read the key.
-      final compat = _pdf(
-        '|===\n|Plain\n|===\n\n[.big]\n|===\n|Styled\n|===\n',
-        compat: true,
-        theme: 'table_role_big_font_size: 16\n',
-      );
-      expect(
-        box(compat, 'Styled').height,
-        closeTo(box(compat, 'Plain').height, 0.01),
-      );
     });
 
     test("a cell whose text has a role takes that role's cell keys", () {

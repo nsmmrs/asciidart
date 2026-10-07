@@ -65,11 +65,12 @@ Asciidoctor project.
   `running_content_on_blank_pages` is true. Tables with a role take the
   theme's `table_role_<role>_*` keys, and a cell whose text is a phrase
   with a role, `table_cell_role_<role>_*`. `base_line_breaking: optimal`
-  optimizes ragged text too, `greedy` breaks any text one line at a time. `doc/pdf.md` lists every setting. With `-a pdf-compat` the layout is the gem's, and
-  `hyphens` and `base_hyphens` hyphenate as the gem does with text-hyphen.
-  In that mode, 763 of the 797 documents of the gem's spec suite convert the same (words,
-  positions, outline, links, labels, pixels and colors; `benchmark/PARITY.md`),
-  6 to 15 times faster than the gem (`benchmark/BASELINE.md`).
+  optimizes ragged text too, `greedy` breaks any text one line at a time. `doc/pdf.md` lists every setting. With `asciidoctor-compat` (or
+  `-a pdf-compat`) the settings default to asciidoctor-pdf's look: 793 of
+  the 797 documents of the gem's spec suite look the same, page image
+  against page image (`benchmark/PARITY.md`), 6 to 15 times faster than
+  the gem (`benchmark/BASELINE.md`). `hyphens` and `base_hyphens`
+  hyphenate as the gem does with text-hyphen.
 - The index in HTML and EPUB: an `[index]` section lists the document's
   index terms by letter, with subterms, see and see-also references, and a
   link to each section a term is used in (Asciidoctor renders it empty;

@@ -1,9 +1,8 @@
-/// Fonts as Prawn 2.4 measures them (the engine asciidoctor-pdf 2.3.27
-/// lays text out with): metrics from TrueType's `OS/2` typographic values
-/// (else `hhea`) or from AFM files, glyph widths truncated to 1000ths of
-/// the em, kerning from the `kern` table's first subtable alone; and the
-/// font catalog of a
-/// theme, with Prawn's built-in families and the icon fonts.
+/// Fonts: line metrics as Prawn 2.4 gives them (so a theme's line heights
+/// set lines as asciidoctor-pdf does), from TrueType's `OS/2` typographic
+/// values (else `hhea`) or from AFM files; text shaped with OpenType
+/// (GPOS kerning, ligatures); and the font catalog of a theme, with the
+/// standard families and the icon fonts.
 library;
 
 import 'package:asciidart/src/io.dart' as io;
@@ -12,8 +11,8 @@ import 'package:asciidart/src/pdf/assets.g.dart';
 import 'package:asciidart/src/pdf/theme.dart';
 import 'package:libpdf/libpdf.dart';
 
-/// A font with Prawn's metrics; [pdf] draws it.
-sealed class PrawnFont {
+/// A font face with Prawn's line metrics; [pdf] draws it.
+sealed class FontFace {
   const new _(this.family, this.style);
 
   /// The family name (as the theme names it).
@@ -85,10 +84,6 @@ sealed class PrawnFont {
 
 /// How text becomes glyphs, for measuring and drawing it.
 enum Shaping {
-  /// As Prawn shapes it: a glyph per character, kerned by the font's kern
-  /// table (its first subtable), or by the AFM pairs as Prawn reads them.
-  prawn,
-
   /// As libpdf shapes it: kerned by the font's GPOS pairs (or its kern
   /// table).
   opentype,
@@ -101,9 +96,9 @@ enum Shaping {
 }
 
 /// A TrueType (or OpenType) font.
-final class TrueTypeFont extends PrawnFont {
+final class TrueTypeFont extends FontFace {
   /// The font of [pdf] in [family] and [style].
-  new(super.family, super.style, this.pdf, [this.shaping = Shaping.prawn])
+  new(super.family, super.style, this.pdf, [this.shaping = Shaping.opentype])
     : slanted = false,
       emboldened = false,
       super._() {
@@ -170,36 +165,18 @@ final class TrueTypeFont extends PrawnFont {
     bool kerning = true,
     Set<String> features = const {},
   }) {
-    if (shaping != Shaping.prawn || features.isNotEmpty) {
-      var width = 0.0;
-      final glyphs = pdf.shape(
-        text,
-        kerning: kerning,
-        ligatures: ligates,
-        features: features,
-      );
-      for (final (i, glyph) in glyphs.indexed) {
-        width += glyph.advance;
-        if (i < glyphs.length - 1) width += glyph.kerning;
-      }
-      return width * size / 1000;
+    var width = 0.0;
+    final glyphs = pdf.shape(
+      text,
+      kerning: kerning,
+      ligatures: ligates,
+      features: features,
+    );
+    for (final (i, glyph) in glyphs.indexed) {
+      width += glyph.advance;
+      if (i < glyphs.length - 1) width += glyph.kerning;
     }
-    var total = 0.0;
-    int? previous;
-    for (final rune in text.runes) {
-      if (kerning && previous != null) {
-        // Prawn (through ttfunk) reads the kern table's first subtable.
-        final kern = pdf.font.kernTablePair(
-          pdf.font.glyphFor(previous),
-          pdf.font.glyphFor(rune),
-          subtable: 0,
-        );
-        if (kern != null) total += kern * _scale;
-      }
-      total += widthOfCode(rune);
-      previous = rune;
-    }
-    return total * size / 1000;
+    return width * size / 1000;
   }
 
   @override
@@ -210,9 +187,9 @@ final class TrueTypeFont extends PrawnFont {
 }
 
 /// One of the 14 standard fonts, from its AFM file.
-final class AfmFont extends PrawnFont {
+final class AfmFont extends FontFace {
   /// The standard font [pdf] in [family] and [style].
-  new(super.family, super.style, this.pdf, [this.shaping = Shaping.prawn])
+  new(super.family, super.style, this.pdf, [this.shaping = Shaping.opentype])
     : super._();
 
   @override
@@ -233,47 +210,13 @@ final class AfmFont extends PrawnFont {
     return (box[3] - box[1]) - (ascender - descender);
   }
 
-  final Map<(int, int), double> _kerns = {};
-
   @override
   double widthOf(
     String text,
     double size, {
     bool kerning = true,
     Set<String> features = const {},
-  }) {
-    if (shaping != Shaping.prawn) {
-      return pdf.widthOf(text, size, kerning: kerning);
-    }
-    final width = pdf.widthOf(text, size, kerning: false);
-    if (!kerning) return width;
-    var kern = 0.0;
-    int? previous;
-    for (final rune in text.runes) {
-      if (previous != null) kern += _kern(previous, rune);
-      previous = rune;
-    }
-    return width + kern * size / 1000;
-  }
-
-  /// The kerning Prawn applies between [left] and [right], in 1000ths of
-  /// the em. Prawn keys its pairs by the last WinAnsi code of each glyph
-  /// name, so a space (32) or a hyphen-minus (45) is never kerned, while a
-  /// no-break space (160) and a soft hyphen (173) are kerned as `space`
-  /// and `hyphen`.
-  double _kern(int left, int right) => _kerns[(left, right)] ??= () {
-    int? named(int code) => switch (code) {
-      0x20 || 0x2d => null,
-      0xa0 => 0x20,
-      0xad => 0x2d,
-      _ => code,
-    };
-    final a = named(left);
-    final b = named(right);
-    if (a == null || b == null) return 0.0;
-    final pair = String.fromCharCodes([a, b]);
-    return pdf.widthOf(pair, 1000) - pdf.widthOf(pair, 1000, kerning: false);
-  }();
+  }) => pdf.widthOf(text, size, kerning: kerning);
 
   @override
   bool hasGlyph(int codePoint) => pdf.covers(codePoint);
@@ -370,7 +313,7 @@ final class FontCatalog {
   new(
     Theme theme, {
     String? fontsDir,
-    this.shaping = Shaping.prawn,
+    this.shaping = Shaping.opentype,
     this.synthesizeFaces = false,
   }) : _catalog = theme.fontCatalog?.families ?? const {},
        _dirs = [
@@ -392,7 +335,7 @@ final class FontCatalog {
 
   final Map<String, Map<String, String>> _catalog;
   final List<String> _dirs;
-  final Map<(String, String), PrawnFont> _fonts = {};
+  final Map<(String, String), FontFace> _fonts = {};
   static final Map<String, List<int>> _files = {};
 
   /// Whether [family] is known.
@@ -403,7 +346,7 @@ final class FontCatalog {
 
   /// The font of [family] in [style]; throws [FontException] for a family
   /// or style the catalog lacks.
-  PrawnFont font(String family, [String style = 'normal']) =>
+  FontFace font(String family, [String style = 'normal']) =>
       _fonts[(family, style)] ??= _load(family, style);
 
   /// The font SVG text of [family] (a name, any case, or a generic
@@ -449,9 +392,9 @@ final class FontCatalog {
   }
 
   /// Every font loaded, to write them into the document.
-  Iterable<PrawnFont> get loaded => _fonts.values;
+  Iterable<FontFace> get loaded => _fonts.values;
 
-  PrawnFont _load(String family, String style) {
+  FontFace _load(String family, String style) {
     if (iconFontFiles[family] case final path?) {
       return TrueTypeFont(family, 'normal', _embedded(_bundled(path)), shaping);
     }
@@ -483,11 +426,8 @@ final class FontCatalog {
     throw FontException('font family $family not found');
   }
 
-  /// The font in [bytes]: as Prawn reads it (widths truncated, kerned by
-  /// the kern table's first subtable), or as OpenType has it.
-  EmbeddedFont _embedded(List<int> bytes) => shaping == Shaping.prawn
-      ? EmbeddedFont.parse(bytes, truncateWidths: true, kernTableSubtable: 0)
-      : EmbeddedFont.parse(bytes);
+  /// The font in [bytes].
+  EmbeddedFont _embedded(List<int> bytes) => EmbeddedFont.parse(bytes);
 
   List<int> _bundled(String path) => _files[path] ??=
       PdfAssets.bytes(path) ?? (throw FontException('$path not found'));

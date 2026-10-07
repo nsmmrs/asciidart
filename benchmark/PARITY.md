@@ -266,31 +266,26 @@ Intentional differences:
 
 ## PDF (`-b pdf`)
 
-The PDF backend converts as the asciidoctor-pdf 2.3.27 gem does (on
-Asciidoctor 2.0.26, with its default dependencies: Prawn 2.4.0,
-prawn-svg 0.34.2, prawn-table, prawn-icon; no optional gems). It reads the
-gem's YAML themes unchanged, and it draws with libpdf, asciidart's own PDF
-library. Prawn's line wrapping and asciidoctor-pdf's page rules are
-imitated in asciidart; no Prawn code is ported.
+The PDF backend reads asciidoctor-pdf 2.3.27's YAML themes unchanged and
+draws with libpdf, asciidart's own PDF library. It has one layout engine,
+asciidart's own (`doc/pdf.md`). With `asciidoctor-compat` (or
+`-a pdf-compat`; ADR-0015), its settings default to asciidoctor-pdf's
+look: the goal is pages that look as the gem's do (on Asciidoctor 2.0.26,
+with its default dependencies: Prawn 2.4.0, prawn-svg 0.34.2,
+prawn-table, prawn-icon; no optional gems), not the same bytes. No Prawn
+code is ported.
 
-Since the Hypermedia Systems roadmap (lane EPIC-xj1gxj), `-b pdf`
-defaults to asciidart's own layout (optimal line breaking, hyphenation,
-widows and orphans). This compatibility mode is selected with
-`-a pdf-compat`, and everything in this section describes that mode.
+Two tools compare the PDF files of the gem and asciidart:
 
-`tool/pdf_parity.dart` compares two PDFs on what a reader sees, not on
-their bytes:
-
-- the words, in order (`pdftotext`);
-- where each word is, to the point (`pdftotext -bbox`);
-- the outline, the link annotations (target and rectangle) and the page
-  labels;
-- the rendered pages: the mean gray difference, and the share of pixels
-  whose color differs from every pixel around them, on the worst page.
-
-The converter tests (`test/pdf/converter_test.dart`) hold 32 fixtures and
-the gem's chronicles and edge-cases examples to all of these, against PDFs
-the gem made (`SOURCE_DATE_EPOCH=0`).
+- `tool/pdf_look.dart`: page images, blurred, the share of pixels that
+  differ (the look check below; `test/pdf/converter_test.dart` holds 32
+  fixtures and the gem's chronicles and edge-cases examples to it,
+  against PDFs the gem made, with `SOURCE_DATE_EPOCH=0`, along with their
+  page counts, outlines and page labels);
+- `tool/pdf_parity.dart`: what a reader extracts: the words in order
+  (`pdftotext`), where each is to the point (`pdftotext -bbox`), the
+  outline, the link annotations and the page labels, and the mean gray
+  difference of the pages.
 
 ### Look check (2026-10-07): 793 of 797 documents look the same
 
@@ -322,7 +317,13 @@ a broken background image reported, not a failure). The other 4:
 - *Within 0.6%* (2): `table-118` (CJK text with a fallback font) and
   `hyphens-006` (a word the gem's patterns don't break).
 
-### Corpus check (2026-10-06): 763 of 797 documents the same
+### Corpus check (2026-10-06, the engine since removed): 763 of 797 documents the same
+
+Until ADR-0015, a second layout engine imitated asciidoctor-pdf and
+Prawn line by line (`-a pdf-compat`); this check held it to the gem's
+words and positions. It was removed once the look check above passed.
+The record of that check:
+
 
 `tool/pdf_spec_corpus.dart` extracts the documents of the gem's own spec
 suite: every `to_pdf` heredoc, with the options the spec converts it with
@@ -394,8 +395,17 @@ keys are read whenever a theme gives the header a height. Not supported:
 - Fonts are embedded as CID fonts (Identity-H) with subsets of TrueType
   and CFF outlines; Prawn embeds simple fonts. Text extracts the same,
   except for `.notdef` (above).
-- Source highlighting uses hilite rather than Rouge; when the gem is run
-  without Rouge, as in the corpus, neither highlights.
+- Source highlighting uses hilite rather than Rouge; with
+  `source-highlighter` set, asciidart highlights where the gem without
+  Rouge (as in the corpus) doesn't.
+- With `asciidoctor-compat`, what the gem gets wrong or lacks stays
+  fixed: a family without an italic or bold face has one made from its
+  regular (slanted, stroked); the index lists a page once, not once per
+  use; callout markers are left out of copied code; `nofooter` on a
+  section is honored; URLs break after their dots and slashes rather than
+  inside a word; a word longer than the line breaks at the line's end
+  even across index terms; a title logo, an autowidth column's image and
+  a heading kept with an unbreakable block are set as the gem means to.
 - Optional gems behave as not installed: asciidoctor-mathematical (STEM
   stays source text), prawn-gmagick (GIF and other formats are reported),
   rghost (`optimize`). PDF pages as images, covers and

@@ -1,18 +1,21 @@
-// The PDF converter in its asciidoctor-pdf compatibility mode
-// (`pdf-compat`) against asciidoctor-pdf 2.3.27: each document in
-// fixtures/ was converted by the gem (SOURCE_DATE_EPOCH=0) into
-// fixtures/<name>-gem.pdf; asciidart's conversion must put the same words
-// in the same places, with the same outline, links and page labels.
+// The PDF converter with asciidoctor-compat (asciidoctor-pdf's look,
+// ADR-0015) against asciidoctor-pdf 2.3.27: each document in fixtures/
+// was converted by the gem (SOURCE_DATE_EPOCH=0) into
+// fixtures/<name>-gem.pdf; asciidart's conversion must have the same
+// pages, outline and page labels, and look the same: no page more than
+// 0.5% different (tool/pdf_look.dart).
 @TestOn('vm')
 library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:asciidart/src/internal.dart';
 import 'package:asciidart/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
+import '../../tool/pdf_look.dart' show pageDifferences;
 import '../../tool/pdf_parity.dart';
 
 bool _has(String tool) => Process.runSync('which', [tool]).exitCode == 0;
@@ -27,6 +30,31 @@ final bool _tools = [
 
 void main() {
   setUpAll(registerPdf);
+
+  /// What differs, by fixture, beyond the 0.5% a page may: the largest
+  /// page difference allowed, and why.
+  const allowances = {
+    // A URL broken after its dots and slashes rather than inside a word,
+    // and a word longer than the line broken a character later.
+    'hyphens': 0.1,
+  };
+
+  /// [pdf] (asciidart's) against [gem]'s: pages, outline, labels and look.
+  void expectLooksLike(String gem, String pdf, Directory dir, String name) {
+    final comparison = Comparison(facts(gem, dir), facts(pdf, dir));
+    expect(comparison.a.pages, comparison.b.pages);
+    expect(comparison.sameOutline, isTrue, reason: '${comparison.b.outline}');
+    expect(comparison.sameLabels, isTrue);
+    final differences = pageDifferences(gem, pdf, '${dir.path}/look');
+    final largest = differences.fold<double>(0, math.max);
+    expect(
+      largest,
+      lessThanOrEqualTo(allowances[name] ?? 0.005),
+      reason:
+          'page ${differences.indexOf(largest) + 1} differs on '
+          '${(largest * 100).toStringAsFixed(2)}% of its pixels',
+    );
+  }
 
   for (final name in [
     'abstract',
@@ -62,7 +90,7 @@ void main() {
     'toc-macro',
     'toc-preamble',
   ]) {
-    test('$name.adoc converts as the gem converts it', () {
+    test('$name.adoc looks as the gem sets it', () {
       final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
       addTearDown(() => dir.deleteSync(recursive: true));
       final out = '${dir.path}/$name.pdf';
@@ -72,21 +100,10 @@ void main() {
           safe: SafeMode.unsafe,
           backend: 'pdf',
           toFile: out,
-          attributes: const {'pdf-compat': ''},
+          attributes: const {'asciidoctor-compat': 'pdf'},
         ),
       );
-      final comparison = Comparison(
-        facts('test/pdf/fixtures/$name-gem.pdf', dir),
-        facts(out, dir),
-      );
-      expect(comparison.a.pages, comparison.b.pages);
-      expect(comparison.text, 1, reason: comparison.wordDiff());
-      expect(comparison.geometry.$1, 1, reason: comparison.wordDiff());
-      expect(comparison.sameOutline, isTrue, reason: '${comparison.b.outline}');
-      expect(comparison.sameLinks, isTrue);
-      expect(comparison.sameLabels, isTrue);
-      expect(comparison.pixels, lessThan(1));
-      expect(comparison.colors, lessThan(0.001));
+      expectLooksLike('test/pdf/fixtures/$name-gem.pdf', out, dir, name);
     }, skip: _tools ? false : 'needs poppler and qpdf');
   }
 
@@ -96,12 +113,7 @@ void main() {
     final out = '${dir.path}/theme-keys2.pdf';
     convertFile(
       'test/pdf/fixtures/theme-keys2.adoc',
-      AsciidoctorOptions(
-        safe: SafeMode.unsafe,
-        backend: 'pdf',
-        toFile: out,
-        attributes: const {'pdf-compat': ''},
-      ),
+      AsciidoctorOptions(safe: SafeMode.unsafe, backend: 'pdf', toFile: out),
     );
     final qdf =
         Process.runSync('qpdf', [
@@ -123,12 +135,9 @@ void main() {
     expect(qdf, matches(RegExp(r'/OpenAction \[\s*\d+ 0 R\s*/FitH\s+841.89')));
   }, skip: _tools ? false : 'needs poppler and qpdf');
 
-  // The gem's own examples (vendored), converted from where they are. In
-  // the chronicles a footnote reference after a floated image is drawn in
-  // the same place but extracts in another order (the gem's content
-  // stream has it earlier), so the words need only be 99.9% in order.
+  // The gem's own examples (vendored), converted from where they are.
   for (final name in ['chronicles-example', 'edge-cases']) {
-    test("the gem's $name.adoc converts as the gem converts it", () {
+    test("the gem's $name.adoc looks as the gem sets it", () {
       final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
       addTearDown(() => dir.deleteSync(recursive: true));
       final out = '${dir.path}/$name.pdf';
@@ -138,25 +147,15 @@ void main() {
           safe: SafeMode.unsafe,
           backend: 'pdf',
           toFile: out,
-          attributes: const {'pdf-compat': ''},
+          attributes: const {'asciidoctor-compat': 'pdf'},
         ),
       );
-      final comparison = Comparison(
-        facts('test/pdf/fixtures/examples/$name-gem.pdf', dir),
-        facts(out, dir),
+      expectLooksLike(
+        'test/pdf/fixtures/examples/$name-gem.pdf',
+        out,
+        dir,
+        name,
       );
-      expect(comparison.a.pages, comparison.b.pages);
-      expect(
-        comparison.text,
-        greaterThanOrEqualTo(0.999),
-        reason: comparison.wordDiff(),
-      );
-      expect(comparison.geometry.$1, 1, reason: comparison.wordDiff());
-      expect(comparison.sameOutline, isTrue);
-      expect(comparison.sameLinks, isTrue);
-      expect(comparison.sameLabels, isTrue);
-      expect(comparison.pixels, lessThan(1));
-      expect(comparison.colors, lessThan(0.001));
     }, skip: _tools ? false : 'needs poppler and qpdf');
   }
 }

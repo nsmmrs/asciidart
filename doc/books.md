@@ -178,18 +178,22 @@ The PDF's `basebackend` is `html`, as asciidoctor-pdf's is: use
 
 asciidart reads asciidoctor-pdf themes unchanged. Two ways to switch:
 
-- **Same pages as before**: `-a pdf-compat` lays the document out as
-  asciidoctor-pdf 2.3.27 does (763 of the 797 documents of its own test
-  suite convert the same; `benchmark/PARITY.md`). Hyphenation
-  (`hyphens`) works without the text-hyphen gem.
-- **Better pages**: the default engine keeps your theme and improves the
-  typesetting (without a theme, it uses asciidart's house theme:
-  `-a pdf-theme=default` for asciidoctor-pdf's). Expect different line and page breaks: justified text is
-  broken by Knuth and Plass and hyphenated, paragraphs and listings keep
-  two lines on each side of a page break, captions stay with their
-  blocks. `doc/pdf.md` lists the settings, each with a default; turn one
-  off to come closer to the old pages (`base_line_breaking: greedy`,
-  `:hyphens!:`, `prose_orphans: 1`, `prose_widows: 1`).
+- **Pages that look as before**: `asciidoctor-compat` (`compat: [pdf]`
+  in `asciidart.yml`, or `-a pdf-compat`; "From Asciidoctor" below) sets
+  pages as asciidoctor-pdf 2.3.27 does: its default theme, margins that
+  add, one line at a time, no hyphenation unless asked, footnotes at the
+  end (793 of the 797 documents of its own test suite look the same;
+  `benchmark/PARITY.md`). Hyphenation (`hyphens`) works without the
+  text-hyphen gem.
+- **Better pages**: without it, asciidart keeps your theme and improves
+  the typesetting (without a theme, it uses asciidart's house theme:
+  `-a pdf-theme=default` for asciidoctor-pdf's). Expect different line
+  and page breaks: justified text is broken by Knuth and Plass and
+  hyphenated, paragraphs and listings keep two lines on each side of a
+  page break, captions stay with their blocks. `doc/pdf.md` lists the
+  settings, each with a default; set one in the theme to come closer to
+  the old pages (`base_line_breaking: greedy`, `base_hyphens: false`,
+  `prose_orphans: 1`, `block_margin_collapse: false`).
 
 Optional gems asciidoctor-pdf uses (prawn-gmagick, rghost,
 asciidoctor-mathematical) have no counterpart; text-hyphen's is built
