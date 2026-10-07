@@ -1545,7 +1545,7 @@ void main() {
       );
     });
 
-    test('asciimath stem without mathml falls back to mathphrase', () {
+    test('asciimath stem is MathML (ADR-0014)', () {
       final doc = makeDoc();
       final node = StubBlock(
         doc,
@@ -1556,7 +1556,7 @@ void main() {
       expect(
         convOf(doc).convert(node),
         '<informalequation>\n'
-        '<mathphrase><![CDATA[x^2]]></mathphrase>\n'
+        '<mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math>\n'
         '</informalequation>',
       );
     });
@@ -2815,7 +2815,7 @@ void main() {
       expect(convOf(doc).convert(node), 'x');
     });
 
-    test('asciimath falls back to mathphrase', () {
+    test('asciimath is MathML (ADR-0014)', () {
       final doc = makeDoc();
       final node = Inline(
         para(doc),
@@ -2825,7 +2825,9 @@ void main() {
       );
       expect(
         convOf(doc).convert(node),
-        '<inlineequation><mathphrase><![CDATA[x^2]]></mathphrase></inlineequation>',
+        '<inlineequation>'
+        '<mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mi>x</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math>'
+        '</inlineequation>',
       );
     });
 

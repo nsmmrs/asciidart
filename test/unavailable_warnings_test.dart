@@ -44,16 +44,13 @@ void main() {
     });
   }
 
-  test('DocBook warns once per document that AsciiMath stays text', () {
+  test('DocBook converts AsciiMath without a warning (ADR-0014)', () {
     final warnings = warningsOf(() {
       convert(
         'asciimath:[x] and asciimath:[y]\n\n[asciimath]\n++++\nz\n++++\n',
         const AsciidoctorOptions(backend: 'docbook5'),
       );
     });
-    const expected =
-        'AsciiMath to MathML conversion is not available. '
-        'Functionality disabled.';
-    expect(warnings, [expected]);
+    expect(warnings, isEmpty);
   });
 }

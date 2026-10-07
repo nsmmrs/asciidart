@@ -15,9 +15,9 @@
 ///
 /// * Role checks use [AbstractNode.includesRole] (membership);
 ///   [AbstractNode.hasRole] tests equality.
-/// * AsciiMath: there is no AsciiMath-to-MathML converter here, so stem and
-///   quoted `asciimath` nodes always produce the output Asciidoctor gives
-///   when its optional `asciimath` gem is not installed.
+/// * AsciiMath: stem and quoted `asciimath` nodes are MathML, from
+///   asciidart's port of the `asciimath` gem (ADR-0014), as Asciidoctor
+///   writes them with the gem installed.
 library;
 
 import 'package:asciidart/src/abstract_block.dart';
@@ -28,6 +28,7 @@ import 'package:asciidart/src/converter.dart';
 import 'package:asciidart/src/document.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/math/asciimath.dart';
 import 'package:asciidart/src/ruby_semantics.dart';
 import 'package:asciidart/src/rx.dart';
 import 'package:asciidart/src/section.dart';
@@ -709,11 +710,10 @@ class Docbook5Converter extends BuiltInConverter {
     }
     final String equationData;
     if (node.style == 'asciimath') {
-      // NOTE fop requires jeuclid to process mathml markup. There is no
-      // AsciiMath-to-MathML converter here, so this always produces what
-      // Asciidoctor emits without its optional asciimath gem.
-      _warnAsciimathUnavailable();
-      equationData = '<mathphrase><![CDATA[$equation]]></mathphrase>';
+      // NOTE fop requires jeuclid to process mathml markup. MathML from
+      // asciidart's port of the asciimath gem (ADR-0014), as Asciidoctor
+      // writes it with the gem installed.
+      equationData = _mathml(equation);
     } else {
       // Unhandled math; pass source to alt and required mathphrase element;
       // dblatex will process alt as LaTeX math.
@@ -1159,28 +1159,19 @@ class Docbook5Converter extends BuiltInConverter {
     return '<menuchoice><guimenu>$menu</guimenu> <guisubmenu>${submenus.join('</guisubmenu> <guisubmenu>')}</guisubmenu> <guimenuitem>${_s(node.attr('menuitem'))}</guimenuitem></menuchoice>';
   }
 
-  bool _asciimathWarned = false;
-
-  /// Warns, once per converter (so once per document), that AsciiMath is
-  /// left as text, as Asciidoctor does when it cannot convert AsciiMath.
-  void _warnAsciimathUnavailable() {
-    if (_asciimathWarned) return;
-    _asciimathWarned = true;
-    logger.warn(
-      'AsciiMath to MathML conversion is not available. '
-      'Functionality disabled.',
-    );
-  }
+  /// [asciimath] as DocBook's MathML (`mml:` prefixed).
+  static String _mathml(String asciimath) => asciimathToMathml(
+    asciimath,
+    prefix: 'mml:',
+    attributes: const {'xmlns:mml': 'http://www.w3.org/1998/Math/MathML'},
+  );
 
   /// Converts the [node] inline quoted text.
   String convertInlineQuoted(Inline node) {
     final type = node.type;
     if (type == 'asciimath') {
-      // NOTE fop requires jeuclid to process mathml markup. There is no
-      // AsciiMath-to-MathML converter here, so this always produces what
-      // Asciidoctor emits without its optional asciimath gem.
-      _warnAsciimathUnavailable();
-      return '<inlineequation><mathphrase><![CDATA[${_s(node.text)}]]></mathphrase></inlineequation>';
+      // NOTE fop requires jeuclid to process mathml markup (ADR-0014).
+      return '<inlineequation>${_mathml(_s(node.text))}</inlineequation>';
     } else if (type == 'latexmath') {
       // Unhandled math; pass source to alt and required mathphrase element;
       // dblatex will process alt as LaTeX math.

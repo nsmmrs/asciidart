@@ -2182,5 +2182,19 @@ base:
       // capitals).
       expect(_pages(house).first.join(' '), contains('SMALL CAPS'));
     });
+
+    test('math shown as source says so, once', () {
+      final logger = MemoryLogger();
+      _pdf(
+        ':stem:\n\nInline stem:[x^2] and stem:[y].\n\n[stem]\n++++\nz\n++++\n',
+        logger: logger,
+      );
+      expect(
+        logger.messages
+            .map((m) => m.message.text)
+            .where((m) => m.startsWith('math')),
+        ['math is shown as its source in the PDF (not typeset yet)'],
+      );
+    });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 }

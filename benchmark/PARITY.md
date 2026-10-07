@@ -67,9 +67,10 @@ dart run tool/corpus_parity.dart --exe-a asciidoctor \
   --out /tmp/corpus-results /tmp/corpus
 ```
 
-The reference is the 2.0.26 gem without optional gems (asciidart provides
-none of Rouge, Pygments, CodeRay or AsciiMath, and behaves as the gem does
-without them), and asciidart runs with `highlightjs-mode=client` so that
+The reference is the 2.0.26 gem with the `asciimath` gem (asciidart has
+its own port, ADR-0014) and no other optional gems (asciidart provides
+none of Rouge, Pygments or CodeRay, and behaves as the gem does without
+them), and asciidart runs with `highlightjs-mode=client` so that
 documents using highlight.js compare with the gem's browser markup, and
 with `index-html!` so that documents with an index section compare with
 the gem's empty one, and with `stylesheet=asciidoctor` so that a page
@@ -206,8 +207,11 @@ reproducers of each.
   without their gems (no highlighting, the highlighter's `<pre>` class kept),
   and warn in asciidart's words, once: `Rouge syntax highlighting is not
   available. Functionality disabled.` (likewise Pygments and CodeRay).
-  `AsciiMath to MathML conversion is not available. Functionality disabled.`
-  is the DocBook counterpart for AsciiMath.
+  AsciiMath is converted to MathML in DocBook and EPUB by asciidart's port
+  of the `asciimath` gem 2.0.6 (ADR-0014), as Asciidoctor and
+  asciidoctor-epub3 do with that gem installed; the parity references
+  install it too. An EPUB content document with MathML declares the
+  `mathml` property (the gem doesn't; EPUBCheck requires it).
 - The `missing convert handler` warning names the converter by its Dart
   class (`ManpageConverter`) instead of the Ruby one
   (`Asciidoctor::Converter::ManPageConverter`).
@@ -240,9 +244,9 @@ Intentional differences:
 - A preamble whose only block is a list becomes the abstract, as in the
   gem, but its list is written as a list: the gem writes a dump of Ruby
   objects there (Asciidoctor's `List#content` is the array of items).
-- AsciiMath stays text, as in the gem without the asciimath gem, and the
-  warning says so in asciidart's words (`AsciiMath to MathML conversion is
-  not available. Functionality disabled.`); likewise the highlighters.
+- AsciiMath is MathML, as in the gem with the asciimath gem (asciidart's
+  port, ADR-0014), and its content document declares `mathml`; the
+  highlighters asciidart lacks warn in its own words.
 - A custom theme (`epub3-stylesdir`) is read as compiled CSS (`epub3.css`,
   `epub3-css3-only.css`): the gem compiles SCSS, for which asciidart has no
   compiler.

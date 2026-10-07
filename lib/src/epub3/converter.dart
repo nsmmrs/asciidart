@@ -30,6 +30,7 @@ import 'package:asciidart/src/index_catalog.dart';
 import 'package:asciidart/src/inline.dart';
 import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
+import 'package:asciidart/src/math/asciimath.dart';
 import 'package:asciidart/src/output_template.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
@@ -681,7 +682,11 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
     lines.add('</body>\n</html>');
 
     // Well-formed, where AsciiDoc markup leaves it broken (asciidart's).
-    chapterItem.setText(balanceXml(lines.join(_lf)));
+    final text = balanceXml(lines.join(_lf));
+    chapterItem.setText(text);
+    // MathML in a content document is declared (EPUB 3; the gem doesn't,
+    // and EPUBCheck reports it).
+    if (text.contains('<mml:math')) chapterItem.addProperty('mathml');
     if (_epubProperties[node]?.contains('svg') ?? false) {
       chapterItem.addProperty('svg');
     }
@@ -885,24 +890,21 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '</figure>';
   }
 
-  /// STEM blocks are listings: the gem converts AsciiMath to MathML only
-  /// with the asciimath gem, which has no counterpart here (and says so,
-  /// once).
+  /// A STEM block: AsciiMath as MathML (asciidart's port of the
+  /// asciimath gem, ADR-0014, as the gem writes it with asciimath
+  /// installed), other math as a listing.
   String convertStem(Block node) {
-    if (node.style == 'asciimath') _warnAsciimathUnavailable();
-    return convertListing(node);
-  }
-
-  bool _asciimathWarned = false;
-
-  /// Warns, once per converter, that AsciiMath stays text.
-  void _warnAsciimathUnavailable() {
-    if (_asciimathWarned) return;
-    _asciimathWarned = true;
-    logger.warn(
-      'AsciiMath to MathML conversion is not available. '
-      'Functionality disabled.',
-    );
+    if (node.style != 'asciimath') return convertListing(node);
+    final idAttr = node.id != null ? ' id="${node.id}"' : '';
+    final titleElement = node.hasTitle
+        ? '<figcaption>${node.captionedTitle()}</figcaption>'
+        : '';
+    return '<figure$idAttr class="${_prependSpace(node.role)}">\n'
+        '$titleElement\n'
+        '<div class="content">\n'
+        '${asciimathToMathml(_s(node.content()), prefix: 'mml:')}\n'
+        '</div>\n'
+        '</figure>';
   }
 
   /// Converts the [node] literal block.
@@ -1720,8 +1722,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   String convertInlineQuoted(Inline node) {
     final type = _s(node.type);
     final (open, close, isTag) = _quoteTags[type] ?? ('', '', false);
-    if (type == 'asciimath') _warnAsciimathUnavailable();
-    final content = _s(node.text);
+    final content = type == 'asciimath'
+        ? asciimathToMathml(_s(node.text), prefix: 'mml:')
+        : _s(node.text);
     if (type == 'monospaced' || type == 'asciimath' || type == 'latexmath') {
       node.addRole('literal');
     }

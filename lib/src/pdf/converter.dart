@@ -5820,6 +5820,7 @@ final class PdfConverter extends BuiltInConverter
   /// Converts the STEM block [node]: its source in a code block (the
   /// gem's `convert_stem`, without a math renderer).
   void convertStem(Block node) {
+    _warnMathAsSource();
     if (node.hasTitle) _caption(node, category: 'code');
     final font = _themeFont('code', _font);
     _out.add(
@@ -5844,6 +5845,16 @@ final class PdfConverter extends BuiltInConverter
         ),
       ),
     );
+  }
+
+  bool _warnedMath = false;
+
+  /// Says once per document, in the modern engine, that math is set as
+  /// its source (ADR-0014: the PDF lays out no math yet).
+  void _warnMathAsSource() {
+    if (_warnedMath || _engine != PdfEngine.modern) return;
+    _warnedMath = true;
+    logger.warn('math is shown as its source in the PDF (not typeset yet)');
   }
 
   /// Converts the audio or video block [node]: a link to the media (or
@@ -9353,6 +9364,7 @@ final class PdfConverter extends BuiltInConverter
       case 'strong':
         (open, close) = ('<strong>', '</strong>');
       case 'monospaced' || 'asciimath' || 'latexmath':
+        if (node.type != 'monospaced') _warnMathAsSource();
         (open, close) = ('<code>', '</code>');
       case 'superscript':
         (open, close) = ('<sup>', '</sup>');
