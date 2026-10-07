@@ -1846,6 +1846,21 @@ base:
       expect(lines[1], startsWith('18/a-long'));
     });
 
+    test('a run-in term: its gap breaks, an index term adds no space', () {
+      const inline =
+          'description_list_term_display: inline\n'
+          'description_list_term_gap: 20\n';
+      final plain = word(
+        _pdf('Term:: Description here.\n', theme: inline),
+        'Description',
+      ).$3;
+      final indexed = word(
+        _pdf('Term::\n(((term)))\nDescription here.\n', theme: inline),
+        'Description',
+      ).$3;
+      expect(indexed, closeTo(plain, 0.01));
+    });
+
     test('<category>_caption_indent sets a caption in', () {
       const source = '= Doc\n\n.Code\n----\nx\n----\n';
       final plain = word(_pdf(source), 'Code').$3;

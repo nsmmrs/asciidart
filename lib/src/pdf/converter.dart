@@ -2312,7 +2312,14 @@ final class PdfConverter extends BuiltInConverter
     final floating =
         _engine == PdfEngine.modern &&
         const {'auto', 'top', 'bottom'}.contains(_s('image_placement'));
+    // (Images float only at the top level: not in a sidebar, a list...)
+    final parent = node.parent;
+    final topLevel =
+        parent is Section ||
+        parent is Document ||
+        parent?.context == BlockContext.preamble;
     while (floating &&
+        topLevel &&
         previous != null &&
         previous.context == BlockContext.image) {
       previous = _previousSibling(previous);
@@ -5616,6 +5623,15 @@ final class PdfConverter extends BuiltInConverter
     // (code_wrap_indent, 1em; code_wrap_marker: none leaves the arrow
     // out).
     final modern = _engine == PdfEngine.modern;
+    final wrapIndent = modern
+        ? _length('code_wrap_indent', font.size) ?? font.size
+        : null;
+    final wrapMarker = modern && _s('code_wrap_marker') != 'none';
+    // Without a hanging indent or a marker, a long line wraps as Typst
+    // wraps raw text: at the line breaking algorithm's breaks (after a
+    // slash too), as many words on a line as fit.
+    final plainWrap = modern && wrapIndent == 0 && !wrapMarker;
+    if (plainWrap) source = _breakAfterSlashes(source);
     final box = _textBox(
       source,
       font.copyWith(color: _c('code_font_color') ?? font.color),
@@ -5623,10 +5639,8 @@ final class PdfConverter extends BuiltInConverter
       normalize: false,
       orphans: modern ? (_n('code_orphans') ?? 2).toInt() : 1,
       widows: modern ? (_n('code_widows') ?? 2).toInt() : 1,
-      wrapIndent: modern
-          ? _length('code_wrap_indent', font.size) ?? font.size
-          : null,
-      wrapMarker: modern && _s('code_wrap_marker') != 'none',
+      wrapIndent: plainWrap ? null : wrapIndent,
+      wrapMarker: wrapMarker,
     );
     CustomContent content = box;
     if (node.hasOption('autofit') || _document.hasAttr('autofit-option')) {
@@ -6407,9 +6421,10 @@ final class PdfConverter extends BuiltInConverter
     final blocks = _collect(() => _traverse(desc));
     // The space after the term: an en space, or as wide as
     // `description_list_term_gap` (0.6em, as Typst's terms separator).
+    // (A space, where the line may break, as Typst's weak spacing.)
     final gap = switch (_theme.value('description_list_term_gap')) {
-      ThemeNumber(:final value) => '<font width="$value">&nbsp;</font>',
-      ThemeString(:final value) => '<font width="$value">&nbsp;</font>',
+      ThemeNumber(:final value) => '<font width="$value"> </font>',
+      ThemeString(:final value) => '<font width="$value"> </font>',
       _ => '&#8194;',
     };
     _out.add(

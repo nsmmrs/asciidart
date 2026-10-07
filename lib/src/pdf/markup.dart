@@ -733,7 +733,16 @@ final class MarkupTransform {
   ]) {
     final fragments = into ?? <Fragment>[];
     var previousIsText = false;
-    void text(String value) {
+    // The modern engine: a concealed index term between two spaces (the
+    // one before it in an element, a term's gap) leaves one.
+    var dropLeadingSpace = false;
+    void text(String given) {
+      var value = given;
+      if (dropLeadingSpace) {
+        dropLeadingSpace = false;
+        value = value.replaceFirst(RegExp(r'^\s+'), '');
+        if (value.isEmpty) return;
+      }
       if (previousIsText) {
         final last = fragments.removeLast();
         fragments.add(_clone(inherited, '${last.text}$value'));
@@ -766,6 +775,15 @@ final class MarkupTransform {
               !(keepIndexSpace && !_spaceAfter(nodes, node))) {
             final last = fragments.last;
             last.text = last.text.substring(0, last.text.length - 1);
+          } else if (keepIndexSpace &&
+              name == 'a' &&
+              fragment.type == 'indexterm' &&
+              attributes['visible'] == null &&
+              !previousIsText &&
+              fragments.isNotEmpty &&
+              fragments.last.text.endsWith(' ') &&
+              _spaceAfter(nodes, node)) {
+            dropLeadingSpace = true;
           }
           var children = content;
           if (fragment.textTransform case final transform?) {

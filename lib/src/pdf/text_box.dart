@@ -1392,7 +1392,13 @@ base class _Wrap {
   /// The line gap of the last line.
   double get lineGap => _lineHeight - (_ascender + _descender);
 
-  double _widthOf(String text, _Format? format) {
+  double _widthOf(String given, _Format? format) {
+    // The modern engine: an anchor's placeholder takes no room (some fonts
+    // give their .notdef glyph a width).
+    final text = _context.engine == PdfEngine.modern
+        ? given.replaceAll(_nul, '')
+        : given;
+    if (text.isEmpty && given.isNotEmpty) return 0;
     final font = format?.font ?? _baseFont;
     final size = format?.size ?? _state.size;
     final width = font.widthOf(
@@ -1707,7 +1713,8 @@ base class _Wrap {
         format,
         width,
         0,
-        ' '.allMatches(text).length,
+        // (A fragment as wide as it says, a fixed space: not stretched.)
+        format.fragment.width != null ? 0 : ' '.allMatches(text).length,
       );
       _fragments.add(printed);
       final font = format.font;
@@ -2125,6 +2132,11 @@ final class _OptimalWrap extends _Wrap {
         final spaces = token.replaceAll(_zwsp, '');
         if (spaces.isEmpty) {
           add(const PenaltyItem(0, 0), p);
+        } else if (format.fragment.width != null) {
+          // A space as wide as it says (a term's gap): a break that
+          // neither stretches nor shrinks.
+          final width = _fragmentWidth(spaces, format);
+          add(GlueItem(null, spaces, width, 0, 0), p);
         } else {
           final width = _widthOf(spaces, format);
           // No break after an opening bracket or before a closing one or
