@@ -25,6 +25,7 @@ String _pdf(
   String source, {
   bool compat = false,
   String? theme,
+  Map<String, String> attributes = const {},
   LoggerBase? logger,
 }) {
   final input = File('${_dir.path}/d${_count++}.adoc')
@@ -49,6 +50,7 @@ String _pdf(
           // asciidoctor-pdf's theme, which these tests were written for
           // (the house theme has its own tests).
           'pdf-theme': 'default',
+        ...attributes,
       },
       logger: logger,
     ),
@@ -75,6 +77,16 @@ String _content(String pdf) {
   Process.runSync('qpdf', ['--qdf', '--object-streams=disable', pdf, out]);
   return latin1.decode(File(out).readAsBytesSync());
 }
+
+/// The top (points from the page's top) of the first word [word] in
+/// [pdf], or null.
+double? _top(String pdf, String word) =>
+    switch (RegExp('yMin="([\\d.]+)"[^>]*>${RegExp.escape(word)}<').firstMatch(
+      Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String,
+    )) {
+      final match? => double.parse(match[1]!),
+      null => null,
+    };
 
 /// The words of [lines], those hyphenated at a line end joined.
 List<String> _words(List<String> lines) => lines
@@ -2203,6 +2215,132 @@ base:
             .map((m) => m.message.text)
             .where((m) => m.startsWith('math')),
         ['math is shown as its source in the PDF (not typeset yet)'],
+      );
+    });
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
+
+  group("asciidoctor-pdf's look (asciidoctor-compat, ADR-0015)", () {
+    const images = 'test/pdf/fixtures/images';
+
+    test('block_margin_collapse: false adds the spaces around a heading', () {
+      const source = 'Para one.\n\n== Heading\n\nPara two.\n';
+      final collapsed = _top(_pdf(source), 'Heading')!;
+      final added = _top(
+        _pdf(source, theme: 'block_margin_collapse: false\n'),
+        'Heading',
+      )!;
+      expect(added, greaterThan(collapsed + 3));
+      expect(
+        _top(
+          _pdf(source, attributes: {'asciidoctor-compat': 'pdf'}),
+          'Heading',
+        ),
+        added,
+      );
+    });
+
+    test('base_hyphens: false leaves justified text unhyphenated', () {
+      const theme = 'page_size: A7\n';
+      bool hyphenated(String pdf) => _pages(pdf).any(
+        (lines) =>
+            lines.any((line) => RegExp('[a-z][-\u00ad]\$').hasMatch(line)),
+      );
+      expect(hyphenated(_pdf(_paragraph, theme: theme)), isTrue);
+      expect(
+        hyphenated(_pdf(_paragraph, theme: '${theme}base_hyphens: false\n')),
+        isFalse,
+      );
+    });
+
+    test('toc_macro_in_section: false gives the contents their own page', () {
+      const source =
+          '= Book\n:doctype: book\n:toc: macro\n\n== Contents\n\n'
+          'toc::[]\n\n== One\n\nText.\n';
+      final inSection = _pages(_pdf(source));
+      expect(inSection[1].first, 'Contents');
+      expect(inSection[1].join(' '), contains('One'));
+      final ownPage = _pages(
+        _pdf(source, attributes: {'asciidoctor-compat': 'true'}),
+      );
+      expect(ownPage[1], ['Contents']);
+      expect(ownPage[2].first, 'Table of Contents');
+      // The theme's own value wins.
+      expect(
+        _pages(
+          _pdf(
+            source,
+            theme: 'toc_macro_in_section: true\n',
+            attributes: {'asciidoctor-compat': 'pdf'},
+          ),
+        )[1].first,
+        'Contents',
+      );
+    });
+
+    test('a title logo fits the page below its top', () {
+      final pdf = _pdf(
+        '= Doc\n:title-page:\n:imagesdir: ${Directory.current.path}/$images\n'
+        ':title-logo-image: image:tall.png[pdfwidth=100%,top=70%]\n\nText.\n',
+      );
+      final bottom = RegExp(r'[\d.]+ 0 0 [\d.]+ [\d.]+ ([\d.]+) cm')
+          .firstMatch(_content(pdf))!;
+      // On the page: at or above the bottom margin (0.67in).
+      expect(double.parse(bottom[1]!), greaterThanOrEqualTo(48.24 - 0.01));
+    });
+
+    test("an autowidth table's column is as wide as its image", () {
+      final content = _content(
+        _pdf(
+          ':imagesdir: ${Directory.current.path}/$images\n\n'
+          '[%autowidth]\n|===\n'
+          '|image:red.png[] |image:red.png[width=50%]\n|===\n',
+        ),
+      );
+      final widths = [
+        for (final m in RegExp(
+          r'([\d.]+) 0 0 ([\d.]+) [\d.]+ [\d.]+ cm',
+        ).allMatches(content))
+          double.parse(m[1]!),
+      ];
+      // Natural (32px at 0.75) and half of that column.
+      expect(widths, [24, 12]);
+    });
+
+    test('a word longer than a line across index terms breaks', () {
+      final pdf = _pdf(
+        '((foo))((bar))((baz))((boom))((bang))((fee))((fi))((fo))((fum))'
+        '((fan))((fool))((ying))((yang))((zed))',
+        theme: 'page_size: A7\n',
+      );
+      expect(_pages(pdf).first.length, greaterThan(1));
+    });
+
+    test('a heading moves with an unbreakable block that would not fit', () {
+      final filler = List.filled(36, 'Line.').join('\n\n');
+      final pdf = _pdf(
+        '$filler\n\n== Heading\n\n[%unbreakable]\n--\n'
+        '${List.filled(8, 'Kept.').join('\n\n')}\n--\n',
+        theme: 'heading_min_height_after: auto\n',
+      );
+      final pages = _pages(pdf);
+      // The heading on the page of the whole block, not alone at the
+      // bottom of the page before.
+      final page = pages.firstWhere((lines) => lines.contains('Heading'));
+      expect(page.where((line) => line == 'Kept.'), hasLength(8));
+    });
+
+    test('an image that is not one is reported, not a failure', () {
+      File('${_dir.path}/corrupt.png').writeAsStringSync('not an image');
+      final logger = MemoryLogger();
+      final pdf = _pdf(
+        '= Doc\n:page-background-image: image:corrupt.png[]\n\nText.\n',
+        attributes: {'imagesdir': _dir.path},
+        logger: logger,
+      );
+      expect(File(pdf).existsSync(), isTrue);
+      expect(
+        logger.messages.map((m) => m.message.text),
+        contains(contains('could not embed page background image')),
       );
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');

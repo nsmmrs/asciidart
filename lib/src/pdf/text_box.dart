@@ -676,6 +676,16 @@ final class PrawnTextBox implements CustomContent {
         line = 0;
         continue;
       }
+      // An inline image not yet arranged: as wide as it asks to be (as
+      // prawn-table measures a cell), not its placeholder text.
+      final image = item.format.image == null
+          ? _naturalImageWidth(item.format.fragment.imageWidth)
+          : null;
+      if (image != null) {
+        least = math.max(least, image);
+        line += image;
+        continue;
+      }
       final font = item.format.font;
       final size = item.format.size;
       for (final segment in _tokenize(item.text)) {
@@ -690,6 +700,18 @@ final class PrawnTextBox implements CustomContent {
       }
     }
     return (least, math.max(most, line));
+  }
+
+  /// The width an inline image of width [spec] (a fragment's: points,
+  /// or in a table cell a percentage and its intrinsic width,
+  /// `25%153.0`) asks of its column: the points, or the intrinsic width
+  /// (the percentage is of the column, as prawn-table measures it); null
+  /// for no image or a width relative to the room alone.
+  static double? _naturalImageWidth(String? spec) {
+    if (spec == null) return null;
+    final pct = spec.indexOf('%');
+    if (pct < 0) return double.tryParse(spec);
+    return double.tryParse(spec.substring(pct + 1));
   }
 
   bool _imagesArranged = false;
@@ -2084,6 +2106,54 @@ final class _OptimalWrap extends _Wrap {
     PdfTextStyle(StandardFont.helvetica, 10),
   );
 
+  /// Splits into characters a word longer than a line that runs across
+  /// items ([pieces], with index terms' anchors or style changes between
+  /// its parts), as a word in one item is split: the line may break
+  /// before any of its characters ([charBreaks], at a cost).
+  void _splitLongRuns(List<(int, String)> pieces, Set<int> charBreaks) {
+    bool isSpace((int, String) piece) =>
+        piece.$2 == '\n' || RegExp('^[ \t$_zwsp]+\$').hasMatch(piece.$2);
+    bool isMarker((int, String) piece) =>
+        _unconsumed[piece.$1].format.fragment.isMarker;
+    final split = <(int, String)>[];
+    final breaks = <int>{};
+    var p = 0;
+    while (p < pieces.length) {
+      var q = p;
+      var width = 0.0;
+      while (q < pieces.length && !isSpace(pieces[q])) {
+        if (!isMarker(pieces[q])) {
+          final (i, text) = pieces[q];
+          width += _widthOf(text, _unconsumed[i].format);
+        }
+        q++;
+      }
+      final long = q - p > 1 && width > _width;
+      if (q == p) q++;
+      for (var r = p; r < q; r++) {
+        final piece = pieces[r];
+        if (long && !isMarker(piece) && piece.$2.runes.length > 1) {
+          for (final (k, rune) in piece.$2.runes.indexed) {
+            if (k > 0 || r > p) breaks.add(split.length);
+            split.add((piece.$1, String.fromCharCode(rune)));
+          }
+        } else {
+          if (charBreaks.contains(r) || (long && r > p && !isMarker(piece))) {
+            breaks.add(split.length);
+          }
+          split.add(piece);
+        }
+      }
+      p = q;
+    }
+    pieces
+      ..clear()
+      ..addAll(split);
+    charBreaks
+      ..clear()
+      ..addAll(breaks);
+  }
+
   @override
   List<_Line> run() {
     _source = [..._unconsumed];
@@ -2124,6 +2194,7 @@ final class _OptimalWrap extends _Wrap {
         }
       }
     }
+    _splitLongRuns(pieces, charBreaks);
     final indent = firstPiece ? _layout.indentFirstLine : 0.0;
     double widthOf(int line) => line == 0 ? _width - indent : _width;
     // The breaker's items, and the piece each comes from.

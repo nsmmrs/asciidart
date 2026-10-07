@@ -292,6 +292,36 @@ The converter tests (`test/pdf/converter_test.dart`) hold 32 fixtures and
 the gem's chronicles and edge-cases examples to all of these, against PDFs
 the gem made (`SOURCE_DATE_EPOCH=0`).
 
+### Look check (2026-10-07): 793 of 797 documents look the same
+
+ADR-0015 asks of the default engine with `asciidoctor-compat` (pdf) that
+its pages look like asciidoctor-pdf's, not that they be the same bytes.
+`tool/pdf_look.dart` renders the gem's pages of the same 797 documents
+once (gray, 50 dpi, cached), then converts each with asciidart, renders
+its pages and compares them blurred (a 5-pixel box; a pixel differs when
+the grays differ by more than 10%). A document looks the same when no
+page differs on more than 0.5% of its pixels (a line of body text one
+point off is about 1%).
+
+```sh
+dart run tool/pdf_look.dart --gem <gem wrapper> \
+  --exe "<asciidart wrapper with -a asciidoctor-compat=pdf>" \
+  --cache <gem pages> --out <dir> [--pairs] ~/.cache/asciidart-work/pdfcorpus/*.adoc
+```
+
+793 documents look the same (748 before the look's defaults,
+`doc/pdf.md`, and the fixes the check found: title logos fitted to the
+page, autowidth columns as wide as their images, words longer than a line
+across index terms broken, a heading kept with a whole unbreakable block,
+a broken background image reported, not a failure). The other 4:
+
+- *The gem fails* (1): `font-002` (a font that isn't in the catalog).
+- *A gem quirk, not copied* (1): `table-098`, a page break inside an
+  AsciiDoc table cell: the gem drops the cell's text after it and moves
+  the rest to a new page.
+- *Within 0.6%* (2): `table-118` (CJK text with a fallback font) and
+  `hyphens-006` (a word the gem's patterns don't break).
+
 ### Corpus check (2026-10-06): 763 of 797 documents the same
 
 `tool/pdf_spec_corpus.dart` extracts the documents of the gem's own spec

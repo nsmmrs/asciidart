@@ -836,9 +836,10 @@ final class PdfConverter extends BuiltInConverter
     _out.add(
       CustomBox(
         _Absolute((page) {
+          // Scaled down to fit the page below its top, as the gem fits it.
           final placed = content.place(
             pageWidth - margins.horizontal - left - right,
-            double.infinity,
+            math.max(0, pageHeight - margins.vertical - top),
             atTop: true,
           );
           placed?.paint(
@@ -1076,10 +1077,12 @@ final class PdfConverter extends BuiltInConverter
     final macro = placement == 'macro';
     // In the modern engine, a toc macro that opens a section is that
     // section's contents: on its page, under its heading (no title of
-    // its own), the section listed as any other (a Contents chapter).
+    // its own), the section listed as any other (a Contents chapter);
+    // unless `toc_macro_in_section` is false.
     final parent = node.parent;
     final ownsSection =
         _engine == PdfEngine.modern &&
+        _theme.value('toc_macro_in_section') != const ThemeBool(false) &&
         macro &&
         parent is Section &&
         parent.blocks.firstOrNull == node;
@@ -2086,13 +2089,35 @@ final class PdfConverter extends BuiltInConverter
         (document.attr('media') ?? 'screen') != 'screen') {
       name = 'default-for-print';
     }
+    Theme theme;
     try {
-      return ThemeLoader(logger: logger).load(name, dir);
+      theme = ThemeLoader(logger: logger).load(name, dir);
     } on ThemeException catch (error) {
       logger.error(error.message);
-      return ThemeLoader(logger: logger).load();
+      theme = ThemeLoader(logger: logger).load();
     }
+    if (asciidoctorCompat(document, CompatFormat.pdf)) {
+      for (final MapEntry(:key, :value) in asciidoctorPdfLook.entries) {
+        if (theme[key] == null) theme[key] = value;
+      }
+    }
+    return theme;
   }
+
+  /// The modern engine's keys as asciidoctor-pdf sets pages, for
+  /// `asciidoctor-compat` (ADR-0015): each one the theme doesn't set.
+  static const Map<String, ThemeValue> asciidoctorPdfLook = {
+    'block_margin_collapse': ThemeBool(false),
+    'base_line_breaking': ThemeString('greedy'),
+    'base_hyphens': ThemeBool(false),
+    'prose_orphans': ThemeNumber(1),
+    'prose_widows': ThemeNumber(1),
+    'code_orphans': ThemeNumber(1),
+    'code_widows': ThemeNumber(1),
+    'footnotes_placement': ThemeString('end'),
+    'toc_macro_in_section': ThemeBool(false),
+    'running_content_on_openers': ThemeBool(true),
+  };
 
   /// The page size of the initial layout (the gem's page size: a named
   /// size, `[w, h]` or `w x h`; turned for landscape).
@@ -2352,7 +2377,7 @@ final class PdfConverter extends BuiltInConverter
   }) {
     var following = next ?? _nextEnclosedBlock(node);
     final base = _themeMargin(fallback, 'bottom', following);
-    if (_engine != PdfEngine.modern || following == null) return base;
+    if (!_collapseMargins || following == null) return base;
     // Past images that float out of the flow, to the block that follows
     // in it (a paragraph's space before a heading).
     if (_floatsOut(following) && !_floatsOut(node)) {
@@ -2449,7 +2474,7 @@ final class PdfConverter extends BuiltInConverter
   /// space below collapses with it) or at the start of a container but a
   /// section, after a heading what its margin below leaves.
   double _marginAbove(AbstractBlock node) {
-    if (_engine != PdfEngine.modern) return 0;
+    if (!_collapseMargins) return 0;
     final above = _n('${_spacingCategory(node)}_margin_top')?.toDouble();
     if (above == null || above <= 0) return 0;
     if (_previousSibling(node) != null) return 0;
@@ -2544,7 +2569,7 @@ final class PdfConverter extends BuiltInConverter
         // collapse.
         final parent = section.parent;
         final collapse =
-            _engine == PdfEngine.modern &&
+            _collapseMargins &&
                 !startedNew &&
                 parent is Section &&
                 parent.blocks.firstOrNull == section &&
@@ -4227,6 +4252,8 @@ final class PdfConverter extends BuiltInConverter
         null,
       );
     } on FormatException catch (error) {
+      return (null, error.message);
+    } on ImageFormatException catch (error) {
       return (null, error.message);
     }
   }
@@ -7296,6 +7323,8 @@ final class PdfConverter extends BuiltInConverter
     final unspecified = document.attributeUnspecified('hyphens');
     var asked = document.attr('hyphens');
     if (asked == null && unspecified) {
+      // `base_hyphens: false`: no hyphenation, not even of justified text.
+      if (_theme.value('base_hyphens') case ThemeBool(value: false)) return;
       asked = switch (_theme.value('base_hyphens')) {
         ThemeString(:final value) => value,
         ThemeBool(:final value) when value => '',
@@ -8253,6 +8282,17 @@ final class PdfConverter extends BuiltInConverter
 
   /// The layout engine the document asks for (`pdf-compat`).
   PdfEngine _engine = PdfEngine.modern;
+
+  /// Whether adjacent margins collapse to the larger, as in CSS (the
+  /// modern engine, unless the theme's `block_margin_collapse` is false),
+  /// rather than add, as asciidoctor-pdf's do.
+  bool get _collapseMargins =>
+      _engine == PdfEngine.modern &&
+      switch (_theme.value('block_margin_collapse')) {
+        ThemeBool(:final value) => value,
+        ThemeString(value: 'false' || 'none') => false,
+        _ => true,
+      };
 
   /// Whether emphasis is set against its surroundings (upright in italic
   /// text): in the modern engine, unless the theme's

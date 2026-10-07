@@ -231,7 +231,7 @@ file is a default: the document's own `:asciidoctor-compat:` (or
 | HTML, website | Asciidoctor's stylesheet alone |
 | EPUB | asciidoctor-epub3's stylesheet alone |
 | DocBook, man pages | no change: the output is Asciidoctor's already |
-| PDF | asciidoctor-pdf's default theme when the document names none |
+| PDF | asciidoctor-pdf's default theme when the document names none, and its page rules (`doc/pdf.md`, "asciidoctor-pdf's look"): the pages look as its pages do |
 
 Bug fixes and repairs (valid XHTML in the EPUB, its landmarks, the
 index in every format) stay in every case. Each format's own setting

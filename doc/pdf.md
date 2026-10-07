@@ -14,6 +14,24 @@ There are two layout engines:
   closely it matches the gem. The keys below are not read in this mode,
   except `base_hyphens` and the `hyphens` attribute, which the gem has.
 
+## asciidoctor-pdf's look
+
+With `asciidoctor-compat` naming the PDF (ADR-0015; `doc/books.md`), a
+document without a theme of its own gets asciidoctor-pdf's (`default`),
+and these keys default as asciidoctor-pdf sets pages, unless the theme
+sets them. On asciidoctor-pdf's own test documents, the pages look the
+same (`benchmark/PARITY.md`).
+
+| Key | With `asciidoctor-compat` | Otherwise |
+| --- | --- | --- |
+| `block_margin_collapse` | `false`: spaces add | `true` |
+| `base_line_breaking` | `greedy` | `auto` |
+| `base_hyphens` | `false` (unless `:hyphens:`) | justified text hyphenated |
+| `prose_orphans`, `prose_widows`, `code_orphans`, `code_widows` | `1` | `2` |
+| `footnotes_placement` | `end` | `page` |
+| `toc_macro_in_section` | `false` | `true` |
+| `running_content_on_openers` | `true` | `false` |
+
 ## The modern engine
 
 Its default theme is asciidart's house theme (`asciidart`, `doc/style.md`):
@@ -70,7 +88,9 @@ and at least the space the next block wants above it: adjacent margins
 collapse to the larger, as in CSS, also with the space above the next
 section's heading. Above the first block after a heading, what the
 heading's margin below leaves; none at the start of another container,
-or at the top of a page. A block that ends with a page break ends there:
+or at the top of a page. `block_margin_collapse: false` adds them
+instead, as asciidoctor-pdf does: a block's space below, then the next
+heading's space above, and no `<category>_margin_top`. A block that ends with a page break ends there:
 none of its space below goes to the next page.
 
 A quote's attribution has its own space above (`quote_cite_margin_top`,
@@ -97,6 +117,8 @@ piece its padding and border at both ends instead, as CSS's
 A `toc::[]` macro that opens a section (its first block) is that
 section's contents: under its heading, on its page, without a title of
 its own, and the section listed in itself: a Contents chapter.
+`toc_macro_in_section: false` sets it as asciidoctor-pdf does instead: on
+a page of its own after the heading, with its title.
 
 | Key | Default | What it does |
 | --- | --- | --- |
@@ -125,7 +147,7 @@ US English), with the hyph-utf8 patterns for 72 languages
 
 | Setting | What it does |
 | --- | --- |
-| `:hyphens!:` | Turns hyphenation off. |
+| `:hyphens!:` (or theme `base_hyphens: false`) | Turns hyphenation off, of justified text too. |
 | `:hyphens:` (or theme `base_hyphens: true`) | Hyphenates all text, not only justified text, in the document's language. |
 | `:hyphens: de` (or `base_hyphens: de`) | Hyphenates all text in that language. A language without patterns is reported. |
 
