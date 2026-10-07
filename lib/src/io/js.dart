@@ -43,7 +43,11 @@ _Host? _nodeHost() {
     JSObject()
       ..setProperty('fs'.toJS, fs)
       ..setProperty('process'.toJS, process)
-      ..setProperty('zlib'.toJS, process.getBuiltinModule('node:zlib')),
+      ..setProperty('zlib'.toJS, process.getBuiltinModule('node:zlib'))
+      ..setProperty(
+        'childProcess'.toJS,
+        process.getBuiltinModule('node:child_process'),
+      ),
   );
 }
 
@@ -57,6 +61,15 @@ extension type _Host(JSObject _) implements JSObject {
   external _Fs get fs;
   external _Process get process;
   external _Zlib? get zlib;
+  external _ChildProcess? get childProcess;
+}
+
+extension type _ChildProcess(JSObject _) implements JSObject {
+  external JSAny execFileSync(
+    String file,
+    JSArray<JSString> args,
+    JSObject options,
+  );
 }
 
 extension type _Fs(JSObject _) implements JSObject {
@@ -69,6 +82,13 @@ extension type _Fs(JSObject _) implements JSObject {
   external JSAny? mkdirSync(String path, JSObject options);
   external JSArray<JSString> readdirSync(String path, JSObject options);
   external int openSync(String path, String flags);
+  external int readSync(
+    int fd,
+    JSUint8Array buffer,
+    int offset,
+    int length,
+    JSAny? position,
+  );
   external void closeSync(int fd);
   external void accessSync(String path, int mode);
 }
@@ -78,6 +98,7 @@ extension type _Stats(JSObject _) implements JSObject {
   external bool isDirectory();
   external bool isFIFO();
   external double get mtimeMs;
+  external double get size;
 }
 
 extension type _Process(JSObject _) implements JSObject {
@@ -86,10 +107,15 @@ extension type _Process(JSObject _) implements JSObject {
   external String get platform;
   external int get pid;
   external String get version;
+  external _Stdin get stdin;
   external _Stream get stdout;
   external _Stream get stderr;
   external int? get exitCode;
   external set exitCode(int? value);
+}
+
+extension type _Stdin(JSObject _) implements JSObject {
+  external bool? get isTTY;
 }
 
 extension type _Stream(JSObject _) implements JSObject {
@@ -261,34 +287,117 @@ List<int> deflateRaw(List<int> bytes) {
 }
 
 /// The size of the file at [path], in bytes.
-int fileSize(String path) => readBytes(path).length;
+int fileSize(String path) {
+  final stats = _stat(path);
+  if (stats == null) throw _noFileSystem(path);
+  return stats.size.round();
+}
 
 /// [length] bytes of the file at [path] from [offset] (fewer at its end).
 List<int> readFileRange(String path, int offset, int length) {
-  final bytes = readBytes(path);
-  final start = offset.clamp(0, bytes.length);
-  return bytes.sublist(start, (offset + length).clamp(start, bytes.length));
+  final host = _host;
+  if (host == null) throw _noFileSystem(path);
+  return _guard('Cannot open file', path, () {
+    final fd = host.fs.openSync(path, 'r');
+    try {
+      final size = length < 0 ? 0 : length;
+      final buffer = Uint8List(size).toJS;
+      final read = host.fs.readSync(fd, buffer, 0, size, offset.toJS);
+      return buffer.toDart.sublist(0, read);
+    } finally {
+      host.fs.closeSync(fd);
+    }
+  });
 }
 
-/// No installed fonts: the JavaScript build has no backend that uses
-/// them.
-List<String> get fontDirectories => const [];
+/// The folders fonts are installed in, the user's first, on Node.js (as
+/// on the Dart VM); none in a browser.
+List<String> get fontDirectories {
+  final process = _host?.process;
+  if (process == null) return const [];
+  final env = environment;
+  final home = env['HOME'] ?? env['USERPROFILE'] ?? '';
+  switch (process.platform) {
+    case 'darwin':
+      return [
+        '$home/Library/Fonts',
+        '/Library/Fonts',
+        '/System/Library/Fonts',
+        '/System/Library/Fonts/Supplemental',
+        '/Network/Library/Fonts',
+      ];
+    case 'win32':
+      return [
+        if (env['LOCALAPPDATA'] case final local?)
+          '$local\\Microsoft\\Windows\\Fonts',
+        '${env['WINDIR'] ?? env['SystemRoot'] ?? r'C:\Windows'}\\Fonts',
+      ];
+  }
+  final dataHome = env['XDG_DATA_HOME'] ?? '$home/.local/share';
+  final dataDirs = (env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share')
+      .split(':')
+      .where((dir) => dir.isNotEmpty);
+  return [
+    '$dataHome/fonts',
+    '$home/.fonts',
+    for (final dir in dataDirs) '$dir/fonts',
+  ];
+}
 
-/// Not available on JavaScript.
-String get userFontDirectory =>
-    throw UnsupportedError('font folders are not available on JavaScript');
+/// The folder fonts are installed in for this user alone (Node.js).
+String get userFontDirectory {
+  final dirs = fontDirectories;
+  if (dirs.isEmpty) {
+    throw UnsupportedError('font folders are not available in a browser');
+  }
+  return dirs.first;
+}
 
-/// Not available on JavaScript.
-String get cacheDirectory =>
-    throw UnsupportedError('a cache folder is not available on JavaScript');
+/// The folder for this user's caches (Node.js).
+String get cacheDirectory {
+  final process = _host?.process;
+  if (process == null) {
+    throw UnsupportedError('a cache folder is not available in a browser');
+  }
+  final env = environment;
+  final home = env['HOME'] ?? env['USERPROFILE'] ?? '';
+  return switch (process.platform) {
+    'darwin' => '$home/Library/Caches',
+    'win32' => env['LOCALAPPDATA'] ?? '$home\\AppData\\Local',
+    _ => env['XDG_CACHE_HOME'] ?? '$home/.cache',
+  };
+}
 
-/// Whether standard input is a terminal: no question is asked on
-/// JavaScript.
-bool get hasTerminal => false;
+/// Whether standard input is a terminal (Node.js).
+bool get hasTerminal => _host?.process.stdin.isTTY ?? false;
 
-/// Not available on JavaScript.
-String? readLine() =>
-    throw UnsupportedError('reading a line is not available on JavaScript');
+/// A line read from standard input, without its line break; null at its
+/// end (Node.js).
+String? readLine() {
+  final host = _host;
+  if (host == null) return null;
+  final bytes = <int>[];
+  final view = Uint8List(1).toJS;
+  var failures = 0;
+  while (true) {
+    final int read;
+    try {
+      read = host.fs.readSync(0, view, 0, 1, null);
+      failures = 0;
+      // A read that would block (EAGAIN) is tried again, for a while.
+      // ignore: avoid_catches_without_on_clauses
+    } catch (_) {
+      if (++failures > 100000) return null;
+      continue;
+    }
+    if (read == 0) return bytes.isEmpty ? null : utf8.decode(bytes);
+    final byte = view.toDart[0];
+    if (byte == 0x0a) {
+      return utf8.decode(bytes).replaceFirst(RegExp(r'\r$'), '');
+    }
+    bytes.add(byte);
+  }
+}
 
 /// The physical cores of the machine: one (the JavaScript build runs
 /// everything serially).
@@ -510,7 +619,27 @@ bool isBrokenPipe(Object error) => switch (error) {
 };
 
 /// Running other programs is not supported on JavaScript; always `null`.
-String? commandOutput(String executable, List<String> arguments) => null;
+String? commandOutput(String executable, List<String> arguments) {
+  final childProcess = _host?.childProcess;
+  if (childProcess == null) return null;
+  try {
+    final output = childProcess.execFileSync(
+      executable,
+      [for (final a in arguments) a.toJS].toJS,
+      JSObject()
+        ..setProperty('encoding'.toJS, 'utf8'.toJS)
+        ..setProperty(
+          'stdio'.toJS,
+          ['ignore'.toJS, 'pipe'.toJS, 'ignore'.toJS].toJS,
+        ),
+    );
+    return output.isA<JSString>() ? (output as JSString).toDart : null;
+    // It couldn't be run, or it failed.
+    // ignore: avoid_catches_without_on_clauses
+  } catch (_) {
+    return null;
+  }
+}
 
 /// Decompresses gzip [bytes].
 List<int> gunzip(List<int> bytes) {

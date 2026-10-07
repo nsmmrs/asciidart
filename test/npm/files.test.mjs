@@ -1,7 +1,9 @@
 // PDFs and EPUBs from JavaScript: the backends load on demand (separate
 // parts of the bundle), and fonts are given as bytes.
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
@@ -28,12 +30,24 @@ test('a PDF, its backend loaded on demand, in the fonts given', async () => {
   assert.deepEqual(again, pdf)
 })
 
-test('without the fonts, built-in ones stand in, with a warning', async () => {
-  const messages = []
-  const ad = new Asciidart({ onDiagnostic: (d) => messages.push(d.message) })
-  const pdf = await ad.convertToBytesAsync('Hello.', { backend: 'pdf' })
-  assert.equal(text(pdf, 5), '%PDF-')
-  assert.ok(messages.some((m) => m.includes('font family Noto Serif is not installed')), messages)
+test('a font that is not installed: a built-in one stands in, with a warning', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'asciidart-files-'))
+  try {
+    writeFileSync(join(dir, 'theme.yml'), 'extends: default\nbase:\n  font_family: No Such Family\n')
+    const messages = []
+    const ad = new Asciidart({ safe: 'unsafe', onDiagnostic: (d) => messages.push(d.message) })
+    const pdf = await ad.convertToBytesAsync('Hello.', {
+      backend: 'pdf',
+      attributes: { 'pdf-theme': join(dir, 'theme.yml') },
+    })
+    assert.equal(text(pdf, 5), '%PDF-')
+    assert.ok(
+      messages.some((m) => m.includes('font family No Such Family is not installed')),
+      messages.join('\n')
+    )
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('an EPUB', async () => {
@@ -45,4 +59,10 @@ test('an EPUB', async () => {
 
 test('text formats and file formats each have their method', () => {
   assert.throws(() => asciidoc.convert('Hello.', { backend: 'pdf' }), /convertToBytes/)
+})
+
+test('asciidart doctor runs on Node.js', () => {
+  const bin = join(import.meta.dirname, '..', '..', 'build', 'npm', 'bin', 'asciidart.js')
+  const usage = execFileSync(process.execPath, [bin, 'doctor', '--help'], { encoding: 'utf8' })
+  assert.match(usage, /Usage: asciidart doctor/)
 })
