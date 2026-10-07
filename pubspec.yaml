@@ -23,12 +23,12 @@ dependencies:
   hilite:
     git:
       url: https://github.com/nsmmrs/hilite.git
-      ref: ab4473c8131c2947c9ff9170d70621ed27f31411
+      ref: 595b0daa0138e3b7d4858f7c889c61804b4b5d0f
   # Our PDF library (the pdf backend's engine); not on pub.dev yet.
   libpdf:
     git:
       url: https://github.com/nsmmrs/libpdf.git
-      ref: 69fd7953cc4d21603c796d85a477dff90785335f
+      ref: 212ef7edc3da1c533957399ee055c5ad35088ee1
   meta: ^1.16.0
   mustache_template: ^2.0.6
   yaml: ^3.1.4
