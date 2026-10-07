@@ -50,3 +50,11 @@ setup() {
   printf '%s\n' "$output" > actual.html
   assert_contains actual.html '<mark>marked</mark>'
 }
+
+@test "unchanged: an escaped mark in a URL loses its backslash" {
+  printf 'POST to `http://localhost:8080/\\_lambda_` now.\n' > input.adoc
+  run -- "$EXE" -s -o - input.adoc
+  [ "$status" -eq 0 ]
+  printf '%s\n' "$output" > actual.html
+  assert_contains actual.html '<a href="http://localhost:8080/_lambda_" class="bare">http://localhost:8080/_lambda_</a>'
+}

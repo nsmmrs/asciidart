@@ -127,20 +127,30 @@ const String del = '\u007f';
 /// (asciidart's: Asciidoctor lets a mark inside a term, as in
 /// `_hyperscript`, pair with one after it): a term's marks pair only
 /// within it, and quoted text may still enclose a whole term.
-String _subQuotesKeepingIndexterms(AbstractNode node, String text) {
+String _subQuotesKeepingIndexterms(
+  AbstractNode node,
+  String text, {
+  bool protectTargets = false,
+}) {
   if (!(text.contains('((') && text.contains('))')) &&
       !text.contains('dexterm')) {
-    return subQuotes(node, text);
+    return subQuotes(node, text, protectTargets: protectTargets);
   }
   final terms = <String>[];
   final masked = text.replaceAllMapped(inlineIndextermMacroRx, (match) {
     final term = match[0]!;
     if (term.startsWith(r'\')) return term;
-    terms.add(subQuotes(node, term));
+    terms.add(subQuotes(node, term, protectTargets: protectTargets));
     return '$_termStart${terms.length - 1}$_termEnd';
   });
-  if (terms.isEmpty) return subQuotes(node, text);
-  return subQuotes(node, masked).replaceAllMapped(
+  if (terms.isEmpty) {
+    return subQuotes(node, text, protectTargets: protectTargets);
+  }
+  return subQuotes(
+    node,
+    masked,
+    protectTargets: protectTargets,
+  ).replaceAllMapped(
     RegExp('$_termStart(\\d+)$_termEnd'),
     (match) => terms[int.parse(match[1]!)],
   );
@@ -351,7 +361,11 @@ String _applySubsInRun(AbstractNode node, String text, List<Sub> subs) {
       case Sub.specialcharacters:
         subject = subSpecialchars(subject);
       case Sub.quotes:
-        subject = _subQuotesKeepingIndexterms(node, subject);
+        subject = _subQuotesKeepingIndexterms(
+          node,
+          subject,
+          protectTargets: subs.contains(Sub.macros),
+        );
       case Sub.attributes:
         if (subject.contains(attrRefHead)) {
           subject = subAttributes(node, subject);
@@ -448,22 +462,122 @@ String subSpecialchars(String text) {
 }
 
 /// Substitutes quoted text (emphasis, strong, monospaced, etc.) in [text].
+/// With [protectTargets] (the text's macros are substituted after), marks
+/// inside a URL or a cross reference's target pair with nothing
+/// (asciidart's; asciidoctor#3876, #1678).
 ///
 /// Port of `Substitutors#sub_quotes`.
-String subQuotes(AbstractNode node, String text) {
+String subQuotes(
+  AbstractNode node,
+  String text, {
+  bool protectTargets = false,
+}) {
   final compat = _documentOf(node).compatMode;
   if (!quotedTextSniffRx[compat]!.hasMatch(text)) return text;
   var result = text;
   for (final sub in quoteSubs[compat]!) {
     if (!sub.mayMatch(result)) continue;
+    final spans = protectTargets ? _targetSpans(result) : const <(int, int)>[];
     result = InlineRun.replace(
       result,
-      sub.pattern,
+      spans.isEmpty ? sub.pattern : _OutsideSpans(sub.pattern, spans),
       (match) =>
           convertQuotedText(node, match as RegExpMatch, sub.type, sub.scope),
     );
   }
   return result;
+}
+
+/// The targets in [text] that formatting marks don't reach into
+/// (asciidart's; asciidoctor#3876, #1678): the URLs and the link, e-mail
+/// and cross reference targets the macros substitution will find there
+/// (not escaped ones).
+List<(int, int)> _targetSpans(String text) {
+  if (!text.contains(':') && !text.contains('&lt;&lt;')) return const [];
+  final spans = <(int, int)>[];
+  for (final match in inlineLinkRx.allMatches(text)) {
+    // (Groups: 1 the prefix, 3 the scheme, then the target: 4 before link
+    // text, 6 in angle brackets, 7 bare.)
+    final scheme = match[3]!;
+    if (scheme.startsWith(r'\')) continue;
+    final start = match.start + match[1]!.length;
+    final target = match[4] ?? match[6] ?? match[7] ?? '';
+    spans.add((start, start + scheme.length + target.length));
+  }
+  for (final match in inlineLinkMacroRx.allMatches(text)) {
+    final whole = match[0]!;
+    if (whole.startsWith(r'\')) continue;
+    final start = match.start + whole.indexOf(':') + 1;
+    spans.add((start, start + match[2]!.length));
+  }
+  for (final match in inlineXrefMacroRx.allMatches(text)) {
+    final whole = match[0]!;
+    if (whole.startsWith(r'\')) continue;
+    // An ID or a path (no spaces): a target by title (`<<Section
+    // *One*>>`) is matched against the converted titles, its formatting
+    // and all.
+    if (match[1] case final shorthand?) {
+      // `&lt;&lt;target,text&gt;&gt;`: the target, before the comma.
+      final comma = shorthand.indexOf(',');
+      final target = comma < 0 ? shorthand : shorthand.substring(0, comma);
+      if (target.contains(_whitespaceRx)) continue;
+      final start = match.start + '&lt;&lt;'.length;
+      spans.add((start, start + target.length));
+    } else if (match[2] case final target?) {
+      if (target.contains(_whitespaceRx)) continue;
+      final start = match.start + 'xref:'.length;
+      spans.add((start, start + target.length));
+    }
+  }
+  return spans;
+}
+
+final RegExp _whitespaceRx = RegExp(r'\s');
+
+/// [pattern]'s matches that don't cut into one of [spans]: a match is
+/// skipped when it overlaps a span without containing it (a mark inside a
+/// URL or target), and the search goes on from the next character.
+final class _OutsideSpans implements Pattern {
+  const new(this.pattern, this.spans);
+
+  final RegExp pattern;
+  final List<(int, int)> spans;
+
+  // An escaped mark (`\_`) is always matched: it only loses its
+  // backslash, as authors escape marks in URLs to keep them from pairing.
+  bool _cuts(Match match) =>
+      !_escaped(match) &&
+      spans.any(
+        (span) =>
+            match.start < span.$2 &&
+            match.end > span.$1 &&
+            !(match.start <= span.$1 && match.end >= span.$2),
+      );
+
+  /// Whether [match] is an escaped mark (a constrained match's leading
+  /// character is the backslash).
+  static bool _escaped(Match match) => match[0]!.startsWith(r'\');
+
+  @override
+  Iterable<Match> allMatches(String string, [int start = 0]) sync* {
+    var at = start;
+    while (at <= string.length) {
+      final match = pattern.allMatches(string, at).firstOrNull;
+      if (match == null) return;
+      if (_cuts(match)) {
+        at = match.start + 1;
+        continue;
+      }
+      yield match;
+      at = match.end > match.start ? match.end : match.end + 1;
+    }
+  }
+
+  @override
+  Match? matchAsPrefix(String string, [int start = 0]) {
+    final match = pattern.matchAsPrefix(string, start);
+    return match == null || _cuts(match) ? null : match;
+  }
 }
 
 /// Converts a quoted text region.

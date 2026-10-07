@@ -320,6 +320,14 @@ Documents that don't hit these cases convert as on `2.1.0`.
   and formatted text or a curved quote (on either side) becomes an em dash
   (#1578, #3946). A bare URL ending with a character reference
   (`http://<host>:<port>`) keeps its `;` (#3128).
+- Formatting marks inside a URL (bare or a link's), a link or e-mail
+  macro's target or a cross reference's target (an ID or a path, without
+  spaces) pair with nothing, so a URL's `#fragment` and an
+  `<<other.adoc#,text>>` on the same line aren't mark text and
+  `<<foo__bar>>` keeps its ID (#3876, #1678); marks around a whole URL
+  still apply, an escaped mark still loses its backslash, and a target
+  that is a title (`<<Section *One*>>`) is formatted to match it as
+  before.
 - Preprocessor: the directives inside a delimited block (`ifdef`,
   `ifndef`, `ifeval`, `include`) run as its content is parsed, after the
   attribute entries before them in the block, so `ifdef` sees an attribute
