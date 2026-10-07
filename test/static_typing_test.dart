@@ -21,6 +21,8 @@ const Map<String, String> objectBoundaries = {
   'lib/src/template.dart': 'Mustache render input',
   // `Map.operator []` and `Map.remove` take `Object?` keys.
   'lib/src/parser.dart': 'Map overrides on BlockAttributes',
+  // JSON is untyped; the page map is the one JSON file the library reads.
+  'lib/src/page_map.dart': 'JSON decode',
   // The I/O seam's `StringSink` implementations take `Object?` writes.
   'lib/src/io/vm.dart': 'StringSink implementation',
   'lib/src/io/js.dart': 'StringSink implementations',

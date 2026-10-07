@@ -33,6 +33,7 @@ import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/math/asciimath.dart';
 import 'package:asciidart/src/output_template.dart';
+import 'package:asciidart/src/page_map.dart';
 import 'package:asciidart/src/section.dart';
 import 'package:asciidart/src/table.dart';
 import 'package:asciidart/src/unbreakable.dart';
@@ -155,7 +156,7 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
   /// The print edition's pages (`epub-page-map`, the PDF's
   /// `pdf-page-map`): their labels, and the pages of each block by where
   /// it starts in the source.
-  ({List<String> labels, Map<String, (int, int)> blocks})? _pageMap;
+  PageMap? _pageMap;
 
   /// The last print page marked, and the page list (href, label).
   int _lastPage = 0;
@@ -175,24 +176,11 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
       logger.warn('epub-page-map: $path not found or not readable');
       return;
     }
-    try {
-      final json =
-          jsonDecode(utf8.decode(io.readBytes(path))) as Map<String, Object?>;
-      _pageMap = (
-        labels: [for (final l in json['labels']! as List<Object?>) '$l'],
-        blocks: {
-          for (final b in json['blocks']! as List<Object?>)
-            if (b case {
-              'at': final String at,
-              'first': final int first,
-              'last': final int last,
-            })
-              at: (first, last),
-        },
-      );
-    } on Object catch (error) {
-      logger.warn('epub-page-map: $path is not a page map ($error)');
+    final map = PageMap.parse(utf8.decode(io.readBytes(path)));
+    if (map == null) {
+      logger.warn('epub-page-map: $path is not a page map');
     }
+    _pageMap = map;
   }
 
   /// [html] (block [node]) with the print pages that start before it

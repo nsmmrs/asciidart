@@ -22,6 +22,7 @@ import 'package:asciidart/src/io.dart' as io;
 import 'package:asciidart/src/list.dart';
 import 'package:asciidart/src/logging.dart';
 import 'package:asciidart/src/output_template.dart';
+import 'package:asciidart/src/page_map.dart';
 import 'package:asciidart/src/pdf/engine.dart';
 import 'package:asciidart/src/pdf/fonts.dart';
 import 'package:asciidart/src/pdf/highlight_style.dart';
@@ -1903,23 +1904,22 @@ final class PdfConverter extends BuiltInConverter
     final tags = _reportTags;
     final target = document.attr('pdf-page-map');
     if (tags == null || target == null) return;
-    final blocks = <Map<String, Object>>[];
+    final blocks = <String, (int, int)>{};
     for (final MapEntry(key: tag, value: (_, at)) in tags.entries) {
       final pages = result.tagPages[tag];
       if (pages == null || at == null) continue;
-      blocks.add({
-        'at': '${at.path ?? at.file ?? ''}:${at.lineno}',
-        'first': pages.first,
-        'last': pages.last,
-      });
+      blocks['${at.path ?? at.file ?? ''}:${at.lineno}'] = (
+        pages.first,
+        pages.last,
+      );
     }
-    final map = {
-      'labels': [for (var i = 1; i <= pageCount; i++) _pageLabel(i)],
-      'blocks': blocks,
-    };
+    final map = PageMap(
+      labels: [for (var i = 1; i <= pageCount; i++) _pageLabel(i)],
+      blocks: blocks,
+    );
     final dir = document.attr('outdir') ?? document.attr('docdir') ?? '.';
     final path = target.startsWith('/') ? target : '$dir/$target';
-    io.writeString(path, '${const JsonEncoder.withIndent(' ').convert(map)}\n');
+    io.writeString(path, map.toJson());
   }
 
   /// Tags the box [block] added last (after any caption) after [before],
