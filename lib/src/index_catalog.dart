@@ -68,6 +68,21 @@ final class IndexCatalog {
         !document.attributeUnspecified('index-html') &&
         !document.hasAttr('index-html');
     _active = always || !unset && _hasIndexSection(document);
+    // A title converted before now (a section's, for its id, while the
+    // document was parsed) has no anchors for its terms: converted again,
+    // its terms are cataloged.
+    if (_active) _reconvertTitles(document);
+  }
+
+  static void _reconvertTitles(AbstractBlock block) {
+    for (final child in block.blocks) {
+      final source = child.sourceTitle;
+      if (source != null &&
+          (source.contains('((') || source.contains('indexterm'))) {
+        child.title = source;
+      }
+      _reconvertTitles(child);
+    }
   }
 
   /// Whether terms are being cataloged.

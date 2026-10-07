@@ -1136,8 +1136,14 @@ class Html5Converter extends BuiltInConverter {
     String imgTag(String src) =>
         '<img src="$src" alt="${_encodeAttributeValue(node.alt)}"'
         '$widthAttr$heightAttr$_voidElementSlash>';
+    // A text file (ASCII art) shown as its text: what the PDF sets, and
+    // what a browser can't show as an image (asciidart's own output;
+    // Asciidoctor writes an <img>).
+    final text = _textImage(node, target);
     final String img;
-    if ((node.hasAttr('format', 'svg') || target.contains('.svg')) &&
+    if (text != null) {
+      img = '<pre>$text</pre>';
+    } else if ((node.hasAttr('format', 'svg') || target.contains('.svg')) &&
         node.document!.safe < SafeMode.secure) {
       if (node.hasOption('inline')) {
         img =
@@ -1165,7 +1171,7 @@ class Html5Converter extends BuiltInConverter {
           '$linkConstraintAttrs>$img</a>';
     }
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
-    final classes = <String>['imageblock'];
+    final classes = <String>['imageblock', if (text != null) 'text'];
     if (node.hasAttr('float')) {
       classes.add(_s(node.attr('float')));
     }
@@ -2193,6 +2199,27 @@ class Html5Converter extends BuiltInConverter {
       return '<span class="${_s(node.role)}">$open${_s(node.text)}$close</span>';
     }
     return '$open${_s(node.text)}$close';
+  }
+
+  /// The text of image [node]'s [target] when it is a text file
+  /// (`image::diagram.txt[]`, or `format=txt`), escaped for HTML; null for
+  /// any other image, or a text file that can't be read.
+  String? _textImage(Block node, String target) {
+    final isText =
+        node.attr('format') == 'txt' ||
+        (!node.hasAttr('format') && target.toLowerCase().endsWith('.txt'));
+    if (!isText || node.document!.safe >= SafeMode.secure) return null;
+    final text = node.readContents(
+      target,
+      start: node.document!.attr('imagesdir'),
+      label: 'text image',
+    );
+    if (text == null) return null;
+    return text
+        .replaceAll(RegExp(r'\r?\n$'), '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
   }
 
   /// Reads the SVG at [target] for inlining into the output.

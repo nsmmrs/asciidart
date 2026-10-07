@@ -181,6 +181,82 @@ NOTE: Watch out.
     );
   });
 
+  test('a term indexed in a chapter title: indexed, its anchor in the '
+      'heading only', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync('''
+= The Book
+:doctype: book
+:uuid: 0000
+
+== Chapter ((Gadget))
+
+Text.
+
+[index]
+== Index
+''');
+    convertFile(
+      input.path,
+      const AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: {'reproducible': ''},
+      ),
+    );
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    final chapter = files['EPUB/_chapter_gadget.xhtml']!;
+    expect(chapter, contains('<title>Chapter Gadget</title>'));
+    expect(chapter, contains('title="Chapter Gadget"'));
+    expect(RegExp('id="_indexterm_1"').allMatches(chapter), hasLength(1));
+    expect(
+      files['EPUB/_index.xhtml'],
+      contains('_chapter_gadget.xhtml#_indexterm_1'),
+    );
+  });
+
+  test('a toc macro lists the contents where it is', () {
+    final dir = Directory.systemTemp.createTempSync('epub3_test.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final input = File('${dir.path}/book.adoc')
+      ..writeAsStringSync('''
+= The Book
+:doctype: book
+:uuid: 0000
+
+[#contents]
+== Contents
+
+toc::[]
+
+== Cats
+
+Text.
+''');
+    final logger = MemoryLogger();
+    convertFile(
+      input.path,
+      AsciidoctorOptions(
+        safe: SafeMode.safe,
+        backend: 'epub3',
+        attributes: const {'reproducible': ''},
+        logger: logger,
+      ),
+    );
+    expect(logger.messages, isEmpty);
+    final files = unzipText(File('${dir.path}/book.epub').readAsBytesSync());
+    expect(
+      files['EPUB/contents.xhtml'],
+      contains(
+        '<nav class="toc">\n<ol>\n<li><a href="contents.xhtml">'
+        'Contents</a></li>\n<li><a href="_cats.xhtml">Cats</a></li>\n'
+        '</ol>\n</nav>',
+      ),
+    );
+  });
+
   test('an index section links to the chapters that use each term', () {
     final dir = Directory.systemTemp.createTempSync('epub3_test.');
     addTearDown(() => dir.deleteSync(recursive: true));

@@ -160,12 +160,13 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         .ulist => convertUlist(node as ListBlock),
         .verse => convertVerse(node as Block),
         .video => convertVideo(node as Block),
-        .toc || .listItem || .tableCell => _missing(node.nodeName),
+        .toc => convertToc(node as Block),
+        .listItem || .tableCell => _missing(node.nodeName),
       };
 
   @override
   bool handlesBlock(BlockContext context) => switch (context) {
-    .toc || .listItem || .tableCell => false,
+    .listItem || .tableCell => false,
     _ => true,
   };
 
@@ -543,6 +544,9 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
               '</h1>\n</header>'
         : '';
 
+    // The index's anchors in the title belong to the heading alone (the
+    // title element allows no markup; an id must be unique).
+    chapterTitle = chapterTitle.replaceAll(_indexAnchorRx, '');
     final lang = _s(document.attr('lang', 'en'));
     final head =
         "<?xml version='1.0' encoding='utf-8'?>\n"
@@ -1352,12 +1356,22 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
 
   /// Converts the [node] image block.
   String convertImage(Block node) {
-    final target = node.imageUri(_s(node.attr('target')));
-    _registerMediaFile(node, target, 'image');
     final idAttr = node.id != null ? ' id="${node.id}"' : '';
     final titleElement = node.hasTitle
         ? '\n<figcaption>${node.captionedTitle()}</figcaption>'
         : '';
+    // A text file (ASCII art) as its text, not an image a reader can't
+    // show (asciidart's own output; the file isn't packed).
+    if (_textImage(node) case final text?) {
+      return '<figure$idAttr class="image text${_prependSpace(node.role)}'
+          '${_prependSpace(node.attr('float'))}">\n'
+          '<div class="content">\n'
+          '<pre>$text</pre>\n'
+          '</div>$titleElement\n'
+          '</figure>';
+    }
+    final target = node.imageUri(_s(node.attr('target')));
+    _registerMediaFile(node, target, 'image');
     final imgAttrs = _imageAttrs(node, node.alt);
     return '<figure$idAttr class="image${_prependSpace(node.role)}'
         '${_prependSpace(node.attr('float'))}">\n'
@@ -1365,6 +1379,42 @@ class Epub3Converter extends BuiltInConverter implements PackagingConverter {
         '<img src="$target"${_prependSpace(imgAttrs.join(' '))} />\n'
         '</div>$titleElement\n'
         '</figure>';
+  }
+
+  /// A `toc::[]` macro (asciidart's): the book's contents where it is, as
+  /// the navigation document lists them (to `toclevels`, or the macro's
+  /// `levels`), linked to the chapters.
+  String convertToc(Block node) {
+    final doc = _doc(node);
+    final levels = _nonNegative(
+      _toInt(node.attr('levels') ?? doc.attr('toclevels', '1')),
+    );
+    final items = doc.doctype == 'book' ? doc.sections : <AbstractBlock>[doc];
+    final list = _navLevel(items, levels, _NavState());
+    if (list.isEmpty) return '';
+    return '<nav class="toc"${node.id == null ? '' : ' id="${node.id}"'}>\n'
+        '$list\n'
+        '</nav>';
+  }
+
+  /// The text of image [node] when its target is a text file
+  /// (`image::diagram.txt[]`, or `format=txt`), escaped; else null.
+  String? _textImage(Block node) {
+    final target = _s(node.attr('target'));
+    final isText =
+        node.attr('format') == 'txt' ||
+        (!node.hasAttr('format') && target.toLowerCase().endsWith('.txt'));
+    if (!isText) return null;
+    final text = node.readContents(
+      target,
+      start: node.document!.attr('imagesdir'),
+      label: 'text image',
+    );
+    return text
+        ?.replaceAll(RegExp(r'\r?\n$'), '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
   }
 
   /// With `ebook-code-overflow=scroll` (asciidart's), code lines keep
@@ -2127,6 +2177,9 @@ String _fromHtmlSpecialChars(String value) =>
     });
 
 /// [value] as a quoted XML attribute value (Ruby's `encode xml: :attr`).
+/// An anchor the index links to, in converted text.
+final RegExp _indexAnchorRx = RegExp(r'<a id="_indexterm_\d+"></a>');
+
 String _xmlAttr(String value) {
   final escaped = value
       .replaceAll('&', '&amp;')

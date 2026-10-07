@@ -411,6 +411,17 @@ class Docbook5Converter extends BuiltInConverter {
     } else {
       tagName = _sectionTag(node);
     }
+    // A book's chapter that holds only a `toc::[]` macro is its contents:
+    // DocBook's <toc>, which processors fill in (a chapter with nothing in
+    // it isn't valid DocBook).
+    if (tagName == 'chapter' &&
+        node.parent is Document &&
+        node.blocks.length == 1 &&
+        node.blocks.first.context == BlockContext.toc) {
+      return '<toc${_nodeAttributes(node)}>\n'
+          '<title>${_s(node.title)}</title>\n'
+          '</toc>';
+    }
     final titleEl =
         node.special &&
             (node.hasOption('notitle') || node.hasOption('untitled'))
@@ -569,22 +580,56 @@ class Docbook5Converter extends BuiltInConverter {
     final alignAttribute = node.hasAttr('align')
         ? ' align="${_s(node.attr('align'))}"'
         : '';
-    final mediaobject =
-        '<mediaobject>\n'
-        '<imageobject>\n'
-        '<imagedata fileref="${node.imageUri(node.attr('target')!)}"${_imageSizeAttributes(node.attributes)}$alignAttribute/>\n'
-        '</imageobject>\n'
-        '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
-        '</mediaobject>';
+    // A text file (ASCII art): its text, in the media object's text
+    // object (asciidart's own output).
+    final text = _textImage(node);
+    final mediaobject = text != null
+        ? '<mediaobject>\n'
+              '<textobject><literallayout class="monospaced">$text'
+              '</literallayout></textobject>\n'
+              '</mediaobject>'
+        : '<mediaobject>\n'
+              '<imageobject>\n'
+              '<imagedata fileref="${node.imageUri(node.attr('target')!)}"${_imageSizeAttributes(node.attributes)}$alignAttribute/>\n'
+              '</imageobject>\n'
+              '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
+              '</mediaobject>';
+    // An image's placement (asciidart's `placement` attribute) as DocBook
+    // XSL's floatstyle: at the top of a page, or never floated.
+    final floatstyle = switch (node.attr('placement')) {
+      'top' || 'auto' => ' floatstyle="before"',
+      'none' || 'here' => ' floatstyle="none"',
+      _ => '',
+    };
     if (node.hasTitle) {
-      return '<figure${_nodeAttributes(node)}>\n'
+      return '<figure${_nodeAttributes(node)}$floatstyle>\n'
           '<title>${_s(node.title)}</title>\n'
           '$mediaobject\n'
           '</figure>';
     }
-    return '<informalfigure${_nodeAttributes(node)}>\n'
+    return '<informalfigure${_nodeAttributes(node)}$floatstyle>\n'
         '$mediaobject\n'
         '</informalfigure>';
+  }
+
+  /// The text of image [node] when its target is a text file
+  /// (`image::diagram.txt[]`, or `format=txt`), escaped; else null.
+  String? _textImage(Block node) {
+    final target = _s(node.attr('target'));
+    final isText =
+        node.attr('format') == 'txt' ||
+        (!node.hasAttr('format') && target.toLowerCase().endsWith('.txt'));
+    if (!isText || node.document!.safe >= SafeMode.secure) return null;
+    return node
+        .readContents(
+          target,
+          start: node.document!.attr('imagesdir'),
+          label: 'text image',
+        )
+        ?.replaceAll(RegExp(r'\r?\n$'), '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
   }
 
   /// Converts the [node] listing block.

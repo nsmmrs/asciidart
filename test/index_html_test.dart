@@ -34,6 +34,17 @@ String _html(String source, {Map<String, String> attributes = const {}}) =>
     );
 
 void main() {
+  test('a term indexed in a section title is in the index', () {
+    final html = _html(
+      '= Book\n:doctype: book\n\n== Chapter ((Gadget))\n\nText.\n\n'
+      '[index]\n== Index\n',
+    );
+    final index = html.substring(html.indexOf('<div class="index">'));
+    expect(index, contains('<span class="index-term">Gadget</span>'));
+    expect(index, contains('href="#_indexterm_1"'));
+    expect(html, contains('Chapter <a id="_indexterm_1"></a>Gadget'));
+  });
+
   test('each use gets an anchor and the index links to it', () {
     final html = _html(_book);
     expect(html, contains('The <a id="_indexterm_1"></a>Tiger is big.'));
