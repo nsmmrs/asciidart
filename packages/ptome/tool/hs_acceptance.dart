@@ -27,6 +27,8 @@ import 'dart:io';
 
 import 'package:ptome/src/internal.dart';
 
+import 'vendored_fonts.dart';
+
 const _repository =
     'https://github.com/bigskysoftware/hypermedia-systems-old.git';
 const _commit = '2e8c4be47f64de281d0e325599bcbe69e7ed05ce';
@@ -381,7 +383,9 @@ Directory _sources() {
     exe,
     ['-S', 'unsafe', ...options, '-o', file, 'HypermediaSystems.adoc'],
     workingDirectory: sources.path,
-    environment: {'SOURCE_DATE_EPOCH': '0', 'TZ': 'UTC'},
+    // The vendored fonts, not the machine's: the default theme's code
+    // font (M+ 1mn) is otherwise found only where `ptome doctor` ran.
+    environment: withVendoredFonts({'SOURCE_DATE_EPOCH': '0', 'TZ': 'UTC'}),
   );
   return (result, watch.elapsed);
 }
