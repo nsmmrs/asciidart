@@ -1,6 +1,7 @@
 /// A Brotli decoder (RFC 7932).
 library;
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:plain_compression/src/brotli_data.g.dart';
@@ -12,30 +13,7 @@ Uint8List brotliDecode(List<int> data) =>
     _Decoder(data is Uint8List ? data : Uint8List.fromList(data)).decode();
 
 /// The static dictionary, expanded the first time it is needed.
-final Uint8List _dictionary = zlibDecode(_base64(brotliDictionaryZlib));
-
-Uint8List _base64(String text) {
-  const alphabet =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  final values = Int8List(128)..fillRange(0, 128, -1);
-  for (var i = 0; i < alphabet.length; i++) {
-    values[alphabet.codeUnitAt(i)] = i;
-  }
-  final out = BytesBuilder(copy: false);
-  var buffer = 0;
-  var bits = 0;
-  for (final unit in text.codeUnits) {
-    final v = unit < 128 ? values[unit] : -1;
-    if (v < 0) continue;
-    buffer = (buffer << 6 | v) & 0xffffff;
-    bits += 6;
-    if (bits >= 8) {
-      bits -= 8;
-      out.addByte((buffer >> bits) & 0xff);
-    }
-  }
-  return out.takeBytes();
-}
+final Uint8List _dictionary = zlibDecode(base64Decode(brotliDictionaryZlib));
 
 /// The number of bits of the word index, by word length (RFC 7932,
 /// section 8).

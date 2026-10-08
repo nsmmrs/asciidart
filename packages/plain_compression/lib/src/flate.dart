@@ -8,17 +8,17 @@ import 'dart:typed_data';
 
 /// Compresses [data] in the zlib format (`/FlateDecode` streams).
 Uint8List zlibEncode(List<int> data, {int level = 6}) {
-  final out = BytesBuilder(copy: false)
-    ..addByte(0x78)
-    ..addByte(_zlibFlags(level))
-    ..add(deflate(data, level: level));
+  final body = deflate(data, level: level);
   final adler = adler32(data);
-  out
-    ..addByte((adler >> 24) & 0xff)
-    ..addByte((adler >> 16) & 0xff)
-    ..addByte((adler >> 8) & 0xff)
-    ..addByte(adler & 0xff);
-  return out.takeBytes();
+  final end = body.length + 2;
+  return Uint8List(end + 4)
+    ..[0] = 0x78
+    ..[1] = _zlibFlags(level)
+    ..setRange(2, end, body)
+    ..[end] = adler >> 24
+    ..[end + 1] = adler >> 16
+    ..[end + 2] = adler >> 8
+    ..[end + 3] = adler;
 }
 
 int _zlibFlags(int level) {
