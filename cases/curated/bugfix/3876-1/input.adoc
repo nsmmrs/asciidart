@@ -1,0 +1,2 @@
+Use link:https://example.org/docs/#maven[Maven],
+the <<maven.adoc#, start guide>> sets it up.

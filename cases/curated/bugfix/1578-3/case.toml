@@ -1,0 +1,9 @@
+description = "asciidoctor#1578: and in a man page. asciidoctor#1578: a double hyphen between a word and formatted text (`_italicized_--but`) was not replaced with an em dash: the markup of the formatted text, already converted, is not a word character."
+source = "bugfix:asciidoctor#1578"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/1578 (asciidart benchmark/PARITY.md)"
+formats = ["manpage"]
+
+[options]
+standalone = true
+doctype = "manpage"

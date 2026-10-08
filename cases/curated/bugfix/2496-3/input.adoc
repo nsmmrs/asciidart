@@ -1,0 +1,6 @@
+[cols="1a"]
+|===
+|text
+// a note
+more
+|===

@@ -75,6 +75,17 @@ final class AsciidartPool {
   AsciidartPool._(this._workers);
 
   final List<_Worker> _workers;
+  final Map<int, Future<_Worker>> _respawning = {};
+
+  /// The worker in slot [i], replaced (once, however many callers ask) if
+  /// it was killed.
+  Future<_Worker> _live(int i) async {
+    if (!_workers[i].dead) return _workers[i];
+    final replacement = _respawning[i] ??= _Worker.spawn().whenComplete(
+      () => _respawning.remove(i),
+    );
+    return _workers[i] = await replacement;
+  }
 
   static Future<AsciidartPool> start({int size = 1}) async => AsciidartPool._(
     await Future.wait([for (var i = 0; i < size; i++) _Worker.spawn()]),
@@ -90,7 +101,7 @@ final class AsciidartPool {
     Duration timeout = const Duration(seconds: 10),
   }) async {
     for (var i = 0; i < _workers.length; i++) {
-      if (_workers[i].dead) _workers[i] = await _Worker.spawn();
+      await _live(i);
     }
     var best = _workers.first;
     for (final worker in _workers) {
@@ -110,8 +121,7 @@ final class AsciidartPool {
     Future<void> lane(int i) async {
       while (next.moveNext()) {
         final conversion = next.current;
-        if (_workers[i].dead) _workers[i] = await _Worker.spawn();
-        out.add(await _workers[i].convert(conversion, timeout));
+        out.add(await (await _live(i)).convert(conversion, timeout));
       }
     }
 

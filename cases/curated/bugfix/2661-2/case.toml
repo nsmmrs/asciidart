@@ -1,0 +1,5 @@
+description = "asciidoctor#2661: and a crafted width on an inline image. asciidoctor#2661: a quote in an image attribute (align, float, width, role, link...) ended the HTML attribute it was written into, letting the rest of the value into the markup."
+source = "bugfix:asciidoctor#2661"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/2661 (asciidart benchmark/PARITY.md)"
+formats = ["html5"]

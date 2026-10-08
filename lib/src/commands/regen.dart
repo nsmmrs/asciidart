@@ -101,7 +101,9 @@ void _checkDivergences(Case c, Corpus corpus, RegenReport report) {
       if (profile is! AsciidartProfile || profile.compareTo == null) continue;
       final reference = profiles[profile.compareTo];
       if (reference == null || reference.sameBehavior(expected)) continue;
-      if (expected.divergence == null) {
+      if (expected.divergence == null && c.divergence != null) {
+        profiles[name] = expected.withDivergence(c.divergence);
+      } else if (expected.divergence == null) {
         report.undocumented.add('${c.id}#${format.name} [$name]');
       }
     }

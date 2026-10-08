@@ -1,0 +1,5 @@
+description = "asciidoctor#3128: unchanged: a trailing ; or ); is moved out of the URL. asciidoctor#3128: a bare URL ending with a placeholder in angle brackets (`http://<host>:<port>`) lost the `;` of the escaped `>` (`&gt;`): the link ended with `&gt` and a stray `;` followed it."
+source = "bugfix:asciidoctor#3128"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3128 (asciidart benchmark/PARITY.md)"
+formats = ["html5"]

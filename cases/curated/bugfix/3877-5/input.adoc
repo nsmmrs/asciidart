@@ -1,0 +1,6 @@
+ifdef::nope[]
+====
+hidden
+====
+endif::[]
+shown

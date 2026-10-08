@@ -1,0 +1,8 @@
+Read <<pp>> and <<gof>>.
+
+[bibliography]
+== References
+:ref: 0
+
+- [[[pp,{counter:ref}]]] Andy Hunt & Dave Thomas. The Pragmatic Programmer.
+- [[[gof,{counter:ref}]]] Erich Gamma et al. Design Patterns.

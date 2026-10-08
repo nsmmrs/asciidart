@@ -1,0 +1,9 @@
+description = "asciidoctor#4875: unchanged: spans that are not nested still close with the previous font. asciidoctor#4875: the man page converter closed every font span with `\\fP`, roff's single \"previous font\", so after a span nested in another the text that followed stayed in the inner span's font."
+source = "bugfix:asciidoctor#4875"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/4875 (asciidart benchmark/PARITY.md)"
+formats = ["manpage"]
+
+[options]
+standalone = true
+doctype = "manpage"

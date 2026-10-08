@@ -1,0 +1,11 @@
+= Title
+
+Link to <<foo>>.
+
+== [[foo]]Section 1
+
+Text.
+
+== [[foo]]Section 2
+
+Text.

@@ -1,0 +1,5 @@
+description = "asciidoctor#4419: imagesdir with a doubled slash before .. finds the image. asciidoctor#4419: a doubled slash before `..` in a path (here imagesdir) made `..` remove the empty segment between the slashes instead of the directory before them, so `X//../dir` resolved to `X/dir`."
+source = "bugfix:asciidoctor#4419"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/4419 (asciidart benchmark/PARITY.md)"
+formats = ["html5"]

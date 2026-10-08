@@ -8,7 +8,9 @@ import 'package:path/path.dart' as p;
 
 import 'anchor/build.dart';
 import 'commands/check.dart';
+import 'commands/coverage.dart';
 import 'fuzz/loop.dart';
+import 'fuzz/triage.dart';
 import 'gen/generator.dart';
 import 'gen/serialize.dart';
 import 'commands/regen.dart';
@@ -451,7 +453,17 @@ final class FuzzCommand extends Command<int> {
         defaultsTo: '${Platform.numberOfProcessors ~/ 2}',
       )
       ..addOption('seed', defaultsTo: '1', help: 'The first seed.')
-      ..addOption('pathology', defaultsTo: '0.08');
+      ..addOption('pathology', defaultsTo: '0.08')
+      ..addOption(
+        'mutation',
+        defaultsTo: '0.5',
+        help: 'Share of mutated documents.',
+      )
+      ..addOption(
+        'blocks',
+        defaultsTo: '24',
+        help: 'Most blocks per generated document.',
+      );
   }
 
   @override
@@ -469,7 +481,11 @@ final class FuzzCommand extends Command<int> {
       duration: Duration(seconds: int.parse(args.option('seconds')!)),
       jobs: int.parse(args.option('jobs')!),
       seed: int.parse(args.option('seed')!),
-      config: GenConfig(pathology: double.parse(args.option('pathology')!)),
+      config: GenConfig(
+        pathology: double.parse(args.option('pathology')!),
+        maxBlocks: int.parse(args.option('blocks')!),
+      ),
+      mutation: double.parse(args.option('mutation')!),
       log: stdout.writeln,
     );
     stdout.writeln(report.summary());
@@ -479,5 +495,123 @@ final class FuzzCommand extends Command<int> {
       stdout.writeln('  ${value.toString().padLeft(5)}  $key');
     }
     return 0;
+  }
+}
+
+/// `ascii_docs triage`: minimizes recorded findings and lists them.
+final class TriageCommand extends Command<int> {
+  TriageCommand() {
+    argParser.addOption(
+      'jobs',
+      abbr: 'j',
+      defaultsTo: '${Platform.numberOfProcessors ~/ 2}',
+    );
+  }
+
+  @override
+  String get name => 'triage';
+
+  @override
+  String get description =>
+      'Minimize the recorded findings and list them by kind.';
+
+  @override
+  Future<int> run() async {
+    final results = await minimizeFindings(
+      Corpus.open(),
+      jobs: int.parse(argResults!.option('jobs')!),
+      log: stderr.writeln,
+    );
+    results.sort(
+      (a, b) => '${a.json['kind']}${a.json['engine']}'.compareTo(
+        '${b.json['kind']}${b.json['engine']}',
+      ),
+    );
+    for (final r in results) {
+      final lines = r.minimized.split('\n');
+      stdout.writeln(
+        '== ${r.json['kind']} [${r.json['engine']}] ${r.json['format']} '
+        '(${p.basename(r.dir)}, ${lines.length} lines)\n'
+        '${(r.json['detail']! as String).split('\n').take(2).join('\n')}\n'
+        '${lines.take(12).map((l) => '  | $l').join('\n')}\n',
+      );
+    }
+    return 0;
+  }
+}
+
+/// `ascii_docs coverage`: the committed cases' Ruby coverage.
+final class CoverageCommand extends Command<int> {
+  CoverageCommand() {
+    argParser
+      ..addMultiOption(
+        'profile',
+        abbr: 'p',
+        help: 'Ruby profiles (default: all).',
+      )
+      ..addOption(
+        'jobs',
+        abbr: 'j',
+        defaultsTo: '${Platform.numberOfProcessors ~/ 2}',
+      )
+      ..addOption(
+        'lost',
+        help: 'Write the elements the pool reaches and the cases miss to this file.',
+      )
+      ..addFlag(
+        'gate',
+        help: 'Fail unless every element is reached or excluded.',
+      );
+  }
+
+  @override
+  String get name => 'coverage';
+
+  @override
+  String get description =>
+      "What the cases reach in each Ruby profile, against the pool and the exclusions.\n"
+      'Arguments limit the cases to those whose id starts with one of them.';
+
+  @override
+  Future<int> run() async {
+    final args = argResults!;
+    final corpus = Corpus.open();
+    final names = args.multiOption('profile');
+    final cases = corpus.cases(args.rest);
+    var failed = false;
+    final lostOut = StringBuffer();
+    for (final profile in corpus.profiles.values.whereType<RubyProfile>()) {
+      if (names.isNotEmpty && !names.contains(profile.name)) continue;
+      final result = await measureCases(
+        corpus,
+        profile,
+        cases,
+        jobs: int.parse(args.option('jobs')!),
+      );
+      String pct(int n, int of) => '${(100 * n / of).toStringAsFixed(2)}%';
+      final l = result.universe.lines.length;
+      final b = result.universe.branches.length;
+      final (cl, cb) = result.count(result.cases);
+      stdout.writeln(
+        '${profile.name}: ${cases.length} cases reach lines ${pct(cl, l)} ($cl/$l), branches ${pct(cb, b)} ($cb/$b)',
+      );
+      if (result.pool case final pool?) {
+        final (pl, pb) = result.count(pool);
+        final lost = result.lost();
+        stdout.writeln(
+          '  pool: lines ${pct(pl, l)}, branches ${pct(pb, b)}; ${lost.length} pool elements the cases miss',
+        );
+        lostOut.writeln('# ${profile.name}');
+        lost.forEach(lostOut.writeln);
+      }
+      final unreached = result.unreached();
+      stdout.writeln(
+        '  ${result.excluded.length} excluded, ${unreached.length} neither reached nor excluded',
+      );
+      if (unreached.isNotEmpty) failed = true;
+    }
+    if (args.option('lost') case final path?)
+      File(path).writeAsStringSync(lostOut.toString());
+    return args.flag('gate') && failed ? 1 : 0;
   }
 }

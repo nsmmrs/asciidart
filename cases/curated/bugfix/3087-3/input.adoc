@@ -1,0 +1,6 @@
+See <<gof>>.
+
+[bibliography]
+== References
+
+- [[[gof,GoF]]] Design Patterns.

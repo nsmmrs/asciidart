@@ -1,0 +1,12 @@
+:var: defined
+
+****
+:var!:
+
+ifndef::var[]
+unset
+endif::[]
+ifdef::var[]
+still set
+endif::[]
+****

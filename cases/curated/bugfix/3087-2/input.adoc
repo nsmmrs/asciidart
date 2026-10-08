@@ -1,0 +1,8 @@
+:abbr: GoF
+
+See <<gof>>.
+
+[bibliography]
+== References
+
+- [[[gof,{abbr}]]] Design Patterns.

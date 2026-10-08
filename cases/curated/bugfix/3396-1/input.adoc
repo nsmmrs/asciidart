@@ -1,0 +1,5 @@
+Aaa.
+
+[.red]#Bbb# bbb.footnote:[Bbb.]
+
+Ccc.

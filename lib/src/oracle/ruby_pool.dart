@@ -255,6 +255,20 @@ final class RubyPool {
   final bool _coverage;
   final List<RubyWorker> _workers;
 
+  /// Replacements being started, by slot, so concurrent callers that find
+  /// the same dead worker share one replacement.
+  final Map<int, Future<RubyWorker>> _restarting = {};
+
+  Future<RubyWorker> _live(int i) async {
+    if (!_workers[i].dead) return _workers[i];
+    final replacement = _restarting[i] ??= RubyWorker.start(
+      profile,
+      repoRoot: _repoRoot,
+      coverage: _coverage,
+    ).whenComplete(() => _restarting.remove(i));
+    return _workers[i] = await replacement;
+  }
+
   static Future<RubyPool> start(
     RubyProfile profile, {
     required String repoRoot,
@@ -276,13 +290,7 @@ final class RubyPool {
     Duration timeout = const Duration(seconds: 10),
   }) async {
     for (var i = 0; i < _workers.length; i++) {
-      if (_workers[i].dead) {
-        _workers[i] = await RubyWorker.start(
-          profile,
-          repoRoot: _repoRoot,
-          coverage: _coverage,
-        );
-      }
+      await _live(i);
     }
     var best = _workers.first;
     for (final worker in _workers) {
@@ -302,14 +310,7 @@ final class RubyPool {
     Future<void> lane(int i) async {
       while (next.moveNext()) {
         final conversion = next.current;
-        if (_workers[i].dead) {
-          _workers[i] = await RubyWorker.start(
-            profile,
-            repoRoot: _repoRoot,
-            coverage: _coverage,
-          );
-        }
-        out.add(await _workers[i].convert(conversion, timeout: timeout));
+        out.add(await (await _live(i)).convert(conversion, timeout: timeout));
       }
     }
 

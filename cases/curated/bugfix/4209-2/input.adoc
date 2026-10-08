@@ -1,0 +1,6 @@
+= Document Title
+:authors: Sarah White; Daniel Allen
+:firstname_2: Dan
+:authorinitials_2: DJA
+
+{lastname_2}, {firstname_2} ({authorinitials_2})

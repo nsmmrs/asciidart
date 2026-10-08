@@ -1,0 +1,5 @@
+= Document Title
+Sarah White
+:author: Daniel Allen
+
+{firstname} {lastname}

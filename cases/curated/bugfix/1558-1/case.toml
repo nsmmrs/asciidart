@@ -1,0 +1,5 @@
+description = "asciidoctor#1558: the style of the last column applies to its cells after a colspan. asciidoctor#1558: in DocBook, a cell after a colspan or beside a rowspan got the style of the wrong column (emphasis applied to the wrong cell)."
+source = "bugfix:asciidoctor#1558"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/1558 (asciidart benchmark/PARITY.md)"
+formats = ["docbook5"]

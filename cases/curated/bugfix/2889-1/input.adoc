@@ -1,0 +1,7 @@
+[cols=">13,11,15"]
+|===
+.3+| Project
+|SPMP |PCERT-SPMP
+|PHD  |PCERT-PHD
+|SQAP |PCERT-SQAP
+|===

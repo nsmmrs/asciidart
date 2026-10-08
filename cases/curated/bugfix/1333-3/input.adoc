@@ -1,0 +1,6 @@
+:product: Widget
+
+.About {product}
+====
+x
+====

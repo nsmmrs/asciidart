@@ -1,0 +1,1 @@
+image::test.png[align=center"><p>this is a paragraph</p>]

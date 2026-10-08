@@ -1,0 +1,10 @@
+====
+:var: defined
+
+ifdef::var[]
+yes
+endif::[]
+ifndef::var[]
+no
+endif::[]
+====

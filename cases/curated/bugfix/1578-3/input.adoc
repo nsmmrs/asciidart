@@ -1,0 +1,10 @@
+= x(1)
+:doctype: manpage
+
+== NAME
+
+x - y
+
+== DESCRIPTION
+
+_italicized_--but nevertheless

@@ -116,8 +116,13 @@ final class Case {
     this.safe = Safe.safe,
     this.standalone = false,
     this.attributes = const {},
+    this.divergence,
     Map<Format, Map<String, Expected>>? expected,
   }) : expected = expected ?? {};
+
+  /// Why asciidart's result may differ from the profile it is compared to
+  /// (a fixed upstream bug), recorded in versions.toml where it does.
+  final String? divergence;
 
   /// The case directory relative to `cases/`, such as `curated/table-span`.
   final String id;
@@ -204,6 +209,7 @@ final class Case {
       ],
       baseDir: baseDir,
       description: meta['description'] as String? ?? '',
+      divergence: meta['divergence'] as String?,
       source: meta['source'] as String? ?? '',
       features: [
         for (final f in (meta['features'] as List? ?? const [])) f as String,

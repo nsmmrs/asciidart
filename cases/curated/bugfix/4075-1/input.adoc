@@ -1,0 +1,5 @@
+:icons:
+:icontype: gif
+:data-uri:
+
+link:++https://example.com++[icon:github[]bar]

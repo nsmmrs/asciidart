@@ -1,0 +1,5 @@
+description = "asciidoctor#3788: an escaped bracket belongs to the reference text. asciidoctor#3788: a closing square bracket couldn't be escaped in the reference text of an inline anchor shorthand: `[[id,[reftext\\]]]` ended at the escaped bracket, kept the backslash in the reference text and left a stray `]` in the text."
+source = "bugfix:asciidoctor#3788"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3788 (asciidart benchmark/PARITY.md)"
+formats = ["html5"]

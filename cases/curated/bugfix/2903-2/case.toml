@@ -1,0 +1,5 @@
+description = "asciidoctor#2903: unchanged: attribute references in a title resolve where it is. asciidoctor#2903: a footnote in a section title was numbered when the parser converted the title to generate the section's ID, before the footnotes of the blocks above it: two footnotes got number 1, and the number ended up in the ID."
+source = "bugfix:asciidoctor#2903"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/2903 (asciidart benchmark/PARITY.md)"
+formats = ["html5"]

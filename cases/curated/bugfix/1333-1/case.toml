@@ -1,0 +1,5 @@
+description = "asciidoctor#1333: unchanged: counters in titles of blocks with and without IDs. asciidoctor#1333: a block title is interpolated on first use: a cross reference converted before the block it points to converts that block's title then, so a counter in the titles counted out of document order (and the attribute playback of the earlier block counted again from the start). A block title's counters (and `{set:...}`) are evaluated once, where the title is written, in document order."
+source = "bugfix:asciidoctor#1333"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/1333 (asciidart benchmark/PARITY.md)"
+formats = ["html5"]

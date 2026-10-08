@@ -19,8 +19,19 @@ final class Finding {
   /// The engine it concerns (a profile name), or null for both.
   final String? engine;
 
-  /// What groups findings of the same bug: kind, engine and a detail key.
-  String get signature => '$kind|${engine ?? '*'}|${_key(detail)}';
+  /// What groups findings of the same bug: kind, engine and a detail key
+  /// (for differences: the tags of the first differing lines).
+  String get signature =>
+      '$kind|${engine ?? '*'}|${kind == 'differs' ? _tags(detail) : _key(detail)}';
+
+  static String _tags(String detail) => [
+    for (final line in detail.split('\n'))
+      RegExp(r'</?[a-zA-Z][\w:-]*')
+          .allMatches(line)
+          .map((m) => m[0])
+          .take(6)
+          .join(),
+  ].join(' / ');
 
   static String _key(String detail) => detail
       // Generated words differ from document to document; markup stays.

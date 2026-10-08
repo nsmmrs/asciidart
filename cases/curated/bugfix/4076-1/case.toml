@@ -1,0 +1,5 @@
+description = "asciidoctor#4076: a link in a superscript nests in DocBook. asciidoctor#4076: a superscript around a link whose text ends with the `^` shorthand (`^link:fn.html[2^]^`) ended at that `^`, leaving the link markup across the end of the superscript (invalid XML and HTML)."
+source = "bugfix:asciidoctor#4076"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/4076 (asciidart benchmark/PARITY.md)"
+formats = ["docbook5"]

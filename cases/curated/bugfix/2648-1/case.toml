@@ -1,0 +1,5 @@
+description = "asciidoctor#2648: a line comment separates two lists in an AsciiDoc cell. asciidoctor#2648: in an AsciiDoc cell, a line comment between two lists didn't separate them (the table parser had dropped it), so the second list was nested in the first."
+source = "bugfix:asciidoctor#2648"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/2648 (asciidart benchmark/PARITY.md)"
+formats = ["html5"]

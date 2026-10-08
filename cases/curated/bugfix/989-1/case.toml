@@ -1,0 +1,5 @@
+description = "asciidoctor#989: cells beside a rowspan get the specs of their own columns. asciidoctor#989: the cells next to one spanning rows took the column spec of the column on their left."
+source = "bugfix:asciidoctor#989"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/989 (asciidart benchmark/PARITY.md)"
+formats = ["html5"]

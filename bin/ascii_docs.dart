@@ -11,11 +11,17 @@ Future<void> main(List<String> args) async {
         ..addCommand(PoolCommand())
         ..addCommand(AnchorCommand())
         ..addCommand(GenCommand())
-        ..addCommand(FuzzCommand());
+        ..addCommand(FuzzCommand())
+        ..addCommand(TriageCommand())
+        ..addCommand(CoverageCommand());
+  var code = 0;
   try {
-    exitCode = await runner.run(args) ?? 0;
+    code = await runner.run(args) ?? 0;
   } on UsageException catch (e) {
     stderr.writeln(e);
-    exitCode = 64;
+    code = 64;
   }
+  // Worker processes and isolates must not keep a finished command alive.
+  await stdout.flush();
+  exit(code);
 }
