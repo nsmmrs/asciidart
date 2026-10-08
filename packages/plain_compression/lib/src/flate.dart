@@ -3,7 +3,6 @@
 /// (including the web).
 library;
 
-import 'dart:math' as math;
 import 'dart:typed_data';
 
 /// Compresses [data] in the zlib format (`/FlateDecode` streams).
@@ -414,8 +413,8 @@ void _writeBlock(
     }
   }
   litFreq[256] = 1;
-  final litLengths = Uint8List.fromList(huffmanLengths(litFreq, 15));
-  final distLengths = Uint8List.fromList(huffmanLengths(distFreq, 15));
+  final litLengths = huffmanLengths(litFreq, 15);
+  final distLengths = huffmanLengths(distFreq, 15);
   // At least one distance code must be defined.
   if (distLengths.every((l) => l == 0)) distLengths[0] = 1;
 
@@ -570,61 +569,71 @@ List<(int, int)> _runLengths(List<int> lengths) {
 /// Huffman code lengths for [frequencies], none longer than [maxBits]
 /// (zlib's way of limiting lengths: shorten the deepest codes, then hand
 /// the lengths out again by frequency).
-List<int> huffmanLengths(List<int> frequencies, int maxBits) {
+///
+/// At most 512 symbols, each less frequent than 2^22: the symbols sort as
+/// `frequency << 9 | symbol` in 32-bit keys.
+Uint8List huffmanLengths(List<int> frequencies, int maxBits) {
   final n = frequencies.length;
-  final lengths = List<int>.filled(n, 0);
-  final used = [
-    for (var s = 0; s < n; s++)
-      if (frequencies[s] > 0) s,
-  ];
-  if (used.isEmpty) return lengths;
-  if (used.length == 1) {
-    lengths[used.single] = 1;
+  if (n > 512) throw ArgumentError.value(n, 'frequencies', 'over 512');
+  final lengths = Uint8List(n);
+  // The used symbols by frequency, then symbol; a symbol's leaf is its
+  // rank among the used symbols, so this is also by weight, then leaf.
+  final leaves = Int32List(n);
+  final rankOf = Int32List(n);
+  var used = 0;
+  for (var s = 0; s < n; s++) {
+    final frequency = frequencies[s];
+    if (frequency == 0) continue;
+    if (frequency < 0 || frequency >= 1 << 22) {
+      throw ArgumentError.value(frequency, 'frequencies', 'not below 2^22');
+    }
+    rankOf[s] = used;
+    leaves[used++] = frequency << 9 | s;
+  }
+  if (used == 0) return lengths;
+  if (used == 1) {
+    lengths[leaves[0] & 511] = 1;
     return lengths;
   }
-  // Build the tree with a simple priority queue (nodes: weight, depth via
-  // parent links).
-  final weights = <int>[];
-  final parents = <int>[];
-  final queue = <int>[];
-  for (final s in used) {
-    weights.add(frequencies[s]);
-    parents.add(-1);
-    queue.add(weights.length - 1);
+  _sort(leaves, used);
+  // Build the tree with two queues: the leaves, sorted, and the internal
+  // nodes, made in order of weight; a tie takes the leaf (lower node).
+  final nodes = 2 * used - 1;
+  final weights = Int32List(nodes);
+  final parents = Int32List(nodes);
+  final queue = Int32List(used);
+  for (var k = 0; k < used; k++) {
+    final leaf = rankOf[leaves[k] & 511];
+    weights[leaf] = leaves[k] >> 9;
+    queue[k] = leaf;
   }
-  int compare(int a, int b) =>
-      weights[a] != weights[b] ? weights[a] - weights[b] : a - b;
-  queue.sort(compare);
-  // Two-queue method: leaves sorted, internal nodes appended in order.
-  final internal = <int>[];
   var li = 0;
-  var ii = 0;
-  int takeMin() {
-    if (ii >= internal.length ||
-        (li < queue.length && compare(queue[li], internal[ii]) <= 0)) {
-      return queue[li++];
+  var ii = used;
+  for (var node = used; node < nodes; node++) {
+    int a;
+    if (ii >= node || (li < used && weights[queue[li]] <= weights[ii])) {
+      a = queue[li++];
+    } else {
+      a = ii++;
     }
-    return internal[ii++];
-  }
-
-  for (var k = 0; k < used.length - 1; k++) {
-    final a = takeMin();
-    final b = takeMin();
-    weights.add(weights[a] + weights[b]);
-    parents.add(-1);
-    final node = weights.length - 1;
+    int b;
+    if (ii >= node || (li < used && weights[queue[li]] <= weights[ii])) {
+      b = queue[li++];
+    } else {
+      b = ii++;
+    }
+    weights[node] = weights[a] + weights[b];
     parents[a] = node;
     parents[b] = node;
-    internal.add(node);
   }
-  final depth = List<int>.filled(weights.length, 0);
-  for (var node = weights.length - 2; node >= 0; node--) {
+  final depth = Int32List(nodes);
+  for (var node = nodes - 2; node >= 0; node--) {
     depth[node] = depth[parents[node]] + 1;
   }
   // Count codes per length, clipping at maxBits.
-  final blCount = List<int>.filled(maxBits + 1, 0);
-  for (var k = 0; k < used.length; k++) {
-    blCount[math.min(depth[k], maxBits)] += 1;
+  final blCount = Int32List(maxBits + 1);
+  for (var k = 0; k < used; k++) {
+    blCount[depth[k] < maxBits ? depth[k] : maxBits] += 1;
   }
   // Clipped codes over-subscribe the code (its Kraft sum, in units of
   // 2^-maxBits, passes 2^maxBits): each step moves a leaf one level down
@@ -643,20 +652,35 @@ List<int> huffmanLengths(List<int> frequencies, int maxBits) {
     blCount[bits + 1] += 2;
     blCount[maxBits] -= 1;
   }
-  // Hand the lengths out: the least frequent symbols get the longest.
-  final byFrequency = [...used]
-    ..sort(
-      (a, b) => frequencies[a] != frequencies[b]
-          ? frequencies[a] - frequencies[b]
-          : b - a,
-    );
+  // Hand the lengths out: the least frequent symbols get the longest, and
+  // of equally frequent ones the higher symbol first.
+  final byFrequency = leaves;
+  for (var k = 0; k < used; k++) {
+    final key = byFrequency[k];
+    byFrequency[k] = (key & ~511) | (511 - (key & 511));
+  }
+  _sort(byFrequency, used);
   var at = 0;
   for (var bits = maxBits; bits >= 1; bits--) {
-    for (var k = 0; k < blCount[bits]; k++) {
-      lengths[byFrequency[at++]] = bits;
+    for (var k = blCount[bits]; k > 0; k--) {
+      lengths[511 - (byFrequency[at++] & 511)] = bits;
     }
   }
   return lengths;
+}
+
+/// Sorts the first [length] keys (insertion sort: a few hundred keys,
+/// mostly in order the second time).
+void _sort(Int32List keys, int length) {
+  for (var i = 1; i < length; i++) {
+    final key = keys[i];
+    var j = i - 1;
+    while (j >= 0 && keys[j] > key) {
+      keys[j + 1] = keys[j];
+      j -= 1;
+    }
+    keys[j + 1] = key;
+  }
 }
 
 /// Canonical Huffman codes for [lengths] (at most 15), bit-reversed for
