@@ -122,6 +122,34 @@ void main() {
     expect(even['after']!.$2, greaterThan(plain['after']!.$2));
   });
 
+  test('a float that spans the columns goes across the top', () {
+    final document = RecordingDocument();
+    FlowLayout(template: _rows(8))
+        .layout([
+          ColumnsBox([
+            for (var i = 1; i <= 3; i++) _para('l$i'),
+            BlockBox(
+              [_para('map')],
+              style: const BoxStyle(float: FloatPlacement.top, floatSpan: true),
+            ),
+            for (var i = 4; i <= 6; i++) _para('l$i'),
+          ], balance: true),
+        ])
+        .render(document);
+    final at = {
+      for (final call in document.pages.single.canvas.calls)
+        if (RegExp(r'^glyphs "\s*(\S+)\s*" at (\S+) (\S+)').firstMatch(call)
+            case final m?)
+          m[1]!: (double.parse(m[2]!), double.parse(m[3]!)),
+    };
+    // The map at the top, at the left margin; the columns under it, the
+    // lines in their order as if it weren't there.
+    expect(at['map']!.$2, greaterThan(at['l1']!.$2));
+    expect(at['map']!.$1, at['l1']!.$1);
+    expect(at['l4']!.$1, greaterThan(at['l1']!.$1));
+    expect(at['l4']!.$2, closeTo(at['l1']!.$2, 1e-6));
+  });
+
   test('links are made on the page the text is on', () {
     final document = RecordingDocument();
     FlowLayout(template: _rows(4))

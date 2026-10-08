@@ -125,6 +125,7 @@ final class BoxStyle {
     this.verticalAlign,
     this.cloneEdges = false,
     this.floatClearance = 0,
+    this.floatSpan = false,
   });
 
   /// The space outside the border.
@@ -195,6 +196,11 @@ final class BoxStyle {
   /// bottom: Typst's `clearance`).
   final double floatClearance;
 
+  /// Whether the floating box, in columns, leaves them for the top or
+  /// bottom of the region across all of them (Typst's `scope: "parent"`):
+  /// a map across a two-column page.
+  final bool floatSpan;
+
   /// This style with [tag] ([BoxStyle.tag]).
   BoxStyle withTag(String? tag) => BoxStyle(
     margin: margin,
@@ -212,6 +218,7 @@ final class BoxStyle {
     verticalAlign: verticalAlign,
     cloneEdges: cloneEdges,
     floatClearance: floatClearance,
+    floatSpan: floatSpan,
   );
 
   /// This style without floating.
@@ -253,6 +260,7 @@ final class BoxStyle {
     floatBarrier: floatBarrier,
     cloneEdges: cloneEdges,
     floatClearance: floatClearance,
+    floatSpan: floatSpan,
   );
 }
 
@@ -1577,6 +1585,13 @@ final class _Pass {
                 region.height / 2,
         };
         final cleared = _cleared(box, top: atTop);
+        // (Too tall for the room the floats already pinned leave: the next
+        // region's.)
+        if (measured([...top, ...bottom, ...cleared]) > region.height) {
+          _floatsSet.remove(box);
+          _floatsNotHere.add(box);
+          continue;
+        }
         (atTop ? top : bottom).addAll(cleared);
         pinned[box] = cleared;
       }
@@ -1740,9 +1755,14 @@ final class _Pass {
               null,
             ),
     BreakBox() => _Fit(const _PlacedSpace(0), 0, null, hit: box),
-    ColumnsBox() => _withoutFloats(
-      () => _columns(box, width, available, atTop: atTop),
-    ),
+    ColumnsBox() => _withoutFloats(() {
+      _columnsDepth++;
+      try {
+        return _columns(box, width, available, atTop: atTop);
+      } finally {
+        _columnsDepth--;
+      }
+    }),
     TableBox() => _withoutFloats(
       () => _table(box, width, available, atTop: atTop),
     ),
@@ -1921,16 +1941,26 @@ final class _Pass {
       }
       // A floating box this region's text no longer reaches (see
       // [_pinFloats]): for the next region.
-      if (_floatsNotHere.contains(child) && _floatDepth == 0) {
+      if (_floatsNotHere.contains(child) && _floats(child)) {
         floated.add(child);
         _floatsWaiting++;
+        continue;
+      }
+      // A floating box that spans the columns it's in: for the region's
+      // top or bottom, measured there (not placed in its column).
+      if (child.style.floatSpan &&
+          _floatDepth > 0 &&
+          _floats(child) &&
+          child.style.float != null &&
+          child.style.float != FloatPlacement.next) {
+        pinned.add((child, top + cursor, 0));
         continue;
       }
       final fit = _place(child, inner, room - cursor, atTop: childAtTop);
       if (fit.placed == null &&
           child.style.floating &&
           !childAtTop &&
-          _floatDepth == 0) {
+          _floats(child)) {
         floated.add(child);
         _floatsWaiting++;
         continue;
@@ -1947,7 +1977,7 @@ final class _Pass {
           when float != FloatPlacement.next &&
               fit.rest == null &&
               !childAtTop &&
-              _floatDepth == 0 &&
+              _floats(child) &&
               (child is BlockBox || child is CustomBox)) {
         pinned.add((child, top + cursor, fit.height));
       }
@@ -2041,6 +2071,15 @@ final class _Pass {
   /// How deep the placing is in columns or tables, where boxes don't
   /// float.
   int _floatDepth = 0;
+
+  /// Whether [child] may float here: at the top level, or out of columns
+  /// when it spans them ([BoxStyle.floatSpan]).
+  bool _floats(LayoutBox child) =>
+      _floatDepth == 0 ||
+      (child.style.floatSpan && _floatDepth == _columnsDepth);
+
+  /// How many of the levels [_floatDepth] counts are columns.
+  int _columnsDepth = 0;
 
   /// [place] with boxes not floating.
   _Fit _withoutFloats(_Fit Function() place) {
@@ -2727,15 +2766,20 @@ final class _Pass {
         _minHeight(box.children.first, columnWidth) > available - top + 1e-6) {
       return _Fit.moved(box);
     }
-    // The columns placed in [room], the tallest's height, what's left and
-    // the page break that ended them.
-    (List<(double, _Placed)>, double, LayoutBox?, BreakBox?)? fill(
-      double room,
-    ) {
+    // The columns placed in [room]: the tallest's height, what's left, the
+    // page break that ended them, and the floating boxes that leave them
+    // (spanning them): those for the next region, and those for this
+    // one's top or bottom. (Each try counts the floating boxes waiting
+    // from where the set started.)
+    final waiting = _floatsWaiting;
+    _Filled? fill(double room) {
+      _floatsWaiting = waiting;
       final columns = <(double, _Placed)>[];
       var height = 0.0;
       LayoutBox? rest = BlockBox(box.children);
       BreakBox? hit;
+      final floated = <LayoutBox>[];
+      final pinned = <(LayoutBox, double, double)>[];
       for (var c = 0; c < box.count && rest != null; c++) {
         // Each column starts at the top of a region (a break or a margin
         // at the top of the first one counts for nothing too).
@@ -2750,33 +2794,54 @@ final class _Pass {
         ));
         height = math.max(height, fit.height);
         rest = fit.rest;
+        floated.addAll(fit.floated);
+        for (final (pin, y, h) in fit.pinned) {
+          pinned.add((pin, top + y, h));
+        }
         if (fit.hit case BreakBox(kind: BreakKind.page) && final page) {
           hit = page;
           break;
         }
       }
-      return (columns, height, rest, hit);
+      return (
+        columns: columns,
+        height: height,
+        rest: rest,
+        hit: hit,
+        floated: floated,
+        pinned: pinned,
+      );
     }
 
-    final filled = fill(available - top);
+    var filled = fill(available - top);
     if (filled == null) return _Fit.moved(box);
-    var (columns, height, rest, hit) = filled;
     // The set ends here: its columns as short as they can be with all of
-    // it in them (found by halving the room; a forced break keeps them).
-    if (box.balance && rest == null && hit == null && box.count > 1) {
-      var low = height / box.count;
-      var high = height;
+    // it in them (found by halving the room; a forced break keeps them, and
+    // no try may send a floating box to the next region).
+    if (box.balance &&
+        filled.rest == null &&
+        filled.hit == null &&
+        box.count > 1) {
+      final kept = filled;
+      var low = kept.height / box.count;
+      var high = kept.height;
       for (var step = 0; step < 16 && high - low > 0.01; step++) {
         final room = (low + high) / 2;
         final tried = fill(room);
-        if (tried != null && tried.$3 == null && tried.$4 == null) {
-          (columns, height, rest, hit) = tried;
+        if (tried != null &&
+            tried.rest == null &&
+            tried.hit == null &&
+            tried.floated.length == kept.floated.length) {
+          filled = tried;
           high = room;
         } else {
           low = room;
         }
       }
+      // (The counter of floating boxes waiting as the chosen try left it.)
+      _floatsWaiting = waiting + filled!.floated.length;
     }
+    final (:columns, :height, :rest, :hit, :floated, :pinned) = filled;
     final done = rest == null;
     final total = top + height + (done ? style.margin.bottom : 0);
     return _Fit(
@@ -2795,6 +2860,8 @@ final class _Pass {
               style,
             ),
       hit: hit,
+      floated: floated,
+      pinned: pinned,
     );
   }
 }
@@ -3575,3 +3642,13 @@ final class LayoutResult {
     fit.placed?.paint(painter, size.left + margins.left, top);
   }
 }
+
+/// A column set's columns placed in some room (see `_Pass._columns`).
+typedef _Filled = ({
+  List<(double, _Placed)> columns,
+  double height,
+  LayoutBox? rest,
+  BreakBox? hit,
+  List<LayoutBox> floated,
+  List<(LayoutBox, double, double)> pinned,
+});

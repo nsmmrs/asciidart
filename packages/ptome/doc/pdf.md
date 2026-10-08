@@ -266,6 +266,7 @@ TeX; `\left` and `\right` grow them.
 | Key | Default | What it does |
 | --- | --- | --- |
 | `image_placement` | `here` | An image (with its caption) floats, as figures do in books: when it doesn't fit the rest of the page, to the top of the next page, the text after it filling the room; when it fits, to the top (`top`) or the bottom (`bottom`) of its page, or the nearer of the two (`auto`), the text flowing around it, or it stays (`next`). Never past a heading or a page break; an image in a list, table, sidebar or other block stays there. An image's own `placement` attribute chooses for it (`image::x.png[placement=bottom]`; `none` keeps it in the flow). |
+| `image_scope`, `image_role_<role>_scope` | `column` | `page`: in columns, an image (with its caption) spans them, floating across the top or the bottom of its page (the nearer, or as its placement says): a map in a two-column book. An image's own `scope` attribute chooses for it (`page` or `parent`, Typst's word). |
 | `image_text_font_family`, `_font_size`, `_font_color`, `_leading` | the code font's | The font of a text file shown as an image (below). |
 
 An image whose target is a text file (`image::diagram.txt[]`, ASCII art)

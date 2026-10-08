@@ -258,6 +258,35 @@ void main() {
       expect(drop.$4 - drop.$3, greaterThan(20));
     });
 
+    test('a figure that spans the columns floats across the page', () {
+      final dir = Directory.current.path;
+      final pdf = _pdf(
+        '= Doc\n\n'
+        '${List.filled(4, _paragraph).join('\n\n')}\n\n'
+        '.A wide figure across both columns of the page\n'
+        'image::$dir/test/pdf/fixtures/images/wide.svg[pdfwidth=100%,'
+        'scope=parent]\n\n'
+        '${List.filled(4, _paragraph).join('\n\n')}\n',
+        theme: 'page:\n  columns: 2\n',
+      );
+      // On the first page: the text in both columns (past the middle of
+      // the page, 297.64), the figure under all of it (at the bottom, the
+      // nearer edge to where it is in the text).
+      final args = ['-bbox', '-f', '1', '-l', '1', pdf, '-'];
+      final first = Process.runSync('pdftotext', args).stdout as String;
+      final caption = double.parse(
+        RegExp(r'yMin="([\d.]+)"[^>]*>Figure<').firstMatch(first)![1]!,
+      );
+      final text = [
+        for (final m in RegExp(
+          r'xMin="([\d.]+)" yMin="([\d.]+)"[^>]*>Hypermedia<',
+        ).allMatches(first))
+          (double.parse(m[1]!), double.parse(m[2]!)),
+      ];
+      expect(text.any((w) => w.$1 > 297.64), isTrue);
+      expect(text.every((w) => w.$2 < caption), isTrue);
+    });
+
     test('lines stay within the column', () {
       final pdf = _pdf('$_paragraph\n\n$_paragraph $_paragraph');
       final bbox =

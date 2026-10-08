@@ -4719,8 +4719,11 @@ final class PdfConverter extends BuiltInConverter
         parent?.context == BlockContext.preamble;
     // (The block's own `placement` attribute first: `none` keeps it where
     // it is, as Typst's figure placement.)
+    // In columns, a figure that spans them floats across the top or bottom
+    // of its page (`auto` unless its placement says).
+    final span = _spans(node);
     final float = topLevel
-        ? switch (node.attr('placement') ?? _imagePlacement) {
+        ? switch (node.attr('placement') ?? (span ? 'auto' : _imagePlacement)) {
             'auto' => FloatPlacement.auto,
             'top' => FloatPlacement.top,
             'bottom' => FloatPlacement.bottom,
@@ -4766,12 +4769,26 @@ final class PdfConverter extends BuiltInConverter
             keepTogether: true,
             float: float,
             floatClearance: _imageFloatClearance,
+            floatSpan: span,
           ),
         ),
       );
     } else {
       _out.addAll(figure);
     }
+  }
+
+  /// Whether the figure [node], in columns, spans them (Typst's figure
+  /// `scope: "parent"`): its `scope` attribute (`parent` or `page`), else
+  /// `image_role_<role>_scope` for one of its roles, else `image_scope`.
+  bool _spans(AbstractBlock node) {
+    if (!_inColumns) return false;
+    var scope = node.attr('scope');
+    for (final role in node.roles) {
+      scope ??= _s('image_role_${role.replaceAll('-', '_')}_scope');
+    }
+    scope ??= _s('image_scope');
+    return scope == 'parent' || scope == 'page';
   }
 
   /// The space between a floating image and the text
@@ -4808,7 +4825,9 @@ final class PdfConverter extends BuiltInConverter
         parent is Document ||
         parent?.context == BlockContext.preamble;
     // The block's own `placement` attribute, else the theme's.
-    final placement = node.attr('placement') ?? _imagePlacement;
+    final placement =
+        node.attr('placement') ?? (_spans(node) ? 'auto' : _imagePlacement);
+    final span = _spans(node);
     final float = topLevel
         ? switch (placement) {
             'auto' => FloatPlacement.auto,
@@ -4842,6 +4861,7 @@ final class PdfConverter extends BuiltInConverter
           keepTogether: true,
           float: float,
           floatClearance: _imageFloatClearance,
+          floatSpan: span,
         ),
       ),
     );

@@ -18,6 +18,9 @@
   `HyphenRepetition.forLanguage`, as Typst does): a `PenaltyItem`'s
   `carry` is the width the next line starts with, which every breaker
   counts.
+- Column sets can balance their last region (`ColumnsBox(balance:)`), and
+  a floating box in columns can span them (`BoxStyle.floatSpan`, Typst's
+  `scope: "parent"`): across the top or bottom of the region.
 - A region holds as much content as fits with its notes under it (the
   most room found by halving), where it gave up when the notes of what
   fit first took most of the region.

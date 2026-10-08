@@ -82,6 +82,7 @@ the fonts Ptome bundles.
 | --- | --- | --- | --- |
 | `image_placement`, `image::x[placement=...]` | `figure(placement)` | `auto` | `here` (default), `auto`, `top`, `bottom`, `next`; `none` on an image |
 | `image_float_clearance` | `place(clearance)` | `1.5em` | `0`–`3em` |
+| `image::x[scope=parent]`, `image_scope` | `figure(scope: "parent")` | `column` | `column` (default), `page` (`parent`) |
 | `image_caption_margin_inside` | `figure(gap)` | `0.65em` | `0`–`2em` |
 | `image::x.txt[]`, `image_text_*` | an ASCII-art figure of raw text | the code font, leading `0.5em` | any font keys |
 
