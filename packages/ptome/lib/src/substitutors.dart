@@ -475,15 +475,29 @@ String subQuotes(
   final compat = _documentOf(node).compatMode;
   if (!quotedTextSniffRx[compat]!.hasMatch(text)) return text;
   var result = text;
+  // The targets, found again only after a rule changed the text.
+  _Spans? spans;
   for (final sub in quoteSubs[compat]!) {
     if (!sub.mayMatch(result)) continue;
-    final spans = protectTargets ? _targetSpans(result) : const <(int, int)>[];
+    final current = protectTargets
+        ? spans ??= _Spans(_targetSpans(result))
+        : null;
+    var replaced = false;
+    final scan = sub.scan;
     result = InlineRun.replace(
       result,
-      spans.isEmpty ? sub.pattern : _OutsideSpans(sub.pattern, spans),
-      (match) =>
-          convertQuotedText(node, match as RegExpMatch, sub.type, sub.scope),
+      current == null || current.isEmpty ? scan : _OutsideSpans(scan, current),
+      (match) {
+        replaced = true;
+        return convertQuotedText(
+          node,
+          match as RegExpMatch,
+          sub.type,
+          sub.scope,
+        );
+      },
     );
+    if (replaced) spans = null;
   }
   return result;
 }
@@ -493,9 +507,14 @@ String subQuotes(
 /// and cross reference targets the macros substitution will find there
 /// (not escaped ones).
 List<(int, int)> _targetSpans(String text) {
-  if (!text.contains(':') && !text.contains('&lt;&lt;')) return const [];
   final spans = <(int, int)>[];
-  for (final match in inlineLinkRx.allMatches(text)) {
+  // Each pattern only where its literal part is (`://`, `link:` or
+  // `mailto:`, `&lt;&lt;` or `xref:`).
+  for (final match in _matchesWhere(
+    text.contains('://'),
+    inlineLinkScan,
+    text,
+  )) {
     // (Groups: 1 the prefix, 3 the scheme, then the target: 4 before link
     // text, 6 in angle brackets, 7 bare.)
     final scheme = match[3]!;
@@ -504,13 +523,21 @@ List<(int, int)> _targetSpans(String text) {
     final target = match[4] ?? match[6] ?? match[7] ?? '';
     spans.add((start, start + scheme.length + target.length));
   }
-  for (final match in inlineLinkMacroRx.allMatches(text)) {
+  for (final match in _matchesWhere(
+    text.contains('link:') || text.contains('mailto:'),
+    inlineLinkMacroScan,
+    text,
+  )) {
     final whole = match[0]!;
     if (whole.startsWith(r'\')) continue;
     final start = match.start + whole.indexOf(':') + 1;
     spans.add((start, start + match[2]!.length));
   }
-  for (final match in inlineXrefMacroRx.allMatches(text)) {
+  for (final match in _matchesWhere(
+    text.contains('&lt;&lt;') || text.contains('xref:'),
+    inlineXrefMacroScan,
+    text,
+  )) {
     final whole = match[0]!;
     if (whole.startsWith(r'\')) continue;
     // An ID or a path (no spaces): a target by title (`<<Section
@@ -532,7 +559,57 @@ List<(int, int)> _targetSpans(String text) {
   return spans;
 }
 
+/// [pattern]'s matches in [text] when [candidate] (none otherwise).
+Iterable<RegExpMatch> _matchesWhere(
+  bool candidate,
+  AnchoredScan pattern,
+  String text,
+) => candidate ? pattern.matchesFrom(text, 0) : const [];
+
 final RegExp _whitespaceRx = RegExp(r'\s');
+
+/// Target spans (start, end), sorted by start, for finding those a match
+/// overlaps without scanning them all.
+final class _Spans {
+  new(List<(int, int)> spans)
+    : _spans = spans..sort((a, b) => a.$1.compareTo(b.$1)) {
+    var reach = -1;
+    for (final (_, end) in _spans) {
+      if (end > reach) reach = end;
+      _reach.add(reach);
+    }
+  }
+
+  final List<(int, int)> _spans;
+
+  /// The furthest end among the spans up to each one.
+  final List<int> _reach = [];
+
+  bool get isEmpty => _spans.isEmpty;
+
+  /// Whether a span overlaps [start]..[end] without lying inside it.
+  bool cuts(int start, int end) {
+    // The spans starting before [end]...
+    var low = 0;
+    var high = _spans.length;
+    while (low < high) {
+      final middle = (low + high) >> 1;
+      if (_spans[middle].$1 < end) {
+        low = middle + 1;
+      } else {
+        high = middle;
+      }
+    }
+    // ...that end after [start], latest first, while one can reach it.
+    for (var i = low - 1; i >= 0 && _reach[i] > start; i--) {
+      final (spanStart, spanEnd) = _spans[i];
+      if (spanEnd > start && !(start <= spanStart && end >= spanEnd)) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
 
 /// [pattern]'s matches that don't cut into one of [spans]: a match is
 /// skipped when it overlaps a span without containing it (a mark inside a
@@ -540,38 +617,21 @@ final RegExp _whitespaceRx = RegExp(r'\s');
 final class _OutsideSpans implements Pattern {
   const new(this.pattern, this.spans);
 
-  final RegExp pattern;
-  final List<(int, int)> spans;
+  final AnchoredScan pattern;
+  final _Spans spans;
 
   // An escaped mark (`\_`) is always matched: it only loses its
   // backslash, as authors escape marks in URLs to keep them from pairing.
   bool _cuts(Match match) =>
-      !_escaped(match) &&
-      spans.any(
-        (span) =>
-            match.start < span.$2 &&
-            match.end > span.$1 &&
-            !(match.start <= span.$1 && match.end >= span.$2),
-      );
+      !_escaped(match) && spans.cuts(match.start, match.end);
 
   /// Whether [match] is an escaped mark (a constrained match's leading
   /// character is the backslash).
   static bool _escaped(Match match) => match[0]!.startsWith(r'\');
 
   @override
-  Iterable<Match> allMatches(String string, [int start = 0]) sync* {
-    var at = start;
-    while (at <= string.length) {
-      final match = pattern.allMatches(string, at).firstOrNull;
-      if (match == null) return;
-      if (_cuts(match)) {
-        at = match.start + 1;
-        continue;
-      }
-      yield match;
-      at = match.end > match.start ? match.end : match.end + 1;
-    }
-  }
+  Iterable<Match> allMatches(String string, [int start = 0]) =>
+      pattern.matchesFrom(string, start, skip: _cuts);
 
   @override
   Match? matchAsPrefix(String string, [int start = 0]) {
@@ -679,7 +739,7 @@ String subAttributes(
       AttributeMissing.parse(
         docAttrs['attribute-missing'] ?? Compliance.attributeMissing,
       );
-  final result = InlineRun.replace(text, attributeReferenceRx, (match) {
+  final result = InlineRun.replace(text, attributeReferenceScan, (match) {
     // escaped attribute, return unescaped
     if (match.group(1) == rs || match.group(4) == rs) {
       return '{${match.group(2)}}';
@@ -1411,7 +1471,7 @@ String _subMacrosLinks(
   if (foundColon && result.contains('://')) {
     // inline urls, target[text] (optionally prefixed with link: or
     // enclosed in <>)
-    result = InlineRun.replace(result, inlineLinkRx, (match) {
+    result = InlineRun.replace(result, inlineLinkScan, (match) {
       if (match.group(2) != null && match.group(5) == null) {
         final prefix = match.group(1)!;
         // honor the escapes
@@ -1574,7 +1634,7 @@ String _subMacrosLinks(
 
   if (foundMacroish && (result.contains('link:') || result.contains('ilto:'))) {
     // inline link macros, link:target[text]
-    result = InlineRun.replace(result, inlineLinkMacroRx, (match) {
+    result = InlineRun.replace(result, inlineLinkMacroScan, (match) {
       // honor the escape
       if (match.group(0)!.startsWith(rs)) {
         return match.group(0)!.substring(1);
@@ -1716,7 +1776,7 @@ String _subMacrosLinks(
 
   if ((foundSquareBracket && result.contains('[[')) ||
       (foundMacroish && result.contains('or:'))) {
-    result = InlineRun.replace(result, inlineAnchorRx, (match) {
+    result = InlineRun.replace(result, inlineAnchorScan, (match) {
       // honor the escape
       if (match.group(1) != null) {
         return match.group(0)!.substring(1);
@@ -1750,7 +1810,7 @@ String _subMacrosLinks(
       (foundMacroish && result.contains('xref:'))) {
     result = InlineRun.replace(
       result,
-      inlineXrefMacroRx,
+      inlineXrefMacroScan,
       (match) => _convertXrefMacro(
         node,
         block,
@@ -1765,7 +1825,7 @@ String _subMacrosLinks(
   if (foundMacroish && result.contains('tnote')) {
     result = InlineRun.replace(
       result,
-      inlineFootnoteMacroRx,
+      inlineFootnoteMacroScan,
       (match) =>
           _convertFootnoteMacro(node, block, doc, compat, match as RegExpMatch),
     );
@@ -2496,7 +2556,7 @@ String extractPassthroughs(AbstractNode node, String text) {
   final passEntry = inlinePassRx[compatMode]!;
   if (result.contains(passEntry.delimiter) ||
       (passEntry.endTrim != null && result.contains(passEntry.endTrim!))) {
-    result = InlineRun.replace(result, passEntry.pattern, (match) {
+    result = InlineRun.replace(result, inlinePassScan[compatMode]!, (match) {
       var preceding = match.group(1)!;
       final attrlist = match.group(4) ?? match.group(3);
       final escaped = match.group(5) != null;

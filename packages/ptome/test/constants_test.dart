@@ -362,7 +362,7 @@ void main() {
             '\\\\?(?:$quoteAttributeListRxt)?\\^((?:\\[[^ \\t\\n\\v\\f\\r\\]]*\\]|\\S)+?)\\^',
             // Ruby: \\?(?:\[([^\[\]]+)\])?~(\S+?)~, likewise
             '\\\\?(?:$quoteAttributeListRxt)?~((?:\\[[^ \\t\\n\\v\\f\\r\\]]*\\]|\\S)+?)~',
-          ].map(asciiSpace),
+          ].map(asciiSpace).map(rubyLineAnchors),
         ),
       );
     });
@@ -391,7 +391,7 @@ void main() {
             '\\\\?(?:$quoteAttributeListRxt)?\\+\\+($ccAll+?)\\+\\+',
             // Ruby: (^|[^\p{Word};:}])(?:\[...\])?\+(\S|\S.*?\S)\+(?!\p{Word})
             '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt)?\\+(\\S|\\S$ccAll*?\\S)\\+(?!$cgWord)',
-          ].map(asciiSpace),
+          ].map(asciiSpace).map(rubyLineAnchors),
         ),
       );
     });
@@ -406,16 +406,20 @@ void main() {
       expect(
         quoteSubs[false]![1].pattern.pattern,
         equals(
-          asciiSpace(
-            r'(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\[\]]+)\])?\*(\S|\S[\s\S]*?\S)\*(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))',
+          rubyLineAnchors(
+            asciiSpace(
+              r'(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\[\]]+)\])?\*(\S|\S[\s\S]*?\S)\*(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))',
+            ),
           ),
         ),
       );
       expect(
         quoteSubs[true]![3].pattern.pattern,
         equals(
-          asciiSpace(
-            r"(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\[\]]+)\])?'(\S|\S[\s\S]*?\S)'(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))",
+          rubyLineAnchors(
+            asciiSpace(
+              r"(^|[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control};:}])(?:\[([^\[\]]+)\])?'(\S|\S[\s\S]*?\S)'(?!(?:\p{Alphabetic}|\p{Mark}|\p{Decimal_Number}|\p{Connector_Punctuation}|\p{Join_Control}))",
+            ),
           ),
         ),
       );
@@ -563,7 +567,7 @@ void main() {
           // Ruby: \\?\(TM\)
           r'\\?\(TM\)',
           // Ruby: (?: |\n|^|\\)--(?: |\n|$)
-          r'(?: |\n|^|\\)--(?: |\n|$)',
+          rubyLineAnchors(r'(?: |\n|^|\\)--(?: |\n|$)'),
           // Ruby: (\p{Word})\\?--(?=\p{Word}), with formatted text and
           // curved quotes as word boundaries (bugfix #1578, #3946)
           '($cgWord|</[^>]+>|&#82(?:17|21);)\\\\?--(?=$cgWord|<[^/!]|&#82(?:16|20);)',

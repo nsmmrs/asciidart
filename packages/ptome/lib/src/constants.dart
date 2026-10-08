@@ -193,6 +193,164 @@ class QuoteSub {
     final open = text.indexOf(guard);
     return open >= 0 && text.indexOf(closeGuard, open + guard.length) >= 0;
   }
+
+  /// [pattern]'s matches, found by trying it only where one can start: a
+  /// match holds the opening delimiter after an optional attribute list
+  /// (`[...]`) and a prefix of nothing (`^`), one character (a backslash,
+  /// or a character that isn't a word character) or `&#8216;`/`&#8220;`.
+  AnchoredScan get scan =>
+      AnchoredScan(pattern, [guard], before: 7, attributeList: true);
+}
+
+/// [inlineLinkRx]'s matches: each holds `://` at most 11 characters after
+/// its start (a prefix such as `link:` or `\&lt;`, a backslash, a scheme
+/// such as `https`).
+final AnchoredScan inlineLinkScan = AnchoredScan(inlineLinkRx, [
+  '://',
+], before: 11);
+
+/// [inlineLinkMacroRx]'s matches: each starts at `link:` or `mailto:`, or
+/// at the backslash escaping it.
+final AnchoredScan inlineLinkMacroScan = AnchoredScan(inlineLinkMacroRx, [
+  'link:',
+  'mailto:',
+], before: 1);
+
+/// [inlineXrefMacroRx]'s matches: each starts at `&lt;&lt;` or `xref:`, or
+/// at the backslash escaping it.
+final AnchoredScan inlineXrefMacroScan = AnchoredScan(inlineXrefMacroRx, [
+  '&lt;&lt;',
+  'xref:',
+], before: 1);
+
+/// [inlineAnchorRx]'s matches: each starts at `[[` or `anchor:`, or at the
+/// backslash escaping it.
+final AnchoredScan inlineAnchorScan = AnchoredScan(inlineAnchorRx, [
+  '[[',
+  'anchor:',
+], before: 1);
+
+/// [attributeReferenceRx]'s matches: each starts at `{`, or at the
+/// backslash escaping it.
+final AnchoredScan attributeReferenceScan = AnchoredScan(attributeReferenceRx, [
+  '{',
+], before: 1);
+
+/// [inlineFootnoteMacroRx]'s matches: each starts at `footnote`, or at
+/// the backslash escaping it.
+final AnchoredScan inlineFootnoteMacroScan = AnchoredScan(
+  inlineFootnoteMacroRx,
+  ['footnote'],
+  before: 1,
+);
+
+/// [inlinePassRx]'s matches, by compat mode: each holds its delimiter
+/// (`+` or a backquote) after a prefix character, a bracketed list and a
+/// backslash, each optional.
+final Map<bool, AnchoredScan> inlinePassScan = {
+  false: AnchoredScan(
+    inlinePassRx[false]!.pattern,
+    ['+', '`'],
+    before: 2,
+    attributeList: true,
+  ),
+  true: AnchoredScan(
+    inlinePassRx[true]!.pattern,
+    ['`'],
+    before: 2,
+    attributeList: true,
+  ),
+};
+
+/// A pattern's matches, the same as [pattern]'s own, found by trying it
+/// (anchored) only where a match can start instead of at every position:
+/// many times faster on long text.
+///
+/// Every match of [pattern] holds one of the [literals], at most [before]
+/// characters after its start, or with [attributeList], at most [before]
+/// characters before an attribute list (`[...]`, no brackets inside)
+/// right in front of the literal (or of a backslash in front of it).
+final class AnchoredScan implements Pattern {
+  /// The matches of [pattern], whose matches hold one of [literals] as
+  /// described.
+  new(
+    this.pattern,
+    this.literals, {
+    required this.before,
+    this.attributeList = false,
+  });
+
+  /// The pattern.
+  final RegExp pattern;
+
+  /// The literals one of which every match holds.
+  final List<String> literals;
+
+  /// How far before the literal (or its attribute list) a match can start.
+  final int before;
+
+  /// Whether an attribute list can come between the start and the literal.
+  final bool attributeList;
+
+  /// Where a match can start in [string] from [start], in order.
+  List<int> _starts(String string, int start) {
+    final starts = <int>{};
+    void add(int from) {
+      for (var at = from - before; at <= from; at++) {
+        if (at >= start) starts.add(at);
+      }
+    }
+
+    for (final literal in literals) {
+      for (
+        var at = string.indexOf(literal, start);
+        at >= 0;
+        at = string.indexOf(literal, at + 1)
+      ) {
+        add(at);
+        if (!attributeList) continue;
+        // (A backslash can come between the list and the literal.)
+        var close = at - 1;
+        if (close >= 0 && string.codeUnitAt(close) == 0x5c) close--;
+        if (close >= 2 && string.codeUnitAt(close) == 0x5d) {
+          final open = string.lastIndexOf('[', close - 2);
+          if (open >= 0 && string.indexOf(']', open) == close) add(open);
+        }
+      }
+    }
+    return starts.toList()..sort();
+  }
+
+  @override
+  Iterable<Match> allMatches(String string, [int start = 0]) =>
+      matchesFrom(string, start);
+
+  /// The matches in [string] from [start], each found from the end of the
+  /// one before; a match [skip] rejects is passed over, and the search goes
+  /// on from its next character.
+  Iterable<RegExpMatch> matchesFrom(
+    String string,
+    int start, {
+    bool Function(Match match)? skip,
+  }) sync* {
+    var at = start;
+    for (final candidate in _starts(string, start)) {
+      if (candidate < at) continue;
+      final match = pattern.matchAsPrefix(string, candidate) as RegExpMatch?;
+      if (match == null) continue;
+      if (skip != null && skip(match)) {
+        at = candidate + 1;
+        continue;
+      }
+      yield match;
+      // (A match holds a literal: never empty.)
+      at = match.end;
+    }
+  }
+
+  @override
+  Match? matchAsPrefix(String string, [int start = 0]) =>
+      pattern.matchAsPrefix(string, start);
 }
 
 /// Quoted-text substitution rules for normal mode (`QUOTE_SUBS`false``).
