@@ -5,8 +5,8 @@ library;
 import 'dart:typed_data';
 
 import 'package:plain_compression/plain_compression.dart';
-import 'package:plain_fonts/src/byte_sink.dart';
-import 'package:plain_fonts/src/opentype.dart';
+
+import 'opentype.dart';
 
 /// Whether [bytes] are a WOFF or WOFF2 font.
 bool isWebFont(List<int> bytes) =>
@@ -266,7 +266,7 @@ final class _Woff2 {
     }
     final boxBitmap = boxes.bytes(((numGlyphs + 31) >> 5) * 4);
 
-    final out = ByteSink(data.length * 2);
+    final out = BytesBuilder(copy: false);
     final offsets = List.filled(numGlyphs + 1, 0);
     final xMins = List.filled(numGlyphs, 0);
     for (var g = 0; g < numGlyphs; g++) {
@@ -365,9 +365,10 @@ final class _Woff2 {
       } else {
         throw const FormatException('a glyph of a negative contour count');
       }
-      out
-        ..add(glyph.take())
-        ..zeros((4 - out.length % 4) % 4);
+      out.add(glyph.take());
+      while (out.length % 4 != 0) {
+        out.addByte(0);
+      }
     }
     offsets[numGlyphs] = out.length;
     final loca = _Writer();
@@ -513,17 +514,21 @@ final class _Woff2 {
 
 /// Big-endian writes.
 final class _Writer {
-  new([int capacity = 256]) : _out = ByteSink(capacity);
+  final BytesBuilder _out = BytesBuilder(copy: false);
 
-  final ByteSink _out;
+  void u8(int v) => _out.addByte(v & 0xff);
 
-  void u8(int v) => _out.addByte(v);
+  void u16(int v) => _out
+    ..addByte((v >> 8) & 0xff)
+    ..addByte(v & 0xff);
 
-  void u16(int v) => _out.u16(v);
+  void i16(int v) => u16(v & 0xffff);
 
-  void i16(int v) => _out.u16(v);
-
-  void u32(int v) => _out.u32(v);
+  void u32(int v) => _out
+    ..addByte((v >> 24) & 0xff)
+    ..addByte((v >> 16) & 0xff)
+    ..addByte((v >> 8) & 0xff)
+    ..addByte(v & 0xff);
 
   void bytes(List<int> b) => _out.add(b);
 
@@ -557,11 +562,7 @@ Uint8List _sfnt(int flavor, List<(int, Uint8List)> tables) {
     entrySelector++;
   }
   final searchRange = 16 << entrySelector;
-  var size = 12 + 16 * sorted.length;
-  for (final (_, table) in sorted) {
-    size += (table.length + 3) & ~3;
-  }
-  final out = _Writer(size)
+  final out = _Writer()
     ..u32(flavor)
     ..u16(sorted.length)
     ..u16(searchRange)
@@ -586,9 +587,10 @@ Uint8List _sfnt(int flavor, List<(int, Uint8List)> tables) {
     offset += (body.length + 3) & ~3;
   }
   for (final body in bodies) {
-    out
-      ..bytes(body)
-      .._out.zeros((4 - body.length % 4) % 4);
+    out.bytes(body);
+    for (var i = body.length; i % 4 != 0; i++) {
+      out.u8(0);
+    }
   }
   final font = out.take();
   if (headAt != null) {

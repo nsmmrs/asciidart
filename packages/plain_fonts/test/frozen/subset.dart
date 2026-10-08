@@ -6,8 +6,7 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:plain_fonts/src/byte_sink.dart';
-import 'package:plain_fonts/src/opentype.dart';
+import 'opentype.dart';
 
 /// The glyphs to keep for [used]: `.notdef`, [used], and the components
 /// of TrueType composite glyphs, recursively (CFF glyphs have none).
@@ -34,16 +33,17 @@ Uint8List subsetTrueType(OpenTypeFont font, Set<int> glyphs) {
   if (!font.isTrueType) {
     throw const FontFormatException('only TrueType outlines can be subset');
   }
-  final glyf = ByteSink();
+  final glyf = BytesBuilder(copy: false);
   final loca = ByteData(4 * (font.numGlyphs + 1));
   for (var g = 0; g < font.numGlyphs; g++) {
     loca.setUint32(4 * g, glyf.length);
     if (glyphs.contains(g)) {
       final data = font.glyphData(g);
-      glyf
-        ..add(data)
-        // Keep every glyph 4-byte aligned.
-        ..zeros((4 - data.length % 4) % 4);
+      glyf.add(data);
+      // Keep every glyph 4-byte aligned.
+      for (var pad = data.length % 4; pad != 0 && pad < 4; pad++) {
+        glyf.addByte(0);
+      }
     }
   }
   loca.setUint32(4 * font.numGlyphs, glyf.length);
@@ -83,6 +83,7 @@ Uint8List assembleFont(
     ..setUint16(6, searchRange)
     ..setUint16(8, entrySelector)
     ..setUint16(10, count * 16 - searchRange);
+  final body = BytesBuilder(copy: false);
   var offset = 12 + 16 * count;
   for (var i = 0; i < count; i++) {
     final data = tables[tags[i]]!;
@@ -94,16 +95,17 @@ Uint8List assembleFont(
       ..setUint32(record + 4, _checksum(data))
       ..setUint32(record + 8, offset)
       ..setUint32(record + 12, data.length);
-    offset += (data.length + 3) & ~3;
+    body.add(data);
+    final padding = (4 - data.length % 4) % 4;
+    for (var k = 0; k < padding; k++) {
+      body.addByte(0);
+    }
+    offset += data.length + padding;
   }
-  final out = ByteSink(offset)..add(header.buffer.asUint8List());
-  for (final tag in tags) {
-    final data = tables[tag]!;
-    out
-      ..add(data)
-      ..zeros((4 - data.length % 4) % 4);
-  }
-  return out.takeBytes();
+  return (BytesBuilder(copy: false)
+        ..add(header.buffer.asUint8List())
+        ..add(body.takeBytes()))
+      .takeBytes();
 }
 
 int _checksum(List<int> data) {

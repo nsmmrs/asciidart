@@ -1,0 +1,325 @@
+// The reader, the subsetters and the web font decoder against frozen
+// copies of their code from before the performance work (test/frozen):
+// the same values, the same bytes, the same rejections, on the fixtures,
+// on damaged copies of them and, when the machine has it, on a CJK CFF
+// font. More fonts (files or folders) can be named in
+// PLAIN_FONTS_EQUIVALENCE_FONTS, separated by colons.
+@TestOn('vm')
+library;
+
+import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
+
+import 'package:plain_fonts/plain_fonts.dart';
+import 'package:test/test.dart';
+
+import 'frozen/cff.dart' as frozen;
+import 'frozen/opentype.dart' as frozen;
+import 'frozen/subset.dart' as frozen;
+import 'frozen/woff.dart' as frozen;
+
+const _cjk = '/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc';
+
+List<String> _fontFiles() {
+  final extra = Platform.environment['PLAIN_FONTS_EQUIVALENCE_FONTS'];
+  final roots = [
+    'test/fonts',
+    if (File(_cjk).existsSync()) _cjk,
+    ...?extra?.split(':').where((path) => path.isNotEmpty),
+  ];
+  final files = <String>[];
+  for (final root in roots) {
+    if (FileSystemEntity.isDirectorySync(root)) {
+      files.addAll(
+        Directory(root)
+            .listSync(recursive: true)
+            .whereType<File>()
+            .map((file) => file.path)
+            .where(
+              (path) => RegExp(r'\.(ttf|otf|ttc|otc|woff2?)$').hasMatch(path),
+            )
+            .toList()
+          ..sort(),
+      );
+    } else {
+      files.add(root);
+    }
+  }
+  return files;
+}
+
+/// What [body] gives, or the type of what it throws (messages may differ).
+Object? _outcome(Object? Function() body) {
+  try {
+    return body();
+  } on FontFormatException {
+    return 'FontFormatException';
+  } on frozen.FontFormatException {
+    return 'FontFormatException';
+    // The frozen code lets these through on some damaged data.
+    // ignore: avoid_catching_errors
+  } on RangeError {
+    return 'RangeError';
+  }
+}
+
+/// Expects [actual] to be [expected], byte arrays compared quickly.
+void _expectSame(Object? actual, Object? expected, {String? reason}) {
+  if (actual is Uint8List && expected is Uint8List) {
+    var same = actual.length == expected.length;
+    for (var i = 0; same && i < actual.length; i++) {
+      same = actual[i] == expected[i];
+    }
+    if (!same) {
+      fail(
+        'bytes differ (${actual.length} against ${expected.length})'
+        '${reason == null ? '' : ': $reason'}',
+      );
+    }
+  } else if (actual is Set<int> && expected is Set<int>) {
+    if (actual.length != expected.length || !actual.containsAll(expected)) {
+      fail('sets differ${reason == null ? '' : ': $reason'}');
+    }
+  } else if (actual is Map<int, int> && expected is Map<int, int>) {
+    if (actual.length != expected.length ||
+        actual.entries.any((e) => expected[e.key] != e.value)) {
+      fail('maps differ${reason == null ? '' : ': $reason'}');
+    }
+  } else {
+    expect(actual, expected, reason: reason);
+  }
+}
+
+void _expectSameFont(
+  OpenTypeFont font,
+  frozen.OpenTypeFont old,
+  Random r, {
+  bool thorough = true,
+}) {
+  expect(
+    [
+      font.unitsPerEm, font.bbox, font.indexToLocFormat, font.ascender, //
+      font.descender, font.lineGap, font.numGlyphs, font.capHeight,
+      font.typoAscender, font.typoDescender, font.typoLineGap, font.xHeight,
+      font.weightClass, font.fsType, font.italicAngle, font.isFixedPitch,
+      font.underlinePosition, font.underlineThickness, font.postScriptName,
+      font.familyName, font.isTrueType, font.tableTags.toList(),
+    ],
+    [
+      old.unitsPerEm, old.bbox, old.indexToLocFormat, old.ascender, //
+      old.descender, old.lineGap, old.numGlyphs, old.capHeight,
+      old.typoAscender, old.typoDescender, old.typoLineGap, old.xHeight,
+      old.weightClass, old.fsType, old.italicAngle, old.isFixedPitch,
+      old.underlinePosition, old.underlineThickness, old.postScriptName,
+      old.familyName, old.isTrueType, old.tableTags.toList(),
+    ],
+  );
+  final cmap = _outcome(() => font.characterMap);
+  _expectSame(cmap, _outcome(() => old.characterMap));
+  if (cmap is! Map<int, int>) return;
+  final probes = [
+    ...cmap.keys,
+    for (var i = 0; i < 2000; i++) r.nextInt(0x110000),
+    for (var c = 0; c < 0x300; c++) c,
+    -1,
+    0xffff,
+    0x10000,
+    0x10ffff,
+  ];
+  for (final c in probes) {
+    if (font.glyphFor(c) != old.glyphFor(c)) {
+      fail('glyphFor($c): ${font.glyphFor(c)} != ${old.glyphFor(c)}');
+    }
+  }
+  for (var g = -1; g <= font.numGlyphs; g++) {
+    if (font.advance(g) != old.advance(g)) fail('advance($g)');
+  }
+  // Kerning: the mapped glyphs' pairs (all of them for a small font, a
+  // sample otherwise) and random pairs, out of range ones too.
+  final mapped = {...cmap.values}.toList()..sort();
+  final pairs = <(int, int)>[
+    if (mapped.isEmpty)
+      ...const <(int, int)>[]
+    else if (!thorough)
+      for (var i = 0; i < 2000; i++)
+        (mapped[r.nextInt(mapped.length)], mapped[r.nextInt(mapped.length)])
+    else if (mapped.length <= 400)
+      for (final a in mapped)
+        for (final b in mapped) (a, b)
+    else
+      for (var i = 0; i < 160000; i++)
+        (mapped[r.nextInt(mapped.length)], mapped[r.nextInt(mapped.length)]),
+    for (var i = 0; i < (thorough ? 20000 : 1000); i++)
+      (r.nextInt(font.numGlyphs + 2), r.nextInt(font.numGlyphs + 2)),
+  ];
+  for (final (a, b) in pairs) {
+    final value = _outcome(() => font.kerning(a, b));
+    final expected = _outcome(() => old.kerning(a, b));
+    if (value != expected) fail('kerning($a, $b): $value != $expected');
+    if (font.kernTablePair(a, b) != old.kernTablePair(a, b)) {
+      fail('kernTablePair($a, $b)');
+    }
+    if (font.kernTablePair(a, b, subtable: 0) !=
+        old.kernTablePair(a, b, subtable: 0)) {
+      fail('kernTablePair($a, $b, subtable: 0)');
+    }
+  }
+  expect(font.hasKernTable, old.hasKernTable);
+  for (final feature in ['smcp', 'onum', 'c2sc', 'liga', 'kern', 'zero']) {
+    expect(
+      _outcome(() => font.hasFeature(feature)),
+      _outcome(() => old.hasFeature(feature)),
+    );
+    _expectSame(
+      _outcome(() => font.singleSubstitutions(feature)),
+      _outcome(() => old.singleSubstitutions(feature)),
+    );
+  }
+  expect(
+    _outcome(() => font.ligatures.map((k, v) => MapEntry(k, v.toString()))),
+    _outcome(() => old.ligatures.map((k, v) => MapEntry(k, v.toString()))),
+  );
+  if (font.isTrueType) {
+    for (var i = 0; i < 300; i++) {
+      final g = i < 100 ? i : r.nextInt(font.numGlyphs);
+      expect(
+        _outcome(() => font.glyphBounds(g)),
+        _outcome(() => old.glyphBounds(g)),
+      );
+      expect(
+        _outcome(() => font.components(g)),
+        _outcome(() => old.components(g)),
+      );
+    }
+  }
+}
+
+/// Glyph sets to subset to: a few glyphs, some hundreds, every one.
+List<Set<int>> _glyphSets(int numGlyphs, Random r) => [
+  {0},
+  {for (var i = 0; i < 12; i++) r.nextInt(numGlyphs)},
+  {for (var i = 0; i < min(numGlyphs, 400); i++) r.nextInt(numGlyphs)},
+  {for (var g = 0; g < numGlyphs; g++) g},
+];
+
+void _expectSameSubsets(OpenTypeFont font, frozen.OpenTypeFont old, Random r) {
+  for (final glyphs in _glyphSets(font.numGlyphs, r)) {
+    final closure = glyphClosure(font, glyphs);
+    _expectSame(closure, frozen.glyphClosure(old, glyphs));
+    if (font.isTrueType) {
+      final bytes = _outcome(() => subsetTrueType(font, closure));
+      final expected = _outcome(() => frozen.subsetTrueType(old, closure));
+      _expectSame(bytes, expected);
+    } else if (font.table('CFF ') case final cff?) {
+      _expectSame(subsetCff(cff, closure), frozen.subsetCff(cff, closure));
+    }
+  }
+  if (font.table('CFF ') case final cff?) {
+    _expectSame(subsetCff(cff, null), frozen.subsetCff(cff, null));
+  }
+}
+
+void main() {
+  final files = _fontFiles();
+  for (final path in files) {
+    test('$path: the same reading, subsets and decoding', () {
+      final bytes = File(path).readAsBytesSync();
+      final r = Random(path.hashCode);
+      if (isWebFont(bytes)) {
+        _expectSame(
+          _outcome(() => decodeWebFont(bytes)),
+          _outcome(() => frozen.decodeWebFont(bytes)),
+        );
+      }
+      final count = OpenTypeFont.fontCount(bytes);
+      for (var index = 0; index < min(count, 2); index++) {
+        final font = OpenTypeFont.parse(bytes, index: index);
+        final old = frozen.OpenTypeFont.parse(bytes, index: index);
+        _expectSameFont(font, old, r);
+        _expectSameSubsets(font, old, r);
+      }
+    }, timeout: const Timeout.factor(10));
+  }
+
+  test('damaged fonts: the same values, subsets and rejections', () {
+    final random = Random(20261008);
+    for (final name in [
+      'notoserif-regular-latin.ttf',
+      'notoserif-kern-subtables.ttf',
+      'notoserif-features.ttf',
+      'notoserif-cff.otf',
+      'notoserif-cid.otf',
+      'libertinus-smcp.otf',
+      'notoserif-features.woff2',
+      'notoserif-features-hmtx.woff2',
+      'notoserif-features.woff',
+    ]) {
+      final bytes = File('test/fonts/$name').readAsBytesSync();
+      for (var i = 0; i < 120; i++) {
+        final copy = Uint8List.fromList(bytes);
+        for (var k = 0; k < 1 + random.nextInt(8); k++) {
+          copy[random.nextInt(copy.length)] = random.nextInt(256);
+        }
+        final input = i % 3 == 2
+            ? Uint8List.sublistView(copy, 0, random.nextInt(copy.length))
+            : copy;
+        if (isWebFont(input)) {
+          _expectSame(
+            _outcome(() => decodeWebFont(input)),
+            _outcome(() => frozen.decodeWebFont(input)),
+          );
+        }
+        final font = _outcome(() => OpenTypeFont.parse(input));
+        final old = _outcome(() => frozen.OpenTypeFont.parse(input));
+        if (font is! OpenTypeFont || old is! frozen.OpenTypeFont) {
+          expect(font is OpenTypeFont, old is frozen.OpenTypeFont);
+          continue;
+        }
+        final r = Random(i);
+        _expectSameFont(font, old, r, thorough: false);
+        for (final glyphs in _glyphSets(font.numGlyphs, r).take(3)) {
+          final closure = _outcome(() => glyphClosure(font, glyphs));
+          _expectSame(
+            closure,
+            _outcome(() => frozen.glyphClosure(old, glyphs)),
+          );
+          if (closure is! Set<int>) continue;
+          if (font.isTrueType) {
+            _expectSame(
+              _outcome(() => subsetTrueType(font, closure)),
+              _outcome(() => frozen.subsetTrueType(old, closure)),
+            );
+          }
+        }
+      }
+    }
+  });
+
+  test('damaged CFF tables: the same subsets, or null', () {
+    final random = Random(1008);
+    for (final name in ['notoserif-cff.otf', 'notoserif-cid.otf']) {
+      final cff = OpenTypeFont.parse(File('test/fonts/$name').readAsBytesSync())
+          .table('CFF ')!;
+      for (var i = 0; i < 400; i++) {
+        final copy = Uint8List.fromList(cff);
+        for (var k = 0; k < 1 + random.nextInt(4); k++) {
+          // Mostly the header, INDEXes and DICTs at the start.
+          final at = random.nextBool()
+              ? random.nextInt(min(copy.length, 2000))
+              : random.nextInt(copy.length);
+          copy[at] = random.nextInt(256);
+        }
+        final input = i % 5 == 4
+            ? Uint8List.sublistView(copy, 0, random.nextInt(copy.length))
+            : copy;
+        final glyphs = {for (var k = 0; k < 30; k++) random.nextInt(400)};
+        _expectSame(
+          _outcome(() => subsetCff(input, glyphs)),
+          _outcome(() => frozen.subsetCff(input, glyphs)),
+          reason: '$name #$i',
+        );
+      }
+    }
+  });
+}

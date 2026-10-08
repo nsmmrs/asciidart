@@ -7,8 +7,6 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:plain_fonts/src/byte_sink.dart';
-
 /// The CFF table [cff] with only the charstrings of [glyphs] (glyph ids
 /// kept; all of them when null) and the subroutines they call, and an
 /// identity charset for a CID font; null when it can't be rewritten
@@ -164,7 +162,7 @@ final class _Cff {
       } else {
         newTop[18] = [_privateSize(privates2[0]), offsets[5]];
       }
-      return (ByteSink()
+      return (BytesBuilder(copy: false)
             ..add(Uint8List.sublistView(_data, 0, hdrSize))
             ..add(_writeIndex(names))
             ..add(_writeIndex([_writeDict(newTop)]))
@@ -181,7 +179,7 @@ final class _Cff {
       offsets.add(at2);
       at2 += part.length;
     }
-    final out = ByteSink(at2)..add(head(offsets));
+    final out = BytesBuilder(copy: false)..add(head(offsets));
     parts(offsets).forEach(out.add);
     return out.takeBytes();
   }
@@ -214,7 +212,7 @@ final class _Cff {
   /// A private DICT (its local subroutines right after it).
   static Uint8List _writePrivate((_Dict, List<Uint8List>) private) {
     final dict = _writeDict(_withSubrs(private.$1, private.$2));
-    return (ByteSink(dict.length + 256)
+    return (BytesBuilder(copy: false)
           ..add(dict)
           ..add(private.$2.isEmpty ? Uint8List(0) : _writeIndex(private.$2)))
         .takeBytes();
@@ -409,7 +407,7 @@ final class _Cff {
   /// [dict] as DICT data: integers that are offsets (and every other
   /// integer) in the 5-byte form, reals as reals.
   static Uint8List _writeDict(_Dict dict) {
-    final out = ByteSink();
+    final out = BytesBuilder(copy: false);
     final keys = dict.keys.toList()
       // ROS must come first in a CID font's Top DICT; SyntheticBase too.
       ..sort((a, b) => a == 1230 ? -1 : (b == 1230 ? 1 : 0));
@@ -420,7 +418,7 @@ final class _Cff {
           final value = operand.toInt();
           out
             ..addByte(29)
-            ..u32(value);
+            ..add((ByteData(4)..setInt32(0, value)).buffer.asUint8List());
         } else {
           out
             ..addByte(30)
@@ -476,8 +474,9 @@ final class _Cff {
         : total <= 0xffffff
         ? 3
         : 4;
-    final out = ByteSink(3 + (items.length + 1) * offSize + total - 1)
-      ..u16(items.length)
+    final out = BytesBuilder(copy: false)
+      ..addByte(items.length >> 8)
+      ..addByte(items.length & 0xff)
       ..addByte(offSize);
     var offset = 1;
     void writeOffset(int value) {
