@@ -13,22 +13,161 @@
 /// `gathered`. A command it doesn't know is shown as its name.
 library;
 
+import 'package:plain_math/src/mathml.dart';
+
 /// The MathML of the LaTeX math [tex] (a `math` element, in display
 /// style when [display]). The commands it doesn't know are added to
 /// [unknown], when given.
-String latexToMathml(String tex, {bool display = false, Set<String>? unknown}) {
+String latexToMathml(
+  String tex, {
+  bool display = false,
+  Set<String>? unknown,
+}) => _math(tex, display: display, unknown: unknown).toString();
+
+/// [tex] as a MathML tree: the tree of [latexToMathml]'s MathML (with
+/// [display] and [unknown] as there), built without writing it and
+/// reading it back, but where an attribute value has a quote in it (a
+/// `\color`'s): that MathML is read as written, which may fail
+/// ([MathMLException]) or read differently.
+MathNode latexToMathTree(
+  String tex, {
+  bool display = false,
+  Set<String>? unknown,
+}) {
+  final math = _math(tex, display: display, unknown: unknown);
+  if (math.quoted) return parseMathML(math.toString());
+  final tree = MathTreeBuilder();
+  math.build(tree);
+  return tree.node;
+}
+
+_Xml _math(String tex, {required bool display, Set<String>? unknown}) {
   final parser = _Parser(tex, unknown ?? <String>{});
   final body = parser.parseUntil(const {});
-  final attrs = display ? ' display="block"' : '';
-  return '<math xmlns="http://www.w3.org/1998/Math/MathML"$attrs>'
-      '${_row(body)}</math>';
+  return _Element(
+    'math',
+    [_row(body)],
+    [
+      ('xmlns', 'http://www.w3.org/1998/Math/MathML'),
+      if (display) ('display', 'block'),
+    ],
+  );
 }
+
+/// MathML as it is built: an element, the text in one, or pieces side by
+/// side (none, for nothing).
+sealed class _Xml {
+  const new();
+
+  /// The MathML. (Each element's by interpolation: as fast as the strings
+  /// the parser built before, faster than a StringBuffer's many writes.)
+  String get markup;
+
+  /// Gives the elements to [tree], as its reader would read the MathML.
+  void build(MathTreeBuilder tree);
+
+  /// Whether an attribute value in it has a `"`, which ends it early in
+  /// the MathML.
+  bool get quoted;
+
+  /// The MathML.
+  @override
+  String toString() => markup;
+}
+
+final class _Element extends _Xml {
+  /// [name] with [children] and [attributes] (`(name, value)`, in order;
+  /// the values written escaped).
+  const new(this.name, [this.children = const [], this.attributes = const []])
+    : selfClosing = false;
+
+  /// An empty element, written as one: `<name .../>`.
+  const new empty(this.name, this.attributes)
+    : children = const [],
+      selfClosing = true;
+
+  final String name;
+  final List<_Xml> children;
+  final List<(String, String)> attributes;
+  final bool selfClosing;
+
+  @override
+  String get markup {
+    final start = switch (attributes) {
+      [] => name,
+      [(final key, final value)] => '$name $key="${_escape(value)}"',
+      _ => [
+        name,
+        for (final (key, value) in attributes) ' $key="${_escape(value)}"',
+      ].join(),
+    };
+    if (selfClosing) return '<$start/>';
+    final content = switch (children) {
+      [] => '',
+      [final only] => only.markup,
+      _ => [for (final c in children) c.markup].join(),
+    };
+    return '<$start>$content</$name>';
+  }
+
+  @override
+  void build(MathTreeBuilder tree) {
+    tree.start(name, {for (final (key, value) in attributes) key: value});
+    for (final child in children) {
+      child.build(tree);
+    }
+    tree.end();
+  }
+
+  @override
+  bool get quoted =>
+      attributes.any((a) => a.$2.contains('"')) ||
+      children.any((c) => c.quoted);
+}
+
+final class _Text extends _Xml {
+  /// [text], written escaped.
+  const new(this.text);
+
+  final String text;
+
+  @override
+  String get markup => _escape(text);
+
+  @override
+  void build(MathTreeBuilder tree) => tree.text(text);
+
+  @override
+  bool get quoted => false;
+}
+
+final class _Pieces extends _Xml {
+  const new(this.pieces);
+
+  final List<_Xml> pieces;
+
+  @override
+  String get markup => [for (final p in pieces) p.markup].join();
+
+  @override
+  void build(MathTreeBuilder tree) {
+    for (final piece in pieces) {
+      piece.build(tree);
+    }
+  }
+
+  @override
+  bool get quoted => pieces.any((p) => p.quoted);
+}
+
+/// Nothing: no MathML.
+const _Xml _nothing = _Pieces([]);
 
 /// A parsed piece: its MathML, and how scripts attach to it.
 final class _Node {
   const new(this.xml, {this.limits = false, this.movable = false});
 
-  final String xml;
+  final _Xml xml;
 
   /// Scripts go under and over it (a large operator, `lim`).
   final bool limits;
@@ -37,18 +176,32 @@ final class _Node {
   final bool movable;
 }
 
-String _row(List<_Node> nodes) => nodes.length == 1
+_Xml _row(List<_Node> nodes) => nodes.length == 1
     ? nodes.single.xml
-    : '<mrow>${nodes.map((n) => n.xml).join()}</mrow>';
+    : _Element('mrow', [for (final n in nodes) n.xml]);
 
-String _escape(String text) => text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
+String _escape(String text) {
+  for (var i = 0; i < text.length; i++) {
+    final c = text.codeUnitAt(i);
+    if (c == 0x26 || c == 0x3c || c == 0x3e) {
+      return text
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;');
+    }
+  }
+  return text;
+}
+
+/// A token element [name] with [text].
+_Element _token(String name, String text) => _Element(name, [_Text(text)]);
 
 _Node _mi(String text, {String? variant}) => _Node(
-  '<mi${variant == null ? '' : ' mathvariant="$variant"'}>'
-  '${_escape(text)}</mi>',
+  _Element(
+    'mi',
+    [_Text(text)],
+    [if (variant != null) ('mathvariant', variant)],
+  ),
 );
 
 _Node _mo(
@@ -59,12 +212,16 @@ _Node _mo(
   bool movable = false,
   String? form,
 }) => _Node(
-  '<mo'
-  '${stretchy == null ? '' : ' stretchy="$stretchy"'}'
-  '${fence ? ' fence="true"' : ''}'
-  '${form == null ? '' : ' form="$form"'}'
-  '${movable ? ' movablelimits="true"' : ''}'
-  '>${_escape(text)}</mo>',
+  _Element(
+    'mo',
+    [_Text(text)],
+    [
+      if (stretchy != null) ('stretchy', '$stretchy'),
+      if (fence) ('fence', 'true'),
+      if (form != null) ('form', form),
+      if (movable) ('movablelimits', 'true'),
+    ],
+  ),
   limits: limits,
   movable: movable,
 );
@@ -180,7 +337,7 @@ final class _Parser {
         final color = _rawArgument();
         final rest = parseUntil(stops);
         nodes.add(
-          _Node('<mstyle mathcolor="${_escape(color)}">${_row(rest)}</mstyle>'),
+          _Node(_Element('mstyle', [_row(rest)], [('mathcolor', color)])),
         );
         break;
       }
@@ -189,8 +346,11 @@ final class _Parser {
         final rest = parseUntil(stops);
         nodes.add(
           _Node(
-            '<mstyle displaystyle="${token == r'\displaystyle'}">'
-            '${_row(rest)}</mstyle>',
+            _Element(
+              'mstyle',
+              [_row(rest)],
+              [('displaystyle', '${token == r'\displaystyle'}')],
+            ),
           ),
         );
         break;
@@ -205,8 +365,8 @@ final class _Parser {
   /// [base] with the scripts and primes that follow it.
   _Node _scripts(_Node base) {
     var limits = base.limits;
-    String? sub;
-    String? sup;
+    _Xml? sub;
+    _Xml? sup;
     var primes = 0;
     while (true) {
       final token = peek();
@@ -230,8 +390,8 @@ final class _Parser {
       }
     }
     if (primes > 0) {
-      final prime = '<mo>${'\u2032' * primes}</mo>';
-      sup = sup == null ? prime : '<mrow>$prime$sup</mrow>';
+      final prime = _token('mo', '\u2032' * primes);
+      sup = sup == null ? prime : _Element('mrow', [prime, sup]);
     }
     if (sub == null && sup == null) return base;
     final tag = limits
@@ -245,11 +405,11 @@ final class _Parser {
               : sub != null
               ? 'msub'
               : 'msup');
-    return _Node('<$tag>${base.xml}${sub ?? ''}${sup ?? ''}</$tag>');
+    return _Node(_Element(tag, [base.xml, ?sub, ?sup]));
   }
 
   /// A command's or a script's argument: a group, or a single piece.
-  String _argument() {
+  _Xml _argument() {
     final token = peek();
     if (token == '{') {
       next();
@@ -260,10 +420,10 @@ final class _Parser {
     // As TeX takes it: one character (a digit of a number alone).
     if (token != null && _hasDigit(token)) {
       next();
-      return '<mn>$token</mn>';
+      return _token('mn', token);
     }
     final atom = parseAtom();
-    return atom?.xml ?? '<mrow></mrow>';
+    return atom?.xml ?? const _Element('mrow');
   }
 
   /// The text of a `{...}` argument as written (a color, an environment's
@@ -304,7 +464,7 @@ final class _Parser {
   }
 
   /// An optional `[...]` argument, parsed.
-  String? _optional() {
+  _Xml? _optional() {
     if (peek() != '[') return null;
     next();
     final nodes = parseUntil(const {']'});
@@ -325,7 +485,7 @@ final class _Parser {
       final m = _digits.matchAsPrefix(source, at);
       final digits = token + (m?[0] ?? '');
       at += (m?[0] ?? '').length;
-      return _Node('<mn>$digits</mn>');
+      return _Node(_token('mn', digits));
     }
     // Letters of any script, and digits other than ASCII's (`𝟎`).
     if (_letter.hasMatch(token)) return _mi(token);
@@ -335,7 +495,7 @@ final class _Parser {
       '|' => _mo('|', stretchy: false),
       '-' => _mo('\u2212'),
       '*' => _mo('\u2217'),
-      '~' => const _Node('<mspace width="0.333em"/>'),
+      '~' => const _Node(_Element.empty('mspace', [('width', '0.333em')])),
       '&' || '^' || '_' => null,
       _ => _mo(token),
     };
@@ -368,43 +528,54 @@ final class _Parser {
       return _mo(op, limits: !integral, movable: !integral);
     }
     if (_spaces[name] case final width?) {
-      return _Node('<mspace width="$width"/>');
+      return _Node(_Element.empty('mspace', [('width', width)]));
     }
     if (_variants[name] case final variant?) {
       final text = name.startsWith('text') || name == 'mbox';
       if (text) return _text(_rawArgument(), variant: variant);
-      return _Node('<mstyle mathvariant="$variant">${_argument()}</mstyle>');
+      return _Node(
+        _Element('mstyle', [_argument()], [('mathvariant', variant)]),
+      );
     }
     if (_accents[name] case (final accent, final over)?) {
       final base = _argument();
-      return over
-          ? _Node('<mover accent="true">$base<mo>$accent</mo></mover>')
-          : _Node('<munder accentunder="true">$base<mo>$accent</mo></munder>');
+      return _Node(_accented(base, accent, over: over));
     }
     switch (name) {
       case 'frac' || 'dfrac' || 'tfrac' || 'cfrac':
         final num = _argument();
         final den = _argument();
-        final frac = '<mfrac>$num$den</mfrac>';
+        final frac = _Element('mfrac', [num, den]);
         return _Node(switch (name) {
-          'dfrac' || 'cfrac' => '<mstyle displaystyle="true">$frac</mstyle>',
-          'tfrac' => '<mstyle displaystyle="false">$frac</mstyle>',
+          'dfrac' || 'cfrac' => _Element(
+            'mstyle',
+            [frac],
+            const [('displaystyle', 'true')],
+          ),
+          'tfrac' => _Element(
+            'mstyle',
+            [frac],
+            const [('displaystyle', 'false')],
+          ),
           _ => frac,
         });
       case 'binom' || 'dbinom' || 'tbinom':
         final n = _argument();
         final k = _argument();
         return _Node(
-          '<mrow><mo>(</mo><mfrac linethickness="0">$n$k</mfrac>'
-          '<mo>)</mo></mrow>',
+          _Element('mrow', [
+            _token('mo', '('),
+            _Element('mfrac', [n, k], const [('linethickness', '0')]),
+            _token('mo', ')'),
+          ]),
         );
       case 'sqrt':
         final index = _optional();
         final radicand = _argument();
         return _Node(
           index == null
-              ? '<msqrt>$radicand</msqrt>'
-              : '<mroot>$radicand$index</mroot>',
+              ? _Element('msqrt', [radicand])
+              : _Element('mroot', [radicand, index]),
         );
       case 'left':
         return _fenced();
@@ -444,28 +615,25 @@ final class _Parser {
       case 'overset' || 'stackrel':
         final over = _argument();
         final base = _argument();
-        return _Node('<mover>$base$over</mover>', limits: true);
+        return _Node(_Element('mover', [base, over]), limits: true);
       case 'underset':
         final under = _argument();
         final base = _argument();
-        return _Node('<munder>$base$under</munder>', limits: true);
+        return _Node(_Element('munder', [base, under]), limits: true);
       case 'overbrace' || 'underbrace':
         final base = _argument();
         final over = name == 'overbrace';
-        final brace = over ? '\u23de' : '\u23df';
         return _Node(
-          over
-              ? '<mover accent="true">$base<mo>$brace</mo></mover>'
-              : '<munder accentunder="true">$base<mo>$brace</mo></munder>',
+          _accented(base, over ? '⏞' : '⏟', over: over),
           limits: true,
         );
       case 'textcolor':
         final color = _rawArgument();
-        return _Node(
-          '<mstyle mathcolor="${_escape(color)}">${_argument()}</mstyle>',
-        );
+        return _Node(_Element('mstyle', [_argument()], [('mathcolor', color)]));
       case 'boxed' || 'fbox':
-        return _Node('<menclose notation="box">${_argument()}</menclose>');
+        return _Node(
+          _Element('menclose', [_argument()], const [('notation', 'box')]),
+        );
       case 'cancel' || 'bcancel' || 'xcancel' || 'sout':
         final notation = switch (name) {
           'bcancel' => 'downdiagonalstrike',
@@ -474,22 +642,24 @@ final class _Parser {
           _ => 'updiagonalstrike',
         };
         return _Node(
-          '<menclose notation="$notation">${_argument()}</menclose>',
+          _Element('menclose', [_argument()], [('notation', notation)]),
         );
       case 'not':
         final negated = parseAtom();
         if (negated == null) return null;
-        // A letter struck through (`\not x`).
-        if (_strikableLetter.firstMatch(negated.xml) case final mi?) {
-          return _mi('${mi[1]}\u0338');
+        // Read from the MathML written (rare enough): a letter struck
+        // through (`\not x`), else the first operator negated.
+        final xml = negated.xml.toString();
+        if (_strikableLetter.firstMatch(xml) case final mi?) {
+          return _mi('${mi[1]}̸');
         }
-        final m = _firstOperator.firstMatch(negated.xml);
+        final m = _firstOperator.firstMatch(xml);
         if (m == null) return negated;
         final text = m[1]!
             .replaceAll('&lt;', '<')
             .replaceAll('&gt;', '>')
             .replaceAll('&amp;', '&');
-        final combined = _negations[text] ?? '$text\u0338';
+        final combined = _negations[text] ?? '$text̸';
         return _mo(combined);
       case 'begin':
         return _environment(_rawArgument());
@@ -516,12 +686,25 @@ final class _Parser {
       return switch (name) {
         '{' => _mo('{', stretchy: false),
         '}' => _mo('}', stretchy: false, form: 'postfix'),
-        '|' => _mo('\u2016', stretchy: false),
+        '|' => _mo('‖', stretchy: false),
         _ => _mo(name),
       };
     }
-    return _Node('<mtext>${_escape(_unknown(command))}</mtext>');
+    return _Node(_token('mtext', _unknown(command)));
   }
+
+  /// [base] with [accent] over it (or under it, unless [over]).
+  _Xml _accented(_Xml base, String accent, {required bool over}) => over
+      ? _Element(
+          'mover',
+          [base, _token('mo', accent)],
+          const [('accent', 'true')],
+        )
+      : _Element(
+          'munder',
+          [base, _token('mo', accent)],
+          const [('accentunder', 'true')],
+        );
 
   /// [command], noted as unknown.
   String _unknown(String command) {
@@ -546,12 +729,17 @@ final class _Parser {
   /// `''`, `--`, `---`) and runs of spaces read as TeX does, and math in
   /// it (`$...$`) set as math. Other commands are noted as unknown.
   _Node _text(String raw, {String? variant}) {
-    final parts = <String>[];
+    final parts = <_Xml>[];
     final run = StringBuffer();
     void flush() {
       if (run.isEmpty) return;
-      final attrs = variant == null ? '' : ' mathvariant="$variant"';
-      parts.add('<mtext$attrs>${_escape('$run')}</mtext>');
+      parts.add(
+        _Element(
+          'mtext',
+          [_Text('$run')],
+          [if (variant != null) ('mathvariant', variant)],
+        ),
+      );
       run.clear();
     }
 
@@ -631,10 +819,8 @@ final class _Parser {
       }
     }
     flush();
-    if (parts.isEmpty) return const _Node('<mtext></mtext>');
-    return _Node(
-      parts.length == 1 ? parts.single : '<mrow>${parts.join()}</mrow>',
-    );
+    if (parts.isEmpty) return const _Node(_Element('mtext'));
+    return _Node(parts.length == 1 ? parts.single : _Element('mrow', parts));
   }
 
   /// The delimiter after `\left`, `\middle`, `\right` or `\big`
@@ -662,13 +848,13 @@ final class _Parser {
         _symbols[command.substring(1)]?.$1 ?? _unknown(command),
       _ => token,
     };
-    if (text.isEmpty) return const _Node('');
+    if (text.isEmpty) return const _Node(_nothing);
     return _mo(text, stretchy: stretchy, fence: stretchy, form: form);
   }
 
   /// `\left` ... `\middle` ... `\right`: a row with stretchy delimiters.
   _Node _fenced() {
-    final parts = <String>[_delimiter(stretchy: true).xml];
+    final parts = <_Xml>[_delimiter(stretchy: true).xml];
     while (true) {
       final inner = parseUntil(const {r'\right', r'\middle'});
       parts.add(_row(inner));
@@ -682,7 +868,7 @@ final class _Parser {
       }
       break;
     }
-    return _Node('<mrow>${parts.join()}</mrow>');
+    return _Node(_Element('mrow', parts));
   }
 
   /// The environment [name] up to its `\end`.
@@ -697,7 +883,7 @@ final class _Parser {
     } else if (name.endsWith('matrix*') && peek() == '[') {
       columns = _rawOptional(); // its columns' alignment: l, c or r
     }
-    final rows = <List<String>>[[]];
+    final rows = <List<_Xml>>[[]];
     while (true) {
       final cell = parseUntil(const {'&', r'\\', r'\end', r'\cr'});
       rows.last.add(_row(cell));
@@ -713,7 +899,8 @@ final class _Parser {
     }
     if (rows.length > 1 &&
         rows.last.length == 1 &&
-        rows.last.single == '<mrow></mrow>') {
+        // (As written: pieces of nothing in a row write the same.)
+        rows.last.single.toString() == '<mrow></mrow>') {
       rows.removeLast();
     }
     final align = switch (bare) {
@@ -749,16 +936,18 @@ final class _Parser {
       'dcases' => true,
       _ => false,
     };
-    final alignAttr = align == null || align.isEmpty
-        ? ''
-        : ' columnalign="$align"';
-    final body = [
-      for (final row in rows)
-        '<mtr>${[for (final cell in row) '<mtd>$cell</mtd>'].join()}</mtr>',
-    ].join();
-    final table = '<mtable$alignAttr>$body</mtable>';
+    final table = _Element(
+      'mtable',
+      [
+        for (final row in rows)
+          _Element('mtr', [
+            for (final cell in row) _Element('mtd', [cell]),
+          ]),
+      ],
+      [if (align != null && align.isNotEmpty) ('columnalign', align)],
+    );
     final styled = display
-        ? '<mstyle displaystyle="true">$table</mstyle>'
+        ? _Element('mstyle', [table], const [('displaystyle', 'true')])
         : table;
     final (open, close) = switch (bare) {
       'pmatrix' => ('(', ')'),
@@ -771,12 +960,27 @@ final class _Parser {
       _ => ('', ''),
     };
     if (open.isEmpty && close.isEmpty) return _Node(styled);
-    const stretchy = 'fence="true" stretchy="true"';
-    final before = open.isEmpty ? '' : '<mo $stretchy>$open</mo>';
-    final after = close.isEmpty
-        ? ''
-        : '<mo $stretchy form="postfix">$close</mo>';
-    return _Node('<mrow>$before$styled$after</mrow>');
+    return _Node(
+      _Element('mrow', [
+        if (open.isNotEmpty)
+          _Element(
+            'mo',
+            [_Text(open)],
+            const [('fence', 'true'), ('stretchy', 'true')],
+          ),
+        styled,
+        if (close.isNotEmpty)
+          _Element(
+            'mo',
+            [_Text(close)],
+            const [
+              ('fence', 'true'),
+              ('stretchy', 'true'),
+              ('form', 'postfix'),
+            ],
+          ),
+      ]),
+    );
   }
 }
 
