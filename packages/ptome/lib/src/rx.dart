@@ -555,6 +555,41 @@ final RegExp inlineEmailRx = RegExp(
   unicode: true,
 );
 
+/// Whether [text] has an `@` that [inlineEmailRx] could match at: one with
+/// a character before it that can end the local part (a word character,
+/// one of `- . % +`, or the `;` of `&amp;`) and one after it that can start
+/// the domain (an alphanumeric). Every code unit above U+007F counts as
+/// both, so this is a necessary condition and skipping the pass when it is
+/// false changes nothing. (The `@` guard alone runs the interpreted regex
+/// over every paragraph of a document whose lines start with `@ `.)
+bool mayHoldEmail(String text) {
+  final last = text.length - 1;
+  if (last < 2) return false;
+  for (
+    var i = text.indexOf('@', 1);
+    i >= 0 && i < last;
+    i = text.indexOf('@', i + 1)
+  ) {
+    final before = text.codeUnitAt(i - 1);
+    final after = text.codeUnitAt(i + 1);
+    if ((after > 0x7f || _isAsciiAlnum(after)) &&
+        (before > 0x7f ||
+            _isAsciiAlnum(before) ||
+            switch (before) {
+              0x5f || 0x2d || 0x2e || 0x25 || 0x2b || 0x3b => true, // _-.%+;
+              _ => false,
+            })) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool _isAsciiAlnum(int c) =>
+    (c >= 0x30 && c <= 0x39) ||
+    (c >= 0x41 && c <= 0x5a) ||
+    (c >= 0x61 && c <= 0x7a);
+
 /// Matches an inline footnote macro, which may span multiple lines.
 final RegExp inlineFootnoteMacroRx = RegExp(
   r'\\?footnote(?:(ref):|:(['

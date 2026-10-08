@@ -1724,7 +1724,7 @@ String _subMacrosLinks(
     });
   }
 
-  if (result.contains('@')) {
+  if (mayHoldEmail(result)) {
     result = InlineRun.replace(result, inlineEmailRx, (match) {
       // honor the escape
       if (match.group(1) != null) {
