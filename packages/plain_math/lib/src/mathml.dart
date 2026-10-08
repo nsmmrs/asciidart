@@ -265,6 +265,11 @@ final class MathTreeBuilder {
   MathNode get node => _node(_root);
 }
 
+final RegExp _spaces = RegExp(r'\s+');
+final RegExp _reference = RegExp(
+  '&(#x[0-9a-fA-F]+|#[0-9]+|[A-Za-z][A-Za-z0-9]*);',
+);
+
 List<_Element> _children(_Element element) => element.elements;
 
 MathNode _row(List<_Element> elements) => elements.length == 1
@@ -346,7 +351,7 @@ MathNode _node(_Element element) {
     'menclose' => MathEnclose(
       _row(children),
       (element.attribute('notation') ?? 'longdiv')
-          .split(RegExp(r'\s+'))
+          .split(_spaces)
           .where((n) => n.isNotEmpty)
           .toList(),
     ),
@@ -585,25 +590,22 @@ final class _XmlReader {
   /// named entity is kept as it is.
   static String _decode(String raw) {
     if (!raw.contains('&')) return raw;
-    return raw.replaceAllMapped(
-      RegExp('&(#x[0-9a-fA-F]+|#[0-9]+|[A-Za-z][A-Za-z0-9]*);'),
-      (m) {
-        final ref = m[1]!;
-        if (ref.startsWith('#x')) {
-          return String.fromCharCode(int.parse(ref.substring(2), radix: 16));
-        }
-        if (ref.startsWith('#')) {
-          return String.fromCharCode(int.parse(ref.substring(1)));
-        }
-        return switch (ref) {
-          'lt' => '<',
-          'gt' => '>',
-          'amp' => '&',
-          'quot' => '"',
-          'apos' => "'",
-          _ => m[0]!,
-        };
-      },
-    );
+    return raw.replaceAllMapped(_reference, (m) {
+      final ref = m[1]!;
+      if (ref.startsWith('#x')) {
+        return String.fromCharCode(int.parse(ref.substring(2), radix: 16));
+      }
+      if (ref.startsWith('#')) {
+        return String.fromCharCode(int.parse(ref.substring(1)));
+      }
+      return switch (ref) {
+        'lt' => '<',
+        'gt' => '>',
+        'amp' => '&',
+        'quot' => '"',
+        'apos' => "'",
+        _ => m[0]!,
+      };
+    });
   }
 }

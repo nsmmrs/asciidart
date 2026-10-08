@@ -1652,6 +1652,19 @@ final class _XmlSink implements _Sink {
   }
 
   void _escaped(String text) {
+    // Most texts need no escaping: written whole.
+    var plain = true;
+    for (var i = 0; i < text.length; i++) {
+      final c = text.codeUnitAt(i);
+      if (c > 127 || c == 38 || c == 60 || c == 62) {
+        plain = false;
+        break;
+      }
+    }
+    if (plain) {
+      _out.write(text);
+      return;
+    }
     for (final cp in text.runes) {
       if (cp == 38) {
         _out.write('&amp;');
