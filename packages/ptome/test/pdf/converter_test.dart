@@ -141,16 +141,19 @@ void main() {
 
     final first = convert();
     expect(convert(), first);
-    final qdf =
-        Process.runSync('qpdf', [
-              '--qdf',
-              '--object-streams=disable',
-              out,
-              '-',
-            ], stdoutEncoding: latin1).stdout
-            as String;
-    expect(qdf, contains('(__section-1)'));
-    expect(qdf, contains('(__section-2)'));
+    // Numbered in order (read where qpdf can decompress the names).
+    if (_has('qpdf')) {
+      final qdf =
+          Process.runSync('qpdf', [
+                '--qdf',
+                '--object-streams=disable',
+                out,
+                '-',
+              ], stdoutEncoding: latin1).stdout
+              as String;
+      expect(qdf, contains('(__section-1)'));
+      expect(qdf, contains('(__section-2)'));
+    }
   });
 
   test('the page mode and the initial zoom come from the theme', () {
