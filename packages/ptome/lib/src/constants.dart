@@ -402,18 +402,28 @@ final class AnchoredScan implements Pattern {
 
   /// Where a match can start in [string] from [start], in order.
   List<int> _starts(String string, int start) {
-    final starts = <int>{};
+    // (Found in order, and so kept, unless a second literal or an
+    // attribute list goes back.)
+    final starts = <int>[];
+    var last = -1;
+    var ordered = true;
     void add(int from) {
-      for (var at = from - before; at <= from; at++) {
-        if (at >= start) starts.add(at);
+      for (var at = math.max(from - before, start); at <= from; at++) {
+        if (at == last) continue;
+        if (at < last) {
+          ordered = false;
+        } else {
+          last = at;
+        }
+        starts.add(at);
       }
     }
 
     for (final literal in literals) {
       for (
-        var at = string.indexOf(literal, start);
+        var at = literalIndexOf(string, literal, start);
         at >= 0;
-        at = string.indexOf(literal, at + 1)
+        at = literalIndexOf(string, literal, at + 1)
       ) {
         add(at);
         if (!attributeList) continue;
@@ -426,21 +436,22 @@ final class AnchoredScan implements Pattern {
         }
       }
     }
-    return starts.toList()..sort();
+    return ordered ? starts : _sortedDistinct(starts);
   }
 
   @override
-  Iterable<Match> allMatches(String string, [int start = 0]) =>
+  List<RegExpMatch> allMatches(String string, [int start = 0]) =>
       matchesFrom(string, start);
 
   /// The matches in [string] from [start], each found from the end of the
   /// one before; a match [skip] rejects is passed over, and the search goes
   /// on from its next character.
-  Iterable<RegExpMatch> matchesFrom(
+  List<RegExpMatch> matchesFrom(
     String string,
     int start, {
     bool Function(Match match)? skip,
-  }) sync* {
+  }) {
+    final matches = <RegExpMatch>[];
     var at = start;
     for (final candidate in _starts(string, start)) {
       if (candidate < at) continue;
@@ -450,10 +461,11 @@ final class AnchoredScan implements Pattern {
         at = candidate + 1;
         continue;
       }
-      yield match;
+      matches.add(match);
       // (A match holds a literal: never empty.)
       at = match.end;
     }
+    return matches;
   }
 
   @override
