@@ -7,11 +7,11 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:plain_compression/plain_compression.dart';
 import 'package:ptome/src/epub3/assets.g.dart';
 import 'package:ptome/src/epub3/book.dart';
 import 'package:ptome/src/epub3/dates.dart';
 import 'package:ptome/src/epub3/epub3.dart';
-import 'package:ptome/src/epub3/zip.dart';
 import 'package:ptome/src/font_index.dart';
 import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
@@ -19,7 +19,7 @@ import 'package:test/test.dart';
 import 'vendored_fonts.dart';
 
 Map<String, String> unzipText(List<int> epub) => {
-  for (final entry in readZip(epub, (b) => ZLibCodec(raw: true).decode(b)))
+  for (final entry in readZip(epub))
     entry.name: utf8.decode(entry.bytes, allowMalformed: true),
 };
 
@@ -99,7 +99,6 @@ void main() {
       epub(attributes: {'epub-embed-fonts': ''});
       final font = readZip(
         File('${dir.path}/book.epub').readAsBytesSync(),
-        (b) => ZLibCodec(raw: true).decode(b),
       ).firstWhere((e) => e.name == 'EPUB/fonts/notoserif-regular-latin.ttf');
       expect(font.bytes.take(4), [0, 1, 0, 0]);
     });
@@ -160,9 +159,9 @@ void main() {
       ..addProperty('nav')
       ..setText('<html/>');
     final epub = book.zip(deflate: (b) => ZLibCodec(raw: true).encode(b));
-    final entries = readZip(epub, (b) => ZLibCodec(raw: true).decode(b));
+    final entries = readZip(epub);
     expect(entries.first.name, 'mimetype');
-    expect(entries.first.method, 0);
+    expect(entries.first.method, ZipMethod.stored);
     expect(utf8.decode(entries.first.bytes), 'application/epub+zip');
     expect(
       [for (final e in entries) e.name],
@@ -173,7 +172,6 @@ void main() {
         'META-INF/container.xml',
       ],
     );
-    expect(crc32(utf8.encode('123456789')), 0xcbf43926);
   });
 
   test('item ids and properties follow gepub', () {

@@ -208,9 +208,12 @@ Asciidoctor project.
   browser, the page's web fonts are used (`pageFonts`), and so are the
   visitor's installed fonts of the families asked for (`localFonts`,
   through Local Font Access). WOFF and WOFF2 fonts work everywhere fonts
-  do. Font reading and the installed-font index live in the plain_fonts package
-  (github.com/nsmmrs/fonts) and compression in the plain_compression package
-  (github.com/nsmmrs/compression), which plain_pdf uses too.
+  do. EPUBs also work in a browser without a host zlib: they are
+  compressed with plain_compression's deflate there (the Dart VM and
+  Node.js keep their zlib), and ZIP reading and `.gz` man pages use
+  plain_compression on every platform. Font reading and the installed-font
+  index live in plain_fonts, compression and ZIP in plain_compression,
+  both in this workspace (ADR-0018).
 - Speed on every core (ADR-0016): the work a PDF or EPUB doesn't need in
   order (PNG images, compression) runs on the physical cores (`-a
   jobs=N`, `1` for none), with the same bytes at any number of workers;

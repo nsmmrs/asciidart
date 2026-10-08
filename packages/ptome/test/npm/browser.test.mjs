@@ -181,3 +181,41 @@ test("makes a PDF in the page's web fonts (WOFF2 and WOFF), like Node.js given t
   assert.ok(without.messages.some((m) => m.includes('Noto Serif is not installed')))
   await fontsPage.close()
 })
+
+/** The entry names of the ZIP archive [bytes], from its central directory. */
+function zipNames(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  let end = bytes.length - 22
+  while (end >= 0 && view.getUint32(end, true) !== 0x06054b50) end--
+  const count = view.getUint16(end + 10, true)
+  let at = view.getUint32(end + 16, true)
+  const names = []
+  for (let i = 0; i < count; i++) {
+    const nameLength = view.getUint16(at + 28, true)
+    const extra = view.getUint16(at + 30, true)
+    const comment = view.getUint16(at + 32, true)
+    names.push(new TextDecoder().decode(bytes.subarray(at + 46, at + 46 + nameLength)))
+    at += 46 + nameLength + extra + comment
+  }
+  return names
+}
+
+test('makes an EPUB in the browser, without a host zlib, with the files Node.js makes', async () => {
+  const source = '= Book\n:doctype: book\n\n== One\n\nText.\n'
+  const attributes = { reproducible: '' }
+  const expected = await new Ptome().convertToBytesAsync(source, { backend: 'epub3', attributes })
+  const actual = Uint8Array.from(
+    await page.evaluate(
+      async ({ source, attributes }) =>
+        Array.from(
+          await new globalThis.ptome.Ptome().convertToBytesAsync(source, {
+            backend: 'epub3',
+            attributes,
+          })
+        ),
+      { source, attributes }
+    )
+  )
+  assert.equal(new TextDecoder().decode(actual.subarray(30, 58)), 'mimetypeapplication/epub+zip')
+  assert.deepEqual(zipNames(actual), zipNames(expected))
+})

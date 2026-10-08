@@ -39,9 +39,6 @@ void writeBytes(String path, List<int> bytes) => _unsupported();
 /// [bytes] compressed with raw DEFLATE (no zlib header).
 List<int> deflateRaw(List<int> bytes) => _unsupported();
 
-/// [bytes] (raw DEFLATE) expanded.
-List<int> inflateRaw(List<int> bytes) => _unsupported();
-
 /// The size of the file at [path], in bytes.
 int fileSize(String path) => _unsupported();
 
@@ -137,9 +134,6 @@ bool isBrokenPipe(Object error) => _unsupported();
 /// `null` when it cannot be run or fails.
 String? commandOutput(String executable, List<String> arguments) =>
     _unsupported();
-
-/// Decompresses gzip [bytes].
-List<int> gunzip(List<int> bytes) => _unsupported();
 
 /// Fetches [uri] with an HTTP GET, following redirects; throws when the
 /// response is not 2xx.

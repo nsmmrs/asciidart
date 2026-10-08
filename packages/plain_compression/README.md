@@ -8,6 +8,12 @@ DEFLATE, zlib and Brotli in pure Dart, without dependencies:
   platform.
 - `brotliDecode`, a Brotli decoder (RFC 7932), as WOFF2 fonts and HTTP
   responses use.
+- `gzipEncode` and `gzipDecode` (RFC 1952; concatenated members too), and
+  `crc32`.
+- ZIP archives: `ZipWriter`, whose bytes depend only on its entries (fixed
+  times and permissions, entries in the order added, so it writes EPUB
+  containers), and `readZip`, which checks every offset, size and CRC. Both
+  handle ZIP64 (archives past 4 GiB or 65,535 entries).
 
 ```dart
 import 'package:plain_compression/plain_compression.dart';
@@ -19,10 +25,12 @@ final text = brotliDecode(brotliBytes);
 
 Errors in the data throw a `FormatException`.
 
-The library was extracted from [plain_pdf](https://github.com/nsmmrs/ptome/tree/master/packages/plain_pdf),
-which compresses PDF streams with it. Tests check it against zlib (the
-Dart VM's) and the `brotli` tool, at every level and quality, and with
-damaged input.
+The library lives in the [ptome](https://github.com/nsmmrs/ptome)
+workspace: plain_pdf compresses PDF streams with it, and ptome writes EPUB
+containers with it. Tests check it against zlib (the Dart VM's), the
+`brotli`, `gzip`, `zip`, `unzip` and `zipinfo` tools and Python's
+`zipfile` (the `tools` tag), at every level and quality, and fuzz the
+decoders with damaged input.
 
 Status: in development; not published to pub.dev.
 

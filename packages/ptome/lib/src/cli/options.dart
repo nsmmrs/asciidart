@@ -49,6 +49,7 @@ library;
 
 import 'dart:convert';
 
+import 'package:plain_compression/plain_compression.dart' show gzipDecode;
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/cli/compat_config.dart';
 import 'package:ptome/src/cli/help_topics.g.dart';
@@ -1086,7 +1087,7 @@ void _putsContent(StringSink sink, String content) {
 
 /// Writes gzip-compressed [path] to [sink] with `puts` semantics.
 void _putsGzipFile(StringSink sink, String path) {
-  final content = utf8.decode(io.gunzip(io.readBytes(path)));
+  final content = utf8.decode(gzipDecode(io.readBytes(path)));
   sink.write(content);
   if (!content.endsWith('\n')) sink.writeln();
 }

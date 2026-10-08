@@ -57,9 +57,6 @@ void writeBytes(String path, List<int> bytes) =>
 /// [bytes] compressed with raw DEFLATE (no zlib header).
 List<int> deflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).encode(bytes);
 
-/// [bytes] (raw DEFLATE) expanded.
-List<int> inflateRaw(List<int> bytes) => io.ZLibCodec(raw: true).decode(bytes);
-
 /// The size of the file at [path], in bytes.
 int fileSize(String path) => _guard(() => io.File(path).lengthSync());
 
@@ -273,9 +270,6 @@ String? commandOutput(String executable, List<String> arguments) {
     return null;
   }
 }
-
-/// Decompresses gzip [bytes].
-List<int> gunzip(List<int> bytes) => io.gzip.decode(bytes);
 
 /// Fetches [uri] with an HTTP GET, following redirects; throws when the
 /// response is not 2xx.

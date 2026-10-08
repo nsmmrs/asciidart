@@ -2,6 +2,9 @@
 
 ## 0.1.0-dev (unreleased)
 
+- CRC-32, gzip (RFC 1952) and ZIP archives: a reproducible writer and a
+  bounds-checked reader, both with ZIP64. They come from ptome's EPUB
+  writer; plain_pdf's PNG reader and ptome's EPUB use them.
 - Renamed from `compression` to `plain_compression`, and moved with its
   history into the ptome pub workspace (github.com/nsmmrs/ptome,
   `packages/plain_compression`; ptome's ADR-0018).

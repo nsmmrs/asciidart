@@ -1,6 +1,24 @@
+List<ZipEntry> readZip(List<int> archive)
 Uint8List brotliDecode(List<int> data)
 Uint8List deflate(List<int> data, {int level = 6})
+Uint8List gzipDecode(List<int> data)
+Uint8List gzipEncode(List<int> data, {int level = 6})
 Uint8List inflate(List<int> data)
 Uint8List zlibDecode(List<int> data)
 Uint8List zlibEncode(List<int> data, {int level = 6})
+enum ZipMethod
+  int code
+  static List<ZipMethod> values
+  static ZipMethod deflated
+  static ZipMethod stored
+final class ZipEntry
+  String name
+  Uint8List bytes
+  ZipEntry(String name, Uint8List bytes, {ZipMethod method = ZipMethod.deflated})
+  ZipMethod method
+final class ZipWriter
+  Uint8List finish()
+  ZipWriter({List<int> Function(List<int>)? deflate, bool zip64 = false})
+  void add(String name, List<int> bytes, {ZipMethod method = ZipMethod.deflated, List<int>? deflated})
 int adler32(List<int> data)
+int crc32(List<int> bytes, {int start = 0, int? end, int crc = 0})

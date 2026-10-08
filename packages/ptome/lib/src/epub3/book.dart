@@ -6,7 +6,8 @@ library;
 
 import 'dart:convert';
 
-import 'package:ptome/src/epub3/zip.dart';
+import 'package:plain_compression/plain_compression.dart'
+    show ZipMethod, ZipWriter;
 
 /// The media type gepub guesses for a path by its extension.
 String? guessMediaType(String href) {
@@ -415,13 +416,17 @@ final class EpubBook {
     List<int> Function(List<int> bytes)? deflate,
     Map<String, List<int>> deflated = const {},
   }) {
-    final zip = ZipWriter();
+    final zip = ZipWriter(deflate: deflate);
     for (final MapEntry(key: path, value: bytes) in files().entries) {
-      if (path == 'mimetype') {
-        zip.add(path, bytes);
-      } else {
-        zip.add(path, bytes, deflate: deflate, deflated: deflated[path]);
-      }
+      final compressed = deflated[path];
+      final store =
+          path == 'mimetype' || (deflate == null && compressed == null);
+      zip.add(
+        path,
+        bytes,
+        method: store ? ZipMethod.stored : ZipMethod.deflated,
+        deflated: compressed,
+      );
     }
     return zip.finish();
   }

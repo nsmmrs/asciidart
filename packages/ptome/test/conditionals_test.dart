@@ -6,8 +6,8 @@ library;
 
 import 'dart:io';
 
+import 'package:plain_compression/plain_compression.dart';
 import 'package:ptome/src/epub3/epub3.dart';
-import 'package:ptome/src/epub3/zip.dart';
 import 'package:ptome/src/internal.dart';
 import 'package:ptome/src/multipage.dart';
 import 'package:ptome/src/pdf/pdf.dart';
@@ -52,10 +52,7 @@ Set<String> _markers(String backend) {
   final text = switch (backend) {
     'pdf' => Process.runSync('pdftotext', [out, '-']).stdout as String,
     'epub3' => [
-      for (final entry in readZip(
-        File(out).readAsBytesSync(),
-        (bytes) => ZLibCodec(raw: true).decode(bytes),
-      ))
+      for (final entry in readZip(File(out).readAsBytesSync()))
         if (entry.name.endsWith('.xhtml')) String.fromCharCodes(entry.bytes),
     ].join(),
     'multipage_html5' => File('${dir.path}/_one.html').readAsStringSync(),

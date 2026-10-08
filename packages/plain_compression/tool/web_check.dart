@@ -23,6 +23,19 @@ void main() {
       parts.add('${compressed.length}:${adler32(compressed)}');
     }
   }
+  // gzip, CRC-32 and a ZIP archive round trip to the same bytes.
+  final gz = gzipEncode(text, level: 9);
+  final zip =
+      (ZipWriter()
+            ..add('a.txt', text)
+            ..add('b.bin', binary, method: ZipMethod.stored))
+          .finish();
+  if (gzipDecode(gz).length != text.length ||
+      readZip(zip).map((e) => e.bytes.length).join(',') !=
+          '${text.length},${binary.length}') {
+    throw StateError('gzip or ZIP round trip');
+  }
+  parts.add('${crc32(binary)} ${adler32(gz)} ${adler32(zip)}');
   // "Hello, Brotli!" at quality 11.
   final brotli = brotliDecode(base64.decode('jwaASGVsbG8sIEJyb3RsaSED'));
   parts.add(utf8.decode(brotli));

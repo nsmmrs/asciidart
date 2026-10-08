@@ -31,7 +31,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ptome/src/epub3/zip.dart';
+import 'package:plain_compression/plain_compression.dart';
 import 'package:ptome/src/xml_balance.dart';
 
 import 'corpus_parity.dart' show rewordings;
@@ -182,15 +182,14 @@ String _epubcheck(String jar, String epub) {
 
 bool _compare(String pathA, String pathB, {String? label}) {
   final name = label ?? pathB;
-  List<({String name, int method, List<int> bytes})> entries(String path) =>
-      readZip(
-        File(path).readAsBytesSync(),
-        (bytes) => ZLibCodec(raw: true).decode(bytes),
-      );
+  List<ZipEntry> entries(String path) => readZip(File(path).readAsBytesSync());
   final a = entries(pathA);
   final b = entries(pathB);
   final problems = <String>[];
-  if (b.isEmpty || b.first.name != 'mimetype' || b.first.method != 0) {
+  final mimetype = b.firstOrNull;
+  if (mimetype == null ||
+      mimetype.name != 'mimetype' ||
+      mimetype.method != ZipMethod.stored) {
     problems.add('mimetype is not the first entry, stored');
   }
   final namesA = [for (final e in a) e.name];

@@ -660,6 +660,13 @@ final class _BitWriter {
 /// Expands a raw DEFLATE stream.
 Uint8List inflate(List<int> data) => _Inflater(data, 0).inflate();
 
+/// Expands the raw DEFLATE stream starting at [start] of [data]: the bytes,
+/// and the offset just past the stream (for the container's trailer).
+(Uint8List, int) inflateAt(List<int> data, int start) {
+  final inflater = _Inflater(data, start);
+  return (inflater.inflate(), inflater.endOffset);
+}
+
 final class _Huffman {
   new(List<int> lengths) {
     for (final length in lengths) {

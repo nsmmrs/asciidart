@@ -15,6 +15,7 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
+import 'package:plain_compression/plain_compression.dart' show deflate;
 import 'package:plain_fonts/plain_fonts.dart'
     show FontPlatform, cacheDirectoryFor, fontDirectoriesFor;
 import 'package:ptome/src/errors.dart';
@@ -125,9 +126,7 @@ extension type _Stream(JSObject _) implements JSObject {
 }
 
 extension type _Zlib(JSObject _) implements JSObject {
-  external JSUint8Array gunzipSync(JSUint8Array bytes);
   external JSUint8Array deflateRawSync(JSUint8Array bytes);
-  external JSUint8Array inflateRawSync(JSUint8Array bytes);
 }
 
 extension type _Console(JSObject _) implements JSObject {
@@ -279,12 +278,11 @@ void writeBytes(String path, List<int> bytes) {
   );
 }
 
-/// [bytes] compressed with raw DEFLATE (no zlib header).
+/// [bytes] compressed with raw DEFLATE (no zlib header): Node.js's zlib,
+/// or plain_compression's deflate where there is none (a browser).
 List<int> deflateRaw(List<int> bytes) {
   final zlib = _host?.zlib;
-  if (zlib == null) {
-    throw UnsupportedError('deflate is unavailable in this environment');
-  }
+  if (zlib == null) return deflate(bytes);
   return zlib.deflateRawSync(Uint8List.fromList(bytes).toJS).toDart;
 }
 
@@ -391,15 +389,6 @@ List<int> zlibEncode(List<int> bytes, int level) =>
 /// [bytes] (zlib format) expanded.
 List<int> zlibDecode(List<int> bytes) =>
     throw UnsupportedError('zlib is unavailable in this environment');
-
-/// [bytes] (raw DEFLATE) expanded.
-List<int> inflateRaw(List<int> bytes) {
-  final zlib = _host?.zlib;
-  if (zlib == null) {
-    throw UnsupportedError('inflate is unavailable in this environment');
-  }
-  return zlib.inflateRawSync(Uint8List.fromList(bytes).toJS).toDart;
-}
 
 /// Creates the directory at [path] and any missing parents.
 void createDirectories(String path) {
@@ -616,15 +605,6 @@ String? commandOutput(String executable, List<String> arguments) {
   } catch (_) {
     return null;
   }
-}
-
-/// Decompresses gzip [bytes].
-List<int> gunzip(List<int> bytes) {
-  final zlib = _host?.zlib;
-  if (zlib == null) {
-    throw UnsupportedError('gzip is unavailable in this environment');
-  }
-  return zlib.gunzipSync(Uint8List.fromList(bytes).toJS).toDart;
 }
 
 /// Fetches [uri] with the global `fetch`, following redirects; throws when

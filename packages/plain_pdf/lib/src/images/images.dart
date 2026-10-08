@@ -291,7 +291,7 @@ final class PngImage extends PdfImage {
       final chunk = Uint8List.sublistView(bytes, start, end);
       // A critical chunk must be intact; ancillary ones are only hints.
       if (_critical.contains(type) &&
-          _crc32(bytes, at + 4, end) != view.getUint32(end)) {
+          crc32(bytes, start: at + 4, end: end) != view.getUint32(end)) {
         throw ImageFormatException('PNG chunk $type is damaged (CRC mismatch)');
       }
       switch (type) {
@@ -656,26 +656,6 @@ final List<int> _pngSignature = [
 ];
 
 const Set<String> _critical = {'IHDR', 'PLTE', 'IDAT', 'IEND'};
-
-/// The CRC-32 (ISO 3309) of [bytes] from [start] to [end].
-int _crc32(List<int> bytes, int start, int end) {
-  var crc = 0xffffffff;
-  for (var i = start; i < end; i++) {
-    crc = _crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
-  }
-  return crc ^ 0xffffffff;
-}
-
-final Uint32List _crcTable = Uint32List.fromList([
-  for (var n = 0; n < 256; n++)
-    () {
-      var c = n;
-      for (var k = 0; k < 8; k++) {
-        c = c & 1 != 0 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-      }
-      return c;
-    }(),
-]);
 
 bool _startsWith(List<int> bytes, List<int> prefix) {
   if (bytes.length < prefix.length) return false;
