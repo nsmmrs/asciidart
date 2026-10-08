@@ -1,6 +1,7 @@
-// The embedded patterns: every language decodes to the vendored hyph-utf8
-// files exactly, tags and aliases find their patterns, and known words
-// hyphenate as TeX hyphenates them.
+// The embedded patterns: every language decodes to the trie of the
+// vendored hyph-utf8 patterns and to its exceptions exactly, tags and
+// aliases find their patterns, and known words hyphenate as TeX hyphenates
+// them.
 @TestOn('vm')
 library;
 
@@ -11,6 +12,7 @@ import 'dart:typed_data';
 import 'package:plain_compression/plain_compression.dart' show brotliDecode;
 import 'package:plain_hyphenation/plain_hyphenation.dart';
 import 'package:plain_hyphenation/src/patterns.g.dart';
+import 'package:plain_hyphenation/src/trie.dart';
 import 'package:test/test.dart';
 
 String _hyphenated(String language, String word) {
@@ -33,11 +35,18 @@ void main() {
         family,
         () => brotliDecode(base64Decode(patternFamilies[family]!)),
       );
-      List<int> slice(int start, int length) =>
+      Uint8List slice(int start, int length) =>
           Uint8List.sublistView(text, start, start + length);
       final patterns = File('vendor/hyph-utf8/patterns/$tag.pat.txt');
       final exceptions = File('vendor/hyph-utf8/patterns/$tag.hyp.txt');
-      expect(slice(at, length), patterns.readAsBytesSync(), reason: tag);
+      final trie = slice(at, length);
+      expect(
+        trie,
+        PatternTrie.parse(patterns.readAsStringSync()).encode(),
+        reason: tag,
+      );
+      // Decoding loses nothing.
+      expect(PatternTrie.decode(trie).encode(), trie, reason: tag);
       expect(
         slice(exceptionsAt, exceptionsLength),
         exceptions.existsSync() ? exceptions.readAsBytesSync() : <int>[],

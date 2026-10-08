@@ -1,6 +1,7 @@
 /// Generates `lib/src/patterns.g.dart` from `vendor/hyph-utf8`: the
-/// languages' patterns and exceptions, compressed with Brotli (quality 11,
-/// by the `brotli` tool) and base64-encoded, one stream per language
+/// languages' patterns, compiled to tries (`PatternTrie.encode`), and
+/// their exceptions, compressed with Brotli (quality 11, by the `brotli`
+/// tool) and base64-encoded, one stream per language
 /// family (the German, Greek, English, Finnish, Latin, Norwegian and
 /// Serbo-Croatian variants share theirs, which compresses them together
 /// about as well as one stream for all), with each language's hyphenmins
@@ -15,6 +16,8 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:plain_hyphenation/src/trie.dart';
 
 Future<void> main() async {
   final root = File(Platform.script.toFilePath()).parent.parent;
@@ -41,21 +44,24 @@ Future<void> main() async {
   for (final MapEntry(key: tag, :value) in languages.entries) {
     final info = value! as Map<String, Object?>;
     final bytes = families.putIfAbsent(family(tag), () => <int>[]);
-    (int, int) add(File file) {
+    (int, int) add(List<int> data) {
       final start = bytes.length;
-      if (file.existsSync()) bytes.addAll(file.readAsBytesSync());
-      return (start, bytes.length - start);
+      bytes.addAll(data);
+      return (start, data.length);
     }
 
-    final (patternsAt, patternsLength) = add(
-      File('${vendor.path}/patterns/$tag.pat.txt'),
+    final (trieAt, trieLength) = add(
+      PatternTrie.parse(
+        File('${vendor.path}/patterns/$tag.pat.txt').readAsStringSync(),
+      ).encode(),
     );
+    final exceptions = File('${vendor.path}/patterns/$tag.hyp.txt');
     final (exceptionsAt, exceptionsLength) = add(
-      File('${vendor.path}/patterns/$tag.hyp.txt'),
+      exceptions.existsSync() ? exceptions.readAsBytesSync() : const [],
     );
     entries.add(
       "  '$tag': (${info['left']}, ${info['right']}, '${family(tag)}', "
-      '$patternsAt, $patternsLength, $exceptionsAt, $exceptionsLength),',
+      '$trieAt, $trieLength, $exceptionsAt, $exceptionsLength),',
     );
   }
 
@@ -74,8 +80,10 @@ Future<void> main() async {
     ..writeln(
       '/// Each language: its hyphenmins (left, right), its family, and',
     )
-    ..writeln('/// the byte offset and length of its patterns and of its')
-    ..writeln("/// exceptions in the family's text.")
+    ..writeln(
+      '/// the byte offset and length of its trie (`PatternTrie.encode`)',
+    )
+    ..writeln("/// and of its exceptions (UTF-8) in the family's bytes.")
     ..writeln(
       'const Map<String, (int, int, String, int, int, int, int)> '
       'hyphenationPatterns = {',
@@ -84,7 +92,7 @@ Future<void> main() async {
     ..writeln()
     ..writeln('};')
     ..writeln()
-    ..writeln("/// Each family's text (the patterns and exceptions of its")
+    ..writeln("/// Each family's bytes (the tries and exceptions of its")
     ..writeln('/// languages), Brotli-compressed, base64.')
     ..writeln('const Map<String, String> patternFamilies = {');
   var total = 0;

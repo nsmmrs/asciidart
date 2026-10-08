@@ -51,23 +51,28 @@ final Map<String, PatternHyphenator> _hyphenators = {};
 final Map<String, Uint8List> _families = {};
 
 /// The hyphenator of [language] (see [patternTag]), with the language's
-/// hyphenmins, or null when there are no patterns for it. Its patterns are
-/// decoded the first time a language of its family is asked for.
+/// hyphenmins, or null when there are no patterns for it. Its patterns
+/// (compiled to a trie by the generator) are decoded the first time a
+/// language of its family is asked for.
 PatternHyphenator? hyphenatorFor(String language) {
   final tag = patternTag(language);
   if (tag == null) return null;
   return _hyphenators.putIfAbsent(tag, () {
     final (left, right, family, at, length, exceptionsAt, exceptionsLength) =
         hyphenationPatterns[tag]!;
-    final text = _families.putIfAbsent(
+    final bytes = _families.putIfAbsent(
       family,
       () => brotliDecode(base64Decode(patternFamilies[family]!)),
     );
-    String slice(int start, int length) =>
-        utf8.decode(Uint8List.sublistView(text, start, start + length));
-    return PatternHyphenator(
-      slice(at, length),
-      exceptions: slice(exceptionsAt, exceptionsLength),
+    return compiledHyphenator(
+      Uint8List.sublistView(bytes, at, at + length),
+      exceptions: utf8.decode(
+        Uint8List.sublistView(
+          bytes,
+          exceptionsAt,
+          exceptionsAt + exceptionsLength,
+        ),
+      ),
       left: left,
       right: right,
     );

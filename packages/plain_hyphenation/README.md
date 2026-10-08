@@ -17,9 +17,12 @@ finds its patterns through the tag itself, an alias (`de` reads as
 `de-1996`) or its primary language. `PatternHyphenator` hyphenates with
 any patterns and exceptions you give it.
 
-The patterns are stored Brotli-compressed, one stream per language family
-(about 600 KB for all 72 languages), and a family is decoded the first
-time one of its languages is used.
+The patterns are compiled ahead of time to tries (breadth-first, with
+each node's digits shared), stored Brotli-compressed, one stream per
+language family (about 470 KB for all 72 languages); a family is decoded
+the first time one of its languages is used, straight into typed arrays,
+and words are hyphenated by walking the trie, with nothing allocated but
+the result.
 
 Tests check every language's patterns against the vendored files, and
 hyphenate the words of the Universal Declaration of Human Rights in 19
