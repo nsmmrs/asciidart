@@ -93,6 +93,7 @@ final class Paragraph {
     this.firstLineIndent = 0,
     this.hyphenator,
     this.breakLongWords = true,
+    this.hyphenRepetition = HyphenRepetition.none,
   });
 
   /// The inline content.
@@ -113,6 +114,44 @@ final class Paragraph {
   /// Whether a word wider than the line is broken between any two
   /// characters (rather than sticking out).
   final bool breakLongWords;
+
+  /// Whether a line broken after a word's own hyphen (a compound's) starts
+  /// with the hyphen again.
+  final HyphenRepetition hyphenRepetition;
+}
+
+/// When a compound's hyphen is repeated at the start of the next line, as
+/// typography has it in some languages (Typst's `should_repeat_hyphen`).
+enum HyphenRepetition {
+  /// Never.
+  none,
+
+  /// Always: Czech, Croatian, Lower Sorbian, Polish, Portuguese, Slovak.
+  always,
+
+  /// Before a word that doesn't start with a capital: Spanish.
+  beforeLowercase;
+
+  /// The repetition the typography of the language [tag] (`pt`, `es-MX`)
+  /// asks for.
+  static HyphenRepetition forLanguage(String? tag) =>
+      switch (tag?.toLowerCase().split(RegExp('[-_]')).first) {
+        'cs' || 'hr' || 'dsb' || 'pl' || 'pt' || 'sk' => always,
+        'es' => beforeLowercase,
+        _ => none,
+      };
+
+  /// Whether the hyphen is repeated before [following] text.
+  bool repeatsBefore(String following) => switch (this) {
+    none => false,
+    always => true,
+    beforeLowercase =>
+      following.isNotEmpty &&
+          !_isUppercase(String.fromCharCode(following.runes.first)),
+  };
+
+  static bool _isUppercase(String c) =>
+      c != c.toLowerCase() && c == c.toUpperCase();
 }
 
 /// An item of the paragraph's line breaking model.
@@ -176,9 +215,16 @@ final class GlueItem extends LineItem {
 final class PenaltyItem extends LineItem {
   /// A break costing [penalty] (`forced` or below always breaks, `never`
   /// or above never does); [flagged] breaks add a hyphen of [width] in
-  /// [run]'s style.
-  const new(this.width, this.penalty, {this.flagged = false, this.run})
-    : super._();
+  /// [run]'s style; a break with a [carry] starts the next line with a
+  /// hyphen that wide (a compound's hyphen repeated, see
+  /// [HyphenRepetition]).
+  const new(
+    this.width,
+    this.penalty, {
+    this.flagged = false,
+    this.run,
+    this.carry = 0,
+  }) : super._();
 
   /// The cost of breaking that forces a break.
   static const double forced = -10000;
@@ -194,6 +240,10 @@ final class PenaltyItem extends LineItem {
 
   /// Whether breaking here adds a hyphen.
   final bool flagged;
+
+  /// The width of the hyphen the next line starts with when the line
+  /// breaks here (0: none).
+  final double carry;
 
   /// The run the break is in: the hyphen's style, and the metrics of an
   /// empty line ending here.
@@ -253,7 +303,7 @@ final class FirstFitLineBreaker extends ItemLineBreaker {
       final s = _skipDiscardable(items, start);
       if (s >= items.length) break;
       final available = widths(breaks.length) + _epsilon;
-      var width = 0.0;
+      var width = _carry(items, start - 1);
       int? candidate;
       var lastResort = false;
       int? end;
@@ -366,7 +416,8 @@ final class KnuthPlassLineBreaker extends ItemLineBreaker {
       final survivors = <_Node>[];
       for (final node in active) {
         final start = node.start;
-        var width = totalWidth[i] - totalWidth[start];
+        var width =
+            totalWidth[i] - totalWidth[start] + _carry(items, node.position);
         if (item is PenaltyItem) width += item.width;
         final stretch = totalStretch[i] - totalStretch[start];
         final shrink = totalShrink[i] - totalShrink[start];
@@ -544,7 +595,7 @@ final class TypstLineBreaker extends ItemLineBreaker {
         final pred = entries[k];
         final start = pred.start;
         if (start > end) continue;
-        var w = width[end] - width[start];
+        var w = width[end] - width[start] + _carry(items, pred.position);
         if (item is PenaltyItem) w += item.width;
         final available = widths(pred.line);
         final infinite = fills[end] - fills[start] > 0;
@@ -678,6 +729,14 @@ final class _Node {
 
 const double _epsilon = 1e-6;
 
+/// The width of the hyphen a line starts with after a break at [at] (see
+/// [PenaltyItem.carry]); 0 at the paragraph's start.
+double _carry(List<LineItem> items, int at) =>
+    switch (at >= 0 ? items[at] : null) {
+      PenaltyItem(:final carry) => carry,
+      _ => 0,
+    };
+
 /// The first index from [start] that isn't glue or a penalty that
 /// doesn't force a break (what a line break discards).
 int _skipDiscardable(List<LineItem> items, int start) {
@@ -713,9 +772,10 @@ List<LineItem> paragraphItems(Paragraph paragraph, {double? maxWidth}) {
       PageReference(:final placeholder) => placeholder,
     });
   }
+  final whole = text.toString();
   final allowed = <int>{};
   final mandatory = <int>{};
-  for (final b in lineBreaks(text.toString())) {
+  for (final b in lineBreaks(whole)) {
     (b.mandatory ? mandatory : allowed).add(b.offset);
   }
   final items = <LineItem>[];
@@ -762,7 +822,21 @@ List<LineItem> paragraphItems(Paragraph paragraph, {double? maxWidth}) {
           PenaltyItem(run.style.measure('-'), 50, flagged: true, run: run),
         );
       } else if (items.lastOrNull is! GlueItem) {
-        items.add(PenaltyItem(0, 0, run: lastRun));
+        // After a compound's hyphen, repeated on the next line where the
+        // language has it so.
+        final run = lastRun;
+        final repeat =
+            run != null &&
+            whole.codeUnitAt(at - 1) == 0x2d &&
+            paragraph.hyphenRepetition.repeatsBefore(whole.substring(at));
+        items.add(
+          PenaltyItem(
+            0,
+            0,
+            run: run,
+            carry: repeat ? run.style.measure('-') : 0,
+          ),
+        );
       }
     }
     softHyphen = false;
@@ -1099,11 +1173,17 @@ List<Line> buildLines(
         (breakItem is PenaltyItem && breakItem.isForced);
     final indent = number == 0 ? paragraph.firstLineIndent : 0.0;
     final emptyRun = breakItem is PenaltyItem ? breakItem.run : null;
+    // The hyphen repeated from the line before (see PenaltyItem.carry).
+    final leading = switch (start > 0 ? items[start - 1] : null) {
+      PenaltyItem(:final carry, :final run?) when carry > 0 => run,
+      _ => null,
+    };
     lines.add(
       _line(
         paragraph,
         content,
         hyphen,
+        leading,
         widths(number) - indent,
         indent,
         justify: paragraph.align == TextAlign.justify && !last,
@@ -1119,13 +1199,16 @@ Line _line(
   Paragraph paragraph,
   List<LineItem> items,
   TextRun? hyphen,
+  TextRun? leadingHyphen,
   double available,
   double indent, {
   required bool justify,
   required TextRun? emptyRun,
 }) {
   // Runs of items of the same content, in order.
-  final pieces = <(InlineContent, StringBuffer)>[];
+  final pieces = <(InlineContent, StringBuffer)>[
+    if (leadingHyphen != null) (leadingHyphen, StringBuffer('-')),
+  ];
   for (final item in items) {
     final (InlineContent? content, String text) = switch (item) {
       BoxItem(:final content, :final text) => (content, text),

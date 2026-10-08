@@ -363,6 +363,11 @@ final class PdfConverter extends BuiltInConverter
         'greedy' => LineBreaking.greedy,
         _ => LineBreaking.auto,
       },
+      // (Typst's typography: the gem never repeats a hyphen.)
+      hyphenRepetition: asciidoctorCompat(document, CompatFormat.pdf)
+          ? HyphenRepetition.none
+          : HyphenRepetition.forLanguage(document.attr('lang')),
+      typstLinks: !asciidoctorCompat(document, CompatFormat.pdf),
       typographicScripts:
           _theme.value('base_typographic_scripts') == const ThemeBool(true),
       labels: (key) => _layoutLabels[key],
@@ -7614,6 +7619,9 @@ final class PdfConverter extends BuiltInConverter
       hyphenator,
       skipCode: true,
       lettersOnly: true,
+      // A word goes on across formatting, as Typst reads it; the gem
+      // hyphenates each text between tags alone.
+      acrossTags: !asciidoctorCompat(_document, CompatFormat.pdf),
     );
   }
 

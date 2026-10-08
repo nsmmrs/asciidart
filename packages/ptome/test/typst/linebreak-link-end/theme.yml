@@ -1,0 +1,7 @@
+extends: ./../base-theme.yml
+# margin: auto is 2.5/21 of the page's width (its height is auto).
+page:
+  size: [180pt, 2000pt]
+  margin: 21.43
+base:
+  font-size: 11

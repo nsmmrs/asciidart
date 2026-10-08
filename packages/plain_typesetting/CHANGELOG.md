@@ -13,3 +13,8 @@
 - Renamed from plain_pdf's names: `PdfRect` to `Rect`, `PdfMatrix` to
   `Matrix`, `PdfColor` to `Color`, `PdfTextStyle` to `TextStyle`.
 - `OpenTypeShaper` is a `Font` on its own, compared with HarfBuzz.
+- A compound's hyphen repeated at the next line's start where the
+  language's typography has it so (`Paragraph.hyphenRepetition`,
+  `HyphenRepetition.forLanguage`, as Typst does): a `PenaltyItem`'s
+  `carry` is the width the next line starts with, which every breaker
+  counts.

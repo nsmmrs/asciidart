@@ -1,0 +1,6 @@
+extends: ./../base-theme.yml
+page:
+  size: [50pt, 2000pt]
+role:
+  red:
+    font-color: #FF0000

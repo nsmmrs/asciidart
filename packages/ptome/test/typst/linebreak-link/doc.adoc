@@ -1,0 +1,6 @@
+https://example.com/(ab[] +
+https://example.com/(ab)[] +
+https://example.com/(paren)[] +
+https://example.com/paren)[] +
+https://hi.com/%%%%%%%%abcdef[] +
+{empty}

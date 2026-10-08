@@ -118,6 +118,13 @@ enum FloatPlacement
   static FloatPlacement next
   static FloatPlacement top
   static List<FloatPlacement> values
+enum HyphenRepetition
+  HyphenRepetition forLanguage(String? tag)
+  bool repeatsBefore(String following)
+  static HyphenRepetition always
+  static HyphenRepetition beforeLowercase
+  static HyphenRepetition none
+  static List<HyphenRepetition> values
 enum InlineAlignment
   static InlineAlignment baseline
   static InlineAlignment middle
@@ -429,10 +436,11 @@ final class PageTemplate
   void Function(Canvas, PageInfo)? background
   void Function(Canvas, PageInfo)? foreground
 final class Paragraph
+  HyphenRepetition hyphenRepetition
   Hyphenator? hyphenator
   LineHeight lineHeight
   List<InlineContent> content
-  Paragraph(List<InlineContent> content, {TextAlign align = TextAlign.left, LineHeight lineHeight = const LineHeight.font(), double firstLineIndent = 0, Hyphenator? hyphenator, bool breakLongWords = true})
+  Paragraph(List<InlineContent> content, {TextAlign align = TextAlign.left, LineHeight lineHeight = const LineHeight.font(), double firstLineIndent = 0, Hyphenator? hyphenator, bool breakLongWords = true, HyphenRepetition hyphenRepetition = HyphenRepetition.none})
   TextAlign align
   bool breakLongWords
   double firstLineIndent
@@ -443,10 +451,11 @@ final class ParagraphBox extends LayoutBox
   int orphans
   int widows
 final class PenaltyItem extends LineItem
-  PenaltyItem(double width, double penalty, {bool flagged = false, TextRun? run})
+  PenaltyItem(double width, double penalty, {bool flagged = false, TextRun? run, double carry = 0})
   TextRun? run
   bool flagged
   bool isForced
+  double carry
   double penalty
   double width
   static double forced

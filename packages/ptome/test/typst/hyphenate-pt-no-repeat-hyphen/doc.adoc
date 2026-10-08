@@ -1,0 +1,4 @@
+:lang: pt
+:hyphens: pt
+
+Um médico otorrinolaringologista cuida da garganta do paciente.

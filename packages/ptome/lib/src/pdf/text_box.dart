@@ -202,6 +202,8 @@ final class TextContext {
     this.boundsHeight = double.infinity,
     this.decorationWidth = 1,
     this.lineBreaking = LineBreaking.auto,
+    this.hyphenRepetition = HyphenRepetition.none,
+    this.typstLinks = false,
     this.typographicScripts = false,
     this.labels,
     LoggerBase? logger,
@@ -230,6 +232,14 @@ final class TextContext {
 
   /// How the modern engine breaks lines.
   final LineBreaking lineBreaking;
+
+  /// Whether a line broken after a compound's hyphen starts with it again
+  /// (the document's language: Portuguese, Spanish...).
+  final HyphenRepetition hyphenRepetition;
+
+  /// Whether URLs in the text break as Typst breaks them ([linkBreaks])
+  /// rather than as words.
+  final bool typstLinks;
 
   /// The fonts.
   final FontCatalog fonts;
@@ -2240,13 +2250,20 @@ final class _OptimalWrap extends _Wrap {
   /// Splits into characters a word longer than a line that runs across
   /// items ([pieces], with index terms' anchors or style changes between
   /// its parts), as a word in one item is split: the line may break
-  /// before any of its characters ([charBreaks], at a cost).
-  void _splitLongRuns(List<(int, String)> pieces, Set<int> charBreaks) {
+  /// before any of its characters ([breaks], at a cost), unless it is a
+  /// URL with breaks of its own. [noHyphenBreaks] (pieces ending in a
+  /// hyphen the line doesn't break after) follow the pieces.
+  void _splitLongRuns(
+    List<(int, String)> pieces,
+    Map<int, double> breaks,
+    Set<int> noHyphenBreaks,
+  ) {
     bool isSpace((int, String) piece) => piece.$2 == '\n' || _isBlank(piece.$2);
     bool isMarker((int, String) piece) =>
         _unconsumed[piece.$1].format.fragment.isMarker;
     final split = <(int, String)>[];
-    final breaks = <int>{};
+    final splitBreaks = <int, double>{};
+    final splitNoHyphen = <int>{};
     var p = 0;
     while (p < pieces.length) {
       var q = p;
@@ -2258,19 +2275,26 @@ final class _OptimalWrap extends _Wrap {
         }
         q++;
       }
-      final long = q - p > 1 && width > _width;
+      var linked = false;
+      for (var r = p + 1; r < q && !linked; r++) {
+        linked = breaks[r] == 0;
+      }
+      final long = q - p > 1 && width > _width && !linked;
       if (q == p) q++;
       for (var r = p; r < q; r++) {
         final piece = pieces[r];
         if (long && !isMarker(piece) && piece.$2.runes.length > 1) {
           for (final (k, rune) in piece.$2.runes.indexed) {
-            if (k > 0 || r > p) breaks.add(split.length);
+            if (k > 0 || r > p) splitBreaks[split.length] = 900;
             split.add((piece.$1, String.fromCharCode(rune)));
           }
         } else {
-          if (charBreaks.contains(r) || (long && r > p && !isMarker(piece))) {
-            breaks.add(split.length);
+          if (breaks[r] case final cost?) {
+            splitBreaks[split.length] = cost;
+          } else if (long && r > p && !isMarker(piece)) {
+            splitBreaks[split.length] = 900;
           }
+          if (noHyphenBreaks.contains(r)) splitNoHyphen.add(split.length);
           split.add(piece);
         }
       }
@@ -2279,9 +2303,12 @@ final class _OptimalWrap extends _Wrap {
     pieces
       ..clear()
       ..addAll(split);
-    charBreaks
+    breaks
       ..clear()
-      ..addAll(breaks);
+      ..addAll(splitBreaks);
+    noHyphenBreaks
+      ..clear()
+      ..addAll(splitNoHyphen);
   }
 
   @override
@@ -2291,15 +2318,42 @@ final class _OptimalWrap extends _Wrap {
     // Spaces at the start of a line are left out, also after zero-width
     // markers (an index term's anchor before the first word).
     final pieces = <(int, String)>[];
-    // The pieces a word longer than a line may break before.
-    final charBreaks = <int>{};
+    // The pieces a line may break before at a cost: the characters of a
+    // word longer than a line (900), the parts of a URL (0).
+    final charBreaks = <int, double>{};
+    // The pieces ending in a hyphen the line doesn't break after (in a
+    // URL, which breaks by its own rules).
+    final noHyphenBreaks = <int>{};
     var lineStart = true;
     for (final (i, item) in _unconsumed.indexed) {
       if (item.text == '\n') {
         pieces.add((i, '\n'));
         lineStart = true;
       } else {
+        final links = _context.typstLinks
+            ? linkBreaks(item.text)
+            : (cuts: const <int>{}, spans: const <(int, int)>[]);
+        var end = 0;
         for (final token in _tokenize(item.text)) {
+          final start = end;
+          end += token.length;
+          if (links.spans.any((span) => start < span.$2 && end > span.$1)) {
+            // A URL's piece: split where the URL may break.
+            lineStart = false;
+            var from = start;
+            for (var at = start + 1; at <= end; at++) {
+              if (at < end && !links.cuts.contains(at)) continue;
+              if (links.cuts.contains(from) && from > 0) {
+                charBreaks[pieces.length] = 0;
+              }
+              pieces.add((i, item.text.substring(from, at)));
+              from = at;
+            }
+            if (token.endsWith('-') && !links.cuts.contains(end)) {
+              noHyphenBreaks.add(pieces.length - 1);
+            }
+            continue;
+          }
           if (_isSpaces(token)) {
             if (lineStart) continue;
           } else if (!item.format.fragment.isMarker) {
@@ -2315,7 +2369,7 @@ final class _OptimalWrap extends _Wrap {
               !_isBlank(word) &&
               _widthOf(word, item.format) > _width) {
             for (final (k, rune) in token.runes.indexed) {
-              if (k > 0) charBreaks.add(pieces.length);
+              if (k > 0) charBreaks[pieces.length] = 900;
               pieces.add((i, String.fromCharCode(rune)));
             }
             continue;
@@ -2324,7 +2378,7 @@ final class _OptimalWrap extends _Wrap {
         }
       }
     }
-    _splitLongRuns(pieces, charBreaks);
+    _splitLongRuns(pieces, charBreaks, noHyphenBreaks);
     final indent = firstPiece ? _layout.indentFirstLine : 0.0;
     double widthOf(int line) => line == 0 ? _width - indent : _width;
     // The breaker's items, and the piece each comes from.
@@ -2376,7 +2430,7 @@ final class _OptimalWrap extends _Wrap {
       final word = shy ? token.substring(0, token.length - 1) : token;
       // A character of a word longer than a line: a costly break before
       // it (see the pieces).
-      if (charBreaks.contains(p)) add(const PenaltyItem(0, 900), p);
+      if (charBreaks[p] case final cost?) add(PenaltyItem(0, cost), p);
       if (word.isNotEmpty) {
         // A piece of a word broken into pieces (at its hyphenation
         // points): its width within the word, kerning to the piece before
@@ -2399,10 +2453,19 @@ final class _OptimalWrap extends _Wrap {
       }
       if (shy) {
         add(PenaltyItem(_widthOf('-', format), 50, flagged: true), p);
-      } else if (word.endsWith('-')) {
-        // After a hyphen of the text: an ordinary break, as Typst has it
-        // (the breaker counts the dash for two lines ending in one).
-        add(const PenaltyItem(0, 0), p);
+      } else if (word.endsWith('-') &&
+          !noHyphenBreaks.contains(p) &&
+          p + 1 < pieces.length &&
+          !_isBlank(pieces[p + 1].$2) &&
+          pieces[p + 1].$2 != '\n') {
+        // After a hyphen of the text, before a word (a space or the end
+        // breaks the line anyway, UAX #14's LB7): an ordinary break, as
+        // Typst has it (the breaker counts the dash for two lines ending
+        // in one), the hyphen repeated at the next line's start where the
+        // language has it so.
+        final next = pieces[p + 1].$2;
+        final repeat = _context.hyphenRepetition.repeatsBefore(next);
+        add(PenaltyItem(0, 0, carry: repeat ? _widthOf('-', format) : 0), p);
       }
     }
     add(const GlueItem.fill(), pieces.length);
@@ -2424,8 +2487,11 @@ final class _OptimalWrap extends _Wrap {
     final breaks = _breaks[key] ??= breaker.breakItems(items, widthOf);
 
     // The pieces of each line: up to the piece its break is in (a space
-    // or a newline ends the line it breaks), then on from the next.
+    // or a newline ends the line it breaks), then on from the next. A line
+    // after a break that carries a hyphen starts with it, in the format of
+    // the piece the hyphen ends.
     final lines = <(int, int)>[];
+    final repeatedHyphens = <int, int>{};
     var start = 0;
     for (final at in breaks) {
       final item = items[at];
@@ -2437,6 +2503,9 @@ final class _OptimalWrap extends _Wrap {
         _ => math.min(piece + 1, pieces.length),
       };
       if (end > start || lines.isEmpty) lines.add((start, end));
+      if (item case PenaltyItem(:final carry) when carry > 0) {
+        repeatedHyphens[lines.length] = pieces[piece].$1;
+      }
       start = end;
     }
 
@@ -2474,6 +2543,12 @@ final class _OptimalWrap extends _Wrap {
     for (final (first, end) in lines) {
       if (maxLines case final most? when lineNumber >= most) break;
       _consumed = _items(pieces, first, end);
+      if (repeatedHyphens[lineNumber] case final i?) {
+        _consumed.insert(
+          0,
+          _source[i].copy(text: '-')..normalizedSoftHyphen = true,
+        );
+      }
       final rest = _items(pieces, end, pieces.length);
       _unconsumed
         ..clear()
@@ -2582,14 +2657,13 @@ final class _BreakKey {
                 :final shrink,
               ) =>
                 (1, text, width, stretch, shrink, false),
-              PenaltyItem(:final width, :final penalty, :final flagged) => (
-                2,
-                '',
-                width,
-                penalty,
-                0,
-                flagged,
-              ),
+              PenaltyItem(
+                :final width,
+                :final penalty,
+                :final flagged,
+                :final carry,
+              ) =>
+                (2, '', width, penalty, carry, flagged),
             },
         ],
       );
@@ -2622,3 +2696,107 @@ final class _BreakKey {
     return true;
   }
 }
+
+/// The URLs in [text] and where they may break, as Typst breaks them
+/// (typst-layout's `linebreak_link`, with typst-syntax's `link_prefix`):
+/// after `://` or from `www.`, a URL runs over the characters a URL takes
+/// (brackets balanced; trailing punctuation left out), and may break
+/// between two characters that are neither letters nor digits, between
+/// letters and digits, never after an opening bracket; a part of 16
+/// bytes (UTF-8) or more may break after any of its characters. The
+/// cuts are the offsets in [text] a line may break before; the spans,
+/// the URLs.
+({Set<int> cuts, List<(int, int)> spans}) linkBreaks(String text) {
+  final cuts = <int>{};
+  final spans = <(int, int)>[];
+  var at = 0;
+  while (at < text.length) {
+    final scheme = text.indexOf('://', at);
+    final www = text.indexOf('www.', at);
+    final int start;
+    if (scheme >= 0 && (www < 0 || scheme + 3 <= www)) {
+      start = scheme + 3;
+    } else if (www >= 0 &&
+        (www == 0 || !_isUrlChar(text.codeUnitAt(www - 1)))) {
+      start = www;
+    } else if (www >= 0) {
+      at = www + 4;
+      continue;
+    } else {
+      break;
+    }
+    final end = _linkEnd(text, start);
+    if (end > start) {
+      spans.add((start, end));
+      _linkCuts(text, start, end, cuts);
+    }
+    at = math.max(end, start + 1);
+  }
+  return (cuts: cuts, spans: spans);
+}
+
+bool _isUrlChar(int c) =>
+    (c >= 0x30 && c <= 0x39) ||
+    ((c | 0x20) >= 0x61 && (c | 0x20) <= 0x7a) ||
+    r"!#$%&*+,-./:;=?@_~'[]()".contains(String.fromCharCode(c));
+
+/// The end of the URL from [start]: `link_prefix`.
+int _linkEnd(String text, int start) {
+  final brackets = <int>[];
+  var i = start;
+  while (i < text.length) {
+    final c = text.codeUnitAt(i);
+    if (c == 0x5b || c == 0x28) {
+      brackets.add(c);
+    } else if (c == 0x5d) {
+      if (brackets.isEmpty || brackets.removeLast() != 0x5b) break;
+    } else if (c == 0x29) {
+      if (brackets.isEmpty || brackets.removeLast() != 0x28) break;
+    } else if (!_isUrlChar(c)) {
+      break;
+    }
+    i++;
+  }
+  while (i > start && "!,.:;?'".contains(text[i - 1])) {
+    i--;
+  }
+  return i;
+}
+
+/// Adds to [cuts] where the URL [start]..[end] of [text] may break
+/// (`linebreak_link`).
+void _linkCuts(String text, int start, int end, Set<int> cuts) {
+  // 0 alphabetic, 1 digit, 2 an opening bracket, 3 other.
+  int classOf(int rune) {
+    final c = String.fromCharCode(rune);
+    if (_alphabetic.hasMatch(c)) return 0;
+    if (_numeric.hasMatch(c)) return 1;
+    return rune == 0x28 || rune == 0x5b ? 2 : 3;
+  }
+
+  var offset = start;
+  var previous = 3;
+  var at = start;
+  for (final rune in text.substring(start, end).runes) {
+    final kind = classOf(rune);
+    if (at > start &&
+        previous != 2 &&
+        (kind == 3 ? previous == 3 : kind != previous)) {
+      final piece = text.substring(offset, at);
+      if (utf8.encode(piece).length < 16) {
+        offset = at;
+        cuts.add(offset);
+      } else {
+        for (final r in piece.runes) {
+          offset += r > 0xffff ? 2 : 1;
+          cuts.add(offset);
+        }
+      }
+    }
+    previous = kind;
+    at += rune > 0xffff ? 2 : 1;
+  }
+}
+
+final RegExp _alphabetic = RegExp(r'^\p{Alphabetic}$', unicode: true);
+final RegExp _numeric = RegExp(r'^\p{N}$', unicode: true);

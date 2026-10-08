@@ -110,6 +110,48 @@ void main() {
     expect(_text(plain.first).trim(), 'an');
   });
 
+  test("a compound's hyphen repeated on the next line, by language", () {
+    // "arco-da-velha" broken after "arco-": "-da-velha" in Portuguese.
+    final width = _body.measure('o arco-da');
+    for (final breaker in [
+      const FirstFitLineBreaker(),
+      const KnuthPlassLineBreaker(),
+      const TypstLineBreaker(),
+    ]) {
+      List<String> lines(String text, HyphenRepetition repetition) => [
+        for (final line in breaker.breakLines(
+          Paragraph([TextRun(text, _body)], hyphenRepetition: repetition),
+          (_) => width,
+        ))
+          _text(line).trim(),
+      ];
+      expect(lines('o arco-da-velha', HyphenRepetition.none), [
+        'o arco-',
+        'da-velha',
+      ]);
+      expect(lines('o arco-da-velha', HyphenRepetition.always), [
+        'o arco-',
+        '-da-velha',
+      ]);
+      // Spanish: not before a capital.
+      expect(lines('o arco-Da-velha', HyphenRepetition.beforeLowercase), [
+        'o arco-',
+        'Da-velha',
+      ]);
+      expect(lines('o arco-da-velha', HyphenRepetition.beforeLowercase), [
+        'o arco-',
+        '-da-velha',
+      ]);
+    }
+    expect(HyphenRepetition.forLanguage('pt-BR'), HyphenRepetition.always);
+    expect(
+      HyphenRepetition.forLanguage('es'),
+      HyphenRepetition.beforeLowercase,
+    );
+    expect(HyphenRepetition.forLanguage('en'), HyphenRepetition.none);
+    expect(HyphenRepetition.forLanguage(null), HyphenRepetition.none);
+  });
+
   test('painted: glyph runs at the baseline, colors, links and anchors', () {
     final page = RecordingPage(const Rect(0, 0, 200, 100));
     final calls = page.canvas.calls;

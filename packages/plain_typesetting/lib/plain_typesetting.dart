@@ -75,6 +75,7 @@ export 'src/layout/paragraph.dart'
         FirstFitLineBreaker,
         FontLineHeight,
         GlueItem,
+        HyphenRepetition,
         Hyphenator,
         ImageFragment,
         ItemLineBreaker,

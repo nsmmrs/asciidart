@@ -21,37 +21,60 @@ and of the first line's top (Ptome's minus Typst's).
 
 ## Findings
 
-Each has a card under EPIC-n7s6v0.
+The paragraph cases (lane TASK-p51s1b): the tests of `justify.typ`,
+`linebreak.typ`, `hyphenate.typ` and `model/par.typ` that AsciiDoc and
+theme keys can say.
 
-- Line breaking matches where both break one line at a time (simple
-  breaking, hard breaks): the same words on each line, the same edges.
-- The modern engine wraps left-aligned text as Prawn does: a style change
-  inside a word is a break opportunity (`emp__has__ized`), and a word
-  across a style change isn't hyphenated whole (`__Tree__beard`). Typst
-  breaks ragged text with its optimizer too.
-- Optimal breaking differs in its costs: Typst's hyphenation and runt
-  costs, its cubic badness (the spaces stretch and shrink by the same
-  amounts as here), and its hanging punctuation (`overhang`, on by
-  default), which lets commas and hyphens into the margin.
-- Typst repeats a compound's hyphen at the next line's start in
-  Portuguese and Spanish.
-- A word longer than the line: Typst lets it overflow into the margin;
-  the modern engine breaks it between characters, so that no text is
-  cropped. A deliberate difference.
-- The vertical model: with `base_leading` (Typst's model: a line's box
-  from its cap height to its baseline, the leading between boxes, the
-  margins between blocks Typst's spacing), lines and paragraphs fall
-  where Typst's do, to a hundredth of a point (a line of a bolder font
-  than its paragraph's aside: Typst takes that line's cap height).
+- Lines break where Typst's do, with the same edges, in 37 of the 41
+  cases: one line at a time (simple breaking, hard breaks) and optimal
+  breaking (Typst's costs: cubic badness, hyphenation and runt costs, two
+  dashes in a row; `base_line_breaking`), hanging punctuation
+  (`overhang`), the vertical model (`base_leading`: lines and paragraphs
+  to a hundredth of a point).
+- Hyphenation reads a word across formatting (`__Tree__beard` is
+  hyphenated Tree-beard), and a compound's hyphen is repeated at the next
+  line's start in the languages whose typography has it so (`:lang:`
+  Portuguese, Czech, Croatian, Polish, Slovak, Lower Sorbian; Spanish
+  before a lowercase word). URLs break as Typst breaks them: between
+  parts of punctuation, letters and digits, never after an opening
+  bracket, and after any character of a long part. None of this changes
+  the Asciidoctor compatibility setting (`asciidoctor-compat=pdf`), which
+  breaks as asciidoctor-pdf does. (A hyphen after a word across
+  formatting is set in another style than Typst's: 0.17 points.)
 
-## Latest run (2026-10-07)
+The differences left, each deliberate or out of reach:
 
-| Case | Lines (Typst, Ptome) | Broken alike | Edges | Line tops | First line | Pages |
+- `justify-avoid-runts`: both layouts cost the same (77.777: one line of
+  14 letters, no runt); which of the tied lines is the short one comes
+  down to the rounding of the widths' sums. (Typst's string also ends in
+  two spaces, which AsciiDoc collapses.)
+- `linebreak-overflow-double`, `issue-hyphenate-in-link`: a word or URL
+  longer than the line. Typst lets it overflow into the margin; the
+  modern engine breaks it where it fits, so that no text is cropped.
+- `linebreak-link-justify`: one line breaks after `www.url.` where Typst
+  breaks after `www.`, the lines close in cost.
+- Not in AsciiDoc: hanging indents (`par-hanging-indent`), justified
+  breaks (`#linebreak(justify: true)`), blocks of a given width and grids
+  (`hyphenate`, `hyphenate-shy`, `hyphenate-outside-of-words`), costs
+  set per paragraph (`costs-*`), CJK and Thai.
+
+## Latest run (2026-10-08)
+
+| Case | Lines (Typst, ptome) | Broken alike | Edges | Line tops | First line | Pages |
 | --- | --- | --- | --- | --- | --- | --- |
 | hs-justify-indent | 6, 6 | 6 of 6 | 0.00 | 0.00 | -0.00 | 1, 1 |
-| hyphenate-between-shape-runs | 2, 2 | 0 of 2 | 22.65 | 0.00 | +0.00 | 1, 1 |
-| hyphenate-es-repeat-hyphen | 5, 5 | 1 of 5 | 15.49 | 0.00 | +0.00 | 1, 1 |
-| hyphenate-pt-repeat-hyphen | 3, 3 | 2 of 3 | 3.38 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-between-shape-runs | 2, 2 | 2 of 2 | 0.17 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-es-capitalized-names | 6, 6 | 6 of 6 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-es-repeat-hyphen | 5, 5 | 5 of 5 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-pt-dash-emphasis | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-pt-no-repeat-hyphen | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-pt-repeat-hyphen | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-pt-repeat-hyphen-hyphenate-true-with-emphasis | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-pt-repeat-hyphen-natural-word-breaking | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-punctuation | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| hyphenate-repeat-style | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| issue-hyphenate-after-tag | 2, 2 | 2 of 2 | 0.17 | 0.00 | -0.00 | 1, 1 |
+| issue-hyphenate-in-link | 3, 3 | 0 of 3 | 18.55 | 0.00 | +0.00 | 1, 1 |
 | justify | 6, 6 | 6 of 6 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | justify-avoid-runts | 5, 5 | 2 of 5 | 2.50 | 0.00 | +0.00 | 1, 1 |
 | justify-knuth-story-optimized | 21, 21 | 21 of 21 | 0.00 | 0.00 | +0.00 | 1, 1 |
@@ -62,14 +85,21 @@ Each has a card under EPIC-n7s6v0.
 | justify-shrink-last-line | 1, 1 | 1 of 1 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | justify-without-justifiables | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-hyphen-nbsp | 2, 2 | 2 of 2 | 0.11 | 0.00 | +0.00 | 1, 1 |
+| linebreak-link | 9, 9 | 9 of 9 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| linebreak-link-end | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| linebreak-link-justify | 7, 7 | 5 of 7 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | linebreak-manual | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| linebreak-manual-consecutive | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-manual-directly-after-automatic | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| linebreak-manual-trailing-multiple | 1, 1 | 1 of 1 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| linebreak-narrow-nbsp | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-optimized-without-justify | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-overflow | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-overflow-double | 2, 4 | 0 of 2 | 77.62 | 0.00 | +0.00 | 1, 1 |
 | linebreak-shape-run | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-simple-without-justify | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-basic | 19, 19 | 19 of 19 | 0.00 | 0.00 | +0.00 | 3, 3 |
+| par-explicit-trim-space | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-leading-and-spacing | 5, 5 | 5 of 5 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-metadata-after-trimmed-space | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-spacing-and-first-line-indent | 4, 4 | 4 of 4 | 0.00 | 0.00 | -0.00 | 1, 1 |

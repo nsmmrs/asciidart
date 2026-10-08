@@ -80,7 +80,11 @@ Asciidoctor project.
   hyphens, no lone word on the last line), other text one line at a
   time, never inside a word at a style change, and
   hyphenated in the document's language (hyph-utf8's patterns, 72
-  languages; `:hyphens!:` turns it off; code spans stay whole), and a
+  languages; `:hyphens!:` turns it off; code spans stay whole; a word
+  across formatting hyphenated whole), a compound's hyphen repeated at
+  the next line's start in Portuguese, Spanish and the other languages
+  whose typography has it so, URLs broken between their parts as Typst
+  breaks them (`benchmark/TYPST.md`), and a
   paragraph leaves at least two lines on either side of a page break
   (`prose_orphans`, `prose_widows`). Text is kerned by the font's GPOS
   pairs and set with its standard ligatures (`base_font_ligatures: none`
