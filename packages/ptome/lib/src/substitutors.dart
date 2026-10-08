@@ -45,6 +45,7 @@ import 'package:ptome/src/helpers.dart';
 import 'package:ptome/src/highlight/highlight.dart';
 import 'package:ptome/src/inline.dart';
 import 'package:ptome/src/inline_tree.dart';
+import 'package:ptome/src/presence.dart';
 import 'package:ptome/src/ruby_semantics.dart';
 import 'package:ptome/src/rx.dart';
 import 'package:ptome/src/text_case.dart';
@@ -132,8 +133,8 @@ String _subQuotesKeepingIndexterms(
   String text, {
   bool protectTargets = false,
 }) {
-  if (!(text.contains('((') && text.contains('))')) &&
-      !text.contains('dexterm')) {
+  if (!(hasLiteral(text, '((') && hasLiteral(text, '))')) &&
+      !hasLiteral(text, 'dexterm')) {
     return subQuotes(node, text, protectTargets: protectTargets);
   }
   final terms = <String>[];
@@ -364,7 +365,7 @@ String _applySubsInRun(AbstractNode node, String text, List<Sub> subs) {
           protectTargets: subs.contains(Sub.macros),
         );
       case Sub.attributes:
-        if (subject.contains(attrRefHead)) {
+        if (hasLiteral(subject, attrRefHead)) {
           subject = subAttributes(node, subject);
         }
       case Sub.replacements:
@@ -448,7 +449,7 @@ String applyReftextSubs(AbstractNode node, String text) =>
 ///
 /// Port of `Substitutors#sub_specialchars`.
 String subSpecialchars(String text) {
-  if (text.contains('>') || text.contains('&') || text.contains('<')) {
+  if (hasAnyChar(text, '>&<')) {
     return InlineRun.replace(
       text,
       specialCharsRx,
@@ -470,7 +471,8 @@ String subQuotes(
   bool protectTargets = false,
 }) {
   final compat = _documentOf(node).compatMode;
-  if (!quotedTextSniffRx[compat]!.hasMatch(text)) return text;
+  // (quotedTextSniffRx, a class of ASCII characters.)
+  if (!hasAnyChar(text, compat ? "*'_+#^~" : '*_`#^~')) return text;
   var result = text;
   // The targets, found again only after a rule changed the text.
   _Spans? spans;
@@ -508,7 +510,7 @@ List<(int, int)> _targetSpans(String text) {
   // Each pattern only where its literal part is (`://`, `link:` or
   // `mailto:`, `&lt;&lt;` or `xref:`).
   for (final match in _matchesWhere(
-    text.contains('://'),
+    hasLiteral(text, '://'),
     inlineLinkScan,
     text,
   )) {
@@ -521,7 +523,7 @@ List<(int, int)> _targetSpans(String text) {
     spans.add((start, start + scheme.length + target.length));
   }
   for (final match in _matchesWhere(
-    text.contains('link:') || text.contains('mailto:'),
+    hasLiteral(text, 'link:') || hasLiteral(text, 'mailto:'),
     inlineLinkMacroScan,
     text,
   )) {
@@ -531,7 +533,7 @@ List<(int, int)> _targetSpans(String text) {
     spans.add((start, start + match[2]!.length));
   }
   for (final match in _matchesWhere(
-    text.contains('&lt;&lt;') || text.contains('xref:'),
+    hasLiteral(text, '&lt;&lt;') || hasLiteral(text, 'xref:'),
     inlineXrefMacroScan,
     text,
   )) {
@@ -906,10 +908,10 @@ String _counterWithArgs(Document doc, List<String> args) {
 ///
 /// Port of `Substitutors#sub_replacements`.
 String subReplacements(String text) {
-  if (!replaceableTextRx.hasMatch(text)) return text;
+  if (!hasReplaceableText(text)) return text;
   var result = text;
   for (final replacement in replacements) {
-    if (!result.contains(replacement.guard)) continue;
+    if (!hasLiteral(result, replacement.guard)) continue;
     result = InlineRun.replace(
       result,
       replacement.pattern,
@@ -922,6 +924,15 @@ String subReplacements(String text) {
   }
   return result;
 }
+
+/// Whether [text] has anything [replaceableTextRx] matches: its literal
+/// alternatives are looked for first, the regex run only for `(C)`, `(R)`
+/// and `(TM)`.
+bool hasReplaceableText(String text) =>
+    hasAnyChar(text, "&'") ||
+    hasLiteral(text, '--') ||
+    hasLiteral(text, '...') ||
+    (hasChar(text, '(') && replaceableTextRx.hasMatch(text));
 
 /// Substitutes replacement text for the matched location.
 ///
@@ -972,10 +983,10 @@ String? _namedGroupOrNull(Match match, String name) {
 String subMacros(AbstractNode node, String text) {
   //return text if text.nil_or_empty?
   // some look ahead assertions to cut unnecessary regex calls
-  final foundSquareBracket = text.contains('[');
-  final foundColon = text.contains(':');
+  final foundSquareBracket = hasLiteral(text, '[');
+  final foundColon = hasLiteral(text, ':');
   final foundMacroish = foundSquareBracket && foundColon;
-  final foundMacroishShort = foundMacroish && text.contains(':[');
+  final foundMacroishShort = foundMacroish && hasLiteral(text, ':[');
   final doc = _documentOf(node);
   final docAttrs = doc.attributes;
   final compat = doc.compatMode;
@@ -1055,7 +1066,7 @@ String subMacros(AbstractNode node, String text) {
 
   if (docAttrs.containsKey('experimental')) {
     if (foundMacroishShort &&
-        (result.contains('kbd:') || result.contains('btn:'))) {
+        (hasLiteral(result, 'kbd:') || hasLiteral(result, 'btn:'))) {
       result = InlineRun.replace(result, inlineKbdBtnMacroRx, (match) {
         // honor the escape
         if (match.group(1) != null) {
@@ -1120,7 +1131,7 @@ String subMacros(AbstractNode node, String text) {
       });
     }
 
-    if (foundMacroish && result.contains('menu:')) {
+    if (foundMacroish && hasLiteral(result, 'menu:')) {
       result = InlineRun.replace(result, inlineMenuMacroRx, (match) {
         // honor the escape
         if (match.group(0)!.startsWith(rs)) {
@@ -1171,7 +1182,7 @@ String subMacros(AbstractNode node, String text) {
       });
     }
 
-    if (result.contains('"') && result.contains('&gt;')) {
+    if (hasLiteral(result, '"') && hasLiteral(result, '&gt;')) {
       result = InlineRun.replace(result, inlineMenuRx, (match) {
         // honor the escape
         if (match.group(0)!.startsWith(rs)) {
@@ -1197,7 +1208,7 @@ String subMacros(AbstractNode node, String text) {
   }
 
   if (foundMacroish &&
-      (result.contains('image:') || result.contains('icon:'))) {
+      (hasLiteral(result, 'image:') || hasLiteral(result, 'icon:'))) {
     // image:filename.png[Alt Text]
     result = InlineRun.replace(result, inlineImageMacroRx, (match) {
       // honor the escape
@@ -1245,8 +1256,8 @@ String subMacros(AbstractNode node, String text) {
     });
   }
 
-  if ((result.contains('((') && result.contains('))')) ||
-      (foundMacroishShort && result.contains('dexterm'))) {
+  if ((hasLiteral(result, '((') && hasLiteral(result, '))')) ||
+      (foundMacroishShort && hasLiteral(result, 'dexterm'))) {
     // (((Tigers,Big cats)))
     // indexterm:[Tigers,Big cats]
     // ((Tigers))
@@ -1461,10 +1472,10 @@ String _subMacrosLinks(
   bool foundSquareBracket,
   bool foundMacroish,
 ) {
-  final foundColon = text.contains(':');
+  final foundColon = hasLiteral(text, ':');
   var result = text;
 
-  if (foundColon && result.contains('://')) {
+  if (foundColon && hasLiteral(result, '://')) {
     // inline urls, target[text] (optionally prefixed with link: or
     // enclosed in <>)
     result = InlineRun.replace(result, inlineLinkScan, (match) {
@@ -1628,7 +1639,8 @@ String _subMacrosLinks(
     });
   }
 
-  if (foundMacroish && (result.contains('link:') || result.contains('ilto:'))) {
+  if (foundMacroish &&
+      (hasLiteral(result, 'link:') || hasLiteral(result, 'ilto:'))) {
     // inline link macros, link:target[text]
     result = InlineRun.replace(result, inlineLinkMacroScan, (match) {
       // honor the escape
@@ -1770,8 +1782,8 @@ String _subMacrosLinks(
     );
   }
 
-  if ((foundSquareBracket && result.contains('[[')) ||
-      (foundMacroish && result.contains('or:'))) {
+  if ((foundSquareBracket && hasLiteral(result, '[[')) ||
+      (foundMacroish && hasLiteral(result, 'or:'))) {
     result = InlineRun.replace(result, inlineAnchorScan, (match) {
       // honor the escape
       if (match.group(1) != null) {
@@ -1802,8 +1814,8 @@ String _subMacrosLinks(
   }
 
   //if (text.include? ';&l') || (found_macroish && (text.include? 'xref:'))
-  if ((result.contains('&') && result.contains(';&l')) ||
-      (foundMacroish && result.contains('xref:'))) {
+  if ((hasLiteral(result, '&') && hasLiteral(result, ';&l')) ||
+      (foundMacroish && hasLiteral(result, 'xref:'))) {
     result = InlineRun.replace(
       result,
       inlineXrefMacroScan,
@@ -1818,7 +1830,7 @@ String _subMacrosLinks(
     );
   }
 
-  if (foundMacroish && result.contains('tnote')) {
+  if (foundMacroish && hasLiteral(result, 'tnote')) {
     result = InlineRun.replace(
       result,
       inlineFootnoteMacroScan,
@@ -2450,7 +2462,9 @@ String extractPassthroughs(AbstractNode node, String text) {
   final compatMode = doc.compatMode;
   final passthrus = _passthroughsOf(node);
   var result = text;
-  if (text.contains('++') || text.contains(r'$$') || text.contains('ss:')) {
+  if (hasLiteral(text, '++') ||
+      hasLiteral(text, r'$$') ||
+      hasLiteral(text, 'ss:')) {
     result = InlineRun.replace(result, inlinePassMacroRx, (match) {
       final boundary = match.group(4);
       if (boundary != null) {
@@ -2637,8 +2651,8 @@ String extractPassthroughs(AbstractNode node, String text) {
 
   // NOTE we need to do the stem in a subsequent step to allow it to be
   // escaped by the former
-  if (result.contains(':') &&
-      (result.contains('stem:') || result.contains('math:'))) {
+  if (hasLiteral(result, ':') &&
+      (hasLiteral(result, 'stem:') || hasLiteral(result, 'math:'))) {
     result = InlineRun.replace(result, inlineStemMacroRx, (match) {
       // honor the escape
       if (match.group(0)!.startsWith(rs)) {

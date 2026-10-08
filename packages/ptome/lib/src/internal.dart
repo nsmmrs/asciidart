@@ -46,6 +46,7 @@ export 'manpage.dart';
 export 'options.dart';
 export 'parser.dart';
 export 'path_resolver.dart';
+export 'presence.dart';
 export 'reader.dart';
 export 'remote.dart';
 export 'ruby_semantics.dart';

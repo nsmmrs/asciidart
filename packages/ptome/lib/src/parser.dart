@@ -26,6 +26,7 @@ import 'package:ptome/src/helpers.dart';
 import 'package:ptome/src/inline.dart';
 import 'package:ptome/src/list.dart';
 import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/presence.dart';
 import 'package:ptome/src/reader.dart';
 import 'package:ptome/src/ruby_semantics.dart';
 import 'package:ptome/src/rx.dart';
@@ -2710,7 +2711,7 @@ abstract final class Parser {
     Reader reader, {
     Cursor? at,
   }) {
-    if (!text.contains('[[') && !text.contains('or:')) return;
+    if (!hasLiteral(text, '[[') && !hasLiteral(text, 'or:')) return;
     for (final match in inlineAnchorScanRx.allMatches(text)) {
       final String id;
       String? reftext;

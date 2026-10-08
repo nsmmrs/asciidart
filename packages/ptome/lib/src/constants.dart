@@ -5,6 +5,7 @@
 /// settings. Constants used by one file live in that file.
 library;
 
+import 'package:ptome/src/presence.dart';
 import 'package:ptome/src/rx.dart';
 
 /// String for matching the tab character (`TAB`).
@@ -190,8 +191,9 @@ class QuoteSub {
   /// match, so the (comparatively slow) regex scan can be skipped; the
   /// result is identical either way.
   bool mayMatch(String text) {
-    final open = text.indexOf(guard);
-    return open >= 0 && text.indexOf(closeGuard, open + guard.length) >= 0;
+    final open = literalIndexOf(text, guard);
+    return open >= 0 &&
+        literalIndexOf(text, closeGuard, open + guard.length) >= 0;
   }
 
   /// [pattern]'s matches, found by trying it only where one can start: a
