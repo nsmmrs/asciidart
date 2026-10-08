@@ -12,12 +12,12 @@ Byte-identical gate (ADR-0001 D4): the Ptome CLI against the
 Asciidoctor gem built from upstream `main` at `30fb8cd5`, via
 `tool/differential.dart` (normalization: version stamps and timestamps
 only). Until 2026-10-07 `master` targeted 2.0.26
-([ADR-0003](../adr/0003-target-latest-stable.md)); the last commit that
+([ADR-0003](../../../adr/0003-target-latest-stable.md)); the last commit that
 matched it is tagged `asciidoctor-2.0.26-parity`, and the 2.0.26 numbers
 below come from it. Upstream's changes since 2.0.26 were re-implemented on
 that architecture (the original port of main is tagged
 `archive/2.1.0-original-port`), and the gates now run against the gem built
-from main ([ADR-0017](../adr/0017-follow-main-fix-bugs.md)).
+from main ([ADR-0017](../../../adr/0017-follow-main-fix-bugs.md)).
 
 ## Corpus
 
@@ -284,7 +284,7 @@ Intentional differences:
 - Writing to standard output (`-o -`) is refused with a message; the gem
   fails with an internal error.
 - The EPUB3 backend is in the native executable only, not in the npm
-  package (see [ADR-0009](../adr/0009-epub3-backend.md)).
+  package (see [ADR-0009](../../../adr/0009-epub3-backend.md)).
 
 ## Upstream bugs fixed
 

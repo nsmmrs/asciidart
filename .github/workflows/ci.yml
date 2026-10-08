@@ -8,6 +8,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 permissions: read-all
+# ptome's jobs run in its package folder (the repository is a pub
+# workspace, ADR-0018).
+defaults:
+  run:
+    working-directory: packages/ptome
 jobs:
   dart:
     strategy:
@@ -140,21 +145,21 @@ jobs:
     - name: Build the npm package
       run: ./tool/build-npm.sh
     - name: Install the package test dependencies
-      working-directory: test/npm
+      working-directory: packages/ptome/test/npm
       run: npm ci
     - name: Run the package tests (API, exports, contents, bundler, browser)
-      working-directory: test/npm
+      working-directory: packages/ptome/test/npm
       env:
         CHROMIUM_PATH: /usr/bin/google-chrome
       run: node --test
     - name: Check the type declarations
-      working-directory: test/npm
+      working-directory: packages/ptome/test/npm
       run: npm run types
     - name: Lint the package (publint, are-the-types-wrong)
-      working-directory: test/npm
+      working-directory: packages/ptome/test/npm
       run: npm run lint
     - name: Check the package for npm (dry run, nothing is published)
-      working-directory: build/npm
+      working-directory: packages/ptome/build/npm
       run: npm publish --dry-run
     - name: Run the Dart tests on Node.js
       run: dart test -p node

@@ -113,7 +113,7 @@ startup dominates; it is a dev-mode runner, not a D2 candidate.
 
 The `_maxInt63` constant that once blocked `dart compile js` is gone; the
 npm package (`tool/build-npm.sh`, one dart2js `-O2` bundle, see
-[ADR-0005](../adr/0005-js-build.md)) runs the same core.
+[ADR-0005](../../../adr/0005-js-build.md)) runs the same core.
 `benchmark/throughput.mjs` times it in process on the corpus and options of
 `benchmark/throughput.dart` below (median of 15 after 5 warmups), next to
 Asciidoctor.js 4.1.0 (`@asciidoctor/core`, the JavaScript rewrite that
@@ -174,7 +174,7 @@ went from 17.6 to 14.8 ms.
 ## After the 2.0.26 retarget (2026-10-04)
 
 `master` now targets Asciidoctor 2.0.26 (see
-[ADR-0003](../adr/0003-target-latest-stable.md)); the earlier numbers above
+[ADR-0003](../../../adr/0003-target-latest-stable.md)); the earlier numbers above
 were taken against the 2.1.0.alpha.0 port. Same machine, same methods.
 
 CLI end to end (`ruby benchmark/bench-exe.rb --exe ...`, 3 warmup + 21

@@ -3,7 +3,7 @@
 Documents of our own that pin behavior the vendored fixture corpus
 (`vendor/asciidoctor/test/fixtures`) never exercised: where Asciidoctor
 2.0.26 (the release this port targets, see
-[ADR-0003](../../adr/0003-target-latest-stable.md)) differs from upstream
+[ADR-0003](../../../../adr/0003-target-latest-stable.md)) differs from upstream
 `main`, and differences found later. They run through the same differential
 harness:
 

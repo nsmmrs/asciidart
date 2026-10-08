@@ -2,10 +2,18 @@
 
 The bar for every change is unchanged output: Ptome must convert
 documents exactly as the Asciidoctor gem built from the vendored upstream
-commit (`main` at `30fb8cd5`, `tool/vendor.sh`) does (ADR-0001, ADR-0017),
+commit (`main` at `30fb8cd5`, `packages/ptome/tool/vendor.sh`) does (ADR-0001, ADR-0017),
 unless the difference is deliberate and listed in `benchmark/PARITY.md`
 (a fixed upstream bug, with its test in `test/bugfix/`; diagnostics, which
 read like a Dart tool's).
+
+## Layout
+
+The repository is a pub workspace ([ADR-0018](adr/0018-ptome-and-the-plain-workspace.md)):
+ptome is `packages/ptome`, and the libraries it is built on are
+`packages/plain_*`, each published on its own. `dart pub get` anywhere
+resolves the whole workspace. Paths and commands below are relative to a
+package's folder, `packages/ptome` unless they say otherwise.
 
 ## Setup
 

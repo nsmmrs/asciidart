@@ -3,10 +3,10 @@
 build/
 # Generated API docs (dart doc output; never committed)
 doc/api/
-# Pub lockfile for a library package (applications keep their own)
+# Pub lockfile (the workspace is libraries; applications keep their own)
 pubspec.lock
 # Release executables (tool/build-exes.sh output; never committed)
-/dist/
+dist/
 # Editor and OS noise
 .idea/
 *.iml

@@ -1,0 +1,51 @@
+name: ptome
+description: A processor for AsciiDoc documents, compatible with Asciidoctor 2.1.0.alpha.0 and fixing bugs it still has. Converts AsciiDoc to HTML 5, DocBook 5, man pages, PDF and EPUB.
+version: 0.1.0
+repository: https://github.com/nsmmrs/ptome/tree/master/packages/ptome
+issue_tracker: https://github.com/nsmmrs/ptome/issues
+# Not publishable while hilite is a git dependency (publish hilite first).
+publish_to: none
+topics:
+  - asciidoc
+  - documentation
+  - converter
+  - markup
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+executables:
+  ptome: ptome
+
+dependencies:
+  args: ^2.4.0
+  # Our compression and font libraries (libpdf's too); not on pub.dev yet.
+  compression:
+    git:
+      url: https://github.com/nsmmrs/compression.git
+      ref: 51b29595a17f9de9455b26c311df06075e50a9b1
+  fonts:
+    git:
+      url: https://github.com/nsmmrs/fonts.git
+      ref: 949dab6b6141e206204bd3c4e3c620eee7f7b840
+  # highlight.js for Dart; not on pub.dev yet, so pinned to a commit.
+  hilite:
+    git:
+      url: https://github.com/nsmmrs/hilite.git
+      ref: 595b0daa0138e3b7d4858f7c889c61804b4b5d0f
+  # Our PDF library (the pdf backend's engine); not on pub.dev yet.
+  libpdf:
+    git:
+      url: https://github.com/nsmmrs/libpdf.git
+      ref: 1a5ded246ebe79241ca239987f8363482632bbe1
+  meta: ^1.16.0
+  mustache_template: ^2.0.6
+  yaml: ^3.1.4
+
+dev_dependencies:
+  analyzer: ^14.0.0
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0
+  vm_service: ^15.0.0

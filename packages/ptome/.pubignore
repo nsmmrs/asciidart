@@ -13,14 +13,10 @@ node_modules/
 # Development only: the package is lib/, bin/, example/, doc/templates.md,
 # the README, CHANGELOG, LICENSE and pubspec.yaml. The vendored data and man/ files
 # are embedded in lib/ (lib/src/data.g.dart, lib/src/cli/help_topics.g.dart).
-/.github/
-/lane.json
-/adr/
 /benchmark/
 /vendor/
 /man/
 /npm/
 /test/
 /tool/
-/CONTRIBUTING.md
 /PORTING-REGEXP.md
