@@ -1,0 +1,6 @@
+// model/emph-strong.typ: emph-syntax
+// Basic.
+_Emphasized and *strong* words!_
+
+// Inside of a word it's a normal underscore or star.
+hello_world Nutzer*innen

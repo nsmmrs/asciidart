@@ -1,0 +1,4 @@
+An inline "`quote.`"
+
+[quote, The Test Author]
+A block-level quote.

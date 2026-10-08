@@ -1,0 +1,12 @@
+extends: ./../base-theme.yml
+code:
+  font-family: DejaVu Sans Mono
+  font-size: 8
+  font-color: #000000
+  padding: 0
+  border-width: 0
+  background-color: transparent
+  margin-top: 12
+  margin-bottom: 12
+  wrap-indent: 0
+  wrap-marker: none

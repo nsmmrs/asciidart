@@ -1,0 +1,23 @@
+extends: ./../base-theme.yml
+list:
+  indent: 0
+  body-indent: 5
+  item-spacing: 6.5
+  # (Attached to the paragraph above: a leading from it.)
+  margin-top: 6.5
+  margin-bottom: 12
+ulist:
+  marker:
+    nesting: ulist
+    disc:
+      content: "\u2022"
+    circle:
+      content: "\u2023"
+    square:
+      content: "\u2013"
+olist:
+  body-indent: 5
+  marker-width: auto
+# (The paragraph the list is attached to: a leading above it.)
+prose:
+  margin-bottom: 6.5

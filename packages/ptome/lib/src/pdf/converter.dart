@@ -367,7 +367,6 @@ final class PdfConverter extends BuiltInConverter
       hyphenRepetition: asciidoctorCompat(document, CompatFormat.pdf)
           ? HyphenRepetition.none
           : HyphenRepetition.forLanguage(document.attr('lang')),
-      typstLinks: !asciidoctorCompat(document, CompatFormat.pdf),
       typographicScripts:
           _theme.value('base_typographic_scripts') == const ThemeBool(true),
       labels: (key) => _layoutLabels[key],
@@ -4034,10 +4033,8 @@ final class PdfConverter extends BuiltInConverter
         // The modern engine's `<category>_cite_margin_top` and
         // `<category>_cite_text_align`; the gem's block margin, at the left.
         final margin =
-            ((_n('${category}_cite_margin_top')) ??
-                    _n('block_margin_bottom') ??
-                    0)
-                .toDouble();
+            _length('${category}_cite_margin_top', _font.size) ??
+            (_n('block_margin_bottom') ?? 0).toDouble();
         if (margin > 0) _out.add(SpacerBox(margin));
         _withFont('${category}_cite', () {
           final parts = [attribution, ?citeTitle].join(', ');
@@ -6519,7 +6516,7 @@ final class PdfConverter extends BuiltInConverter
     final unmarked =
         (node.context == BlockContext.ulist && _listBullets.last == null) ||
         (node.context == BlockContext.olist && _listNumerals.last == null);
-    var indent = (_n('list_indent') ?? 0).toDouble();
+    var indent = _length('list_indent', _font.size) ?? 0;
     if (unmarked) {
       if (node.style == 'unstyled') {
         indent = 0;
@@ -6646,7 +6643,7 @@ final class PdfConverter extends BuiltInConverter
     if (item.isCompound) {
       marginBottom = null;
     } else if (_nextEnclosedBlockDescending(item) != null) {
-      marginBottom = (_n('list_item_spacing') ?? 0).toDouble();
+      marginBottom = _length('list_item_spacing', _font.size) ?? 0;
     }
     final text = item.text;
     final primary = text == null || text.isEmpty
@@ -6822,8 +6819,8 @@ final class PdfConverter extends BuiltInConverter
       final termFont = _themeFont('description_list_term', _font);
       final termHeight = _typesetHeight(termFont);
       final proseHeight = _typesetHeight(_font);
-      final indent = (_n('description_list_description_indent') ?? 0)
-          .toDouble();
+      final indent =
+          _length('description_list_description_indent', _font.size) ?? 0;
       // `description_list_term_display: inline` (modern engine): a term
       // run in before its description, the lines after the first hanging
       // by the description indent.
@@ -6947,10 +6944,13 @@ final class PdfConverter extends BuiltInConverter
         ),
       );
     }
-    // The entries apart as paragraphs (Typst's terms: the paragraph
-    // spacing between items).
+    // The entries apart as paragraphs (Typst's wide terms: the paragraph
+    // spacing between items), or as `description_list_item_spacing` says
+    // (a tight list: the leading).
     if (!last) {
-      final spacing = (_n('prose_margin_bottom') ?? 0).toDouble();
+      final spacing =
+          _length('description_list_item_spacing', _font.size) ??
+          (_n('prose_margin_bottom') ?? 0).toDouble();
       if (spacing > 0) _out.add(SpacerBox(spacing));
     }
   }
@@ -7097,8 +7097,9 @@ final class PdfConverter extends BuiltInConverter
         ? (_n('callout_list_margin_top_after_code') ?? 0).toDouble()
         : 0.0;
     final spacing =
-        (_n('callout_list_item_spacing') ?? _n('list_item_spacing') ?? 0)
-            .toDouble();
+        _length('callout_list_item_spacing', _font.size) ??
+        _length('list_item_spacing', _font.size) ??
+        0;
     final align =
         _alignOf(node.roles) ??
         (_s('callout_list_text_align')) ??
@@ -7271,8 +7272,11 @@ final class PdfConverter extends BuiltInConverter
       markerFont,
       align: fixed == null ? 'right' : 'left',
       normalize: false,
-      characterSpacing: fixed == null ? -0.5 : 0,
+      // (The gem's tighter marker; not under Typst's list model.)
+      characterSpacing: fixed == null && _listBodyIndent == null ? -0.5 : 0,
       features: features,
+      // (A marker set at the end of its box doesn't hang into the gap.)
+      overhang: false,
     );
     if (_listBodyIndent case final bodyIndent?) {
       _listMarkerWidth = math.max(_listMarkerWidth, width);
@@ -7300,7 +7304,7 @@ final class PdfConverter extends BuiltInConverter
           if (desc.isCompound) {
             descMargin = null;
           } else if (_nextEnclosedBlockDescending(desc) != null) {
-            descMargin = (_n('list_item_spacing') ?? 0).toDouble();
+            descMargin = _length('list_item_spacing', _font.size) ?? 0;
           }
         }
         final children = _collect(() {
@@ -7355,7 +7359,7 @@ final class PdfConverter extends BuiltInConverter
         boxes,
         style: BoxStyle(
           margin: EdgeInsets(
-            left: (_n('list_indent') ?? 0).toDouble(),
+            left: _length('list_indent', _font.size) ?? 0,
             bottom: node.parent is ListItem
                 ? 0
                 : _marginBelow(node, fallback: 'prose'),
@@ -7441,6 +7445,7 @@ final class PdfConverter extends BuiltInConverter
     bool hyphenate = false,
     Set<String> features = const {},
     double? skew,
+    bool overhang = true,
   }) {
     var text = hyphenate ? _hyphenated(markup, align) : markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -7449,8 +7454,10 @@ final class PdfConverter extends BuiltInConverter
     text = text.replaceAll(RegExp('[\ufe00-\ufe0f]'), '');
 
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
-    if (text.contains('://')) {
-      text = _breakUrls(text, markup: inlineFormat);
+    // (`www.` links too, Typst's; not as asciidoctor-pdf breaks.)
+    final www = !asciidoctorCompat(_document, CompatFormat.pdf);
+    if (text.contains('://') || (www && text.contains('www.'))) {
+      text = _breakUrls(text, markup: inlineFormat, www: www);
     }
     // (Prose: preformatted text, set as it is, keeps its lines.)
     if (normalize && text.contains('/')) {
@@ -7505,7 +7512,7 @@ final class PdfConverter extends BuiltInConverter
         wrapMarker: wrapMarker,
         at: _at,
         skew: skew,
-        overhang: _overhangAmount(),
+        overhang: overhang ? _overhangAmount() : 0,
         capLines: _typstLeading(font) != null,
         justifyWidest:
             _choice('base_justify_width', const ['room', 'widest']) == 'widest',
@@ -8684,19 +8691,25 @@ final class PdfConverter extends BuiltInConverter
   /// opening bracket; a run of 16 characters or more anywhere in it. The
   /// modern engine's, in place of the gem's breaks after `/`, `?`, `&`
   /// and `#`.
-  static String _breakUrls(String text, {bool markup = true}) {
+  static String _breakUrls(String text, {bool markup = true, bool www = true}) {
     final out = StringBuffer();
     // The text between tags only (an href stays whole).
     final pieces = markup
         ? RegExp('<[^>]*>|[^<]+').allMatches(text).map((m) => m[0]!)
         : [text];
     for (final piece in pieces) {
-      if (piece.startsWith('<') || !piece.contains('://')) {
+      if (piece.startsWith('<') ||
+          (!piece.contains('://') && !(www && piece.contains('www.')))) {
         out.write(piece);
         continue;
       }
       out.write(
         piece.replaceAllMapped(_urlRx, (m) {
+          // A link after its scheme, or from its `www.` (Typst reads
+          // both as links).
+          if (m[4] case final link?) {
+            return www ? '${m[3]}${_linkBreaks(link)}' : m[0]!;
+          }
           final link = m[2]!;
           return '${m[1]}​${_linkBreaks(link)}';
         }),
@@ -8734,6 +8747,10 @@ final class PdfConverter extends BuiltInConverter
   static final RegExp _urlRx = RegExp(
     '([a-zA-Z][a-zA-Z0-9+.-]*://)'
     r"((?:[0-9A-Za-z!#$%*+,\-./:;=?@_~'\[\]()]|&amp;)*"
+    r'(?:[0-9A-Za-z#$%*+\-/=@_~\[\]()]|&amp;))'
+    // Or a link from its `www.`, where a word starts.
+    r'|(^|[\s\u00a0])'
+    r"(www\.(?:[0-9A-Za-z!#$%*+,\-./:;=?@_~'\[\]()]|&amp;)*"
     r'(?:[0-9A-Za-z#$%*+\-/=@_~\[\]()]|&amp;))',
   );
 
@@ -9173,7 +9190,8 @@ final class PdfConverter extends BuiltInConverter
         }
       }
     }
-    final indent = (_n('description_list_description_indent') ?? 0).toDouble();
+    final indent =
+        _length('description_list_description_indent', _font.size) ?? 0;
     // (A flat index's lines after the first: `index_hanging_indent`.)
     final hanging = flat == null
         ? indent * 2

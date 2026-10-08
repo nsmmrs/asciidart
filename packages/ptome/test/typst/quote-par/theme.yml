@@ -1,0 +1,10 @@
+extends: ./../base-theme.yml
+quote:
+  font-size: 1em
+  font-style: normal
+  border-width: 0
+  padding: [0, 10]
+  margin-top: 24
+  margin-bottom: 18
+  cite-margin-top: 0.9em
+  cite-text-align: right

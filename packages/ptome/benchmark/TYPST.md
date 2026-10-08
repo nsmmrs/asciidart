@@ -42,6 +42,25 @@ theme keys can say.
   breaks as asciidoctor-pdf does. (A hyphen after a word across
   formatting is set in another style than Typst's: 0.17 points.)
 
+The cases of lists, enums, term lists, headings, quotes, emphasis, smart
+quotes and code (lane TASK-kp5w21), their themes saying what Typst's
+defaults are, all break and fall as Typst's do. What they took:
+
+- Lengths in `em` where the theme keys say they're allowed
+  (`list_indent`, `list_item_spacing`, `description_list_description_indent`,
+  `quote_cite_margin_top`): they were read as plain numbers only.
+- A list marker set at the end of its box doesn't hang into the gap
+  (`overhang` moved an en dash 1.1 points), and under Typst's list model
+  (`list_body_indent`) it isn't tightened as the gem's is.
+- A run-in term list's items a leading apart in a tight list
+  (`description_list_item_spacing`; a paragraph spacing by default).
+- A font without a cap height (DejaVu Sans Mono, M+): its lines set on
+  its typographic ascender, as Typst does, not on its ascender.
+- What AsciiDoc doesn't say, the themes do: a list "attached" to the
+  paragraph above (no blank line in Typst; a list can't interrupt a
+  paragraph in AsciiDoc), a wide list (blank lines between items in
+  Typst; AsciiDoc doesn't tell them apart).
+
 The differences left, each deliberate or out of reach:
 
 - `justify-avoid-runts`: both layouts cost the same (77.777: one line of
@@ -62,6 +81,10 @@ The differences left, each deliberate or out of reach:
 
 | Case | Lines (Typst, ptome) | Broken alike | Edges | Line tops | First line | Pages |
 | --- | --- | --- | --- | --- | --- | --- |
+| emph-syntax | 4, 4 | 4 of 4 | 0.00 | 0.00 | -0.00 | 1, 1 |
+| enum-built-in-loop | 5, 5 | 5 of 5 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| enum-numbering-reversed | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| heading-basic | 3, 3 | 3 of 3 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | hs-justify-indent | 6, 6 | 6 of 6 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | hyphenate-between-shape-runs | 2, 2 | 2 of 2 | 0.17 | 0.00 | +0.00 | 1, 1 |
 | hyphenate-es-capitalized-names | 6, 6 | 6 of 6 | 0.00 | 0.00 | +0.00 | 1, 1 |
@@ -73,6 +96,7 @@ The differences left, each deliberate or out of reach:
 | hyphenate-pt-repeat-hyphen-natural-word-breaking | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | hyphenate-punctuation | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | hyphenate-repeat-style | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| issue-1050-terms-indent | 12, 12 | 12 of 12 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | issue-hyphenate-after-tag | 2, 2 | 2 of 2 | 0.17 | 0.00 | -0.00 | 1, 1 |
 | issue-hyphenate-in-link | 3, 3 | 0 of 3 | 18.55 | 0.00 | +0.00 | 1, 1 |
 | justify | 6, 6 | 6 of 6 | 0.00 | 0.00 | +0.00 | 1, 1 |
@@ -87,7 +111,7 @@ The differences left, each deliberate or out of reach:
 | linebreak-hyphen-nbsp | 2, 2 | 2 of 2 | 0.11 | 0.00 | +0.00 | 1, 1 |
 | linebreak-link | 9, 9 | 9 of 9 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-link-end | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
-| linebreak-link-justify | 7, 7 | 5 of 7 | 0.00 | 0.00 | -0.00 | 1, 1 |
+| linebreak-link-justify | 7, 7 | 7 of 7 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | linebreak-manual | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-manual-consecutive | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-manual-directly-after-automatic | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
@@ -98,8 +122,18 @@ The differences left, each deliberate or out of reach:
 | linebreak-overflow-double | 2, 4 | 0 of 2 | 77.62 | 0.00 | +0.00 | 1, 1 |
 | linebreak-shape-run | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | linebreak-simple-without-justify | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| list-attached | 4, 4 | 4 of 4 | 0.00 | 0.00 | -0.00 | 1, 1 |
+| list-basic | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| list-marker-dash | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| list-nested | 9, 9 | 9 of 9 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-basic | 19, 19 | 19 of 19 | 0.00 | 0.00 | +0.00 | 3, 3 |
 | par-explicit-trim-space | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-leading-and-spacing | 5, 5 | 5 of 5 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-metadata-after-trimmed-space | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-spacing-and-first-line-indent | 4, 4 | 4 of 4 | 0.00 | 0.00 | -0.00 | 1, 1 |
+| quote-par | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| raw-align-default | 4, 4 | 4 of 4 | 0.00 | 0.00 | -0.00 | 1, 1 |
+| raw-tab-size | 12, 12 | 12 of 12 | 0.00 | 0.00 | -0.00 | 1, 1 |
+| smartquote | 5, 5 | 5 of 5 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| terms-built-in-loop | 4, 4 | 4 of 4 | 0.00 | 0.00 | -0.00 | 1, 1 |
+| terms-multiline | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |

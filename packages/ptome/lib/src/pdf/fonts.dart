@@ -139,6 +139,19 @@ final class TrueTypeFont extends FontFace {
 
   late final double _scale;
 
+  /// The height of capital letters, where lines are set on it (Typst's
+  /// model): the font's `OS/2` cap height, else its typographic ascender
+  /// (as Typst takes it; the PDF's font descriptor keeps its own).
+  @override
+  double capHeightAt(double size) {
+    final font = pdf.font;
+    final units = switch (font.capHeight) {
+      final cap? when cap > 0 => cap,
+      _ => font.typoAscender ?? font.ascender,
+    };
+    return units / font.unitsPerEm * size;
+  }
+
   @override
   late final int ascender;
 

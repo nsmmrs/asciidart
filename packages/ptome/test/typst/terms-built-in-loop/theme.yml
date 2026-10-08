@@ -1,0 +1,11 @@
+extends: ./../base-theme.yml
+# Typst's term lists: the term strong, then h(0.6em), run in; the lines
+# after the first indented 2em; the items a leading apart (a tight list).
+description-list:
+  term-display: inline
+  term-gap: 0.6em
+  term-font-style: bold
+  description-indent: 2em
+  item-spacing: 0.65em
+  margin-top: 12
+  margin-bottom: 12

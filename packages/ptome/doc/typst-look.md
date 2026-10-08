@@ -64,6 +64,7 @@ the fonts Ptome bundles.
 | `callout_list_indent`, `_marker_width`, `_marker_text_align`, `_marker_content` | callouts as an `enum` | `1em`, `1em`, `left`, `'{{number}}.'` | lengths; alignments; templates |
 | `description_list_term_display`, `_term_gap` | `terms(separator: h(0.6em))`, run in | `inline`, `0.6em` | `block` (default), `inline`; `0`–`2em` |
 | `description_list_description_indent` | `terms(hanging-indent)` | `2em` (the book: `1em`) | `0`–`3em` |
+| `description_list_item_spacing` | `terms(spacing)`: a tight list's items a leading apart, a wide one's a paragraph spacing | the leading or `1.2em` | any length (default: the paragraph spacing) |
 
 ## Code
 

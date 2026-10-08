@@ -1,0 +1,15 @@
+extends: ./../base-theme.yml
+description-list:
+  term-display: inline
+  term-gap: 0.6em
+  term-font-style: bold
+  description-indent: 2em
+  item-spacing: 0.65em
+  margin-top: 12
+  margin-bottom: 12
+list:
+  item-spacing: 6.5
+base:
+  font-size: 8
+prose:
+  margin-bottom: 9.6

@@ -1,0 +1,20 @@
+extends: ./../base-theme.yml
+list:
+  indent: 0
+  body-indent: 5
+  # (A wide list: items a paragraph spacing apart.)
+  item-spacing: 12
+  margin-top: 12
+  margin-bottom: 12
+ulist:
+  marker:
+    nesting: ulist
+    disc:
+      content: "\u2022"
+    circle:
+      content: "\u2023"
+    square:
+      content: "\u2013"
+olist:
+  body-indent: 5
+  marker-width: auto
