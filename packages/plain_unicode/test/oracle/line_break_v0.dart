@@ -1,12 +1,12 @@
-/// Line break opportunities by the Unicode Line Breaking Algorithm
-/// (UAX #14, Unicode 18.0), with its default rules.
+/// The line breaker as of 17001e86, frozen: a binary search over ranges,
+/// a `_Unit` object per character and the rules as written in UAX #14.
+/// The oracle the optimized `lib/src/line_break.dart` is compared with
+/// (`test/line_break_equivalence_test.dart`); never change it.
 library;
 
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:meta/meta.dart';
-import 'package:plain_unicode/src/line_break_data.g.dart' as data;
+
+import 'line_break_data_v0.dart';
 
 /// A Line_Break class (UAX #14, 5.1).
 enum LineBreakClass {
@@ -158,53 +158,31 @@ enum LineBreakClass {
   xx,
 }
 
-// The flags of a code point's properties (bits 12-15; see
-// line_break_data.g.dart).
-const int _eastAsian = 1 << 12;
-const int _initialPunctuation = 1 << 13;
-const int _finalPunctuation = 1 << 14;
-const int _unassignedPictographic = 1 << 15;
+const int _eastAsian = 1 << 6;
+const int _initialPunctuation = 1 << 7;
+const int _finalPunctuation = 1 << 8;
+const int _unassignedPictographic = 1 << 9;
+const int _combiningMark = 1 << 10;
 
-/// The line breaking properties of every code point, decoded on first use
-/// from the generated three-stage table.
-final class _PropertyTable {
-  new()
-    : palette = Uint16List.fromList(data.palette),
-      stage1 = _words(data.stage1),
-      stage2 = _words(data.stage2),
-      stage3 = base64.decode(data.stage3);
-
-  final Uint16List palette;
-  final Uint16List stage1;
-  final Uint16List stage2;
-  final Uint8List stage3;
-
-  /// The properties of [codePoint] (0 to 0x10FFFF): its class (bits 0-5),
-  /// the class the rules use (bits 6-11) and its flags.
-  @pragma('vm:prefer-inline')
-  @pragma('dart2js:prefer-inline')
-  int operator [](int codePoint) =>
-      palette[stage3[stage2[stage1[codePoint >> 11] + (codePoint >> 5 & 63)] +
-          (codePoint & 31)]];
-
-  /// The little-endian 16-bit integers of [encoded], in base64.
-  static Uint16List _words(String encoded) {
-    final bytes = base64.decode(encoded);
-    final words = Uint16List(bytes.length >> 1);
-    for (var i = 0; i < words.length; i++) {
-      words[i] = bytes[2 * i] | bytes[2 * i + 1] << 8;
+/// The line breaking properties of [codePoint]: its class (as in the data)
+/// and flags.
+int _properties(int codePoint) {
+  var low = 0;
+  var high = rangeStarts.length - 1;
+  while (low < high) {
+    final middle = (low + high + 1) >> 1;
+    if (rangeStarts[middle] <= codePoint) {
+      low = middle;
+    } else {
+      high = middle - 1;
     }
-    return words;
   }
+  return rangeValues[low];
 }
-
-final _PropertyTable _properties = _PropertyTable();
 
 /// The Line_Break class of [codePoint], as in the Unicode data.
-LineBreakClass lineBreakClass(int codePoint) {
-  final c = codePoint < 0 ? 0 : (codePoint > 0x10ffff ? 0x10ffff : codePoint);
-  return LineBreakClass.values[_properties[c] & 0x3f];
-}
+LineBreakClass lineBreakClass(int codePoint) =>
+    LineBreakClass.values[_properties(codePoint) & 0x3f];
 
 /// A place text may (or must) be broken: before the code unit at
 /// [offset].
@@ -290,11 +268,20 @@ List<LineBreak> lineBreaks(String text) {
 /// marks attached to their base (LB9) or made alphabetic (LB10).
 List<_Unit> _units(String text) {
   final units = <_Unit>[];
-  final table = _properties;
   var offset = 0;
   for (final rune in text.runes) {
-    final properties = table[rune];
-    final cls = LineBreakClass.values[properties >> 6 & 0x3f];
+    final properties = _properties(rune);
+    final original = LineBreakClass.values[properties & 0x3f];
+    final cls = switch (original) {
+      LineBreakClass.ai ||
+      LineBreakClass.sg ||
+      LineBreakClass.xx => LineBreakClass.al,
+      LineBreakClass.sa when properties & _combiningMark != 0 =>
+        LineBreakClass.cm,
+      LineBreakClass.sa => LineBreakClass.al,
+      LineBreakClass.cj => LineBreakClass.ns,
+      final c => c,
+    };
     final start = offset;
     offset += rune > 0xffff ? 2 : 1;
     if (cls == LineBreakClass.cm || cls == LineBreakClass.zwj) {

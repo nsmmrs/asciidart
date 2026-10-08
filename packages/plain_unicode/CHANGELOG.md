@@ -9,3 +9,8 @@
   Final_Sigma rule, checked against Ruby 4.0.7 and Node.js for every code
   point. It replaces ptome's Ruby-generated table and plain_highlighting's
   use of the platform's tables.
+- Line breaking is faster, with the same breaks: the line break
+  properties are a three-stage table (25.7 KB of data, ICU's layout)
+  instead of a binary search over 3,851 ranges, with the class the rules
+  use resolved at generation time. `lineBreakClass` takes 5.5 ns instead
+  of 16.
