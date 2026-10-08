@@ -605,6 +605,7 @@ final class PdfConverter extends BuiltInConverter
         for (final (section, anchor) in _sections)
           if (_opensPages(section)) ?_anchorPages[anchor],
       };
+      _pageMarks = _marksByPage(result, pageCount: result.pageCount);
     }
 
     measure();
@@ -7731,6 +7732,47 @@ final class PdfConverter extends BuiltInConverter
 
   // Running content.
 
+  /// The first and last mark anchor on each page (by 0-based page):
+  /// `running_content_marks` names the prefix of the anchors that are
+  /// marks (`v-` for a Bible's verses); a page without one has the last
+  /// one before it for both.
+  List<(String, String)?> _pageMarks = const [];
+
+  /// [result]'s mark anchors (see [_pageMarks]), in reading order.
+  List<(String, String)?> _marksByPage(
+    LayoutResult result, {
+    required int pageCount,
+  }) {
+    final prefix = _s('running_content_marks');
+    if (prefix == null || prefix.isEmpty) return const [];
+    final first = <int, String>{};
+    final last = <int, String>{};
+    for (final MapEntry(:key, :value) in result.anchors.entries) {
+      if (!key.startsWith(prefix)) continue;
+      first.putIfAbsent(value.page, () => key);
+      last[value.page] = key;
+    }
+    final marks = <(String, String)?>[];
+    String? before;
+    for (var page = 0; page < pageCount; page++) {
+      if ((first[page], last[page]) case (final a?, final b?)) {
+        marks.add((a, b));
+        before = b;
+      } else {
+        final carried = before;
+        marks.add(carried == null ? null : (carried, carried));
+      }
+    }
+    return marks;
+  }
+
+  /// The text a mark anchor stands for: its reference text, else its id.
+  String _markText(String id) => switch (_document.catalog.refs[id]) {
+    final Inline inline => inline.reftext ?? id,
+    final AbstractNode node => node.reftext ?? id,
+    null => id,
+  };
+
   /// The pages before the running content starts, and before the page
   /// numbers start (the gem's `num_front_matter_pages`).
   (int, int) _skip = (0, 0);
@@ -8224,6 +8266,15 @@ final class PdfConverter extends BuiltInConverter
       return _sections[index].$1.numeral;
     }
 
+    // The first and last mark on the page (`running_content_marks`): a
+    // Bible's first and last verse, `{page-first-mark}–{page-last-mark}`.
+    if (_pageMarks.elementAtOrNull(page.number - 1) case (
+      final first,
+      final last,
+    )) {
+      attributes['page-first-mark'] = _markText(first);
+      attributes['page-last-mark'] = _markText(last);
+    }
     final sectlevels = (_n('${periphery}_sectlevels') ?? 2).toInt();
     final partMark = page.mark('part');
     var chapterMark = page.mark('chapter');

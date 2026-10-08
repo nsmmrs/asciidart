@@ -188,6 +188,36 @@ void main() {
       expect(two.$3, greaterThan(alphas.map((w) => w.$3).reduce(math.max)));
     });
 
+    test("running content names a page's first and last mark", () {
+      // Anchors whose ids start with `running_content_marks`: their
+      // reference text, the first and last on each page (a page without
+      // one has the last before it).
+      final paragraphs = [
+        for (var i = 1; i <= 60; i++) '[[m-$i,Mark $i]]Text of mark $i.',
+      ];
+      final pdf = _pdf(
+        '= Marks\n\n${paragraphs.join('\n\n')}\n\n'
+        '<<<\n\nNo mark here.\n',
+        theme:
+            'running-content:\n  marks: m-\nheader:\n  height: 0.5in\n'
+            '  recto:\n    center:\n      content: '
+            "'{page-first-mark} to {page-last-mark}'\n"
+            '  verso:\n    center:\n      content: '
+            "'{page-first-mark} to {page-last-mark}'\n",
+      );
+      final pages = _pages(pdf).where((p) => p.isNotEmpty).toList();
+      expect(pages.length, greaterThan(2));
+      String first(List<String> page) =>
+          RegExp(r'Text of mark (\d+)').firstMatch(page.join('\n'))![1]!;
+      String last(List<String> page) =>
+          RegExp(r'Text of mark (\d+)').allMatches(page.join('\n')).last[1]!;
+      for (final page in pages.take(pages.length - 1)) {
+        expect(page.first, 'Mark ${first(page)} to Mark ${last(page)}');
+      }
+      // The page without one: the last mark before it, twice.
+      expect(pages.last.first, 'Mark 60 to Mark 60');
+    });
+
     test('lines stay within the column', () {
       final pdf = _pdf('$_paragraph\n\n$_paragraph $_paragraph');
       final bbox =

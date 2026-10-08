@@ -314,6 +314,7 @@ each use, which is asciidoctor-pdf's default). With `media` other than
 | `running_content_on_openers` | `false` | A page that opens a part or chapter has no header or footer unless this is `true`. |
 | `section_role_<role>_running_content_on_openers` | | `true` keeps the running content on the first page of a part or chapter with that role (a foreword set as an ordinary heading). |
 | `header_title_style`, `footer_title_style` | `document` | As in asciidoctor-pdf (`document`, `toc`, `basic`). |
+| `running_content_marks` | | A prefix of anchor ids (`v-`): those anchors are the pages' marks, and running content may refer to `{page-first-mark}` and `{page-last-mark}`, the reference text of the first and last on the page (a page without one has the last one before it): a Bible's running head, `EXODUS 33:14`, from `[[v-exo-33-14,Exodus 33:14]]`. |
 
 Running content may be a template: `'{{#chapter-numeral}}{{chapter-numeral}}. {{/chapter-numeral}}{{chapter-title}} · {page-number}'`
 writes `3. A Web 1.0 Application · 71`, and on an unnumbered chapter's
