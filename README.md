@@ -44,6 +44,44 @@ dart test                            # the same, one package:test test per case 
 ```
 
 `regen` takes `-p <profile>` and case-id prefixes to limit what it runs.
+
+## Building the corpus
+
+```sh
+# The pool (sources.toml): fetched, indexed, measured; never committed.
+dart run bin/ascii_docs.dart pool fetch
+dart run bin/ascii_docs.dart pool capture      # inputs Asciidoctor's own tests convert
+dart run bin/ascii_docs.dart pool index
+dart run bin/ascii_docs.dart pool measure      # per-conversion Ruby coverage, output hashes
+dart run bin/ascii_docs.dart pool stats        # unions and the set cover
+dart --branch-coverage bin/ascii_docs.dart pool dart-cov -f html5 \
+  --first ~/.cache/ascii-docs/pool/ruby-cover.txt   # asciidart elements beyond the Ruby cover
+
+# Anchors: chosen, cut down, sanitized, verified, written to cases/anchor.
+dart run bin/ascii_docs.dart anchor --lanes 6
+dart run bin/ascii_docs.dart regen anchor
+
+# The generator and fuzzer.
+dart run bin/ascii_docs.dart gen 42            # the document seed 42 generates
+dart run bin/ascii_docs.dart fuzz --seconds 600 -j 8
+dart run bin/ascii_docs.dart triage            # minimize findings, list them
+
+# Gates.
+dart run bin/ascii_docs.dart oracles           # invariants hold on every recorded output
+dart run bin/ascii_docs.dart coverage --gate   # Ruby: reached or excluded
+dart --branch-coverage bin/ascii_docs.dart dart-coverage --gate   # asciidart
+```
+
+Sanitizing replaces every word of prose (titles, paragraphs, cells, prose
+attribute values, code identifiers) with a pseudo-word of the same length,
+case pattern and script, one to one over the document's vocabulary, and
+keeps markup, punctuation, digits, attribute and macro names, targets and
+URLs. A sanitized document must reach every line and branch the original
+did in both Ruby profiles, convert to output with the original's letter
+shape, and still agree between asciidart and Asciidoctor main. Words whose
+replacement breaks that stay original and are listed in the case's
+`kept-words`.
+
 Checkouts, gems, the raw pool and fuzzer state live in
 `$ASCII_DOCS_CACHE` (default `~/.cache/ascii-docs`) and are never
 committed.
