@@ -12,6 +12,7 @@ import 'commands/check.dart';
 import 'commands/coverage.dart';
 import 'fuzz/loop.dart';
 import 'fuzz/oracles.dart';
+import 'fuzz/promote.dart';
 import 'oracle/ptome_runner.dart';
 import 'oracle/dart_coverage.dart';
 import 'fuzz/triage.dart';
@@ -513,6 +514,7 @@ final class FuzzCommand extends Command<int> {
 /// `ascii_docs triage`: minimizes recorded findings and lists them.
 final class TriageCommand extends Command<int> {
   TriageCommand() {
+    argParser.addOption('top', help: 'Only the N most frequent signatures.');
     argParser.addOption(
       'jobs',
       abbr: 'j',
@@ -532,6 +534,10 @@ final class TriageCommand extends Command<int> {
     final results = await minimizeFindings(
       Corpus.open(),
       jobs: int.parse(argResults!.option('jobs')!),
+      top: switch (argResults!.option('top')) {
+        final String n => int.parse(n),
+        null => null,
+      },
       log: stderr.writeln,
     );
     results.sort(
@@ -799,5 +805,37 @@ final class DartCoverageCommand extends Command<int> {
     }
     await coverage.close();
     return args.flag('gate') && unreached.isNotEmpty ? 1 : 0;
+  }
+}
+
+/// `ascii_docs promote`: fuzzer finds that reach new code become cases.
+final class PromoteCommand extends Command<int> {
+  PromoteCommand() {
+    argParser.addOption(
+      'jobs',
+      abbr: 'j',
+      defaultsTo: '${Platform.numberOfProcessors ~/ 2}',
+    );
+  }
+
+  @override
+  String get name => 'promote';
+
+  @override
+  String get description =>
+      'Write the queued fuzz documents that reach code no case does to cases/found.';
+
+  @override
+  Future<int> run() async {
+    final report = await promote(
+      Corpus.open(),
+      jobs: int.parse(argResults!.option('jobs')!),
+      log: stdout.writeln,
+    );
+    stdout.writeln(
+      '${report.written.length} found cases written (${report.candidates} conversions examined, '
+      '${report.disagreeing} reach new code but Ruby and ptome disagree: triage those)',
+    );
+    return 0;
   }
 }

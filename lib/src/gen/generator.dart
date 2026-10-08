@@ -153,7 +153,13 @@ final class _Generator {
       ]);
       return Generated(doc, seed, words, options, pathological: pathological);
     }
-    if (rng.chance(config.header)) doc.header = _header();
+    if (rng.chance(config.header)) {
+      // Embedded output leaves the document title out (unless showtitle).
+      final saved = suppressWords;
+      suppressWords = !options.standalone;
+      doc.header = _header();
+      suppressWords = saved;
+    }
     if (doctype == 'book') sectionLevel = -1;
     doc.blocks.addAll(
       _sectionBody(rng.between(1, config.maxBlocks), 0, top: true),

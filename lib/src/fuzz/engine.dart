@@ -7,7 +7,6 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../oracle/ptome_pool.dart';
 import '../oracle/ruby_pool.dart';
 import '../spec/conversion.dart';
 import '../spec/corpus.dart';
@@ -64,7 +63,10 @@ final class FuzzEngine {
   final RubyProfile ruby;
   final PtomeProfile ptome;
   final RubyPool rubyPool;
-  final PtomePool dartPool;
+
+  /// ptome in worker processes (bin/ptome_worker.dart, compiled AOT): a
+  /// document that hangs or crashes it costs one process.
+  final RubyPool dartPool;
 
   /// An empty directory to convert in (includes resolve to nothing).
   final String baseDir;
@@ -90,10 +92,25 @@ final class FuzzEngine {
         size: jobs,
         coverage: true,
       ),
-      await PtomePool.start(size: jobs),
+      await RubyPool.withWorkers(() => _ptomeWorker(corpus.root), size: jobs),
       base.path,
     );
   }
+
+  static Future<RubyWorker> _ptomeWorker(String root) => RubyWorker.spawn(
+    [
+      'systemd-run',
+      '--user',
+      '--scope',
+      '-q',
+      '-p',
+      'MemoryMax=2G',
+      '-p',
+      'MemorySwapMax=0', //
+      ptomeWorkerExecutable(root),
+    ],
+    environment: {...Platform.environment, 'TZ': 'UTC'},
+  );
 
   Future<Examination> examine(
     String text,
@@ -145,6 +162,63 @@ final class FuzzEngine {
 
   Future<void> close() async {
     await rubyPool.close();
-    dartPool.close();
+    await dartPool.close();
   }
+}
+
+/// build/ptome_worker, compiled from bin/ptome_worker.dart when missing or
+/// older than the sources (ascii-docs' and the ptome checkout's).
+String ptomeWorkerExecutable(String root) {
+  final exe = File(p.join(root, 'build', 'ptome_worker'));
+  DateTime newest(String dir) {
+    var latest = DateTime(1970);
+    final d = Directory(dir);
+    if (!d.existsSync()) return latest;
+    for (final f in d.listSync(recursive: true).whereType<File>()) {
+      if (!f.path.endsWith('.dart')) continue;
+      final m = f.lastModifiedSync();
+      if (m.isAfter(latest)) latest = m;
+    }
+    return latest;
+  }
+
+  final config = File(p.join(root, '.dart_tool', 'package_config.json'));
+  final ptomeRoot = RegExp(r'"name": "ptome",\s*"rootUri": "([^"]+)"')
+      .firstMatch(config.existsSync() ? config.readAsStringSync() : '')?[1];
+  final sources = [
+    newest(p.join(root, 'lib')),
+    newest(p.join(root, 'bin')),
+    if (ptomeRoot != null)
+      newest(
+        p.join(
+          p.normalize(
+            p.join(
+              root,
+              '.dart_tool',
+              Uri.decodeFull(ptomeRoot).replaceFirst('file://', ''),
+            ),
+          ),
+          'lib',
+        ),
+      ),
+  ].reduce((a, b) => a.isAfter(b) ? a : b);
+  if (!exe.existsSync() || exe.lastModifiedSync().isBefore(sources)) {
+    exe.parent.createSync(recursive: true);
+    final result = Process.runSync(Platform.resolvedExecutable, [
+      'compile',
+      'exe',
+      p.join(root, 'bin', 'ptome_worker.dart'),
+      '-o',
+      exe.path, //
+    ]);
+    if (result.exitCode != 0) {
+      throw ProcessException(
+        'dart',
+        ['compile', 'exe'],
+        '${result.stdout}${result.stderr}',
+        result.exitCode,
+      );
+    }
+  }
+  return exe.path;
 }

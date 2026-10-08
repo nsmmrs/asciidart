@@ -1,0 +1,9 @@
+description = "Found by the fuzzer: reaches code no other case did."
+source = "gen:mut-100277"
+formats = ["docbook5"]
+
+[options]
+standalone = true
+
+[attributes]
+"linkcss" = "@"

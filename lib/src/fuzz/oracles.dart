@@ -123,7 +123,10 @@ List<Finding> checkInvariants(
     case Format.html5:
       final problem = htmlBalanceProblem(output);
       if (problem != null) findings.add(Finding('html-balance', problem));
-    case Format.manpage:
+    // Embedded man pages lack the preamble that defines macros such as
+    // MTO and URL; only whole pages are checked.
+    case Format.manpage
+        when output.startsWith("'\\\" t") || output.contains('\n.TH '):
       final problem = troffProblem(output);
       if (problem != null) findings.add(Finding('troff', problem));
     default:
@@ -246,7 +249,7 @@ String? troffProblem(String manpage) {
   try {
     final result = Process.runSync(
       'groff',
-      ['-t', '-man', '-Tutf8', '-ww', '-z', file.path],
+      ['-k', '-t', '-man', '-Tutf8', '-ww', '-z', file.path],
       environment: const {'LC_ALL': 'C.UTF-8'},
     );
     // Line-breaking complaints are typesetting, not structure.

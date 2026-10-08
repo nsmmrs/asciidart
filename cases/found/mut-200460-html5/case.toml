@@ -1,0 +1,10 @@
+description = "Found by the fuzzer: reaches code no other case did."
+source = "gen:mut-200460"
+formats = ["html5"]
+
+[options]
+standalone = true
+
+[attributes]
+"source-highlighter" = "html-pipeline"
+"linkcss" = ""

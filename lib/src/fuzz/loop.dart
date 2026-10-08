@@ -165,6 +165,17 @@ Future<FuzzReport> fuzz(
   await Future.wait([for (var i = 0; i < jobs; i++) lane()]);
   report.watch.stop();
   saveCoverage(engine.ruby, covered);
+  // How often each signature came up, for triage to start with the most
+  // frequent (merged with earlier runs).
+  final summary = File(p.join(fuzzDir, 'signatures.json'));
+  final counts = summary.existsSync()
+      ? (jsonDecode(summary.readAsStringSync()) as Map<String, Object?>)
+            .cast<String, int>()
+      : <String, int>{};
+  for (final MapEntry(:key, :value) in report.findings.entries) {
+    counts[key] = (counts[key] ?? 0) + value;
+  }
+  summary.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(counts));
   await engine.close();
   return report;
 }

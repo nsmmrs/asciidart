@@ -81,9 +81,10 @@ final class PtomePool {
   /// it was killed.
   Future<_Worker> _live(int i) async {
     if (!_workers[i].dead) return _workers[i];
-    final replacement = _respawning[i] ??= _Worker.spawn().whenComplete(
-      () => _respawning.remove(i),
-    );
+    final replacement = _respawning[i] ??= _Worker.spawn().whenComplete(() {
+      // Not `=> remove(i)`: that returns this future, which would wait on itself.
+      _respawning.remove(i);
+    });
     return _workers[i] = await replacement;
   }
 

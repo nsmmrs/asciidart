@@ -1,0 +1,6 @@
+description = "Found by the fuzzer: reaches code no other case did."
+source = "gen:gen-417470"
+formats = ["html5"]
+
+[attributes]
+"sectnums" = ""

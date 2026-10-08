@@ -25,12 +25,27 @@ final class TriagedFinding {
 Future<List<TriagedFinding>> minimizeFindings(
   Corpus corpus, {
   int jobs = 4,
+  int? top,
   void Function(String)? log,
 }) async {
   final root = Directory(p.join(fuzzDir, 'findings'));
   if (!root.existsSync()) return const [];
-  final dirs = root.listSync().whereType<Directory>().toList()
+  var dirs = root.listSync().whereType<Directory>().toList()
     ..sort((a, b) => a.path.compareTo(b.path));
+  // The most frequent signatures first (fuzz runs count them).
+  final summary = File(p.join(fuzzDir, 'signatures.json'));
+  if (top != null && summary.existsSync()) {
+    final counts = (jsonDecode(
+      summary.readAsStringSync(),
+    ) as Map<String, Object?>).cast<String, int>();
+    final ranked = counts.keys.toList()
+      ..sort((a, b) => counts[b]!.compareTo(counts[a]!));
+    final wanted = {for (final s in ranked.take(top)) signatureHash(s)};
+    dirs = [
+      for (final d in dirs)
+        if (wanted.contains(p.basename(d.path))) d,
+    ];
+  }
   final engine = await FuzzEngine.start(corpus, jobs: jobs, workDir: fuzzDir);
   final results = <TriagedFinding>[];
   var next = 0;

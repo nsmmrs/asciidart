@@ -105,10 +105,20 @@ final class RubyWorker {
             'MemorySwapMax=0',
             ...ruby,
           ];
+    return spawn(command, environment: env);
+  }
+
+  /// Starts any process that speaks the worker protocol (a header line,
+  /// then one response line per request line): Ruby's worker.rb, or
+  /// ptome's `bin/ptome_worker.dart`.
+  static Future<RubyWorker> spawn(
+    List<String> command, {
+    required Map<String, String> environment,
+  }) async {
     final process = await Process.start(
       command.first,
       command.skip(1).toList(),
-      environment: env,
+      environment: environment,
       includeParentEnvironment: false,
     );
     final stderrText = StringBuffer();
@@ -191,7 +201,9 @@ final class RubyWorker {
         Converted(
           id: conversion.id,
           micros: micros,
-          output: json['output']! as String,
+          output:
+              json['output'] as String? ??
+              base64.decode(json['output_base64']! as String),
           log: [
             for (final entry
                 in (json['log']! as List).cast<Map<String, Object?>>())
@@ -248,11 +260,10 @@ final class RubyWorker {
 /// [size] workers of one profile; conversions go to the least busy one, and
 /// a worker that dies (timeout, crash) is replaced.
 final class RubyPool {
-  RubyPool._(this.profile, this._repoRoot, this._coverage, this._workers);
+  RubyPool._(this._spawn, this._workers);
 
-  final RubyProfile profile;
-  final String _repoRoot;
-  final bool _coverage;
+  /// Starts a replacement worker.
+  final Future<RubyWorker> Function() _spawn;
   final List<RubyWorker> _workers;
 
   /// Replacements being started, by slot, so concurrent callers that find
@@ -261,11 +272,10 @@ final class RubyPool {
 
   Future<RubyWorker> _live(int i) async {
     if (!_workers[i].dead) return _workers[i];
-    final replacement = _restarting[i] ??= RubyWorker.start(
-      profile,
-      repoRoot: _repoRoot,
-      coverage: _coverage,
-    ).whenComplete(() => _restarting.remove(i));
+    final replacement = _restarting[i] ??= _spawn().whenComplete(() {
+      // Not `=> remove(i)`: that returns this future, which would wait on itself.
+      _restarting.remove(i);
+    });
     return _workers[i] = await replacement;
   }
 
@@ -274,13 +284,19 @@ final class RubyPool {
     required String repoRoot,
     int size = 1,
     bool coverage = false,
-  }) async {
-    final workers = await Future.wait([
-      for (var i = 0; i < size; i++)
-        RubyWorker.start(profile, repoRoot: repoRoot, coverage: coverage),
-    ]);
-    return RubyPool._(profile, repoRoot, coverage, workers);
-  }
+  }) => withWorkers(
+    () => RubyWorker.start(profile, repoRoot: repoRoot, coverage: coverage),
+    size: size,
+  );
+
+  /// A pool of [size] workers that [spawn] starts.
+  static Future<RubyPool> withWorkers(
+    Future<RubyWorker> Function() spawn, {
+    int size = 1,
+  }) async => RubyPool._(
+    spawn,
+    await Future.wait([for (var i = 0; i < size; i++) spawn()]),
+  );
 
   String get version => _workers.first.version;
   CoverageUniverse? get universe => _workers.first.universe;

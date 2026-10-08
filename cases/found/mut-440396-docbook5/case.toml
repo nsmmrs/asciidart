@@ -1,0 +1,10 @@
+description = "Found by the fuzzer: reaches code no other case did."
+source = "gen:mut-440396"
+formats = ["docbook5"]
+
+[options]
+doctype = "inline"
+standalone = true
+
+[attributes]
+"attribute-missing" = "drop-line"

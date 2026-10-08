@@ -1,0 +1,10 @@
+description = "Found by the fuzzer: reaches code no other case did."
+source = "gen:gen-207085"
+formats = ["docbook5"]
+
+[options]
+doctype = "inline"
+
+[attributes]
+"sectnums" = ""
+"attribute-missing" = "warn"
