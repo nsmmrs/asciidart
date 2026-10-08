@@ -542,7 +542,7 @@ final class OpenTypeFont {
     if (lookups.isEmpty) return null;
     final lookupList = t.offset + _data.u16(t.offset + 8);
     // The pair adjustment subtables of each lookup.
-    final byLookup = <List<int>>[];
+    final byLookup = <List<_PairSubtable>>[];
     for (final index in lookups) {
       final lookup = lookupList + _data.u16(lookupList + 2 + 2 * index);
       final lookupType = _data.u16(lookup);
@@ -558,7 +558,9 @@ final class OpenTypeFont {
         }
         if (type == 2) subtables.add(sub);
       }
-      if (subtables.isNotEmpty) byLookup.add(subtables);
+      if (subtables.isNotEmpty) {
+        byLookup.add([for (final sub in subtables) _PairSubtable(this, sub)]);
+      }
     }
     if (byLookup.isEmpty) return null;
     // Each lookup applies in turn (their adjustments add up); within one,
@@ -567,7 +569,7 @@ final class OpenTypeFont {
       var total = 0;
       for (final subtables in byLookup) {
         for (final sub in subtables) {
-          if (_pairAdjustment(sub, left, right) case final value?) {
+          if (sub.adjustment(left, right) case final value?) {
             total += value;
             break;
           }
@@ -694,6 +696,144 @@ final class OpenTypeFont {
     return 0;
   }
 
+  /// The accelerator of the pair adjustment subtable at [sub]: its
+  /// coverage, classes and values in typed arrays, giving what
+  /// [_pairAdjustment] gives; null when the subtable can't be read whole
+  /// or isn't regular enough (unsorted coverage, a format not known), so
+  /// that the subtable is read as it is, its errors where they are.
+  _PairAccelerator? _pairAccelerator(int sub) {
+    try {
+      final format = _data.u16(sub);
+      if (format != 1 && format != 2) return null;
+      final coverage = _coverageArray(sub + _data.u16(sub + 2));
+      if (coverage == null) return null;
+      final valueFormat1 = _data.u16(sub + 4);
+      final valueFormat2 = _data.u16(sub + 6);
+      final size1 = _valueSize(valueFormat1);
+      final size2 = _valueSize(valueFormat2);
+      if (format == 1) {
+        // The pair set of each coverage index used.
+        final sets = <int, _PairSet>{};
+        for (final entry in coverage) {
+          if (entry == 0 || sets.containsKey(entry - 1)) continue;
+          final pairSet = _data.u16(sub + 10 + 2 * (entry - 1)) + sub;
+          final count = _data.u16(pairSet);
+          final seconds = Uint16List(count);
+          final values = Int16List(count);
+          var sorted = true;
+          for (var i = 0; i < count; i++) {
+            final record = pairSet + 2 + (2 + size1 + size2) * i;
+            seconds[i] = _data.u16(record);
+            values[i] = _xAdvance(record + 2, valueFormat1);
+            if (i > 0 && seconds[i] <= seconds[i - 1]) sorted = false;
+          }
+          sets[entry - 1] = _PairSet(seconds, values, sorted: sorted);
+        }
+        return _PairGlyphs(coverage, sets);
+      }
+      final class1 = _classArray(sub + _data.u16(sub + 8));
+      final class2 = _classArray(sub + _data.u16(sub + 10));
+      final class2Count = _data.u16(sub + 14);
+      var max1 = 0;
+      for (final c in class1) {
+        if (c > max1) max1 = c;
+      }
+      var max2 = 0;
+      for (final c in class2) {
+        if (c > max2) max2 = c;
+      }
+      final records = max1 * class2Count + max2 + 1;
+      if (records > 1 << 22) return null;
+      final values = Int16List(records);
+      for (var r = 0; r < records; r++) {
+        values[r] = _xAdvance(sub + 16 + r * (size1 + size2), valueFormat1);
+      }
+      return _PairClasses(coverage, class1, class2, class2Count, values);
+    } on FontFormatException {
+      return null;
+    }
+  }
+
+  /// A coverage table as 1 + the coverage index of each glyph (0 for
+  /// none), up to its last glyph; null when it isn't one a lookup by
+  /// glyph can stand for (format 1 not strictly sorted, indexes past
+  /// 16 bits, an unknown format).
+  Uint16List? _coverageArray(int coverage) {
+    final format = _data.u16(coverage);
+    final count = _data.u16(coverage + 2);
+    if (format == 1) {
+      if (count == 0) return Uint16List(0);
+      final last = _data.u16(coverage + 4 + 2 * (count - 1));
+      final array = Uint16List(last + 1);
+      var previous = -1;
+      for (var i = 0; i < count; i++) {
+        final glyph = _data.u16(coverage + 4 + 2 * i);
+        if (glyph <= previous || glyph > last) return null;
+        array[glyph] = i + 1;
+        previous = glyph;
+      }
+      return array;
+    }
+    if (format == 2) {
+      var last = -1;
+      for (var i = 0; i < count; i++) {
+        final end = _data.u16(coverage + 4 + 6 * i + 2);
+        if (end > last) last = end;
+      }
+      final array = Uint16List(last + 1);
+      // The first range of a glyph counts: filled from the last.
+      for (var i = count - 1; i >= 0; i--) {
+        final range = coverage + 4 + 6 * i;
+        final start = _data.u16(range);
+        final end = _data.u16(range + 2);
+        final index = _data.u16(range + 4);
+        for (var g = start; g <= end; g++) {
+          final entry = index + g - start + 1;
+          if (entry > 0xffff) return null;
+          array[g] = entry;
+        }
+      }
+      return array;
+    }
+    return null;
+  }
+
+  /// A class definition table as the class of each glyph, up to its last
+  /// glyph (0 past it).
+  Uint16List _classArray(int classDef) {
+    final format = _data.u16(classDef);
+    if (format == 1) {
+      final start = _data.u16(classDef + 2);
+      final count = _data.u16(classDef + 4);
+      final array = Uint16List(count == 0 ? 0 : start + count);
+      for (var i = 0; i < count; i++) {
+        array[start + i] = _data.u16(classDef + 6 + 2 * i);
+      }
+      return array;
+    }
+    if (format == 2) {
+      final count = _data.u16(classDef + 2);
+      var last = -1;
+      for (var i = 0; i < count; i++) {
+        final end = _data.u16(classDef + 4 + 6 * i + 2);
+        if (end > last) last = end;
+      }
+      final array = Uint16List(last + 1);
+      // The first range of a glyph counts: filled from the last.
+      for (var i = count - 1; i >= 0; i--) {
+        final range = classDef + 4 + 6 * i;
+        final start = _data.u16(range);
+        final end = _data.u16(range + 2);
+        final value = _data.u16(range + 4);
+        for (var g = start; g <= end; g++) {
+          array[g] = value;
+        }
+      }
+      return array;
+    }
+    return Uint16List(0);
+  }
+
   final Map<String, Map<int, int>> _singles = {};
 
   /// The glyph each glyph becomes in [feature] (`onum`, `smcp`...): the
@@ -811,5 +951,109 @@ final class OpenTypeFont {
       }
     }
     return glyphs;
+  }
+}
+
+/// A pair adjustment subtable of the `kern` feature, read through its
+/// accelerator, made on first use (or as it is, when it has none).
+final class _PairSubtable {
+  new(this._font, this._offset);
+
+  final OpenTypeFont _font;
+  final int _offset;
+  late final _PairAccelerator? _accelerator = _font._pairAccelerator(_offset);
+
+  /// The xAdvance adjustment of [left] before [right], or null when the
+  /// subtable doesn't have the pair.
+  int? adjustment(int left, int right) =>
+      _accelerator?.adjustment(left, right) ??
+      (_accelerator == null
+          ? _font._pairAdjustment(_offset, left, right)
+          : null);
+}
+
+/// A pair adjustment subtable compiled into typed arrays.
+sealed class _PairAccelerator {
+  int? adjustment(int left, int right);
+}
+
+/// The pairs of format 1: a pair set for each first glyph covered.
+final class _PairGlyphs extends _PairAccelerator {
+  new(this._coverage, this._sets);
+
+  /// 1 + the coverage index of each glyph, 0 for none.
+  final Uint16List _coverage;
+  final Map<int, _PairSet> _sets;
+
+  @override
+  int? adjustment(int left, int right) {
+    if (left < 0 || left >= _coverage.length) return null;
+    final entry = _coverage[left];
+    if (entry == 0) return null;
+    return _sets[entry - 1]!.adjustment(right);
+  }
+}
+
+/// The second glyphs of a pair set, in order, and their xAdvance values.
+final class _PairSet {
+  new(this._seconds, this._values, {required this.sorted});
+
+  final Uint16List _seconds;
+  final Int16List _values;
+
+  /// Whether the second glyphs are in increasing order (searched by
+  /// halves; else in order, the first one counting).
+  final bool sorted;
+
+  int? adjustment(int right) {
+    final seconds = _seconds;
+    if (sorted) {
+      var lo = 0;
+      var hi = seconds.length - 1;
+      while (lo <= hi) {
+        final mid = (lo + hi) >> 1;
+        final g = seconds[mid];
+        if (g == right) return _values[mid];
+        if (g < right) {
+          lo = mid + 1;
+        } else {
+          hi = mid - 1;
+        }
+      }
+      return null;
+    }
+    for (var i = 0; i < seconds.length; i++) {
+      if (seconds[i] == right) return _values[i];
+    }
+    return null;
+  }
+}
+
+/// The pairs of format 2: values by the classes of the two glyphs.
+final class _PairClasses extends _PairAccelerator {
+  new(
+    this._coverage,
+    this._class1,
+    this._class2,
+    this._class2Count,
+    this._values,
+  );
+
+  final Uint16List _coverage;
+  final Uint16List _class1;
+  final Uint16List _class2;
+  final int _class2Count;
+
+  /// The xAdvance of each record, by `class1 * class2Count + class2`.
+  final Int16List _values;
+
+  @override
+  int? adjustment(int left, int right) {
+    if (left < 0 || left >= _coverage.length || _coverage[left] == 0) {
+      return null;
+    }
+    final class1 = left < _class1.length ? _class1[left] : 0;
+    final class2 = right >= 0 && right < _class2.length ? _class2[right] : 0;
+    return _values[class1 * _class2Count + class2];
   }
 }

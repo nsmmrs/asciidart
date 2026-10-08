@@ -296,6 +296,54 @@ void main() {
     }
   });
 
+  test('damaged GPOS tables: the same kerning, or the same rejection', () {
+    final random = Random(2026);
+    for (final name in [
+      'notoserif-features.ttf',
+      'notoserif-regular-latin.ttf',
+      'notoserif-kern-subtables.ttf',
+      'mplus1p-regular-multilingual.ttf',
+    ]) {
+      final bytes = File('test/fonts/$name').readAsBytesSync();
+      final view = ByteData.sublistView(bytes);
+      var (gpos, length) = (0, 0);
+      for (var i = 0; i < view.getUint16(4); i++) {
+        final record = 12 + 16 * i;
+        if (String.fromCharCodes(bytes, record, record + 4) == 'GPOS') {
+          gpos = view.getUint32(record + 8);
+          length = view.getUint32(record + 12);
+        }
+      }
+      for (var i = 0; i < 120; i++) {
+        final copy = Uint8List.fromList(bytes);
+        for (var k = 0; k < 1 + random.nextInt(4); k++) {
+          // Mostly the headers, lookup lists, coverage and class tables.
+          final at = random.nextInt(3) == 0
+              ? random.nextInt(length)
+              : random.nextInt(min(length, 600));
+          copy[gpos + at] = random.nextBool()
+              ? random.nextInt(256)
+              : copy[gpos + at] ^ (1 << random.nextInt(8));
+        }
+        final font = OpenTypeFont.parse(copy);
+        final old = frozen.OpenTypeFont.parse(copy);
+        final glyphs = [
+          for (var c = 0x21; c < 0x7f; c += 2) font.glyphFor(c),
+          for (var k = 0; k < 20; k++) random.nextInt(font.numGlyphs + 5),
+        ];
+        for (final a in glyphs) {
+          for (final b in glyphs) {
+            final value = _outcome(() => font.kerning(a, b));
+            final expected = _outcome(() => old.kerning(a, b));
+            if (value != expected) {
+              fail('$name #$i kerning($a, $b): $value != $expected');
+            }
+          }
+        }
+      }
+    }
+  });
+
   test('damaged CFF tables: the same subsets, or null', () {
     final random = Random(1008);
     for (final name in ['notoserif-cff.otf', 'notoserif-cid.otf']) {
