@@ -1,9 +1,7 @@
-/// Math layout: a [MathNode] tree set in a font with an OpenType `MATH`
-/// table, by the rules of the `MATH` table's specification and MathML
-/// Core (which follow TeX's): script shifts and gaps, fractions,
-/// radicals, limits and accents, stretchy delimiters and large operators
-/// from the font's variants and glyph assemblies, and TeX's spacing
-/// between atoms.
+// A frozen copy of lib/src/math_layout.dart as of 17001e86 (before items
+// were moved in place and glyph metrics cached): the oracle the math
+// layout's equivalence test compares every double with. Don't change it.
+// ignore_for_file: type=lint
 library;
 
 import 'dart:math' as math;
@@ -20,7 +18,7 @@ import 'package:plain_typesetting/src/graphic.dart';
 
 /// A formula laid out: as wide as [width], [height] above its baseline
 /// and [depth] below it (points), drawn with [paintAt].
-final class MathBox implements Graphic {
+final class FrozenMathBox implements Graphic {
   new _(this.width, this.height, this.depth, this._items);
 
   /// The width, in points.
@@ -112,25 +110,14 @@ final class MathBox implements Graphic {
   }
 }
 
-/// A glyph, rule or stroke of a formula, at (x, y) in the box it is in.
-///
-/// An item is in one box at a time: a box's items move with it into its
-/// parent (in place, by [moveBy]), and a box is never placed twice, so
-/// each coordinate is the sum of the offsets of the boxes it went
-/// through, added in the order they were placed in each other.
 sealed class _Item {
   new(this.x, this.y, this.color);
 
-  double x;
-  double y;
+  final double x;
+  final double y;
   final Color? color;
 
-  /// Moves the item by ([dx], [dy]).
-  void moveBy(double dx, double dy) {
-    // (Adding 0 too, as a copy at x + dx did: it turns -0.0 into 0.0.)
-    x += dx;
-    y += dy;
-  }
+  _Item moved(double dx, double dy);
 }
 
 final class _Glyph extends _Item {
@@ -152,6 +139,10 @@ final class _Glyph extends _Item {
   /// The advance, in 1000ths of the em.
   final double advance;
   final double size;
+
+  @override
+  _Item moved(double dx, double dy) =>
+      _Glyph(font, glyph, text, advance, size, x + dx, y + dy, color);
 }
 
 final class _Rule extends _Item {
@@ -159,6 +150,9 @@ final class _Rule extends _Item {
 
   final double w;
   final double h;
+
+  @override
+  _Item moved(double dx, double dy) => _Rule(x + dx, y + dy, w, h, color);
 }
 
 enum _StrokeKind { line, rect, roundedRect, ellipse }
@@ -170,6 +164,10 @@ final class _Stroke extends _Item {
   final double w;
   final double h;
   final double lineWidth;
+
+  @override
+  _Item moved(double dx, double dy) =>
+      _Stroke(kind, x + dx, y + dy, w, h, lineWidth, color);
 }
 
 /// TeX's classes of atoms, for the space between them.
@@ -216,14 +214,10 @@ final class _Box {
   /// The lowest point of its ink (above the baseline for an accent).
   final double inkBottom;
 
-  /// The items moved by ([dx], [dy]), for the box this one is placed in
-  /// (in place: see [_Item]).
-  List<_Item> shifted(double dx, double dy) {
-    for (final item in items) {
-      item.moveBy(dx, dy);
-    }
-    return items;
-  }
+  /// The items moved by ([dx], [dy]).
+  List<_Item> shifted(double dx, double dy) => [
+    for (final item in items) item.moved(dx, dy),
+  ];
 }
 
 /// The style a part is set in: display or text, its script level, cramped
@@ -266,7 +260,7 @@ final class _Style {
 }
 
 /// Lays out formulas in [font], which must have an OpenType `MATH` table.
-final class MathLayout {
+final class FrozenMathLayout {
   /// A layout in [font]; a character it lacks in the first of
   /// [fallbacks] that has it.
   new(this.font, {this.fallbacks = const []})
@@ -287,30 +281,20 @@ final class MathLayout {
 
   late final double _upem = _otf.unitsPerEm.toDouble();
 
-  /// The bounds of [font]'s glyphs looked up, by glyph.
-  final Map<int, (int, int, int, int)> _bounds = {};
-
-  /// The bounds (xMin, yMin, xMax, yMax) of [glyph] of [font].
-  (int, int, int, int) _boundsOf(int glyph) =>
-      _bounds[glyph] ??= _otf.glyphBounds(glyph);
-
-  /// What [_operator] gave, by operator.
-  final Map<String, ({_Class cls, bool largeOp, bool movable, bool stretchy})>
-  _operators = {};
-
-  /// What [_variant] gave, by text and variant.
-  final Map<(String, String), String> _variants = {};
-
   double _base = 10;
 
   /// [node] set at [size] points, in display style when [display].
-  MathBox layout(MathNode node, {required double size, bool display = false}) {
+  FrozenMathBox layout(
+    MathNode node, {
+    required double size,
+    bool display = false,
+  }) {
     _base = size;
     final box = _layout(
       node,
       _Style(display: display, level: 0, cramped: false),
     );
-    return MathBox._(box.width, box.height, box.depth, box.items);
+    return FrozenMathBox._(box.width, box.height, box.depth, box.items);
   }
 
   double _size(_Style s) {
@@ -380,7 +364,7 @@ final class MathLayout {
       _ => null,
     };
     if (named != null) return named * _em(s);
-    final m = _lengthPattern.firstMatch(value);
+    final m = RegExp(r'^(-?[\d.]+)\s*([a-z%]*)$').firstMatch(value);
     if (m == null) return null;
     final n = double.tryParse(m[1]!);
     if (n == null) return null;
@@ -396,8 +380,6 @@ final class MathLayout {
       _ => null,
     };
   }
-
-  static final RegExp _lengthPattern = RegExp(r'^(-?[\d.]+)\s*([a-z%]*)$');
 
   // Tokens.
 
@@ -461,7 +443,6 @@ final class MathLayout {
     var ink = double.infinity;
     final items = <_Item>[];
     var last = 0;
-    final single = text.length == 1 || text.runes.length == 1;
     for (final rune in text.runes) {
       var glyph = _glyphOf(rune);
       var face = font;
@@ -478,14 +459,12 @@ final class MathLayout {
       final upem = otf.unitsPerEm.toDouble();
       final faceScale = size / upem;
       final advance = otf.advance(glyph).toDouble();
-      final (_, yMin, _, yMax) = identical(face, font)
-          ? _boundsOf(glyph)
-          : otf.glyphBounds(glyph);
+      final (_, yMin, _, yMax) = otf.glyphBounds(glyph);
       items.add(
         _Glyph(
           face,
           glyph,
-          single ? text : String.fromCharCode(rune),
+          String.fromCharCode(rune),
           advance * 1000 / upem,
           size,
           x,
@@ -502,6 +481,7 @@ final class MathLayout {
     final italic = italicCorrection
         ? (_table.italicsCorrections[last] ?? 0) * scale
         : 0.0;
+    final single = text.runes.length == 1;
     final attach = single
         ? switch (_table.topAccentAttachments[last]) {
             final a? => a * scale,
@@ -542,7 +522,7 @@ final class MathLayout {
     final size = _size(s);
     final scale = size / _upem;
     final advance = _otf.advance(glyph).toDouble();
-    final (_, yMin, _, yMax) = _boundsOf(glyph);
+    final (_, yMin, _, yMax) = _otf.glyphBounds(glyph);
     return _Box(
       advance * scale,
       yMax * scale,
@@ -797,7 +777,7 @@ final class MathLayout {
     var bottom = 0.0;
     for (final part in list) {
       final advance = _otf.advance(part.glyph).toDouble();
-      final (xMin, yMin, xMax, yMax) = _boundsOf(part.glyph);
+      final (xMin, yMin, xMax, yMax) = _otf.glyphBounds(part.glyph);
       if (vertical) {
         items.add(
           _Glyph(
@@ -1048,7 +1028,7 @@ final class MathLayout {
     }
     final shiftAll = -left;
     final all = <_Item>[
-      for (final item in items) item..moveBy(shiftAll, 0),
+      for (final item in items) item.moved(shiftAll, 0),
       for (final (box, x, y) in pieces) ...box.shifted(x + shiftAll, y),
     ];
     return _Box(
@@ -1216,7 +1196,7 @@ final class MathLayout {
         widths[c] = math.max(widths[c], cell.width);
       }
     }
-    final aligns = (node.columnAlign ?? 'center').split(_spaces);
+    final aligns = (node.columnAlign ?? 'center').split(RegExp(r'\s+'));
     String alignOf(int c) => aligns[math.min(c, aligns.length - 1)];
     final columnGap = 0.8 * _em(s);
     final rowGap = 0.5 * _em(s);
@@ -1260,8 +1240,6 @@ final class MathLayout {
         widths.fold<double>(0, (a, b) => a + b) + columnGap * (columns - 1);
     return _Box(width, top, total - top, items, cls: _Class.inner);
   }
-
-  static final RegExp _spaces = RegExp(r'\s+');
 
   // Enclosures.
 
@@ -1418,10 +1396,6 @@ final class MathLayout {
 
   ({_Class cls, bool largeOp, bool movable, bool stretchy}) _operator(
     String text,
-  ) => _operators[text] ??= _operatorOf(text);
-
-  ({_Class cls, bool largeOp, bool movable, bool stretchy}) _operatorOf(
-    String text,
   ) {
     if (text.runes.length > 1) {
       if (_limitWords.contains(text)) {
@@ -1437,7 +1411,7 @@ final class MathLayout {
           stretchy: false,
         );
       }
-      final letters = _letters.hasMatch(text);
+      final letters = RegExp(r'^\p{L}+$', unicode: true).hasMatch(text);
       return (
         cls: letters ? _Class.op : _Class.ord,
         largeOp: false,
@@ -1483,8 +1457,6 @@ final class MathLayout {
     }
     return (cls: _Class.ord, largeOp: false, movable: false, stretchy: false);
   }
-
-  static final RegExp _letters = RegExp(r'^\p{L}+$', unicode: true);
 
   // Variants (Unicode's Mathematical Alphanumeric Symbols).
 
@@ -1543,10 +1515,6 @@ final class MathLayout {
   /// identifier's, italic for Latin letters and small Greek ones).
   String _variant(String text, String variant) {
     if (variant == 'normal') return text;
-    return _variants[(text, variant)] ??= _variantOf(text, variant);
-  }
-
-  String _variantOf(String text, String variant) {
     final greekCapitals = variant != 'auto-italic';
     final name = variant == 'auto-italic' ? 'italic' : variant;
     final starts = _variantStarts[name];
