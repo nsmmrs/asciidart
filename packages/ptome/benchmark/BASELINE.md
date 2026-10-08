@@ -228,3 +228,33 @@ running content).
 | medium | 396.7 ms | 33.6 ms | 11.8x |
 | large | 496.3 ms | 47.2 ms | 10.5x |
 | chronicles | 690.1 ms | 101.8 ms | 6.8x |
+
+## Two-byte documents (2026-10-08)
+
+The throughput corpus and Hypermedia Systems are almost all Latin-1. That
+hid the VM's two-byte cliff: on text outside Latin-1, the interpreted
+regexes' Unicode classes are 10–12x slower. The e-mail pass also ran over
+every paragraph holding an `@`, and every verse line in loci's Bible
+dialect starts with `@ `. `benchmark/throughput.dart --two-byte` now
+times a corpus variant with curly apostrophes and verse marks. Every
+backend is warmed up before any is timed, because the first backend timed
+used to run up to 2x slower from heap growth alone.
+
+CLI end to end, html5, interleaved runs, min of n (n=3 for the KJV, 5–7
+otherwise; the machine was shared with other jobs, so allow ±10%). Ruby
+is the asciidoctor gem from upstream main (2.1.0.alpha.0) on Ruby 4.0.7.
+The documents are loci's (`bible/kjv/kjv.adoc`, Genesis alone,
+`classics/ethics/ethics-{en,grc}.adoc`). The corpora are written by
+`throughput.dart --write-corpus [--two-byte]` and converted with `-d book`.
+
+| Document | Ruby | Ptome `17001e8` | Ptome, e-mail pre-check (`db297a7`) |
+| --- | --: | --: | --: |
+| KJV (6 MB) | 2,179 ms | 12,274 ms | 1,867 ms |
+| Genesis | 175 ms | 514 ms | 100 ms |
+| Ethics (en) | 173 ms | 377 ms | 111 ms |
+| Ethics (grc) | 196 ms | 763 ms | 60 ms |
+| Corpus, two-byte | 208 ms | 177 ms | 96 ms |
+| Corpus | 242 ms | 84 ms | 85 ms |
+
+To hold these documents to byte identity, pass them to
+`tool/differential.dart` as `--extra-file`s (see `tool/README.md`).

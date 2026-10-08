@@ -13,6 +13,16 @@
 //     /tmp/throughput
 //   dart run benchmark/throughput.dart --write-corpus /tmp/large.adoc
 //   dart run benchmark/throughput.dart --file PATH/TO/book.adoc
+//   dart run benchmark/throughput.dart --two-byte
+//
+// --two-byte times the corpus with its apostrophes curly (’) and a verse
+// mark (`@ `) before each line of prose, as in loci's Bible dialect: text
+// outside Latin-1 takes the VM's slower two-byte paths, which the plain
+// corpus never reaches (the e-mail pass once cost the KJV 12 s this way).
+//
+// Every backend is warmed up before any is timed: the first one timed in
+// a cold heap ran about 2x slower from heap growth alone. Diagnostics (the
+// corpus repeats ids) are dropped, so that only conversion is timed.
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -34,13 +44,19 @@ void main(List<String> args) {
       defaultsTo: ['html5', 'docbook5', 'manpage'],
       help: 'Backends to time.',
     )
+    ..addFlag(
+      'two-byte',
+      negatable: false,
+      help: 'Curly apostrophes and verse marks in the corpus.',
+    )
     ..addOption('write-corpus', help: 'Write the corpus to a file and exit.')
     ..addOption('file', help: 'Time this document instead of the corpus.');
   final options = parser.parse(args);
   final file = options['file'] as String?;
   final base = _sources.map((p) => File(p).readAsStringSync()).join('\n\n');
   final copies = int.parse(options['copies'] as String);
-  final corpus = List.filled(copies, base).join('\n\n');
+  final plain = List.filled(copies, base).join('\n\n');
+  final corpus = options['two-byte'] as bool ? _twoByte(plain) : plain;
   final corpusPath = options['write-corpus'] as String?;
   if (corpusPath != null) {
     File(corpusPath).writeAsStringSync(corpus);
@@ -51,13 +67,15 @@ void main(List<String> args) {
   stdout.writeln(
     file == null ? 'corpus: ${corpus.length} chars' : 'document: $file',
   );
-  for (final backend in options['backend'] as List<String>) {
+  final backends = options['backend'] as List<String>;
+  asciidoctor.Document Function() loader(String backend) {
     final convertOptions = file == null
         ? asciidoctor.AsciidoctorOptions(
             safe: asciidoctor.SafeMode.safe,
             backend: backend,
             doctype: 'book',
             standalone: true,
+            logger: asciidoctor.NullLogger(),
           )
         : asciidoctor.AsciidoctorOptions(
             safe: asciidoctor.SafeMode.unsafe,
@@ -65,12 +83,19 @@ void main(List<String> args) {
             standalone: true,
             logger: asciidoctor.NullLogger(),
           );
-    asciidoctor.Document load() => file == null
+    return () => file == null
         ? asciidoctor.load(corpus, options: convertOptions)
         : asciidoctor.loadFile(file, options: convertOptions);
+  }
+
+  for (final backend in backends) {
+    final load = loader(backend);
     for (var i = 0; i < warmup; i++) {
       load().convert();
     }
+  }
+  for (final backend in backends) {
+    final load = loader(backend);
     final loads = <int>[];
     final totals = <int>[];
     for (var i = 0; i < iterations; i++) {
@@ -91,3 +116,9 @@ String _median(List<int> micros) {
   final sorted = [...micros]..sort();
   return (sorted[sorted.length ~/ 2] / 1000).toStringAsFixed(1);
 }
+
+/// [corpus] with its apostrophes curly and `@ ` before each line that
+/// starts with a letter (prose, not markup).
+String _twoByte(String corpus) => corpus
+    .replaceAll("'", '\u2019')
+    .replaceAllMapped(RegExp('^(?=[A-Za-z])', multiLine: true), (_) => '@ ');
