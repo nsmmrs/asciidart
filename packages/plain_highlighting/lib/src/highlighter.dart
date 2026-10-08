@@ -4,6 +4,7 @@
 /// and the registry functions; the browser-only parts are left out).
 library;
 
+import 'package:plain_highlighting/src/first_chars.dart' show isWordChar;
 import 'package:plain_highlighting/src/js_string.dart';
 import 'package:plain_highlighting/src/logger.dart' as logger;
 import 'package:plain_highlighting/src/mode.dart';
@@ -236,6 +237,38 @@ final class Engine {
       final keywords = top.mode.keywords;
       if (keywords is! CompiledKeywords) {
         emitter.addText(modeBuffer);
+        return;
+      }
+      if (top.mode.keywordsAreWords) {
+        // The words found in Dart; the text not emitted yet is always one
+        // slice, text[pending, i).
+        final text = modeBuffer;
+        final n = text.length;
+        var pending = 0;
+        var i = 0;
+        while (i < n) {
+          if (!isWordChar(text.codeUnitAt(i))) {
+            i++;
+            continue;
+          }
+          final start = i;
+          do {
+            i++;
+          } while (i < n && isWordChar(text.codeUnitAt(i)));
+          final match = text.substring(start, i);
+          final word = language.caseInsensitive ? jsLowerCase(match) : match;
+          final data = keywords.byWord[word];
+          if (data == null) continue;
+          final hits = (keywordHits[word] ?? 0) + 1;
+          keywordHits[word] = hits;
+          if (hits <= _maxKeywordHits) relevance += data.relevance;
+          // (`_` scopes count for relevance only: no highlighting.)
+          if (data.scope.startsWith('_')) continue;
+          emitter.addText(text.substring(pending, start));
+          emitKeyword(match, alias(data.scope));
+          pending = i;
+        }
+        emitter.addText(pending == 0 ? text : text.substring(pending));
         return;
       }
       var lastIndex = 0;

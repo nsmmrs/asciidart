@@ -348,7 +348,11 @@ Mode compileLanguage(Language language) {
         caseInsensitive: language.caseInsensitive,
       );
     }
-    mode.keywordPatternRe = langRe(keywordPattern, global: true);
+    mode
+      ..keywordPatternRe = langRe(keywordPattern, global: true)
+      ..keywordsAreWords =
+          keywordPattern == r'\w+' &&
+          !(language.unicodeRegex && language.caseInsensitive);
 
     if (parent != null) {
       if (!ext.truthy(mode.begin)) mode.begin = const RegexSource(r'\B|\b');

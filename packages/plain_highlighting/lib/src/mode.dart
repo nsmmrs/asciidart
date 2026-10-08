@@ -669,6 +669,11 @@ class Mode extends ContainsEntry {
   /// The compiled `$pattern` of the keywords.
   RegExp? keywordPatternRe;
 
+  /// Whether [keywordPatternRe] finds the runs of ASCII word characters
+  /// (`\w+`, but in a language both Unicode and case-insensitive, where
+  /// `\w` has two more), so that keywords can be found without it.
+  bool keywordsAreWords = false;
+
   /// The compiled [begin].
   RegExp? beginRe;
 
@@ -700,7 +705,10 @@ class Mode extends ContainsEntry {
       isCompiled = true;
       beforeBegin = from.beforeBegin;
     }
-    keywordPatternRe = from.keywordPatternRe ?? keywordPatternRe;
+    if (from.keywordPatternRe case final re?) {
+      keywordPatternRe = re;
+      keywordsAreWords = from.keywordsAreWords;
+    }
     beginRe = from.beginRe ?? beginRe;
     endRe = from.endRe ?? endRe;
     illegalRe = from.illegalRe ?? illegalRe;
