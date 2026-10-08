@@ -8,5 +8,6 @@
 - The patterns are stored Brotli-compressed, one stream per language
   family (808 KiB of source, from 1.5 MB of base64 zlib), and decoded a
   family at a time.
-- Tested against hypher and Hyphenopoly on the UDHR's words in 19
-  languages.
+- Tested against hypher, Hyphenopoly and pub.dev's `hyphenation` package
+  (given the same patterns: every word the same) on the UDHR's words in
+  19 languages.
