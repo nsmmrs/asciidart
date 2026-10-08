@@ -219,6 +219,9 @@ Asciidoctor project.
   both in this workspace (ADR-0018). The PDF converter lays out with
   plain_typesetting (shaping, paragraphs, pages, math), which draws on
   plain_pdf's canvas.
+- PDFs are the same on every run when sections have no ids (`sectids`
+  unset): their destinations were named after a hash code that changed
+  from run to run; they are numbered in order (`__section-1`...).
 - Speed on every core (ADR-0016): the work a PDF or EPUB doesn't need in
   order (PNG images, compression) runs on the physical cores (`-a
   jobs=N`, `1` for none), with the same bytes at any number of workers;

@@ -110,6 +110,49 @@ void main() {
     }, skip: _tools ? false : 'needs poppler and qpdf');
   }
 
+  test('sections without ids have the same destinations on every run', () {
+    // (Made up from a hash code, they differed from run to run, and so did
+    // the PDF.)
+    final dir = Directory.systemTemp.createTempSync('ptome-pdf.');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final source = File('${dir.path}/doc.adoc')
+      ..writeAsStringSync(
+        '= Doc\n:sectids!:\n:toc:\n\n== One\n\ntext\n\n== Two\n\ntext\n',
+      );
+    // (To the same file: the second half of the file's /ID comes from its
+    // name.)
+    final out = '${dir.path}/doc.pdf';
+    List<int> convert() {
+      convertFile(
+        source.path,
+        AsciidoctorOptions(
+          safe: SafeMode.unsafe,
+          backend: 'pdf',
+          toFile: out,
+          // (A fixed time: the creation date is the conversion's.)
+          attributes: const {
+            'reproducible': '',
+            'localdatetime': '2026-10-08 12:00:00 +0000',
+          },
+        ),
+      );
+      return File(out).readAsBytesSync();
+    }
+
+    final first = convert();
+    expect(convert(), first);
+    final qdf =
+        Process.runSync('qpdf', [
+              '--qdf',
+              '--object-streams=disable',
+              out,
+              '-',
+            ], stdoutEncoding: latin1).stdout
+            as String;
+    expect(qdf, contains('(__section-1)'));
+    expect(qdf, contains('(__section-2)'));
+  });
+
   test('the page mode and the initial zoom come from the theme', () {
     final dir = Directory.systemTemp.createTempSync('ptome-pdf.');
     addTearDown(() => dir.deleteSync(recursive: true));

@@ -179,6 +179,14 @@ final class PdfConverter extends BuiltInConverter
   late Document _document;
   final List<(Section, String)> _sections = [];
 
+  /// The anchors made up for sections without an id, in the order they
+  /// were asked for (the same on every run, unlike a hash code).
+  final Map<Section, String> _madeUpAnchors = Map.identity();
+
+  /// The anchor made up for [section], which has no id.
+  String _madeUpAnchor(Section section) =>
+      _madeUpAnchors[section] ??= '__section-${_madeUpAnchors.length + 1}';
+
   /// Saves the converted document (once its work on other cores is
   /// done, or doing it here).
   Uint8List Function()? _save;
@@ -387,6 +395,7 @@ final class PdfConverter extends BuiltInConverter
       kerning: _s('base_font_kerning') != 'none',
     );
     _sections.clear();
+    _madeUpAnchors.clear();
     _floatGroup = _floatNext = null;
     _hasTitlePage = _frontCover = _backCover = _noCover = false;
     _runningBackgrounds.clear();
@@ -1424,7 +1433,7 @@ final class PdfConverter extends BuiltInConverter
     for (final (s, anchor) in _sections) {
       if (s == section) return anchor;
     }
-    return '__section-${section.hashCode}';
+    return _madeUpAnchor(section);
   }
 
   /// The page label of [anchor]'s page, or `?`.
@@ -2607,7 +2616,7 @@ final class PdfConverter extends BuiltInConverter
         _s('heading_h${hlevel}_text_align') ??
         _s('heading_text_align') ??
         _baseTextAlign;
-    final anchor = section.id ?? '__section-${section.hashCode}';
+    final anchor = section.id ?? _madeUpAnchor(section);
     final hidden = section.hasOption('notitle');
     final part = sectname == 'part';
     final chapterlike =
