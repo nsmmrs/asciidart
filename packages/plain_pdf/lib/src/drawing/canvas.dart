@@ -5,7 +5,6 @@
 /// explicit position.
 library;
 
-import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -695,7 +694,7 @@ final class PdfCanvas implements Canvas {
     } else {
       _op2(x, y, 'Td');
     }
-    _content.bytes(_showText(glyphs, style));
+    _showText(glyphs, style);
     _op('ET');
     if (embolden) _op('Q');
     return style.widthOf(glyphs);
@@ -703,7 +702,7 @@ final class PdfCanvas implements Canvas {
 
   /// The `TJ` operator showing [glyphs]: runs of glyph codes, with the
   /// kerning and the word spacing between them as adjustments.
-  Uint8List _showText(List<ShapedGlyph> glyphs, TextStyle style) {
+  void _showText(List<ShapedGlyph> glyphs, TextStyle style) {
     final font = _pdfFont(style);
     final codes = font.encode(glyphs);
     final width = switch (font) {
@@ -711,33 +710,29 @@ final class PdfCanvas implements Canvas {
       EmbeddedFont() => 2,
     };
     final hex = font is EmbeddedFont;
-    final out = BytesBuilder()..addByte(0x5b); // [
+    final wordSpacing = style.wordSpacing != 0
+        ? style.wordSpacing * 1000 / style.size
+        : 0.0;
+    final out = _content..byte(0x5b); // [
+    final last = glyphs.length - 1;
     var start = 0;
-    var end = 0;
-    void flush() {
-      if (end == start) return;
-      PdfString(codes.sublist(start, end), hex: hex).writeTo(out);
-      start = end;
-    }
-
-    for (var i = 0; i < glyphs.length; i++) {
+    for (var i = 0; i <= last; i++) {
       final glyph = glyphs[i];
-      end = (i + 1) * width;
       var adjustment = 0.0;
-      if (i < glyphs.length - 1) adjustment -= glyph.kerning;
-      if (glyph.text == ' ' && style.wordSpacing != 0) {
-        adjustment -= style.wordSpacing * 1000 / style.size;
-      }
+      if (i < last) adjustment -= glyph.kerning;
+      if (wordSpacing != 0 && glyph.text == ' ') adjustment -= wordSpacing;
       if (adjustment != 0) {
-        flush();
+        final end = (i + 1) * width;
+        if (end != start) out.string(codes, start, end, hex: hex);
+        start = end;
         out
-          ..addByte(0x20)
-          ..add(latin1.encode(formatNumber(adjustment, precision: 3)))
-          ..addByte(0x20);
+          ..byte(0x20)
+          ..number(adjustment, 3)
+          ..byte(0x20);
       }
     }
-    flush();
-    out.add(latin1.encode('] TJ\n'));
-    return out.takeBytes();
+    final end = glyphs.length * width;
+    if (end != start) out.string(codes, start, end, hex: hex);
+    out.operator('] TJ');
   }
 }

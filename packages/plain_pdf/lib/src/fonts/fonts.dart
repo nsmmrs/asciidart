@@ -4,6 +4,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:plain_fonts/plain_fonts.dart';
@@ -133,6 +134,23 @@ final class StandardFont extends PdfFont {
     return kerns;
   }();
 
+  /// [_kerns] as a table by `left << 8 | right`, NaN for no pair (the
+  /// values are whole numbers, exact in single precision).
+  late final Float32List _kernTable = () {
+    final table = Float32List(0x10000)..fillRange(0, 0x10000, double.nan);
+    for (final MapEntry(:key, :value) in _kerns.entries) {
+      table[key] = value;
+    }
+    return table;
+  }();
+
+  /// The one-character strings of U+0000 to U+00FF, made once.
+  static final List<String> _latin1 = List.generate(
+    0x100,
+    String.fromCharCode,
+    growable: false,
+  );
+
   @override
   List<ShapedGlyph> shape(
     String text, {
@@ -141,19 +159,29 @@ final class StandardFont extends PdfFont {
     Set<String> features = const {},
   }) {
     final glyphs = <ShapedGlyph>[];
+    final widths = _widths;
+    final kerns = kerning ? _kernTable : null;
+    final missing = _data.symbolic ? 0x20 : 0x3f; // '?'
     var previous = -1;
     for (final rune in text.runes) {
-      final code = _code(rune) ?? (_data.symbolic ? 0x20 : 0x3f); // '?'
-      final width = (code < 256 ? _widths[code] : null) ?? 0;
-      if (kerning && previous >= 0 && code < 256) {
-        final kern = _kerns[previous << 8 | code];
-        if (kern != null) {
-          final last = glyphs.removeLast();
-          glyphs.add(ShapedGlyph(last.id, last.text, last.advance, kern));
+      final code = _code(rune) ?? missing;
+      final codeWidth = code < 256 ? widths[code] : null;
+      if (kerns != null && previous >= 0 && code < 256) {
+        final kern = kerns[previous << 8 | code];
+        if (!kern.isNaN) {
+          final last = glyphs.length - 1;
+          final glyph = glyphs[last];
+          glyphs[last] = ShapedGlyph(glyph.id, glyph.text, glyph.advance, kern);
         }
       }
-      glyphs.add(ShapedGlyph(code, String.fromCharCode(rune), width));
-      previous = code < 256 && _widths[code] != null ? code : -1;
+      glyphs.add(
+        ShapedGlyph(
+          code,
+          rune < 0x100 ? _latin1[rune] : String.fromCharCode(rune),
+          codeWidth ?? 0,
+        ),
+      );
+      previous = codeWidth != null ? code : -1;
     }
     return glyphs;
   }
@@ -331,18 +359,19 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
 
   @override
   List<int> encode(List<ShapedGlyph> glyphs) {
-    final bytes = <int>[];
+    final bytes = Uint8List(glyphs.length * 2);
+    var at = 0;
     for (final glyph in glyphs) {
+      final id = glyph.id;
       // `.notdef` stands for no character: it stays out of the ToUnicode
       // map (and still goes into the subset).
-      if (glyph.id == 0) {
+      if (id == 0) {
         _usedNotdef = true;
       } else {
-        _used.putIfAbsent(glyph.id, () => glyph.text);
+        _used[id] ??= glyph.text; // the first text stays
       }
-      bytes
-        ..add(glyph.id >> 8)
-        ..add(glyph.id & 0xff);
+      bytes[at++] = id >> 8;
+      bytes[at++] = id;
     }
     return bytes;
   }
