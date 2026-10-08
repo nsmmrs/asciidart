@@ -57,10 +57,8 @@ Object? _outcome(Object? Function() body) {
     return 'FontFormatException';
   } on frozen.FontFormatException {
     return 'FontFormatException';
-    // The frozen code lets these through on some damaged data.
-    // ignore: avoid_catching_errors
-  } on RangeError {
-    return 'RangeError';
+  } on Object catch (e) {
+    return e is RangeError ? 'RangeError' : '${e.runtimeType}';
   }
 }
 
@@ -349,7 +347,7 @@ void main() {
     for (final name in ['notoserif-cff.otf', 'notoserif-cid.otf']) {
       final cff = OpenTypeFont.parse(File('test/fonts/$name').readAsBytesSync())
           .table('CFF ')!;
-      for (var i = 0; i < 400; i++) {
+      for (var i = 0; i < 1500; i++) {
         final copy = Uint8List.fromList(cff);
         for (var k = 0; k < 1 + random.nextInt(4); k++) {
           // Mostly the header, INDEXes and DICTs at the start.

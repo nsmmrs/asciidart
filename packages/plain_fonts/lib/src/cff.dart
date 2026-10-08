@@ -29,8 +29,94 @@ final class _Unsupported implements Exception {
   const new();
 }
 
-/// An INDEX: its items, as views of the CFF data.
-typedef _Index = List<Uint8List>;
+/// An INDEX of the CFF data: where each item starts, and where the last
+/// one ends.
+final class _Index {
+  new(this.data, this.offsets);
+
+  /// The empty INDEX.
+  new empty(this.data) : offsets = Int32List(1);
+
+  final Uint8List data;
+
+  /// The start of each item in [data], then the end of the last.
+  final Int32List offsets;
+
+  int get length => offsets.length - 1;
+
+  bool get isEmpty => offsets.length == 1;
+
+  /// Item [i], as a view of [data].
+  Uint8List operator [](int i) =>
+      Uint8List.sublistView(data, offsets[i], offsets[i + 1]);
+}
+
+/// An INDEX to write: the items of [source], each kept as it is or (when
+/// [kept] says no) replaced by the one-byte [stub].
+final class _Rewrite {
+  new(this.source, this.kept, this.stub);
+
+  /// The items of [source] as they are.
+  new copy(_Index source) : this(source, null, 0);
+
+  final _Index source;
+  final bool Function(int item)? kept;
+  final int stub;
+
+  int get length => source.length;
+
+  bool get isEmpty => source.isEmpty;
+
+  /// The size of the items' data.
+  late final int dataSize = () {
+    final kept = this.kept;
+    final offsets = source.offsets;
+    if (kept == null) return offsets[length] - offsets[0];
+    var size = 0;
+    for (var i = 0; i < length; i++) {
+      size += kept(i) ? offsets[i + 1] - offsets[i] : 1;
+    }
+    return size;
+  }();
+
+  late final int _offSize = _Cff._offSize(dataSize + 1);
+
+  /// The size of the INDEX as written.
+  int get size => isEmpty ? 2 : 3 + (length + 1) * _offSize + dataSize;
+
+  void writeTo(ByteSink out) {
+    if (isEmpty) {
+      out
+        ..addByte(0)
+        ..addByte(0);
+      return;
+    }
+    final kept = this.kept;
+    final offsets = source.offsets;
+    final data = source.data;
+    final offSize = _offSize;
+    out
+      ..u16(length)
+      ..addByte(offSize);
+    var offset = 1;
+    _Cff._writeOffset(out, offset, offSize);
+    for (var i = 0; i < length; i++) {
+      offset += kept == null || kept(i) ? offsets[i + 1] - offsets[i] : 1;
+      _Cff._writeOffset(out, offset, offSize);
+    }
+    if (kept == null) {
+      out.addRange(data, offsets[0], offsets[length]);
+      return;
+    }
+    for (var i = 0; i < length; i++) {
+      if (kept(i)) {
+        out.addRange(data, offsets[i], offsets[i + 1]);
+      } else {
+        out.addByte(stub);
+      }
+    }
+  }
+}
 
 /// A DICT: operands by operator (two-byte operators as 1200 + the second
 /// byte).
@@ -44,19 +130,16 @@ final class _Cff {
   Uint8List subset(Set<int>? glyphs) {
     if (_data.isEmpty || _data[0] != 1) throw const _Unsupported();
     final hdrSize = _data[2];
-    var at = hdrSize;
-    final (names, afterNames) = _index(at);
-    at = afterNames;
-    final (topDicts, afterTop) = _index(at);
-    at = afterTop;
-    final (strings, afterStrings) = _index(at);
-    at = afterStrings;
-    final (globalSubrs, _) = _index(at);
+    final (names, afterNames) = _index(hdrSize);
+    final (topDicts, afterTop) = _index(afterNames);
+    final (strings, afterStrings) = _index(afterTop);
+    final (globalSubrs, _) = _index(afterStrings);
     if (topDicts.length != 1) throw const _Unsupported();
-    final top = _dict(topDicts.single);
+    final top = _dict(topDicts[0]);
     if (_int(top, 1206, 2) != 2) throw const _Unsupported();
     final (charStrings, _) = _index(_int(top, 17));
-    final keep = glyphs ?? {for (var g = 0; g < charStrings.length; g++) g};
+    final count = charStrings.length;
+    bool kept(int g) => g == 0 || glyphs == null || glyphs.contains(g);
     final cid = top.containsKey(1230);
 
     // The private DICTs (one per font DICT for a CID font) and their local
@@ -67,14 +150,11 @@ final class _Cff {
     int Function(int glyph) fdOf;
     if (cid) {
       final (fdArray, _) = _index(_int(top, 1236));
-      fontDicts = [for (final item in fdArray) _dict(item)];
+      fontDicts = [for (var i = 0; i < fdArray.length; i++) _dict(fdArray[i])];
       for (final fd in fontDicts) {
         privates.add(_private(fd));
       }
-      final (select, selectEnd) = _fdSelect(
-        _int(top, 1237),
-        charStrings.length,
-      );
+      final (select, selectEnd) = _fdSelect(_int(top, 1237), count);
       fdSelect = Uint8List.sublistView(_data, _int(top, 1237), selectEnd);
       fdOf = (glyph) => select[glyph];
     } else {
@@ -86,34 +166,25 @@ final class _Cff {
     // The subroutines the kept glyphs call.
     final usedGlobal = <int>{};
     final usedLocal = [for (final _ in privates) <int>{}];
-    for (final glyph in {0, ...keep}) {
-      if (glyph < 0 || glyph >= charStrings.length) continue;
+    final charstring = _Charstring(_data, globalSubrs, usedGlobal);
+    void visit(int glyph) {
       final fd = fdOf(glyph);
-      _Charstring(
-        globalSubrs,
-        privates[fd].$2,
-        usedGlobal,
-        usedLocal[fd],
-      ).run(charStrings[glyph]);
+      charstring
+        ..local = privates[fd].$2
+        ..usedLocal = usedLocal[fd]
+        ..start(charStrings.offsets[glyph], charStrings.offsets[glyph + 1]);
     }
 
-    final emptyGlyph = Uint8List.fromList([0x0e]); // endchar
-    final emptySubr = Uint8List.fromList([0x0b]); // return
-    final newCharStrings = [
-      for (var g = 0; g < charStrings.length; g++)
-        if (g == 0 || keep.contains(g)) charStrings[g] else emptyGlyph,
-    ];
-    final newGlobal = [
-      for (var i = 0; i < globalSubrs.length; i++)
-        if (usedGlobal.contains(i)) globalSubrs[i] else emptySubr,
-    ];
-    final newLocals = [
-      for (final (fd, (_, subrs)) in privates.indexed)
-        [
-          for (var i = 0; i < subrs.length; i++)
-            if (usedLocal[fd].contains(i)) subrs[i] else emptySubr,
-        ],
-    ];
+    if (glyphs == null) {
+      for (var g = 0; g < count; g++) {
+        visit(g);
+      }
+    } else {
+      for (final glyph in {0, ...glyphs}) {
+        if (glyph < 0 || glyph >= count) continue;
+        visit(glyph);
+      }
+    }
 
     // The layout: header, Name, Top DICT, String and Global Subr INDEXes,
     // then the charset, encoding, FDSelect, CharStrings, FDArray and the
@@ -122,35 +193,34 @@ final class _Cff {
     // A CID font gets an identity charset: CID n is glyph n, as PDF text
     // addresses it.
     final charset = cid
-        ? _identityCharset(charStrings.length)
-        : _optionalTable(top, 15, charStrings.length);
-    final encoding = cid ? null : _optionalTable(top, 16, charStrings.length);
-    final privates2 = [
-      for (final (fd, (private, _)) in privates.indexed)
-        (private, newLocals[fd]),
+        ? _identityCharset(count)
+        : _optionalTable(top, 15, count);
+    final encoding = cid ? null : _optionalTable(top, 16, count);
+    final newCharStrings = _Rewrite(charStrings, kept, 0x0e); // endchar
+    final newGlobal = _Rewrite(
+      globalSubrs,
+      usedGlobal.contains,
+      0x0b, // return
+    );
+    // Each private DICT (pointing at its subroutines right after it), and
+    // its subroutines.
+    final privateParts = [
+      for (final (fd, (private, subrs)) in privates.indexed)
+        (
+          _writeDict(_withSubrs(private, isEmpty: subrs.isEmpty)),
+          _Rewrite(subrs, usedLocal[fd].contains, 0x0b),
+        ),
     ];
 
-    // The parts after the INDEXes, given their offsets: charset, encoding,
-    // FDSelect, CharStrings, FDArray, then each private DICT.
-    List<Uint8List> parts(List<int> offsets) => [
-      charset ?? Uint8List(0),
-      encoding ?? Uint8List(0),
-      fdSelect ?? Uint8List(0),
-      _writeIndex(newCharStrings),
-      if (cid)
-        _writeIndex([
-          for (final (i, fd) in fontDicts.indexed)
-            _writeDict({
-              ...fd,
-              18: [_privateSize(privates2[i]), offsets[5 + i]],
-            }),
-        ])
-      else
-        Uint8List(0),
-      for (final private in privates2) _writePrivate(private),
-    ];
+    Uint8List fdArray(List<int> offsets) => _writeIndex([
+      for (final (i, fd) in fontDicts.indexed)
+        _writeDict({
+          ...fd,
+          18: [privateParts[i].$1.length, offsets[5 + i]],
+        }),
+    ]);
 
-    Uint8List head(List<int> offsets) {
+    Uint8List topDict(List<int> offsets) {
       final newTop = {...top}
         ..[17] = [offsets[3]]
         ..remove(18)
@@ -162,27 +232,50 @@ final class _Cff {
         newTop[1236] = [offsets[4]];
         newTop[1237] = [offsets[2]];
       } else {
-        newTop[18] = [_privateSize(privates2[0]), offsets[5]];
+        newTop[18] = [privateParts[0].$1.length, offsets[5]];
       }
-      return (ByteSink()
-            ..add(Uint8List.sublistView(_data, 0, hdrSize))
-            ..add(_writeIndex(names))
-            ..add(_writeIndex([_writeDict(newTop)]))
-            ..add(_writeIndex(strings))
-            ..add(_writeIndex(newGlobal)))
-          .takeBytes();
+      return _writeIndex([_writeDict(newTop)]);
     }
 
-    // Sizes don't depend on offsets: measure with zeros, then place.
-    final zeros = List.filled(5 + privates2.length, 0);
-    var at2 = head(zeros).length;
+    // Sizes don't depend on offsets: measure with zeros, then place the
+    // parts after the INDEXes: charset, encoding, FDSelect, CharStrings,
+    // FDArray, then each private DICT.
+    final zeros = List.filled(5 + privateParts.length, 0);
+    final names2 = _Rewrite.copy(names);
+    final strings2 = _Rewrite.copy(strings);
+    var at =
+        hdrSize +
+        names2.size +
+        topDict(zeros).length +
+        strings2.size +
+        newGlobal.size;
     final offsets = <int>[];
-    for (final part in parts(zeros)) {
-      offsets.add(at2);
-      at2 += part.length;
+    for (final size in [
+      charset?.length ?? 0,
+      encoding?.length ?? 0,
+      fdSelect?.length ?? 0,
+      newCharStrings.size,
+      if (cid) fdArray(zeros).length else 0,
+      for (final (dict, subrs) in privateParts)
+        dict.length + (subrs.isEmpty ? 0 : subrs.size),
+    ]) {
+      offsets.add(at);
+      at += size;
     }
-    final out = ByteSink(at2)..add(head(offsets));
-    parts(offsets).forEach(out.add);
+    final out = ByteSink(at)..addRange(_data, 0, hdrSize);
+    names2.writeTo(out);
+    out.add(topDict(offsets));
+    strings2.writeTo(out);
+    newGlobal.writeTo(out);
+    if (charset != null) out.add(charset);
+    if (encoding != null) out.add(encoding);
+    if (fdSelect != null) out.add(fdSelect);
+    newCharStrings.writeTo(out);
+    if (cid) out.add(fdArray(offsets));
+    for (final (dict, subrs) in privateParts) {
+      out.add(dict);
+      if (!subrs.isEmpty) subrs.writeTo(out);
+    }
     return out.takeBytes();
   }
 
@@ -197,34 +290,23 @@ final class _Cff {
   /// of [dict].
   (_Dict, _Index) _private(_Dict dict) {
     final entry = dict[18];
-    if (entry == null || entry.length != 2) return (<int, List<num>>{}, []);
+    if (entry == null || entry.length != 2) {
+      return (<int, List<num>>{}, _Index.empty(_data));
+    }
     final size = entry[0].toInt();
     final offset = entry[1].toInt();
     final private = _dict(Uint8List.sublistView(_data, offset, offset + size));
     final subrs = private.containsKey(19)
         ? _index(offset + _int(private, 19)).$1
-        : <Uint8List>[];
+        : _Index.empty(_data);
     return (private, subrs);
   }
 
-  /// The size of the private DICT of [private] as written.
-  static int _privateSize((_Dict, List<Uint8List>) private) =>
-      _writeDict(_withSubrs(private.$1, private.$2)).length;
-
-  /// A private DICT (its local subroutines right after it).
-  static Uint8List _writePrivate((_Dict, List<Uint8List>) private) {
-    final dict = _writeDict(_withSubrs(private.$1, private.$2));
-    return (ByteSink(dict.length + 256)
-          ..add(dict)
-          ..add(private.$2.isEmpty ? Uint8List(0) : _writeIndex(private.$2)))
-        .takeBytes();
-  }
-
   /// [dict] pointing at its subroutines right after it (or without
-  /// them).
-  static _Dict _withSubrs(_Dict dict, List<Uint8List> subrs) {
+  /// them, when it has none).
+  static _Dict _withSubrs(_Dict dict, {required bool isEmpty}) {
     final copy = {...dict}..remove(19);
-    if (subrs.isEmpty) return copy;
+    if (isEmpty) return copy;
     // The offset is the DICT's own size, which includes the offset's 5
     // bytes.
     final size = _writeDict({
@@ -307,10 +389,11 @@ final class _Cff {
     }
   }
 
-  /// The INDEX at [at] and where it ends.
+  /// The INDEX at [at] and where it ends; throws a [RangeError] when an
+  /// item would be outside the data.
   (_Index, int) _index(int at) {
     final count = _data[at] << 8 | _data[at + 1];
-    if (count == 0) return (<Uint8List>[], at + 2);
+    if (count == 0) return (_Index.empty(_data), at + 2);
     final offSize = _data[at + 2];
     int offset(int i) {
       var value = 0;
@@ -321,13 +404,20 @@ final class _Cff {
     }
 
     final base = at + 3 + (count + 1) * offSize - 1;
-    return (
-      [
-        for (var i = 0; i < count; i++)
-          Uint8List.sublistView(_data, base + offset(i), base + offset(i + 1)),
-      ],
-      base + offset(count),
-    );
+    final offsets = Int32List(count + 1);
+    var previous = base + offset(0);
+    if (previous < 0 || previous > _data.length) {
+      throw RangeError.range(previous, 0, _data.length);
+    }
+    offsets[0] = previous;
+    for (var i = 1; i <= count; i++) {
+      final next = base + offset(i);
+      if (next < previous || next > _data.length) {
+        throw RangeError.range(next, previous, _data.length);
+      }
+      offsets[i] = previous = next;
+    }
+    return (_Index(_data, offsets), previous);
   }
 
   static int _int(_Dict dict, int key, [int? fallback]) {
@@ -466,47 +556,58 @@ final class _Cff {
     ];
   }
 
+  /// The offset size of an INDEX whose last offset is [last].
+  static int _offSize(int last) => last <= 0xff
+      ? 1
+      : last <= 0xffff
+      ? 2
+      : last <= 0xffffff
+      ? 3
+      : 4;
+
+  static void _writeOffset(ByteSink out, int value, int offSize) {
+    for (var k = offSize - 1; k >= 0; k--) {
+      out.addByte((value >> (8 * k)) & 0xff);
+    }
+  }
+
   static Uint8List _writeIndex(List<Uint8List> items) {
     if (items.isEmpty) return Uint8List.fromList([0, 0]);
     final total = items.fold<int>(0, (sum, item) => sum + item.length) + 1;
-    final offSize = total <= 0xff
-        ? 1
-        : total <= 0xffff
-        ? 2
-        : total <= 0xffffff
-        ? 3
-        : 4;
+    final offSize = _offSize(total);
     final out = ByteSink(3 + (items.length + 1) * offSize + total - 1)
       ..u16(items.length)
       ..addByte(offSize);
     var offset = 1;
-    void writeOffset(int value) {
-      for (var k = offSize - 1; k >= 0; k--) {
-        out.addByte((value >> (8 * k)) & 0xff);
-      }
-    }
-
-    writeOffset(offset);
+    _writeOffset(out, offset, offSize);
     for (final item in items) {
       offset += item.length;
-      writeOffset(offset);
+      _writeOffset(out, offset, offSize);
     }
     items.forEach(out.add);
     return out.takeBytes();
   }
 }
 
-/// Runs a Type 2 charstring far enough to find the subroutines it calls
-/// (their operands, the stems before a hint mask).
+/// Runs Type 2 charstrings far enough to find the subroutines they call
+/// (their operands, the stems before a hint mask): one glyph at a time,
+/// in the CFF data itself.
 final class _Charstring {
-  new(this._global, this._local, this._usedGlobal, this._usedLocal);
+  new(this._data, this._global, this._usedGlobal)
+    : _view = ByteData.sublistView(_data);
 
-  final List<Uint8List> _global;
-  final List<Uint8List> _local;
+  final Uint8List _data;
+  final ByteData _view;
+  final _Index _global;
   final Set<int> _usedGlobal;
-  final Set<int> _usedLocal;
 
-  final List<num> _stack = [];
+  /// The local subroutines of the glyph, and those it calls.
+  late _Index local;
+  late Set<int> usedLocal;
+
+  /// The operands (only their count and the last one matter).
+  Int32List _stack = Int32List(48);
+  int _top = 0;
   int _stems = 0;
   bool _hintsDone = false;
   int _depth = 0;
@@ -517,29 +618,53 @@ final class _Charstring {
       ? 1131
       : 32768;
 
-  void run(Uint8List code) {
+  /// Runs the glyph whose charstring is the data from [start] to [end].
+  void start(int start, int end) {
+    _top = 0;
+    _stems = 0;
+    _hintsDone = false;
+    _depth = 0;
+    _run(start, end);
+  }
+
+  void _push(int value) {
+    if (_top == _stack.length) {
+      _stack = Int32List(_stack.length * 2)..setRange(0, _top, _stack);
+    }
+    _stack[_top++] = value;
+  }
+
+  int _pop() {
+    if (_top == 0) throw const _Unsupported();
+    return _stack[--_top];
+  }
+
+  void _run(int start, int end) {
     if (++_depth > 10) throw const _Unsupported();
-    var at = 0;
-    while (at < code.length) {
+    final code = _data;
+    var at = start;
+    while (at < end) {
       final b0 = code[at];
       if (b0 >= 32 || b0 == 28) {
         if (b0 == 28) {
-          _stack.add(_Cff._signed16(code[at + 1] << 8 | code[at + 2]));
+          if (at + 3 > end) throw const _Unsupported();
+          _push(_Cff._signed16(code[at + 1] << 8 | code[at + 2]));
           at += 3;
         } else if (b0 <= 246) {
-          _stack.add(b0 - 139);
+          _push(b0 - 139);
           at++;
         } else if (b0 <= 250) {
-          _stack.add((b0 - 247) * 256 + code[at + 1] + 108);
+          if (at + 2 > end) throw const _Unsupported();
+          _push((b0 - 247) * 256 + code[at + 1] + 108);
           at += 2;
         } else if (b0 <= 254) {
-          _stack.add(-(b0 - 251) * 256 - code[at + 1] - 108);
+          if (at + 2 > end) throw const _Unsupported();
+          _push(-(b0 - 251) * 256 - code[at + 1] - 108);
           at += 2;
         } else {
-          // 16.16 fixed.
-          _stack.add(
-            ByteData.sublistView(code, at + 1, at + 5).getInt32(0) / 65536,
-          );
+          // 16.16 fixed (only its integer part is ever used).
+          if (at + 5 > end) throw const _Unsupported();
+          _push(_view.getInt32(at + 1) ~/ 65536);
           at += 5;
         }
         continue;
@@ -547,40 +672,43 @@ final class _Charstring {
       at++;
       switch (b0) {
         case 1 || 3 || 18 || 23: // hstem, vstem, hstemhm, vstemhm
-          _stems += _stack.length ~/ 2;
-          _stack.clear();
+          _stems += _top ~/ 2;
+          _top = 0;
         case 19 || 20: // hintmask, cntrmask
           if (!_hintsDone) {
             // Implicit vstem before the first mask.
-            _stems += _stack.length ~/ 2;
+            _stems += _top ~/ 2;
             _hintsDone = true;
           }
-          _stack.clear();
+          _top = 0;
           at += (_stems + 7) ~/ 8;
         case 10: // callsubr
-          final index = _stack.removeLast().toInt() + _bias(_local.length);
-          if (index < 0 || index >= _local.length) throw const _Unsupported();
-          _usedLocal.add(index);
-          run(_local[index]);
+          final subrs = local;
+          final index = _pop() + _bias(subrs.length);
+          if (index < 0 || index >= subrs.length) throw const _Unsupported();
+          usedLocal.add(index);
+          _run(subrs.offsets[index], subrs.offsets[index + 1]);
         case 29: // callgsubr
-          final index = _stack.removeLast().toInt() + _bias(_global.length);
-          if (index < 0 || index >= _global.length) throw const _Unsupported();
+          final index = _pop() + _bias(_global.length);
+          if (index < 0 || index >= _global.length) {
+            throw const _Unsupported();
+          }
           _usedGlobal.add(index);
-          run(_global[index]);
+          _run(_global.offsets[index], _global.offsets[index + 1]);
         case 11: // return
           _depth--;
           return;
         case 14: // endchar
           // With four or more arguments it's a `seac` accent, which refers
           // to other glyphs by standard encoding.
-          if (_stack.length >= 4) throw const _Unsupported();
+          if (_top >= 4) throw const _Unsupported();
           _depth--;
           return;
         case 12:
           at++;
-          _stack.clear();
+          _top = 0;
         default:
-          _stack.clear();
+          _top = 0;
       }
     }
     _depth--;

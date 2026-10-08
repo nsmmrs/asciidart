@@ -41,6 +41,14 @@ final class ByteSink {
     _length = end;
   }
 
+  /// Writes the bytes of [source] from [start] to [end].
+  void addRange(Uint8List source, int start, int end) {
+    final length = _length + end - start;
+    if (length > _bytes.length) _grow(end - start);
+    _bytes.setRange(_length, length, source, start);
+    _length = length;
+  }
+
   /// Writes [count] zero bytes.
   void zeros(int count) {
     if (count <= 0) return;
