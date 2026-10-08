@@ -215,7 +215,11 @@ final class Engine {
     }
     final emitter = Emitter(classPrefix);
     late Frame top;
-    var modeBuffer = '';
+    // The mode buffer (the text not processed yet): the slice of the code
+    // from bufferStart to bufferEnd, or bufferText once it isn't one.
+    var bufferStart = 0;
+    var bufferEnd = 0;
+    String? bufferText;
     num relevance = 0;
     var index = 0;
     var iterations = 0;
@@ -233,19 +237,55 @@ final class Engine {
 
     String alias(String scope) => language.classNameAliases[scope] ?? scope;
 
-    void processKeywords() {
+    /// The mode buffer as a string.
+    String buffer() =>
+        bufferText ?? codeToHighlight.substring(bufferStart, bufferEnd);
+
+    bool bufferIsEmpty() => bufferText?.isEmpty ?? bufferStart == bufferEnd;
+
+    void clearBuffer() {
+      bufferText = null;
+      bufferStart = bufferEnd = 0;
+    }
+
+    /// Sets the mode buffer to the code from [from] to [to].
+    void setBuffer(int from, int to) {
+      bufferText = null;
+      bufferStart = from;
+      bufferEnd = to;
+    }
+
+    /// Adds the code from [from] to [to] to the mode buffer.
+    void append(int from, int to) {
+      if (from >= to) return;
+      final text = bufferText;
+      if (text != null) {
+        bufferText = text + codeToHighlight.substring(from, to);
+      } else if (bufferStart == bufferEnd) {
+        setBuffer(from, to);
+      } else if (bufferEnd == from) {
+        bufferEnd = to;
+      } else {
+        bufferText = buffer() + codeToHighlight.substring(from, to);
+      }
+    }
+
+    /// Adds [text], which isn't the code there, to the mode buffer.
+    void appendText(String text) => bufferText = buffer() + text;
+
+    /// Emits [text] from [from] to [to], its keywords highlighted.
+    void processKeywords(String text, int from, int to) {
       final keywords = top.mode.keywords;
       if (keywords is! CompiledKeywords) {
-        emitter.addText(modeBuffer);
+        emitter.addSlice(text, from, to);
         return;
       }
       if (top.mode.keywordsAreWords) {
         // The words found in Dart; the text not emitted yet is always one
         // slice, text[pending, i).
-        final text = modeBuffer;
-        final n = text.length;
-        var pending = 0;
-        var i = 0;
+        final n = to;
+        var pending = from;
+        var i = from;
         while (i < n) {
           if (!isWordChar(text.codeUnitAt(i))) {
             i++;
@@ -264,13 +304,16 @@ final class Engine {
           if (hits <= _maxKeywordHits) relevance += data.relevance;
           // (`_` scopes count for relevance only: no highlighting.)
           if (data.scope.startsWith('_')) continue;
-          emitter.addText(text.substring(pending, start));
+          emitter.addSlice(text, pending, start);
           emitKeyword(match, alias(data.scope));
           pending = i;
         }
-        emitter.addText(pending == 0 ? text : text.substring(pending));
+        emitter.addSlice(text, pending, n);
         return;
       }
+      final modeBuffer = from == 0 && to == text.length
+          ? text
+          : text.substring(from, to);
       var lastIndex = 0;
       final buf = StringBuffer();
       for (final match in top.mode.keywordPatternRe!.allMatches(modeBuffer)) {
@@ -302,7 +345,8 @@ final class Engine {
     }
 
     void processSubLanguage() {
-      if (modeBuffer.isEmpty) return;
+      if (bufferIsEmpty()) return;
+      final modeBuffer = buffer();
       final Highlighted result;
       switch (top.mode.subLanguage!) {
         case SubLanguageName(:final name):
@@ -322,10 +366,12 @@ final class Engine {
     void processBuffer() {
       if (top.mode.subLanguage != null) {
         processSubLanguage();
+      } else if (bufferText case final text?) {
+        processKeywords(text, 0, text.length);
       } else {
-        processKeywords();
+        processKeywords(codeToHighlight, bufferStart, bufferEnd);
       }
-      modeBuffer = '';
+      clearBuffer();
     }
 
     void emitMultiClass(CompiledScope scope, ModeMatch match) {
@@ -342,9 +388,9 @@ final class Engine {
         if (klass != null && klass.isNotEmpty) {
           emitKeyword(text ?? '', klass);
         } else {
-          modeBuffer = text ?? '';
-          processKeywords();
-          modeBuffer = '';
+          final group = text ?? '';
+          processKeywords(group, 0, group.length);
+          clearBuffer();
         }
         i++;
       }
@@ -357,11 +403,11 @@ final class Engine {
       final beginScope = mode.beginScope;
       if (beginScope is CompiledScope) {
         if (beginScope.wrap case final wrap? when wrap.isNotEmpty) {
-          emitKeyword(modeBuffer, alias(wrap));
-          modeBuffer = '';
+          emitKeyword(buffer(), alias(wrap));
+          clearBuffer();
         } else if (beginScope.multi) {
           emitMultiClass(beginScope, match);
-          modeBuffer = '';
+          clearBuffer();
         }
       }
       return top = Frame(mode, top);
@@ -393,10 +439,10 @@ final class Engine {
       return null;
     }
 
-    int doIgnore(String lexeme) {
+    int doIgnore(ModeMatch match, String lexeme) {
       if (top.mode.matcher!.regexIndex == 0) {
         // No more rules can match here: move on one character.
-        modeBuffer += lexeme.isEmpty ? '' : lexeme[0];
+        if (lexeme.isNotEmpty) append(match.index, match.index + 1);
         return 1;
       }
       // More rules can match at this very spot.
@@ -411,16 +457,17 @@ final class Engine {
       for (final cb in [newMode.beforeBegin, newMode.onBegin]) {
         if (cb == null) continue;
         cb(match, resp);
-        if (resp.isMatchIgnored) return doIgnore(lexeme);
+        if (resp.isMatchIgnored) return doIgnore(match, lexeme);
       }
+      final lexemeEnd = match.index + lexeme.length;
       if (newMode.skip ?? false) {
-        modeBuffer += lexeme;
+        append(match.index, lexemeEnd);
       } else {
-        if (newMode.excludeBegin ?? false) modeBuffer += lexeme;
+        if (newMode.excludeBegin ?? false) append(match.index, lexemeEnd);
         processBuffer();
         if (!(newMode.returnBegin ?? false) &&
             !(newMode.excludeBegin ?? false)) {
-          modeBuffer = lexeme;
+          setBuffer(match.index, lexemeEnd);
         }
       }
       startNewMode(newMode, match);
@@ -433,6 +480,7 @@ final class Engine {
       if (endMode == null) return _noMatch;
       final origin = top.mode;
       final endScope = origin.endScope;
+      final lexemeEnd = match.index + lexeme.length;
       if (endScope is CompiledScope && (endScope.wrap?.isNotEmpty ?? false)) {
         processBuffer();
         emitKeyword(lexeme, endScope.wrap!);
@@ -440,13 +488,13 @@ final class Engine {
         processBuffer();
         emitMultiClass(endScope, match);
       } else if (origin.skip ?? false) {
-        modeBuffer += lexeme;
+        append(match.index, lexemeEnd);
       } else {
         if (!((origin.returnEnd ?? false) || (origin.excludeEnd ?? false))) {
-          modeBuffer += lexeme;
+          append(match.index, lexemeEnd);
         }
         processBuffer();
-        if (origin.excludeEnd ?? false) modeBuffer = lexeme;
+        if (origin.excludeEnd ?? false) setBuffer(match.index, lexemeEnd);
       }
       do {
         if (_truthyScope(top.mode.scope)) emitter.closeNode();
@@ -475,9 +523,10 @@ final class Engine {
       list.forEach(emitter.openNode);
     }
 
-    int processLexeme(String textBeforeMatch, [ModeMatch? match]) {
+    /// Processes the code from [from] to [to], then [match] (there).
+    int processLexeme(int from, int to, [ModeMatch? match]) {
       final lexeme = match?[0];
-      modeBuffer += textBeforeMatch;
+      append(from, to);
       if (match == null || lexeme == null) {
         processBuffer();
         return 0;
@@ -487,10 +536,7 @@ final class Engine {
           match.type == MatchType.end &&
           lastMatch?.index == match.index &&
           lexeme.isEmpty) {
-        modeBuffer += codeToHighlight.substring(
-          match.index,
-          (match.index + 1).clamp(0, codeToHighlight.length),
-        );
+        append(match.index, (match.index + 1).clamp(0, codeToHighlight.length));
         return 1;
       }
       lastMatch = match;
@@ -506,7 +552,7 @@ final class Engine {
       }
       // An illegal match of `$` (a zero-width match at a line end).
       if (match.type == MatchType.illegal && lexeme.isEmpty) {
-        if (match.index != codeToHighlight.length) modeBuffer += '\n';
+        if (match.index != codeToHighlight.length) appendText('\n');
         return 1;
       }
       if (iterations > 100000 && iterations > match.index * 3) {
@@ -515,7 +561,7 @@ final class Engine {
         );
       }
       // An end match that could not complete (a callback ignored it).
-      modeBuffer += lexeme;
+      append(match.index, match.index + lexeme.length);
       return lexeme.length;
     }
 
@@ -534,12 +580,12 @@ final class Engine {
         top.mode.matcher!.lastIndex = index;
         final match = top.mode.matcher!.exec(codeToHighlight);
         if (match == null) break;
-        final beforeMatch = codeToHighlight.substring(index, match.index);
-        final processedCount = processLexeme(beforeMatch, match);
+        final processedCount = processLexeme(index, match.index, match);
         index = match.index + processedCount;
       }
       processLexeme(
-        codeToHighlight.substring(index.clamp(0, codeToHighlight.length)),
+        index.clamp(0, codeToHighlight.length),
+        codeToHighlight.length,
       );
       emitter.finalize();
       return Highlighted(

@@ -32,6 +32,11 @@ void main() {
       final buffer = StringBuffer('>');
       expect(writeEscapedHtml(buffer, text), expected != text);
       expect(buffer.toString(), '>$expected');
+      final start = random.nextInt(text.length + 1);
+      final end = start + random.nextInt(text.length - start + 1);
+      final slice = StringBuffer();
+      writeEscapedHtml(slice, text, start, end);
+      expect(slice.toString(), _oracle(text.substring(start, end)));
     }
     const plain = 'no specials';
     expect(identical(escapeHtml(plain), plain), isTrue);

@@ -8,13 +8,18 @@ String escapeHtml(String value) {
   return buffer.toString();
 }
 
-/// Writes [value] to [buffer] escaped as [escapeHtml] does, in one pass
-/// (the slices between special characters as they are); returns whether
-/// it had a special character.
-bool writeEscapedHtml(StringBuffer buffer, String value) {
-  var from = 0;
-  final n = value.length;
-  for (var i = 0; i < n; i++) {
+/// Writes [value] (from [start] to [end]) to [buffer] escaped as
+/// [escapeHtml] does, in one pass (the slices between special characters
+/// as they are); returns whether it had a special character.
+bool writeEscapedHtml(
+  StringBuffer buffer,
+  String value, [
+  int start = 0,
+  int? end,
+]) {
+  var from = start;
+  final n = end ?? value.length;
+  for (var i = start; i < n; i++) {
     final String escaped;
     switch (value.codeUnitAt(i)) {
       case 0x26:
@@ -34,10 +39,12 @@ bool writeEscapedHtml(StringBuffer buffer, String value) {
     buffer.write(escaped);
     from = i + 1;
   }
-  if (from == 0) {
-    buffer.write(value);
+  if (from == start) {
+    buffer.write(
+      start == 0 && n == value.length ? value : value.substring(start, n),
+    );
     return false;
   }
-  if (from < n) buffer.write(value.substring(from));
+  if (from < n) buffer.write(value.substring(from, n));
   return true;
 }

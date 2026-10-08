@@ -1,24 +1,15 @@
-/// The token tree the highlighter builds, and its HTML rendering.
+/// What the highlighter emits: HTML, written as it goes.
 ///
-/// Port of `src/lib/token_tree.js` and `src/lib/html_renderer.js`.
+/// Port of `src/lib/token_tree.js` and `src/lib/html_renderer.js`, without
+/// the tree: nothing reads it but the renderer, so each node's HTML is
+/// written when the node opens, text as it is added, and the spans still
+/// open are closed at the end, as rendering the tree would.
 library;
 
 import 'package:plain_highlighting/src/utils.dart';
 
-/// A node of the token tree: a scope with children (text and nodes).
-final class TokenNode {
-  /// A node for [scope].
-  new([this.scope]);
-
-  /// The scope (`keyword`, `title.function`, `language:xml`), or `null` for
-  /// a node that wraps nothing (the root of a tree).
-  String? scope;
-
-  /// Text (`String`) and nested [TokenNode]s, in order.
-  final List<Object> children = [];
-}
-
-/// Builds the token tree while highlighting (`TokenTreeEmitter`).
+/// Writes the HTML of the token tree while highlighting
+/// (`TokenTreeEmitter` and `HTMLRenderer`).
 final class Emitter {
   /// An emitter writing CSS classes with [classPrefix].
   new(this.classPrefix);
@@ -26,70 +17,74 @@ final class Emitter {
   /// The prefix of the CSS classes ([toHtml]).
   final String classPrefix;
 
-  /// The root of the tree.
-  final TokenNode root = TokenNode();
+  final StringBuffer _html = StringBuffer();
 
-  late final List<TokenNode> _stack = [root];
+  /// For each open node, whether it wrote a span (a node with an empty
+  /// scope wraps nothing).
+  final List<bool> _open = [];
 
-  TokenNode get _top => _stack.last;
+  /// The number of open nodes that wrote a span.
+  int _spans = 0;
 
   /// Adds [text] to the current node.
   void addText(String text) {
     if (text.isEmpty) return;
-    _top.children.add(text);
+    writeEscapedHtml(_html, text);
+  }
+
+  /// Adds the text of [source] from [start] to [end] to the current node.
+  void addSlice(String source, int start, int end) {
+    if (start >= end) return;
+    writeEscapedHtml(_html, source, start, end);
   }
 
   /// Opens a node for [scope] inside the current one.
   void openNode(String scope) {
-    final node = TokenNode(scope);
-    _top.children.add(node);
-    _stack.add(node);
+    final wraps = scope.isNotEmpty;
+    if (wraps) _openSpan(_classes[scope] ??= _cssClass(scope));
+    _open.add(wraps);
   }
 
-  /// Closes the current node.
+  void _openSpan(String cssClass) {
+    _html
+      ..write('<span class="')
+      ..write(cssClass)
+      ..write('">');
+    _spans++;
+  }
+
+  /// Closes the current node (none at the top).
   void closeNode() {
-    if (_stack.length > 1) _stack.removeLast();
+    if (_open.isEmpty) return;
+    if (_open.removeLast()) {
+      _html.write('</span>');
+      _spans--;
+    }
   }
 
-  /// Adds the tree of a sub-language's [emitter], scoped `language:name`
+  /// Adds what a sub-language's [emitter] emitted, scoped `language:name`
   /// when [name] is given.
   void addSublanguage(Emitter emitter, String? name) {
-    final node = emitter.root;
-    if (name != null && name.isNotEmpty) node.scope = 'language:$name';
-    _top.children.add(node);
+    final wraps = name != null && name.isNotEmpty;
+    if (wraps) _openSpan(_classes['language:$name'] ??= 'language-$name');
+    _html.write(emitter.toHtml());
+    if (wraps) {
+      _html.write('</span>');
+      _spans--;
+    }
   }
 
   /// Closes every open node.
   void finalize() {
-    while (_stack.length > 1) {
-      _stack.removeLast();
+    while (_open.isNotEmpty) {
+      closeNode();
     }
   }
 
-  /// The tree as HTML.
+  /// The HTML, with the nodes still open closed.
   String toHtml() {
-    final buffer = StringBuffer();
-    _render(root, buffer);
-    return buffer.toString();
-  }
-
-  void _render(TokenNode node, StringBuffer buffer) {
-    final scope = node.scope;
-    final wraps = scope != null && scope.isNotEmpty;
-    if (wraps) {
-      buffer
-        ..write('<span class="')
-        ..write(_classes[scope] ??= _cssClass(scope))
-        ..write('">');
-    }
-    for (final child in node.children) {
-      if (child is String) {
-        writeEscapedHtml(buffer, child);
-      } else {
-        _render(child as TokenNode, buffer);
-      }
-    }
-    if (wraps) buffer.write('</span>');
+    if (_spans == 0) return _html.toString();
+    return '$_html${'</span>' * _spans}';
   }
 
   /// The CSS classes of each scope, with [classPrefix].
