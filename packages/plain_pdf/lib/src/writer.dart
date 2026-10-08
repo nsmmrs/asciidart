@@ -6,8 +6,8 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:plain_compression/plain_compression.dart';
-import 'package:plain_pdf/src/md5.dart';
 import 'package:plain_pdf/src/objects.dart';
 
 /// How a file is written.
@@ -160,13 +160,15 @@ final class PdfWriter {
   /// Objects waiting for an object stream.
   final List<(int, PdfObject)> _pending = [];
 
-  /// The digest input in deterministic mode (the bytes written).
-  final BytesBuilder _digest = BytesBuilder();
+  /// The MD5 of the bytes written up to the file identifier, in
+  /// deterministic mode.
+  final _Digested _digested = _Digested();
+  late final ByteConversionSink _digest = md5.startChunkedConversion(_digested);
 
   void _emit(List<int> bytes) {
     _sink(bytes);
     _offset += bytes.length;
-    if (options.deterministic) _digest.add(bytes);
+    if (options.deterministic && _digested.value == null) _digest.add(bytes);
   }
 
   /// A reference for an object to write later.
@@ -296,11 +298,14 @@ final class PdfWriter {
       PdfArray([PdfString(id, hex: true), PdfString(id, hex: true)]);
 
   Uint8List _fileId() {
-    if (options.deterministic) return md5(_digest.toBytes());
+    if (options.deterministic) {
+      if (_digested.value == null) _digest.close();
+      return Uint8List.fromList(_digested.value!.bytes);
+    }
     final seed = utf8.encode(
       '${DateTime.now().microsecondsSinceEpoch} $_offset $_nextNumber',
     );
-    return md5(seed);
+    return Uint8List.fromList(md5.convert(seed).bytes);
   }
 
   void _writeXrefTable(PdfRef root, PdfRef? info, Uint8List id) {
@@ -484,4 +489,15 @@ String xmpPacket(PdfInfo info, DateTime date) {
     ..write('</rdf:Description>\n</rdf:RDF>\n</x:xmpmeta>\n')
     ..write('<?xpacket end="w"?>');
   return out.toString();
+}
+
+/// Where a chunked digest ends up.
+final class _Digested implements Sink<Digest> {
+  Digest? value;
+
+  @override
+  void add(Digest data) => value = data;
+
+  @override
+  void close() {}
 }

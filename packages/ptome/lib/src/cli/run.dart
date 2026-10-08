@@ -18,7 +18,8 @@ import 'package:ptome/src/options.dart';
 /// Runs the Ptome CLI, reporting through the process exit code.
 ///
 /// [configure] adjusts the processor options of every conversion (a custom
-/// command's extensions and overrides).
+/// command's extensions and overrides). [setup] registers what the command
+/// has compiled in (its backends), here and on every `-j` worker isolate.
 ///
 /// A first argument of `init-config` runs the project scaffold instead
 /// of converting (see [runInitConfig]), and `doctor` checks and installs
@@ -27,6 +28,7 @@ import 'package:ptome/src/options.dart';
 Future<void> runCli(
   List<String> args, {
   AsciidoctorOptions Function(AsciidoctorOptions options)? configure,
+  void Function()? setup,
 }) async {
   // A failed stdout also completes its done future with the error. A
   // reader that went away (`ptome ... | head`) ends the run quietly;
@@ -41,7 +43,7 @@ Future<void> runCli(
       },
     ),
   );
-  io.exitCode = await runCliCode(args, configure: configure);
+  io.exitCode = await runCliCode(args, configure: configure, setup: setup);
 }
 
 /// Runs the Asciidoctor CLI, returning the process exit code.
@@ -56,7 +58,9 @@ Future<int> runCliCode(
   StringSink? out,
   StringSink? err,
   AsciidoctorOptions Function(AsciidoctorOptions options)? configure,
+  void Function()? setup,
 }) async {
+  setup?.call();
   if (args.isNotEmpty && args.first == 'init-config') {
     return runInitConfig(args.sublist(1), out: out, err: err);
   }
@@ -65,7 +69,8 @@ Future<int> runCliCode(
   }
   try {
     final invoker = Invoker.fromArgs(args, out: out, err: err)
-      ..configure = configure;
+      ..configure = configure
+      ..setup = setup;
     if (out != null) invoker.redirectStreams(out, err);
     await invoker.invokeAsync();
     return invoker.code;

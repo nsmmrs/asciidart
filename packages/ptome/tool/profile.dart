@@ -12,7 +12,9 @@
 /// self time (the function on top of the stack) and by inclusive time (the
 /// function anywhere on the stack), each with the share of all samples;
 /// with `--callers NAME` (repeatable), the callers (outside its library and
-/// the core's) of the samples with a function named NAME on top.
+/// the core's) of the samples with a function named NAME on top. Each
+/// table lists N rows (`--top`, 40); `--top 0` leaves out the first two
+/// and lists every caller.
 /// The VM runs the code JIT-compiled, so the shares are close to, not the
 /// same as, the native executable's.
 library;
@@ -127,6 +129,7 @@ Future<void> main(List<String> args) async {
     }
   }
   void table(String title, Map<int, int> counts) {
+    if (top == 0) return;
     stdout.writeln('\n$title (${all.length} samples, ~$wall ms to exit):');
     final entries = counts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -165,7 +168,7 @@ Future<void> main(List<String> args) async {
     stdout.writeln('\nCallers of $name ($total samples on top):');
     final entries = callers.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    for (final entry in entries.take(top)) {
+    for (final entry in top == 0 ? entries : entries.take(top)) {
       final share = (100 * entry.value / all.length).toStringAsFixed(1);
       stdout.writeln('${share.padLeft(6)}%  ${entry.key}');
     }

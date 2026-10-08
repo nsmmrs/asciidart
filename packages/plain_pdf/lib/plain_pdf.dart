@@ -39,7 +39,6 @@ export 'src/images/images.dart'
         PngColorType,
         PngImage,
         PngPayload;
-export 'src/md5.dart' show md5;
 export 'src/objects.dart'
     show
         PdfArray,

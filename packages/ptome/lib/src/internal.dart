@@ -39,7 +39,6 @@ export 'index_catalog.dart';
 export 'inline.dart';
 export 'inline_tree.dart';
 export 'io/types.dart';
-export 'job_pool.dart';
 export 'list.dart';
 export 'load.dart';
 export 'logging.dart';

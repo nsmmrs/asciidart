@@ -54,8 +54,8 @@ final class _Pending<R> implements _Waiting {
 
 /// A request, whatever its result's type.
 abstract interface class _Asked {
-  /// Runs the job (on the worker); the reply.
-  _Answer answer();
+  /// Runs the job (on the worker); the reply, or its future.
+  FutureOr<_Answer> answer();
 }
 
 /// A reply, whatever its result's type.
@@ -72,13 +72,21 @@ final class _Request<R> implements _Asked {
   final Job<R> job;
 
   @override
-  _Reply<R> answer() {
+  FutureOr<_Reply<R>> answer() {
+    _Reply<R> failed(Object error, StackTrace stack) =>
+        _Reply<R>(id, null, error: '$error', stack: '$stack');
     try {
-      return _Reply<R>(id, job.run());
+      return switch (job.run()) {
+        final Future<R> later => later.then(
+          (value) => _Reply<R>(id, value),
+          onError: failed,
+        ),
+        final R value => _Reply<R>(id, value),
+      };
       // A job's failure goes back to its future.
       // ignore: avoid_catches_without_on_clauses
     } catch (error, stack) {
-      return _Reply<R>(id, null, error: '$error', stack: '$stack');
+      return failed(error, stack);
     }
   }
 }
@@ -122,7 +130,14 @@ final class _Hello {
 void _work((SendPort, int) start) {
   final (main, index) = start;
   final port = RawReceivePort((Object message) {
-    if (message case final _Asked request) main.send(request.answer());
+    if (message case final _Asked request) {
+      switch (request.answer()) {
+        case final Future<_Answer> later:
+          unawaited(later.then(main.send));
+        case final _Answer now:
+          main.send(now);
+      }
+    }
   });
   main.send(_Hello(index, port.sendPort));
 }

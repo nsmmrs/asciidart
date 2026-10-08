@@ -16,6 +16,7 @@ environment:
 resolution: workspace
 
 dependencies:
+  crypto: ^3.0.6
   meta: ^1.16.0
   plain_compression: ^0.1.0-dev
   plain_fonts: ^0.1.0-dev

@@ -44,6 +44,23 @@ final class _Throws extends Job<int> {
   int run() => throw StateError('no luck');
 }
 
+/// Waits [millis] (on a timer), then gives its [name], or fails when it
+/// [fails].
+final class _Later extends Job<String> {
+  const new(this.name, this.millis, {this.fails = false});
+
+  final String name;
+  final int millis;
+  final bool fails;
+
+  @override
+  Future<String> run() async {
+    await Future<void>.delayed(Duration(milliseconds: millis));
+    if (fails) throw StateError('too late');
+    return name;
+  }
+}
+
 /// Ends its worker.
 final class _Dies extends Job<int> {
   const new();
@@ -94,6 +111,35 @@ void main() {
     );
     await expectLater(
       Parallel.serial.submit(const _Throws()),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('a job that waits holds its worker until it ends', () async {
+    final pool = Parallel.ofSize(2);
+    final finished = <String>[];
+    await Future.wait([
+      for (final job in const [
+        _Later('long', 300),
+        _Later('a', 10),
+        _Later('b', 10),
+      ])
+        pool.submit(job).then(finished.add),
+    ]);
+    expect(finished, ['a', 'b', 'long']);
+    await expectLater(
+      pool.submit(const _Later('x', 1, fails: true)),
+      throwsA(
+        isA<JobFailure>().having(
+          (f) => f.message,
+          'message',
+          'Bad state: too late',
+        ),
+      ),
+    );
+    expect(await Parallel.serial.submit(const _Later('s', 1)), 's');
+    await expectLater(
+      Parallel.serial.submit(const _Later('s', 1, fails: true)),
       throwsA(isA<StateError>()),
     );
   });

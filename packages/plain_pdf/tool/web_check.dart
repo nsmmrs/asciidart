@@ -6,6 +6,7 @@
 // digest it prints with the VM's).
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:plain_pdf/plain_pdf.dart';
 import 'package:plain_typesetting/plain_typesetting.dart';
 
@@ -48,8 +49,7 @@ void main() {
   final pdf = document.save(
     options: const PdfWriterOptions(deterministic: true),
   );
-  final digest = [for (final b in md5(pdf)) b.toRadixString(16).padLeft(2, '0')]
-      .join();
+  final digest = md5.convert(pdf);
   // The digest is the program's output.
   // ignore: avoid_print
   print('${pdf.length} $digest');

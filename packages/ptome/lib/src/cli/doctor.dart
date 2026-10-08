@@ -15,10 +15,10 @@ library;
 
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:ptome/src/font_index.dart';
 import 'package:ptome/src/io.dart' as io;
 import 'package:ptome/src/remote.dart';
-import 'package:ptome/src/sha256.dart';
 
 /// Usage text for `doctor` (printed by `--help` and on misuse).
 const String doctorUsage = '''
@@ -604,7 +604,7 @@ Future<List<int>> _pinned(
   Future<RemoteResource> Function(Uri uri) fetch,
 ) async {
   final bytes = (await fetch(Uri.parse(file.url))).body;
-  if (sha256Hex(bytes) != file.sha256) {
+  if ('${sha256.convert(bytes)}' != file.sha256) {
     throw DoctorException(
       '${file.url} is not the file expected (its SHA-256 differs)',
     );

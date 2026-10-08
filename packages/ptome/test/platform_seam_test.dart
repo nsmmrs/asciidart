@@ -15,11 +15,7 @@ import 'package:test/test.dart';
 /// library.
 const Map<String, Set<String>> allowedImports = {
   'dart:io': {'lib/src/io/vm.dart'},
-  'dart:isolate': {
-    'lib/src/cli/workers_isolate.dart',
-    'lib/src/job_pool.dart',
-    'lib/src/parallel/pool_isolate.dart',
-  },
+  'dart:isolate': {'lib/src/parallel/pool_isolate.dart'},
   'dart:js_interop': {'lib/src/io/js.dart', 'lib/src/js/'},
   'dart:js_interop_unsafe': {'lib/src/io/js.dart', 'lib/src/js/'},
 };

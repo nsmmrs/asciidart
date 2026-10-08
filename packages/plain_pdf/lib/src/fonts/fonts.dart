@@ -5,11 +5,11 @@ library;
 
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:plain_fonts/plain_fonts.dart';
 import 'package:plain_pdf/src/fonts/encoding.dart';
 import 'package:plain_pdf/src/fonts/standard_metrics.dart';
 import 'package:plain_pdf/src/fonts/standard_metrics.g.dart';
-import 'package:plain_pdf/src/md5.dart';
 import 'package:plain_pdf/src/objects.dart';
 import 'package:plain_pdf/src/writer.dart';
 import 'package:plain_typesetting/plain_typesetting.dart';
@@ -350,7 +350,9 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
   /// The six-letter tag of the subset (ISO 32000-2, 9.9.2), derived from
   /// the glyphs used so the same use gives the same tag.
   String get _subsetTag {
-    final digest = md5(utf8.encode((_used.keys.toList()..sort()).join(',')));
+    final digest = md5
+        .convert(utf8.encode((_used.keys.toList()..sort()).join(',')))
+        .bytes;
     return String.fromCharCodes([
       for (final b in digest.take(6)) 0x41 + b % 26,
     ]);

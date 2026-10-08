@@ -354,7 +354,11 @@ final class Invoker {
 
       final workerCount = min(options.jobs, infiles.length);
       final wallClock = Stopwatch()..start();
-      final responses = await convertOnWorkers(requests, workerCount);
+      final responses = await convertOnWorkers(
+        requests,
+        workerCount,
+        setup: setup,
+      );
       wallClock.stop();
 
       // Replay in input order. The first hard failure stops the replay like
@@ -453,6 +457,10 @@ final class Invoker {
   /// Adjusts the processor options before each conversion: a custom
   /// command's configuration (extensions, output overrides, highlighters).
   AsciidoctorOptions Function(AsciidoctorOptions options)? configure;
+
+  /// Registers what the command has compiled in (its backends) on each
+  /// worker isolate of a `-j` run, as it did here.
+  void Function()? setup;
 
   /// The processor options for [options], before output targets.
   AsciidoctorOptions _processorOptions(CliOptions options) {

@@ -5,8 +5,8 @@ library;
 
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:meta/meta.dart';
-import 'package:plain_pdf/plain_pdf.dart' show md5;
 
 /// A name in the index: its text (for sorting) and its inline markup.
 @immutable
@@ -99,10 +99,7 @@ final class IndexCategory extends IndexGroup {
 final class IndexTerm extends IndexGroup {
   /// The term [name].
   new(super.name)
-    : anchor = '__indextermdef-${_hex(md5(utf8.encode(name.text)))}';
-
-  static String _hex(List<int> bytes) =>
-      [for (final byte in bytes) byte.toRadixString(16).padLeft(2, '0')].join();
+    : anchor = '__indextermdef-${md5.convert(utf8.encode(name.text))}';
 
   /// The anchor of its entry in the index.
   final String anchor;

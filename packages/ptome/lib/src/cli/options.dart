@@ -4,8 +4,8 @@
 ///
 /// ## Parser choice
 ///
-/// The parser is hand-rolled instead of using `package:args` (already in
-/// `pubspec.yaml`), because `package:args` cannot express the behaviors the
+/// The parser is hand-rolled instead of using `package:args` (which only
+/// the tools use), because `package:args` cannot express the behaviors the
 /// `asciidoctor` CLI has: options with optional arguments
 /// (`-h/--help [TOPIC]`), unambiguous-prefix completion of long options
 /// (`--back`) and of enumerated values (`--failure-level=e`, `-d art`),

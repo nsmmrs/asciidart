@@ -10,6 +10,7 @@ library;
 import 'dart:io';
 
 import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
 import '../support/paths.dart';
@@ -577,6 +578,26 @@ void main() {
       }
       expect(parallelError, isA<WorkerFailure>());
       expect(parallelError.toString(), equals(sequentialError.toString()));
+    });
+
+    test('-j workers have the backends the command registers', () async {
+      // Backends registered in the command's main (the executable's PDF)
+      // are registered again on each worker isolate: `setup`.
+      final src = writeParityFixtures();
+      final dest = makeTempDir('jobs_setup_');
+      final err = StringBuffer();
+      final code = await runCliCode(
+        ['-j', '2', '-b', 'pdf', '-D', dest.path, ...parityInputs(src)],
+        out: StringBuffer(),
+        err: err,
+        setup: registerPdf,
+      );
+      expect(err.toString(), isNot(contains('missing converter')));
+      expect(code, 0);
+      expect(
+        {for (final file in dest.listSync()) file.uri.pathSegments.last},
+        {'a.pdf', 'b.pdf', 'c.pdf', 'd.pdf'},
+      );
     });
 
     test('invoke stays sequential when jobs exceeds 1', () async {

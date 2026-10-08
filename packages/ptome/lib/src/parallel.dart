@@ -26,8 +26,10 @@ abstract base class Job<R> {
   /// A job.
   const new();
 
-  /// The result, computed on a worker (or here, serially).
-  R run();
+  /// The result, computed on a worker (or here, serially); a future for
+  /// work that waits (a conversion reading its files), during which the
+  /// worker takes no other job.
+  FutureOr<R> run();
 }
 
 /// Runs [Job]s.
@@ -121,13 +123,23 @@ final class _Serial implements Parallel {
   @override
   Future<R> submit<R>(Job<R> job) {
     // (Run now; handed back as the shuffle says.)
-    R Function() outcome;
+    final FutureOr<R> result;
     try {
-      final result = job.run();
-      outcome = () => result;
+      result = job.run();
     } catch (error, stack) {
-      outcome = () => Error.throwWithStackTrace(error, stack);
+      return _handBack(() => Error.throwWithStackTrace(error, stack));
     }
+    return switch (result) {
+      final Future<R> later => later.then(
+        (value) => _handBack(() => value),
+        onError: (Object error, StackTrace stack) =>
+            _handBack<R>(() => Error.throwWithStackTrace(error, stack)),
+      ),
+      final R value => _handBack(() => value),
+    };
+  }
+
+  static Future<R> _handBack<R>(R Function() outcome) {
     final completer = Completer<R>();
     deliver(completer, outcome);
     return completer.future;
