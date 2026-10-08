@@ -251,10 +251,10 @@ final class MathTreeBuilder {
   void text(String text) {
     if (text.isEmpty) return;
     final children = _open.last.children;
-    if (children.isNotEmpty && children.last is String) {
-      children.last = '${children.last}$text';
+    if (children.lastOrNull case _XmlText(text: final before)) {
+      children.last = _XmlText('$before$text');
     } else {
-      children.add(text);
+      children.add(_XmlText(text));
     }
   }
 
@@ -412,14 +412,24 @@ MathNode _node(_Element element) {
   );
 }
 
+/// A child of an element: an element, or text.
+sealed class _XmlNode;
+
+/// Text in an element (its references replaced).
+final class _XmlText implements _XmlNode {
+  new(this.text);
+
+  final String text;
+}
+
 /// An element of a MathML document: its local name (without a namespace
 /// prefix), attributes and children (elements and text).
-final class _Element {
+final class _Element implements _XmlNode {
   new(this.name, this.attributes);
 
   final String name;
   final Map<String, String> attributes;
-  final List<Object> children = [];
+  final List<_XmlNode> children = [];
 
   String? attribute(String name) => attributes[name];
 
@@ -429,10 +439,11 @@ final class _Element {
     final out = StringBuffer();
     void collect(_Element e) {
       for (final child in e.children) {
-        if (child is String) {
-          out.write(child);
-        } else {
-          collect(child as _Element);
+        switch (child) {
+          case _XmlText(:final text):
+            out.write(text);
+          case final _Element element:
+            collect(element);
         }
       }
     }
@@ -543,7 +554,7 @@ final class _XmlReader {
     final text = StringBuffer();
     void flush() {
       if (text.isNotEmpty) {
-        element.children.add(_decode(text.toString()));
+        element.children.add(_XmlText(_decode(text.toString())));
         text.clear();
       }
     }
@@ -568,7 +579,7 @@ final class _XmlReader {
         final end = _text.indexOf(']]>', _at);
         if (end < 0) _fail('unterminated CDATA section');
         flush();
-        element.children.add(_text.substring(_at + 9, end));
+        element.children.add(_XmlText(_text.substring(_at + 9, end)));
         _at = end + 3;
       } else if (_text.startsWith('<!--', _at)) {
         _skipPast('-->');
