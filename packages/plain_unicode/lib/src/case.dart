@@ -104,14 +104,32 @@ bool _isFinalSigma(List<int> runes, int index) {
   return true;
 }
 
-/// A generated mapping table (`cp:mapped mapped,...`, base 36).
-Map<int, String> _parse(String table) => {
-  for (final entry in table.split(','))
-    if (entry.split(':') case [final cp, final mapped])
-      int.parse(cp, radix: 36): String.fromCharCodes([
+/// A generated mapping table: runs (`start:delta:count:stride`) and
+/// mappings to several code points (`cp=mapped mapped`), in base 36.
+Map<int, String> _parse(String table) {
+  final map = <int, String>{};
+  for (final entry in table.split(',')) {
+    if (entry.split('=') case [final cp, final mapped]) {
+      map[int.parse(cp, radix: 36)] = String.fromCharCodes([
         for (final c in mapped.split(' ')) int.parse(c, radix: 36),
-      ]),
-};
+      ]);
+    } else if (entry.split(':') case [
+      final start,
+      final delta,
+      final count,
+      final stride,
+    ]) {
+      final first = int.parse(start, radix: 36);
+      final offset = int.parse(delta, radix: 36);
+      final step = int.parse(stride);
+      for (var i = 0; i < int.parse(count, radix: 36); i++) {
+        final cp = first + i * step;
+        map[cp] = String.fromCharCode(cp + offset);
+      }
+    }
+  }
+  return map;
+}
 
 /// Generated ranges (`start-end,...`, base 36) as a flat sorted list.
 List<int> _parseRanges(String ranges) => [

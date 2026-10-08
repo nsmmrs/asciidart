@@ -55,12 +55,45 @@ Future<void> main() async {
     if (property == 'Case_Ignorable') ignorable.add((start, end));
   }
 
-  String table(Map<int, List<int>> map) => [
-    for (final cp in map.keys.toList()..sort())
-      // Only the mappings that change something.
-      if (!(map[cp]!.length == 1 && map[cp]!.single == cp))
-        '${cp.toRadixString(36)}:${_base36(map[cp]!)}',
-  ].join(',');
+  // Single code point mappings come in runs: consecutive or alternating
+  // code points with the same offset (`start:delta:count:stride`, base 36,
+  // the delta signed). Mappings to several code points are listed
+  // (`cp=mapped mapped`). ASCII is left out: the code maps it directly.
+  String table(Map<int, List<int>> map) {
+    final singles = <(int, int)>[];
+    final entries = <String>[];
+    for (final cp in map.keys.toList()..sort()) {
+      final mapped = map[cp]!;
+      if (cp < 0x80 || (mapped.length == 1 && mapped.single == cp)) continue;
+      if (mapped.length == 1) {
+        singles.add((cp, mapped.single - cp));
+      } else {
+        entries.add('${cp.toRadixString(36)}=${_base36(mapped)}');
+      }
+    }
+    for (var i = 0; i < singles.length;) {
+      final (start, delta) = singles[i];
+      var count = 1;
+      var stride = 1;
+      if (i + 1 < singles.length &&
+          singles[i + 1].$2 == delta &&
+          singles[i + 1].$1 - start <= 2) {
+        stride = singles[i + 1].$1 - start;
+        while (i + count < singles.length &&
+            singles[i + count].$2 == delta &&
+            singles[i + count].$1 == start + count * stride) {
+          count++;
+        }
+      }
+      entries.add(
+        '${start.toRadixString(36)}:${delta.toRadixString(36)}:'
+        '${count.toRadixString(36)}:$stride',
+      );
+      i += count;
+    }
+    return entries.join(',');
+  }
+
   String ranges(List<(int, int)> list) {
     list.sort((a, b) => a.$1.compareTo(b.$1));
     final merged = <(int, int)>[];
@@ -90,8 +123,9 @@ Future<void> main() async {
     ..writeln('/// The Unicode version of the case mappings.')
     ..writeln("const String caseMappingUnicodeVersion = '$_version';")
     ..writeln()
-    ..writeln('/// Full upper case mappings that change a code point, in base')
-    ..writeln('/// 36: `cp:mapped mapped,...`.')
+    ..writeln('/// Full upper case mappings of non-ASCII code points: runs')
+    ..writeln('/// (`start:delta:count:stride`) and mappings to several code')
+    ..writeln('/// points (`cp=mapped mapped`), in base 36.')
     ..writeln("const String upperTable = '${table(upper)}';")
     ..writeln()
     ..writeln('/// Full lower case mappings that change a code point (without')

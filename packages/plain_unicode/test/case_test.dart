@@ -107,7 +107,10 @@ void main() {
   test(
     "JavaScript's toUpperCase and toLowerCase (Node.js), every code point",
     () {
-      final node = Process.runSync('node', ['-e', _nodeMappings]);
+      final node = Process.runSync('node', [
+        '-e',
+        _nodeMappings,
+      ], stdoutEncoding: utf8);
       expect(node.exitCode, 0, reason: '${node.stderr}');
       final js = <int, (String, String)>{};
       String text(String hex) => String.fromCharCodes([
@@ -136,7 +139,7 @@ void main() {
         '-e',
         _nodeLowerCase,
         jsonEncode(samples),
-      ]);
+      ], stdoutEncoding: utf8);
       expect([
         for (final s in samples) lowerCase(s, finalSigma: true),
       ], jsonDecode('${context.stdout}'));
