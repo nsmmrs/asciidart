@@ -177,7 +177,7 @@ void main() {
         environment: {'PTOME_MANPAGE_PATH': '$repoRoot/man/ptome.1'},
       );
       expect(result.exitCode, equals(0));
-      expect(result.out, contains('Manual: ptome Manual'));
+      expect(result.out, contains('Manual: Ptome Manual'));
       expect(result.out, contains('.TH "PTOME"'));
     });
 

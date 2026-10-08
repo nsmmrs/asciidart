@@ -40,10 +40,10 @@ void main() {
       expect(
         keys.where((key) => key.startsWith('stylesheets/')),
         orderedEquals([
-          'stylesheets/ptome-epub3-house.css',
-          'stylesheets/ptome-house.css',
           'stylesheets/asciidoctor-default.css',
           'stylesheets/coderay-asciidoctor.css',
+          'stylesheets/ptome-epub3-house.css',
+          'stylesheets/ptome-house.css',
         ]),
       );
       expect(keys, hasLength(41));

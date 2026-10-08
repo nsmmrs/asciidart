@@ -84,7 +84,7 @@ void main() {
         );
         expect(result.exitCode, equals(0));
         expect(result.out, contains('.TH "PTOME"'));
-        expect(result.out, contains('Manual: ptome Manual'));
+        expect(result.out, contains('Manual: Ptome Manual'));
       } finally {
         tmp.deleteSync(recursive: true);
       }

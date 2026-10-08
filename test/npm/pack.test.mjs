@@ -19,12 +19,12 @@ test('npm pack lists the expected files', () => {
   assert.deepEqual(files.filter((file) => !parts.includes(file)), [
     'LICENSE',
     'README.md',
-    'ptome.js',
     'bin/ptome.js',
     'browser.js',
     'node.cjs',
     'node.js',
     'package.json',
+    'ptome.js',
     'src/api.g.js',
     'src/core.js',
     'src/index.js',

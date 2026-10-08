@@ -39,7 +39,7 @@ setup() {
   run --separate-stderr -- "$EXE" -h manpage
   [ "$status" -eq 0 ]
   # The page is asciidoctor(1) or ptome(1), depending on the CLI.
-  assert_output_contains '.TH "ASCIID'
+  [[ "$output" == *'.TH "ASCIIDOCTOR"'* || "$output" == *'.TH "PTOME"'* ]]
   assert_output_contains ' Manual'
 }
 
