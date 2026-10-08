@@ -194,10 +194,25 @@ final class PdfWriter {
   void _writeIndirect(int number, PdfObject object) {
     _locations[number] = _Offset(_offset);
     final out = BytesBuilder()..add(ascii.encode('$number 0 obj\n'));
-    _encode(object).writeTo(out);
-    out.add(ascii.encode('\nendobj\n'));
+    final encoded = _encode(object);
+    if (encoded is PdfStream) {
+      // The data goes to the sink as it is, not copied into the builder.
+      PdfDict({...encoded.dict.entries, 'Length': PdfInt(encoded.data.length)})
+          .writeTo(out);
+      out.add(_streamStart);
+      _emit(out.takeBytes());
+      _emit(encoded.data);
+      _emit(_streamEnd);
+      return;
+    }
+    encoded.writeTo(out);
+    out.add(_objectEnd);
     _emit(out.takeBytes());
   }
+
+  static final Uint8List _streamStart = ascii.encode('\nstream\n');
+  static final Uint8List _streamEnd = ascii.encode('\nendstream\nendobj\n');
+  static final Uint8List _objectEnd = ascii.encode('\nendobj\n');
 
   /// [object] with stream data compressed, when it should be.
   PdfObject _encode(PdfObject object) {
@@ -231,13 +246,14 @@ final class PdfWriter {
       body.addByte(0x0a);
       _locations[objectNumber] = _InStream(number, i);
     }
-    final header = offsets.takeBytes();
+    final first = offsets.length;
+    offsets.add(body.takeBytes());
     final stream = PdfStream(
-      [...header, ...body.takeBytes()],
+      offsets.takeBytes(),
       dict: PdfDict({
         'Type': const PdfName('ObjStm'),
         'N': PdfInt(_pending.length),
-        'First': PdfInt(header.length),
+        'First': PdfInt(first),
       }),
     );
     _pending.clear();
