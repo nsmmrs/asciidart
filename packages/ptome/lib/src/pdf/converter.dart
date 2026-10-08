@@ -6537,23 +6537,43 @@ final class PdfConverter extends BuiltInConverter
   /// The formula of the AsciiMath (or with [latex], LaTeX) [source] (its
   /// MathML), or null when it can't be set (no math font, or MathML the
   /// layout can't read). A LaTeX command it doesn't know is reported.
+  ///
+  /// The same formula is converted once per document; its warning, if
+  /// any, comes again for each occurrence.
   MathNode? _mathOf(String source, {bool latex = false, bool display = false}) {
     if (_math == null) return null;
+    final (math, warning) = _formulas[(source, latex)] ??= _convertMath(
+      source,
+      latex: latex,
+    );
+    if (warning != null) logger.warn(warning);
+    return math;
+  }
+
+  /// The formulas converted so far, by source and language, with the
+  /// warning each gave.
+  final Map<(String, bool), (MathNode?, String?)> _formulas = {};
+
+  /// The formula of [source] (see [_mathOf]), and the warning to give.
+  static (MathNode?, String?) _convertMath(
+    String source, {
+    required bool latex,
+  }) {
     final unknown = <String>{};
     try {
       final math = latex
           ? latexToMath(_stripDelimiters(source), unknown: unknown)
           : asciimathToMath(source);
       if (unknown.isNotEmpty) {
-        logger.warn(
+        return (
+          math,
           'unknown LaTeX math command${unknown.length == 1 ? '' : 's'} '
-          '${unknown.join(', ')}, shown as written: $source',
+              '${unknown.join(', ')}, shown as written: $source',
         );
       }
-      return math;
+      return (math, null);
     } on MathMLException catch (error) {
-      logger.warn('could not typeset math: $source ($error)');
-      return null;
+      return (null, 'could not typeset math: $source ($error)');
     }
   }
 

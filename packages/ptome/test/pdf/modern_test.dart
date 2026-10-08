@@ -2432,12 +2432,19 @@ base:
 
     test('an unknown LaTeX command is shown and reported', () {
       final logger = MemoryLogger();
-      _pdf(':stem: latexmath\n\nstem:[\\foo x]\n', logger: logger);
+      // (Each occurrence reported, though the formula is converted once.)
+      _pdf(
+        ':stem: latexmath\n\nstem:[\\foo x] and stem:[\\foo x]\n',
+        logger: logger,
+      );
       expect(
         logger.messages
             .where((m) => m.severity == Severity.warn)
             .map((m) => m.message.text),
-        [r'unknown LaTeX math command \foo, shown as written: \foo x'],
+        [
+          for (var i = 0; i < 2; i++)
+            r'unknown LaTeX math command \foo, shown as written: \foo x',
+        ],
       );
     });
 
