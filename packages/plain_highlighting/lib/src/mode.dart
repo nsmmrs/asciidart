@@ -164,6 +164,21 @@ final class ModeGroup extends ContainsEntry {
   final List<ContainsEntry> modes;
 }
 
+/// How a mode's end expression is matched where its end was found:
+/// upstream runs it on the rest of the text and checks for a match at its
+/// start.
+enum EndMatch {
+  /// It matches anywhere (the default end, `\B|\b`).
+  anywhere,
+
+  /// Its result can't depend on the text before (no `^`, `\b`, `\B` or
+  /// lookbehind): matched in place, without copying the rest.
+  inPlace,
+
+  /// Matched on a copy of the rest.
+  onRest,
+}
+
 /// How a match was found.
 enum MatchType {
   /// A mode's `begin`.
@@ -190,6 +205,7 @@ final class ModeMatch {
     this.index,
     this._match,
     this._offset, {
+    required this._groupCount,
     this.type,
     this.rule,
     this.position = 0,
@@ -203,7 +219,24 @@ final class ModeMatch {
       _offset = 0,
       _groups = groups,
       _length = null,
+      _groupCount = 0,
       position = 0;
+
+  /// A match of [lexeme] alone, found without a regular expression (a
+  /// literal rule, or an empty match), with [length] groups (the rest
+  /// unmatched).
+  new literal(
+    this.input,
+    this.index,
+    String lexeme, {
+    required this.type,
+    required this.rule,
+    required this.position,
+    required int this._length,
+  }) : _match = null,
+       _offset = 0,
+       _groups = [lexeme],
+       _groupCount = 0;
 
   /// The text that was searched.
   final String input;
@@ -213,6 +246,10 @@ final class ModeMatch {
 
   final RegExpMatch? _match;
   final int _offset;
+
+  /// The number of groups of [_match]'s expression (known, rather than
+  /// asked of the match: a native call on the VM).
+  final int _groupCount;
   List<String?>? _groups;
 
   /// [length], when the match is of the rule alone (the alternation's
@@ -234,12 +271,11 @@ final class ModeMatch {
     if (groups != null) return i < groups.length ? groups[i] : null;
     final match = _match!;
     final g = _offset + i;
-    return g <= match.groupCount ? match.group(g) : null;
+    return g <= _groupCount ? match.group(g) : null;
   }
 
   /// The number of groups, including group 0.
-  int get length =>
-      _groups?.length ?? _length ?? (_match!.groupCount - _offset + 1);
+  int get length => _length ?? _groups?.length ?? (_groupCount - _offset + 1);
 }
 
 /// Lets a callback ignore the match it was called for, and keep state for
@@ -680,6 +716,9 @@ class Mode extends ContainsEntry {
   /// The compiled [end].
   RegExp? endRe;
 
+  /// How [endRe] is matched where an end match was found.
+  EndMatch endMatch = EndMatch.onRest;
+
   /// The compiled [illegal].
   RegExp? illegalRe;
 
@@ -710,7 +749,10 @@ class Mode extends ContainsEntry {
       keywordsAreWords = from.keywordsAreWords;
     }
     beginRe = from.beginRe ?? beginRe;
-    endRe = from.endRe ?? endRe;
+    if (from.endRe case final re?) {
+      endRe = re;
+      endMatch = from.endMatch;
+    }
     illegalRe = from.illegalRe ?? illegalRe;
     terminatorEnd = from.terminatorEnd ?? terminatorEnd;
     matcher = from.matcher ?? matcher;

@@ -59,8 +59,13 @@ final class MultiRegex {
   /// ([_beyondAscii]) and those that can match at the end ([_atEnd]).
   List<List<int>>? _byChar;
 
-  /// Whether each rule only matches at the start of a word.
-  late final List<bool> _wordStart = List.filled(_regexes.length, false);
+  /// The number of groups of each rule.
+  final List<int> _groupCounts = [];
+
+  /// What each rule's matches can start with (see [FirstChars]); null
+  /// for a rule that matches the empty string anywhere (the last one the
+  /// table has).
+  late final List<FirstChars?> _first = List.filled(_regexes.length, null);
 
   /// The class of the run each rule's matches start with, if one (see
   /// [FirstChars.run]), and where the rule last didn't match in a run:
@@ -70,10 +75,6 @@ final class MultiRegex {
   late final List<String?> _missIn = List.filled(_regexes.length, null);
   late final List<int> _missAt = List.filled(_regexes.length, 0);
   late final List<int> _missTo = List.filled(_regexes.length, 0);
-
-  /// What must follow the run each rule's matches take whole, if one (see
-  /// [FirstChars.follow]).
-  late final List<RunFollow?> _follow = List.filled(_regexes.length, null);
 
   /// Each rule alone (compiled when first tried).
   late final List<RegExp?> _alone = List.filled(_regexes.length, null);
@@ -90,7 +91,9 @@ final class MultiRegex {
     _matchIndexes[_matchAt] = opts;
     _regexes.add((opts, re));
     _groups.add(_matchAt);
-    _matchAt += regex.countMatchGroups(re) + 1;
+    final groupCount = regex.countMatchGroups(re);
+    _groupCounts.add(groupCount);
+    _matchAt += groupCount + 1;
   }
 
   void _build() {
@@ -109,6 +112,13 @@ final class MultiRegex {
   List<List<int>>? _dispatchTable() {
     final table = List.generate(130, (_) => <int>[]);
     for (final (i, (_, source)) in _regexes.indexed) {
+      if (matchesEmptyEverywhere(source)) {
+        // It matches wherever the search starts: no later rule can.
+        for (final rules in table) {
+          rules.add(i);
+        }
+        break;
+      }
       final first = firstChars(source, ignoreCase: ignoreCase);
       if (first == null) return null;
       for (var c = 0; c < 128; c++) {
@@ -116,9 +126,8 @@ final class MultiRegex {
       }
       if (first.nonAscii) table[_beyondAscii].add(i);
       if (first.atEnd) table[_atEnd].add(i);
-      _wordStart[i] = first.wordStart;
+      _first[i] = first;
       _run[i] = first.run;
-      _follow[i] = first.follow;
     }
     return table;
   }
@@ -130,10 +139,13 @@ final class MultiRegex {
     if (_byChar case final byChar?) return _dispatch(byChar, s);
     final match = re.allMatches(s, lastIndex).firstOrNull;
     if (match == null) return null;
-    var i = 1;
-    while (i <= match.groupCount && match.group(i) == null) {
-      i++;
+    // (The first rule's group that matched: a rule's own groups come
+    // after its group.)
+    var k = 0;
+    while (k < _groups.length - 1 && match.group(_groups[k]) == null) {
+      k++;
     }
+    final i = _groups[k];
     final data = _matchIndexes[i]!;
     return ModeMatch(
       s,
@@ -143,6 +155,7 @@ final class MultiRegex {
       type: data.type,
       rule: data.rule,
       position: data.position,
+      groupCount: _matchAt - 1,
     );
   }
 
@@ -160,11 +173,25 @@ final class MultiRegex {
       if (rules.isEmpty) continue;
       final afterWord = at > 0 && isWordChar(s.codeUnitAt(at - 1));
       for (final i in rules) {
-        if (afterWord && _wordStart[i]) continue;
+        final first = _first[i];
+        if (first == null) {
+          // (The rule that matches the empty string anywhere.)
+          return _literalMatch(i, s, at, '');
+        }
+        if (afterWord && first.wordStart) continue;
+        if (!first.admitsLine(s, at) || !first.admitsPrefix(s, at)) continue;
+        if (first.literal && _groupCounts[i] == 0) {
+          return _literalMatch(
+            i,
+            s,
+            at,
+            s.substring(at, at + first.prefix!.length),
+          );
+        }
         if (at < _missTo[i] && at > _missAt[i] && identical(s, _missIn[i])) {
           continue;
         }
-        if (_follow[i] case final follow? when !follow.admits(s, at)) {
+        if (first.follow case final follow? when !follow.admits(s, at)) {
           if (_run[i] case final run?) _missed(i, run, s, at);
           continue;
         }
@@ -181,12 +208,27 @@ final class MultiRegex {
             position: data.position,
             // (As many groups as the alternation's from the rule's on.)
             length: _matchAt - _groups[i],
+            groupCount: _groupCounts[i],
           );
         }
         if (_run[i] case final run?) _missed(i, run, s, at);
       }
     }
     return null;
+  }
+
+  /// The match of rule [i] at [at] in [s] that is [lexeme] alone.
+  ModeMatch _literalMatch(int i, String s, int at, String lexeme) {
+    final data = _regexes[i].$1;
+    return ModeMatch.literal(
+      s,
+      at,
+      lexeme,
+      type: data.type,
+      rule: data.rule,
+      position: data.position,
+      length: _matchAt - _groups[i],
+    );
   }
 
   /// Rule [i], whose matches start with a run of [run]'s characters,
@@ -360,7 +402,16 @@ Mode compileLanguage(Language language) {
       if (!ext.truthy(mode.end) && !(mode.endsWithParent ?? false)) {
         mode.end = const RegexSource(r'\B|\b');
       }
-      if (ext.truthy(mode.end)) mode.endRe = langRe(ext.sourceOf(mode.end)!);
+      if (ext.truthy(mode.end)) {
+        final source = ext.sourceOf(mode.end)!;
+        mode
+          ..endRe = langRe(source)
+          ..endMatch = source == r'\B|\b'
+              ? EndMatch.anywhere
+              : source.contains(_startContext)
+              ? EndMatch.onRest
+              : EndMatch.inPlace;
+      }
       var terminatorEnd = ext.sourceOf(mode.end) ?? '';
       final parentEnd = parent.terminatorEnd;
       if ((mode.endsWithParent ?? false) &&
@@ -430,6 +481,9 @@ List<ContainsEntry> _expandOrCloneMode(Mode mode) {
   if (mode.frozen) return [inherit(mode)];
   return [mode];
 }
+
+/// What makes a match depend on the text before it.
+final RegExp _startContext = RegExp(r'\^|\\[bB]|\(\?<[=!]');
 
 /// Whether this runs as JavaScript (or WebAssembly), on the platform's
 /// regular expression engine.

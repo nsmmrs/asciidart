@@ -583,16 +583,12 @@ final class Engine {
 bool _endsAt(Mode mode, String code, int index) {
   final re = mode.endRe;
   if (re == null) return false;
-  final source = re.pattern;
-  if (source == r'\B|\b') return true; // the default end matches anywhere
-  if (_contextFree[source] ??= !source.contains(_startContext)) {
-    return re.matchAsPrefix(code, index) != null;
-  }
-  return re.matchAsPrefix(code.substring(index)) != null;
+  return switch (mode.endMatch) {
+    EndMatch.anywhere => true,
+    EndMatch.inPlace => re.matchAsPrefix(code, index) != null,
+    EndMatch.onRest => re.matchAsPrefix(code.substring(index)) != null,
+  };
 }
-
-final Map<String, bool> _contextFree = {};
-final RegExp _startContext = RegExp(r'\^|\\[bB]|\(\?<[=!]');
 
 bool _truthyScope(ScopeSpec? scope) => switch (scope) {
   null => false,

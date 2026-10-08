@@ -4,7 +4,12 @@
 /// character there (or the end), a rule that starts words is at one,
 /// where a rule that starts with a run doesn't match, it doesn't match
 /// further into the run either, and every filter the matcher applies
-/// before trying a rule (what follows a run) lets the rule be tried.
+/// before trying a rule (line starts, literal prefixes, what follows a
+/// run) lets the rule be tried; a literal rule matches exactly where its
+/// literal is. The group counts the matcher keeps are the engine's.
+///
+/// Both tests take every rule of every language, as their matchers
+/// search for them.
 @TestOn('vm')
 library;
 
@@ -17,6 +22,7 @@ import 'package:plain_highlighting/src/highlighter.dart';
 import 'package:plain_highlighting/src/languages/all.g.dart';
 import 'package:plain_highlighting/src/mode.dart';
 import 'package:plain_highlighting/src/mode_compiler.dart';
+import 'package:plain_highlighting/src/regex.dart' as regex;
 import 'package:test/test.dart';
 
 /// The sources of the rules of [mode] and of the modes it contains (what
@@ -108,6 +114,51 @@ void main() {
     expect(follow(r'\w+|x'), isNull, reason: 'alternatives');
   });
 
+  test('line starts, literals and empty matches', () {
+    FirstChars read(String source, {bool ignoreCase = false}) =>
+        firstChars(source, ignoreCase: ignoreCase)!;
+    expect(read(r'^\$ ').lineStart, isTrue);
+    expect(read('^a|^b').lineStart, isTrue);
+    expect(read('(?:^a)b').lineStart, isTrue);
+    expect(read('^a|b').lineStart, isFalse);
+    expect(read('^?a').lineStart, isFalse);
+    expect(read(r'\b^a').lineStart, isFalse);
+    expect(read('^a').admitsLine('x\na', 2), isTrue);
+    expect(read('^a').admitsLine('x\u2028a', 2), isTrue);
+    expect(read('^a').admitsLine('xa', 1), isFalse);
+    expect(read('^a').admitsLine('a', 0), isTrue);
+
+    expect(read(r'import java\.').prefix, 'import java.');
+    expect(read(r'import java\.').literal, isTrue);
+    expect(read(r'(record)(\s+)').prefix, 'record');
+    expect(read(r'(record)(\s+)').literal, isFalse);
+    expect(read(r'\bif\b').prefix, 'if');
+    expect(read(r'\bif\b').literal, isFalse, reason: 'assertions');
+    expect(read('if(?!x)').literal, isFalse, reason: 'assertions');
+    expect(read('if(?=x)').prefix, 'if');
+    expect(read('if(?=x)').literal, isFalse);
+    expect(read('(?=ab)abc').prefix, isNull, reason: 'lookahead');
+    expect(read('ab?c').prefix, isNull, reason: 'one character');
+    expect(read('a').prefix, 'a', reason: 'a literal');
+    expect(read('a').literal, isTrue);
+    expect(read('a+').prefix, isNull);
+    expect(read('ab|ac').prefix, isNull, reason: 'alternatives');
+    expect(read('(?:ab|ac)d').prefix, isNull, reason: 'alternatives');
+    expect(read('"\u00e9b').prefix, isNull, reason: 'beyond ASCII');
+    expect(read('Non-Sealed', ignoreCase: true).prefix, 'non-sealed');
+    expect(
+      read('Non-Sealed', ignoreCase: true).admitsPrefix('NON-SEALED;', 0),
+      isTrue,
+    );
+    expect(read('Non-Sealed').admitsPrefix('NON-SEALED;', 0), isFalse);
+    expect(read('ab').admitsPrefix('xa', 1), isFalse, reason: 'the end');
+
+    expect(matchesEmptyEverywhere(r'\B|\b'), isTrue);
+    expect(matchesEmptyEverywhere(r'\B|\b|\)'), isTrue);
+    expect(matchesEmptyEverywhere(r'\b|\B'), isFalse, reason: 'not read');
+    expect(matchesEmptyEverywhere(r'\B'), isFalse);
+  });
+
   test('every rule of every language, on the samples', () {
     final engine = Engine();
     for (final (name, aliases, at) in allLanguages) {
@@ -115,6 +166,9 @@ void main() {
     }
     var checked = 0;
     var followed = 0;
+    var lined = 0;
+    var prefixed = 0;
+    var literals = 0;
     for (final name in engine.languageNames) {
       final language = engine.getLanguage(name)!;
       if (language.unicodeRegex) continue;
@@ -122,6 +176,15 @@ void main() {
       if (samples.isEmpty) continue;
       final ignoreCase = language.caseInsensitive;
       for (final source in _rules(compileLanguage(language))) {
+        if (matchesEmptyEverywhere(source)) {
+          final re = RegExp(source, multiLine: true);
+          for (final text in samples.take(1)) {
+            for (var at = 0; at <= text.length; at++) {
+              expect(re.matchAsPrefix(text, at)?[0], '', reason: source);
+            }
+          }
+          continue;
+        }
         final first = firstChars(source, ignoreCase: ignoreCase);
         if (first == null) continue;
         final re = RegExp(source, multiLine: true, caseSensitive: !ignoreCase);
@@ -137,7 +200,17 @@ void main() {
           // run's end.
           var missedUntil = -1;
           for (var at = 0; at <= text.length; at++) {
-            final matched = re.matchAsPrefix(text, at) != null;
+            final match = re.matchAsPrefix(text, at);
+            final matched = match != null;
+            if (first.literal) {
+              final where = '$name: /$source/ at $at, literal';
+              final prefix = first.prefix!;
+              expect(first.admitsPrefix(text, at), matched, reason: where);
+              if (matched) {
+                expect(match.end - at, prefix.length, reason: where);
+                literals++;
+              }
+            }
             if (!inRun(text, at)) missedUntil = -1;
             if (!matched) {
               if (missedUntil < 0 && inRun(text, at)) missedUntil = at;
@@ -145,6 +218,10 @@ void main() {
             }
             final where = '$name: /$source/ at $at';
             expect(missedUntil, -1, reason: '$where, in a run it missed');
+            expect(first.admitsLine(text, at), isTrue, reason: '$where, ^');
+            expect(first.admitsPrefix(text, at), isTrue, reason: where);
+            if (first.lineStart) lined++;
+            if (first.prefix != null) prefixed++;
             if (at == text.length) {
               expect(first.atEnd, isTrue, reason: where);
               continue;
@@ -173,5 +250,32 @@ void main() {
     }
     expect(checked, greaterThan(10000));
     expect(followed, greaterThan(1000));
+    expect(lined, greaterThan(100));
+    expect(prefixed, greaterThan(1000));
+    expect(literals, greaterThan(1000));
+  });
+
+  test('group counts', () {
+    final engine = Engine();
+    for (final (name, aliases, at) in allLanguages) {
+      engine.registerLanguage(name, () => readGrammar(at), aliases: aliases);
+    }
+    for (final name in engine.languageNames) {
+      final language = engine.getLanguage(name)!;
+      for (final source in _rules(compileLanguage(language))) {
+        // (An empty alternative makes it match the empty text.)
+        final re = RegExp(
+          '(?:$source)|',
+          multiLine: true,
+          caseSensitive: !language.caseInsensitive,
+          unicode: language.unicodeRegex,
+        );
+        expect(
+          regex.countMatchGroups(source),
+          re.firstMatch('')!.groupCount,
+          reason: '$name: /$source/',
+        );
+      }
+    }
   });
 }

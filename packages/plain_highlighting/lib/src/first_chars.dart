@@ -11,11 +11,15 @@ import 'dart:typed_data';
 final class FirstChars {
   new _(
     this._ascii, {
+    required this._ignoreCase,
     required this.nonAscii,
     required this.atEnd,
     required this.wordStart,
     this.run,
     this.follow,
+    this.lineStart = false,
+    this.prefix,
+    this.literal = false,
   });
 
   /// 1 for each ASCII character a match can start with.
@@ -42,9 +46,49 @@ final class FirstChars {
   /// takes that run whole: see [RunFollow].
   final RunFollow? follow;
 
+  /// Whether every match starts at the start of a line (`^`, multiline):
+  /// at the text's start or after a line terminator.
+  final bool lineStart;
+
+  /// A literal every match starts with, in lower case when ignoring case
+  /// (ASCII only): two characters or more, or any when [literal].
+  final String? prefix;
+
+  /// Whether every match is [prefix] and nothing more (no assertion: the
+  /// expression is literal characters only).
+  final bool literal;
+
+  final bool _ignoreCase;
+
   /// Whether a match can start with the ASCII character [c].
   bool has(int c) => _ascii[c] != 0;
+
+  /// Whether [at] in [s] is at a line's start, if [lineStart] asks for it.
+  bool admitsLine(String s, int at) {
+    if (!lineStart || at == 0) return true;
+    final c = s.codeUnitAt(at - 1);
+    return c == 10 || c == 13 || c == 0x2028 || c == 0x2029;
+  }
+
+  /// Whether [s] has [prefix] at [at] (true without one).
+  bool admitsPrefix(String s, int at) {
+    final prefix = this.prefix;
+    if (prefix == null) return true;
+    final n = prefix.length;
+    if (at + n > s.length) return false;
+    for (var k = 0; k < n; k++) {
+      var c = s.codeUnitAt(at + k);
+      if (_ignoreCase && c >= 0x41 && c <= 0x5a) c |= 0x20;
+      if (c != prefix.codeUnitAt(k)) return false;
+    }
+    return true;
+  }
 }
+
+/// Whether the expression [source] matches the empty string at every
+/// position (`\B|\b`, a mode's default end, alone or before its parent's).
+bool matchesEmptyEverywhere(String source) =>
+    source == r'\B|\b' || source.startsWith(r'\B|\b|');
 
 /// A match that starts with a run of a class it must take whole: the
 /// expression is `C D* R`, `C+ R` or a group of such a run followed by
@@ -115,13 +159,20 @@ FirstChars? firstChars(String source, {required bool ignoreCase}) {
     for (var c = 0; c < 128 && words; c++) {
       if (chars.ascii[c] != 0 && !isWordChar(c)) words = false;
     }
+    final prefix = chars.prefix;
     return FirstChars._(
       chars.ascii,
+      ignoreCase: ignoreCase,
       nonAscii: chars.nonAscii,
       atEnd: chars.atEnd,
       wordStart: chars.boundary && words,
       run: parser.backreferences ? null : chars.run?.ascii,
       follow: parser.backreferences ? null : _runFollow(chars),
+      lineStart: chars.lineStart,
+      prefix: prefix != null && (prefix.length > 1 || chars.literal)
+          ? prefix
+          : null,
+      literal: chars.literal,
     );
   } on _Unread {
     return null;
@@ -182,6 +233,18 @@ final class _Chars {
   _Chars? runClass;
   _Chars? follow;
   bool exactRun = false;
+
+  /// Whether the expression read asserts `^` before anything else.
+  bool lineStart = false;
+
+  /// The literal the expression's matches start with (see
+  /// [FirstChars.prefix]), and whether they are that literal alone
+  /// ([FirstChars.literal]).
+  String? prefix;
+  bool literal = false;
+
+  /// Whether the expression read is an assertion: it takes no character.
+  bool assertion = false;
 
   /// Whether this set's ASCII characters are all in [other]'s.
   bool asciiIn(_Chars other) {
@@ -253,6 +316,7 @@ final class _Parser {
     final chars = _Chars();
     var nullable = false;
     var boundary = true;
+    var lineStart = true;
     var alternatives = 0;
     _Chars? run;
     while (true) {
@@ -260,6 +324,7 @@ final class _Parser {
       chars.addAll(first);
       nullable = nullable || empty;
       boundary = boundary && first.boundary;
+      lineStart = lineStart && first.lineStart;
       run = first.run;
       alternatives++;
       if (!_done && _c == 0x7c /* | */ ) {
@@ -270,11 +335,14 @@ final class _Parser {
         chars
           ..runClass = first.runClass
           ..follow = first.follow
-          ..exactRun = first.exactRun;
+          ..exactRun = first.exactRun
+          ..prefix = first.prefix
+          ..literal = first.literal;
       }
       return (
         chars
           ..boundary = boundary
+          ..lineStart = lineStart
           ..run = alternatives == 1 ? run : null,
         nullable,
       );
@@ -294,7 +362,9 @@ final class _Parser {
       terms.add((first, empty));
       if (one == null) {
         one = first;
-        chars.boundary = first.boundary;
+        chars
+          ..boundary = first.boundary
+          ..lineStart = first.lineStart;
       } else {
         two ??= first;
       }
@@ -318,8 +388,32 @@ final class _Parser {
         chars.run = one.run;
       }
       _readRunFollow(chars, terms);
+      _readPrefix(chars, terms);
     }
     return (chars, open);
+  }
+
+  /// The literal a sequence of [terms] starts with, and whether it is
+  /// that literal alone, into [chars].
+  void _readPrefix(_Chars chars, List<(_Chars, bool)> terms) {
+    final prefix = StringBuffer();
+    var literal = true;
+    for (final (term, _) in terms) {
+      if (term.prefix case final p? when !term.quantified) {
+        prefix.write(p);
+        if (term.literal) continue;
+      } else if (term.assertion) {
+        // (It takes no character.)
+        literal = false;
+        continue;
+      }
+      literal = false;
+      break;
+    }
+    if (prefix.isEmpty) return;
+    chars
+      ..prefix = prefix.toString()
+      ..literal = literal;
   }
 
   /// The run a sequence of [terms] starts with after its first character
@@ -371,6 +465,7 @@ final class _Parser {
         empty = true;
         chars
           ..boundary = false
+          ..lineStart = false
           ..quantified = true
           ..min = 0
           ..unbounded = true;
@@ -379,6 +474,7 @@ final class _Parser {
         empty = true;
         chars
           ..boundary = false
+          ..lineStart = false
           ..quantified = true
           ..min = 0;
       case 0x2b: // +
@@ -396,7 +492,9 @@ final class _Parser {
           ..unbounded = unbounded;
         if (min == 0) {
           empty = true;
-          chars.boundary = false;
+          chars
+            ..boundary = false
+            ..lineStart = false;
         }
       default:
         return (chars, empty);
@@ -434,7 +532,12 @@ final class _Parser {
         chars.ascii[10] = chars.ascii[13] = 0;
         return (chars, false);
       case 0x5e: // ^
-        return (_Chars(), true);
+        return (
+          _Chars()
+            ..lineStart = true
+            ..assertion = true,
+          true,
+        );
       case 0x24: // $: a line break (or the end) follows
         final chars = _Chars()
           ..add(10)
@@ -454,6 +557,13 @@ final class _Parser {
   _Chars _literal(int c) {
     final chars = _Chars()..add(c);
     if (ignoreCase) chars.foldCase();
+    // (ASCII only; a letter in lower case when ignoring case.)
+    if (c < 128) {
+      final letter = (c | 0x20) >= 0x61 && (c | 0x20) <= 0x7a;
+      chars
+        ..prefix = String.fromCharCode(ignoreCase && letter ? c | 0x20 : c)
+        ..literal = true;
+    }
     return chars;
   }
 
@@ -486,14 +596,18 @@ final class _Parser {
     // A negative lookahead or a lookbehind takes no character and asks
     // nothing of the next one here; a lookahead asks what it matches of
     // it (unless it can match with none).
-    if (zeroWidth) return (_Chars(), true);
+    if (zeroWidth) return (_Chars()..assertion = true, true);
     if (lookahead) {
-      // (It takes no character: no run starts with it.)
+      // (It takes no character: no run or literal starts with it.)
       chars
         ..runClass = null
         ..follow = null
-        ..exactRun = false;
-      return empty ? (_Chars(), true) : (chars..run = null, false);
+        ..exactRun = false
+        ..prefix = null
+        ..literal = false;
+      return empty
+          ? (_Chars()..assertion = true, true)
+          : (chars..run = null, false);
     }
     return (chars, empty);
   }
@@ -504,9 +618,14 @@ final class _Parser {
     at++;
     switch (c) {
       case 0x62: // \b
-        return (_Chars()..boundary = true, true);
+        return (
+          _Chars()
+            ..boundary = true
+            ..assertion = true,
+          true,
+        );
       case 0x42: // \B
-        return (_Chars(), true);
+        return (_Chars()..assertion = true, true);
       case >= 0x31 && <= 0x39: // a backreference: anything, or nothing
         backreferences = true;
         while (!_done && _c >= 0x30 && _c <= 0x39) {
