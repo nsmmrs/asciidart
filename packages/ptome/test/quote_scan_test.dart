@@ -33,11 +33,12 @@ String _text(Random random, [List<String> pieces = _pieces]) => [
     pieces[random.nextInt(pieces.length)],
 ].join();
 
-String _describe(Iterable<Match> matches) => [
-  for (final m in matches)
-    '${m.start}-${m.end}:'
-        '${[for (var g = 0; g <= m.groupCount; g++) m[g]].join('|')}',
-].join(' ');
+String _describe(Iterable<Match> matches) => matches.map(_match).join(' ');
+
+String _match(Match m) {
+  final groups = [for (var g = 0; g <= m.groupCount; g++) m[g]].join('|');
+  return '${m.start}-${m.end}:$groups';
+}
 
 /// [pattern]'s matches from [start], a match [skip] rejects passed over
 /// and the search going on from its next character (the reference).

@@ -37,11 +37,7 @@ void main() {
         for (final m in _tokenRx.allMatches(text))
           if (m[2] case final name?) '${m.start}-${m.end} ${m[1]}$name${m[4]}',
       ];
-      final actual = [
-        for (final t in xmlTags(text))
-          '${t.start}-${t.end} ${t.closing ? '/' : ''}${t.name}'
-              '${t.empty ? '/' : ''}',
-      ];
+      final actual = [for (final t in xmlTags(text)) _tag(t)];
       expect(actual, expected, reason: Uri.encodeComponent(text));
     }
   });
@@ -67,4 +63,10 @@ void main() {
     expect(balanceXml('</x><a>t</a>'), '<a>t</a>');
     expect(balanceXml('<!-- </a> --><a/>'), '<!-- </a> --><a/>');
   });
+}
+
+String _tag(XmlTag t) {
+  final closing = t.closing ? '/' : '';
+  final empty = t.empty ? '/' : '';
+  return '${t.start}-${t.end} $closing${t.name}$empty';
 }
