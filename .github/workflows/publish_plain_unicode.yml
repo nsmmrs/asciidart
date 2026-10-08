@@ -1,0 +1,30 @@
+name: Publish plain_unicode
+# Publishes plain_unicode to pub.dev when its tag is pushed
+# (`plain_unicode-v<version>`; RELEASING.md), by pub.dev's automated
+# publishing: pub.dev checks the tag against the version and takes
+# GitHub's OIDC token, no secret. The pub.dev environment can require an
+# approval first.
+on:
+  push:
+    tags: ['plain_unicode-v[0-9]+.[0-9]+.[0-9]+*']
+permissions: read-all
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/plain_unicode
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart (and the pub.dev token)
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get
+    - name: Dry run
+      run: dart pub publish --dry-run
+    - name: Publish
+      run: dart pub publish --force

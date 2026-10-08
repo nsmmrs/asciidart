@@ -51,6 +51,22 @@ jobs:
           [ -f "$pkg/tool/api_check.dart" ] || continue
           (cd "$pkg" && dart run tool/api_check.dart)
         done
+  publishable:
+    # Each package would publish: no errors or warnings in a dry run (but
+    # depending on siblings not released yet; tool/publish_check.sh).
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies (the whole workspace)
+      run: dart pub get
+    - name: Dry-run publishing every package
+      run: tool/publish_check.sh
   standalone:
     # Each package resolved on its own against its siblings' published
     # versions (in the workspace they always resolve locally); packages

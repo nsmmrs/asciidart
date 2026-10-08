@@ -14,6 +14,7 @@ ptome is `packages/ptome`, and the libraries it is built on are
 `packages/plain_*`, each published on its own. `dart pub get` anywhere
 resolves the whole workspace. Paths and commands below are relative to a
 package's folder, `packages/ptome` unless they say otherwise.
+[RELEASING.md](RELEASING.md) says how each package is released.
 
 ## Setup
 
