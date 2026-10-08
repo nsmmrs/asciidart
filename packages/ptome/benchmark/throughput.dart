@@ -2,13 +2,17 @@
 // document, excluding process startup (which `bench-exe.rb` measures).
 //
 // The corpus is built deterministically from in-repo samples (mdbasics,
-// the syntax reference and the sample fixture), repeated --copies times.
+// the syntax reference and the sample fixture), repeated --copies times;
+// with --file, a document read from a file (its includes too, unsafe), such
+// as the Hypermedia Systems book that tool/hs_acceptance.dart clones
+// (~/.cache/asciidart-work/hs-old/HypermediaSystems.adoc, benchmark/HS.md).
 //
-// Usage (from the repo root):
+// Usage (from the package folder):
 //   dart run benchmark/throughput.dart [--copies 20] [--iterations 15]
 //   dart compile exe benchmark/throughput.dart -o /tmp/throughput && \
 //     /tmp/throughput
 //   dart run benchmark/throughput.dart --write-corpus /tmp/large.adoc
+//   dart run benchmark/throughput.dart --file PATH/TO/book.adoc
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -30,8 +34,10 @@ void main(List<String> args) {
       defaultsTo: ['html5', 'docbook5', 'manpage'],
       help: 'Backends to time.',
     )
-    ..addOption('write-corpus', help: 'Write the corpus to a file and exit.');
+    ..addOption('write-corpus', help: 'Write the corpus to a file and exit.')
+    ..addOption('file', help: 'Time this document instead of the corpus.');
   final options = parser.parse(args);
+  final file = options['file'] as String?;
   final base = _sources.map((p) => File(p).readAsStringSync()).join('\n\n');
   final copies = int.parse(options['copies'] as String);
   final corpus = List.filled(copies, base).join('\n\n');
@@ -42,22 +48,34 @@ void main(List<String> args) {
   }
   final iterations = int.parse(options['iterations'] as String);
   final warmup = int.parse(options['warmup'] as String);
-  stdout.writeln('corpus: ${corpus.length} chars');
+  stdout.writeln(
+    file == null ? 'corpus: ${corpus.length} chars' : 'document: $file',
+  );
   for (final backend in options['backend'] as List<String>) {
-    final convertOptions = asciidoctor.AsciidoctorOptions(
-      safe: asciidoctor.SafeMode.safe,
-      backend: backend,
-      doctype: 'book',
-      standalone: true,
-    );
+    final convertOptions = file == null
+        ? asciidoctor.AsciidoctorOptions(
+            safe: asciidoctor.SafeMode.safe,
+            backend: backend,
+            doctype: 'book',
+            standalone: true,
+          )
+        : asciidoctor.AsciidoctorOptions(
+            safe: asciidoctor.SafeMode.unsafe,
+            backend: backend,
+            standalone: true,
+            logger: asciidoctor.NullLogger(),
+          );
+    asciidoctor.Document load() => file == null
+        ? asciidoctor.load(corpus, options: convertOptions)
+        : asciidoctor.loadFile(file, options: convertOptions);
     for (var i = 0; i < warmup; i++) {
-      asciidoctor.convert(corpus, convertOptions);
+      load().convert();
     }
     final loads = <int>[];
     final totals = <int>[];
     for (var i = 0; i < iterations; i++) {
       final watch = Stopwatch()..start();
-      final doc = asciidoctor.load(corpus, options: convertOptions);
+      final doc = load();
       loads.add(watch.elapsedMicroseconds);
       doc.convert();
       totals.add(watch.elapsedMicroseconds);

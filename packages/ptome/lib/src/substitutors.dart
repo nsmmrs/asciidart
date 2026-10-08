@@ -150,10 +150,7 @@ String _subQuotesKeepingIndexterms(
     node,
     masked,
     protectTargets: protectTargets,
-  ).replaceAllMapped(
-    RegExp('$_termStart(\\d+)$_termEnd'),
-    (match) => terms[int.parse(match[1]!)],
-  );
+  ).replaceAllMapped(_termRx, (match) => terms[int.parse(match[1]!)]);
 }
 
 /// The ends of an index term's placeholder while quotes are substituted.
@@ -957,8 +954,7 @@ String doReplacement(RegExpMatch match, String replacement, String restore) {
 /// excluding the `(?<=` / `(?<!` lookbehinds).
 ///
 /// The pattern source is inspected.
-bool _hasNamedGroups(RegExp regexp) =>
-    RegExp(r'\(\?<[A-Za-z_]').hasMatch(regexp.pattern);
+bool _hasNamedGroups(RegExp regexp) => _namedGroupRx.hasMatch(regexp.pattern);
 
 /// Returns the `name`d group of [match], or `null` when the pattern does
 /// not declare it.
@@ -1232,7 +1228,7 @@ String subMacros(AbstractNode node, String text) {
         final defaultAlt = Helpers.basename(
           target,
           dropExtension: true,
-        ).replaceAll(RegExp('[_-]'), ' ');
+        ).replaceAll(_altSeparatorRx, ' ');
         attrs['alt'] = defaultAlt;
         attrs['default-alt'] = defaultAlt;
       }
@@ -3095,3 +3091,13 @@ bool _holdsAttributes(String text) =>
     text.contains('=') &&
     (!text.contains('<') ||
         text.replaceAll(_convertedMarkupRx, '').contains('='));
+
+/// An index term's placeholder (see [_termStart]).
+final RegExp _termRx = RegExp('$_termStart(\\d+)$_termEnd');
+
+/// A named capture group's opening (not a lookbehind).
+final RegExp _namedGroupRx = RegExp(r'\(\?<[A-Za-z_]');
+
+/// The characters of an image's file name that become spaces in its
+/// default alt text.
+final RegExp _altSeparatorRx = RegExp('[_-]');

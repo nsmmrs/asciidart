@@ -151,16 +151,14 @@ String _literals(String xml) {
   final opened = <bool>[];
   var last = 0;
   var changed = false;
-  for (final m in _literalTagRx.allMatches(xml)) {
-    final closing = m[1] == '/';
-    final name = m[2]!;
+  for (final (:start, :end, :closing, :name, :role) in literalTags(xml)) {
     String? replacement;
     switch (name) {
       case 'literal':
         depth += closing ? -1 : 1;
       case 'emphasis' when !closing && depth > 0:
         opened.add(true);
-        replacement = '<phrase role="${m[3] ?? 'emphasis'}">';
+        replacement = '<phrase role="${role ?? 'emphasis'}">';
       case 'quote' when !closing && depth > 0:
         opened.add(false);
         replacement = '&#8220;';
@@ -173,9 +171,9 @@ String _literals(String xml) {
     }
     if (replacement == null) continue;
     out
-      ..write(xml.substring(last, m.start))
+      ..write(xml.substring(last, start))
       ..write(replacement);
-    last = m.end;
+    last = end;
     changed = true;
   }
   if (!changed) return xml;
@@ -183,9 +181,40 @@ String _literals(String xml) {
   return out.toString();
 }
 
-final RegExp _literalTagRx = RegExp(
-  '<(/?)(literal|emphasis|quote)(?: role="([^"]*)")?>',
-);
+/// The `literal`, `emphasis` and `quote` tags of [xml], in order: a
+/// hand-written scan matching what this pattern finds (`allMatches`).
+///
+/// ```text
+/// <(/?)(literal|emphasis|quote)(?: role="([^"]*)")?>
+/// ```
+Iterable<({int start, int end, bool closing, String name, String? role})>
+literalTags(String xml) sync* {
+  for (var at = xml.indexOf('<'); at >= 0; at = xml.indexOf('<', at + 1)) {
+    var i = at + 1;
+    final closing = xml.startsWith('/', i);
+    if (closing) i++;
+    final name = xml.startsWith('literal', i)
+        ? 'literal'
+        : xml.startsWith('emphasis', i)
+        ? 'emphasis'
+        : xml.startsWith('quote', i)
+        ? 'quote'
+        : null;
+    if (name == null) continue;
+    i += name.length;
+    String? role;
+    if (xml.startsWith(' role="', i)) {
+      final close = xml.indexOf('"', i + 7);
+      if (close >= 0 && xml.startsWith('>', close + 1)) {
+        role = xml.substring(i + 7, close);
+        i = close + 1;
+      }
+    }
+    if (!xml.startsWith('>', i)) continue;
+    yield (start: at, end: i + 1, closing: closing, name: name, role: role);
+    at = i;
+  }
+}
 
 /// Default quote tags for unknown quoted-text types.
 const (String, String, bool) _defaultQuoteTags = ('', '', true);
@@ -638,7 +667,7 @@ class Docbook5Converter extends BuiltInConverter {
           start: node.document!.attr('imagesdir'),
           label: 'text image',
         )
-        ?.replaceAll(RegExp(r'\r?\n$'), '')
+        ?.replaceAll(_finalNewlineRx, '')
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;');
@@ -1505,3 +1534,6 @@ class Docbook5Converter extends BuiltInConverter {
     return result.join(lf);
   }
 }
+
+/// A text's line break at its end.
+final RegExp _finalNewlineRx = RegExp(r'\r?\n$');

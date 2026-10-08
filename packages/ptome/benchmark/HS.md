@@ -305,6 +305,25 @@ Laying out chapters on several workers was measured before being built
 and the walk, which slow down 1.5–3x as workers are added, as processes
 as much as isolates (ADR-0016, "Measured").
 
+### Text formats against Asciidoctor (2026-10-08)
+
+The text formats in process, warm (`benchmark/throughput.dart --file
+~/.cache/asciidart-work/hs-old/HypermediaSystems.adoc`, the native
+executable, median of 9), against the gem's `--timings` (read, parse and
+convert, best of three):
+
+| | Ptome | Asciidoctor (upstream `main`) |
+| --- | --- | --- |
+| HTML | 135 ms (parse 31 ms) | 142 ms |
+| DocBook 5 | 131 ms (parse 32 ms) | 158 ms |
+| Man page | 165 ms (parse 29 ms) | 202 ms |
+
+DocBook took 203 ms before: each inline pattern now runs only where a
+match can start (next to the literal it always holds, such as a quote's
+delimiter or `link:`), and the DocBook repairs scan the tags by hand
+instead of with a regular expression. The output is the same, byte for
+byte.
+
 ## Latest run, edited edition (2026-10-06)
 
 | Check | Result | Detail |

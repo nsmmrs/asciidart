@@ -2297,7 +2297,7 @@ class Html5Converter extends BuiltInConverter {
     final value = node.attr('front-cover-image');
     if (value == null || value.trim().isEmpty) return null;
     if (asciidoctorCompat(node, CompatFormat.html)) return null;
-    final macro = RegExp(r'^image:{1,2}(.*?)\[(.*)\]$').firstMatch(value);
+    final macro = _imageMacroValueRx.firstMatch(value);
     final target = macro?[1] ?? value.trim();
     final alt = switch (macro?[2]) {
       final String attrs when attrs.trim().isNotEmpty =>
@@ -2327,7 +2327,7 @@ class Html5Converter extends BuiltInConverter {
     );
     if (text == null) return null;
     return text
-        .replaceAll(RegExp(r'\r?\n$'), '')
+        .replaceAll(_finalNewlineRx, '')
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;');
@@ -2490,3 +2490,9 @@ class Html5Converter extends BuiltInConverter {
     _ => null,
   };
 }
+
+/// An image macro as an attribute's value (`image::cover.png[Alt]`).
+final RegExp _imageMacroValueRx = RegExp(r'^image:{1,2}(.*?)\[(.*)\]$');
+
+/// A text's line break at its end.
+final RegExp _finalNewlineRx = RegExp(r'\r?\n$');
