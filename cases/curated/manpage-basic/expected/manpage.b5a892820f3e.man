@@ -1,0 +1,10 @@
+.SH "SYNOPSIS"
+.sp
+\fBtool\fP [\fIOPTION\fP].\|.\|. \fIFILE\fP
+.SH "OPTIONS"
+.sp
+\fB\-v\fP, \fB\-\-verbose\fP
+.RS 4
+  Print more. A line starting with a dot:
+\&.not a request
+.RE

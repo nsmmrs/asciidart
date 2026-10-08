@@ -1,0 +1,6 @@
+[source,ruby]
+----
+include::fixtures/sample.rb[tags=greet]
+----
+
+include::fixtures/missing.adoc[]

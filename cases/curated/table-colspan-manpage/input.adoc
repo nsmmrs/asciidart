@@ -1,0 +1,12 @@
+= colspan(1)
+
+== NAME
+
+colspan - a table cell spanning past the columns
+
+== DESCRIPTION
+
+[cols=2*]
+|===
+|a 2+|b
+|===

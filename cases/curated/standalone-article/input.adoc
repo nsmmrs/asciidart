@@ -1,0 +1,13 @@
+= Document Title
+Author Name <author@example.org>
+v1.0, 2025-01-02: First release
+
+== First Section
+
+NOTE: An admonition.
+
+=== Nested
+
+* one
+* two
+.. nested

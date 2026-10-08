@@ -1,0 +1,7 @@
+description = "A minimal man page with synopsis, options list and escapes."
+source = "handmade"
+features = ["doctype.manpage", "converter.manpage"]
+formats = ["manpage", "html5"]
+
+[options]
+doctype = "manpage"

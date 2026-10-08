@@ -1,0 +1,17 @@
+= tool(1)
+:manmanual: Tool Manual
+:mansource: Tool 1.0
+
+== NAME
+
+tool - does a thing
+
+== SYNOPSIS
+
+*tool* [_OPTION_]... _FILE_
+
+== OPTIONS
+
+*-v*, *--verbose*::
+  Print more. A line starting with a dot:
+.not a request
