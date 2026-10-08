@@ -1,0 +1,4 @@
+# Upstream sources and tests stay byte-for-byte as released (no CRLF
+# conversion on Windows checkouts): the tests compare output exactly.
+vendor/** -text
+test/reference/** -text
