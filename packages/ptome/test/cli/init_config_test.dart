@@ -240,12 +240,16 @@ void main() {
       () async {
         final dir = generateScaffold();
         final pubspec = File('${dir.path}/pubspec.yaml');
-        pubspec.writeAsStringSync(
-          '${pubspec.readAsStringSync()}\n'
-          'dependency_overrides:\n'
-          '  ptome:\n'
-          '    path: ${findPackageRoot()}\n',
-        );
+        // ptome and its workspace siblings (the plain_* libraries), from
+        // this checkout.
+        final packages = Directory(findPackageRoot()).parent;
+        final overrides = StringBuffer('dependency_overrides:\n');
+        for (final package in packages.listSync().whereType<Directory>()) {
+          if (!File('${package.path}/pubspec.yaml').existsSync()) continue;
+          final name = package.uri.pathSegments.lastWhere((s) => s.isNotEmpty);
+          overrides.write('  $name:\n    path: ${package.path}\n');
+        }
+        pubspec.writeAsStringSync('${pubspec.readAsStringSync()}\n$overrides');
         final pubGet = await Process.run('dart', [
           'pub',
           'get',
