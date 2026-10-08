@@ -129,7 +129,7 @@ Asciidoctor project.
   (the OpenType MATH table's rules) in the bundled Noto Sans Math or the
   theme's `math_font_family`; copied, a formula gives its source. The
   AsciiMath and LaTeX converters live in plain_math (ADR-0018), checked
-  against the asciimath gem and Temml; LaTeX's `\text` reads TeX's text
+  against the asciimath gem, Temml and KaTeX; LaTeX's `\text` reads TeX's text
   mode, including `$...$` math in it.
 - Old-style numerals and small capitals from the font's OpenType
   features (`base_font_variant_numeric: oldstyle-nums`,

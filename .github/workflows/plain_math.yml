@@ -43,11 +43,11 @@ jobs:
       uses: dart-lang/setup-dart@v1
     - name: Install Dart dependencies
       run: dart pub get
-    - name: Set up Node.js (Temml)
+    - name: Set up Node.js (Temml and KaTeX)
       uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - name: Install the oracle (Temml with npm)
+    - name: Install the oracles (Temml and KaTeX with npm)
       run: tool/oracles/setup.sh
-    - name: Run the tests that compare with Temml
+    - name: Run the tests that compare with Temml and KaTeX
       run: dart test --tags tools

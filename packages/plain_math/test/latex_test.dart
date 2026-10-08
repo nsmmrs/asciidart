@@ -142,8 +142,8 @@ void main() {
 
   test('negations: operators once escaped, letters struck through', () {
     expect(body(r'\not<\not>'), '<mrow><mo>≮</mo><mo>≯</mo></mrow>');
-    expect(body(r'\not\&'), '<mo>&amp;̸</mo>');
-    expect(body(r'\not x'), '<mi>x̸</mi>');
+    expect(body(r'\not\&'), '<mo>&amp;\u0338</mo>');
+    expect(body(r'\not x'), '<mi>x\u0338</mi>');
   });
 
   test(r'\dots: centered before an operator', () {
@@ -186,7 +186,7 @@ void main() {
   });
 
   test('text mode', () {
-    expect(body(r'\text{a~b\ c  d}'), '<mtext>a b c d</mtext>');
+    expect(body(r'\text{a~b\ c  d}'), '<mtext>a\u00a0b c d</mtext>');
     expect(
       body(r"\text{``q'' -- x---y it's}"),
       '<mtext>“q” – x—y it’s</mtext>',

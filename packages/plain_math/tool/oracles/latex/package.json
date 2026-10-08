@@ -2,8 +2,9 @@
   "name": "plain-math-oracles",
   "private": true,
   "type": "module",
-  "description": "The Temml oracle for test/temml_test.dart.",
+  "description": "The Temml and KaTeX oracles for test/latex_oracles_test.dart.",
   "dependencies": {
+    "katex": "0.19.0",
     "temml": "0.14.0"
   }
 }
