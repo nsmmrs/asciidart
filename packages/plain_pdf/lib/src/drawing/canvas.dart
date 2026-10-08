@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/byte_writer.dart';
 import 'package:plain_pdf/src/drawing/shading.dart';
 import 'package:plain_pdf/src/fonts/fonts.dart';
 import 'package:plain_pdf/src/images/images.dart';
@@ -222,7 +223,7 @@ final class GraphicsStateResource extends Resource {
 final class PdfCanvas implements Canvas {
   new _();
 
-  final BytesBuilder _content = BytesBuilder();
+  final ByteWriter _content = ByteWriter();
 
   final Map<String, Map<String, Resource>> _resources = {};
 
@@ -239,31 +240,75 @@ final class PdfCanvas implements Canvas {
       ? 'a path was left without painting it'
       : null;
 
-  void _op(String operator, [List<num> operands = const []]) {
-    final line = StringBuffer();
-    for (final operand in operands) {
-      line
-        ..write(formatNumber(operand))
-        ..write(' ');
-    }
-    line
-      ..write(operator)
-      ..write('\n');
-    _content.add(latin1.encode(line.toString()));
-  }
+  // Each operator is written straight to bytes, its operands formatted as
+  // formatNumber formats them.
 
-  void _named(String operator, String name, [List<num> operands = const []]) {
-    final line = StringBuffer();
-    for (final operand in operands) {
-      line
-        ..write(formatNumber(operand))
-        ..write(' ');
-    }
-    _content
-      ..add(latin1.encode(line.toString()))
-      ..add(PdfName(name).toBytes())
-      ..add(latin1.encode(' $operator\n'));
-  }
+  void _op(String operator) => _content.operator(operator);
+
+  void _op1(double a, String operator) => _content
+    ..number(a, 5)
+    ..byte(0x20)
+    ..operator(operator);
+
+  void _op2(double a, double b, String operator) => _content
+    ..number(a, 5)
+    ..byte(0x20)
+    ..number(b, 5)
+    ..byte(0x20)
+    ..operator(operator);
+
+  void _op3(double a, double b, double c, String operator) => _content
+    ..number(a, 5)
+    ..byte(0x20)
+    ..number(b, 5)
+    ..byte(0x20)
+    ..number(c, 5)
+    ..byte(0x20)
+    ..operator(operator);
+
+  void _op4(double a, double b, double c, double d, String operator) => _content
+    ..number(a, 5)
+    ..byte(0x20)
+    ..number(b, 5)
+    ..byte(0x20)
+    ..number(c, 5)
+    ..byte(0x20)
+    ..number(d, 5)
+    ..byte(0x20)
+    ..operator(operator);
+
+  void _op6(
+    double a,
+    double b,
+    double c,
+    double d,
+    double e,
+    double f,
+    String operator,
+  ) => _content
+    ..number(a, 5)
+    ..byte(0x20)
+    ..number(b, 5)
+    ..byte(0x20)
+    ..number(c, 5)
+    ..byte(0x20)
+    ..number(d, 5)
+    ..byte(0x20)
+    ..number(e, 5)
+    ..byte(0x20)
+    ..number(f, 5)
+    ..byte(0x20)
+    ..operator(operator);
+
+  void _opInt(int a, String operator) => _content
+    ..numeric(a)
+    ..byte(0x20)
+    ..operator(operator);
+
+  void _named(String operator, String name) => _content
+    ..name(name)
+    ..byte(0x20)
+    ..operator(operator);
 
   /// The name [resource] has in [category], given by its first use.
   String _use(String category, Object key, Resource resource, String prefix) {
@@ -307,7 +352,7 @@ final class PdfCanvas implements Canvas {
   @override
   void transform(Matrix matrix) {
     _noPath('transform()');
-    _op('cm', [matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f]);
+    _op6(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f, 'cm');
   }
 
   /// Moves the origin to ([x], [y]).
@@ -325,29 +370,35 @@ final class PdfCanvas implements Canvas {
 
   /// The width of stroked lines (`w`).
   @override
-  void setLineWidth(double width) => _op('w', [width]);
+  void setLineWidth(double width) => _op1(width, 'w');
 
   /// The shape of line ends (`J`).
   @override
-  void setLineCap(LineCap cap) => _op('J', [cap.index]);
+  void setLineCap(LineCap cap) => _opInt(cap.index, 'J');
 
   /// The shape of corners (`j`).
   @override
-  void setLineJoin(LineJoin join) => _op('j', [join.index]);
+  void setLineJoin(LineJoin join) => _opInt(join.index, 'j');
 
   /// The miter limit (`M`).
   @override
-  void setMiterLimit(double limit) => _op('M', [limit]);
+  void setMiterLimit(double limit) => _op1(limit, 'M');
 
   /// The dash pattern (`d`): alternating dash and gap lengths starting at
   /// [phase]; empty for solid lines.
   @override
   void dash(List<double> pattern, [double phase = 0]) {
-    final out = BytesBuilder();
-    PdfArray.numbers(pattern).writeTo(out);
-    _content
-      ..add(out.takeBytes())
-      ..add(latin1.encode(' ${formatNumber(phase)} d\n'));
+    final out = _content..byte(0x5b); // [
+    for (var i = 0; i < pattern.length; i++) {
+      if (i > 0) out.byte(0x20);
+      out.numeric(pattern[i]);
+    }
+    out
+      ..byte(0x5d) // ]
+      ..commit()
+      ..byte(0x20)
+      ..number(phase, 5)
+      ..operator(' d');
   }
 
   /// The color of fills, text included.
@@ -361,11 +412,11 @@ final class PdfCanvas implements Canvas {
   void _color(Color color, {required bool stroke}) {
     switch (color) {
       case GrayColor(:final level):
-        _op(stroke ? 'G' : 'g', [level]);
+        _op1(level, stroke ? 'G' : 'g');
       case RgbColor(:final red, :final green, :final blue):
-        _op(stroke ? 'RG' : 'rg', [red, green, blue]);
+        _op3(red, green, blue, stroke ? 'RG' : 'rg');
       case CmykColor(:final cyan, :final magenta, :final yellow, :final black):
-        _op(stroke ? 'K' : 'k', [cyan, magenta, yellow, black]);
+        _op4(cyan, magenta, yellow, black, stroke ? 'K' : 'k');
       case SpotColor(:final name, :final alternate, :final tint):
         final space = _use(
           'ColorSpace',
@@ -374,7 +425,7 @@ final class PdfCanvas implements Canvas {
           'CS',
         );
         _named(stroke ? 'CS' : 'cs', space);
-        _op(stroke ? 'SCN' : 'scn', [tint]);
+        _op1(tint, stroke ? 'SCN' : 'scn');
     }
   }
 
@@ -426,14 +477,14 @@ final class PdfCanvas implements Canvas {
   @override
   void moveTo(double x, double y) {
     _path = true;
-    _op('m', [x, y]);
+    _op2(x, y, 'm');
   }
 
   /// A line to ([x], [y]) (`l`).
   @override
   void lineTo(double x, double y) {
     _needPath('lineTo()');
-    _op('l', [x, y]);
+    _op2(x, y, 'l');
   }
 
   /// A cubic Bézier curve to ([x3], [y3]) with control points ([x1],
@@ -448,7 +499,7 @@ final class PdfCanvas implements Canvas {
     double y3,
   ) {
     _needPath('curveTo()');
-    _op('c', [x1, y1, x2, y2, x3, y3]);
+    _op6(x1, y1, x2, y2, x3, y3, 'c');
   }
 
   /// Closes the subpath (`h`).
@@ -466,7 +517,7 @@ final class PdfCanvas implements Canvas {
   @override
   void rect(Rect rect) {
     _path = true;
-    _op('re', [rect.left, rect.bottom, rect.width, rect.height]);
+    _op4(rect.left, rect.bottom, rect.width, rect.height, 're');
   }
 
   /// A rectangle with corners rounded to [radius].
@@ -555,7 +606,7 @@ final class PdfCanvas implements Canvas {
     _noPath('image()');
     final name = _use('XObject', image, ImageResource(image), 'Im');
     _op('q');
-    _op('cm', [rect.width, 0, 0, rect.height, rect.left, rect.bottom]);
+    _op6(rect.width, 0, 0, rect.height, rect.left, rect.bottom, 'cm');
     _named('Do', name);
     _op('Q');
   }
@@ -567,7 +618,7 @@ final class PdfCanvas implements Canvas {
     final name = _use('XObject', page, ImportedPageResource(page), 'Pg');
     final m = page.placement(rect);
     _op('q');
-    _op('cm', [m.a, m.b, m.c, m.d, m.e, m.f]);
+    _op6(m.a, m.b, m.c, m.d, m.e, m.f, 'cm');
     _named('Do', name);
     _op('Q');
   }
@@ -590,14 +641,14 @@ final class PdfCanvas implements Canvas {
   @override
   void beginMarkedContent(String tag, {String? actualText}) {
     _noPath('marked content');
-    _content.add(PdfName(tag).toBytes());
+    _content.name(tag);
     if (actualText != null) {
       _content
-        ..add(latin1.encode(' '))
-        ..add(PdfDict({'ActualText': PdfString.text(actualText)}).toBytes())
-        ..add(latin1.encode(' BDC\n'));
+        ..byte(0x20)
+        ..bytes(PdfDict({'ActualText': PdfString.text(actualText)}).toBytes())
+        ..operator(' BDC');
     } else {
-      _content.add(latin1.encode(' BMC\n'));
+      _content.operator(' BMC');
     }
   }
 
@@ -625,23 +676,26 @@ final class PdfCanvas implements Canvas {
     if (embolden) _op('q');
     _op('BT');
     _content
-      ..add(PdfName(fontName).toBytes())
-      ..add(latin1.encode(' ${formatNumber(style.size)} Tf\n'));
-    if (style.characterSpacing != 0) _op('Tc', [style.characterSpacing]);
-    if (style.rise != 0) _op('Ts', [style.rise]);
-    if (style.horizontalScaling != 100) _op('Tz', [style.horizontalScaling]);
+      ..name(fontName)
+      ..commit()
+      ..byte(0x20)
+      ..number(style.size, 5)
+      ..operator(' Tf');
+    if (style.characterSpacing != 0) _op1(style.characterSpacing, 'Tc');
+    if (style.rise != 0) _op1(style.rise, 'Ts');
+    if (style.horizontalScaling != 100) _op1(style.horizontalScaling, 'Tz');
     if (embolden) {
-      _op('w', [style.embolden]);
-      _op('Tr', [TextRenderMode.fillStroke.index]);
+      _op1(style.embolden, 'w');
+      _opInt(TextRenderMode.fillStroke.index, 'Tr');
     } else if (style.renderMode != TextRenderMode.fill) {
-      _op('Tr', [style.renderMode.index]);
+      _opInt(style.renderMode.index, 'Tr');
     }
     if (style.skew != 0) {
-      _op('Tm', [1, 0, style.skew, 1, x, y]);
+      _op6(1, 0, style.skew, 1, x, y, 'Tm');
     } else {
-      _op('Td', [x, y]);
+      _op2(x, y, 'Td');
     }
-    _content.add(_showText(glyphs, style));
+    _content.bytes(_showText(glyphs, style));
     _op('ET');
     if (embolden) _op('Q');
     return style.widthOf(glyphs);

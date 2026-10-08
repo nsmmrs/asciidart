@@ -73,6 +73,9 @@
   explicit destinations), named destinations, outlines with nesting and
   styles, page labels, page mode, language and viewer preferences. Each
   document declares the lowest PDF version it needs.
+- Speed, with the same bytes: content streams are written straight to
+  bytes, numbers formatted with integer math (`formatNumber` decides only
+  next to a rounding tie).
 - Layout, paragraphs: break opportunities by the Unicode Line Breaking
   Algorithm (UAX #14, Unicode 18.0; the conformance test passes), styled
   text runs and inline images as boxes, glue and penalties, line breaking
