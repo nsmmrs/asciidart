@@ -478,6 +478,12 @@ final class PdfConverter extends BuiltInConverter
       if (titlePage) _out.add(_bodyMarker());
       final columns = (_n('page_columns') ?? 1).toInt();
       _inColumns = !book && columns >= 2;
+      // A book's chapters in columns, their headings across them (the
+      // modern engine's; the gem sets a book in one column).
+      _bookColumns =
+          book && columns >= 2 && !asciidoctorCompat(document, CompatFormat.pdf)
+          ? columns
+          : 0;
       if (_inColumns) {
         final body = _collect(() {
           _manNameSection(document);
@@ -2703,6 +2709,25 @@ final class PdfConverter extends BuiltInConverter
         _out.add(
           BlockBox(slot, style: BoxStyle(margin: _outdented(EdgeInsets.zero))),
         );
+      } else if (chapterlike && _bookColumns >= 2) {
+        // The chapter's content in the book's columns, balanced where it
+        // ends (what follows starts under its shorter column).
+        final saved = _inColumns;
+        _inColumns = true;
+        final List<LayoutBox> body;
+        try {
+          body = _collect(() => _traverse(section));
+        } finally {
+          _inColumns = saved;
+        }
+        _out.add(
+          ColumnsBox(
+            body,
+            count: _bookColumns,
+            gap: (_n('page_column_gap') ?? _rootFontSize).toDouble(),
+            balance: true,
+          ),
+        );
       } else {
         _traverse(section);
       }
@@ -4217,6 +4242,11 @@ final class PdfConverter extends BuiltInConverter
 
   /// Whether the body is set in the theme's page columns.
   bool _inColumns = false;
+
+  /// The columns each chapter of a book is set in (`page_columns`, modern
+  /// engine), its heading across them and the columns balanced where it
+  /// ends; 0 for none.
+  int _bookColumns = 0;
 
   // Images.
 

@@ -154,6 +154,40 @@ void main() {
       expect(left('And,'), left('Plain.'));
     });
 
+    test("a book's chapters in columns, balanced, their headings across", () {
+      final pdf = _pdf(
+        '= Book\n:doctype: book\n\n== One\n\n'
+        '${List.filled(6, 'Alpha beta gamma delta.').join('\n\n')}\n\n'
+        '== Two\n\nOmega.\n',
+        theme:
+            'page:\n  columns: 2\nheading:\n  chapter:\n'
+            '    break-before: auto\n',
+      );
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      final words = [
+        for (final m in RegExp(
+          r'xMin="([\d.]+)" yMin="([\d.]+)"[^>]*>(\w+)<',
+        ).allMatches(bbox))
+          (m[3]!, double.parse(m[1]!), double.parse(m[2]!)),
+      ];
+      // A4 with the default theme's margins: the middle at 297.64.
+      final alphas = [
+        for (final w in words)
+          if (w.$1 == 'Alpha') w,
+      ];
+      final right = alphas.where((w) => w.$2 > 297.64).toList();
+      // Three paragraphs a column, the two columns' first lines level.
+      expect(right, hasLength(3));
+      expect(right.first.$3, alphas.first.$3);
+      final one = words.firstWhere((w) => w.$1 == 'One');
+      final two = words.firstWhere((w) => w.$1 == 'Two');
+      // The headings at the margin, the second under the columns.
+      expect(one.$2, two.$2);
+      expect(one.$3, lessThan(alphas.first.$3));
+      expect(two.$3, greaterThan(alphas.map((w) => w.$3).reduce(math.max)));
+    });
+
     test('lines stay within the column', () {
       final pdf = _pdf('$_paragraph\n\n$_paragraph $_paragraph');
       final bbox =

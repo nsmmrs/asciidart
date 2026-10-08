@@ -89,6 +89,39 @@ void main() {
     );
   });
 
+  test('balanced columns: the last region of a set as even as can be', () {
+    // Where each line is drawn: its text, x and y.
+    Map<String, (double, double)> placed({required bool balance}) {
+      final document = RecordingDocument();
+      FlowLayout(template: _rows(8))
+          .layout([
+            ColumnsBox([
+              for (var i = 1; i <= 6; i++) _para('l$i'),
+            ], balance: balance),
+            _para('after'),
+          ])
+          .render(document);
+      return {
+        for (final call in document.pages.single.canvas.calls)
+          if (RegExp(r'^glyphs "\s*(\S+)\s*" at (\S+) (\S+)').firstMatch(call)
+              case final m?)
+            m[1]!: (double.parse(m[2]!), double.parse(m[3]!)),
+      };
+    }
+
+    // Unbalanced, all six lines fit in the first column; balanced, three
+    // and three, the paragraph after them right under the third line.
+    final plain = placed(balance: false);
+    expect(plain['l4']!.$1, plain['l1']!.$1);
+    final even = placed(balance: true);
+    expect(even['l4']!.$1, greaterThan(even['l1']!.$1));
+    expect(even['l4']!.$2, closeTo(even['l1']!.$2, 1e-6));
+    expect(even['l6']!.$2, closeTo(even['l3']!.$2, 1e-6));
+    expect(even['after']!.$1, even['l1']!.$1);
+    expect(even['after']!.$2, lessThan(even['l3']!.$2));
+    expect(even['after']!.$2, greaterThan(plain['after']!.$2));
+  });
+
   test('links are made on the page the text is on', () {
     final document = RecordingDocument();
     FlowLayout(template: _rows(4))

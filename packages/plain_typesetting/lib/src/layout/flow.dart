@@ -475,19 +475,28 @@ final class BreakBox extends LayoutBox {
 }
 
 /// Boxes flowing through [count] columns, column by column, from where
-/// the set starts to the bottom of the region (and on to the next).
+/// the set starts to the bottom of the region (and on to the next); with
+/// [balance], the columns of the region the set ends in as even as they
+/// can be (so what follows the set, a heading across them say, comes
+/// right under its shortest height).
 final class ColumnsBox extends LayoutBox {
   /// [children] in [count] columns [gap] apart.
   const new(
     this.children, {
     this.count = 2,
     this.gap = 12,
+    this.balance = false,
     BoxStyle style = const BoxStyle(),
   }) : _continued = false,
        super._(style);
 
-  const new _rest(this.children, this.count, this.gap, BoxStyle style)
-    : _continued = true,
+  const new _rest(
+    this.children,
+    this.count,
+    this.gap,
+    this.balance,
+    BoxStyle style,
+  ) : _continued = true,
       super._(style);
 
   /// The children.
@@ -498,6 +507,9 @@ final class ColumnsBox extends LayoutBox {
 
   /// The space between columns.
   final double gap;
+
+  /// Whether the columns of the set's last region are balanced.
+  final bool balance;
 
   final bool _continued;
 }
@@ -2707,7 +2719,6 @@ final class _Pass {
     final top = atTop || box._continued ? 0.0 : style.margin.top;
     final inner = width - style.margin.horizontal;
     final columnWidth = (inner - box.gap * (box.count - 1)) / box.count;
-    LayoutBox? rest = BlockBox(box.children);
     // Too little room for the first box: the set goes on in the next
     // region.
     if (!atTop &&
@@ -2716,26 +2727,54 @@ final class _Pass {
         _minHeight(box.children.first, columnWidth) > available - top + 1e-6) {
       return _Fit.moved(box);
     }
-    final columns = <(double, _Placed)>[];
-    var height = 0.0;
-    BreakBox? hit;
-    for (var c = 0; c < box.count && rest != null; c++) {
-      // Each column starts at the top of a region (a break or a margin
-      // at the top of the first one counts for nothing too).
-      final fit = _place(rest, columnWidth, available - top, atTop: true);
-      if (fit.placed == null) {
-        if (c == 0) return _Fit.moved(box);
-        break;
+    // The columns placed in [room], the tallest's height, what's left and
+    // the page break that ended them.
+    (List<(double, _Placed)>, double, LayoutBox?, BreakBox?)? fill(
+      double room,
+    ) {
+      final columns = <(double, _Placed)>[];
+      var height = 0.0;
+      LayoutBox? rest = BlockBox(box.children);
+      BreakBox? hit;
+      for (var c = 0; c < box.count && rest != null; c++) {
+        // Each column starts at the top of a region (a break or a margin
+        // at the top of the first one counts for nothing too).
+        final fit = _place(rest, columnWidth, room, atTop: true);
+        if (fit.placed == null) {
+          if (c == 0) return null;
+          break;
+        }
+        columns.add((
+          style.margin.left + c * (columnWidth + box.gap),
+          fit.placed!,
+        ));
+        height = math.max(height, fit.height);
+        rest = fit.rest;
+        if (fit.hit case BreakBox(kind: BreakKind.page) && final page) {
+          hit = page;
+          break;
+        }
       }
-      columns.add((
-        style.margin.left + c * (columnWidth + box.gap),
-        fit.placed!,
-      ));
-      height = math.max(height, fit.height);
-      rest = fit.rest;
-      if (fit.hit case BreakBox(kind: BreakKind.page) && final page) {
-        hit = page;
-        break;
+      return (columns, height, rest, hit);
+    }
+
+    final filled = fill(available - top);
+    if (filled == null) return _Fit.moved(box);
+    var (columns, height, rest, hit) = filled;
+    // The set ends here: its columns as short as they can be with all of
+    // it in them (found by halving the room; a forced break keeps them).
+    if (box.balance && rest == null && hit == null && box.count > 1) {
+      var low = height / box.count;
+      var high = height;
+      for (var step = 0; step < 16 && high - low > 0.01; step++) {
+        final room = (low + high) / 2;
+        final tried = fill(room);
+        if (tried != null && tried.$3 == null && tried.$4 == null) {
+          (columns, height, rest, hit) = tried;
+          high = room;
+        } else {
+          low = room;
+        }
       }
     }
     final done = rest == null;
@@ -2752,6 +2791,7 @@ final class _Pass {
               },
               box.count,
               box.gap,
+              box.balance,
               style,
             ),
       hit: hit,

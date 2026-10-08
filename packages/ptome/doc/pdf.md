@@ -329,6 +329,13 @@ A part or chapter with the `noheader` or `nofooter` option (as
 asciidoctor-pdf reads them on the `toc` macro) has no header or footer on
 its pages: `[colophon%notitle%noheader%nofooter]` for a copyright page.
 
+`page_columns` (with `page_column_gap`) sets an article's body in columns,
+as asciidoctor-pdf does, and a book's too: each chapter's heading across
+the page, its content in the columns under it, which are balanced where
+the chapter ends, so that the next chapter starts under its shorter
+column (with `heading_chapter_break_before: auto`). The asciidoctor-pdf
+compatibility setting keeps a book in one column, as the gem does.
+
 ### Headings
 
 | Key | Default | What it does |
