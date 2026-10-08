@@ -4,7 +4,6 @@ PdfCanvas pdfCanvasOf(Canvas canvas, String what)
 String formatNumber(num value, {int precision = 5})
 String get plainPdfVersion
 String pdfDate(DateTime date)
-Uint8List md5(List<int> data)
 abstract interface class ZlibCodec
   Uint8List decode(List<int> data)
   Uint8List encode(List<int> data, int level)

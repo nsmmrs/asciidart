@@ -190,7 +190,7 @@ final class BoxItem extends LineItem
 final class BoxStyle
   Border border
   BoxStyle withTag(String? tag)
-  BoxStyle({EdgeInsets margin = EdgeInsets.zero, EdgeInsets padding = EdgeInsets.zero, Border border = Border.none, Color? background, bool keepTogether = false, bool keepWithNext = false, String? anchor, Map<String, String> marks = const {}, void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration, String? tag, FloatPlacement? float, bool floatBarrier = false, VerticalAlign? verticalAlign, bool cloneEdges = false, double floatClearance = 0})
+  BoxStyle({EdgeInsets margin = EdgeInsets.zero, EdgeInsets padding = EdgeInsets.zero, Border border = Border.none, Color? background, bool keepTogether = false, bool keepWithNext = false, String? anchor, Map<String, String> marks = const {}, void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration, String? tag, FloatPlacement? float, bool floatBarrier = false, VerticalAlign? verticalAlign, bool cloneEdges = false, double floatClearance = 0, bool floatSpan = false})
   Color? background
   EdgeInsets margin
   EdgeInsets padding
@@ -201,6 +201,7 @@ final class BoxStyle
   VerticalAlign? verticalAlign
   bool cloneEdges
   bool floatBarrier
+  bool floatSpan
   bool floating
   bool keepTogether
   bool keepWithNext
@@ -223,8 +224,9 @@ final class CmykColor extends Color
   double yellow
   int hashCode
 final class ColumnsBox extends LayoutBox
-  ColumnsBox(List<LayoutBox> children, {int count = 2, double gap = 12, BoxStyle style = const BoxStyle()})
+  ColumnsBox(List<LayoutBox> children, {int count = 2, double gap = 12, bool balance = false, BoxStyle style = const BoxStyle()})
   List<LayoutBox> children
+  bool balance
   double gap
   int count
 final class ComputedColumnWidth extends ColumnWidth
@@ -272,17 +274,20 @@ final class FixedColumnWidth extends ColumnWidth
   FixedColumnWidth(double points)
   double points
 final class FlowLayout
-  FlowLayout({PageTemplate? template, Map<String?, PageTemplate>? templates, PageBreaker pageBreaker = const DefaultPageBreaker(), LineBreaker lineBreaker = const FirstFitLineBreaker(), String Function(int)? pageLabel, int maxPasses = 5, String? startTemplate, bool keepTemplate = false, PageTemplate Function(PageTemplate, int)? templateForPage, Map<String, LayoutBox> notes = const {}, LayoutBox? noteSeparator})
+  FlowLayout({PageTemplate? template, Map<String?, PageTemplate>? templates, PageBreaker pageBreaker = const DefaultPageBreaker(), LineBreaker lineBreaker = const FirstFitLineBreaker(), String Function(int)? pageLabel, int maxPasses = 5, String? startTemplate, bool keepTemplate = false, PageTemplate Function(PageTemplate, int)? templateForPage, Map<String, LayoutBox> notes = const {}, LayoutBox? noteSeparator, Map<String, LayoutBox> sideNotes = const {}, Rect? Function(int, PageTemplate)? sideColumn, double sideNoteGap = 2})
   LayoutBox? noteSeparator
   LayoutResult layout(List<LayoutBox> content, {LayoutResult? reuse, int unchangedBefore = 0, Set<int>? changedPages})
   LineBreaker lineBreaker
   Map<String, LayoutBox> notes
+  Map<String, LayoutBox> sideNotes
   Map<String?, PageTemplate> templates
   PageBreaker pageBreaker
   PageTemplate Function(PageTemplate, int)? templateForPage
+  Rect? Function(int, PageTemplate)? sideColumn
   String Function(int) pageLabel
   String? startTemplate
   bool keepTemplate
+  double sideNoteGap
   int maxPasses
 final class FontLineHeight extends LineHeight
   FontLineHeight({double leading = 0})
