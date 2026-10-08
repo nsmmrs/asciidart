@@ -76,16 +76,26 @@ final class Emitter {
   void _render(TokenNode node, StringBuffer buffer) {
     final scope = node.scope;
     final wraps = scope != null && scope.isNotEmpty;
-    if (wraps) buffer.write('<span class="${_cssClass(scope)}">');
+    if (wraps) {
+      buffer
+        ..write('<span class="')
+        ..write(_classes[scope] ??= _cssClass(scope))
+        ..write('">');
+    }
     for (final child in node.children) {
       if (child is String) {
-        buffer.write(escapeHtml(child));
+        writeEscapedHtml(buffer, child);
       } else {
         _render(child as TokenNode, buffer);
       }
     }
     if (wraps) buffer.write('</span>');
   }
+
+  /// The CSS classes of each scope, with [classPrefix].
+  late final Map<String, String> _classes = _classesByPrefix[classPrefix] ??=
+      {};
+  static final Map<String, Map<String, String>> _classesByPrefix = {};
 
   String _cssClass(String name) {
     if (name.startsWith('language:')) {
