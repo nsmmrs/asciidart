@@ -242,6 +242,26 @@ List<LineBreak> lineBreaks(String text) => [
     LineBreak(code >> 1, mandatory: code & 1 != 0),
 ];
 
+/// The break opportunities of a text, as [lineBreakOffsets] finds them:
+/// what [lineBreaks] lists, in one list of integers instead of an object
+/// for each break.
+extension type const LineBreakOffsets._(List<int> _codes) {
+  /// The number of break opportunities.
+  int get length => _codes.length;
+
+  /// The code unit offset of the break opportunity at [index]: the text
+  /// may break before the code unit there.
+  int offsetAt(int index) => _codes[index] >> 1;
+
+  /// Whether the line must end at the break opportunity at [index].
+  bool isMandatoryAt(int index) => _codes[index] & 1 != 0;
+}
+
+/// The break opportunities in [text], in order, as [lineBreaks] finds
+/// them, without an object for each: for hot paths.
+LineBreakOffsets lineBreakOffsets(String text) =>
+    LineBreakOffsets._(_breakCodes(text));
+
 // The classes, as integers: the indexes of LineBreakClass.
 const int _bk = 0;
 const int _cr = 1;

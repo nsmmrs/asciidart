@@ -11,5 +11,11 @@ library;
 export 'src/case.dart' show isCaseIgnorable, isCased, lowerCase, upperCase;
 export 'src/case_data.g.dart' show caseMappingUnicodeVersion;
 export 'src/line_break.dart'
-    show LineBreak, LineBreakClass, lineBreakClass, lineBreaks;
+    show
+        LineBreak,
+        LineBreakClass,
+        LineBreakOffsets,
+        lineBreakClass,
+        lineBreakOffsets,
+        lineBreaks;
 export 'src/line_break_data.g.dart' show lineBreakUnicodeVersion;

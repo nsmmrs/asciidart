@@ -15,7 +15,7 @@ import 'package:plain_typesetting/src/geometry.dart';
 import 'package:plain_typesetting/src/layout/inline.dart';
 import 'package:plain_typesetting/src/link.dart';
 import 'package:plain_unicode/plain_unicode.dart'
-    show LineBreakClass, lineBreakClass, lineBreaks;
+    show LineBreakClass, lineBreakClass, lineBreakOffsets;
 
 /// How the lines of a paragraph are spaced.
 @immutable
@@ -929,11 +929,10 @@ List<LineItem> paragraphItems(Paragraph paragraph, {double? maxWidth}) {
     });
   }
   final whole = text.toString();
-  final allowed = <int>{};
-  final mandatory = <int>{};
-  for (final b in lineBreaks(whole)) {
-    (b.mandatory ? mandatory : allowed).add(b.offset);
-  }
+  final breaks = lineBreakOffsets(whole);
+  // The first break opportunity not before the offset last asked about
+  // (breakBefore is asked about offsets in order).
+  var nextBreak = 0;
   final items = <LineItem>[];
   final word = StringBuffer();
   TextRun? wordRun;
@@ -966,12 +965,17 @@ List<LineItem> paragraphItems(Paragraph paragraph, {double? maxWidth}) {
   var offset = 0;
   void breakBefore(int at) {
     if (at == 0) return;
-    if (mandatory.contains(at)) {
+    while (nextBreak < breaks.length && breaks.offsetAt(nextBreak) < at) {
+      nextBreak++;
+    }
+    final opportunity =
+        nextBreak < breaks.length && breaks.offsetAt(nextBreak) == at;
+    if (opportunity && breaks.isMandatoryAt(nextBreak)) {
       flush();
       items
         ..add(const GlueItem.fill())
         ..add(PenaltyItem(0, PenaltyItem.forced, run: lastRun));
-    } else if (allowed.contains(at)) {
+    } else if (opportunity) {
       flush();
       if (lastRun case final run? when softHyphen) {
         items.add(

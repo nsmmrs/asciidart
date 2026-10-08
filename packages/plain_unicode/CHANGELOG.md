@@ -16,3 +16,8 @@
   of 16. The rules run over integer classes in reused typed lists, with no
   object per character and no closure per pair: `lineBreaks` takes about
   29 ns per code unit of English instead of 67.
+- `lineBreakOffsets(text)`: the breaks of `lineBreaks` without an object
+  for each, as a `LineBreakOffsets` (an extension type over one
+  `List<int>`: `length`, `offsetAt`, `isMandatoryAt`). plain_typesetting's
+  `paragraphItems` walks it with a cursor instead of probing two
+  `Set<int>`s per character.

@@ -67,6 +67,17 @@ void main() {
     expect(lineBreaks(''), isEmpty);
   });
 
+  test('the breaks without objects', () {
+    final breaks = lineBreakOffsets('a b\nc');
+    expect(breaks.length, 3);
+    expect([for (var i = 0; i < 3; i++) breaks.offsetAt(i)], [2, 4, 5]);
+    expect(
+      [for (var i = 0; i < 3; i++) breaks.isMandatoryAt(i)],
+      [false, true, true],
+    );
+    expect(lineBreakOffsets('').length, 0);
+  });
+
   test('classes', () {
     expect(lineBreakClass(0x41), LineBreakClass.al);
     expect(lineBreakClass(0x20), LineBreakClass.sp);

@@ -30,8 +30,17 @@ List<String> _differences(Iterable<String> texts) {
   for (final text in texts) {
     final expected = _oracle(text);
     final actual = _signature(lineBreaks(text));
-    if (actual != expected && failures.length < 20) {
-      failures.add('${_codePoints(text)}\n  want $expected\n  got  $actual');
+    final offsets = lineBreakOffsets(text);
+    final objectFree = [
+      for (var i = 0; i < offsets.length; i++)
+        '${offsets.offsetAt(i)}${offsets.isMandatoryAt(i) ? '!' : ''}',
+    ].join(',');
+    if ((actual != expected || objectFree != expected) &&
+        failures.length < 20) {
+      failures.add(
+        '${_codePoints(text)}\n  want $expected\n  got  $actual\n'
+        '  and  $objectFree',
+      );
     }
   }
   return failures;
