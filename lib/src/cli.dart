@@ -4,9 +4,17 @@ library;
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:path/path.dart' as p;
 
 import 'commands/check.dart';
 import 'commands/regen.dart';
+import 'pool/capture.dart';
+import 'pool/entry.dart';
+import 'pool/index.dart';
+import 'pool/measure.dart';
+import 'pool/source.dart';
+import 'pool/stats.dart';
+import 'pool/dart_measure.dart';
 import 'spec/conversion.dart';
 import 'spec/corpus.dart';
 import 'spec/profile.dart';
@@ -114,5 +122,250 @@ final class TestCommand extends Command<int> {
       '${report.skipped} skipped in ${report.watch.elapsedMilliseconds} ms',
     );
     return report.failures.isEmpty ? 0 : 1;
+  }
+}
+
+/// `ascii_docs pool ...`: the raw pool (fetch, index, capture, measure).
+final class PoolCommand extends Command<int> {
+  PoolCommand() {
+    addSubcommand(_PoolFetch());
+    addSubcommand(_PoolIndex());
+    addSubcommand(_PoolCapture());
+    addSubcommand(_PoolMeasure());
+    addSubcommand(_PoolStats());
+    addSubcommand(_PoolDartCoverage());
+  }
+
+  @override
+  String get name => 'pool';
+
+  @override
+  String get description => 'Build and measure the raw document pool.';
+}
+
+final class _PoolFetch extends Command<int> {
+  @override
+  String get name => 'fetch';
+
+  @override
+  String get description =>
+      'Check out every source in sources.toml (arguments: source names).';
+
+  @override
+  Future<int> run() async {
+    final corpus = Corpus.open();
+    final sources = PoolSource.load(p.join(corpus.root, 'sources.toml'));
+    var failed = 0;
+    for (final source in sources) {
+      if (argResults!.rest.isNotEmpty &&
+          !argResults!.rest.contains(source.name))
+        continue;
+      try {
+        await source.fetch();
+        stdout.writeln('fetched ${source.name}');
+      } on ProcessException catch (e) {
+        failed++;
+        stderr.writeln('${source.name}: ${e.message}');
+      }
+    }
+    return failed == 0 ? 0 : 1;
+  }
+}
+
+final class _PoolIndex extends Command<int> {
+  @override
+  String get name => 'index';
+
+  @override
+  String get description =>
+      'Write the pool manifest: documents, heredocs and captured test inputs.';
+
+  @override
+  Future<int> run() async {
+    final corpus = Corpus.open();
+    final entries = <PoolEntry>[];
+    for (final source in PoolSource.load(p.join(corpus.root, 'sources.toml'))) {
+      if (!Directory(source.checkout).existsSync()) {
+        stderr.writeln('${source.name}: not fetched');
+        continue;
+      }
+      final found = indexSource(source);
+      stdout.writeln('${source.name}: ${found.length}');
+      entries.addAll(found);
+    }
+    for (final profile in corpus.profiles.values.whereType<RubyProfile>()) {
+      final found = capturedEntries(profile);
+      stdout.writeln('capture-${profile.name}: ${found.length}');
+      entries.addAll(found);
+    }
+    PoolEntry.writeAll(entries);
+    stdout.writeln('${entries.length} entries -> $manifestPath');
+    return 0;
+  }
+}
+
+final class _PoolCapture extends Command<int> {
+  @override
+  String get name => 'capture';
+
+  @override
+  String get description =>
+      "Record the documents each Ruby profile's test suite converts.";
+
+  @override
+  Future<int> run() async {
+    final corpus = Corpus.open();
+    for (final profile in corpus.profiles.values.whereType<RubyProfile>()) {
+      final n = await capture(profile, repoRoot: corpus.root);
+      stdout.writeln('${profile.name}: $n documents');
+    }
+    return 0;
+  }
+}
+
+final class _PoolMeasure extends Command<int> {
+  _PoolMeasure() {
+    argParser
+      ..addMultiOption('profile', abbr: 'p', help: 'Profiles (default: all).')
+      ..addMultiOption(
+        'format',
+        abbr: 'f',
+        defaultsTo: ['html5', 'docbook5', 'manpage'],
+        allowed: [for (final f in Format.values) f.name],
+      )
+      ..addOption(
+        'jobs',
+        abbr: 'j',
+        defaultsTo: '${Platform.numberOfProcessors ~/ 2}',
+      );
+  }
+
+  @override
+  String get name => 'measure';
+
+  @override
+  String get description =>
+      'Convert every pool entry with each profile; record coverage and output hashes.';
+
+  @override
+  Future<int> run() async {
+    final args = argResults!;
+    final corpus = Corpus.open();
+    final entries = PoolEntry.readAll();
+    final names = args.multiOption('profile');
+    for (final profile in corpus.profiles.values) {
+      if (names.isNotEmpty && !names.contains(profile.name)) continue;
+      for (final name in args.multiOption('format')) {
+        final format = Format.parse(name);
+        if (profile is RubyProfile && format.binary) continue;
+        final watch = Stopwatch()..start();
+        final failed = await measure(
+          profile,
+          format,
+          entries,
+          repoRoot: corpus.root,
+          defaults: corpus.defaults.attributes,
+          jobs: int.parse(args.option('jobs')!),
+          progress: (n) => stderr.write('\r${profile.name} ${format.name}: $n'),
+        );
+        stderr.write('\r');
+        stdout.writeln(
+          '${profile.name} ${format.name}: ${entries.length} entries, $failed failed, '
+          '${watch.elapsed.inSeconds}s',
+        );
+      }
+    }
+    return 0;
+  }
+}
+
+final class _PoolStats extends Command<int> {
+  _PoolStats() {
+    argParser
+      ..addMultiOption(
+        'profile',
+        abbr: 'p',
+        help: 'Ruby profiles (default: all).',
+      )
+      ..addOption(
+        'write',
+        help: 'Write the chosen conversion ids to this file.',
+      );
+  }
+
+  @override
+  String get name => 'stats';
+
+  @override
+  String get description =>
+      'Coverage of the measured pool, and the set cover over it.';
+
+  @override
+  Future<int> run() async {
+    final args = argResults!;
+    final corpus = Corpus.open();
+    final names = args.multiOption('profile');
+    final profiles = [
+      for (final profile in corpus.profiles.values.whereType<RubyProfile>())
+        if (names.isEmpty || names.contains(profile.name))
+          ?await ProfileMeasurements.load(profile, repoRoot: corpus.root),
+    ];
+    final (problem, chosen) = poolStats(profiles);
+    if (args.option('write') case final path?) {
+      File(path).writeAsStringSync(
+        '${[for (final i in chosen) problem.ids[i]].join('\n')}\n',
+      );
+    }
+    return 0;
+  }
+}
+
+final class _PoolDartCoverage extends Command<int> {
+  _PoolDartCoverage() {
+    argParser
+      ..addOption(
+        'format',
+        abbr: 'f',
+        defaultsTo: 'html5',
+        allowed: [for (final f in Format.values) f.name],
+      )
+      ..addOption(
+        'first',
+        help:
+            'A file of conversion ids (id#format) to run first, such as '
+            'the Ruby set cover.',
+      );
+  }
+
+  @override
+  String get name => 'dart-cov';
+
+  @override
+  String get description =>
+      "Record which pool entries reach asciidart code earlier ones didn't "
+      '(run with `dart --branch-coverage`).';
+
+  @override
+  Future<int> run() async {
+    final args = argResults!;
+    final corpus = Corpus.open();
+    final format = Format.parse(args.option('format')!);
+    final first = switch (args.option('first')) {
+      final String path => File(path).readAsLinesSync(),
+      null => const <String>[],
+    };
+    final result = await measureDartCoverage(
+      format,
+      PoolEntry.readAll(),
+      defaults: corpus.defaults.attributes,
+      profile: corpus.profiles.values.whereType<AsciidartProfile>().single,
+      first: [
+        for (final id in first)
+          if (id.endsWith('#${format.name}'))
+            id.substring(0, id.lastIndexOf('#')),
+      ],
+    );
+    stdout.writeln('asciidart ${format.name}: $result');
+    return 0;
   }
 }

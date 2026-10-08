@@ -49,6 +49,7 @@ final class Conversion {
     this.safe = Safe.safe,
     this.standalone = false,
     this.attributes = const {},
+    this.extra = const {},
   });
 
   final String id;
@@ -65,6 +66,10 @@ final class Conversion {
   /// soft (a document may override it).
   final Map<String, String> attributes;
 
+  /// Other Asciidoctor API options, passed through to Ruby engines as they
+  /// are (captured test inputs); asciidart ignores them.
+  final Map<String, Object?> extra;
+
   Map<String, Object?> toJson() => {
     'id': id,
     'input': input,
@@ -74,6 +79,7 @@ final class Conversion {
     'safe': safe.name,
     'standalone': standalone,
     'attributes': attributes,
+    if (extra.isNotEmpty) 'options': extra,
   };
 }
 

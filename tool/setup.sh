@@ -25,7 +25,11 @@ awk '
   echo "$name: $(git -C "$target" rev-parse --short HEAD)"
 done
 export GEM_HOME="$cache/gems" GEM_PATH="$cache/gems"
-for gem in logger:1.7.0 base64:0.3.0 cgi:0.5.2 rouge:3.30.0 coderay:1.1.3 asciimath:2.0.6; do
+# The worker's optional gems, then what Asciidoctor's own test suite needs
+# (the pool captures the inputs its tests convert).
+for gem in logger:1.7.0 base64:0.3.0 cgi:0.5.2 rouge:3.30.0 coderay:1.1.3 asciimath:2.0.6 \
+    minitest:5.27.0 nokogiri:1.19.4 erubi:1.13.1 haml:6.4.0 slim:5.2.2 tilt:2.9.0 \
+    concurrent-ruby:1.3.8 net-ftp:0.3.9 open-uri-cached:2.0.0 ostruct:0.6.3 rake:13.4.2; do
   name="${gem%%:*}" version="${gem##*:}"
   gem list -i "^$name$" -v "$version" >/dev/null || gem install -q --no-document "$name" -v "$version"
 done

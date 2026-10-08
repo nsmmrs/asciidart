@@ -4,12 +4,15 @@
 #
 # Reads one JSON request per line on stdin, writes one JSON response per line
 # on stdout, in order. The first line written is a header:
-#   {"ready": true, "version": "...", "universe": {"lines": [...], "branches": [...]}}
+#   {"ready": true, "version": "...", "universe": {"lines": [...], "branches": [...]},
+#    "load_time": {"lines": [...], "branches": [...]}}
 # ("universe" only with --coverage: every relevant line and branch arm of the
-# checkout's lib/, as "file:line" and "file:line:col:type:arm@line:col").
+# checkout's lib/, as "file:line" and "file:line:col:type:arm@line:col";
+# "load_time": the universe indices loading alone reaches).
 #
-# Request:  {"id", "input", "base_dir", "path"?, "backend", "doctype"?,
-#            "safe", "standalone", "attributes": {name: value}}
+# Request:  {"id", "input", "base_dir", "backend", "doctype"?, "safe",
+#            "standalone", "attributes": {name: value}, "options"?: {...}}
+#   "options": other API options, passed as they are (captured test inputs).
 #   An attribute named "name!" unsets name; a value ending in "@" is soft.
 # Response: {"id", "ok", "output"?, "log": [{"severity", "message", "lineno"?, "path"?}],
 #            "err"?, "ms", "lines"?, "branches"?}
@@ -23,6 +26,10 @@ COVERAGE = ARGV.include? '--coverage'
 
 # Optional gems and stdlib load before Coverage.start so they are not
 # tracked: every tracked file makes each per-case Coverage.result slower.
+begin
+  gem 'cgi' # Ruby 4's default cgi lacks CGI.parse
+rescue Gem::LoadError
+end
 %w(cgi open-uri pathname strscan uri set logger erb stringio).each do |lib|
   require lib
 rescue LoadError
@@ -70,10 +77,12 @@ end
 LINE_TAB = Hash.new {|h, k| h[k] = [] }
 ARM_TAB = Hash.new {|h, k| h[k] = {} }
 universe = nil
+load_time = nil
+baseline = nil
 if COVERAGE
   lines = []
   branches = []
-  Coverage.peek_result.each do |file, cov|
+  (baseline = Coverage.peek_result).each do |file, cov|
     next unless lib_file? file
     rel = file.delete_prefix "#{ROOT}/"
     cov[:lines].each_with_index do |count, i|
@@ -134,6 +143,11 @@ def convert request
     attributes: request['attributes'] || {},
     to_file: false,
   }
+  (request['options'] || {}).each do |key, value|
+    opts[key.to_sym] = %w(safe doctype).include?(key) && String === value ? value.to_sym : value
+  end
+  opts[:to_file] = false
+  opts.delete :to_dir
   opts[:doctype] = request['doctype'] if request['doctype']
   opts[:base_dir] = request['base_dir'] if request['base_dir']
   output = Asciidoctor.convert request['input'], opts
@@ -143,7 +157,12 @@ ensure
 end
 
 $stdout.sync = true
-$stdout.puts JSON.generate(ready: true, version: Asciidoctor::VERSION, universe: universe)
+if COVERAGE
+  # What loading alone runs (class bodies, constants): covered by every case.
+  l, b = reached baseline
+  load_time = { lines: l, branches: b }
+end
+$stdout.puts JSON.generate(ready: true, version: Asciidoctor::VERSION, universe: universe, load_time: load_time)
 $stdin.each_line do |line|
   request = JSON.parse line
   t0 = Process.clock_gettime Process::CLOCK_MONOTONIC

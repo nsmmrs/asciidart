@@ -7,7 +7,8 @@ Future<void> main(List<String> args) async {
   final runner =
       CommandRunner<int>('ascii_docs', 'The ascii-docs corpus tools.')
         ..addCommand(RegenCommand())
-        ..addCommand(TestCommand());
+        ..addCommand(TestCommand())
+        ..addCommand(PoolCommand());
   try {
     exitCode = await runner.run(args) ?? 0;
   } on UsageException catch (e) {

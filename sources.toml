@@ -1,0 +1,192 @@
+# The pool: repositories whose AsciiDoc documents (and Ruby test heredocs)
+# are measured, cut down and sanitized into cases/anchor. Fetched at these
+# commits into $ASCII_DOCS_CACHE/pool/src; never committed, whatever the
+# license, since only sanitized structure reaches the corpus.
+#
+# documents: globs of document files; heredocs: globs of Ruby files whose
+# <<~ heredocs are documents; sparse: paths to check out (default: all).
+
+[[source]]
+name = "asciidoctor-2.0.26"
+url = "https://github.com/asciidoctor/asciidoctor.git"
+commit = "0b99b39c9df884d4aec13bba45f03cdbab505769"
+license = "MIT"
+documents = ["**/*.adoc"]
+heredocs = ["test/**/*_test.rb"]
+
+[[source]]
+name = "asciidoctor-main"
+url = "https://github.com/asciidoctor/asciidoctor.git"
+commit = "30fb8cd5f7145c57274b04524ceaa99812f830e0"
+license = "MIT"
+documents = ["**/*.adoc"]
+heredocs = ["test/**/*_test.rb"]
+
+[[source]]
+name = "asciidoctor-pdf"
+url = "https://github.com/asciidoctor/asciidoctor-pdf.git"
+commit = "7ea543badd3677d6b6b860bc167f699bbe9a9d62"
+license = "MIT"
+documents = ["**/*.adoc"]
+heredocs = ["spec/**/*_spec.rb"]
+
+[[source]]
+name = "asciidoctor-epub3"
+url = "https://github.com/asciidoctor/asciidoctor-epub3.git"
+commit = "199ab4c43d65421f3bb399a7fb40bb267e9d339b"
+license = "MIT"
+documents = ["**/*.adoc"]
+heredocs = ["spec/**/*_spec.rb"]
+
+[[source]]
+name = "asciidoctor.js"
+url = "https://github.com/asciidoctor/asciidoctor.js.git"
+commit = "9c27e439f1173f9e2586a86062608e49533307f9"
+license = "MIT"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoctor-diagram"
+url = "https://github.com/asciidoctor/asciidoctor-diagram.git"
+commit = "c559bce56772453bb7446b7a12126ad6980fcda4"
+license = "MIT"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoctor-maven-plugin"
+url = "https://github.com/asciidoctor/asciidoctor-maven-plugin.git"
+commit = "c95c58978e51fcf882e722417e9803eed77c4b20"
+license = "Apache-2.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoctor-doctest"
+url = "https://github.com/asciidoctor-contrib/asciidoctor-doctest.git"
+commit = "1f48884cb953e0315490837fbc30c1558c5752a0"
+license = "MIT"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoctor-intellij-plugin"
+url = "https://github.com/asciidoctor/asciidoctor-intellij-plugin.git"
+commit = "b61d4e68c63cfb3a557aa389816cffd2487461c5"
+license = "Apache-2.0"
+documents = ["**/*.adoc"]
+sparse = ["testData", "src/test", "doc"]
+
+[[source]]
+name = "asciidoc-docs"
+url = "https://github.com/asciidoctor/asciidoc-docs.git"
+commit = "45b7693d7327c8850e7f486049c125fb61e666db"
+license = "CC-BY-4.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoc-lang"
+url = "https://gitlab.eclipse.org/eclipse/asciidoc-lang/asciidoc-lang.git"
+commit = "68ed0b22e8d9b919897542d8ae14f03e7dbdd2e4"
+license = "EPL-2.0 AND CC-BY-4.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoc-tck"
+url = "https://gitlab.eclipse.org/eclipse/asciidoc-lang/asciidoc-tck.git"
+commit = "cdfada9c2768b164eadf4bc12e9f9c68e6caf68a"
+license = "EPL-2.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoc-py"
+url = "https://github.com/asciidoc-py/asciidoc-py.git"
+commit = "38ea14a19b95fae22ec8baa18face46bf53c60db"
+license = "GPL-2.0-or-later"
+documents = ["**/*.txt", "**/*.adoc", "**/*.asciidoc"]
+sparse = ["tests", "doc"]
+
+[[source]]
+name = "asciidork"
+url = "https://github.com/jaredh159/asciidork.git"
+commit = "79671b57923841e41fc91d2c1d2fce18cca3131c"
+license = "MIT"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoc-parser"
+url = "https://github.com/asciidoc-rs/asciidoc-parser.git"
+commit = "c4ea28b3cd6e3a310d123eebeddb991d882f865f"
+license = "MIT OR Apache-2.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "libasciidoc"
+url = "https://github.com/bytesparadise/libasciidoc.git"
+commit = "d90d46fa316478894fb43f9e4277807140e563ea"
+license = "Apache-2.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "tree-sitter-asciidoc"
+url = "https://github.com/cathaysia/tree-sitter-asciidoc.git"
+commit = "ade998931aeac0a10ca592b421cdb1f2f088f6c9"
+license = "Apache-2.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "asciidoc-samples"
+url = "https://github.com/opendevise/asciidoc-samples.git"
+commit = "3985219d3d5f7843dbe8cc90566aa3064d49a607"
+license = "NOASSERTION"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "progit2"
+url = "https://github.com/progit/progit2.git"
+commit = "a013e3230a1207cfa5ae94d28ba7d2021063c337"
+license = "CC-BY-NC-SA-3.0"
+documents = ["**/*.asc", "**/*.adoc"]
+
+[[source]]
+name = "hypermedia-systems"
+url = "/home/nes/Work/ports/hypermedia-systems-asciidart"
+commit = "3fcd9d69683c8b3d4e4e96a11c298b32e1b317ab"
+license = "CC-BY-NC-SA-4.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "antora"
+url = "https://gitlab.com/antora/antora.git"
+commit = "87797da7a7f337301ec9b1ad26aa291a28342d56"
+license = "MPL-2.0"
+documents = ["**/*.adoc"]
+
+[[source]]
+name = "git"
+url = "https://github.com/git/git.git"
+commit = "8103b446517e0c44e67561b9d0ccce56efa60a71"
+license = "GPL-2.0-only"
+documents = ["Documentation/**/*.adoc", "Documentation/**/*.txt"]
+sparse = ["Documentation"]
+
+[[source]]
+name = "hibernate"
+url = "https://github.com/hibernate/hibernate-orm.git"
+commit = "bc6aa6d42f3547a3e5b4204ada1e597ffcc5ed20"
+license = "Apache-2.0"
+documents = ["**/*.adoc"]
+sparse = ["documentation"]
+
+[[source]]
+name = "quarkus"
+url = "https://github.com/quarkusio/quarkus.git"
+commit = "1f3f7fae7924013db0d5f23479d11654a34f1f70"
+license = "Apache-2.0"
+documents = ["**/*.adoc"]
+sparse = ["docs/src/main/asciidoc"]
+
+[[source]]
+name = "spring-boot"
+url = "https://github.com/spring-projects/spring-boot.git"
+commit = "f6142c9f47591b70949391d1848c1f81503006db"
+license = "Apache-2.0"
+documents = ["**/*.adoc"]
+sparse = ["documentation", "build-plugin/spring-boot-maven-plugin/src/docs", "build-plugin/spring-boot-gradle-plugin/src/docs"]

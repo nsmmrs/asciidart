@@ -17,6 +17,7 @@ dependencies:
       url: https://github.com/nsmmrs/asciidart.git
       ref: 8d9f3d752be63e71f2793503a1f492939f31685f
   crypto: ^3.0.7
+  glob: ^2.2.0
   path: ^1.9.1
   toml: ^0.18.0
   vm_service: ^15.3.0

@@ -14,13 +14,42 @@ import '../spec/profile.dart';
 
 /// Every relevant line and branch arm of an Asciidoctor checkout's `lib/`.
 final class CoverageUniverse {
-  const CoverageUniverse(this.lines, this.branches);
+  const CoverageUniverse(
+    this.lines,
+    this.branches, {
+    this.loadTimeLines = const [],
+    this.loadTimeBranches = const [],
+  });
 
   /// `file:line`.
   final List<String> lines;
 
   /// `file:line:col:type:arm@line:col`.
   final List<String> branches;
+
+  /// What loading alone reaches (class bodies, constants): covered by every
+  /// conversion, but never reported per case.
+  final List<int> loadTimeLines;
+  final List<int> loadTimeBranches;
+
+  Map<String, Object> toJson() => {
+    'lines': lines,
+    'branches': branches,
+    'load_time': {'lines': loadTimeLines, 'branches': loadTimeBranches},
+  };
+
+  static CoverageUniverse fromJson(
+    Map<String, Object?> json, {
+    Map<String, Object?>? loadTime,
+  }) {
+    final load = loadTime ?? json['load_time'] as Map<String, Object?>?;
+    return CoverageUniverse(
+      (json['lines']! as List).cast<String>(),
+      (json['branches']! as List).cast<String>(),
+      loadTimeLines: (load?['lines'] as List? ?? const []).cast<int>(),
+      loadTimeBranches: (load?['branches'] as List? ?? const []).cast<int>(),
+    );
+  }
 }
 
 /// One worker process.
@@ -109,6 +138,7 @@ final class RubyWorker {
     );
     final head = await header.future;
     final universe = head['universe'] as Map<String, Object?>?;
+    final loadTime = head['load_time'] as Map<String, Object?>?;
     return RubyWorker._(
       process,
       controller.stream,
@@ -116,10 +146,7 @@ final class RubyWorker {
       head['version']! as String,
       universe == null
           ? null
-          : CoverageUniverse(
-              (universe['lines']! as List).cast<String>(),
-              (universe['branches']! as List).cast<String>(),
-            ),
+          : CoverageUniverse.fromJson(universe, loadTime: loadTime),
     );
   }
 
@@ -261,6 +288,33 @@ final class RubyPool {
       if (worker.pending < best.pending) best = worker;
     }
     return best.convert(conversion, timeout: timeout);
+  }
+
+  /// Converts every conversion, one at a time per worker (so each time
+  /// limit covers only its own conversion), in completion order.
+  Stream<Outcome> convertAll(
+    Iterable<Conversion> conversions, {
+    Duration timeout = const Duration(seconds: 10),
+  }) {
+    final next = conversions.iterator;
+    final out = StreamController<Outcome>();
+    Future<void> lane(int i) async {
+      while (next.moveNext()) {
+        final conversion = next.current;
+        if (_workers[i].dead) {
+          _workers[i] = await RubyWorker.start(
+            profile,
+            repoRoot: _repoRoot,
+            coverage: _coverage,
+          );
+        }
+        out.add(await _workers[i].convert(conversion, timeout: timeout));
+      }
+    }
+
+    Future.wait([for (var i = 0; i < _workers.length; i++) lane(i)])
+        .whenComplete(out.close);
+    return out.stream;
   }
 
   Future<void> close() => Future.wait([
