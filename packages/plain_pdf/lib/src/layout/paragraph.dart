@@ -13,7 +13,8 @@ import 'package:plain_pdf/src/drawing/document.dart';
 import 'package:plain_pdf/src/drawing/geometry.dart';
 import 'package:plain_pdf/src/fonts/fonts.dart';
 import 'package:plain_pdf/src/layout/inline.dart';
-import 'package:plain_pdf/src/layout/line_break.dart';
+import 'package:plain_unicode/plain_unicode.dart'
+    show LineBreakClass, lineBreakClass, lineBreaks;
 
 /// How the lines of a paragraph are spaced.
 @immutable

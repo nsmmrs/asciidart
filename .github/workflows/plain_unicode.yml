@@ -1,16 +1,14 @@
-name: plain_highlighting
+name: plain_unicode
 on:
   push:
     branches: ['**']
     paths:
-    - 'packages/plain_highlighting/**'
     - 'packages/plain_unicode/**'
-    - '.github/workflows/plain_highlighting.yml'
+    - '.github/workflows/plain_unicode.yml'
   pull_request:
     paths:
-    - 'packages/plain_highlighting/**'
     - 'packages/plain_unicode/**'
-    - '.github/workflows/plain_highlighting.yml'
+    - '.github/workflows/plain_unicode.yml'
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,7 +16,7 @@ concurrency:
 permissions: read-all
 defaults:
   run:
-    working-directory: packages/plain_highlighting
+    working-directory: packages/plain_unicode
 jobs:
   web:
     runs-on: ubuntu-latest
@@ -36,7 +34,7 @@ jobs:
         js="$(node build/web_check.js)"
         echo "VM: $vm"; echo "JS: $js"
         test "$vm" = "$js"
-  generated:
+  tools:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -45,18 +43,9 @@ jobs:
       uses: dart-lang/setup-dart@v1
     - name: Install Dart dependencies
       run: dart pub get
-    - name: Set up Node.js
+    - name: Set up Node.js (the JavaScript case mapping oracle)
       uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - name: Install the generator's dependencies (highlight.js)
-      working-directory: packages/plain_highlighting/tool/generate
-      run: npm ci
-    - name: Generated files are up to date
-      run: |
-        node tool/generate/generate.mjs
-        node tool/generate/reference.mjs
-        dart format lib/src/languages > /dev/null
-        git diff --exit-code
-    - name: vendor/ matches the pinned release
-      run: tool/vendor.sh --check
+    - name: Run the tests that check against Ruby's tables and Node.js
+      run: dart test --tags tools

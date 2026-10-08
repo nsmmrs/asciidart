@@ -1,0 +1,4 @@
+tags:
+  tools:
+    # Tests that run Node.js as an oracle; skipped where it is missing.
+    skip: false

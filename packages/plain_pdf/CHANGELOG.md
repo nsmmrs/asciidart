@@ -2,6 +2,9 @@
 
 ## 0.1.0-dev (unreleased)
 
+- Line breaking (UAX #14) moved to plain_unicode with its history;
+  plain_pdf depends on it and no longer exports `lineBreaks`,
+  `lineBreakClass`, `LineBreak`, `LineBreakClass` and `unicodeVersion`.
 - Renamed from `libpdf` to `plain_pdf`, and moved with its history into the
   ptome pub workspace (github.com/nsmmrs/ptome, `packages/plain_pdf`;
   ptome's ADR-0018). It no longer re-exports `OpenTypeFont` and

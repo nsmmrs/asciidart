@@ -101,9 +101,6 @@ export 'src/layout/inline.dart'
         InlineImage,
         PageReference,
         TextRun;
-export 'src/layout/line_break.dart'
-    show LineBreak, LineBreakClass, lineBreakClass, lineBreaks;
-export 'src/layout/line_break_data.g.dart' show unicodeVersion;
 export 'src/layout/paragraph.dart'
     show
         BoxItem,

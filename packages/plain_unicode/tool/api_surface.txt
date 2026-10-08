@@ -1,0 +1,66 @@
+LineBreakClass lineBreakClass(int codePoint)
+List<LineBreak> lineBreaks(String text)
+String get caseMappingUnicodeVersion
+String get lineBreakUnicodeVersion
+String lowerCase(String text, {bool finalSigma = false})
+String upperCase(String text)
+bool isCaseIgnorable(int rune)
+bool isCased(int rune)
+enum LineBreakClass
+  static LineBreakClass ai
+  static LineBreakClass ak
+  static LineBreakClass al
+  static LineBreakClass ap
+  static LineBreakClass as_
+  static LineBreakClass b2
+  static LineBreakClass ba
+  static LineBreakClass bb
+  static LineBreakClass bk
+  static LineBreakClass cb
+  static LineBreakClass cj
+  static LineBreakClass cl
+  static LineBreakClass cm
+  static LineBreakClass cp
+  static LineBreakClass cr
+  static LineBreakClass eb
+  static LineBreakClass em
+  static LineBreakClass ex
+  static LineBreakClass gl
+  static LineBreakClass h2
+  static LineBreakClass h3
+  static LineBreakClass hh
+  static LineBreakClass hl
+  static LineBreakClass hy
+  static LineBreakClass id
+  static LineBreakClass in_
+  static LineBreakClass is_
+  static LineBreakClass jl
+  static LineBreakClass jt
+  static LineBreakClass jv
+  static LineBreakClass lf
+  static LineBreakClass nl
+  static LineBreakClass ns
+  static LineBreakClass nu
+  static LineBreakClass op
+  static LineBreakClass po
+  static LineBreakClass pr
+  static LineBreakClass qu
+  static LineBreakClass ri
+  static LineBreakClass sa
+  static LineBreakClass sg
+  static LineBreakClass sp
+  static LineBreakClass sy
+  static LineBreakClass vf
+  static LineBreakClass vi
+  static LineBreakClass wj
+  static LineBreakClass xx
+  static LineBreakClass zw
+  static LineBreakClass zwj
+  static List<LineBreakClass> values
+final class LineBreak
+  LineBreak(int offset, {required bool mandatory})
+  String toString()
+  bool ==(Object other)
+  bool mandatory
+  int hashCode
+  int offset

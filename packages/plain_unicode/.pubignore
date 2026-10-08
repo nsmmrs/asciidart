@@ -1,0 +1,9 @@
+# The files left out of the pub.dev package (this replaces .gitignore for
+# publishing, so its entries are repeated). The vendored Unicode data is
+# only for the generators; the tables are in lib/.
+.dart_tool/
+build/
+pubspec.lock
+/vendor/
+/tool/
+/test/

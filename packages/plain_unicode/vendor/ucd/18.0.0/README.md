@@ -2,7 +2,7 @@
 
 From https://www.unicode.org/Public/18.0.0/ucd/, for
 `tool/generate_line_break.dart` (which writes
-`lib/src/layout/line_break_data.g.dart`):
+`lib/src/line_break_data.g.dart`):
 
 - `LineBreak.txt`: the Line_Break property (UAX #14).
 - `EastAsianWidth.txt`: East_Asian_Width, for the `$EastAsian` set of the

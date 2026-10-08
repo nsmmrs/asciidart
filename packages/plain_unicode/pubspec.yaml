@@ -1,0 +1,25 @@
+name: plain_unicode
+description: >-
+  Unicode text algorithms in pure Dart, the same on every platform: line
+  breaking (UAX #14) and full case mapping, from the Unicode Character
+  Database.
+version: 0.1.0-dev
+repository: https://github.com/nsmmrs/ptome/tree/master/packages/plain_unicode
+issue_tracker: https://github.com/nsmmrs/ptome/issues
+topics:
+  - unicode
+  - text
+  - line-breaking
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  meta: ^1.16.0
+
+dev_dependencies:
+  analyzer: ^14.4.0
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0

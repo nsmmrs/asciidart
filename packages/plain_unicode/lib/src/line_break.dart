@@ -3,7 +3,7 @@
 library;
 
 import 'package:meta/meta.dart';
-import 'package:plain_pdf/src/layout/line_break_data.g.dart';
+import 'package:plain_unicode/src/line_break_data.g.dart';
 
 /// A Line_Break class (UAX #14, 5.1).
 enum LineBreakClass {

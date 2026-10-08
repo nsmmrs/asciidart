@@ -12,6 +12,7 @@ holding Ptome and the pure-Dart libraries it is built on
 |---|---|
 | [ptome](packages/ptome) | The AsciiDoc processor: library, command line, npm package |
 | [plain_pdf](packages/plain_pdf) | PDF from ISO 32000: writer, reader, drawing, fonts, images, SVG, math, box-tree layout |
+| [plain_unicode](packages/plain_unicode) | Line breaking (UAX #14) and full case mapping, from the Unicode Character Database |
 | [plain_fonts](packages/plain_fonts) | TrueType, OpenType, WOFF and WOFF2: reading, subsetting, installed fonts |
 | [plain_compression](packages/plain_compression) | DEFLATE, zlib and Brotli, the same bytes on every platform |
 | [plain_highlighting](packages/plain_highlighting) | Syntax highlighting for 190+ languages, a port of highlight.js 11.12.0 |

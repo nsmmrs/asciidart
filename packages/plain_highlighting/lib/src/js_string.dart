@@ -1,61 +1,13 @@
 /// JavaScript string semantics the engine relies on.
 library;
 
-/// [text] in lower case as JavaScript's `toLowerCase` gives it.
-///
-/// Dart's mapping agrees except for the two context-dependent or
-/// multi-character cases of Unicode's SpecialCasing: `İ` (U+0130) becomes
-/// `i` + U+0307, and a capital sigma at the end of a word becomes `ς`.
-String jsLowerCase(String text) {
-  final lower = text.toLowerCase();
-  if (!_hasSpecial(text)) return lower;
-  final out = StringBuffer();
-  final runes = text.runes.toList();
-  for (var i = 0; i < runes.length; i++) {
-    final r = runes[i];
-    if (r == 0x130) {
-      out.write('i\u0307');
-    } else if (r == 0x3a3) {
-      out.write(_isFinalSigma(runes, i) ? 'ς' : 'σ');
-    } else {
-      out.write(String.fromCharCode(r).toLowerCase());
-    }
-  }
-  return out.toString();
-}
+import 'package:plain_unicode/plain_unicode.dart' show lowerCase;
 
-/// Whether [text] has a capital I with a dot above or a capital sigma,
-/// which JavaScript lower-cases differently.
-bool _hasSpecial(String text) {
-  for (var i = 0; i < text.length; i++) {
-    final unit = text.codeUnitAt(i);
-    if (unit == 0x130 || unit == 0x3a3) return true;
-  }
-  return false;
-}
-
-final RegExp _cased = RegExp(r'^\p{Cased}$', unicode: true);
-final RegExp _caseIgnorable = RegExp(r'^\p{Case_Ignorable}$', unicode: true);
-
-bool _is(RegExp property, int rune) =>
-    property.hasMatch(String.fromCharCode(rune));
-
-/// Unicode's Final_Sigma: a cased letter before (skipping case-ignorable
-/// ones), and none after.
-bool _isFinalSigma(List<int> runes, int index) {
-  var before = false;
-  for (var i = index - 1; i >= 0; i--) {
-    if (_is(_caseIgnorable, runes[i])) continue;
-    before = _is(_cased, runes[i]);
-    break;
-  }
-  if (!before) return false;
-  for (var i = index + 1; i < runes.length; i++) {
-    if (_is(_caseIgnorable, runes[i])) continue;
-    return !_is(_cased, runes[i]);
-  }
-  return true;
-}
+/// [text] in lower case as JavaScript's `toLowerCase` gives it: full
+/// Unicode mappings (`İ` becomes `i` + U+0307) and the Final_Sigma rule (a
+/// capital sigma that ends a word becomes `ς`), from plain_unicode's
+/// tables, the same on the Dart VM and in a browser.
+String jsLowerCase(String text) => lowerCase(text, finalSigma: true);
 
 final RegExp _decimal = RegExp(r'^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$');
 final RegExp _radix = RegExp(r'^0([xXoObB])([0-9a-fA-F]+)$');

@@ -6,12 +6,14 @@ on:
     - 'packages/plain_pdf/**'
     - 'packages/plain_fonts/**'
     - 'packages/plain_compression/**'
+    - 'packages/plain_unicode/**'
     - '.github/workflows/plain_pdf.yml'
   pull_request:
     paths:
     - 'packages/plain_pdf/**'
     - 'packages/plain_fonts/**'
     - 'packages/plain_compression/**'
+    - 'packages/plain_unicode/**'
     - '.github/workflows/plain_pdf.yml'
   workflow_dispatch:
 concurrency:
