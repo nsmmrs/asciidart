@@ -70,6 +70,28 @@ _Node _mo(
 );
 
 final RegExp _letter = RegExp(r'^[\p{L}\p{N}]', unicode: true);
+final RegExp _digits = RegExp(r'[0-9]*(?:\.[0-9]+)?');
+final RegExp _word = RegExp('[a-zA-Z]+');
+final RegExp _commandWord = RegExp(r'\\([a-zA-Z]+)');
+final RegExp _space = RegExp(r'\s');
+final RegExp _strikableLetter = RegExp(r'^<mi>(.)</mi>$');
+final RegExp _firstOperator = RegExp('<mo>(.*?)</mo>');
+
+/// Whether [token] has an ASCII digit in it.
+bool _hasDigit(String token) {
+  for (var i = 0; i < token.length; i++) {
+    if (_isDigit(token.codeUnitAt(i))) return true;
+  }
+  return false;
+}
+
+bool _isDigit(int c) => c >= 0x30 && c <= 0x39;
+
+/// Whether [c] is an ASCII letter.
+bool _isLetter(int c) {
+  final lower = c | 0x20;
+  return lower >= 0x61 && lower <= 0x7a;
+}
 
 final class _Parser {
   new(this.source, this.unknown);
@@ -97,23 +119,45 @@ final class _Parser {
 
   /// The next token without consuming it: a command (`\name`, or `\` and
   /// one character), or one character (a code point: a surrogate pair is
-  /// one); null at the end.
+  /// one); null at the end. Scanned once per position: the same token is
+  /// peeked again by the callers in turn.
   String? peek() {
+    if (at == _peekFrom) {
+      at = _peekAt;
+      return _peeked;
+    }
+    final from = at;
+    final token = _scan();
+    _peekFrom = from;
+    _peekAt = at;
+    _peeked = token;
+    return token;
+  }
+
+  /// The position [peek] last scanned from, where its token starts (past
+  /// spaces and comments), and the token.
+  int _peekFrom = -1;
+  int _peekAt = 0;
+  String? _peeked;
+
+  String? _scan() {
     skipSpace();
     if (done) return null;
-    final c = source[at];
-    if (c != r'\') {
-      final unit = source.codeUnitAt(at);
+    final unit = source.codeUnitAt(at);
+    if (unit != 0x5c) {
       return unit >= 0xd800 &&
               unit < 0xdc00 &&
               at + 1 < source.length &&
               (source.codeUnitAt(at + 1) & 0xfc00) == 0xdc00
           ? source.substring(at, at + 2)
-          : c;
+          : source[at];
     }
     if (at + 1 >= source.length) return r'\';
-    final m = RegExp('[a-zA-Z]+').matchAsPrefix(source, at + 1);
-    if (m != null) return '\\${m[0]}';
+    var end = at + 1;
+    while (end < source.length && _isLetter(source.codeUnitAt(end))) {
+      end++;
+    }
+    if (end > at + 1) return source.substring(at, end);
     return '\\${source[at + 1]}';
   }
 
@@ -214,7 +258,7 @@ final class _Parser {
       return _row(nodes);
     }
     // As TeX takes it: one character (a digit of a number alone).
-    if (token != null && RegExp('[0-9]').hasMatch(token)) {
+    if (token != null && _hasDigit(token)) {
       next();
       return '<mn>$token</mn>';
     }
@@ -277,8 +321,8 @@ final class _Parser {
       return _Node(_row(nodes));
     }
     if (token.startsWith(r'\') && token.length > 1) return _command(token);
-    if (RegExp('[0-9]').hasMatch(token)) {
-      final m = RegExp(r'[0-9]*(?:\.[0-9]+)?').matchAsPrefix(source, at);
+    if (_hasDigit(token)) {
+      final m = _digits.matchAsPrefix(source, at);
       final digits = token + (m?[0] ?? '');
       at += (m?[0] ?? '').length;
       return _Node('<mn>$digits</mn>');
@@ -390,10 +434,10 @@ final class _Parser {
         if (star) next();
         final text = _rawArgument()
             .replaceAllMapped(
-              RegExp(r'\\([a-zA-Z]+)'),
+              _commandWord,
               (m) => _symbols[m[1]]?.$1 ?? _unknown(m[0]!),
             )
-            .replaceAll(RegExp(r'\s'), '');
+            .replaceAll(_space, '');
         return star ? _mo(text, limits: true, movable: true) : _mi(text);
       case 'mathop':
         return _mo(_rawArgument(), limits: true, movable: true);
@@ -436,10 +480,10 @@ final class _Parser {
         final negated = parseAtom();
         if (negated == null) return null;
         // A letter struck through (`\not x`).
-        if (RegExp(r'^<mi>(.)</mi>$').firstMatch(negated.xml) case final mi?) {
+        if (_strikableLetter.firstMatch(negated.xml) case final mi?) {
           return _mi('${mi[1]}\u0338');
         }
-        final m = RegExp('<mo>(.*?)</mo>').firstMatch(negated.xml);
+        final m = _firstOperator.firstMatch(negated.xml);
         if (m == null) return negated;
         final text = m[1]!
             .replaceAll('&lt;', '<')
@@ -541,7 +585,7 @@ final class _Parser {
         parts.add(_row(math.parseUntil(const {})));
         i = end + 1;
       } else if (c == r'\' && i + 1 < raw.length) {
-        final word = RegExp('[a-zA-Z]+').matchAsPrefix(raw, i + 1);
+        final word = _word.matchAsPrefix(raw, i + 1);
         final name = word?[0] ?? raw[i + 1];
         i += 1 + name.length;
         if (_textAccents[name] case final mark?) {
@@ -572,9 +616,12 @@ final class _Parser {
           }
         }
       } else {
-        final ligature = _textLigatures.entries
-            .where((l) => raw.startsWith(l.key, i))
-            .firstOrNull;
+        // (Only these start one.)
+        final ligature = c == '-' || c == '`' || c == "'"
+            ? _textLigatures.entries
+                  .where((l) => raw.startsWith(l.key, i))
+                  .firstOrNull
+            : null;
         if (ligature != null) {
           run.write(ligature.value);
           i += ligature.key.length;
