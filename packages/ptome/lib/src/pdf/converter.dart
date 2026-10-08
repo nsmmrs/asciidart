@@ -2390,6 +2390,7 @@ final class PdfConverter extends BuiltInConverter
         if (_reportTags != null && block is! Section) {
           _tagLast(before, block);
         }
+        if (block is! Section && block.role != null) _sideFloat(block, before);
       }
     } else if (node is Block && node.contentModel != ContentModel.compound) {
       if (node.content() case final text?) {
@@ -2398,6 +2399,49 @@ final class PdfConverter extends BuiltInConverter
           CustomBox(_textBox(text, _font, align: align, hyphenate: true)),
         );
       }
+    }
+  }
+
+  /// The boxes [block] added from [from] on, floating to a side when the
+  /// theme floats one of its roles (`role_<role>_float: left` or `right`,
+  /// `role_<role>_float_width`, a length or a percentage of the page's
+  /// content width, `role_<role>_float_gap`; modern engine): the blocks
+  /// after it are set beside it, or below it where they don't fit beside
+  /// it whole, and what doesn't fit on its page goes on at the top of the
+  /// next, beside what is set there (a report's sidebar).
+  void _sideFloat(AbstractBlock block, int from) {
+    if (asciidoctorCompat(_document, CompatFormat.pdf)) return;
+    for (final role in block.roles) {
+      final key = 'role_${role.replaceAll('-', '_')}_float';
+      final side = switch (_s(key)) {
+        'left' => FloatSide.left,
+        'right' => FloatSide.right,
+        _ => null,
+      };
+      if (side == null) continue;
+      final content =
+          _pageSize(_document).$1 - _pageMargins(_document).horizontal;
+      final width = switch (_theme.value('${key}_width')) {
+        ThemeString(:final value) when value.trim().endsWith('%') =>
+          content *
+              (double.tryParse(value.trim().replaceFirst('%', '')) ?? 50) /
+              100,
+        _ => _length('${key}_width', _font.size) ?? content / 3,
+      };
+      final boxes = _out.sublist(from);
+      _out
+        ..removeRange(from, _out.length)
+        ..add(
+          BlockBox(
+            boxes,
+            style: BoxStyle(
+              side: side,
+              sideWidth: width,
+              sideGap: _length('${key}_gap', _font.size) ?? _font.size,
+            ),
+          ),
+        );
+      return;
     }
   }
 
@@ -2692,6 +2736,14 @@ final class PdfConverter extends BuiltInConverter
     // modern engine): its heading and content in a box, as a sidebar.
     final boxed = _boxedRole(section);
     void content() {
+      // `heading_h<n>_repeat` (modern engine): the heading set again at the
+      // top of each page the section goes on to.
+      final start = _out.length;
+      var head = 0;
+      final repeat =
+          !hidden &&
+          !asciidoctorCompat(_document, CompatFormat.pdf) &&
+          _theme.value('heading_h${hlevel}_repeat') == const ThemeBool(true);
       if (hidden) {
         // No heading, but the section still names its pages' running
         // content.
@@ -2732,6 +2784,7 @@ final class PdfConverter extends BuiltInConverter
           outdent: true,
           collapse: collapse,
         );
+        head = _out.length - start;
       }
       if (dropText case final text?) {
         _pendingDrop = (text: text, level: hlevel, lines: dropLines);
@@ -2763,6 +2816,12 @@ final class PdfConverter extends BuiltInConverter
         );
       } else {
         _traverse(section);
+      }
+      if (repeat && head > 0) {
+        final boxes = _out.sublist(start);
+        _out
+          ..removeRange(start, _out.length)
+          ..add(BlockBox(boxes, repeatedHead: head));
       }
     }
 
@@ -3071,17 +3130,33 @@ final class PdfConverter extends BuiltInConverter
                 0)
             .toDouble();
     if (pageTop > 0) content = _PageTopGap(content, pageTop);
-    final margin = outdent
-        ? _outdented(EdgeInsets(top: marginTop, bottom: marginBottom))
-        : EdgeInsets(top: marginTop, bottom: marginBottom);
-    // The padding and border of the level (the gem's `pad_box` and
-    // `theme_fill_and_stroke_bounds`).
     final category = 'heading_h$level';
+    // (The modern engine: the level's side margins, negative to reach out
+    // past the content's edges, as a banner.)
+    final modern = !asciidoctorCompat(_document, CompatFormat.pdf);
+    final sides = EdgeInsets(
+      top: marginTop,
+      bottom: marginBottom,
+      left: modern ? _length('${category}_margin_left', _font.size) ?? 0 : 0,
+      right: modern ? _length('${category}_margin_right', _font.size) ?? 0 : 0,
+    );
+    final margin = outdent ? _outdented(sides) : sides;
+    // The padding and border of the level (the gem's `pad_box` and
+    // `theme_fill_and_stroke_bounds`), and in the modern engine its
+    // background.
     final padding = _theme.value('${category}_padding');
+    final background = modern
+        ? switch (_c('${category}_background_color')) {
+            TransparentColor() || null => null,
+            final color => pdfColorOf(color),
+          }
+        : null;
     final border =
-        _theme.value('${category}_border_width') != null &&
-            (_c('${category}_border_color') ?? _c('base_border_color')) != null
-        ? _headingBorder(category)
+        (_theme.value('${category}_border_width') != null &&
+                (_c('${category}_border_color') ?? _c('base_border_color')) !=
+                    null) ||
+            background != null
+        ? _headingBorder(category, background: background)
         : null;
     // Floating images wait for no heading: it follows them (unless
     // `heading_float_barrier` is false: Typst's headings pass floats
@@ -3098,6 +3173,10 @@ final class PdfConverter extends BuiltInConverter
       'bottom' => VerticalAlign.bottom,
       _ => null,
     };
+    // The modern engine: a rule under the heading, a box of its own (beside
+    // a block floating to a side, the rule may go under it, the heading
+    // beside it).
+    final rule = modern ? _headingRule(category) : null;
     if (padding == null && border == null && verticalAlign == null) {
       _out.add(
         CustomBox(
@@ -3107,32 +3186,83 @@ final class PdfConverter extends BuiltInConverter
             anchor: anchor,
             marks: marks,
             floatBarrier: barrier,
-            keepWithNext: sticky,
+            keepWithNext: sticky || rule != null,
           ),
         ),
       );
-      return;
-    }
-    _out.add(
-      BlockBox(
-        [CustomBox(content)],
-        style: BoxStyle(
-          margin: margin,
-          padding: _padding('${category}_padding'),
-          anchor: anchor,
-          marks: marks,
-          decoration: border,
-          floatBarrier: barrier,
-          verticalAlign: verticalAlign,
-          keepWithNext: sticky,
+    } else {
+      _out.add(
+        BlockBox(
+          [CustomBox(content)],
+          style: BoxStyle(
+            margin: margin,
+            padding: _padding('${category}_padding'),
+            anchor: anchor,
+            marks: marks,
+            decoration: border,
+            floatBarrier: barrier,
+            verticalAlign: verticalAlign,
+            keepWithNext: sticky || rule != null,
+          ),
         ),
+      );
+    }
+    if (rule != null) _out.add(rule);
+  }
+
+  /// The rule under a heading of theme [category] (`heading_h3_rule_width`,
+  /// `_color`, `_margin_top`, `_margin_bottom`; `_dash`, lengths of dashes
+  /// and gaps in turn, and `_cap`, `round` or `square`, for a rule of
+  /// segments), if any.
+  LayoutBox? _headingRule(String category) {
+    final width = (_n('${category}_rule_width') ?? 0).toDouble();
+    final color = pdfColorOf(
+      _c('${category}_rule_color') ?? _c('base_border_color'),
+    );
+    if (width <= 0 || color == null) return null;
+    final dash = switch (_theme.value('${category}_rule_dash')) {
+      ThemeList(:final values) => [for (final v in values) _toPoints(v)],
+      _ => const <double>[],
+    };
+    final cap = switch (_s('${category}_rule_cap')) {
+      'round' => LineCap.round,
+      'square' => LineCap.projectingSquare,
+      _ => LineCap.butt,
+    };
+    // (A round or square cap reaches half the width past each end.)
+    final inset = cap == LineCap.butt ? 0.0 : width / 2;
+    return BlockBox(
+      const [],
+      style: BoxStyle(
+        padding: EdgeInsets(top: width),
+        margin: _outdented(
+          EdgeInsets(
+            top: _length('${category}_rule_margin_top', _font.size) ?? 0,
+            bottom: _length('${category}_rule_margin_bottom', _font.size) ?? 0,
+          ),
+        ),
+        keepWithNext: true,
+        decoration: (page, rect, {required first, required last}) {
+          final y = rect.top - width / 2;
+          final canvas = page.canvas
+            ..save()
+            ..setStrokeColor(color)
+            ..setLineWidth(width)
+            ..setLineCap(cap);
+          if (dash.isNotEmpty) canvas.dash(dash);
+          canvas
+            ..moveTo(rect.left + inset, y)
+            ..lineTo(rect.right - inset, y)
+            ..stroke()
+            ..restore();
+        },
       ),
     );
   }
 
   /// The border of heading theme [category] (`heading_h2`...), around the
-  /// heading and its padding.
-  BoxDecoration _headingBorder(String category) {
+  /// heading and its padding, over its [background].
+  BoxDecoration _headingBorder(String category, {Color? background}) {
     final widthValue = _theme.value('${category}_border_width');
     final width = switch (widthValue) {
       ThemeNumber(:final value) => value.toDouble(),
@@ -3147,6 +3277,15 @@ final class PdfConverter extends BuiltInConverter
         ? (_n('${category}_border_radius') ?? 0).toDouble()
         : 0.0;
     return (page, rect, {required first, required last}) {
+      if (background != null) {
+        final canvas = page.canvas
+          ..save()
+          ..setFillColor(background);
+        radius > 0 ? canvas.roundedRect(rect, radius) : canvas.rect(rect);
+        canvas
+          ..fill()
+          ..restore();
+      }
       if (color == null || (width <= 0 && widths == null)) return;
       _strokeBounds(
         page.canvas,
@@ -3480,6 +3619,49 @@ final class PdfConverter extends BuiltInConverter
 
   // Blocks with a background and a border.
 
+  /// The shadow of a block of theme [category], if any: its color
+  /// (`<category>_shadow_color`), offset (`_shadow_offset`, right and
+  /// down), blur (`_shadow_blur`, how far it fades out) and opacity
+  /// (`_shadow_opacity`, 0.3); painted under the block, rounded as it is.
+  void Function(Canvas canvas, Rect rect, double radius)? _shadow(
+    String category,
+  ) {
+    final color = pdfColorOf(_c('${category}_shadow_color'));
+    if (color == null) return null;
+    final offset = switch (_theme.value('${category}_shadow_offset')) {
+      ThemeList(:final values) when values.length >= 2 => (
+        _toPoints(values[0]),
+        _toPoints(values[1]),
+      ),
+      _ => (0.0, 2.0),
+    };
+    final blur = (_n('${category}_shadow_blur') ?? 4).toDouble();
+    final opacity = (_n('${category}_shadow_opacity') ?? 0.3).toDouble();
+    // (PDF has no blur: rounded rectangles shrinking inward, each adding a
+    // little more of the color, so it fades out over the blur.)
+    const steps = 8;
+    return (canvas, rect, radius) {
+      final (dx, dy) = offset;
+      canvas
+        ..save()
+        ..setFillColor(color)
+        ..opacity(fill: 1 - math.pow(1 - opacity, 1 / steps).toDouble());
+      for (var i = 0; i < steps; i++) {
+        final grow = blur / 2 - blur * i / steps;
+        final r = Rect(
+          rect.left + dx - grow,
+          rect.bottom - dy - grow,
+          rect.width + grow * 2,
+          rect.height + grow * 2,
+        );
+        final rounded = radius + grow;
+        rounded > 0 ? canvas.roundedRect(r, rounded) : canvas.rect(r);
+        canvas.fill();
+      }
+      canvas.restore();
+    };
+  }
+
   /// The decoration of a block of theme [category] (the gem's
   /// `theme_fill_and_stroke_block`): its background and border, the
   /// border centered on the block's edge, with a dashed line where a split
@@ -3501,7 +3683,16 @@ final class PdfConverter extends BuiltInConverter
     final sideWidths = widthValue is ThemeList;
     var fill = background ?? _c('${category}_background_color');
     if (fill is TransparentColor) fill = null;
-    if (borderWidth <= 0 && fill == null) return extra;
+    // The modern engine: a shadow under the block and an image over its
+    // background (`<category>_shadow_*`, `<category>_background_image`).
+    final modern = !asciidoctorCompat(_document, CompatFormat.pdf);
+    final shadow = modern ? _shadow(category) : null;
+    final image = modern
+        ? _resolveBackgroundImage('${category}_background_image')?.image
+        : null;
+    if (borderWidth <= 0 && fill == null && shadow == null && image == null) {
+      return extra;
+    }
     final stroke = _c('${category}_border_color') ?? _c('base_border_color');
     final pageBackground =
         _c('page_background_color') ?? const HexColor('FFFFFF');
@@ -3526,10 +3717,20 @@ final class PdfConverter extends BuiltInConverter
     final hasStroke = (_n('${category}_border_width') ?? 0) > 0 || sideWidths;
     return (page, rect, {required first, required last}) {
       final canvas = page.canvas..save();
+      shadow?.call(canvas, rect, radius);
       if (pdfColorOf(fill) case final color?) {
         canvas.setFillColor(color);
         radius > 0 ? canvas.roundedRect(rect, radius) : canvas.rect(rect);
         canvas.fill();
+      }
+      if (image != null) {
+        canvas.save();
+        radius > 0 ? canvas.roundedRect(rect, radius) : canvas.rect(rect);
+        canvas
+          ..clip()
+          ..translate(rect.left, rect.bottom);
+        _drawPageImage(canvas, image, size: (rect.width, rect.height));
+        canvas.restore();
       }
       if (hasStroke) {
         if (pdfColorOf(stroke) case final color?) {
@@ -4060,6 +4261,52 @@ final class PdfConverter extends BuiltInConverter
 
   /// Converts the example block [node].
   void convertExample(Block node) {
+    // The modern engine styles a block with a role by the theme's
+    // example_role_<role>_* keys, over its example_* keys.
+    if (_withRoleKeys(node, 'example', () => _convertExample(node))) return;
+    _convertExample(node);
+  }
+
+  /// Converts [node] with the theme's `<category>_role_<role>_*` keys over
+  /// its `<category>_*` keys (and `<category>_role_<role>_link_*` over
+  /// `link_*`), for each of its roles that has some (modern engine);
+  /// whether it did.
+  bool _withRoleKeys(Block node, String category, void Function() convert) {
+    if (node.roles.isEmpty || asciidoctorCompat(_document, CompatFormat.pdf)) {
+      return false;
+    }
+    final saved = _theme;
+    for (final role in node.roles) {
+      final prefix = '${category}_role_${role.replaceAll('-', '_')}_';
+      // (Links in it too: `<category>_role_<role>_link_*`.)
+      _theme = _theme
+          .overlaid(prefix, '${category}_')
+          .overlaid('${prefix}link_', 'link_');
+    }
+    if (identical(_theme, saved)) return false;
+    // (Links styled by the role: inline styles from the overlaid keys.)
+    final savedMarkup = _markup;
+    final linked = node.roles.any((role) {
+      final prefix = '${category}_role_${role.replaceAll('-', '_')}_link_';
+      return saved.keys.any((key) => key.startsWith(prefix));
+    });
+    if (linked) {
+      _markup = MarkupTransform(
+        theme: _theme,
+        invertEmphasis: _invertEmphasis,
+        keepIndexSpace: true,
+      );
+    }
+    try {
+      convert();
+    } finally {
+      _theme = saved;
+      _markup = savedMarkup;
+    }
+    return true;
+  }
+
+  void _convertExample(Block node) {
     final captionBelow = _s('example_caption_end') == 'bottom';
     if (!captionBelow && node.hasTitle) _caption(node, category: 'example');
     final children = _collect(
@@ -4085,8 +4332,14 @@ final class PdfConverter extends BuiltInConverter
     if (margin > 0) _out.add(SpacerBox(margin));
   }
 
-  /// Converts the sidebar [node].
+  /// Converts the sidebar [node] (by the theme's `sidebar_role_<role>_*`
+  /// keys for its roles, in the modern engine).
   void convertSidebar(Block node) {
+    if (_withRoleKeys(node, 'sidebar', () => _convertSidebar(node))) return;
+    _convertSidebar(node);
+  }
+
+  void _convertSidebar(Block node) {
     final children = _collect(() {
       if (node.title case final title? when title.isNotEmpty) {
         final font = _themeFont('sidebar_title', _font);
@@ -4119,6 +4372,10 @@ final class PdfConverter extends BuiltInConverter
             ),
           ),
         );
+        // (The modern engine: a rule under it, `sidebar_title_rule_*`.)
+        if (!asciidoctorCompat(_document, CompatFormat.pdf)) {
+          if (_headingRule('sidebar_title') case final rule?) _out.add(rule);
+        }
       }
       // (The modern engine: `sidebar_*` keys for the blocks inside it,
       // `sidebar_prose_margin_bottom`...)

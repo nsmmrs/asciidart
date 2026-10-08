@@ -1,0 +1,243 @@
+# A personal report laid out as in print: purple banners, a gray sidebar
+# that floats beside the text and goes on at the top of the next page
+# (through the banner there), callouts with a shadow, summary tables.
+# Fonts: the gem's Noto Sans (pdf-fontsdir: vendor/asciidoctor-pdf/data/fonts).
+extends: default
+font:
+  catalog:
+    merge: false
+    Noto Sans:
+      normal: notosans-regular-subset.ttf
+      bold: notosans-bold-subset.ttf
+      italic: notosans-italic-subset.ttf
+      bold_italic: notosans-bold_italic-subset.ttf
+  fallbacks: []
+page:
+  size: Letter
+  margin: [0.5in, 0.5in, 0.85in, 0.5in]
+  numbering:
+    start-at: title
+base:
+  font-family: Noto Sans
+  font-size: 8.5
+  font-color: '#333333'
+  line-height: 1.6
+  text-align: left
+prose:
+  margin-bottom: 10
+caption:
+  font-color: '#895782'
+  font-size: 9.5
+  font-style: normal
+  text-transform: uppercase
+  margin-inside: 1
+link:
+  font-color: '#1e88c7'
+  text-decoration: underline
+role:
+  normal:
+    font-color: '#5fb03a'
+  below:
+    font-color: '#e3962b'
+  above:
+    font-color: '#2c9ed8'
+  high:
+    font-color: '#e04452'
+  gene:
+    font-color: '#895782'
+    font-size: 10
+  # The sidebar: floats to the right of the text after it, and goes on
+  # at the top of the next page.
+  aside:
+    float: right
+    float-width: 38%
+    float-gap: 18
+  # The gauge: beside the first paragraph.
+  gauge:
+    float: right
+    float-width: 150
+    float-gap: 10
+  lead:
+    font-size: 15
+    font-color: '#a679a2'
+  note:
+    font-color: '#8a8a8a'
+  meta:
+    font-color: '#895782'
+  source:
+    font-size: 6.5
+    font-color: '#8a8a8a'
+  study:
+    font-size: 10
+  food:
+    font-color: '#895782'
+    font-size: 9.5
+    font-style: bold
+    text-transform: uppercase
+heading:
+  font-color: '#895782'
+  font-style: normal
+  margin-top: 0
+  margin-bottom: 6
+  # The banner: the category, at the top of each of its pages.
+  h2:
+    font-size: 21
+    font-color: '#ffffff'
+    text-transform: uppercase
+    background-color: '#895782'
+    border-radius: 17
+    padding: [5, 16, 5, 16]
+    margin-left: -20
+    margin-right: -20
+    margin-bottom: 12
+    repeat: true
+  # The subject, under the banner on each of its pages, a rule under it.
+  h3:
+    font-size: 19
+    text-transform: uppercase
+    padding: [0, 0, 0, 34]
+    margin-bottom: 4
+    rule-width: 0.75
+    rule-color: '#895782'
+    rule-margin-top: 10
+    rule-margin-bottom: 16
+    repeat: true
+thematic-break:
+  border-color: '#895782'
+  border-width: 0.75
+  margin-top: 4
+  margin-bottom: 14
+# Gray boxes in the sidebar.
+sidebar:
+  role:
+    genes:
+      background-color: '#f6f6f6'
+      border-width: 0
+      border-radius: 0
+      padding: [10, 10, 10, 10]
+      title-font-color: '#7a7a7a'
+      title-font-size: 9.5
+      title-font-style: normal
+      title-text-transform: uppercase
+      title-text-align: left
+      title-margin-bottom: 8
+      title-rule-width: 0.75
+      title-rule-color: '#7a7a7a'
+      title-rule-margin-bottom: 8
+    notes:
+      background-color: '#f6f6f6'
+      border-width: 0
+      border-radius: 0
+      padding: [12, 10, 10, 10]
+      font-color: '#6d6f71'
+      box-decoration-break: clone
+# The callout, with its stripes, and the pills.
+example:
+  role:
+    verdict:
+      background-color: '#ffffff'
+      border-width: 0
+      border-radius: 0
+      padding: [14, 110, 12, 18]
+      shadow-color: '#000000'
+      shadow-offset: [1, 2]
+      shadow-blur: 6
+      shadow-opacity: 0.35
+      background-image: image:images/stripes.svg[fit=contain,position=right top]
+    pill:
+      background-color: '#895782'
+      border-width: 0
+      border-radius: 17
+      padding: [5, 18, 5, 18]
+      font-color: '#ffffff'
+      font-size: 15
+      text-transform: uppercase
+      link-font-color: '#ffffff'
+      link-text-decoration: none
+    group:
+      background-color: '#895782'
+      border-width: 0
+      border-radius: 12
+      padding: [3, 14, 3, 14]
+      font-color: '#ffffff'
+      font-size: 9
+      text-transform: uppercase
+# The summary and the foods.
+table:
+  role:
+    summary:
+      border-width: 0
+      grid-color: '#333333'
+      grid-width: [0.75, 0.75]
+      cell-padding: [6, 10, 6, 10]
+    foods:
+      background-color: '#f6f6f6'
+      border-width: 0
+      grid-width: 0
+      cell-padding: [12, 14, 12, 14]
+image:
+  align: left
+# The intro's headings: no banner, a rule of three bars under them.
+section:
+  role:
+    intro:
+      heading-h2-font-size: 17
+      heading-h2-font-color: '#7a5a77'
+      heading-h2-text-transform: none
+      heading-h2-background-color: transparent
+      heading-h2-padding: 0
+      heading-h2-margin-left: 0
+      heading-h2-margin-right: 0
+      heading-h2-margin-top: 14
+      heading-h2-repeat: false
+      heading-h2-rule-width: 4
+      heading-h2-rule-color: '#d4d4d4'
+      heading-h2-rule-cap: round
+      heading-h2-rule-dash: [200, 10, 40, 10, 400]
+      heading-h2-rule-margin-top: 8
+      heading-h2-rule-margin-bottom: 12
+      heading-h3-font-size: 14
+      heading-h3-font-color: '#a679a2'
+      heading-h3-text-transform: none
+      heading-h3-padding: [0, 0, 0, 16]
+      heading-h3-rule-width: 0
+      heading-h3-repeat: false
+    studies:
+      heading-h3-font-size: 12
+      heading-h3-padding: [0, 0, 0, 0]
+      heading-h3-rule-width: 0
+      heading-h3-repeat: false
+      heading-h3-margin-top: 14
+footer:
+  height: 0.6in
+  padding: [14, 0, 0, 0]
+  vertical-align: top
+  font-size: 7
+  font-color: '#333333'
+  background-image: image:images/footer.svg[fit=fill]
+  recto:
+    left:
+      content: '{document-title} - {author} - {revdate}'
+    right:
+      content: '{page-number}'
+  verso:
+    left:
+      content: '{document-title} - {author} - {revdate}'
+    right:
+      content: '{page-number}'
+header:
+  height: 0
+title-page:
+  background-image: image:images/cover.svg[fit=fill]
+  text-align: left
+  title:
+    top: 95%
+    display: none
+  subtitle:
+    display: none
+  revision:
+    display: none
+  authors:
+    font-size: 12
+    font-color: '#222222'
+    content: 'Prepared for: {author}'

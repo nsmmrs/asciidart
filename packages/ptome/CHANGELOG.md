@@ -157,6 +157,14 @@ Asciidoctor project.
   figures that span the columns (`image_scope`), and phrases with a role
   set beside their line in the center column or the outer margin
   (`role_<role>_display: side`, `side_notes_column`).
+- Layouts no PDF library we know of makes: a sidebar that floats beside
+  the text (`role_<role>_float`) and goes on at the top of the next page,
+  through the repeated banner there (`heading_h<n>_repeat`), the blocks
+  beside it narrowed or, where they don't fit beside it, set below it;
+  banners (`heading_h<n>_background_color`, negative side margins), rules
+  of rounded bars under headings (`heading_h<n>_rule_*`), shadows and
+  background images on framed blocks, and role keys for example blocks
+  and sidebars (`example_role_<role>_*`, links in them included).
 - Generated text from templates (ADR-0010): caption numbers
   (`<kind>-caption-template`, `appendix-caption-template`) in every
   format, footnote markers (`footnote-reference-template`,

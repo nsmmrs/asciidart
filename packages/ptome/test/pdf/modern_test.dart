@@ -258,6 +258,63 @@ void main() {
       expect(drop.$4 - drop.$3, greaterThan(20));
     });
 
+    test('a sidebar floating beside the text, through the next banner', () {
+      // The report fixture: each subject's sidebar floats to the right of
+      // the text after it; Vitamin A's goes on at the top of the next
+      // page, where the repeated banner and title are set beside it.
+      const dir = 'test/pdf/fixtures/report';
+      final out = '${_dir.path}/report.pdf';
+      final messages = MemoryLogger();
+      convertFile(
+        '$dir/report.adoc',
+        AsciidoctorOptions(
+          safe: SafeMode.unsafe,
+          backend: 'pdf',
+          toFile: out,
+          attributes: {
+            'pdf-theme': '$dir/report-theme.yml',
+            'pdf-fontsdir': 'vendor/asciidoctor-pdf/data/fonts',
+          },
+          logger: messages,
+        ),
+      );
+      expect([
+        for (final m in messages.messages)
+          if (m.severity.index >= Severity.warn.index) '${m.message}',
+      ], isEmpty);
+      final pages =
+          (Process.runSync('pdftotext', ['-bbox', out, '-']).stdout as String)
+              .split('<page ')
+              .skip(1)
+              .toList();
+      List<(String, double, double)> words(String page) => [
+        for (final m in RegExp(
+          r'xMin="([\d.]+)" yMin="([\d.]+)"[^>]*>([^<]+)<',
+        ).allMatches(page))
+          (m[3]!, double.parse(m[1]!), double.parse(m[2]!)),
+      ];
+      (String, double, double) find(
+        List<(String, double, double)> all,
+        String word,
+      ) => all.firstWhere((w) => w.$1 == word);
+      // The pages of Vitamin A: its first (with its genes), then the one it
+      // goes on to.
+      final at = pages.indexWhere(
+        (page) => page.contains('>BCMO1<') && page.contains('>RELATED<'),
+      );
+      final (first, next) = (words(pages[at]), words(pages[at + 1]));
+      // On the first page the sidebar is at the right, beside the text.
+      final genes = find(first, 'RELATED');
+      expect(genes.$2, greaterThan(306));
+      // On the next: the banner and title again, at the left, the rest of
+      // the sidebar at the right, its top level with the banner's.
+      final banner = find(next, 'VITAMINS');
+      final rest = next.firstWhere((w) => w.$2 > 306);
+      expect(banner.$2, lessThan(100));
+      expect(rest.$3, closeTo(banner.$3, 12));
+      expect(find(next, 'TENDENCY').$2, lessThan(300));
+    });
+
     test('phrases with a side role set beside their line', () {
       final pdf = _pdf(
         '= Doc\n\n[[v1]]Verse one. [.xref]##*1:1* see <<v2,Two>>## '

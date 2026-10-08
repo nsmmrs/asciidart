@@ -218,6 +218,81 @@ void main() {
     expect(at.containsKey('m6'), isFalse);
   });
 
+  test('a side float: blocks beside it, the rest on the next page', () {
+    final document = RecordingDocument();
+    FlowLayout(template: _rows(8))
+        .layout([
+          BlockBox([
+            _para('head'),
+            _para('l1'),
+            BlockBox(
+              [
+                _para([for (var i = 1; i <= 10; i++) 's$i'].join('\n')),
+              ],
+              style: const BoxStyle(
+                side: FloatSide.right,
+                sideWidth: 100,
+                sideGap: 10,
+              ),
+            ),
+            for (var i = 1; i <= 7; i++) _para('b$i'),
+            _para('c1\nc2\nc3'),
+          ], repeatedHead: 1),
+        ])
+        .render(document);
+    Map<String, (double, double)> at(int page) => {
+      for (final call in document.pages[page].canvas.calls)
+        if (RegExp(r'^glyphs "\s*(\S+)\s*" at (\S+) (\S+)').firstMatch(call)
+            case final m?)
+          m[1]!: (double.parse(m[2]!), double.parse(m[3]!)),
+    };
+    final first = at(0);
+    final second = at(1);
+    // The float at the right from the third row, the blocks after it
+    // beside it at the left; six of its lines here, four at the top of
+    // the next page.
+    expect(first['s1']!.$1, closeTo(180, 1e-6));
+    expect(first['s1']!.$2, first['b1']!.$2);
+    expect(first['b1']!.$1, 20);
+    expect(first['s6']!.$2, first['b6']!.$2);
+    expect(first.containsKey('s7'), isFalse);
+    // The next page: the rest of the float at its top, the repeated head
+    // and b7 beside it; c, three lines, doesn't fit in the two rows left
+    // beside it, so it starts under it.
+    expect(second['s7']!.$1, closeTo(180, 1e-6));
+    expect(second['head']!.$2, second['s7']!.$2);
+    expect(second['b7']!.$2, second['s8']!.$2);
+    expect(second['c1']!.$2, lessThan(second['s10']!.$2));
+    expect(second['c1']!.$1, 20);
+  });
+
+  test('a block narrowed beside a side float wraps in its width', () {
+    final document = RecordingDocument();
+    FlowLayout(template: _rows(8))
+        .layout([
+          BlockBox(
+            [_para('s1\ns2\ns3\ns4')],
+            style: const BoxStyle(
+              side: FloatSide.left,
+              sideWidth: 160,
+              sideGap: 10,
+            ),
+          ),
+          _para('alpha beta gamma delta epsilon'),
+        ])
+        .render(document);
+    final lines = [
+      for (final call in document.pages.single.canvas.calls)
+        if (RegExp(r'^glyphs "([^"]*)" at (\S+) (\S+)').firstMatch(call)
+            case final m? when !m[1]!.trim().startsWith('s'))
+          (m[1]!.trim(), double.parse(m[2]!)),
+    ];
+    // Beside the float (from x 190 on, 90 wide), the paragraph takes more
+    // than one line.
+    expect(lines.length, greaterThan(1));
+    expect(lines.first.$2, closeTo(190, 1e-6));
+  });
+
   test('links are made on the page the text is on', () {
     final document = RecordingDocument();
     FlowLayout(template: _rows(4))

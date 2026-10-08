@@ -1,0 +1,401 @@
+= Nutria Personal Report
+Sam Rivera
+v1.0, February 9, 2026
+:title-page:
+:imagesdir: images
+:sectanchors!:
+:example-caption!:
+:table-caption!:
+:figure-caption!:
+
+[.intro]
+== Welcome to Your Nutria Personal Report
+
+[.meta]
+Nutria Personal Report +
+February 9, 2026
+
+[.intro]
+=== Congratulations!
+
+This report reads a handful of your genes for what they suggest about the
+vitamins and minerals your body takes up, keeps and uses. Until recently
+this kind of insight was out of reach; today a small sample is enough to
+look at the variants that matter for nutrition, and to turn them into
+plain advice for the way you eat.
+
+_Each of us is different in ways that a diet plan rarely considers. Some
+people absorb a vitamin readily; others need more of it from food. The
+pages that follow put your results side by side with what the research
+says, so that you can decide what to change._
+
+_None of this is a diagnosis: genes describe tendencies, and the way you
+live shapes how much they matter._
+
+[.intro]
+== What Is Genetic Testing?
+
+A genetic test reads a sample of cells, from saliva for example, and
+looks at the places in the genome where people commonly differ. These
+places, single nucleotide polymorphisms, are what the following pages
+call variants; the pair of variants you carry at each place is your
+genotype for it.
+
+[.intro]
+== How Are Your Results Determined?
+
+For each nutrient we combine the genotypes of the genes studied for it
+into a score, and the score into a rating: below average, normal or
+above average. Some nutrients depend on one gene, others on several, each
+weighted by how strongly studies have linked it with the nutrient's
+levels in the body.
+
+A rating describes a tendency, a greater or lesser chance, not a
+certainty. Diet, age, health and medication all have their say as well.
+
+<<<
+
+[.intro]
+== Why Is Your Genotype Important?
+
+The studies behind this report were chosen for their size and their
+care: large groups of people, measured levels of each nutrient, and
+results that other groups have since confirmed. We keep that list up to
+date as new work appears, and so will your report.
+
+Advice drawn from genes is still young. What we can say with confidence
+is modest, and we say no more than that; where the research is unclear,
+the report tells you so.
+
+On the following pages you will find a summary of your results, then a
+page or two for each nutrient: what your genes suggest, the genes looked
+at, and what you can do about it.
+
+[.pill]
+====
+<<summary,Report summary>>
+====
+
+[.pill]
+====
+image:icon-vitamins.svg[,18] {nbsp} <<vitamins,Vitamins>>
+====
+
+[.pill]
+====
+image:icon-minerals.svg[,18] {nbsp} <<minerals,Minerals>>
+====
+
+<<<
+
+[#summary]
+== Report Summary
+
+[.group]
+====
+image:icon-vitamins.svg[,12] {nbsp} Vitamins
+====
+
+[.summary,cols="5,3,6"]
+|===
+|Vitamin A Tendency |[.normal]#NORMAL# |BCMO1
+|Vitamin B9 -- Folate Tendency |[.below]#BELOW AVERAGE# |MTHFR
+|Vitamin E Tendency |[.above]#ABOVE AVERAGE# |ZPR1, SCARB1, CYP4F2
+|===
+
+[.group]
+====
+image:icon-minerals.svg[,12] {nbsp} Minerals
+====
+
+[.summary,cols="5,3,6"]
+|===
+|Calcium Tendency |[.normal]#NORMAL# |CASR, DGKD, GCKR
+|Iron Tendency |[.high]#ABOVE AVERAGE# |TF, HFE, TMPRSS6
+|===
+
+<<<
+
+[#vitamins]
+== image:icon-vitamins.svg[,20] {nbsp} Vitamins
+
+=== Vitamin A Tendency
+
+image::gauge-normal.svg[Normal,role=gauge,pdfwidth=150]
+
+.What your genes say about you:
+Your genotype points to a *[.normal]#NORMAL#* ability to turn
+beta-carotene from food or supplements into the active form of vitamin
+A. Of the variants studied, you carry few or none of those linked with a
+weaker conversion.
+
+[.aside]
+--
+[.genes]
+.Related genes / SNPs
+****
+[.gene]#BCMO1#
+****
+
+[.notes]
+****
+The gene studied here makes the enzyme that splits beta-carotene into
+two molecules of vitamin A. Some of its common variants slow that step,
+and people who carry them tend to have less of the vitamin in their
+blood when they rely on plants for it.
+
+Vitamin A matters for sight in dim light, for the skin and the linings
+of the body, and for the immune system. Animal foods such as dairy, eggs
+and liver provide it ready to use; plants provide carotenes that the
+body converts as it needs.
+
+Too much of the ready-made form can do harm, and pregnant women are
+advised to keep foods such as liver to an occasional serving. Carotenes
+from plants carry no such risk: the body converts only what it needs.
+
+How much beta-carotene the body converts also depends on the meal: fat
+helps it along, so a little oil on a salad or with cooked carrots makes
+a difference, and so does cooking, which frees carotenes from the plant's
+cells.
+
+Most people in good health get enough vitamin A from a varied diet, and
+the body stores what it doesn't need right away in the liver, for weeks
+or months.
+
+Orange and dark green vegetables are the richest sources of carotenes:
+carrots, sweet potatoes, pumpkin, spinach and kale, as well as apricots,
+mangoes and melons, and the vitamin itself is in eggs, dairy and oily
+fish.
+****
+--
+
+[.verdict]
+====
+[.lead]
+Your genetic profile indicates that your response is [.normal]#NORMAL#.
+
+[.note]
+Your ability to convert beta-carotene into vitamin A is unlikely to be
+reduced.
+====
+
+If you take a beta-carotene supplement, your body is likely to convert
+it as expected. How your genotype affects the conversion of carotenes
+from food is less clear.
+
+'''
+
+.Success strategies
+Vitamin A needs rise during pregnancy and breastfeeding. Since you
+convert beta-carotene normally, colorful vegetables and fruit are an
+easy way to meet your needs, and their carotenes act as antioxidants on
+the way.
+
+[.foods,cols="1,2"]
+|===
+a|image::food-orange.svg[Carrots,130]
+a|[.food]#Vitamin A-rich foods to include in your diet:#
+
+Carrots, sweet potatoes, pumpkin, spinach, kale, apricots, eggs and
+cheese.
+|===
+
+'''
+
+<<<
+
+=== Vitamin B9 -- Folate Tendency
+
+image::gauge-below.svg[Below average,role=gauge,pdfwidth=150]
+
+.What your genes say about you:
+Your genotype points to a *[.below]#BELOW AVERAGE#* folate status:
+you carry a variant that slows one of the steps the body uses folate
+for, which can mean somewhat lower levels in the blood.
+
+[.aside]
+--
+[.genes]
+.Related genes / SNPs
+****
+[.gene]#MTHFR#
+****
+
+[.notes]
+****
+The enzyme this gene makes turns folate into the form the body uses to
+recycle homocysteine and to build and repair DNA. One common variant
+makes the enzyme less active, more so when two copies are carried.
+
+People with the less active form may have higher homocysteine and lower
+folate, especially when their diet is low in folate. Enough folate from
+food usually offsets the difference.
+
+Folate matters most before and during early pregnancy, when it helps the
+baby's spine and brain develop; that is why many grains are fortified
+with folic acid, the form used in supplements.
+
+Leafy greens, legumes, asparagus, broccoli and citrus fruit are good
+sources; heat destroys some of the folate in vegetables, so eat some of
+them raw or lightly cooked.
+
+Alcohol and smoking both lower folate levels. Some medicines do too:
+ask your doctor or pharmacist if you take any regularly.
+
+The variant is common: about one person in ten carries two copies, and
+many more carry one. Most never notice it.
+****
+--
+
+[.verdict]
+====
+[.lead]
+Your genetic profile indicates that your response is
+[.below]#BELOW AVERAGE#.
+
+[.note]
+You may have a somewhat higher chance of low folate levels. Your doctor
+can measure folate and homocysteine in a routine blood test.
+====
+
+.Success strategies
+* Eat folate-rich foods every day: leafy greens, beans, lentils and
+  citrus fruit.
+* Keep some vegetables raw or lightly steamed, as heat destroys folate.
+* If you are planning a pregnancy, ask your doctor about a supplement.
+
+[.foods,cols="1,2"]
+|===
+a|image::food-green.svg[Broccoli,130]
+a|[.food]#Folate-rich foods to include in your diet:#
+
+Lentils, chickpeas, asparagus, broccoli, spinach and oranges.
+|===
+
+<<<
+
+=== Vitamin E Tendency
+
+image::gauge-above.svg[Above average,role=gauge,pdfwidth=150]
+
+.What your genes say about you:
+Your genotype points to *[.above]#ABOVE AVERAGE#* vitamin E levels:
+you carry variants linked with more of the vitamin circulating in the
+blood.
+
+[.aside]
+--
+[.genes]
+.Related genes / SNPs
+****
+[.gene]#ZPR1, SCARB1, CYP4F2#
+****
+
+[.notes]
+****
+These genes affect how vitamin E is carried in the blood, taken up by
+cells and broken down. Variants in them have been linked with the
+amount of the vitamin measured in the blood of large groups of people.
+
+Vitamin E protects fats in cell membranes from damage. Nuts, seeds and
+plant oils are its richest sources; few people eat too little of it,
+and supplements in high doses can interfere with blood clotting.
+****
+--
+
+[.verdict]
+====
+[.lead]
+Your genetic profile indicates that your response is
+[.above]#ABOVE AVERAGE#.
+
+[.note]
+You are likely to keep good vitamin E levels from food alone.
+====
+
+.Success strategies
+Since your levels tend to be good, there is little reason to add a
+supplement: high doses can thin the blood. Nuts and seeds remain a
+healthy source of the vitamin and of good fats.
+
+<<<
+
+[#minerals]
+== image:icon-minerals.svg[,20] {nbsp} Minerals
+
+=== Calcium Tendency
+
+image::gauge-normal.svg[Normal,role=gauge,pdfwidth=150]
+
+.What your genes say about you:
+Your genotype points to *[.normal]#NORMAL#* calcium levels in the
+blood.
+
+[.aside]
+--
+[.genes]
+.Related genes / SNPs
+****
+[.gene]#CASR, DGKD, GCKR#
+****
+
+[.notes]
+****
+These genes help the body sense and keep its calcium level steady.
+Calcium is the most plentiful mineral in the body, nearly all of it in
+the bones and teeth.
+****
+--
+
+[.verdict]
+====
+[.lead]
+Your genetic profile indicates that you are likely to have
+[.normal]#NORMAL# calcium levels.
+====
+
+.Success strategies
+Keep your bones strong with calcium-rich foods and exercise that bears
+your weight, such as walking or climbing stairs.
+
+[.foods,cols="1,2"]
+|===
+a|image::food-gold.svg[Seeds,130]
+a|[.food]#Calcium-rich foods to include in your diet:#
+
+Milk, yogurt, cheese, almonds, tofu and kale.
+|===
+
+<<<
+
+[.studies]
+== Links to Related Studies
+
+[.studies]
+=== Vitamins -- Vitamin A Tendency
+
+[.source]
+J Nutr Sci. 2019;8:e12. doi: 10.0000/jns.2019.12.
+
+[.study]
+Common variants of the beta-carotene enzyme gene and vitamin A status
+in adults
+
+https://example.org/studies/1001
+
+[.source]
+Rivera S, Chen L, et al.
+
+[.studies]
+=== Vitamins -- Vitamin B9 -- Folate Tendency
+
+[.source]
+Am J Clin Nutr. 2018;108:1334-41. doi: 10.0000/ajcn.2018.209.
+
+[.study]
+A common variant of MTHFR and folate status in a large cohort
+
+https://example.org/studies/1002
+
+[.source]
+Okafor A, Lindqvist M, et al.

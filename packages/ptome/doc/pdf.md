@@ -353,6 +353,33 @@ the chapter ends, so that the next chapter starts under its shorter
 column (with `heading_chapter_break_before: auto`). The asciidoctor-pdf
 compatibility setting keeps a book in one column, as the gem does.
 
+### Sidebars, callouts and banners
+
+A block whose role the theme floats goes to the left or the right of the
+page, the blocks after it beside it: each one beside it whole, narrowed, or,
+where it doesn't fit beside it, below it at full width (a section's blocks
+each so). Where the floating block doesn't fit on its page, the rest goes on
+at the top of the next one, before anything else there, what is set there
+going around it too: a report's sidebar that runs from one page into the
+next, through the banner at the top of the second. A page break waits for
+it, and the repeated headings of its section (`heading_h<n>_repeat`) are set
+beside it.
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `role_<role>_float` | | `left` or `right`: blocks with the role (an open block, a sidebar, an image) float to that side. |
+| `role_<role>_float_width` | a third of the text's width | Its width: a length or a percentage of the page's text width. |
+| `role_<role>_float_gap` | the font size | The space between it and the blocks beside it. |
+| `example_role_<role>_<key>`, `sidebar_role_<role>_<key>` | | For an example block or a sidebar with the role (`[.callout]`), replaces `example_<key>` or `sidebar_<key>`; `_link_font_color` and `_link_text_decoration` style the links in it (a pill-shaped link). |
+| `<category>_shadow_color` | | A shadow under a framed block (`example`, `sidebar`, their roles' keys): `_shadow_offset` (right and down, `[0, 2]`), `_shadow_blur` (`4`), `_shadow_opacity` (`0.3`). |
+| `<category>_background_image` | | An image over a framed block's background, clipped to it: `image:stripes.svg[fit=contain,position=right top]`, as `page_background_image`. |
+| `sidebar_title_rule_width` | | A rule under a sidebar's title, as `heading_h<n>_rule_*`. |
+
+`test/pdf/fixtures/report` lays out a personal report with them: banners
+over each page of a category, a gauge floated beside the first paragraph, a
+callout with a shadow and stripes, and a gray sidebar of two boxes that goes
+on at the top of the next page.
+
 ### Headings
 
 | Key | Default | What it does |
@@ -362,6 +389,10 @@ compatibility setting keeps a book in one column, as the gem does.
 | `heading_min_height_after` | asciidoctor-pdf's | `auto`: a heading moves to the next page unless the block after it can start under it (as much of it as may start a page: a paragraph's first `prose_orphans` lines): a sticky heading; a length works as in asciidoctor-pdf. |
 | `heading_h<n>_leading` | the base leading | Under `base_leading`, the space between the heading's lines (a part's title: `5`). |
 | `heading_h<n>_vertical_align` | `top` | `middle` or `bottom`: a heading that starts its page (a part's title page) in the middle or at the bottom of it. |
+| `heading_h<n>_background_color` | | A fill behind the heading and its padding, rounded by `heading_h<n>_border_radius`: a banner. |
+| `heading_h<n>_margin_left`, `_margin_right` | `0` | The heading's side margins; negative ones reach out past the text's edges. Beside a block floating to a side, a heading reaches no nearer it than the float's gap. |
+| `heading_h<n>_repeat` | `false` | `true`: the heading is set again at the top of each page its section goes on to (a report's category banner and subject, under one another), and on the page a sidebar of the section goes on to. |
+| `heading_h<n>_rule_width` | | A rule under the heading, as a box of its own (beside a block floating to a side, the heading may be set beside it and the rule under it): `_rule_color`, `_rule_margin_top`, `_rule_margin_bottom`; `_rule_dash`, lengths of dashes and gaps in turn, and `_rule_cap` (`round` or `square`) for a rule of rounded bars. |
 | `heading_h<n>_drop_lines` | | `2` or more: the heading set as a drop beside that many first lines of the section's first paragraph (a Bible's chapter number, an initial), its capitals from the first line's to the last line's baseline, the heading itself left out (its anchor and running content stay). `_drop_content` is a template for its text (`{{numeral}}` by default; `{{title}}`, and the section's attributes as `{{attr-<name>}}`: `[number=34]` gives `{{attr-number}}`); `_drop_font_family`, `_font_style`, `_font_color`; `_drop_gap` (`0.3em`) after it; `_drop_skip_roles` the roles of paragraphs it passes (a psalm's title). |
 
 A section with a role the theme styles is set in a box, as a sidebar is:

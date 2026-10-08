@@ -21,6 +21,14 @@
 - Column sets can balance their last region (`ColumnsBox(balance:)`), and
   a floating box in columns can span them (`BoxStyle.floatSpan`, Typst's
   `scope: "parent"`): across the top or bottom of the region.
+- Blocks floating to a side (`BoxStyle.side`, `sideWidth`, `sideGap`):
+  the blocks after one are set beside it, each whole or, where it doesn't
+  fit beside it, below it; what doesn't fit in its region goes on at the
+  top of the next, before anything else, the content there going around
+  it (a sidebar through the next page's banner); a forced break waits for
+  it. A block's first children can be set again at the top of each later
+  piece of it (`BlockBox.repeatedHead`), and on the piece its floating
+  block goes on to.
 - Side notes (`FlowLayout.sideNotes`, `sideColumn`): boxes set beside the
   line their anchor is on, in a column of the page's choosing (a reference
   Bible's center column), pushed down where they crowd and carried to the

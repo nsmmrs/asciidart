@@ -126,6 +126,9 @@ final class BoxStyle {
     this.cloneEdges = false,
     this.floatClearance = 0,
     this.floatSpan = false,
+    this.side,
+    this.sideWidth = 0,
+    this.sideGap = 0,
   });
 
   /// The space outside the border.
@@ -201,8 +204,47 @@ final class BoxStyle {
   /// a map across a two-column page.
   final bool floatSpan;
 
+  /// The side the block floats to, [sideWidth] wide, the blocks after it
+  /// set beside it ([sideGap] from it) or, where one doesn't fit beside it
+  /// whole, below it (CSS's `float` with blocks that avoid it, as a
+  /// report's sidebar); null when it stays in the flow. Where it doesn't
+  /// fit in its region, the rest goes on at the top of the next region,
+  /// before anything else there, what is set there going around it too.
+  /// Blocks only, not inside columns, tables or framed blocks.
+  final FloatSide? side;
+
+  /// The width of a block floating to a [side].
+  final double sideWidth;
+
+  /// The space between a block floating to a [side] and the blocks
+  /// beside it.
+  final double sideGap;
+
   /// This style with [tag] ([BoxStyle.tag]).
   BoxStyle withTag(String? tag) => BoxStyle(
+    margin: margin,
+    padding: padding,
+    border: border,
+    background: background,
+    keepTogether: keepTogether,
+    keepWithNext: keepWithNext,
+    anchor: anchor,
+    marks: marks,
+    decoration: decoration,
+    tag: tag,
+    float: float,
+    floatBarrier: floatBarrier,
+    verticalAlign: verticalAlign,
+    cloneEdges: cloneEdges,
+    floatClearance: floatClearance,
+    floatSpan: floatSpan,
+    side: side,
+    sideWidth: sideWidth,
+    sideGap: sideGap,
+  );
+
+  /// This style not floating to a side ([side]).
+  BoxStyle get _unsided => BoxStyle(
     margin: margin,
     padding: padding,
     border: border,
@@ -237,6 +279,9 @@ final class BoxStyle {
     verticalAlign: verticalAlign,
     cloneEdges: cloneEdges,
     floatClearance: floatClearance,
+    side: side,
+    sideWidth: sideWidth,
+    sideGap: sideGap,
   );
 
   /// This style with the room above the block as its top margin (where
@@ -261,7 +306,19 @@ final class BoxStyle {
     cloneEdges: cloneEdges,
     floatClearance: floatClearance,
     floatSpan: floatSpan,
+    side: side,
+    sideWidth: sideWidth,
+    sideGap: sideGap,
   );
+}
+
+/// The side a block floats to ([BoxStyle.side]).
+enum FloatSide {
+  /// The left.
+  left,
+
+  /// The right.
+  right,
 }
 
 /// Where a floating box goes when it fits in its region.
@@ -303,17 +360,26 @@ sealed class LayoutBox {
 
 /// A box holding other boxes, one below the other.
 final class BlockBox extends LayoutBox {
-  /// A block of [children].
-  const new(this.children, {BoxStyle style = const BoxStyle()})
-    : _continued = false,
-      super._(style);
+  /// A block of [children], the first [repeatedHead] of them set again at
+  /// the top of each later piece of it (a section's heading at the top of
+  /// each page the section goes on to, as a table's header rows).
+  const new(
+    this.children, {
+    BoxStyle style = const BoxStyle(),
+    this.repeatedHead = 0,
+  }) : _continued = false,
+       super._(style);
 
-  const new _rest(this.children, BoxStyle style)
+  const new _rest(this.children, BoxStyle style, {this.repeatedHead = 0})
     : _continued = true,
       super._(style);
 
   /// The children.
   final List<LayoutBox> children;
+
+  /// How many of the first [children] each later piece of the block
+  /// starts with again.
+  final int repeatedHead;
 
   /// Whether this is the rest of a block split by a break (no top margin,
   /// border or padding).
@@ -1250,7 +1316,13 @@ final class _Pass {
     // own.
     // Floating boxes that didn't fit, for the top of the next region.
     final floats = <LayoutBox>[];
-    while (rest != null || _deferredNotes != null || floats.isNotEmpty) {
+    // What is left of blocks floating to a side, for the top of the next
+    // region.
+    var carriedFloats = <LayoutBox>[];
+    while (rest != null ||
+        _deferredNotes != null ||
+        floats.isNotEmpty ||
+        carriedFloats.isNotEmpty) {
       final page = _newPage(template);
       if (!layout.keepTemplate) template = null;
       var discard = false;
@@ -1301,12 +1373,61 @@ final class _Pass {
                     double.infinity,
                     atTop: true,
                   ).height);
-        var fit = _place(
-          content,
-          region.width,
-          region.height - reserved,
-          atTop: true,
-        );
+        // What is left of blocks floating to a side: at the top of the
+        // region first, the content going around them.
+        _seedExclusions = [];
+        final carriedHere = carriedFloats;
+        carriedFloats = [];
+        for (final float in carriedHere) {
+          final side = float.style.side!;
+          final width = math.min(float.style.sideWidth, region.width);
+          var floatTop = 0.0;
+          for (final other in _seedExclusions) {
+            if (other.side == side) {
+              floatTop = math.max(floatTop, other.bottom);
+            }
+          }
+          final floatFit = floatTop.isInfinite
+              ? null
+              : _withoutExclusions(
+                  () => _place(
+                    _unsided(float),
+                    width,
+                    region.height - reserved - floatTop,
+                    atTop: true,
+                  ),
+                );
+          if (floatFit?.placed case final piece?) {
+            final x = side == FloatSide.right ? region.width - width : 0.0;
+            page.placed.add((
+              Rect(
+                region.left + x,
+                region.bottom,
+                width,
+                region.height - floatTop,
+              ),
+              piece,
+            ));
+            _seedExclusions.add(
+              _Exclusion(
+                side,
+                x,
+                x + width,
+                gap: float.style.sideGap,
+                top: floatTop,
+                bottom: floatFit!.rest == null
+                    ? floatTop + floatFit.height
+                    : double.infinity,
+              ),
+            );
+            if (floatFit.rest case final more?) {
+              carriedFloats.add(_sided(more, float.style));
+            }
+          } else {
+            carriedFloats.add(float);
+          }
+        }
+        var fit = _placeRegion(content, region.width, region.height - reserved);
         // Floating boxes that fit, at the top or the bottom of the region:
         // the content in what the top ones leave.
         final top = <LayoutBox>[...waitingTop];
@@ -1358,7 +1479,13 @@ final class _Pass {
         }
         rest = fit.rest;
         floats.addAll(fit.floated);
-        if (rest == null && _deferredNotes == null && floats.isEmpty) break;
+        carriedFloats.addAll(fit.carried);
+        if (rest == null &&
+            _deferredNotes == null &&
+            floats.isEmpty &&
+            carriedFloats.isEmpty) {
+          break;
+        }
         if (fit.hit case BreakBox(
           kind: BreakKind.page,
           template: final name,
@@ -1593,7 +1720,7 @@ final class _Pass {
       for (var step = 0; step < 12; step++) {
         final room = (low + high) / 2;
         _floatsWaiting = 0;
-        final tried = _place(content, width, room, atTop: true);
+        final tried = _placeRegion(content, width, room);
         final tryNotes = pending(tried);
         if (total(tried, tryNotes) <= region.height + 1e-6) {
           best = (tried, tryNotes);
@@ -1610,7 +1737,7 @@ final class _Pass {
         notes = tryNotes;
       } else {
         _floatsWaiting = 0;
-        fit = _place(content, width, region.height, atTop: true);
+        fit = _placeRegion(content, width, region.height);
         notes = pending(fit);
       }
     }
@@ -1654,11 +1781,10 @@ final class _Pass {
     void place() {
       _floatsWaiting = 0;
       _floatsReached.clear();
-      fit = _place(
+      fit = _placeRegion(
         content,
         region.width,
         region.height - measured(top) - measured(bottom),
-        atTop: true,
       );
     }
 
@@ -1764,9 +1890,11 @@ final class _Pass {
     };
   }
 
-  /// The height of [box] laid out with no limit.
-  double _measure(LayoutBox box, double width) =>
-      _place(box, width, double.infinity, atTop: false).height;
+  /// The height of [box] laid out with no limit (beside no block floating
+  /// to a side).
+  double _measure(LayoutBox box, double width) => _withoutExclusions(
+    () => _place(box, width, double.infinity, atTop: false),
+  ).height;
 
   /// The least height [box] needs where it starts (to keep a box with
   /// it).
@@ -1868,6 +1996,8 @@ final class _Pass {
     double available, {
     required bool atTop,
   }) {
+    // (Where it starts, as measuring below may move it.)
+    final (y, left, right) = (_y, _left, _right);
     final style = box.style;
     final continued = box._continued;
     final clone = style.cloneEdges;
@@ -1917,6 +2047,10 @@ final class _Pass {
     // for them throughout).
     // (A block whose pieces each close reserves the room throughout.)
     final full = available - top - (clone ? bottom : 0);
+    final mark = _exclusions.length;
+    _y = y;
+    _left = left;
+    _right = right;
     final fit = _blockChildren(
       box,
       width,
@@ -1931,6 +2065,10 @@ final class _Pass {
         fit.hit == null &&
         bottom > 0 &&
         fit.height - style.margin.bottom > available + 1e-6) {
+      _exclusions.length = mark;
+      _y = y;
+      _left = left;
+      _right = right;
       return _blockChildren(
         box,
         width,
@@ -1961,16 +2099,46 @@ final class _Pass {
     final children = <(double, _Placed)>[];
     final floated = <LayoutBox>[];
     final pinned = <(LayoutBox, double, double)>[];
+    final carried = <LayoutBox>[];
     var cursor = 0.0;
     var trailing = 0.0;
     final atTopInside = atTop && top == 0;
-    _Fit split(List<LayoutBox> rest, {BreakBox? hit}) {
+    // Where the content starts in the region, for blocks floating to a
+    // side; the blocks floating there before the children.
+    final contentY = _y + top;
+    final innerLeft =
+        _left +
+        style.margin.left +
+        style.border.widths.left +
+        style.padding.left;
+    final innerRight =
+        _right +
+        style.margin.right +
+        style.border.widths.right +
+        style.padding.right;
+    final entryMark = _exclusions.length;
+    // [rest] from child [from] on (placed in part when [partial]): the
+    // repeated head first when a child after it was placed.
+    _Fit split(
+      List<LayoutBox> rest, {
+      BreakBox? hit,
+      int? from,
+      bool partial = false,
+      bool headOnly = false,
+    }) {
       if (children.isEmpty &&
           floated.isEmpty &&
           rest.length == box.children.length &&
           !atTop) {
+        _exclusions.length = entryMark;
         return _Fit.moved(box);
       }
+      final head = box.repeatedHead;
+      final repeat =
+          head > 0 &&
+          (rest.isNotEmpty || headOnly) &&
+          from != null &&
+          (partial ? from >= head : from > head);
       // (The space below the last piece placed doesn't carry to the
       // region's end: a piece with its own bottom edge closes right
       // under it.)
@@ -1993,10 +2161,17 @@ final class _Pass {
         placed.height,
         // A box that ends with a break ends there: nothing of it (not
         // its bottom margin) is carried past the break.
-        rest.isEmpty ? null : BlockBox._rest(rest, style),
+        rest.isEmpty && !repeat
+            ? null
+            : BlockBox._rest(
+                [if (repeat) ...box.children.take(head), ...rest],
+                style,
+                repeatedHead: head,
+              ),
         hit: hit,
         floated: floated,
         pinned: pinned,
+        carried: carried,
       );
     }
 
@@ -2009,10 +2184,11 @@ final class _Pass {
       }
       final childAtTop = atTopInside && cursor == 0;
       if (child is BreakBox) {
-        // With floating boxes waiting, the break comes after them: the
-        // region ends here, the break left for after them.
-        if (floated.isNotEmpty || _floatsWaiting > 0) {
-          return split(box.children.sublist(i));
+        // With floating boxes waiting (or the rest of one floating to a
+        // side), the break comes after them: the region ends here, the
+        // break left for after them.
+        if (floated.isNotEmpty || _floatsWaiting > 0 || carried.isNotEmpty) {
+          return split(box.children.sublist(i), from: i);
         }
         // A break at the top of a region: none, unless forced (or a break
         // to a template, which replaces an empty page).
@@ -2024,13 +2200,13 @@ final class _Pass {
           continue;
         }
         final rest = box.children.sublist(i + 1);
-        return split(rest, hit: child);
+        return split(rest, hit: child, from: i + 1);
       }
       // A box no floating box may pass: after them, in the next region.
       if (child.style.floatBarrier &&
           !childAtTop &&
           (floated.isNotEmpty || _floatsWaiting > 0)) {
-        return split(box.children.sublist(i));
+        return split(box.children.sublist(i), from: i);
       }
       // A floating box this region's text no longer reaches (see
       // [_pinFloats]): for the next region.
@@ -2049,18 +2225,166 @@ final class _Pass {
         pinned.add((child, top + cursor, 0));
         continue;
       }
-      final fit = _place(child, inner, room - cursor, atTop: childAtTop);
+      final mark = _exclusions.length;
+      final y = contentY + cursor;
+      _y = y;
+      _left = innerLeft;
+      _right = innerRight;
+      // A block floating to a side: set there, the blocks after it beside
+      // it; what doesn't fit, at the top of the next region.
+      if (child.style.side case final side? when _excluding) {
+        final left = innerLeft;
+        final right = _regionWidth - innerRight;
+        final width = math.min(child.style.sideWidth, right - left);
+        // (Under one already floating to that side.)
+        var floatTop = y;
+        for (var moved = true; moved;) {
+          moved = false;
+          for (final other in _exclusions) {
+            if (other.side == side &&
+                other.top <= floatTop + 1e-6 &&
+                other.bottom > floatTop + 1e-6) {
+              floatTop = other.bottom;
+              moved = true;
+            }
+          }
+        }
+        final floatRoom = room - cursor - (floatTop - y);
+        final x = side == FloatSide.right ? right - width : left;
+        final floatFit = floatTop.isInfinite || floatRoom <= 0
+            ? null
+            : _withoutExclusions(
+                () => _place(_unsided(child), width, floatRoom, atTop: false),
+              );
+        if (floatFit?.placed case final piece?) {
+          children.add((
+            cursor + floatTop - y,
+            _PlacedBlock(
+              BoxStyle(margin: EdgeInsets(left: x - left)),
+              inner,
+              floatFit!.height,
+              [(0, piece)],
+              top: 0,
+              openTop: false,
+              openBottom: false,
+              marks: const {},
+              anchor: null,
+            ),
+          ));
+          _exclusions.add(
+            _Exclusion(
+              side,
+              x,
+              x + width,
+              gap: child.style.sideGap,
+              top: floatTop,
+              bottom: floatFit.rest == null
+                  ? floatTop + floatFit.height
+                  : double.infinity,
+            ),
+          );
+          if (floatFit.rest case final rest?) {
+            carried.add(_sided(rest, child.style));
+          }
+        } else {
+          carried.add(child);
+        }
+        continue;
+      }
+      // Beside blocks floating to a side: a block that fits beside them
+      // whole is set there, narrowed; one that doesn't, below them (a
+      // block without a frame, its children each so).
+      var fit = _Fit.moved(child);
+      var placed = false;
+      if (_excluding && _exclusions.isNotEmpty && !_transparent(child)) {
+        final left = innerLeft;
+        final right = _regionWidth - innerRight;
+        var narrowLeft = left;
+        var narrowRight = right;
+        var until = double.infinity;
+        for (final other in _exclusions) {
+          if (other.top > y + 1e-6 || other.bottom <= y + 1e-6) continue;
+          final before = (narrowLeft, narrowRight);
+          if (other.side == FloatSide.right) {
+            narrowRight = math.min(narrowRight, other.left - other.gap);
+          } else {
+            narrowLeft = math.max(narrowLeft, other.right + other.gap);
+          }
+          if ((narrowLeft, narrowRight) != before) {
+            until = math.min(until, other.bottom);
+          }
+        }
+        if (narrowLeft > left + 1e-6 || narrowRight < right - 1e-6) {
+          // (A block reaching out past its edges with negative margins
+          // reaches no nearer the floating block than the gap.)
+          final margin = child.style.margin;
+          final narrowed = BlockBox(
+            [child],
+            style: BoxStyle(
+              margin: EdgeInsets(
+                left:
+                    narrowLeft -
+                    left +
+                    (narrowLeft > left + 1e-6
+                        ? math.max(0.0, -margin.left)
+                        : 0.0),
+                right:
+                    right -
+                    narrowRight +
+                    (narrowRight < right - 1e-6
+                        ? math.max(0.0, -margin.right)
+                        : 0.0),
+              ),
+            ),
+          );
+          final tried = _place(
+            narrowed,
+            inner,
+            room - cursor,
+            atTop: childAtTop,
+          );
+          final beside =
+              tried.placed != null &&
+              (until.isInfinite ||
+                  (tried.rest == null &&
+                      tried.hit == null &&
+                      tried.height - child.style.margin.bottom <=
+                          until - y + 1e-6));
+          if (beside) {
+            fit = tried;
+            placed = true;
+          } else {
+            _exclusions.length = mark;
+            // Below them, if the region goes on that far.
+            final skip = until - y;
+            if (cursor + skip >= room - 1e-6) {
+              return split(box.children.sublist(i), from: i);
+            }
+            children.add((cursor, _PlacedSpace(skip)));
+            cursor += skip;
+            trailing = 0;
+            i--;
+            continue;
+          }
+        }
+      }
+      if (!placed) {
+        fit = _place(child, inner, room - cursor, atTop: childAtTop);
+      }
       if (fit.placed == null &&
           child.style.floating &&
           !childAtTop &&
           _floats(child)) {
+        _exclusions.length = mark;
         floated.add(child);
         _floatsWaiting++;
         continue;
       }
       if (fit.placed == null) {
-        return split(box.children.sublist(i));
+        _exclusions.length = mark;
+        return split(box.children.sublist(i), from: i);
       }
+      carried.addAll(fit.carried);
       floated.addAll(fit.floated);
       for (final (pin, y, height) in fit.pinned) {
         pinned.add((pin, top + cursor + y, height));
@@ -2081,7 +2405,12 @@ final class _Pass {
           !childAtTop) {
         final next = _minHeight(box.children[i + 1], inner);
         if (cursor + fit.height + next > room + 1e-6) {
-          return split(box.children.sublist(i));
+          _exclusions.length = mark;
+          carried.removeRange(
+            carried.length - fit.carried.length,
+            carried.length,
+          );
+          return split(box.children.sublist(i), from: i);
         }
       }
       children.add((cursor, fit.placed!));
@@ -2096,8 +2425,18 @@ final class _Pass {
         _ => 0.0,
       };
       if (fit.rest != null || fit.hit != null) {
-        return split([?fit.rest, ...box.children.sublist(i + 1)], hit: fit.hit);
+        return split(
+          [?fit.rest, ...box.children.sublist(i + 1)],
+          hit: fit.hit,
+          from: fit.rest != null ? i : i + 1,
+          partial: fit.rest != null,
+        );
       }
+    }
+    // A block with a repeated head whose block floating to a side goes on
+    // in the next region: the head goes on there too, beside it.
+    if (carried.isNotEmpty && box.repeatedHead > 0 && _excluding) {
+      return split(const [], from: box.children.length, headOnly: true);
     }
     // Its margin below no more than the room left (a region's end takes
     // what doesn't fit of it).
@@ -2118,7 +2457,14 @@ final class _Pass {
       anchor: continued ? null : style.anchor,
       marginBottom: marginBottom,
     );
-    return _Fit(placed, placed.height, null, floated: floated, pinned: pinned);
+    return _Fit(
+      placed,
+      placed.height,
+      null,
+      floated: floated,
+      pinned: pinned,
+      carried: carried,
+    );
   }
 
   /// The floating boxes set at the top or bottom of a region (their place
@@ -2178,11 +2524,88 @@ final class _Pass {
   _Fit _withoutFloats(_Fit Function() place) {
     _floatDepth++;
     try {
-      return place();
+      return _withoutExclusions(place);
     } finally {
       _floatDepth--;
     }
   }
+
+  // Blocks floating to a side ([BoxStyle.side]).
+
+  /// Whether the blocks being placed go around blocks floating to a side
+  /// (in a region's flow, not while measuring or in a framed block).
+  bool _excluding = false;
+
+  /// The blocks floating to a side in the region being filled.
+  List<_Exclusion> _exclusions = [];
+
+  /// Those carried over from the region before, set at its top.
+  List<_Exclusion> _seedExclusions = [];
+
+  /// The width of the region being filled.
+  double _regionWidth = 0;
+
+  /// Where the box being placed starts: its top from the region's top,
+  /// its edges from the region's.
+  double _y = 0;
+  double _left = 0;
+  double _right = 0;
+
+  /// [place] with no block floating to a side.
+  _Fit _withoutExclusions(_Fit Function() place) {
+    final saved = _excluding;
+    _excluding = false;
+    try {
+      return place();
+    } finally {
+      _excluding = saved;
+    }
+  }
+
+  /// [content] placed in a region [width] wide and [room] high, beside
+  /// the blocks floating to a side carried there.
+  _Fit _placeRegion(LayoutBox content, double width, double room) {
+    _exclusions = [..._seedExclusions];
+    _regionWidth = width;
+    _y = _left = _right = 0;
+    _excluding = true;
+    try {
+      return _place(content, width, room, atTop: true);
+    } finally {
+      _excluding = false;
+    }
+  }
+
+  /// Whether [box] is a block whose children go around blocks floating to
+  /// a side each on its own (one without a frame or a keep).
+  static bool _transparent(LayoutBox box) =>
+      box is BlockBox &&
+      box.style.padding == EdgeInsets.zero &&
+      box.style.border == Border.none &&
+      box.style.background == null &&
+      box.style.decoration == null &&
+      !box.style.keepTogether &&
+      box.style.side == null;
+
+  /// [box] (a block floating to a side) not floating.
+  static BlockBox _unsided(LayoutBox box) => switch (box) {
+    BlockBox(:final children, :final style) => BlockBox(
+      children,
+      style: style._unsided,
+    ),
+    _ => BlockBox([box]),
+  };
+
+  /// [rest] (of a block floating to a side as [style] says) floating
+  /// again, for the next region.
+  static BlockBox _sided(LayoutBox rest, BoxStyle style) => BlockBox(
+    [rest],
+    style: BoxStyle(
+      side: style.side,
+      sideWidth: style.sideWidth,
+      sideGap: style.sideGap,
+    ),
+  );
 
   /// The height of the region being filled (for keep rules).
   double _regionHeight = double.infinity;
@@ -2969,6 +3392,7 @@ final class _Fit {
     this.hit,
     this.floated = const [],
     this.pinned = const [],
+    this.carried = const [],
   });
 
   /// Nothing placed: all of [box] goes to the next region.
@@ -2978,7 +3402,8 @@ final class _Fit {
       rest = box,
       hit = null,
       floated = const [],
-      pinned = const [];
+      pinned = const [],
+      carried = const [];
 
   final _Placed? placed;
   final double height;
@@ -2993,6 +3418,32 @@ final class _Fit {
   /// Floating boxes that fit, for the top or bottom of the region: each
   /// with its top (from the placed part's top) and height.
   final List<(LayoutBox, double, double)> pinned;
+
+  /// What is left of blocks floating to a side ([BoxStyle.side]), for the
+  /// top of the next region (each floating to its side).
+  final List<LayoutBox> carried;
+}
+
+/// Where a block floating to a side is in its region: across from [left]
+/// to [right] (from the region's left), down from [top] to [bottom] (from
+/// its top; infinite when it goes on in the next region), the blocks
+/// beside it [gap] from it.
+final class _Exclusion {
+  const new(
+    this.side,
+    this.left,
+    this.right, {
+    required this.gap,
+    required this.top,
+    required this.bottom,
+  });
+
+  final FloatSide side;
+  final double left;
+  final double right;
+  final double gap;
+  final double top;
+  final double bottom;
 }
 
 final class _Page {

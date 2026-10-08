@@ -45,6 +45,7 @@ export 'src/layout/flow.dart'
         EdgeInsets,
         FixedColumnWidth,
         FloatPlacement,
+        FloatSide,
         FlowLayout,
         FractionColumnWidth,
         ImageBox,

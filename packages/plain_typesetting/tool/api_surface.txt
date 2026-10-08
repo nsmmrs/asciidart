@@ -118,6 +118,10 @@ enum FloatPlacement
   static FloatPlacement next
   static FloatPlacement top
   static List<FloatPlacement> values
+enum FloatSide
+  static FloatSide left
+  static FloatSide right
+  static List<FloatSide> values
 enum HyphenRepetition
   HyphenRepetition forLanguage(String? tag)
   bool repeatsBefore(String following)
@@ -174,8 +178,9 @@ final class AnchorPosition
 final class AutoColumnWidth extends ColumnWidth
   AutoColumnWidth()
 final class BlockBox extends LayoutBox
-  BlockBox(List<LayoutBox> children, {BoxStyle style = const BoxStyle()})
+  BlockBox(List<LayoutBox> children, {BoxStyle style = const BoxStyle(), int repeatedHead = 0})
   List<LayoutBox> children
+  int repeatedHead
 final class Border
   Border({EdgeInsets widths = EdgeInsets.zero, Color color = const GrayColor(0), double radius = 0})
   Color color
@@ -190,11 +195,12 @@ final class BoxItem extends LineItem
 final class BoxStyle
   Border border
   BoxStyle withTag(String? tag)
-  BoxStyle({EdgeInsets margin = EdgeInsets.zero, EdgeInsets padding = EdgeInsets.zero, Border border = Border.none, Color? background, bool keepTogether = false, bool keepWithNext = false, String? anchor, Map<String, String> marks = const {}, void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration, String? tag, FloatPlacement? float, bool floatBarrier = false, VerticalAlign? verticalAlign, bool cloneEdges = false, double floatClearance = 0, bool floatSpan = false})
+  BoxStyle({EdgeInsets margin = EdgeInsets.zero, EdgeInsets padding = EdgeInsets.zero, Border border = Border.none, Color? background, bool keepTogether = false, bool keepWithNext = false, String? anchor, Map<String, String> marks = const {}, void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration, String? tag, FloatPlacement? float, bool floatBarrier = false, VerticalAlign? verticalAlign, bool cloneEdges = false, double floatClearance = 0, bool floatSpan = false, FloatSide? side, double sideWidth = 0, double sideGap = 0})
   Color? background
   EdgeInsets margin
   EdgeInsets padding
   FloatPlacement? float
+  FloatSide? side
   Map<String, String> marks
   String? anchor
   String? tag
@@ -206,6 +212,8 @@ final class BoxStyle
   bool keepTogether
   bool keepWithNext
   double floatClearance
+  double sideGap
+  double sideWidth
   void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration
 final class BreakBox extends LayoutBox
   BreakBox.column({bool force = false})
