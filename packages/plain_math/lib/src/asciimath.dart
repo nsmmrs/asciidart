@@ -14,7 +14,7 @@ String asciimathToMathml(
   String prefix = '',
   Map<String, String> attributes = const {},
 }) {
-  final ast = _Parser(_parserSymbols).parse(asciimath);
+  final ast = const _Parser().parse(asciimath);
   return (_MathmlBuilder(prefix)..appendExpression(ast, attributes)).toString();
 }
 
@@ -585,16 +585,9 @@ int _longest(Iterable<String> keys) =>
     keys.map((k) => k.runes.length).reduce((a, b) => a > b ? a : b);
 
 final class _Tokenizer {
-  new(this._input, this._symbols)
-    : _symbolRx = RegExp(
-        r'((?:\\[ \t\r\n\f\v0-9]|[^ \t\r\n\f\v0-9])'
-        '{1,${_longest(_symbols.keys)}})',
-        unicode: true,
-      );
+  new(this._input);
 
   final String _input;
-  final Map<String, _Entry> _symbols;
-  final RegExp _symbolRx;
   int _pos = 0;
   _Token? _pushedBack;
 
@@ -602,6 +595,14 @@ final class _Tokenizer {
   static final _number = RegExp(r'[0-9]+(?:\.[0-9]+)?');
   static final _quotedText = RegExp('"[^"]*"');
   static final _texText = RegExp(r'text\([^)]*\)');
+
+  /// The run of characters a symbol may span: as many as the longest key
+  /// has (built once: the table is fixed).
+  static final _symbolRx = RegExp(
+    r'((?:\\[ \t\r\n\f\v0-9]|[^ \t\r\n\f\v0-9])'
+    '{1,${_longest(_parserSymbols.keys)}})',
+    unicode: true,
+  );
 
   _Token next() {
     if (_pushedBack case final token?) {
@@ -655,12 +656,12 @@ final class _Tokenizer {
     final matched = _scan(_symbolRx) ?? _input.substring(_pos, _pos + 1);
     var runes = matched.runes.toList();
     var s = String.fromCharCodes(runes);
-    while (runes.length > 1 && !_symbols.containsKey(s)) {
+    while (runes.length > 1 && !_parserSymbols.containsKey(s)) {
       runes = runes.sublist(0, runes.length - 1);
       s = String.fromCharCodes(runes);
     }
     _pos = position + s.length;
-    if (_symbols[s] case final entry?) {
+    if (_parserSymbols[s] case final entry?) {
       return _Token(entry.value, entry.type, text: s, entry: entry);
     }
     return _Token(s, 'identifier');
@@ -925,12 +926,9 @@ _Node? _expression(List<_Node> nodes) => switch (nodes.length) {
 // The parser.
 
 final class _Parser {
-  new(this._symbols);
+  const new();
 
-  final Map<String, _Entry> _symbols;
-
-  _Node? parse(String input) =>
-      _expressionOf(_Tokenizer(input, _symbols), null);
+  _Node? parse(String input) => _expressionOf(_Tokenizer(input), null);
 
   _Node? _expressionOf(_Tokenizer tok, String? closeParenType) {
     _Node? e;
@@ -1124,14 +1122,20 @@ final class _Parser {
     return _Matrix(node.lparen, cells, node.rparen);
   }
 
+  static final _sixDigits = RegExp(
+    '#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})',
+    caseSensitive: false,
+  );
+  static final _threeDigits = RegExp(
+    '#([0-9a-f])([0-9a-f])([0-9a-f])',
+    caseSensitive: false,
+  );
+
   _Color _toColor(_Node expression) {
     final s = StringBuffer();
     _colorText(s, expression);
     final text = s.toString();
-    final six = RegExp(
-      '#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})',
-      caseSensitive: false,
-    ).firstMatch(text);
+    final six = _sixDigits.firstMatch(text);
     if (six != null) {
       return _Color(
         int.parse(six[1]!, radix: 16),
@@ -1140,10 +1144,7 @@ final class _Parser {
         text,
       );
     }
-    final three = RegExp(
-      '#([0-9a-f])([0-9a-f])([0-9a-f])',
-      caseSensitive: false,
-    ).firstMatch(text);
+    final three = _threeDigits.firstMatch(text);
     if (three != null) {
       int twice(String h) => int.parse('$h$h', radix: 16);
       return _Color(twice(three[1]!), twice(three[2]!), twice(three[3]!), text);
@@ -1444,9 +1445,10 @@ final class _MathmlBuilder {
     }
   }
 
+  static final _alphanumeric = RegExp(r'[\p{Alphabetic}\p{Nd}]', unicode: true);
+
   void _identifierOrOperator(String value) {
-    if (value.isEmpty ||
-        RegExp(r'[\p{Alphabetic}\p{Nd}]', unicode: true).hasMatch(value)) {
+    if (value.isEmpty || _alphanumeric.hasMatch(value)) {
       _tag('mi', text: value);
     } else {
       _tag('mo', text: value);
