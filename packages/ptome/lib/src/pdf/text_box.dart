@@ -942,12 +942,38 @@ final class TextBox implements CustomContent {
     double available, {
     required bool atTop,
   }) {
+    // The same for the same room and labels (the layout probes a text
+    // many times over, and lays the document out again for its index,
+    // footnote numbers and page references): kept, unless the placement
+    // reported that the text cannot fit, which a later call reports
+    // again.
+    _relabel();
+    final key = (width, available, atTop, _labelState());
+    if (_placements[key] case final placed?) return placed.$1;
+    _reported = false;
+    final placed = _placeShrinking(width, available, atTop: atTop);
+    if (!_reported) _placements[key] = (placed,);
+    return placed;
+  }
+
+  final Map<(double, double, bool, String), (CustomPlacement?,)> _placements =
+      {};
+
+  /// Whether the last [_place] reported that the text cannot fit.
+  bool _reported = false;
+
+  CustomPlacement? _placeShrinking(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
     if (!_layout.shrinkToFit) return _place(width, available, atTop: atTop);
     var box = this;
     var size = _state.size;
     while (true) {
       final last = size <= 5;
       final placed = box._place(width, available, atTop: atTop, quiet: !last);
+      if (box._reported) _reported = true;
       if (last || (placed != null && placed.rest == null)) return placed;
       size = math.max(size - 0.5, 5);
       box = box.resized(size);
@@ -1086,6 +1112,7 @@ final class TextBox implements CustomContent {
       if (!atTop || quiet) return null;
       // Nothing fits even on a fresh page: the gem reports it and drops
       // the text.
+      _reported = true;
       _context.logger.error(
         'cannot fit formatted text on page: '
         '${_items.map((i) => i.text).join()}',
