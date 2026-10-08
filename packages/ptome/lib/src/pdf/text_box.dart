@@ -10,7 +10,6 @@ library;
 import 'dart:convert';
 import 'dart:math' as math;
 
-import 'package:meta/meta.dart';
 import 'package:plain_pdf/plain_pdf.dart';
 import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:ptome/src/cursor.dart';
@@ -657,6 +656,13 @@ final class TextBox implements CustomContent {
   }
 
   final Map<(double, String), double> _minHeights = {};
+
+  /// The line breaks the wraps of the items found, by the texts of their
+  /// labels (see [_labelState]), then by breaker and widths.
+  final Map<String, Map<_BreaksKey, List<int>>> _breaks = {};
+
+  /// The breaks kept for the items as they are labelled now.
+  Map<_BreaksKey, List<int>> _breaksNow() => _breaks[_labelState()] ??= {};
   final Map<(double, String), int> _lineCounts = {};
 
   /// The texts of the items whose text is a label (after [_relabel]): what
@@ -678,6 +684,7 @@ final class TextBox implements CustomContent {
       width,
       double.infinity,
       firstPiece: first,
+      breaks: _breaksNow(),
       continuedIndent: continuedIndent,
       maxLines: maxLines,
     );
@@ -919,6 +926,7 @@ final class TextBox implements CustomContent {
       width,
       double.infinity,
       firstPiece: first,
+      breaks: _breaksNow(),
       continuedIndent: continuedIndent,
     ).run();
     final printed = [
@@ -1022,6 +1030,7 @@ final class TextBox implements CustomContent {
       width,
       double.infinity,
       firstPiece: first,
+      breaks: _breaksNow(),
       continuedIndent: continuedIndent,
     );
     final lines = wrap.run();
@@ -1068,6 +1077,7 @@ final class TextBox implements CustomContent {
       width,
       available - gap,
       firstPiece: first,
+      breaks: _breaksNow(),
       continuedIndent: continuedIndent,
     );
     var lines = wrap.run();
@@ -1084,6 +1094,7 @@ final class TextBox implements CustomContent {
         width,
         double.infinity,
         firstPiece: first,
+        breaks: _breaksNow(),
         continuedIndent: continuedIndent,
       ).run().length;
       final remaining = total - lines.length;
@@ -1102,6 +1113,7 @@ final class TextBox implements CustomContent {
           width,
           available - gap,
           firstPiece: first,
+          breaks: _breaksNow(),
           continuedIndent: continuedIndent,
           maxLines: keep,
         );
@@ -1493,6 +1505,7 @@ _Wrap _wrapOf(
   required bool firstPiece,
   double? continuedIndent,
   int? maxLines,
+  Map<_BreaksKey, List<int>>? breaks,
 }) => layout.wrapIndent == null
     ? _OptimalWrap(
         items,
@@ -1503,6 +1516,7 @@ _Wrap _wrapOf(
         height,
         firstPiece: firstPiece,
         maxLines: maxLines,
+        breaks: breaks,
       )
     : _Wrap(
         items,
@@ -2281,7 +2295,11 @@ final class _OptimalWrap extends _Wrap {
     super._height, {
     required super.firstPiece,
     super.maxLines,
-  });
+    Map<_BreaksKey, List<int>>? breaks,
+  }) : _breakMemo = breaks;
+
+  /// The breaks found for these items before (their text box's), if kept.
+  final Map<_BreaksKey, List<int>>? _breakMemo;
 
   /// A stand-in for the content of the breaker's items (it reads only
   /// their widths).
@@ -2484,15 +2502,17 @@ final class _OptimalWrap extends _Wrap {
       _ => const FirstFitLineBreaker(),
     };
     // The same paragraph is broken at the same width again and again (as
-    // pages are tried and the book laid out again): its breaks are kept.
-    final key = _BreakKey(
-      breaker,
+    // pages are tried and the book laid out again): its breaks are kept by
+    // its text box, whose items at a width are the same each time.
+    final key = (
+      _describeBreaker(breaker, drop > 1 ? (drop, widthOf(1)) : null),
       widthOf(0),
       widthOf(math.max(drop, 1)),
-      items,
-      drop: drop > 1 ? (drop, widthOf(1)) : null,
     );
-    final breaks = _breaks[key] ??= breaker.breakItems(items, widthOf);
+    final memo = _breakMemo;
+    final breaks = memo == null
+        ? breaker.breakItems(items, widthOf)
+        : memo[key] ??= breaker.breakItems(items, widthOf);
 
     // The pieces of each line: up to the piece its break is in (a space
     // or a newline ends the line it breaks), then on from the next. A line
@@ -2546,8 +2566,12 @@ final class _OptimalWrap extends _Wrap {
       _justifyTo = widest;
     }
 
-    // Each line set as Prawn's wrap sets it.
+    // Each line set as Prawn's wrap sets it. While a line is set, the
+    // items left over are read only for their first (whether one follows,
+    // and whether it is a newline), so only that one is built per line;
+    // the others are added where the wrap stops ([restFrom]).
     var lineNumber = 0;
+    int? restFrom;
     for (final (first, end) in lines) {
       if (maxLines case final most? when lineNumber >= most) break;
       _consumed = _items(pieces, first, end);
@@ -2557,10 +2581,14 @@ final class _OptimalWrap extends _Wrap {
           _source[i].copy(text: '-')..normalizedSoftHyphen = true,
         );
       }
-      final rest = _items(pieces, end, pieces.length);
+      var next = end;
+      while (next < pieces.length && pieces[next].$1 == pieces[end].$1) {
+        next++;
+      }
       _unconsumed
         ..clear()
-        ..addAll(rest);
+        ..addAll(_items(pieces, end, next));
+      restFrom = next;
       _newline = end > first && pieces[end - 1].$2 == '\n';
       _accumulated = 0;
       _fragments = [];
@@ -2577,7 +2605,11 @@ final class _OptimalWrap extends _Wrap {
       lineNumber++;
       if (_layout.singleLine) break;
     }
-    if (lineNumber == lines.length) _unconsumed.clear();
+    if (lineNumber == lines.length) {
+      _unconsumed.clear();
+    } else if (restFrom != null) {
+      _unconsumed.addAll(_items(pieces, restFrom, pieces.length));
+    }
     return _lines;
   }
 
@@ -2617,99 +2649,22 @@ final RegExp _linesRx = RegExp('[^\n]+|\n');
 final RegExp _leadingSpacesRx = RegExp('^[\u00a0 ]*');
 final RegExp _trailingWordRx = RegExp('[^$_breakChars]*\$');
 
-/// The breaks found for each paragraph's items, by breaker and widths.
-final Map<_BreakKey, List<int>> _breaks = {};
+/// What a paragraph's line breaks depend on besides its items: the
+/// breaker and its costs (with a drop's lines and their width), the first
+/// line's width and the others'.
+typedef _BreaksKey = (String breaker, double first, double rest);
 
-/// A line item as a break key compares it: its kind (0 a box, 1 glue, 2
-/// a penalty), text and measures (a penalty's cost as its second).
-typedef _ItemKey = (
-  int kind,
-  String text,
-  double width,
-  double stretch,
-  double shrink,
-  bool flagged,
-);
-
-/// What a paragraph's line breaks depend on: the breaker and its costs,
-/// the first line's width and the others', and each item (its kind, text
-/// and measures).
-@immutable
-final class _BreakKey {
-  new(
-    ItemLineBreaker breaker,
-    double first,
-    double rest,
-    List<LineItem> items, {
-    (int, double)? drop,
-  }) : this._(_describe(breaker, drop), first, rest, [
-         for (final item in items)
-           switch (item) {
-             BoxItem(:final text, :final width) => (
-               0,
-               text,
-               width,
-               0,
-               0,
-               false,
-             ),
-             GlueItem(
-               :final text,
-               :final width,
-               :final stretch,
-               :final shrink,
-             ) =>
-               (1, text, width, stretch, shrink, false),
-             PenaltyItem(
-               :final width,
-               :final penalty,
-               :final flagged,
-               :final carry,
-             ) =>
-               (2, '', width, penalty, carry, flagged),
-           },
-       ]);
-
-  new _(this._breaker, this._first, this._rest, this._items)
-    : _hash = Object.hash(_breaker, _first, _rest, Object.hashAll(_items));
-
-  /// [breaker] and its costs, and a drop's lines and their width.
-  static String _describe(ItemLineBreaker breaker, (int, double)? drop) {
-    final costs = switch (breaker) {
-      TypstLineBreaker(
-        :final justify,
-        :final fontSize,
-        :final hyphenationCost,
-        :final runtCost,
-      ) =>
-        'typst $justify $fontSize $hyphenationCost $runtCost',
-      _ => breaker.runtimeType.toString(),
-    };
-    return drop == null ? costs : '$costs drop ${drop.$1} ${drop.$2}';
-  }
-
-  final String _breaker;
-  final double _first;
-  final double _rest;
-  final List<_ItemKey> _items;
-  final int _hash;
-
-  @override
-  int get hashCode => _hash;
-
-  @override
-  bool operator ==(Object other) {
-    if (other is! _BreakKey ||
-        other._hash != _hash ||
-        other._breaker != _breaker ||
-        other._first != _first ||
-        other._rest != _rest ||
-        other._items.length != _items.length) {
-      return false;
-    }
-    for (var i = 0; i < _items.length; i++) {
-      if (other._items[i] != _items[i]) return false;
-    }
-    return true;
-  }
+/// [breaker] and its costs, and a drop's lines and their width.
+String _describeBreaker(ItemLineBreaker breaker, (int, double)? drop) {
+  final costs = switch (breaker) {
+    TypstLineBreaker(
+      :final justify,
+      :final fontSize,
+      :final hyphenationCost,
+      :final runtCost,
+    ) =>
+      'typst $justify $fontSize $hyphenationCost $runtCost',
+    _ => breaker.runtimeType.toString(),
+  };
+  return drop == null ? costs : '$costs drop ${drop.$1} ${drop.$2}';
 }
