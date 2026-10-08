@@ -2,13 +2,14 @@
 
 [![CI](https://github.com/nsmmrs/ptome/actions/workflows/ci.yml/badge.svg)](https://github.com/nsmmrs/ptome/actions/workflows/ci.yml)
 
-An AsciiDoc processor written in Dart. It converts AsciiDoc to HTML 5,
-DocBook 5, man pages and (with the native executable) EPUB 3 and PDF, and
-is meant
-as a drop-in replacement for
-[Asciidoctor](https://asciidoctor.org) 2.1 (upstream `main`, 2.1.0.alpha.0): the same documents,
-attributes, command-line options and output. It is a library, a command
-line tool, and (compiled to JavaScript) an npm package.
+Ptome ("plain text tome": a tome with a silent p, like pterodactyl) is a
+processor for AsciiDoc® documents, written in Dart. It converts AsciiDoc to
+HTML 5, DocBook 5, man pages, EPUB 3 and PDF, and is meant as a drop-in
+replacement for [Asciidoctor](https://asciidoctor.org) 2.1 (upstream
+`main`, 2.1.0.alpha.0): the same documents, attributes, command-line
+options and output. It is a library, a command line tool, and (compiled to
+JavaScript) an npm package. It was called asciidart until 2026-10-08
+([ADR-0018](adr/0018-ptome-and-the-plain-workspace.md)).
 
 > Ptome follows Asciidoctor's development version (upstream `main` at
 > `30fb8cd5`, which reports 2.1.0.alpha.0) and fixes bugs Asciidoctor still
@@ -185,3 +186,6 @@ from Asciidoctor live under [`vendor/`](vendor/README.md), with their
 license. Ptome ships no fonts: `ptome doctor` downloads the
 built-in themes' fonts (SIL Open Font License 1.1 and MIT) from their
 projects, with their licenses.
+
+AsciiDoc® and AsciiDoc Language™ are trademarks of the Eclipse Foundation,
+Inc.

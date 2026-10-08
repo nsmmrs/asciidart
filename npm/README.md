@@ -1,10 +1,12 @@
 # Ptome
 
-Ptome is an AsciiDoc processor written in Dart and compiled to
-JavaScript. It converts AsciiDoc to HTML 5, DocBook 5 and man pages
-compatibly with [Asciidoctor](https://asciidoctor.org) (its development
-version, 2.1.0.alpha.0, with fixes for bugs it still has), and is not
-affiliated with or endorsed by the Asciidoctor project.
+Ptome ("plain text tome") is a processor for AsciiDoc® documents, written
+in Dart and compiled to JavaScript. It converts AsciiDoc to HTML 5,
+DocBook 5, man pages, PDF and EPUB compatibly with
+[Asciidoctor](https://asciidoctor.org) (its development version,
+2.1.0.alpha.0, with fixes for bugs it still has), and is not affiliated
+with or endorsed by the Asciidoctor project. It was called asciidart until
+2026-10-08.
 
 It runs on Node.js (20.19 or later) and in browsers, ships TypeScript
 types, and provides the `ptome` command. Its API is the Dart API's, with
@@ -124,3 +126,6 @@ The same library is available for Dart
 ## License
 
 MIT. Asciidoctor's stylesheets and locale data are included unchanged.
+
+AsciiDoc® and AsciiDoc Language™ are trademarks of the Eclipse Foundation,
+Inc.

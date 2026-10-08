@@ -43,7 +43,7 @@ abstract final class HelpTopics {
       '.  LINKSTYLE blue R < >\n'
       '.\\}\n'
       '.SH "NAME"\n'
-      'Ptome \\- convert AsciiDoc documents to HTML, DocBook and man pages\n'
+      'ptome \\- convert AsciiDoc documents to HTML, DocBook, man pages, EPUB and PDF\n'
       '.SH "SYNOPSIS"\n'
       '.sp\n'
       '\\fBptome\\fP [\\fIOPTION\\fP].\\|.\\|. \\fIFILE\\fP.\\|.\\|.\n'

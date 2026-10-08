@@ -1,5 +1,5 @@
 name: ptome
-description: AsciiDoc processor for Dart, compatible with Asciidoctor 2.1.0.alpha.0 and fixing bugs it still has. Converts AsciiDoc to HTML 5, DocBook 5, man pages, PDF and EPUB.
+description: A processor for AsciiDoc documents, compatible with Asciidoctor 2.1.0.alpha.0 and fixing bugs it still has. Converts AsciiDoc to HTML 5, DocBook 5, man pages, PDF and EPUB.
 version: 0.1.0
 repository: https://github.com/nsmmrs/ptome
 issue_tracker: https://github.com/nsmmrs/ptome/issues

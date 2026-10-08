@@ -2,7 +2,8 @@
 
 ## 0.1.0 (unreleased)
 
-First release of Ptome, an AsciiDoc processor for Dart compatible with
+First release of Ptome (called asciidart until 2026-10-08, ADR-0018), a
+processor for AsciiDoc® documents written in Dart, compatible with
 Asciidoctor's development version (upstream `main` at `30fb8cd5`, which
 reports **2.1.0.alpha.0**), fixing bugs Asciidoctor still has. The tag
 `asciidoctor-2.0.26-parity` marks the last commit that matched the 2.0.26

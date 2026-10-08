@@ -1,7 +1,7 @@
 {
   "name": "ptome",
   "version": "0.1.0",
-  "description": "AsciiDoc processor written in Dart, compiled to JavaScript: converts AsciiDoc to HTML 5, DocBook 5, man pages, PDF and EPUB compatibly with Asciidoctor (its development version, 2.1.0.alpha.0), fixing bugs it still has.",
+  "description": "A processor for AsciiDoc documents, written in Dart and compiled to JavaScript: converts AsciiDoc to HTML 5, DocBook 5, man pages, PDF and EPUB compatibly with Asciidoctor (its development version, 2.1.0.alpha.0), fixing bugs it still has.",
   "keywords": [
     "asciidoc",
     "asciidoctor",
