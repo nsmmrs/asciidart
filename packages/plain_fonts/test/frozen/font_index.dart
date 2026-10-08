@@ -166,34 +166,25 @@ final class FontIndex {
   List<String> get files => _files ??= [..._memory.keys, ..._walk()];
 
   /// The first font file named [name] (any case).
-  String? fileNamed(String name) => _byFileName[name.toLowerCase()];
-
-  /// The first file of each name, by its name in lowercase.
-  late final Map<String, String> _byFileName = () {
-    final byName = <String, String>{};
+  String? fileNamed(String name) {
+    final lower = name.toLowerCase();
     for (final file in files) {
-      byName.putIfAbsent(_baseName(file).toLowerCase(), () => file);
+      if (_baseName(file).toLowerCase() == lower) return file;
     }
-    return byName;
-  }();
+    return null;
+  }
 
   /// Every font of every file.
   List<InstalledFont> get fonts => _fonts ??= _read();
 
-  /// The fonts of each family key (family or legacy family), in order.
-  late final Map<String, List<InstalledFont>> _byFamily = () {
-    final byFamily = <String, List<InstalledFont>>{};
-    for (final font in fonts) {
-      final family = _key(font.family);
-      final legacy = _key(font.legacyFamily);
-      (byFamily[family] ??= []).add(font);
-      if (legacy != family) (byFamily[legacy] ??= []).add(font);
-    }
-    return byFamily;
-  }();
-
   /// Whether a font of [family] (any case) is installed.
-  bool hasFamily(String family) => _byFamily.containsKey(_key(family));
+  bool hasFamily(String family) {
+    final wanted = _key(family);
+    return fonts.any(
+      (font) =>
+          _key(font.family) == wanted || _key(font.legacyFamily) == wanted,
+    );
+  }
 
   /// The font of [family] (any case) nearest to [bold] and [italic]: the
   /// italic ones first when [italic], then the normal width, then the
@@ -205,7 +196,10 @@ final class FontIndex {
     final target = bold ? 700 : 400;
     InstalledFont? best;
     var bestScore = 1 << 30;
-    for (final font in _byFamily[wanted] ?? const <InstalledFont>[]) {
+    for (final font in fonts) {
+      if (_key(font.family) != wanted && _key(font.legacyFamily) != wanted) {
+        continue;
+      }
       final score =
           (font.italic == italic ? 0 : 100000) +
           (font.width - 5).abs() * 1000 +
@@ -219,9 +213,7 @@ final class FontIndex {
   }
 
   static String _key(String family) =>
-      family.toLowerCase().replaceAll(_spaces, ' ').trim();
-
-  static final RegExp _spaces = RegExp(r'\s+');
+      family.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
 
   static const _extensions = {
     '.ttf',
@@ -232,9 +224,8 @@ final class FontIndex {
     '.woff2',
   };
 
-  static bool _isWebFontFile(String path) => _webFontFile.hasMatch(path);
-
-  static final RegExp _webFontFile = RegExp(r'\.woff2?$', caseSensitive: false);
+  static bool _isWebFontFile(String path) =>
+      RegExp(r'\.woff2?$', caseSensitive: false).hasMatch(path);
 
   List<String> _walk() {
     final found = <String>[];
@@ -321,9 +312,8 @@ final class FontIndex {
     return fonts;
   }
 
-  static String _clean(String text) => text.replaceAll(_breaks, ' ');
-
-  static final RegExp _breaks = RegExp(r'[\t\r\n]');
+  static String _clean(String text) =>
+      text.replaceAll(RegExp(r'[\t\r\n]'), ' ');
 
   static InstalledFont? _fromLine(String line) {
     final f = line.split('\t');
@@ -434,7 +424,10 @@ final class FontIndex {
     final subfamily = _name(names, 17) ?? _name(names, 2) ?? 'Regular';
     var weight = 400;
     var width = 5;
-    var italic = _italic.hasMatch(subfamily);
+    var italic = RegExp(
+      'italic|oblique',
+      caseSensitive: false,
+    ).hasMatch(subfamily);
     if (table('OS/2') case final os2? when os2.length >= 64) {
       weight = _u16(os2, 4);
       width = _u16(os2, 6);
@@ -452,8 +445,6 @@ final class FontIndex {
       italic: italic,
     );
   }
-
-  static final RegExp _italic = RegExp('italic|oblique', caseSensitive: false);
 
   /// Name [id] of a `name` table: the Windows English one first, then any
   /// Unicode one, then a Macintosh one.
@@ -517,9 +508,7 @@ final class FontIndex {
 /// Reads [length] bytes from [offset] (fewer at the end).
 typedef _Ranges = Uint8List Function(int offset, int length);
 
-final RegExp _slash = RegExp(r'[/\\]');
-
 String _baseName(String path) {
-  final slash = path.lastIndexOf(_slash);
+  final slash = path.lastIndexOf(RegExp(r'[/\\]'));
   return slash < 0 ? path : path.substring(slash + 1);
 }
