@@ -1,0 +1,4 @@
+tags:
+  tools:
+    # Tests that run the brotli tool; skipped where it is missing.
+    skip: false
