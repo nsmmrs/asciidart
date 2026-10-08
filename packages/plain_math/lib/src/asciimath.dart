@@ -584,6 +584,11 @@ const _eof = _Token(null, 'eof');
 int _longest(Iterable<String> keys) =>
     keys.map((k) => k.runes.length).reduce((a, b) => a > b ? a : b);
 
+/// Whether [c] is one of the gem's whitespace characters (`[ \t\r\n\f\v]`).
+bool _isSpace(int c) => c == 0x20 || (c >= 0x09 && c <= 0x0d);
+
+bool _isDigit(int c) => c >= 0x30 && c <= 0x39;
+
 final class _Tokenizer {
   new(this._input);
 
@@ -591,34 +596,26 @@ final class _Tokenizer {
   int _pos = 0;
   _Token? _pushedBack;
 
-  static final _whitespace = RegExp(r'[ \t\r\n\f\v]+');
-  static final _number = RegExp(r'[0-9]+(?:\.[0-9]+)?');
-  static final _quotedText = RegExp('"[^"]*"');
-  static final _texText = RegExp(r'text\([^)]*\)');
-
-  /// The run of characters a symbol may span: as many as the longest key
-  /// has (built once: the table is fixed).
-  static final _symbolRx = RegExp(
-    r'((?:\\[ \t\r\n\f\v0-9]|[^ \t\r\n\f\v0-9])'
-    '{1,${_longest(_parserSymbols.keys)}})',
-    unicode: true,
-  );
+  /// The most units a symbol's run may have: as many characters as the
+  /// longest key has.
+  static final int _lookahead = _longest(_parserSymbols.keys);
 
   _Token next() {
     if (_pushedBack case final token?) {
       _pushedBack = null;
       return token;
     }
-    _scan(_whitespace);
-    if (_pos >= _input.length) return _eof;
-    final c = _input[_pos];
-    if (c == '"') return _readQuotedText() ?? _readSymbol();
-    if (c == 't' && _input.startsWith('text(', _pos)) {
+    final input = _input;
+    while (_pos < input.length && _isSpace(input.codeUnitAt(_pos))) {
+      _pos++;
+    }
+    if (_pos >= input.length) return _eof;
+    final c = input.codeUnitAt(_pos);
+    if (c == 0x22) return _readQuotedText() ?? _readSymbol();
+    if (c == 0x74 && input.startsWith('text(', _pos)) {
       return _readTexText() ?? _readSymbol();
     }
-    if (c == '-' || (c.codeUnitAt(0) >= 0x30 && c.codeUnitAt(0) <= 0x39)) {
-      return _readNumber() ?? _readSymbol();
-    }
+    if (c == 0x2d || _isDigit(c)) return _readNumber() ?? _readSymbol();
     return _readSymbol();
   }
 
@@ -626,47 +623,146 @@ final class _Tokenizer {
     if (token.type != 'eof') _pushedBack = token;
   }
 
-  String? _scan(RegExp rx) {
-    final match = rx.matchAsPrefix(_input, _pos);
-    if (match == null) return null;
-    _pos = match.end;
-    return match[0];
+  /// `"..."`.
+  _Token? _readQuotedText() {
+    final end = _input.indexOf('"', _pos + 1);
+    if (end < 0) return null;
+    final text = _input.substring(_pos + 1, end);
+    _pos = end + 1;
+    return _Token(text, 'text');
   }
 
-  _Token? _readQuotedText() => switch (_scan(_quotedText)) {
-    final text? => _Token(text.substring(1, text.length - 1), 'text'),
-    null => null,
-  };
+  /// `text(...)`.
+  _Token? _readTexText() {
+    final end = _input.indexOf(')', _pos + 5);
+    if (end < 0) return null;
+    final text = _input.substring(_pos + 5, end);
+    _pos = end + 1;
+    return _Token(text, 'text');
+  }
 
-  _Token? _readTexText() => switch (_scan(_texText)) {
-    final text? => _Token(text.substring(5, text.length - 1), 'text'),
-    null => null,
-  };
+  /// Digits, and a fraction: `[0-9]+(?:\.[0-9]+)?`.
+  _Token? _readNumber() {
+    final input = _input;
+    final start = _pos;
+    var end = start;
+    while (end < input.length && _isDigit(input.codeUnitAt(end))) {
+      end++;
+    }
+    if (end == start) return null;
+    if (end + 1 < input.length &&
+        input.codeUnitAt(end) == 0x2e &&
+        _isDigit(input.codeUnitAt(end + 1))) {
+      end += 2;
+      while (end < input.length && _isDigit(input.codeUnitAt(end))) {
+        end++;
+      }
+    }
+    _pos = end;
+    return _Token(input.substring(start, end), 'number');
+  }
 
-  _Token? _readNumber() => switch (_scan(_number)) {
-    final number? => _Token(number, 'number'),
-    null => null,
-  };
-
-  /// The longest symbol at the position (the gem's: the longest run the
-  /// table's keys may have, shortened a character at a time), else its
-  /// first character as an identifier.
+  /// The longest symbol at the position, else its first character as an
+  /// identifier. As the gem finds it: in the longest run a key may span
+  /// (up to [_lookahead] units, each `\` and a space or digit, or one
+  /// character other than those), the longest key it starts with; found
+  /// here by walking the keys' trie.
   _Token _readSymbol() {
-    final position = _pos;
-    final matched = _scan(_symbolRx) ?? _input.substring(_pos, _pos + 1);
-    var runes = matched.runes.toList();
-    var s = String.fromCharCodes(runes);
-    while (runes.length > 1 && !_parserSymbols.containsKey(s)) {
-      runes = runes.sublist(0, runes.length - 1);
-      s = String.fromCharCodes(runes);
+    final input = _input;
+    final length = input.length;
+    final start = _pos;
+    var end = start;
+    for (var units = 0; units < _lookahead && end < length; units++) {
+      final c = input.codeUnitAt(end);
+      if (c == 0x5c &&
+          end + 1 < length &&
+          (_isSpace(input.codeUnitAt(end + 1)) ||
+              _isDigit(input.codeUnitAt(end + 1)))) {
+        end += 2;
+      } else if (_isSpace(c) || _isDigit(c)) {
+        break;
+      } else if ((c & 0xfc00) == 0xd800 &&
+          end + 1 < length &&
+          (input.codeUnitAt(end + 1) & 0xfc00) == 0xdc00) {
+        end += 2;
+      } else {
+        end += 1;
+      }
     }
-    _pos = position + s.length;
-    if (_parserSymbols[s] case final entry?) {
-      return _Token(entry.value, entry.type, text: s, entry: entry);
+    // (The run is never empty: a digit starts a number, spaces are
+    // skipped.)
+    _TrieNode? found;
+    var node = _symbolTrie.child(input.codeUnitAt(start));
+    for (var i = start + 1; node != null; i++) {
+      if (node.entry != null) found = node;
+      if (i >= end) break;
+      node = node.child(input.codeUnitAt(i));
     }
-    return _Token(s, 'identifier');
+    if (found != null) {
+      final key = found.key!;
+      _pos = start + key.length;
+      final entry = found.entry!;
+      return _Token(entry.value, entry.type, text: key, entry: entry);
+    }
+    final c = input.codeUnitAt(start);
+    final one =
+        (c & 0xfc00) == 0xd800 &&
+            start + 1 < end &&
+            (input.codeUnitAt(start + 1) & 0xfc00) == 0xdc00
+        ? 2
+        : 1;
+    _pos = start + one;
+    return _Token(input.substring(start, start + one), 'identifier');
   }
 }
+
+/// A node of the symbol table's trie (its keys are ASCII): its children
+/// by character, in a list (most nodes have one), and the key ending at
+/// it, if any, with its entry.
+final class _TrieNode {
+  final List<int> _chars = [];
+  final List<_TrieNode> _children = [];
+  String? key;
+  _Entry? entry;
+
+  _TrieNode? child(int c) {
+    final chars = _chars;
+    for (var i = 0; i < chars.length; i++) {
+      if (chars[i] == c) return _children[i];
+    }
+    return null;
+  }
+
+  _TrieNode _add(int c) {
+    if (child(c) case final node?) return node;
+    final node = _TrieNode();
+    _chars.add(c);
+    _children.add(node);
+    return node;
+  }
+}
+
+/// The trie's root: its children by ASCII character.
+final class _TrieRoot {
+  final List<_TrieNode?> _children = List.filled(128, null);
+
+  _TrieNode? child(int c) => c < 128 ? _children[c] : null;
+}
+
+final _TrieRoot _symbolTrie = () {
+  final root = _TrieRoot();
+  for (final MapEntry(:key, :value) in _parserSymbols.entries) {
+    final units = key.codeUnits;
+    var node = root._children[units[0]] ??= _TrieNode();
+    for (final c in units.skip(1)) {
+      node = node._add(c);
+    }
+    node
+      ..key = key
+      ..entry = value;
+  }
+  return root;
+}();
 
 // The tree.
 
