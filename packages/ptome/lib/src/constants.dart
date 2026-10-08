@@ -5,6 +5,8 @@
 /// settings. Constants used by one file live in that file.
 library;
 
+import 'dart:math' as math;
+
 import 'package:ptome/src/presence.dart';
 import 'package:ptome/src/rx.dart';
 
@@ -264,6 +266,110 @@ final Map<bool, AnchoredScan> inlinePassScan = {
   ),
 };
 
+/// [inlineIndextermMacroRx]'s matches: each starts at `indexterm` or
+/// `((`, or at the backslash escaping it.
+final AnchoredScan inlineIndextermMacroScan = AnchoredScan(
+  inlineIndextermMacroRx,
+  ['indexterm', '(('],
+  before: 1,
+);
+
+/// [inlineKbdBtnMacroRx]'s matches: each starts at `kbd:` or `btn:`, or at
+/// the backslash escaping it.
+final AnchoredScan inlineKbdBtnMacroScan = AnchoredScan(inlineKbdBtnMacroRx, [
+  'kbd:',
+  'btn:',
+], before: 1);
+
+/// [inlineMenuMacroRx]'s matches: each starts at `menu:`, or at the
+/// backslash escaping it.
+final AnchoredScan inlineMenuMacroScan = AnchoredScan(inlineMenuMacroRx, [
+  'menu:',
+], before: 1);
+
+/// [inlineMenuRx]'s matches: each starts at a double quote, or at the
+/// backslash escaping it.
+final AnchoredScan inlineMenuScan = AnchoredScan(inlineMenuRx, [
+  '"',
+], before: 1);
+
+/// [inlineImageMacroRx]'s matches: each starts at `image:` or `icon:`, or
+/// at the backslash escaping it.
+final AnchoredScan inlineImageMacroScan = AnchoredScan(inlineImageMacroRx, [
+  'image:',
+  'icon:',
+], before: 1);
+
+/// [inlineStemMacroRx]'s matches: each starts at `stem:`, `latexmath:` or
+/// `asciimath:`, or at the backslash escaping it.
+final AnchoredScan inlineStemMacroScan = AnchoredScan(inlineStemMacroRx, [
+  'stem:',
+  'latexmath:',
+  'asciimath:',
+], before: 1);
+
+/// [inlinePassMacroRx]'s matches: each starts at `pass:` or the backslash
+/// escaping it, or holds `++` or `$$` after at most two backslashes and
+/// before them an attribute list (`[...]`, no brackets inside) and the
+/// backslash escaping it, each optional.
+final StartsScan inlinePassMacroScan = StartsScan(
+  inlinePassMacroRx,
+  _passMacroStarts,
+);
+
+List<int> _passMacroStarts(String string, int start) {
+  final starts = <int>[];
+  void add(int at) {
+    if (at >= start) starts.add(at);
+  }
+
+  for (
+    var at = literalIndexOf(string, 'pass:', start);
+    at >= 0;
+    at = literalIndexOf(string, 'pass:', at + 1)
+  ) {
+    add(at - 1);
+    add(at);
+  }
+  for (final literal in const ['++', r'$$']) {
+    for (
+      var at = literalIndexOf(string, literal, start);
+      at >= 0;
+      at = literalIndexOf(string, literal, at + 1)
+    ) {
+      add(at - 2);
+      add(at - 1);
+      add(at);
+      // An attribute list right before the literal or its backslashes.
+      var close = at - 1;
+      for (var k = 0; k <= 2 && close >= 0; k++) {
+        if (string.codeUnitAt(close) == 0x5d) {
+          final open = string.lastIndexOf('[', close);
+          if (open >= 0 &&
+              open < close - 1 &&
+              string.indexOf(']', open) == close) {
+            add(open - 1);
+            add(open);
+          }
+        }
+        if (string.codeUnitAt(close) != 0x5c) break;
+        close--;
+      }
+    }
+  }
+  return _sortedDistinct(starts);
+}
+
+/// [starts] sorted, each once.
+List<int> _sortedDistinct(List<int> starts) {
+  starts.sort();
+  var kept = 0;
+  for (final at in starts) {
+    if (kept == 0 || starts[kept - 1] != at) starts[kept++] = at;
+  }
+  return starts..length = kept;
+}
+
 /// A pattern's matches, the same as [pattern]'s own, found by trying it
 /// (anchored) only where a match can start instead of at every position:
 /// many times faster on long text.
@@ -353,6 +459,73 @@ final class AnchoredScan implements Pattern {
   @override
   Match? matchAsPrefix(String string, [int start = 0]) =>
       pattern.matchAsPrefix(string, start);
+}
+
+/// A pattern's matches, the same as [pattern]'s own, found by trying it
+/// (anchored) only at the positions [starts] gives: every position from
+/// `start` on where a match can start, in order, each once.
+final class StartsScan implements Pattern {
+  /// The matches of [pattern], which start only where [starts] says.
+  new(this.pattern, this.starts);
+
+  /// The pattern.
+  final RegExp pattern;
+
+  /// Where a match of [pattern] can start in a string from a position.
+  final List<int> Function(String string, int start) starts;
+
+  @override
+  List<RegExpMatch> allMatches(String string, [int start = 0]) {
+    final matches = <RegExpMatch>[];
+    var at = start;
+    for (final candidate in starts(string, start)) {
+      if (candidate < at) continue;
+      final match = pattern.matchAsPrefix(string, candidate) as RegExpMatch?;
+      if (match == null) continue;
+      matches.add(match);
+      // (A match is never empty.)
+      at = match.end;
+    }
+    return matches;
+  }
+
+  @override
+  Match? matchAsPrefix(String string, [int start = 0]) =>
+      pattern.matchAsPrefix(string, start);
+}
+
+/// Where the em-dash replacement can match in [string] from [start]: its
+/// `--` follows a word character (one or two code units), the `;` of
+/// `&#8217;` or `&#8221;`, or the `>` of a closing tag `</...>` (whose
+/// start is a `</` after the last `>` before it), with an optional
+/// backslash between.
+List<int> _emDashStarts(String string, int start) {
+  final starts = <int>[];
+  void add(int at) {
+    if (at >= start) starts.add(at);
+  }
+
+  for (
+    var dash = literalIndexOf(string, '--', start);
+    dash >= 0;
+    dash = literalIndexOf(string, '--', dash + 1)
+  ) {
+    for (final back in const [1, 2, 3, 7, 8]) {
+      add(dash - back);
+    }
+    for (final close in [dash - 1, dash - 2]) {
+      if (close < 3 || string.codeUnitAt(close) != 0x3e) continue;
+      final after = string.lastIndexOf('>', close - 1) + 1;
+      for (
+        var open = string.indexOf('</', math.max(after, start));
+        open >= 0 && open <= close - 3;
+        open = string.indexOf('</', open + 1)
+      ) {
+        starts.add(open);
+      }
+    }
+  }
+  return _sortedDistinct(starts);
 }
 
 /// Quoted-text substitution rules for normal mode (`QUOTE_SUBS`false``).
@@ -598,8 +771,19 @@ final Map<bool, List<QuoteSub>> quoteSubs = <bool, List<QuoteSub>>{
 ///
 /// A replacement rule: pattern, replacement and scope.
 class Replacement {
-  /// Creates a rule with [pattern], [replacement], [scope] and [guard].
-  const new(this.pattern, this.replacement, this.scope, this.guard);
+  /// Creates a rule with [pattern], [replacement], [scope] and [guard];
+  /// every match starting at most [before] code units before its guard
+  /// (or [scan] finding where they start).
+  new(
+    this.pattern,
+    this.replacement,
+    this.scope,
+    this.guard, {
+    int before = 0,
+    Pattern Function(RegExp pattern)? scan,
+  }) : scan = scan == null
+           ? AnchoredScan(pattern, [guard], before: before)
+           : scan(pattern);
 
   /// The pattern matching the source text.
   final RegExp pattern;
@@ -615,20 +799,24 @@ class Replacement {
   /// Text without it cannot match, so the regex scan is skipped; the
   /// result is identical either way.
   final String guard;
+
+  /// [pattern]'s matches, found by trying it only where one can start.
+  final Pattern scan;
 }
 
 /// Textual replacements (`REPLACEMENTS`).
 ///
 /// Order is significant: replacements apply in list order.
 final List<Replacement> replacements = <Replacement>[
-  Replacement(RegExp(r'\\?\(C\)'), '&#169;', 'none', '(C)'),
-  Replacement(RegExp(r'\\?\(R\)'), '&#174;', 'none', '(R)'),
-  Replacement(RegExp(r'\\?\(TM\)'), '&#8482;', 'none', '(TM)'),
+  Replacement(RegExp(r'\\?\(C\)'), '&#169;', 'none', '(C)', before: 1),
+  Replacement(RegExp(r'\\?\(R\)'), '&#174;', 'none', '(R)', before: 1),
+  Replacement(RegExp(r'\\?\(TM\)'), '&#8482;', 'none', '(TM)', before: 1),
   Replacement(
     lineRx(r'(?: |\n|^|\\)--(?: |\n|$)'),
     '&#8201;&#8212;&#8201;',
     'none',
     '--',
+    before: 1,
   ),
   // Between words; the end of formatted text or a closing curved quote
   // counts as the end of a word, and the start of either as the start of
@@ -644,9 +832,10 @@ final List<Replacement> replacements = <Replacement>[
     '&#8212;&#8203;',
     'leading',
     '--',
+    scan: (pattern) => StartsScan(pattern, _emDashStarts),
   ),
-  Replacement(RegExp(r'\\?\.\.\.'), '&#8230;&#8203;', 'none', '...'),
-  Replacement(RegExp(r"\\?`'"), '&#8217;', 'none', "`'"),
+  Replacement(RegExp(r'\\?\.\.\.'), '&#8230;&#8203;', 'none', '...', before: 1),
+  Replacement(RegExp(r"\\?`'"), '&#8217;', 'none', "`'", before: 1),
   Replacement(
     RegExp(
       '($cgAlnum'
@@ -657,11 +846,13 @@ final List<Replacement> replacements = <Replacement>[
     '&#8217;',
     'leading',
     "'",
+    // (An astral letter or digit is two code units.)
+    before: 3,
   ),
-  Replacement(RegExp(r'\\?-&gt;'), '&#8594;', 'none', '-&gt;'),
-  Replacement(RegExp(r'\\?=&gt;'), '&#8658;', 'none', '=&gt;'),
-  Replacement(RegExp(r'\\?&lt;-'), '&#8592;', 'none', '&lt;-'),
-  Replacement(RegExp(r'\\?&lt;='), '&#8656;', 'none', '&lt;='),
+  Replacement(RegExp(r'\\?-&gt;'), '&#8594;', 'none', '-&gt;', before: 1),
+  Replacement(RegExp(r'\\?=&gt;'), '&#8658;', 'none', '=&gt;', before: 1),
+  Replacement(RegExp(r'\\?&lt;-'), '&#8592;', 'none', '&lt;-', before: 1),
+  Replacement(RegExp(r'\\?&lt;='), '&#8656;', 'none', '&lt;=', before: 1),
   Replacement(
     RegExp(
       r'\\?(&)amp;((?:[a-zA-Z][a-zA-Z]+\d{0,2}|#\d\d\d{0,4}|#x[\da-fA-F]'
@@ -670,6 +861,7 @@ final List<Replacement> replacements = <Replacement>[
     '',
     'bounding',
     '&amp;',
+    before: 1,
   ),
 ];
 

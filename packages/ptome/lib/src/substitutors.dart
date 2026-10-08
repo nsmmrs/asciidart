@@ -138,7 +138,7 @@ String _subQuotesKeepingIndexterms(
     return subQuotes(node, text, protectTargets: protectTargets);
   }
   final terms = <String>[];
-  final masked = text.replaceAllMapped(inlineIndextermMacroRx, (match) {
+  final masked = text.replaceAllMapped(inlineIndextermMacroScan, (match) {
     final term = match[0]!;
     if (term.startsWith(r'\')) return term;
     terms.add(subQuotes(node, term, protectTargets: protectTargets));
@@ -449,14 +449,35 @@ String applyReftextSubs(AbstractNode node, String text) =>
 ///
 /// Port of `Substitutors#sub_specialchars`.
 String subSpecialchars(String text) {
-  if (hasAnyChar(text, '>&<')) {
-    return InlineRun.replace(
-      text,
-      specialCharsRx,
-      (match) => specialCharsTr[match.group(0)]!,
-    );
+  if (!hasAnyChar(text, '>&<')) return text;
+  if (!InlineRun.tracks(text)) return _escapeSpecialchars(text);
+  return InlineRun.replace(
+    text,
+    specialCharsRx,
+    (match) => specialCharsTr[match.group(0)]!,
+  );
+}
+
+/// [text] with `<`, `&` and `>` replaced by their entities, as
+/// [specialCharsRx] and [specialCharsTr] replace them, in one pass.
+String _escapeSpecialchars(String text) {
+  final out = StringBuffer();
+  var from = 0;
+  for (var i = 0; i < text.length; i++) {
+    final entity = switch (text.codeUnitAt(i)) {
+      0x3c => '&lt;',
+      0x26 => '&amp;',
+      0x3e => '&gt;',
+      _ => null,
+    };
+    if (entity == null) continue;
+    out
+      ..write(text.substring(from, i))
+      ..write(entity);
+    from = i + 1;
   }
-  return text;
+  out.write(text.substring(from));
+  return out.toString();
 }
 
 /// Substitutes quoted text (emphasis, strong, monospaced, etc.) in [text].
@@ -914,7 +935,7 @@ String subReplacements(String text) {
     if (!hasLiteral(result, replacement.guard)) continue;
     result = InlineRun.replace(
       result,
-      replacement.pattern,
+      replacement.scan,
       (match) => doReplacement(
         match as RegExpMatch,
         replacement.replacement,
@@ -1067,7 +1088,7 @@ String subMacros(AbstractNode node, String text) {
   if (docAttrs.containsKey('experimental')) {
     if (foundMacroishShort &&
         (hasLiteral(result, 'kbd:') || hasLiteral(result, 'btn:'))) {
-      result = InlineRun.replace(result, inlineKbdBtnMacroRx, (match) {
+      result = InlineRun.replace(result, inlineKbdBtnMacroScan, (match) {
         // honor the escape
         if (match.group(1) != null) {
           return match.group(0)!.substring(1);
@@ -1132,7 +1153,7 @@ String subMacros(AbstractNode node, String text) {
     }
 
     if (foundMacroish && hasLiteral(result, 'menu:')) {
-      result = InlineRun.replace(result, inlineMenuMacroRx, (match) {
+      result = InlineRun.replace(result, inlineMenuMacroScan, (match) {
         // honor the escape
         if (match.group(0)!.startsWith(rs)) {
           return match.group(0)!.substring(1);
@@ -1183,7 +1204,7 @@ String subMacros(AbstractNode node, String text) {
     }
 
     if (hasLiteral(result, '"') && hasLiteral(result, '&gt;')) {
-      result = InlineRun.replace(result, inlineMenuRx, (match) {
+      result = InlineRun.replace(result, inlineMenuScan, (match) {
         // honor the escape
         if (match.group(0)!.startsWith(rs)) {
           return match.group(0)!.substring(1);
@@ -1210,7 +1231,7 @@ String subMacros(AbstractNode node, String text) {
   if (foundMacroish &&
       (hasLiteral(result, 'image:') || hasLiteral(result, 'icon:'))) {
     // image:filename.png[Alt Text]
-    result = InlineRun.replace(result, inlineImageMacroRx, (match) {
+    result = InlineRun.replace(result, inlineImageMacroScan, (match) {
       // honor the escape
       if (match.group(0)!.startsWith(rs)) {
         return match.group(0)!.substring(1);
@@ -1262,7 +1283,7 @@ String subMacros(AbstractNode node, String text) {
     // indexterm:[Tigers,Big cats]
     // ((Tigers))
     // indexterm2:[Tigers]
-    result = InlineRun.replace(result, inlineIndextermMacroRx, (match) {
+    result = InlineRun.replace(result, inlineIndextermMacroScan, (match) {
       final macro = match.group(1);
       if (macro == 'indexterm') {
         // honor the escape
@@ -2465,7 +2486,7 @@ String extractPassthroughs(AbstractNode node, String text) {
   if (hasLiteral(text, '++') ||
       hasLiteral(text, r'$$') ||
       hasLiteral(text, 'ss:')) {
-    result = InlineRun.replace(result, inlinePassMacroRx, (match) {
+    result = InlineRun.replace(result, inlinePassMacroScan, (match) {
       final boundary = match.group(4);
       if (boundary != null) {
         // $$, ++, or +++
@@ -2653,7 +2674,7 @@ String extractPassthroughs(AbstractNode node, String text) {
   // escaped by the former
   if (hasLiteral(result, ':') &&
       (hasLiteral(result, 'stem:') || hasLiteral(result, 'math:'))) {
-    result = InlineRun.replace(result, inlineStemMacroRx, (match) {
+    result = InlineRun.replace(result, inlineStemMacroScan, (match) {
       // honor the escape
       if (match.group(0)!.startsWith(rs)) {
         return match.group(0)!.substring(1);

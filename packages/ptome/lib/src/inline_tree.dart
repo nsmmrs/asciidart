@@ -169,6 +169,13 @@ final class InlineRun {
         : null;
   }
 
+  /// Whether [text] is the text a tracking run is substituting, whose
+  /// replacements must go through [replace].
+  static bool tracks(String text) {
+    final run = _current;
+    return run != null && identical(text, run._subject);
+  }
+
   /// [text] with the matches of [pattern] replaced by [replacement]'s
   /// results, as [String.replaceAllMapped]; in a tracking run, when [text]
   /// is the text being substituted, the elements' positions follow.
