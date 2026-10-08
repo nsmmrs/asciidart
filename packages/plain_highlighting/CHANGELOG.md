@@ -11,3 +11,8 @@
   its languages (generated from upstream), `highlight`, `highlightAuto` and
   language lookup. Byte-identical with highlight.js on upstream's 568 markup
   tests, and the same auto-detection on 766 samples.
+- About three times faster on the Dart VM (0.47 s for 2.1 MiB of code,
+  from 1.38 s; highlight.js on Node.js: 0.32 s): a mode's rules are tried
+  only where they can start (read from their sources), each alone,
+  instead of searching for one alternation of them (see
+  `benchmark/BASELINE.md`). JavaScript keeps the platform's engine.

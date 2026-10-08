@@ -193,6 +193,7 @@ final class ModeMatch {
     this.type,
     this.rule,
     this.position = 0,
+    this._length,
   });
 
   /// A match of groups listed in [groups] (for tests and callers outside
@@ -201,6 +202,7 @@ final class ModeMatch {
     : _match = null,
       _offset = 0,
       _groups = groups,
+      _length = null,
       position = 0;
 
   /// The text that was searched.
@@ -212,6 +214,10 @@ final class ModeMatch {
   final RegExpMatch? _match;
   final int _offset;
   List<String?>? _groups;
+
+  /// [length], when the match is of the rule alone (the alternation's
+  /// groups after the rule's are null).
+  final int? _length;
 
   /// What kind of rule matched.
   final MatchType? type;
@@ -232,7 +238,8 @@ final class ModeMatch {
   }
 
   /// The number of groups, including group 0.
-  int get length => _groups?.length ?? (_match!.groupCount - _offset + 1);
+  int get length =>
+      _groups?.length ?? _length ?? (_match!.groupCount - _offset + 1);
 }
 
 /// Lets a callback ignore the match it was called for, and keep state for

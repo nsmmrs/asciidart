@@ -4,8 +4,11 @@
 /// Port of `src/lib/mode_compiler.js`.
 library;
 
+import 'dart:typed_data';
+
 import 'package:plain_highlighting/src/compile_keywords.dart';
 import 'package:plain_highlighting/src/compiler_extensions.dart' as ext;
+import 'package:plain_highlighting/src/first_chars.dart';
 import 'package:plain_highlighting/src/mode.dart';
 import 'package:plain_highlighting/src/regex.dart' as regex;
 
@@ -20,25 +23,69 @@ final class _RuleOptions {
 
 /// Several regular expressions searched at once, as one alternation; a
 /// match tells which of them matched.
+///
+/// With [prefilter], when the first characters of every rule can be read
+/// from its source ([firstChars]), a search goes through the text itself
+/// and tries, at each position, only the rules that can start with the
+/// character there (and start there, for a rule that starts a word), each
+/// compiled alone, in order: the alternation's match, since its first
+/// alternative that matches at the leftmost position wins. (Dart's engine
+/// runs a long alternation slowly at every position.)
 final class MultiRegex {
-  /// A matcher compiling its regular expressions with [_compile].
-  new(this._compile);
+  /// A matcher compiling its regular expressions with [_compile]; with
+  /// [prefilter] (the language's [ignoreCase]), trying them only where
+  /// they can start.
+  new(this._compile, {this.prefilter = false, this.ignoreCase = false});
 
   final RegExp Function(String source, {bool global}) _compile;
+
+  /// Whether searches try each rule only where it can start.
+  final bool prefilter;
+
+  /// Whether the rules ignore case.
+  final bool ignoreCase;
+
   final Map<int, _RuleOptions> _matchIndexes = {};
   final List<(_RuleOptions, String)> _regexes = [];
+
+  /// The alternation's group of each rule, in order.
+  final List<int> _groups = [];
   int _matchAt = 1;
   int _position = 0;
   RegExp? _matcherRe;
 
+  /// The rules that can start with each ASCII character, in order (by
+  /// index into [_regexes]); then those that can start with any other
+  /// ([_beyondAscii]) and those that can match at the end ([_atEnd]).
+  List<List<int>>? _byChar;
+
+  /// Whether each rule only matches at the start of a word.
+  late final List<bool> _wordStart = List.filled(_regexes.length, false);
+
+  /// The class of the run each rule's matches start with, if one (see
+  /// [FirstChars.run]), and where the rule last didn't match in a run:
+  /// the text, the position and the run's end, between which it doesn't
+  /// match either.
+  late final List<Uint8List?> _run = List.filled(_regexes.length, null);
+  late final List<String?> _missIn = List.filled(_regexes.length, null);
+  late final List<int> _missAt = List.filled(_regexes.length, 0);
+  late final List<int> _missTo = List.filled(_regexes.length, 0);
+
+  /// Each rule alone (compiled when first tried).
+  late final List<RegExp?> _alone = List.filled(_regexes.length, null);
+
   /// Where the next search starts.
   int lastIndex = 0;
+
+  static const int _beyondAscii = 128;
+  static const int _atEnd = 129;
 
   /// Adds [re], matching a rule described by [opts].
   void _addRule(String re, _RuleOptions opts) {
     opts.position = _position++;
     _matchIndexes[_matchAt] = opts;
     _regexes.add((opts, re));
+    _groups.add(_matchAt);
     _matchAt += regex.countMatchGroups(re) + 1;
   }
 
@@ -49,13 +96,33 @@ final class MultiRegex {
       regex.rewriteBackreferences(terminators, joinWith: '|'),
       global: true,
     );
+    if (prefilter) _byChar = _dispatchTable();
     lastIndex = 0;
+  }
+
+  /// The rules by the character they can start with (see [_byChar]), or
+  /// null when one's first characters can't be read.
+  List<List<int>>? _dispatchTable() {
+    final table = List.generate(130, (_) => <int>[]);
+    for (final (i, (_, source)) in _regexes.indexed) {
+      final first = firstChars(source, ignoreCase: ignoreCase);
+      if (first == null) return null;
+      for (var c = 0; c < 128; c++) {
+        if (first.has(c)) table[c].add(i);
+      }
+      if (first.nonAscii) table[_beyondAscii].add(i);
+      if (first.atEnd) table[_atEnd].add(i);
+      _wordStart[i] = first.wordStart;
+      _run[i] = first.run;
+    }
+    return table;
   }
 
   /// The first match in [s] at or after [lastIndex], or `null`.
   ModeMatch? exec(String s) {
     final re = _matcherRe;
     if (re == null || lastIndex > s.length) return null;
+    if (_byChar case final byChar?) return _dispatch(byChar, s);
     final match = re.allMatches(s, lastIndex).firstOrNull;
     if (match == null) return null;
     var i = 1;
@@ -73,16 +140,76 @@ final class MultiRegex {
       position: data.position,
     );
   }
+
+  /// [exec] trying each rule alone where it can start.
+  ModeMatch? _dispatch(List<List<int>> byChar, String s) {
+    final length = s.length;
+    for (var at = lastIndex; at <= length; at++) {
+      final List<int> rules;
+      if (at == length) {
+        rules = byChar[_atEnd];
+      } else {
+        final c = s.codeUnitAt(at);
+        rules = byChar[c < 128 ? c : _beyondAscii];
+      }
+      if (rules.isEmpty) continue;
+      final afterWord = at > 0 && isWordChar(s.codeUnitAt(at - 1));
+      for (final i in rules) {
+        if (afterWord && _wordStart[i]) continue;
+        if (at < _missTo[i] && at > _missAt[i] && identical(s, _missIn[i])) {
+          continue;
+        }
+        final alone = _alone[i] ??= _compile(_regexes[i].$2);
+        if (alone.matchAsPrefix(s, at) case final RegExpMatch match) {
+          final data = _regexes[i].$1;
+          return ModeMatch(
+            s,
+            at,
+            match,
+            0,
+            type: data.type,
+            rule: data.rule,
+            position: data.position,
+            // (As many groups as the alternation's from the rule's on.)
+            length: _matchAt - _groups[i],
+          );
+        }
+        if (_run[i] case final run?) _missed(i, run, s, at);
+      }
+    }
+    return null;
+  }
+
+  /// Rule [i], whose matches start with a run of [run]'s characters,
+  /// didn't match in [s] at [at]: nor does it further into the run.
+  void _missed(int i, Uint8List run, String s, int at) {
+    var c = s.codeUnitAt(at);
+    if (c >= 128 || run[c] == 0) return;
+    var end = at + 1;
+    while (end < s.length && (c = s.codeUnitAt(end)) < 128 && run[c] != 0) {
+      end++;
+    }
+    _missIn[i] = s;
+    _missAt[i] = at;
+    _missTo[i] = end;
+  }
 }
 
 /// A [MultiRegex] that can resume a search at the same position, skipping
 /// the rules already tried there (so a callback can ignore a match and let
 /// a later rule match instead).
 final class ResumableMultiRegex {
-  /// A matcher compiling its regular expressions with [_compile].
-  new(this._compile);
+  /// A matcher compiling its regular expressions with [_compile] (see
+  /// [MultiRegex] for [prefilter] and [ignoreCase]).
+  new(this._compile, {this.prefilter = false, this.ignoreCase = false});
 
   final RegExp Function(String source, {bool global}) _compile;
+
+  /// Whether searches try each rule only where it can start.
+  final bool prefilter;
+
+  /// Whether the rules ignore case.
+  final bool ignoreCase;
   final List<(String, _RuleOptions)> _rules = [];
   final Map<int, MultiRegex> _multiRegexes = {};
   int _count = 0;
@@ -96,7 +223,11 @@ final class ResumableMultiRegex {
   MultiRegex _getMatcher(int index) {
     final cached = _multiRegexes[index];
     if (cached != null) return cached;
-    final matcher = MultiRegex(_compile);
+    final matcher = MultiRegex(
+      _compile,
+      prefilter: prefilter,
+      ignoreCase: ignoreCase,
+    );
     for (final (re, opts) in _rules.skip(index)) {
       matcher._addRule(re, opts);
     }
@@ -148,7 +279,13 @@ Mode compileLanguage(Language language) {
   );
 
   ResumableMultiRegex buildModeRegex(Mode mode) {
-    final mm = ResumableMultiRegex(langRe);
+    final mm = ResumableMultiRegex(
+      langRe,
+      // (On the VM, whose engine runs alternations slowly; not in Unicode
+      // mode, which the first characters aren't read for.)
+      prefilter: !_onJavaScript && !language.unicodeRegex,
+      ignoreCase: language.caseInsensitive,
+    );
     for (final term in mode.contains!.cast<Mode>()) {
       mm._addRule(
         ext.sourceOf(term.begin) ?? '',
@@ -280,3 +417,7 @@ List<ContainsEntry> _expandOrCloneMode(Mode mode) {
   if (mode.frozen) return [inherit(mode)];
   return [mode];
 }
+
+/// Whether this runs as JavaScript (or WebAssembly), on the platform's
+/// regular expression engine.
+const bool _onJavaScript = bool.fromEnvironment('dart.library.js_interop');
