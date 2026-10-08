@@ -15,6 +15,7 @@ final class FirstChars {
     required this.atEnd,
     required this.wordStart,
     this.run,
+    this.follow,
   });
 
   /// 1 for each ASCII character a match can start with.
@@ -37,8 +38,59 @@ final class FirstChars {
   /// earlier too). 1 for each.
   final Uint8List? run;
 
+  /// What must follow the run every match starts with, when the match
+  /// takes that run whole: see [RunFollow].
+  final RunFollow? follow;
+
   /// Whether a match can start with the ASCII character [c].
   bool has(int c) => _ascii[c] != 0;
+}
+
+/// A match that starts with a run of a class it must take whole: the
+/// expression is `C D* R`, `C+ R` or a group of such a run followed by
+/// `R`, where every match of the rest `R` takes a character and none
+/// starts with one of the run's class (D, or C). Then the run can't stop
+/// early (`R` would start inside it), so the character after the run
+/// (or the text's end) must be one `R` can start with: a superset test
+/// the matcher makes before trying the expression (PCRE2's
+/// auto-possessification, used only as a filter).
+final class RunFollow {
+  new _(
+    this._run, {
+    required this.runNonAscii,
+    required this._follow,
+    required this.followNonAscii,
+    required this.followAtEnd,
+  });
+
+  /// 1 for each ASCII character of the run's class.
+  final Uint8List _run;
+
+  /// Whether the run's class may have characters beyond ASCII (which
+  /// [admits] then can't see past).
+  final bool runNonAscii;
+
+  /// 1 for each ASCII character the rest can start with.
+  final Uint8List _follow;
+
+  /// Whether the rest can start with a character beyond ASCII.
+  final bool followNonAscii;
+
+  /// Whether the rest can match at the text's end.
+  final bool followAtEnd;
+
+  /// Whether a match whose first character is at [at] in [s] may take
+  /// the run after it: false when the character after the run (or the
+  /// text's end) can't start the rest.
+  bool admits(String s, int at) {
+    final n = s.length;
+    for (var e = at + 1; e < n; e++) {
+      final c = s.codeUnitAt(e);
+      if (c >= 128) return runNonAscii || followNonAscii;
+      if (_run[c] == 0) return _follow[c] != 0;
+    }
+    return followAtEnd;
+  }
 }
 
 /// Whether [c] is a word character (`\w`, as `\b` reads it outside
@@ -69,10 +121,28 @@ FirstChars? firstChars(String source, {required bool ignoreCase}) {
       atEnd: chars.atEnd,
       wordStart: chars.boundary && words,
       run: parser.backreferences ? null : chars.run?.ascii,
+      follow: parser.backreferences ? null : _runFollow(chars),
     );
   } on _Unread {
     return null;
   }
+}
+
+/// The [RunFollow] of an expression read as [chars], if it has one.
+RunFollow? _runFollow(_Chars chars) {
+  final run = chars.runClass;
+  final follow = chars.follow;
+  if (run == null || follow == null) return null;
+  for (var c = 0; c < 128; c++) {
+    if (run.ascii[c] != 0 && follow.ascii[c] != 0) return null;
+  }
+  return RunFollow._(
+    run.ascii,
+    runNonAscii: run.nonAscii,
+    follow: follow.ascii,
+    followNonAscii: follow.nonAscii,
+    followAtEnd: follow.atEnd,
+  );
 }
 
 /// What [firstChars] doesn't read.
@@ -104,6 +174,14 @@ final class _Chars {
   /// The class of the run the expression's matches start with (see
   /// [FirstChars.run]).
   _Chars? run;
+
+  /// The class of the run the expression's matches start with after
+  /// their first character, and what can follow that run (the first
+  /// characters of the rest, when the rest can't match empty): see
+  /// [RunFollow]. With [exactRun], the expression is the run alone.
+  _Chars? runClass;
+  _Chars? follow;
+  bool exactRun = false;
 
   /// Whether this set's ASCII characters are all in [other]'s.
   bool asciiIn(_Chars other) {
@@ -188,6 +266,12 @@ final class _Parser {
         at++;
         continue;
       }
+      if (alternatives == 1) {
+        chars
+          ..runClass = first.runClass
+          ..follow = first.follow
+          ..exactRun = first.exactRun;
+      }
       return (
         chars
           ..boundary = boundary
@@ -204,8 +288,10 @@ final class _Parser {
     // The first two terms, for the run.
     _Chars? one;
     _Chars? two;
+    final terms = <(_Chars, bool)>[];
     while (!_done && _c != 0x7c && _c != 0x29 /* ) */ ) {
       final (first, empty) = _term();
+      terms.add((first, empty));
       if (one == null) {
         one = first;
         chars.boundary = first.boundary;
@@ -231,8 +317,48 @@ final class _Parser {
         // (A group whose matches start with a run.)
         chars.run = one.run;
       }
+      _readRunFollow(chars, terms);
     }
     return (chars, open);
+  }
+
+  /// The run a sequence of [terms] starts with after its first character
+  /// (`C D*`, `C+`, or a group that is such a run alone), and what can
+  /// follow it, into [chars].
+  void _readRunFollow(_Chars chars, List<(_Chars, bool)> terms) {
+    final (one, _) = terms[0];
+    final _Chars? runClass;
+    var rest = 1;
+    if (one.single && one.quantified && one.unbounded && one.min >= 1) {
+      runClass = one;
+    } else if (one.single &&
+        !one.quantified &&
+        terms.length > 1 &&
+        terms[1].$1.single &&
+        terms[1].$1.unbounded) {
+      runClass = terms[1].$1;
+      rest = 2;
+    } else if (!one.single && !one.quantified && one.exactRun) {
+      runClass = one.runClass;
+    } else {
+      return;
+    }
+    if (rest == terms.length) {
+      chars
+        ..exactRun = true
+        ..runClass = runClass;
+      return;
+    }
+    final follow = _Chars();
+    for (final (term, empty) in terms.skip(rest)) {
+      follow.addAll(term);
+      if (!empty) {
+        chars
+          ..runClass = runClass
+          ..follow = follow;
+        return;
+      }
+    }
   }
 
   /// An atom and its quantifier.
@@ -361,7 +487,14 @@ final class _Parser {
     // nothing of the next one here; a lookahead asks what it matches of
     // it (unless it can match with none).
     if (zeroWidth) return (_Chars(), true);
-    if (lookahead) return empty ? (_Chars(), true) : (chars..run = null, false);
+    if (lookahead) {
+      // (It takes no character: no run starts with it.)
+      chars
+        ..runClass = null
+        ..follow = null
+        ..exactRun = false;
+      return empty ? (_Chars(), true) : (chars..run = null, false);
+    }
     return (chars, empty);
   }
 

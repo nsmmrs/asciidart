@@ -71,6 +71,10 @@ final class MultiRegex {
   late final List<int> _missAt = List.filled(_regexes.length, 0);
   late final List<int> _missTo = List.filled(_regexes.length, 0);
 
+  /// What must follow the run each rule's matches take whole, if one (see
+  /// [FirstChars.follow]).
+  late final List<RunFollow?> _follow = List.filled(_regexes.length, null);
+
   /// Each rule alone (compiled when first tried).
   late final List<RegExp?> _alone = List.filled(_regexes.length, null);
 
@@ -114,6 +118,7 @@ final class MultiRegex {
       if (first.atEnd) table[_atEnd].add(i);
       _wordStart[i] = first.wordStart;
       _run[i] = first.run;
+      _follow[i] = first.follow;
     }
     return table;
   }
@@ -157,6 +162,10 @@ final class MultiRegex {
       for (final i in rules) {
         if (afterWord && _wordStart[i]) continue;
         if (at < _missTo[i] && at > _missAt[i] && identical(s, _missIn[i])) {
+          continue;
+        }
+        if (_follow[i] case final follow? when !follow.admits(s, at)) {
+          if (_run[i] case final run?) _missed(i, run, s, at);
           continue;
         }
         final alone = _alone[i] ??= _compile(_regexes[i].$2);

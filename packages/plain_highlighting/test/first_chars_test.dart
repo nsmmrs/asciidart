@@ -1,9 +1,10 @@
 /// What the matchers skip by (`lib/src/first_chars.dart`) holds for every
 /// rule of every language: on upstream's markup and detection samples, at
 /// every position where a rule matches, its first characters have the
-/// character there (or the end), a rule that starts words is at one, and
+/// character there (or the end), a rule that starts words is at one,
 /// where a rule that starts with a run doesn't match, it doesn't match
-/// further into the run either.
+/// further into the run either, and every filter the matcher applies
+/// before trying a rule (what follows a run) lets the rule be tried.
 @TestOn('vm')
 library;
 
@@ -78,12 +79,42 @@ void main() {
     expect(read(r'(?=\w+)x')!.run, isNull, reason: 'lookahead');
   });
 
+  test('what follows a run', () {
+    RunFollow? follow(String source, {bool ignoreCase = false}) =>
+        firstChars(source, ignoreCase: ignoreCase)!.follow;
+    final generic = follow(r'([a-z]\w*)(\s*<)')!;
+    expect(generic.admits('abc<', 0), isTrue);
+    expect(generic.admits('abc  <', 0), isTrue);
+    expect(generic.admits('abc.', 0), isFalse);
+    expect(generic.admits('abc', 0), isFalse, reason: 'the end');
+    expect(generic.admits('abcé', 0), isTrue, reason: r'\s has more');
+    expect(follow(r'\w+$')!.admits('ab', 0), isTrue);
+    expect(follow(r'\w+$')!.admits('ab\n', 0), isTrue);
+    expect(follow(r'\w+$')!.admits('ab.', 0), isFalse);
+    expect(follow('[a-z]+x', ignoreCase: true), isNull, reason: 'x in it');
+    expect(follow('[^"]+"')!.admits('aé"', 0), isTrue, reason: 'unseen');
+    expect(follow(r'a[b-z]+\(')!.admits('ab-', 0), isFalse);
+    expect(follow(r'\.\d+[eE]')!.admits('.12e', 0), isTrue);
+    expect(follow(r'\.\d+[eE]')!.admits('.12+', 0), isFalse);
+    expect(follow(r'\w+'), isNull, reason: 'nothing follows');
+    expect(follow(r'\w+\s*'), isNull, reason: 'the rest can be empty');
+    expect(follow(r'\w+\d'), isNull, reason: 'the rest can start the run');
+    expect(follow(r'(?=\w+)x'), isNull, reason: 'lookahead');
+    expect(follow(r'(\w)+x'), isNull, reason: 'a quantified group');
+    expect(follow(r'(\w+)=\1'), isNull, reason: 'backreference');
+    expect(follow(r'\w*x'), isNull, reason: 'the run can be empty');
+    expect(follow(r'(\w+)\s*=')!.admits('ab =', 0), isTrue);
+    expect(follow(r'(?:[a-z]\w*)\s*=')!.admits('ab+', 0), isFalse);
+    expect(follow(r'\w+|x'), isNull, reason: 'alternatives');
+  });
+
   test('every rule of every language, on the samples', () {
     final engine = Engine();
     for (final (name, aliases, at) in allLanguages) {
       engine.registerLanguage(name, () => readGrammar(at), aliases: aliases);
     }
     var checked = 0;
+    var followed = 0;
     for (final name in engine.languageNames) {
       final language = engine.getLanguage(name)!;
       if (language.unicodeRegex) continue;
@@ -131,11 +162,16 @@ void main() {
                 reason: where,
               );
             }
+            if (first.follow case final follow?) {
+              expect(follow.admits(text, at), isTrue, reason: '$where, follow');
+              followed++;
+            }
             checked++;
           }
         }
       }
     }
     expect(checked, greaterThan(10000));
+    expect(followed, greaterThan(1000));
   });
 }
