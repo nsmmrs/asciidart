@@ -4,6 +4,10 @@
 
 - Faster checksums, same values: CRC-32 slices by 8 and Adler-32 reads
   typed bytes eight at a time.
+- A table-driven inflater (two-level tables, output written in place,
+  stored blocks copied whole): 3-5x faster on compressed data, 25x on
+  stored blocks; the same errors for damaged streams. A large result
+  (256 KiB or more) is a view of a larger buffer.
 - CRC-32, gzip (RFC 1952) and ZIP archives: a reproducible writer and a
   bounds-checked reader, both with ZIP64. They come from ptome's EPUB
   writer; plain_pdf's PNG reader and ptome's EPUB use them.

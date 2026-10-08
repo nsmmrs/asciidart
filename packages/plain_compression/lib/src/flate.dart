@@ -705,75 +705,218 @@ Uint8List inflate(List<int> data) => _Inflater(data, 0).inflate();
   return (inflater.inflate(), inflater.endOffset);
 }
 
-final class _Huffman {
-  new(List<int> lengths) {
-    for (final length in lengths) {
-      counts[length] += 1;
-    }
-    counts[0] = 0;
-    final offsets = List<int>.filled(16, 0);
-    for (var len = 1; len < 15; len++) {
-      offsets[len + 1] = offsets[len] + counts[len];
-    }
-    symbols = List<int>.filled(lengths.length, 0);
-    for (var s = 0; s < lengths.length; s++) {
-      if (lengths[s] != 0) symbols[offsets[lengths[s]]++] = s;
-    }
-  }
+/// A Huffman decoding table, indexed by the next [rootBits] bits of the
+/// stream (zlib's and libdeflate's two-level layout).
+///
+/// An entry is 0 where no code starts with those bits, `symbol << 8 |
+/// length` for a code of that length, or, where codes longer than
+/// [rootBits] start, a subtable: `offset << 8 | 0x80 | bits`, indexed by
+/// the `bits` bits after the root's; its entries hold the codes' whole
+/// lengths.
+///
+/// The codes are canonical (RFC 1951, 3.2.2) the way puff decodes them:
+/// an incomplete code leaves entries 0, and an over-subscribed one keeps
+/// the codes that fit their length and loses the rest, which is how the
+/// bit-at-a-time decoder before this one read malformed streams.
+final class _Table {
+  new(this.entries, this.rootBits);
 
-  final List<int> counts = List<int>.filled(16, 0);
-  late final List<int> symbols;
+  final Int32List entries;
+  final int rootBits;
 }
 
-final class _Inflater {
-  new(this._data, this._at);
+/// The table for the code [lengths] of the [count] symbols from [start],
+/// its root at most [maxRootBits] bits.
+_Table _table(Uint8List lengths, int start, int count, int maxRootBits) {
+  final counts = Int32List(16);
+  for (var s = start; s < start + count; s++) {
+    counts[lengths[s]] += 1;
+  }
+  counts[0] = 0;
+  final offsets = Int32List(17);
+  var maxLength = 0;
+  for (var length = 1; length <= 15; length++) {
+    offsets[length + 1] = offsets[length] + counts[length];
+    if (counts[length] > 0) maxLength = length;
+  }
+  final root = maxLength == 0
+      ? 1
+      : (maxLength < maxRootBits ? maxLength : maxRootBits);
+  final rootSize = 1 << root;
+  // The symbols by length, then symbol, and their codes, up to the first
+  // code too big for its length.
+  final sorted = Int32List(offsets[16]);
+  for (var s = 0; s < count; s++) {
+    final length = lengths[start + s];
+    if (length != 0) sorted[offsets[length]++] = s;
+  }
+  final codes = Int32List(sorted.length);
+  var defined = 0;
+  var code = 0;
+  lengths:
+  for (var length = 1; length <= 15; length++) {
+    for (var k = counts[length]; k > 0; k--) {
+      if (code >= 1 << length) break lengths;
+      codes[defined++] = code++;
+    }
+    code <<= 1;
+  }
+  // The subtables' sizes, by the root bits their codes start with (the
+  // codes come by length, so the last one of a prefix is its longest).
+  final subBits = Int32List(rootSize);
+  for (var k = 0; k < defined; k++) {
+    final length = lengths[start + sorted[k]];
+    if (length > root) subBits[codes[k] >> (length - root)] = length - root;
+  }
+  var size = rootSize;
+  for (var prefix = 0; prefix < rootSize; prefix++) {
+    if (subBits[prefix] > 0) size += 1 << subBits[prefix];
+  }
+  final entries = Int32List(size);
+  final subOffsets = Int32List(rootSize);
+  var next = rootSize;
+  for (var prefix = 0; prefix < rootSize; prefix++) {
+    final bits = subBits[prefix];
+    if (bits == 0) continue;
+    subOffsets[prefix] = next;
+    entries[_reversed(prefix, root)] = next << 8 | 0x80 | bits;
+    next += 1 << bits;
+  }
+  for (var k = 0; k < defined; k++) {
+    final symbol = sorted[k];
+    final length = lengths[start + symbol];
+    final entry = symbol << 8 | length;
+    final code = codes[k];
+    if (length <= root) {
+      for (var i = _reversed(code, length); i < rootSize; i += 1 << length) {
+        entries[i] = entry;
+      }
+    } else {
+      final rest = length - root;
+      final prefix = code >> rest;
+      final offset = subOffsets[prefix];
+      final end = 1 << subBits[prefix];
+      final first = _reversed(code & ((1 << rest) - 1), rest);
+      for (var i = first; i < end; i += 1 << rest) {
+        entries[offset + i] = entry;
+      }
+    }
+  }
+  return _Table(entries, root);
+}
 
-  final List<int> _data;
+/// The low [length] bits of [code] (at most 15) in reverse order.
+int _reversed(int code, int length) =>
+    ((_reversedBytes[code & 0xff] << 8) | _reversedBytes[code >> 8]) >>
+    (16 - length);
+
+final Uint8List _reversedBytes = () {
+  final table = Uint8List(256);
+  for (var b = 0; b < 256; b++) {
+    var r = 0;
+    for (var k = 0; k < 8; k++) {
+      r |= ((b >> k) & 1) << (7 - k);
+    }
+    table[b] = r;
+  }
+  return table;
+}();
+
+final _Table _fixedLiterals = _table(
+  Uint8List.fromList([for (var s = 0; s < 288; s++) _fixedLength(s)]),
+  0,
+  288,
+  9,
+);
+
+int _fixedLength(int symbol) {
+  if (symbol < 144) return 8;
+  if (symbol < 256) return 9;
+  if (symbol < 280) return 7;
+  return 8;
+}
+
+final _Table _fixedDistances = _table(
+  Uint8List(30)..fillRange(0, 30, 5),
+  0,
+  30,
+  5,
+);
+
+const _endedEarly = FormatException('deflate data ended early');
+
+/// Inflates with two-level tables and a bit buffer refilled a byte at a
+/// time up to 24 to 31 bits, so values stay below 2^31 (the same with
+/// dart2js); writes straight into a growing buffer.
+final class _Inflater {
+  new(List<int> data, this._at)
+    : _data = data is Uint8List ? data : Uint8List.fromList(data),
+      _out = Uint8List(
+        data.length - _at > 0 ? (data.length - _at) * 4 + 64 : 64,
+      );
+
+  final Uint8List _data;
   int _at;
   int _bitBuffer = 0;
   int _bitCount = 0;
-  final BytesBuilder _out = BytesBuilder(copy: false);
-  final Uint8List _window = Uint8List(1 << 16);
-  int _windowAt = 0;
-  int _total = 0;
+  Uint8List _out;
+  int _pos = 0;
 
   /// Where the compressed data ended (after the last byte used).
-  int get endOffset => _at;
+  int get endOffset => _at - (_bitCount >> 3);
 
-  int _bits(int need) {
-    while (_bitCount < need) {
-      if (_at >= _data.length) {
-        throw const FormatException('deflate data ended early');
-      }
-      _bitBuffer |= _data[_at++] << _bitCount;
+  /// Reads bytes while the buffer holds fewer than 24 bits and there are
+  /// any.
+  void _refill() {
+    final data = _data;
+    while (_bitCount < 24 && _at < data.length) {
+      _bitBuffer |= data[_at++] << _bitCount;
       _bitCount += 8;
     }
+  }
+
+  int _bits(int need) {
+    if (_bitCount < need) {
+      _refill();
+      if (_bitCount < need) throw _endedEarly;
+    }
     final value = _bitBuffer & ((1 << need) - 1);
-    _bitBuffer >>= need;
+    _bitBuffer >>>= need;
     _bitCount -= need;
     return value;
   }
 
-  void _emit(int byte) {
-    _window[_windowAt] = byte;
-    _windowAt = (_windowAt + 1) & 0xffff;
-    _total += 1;
-    if (_windowAt == 0) _out.add(Uint8List.fromList(_window));
+  int _decode(_Table table) {
+    if (_bitCount < 15) _refill();
+    final entries = table.entries;
+    final root = table.rootBits;
+    var entry = entries[_bitBuffer & ((1 << root) - 1)];
+    if (entry & 0x80 != 0) {
+      entry =
+          entries[(entry >> 8) +
+              ((_bitBuffer >>> root) & ((1 << (entry & 15)) - 1))];
+    }
+    final length = entry & 15;
+    if (length == 0 || length > _bitCount) throw _badCode(length, _bitCount);
+    _bitBuffer >>>= length;
+    _bitCount -= length;
+    return entry >> 8;
   }
 
-  int _decode(_Huffman h) {
-    var code = 0;
-    var first = 0;
-    var index = 0;
-    for (var len = 1; len <= 15; len++) {
-      code |= _bits(1);
-      final count = h.counts[len];
-      if (code - count < first) return h.symbols[index + (code - first)];
-      index += count;
-      first = (first + count) << 1;
-      code <<= 1;
+  /// The error for a code of [length] (0: none) with [available] bits
+  /// left: the bit-at-a-time decoder read 15 bits before it gave up on a
+  /// code, so it ran out of data first when fewer were left.
+  static FormatException _badCode(int length, int available) =>
+      length == 0 && available >= 15
+      ? const FormatException('invalid deflate code')
+      : _endedEarly;
+
+  void _grow(int need) {
+    var size = _out.length * 2;
+    while (size < _pos + need) {
+      size *= 2;
     }
-    throw const FormatException('invalid deflate code');
+    _out = Uint8List(size)..setRange(0, _pos, _out);
   }
 
   Uint8List inflate() {
@@ -784,110 +927,197 @@ final class _Inflater {
         case 0:
           _stored();
         case 1:
-          _codes(_fixedLit, _fixedDist);
+          _codes(_fixedLiterals, _fixedDistances);
         case 2:
-          final (lit, dist) = _dynamic();
-          _codes(lit, dist);
+          final (literals, distances) = _dynamic();
+          _codes(literals, distances);
         default:
           throw const FormatException('invalid deflate block type');
       }
     } while (last == 0);
-    if (_windowAt > 0) _out.add(Uint8List.sublistView(_window, 0, _windowAt));
-    return _out.takeBytes();
+    // A large result is a view of the buffer: the pages past its end were
+    // never touched, and copying would fault in as many again.
+    if (_pos == _out.length) return _out;
+    if (_pos >= 1 << 18) return Uint8List.sublistView(_out, 0, _pos);
+    return _out.sublist(0, _pos);
   }
 
   void _stored() {
+    // Give back the whole bytes the buffer holds; the rest of the current
+    // byte is padding.
+    _at -= _bitCount >> 3;
     _bitBuffer = 0;
     _bitCount = 0;
-    if (_at + 4 > _data.length) {
-      throw const FormatException('deflate data ended early');
-    }
-    final length = _data[_at] | (_data[_at + 1] << 8);
-    final check = _data[_at + 2] | (_data[_at + 3] << 8);
+    final data = _data;
+    if (_at + 4 > data.length) throw _endedEarly;
+    final length = data[_at] | (data[_at + 1] << 8);
+    final check = data[_at + 2] | (data[_at + 3] << 8);
     _at += 4;
     if (length != (~check & 0xffff)) {
       throw const FormatException('invalid stored block length');
     }
-    if (_at + length > _data.length) {
-      throw const FormatException('deflate data ended early');
-    }
-    for (var k = 0; k < length; k++) {
-      _emit(_data[_at++]);
-    }
+    if (_at + length > data.length) throw _endedEarly;
+    if (_pos + length > _out.length) _grow(length);
+    _out.setRange(_pos, _pos + length, data, _at);
+    _pos += length;
+    _at += length;
   }
 
-  static final _Huffman _fixedLit = _Huffman([
-    for (var s = 0; s < 288; s++) _fixedLength(s),
-  ]);
-
-  static int _fixedLength(int symbol) {
-    if (symbol < 144) return 8;
-    if (symbol < 256) return 9;
-    if (symbol < 280) return 7;
-    return 8;
-  }
-
-  static final _Huffman _fixedDist = _Huffman(List<int>.filled(30, 5));
-
-  (_Huffman, _Huffman) _dynamic() {
+  (_Table, _Table) _dynamic() {
     final hlit = _bits(5) + 257;
     final hdist = _bits(5) + 1;
     final hclen = _bits(4) + 4;
-    final clLengths = List<int>.filled(19, 0);
+    final clLengths = Uint8List(19);
     for (var k = 0; k < hclen; k++) {
       clLengths[_codeLengthOrder[k]] = _bits(3);
     }
-    final cl = _Huffman(clLengths);
-    final lengths = <int>[];
-    while (lengths.length < hlit + hdist) {
+    final cl = _table(clLengths, 0, 19, 7);
+    final total = hlit + hdist;
+    final lengths = Uint8List(total);
+    var n = 0;
+    while (n < total) {
       final symbol = _decode(cl);
       if (symbol < 16) {
-        lengths.add(symbol);
-      } else if (symbol == 16) {
-        if (lengths.isEmpty) throw const FormatException('invalid repeat');
-        final previous = lengths.last;
-        for (var k = 3 + _bits(2); k > 0; k--) {
-          lengths.add(previous);
-        }
-      } else {
-        final repeat = symbol == 17 ? 3 + _bits(3) : 11 + _bits(7);
-        for (var k = 0; k < repeat; k++) {
-          lengths.add(0);
-        }
+        lengths[n++] = symbol;
+        continue;
       }
+      var value = 0;
+      int repeat;
+      if (symbol == 16) {
+        if (n == 0) throw const FormatException('invalid repeat');
+        value = lengths[n - 1];
+        repeat = 3 + _bits(2);
+      } else {
+        repeat = symbol == 17 ? 3 + _bits(3) : 11 + _bits(7);
+      }
+      if (n + repeat > total) {
+        throw const FormatException('too many code lengths');
+      }
+      lengths.fillRange(n, n + repeat, value);
+      n += repeat;
     }
-    if (lengths.length > hlit + hdist) {
-      throw const FormatException('too many code lengths');
-    }
-    return (
-      _Huffman(lengths.sublist(0, hlit)),
-      _Huffman(lengths.sublist(hlit)),
-    );
+    return (_table(lengths, 0, hlit, 10), _table(lengths, hlit, hdist, 8));
   }
 
-  void _codes(_Huffman lit, _Huffman dist) {
+  /// Decodes the symbols of a compressed block up to its end-of-block code.
+  void _codes(_Table literals, _Table distances) {
+    final data = _data;
+    final dataLength = data.length;
+    final lit = literals.entries;
+    final litRoot = literals.rootBits;
+    final litMask = (1 << litRoot) - 1;
+    final dist = distances.entries;
+    final distRoot = distances.rootBits;
+    final distMask = (1 << distRoot) - 1;
+    var buffer = _bitBuffer;
+    var count = _bitCount;
+    var at = _at;
+    var out = _out;
+    var pos = _pos;
     while (true) {
-      final symbol = _decode(lit);
+      if (count < 15) {
+        while (count < 24 && at < dataLength) {
+          buffer |= data[at++] << count;
+          count += 8;
+        }
+      }
+      var entry = lit[buffer & litMask];
+      if (entry & 0x80 != 0) {
+        entry =
+            lit[(entry >> 8) +
+                ((buffer >>> litRoot) & ((1 << (entry & 15)) - 1))];
+      }
+      var length = entry & 15;
+      if (length == 0 || length > count) throw _badCode(length, count);
+      buffer >>>= length;
+      count -= length;
+      final symbol = entry >> 8;
       if (symbol < 256) {
-        _emit(symbol);
-      } else if (symbol == 256) {
-        return;
+        if (pos == out.length) {
+          _pos = pos;
+          _grow(1);
+          out = _out;
+        }
+        out[pos++] = symbol;
+        continue;
+      }
+      if (symbol == 256) break;
+      final code = symbol - 257;
+      if (code >= 29) throw const FormatException('invalid length code');
+      length = _lengthBase[code];
+      final lengthExtra = _lengthExtra[code];
+      if (lengthExtra > 0) {
+        if (count < lengthExtra) {
+          while (count < 24 && at < dataLength) {
+            buffer |= data[at++] << count;
+            count += 8;
+          }
+          if (count < lengthExtra) throw _endedEarly;
+        }
+        length += buffer & ((1 << lengthExtra) - 1);
+        buffer >>>= lengthExtra;
+        count -= lengthExtra;
+      }
+      if (count < 15) {
+        while (count < 24 && at < dataLength) {
+          buffer |= data[at++] << count;
+          count += 8;
+        }
+      }
+      entry = dist[buffer & distMask];
+      if (entry & 0x80 != 0) {
+        entry =
+            dist[(entry >> 8) +
+                ((buffer >>> distRoot) & ((1 << (entry & 15)) - 1))];
+      }
+      final codeLength = entry & 15;
+      if (codeLength == 0 || codeLength > count) {
+        throw _badCode(codeLength, count);
+      }
+      buffer >>>= codeLength;
+      count -= codeLength;
+      final distCode = entry >> 8;
+      if (distCode >= 30) {
+        throw const FormatException('invalid distance code');
+      }
+      var distance = _distBase[distCode];
+      final distExtra = _distExtra[distCode];
+      if (distExtra > 0) {
+        if (count < distExtra) {
+          while (count < 24 && at < dataLength) {
+            buffer |= data[at++] << count;
+            count += 8;
+          }
+          if (count < distExtra) throw _endedEarly;
+        }
+        distance += buffer & ((1 << distExtra) - 1);
+        buffer >>>= distExtra;
+        count -= distExtra;
+      }
+      if (distance > pos) {
+        throw const FormatException('distance too far back');
+      }
+      if (pos + length > out.length) {
+        _pos = pos;
+        _grow(length);
+        out = _out;
+      }
+      final end = pos + length;
+      if (distance == 1) {
+        out.fillRange(pos, end, out[pos - 1]);
+        pos = end;
+      } else if (distance >= length && length > 16) {
+        out.setRange(pos, end, out, pos - distance);
+        pos = end;
       } else {
-        final code = symbol - 257;
-        if (code >= 29) throw const FormatException('invalid length code');
-        final length = _lengthBase[code] + _bits(_lengthExtra[code]);
-        final distCode = _decode(dist);
-        if (distCode >= 30) {
-          throw const FormatException('invalid distance code');
-        }
-        final distance = _distBase[distCode] + _bits(_distExtra[distCode]);
-        if (distance > _total) {
-          throw const FormatException('distance too far back');
-        }
-        for (var k = 0; k < length; k++) {
-          _emit(_window[(_windowAt - distance) & 0xffff]);
+        for (var from = pos - distance; pos < end; pos++, from++) {
+          out[pos] = out[from];
         }
       }
     }
+    _bitBuffer = buffer;
+    _bitCount = count;
+    _at = at;
+    _pos = pos;
   }
 }
