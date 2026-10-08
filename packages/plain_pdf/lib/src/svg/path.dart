@@ -262,36 +262,99 @@ final class _PathParser {
     }
   }
 
-  static final RegExp _number = RegExp(
-    r'[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?',
-  );
+  static bool _isDigit(int c) => c >= 0x30 && c <= 0x39;
 
+  /// The next number, or null: `[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?`,
+  /// scanned by hand.
   double? _numberOrNull() {
     _skipSeparators();
-    final match = _number.matchAsPrefix(data, _at);
-    if (match == null) return null;
-    _at = match.end;
-    return double.parse(match[0]!);
+    final length = data.length;
+    final start = _at;
+    var i = start;
+    if (i < length) {
+      final c = data.codeUnitAt(i);
+      if (c == 0x2b || c == 0x2d) i++; // + -
+    }
+    final digits = i;
+    while (i < length && _isDigit(data.codeUnitAt(i))) {
+      i++;
+    }
+    if (i > digits) {
+      // Digits, then perhaps a point and more digits.
+      if (i < length && data.codeUnitAt(i) == 0x2e) {
+        i++;
+        while (i < length && _isDigit(data.codeUnitAt(i))) {
+          i++;
+        }
+      }
+    } else {
+      // A point and at least one digit.
+      if (i + 1 >= length ||
+          data.codeUnitAt(i) != 0x2e ||
+          !_isDigit(data.codeUnitAt(i + 1))) {
+        return null;
+      }
+      i += 2;
+      while (i < length && _isDigit(data.codeUnitAt(i))) {
+        i++;
+      }
+    }
+    // An exponent counts only with its digits.
+    if (i < length && data.codeUnitAt(i) | 0x20 == 0x65) {
+      var j = i + 1;
+      if (j < length) {
+        final c = data.codeUnitAt(j);
+        if (c == 0x2b || c == 0x2d) j++;
+      }
+      final exponent = j;
+      while (j < length && _isDigit(data.codeUnitAt(j))) {
+        j++;
+      }
+      if (j > exponent) i = j;
+    }
+    _at = i;
+    return double.parse(data.substring(start, i));
+  }
+
+  /// The numbers read last, by [_numbers].
+  final List<double> _values = List.filled(6, 0);
+
+  /// Reads [count] numbers into [_values]; false when they aren't there.
+  bool _numbers(int count) {
+    for (var i = 0; i < count; i++) {
+      final v = _numberOrNull();
+      if (v == null) return false;
+      _values[i] = v;
+    }
+    return true;
   }
 
   bool? _flag() {
     _skipSeparators();
     if (_at >= data.length) return null;
-    final c = data[_at];
-    if (c != '0' && c != '1') return null;
+    final c = data.codeUnitAt(_at);
+    if (c != 0x30 && c != 0x31) return null;
     _at++;
-    return c == '1';
+    return c == 0x31;
   }
 
   bool _startsNumber() {
     _skipSeparators();
     if (_at >= data.length) return false;
-    final c = data[_at];
-    return '0123456789+-.'.contains(c);
+    final c = data.codeUnitAt(_at);
+    return _isDigit(c) || c == 0x2b || c == 0x2d || c == 0x2e;
   }
+
+  /// Whether [c] is a command letter (`MmLlHhVvCcSsQqTtAaZz`).
+  static bool _isCommand(int c) => switch (c | 0x20) {
+    0x6d || 0x6c || 0x68 || 0x76 || 0x63 || 0x73 || 0x71 || 0x74 => true,
+    0x61 || 0x7a => true,
+    _ => false,
+  };
 
   SvgPath parse() {
     final segments = <PathSegment>[];
+    final v = _values;
     var x = 0.0;
     var y = 0.0;
     var startX = 0.0;
@@ -299,68 +362,54 @@ final class _PathParser {
     // The last control point, for smooth curves.
     double? cx;
     double? cy;
-    String? previous;
-    String? command;
+    // The previous and current commands' letters (0: none yet).
+    var previous = 0;
+    var command = 0;
     while (true) {
       _skipSeparators();
       if (_at >= data.length) break;
-      final c = data[_at];
-      if (RegExp('[MmLlHhVvCcSsQqTtAaZz]').hasMatch(c)) {
+      final c = data.codeUnitAt(_at);
+      if (_isCommand(c)) {
         command = c;
         _at++;
-      } else if (command == null || !_startsNumber()) {
+      } else if (command == 0 || !_startsNumber()) {
         break;
-      } else if (command == 'M') {
-        command = 'L'; // numbers after a move are lines
-      } else if (command == 'm') {
-        command = 'l';
+      } else if (command == 0x4d) {
+        command = 0x4c; // numbers after a move are lines: M to L
+      } else if (command == 0x6d) {
+        command = 0x6c; // m to l
       }
-      final relative = command.toLowerCase() == command;
+      final relative = command >= 0x61; // lower case
       final ox = relative ? x : 0.0;
       final oy = relative ? y : 0.0;
-      List<double>? numbers(int count) {
-        final values = <double>[];
-        for (var i = 0; i < count; i++) {
-          final v = _numberOrNull();
-          if (v == null) return null;
-          values.add(v);
-        }
-        return values;
-      }
-
       var smooth = false;
-      switch (command.toUpperCase()) {
-        case 'Z':
+      switch (command | 0x20) {
+        case 0x7a: // z
           segments.add(const CloseSegment());
           x = startX;
           y = startY;
-        case 'M':
-          final v = numbers(2);
-          if (v == null) return SvgPath(segments);
+        case 0x6d: // m
+          if (!_numbers(2)) return SvgPath(segments);
           x = ox + v[0];
           y = oy + v[1];
           startX = x;
           startY = y;
           segments.add(MoveSegment(x, y));
-        case 'L':
-          final v = numbers(2);
-          if (v == null) return SvgPath(segments);
+        case 0x6c: // l
+          if (!_numbers(2)) return SvgPath(segments);
           x = ox + v[0];
           y = oy + v[1];
           segments.add(LineSegment(x, y));
-        case 'H':
-          final v = numbers(1);
-          if (v == null) return SvgPath(segments);
+        case 0x68: // h
+          if (!_numbers(1)) return SvgPath(segments);
           x = ox + v[0];
           segments.add(LineSegment(x, y));
-        case 'V':
-          final v = numbers(1);
-          if (v == null) return SvgPath(segments);
+        case 0x76: // v
+          if (!_numbers(1)) return SvgPath(segments);
           y = oy + v[0];
           segments.add(LineSegment(x, y));
-        case 'C':
-          final v = numbers(6);
-          if (v == null) return SvgPath(segments);
+        case 0x63: // c
+          if (!_numbers(6)) return SvgPath(segments);
           segments.add(
             CubicSegment(
               ox + v[0],
@@ -376,10 +425,9 @@ final class _PathParser {
           x = ox + v[4];
           y = oy + v[5];
           smooth = true;
-        case 'S':
-          final v = numbers(4);
-          if (v == null) return SvgPath(segments);
-          final reflect = previous != null && 'CcSs'.contains(previous);
+        case 0x73: // s
+          if (!_numbers(4)) return SvgPath(segments);
+          final reflect = previous | 0x20 == 0x63 || previous | 0x20 == 0x73;
           final x1 = reflect ? 2 * x - cx! : x;
           final y1 = reflect ? 2 * y - cy! : y;
           segments.add(
@@ -390,9 +438,8 @@ final class _PathParser {
           x = ox + v[2];
           y = oy + v[3];
           smooth = true;
-        case 'Q':
-          final v = numbers(4);
-          if (v == null) return SvgPath(segments);
+        case 0x71: // q
+          if (!_numbers(4)) return SvgPath(segments);
           final qx = ox + v[0];
           final qy = oy + v[1];
           segments.add(_quadratic(x, y, qx, qy, ox + v[2], oy + v[3]));
@@ -401,10 +448,9 @@ final class _PathParser {
           x = ox + v[2];
           y = oy + v[3];
           smooth = true;
-        case 'T':
-          final v = numbers(2);
-          if (v == null) return SvgPath(segments);
-          final reflect = previous != null && 'QqTt'.contains(previous);
+        case 0x74: // t
+          if (!_numbers(2)) return SvgPath(segments);
+          final reflect = previous | 0x20 == 0x71 || previous | 0x20 == 0x74;
           final qx = reflect ? 2 * x - cx! : x;
           final qy = reflect ? 2 * y - cy! : y;
           segments.add(_quadratic(x, y, qx, qy, ox + v[0], oy + v[1]));
@@ -413,23 +459,25 @@ final class _PathParser {
           x = ox + v[0];
           y = oy + v[1];
           smooth = true;
-        case 'A':
-          final radii = numbers(3);
+        case 0x61: // a
+          if (!_numbers(3)) return SvgPath(segments);
+          final rx = v[0];
+          final ry = v[1];
+          final angle = v[2];
           final large = _flag();
-          final sweep = _flag();
-          final end = numbers(2);
-          if (radii == null || large == null || sweep == null || end == null) {
+          final sweep = large == null ? null : _flag();
+          if (large == null || sweep == null || !_numbers(2)) {
             return SvgPath(segments);
           }
-          final ex = ox + end[0];
-          final ey = oy + end[1];
+          final ex = ox + v[0];
+          final ey = oy + v[1];
           segments.addAll(
             arcToCubics(
               x,
               y,
-              radii[0],
-              radii[1],
-              radii[2],
+              rx,
+              ry,
+              angle,
               ex,
               ey,
               largeArc: large,
