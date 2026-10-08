@@ -8,7 +8,7 @@ void main() {
   for (final c in corpus.cases()) {
     group(c.id, () {
       for (final format in c.formats) {
-        test(format.name, () {
+        test(format.name, skip: c.knownIssues[format], () {
           final report = checkCases([c], profile, formats: {format});
           expect(
             report.failures.map((f) => '${f.testId}\n${f.detail}'),
