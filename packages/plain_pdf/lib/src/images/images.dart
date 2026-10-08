@@ -424,10 +424,16 @@ final class PngImage extends PdfImage {
       interlaced: interlaced,
     );
     final Uint8List color;
+    // Null when every pixel is opaque.
     final Uint8List? alpha;
     final int alphaDepth;
     if (colorType.hasAlpha) {
-      (color, alpha) = _splitAlpha(pixels, colorChannels);
+      final (samples, alphaSamples, opaque) = _splitAlpha(
+        pixels,
+        colorChannels,
+      );
+      color = samples;
+      alpha = opaque ? null : alphaSamples;
       alphaDepth = bitDepth;
     } else if (colorType == PngColorType.palette && transparency != null) {
       color = pixels;
@@ -442,7 +448,7 @@ final class PngImage extends PdfImage {
       compress: options.compress,
       level: options.compressionLevel,
       color: _encodedSamples(options, color, bitDepth, colorChannels),
-      alpha: alpha == null || alpha.every((b) => b == 0xff)
+      alpha: alpha == null
           ? null
           : _encodedSamples(options, alpha, alphaDepth, 1),
       alphaDepth: alphaDepth,
@@ -560,8 +566,12 @@ final class PngImage extends PdfImage {
     ]);
   }
 
-  /// [pixels] split into color samples and alpha samples.
-  (Uint8List, Uint8List) _splitAlpha(Uint8List pixels, int colorChannels) {
+  /// [pixels] split into color samples and alpha samples, and whether
+  /// every alpha byte is 0xff.
+  (Uint8List, Uint8List, bool) _splitAlpha(
+    Uint8List pixels,
+    int colorChannels,
+  ) {
     final sample = bitDepth >> 3;
     final count = width * height;
     final colorBytes = colorChannels * sample;
@@ -569,15 +579,19 @@ final class PngImage extends PdfImage {
     final alpha = Uint8List(count * sample);
     var from = 0;
     var c = 0;
+    // The AND of every alpha byte: 0xff when all are.
+    var all = 0xff;
     if (sample == 1 && colorChannels == 3) {
       // (8-bit RGBA, the usual.)
       for (var p = 0; p < count; p++, from += 4, c += 3) {
         color[c] = pixels[from];
         color[c + 1] = pixels[from + 1];
         color[c + 2] = pixels[from + 2];
-        alpha[p] = pixels[from + 3];
+        final value = pixels[from + 3];
+        alpha[p] = value;
+        all &= value;
       }
-      return (color, alpha);
+      return (color, alpha, all == 0xff);
     }
     var a = 0;
     for (var p = 0; p < count; p++) {
@@ -585,28 +599,33 @@ final class PngImage extends PdfImage {
         color[c++] = pixels[from++];
       }
       for (var k = 0; k < sample; k++) {
-        alpha[a++] = pixels[from++];
+        final value = pixels[from++];
+        alpha[a++] = value;
+        all &= value;
       }
     }
-    return (color, alpha);
+    return (color, alpha, all == 0xff);
   }
 
   /// The alpha of each pixel of a palette image, from the palette's alpha
-  /// in `tRNS` (opaque past its end).
-  Uint8List _paletteAlpha(Uint8List pixels, int stride) {
+  /// in `tRNS` (opaque past its end); null when every pixel is opaque.
+  Uint8List? _paletteAlpha(Uint8List pixels, int stride) {
     final table = transparency!;
     final alpha = Uint8List(width * height);
     final mask = (1 << bitDepth) - 1;
+    var all = 0xff;
     for (var y = 0; y < height; y++) {
       for (var x = 0; x < width; x++) {
         final bit = x * bitDepth;
         final index =
             (pixels[y * stride + (bit >> 3)] >> (8 - bitDepth - (bit & 7))) &
             mask;
-        alpha[y * width + x] = index < table.length ? table[index] : 0xff;
+        final value = index < table.length ? table[index] : 0xff;
+        alpha[y * width + x] = value;
+        all &= value;
       }
     }
-    return alpha;
+    return all == 0xff ? null : alpha;
   }
 
   /// Decoded [samples] as image stream data: filtered and compressed (for

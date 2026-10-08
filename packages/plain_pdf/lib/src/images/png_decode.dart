@@ -121,6 +121,9 @@ void _copyPixel(
 
 /// Unfilters [rows] rows of [stride] bytes starting at [offset] in
 /// [data]; returns the packed rows and the offset after them.
+///
+/// Each filter has its own loop, the first [bpp] bytes of a row (which
+/// have nothing to their left) and the first row (nothing above) apart.
 (Uint8List, int) _unfilter(
   Uint8List data,
   int offset,
@@ -129,41 +132,67 @@ void _copyPixel(
   int bpp,
 ) {
   final out = Uint8List(stride * rows);
+  // The bytes of a row with no left neighbor.
+  final lead = bpp < stride ? bpp : stride;
   var at = offset;
   for (var r = 0; r < rows; r++) {
     if (at + 1 + stride > data.length) {
       throw const FormatException('PNG image data is truncated');
     }
     final filter = data[at];
+    final from = at + 1;
     final row = r * stride;
-    final previous = row - stride;
-    for (var i = 0; i < stride; i++) {
-      final raw = data[at + 1 + i];
-      final left = i >= bpp ? out[row + i - bpp] : 0;
-      final up = r > 0 ? out[previous + i] : 0;
-      final upLeft = r > 0 && i >= bpp ? out[previous + i - bpp] : 0;
-      out[row + i] = switch (filter) {
-        0 => raw,
-        1 => raw + left,
-        2 => raw + up,
-        3 => raw + ((left + up) >> 1),
-        4 => raw + _paeth(left, up, upLeft),
-        _ => throw FormatException('PNG filter type $filter is not defined'),
-      };
+    final up = row - stride;
+    switch (filter) {
+      case 0:
+        out.setRange(row, row + stride, data, from);
+      case 1: // Sub
+        out.setRange(row, row + lead, data, from);
+        for (var i = lead; i < stride; i++) {
+          out[row + i] = data[from + i] + out[row + i - bpp];
+        }
+      case 2 when r == 0: // Up, from a row of zeros
+        out.setRange(row, row + stride, data, from);
+      case 2:
+        for (var i = 0; i < stride; i++) {
+          out[row + i] = data[from + i] + out[up + i];
+        }
+      case 3 when r == 0: // Average
+        out.setRange(row, row + lead, data, from);
+        for (var i = lead; i < stride; i++) {
+          out[row + i] = data[from + i] + (out[row + i - bpp] >> 1);
+        }
+      case 3:
+        for (var i = 0; i < lead; i++) {
+          out[row + i] = data[from + i] + (out[up + i] >> 1);
+        }
+        for (var i = lead; i < stride; i++) {
+          out[row + i] =
+              data[from + i] + ((out[row + i - bpp] + out[up + i]) >> 1);
+        }
+      case 4 when r == 0: // Paeth, from zeros above: the left byte
+        out.setRange(row, row + lead, data, from);
+        for (var i = lead; i < stride; i++) {
+          out[row + i] = data[from + i] + out[row + i - bpp];
+        }
+      case 4:
+        // Nothing to the left: the byte above.
+        for (var i = 0; i < lead; i++) {
+          out[row + i] = data[from + i] + out[up + i];
+        }
+        for (var i = lead; i < stride; i++) {
+          out[row + i] =
+              data[from + i] +
+              _paethOf(out[row + i - bpp], out[up + i], out[up + i - bpp]);
+        }
+      default:
+        if (stride > 0) {
+          throw FormatException('PNG filter type $filter is not defined');
+        }
     }
     at += 1 + stride;
   }
   return (out, at);
-}
-
-int _paeth(int a, int b, int c) {
-  final p = a + b - c;
-  final pa = (p - a).abs();
-  final pb = (p - b).abs();
-  final pc = (p - c).abs();
-  if (pa <= pb && pa <= pc) return a;
-  if (pb <= pc) return b;
-  return c;
 }
 
 /// [image]'s packed rows of [stride] bytes filtered again, each row with
@@ -307,7 +336,9 @@ void _filterRow(
   }
 }
 
-/// [_paeth] with the absolute values inline (the filter's hot loop).
+/// The Paeth predictor of left [a], above [b] and upper left [c] (the
+/// one of them nearest `a + b - c`, in that order on ties), with the
+/// absolute values inline.
 @pragma('vm:prefer-inline')
 int _paethOf(int a, int b, int c) {
   final p = a + b - c;

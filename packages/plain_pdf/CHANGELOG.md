@@ -76,7 +76,8 @@
 - Speed, with the same bytes: content streams are written straight to
   bytes, numbers formatted with integer math (`formatNumber` decides only
   next to a rounding tie); standard fonts kern from a flat table, and
-  text runs go into `TJ` without copies.
+  text runs go into `TJ` without copies; PNG rows are unfiltered with a
+  loop per filter, and opaque alpha is found while it is split out.
 - Layout, paragraphs: break opportunities by the Unicode Line Breaking
   Algorithm (UAX #14, Unicode 18.0; the conformance test passes), styled
   text runs and inline images as boxes, glue and penalties, line breaking
