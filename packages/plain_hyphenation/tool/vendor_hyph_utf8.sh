@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Vendors the hyphenation patterns of hyph-utf8 (github.com/hyphenation/
-# tex-hyphen, pinned) for the languages whose licences let ptome
+# tex-hyphen, pinned) for the languages whose licences let the package
 # distribute them: MIT, BSD, LPPL, public domain, Unlicense and the
 # all-permissive notices (not the GPL, LGPL or MPL ones, nor those with
 # none). Writes vendor/hyph-utf8/patterns/<lang>.pat.txt (and .hyp.txt,
 # the exceptions), vendor/hyph-utf8/languages.json (each language's
 # hyphenmins and licence) and vendor/hyph-utf8/NOTICES.md (each file's
-# notice), then embeds them (tool/embed_hyphenation.dart).
+# notice), then embeds them (tool/generate_patterns.dart).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 SHA=5684c0f51c0b81133db2efbe60a408b4155a3ff5
@@ -26,4 +26,4 @@ for lang in $LANGS; do
 done
 dart run tool/hyph_metadata.dart "$OUT" "$SHA"
 rm -rf "$OUT/tex"
-dart run tool/embed_hyphenation.dart
+dart run tool/generate_patterns.dart

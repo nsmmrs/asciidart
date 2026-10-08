@@ -92,7 +92,6 @@ export 'src/layout/flow.dart'
         TableCell,
         TableRow,
         VerticalAlign;
-export 'src/layout/hyphenation.dart' show PatternHyphenator;
 export 'src/layout/inline.dart'
     show
         InlineAlignment,

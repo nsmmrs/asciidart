@@ -5,8 +5,6 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:plain_pdf/src/layout/paragraph.dart';
-
 /// A hyphenator of TeX hyphenation patterns (`.hy1p`, `a1b2c`...:
 /// letters with digits between them, dots for the word's ends) and
 /// exceptions (words hyphenated by hand: `as-so-ciate`).
@@ -15,7 +13,7 @@ import 'package:plain_pdf/src/layout/paragraph.dart';
 /// around a place is odd, keeping at least [left] letters before the first
 /// hyphen and [right] after the last (TeX's `\lefthyphenmin` and
 /// `\righthyphenmin`).
-final class PatternHyphenator implements Hyphenator {
+final class PatternHyphenator {
   /// A hyphenator of [patterns] and [exceptions] (both separated by
   /// whitespace).
   new(
@@ -69,7 +67,8 @@ final class PatternHyphenator implements Hyphenator {
   /// Whether there are any patterns.
   bool get isEmpty => _patterns.isEmpty && _exceptions.isEmpty;
 
-  @override
+  /// The places [word] may be hyphenated: the number of letters before
+  /// each hyphen.
   List<int> hyphenate(String word) => _cache[word] ??= _hyphenate(word);
 
   List<int> _hyphenate(String word) {

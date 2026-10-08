@@ -1,0 +1,9 @@
+Iterable<String> get hyphenationLanguages
+PatternHyphenator? hyphenatorFor(String language)
+String? patternTag(String language)
+final class PatternHyphenator
+  List<int> hyphenate(String word)
+  PatternHyphenator(String patterns, {String exceptions = '', int left = 2, int right = 3})
+  bool isEmpty
+  int left
+  int right

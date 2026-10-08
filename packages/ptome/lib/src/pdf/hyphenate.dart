@@ -1,66 +1,12 @@
-/// Hyphenation for the PDF backend: the hyph-utf8 patterns embedded in
-/// `hyphenation.g.dart`, by language, and soft hyphens put into inline
-/// markup where words may break.
+/// Hyphenation for the PDF backend: soft hyphens put into inline markup
+/// where words may break, by plain_hyphenation's hyph-utf8 patterns for
+/// the document's language.
 library;
 
-import 'dart:convert';
+import 'package:plain_hyphenation/plain_hyphenation.dart';
 
-import 'package:plain_compression/plain_compression.dart' show zlibDecode;
-import 'package:plain_pdf/plain_pdf.dart' show PatternHyphenator;
-import 'package:ptome/src/pdf/hyphenation.g.dart';
-
-/// Language tags read as another tag of the patterns.
-const Map<String, String> _aliases = {
-  'en': 'en-us',
-  'en-uk': 'en-gb',
-  'de': 'de-1996',
-  'de-de': 'de-1996',
-  'de-at': 'de-1996',
-  'de-ch': 'de-ch-1901',
-  'el': 'el-monoton',
-  'mn': 'mn-cyrl',
-  'sh': 'sh-latn',
-  'sr': 'sh-cyrl',
-  'sr-latn': 'sh-latn',
-  'zh': 'zh-latn-pinyin',
-  'nb-no': 'nb',
-  'nn-no': 'nn',
-};
-
-final Map<String, PatternHyphenator?> _hyphenators = {};
-
-/// The tag of the patterns for [language] (`en_US`, `de`, `pt-BR`...),
-/// or null when there are none.
-String? patternTag(String language) {
-  final tag = language.trim().toLowerCase().replaceAll('_', '-');
-  for (final candidate in [
-    tag,
-    ?_aliases[tag],
-    if (tag.contains('-')) tag.substring(0, tag.indexOf('-')),
-    if (tag.contains('-')) ?_aliases[tag.substring(0, tag.indexOf('-'))],
-  ]) {
-    if (hyphenationPatterns.containsKey(candidate)) return candidate;
-  }
-  return null;
-}
-
-/// The hyphenator of [language], or null when there are no patterns for
-/// it.
-PatternHyphenator? hyphenatorFor(String language) {
-  final tag = patternTag(language);
-  if (tag == null) return null;
-  return _hyphenators.putIfAbsent(tag, () {
-    final (left, right, patterns, exceptions) = hyphenationPatterns[tag]!;
-    String unpack(String data) =>
-        data.isEmpty ? '' : utf8.decode(zlibDecode(base64Decode(data)));
-    return PatternHyphenator(
-      unpack(patterns),
-      exceptions: unpack(exceptions),
-      left: left,
-      right: right,
-    );
-  });
-}
+export 'package:plain_hyphenation/plain_hyphenation.dart'
+    show PatternHyphenator, hyphenatorFor, patternTag;
 
 const String _softHyphen = '­';
 

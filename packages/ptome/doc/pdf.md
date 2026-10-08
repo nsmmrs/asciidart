@@ -140,7 +140,7 @@ a page of its own after the heading, with its title.
 
 Justified text is hyphenated in the document's language (`lang`, else
 US English), with the hyph-utf8 patterns for 72 languages
-(`vendor/hyph-utf8`). Code spans and bare links are left whole.
+(the plain_hyphenation package). Code spans and bare links are left whole.
 
 | Setting | What it does |
 | --- | --- |

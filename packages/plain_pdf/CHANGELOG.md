@@ -2,6 +2,8 @@
 
 ## 0.1.0-dev (unreleased)
 
+- `PatternHyphenator` moved to plain_hyphenation with its history;
+  plain_pdf keeps the `Hyphenator` interface its paragraphs take.
 - Line breaking (UAX #14) moved to plain_unicode with its history;
   plain_pdf depends on it and no longer exports `lineBreaks`,
   `lineBreakClass`, `LineBreak`, `LineBreakClass` and `unicodeVersion`.

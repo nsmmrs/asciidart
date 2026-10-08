@@ -1,0 +1,11 @@
+# The files left out of the pub.dev package (this replaces .gitignore for
+# publishing, so its entries are repeated). The patterns are in lib/; the
+# vendored copies are for the generator. Their notices are in
+# vendor/hyph-utf8/NOTICES.md, also published.
+.dart_tool/
+build/
+pubspec.lock
+/vendor/hyph-utf8/patterns/
+/vendor/hyph-utf8/languages.json
+/tool/
+/test/

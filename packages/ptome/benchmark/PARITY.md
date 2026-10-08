@@ -518,7 +518,7 @@ keys are read whenever a theme gives the header a height. Not supported:
 - Hyphenation (`hyphens`, `base_hyphens`) is built in, the gem's with
   the optional text-hyphen gem installed (as the corpus is converted, and
   as the gem's spec suite runs). The patterns are hyph-utf8's, for 72
-  languages (`vendor/hyph-utf8`): text-hyphen's US English patterns may
+  languages (plain_hyphenation): text-hyphen's US English patterns may
   be used for non-commercial purposes only. The two sets break some words
   differently (`hyphens-006`: "vi-cious").
 - The parity tool compares what a reader sees; object order, compression

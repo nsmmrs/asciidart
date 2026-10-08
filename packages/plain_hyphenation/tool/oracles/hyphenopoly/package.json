@@ -1,0 +1,9 @@
+{
+  "name": "plain-hyphenation-oracles",
+  "private": true,
+  "type": "module",
+  "description": "The Hyphenopoly oracle for test/oracles_test.dart.",
+  "dependencies": {
+    "hyphenopoly": "6.0.0"
+  }
+}

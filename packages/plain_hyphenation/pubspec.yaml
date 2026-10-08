@@ -1,0 +1,24 @@
+name: plain_hyphenation
+description: >-
+  Hyphenation in pure Dart: Liang's algorithm, as TeX hyphenates, over the
+  hyph-utf8 patterns of 72 languages, decoded one language at a time.
+version: 0.1.0-dev
+repository: https://github.com/nsmmrs/ptome/tree/master/packages/plain_hyphenation
+issue_tracker: https://github.com/nsmmrs/ptome/issues
+topics:
+  - hyphenation
+  - typesetting
+  - text
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  plain_compression: ^0.1.0-dev
+
+dev_dependencies:
+  analyzer: ^14.4.0
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0
