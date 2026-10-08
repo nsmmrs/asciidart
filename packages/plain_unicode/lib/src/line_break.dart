@@ -3,6 +3,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
@@ -233,430 +234,388 @@ final class LineBreak {
   String toString() => 'LineBreak($offset${mandatory ? ', mandatory' : ''})';
 }
 
-/// One unit of the rules: a character with the combining marks (and
-/// joiners) after it (LB9).
-final class _Unit {
-  new(this.cls, this.flags, this.codePoint, this.start);
-
-  /// The resolved class.
-  final LineBreakClass cls;
-
-  /// The flags of the unit's base character.
-  final int flags;
-
-  /// The base character.
-  final int codePoint;
-
-  /// Its code unit offset.
-  final int start;
-
-  /// Whether the unit ends with a zero width joiner.
-  bool endsWithJoiner = false;
-
-  bool get eastAsian => flags & _eastAsian != 0;
-  bool get initial => flags & _initialPunctuation != 0;
-  bool get finalPunctuation => flags & _finalPunctuation != 0;
-  bool get unassignedPictographic => flags & _unassignedPictographic != 0;
-
-  /// AK, U+25CC DOTTED CIRCLE, or AS (the `(AK | [◌] | AS)` of LB28a).
-  bool get aksara =>
-      cls == LineBreakClass.ak ||
-      codePoint == 0x25cc ||
-      cls == LineBreakClass.as_;
-
-  /// AK or U+25CC DOTTED CIRCLE.
-  bool get aksaraOrCircle => cls == LineBreakClass.ak || codePoint == 0x25cc;
-}
-
 /// The break opportunities in [text], in order: every position the
 /// default rules of UAX #14 allow a break at, and the end of the text
 /// (mandatory). A break at offset 0 is never reported.
-List<LineBreak> lineBreaks(String text) {
-  final units = _units(text);
-  final breaks = <LineBreak>[];
-  for (var i = 1; i < units.length; i++) {
-    final decision = _decide(units, i);
-    if (decision != _Decision.keep) {
-      breaks.add(
-        LineBreak(units[i].start, mandatory: decision == _Decision.mandatory),
-      );
+List<LineBreak> lineBreaks(String text) => [
+  for (final code in _breakCodes(text))
+    LineBreak(code >> 1, mandatory: code & 1 != 0),
+];
+
+// The classes, as integers: the indexes of LineBreakClass.
+const int _bk = 0;
+const int _cr = 1;
+const int _lf = 2;
+const int _cm = 3;
+const int _nl = 4;
+const int _wj = 6;
+const int _zw = 7;
+const int _gl = 8;
+const int _sp = 9;
+const int _zwj = 10;
+const int _b2 = 11;
+const int _ba = 12;
+const int _bb = 13;
+const int _hy = 14;
+const int _cb = 15;
+const int _cl = 16;
+const int _cp = 17;
+const int _ex = 18;
+const int _in = 19;
+const int _ns = 20;
+const int _op = 21;
+const int _qu = 22;
+const int _is = 23;
+const int _nu = 24;
+const int _po = 25;
+const int _pr = 26;
+const int _sy = 27;
+const int _ak = 29;
+const int _al = 30;
+const int _ap = 31;
+const int _as = 32;
+const int _eb = 34;
+const int _em = 35;
+const int _h2 = 36;
+const int _h3 = 37;
+const int _hh = 38;
+const int _hl = 39;
+const int _id = 40;
+const int _jl = 41;
+const int _jv = 42;
+const int _jt = 43;
+const int _ri = 44;
+const int _vf = 46;
+const int _vi = 47;
+
+// The flags of a unit: its base character's (the properties' bits 12-15,
+// shifted down), and two of its own.
+const int _eastAsianUnit = _eastAsian >> 12;
+const int _initialUnit = _initialPunctuation >> 12;
+const int _finalUnit = _finalPunctuation >> 12;
+const int _unassignedPictographicUnit = _unassignedPictographic >> 12;
+
+/// The unit ends with a zero width joiner (LB8a).
+const int _joiner = 1 << 4;
+
+/// The unit's base is U+25CC DOTTED CIRCLE (LB28a).
+const int _dottedCircle = 1 << 5;
+
+// The sets of classes the rules test, as bits of a class's entry in
+// [_classSets] (not as bit masks of classes: JavaScript's are 32 bits).
+const int _noBase = 1;
+const int _beforeInitialQuote = 2;
+const int _afterFinalQuote = 4;
+const int _beforeWordInitialHyphen = 8;
+const int _korean = 16;
+
+/// The sets each class is in.
+final Uint8List _classSets = () {
+  final sets = Uint8List(64);
+  void add(int set, List<int> classes) {
+    for (final c in classes) {
+      sets[c] |= set;
     }
   }
-  if (text.isNotEmpty) breaks.add(LineBreak(text.length, mandatory: true));
-  return breaks;
+
+  add(_noBase, [_bk, _cr, _lf, _nl, _sp, _zw]);
+  add(_beforeInitialQuote, [_bk, _cr, _lf, _nl, _op, _qu, _gl, _sp, _zw]);
+  add(_afterFinalQuote, [
+    ...[_sp, _gl, _wj, _cl, _qu, _cp, _ex, _is, _sy, _bk, _cr, _lf, _nl],
+    _zw,
+  ]);
+  add(_beforeWordInitialHyphen, [_bk, _cr, _lf, _nl, _sp, _zw, _cb, _gl]);
+  add(_korean, [_jl, _jv, _jt, _h2, _h3]);
+  return sets;
+}();
+
+/// The units of the rules (a character with the combining marks and
+/// joiners after it, LB9), as parallel lists: each unit's resolved class,
+/// flags and code unit offset. Reused from text to text, they only grow,
+/// up to [_retainedUnits] units.
+Uint8List _unitClasses = Uint8List(256);
+Uint8List _unitFlags = Uint8List(256);
+Int32List _unitStarts = Int32List(256);
+
+/// The most units kept between calls; longer texts get lists of their
+/// own.
+const int _retainedUnits = 1 << 16;
+
+/// The break opportunities in [text], each as its code unit offset
+/// shifted left once, plus 1 if the break is mandatory.
+List<int> _breakCodes(String text) {
+  final length = text.length;
+  var classes = _unitClasses;
+  var flags = _unitFlags;
+  var starts = _unitStarts;
+  if (length > classes.length) {
+    final size = length > _retainedUnits
+        ? length
+        : math.min(math.max(length, classes.length * 2), _retainedUnits);
+    classes = Uint8List(size);
+    flags = Uint8List(size);
+    starts = Int32List(size);
+    if (size <= _retainedUnits) {
+      _unitClasses = classes;
+      _unitFlags = flags;
+      _unitStarts = starts;
+    }
+  }
+  final count = _units(text, classes, flags, starts);
+  final codes = <int>[];
+  // The unit before the spaces that end before unit i (or -1).
+  var spaced = -1;
+  for (var i = 1; i < count; i++) {
+    if (classes[i - 1] != _sp) spaced = i - 1;
+    final decision = _decide(classes, flags, count, i, spaced);
+    if (decision != _keep) {
+      codes.add(starts[i] << 1 | (decision == _mandatory ? 1 : 0));
+    }
+  }
+  if (length > 0) codes.add(length << 1 | 1);
+  return codes;
 }
 
-/// The characters of [text] as units: classes resolved (LB1), combining
-/// marks attached to their base (LB9) or made alphabetic (LB10).
-List<_Unit> _units(String text) {
-  final units = <_Unit>[];
+/// Fills [classes], [flags] and [starts] with the units of [text]:
+/// classes resolved (LB1), combining marks attached to their base (LB9)
+/// or made alphabetic (LB10). Returns the number of units.
+int _units(String text, Uint8List classes, Uint8List flags, Int32List starts) {
   final table = _properties;
-  var offset = 0;
-  for (final rune in text.runes) {
+  final sets = _classSets;
+  final length = text.length;
+  var count = 0;
+  var i = 0;
+  while (i < length) {
+    final start = i;
+    var rune = text.codeUnitAt(i++);
+    if (rune & 0xfc00 == 0xd800 && i < length) {
+      final low = text.codeUnitAt(i);
+      if (low & 0xfc00 == 0xdc00) {
+        rune = 0x10000 + ((rune & 0x3ff) << 10) + (low & 0x3ff);
+        i++;
+      }
+    }
     final properties = table[rune];
-    final cls = LineBreakClass.values[properties >> 6 & 0x3f];
-    final start = offset;
-    offset += rune > 0xffff ? 2 : 1;
-    if (cls == LineBreakClass.cm || cls == LineBreakClass.zwj) {
-      final base = units.lastOrNull;
-      if (base != null && !_noBase.contains(base.cls)) {
+    final cls = properties >> 6 & 0x3f;
+    if (cls == _cm || cls == _zwj) {
+      final joiner = cls == _zwj ? _joiner : 0;
+      if (count > 0 && sets[classes[count - 1]] & _noBase == 0) {
         // LB9: part of the base's unit.
-        base.endsWithJoiner = cls == LineBreakClass.zwj;
+        flags[count - 1] = flags[count - 1] & ~_joiner | joiner;
         continue;
       }
       // LB10: as if it were U+0041 A.
-      units.add(
-        _Unit(LineBreakClass.al, 0, 0x41, start)
-          ..endsWithJoiner = cls == LineBreakClass.zwj,
-      );
+      classes[count] = _al;
+      flags[count] = joiner;
+      starts[count++] = start;
       continue;
     }
-    units.add(_Unit(cls, properties, rune, start));
+    classes[count] = cls;
+    flags[count] = properties >> 12 | (rune == 0x25cc ? _dottedCircle : 0);
+    starts[count++] = start;
   }
-  return units;
+  return count;
 }
 
-const Set<LineBreakClass> _noBase = {
-  LineBreakClass.bk,
-  LineBreakClass.cr,
-  LineBreakClass.lf,
-  LineBreakClass.nl,
-  LineBreakClass.sp,
-  LineBreakClass.zw,
-};
+// The decisions between two units.
+const int _keep = 0;
+const int _allow = 1;
+const int _mandatory = 2;
 
-enum _Decision { keep, allow, mandatory }
+/// AK, U+25CC DOTTED CIRCLE, or AS (the `(AK | [◌] | AS)` of LB28a).
+bool _aksara(Uint8List classes, Uint8List flags, int i) =>
+    classes[i] == _ak || flags[i] & _dottedCircle != 0 || classes[i] == _as;
 
-/// Whether the text may break between `units[i - 1]` and `units[i]`.
-_Decision _decide(List<_Unit> units, int i) {
-  final before = units[i - 1];
-  final after = units[i];
-  final b = before.cls;
-  final a = after.cls;
-  LineBreakClass? at(int index) =>
-      index >= 0 && index < units.length ? units[index].cls : null;
+/// AK or U+25CC DOTTED CIRCLE.
+bool _aksaraOrCircle(Uint8List classes, Uint8List flags, int i) =>
+    classes[i] == _ak || flags[i] & _dottedCircle != 0;
 
-  /// The index of the unit before the spaces that end just before [i].
-  int beforeSpaces(int index) {
-    var j = index - 1;
-    while (j >= 0 && units[j].cls == LineBreakClass.sp) {
-      j--;
-    }
-    return j;
-  }
+/// Whether the text may break between units `i - 1` and `i` of the
+/// [count] in [classes] and [flags]; [spaced] is the unit before the
+/// spaces that end before `i`, or -1.
+int _decide(Uint8List classes, Uint8List flags, int count, int i, int spaced) {
+  final b = classes[i - 1];
+  final a = classes[i];
+  final before = flags[i - 1];
+  final after = flags[i];
+  final s = spaced >= 0 ? classes[spaced] : -1;
+  final sets = _classSets;
 
   // LB4, LB5: hard line breaks.
-  if (b == LineBreakClass.bk) return _Decision.mandatory;
-  if (b == LineBreakClass.cr && a == LineBreakClass.lf) return _Decision.keep;
-  if (b == LineBreakClass.cr ||
-      b == LineBreakClass.lf ||
-      b == LineBreakClass.nl) {
-    return _Decision.mandatory;
-  }
+  if (b == _bk) return _mandatory;
+  if (b == _cr && a == _lf) return _keep;
+  if (b == _cr || b == _lf || b == _nl) return _mandatory;
   // LB6.
-  if (a == LineBreakClass.bk ||
-      a == LineBreakClass.cr ||
-      a == LineBreakClass.lf ||
-      a == LineBreakClass.nl) {
-    return _Decision.keep;
-  }
+  if (a == _bk || a == _cr || a == _lf || a == _nl) return _keep;
   // LB7.
-  if (a == LineBreakClass.sp || a == LineBreakClass.zw) return _Decision.keep;
+  if (a == _sp || a == _zw) return _keep;
   // LB8: ZW SP* ÷
-  final spaced = beforeSpaces(i);
-  if (spaced >= 0 && units[spaced].cls == LineBreakClass.zw) {
-    return _Decision.allow;
-  }
+  if (s == _zw) return _allow;
   // LB8a.
-  if (before.endsWithJoiner) return _Decision.keep;
+  if (before & _joiner != 0) return _keep;
   // LB11.
-  if (a == LineBreakClass.wj || b == LineBreakClass.wj) return _Decision.keep;
+  if (a == _wj || b == _wj) return _keep;
   // LB12.
-  if (b == LineBreakClass.gl) return _Decision.keep;
+  if (b == _gl) return _keep;
   // LB12a.
-  if (a == LineBreakClass.gl &&
-      b != LineBreakClass.sp &&
-      b != LineBreakClass.hy &&
-      b != LineBreakClass.hh) {
-    return _Decision.keep;
-  }
+  if (a == _gl && b != _sp && b != _hy && b != _hh) return _keep;
   // LB13.
-  if (a == LineBreakClass.cl ||
-      a == LineBreakClass.cp ||
-      a == LineBreakClass.ex ||
-      a == LineBreakClass.sy) {
-    return _Decision.keep;
-  }
+  if (a == _cl || a == _cp || a == _ex || a == _sy) return _keep;
   // LB14: OP SP* ×
-  if (spaced >= 0 && units[spaced].cls == LineBreakClass.op) {
-    return _Decision.keep;
-  }
+  if (s == _op) return _keep;
   // LB15a: (sot | BK | CR | LF | NL | OP | QU | GL | SP | ZW) [Pi&QU] SP* ×
-  if (spaced >= 0 &&
-      units[spaced].cls == LineBreakClass.qu &&
-      units[spaced].initial) {
-    final previous = at(spaced - 1);
-    if (previous == null || _beforeInitialQuote.contains(previous)) {
-      return _Decision.keep;
+  if (s == _qu && flags[spaced] & _initialUnit != 0) {
+    if (spaced == 0 || sets[classes[spaced - 1]] & _beforeInitialQuote != 0) {
+      return _keep;
     }
   }
   // LB15b: × [Pf&QU] (SP | GL | WJ | CL | QU | CP | EX | IS | SY | BK | CR |
   // LF | NL | ZW | eot)
-  if (a == LineBreakClass.qu && after.finalPunctuation) {
-    final next = at(i + 1);
-    if (next == null || _afterFinalQuote.contains(next)) return _Decision.keep;
-  }
-  // LB15c: SP ÷ IS NU
-  if (b == LineBreakClass.sp &&
-      a == LineBreakClass.is_ &&
-      at(i + 1) == LineBreakClass.nu) {
-    return _Decision.allow;
-  }
-  // LB15d.
-  if (a == LineBreakClass.is_) return _Decision.keep;
-  // LB16: (CL | CP) SP* × NS
-  if (a == LineBreakClass.ns &&
-      spaced >= 0 &&
-      (units[spaced].cls == LineBreakClass.cl ||
-          units[spaced].cls == LineBreakClass.cp)) {
-    return _Decision.keep;
-  }
-  // LB17: B2 SP* × B2
-  if (a == LineBreakClass.b2 &&
-      spaced >= 0 &&
-      units[spaced].cls == LineBreakClass.b2) {
-    return _Decision.keep;
-  }
-  // LB18.
-  if (b == LineBreakClass.sp) return _Decision.allow;
-  // LB19.
-  if (a == LineBreakClass.qu && !after.initial) return _Decision.keep;
-  if (b == LineBreakClass.qu && !before.finalPunctuation) {
-    return _Decision.keep;
-  }
-  // LB19a.
-  if (a == LineBreakClass.qu) {
-    if (!before.eastAsian) return _Decision.keep;
-    if (i + 1 >= units.length || !units[i + 1].eastAsian) {
-      return _Decision.keep;
+  if (a == _qu && after & _finalUnit != 0) {
+    if (i + 1 == count || sets[classes[i + 1]] & _afterFinalQuote != 0) {
+      return _keep;
     }
   }
-  if (b == LineBreakClass.qu) {
-    if (!after.eastAsian) return _Decision.keep;
-    if (i - 2 < 0 || !units[i - 2].eastAsian) return _Decision.keep;
+  // LB15c: SP ÷ IS NU
+  if (b == _sp && a == _is && i + 1 < count && classes[i + 1] == _nu) {
+    return _allow;
+  }
+  // LB15d.
+  if (a == _is) return _keep;
+  // LB16: (CL | CP) SP* × NS
+  if (a == _ns && (s == _cl || s == _cp)) return _keep;
+  // LB17: B2 SP* × B2
+  if (a == _b2 && s == _b2) return _keep;
+  // LB18.
+  if (b == _sp) return _allow;
+  // LB19.
+  if (a == _qu && after & _initialUnit == 0) return _keep;
+  if (b == _qu && before & _finalUnit == 0) return _keep;
+  // LB19a.
+  if (a == _qu) {
+    if (before & _eastAsianUnit == 0) return _keep;
+    if (i + 1 == count || flags[i + 1] & _eastAsianUnit == 0) return _keep;
+  }
+  if (b == _qu) {
+    if (after & _eastAsianUnit == 0) return _keep;
+    if (i < 2 || flags[i - 2] & _eastAsianUnit == 0) return _keep;
   }
   // LB20.
-  if (a == LineBreakClass.cb || b == LineBreakClass.cb) return _Decision.allow;
+  if (a == _cb || b == _cb) return _allow;
   // LB20a: (sot | BK | CR | LF | NL | SP | ZW | CB | GL) (HY | HH) ×
   // (AL | HL)
-  if ((b == LineBreakClass.hy || b == LineBreakClass.hh) &&
-      (a == LineBreakClass.al || a == LineBreakClass.hl)) {
-    final previous = at(i - 2);
-    if (previous == null || _beforeWordInitialHyphen.contains(previous)) {
-      return _Decision.keep;
+  if ((b == _hy || b == _hh) && (a == _al || a == _hl)) {
+    if (i < 2 || sets[classes[i - 2]] & _beforeWordInitialHyphen != 0) {
+      return _keep;
     }
   }
   // LB21.
-  if (a == LineBreakClass.ba ||
-      a == LineBreakClass.hh ||
-      a == LineBreakClass.hy ||
-      a == LineBreakClass.ns ||
-      b == LineBreakClass.bb) {
-    return _Decision.keep;
-  }
+  if (a == _ba || a == _hh || a == _hy || a == _ns || b == _bb) return _keep;
   // LB21a: HL (HY | HH) × [^HL]
-  if ((b == LineBreakClass.hy || b == LineBreakClass.hh) &&
-      at(i - 2) == LineBreakClass.hl &&
-      a != LineBreakClass.hl) {
-    return _Decision.keep;
+  if ((b == _hy || b == _hh) && i >= 2 && classes[i - 2] == _hl && a != _hl) {
+    return _keep;
   }
   // LB21b.
-  if (b == LineBreakClass.sy && a == LineBreakClass.hl) return _Decision.keep;
+  if (b == _sy && a == _hl) return _keep;
   // LB22.
-  if (a == LineBreakClass.in_) return _Decision.keep;
-  final letterBefore = b == LineBreakClass.al || b == LineBreakClass.hl;
-  final letterAfter = a == LineBreakClass.al || a == LineBreakClass.hl;
+  if (a == _in) return _keep;
+  final letterBefore = b == _al || b == _hl;
+  final letterAfter = a == _al || a == _hl;
   // LB23.
-  if (letterBefore && a == LineBreakClass.nu) return _Decision.keep;
-  if (b == LineBreakClass.nu && letterAfter) return _Decision.keep;
+  if (letterBefore && a == _nu) return _keep;
+  if (b == _nu && letterAfter) return _keep;
   // LB23a.
-  if (b == LineBreakClass.pr &&
-      (a == LineBreakClass.id ||
-          a == LineBreakClass.eb ||
-          a == LineBreakClass.em)) {
-    return _Decision.keep;
-  }
-  if ((b == LineBreakClass.id ||
-          b == LineBreakClass.eb ||
-          b == LineBreakClass.em) &&
-      a == LineBreakClass.po) {
-    return _Decision.keep;
-  }
+  if (b == _pr && (a == _id || a == _eb || a == _em)) return _keep;
+  if ((b == _id || b == _eb || b == _em) && a == _po) return _keep;
   // LB24.
-  if ((b == LineBreakClass.pr || b == LineBreakClass.po) && letterAfter) {
-    return _Decision.keep;
-  }
-  if (letterBefore && (a == LineBreakClass.pr || a == LineBreakClass.po)) {
-    return _Decision.keep;
-  }
+  if ((b == _pr || b == _po) && letterAfter) return _keep;
+  if (letterBefore && (a == _pr || a == _po)) return _keep;
   // LB25.
-  if (_lb25(units, i)) return _Decision.keep;
+  if (_lb25(classes, count, i)) return _keep;
   // LB26.
-  if (b == LineBreakClass.jl &&
-      (a == LineBreakClass.jl ||
-          a == LineBreakClass.jv ||
-          a == LineBreakClass.h2 ||
-          a == LineBreakClass.h3)) {
-    return _Decision.keep;
-  }
-  if ((b == LineBreakClass.jv || b == LineBreakClass.h2) &&
-      (a == LineBreakClass.jv || a == LineBreakClass.jt)) {
-    return _Decision.keep;
-  }
-  if ((b == LineBreakClass.jt || b == LineBreakClass.h3) &&
-      a == LineBreakClass.jt) {
-    return _Decision.keep;
-  }
+  if (b == _jl && (a == _jl || a == _jv || a == _h2 || a == _h3)) return _keep;
+  if ((b == _jv || b == _h2) && (a == _jv || a == _jt)) return _keep;
+  if ((b == _jt || b == _h3) && a == _jt) return _keep;
   // LB27.
-  if (_korean.contains(b) && a == LineBreakClass.po) return _Decision.keep;
-  if (b == LineBreakClass.pr && _korean.contains(a)) return _Decision.keep;
+  if (sets[b] & _korean != 0 && a == _po) return _keep;
+  if (b == _pr && sets[a] & _korean != 0) return _keep;
   // LB28.
-  if (letterBefore && letterAfter) return _Decision.keep;
+  if (letterBefore && letterAfter) return _keep;
   // LB28a.
-  if (b == LineBreakClass.ap && after.aksara) return _Decision.keep;
-  if (before.aksara && (a == LineBreakClass.vf || a == LineBreakClass.vi)) {
-    return _Decision.keep;
-  }
-  if (b == LineBreakClass.vi &&
+  if (b == _ap && _aksara(classes, flags, i)) return _keep;
+  if (_aksara(classes, flags, i - 1) && (a == _vf || a == _vi)) return _keep;
+  if (b == _vi &&
       i >= 2 &&
-      units[i - 2].aksara &&
-      after.aksaraOrCircle) {
-    return _Decision.keep;
+      _aksara(classes, flags, i - 2) &&
+      _aksaraOrCircle(classes, flags, i)) {
+    return _keep;
   }
-  if (before.aksara && after.aksara && at(i + 1) == LineBreakClass.vf) {
-    return _Decision.keep;
+  if (_aksara(classes, flags, i - 1) &&
+      _aksara(classes, flags, i) &&
+      i + 1 < count &&
+      classes[i + 1] == _vf) {
+    return _keep;
   }
   // LB29.
-  if (b == LineBreakClass.is_ && letterAfter) return _Decision.keep;
+  if (b == _is && letterAfter) return _keep;
   // LB30.
-  if ((letterBefore || b == LineBreakClass.nu) &&
-      a == LineBreakClass.op &&
-      !after.eastAsian) {
-    return _Decision.keep;
+  if ((letterBefore || b == _nu) && a == _op && after & _eastAsianUnit == 0) {
+    return _keep;
   }
-  if (b == LineBreakClass.cp &&
-      !before.eastAsian &&
-      (letterAfter || a == LineBreakClass.nu)) {
-    return _Decision.keep;
+  if (b == _cp && before & _eastAsianUnit == 0 && (letterAfter || a == _nu)) {
+    return _keep;
   }
   // LB30a: an odd number of regional indicators before.
-  if (b == LineBreakClass.ri && a == LineBreakClass.ri) {
-    var count = 0;
-    for (var j = i - 1; j >= 0 && units[j].cls == LineBreakClass.ri; j--) {
-      count++;
+  if (b == _ri && a == _ri) {
+    var j = i - 1;
+    while (j >= 0 && classes[j] == _ri) {
+      j--;
     }
-    if (count.isOdd) return _Decision.keep;
+    if ((i - 1 - j).isOdd) return _keep;
   }
   // LB30b.
-  if (a == LineBreakClass.em &&
-      (b == LineBreakClass.eb || before.unassignedPictographic)) {
-    return _Decision.keep;
+  if (a == _em && (b == _eb || before & _unassignedPictographicUnit != 0)) {
+    return _keep;
   }
   // LB31.
-  return _Decision.allow;
+  return _allow;
 }
 
 /// LB25: no break inside numbers.
-bool _lb25(List<_Unit> units, int i) {
-  final b = units[i - 1].cls;
-  final a = units[i].cls;
-  LineBreakClass? at(int index) =>
-      index >= 0 && index < units.length ? units[index].cls : null;
-
-  /// Whether `NU (SY | IS)*` ends at [end] (inclusive).
-  bool number(int end) {
-    var j = end;
-    while (j >= 0 &&
-        (units[j].cls == LineBreakClass.sy ||
-            units[j].cls == LineBreakClass.is_)) {
-      j--;
-    }
-    return j >= 0 && units[j].cls == LineBreakClass.nu;
-  }
-
-  final prefixOrPostfix = a == LineBreakClass.po || a == LineBreakClass.pr;
+bool _lb25(Uint8List classes, int count, int i) {
+  final b = classes[i - 1];
+  final a = classes[i];
+  final prefixOrPostfix = a == _po || a == _pr;
   // NU (SY | IS)* (CL | CP) × (PO | PR)
   if (prefixOrPostfix &&
-      (b == LineBreakClass.cl || b == LineBreakClass.cp) &&
-      number(i - 2)) {
+      (b == _cl || b == _cp) &&
+      _endsNumber(classes, i - 2)) {
     return true;
   }
   // NU (SY | IS)* × (PO | PR)
-  if (prefixOrPostfix && number(i - 1)) return true;
-  if (b == LineBreakClass.po || b == LineBreakClass.pr) {
+  if (prefixOrPostfix && _endsNumber(classes, i - 1)) return true;
+  if (b == _po || b == _pr) {
     // (PO | PR) × OP NU, (PO | PR) × OP IS NU, (PO | PR) × NU
-    if (a == LineBreakClass.op) {
-      if (at(i + 1) == LineBreakClass.nu) return true;
-      if (at(i + 1) == LineBreakClass.is_ && at(i + 2) == LineBreakClass.nu) {
+    if (a == _op) {
+      if (i + 1 < count && classes[i + 1] == _nu) return true;
+      if (i + 2 < count && classes[i + 1] == _is && classes[i + 2] == _nu) {
         return true;
       }
     }
-    if (a == LineBreakClass.nu) return true;
+    if (a == _nu) return true;
   }
   // HY × NU, IS × NU
-  if ((b == LineBreakClass.hy || b == LineBreakClass.is_) &&
-      a == LineBreakClass.nu) {
-    return true;
-  }
+  if ((b == _hy || b == _is) && a == _nu) return true;
   // NU (SY | IS)* × NU
-  if (a == LineBreakClass.nu && number(i - 1)) return true;
+  if (a == _nu && _endsNumber(classes, i - 1)) return true;
   return false;
 }
 
-const Set<LineBreakClass> _beforeInitialQuote = {
-  LineBreakClass.bk,
-  LineBreakClass.cr,
-  LineBreakClass.lf,
-  LineBreakClass.nl,
-  LineBreakClass.op,
-  LineBreakClass.qu,
-  LineBreakClass.gl,
-  LineBreakClass.sp,
-  LineBreakClass.zw,
-};
-
-const Set<LineBreakClass> _afterFinalQuote = {
-  LineBreakClass.sp,
-  LineBreakClass.gl,
-  LineBreakClass.wj,
-  LineBreakClass.cl,
-  LineBreakClass.qu,
-  LineBreakClass.cp,
-  LineBreakClass.ex,
-  LineBreakClass.is_,
-  LineBreakClass.sy,
-  LineBreakClass.bk,
-  LineBreakClass.cr,
-  LineBreakClass.lf,
-  LineBreakClass.nl,
-  LineBreakClass.zw,
-};
-
-const Set<LineBreakClass> _beforeWordInitialHyphen = {
-  LineBreakClass.bk,
-  LineBreakClass.cr,
-  LineBreakClass.lf,
-  LineBreakClass.nl,
-  LineBreakClass.sp,
-  LineBreakClass.zw,
-  LineBreakClass.cb,
-  LineBreakClass.gl,
-};
-
-const Set<LineBreakClass> _korean = {
-  LineBreakClass.jl,
-  LineBreakClass.jv,
-  LineBreakClass.jt,
-  LineBreakClass.h2,
-  LineBreakClass.h3,
-};
+/// Whether `NU (SY | IS)*` ends at unit [end] (inclusive).
+bool _endsNumber(Uint8List classes, int end) {
+  var j = end;
+  while (j >= 0 && (classes[j] == _sy || classes[j] == _is)) {
+    j--;
+  }
+  return j >= 0 && classes[j] == _nu;
+}

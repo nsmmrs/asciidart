@@ -13,4 +13,6 @@
   properties are a three-stage table (25.7 KB of data, ICU's layout)
   instead of a binary search over 3,851 ranges, with the class the rules
   use resolved at generation time. `lineBreakClass` takes 5.5 ns instead
-  of 16.
+  of 16. The rules run over integer classes in reused typed lists, with no
+  object per character and no closure per pair: `lineBreaks` takes about
+  29 ns per code unit of English instead of 67.
