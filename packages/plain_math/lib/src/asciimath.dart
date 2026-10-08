@@ -1035,18 +1035,18 @@ final class _Parser {
       if (t1.type == 'infix' && t1.value == 'frac') {
         final i2 = _intermediate(tok, closeParenType);
         if (i2 != null) {
-          e = _concat(
+          e = _append(
             e,
             _Infix(_symbolOf(t1), _unwrapParen(i1)!, _unwrapParen(i2)!),
           );
         } else {
-          e = _concat(e, i1);
+          e = _append(e, i1);
         }
       } else if (t1.type == 'eof') {
-        e = _concat(e, i1);
+        e = _append(e, i1);
         break;
       } else {
-        e = _concat(e, i1);
+        e = _append(e, i1);
         tok.pushBack(t1);
         if (t1.type == closeParenType) break;
       }
@@ -1131,6 +1131,22 @@ final class _Parser {
       default:
         return _symbolOf(t1);
     }
+  }
+
+  /// [_concat] for [_expressionOf]'s accumulator [e], a sequence nothing
+  /// else holds: [x] (or its children) appended to it in place. The
+  /// children and their order are those of the gem's new sequence, whose
+  /// old one is thrown away; this saves copying it for every term.
+  _Node? _append(_Node? e, _Node? x) {
+    if (e is _Sequence && e.children.length >= 2) {
+      if (x is _Sequence) {
+        [...x.children].forEach(e.add);
+      } else if (x != null) {
+        e.add(x);
+      }
+      return e;
+    }
+    return _concat(e, x);
   }
 
   _Node? _concat(_Node? e1, _Node? e2) {
