@@ -1,6 +1,6 @@
 # ADR-0006: asciidart, a Compatible Re-implementation
 
-**Status:** Final — decided with the user 2026-10-05.
+**Status:** Final — decided with the user 2026-10-05. Its naming decision is superseded by [ADR-0018](0018-ptome-and-the-plain-workspace.md); its compatibility-ledger policy stays.
 
 ## Context
 
