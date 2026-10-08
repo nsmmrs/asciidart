@@ -1,0 +1,1250 @@
+x^2
+a_1
+a_1^2
+sum_(i=1)^n i^3=((n(n+1))/2)^2
+int_0^1 f(x)dx
+sqrt(x)
+root(3)(x)
+frac(a)(b)
+a/b
+(a+b)/(c+d)
+[[a,b],[c,d]]
+((1,2),(3,4))
+((a,b),(c))
+((a+b,c),(d))
+{(x,x>0),(-x,x<=0):}
+|x|
+abs(x)
+norm(vec v)
+floor(x)+ceil(y)
+lim_(x->oo) 1/x
+"text here" + x
+text(abc)
+alpha+beta=gamma
+phi varphi Phi
+bb(A) bbb(R) cc(F) tt(x) fr(g) sf(s) rm(d)
+hat x bar y vec z dot a ddot b
+ul(x) ubrace(1+2) obrace(3+4)
+stackrel(def)(=) overset(a)(b) underset(c)(d)
+color(red)(x) color(#ff0000)(y) color(#0f0)(z)
+cancel(x)
+tilde x
+a xx b ** c *** d
+AA x EE y
+x in A !in B sub C sup D
+a < b <= c >= d > e
+x -> y |-> z => w <=> v
+del f / del x grad f
++- -+ oo O/
+... cdots vdots ddots
+a mod b
+sin x cos y tan z log w ln v
+dy/dx
+2.5 + 30
+-x
+f(x) g(y)
+(:a,b:)
+<<a>>
+{a}
+[a)
+(a]
+()
+x_
+x^
+^2
+_1
+1/
+/2
+"unclosed
+text(unclosed
+|x
+x|
+:}
+{:a:}
+a,b,c
+(a,b,c)
+[a,b]
+((a,b,c),(d,e,f),(g,h,i))
+[(a,b),(c,d)]
+((a),(b))
+(x)
+((x))
+sqrt(sqrt(x))
+x^(2n)
+e^(i pi)+1=0
+a_(i,j)
+lim_(n->oo)(1+1/n)^n=e
+int_a^b f(x) dx = F(b)-F(a)
+prod_(k=1)^n k
+bigcup_i A_i nnn
+CC NN QQ RR ZZ
+x' f''
+angle ABC triangle
+:. :'
+a quad b qquad c
+\ x
+a//b
+a\\b
+setminus
+-: div
+|>< ><| |><|
+o+ ox o.
+^^ ^^^ vv vvv nn uu uuu
+-< -<= >- >-=
+-= ~ ~= ~~ prop
+and or not if implies iff
+_|_ TT |-- |==
+|__ x __| |~ y ~|
+diamond square frown
+uarr darr rarr larr harr rArr lArr hArr
+>-> ->> >->> mapsto
+epsi varepsilon vartheta
+ii(x) bii(y) bcc(z) bfr(w) bsf(v) sfi(u) sfbi(t)
+overarc(AB) overparen(CD)
+mathbf(x) mathbb(N) mathcal(L) mathtt(c) mathfrak(g) mathsf(s)
+ü + é
+x_1 ^2
+1/2/3
+a^b^c
+a_b_c
+sqrt
+frac(a)
+color(blue)
+"a" "b"
+underset(_)(hat A) = hat A exp j vartheta_0
+x+b/(2a)<+-sqrt((b^2)/(4a^2)-c/a)
+a^2 + b^2 = c^2
+x = (-b+-sqrt(b^2-4ac))/(2a)
+m = (y_2 - y_1)/(x_2 - x_1) = (Deltay)/(Deltax)
+d/dx [x^n] = nx^(n - 1)
+int_a^b f(x) dx = [F(x)]_a^b = F(b) - F(a)
+int_a^b f(x) dx = f(c)(b - a)
+ax^2 + bx + c = 0
+"average value"=1/(b-a) int_a^b f(x) dx
+d/dx[int_a^x f(t) dt] = f(x)
+hat(ab) bar(xy) ul(A) vec(v)
+z_12^34
+lim_(x->c)(f(x)-f(c))/(x-c)
+int_0^(pi/2) g(x) dx
+sum_(n=0)^oo a_n
+((1),(42))
+((1,42))
+((1,2,3),(4,5,6),(7,8,9))
+|(a,b),(c,d)|=ad-bc
+((a_(11), cdots , a_(1n)),(vdots, ddots, vdots),(a_(m1), cdots , a_(mn)))
+sum_(k=1)^n k = 1+2+ cdots +n=(n(n+1))/2
+"Скорость"=("Расстояние")/("Время")
+bb (a + b) + cc c = fr (d^n)
+max()
+text("foo")
+ubrace(1 + 2) obrace(3 + 4
+{:(a,b),(c,d):}
+overset (a + b) (c + d)
+underset a b
+sin a_c^b
+max a_c^b
+norm a_c^b
+overarc a_b^c
+frown a_b^c
+sin(a_c^b)
+text(a)a2)
+cancel(a_b^c) cancel a_b^c
+color(red)(x) color(#123)(y) color(#1234ab)(z) colortext(blue)(a_b^c)
+ii
+rm(ms)
+hat
+40% * 3!
+R(alpha_(K+1)|x)
+|(a),(b)|
+|a+b|
+|a+b|/c
+[[a,b,|,c],[d,e,|,f]]
+~a mlt b mgt -+c
+a+b+...+c
+frac{a}{b}
+ubrace(((1, 0),(0, 1)))_("Adjustment to texture space")
+Скорость=(Расстояние)/(Время)
++
+-
+*
+cdot
+**
+ast
+***
+star
+//
+\\
+backslash
+xx
+times
+|><
+ltimes
+><|
+rtimes
+|><|
+bowtie
+-:
+div
+divide
+@
+circ
+o+
+oplus
+ox
+otimes
+o.
+odot
+sum
+prod
+^^
+wedge
+^^^
+bigwedge
+vv
+vee
+vvv
+bigvee
+nn
+cap
+nnn
+bigcap
+uu
+cup
+uuu
+bigcup
+=
+!=
+ne
+:=
+<
+lt
+mlt
+ll
+>
+gt
+mgt
+gg
+<=
+le
+>=
+ge
+-<
+-lt
+prec
+>-
+succ
+-<=
+preceq
+>-=
+succeq
+in
+!in
+notin
+sub
+subset
+sup
+supset
+sube
+subseteq
+supe
+supseteq
+-=
+equiv
+~
+sim
+~=
+cong
+~~
+approx
+prop
+propto
+and
+or
+not
+neg
+=>
+implies
+if
+<=>
+iff
+AA
+forall
+EE
+exists
+_|_
+bot
+TT
+top
+|--
+vdash
+|==
+models
+(
+left(
+)
+right)
+[
+left[
+]
+right]
+{
+}
+|
+:|:
+|:
+:|
+(:
+<<
+langle
+:)
+>>
+rangle
+{:
+int
+dx
+dy
+dz
+dt
+oint
+del
+partial
+grad
+nabla
++-
+pm
+-+
+mp
+O/
+emptyset
+oo
+infty
+aleph
+...
+ldots
+:.
+therefore
+:'
+because
+/_
+angle
+/_\
+triangle
+'
+prime
+tilde
+\ 
+frown
+quad
+qquad
+cdots
+vdots
+ddots
+diamond
+square
+|__
+lfloor
+__|
+rfloor
+|~
+lceiling
+~|
+rceiling
+CC
+NN
+QQ
+RR
+ZZ
+f
+g
+lim
+Lim
+min
+max
+sin
+Sin
+cos
+Cos
+tan
+Tan
+sinh
+Sinh
+cosh
+Cosh
+tanh
+Tanh
+cot
+Cot
+sec
+Sec
+csc
+Csc
+arcsin
+arccos
+arctan
+coth
+sech
+csch
+exp
+abs
+Abs
+norm
+floor
+ceil
+log
+Log
+ln
+Ln
+det
+dim
+ker
+mod
+gcd
+lcm
+lub
+glb
+uarr
+uparrow
+darr
+downarrow
+rarr
+rightarrow
+->
+to
+>->
+rightarrowtail
+->>
+twoheadrightarrow
+>->>
+twoheadrightarrowtail
+|->
+mapsto
+larr
+leftarrow
+harr
+leftrightarrow
+rArr
+Rightarrow
+lArr
+Leftarrow
+hArr
+Leftrightarrow
+root
+frac
+/
+stackrel
+overset
+underset
+color
+_
+^
+bar
+vec
+dot
+ddot
+overarc
+overparen
+ul
+underline
+ubrace
+underbrace
+obrace
+overbrace
+cancel
+bb
+mathbf
+bbb
+mathbb
+bii
+cc
+mathcal
+bcc
+tt
+mathtt
+fr
+mathfrak
+bfr
+sf
+mathsf
+bsf
+sfi
+sfbi
+rm
+alpha
+Alpha
+beta
+Beta
+gamma
+Gamma
+delta
+Delta
+epsi
+epsilon
+Epsilon
+varepsilon
+zeta
+Zeta
+eta
+Eta
+theta
+Theta
+vartheta
+iota
+Iota
+kappa
+Kappa
+lambda
+Lambda
+mu
+Mu
+nu
+Nu
+xi
+Xi
+omicron
+Omicron
+pi
+Pi
+rho
+Rho
+sigma
+Sigma
+tau
+Tau
+upsilon
+Upsilon
+phi
+Phi
+varphi
+chi
+Chi
+psi
+Psi
+omega
+Omega
++(a)(b)
+-(a)(b)
+*(a)(b)
+cdot(a)(b)
+**(a)(b)
+ast(a)(b)
+***(a)(b)
+star(a)(b)
+//(a)(b)
+\\(a)(b)
+backslash(a)(b)
+setminus(a)(b)
+xx(a)(b)
+times(a)(b)
+|><(a)(b)
+ltimes(a)(b)
+><|(a)(b)
+rtimes(a)(b)
+|><|(a)(b)
+bowtie(a)(b)
+-:(a)(b)
+div(a)(b)
+divide(a)(b)
+@(a)(b)
+circ(a)(b)
+o+(a)(b)
+oplus(a)(b)
+ox(a)(b)
+otimes(a)(b)
+o.(a)(b)
+odot(a)(b)
+sum(a)(b)
+prod(a)(b)
+^^(a)(b)
+wedge(a)(b)
+^^^(a)(b)
+bigwedge(a)(b)
+vv(a)(b)
+vee(a)(b)
+vvv(a)(b)
+bigvee(a)(b)
+nn(a)(b)
+cap(a)(b)
+nnn(a)(b)
+bigcap(a)(b)
+uu(a)(b)
+cup(a)(b)
+uuu(a)(b)
+bigcup(a)(b)
+=(a)(b)
+!=(a)(b)
+ne(a)(b)
+:=(a)(b)
+<(a)(b)
+lt(a)(b)
+mlt(a)(b)
+ll(a)(b)
+>(a)(b)
+gt(a)(b)
+mgt(a)(b)
+gg(a)(b)
+<=(a)(b)
+le(a)(b)
+>=(a)(b)
+ge(a)(b)
+-<(a)(b)
+-lt(a)(b)
+prec(a)(b)
+>-(a)(b)
+succ(a)(b)
+-<=(a)(b)
+preceq(a)(b)
+>-=(a)(b)
+succeq(a)(b)
+in(a)(b)
+!in(a)(b)
+notin(a)(b)
+sub(a)(b)
+subset(a)(b)
+sup(a)(b)
+supset(a)(b)
+sube(a)(b)
+subseteq(a)(b)
+supe(a)(b)
+supseteq(a)(b)
+-=(a)(b)
+equiv(a)(b)
+~(a)(b)
+sim(a)(b)
+~=(a)(b)
+cong(a)(b)
+~~(a)(b)
+approx(a)(b)
+prop(a)(b)
+propto(a)(b)
+and(a)(b)
+or(a)(b)
+not(a)(b)
+neg(a)(b)
+=>(a)(b)
+implies(a)(b)
+if(a)(b)
+<=>(a)(b)
+iff(a)(b)
+AA(a)(b)
+forall(a)(b)
+EE(a)(b)
+exists(a)(b)
+_|_(a)(b)
+bot(a)(b)
+TT(a)(b)
+top(a)(b)
+|--(a)(b)
+vdash(a)(b)
+|==(a)(b)
+models(a)(b)
+((a)(b)
+left((a)(b)
+)(a)(b)
+right)(a)(b)
+[(a)(b)
+left[(a)(b)
+](a)(b)
+right](a)(b)
+{(a)(b)
+}(a)(b)
+|(a)(b)
+:|:(a)(b)
+|:(a)(b)
+:|(a)(b)
+(:(a)(b)
+<<(a)(b)
+langle(a)(b)
+:)(a)(b)
+>>(a)(b)
+rangle(a)(b)
+{:(a)(b)
+:}(a)(b)
+int(a)(b)
+dx(a)(b)
+dy(a)(b)
+dz(a)(b)
+dt(a)(b)
+oint(a)(b)
+del(a)(b)
+partial(a)(b)
+grad(a)(b)
+nabla(a)(b)
++-(a)(b)
+pm(a)(b)
+-+(a)(b)
+mp(a)(b)
+O/(a)(b)
+emptyset(a)(b)
+oo(a)(b)
+infty(a)(b)
+aleph(a)(b)
+...(a)(b)
+ldots(a)(b)
+:.(a)(b)
+therefore(a)(b)
+:'(a)(b)
+because(a)(b)
+/_(a)(b)
+angle(a)(b)
+/_\(a)(b)
+triangle(a)(b)
+'(a)(b)
+prime(a)(b)
+tilde(a)(b)
+\ (a)(b)
+frown(a)(b)
+quad(a)(b)
+qquad(a)(b)
+cdots(a)(b)
+vdots(a)(b)
+ddots(a)(b)
+diamond(a)(b)
+square(a)(b)
+|__(a)(b)
+lfloor(a)(b)
+__|(a)(b)
+rfloor(a)(b)
+|~(a)(b)
+lceiling(a)(b)
+~|(a)(b)
+rceiling(a)(b)
+CC(a)(b)
+NN(a)(b)
+QQ(a)(b)
+RR(a)(b)
+ZZ(a)(b)
+f(a)(b)
+g(a)(b)
+lim(a)(b)
+Lim(a)(b)
+min(a)(b)
+max(a)(b)
+sin(a)(b)
+Sin(a)(b)
+cos(a)(b)
+Cos(a)(b)
+tan(a)(b)
+Tan(a)(b)
+sinh(a)(b)
+Sinh(a)(b)
+cosh(a)(b)
+Cosh(a)(b)
+tanh(a)(b)
+Tanh(a)(b)
+cot(a)(b)
+Cot(a)(b)
+sec(a)(b)
+Sec(a)(b)
+csc(a)(b)
+Csc(a)(b)
+arcsin(a)(b)
+arccos(a)(b)
+arctan(a)(b)
+coth(a)(b)
+sech(a)(b)
+csch(a)(b)
+exp(a)(b)
+abs(a)(b)
+Abs(a)(b)
+norm(a)(b)
+floor(a)(b)
+ceil(a)(b)
+log(a)(b)
+Log(a)(b)
+ln(a)(b)
+Ln(a)(b)
+det(a)(b)
+dim(a)(b)
+ker(a)(b)
+mod(a)(b)
+gcd(a)(b)
+lcm(a)(b)
+lub(a)(b)
+glb(a)(b)
+uarr(a)(b)
+uparrow(a)(b)
+darr(a)(b)
+downarrow(a)(b)
+rarr(a)(b)
+rightarrow(a)(b)
+->(a)(b)
+to(a)(b)
+>->(a)(b)
+rightarrowtail(a)(b)
+->>(a)(b)
+twoheadrightarrow(a)(b)
+>->>(a)(b)
+twoheadrightarrowtail(a)(b)
+|->(a)(b)
+mapsto(a)(b)
+larr(a)(b)
+leftarrow(a)(b)
+harr(a)(b)
+leftrightarrow(a)(b)
+rArr(a)(b)
+Rightarrow(a)(b)
+lArr(a)(b)
+Leftarrow(a)(b)
+hArr(a)(b)
+Leftrightarrow(a)(b)
+sqrt(a)(b)
+root(a)(b)
+/(a)(b)
+stackrel(a)(b)
+overset(a)(b)
+underset(a)(b)
+color(a)(b)
+_(a)(b)
+^(a)(b)
+hat(a)(b)
+bar(a)(b)
+vec(a)(b)
+dot(a)(b)
+ddot(a)(b)
+overarc(a)(b)
+overparen(a)(b)
+ul(a)(b)
+underline(a)(b)
+ubrace(a)(b)
+underbrace(a)(b)
+obrace(a)(b)
+overbrace(a)(b)
+cancel(a)(b)
+bb(a)(b)
+mathbf(a)(b)
+bbb(a)(b)
+mathbb(a)(b)
+ii(a)(b)
+bii(a)(b)
+cc(a)(b)
+mathcal(a)(b)
+bcc(a)(b)
+tt(a)(b)
+mathtt(a)(b)
+fr(a)(b)
+mathfrak(a)(b)
+bfr(a)(b)
+sf(a)(b)
+mathsf(a)(b)
+bsf(a)(b)
+sfi(a)(b)
+sfbi(a)(b)
+rm(a)(b)
+alpha(a)(b)
+Alpha(a)(b)
+beta(a)(b)
+Beta(a)(b)
+gamma(a)(b)
+Gamma(a)(b)
+delta(a)(b)
+Delta(a)(b)
+epsi(a)(b)
+epsilon(a)(b)
+Epsilon(a)(b)
+varepsilon(a)(b)
+zeta(a)(b)
+Zeta(a)(b)
+eta(a)(b)
+Eta(a)(b)
+theta(a)(b)
+Theta(a)(b)
+vartheta(a)(b)
+iota(a)(b)
+Iota(a)(b)
+kappa(a)(b)
+Kappa(a)(b)
+lambda(a)(b)
+Lambda(a)(b)
+mu(a)(b)
+Mu(a)(b)
+nu(a)(b)
+Nu(a)(b)
+xi(a)(b)
+Xi(a)(b)
+omicron(a)(b)
+Omicron(a)(b)
+pi(a)(b)
+Pi(a)(b)
+rho(a)(b)
+Rho(a)(b)
+sigma(a)(b)
+Sigma(a)(b)
+tau(a)(b)
+Tau(a)(b)
+upsilon(a)(b)
+Upsilon(a)(b)
+phi(a)(b)
+Phi(a)(b)
+varphi(a)(b)
+chi(a)(b)
+Chi(a)(b)
+psi(a)(b)
+Psi(a)(b)
+omega(a)(b)
+Omega(a)(b)
+x_+^+ +
+x_-^- -
+x_*^* *
+x_cdot^cdot cdot
+x_**^** **
+x_ast^ast ast
+x_***^*** ***
+x_star^star star
+x_//^// //
+x_\\^\\ \\
+x_backslash^backslash backslash
+x_setminus^setminus setminus
+x_xx^xx xx
+x_times^times times
+x_|><^|>< |><
+x_ltimes^ltimes ltimes
+x_><|^><| ><|
+x_rtimes^rtimes rtimes
+x_|><|^|><| |><|
+x_bowtie^bowtie bowtie
+x_-:^-: -:
+x_div^div div
+x_divide^divide divide
+x_@^@ @
+x_circ^circ circ
+x_o+^o+ o+
+x_oplus^oplus oplus
+x_ox^ox ox
+x_otimes^otimes otimes
+x_o.^o. o.
+x_odot^odot odot
+x_sum^sum sum
+x_prod^prod prod
+x_^^^^^ ^^
+x_wedge^wedge wedge
+x_^^^^^^^ ^^^
+x_bigwedge^bigwedge bigwedge
+x_vv^vv vv
+x_vee^vee vee
+x_vvv^vvv vvv
+x_bigvee^bigvee bigvee
+x_nn^nn nn
+x_cap^cap cap
+x_nnn^nnn nnn
+x_bigcap^bigcap bigcap
+x_uu^uu uu
+x_cup^cup cup
+x_uuu^uuu uuu
+x_bigcup^bigcup bigcup
+x_=^= =
+x_!=^!= !=
+x_ne^ne ne
+x_:=^:= :=
+x_<^< <
+x_lt^lt lt
+x_mlt^mlt mlt
+x_ll^ll ll
+x_>^> >
+x_gt^gt gt
+x_mgt^mgt mgt
+x_gg^gg gg
+x_<=^<= <=
+x_le^le le
+x_>=^>= >=
+x_ge^ge ge
+x_-<^-< -<
+x_-lt^-lt -lt
+x_prec^prec prec
+x_>-^>- >-
+x_succ^succ succ
+x_-<=^-<= -<=
+x_preceq^preceq preceq
+x_>-=^>-= >-=
+x_succeq^succeq succeq
+x_in^in in
+x_!in^!in !in
+x_notin^notin notin
+x_sub^sub sub
+x_subset^subset subset
+x_sup^sup sup
+x_supset^supset supset
+x_sube^sube sube
+x_subseteq^subseteq subseteq
+x_supe^supe supe
+x_supseteq^supseteq supseteq
+x_-=^-= -=
+x_equiv^equiv equiv
+x_~^~ ~
+x_sim^sim sim
+x_~=^~= ~=
+x_cong^cong cong
+x_~~^~~ ~~
+x_approx^approx approx
+x_prop^prop prop
+x_propto^propto propto
+x_and^and and
+x_or^or or
+x_not^not not
+x_neg^neg neg
+x_=>^=> =>
+x_implies^implies implies
+x_if^if if
+x_<=>^<=> <=>
+x_iff^iff iff
+x_AA^AA AA
+x_forall^forall forall
+x_EE^EE EE
+x_exists^exists exists
+x__|_^_|_ _|_
+x_bot^bot bot
+x_TT^TT TT
+x_top^top top
+x_|--^|-- |--
+x_vdash^vdash vdash
+x_|==^|== |==
+x_models^models models
+x_(^( (
+x_left(^left( left(
+x_)^) )
+x_right)^right) right)
+x_[^[ [
+x_left[^left[ left[
+x_]^] ]
+x_right]^right] right]
+x_{^{ {
+x_}^} }
+x_|^| |
+x_:|:^:|: :|:
+x_|:^|: |:
+x_:|^:| :|
+x_(:^(: (:
+x_<<^<< <<
+x_langle^langle langle
+x_:)^:) :)
+x_>>^>> >>
+x_rangle^rangle rangle
+x_{:^{: {:
+x_:}^:} :}
+x_int^int int
+x_dx^dx dx
+x_dy^dy dy
+x_dz^dz dz
+x_dt^dt dt
+x_oint^oint oint
+x_del^del del
+x_partial^partial partial
+x_grad^grad grad
+x_nabla^nabla nabla
+x_+-^+- +-
+x_pm^pm pm
+x_-+^-+ -+
+x_mp^mp mp
+x_O/^O/ O/
+x_emptyset^emptyset emptyset
+x_oo^oo oo
+x_infty^infty infty
+x_aleph^aleph aleph
+x_...^... ...
+x_ldots^ldots ldots
+x_:.^:. :.
+x_therefore^therefore therefore
+x_:'^:' :'
+x_because^because because
+x_/_^/_ /_
+x_angle^angle angle
+x_/_\^/_\ /_\
+x_triangle^triangle triangle
+x_'^' '
+x_prime^prime prime
+x_tilde^tilde tilde
+x_\ ^\  \ 
+x_frown^frown frown
+x_quad^quad quad
+x_qquad^qquad qquad
+x_cdots^cdots cdots
+x_vdots^vdots vdots
+x_ddots^ddots ddots
+x_diamond^diamond diamond
+x_square^square square
+x_|__^|__ |__
+x_lfloor^lfloor lfloor
+x___|^__| __|
+x_rfloor^rfloor rfloor
+x_|~^|~ |~
+x_lceiling^lceiling lceiling
+x_~|^~| ~|
+x_rceiling^rceiling rceiling
+x_CC^CC CC
+x_NN^NN NN
+x_QQ^QQ QQ
+x_RR^RR RR
+x_ZZ^ZZ ZZ
+x_f^f f
+x_g^g g
+x_lim^lim lim
+x_Lim^Lim Lim
+x_min^min min
+x_max^max max
+x_sin^sin sin
+x_Sin^Sin Sin
+x_cos^cos cos
+x_Cos^Cos Cos
+x_tan^tan tan
+x_Tan^Tan Tan
+x_sinh^sinh sinh
+x_Sinh^Sinh Sinh
+x_cosh^cosh cosh
+x_Cosh^Cosh Cosh
+x_tanh^tanh tanh
+x_Tanh^Tanh Tanh
+x_cot^cot cot
+x_Cot^Cot Cot
+x_sec^sec sec
+x_Sec^Sec Sec
+x_csc^csc csc
+x_Csc^Csc Csc
+x_arcsin^arcsin arcsin
+x_arccos^arccos arccos
+x_arctan^arctan arctan
+x_coth^coth coth
+x_sech^sech sech
+x_csch^csch csch
+x_exp^exp exp
+x_abs^abs abs
+x_Abs^Abs Abs
+x_norm^norm norm
+x_floor^floor floor
+x_ceil^ceil ceil
+x_log^log log
+x_Log^Log Log
+x_ln^ln ln
+x_Ln^Ln Ln
+x_det^det det
+x_dim^dim dim
+x_ker^ker ker
+x_mod^mod mod
+x_gcd^gcd gcd
+x_lcm^lcm lcm
+x_lub^lub lub
+x_glb^glb glb
+x_uarr^uarr uarr
+x_uparrow^uparrow uparrow
+x_darr^darr darr
+x_downarrow^downarrow downarrow
+x_rarr^rarr rarr
+x_rightarrow^rightarrow rightarrow
+x_->^-> ->
+x_to^to to
+x_>->^>-> >->
+x_rightarrowtail^rightarrowtail rightarrowtail
+x_->>^->> ->>
+x_twoheadrightarrow^twoheadrightarrow twoheadrightarrow
+x_>->>^>->> >->>
+x_twoheadrightarrowtail^twoheadrightarrowtail twoheadrightarrowtail
+x_|->^|-> |->
+x_mapsto^mapsto mapsto
+x_larr^larr larr
+x_leftarrow^leftarrow leftarrow
+x_harr^harr harr
+x_leftrightarrow^leftrightarrow leftrightarrow
+x_rArr^rArr rArr
+x_Rightarrow^Rightarrow Rightarrow
+x_lArr^lArr lArr
+x_Leftarrow^Leftarrow Leftarrow
+x_hArr^hArr hArr
+x_Leftrightarrow^Leftrightarrow Leftrightarrow
+x_sqrt^sqrt sqrt
+x_root^root root
+x_frac^frac frac
+x_/^/ /
+x_stackrel^stackrel stackrel
+x_overset^overset overset
+x_underset^underset underset
+x_color^color color
+x__^_ _
+x_^^^ ^
+x_hat^hat hat
+x_bar^bar bar
+x_vec^vec vec
+x_dot^dot dot
+x_ddot^ddot ddot
+x_overarc^overarc overarc
+x_overparen^overparen overparen
+x_ul^ul ul
+x_underline^underline underline
+x_ubrace^ubrace ubrace
+x_underbrace^underbrace underbrace
+x_obrace^obrace obrace
+x_overbrace^overbrace overbrace
+x_cancel^cancel cancel
+x_bb^bb bb
+x_mathbf^mathbf mathbf
+x_bbb^bbb bbb
+x_mathbb^mathbb mathbb
+x_ii^ii ii
+x_bii^bii bii
+x_cc^cc cc
+x_mathcal^mathcal mathcal
+x_bcc^bcc bcc
+x_tt^tt tt
+x_mathtt^mathtt mathtt
+x_fr^fr fr
+x_mathfrak^mathfrak mathfrak
+x_bfr^bfr bfr
+x_sf^sf sf
+x_mathsf^mathsf mathsf
+x_bsf^bsf bsf
+x_sfi^sfi sfi
+x_sfbi^sfbi sfbi
+x_rm^rm rm
+x_alpha^alpha alpha
+x_Alpha^Alpha Alpha
+x_beta^beta beta
+x_Beta^Beta Beta
+x_gamma^gamma gamma
+x_Gamma^Gamma Gamma
+x_delta^delta delta
+x_Delta^Delta Delta
+x_epsi^epsi epsi
+x_epsilon^epsilon epsilon
+x_Epsilon^Epsilon Epsilon
+x_varepsilon^varepsilon varepsilon
+x_zeta^zeta zeta
+x_Zeta^Zeta Zeta
+x_eta^eta eta
+x_Eta^Eta Eta
+x_theta^theta theta
+x_Theta^Theta Theta
+x_vartheta^vartheta vartheta
+x_iota^iota iota
+x_Iota^Iota Iota
+x_kappa^kappa kappa
+x_Kappa^Kappa Kappa
+x_lambda^lambda lambda
+x_Lambda^Lambda Lambda
+x_mu^mu mu
+x_Mu^Mu Mu
+x_nu^nu nu
+x_Nu^Nu Nu
+x_xi^xi xi
+x_Xi^Xi Xi
+x_omicron^omicron omicron
+x_Omicron^Omicron Omicron
+x_pi^pi pi
+x_Pi^Pi Pi
+x_rho^rho rho
+x_Rho^Rho Rho
+x_sigma^sigma sigma
+x_Sigma^Sigma Sigma
+x_tau^tau tau
+x_Tau^Tau Tau
+x_upsilon^upsilon upsilon
+x_Upsilon^Upsilon Upsilon
+x_phi^phi phi
+x_Phi^Phi Phi
+x_varphi^varphi varphi
+x_chi^chi chi
+x_Chi^Chi Chi
+x_psi^psi psi
+x_Psi^Psi Psi
+x_omega^omega omega
+x_Omega^Omega Omega
+f'(x) = lim_(Deltax->0)(f(x+Deltax)-f(x))/(Deltax)
+s'_i = {(- 1, if s_i > s_(i + 1)),( + 1, if s_i <= s_(i + 1)):}
+s'_i = {(, if s_i > s_(i + 1)),( + 1,):}
+{ x\ : \ x in A ^^ x in B }

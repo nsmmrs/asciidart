@@ -1,15 +1,14 @@
 /// AsciiMath to MathML (ADR-0014) against the `asciimath` gem 2.0.6:
 /// `test/fixtures/asciimath/expected.json` is the gem's MathML for each
 /// expression of `expressions.txt` (`AsciiMath.parse(e).to_mathml('mml:')`,
-/// regenerated with `ruby asciimath-oracle.rb expressions.txt`; see the
-/// fixture's README).
+/// written by `tool/asciimath_corpus.rb`; see the fixture's README).
 @TestOn('vm')
 library;
 
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ptome/src/math/asciimath.dart';
+import 'package:plain_math/plain_math.dart';
 import 'package:test/test.dart';
 
 void main() {

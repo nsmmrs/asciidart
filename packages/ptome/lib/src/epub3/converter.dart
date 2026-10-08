@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:plain_math/plain_math.dart' show asciimathToMathml;
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/attribute_list.dart';
@@ -34,7 +35,6 @@ import 'package:ptome/src/index_catalog.dart';
 import 'package:ptome/src/inline.dart';
 import 'package:ptome/src/io.dart' as io;
 import 'package:ptome/src/list.dart';
-import 'package:ptome/src/math/asciimath.dart';
 import 'package:ptome/src/output_template.dart';
 import 'package:ptome/src/page_map.dart';
 import 'package:ptome/src/parallel.dart';

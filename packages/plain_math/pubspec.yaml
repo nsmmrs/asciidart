@@ -1,0 +1,23 @@
+name: plain_math
+description: >-
+  Math notations to MathML in pure Dart: AsciiMath (as the asciimath gem
+  writes it, byte for byte) and LaTeX, and a typed MathML tree for layout.
+version: 0.1.0-dev
+repository: https://github.com/nsmmrs/ptome/tree/master/packages/plain_math
+issue_tracker: https://github.com/nsmmrs/ptome/issues
+topics:
+  - math
+  - mathml
+  - asciimath
+  - latex
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dev_dependencies:
+  analyzer: ^14.4.0
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0
+  xml: ^7.1.0

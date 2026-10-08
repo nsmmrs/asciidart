@@ -2,6 +2,7 @@
 /// plain_pdf's math layout in a font with an OpenType `MATH` table.
 library;
 
+import 'package:plain_math/plain_math.dart' show MathNode;
 import 'package:plain_pdf/plain_pdf.dart';
 
 /// A formula in a line of text: laid out at the text's size when the

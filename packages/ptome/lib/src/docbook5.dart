@@ -20,6 +20,7 @@
 ///   writes them with the gem installed.
 library;
 
+import 'package:plain_math/plain_math.dart' show asciimathToMathml;
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/attribute_list.dart';
@@ -28,7 +29,6 @@ import 'package:ptome/src/converter.dart';
 import 'package:ptome/src/document.dart';
 import 'package:ptome/src/inline.dart';
 import 'package:ptome/src/list.dart';
-import 'package:ptome/src/math/asciimath.dart';
 import 'package:ptome/src/ruby_semantics.dart';
 import 'package:ptome/src/rx.dart';
 import 'package:ptome/src/section.dart';

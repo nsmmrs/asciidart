@@ -1,0 +1,9 @@
+{
+  "name": "plain-math-oracles",
+  "private": true,
+  "type": "module",
+  "description": "The Temml oracle for test/temml_test.dart.",
+  "dependencies": {
+    "temml": "0.14.0"
+  }
+}

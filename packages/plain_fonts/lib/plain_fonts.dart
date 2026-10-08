@@ -17,6 +17,13 @@ export 'src/font_files.dart'
         cacheDirectoryFor,
         fontDirectoriesFor;
 export 'src/font_index.dart' show FontIndex, InstalledFont;
+export 'src/math_table.dart'
+    show
+        GlyphConstruction,
+        GlyphPart,
+        MathConstant,
+        MathVariant,
+        OpenTypeMathTable;
 export 'src/opentype.dart' show FontFormatException, OpenTypeFont;
 export 'src/subset.dart' show assembleFont, glyphClosure, subsetTrueType;
 export 'src/woff.dart' show decodeWebFont, isWebFont;

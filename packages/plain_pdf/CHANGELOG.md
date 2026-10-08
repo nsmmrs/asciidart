@@ -2,6 +2,12 @@
 
 ## 0.1.0-dev (unreleased)
 
+- The MathML tree (`MathNode` and its kinds, `parseMathML`,
+  `MathMLException`) moved to plain_math with its history, and the
+  OpenType MATH table (`OpenTypeMathTable`, `MathConstant`,
+  `MathVariant`, `GlyphConstruction`, `GlyphPart`) to plain_fonts;
+  plain_pdf depends on both and no longer exports them. A formula's `mathcolor` is parsed as a CSS color by the
+  math layout.
 - `PatternHyphenator` moved to plain_hyphenation with its history;
   plain_pdf keeps the `Hyphenator` interface its paragraphs take.
 - Line breaking (UAX #14) moved to plain_unicode with its history;

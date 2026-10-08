@@ -10,13 +10,13 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:plain_fonts/plain_fonts.dart';
+import 'package:plain_math/plain_math.dart';
 import 'package:plain_pdf/src/drawing/canvas.dart';
 import 'package:plain_pdf/src/drawing/color.dart';
 import 'package:plain_pdf/src/drawing/geometry.dart';
 import 'package:plain_pdf/src/drawing/graphic.dart';
 import 'package:plain_pdf/src/fonts/fonts.dart';
-import 'package:plain_pdf/src/math/math_table.dart';
-import 'package:plain_pdf/src/math/mathml.dart';
+import 'package:plain_pdf/src/svg/css_color.dart';
 
 /// A formula laid out: as wide as [width], [height] above its baseline
 /// and [depth] below it (points), drawn with [paintAt].
@@ -344,7 +344,7 @@ final class MathLayout {
     return s.copyWith(
       display: node.display,
       level: level,
-      color: node.color,
+      color: _mathColor(node.color),
       variant: node.variant,
     );
   }
@@ -1544,3 +1544,13 @@ final class MathLayout {
     ]);
   }
 }
+
+/// The color of a `mathcolor` attribute (a CSS color), or null.
+PdfColor? _mathColor(String? value) => switch (parseCssColor(value ?? '')) {
+  (:final red, :final green, :final blue, alpha: _)? => RgbColor(
+    red,
+    green,
+    blue,
+  ),
+  null => null,
+};

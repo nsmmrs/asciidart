@@ -2,7 +2,6 @@
 List<Line> buildLines(Paragraph paragraph, List<LineItem> items, List<int> breaks, double Function(int) widths)
 List<LineItem> paragraphItems(Paragraph paragraph, {double? maxWidth})
 List<int>? pdfDocEncode(String text)
-MathNode parseMathML(String text)
 String formatNumber(num value, {int precision = 5})
 String get plainPdfVersion
 String pdfDate(DateTime date)
@@ -80,70 +79,6 @@ enum LineJoin
   static LineJoin miter
   static LineJoin round
   static List<LineJoin> values
-enum MathConstant
-  static List<MathConstant> values
-  static MathConstant accentBaseHeight
-  static MathConstant axisHeight
-  static MathConstant delimitedSubFormulaMinHeight
-  static MathConstant displayOperatorMinHeight
-  static MathConstant flattenedAccentBaseHeight
-  static MathConstant fractionDenomDisplayStyleGapMin
-  static MathConstant fractionDenominatorDisplayStyleShiftDown
-  static MathConstant fractionDenominatorGapMin
-  static MathConstant fractionDenominatorShiftDown
-  static MathConstant fractionNumDisplayStyleGapMin
-  static MathConstant fractionNumeratorDisplayStyleShiftUp
-  static MathConstant fractionNumeratorGapMin
-  static MathConstant fractionNumeratorShiftUp
-  static MathConstant fractionRuleThickness
-  static MathConstant lowerLimitBaselineDropMin
-  static MathConstant lowerLimitGapMin
-  static MathConstant mathLeading
-  static MathConstant overbarExtraAscender
-  static MathConstant overbarRuleThickness
-  static MathConstant overbarVerticalGap
-  static MathConstant radicalDegreeBottomRaisePercent
-  static MathConstant radicalDisplayStyleVerticalGap
-  static MathConstant radicalExtraAscender
-  static MathConstant radicalKernAfterDegree
-  static MathConstant radicalKernBeforeDegree
-  static MathConstant radicalRuleThickness
-  static MathConstant radicalVerticalGap
-  static MathConstant scriptPercentScaleDown
-  static MathConstant scriptScriptPercentScaleDown
-  static MathConstant skewedFractionHorizontalGap
-  static MathConstant skewedFractionVerticalGap
-  static MathConstant spaceAfterScript
-  static MathConstant stackBottomDisplayStyleShiftDown
-  static MathConstant stackBottomShiftDown
-  static MathConstant stackDisplayStyleGapMin
-  static MathConstant stackGapMin
-  static MathConstant stackTopDisplayStyleShiftUp
-  static MathConstant stackTopShiftUp
-  static MathConstant stretchStackBottomShiftDown
-  static MathConstant stretchStackGapAboveMin
-  static MathConstant stretchStackGapBelowMin
-  static MathConstant stretchStackTopShiftUp
-  static MathConstant subSuperscriptGapMin
-  static MathConstant subscriptBaselineDropMin
-  static MathConstant subscriptShiftDown
-  static MathConstant subscriptTopMax
-  static MathConstant superscriptBaselineDropMax
-  static MathConstant superscriptBottomMaxWithSubscript
-  static MathConstant superscriptBottomMin
-  static MathConstant superscriptShiftUp
-  static MathConstant superscriptShiftUpCramped
-  static MathConstant underbarExtraDescender
-  static MathConstant underbarRuleThickness
-  static MathConstant underbarVerticalGap
-  static MathConstant upperLimitBaselineRiseMin
-  static MathConstant upperLimitGapMin
-enum MathTokenKind
-  static List<MathTokenKind> values
-  static MathTokenKind identifier
-  static MathTokenKind number
-  static MathTokenKind operator
-  static MathTokenKind text
 enum PageMode
   String pdfName
   static List<PageMode> values
@@ -380,11 +315,6 @@ final class GlueItem extends LineItem
   double shrink
   double stretch
   double width
-final class GlyphConstruction
-  GlyphConstruction(List<({int advance, int glyph})> variants, List<({int endConnector, bool extender, int fullAdvance, int glyph, int startConnector})> parts, int italicsCorrection)
-  List<({int advance, int glyph})> variants
-  List<({int endConnector, bool extender, int fullAdvance, int glyph, int startConnector})> parts
-  int italicsCorrection
 final class GradientStop
   GradientStop(double offset, PdfColor color)
   PdfColor color
@@ -484,67 +414,11 @@ final class MathBox implements Graphic
   double width
   void paint(PdfCanvas canvas, PdfRect rect)
   void paintAt(PdfCanvas canvas, double x, double y)
-final class MathEnclose extends MathNode
-  List<String> notations
-  MathEnclose(MathNode child, List<String> notations)
-  MathNode child
-final class MathFraction extends MathNode
-  MathFraction(MathNode numerator, MathNode denominator, {String? lineThickness})
-  MathNode denominator
-  MathNode numerator
-  String? lineThickness
 final class MathLayout
   EmbeddedFont font
   List<EmbeddedFont> fallbacks
   MathBox layout(MathNode node, {required double size, bool display = false})
   MathLayout(EmbeddedFont font, {List<EmbeddedFont> fallbacks = const []})
-final class MathMLException implements Exception
-  MathMLException(String message)
-  String message
-  String toString()
-final class MathRadical extends MathNode
-  MathNode radicand
-  MathNode? index
-  MathRadical(MathNode radicand, {MathNode? index})
-final class MathRow extends MathNode
-  List<MathNode> children
-  MathRow(List<MathNode> children)
-final class MathScripts extends MathNode
-  MathNode base
-  MathNode? sub
-  MathNode? sup
-  MathScripts(MathNode base, {MathNode? sub, MathNode? sup})
-final class MathSpace extends MathNode
-  MathSpace(String? width)
-  String? width
-final class MathStyled extends MathNode
-  MathNode child
-  MathStyled(MathNode child, {bool? display, String? scriptLevel, PdfColor? color, String? variant})
-  PdfColor? color
-  String? scriptLevel
-  String? variant
-  bool? display
-final class MathTable extends MathNode
-  List<List<MathNode>> rows
-  MathTable(List<List<MathNode>> rows, {String? columnAlign})
-  String? columnAlign
-final class MathToken extends MathNode
-  MathToken(MathTokenKind kind, String text, {String? variant, bool? stretchy, bool? largeOperator, bool? movableLimits, bool? fence, String? form})
-  MathTokenKind kind
-  String text
-  String? form
-  String? variant
-  bool? fence
-  bool? largeOperator
-  bool? movableLimits
-  bool? stretchy
-final class MathUnderOver extends MathNode
-  MathNode base
-  MathNode? over
-  MathNode? under
-  MathUnderOver(MathNode base, {MathNode? under, MathNode? over, bool accent = false, bool accentUnder = false})
-  bool accent
-  bool accentUnder
 final class MoveSegment extends PathSegment
   MoveSegment(double x, double y)
   double x
@@ -555,15 +429,6 @@ final class MultipleLineHeight extends LineHeight
 final class NamedTarget extends LinkTarget
   NamedTarget(String name)
   String name
-final class OpenTypeMathTable
-  GlyphConstruction? horizontal(int glyph)
-  GlyphConstruction? vertical(int glyph)
-  Map<int, int> italicsCorrections
-  Map<int, int> topAccentAttachments
-  OpenTypeMathTable? parse(Uint8List bytes)
-  Set<int> extendedShapes
-  int [](MathConstant constant)
-  int minConnectorOverlap
 final class PageInfo
   PageTemplate template
   String label
@@ -1039,8 +904,6 @@ sealed class LinkTarget
   LinkTarget.destination(PdfDestination destination)
   LinkTarget.named(String name)
   LinkTarget.uri(String uri)
-sealed class MathNode
-  MathNode()
 sealed class PathSegment
   PathSegment()
 sealed class PdfColor
@@ -1090,9 +953,7 @@ sealed class PdfShading
   bool extendEnd
   bool extendStart
 typedef BoxDecoration = void Function(PdfPage, PdfRect, {required bool first, required bool last})
-typedef GlyphPart = ({int endConnector, bool extender, int fullAdvance, int glyph, int startConnector})
 typedef LineWidths = double Function(int)
-typedef MathVariant = ({int advance, int glyph})
 typedef PngPayload = ({Uint8List? alpha, int alphaDepth, Uint8List color, bool compress, int level})
 typedef StreamPayload = ({bool compress, Uint8List? data, int length, int level})
 typedef SvgFontResolver = PdfFont? Function(String, {required bool bold, required bool italic})

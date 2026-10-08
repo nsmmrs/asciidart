@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
+import 'package:plain_math/plain_math.dart';
 import 'package:plain_pdf/plain_pdf.dart';
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
@@ -23,8 +24,6 @@ import 'package:ptome/src/index_catalog.dart' show indexHasCategoryHeadings;
 import 'package:ptome/src/inline.dart';
 import 'package:ptome/src/io.dart' as io;
 import 'package:ptome/src/list.dart';
-import 'package:ptome/src/math/asciimath.dart';
-import 'package:ptome/src/math/latex.dart';
 import 'package:ptome/src/output_template.dart';
 import 'package:ptome/src/page_map.dart';
 import 'package:ptome/src/parallel.dart';
@@ -6115,16 +6114,16 @@ final class PdfConverter extends BuiltInConverter
     if (_math == null) return null;
     final unknown = <String>{};
     try {
-      final mathml = latex
-          ? latexToMathml(_stripDelimiters(source), unknown: unknown)
-          : asciimathToMathml(source);
+      final math = latex
+          ? latexToMath(_stripDelimiters(source), unknown: unknown)
+          : asciimathToMath(source);
       if (unknown.isNotEmpty) {
         logger.warn(
           'unknown LaTeX math command${unknown.length == 1 ? '' : 's'} '
           '${unknown.join(', ')}, shown as written: $source',
         );
       }
-      return parseMathML(mathml);
+      return math;
     } on MathMLException catch (error) {
       logger.warn('could not typeset math: $source ($error)');
       return null;

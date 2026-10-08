@@ -126,29 +126,6 @@ export 'src/layout/paragraph.dart'
         buildLines,
         paragraphItems;
 export 'src/math/layout.dart' show MathBox, MathLayout;
-export 'src/math/math_table.dart'
-    show
-        GlyphConstruction,
-        GlyphPart,
-        MathConstant,
-        MathVariant,
-        OpenTypeMathTable;
-export 'src/math/mathml.dart'
-    show
-        MathEnclose,
-        MathFraction,
-        MathMLException,
-        MathNode,
-        MathRadical,
-        MathRow,
-        MathScripts,
-        MathSpace,
-        MathStyled,
-        MathTable,
-        MathToken,
-        MathTokenKind,
-        MathUnderOver,
-        parseMathML;
 export 'src/md5.dart' show md5;
 export 'src/objects.dart'
     show

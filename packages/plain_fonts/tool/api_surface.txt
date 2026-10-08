@@ -22,6 +22,64 @@ enum FontPlatform
   static FontPlatform macos
   static FontPlatform windows
   static List<FontPlatform> values
+enum MathConstant
+  static List<MathConstant> values
+  static MathConstant accentBaseHeight
+  static MathConstant axisHeight
+  static MathConstant delimitedSubFormulaMinHeight
+  static MathConstant displayOperatorMinHeight
+  static MathConstant flattenedAccentBaseHeight
+  static MathConstant fractionDenomDisplayStyleGapMin
+  static MathConstant fractionDenominatorDisplayStyleShiftDown
+  static MathConstant fractionDenominatorGapMin
+  static MathConstant fractionDenominatorShiftDown
+  static MathConstant fractionNumDisplayStyleGapMin
+  static MathConstant fractionNumeratorDisplayStyleShiftUp
+  static MathConstant fractionNumeratorGapMin
+  static MathConstant fractionNumeratorShiftUp
+  static MathConstant fractionRuleThickness
+  static MathConstant lowerLimitBaselineDropMin
+  static MathConstant lowerLimitGapMin
+  static MathConstant mathLeading
+  static MathConstant overbarExtraAscender
+  static MathConstant overbarRuleThickness
+  static MathConstant overbarVerticalGap
+  static MathConstant radicalDegreeBottomRaisePercent
+  static MathConstant radicalDisplayStyleVerticalGap
+  static MathConstant radicalExtraAscender
+  static MathConstant radicalKernAfterDegree
+  static MathConstant radicalKernBeforeDegree
+  static MathConstant radicalRuleThickness
+  static MathConstant radicalVerticalGap
+  static MathConstant scriptPercentScaleDown
+  static MathConstant scriptScriptPercentScaleDown
+  static MathConstant skewedFractionHorizontalGap
+  static MathConstant skewedFractionVerticalGap
+  static MathConstant spaceAfterScript
+  static MathConstant stackBottomDisplayStyleShiftDown
+  static MathConstant stackBottomShiftDown
+  static MathConstant stackDisplayStyleGapMin
+  static MathConstant stackGapMin
+  static MathConstant stackTopDisplayStyleShiftUp
+  static MathConstant stackTopShiftUp
+  static MathConstant stretchStackBottomShiftDown
+  static MathConstant stretchStackGapAboveMin
+  static MathConstant stretchStackGapBelowMin
+  static MathConstant stretchStackTopShiftUp
+  static MathConstant subSuperscriptGapMin
+  static MathConstant subscriptBaselineDropMin
+  static MathConstant subscriptShiftDown
+  static MathConstant subscriptTopMax
+  static MathConstant superscriptBaselineDropMax
+  static MathConstant superscriptBottomMaxWithSubscript
+  static MathConstant superscriptBottomMin
+  static MathConstant superscriptShiftUp
+  static MathConstant superscriptShiftUpCramped
+  static MathConstant underbarExtraDescender
+  static MathConstant underbarRuleThickness
+  static MathConstant underbarVerticalGap
+  static MathConstant upperLimitBaselineRiseMin
+  static MathConstant upperLimitGapMin
 final class FontFilesException implements Exception
   FontFilesException(String message, String path)
   String message
@@ -49,6 +107,11 @@ final class FontIndex
   bool isInMemory(String path)
   bool passedOverWebFonts
   static bool decodesWebFonts
+final class GlyphConstruction
+  GlyphConstruction(List<({int advance, int glyph})> variants, List<({int endConnector, bool extender, int fullAdvance, int glyph, int startConnector})> parts, int italicsCorrection)
+  List<({int advance, int glyph})> variants
+  List<({int endConnector, bool extender, int fullAdvance, int glyph, int startConnector})> parts
+  int italicsCorrection
 final class InstalledFont
   InstalledFont({required String path, required int index, required String family, required String legacyFamily, required String subfamily, required int weight, required int width, required bool italic})
   String family
@@ -102,4 +165,15 @@ final class OpenTypeFont
   int? underlinePosition (settable)
   int? underlineThickness (settable)
   int? xHeight (settable)
+final class OpenTypeMathTable
+  GlyphConstruction? horizontal(int glyph)
+  GlyphConstruction? vertical(int glyph)
+  Map<int, int> italicsCorrections
+  Map<int, int> topAccentAttachments
+  OpenTypeMathTable? parse(Uint8List bytes)
+  Set<int> extendedShapes
+  int [](MathConstant constant)
+  int minConnectorOverlap
 typedef FontFolderEntry = ({bool isDirectory, bool isFile, String name, String path})
+typedef GlyphPart = ({int endConnector, bool extender, int fullAdvance, int glyph, int startConnector})
+typedef MathVariant = ({int advance, int glyph})

@@ -1,0 +1,13 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # MathML is written as adjacent string literals with no whitespace
+    # between elements, on purpose: whitespace would change the output.
+    missing_whitespace_between_adjacent_strings: false

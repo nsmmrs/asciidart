@@ -1,7 +1,6 @@
-// LaTeX math to MathML (ADR-0014): what each construct becomes, and that
-// plain_pdf's MathML reader takes it.
-import 'package:plain_pdf/plain_pdf.dart';
-import 'package:ptome/src/math/latex.dart';
+// LaTeX math to MathML (ptome's ADR-0014): what each construct becomes,
+// and that the MathML reader takes it.
+import 'package:plain_math/plain_math.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -133,5 +132,80 @@ void main() {
 
   test('display style', () {
     expect(latexToMathml('x', display: true), contains('display="block"'));
+  });
+
+  test('characters beyond the BMP, and letters of any script', () {
+    expect(body('𝐀+𝟎'), '<mrow><mi>𝐀</mi><mo>+</mo><mi>𝟎</mi></mrow>');
+    expect(body('αβ'), '<mrow><mi>α</mi><mi>β</mi></mrow>');
+    expect(body(r'\imath\jmath'), '<mrow><mi>ı</mi><mi>ȷ</mi></mrow>');
+  });
+
+  test('negations: operators once escaped, letters struck through', () {
+    expect(body(r'\not<\not>'), '<mrow><mo>≮</mo><mo>≯</mo></mrow>');
+    expect(body(r'\not\&'), '<mo>&amp;̸</mo>');
+    expect(body(r'\not x'), '<mi>x̸</mi>');
+  });
+
+  test(r'\dots: centered before an operator', () {
+    expect(body(r'\dots+\dots\int\dots,'), startsWith('<mrow><mo>⋯</mo>'));
+    expect(body(r'a\dots,'), '<mrow><mi>a</mi><mo>…</mo><mo>,</mo></mrow>');
+    expect(body(r'\dots\int'), contains('<mo>⋯</mo>'));
+  });
+
+  test(r'\operatorname: symbols in it, and the starred form', () {
+    expect(body(r'\operatorname{\Gamma}'), '<mi>Γ</mi>');
+    expect(
+      body(r'\operatorname*{argmax}_x'),
+      '<munder><mo movablelimits="true">argmax</mo><mi>x</mi></munder>',
+    );
+  });
+
+  test('delimiters: any symbol, unknown ones listed', () {
+    expect(body(r'\Biggl\Uparrow'), '<mo stretchy="false">⇑</mo>');
+    final unknown = <String>{};
+    latexToMathml(r'\bigl\foo', unknown: unknown);
+    expect(unknown, {r'\foo'});
+  });
+
+  test("environments' arguments, rcases, unknown ones listed", () {
+    expect(
+      body(r'\begin{alignat}{2} a &= b \end{alignat}'),
+      isNot(contains('<mn>2</mn>')),
+    );
+    expect(
+      body(r'\begin{pmatrix*}[r] a & -1 \end{pmatrix*}'),
+      contains('<mtable columnalign="right">'),
+    );
+    expect(
+      body(r'\begin{rcases} a \\ b \end{rcases}'),
+      endsWith('<mo fence="true" stretchy="true" form="postfix">}</mo></mrow>'),
+    );
+    final unknown = <String>{};
+    latexToMathml(r'\begin{CD} A @>>> B \end{CD}', unknown: unknown);
+    expect(unknown, contains(r'\begin{CD}'));
+  });
+
+  test('text mode', () {
+    expect(body(r'\text{a~b\ c  d}'), '<mtext>a b c d</mtext>');
+    expect(
+      body(r"\text{``q'' -- x---y it's}"),
+      '<mtext>“q” – x—y it’s</mtext>',
+    );
+    expect(
+      body(r'\text{Schr\"odinger \c{c}a \i}'),
+      '<mtext>Schro\u0308dinger c\u0327a ı</mtext>',
+    );
+    expect(body(r'\text{a \textbf{b} {c}}'), '<mtext>a b c</mtext>');
+    expect(body(r'\text{\$5 \& \{x\}}'), r'<mtext>$5 &amp; {x}</mtext>');
+    expect(
+      body(r'\text{if $x>0$ only}'),
+      '<mrow><mtext>if </mtext><mrow><mi>x</mi><mo>&gt;</mo><mn>0</mn></mrow>'
+      '<mtext> only</mtext></mrow>',
+    );
+    expect(body(r'\textbf{bold}'), '<mtext mathvariant="bold">bold</mtext>');
+    final unknown = <String>{};
+    final mathml = latexToMathml(r'\text{\tiny a}', unknown: unknown);
+    expect(mathml, contains(r'<mtext>\tinya</mtext>'));
+    expect(unknown, {r'\tiny'});
   });
 }

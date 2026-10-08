@@ -1,6 +1,6 @@
 /// Checks the public API.
 ///
-/// 1. It is closed: every `package:compression` type that appears in an
+/// 1. It is closed: every `package:plain_hyphenation` type that appears in an
 ///    exported signature (supertypes, constructor and method parameters,
 ///    return types, fields, typedefs) is itself exported by one of the
 ///    public libraries.

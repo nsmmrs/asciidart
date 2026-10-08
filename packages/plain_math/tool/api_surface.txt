@@ -1,0 +1,69 @@
+MathNode asciimathToMath(String asciimath)
+MathNode latexToMath(String tex, {bool display = false, Set<String>? unknown})
+MathNode parseMathML(String text)
+String asciimathToMathml(String asciimath, {String prefix = '', Map<String, String> attributes = const {}})
+String latexToMathml(String tex, {bool display = false, Set<String>? unknown})
+enum MathTokenKind
+  static List<MathTokenKind> values
+  static MathTokenKind identifier
+  static MathTokenKind number
+  static MathTokenKind operator
+  static MathTokenKind text
+final class MathEnclose extends MathNode
+  List<String> notations
+  MathEnclose(MathNode child, List<String> notations)
+  MathNode child
+final class MathFraction extends MathNode
+  MathFraction(MathNode numerator, MathNode denominator, {String? lineThickness})
+  MathNode denominator
+  MathNode numerator
+  String? lineThickness
+final class MathMLException implements Exception
+  MathMLException(String message)
+  String message
+  String toString()
+final class MathRadical extends MathNode
+  MathNode radicand
+  MathNode? index
+  MathRadical(MathNode radicand, {MathNode? index})
+final class MathRow extends MathNode
+  List<MathNode> children
+  MathRow(List<MathNode> children)
+final class MathScripts extends MathNode
+  MathNode base
+  MathNode? sub
+  MathNode? sup
+  MathScripts(MathNode base, {MathNode? sub, MathNode? sup})
+final class MathSpace extends MathNode
+  MathSpace(String? width)
+  String? width
+final class MathStyled extends MathNode
+  MathNode child
+  MathStyled(MathNode child, {bool? display, String? scriptLevel, String? color, String? variant})
+  String? color
+  String? scriptLevel
+  String? variant
+  bool? display
+final class MathTable extends MathNode
+  List<List<MathNode>> rows
+  MathTable(List<List<MathNode>> rows, {String? columnAlign})
+  String? columnAlign
+final class MathToken extends MathNode
+  MathToken(MathTokenKind kind, String text, {String? variant, bool? stretchy, bool? largeOperator, bool? movableLimits, bool? fence, String? form})
+  MathTokenKind kind
+  String text
+  String? form
+  String? variant
+  bool? fence
+  bool? largeOperator
+  bool? movableLimits
+  bool? stretchy
+final class MathUnderOver extends MathNode
+  MathNode base
+  MathNode? over
+  MathNode? under
+  MathUnderOver(MathNode base, {MathNode? under, MathNode? over, bool accent = false, bool accentUnder = false})
+  bool accent
+  bool accentUnder
+sealed class MathNode
+  MathNode()

@@ -69,6 +69,8 @@ _Node _mo(
   movable: movable,
 );
 
+final RegExp _letter = RegExp(r'^[\p{L}\p{N}]', unicode: true);
+
 final class _Parser {
   new(this.source, this.unknown);
 
@@ -94,12 +96,21 @@ final class _Parser {
   }
 
   /// The next token without consuming it: a command (`\name`, or `\` and
-  /// one character), or one character; null at the end.
+  /// one character), or one character (a code point: a surrogate pair is
+  /// one); null at the end.
   String? peek() {
     skipSpace();
     if (done) return null;
     final c = source[at];
-    if (c != r'\') return c;
+    if (c != r'\') {
+      final unit = source.codeUnitAt(at);
+      return unit >= 0xd800 &&
+              unit < 0xdc00 &&
+              at + 1 < source.length &&
+              (source.codeUnitAt(at + 1) & 0xfc00) == 0xdc00
+          ? source.substring(at, at + 2)
+          : c;
+    }
     if (at + 1 >= source.length) return r'\';
     final m = RegExp('[a-zA-Z]+').matchAsPrefix(source, at + 1);
     if (m != null) return '\\${m[0]}';
@@ -239,6 +250,15 @@ final class _Parser {
     return source.substring(start);
   }
 
+  /// The text of an optional `[...]` argument as written.
+  String _rawOptional() {
+    next(); // [
+    final end = source.indexOf(']', at);
+    final text = source.substring(at, end < 0 ? source.length : end);
+    at = end < 0 ? source.length : end + 1;
+    return text;
+  }
+
   /// An optional `[...]` argument, parsed.
   String? _optional() {
     if (peek() != '[') return null;
@@ -263,7 +283,8 @@ final class _Parser {
       at += (m?[0] ?? '').length;
       return _Node('<mn>$digits</mn>');
     }
-    if (RegExp('[a-zA-Z]').hasMatch(token)) return _mi(token);
+    // Letters of any script, and digits other than ASCII's (`𝟎`).
+    if (_letter.hasMatch(token)) return _mi(token);
     return switch (token) {
       '(' || '[' => _mo(token, stretchy: false),
       ')' || ']' => _mo(token, stretchy: false, form: 'postfix'),
@@ -278,6 +299,19 @@ final class _Parser {
 
   _Node? _command(String command) {
     final name = command.substring(1);
+    if (name == 'dots') {
+      // amsmath's: centered before an operator (`\dots +`, `\dots \int`),
+      // on the line otherwise.
+      final after = peek();
+      final centered = switch (after) {
+        '+' || '-' || '=' || '<' || '>' || '*' => true,
+        final String c when c.startsWith(r'\') && c.length > 2 =>
+          _largeOperators.containsKey(c.substring(1)) ||
+              _symbols[c.substring(1)]?.$2 == _Kind.operator,
+        _ => false,
+      };
+      return _mo(centered ? '\u22ef' : '\u2026');
+    }
     if (_symbols[name] case final symbol?) {
       return _symbolNode(symbol);
     }
@@ -294,11 +328,7 @@ final class _Parser {
     }
     if (_variants[name] case final variant?) {
       final text = name.startsWith('text') || name == 'mbox';
-      if (text) {
-        return _Node(
-          '<mtext mathvariant="$variant">${_escape(_rawArgument())}</mtext>',
-        );
-      }
+      if (text) return _text(_rawArgument(), variant: variant);
       return _Node('<mstyle mathvariant="$variant">${_argument()}</mstyle>');
     }
     if (_accents[name] case (final accent, final over)?) {
@@ -353,14 +383,18 @@ final class _Parser {
           'Bigm':
         return _delimiter(stretchy: false);
       case 'text' || 'textrm' || 'mbox' || 'textnormal' || 'hbox':
-        return _Node('<mtext>${_escape(_rawArgument())}</mtext>');
-      case 'operatorname' || 'operatorname*':
-        final text = _rawArgument().replaceAll(RegExp(r'\s'), '');
+        return _text(_rawArgument());
+      case 'operatorname':
+        // \operatorname*: limits under and over.
         final star = peek() == '*';
         if (star) next();
-        return star || name.endsWith('*')
-            ? _mo(text, limits: true, movable: true)
-            : _mi(text);
+        final text = _rawArgument()
+            .replaceAllMapped(
+              RegExp(r'\\([a-zA-Z]+)'),
+              (m) => _symbols[m[1]]?.$1 ?? _unknown(m[0]!),
+            )
+            .replaceAll(RegExp(r'\s'), '');
+        return star ? _mo(text, limits: true, movable: true) : _mi(text);
       case 'mathop':
         return _mo(_rawArgument(), limits: true, movable: true);
       case 'overset' || 'stackrel':
@@ -401,9 +435,16 @@ final class _Parser {
       case 'not':
         final negated = parseAtom();
         if (negated == null) return null;
+        // A letter struck through (`\not x`).
+        if (RegExp(r'^<mi>(.)</mi>$').firstMatch(negated.xml) case final mi?) {
+          return _mi('${mi[1]}\u0338');
+        }
         final m = RegExp('<mo>(.*?)</mo>').firstMatch(negated.xml);
         if (m == null) return negated;
-        final text = m[1]!;
+        final text = m[1]!
+            .replaceAll('&lt;', '<')
+            .replaceAll('&gt;', '>')
+            .replaceAll('&amp;', '&');
         final combined = _negations[text] ?? '$text\u0338';
         return _mo(combined);
       case 'begin':
@@ -435,8 +476,13 @@ final class _Parser {
         _ => _mo(name),
       };
     }
+    return _Node('<mtext>${_escape(_unknown(command))}</mtext>');
+  }
+
+  /// [command], noted as unknown.
+  String _unknown(String command) {
     unknown.add(command);
-    return _Node('<mtext>${_escape(command)}</mtext>');
+    return command;
   }
 
   _Node _symbolNode((String, _Kind) symbol) {
@@ -448,6 +494,100 @@ final class _Parser {
       _Kind.open => _mo(text, stretchy: false),
       _Kind.close => _mo(text, stretchy: false, form: 'postfix'),
     };
+  }
+
+  /// [raw], a `\text` argument, in text mode: `mtext` (in [variant]),
+  /// with groups, `~` and `\ `, escaped characters, accents (`\"o`), the
+  /// text style commands (their style aside), TeX's ligatures (```` `` ````,
+  /// `''`, `--`, `---`) and runs of spaces read as TeX does, and math in
+  /// it (`$...$`) set as math. Other commands are noted as unknown.
+  _Node _text(String raw, {String? variant}) {
+    final parts = <String>[];
+    final run = StringBuffer();
+    void flush() {
+      if (run.isEmpty) return;
+      final attrs = variant == null ? '' : ' mathvariant="$variant"';
+      parts.add('<mtext$attrs>${_escape('$run')}</mtext>');
+      run.clear();
+    }
+
+    void space() {
+      if (run.isEmpty || !'$run'.endsWith(' ')) run.write(' ');
+    }
+
+    var i = 0;
+
+    /// The code point at [i] (a surrogate pair whole), consumed.
+    String char() {
+      final unit = raw.codeUnitAt(i);
+      final pair = (unit & 0xfc00) == 0xd800 && i + 1 < raw.length;
+      return raw.substring(i, i += pair ? 2 : 1);
+    }
+
+    while (i < raw.length) {
+      final c = raw[i];
+      if (c == '{' || c == '}') {
+        i++;
+      } else if (c == '~') {
+        run.write('\u00a0');
+        i++;
+      } else if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+        space();
+        i++;
+      } else if (c == r'$') {
+        final end = _closingDollar(raw, i + 1);
+        flush();
+        final math = _Parser(raw.substring(i + 1, end), unknown);
+        parts.add(_row(math.parseUntil(const {})));
+        i = end + 1;
+      } else if (c == r'\' && i + 1 < raw.length) {
+        final word = RegExp('[a-zA-Z]+').matchAsPrefix(raw, i + 1);
+        final name = word?[0] ?? raw[i + 1];
+        i += 1 + name.length;
+        if (_textAccents[name] case final mark?) {
+          while (i < raw.length && (raw[i] == ' ' || raw[i] == '{')) {
+            i++;
+          }
+          if (raw.startsWith(r'\i', i) || raw.startsWith(r'\j', i)) {
+            run.write(raw[i + 1] == 'i' ? '\u0131' : '\u0237');
+            i += 2;
+          } else if (i < raw.length) {
+            run.write(char());
+          }
+          run.write(mark);
+          if (i < raw.length && raw[i] == '}') i++;
+        } else if (_textSymbols[name] case final text?) {
+          run.write(text);
+        } else if (name == ' ') {
+          space();
+        } else if (word == null) {
+          run.write(name); // \$ \{ \} \& \% \# \_
+        } else if (!_textStyles.contains(name)) {
+          run.write(_unknown('\\$name'));
+        }
+        // A control word ends at the spaces after it.
+        if (word != null) {
+          while (i < raw.length && raw[i] == ' ') {
+            i++;
+          }
+        }
+      } else {
+        final ligature = _textLigatures.entries
+            .where((l) => raw.startsWith(l.key, i))
+            .firstOrNull;
+        if (ligature != null) {
+          run.write(ligature.value);
+          i += ligature.key.length;
+        } else {
+          run.write(char());
+        }
+      }
+    }
+    flush();
+    if (parts.isEmpty) return const _Node('<mtext></mtext>');
+    return _Node(
+      parts.length == 1 ? parts.single : '<mrow>${parts.join()}</mrow>',
+    );
   }
 
   /// The delimiter after `\left`, `\middle`, `\right` or `\big`
@@ -471,6 +611,8 @@ final class _Parser {
       r'\updownarrow' => '\u2195',
       r'\backslash' => r'\',
       '/' => '/',
+      final command when command.startsWith(r'\') && command.length > 2 =>
+        _symbols[command.substring(1)]?.$1 ?? _unknown(command),
       _ => token,
     };
     if (text.isEmpty) return const _Node('');
@@ -499,9 +641,14 @@ final class _Parser {
   /// The environment [name] up to its `\end`.
   _Node? _environment(String name) {
     final bare = name.replaceAll('*', '');
+    if (!_environments.contains(bare)) _unknown('\\begin{$name}');
     String? columns;
     if (bare == 'array' || bare == 'subarray') {
       columns = _rawArgument();
+    } else if (bare == 'alignat' || bare == 'alignedat') {
+      _rawArgument(); // the number of column pairs
+    } else if (name.endsWith('matrix*') && peek() == '[') {
+      columns = _rawOptional(); // its columns' alignment: l, c or r
     }
     final rows = <List<String>>[[]];
     while (true) {
@@ -523,14 +670,16 @@ final class _Parser {
       rows.removeLast();
     }
     final align = switch (bare) {
-      'cases' || 'dcases' => 'left left',
+      'cases' || 'dcases' || 'rcases' => 'left left',
       'aligned' ||
       'align' ||
       'alignat' ||
+      'alignedat' ||
       'split' ||
       'eqnarray' => 'right left',
-      'array' || 'subarray' => [
-        for (final c in (columns ?? '').split(''))
+      // array's columns, or a starred matrix's alignment.
+      _ when columns != null => [
+        for (final c in columns.split(''))
           if (c == 'l')
             'left'
           else if (c == 'r')
@@ -544,6 +693,7 @@ final class _Parser {
       'aligned' ||
       'align' ||
       'alignat' ||
+      'alignedat' ||
       'gathered' ||
       'gather' ||
       'split' ||
@@ -570,6 +720,7 @@ final class _Parser {
       'vmatrix' => ('|', '|'),
       'Vmatrix' => ('\u2016', '\u2016'),
       'cases' || 'dcases' => ('{', ''),
+      'rcases' => ('', '}'),
       _ => ('', ''),
     };
     if (open.isEmpty && close.isEmpty) return _Node(styled);
@@ -583,6 +734,116 @@ final class _Parser {
 }
 
 enum _Kind { identifier, upright, operator, open, close }
+
+/// The index of the `$` that closes math opened before [from] in [text]
+/// (one in braces or after a backslash doesn't), or the text's end.
+int _closingDollar(String text, int from) {
+  var depth = 0;
+  for (var j = from; j < text.length; j++) {
+    switch (text[j]) {
+      case r'\':
+        j++;
+      case '{':
+        depth++;
+      case '}':
+        depth--;
+      case r'$' when depth == 0:
+        return j;
+    }
+  }
+  return text.length;
+}
+
+/// Text mode's accent commands: the combining mark each puts on the
+/// character after it.
+const Map<String, String> _textAccents = {
+  "'": '\u0301',
+  '`': '\u0300',
+  '"': '\u0308',
+  '^': '\u0302',
+  '~': '\u0303',
+  '=': '\u0304',
+  '.': '\u0307',
+  'u': '\u0306',
+  'v': '\u030c',
+  'H': '\u030b',
+  'r': '\u030a',
+  'c': '\u0327',
+};
+
+/// Text mode's symbol commands.
+const Map<String, String> _textSymbols = {
+  'i': '\u0131',
+  'j': '\u0237',
+  'TeX': 'TeX',
+  'LaTeX': 'LaTeX',
+  'ldots': '\u2026',
+  'dots': '\u2026',
+  'textendash': '\u2013',
+  'textemdash': '\u2014',
+  'textbackslash': r'\',
+  'ss': '\u00df',
+  'ae': '\u00e6',
+  'AE': '\u00c6',
+  'o': '\u00f8',
+  'O': '\u00d8',
+  'aa': '\u00e5',
+  'AA': '\u00c5',
+  'l': '\u0142',
+  'L': '\u0141',
+};
+
+/// Text mode's style commands, whose argument is read as text (their
+/// style aside).
+const Set<String> _textStyles = {
+  'text',
+  'textrm',
+  'textnormal',
+  'textbf',
+  'textit',
+  'textsf',
+  'texttt',
+  'textup',
+  'emph',
+  'mbox',
+  'hbox',
+};
+
+/// TeX's text ligatures, longest first.
+const Map<String, String> _textLigatures = {
+  '---': '\u2014',
+  '--': '\u2013',
+  '``': '\u201c',
+  "''": '\u201d',
+  '`': '\u2018',
+  "'": '\u2019',
+};
+
+/// The environments read (`*` forms too).
+const Set<String> _environments = {
+  'matrix',
+  'pmatrix',
+  'bmatrix',
+  'Bmatrix',
+  'vmatrix',
+  'Vmatrix',
+  'smallmatrix',
+  'cases',
+  'dcases',
+  'rcases',
+  'array',
+  'subarray',
+  'aligned',
+  'align',
+  'alignat',
+  'alignedat',
+  'gathered',
+  'gather',
+  'split',
+  'eqnarray',
+  'multline',
+  'equation',
+};
 
 const Map<String, (String, _Kind)> _symbols = {
   // Greek.
@@ -633,6 +894,8 @@ const Map<String, (String, _Kind)> _symbols = {
   'nabla': ('\u2207', _Kind.upright),
   'hbar': ('\u210f', _Kind.identifier),
   'ell': ('\u2113', _Kind.identifier),
+  'imath': ('\u0131', _Kind.identifier),
+  'jmath': ('\u0237', _Kind.identifier),
   'Re': ('\u211c', _Kind.upright),
   'Im': ('\u2111', _Kind.upright),
   'aleph': ('\u2135', _Kind.upright),

@@ -3,6 +3,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:plain_fonts/plain_fonts.dart';
+import 'package:plain_math/plain_math.dart';
 import 'package:plain_pdf/plain_pdf.dart';
 import 'package:test/test.dart';
 
@@ -68,7 +70,8 @@ void main() {
         ),
       );
       expect(styled, isA<MathStyled>());
-      expect((styled as MathStyled).color, const RgbColor(1, 0, 0));
+      // The tree keeps the attribute; the layout reads it as a color.
+      expect((styled as MathStyled).color, '#ff0000');
       expect(styled.variant, 'bold');
       final table = parseMathML(
         math(

@@ -127,7 +127,10 @@ Asciidoctor project.
 - Math in the PDF: AsciiMath and LaTeX math are typeset (ADR-0014), inline at the
   text's size and in display style in STEM blocks, by plain_pdf's math layout
   (the OpenType MATH table's rules) in the bundled Noto Sans Math or the
-  theme's `math_font_family`; copied, a formula gives its source.
+  theme's `math_font_family`; copied, a formula gives its source. The
+  AsciiMath and LaTeX converters live in plain_math (ADR-0018), checked
+  against the asciimath gem and Temml; LaTeX's `\text` reads TeX's text
+  mode, including `$...$` math in it.
 - Old-style numerals and small capitals from the font's OpenType
   features (`base_font_variant_numeric: oldstyle-nums`,
   `role_<role>_font_variant: small-caps`), in the modern PDF engine.

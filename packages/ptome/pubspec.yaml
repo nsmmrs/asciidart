@@ -25,6 +25,7 @@ dependencies:
   plain_fonts: ^0.1.0-dev
   plain_highlighting: ^0.1.0
   plain_hyphenation: ^0.1.0-dev
+  plain_math: ^0.1.0-dev
   plain_pdf: ^0.1.0-dev
   plain_unicode: ^0.1.0-dev
   yaml: ^3.1.4

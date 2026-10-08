@@ -2,6 +2,9 @@
 
 ## 0.1.0-dev (unreleased)
 
+- The OpenType MATH table (`OpenTypeMathTable`, `MathConstant`,
+  `MathVariant`, `GlyphConstruction`, `GlyphPart`) from plain_pdf, with
+  its history.
 - Renamed from `fonts` to `plain_fonts`, and moved with its history into the
   ptome pub workspace (github.com/nsmmrs/ptome, `packages/plain_fonts`;
   ptome's ADR-0018).
