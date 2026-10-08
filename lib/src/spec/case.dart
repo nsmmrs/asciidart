@@ -170,8 +170,11 @@ final class Case {
     final meta = TomlDocument.loadSync(p.join(dir, 'case.toml')).toMap();
     final options = (meta['options'] as Map? ?? const {})
         .cast<String, Object?>();
+    // The document may sit below the case directory (with the files it
+    // includes around it); its directory is the base directory.
+    final inputPath = p.join(dir, options['input'] as String? ?? 'input.adoc');
     final baseDir = switch (options['base_dir']) {
-      null => dir,
+      null => p.dirname(inputPath),
       final String relative => p.normalize(p.join(casesRoot, '..', relative)),
       final other => throw FormatException('$dir: base_dir $other'),
     };
@@ -192,7 +195,7 @@ final class Case {
       id: p.relative(dir, from: casesRoot),
       dir: dir,
       input: utf8.decode(
-        File(p.join(dir, 'input.adoc')).readAsBytesSync(),
+        File(inputPath).readAsBytesSync(),
         allowMalformed: true,
       ),
       formats: [

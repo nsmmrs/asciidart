@@ -202,6 +202,7 @@ final class RubyWorker {
               ),
           ],
           coverage: coverage,
+          includes: (json['includes'] as List? ?? const []).cast<String>(),
         ),
       );
     } else {

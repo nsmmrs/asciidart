@@ -136,11 +136,16 @@ final class Converted extends Outcome {
     required this.output,
     this.log = const [],
     this.coverage,
+    this.includes = const [],
   });
 
   /// Text, or bytes for binary formats.
   final Object output;
   final List<LogEntry> log;
+
+  /// The files the document included (absolute paths), where the engine
+  /// reports them.
+  final List<String> includes;
   final CaseCoverage? coverage;
 }
 

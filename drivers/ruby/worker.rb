@@ -15,7 +15,7 @@
 #   "options": other API options, passed as they are (captured test inputs).
 #   An attribute named "name!" unsets name; a value ending in "@" is soft.
 # Response: {"id", "ok", "output"?, "log": [{"severity", "message", "lineno"?, "path"?}],
-#            "err"?, "ms", "lines"?, "branches"?}
+#            "includes"?: [absolute paths], "err"?, "ms", "lines"?, "branches"?}
 #   lines/branches (with --coverage): universe indices this case reached.
 require 'json'
 require 'coverage'
@@ -69,6 +69,18 @@ require 'asciidoctor/cli'
   require "asciidoctor/#{part}"
 rescue LoadError
 end
+
+# The files each conversion includes (absolute paths), for callers that
+# copy a document with everything it reads.
+INCLUDED = []
+module TrackIncludes
+  def resolve_include_path target, attrlist, attributes
+    result = super
+    INCLUDED << result[0] if Array === result && result[1] == :file
+    result
+  end
+end
+Asciidoctor::PreprocessorReader.prepend TrackIncludes
 
 def lib_file? path
   path.start_with?(LIB) && path.end_with?('.rb')
@@ -134,6 +146,7 @@ def log_entry message
 end
 
 def convert request
+  INCLUDED.clear
   logger = Asciidoctor::MemoryLogger.new
   Asciidoctor::LoggerManager.logger = logger
   opts = {
@@ -172,6 +185,7 @@ $stdin.each_line do |line|
     response[:ok] = true
     response[:output] = output.to_s
     response[:log] = log
+    response[:includes] = INCLUDED.uniq unless INCLUDED.empty?
   rescue Exception => e # rubocop:disable Lint/RescueException
     response[:ok] = false
     frame = e.backtrace&.find {|l| l.start_with? LIB } || e.backtrace&.first

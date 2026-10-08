@@ -19,12 +19,12 @@ Future<List<String>> reduceLines(
       chunks.last.add(line);
     }
   }
-  final kept = await _ddmin(
+  final kept = await ddmin(
     chunks,
     (units) => keeps([for (final u in units) ...u]),
   );
   final remaining = [for (final u in kept) ...u];
-  final single = await _ddmin([
+  final single = await ddmin([
     for (final l in remaining) [l],
   ], (units) => keeps([for (final u in units) ...u]));
   return [for (final u in single) ...u];
@@ -33,7 +33,7 @@ Future<List<String>> reduceLines(
 /// Zeller's ddmin over [units], removing complements: returns a subset
 /// that still [keeps] and from which no single slice at the finest
 /// granularity can be removed.
-Future<List<T>> _ddmin<T>(
+Future<List<T>> ddmin<T>(
   List<T> units,
   Future<bool> Function(List<T>) keeps,
 ) async {

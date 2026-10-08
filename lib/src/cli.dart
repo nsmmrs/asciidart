@@ -6,7 +6,11 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
 
+import 'anchor/build.dart';
 import 'commands/check.dart';
+import 'fuzz/loop.dart';
+import 'gen/generator.dart';
+import 'gen/serialize.dart';
 import 'commands/regen.dart';
 import 'pool/capture.dart';
 import 'pool/entry.dart';
@@ -366,6 +370,114 @@ final class _PoolDartCoverage extends Command<int> {
       ],
     );
     stdout.writeln('asciidart ${format.name}: $result');
+    return 0;
+  }
+}
+
+/// `ascii_docs anchor`: builds cases/anchor from the measured pool.
+final class AnchorCommand extends Command<int> {
+  AnchorCommand() {
+    argParser
+      ..addOption('limit', help: 'Build at most this many anchors.')
+      ..addOption('lanes', defaultsTo: '4', help: 'Parallel oracles.')
+      ..addFlag('reduce', defaultsTo: true, help: 'Cut documents down first.');
+  }
+
+  @override
+  String get name => 'anchor';
+
+  @override
+  String get description =>
+      'Select, reduce, sanitize and verify pool documents into cases/anchor.';
+
+  @override
+  Future<int> run() async {
+    final args = argResults!;
+    final corpus = Corpus.open();
+    final report = await buildAnchors(
+      corpus,
+      lanes: int.parse(args.option('lanes')!),
+      limit: switch (args.option('limit')) {
+        final String n => int.parse(n),
+        null => null,
+      },
+      reduce: args.flag('reduce'),
+      log: stdout.writeln,
+    );
+    stdout.writeln(
+      '${report.emitted.length} anchors written, ${report.skipped.length} skipped '
+      '(${report.chosen} chosen of ${report.candidates} eligible), '
+      '${report.residue.length} with original words kept',
+    );
+    for (final MapEntry(:key, :value) in report.residue.entries) {
+      stdout.writeln('  residue $key: ${value.join(' ')}');
+    }
+    return 0;
+  }
+}
+
+/// `ascii_docs gen SEED`: prints a generated document.
+final class GenCommand extends Command<int> {
+  @override
+  String get name => 'gen';
+
+  @override
+  String get description => 'Print the document a seed generates.';
+
+  @override
+  Future<int> run() async {
+    for (final arg in argResults!.rest) {
+      final generated = generate(int.parse(arg));
+      stdout.writeln(serialize(generated.doc));
+      stderr.writeln(
+        'seed $arg: doctype ${generated.options.doctype ?? 'article'}, '
+        'attributes ${generated.options.attributes}, '
+        '${generated.words.length} tracked words, '
+        'pathological ${generated.pathological}',
+      );
+    }
+    return 0;
+  }
+}
+
+/// `ascii_docs fuzz`: the fuzz loop.
+final class FuzzCommand extends Command<int> {
+  FuzzCommand() {
+    argParser
+      ..addOption('seconds', defaultsTo: '60')
+      ..addOption(
+        'jobs',
+        abbr: 'j',
+        defaultsTo: '${Platform.numberOfProcessors ~/ 2}',
+      )
+      ..addOption('seed', defaultsTo: '1', help: 'The first seed.')
+      ..addOption('pathology', defaultsTo: '0.08');
+  }
+
+  @override
+  String get name => 'fuzz';
+
+  @override
+  String get description =>
+      'Generate documents; keep those that reach new code; record findings.';
+
+  @override
+  Future<int> run() async {
+    final args = argResults!;
+    final report = await fuzz(
+      Corpus.open(),
+      duration: Duration(seconds: int.parse(args.option('seconds')!)),
+      jobs: int.parse(args.option('jobs')!),
+      seed: int.parse(args.option('seed')!),
+      config: GenConfig(pathology: double.parse(args.option('pathology')!)),
+      log: stdout.writeln,
+    );
+    stdout.writeln(report.summary());
+    final top = report.findings.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    for (final MapEntry(:key, :value) in top.take(40)) {
+      stdout.writeln('  ${value.toString().padLeft(5)}  $key');
+    }
     return 0;
   }
 }

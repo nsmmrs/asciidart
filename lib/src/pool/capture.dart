@@ -96,15 +96,26 @@ List<PoolEntry> capturedEntries(RubyProfile profile) {
       },
       standalone: standalone is bool ? standalone : null,
       attributes: attributes,
-      extra: options
-        ..removeWhere(
-          (k, _) => const {'to_file', 'to_dir', 'mkdirs'}.contains(k),
-        ),
+      // Options that change nothing about the conversion itself go.
+      extra: options..removeWhere((k, _) => _inert.contains(k)),
     );
     entries.add(entry);
   }
   return entries;
 }
+
+/// Captured options with no effect on a conversion's output.
+const _inert = {
+  'to_file',
+  'to_dir',
+  'mkdirs',
+  'parse',
+  'warnings',
+  'failure_level',
+  'catalog_assets',
+  'header_footer',
+  'standalone',
+};
 
 /// Asciidoctor accepts attributes as a hash, an array of `name=value`, or
 /// a string of them.

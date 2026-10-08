@@ -219,13 +219,25 @@ final class Sanitizer {
   /// the document converts).
   final Set<String> restore;
 
+  /// Lowercased words replaced so far (candidates for [restore]).
+  final Set<String> replaced = {};
+
   String _word(String word, {Set<String>? alsoKeep}) {
     final lower = word.toLowerCase();
     if (restore.contains(lower) || (alsoKeep?.contains(lower) ?? false)) {
       return word;
     }
-    return map[word];
+    final result = map[word];
+    if (result != word) replaced.add(lower);
+    return result;
   }
+
+  /// The sanitized form of a source file a document includes (code: its
+  /// keywords and tag directives stay).
+  String sanitizeCode(String source) => source
+      .split('\n')
+      .map((line) => _verbatim(line, 'source', null))
+      .join('\n');
 
   /// Every letter run of [text] replaced.
   String words(String text, {Set<String>? keep}) =>

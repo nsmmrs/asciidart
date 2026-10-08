@@ -90,6 +90,35 @@ bool _isUpper(int rune) {
 final class WordMap {
   WordMap({this.salt = 'ascii-docs/1'});
 
+  /// A map that is one to one over [vocabulary] (the words of one document
+  /// and the files it includes): no two of its words share a replacement,
+  /// and no replacement is itself one of its words. Assignments go in
+  /// sorted order, so the result depends only on the vocabulary.
+  WordMap.forVocabulary(
+    Iterable<String> vocabulary, {
+    this.salt = 'ascii-docs/1',
+  }) {
+    final words = {
+      for (final w in vocabulary)
+        if (w.runes.length > 2) w.toLowerCase(),
+    }.toList()..sort();
+    final originals = words.toSet();
+    final used = <String>{};
+    for (final word in words) {
+      for (var attempt = 0; ; attempt++) {
+        final candidate = _scramble(word, from: attempt * 17);
+        final free =
+            !used.contains(candidate) &&
+            (candidate == word || !originals.contains(candidate));
+        if (free || attempt > 64) {
+          used.add(candidate);
+          _cache[word] = candidate;
+          break;
+        }
+      }
+    }
+  }
+
   /// Changing the salt changes every replacement.
   final String salt;
   final Map<String, String> _cache = {};
@@ -112,8 +141,8 @@ final class WordMap {
     return out.toString();
   }
 
-  String _scramble(String lower) {
-    for (var attempt = 0; ; attempt++) {
+  String _scramble(String lower, {int from = 0}) {
+    for (var attempt = from; ; attempt++) {
       final digest = sha256
           .convert(utf8.encode('$salt\u0000$lower\u0000$attempt'))
           .bytes;
@@ -138,7 +167,7 @@ final class WordMap {
       if (candidate == lower && lower.runes.every(_keep)) return candidate;
       if (candidate != lower && !reservedWords.contains(candidate))
         return candidate;
-      if (attempt > 16) return candidate;
+      if (attempt > from + 16) return candidate;
     }
   }
 
