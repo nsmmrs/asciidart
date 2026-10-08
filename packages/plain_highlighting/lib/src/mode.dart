@@ -7,7 +7,8 @@
 /// compiled state lives in further fields that copies carry along.
 library;
 
-import 'package:hilite/src/mode_compiler.dart' show ResumableMultiRegex;
+import 'package:plain_highlighting/src/mode_compiler.dart'
+    show ResumableMultiRegex;
 
 /// A regular expression as a definition gives it. highlight.js compiles
 /// only the source of a regular expression (with the language's flags), so

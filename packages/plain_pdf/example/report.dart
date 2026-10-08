@@ -5,7 +5,7 @@
 //   dart run example/report.dart report.pdf
 import 'dart:io';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 void main(List<String> args) {
   final body = PdfTextStyle(StandardFont.timesRoman, 11);

@@ -4,12 +4,12 @@
 /// and the registry functions; the browser-only parts are left out).
 library;
 
-import 'package:hilite/src/js_string.dart';
-import 'package:hilite/src/logger.dart' as logger;
-import 'package:hilite/src/mode.dart';
-import 'package:hilite/src/mode_compiler.dart';
-import 'package:hilite/src/token_tree.dart';
-import 'package:hilite/src/utils.dart';
+import 'package:plain_highlighting/src/js_string.dart';
+import 'package:plain_highlighting/src/logger.dart' as logger;
+import 'package:plain_highlighting/src/mode.dart';
+import 'package:plain_highlighting/src/mode_compiler.dart';
+import 'package:plain_highlighting/src/token_tree.dart';
+import 'package:plain_highlighting/src/utils.dart';
 
 const int _maxKeywordHits = 7;
 

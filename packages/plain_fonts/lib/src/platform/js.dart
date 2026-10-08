@@ -7,8 +7,8 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
-import 'package:fonts/src/font_files.dart';
-import 'package:fonts/src/platform/none.dart';
+import 'package:plain_fonts/src/font_files.dart';
+import 'package:plain_fonts/src/platform/none.dart';
 
 @JS('globalThis.process')
 external _Process? get _nodeProcess;

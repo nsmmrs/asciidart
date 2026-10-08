@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 import '../example/booklet.dart' as booklet;
-import '../example/libpdf_example.dart' as hello;
+import '../example/plain_pdf_example.dart' as hello;
 import '../example/report.dart' as report;
 import '../example/svg_chart.dart' as chart;
 

@@ -1,8 +1,8 @@
-/// The public API of hilite.
+/// The public API of plain_highlighting.
 library;
 
-import 'package:hilite/src/highlighter.dart';
-import 'package:hilite/src/languages/all.g.dart';
+import 'package:plain_highlighting/src/highlighter.dart';
+import 'package:plain_highlighting/src/languages/all.g.dart';
 
 /// The result of highlighting code.
 final class HighlightResult {
@@ -45,8 +45,8 @@ final class HighlightResult {
 /// A highlighter with every language of highlight.js 11.12.0.
 ///
 /// Languages are built on first use. One instance can highlight any amount
-/// of code; use [hilite] unless you need another [classPrefix].
-final class Hilite {
+/// of code; use [highlighting] unless you need another [classPrefix].
+final class Highlighting {
   /// A highlighter whose CSS classes start with [classPrefix].
   new({this.classPrefix = 'hljs-'})
     : _engine = Engine(classPrefix: classPrefix) {
@@ -98,4 +98,4 @@ final class Hilite {
 }
 
 /// The default highlighter (`hljs-` classes).
-final Hilite hilite = Hilite();
+final Highlighting highlighting = Highlighting();

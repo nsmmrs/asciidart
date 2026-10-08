@@ -7,7 +7,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_fonts/plain_fonts.dart' show FontFormatException;
+import 'package:plain_pdf/plain_pdf.dart';
 import 'package:test/test.dart';
 
 /// [count] damaged copies of [bytes]: bytes flipped, the end cut off, bytes

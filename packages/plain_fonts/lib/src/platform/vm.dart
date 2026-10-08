@@ -3,7 +3,7 @@ library;
 
 import 'dart:io' as io;
 
-import 'package:fonts/src/font_files.dart';
+import 'package:plain_fonts/src/font_files.dart';
 
 /// The platform's files.
 final FontFiles files = _VmFontFiles();

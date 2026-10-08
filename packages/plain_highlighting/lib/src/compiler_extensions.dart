@@ -5,9 +5,9 @@
 /// and `src/lib/exts/before_match.js`.
 library;
 
-import 'package:hilite/src/logger.dart' as logger;
-import 'package:hilite/src/mode.dart';
-import 'package:hilite/src/regex.dart' as regex;
+import 'package:plain_highlighting/src/logger.dart' as logger;
+import 'package:plain_highlighting/src/mode.dart';
+import 'package:plain_highlighting/src/regex.dart' as regex;
 
 /// A compiler extension: adjusts [mode] (with [parent], `null` for the
 /// language itself) before compilation.

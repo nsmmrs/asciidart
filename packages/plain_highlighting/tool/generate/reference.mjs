@@ -1,4 +1,4 @@
-// Records highlight.js's auto-detection results for hilite's tests:
+// Records highlight.js's auto-detection results for plain_highlighting's tests:
 // test/reference/detect.json maps each sample (upstream's detection samples
 // and markup inputs) to the detected language, its relevance and the
 // runner-up, as highlight.js 11.12.0 computes them.

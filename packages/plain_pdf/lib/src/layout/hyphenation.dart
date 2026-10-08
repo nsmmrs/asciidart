@@ -5,7 +5,7 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:libpdf/src/layout/paragraph.dart';
+import 'package:plain_pdf/src/layout/paragraph.dart';
 
 /// A hyphenator of TeX hyphenation patterns (`.hy1p`, `a1b2c`...:
 /// letters with digits between them, dots for the word's ends) and

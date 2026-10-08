@@ -4,7 +4,7 @@ library;
 import 'dart:convert';
 import 'dart:io' as io;
 
-import 'package:fonts/fonts.dart'
+import 'package:plain_fonts/plain_fonts.dart'
     show FontPlatform, cacheDirectoryFor, fontDirectoriesFor;
 import 'package:ptome/src/errors.dart';
 import 'package:ptome/src/io/types.dart';

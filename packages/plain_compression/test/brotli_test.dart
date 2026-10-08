@@ -9,7 +9,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:compression/compression.dart';
+import 'package:plain_compression/plain_compression.dart';
 import 'package:test/test.dart';
 
 bool _has(String tool) =>

@@ -1,22 +1,22 @@
-# hilite
+# plain_highlighting
 
-Syntax highlighting for 190+ languages in pure Dart. hilite is a port of
+Syntax highlighting for 190+ languages in pure Dart. plain_highlighting is a port of
 [highlight.js](https://highlightjs.org) 11.12.0: the same languages, the same
 HTML, the same CSS classes, so every highlight.js theme works with it. It runs
 wherever Dart runs (VM, AOT, web, Flutter), with no JavaScript runtime.
 
-> hilite is an independent port, not affiliated with or endorsed by the
+> plain_highlighting is an independent port, not affiliated with or endorsed by the
 > highlight.js project.
 
 ```dart
-import 'package:hilite/hilite.dart';
+import 'package:plain_highlighting/plain_highlighting.dart';
 
 void main() {
-  final result = hilite.highlight('final x = 1;', language: 'dart');
+  final result = highlighting.highlight('final x = 1;', language: 'dart');
   print(result.html);
   // <span class="hljs-keyword">final</span> x = <span class="hljs-number">1</span>;
 
-  final auto = hilite.highlightAuto('def greet(name):\n    return f"hi {name}"\n');
+  final auto = highlighting.highlightAuto('def greet(name):\n    return f"hi {name}"\n');
   print(auto.language); // python
 }
 ```
@@ -27,11 +27,11 @@ void main() {
   `languages: [...]`.
 - `HighlightResult` has the `html`, the `language`, its `relevance`, and for
   auto-detection the runner-up (`secondBest`).
-- `Hilite(classPrefix: ...)` changes the `hljs-` prefix of the CSS classes.
+- `Highlighting(classPrefix: ...)` changes the `hljs-` prefix of the CSS classes.
 
 ## Compatibility
 
-hilite produces the same output as highlight.js 11.12.0, and is checked
+plain_highlighting produces the same output as highlight.js 11.12.0, and is checked
 against it:
 
 - upstream's markup tests (568 cases over every language with tests) give
@@ -57,7 +57,7 @@ node tool/generate/generate.mjs    # regenerate lib/src/languages
 node tool/generate/reference.mjs   # regenerate test/reference/detect.json
 ```
 
-The generated files are committed, so building hilite needs no Node.js.
+The generated files are committed, so building plain_highlighting needs no Node.js.
 
 ## License
 

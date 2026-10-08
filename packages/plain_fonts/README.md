@@ -1,4 +1,4 @@
-# fonts
+# plain_fonts
 
 TrueType, OpenType, WOFF and WOFF2 fonts in pure Dart:
 
@@ -20,7 +20,7 @@ TrueType, OpenType, WOFF and WOFF2 fonts in pure Dart:
   time.
 
 ```dart
-import 'package:fonts/fonts.dart';
+import 'package:plain_fonts/plain_fonts.dart';
 
 final installed = FontIndex.system(cacheFile: '/tmp/font-index.tsv');
 final serif = installed.find('Noto Serif', bold: true);
@@ -37,10 +37,10 @@ loaded on demand: `await FontIndex.loadWebFontDecoder()` before indexing
 web fonts, so that programs that read none don't carry it. A `FontFiles`
 implementation gives the index files from elsewhere.
 
-The library was extracted from [libpdf](https://github.com/nsmmrs/libpdf)
+The library was extracted from [plain_pdf](https://github.com/nsmmrs/ptome/tree/master/packages/plain_pdf)
 (reading, subsetting, web fonts) and
 [asciidart](https://github.com/nsmmrs/asciidart) (the index). Compression
-comes from [compression](https://github.com/nsmmrs/compression).
+comes from [plain_compression](https://github.com/nsmmrs/ptome/tree/master/packages/plain_compression).
 
 Status: in development; not published to pub.dev.
 

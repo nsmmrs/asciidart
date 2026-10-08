@@ -1,12 +1,15 @@
 name: Release check
-# Rehearses a release of a tag on pub.dev and npm without publishing
-# anything: both registries are only asked for a dry run. Publishing is a
-# separate, manual step.
+# Rehearses a release of ptome (tag ptome-v<version>, ADR-0018) on pub.dev
+# and npm without publishing anything: both registries are only asked for
+# a dry run. Publishing is a separate step.
 on:
   push:
-    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+    tags: ['ptome-v[0-9]+.[0-9]+.[0-9]+*']
   workflow_dispatch:
 permissions: read-all
+defaults:
+  run:
+    working-directory: packages/ptome
 jobs:
   dry-run:
     runs-on: ubuntu-latest
@@ -22,7 +25,7 @@ jobs:
     - name: Check that the tag matches the package versions
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        tag="${GITHUB_REF_NAME#v}"
+        tag="${GITHUB_REF_NAME#ptome-v}"
         pub="$(sed -n 's/^version: //p' pubspec.yaml)"
         npm="$(node -p "require('./npm/package.json').version")"
         echo "tag $tag, pubspec $pub, npm $npm"
@@ -34,5 +37,5 @@ jobs:
     - name: Build the npm package
       run: ./tool/build-npm.sh
     - name: npm dry run
-      working-directory: build/npm
+      working-directory: packages/ptome/build/npm
       run: npm publish --dry-run

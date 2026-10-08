@@ -11,7 +11,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:compression/compression.dart' show zlibEncode;
+import 'package:plain_compression/plain_compression.dart' show zlibEncode;
 
 void main() {
   final root = File(Platform.script.toFilePath()).parent.parent;

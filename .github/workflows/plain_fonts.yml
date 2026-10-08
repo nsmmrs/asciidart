@@ -1,36 +1,25 @@
-name: CI
+name: plain_fonts
 on:
   push:
     branches: ['**']
+    paths:
+    - 'packages/plain_fonts/**'
+    - 'packages/plain_compression/**'
+    - '.github/workflows/plain_fonts.yml'
   pull_request:
+    paths:
+    - 'packages/plain_fonts/**'
+    - 'packages/plain_compression/**'
+    - '.github/workflows/plain_fonts.yml'
   workflow_dispatch:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 permissions: read-all
+defaults:
+  run:
+    working-directory: packages/plain_fonts
 jobs:
-  dart:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Set up Dart
-      uses: dart-lang/setup-dart@v1
-    - name: Install Dart dependencies
-      run: dart pub get
-    - name: Analyze Dart code
-      run: dart analyze --fatal-infos .
-    - name: Check Dart formatting
-      run: dart format --output=none --set-exit-if-changed .
-    - name: Check the public API against its snapshot
-      if: matrix.os == 'ubuntu-latest'
-      run: dart run tool/api_check.dart
-    - name: Run Dart tests
-      run: dart test
   web:
     runs-on: ubuntu-latest
     steps:
@@ -40,7 +29,7 @@ jobs:
       uses: dart-lang/setup-dart@v1
     - name: Install Dart dependencies
       run: dart pub get
-    - name: Check that JavaScript reads and subsets fonts as the VM does
+    - name: Check that JavaScript writes the same bytes as the VM
       run: |
         dart compile js -O2 -o build/web_check.js tool/web_check.dart
         vm="$(dart run tool/web_check.dart)"
@@ -63,9 +52,9 @@ jobs:
       uses: actions/checkout@v4
     - name: Set up Dart
       uses: dart-lang/setup-dart@v1
-    - name: Install woff2
-      run: sudo apt-get update -q && sudo apt-get install -yq woff2
     - name: Install Dart dependencies
       run: dart pub get
+    - name: Install woff2
+      run: sudo apt-get update -q && sudo apt-get install -yq woff2
     - name: Run the tests that check against woff2_compress and woff2_decompress
       run: dart test --tags tools

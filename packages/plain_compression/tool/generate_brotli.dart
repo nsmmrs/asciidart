@@ -13,7 +13,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:compression/compression.dart' show zlibEncode;
+import 'package:plain_compression/plain_compression.dart' show zlibEncode;
 
 /// google/brotli v1.2.0.
 const _commit = '028fb5a23661f123017c060daa546b55cf4bde29';

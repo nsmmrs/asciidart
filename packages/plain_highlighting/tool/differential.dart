@@ -1,5 +1,5 @@
-/// Compares hilite with highlight.js on real code: reads the JSON Lines
-/// file written by `tool/generate/differential.mjs` and highlights each
+/// Compares plain_highlighting with highlight.js on real code: reads the JSON
+/// Lines file written by `tool/generate/differential.mjs` and highlights each
 /// block again, reporting every difference in HTML, relevance or detected
 /// language.
 ///
@@ -9,7 +9,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:hilite/hilite.dart';
+import 'package:plain_highlighting/plain_highlighting.dart';
 
 void main(List<String> args) {
   var same = 0;
@@ -19,7 +19,7 @@ void main(List<String> args) {
     final entry = jsonDecode(line) as Map<String, Object?>;
     final code = entry['code']! as String;
     final language = entry['language']! as String;
-    final r = hilite.highlight(code, language: language);
+    final r = highlighting.highlight(code, language: language);
     final problems = [
       if (r.html != entry['html']) 'html',
       if (r.relevance != entry['relevance']) 'relevance',
@@ -27,7 +27,7 @@ void main(List<String> args) {
     ];
     final auto = entry['auto'] as Map<String, Object?>?;
     if (auto != null) {
-      final a = hilite.highlightAuto(code);
+      final a = highlighting.highlightAuto(code);
       if (a.language != auto['language']) {
         problems.add('auto ${auto['language']} -> ${a.language}');
       } else if (a.html != auto['html'] || a.relevance != auto['relevance']) {

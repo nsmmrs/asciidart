@@ -4,7 +4,7 @@
 // must be the same bytes on both.
 import 'dart:convert';
 
-import 'package:compression/compression.dart';
+import 'package:plain_compression/plain_compression.dart';
 
 void main() {
   final text = utf8.encode(

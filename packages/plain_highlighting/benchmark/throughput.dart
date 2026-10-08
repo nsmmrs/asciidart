@@ -1,4 +1,4 @@
-/// Times hilite over the source blocks of a differential file
+/// Times plain_highlighting over the source blocks of a differential file
 /// (`tool/generate/differential.mjs`): the first pass (which compiles each
 /// language on first use) and the best of five warm passes.
 ///
@@ -8,7 +8,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:hilite/hilite.dart';
+import 'package:plain_highlighting/plain_highlighting.dart';
 
 void main(List<String> args) {
   final blocks = [
@@ -22,7 +22,7 @@ void main(List<String> args) {
   int pass() {
     final sw = Stopwatch()..start();
     for (final b in blocks) {
-      hilite.highlight(
+      highlighting.highlight(
         b['code']! as String,
         language: b['language']! as String,
       );

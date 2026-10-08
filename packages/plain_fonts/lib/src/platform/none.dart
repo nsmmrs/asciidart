@@ -1,7 +1,7 @@
 /// No file system (a platform with neither `dart:io` nor JavaScript).
 library;
 
-import 'package:fonts/src/font_files.dart';
+import 'package:plain_fonts/src/font_files.dart';
 
 /// The platform's files: none.
 final FontFiles files = NoFontFiles();

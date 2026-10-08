@@ -7,16 +7,16 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:compression/compression.dart';
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
-import 'package:libpdf/src/drawing/graphic.dart';
-import 'package:libpdf/src/images/exif.dart';
-import 'package:libpdf/src/images/png_decode.dart';
-import 'package:libpdf/src/objects.dart';
-import 'package:libpdf/src/writer.dart';
+import 'package:plain_compression/plain_compression.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/graphic.dart';
+import 'package:plain_pdf/src/images/exif.dart';
+import 'package:plain_pdf/src/images/png_decode.dart';
+import 'package:plain_pdf/src/objects.dart';
+import 'package:plain_pdf/src/writer.dart';
 
-/// An image file libpdf can't read.
+/// An image file plain_pdf can't read.
 final class ImageFormatException implements Exception {
   /// An exception with [message].
   const new(this.message);

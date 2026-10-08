@@ -5,8 +5,8 @@ library;
 
 import 'dart:convert';
 
-import 'package:compression/compression.dart' show zlibDecode;
-import 'package:libpdf/libpdf.dart' show PatternHyphenator;
+import 'package:plain_compression/plain_compression.dart' show zlibDecode;
+import 'package:plain_pdf/plain_pdf.dart' show PatternHyphenator;
 import 'package:ptome/src/pdf/hyphenation.g.dart';
 
 /// Language tags read as another tag of the patterns.

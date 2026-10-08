@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 import 'package:test/test.dart';
 
 /// A page with each of [lines] in its font, at 14 points.

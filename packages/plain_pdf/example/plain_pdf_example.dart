@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 void main(List<String> args) {
   final document = PdfDocument(info: const PdfInfo(title: 'Hello'));

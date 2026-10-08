@@ -1,0 +1,60 @@
+name: plain_highlighting
+on:
+  push:
+    branches: ['**']
+    paths:
+    - 'packages/plain_highlighting/**'
+    - '.github/workflows/plain_highlighting.yml'
+  pull_request:
+    paths:
+    - 'packages/plain_highlighting/**'
+    - '.github/workflows/plain_highlighting.yml'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions: read-all
+defaults:
+  run:
+    working-directory: packages/plain_highlighting
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get
+    - name: Check that JavaScript writes the same bytes as the VM
+      run: |
+        dart compile js -O2 -o build/web_check.js tool/web_check.dart
+        vm="$(dart run tool/web_check.dart)"
+        js="$(node build/web_check.js)"
+        echo "VM: $vm"; echo "JS: $js"
+        test "$vm" = "$js"
+  generated:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install the generator's dependencies (highlight.js)
+      working-directory: packages/plain_highlighting/tool/generate
+      run: npm ci
+    - name: Generated files are up to date
+      run: |
+        node tool/generate/generate.mjs
+        node tool/generate/reference.mjs
+        dart format lib/src/languages > /dev/null
+        git diff --exit-code
+    - name: vendor/ matches the pinned release
+      run: tool/vendor.sh --check

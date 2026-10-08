@@ -2,9 +2,9 @@
 /// between color stops.
 library;
 
-import 'package:libpdf/src/drawing/color.dart';
-import 'package:libpdf/src/objects.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/drawing/color.dart';
+import 'package:plain_pdf/src/objects.dart';
 
 /// A color at a position (0 to 1) of a gradient.
 @immutable

@@ -1,4 +1,4 @@
-// Times libpdf and package:pdf making the same documents through their
+// Times plain_pdf and package:pdf making the same documents through their
 // drawing APIs (no layout): text in a standard font, text in an embedded
 // TrueType font (subset), and JPEG images; prints the median time of
 // several runs and the size of the file each makes.
@@ -8,8 +8,8 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:libpdf/libpdf.dart' as lib;
 import 'package:pdf/pdf.dart' as pdf;
+import 'package:plain_pdf/plain_pdf.dart' as lib;
 
 const pages = 50;
 const linesPerPage = 45;
@@ -21,7 +21,7 @@ final Uint8List serif = File('../../test/fonts/notoserif-regular-latin.ttf')
 final Uint8List jpeg = File('../../test/images/jpeg/rgb-baseline.jpg')
     .readAsBytesSync();
 
-Uint8List libpdfText({required bool embedded}) {
+Uint8List plainPdfText({required bool embedded}) {
   final document = lib.PdfDocument();
   final font = embedded
       ? lib.EmbeddedFont.parse(serif)
@@ -53,7 +53,7 @@ Future<Uint8List> pdfText({required bool embedded}) async {
   return document.save();
 }
 
-Uint8List libpdfImages() {
+Uint8List plainPdfImages() {
   final document = lib.PdfDocument();
   for (var p = 0; p < pages; p++) {
     final image = lib.PdfImage.parse(jpeg);
@@ -96,14 +96,14 @@ Future<void> main() async {
   final workloads =
       <String, (Future<Uint8List> Function(), Future<Uint8List> Function())>{
         'standard font text, $pages pages': (
-          () async => libpdfText(embedded: false),
+          () async => plainPdfText(embedded: false),
           () => pdfText(embedded: false),
         ),
         'TrueType text (subset), $pages pages': (
-          () async => libpdfText(embedded: true),
+          () async => plainPdfText(embedded: true),
           () => pdfText(embedded: true),
         ),
-        'JPEG images, $pages pages': (() async => libpdfImages(), pdfImages),
+        'JPEG images, $pages pages': (() async => plainPdfImages(), pdfImages),
       };
   stdout.writeln(
     '| Document | libpdf | package:pdf | libpdf size | package:pdf size |',

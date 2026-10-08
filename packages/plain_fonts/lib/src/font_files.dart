@@ -2,9 +2,9 @@
 /// keeps its fonts and caches.
 library;
 
-import 'package:fonts/src/platform/none.dart'
-    if (dart.library.io) 'package:fonts/src/platform/vm.dart'
-    if (dart.library.js_interop) 'package:fonts/src/platform/js.dart'
+import 'package:plain_fonts/src/platform/none.dart'
+    if (dart.library.io) 'package:plain_fonts/src/platform/vm.dart'
+    if (dart.library.js_interop) 'package:plain_fonts/src/platform/js.dart'
     as host;
 
 /// An entry of a folder.
@@ -78,10 +78,10 @@ enum FontPlatform {
   windows,
 }
 
-/// The folders fonts are installed in on [os], the user's first, given
-/// the [environment]: on Linux `$XDG_DATA_HOME/fonts`, `~/.fonts` and
-/// `fonts` in each of `$XDG_DATA_DIRS`; on macOS the user's, the local and
-/// the system `Library/Fonts`; on Windows the user's and the system's.
+/// The folders fonts are installed in on [os], the user's first, given the
+/// [environment]: on Linux `$XDG_DATA_HOME/fonts`, `~/.fonts` and `fonts`
+/// in each of `$XDG_DATA_DIRS`; on macOS the user's, the local and the system
+/// `Library/Fonts`; on Windows the user's and the system's.
 List<String> fontDirectoriesFor(
   FontPlatform os,
   Map<String, String> environment,

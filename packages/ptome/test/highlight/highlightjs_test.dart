@@ -1,5 +1,5 @@
-/// highlight.js in ptome: highlighting at conversion with hilite (the
-/// default), and the browser markup of Asciidoctor with
+/// highlight.js in ptome: highlighting at conversion with plain_highlighting
+/// (the default), and the browser markup of Asciidoctor with
 /// `highlightjs-mode=client`.
 library;
 
@@ -35,7 +35,7 @@ void main() {
       );
     });
 
-    test("links the theme stylesheet only, for hilite's version", () {
+    test("links only the theme stylesheet of plain_highlighting's version", () {
       final html = convertWith(ruby, {'highlightjs-theme': 'monokai'});
       expect(
         html,

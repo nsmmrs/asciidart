@@ -7,15 +7,15 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
-import 'package:libpdf/src/drawing/graphic.dart';
-import 'package:libpdf/src/objects.dart';
-import 'package:libpdf/src/reader/filters.dart';
-import 'package:libpdf/src/writer.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/graphic.dart';
+import 'package:plain_pdf/src/objects.dart';
+import 'package:plain_pdf/src/reader/filters.dart';
+import 'package:plain_pdf/src/writer.dart';
 
-/// A file that isn't a PDF file libpdf can read.
+/// A file that isn't a PDF file plain_pdf can read.
 final class PdfFormatException implements Exception {
   /// An exception reporting [message].
   const new(this.message);

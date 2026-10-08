@@ -40,7 +40,7 @@ void main() {
     ..writeln('/// The metrics of the 14 standard fonts.')
     ..writeln('library;')
     ..writeln()
-    ..writeln("import 'package:libpdf/src/fonts/standard_metrics.dart';")
+    ..writeln("import 'package:plain_pdf/src/fonts/standard_metrics.dart';")
     ..writeln()
     ..writeln('/// The standard fonts by name.')
     ..writeln('const Map<String, StandardFontData> standardFontData = {');

@@ -171,7 +171,7 @@ reproducers of each.
   are no script warnings.
 - highlight.js is Ptome's syntax highlighter, and highlights at
   conversion: with `source-highlighter=highlight.js`, source blocks come out
-  highlighted (by hilite, a Dart port of highlight.js 11.12.0, byte for byte
+  highlighted (by plain_highlighting, a Dart port of highlight.js 11.12.0, byte for byte
   what highlight.js produces in the browser), and the page links only the
   theme's stylesheet (highlight.js 11.12.0 on the CDN, or `highlightjsdir`).
   The gem's behavior, markup for the browser plus the highlight.js 9.18.3
@@ -369,7 +369,7 @@ Documents that don't hit these cases convert as with the gem.
 ## PDF (`-b pdf`)
 
 The PDF backend reads asciidoctor-pdf 2.3.27's YAML themes unchanged and
-draws with libpdf, Ptome's own PDF library. It has one layout engine,
+draws with plain_pdf, Ptome's own PDF library. It has one layout engine,
 Ptome's own (`doc/pdf.md`). With `asciidoctor-compat` (or
 `-a pdf-compat`; ADR-0015), its settings default to asciidoctor-pdf's
 look: the goal is pages that look as the gem's do (on Asciidoctor 2.0.26,
@@ -454,7 +454,7 @@ count. Of the other 34:
     (`page-041`).
 - *Text extraction only, the pages identical* (6):
   - A character the font has no glyph for is drawn as `.notdef`. The gem's
-    PDF maps it to the character, ptome's doesn't (libpdf writes CID
+    PDF maps it to the character, ptome's doesn't (plain_pdf writes CID
     fonts with Identity-H, where `.notdef` can't stand for several
     characters): `table-118`, `font-004`, `font-005`, `admonition-009`.
   - `footnote-027` and `source-069` differ in reading order only.
@@ -484,7 +484,7 @@ not from ptome: it never sets a header, for instance, and the header
 keys are read whenever a theme gives the header a height. Not supported:
 
 - `code_highlight_background_color`, `code_line_gap`: options of the gem's
-  Rouge formatter. Ptome highlights with hilite (colors from a
+  Rouge formatter. Ptome highlights with plain_highlighting (colors from a
   highlight.js theme).
 - `block_anchor_top`: only moves where a block's destination points.
 - `abstract_text_decoration`, `abstract_title_text_decoration`,
@@ -499,7 +499,7 @@ keys are read whenever a theme gives the header a height. Not supported:
 - Fonts are embedded as CID fonts (Identity-H) with subsets of TrueType
   and CFF outlines; Prawn embeds simple fonts. Text extracts the same,
   except for `.notdef` (above).
-- Source highlighting uses hilite rather than Rouge; with
+- Source highlighting uses plain_highlighting rather than Rouge; with
   `source-highlighter` set, Ptome highlights where the gem without
   Rouge (as in the corpus) doesn't.
 - With `asciidoctor-compat`, what the gem gets wrong or lacks stays
@@ -513,7 +513,7 @@ keys are read whenever a theme gives the header a height. Not supported:
 - Optional gems behave as not installed: asciidoctor-mathematical (STEM
   stays source text), prawn-gmagick (GIF and other formats are reported),
   rghost (`optimize`). PDF pages as images, covers and
-  backgrounds (prawn-templates) are supported natively, through libpdf's
+  backgrounds (prawn-templates) are supported natively, through plain_pdf's
   PDF reader.
 - Hyphenation (`hyphens`, `base_hyphens`) is built in, the gem's with
   the optional text-hyphen gem installed (as the corpus is converted, and

@@ -1,12 +1,12 @@
 /// Inline content of paragraphs: styled text runs and inline images.
 library;
 
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/color.dart';
-import 'package:libpdf/src/drawing/document.dart';
-import 'package:libpdf/src/drawing/graphic.dart';
-import 'package:libpdf/src/fonts/fonts.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/color.dart';
+import 'package:plain_pdf/src/drawing/document.dart';
+import 'package:plain_pdf/src/drawing/graphic.dart';
+import 'package:plain_pdf/src/fonts/fonts.dart';
 
 /// A piece of a paragraph's content.
 @immutable

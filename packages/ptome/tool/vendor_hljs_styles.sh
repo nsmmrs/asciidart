@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Vendors the themes of highlight.js 11.12.0 (the release hilite ports;
+# Vendors the themes of highlight.js 11.12.0 (the release plain_highlighting ports;
 # BSD-3-Clause) for the PDF backend's syntax highlighting: the minified
 # stylesheets of styles/ (not base16/) into vendor/highlight.js-styles,
 # with the licence, then embeds them (tool/embed_hljs_styles.dart).

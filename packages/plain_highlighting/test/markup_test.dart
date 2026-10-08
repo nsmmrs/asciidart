@@ -6,7 +6,7 @@ library;
 
 import 'dart:io';
 
-import 'package:hilite/hilite.dart';
+import 'package:plain_highlighting/plain_highlighting.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -30,7 +30,7 @@ void main() {
           '',
         );
         test(name, () {
-          final actual = hilite
+          final actual = highlighting
               .highlight(source.readAsStringSync(), language: language)
               .html;
           expect(actual.trim(), expected.readAsStringSync().trim());

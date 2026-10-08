@@ -4,7 +4,7 @@
 
 ## Context
 
-libpdf is a general-purpose PDF library in pure Dart, written from
+plain_pdf is a general-purpose PDF library in pure Dart, written from
 ISO 32000-2. Its first consumer is asciidart's PDF backend, which must lay
 out documents as asciidoctor-pdf (on Prawn) does; other consumers want a
 library that doesn't know about asciidart or Prawn at all.
@@ -26,7 +26,7 @@ library that doesn't know about asciidart or Prawn at all.
      paints; forward references (page numbers in a table of contents) are
      resolved by laying out again until nothing changes.
 2. **Strategies at the seams.** Line breaking and page-break decisions are
-   interfaces. libpdf ships defaults (first fit, Knuth-Plass for lines);
+   interfaces. plain_pdf ships defaults (first fit, Knuth-Plass for lines);
    callers plug in their own. asciidart's Prawn-compatible strategies live
    in asciidart, never here.
 3. **Pure Dart, minimal dependencies.** Only the Dart team's packages,

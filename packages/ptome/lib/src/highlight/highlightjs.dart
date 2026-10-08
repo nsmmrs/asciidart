@@ -1,23 +1,23 @@
 /// highlight.js: the syntax highlighter of Ptome.
 ///
 /// By default Ptome highlights source blocks itself, at conversion, with
-/// hilite (highlight.js 11.12.0 in Dart): the output is what highlight.js
-/// would produce in the browser, and the page only links the theme's
-/// stylesheet. With the `highlightjs-mode` attribute set to `client`, it
-/// behaves as Asciidoctor does instead: source blocks get the markup hooks
-/// and the page loads highlight.js, which highlights them in the browser
-/// (port of `lib/asciidoctor/syntax_highlighter/highlightjs.rb`).
+/// plain_highlighting (highlight.js 11.12.0 in Dart): the output is what
+/// highlight.js would produce in the browser, and the page only links the
+/// theme's stylesheet. With the `highlightjs-mode` attribute set to `client`,
+/// it behaves as Asciidoctor does instead: source blocks get the markup hooks
+/// and the page loads highlight.js, which highlights them in the browser (port
+/// of `lib/asciidoctor/syntax_highlighter/highlightjs.rb`).
 library;
 
-import 'package:hilite/hilite.dart' show hilite;
+import 'package:plain_highlighting/plain_highlighting.dart' show highlighting;
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/document.dart';
 import 'package:ptome/src/highlight/highlight.dart';
 import 'package:ptome/src/highlight/syntax_highlighter.dart';
 
-/// The highlight.js release whose themes match hilite's output (its CSS
-/// classes): the version hilite ports.
-const String hiliteHighlightJsVersion = '11.12.0';
+/// The highlight.js release whose themes match plain_highlighting's output
+/// (its CSS classes): the version plain_highlighting ports.
+const String portedHighlightJsVersion = '11.12.0';
 
 /// highlight.js, highlighting at conversion (the default) or in the browser
 /// (`highlightjs-mode=client`).
@@ -53,11 +53,11 @@ final class HighlightJsHighlighter extends SyntaxHighlighterBase {
     // highlight.js does not know, is not highlighted; nor is a block with
     // the nohighlight option.
     if (language == null ||
-        !hilite.hasLanguage(language) ||
+        !highlighting.hasLanguage(language) ||
         node.hasOption('nohighlight')) {
       return HighlightResult(escapeSpecialChars(source));
     }
-    final html = hilite.highlight(source, language: language).html;
+    final html = highlighting.highlight(source, language: language).html;
     // Callouts go at line ends: close the spans a line leaves open.
     return HighlightResult(
       callouts == null || callouts.isEmpty ? html : splitSpansAtLines(html),
@@ -89,7 +89,7 @@ final class HighlightJsHighlighter extends SyntaxHighlighterBase {
     if (!client) {
       final baseUrl =
           highlightjsDir ??
-          '$cdnBaseUrl/highlight.js/$hiliteHighlightJsVersion';
+          '$cdnBaseUrl/highlight.js/$portedHighlightJsVersion';
       return '<link rel="stylesheet" href="$baseUrl/styles/$theme.min.css"'
           '$selfClosingTagSlash>';
     }

@@ -10,7 +10,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:fonts/fonts.dart';
+import 'package:plain_fonts/plain_fonts.dart';
 import 'package:test/test.dart';
 
 bool _has(String tool) =>

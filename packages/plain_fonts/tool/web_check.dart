@@ -3,8 +3,8 @@
 // output must be the same bytes on both.
 import 'dart:convert';
 
-import 'package:compression/compression.dart' show adler32;
-import 'package:fonts/fonts.dart';
+import 'package:plain_compression/plain_compression.dart' show adler32;
+import 'package:plain_fonts/plain_fonts.dart';
 
 void main() {
   final font = OpenTypeFont.parse(base64.decode(_woff2));

@@ -8,14 +8,14 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/color.dart';
-import 'package:libpdf/src/drawing/document.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
-import 'package:libpdf/src/drawing/graphic.dart';
-import 'package:libpdf/src/layout/inline.dart';
-import 'package:libpdf/src/layout/paragraph.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/color.dart';
+import 'package:plain_pdf/src/drawing/document.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/graphic.dart';
+import 'package:plain_pdf/src/layout/inline.dart';
+import 'package:plain_pdf/src/layout/paragraph.dart';
 
 /// Distances on the four sides of a box.
 @immutable

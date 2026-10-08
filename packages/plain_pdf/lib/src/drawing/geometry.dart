@@ -4,8 +4,8 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:libpdf/src/objects.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/objects.dart';
 
 /// A rectangle: its lower-left corner and its size.
 @immutable

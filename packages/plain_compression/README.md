@@ -1,4 +1,4 @@
-# compression
+# plain_compression
 
 DEFLATE, zlib and Brotli in pure Dart, without dependencies:
 
@@ -10,7 +10,7 @@ DEFLATE, zlib and Brotli in pure Dart, without dependencies:
   responses use.
 
 ```dart
-import 'package:compression/compression.dart';
+import 'package:plain_compression/plain_compression.dart';
 
 final packed = zlibEncode(bytes, level: 9);
 final same = zlibDecode(packed);
@@ -19,7 +19,7 @@ final text = brotliDecode(brotliBytes);
 
 Errors in the data throw a `FormatException`.
 
-The library was extracted from [libpdf](https://github.com/nsmmrs/libpdf),
+The library was extracted from [plain_pdf](https://github.com/nsmmrs/ptome/tree/master/packages/plain_pdf),
 which compresses PDF streams with it. Tests check it against zlib (the
 Dart VM's) and the `brotli` tool, at every level and quality, and with
 damaged input.

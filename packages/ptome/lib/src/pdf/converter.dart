@@ -1,15 +1,15 @@
 /// The PDF backend (`-b pdf`): converts documents as asciidoctor-pdf
-/// 2.3.27 does, with its themes, into libpdf boxes laid out on pages. Text
+/// 2.3.27 does, with its themes, into plain_pdf boxes laid out on pages. Text
 /// is set by a Prawn-compatible text box ([TextBox]); blocks, page
-/// breaks and running content are libpdf's box tree.
+/// breaks and running content are plain_pdf's box tree.
 library;
 
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:libpdf/libpdf.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/attribute_list.dart';
@@ -4866,7 +4866,7 @@ final class PdfConverter extends BuiltInConverter
   };
 
   /// Converts the table [node] (the gem's `convert_table`, prawn-table's
-  /// layout on libpdf's tables).
+  /// layout on plain_pdf's tables).
   void convertTable(Table node) {
     // The modern engine styles a table with a role by the theme's
     // table_role_<role>_* keys, over its table_* keys.
@@ -5460,7 +5460,7 @@ final class PdfConverter extends BuiltInConverter
     );
   }
 
-  /// The libpdf cell of [data] in [font], with prawn-table's borders.
+  /// The plain_pdf cell of [data] in [font], with prawn-table's borders.
   TableCell _tableCell(
     _TableCellData data,
     _FontState font,
@@ -5898,8 +5898,8 @@ final class PdfConverter extends BuiltInConverter
     final font = _themeFont('code', _font);
     var source = '';
     _withFont('code', () => source = _guardIndentation(node.content() ?? ''));
-    // Highlighted by hilite (`source-highlighter=highlight.js`): the
-    // modern engine colors the tokens as the `highlightjs-theme` does
+    // Highlighted by plain_highlighting (`source-highlighter=highlight.js`):
+    // the modern engine colors the tokens as the `highlightjs-theme` does
     // (github by default); the gem leaves them as text.
     if (source.contains('<span class="hljs-')) {
       // A line's indentation inside a token (a string that runs over
@@ -10243,7 +10243,7 @@ final class _Absolute implements CustomContent {
   (double, double) intrinsicWidths() => (0, 0);
 }
 
-/// The platform's zlib (the Dart VM's), faster than libpdf's own.
+/// The platform's zlib (the Dart VM's), faster than plain_pdf's own.
 /// A PNG image's samples encoded as the PDF is saved with
 /// ([PngImage.encode]), from the file's [bytes].
 final class _PngEncoding extends Job<PngPayload> {

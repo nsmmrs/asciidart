@@ -26,7 +26,7 @@ feature the format has no use for.
 | Roles for text (`[.sc]#...#`) | theme `role_<role>_*` | CSS (the author's) | CSS | CSS | `role` attribute |
 | Built-in roles (`small-caps`, `big`, `small`, colors) | `small-caps` in the house theme (`role_small-caps_font_variant`) | colors, sizes; `small-caps` in the house stylesheet | same | same | `role` attribute |
 | Section roles (a boxed `[.html-note]`) | theme `section_role_<role>_*` | class (CSS) | class | class | `role` |
-| Source highlighting | hilite | hilite | hilite | hilite | `language` |
+| Source highlighting | plain_highlighting | plain_highlighting | plain_highlighting | plain_highlighting | `language` |
 | Math (`stem:[]`) | AsciiMath and LaTeX typeset (OpenType MATH) | MathJax | MathJax | MathML for AsciiMath; LaTeX as source | MathML for AsciiMath; LaTeX in `<alt>` |
 | Cover (`front-cover-image`) | cover page | before the header | on the home page | cover | `<cover>` |
 | Title page, dedication, colophon | yes | headings | pages | pages, with landmarks | `<dedication>`, `<colophon>` |

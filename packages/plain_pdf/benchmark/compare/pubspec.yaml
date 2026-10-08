@@ -1,11 +1,12 @@
-name: libpdf_compare
-description: Compares libpdf with package:pdf on comparable documents.
+name: plain_pdf_compare
+description: Compares plain_pdf with package:pdf on comparable documents.
 publish_to: none
 
 environment:
   sdk: ^3.13.0
 
+resolution: workspace
+
 dependencies:
-  libpdf:
-    path: ../..
+  plain_pdf: ^0.1.0-dev
   pdf: ^3.11.0

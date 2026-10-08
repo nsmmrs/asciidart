@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:compression/compression.dart';
-import 'package:compression/src/flate.dart' show huffmanLengths;
+import 'package:plain_compression/plain_compression.dart';
+import 'package:plain_compression/src/flate.dart' show huffmanLengths;
 import 'package:test/test.dart';
 
 void main() {

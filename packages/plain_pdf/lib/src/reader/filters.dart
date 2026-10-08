@@ -5,9 +5,9 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:compression/compression.dart';
-import 'package:libpdf/src/objects.dart';
-import 'package:libpdf/src/reader/reader.dart';
+import 'package:plain_compression/plain_compression.dart';
+import 'package:plain_pdf/src/objects.dart';
+import 'package:plain_pdf/src/reader/reader.dart';
 
 /// The decoded data of [stream], whose filter and parameters are
 /// resolved by [resolve].

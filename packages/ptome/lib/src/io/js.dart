@@ -15,7 +15,7 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
-import 'package:fonts/fonts.dart'
+import 'package:plain_fonts/plain_fonts.dart'
     show FontPlatform, cacheDirectoryFor, fontDirectoriesFor;
 import 'package:ptome/src/errors.dart';
 import 'package:ptome/src/io/types.dart';

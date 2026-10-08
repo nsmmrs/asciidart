@@ -1,5 +1,5 @@
 /// The highlighters Ptome does not provide: Rouge, Pygments and
-/// CodeRay. Ptome highlights with highlight.js (hilite) only; these
+/// CodeRay. Ptome highlights with highlight.js (plain_highlighting) only; these
 /// names behave as they do in Asciidoctor when their gem is not installed.
 library;
 

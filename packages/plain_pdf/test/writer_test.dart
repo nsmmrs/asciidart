@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:libpdf/libpdf.dart';
-import 'package:libpdf/src/writer.dart' show xmpPacket;
+import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_pdf/src/writer.dart' show xmpPacket;
 import 'package:test/test.dart';
 
 /// A one-page document with [text] in Helvetica, written with [options].

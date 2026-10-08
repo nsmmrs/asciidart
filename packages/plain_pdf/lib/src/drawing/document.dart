@@ -6,16 +6,16 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/color.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
-import 'package:libpdf/src/drawing/shading.dart';
-import 'package:libpdf/src/fonts/fonts.dart';
-import 'package:libpdf/src/images/images.dart';
-import 'package:libpdf/src/objects.dart';
-import 'package:libpdf/src/reader/reader.dart';
-import 'package:libpdf/src/writer.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/color.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/shading.dart';
+import 'package:plain_pdf/src/fonts/fonts.dart';
+import 'package:plain_pdf/src/images/images.dart';
+import 'package:plain_pdf/src/objects.dart';
+import 'package:plain_pdf/src/reader/reader.dart';
+import 'package:plain_pdf/src/writer.dart';
 
 /// A stream's data as the writer stores it (see [encodeStream]): the
 /// compression it was encoded with, the data's length, and the

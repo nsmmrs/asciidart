@@ -6,7 +6,7 @@ List<LineItem> paragraphItems(Paragraph paragraph, {double? maxWidth})
 List<int>? pdfDocEncode(String text)
 MathNode parseMathML(String text)
 String formatNumber(num value, {int precision = 5})
-String get libpdfVersion
+String get plainPdfVersion
 String get unicodeVersion
 String pdfDate(DateTime date)
 Uint8List md5(List<int> data)
@@ -420,10 +420,6 @@ final class FlowLayout
   String? startTemplate
   bool keepTemplate
   int maxPasses
-final class FontFormatException implements Exception
-  FontFormatException(String message)
-  String message
-  String toString()
 final class FontLineHeight extends LineHeight
   FontLineHeight({double leading = 0})
   double leading
@@ -620,47 +616,6 @@ final class MultipleLineHeight extends LineHeight
 final class NamedTarget extends LinkTarget
   NamedTarget(String name)
   String name
-final class OpenTypeFont
-  (int, int, int, int) glyphBounds(int glyph)
-  Iterable<String> tableTags
-  List<int> bbox (settable)
-  List<int> components(int glyph)
-  Map<int, List<(List<int>, int)>> ligatures
-  Map<int, int> characterMap
-  Map<int, int> singleSubstitutions(String feature)
-  OpenTypeFont.parse(List<int> bytes, {int index = 0})
-  String postScriptName (settable)
-  String? familyName (settable)
-  Uint8List bytes
-  Uint8List glyphData(int glyph)
-  Uint8List? table(String tag)
-  bool embeddingRestricted
-  bool hasFeature(String feature)
-  bool hasKernTable
-  bool hasTable(String tag)
-  bool isFixedPitch (settable)
-  bool isTrueType
-  double italicAngle (settable)
-  int advance(int glyph)
-  int ascender (settable)
-  int descender (settable)
-  int fontCount(List<int> bytes)
-  int fsType (settable)
-  int glyphFor(int codePoint)
-  int indexToLocFormat (settable)
-  int kerning(int left, int right)
-  int lineGap (settable)
-  int numGlyphs (settable)
-  int unitsPerEm (settable)
-  int weightClass (settable)
-  int? capHeight (settable)
-  int? kernTablePair(int left, int right, {int? subtable})
-  int? typoAscender (settable)
-  int? typoDescender (settable)
-  int? typoLineGap (settable)
-  int? underlinePosition (settable)
-  int? underlineThickness (settable)
-  int? xHeight (settable)
 final class OpenTypeMathTable
   GlyphConstruction? horizontal(int glyph)
   GlyphConstruction? vertical(int glyph)

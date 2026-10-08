@@ -4,5 +4,5 @@
 /// font don't carry the Brotli dictionary.
 library;
 
-export 'package:fonts/src/platform/web_fonts_vm.dart'
-    if (dart.library.js_interop) 'package:fonts/src/platform/web_fonts_js.dart';
+export 'package:plain_fonts/src/platform/web_fonts_vm.dart'
+    if (dart.library.js_interop) 'package:plain_fonts/src/platform/web_fonts_js.dart';

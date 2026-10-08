@@ -49,7 +49,7 @@ void main() {
       expect(style.base.color, '24292E');
     });
 
-    test("turns hilite's spans into markup, nested", () {
+    test("turns plain_highlighting's spans into markup, nested", () {
       expect(
         style.markup(
           '<span class="hljs-meta">@x <span class="hljs-keyword">def</span>'

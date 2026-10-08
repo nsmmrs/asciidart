@@ -3,7 +3,7 @@
 //   dart run example/svg_chart.dart chart.pdf
 import 'dart:io';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 void main(List<String> args) {
   const values = [12, 19, 7, 15, 22, 9];

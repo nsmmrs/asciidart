@@ -2,7 +2,7 @@
 /// sizes images by.
 library;
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 /// The size prawn-svg gives [svg] (its `DocumentSizing`): the root's
 /// width and height (user units are points), the [requestedWidth] or

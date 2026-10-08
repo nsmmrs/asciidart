@@ -8,7 +8,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:hilite/hilite.dart';
+import 'package:plain_highlighting/plain_highlighting.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -18,7 +18,7 @@ void main() {
   for (final MapEntry(key: path, value: expected) in reference.entries) {
     test(path, () {
       final code = File('vendor/highlight.js/test/$path').readAsStringSync();
-      final result = hilite.highlightAuto(code);
+      final result = highlighting.highlightAuto(code);
       expect(
         (
           language: result.language,

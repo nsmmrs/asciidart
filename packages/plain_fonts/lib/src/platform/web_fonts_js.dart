@@ -4,7 +4,7 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:fonts/src/woff.dart' deferred as woff;
+import 'package:plain_fonts/src/woff.dart' deferred as woff;
 
 /// Decodes WOFF and WOFF2 fonts to the fonts they wrap; null until
 /// [loadWebFontDecoder] has loaded it.

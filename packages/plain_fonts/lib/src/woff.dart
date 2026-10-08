@@ -4,8 +4,8 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:compression/compression.dart';
-import 'package:fonts/src/opentype.dart';
+import 'package:plain_compression/plain_compression.dart';
+import 'package:plain_fonts/src/opentype.dart';
 
 /// Whether [bytes] are a WOFF or WOFF2 font.
 bool isWebFont(List<int> bytes) =>

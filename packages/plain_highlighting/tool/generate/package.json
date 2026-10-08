@@ -1,5 +1,5 @@
 {
-  "name": "highlightjs-dart-generator",
+  "name": "plain-highlighting-generator",
   "private": true,
   "type": "module",
   "description": "Generates the Dart language definitions from highlight.js (see ../../README.md).",

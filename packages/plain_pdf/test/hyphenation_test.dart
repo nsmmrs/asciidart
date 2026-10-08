@@ -1,4 +1,4 @@
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 import 'package:test/test.dart';
 
 /// [word] with a hyphen at each of [hyphenator]'s points.

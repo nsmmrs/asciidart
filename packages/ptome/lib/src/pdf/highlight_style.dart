@@ -1,7 +1,8 @@
 /// Syntax highlighting in the PDF (modern engine): a highlight.js theme
 /// (`highlightjs-theme`, as the HTML backends use it) read for the colors,
-/// weights and styles of hilite's token classes, and hilite's HTML turned
-/// into the PDF backend's text markup with them.
+/// weights and styles of plain_highlighting's token classes, and
+/// plain_highlighting's HTML turned into the PDF backend's text markup with
+/// them.
 library;
 
 import 'package:ptome/src/highlight/hljs_styles.g.dart';
@@ -161,8 +162,8 @@ final class HighlightStyle {
   /// The style of the code a theme's `.hljs` rule gives (its color).
   TokenStyle get base => styleOf(const {'hljs'}, const []);
 
-  /// [html] (hilite's, with `<span class="hljs-...">` around tokens) as
-  /// the PDF backend's markup: each token's span as `<font color>`,
+  /// [html] (plain_highlighting's, with `<span class="hljs-...">` around
+  /// tokens) as the PDF backend's markup: each token's span as `<font color>`,
   /// `<strong>` and `<em>`. Other spans are left as they are.
   String markup(String html) {
     final out = StringBuffer();

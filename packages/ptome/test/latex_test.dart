@@ -1,6 +1,6 @@
 // LaTeX math to MathML (ADR-0014): what each construct becomes, and that
-// libpdf's MathML reader takes it.
-import 'package:libpdf/libpdf.dart';
+// plain_pdf's MathML reader takes it.
+import 'package:plain_pdf/plain_pdf.dart';
 import 'package:ptome/src/math/latex.dart';
 import 'package:test/test.dart';
 

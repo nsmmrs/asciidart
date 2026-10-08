@@ -2,8 +2,8 @@
 /// images alike.
 library;
 
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
 
 /// Something with an intrinsic size that is drawn into a rectangle.
 abstract interface class Graphic {

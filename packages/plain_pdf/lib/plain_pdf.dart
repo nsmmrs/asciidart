@@ -1,15 +1,12 @@
-/// libpdf: a pure-Dart PDF library written from ISO 32000.
+/// plain_pdf: a pure-Dart PDF library written from ISO 32000.
 ///
-/// The object layer: the PDF object model (`PdfObject` and its kinds) and
-/// a `PdfWriter` that writes a file with cross-reference tables or
-/// streams (compressed by the compression package). Fonts (`PdfFont`, read
-/// by the fonts package) and images
-/// (`PdfImage`). The drawing layer: a `PdfDocument` of pages drawn on
-/// `PdfCanvas`es, with links, destinations, outlines and page labels.
+/// The object layer: the PDF object model (`PdfObject` and its kinds) and a
+/// `PdfWriter` that writes a file with cross-reference tables or streams
+/// (compressed by the plain_compression package). Fonts (`PdfFont`, read by the
+/// plain_fonts package) and images (`PdfImage`). The drawing layer: a
+/// `PdfDocument` of pages drawn on `PdfCanvas`es, with links, destinations,
+/// outlines and page labels.
 library;
-
-// The font types libpdf's API uses (the fonts package has the rest).
-export 'package:fonts/fonts.dart' show FontFormatException, OpenTypeFont;
 
 export 'src/drawing/canvas.dart'
     show
@@ -185,5 +182,5 @@ export 'src/svg/svg.dart' show SvgFontResolver, SvgImage, SvgImageResolver;
 export 'src/writer.dart'
     show PdfInfo, PdfWriter, PdfWriterOptions, ZlibCodec, pdfDate;
 
-/// The version of libpdf.
-const String libpdfVersion = '0.1.0-dev';
+/// The version of plain_pdf.
+const String plainPdfVersion = '0.1.0-dev';

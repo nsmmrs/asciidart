@@ -15,7 +15,7 @@ The modern PDF engine's tests set text in them (ligatures, GPOS kerning).
 
 `notoserif-features.ttf` is Noto Serif 2.015 (© 2022 The Noto Project
 Authors, SIL Open Font License 1.1), subset to Basic Latin with its
-`onum`, `smcp`, `liga` and `kern` features (as in libpdf's test fonts).
+`onum`, `smcp`, `liga` and `kern` features (as in plain_pdf's test fonts).
 
 `libertinus-scripts.otf` is Libertinus Serif Regular 7.051 (© 2012-2024
 The Libertinus Project Authors, SIL Open Font License 1.1, from

@@ -1,5 +1,5 @@
 /// The fonts the backends that set text in fonts of their own (PDF, EPUB)
-/// and `ptome doctor` find: the fonts package's index, with
+/// and `ptome doctor` find: the plain_fonts package's index, with
 /// Ptome's policy.
 ///
 /// The folders searched are those of `PTOME_FONT_PATH` (separated as
@@ -11,11 +11,11 @@ library;
 
 import 'dart:async';
 
-import 'package:fonts/fonts.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_fonts/plain_fonts.dart';
 import 'package:ptome/src/io.dart' as io;
 
-export 'package:fonts/fonts.dart' show FontIndex, InstalledFont;
+export 'package:plain_fonts/plain_fonts.dart' show FontIndex, InstalledFont;
 
 /// The machine's fonts, and those of the conversion under way.
 abstract final class Fonts {

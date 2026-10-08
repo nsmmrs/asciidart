@@ -3,7 +3,7 @@
 // decoder loaded on demand, and prints the families it finds.
 import 'dart:js_interop';
 
-import 'package:fonts/fonts.dart';
+import 'package:plain_fonts/plain_fonts.dart';
 
 @JS('process.argv')
 external JSArray<JSString> get _argv;

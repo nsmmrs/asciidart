@@ -5,8 +5,8 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
 
 /// A segment of a path, in absolute coordinates.
 sealed class PathSegment {

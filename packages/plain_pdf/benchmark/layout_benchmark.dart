@@ -2,7 +2,7 @@
 // growing sizes and prints pages per second.
 //
 //   dart run benchmark/layout_benchmark.dart
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 import '../test/sample_document.dart';
 

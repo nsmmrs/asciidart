@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:libpdf/src/layout/line_break.dart';
+import 'package:plain_pdf/src/layout/line_break.dart';
 import 'package:test/test.dart';
 
 /// The cases of the Unicode conformance test `LineBreakTest.txt`: the

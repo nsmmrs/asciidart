@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:fonts/fonts.dart';
+import 'package:plain_fonts/plain_fonts.dart';
 import 'package:test/test.dart';
 
 /// Files in memory, for an index that reads no disk.

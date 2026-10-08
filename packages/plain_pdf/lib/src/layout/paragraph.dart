@@ -7,13 +7,13 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/document.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
-import 'package:libpdf/src/fonts/fonts.dart';
-import 'package:libpdf/src/layout/inline.dart';
-import 'package:libpdf/src/layout/line_break.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/document.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/fonts/fonts.dart';
+import 'package:plain_pdf/src/layout/inline.dart';
+import 'package:plain_pdf/src/layout/line_break.dart';
 
 /// How the lines of a paragraph are spaced.
 @immutable

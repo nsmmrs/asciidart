@@ -9,14 +9,14 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:libpdf/src/drawing/color.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
-import 'package:libpdf/src/drawing/shading.dart';
-import 'package:libpdf/src/fonts/fonts.dart';
-import 'package:libpdf/src/images/images.dart';
-import 'package:libpdf/src/objects.dart';
-import 'package:libpdf/src/reader/reader.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/drawing/color.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/shading.dart';
+import 'package:plain_pdf/src/fonts/fonts.dart';
+import 'package:plain_pdf/src/images/images.dart';
+import 'package:plain_pdf/src/objects.dart';
+import 'package:plain_pdf/src/reader/reader.dart';
 
 /// The shape at the ends of stroked open lines.
 enum LineCap {

@@ -6,7 +6,7 @@
 // digest it prints with the VM's).
 import 'dart:convert';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 void main() {
   final document = PdfDocument(info: const PdfInfo(title: 'web'));

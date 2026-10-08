@@ -3,8 +3,8 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:compression/src/brotli_data.g.dart';
-import 'package:compression/src/flate.dart';
+import 'package:plain_compression/src/brotli_data.g.dart';
+import 'package:plain_compression/src/flate.dart';
 
 /// Expands the Brotli stream [data]; throws a [FormatException] when it is
 /// malformed.

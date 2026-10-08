@@ -3,7 +3,7 @@
 /// HTML alone stays small.
 library;
 
-import 'package:fonts/fonts.dart' show FontIndex;
+import 'package:plain_fonts/plain_fonts.dart' show FontIndex;
 import 'package:ptome/src/epub3/epub3.dart' deferred as epub3;
 import 'package:ptome/src/pdf/pdf.dart' deferred as pdf;
 

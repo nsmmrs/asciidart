@@ -265,8 +265,8 @@ abstract final class SyntaxHighlighter {
       }
     }
 
-    // highlight.js is Ptome's highlighter (hilite); html-pipeline and
-    // prettify only emit markup for tools that highlight later. Rouge,
+    // highlight.js is Ptome's highlighter (plain_highlighting); html-pipeline
+    // and prettify only emit markup for tools that highlight later. Rouge,
     // Pygments and CodeRay behave as without their gems.
     add(
       (opts) => HighlightJsHighlighter(document: opts.document),

@@ -2,8 +2,8 @@
 /// into a tree of [MathNode]s for the math layout.
 library;
 
-import 'package:libpdf/src/drawing/color.dart';
-import 'package:libpdf/src/svg/css_color.dart';
+import 'package:plain_pdf/src/drawing/color.dart';
+import 'package:plain_pdf/src/svg/css_color.dart';
 import 'package:xml/xml.dart';
 
 /// A node of a math formula.

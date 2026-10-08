@@ -66,7 +66,7 @@ Asciidoctor project.
   `tool/api_surface.txt` records the public API and CI checks it.
 - A PDF backend (`-b pdf`, native executable) that converts as the
   asciidoctor-pdf 2.3.27 gem does and reads its YAML themes unchanged, drawn
-  with libpdf (Ptome's own pure-Dart PDF library; no Prawn code). It
+  with plain_pdf (Ptome's own pure-Dart PDF library; no Prawn code). It
   covers:
   - title pages, covers and backgrounds (PDF pages included);
   - running content;
@@ -125,7 +125,7 @@ Asciidoctor project.
   variable, `compat:` in a project's `ptome.yml` or in
   `~/.config/ptome/config.yml`.
 - Math in the PDF: AsciiMath and LaTeX math are typeset (ADR-0014), inline at the
-  text's size and in display style in STEM blocks, by libpdf's math layout
+  text's size and in display style in STEM blocks, by plain_pdf's math layout
   (the OpenType MATH table's rules) in the bundled Noto Sans Math or the
   theme's `math_font_family`; copied, a formula gives its source.
 - Old-style numerals and small capitals from the font's OpenType
@@ -140,7 +140,7 @@ Asciidoctor project.
   in a box (`section_role_<role>_*`), an index with each page once and
   page numbers in a column
   (`index_pagenum_text_align`, `index_category_headings`, `index_font_*`),
-  and source code highlighted by hilite in a highlight.js theme
+  and source code highlighted by plain_highlighting in a highlight.js theme
   (`source-highlighter=highlight.js`, `highlightjs-theme`).
 - Generated text from templates (ADR-0010): caption numbers
   (`<kind>-caption-template`, `appendix-caption-template`) in every
@@ -178,7 +178,7 @@ Asciidoctor project.
   release it is compatible with; `man/ptome.1` documents it.
   `init-config` generates a project for a custom command with Dart converter
   functions compiled in.
-- Syntax highlighting with highlight.js at conversion (hilite, a Dart port
+- Syntax highlighting with highlight.js at conversion (plain_highlighting, a Dart port
   of highlight.js 11.12.0); `highlightjs-mode=client` gives Asciidoctor's
   browser-side markup. Rouge, Pygments and CodeRay behave as when their gems
   are missing.
@@ -208,9 +208,9 @@ Asciidoctor project.
   browser, the page's web fonts are used (`pageFonts`), and so are the
   visitor's installed fonts of the families asked for (`localFonts`,
   through Local Font Access). WOFF and WOFF2 fonts work everywhere fonts
-  do. Font reading and the installed-font index live in the fonts package
-  (github.com/nsmmrs/fonts) and compression in the compression package
-  (github.com/nsmmrs/compression), which libpdf uses too.
+  do. Font reading and the installed-font index live in the plain_fonts package
+  (github.com/nsmmrs/fonts) and compression in the plain_compression package
+  (github.com/nsmmrs/compression), which plain_pdf uses too.
 - Speed on every core (ADR-0016): the work a PDF or EPUB doesn't need in
   order (PNG images, compression) runs on the physical cores (`-a
   jobs=N`, `1` for none), with the same bytes at any number of workers;

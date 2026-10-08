@@ -3,7 +3,7 @@
 /// Port of `src/lib/token_tree.js` and `src/lib/html_renderer.js`.
 library;
 
-import 'package:hilite/src/utils.dart';
+import 'package:plain_highlighting/src/utils.dart';
 
 /// A node of the token tree: a scope with children (text and nodes).
 final class TokenNode {

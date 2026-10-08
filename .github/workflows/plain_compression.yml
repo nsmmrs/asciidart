@@ -1,0 +1,49 @@
+name: plain_compression
+on:
+  push:
+    branches: ['**']
+    paths:
+    - 'packages/plain_compression/**'
+    - '.github/workflows/plain_compression.yml'
+  pull_request:
+    paths:
+    - 'packages/plain_compression/**'
+    - '.github/workflows/plain_compression.yml'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions: read-all
+defaults:
+  run:
+    working-directory: packages/plain_compression
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get
+    - name: Check that JavaScript writes the same bytes as the VM
+      run: |
+        dart compile js -O2 -o build/web_check.js tool/web_check.dart
+        vm="$(dart run tool/web_check.dart)"
+        js="$(node build/web_check.js)"
+        echo "VM: $vm"; echo "JS: $js"
+        test "$vm" = "$js"
+  tools:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get
+    - name: Install brotli
+      run: sudo apt-get update -q && sudo apt-get install -yq brotli
+    - name: Run the tests that check against the brotli tool
+      run: dart test --tags tools

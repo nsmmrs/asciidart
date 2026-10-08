@@ -6,9 +6,9 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:compression/compression.dart';
-import 'package:libpdf/src/md5.dart';
-import 'package:libpdf/src/objects.dart';
+import 'package:plain_compression/plain_compression.dart';
+import 'package:plain_pdf/src/md5.dart';
+import 'package:plain_pdf/src/objects.dart';
 
 /// How a file is written.
 final class PdfWriterOptions {
@@ -42,7 +42,7 @@ final class PdfWriterOptions {
   /// The Flate level (1–9).
   final int compressionLevel;
 
-  /// The zlib codec that compresses streams and reads PNG data: libpdf's
+  /// The zlib codec that compresses streams and reads PNG data: plain_pdf's
   /// own by default; a faster native one where the platform has it (the
   /// Dart VM's `ZLibCodec`). Its output only needs to be valid zlib data.
   final ZlibCodec? zlib;
@@ -57,7 +57,7 @@ final class PdfWriterOptions {
       zlib?.decode(data) ?? zlibDecode(data);
 }
 
-/// A zlib codec to compress and decompress with in place of libpdf's own
+/// A zlib codec to compress and decompress with in place of plain_pdf's own
 /// ([PdfWriterOptions.zlib]).
 abstract interface class ZlibCodec {
   /// [data] compressed in zlib format at [level] (1–9).

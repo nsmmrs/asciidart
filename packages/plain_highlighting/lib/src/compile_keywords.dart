@@ -1,8 +1,8 @@
 /// Port of `src/lib/compile_keywords.js`.
 library;
 
-import 'package:hilite/src/js_string.dart';
-import 'package:hilite/src/mode.dart';
+import 'package:plain_highlighting/src/js_string.dart';
+import 'package:plain_highlighting/src/mode.dart';
 
 // Keywords that should have no default relevance value.
 const List<String> _commonKeywords = [

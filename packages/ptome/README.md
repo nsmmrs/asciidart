@@ -32,10 +32,10 @@ JavaScript) an npm package. It was called asciidart until 2026-10-08
   matches the asciidoctor-epub3 2.3.0 gem file by file
   (`tool/epub_parity.dart`).
 - **PDF without Ruby or a browser.** `-b pdf` draws with
-  [libpdf](https://github.com/nsmmrs/libpdf), a pure-Dart PDF library (its
+  [plain_pdf](https://github.com/nsmmrs/ptome/tree/master/packages/plain_pdf), a pure-Dart PDF library (its
   fonts and compression come from the
-  [fonts](https://github.com/nsmmrs/fonts) and
-  [compression](https://github.com/nsmmrs/compression) packages), and reads
+  [plain_fonts](https://github.com/nsmmrs/ptome/tree/master/packages/plain_fonts) and
+  [plain_compression](https://github.com/nsmmrs/ptome/tree/master/packages/plain_compression) packages), and reads
   asciidoctor-pdf's YAML themes. Fonts are yours: a theme names any installed font, and `ptome doctor`
   installs the built-in themes' (Noto, M PLUS and the icon fonts). With
   `asciidoctor-compat`, the pages look as asciidoctor-pdf 2.3.27 sets them:
@@ -129,7 +129,7 @@ Ruby's Tilt templates cannot run on Dart. Instead
 ## Syntax highlighting
 
 `:source-highlighter: highlight.js` highlights source blocks at conversion,
-with [hilite](https://github.com/nsmmrs/hilite) (highlight.js 11.12.0 in
+with [plain_highlighting](https://github.com/nsmmrs/ptome/tree/master/packages/plain_highlighting) (highlight.js 11.12.0 in
 Dart): the HTML is what highlight.js would produce in the browser, so any
 highlight.js theme styles it (`highlightjs-theme`, default `github`), and
 the page needs no JavaScript. `highlightjs-mode=client` keeps Asciidoctor's

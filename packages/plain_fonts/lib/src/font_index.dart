@@ -13,9 +13,9 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:fonts/src/font_files.dart';
-import 'package:fonts/src/web_fonts.dart' as web_fonts;
 import 'package:meta/meta.dart';
+import 'package:plain_fonts/src/font_files.dart';
+import 'package:plain_fonts/src/web_fonts.dart' as web_fonts;
 
 /// A font found in the font folders (one font of a file: a collection
 /// holds several).

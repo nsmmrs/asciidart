@@ -1,4 +1,4 @@
-# libpdf
+# plain_pdf
 
 A pure-Dart PDF library written from the specification (ISO 32000-2,
 PDF 2.0; output stays readable by PDF 1.7 readers by declaring the lowest
@@ -16,7 +16,7 @@ Layers, each public and usable alone:
    images; links, destinations, outlines and page labels.
 3. **Layout.** A typed box tree is measured, broken into lines and pages,
    and painted. Line breaking and page breaking are pluggable strategies:
-   libpdf ships defaults (first fit, Knuth-Plass), and callers can supply
+   plain_pdf ships defaults (first fit, Knuth-Plass), and callers can supply
    their own to reproduce another engine's behavior.
 4. **Reading.** `PdfFile.parse` reads a PDF file's objects and pages
    (cross-reference tables and streams, object streams, damaged files
@@ -26,8 +26,8 @@ Fonts: the 14 standard fonts with their metrics and kerning, and OpenType
 fonts (TrueType and CFF outlines, or the WOFF and WOFF2 web fonts that wrap
 them) embedded as subsets, with kerning, `liga` ligatures and a ToUnicode
 map so text stays extractable. Reading and subsetting fonts is the
-[fonts](https://github.com/nsmmrs/fonts) package's work, and compression
-the [compression](https://github.com/nsmmrs/compression) package's. Images: JPEG,
+[plain_fonts](https://github.com/nsmmrs/ptome/tree/master/packages/plain_fonts) package's work, and compression
+the [plain_compression](https://github.com/nsmmrs/ptome/tree/master/packages/plain_compression) package's. Images: JPEG,
 PNG of every kind, and SVG (drawn as vector graphics).
 
 The examples in [`example/`](example) make a one-page hello world, a
@@ -36,7 +36,7 @@ styled report, an SVG chart and a two-column booklet.
 ```dart
 import 'dart:io';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 void main(List<String> args) {
   final document = PdfDocument(info: const PdfInfo(title: 'Hello'));

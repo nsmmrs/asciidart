@@ -2,6 +2,11 @@
 
 ## 0.1.0-dev (unreleased)
 
+- Renamed from `libpdf` to `plain_pdf`, and moved with its history into the
+  ptome pub workspace (github.com/nsmmrs/ptome, `packages/plain_pdf`;
+  ptome's ADR-0018). It no longer re-exports `OpenTypeFont` and
+  `FontFormatException`; import them from plain_fonts. `libpdfVersion` is
+  `plainPdfVersion`.
 - The repository: package layout, analysis, CI (Linux, macOS, Windows, and
   a JavaScript compile of the library), the layered design (ADR-0001).
 - The object layer: the PDF object model as sealed types (null, boolean,
@@ -19,12 +24,10 @@
   and WinAnsi encoding generated from the Adobe AFM files. CFF fonts are
   embedded whole for now.
 - Web fonts: WOFF and WOFF2 fonts embed as the fonts they wrap.
-- Font reading and subsetting moved to the fonts package
-  (github.com/nsmmrs/fonts), and DEFLATE, zlib and Brotli to the
-  compression package (github.com/nsmmrs/compression), with their
-  history; libpdf depends on both and re-exports `OpenTypeFont` and
-  `FontFormatException`, which its API uses. `adler32`, `deflate`,
-  `inflate`, `zlibEncode` and `zlibDecode` now come from compression.
+- Font reading and subsetting moved to the plain_fonts package, and
+  DEFLATE, zlib and Brotli to plain_compression, with their history;
+  plain_pdf depends on both. `adler32`, `deflate`, `inflate`, `zlibEncode`
+  and `zlibDecode` now come from plain_compression.
 - Images: JPEG files embedded as they are (DCTDecode; gray, RGB and CMYK,
   baseline and progressive, Adobe-inverted CMYK, EXIF orientation
   reported); PNG files of every color type and bit depth, embedded as they
@@ -155,7 +158,7 @@
 - Faster text: standard-font kerning by code, number formatting without
   regular expressions, `TJ` written without per-glyph allocations, copying
   byte builders, embedded-font kerning pairs cached. BASELINE.md compares
-  libpdf with package:pdf.
+  plain_pdf with package:pdf.
 - `PatternHyphenator`: Liang's hyphenation over TeX patterns and
   exceptions (as hyph-utf8 distributes them), with the fewest letters
   before and after a hyphen; a `Hyphenator` for paragraphs.

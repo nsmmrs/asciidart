@@ -22,7 +22,7 @@ SOFTWARE.
 
 ---
 
-hilite is a port of highlight.js. Its engine is ported from, and its
+plain_highlighting is a port of highlight.js. Its engine is ported from, and its
 language definitions are generated from, highlight.js, which is distributed
 under the following license:
 

@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 import 'package:test/test.dart';
 
 import 'sample_document.dart';
@@ -56,7 +56,7 @@ void main() {
       final pdf = File('${dir.path}/sample.pdf')
         ..writeAsBytesSync(document.save());
       final pages = renderPages(pdf, result.pageCount);
-      final update = Platform.environment['LIBPDF_UPDATE_GOLDENS'] == '1';
+      final update = Platform.environment['PLAIN_PDF_UPDATE_GOLDENS'] == '1';
       for (final (i, page) in pages.indexed) {
         final golden = File('test/golden/layout-${i + 1}.pgm.gz');
         if (update) {

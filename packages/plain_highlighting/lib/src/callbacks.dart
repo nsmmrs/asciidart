@@ -5,8 +5,8 @@
 /// generation instead of being silently dropped.
 library;
 
-import 'package:hilite/src/languages/mathematica_symbols.g.dart';
-import 'package:hilite/src/mode.dart';
+import 'package:plain_highlighting/src/languages/mathematica_symbols.g.dart';
+import 'package:plain_highlighting/src/mode.dart';
 
 /// `SHEBANG`: a shebang only counts on the first line.
 void shebangOnBegin(ModeMatch match, CallbackResponse response) {

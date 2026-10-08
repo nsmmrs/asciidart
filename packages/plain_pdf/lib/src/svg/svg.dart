@@ -9,16 +9,16 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/color.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
-import 'package:libpdf/src/drawing/graphic.dart';
-import 'package:libpdf/src/drawing/shading.dart';
-import 'package:libpdf/src/fonts/fonts.dart';
-import 'package:libpdf/src/images/images.dart';
-import 'package:libpdf/src/svg/css.dart';
-import 'package:libpdf/src/svg/css_color.dart';
-import 'package:libpdf/src/svg/path.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/color.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/graphic.dart';
+import 'package:plain_pdf/src/drawing/shading.dart';
+import 'package:plain_pdf/src/fonts/fonts.dart';
+import 'package:plain_pdf/src/images/images.dart';
+import 'package:plain_pdf/src/svg/css.dart';
+import 'package:plain_pdf/src/svg/css_color.dart';
+import 'package:plain_pdf/src/svg/path.dart';
 import 'package:xml/xml.dart';
 
 /// The font for a font [family] as an SVG names it, in [bold] and

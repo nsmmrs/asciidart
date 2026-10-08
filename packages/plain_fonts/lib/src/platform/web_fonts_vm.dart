@@ -3,7 +3,7 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:fonts/src/woff.dart';
+import 'package:plain_fonts/src/woff.dart';
 
 /// Decodes WOFF and WOFF2 fonts to the fonts they wrap.
 Uint8List Function(List<int> bytes)? get webFontDecoder => decodeWebFont;

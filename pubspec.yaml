@@ -8,3 +8,5 @@ environment:
 
 workspace:
   - packages/*
+  # plain_pdf's comparison with package:pdf (a benchmark, not published).
+  - packages/plain_pdf/benchmark/compare

@@ -8,7 +8,7 @@ library;
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:fonts/fonts.dart' show FontIndex;
+import 'package:plain_fonts/plain_fonts.dart' show FontIndex;
 import 'package:ptome/src/api/file_backends_js.dart';
 import 'package:ptome/src/cli/run.dart' show runCliCode;
 import 'package:ptome/src/js/api.g.dart';

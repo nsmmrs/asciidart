@@ -6,19 +6,19 @@ fonts, the writer or Flate.
 
 ## Against package:pdf (2026-10-06)
 
-`benchmark/compare/` (a package of its own, so libpdf has no dependency
+`benchmark/compare/` (a package of its own, so plain_pdf has no dependency
 on package:pdf) makes the same documents with each library's drawing API,
 no layout: 50 A4 pages of 45 lines of text in a standard font, the same
 in an embedded TrueType font (Noto Serif, subset), and 50 pages each
 with a JPEG. Median of 11 runs after 3 warmups; sizes of the files made.
 
-| Document | libpdf | package:pdf | libpdf size | package:pdf size |
+| Document | plain_pdf | package:pdf | plain_pdf size | package:pdf size |
 | --- | --: | --: | --: | --: |
 | standard font text, 50 pages | 18.5 ms | 6.1 ms | 25 KB | 31 KB |
 | TrueType text (subset), 50 pages | 32.9 ms | 12.0 ms | 40 KB | 41 KB |
 | JPEG images, 50 pages | 4.8 ms | 2.5 ms | 42 KB | 50 KB |
 
-libpdf is slower and makes smaller files:
+plain_pdf is slower and makes smaller files:
 
 - *Flate.* Its Flate encoder is pure Dart, so the bytes are the same on the
   VM and the web; package:pdf uses the platform's zlib on the VM. Flate is
@@ -45,4 +45,4 @@ bin/compare.dart -o compare && ./compare`.
 - `test/fuzz_test.dart` damages JPEG, PNG, SVG, font and PDF input with
   seeded random edits. Every decoder either reads it or rejects it with its
   format exception.
-- veraPDF waits for PDF/A, which libpdf doesn't write yet.
+- veraPDF waits for PDF/A, which plain_pdf doesn't write yet.

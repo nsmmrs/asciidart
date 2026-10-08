@@ -1,5 +1,5 @@
 // Writes highlight.js's output for real code to a JSON Lines file, for
-// tool/differential.dart to compare hilite against.
+// tool/differential.dart to compare plain_highlighting against.
 //
 // Code comes from the source blocks of AsciiDoc files below DIR
 // (`[source,lang]` + `----`); each line of OUT holds the language, the

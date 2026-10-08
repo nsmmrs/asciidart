@@ -5,7 +5,7 @@
 /// standard families and the icon fonts.
 library;
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 import 'package:ptome/src/font_index.dart';
 import 'package:ptome/src/io.dart' as io;
 import 'package:ptome/src/path_resolver.dart';
@@ -84,11 +84,11 @@ sealed class FontFace {
 
 /// How text becomes glyphs, for measuring and drawing it.
 enum Shaping {
-  /// As libpdf shapes it: kerned by the font's GPOS pairs (or its kern
+  /// As plain_pdf shapes it: kerned by the font's GPOS pairs (or its kern
   /// table).
   opentype,
 
-  /// As libpdf shapes it, with the font's standard ligatures (`liga`).
+  /// As plain_pdf shapes it, with the font's standard ligatures (`liga`).
   ligatures;
 
   /// Whether the font's standard ligatures are used.

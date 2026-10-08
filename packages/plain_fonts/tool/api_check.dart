@@ -24,7 +24,7 @@ import 'package:analyzer/dart/element/type.dart';
 
 // Resolved relative to this file: tool/ -> repository root.
 final String repo = File.fromUri(Platform.script).parent.parent.path;
-const publicLibs = ['fonts.dart'];
+const publicLibs = ['plain_fonts.dart'];
 
 /// The absolute, normalized path of the public library [name], which the
 /// analyzer requires (native separators on Windows).
@@ -49,7 +49,7 @@ Future<void> main(List<String> args) async {
   final missing = <String, Set<String>>{};
   void checkElement(Element e, String where) {
     final uri = e.library?.uri.toString() ?? '';
-    if (!uri.startsWith('package:fonts/')) return;
+    if (!uri.startsWith('package:plain_fonts/')) return;
     if (e.name == null || e.name!.startsWith('_')) return;
     if (exported.contains(e)) return;
     missing

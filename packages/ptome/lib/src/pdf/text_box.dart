@@ -3,15 +3,15 @@
 /// word joiners), each line as tall as its tallest fragment, baselines
 /// placed with the leading and the gaps asciidoctor-pdf passes,
 /// justification by word spacing, font fallback per glyph. A
-/// [TextBox] is libpdf custom content: the layout gives it the room
+/// [TextBox] is plain_pdf custom content: the layout gives it the room
 /// left on the page and it places the lines that fit.
 library;
 
 import 'dart:convert';
 import 'dart:math' as math;
 
-import 'package:libpdf/libpdf.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 import 'package:ptome/src/cursor.dart';
 import 'package:ptome/src/logging.dart';
 import 'package:ptome/src/pdf/fonts.dart';
@@ -365,7 +365,7 @@ final class _Line {
 }
 
 /// Text laid out in lines (Typst's line breaking, or for code one line at
-/// a time with a hanging indent), as libpdf custom content.
+/// a time with a hanging indent), as plain_pdf custom content.
 final class TextBox implements CustomContent {
   /// The text of [fragments] (from the markup) starting from [state],
   /// laid out by [layout].
@@ -1351,7 +1351,7 @@ PdfColor? _pdfColor(ThemeColor? color) => switch (color) {
   ),
 };
 
-/// [color] as libpdf draws it, for the converter.
+/// [color] as plain_pdf draws it, for the converter.
 PdfColor? pdfColorOf(ThemeColor? color) => _pdfColor(color);
 
 /// The break characters of Prawn's line wrapping: whitespace (with the
@@ -2214,7 +2214,7 @@ String destinationName(String anchor) {
 }
 
 /// The modern engine's wrap: the breaks Typst's optimizer would choose
-/// (libpdf's TypstLineBreaker: the lines' costs, as Knuth and Plass's total
+/// (plain_pdf's TypstLineBreaker: the lines' costs, as Knuth and Plass's total
 /// fit), over the same items, and the lines then set as Prawn's wrap sets
 /// them (justified by word spacing when justified).
 final class _OptimalWrap extends _Wrap {

@@ -2,8 +2,8 @@
 /// (UAX #14, Unicode 18.0), with its default rules.
 library;
 
-import 'package:libpdf/src/layout/line_break_data.g.dart';
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/src/layout/line_break_data.g.dart';
 
 /// A Line_Break class (UAX #14, 5.1).
 enum LineBreakClass {

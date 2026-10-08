@@ -9,14 +9,14 @@ library;
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:fonts/fonts.dart';
-import 'package:libpdf/src/drawing/canvas.dart';
-import 'package:libpdf/src/drawing/color.dart';
-import 'package:libpdf/src/drawing/geometry.dart';
-import 'package:libpdf/src/drawing/graphic.dart';
-import 'package:libpdf/src/fonts/fonts.dart';
-import 'package:libpdf/src/math/math_table.dart';
-import 'package:libpdf/src/math/mathml.dart';
+import 'package:plain_fonts/plain_fonts.dart';
+import 'package:plain_pdf/src/drawing/canvas.dart';
+import 'package:plain_pdf/src/drawing/color.dart';
+import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/graphic.dart';
+import 'package:plain_pdf/src/fonts/fonts.dart';
+import 'package:plain_pdf/src/math/math_table.dart';
+import 'package:plain_pdf/src/math/mathml.dart';
 
 /// A formula laid out: as wide as [width], [height] above its baseline
 /// and [depth] below it (points), drawn with [paintAt].

@@ -1,8 +1,8 @@
 /// Math in the PDF (ADR-0014): AsciiMath converted to MathML, set by
-/// libpdf's math layout in a font with an OpenType `MATH` table.
+/// plain_pdf's math layout in a font with an OpenType `MATH` table.
 library;
 
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 /// A formula in a line of text: laid out at the text's size when the
 /// line is ([at]), standing on the baseline with its depth below it.

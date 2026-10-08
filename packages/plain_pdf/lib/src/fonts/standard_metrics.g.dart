@@ -7,7 +7,7 @@
 /// The metrics of the 14 standard fonts.
 library;
 
-import 'package:libpdf/src/fonts/standard_metrics.dart';
+import 'package:plain_pdf/src/fonts/standard_metrics.dart';
 
 /// The standard fonts by name.
 const Map<String, StandardFontData> standardFontData = {

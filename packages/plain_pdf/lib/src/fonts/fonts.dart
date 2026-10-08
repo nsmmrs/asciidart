@@ -5,13 +5,13 @@ library;
 
 import 'dart:convert';
 
-import 'package:fonts/fonts.dart';
-import 'package:libpdf/src/fonts/encoding.dart';
-import 'package:libpdf/src/fonts/standard_metrics.dart';
-import 'package:libpdf/src/fonts/standard_metrics.g.dart';
-import 'package:libpdf/src/md5.dart';
-import 'package:libpdf/src/objects.dart';
-import 'package:libpdf/src/writer.dart';
+import 'package:plain_fonts/plain_fonts.dart';
+import 'package:plain_pdf/src/fonts/encoding.dart';
+import 'package:plain_pdf/src/fonts/standard_metrics.dart';
+import 'package:plain_pdf/src/fonts/standard_metrics.g.dart';
+import 'package:plain_pdf/src/md5.dart';
+import 'package:plain_pdf/src/objects.dart';
+import 'package:plain_pdf/src/writer.dart';
 
 /// A glyph of shaped text: what to draw and how far it moves.
 final class ShapedGlyph {

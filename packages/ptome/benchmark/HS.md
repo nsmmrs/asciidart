@@ -214,7 +214,7 @@ rasterized once (`pdftoppm -gray -r 100`). The port's
 `scripts/pagediff.sh` converts the edited edition with those fonts
 (`build.sh pdf-golden`), rasterizes the same pages and compares each pair
 with ImageMagick: the pixels that differ by more than 15% once both images
-are blurred by a pixel (the same glyphs embedded by Typst and by libpdf
+are blurred by a pixel (the same glyphs embedded by Typst and by plain_pdf
 rasterize a little differently at their edges, which the blur absorbs;
 anything moved by half a pixel still shows). A page passes under 0.1% of
 its pixels. `tool/hs/page_lines.dart` compares the words' positions
@@ -229,7 +229,7 @@ The golden PDF and the fonts taken from it are licensed for this
 comparison only: neither is committed anywhere.
 
 The page-for-page match copied a few defects of the Typst build on
-purpose (tags `hs-golden-parity-2026-10-06` in Ptome and libpdf,
+purpose (tags `hs-golden-parity-2026-10-06` in Ptome and plain_pdf,
 `golden-parity-2026-10-06` in the port): index terms that lost the space
 before a parenthesis, a heading that lost its `<progress>`, a callout
 turned into a bullet, lists and code blocks set differently because of
@@ -261,7 +261,7 @@ after it:
 
 - The line breaker computed a hyphenation's cost (the letters on each
   side) for every line that could end there; it is the same for all, so
-  it is computed once (libpdf).
+  it is computed once (plain_pdf).
 - Patterns built inside the line wrapping's loops are built once; the
   tokenizer and the trimming of spaces, which ran for every piece of
   text, are written out as scans (checked against the patterns on 200,000
@@ -269,7 +269,7 @@ after it:
 - A word's width is shaped once per font and features, not at each
   measurement.
 - Streams are compressed, and PNG data read, with the Dart VM's native
-  zlib rather than libpdf's Dart one (`PdfWriterOptions.zlib`).
+  zlib rather than plain_pdf's Dart one (`PdfWriterOptions.zlib`).
 
 ### Using every core (2026-10-07)
 
@@ -296,7 +296,7 @@ What changed:
   moment the walk reads them (the save: 1078 → 156 ms), and the pages'
   content streams are compressed there once they are painted (156 →
   56 ms).
-- hilite's first auto-detection, which compiles every grammar (one
+- plain_highlighting's first auto-detection, which compiles every grammar (one
   listing is an HTTP response with an HTML body), takes 103 ms instead of
   180.
 

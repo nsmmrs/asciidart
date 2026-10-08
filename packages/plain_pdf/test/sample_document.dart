@@ -1,6 +1,6 @@
 // A sample document exercising the layout engine, shared by the golden
 // render test and the benchmark.
-import 'package:libpdf/libpdf.dart';
+import 'package:plain_pdf/plain_pdf.dart';
 
 final PdfTextStyle _body = PdfTextStyle(StandardFont.timesRoman, 10.5);
 final PdfTextStyle _heading = PdfTextStyle(

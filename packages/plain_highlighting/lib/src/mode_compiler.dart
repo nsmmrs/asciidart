@@ -4,10 +4,10 @@
 /// Port of `src/lib/mode_compiler.js`.
 library;
 
-import 'package:hilite/src/compile_keywords.dart';
-import 'package:hilite/src/compiler_extensions.dart' as ext;
-import 'package:hilite/src/mode.dart';
-import 'package:hilite/src/regex.dart' as regex;
+import 'package:plain_highlighting/src/compile_keywords.dart';
+import 'package:plain_highlighting/src/compiler_extensions.dart' as ext;
+import 'package:plain_highlighting/src/mode.dart';
+import 'package:plain_highlighting/src/regex.dart' as regex;
 
 /// What a rule of a [MultiRegex] stands for.
 final class _RuleOptions {

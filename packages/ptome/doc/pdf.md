@@ -1,6 +1,6 @@
 # PDF output
 
-`ptome -b pdf` writes a PDF with Ptome's own PDF library, libpdf,
+`ptome -b pdf` writes a PDF with Ptome's own PDF library, plain_pdf,
 and reads asciidoctor-pdf's YAML themes unchanged (`pdf-theme`,
 `pdf-themesdir`, `pdf-fontsdir`). It needs an output file, and sets text
 in the fonts installed on the machine (`ptome doctor` installs the
@@ -222,7 +222,7 @@ document); one that doesn't fit goes on at the bottom of the next page.
 With `code_wrap_indent: 0` and `code_wrap_marker: none`, a long code line wraps as prose does: at the line breaking algorithm's opportunities (spaces, after a slash), as many words on a line as fit, the next line at the left.
 
 With `source-highlighter=highlight.js`, source blocks are highlighted by
-hilite (the highlighter the HTML backends use) and their tokens set in the
+plain_highlighting (the highlighter the HTML backends use) and their tokens set in the
 colors, weights and styles of the highlight.js theme `highlightjs-theme`
 names (`github` by default; any of highlight.js 11.12.0's themes). The
 block's background stays the PDF theme's.
@@ -238,7 +238,7 @@ markers their own (`callout_list_marker_content: '{{number}}.'`).
 
 AsciiMath (`stem:[]`, `asciimath:[]`, `[stem]` blocks with `:stem:` or
 `:stem: asciimath`) is typeset: converted to MathML (the same as the
-DocBook and EPUB backends', ADR-0014), then laid out by libpdf's math
+DocBook and EPUB backends', ADR-0014), then laid out by plain_pdf's math
 layout in a font with an OpenType `MATH` table, by its rules (scripts,
 fractions, radicals, limits, accents, delimiters that grow with what they
 enclose, larger operators in display style). Inline formulas stand on the

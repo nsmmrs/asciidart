@@ -5,8 +5,8 @@ library;
 
 import 'dart:convert';
 
-import 'package:libpdf/libpdf.dart' show md5;
 import 'package:meta/meta.dart';
+import 'package:plain_pdf/plain_pdf.dart' show md5;
 
 /// A name in the index: its text (for sorting) and its inline markup.
 @immutable
