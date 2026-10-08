@@ -8,17 +8,19 @@ import 'dart:typed_data';
 
 /// Compresses [data] in the zlib format (`/FlateDecode` streams).
 Uint8List zlibEncode(List<int> data, {int level = 6}) {
-  final body = deflate(data, level: level);
-  final adler = adler32(data);
-  final end = body.length + 2;
-  return Uint8List(end + 4)
-    ..[0] = 0x78
-    ..[1] = _zlibFlags(level)
-    ..setRange(2, end, body)
-    ..[end] = adler >> 24
-    ..[end + 1] = adler >> 16
-    ..[end + 2] = adler >> 8
-    ..[end + 3] = adler;
+  final input = data is Uint8List ? data : Uint8List.fromList(data);
+  final out = _BitWriter(input.length)
+    ..writeBits(0x78, 8)
+    ..writeBits(_zlibFlags(level), 8);
+  _deflate(out, input, level);
+  final adler = adler32(input);
+  return (out
+        ..alignToByte()
+        ..writeBits(adler >>> 24, 8)
+        ..writeBits((adler >> 16) & 0xff, 8)
+        ..writeBits((adler >> 8) & 0xff, 8)
+        ..writeBits(adler & 0xff, 8))
+      .finish();
 }
 
 int _zlibFlags(int level) {
@@ -182,18 +184,24 @@ final Uint16List _lengthCodeOf = () {
   return table;
 }();
 
-int _distCodeOf(int distance) {
-  var lo = 0;
-  var hi = _distBase.length - 1;
-  while (lo < hi) {
-    final mid = (lo + hi + 1) >> 1;
-    if (_distBase[mid] <= distance) {
-      lo = mid;
-    } else {
-      hi = mid - 1;
+/// zlib's `_dist_code`: the code of distance `d` is entry `d - 1` up to
+/// 256, and entry `256 + ((d - 1) >> 7)` beyond (the codes from 16 on
+/// start at multiples of 128, plus one).
+final Uint8List _distCodes = () {
+  final table = Uint8List(512);
+  for (var code = 0; code < _distBase.length; code++) {
+    final base = _distBase[code];
+    for (var d = base; d < base + (1 << _distExtra[code]); d++) {
+      final i = d - 1;
+      table[i < 256 ? i : 256 + (i >> 7)] = code;
     }
   }
-  return lo;
+  return table;
+}();
+
+int _distCodeOf(int distance) {
+  final i = distance - 1;
+  return _distCodes[i < 256 ? i : 256 + (i >> 7)];
 }
 
 /// Compresses [data] as a raw DEFLATE stream (no header).
@@ -202,18 +210,26 @@ int _distCodeOf(int distance) {
 /// further (the chain length grows with the level).
 Uint8List deflate(List<int> data, {int level = 6}) {
   final input = data is Uint8List ? data : Uint8List.fromList(data);
-  final out = _BitWriter();
-  if (input.isEmpty) {
+  final out = _BitWriter(input.length);
+  _deflate(out, input, level);
+  return out.finish();
+}
+
+/// Writes [input] compressed at [level] to [out]: greedy matching, the
+/// longest match within the level's chain length, every position hashed.
+void _deflate(_BitWriter out, Uint8List input, int level) {
+  final n = input.length;
+  if (n == 0) {
     // One final fixed block holding just the end-of-block code.
     out
       ..writeBits(1, 1)
       ..writeBits(1, 2)
       ..writeBits(0, 7);
-    return out.finish();
+    return;
   }
   if (level == 0) {
-    _writeStored(out, input, 0, input.length, last: true);
-    return out.finish();
+    _writeStored(out, input, 0, n, last: true);
+    return;
   }
   final maxChain = switch (level) {
     1 => 4,
@@ -226,67 +242,95 @@ Uint8List deflate(List<int> data, {int level = 6}) {
     8 => 1024,
     _ => 4096,
   };
-  final head = Int32List(_hashSize)..fillRange(0, _hashSize, -1);
-  final prev = Int32List(_windowSize);
-  // Symbols of the current block: literal/length codes with their extra
-  // bits, and distances.
+  // Positions plus one, so that a new table is empty; a position's link
+  // is at its index in the window, which for a short input is the
+  // position itself.
+  final head = Int32List(_hashSize);
+  final prev = Int32List(n < _windowSize ? n : _windowSize);
+  final words = ByteData.sublistView(input);
+  // Symbols of the current block: literals and match lengths, and
+  // distances (0 for a literal).
   final litLen = Uint16List(_blockSymbols + 1);
   final distances = Uint16List(_blockSymbols + 1);
   var count = 0;
   var blockStart = 0;
-
-  int hashAt(int i) =>
-      ((input[i] << 10) ^ (input[i + 1] << 5) ^ input[i + 2]) & (_hashSize - 1);
-
-  void insert(int i) {
-    if (i + _minMatch > input.length) return;
-    final h = hashAt(i);
-    prev[i & (_windowSize - 1)] = head[h];
-    head[h] = i;
-  }
+  // The last position with three bytes to hash.
+  final lastHashed = n - _minMatch;
+  // zlib's rolling UPDATE_HASH: the hash of position p is ((hash << 5) ^
+  // input[p + 2]) & mask with hash that of p - 1, which is (input[p] << 10
+  // ^ input[p + 1] << 5 ^ input[p + 2]) & mask, as the bits shifted past
+  // the mask drop out. Positions are hashed in order, so when a match is
+  // searched at i, `hash` is that of i - 1.
+  var hash = n >= 2 ? ((input[0] << 5) ^ input[1]) & (_hashSize - 1) : 0;
 
   var i = 0;
-  while (i < input.length) {
+  while (i < n) {
     var bestLength = 0;
     var bestDistance = 0;
-    if (i + _minMatch <= input.length) {
-      var candidate = head[hashAt(i)];
+    if (i <= lastHashed) {
+      var candidate = head[((hash << 5) ^ input[i + 2]) & (_hashSize - 1)] - 1;
       var chain = maxChain;
       final limit = i - _windowSize;
-      final maxLength = input.length - i < _maxMatch
-          ? input.length - i
-          : _maxMatch;
+      final maxLength = n - i < _maxMatch ? n - i : _maxMatch;
+      final first = input[i];
+      final second = input[i + 1];
+      // input[i + bestLength], the byte a longer match must have.
+      var scanEnd = first;
       while (candidate >= 0 && candidate > limit && chain-- > 0) {
-        if (input[candidate + bestLength] == input[i + bestLength]) {
+        // zlib's quick rejection: a match longer than bestLength has the
+        // same bytes at 0, 1, bestLength - 1 and bestLength.
+        if (input[candidate + bestLength] == scanEnd &&
+            (bestLength < 2 ||
+                (input[candidate] == first &&
+                    input[candidate + 1] == second &&
+                    input[candidate + bestLength - 1] ==
+                        input[i + bestLength - 1]))) {
           var length = 0;
-          while (length < maxLength &&
-              input[candidate + length] == input[i + length]) {
-            length += 1;
+          while (true) {
+            if (length + 4 > maxLength) {
+              while (length < maxLength &&
+                  input[candidate + length] == input[i + length]) {
+                length += 1;
+              }
+              break;
+            }
+            // Four bytes at a time; the lowest set bit of the difference
+            // is in the first byte that differs.
+            final x =
+                words.getUint32(candidate + length, Endian.little) ^
+                words.getUint32(i + length, Endian.little);
+            if (x != 0) {
+              length += ((x & -x).bitLength - 1) >> 3;
+              break;
+            }
+            length += 4;
           }
           if (length > bestLength) {
             bestLength = length;
             bestDistance = i - candidate;
             if (length == maxLength) break;
+            scanEnd = input[i + length];
           }
         }
-        candidate = prev[candidate & (_windowSize - 1)];
+        candidate = prev[candidate & (_windowSize - 1)] - 1;
       }
     }
+    final advance = bestLength >= _minMatch ? bestLength : 1;
     if (bestLength >= _minMatch) {
       litLen[count] = bestLength;
       distances[count] = bestDistance;
-      count += 1;
-      for (var k = 0; k < bestLength; k++) {
-        insert(i + k);
-      }
-      i += bestLength;
     } else {
       litLen[count] = input[i];
       distances[count] = 0;
-      count += 1;
-      insert(i);
-      i += 1;
     }
+    count += 1;
+    final stop = i + advance - 1 < lastHashed ? i + advance - 1 : lastHashed;
+    for (var p = i; p <= stop; p++) {
+      hash = ((hash << 5) ^ input[p + 2]) & (_hashSize - 1);
+      prev[p & (_windowSize - 1)] = head[hash];
+      head[hash] = p + 1;
+    }
+    i += advance;
     if (count >= _blockSymbols) {
       _writeBlock(
         out,
@@ -296,25 +340,24 @@ Uint8List deflate(List<int> data, {int level = 6}) {
         litLen,
         distances,
         count,
-        last: i >= input.length,
+        last: i >= n,
       );
       blockStart = i;
       count = 0;
     }
   }
-  if (count > 0 || blockStart < input.length) {
+  if (count > 0 || blockStart < n) {
     _writeBlock(
       out,
       input,
       blockStart,
-      input.length,
+      n,
       litLen,
       distances,
       count,
       last: true,
     );
   }
-  return out.finish();
 }
 
 void _writeStored(
@@ -327,18 +370,13 @@ void _writeStored(
   var at = start;
   do {
     final length = end - at > 65535 ? 65535 : end - at;
-    final final_ = last && at + length >= end;
     out
-      ..writeBits(final_ ? 1 : 0, 1)
+      ..writeBits(last && at + length >= end ? 1 : 0, 1)
       ..writeBits(0, 2)
       ..alignToByte()
-      ..writeBytes([
-        length & 0xff,
-        length >> 8,
-        ~length & 0xff,
-        (~length >> 8) & 0xff,
-      ])
-      ..writeBytes(input.sublist(at, at + length));
+      ..writeBits(length, 16)
+      ..writeBits(~length & 0xffff, 16)
+      ..writeBytes(input, at, at + length);
     at += length;
   } while (at < end);
 }
@@ -355,20 +393,29 @@ void _writeBlock(
   int count, {
   required bool last,
 }) {
-  final litFreq = List<int>.filled(286, 0);
-  final distFreq = List<int>.filled(30, 0);
+  // Each symbol's literal/length code and distance code, found once.
+  final symbols = Uint16List(count);
+  final distSymbols = Uint8List(count);
+  final litFreq = Int32List(286);
+  final distFreq = Int32List(30);
   for (var s = 0; s < count; s++) {
     final distance = distances[s];
     if (distance == 0) {
-      litFreq[litLen[s]] += 1;
+      final literal = litLen[s];
+      symbols[s] = literal;
+      litFreq[literal] += 1;
     } else {
-      litFreq[257 + _lengthCodeOf[litLen[s]]] += 1;
-      distFreq[_distCodeOf(distance)] += 1;
+      final symbol = 257 + _lengthCodeOf[litLen[s]];
+      final distCode = _distCodeOf(distance);
+      symbols[s] = symbol;
+      distSymbols[s] = distCode;
+      litFreq[symbol] += 1;
+      distFreq[distCode] += 1;
     }
   }
   litFreq[256] = 1;
-  final litLengths = huffmanLengths(litFreq, 15);
-  final distLengths = huffmanLengths(distFreq, 15);
+  final litLengths = Uint8List.fromList(huffmanLengths(litFreq, 15));
+  final distLengths = Uint8List.fromList(huffmanLengths(distFreq, 15));
   // At least one distance code must be defined.
   if (distLengths.every((l) => l == 0)) distLengths[0] = 1;
 
@@ -400,7 +447,9 @@ void _writeBlock(
     hclen -= 1;
   }
 
-  // Compare the size with storing the block.
+  // Compare the size with storing the block; the symbols' bits are their
+  // codes' lengths and extra bits times their frequencies (the
+  // end-of-block code's frequency is 1).
   var bits = 3 + 5 + 5 + 4 + hclen * 3;
   for (final (symbol, _) in rle) {
     bits +=
@@ -412,21 +461,15 @@ void _writeBlock(
           _ => 0,
         };
   }
-  for (var s = 0; s < count; s++) {
-    final distance = distances[s];
-    if (distance == 0) {
-      bits += litLengths[litLen[s]];
-    } else {
-      final lengthCode = _lengthCodeOf[litLen[s]];
-      final distCode = _distCodeOf(distance);
-      bits +=
-          litLengths[257 + lengthCode] +
-          _lengthExtra[lengthCode] +
-          distLengths[distCode] +
-          _distExtra[distCode];
-    }
+  for (var c = 0; c < 257; c++) {
+    bits += litFreq[c] * litLengths[c];
   }
-  bits += litLengths[256];
+  for (var c = 257; c < 286; c++) {
+    bits += litFreq[c] * (litLengths[c] + _lengthExtra[c - 257]);
+  }
+  for (var c = 0; c < 30; c++) {
+    bits += distFreq[c] * (distLengths[c] + _distExtra[c]);
+  }
   final storedBits = (end - start) * 8 + ((end - start) ~/ 65535 + 1) * 40;
   if (storedBits < bits) {
     _writeStored(out, input, start, end, last: last);
@@ -446,7 +489,7 @@ void _writeBlock(
     out.writeBits(clLengths[_codeLengthOrder[k]], 3);
   }
   for (final (symbol, extra) in rle) {
-    out.writeCode(clCodes[symbol], clLengths[symbol]);
+    out.writeBits(clCodes[symbol], clLengths[symbol]);
     switch (symbol) {
       case 16:
         out.writeBits(extra, 2);
@@ -457,23 +500,24 @@ void _writeBlock(
     }
   }
   for (var s = 0; s < count; s++) {
-    final distance = distances[s];
-    if (distance == 0) {
-      final literal = litLen[s];
-      out.writeCode(litCodes[literal], litLengths[literal]);
+    final symbol = symbols[s];
+    if (symbol < 256) {
+      out.writeBits(litCodes[symbol], litLengths[symbol]);
     } else {
-      final length = litLen[s];
-      final lengthCode = _lengthCodeOf[length];
+      // The length code and its extra bits in one write (20 bits at most).
+      final code = symbol - 257;
+      final codeLength = litLengths[symbol];
+      out.writeBits(
+        litCodes[symbol] | (litLen[s] - _lengthBase[code]) << codeLength,
+        codeLength + _lengthExtra[code],
+      );
+      final distCode = distSymbols[s];
       out
-        ..writeCode(litCodes[257 + lengthCode], litLengths[257 + lengthCode])
-        ..writeBits(length - _lengthBase[lengthCode], _lengthExtra[lengthCode]);
-      final distCode = _distCodeOf(distance);
-      out
-        ..writeCode(distCodes[distCode], distLengths[distCode])
-        ..writeBits(distance - _distBase[distCode], _distExtra[distCode]);
+        ..writeBits(distCodes[distCode], distLengths[distCode])
+        ..writeBits(distances[s] - _distBase[distCode], _distExtra[distCode]);
     }
   }
-  out.writeCode(litCodes[256], litLengths[256]);
+  out.writeBits(litCodes[256], litLengths[256]);
 }
 
 /// The code lengths as code length symbols: 0–15 as they are, 16 repeats
@@ -615,81 +659,89 @@ List<int> huffmanLengths(List<int> frequencies, int maxBits) {
   return lengths;
 }
 
-/// Canonical Huffman codes for [lengths], bit-reversed for writing.
-List<int> _canonicalCodes(List<int> lengths) {
-  final maxBits = lengths.fold(0, (a, b) => a > b ? a : b);
-  final blCount = List<int>.filled(maxBits + 1, 0);
+/// Canonical Huffman codes for [lengths] (at most 15), bit-reversed for
+/// writing.
+Int32List _canonicalCodes(List<int> lengths) {
+  final counts = Int32List(16);
   for (final length in lengths) {
-    if (length > 0) blCount[length] += 1;
+    counts[length] += 1;
   }
-  final nextCode = List<int>.filled(maxBits + 2, 0);
+  counts[0] = 0;
+  final nextCode = Int32List(16);
   var code = 0;
-  for (var bits = 1; bits <= maxBits; bits++) {
-    code = (code + blCount[bits - 1]) << 1;
+  for (var bits = 1; bits <= 15; bits++) {
+    code = (code + counts[bits - 1]) << 1;
     nextCode[bits] = code;
   }
-  final codes = List<int>.filled(lengths.length, 0);
+  final codes = Int32List(lengths.length);
   for (var s = 0; s < lengths.length; s++) {
     final length = lengths[s];
-    if (length == 0) continue;
-    codes[s] = _reverse(nextCode[length]++, length);
+    if (length != 0) codes[s] = _reversed(nextCode[length]++, length);
   }
   return codes;
 }
 
-int _reverse(int code, int length) {
-  var result = 0;
-  var value = code;
-  for (var k = 0; k < length; k++) {
-    result = (result << 1) | (value & 1);
-    value >>= 1;
-  }
-  return result;
-}
-
+/// Writes bits, least significant first, into one growing buffer.
 final class _BitWriter {
-  final BytesBuilder _out = BytesBuilder(copy: false);
-  final Uint8List _buffer = Uint8List(65536);
+  /// A writer for [inputLength] bytes compressed: room for them stored, as
+  /// a block is stored when that is smaller (5 bytes per stored block of
+  /// 65535 and per block of 16383 symbols or fewer, plus the wrapper).
+  new(int inputLength)
+    : _buffer = Uint8List(inputLength + (inputLength >> 11) + 64);
+
+  Uint8List _buffer;
   int _used = 0;
   int _bits = 0;
   int _bitCount = 0;
 
-  void _byte(int value) {
-    _buffer[_used++] = value;
-    if (_used == _buffer.length) {
-      _out.add(Uint8List.fromList(_buffer));
-      _used = 0;
+  void _grow(int need) {
+    var size = _buffer.length * 2;
+    while (size < _used + need) {
+      size *= 2;
     }
+    _buffer = Uint8List(size)..setRange(0, _used, _buffer);
   }
 
-  /// Writes the low [count] bits of [value], least significant first.
+  /// Writes the [count] bits of [value], which has no more bits: 24 at
+  /// most, so with the fewer than 8 bits pending the values stay below
+  /// 2^31 (the same with dart2js).
   void writeBits(int value, int count) {
-    _bits |= (value & ((1 << count) - 1)) << _bitCount;
-    _bitCount += count;
-    while (_bitCount >= 8) {
-      _byte(_bits & 0xff);
-      _bits >>= 8;
-      _bitCount -= 8;
+    var bits = _bits | (value << _bitCount);
+    var bitCount = _bitCount + count;
+    if (bitCount >= 8) {
+      if (_used + 4 > _buffer.length) _grow(4);
+      final buffer = _buffer;
+      var used = _used;
+      do {
+        buffer[used++] = bits & 0xff;
+        bits >>>= 8;
+        bitCount -= 8;
+      } while (bitCount >= 8);
+      _used = used;
     }
+    _bits = bits;
+    _bitCount = bitCount;
   }
-
-  /// Writes a Huffman code (already bit-reversed).
-  void writeCode(int code, int length) => writeBits(code, length);
 
   void alignToByte() {
-    if (_bitCount > 0) {
-      _byte(_bits & 0xff);
-      _bits = 0;
-      _bitCount = 0;
-    }
+    if (_bitCount > 0) writeBits(0, 8 - _bitCount);
   }
 
-  void writeBytes(List<int> bytes) => bytes.forEach(_byte);
+  /// Writes the bytes of [bytes] from [start] to [end] (at a byte
+  /// boundary).
+  void writeBytes(Uint8List bytes, int start, int end) {
+    if (_used + end - start > _buffer.length) _grow(end - start);
+    _buffer.setRange(_used, _used + end - start, bytes, start);
+    _used += end - start;
+  }
 
   Uint8List finish() {
     alignToByte();
-    if (_used > 0) _out.add(Uint8List.sublistView(_buffer, 0, _used));
-    return _out.takeBytes();
+    if (_used == _buffer.length) return _buffer;
+    // As the inflater does: a large result is a view, its buffer's pages
+    // past the end never touched.
+    if (_used >= 1 << 18) return Uint8List.sublistView(_buffer, 0, _used);
+    return _buffer.sublist(0, _used);
   }
 }
 

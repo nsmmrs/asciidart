@@ -10,6 +10,9 @@
   (256 KiB or more) is a view of a larger buffer.
 - The Brotli dictionary is base64-decoded by dart:convert: its first use
   takes about 1 ms, not 7.
+- A faster encoder writing the same bytes: rolling hash, zlib's quick
+  match rejection and distance-code table, word compares, typed block
+  tables and one bit buffer: 1.4x on text, 2x on images, 6x stored.
 - CRC-32, gzip (RFC 1952) and ZIP archives: a reproducible writer and a
   bounds-checked reader, both with ZIP64. They come from ptome's EPUB
   writer; plain_pdf's PNG reader and ptome's EPUB use them.
