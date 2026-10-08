@@ -262,6 +262,14 @@ extension type const LineBreakOffsets._(List<int> _codes) {
 LineBreakOffsets lineBreakOffsets(String text) =>
     LineBreakOffsets._(_breakCodes(text));
 
+/// [lineBreaks] with every decision from the rules, none from the pair
+/// tables: what the tables are tested against.
+@visibleForTesting
+List<LineBreak> lineBreaksByRules(String text) => [
+  for (final code in _breakCodes(text, byRules: true))
+    LineBreak(code >> 1, mandatory: code & 1 != 0),
+];
+
 // The classes, as integers: the indexes of LineBreakClass.
 const int _bk = 0;
 const int _cr = 1;
@@ -362,8 +370,9 @@ Int32List _unitStarts = Int32List(256);
 const int _retainedUnits = 1 << 16;
 
 /// The break opportunities in [text], each as its code unit offset
-/// shifted left once, plus 1 if the break is mandatory.
-List<int> _breakCodes(String text) {
+/// shifted left once, plus 1 if the break is mandatory. With [byRules],
+/// every decision comes from the rules, none from the pair tables.
+List<int> _breakCodes(String text, {bool byRules = false}) {
   final length = text.length;
   var classes = _unitClasses;
   var flags = _unitFlags;
@@ -382,12 +391,26 @@ List<int> _breakCodes(String text) {
     }
   }
   final count = _units(text, classes, flags, starts);
+  final pairs = byRules ? _noPairs : _pairs;
+  final afterSpaces = byRules ? _noPairs : _afterSpaces;
   final codes = <int>[];
   // The unit before the spaces that end before unit i (or -1).
   var spaced = -1;
   for (var i = 1; i < count; i++) {
-    if (classes[i - 1] != _sp) spaced = i - 1;
-    final decision = _decide(classes, flags, count, i, spaced);
+    final b = classes[i - 1];
+    final a = classes[i];
+    int decision;
+    if (b != _sp) {
+      spaced = i - 1;
+      decision = (flags[i - 1] | flags[i]) & (_joiner | _dottedCircle) == 0
+          ? pairs[b << 6 | a]
+          : _byRules;
+    } else {
+      decision = afterSpaces[(spaced >= 0 ? classes[spaced] : _start) << 6 | a];
+    }
+    if (decision == _byRules) {
+      decision = _decide(classes, flags, count, i, spaced);
+    }
     if (decision != _keep) {
       codes.add(starts[i] << 1 | (decision == _mandatory ? 1 : 0));
     }
@@ -639,3 +662,88 @@ bool _endsNumber(Uint8List classes, int end) {
   }
   return j >= 0 && classes[j] == _nu;
 }
+
+// ---- The pair tables -------------------------------------------------
+
+/// A decision the pair tables leave to the rules ([_decide]).
+const int _byRules = 3;
+
+/// Pair tables that leave every decision to the rules.
+final Uint8List _noPairs = Uint8List(64 * 64)..fillRange(0, 64 * 64, _byRules);
+
+/// Stands for the start of the text in [_afterSpaces]: XX, which no unit
+/// has (LB1 makes it AL).
+const int _start = 48;
+
+/// Whether the decision between a unit of class [b] (not SP) and one of
+/// class [a] may depend on more than the two classes: on the units around
+/// them (lookbehind and lookahead), or on flags (LB15a/b, LB19, LB19a,
+/// LB30, LB30b; the joiner and dotted circle flags are checked apart).
+///
+/// Revisit this on every change of the rules;
+/// test/line_break_tables_test.dart checks it against them.
+bool _needsRules(int b, int a) =>
+    b == _qu ||
+    a == _qu ||
+    b == _hy ||
+    b == _hh ||
+    ((a == _po || a == _pr) &&
+        (b == _sy || b == _is || b == _cl || b == _cp)) ||
+    ((b == _po || b == _pr) && a == _op) ||
+    (a == _nu && (b == _sy || b == _is)) ||
+    b == _vi ||
+    ((b == _ak || b == _as) && (a == _ak || a == _as)) ||
+    (a == _op && (b == _al || b == _hl || b == _nu)) ||
+    b == _cp ||
+    (b == _ri && a == _ri) ||
+    a == _em;
+
+/// The decision between a unit of class `b` (not SP) and one of class
+/// `a`, at `b << 6 | a`, where the two classes decide it; [_byRules]
+/// elsewhere. Filled by the rules themselves, so they stay the one source
+/// of truth.
+final Uint8List _pairs = () {
+  final table = Uint8List(64 * 64)..fillRange(0, 64 * 64, _byRules);
+  final classes = Uint8List(2);
+  final flags = Uint8List(2);
+  for (var b = 0; b < LineBreakClass.values.length; b++) {
+    if (b == _sp) continue;
+    for (var a = 0; a < LineBreakClass.values.length; a++) {
+      if (_needsRules(b, a)) continue;
+      classes
+        ..[0] = b
+        ..[1] = a;
+      table[b << 6 | a] = _decide(classes, flags, 2, 1, 0);
+    }
+  }
+  return table;
+}();
+
+/// The decision between an SP unit and one of class `a`, at `s << 6 | a`
+/// where `s` is the class of the unit before the spaces ([_start] if
+/// none), where those two classes decide it; [_byRules] elsewhere.
+final Uint8List _afterSpaces = () {
+  final table = Uint8List(64 * 64)..fillRange(0, 64 * 64, _byRules);
+  final classes = Uint8List(3);
+  final flags = Uint8List(3);
+  for (var s = 0; s < LineBreakClass.values.length; s++) {
+    if (s == _sp) continue;
+    for (var a = 0; a < LineBreakClass.values.length; a++) {
+      // LB15a, LB15b, LB15c read more than the two classes.
+      if (s == _qu || a == _qu || a == _is) continue;
+      if (s == _start) {
+        classes
+          ..[0] = _sp
+          ..[1] = a;
+        table[s << 6 | a] = _decide(classes, flags, 2, 1, -1);
+      } else {
+        classes
+          ..[0] = s
+          ..[1] = _sp
+          ..[2] = a;
+        table[s << 6 | a] = _decide(classes, flags, 3, 2, 0);
+      }
+    }
+  }
+  return table;
+}();

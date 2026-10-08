@@ -21,3 +21,9 @@
   `List<int>`: `length`, `offsetAt`, `isMandatoryAt`). plain_typesetting's
   `paragraphItems` walks it with a cursor instead of probing two
   `Set<int>`s per character.
+- Line breaking answers most pairs of classes from two 64x64 tables (one
+  for pairs after spaces), filled by running the rules themselves, and
+  leaves the pairs that need more context to the rules. A permanent test
+  checks the tables against the rules. `lineBreakOffsets` takes about
+  9 ns per code unit of English, 12 of Japanese (56 and 75 before these
+  changes).
