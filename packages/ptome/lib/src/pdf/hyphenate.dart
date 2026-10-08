@@ -30,9 +30,8 @@ String hyphenateMarkup(
   // (UAX #29) have it, letters, digits and underscores joined by an
   // apostrophe or a period between them, hyphenated only when it is all
   // letters (not `_hyperscript`, `html5` or `don’t`).
-  final wordRx = lettersOnly ? _uaxWord : _word;
   if (!markup.contains('<') && !markup.contains('&')) {
-    return _hyphenateTexts([markup], wordRx, hyphenator, lettersOnly).single;
+    return _hyphenateTexts([markup], hyphenator, lettersOnly).single;
   }
   // Tags and character references, texts, and what neither takes (a lone
   // `&` or `<`, kept as it is).
@@ -60,7 +59,6 @@ String hyphenateMarkup(
     if (group.isEmpty) return;
     final texts = _hyphenateTexts(
       [for (final i in group) tokens[i].text!],
-      wordRx,
       hyphenator,
       lettersOnly,
     );
@@ -111,19 +109,21 @@ String hyphenateMarkup(
 /// may break, the words read across the pieces.
 List<String> _hyphenateTexts(
   List<String> texts,
-  RegExp wordRx,
   PatternHyphenator hyphenator,
   bool lettersOnly,
 ) {
   final whole = texts.join();
   // The offsets (in [whole]) before which a soft hyphen goes.
   final points = <int>[];
-  for (final m in wordRx.allMatches(whole)) {
-    final word = m[0]!;
-    if (lettersOnly && !_letters.hasMatch(word)) continue;
+  for (final (start, end, letters) in hyphenationWords(
+    whole,
+    lettersOnly: lettersOnly,
+  )) {
+    if (lettersOnly && !letters) continue;
+    final word = whole.substring(start, end);
     final breaks = hyphenator.hyphenate(word);
     if (breaks.isEmpty) continue;
-    var offset = m.start;
+    var offset = start;
     var rune = 0;
     for (final code in word.runes) {
       if (breaks.contains(rune)) points.add(offset);
@@ -165,11 +165,101 @@ final RegExp _formattingTagRx = RegExp(
   r'^</?(?:em|strong|b|i|u|s|del|ins|mark|span|font|sup|sub|a)(?:[\s>]|$)',
 );
 
-final RegExp _word = RegExp(r'[\p{L}\p{M}\p{N}\p{Pc}]+', unicode: true);
+/// The words of [text] hyphenation looks at: their start, their end and
+/// whether they are all letters (and marks). A word is a run of word
+/// characters (`[\p{L}\p{M}\p{N}\p{Pc}]+`); with [lettersOnly], runs
+/// joined by one of `' ’ . : ·` between them make one word (Unicode word
+/// boundaries, UAX #29, as Typst has them).
+///
+/// A hand scanner (the word regexes cost over 100 ns a character in the
+/// VM's regex interpreter): ASCII by its code, other characters by a
+/// one-character regex of the same classes, once each.
+List<(int, int, bool)> hyphenationWords(
+  String text, {
+  required bool lettersOnly,
+}) {
+  final words = <(int, int, bool)>[];
+  final n = text.length;
+  int runeAt(int i) {
+    final c = text.codeUnitAt(i);
+    if (c >= 0xd800 && c < 0xdc00 && i + 1 < n) {
+      final d = text.codeUnitAt(i + 1);
+      if (d >= 0xdc00 && d < 0xe000) {
+        return 0x10000 + ((c - 0xd800) << 10) + (d - 0xdc00);
+      }
+    }
+    return c;
+  }
 
-final RegExp _uaxWord = RegExp(
-  r"[\p{L}\p{M}\p{N}\p{Pc}]+(?:['’.:·][\p{L}\p{M}\p{N}\p{Pc}]+)*",
+  var i = 0;
+  while (i < n) {
+    var rune = runeAt(i);
+    var kind = _kindOf(rune);
+    if (kind == _notWord) {
+      i += rune > 0xffff ? 2 : 1;
+      continue;
+    }
+    final start = i;
+    var letters = true;
+    while (true) {
+      if (kind != _letter) letters = false;
+      i += rune > 0xffff ? 2 : 1;
+      if (i >= n) break;
+      rune = runeAt(i);
+      kind = _kindOf(rune);
+      if (kind != _notWord) continue;
+      // (A joiner between word characters: one code unit.)
+      if (lettersOnly && _isJoiner(rune) && i + 1 < n) {
+        final next = runeAt(i + 1);
+        final nextKind = _kindOf(next);
+        if (nextKind != _notWord) {
+          letters = false;
+          i++;
+          rune = next;
+          kind = nextKind;
+          continue;
+        }
+      }
+      break;
+    }
+    words.add((start, i, letters));
+  }
+  return words;
+}
+
+/// What a character is to [hyphenationWords]: not a word character, a
+/// word character (a digit or a connector), or a letter or mark.
+const int _notWord = 0;
+const int _wordCharacter = 1;
+const int _letter = 2;
+
+final Map<int, int> _kinds = {};
+
+int _kindOf(int rune) {
+  if (rune < 0x80) {
+    final lower = rune | 0x20;
+    if (lower >= 0x61 && lower <= 0x7a) return _letter;
+    if ((rune >= 0x30 && rune <= 0x39) || rune == 0x5f) return _wordCharacter;
+    return _notWord;
+  }
+  return _kinds[rune] ??= () {
+    final char = String.fromCharCode(rune);
+    if (_letterRx.hasMatch(char)) return _letter;
+    if (_wordCharacterRx.hasMatch(char)) return _wordCharacter;
+    return _notWord;
+  }();
+}
+
+bool _isJoiner(int rune) =>
+    rune == 0x27 ||
+    rune == 0x2019 ||
+    rune == 0x2e ||
+    rune == 0x3a ||
+    rune == 0xb7;
+
+final RegExp _letterRx = RegExp(r'^[\p{L}\p{M}]$', unicode: true);
+
+final RegExp _wordCharacterRx = RegExp(
+  r'^[\p{L}\p{M}\p{N}\p{Pc}]$',
   unicode: true,
 );
-
-final RegExp _letters = RegExp(r'^[\p{L}\p{M}]+$', unicode: true);

@@ -1,4 +1,6 @@
 // Soft hyphens put into inline markup (lib/src/pdf/hyphenate.dart).
+import 'dart:math';
+
 import 'package:ptome/src/pdf/hyphenate.dart';
 import 'package:test/test.dart';
 
@@ -54,5 +56,37 @@ void main() {
       'a & hy-phen-ation < b',
     );
     expect(marks('a & hyphenation < b'), 'a & hy-phen-ation < b');
+  });
+
+  group('hyphenationWords', () {
+    // The regexes it stands for (the oracle).
+    final word = RegExp(r'[\p{L}\p{M}\p{N}\p{Pc}]+', unicode: true);
+    final uaxWord = RegExp(
+      r"[\p{L}\p{M}\p{N}\p{Pc}]+(?:['’.:·][\p{L}\p{M}\p{N}\p{Pc}]+)*",
+      unicode: true,
+    );
+    final letters = RegExp(r'^[\p{L}\p{M}]+$', unicode: true);
+    const pieces = [
+      'a', 'Z', 'é', 'ß', 'α', 'Ж', 'ا', 'ह', '́', 'ि', '1', '٣', //
+      '_', '‿', ' ', '-', "'", '’', '.', ':', '·', ',', '­', //
+      '\u{1d400}', '\u{1d7cf}', '😀', '\ud800', '\udc00', '‍', '\t', //
+      '中', 'ー', '&', ';',
+    ];
+    for (final lettersOnly in [false, true]) {
+      test('the regex words${lettersOnly ? ' (letters only)' : ''}', () {
+        final random = Random(lettersOnly ? 29 : 121);
+        final rx = lettersOnly ? uaxWord : word;
+        for (var i = 0; i < 30000; i++) {
+          final text = [
+            for (var k = random.nextInt(20); k > 0; k--)
+              pieces[random.nextInt(pieces.length)],
+          ].join();
+          expect(hyphenationWords(text, lettersOnly: lettersOnly), [
+            for (final m in rx.allMatches(text))
+              (m.start, m.end, letters.hasMatch(m[0]!)),
+          ], reason: 'in ${Uri.encodeComponent(text)}');
+        }
+      });
+    }
   });
 }
