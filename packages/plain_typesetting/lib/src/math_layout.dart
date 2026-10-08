@@ -11,12 +11,12 @@ import 'dart:typed_data';
 
 import 'package:plain_fonts/plain_fonts.dart';
 import 'package:plain_math/plain_math.dart';
-import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/color.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
-import 'package:plain_pdf/src/drawing/graphic.dart';
-import 'package:plain_pdf/src/fonts/fonts.dart';
-import 'package:plain_pdf/src/svg/css_color.dart';
+import 'package:plain_typesetting/src/canvas.dart';
+import 'package:plain_typesetting/src/color.dart';
+import 'package:plain_typesetting/src/css_color.dart';
+import 'package:plain_typesetting/src/font.dart';
+import 'package:plain_typesetting/src/geometry.dart';
+import 'package:plain_typesetting/src/graphic.dart';
 
 /// A formula laid out: as wide as [width], [height] above its baseline
 /// and [depth] below it (points), drawn with [paintAt].
@@ -42,7 +42,7 @@ final class MathBox implements Graphic {
 
   /// Draws the formula with its baseline starting at ([x], [y]), in the
   /// canvas's fill color where the formula sets none.
-  void paintAt(PdfCanvas canvas, double x, double y) {
+  void paintAt(Canvas canvas, double x, double y) {
     canvas.save();
     for (final item in _items) {
       if (item.color case final color?) {
@@ -62,11 +62,11 @@ final class MathBox implements Graphic {
             [ShapedGlyph(glyph, text, advance)],
             x + item.x,
             y + item.y,
-            PdfTextStyle(font, size),
+            TextStyle(font, size),
           );
         case _Rule(:final w, :final h):
           canvas
-            ..rect(PdfRect(x + item.x, y + item.y, w, h))
+            ..rect(Rect(x + item.x, y + item.y, w, h))
             ..fill();
         case _Stroke(:final kind, :final w, :final h, :final lineWidth):
           canvas.setLineWidth(lineWidth);
@@ -78,12 +78,9 @@ final class MathBox implements Graphic {
                 ..moveTo(left, bottom)
                 ..lineTo(left + w, bottom + h);
             case _StrokeKind.rect:
-              canvas.rect(PdfRect(left, bottom, w, h));
+              canvas.rect(Rect(left, bottom, w, h));
             case _StrokeKind.roundedRect:
-              canvas.roundedRect(
-                PdfRect(left, bottom, w, h),
-                math.min(w, h) / 4,
-              );
+              canvas.roundedRect(Rect(left, bottom, w, h), math.min(w, h) / 4);
             case _StrokeKind.ellipse:
               canvas.ellipse(left + w / 2, bottom + h / 2, w / 2, h / 2);
           }
@@ -99,7 +96,7 @@ final class MathBox implements Graphic {
   }
 
   @override
-  void paint(PdfCanvas canvas, PdfRect rect) {
+  void paint(Canvas canvas, Rect rect) {
     final sx = width == 0 ? 1.0 : rect.width / width;
     final sy = height + depth == 0 ? 1.0 : rect.height / (height + depth);
     if ((sx - 1).abs() < 1e-6 && (sy - 1).abs() < 1e-6) {
@@ -120,7 +117,7 @@ sealed class _Item {
 
   final double x;
   final double y;
-  final PdfColor? color;
+  final Color? color;
 
   _Item moved(double dx, double dy);
 }
@@ -137,7 +134,7 @@ final class _Glyph extends _Item {
     super.color,
   );
 
-  final EmbeddedFont font;
+  final OpenTypeTextFont font;
   final int glyph;
   final String text;
 
@@ -239,14 +236,14 @@ final class _Style {
   final bool display;
   final int level;
   final bool cramped;
-  final PdfColor? color;
+  final Color? color;
   final String? variant;
 
   _Style copyWith({
     bool? display,
     int? level,
     bool? cramped,
-    PdfColor? color,
+    Color? color,
     String? variant,
   }) => _Style(
     display: display ?? this.display,
@@ -275,10 +272,10 @@ final class MathLayout {
       font.table('MATH') ?? (throw ArgumentError('the font has no MATH table'));
 
   /// The font, with a `MATH` table.
-  final EmbeddedFont font;
+  final OpenTypeTextFont font;
 
   /// The fonts for the characters [font] lacks.
-  final List<EmbeddedFont> fallbacks;
+  final List<OpenTypeTextFont> fallbacks;
 
   final OpenTypeMathTable? _math;
   OpenTypeMathTable get _table => _math!;
@@ -1546,7 +1543,7 @@ final class MathLayout {
 }
 
 /// The color of a `mathcolor` attribute (a CSS color), or null.
-PdfColor? _mathColor(String? value) => switch (parseCssColor(value ?? '')) {
+Color? _mathColor(String? value) => switch (parseCssColor(value ?? '')) {
   (:final red, :final green, :final blue, alpha: _)? => RgbColor(
     red,
     green,

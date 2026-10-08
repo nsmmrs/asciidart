@@ -10,15 +10,12 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/color.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
-import 'package:plain_pdf/src/drawing/graphic.dart';
 import 'package:plain_pdf/src/drawing/shading.dart';
 import 'package:plain_pdf/src/fonts/fonts.dart';
 import 'package:plain_pdf/src/images/images.dart';
 import 'package:plain_pdf/src/svg/css.dart';
-import 'package:plain_pdf/src/svg/css_color.dart';
 import 'package:plain_pdf/src/svg/path.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:xml/xml.dart';
 
 /// The font for a font [family] as an SVG names it, in [bold] and
@@ -160,7 +157,7 @@ final class SvgImage implements Graphic {
   final Expando<Map<String, String>> _specified = Expando();
 
   /// Draws the image into [rect] (by its `preserveAspectRatio`).
-  void draw(PdfCanvas canvas, PdfRect rect) =>
+  void draw(PdfCanvas canvas, Rect rect) =>
       _Renderer(this, canvas).render(rect);
 
   @override
@@ -170,7 +167,8 @@ final class SvgImage implements Graphic {
   double get intrinsicHeight => height;
 
   @override
-  void paint(PdfCanvas canvas, PdfRect rect) => draw(canvas, rect);
+  void paint(Canvas canvas, Rect rect) =>
+      draw(pdfCanvasOf(canvas, 'an SVG image'), rect);
 }
 
 /// The standard fonts for the generic families and common names.
@@ -384,7 +382,7 @@ const Set<String> _notRendered = {
 };
 
 /// A bounding box large enough for any group drawn as a form.
-const PdfRect _anywhere = PdfRect(-100000, -100000, 200000, 200000);
+const Rect _anywhere = Rect(-100000, -100000, 200000, 200000);
 
 final class _Renderer {
   new(this.svg, this.canvas, [List<XmlElement>? uses]) : _uses = uses ?? [];
@@ -400,7 +398,7 @@ final class _Renderer {
 
   void _warn(String message) => svg._warnings.add(message);
 
-  static bool _finite(PdfMatrix m) =>
+  static bool _finite(Matrix m) =>
       m.a.isFinite &&
       m.b.isFinite &&
       m.c.isFinite &&
@@ -408,10 +406,10 @@ final class _Renderer {
       m.e.isFinite &&
       m.f.isFinite;
 
-  void render(PdfRect rect) {
+  void render(Rect rect) {
     final box = svg._viewBox;
     final (sx, sy, tx, ty) = svg._aspect.fit(box, rect.width, rect.height);
-    final matrix = PdfMatrix(
+    final matrix = Matrix(
       sx,
       0,
       0,
@@ -694,13 +692,13 @@ final class _Renderer {
   ) {
     _withState(element, style, null, container: true, () {
       canvas
-        ..rect(PdfRect(x, y, width, height))
+        ..rect(Rect(x, y, width, height))
         ..clip();
       final box = viewBox ?? (0, 0, width, height);
       final (sx, sy, tx, ty) = _AspectRatio.parse(
         element.getAttribute('preserveAspectRatio'),
       ).fit(box, width, height);
-      final matrix = PdfMatrix(
+      final matrix = Matrix(
         sx,
         0,
         0,
@@ -1118,7 +1116,7 @@ final class _Renderer {
       );
     }
 
-    PdfShading shading(PdfColor Function((double, CssColor, double)) color) {
+    PdfShading shading(Color Function((double, CssColor, double)) color) {
       final gradientStops = [
         for (final stop in stops) GradientStop(stop.$1, color(stop)),
       ];
@@ -1151,7 +1149,7 @@ final class _Renderer {
     void space(PdfCanvas c) {
       if (!userSpace) {
         c.transform(
-          PdfMatrix(
+          Matrix(
             bounds!.width,
             0,
             0,
@@ -1204,11 +1202,11 @@ final class _Renderer {
     var evenOdd = false;
     for (final child in clip.childElements) {
       var shape = child;
-      var transform = const PdfMatrix.identity();
+      var transform = const Matrix.identity();
       if (child.localName == 'use') {
         final target = _referenced(child);
         if (target == null) continue;
-        transform = PdfMatrix.translation(
+        transform = Matrix.translation(
           _x(child, 'x', clipStyle),
           _y(child, 'y', clipStyle),
         );
@@ -1242,18 +1240,11 @@ final class _Renderer {
         return;
       }
       union = union.transform(
-        PdfMatrix(
-          bounds.width,
-          0,
-          0,
-          bounds.height,
-          bounds.left,
-          bounds.bottom,
-        ),
+        Matrix(bounds.width, 0, 0, bounds.height, bounds.left, bounds.bottom),
       );
     }
     if (union.isEmpty) {
-      canvas.rect(const PdfRect(0, 0, 0, 0));
+      canvas.rect(const Rect(0, 0, 0, 0));
     } else {
       union.addTo(canvas);
     }
@@ -1382,7 +1373,7 @@ final class _Renderer {
     ];
   }
 
-  PdfTextStyle _pdfStyle(Map<String, String> style) {
+  TextStyle _pdfStyle(Map<String, String> style) {
     final size = _fontSize(style);
     final weight = style['font-weight'] ?? 'normal';
     final bold =
@@ -1408,7 +1399,7 @@ final class _Renderer {
     }
     double spacing(String? value) =>
         value == null || value == 'normal' ? 0 : _length(value, fontSize: size);
-    return PdfTextStyle(
+    return TextStyle(
       font,
       size,
       characterSpacing: spacing(style['letter-spacing']),
@@ -1416,7 +1407,7 @@ final class _Renderer {
     );
   }
 
-  void _drawText(_TextPiece piece, PdfTextStyle textStyle, double x, double y) {
+  void _drawText(_TextPiece piece, TextStyle textStyle, double x, double y) {
     final style = piece.style;
     final fill = _paintOf(style['fill'] ?? 'black', style);
     final stroke = _paintOf(style['stroke'] ?? 'none', style);
@@ -1465,7 +1456,7 @@ final class _Renderer {
         : TextRenderMode.fill;
     canvas
       // SVG text is upright in a y-down space.
-      ..transform(PdfMatrix(1, 0, 0, -1, x, y + shift))
+      ..transform(Matrix(1, 0, 0, -1, x, y + shift))
       ..text(piece.text, 0, 0, textStyle.copyWith(renderMode: mode));
     final decoration = style['text-decoration'] ?? '';
     if (decoration.contains('underline') ||
@@ -1477,7 +1468,7 @@ final class _Renderer {
           : font.xHeight * size / 2000;
       if (fillColor != null) canvas.setFillColor(_rgb(fillColor));
       canvas
-        ..rect(PdfRect(0, at - thickness / 2, width, thickness))
+        ..rect(Rect(0, at - thickness / 2, width, thickness))
         ..fill();
     }
     canvas.restore();
@@ -1565,14 +1556,14 @@ final class _Renderer {
       final drawHeight = intrinsicHeight * sy;
       canvas
         ..save()
-        ..rect(PdfRect(x, y, width, height))
+        ..rect(Rect(x, y, width, height))
         ..clip()
         // Images are upright: flip back into a y-up space.
-        ..transform(PdfMatrix(1, 0, 0, -1, x + tx, y + ty + drawHeight));
+        ..transform(Matrix(1, 0, 0, -1, x + tx, y + ty + drawHeight));
       if (raster != null) {
-        canvas.image(raster, PdfRect(0, 0, drawWidth, drawHeight));
+        canvas.image(raster, Rect(0, 0, drawWidth, drawHeight));
       } else {
-        vector!.draw(canvas, PdfRect(0, 0, drawWidth, drawHeight));
+        vector!.draw(canvas, Rect(0, 0, drawWidth, drawHeight));
         svg._warnings.addAll(vector.warnings);
       }
       canvas.restore();
@@ -1610,35 +1601,28 @@ final class _TextPiece {
 }
 
 /// The transformation of an SVG `transform` attribute.
-PdfMatrix _parseTransform(String text) {
-  var matrix = const PdfMatrix.identity();
+Matrix _parseTransform(String text) {
+  var matrix = const Matrix.identity();
   for (final m in RegExp(
     r'(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)',
   ).allMatches(text)) {
     final v = _numbers(m[2]!);
     double at(int i, [double fallback = 0]) => i < v.length ? v[i] : fallback;
     final next = switch (m[1]) {
-      'matrix' when v.length >= 6 => PdfMatrix(
-        v[0],
-        v[1],
-        v[2],
-        v[3],
-        v[4],
-        v[5],
-      ),
-      'translate' => PdfMatrix.translation(at(0), at(1)),
-      'scale' => PdfMatrix.scaling(at(0, 1), at(1, at(0, 1))),
+      'matrix' when v.length >= 6 => Matrix(v[0], v[1], v[2], v[3], v[4], v[5]),
+      'translate' => Matrix.translation(at(0), at(1)),
+      'scale' => Matrix.scaling(at(0, 1), at(1, at(0, 1))),
       'rotate' => () {
-        final r = PdfMatrix.rotation(at(0) * math.pi / 180);
+        final r = Matrix.rotation(at(0) * math.pi / 180);
         if (v.length < 3) return r;
-        return PdfMatrix.translation(
+        return Matrix.translation(
           -at(1),
           -at(2),
-        ).then(r).then(PdfMatrix.translation(at(1), at(2)));
+        ).then(r).then(Matrix.translation(at(1), at(2)));
       }(),
-      'skewX' => PdfMatrix(1, 0, math.tan(at(0) * math.pi / 180), 1, 0, 0),
-      'skewY' => PdfMatrix(1, math.tan(at(0) * math.pi / 180), 0, 1, 0, 0),
-      _ => const PdfMatrix.identity(),
+      'skewX' => Matrix(1, 0, math.tan(at(0) * math.pi / 180), 1, 0, 0),
+      'skewY' => Matrix(1, math.tan(at(0) * math.pi / 180), 0, 1, 0, 0),
+      _ => const Matrix.identity(),
     };
     // Transforms apply right to left: the last listed applies first.
     matrix = next.then(matrix);

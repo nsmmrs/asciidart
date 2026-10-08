@@ -10,6 +10,7 @@ import 'dart:typed_data';
 
 import 'package:pdf/pdf.dart' as pdf;
 import 'package:plain_pdf/plain_pdf.dart' as lib;
+import 'package:plain_typesetting/plain_typesetting.dart' as lib;
 
 const pages = 50;
 const linesPerPage = 45;
@@ -26,9 +27,9 @@ Uint8List plainPdfText({required bool embedded}) {
   final font = embedded
       ? lib.EmbeddedFont.parse(serif)
       : lib.StandardFont.helvetica;
-  final style = lib.PdfTextStyle(font, 11);
+  final style = lib.TextStyle(font, 11);
   for (var p = 0; p < pages; p++) {
-    final canvas = document.addPage(const lib.PdfRect(0, 0, 595, 842)).canvas;
+    final canvas = document.addPage(const lib.Rect(0, 0, 595, 842)).canvas;
     for (var l = 0; l < linesPerPage; l++) {
       canvas.text('$p.$l $sentence', 50, 800 - l * 16.0, style);
     }
@@ -58,9 +59,9 @@ Uint8List plainPdfImages() {
   for (var p = 0; p < pages; p++) {
     final image = lib.PdfImage.parse(jpeg);
     document
-        .addPage(const lib.PdfRect(0, 0, 595, 842))
+        .addPage(const lib.Rect(0, 0, 595, 842))
         .canvas
-        .image(image, const lib.PdfRect(50, 400, 400, 300));
+        .image(image, const lib.Rect(50, 400, 400, 300));
   }
   return document.save();
 }

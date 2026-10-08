@@ -1,0 +1,30 @@
+name: plain_typesetting
+description: >-
+  Typesetting in pure Dart, independent of the output format: OpenType
+  shaping, paragraphs broken into lines (Knuth-Plass or first fit), a
+  box-tree page layout with tables, columns and floats, and math layout by
+  the OpenType MATH table, drawn on any canvas.
+version: 0.1.0-dev
+repository: https://github.com/nsmmrs/ptome/tree/master/packages/plain_typesetting
+issue_tracker: https://github.com/nsmmrs/ptome/issues
+topics:
+  - typesetting
+  - layout
+  - text
+  - fonts
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  meta: ^1.16.0
+  plain_fonts: ^0.1.0-dev
+  plain_math: ^0.1.0-dev
+  plain_unicode: ^0.1.0-dev
+
+dev_dependencies:
+  analyzer: ^14.4.0
+  test: ^1.32.0
+  very_good_analysis: ^11.0.0

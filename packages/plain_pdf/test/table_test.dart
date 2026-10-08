@@ -6,9 +6,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:test/test.dart';
 
-final PdfTextStyle body = PdfTextStyle(StandardFont.helvetica, 10);
+final TextStyle body = TextStyle(StandardFont.helvetica, 10);
 final double lineHeight =
     (StandardFont.helvetica.ascender - StandardFont.helvetica.descender) / 100;
 
@@ -16,7 +17,7 @@ TableCell cell(
   String text, {
   int colSpan = 1,
   int rowSpan = 1,
-  PdfColor? background,
+  Color? background,
   Border border = Border.none,
   VerticalAlign verticalAlign = VerticalAlign.top,
 }) => TableCell(
@@ -41,7 +42,7 @@ var _count = 0;
 (File, LayoutResult) render(List<LayoutBox> boxes, {double height = 400}) {
   final result = FlowLayout(
     template: PageTemplate(
-      PdfRect(0, 0, 300, height),
+      Rect(0, 0, 300, height),
       margins: const EdgeInsets.all(20),
     ),
   ).layout(boxes);
@@ -124,7 +125,7 @@ void main() {
   });
 
   test('cells placed by offset and decorated by a callback', () {
-    final pieces = <(PdfRect, bool, bool)>[];
+    final pieces = <(Rect, bool, bool)>[];
     final (pdf, _) = render([
       TableBox(
         [
@@ -287,7 +288,7 @@ void main() {
   });
 
   test('stripes start over in each region', () {
-    const blue = PdfColor.rgb(0, 0, 1);
+    const blue = Color.rgb(0, 0, 1);
     final (pdf, _) = render([
       TableBox(
         [
@@ -335,14 +336,14 @@ void main() {
   });
 
   test('backgrounds, borders and vertical alignment', () {
-    const red = PdfColor.rgb(1, 0, 0);
+    const red = Color.rgb(1, 0, 0);
     final (pdf, _) = render([
       TableBox(
         [
           row([
             cell(
               'top',
-              background: const PdfColor.rgb(0, 0, 1),
+              background: const Color.rgb(0, 0, 1),
               border: const Border(widths: EdgeInsets.all(2), color: red),
             ),
             cell(List.filled(5, 'x').join('\n')),

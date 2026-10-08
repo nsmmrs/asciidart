@@ -8,6 +8,7 @@ on:
     - 'packages/plain_compression/**'
     - 'packages/plain_unicode/**'
     - 'packages/plain_math/**'
+    - 'packages/plain_typesetting/**'
     - '.github/workflows/plain_pdf.yml'
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
     - 'packages/plain_compression/**'
     - 'packages/plain_unicode/**'
     - 'packages/plain_math/**'
+    - 'packages/plain_typesetting/**'
     - '.github/workflows/plain_pdf.yml'
   workflow_dispatch:
 concurrency:

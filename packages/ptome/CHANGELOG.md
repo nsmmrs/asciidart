@@ -216,7 +216,9 @@ Asciidoctor project.
   Node.js keep their zlib), and ZIP reading and `.gz` man pages use
   plain_compression on every platform. Font reading and the installed-font
   index live in plain_fonts, compression and ZIP in plain_compression,
-  both in this workspace (ADR-0018).
+  both in this workspace (ADR-0018). The PDF converter lays out with
+  plain_typesetting (shaping, paragraphs, pages, math), which draws on
+  plain_pdf's canvas.
 - Speed on every core (ADR-0016): the work a PDF or EPUB doesn't need in
   order (PNG images, compression) runs on the physical cores (`-a
   jobs=N`, `1` for none), with the same bytes at any number of workers;

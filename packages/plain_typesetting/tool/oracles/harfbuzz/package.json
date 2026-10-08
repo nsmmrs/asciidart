@@ -1,0 +1,9 @@
+{
+  "name": "plain-typesetting-oracles",
+  "private": true,
+  "type": "module",
+  "description": "The HarfBuzz oracle for test/harfbuzz_test.dart.",
+  "dependencies": {
+    "harfbuzzjs": "1.6.3"
+  }
+}

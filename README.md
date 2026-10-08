@@ -11,7 +11,8 @@ holding Ptome and the pure-Dart libraries it is built on
 | Package | What it is |
 |---|---|
 | [ptome](packages/ptome) | The AsciiDoc processor: library, command line, npm package |
-| [plain_pdf](packages/plain_pdf) | PDF from ISO 32000: writer, reader, drawing, fonts, images, SVG, math, box-tree layout |
+| [plain_pdf](packages/plain_pdf) | PDF from ISO 32000: writer, reader, drawing, fonts, images, SVG; a backend for plain_typesetting |
+| [plain_typesetting](packages/plain_typesetting) | Shaping, paragraphs, page layout and math layout, drawn on any canvas |
 | [plain_unicode](packages/plain_unicode) | Line breaking (UAX #14) and full case mapping, from the Unicode Character Database |
 | [plain_hyphenation](packages/plain_hyphenation) | Hyphenation as TeX does it, with the hyph-utf8 patterns of 72 languages |
 | [plain_math](packages/plain_math) | AsciiMath and LaTeX to MathML, and MathML as a typed tree |

@@ -12,6 +12,7 @@ import 'dart:math' as math;
 
 import 'package:meta/meta.dart';
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:ptome/src/cursor.dart';
 import 'package:ptome/src/logging.dart';
 import 'package:ptome/src/pdf/fonts.dart';
@@ -1108,7 +1109,7 @@ final class TextBox implements CustomContent {
   }
 
   void _paint(
-    PdfPage page,
+    LayoutPage page,
     List<_Line> lines,
     double x,
     double top,
@@ -1167,7 +1168,7 @@ final class TextBox implements CustomContent {
                     f.ascender -
                     (f.ascender + f.descender - image.height) / 2;
           final imageLeft = left + (f.width - image.width) / 2;
-          final rect = PdfRect(
+          final rect = Rect(
             imageLeft,
             top - image.drawHeight,
             image.drawWidth,
@@ -1175,7 +1176,7 @@ final class TextBox implements CustomContent {
           );
           switch (image.graphic) {
             case final PdfImage raster:
-              canvas.image(raster, rect);
+              raster.paint(canvas, rect);
             case final InlineMath formula:
               // In the text's color; copied as its source.
               canvas
@@ -1212,7 +1213,7 @@ final class TextBox implements CustomContent {
               f.text,
               textX,
               y,
-              PdfTextStyle(
+              TextStyle(
                 f.format.font.pdf,
                 f.format.size,
                 wordSpacing: f.wordSpacing,
@@ -1249,7 +1250,7 @@ final class TextBox implements CustomContent {
             ..stroke()
             ..restore();
         }
-        final box = PdfRect(
+        final box = Rect(
           left,
           y - f.descender,
           f.width,
@@ -1267,7 +1268,7 @@ final class TextBox implements CustomContent {
   /// A return arrow just past [right], beside [line] (which wraps), in
   /// the line's text color and size: drawn rather than set in a font, so
   /// that no font needs the glyph and the text extracts unchanged.
-  void _wrapArrow(PdfCanvas canvas, _Line line, double right, double top) {
+  void _wrapArrow(Canvas canvas, _Line line, double right, double top) {
     final printed = [
       for (final f in line.fragments)
         if (!f.format.fragment.isMarker) f,
@@ -1281,7 +1282,7 @@ final class TextBox implements CustomContent {
     canvas
       ..save()
       ..setStrokeColor(
-        _pdfColor(last.format.fragment.color) ?? const PdfColor.gray(0),
+        _pdfColor(last.format.fragment.color) ?? const Color.gray(0),
       )
       ..setLineWidth(size * 0.06)
       ..setLineCap(LineCap.round)
@@ -1297,7 +1298,7 @@ final class TextBox implements CustomContent {
   }
 
   void _background(
-    PdfCanvas canvas,
+    Canvas canvas,
     Fragment fragment,
     double left,
     double y,
@@ -1317,7 +1318,7 @@ final class TextBox implements CustomContent {
       width = f.width;
       height = f.ascender + f.descender;
     }
-    final rect = PdfRect(left, rectTop - height, width, height);
+    final rect = Rect(left, rectTop - height, width, height);
     final radius = (fragment.borderRadius ?? 0).toDouble();
     canvas.save();
     if (_pdfColor(fragment.backgroundColor) case final color?) {
@@ -1340,10 +1341,10 @@ final class TextBox implements CustomContent {
 }
 
 /// [color] for drawing (null for none or transparent).
-PdfColor? _pdfColor(ThemeColor? color) => switch (color) {
+Color? _pdfColor(ThemeColor? color) => switch (color) {
   null || TransparentColor() => null,
-  HexColor(:final hex) => PdfColor.hex(hex),
-  CmykThemeColor(:final components) => PdfColor.cmyk(
+  HexColor(:final hex) => Color.hex(hex),
+  CmykThemeColor(:final components) => Color.cmyk(
     components[0] / 100,
     components[1] / 100,
     components[2] / 100,
@@ -1352,7 +1353,7 @@ PdfColor? _pdfColor(ThemeColor? color) => switch (color) {
 };
 
 /// [color] as plain_pdf draws it, for the converter.
-PdfColor? pdfColorOf(ThemeColor? color) => _pdfColor(color);
+Color? pdfColorOf(ThemeColor? color) => _pdfColor(color);
 
 /// The break characters of Prawn's line wrapping: whitespace (with the
 /// zero width space), the soft hyphen and the hyphen.
@@ -2233,7 +2234,7 @@ final class _OptimalWrap extends _Wrap {
   /// their widths).
   static final TextRun _content = TextRun(
     '',
-    PdfTextStyle(StandardFont.helvetica, 10),
+    TextStyle(StandardFont.helvetica, 10),
   );
 
   /// Splits into characters a word longer than a line that runs across

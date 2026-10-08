@@ -2,8 +2,8 @@
 /// images alike.
 library;
 
-import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_typesetting/src/canvas.dart';
+import 'package:plain_typesetting/src/geometry.dart';
 
 /// Something with an intrinsic size that is drawn into a rectangle.
 abstract interface class Graphic {
@@ -14,5 +14,5 @@ abstract interface class Graphic {
   double get intrinsicHeight;
 
   /// Draws the graphic into [rect].
-  void paint(PdfCanvas canvas, PdfRect rect);
+  void paint(Canvas canvas, Rect rect);
 }

@@ -3,8 +3,8 @@
 library;
 
 import 'package:meta/meta.dart';
-import 'package:plain_pdf/src/drawing/color.dart';
 import 'package:plain_pdf/src/objects.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 /// A color at a position (0 to 1) of a gradient.
 @immutable
@@ -16,7 +16,7 @@ final class GradientStop {
   final double offset;
 
   /// The color: gray, RGB or CMYK (all of a gradient's stops alike).
-  final PdfColor color;
+  final Color color;
 }
 
 /// A gradient filling the clipping region.
@@ -68,7 +68,7 @@ sealed class PdfShading {
         GradientStop(stop.offset.clamp(0, 1).toDouble(), stop.color),
       if (sorted.last.offset < 1) GradientStop(1, sorted.last.color),
     ];
-    PdfDict between(PdfColor a, PdfColor b) => PdfDict({
+    PdfDict between(Color a, Color b) => PdfDict({
       'FunctionType': const PdfInt(2),
       'Domain': PdfArray.numbers([0, 1]),
       'C0': PdfArray.numbers(a.components),

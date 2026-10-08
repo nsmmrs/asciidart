@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'package:meta/meta.dart';
 import 'package:plain_math/plain_math.dart';
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/attribute_list.dart';
@@ -521,7 +522,7 @@ final class PdfConverter extends BuiltInConverter
     PageTemplate templateFor(String layout) {
       final (width, height) = _layoutSize(document, layout);
       return PageTemplate(
-        PdfRect(0, 0, width, height),
+        Rect(0, 0, width, height),
         margins: _marginsFor(document, layout),
         header: _header,
         footer: _footer,
@@ -536,7 +537,7 @@ final class PdfConverter extends BuiltInConverter
         layout: templateFor(layout),
       for (final MapEntry(:key, value: page) in _importedPages.entries)
         key: PageTemplate(
-          PdfRect(0, 0, page.intrinsicWidth, page.intrinsicHeight),
+          Rect(0, 0, page.intrinsicWidth, page.intrinsicHeight),
           margins: EdgeInsets.zero,
           background: (canvas, info) => page.paint(canvas, info.template.size),
         ),
@@ -1666,7 +1667,7 @@ final class PdfConverter extends BuiltInConverter
 
   /// Draws [image] on a page by its fit and position.
   void _drawPageImage(
-    PdfCanvas canvas,
+    Canvas canvas,
     _PageImage image, {
     (double, double)? size,
   }) {
@@ -1713,10 +1714,10 @@ final class PdfConverter extends BuiltInConverter
       'bottom' => h,
       _ => pageHeight - (pageHeight - h) / 2,
     };
-    final rect = PdfRect(left, top - h, w, h);
+    final rect = Rect(left, top - h, w, h);
     switch (graphic) {
       case final PdfImage raster:
-        canvas.image(raster, rect);
+        raster.paint(canvas, rect);
       case final other:
         canvas.save();
         other.paint(canvas, rect);
@@ -1748,7 +1749,7 @@ final class PdfConverter extends BuiltInConverter
   /// Paints the background of [page]: the page's background color and
   /// image (the title page's own, if any; none on cover pages; the gem's
   /// `init_page`).
-  void _pageBackground(PdfCanvas canvas, PageInfo page) {
+  void _pageBackground(Canvas canvas, PageInfo page) {
     final number = page.number;
     if ((_frontCover && number == 1) || (_backCover && number == page.count)) {
       return;
@@ -1768,12 +1769,7 @@ final class PdfConverter extends BuiltInConverter
           ..save()
           ..setFillColor(color)
           ..rect(
-            PdfRect(
-              -bleed,
-              -bleed,
-              pageWidth + 2 * bleed,
-              pageHeight + 2 * bleed,
-            ),
+            Rect(-bleed, -bleed, pageWidth + 2 * bleed, pageHeight + 2 * bleed),
           )
           ..fill()
           ..restore();
@@ -1794,7 +1790,7 @@ final class PdfConverter extends BuiltInConverter
   )?.image;
 
   /// Paints the foreground of [page] (the gem's `stamp_foreground_image`).
-  void _pageForeground(PdfCanvas canvas, PageInfo page) {
+  void _pageForeground(Canvas canvas, PageInfo page) {
     if (_frontCover && page.number == 1) return;
     if (_foregroundImage case final image?) {
       _drawPageImage(
@@ -3366,7 +3362,7 @@ final class PdfConverter extends BuiltInConverter
         ? 0.0
         : (_n('${category}_border_radius') ?? 0).toDouble();
     final dashRadius = radius + borderWidth;
-    final PdfColor? gapColor;
+    final Color? gapColor;
     final double shift;
     if (borderWidth > 0) {
       if (stroke == pageBackground) {
@@ -3444,9 +3440,9 @@ final class PdfConverter extends BuiltInConverter
   /// side (top, right, bottom, left), in [style] (`solid`, `dashed`,
   /// `dotted`, `double`) with corners of [radius].
   static void _strokeBounds(
-    PdfCanvas canvas,
-    PdfRect rect,
-    PdfColor color, {
+    Canvas canvas,
+    Rect rect,
+    Color color, {
     double width = 0.5,
     List<double>? widths,
     String? style,
@@ -3499,7 +3495,7 @@ final class PdfConverter extends BuiltInConverter
       }
       return;
     }
-    void outline(PdfRect r) => _roundedRectangle(canvas, r, radius);
+    void outline(Rect r) => _roundedRectangle(canvas, r, radius);
     canvas
       ..save()
       ..setStrokeColor(color);
@@ -3519,7 +3515,7 @@ final class PdfConverter extends BuiltInConverter
         outline(rect);
         canvas.stroke();
         outline(
-          PdfRect(
+          Rect(
             rect.left + inset,
             rect.bottom + inset,
             rect.width - inset * 2,
@@ -3542,7 +3538,7 @@ final class PdfConverter extends BuiltInConverter
   /// Adds [rect] with corners of [radius] to [canvas]'s path as Prawn
   /// draws it (`rounded_rectangle`): from the top left corner, clockwise,
   /// so that a dash pattern starts where Prawn's does.
-  static void _roundedRectangle(PdfCanvas canvas, PdfRect rect, double radius) {
+  static void _roundedRectangle(Canvas canvas, Rect rect, double radius) {
     const kappa = 4 * (1.4142135623730951 - 1) / 3;
     final points = [
       (rect.left, rect.top),
@@ -3583,8 +3579,8 @@ final class PdfConverter extends BuiltInConverter
   /// Strokes a horizontal rule from [x1] to [x2] at [y] (the gem's
   /// `stroke_horizontal_rule`).
   static void _horizontalRule(
-    PdfCanvas canvas,
-    PdfColor color,
+    Canvas canvas,
+    Color color,
     double x1,
     double x2,
     double y,
@@ -3628,8 +3624,8 @@ final class PdfConverter extends BuiltInConverter
   /// Strokes a vertical rule at [x] from [top] to [bottom] (the gem's
   /// `stroke_vertical_rule`).
   static void _verticalRule(
-    PdfCanvas canvas,
-    PdfColor color,
+    Canvas canvas,
+    Color color,
     double x,
     double top,
     double bottom,
@@ -5687,8 +5683,8 @@ final class PdfConverter extends BuiltInConverter
       _ => math.max(0, (room - height) * 0.5),
     };
     void decorate(
-      PdfPage page,
-      PdfRect rect, {
+      LayoutPage page,
+      Rect rect, {
       required bool first,
       required bool last,
     }) {
@@ -7863,7 +7859,7 @@ final class PdfConverter extends BuiltInConverter
 
     // The attributes the content refers to.
     final attributes = _runningAttributes(periphery, page, label);
-    final pieces = <void Function(PdfPage page)>[];
+    final pieces = <void Function(LayoutPage page)>[];
     final background = _color(_c('${periphery}_background_color'));
     final borderColor = borderWidth > 0
         ? pdfColorOf(_c('${periphery}_border_color') ?? _c('base_border_color'))
@@ -7875,7 +7871,7 @@ final class PdfConverter extends BuiltInConverter
           canvas
             ..save()
             ..setFillColor(background)
-            ..rect(PdfRect(left, top - height, width, height))
+            ..rect(Rect(left, top - height, width, height))
             ..fill()
             ..restore();
         }
@@ -7969,12 +7965,7 @@ final class PdfConverter extends BuiltInConverter
               pdfPage,
               graphic,
               attrs,
-              PdfRect(
-                boxLeft,
-                boxTop - contentHeight,
-                columnWidth,
-                contentHeight,
-              ),
+              Rect(boxLeft, boxTop - contentHeight, columnWidth, contentHeight),
               align,
               imageValign,
             ),
@@ -8047,10 +8038,10 @@ final class PdfConverter extends BuiltInConverter
   /// [attrs], else fit to the box), aligned (the gem's image in
   /// `ink_running_content`).
   void _runningImage(
-    PdfPage page,
+    LayoutPage page,
     Graphic graphic,
     Map<String, String> attrs,
-    PdfRect box,
+    Rect box,
     String align,
     String valign,
   ) {
@@ -8088,11 +8079,11 @@ final class PdfConverter extends BuiltInConverter
       'bottom' => box.bottom + h,
       _ => box.top,
     };
-    final rect = PdfRect(left, top - h, w, h);
+    final rect = Rect(left, top - h, w, h);
     final canvas = page.canvas;
     switch (graphic) {
       case final PdfImage image:
-        canvas.image(image, rect);
+        image.paint(canvas, rect);
       case final other:
         canvas.save();
         other.paint(canvas, rect);
@@ -8108,7 +8099,7 @@ final class PdfConverter extends BuiltInConverter
     }
   }
 
-  static PdfColor? _color(ThemeColor? value) =>
+  static Color? _color(ThemeColor? value) =>
       value is TransparentColor ? null : pdfColorOf(value);
 
   /// The part or chapter [page] is in (a chapter before the part it is
@@ -8353,7 +8344,7 @@ final class PdfConverter extends BuiltInConverter
         final page = pages[titlePage];
         pdf.addOutline(
           _plain(title),
-          LinkTarget.destination(
+          DestinationTarget(
             PdfDestination.xyz(page, left: 0, top: page.height),
           ),
         );
@@ -8391,7 +8382,7 @@ final class PdfConverter extends BuiltInConverter
         final page = pages[pages_.$1 - 1];
         destination = PdfDestination.xyz(page, left: 0, top: page.height);
       }
-      final target = LinkTarget.destination(destination);
+      final target = DestinationTarget(destination);
       if (parent == null) {
         pdf.addOutline(_plain(tocTitle), target);
       } else {
@@ -8418,7 +8409,7 @@ final class PdfConverter extends BuiltInConverter
         final title = _plain(_numberedTitle(section));
         if (title.isEmpty) continue;
         final target = switch (destination(section)) {
-          final d? => LinkTarget.destination(d),
+          final d? => DestinationTarget(d),
           null => null,
         };
         final children = _sectionsOf(section);
@@ -9946,7 +9937,7 @@ final class _Border {
   });
 
   final double width;
-  final PdfColor color;
+  final Color color;
   final double radius;
 
   /// The widths side by side (top, right, bottom, left), if they differ.
@@ -10086,18 +10077,18 @@ final class _ImageContent implements CustomContent {
     return CustomPlacement(
       height: h,
       paint: (page, x, top) {
-        final rect = PdfRect(x + left, top - h, w, h);
+        final rect = Rect(x + left, top - h, w, h);
         final canvas = page.canvas;
         switch (graphic) {
           case final PdfImage image:
-            canvas.image(image, rect);
+            image.paint(canvas, rect);
           case final other:
             canvas.save();
             other.paint(canvas, rect);
             canvas.restore();
         }
         if (border case final border?) {
-          final frame = border.fitWidth ? PdfRect(x, top - h, width, h) : rect;
+          final frame = border.fitWidth ? Rect(x, top - h, width, h) : rect;
           PdfConverter._strokeBounds(
             canvas,
             frame,
@@ -10222,7 +10213,7 @@ final class _PageTopGap implements CustomContent {
 final class _Absolute implements CustomContent {
   const new(this.paint, {this.fill = false});
 
-  final void Function(PdfPage page) paint;
+  final void Function(LayoutPage page) paint;
   final bool fill;
 
   @override
@@ -10288,7 +10279,7 @@ final class _DisplayMath implements CustomContent {
   final MathBox box;
   final String source;
   final String align;
-  final PdfColor? color;
+  final Color? color;
 
   @override
   CustomPlacement? place(
@@ -10317,7 +10308,7 @@ final class _DisplayMath implements CustomContent {
         }
         box.paint(
           canvas,
-          PdfRect(x + left, top - height, box.width * scale, height),
+          Rect(x + left, top - height, box.width * scale, height),
         );
         canvas
           ..endMarkedContent()

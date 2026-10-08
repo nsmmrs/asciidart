@@ -7,15 +7,16 @@
 import 'dart:convert';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 void main() {
   final document = PdfDocument(info: const PdfInfo(title: 'web'));
-  final page = document.addPage(const PdfRect(0, 0, 612, 792));
-  final style = PdfTextStyle(StandardFont.helvetica, 12, wordSpacing: 1);
+  final page = document.addPage(const Rect(0, 0, 612, 792));
+  final style = TextStyle(StandardFont.helvetica, 12, wordSpacing: 1);
   page.canvas
     ..text('web ' * 40, 72, 720, style)
     ..setFillColor(const SpotColor('Spot', CmykColor(0, 1, 1, 0)))
-    ..roundedRect(const PdfRect(72, 500, 100, 50), 8)
+    ..roundedRect(const Rect(72, 500, 100, 50), 8)
     ..fill()
     ..saved(() {
       page.canvas
@@ -27,22 +28,22 @@ void main() {
   for (final (i, png) in [_rgba16Interlaced, _paletteAlpha].indexed) {
     page.canvas.image(
       PdfImage.parse(base64.decode(png)),
-      PdfRect(72 + 48.0 * i, 600, 32, 32),
+      Rect(72 + 48.0 * i, 600, 32, 32),
     );
   }
-  SvgImage.parse(_svg).draw(page.canvas, const PdfRect(300, 600, 150, 120));
+  SvgImage.parse(_svg).draw(page.canvas, const Rect(300, 600, 150, 120));
   page.canvas.text(
     'web fonts',
     72,
     450,
-    PdfTextStyle(EmbeddedFont.parse(base64.decode(_woff2)), 14),
+    TextStyle(EmbeddedFont.parse(base64.decode(_woff2)), 14),
   );
   page.link(
-    const PdfRect(72, 715, 100, 15),
+    const Rect(72, 715, 100, 15),
     const LinkTarget.uri('https://example.org/'),
   );
   document
-    ..addOutline('web', LinkTarget.destination(PdfDestination.fit(page)))
+    ..addOutline('web', DestinationTarget(PdfDestination.fit(page)))
     ..labelPages(0, const PageLabel(style: PageNumberStyle.lowerRoman));
   final pdf = document.save(
     options: const PdfWriterOptions(deterministic: true),

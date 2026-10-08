@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:test/test.dart';
 
 bool _has(String tool) => Process.runSync('which', [tool]).exitCode == 0;
@@ -96,7 +97,7 @@ PdfDocument page(
   double height = 100,
 }) {
   final document = PdfDocument();
-  draw(document.addPage(PdfRect(0, 0, width, height)).canvas);
+  draw(document.addPage(Rect(0, 0, width, height)).canvas);
   return document;
 }
 
@@ -145,15 +146,15 @@ void main() {
     const options = PdfWriterOptions(deterministic: true);
     Uint8List save({bool payload = false, bool tiny = false}) {
       final document = PdfDocument();
-      final page = document.addPage(const PdfRect(0, 0, 200, 200));
+      final page = document.addPage(const Rect(0, 0, 200, 200));
       if (tiny) {
         page.canvas
-          ..rect(const PdfRect(1, 1, 2, 2))
+          ..rect(const Rect(1, 1, 2, 2))
           ..fill();
       } else {
         for (var i = 0; i < 50; i++) {
           page.canvas
-            ..rect(PdfRect(i.toDouble(), i.toDouble(), 10, 10))
+            ..rect(Rect(i.toDouble(), i.toDouble(), 10, 10))
             ..fill();
         }
       }
@@ -171,13 +172,13 @@ void main() {
     final pdf = saved(
       page((c) {
         c
-          ..setFillColor(const PdfColor.rgb(1, 0, 0))
-          ..rect(const PdfRect(10, 10, 30, 30))
+          ..setFillColor(const Color.rgb(1, 0, 0))
+          ..rect(const Rect(10, 10, 30, 30))
           ..fill()
-          ..setFillColor(const PdfColor.rgb(0, 0.5, 0))
+          ..setFillColor(const Color.rgb(0, 0.5, 0))
           ..circle(70, 70, 15)
           ..fill()
-          ..setStrokeColor(const PdfColor.rgb(0, 0, 1))
+          ..setStrokeColor(const Color.rgb(0, 0, 1))
           ..setLineWidth(4)
           ..moveTo(10, 90)
           ..lineTo(40, 90)
@@ -197,8 +198,8 @@ void main() {
     final pdf = saved(
       page((c) {
         c
-          ..roundedRect(const PdfRect(10, 10, 80, 80), 20)
-          ..rect(const PdfRect(40, 40, 20, 20))
+          ..roundedRect(const Rect(10, 10, 80, 80), 20)
+          ..rect(const Rect(40, 40, 20, 20))
           ..fill(evenOdd: true);
       }),
     );
@@ -216,10 +217,10 @@ void main() {
             c
               ..translate(50, 0)
               ..rotate(90)
-              ..rect(const PdfRect(0, 0, 20, 10))
+              ..rect(const Rect(0, 0, 20, 10))
               ..fill();
           })
-          ..rect(const PdfRect(80, 80, 10, 10))
+          ..rect(const Rect(80, 80, 10, 10))
           ..fill();
       }),
     );
@@ -233,9 +234,9 @@ void main() {
     final pdf = saved(
       page((c) {
         c
-          ..rect(const PdfRect(0, 0, 50, 100))
+          ..rect(const Rect(0, 0, 50, 100))
           ..clip()
-          ..rect(const PdfRect(0, 0, 100, 100))
+          ..rect(const Rect(0, 0, 100, 100))
           ..fill();
       }),
     );
@@ -248,15 +249,15 @@ void main() {
     final pdf = saved(
       page((c) {
         for (final (i, color) in [
-          const PdfColor.gray(0.5),
-          const PdfColor.cmyk(0, 1, 1, 0),
+          const Color.gray(0.5),
+          const Color.cmyk(0, 1, 1, 0),
           const SpotColor('Brand Red', CmykColor(0, 1, 1, 0)),
           const SpotColor('Brand Red', CmykColor(0, 1, 1, 0), 0.5),
-          PdfColor.hex('#00f'),
+          Color.hex('#00f'),
         ].indexed) {
           c
             ..setFillColor(color)
-            ..rect(PdfRect(i * 20.0, 0, 20, 100))
+            ..rect(Rect(i * 20.0, 0, 20, 100))
             ..fill();
         }
       }),
@@ -294,7 +295,7 @@ void main() {
     document.outputIntents.add(
       PdfOutputIntent(profile, identifier: 'Custom', info: 'A printer'),
     );
-    document.addPage(const PdfRect(0, 0, 100, 100));
+    document.addPage(const Rect(0, 0, 100, 100));
     final pdf = saved(document);
     final qdf =
         Process.runSync('qpdf', [
@@ -319,7 +320,7 @@ void main() {
   });
 
   test('marked content with actual text reads as that text', () {
-    final style = PdfTextStyle(StandardFont.helvetica, 12);
+    final style = TextStyle(StandardFont.helvetica, 12);
     final pdf = saved(
       page(width: 300, (c) {
         c
@@ -369,10 +370,10 @@ void main() {
 
   test('opacity, blend modes and soft masks', () {
     final mask = PdfForm(
-      const PdfRect(0, 0, 100, 100),
+      const Rect(0, 0, 100, 100),
       (c) => c
-        ..setFillColor(const PdfColor.gray(1))
-        ..rect(const PdfRect(0, 0, 50, 100))
+        ..setFillColor(const Color.gray(1))
+        ..rect(const Rect(0, 0, 50, 100))
         ..fill(),
       group: const TransparencyGroup(),
     );
@@ -382,24 +383,24 @@ void main() {
           ..saved(() {
             c
               ..opacity(fill: 0.5)
-              ..rect(const PdfRect(0, 0, 100, 20))
+              ..rect(const Rect(0, 0, 100, 20))
               ..fill();
           })
-          ..setFillColor(const PdfColor.rgb(0, 0, 1))
-          ..rect(const PdfRect(0, 20, 100, 20))
+          ..setFillColor(const Color.rgb(0, 0, 1))
+          ..rect(const Rect(0, 20, 100, 20))
           ..fill()
           ..saved(() {
             c
               ..setBlendMode(BlendMode.multiply)
-              ..setFillColor(const PdfColor.rgb(1, 0, 0))
-              ..rect(const PdfRect(0, 20, 100, 20))
+              ..setFillColor(const Color.rgb(1, 0, 0))
+              ..rect(const Rect(0, 20, 100, 20))
               ..fill();
           })
           ..saved(() {
             c
               ..softMask(mask)
-              ..setFillColor(const PdfColor.rgb(1, 0, 0))
-              ..rect(const PdfRect(0, 60, 100, 40))
+              ..setFillColor(const Color.rgb(1, 0, 0))
+              ..rect(const Rect(0, 60, 100, 40))
               ..fill()
               ..clearSoftMask();
           });
@@ -418,20 +419,20 @@ void main() {
   });
 
   test('a soft mask needs a group', () {
-    final form = PdfForm(const PdfRect(0, 0, 1, 1), (_) {});
+    final form = PdfForm(const Rect(0, 0, 1, 1), (_) {});
     expect(() => page((c) => c.softMask(form)), throwsArgumentError);
   });
 
   test('forms are drawn once and painted where they are used', () {
     final star = PdfForm(
-      const PdfRect(0, 0, 20, 20),
+      const Rect(0, 0, 20, 20),
       (c) => c
-        ..rect(const PdfRect(0, 0, 20, 20))
+        ..rect(const Rect(0, 0, 20, 20))
         ..fill(),
     );
     final document = PdfDocument();
     for (var i = 0; i < 2; i++) {
-      document.addPage(const PdfRect(0, 0, 100, 100)).canvas.saved(() {
+      document.addPage(const Rect(0, 0, 100, 100)).canvas.saved(() {
         document.pages[i].canvas
           ..translate(40, 40)
           ..form(star);
@@ -456,7 +457,7 @@ void main() {
     final png = PdfImage.parse(
       File('test/images/pngsuite/basn2c08.png').readAsBytesSync(),
     );
-    final pdf = saved(page((c) => c.image(png, const PdfRect(10, 10, 64, 64))));
+    final pdf = saved(page((c) => c.image(png, const Rect(10, 10, 64, 64))));
     final image = render(pdf);
     expect(image.at(5, 5), near(white));
     expect(image.at(40, 40), isNot(near(white)));
@@ -466,13 +467,8 @@ void main() {
     final serif = EmbeddedFont.parse(
       File('test/fonts/notoserif-regular-latin.ttf').readAsBytesSync(),
     );
-    final helvetica = PdfTextStyle(StandardFont.helvetica, 12);
-    final spaced = PdfTextStyle(
-      serif,
-      12,
-      wordSpacing: 20,
-      characterSpacing: 1,
-    );
+    final helvetica = TextStyle(StandardFont.helvetica, 12);
+    final spaced = TextStyle(serif, 12, wordSpacing: 20, characterSpacing: 1);
     late double helloWidth;
     late double spacedWidth;
     final pdf = saved(
@@ -497,13 +493,13 @@ void main() {
     expect(wave.xMax, closeTo(10 + spacedWidth - 1, 0.6));
     expect(
       spaced.measure('AVA Wave'),
-      greaterThan(PdfTextStyle(serif, 12).measure('AVA Wave') + 20 + 7),
+      greaterThan(TextStyle(serif, 12).measure('AVA Wave') + 20 + 7),
     );
   });
 
   test('kerning is applied as the measure says', () {
-    final kerned = PdfTextStyle(StandardFont.helvetica, 40);
-    final unkerned = PdfTextStyle(StandardFont.helvetica, 40, kerning: false);
+    final kerned = TextStyle(StandardFont.helvetica, 40);
+    final unkerned = TextStyle(StandardFont.helvetica, 40, kerning: false);
     expect(
       kerned.measure('AV'),
       lessThan(kerned.font.widthOf('AV', 40, kerning: false)),
@@ -527,28 +523,23 @@ void main() {
   });
 
   test('rise, scaling and render modes', () {
-    final style = PdfTextStyle(StandardFont.helvetica, 20);
+    final style = TextStyle(StandardFont.helvetica, 20);
     final pdf = saved(
       page(width: 300, (c) {
         c
           ..text('base', 10, 50, style)
-          ..text(
-            'up',
-            100,
-            50,
-            PdfTextStyle(StandardFont.helvetica, 20, rise: 10),
-          )
+          ..text('up', 100, 50, TextStyle(StandardFont.helvetica, 20, rise: 10))
           ..text(
             'wide',
             150,
             50,
-            PdfTextStyle(StandardFont.helvetica, 20, horizontalScaling: 200),
+            TextStyle(StandardFont.helvetica, 20, horizontalScaling: 200),
           )
           ..text(
             'hidden',
             10,
             10,
-            PdfTextStyle(
+            TextStyle(
               StandardFont.helvetica,
               20,
               renderMode: TextRenderMode.invisible,
@@ -571,19 +562,19 @@ void main() {
 
   test('text slanted and emboldened from an upright, regular face', () {
     final document = PdfDocument();
-    document.addPage(const PdfRect(0, 0, 300, 100)).canvas
+    document.addPage(const Rect(0, 0, 300, 100)).canvas
       ..setStrokeColor(const GrayColor(0))
       ..text(
         'slanted',
         10,
         50,
-        PdfTextStyle(StandardFont.helvetica, 20, skew: 0.2),
+        TextStyle(StandardFont.helvetica, 20, skew: 0.2),
       )
       ..text(
         'bold',
         150,
         50,
-        PdfTextStyle(StandardFont.helvetica, 20, embolden: 0.6),
+        TextStyle(StandardFont.helvetica, 20, embolden: 0.6),
       );
     final pdf = saved(document);
     final qdf = run('qpdf', [
@@ -606,7 +597,7 @@ void main() {
       pageMode: PageMode.fullScreen,
       nonFullScreenPageMode: PageMode.useOutlines,
     );
-    final page = document.addPage(const PdfRect(0, 0, 200, 200));
+    final page = document.addPage(const Rect(0, 0, 200, 200));
     document.openAction = PdfDestination.fitHeight(page, left: 0);
     final pdf = saved(document);
     final qdf = run('qpdf', [
@@ -627,29 +618,29 @@ void main() {
       displayTitle: true,
       language: 'en-US',
     );
-    final first = document.addPage(const PdfRect(0, 0, 200, 200));
-    final second = document.addPage(const PdfRect(0, 0, 200, 200));
+    final first = document.addPage(const Rect(0, 0, 200, 200));
+    final second = document.addPage(const Rect(0, 0, 200, 200));
     document
       ..addDestination('chapter-2', PdfDestination.xyz(second, top: 200))
       ..addDestination('ünïcode', PdfDestination.fit(second));
-    final style = PdfTextStyle(StandardFont.helvetica, 12);
+    final style = TextStyle(StandardFont.helvetica, 12);
     for (final y in [15.0, 45.0, 75.0]) {
       first.canvas.text('link', 15, y, style);
     }
     first
       ..link(
-        const PdfRect(10, 10, 50, 20),
+        const Rect(10, 10, 50, 20),
         const LinkTarget.uri('https://example.org/ä b'),
       )
-      ..link(const PdfRect(10, 40, 50, 20), const LinkTarget.named('chapter-2'))
+      ..link(const Rect(10, 40, 50, 20), const LinkTarget.named('chapter-2'))
       ..link(
-        const PdfRect(10, 70, 50, 20),
-        LinkTarget.destination(PdfDestination.fitWidth(second, top: 100)),
+        const Rect(10, 70, 50, 20),
+        DestinationTarget(PdfDestination.fitWidth(second, top: 100)),
       );
     document
         .addOutline(
           'Chapter 1',
-          LinkTarget.destination(PdfDestination.fit(first)),
+          DestinationTarget(PdfDestination.fit(first)),
           open: true,
           bold: true,
         )
@@ -691,11 +682,11 @@ void main() {
     final document = PdfDocument();
     for (var i = 0; i < 5; i++) {
       document.addPage(
-        const PdfRect(0, 0, 612, 792),
-        cropBox: const PdfRect(9, 9, 594, 774),
-        bleedBox: const PdfRect(9, 9, 594, 774),
-        trimBox: const PdfRect(18, 18, 576, 756),
-        artBox: const PdfRect(36, 36, 540, 720),
+        const Rect(0, 0, 612, 792),
+        cropBox: const Rect(9, 9, 594, 774),
+        bleedBox: const Rect(9, 9, 594, 774),
+        trimBox: const Rect(18, 18, 576, 756),
+        artBox: const Rect(36, 36, 540, 720),
         rotation: i == 4 ? 90 : 0,
       );
     }
@@ -740,12 +731,12 @@ void main() {
 
   test('a page left inside a path or save is reported', () {
     final open = PdfDocument();
-    open.addPage(const PdfRect(0, 0, 10, 10)).canvas.save();
+    open.addPage(const Rect(0, 0, 10, 10)).canvas.save();
     expect(open.save, throwsStateError);
     final path = PdfDocument();
-    path.addPage(const PdfRect(0, 0, 10, 10)).canvas.moveTo(0, 0);
+    path.addPage(const Rect(0, 0, 10, 10)).canvas.moveTo(0, 0);
     expect(path.save, throwsStateError);
-    final canvas = PdfDocument().addPage(const PdfRect(0, 0, 10, 10)).canvas;
+    final canvas = PdfDocument().addPage(const Rect(0, 0, 10, 10)).canvas;
     expect(() => canvas.lineTo(1, 1), throwsStateError);
     expect(canvas.restore, throwsStateError);
   });
@@ -754,9 +745,9 @@ void main() {
     Uint8List make() {
       final document = PdfDocument(info: const PdfInfo(title: 'Same'));
       document
-          .addPage(const PdfRect(0, 0, 100, 100))
+          .addPage(const Rect(0, 0, 100, 100))
           .canvas
-          .text('same', 10, 10, PdfTextStyle(StandardFont.courier, 10));
+          .text('same', 10, 10, TextStyle(StandardFont.courier, 10));
       return document.save(
         options: const PdfWriterOptions(deterministic: true),
       );

@@ -4,6 +4,7 @@
 import 'dart:io';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 void main(List<String> args) {
   const values = [12, 19, 7, 15, 22, 9];
@@ -32,8 +33,8 @@ void main(List<String> args) {
   <text x="180" y="20" text-anchor="middle" font-size="14" font-weight="bold">Sales</text>
 </svg>''');
   final document = PdfDocument();
-  final page = document.addPage(const PdfRect(0, 0, 595, 842));
-  svg.draw(page.canvas, PdfRect(117, 500, svg.width * 1.5, svg.height * 1.5));
+  final page = document.addPage(const Rect(0, 0, 595, 842));
+  svg.draw(page.canvas, Rect(117, 500, svg.width * 1.5, svg.height * 1.5));
   File(args.isEmpty ? 'chart.pdf' : args.first)
       .writeAsBytesSync(document.save());
 }

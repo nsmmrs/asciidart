@@ -2,11 +2,11 @@
 library;
 
 import 'package:meta/meta.dart';
-import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/color.dart';
-import 'package:plain_pdf/src/drawing/document.dart';
-import 'package:plain_pdf/src/drawing/graphic.dart';
-import 'package:plain_pdf/src/fonts/fonts.dart';
+import 'package:plain_typesetting/src/canvas.dart';
+import 'package:plain_typesetting/src/color.dart';
+import 'package:plain_typesetting/src/font.dart';
+import 'package:plain_typesetting/src/graphic.dart';
+import 'package:plain_typesetting/src/link.dart';
 
 /// A piece of a paragraph's content.
 @immutable
@@ -34,10 +34,10 @@ final class TextRun extends InlineContent {
   final String text;
 
   /// The font, size and text state.
-  final PdfTextStyle style;
+  final TextStyle style;
 
   /// The fill color, or null for the canvas's current color.
-  final PdfColor? color;
+  final Color? color;
 
   /// Whether the text is underlined.
   final bool underline;
@@ -57,7 +57,7 @@ final class TextRun extends InlineContent {
 
   /// The fonts that set the characters [style]'s font lacks: each
   /// character goes to the first that has it.
-  final List<PdfFont> fallbackFonts;
+  final List<Font> fallbackFonts;
 
   /// A run of [text] with this run's formatting.
   TextRun withText(String text) => TextRun(
@@ -73,7 +73,7 @@ final class TextRun extends InlineContent {
   );
 
   /// This run in [style].
-  TextRun withStyle(PdfTextStyle style) => TextRun(
+  TextRun withStyle(TextStyle style) => TextRun(
     text,
     style,
     color: color,
@@ -99,10 +99,10 @@ final class InlineDecoration {
   });
 
   /// The fill.
-  final PdfColor? background;
+  final Color? background;
 
   /// The border's color.
-  final PdfColor? borderColor;
+  final Color? borderColor;
 
   /// The border's width.
   final double borderWidth;
@@ -172,13 +172,13 @@ final class PageReference extends InlineContent {
   final String anchor;
 
   /// The font, size and text state.
-  final PdfTextStyle style;
+  final TextStyle style;
 
   /// The text measured before the page is known.
   final String placeholder;
 
   /// The fill color.
-  final PdfColor? color;
+  final Color? color;
 
   /// Where the reference links to.
   final LinkTarget? link;

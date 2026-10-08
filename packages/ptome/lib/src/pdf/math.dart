@@ -3,7 +3,7 @@
 library;
 
 import 'package:plain_math/plain_math.dart' show MathNode;
-import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 /// A formula in a line of text: laid out at the text's size when the
 /// line is ([at]), standing on the baseline with its depth below it.
@@ -32,5 +32,5 @@ final class InlineMath implements Graphic {
   double get intrinsicHeight => at(10).intrinsicHeight;
 
   @override
-  void paint(PdfCanvas canvas, PdfRect rect) => at(10).paint(canvas, rect);
+  void paint(Canvas canvas, Rect rect) => at(10).paint(canvas, rect);
 }

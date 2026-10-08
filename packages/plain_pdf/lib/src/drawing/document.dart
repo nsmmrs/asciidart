@@ -8,14 +8,14 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/color.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_pdf/src/drawing/pdf_values.dart';
 import 'package:plain_pdf/src/drawing/shading.dart';
 import 'package:plain_pdf/src/fonts/fonts.dart';
 import 'package:plain_pdf/src/images/images.dart';
 import 'package:plain_pdf/src/objects.dart';
 import 'package:plain_pdf/src/reader/reader.dart';
 import 'package:plain_pdf/src/writer.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 /// A stream's data as the writer stores it (see [encodeStream]): the
 /// compression it was encoded with, the data's length, and the
@@ -43,7 +43,7 @@ StreamPayload encodeStream(Uint8List data, PdfWriterOptions options) {
 }
 
 /// A page: its boxes, its content and its links.
-final class PdfPage {
+final class PdfPage implements LayoutPage {
   new _(
     this.mediaBox, {
     this.cropBox,
@@ -54,24 +54,25 @@ final class PdfPage {
   });
 
   /// The page's extent (`MediaBox`).
-  final PdfRect mediaBox;
+  final Rect mediaBox;
 
   /// The region shown and printed (`CropBox`); the media box by default.
-  final PdfRect? cropBox;
+  final Rect? cropBox;
 
   /// The region to clip to in production, with the bleed (`BleedBox`).
-  final PdfRect? bleedBox;
+  final Rect? bleedBox;
 
   /// The finished page after trimming (`TrimBox`).
-  final PdfRect? trimBox;
+  final Rect? trimBox;
 
   /// The page's meaningful content (`ArtBox`).
-  final PdfRect? artBox;
+  final Rect? artBox;
 
   /// The clockwise rotation when shown, a multiple of 90 degrees.
   final int rotation;
 
   /// The page's content.
+  @override
   final PdfCanvas canvas = newCanvas();
 
   /// The content stream's data, as painted so far.
@@ -82,10 +83,10 @@ final class PdfPage {
   /// compression and its content is as long as it was.
   StreamPayload? contentPayload;
 
-  final List<(PdfRect, LinkTarget)> _links = [];
+  final List<(Rect, LinkTarget)> _links = [];
 
-  /// Makes [rect] a link to [target].
-  void link(PdfRect rect, LinkTarget target) => _links.add((rect, target));
+  @override
+  void link(Rect rect, LinkTarget target) => _links.add((rect, target));
 
   /// The page's width.
   double get width => mediaBox.width;
@@ -186,43 +187,10 @@ PdfObject _number(double? value) => switch (value) {
   final v => PdfReal(v),
 };
 
-/// Where a link or an outline item goes.
-@immutable
-sealed class LinkTarget {
-  const new _();
-
-  /// The web address [uri].
-  const factory uri(String uri) = UriTarget;
-
-  /// The named destination [name].
-  const factory named(String name) = NamedTarget;
-
-  /// The [destination].
-  const factory destination(PdfDestination destination) = DestinationTarget;
-}
-
-/// A web address.
-final class UriTarget extends LinkTarget {
-  /// A link to [uri].
-  const new(this.uri) : super._();
-
-  /// The address.
-  final String uri;
-}
-
-/// A named destination.
-final class NamedTarget extends LinkTarget {
-  /// A link to the destination [name].
-  const new(this.name) : super._();
-
-  /// The destination's name.
-  final String name;
-}
-
 /// An explicit destination.
 final class DestinationTarget extends LinkTarget {
   /// A link to [destination].
-  const new(this.destination) : super._();
+  const new(this.destination);
 
   /// The destination.
   final PdfDestination destination;
@@ -412,7 +380,7 @@ final class PdfOutputIntent {
 }
 
 /// A PDF document.
-final class PdfDocument {
+final class PdfDocument implements LayoutDocument<PdfPage> {
   /// An empty document with [info]; [language] is its natural language
   /// (`en-US`), [pageMode] how it opens (and [nonFullScreenPageMode] how
   /// it shows when it leaves full screen), [displayTitle] whether viewers
@@ -460,12 +428,13 @@ final class PdfDocument {
   final Map<int, PageLabel> _labels = {};
 
   /// Adds a page of [mediaBox] (with the other boxes) and returns it.
+  @override
   PdfPage addPage(
-    PdfRect mediaBox, {
-    PdfRect? cropBox,
-    PdfRect? bleedBox,
-    PdfRect? trimBox,
-    PdfRect? artBox,
+    Rect mediaBox, {
+    Rect? cropBox,
+    Rect? bleedBox,
+    Rect? trimBox,
+    Rect? artBox,
     int rotation = 0,
   }) {
     if (rotation % 90 != 0) {
@@ -508,6 +477,12 @@ final class PdfDocument {
   /// links from other documents, `file.pdf#name`).
   void addDestination(String name, PdfDestination destination) =>
       _destinations[name] = destination;
+
+  /// Adds the destination [name] at ([left], [top]) of [page] (an XYZ
+  /// destination that keeps the zoom).
+  @override
+  void addAnchor(String name, PdfPage page, double left, double top) =>
+      addDestination(name, PdfDestination.xyz(page, left: left, top: top));
 
   /// Labels the pages from [pageIndex] (0-based) on, up to the next
   /// labeled index, with [label].
@@ -719,6 +694,7 @@ final class _Saver {
     DestinationTarget(:final destination) => {
       'Dest': destination._toArray(_pageRef(destination.page)),
     },
+    _ => throw ArgumentError.value(target, 'target', 'not a PDF link target'),
   };
 
   PdfRef _pageRef(PdfPage page) =>

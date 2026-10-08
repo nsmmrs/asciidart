@@ -5,16 +5,17 @@
 import 'dart:io';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 void main(List<String> args) {
-  final body = PdfTextStyle(StandardFont.timesRoman, 9.5);
-  final title = PdfTextStyle(StandardFont.named('Times-Bold'), 22);
-  final small = PdfTextStyle(StandardFont.helvetica, 7);
+  final body = TextStyle(StandardFont.timesRoman, 9.5);
+  final title = TextStyle(StandardFont.named('Times-Bold'), 22);
+  final small = TextStyle(StandardFont.helvetica, 7);
   const text =
       'A booklet sets its text in narrow columns, which keeps lines short '
       'enough to read easily at a small size; the columns fill one after '
       'the other, and the text runs on to the next page.';
-  const size = PdfRect(0, 0, 420, 595);
+  const size = Rect(0, 0, 420, 595);
   const margins = EdgeInsets.symmetric(vertical: 48, horizontal: 36);
   final layout = FlowLayout(
     templates: {

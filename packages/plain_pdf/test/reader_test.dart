@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:plain_compression/plain_compression.dart' show zlibEncode;
 import 'package:plain_pdf/plain_pdf.dart';
 import 'package:plain_pdf/src/reader/filters.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:test/test.dart';
 
 import 'drawing_test.dart' show near, render;
@@ -29,16 +30,16 @@ String _text(File pdf) =>
 /// blue US Letter page rotated by [rotation].
 Uint8List _source({int rotation = 0, bool compact = false}) {
   final document = PdfDocument();
-  final style = PdfTextStyle(StandardFont.helvetica, 24);
-  document.addPage(const PdfRect(0, 0, 595.28, 841.89)).canvas
+  final style = TextStyle(StandardFont.helvetica, 24);
+  document.addPage(const Rect(0, 0, 595.28, 841.89)).canvas
     ..setFillColor(const RgbColor(1, 0, 0))
-    ..rect(const PdfRect(0, 0, 595.28, 841.89))
+    ..rect(const Rect(0, 0, 595.28, 841.89))
     ..fill()
     ..setFillColor(const GrayColor(0))
     ..text('first', 72, 700, style);
-  document.addPage(const PdfRect(0, 0, 612, 792), rotation: rotation).canvas
+  document.addPage(const Rect(0, 0, 612, 792), rotation: rotation).canvas
     ..setFillColor(const RgbColor(0, 0, 1))
-    ..rect(const PdfRect(0, 0, 306, 792))
+    ..rect(const Rect(0, 0, 306, 792))
     ..fill()
     ..setFillColor(const GrayColor(0))
     ..text('second', 400, 700, style);
@@ -50,7 +51,7 @@ Uint8List _source({int rotation = 0, bool compact = false}) {
 /// [page] painted on a page of its size, saved.
 File _imported(ImportedPage page) {
   final document = PdfDocument();
-  final rect = PdfRect(0, 0, page.intrinsicWidth, page.intrinsicHeight);
+  final rect = Rect(0, 0, page.intrinsicWidth, page.intrinsicHeight);
   page.paint(document.addPage(rect).canvas, rect);
   final file = _write(
     document.save(options: const PdfWriterOptions(deterministic: true)),
@@ -133,8 +134,8 @@ void main() {
       final page = PdfFile.parse(_source()).pages[1];
       final document = PdfDocument();
       page.paint(
-        document.addPage(const PdfRect(0, 0, 400, 400)).canvas,
-        const PdfRect(100, 100, 153, 198),
+        document.addPage(const Rect(0, 0, 400, 400)).canvas,
+        const Rect(100, 100, 153, 198),
       );
       final pdf = _write(document.save());
       final rendered = render(pdf);
@@ -148,7 +149,7 @@ void main() {
       final page = PdfFile.parse(_source()).pages[0];
       final document = PdfDocument();
       for (var i = 0; i < 3; i++) {
-        final rect = PdfRect(0, 0, page.intrinsicWidth, page.intrinsicHeight);
+        final rect = Rect(0, 0, page.intrinsicWidth, page.intrinsicHeight);
         page.paint(document.addPage(rect).canvas, rect);
       }
       final bytes = latin1.decode(

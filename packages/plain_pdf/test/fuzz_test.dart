@@ -9,6 +9,7 @@ import 'dart:typed_data';
 
 import 'package:plain_fonts/plain_fonts.dart' show FontFormatException;
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:test/test.dart';
 
 /// [count] damaged copies of [bytes]: bytes flipped, the end cut off, bytes
@@ -96,16 +97,16 @@ void main() {
     final svg = SvgImage.parse(String.fromCharCodes(bytes));
     final document = PdfDocument();
     svg.paint(
-      document.addPage(const PdfRect(0, 0, 200, 200)).canvas,
-      const PdfRect(0, 0, 200, 200),
+      document.addPage(const Rect(0, 0, 200, 200)).canvas,
+      const Rect(0, 0, 200, 200),
     );
   }, (error) => error is FormatException);
   void drawText(Uint8List bytes) {
     final font = EmbeddedFont.parse(bytes);
-    final style = PdfTextStyle(font, 12);
+    final style = TextStyle(font, 12);
     final document = PdfDocument();
     document
-        .addPage(const PdfRect(0, 0, 200, 200))
+        .addPage(const Rect(0, 0, 200, 200))
         .canvas
         .text('Hello, fuzz', 10, 100, style);
     document.save();
@@ -132,7 +133,7 @@ void main() {
       final file = PdfFile.parse(bytes);
       final document = PdfDocument();
       for (final page in file.pages) {
-        final rect = PdfRect(0, 0, page.intrinsicWidth, page.intrinsicHeight);
+        final rect = Rect(0, 0, page.intrinsicWidth, page.intrinsicHeight);
         page.paint(document.addPage(rect).canvas, rect);
       }
       document.save();

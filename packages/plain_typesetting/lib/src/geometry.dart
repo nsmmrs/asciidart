@@ -1,15 +1,14 @@
-/// Rectangles and transformation matrices in PDF user space (points, y
-/// up).
+/// Rectangles and transformation matrices in a canvas's space (points, y
+/// up, as in PDF).
 library;
 
 import 'dart:math' as math;
 
 import 'package:meta/meta.dart';
-import 'package:plain_pdf/src/objects.dart';
 
 /// A rectangle: its lower-left corner and its size.
 @immutable
-final class PdfRect {
+final class Rect {
   /// The rectangle from ([left], [bottom]) that is [width] by [height].
   const new(this.left, this.bottom, this.width, this.height);
 
@@ -35,12 +34,9 @@ final class PdfRect {
   /// The top edge.
   double get top => bottom + height;
 
-  /// The rectangle as a PDF array: `[left bottom right top]`.
-  PdfArray toArray() => PdfArray.numbers([left, bottom, right, top]);
-
   @override
   bool operator ==(Object other) =>
-      other is PdfRect &&
+      other is Rect &&
       other.left == left &&
       other.bottom == bottom &&
       other.width == width &&
@@ -50,13 +46,13 @@ final class PdfRect {
   int get hashCode => Object.hash(left, bottom, width, height);
 
   @override
-  String toString() => 'PdfRect($left, $bottom, $width, $height)';
+  String toString() => 'Rect($left, $bottom, $width, $height)';
 }
 
 /// An affine transformation `[a b c d e f]` (ISO 32000-2, 8.3.4): a point
 /// (x, y) maps to (a·x + c·y + e, b·x + d·y + f).
 @immutable
-final class PdfMatrix {
+final class Matrix {
   /// The matrix `[a b c d e f]`.
   const new(this.a, this.b, this.c, this.d, this.e, this.f);
 
@@ -73,7 +69,7 @@ final class PdfMatrix {
   factory rotation(double radians) {
     final cos = math.cos(radians);
     final sin = math.sin(radians);
-    return PdfMatrix(cos, sin, -sin, cos, 0, 0);
+    return Matrix(cos, sin, -sin, cos, 0, 0);
   }
 
   /// The coefficient `a`.
@@ -95,7 +91,7 @@ final class PdfMatrix {
   final double f;
 
   /// This transformation followed by [other].
-  PdfMatrix then(PdfMatrix other) => PdfMatrix(
+  Matrix then(Matrix other) => Matrix(
     a * other.a + b * other.c,
     a * other.b + b * other.d,
     c * other.a + d * other.c,
@@ -108,12 +104,9 @@ final class PdfMatrix {
   (double, double) apply(double x, double y) =>
       (a * x + c * y + e, b * x + d * y + f);
 
-  /// The matrix as a PDF array.
-  PdfArray toArray() => PdfArray.numbers([a, b, c, d, e, f]);
-
   @override
   bool operator ==(Object other) =>
-      other is PdfMatrix &&
+      other is Matrix &&
       other.a == a &&
       other.b == b &&
       other.c == c &&
@@ -125,5 +118,5 @@ final class PdfMatrix {
   int get hashCode => Object.hash(a, b, c, d, e, f);
 
   @override
-  String toString() => 'PdfMatrix($a, $b, $c, $d, $e, $f)';
+  String toString() => 'Matrix($a, $b, $c, $d, $e, $f)';
 }

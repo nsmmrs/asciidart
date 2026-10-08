@@ -6,12 +6,13 @@
 import 'dart:io';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 void main(List<String> args) {
-  final body = PdfTextStyle(StandardFont.timesRoman, 11);
-  final small = PdfTextStyle(StandardFont.helvetica, 8);
-  final heading = PdfTextStyle(StandardFont.named('Helvetica-Bold'), 16);
-  final accent = PdfColor.hex('#1565c0');
+  final body = TextStyle(StandardFont.timesRoman, 11);
+  final small = TextStyle(StandardFont.helvetica, 8);
+  final heading = TextStyle(StandardFont.named('Helvetica-Bold'), 16);
+  final accent = Color.hex('#1565c0');
   const sections = ['Summary', 'Findings', 'Data', 'Outlook'];
   const text =
       'Quarterly results improved across every region, with the largest '
@@ -58,7 +59,7 @@ void main(List<String> args) {
           [
             TableRow([
               for (final h in ['Region', 'Q1', 'Q2', 'Q3'])
-                _cell(h, small, background: const PdfColor.gray(0.85)),
+                _cell(h, small, background: const Color.gray(0.85)),
             ]),
             for (var r = 1; r <= 40; r++)
               TableRow([
@@ -80,7 +81,7 @@ void main(List<String> args) {
 
   final layout = FlowLayout(
     template: PageTemplate(
-      const PdfRect(0, 0, 595, 842),
+      const Rect(0, 0, 595, 842),
       header: (page) => [
         const SpacerBox(36),
         ParagraphBox(
@@ -106,7 +107,7 @@ void main(List<String> args) {
     if (result.anchors[name] case final at?) {
       document.addOutline(
         name,
-        LinkTarget.destination(PdfDestination.fit(pages[at.page])),
+        DestinationTarget(PdfDestination.fit(pages[at.page])),
       );
     }
   }
@@ -114,11 +115,10 @@ void main(List<String> args) {
       .writeAsBytesSync(document.save());
 }
 
-TableCell _cell(String text, PdfTextStyle style, {PdfColor? background}) =>
-    TableCell(
-      [
-        ParagraphBox(Paragraph([TextRun(text, style)])),
-      ],
-      background: background,
-      border: const Border(widths: EdgeInsets.all(0.5)),
-    );
+TableCell _cell(String text, TextStyle style, {Color? background}) => TableCell(
+  [
+    ParagraphBox(Paragraph([TextRun(text, style)])),
+  ],
+  background: background,
+  border: const Border(widths: EdgeInsets.all(0.5)),
+);

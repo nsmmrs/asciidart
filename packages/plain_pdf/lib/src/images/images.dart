@@ -9,12 +9,11 @@ import 'dart:typed_data';
 
 import 'package:plain_compression/plain_compression.dart';
 import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
-import 'package:plain_pdf/src/drawing/graphic.dart';
 import 'package:plain_pdf/src/images/exif.dart';
 import 'package:plain_pdf/src/images/png_decode.dart';
 import 'package:plain_pdf/src/objects.dart';
 import 'package:plain_pdf/src/writer.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 /// An image file plain_pdf can't read.
 final class ImageFormatException implements Exception {
@@ -59,7 +58,8 @@ sealed class PdfImage implements Graphic {
   double get intrinsicHeight => height.toDouble();
 
   @override
-  void paint(PdfCanvas canvas, PdfRect rect) => canvas.image(this, rect);
+  void paint(Canvas canvas, Rect rect) =>
+      pdfCanvasOf(canvas, 'a PDF image').image(this, rect);
 
   /// The reference the image is written under, reserved from [writer].
   PdfRef reference(PdfWriter writer) =>

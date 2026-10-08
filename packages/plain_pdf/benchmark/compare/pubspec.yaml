@@ -9,4 +9,5 @@ resolution: workspace
 
 dependencies:
   plain_pdf: ^0.1.0-dev
+  plain_typesetting: ^0.1.0-dev
   pdf: ^3.11.0

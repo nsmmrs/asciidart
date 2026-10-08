@@ -12,70 +12,14 @@ import 'package:plain_pdf/src/fonts/standard_metrics.g.dart';
 import 'package:plain_pdf/src/md5.dart';
 import 'package:plain_pdf/src/objects.dart';
 import 'package:plain_pdf/src/writer.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
-/// A glyph of shaped text: what to draw and how far it moves.
-final class ShapedGlyph {
-  /// A glyph [id] standing for [text], advancing [advance] plus [kerning]
-  /// (in 1000ths of the em).
-  const new(this.id, this.text, this.advance, [this.kerning = 0]);
-
-  /// The glyph: its id in an embedded font, its code in a standard font.
-  final int id;
-
-  /// The characters the glyph stands for (several for a ligature).
-  final String text;
-
-  /// The glyph's advance width, in 1000ths of the em.
-  final double advance;
-
-  /// The kerning before the next glyph, in 1000ths of the em (negative
-  /// brings it closer).
-  final double kerning;
-}
-
-/// A font text can be set in.
-sealed class PdfFont {
+/// A font of a PDF: a standard font or an embedded one, which the PDF
+/// canvas sets text in.
+sealed class PdfFont implements Font {
   new _();
 
-  /// The PostScript name.
-  String get name;
-
-  /// The ascender, in 1000ths of the em.
-  double get ascender;
-
-  /// The descender (negative), in 1000ths of the em.
-  double get descender;
-
-  /// The line gap, in 1000ths of the em.
-  double get lineGap;
-
-  /// The height of capital letters, in 1000ths of the em.
-  double get capHeight;
-
-  /// The height of lowercase letters, in 1000ths of the em.
-  double get xHeight;
-
-  /// The position of the underline's center, in 1000ths of the em
-  /// (negative: below the baseline).
-  double get underlinePosition;
-
-  /// The underline's thickness, in 1000ths of the em.
-  double get underlineThickness;
-
-  /// Whether the font has a glyph for [codePoint].
-  bool covers(int codePoint);
-
-  /// [text] as glyphs, with kerning (and ligatures in an embedded font)
-  /// when asked, and in an embedded font, the single substitutions of the
-  /// OpenType [features] it has (`onum`, `smcp`...).
-  List<ShapedGlyph> shape(
-    String text, {
-    bool kerning = true,
-    bool ligatures = false,
-    Set<String> features = const {},
-  });
-
-  /// The width of [text] at [size] points.
+  @override
   double widthOf(String text, double size, {bool kerning = true}) {
     var width = 0.0;
     for (final glyph in shape(text, kerning: kerning)) {
@@ -289,13 +233,14 @@ final class _StandardGlyphs {
 /// A TrueType or OpenType font embedded in the document: subset to the
 /// glyphs used (TrueType outlines) and written as a Type0 font with
 /// Identity-H encoding and a ToUnicode map, so text extracts and searches.
-final class EmbeddedFont extends PdfFont {
+final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
   new _(
     this.font, {
     required this.subset,
     required this.truncateWidths,
     this.kernTableSubtable,
-  }) : super._();
+  }) : _shaper = OpenTypeShaper(font, kernTableSubtable: kernTableSubtable),
+       super._();
 
   /// The font in [bytes] (the font at [index] of a collection); with
   /// [subset] (the default), only the glyphs used are embedded. The
@@ -317,8 +262,11 @@ final class EmbeddedFont extends PdfFont {
     kernTableSubtable: kernTableSubtable,
   );
 
-  /// The font program.
+  @override
   final OpenTypeFont font;
+
+  /// Shapes text, and gives the metrics.
+  final OpenTypeShaper _shaper;
 
   /// Whether only the glyphs used are embedded.
   final bool subset;
@@ -328,16 +276,6 @@ final class EmbeddedFont extends PdfFont {
 
   /// The `kern` subtable text is kerned by alone, if any.
   final int? kernTableSubtable;
-
-  int _kerning(int left, int right) =>
-      _kerns[(left << 16) | right] ??= switch (kernTableSubtable) {
-        final subtable? =>
-          font.kernTablePair(left, right, subtable: subtable) ?? 0,
-        null => font.kerning(left, right),
-      };
-
-  /// The kerning of the pairs looked up, by `left << 16 | right`.
-  final Map<int, int> _kerns = {};
 
   /// The glyphs used so far, with the text each stands for.
   final Map<int, String> _used = {};
@@ -349,38 +287,34 @@ final class EmbeddedFont extends PdfFont {
   /// `.notdef`).
   bool get missedGlyphs => _usedNotdef;
 
-  double _scale(num units) => units * 1000 / font.unitsPerEm;
+  double _scale(num units) => _shaper.scale(units);
 
   @override
   String get name => font.postScriptName;
 
   @override
-  double get ascender => _scale(font.ascender);
+  double get ascender => _shaper.ascender;
 
   @override
-  double get descender => _scale(font.descender);
+  double get descender => _shaper.descender;
 
   @override
-  double get lineGap => _scale(font.lineGap);
+  double get lineGap => _shaper.lineGap;
 
   @override
-  double get capHeight => _scale(font.capHeight ?? font.ascender);
+  double get capHeight => _shaper.capHeight;
 
   @override
-  double get xHeight => _scale(font.xHeight ?? (font.ascender ~/ 2));
-
-  // `post` gives the top of the underline; PdfFont, its center.
-  @override
-  double get underlinePosition =>
-      _scale(font.underlinePosition ?? -font.unitsPerEm ~/ 10) -
-      underlineThickness / 2;
+  double get xHeight => _shaper.xHeight;
 
   @override
-  double get underlineThickness =>
-      _scale(font.underlineThickness ?? font.unitsPerEm ~/ 20);
+  double get underlinePosition => _shaper.underlinePosition;
 
   @override
-  bool covers(int codePoint) => font.glyphFor(codePoint) != 0;
+  double get underlineThickness => _shaper.underlineThickness;
+
+  @override
+  bool covers(int codePoint) => _shaper.covers(codePoint);
 
   @override
   List<ShapedGlyph> shape(
@@ -388,63 +322,12 @@ final class EmbeddedFont extends PdfFont {
     bool kerning = true,
     bool ligatures = false,
     Set<String> features = const {},
-  }) {
-    final runes = text.runes.toList();
-    // The features' single substitutions come first (as `smcp` comes
-    // before `liga`): a substituted glyph doesn't ligate.
-    final singles = [
-      for (final feature in features) font.singleSubstitutions(feature),
-    ];
-    int glyphOf(int rune) {
-      var glyph = font.glyphFor(rune);
-      for (final substitutions in singles) {
-        glyph = substitutions[glyph] ?? glyph;
-      }
-      return glyph;
-    }
-
-    final ids = <int>[];
-    final texts = <String>[];
-    var i = 0;
-    while (i < runes.length) {
-      final glyph = glyphOf(runes[i]);
-      var matched = false;
-      if (ligatures) {
-        for (final (rest, ligature)
-            in font.ligatures[glyph] ?? const <(List<int>, int)>[]) {
-          if (i + rest.length >= runes.length) continue;
-          var all = true;
-          for (var k = 0; all && k < rest.length; k++) {
-            all = glyphOf(runes[i + 1 + k]) == rest[k];
-          }
-          if (!all) continue;
-          ids.add(ligature);
-          texts.add(
-            String.fromCharCodes(runes.sublist(i, i + 1 + rest.length)),
-          );
-          i += 1 + rest.length;
-          matched = true;
-          break;
-        }
-      }
-      if (!matched) {
-        ids.add(glyph);
-        texts.add(String.fromCharCode(runes[i]));
-        i += 1;
-      }
-    }
-    return [
-      for (var k = 0; k < ids.length; k++)
-        ShapedGlyph(
-          ids[k],
-          texts[k],
-          _scale(font.advance(ids[k])),
-          kerning && k + 1 < ids.length
-              ? _scale(_kerning(ids[k], ids[k + 1]))
-              : 0,
-        ),
-    ];
-  }
+  }) => _shaper.shape(
+    text,
+    kerning: kerning,
+    ligatures: ligatures,
+    features: features,
+  );
 
   @override
   List<int> encode(List<ShapedGlyph> glyphs) {

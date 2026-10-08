@@ -119,21 +119,6 @@ void main() {
     expect(font.kernTablePair(glyph('T'), glyph('o'), subtable: 2), isNull);
   });
 
-  test('text kerned by one kern subtable alone', () {
-    final bytes = File('test/fonts/notoserif-kern-subtables.ttf')
-        .readAsBytesSync();
-    final first = EmbeddedFont.parse(bytes, kernTableSubtable: 0);
-    final second = EmbeddedFont.parse(bytes, kernTableSubtable: 1);
-    double kerning(EmbeddedFont font, String text) =>
-        font.shape(text).first.kerning;
-    final unit = 1000 / first.font.unitsPerEm;
-    // (Without a subtable, the font's GPOS pairs kern instead.)
-    expect(kerning(first, 'AV'), closeTo(-80 * unit, 1e-6));
-    expect(kerning(first, 'To'), 0);
-    expect(kerning(second, 'AV'), closeTo(-40 * unit, 1e-6));
-    expect(kerning(second, 'To'), closeTo(-60 * unit, 1e-6));
-  });
-
   test('WOFF and WOFF2 fonts embed as the fonts they wrap', () {
     final ttf = EmbeddedFont.parse(
       File('test/fonts/notoserif-features.ttf').readAsBytesSync(),
@@ -159,53 +144,6 @@ void main() {
     expect(helvetica.covers(0x20ac), isTrue); // € in WinAnsi
     expect(helvetica.covers(0x3b1), isFalse); // α
     expect(StandardFont.named('Symbol').covers(0x3b1), isTrue);
-  });
-
-  test('OpenType features substitute glyphs: old-style numerals, '
-      'small capitals', () {
-    final font = EmbeddedFont.parse(
-      File('test/fonts/notoserif-features.ttf').readAsBytesSync(),
-    );
-    expect(font.font.hasFeature('onum'), isTrue);
-    expect(font.font.hasFeature('zero'), isFalse);
-    List<int> ids(String text, [Set<String> features = const {}]) => [
-      for (final glyph in font.shape(text, features: features)) glyph.id,
-    ];
-    final lining = ids('2026');
-    final oldstyle = ids('2026', {'onum'});
-    expect(oldstyle, hasLength(4));
-    expect(oldstyle, isNot(lining));
-    final small = ids('Abc', {'smcp'});
-    // The capital stays; the lowercase letters become small capitals.
-    expect(small.first, ids('A').single);
-    expect(small.sublist(1), isNot(ids('bc')));
-    // The text they stand for is unchanged.
-    expect(
-      font.shape('2026', features: {'onum'}).map((g) => g.text).join(),
-      '2026',
-    );
-  });
-
-  test('small capitals by multiple substitutions of one glyph', () {
-    // Libertinus's smcp is a GSUB type 2 lookup.
-    final font = EmbeddedFont.parse(
-      File('test/fonts/libertinus-smcp.otf').readAsBytesSync(),
-    );
-    List<int> ids(String text, [Set<String> features = const {}]) => [
-      for (final glyph in font.shape(text, features: features)) glyph.id,
-    ];
-    final small = ids('Abc', {'smcp'});
-    expect(small, hasLength(3));
-    expect(small.sublist(1), isNot(ids('bc')));
-  });
-
-  test('ligatures replace their sequence', () {
-    final font = EmbeddedFont.parse(serif());
-    final shaped = font.shape('office', ligatures: true);
-    expect(shaped.map((g) => g.text).join(), 'office');
-    if (font.font.ligatures.isNotEmpty) {
-      expect(shaped.length, lessThan(6));
-    }
   });
 
   test('a character without a glyph is .notdef, not mapped to text', () {

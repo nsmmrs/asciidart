@@ -1,13 +1,11 @@
 import 'dart:io';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:test/test.dart';
 
-final PdfTextStyle body = PdfTextStyle(StandardFont.helvetica, 10);
-final PdfTextStyle bold = PdfTextStyle(
-  StandardFont.named('Helvetica-Bold'),
-  10,
-);
+final TextStyle body = TextStyle(StandardFont.helvetica, 10);
+final TextStyle bold = TextStyle(StandardFont.named('Helvetica-Bold'), 10);
 
 const String lorem =
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do '
@@ -279,14 +277,14 @@ void main() {
     'a painted paragraph reads back with the same lines',
     () {
       final document = PdfDocument();
-      final page = document.addPage(const PdfRect(0, 0, 300, 400));
+      final page = document.addPage(const Rect(0, 0, 300, 400));
       final result = lines(
         lorem,
         align: TextAlign.justify,
         breaker: const KnuthPlassLineBreaker(),
       );
       var top = 380.0;
-      final links = <PdfRect>[];
+      final links = <Rect>[];
       for (final line in result) {
         line.paint(page.canvas, 50, top, link: (rect, _) => links.add(rect));
         top -= line.height;
@@ -313,7 +311,7 @@ void main() {
     'inline decorations paint behind their text',
     () {
       final document = PdfDocument();
-      final page = document.addPage(const PdfRect(0, 0, 100, 40));
+      final page = document.addPage(const Rect(0, 0, 100, 40));
       const FirstFitLineBreaker()
           .breakLines(
             Paragraph([
@@ -321,7 +319,7 @@ void main() {
                 'MMMM',
                 body,
                 decoration: const InlineDecoration(
-                  background: PdfColor.rgb(0, 1, 0),
+                  background: Color.rgb(0, 1, 0),
                   padding: 2,
                 ),
               ),

@@ -9,11 +9,10 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
-import 'package:plain_pdf/src/drawing/graphic.dart';
 import 'package:plain_pdf/src/objects.dart';
 import 'package:plain_pdf/src/reader/filters.dart';
 import 'package:plain_pdf/src/writer.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 /// A file that isn't a PDF file plain_pdf can read.
 final class PdfFormatException implements Exception {
@@ -341,13 +340,13 @@ final class ImportedPage implements Graphic {
   final PdfObject? _resources;
 
   /// The visible region of the page: its crop box (within its media box).
-  final PdfRect box;
+  final Rect box;
 
   /// The page's rotation when displayed, clockwise: 0, 90, 180 or 270.
   final int rotation;
 
-  static PdfRect _box(PdfFile file, Map<String, PdfObject> attributes) {
-    PdfRect? rect(PdfObject? object) {
+  static Rect _box(PdfFile file, Map<String, PdfObject> attributes) {
+    Rect? rect(PdfObject? object) {
       if (file.resolve(object) case PdfArray(:final items)
           when items.length == 4) {
         final values = [
@@ -362,12 +361,12 @@ final class ImportedPage implements Graphic {
         final right = values[0] < values[2] ? values[2] : values[0];
         final bottom = values[1] < values[3] ? values[1] : values[3];
         final top = values[1] < values[3] ? values[3] : values[1];
-        return PdfRect(left, bottom, right - left, top - bottom);
+        return Rect(left, bottom, right - left, top - bottom);
       }
       return null;
     }
 
-    final media = rect(attributes['MediaBox']) ?? const PdfRect(0, 0, 612, 792);
+    final media = rect(attributes['MediaBox']) ?? const Rect(0, 0, 612, 792);
     final crop = rect(attributes['CropBox']);
     if (crop == null) return media;
     final left = crop.left > media.left ? crop.left : media.left;
@@ -375,7 +374,7 @@ final class ImportedPage implements Graphic {
     final right = crop.right < media.right ? crop.right : media.right;
     final top = crop.top < media.top ? crop.top : media.top;
     if (right <= left || top <= bottom) return media;
-    return PdfRect(left, bottom, right - left, top - bottom);
+    return Rect(left, bottom, right - left, top - bottom);
   }
 
   /// The width as displayed, in points.
@@ -387,12 +386,13 @@ final class ImportedPage implements Graphic {
   double get intrinsicHeight => rotation % 180 == 0 ? box.height : box.width;
 
   @override
-  void paint(PdfCanvas canvas, PdfRect rect) => canvas.page(this, rect);
+  void paint(Canvas canvas, Rect rect) =>
+      pdfCanvasOf(canvas, 'an imported page').page(this, rect);
 
   /// The transformation from the page's space to [rect], where the page
   /// is displayed.
   @internal
-  PdfMatrix placement(PdfRect rect) {
+  Matrix placement(Rect rect) {
     final b = box;
     // Page space to displayed space (the box's lower left at the origin).
     final (a, bb, c, d, e, f) = switch (rotation) {
@@ -403,7 +403,7 @@ final class ImportedPage implements Graphic {
     };
     final sx = rect.width / intrinsicWidth;
     final sy = rect.height / intrinsicHeight;
-    return PdfMatrix(
+    return Matrix(
       a * sx,
       bb * sy,
       c * sx,

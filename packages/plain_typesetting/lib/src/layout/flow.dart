@@ -9,13 +9,13 @@ library;
 import 'dart:math' as math;
 
 import 'package:meta/meta.dart';
-import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/color.dart';
-import 'package:plain_pdf/src/drawing/document.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
-import 'package:plain_pdf/src/drawing/graphic.dart';
-import 'package:plain_pdf/src/layout/inline.dart';
-import 'package:plain_pdf/src/layout/paragraph.dart';
+import 'package:plain_typesetting/src/canvas.dart';
+import 'package:plain_typesetting/src/color.dart';
+import 'package:plain_typesetting/src/geometry.dart';
+import 'package:plain_typesetting/src/graphic.dart';
+import 'package:plain_typesetting/src/layout/inline.dart';
+import 'package:plain_typesetting/src/layout/paragraph.dart';
+import 'package:plain_typesetting/src/page.dart';
 
 /// Distances on the four sides of a box.
 @immutable
@@ -85,7 +85,7 @@ final class Border {
   final EdgeInsets widths;
 
   /// The color.
-  final PdfColor color;
+  final Color color;
 
   /// The corner radius.
   final double radius;
@@ -99,8 +99,8 @@ final class Border {
 /// [page]; [first] and [last] tell whether it is where the block starts
 /// and ends (a block split across pages has a piece on each).
 typedef BoxDecoration = void Function(
-  PdfPage page,
-  PdfRect rect, {
+  LayoutPage page,
+  Rect rect, {
   required bool first,
   required bool last,
 });
@@ -137,7 +137,7 @@ final class BoxStyle {
   final Border border;
 
   /// The fill inside the border.
-  final PdfColor? background;
+  final Color? background;
 
   /// Whether the box moves to the next region rather than split (when it
   /// fits in a whole region).
@@ -413,7 +413,7 @@ final class DrawingBox extends LayoutBox {
   final double? width;
 
   /// Paints the box into its rectangle.
-  final void Function(PdfCanvas canvas, PdfRect rect) draw;
+  final void Function(Canvas canvas, Rect rect) draw;
 
   /// Its alignment.
   final BoxAlign align;
@@ -538,7 +538,7 @@ final class CustomPlacement {
   final double height;
 
   /// Paints the piece on `page` (through its canvas) at (`x`, `top`).
-  final void Function(PdfPage page, double x, double top) paint;
+  final void Function(LayoutPage page, double x, double top) paint;
 
   /// What didn't fit, or null.
   final CustomContent? rest;
@@ -617,7 +617,7 @@ final class TableCell {
   final EdgeInsets padding;
 
   /// The fill.
-  final PdfColor? background;
+  final Color? background;
 
   /// The border, centered on the cell's edges.
   final Border border;
@@ -755,7 +755,7 @@ final class TableBox extends LayoutBox {
 
   /// The backgrounds the body rows take in turn (cells without their own),
   /// counting from the first body row in each region.
-  final List<PdfColor?> stripes;
+  final List<Color?> stripes;
 
   /// The rows left to place (with their cells' columns), when this is the
   /// rest of a split table.
@@ -894,7 +894,7 @@ final class PageTemplate {
   });
 
   /// The page size.
-  final PdfRect size;
+  final Rect size;
 
   /// How far the sheet runs past [size] on every side, for content that
   /// is trimmed off in print: with a bleed (0 included), [size] is the
@@ -919,18 +919,18 @@ final class PageTemplate {
   final List<LayoutBox> Function(PageInfo page)? footer;
 
   /// Paints under a page's content.
-  final void Function(PdfCanvas canvas, PageInfo page)? background;
+  final void Function(Canvas canvas, PageInfo page)? background;
 
   /// Paints over a page's content and its header and footer.
-  final void Function(PdfCanvas canvas, PageInfo page)? foreground;
+  final void Function(Canvas canvas, PageInfo page)? foreground;
 
   /// The regions content flows through, in order.
-  List<PdfRect> get regions {
+  List<Rect> get regions {
     final width = size.width - margins.horizontal;
     final columnWidth = (width - columnGap * (columns - 1)) / columns;
     return [
       for (var i = 0; i < columns; i++)
-        PdfRect(
+        Rect(
           size.left + margins.left + i * (columnWidth + columnGap),
           size.bottom + margins.bottom,
           columnWidth,
@@ -1281,7 +1281,7 @@ final class _Pass {
         final topHeight = topFit?.height ?? 0.0;
         final area = topHeight == 0
             ? region
-            : PdfRect(
+            : Rect(
                 region.left,
                 region.bottom,
                 region.width,
@@ -1289,7 +1289,7 @@ final class _Pass {
               );
         if (topFit != null) {
           page.placed.add((
-            PdfRect(
+            Rect(
               region.left,
               region.bottom + area.height,
               region.width,
@@ -1306,7 +1306,7 @@ final class _Pass {
           page.placed.add((area, fit.placed));
           if (notes != null) {
             page.placed.add((
-              PdfRect(area.left, area.bottom, area.width, notes.height),
+              Rect(area.left, area.bottom, area.width, notes.height),
               notes.placed,
             ));
           }
@@ -1447,7 +1447,7 @@ final class _Pass {
   /// Notes that don't fit are deferred to the next region.
   (_Fit, _Fit?) _notes(
     LayoutBox content,
-    PdfRect region,
+    Rect region,
     _Fit first, {
     List<LayoutBox> bottom = const [],
   }) {
@@ -1510,7 +1510,7 @@ final class _Pass {
   /// the height they leave.
   _Fit _pinFloats(
     LayoutBox content,
-    PdfRect region,
+    Rect region,
     _Fit first,
     List<LayoutBox> top,
     List<LayoutBox> bottom,
@@ -2458,7 +2458,7 @@ final class _Pass {
       double y,
       double height, {
       required bool openBottom,
-      PdfColor? stripe,
+      Color? stripe,
     }) {
       final width = _cellWidth(col, cell, widths);
       final padding = cell.padding;
@@ -2486,7 +2486,7 @@ final class _Pass {
 
     // The body rows placed in this region, for the stripes.
     var stripeIndex = 0;
-    PdfColor? nextStripe({required bool body}) {
+    Color? nextStripe({required bool body}) {
       if (!body || box.stripes.isEmpty) return null;
       return box.stripes[stripeIndex++ % box.stripes.length];
     }
@@ -2781,7 +2781,7 @@ final class _Page {
   new(this.template);
 
   final PageTemplate template;
-  final List<(PdfRect, _Placed?)> placed = [];
+  final List<(Rect, _Placed?)> placed = [];
 
   /// The marks set on the page, in order.
   final List<(String, String)> marks = [];
@@ -2810,8 +2810,8 @@ sealed class _Placed {
 final class _Painter {
   new(this.canvas, this.page);
 
-  final PdfCanvas canvas;
-  final PdfPage page;
+  final Canvas canvas;
+  final LayoutPage page;
 }
 
 final class _PlacedSpace extends _Placed {
@@ -2912,7 +2912,7 @@ final class _PlacedBlock extends _Placed {
     final boxTop = top - this.top;
     final bottomMargin = openBottom ? 0 : marginBottom ?? style.margin.bottom;
     final boxHeight = height - this.top - bottomMargin;
-    final rect = PdfRect(left, boxTop - boxHeight, boxWidth, boxHeight);
+    final rect = Rect(left, boxTop - boxHeight, boxWidth, boxHeight);
     final uniform =
         border.widths.top == border.widths.left &&
         border.widths.left == border.widths.right &&
@@ -2939,7 +2939,7 @@ final class _PlacedBlock extends _Placed {
         ..setStrokeColor(border.color);
       if (uniform && widths.top > 0) {
         final w = widths.top;
-        final inset = PdfRect(
+        final inset = Rect(
           rect.left + w / 2,
           rect.bottom + w / 2,
           rect.width - w,
@@ -2962,7 +2962,7 @@ final class _PlacedBlock extends _Placed {
             ..stroke();
         }
 
-        final PdfRect(left: l, bottom: b, right: r, top: t) = rect;
+        final Rect(left: l, bottom: b, right: r, top: t) = rect;
         if (_topEdge) {
           side(widths.top, l, t - widths.top / 2, r, t - widths.top / 2);
         }
@@ -3087,7 +3087,7 @@ final class _PlacedImage extends _Placed {
   void paint(_Painter painter, double x, double top) {
     image.paint(
       painter.canvas,
-      PdfRect(x + left, top - this.top - imageHeight, width, imageHeight),
+      Rect(x + left, top - this.top - imageHeight, width, imageHeight),
     );
   }
 }
@@ -3103,7 +3103,7 @@ final class _PlacedDrawing extends _Placed {
     this.anchor,
   );
 
-  final void Function(PdfCanvas canvas, PdfRect rect) draw;
+  final void Function(Canvas canvas, Rect rect) draw;
   final double left;
   final double top;
   final double width;
@@ -3128,7 +3128,7 @@ final class _PlacedDrawing extends _Placed {
     painter.canvas.saved(
       () => draw(
         painter.canvas,
-        PdfRect(x + left, top - this.top - drawingHeight, width, drawingHeight),
+        Rect(x + left, top - this.top - drawingHeight, width, drawingHeight),
       ),
     );
   }
@@ -3185,7 +3185,7 @@ final class _PlacedCustom extends _Placed {
   void paint(_Painter painter, double x, double top) {
     decoration?.call(
       painter.page,
-      PdfRect(
+      Rect(
         x + left,
         top - this.top - placement.height,
         width,
@@ -3243,7 +3243,7 @@ final class _PlacedCell {
   final TableCell cell;
 
   /// The background of the cell's row, for a cell without its own.
-  final PdfColor? stripe;
+  final Color? stripe;
 
   /// The left edge, from the table's region's left.
   final double x;
@@ -3313,7 +3313,7 @@ final class _PlacedTable extends _Placed {
           ..save()
           ..setFillColor(background)
           ..rect(
-            PdfRect(
+            Rect(
               x + placed.x,
               top - placed.y - placed.height,
               placed.width,
@@ -3335,7 +3335,7 @@ final class _PlacedTable extends _Placed {
       if (placed.cell.decoration case final decoration?) {
         decoration(
           painter.page,
-          PdfRect(
+          Rect(
             x + placed.x,
             top - placed.y - placed.height,
             placed.width,
@@ -3436,13 +3436,13 @@ final class LayoutResult {
     null => null,
   };
 
-  /// Adds the pages to [document]; anchors become named destinations,
-  /// named by [destinationName] (the anchor's name when null).
-  List<PdfPage> render(
-    PdfDocument document, {
+  /// Adds the pages to [document]; anchors become its destinations, named
+  /// by [destinationName] (the anchor's name when null).
+  List<P> render<P extends LayoutPage>(
+    LayoutDocument<P> document, {
     String Function(String anchor)? destinationName,
   }) {
-    final rendered = <PdfPage>[];
+    final rendered = <P>[];
     final carried = <String, String>{};
     for (final (i, page) in _pages.indexed) {
       // A mark's value on a page: the first set on it, else the last
@@ -3465,36 +3465,34 @@ final class LayoutResult {
       );
       final template = page.template;
       final size = template.size;
-      final PdfPage pdfPage;
+      final P target;
       if (template.bleed case final bleed?) {
-        final sheet = PdfRect(
+        final sheet = Rect(
           size.left - bleed,
           size.bottom - bleed,
           size.width + 2 * bleed,
           size.height + 2 * bleed,
         );
-        pdfPage = document.addPage(sheet, trimBox: size, bleedBox: sheet);
+        target = document.addPage(sheet, trimBox: size, bleedBox: sheet);
       } else {
-        pdfPage = document.addPage(size);
+        target = document.addPage(size);
       }
-      final painter = _Painter(pdfPage.canvas, pdfPage);
-      template.background?.call(pdfPage.canvas, info);
+      final painter = _Painter(target.canvas, target);
+      template.background?.call(target.canvas, info);
       _running(template.header?.call(info), template, painter, header: true);
       for (final (region, placed) in page.placed) {
         placed?.paint(painter, region.left, region.top);
       }
       _running(template.footer?.call(info), template, painter, header: false);
-      template.foreground?.call(pdfPage.canvas, info);
-      rendered.add(pdfPage);
+      template.foreground?.call(target.canvas, info);
+      rendered.add(target);
     }
     for (final MapEntry(key: name, value: position) in anchors.entries) {
-      document.addDestination(
+      document.addAnchor(
         destinationName?.call(name) ?? name,
-        PdfDestination.xyz(
-          rendered[position.page],
-          left: position.x,
-          top: position.y,
-        ),
+        rendered[position.page],
+        position.x,
+        position.y,
       );
     }
     return rendered;

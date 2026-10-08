@@ -1,0 +1,8 @@
+# The files left out of the pub.dev package (this replaces .gitignore for
+# publishing, so its entries are repeated).
+.dart_tool/
+build/
+pubspec.lock
+node_modules/
+/tool/
+/test/

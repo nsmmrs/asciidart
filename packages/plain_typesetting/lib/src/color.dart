@@ -6,7 +6,7 @@ import 'package:meta/meta.dart';
 
 /// A color to fill or stroke with.
 @immutable
-sealed class PdfColor {
+sealed class Color {
   const new _();
 
   /// Gray: 0 is black, 1 is white.
@@ -42,7 +42,7 @@ sealed class PdfColor {
 }
 
 /// A device gray color.
-final class GrayColor extends PdfColor {
+final class GrayColor extends Color {
   /// Gray at [level] (0 black, 1 white).
   const new(this.level) : super._();
 
@@ -60,7 +60,7 @@ final class GrayColor extends PdfColor {
 }
 
 /// A device RGB color.
-final class RgbColor extends PdfColor {
+final class RgbColor extends Color {
   /// The color of [red], [green] and [blue] (0 to 1).
   const new(this.red, this.green, this.blue) : super._();
 
@@ -88,7 +88,7 @@ final class RgbColor extends PdfColor {
 }
 
 /// A device CMYK color.
-final class CmykColor extends PdfColor {
+final class CmykColor extends Color {
   /// The color of [cyan], [magenta], [yellow] and [black] (0 to 1).
   const new(this.cyan, this.magenta, this.yellow, this.black) : super._();
 
@@ -122,7 +122,7 @@ final class CmykColor extends PdfColor {
 /// A spot color: a named colorant at a [tint], shown on screen (and by
 /// printers without the colorant) as its CMYK [alternate] scaled by the
 /// tint.
-final class SpotColor extends PdfColor {
+final class SpotColor extends Color {
   /// The colorant [name] at [tint] (0 to 1), approximated by
   /// [alternate].
   const new(this.name, this.alternate, [this.tint = 1]) : super._();

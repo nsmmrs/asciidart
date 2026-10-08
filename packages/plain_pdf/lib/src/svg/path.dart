@@ -6,7 +6,7 @@ library;
 import 'dart:math' as math;
 
 import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 /// A segment of a path, in absolute coordinates.
 sealed class PathSegment {
@@ -149,7 +149,7 @@ final class SvgPath {
   bool get isEmpty => !segments.any((s) => s is! MoveSegment);
 
   /// The path transformed by [matrix].
-  SvgPath transform(PdfMatrix matrix) => SvgPath([
+  SvgPath transform(Matrix matrix) => SvgPath([
     for (final segment in segments)
       switch (segment) {
         MoveSegment(:final x, :final y) => () {
@@ -179,7 +179,7 @@ final class SvgPath {
   ]);
 
   /// The bounding box of the path's points and control points.
-  PdfRect? get bounds {
+  Rect? get bounds {
     var minX = double.infinity;
     var minY = double.infinity;
     var maxX = double.negativeInfinity;
@@ -211,7 +211,7 @@ final class SvgPath {
       }
     }
     if (minX > maxX) return null;
-    return PdfRect(minX, minY, maxX - minX, maxY - minY);
+    return Rect(minX, minY, maxX - minX, maxY - minY);
   }
 
   /// Adds the path to [canvas]'s current path.

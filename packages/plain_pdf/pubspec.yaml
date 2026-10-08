@@ -1,14 +1,13 @@
 name: plain_pdf
 description: >-
   A pure-Dart PDF library written from ISO 32000: a writer and a reader,
-  fonts, images, drawing, and a box-tree layout engine with pluggable line
-  breaking.
+  fonts, images, drawing and SVG, and a backend for plain_typesetting's
+  layouts.
 version: 0.1.0-dev
 repository: https://github.com/nsmmrs/ptome/tree/master/packages/plain_pdf
 issue_tracker: https://github.com/nsmmrs/ptome/issues
 topics:
   - pdf
-  - layout
   - typesetting
 
 environment:
@@ -21,6 +20,7 @@ dependencies:
   plain_compression: ^0.1.0-dev
   plain_fonts: ^0.1.0-dev
   plain_math: ^0.1.0-dev
+  plain_typesetting: ^0.1.0-dev
   plain_unicode: ^0.1.0-dev
   xml: ^7.1.0
 

@@ -1,13 +1,11 @@
 // A sample document exercising the layout engine, shared by the golden
 // render test and the benchmark.
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
-final PdfTextStyle _body = PdfTextStyle(StandardFont.timesRoman, 10.5);
-final PdfTextStyle _heading = PdfTextStyle(
-  StandardFont.named('Helvetica-Bold'),
-  15,
-);
-final PdfTextStyle _small = PdfTextStyle(StandardFont.helvetica, 8);
+final TextStyle _body = TextStyle(StandardFont.timesRoman, 10.5);
+final TextStyle _heading = TextStyle(StandardFont.named('Helvetica-Bold'), 15);
+final TextStyle _small = TextStyle(StandardFont.helvetica, 8);
 
 const String _text =
     'The quick brown fox jumps over the lazy dog. Typesetting a '
@@ -51,7 +49,7 @@ List<LayoutBox> sampleContent({int chapters = 3}) => [
       [
         TableRow([
           for (final h in ['Item', 'Description', 'Price'])
-            _cell(h, background: const PdfColor.gray(0.85)),
+            _cell(h, background: const Color.gray(0.85)),
         ]),
         for (var r = 1; r <= 6; r++)
           TableRow([
@@ -78,7 +76,7 @@ List<LayoutBox> sampleContent({int chapters = 3}) => [
   ],
 ];
 
-TableCell _cell(String text, {PdfColor? background}) => TableCell(
+TableCell _cell(String text, {Color? background}) => TableCell(
   [
     ParagraphBox(Paragraph([TextRun(text, _small)])),
   ],
@@ -89,7 +87,7 @@ TableCell _cell(String text, {PdfColor? background}) => TableCell(
 /// A layout for the sample: A5 pages with a running header and a footer.
 FlowLayout sampleLayout() => FlowLayout(
   template: PageTemplate(
-    const PdfRect(0, 0, 420, 595),
+    const Rect(0, 0, 420, 595),
     margins: const EdgeInsets.symmetric(vertical: 50, horizontal: 40),
     header: (page) => [
       const SpacerBox(20),

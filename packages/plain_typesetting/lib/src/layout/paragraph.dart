@@ -8,11 +8,11 @@ library;
 import 'dart:math' as math;
 
 import 'package:meta/meta.dart';
-import 'package:plain_pdf/src/drawing/canvas.dart';
-import 'package:plain_pdf/src/drawing/document.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
-import 'package:plain_pdf/src/fonts/fonts.dart';
-import 'package:plain_pdf/src/layout/inline.dart';
+import 'package:plain_typesetting/src/canvas.dart';
+import 'package:plain_typesetting/src/font.dart';
+import 'package:plain_typesetting/src/geometry.dart';
+import 'package:plain_typesetting/src/layout/inline.dart';
+import 'package:plain_typesetting/src/link.dart';
 import 'package:plain_unicode/plain_unicode.dart'
     show LineBreakClass, lineBreakClass, lineBreaks;
 
@@ -820,7 +820,7 @@ List<LineItem> paragraphItems(Paragraph paragraph, {double? maxWidth}) {
 /// [run] split where its font lacks characters a fallback font has.
 List<TextRun> _withFallbacks(TextRun run) {
   final primary = run.style.font;
-  PdfFont fontFor(int rune) {
+  Font fontFor(int rune) {
     if (primary.covers(rune) || rune <= 0x20) return primary;
     for (final font in run.fallbackFonts) {
       if (font.covers(rune)) return font;
@@ -830,7 +830,7 @@ List<TextRun> _withFallbacks(TextRun run) {
 
   final runs = <TextRun>[];
   final text = StringBuffer();
-  PdfFont? current;
+  Font? current;
   void flush() {
     if (text.isEmpty) return;
     final piece = run.withText(text.toString());
@@ -911,7 +911,7 @@ final class TextFragment extends LineFragment {
 
   /// The style it is drawn in: the run's, with the word spacing that
   /// justifies the line.
-  final PdfTextStyle style;
+  final TextStyle style;
 }
 
 /// An inline image on a line.
@@ -965,10 +965,10 @@ final class Line {
   /// the rectangles of links to [link] and the positions of anchors to
   /// [anchor].
   void paint(
-    PdfCanvas canvas,
+    Canvas canvas,
     double x,
     double top, {
-    void Function(PdfRect rect, LinkTarget target)? link,
+    void Function(Rect rect, LinkTarget target)? link,
     void Function(String name, double x, double y)? anchor,
   }) {
     final y = top - baseline;
@@ -982,7 +982,7 @@ final class Line {
             _decorate(
               canvas,
               decoration,
-              PdfRect(
+              Rect(
                 left - decoration.padding,
                 y + font.descender * size / 1000,
                 fragment.width + 2 * decoration.padding,
@@ -997,7 +997,7 @@ final class Line {
           if (run.underline) {
             canvas
               ..rect(
-                PdfRect(
+                Rect(
                   left,
                   y + font.underlinePosition * size / 1000 - thickness / 2,
                   fragment.width,
@@ -1009,7 +1009,7 @@ final class Line {
           if (run.strikethrough) {
             canvas
               ..rect(
-                PdfRect(
+                Rect(
                   left,
                   y + font.xHeight * size / 2000 - thickness / 2,
                   fragment.width,
@@ -1021,7 +1021,7 @@ final class Line {
           canvas.restore();
           if (run.link case final target? when link != null) {
             link(
-              PdfRect(
+              Rect(
                 left,
                 y + font.descender * size / 1000,
                 fragment.width,
@@ -1036,18 +1036,18 @@ final class Line {
         case ImageFragment(:final image, :final bottom):
           image.image.paint(
             canvas,
-            PdfRect(left, y + bottom, image.width, image.height),
+            Rect(left, y + bottom, image.width, image.height),
           );
           if (image.link case final target? when link != null) {
-            link(PdfRect(left, y + bottom, image.width, image.height), target);
+            link(Rect(left, y + bottom, image.width, image.height), target);
           }
       }
     }
   }
 }
 
-void _decorate(PdfCanvas canvas, InlineDecoration decoration, PdfRect rect) {
-  void shape(PdfRect r) => decoration.radius > 0
+void _decorate(Canvas canvas, InlineDecoration decoration, Rect rect) {
+  void shape(Rect r) => decoration.radius > 0
       ? canvas.roundedRect(r, decoration.radius)
       : canvas.rect(r);
   canvas.save();
@@ -1062,7 +1062,7 @@ void _decorate(PdfCanvas canvas, InlineDecoration decoration, PdfRect rect) {
       ..setStrokeColor(color)
       ..setLineWidth(w);
     shape(
-      PdfRect(
+      Rect(
         rect.left + w / 2,
         rect.bottom + w / 2,
         rect.width - w,
@@ -1185,7 +1185,7 @@ Line _line(
   var gap = 0.0;
   var size = 0.0;
   var xHeight = 0.0;
-  void text(PdfTextStyle style) {
+  void text(TextStyle style) {
     final scale = style.size / 1000;
     ascent = math.max(
       ascent,

@@ -1,0 +1,589 @@
+({double alpha, double blue, double green, double red})? parseCssColor(String text)
+List<Line> buildLines(Paragraph paragraph, List<LineItem> items, List<int> breaks, double Function(int) widths)
+List<LineItem> paragraphItems(Paragraph paragraph, {double? maxWidth})
+String get plainTypesettingVersion
+abstract base class ItemLineBreaker implements LineBreaker
+  ItemLineBreaker()
+  List<Line> breakLines(Paragraph paragraph, double Function(int) widths)
+  List<int> breakItems(List<LineItem> items, double Function(int) widths)
+abstract base class LinkTarget
+  LinkTarget()
+  LinkTarget.named(String name)
+  LinkTarget.uri(String uri)
+abstract interface class Canvas
+  Canvas()
+  double glyphs(List<ShapedGlyph> glyphs, double x, double y, TextStyle style)
+  double text(String text, double x, double y, TextStyle style)
+  void beginMarkedContent(String tag, {String? actualText})
+  void circle(double cx, double cy, double radius)
+  void clip({bool evenOdd = false})
+  void closePath()
+  void curveTo(double x1, double y1, double x2, double y2, double x3, double y3)
+  void dash(List<double> pattern, [double phase = 0])
+  void ellipse(double cx, double cy, double rx, double ry)
+  void endMarkedContent()
+  void endPath()
+  void fill({bool evenOdd = false})
+  void fillAndStroke({bool evenOdd = false})
+  void lineTo(double x, double y)
+  void moveTo(double x, double y)
+  void opacity({double? fill, double? stroke})
+  void rect(Rect rect)
+  void restore()
+  void rotate(double degrees)
+  void roundedRect(Rect rect, double radius)
+  void save()
+  void saved(void Function() draw)
+  void scale(double x, [double? y])
+  void setBlendMode(BlendMode mode)
+  void setFillColor(Color color)
+  void setLineCap(LineCap cap)
+  void setLineJoin(LineJoin join)
+  void setLineWidth(double width)
+  void setMiterLimit(double limit)
+  void setStrokeColor(Color color)
+  void stroke()
+  void transform(Matrix matrix)
+  void translate(double x, double y)
+abstract interface class CustomContent
+  (double, double) intrinsicWidths()
+  CustomContent()
+  CustomPlacement? place(double width, double available, {required bool atTop})
+  double minHeight(double width)
+abstract interface class Font
+  Font()
+  List<ShapedGlyph> shape(String text, {bool kerning = true, bool ligatures = false, Set<String> features = const {}})
+  String name
+  bool covers(int codePoint)
+  double ascender
+  double capHeight
+  double descender
+  double lineGap
+  double underlinePosition
+  double underlineThickness
+  double widthOf(String text, double size, {bool kerning = true})
+  double xHeight
+abstract interface class Graphic
+  Graphic()
+  double intrinsicHeight
+  double intrinsicWidth
+  void paint(Canvas canvas, Rect rect)
+abstract interface class Hyphenator
+  Hyphenator()
+  List<int> hyphenate(String word)
+abstract interface class LayoutDocument<P extends LayoutPage>
+  LayoutDocument<P>()
+  P addPage(Rect mediaBox, {Rect? bleedBox, Rect? trimBox})
+  void addAnchor(String name, P page, double left, double top)
+abstract interface class LayoutPage
+  Canvas canvas
+  LayoutPage()
+  void link(Rect rect, LinkTarget target)
+abstract interface class LineBreaker
+  LineBreaker()
+  List<Line> breakLines(Paragraph paragraph, double Function(int) widths)
+abstract interface class OpenTypeTextFont implements Font
+  OpenTypeFont font
+  OpenTypeTextFont()
+abstract interface class PageBreaker
+  PageBreaker()
+  bool moveKeptBox(double height, double available, double regionHeight)
+  int linesThatFit(List<double> heights, double available, {required int orphans, required int widows, required bool atTop})
+enum BlendMode
+  static BlendMode colorBurn
+  static BlendMode colorDodge
+  static BlendMode darken
+  static BlendMode difference
+  static BlendMode exclusion
+  static BlendMode hardLight
+  static BlendMode lighten
+  static BlendMode multiply
+  static BlendMode normal
+  static BlendMode overlay
+  static BlendMode screen
+  static BlendMode softLight
+  static List<BlendMode> values
+enum BoxAlign
+  static BoxAlign center
+  static BoxAlign left
+  static BoxAlign right
+  static List<BoxAlign> values
+enum BreakKind
+  static BreakKind column
+  static BreakKind page
+  static List<BreakKind> values
+enum FloatPlacement
+  static FloatPlacement auto
+  static FloatPlacement bottom
+  static FloatPlacement next
+  static FloatPlacement top
+  static List<FloatPlacement> values
+enum InlineAlignment
+  static InlineAlignment baseline
+  static InlineAlignment middle
+  static InlineAlignment top
+  static List<InlineAlignment> values
+enum LineCap
+  static LineCap butt
+  static LineCap projectingSquare
+  static LineCap round
+  static List<LineCap> values
+enum LineJoin
+  static LineJoin bevel
+  static LineJoin miter
+  static LineJoin round
+  static List<LineJoin> values
+enum PageSide
+  PageSide of(int number)
+  static List<PageSide> values
+  static PageSide recto
+  static PageSide verso
+enum TextAlign
+  static List<TextAlign> values
+  static TextAlign center
+  static TextAlign justify
+  static TextAlign left
+  static TextAlign right
+enum TextRenderMode
+  static List<TextRenderMode> values
+  static TextRenderMode clip
+  static TextRenderMode fill
+  static TextRenderMode fillClip
+  static TextRenderMode fillStroke
+  static TextRenderMode fillStrokeClip
+  static TextRenderMode invisible
+  static TextRenderMode stroke
+  static TextRenderMode strokeClip
+enum VerticalAlign
+  static List<VerticalAlign> values
+  static VerticalAlign bottom
+  static VerticalAlign middle
+  static VerticalAlign top
+final class AnchorPosition
+  AnchorPosition(int page, double x, double y)
+  double x
+  double y
+  int page
+final class AutoColumnWidth extends ColumnWidth
+  AutoColumnWidth()
+final class BlockBox extends LayoutBox
+  BlockBox(List<LayoutBox> children, {BoxStyle style = const BoxStyle()})
+  List<LayoutBox> children
+final class Border
+  Border({EdgeInsets widths = EdgeInsets.zero, Color color = const GrayColor(0), double radius = 0})
+  Color color
+  EdgeInsets widths
+  double radius
+  static Border none
+final class BoxItem extends LineItem
+  BoxItem(InlineContent content, String text, double width)
+  InlineContent content
+  String text
+  double width
+final class BoxStyle
+  Border border
+  BoxStyle withTag(String? tag)
+  BoxStyle({EdgeInsets margin = EdgeInsets.zero, EdgeInsets padding = EdgeInsets.zero, Border border = Border.none, Color? background, bool keepTogether = false, bool keepWithNext = false, String? anchor, Map<String, String> marks = const {}, void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration, String? tag, FloatPlacement? float, bool floatBarrier = false, VerticalAlign? verticalAlign, bool cloneEdges = false, double floatClearance = 0})
+  Color? background
+  EdgeInsets margin
+  EdgeInsets padding
+  FloatPlacement? float
+  Map<String, String> marks
+  String? anchor
+  String? tag
+  VerticalAlign? verticalAlign
+  bool cloneEdges
+  bool floatBarrier
+  bool floating
+  bool keepTogether
+  bool keepWithNext
+  double floatClearance
+  void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration
+final class BreakBox extends LayoutBox
+  BreakBox.column({bool force = false})
+  BreakBox.page({String? template, bool force = false, PageSide? side})
+  BreakKind kind
+  PageSide? side
+  String? template
+  bool force
+final class CmykColor extends Color
+  CmykColor(double cyan, double magenta, double yellow, double black)
+  List<double> components
+  bool ==(Object other)
+  double black
+  double cyan
+  double magenta
+  double yellow
+  int hashCode
+final class ColumnsBox extends LayoutBox
+  ColumnsBox(List<LayoutBox> children, {int count = 2, double gap = 12, BoxStyle style = const BoxStyle()})
+  List<LayoutBox> children
+  double gap
+  int count
+final class ComputedColumnWidth extends ColumnWidth
+  ComputedColumnWidth(double Function(double) width)
+  double Function(double) width
+final class CustomBox extends LayoutBox
+  CustomBox(CustomContent content, {BoxStyle style = const BoxStyle()})
+  CustomContent content
+final class CustomPlacement
+  CustomContent? rest
+  CustomPlacement({required double height, required void Function(LayoutPage, double, double) paint, CustomContent? rest, List<(String, double, double)> anchors = const []})
+  List<(String, double, double)> anchors
+  double height
+  void Function(LayoutPage, double, double) paint
+final class DefaultPageBreaker implements PageBreaker
+  DefaultPageBreaker()
+  bool moveKeptBox(double height, double available, double regionHeight)
+  int linesThatFit(List<double> heights, double available, {required int orphans, required int widows, required bool atTop})
+final class DrawingBox extends LayoutBox
+  BoxAlign align
+  DrawingBox(double height, void Function(Canvas, Rect) draw, {double? width, BoxStyle style = const BoxStyle(), BoxAlign align = BoxAlign.left})
+  double height
+  double? width
+  void Function(Canvas, Rect) draw
+final class EdgeInsets
+  EdgeInsets({double top = 0, double right = 0, double bottom = 0, double left = 0})
+  EdgeInsets.all(double value)
+  EdgeInsets.symmetric({double vertical = 0, double horizontal = 0})
+  bool ==(Object other)
+  double bottom
+  double horizontal
+  double left
+  double right
+  double top
+  double vertical
+  int hashCode
+  static EdgeInsets zero
+final class ExactLineHeight extends LineHeight
+  ExactLineHeight(double points)
+  double points
+final class FirstFitLineBreaker extends ItemLineBreaker
+  FirstFitLineBreaker()
+  List<int> breakItems(List<LineItem> items, double Function(int) widths)
+final class FixedColumnWidth extends ColumnWidth
+  FixedColumnWidth(double points)
+  double points
+final class FlowLayout
+  FlowLayout({PageTemplate? template, Map<String?, PageTemplate>? templates, PageBreaker pageBreaker = const DefaultPageBreaker(), LineBreaker lineBreaker = const FirstFitLineBreaker(), String Function(int)? pageLabel, int maxPasses = 5, String? startTemplate, bool keepTemplate = false, PageTemplate Function(PageTemplate, int)? templateForPage, Map<String, LayoutBox> notes = const {}, LayoutBox? noteSeparator})
+  LayoutBox? noteSeparator
+  LayoutResult layout(List<LayoutBox> content, {LayoutResult? reuse, int unchangedBefore = 0, Set<int>? changedPages})
+  LineBreaker lineBreaker
+  Map<String, LayoutBox> notes
+  Map<String?, PageTemplate> templates
+  PageBreaker pageBreaker
+  PageTemplate Function(PageTemplate, int)? templateForPage
+  String Function(int) pageLabel
+  String? startTemplate
+  bool keepTemplate
+  int maxPasses
+final class FontLineHeight extends LineHeight
+  FontLineHeight({double leading = 0})
+  double leading
+final class FractionColumnWidth extends ColumnWidth
+  FractionColumnWidth(double weight)
+  double weight
+final class GlueItem extends LineItem
+  GlueItem(TextRun? run, String text, double width, double stretch, double shrink)
+  GlueItem.fill()
+  String text
+  TextRun? run
+  double shrink
+  double stretch
+  double width
+final class GrayColor extends Color
+  GrayColor(double level)
+  List<double> components
+  bool ==(Object other)
+  double level
+  int hashCode
+final class ImageBox extends LayoutBox
+  BoxAlign align
+  Graphic image
+  ImageBox(Graphic image, double width, double height, {BoxStyle style = const BoxStyle(), BoxAlign align = BoxAlign.left, bool shrinkToFit = true})
+  bool shrinkToFit
+  double height
+  double width
+final class ImageFragment extends LineFragment
+  ImageFragment(double x, double width, InlineImage image, double bottom)
+  InlineImage image
+  double bottom
+final class InlineDecoration
+  Color? background
+  Color? borderColor
+  InlineDecoration({Color? background, Color? borderColor, double borderWidth = 0, double radius = 0, double padding = 0})
+  double borderWidth
+  double padding
+  double radius
+final class InlineImage extends InlineContent
+  Graphic image
+  InlineAlignment alignment
+  InlineImage(Graphic image, double width, double height, {InlineAlignment alignment = InlineAlignment.baseline, LinkTarget? link})
+  LinkTarget? link
+  double height
+  double width
+final class KnuthPlassLineBreaker extends ItemLineBreaker
+  KnuthPlassLineBreaker({double tolerance = 2, double linePenalty = 10, double flaggedDemerits = 100, double fitnessDemerits = 100})
+  List<int> breakItems(List<LineItem> items, double Function(int) widths)
+  double fitnessDemerits
+  double flaggedDemerits
+  double linePenalty
+  double tolerance
+final class LayoutResult
+  List<P> render<P extends LayoutPage>(LayoutDocument<P> document, {String Function(String)? destinationName})
+  List<int> anchorPages(String anchor)
+  List<int> boundaries
+  Map<String, ({int first, int last})> tagPages
+  Map<String, AnchorPosition> anchors
+  int boundaryBefore(int page)
+  int pageCount
+  int? pageOf(String anchor)
+final class Line
+  Line(List<LineFragment> fragments, {required double width, required double height, required double baseline, required double ascent, required double descent, required bool hyphenated})
+  List<LineFragment> fragments
+  bool hyphenated
+  double ascent
+  double baseline
+  double descent
+  double height
+  double width
+  void paint(Canvas canvas, double x, double top, {void Function(Rect, LinkTarget)? link, void Function(String, double, double)? anchor})
+final class MathBox implements Graphic
+  double depth
+  double height
+  double intrinsicHeight
+  double intrinsicWidth
+  double width
+  void paint(Canvas canvas, Rect rect)
+  void paintAt(Canvas canvas, double x, double y)
+final class MathLayout
+  List<OpenTypeTextFont> fallbacks
+  MathBox layout(MathNode node, {required double size, bool display = false})
+  MathLayout(OpenTypeTextFont font, {List<OpenTypeTextFont> fallbacks = const []})
+  OpenTypeTextFont font
+final class Matrix
+  (double, double) apply(double x, double y)
+  Matrix then(Matrix other)
+  Matrix(double a, double b, double c, double d, double e, double f)
+  Matrix.identity()
+  Matrix.rotation(double radians)
+  Matrix.scaling(double x, double y)
+  Matrix.translation(double x, double y)
+  String toString()
+  bool ==(Object other)
+  double a
+  double b
+  double c
+  double d
+  double e
+  double f
+  int hashCode
+final class MultipleLineHeight extends LineHeight
+  MultipleLineHeight(double factor)
+  double factor
+final class NamedTarget extends LinkTarget
+  NamedTarget(String name)
+  String name
+final class OpenTypeShaper implements OpenTypeTextFont
+  List<ShapedGlyph> shape(String text, {bool kerning = true, bool ligatures = false, Set<String> features = const {}})
+  OpenTypeFont font
+  OpenTypeShaper(OpenTypeFont font, {int? kernTableSubtable})
+  String name
+  bool covers(int codePoint)
+  double ascender
+  double capHeight
+  double descender
+  double lineGap
+  double scale(num units)
+  double underlinePosition
+  double underlineThickness
+  double widthOf(String text, double size, {bool kerning = true})
+  double xHeight
+  int? kernTableSubtable
+final class PageInfo
+  PageTemplate template
+  String label
+  String? mark(String name)
+  String? topMark(String name)
+  bool isEmpty
+  int count
+  int number
+final class PageReference extends InlineContent
+  Color? color
+  LinkTarget? link
+  PageReference(String anchor, TextStyle style, {String placeholder = '000', Color? color, LinkTarget? link})
+  String anchor
+  String placeholder
+  TextRun resolve(String text)
+  TextStyle style
+final class PageTemplate
+  EdgeInsets margins
+  List<LayoutBox> Function(PageInfo)? footer
+  List<LayoutBox> Function(PageInfo)? header
+  List<Rect> regions
+  PageTemplate(Rect size, {EdgeInsets margins = const EdgeInsets.all(72), int columns = 1, double columnGap = 12, List<LayoutBox> Function(PageInfo)? header, List<LayoutBox> Function(PageInfo)? footer, void Function(Canvas, PageInfo)? background, void Function(Canvas, PageInfo)? foreground, double? bleed})
+  Rect size
+  double columnGap
+  double? bleed
+  int columns
+  void Function(Canvas, PageInfo)? background
+  void Function(Canvas, PageInfo)? foreground
+final class Paragraph
+  Hyphenator? hyphenator
+  LineHeight lineHeight
+  List<InlineContent> content
+  Paragraph(List<InlineContent> content, {TextAlign align = TextAlign.left, LineHeight lineHeight = const LineHeight.font(), double firstLineIndent = 0, Hyphenator? hyphenator, bool breakLongWords = true})
+  TextAlign align
+  bool breakLongWords
+  double firstLineIndent
+final class ParagraphBox extends LayoutBox
+  LineBreaker? lineBreaker
+  Paragraph paragraph
+  ParagraphBox(Paragraph paragraph, {BoxStyle style = const BoxStyle(), int orphans = 2, int widows = 2, LineBreaker? lineBreaker})
+  int orphans
+  int widows
+final class PenaltyItem extends LineItem
+  PenaltyItem(double width, double penalty, {bool flagged = false, TextRun? run})
+  TextRun? run
+  bool flagged
+  bool isForced
+  double penalty
+  double width
+  static double forced
+  static double never
+final class Rect
+  Rect(double left, double bottom, double width, double height)
+  Rect.fromEdges(double left, double bottom, double right, double top)
+  String toString()
+  bool ==(Object other)
+  double bottom
+  double height
+  double left
+  double right
+  double top
+  double width
+  int hashCode
+final class RgbColor extends Color
+  List<double> components
+  RgbColor(double red, double green, double blue)
+  bool ==(Object other)
+  double blue
+  double green
+  double red
+  int hashCode
+final class ShapedGlyph
+  ShapedGlyph(int id, String text, double advance, [double kerning = 0])
+  String text
+  double advance
+  double kerning
+  int id
+final class SpacerBox extends LayoutBox
+  SpacerBox(double height)
+  double height
+final class SpotColor extends Color
+  CmykColor alternate
+  List<double> components
+  SpotColor(String name, CmykColor alternate, [double tint = 1])
+  String name
+  bool ==(Object other)
+  double tint
+  int hashCode
+final class TableBox extends LayoutBox
+  BoxAlign align
+  List<Color?> stripes
+  List<ColumnWidth> columns
+  List<TableRow> rows
+  TableBox(List<TableRow> rows, {required List<ColumnWidth> columns, int headerRows = 0, double? width, bool shrinkToContent = false, BoxAlign align = BoxAlign.left, List<Color?> stripes = const [], BoxStyle style = const BoxStyle()})
+  bool shrinkToContent
+  double? width
+  int headerRows
+final class TableCell
+  Border border
+  Color? background
+  EdgeInsets padding
+  List<LayoutBox> content
+  TableCell(List<LayoutBox> content, {int colSpan = 1, int rowSpan = 1, EdgeInsets padding = const EdgeInsets.all(4), Color? background, Border border = Border.none, VerticalAlign verticalAlign = VerticalAlign.top, double Function(double, double)? verticalOffset, void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration})
+  VerticalAlign verticalAlign
+  double Function(double, double)? verticalOffset
+  int colSpan
+  int rowSpan
+  void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration
+final class TableRow
+  List<TableCell> cells
+  TableRow(List<TableCell> cells, {double minHeight = 0})
+  double minHeight
+final class TextFragment extends LineFragment
+  List<ShapedGlyph> glyphs
+  String text
+  TextFragment(double x, double width, TextRun run, String text, List<ShapedGlyph> glyphs, TextStyle style)
+  TextRun run
+  TextStyle style
+final class TextRun extends InlineContent
+  Color? color
+  InlineDecoration? decoration
+  LinkTarget? link
+  List<Font> fallbackFonts
+  String text
+  String? anchor
+  TextRun withStyle(TextStyle style)
+  TextRun withText(String text)
+  TextRun(String text, TextStyle style, {Color? color, bool underline = false, bool strikethrough = false, LinkTarget? link, String? anchor, InlineDecoration? decoration, List<Font> fallbackFonts = const []})
+  TextStyle style
+  bool strikethrough
+  bool underline
+final class TextStyle
+  Font font
+  List<ShapedGlyph> shape(String text)
+  Set<String> features
+  TextRenderMode renderMode
+  TextStyle copyWith({Font? font, double? size, double? characterSpacing, double? wordSpacing, double? rise, double? horizontalScaling, TextRenderMode? renderMode, bool? kerning, bool? ligatures, Set<String>? features, double? skew, double? embolden})
+  TextStyle(Font font, double size, {double characterSpacing = 0, double wordSpacing = 0, double rise = 0, double horizontalScaling = 100, TextRenderMode renderMode = TextRenderMode.fill, bool kerning = true, bool ligatures = false, Set<String> features = const {}, double skew = 0, double embolden = 0})
+  bool ==(Object other)
+  bool kerning
+  bool ligatures
+  double characterSpacing
+  double embolden
+  double horizontalScaling
+  double measure(String text)
+  double rise
+  double size
+  double skew
+  double widthOf(List<ShapedGlyph> glyphs)
+  double wordSpacing
+  int hashCode
+final class TypstLineBreaker extends ItemLineBreaker
+  List<int> breakItems(List<LineItem> items, double Function(int) widths)
+  TypstLineBreaker({bool justify = true, double fontSize = 10, double hyphenationCost = 135, double runtCost = 100})
+  bool justify
+  double fontSize
+  double hyphenationCost
+  double runtCost
+final class UriTarget extends LinkTarget
+  String uri
+  UriTarget(String uri)
+sealed class Color
+  Color.cmyk(double cyan, double magenta, double yellow, double black)
+  Color.gray(double level)
+  Color.hex(String hex)
+  Color.rgb(double red, double green, double blue)
+  List<double> components
+sealed class ColumnWidth
+  ColumnWidth.auto()
+  ColumnWidth.computed(double Function(double) width)
+  ColumnWidth.fixed(double points)
+  ColumnWidth.fraction(double weight)
+sealed class InlineContent
+sealed class LayoutBox
+  BoxStyle style
+sealed class LineFragment
+  double width
+  double x
+sealed class LineHeight
+  LineHeight.exact(double points)
+  LineHeight.font({double leading})
+  LineHeight.multiple(double factor)
+sealed class LineItem
+  double width
+typedef BoxDecoration = void Function(LayoutPage, Rect, {required bool first, required bool last})
+typedef CssColor = ({double alpha, double blue, double green, double red})
+typedef LineWidths = double Function(int)

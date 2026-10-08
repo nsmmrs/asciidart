@@ -14,13 +14,15 @@ Layers, each public and usable alone:
 2. **Drawing.** Content streams through a typed graphics API: paths,
    colors, transforms, clipping, transparency; text with embedded fonts;
    images; links, destinations, outlines and page labels.
-3. **Layout.** A typed box tree is measured, broken into lines and pages,
-   and painted. Line breaking and page breaking are pluggable strategies:
-   plain_pdf ships defaults (first fit, Knuth-Plass), and callers can supply
-   their own to reproduce another engine's behavior.
-4. **Reading.** `PdfFile.parse` reads a PDF file's objects and pages
+3. **Reading.** `PdfFile.parse` reads a PDF file's objects and pages
    (cross-reference tables and streams, object streams, damaged files
    rebuilt by scanning); its pages can be painted into another document.
+
+Layout is the
+[plain_typesetting](https://github.com/nsmmrs/ptome/tree/master/packages/plain_typesetting)
+package's work: its paragraphs, page layout and math draw on any canvas,
+and plain_pdf's canvas, pages and fonts implement its interfaces, so a
+layout's `render` makes PDF pages.
 
 Fonts: the 14 standard fonts with their metrics and kerning, and OpenType
 fonts (TrueType and CFF outlines, or the WOFF and WOFF2 web fonts that wrap
@@ -37,19 +39,20 @@ styled report, an SVG chart and a two-column booklet.
 import 'dart:io';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 void main(List<String> args) {
   final document = PdfDocument(info: const PdfInfo(title: 'Hello'));
-  final page = document.addPage(const PdfRect(0, 0, 595, 842)); // A4
-  final style = PdfTextStyle(StandardFont.helvetica, 24);
+  final page = document.addPage(const Rect(0, 0, 595, 842)); // A4
+  final style = TextStyle(StandardFont.helvetica, 24);
   page.canvas
-    ..setFillColor(PdfColor.hex('#1565c0'))
-    ..roundedRect(const PdfRect(72, 700, 451, 60), 8)
+    ..setFillColor(Color.hex('#1565c0'))
+    ..roundedRect(const Rect(72, 700, 451, 60), 8)
     ..fill()
-    ..setFillColor(const PdfColor.gray(1))
+    ..setFillColor(const Color.gray(1))
     ..text('Hello, PDF', 90, 722, style);
   page.link(
-    const PdfRect(72, 700, 451, 60),
+    const Rect(72, 700, 451, 60),
     const LinkTarget.uri('https://example.org/'),
   );
   File(args.isEmpty ? 'hello.pdf' : args.first)

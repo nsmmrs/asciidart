@@ -3,13 +3,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:test/test.dart';
 
-final PdfTextStyle body = PdfTextStyle(StandardFont.helvetica, 10);
-final PdfTextStyle heading = PdfTextStyle(
-  StandardFont.named('Helvetica-Bold'),
-  14,
-);
+final TextStyle body = TextStyle(StandardFont.helvetica, 10);
+final TextStyle heading = TextStyle(StandardFont.named('Helvetica-Bold'), 14);
 
 /// The height of a line of [body] text.
 final double lineHeight =
@@ -33,7 +31,7 @@ PageTemplate rowsTemplate(
   List<LayoutBox> Function(PageInfo page)? header,
   List<LayoutBox> Function(PageInfo page)? footer,
 }) => PageTemplate(
-  PdfRect(0, 0, 300, 40 + rows * lineHeight),
+  Rect(0, 0, 300, 40 + rows * lineHeight),
   margins: const EdgeInsets.all(20),
   columns: columns,
   header: header,
@@ -139,7 +137,7 @@ void main() {
     final result =
         FlowLayout(
           template: const PageTemplate(
-            PdfRect(0, 0, 100, 100),
+            Rect(0, 0, 100, 100),
             margins: EdgeInsets.all(10),
           ),
         ).layout([
@@ -156,7 +154,7 @@ void main() {
     // 80 points a region; lines of 10 after a gap of 3.
     LayoutResult layout(List<LayoutBox> content) => FlowLayout(
       template: const PageTemplate(
-        PdfRect(0, 0, 100, 100),
+        Rect(0, 0, 100, 100),
         margins: EdgeInsets.all(10),
       ),
     ).layout(content);
@@ -384,7 +382,7 @@ void main() {
     final result =
         FlowLayout(
           template: const PageTemplate(
-            PdfRect(0, 0, 100, 100),
+            Rect(0, 0, 100, 100),
             margins: EdgeInsets.all(10),
           ),
         ).layout([
@@ -402,7 +400,7 @@ void main() {
     final result =
         FlowLayout(
           template: const PageTemplate(
-            PdfRect(0, 0, 100, 100),
+            Rect(0, 0, 100, 100),
             margins: EdgeInsets.all(10),
           ),
         ).layout([
@@ -432,7 +430,7 @@ void main() {
     final result =
         FlowLayout(
           template: const PageTemplate(
-            PdfRect(0, 0, 100, 100),
+            Rect(0, 0, 100, 100),
             margins: EdgeInsets.all(10),
           ),
         ).layout([
@@ -450,7 +448,7 @@ void main() {
     // 80 points a region, its top at 90.
     LayoutResult layout(List<LayoutBox> content) => FlowLayout(
       template: const PageTemplate(
-        PdfRect(0, 0, 100, 100),
+        Rect(0, 0, 100, 100),
         margins: EdgeInsets.all(10),
       ),
     ).layout(content);
@@ -499,7 +497,7 @@ void main() {
     // 80 points a region, its top at 90.
     LayoutResult layout(List<LayoutBox> content) => FlowLayout(
       template: const PageTemplate(
-        PdfRect(0, 0, 100, 100),
+        Rect(0, 0, 100, 100),
         margins: EdgeInsets.all(10),
       ),
     ).layout(content);
@@ -556,7 +554,7 @@ void main() {
       Map<String, LayoutBox> notes,
     ) => FlowLayout(
       template: const PageTemplate(
-        PdfRect(0, 0, 100, 100),
+        Rect(0, 0, 100, 100),
         margins: EdgeInsets.all(10),
       ),
       notes: notes,
@@ -598,7 +596,7 @@ void main() {
     test('are set once, with a separator above them', () {
       final result = FlowLayout(
         template: const PageTemplate(
-          PdfRect(0, 0, 100, 100),
+          Rect(0, 0, 100, 100),
           margins: EdgeInsets.all(10),
         ),
         notes: {
@@ -623,7 +621,7 @@ void main() {
     LayoutResult layout(int count) =>
         FlowLayout(
           template: const PageTemplate(
-            PdfRect(0, 0, 100, 100),
+            Rect(0, 0, 100, 100),
             margins: EdgeInsets.all(10),
           ),
         ).layout([
@@ -644,8 +642,8 @@ void main() {
   });
 
   test('kept templates: a break template lasts; at the top it replaces', () {
-    const portrait = PageTemplate(PdfRect(0, 0, 100, 200));
-    const landscape = PageTemplate(PdfRect(0, 0, 200, 100));
+    const portrait = PageTemplate(Rect(0, 0, 100, 200));
+    const landscape = PageTemplate(Rect(0, 0, 200, 100));
     List<double> widths(List<LayoutBox> boxes) {
       final document = PdfDocument();
       final pages = FlowLayout(
@@ -718,15 +716,12 @@ void main() {
 
   test('a bleed grows the sheet past the trimmed page', () {
     final document = PdfDocument();
-    FlowLayout(template: const PageTemplate(PdfRect(0, 0, 100, 200), bleed: 9))
+    FlowLayout(template: const PageTemplate(Rect(0, 0, 100, 200), bleed: 9))
         .layout([para('a')])
         .render(document);
     final page = document.pages.single;
-    expect(
-      page.mediaBox.toString(),
-      const PdfRect(-9, -9, 118, 218).toString(),
-    );
-    expect(page.trimBox.toString(), const PdfRect(0, 0, 100, 200).toString());
+    expect(page.mediaBox.toString(), const Rect(-9, -9, 118, 218).toString());
+    expect(page.trimBox.toString(), const Rect(0, 0, 100, 200).toString());
     expect(page.bleedBox.toString(), page.mediaBox.toString());
   });
 
@@ -776,7 +771,7 @@ void main() {
   });
 
   test('templateForPage gives each page its template', () {
-    const template = PageTemplate(PdfRect(0, 0, 100, 100));
+    const template = PageTemplate(Rect(0, 0, 100, 100));
     final margins = <double>[];
     FlowLayout(
           template: template,
@@ -801,7 +796,7 @@ void main() {
   });
 
   test('a custom box paints its decoration under its content', () {
-    final rects = <PdfRect>[];
+    final rects = <Rect>[];
     FlowLayout(template: rowsTemplate(4))
         .layout([
           CustomBox(
@@ -823,7 +818,7 @@ void main() {
     final order = <String>[];
     FlowLayout(
       template: PageTemplate(
-        const PdfRect(0, 0, 100, 100),
+        const Rect(0, 0, 100, 100),
         margins: const EdgeInsets.all(10),
         background: (canvas, page) => order.add('background'),
         foreground: (canvas, page) => order.add('foreground'),
@@ -852,7 +847,7 @@ void main() {
     // 80 points a region: 7 lines of 10 after a gap of 3.
     FlowLayout flow() => FlowLayout(
       template: const PageTemplate(
-        PdfRect(0, 0, 100, 100),
+        Rect(0, 0, 100, 100),
         margins: EdgeInsets.all(10),
       ),
     );
@@ -1193,10 +1188,10 @@ void main() {
         BlockBox(
           [para(lines(9))],
           style: const BoxStyle(
-            background: PdfColor.rgb(1, 0.9, 0.9),
+            background: Color.rgb(1, 0.9, 0.9),
             border: Border(
               widths: EdgeInsets.all(2),
-              color: PdfColor.rgb(1, 0, 0),
+              color: Color.rgb(1, 0, 0),
             ),
             padding: EdgeInsets.all(4),
           ),
@@ -1228,7 +1223,7 @@ void main() {
       final png = PdfImage.parse(
         File('test/images/pngsuite/basn2c08.png').readAsBytesSync(),
       );
-      var drawn = const PdfRect(0, 0, 0, 0);
+      var drawn = const Rect(0, 0, 0, 0);
       final (pdf, result) = render([
         ImageBox(png, 100, 1000, align: BoxAlign.center),
         DrawingBox(10, (canvas, rect) {

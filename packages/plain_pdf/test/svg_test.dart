@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:test/test.dart';
 
 bool _has(String tool) => Process.runSync('which', [tool]).exitCode == 0;
@@ -12,8 +13,8 @@ final bool _tools = ['rsvg-convert', 'pdftoppm', 'qpdf'].every(_has);
 /// [svg] drawn on a page of its size.
 Uint8List svgPdf(SvgImage svg) {
   final document = PdfDocument();
-  final page = document.addPage(PdfRect(0, 0, svg.width, svg.height));
-  svg.draw(page.canvas, PdfRect(0, 0, svg.width, svg.height));
+  final page = document.addPage(Rect(0, 0, svg.width, svg.height));
+  svg.draw(page.canvas, Rect(0, 0, svg.width, svg.height));
   return document.save();
 }
 
@@ -57,8 +58,8 @@ void main() {
     );
     final document = PdfDocument();
     svg.paint(
-      document.addPage(const PdfRect(0, 0, 100, 50)).canvas,
-      const PdfRect(0, 0, 100, 50),
+      document.addPage(const Rect(0, 0, 100, 50)).canvas,
+      const Rect(0, 0, 100, 50),
     );
     expect(asked, ['sans-serif', 'Fallback', 'Nope', 'Other One', 'Fallback']);
   });
@@ -145,7 +146,7 @@ void main() {
         ),
     };
     const px = 0.75;
-    final helvetica = PdfTextStyle(StandardFont.helvetica, 20 * px);
+    final helvetica = TextStyle(StandardFont.helvetica, 20 * px);
     expect(words['Start']!.$1, closeTo(10 * px, 0.5));
     expect(
       words['Start']!.$3,
@@ -211,7 +212,7 @@ void main() {
   test('an SVG is placed by the layout like any image', () {
     final svg = SvgImage.parse(File('test/svg/shapes.svg').readAsStringSync());
     final result = FlowLayout(
-      template: const PageTemplate(PdfRect(0, 0, 300, 300)),
+      template: const PageTemplate(Rect(0, 0, 300, 300)),
     ).layout([ImageBox(svg, svg.width, svg.height, align: BoxAlign.center)]);
     final document = PdfDocument();
     result.render(document);

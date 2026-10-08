@@ -5,30 +5,18 @@
 /// (compressed by the plain_compression package). Fonts (`PdfFont`, read by the
 /// plain_fonts package) and images (`PdfImage`). The drawing layer: a
 /// `PdfDocument` of pages drawn on `PdfCanvas`es, with links, destinations,
-/// outlines and page labels.
+/// outlines and page labels. The canvas, pages and fonts implement
+/// plain_typesetting's interfaces, so its layouts make PDF pages.
 library;
 
 export 'src/drawing/canvas.dart'
-    show
-        BlendMode,
-        LineCap,
-        LineJoin,
-        PdfCanvas,
-        PdfForm,
-        PdfTextStyle,
-        SoftMaskKind,
-        TextRenderMode,
-        TransparencyGroup;
-export 'src/drawing/color.dart'
-    show CmykColor, GrayColor, PdfColor, RgbColor, SpotColor;
+    show PdfCanvas, PdfForm, SoftMaskKind, TransparencyGroup, pdfCanvasOf;
 export 'src/drawing/document.dart'
     show
         DestinationTarget,
         FitDestination,
         FitHeightDestination,
         FitWidthDestination,
-        LinkTarget,
-        NamedTarget,
         PageLabel,
         PageMode,
         PageNumberStyle,
@@ -38,15 +26,11 @@ export 'src/drawing/document.dart'
         PdfOutputIntent,
         PdfPage,
         StreamPayload,
-        UriTarget,
         XyzDestination,
         encodeStream;
-export 'src/drawing/geometry.dart' show PdfMatrix, PdfRect;
-export 'src/drawing/graphic.dart' show Graphic;
 export 'src/drawing/shading.dart'
     show AxialShading, GradientStop, PdfShading, RadialShading;
-export 'src/fonts/fonts.dart'
-    show EmbeddedFont, PdfFont, ShapedGlyph, StandardFont;
+export 'src/fonts/fonts.dart' show EmbeddedFont, PdfFont, StandardFont;
 export 'src/images/images.dart'
     show
         ImageFormatException,
@@ -55,77 +39,6 @@ export 'src/images/images.dart'
         PngColorType,
         PngImage,
         PngPayload;
-export 'src/layout/flow.dart'
-    show
-        AnchorPosition,
-        AutoColumnWidth,
-        BlockBox,
-        Border,
-        BoxAlign,
-        BoxDecoration,
-        BoxStyle,
-        BreakBox,
-        BreakKind,
-        ColumnWidth,
-        ColumnsBox,
-        ComputedColumnWidth,
-        CustomBox,
-        CustomContent,
-        CustomPlacement,
-        DefaultPageBreaker,
-        DrawingBox,
-        EdgeInsets,
-        FixedColumnWidth,
-        FloatPlacement,
-        FlowLayout,
-        FractionColumnWidth,
-        ImageBox,
-        LayoutBox,
-        LayoutResult,
-        PageBreaker,
-        PageInfo,
-        PageSide,
-        PageTemplate,
-        ParagraphBox,
-        SpacerBox,
-        TableBox,
-        TableCell,
-        TableRow,
-        VerticalAlign;
-export 'src/layout/inline.dart'
-    show
-        InlineAlignment,
-        InlineContent,
-        InlineDecoration,
-        InlineImage,
-        PageReference,
-        TextRun;
-export 'src/layout/paragraph.dart'
-    show
-        BoxItem,
-        ExactLineHeight,
-        FirstFitLineBreaker,
-        FontLineHeight,
-        GlueItem,
-        Hyphenator,
-        ImageFragment,
-        ItemLineBreaker,
-        KnuthPlassLineBreaker,
-        Line,
-        LineBreaker,
-        LineFragment,
-        LineHeight,
-        LineItem,
-        LineWidths,
-        MultipleLineHeight,
-        Paragraph,
-        PenaltyItem,
-        TextAlign,
-        TextFragment,
-        TypstLineBreaker,
-        buildLines,
-        paragraphItems;
-export 'src/math/layout.dart' show MathBox, MathLayout;
 export 'src/md5.dart' show md5;
 export 'src/objects.dart'
     show

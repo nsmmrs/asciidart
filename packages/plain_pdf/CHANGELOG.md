@@ -2,6 +2,18 @@
 
 ## 0.1.0-dev (unreleased)
 
+- Layout moved to plain_typesetting with its history: paragraphs and the
+  line breakers, `FlowLayout` and its boxes, the math layout, geometry,
+  colors, `TextStyle`, `Graphic`, `ShapedGlyph`, and the shaping loop of
+  embedded fonts. plain_pdf depends on it and no longer exports them;
+  `PdfRect`, `PdfMatrix`, `PdfColor` and `PdfTextStyle` are now
+  `Rect`, `Matrix`, `Color` and `TextStyle` there.
+- `PdfCanvas` implements plain_typesetting's `Canvas`, `PdfPage` its
+  `LayoutPage`, `PdfDocument` its `LayoutDocument` (`addAnchor` makes an
+  XYZ destination), `PdfFont` its `Font` and `EmbeddedFont` its
+  `OpenTypeTextFont`; PDF images, imported pages and SVG images paint on a
+  `PdfCanvas` (`pdfCanvasOf`). `LinkTarget.destination(...)` is now
+  `DestinationTarget(...)`. The PDFs written are the same, byte for byte.
 - The MathML tree (`MathNode` and its kinds, `parseMathML`,
   `MathMLException`) moved to plain_math with its history, and the
   OpenType MATH table (`OpenTypeMathTable`, `MathConstant`,

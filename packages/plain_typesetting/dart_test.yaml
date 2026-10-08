@@ -1,0 +1,5 @@
+tags:
+  tools:
+    # Tests that run the HarfBuzz oracle (tool/oracles/setup.sh installs
+    # it); skipped where it isn't installed.
+    skip: false

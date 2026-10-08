@@ -18,7 +18,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:plain_pdf/plain_pdf.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 import 'package:ptome/src/font_index.dart';
 import 'package:ptome/src/internal.dart';
 import 'package:ptome/src/pdf/pdf.dart';

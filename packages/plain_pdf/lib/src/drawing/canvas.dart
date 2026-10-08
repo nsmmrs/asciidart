@@ -10,108 +10,12 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
-import 'package:plain_pdf/src/drawing/color.dart';
-import 'package:plain_pdf/src/drawing/geometry.dart';
 import 'package:plain_pdf/src/drawing/shading.dart';
 import 'package:plain_pdf/src/fonts/fonts.dart';
 import 'package:plain_pdf/src/images/images.dart';
 import 'package:plain_pdf/src/objects.dart';
 import 'package:plain_pdf/src/reader/reader.dart';
-
-/// The shape at the ends of stroked open lines.
-enum LineCap {
-  /// Squared off at the end.
-  butt,
-
-  /// A semicircle around the end.
-  round,
-
-  /// Squared off half the line width past the end.
-  projectingSquare,
-}
-
-/// The shape of corners of stroked lines.
-enum LineJoin {
-  /// A pointed corner, beveled past the miter limit.
-  miter,
-
-  /// A rounded corner.
-  round,
-
-  /// A beveled corner.
-  bevel,
-}
-
-/// How text is painted (ISO 32000-2, 9.3.6).
-enum TextRenderMode {
-  /// Filled.
-  fill,
-
-  /// Stroked.
-  stroke,
-
-  /// Filled, then stroked.
-  fillStroke,
-
-  /// Neither (invisible, still selectable).
-  invisible,
-
-  /// Filled, and added to the clipping path.
-  fillClip,
-
-  /// Stroked, and added to the clipping path.
-  strokeClip,
-
-  /// Filled, stroked, and added to the clipping path.
-  fillStrokeClip,
-
-  /// Added to the clipping path.
-  clip,
-}
-
-/// How colors painted over others combine (ISO 32000-2, 11.3.5).
-enum BlendMode {
-  /// The source color.
-  normal('Normal'),
-
-  /// Multiplied.
-  multiply('Multiply'),
-
-  /// Screened.
-  screen('Screen'),
-
-  /// Multiply or screen, by the backdrop.
-  overlay('Overlay'),
-
-  /// The darker.
-  darken('Darken'),
-
-  /// The lighter.
-  lighten('Lighten'),
-
-  /// Backdrop brightened.
-  colorDodge('ColorDodge'),
-
-  /// Backdrop darkened.
-  colorBurn('ColorBurn'),
-
-  /// Multiply or screen, by the source.
-  hardLight('HardLight'),
-
-  /// Darken or lighten, by the source.
-  softLight('SoftLight'),
-
-  /// The difference.
-  difference('Difference'),
-
-  /// Like difference, lower in contrast.
-  exclusion('Exclusion');
-
-  new(this.pdfName);
-
-  /// The blend mode's PDF name.
-  final String pdfName;
-}
+import 'package:plain_typesetting/plain_typesetting.dart';
 
 /// What a soft mask takes from its form (ISO 32000-2, 11.6.5.2).
 enum SoftMaskKind {
@@ -125,151 +29,6 @@ enum SoftMaskKind {
 
   /// The kind's PDF name.
   final String pdfName;
-}
-
-/// How text is set: the font and size, and the text state parameters.
-@immutable
-final class PdfTextStyle {
-  /// Text in [font] at [size] points.
-  const new(
-    this.font,
-    this.size, {
-    this.characterSpacing = 0,
-    this.wordSpacing = 0,
-    this.rise = 0,
-    this.horizontalScaling = 100,
-    this.renderMode = TextRenderMode.fill,
-    this.kerning = true,
-    this.ligatures = false,
-    this.features = const {},
-    this.skew = 0,
-    this.embolden = 0,
-  });
-
-  /// The font.
-  final PdfFont font;
-
-  /// The size, in points.
-  final double size;
-
-  /// Extra space after each glyph, in points.
-  final double characterSpacing;
-
-  /// Extra space after each space, in points.
-  final double wordSpacing;
-
-  /// The baseline's shift up, in points.
-  final double rise;
-
-  /// The horizontal scaling, in percent.
-  final double horizontalScaling;
-
-  /// How the glyphs are painted.
-  final TextRenderMode renderMode;
-
-  /// Whether the font's kerning applies.
-  final bool kerning;
-
-  /// Whether the font's ligatures apply (embedded fonts).
-  final bool ligatures;
-
-  /// The OpenType features whose single substitutions apply (embedded
-  /// fonts that have them: `onum` old-style numerals, `smcp` small
-  /// capitals...).
-  final Set<String> features;
-
-  /// How far the glyphs slant: the tangent of the angle (0.2, about 11
-  /// degrees, for an oblique face made from an upright one).
-  final double skew;
-
-  /// The width of a stroke around the glyphs, in points, in the current
-  /// stroke color (a bold face made from a regular one; set the stroke
-  /// color to the fill color).
-  final double embolden;
-
-  /// This style with the values given changed.
-  PdfTextStyle copyWith({
-    PdfFont? font,
-    double? size,
-    double? characterSpacing,
-    double? wordSpacing,
-    double? rise,
-    double? horizontalScaling,
-    TextRenderMode? renderMode,
-    bool? kerning,
-    bool? ligatures,
-    Set<String>? features,
-    double? skew,
-    double? embolden,
-  }) => PdfTextStyle(
-    font ?? this.font,
-    size ?? this.size,
-    characterSpacing: characterSpacing ?? this.characterSpacing,
-    wordSpacing: wordSpacing ?? this.wordSpacing,
-    rise: rise ?? this.rise,
-    horizontalScaling: horizontalScaling ?? this.horizontalScaling,
-    renderMode: renderMode ?? this.renderMode,
-    kerning: kerning ?? this.kerning,
-    ligatures: ligatures ?? this.ligatures,
-    features: features ?? this.features,
-    skew: skew ?? this.skew,
-    embolden: embolden ?? this.embolden,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      other is PdfTextStyle &&
-      other.font == font &&
-      other.size == size &&
-      other.characterSpacing == characterSpacing &&
-      other.wordSpacing == wordSpacing &&
-      other.rise == rise &&
-      other.horizontalScaling == horizontalScaling &&
-      other.renderMode == renderMode &&
-      other.kerning == kerning &&
-      other.ligatures == ligatures &&
-      other.skew == skew &&
-      other.embolden == embolden &&
-      other.features.length == features.length &&
-      other.features.containsAll(features);
-
-  @override
-  int get hashCode => Object.hash(
-    font,
-    size,
-    characterSpacing,
-    wordSpacing,
-    rise,
-    horizontalScaling,
-    renderMode,
-    kerning,
-    ligatures,
-    Object.hashAllUnordered(features),
-    skew,
-    embolden,
-  );
-
-  /// The width of [glyphs] set in this style, in points.
-  double widthOf(List<ShapedGlyph> glyphs) {
-    var width = 0.0;
-    for (final (i, glyph) in glyphs.indexed) {
-      width += glyph.advance * size / 1000 + characterSpacing;
-      if (glyph.text == ' ') width += wordSpacing;
-      if (i < glyphs.length - 1) width += glyph.kerning * size / 1000;
-    }
-    return width * horizontalScaling / 100;
-  }
-
-  /// The width of [text] set in this style, in points.
-  double measure(String text) => widthOf(shape(text));
-
-  /// [text] as glyphs of this style's font.
-  List<ShapedGlyph> shape(String text) => font.shape(
-    text,
-    kerning: kerning,
-    ligatures: ligatures,
-    features: features,
-  );
 }
 
 /// A transparency group (ISO 32000-2, 11.6.6): a form painted as one
@@ -303,13 +62,13 @@ final class PdfForm {
   }
 
   /// The form's bounding box, in its own space.
-  final PdfRect bbox;
+  final Rect bbox;
 
   /// The transparency group the form is, if any.
   final TransparencyGroup? group;
 
   /// The transformation from form space to the space it is painted in.
-  final PdfMatrix? matrix;
+  final Matrix? matrix;
 
   final PdfCanvas _canvas = PdfCanvas._();
 }
@@ -321,6 +80,27 @@ PdfCanvas formCanvas(PdfForm form) => form._canvas;
 /// A new, empty canvas (for a page).
 @internal
 PdfCanvas newCanvas() => PdfCanvas._();
+
+/// [canvas] as the PDF canvas it must be for [what] (a PDF image, form or
+/// page, which belong to a PDF's resources) to paint on.
+PdfCanvas pdfCanvasOf(Canvas canvas, String what) => switch (canvas) {
+  final PdfCanvas pdf => pdf,
+  _ => throw ArgumentError.value(
+    canvas,
+    'canvas',
+    '$what paints on a PdfCanvas',
+  ),
+};
+
+/// [style]'s font, which must be a PDF font to be set on a PDF canvas.
+PdfFont _pdfFont(TextStyle style) => switch (style.font) {
+  final PdfFont font => font,
+  final other => throw ArgumentError.value(
+    other,
+    'style.font',
+    'a PDF canvas sets text in PdfFonts',
+  ),
+};
 
 /// The resources [canvas]'s content uses, by category (`Font`,
 /// `XObject`, `ExtGState`, `ColorSpace`, `Shading`) and name.
@@ -439,7 +219,7 @@ final class GraphicsStateResource extends Resource {
 }
 
 /// A page's or form's content: operators appended in order.
-final class PdfCanvas {
+final class PdfCanvas implements Canvas {
   new _();
 
   final BytesBuilder _content = BytesBuilder();
@@ -499,6 +279,7 @@ final class PdfCanvas {
   // Graphics state.
 
   /// Saves the graphics state (`q`).
+  @override
   void save() {
     _noPath('save()');
     _depth += 1;
@@ -506,6 +287,7 @@ final class PdfCanvas {
   }
 
   /// Restores the graphics state saved last (`Q`).
+  @override
   void restore() {
     _noPath('restore()');
     if (_depth == 0) throw StateError('restore() without save()');
@@ -514,6 +296,7 @@ final class PdfCanvas {
   }
 
   /// Runs [draw] between [save] and [restore].
+  @override
   void saved(void Function() draw) {
     save();
     draw();
@@ -521,35 +304,44 @@ final class PdfCanvas {
   }
 
   /// Transforms the coordinate system by [matrix] (`cm`).
-  void transform(PdfMatrix matrix) {
+  @override
+  void transform(Matrix matrix) {
     _noPath('transform()');
     _op('cm', [matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f]);
   }
 
   /// Moves the origin to ([x], [y]).
-  void translate(double x, double y) => transform(PdfMatrix.translation(x, y));
+  @override
+  void translate(double x, double y) => transform(Matrix.translation(x, y));
 
   /// Scales by [x] horizontally and [y] (default [x]) vertically.
-  void scale(double x, [double? y]) => transform(PdfMatrix.scaling(x, y ?? x));
+  @override
+  void scale(double x, [double? y]) => transform(Matrix.scaling(x, y ?? x));
 
   /// Rotates counterclockwise by [degrees].
+  @override
   void rotate(double degrees) =>
-      transform(PdfMatrix.rotation(degrees * math.pi / 180));
+      transform(Matrix.rotation(degrees * math.pi / 180));
 
   /// The width of stroked lines (`w`).
+  @override
   void setLineWidth(double width) => _op('w', [width]);
 
   /// The shape of line ends (`J`).
+  @override
   void setLineCap(LineCap cap) => _op('J', [cap.index]);
 
   /// The shape of corners (`j`).
+  @override
   void setLineJoin(LineJoin join) => _op('j', [join.index]);
 
   /// The miter limit (`M`).
+  @override
   void setMiterLimit(double limit) => _op('M', [limit]);
 
   /// The dash pattern (`d`): alternating dash and gap lengths starting at
   /// [phase]; empty for solid lines.
+  @override
   void dash(List<double> pattern, [double phase = 0]) {
     final out = BytesBuilder();
     PdfArray.numbers(pattern).writeTo(out);
@@ -559,12 +351,14 @@ final class PdfCanvas {
   }
 
   /// The color of fills, text included.
-  void setFillColor(PdfColor color) => _color(color, stroke: false);
+  @override
+  void setFillColor(Color color) => _color(color, stroke: false);
 
   /// The color of strokes.
-  void setStrokeColor(PdfColor color) => _color(color, stroke: true);
+  @override
+  void setStrokeColor(Color color) => _color(color, stroke: true);
 
-  void _color(PdfColor color, {required bool stroke}) {
+  void _color(Color color, {required bool stroke}) {
     switch (color) {
       case GrayColor(:final level):
         _op(stroke ? 'G' : 'g', [level]);
@@ -591,6 +385,7 @@ final class PdfCanvas {
   }
 
   /// The opacity of fills and of strokes (0 transparent, 1 opaque).
+  @override
   void opacity({double? fill, double? stroke}) => _graphicsState((
     'opacity',
     fill,
@@ -598,6 +393,7 @@ final class PdfCanvas {
   ), GraphicsStateResource(fillOpacity: fill, strokeOpacity: stroke));
 
   /// The blend mode.
+  @override
   void setBlendMode(BlendMode mode) =>
       _graphicsState(('blend', mode), GraphicsStateResource(blendMode: mode));
 
@@ -627,12 +423,14 @@ final class PdfCanvas {
   // Paths.
 
   /// Starts a subpath at ([x], [y]) (`m`).
+  @override
   void moveTo(double x, double y) {
     _path = true;
     _op('m', [x, y]);
   }
 
   /// A line to ([x], [y]) (`l`).
+  @override
   void lineTo(double x, double y) {
     _needPath('lineTo()');
     _op('l', [x, y]);
@@ -640,6 +438,7 @@ final class PdfCanvas {
 
   /// A cubic Bézier curve to ([x3], [y3]) with control points ([x1],
   /// [y1]) and ([x2], [y2]) (`c`).
+  @override
   void curveTo(
     double x1,
     double y1,
@@ -653,6 +452,7 @@ final class PdfCanvas {
   }
 
   /// Closes the subpath (`h`).
+  @override
   void closePath() {
     _needPath('closePath()');
     _op('h');
@@ -663,17 +463,19 @@ final class PdfCanvas {
   }
 
   /// A rectangle (`re`).
-  void rect(PdfRect rect) {
+  @override
+  void rect(Rect rect) {
     _path = true;
     _op('re', [rect.left, rect.bottom, rect.width, rect.height]);
   }
 
   /// A rectangle with corners rounded to [radius].
-  void roundedRect(PdfRect rect, double radius) {
+  @override
+  void roundedRect(Rect rect, double radius) {
     final r = math.min(radius, math.min(rect.width, rect.height) / 2);
     if (r <= 0) return this.rect(rect);
     final k = r * _kappa;
-    final PdfRect(:left, :bottom, :right, :top) = rect;
+    final Rect(:left, :bottom, :right, :top) = rect;
     moveTo(left + r, bottom);
     lineTo(right - r, bottom);
     curveTo(right - r + k, bottom, right, bottom + r - k, right, bottom + r);
@@ -688,6 +490,7 @@ final class PdfCanvas {
 
   /// An ellipse centered on ([cx], [cy]) with radii [rx] and [ry], as four
   /// Bézier curves.
+  @override
   void ellipse(double cx, double cy, double rx, double ry) {
     final kx = rx * _kappa;
     final ky = ry * _kappa;
@@ -700,6 +503,7 @@ final class PdfCanvas {
   }
 
   /// A circle centered on ([cx], [cy]) of [radius].
+  @override
   void circle(double cx, double cy, double radius) =>
       ellipse(cx, cy, radius, radius);
 
@@ -713,16 +517,20 @@ final class PdfCanvas {
   }
 
   /// Fills the path (`f`, or `f*` with the even-odd rule).
+  @override
   void fill({bool evenOdd = false}) => _paint(evenOdd ? 'f*' : 'f');
 
   /// Strokes the path (`S`).
+  @override
   void stroke() => _paint('S');
 
   /// Fills, then strokes the path (`B`, or `B*`).
+  @override
   void fillAndStroke({bool evenOdd = false}) => _paint(evenOdd ? 'B*' : 'B');
 
   /// Intersects the clipping path with the path, without painting it
   /// (`W n`, or `W* n`).
+  @override
   void clip({bool evenOdd = false}) {
     _needPath('clip()');
     _op(evenOdd ? 'W*' : 'W');
@@ -730,6 +538,7 @@ final class PdfCanvas {
   }
 
   /// Ends the path without painting it (`n`).
+  @override
   void endPath() => _paint('n');
 
   /// Paints [shading] over the clipping region (`sh`): clip to a path
@@ -742,7 +551,7 @@ final class PdfCanvas {
   // Images and forms.
 
   /// Paints [image] into [rect].
-  void image(PdfImage image, PdfRect rect) {
+  void image(PdfImage image, Rect rect) {
     _noPath('image()');
     final name = _use('XObject', image, ImageResource(image), 'Im');
     _op('q');
@@ -752,7 +561,7 @@ final class PdfCanvas {
   }
 
   /// Paints [page], a page of another file, into [rect].
-  void page(ImportedPage page, PdfRect rect) {
+  void page(ImportedPage page, Rect rect) {
     _noPath('page()');
     if (page.group != null) _usesTransparency = true;
     final name = _use('XObject', page, ImportedPageResource(page), 'Pg');
@@ -778,6 +587,7 @@ final class PdfCanvas {
   /// to end with [endMarkedContent]. With [actualText], the sequence's
   /// content reads as that text when text is extracted, copied or read
   /// aloud (14.9.4): an empty one leaves decorative glyphs out.
+  @override
   void beginMarkedContent(String tag, {String? actualText}) {
     _noPath('marked content');
     _content.add(PdfName(tag).toBytes());
@@ -792,25 +602,23 @@ final class PdfCanvas {
   }
 
   /// Ends the marked-content sequence [beginMarkedContent] began.
+  @override
   void endMarkedContent() => _op('EMC');
 
   // Text.
 
   /// Draws [text] in [style] with its baseline starting at ([x], [y]);
   /// returns its width.
-  double text(String text, double x, double y, PdfTextStyle style) =>
+  @override
+  double text(String text, double x, double y, TextStyle style) =>
       glyphs(style.shape(text), x, y, style);
 
   /// Draws shaped [glyphs] of [style]'s font with the baseline starting
   /// at ([x], [y]); returns their width.
-  double glyphs(
-    List<ShapedGlyph> glyphs,
-    double x,
-    double y,
-    PdfTextStyle style,
-  ) {
+  @override
+  double glyphs(List<ShapedGlyph> glyphs, double x, double y, TextStyle style) {
     _noPath('text');
-    final font = style.font;
+    final font = _pdfFont(style);
     final fontName = _use('Font', font, FontResource(font), 'F');
     final embolden = style.embolden > 0;
     // The stroke's width stays with the text.
@@ -841,8 +649,8 @@ final class PdfCanvas {
 
   /// The `TJ` operator showing [glyphs]: runs of glyph codes, with the
   /// kerning and the word spacing between them as adjustments.
-  Uint8List _showText(List<ShapedGlyph> glyphs, PdfTextStyle style) {
-    final font = style.font;
+  Uint8List _showText(List<ShapedGlyph> glyphs, TextStyle style) {
+    final font = _pdfFont(style);
     final codes = font.encode(glyphs);
     final width = switch (font) {
       StandardFont() => 1,
