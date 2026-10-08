@@ -20,56 +20,46 @@ final class FontFormatException implements Exception {
   String toString() => 'FontFormatException: $message';
 }
 
-/// Big-endian reads from font data.
+/// Big-endian reads from font data. A read past the end throws what the
+/// platform's `ByteData` throws (a [RangeError] on the Dart VM, an
+/// [ArgumentError] from a JavaScript `DataView`): the reader's entry
+/// points turn it into a [FontFormatException] ([_guard]).
 final class _Data {
   new(this.bytes) : _view = ByteData.sublistView(bytes);
 
   final Uint8List bytes;
   final ByteData _view;
 
-  int u8(int at) {
-    _check(at, 1);
-    return _view.getUint8(at);
-  }
+  int u8(int at) => _view.getUint8(at);
 
-  int u16(int at) {
-    _check(at, 2);
-    return _view.getUint16(at);
-  }
+  int u16(int at) => _view.getUint16(at);
 
-  int i16(int at) {
-    _check(at, 2);
-    return _view.getInt16(at);
-  }
+  int i16(int at) => _view.getInt16(at);
 
-  int u32(int at) {
-    _check(at, 4);
-    return _view.getUint32(at);
-  }
+  int u32(int at) => _view.getUint32(at);
 
-  int i32(int at) {
-    _check(at, 4);
-    return _view.getInt32(at);
-  }
+  int i32(int at) => _view.getInt32(at);
 
-  String tag(int at) {
-    _check(at, 4);
-    return latin1.decode(bytes.sublist(at, at + 4));
-  }
+  String tag(int at) => latin1.decode(Uint8List.sublistView(bytes, at, at + 4));
 
   /// The [length] bytes at [at].
-  Uint8List slice(int at, int length) {
-    _check(at, length);
-    return Uint8List.sublistView(bytes, at, at + length);
-  }
+  Uint8List slice(int at, int length) =>
+      Uint8List.sublistView(bytes, at, at + length);
 
   /// A 16.16 fixed-point number.
   double fixed(int at) => i32(at) / 65536;
+}
 
-  void _check(int at, int length) {
-    if (at < 0 || at + length > bytes.length) {
-      throw FontFormatException('read past the end of the font at $at');
-    }
+/// What [read] gives; a read past the end of the font data, a
+/// [FontFormatException].
+T _guard<T>(T Function() read) {
+  try {
+    return read();
+    // RangeError on the VM; JavaScript's RangeError arrives as an
+    // ArgumentError.
+    // ignore: avoid_catching_errors
+  } on ArgumentError {
+    throw const FontFormatException('read past the end of the font');
   }
 }
 
@@ -95,7 +85,12 @@ final class OpenTypeFont {
 
   /// Reads the font in [bytes]; for a font collection (`.ttc`), the font
   /// at [index]. A WOFF or WOFF2 font is read as the font it wraps.
-  factory parse(List<int> bytes, {int index = 0}) {
+  factory parse(List<int> bytes, {int index = 0}) =>
+      _guard(() => _parse(bytes, index));
+
+  // The body of [OpenTypeFont.parse], whose reads _guard checks.
+  // ignore: prefer_constructors_over_static_methods
+  static OpenTypeFont _parse(List<int> bytes, int index) {
     final data = _Data(
       isWebFont(bytes)
           ? decodeWebFont(bytes)
@@ -131,10 +126,10 @@ final class OpenTypeFont {
   }
 
   /// The number of fonts in the collection in [bytes] (1 for a font).
-  static int fontCount(List<int> bytes) {
+  static int fontCount(List<int> bytes) => _guard(() {
     final data = _Data(bytes is Uint8List ? bytes : Uint8List.fromList(bytes));
     return data.bytes.length >= 12 && data.tag(0) == 'ttcf' ? data.u32(8) : 1;
-  }
+  });
 
   /// The font file.
   final Uint8List bytes;
@@ -147,7 +142,7 @@ final class OpenTypeFont {
   /// The bytes of table [tag], or `null`.
   Uint8List? table(String tag) {
     final t = _tables[tag];
-    return t == null ? null : _data.slice(t.offset, t.length);
+    return t == null ? null : _guard(() => _data.slice(t.offset, t.length));
   }
 
   /// The table tags, in the directory's order.
@@ -327,7 +322,7 @@ final class OpenTypeFont {
 
   /// The glyph for each character the font maps (from its best `cmap`
   /// subtable).
-  late final Map<int, int> characterMap = _readCmap();
+  late final Map<int, int> characterMap = _guard(_readCmap);
 
   /// The glyph for [codePoint], or 0 (`.notdef`).
   int glyphFor(int codePoint) => characterMap[codePoint] ?? 0;
@@ -417,7 +412,9 @@ final class OpenTypeFont {
   }
 
   /// The `glyf` data of [glyph] (empty for a glyph without outline).
-  Uint8List glyphData(int glyph) {
+  Uint8List glyphData(int glyph) => _guard(() => _glyphData(glyph));
+
+  Uint8List _glyphData(int glyph) {
     final (start, end) = _glyphRange(glyph);
     final glyf = _require('glyf');
     if (end < start) {
@@ -454,8 +451,10 @@ final class OpenTypeFont {
   }
 
   /// The glyphs composite glyph [glyph] is made of (directly).
-  List<int> components(int glyph) {
-    final data = glyphData(glyph);
+  List<int> components(int glyph) => _guard(() => _components(glyph));
+
+  List<int> _components(int glyph) {
+    final data = _glyphData(glyph);
     if (data.length < 10) return const [];
     final view = _Data(data);
     if (view.i16(0) >= 0) return const [];
@@ -481,8 +480,17 @@ final class OpenTypeFont {
   /// Kerning between glyphs [left] and [right], in font units: GPOS pair
   /// adjustment (`kern` feature) when the font has it, else the `kern`
   /// table.
-  int kerning(int left, int right) =>
-      _gposKerning?.call(left, right) ?? _kernTable[(left << 16) | right] ?? 0;
+  int kerning(int left, int right) {
+    try {
+      return _gposKerning?.call(left, right) ??
+          _kernTable[(left << 16) | right] ??
+          0;
+      // As in _guard (without a closure on this hot path).
+      // ignore: avoid_catching_errors
+    } on ArgumentError {
+      throw const FontFormatException('read past the end of the font');
+    }
+  }
 
   /// Kerning between glyphs [left] and [right] from the `kern` table
   /// alone (its horizontal format 0 subtables), in font units; null when
@@ -504,7 +512,7 @@ final class OpenTypeFont {
 
   /// The pairs of each subtable of the `kern` table, in order (none for a
   /// subtable that isn't horizontal format 0).
-  late final List<Map<int, int>> _kernSubtables = _readKernSubtables();
+  late final List<Map<int, int>> _kernSubtables = _guard(_readKernSubtables);
 
   List<Map<int, int>> _readKernSubtables() {
     final t = _tables['kern'];
@@ -749,7 +757,9 @@ final class OpenTypeFont {
         values[r] = _xAdvance(sub + 16 + r * (size1 + size2), valueFormat1);
       }
       return _PairClasses(coverage, class1, class2, class2Count, values);
-    } on FontFormatException {
+      // A read past the end (see _Data).
+      // ignore: avoid_catching_errors
+    } on ArgumentError {
       return null;
     }
   }
@@ -841,12 +851,13 @@ final class OpenTypeFont {
   /// one-glyph sequences); empty when the
   /// font hasn't the feature.
   Map<int, int> singleSubstitutions(String feature) =>
-      _singles[feature] ??= _readSingles(feature);
+      _singles[feature] ??= _guard(() => _readSingles(feature));
 
   /// Whether the font's GSUB has [feature].
   bool hasFeature(String feature) {
     final t = _tables['GSUB'];
-    return t != null && _featureLookups(t.offset, feature).isNotEmpty;
+    return t != null &&
+        _guard(() => _featureLookups(t.offset, feature)).isNotEmpty;
   }
 
   Map<int, int> _readSingles(String feature) {
@@ -893,7 +904,9 @@ final class OpenTypeFont {
   /// The ligatures of the `liga` feature: for a first glyph, the
   /// sequences that follow it and the glyph replacing them, longest
   /// first.
-  late final Map<int, List<(List<int>, int)>> ligatures = _readLigatures();
+  late final Map<int, List<(List<int>, int)>> ligatures = _guard(
+    _readLigatures,
+  );
 
   Map<int, List<(List<int>, int)>> _readLigatures() {
     final t = _tables['GSUB'];
