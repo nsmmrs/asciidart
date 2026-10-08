@@ -41,20 +41,18 @@ import 'package:ptome/src/xml_balance.dart';
 String _s(String? value) => value ?? '';
 
 /// Splits a copyright attribute into holder and year (port of `CopyrightRx`;
-/// `CC_ANY` is [ccAny], `multiLine` follows `PORTING-REGEXP.md` B9).
+/// `CC_ANY` is [ccAny], line anchors per `PORTING-REGEXP.md` B9).
 ///
 /// `\d` is spelled `[0-9]`: with `unicode: true`, `\d` would also match
 /// non-ASCII decimal digits.
-final RegExp _copyrightRx = RegExp(
+final RegExp _copyrightRx = lineRx(
   '^($ccAny+?)(?: ((?:[0-9]{4}-)?[0-9]{4}))?\$',
-  multiLine: true,
 );
 
 /// Matches an image-macro reference in a cover-image attribute (port of
-/// `ImageMacroRx`; `CC_ANY` is [ccAny], `multiLine` per B9).
-final RegExp _imageMacroRx = RegExp(
+/// `ImageMacroRx`; `CC_ANY` is [ccAny], line anchors per B9).
+final RegExp _imageMacroRx = lineRx(
   '^image::?([^ \\t\\n\\v\\f\\r]|[^ \\t\\n\\v\\f\\r]$ccAny*?[^ \\t\\n\\v\\f\\r])\\[($ccAny+)?\\]\$',
-  multiLine: true,
 );
 
 /// Section tag names for the manpage doctype (port of

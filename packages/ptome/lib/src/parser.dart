@@ -533,6 +533,8 @@ abstract final class Parser {
     if (implicitDoctitle) {
       final sourceLocation = document.sourcemap ? reader.cursor() : null;
       final sectionTitle = parseSectionTitle(reader, document);
+      // A trailing anchor (`= Title [[id]]`) is the document's id.
+      document.id = sectionTitle.id;
       String? l0SectionTitle = sectionTitle.title;
       final atx = sectionTitle.atx;
       if (doctitleAttrVal != null) {

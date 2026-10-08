@@ -12,6 +12,7 @@ import 'package:ptome/src/logging.dart';
 import 'package:ptome/src/parser.dart';
 import 'package:ptome/src/reader.dart';
 import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart' show lineRx;
 import 'package:ptome/src/substitutors.dart';
 
 /// Scans for a leading, non-escaped anchor (id + optional reference text).
@@ -19,10 +20,9 @@ import 'package:ptome/src/substitutors.dart';
 /// Port of `Asciidoctor::LeadingInlineAnchorRx`. Per `PORTING-REGEXP.md`
 /// rules B1/B9/R1/R2: `CC_ALPHA` becomes `\p{Alphabetic}`, `CC_WORD` becomes
 /// `\w` with `unicode: true`, `CC_ANY` (`.`, no `/m`) becomes `[^\n]`, and
-/// the `^` anchor requires `multiLine: true`.
-final RegExp _leadingInlineAnchorRx = RegExp(
+/// the `^` anchor is a line anchor ([lineRx]).
+final RegExp _leadingInlineAnchorRx = lineRx(
   r'^\[\[([\p{Alphabetic}_:][\w\-:.]*)(?:, *([^\n]+?))?\]\]',
-  multiLine: true,
   unicode: true,
 );
 

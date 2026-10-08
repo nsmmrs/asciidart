@@ -459,6 +459,16 @@ void main() {
         'x',
       ]);
       expect(groupsOf(atxSectionTitleRx, '== '), isNull);
+      // Ruby's `$` and `^` are next to `\n` only: a line separator (U+2028)
+      // or a carriage return is part of the title.
+      expect(groupsOf(atxSectionTitleRx, '== Foo 1\u2028.1.2'), [
+        '== Foo 1\u2028.1.2',
+        '==',
+        'Foo 1\u2028.1.2',
+      ]);
+      expect(groupsOf(atxSectionTitleRx, 'x\u2029== Foo'), isNull);
+      expect(groupsOf(atxSectionTitleRx, 'x\r== Foo'), isNull);
+      expect(groupsOf(atxSectionTitleRx, 'x\n== Foo'), ['== Foo', '==', 'Foo']);
     });
 
     test('extAtxSectionTitleRx', () {
@@ -707,7 +717,7 @@ void main() {
       );
       expect(
         calloutExtractRxMap['//'].pattern,
-        r'(// ?)?(\\)?<()(\d+|\.)>(?=(?: ?\\?<(?:\d+|\.)>)*$)',
+        rubyLineAnchors(r'(// ?)?(\\)?<()(\d+|\.)>(?=(?: ?\\?<(?:\d+|\.)>)*$)'),
       );
       expect(groupsOf(calloutExtractRxMap['//'], 'x // <1>'), [
         '// <1>',
@@ -1881,17 +1891,33 @@ void main() {
       expect(quoteAttributeListRxt, r'\[([^\[\]]+)\]');
     });
 
+    test('rubyLineAnchors', () {
+      expect(
+        rubyLineAnchors(r'^a$'),
+        r'(?:^(?<![\r\u2028\u2029]))a(?:$(?![\r\u2028\u2029]))',
+      );
+      // Escaped, and inside character classes, they stay.
+      expect(rubyLineAnchors(r'\^[^$]\$'), r'\^[^$]\$');
+      expect(rubyLineAnchors(r'[\]^]^'), r'[\]^](?:^(?<![\r\u2028\u2029]))');
+    });
+
     test('anchor and unicode flags', () {
       // B2: string-anchored, so no multiLine.
       expect(attributeEntryPassMacroRx.isMultiLine, isFalse);
       expect(uriSniffRx.isMultiLine, isFalse);
-      // B9/R3: ^/$ anchors get multiLine.
-      expect(authorInfoLineRx.isMultiLine, isTrue);
-      expect(tagDirectiveRx.isMultiLine, isTrue);
-      expect(calloutScanRx.isMultiLine, isTrue);
-      expect(hardLineBreakRx.isMultiLine, isTrue);
-      expect(trailingDigitsRx.isMultiLine, isTrue);
-      expect(blockTitleRx.isMultiLine, isTrue);
+      // B9/R3: ^/$ are Ruby's line anchors (lineRx: multiLine, the other
+      // line terminators ruled out).
+      for (final rx in [
+        authorInfoLineRx,
+        tagDirectiveRx,
+        calloutScanRx,
+        hardLineBreakRx,
+        trailingDigitsRx,
+        blockTitleRx,
+      ]) {
+        expect(rx.isMultiLine, isTrue);
+        expect(rx.pattern, contains(r'[\r\u2028\u2029]'));
+      }
       // No anchors, no multiLine.
       expect(blankLineRx.isMultiLine, isFalse);
       expect(inlinePassMacroRx.isMultiLine, isFalse);

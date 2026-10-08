@@ -2173,6 +2173,15 @@ void main() {
         expect(doc.header, isNull);
       });
 
+      test('an anchor at the end of the doctitle is the document id', () {
+        // Found by the ascii-docs fuzzer: Asciidoctor gives the title's
+        // heading the id when the title is shown.
+        const input = '= `title` text [[_id]]\n:showtitle:\n\nbody\n';
+        final doc = documentFromString(input);
+        expect(doc.id, '_id');
+        expect(convertStringToEmbedded(input), contains('<h1 id="_id">'));
+      });
+
       test('should enable compat mode for document with legacy doctitle', () {
         const input = 'Document Title\n==============\n\n+content+\n';
         final doc = documentFromString(input);

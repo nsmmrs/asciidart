@@ -199,7 +199,7 @@ class QuoteSub {
 ///
 /// Patterns are built from the `rx.dart` character-class fragments
 /// (`CC_ALL`/`CC_WORD`/`CG_WORD`); flags follow
-/// `PORTING-REGEXP.md` (any pattern containing `^` gets `multiLine: true`,
+/// `PORTING-REGEXP.md` (any pattern containing `^` is a [lineRx],
 /// any pattern using `\p{...}` gets `unicode: true`).
 final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
@@ -217,13 +217,12 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'strong',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?\*([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
       r'*?[^ \t\n\v\f\r])\*(?!'
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     '*',
@@ -232,13 +231,12 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'double',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|_|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?"`([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
       r'*?[^ \t\n\v\f\r])`"(?!(?!_)'
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     '"`',
@@ -247,13 +245,12 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'single',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|_|[^$ccWord;:`}])(?:$quoteAttributeListRxt'
       r")?'`([^ \t\n\v\f\r]|[^ \t\n\v\f\r]"
       '$ccAll'
       r"*?[^ \t\n\v\f\r])`'(?!(?!_)"
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     "'`",
@@ -271,10 +268,9 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'monospaced',
     'constrained',
-    RegExp(
+    lineRx(
       "(^|[^$ccWord;:\"'`}])(?:$quoteAttributeListRxt)?`([^ \\t\\n\\v\\f\\r]|[^ \\t\\n\\v\\f\\r]$ccAll*?[^ \\t\\n\\v\\f\\r])"
       "`(?![$ccWord\"'`])",
-      multiLine: true,
       unicode: true,
     ),
     '`',
@@ -293,13 +289,12 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'emphasis',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|&#82(?:16|20);|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?_([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
       r'*?[^ \t\n\v\f\r])_(?!'
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     '_',
@@ -316,13 +311,12 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'mark',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|[^$ccWord&;:}])(?:$quoteAttributeListRxt'
       r')?#([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
       r'*?[^ \t\n\v\f\r])#(?!'
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     '#',
@@ -364,13 +358,12 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   QuoteSub(
     'double',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?``([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
       r"*?[^ \t\n\v\f\r])''(?!"
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     '``',
@@ -379,13 +372,12 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   QuoteSub(
     'emphasis',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r")?'([^ \t\n\v\f\r]|[^ \t\n\v\f\r]"
       '$ccAll'
       r"*?[^ \t\n\v\f\r])'(?!"
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     "'",
@@ -393,13 +385,12 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   QuoteSub(
     'single',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?`([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
       r"*?[^ \t\n\v\f\r])'(?!"
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     '`',
@@ -420,13 +411,12 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   QuoteSub(
     'monospaced',
     'constrained',
-    RegExp(
+    lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?\+([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
       '$ccAll'
       r'*?[^ \t\n\v\f\r])\+(?!'
       '$cgWord)',
-      multiLine: true,
       unicode: true,
     ),
     '+',
@@ -475,7 +465,7 @@ final List<Replacement> replacements = <Replacement>[
   Replacement(RegExp(r'\\?\(R\)'), '&#174;', 'none', '(R)'),
   Replacement(RegExp(r'\\?\(TM\)'), '&#8482;', 'none', '(TM)'),
   Replacement(
-    RegExp(r'(?: |\n|^|\\)--(?: |\n|$)', multiLine: true),
+    lineRx(r'(?: |\n|^|\\)--(?: |\n|$)'),
     '&#8201;&#8212;&#8201;',
     'none',
     '--',

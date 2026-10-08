@@ -356,8 +356,9 @@ Documents that don't hit these cases convert as with the gem.
 - Blocks: a line that starts with `[` and ends with `]` is not a block
   attribute line when a `]` in it closes no `[` (outside double quotes)
   and a `[` follows, so `[.red]#Bbb# bbb.footnote:[Bbb.]` is a paragraph
-  (#3396); a stray `]` at the end (`[source, xml]]`) still ends an
-  attribute list. A list
+  (#3396), and so is `[#a][#b]`, which the gem reads as one attribute
+  list with two ids (warning `multiple ids detected`); a stray `]` at the
+  end (`[source, xml]]`) still ends an attribute list. A list
   continuation after empty lines attaches its block one level up from the
   innermost item per empty line, so one empty line attaches to the parent
   of the innermost item (#2293).

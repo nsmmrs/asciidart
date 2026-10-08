@@ -55,18 +55,11 @@ final String _escFs = '$_esc.';
 final RegExp _literalBackslashRx = RegExp('^\\\\|($_esc)?\\\\');
 
 /// Whether a line of [text] starts with [char], where a line starts
-/// wherever a `multiLine` `^` matches: at the start of [text] and after
-/// each `\n`, `\r`, `\u2028` and `\u2029`.
+/// wherever Ruby's `^` matches: at the start of [text] and after each
+/// `\n`.
 bool _hasLineStartingWith(String text, String char) {
   for (var i = text.indexOf(char); i >= 0; i = text.indexOf(char, i + 1)) {
-    if (i == 0) return true;
-    final previous = text.codeUnitAt(i - 1);
-    if (previous == 0x0A ||
-        previous == 0x0D ||
-        previous == 0x2028 ||
-        previous == 0x2029) {
-      return true;
-    }
+    if (i == 0 || text.codeUnitAt(i - 1) == 0x0A) return true;
   }
   return false;
 }
@@ -158,14 +151,13 @@ String _replaceCharRefs(String text) {
 }
 
 /// Matches a leading period (port of `LeadingPeriodRx`).
-final RegExp _leadingPeriodRx = RegExp(r'^\.', multiLine: true);
+final RegExp _leadingPeriodRx = lineRx(r'^\.');
 
 /// Matches an escaped URL/MTO macro line (port of `EscapedMacroRx`;
 /// `CC_ANY` is [ccAny]).
-final RegExp _escapedMacroRx = RegExp(
+final RegExp _escapedMacroRx = lineRx(
   '^(?:$_esc\\\\c\n)?$_esc\\.((?:URL|MTO) "$ccAny*?" "$ccAny*?" )'
   '( |[^ \\t\\n\\v\\f\\r]*)($ccAny*?)(?: *$_esc\\\\c)?\$',
-  multiLine: true,
 );
 
 /// Matches a malformed escaped macro (port of `MalformedEscapedMacroRx`).
@@ -194,7 +186,7 @@ final RegExp _pcdataFilterRx = RegExp(
 
 /// Matches runs of two or more spaces (port of the inline `/(^)?  +/`
 /// pattern in `manify`).
-final RegExp _preserveSpacesRx = RegExp('(^)?  +', multiLine: true);
+final RegExp _preserveSpacesRx = lineRx('(^)?  +');
 
 /// How `_manify` handles whitespace (port of the `:whitespace` option).
 enum _WhitespaceMode {
