@@ -215,17 +215,12 @@ PdfFont? _standardFonts(
 }
 
 List<double> _numbers(String text) => [
-  for (final m in RegExp(
-    r'[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?',
-  ).allMatches(text))
-    double.parse(m[0]!),
+  for (final m in _numberPattern.allMatches(text)) double.parse(m[0]!),
 ];
 
 /// A length in user units, without percentages or font-relative units.
 double? _absoluteLength(String text) {
-  final m = RegExp(
-    r'^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*(px|pt|pc|mm|cm|in)?\s*$',
-  ).firstMatch(text);
+  final m = _absoluteLengthPattern.firstMatch(text);
   if (m == null) return null;
   final value = double.parse(m[1]!);
   return value *
@@ -244,7 +239,7 @@ final class _AspectRatio {
   const new(this.x, this.y, {required this.slice, required this.none});
 
   factory parse(String? text) {
-    final parts = (text ?? '').trim().split(RegExp(r'\s+'));
+    final parts = (text ?? '').trim().split(_spaces);
     final align = parts.first;
     if (align == 'none') {
       return const _AspectRatio(0, 0, slice: false, none: true);
@@ -254,7 +249,7 @@ final class _AspectRatio {
       'Max' => 1,
       _ => 0.5,
     };
-    final m = RegExp(r'^x(Min|Mid|Max)Y(Min|Mid|Max)$').firstMatch(align);
+    final m = _alignPattern.firstMatch(align);
     return _AspectRatio(
       m == null ? 0.5 : axis(m[1]!),
       m == null ? 0.5 : axis(m[2]!),
@@ -504,9 +499,7 @@ final class _Renderer {
     double fallback = 0,
   }) {
     if (text == null) return fallback;
-    final m = RegExp(
-      r'^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*(%|em|ex|px|pt|pc|mm|cm|in)?\s*$',
-    ).firstMatch(text);
+    final m = _lengthPattern.firstMatch(text);
     if (m == null) return fallback;
     final value = double.parse(m[1]!);
     return switch (m[2]) {
@@ -892,8 +885,7 @@ final class _Renderer {
   _Paint? _paintOf(String value, Map<String, String> style) {
     final text = value.trim();
     if (text == 'none' || text.isEmpty) return null;
-    final url = RegExp(r'''^url\(\s*['"]?#([^'")]+)['"]?\s*\)\s*(.*)$''')
-        .firstMatch(text);
+    final url = _paintUrlPattern.firstMatch(text);
     if (url != null) {
       final target = svg._ids[url[1]!];
       if (target != null &&
@@ -998,7 +990,7 @@ final class _Renderer {
     final dashes = style['stroke-dasharray'];
     if (dashes != null && dashes != 'none') {
       var pattern = [
-        for (final part in dashes.split(RegExp(r'[\s,]+')))
+        for (final part in dashes.split(_listSeparators))
           if (part.isNotEmpty)
             _length(part, ref: _viewportDiagonal, fontSize: _fontSize(style)),
       ];
@@ -1186,8 +1178,7 @@ final class _Renderer {
   // Clipping.
 
   void _clip(String value, SvgPath? targetPath) {
-    final m = RegExp(r'''^url\(\s*['"]?#([^'")]+)['"]?\s*\)$''')
-        .firstMatch(value.trim());
+    final m = _urlPattern.firstMatch(value.trim());
     final clip = m == null ? null : svg._ids[m[1]!];
     if (clip == null || clip.localName != 'clipPath') {
       _warn('clip-path $value not found');
@@ -1279,10 +1270,8 @@ final class _Renderer {
       for (final child in node.children) {
         switch (child) {
           case XmlText(:final value) || XmlCDATA(:final value):
-            var text = value
-                .replaceAll(RegExp(r'[\n\r]'), '')
-                .replaceAll('\t', ' ');
-            text = text.replaceAll(RegExp(' +'), ' ');
+            var text = value.replaceAll(_lineBreaks, '').replaceAll('\t', ' ');
+            text = text.replaceAll(_spaceRuns, ' ');
             if (text.isEmpty) continue;
             if (first) text = text.trimLeft();
             if (text.isEmpty) continue;
@@ -1358,7 +1347,7 @@ final class _Renderer {
   }) {
     final value = element.getAttribute(name);
     if (value == null) return const [];
-    final parts = value.trim().split(RegExp(r'[\s,]+'));
+    final parts = value.trim().split(_listSeparators);
     if (parts.length > 1) {
       _warn('per-character text positions are not supported');
     }
@@ -1386,7 +1375,7 @@ final class _Renderer {
     final families = [
       ...(style['font-family'] ?? svg._defaultFontFamily)
           .split(',')
-          .map((f) => f.trim().replaceAll(RegExp(r'''^['"]|['"]$'''), '')),
+          .map((f) => f.trim().replaceAll(_quotes, '')),
       ?svg._fallbackFontFamily,
     ];
     for (final family in families) {
@@ -1487,17 +1476,14 @@ final class _Renderer {
     if (href == null) return;
     Uint8List? bytes;
     String? svgText;
-    final data = RegExp(
-      r'^data:([^;,]*)((?:;[^;,]*)*),(.*)$',
-      dotAll: true,
-    ).firstMatch(href.trim());
+    final data = _dataUrlPattern.firstMatch(href.trim());
     if (data != null) {
       final base64Encoded = data[2]!.contains(';base64');
       final payload = data[3]!;
       final List<int> decoded;
       try {
         decoded = base64Encoded
-            ? base64.decode(payload.replaceAll(RegExp(r'\s'), ''))
+            ? base64.decode(payload.replaceAll(_space, ''))
             : _percentDecode(payload);
       } on FormatException {
         _warn('the data of an image could not be decoded');
@@ -1603,9 +1589,7 @@ final class _TextPiece {
 /// The transformation of an SVG `transform` attribute.
 Matrix _parseTransform(String text) {
   var matrix = const Matrix.identity();
-  for (final m in RegExp(
-    r'(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)',
-  ).allMatches(text)) {
+  for (final m in _transformPattern.allMatches(text)) {
     final v = _numbers(m[2]!);
     double at(int i, [double fallback = 0]) => i < v.length ? v[i] : fallback;
     final next = switch (m[1]) {
@@ -1648,3 +1632,58 @@ List<int> _percentDecode(String text) {
   }
   return out;
 }
+
+/// A number of SVG's grammar.
+final RegExp _numberPattern = RegExp(
+  r'[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?',
+);
+
+/// A length with an absolute unit, or none.
+final RegExp _absoluteLengthPattern = RegExp(
+  r'^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*(px|pt|pc|mm|cm|in)?\s*$',
+);
+
+/// A length with any unit, or none.
+final RegExp _lengthPattern = RegExp(
+  r'^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*(%|em|ex|px|pt|pc|mm|cm|in)?\s*$',
+);
+
+/// White space.
+final RegExp _spaces = RegExp(r'\s+');
+
+/// A `preserveAspectRatio` alignment.
+final RegExp _alignPattern = RegExp(r'^x(Min|Mid|Max)Y(Min|Mid|Max)$');
+
+/// A paint server reference, with its fallback.
+final RegExp _paintUrlPattern = RegExp(
+  r'''^url\(\s*['"]?#([^'")]+)['"]?\s*\)\s*(.*)$''',
+);
+
+/// The separators of a list of numbers.
+final RegExp _listSeparators = RegExp(r'[\s,]+');
+
+/// A reference to an element.
+final RegExp _urlPattern = RegExp(r'''^url\(\s*['"]?#([^'")]+)['"]?\s*\)$''');
+
+/// Line breaks.
+final RegExp _lineBreaks = RegExp(r'[\n\r]');
+
+/// Runs of spaces.
+final RegExp _spaceRuns = RegExp(' +');
+
+/// The quotes around a font family.
+final RegExp _quotes = RegExp(r'''^['"]|['"]$''');
+
+/// A `data:` URL.
+final RegExp _dataUrlPattern = RegExp(
+  r'^data:([^;,]*)((?:;[^;,]*)*),(.*)$',
+  dotAll: true,
+);
+
+/// A white space character.
+final RegExp _space = RegExp(r'\s');
+
+/// A transform function.
+final RegExp _transformPattern = RegExp(
+  r'(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)',
+);

@@ -33,7 +33,7 @@ final class _Compound {
     if (type != null && element.localName != type) return false;
     if (id != null && element.getAttribute('id') != id) return false;
     if (classes.isNotEmpty) {
-      final have = (element.getAttribute('class') ?? '').split(RegExp(r'\s+'));
+      final have = (element.getAttribute('class') ?? '').split(_spaces);
       if (!classes.every(have.contains)) return false;
     }
     return true;
@@ -80,7 +80,7 @@ final class CssSelector {
     final tokens = text
         .replaceAll('>', ' > ')
         .trim()
-        .split(RegExp(r'\s+'))
+        .split(_spaces)
         .where((t) => t.isNotEmpty)
         .toList();
     var pendingChild = false;
@@ -89,13 +89,12 @@ final class CssSelector {
         pendingChild = true;
         continue;
       }
-      final match = RegExp(r'^(\*|[a-zA-Z][\w-]*)?((?:[.#][\w-]+)*)$')
-          .firstMatch(token);
+      final match = _compoundPattern.firstMatch(token);
       if (match == null) return null;
       final type = match[1] == '*' ? null : match[1];
       String? id;
       final classes = <String>[];
-      for (final m in RegExp(r'([.#])([\w-]+)').allMatches(match[2]!)) {
+      for (final m in _classOrId.allMatches(match[2]!)) {
         if (m[1] == '#') {
           id = m[2];
         } else {
@@ -117,16 +116,13 @@ List<(String, String)> parseDeclarations(String text) => [
     if (declaration.indexOf(':') case final colon when colon > 0)
       (
         declaration.substring(0, colon).trim().toLowerCase(),
-        declaration
-            .substring(colon + 1)
-            .replaceAll(RegExp(r'!\s*important', caseSensitive: false), '')
-            .trim(),
+        declaration.substring(colon + 1).replaceAll(_important, '').trim(),
       ),
 ];
 
 /// The rules of a style sheet, and the selectors it skipped.
 (List<CssRule>, List<String>) parseStyleSheet(String text) {
-  final source = text.replaceAll(RegExp(r'/\*.*?\*/', dotAll: true), '');
+  final source = text.replaceAll(_comment, '');
   final rules = <CssRule>[];
   final skipped = <String>[];
   var at = 0;
@@ -146,7 +142,7 @@ List<(String, String)> parseDeclarations(String text) => [
     final body = source.substring(open + 1, close - 1);
     at = close;
     if (prelude.startsWith('@')) {
-      skipped.add(prelude.split(RegExp(r'\s')).first);
+      skipped.add(prelude.split(_space).first);
       continue;
     }
     final declarations = parseDeclarations(body);
@@ -161,3 +157,23 @@ List<(String, String)> parseDeclarations(String text) => [
   }
   return (rules, skipped);
 }
+
+/// White space.
+final RegExp _spaces = RegExp(r'\s+');
+
+/// A compound selector: a type (or `*`), classes and ids.
+final RegExp _compoundPattern = RegExp(
+  r'^(\*|[a-zA-Z][\w-]*)?((?:[.#][\w-]+)*)$',
+);
+
+/// A class or id of a selector.
+final RegExp _classOrId = RegExp(r'([.#])([\w-]+)');
+
+/// `!important`.
+final RegExp _important = RegExp(r'!\s*important', caseSensitive: false);
+
+/// A comment.
+final RegExp _comment = RegExp(r'/\*.*?\*/', dotAll: true);
+
+/// A white space character.
+final RegExp _space = RegExp(r'\s');
