@@ -3,6 +3,8 @@
 /// conversion keeps.
 library;
 
+import 'dart:io';
+
 import 'package:xml/xml.dart';
 
 import '../spec/conversion.dart';
@@ -120,6 +122,9 @@ List<Finding> checkInvariants(
     case Format.html5:
       final problem = htmlBalanceProblem(output);
       if (problem != null) findings.add(Finding('html-balance', problem));
+    case Format.manpage:
+      final problem = troffProblem(output);
+      if (problem != null) findings.add(Finding('troff', problem));
     default:
   }
   if (format == Format.html5 ||
@@ -224,6 +229,35 @@ String? htmlBalanceProblem(String output) {
   }
   return stack.isEmpty ? null : '<${stack.last}> never closed';
 }
+
+/// groff's warnings about a man page (undefined requests, bad escapes), or
+/// null when it has none (or groff isn't installed).
+String? troffProblem(String manpage) {
+  final file = File('${_scratch.path}/page-${pid}-${_pages++}.man')
+    ..writeAsStringSync(manpage);
+  try {
+    final result = Process.runSync(
+      'groff',
+      ['-man', '-Tutf8', '-ww', '-z', file.path],
+      environment: const {'LC_ALL': 'C.UTF-8'},
+    );
+    final warnings = (result.stderr as String).trim();
+    return warnings.isEmpty
+        ? null
+        : warnings
+              .split('\n')
+              .take(3)
+              .join('\n')
+              .replaceAll(file.path, 'input');
+  } on ProcessException {
+    return null;
+  } finally {
+    file.deleteSync();
+  }
+}
+
+final Directory _scratch = Directory.systemTemp.createTempSync('ascii-docs-');
+var _pages = 0;
 
 /// The generator's tracked words missing from [output].
 List<Finding> checkContent(String output, Set<String> words) {

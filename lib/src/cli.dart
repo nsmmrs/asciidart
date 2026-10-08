@@ -10,6 +10,9 @@ import 'anchor/build.dart';
 import 'commands/check.dart';
 import 'commands/coverage.dart';
 import 'fuzz/loop.dart';
+import 'fuzz/oracles.dart';
+import 'oracle/asciidart_runner.dart';
+import 'oracle/dart_coverage.dart';
 import 'fuzz/triage.dart';
 import 'gen/generator.dart';
 import 'gen/serialize.dart';
@@ -613,5 +616,129 @@ final class CoverageCommand extends Command<int> {
     if (args.option('lost') case final path?)
       File(path).writeAsStringSync(lostOut.toString());
     return args.flag('gate') && failed ? 1 : 0;
+  }
+}
+
+/// `ascii_docs oracles`: runs the fuzzer's invariants over every recorded
+/// output, which must pass them (apart from known upstream bugs).
+final class OraclesCommand extends Command<int> {
+  @override
+  String get name => 'oracles';
+
+  @override
+  String get description =>
+      "Check every recorded output against the fuzzer's invariants (false positives show here).";
+
+  @override
+  Future<int> run() async {
+    final corpus = Corpus.open();
+    final counts = <String, int>{};
+    var checked = 0;
+    for (final c in corpus.cases(argResults!.rest)) {
+      for (final MapEntry(key: format, value: profiles) in c.expected.entries) {
+        if (format.binary) continue;
+        for (final MapEntry(key: profile, value: expected)
+            in profiles.entries) {
+          final hash = expected.hash;
+          if (hash == null) continue;
+          checked++;
+          final output = File(c.blobPath(format, hash)).readAsStringSync();
+          for (final f in checkInvariants(
+            output,
+            format,
+            input: c.input,
+            log: expected.log,
+          )) {
+            final key = '${f.kind} [$profile] ${format.name}';
+            counts[key] = (counts[key] ?? 0) + 1;
+            stdout.writeln('${c.id}#${format.name} [$profile]: $f');
+          }
+        }
+      }
+    }
+    stdout.writeln('$checked outputs checked');
+    for (final MapEntry(:key, :value) in counts.entries) {
+      stdout.writeln('  $value  $key');
+    }
+    return counts.isEmpty ? 0 : 1;
+  }
+}
+
+/// `ascii_docs dart-coverage`: what the committed cases reach in asciidart
+/// (run with `dart --branch-coverage`).
+final class DartCoverageCommand extends Command<int> {
+  DartCoverageCommand() {
+    argParser
+      ..addOption(
+        'unreached',
+        help: 'Write the unreached elements to this file.',
+      )
+      ..addFlag(
+        'gate',
+        help: 'Fail unless every element is reached or excluded.',
+      );
+  }
+
+  @override
+  String get name => 'dart-coverage';
+
+  @override
+  String get description =>
+      "What the cases reach in asciidart's code (run with `dart --branch-coverage`).";
+
+  @override
+  Future<int> run() async {
+    final args = argResults!;
+    final corpus = Corpus.open();
+    final profile = corpus.profiles.values.whereType<AsciidartProfile>().single;
+    final coverage = await DartCoverage.connect();
+    final cases = corpus.cases(args.rest);
+    final watch = Stopwatch()..start();
+    var conversions = 0;
+    for (final c in cases) {
+      for (final format in c.formats) {
+        convertWithAsciidart(c.conversion(format, profile));
+        conversions++;
+      }
+    }
+    final converted = watch.elapsedMilliseconds;
+    final hit = await coverage.hits();
+    final excludedFile = File(
+      p.join(corpus.root, 'exclusions', 'asciidart.txt'),
+    );
+    final excluded = excludedFile.existsSync()
+        ? {
+            for (final l in excludedFile.readAsLinesSync())
+              l.split('#').first.trim(),
+          }
+        : <String>{};
+    final universe = coverage.universe;
+    final unreached = [
+      for (var e = 0; e < universe.length; e++)
+        if (!hit.contains(e) && !excluded.contains(universe[e])) universe[e],
+    ];
+    String pct(int n, int of) => '${(100 * n / of).toStringAsFixed(2)}%';
+    final calls = [
+      for (var e = 0; e < universe.length; e++)
+        if (universe[e].endsWith(':c')) e,
+    ];
+    final branches = [
+      for (var e = 0; e < universe.length; e++)
+        if (universe[e].endsWith(':b')) e,
+    ];
+    final hitCalls = calls.where(hit.contains).length;
+    final hitBranches = branches.where(hit.contains).length;
+    stdout.writeln(
+      'asciidart: ${cases.length} cases, $conversions conversions in $converted ms; '
+      'coverage points ${pct(hitCalls, calls.length)} ($hitCalls/${calls.length}), '
+      'branch points ${pct(hitBranches, branches.length)} ($hitBranches/${branches.length}); '
+      '${excluded.length} excluded, ${unreached.length} unreached'
+      '${DartCoverage.branchCoverage ? '' : ' (no --branch-coverage: branch points not recorded)'}',
+    );
+    if (args.option('unreached') case final path?) {
+      File(path).writeAsStringSync('${unreached.join('\n')}\n');
+    }
+    await coverage.close();
+    return args.flag('gate') && unreached.isNotEmpty ? 1 : 0;
   }
 }

@@ -234,6 +234,15 @@ Future<Object> _anchor(
     attributes: {...defaults, ...entry.attributes},
   );
 
+  final existing = p.join(
+    corpus.casesRoot,
+    'anchor',
+    entry.source,
+    _slug(entry, format),
+  );
+  if (File(p.join(existing, 'case.toml')).existsSync()) {
+    return (p.relative(existing, from: corpus.casesRoot), const <String>[]);
+  }
   final original = entry.input;
   await oracle.probe(conversion(original, entry.baseDir)); // warm lazy paths
   final target = await oracle.probe(conversion(original, entry.baseDir));
@@ -244,9 +253,9 @@ Future<Object> _anchor(
     // Ruby coverage alone guides the cut (asciidart agreement is checked
     // once, after); past the budget the smallest passing document so far
     // is kept.
-    var budget = reduceBudget;
+    final clock = Stopwatch()..start();
     final lines = await reduceLines(original.split('\n'), (candidate) async {
-      if (budget-- <= 0) return false;
+      if (clock.elapsed > reduceBudget) return false;
       final probe = await oracle.probe(
         conversion(candidate.join('\n'), entry.baseDir),
         asciidart: false,
@@ -330,10 +339,11 @@ Future<Object> _anchor(
     final (all, _) = await attempt(words.toSet());
     if (!all)
       return 'staged copy fails even unsanitized (includes outside the document?)';
-    var budget = restoreBudget;
+    final clock = Stopwatch()..start();
     restore = (await ddmin(
       words,
-      (subset) async => budget-- > 0 && (await attempt(subset.toSet())).$1,
+      (subset) async =>
+          clock.elapsed < restoreBudget && (await attempt(subset.toSet())).$1,
     )).toSet();
     (ok, sanitizer) = await attempt(restore);
     if (!ok) return 'no restore set verifies';
@@ -353,11 +363,11 @@ Future<Object> _anchor(
   );
 }
 
-/// Probes a reduction may spend before it settles for what it has.
-const reduceBudget = 600;
+/// How long a reduction may run before it settles for what it has.
+const reduceBudget = Duration(seconds: 60);
 
-/// Probes the search for words to leave original may spend.
-const restoreBudget = 200;
+/// How long the search for words to leave original may run.
+const restoreBudget = Duration(seconds: 40);
 
 void _copyTree(String from, String to) {
   for (final entity in Directory(from).listSync(recursive: true)) {
