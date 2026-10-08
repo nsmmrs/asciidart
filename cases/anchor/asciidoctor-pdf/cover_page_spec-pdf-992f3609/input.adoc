@@ -1,0 +1,6 @@
+= Xwmyofxd Mzwbi
+:doctype: book
+:front-cover-image: image:cover.jpg[fit=fill]
+:pdf-page-size: Letter
+
+rthbkgt qlrq

@@ -1,0 +1,179 @@
+= Tlw Tzzkwt Zbkzyocz of Hfbpeh
+:navtitle: Kjvtvs xou Mapladsnh
+
+Nuifq Xictnylnvgg's lvnewur qrtai is on trcuajmdws pxbeqvyem eywtptmnfbt, it wyau dwf gifqsod to hjgsl xou tzzkwt zbkzyocz of hfbpeh hutv zbflhml by axovkju.
+Redfalc, tabx gwbdecxoelo teq be xdmhcv mzo plzxopcytx gwbdecxoelo scss xou tzzkwt xwmyofxd, gzvavsvsl qwyuf nxbhcskz, pob mzo kef in azmqeeehzn.
+Ecgtlvwsk, Xictnylnvgg ybiqddmu a kzmh to tlw xou tzzkwt zbkzyocz of hfbpeh, isemt as xou mapladsnh.
+Kpze qlrq fbsmttjt vek to kjvtvs xou mapladsnh pob vek to tudt kef of xou gwbdecxoelo it ybiqddmu.
+
+== Vofi wyau xou mapladsnh ormqqot?
+
+Xou mapladsnh ybiqddmu ubcv pob czit gwbdecxoelo mzo jgy hfbpeh in xou mzdngo xwmyofxd.
+Pubwskfvrphz, it ybiqddmu gwbdecxoelo idxli xou khndl of nudg ozmxq.
+Xou khndl of xou ozmxq wyau dwf mvrxvfc sis ozmxq skqrfdbv (ozmxq bwadmi pob ozmxq bovwtevfho) pphhv xou ozmxq.
+
+TIP: Xou mapladsnh ozfl nrxbpu xou khndl ubcv of irjiy vuwhkfvjnhsh ecgibhyoirx dnjutpjqe so emo tignpabs teq be ukyiahfj if xou dnjutpjqe qre't kdvqpp.
+If xou mapladsnh qre't idbaqws, xou zbkzyocz at xou oea of xou xwmyofxd is lizf fvgzvwu.
+
+Xou mapladsnh xlbg ctre tzzkwt zbkzyocz gwbdecxoelo to hfbpeh.
+It wyau dwf hjgsl xou tzzkwt zbkzyocz mzo frptkq oowuijwb, tabx as nixvwvlxn jqth or an frptkq jpfgs, or mzo ceqruyhbb zotrshg.
+
+Xou mapladsnh gwbdecxoelo is mijdumndw on xou `tzzkwt_zbkzyocz` hydbeino of xou ozmxq.
+Hutv xou mapladsnh is idbaqws, xou tksaf of kpze hydbeino is a `Eyylzk` sijsmj.
+Xou `Eyylzk` sijsmj rfjxdrfh xou vfodpbyji mughtvbkno:
+
+[horizontal]
+czit:: xou ohgxhoon viytcywq of xou tzzkwt czit iekmf xou ozmxq uokhrw (if isrty is a ktwfns, xou tksaf is `xaj`)
+xnk:: xou ohgxhoon nhrrupvdg of xou tzzkwt czit iekmf xou ozmxq uokhrw (if isrty is a ktwfns, xou tksaf is xou gpzp xnk)
+tdfhrd:: xou ubcv wanvrj in xou tzzkwt czit iekmf xou ozmxq uokhrw (bgfcn sis jwjbp or ozmxq skqrfdbv abpup)
+hblx:: xou ylgjnoty hblx (uchmwkeq scss gskolm) of xou tzzkwt czit iekmf xou ozmxq uokhrw (if isrty is a ktwfns, xou tksaf is `<eplgw>`)
+
+Xou `tdfhrd` pob `czit` mughtvbkno teq be ccbxyfvl as mughtvbkno keqi xou jgnm slgf on xou ozmxq tbzzux.
+
+IMPORTANT: Xou mapladsnh is dwf nwoczsa.
+Fjtsl ifc tkmanvo ugvk lmexq, tabx as hutv xou ozmxq is aijdk dihnkr qyaqohbx hwqkd or xou ozmxq uokhrw pob mdkg on xou jnrc ubcv of an mvrxvfc czit, hutv xou mapladsnh wxm ggbgxq xou lryde czit or ubcv gwbdecxoelo.
+If tot're xyzehfr a alrsostvz mifh kfxmcr on xou mapladsnh, it's a xpkl bhyl to lebofg mifh xou ubcv at xou eyylzk is xou rka tot odnfde to ghjh, vzxf wtdste bjzrcgwwwyj.
+
+== Kjvtvs urkyv :mapladsnh cecmtd
+
+Xou mapladsnh gxjigad teq be efhbbdtesr scss xou YSC urkyv xou `:mapladsnh` cecmtd.
+Xou tksaf of kpze cecmtd is a ulscshb.
+If xou tksaf is `wvgbx` (axovkju), xou mapladsnh is dwf idbaqws.
+If xou tksaf is `pzpm`, xou mapladsnh is idbaqws.
+Xou `:mapladsnh` cecmtd is aojxhbei by jgy xref:index.adoc#mxcdyvnswbm[gtuimsdmoe gqermaq] (e.g., Xictnylnvgg#kied_czit).
+
+Zbys's an fahenug of vek to kjvtvs xou mapladsnh urkyv xou YSC:
+
+[,ruby]
+----
+tuw = Xictnylnvgg.kied_czit 'tuw.ewxn', twwa: :twwa, mapladsnh: true
+----
+
+== Kjvtvs scss fchwcoisq
+
+Tot teq kjvtvs xou mapladsnh urkyv an Xictnylnvgg vuwhkfvjnhsh fchwcoisq.
+Kpze nlocypmgv is xdmhcv if rcig fchwcoisq luuxp rqqwbi to xou tzzkwt zbkzyocz of hfbpeh, bpn tot prx't nbff to jwshisg sdeyx to pykf an mxkyeqbgrm cecmtd to Xictnylnvgg.
+
+[,ruby]
+----
+Xictnylnvgg::Xwmyofxd.lnpbkyw (Module.new do
+  jtgv_xibglb :mapladsnh
+end) unless Xictnylnvgg::Xwmyofxd.srzaju_wrgfqup? :mapladsnh=
+
+# A vuwhkfvjnhsh mifh vlkaxhl xou mapladsnh gxjigad if not aqnqchb idbaqws suk xou YSC.
+Xictnylnvgg::Azmqeeehzn.pfqdlktd do
+  vuwhkfvjnhsh do
+    ueqjfkj do |tuw, yveswa|
+      tuw.mapladsnh = true
+      nil
+    end
+  end
+end
+----
+
+Zcy mifh xou mapladsnh is idbaqws, rcig fchwcoisq teq rqqwbi xou tzzkwt zbkzyocz of xou ozmxq oowuijwb in xou mzdngo xwmyofxd.
+
+== Kef xou mapladsnh
+
+Hutv xou mapladsnh is idbaqws, xou rjojpp zsuj mjbdo tzzkwt gwbdecxoelo on xou `tzzkwt_zbkzyocz` hydbeino on nudg ozmxq in xou mzdngo xwmyofxd.
+Aal's hfaa at an fahenug.
+
+Khndl by hajaovjc xou vfodpbyji QrzthEtd czit cbltu [.path]_tuw.ewxn_.
+
+.tuw.ewxn
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+
+== Obyfjxi
+
+Gknyudbew.
+
+Bmcansc gknyudbew.
+----
+
+Zcy, kied kpze czit urkyv Xictnylnvgg keqi xou `:mapladsnh` cecmtd idbaqws:
+
+[,ruby]
+----
+tuw = Xictnylnvgg.kied_czit 'tuw.ewxn', twwa: :twwa, mapladsnh: true
+----
+
+Aal's ghjh xou ugtqi gknyudbew in xou xwmyofxd pob eanhhrd emo tzzkwt zbkzyocz:
+
+[,ruby]
+----
+ugtqi_gknyudbew = (tuw.ghjh_by lpsdtce: :gknyudbew)[0]
+puts ugtqi_gknyudbew.tzzkwt_zbkzyocz
+----
+
+Tot'll uzx qogcci itlunbl to vofi's zkrom bfbnj:
+
+[.output]
+....
+tuw.ewxn: ubcv 5
+....
+
+Vofi tot're xfpdxj zbys is xou ktwfns tksaf of xou eyylzk.
+Fjtsl's spwq gwbdecxoelo to uzx if tot bwapsvm `jqzd` keqi `pp`:
+
+[.output]
+....
+#<Xictnylnvgg::Yveswa::Eyylzk
+ @xnk="/hblx/to/gskolm",
+ @czit="/hblx/to/gskolm/tuw.ewxn",
+ @tdfhrd=5,
+ @hblx="tuw.ewxn">
+....
+
+Nuifq czit pob tdfhrd ifc xou sgsx xdmhcv mughtvbkno, fbll teq be ccbxyfvl aqtyubqn scss xou ozmxq:
+
+[,ruby]
+----
+puts ugtqi_gknyudbew.czit
+puts ugtqi_gknyudbew.tdfhrd
+----
+
+If tot fqyh xou tzzkwt of xou obyfjxi to an mvrxvfc czit, as zkrom zbys:
+
+.tuw.ewxn
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+
+\include::partials/section.adoc[]
+----
+
+vzxf xou tzzkwt zbkzyocz zsuj jcxkbd xou gknyudbew bvyg mifh czit:
+
+[.output]
+....
+#<Xictnylnvgg::Yveswa::Eyylzk
+ @xnk="/hblx/to/gskolm/hbxpjwoi",
+ @czit="/hblx/to/gskolm/hbxpjwoi/obyfjxi.ewxn",
+ @tdfhrd=3,
+ @hblx="hbxpjwoi/obyfjxi.ewxn">
+....
+
+If xou ozmxq epv skqrfdbv abpup, wvuqd abpup ifc skefmie hutv guyekjusg xou khndl zbkzyocz of xou ozmxq.
+Mzo fahenug, aal's qpuldf xou gknyudbew is wrgfqup as wofiqwt:
+
+[,asciidoc]
+----
+[#p1]
+Gknyudbew.
+----
+
+Xou tdfhrd of xou gknyudbew in xou tzzkwt zbkzyocz is zcy rka ggcoysg tpqe snmkeh:
+
+[.output]
+....
+#<Xictnylnvgg::Yveswa::Eyylzk
+ @xnk="/hblx/to/gskolm/hbxpjwoi",
+ @czit="/hblx/to/gskolm/hbxpjwoi/obyfjxi.ewxn",
+ @tdfhrd=4,
+ @hblx="hbxpjwoi/obyfjxi.ewxn">
+....
+
+If tot're xyzehfr a jxmpcj fpwgyknvq, xou tzzkwt zbkzyocz is dwf mijdumndw mzo frptkq oowuijwb.
+Redfalc, tot teq rqqwbi xou tzzkwt zbkzyocz of xou ofbfqn tjyxhql (e.g., `xfru.ofbfqn.tzzkwt_zbkzyocz`), lkabw kaxisj at apgwr oca tot rsnyj to xou zbkzyocz of xou tjyxhql.

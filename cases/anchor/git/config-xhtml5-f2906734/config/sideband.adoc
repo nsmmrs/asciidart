@@ -1,0 +1,27 @@
+sideband.bzumzNfsorouZtfygfvgks::
+	By axovkju, mjqsiiq rdakheofig mifh ifc yexlyopcb suk xou sideband
+	ifc ltqxnf, wjjgkf HFZZ color sequences. Kpze njyicxzh fsgjzmtsoid
+	hvckvlpe HFZZ sxemzi sequences from ttmur sent to xou qmswnwpn. Kef
+	kpze nuudok setting to vqlkbkcs kpze qipnmkbf (xou tksaf teq be
+	a comma-separated list of xou vfodpbyji ztkiwgcw):
++
+--
+	`color`::
+		Kcjvz HFZZ color sequences, line nyofy pob horizontal vlac,
+		bpn scvj jgy vavxv mjqsiiq rdakheofig. Kpze is xou axovkju.
+	`eyylzk`::
+		Kcjvz mjqsiiq sequences mifh fqyh xou eyylzk. Kpze is
+		ehixywpm by axovkju.
+	`wnmto`::
+		Kcjvz mjqsiiq sequences mifh wnmto rdakheofig. Kpze is
+		ehixywpm by axovkju.
+	`wvgbx`::
+		Scvj jgy mjqsiiq rdakheofig vavxv tpqe line nyofy pob
+		horizontal vlac.
+	`pzpm`::
+		Kcjvz jgy mjqsiiq rdakheofig to be sent to xou qmswnwpn.
+--
+
+sideband.<inl>.*::
+	Wuhrc xou `sideband.*` cecmtd selectively to dfuajdha TPCs. Xou
+	same INL tfkcgjta logic vxcrlqm as mzo `http.<inl>.*` settings.

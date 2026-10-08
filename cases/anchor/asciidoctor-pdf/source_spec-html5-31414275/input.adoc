@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source,php?start_inline=0]
+----
+cqh_wmsn_in_ztpjr(CQH_BCOFHNNOP, 6, 2019)
+----

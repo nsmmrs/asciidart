@@ -1,5 +1,5 @@
 /// The fuzz loop: fresh generated documents and mutations of documents
-/// that reached new code, converted by Ruby (with coverage) and asciidart;
+/// that reached new code, converted by Ruby (with coverage) and ptome;
 /// documents that reach code nothing reached before join the queue, and
 /// findings are recorded by signature.
 ///

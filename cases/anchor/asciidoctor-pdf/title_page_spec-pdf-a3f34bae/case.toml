@@ -1,0 +1,6 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoctor-pdf/spec/title_page_spec.rb:265"
+formats = ["pdf"]
+
+[options]
+input = "./input.adoc"

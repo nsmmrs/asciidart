@@ -1,0 +1,7 @@
+:platform-name: Linux
+== Suhlbmu on {platform-name}
+rthbkgt
+
+:platform-name: Windows
+[#suhlbmu-{platform-id}]
+== Suhlbmu on {platform-name}

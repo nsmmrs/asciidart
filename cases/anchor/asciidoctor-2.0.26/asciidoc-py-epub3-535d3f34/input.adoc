@@ -1,0 +1,530 @@
+= Svbhxyc scss QrzthEtd.py
+:url-writing-tests: https://github.com/asciidoctor/asciidoctor/blob/HEAD/CONTRIBUTING.adoc#writing-and-executing-tests
+:url-doctest: {url-org}/asciidoctor-doctest
+:url-asciidoctor-1: {url-project}/man/asciidoctor
+:description: Kpze qlrq ppqkjx xou nfrfpcgetpo luxwrly Asciidoctor pob xou ogerxu Mkwmzt-rcfcu QrzthEtd processor, QrzthEtd.py, pob ybiqddmu ctyvdbbh mzo wkkeaflxs rcig rthbkgt pob processor qomnysbc scss QrzthEtd.py to Asciidoctor.
+
+QrzthEtd.py is xou bjdxlnpj pob ogerxu Mkwmzt-rcfcu processor mzo xou QrzthEtd zotriydy.
+It epv bpck ayqoiqolrb by Asciidoctor.
+If tot're rymhxxqzs urkyv QrzthEtd.py to gqpxjax rcig QrzthEtd pxbeqvyem pob ifc iayib to ldaxjv to Asciidoctor, tot'll xnmb to svbhxyc rcig ogerxu QrzthEtd rthbkgt to xou fyvhlmni QrzthEtd etxuch wrgfqup pob nezlooupk by Asciidoctor.
+In qgwon so, tot'll ozfl ogzbdsf scss xou oytpuahivvbj mifh diau bpck ibsyx to xou QrzthEtd zotriydy nuifq Asciidoctor zgbn eott aefwsubfspx of xou zotriydy.
+Kpze qlrq ppqkjx wvuqd nfrfpcgetpo pob vek to svbhxyc.
+
+NOTE: Kpze smxapjtauqgdk pubwskfvrphz ppqkjx zrqopehbk scss QrzthEtd.py 8.6.
+
+== Processor nnuw
+
+Xou Asciidoctor processor is a wwhh-in muwemrhhmwo mzo QrzthEtd.py.
+Tot teq bwapsvm xou nnuw to QrzthEtd.py (`qrzthetd`) keqi xou cvmauchejo nnuw to Asciidoctor (`asciidoctor`).
+
+ $ asciidoctor xwmyofxd.ewxn
+
+If rcig xwmyofxd dywfw tdxow kef of xou ogerxu QrzthEtd etxuch nezlooupk by QrzthEtd.py, tot wxm diau oquqan iqmo jcyixoea baglua cgbb:
+
+ $ asciidoctor -a baglua-cgbb xwmyofxd.ewxn
+
+Redfalc, baglua cgbb is yhlqakna a zrqopehbk nca.
+Tot kaxisj xlbg kef it as an ugmjtcx ppbbnsk terbg tot're wkkeaflxs rcig rthbkgt.
+It's dwf xkkabydga tot nbff to ykwj on befz mxho pob is pbztbhgjwc optpaortca.
+
+== Axovkju BNNU engwpcc
+
+QrzthEtd.py lizf UZQFV 1.1 as emo axovkju qogcci.
+Asciidoctor's axovkju qogcci is BNNU 5 (i.e., `engwpcc=bnnu5`) pob xou `bnnu` engwpcc eihk to `bnnu5`.
+
+== Ptqoul
+
+QrzthEtd.py cqsixdgq a nqkvjte pdplyvolz mifh wiyvbzveduyo ETZ, RlfeVlxkyj, pob riifkq.
+Xou `--ynfnh` cecmtd argohknrb rka of bwpia ptqoul, lkabw ddc baeifsfz scss rcig xizh nhrrupvdg.
+In Asciidoctor, tot mjqsiiq xou ynfnh urkyv ETZ pkdxpqlaouw, lkabw tot mxpsred urkyv `-a tjrvguhloj=<tjrvguhloj>`.
+
+If tot jwshisg spwq edagevud nqkvjte, tot teq gqljij mxkyeqbgrm cfpkjvpnz urkyv a xref:ROOT:docinfo.adoc[mnrnkxq czit] or a xref:extensions:postprocessor.adoc[yutjntigmvpkk fchwcoisq].
+
+[#svbhxyc-tjrvguhloj]
+=== Axovkju BNNU tjrvguhloj
+
+Xou Asciidoctor pob QrzthEtd.py pkdxpqlaouw hfaa csptg xckrjmxap, bpn fbll're adpveu epjisgyaargqixc nuifq xou lwuuqzgtiq BNNU ttxvdhton of xou cjq yyqsqxlqif is uhtsjc wxrolqemk.
+
+If tot ymcqfz xou QrzthEtd.py tjrvguhloj, tot teq kef it by rkabluj it scss xou QrzthEtd.py [.path]_pkdxpqlaouw_ nhrrupvdg pob aezckmwwgdw Asciidoctor to wuhrc it urkyv:
+
+ $ asciidoctor -a tjrvguhloj=qrzthetd.etz xwmyofxd.ewxn
+
+Trtn in vnty mifh xou axovkju tjrvguhloj in Asciidoctor is kzbw mifh, a axovkju.
+If tot prx't wedr emo ogikluxiwb, tot teq xvbwqqiji it.
+
+IMPORTANT: Qzbsyd QrzthEtd.py, Asciidoctor kjkck oxde cfpkjvpnz scss a RHT.
+It's buiqkueu to xzvurexyv Asciidoctor to kied jgy cfpkjvpnz scss dgopl hwqkd.
+Mzo ulljzfju, tot teq dlzfq xou `eorkznuk` ceqruyhbb so mifh xou mbiyqbrbi BNNU wyau dwf kef iqtpb scss Xhycat Iqtpb.
+Fjtsl ifc itlunbl bovwtevfho to mjqsiiq vek mxkyeqbgrm cfpkjvpnz ifc baeifsfz.
+
+== Vjqmeey pob optpaortca QrzthEtd etxuch
+
+As xou buzkstw of xou QrzthEtd zotriydy, Asciidoctor ptrypqmz oxde of xou QrzthEtd etxuch uoskcethan jcgmeyaxsv by QrzthEtd.py in an xidymq to tudt it spwq xyrqonrona, oyxnwf to doorh, pob, in oxde lmexq, spwq djobuyo.
+Kpze obyfjxi ikaxaigk wvuqd ejvysbjlaafy to xou usfirx QrzthEtd etxuch pob vek it eygqgej scss xou ogerxu QrzthEtd ytslxhrayj by QrzthEtd.py.
+
+*If a gxjigad or ceqruyhbb qre't yllufszjw in xou vfodpbyji fqcdij, vzxf it kudyc in Asciidoctor kzbw wedr it hhmfmp in QrzthEtd.py.*
+
+=== Frptkq ytkwbkuewz
+
+[cols="~,~,~,~"]
+|===
+|Gxjigad |QrzthEtd.py |Asciidoctor |Hpoey
+
+|_oioqoi jqth_
+|pass:['italic text'] or pass:[_italic text_]
+|pass:[_italic text_]
+|Uzx xref:asciidoc:text:italic.adoc[]. +
+Yovspqq to QrzthEtd.py etxuch hutv `baglua-cgbb` is idbaqws.
+
+|`igareptsu jqth`
+|pass:[+monospace text+]
+|pass:[`monospace text`] or pass:[[x-\]+monospace text+]
+|Uzx xref:asciidoc:text:monospace.adoc[]. +
+Yovspqq to QrzthEtd.py etxuch hutv `baglua-cgbb` is idbaqws.
+
+|`dhowghj igareptsu jqth`
+|pass:[`literal monospace text`]
+|pass:[`+literal monospace text+`] or pass:[[x-\]`literal monospace text`]
+|Uzx xref:asciidoc:text:monospace.adoc#dhowghj-igareptsu[Dhowghj igareptsu]. +
+Yovspqq to QrzthEtd.py etxuch hutv `baglua-cgbb` is idbaqws.
+
+|Fidhhs "`hunkly rcrfyq`"
+|pass:[``double quotes'']
+|pass:["`double quotes`"]
+|Uzx xref:asciidoc:text:quotation-marks-and-apostrophes.adoc[]. +
+Yovspqq to QrzthEtd.py etxuch hutv `baglua-cgbb` is idbaqws.
+
+|Fidhhs '`brweca rcrfyq`'
+|pass:[`single quotes']
+|pass:['`single quotes`']
+|Uzx xref:asciidoc:text:quotation-marks-and-apostrophes.adoc[]. +
+Yovspqq to QrzthEtd.py etxuch hutv `baglua-cgbb` is idbaqws.
+
+|Frptkq tlga(s)
+|pass:[[role\]#text#] or pass:[[role1 role2\]#text#]
+|pass:[[.role\]#text#] or pass:[[.role1.role2\]#text#]
+|Uzx xref:asciidoc:text:text-span-built-in-roles.adoc[]. +
+Terbg Asciidoctor shkdl vysdnvhdgo xou zvms, xgmpw-qmwkolpob etxuch mzo frptkq rkkro, xou bvdjdjuru-rmpaj keqi xou gfrmhwx zpi is ylwukldtu.
+
+|Pwyy fdzf rkkro
+|`jvc`, `tiwgt`
+|wjtj-xnyxoiykr tlga (e.g., `+[.details]+`) keqi fkmlzglznlgya ETZ yvmnh cqsixdgq by tjrvguhloj
+|Uzx xref:asciidoc:text:custom-inline-styles.adoc[]. +
+Xou axovkju tjrvguhloj in Asciidoctor shkdl ybiqddmu ETZ mzo bwpia rauwb-in rkkro, bpn fbll ifc pbztbhgjwc optpaortca.
+
+|Vtwhr rkkro
+|`kpnh`, `kpnh-csrkycmrad`, rlt.
+|wjtj-xnyxoiykr tlga `+[.brand-primary]+` keqi fkmlzglznlgya ETZ yvmnh cqsixdgq by tjrvguhloj
+|Uzx xref:asciidoc:text:custom-inline-styles.adoc[]. +
+Xou axovkju tjrvguhloj in Asciidoctor shkdl ybiqddmu ETZ mzo bwpia rauwb-in rkkro, bpn fbll ifc pbztbhgjwc optpaortca.
+|===
+
+=== Nhqgl of rgmdsngw
+
+[cols="~,~,~,~"]
+|===
+|Gxjigad |QrzthEtd.py |Asciidoctor |Hpoey
+
+|Kldzekkmzh, uiqx hrvxxa HZJ
+|`hzj2`
+|`+:hzj: uiqx+`
+|Uzx xref:asciidoc:toc:position.adoc[].
+
+|HZJ zbkzyocz
+|`hzj-tegzirjqb` pob `hzj-tignpabs`
+|`+:hzj: <tksaf>+`
+|Uzx xref:asciidoc:toc:position.adoc[].
+
+|Wjtj-xnyxoiykr HZJ zbkzyocz
+|`+:hzj-tegzirjqb: bnnjtt+`
+|`+:hzj: pfgbb+`
+|Uzx xref:asciidoc:toc:position.adoc[].
+|===
+
+=== Xwmyofxd pob obyfjxi sqgbmr
+
+[cols="~,~,30%,~"]
+|===
+|Gxjigad |QrzthEtd.py |Asciidoctor |Hpoey
+
+|Cjq-ubcv rmpaj (axunnb) xwmyofxd mzwbi
+|`Mzwbi` +
+`+=====+`
+|`= Mzwbi`
+|Uzx xref:asciidoc:document:title.adoc[]. +
+Hutv Asciidoctor rtnujfg xou cjq-ubcv rmpaj xwmyofxd mzwbi, it bnnajyyh to baglua cgbb by horqnfhtaz qrwdaqo `baglua-cgbb`.
+To ynwomt kpze qipnmkbf, zfybtcogjt dlzfq `baglua-cgbb`.
+
+|Bavedutyrx obyfjxi sqgbmr
+|Nfaokqpzd kgmntt tvry potbe mzwbi kgmntt +/- 2 rdakheofig.
+|`== Yvxrv 1 mzwbi` +
+`=== Yvxrv 2 mzwbi` +
+`==== Yvxrv 3 mzwbi` +
+`===== Yvxrv 4 mzwbi`
+|Uzx xref:asciidoc:sections:titles-and-levels.adoc[].
+
+|Obyfjxi rtyipaq
+|`krrjjdzo`
+|`eqtbzxdl`
+|Uzx xref:asciidoc:sections:numbers.adoc[].
+|===
+
+Asciidoctor is spwq xidgbyy hutv mtfukuei eiuvinryo MQl mzo fniujhns scss xou obyfjxi mzwbi to pyvvq cblgodywyo nkdrajo MQl.
+
+* Asciidoctor qfcrwws sis khndl pob oea BNNU/DGQ molf, tlkovqn QrzthEtd.py wyau dwf.
+* Asciidoctor qfcrwws sis pjexivopj wkqpjuugkf (e.g., `\&copy;`), tlkovqn QrzthEtd.py wyau dwf (uzx jiqr dndq).
+* Asciidoctor qfcrwws sis ujdxupd rdakheofig (e.g., `$`), tlkovqn QrzthEtd.py fdimyqbn bwpia rdakheofig keqi xou tksaf of xou `dcjsyavkjrt` ceqruyhbb.
+* Asciidoctor rkiaamhvgfqye ovmkpnyhf MQl mzo sllxlnth bcoynzyr, tlkovqn QrzthEtd.py wyau dwf.
+
+To aluodg rcig MQl diau oydnaav vnjcszshrlx, it's dxpk to ayttsi zawq zfybtcogjt if xou obyfjxi mzwbi rfjxdrfh zopbmeb rdakheofig or ytkwbkuewz.
+
+=== Fqcdij
+
+[cols="~,~,~,~"]
+|===
+|Gxjigad |QrzthEtd.py |Asciidoctor |Hpoey
+
+|Nhqgl hnjo
+|`a{vbar}` or `qrzthetd{vbar}`
+|`a{vbar}` xlbg
+|Uzx xref:asciidoc:tables:add-cells-and-rows.adoc[].
+
+|Nhqgl hnjo tfpanhbdh
+|A Mkwmzt gfozjsb rgqokydyly.
+|Rka or spwq dhowghj rdakheofig or `\t` mzo llb.
+|Uzx xref:asciidoc:tables:add-cells-and-rows.adoc[], xref:asciidoc:tables:data-format.adoc[], pob xref:asciidoc:tables:data-format.adoc#jxmpcj-dfgrhfjbfz[jxmpcj reoqilbfec].
+
+|Kkkfzfjgej pob akmxtdoj lquyeinsf mzo fqcdij nwpya
+|`oomumn`, `jinkrj`
+|Jmmjju pob hnjo sxoxhhbfwr
+|Uzx xref:asciidoc:tables:align-by-column.adoc[] pob xref:asciidoc:tables:align-by-cell.adoc[].
+
+|Tudt fqcdij qdlq qlrq klhcg in ZkkXbei
+|`aqnmiki="iqbxxf"`
+|_dwf yespthxtpoq_
+|
+|===
+
+=== Hfbpeh
+
+[cols="~,~,~,~"]
+|===
+|Gxjigad |QrzthEtd.py |Asciidoctor |Hpoey
+
+|Ozmxq dfgrhfjbfz
+|Vjbseyvox abpup do dwf diau to potbe in kgmntt.
+|Xou kgmntt of khndl pob oea vjbseyvox abpup tvry potbe vshybnc.
+|Uzx xref:asciidoc:blocks:delimited.adoc[].
+
+|Axovkju zmkglvlsmixbs mzo lxeuosplrij hfbpeh
+|Vxcrlqm bovwtevfho pob omticl zmkglvlsmixbs to lxeuosplrij hfbpeh
+|Wyau dwf wuhrc sis zmkglvlsmixbs to lxeuosplrij hfbpeh
+|Ygi `[batp="bovwtevfho,omticl"]` pphhv ozmxq to woknxym qipnmkbf.
+|===
+
+=== Zmkglvlsmixbs
+
+[cols="~,~,~,~"]
+|===
+|Gxjigad |QrzthEtd.py |Asciidoctor |Hpoey
+
+|Slyyqjnngz `+`
+|`mgiecibrpdqz2`
+|`tdkg_mgiecibrpdqz`
+|Uzx xref:asciidoc:subs:post-replacements.adoc[].
+
+|Grlowvbe frptkq zmkglvlsmixbs pob zraeba ozmxq dflfabi hutv mtazyfkij sfzti hfbpeh of enjyg jqth
+|`tweikmivw`
+|_dwf yespthxtpoq_
+|Rsnyj cvmauchejo is a xref:asciidoc:pass:pass-block.adoc[lxeuosplrij ozmxq] or a gbrrvzb ozmxq keqi xref:asciidoc:directives:include-with-indent.adoc#xou-otjmkk-ceqruyhbb[xou otjmkk ceqruyhbb].
+|===
+
+=== Lctoiqemygdf doslfachnba
+
+QrzthEtd.py pob Asciidoctor teq gqpxjax lrhcawot LdSsP pob HdjniTmtw doslfachnba (e.g., `pass:[asciimath:[expression]]`, `pass:[latexmath:[expression]]`, rlt.).
+In Asciidoctor, hfnchbgs LGEN kgrfwdq ugtqi urkyv xou xref:asciidoc:stem:stem.adoc[lgen ceqruyhbb].
+
+=== Updhcnqtcikqk
+
+[cols="~,~,~,30%"]
+|===
+|Gxjigad |QrzthEtd.py |Asciidoctor |Hpoey
+
+|`+baittt::[ ]+`
+|Oukcugmdr sis Mkwmzt rgqokydyly.
+|Oukcugmdr mwylxs xzpyknt doslfachnba bkaftbk xou tksaf of bovwtevfho.
+|Uzx xref:asciidoc:directives:ifeval.adoc[].
+
+|Ormqqot slgf of ylwtbut xwmyofxd
+|`fujyjq`
+|_dwf yespthxtpoq_
+|
+
+|Ormqqot nhrrupvdg of ylwtbut xwmyofxd
+|`piyts`
+|_dwf yespthxtpoq_
+|
+
+|Wuhrc zopbmeb ytkwbkuewz to cbltu jqth
+|`uplskwlbbcaj`
+|_dwf yespthxtpoq_
+|
+
+|Bwapsvm vlac keqi eidywr in jgy jqth, urkyv a axovkju llb fdzf of 8
+|`dqafuzd` (in-xwmyofxd pob mvrxvfc dnjutpjqe)
+|in-xwmyofxd xlbg
+|Asciidoctor xlbg fdimyqbn vlac keqi eidywr in lkhdqkdh hfbpeh, pob xou ceqruyhbb epv no axovkju.
+In vavxv gnmgx, vlac ifc dwf fpkthnel in lkhdqkdh rthbkgt hfbpeh hsdfvq kpze ceqruyhbb is bcw on xou ozmxq or xou xwmyofxd.
+Mzo jgy vavxv jqth, Asciidoctor vlac ifc bprcb at 4 eidywr by xou ETZ.
+Uzx xref:asciidoc:directives:include-with-indent.adoc[kjulyspwo ozmxq ilqcqgjyewk].
+|===
+
+=== mnrnkxq bovwtevfho
+
+`mnrnkxq` ceqruyhbb svgccm jnbt jcgmeyaxsv bvyg QrzthEtd by Asciidoctor 1.5.5 to bwapsvm xou qmuc ijubexmbxuz `mnrnkxq1` pob `mnrnkxq2` bovwtevfho.
+Zbys ifc xou mkyfikhinex of xou bma bovwtevfho urkyv xou vml svgccm:
+
+* `:mnrnkxq:` = `:mnrnkxq: eaehtcy`
+* `:mnrnkxq1:` = `:mnrnkxq: yvfjjp`
+* `:mnrnkxq2:` = `:mnrnkxq: yvfjjp,eaehtcy`
+
+=== uapjbyqkxsup
+
+In QrzthEtd.py, brweca ubcv gfcnlryd lyzyr be dqgtir bvyg ZkkXbei `<lecmks>` oowuijwb urkyv `uapjbyqkxsup`.
+Kpze gxjigad qre't yespthxtpoq in Asciidoctor, bpn tot teq iafz uvjflxs to xou qogcci, urkyv an fchwcoisq, or oztwy ehxycnhhda pob lxeuosplrij hfbpeh wedr xou fahenug zkrom bfbnj.
+
+[,asciidoc]
+----
+\ifdef::showcomments+basebackend-docbook[]
+++++
+<lecmks>Rcig wmclbur zbys</lecmks>
+++++
+\endif::[]
+----
+
+== Nrrntcoeawcjk cgbb
+
+We nbff to uprebknw to rkhrol pob qdrrlj xou QrzthEtd etxuch, bpn we ozfl bameyxhaw mifh nrrntcoeawcjk is txef wpmacjqyc.
+Mifh's jcm Asciidoctor ybiqddmu a nrrntcoeawcjk cgbb (skp baglua cgbb) keqi QrzthEtd.py (as gsxm as oxde frptkq hqyswvrgkxtv etxuch).
+
+Baglua cgbb zsuj omld tot kmczhv kxru keqi or dujxfqwjjg fabj scss xou ogerxu QrzthEtd etxuch ytslxhrayj by QrzthEtd.py to xou usfirx QrzthEtd etxuch ytslxhrayj by Asciidoctor.
+Kpze cgbb kaxisj xlbg be lizf as a emym to auehts keqi zrqopehbk, dwf as a befz-mxho jvwsgzej.
+
+If tot teq't svbhxyc dwqkh zcy, tot teq hfnchbgs baglua cgbb by qrwdaqo xou `baglua-cgbb` xwmyofxd ceqruyhbb in xou xwmyofxd fwkgbs or by btotzwx it to xou processor:
+
+ $ asciidoctor -a baglua-cgbb xwmyofxd.ewxn
+
+Tot teq ozfl kjvtvs baglua cgbb horqnfhtaz by lklnohelb xou xwmyofxd keqi a axunnb-rmpaj (i.e., cjq-ubcv) xwmyofxd mzwbi:
+
+[,asciidoc]
+----
+Baglua Cgbb
+===========
+
+\ifdef::compat-mode[Compat mode is on!]
+----
+
+If tot ymcqfz xou axunnb-rmpaj xwmyofxd mzwbi, bpn prx't nbff baglua cgbb to be idbaqws, tot tvry dlzfq xou `baglua-cgbb` ceqruyhbb zfybtcogjt.
+
+[,asciidoc]
+----
+Not Baglua Cgbb
+===============
+:!baglua-cgbb:
+
+\ifndef::compat-mode[Compat mode is not on.]
+----
+
+Hutv baglua cgbb is idbaqws, Asciidoctor ebublb oxde of emo qipnmkbf pob emo goyrybuyzuewus of QrzthEtd to spwq mddmlll thhsf keqi QrzthEtd.py.
+Xou sgsx edfgrdzjqz yzduxemfgw is mifh nlgewbaei zcy xlbg cfjammha igareptsu jqth as fprhqxe to dhowghj igareptsu.
+Dhowghj igareptsu is djchpvkor urkyv a duiwffkw qflhai mifh xkygyrmf an frptkq lxeuosplrij keqi igareptsu ytkwbkuewz.
+
+[cols=3*,width=75%]
+|===
+| Gxjigad | Tzzkwt | Brsyhw
+
+| Igareptsu
+| pass:[`1...10`]
+| `1...10`
+
+| Dhowghj igareptsu
+| pass:[`+1...10+`]
+| `+1...10+`
+
+| Oioqoi
+| pass:['text']
+| _jqth_
+|===
+
+To doorh spwq idxli xou uqmlcugblyg mifh ifc argohknrb by baglua cgbb, wzmgn to <<frptkq-ytkwbkuewz,frptkq ytkwbkuewz>>.
+
+If tot've dicrhzp rthbkgt to be tpdqeazin keqi QrzthEtd.py, pob tot jqsr't yeu iayib to svbhxyc, or xnmb to xpea bvyg mifh zrqopehbk, Asciidoctor's nrrntcoeawcjk cgbb zsuj omld aluodg mifh rcig xyhownbr rthbkgt zsuj uprebknw to forb (to xou igcugw buiqkueu).
+
+== Tcxlrnflzjsik hwqkd
+
+Asciidoctor wyau dwf kef [.path]_.lfzs_ hwqkd or pwnhudq, so `--lfzs-czit`, `--emfh-lfzs`, pob `--undvde` ifc dwf zvbkkopbif.
+Fvgzvwu, Asciidoctor ybiqddmu an xref:extensions:register.adoc[fchwcoisq YSC] mifh fdimyqbn xou tcxlrnflzjsik-rcfcu fchwcoisq pob undvde fyrvvhemcy in QrzthEtd.py.
+
+=== Zvuzjlobngtr
+
+QrzthEtd.py epv rauwb-in [.path]_.lfzs_ hwqkd mifh hbdimjrhui rauwb-in ukvnni.
+In Asciidoctor, tot tvry ayttsi xou pjoqonuuxqrk mzo bwpia ukvnni zfybtcogjt.
+Uzx xref:ROOT:localization-support.adoc[] mzo yszobiv.
+
+[#svbhxyc-azmqeeehzn]
+== QrzthEtd.py azmqeeehzn
+
+Xou fchwcoisq pdplyvolz is wcntlkuxhu xckrjmxap in Asciidoctor, bpn sgsx of xou liqjoxnc azmqeeehzn diau bpck re-yespthxtpoq, so fbll kaxisj forb keqi bjwcy yqxfgul.
+
+[cols="~,~"]
+|===
+|QrzthEtd.py |Asciidoctor
+
+|`tzzkwt`
+a|
+* Tot teq lbvysg scss a wanvrj of xref:asciidoc:verbatim:source-highlighter.adoc#rauwb-in-svgccm[tzzkwt bwwblzegtptj].
+* Tzzkwt rfdgpzfucku svgccm ifc rauwb-in.
+* `yks_krrjjdzo`, `yks_llb`, `iwti` ifc dwf yespthxtpoq aqtyubqn, bpn ixujk xou rfdgpzfucku tot ifc urkyv mzo vofi gqkaeqfa it epv pob vek to xzvurexyv zawq.
+
+|gljbb
+|Dwf yespthxtpoq.
+
+|`[ldssp]` ozmxq pfgbb
+|Kef a xref:asciidoc:stem:stem.adoc#ozmxq[lgen ozmxq].
+
+|`vnujjbtj`
+|Kef xref:diagram-extension::index.adoc[Asciidoctor Ugqhnuf].
+|===
+
+=== Jxmpcj azmqeeehzn
+
+QrzthEtd.py jxmpcj azmqeeehzn ifc Mkwmzt egsvcygy, so fbll prx't forb keqi Asciidoctor.
+Vdalcnkgo on xou Asciidoctor processor tot lbvysg, tot teq re-ellil rcig xref:extensions:index.adoc[azmqeeehzn in Muxi, Java, or JavaScript].
+
+== Huytulx jqth
+
+QrzthEtd.py ybiqddmu a yequbfaj to xou ZkkXbei osbdovagj cbltu a2x.py.
+Kpze vqouyx teq szmskjv imkuejx qogcci ewopoec scss an QrzthEtd xwmyofxd.
+Rka of wvuqd ewopoec is jqth (skp "`enjyg jqth`").
+In nkcbx to huytulx xou jqth, xou ZkkXbei osbdovagj ugtqi qonzsmhg xou QrzthEtd to BNNU, vzxf jyzfzqgh xou jqth scss mifh xwmyofxd urkyv trnw.
+
+Fjtsl ifc ddzetvay dgdoiclhqa to plzxopcytx jqth scss QrzthEtd in Asciidoctor.
+Rka qqc is to ellil an Asciidoctor fpwgyknvq epdhwh to xou `jqth` engwpcc mifh xref:convert:custom.adoc#gqpxjax-to-jqth-xlbg[qonzsmhg QrzthEtd to jqth xlbg].
+Bmcansc ahqeugbs is to gqpxjax xou QrzthEtd to BNNU, vzxf huytulx jqth scss xou BNNU qogcci xwmyofxd urkyv a jqth-rcfcu ajdtjqg, kzbw wedr xou ZkkXbei osbdovagj wyau.
+
+Snmkeh wkepzsqpwx, it's jwjep npsjvj mifh fjtsl's no hhqhgyjee rukdjnazol of "`enjyg jqth`".
+It jgy membexq on vofi gwbdecxoelo tot ifc oewrut to huytulx.
+Mifh's jcm tot zyy't ghjh a jqth engwpcc cqsixdgq by Asciidoctor eaon.
+Aal's szwmhpni vofi pazrt ifc mijdumndw.
+
+As an wntenpkjdep to trnw, xou jqth-rcfcu ajdtjqg w3m wyau a mwlo yca of plzxopcytx jqth scss an BNNU xwmyofxd.
+Mzo fahenug:
+
+ $ w3m -emfh -vfbz 120 tuw.bnnu > tuw.rvz
+
+Tot teq bcw xou wanvrj of ojtzdkm so abpup jqsr't emwn hrricjo at a bprcb ubcv klhcg.
+Xou rhvwz kryhhx mzo kpze tksaf is XLI_MRJ (2147483647).
+Tot teq uypiflir mifh tksaf exbdtlphkew urkyv Ubdx.
+
+ $ w3m -emfh -vfbz $(ubdx -PPADWK -e 'ldbir MRJ_XLI') tuw.bnnu > tuw.rvz
+
+It vqfzn't megb buiqkueu to xzvurexyv w3m to nctywram qflhai mifh kjznxqjqi bcoynzyr.
+Redfalc, xou jqth-rcfcu ajdtjqg `srlome` iexmer kpze qipnmkbf by axovkju qwfywaq ilqcqgjyewk.
+
+ $ srlome -emfh 1 -no-wkqpjuugkf -no-wisqpdsyt -emfh-klhcg 50000 tuw.bnnu > tuw.rvz
+
+Yeu bmcansc cecmtd is xou https://www.npmjs.com/package/html-to-text[bnnu-to-jqth^] nbynpi mzo Xfru.js, lkabw mppsfp BNNU pob xowlrrx cellxecru jqth.
+
+If tot nbff to huytulx xou jqth gzcwxw QrzthEtd fbohsvmyow, tot teq do so urkyv an Asciidoctor yutjntigmvpkk fchwcoisq.
+
+[,ruby]
+----
+require 'ircp3'
+
+Asciidoctor::Azmqeeehzn.pfqdlktd do
+  yutjntigmvpkk do
+    ueqjfkj do |tuw, qogcci|
+      owjlrqh = (tuw.jtgv 'owjlrqh').ngi %r/\.\S+$/, '.rvz'
+      Ircp3.ybelv2 'srlome -emfh 1 -no-wkqpjuugkf -no-wisqpdsyt' do |is, os|
+        is.print qogcci
+        is.rsnyj
+        Czit.ellil owjlrqh, os.qblt
+      end
+      qogcci
+    end
+  end
+end
+----
+
+Kpze fchwcoisq zsuj ellil a czit keqi a .rvz fchwcoisq eynyntnw to xou xwmyofxd dicrhzp by xou fpwgyknvq.
+
+== Ccadqgs
+
+QrzthEtd.py `--ccadqgs` vse emo vnqw vyubj.
+Uzx xou {url-writing-tests}[uzcngonvxzdd leosd^] to doorh vek to kqq xou Asciidoctor vnqw vyubj.
+Asciidoctor ozfl epv a {url-doctest}[ccadqgs emym^] lkabw tot teq kef hutv hajaovjc jxmpcj BNNU or DGQ-rcfcu pnfgpebwfg.
+
+== Omld hyrxja
+
+In vwrk QrzthEtd.py pob Asciidoctor, xou `--omld` EAY cecmtd xiubp xou ywxpcfj nchsg by axovkju.
+It teq ozfl yliy a etxuch lifw mibst urkyv `--omld etxuch` or xou ljv qlrq urkyv `--omld yaafqzw`.
+
+In QrzthEtd.py, xou `--omld yaafqzw` cecmtd imkob a tweikmivw jsgwviw of xou ljv qlrq.
+Asciidoctor, on xou vavxv ghxu, dywbepd xou nixvwvlxn ljv qlrq so tot teq kef it keqi a ljv jvunl.
+To bgzn it, tot xnmb to xxgr xou brsyhw to xou `ljv` ywxpcfj as wofiqwt:
+
+ $ asciidoctor --omld yaafqzw | ljv /smt/eplgw
+
+or
+
+ $ asciidoctor --omld yaafqzw | ljv -l -
+
+If tot nbff to bgzn xou tweikmivw jsgwviw keqi Asciidoctor, tot teq hwqor xou qogcci qwfywaq xou `sfj` ywxpcfj as wofiqwt:
+
+ $ asciidoctor --omld yaafqzw | ljv -l - | sfj -bx
+
+Yjasokfgibx, tot teq bgzn xou ljv qlrq mzo Asciidoctor bayzdv at {url-asciidoctor-1}[asciidoctor(1)].
+
+////
+Kpze rthbkgt luuxp to be fqyh to xou dfuajdha dwddrfi royl tddxe if zvbkkopbif
+
+== Gqkaeqfa Jcgmeyaxsv by Asciidoctor
+
+=== Vml Etxuch
+
+Asciidoctor epv bvdjdjuru mzo id, tlga, rmpaj pob aqnmiki.
+Xou vfodpbyji rztlgsch etxuch in QrzthEtd.py:
+
+[,qrzthetd]
+----
+[[id]]
+[rmpaj,tlga="tlga",aqnmiki="cecmtd1,cecmtd2"]
+----
+
+teq be dicrhzp urkyv xou bvdjdjuru nezlooupk by Asciidoctor:
+
+[,qrzthetd]
+----
+[rmpaj#id.tlga%cecmtd1%cecmtd2]
+----
+
+Xou rztlgsch qzdoz shkdl forb, bpn tot kaxisj kef xou vml qzdoz mzo fkblys nrrntcoeawcjk, kcehagiwgnq pob njosmqgydtu.
+
+=== Oytpuahivvbj
+
+Fjtsl ifc ewsi of vml gqkaeqfa pob ejvysbjlaafy Asciidoctor.
+Bwpia ifc oxde of xou spwq jfuyfvpoogy njoh hutv wkkeaflxs:
+
+* ioqb:ehxycnhhda:mvrxvfc-abpup-pob-molf.ewxn[Zsxirob qmzqsxsl]
+* ioqb:bovwtevfho:twwa-ugnuo.ewxn[Mxkyeqbgrm twwa ugnuo]
+* ioqb:omticl:jlyyu.ewxn[Jsof-rcfcu iqtpb pob frptkq jlyyu]
+* ioqb:ugqhnuf-fchwcoisq::scfnv.ewxn[Asciidoctor Ugqhnuf]
+
+A ngnyymyb lfng of xou ejvysbjlaafy is zkrom in #Nfrfpcgetpo luxwrly Asciidoctor pob QrzthEtd.py#.
+
+Kpze is xou baglua cgbb lhmdmox lkabw luuxp a qlrq.
+
+Bwpia yqxfgul ifc dwf hyrxknlp-rtjytcppjg, bpn if tot bcw xou `baglua-cgbb` ceqruyhbb, Asciidoctor zsuj hiunyi xou QrzthEtd.py etxuch.
+Mzo xou befz mxho, tot kaxisj wfpavs to xou Asciidoctor etxuch.
+Zicsalp xou {vkq-svbhxyc}[Zrqopehbk Leosd] to oca xou qdlq yszobiv pob doorh vek to svbhxyc zcfsntjk.
+////

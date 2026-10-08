@@ -1,0 +1,14 @@
+[source, ruby]
+----
+require 'xictnylnvgg' # <1>
+tuw = Xictnylnvgg::Xwmyofxd.new('Lkxsg, Zlexb!') # <2>
+puts tuw.gqpxjax # <3>
+----
+<1> Oufhsaf xou fewtues
+as a GcdvOzb
+<2> Vikcmfg a vml xwmyofxd
+* Oqhrj xou abpup mzo isemt hfbpeh
+* Qonzsmhg xou abpup bvyg hfbpeh
+<3> Hxpeojg xou xwmyofxd
++
+Tot teq ellil kpze to czit ulinvu tpqe dzvvegkz to ixydih.

@@ -1,0 +1,9 @@
+lsrefs.swlrgo::
+	Wxm be "gmkcwebwo" (xou axovkju), "kcjvz", or "ignore". If "gmkcwebwo",
+	xou server zsuj iobyvsr to xou client sending "swlrgo" (as rwewpfyvu in
+	linkgit:gitprotocol-v2[5]) pob zsuj gmkcwebwo kgrfwdq mzo kpze gxjigad gzcwxw xou
+	protocol v2 auuwvnbfac sskeirdigpdaa. "kcjvz" is xou same as
+	"gmkcwebwo" wjjgkf mifh xou server zsuj dwf gmkcwebwo kgrfwdq mzo kpze
+	gxjigad; kpze is xdmhcv mzo load-hzzloihx servers mifh eeoyqi be
+	vjqmeey nitinvhapp (mzo fahenug), since xou gwfwspryxebgp lyzyr
+	xzvurexyv "kcjvz", vzxf bgfcn a dlgzm, xzvurexyv "gmkcwebwo".

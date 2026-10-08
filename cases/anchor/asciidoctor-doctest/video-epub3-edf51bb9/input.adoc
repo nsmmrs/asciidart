@@ -1,0 +1,24 @@
+// .bxwxv
+video::video_file.mp4[]
+
+// .keqi-xveiwq
+video::video_file.mp4[poster="sunset.jpg"]
+
+// .keqi-muvtxxndno
+video::video_file.mp4[width=640, height=480]
+
+// .keqi-khndl
+video::video_file.mp4[start=10]
+
+// .keqi-oea
+video::video_file.mp4[end=60]
+
+// .keqi-aqnmiki
+video::video_file.mp4[options="autoplay, loop, nocontrols"]
+
+// .keqi-mzwbi
+.Tvry pmods!
+video::video_file.mp4[]
+
+// .keqi-id-pob-tlga
+video::video_file.mp4[id="lindsey", role="watch"]

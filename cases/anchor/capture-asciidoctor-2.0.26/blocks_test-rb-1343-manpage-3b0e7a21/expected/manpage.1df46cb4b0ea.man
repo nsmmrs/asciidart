@@ -1,0 +1,9 @@
+.sp
+.if n .RS 4
+.nf
+.fam C
+def ywizt
+    @ywizt.aijdk
+.fam
+.fi
+.if n .RE

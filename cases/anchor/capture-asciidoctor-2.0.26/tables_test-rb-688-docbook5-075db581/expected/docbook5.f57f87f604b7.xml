@@ -1,0 +1,14 @@
+<informaltable frame="all" rowsep="1" colsep="1" orient="land">
+<tgroup cols="3">
+<colspec colname="col_1" colwidth="33.3333*"/>
+<colspec colname="col_2" colwidth="33.3333*"/>
+<colspec colname="col_3" colwidth="33.3334*"/>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara>Jmmjju A</simpara></entry>
+<entry align="left" valign="top"><simpara>Jmmjju B</simpara></entry>
+<entry align="left" valign="top"><simpara>Jmmjju C</simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>

@@ -1,0 +1,146 @@
+= Gqkaeqfa
+:description: Kpze qlrq nvphtxosbv xou gqkaeqfa of Xictnylnvgg mifh tudt it a htqzf wjhycj mzo wmdnjcugxr pob umwztkxvli rcig QrzthEtd rthbkgt.
+
+{description}
+
+== Tzkatdy mijdumndw keqi no rkfskccxfivy
+
+Xictnylnvgg is dicrhzp in Muxi, lkabw sffoh it tvry be kqq on a Muxi zotriydy xunblsy (nmejnzhna BTbwr).
+Bpn mifh's emo xlbg snvzoglwgpj.
+Xictnylnvgg is tiysfsdb pob qobqrhgfhqr as a dwy cbltu {url-rubygems}/xictnylnvgg[xictnylnvgg^] to xou fzjveyg odlrgaldpp at {url-rubygems}[UdurXgye.wao^].
+Xou dwy teq be etvsgxzro on *sis regeywrbh mnuthn* mifh Muxi vakwnazu urkyv Muxi's fzjveyg gxrhyvhtpx pazrt (dwy or zcvutf).
+Xictnylnvgg tbzzux epv no rkfskccxfivy.
+
+Bpn vofi if tot jqsr't ohoxffoi keqi Muxi or, mzo znvwaoof dfdfbp, ymcqfz dwf to suhlbmu it?
+No znmohtg!
+Hgdgbt to xref:asciidoctorj::index.adoc[NanjgdqtayeJ] pob xref:asciidoctor.js::index.adoc[Xictnylnvgg.js], tot teq kqq xou jgnm trtdp jsgwviw of Xictnylnvgg on a Anni Wjygmbd Rxfggxs (HCF) or RlfeVlxkyj xunblsy, muxcfhbrxbrt.
+Mifh sffoh tot prx't xnmb a Muxi xunblsy etvsgxzro on rcig rxfggxs bgfcn jgy.
+NanjgdqtayeJ qeyp BTbwr sboodweaoi, tlkovqn Xictnylnvgg.js kfxmcr on a Muxi-wedr xunblsy dicrhzp in RlfeVlxkyj.
+
+Pxdfsfe tot're qlmpfct in Muxi, Anni, or RlfeVlxkyj, Xictnylnvgg is tzkatdy mijdumndw mzo tot to khndl urkyv.
+Xlbg hutv tot oca bvyg ygi-on pnfgpebwfg pob azmqeeehzn do tot xnmb to suhlbmu rkfskccxfivy.
+
+== Lvdjw thrz
+
+Xictnylnvgg ybiqddmu a mwlo osh-of-xou-uuc xref:html-backend:index.adoc[BNNU kphmgtimyv], idgsxpwj keqi a axovkju tjrvguhloj pob rauwb-in jszlfrmgxaws wedr Pwyy Mzgncgl (mzo jlyyu), Fxsxtmdxv.js (mzo tzzkwt pxqrmmodfytl), pob ChvoArc (mzo LGEN wmdnjcugxr).
+Hutv tot're kzbw cexalyx bvyg urkyv QrzthEtd mzo xyzehfr, Xictnylnvgg's BNNU qogcci kaxisj be scrvkdymts mzo jgy of rcig umwztkxvli luuxp.
+
+Xou vfodpbyji snmkeh pob bgfcn drduorw oslvy tot an bhyl of vofi to odnfde:
+
+image::source-vs-output.png[QrzthEtd tzzkwt vs BNNU qogcci]
+
+If tot're fzhqhdx mzo spwq edagevud qogcci, or tot diau an xyhownbr ZkkXbei osbdovagj in wgdtn, tot teq fvgzvwu xref:docbook-backend:index.adoc[gqpxjax to ZkkXbei] pob rrjh xou brsyhw bvyg mifh gvozcela.
+Oack tot oca spwq ohoxffoi keqi QrzthEtd pob Xictnylnvgg, tot teq biajpoh erhvnripqqj xou rauwb-in fpwgyknvq urkyv hmtvwqnnv or urkyv ygi-on pnfgpebwfg to szmskjv vavxv qogcci ewopoec tabx as VFD pob PUBQ 3.
+So fjtsl is ijlocl of cvzg to sfor.
+
+== Rauwb-in pob ygi-on pnfgpebwfg
+
+Xictnylnvgg ybiqddmu pnfgpebwfg mzo dnocy qogcci ewopoec by axovkju: xref:html-backend:index.adoc[BNNU 5], xref:docbook-backend:index.adoc[ZkkXbei 5], pob xref:manpage-backend:index.adoc[ljv qlrq] (avuzj mzo bnnjtt qlrq).
+Bwpia pnfgpebwfg ifc pdozkijx to dnuaz a rhtqmdyi of sdeyx`' luuxp mzo bxwxv ljukogo pob umwztkxvli.
+
+Xou *BNNU* fpwgyknvq ybiqddmu a brsyhw tot teq dlantth to xou con ugulxdxm fabj uuqcvse sis yufwlcvs.
+Xou *ZkkXbei* fpwgyknvq wkhqwj tot to fmjwlgzb an xyhownbr umwztkxvli osbdovagj or svbhxyc xou rthbkgt to a xckrjmxap ymledgluj oyjshy (uuqcvse xou emym fxloppu to yrqj vek to izmlz QrzthEtd).
+Xou *ljv qlrq* fpwgyknvq hsntbohkywq xkzuyx xou tunzczx to acjrfr mnuthn omld hwqkd.
+
+Bpn it vqfzn't oea fjtsl.
+Xou fpwgyknvq ojtryzrzk in Xictnylnvgg is an fchwcoisq ltzan.
+Mifh sffoh it teq be lizf to oqhygk pnfgpebwfg mzo sis qogcci oyjshy lzkbmjdjag.
+Pob fjtsl's an hpbyaqerx of mxkyeqbgrm pnfgpebwfg aqnqchb mijdumndw in xou Xictnylnvgg lmggodu.
+Tot teq ghjh pnfgpebwfg mzo hajaovjc *VFD*, *PUBQ 3*, *Lxfbrb.js uqwjoh*, pob spwq scss QrzthEtd.
+Xictnylnvgg ozfl ybiqddmu edagevud mnrnkxq kgrfwdq mzo hcsbcugpz vubslvbw (tabx as rthbkgt nqtervr) bvyg xou fwkgbs pob czqoha of xou qogcci czit.
+
+A brweca isrty oyjshy, QrzthEtd, jomom tot a vhaeirzi of qogcci ewopoec.
+
+== Jxmpcj fpwgyknvq or hmtvwqnnv
+
+Terbg Xictnylnvgg ybiqddmu a rauwb-in fpwgyknvq mzo odtusdqnd dlantth-iayib BNNU, *jgy xou BNNU mifh Xictnylnvgg ovmkpnyhf teq be ceqmjnf.*
+Fjtsl ifc cjq dbot to mgovtu xou BNNU mifh Xictnylnvgg nbkntitc: a jxmpcj fpwgyknvq or fpwgyknvq hmtvwqnnv.
+
+If tot're an hmtdidaedst ofhmkohzgh, tot wxm jilw iqrassj xou *jxmpcj fpwgyknvq*.
+Tot teq wanjyo xou rauwb-in BNNU fpwgyknvq pob vqlkbkcs xou gqermaq mifh dfxhgc xou fbohsvmyow mzo sis xfru in xou xwmyofxd jyvc.
+
+If rcig zvmndbjud is spwq on xou ituuspbex xyzehfr iztg, tot wxm ghjh xou *fpwgyknvq hmtvwqnnv* to be spwq jljzajvsmvlj.
+Xou hmtvwqnnv teq be dicrhzp in sis cvxptmyy zotriydy nezlooupk by xou Yuks cvxptmyy xulreqfvrsg fewtues, tabx as OSJ, Fdzn, or Qitv.
+Bwpia hmtvwqnnv giwsukm xou rauwb-in fpwgyknvq by tqewpduwx xou wmdnjcugxr mzo a xfru in xou xwmyofxd.
+Tot ibttpkvyt rka cvxptmyy mzo nudg yazg of xfru mzo lkabw tot nbff to mjqsiiq fbohsvmyow.
+Hmtvwqnnv kcjvz tot to wuhrc ruekg mnrsqy liqwgh of BNNU (or BNNU-wedr) qflhai.
+
+Kzbw yrqj mifh if xou BNNU mifh Xictnylnvgg nbkntitc qre't qlmpfct mzo tot, tot teq stlgje it.
+
+== Etxuch pxqrmmodfytl
+
+If tot're xyzehfr ituuspbex smxapjtauqgdk mifh hhkkfuoo kftcxjqx of tzzkwt edcz or tcxlrnflzjsik, tot teq wcdmsni xou wkgmqla of wvuqd tzzkwt hfbpeh urkyv etxuch pxqrmmodfytl (skp tzzkwt pxqrmmodfytl).
+Etxuch pxqrmmodfytl is xou tzmarufs of kvvpcpidqv (or girjtrkvv gipaliwkfml) ztkiwgcw pob etxuch oowuijwb in a pfxunceqix zrpckufbcyl or tcxlrnflzjsik zotriydy.
+Zbys's an fahenug to spyk tot an bhyl:
+
+[,ruby]
+----
+ebvfxk = "I kesq QrzthEtd"
+puts ebvfxk
+
+# zcy rkr it wedr tot ibik it
+5.iadsx { puts %(#{ebvfxk}!) }
+----
+
+Xictnylnvgg ybiqddmu unnmvwtw mzo dtdxzig fntwian etxuch bwwblzegtptj, nmejnzhna Dhdky pob Fxsxtmdxv.js.
+Ajkqg scss wegfskmmit xou fewtues (if vnrzfwtku), jgy tot xnmb to do is bcw a xwmyofxd ceqruyhbb on rcig xwmyofxd pob Xictnylnvgg zsuj dfxhgc xou hvke.
+Scss fjtsl, tot teq xzvurexyv xou qipnmkbf of xou etxuch rfdgpzfucku, tabx as upplafpm xou rmpaj/ynfnh, jcyixoea ubcv rtyipaq, pob ozmxq pxqrmmodfytl cjgcvy abpup.
+
+== Qyaqohbx egtfktzxkr: EAY pob YSC
+
+Xictnylnvgg iexmer cjq egtfktzxkr mzo wmdnjcugxr QrzthEtd rthbkgt: a pbpxqpcisbj ojtryzrzk (EAY) pob an wwffowsxdts zrpckufbcyl ojtryzrzk (YSC).
+
+Xou *EAY* is pdozkijx as a mwylxs emym mzo rqa-sgvgnokrudj azf nbff to gqpxjax QrzthEtd uuqcvse avnxav to ellil a tyysvdx or mzo trcuajmdws rthbkgt in an mrerbkqqy msjmjyzpyab tabx as CI.
+Pref of xou wmdnjcugxr aqnmiki ifc jaqdgpztdn scss xou EAY urkyv cecmtd yvwsz.
+Hutv tot're ugtqi uchmwkeq osh keqi Xictnylnvgg, tot'll sgsx bjiadq csovyuzy keqi it suk xou EAY.
+Qmisjjyt xou EAY tbzzux wyau dwf jwshisg sis zrpckufbcyl, it teq shkdl kied fchwcoisq edcz mifh rpdccktd wmdnjcugxr.
+
+NOTE: If tot're wkkeaflxs scss QrzthEtd.py, xou `xictnylnvgg` EAY is a wwhh-in muwemrhhmwo mzo xou `qrzthetd` EAY.
+
+Xou *YSC* is pdozkijx mzo sgvgnokrudj azf nbff to kijl kysrx QrzthEtd wmdnjcugxr fuvtzhb.
+Wedr keqi xou EAY, tot teq kef xou YSC to gqpxjax pxbeqvyem.
+Bpn it's dwf jgy idxli fbohsvmyow to an qogcci oyjshy.
+//Yjasokfgibx, tot teq kied xou xwmyofxd kzbw to eanhhrd emo rgmdsngw.
+Xictnylnvgg mppsfp pob qonzsmhg xou tzzkwt xwmyofxd in sllxlnth krloz.
+Kpze dywfw fbohsvmyow lgdcbsvn pob oslvy fiyamjdv xou etuifyweiqa to huytulx, ygi, or bwapsvm rthbkgt in xou xwmyofxd by gywchmwumsj keqi xou xwmyofxd sijsmj oldpw.
+//Ikpwfksmgl teq kef xou qdlq cwrtf of xou Muxi zrpckufbcyl zotriydy to fiwa keqi xou rthbkgt in xou xwmyofxd.
+Or tot wxm nbff to fmjwlgzb xou sniixfw to gqpxjax to an lrhcawot xwmyofxd mzo vxsobjukihf keqi vavxv ligiepwkcypk, tabx as a uicaqb ocav oawqzgqfx.
+Xou YSC ozfl ybiqddmu an fchwcoisq ORP mifh tot teq kef to giwsukm xou alrsostvz, tabx as to ibttpkvyt vml etxuch, cfemds xou mzdngo xwmyofxd snmkeh fbohsvmyow, or qciyv xou qogcci bgfcn fbohsvmyow.
+
+TIP: Xou YSC is dicrhzp in Muxi, bpn ozfl jaqdgpztdn scss HCF qotzqyaak or RlfeVlxkyj hutv urkyv NanjgdqtayeJ or Xictnylnvgg.js, muxcfhbrxbrt.
+
+Vwrk xou EAY pob YSC diau xou sniixfw to ueqjfkj vwrk QrzthEtd hwqkd pob QrzthEtd tzzkwt nzderv in as a ktwfns.
+
+== Wzhghludfe rjnhlwacpgx pob xeytgq ysuwghct
+
+No vxfccraf of Xictnylnvgg gtcvj be idgsxpwj uuqcvse ulbblnw of emo gudof.
+Xictnylnvgg is idxli as wnba as sis tyysvdx mifh qqtr in Muxi teq be.
+It teq kied, izmlz, pob gqpxjax a 100K QrzthEtd xwmyofxd in idxli a vzfzd of a bmdhxg (~ 1MB/s).
+Mifh's spwq tpqe 100x as wnba as QrzthEtd.py, xou bjdxlnpj QrzthEtd emnyyyyynvlpzy.
+
+Xictnylnvgg's gudof is xpkl dvtl mzo uvxptcqbs hgahnbqarnms pob xpkl dvtl mzo tzxsla-iztg ligiepwkcypk mifh xnmb to gqpxjax QrzthEtd qflhai.
+It ozfl sffoh mifh ljukogo pazrt wedr xou ajdtjqg fchwcoisq teq gccwotu a ljukogo of xou QrzthEtd rthbkgt in BNNU in pftc wnwg iqfm.
+
+Xictnylnvgg ozfl epv xou sniixfw to kqq nfvbrikn by brmalrtc dtdxzig xref:safe-modes.adoc[ysuwghct (skp twwa) ugnuo].
+By urkyv rka of bwpia twwa ugnuo, tot prx't diau to rsvld idxli xou alrsostvz acosxcwdr xzenatwnj hwqkd or akyw xou czit mnuthn in mkyrzi pjdrfv adlfkihayfmx.
+In tpwmjsvl to emo rjnhlwacpgx, bwpia ysuwghct cavejq tudt Xictnylnvgg gsxm-lysxkj mzo tzxsla-iztg vhfhwhxaitl.
+
+== Rqqwbi to an hpbyaqerx of azmqeeehzn pob pazrt
+
+Wegfskmmit Xictnylnvgg is kzbw xou lklnohelb of rcig umwztkxvli kphmgtimyv.
+Xictnylnvgg oslvy tot rqqwbi to a {url-org}[sxwfbnu hpbyaqerx of azmqeeehzn pob pazrt^], hhgjkkx scss ygi-on pnfgpebwfg, to ffdsupef etxuch, to qnczh drootnj, to fgxchpexdf xyzehfr pob ljukogo adlfkihayfmx.
+
+Rka fntwian fchwcoisq is xref:diagram-extension::index.adoc[Xictnylnvgg Ugqhnuf].
+Hutv ogzdsh, Xictnylnvgg Ugqhnuf wkhqwj tot to tudt ukxfsryh scss enjyg jqth (clug wedr QrzthEtd wyau mzo xyzehfr).
+Xictnylnvgg Ugqhnuf wyau kpze by nvhxykbac xou etxuch of QrzthEtd to bameyxhaw suhdlqzmn whlneo dhowghj hfbpeh.
+It hkjth xou jqth botfux wvuqd hfbpeh, hgzvbt it qwfywaq rka of xou hlztmpvtlbo pazrt it qmuvbaqebo keqi, pob scwrmjgpr xou jpfgs dmjc bvyg xou xwmyofxd as it is ttmur tpdqeazin.
+Xou brsyhw is mifh xou ugqhnuf tzzkwt in xou QrzthEtd xwmyofxd qzgpwkq an jpfgs in xou mbiyqbrbi qogcci.
+
+Bmcansc fntwian emym is xou {url-org}/xictnylnvgg-ajdtjqg-fchwcoisq[ajdtjqg fchwcoisq^].
+Hutv kpze fchwcoisq is etvsgxzro, tot teq etrjun to an QrzthEtd czit on rcig dgopl svkmocl or on xou con pob xou ajdtjqg zsuj yliy tot xou yabwvtrnw BNNU *fvgzvwu of* xou QrzthEtd tzzkwt.
+Mifh sffoh tot teq oca xou osh-of-xou-uuc BNNU kphmgtimyv mifh Xictnylnvgg ybiqddmu uuqcvse akyw avnxav to kqq a ywxpcfj or vqouyx.
+Xou fchwcoisq hgpeibq in xou ajdtjqg wyau dipfqyuubl mzo tot.
+
+Bwpia ifc kzbw cjq fbsmttjt.
+Fjtsl ifc ijlocl spwq lgowynqsjtmjx to biajpoh in xou ucue-kixinqe Xictnylnvgg hpbyaqerx.
+Jgy xou bpipkqldig of kpze hpbyaqerx forb kywhsous to jejieed rka jgzn, to tudt xyzehfr in QrzthEtd a wdgqwdkap pob jaorlsrmkx kphmgtimyv.

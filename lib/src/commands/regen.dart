@@ -4,7 +4,7 @@ library;
 
 import 'dart:io';
 
-import '../oracle/asciidart_runner.dart';
+import '../oracle/ptome_runner.dart';
 import '../oracle/ruby_pool.dart';
 import '../spec/case.dart';
 import '../spec/conversion.dart';
@@ -15,6 +15,10 @@ final class RegenReport {
   int converted = 0;
   final List<String> changed = [];
   final List<String> undocumented = [];
+
+  /// Results whose output matches the reference but whose log doesn't
+  /// (diagnostic parity, to triage; not a failure).
+  final List<String> logOnly = [];
 
   bool get clean => changed.isEmpty && undocumented.isEmpty;
 }
@@ -52,13 +56,13 @@ Future<RegenReport> regen(
         } finally {
           await pool.close();
         }
-      case AsciidartProfile():
+      case PtomeProfile():
         for (final c in cases) {
           for (final format in c.formats) {
             results.add((
               c,
               format,
-              convertWithAsciidart(c.conversion(format, profile)),
+              convertWithPtome(c.conversion(format, profile)),
             ));
           }
         }
@@ -92,19 +96,24 @@ Future<RegenReport> regen(
   return report;
 }
 
-/// An asciidart result that differs from the one it is compared to must
+/// An ptome result that differs from the one it is compared to must
 /// say why.
 void _checkDivergences(Case c, Corpus corpus, RegenReport report) {
   for (final MapEntry(key: format, value: profiles) in c.expected.entries) {
     for (final MapEntry(key: name, value: expected) in profiles.entries) {
       final profile = corpus.profiles[name];
-      if (profile is! AsciidartProfile || profile.compareTo == null) continue;
+      if (profile is! PtomeProfile || profile.compareTo == null) continue;
       final reference = profiles[profile.compareTo];
       if (reference == null || reference.sameBehavior(expected)) continue;
+      final id = '${c.id}#${format.name} [$name]';
       if (expected.divergence == null && c.divergence != null) {
         profiles[name] = expected.withDivergence(c.divergence);
       } else if (expected.divergence == null) {
-        report.undocumented.add('${c.id}#${format.name} [$name]');
+        if (expected.hash != null && expected.hash == reference.hash) {
+          report.logOnly.add(id);
+        } else {
+          report.undocumented.add(id);
+        }
       }
     }
   }

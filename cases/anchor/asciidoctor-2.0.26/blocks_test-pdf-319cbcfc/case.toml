@@ -1,0 +1,8 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoctor-2.0.26/test/blocks_test.rb:2413"
+formats = ["pdf"]
+# Original words left in place (replacing them changed the conversion).
+kept-words = ["height", "style", "svg", "width"]
+
+[options]
+input = "./input.adoc"

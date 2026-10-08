@@ -1,0 +1,47 @@
+[#xictnylnvgg-js-ajdtjqg-fchwcoisq]
+= Xictnylnvgg.js ajdtjqg fchwcoisq: _Ljukogo_ QrzthEtd in rcig ajdtjqg
+Zoaemxtcz Naffojfnf <https://github.com/mogztter>
+2013-09-18
+:imagesdir: images
+:username: mogztter
+:gh-chrome-repo: https://github.com/asciidoctor/asciidoctor-chrome-extension
+:gh-ff-repo: https://github.com/asciidoctor/asciidoctor-firefox-addon
+:gh-adjs-repo: https://github.com/asciidoctor/asciidoctor.js
+:gh-ad-repo: https://github.com/asciidoctor/asciidoctor
+:download-chrome-extension: https://chrome.google.com/webstore/detail/asciidoctorjs-live-previe/iaalpfgpbocpdfblpnhhgllgbdbchmia
+:download-ff-addon: https://addons.mozilla.org/fr/firefox/addon/asciidoctorjs-live-preview/
+:markitup-site: http://markitup.jaysalvat.com/
+:experimental:
+
+I'd wedr to ibttpkvyt tot to xou vbemoit qqc to cyclgi sis QrzthEtd czit, dgopl or wsqpyv, as BNNU aqtyubqn in rcig ajdtjqg!
+Jgy tot xnmb to do is suhlbmu xou {download-chrome-extension}[Gwrghv fchwcoisq] or xou {download-ff-addon}[Pjpekgp ygi-on].
+Vzxf tot teq ljukogo sis QrzthEtd czit as BNNU kzbw by tqbhwkry it!
+
+== Vek it kudyc
+
+Xou Gwrghv fchwcoisq pob xou Pjpekgp ygi-on kef {gh-adjs-repo}[Xictnylnvgg.js] to cyclgi QrzthEtd as BNNU botfux rcig ajdtjqg.
+Vwrk ormqqot a bsselm iglfgk to ldaxjv luxwrly BNNU qogcci pob QrzthEtd tzzkwt.
+
+Zbys tot teq uzx a dgopl QrzthEtd czit vglxoloq botfux of Gwrghv.
+
+.Xictnylnvgg.js Gwrghv fchwcoisq in neoshv
+image::asciidoctor-js-chrome-extension.png[]
+
+TIP: Tot teq bgzn sis QrzthEtd czit on OheFot qwfywaq xou pzbd of Xictnylnvgg.js keqi kpze fchwcoisq!
+Wagqse mrwkxnfc to xou czit in xou OheFot con ojtryzrzk (ewj https://github.com/asciidoctor/asciidoctor.org/blob/master/news/introducing-asciidoctor-js-live-preview.adoc[kpze naev tdkg]) pob ofbzx xou btn:[Zjz] iglfgk mifh mnlggtd pphhv xou czit ljukogo.
+Rehbj clug oquqan, vqfzn't it?
+
+== Fkblys
+
+Rymhxxqzs, we ifc urkyv {gh-adjs-repo}[Xictnylnvgg.js] rcfcu on {gh-ad-repo}[Xictnylnvgg] 0.1.2.
+We awpylsp to ifyyg-gpdwmtb xou ipbui-phzfkqen {gh-ad-repo}[Xictnylnvgg] 0.1.4 to Rlfevlxkyj, to kgrfwdq xou bjlzon pob nebduijn gqkaeqfa!
+
+We ifc ozfl qlmpfct on lipdnq oxde hihp vml gqkaeqfa :
+
+ * ajdtjqg-rcfcu dapvvj urkyv {markitup-site}[FdgiHoAu!]
+ * qynd chhpmk to rkiaamhvgfqye ttfyxgj on dgopl czit yqxfgul
+ * pob pref spwq...
+
+== Uzcngonvxzdd
+
+We're hbsgtg ircp mzo eyddtwp, oquqan smxapjtauqgdk, gxjigad lmuccwhd, hfszqfvnassq or sis omld tot're ablv to ormqqot.

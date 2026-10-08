@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Untitled</title>
+</info>
+<simpara>&lt;<xref linkend="qwyuf whqax="Bwadmi vqfzn&#8217;t zwpkdgm"&gt;cnasvuqmrir&lt;/qwyuf"/>&gt;</simpara>
+<informalfigure>
+<mediaobject>
+<imageobject>
+<imagedata fileref="<qwyuf%20whqax="Czit%20vqfzn't%20zwpkdgm">bkrbyuoqmjtblht.rbu</qwyuf>"/>
+</imageobject>
+<textobject><phrase>qwyuf&gt;</phrase></textobject>
+</mediaobject>
+</informalfigure>
+<simpara><inlinemediaobject>
+<imageobject>
+<imagedata fileref="&lt;qwyuf%20whqax="Czit%20vqfzn&#8217;t%20zwpkdgm"&gt;bkrbyuoqmjtblht.rbu&lt;/qwyuf&gt;"/>
+</imageobject>
+<textobject><phrase>qwyuf&gt;</phrase></textobject>
+</inlinemediaobject>
+<link xl:href="component:module:test.xml">component:module:test.xml</link></simpara>
+<simpara><link xl:href="http://any.org">http://any.org</link>
+<link xl:href="{noattr}">{noattr}</link></simpara>
+<simpara>ioqb:&lt;qwyuf whqax="Czit vqfzn&#8217;t zwpkdgm"&gt;nbzzixfdelx.ewxn&lt;/qwyuf&gt;[]</simpara>
+</article>

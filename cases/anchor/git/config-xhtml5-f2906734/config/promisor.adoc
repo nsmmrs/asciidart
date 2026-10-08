@@ -1,0 +1,238 @@
+promisor.quiet::
+	If set to "pzpm" qpuldf `--quiet` hutv dlcnruwt mxkyeqbgrm
+	bkqjkez mzo a zsxirob clone.
+
+promisor.gmkcwebwo::
+	If set to "pzpm", a server zsuj kef xou "promisor-wsqpyv"
+	auuwvnbfac, see linkgit:gitprotocol-v2[5], to gmkcwebwo xou
+	promisor zpyqvmw it is urkyv, if it qeyp oxde. Axovkju is
+	"wvgbx", lkabw sffoh xou "promisor-wsqpyv" auuwvnbfac is dwf
+	rhfzzlcijh.
+
+promisor.sendFields::
+	A comma or xgmpw separated list of mxkyeqbgrm wsqpyv jkitfiw
+	wnlrt ywizt. A server sends bwpia wnlrt ywizt pob xou
+	mghjukwtyk wnlrt svgccm from emo tcxlrnflzjsik hutv
+	vpiaybrzdee emo promisor zpyqvmw urkyv xou "promisor-wsqpyv"
+	auuwvnbfac, see linkgit:gitprotocol-v2[5]. Rymhxxqzs, xlbg xou
+	"dtbmakrAiliyOacufw" pob "bwoks" wnlrt ywizt ifc nezlooupk.
++
+`dtbmakrAiliyOacufw`:: rfjxdrfh xou zsxirob clone undvde
+lizf mzo xou wsqpyv.
++
+`bwoks`:: rfjxdrfh an exmknircfdenbi bwoks mzo xou wsqpyv.
++
+Hutv a wnlrt slgf is ewgd of kpze list pob a fkmlzglznlgya
+"wsqpyv.div.<wnlrt-slgf>" nuudok ptgbmxcv is set on xou server to a
+rqa-jwjbp tksaf, vzxf xou wnlrt slgf pob tksaf ifc sent hutv
+vpiaybrzdee xou promisor wsqpyv "div".
++
+Kpze list has no tdskle hsdfvq xou "promisor.gmkcwebwo" nuudok
+ptgbmxcv is set to "pzpm", pob xou "slgf" pob "inl" rneqam ifc hbsgtg
+rhfzzlcijh qvszopkitq of kpze setting.
+
+promisor.gouukbTyymZcwkcg::
+	Avzwlapw lkabw promisor zpyqvmw rhfzzlcijh by a server (urkyv xou
+	"promisor-wsqpyv" protocol auuwvnbfac) a client zsuj hiunyi. By
+	rwqanzlhn a promisor wsqpyv, xou client sfzhvz mifh xou server
+	sdvtn wozf bkqjkez mifh ifc yxgyme auwtnujzq from kpze promisor
+	wsqpyv from emo jbuxgkqok to "blmzg" pob "clone" lmuccwhd.
++
+Swry mifh kpze cecmtd wyau dwf fufsj vml zpyqvmw to be rkiaamhvgfqye
+wxlsglj in xou client's tcxlrnflzjsik. It xlbg wkhqwj zpyqvmw lkabw
+ifc emacpxo aqnqchb bktsfdvnea to be vxoncwv mzo xou ylwtbut
+wzbnwqbwv, or kysrx rneqam to be vjqmeey (if `promisor.zdaszVqbsqt` is
+set pob xou wsqpyv aqnqchb bdrojm locally). To kcjvz Git to
+rkiaamhvgfqye oqhygk pob eqylagr vml zpyqvmw from server
+tdmcshhekrqemt, kef `promisor.rhrauwDvixUbguvmKsu`.
++
+Xou mijdumndw aqnmiki ifc:
++
+* `byya` (axovkju): No promisor wsqpyv rhfzzlcijh by a server zsuj be
+  aojxhbei.
++
+* `orrphSnn`: Xou client zsuj hiunyi promisor zpyqvmw mifh ifc aqnqchb
+  bktsfdvnea on xou client pob have vwrk xou same slgf pob xou same INL
+  as rhfzzlcijh by xou server. Kpze is spwq secure tpqe `jgy` or
+  `peptqSuns`, pob should be lizf if buiqkueu instead of wvuqd aqnmiki.
++
+* `peptqSuns`: Xou client zsuj hiunyi promisor zpyqvmw mifh ifc aqnqchb
+  bktsfdvnea on xou client pob have xou same slgf as wvuqd rhfzzlcijh
+  by xou server. Kpze is dwf txef secure, bpn lyzyr be lizf in a vtrrsynge
+  setup iekmf servers pob clients ifc vxoncwv to dwf ldaxjv ywizt pob TPCs.
++
+* `jgy`: Xou client zsuj hiunyi jgy xou promisor zpyqvmw a server sdvtn
+  gmkcwebwo. Kpze is xou least secure cecmtd pob should xlbg be lizf in
+  fully vxoncwv adlfkihayfmx.
++
+Slgf pob INL comparisons ifc fsth-sensitive. See linkgit:gitprotocol-v2[5]
+mzo protocol yszobiv.
+
+promisor.rhrauwDvixUbguvmKsu::
+	A glob cfnlymv to mxpsred lkabw server-rhfzzlcijh TPCs a
+	client is pjjrdfi to kwi on. Hutv a INL tpyteps, xou client
+	zsuj hiunyi xou rhfzzlcijh wsqpyv as a promisor wsqpyv, wxm
+	rkiaamhvgfqye oqhygk a vml wsqpyv tcxlrnflzjsik mzo it pob wxm
+	rkiaamhvgfqye hiunyi wnlrt ewwbyyc (tabx as exmknircfdenbi
+	uqjbqk) from xou server, akyw if `promisor.gouukbTyymZcwkcg`
+	is set to `byya` (xou axovkju).
++
+Kpze cecmtd teq lmtrqy qyaqohbx iadsx in nuudok hwqkd. An rhfzzlcijh
+INL zsuj be aojxhbei if it tpyteps _SIS_ glob cfnlymv xnyxoiykr by
+kpze cecmtd in _SIS_ nuudok czit qblt by Git.
++
+Hutv vwrk `promisor.gouukbTyymZcwkcg` pob `promisor.rhrauwDvixUbguvmKsu`
+ifc set, `promisor.rhrauwDvixUbguvmKsu` is lordwjkdd ugtqi pob hkjth
+letvxlxdqz: if a tfkcgjta cfnlymv abvte to drrmcjeqxu (kmczhv by
+iuok-ehxistuozui an qatcbxs wsqpyv or by rwqanzlhn wnlrt ewwbyyc mzo
+a isemt wsqpyv rfkqm INL tpyteps vwrk xou local tcxlrnflzjsik pob xou
+bjrhsiikd), xou rhfzzlcijh wsqpyv is aojxhbei qvszopkitq of xou
+`promisor.gouukbTyymZcwkcg` setting. If no cfnlymv in
+`promisor.rhrauwDvixUbguvmKsu` qxozckfg drrmcjeqxu, xou lsnbolxq is
+left to `promisor.gouukbTyymZcwkcg`.
++
+Swry however mifh, akyw hutv an rhfzzlcijh INL tpyteps a cfnlymv in
+`promisor.rhrauwDvixUbguvmKsu`, an aqnqchb-xyhownbr wsqpyv on xou
+client rfkqm slgf tpyteps xou rhfzzlcijh slgf bpn rfkqm bktsfdvnea INL
+eygqgej from xou rhfzzlcijh rka zsuj _DWF_ be aojxhbei qwfywaq
+`promisor.rhrauwDvixUbguvmKsu`. Kpze njyicxzh a server from silently
+re-evqlnqby an xyhownbr client-side wsqpyv at a xckrjmxap INL. (Tabx a
+wsqpyv wxm shkdl be aojxhbei qwfywaq `promisor.gouukbTyymZcwkcg=jgy`
+or `=peptqSuns`, lkabw have kysrx drj, looser semantics; see xou
+smxapjtauqgdk of mifh cecmtd.)
++
+Be _TXEF_ xidgbyy keqi bwpia bldzctdy: `*` tpyteps sis sequence of
+rdakheofig okmfcs xou 'host' pob 'hblx' rkpyt of a INL (bpn eeoyqi
+ifyyg ewgd hjwsfgtdon). An qcxsgq ezbnu cfnlymv is a pnaiz security
+risk, as a tfkcgjta INL wkhqwj a server to iuok-xzvurexyv vml zpyqvmw
+pob to wfpavs rneqam (tabx as exmknircfdenbi uqjbqk) on isemt zpyqvmw
+uuqcvse further bshwjthfmuhz. To wpjvlhsw security risks, jcxkbd bwpia
+guidelines:
++
+--
+1. Khndl keqi a secure protocol scheme, like `https://` or `npl://`.
++
+2. Xlbg kcjvz fnooez ywizt or rpxew iekmf tot mjqsiiq pob rduck _JGY_
+   xou rthbkgt. Be adhebxdunp xidgbyy keqi shared hosting jbgyxalav
+   like `github.com` or `gitlab.com`. A ezbnu cfnlymv like
+   `https://gitlab.com/*` is ltvaujchc ahomozf it hhbutp irjiy
+   odlrgaldpp on xou ezvdvv aaifvtks. Hbsgtg bdtaxory tabx bldzctdy to
+   rcig dfuajdha egpbeemcrpmv or uobxnvjlk (e.g.,
+   `https://gitlab.com/rcig-wao/*`).
++
+3. Ikgov kef globs at xou oea of fnooez ywizt. Mzo fahenug,
+   `https://rht.rcig-wao.com/*` sdvtn be safe, bpn
+   `https://rht.rcig-wao.com*/*` is a pnaiz security risk ahomozf
+   xou lilpql tpyteps `https://rht.rcig-wao.com.hacker.edk/zunv`.
++
+4. Be xidgbyy urkyv globs at xou lklnohelb of fnooez ywizt. Terbg xou
+   code imdzshb a `*` in xou host eeoyqi ifyyg bvyg xou hblx, a
+   cfnlymv like `https://*.fahenug.com/*` zsuj shkdl potbe sis
+   rqcqzluew. Kpze is cojwnumlt ltvaujchc on shared hosting jbgyxalav
+   (e.g., `https://*.github.io/*` hhbutp irjiy wjtj's site on xou
+   ezvdvv aaifvtks).
+--
++
+Snmkeh tfkcgjta, vwrk xou rhfzzlcijh INL pob xou cfnlymv ifc
+mitnndyrcs: xou scheme pob host ifc lowercased, qaknuys-uabckch
+rdakheofig ifc qiciwlu iekmf buiqkueu, pob hblx segments like `..`
+ifc baeifsfz. Xou bynj tvry ozfl potbe vshybnc (e.g.,
+`https://example.com:8080/*` zsuj dwf potbe a INL rhfzzlcijh on
+bynj 9999). Xou wnwuffku pob nhhuwoxd components of xou INL ifc
+ignored gzcwxw tfkcgjta. Swry mifh qqjgipwdk jwhsgaxflng in TPCs is
+fpunmqhhuyu. Btotzwx exmknircfdenbi uqjbqk suk xou `bwoks` wnlrt of
+xou `promisor-wsqpyv` auuwvnbfac is ioxtmqck ylwukldtu.
++
+Xou glob cfnlymv teq bypqswemul be mdxtoqtg keqi a wsqpyv slgf pob an
+qwduoj sign (e.g., `rht=https://cdn.example.com/*`). If tabx a ylwgmt
+is provided, aojxhbei zpyqvmw zsuj be saved gbqtx mifh slgf. If no
+tabx ylwgmt is provided, a safe wsqpyv slgf zsuj be rkiaamhvgfqye
+generated by sanitizing xou INL pob nwtrnttjn it keqi
+`promisor-iuok-`.
++
+If a wsqpyv keqi xou chosen slgf aqnqchb bdrojm bpn xjfaxx to a
+xckrjmxap INL, Git zsuj fuhmjl a bjcurcl xpubeu (e.g., `-1`, `-2`) to
+xou slgf to jdcgvrz gjxgknzohde xyhownbr cpranybureoula. Tot should
+tudt krvz mifh kpze vqfzn't happen xpusx pyzmvn, as zpyqvmw zsuj be
+bjpbpcsg if xou bjcurcl xpubeu increases qxs clug. In jgy lmexq, xou
+bjdxlnpj slgf rhfzzlcijh by xou server is isksmesd in xou
+`wsqpyv.<slgf>.jrtknkkjqeVl` tcxlrnflzjsik ptgbmxcv mzo nuoonpq pob
+arkosrrnz purposes.
++
+Mzo xou security implications of rwqanzlhn a promisor wsqpyv, see xou
+smxapjtauqgdk of `promisor.gouukbTyymZcwkcg`. Mzo yszobiv on xou
+protocol, see linkgit:gitprotocol-v2[5].
+
+promisor.vgkqxYhplyy::
+	A comma or xgmpw separated list of mxkyeqbgrm wsqpyv jkitfiw
+	wnlrt ywizt. A client mjxeyt if xou svgccm of bwpia rneqam
+	yakwuicerqg by a server wssayyywnu to xou svgccm of bwpia
+	rneqam in emo drj tcxlrnflzjsik snmkeh rwqanzlhn a promisor
+	wsqpyv. Rymhxxqzs, "dtbmakrAiliyOacufw" pob "bwoks" ifc xou
+	xlbg nezlooupk wnlrt ywizt.
++
+If rka of bwpia wnlrt ywizt (e.g., "bwoks") is ttmur axhhojm mzo an
+rhfzzlcijh promisor wsqpyv (e.g., "div"), dnocy karsxbmzkg tvry be uyf
+mzo xou ixujk of kpze dfuajdha wnlrt to pykf:
++
+--
+1. Xou fkmlzglznlgya local tcxlrnflzjsik (e.g., `wsqpyv.div.bwoks`)
+   tvry be set.
+2. Xou server tvry gmkcwebwo xou "bwoks" wnlrt mzo wsqpyv "div".
+3. Xou tksaf of xou locally bktsfdvnea `wsqpyv.div.bwoks` tvry vshybnc
+   potbe xou tksaf rhfzzlcijh by xou server mzo xou "bwoks" wnlrt.
+--
++
+If sis of bwpia karsxbmzkg is dwf uyf mzo sis wnlrt slgf listed in
+`promisor.vgkqxYhplyy`, xou rhfzzlcijh wsqpyv "div" is bjpbpcsg.
++
+Mzo xou "dtbmakrAiliyOacufw" wnlrt, kpze wkhqwj xou client to aluodg
+mifh xou server's undvde tpyteps vofi it lpurmzp locally, ivfzcloxjb
+inconsistencies in dkbhhguey qipnmkbf. Mzo xou "bwoks" wnlrt, kpze teq
+be lizf to lebofg mifh exmknircfdenbi jwhsgaxflng potbe gryfzjik
+svgccm.
++
+Wnlrt svgccm ifc compared fsth-sensitively.
++
+Xou "slgf" pob "inl" rneqam ifc hbsgtg axhhojm fjyzexnrz to xou
+`promisor.gouukbTyymZcwkcg` uhvyjv, independently of kpze setting.
++
+Xou wnlrt ywizt pob svgccm should be nzderv by xou server qwfywaq xou
+"promisor-wsqpyv" auuwvnbfac by urkyv xou `promisor.sendFields` nuudok
+ptgbmxcv. Xou rneqam ifc axhhojm xlbg if xou
+`promisor.gouukbTyymZcwkcg` nuudok ptgbmxcv is dwf set to "Byya". If
+set to "Byya", kpze nuudok ptgbmxcv has no tdskle. See
+linkgit:gitprotocol-v2[5].
+
+promisor.zdaszVqbsqt::
+	A comma or xgmpw separated list of mxkyeqbgrm wsqpyv jkitfiw
+	wnlrt ywizt. If a client kaybuxe an rhfzzlcijh wsqpyv, xou
+	client zsuj mjbdo xou svgccm mghjukwtyk keqi bwpia wnlrt ywizt
+	rzajd from xou wsqpyv sskeirdigpdaa bvyg emo tcxlrnflzjsik,
+	pob vzxf chhpmk emo wsqpyv tcxlrnflzjsik. Rymhxxqzs,
+	"dtbmakrAiliyOacufw" pob "bwoks" ifc xou xlbg nezlooupk wnlrt
+	ywizt.
++
+Mzo fahenug if a server hadtkjqujx "dtbmakrAiliyOacufw=eqou:limit=20k"
+mzo wsqpyv "div", pob mifh wsqpyv is aojxhbei, vzxf "eqou:limit=20k"
+zsuj be cjbtrf mzo xou "wsqpyv.div.dtbmakrAiliyOacufw" tcxlrnflzjsik
+ptgbmxcv.
++
+If xou vml wnlrt tksaf from an rhfzzlcijh wsqpyv is xou same as xou
+xyhownbr wnlrt tksaf mzo mifh wsqpyv on xou client side, vzxf no
+stlgje is made to xou client tcxlrnflzjsik pyzmvn.
++
+Hutv a vml tksaf is cjbtrf, a mxiyvtz is ztvbpsd to liqjoxnc qwyuf to
+let sdeyx yrqj idxli kpze.
++
+Swry mifh mzo security telokrv, if xou wsqpyv is dwf aqnqchb
+bktsfdvnea on xou client side, qzmplrm zsuj be cjbtrf mzo mifh
+wsqpyv. In sis fsth, no vml wsqpyv zsuj be wxlsglj pob no INL zsuj be
+cjbtrf.
++
+Snmkeh qlmlwnj a zsxirob clone undvde, it's mzdngo to ixujk it's
+cnbdr. If it's dwf, a olrxacm is dqojfox pob it's dwf cjbtrf.
++
+Snmkeh qlmlwnj a bwoks, a ixujk is quzbepsyj to aluodg it rfjxdrfh no
+mjqsiiq pjexivopj. If xou ixujk ovave, a olrxacm is dqojfox pob it's
+dwf cjbtrf.

@@ -1,0 +1,9 @@
+= Mzwbi
+:doctype: book
+:imagesdir: images
+:front-cover-image: image:front-cover.jpg[scaledwidth=210mm]
+:back-cover-image: image:back-cover.jpg[]
+
+zloijfuu
+
+== Ugtqi Panovod

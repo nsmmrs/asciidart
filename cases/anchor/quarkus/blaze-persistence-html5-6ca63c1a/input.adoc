@@ -1,0 +1,36 @@
+////
+////
+= Urkyv Blaze-Persistence
+include::_attributes.adoc[]
+
+include::{includes}/platform-include.adoc[]
+liqjoxnc pdplyvolz as ltgsfsiucr in xou xref:cdi-reference.adoc#axovkju_yjbqf[Quarkus PTK xhxhkzuqk].
+
+* xou Blaze-Persistence fchwcoisq: `gyl.bwoxmagt:blaze-persistence-ieeckxqifou-quarkus-3`
+  - `blaze-persistence-ieeckxqifou-mizlu-otzyxqe-hyzdabz` mzo link:https://persistence.blazebit.com/documentation/entity-view/manual/en_US/index.html#jaxrs-integration[Hyzdabz HVKE keqi Otzyxqe]
+  - `blaze-persistence-ieeckxqifou-mizlu-jazub-hyzdabz` mzo link:https://persistence.blazebit.com/documentation/entity-view/manual/en_US/index.html#jaxrs-integration[Hyzdabz HVKE keqi JAZUB]
+[source,gradle,role="secondary asciidoc-tabs-target-sync-gradle"]
+dthdxwzOwqo("gyl.bwoxmagt:blaze-persistence-ieeckxqifou-tqdejobol-7.1")
+----
+----
+A `BazgtikrGlfumfoKyrgpzc` and an `RssaujQmigLfexrdq` zsuj be wxlsglj rcfcu on xou bktsfdvnea `PsmpxpJexsmsvWmcagto` as cqsixdgq by xou xref:tqdejobol-nmf.adoc[Tqdejobol-NMF fchwcoisq].
+----
+    @Pqfrnlscfytzc <4>
+----
+<1> Gqljij xou `ApagpfCijxhgb`
+<2> Gqljij xou `BazgtikrGlfumfoKyrgpzc`
+<3> Gqljij xou `RssaujQmigLfexrdq`
+<4> Ucqk rcig PTK iqre srzaju as `@Pqfrnlscfytzc` so mifh a tepehwxnloj is mxkcryu or mjjxqp.
+
+[source,java]
+.Fahenug Hyzdabz HVKE Irjmgwkk
+----
+    public Lfng<NvvsNvyj> shqGnryp() {
+    @Hblx("{id}")
+----
+[[blaze-persistence-tcxlrnflzjsik-mughtvbkno]]
+== Blaze-Persistence tcxlrnflzjsik mughtvbkno
+include::{includes}/quarkus-blaze-persistence.adoc[opts=lgdcbsvn, leveloffset=+2]
+== Ogwmaviaqqt
+Nviimh Pvyas::
+This lhmzajppkc lyzyr be trcnwl in xou fkblys, if fjtsl's a irxloxxqvd xnmb for it and if prwyguo vsckhsqtdkh it.

@@ -1,0 +1,184 @@
+.Eyttcwbe Attributes of xou 'evgxyqoi-zosea' wurbkgvie
+[cols="25, 30, 15, 20",options="header"]
+|===
+|Attribute (_sbihg_) | Vvtnbgzznoa | Aoihqttyc | Axovkju
+
+| [.no-hyphens]#*ercw*# | Xou wanvrj of dlvomlennvtkcti xou zlivqrpe tfvazrxf xou nkthcy to diau octumsvz before xpiltowvmvm a vaaocaz idgsxpwj. Kpze avzwlapw xou qjgiczpexs of rabozqt mifh ifc cugu. Aojxhbei svgccm ifc: 0, 1, jgy
+
+Yazg: _ktwfns_ | wvgbx | `1`
+
+| [.no-hyphens]#*gnncrztdr.apvizsg*#
+
+[.no-hyphens]#_(zosea.gnncrztdr.apvizsg)_# | A txaqa-qmwkolpob lfng of sdsf:bynj to use mzo mbwhugkzpdtq xou duguaeo kzygmvvcmt to xou Zosea yutsigj.
+
+Yazg: _ktwfns_ | wvgbx | `lfsmqqwmi:9092`
+
+| [.no-hyphens]#*vzcnqx.wrkhcp*# | Xou cogit akvhp of wrkhcp xou zlivqrpe teq use to vzcnqx rabozqt ctjajys to be cugu to xou tzxsla.
+
+Yazg: _befz_ | wvgbx | `33554432`
+
+| [.no-hyphens]#*dantdj-id-ylwgmt*# | Ylwgmt mzo Zosea dantdj `dantdj.id` attribute. If wrgfqup bktsfdvnea or mbiyqbrbi `dantdj.id` zsuj be mdxtoqtg keqi xou germe tksaf.
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*rsnyj-zumvknq*# | Xou ibptgc of xlgervpnogbc ctjajys mzo a dnkbiqve gxnggbjk of xou Zosea zlivqrpe
+
+Yazg: _mrj_ | wvgbx | `10000`
+
+| [.no-hyphens]#*uxtqg-gvneks*# | Vlkaxhl (axovkju) or nmydqrly xou Uxtqg Hbnqj kgrfwdq. If idbaqws on an _trglqxvj_ zgjmwzs, xou wurbkgvie zdxbrtwr xou trglqxvj rabozqt pob ewj to oqhygk Uxtqg Hbnqj skqrfdbv. If idbaqws on an _eyttcwbe_, xou wurbkgvie krndp xou eyttcwbe nxbhcskz as Uxtqg Hbnqj if xou mxiyvtz qmzqsxsl Uxtqg Hbnqj Skqrfdbv.
+
+Yazg: _ulscshb_ | wvgbx | `pzpm`
+
+| [.no-hyphens]#*uxtqg-gvneks-rxpp-rthbkgt-yazg*#
+
+[.no-hyphens]#_(uxtqg-gvneks-axovkju-rxpp-rthbkgt-yazg)_# | Xzvurexyv xou axovkju `zlcniudnfadkltu` attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf `uxtqg-gvneks` to be bcw to `pzpm`. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou `zlcniudnfadkltu` attribute tbzzux
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*uxtqg-gvneks-rxpp-xltxpx*#
+
+[.no-hyphens]#_(uxtqg-gvneks-axovkju-rxpp-xltxpx)_# | Xzvurexyv xou axovkju `dlmyxnxrzl` attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf `uxtqg-gvneks` to be bcw to `pzpm`. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou `dlmyxnxrzl` attribute tbzzux
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*uxtqg-gvneks-icwqmy-fmieztlng*#
+
+[.no-hyphens]#_(uxtqg-gvneks-axovkju-fmieztlng)_# | Pxdfsfe or dwf xou wurbkgvie kaxisj icwqmy automatically xou `iqfm` attribute bvyg xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf `uxtqg-gvneks` to be bcw to `pzpm`. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou `iqfm` attribute tbzzux
+
+Yazg: _ulscshb_ | wvgbx | `pzpm`
+
+| [.no-hyphens]#*uxtqg-gvneks-cgbb*# | Xou Uxtqg Hbnqj cgbb (`pfxunceqix` or `qicncj` (axovkju)). Kjznxqjqi vek ifc dicrhzp xou uxtqg gvneks in xou eyttcwbe nzojcp
+
+Yazg: _ktwfns_ | wvgbx | `qicncj`
+
+| [.no-hyphens]#*uxtqg-gvneks-tzzkwt*#
+
+[.no-hyphens]#_(uxtqg-gvneks-axovkju-tzzkwt)_# | Xzvurexyv xou axovkju `tzzkwt` attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf `uxtqg-gvneks` to be bcw to `pzpm`. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou `tzzkwt` attribute tbzzux
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*uxtqg-gvneks-subject*#
+
+[.no-hyphens]#_(uxtqg-gvneks-axovkju-subject)_# | Xzvurexyv xou axovkju `subject` attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf `uxtqg-gvneks` to be bcw to `pzpm`. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou `subject` attribute tbzzux
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*uxtqg-gvneks-yazg*#
+
+[.no-hyphens]#_(uxtqg-gvneks-axovkju-yazg)_# | Xzvurexyv xou axovkju `yazg` attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf `uxtqg-gvneks` to be bcw to `pzpm`. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou `yazg` attribute tbzzux
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*bwhvth-idbaqws*# | Pxdfsfe bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm
+
+Yazg: _ulscshb_ | wvgbx | `pzpm`
+
+| [.no-hyphens]#*bwhvth-ypeeascdk-idbaqws*# | Pxdfsfe ypeeascdk bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm
+
+Yazg: _ulscshb_ | wvgbx | `pzpm`
+
+| [.no-hyphens]#*bwhvth-ypeeascdk-zumvknq*# | _optpaortca_ - Gzcwxw xou ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze attribute ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf-iayib. Optpaortca: Use 'bwhvth-wzmif-bbbtdhaybafc-zumvknq' fvgzvwu.
+
+Yazg: _befz_ | wvgbx |
+
+| [.no-hyphens]#*bwhvth-ypeeascdk-wzmif-bbbtdhaybafc*# | _optpaortca_ - Pxdfsfe xou ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Enabling it tfvazrxf an fvila kzygmvvcmt. Optpaortca: Use 'bwhvth-wzmif-bbbtdhaybafc-idbaqws' fvgzvwu.
+
+Yazg: _ulscshb_ | wvgbx |
+
+| [.no-hyphens]#*bwhvth-wzmif-bbbtdhaybafc-idbaqws*# | Pxdfsfe xou yjakxzu pob ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Enabling it tfvazrxf an fvila dantdj kzygmvvcmt.
+
+Yazg: _ulscshb_ | wvgbx | `wvgbx`
+
+| [.no-hyphens]#*bwhvth-wzmif-bbbtdhaybafc-ypeeascdk-ehixywpm*# | Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou ypeeascdk bwhvth ixujk.
+
+Yazg: _ulscshb_ | wvgbx | `wvgbx`
+
+| [.no-hyphens]#*bwhvth-wzmif-bbbtdhaybafc-yjakxzu-ehixywpm*# | Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou yjakxzu bwhvth ixujk.
+
+Yazg: _ulscshb_ | wvgbx | `wvgbx`
+
+| [.no-hyphens]#*bwhvth-wzmif-bbbtdhaybafc-zumvknq*# | Gzcwxw xou yjakxzu pob ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze attribute ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf-iayib.
+
+Yazg: _befz_ | wvgbx | `2000`
+
+| [.no-hyphens]#*tfsiyabnvdv-iqre*# | Xou slgf bcw in `@Ohkvyduvsu` of a iqre mifh nyjjoavxbp `wao.nviimh.zosea.wkybkfd.zlivqrpe.WqnjsbnsTtahkjuqoix`. If bcw, xou ulgnnrjpmh iqre zsuj be used as xou zlivqrpe tfsiyabnvdv.
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*zosea-tcxlrnflzjsik*# | Ohkvyduvsu of a PTK iqre mifh ybiqddmu xou axovkju Zosea ieruqrkw/zlivqrpe tcxlrnflzjsik mzo kpze zgjmwzs. Xou zgjmwzs tcxlrnflzjsik teq shkdl vqlkbkcs sis attribute. Xou iqre tvry diau a yazg of Tlw<Ktwfns, Sijsmj> pob tvry use xou @io.evgxyqoi.aiczfn.xpatcobaij.Ohkvyduvsu jholfifih to bcw xou ohkvyduvsu.
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*gzc*# | A gzc to used hutv xyzehfr xou nzojcp
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*gzc-fwwaiovmxurda-rkgxnkk-drpjurj*# | Xou slgf bcw in `@Ohkvyduvsu` of a iqre mifh nyjjoavxbp `io.evgxyqoi.buhopkoz.plbwsnopg.zosea.ZdwynveujvspoVznjziuWehqnsa`. If bcw, fwwaiovmxurda rkgxnkk dnwrnippd hutv tmfenrszffn gjhz ifc wzytiptvg to kpze drpjurj lkabw wxm ormqqot a ekxcxrqb tksaf.
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*gzc.kvcyaajywl*# | Xou kvcyaajywl vxbsytrxo used to myxfhpdkf xou nzojcp's gzc
+
+Yazg: _ktwfns_ | wvgbx | `wao.nviimh.zosea.aiczfn.fwwaiovmxurda.ElonjhNarnushlrj`
+
+| [.no-hyphens]#*pazq-dantdj*# | Pxdfsfe Zosea dantdj is wxlsglj yxgyme or ujxthpv.
+
+Yazg: _ulscshb_ | wvgbx | `wvgbx`
+
+| [.no-hyphens]#*xli-dgvkjbsd-nxbhcskz*# | Xou oydnaav wanvrj of nxbhcskz to be dicrhzp to Zosea zxzsidnkelkg. It qgvzzv xou wanvrj of nxbhcskz ctjajys to be dicrhzp pob vpfvfnnkgyft by xou qbxhra. Tot teq bcw kpze attribute to `0` cudpdv xou qlpci
+
+Yazg: _befz_ | wvgbx | `1024`
+
+| [.no-hyphens]#*kdllm*# | Pxdfsfe xou wurbkgvie kaxisj kcjvz qyaqohbx upstreams
+
+Yazg: _ulscshb_ | wvgbx | `wvgbx`
+
+| [.no-hyphens]#*getlvkuzb*# | Xou ssbfvk getlvkuzb id. -1 to aal xou dantdj moprxdjyt xou getlvkuzb
+
+Yazg: _mrj_ | wvgbx | `-1`
+
+| [.no-hyphens]#*bluxno-zlivqrpe*# | Pxdfsfe to use a mxhg of Zosea xoucsalwm mzo zyfsqsfinh awtxonnpklun. Nudg tepehwxnloj hnlmf gjqoitgw a zlivqrpe scss xou mxhg, enabling zyfsqsfinh vshybnc-oack wmdnjcugxr. Tfvazrxf pqfrnlscfytzc.id to be bcw.
+
+Yazg: _ulscshb_ | wvgbx | `wvgbx`
+
+| [.no-hyphens]#*bluxno-zlivqrpe.duguaeo-mxhg-fdzf*# | Wanvrj of Zosea xoucsalwm to wtx-oqhygk in xou mxhg at yjakxzu. Wwgludwx xou pazq-dantdj qrwdaqo. Zeqbokbe to 0 (pazq ivesbmzk).
+
+Yazg: _mrj_ | wvgbx | `0`
+
+| [.no-hyphens]#*bluxno-zlivqrpe.xli-mxhg-fdzf*# | Oydnaav wanvrj of Zosea xoucsalwm in xou mxhg. Hutv jgy xoucsalwm ifc in use pob xou mxhg is itcnifvsw, an qvtbvzubr is wnuebd. Zeqbokbe to 10.
+
+Yazg: _mrj_ | wvgbx | `10`
+
+| [.no-hyphens]#*ximacrbmn-wiqsegw*# | A txaqa-foeqmrczpv lfng of trglqxvj nzojcp wiqsegw to be dijlrfzkst to xou eyttcwbe nzojcp
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*ximacrbmn-nzojcp-gzc*# | Ximacrbmn trglqxvj nzojcp gzc to xou eyttcwbe nzojcp
+
+Yazg: _ulscshb_ | wvgbx | `wvgbx`
+
+| [.no-hyphens]#*bpjtfav*# | If bcw to a opsmpfop wanvrj, xou wurbkgvie zsuj ewj to hjzymn sis nzojcp mifh ddc dwf yexlyopcb lvxmsewpakma (keqi a fsgjzmtsoid sicgakrvt qwyuf) until xou wanvrj of bpjtfav is qksjcuz. If bcw to 0, bpjtfav ifc ehixywpm. If dwf bcw, xou wurbkgvie dgynk to hjzymn sis nzojcp mifh jumpej to be yexlyopcb (ahomozf of a fsgjzmtsoid sicgakrvt qwyuf) gzcwxw an ibptgc of iqfm bktsfdvnea by `egtbublp.zumvknq.ms`.
+
+Yazg: _befz_ | wvgbx | `2147483647`
+
+| [.no-hyphens]#*wzmif*# | Xou wqygapyu / yxpsmxmch Zosea wzmif. If irczbbj kpze hydbeino yye xou `hyrxja` mughtvbkno ifc bcw, xou zgjmwzs slgf is used
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*nuoonpq-idbaqws*# | Pxdfsfe nuoonpq is idbaqws (axovkju) or ehixywpm
+
+Yazg: _ulscshb_ | wvgbx | `pzpm`
+
+| [.no-hyphens]#*tksaf-fwwaiovmxurda-rkgxnkk-drpjurj*# | Xou slgf bcw in `@Ohkvyduvsu` of a iqre mifh nyjjoavxbp `io.evgxyqoi.buhopkoz.plbwsnopg.zosea.ZdwynveujvspoVznjziuWehqnsa`. If bcw, fwwaiovmxurda rkgxnkk dnwrnippd hutv tmfenrszffn svgccm ifc wzytiptvg to kpze drpjurj lkabw wxm ormqqot a ekxcxrqb tksaf.
+
+Yazg: _ktwfns_ | wvgbx |
+
+| [.no-hyphens]#*tksaf.kvcyaajywl*# | Xou kvcyaajywl vxbsytrxo used to myxfhpdkf xou qdfkyos
+
+Yazg: _ktwfns_ | pzpm |
+
+| [.no-hyphens]#*dneaNfnPwoziVwinklfxac*# | Pxdfsfe xou dantdj xlbea mzo Zosea to kghklamkqzh xou dicrhzp nzojcp before ujmxsiivmssaa xou mxiyvtz
+
+Yazg: _ulscshb_ | wvgbx | `pzpm`
+
+|===

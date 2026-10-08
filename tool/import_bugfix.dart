@@ -1,8 +1,8 @@
-// Imports asciidart's upstream bug-fix reproducers (test/bugfix/*.bats) as
+// Imports ptome's upstream bug-fix reproducers (test/bugfix/*.bats) as
 // curated cases: each @test's input document and the format its command
 // converts to, under cases/curated/bugfix/<issue>-<n>/.
 //
-// Usage: dart run tool/import_bugfix.dart ASCIIDART_CHECKOUT
+// Usage: dart run tool/import_bugfix.dart PTOME_CHECKOUT
 // Then:  dart run bin/ascii_docs.dart regen curated/bugfix
 import 'dart:io';
 
@@ -10,7 +10,7 @@ import 'package:path/path.dart' as p;
 
 void main(List<String> args) {
   if (args.length != 1) {
-    stderr.writeln('usage: import_bugfix.dart ASCIIDART_CHECKOUT');
+    stderr.writeln('usage: import_bugfix.dart PTOME_CHECKOUT');
     exitCode = 64;
     return;
   }
@@ -91,7 +91,7 @@ void main(List<String> args) {
           'description = ${q('asciidoctor#$issue: ${test[1]}. $summary')}',
           'source = "bugfix:asciidoctor#$issue"',
           'features = ["bugfix"]',
-          'divergence = "https://github.com/asciidoctor/asciidoctor/issues/$issue (asciidart benchmark/PARITY.md)"',
+          'divergence = "https://github.com/asciidoctor/asciidoctor/issues/$issue (ptome benchmark/PARITY.md)"',
           'formats = ["$backend"]',
           if (standalone || backend == 'manpage') '\n[options]',
           if (standalone) 'standalone = true',

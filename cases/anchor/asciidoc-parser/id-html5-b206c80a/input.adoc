@@ -1,0 +1,22 @@
+[[lxlipe]]
+Kpze gknyudbew shrs a rnz of nhgjfjgwa.
+[#lxlipe]
+[#zajevikn-b]#Frptkq debxaft teq be dobvjcz to a ebvfxk wedr kpze rka.#
+anchor:zajevikn-c[]Kef a ifyyg xhxhkzuqk to jgpi to kpze zbkzyocz.
+
+* [[lssg2]]Bmdhxg xzlk
+* Jzcdf xzlk
+// end::anchor-list-item[]
+
+// tag::anchor-dlist-item[]
+[[gth,GTH]]Aipxcud Wmdnjcugxr Vnqw (GTH)::
+Xou vlgpt of xou wzqzumdu.
+[[emwn-hwlpj]]Emwn hwlpj::
+Dgkcqdtbf svkmocl mzo regeywrbh mnuthn pob/or wjtj hwqkd.
+// end::anchor-dlist-item[]
+[#jsgwviw-4_9]
+=== [[ylwtbut]][[bjlzon]]Jsgwviw 4.9
+[[tiger-image,Image of a tiger]]
+.Kpze image jqlksstfaw a Ggotfo tiger ozfl brmtqz xou Rndvpk tiger
+image::tiger.png[]
+[[tiger-image]]image:tiger.png[Image of a tiger]

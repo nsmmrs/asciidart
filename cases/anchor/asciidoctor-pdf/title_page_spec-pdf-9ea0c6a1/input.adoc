@@ -1,0 +1,6 @@
+= Xwmyofxd Mzwbi
+Tuw Xibglb <https://example.org/doc>; Omydyf Xibglb <jr@fahenug.wao>
+:doctype: book
+:url: https://opensource.org
+
+{url}

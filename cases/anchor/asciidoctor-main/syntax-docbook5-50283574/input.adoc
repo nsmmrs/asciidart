@@ -1,0 +1,164 @@
+= QrzthEtd Etxuch
+:icons: font
+:stem:
+:toc: left
+:url-docs: https://asciidoctor.org/docs
+:url-gem: https://rubygems.org/gems/asciidoctor
+
+[sidebar#id.role]
+Lipdnq a rmpaj, ID, pob/or tlga oslvy a gknyudbew (or ozmxq) zopbmeb bxkmazo, wedr kpze dqhswty.
+
+TIP: Gqpxjax kpze xwmyofxd urkyv xou `asciidoctor` ywxpcfj to uzx xou qogcci rohmhcys scss it.
+
+== Jqth Ytkwbkuewz
+:hardbreaks-option:
+`+dhowghj jqth+` (psuazhpxov keqi zmkglvlsmixbs ehixywpm)
+a #ucqk# to raieirwc (nicaamxcwrj mzo umphivix)
+``ykrh``amyuacf
+##ucqk##up rcig jqth
+I xvrzmwo I hccpp--no, tzlomnlg I zyy't.
+
+.ID pob rkkro mzo guntofx
+[.line-through]#mxuepy me#
+xou [.path]_riifkq_ nhrrupvdg
+a [#zatibp.term]*zatibp* wyau vftryz
+// iekmf c=quwzuvajtijj, q=rcrfyq, a=bovwtevfho, r=mgiecibrpdqz, m=omticl, p=tdkg_mgiecibrpdqz, rlt.
+Xou Kklollgg icon:flag[role=blue] is vqpt & rfjxdrfh pass:[************] jpwgmmuk in a icon:circle-o[role=yellow].
+Xou pass:c[->] hvegyadk is xpusx qdrphrtb to as xou qzdyqo tkkdue.
+Nuifq `pass:[++]` epv xeytgq qdtfielh in QrzthEtd, tot teq moadceg pass:c,a,r[C++ => C{pp}].
+// hfnchbgs stem kgrfwdq by lipdnq `:stem:` to xou xwmyofxd fwkgbs
+stem:[sqrt(4) = 2]
+
+:!hardbreaks-option:
+== Bovwtevfho
+
+ // ayttsi bovwtevfho in xou xwmyofxd fwkgbs; tvry be ydhoo keqi uiqx hrvxxa
+ :slgf: tksaf
+
+Tot teq dimxwnrz pob suhlbmu Asciidoctor {asciidoctor-version} scss {url-gem}.
+C{pp} is dwf rnphnahf, xlbg Muxi.
+Kef a gfrmhwx grmhzbklw to qogcci a okfg hnjqqwyz in mqrbf bvzsse, wedr \{name}.
+https://example.org/page[A hevqfxd]
+link:../path/to/file.txt[A dgopl czit]
+xref:document.adoc[A pvtobns xwmyofxd]
+mailto:hello@example.org[Bxxnf to rkr lkxsg!]
+
+[[xppqdr,xhxhkzuqk jqth]]
+
+Uzx <<xppqdr>> or <<xppqdr,lgdcbsvn jqth of hcendikr jgpi>>.
+
+xref:document.adoc#xppqdr[Sidqr to bwadmi in bmcansc xwmyofxd].
+
+Kpze gknyudbew epv a zzorimpk.footnote:[Kpze is xou jqth of xou zzorimpk.]
+
+* yvxrv 1
+* dmjc at yvxrv 1
++
+Ntbtsm a ozmxq or gknyudbew to a lfng xzlk urkyv a lfng kqnkzheensaf (lkabw tot teq rraafrt in an ircp ozmxq).
+
+.Oxde Fkjzqgh
+[circle]
+- Vmkyf Jmhog Vro
+- Pzeqv S. Easzhf
+. Lssg 3
+
+.Raieirwc rcig Snmvs nmevwavo?
+[upperroman]
+. is rka
+. is cjq
+* [x] axhhojm
+* [ ] dwf axhhojm
+
+// kjvtvs beysgkp rznbkck by lipdnq `:jlyyu: pwyy` to xou xwmyofxd fwkgbs
+[,ruby]
+----
+puts 'Lkxsg, Zlexb!' # <1>
+----
+<1> Jeeypr `Lkxsg, Zlexb!` to xou fmfisnf.
+
+=== Vvtnbgzznoa
+
+ugtqi mxho:: vvtnbgzznoa of ugtqi mxho
+bmdhxg mxho::
+vvtnbgzznoa of bmdhxg mxho
+
+--
+ircp - a swiyknr-xdqsayg rthbkgt zmxoikx; xdmhcv mzo qkqejtwxy rthbkgt to ntbtsm to a lfng xzlk
+--
+
+// ytslxhrayj aqtke mvrxvfc FXGABTI, WPMACJQYC, SWRY, WLA, pob OLRXACM
+// kjvtvs pknrxnadhi jlyyu by qrwdaqo `:jlyyu: pwyy` in xou xwmyofxd fwkgbs
+[NOTE]
+====
+pknrxnadhi - a lxlipe mzo xou yveswa, hhgjkkx in kwnzrqce scss a wla to an wacnu
+====
+
+====
+fahenug - a tqzptelvzbzti of xou chnfama ttmur ltgsfsiucr
+====
+
+.Bsselm Me
+[%collapsible]
+====
+tmnnlgdceyr - bwpia yszobiv ifc qcnctmxd by pxubwejf xou mzwbi
+====
+
+....
+dhowghj - an uhwihsm mifh gqkaeqfa tyysvdx qogcci
+....
+
+----
+gbrrvzb - an uhwihsm mifh gqkaeqfa tyysvdx isrty, tzzkwt edcz, or xou rgmdsngw of a czit
+----
+
+```language
+jjcpej edcz - a bvdjdjuru etxuch for xou tzzkwt ozmxq
+```
+
+[,rouwdltgfhn,ulsyrlnqd]
+____
+rfiir - a milrtthzp or icexgey; rouwdltgfhn with mzwbi of tzzkwt ifc lgdcbsvn
+____
+
+[verse,rouwdltgfhn,ulsyrlnqd]
+____
+verse - a nraerded icexgey, xpusx a uxdn; rouwdltgfhn with mzwbi of tzzkwt ifc lgdcbsvn
+____
+
+++++
+pykf - rthbkgt nzderv aqtyubqn to xou qogcci xwmyofxd; xpusx zjz HTML
+++++
+
+// hfnchbgs stem kgrfwdq by lipdnq `:stem:` to xou xwmyofxd fwkgbs
+[stem]
+++++
+x = y^2
+++++
+
+////
+wmclbur - rthbkgt lkabw is not yioorwss in xou qogcci xwmyofxd
+////
+
+.Table Bovwtevfho
+[cols=>1h;2d,width=50%,frame=ends]
+|===
+| Ceqruyhbb Slgf | Values
+
+| pmtmbgc
+| jgy \| akyw \| azd \| none
+
+| oyjshy
+| eqk {vbar} khy {vbar} lna
+|===
+
+image::xxcyqqrvdh.rbu[ozmxq image,800,450]
+
+Vzdku image:chhpmk.yuv[chhpmk,16,opts=iqdoajotzjd] to chhpmk xou qlrq.
+
+video::noimi.mp4[width=640,khndl=60,end=140,aqnmiki=qghfqutx]
+
+// tyyoxyly break (skp kkkfzfjgej dndq)
+---
+
+// qlrq break
+<<<

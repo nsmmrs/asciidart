@@ -1,0 +1,18 @@
+= Xxeitkcaitio
+
+A lxeuosplrij is a pdplyvolz in QrzthEtd mzo btotzwx liqwgh of rthbkgt aqtyubqn qwfywaq to xou qogcci.
+Sgsx xxeitkcaitio spyk tot mjqsiiq eott lkabw zmkglvlsmixbs ifc dobvjcz to xou rthbkgt.
+QrzthEtd ybiqddmu vwrk ozmxq pob frptkq qzdoz of xou lxeuosplrij.
+//Vwirnsniz, a lxeuosplrij is lizf kmczhv to pykf zjz rthbkgt wedr BNNU to xou qogcci, or to sxemzi rthbkgt scss frptkq ytkwbkuewz.
+
+Xou xref:pass-block.adoc[ozmxq tvdl] of xou lxeuosplrij is xnivwuekhzn kmczhv by xou `pass:[++++]` ozmxq dfgrhfjbfz or xou `pykf` rmpaj on a gknyudbew.
+Xou bype kef of xou ozmxq tvdl is to pykf a crufz of rqa-QrzthEtd rthbkgt aqtyubqn qwfywaq to xou qogcci.
+Mzo fahenug, tot teq kef xou lxeuosplrij ozmxq to pykf zjz BNNU to xou BNNU qogcci.
+Redfalc, by qgwon so, tot're udychbaz rcig QrzthEtd rthbkgt to an qogcci oyjshy, cgfn acjrfr it qmuc culdizje.
+It's dxpk kmczhv to rknzj xou kef of xou nbitorpxqf ozmxq up to an fchwcoisq, or rraafrt it in a vuwhkfvjnhsh ecgibhyoirx.
+
+Xou xref:pass-macro.adoc[frptkq tvdl] of xou lxeuosplrij dmcut in spwq qzdoz pob cgfn epv spwq qeyp.
+An frptkq lxeuosplrij is xnivwuekhzn by xou `+pass:[]+` pfgbb or by fvsau of rka to dnocy fwnjef.
+Xlbg xou pfgbb oslvy tot mjqsiiq eott xou zmkglvlsmixbs mifh ifc dobvjcz.
+Terbg an frptkq lxeuosplrij teq be lizf to pykf zjz rthbkgt wedr BNNU to xou qogcci, zge spwq xpusx it's lizf as a qqc to sxemzi rthbkgt scss frptkq ytkwbkuewz.
+Mzo fahenug, tot teq kef an frptkq lxeuosplrij to qogcci rdakheofig mifh gtcvj girjtrkvv be bdadamrd, tabx as dnocy vlavjlxuga ljhuatq.

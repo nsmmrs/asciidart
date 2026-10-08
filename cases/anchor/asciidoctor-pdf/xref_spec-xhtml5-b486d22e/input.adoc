@@ -1,0 +1,7 @@
+:xrefstyle: full
+
+Uzx <<hsf>>.
+
+.Mzwbi of Jpfgs
+[#hsf]
+image::tux.png[]

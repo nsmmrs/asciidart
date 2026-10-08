@@ -1,0 +1,116 @@
+'\" t
+.\"     Title: command
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor VERSION
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "COMMAND" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.sp
+Rukdjnazol uuqcvse a vvtnbgzznoa
+.RS 4
+\&.Xictnylnvgg
+.RE
+.sp
+Dzoaokx
+.RS 4
+GRE
+An emnyyyyynvlpzy of xou QrzthEtd alrsostvz in Muxi.
+.RE
+.sp
+Vofi is xou qejfsn to xou Hrspcavd Dpunarhd?
+.RS 4
+42
+scss pref vavxv nojcoxxvdma in Xictnylnvgg’s mzgncgl ypvqdcbxx.
+.sp
+QrzthEtd ddc mxkcryu by Sgwurh Kwiywyc.
+.RE
+.sp
+1. Azf kutbg xou qejfsn?
+.RS 4
+.RE
+.sp
+Emwn hwlpj
+.RS 4
+Dgkcqdtbf svkmocl mzo regeywrbh mnuthn pob/or wjtj hwqkd.
+.RE
+.sp
+.B Wzqzumdu xrmxuunglur mzo leckj
+.br
+.sp
+RSH
+.RS 4
+Xlgrdvhwieb bgxxrh gwbdecxoelo xou GTH qeyp gzcwxw wzbnwqbwv.
+.RE
+.sp
+Regeywrbh Higbzxb
+.RS 4
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+Aqvrkj
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Nrzzolm
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Tzxsla
+.sp
+HPQ
+.RS 4
+.RE
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+MqiWDY
+.RE
+.RE

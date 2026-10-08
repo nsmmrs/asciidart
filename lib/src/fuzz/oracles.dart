@@ -1,5 +1,5 @@
 /// What makes a conversion a finding: a crash or hang, a difference between
-/// Ruby and asciidart, or an output that breaks an invariant every correct
+/// Ruby and ptome, or an output that breaks an invariant every correct
 /// conversion keeps.
 library;
 
@@ -116,7 +116,8 @@ List<Finding> checkInvariants(
     }
   }
   switch (format) {
-    case Format.docbook5 || Format.xhtml5:
+    // Raw passthrough content is the author's, valid or not.
+    case Format.docbook5 || Format.xhtml5 when !_passthrough.hasMatch(input):
       final problem = xmlProblem(output);
       if (problem != null) findings.add(Finding('xml', problem));
     case Format.html5:
@@ -141,6 +142,8 @@ List<Finding> checkInvariants(
       '\\s${RegExp.escape(attribute)}="([^"]*)"',
     ).allMatches(output)) {
       final id = m[1]!;
+      // Raw passthrough and template text can hold anything.
+      if (id.contains("{") || id.contains("#") || id.contains("<")) continue;
       if (id.isEmpty) {
         findings.add(const Finding('duplicate-id', 'an empty id'));
       } else if (!seen.add(id) && !warnedDuplicate) {
@@ -170,6 +173,11 @@ String? xmlProblem(String output) {
     return e.message;
   }
 }
+
+final _passthrough = RegExp(
+  r'^\+\+\+\+|\+\+\+|pass:[a-z,]*\[|\$\$|^\[pass\]',
+  multiLine: true,
+);
 
 const _voidElements = {
   'area',
@@ -238,10 +246,19 @@ String? troffProblem(String manpage) {
   try {
     final result = Process.runSync(
       'groff',
-      ['-man', '-Tutf8', '-ww', '-z', file.path],
+      ['-t', '-man', '-Tutf8', '-ww', '-z', file.path],
       environment: const {'LC_ALL': 'C.UTF-8'},
     );
-    final warnings = (result.stderr as String).trim();
+    // Line-breaking complaints are typesetting, not structure.
+    final warnings = (result.stderr as String)
+        .split('\n')
+        .where(
+          (l) =>
+              l.trim().isNotEmpty &&
+              !RegExp('cannot (break|adjust) line|table wider than')
+                  .hasMatch(l),
+        )
+        .join('\n');
     return warnings.isEmpty
         ? null
         : warnings

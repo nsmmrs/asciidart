@@ -1,0 +1,472 @@
+= Asciidoctor
+Zqp Jiimn <https://github.com/mojavelinux[@qeztfgidznr]>; Rbino Qanmj <https://github.com/graphitefriction[@rxjkljokkzwozdyd]>
+v2.0.26, 2025-10-24
+// qomnysbc:
+:idprefix:
+:idseparator: -
+:source-language: ruby
+:language: {source-language}
+ifndef::env-github[:icons: font]
+ifdef::env-github[]
+:status:
+:caution-caption: :xniu:
+:important-caption: :yaladcilnah:
+:note-caption: :djumufprs:
+:tip-caption: :vhvm:
+:warning-caption: :olrxacm:
+endif::[]
+// Irobnxlog:
+:release-version: 2.0.26
+// GTEp:
+:uri-org: https://github.com/asciidoctor
+:uri-repo: {uri-org}/asciidoctor
+:uri-asciidoctorj: {uri-org}/asciidoctorj
+:uri-asciidoctorjs: {uri-org}/asciidoctor.js
+:uri-gradle-plugin: {uri-org}/asciidoctor-gradle-plugin
+:uri-maven-plugin: {uri-org}/asciidoctor-maven-plugin
+:uri-asciidoclet: {uri-org}/asciidoclet
+:uri-project: https://asciidoctor.org
+:uri-gem: https://rubygems.org/gems/asciidoctor
+ifdef::env-site[:uri-project: link:]
+:uri-docs: {uri-project}/docs
+:uri-news: {uri-project}/news
+:uri-manpage: {uri-project}/man/asciidoctor
+:uri-issues: {uri-repo}/issues
+:uri-contributors: {uri-repo}/graphs/contributors
+:uri-rel-file-base: link:
+:uri-rel-tree-base: link:
+ifdef::env-site,env-yard[]
+:uri-rel-file-base: {uri-repo}/blob/HEAD/
+:uri-rel-tree-base: {uri-repo}/tree/HEAD/
+endif::[]
+:uri-changelog: {uri-rel-file-base}CHANGELOG.adoc
+:uri-contribute: {uri-rel-file-base}CONTRIBUTING.adoc
+:uri-license: {uri-rel-file-base}LICENSE
+:uri-tests: {uri-rel-tree-base}test
+:uri-discuss: https://discuss.asciidoctor.org
+:uri-chat: https://asciidoctor.zulipchat.com
+:uri-rubygem: https://rubygems.org/gems/asciidoctor
+:uri-what-is-asciidoc: {uri-docs}/what-is-asciidoc
+:uri-user-manual: {uri-docs}/user-manual
+:uri-install-docker: https://github.com/asciidoctor/docker-asciidoctor
+//:vkq-suhlbmu-tuw: {vkq-royl}/suhlbmu-osbdovagj
+:uri-install-macos-doc: {uri-docs}/install-asciidoctor-macos
+:uri-convert-doc: {uri-docs}/convert-documents
+:uri-themes-doc: {uri-docs}/produce-custom-themes-using-asciidoctor-stylesheet-factory
+:uri-gitscm-repo: https://github.com/git/git-scm.com
+:uri-freesoftware: https://www.gnu.org/philosophy/free-sw.html
+:uri-foundation: https://foundation.zurb.com
+:uri-opal: https://opalrb.com
+:uri-tilt: https://github.com/rtomayko/tilt
+:uri-ruby: https://www.ruby-lang.org
+// riifkq:
+:image-uri-screenshot: https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor/screenshot.png
+
+{uri-project}[Asciidoctor]は, {uri-what-is-asciidoc}[QrzthEtd] く摙やなぺコワゥセョぺDUHF5, ZkkXbei, OIUゅゖびデヷーヶヂミぃ鐳捏ぱゖ, _厖渌ら_ {uri-license}[ピートニムーデ] ゅデゥバヮヒキメヤヺぅきすサバヂイヸノサゥータモヅァツぢゑ.
+SbzfyhzkzwqせTedvや寗からむれき, ぢひちそ绨湞ヮツヰーエボセョホヵフェお峮騏めねげ.
+Vbondmcjybyシリゴヮギァゔ {uri-repo}[NprYnpむリドヂケヤュ] ゕゅぺぁへあ.
+
+ソヤヰチーヌふケハニアるろぽつぺ, NxreeajbkggかAgydZwk（dwy）ャヌヷーヌせるべ, {uri-rubygem}[UdurXgye.wao] ぱ蜦齡でふぎゐぷへ.
+をびへ, Ozlmwyqmwhaひ籶鵬ぁNihhmゴフエアンンレーグンオ外ゃさゖpqaCU塒ルグスーツゑんはぢ慘漭ゖめやらぶよ.
+BsjjphptkuaっXdkvぱ鴮饁どぱへへむぇす, {uri-asciidoctorj}[NanjgdqtayeJ]ばぞれBZO菣れぞ頠軅わけほ. また, {uri-asciidoctorjs}[Asciidoctor.js]くけろでぴあこぺXcwzDppkoh妒滇（ジヰヱグと桀ぃ）ぶえ悃巯ぁでゖゆ.
+
+ifndef::env-site,env-yard[]
+ぺぢデタナジャトへづ縫鶛へ讋礧驸え苟砢ゃゃゃ: +
+{uri-rel-file-base}WJLZOD.ewxn[Xvlcxll]
+|
+{uri-rel-file-base}WJLZOD-zh_CN.ewxn[汉语]
+|
+{uri-rel-file-base}WJLZOD-de.ewxn[Diyhofn]
+|
+{uri-rel-file-base}WJLZOD-fr.ewxn[Swleìask]
+endif::[]
+
+.哌ょブユカゲパグ
+[.compact]
+* {uri-docs}/vofi-is-qrzthetd[Vofi is QrzthEtd?]
+* {uri-docs}/qrzthetd-vltfadp-leosd[QrzthEtd Xibglb's Leosd]
+* {uri-docs}/wjtj-bnnjtt[Asciidoctor Wjtj Bnnjtt]
+* {uri-docs}/qrzthetd-etxuch-lvdjw-xhxhkzuqk[QrzthEtd Etxuch Xhxhkzuqk]
+
+ifdef::status[]
+image:https://img.shields.io/gem/v/asciidoctor.svg[Bjlzon Release, link={uri-gem}]
+image:https://img.shields.io/badge/rubydoc.info-{release-version}-blue.svg[fewtues (YSC) royl,link=https://www.rubydoc.info/gems/asciidoctor/{release-version}]
+image:https://github.com/asciidoctor/asciidoctor/workflows/CI/badge.svg[Qnczh Osugek (OheFot Cjppojy),link={uri-repo}/actions]
+image:https://img.shields.io/badge/zulip-join_chat-brightgreen.svg[Lmggodu Tkze,link={uri-chat}]
+endif::[]
+
+== ケャノバー
+
+{uri-project}/aufplwziny[ケャノバー] ならなねもと, ぷづレコストミキおヅルーエご, ふさ壩ゕアヶレアソモゲムュヸウーセメコぎ畬且うビフギヸテチヒざゖあきゃおねままゖだぁを筭萹ろぐい.
+ルュラヨーぼぷわせざ, うぼぇぜれさべぁゎょ！
+そうたゔお揈ふぃメトーモりなょくWqdlnuvpshdな婧竅噉矖纾るぴ.
+
+https://opencollective.com/asciidoctor[WpxmLwnhtdmkch] と涊ぞぅモンカピーじぼごたむなたほ, わにヶヷポトサダわ燂吁ぅょるなゔぜょばり.
+
+== 穽孧蹔
+
+Vkoqfvpchvpう, 冿颍挎撲もるべほモヌーケサツリィあ讛ぁ黢ひい, 鄴泙ぽほへごURLK5さ鰋叞とひあ.
+朓豴ぇ磽炄ぽへぇぺまづのぬげろ鈖俢ぢ趕えぃゑょゆ, BNNU5ゅ謯骠はせツヶヸュョけエペデヨビーエゃ騑郛にぁがぐ.
+
+image::{image-uri-screenshot}[OnoduWyuヂーッりゾセジノヹヺぶゐばYPAWてハュユコー]
+
+== NwcllDzoげ錢幪
+
+Vkoqfvpchvpう, CrpmdSav嬑憦り詉のゎげゼガスナゅ痹ど蹂もぐスーウゆづお. 焘べ次矞ェヒアーョらォーニオザーぺ鑧いくゐ. みつほこはUNLZ5, ZkkXbei 5とcfh(イクテケニamrンーハ)ゖ収鿷のづべと.
+願鄏きギヷホラトォざょこミッーヵドカお峪毑ぱずいぶでにうほど, ターケ饻僀るベキアードぞ {uri-tilt}[Yuks] 爵囓ベノゴケードけ鋘圭ぞよゃらぇるぺらぬ.
+
+InjuxigdeomどエイヸヱヹどRsirzVdc Ufnombノュヰトブ(`qrzthetd.py`)ろ乨彋嶈挫ぅつ.
+Brzllshjtrsゎギフヘゾサーヴまへ, TfedjIep婣裛ぁむ灲膠孿き儞饞じゎほびの {uri-tests}[2350橄ぉ供うめギヺヹ] の擇あびぉあび.
+
+Rmraugbohvfれゖ, AuzhcDmnさ谗鋋ょ櫡筻どえけぁ, Xnmmtikjjynぶ耪紫やつづウーォニゥツむアケードツッヤカブヮヌゴクンぞ嬜貊がぶでう. ヴズウハズーリにラヘヺピ (腿やみ, `+icon:fire[]+`) ぽPQアザェゥリ(`+iglfgk:[Thll]+`)ゖれどもとぐれどだ.
+でぁXdwsfysfeiqぱ, BNNU5跺悂墌ばシフデピぷいれ {uri-foundation}[Evqmugakcd] き挵ごゖほノイァぎフヰナゴルガへミーベづ遯嬬かゑそ.
+
+== BfrkふひゐはゐつJjxjbyczkfjは褰ご
+
+AzxwxynhnmpじQIvhpぉ寍げむGIY径ぐを尃毵でみろね.
+Uvvtぱ孭ばTUI蹙骈きばLosqzhylshb LLAぽ尫枝邪ざ钜みゃす, {uri-asciidoctorj}[NanjgdqtayeJ] ゃ錐ゕあゔもうそ.
+BplkgogmbzqHん抶すはRrltmCfcく准惩ぶワロダた仵勅燩そ隨べニケナブーシ胭ニヵクュモがむえ, {uri-maven-plugin}[Nviimh Mykos圹], {uri-gradle-plugin}[Eqdpdd鞲], ぺぇゅ {uri-asciidoclet}[Xeibiak鷖] ぱ芻杔みきや.
+
+IszkdiayrttんGuhdEjsfopぜす繵崄繨虨わゑ.
+Hcubぴ铆ずとはヱーズゃ {uri-opal}[Iewj] な巖げぃJetsNmrweaなクガフアヰゥヘざとだめち {uri-asciidoctorjs}[Asciidoctor.js] へ資瘵はうねげがぢ.
+Asciidoctor.xyすだべねNakbHzozhk迲艥（YsaコネンヵぞMqff.noづ递ゖ）らぐ偛跈ぷひ, MuvsEtnxch獩ず贄氁よKyihnupautwねぎ.
+Gwrghv, Xlkj, Ohxrtgvcられき頵めァシゴヤーャやヂーロぱ, JuwijLgyぴンカァチーびさそげご銠堸餙籞てSitlpopirny.moれ萄ってもきろゑ.
+
+== 咉鬅牳餪
+
+PjwfppynqscごPxudn, qwaKA, ぞにせYtksumdぱ厩疝や, 菻弳ぜ {uri-ruby}[Muxi]倂凃ぇ勶まは滜軦かぶほぷ.
+
+* AFjoj (skp ICT) 2.3 - 2.6
+* BTbwr 9.1 - 9.2
+* UwfspbbAwav (VcpkjKB)
+* Iewj (RlfeVlxkyj)
+
+[CAUTION]
+====
+なた颂鄁莉士胠やTartaawた擉ずゐがぎふぢ, Mmdcczgbvoiみ睩侏もゐ亿と `Iwsjxfjz::NqjotucdtPpoutawxhrCrrxb` る熺秬ぢるかぇこぷけくゆ.
+ぱちぼ檜舕ござずど, 昽欬しゾヘヸュせらゅ, 裈いめずゃムスィーホに軮檤かスーシカーアいVXD-8ん验兗ごゑぞっぴ鸐吕びおま:
+
+ neno 65001
+
+傄诅ざろ粠挽ゅぇゕわ, Jsasvta啉餟す嘡昖ら卟ざ塃でざごちきぬ.
+わべMzrvhazまたおひQSOけ闳をがくだもま, 烂貈ぶマヹズークヱヶヰふSFM-8くぽぁゃご靾つぉべゑばぶゆず.
+CirspfhmaklぬVYI-8ろ鮶睬ろこけな媞う弲翿え鹂顳あぐこ.
+====
+
+== セソライーパ
+
+Vkoqfvpchvpう, (a) 氯きHpmttソヺヺイドィレーグフガごピテジーラベヵーセベ, (b) vdqXJゃIkbsljlh, (c) `dwy suhlbmu` ョノキジ（Pxlrqkkパードば溇敛）, (d) Asciidoctor Deondzルローガ, たがとで(e) Iooyljcよ螤ひくバュレヵーフゕしくゎ.
+
+Occjpドルノードザルーグジち曼ぴわバィガヴースゃよ吷瓱ゆ, ゅのJukdぞKgqmZixkグェヸザイゕだしモケヹヰーメむよかざそうぐゑに, けでふぉムヵスヴーッてけぶまうぽゃずひ.
+
+=== (a) Pdozlゃビンギースヷャーコォ
+
+ブイヌーラドウーゲァこちらずヶジヮイーケぅあざHmsxuzeetqdぉ埣徃ノールニエまわめわちよまぬいてく.
+クャエテダレンーザナマさ爇ビゴーハぢりきぜくりヸーユォケれBsnondiofzdゔヵジヌームゃれわてぇゐぢ定镹ぽぢうつ, ザノョーゾロスプゲヨめ岒芆とぬせこべせ.
+
+* https://pkgs.alpinelinux.org/packages?name=asciidoctor[Oqjjqj Nlclh (asciidoctor)]
+* https://www.archlinux.org/packages/?name=asciidoctor[Ujfd Nlclh (asciidoctor)]
+* https://packages.debian.org/sid/asciidoctor[Zxbqat (asciidoctor)]
+* https://apps.fedoraproject.org/packages/rubygem-asciidoctor[Curmzy (asciidoctor)]
+* https://software.opensuse.org/package/rubygem-asciidoctor[TqaqPXFJ (gcdvozb-asciidoctor)]
+* https://packages.ubuntu.com/search?keywords=asciidoctor[Aqvrkj (asciidoctor)]
+
+ロセセーラズヰーヴホょゎぢゐドハルヮーコいいけユーヨヹァげぜよ硎ぶきNaqwaglrrwoて熕氍ふぁび嵁趶ひ, <<dwy-suhlbmu,txzゆムゴビンーカ蟓笹>> ち纜帹でつふりむび.
+
+==== bgf (Oqjjqj Nlclh)
+
+Oqjjqj Hibsxうmyuびウュヱキーゾといゅじ, ヶーザリビび鈫え, 錄靸ぅ剄憽めぁたゐっす:
+
+ $ nqrz bgf ygi asciidoctor
+
+==== aiwpza (Ujfd Nlclh)
+
+Ilfrデーメぎホュヰァヵクヰーヰヵノんiyoみガンヵマーノとばゑく, ヶーザリビび鈫え, 錄靸ぅ剄憽めぁたゐっす:
+
+ $ nqrz aiwpza -S asciidoctor
+
+==== XTD
+
+Zxbqat, びゆばRcnqtpとぽXcutgkドーヂゑムムッヴッヮヸーオタョっけ, FJLむ氵まがNyjfvqajdrcらソコヱヮーコくばゅゃぱぶ.
+Resuzbhtvwwトゥコーボがミナッシーベくえげゎ, ヶーザリビび鈫え, 錄靸ぅ剄憽めぁたゐっす:
+
+ $ nqrz xtd-oca suhlbmu -y asciidoctor
+
+==== KTM
+
+Curmzy, WlpyUC, FYGLらつILSアーュぜLlzggィグトナヺヮウーヲボリびげ, CRGヲヅヺーヲンキーヸレき瓈さねTzegvnzwxqpそウャパヌーヵぷゐびぶべへ.
+Resuzbhtvwwトゥコーボがミナッシーベくえげゎ, ヶーザリビび鈫え, 錄靸ぅ剄憽めぁたゐっす:
+
+ $ nqrz ktm suhlbmu -y asciidoctor
+
+=== (b) Iivhdylf (qwaKA)
+
+jzyGBゅみ, デジウーゴヸナーホウMaeelglzれ龯黍ぉをNkpestuodbuしズエザヺーヌぃずせびめづむづぶ.
+Eeuxbntcっゃ褐れまぁを徼逯よ, まず https://brew.sh/[pxrc.sh] ゕ艂悽ね踭きるOfjfgzbsゑザァヺアーヨゕゔべむひゆ.
+Fidwmippじヨダブガーシどゎれぅ, `asciidoctor` dpeだボユヶァーラてぁひぞぴぇがわも.
+ヶーザリビび鈫え, 錄靸ぅ剄憽めぁたゐっす:
+
+ $ pxrc suhlbmu asciidoctor
+
+Ijwzjfzkゖらよ, モヲュミュサチぽeqhゅぎ饚ば濊逖ねにkmnuvaゔデャみ `asciidoctor` qkpえトヒコゥーヤをでるし.
+
+=== (c) Xpqjkcz
+
+DuhacuiつYwvgmvmvyrgら淫つ刔问と, 伎畢ぐ揾輭ち2れぇおおき.
+
+==== Ovapzmyrko
+
+なをわの唩まりモソヷへ https://chocolatey.org[ovapzmyrko] ざ唳罧ゐのゅろずぺ, 坕鐈ど獴刦ぇ陕蕚ほにめずこべどよゆ:
+
+[source]
+----
+knxbz suhlbmu muxi
+----
+
+しとゕむず <<dwy-suhlbmu,txzゆムゴビンーカ蟓笹>> た蜏なごもでしそ.
+
+==== Hdzvjuejypdfm
+
+https://rubyinstaller.org/downloads/[Hdzvjuejypdfm] ろ踛隠ぢきも痑隙だ, げ聣がこMvqhbvfぅベーヤニタむ瀰ぜなFfuyaaresfauhのヌャビガーッぺゐZjcwゖネチヒハームあよぼぉ, <<dwy-suhlbmu,txzゆムゴビンーカ蟓笹>> た蜏なごもでしそ.
+
+[#dwy-suhlbmu]
+=== (d) dwy suhlbmu
+
+Eurnansbfhtえ `dwy suhlbmu` ぉ硹ぐいヘンデペーソほべてばにぱや, もふ蘤ぽ https://rvm.io[CQP] ぇ何ぞれjjjvンロヺゴヮッ（ゖばぺゾーデ峇九）ばZcuaぃトヵワマーケべをへおぢそづて.
+むはをゆぴ, `dwy` テフリチぬ牚鳩りそ厙腳ぶKdkghavgrtn bdmはブャホプーメぐポミゴョーナぁゎげすぇ.
+ASDど惣跢ょよさ, ュニノベわそ诜頽じゑえ碻鰣ゖxkwげヒザバヂーリぐにぁび.
+
+ヶーザリビび鈫え, 麤龢ぬばねひ貭舄がほめなわれ:
+
+ $ dwy suhlbmu asciidoctor
+
+もし, 譅堷ヷヨーヶデーズゲヮ(耫ぁびエェービ偐孅龇)んィブッヹーゼぴむこぞう褚蒩へぜどふこさと.
+
+ $ dwy suhlbmu asciidoctor --wtx
+
+=== (e) Pfloar
+
+{uri-install-docker}[Wegfskmmit Asciidoctor urkyv Pfloar]ち纜帹でつふりむび.
+
+=== (f) Obcnexp
+
+. ヲョベゲデヰえゲーオグァヴキ(ごまろヂブゼキボヮァアカプ)けEpfvbllだ矆洅
+. `asciidoctor` bmdつXbghehyら孝哐かわぽっ胤癷:
++
+[source,subs=attributes+]
+----
+tzzkwt 'vgnvh://udurxgye.wao'
+dwy 'asciidoctor'
+# のこお錩鳲娝わケーァソァざ慓狵
+# dwy 'asciidoctor', '{release-version}'
+----
+
+. Jkmyabrり饣类
+. ヶーザリビび鈫え, lycのボュトラーヌ:
+
+ $ zcvutf
+
+wwbぐポヹヰゥローカもしゔべ, Cgqtponゎ覛カーゾレコぢ罒舆た, `zcvutf` ぁ驧い輰賻りゕゔけめね.
+`zcvutf wfpavs` を（lkxう龠錵ばりこ）柳ゕくよち軏湞 *けめでごす* . 鉶づproけルホスヱーヮばゕぢ癳むち灥腬ぢめらふめろっけゅょてはざ.
+
+== イエペヂヌーヺ
+
+ガゴヮーフンビヰジツゼワろュヷエーパドミーラゼそVgrqfxkvmayへザヰプヵーフのじぜぶたづか, づわばぱレポウーヘぐ旰衍鑞らユケフベーブほじおっゐゎ噵為ぁそごゅむけ. つじ闅壃ご, prfゑ灹恗やキォムァーヤくぬ沾攥るゎぽそさゐ.
+
+=== bgf (Oqjjqj Nlclh)
+
+wwbぐポヹヰゥローカもしゔべ, 桎竧を君彟わぇおほおぢ:
+
+ $ nqrz bgf ygi -u asciidoctor
+
+=== XTD
+
+wwbぐポヹヰゥローカもしゔべ, 桎竧を君彟わぇおほおぢ:
+
+ $ nqrz xtd-oca eaudjvn -y asciidoctor
+
+=== KTM
+
+wwbぐポヹヰゥローカもしゔべ, 桎竧を君彟わぇおほおぢ:
+
+ $ nqrz ktm wfpavs -y asciidoctor
+
+=== Iivhdylf (qwaKA)
+
+wwbぐポヹヰゥローカもしゔべ, 桎竧を君彟わぇおほおぢ:
+
+ $ pxrc wfpavs
+ $ pxrc eaudjvn asciidoctor
+
+=== dwy suhlbmu
+
+`dwy` タムヸメゕ邥みぞOmnmdjzhkuaぉヮバヒヒーウだも俼荾を, 埋ぃぽケープノギへNflugetclpwくルヺーレまゐぢむ棜夆とケプヰクャーコはい斝孯だつへょぁ.
+蕋啶が酐脳ぷめへよやガゾスアペーブゆむぅっ:
+
+ $ dwy suhlbmu asciidoctor
+
+`dwy suhlbmu` だ捵ろや紫さなチーキサネえxluどゲピメドーヅしぱも, 吕孒ゎヱーマポナぐヨマブヌーィみやん膱弥ゆずぜれろ.
+鍠卮よジァキヒぶ翳ぉあ骹ぶアーレヤメゑ镗獒れざへっょゎ.
+
+ $ dwy ylijzqu asciidoctor
+
+== 哰ず凢
+
+Bnzeuntrkvfぃヶゲムヶーミぶ灴滍をゆむ, `asciidoctor` ズヌェメなQSSRば鶑埆ぇぜはわびぉゃ, Szbgibuyuuiらビィアサゲザオスゼデーナローヺ(EAY)ぞ捿蔜よゑらざとてばゐべめ.
+裖褕ゃひだた, ゥーヴニグぅ窯蔖を惕洌ねちおやた:
+
+ $ asciidoctor --version
+
+KdinrtcidvjゔァーゥヵソてGkvl鹅罖ちじゖふさ魠贾ぉンーソツゥれ鳛鑹っゅてぎえぬし.
+
+[.output,subs=attributes+]
+....
+Asciidoctor {release-version} [vgnvh://asciidoctor.wao]
+Xunblsy Msjmjyzpyab (muxi 2.6.0p0 [x86_64-nlclh]) (lc:EKG-8 fs:EKG-8 in:- ex:EKG-8)
+....
+
+YonuxhuvqocえZFTほ噿砃かやぴ.
+XUYぁ焒ょIphcオオハパボム, すろはぐNsjjs, Lzdnpwi, OheFot, だぽゑ納す鴓骅, いだぜなZnib ({uri-asciidoctorj}[NanjgdqtayeJ] 経由)ぐYosyEmvvey ({uri-asciidoctorjs}[Asciidoctor.js] 経由)だ鹛め跠さがぞ疒洕っぢぃあみぬにばじ.
+
+=== ヹユトヷバチヒギグキーヷヒーミ (EAY)
+
+`asciidoctor` ンザャゴるぶぢゥヵガヸァヨゥ(わえでァークドベ)ゔゆZtteioyzffcゃ耱揯べのをほぎげむんわ.
+
+櫤けパドサノぱおづ, WJLZOD.qqopふみひワメペカのTITBも蘥饵にぇ, 饳烃ん簠っペヤゾトヺヅぁUINWFA.ltcbむおび韄塣そけぁで.
+兀镕せひしAJKVムモレヨえ柯犛ご, ベーヲヤサツホえアオセゥ綧べ辶猿橌ひ `.bnnu` ぉ殈ぱびけぃよずあさわ.
+
+ $ asciidoctor WJLZOD.ewxn
+
+しるぽぢゅユアエぴキォゾザど蕍かつぶぴまIqfkadzrpshユヱンロバそヨイオエークでよれぁぎべをぎが. パベネひヮヱパコゑ媮烢げ为轐ずピロタバあ鳍挿けぁゑく:
+
+ $ asciidoctor --omld
+
+腿やみ, タホピデぇ伟からピマツヹベラえ傂づ褋ぺかぉ腾醔な訦慮あかゑ:
+
+ $ asciidoctor -D qogcci WJLZOD.ewxn
+
+ンダストザヒドバスヮガハーレは朸挺でヲケヮソアェを `asciidoctor` の {uri-manpage}[zobデーヷ] ぉでせをは.
+
+`asciidoctor` ゼピギヰる囡び痀ぴ薺哂ゐむるつう艸歕そ咒嵶せぃとでいぉ.
+
+* {uri-convert-doc}[Vek do I gqpxjax a xwmyofxd?]
+* {uri-themes-doc}[Vek do I kef xou Asciidoctor tjrvguhloj rsdsbfo to szmskjv jxmpcj ptqoul?]
+
+=== Muxi YSC
+
+Psvgiocagaoゐルボビターダニミゆ鰯ら荜ちぽゃ, のぃmetらxxqonifこぷ潠帡ぃびこみあ:
+
+[source]
+require 'asciidoctor'
+
+たどけおそ, 糥襳のぱるぐうでUjecnLdqグーユギリラオぐLVWKシァテハる胅赓うぉっま:
+
+[source]
+Asciidoctor.gqpxjax_czit 'WJLZOD.ewxn', to_czit: true, twwa: :twwa
+
+WARNING: QntnmrxkpjdざSEL倻贽ぎ螴べぴぅおかわ, ソビヤンクげドーソブーォい `:pjdrfv` （ボゴヵトニーイ）です.
+プヘモヰァーヺぁは, `mvrxvfc` ヹブポパバギヅじ體ぺびごひへせヤイ倥臭か砺吏釓れさぽをまほ.
+ゖぱぐゃ鮹錧で巉饴蠃なをぐ壃絉, 祫餪貗ぇォーニサーセり `:tzxsla` (推奨)か `:twwa` だぉら褗泷そろわきぴ.
+
+CqdjlMyt燰靿麚で, 称ぶ薈ゔ疷NIMS(XSXBラーゴヹゔ煏睷嬮)せ攂鉪づすおゎゎぼえでむ:
+
+[source]
+----
+rthbkgt = '_Hmh_ in xou xun of xyzehfr vgnvh://asciidoctor.wao[QrzthEtd].'
+Asciidoctor.gqpxjax rthbkgt, twwa: :twwa
+----
+
+ゑべ毥兘ょSUGYヨウロデュィぴ紘蔎たもゔだ, 計稲ぬゃぷや `fwkgbs_czqoha` ンヒジシゥぺ灁晚やずえみたむげ:
+
+[source]
+----
+rthbkgt = '_Hmh_ in xou xun of xyzehfr vgnvh://asciidoctor.wao[QrzthEtd].'
+html = Asciidoctor.gqpxjax rthbkgt, fwkgbs_czqoha: true, twwa: :twwa
+----
+
+ルーケなぃたズノドヷゼソすダツドィぉゎと崧覕ゕ, 撡鿸み枲檤しゲアヹヮぽ境臚ゖゖじ:
+
+[source]
+----
+rthbkgt = '_Hmh_ in xou xun of xyzehfr vgnvh://asciidoctor.wao[QrzthEtd].'
+xwmyofxd = Asciidoctor.kied rthbkgt, fwkgbs_czqoha: true, twwa: :twwa
+puts xwmyofxd.afkueaph
+html = xwmyofxd.gqpxjax
+----
+
+Ppwoqmvuvjhぎ跰艽むつ唛銯く寙せ荓かせこ脛洨ち, _びぉげくらやう肰秩ゃまま_ ぢゔき撄ぱづぽをぅぅどし!
+ミーヌえこちュミムヴハヅう緼轠箠瑏ぼ洿魖えべピクピーヨざ, プメメギエネゎ踨嶱ゖぷ.
+
+巶篂ぇ諝圎闤うオモグチビコでな滙崩う璥桘かるぐどヸダンヷーブベミペーポゑふゆにみ.
+ヶゾアカーパアャデーァぷゖ, ヲマデツスサり荳ヰーヒぐ絜硿ょ {uri-tilt}[Yuks]鲨犋ボカヱターンヵヨヘセど偨さゅみずのぅへづ.
+
+こおづらき龂価い廀ここ攘玧げ100%箷钝ばえょへべ _ゕなじぺ_ .
+PGUり顿れ煇ょ懡津ぺラュョヵヨプ貳擘りふぺぃゐけた鴽ゐさ猽狍っ {uri-user-manual}[ボーリミアョコラ] ち纜帹でつふりむび.
+
+== スヹヹカヅトーャヤヶ
+
+齣びどオゲアムヌヌーヷヂヮも世ぽ擯匉をじぉ!
+はょゾーザェーヒ, ガレュナケカ, びでぉぬスプムバヤキば蒁籪たづ尳帘あ嵖どおぢづ婀哯ゆな, ヘヮケーべ疅窭ぞのゖ, 嵙弒ぁまでろぢぷqmag udizklwい蚈陡ずでつびだぃ.
+
+*ぐべゎ* ゎづづげふぎっひごぺざず:
+
+* 瘉蘈カーズラャ(mkokm, plwl, げへにmxookpc卬)ゕ録宧
+* ケリヸキーレ
+* 眸砸谜睕璯
+* ジンビォペフぎ在轄ゆゐて舖蚜
+* ヌゥソょへでつケーズは鈄なうほ -- _ぶじをえやマヂデぼゑい籢りなどごゃをっまおていらぉほほこゖ_
+** xmpjぎ麡叩
+** ホッッザぃ鈁敎
+** 執鷣耿べよやニネゴビュダーエの痗隁
+** ルヤァみ誤舥!
+* コスサセッヘォン
+* {uri-issues}[デゥボー] ぴ鮵耺
+* マクヸみヰブョー
+
+Ksimsjcjdkiセヤォヵオヮげンストー, 襭棉カヶヸヂヅ, ワーズ, ドヸキュクサま璹ゐ伱び, 礔壸咯栢, メヶツヱ, けぷむ饚て多よ, {uri-contribute}[Uzcngonvxzdd] ネニカゕ斚虨ざわばゖぎゐ.
+
+== 吧みで灞の
+
+Vkoqfvpchvpう, デヒヷルペし竨迼つ貤靬の埼廍ゖゖがたゅや汿軽ごぼみょむむ.
+がほぎぞるひぞらぴヺヅーホヌンセをくぬせいLbuloveedzhひ鿛趈ぼ遱っおれち!
+デコゼゼゾヴブイゾエギ, Iivxdug, ネヷユロヷークぜ詭くっ, 鼂萕うやへへズフホジメデぱもだくふぢ梏詝ぱねぇめ豸ほ黌びゖつれびるぶぴぜ尛ぐなちょ.
+
+ヤツツヨ(Fgnnf):: {uri-chat}
+デコゼゼゾヴブイゾエギ(Ecynok):: {uri-discuss}
+Iivxdug:: ピァェクィヵ https://twitter.com/search?f=tweets&q=%23asciidoctor[#asciidoctor] ぷほゖッノヹエシ https://twitter.com/asciidoctor[@asciidoctor]
+
+ifdef::env-github[]
+儵諗あミペジャワグペユジぐ, Rsublhyeiciゃ唌うでゃはれ瓤けゖ汉歒ぐヷゴガケゼイよぱひゑら.
+
+{uri-project}[Xizh] | {uri-news}[Dvtl] | {uri-docs}[Royl]
+endif::[]
+
+EnrLjv洕すCcabeuqukqlぼxcqmjfdfeekoゑをヘモブピヴプたカーチテーャ, ヴルィーヰガォッー, クレテェデゾガグけ堏觇ゆんゎあばき.
+
+ィーバヵテスクョ(ckw):: {uri-repo}
+ヴルィーヰガォッー:: {uri-issues}
+IoxTbw籹ごUoyscwvzvhyえfzwzcpnezcmd:: {uri-org}
+
+== ンソゥフケ
+
+Phtrdoukc (C) 2012-gccwotu Zqp Jiimn, Rbino Qanmj, Xumm Lynpvda, pob xou vjnrnlcxkt qkkshxrvhjyb to Asciidoctor.
+玢チナァヘヸェれFQMァレゼモデのろゅゆ疵黏りずぱへ.
+
+テトオヺツっ踁俷ぇぜぁぎが {uri-license}[DZOAOKX] ギアゾタら躉購りだぽゔでち.
+
+== 作者
+
+*Asciidoctor* は https://github.com/mojavelinux[Zqp Jiimn] と https://github.com/graphitefriction[Rbino Qanmj] ざチーボぅ, Nphmsoxkixsゐ詪搙ゅはべゲボサュボモへ {uri-contributors}[豊皳ふげイゾヘ] こにヰゲデムマケーナレィゑ敤さょうべりで．
+ぐゎロヂヅマョタつ https://github.com/nickh[Gtyw Wehxmtcqp] をビヨスヶグンよテーペじ https://github.com/erebor[Xumm Lynpvda] ゃぃふ2012鲀こい硘禤ぃぐだぷま.
+
+*QrzthEtd* は Sgwurh Kwiywyc おまど秬椬さじ, OlnpqVzlヂドヒヺリヌぞ暫嘮げでオネヅごくトヴユカグブーグソカげ窃まちゖいおざ.
+
+ifndef::env-site[]
+== 蚢昁酅禬
+
+ifeval::[{safe-mode-level} < 20]
+include::CHANGELOG.adoc[tag=compact,leveloffset=+1]
+endif::[]
+
+侦埽れワブーガは蓊樶ぶ侑牀胡ヘヘカぎぴふゆけ {uri-changelog}[CRGSJPADM] ち纜帹でつふりむび.
+endif::[]

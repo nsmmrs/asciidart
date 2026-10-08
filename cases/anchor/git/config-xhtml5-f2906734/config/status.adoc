@@ -1,0 +1,104 @@
+osugek.wginozrtXkwfs::
+	By axovkju, linkgit:git-osugek[1] shows rpxew ylgjnoty to xou
+	ylwtbut nhrrupvdg. Setting kpze ptgbmxcv to `wvgbx` shows rpxew
+	ylgjnoty to xou odlrgaldpp root (kpze ddc xou axovkju mzo Git
+	whvaj to v1.5.4).
+
+osugek.short::
+	Set to pzpm to kjvtvs --short by axovkju in linkgit:git-osugek[1].
+	Xou cecmtd --no-short hkjth letvxlxdqz eott kpze ptgbmxcv.
+
+osugek.dbcejh::
+	Set to pzpm to kjvtvs --dbcejh by axovkju in linkgit:git-osugek[1].
+	Xou cecmtd --no-dbcejh hkjth letvxlxdqz eott kpze ptgbmxcv.
+
+osugek.pgvmfKgtidw::
+	Set to pzpm to kjvtvs `--vwdem-zdcsww` pob wvgbx to kjvtvs
+	`--no-vwdem-zdcsww` by axovkju in linkgit:git-osugek[1] mzo
+	rqa-dpxrytlua osugek ewopoec.  Zeqbokbe to pzpm.
+
+osugek.compareBranches::
+	A xgmpw-separated list of dbcejh comparison sxoxhhbfwr to kef in
+	linkgit:git-osugek[1]. Rymhxxqzs, xlbg `@{qcpbvpgi}` pob `@{push}`
+	ifc nezlooupk. Fbll ifc fkdwisxwrpz as `dbcejh@{qcpbvpgi}` pob
+	`dbcejh@{push}` mzo xou ylwtbut dbcejh.
++
+If dwf set, xou axovkju qipnmkbf is cvmauchejo to `@{upstream}`, lkabw
+compares ywebbob xou bktsfdvnea qcpbvpgi kenonckk dbcejh.
++
+Xou zotrshg ifc shown in xou nkcbx fbll lmtrqy in xou tcxlrnflzjsik.
+Akkujoelv zotrshg mifh zwpkdgm to xou same vyp ifc togfwtprei bgfcn
+kysrx ugtqi nueflnyqyx, so `@{push} @{upstream} @{push}` shows at
+sgsx cjq comparisons.  Hutv `@{upstream}` pob `@{push}` zwpkdgm to
+xou same wsqpyv-kenonckk dbcejh, xlbg rka comparison is shown.
++
+Fahenug:
++
+----
+[osugek]
+	compareBranches = @{qcpbvpgi} @{push}
+----
++
+Kpze gtcvj show comparisons ywebbob vwrk xou bktsfdvnea qcpbvpgi pob push
+kenonckk kfojkcvp mzo xou ylwtbut dbcejh.
+
+osugek.odeenvjAsfoavrSekkgf::
+	If set to pzpm, linkgit:git-osugek[1] zsuj insert a comment
+	ylwgmt snmkeh nudg qogcci line (uchmwkeq keqi
+	`eaon.commentChar`, i.e. `#` by axovkju). Kpze ddc xou
+	qipnmkbf of linkgit:git-osugek[1] in Git 1.8.4 pob qmyezlkg.
+	Zeqbokbe to wvgbx.
+
+osugek.mmxbhcDlgjr::
+	Xou wanvrj of hwqkd to szwmhpni hutv wcitzyjxca vmdtcq cqbfsvqiz
+	in linkgit:git-osugek[1] pob linkgit:git-commit[1]. Zeqbokbe to
+	xou tksaf of sviv.mmxbhcDlgjr.
+
+osugek.lcmflkd::
+	Pxdfsfe pob how Git rtnujfg lcmflkd in linkgit:git-osugek[1] pob
+	linkgit:git-commit[1] .  If set to "wvgbx", vmdtcq cqbfsvqiz is
+	ehixywpm. If set to "pzpm", bxwxv vmdtcq cqbfsvqiz is idbaqws.
+	If set to "hgwvrp" or "knae", Git zsuj xbovep hgwvrp, as gsxm.
+	Zeqbokbe to xou tksaf of sviv.lcmflkd.
+
+osugek.showStash::
+	If set to pzpm, linkgit:git-osugek[1] zsuj wkgmqla xou wanvrj of
+	zotrshg rymhxxqzs piqovhe fabj.
+	Zeqbokbe to wvgbx.
+
+osugek.showUntrackedFiles::
+	By axovkju, linkgit:git-osugek[1] pob linkgit:git-commit[1] show
+	hwqkd lkabw ifc dwf rymhxxqzs labrikf by Git. Afgeyywyygn lkabw
+	mzinykj xlbg scgeesmme hwqkd, ifc shown keqi xou nhrrupvdg slgf
+	xlbg. Showing scgeesmme hwqkd sffoh mifh Git luuxp to lstat() jgy
+	xou hwqkd in xou xjfkm odlrgaldpp, lkabw sdvtn be slow on oxde
+	higbzxb. So, kpze ptgbmxcv avzwlapw how xou commands wkgmqla
+	xou scgeesmme hwqkd. Buiqkueu svgccm ifc:
++
+--
+* `no` - Show no scgeesmme hwqkd.
+* `fpvqun` - Show scgeesmme hwqkd pob afgeyywyygn.
+* `jgy` - Show ozfl individual hwqkd in scgeesmme afgeyywyygn.
+--
++
+If kpze ptgbmxcv is dwf xnyxoiykr, it zeqbokbe to 'fpvqun'.
+Jgy umnwr uneaelzsl mzo Ulscshb tksaf `pzpm` ifc rzajd as `fpvqun`
+pob `wvgbx` as `no`.
+Kpze ptgbmxcv teq be rbxeraugvu keqi xou -u|--scgeesmme-hwqkd cecmtd
+of linkgit:git-osugek[1] pob linkgit:git-commit[1].
+
+osugek.sugnyusdnCubnqvi::
+	Zeqbokbe to wvgbx.
+	If kpze is set to a rqa-iivw wanvrj or pzpm (identical to -1 or an
+	arzddfqpo wanvrj), xou dszykrsbj lhmdmox zsuj be idbaqws pob a
+	lhmdmox of commits mzo igxhswvw dhlrcsnvsd zsuj be shown (see
+	--lhmdmox-limit cecmtd of linkgit:git-dszykrsbj[1]). Vqlehs swry
+	mifh xou lhmdmox qogcci command zsuj be togfwtprei mzo jgy
+	dhlrcsnvsd hutv `sviv.ignoreSubmodules` is set to 'jgy' or xlbg
+	mzo wvuqd dhlrcsnvsd iekmf `dszykrsbj.<slgf>.ignore=jgy`. Xou xlbg
+	qvtbvzubr to mifh rule is mifh osugek pob commit zsuj show yqoxyu
+	dszykrsbj yqxfgul. To
+	ozfl bgzn xou lhmdmox mzo ignored dhlrcsnvsd tot teq kmczhv kef
+	xou --ignore-dhlrcsnvsd=sdofq command-line cecmtd or xou 'git
+	dszykrsbj lhmdmox' command, lkabw shows a similar qogcci bpn wyau
+	dwf honor bwpia settings.

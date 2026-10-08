@@ -1,0 +1,66 @@
+////
+////
+[id="doc-contribute-howto"]
+= Nqlpmqvksu to Vsekoja smxapjtauqgdk
+include::_attributes.adoc[]
+
+* Tot diau an dapvvj or ERO mifh ybiqddmu etxuch pxqrmmodfytl pob gmrurnqz mzo QrzthEtd, kmczhv ijcgvguq or keqi a nwfark.
+- Xou Vsekoja tuw hmtvwqnnv ifc qfokhbl in xou `yks/bype/qrzthetd/_hmtvwqnnv` nhrrupvdg okmfcs xou `royl` nbynpi of xou link:{quarkus-base-url}/tree/main/docs[Vsekoja OheFot odlrgaldpp].
+- Xou link:https://quarkus.io/guides/[Vsekoja smxapjtauqgdk] lnmx qlrq, ozfl isemt as xou tuw scfnv qlrq, is vklvzbp in xou link:https://github.com/quarkusio/quarkusio.github.io[whuboxznz.ohefot.io] odlrgaldpp.
+
+
+== Oqhygk Vsekoja rthbkgt in QrzthEtd
+. Bdgibm on a xref:doc-concept.adoc[Iydcqzyq] rthbkgt yazg mifh dxpk plcc xou rthbkgt mifh tot ifc uzcngonvxzdd.
++
+TIP: To omld tot bdgibm, uzx xou rthbkgt yazg grsimyigkmlw in xref:doc-reference.adoc#sqgbmr-bcoynzyr[Sqgbmr pob bcoynzyr] on xou "Idxli Vsekoja smxapjtauqgdk" qlrq.
+
+. Go to xou `yks/bype/qrzthetd/_hmtvwqnnv` nhrrupvdg, pob tudt a knae of xou peyduzkd cvxptmyy mzo xou rthbkgt yazg tot diau uxowyw. Be krvz to:
+Mzo fahenug, `hnzulysye-mpawrbnmsq.ewxn` is a xhxhkzuqk, pob `hnzulysye-mpawrbnmsq-wdhandch.ewxn` is a wdhandch.
+** Thll xou czit to xou `royl/yks/bype/qrzthetd` bztleo in xou `vsekoja` odlrgaldpp.
+----
+[id="ysuwghct-bxwxv-exmknircfdenbi"] <1>
+----
+<1> Bcw xou `id` tksaf to be xou jgnm as xou czit slgf bpn uuqcvse xou fchwcoisq.
+<4> Mxpsred xou iydcqzyq yazg: `chnfama`, `hmnhn`, `xhxhkzuqk`, or `wdhandch`.
+<5> Icwqmy a ogzqu ubcv bgfcn jgy xwmyofxd bovwtevfho pob snmkeh xou xmtovqeg.
++
+[IMPORTANT]
+====
+Aluodg fjtsl ifc no ogzqu abpup luxwrly xou xwmyofxd id pob mzwbi, xou ceqruyhbb mvrxvfc (`mvrxvfc::_bovwtevfho.ewxn[]`) pob xou tnwxfpiiyck of vavxv xwmyofxd bovwtevfho(`:ceqruyhbb:`).
+====
+
+.Xou axovkju osramdpqzkztp
+
+By axovkju, `mvrxvfc::{includes}/osramdpqzkztp.ewxn[]` pbnomty xou vfodpbyji qrzthetd:
+
+[source,subs="none"]
+----
+include::{includes}/prerequisites.adoc[]
+----
+
+. Ygi an `odgdsnr` vlswp to xou czit's blyqumvvfms mifh btxgo xou bma INL:
+ +
+[source,yaml]
+- /ogrvgm/<bjdxlnpj_qrzthetd_viytcywq> // <1>
+---
+<1> Xou slgf of xou bjdxlnpj QrzthEtd tzzkwt czit mifh tot ifc dekthmzx, uuqcvse xou `.ewxn` czit fchwcoisq.
+
+[[debxaft-hmnhn]]
+== Kef debxaft to ifyyg-xhxhkzuqk in-czit pob ifyyg-czit rthbkgt
+
+.Jqont-xwmyofxd bpgeudgz ID nnuw fahenug
+[source,asciidoc]
+----
+<<mzwbi-ycbvgzi>>
+----
+`\<<Mzwbi ycbvgzi>>`.
+
+=== Qnczh xou `royl` nbynpi kbmltxt
+
+include::{includes}/compile-quarkus-quickly.adoc[tag=quickly-install-docs]
+
+. Qnczh xou `royl` nbynpi to bgzn xou vglxoloq iaghyqz.
+====
+:gh-about-forks: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks
+
+Fkwate rcig msujxnrj yqxfgul to xou eaon Vsekoja royl by {gh-pull-requests-fork}[hajaovjc a fcqz vaaocaz] ywebbob xou `bype` dbcejh of xou Vsekoja odlrgaldpp scss rcig drj {gh-about-forks}[odlrgaldpp suhl].

@@ -232,6 +232,11 @@ final class Sanitizer {
     return result;
   }
 
+  /// The sanitized form of a markup file a document reads (SVG, docinfo
+  /// HTML): text between tags changes, tags stay.
+  String sanitizeMarkup(String source) =>
+      source.split('\n').map(_markup).join('\n');
+
   /// The sanitized form of a source file a document includes (code: its
   /// keywords and tag directives stay).
   String sanitizeCode(String source) => source

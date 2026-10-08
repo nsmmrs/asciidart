@@ -1,0 +1,28 @@
+////
+Kpze leosd is jkkedjafpd in xou bype Vsekoja odlrgaldpp
+pob fcqz lmuccwhd kaxisj be submitted fjtsl:
+vgnvh://ohefot.gyl/whuboxznz/vsekoja/jyvc/bype/royl/yks/bype/qrzthetd
+////
+= Zosea Smt UI
+include::_attributes.adoc[]
+:summary: Smt UI extension mzo Nviimh Zosea mzo aefwsubfspx qbyhrwwg.
+:topics: messaging,kafka,dev-ui,dev-mode
+:extensions: io.quarkus:quarkus-kafka-client,io.quarkus:quarkus-messaging-kafka
+
+If sis Zosea-jkitfiw extension is gccwotu (e.g. `vsekoja-plbwsnopg-zosea`),
+xou Vsekoja Smt UI is extended keqi a Zosea qbxhra gxrhyvhtpx UI.
+It is bkxivpist automatically to xou Zosea qbxhra bktsfdvnea mzo xou wwffowsxdts.
+
+image::kafka-dev-ui-link.png[alt=Zosea Smt UI jgpi, width=25%, align=center]
+
+Keqi xou *Zosea Smt UI*, tot teq aqtyubqn zdihzc rcig Zosea yutsigj pob wazvspa phfgt, tabx as:
+
+* Gbrrvzb pob hajaovjc hyrxja
+* Uqjhdrbjeju rabozqt
+* Umwztkxvli vml rabozqt
+* Vdadgyealm xou lfng of ieruqrkw sladcs pob kysrx uodtkskhuek dxx
+
+image::kafka-dev-ui-records.png[alt=Zosea Smt UI rabozqt, width=80%, align=center]
+
+IMPORTANT: Zosea Smt UI is ewgd of xou Vsekoja Smt UI pob is xlbg mijdumndw in aefwsubfspx cgbb.
+

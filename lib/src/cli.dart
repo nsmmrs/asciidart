@@ -2,6 +2,7 @@
 library;
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
@@ -11,7 +12,7 @@ import 'commands/check.dart';
 import 'commands/coverage.dart';
 import 'fuzz/loop.dart';
 import 'fuzz/oracles.dart';
-import 'oracle/asciidart_runner.dart';
+import 'oracle/ptome_runner.dart';
 import 'oracle/dart_coverage.dart';
 import 'fuzz/triage.dart';
 import 'gen/generator.dart';
@@ -86,6 +87,14 @@ final class RegenCommand extends Command<int> {
         '  differs from its reference without a divergence note: $id',
       );
     }
+    if (report.logOnly.isNotEmpty) {
+      stdout.writeln(
+        '  ${report.logOnly.length} with the same output but a different log (triage/log-differences.txt)',
+      );
+      File(p.join(corpus.root, 'triage', 'log-differences.txt'))
+        ..parent.createSync(recursive: true)
+        ..writeAsStringSync('${report.logOnly.join('\n')}\n');
+    }
     return (check && report.changed.isNotEmpty) ||
             report.undocumented.isNotEmpty
         ? 1
@@ -108,13 +117,13 @@ final class TestCommand extends Command<int> {
 
   @override
   String get description =>
-      'Convert cases with asciidart and compare with the recorded results.';
+      'Convert cases with ptome and compare with the recorded results.';
 
   @override
   Future<int> run() async {
     final args = argResults!;
     final corpus = Corpus.open();
-    final profile = corpus.profiles.values.whereType<AsciidartProfile>().single;
+    final profile = corpus.profiles.values.whereType<PtomeProfile>().single;
     final cases = corpus.cases(args.rest);
     final report = checkCases(
       cases,
@@ -351,7 +360,7 @@ final class _PoolDartCoverage extends Command<int> {
 
   @override
   String get description =>
-      "Record which pool entries reach asciidart code earlier ones didn't "
+      "Record which pool entries reach ptome code earlier ones didn't "
       '(run with `dart --branch-coverage`).';
 
   @override
@@ -367,14 +376,14 @@ final class _PoolDartCoverage extends Command<int> {
       format,
       PoolEntry.readAll(),
       defaults: corpus.defaults.attributes,
-      profile: corpus.profiles.values.whereType<AsciidartProfile>().single,
+      profile: corpus.profiles.values.whereType<PtomeProfile>().single,
       first: [
         for (final id in first)
           if (id.endsWith('#${format.name}'))
             id.substring(0, id.lastIndexOf('#')),
       ],
     );
-    stdout.writeln('asciidart ${format.name}: $result');
+    stdout.writeln('ptome ${format.name}: $result');
     return 0;
   }
 }
@@ -583,6 +592,7 @@ final class CoverageCommand extends Command<int> {
     final cases = corpus.cases(args.rest);
     var failed = false;
     final lostOut = StringBuffer();
+    final eligible = eligibleUnion(corpus);
     for (final profile in corpus.profiles.values.whereType<RubyProfile>()) {
       if (names.isNotEmpty && !names.contains(profile.name)) continue;
       final result = await measureCases(
@@ -607,6 +617,29 @@ final class CoverageCommand extends Command<int> {
         lostOut.writeln('# ${profile.name}');
         lost.forEach(lostOut.writeln);
       }
+      if (eligible[profile.name] case final union?) {
+        final withLoad = Uint8List.fromList(union);
+        for (final l in result.universe.loadTimeLines) {
+          withLoad[l] = 1;
+        }
+        for (final b in result.universe.loadTimeBranches) {
+          withLoad[result.lineCount + b] = 1;
+        }
+        final (el, eb) = result.count(withLoad);
+        final missed = [
+          for (var e = 0; e < union.length; e++)
+            if (union[e] == 1 &&
+                result.cases[e] == 0 &&
+                !result.excluded.contains(e))
+              result.element(e),
+        ];
+        stdout.writeln(
+          '  eligible pool (agreeing, no Ruby-only options): lines ${pct(el, l)}, branches ${pct(eb, b)}; '
+          '${missed.length} of its elements the cases miss',
+        );
+        lostOut.writeln('# ${profile.name} eligible');
+        missed.forEach(lostOut.writeln);
+      }
       final unreached = result.unreached();
       stdout.writeln(
         '  ${result.excluded.length} excluded, ${unreached.length} neither reached nor excluded',
@@ -622,6 +655,13 @@ final class CoverageCommand extends Command<int> {
 /// `ascii_docs oracles`: runs the fuzzer's invariants over every recorded
 /// output, which must pass them (apart from known upstream bugs).
 final class OraclesCommand extends Command<int> {
+  OraclesCommand() {
+    argParser.addFlag(
+      'update',
+      help: 'Accept the current hits as the baseline (triage/oracle-baseline.txt).',
+    );
+  }
+
   @override
   String get name => 'oracles';
 
@@ -633,6 +673,7 @@ final class OraclesCommand extends Command<int> {
   Future<int> run() async {
     final corpus = Corpus.open();
     final counts = <String, int>{};
+    final hits = <String>[];
     var checked = 0;
     for (final c in corpus.cases(argResults!.rest)) {
       for (final MapEntry(key: format, value: profiles) in c.expected.entries) {
@@ -651,20 +692,40 @@ final class OraclesCommand extends Command<int> {
           )) {
             final key = '${f.kind} [$profile] ${format.name}';
             counts[key] = (counts[key] ?? 0) + 1;
-            stdout.writeln('${c.id}#${format.name} [$profile]: $f');
+            hits.add('${c.id}#${format.name} [$profile]: ${f.kind}');
           }
         }
       }
     }
-    stdout.writeln('$checked outputs checked');
+    // Hits already reviewed (upstream behavior both implementations share,
+    // or known bugs) are listed in the baseline; only new ones fail.
+    final baselineFile = File(
+      p.join(corpus.root, 'triage', 'oracle-baseline.txt'),
+    );
+    if (argResults!.flag('update')) {
+      baselineFile
+        ..parent.createSync(recursive: true)
+        ..writeAsStringSync('${(hits..sort()).join('\n')}\n');
+    }
+    final baseline = baselineFile.existsSync()
+        ? baselineFile.readAsLinesSync().toSet()
+        : <String>{};
+    final fresh = [
+      for (final h in hits)
+        if (!baseline.contains(h)) h,
+    ];
+    stdout.writeln(
+      '$checked outputs checked, ${hits.length} hits, ${fresh.length} not in the baseline',
+    );
     for (final MapEntry(:key, :value) in counts.entries) {
       stdout.writeln('  $value  $key');
     }
-    return counts.isEmpty ? 0 : 1;
+    fresh.forEach(stdout.writeln);
+    return fresh.isEmpty ? 0 : 1;
   }
 }
 
-/// `ascii_docs dart-coverage`: what the committed cases reach in asciidart
+/// `ascii_docs dart-coverage`: what the committed cases reach in ptome
 /// (run with `dart --branch-coverage`).
 final class DartCoverageCommand extends Command<int> {
   DartCoverageCommand() {
@@ -684,28 +745,26 @@ final class DartCoverageCommand extends Command<int> {
 
   @override
   String get description =>
-      "What the cases reach in asciidart's code (run with `dart --branch-coverage`).";
+      "What the cases reach in ptome's code (run with `dart --branch-coverage`).";
 
   @override
   Future<int> run() async {
     final args = argResults!;
     final corpus = Corpus.open();
-    final profile = corpus.profiles.values.whereType<AsciidartProfile>().single;
+    final profile = corpus.profiles.values.whereType<PtomeProfile>().single;
     final coverage = await DartCoverage.connect();
     final cases = corpus.cases(args.rest);
     final watch = Stopwatch()..start();
     var conversions = 0;
     for (final c in cases) {
       for (final format in c.formats) {
-        convertWithAsciidart(c.conversion(format, profile));
+        convertWithPtome(c.conversion(format, profile));
         conversions++;
       }
     }
     final converted = watch.elapsedMilliseconds;
     final hit = await coverage.hits();
-    final excludedFile = File(
-      p.join(corpus.root, 'exclusions', 'asciidart.txt'),
-    );
+    final excludedFile = File(p.join(corpus.root, 'exclusions', 'ptome.txt'));
     final excluded = excludedFile.existsSync()
         ? {
             for (final l in excludedFile.readAsLinesSync())
@@ -729,7 +788,7 @@ final class DartCoverageCommand extends Command<int> {
     final hitCalls = calls.where(hit.contains).length;
     final hitBranches = branches.where(hit.contains).length;
     stdout.writeln(
-      'asciidart: ${cases.length} cases, $conversions conversions in $converted ms; '
+      'ptome: ${cases.length} cases, $conversions conversions in $converted ms; '
       'coverage points ${pct(hitCalls, calls.length)} ($hitCalls/${calls.length}), '
       'branch points ${pct(hitBranches, branches.length)} ($hitBranches/${branches.length}); '
       '${excluded.length} excluded, ${unreached.length} unreached'

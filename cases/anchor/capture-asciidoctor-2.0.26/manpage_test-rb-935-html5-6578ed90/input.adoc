@@ -1,0 +1,17 @@
+= ywxpcfj (1)
+Pcnshz Slgf
+:doctype: manpage
+:ljv tzzkwt: Ywxpcfj 1.2.3
+
+== SLGF
+ywxpcfj - wyau ijuny
+
+== SYNOPSIS
+*ywxpcfj* [_CECMTD_]... _CZIT_...
+
+== VVTNBGZZNOA
+To oca rcig ztqgrof, uzx <<xphri-8-atmw>>.
+
+.Xphri 8-Atmw
+[#xphri-8-atmw]
+image::signs-point-to-yes.jpg[]

@@ -82,6 +82,23 @@ module TrackIncludes
 end
 Asciidoctor::PreprocessorReader.prepend TrackIncludes
 
+# Other files a conversion reads (docinfo, stylesheets, data-uri images,
+# SVGs, CSV data): recorded too, while a conversion runs.
+TRACKING = [false]
+module TrackReads
+  %i(read binread readlines open).each do |name|
+    define_method name do |path, *args, **kwargs, &block|
+      if TRACKING[0] && ::String === path && !path.start_with?(LIB_DIR) && (::File.file? path)
+        INCLUDED << ::File.expand_path(path)
+      end
+      super(path, *args, **kwargs, &block)
+    end
+  end
+end
+LIB_DIR = File.join(ROOT, 'lib')
+DATA_DIR = File.join(ROOT, 'data')
+File.singleton_class.prepend TrackReads
+
 def lib_file? path
   path.start_with?(LIB) && path.end_with?('.rb')
 end
@@ -128,7 +145,8 @@ def reached result
 end
 
 SEVERITIES = { Logger::DEBUG => 'debug', Logger::INFO => 'info', Logger::WARN => 'warning',
-               Logger::ERROR => 'error', Logger::FATAL => 'fatal' }.freeze
+               Logger::ERROR => 'error', Logger::FATAL => 'fatal',
+               DEBUG: 'debug', INFO: 'info', WARN: 'warning', ERROR: 'error', FATAL: 'fatal' }.freeze
 
 def log_entry message
   entry = { severity: SEVERITIES[message[:severity]] || message[:severity].to_s.downcase }
@@ -148,6 +166,7 @@ end
 def convert request
   INCLUDED.clear
   logger = Asciidoctor::MemoryLogger.new
+  logger.level = Logger::DEBUG # everything, as ptome reports it (MemoryLogger defaults to WARN)
   Asciidoctor::LoggerManager.logger = logger
   opts = {
     safe: (request['safe'] || 'safe').to_sym,
@@ -163,9 +182,12 @@ def convert request
   opts.delete :to_dir
   opts[:doctype] = request['doctype'] if request['doctype']
   opts[:base_dir] = request['base_dir'] if request['base_dir']
+  TRACKING[0] = true
   output = Asciidoctor.convert request['input'], opts
+  INCLUDED.reject! {|path| path.start_with? DATA_DIR }
   [output, logger.messages.map {|m| log_entry m }]
 ensure
+  TRACKING[0] = false
   Asciidoctor::LoggerManager.logger = nil
 end
 

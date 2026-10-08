@@ -1,0 +1,13 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-2.0.26/api_test.rb:1364.1"
+formats = ["epub3"]
+
+[options]
+input = "./input.adoc"
+safe = "server"
+standalone = true
+
+[attributes]
+"allow-uri-read" = ""
+"stylesdir" = "http://127.0.0.1:9876/fixtures"
+"stylesheet" = "custom.css"

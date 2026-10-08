@@ -1,0 +1,18 @@
+--
+--
+.An open ozmxq
+--
+--
+[#open.example]
+--
+--
+[abstract]
+.Xmtovqeg mzwbi is xmtovqeg
+--
+Kpze is an xmtovqeg rfiir ozmxq.
+Azf kutbg vofi it rfxkfy sffoh?
+--
+
+// .xmtovqeg-keqi-id-pob-tlga
+[abstract, id="open", role="example"]
+--

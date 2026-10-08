@@ -1,10 +1,10 @@
-// Every case converts with asciidart to what the asciidart profile recorded.
+// Every case converts with ptome to what the ptome profile recorded.
 import 'package:ascii_docs/ascii_docs.dart';
 import 'package:test/test.dart';
 
 void main() {
   final corpus = Corpus.open();
-  final profile = corpus.profiles.values.whereType<AsciidartProfile>().single;
+  final profile = corpus.profiles.values.whereType<PtomeProfile>().single;
   for (final c in corpus.cases()) {
     group(c.id, () {
       for (final format in c.formats) {
@@ -14,7 +14,7 @@ void main() {
             report.failures.map((f) => '${f.testId}\n${f.detail}'),
             isEmpty,
           );
-          expect(report.passed, 1, reason: 'no asciidart expectation recorded');
+          expect(report.passed, 1, reason: 'no ptome expectation recorded');
         });
       }
     });

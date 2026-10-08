@@ -1,5 +1,5 @@
 /// One conversion of one document to one format, and its result: the unit
-/// every engine (Ruby workers, asciidart in-process) runs.
+/// every engine (Ruby workers, ptome in-process) runs.
 library;
 
 /// The output formats a case can name.
@@ -67,12 +67,12 @@ final class Conversion {
   final Map<String, String> attributes;
 
   /// Other Asciidoctor API options, passed through to Ruby engines as they
-  /// are (captured test inputs); asciidart ignores them.
+  /// are (captured test inputs); ptome ignores them.
   final Map<String, Object?> extra;
 
   Map<String, Object?> toJson() => {
     'id': id,
-    'input': input,
+    'input': wellFormed(input),
     'backend': format.name,
     'base_dir': baseDir,
     'doctype': ?doctype,
@@ -178,4 +178,31 @@ final class CaseCoverage {
 
   final List<int> lines;
   final List<int> branches;
+}
+
+/// [text] with lone UTF-16 surrogates replaced by U+FFFD (they can't be
+/// encoded as UTF-8, which every engine reads).
+String wellFormed(String text) {
+  StringBuffer? out;
+  for (var i = 0; i < text.length; i++) {
+    final unit = text.codeUnitAt(i);
+    final high = unit >= 0xD800 && unit <= 0xDBFF;
+    final low = unit >= 0xDC00 && unit <= 0xDFFF;
+    if (high && i + 1 < text.length) {
+      final next = text.codeUnitAt(i + 1);
+      if (next >= 0xDC00 && next <= 0xDFFF) {
+        out?.writeCharCode(unit);
+        out?.writeCharCode(next);
+        i++;
+        continue;
+      }
+    }
+    if (high || low) {
+      out ??= StringBuffer(text.substring(0, i));
+      out.write('\uFFFD');
+    } else {
+      out?.writeCharCode(unit);
+    }
+  }
+  return out?.toString() ?? text;
 }

@@ -1,5 +1,5 @@
 description = "asciidoctor#2293: unchanged: repeated continuations climb one level each (upstream's own case). asciidoctor#2293: a list continuation after empty lines attached its block to the outermost list item, whatever the number of empty lines. Each empty line moves up one level from the innermost item, so one empty line attaches to the parent of the innermost item."
 source = "bugfix:asciidoctor#2293"
 features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/2293 (asciidart benchmark/PARITY.md)"
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/2293 (ptome benchmark/PARITY.md)"
 formats = ["html5"]

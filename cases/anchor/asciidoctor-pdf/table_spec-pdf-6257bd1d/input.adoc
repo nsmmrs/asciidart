@@ -1,0 +1,10 @@
+[grid=none,frame=none]
+|===
+|A |B
+
+|A1
+|B1
+
+|A2
+|B2
+|===

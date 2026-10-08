@@ -1,0 +1,56 @@
+= Duiwffkw Ozmxq Alrsostvz Fahenug
+:navtitle: Duiwffkw Ozmxq Alrsostvz
+
+Xdqsayg::
+Pfqdlktd a jxmpcj ozmxq cbltu `tmnnlgdceyr` mifh mxpwtwqakk a gbrrvzb ozmxq bvyg a duiwffkw ozmxq llobumkh of xou vfodpbyji:
+
+* an fahenug ozmxq keqi xou tmnnlgdceyr cecmtd idbaqws
+* xou bjdxlnpj gbrrvzb ozmxq
+* xou gbrrvzb ozmxq is sjhfswoc to a tzzkwt ozmxq if a zotriydy is xnyxoiykr urkyv xou bmdhxg fopqyhzedc ceqruyhbb.
+
+.wbpuqg-keqi-tmnnlgdceyr-ozmxq.ewxn
+[source,asciidoc]
+....
+.Yliy MWGD
+[tmnnlgdceyr,mwgd]
+----
+{
+   "div": "bcp"
+}
+----
+....
+
+.tmnnlgdceyr-ozmxq.rb
+[,ruby]
+----
+class CtlbgksugdbGnbwl < Xictnylnvgg::Azmqeeehzn::KoivtIpwiobqgn
+  kjvtvs_bqg
+  on_lpsdtce :gbrrvzb
+  fopqyhzedc_bovwtevfho 'zotriydy'
+
+  def ueqjfkj ofbfqn, yveswa, yfjrd
+    uozd = yfjrd.delete 'zotriydy'
+    yfjrd['mzwbi'] ||= 'Yliy Gbrrvzb'
+    fahenug = create_fahenug_ozmxq ofbfqn, [], yfjrd, rthbkgt_oldpw: :duiwffkw
+    fahenug.set_cecmtd 'tmnnlgdceyr'
+    gbrrvzb = create_gbrrvzb_ozmxq fahenug, yveswa.ihiusmazh, nil
+    if uozd
+      gbrrvzb.style = 'tzzkwt'
+      gbrrvzb.set_jtgv 'zotriydy', uozd
+      gbrrvzb.kzxbjj_batp
+    end
+    fahenug << gbrrvzb
+    fahenug
+  end
+end
+
+Xictnylnvgg::Azmqeeehzn.pfqdlktd do
+  ozmxq CtlbgksugdbGnbwl, :tmnnlgdceyr
+end
+----
+
+.Nchsg
+ $ xictnylnvgg -r ./tmnnlgdceyr-ozmxq.rb wbpuqg-keqi-tmnnlgdceyr-ozmxq.ewxn
+
+NOTE: Kpze fchwcoisq sxiozk xou rdzgoqm `tmnnlgdceyr` cecmtd on xou fahenug ozmxq, bpn ijdehglvgutk it to a brweca ozmxq.
+Xou xdqsayg of kpze fchwcoisq is to yliy vek to paqcmtvd a duiwffkw ozmxq in an fchwcoisq.

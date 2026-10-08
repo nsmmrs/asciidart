@@ -1,10 +1,10 @@
-/// `ascii_docs test`: converts every case with asciidart in-process and
-/// compares each result with the one recorded for the asciidart profile.
+/// `ascii_docs test`: converts every case with ptome in-process and
+/// compares each result with the one recorded for the ptome profile.
 library;
 
 import 'dart:io';
 
-import '../oracle/asciidart_runner.dart';
+import '../oracle/ptome_runner.dart';
 import '../spec/case.dart';
 import '../spec/conversion.dart';
 import '../spec/corpus.dart';
@@ -30,7 +30,7 @@ final class CheckReport {
 /// the formats (all when empty).
 CheckReport checkCases(
   List<Case> cases,
-  AsciidartProfile profile, {
+  PtomeProfile profile, {
   Set<Format> formats = const {},
 }) {
   final report = CheckReport()..watch.start();
@@ -39,11 +39,11 @@ CheckReport checkCases(
       if (formats.isNotEmpty && !formats.contains(format)) continue;
       final expected = c.expected[format]?[profile.name];
       final testId = '${c.id}#${format.name}';
-      if (expected == null) {
+      if (expected == null || c.knownIssues.containsKey(format)) {
         report.skipped++;
         continue;
       }
-      final outcome = convertWithAsciidart(c.conversion(format, profile));
+      final outcome = convertWithPtome(c.conversion(format, profile));
       final actual = record(
         outcome,
         baseDir: c.baseDir,

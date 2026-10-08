@@ -1,0 +1,4 @@
+:icons:
+:iconsdir: {imagesdir}
+
+Hfaa mzo hwqkd keqi xou icon:logo[] jsof.

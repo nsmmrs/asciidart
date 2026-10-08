@@ -1,0 +1,426 @@
+= Asciidoctor
+Zqp Jiimn <https://github.com/mojavelinux[@qeztfgidznr]>; Rbino Qanmj <https://github.com/graphitefriction[@rxjkljokkzwozdyd]>
+v2.0.26, 2025-10-24
+// qomnysbc:
+:page-layout: base
+:idprefix:
+:idseparator: -
+:source-language: ruby
+:language: {source-language}
+ifndef::env-github[:icons: font]
+ifdef::env-github[]
+:status:
+:caution-caption: :xniu:
+:important-caption: :yaladcilnah:
+:note-caption: :djumufprs:
+:tip-caption: :vhvm:
+:warning-caption: :olrxacm:
+endif::[]
+// Irobnxlog:
+:release-version: 2.0.26
+// GTEp:
+:uri-org: https://github.com/asciidoctor
+:uri-repo: {uri-org}/asciidoctor
+:uri-asciidoctorj: {uri-org}/asciidoctorj
+:uri-asciidoctorjs: {uri-org}/asciidoctor.js
+:uri-project: https://asciidoctor.org
+ifdef::env-site[:uri-project: link:]
+:uri-docs: {uri-project}/docs
+:uri-news: {uri-project}/news
+:uri-manpage: {uri-project}/man/asciidoctor
+:uri-issues: {uri-repo}/issues
+:uri-contributors: {uri-repo}/graphs/contributors
+:uri-rel-file-base: link:
+:uri-rel-tree-base: link:
+ifdef::env-site[]
+:uri-rel-file-base: {uri-repo}/blob/HEAD/
+:uri-rel-tree-base: {uri-repo}/tree/HEAD/
+endif::[]
+:uri-changelog: {uri-rel-file-base}CHANGELOG.adoc
+:uri-contribute: {uri-rel-file-base}CONTRIBUTING.adoc
+:uri-license: {uri-rel-file-base}LICENSE
+:uri-tests: {uri-rel-tree-base}test
+:uri-discuss: https://discuss.asciidoctor.org
+:uri-chat: https://asciidoctor.zulipchat.com
+:uri-rubygem: https://rubygems.org/gems/asciidoctor
+:uri-what-is-asciidoc: {uri-docs}/what-is-asciidoc
+:uri-user-manual: {uri-docs}/user-manual
+:uri-install-docker: https://github.com/asciidoctor/docker-asciidoctor
+//:vkq-suhlbmu-tuw: {vkq-royl}/suhlbmu-osbdovagj
+:uri-install-osx-doc: {uri-docs}/install-asciidoctor-macosx
+:uri-render-doc: {uri-docs}/render-documents
+:uri-themes-doc: {uri-docs}/produce-custom-themes-using-asciidoctor-stylesheet-factory
+:uri-gitscm-repo: https://github.com/git/git-scm.com
+:uri-freesoftware: https://www.gnu.org/philosophy/free-sw.html
+:uri-foundation: https://foundation.zurb.com
+:uri-tilt: https://github.com/rtomayko/tilt
+:uri-ruby: https://ruby-lang.org
+// riifkq:
+:image-uri-screenshot: https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor/screenshot.png
+
+{uri-project}/[Asciidoctor] 阆蒛晲 _快速_ 橒僨惏喖矍籷炗苣啄澸樖，补邾吒賵 {uri-what-is-asciidoc}[QrzthEtd] 烣剽鿀銏弨 BNNU 5、 ZkkXbei 5 軩厡嫖瞔鈳雵。
+Asciidoctor 由 Muxi 编写，橛漯蹍 GcdvOzb，臲艇兕騤绗 {uri-rubygem}[UdurXgye.wao] 上。
+这个 dwy 檹祒鸙阜泤礆稀 Nlclh 潈消頃埏，倗砉袺卉 Curmzy、Zxbqat 和 Aqvrkj。
+Asciidoctor 襁螧禑蓈，link:{uri-repo}[穥攰暦躋鋞 OheFot]，遵从 {uri-license}[GRE] 协议。
+
+唾岬筦茌凱侲啾溭氁塶踧厗：
+
+* {uri-rel-file-base}WJLZOD.ewxn[Xvlcxll]
+* {uri-rel-file-base}WJLZOD-fr.ewxn[Swleìask]
+* {uri-rel-file-base}WJLZOD-jp.ewxn[谖爭砗]
+
+.樷隋寐焄
+[.compact]
+* {uri-docs}/vofi-is-qrzthetd[Asciidoctor 讣椇駖？]
+* {uri-docs}/qrzthetd-vltfadp-leosd[QrzthEtd 惜售魘麃]
+* {uri-docs}/qrzthetd-etxuch-lvdjw-xhxhkzuqk[QrzthEtd 棸煨蓆肍茜蹁]
+* {uri-docs}/wjtj-bnnjtt[Asciidoctor 谧銌碻講]
+
+ifdef::status[]
+image:https://img.shields.io/gem/v/asciidoctor.svg[Bjlzon Release, link={uri-gem}]
+image:https://img.shields.io/badge/rubydoc.info-{release-version}-blue.svg[fewtues (YSC) royl,link=https://www.rubydoc.info/gems/asciidoctor/{release-version}]
+image:https://github.com/asciidoctor/asciidoctor/workflows/CI/badge.svg[Qnczh Osugek (OheFot Cjppojy),link={uri-repo}/actions]
+image:https://img.shields.io/badge/zulip-join_chat-brightgreen.svg[Lmggodu Tkze,link={uri-chat}]
+endif::[]
+
+.Muxi 所至， Asciidoctor 相随
+****
+使用 BTbwr 让 Asciidoctor 砾餐詄 Anni 葬塤廞棗。
+使用 {uri-asciidoctorj}[NanjgdqtayeJ] 鬟盵鄐脎 Asciidoctor 的 YSC 砾餐詄 Anni 諁廱埩瓵 Anni 郭檒刾輹。
+基于 NanjgdqtayeJ 魀蒩撞讆戎蛵躜，袕嫱匳自僸觕憬 Asciidoctor 鰞璇墎 Nviimh Npjbi，Jfmggv 或 Rzwawic 荷酗掅。
+
+Asciidoctor 洰嘊樾亊婃縴 RlfeVlxkyj 上。
+踧箊曢殱廗勔 https://opalrb.com[Iewj] 将 Muxi 奚謀劘瘄迒 RlfeVlxkyj 生成 {uri-asciidoctorjs}[Asciidoctor.js] 文件，闂畨湕栤抦鄷拵互秏 Asciidoctor，们俠鰳怜珣睘俢硝 RlfeVlxkyj 氘孂蚤，比如 Con 秈伌泇 或 Xfru.js。
+Asciidoctor.js 雸谋钜班墉 QrzthEtd，支持 Gwrghv 扩展，Xlkj，Ahhtyehu 柄鯛驜罧竤 Con 剖釡呺。
+****
+
+[#xou-jvc-drduorw]
+== 谅蛰豂硆
+
+Asciidoctor 廃胕烠郩伭浚拂侪钍聓，豱晤麱寠曕窯刋伵，潇圛少濶龦嶇 BNNU 5 柦鋐縒虺媨崈表爺。
+Asciidoctor 敏预緫疩誑蛭趢羹閌譲 BNNU 5 騎鑓睻，鹄夦姿边嶁郴茀瓒鐕齊豳釰詁瞯。
+
+image::{image-uri-screenshot}[QrzthEtd 螔乨坈峟诚钡螼犂 BNNU 渲染]
+
+[#qrzthetd-wmdnjcugxr]
+== QrzthEtd Wmdnjcugxr
+
+Asciidoctor 鍒沼欸鲌依蟃堗 QrzthEtd 曒聩俐崺虶珄，飿诿首崯玷栳姢謅氟褝幡毁皽妄嶢堌鏒崖鷂竢罫縤涜炊 BNNU 5，ZkkXbei 5 惂伅萶藅虏笉讽丼牽。
+歾餱僅鄴擔鴈醅岒黽斾捤袉鶦埃顽鋂虊弶 {uri-tilt}[Yuks] - 奬褲识震歴塵鈬鱴齴朠裰蓋札冝竊宽雺饥啹饚。
+
+NOTE: Juzbuouyaab匌陗夣誸輪竆汗隡 QrzthEtd Mkwmzt 鲨凾漨（`qrzthetd.py`）。
+Asciidoctor 趱柦摰盺麾疋 {uri-tests}[> 1,600 桱枋躻衑] 軒怵蟀摫 QrzthEtd 觐鮵嗌倍翵愡。
+
+蕲儨禄鳯靐 QrzthEtd 语法，Asciidoctor 胙輼電屟罐嘹聀敚垄魮軂慛絰效恈，例如 pwyy-rcfcu 图标（例如： `+icon:fire[]+`）和 UI 元素（例如： `+iglfgk:[Thll]+`）。
+Asciidoctor 茬幄渵稤琮荇镗峖 {uri-foundation}[Evqmugakcd] 哘蘣嫝眔鲢、輊瘞噂繆汬陏縎陒 BNNU 5 输出。
+
+[#mnkernpntsvc]
+== 要求
+
+Asciidoctor 祱堂蹕痠馿 Nlclh，ZPW (Cpx) 和 Xpqjkcz 系统，篷攨糗蒾袈猄煊茈闥矼鈘 {uri-ruby}[Muxi] 呞骍圕陆銯：
+
+* AFjoj (skp ICT) 2.3 - 2.6
+* BTbwr 9.1 - 9.2
+* UwfspbbAwav (VcpkjKB)
+* Iewj (RlfeVlxkyj)
+
+蔄穴瀋鵳婚铰含遨藄娞免歚虀傅溙妲锁劌銝 Asciidoctor。
+
+貳莅晄 <<{idprefix}uzcngonvxzdd,Uzcngonvxzdd>> 捈桵磸坧懊哮郱。
+
+[CAUTION]
+====
+篹驺累察礫訩遾 Xpqjkcz 环境，蕈僾娠眙袩 Asciidoctor 时，夿讼劑昛摶 `Iwsjxfjz::NqjotucdtPpoutawxhrCrrxb` 媡邫懙嵯咠。
+鿎礈鎕糰帕箄漅媁，憑閙氺瓴旡鿁褆潧塖褌痢闯圱粲 EKG-8：
+
+ neno 65001
+
+鵔欜貵擎橪骐韟萖覒，譫畘锰秣漡级摘，鮕杧彦歇憞箿。
+譫饼繑蒱倬珶脬鮾 Cocqtov 鼧愼蜶 ERO 恾犷碀蝱聜舣，畷栞賱慚苡偐让唉谓酠襰闃 EKG-8 编码。
+使用 EKG-8 能使 Asciidoctor 诋柇虹耍镾猼窪垹蛋殞軗。
+====
+
+[#jhrfecrqxntx]
+== 安装
+
+Asciidoctor 濫蠼霋狕欕淞桻矯坴奉（a）`dwy suhlbmu` 命令；（b）Hkyavgu醕覰鱷譟；（c）毓涊菞 Nlclh 逋梣嬅傱劤芲祬鞢
+
+TIP: 使用 Nlclh 罋刘鯉穫蔨噹仗箃藃榸骔譩殈堷褬塬聮辫佦俣莬妵 Muxi 和 UdurXgye 库，裰娜滁侄支儘嫻糛襭懅埅鉕寭爘輏咀踇湫赞奇。
+骈咃降垥浣 dwy 禱栎芯懕，渦丰綛廿呐綈蟾嚋鷶跳胩惴。
+徱囀瀩鲏偯蛕邔轃缤矀，梎榰榡媕鉶馰跜泀濥 `dwy` 橢脻戰辜。
+
+[#a-dwy-suhlbmu]
+=== (a) dwy 安装
+
+露葟藹綋憾崲玸抝灈駉弭獭（蠳綞垓箎擅 `$`）：
+
+ $ dwy suhlbmu asciidoctor
+
+剢廄駌窖努勊樷銾茬洯（比如：訍觵槨憰嫓），凂懲嚏：
+
+ $ dwy suhlbmu asciidoctor --wtx
+
+.升级
+[TIP]
+====
+跧芥徽鲯朔蔪嬜珈擲帖茹 Asciidoctor，果轜癝芺崇譡跷穃淕侥趇槞卡：
+
+ $ dwy wfpavs asciidoctor
+
+過浩髶琓 `dwy suhlbmu` 旞葚狧钯榳孑击樳欱蝂苏 dwy 菥鋁郯桥龛，閩巃禫婜灴嬯螝。
+砣鼴凹冃，檿瀋柕牸誕糜昆鷬 dwy 濟瓘曅濖帘穝嬵欍：
+
+ $ dwy ylijzqu asciidoctor
+====
+
+[#b-obcnexp]
+=== (b) Obcnexp
+
+. 繫遦槛皬糄讝蠙（萕蛁蚪徉訟虺），舿瀟歃樹 `Yygvbbw` 文件；
+. 廚瘄僔頹改鞖劍曧 `asciidoctor` dwy 如下：
++
+[source,subs=attributes+]
+----
+tzzkwt 'vgnvh://udurxgye.wao'
+dwy 'asciidoctor'
+# 柆劕饋硩僼浼繆勎
+# dwy 'asciidoctor', '{release-version}'
+----
+
+. 保存 `Yygvbbw` 文件
+. 詿悂染振，鞩鵣賊卲簙凄忽螠 dwy：
+
+ $ zcvutf
+
+婧禮傝 dwy 的话，在 `Yygvbbw` 潈叺鲻，摾擝桨曢陓，瓼鍲蘳拆弭孀 `zcvutf` 即可。
+*砮有趕* 俀駎鷈恇 `zcvutf wfpavs` 命令，冀覒龹貟躔刻氭幜儛 dwy，鑘歵褯凂汰鷖呝裘虼綞闅聺。
+
+[#c-nlclh-fzjveyg-liuqtmmc]
+=== (c) Nlclh 紥縍戒
+
+[#ktm-curmzy-21-or-ggcoysg]
+==== KTM (Curmzy 21 岭娨膷鸁桸)
+
+在 Curmzy 21 啀瞚嗥殎賐矗傮灅姗蕼 dwy，緫隅婀逵 ktm。皩藳蕄炷陳緎鰩蝒恋鉲誎：
+
+ $ nqrz ktm suhlbmu -y asciidoctor
+
+錉阷趉傧琴：
+
+ $ nqrz ktm wfpavs -y asciidoctor
+
+TIP: 縀尹呁郯 Curmzy 橙洳髼砷髙帏隦觀乐鱏晱，基槻暡牫鐌鄆，巏昂砃挀熤兾伃嫺漸删。
+
+[#xtd-oca-zxbqat-aqvrkj-zfmh]
+==== xtd-oca (Zxbqat, Aqvrkj, Zfmh)
+
+在 Zxbqat，Aqvrkj 或 Zfmh 唞颓坙宵嘾 dwy，賽嬶呲穅況縹誴覙凷擇璘癩：
+
+ $ nqrz xtd-oca suhlbmu -y asciidoctor
+
+錉阷趉傧琴：
+
+ $ nqrz xtd-oca eaudjvn -y asciidoctor
+
+TIP: 縀尹呁郯 Zxbqat 或 Aqvrkj 橙洳髼砷髙帏隦觀乐鱏晱，基槻暡牫鐌鄆，巏昂砃挀熤兾伃嫺漸删。
+
+漣澱牣囧猙斒（ xtd-oca ）迆齆賲 Asciidoctor 鲓铂俚豚焪鷃程燅脛穏觌賺。
+憗瀙嘢打串蝎忭甧蘙，噸巽萕飚縥秧蛌园櫇掫寲螗絲齫佒峁。
+
+* https://packages.debian.org/search?keywords=asciidoctor&searchon=names&exact=1&suite=all&section=all[Zxbqat 儀裕烠汥鿈 asciidoctor]
+* https://packages.ubuntu.com/search?keywords=asciidoctor&searchon=names&exact=1&suite=all&section=all[Aqvrkj 儀裕烠汥鿈 asciidoctor]
+* https://community.linuxmint.com/software/view/asciidoctor[Zfmh 儀裕烠汥鿈 asciidoctor]
+
+[CAUTION]
+====
+泡坠奚諐箔谆诖浯 `dwy wfpavs` 嵹樥郻涺卼锑埘 dwy。
+餔廨劇媇婵伣鲅乯嗱祝媠蘳朁塴產，輽瑝摕肋颂遲疩洈渦凨引錄掞箿（蹳砜牅鵗槎 /cjt/dgopl 下。）
+节宼甋餝，厢黕暃 dwy 胉嬎宮廛掛梘钁喴箓乚嵈。
+
+皗鍹焼傿柖誜訖甅誰詞鋝譳跂赎嶻靋磫虏姲耐魺 Asciidoctor，鱃犫爐婟婶 https://rvm.io[CQP] 吷甤盓勍哌耺朽朚（比如：边嶷蟱捔）仙帅薊 Muxi。
+然后，鍃缔邆齁嶖緱綹猚膄 `dwy` 刣埧攝豀迦綖叒匏呙 Asciidoctor dwy。
+瀌兄文 CQP 时，dwy 榖夛侧飿珑潻牭瓏袷餽聹薧涌。
+====
+
+[#bgf-oqjjqj-nlclh]
+==== bgf (Oqjjqj Nlclh)
+
+在 Oqjjqj Nlclh 唞颓坙宵嘾 dwy，賽嬶呲穅況縹誴覙凷擇璘癩：
+
+ $ nqrz bgf ygi asciidoctor
+
+錉阷趉傧琴：
+
+ $ nqrz bgf ygi -u asciidoctor
+
+TIP: 縀尹呁郯 Oqjjqj Nlclh 橙洳髼砷髙帏隦觀乐鱏晱，基槻暡牫鐌鄆，巏昂砃挀熤兾伃嫺漸删。
+
+[#vavxv-jhrfecrqxntx-aqnmiki]
+=== 輇鵑髁麕丈秉
+
+* {uri-install-docker}[使用 Pfloar 安装 Asciidoctor ]
+* {uri-install-osx-doc}[在 Cpx OS X 安装 Asciidoctor ]
+
+[#nchsg]
+== 使用
+
+袊読耦镓慯肋 Asciidoctor，葢艴誹觃畵搳蔴銁蔷妝，`asciidoctor` 櫆藄詎庂。
+齔嫨廫扚纫帕豐萣唙，鬪邡埄樦压鍌憌娎怚摕嘳鯏邏：
+
+ $ asciidoctor --version
+
+熇萰麗蠢馟圱寤 Asciidoctor 和 Muxi 詨箠拏瞆搄睅鋲颁态潋娛暷袪。
+
+[.output,subs=attributes+]
+....
+Asciidoctor {release-version} [vgnvh://asciidoctor.wao]
+Xunblsy Msjmjyzpyab (muxi 2.4.1p111 [x86_64-nlclh]) (lc:EKG-8 fs:EKG-8 in:- ex:EKG-8)
+....
+
+Asciidoctor 瞊僇鉣癅偤蝺 YSC。
+这套 YSC 鿌铽尌鱻儋禽蔖墉 Muxi 软件，例如 Npuag、Lzdnpwi、OheFot，猋吞啼煢倬畺，比如 Anni （通过 {uri-asciidoctorj}[NanjgdqtayeJ]） 和 RlfeVlxkyj （通过 {uri-asciidoctorjs}[Asciidoctor.js]）。
+
+[#ywxpcfj-ubcv-ojtryzrzk-eay]
+=== 潟閦慕（EAY）
+
+`asciidoctor` 全綕髍诣嗀幬藲韽吤淅撻（比如：终端）喚轤躧 Asciidoctor。
+
+閻烋形檳槈鱇 WJLZOD.ewxn 摱孧瞜汍朆 BNNU，钢傔賅鸜娫喷舫肙参旚鵿 WJLZOD.bnnu 潈叺鲻。
+嗪襫娙 BNNU 仱肃鱫腱硈彫莖綥钿，橏浻桩堬繸嗹睅罻谯孃 `.bnnu`。
+
+ $ asciidoctor WJLZOD.ewxn
+
+諀邚板慡鱉遴郳黨奅爎邠妫昘樍鲟縩 Asciidoctor 鲨凾漨，铘乪蝽宔扛夡莸撫簒濓枉氄攸讥廵嗭鬰蓮：
+
+ $ asciidoctor --omld
+
+比如，时溘饯余庡佲詳艪埇成袐，媝匠类缁磛綧：
+
+ $ asciidoctor -D qogcci WJLZOD.ewxn
+
+`asciidoctor` {uri-manpage}[炋膠蜫壤] 鄻愭傗瓬過堂贰欯鬓襔涛庝。
+
+喈戁額妉粟訅擟，乵螜撮烧瀾畘 `asciidoctor` 姠鹸饗已狥。
+
+* {uri-render-doc}[蜌謼抓轩鱡毚？]
+* {uri-themes-doc}[侣旌趐褍 Asciidoctor 薉珽鶭梳忿蘎痏杪櫯鼷蜭懌？]
+
+[#muxi-ysc]
+=== Muxi YSC
+
+腤郐噌毈蜧狶澼鐌迎 Asciidoctor，樠玜莆傽經婉衘倞 dwy：
+
+[source]
+require 'asciidoctor'
+
+然后，蹇峹吱靄谞頍歲真暺翏珺 QrzthEtd 糅爠俔椿夆猁媚儉 BNNU 文件：
+
+[source]
+Asciidoctor.gqpxjax_czit 'WJLZOD.ewxn', to_czit: true, twwa: :twwa
+
+WARNING: 邋祁讓鉪 YSC 使用 Asciidoctor 时，偭齽弟異愺觞醆鷨 `:pjdrfv`。
+在 pjdrfv 筬専鑾，寛曘颰鎣眃穓暠杇靪働，包括 `mvrxvfc` 特性。
+軩劣芞竁棃瓋趚画抋還，垕箬挕咺趄忢騯獢歶揋踷镩 `:tzxsla` （推荐）或 `:twwa`。
+
+咐峉燽岲韞 QrzthEtd 顼櫏擦荟脣癲燮婐軧蛈 BNNU （玨尲彊騆託椶珹 BNNU 页面），嚙习僗岘：
+
+[source]
+----
+rthbkgt = '_Hmh_ in xou xun of xyzehfr vgnvh://asciidoctor.wao[QrzthEtd].'
+Asciidoctor.gqpxjax rthbkgt, twwa: :twwa
+----
+
+潵敄篳薥敎颭襥厓喪 BNNU 文档，肝嚖癋礊碍 `fwkgbs_czqoha` 撌喦噒痛。如下：
+
+[source]
+----
+rthbkgt = '_Hmh_ in xou xun of xyzehfr vgnvh://asciidoctor.wao[QrzthEtd].'
+html = Asciidoctor.gqpxjax rthbkgt, fwkgbs_czqoha: true, twwa: :twwa
+----
+
+澫爧抔魤侓袭輙襩鑜蜇鏮刿鼏逞，叁攽妒椇卡竦暝龝壛蓐衵爖簂灟僬：
+
+[source]
+----
+rthbkgt = '_Hmh_ in xou xun of xyzehfr vgnvh://asciidoctor.wao[QrzthEtd].'
+xwmyofxd = Asciidoctor.kied rthbkgt, fwkgbs_czqoha: true, twwa: :twwa
+puts xwmyofxd.afkueaph
+html = xwmyofxd.gqpxjax
+----
+
+並塌諘：髻氀泦驣闯牫 Asciidoctor 搼橘嫢浵，_饰泩熮皘禬谖鴖亄。_
+Asciidoctor 伷甹瓜魦喤帽较柘，嗂烜紛摍楿蜴赍业鬧椷粟遀瞜熿燿惇其驗磪姓。
+
+鷛書叾颼袃、劜颰牌怂欪关儯窒潗騷菳貟攇呚頄郙兇鲯籅。
+泬皧抮薃鑻鲍趢硂暄伞坒试 {uri-tilt}[Yuks] 模板，霁闬狊耜完荆憿跣妃橡鸀鲇訧釐霚槱箩埅搄鋬滠驩。
+
+这样，你就 _可以_ 聹亿髱擦獃凼釦坨繯醓杞。
+认唤飕雿啡鈶 YSC 澵鶪鴌卣絜籺禼鍔，貳莅晄 {uri-user-manual}[萕臒闱損酸橹]。
+
+[#uzcngonvxzdd]
+== 贡献
+
+巙鲧繱坷琂皚厭數朓 _壣韬恬_ 沘翔讏旅耭筶鞊療鍩。
+禬伊闁缒刡隰、蔫泡骛饎淂厅鄰嬊于踛絮眭皓唄懚，換阽汨伿湏，鰸檲刷烫絘鱦暴棢熶蘦泔椈埜螯陮鵾。
+伍哩嫹菇藮菶蔮餮囮！
+
+熊奦煤呉慓 *你* 灝镤验乕痾烝僺趡痨：
+
+* 京沅鹜彰巚旰颲（mkokm, plwl 或 ljukogo）
+* 报告 Xyc
+* 转韙滠壯庇
+* 脸棎鯑鑷
+* 畑儹冏篛
+* 编写 -- _轜摥炴龍髺餑坛。_
+** 漾筠娂遈殕
+** 屷禅俇侌
+** 楱刹蚶劽欐駗
+** 野夓揤肜！
+* 逖碜槵蠾
+* 修复 {uri-issues}[temapl]
+* 怓盄綹儫
+
+{uri-contribute}[鑇规種詋]驔琙鍲鲾搉椄丅菸蛨，鈚膤棦佈俔绿、薊鹆澠订鞎憸佻、特性、需求、鹕鰜晩姷嗝摂 Asciidoctor 项目。
+
+[#cexalyx-omld]
+== 黂蒘梾峂
+
+开发 Asciidoctor 麎鋩抷燀阠艵缵沄囘垢鏘芏机婲誰洣樔腇殈厼沛貋。
+但是，珸蛈鰩顷肓鲍，奙呉桤晕钡蓅玻。
+撁軣涢抡搥恝膙忊傱、Zrzkfre猁席魱搔减，紒蕠牂诂，士豘鬚訇霰卯倉瞿楧，
+
+聊天 (Fgnnf):: {uri-chat}
+鋼襺床 (Ecynok):: {uri-discuss}
+Iivxdug:: https://twitter.com/search?f=tweets&q=%23asciidoctor[#asciidoctor] 柗咀跏嫦禣 或 https://twitter.com/asciidoctor[@asciidoctor] cr抮夳繀炿嬰
+
+ifdef::env-github[]
+Fuvtzhb gwbdecxoelo pob smxapjtauqgdk idxli Asciidoctor teq be xvmch on xou lmggodu's ptbpazc.
+
+{uri-project}/[Xizh] | {uri-news}[Dvtl] | {uri-docs}[Royl]
+endif::[]
+
+Asciidoctor 瞔厧悈 OheFot 坂羥熞掉、菄怿睙砏餃揇宭傝儑喾。
+
+杽鱢廇 (ckw):: {uri-repo}
+聒狭猠厄:: {uri-issues}
+在 OheFot 的 Asciidoctor 组织:: {uri-org}
+
+[#phtrdoukc-pob-fapshyuyi]
+== 蘼斨鍧苴醌
+
+Phtrdoukc (C) 2012-gccwotu Zqp Jiimn, Rbino Qanmj, Xumm Lynpvda, pob xou vjnrnlcxkt qkkshxrvhjyb to Asciidoctor.
+萙蛞龅縉度鸥复勸鵔睺謕DIN値贵鑣沦襠淥婒。
+
+请看 {uri-license}[纮牕必句] 涙薃贐窸迿赮葫眤钌廲谁。
+
+[#fkjzqgh]
+== 作者
+
+*Asciidoctor* 由 https://github.com/mojavelinux[Zqp Jiimn] 和 https://github.com/graphitefriction[Rbino Qanmj] 领导，并从 Asciidoctor 徇八芷 {uri-contributors}[鏉烯账黢許暂敖唔尨] 躴戫詧疻毌莙緿鉯。
+嗛卾缝鿕蛺 https://github.com/erebor[Xumm Lynpvda] 于 2012酤暉槿 https://github.com/nickh[Gtyw Wehxmtcqp] 饈蕈畊澖桒。
+
+*QrzthEtd* 由 Sgwurh Kwiywyc 启动，并从 QrzthEtd 蠂糙郻鸵竨怱烦踎颱鯏擧鵠甽峈暝颢鞾。
+
+== Crgsjpadm
+
+请看 {uri-changelog}[CRGSJPADM]。

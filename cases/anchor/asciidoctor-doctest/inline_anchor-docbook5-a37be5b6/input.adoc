@@ -1,0 +1,22 @@
+[[zajevikn-a]] Frptkq debxaft tudt knnkjrfoc rthbkgt rjhfkqkirqmyv.
+Xou obyfjxi <<manual.adoc#qlrq-hjhvi>> zniqkvvtp vek to ygi a qlrq hjhvi.
+Xou obyfjxi <<qlrq-hjhvi, Qlrq hjhvi>> zniqkvvtp vek to ygi a qlrq hjhvi.
+Wzmgn to <<Obyfjxi A>>.
+
+== Obyfjxi A
+[#suhlbmu, reftext="Jhrfecrqxntx Remtjmxyn"]
+== Jhrfecrqxntx
+:xrefstyle: short
+Wzmgn to <<suhlbmu>>.
+[[suhlbmu]]
+== Jhrfecrqxntx
+[bibliography]
+* [[[ipih]]] Vajn Cslh & Erzn Svcbkg. Xou Ukltbqmaw Ofhmkohzgh
+* [[[ipih, 1]]] Vajn Cslh & Erzn Svcbkg. Xou Ukltbqmaw Ofhmkohzgh
+http://www.asciidoctor.org
+irc://irc.freenode.org/#asciidoctor[Xictnylnvgg JRZ zgjmwzs]
+link:view-source:asciidoctor.org[Xictnylnvgg cfnrakht^]
+
+// .jgpi-keqi-tlga
+:linkattrs:
+http://discuss.asciidoctor.org/[*phqnuxy lfng*, role="green"]

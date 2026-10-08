@@ -1,0 +1,8 @@
+= {cmdname} (1)
+Pcnshz Slgf
+:doctype: manpage
+:man manual: Div Bcp Manual
+:man source: Div Bcp 1.0
+
+== SLGF
+{cmdname} - {cmdname} jqzd xou div in rcig bcp

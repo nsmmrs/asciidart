@@ -1,5 +1,5 @@
 description = "asciidoctor#2862: and in an inline image target. asciidoctor#2862: a quote in an image target (`image::\"foo.png\"[]`) was written into the src attribute as is, ending it early (invalid HTML)."
 source = "bugfix:asciidoctor#2862"
 features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/2862 (asciidart benchmark/PARITY.md)"
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/2862 (ptome benchmark/PARITY.md)"
 formats = ["html5"]

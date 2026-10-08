@@ -5,6 +5,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
@@ -22,13 +23,14 @@ import '../spec/conversion.dart';
 import '../spec/corpus.dart';
 import '../spec/profile.dart';
 import 'oracle.dart';
+import 'placeholder.dart';
 
-/// The formats whose conversions Ruby measures (and asciidart must match).
+/// The formats whose conversions Ruby measures (and ptome must match).
 const rubyFormats = [Format.html5, Format.docbook5, Format.manpage];
 
-/// The formats only asciidart converts here; their candidates are verified
+/// The formats only ptome converts here; their candidates are verified
 /// through the document's html5 conversion.
-const asciidartFormats = [Format.xhtml5, Format.pdf, Format.epub3];
+const ptomeFormats = [Format.xhtml5, Format.pdf, Format.epub3];
 
 final class AnchorReport {
   int candidates = 0;
@@ -40,17 +42,18 @@ final class AnchorReport {
   final Map<String, List<String>> residue = {};
 }
 
-/// Chooses the anchor conversions: those whose Ruby main and asciidart
-/// outputs agree (for asciidart-only formats: whose html5 outputs agree),
+/// Chooses the anchor conversions: those whose Ruby main and ptome
+/// outputs agree (for ptome-only formats: whose html5 outputs agree),
 /// from entries without Ruby-only options, covering what they all cover.
 (CoverProblem, List<int>) chooseAnchors(
   Corpus corpus,
   Map<String, PoolEntry> entries, {
   void Function(String)? log,
+  Map<String, (int, int)>? ranges,
 }) {
   final ruby = corpus.profiles.values.whereType<RubyProfile>().toList();
-  final asciidart = corpus.profiles.values.whereType<AsciidartProfile>().single;
-  final reference = asciidart.compareTo!;
+  final ptome = corpus.profiles.values.whereType<PtomeProfile>().single;
+  final reference = ptome.compareTo!;
   final measurements = <String, ProfileMeasurements>{};
   for (final profile in ruby) {
     final files = {
@@ -61,13 +64,12 @@ final class AnchorReport {
     final universe = files.values.first.universe!;
     measurements[profile.name] = ProfileMeasurements(profile, universe, files);
   }
-  final asciidartHashes = {
+  final ptomeHashes = {
     for (final format in rubyFormats)
-      format: MeasureFile.read(measurePath(asciidart.name, format))
-          .measurements,
+      format: MeasureFile.read(measurePath(ptome.name, format)).measurements,
   };
   bool agrees(String id, Format format) {
-    final mine = asciidartHashes[format]?[id];
+    final mine = ptomeHashes[format]?[id];
     final theirs = measurements[reference]?.files[format]?.measurements[id];
     return mine?.hash != null && mine!.hash == theirs?.hash;
   }
@@ -77,10 +79,10 @@ final class AnchorReport {
     return entry != null && entry.extra.isEmpty;
   }
 
-  // asciidart elements by name across the formats' marginal files.
+  // ptome elements by name across the formats' marginal files.
   final dartNames = <String, int>{};
   final dartSets = <String, List<int>>{};
-  for (final format in [...rubyFormats, ...asciidartFormats]) {
+  for (final format in [...rubyFormats, ...ptomeFormats]) {
     final file = File(dartCoveragePath(format));
     if (!file.existsSync()) continue;
     final records = <Map<String, Object?>>[];
@@ -131,6 +133,11 @@ final class AnchorReport {
     if (!eligible(id) || !agrees(id, proxy)) continue;
     problem.add(key, value.map((e) => e + offset));
   }
+  // Where each Ruby profile's elements sit in the problem: (offset, size).
+  ranges?.addAll({
+    for (final pm in measurements.values)
+      pm.profile.name: (offsets[pm.profile.name]!, pm.size),
+  });
   final chosen = greedyCover(problem);
   log?.call(
     'anchor cover: ${chosen.length} of ${problem.ids.length} eligible conversions',
@@ -154,15 +161,11 @@ Future<AnchorReport> buildAnchors(
   final work = [for (final i in chosen) problem.ids[i]];
   if (limit != null && work.length > limit) work.length = limit;
   final ruby = corpus.profiles.values.whereType<RubyProfile>().toList();
-  final asciidart = corpus.profiles.values.whereType<AsciidartProfile>().single;
+  final ptome = corpus.profiles.values.whereType<PtomeProfile>().single;
   final map = WordMap();
   var next = 0;
   Future<void> lane() async {
-    final oracle = await AnchorOracle.start(
-      ruby,
-      asciidart,
-      repoRoot: corpus.root,
-    );
+    final oracle = await AnchorOracle.start(ruby, ptome, repoRoot: corpus.root);
     try {
       while (next < work.length) {
         final key = work[next++];
@@ -179,7 +182,7 @@ Future<AnchorReport> buildAnchors(
             format,
             map: map,
             reduce: reduce,
-            reference: asciidart.compareTo!,
+            reference: ptome.compareTo!,
             log: log,
           );
           switch (result) {
@@ -220,7 +223,7 @@ Future<Object> _anchor(
   required String reference,
   void Function(String)? log,
 }) async {
-  // asciidart-only formats are checked through the document's html5.
+  // ptome-only formats are checked through the document's html5.
   final checked = rubyFormats.contains(format) ? format : Format.html5;
   final defaults = corpus.defaults.attributes;
   Conversion conversion(String input, String baseDir) => Conversion(
@@ -250,7 +253,7 @@ Future<Object> _anchor(
 
   var input = original;
   if (reduce && checked == format) {
-    // Ruby coverage alone guides the cut (asciidart agreement is checked
+    // Ruby coverage alone guides the cut (ptome agreement is checked
     // once, after); past the budget the smallest passing document so far
     // is kept.
     final clock = Stopwatch()..start();
@@ -258,7 +261,7 @@ Future<Object> _anchor(
       if (clock.elapsed > reduceBudget) return false;
       final probe = await oracle.probe(
         conversion(candidate.join('\n'), entry.baseDir),
-        asciidart: false,
+        ptome: false,
       );
       return probe.covers(target);
     });
@@ -309,19 +312,34 @@ Future<Object> _anchor(
       ..parent.createSync(recursive: true)
       ..writeAsStringSync(text);
     for (final path in includes) {
+      final target = File(p.join(stage, p.relative(path, from: root)))
+        ..parent.createSync(recursive: true);
+      if (placeholderImage(path) case final bytes?) {
+        target.writeAsBytesSync(bytes);
+        continue;
+      }
       final source = _read(path);
+      final extension = p.extension(path).toLowerCase();
       final isDoc = const {
         '.adoc',
         '.asciidoc',
         '.asc',
         '.ad',
         '.txt',
-      }.contains(p.extension(path));
-      File(p.join(stage, p.relative(path, from: root)))
-        ..parent.createSync(recursive: true)
-        ..writeAsStringSync(
-          isDoc ? sanitizer.sanitize(source) : sanitizer.sanitizeCode(source),
-        );
+      }.contains(extension);
+      final isMarkup = const {
+        '.svg',
+        '.html',
+        '.htm',
+        '.xml',
+      }.contains(extension);
+      target.writeAsStringSync(
+        isDoc
+            ? sanitizer.sanitize(source)
+            : isMarkup
+            ? sanitizer.sanitizeMarkup(source)
+            : sanitizer.sanitizeCode(source),
+      );
     }
     final probe = await oracle.probe(conversion(text, stagedBase));
     final ok =
@@ -426,4 +444,17 @@ String _caseToml(
       '\n[attributes]\n${[for (final MapEntry(:key, :value) in entry.attributes.entries) '${q(key)} = ${q(value)}'].join('\n')}',
     '',
   ].join('\n');
+}
+
+/// Per Ruby profile, the elements some eligible anchor candidate reaches
+/// (what the anchors can be expected to keep).
+Map<String, Uint8List> eligibleUnion(Corpus corpus) {
+  final entries = {for (final e in PoolEntry.readAll()) e.id: e};
+  final ranges = <String, (int, int)>{};
+  final (problem, _) = chooseAnchors(corpus, entries, ranges: ranges);
+  final reachable = problem.reachable();
+  return {
+    for (final MapEntry(key: name, value: (offset, size)) in ranges.entries)
+      name: Uint8List.sublistView(reachable, offset, offset + size),
+  };
 }

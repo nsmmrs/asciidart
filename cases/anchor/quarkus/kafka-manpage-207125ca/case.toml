@@ -1,0 +1,12 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:quarkus/docs/src/main/asciidoc/kafka.adoc"
+formats = ["manpage"]
+# Original words left in place (replacing them changed the conversion).
+kept-words = ["add", "addextension", "adding", "addition", "additional", "assertequals", "assertionerror", "assertions", "assign", "assigned", "assignment", "associated", "attribute", "attributes", "auto", "autodetection", "autodetects", "automatic", "automatically", "been", "before", "enabling", "end", "endif", "entry", "entryset", "expression", "extended", "extension", "extensions", "failing", "ids", "ifdef", "ifndef", "ignore", "ignoring", "subject", "submitted", "subs", "subscribe", "subscribed", "unless", "unlike", "unprocessed", "unsynced", "until", "update", "upstream", "upstreams", "usage", "use", "used"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

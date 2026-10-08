@@ -1,9 +1,9 @@
-/// asciidart's coverage over the pool: entries run one after another in
+/// ptome's coverage over the pool: entries run one after another in
 /// this isolate, and each is credited with the elements it reached first
 /// (marginal sets; `--first` entries run first, so the rest are credited
 /// only with what those leave uncovered).
 ///
-/// `$ASCII_DOCS_CACHE/pool/measure/asciidart/<format>.cov.jsonl`: one
+/// `$ASCII_DOCS_CACHE/pool/measure/ptome/<format>.cov.jsonl`: one
 /// `{"id", "us", "first"?, "new": [...]}` per entry that reached something
 /// new (and every first entry), then `{"universe": [...], "hit": n}`.
 library;
@@ -13,7 +13,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../oracle/asciidart_runner.dart';
+import '../oracle/ptome_runner.dart';
 import '../oracle/dart_coverage.dart';
 import '../spec/conversion.dart';
 import '../spec/profile.dart';
@@ -22,7 +22,7 @@ import 'measure.dart';
 import 'source.dart';
 
 String dartCoveragePath(Format format) =>
-    p.join(poolDir, 'measure', 'asciidart', '${format.name}.cov.jsonl');
+    p.join(poolDir, 'measure', 'ptome', '${format.name}.cov.jsonl');
 
 /// Runs [entries] (those in [first] first, then the rest cheapest first);
 /// returns a summary line.
@@ -30,7 +30,7 @@ Future<String> measureDartCoverage(
   Format format,
   List<PoolEntry> entries, {
   required Map<String, String> defaults,
-  required AsciidartProfile profile,
+  required PtomeProfile profile,
   List<String> first = const [],
 }) async {
   if (!DartCoverage.branchCoverage) {
@@ -65,7 +65,7 @@ Future<String> measureDartCoverage(
   final watch = Stopwatch()..start();
   for (final id in order) {
     final entry = byId[id]!;
-    final outcome = convertWithAsciidart(
+    final outcome = convertWithPtome(
       entry.conversion(format, defaults: {...profile.attributes, ...defaults}),
     );
     final now = await coverage.hits();

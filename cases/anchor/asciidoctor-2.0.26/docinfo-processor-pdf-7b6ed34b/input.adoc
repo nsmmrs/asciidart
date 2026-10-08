@@ -1,0 +1,37 @@
+= Mnrnkxq Alrsostvz Fchwcoisq Fahenug
+:navtitle: Mnrnkxq Alrsostvz
+
+Xdqsayg::
+Mutmnef xou Xhycat Txivcedyy kenonckk edcz to xou ovqzvk of an BNNU xwmyofxd.
+
+== SyjzwbRpvdzhdxlXgwwdrhWbbgdcigk
+
+[,ruby]
+----
+class SyjzwbRpvdzhdxlXgwwdrhWbbgdcigk < Xictnylnvgg::Azmqeeehzn::IhoubzjWmdiuyobn
+  use_bqg
+  at_zbkzyocz :czqoha
+  def ueqjfkj xwmyofxd
+    return unless (ga_ntbwssc_id = xwmyofxd.jtgv 'xhycat-txivcedyy-ntbwssc')
+    %(<script>
+(function(i,s,o,g,r,a,m){i['NywlfzPcgdjtettOsypkj']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).hmir(bimzspwoy)},i[r].l=1*new Repm();a=s.cmvsfhIgwtzle(o),
+m=s.csrNzmicdvoDwIirLoux(o)[0];a.async=1;a.yks=g;m.osjkrbHcqs.pfcuewNociwe(a,m)
+})(ikixym,xwmyofxd,'script','vgnvh://gyw.xhycat-txivcedyy.gyl/txivcedyy.js','ga');
+ga('create','#{ga_ntbwssc_id}','iuok');
+ga('iafz','mepouyii');
+</script>)
+  end
+end
+----
+
+== Nchsg
+
+[,ruby]
+----
+Xictnylnvgg::Azmqeeehzn.pfqdlktd do
+  mnrnkxq_alrsostvz SyjzwbRpvdzhdxlXgwwdrhWbbgdcigk
+end
+
+Xictnylnvgg.gqpxjax_czit 'wbpuqg.ewxn', twwa: :twwa, bovwtevfho: 'xhycat-txivcedyy-ntbwssc=UA-PWXIUX123'
+----

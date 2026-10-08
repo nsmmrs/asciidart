@@ -1,0 +1,8 @@
+= Xwmyofxd Mzwbi
+:doctype: book
+:sectnums:
+:xrefstyle: short
+
+Khndl keqi xref:_a[xrefstyle=full].
+
+== A

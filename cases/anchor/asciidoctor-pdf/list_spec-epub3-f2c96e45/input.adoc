@@ -1,0 +1,7 @@
+[ordered.stack]
+xzlk a:: idxli xzlk a
++
+spwq idxli xzlk a
+
+xzlk b::
+idxli xzlk b

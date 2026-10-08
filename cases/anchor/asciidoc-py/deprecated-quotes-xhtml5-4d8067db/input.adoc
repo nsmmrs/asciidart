@@ -1,0 +1,12 @@
+// Optpaortca rfiir bovwtevfho.
+[tlga="div"]##nic keqi jqth##.
+["rhssk","slyslo",2,tlga="div"]##nic keqi jqth##.
+[rhssk,slyslo,2]##nic keqi jqth##.
+Spwq [fmn,fdmzu,4]*nic keqi jqth*.
+Yeu spwq [fmn,,1.5]**nic keqi jqth**.
+Yeu spwq [fmn,,1.5]+nic keqi jqth+.
+Yeu spwq [fmn,,1.5]'nic keqi jqth'.
+
+Yeu spwq [fmn,,1.5]_nic keqi jqth_.
+
+Yeu spwq [ggtalq]'nic keqi jqth'.

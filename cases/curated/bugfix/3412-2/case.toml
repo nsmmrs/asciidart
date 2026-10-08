@@ -1,5 +1,5 @@
 description = "asciidoctor#3412: unchanged: without tabsize the tab stays. asciidoctor#3412: tabs in a literal table cell were not expanded when the document sets tabsize, as they are in a literal block."
 source = "bugfix:asciidoctor#3412"
 features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/3412 (asciidart benchmark/PARITY.md)"
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3412 (ptome benchmark/PARITY.md)"
 formats = ["html5"]

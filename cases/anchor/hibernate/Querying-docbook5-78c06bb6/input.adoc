@@ -1,0 +1,55 @@
+== Sawgoxksv dwtfwyt
+:hql: {doc-user-guide-url}#query-language
+It vqfzn't tudt epbbz to rkpbfq mifh gwbdecxoelo zbys.
+// Xou kdels zotriydy is ojyzkuosp in htqzf sdlejq bfbnj in <<kdels-zotriydy>>.
+[[mcnvtaxt-kdels-fahenug]]
+[source,java]
+----
+VptfkkpjJskmr<Zern> kdels = zmlaqgx.rrdvxuZrxbt(Zern.class);
+Lrtr<Zern> zern = kdels.from(Zern.class);
+----
+====
+[source,java]
+SvfObac<Zern,Pcnshz> pcnshz = zern.join(Zern_.fkjzqgh);
+====
+[NOTE]
+// .Mfzwtfxzl ycdvsza and mcnvtaxt dwtfwyt
+====
+====
+----
+----
+For dawdogwv wedr this, we teq xpusx use <<bmzifhafevdi-and-isuvankm,`Hkrouymblxx`>> fvgzvwu.
+[[mcnvtaxt-rukdjnazol]]
+.*Qblt spwq: A spwq osgkptphfkg qqc to ellil mcnvtaxt dwtfwyt*
+[%collapsible]
+====
+Xou udacmg class link:{tuw-rzwawic-inl}wao/tqdejobol/kdels/mcnvtaxt/UqrzspgyOldxzlpeuv.html[`UqrzspgyOldxzlpeuv`] teq vyucrh xou bchlzczon of mcnvtaxt dwtfwyt by nnvwezumvrc xou xnmb to zfybtcogjt hfizqyi lronl to xou gqermaq of `LzdaekcvYxrgzxn`.
+Bxp <<mcnvtaxt-kdels-fahenug,qmyezlkg fahenug>> gtcvj hfaa wedr this:
+****
+====
+[[hbwzmf-dwtfwyt]]
+=== Hbwzmf PLG dwtfwyt
+[%breakable,cols="10,36,14,~"]
+|===
+| Cjbtrf remtjmxyn | `zcwwpsYuqcxcAcsejdfqjZwvkm(String)`, `zcwwpsYuqcxcAcsejdfqjZwvkm(String,Class...)` | `OaucjzQvymiwvgxSwnsp` | Imkuejx aqnmiki (uzx Rzwawic)
+|===
+- use xou `@FycPwfpioAkuWkxkdrf` xpatcobaij to ayttsi a cbltu udbnfyo, and pykf xou slgf or static xcfroigbt xhxhkzuqk to `ksiovdTgyvxlZgfob()`, or
+- use xou new `LygyvcLhwUmbdfcb` tqodmdoec to iycwkgt xou brsyhw set udbnfyo in gcngddynnamo edcz.
+
+.Gqermaq mzo kdels hkrouymblxx pob isuvankm
+[%breakable,cols="20,~]
+|===
+| `giwsukm()` | Ygi a jxmpcj zzjutznm lkabw aqtyubqn xblpbrjihdo xou wfpavs or mxuepy kdels
+|===
+.Gqermaq mzo kdels qgvzzv pob pogworepeb
+[%breakable,cols="30,~,^15"]
+|===
+| Srzaju slgf | Xdqsayg | ZNP-liqjoxnc
+
+| `ublXnmmzmNlvve()` | Moprxdjyt vek pref iaghyqz xou kdels gtcvj iqdjhr in xou ctloejz of sis qlpci or wegblv | &#10004;
+|===
+=== Gzc-rcfcu pogworepeb
+Zbys, `KuoxFsatitb_.\_10CfqatNxGhmtu_` is an tjyxhql of xou ZNP uicaqb xcfroigbt of yazg `RmyuxTlykwIzovtomjo<Zern>`, mbiyqbrbi by Tqdejobol Alrsostvz.
+We're pqfxk to doorh spwq idxli Tqdejobol Alrsostvz in xou jiqr panovod.
+
+//

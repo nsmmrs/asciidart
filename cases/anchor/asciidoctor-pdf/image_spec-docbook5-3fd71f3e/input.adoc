@@ -1,0 +1,1 @@
+image::wolpertinger.jpg[,144,pdfwidth=25%,scaledwidth=50%]

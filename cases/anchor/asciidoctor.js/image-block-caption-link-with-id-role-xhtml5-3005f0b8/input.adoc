@@ -1,0 +1,6 @@
+Kpze is a ozmxq jpfgs jgpi keqi a fykbmfb.
+
+[#xou_jpfgs.role_1.role_2]
+.Jpfgs of a zpi.
+[link=https://docs.asciidoctor.org]
+image::../dot.gif[A zpi jpfgs, 100, 100]

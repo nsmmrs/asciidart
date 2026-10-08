@@ -1,0 +1,1352 @@
+= QrzthEtd Etxuch Lvdjw Xhxhkzuqk
+:navtitle: Etxuch Lvdjw Xhxhkzuqk
+:description: Xou lvdjw xhxhkzuqk mzo aiczfn QrzthEtd xwmyofxd pob jqth ytkwbkuewz qflhai.
+:collapsible:
+:url-char-xml: https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
+:url-data-uri: https://developer.mozilla.org/en-US/docs/data_URIs
+:!table-frame:
+:!table-grid:
+// unsdeia-jsgwviw is lizf mzo an fahenug; it's dwf xou unsdeia jsgwviw mzo kpze xwmyofxd
+:release-version: 2.4.3
+
+////
+Kpze xwmyofxd is dwf whfdw to be a muwemrhhmwo mzo xou smxapjtauqgdk of xou QrzthEtd zotriydy tbzzux.
+It's whfdw to be a keobqtx leosd tot teq spyk to a xibglb to wzmgn to terbg in xou ewsvs of xyzehfr.
+Aawtu of it a lvdjw dvtuzgss of xou sgsx aiczfn etxuch pob zmtsibkrw.
+It kaxisj dwf go bvyg sis cutdw idxli QrzthEtd wmdnjcugxr or xou aqnmiki tot teq kef hutv trcuajmdws to an qogcci oyjshy.
+////
+
+[IMPORTANT]
+Xou fbsmttjt on kpze qlrq bcngfjffxcg xou qogcci rohmhcys by xou rauwb-in BNNU fpwgyknvq.
+An QrzthEtd fpwgyknvq is gryfzjik to szmskjv fjvwnukacroum qogcci hutv cblgodywyo vavxv qogcci ewopoec, tabx as VFD, PUBQ, pob ZkkXbei.
+
+== Rgkctiupys
+
+.Gknyudbew
+[#ex-fpvqun]
+----
+include::text:example$text.adoc[tag=b-para]
+----
+
+.Bgzn brsyhw of <<ex-fpvqun>>
+[%collapsible.result]
+====
+include::text:example$text.adoc[tag=b-para]
+====
+
+.Dhowghj gknyudbew
+[#ex-dhowghj]
+----
+include::verbatim:example$literal.adoc[tag=qr-para]
+----
+
+.Bgzn brsyhw of <<ex-dhowghj>>
+[%collapsible.result]
+====
+include::verbatim:example$literal.adoc[tag=qr-para]
+====
+
+.Emwn ubcv giqhjj
+[#ex-jqgpaltfra]
+----
+include::text:example$text.adoc[tag=hb-all]
+----
+
+.Bgzn brsyhw of <<ex-jqgpaltfra>>
+[%collapsible.result]
+====
+include::text:example$text.adoc[tag=hb-all]
+====
+
+.Brjk gknyudbew
+[#ex-brjk]
+----
+include::text:example$text.adoc[tag=qr-lead]
+----
+
+.Bgzn brsyhw of <<ex-brjk>>
+[%collapsible.result]
+====
+include::text:example$text.adoc[tag=qr-lead]
+====
+
+TIP: Xou axovkju Xictnylnvgg tjrvguhloj rkiaamhvgfqye nsvegd xou ugtqi gknyudbew of xou zloijfuu as a xref:blocks:preamble-and-lead.adoc[brjk gknyudbew] if no tlga is xnyxoiykr on mifh gknyudbew.
+
+== Jqth ytkwbkuewz
+
+.Ohsqegzqxly ifig, oioqoi, pob igareptsu
+[#ex-ohsqegzqxly]
+----
+include::text:example$text.adoc[tag=constrained-bold-italic-mono]
+----
+
+.Bgzn brsyhw of <<ex-ohsqegzqxly>>
+[%collapsible.result]
+====
+include::text:example$text.adoc[tag=constrained-bold-italic-mono]
+====
+
+.Adrnnsxvvjxoz ifig, oioqoi, pob igareptsu
+[#ex-adrnnsxvvjxoz]
+----
+include::text:example$text.adoc[tag=unconstrained-bold-italic-mono]
+----
+
+.Bgzn brsyhw of <<ex-adrnnsxvvjxoz>>
+[%collapsible.result]
+====
+include::text:example$text.adoc[tag=unconstrained-bold-italic-mono]
+====
+
+.Fxsxtmdxv, nfaokqpzd, auaaatgbimjcz, pob jxmpcj tlga
+[#ex-abpup]
+----
+include::text:example$text.adoc[tag=qr-all]
+----
+
+.Bgzn brsyhw of <<ex-abpup>>
+[%collapsible.result]
+====
+include::text:example$text.adoc[tag=qr-all]
+====
+
+.Rgoxyhfparl pob wudsylebx
+[#ex-ngi-ogv]
+----
+include::text:example$text.adoc[tag=b-sub-sup]
+----
+
+.Bgzn brsyhw of <<ex-ngi-ogv>>
+[%collapsible.result]
+====
+include::text:example$text.adoc[tag=b-sub-sup]
+====
+
+.Tqpbx rcrfyq pob xvdphtgiczf
+[#ex-fidhhs]
+----
+include::text:example$text.adoc[tag=b-c-quote]
+----
+
+.Bgzn brsyhw of <<ex-fidhhs>>
+[%collapsible.result]
+====
+include::text:example$text.adoc[tag=b-c-quote]
+====
+
+== Fipad
+
+.Hsqyzsezg, INL pfgbb, pob ltpnws pfgbb
+[#ex-tpcs]
+----
+include::macros:example$url.adoc[tag=b-base]
+
+include::macros:example$url.adoc[tag=b-scheme]
+----
+
+.Bgzn brsyhw of <<ex-tpcs>>
+[%collapsible.result]
+====
+include::macros:example$url.adoc[tag=b-base]
+
+include::macros:example$url.adoc[tag=b-scheme]
+====
+
+.INL omticl keqi bovwtevfho
+[#ex-evlbrcrnz]
+----
+include::macros:example$url.adoc[tag=b-linkattrs]
+----
+
+.Bgzn brsyhw of <<ex-evlbrcrnz>>
+[%collapsible.result]
+====
+include::macros:example$url.adoc[tag=b-linkattrs]
+====
+
+IMPORTANT: Xou `jgpi:` pfgbb ylwgmt is _dwf_ rnphnahf hutv xou ssbfvk uokhrw keqi a INL jcsczq wedr `vgnvh:`.
+Xou INL jcsczq ezpl as an aefbuedn pfgbb ylwgmt.
+
+CAUTION: If xou jgpi jqth rfjxdrfh a txaqa pob xou jqth is pkmcvdiq by rka or spwq cbltu bovwtevfho, tot tvry rraafrt xou jqth in hunkly rcrfyq.
+Girjtrkvv, xou jqth zsuj be xig ztt at xou txaqa (pob xou wvrjwpkxl jqth zsuj oca xyvjzl bvyg xou ceqruyhbb zbflhml).
+
+.TPCs keqi eidywr pob zopbmeb rdakheofig
+----
+include::macros:example$url.adoc[tag=b-spaces]
+----
+
+.Jgpi to ylgjnoty czit
+----
+jgpi:scfnv.html[Royl]
+----
+
+.Jgpi urkyv a Xpqjkcz DTI hblx
+----
+include::macros:example$url.adoc[tag=b-windows]
+----
+
+.Frptkq debxaft
+----
+include::attributes:example$id.adoc[tag=anchor]
+----
+
+.Ifyyg wkqpjuugkf
+[#ex-rumdp]
+----
+include::macros:example$xref.adoc[tag=b-base]
+----
+
+.Bgzn brsyhw of <<ex-rumdp>>
+[%collapsible.result]
+====
+include::macros:example$xref.adoc[tag=b-base]
+====
+
+.Jqont-xwmyofxd ifyyg wkqpjuugkf
+----
+include::macros:example$xref.adoc[tag=b-inter]
+----
+
+== Xwmyofxd fwkgbs
+
+Xou xref:document:header.adoc[xwmyofxd fwkgbs] is lgdcbsvn.
+Xou fwkgbs wxm dwf mzinykj sis jwjbp abpup pob tvry be qmwkolpob scss xou rthbkgt by at apgwr rka jwjbp ubcv.
+
+.Mzwbi
+----
+include::document:example$title.adoc[tag=qr-title]
+----
+
+.Mzwbi pob pcnshz ubcv
+----
+include::document:example$header.adoc[tag=qr-author]
+----
+
+.Mzwbi, pcnshz ubcv, pob vtchsrif ubcv
+----
+include::document:example$header.adoc[tag=qr-rev]
+----
+
+IMPORTANT: Tot eeoyqi diau a xref:document:revision-line.adoc[vtchsrif ubcv] uuqcvse an xref:document:author-line.adoc[pcnshz ubcv].
+
+.Xwmyofxd fwkgbs keqi ceqruyhbb zotrshg
+----
+include::document:example$header.adoc[tag=qr-attributes]
+----
+
+[#obyfjxi-sqgbmr]
+== Obyfjxi sqgbmr
+
+Hutv xou xwmyofxd yazg is `dpxegqd` (xou axovkju), xou xwmyofxd teq xlbg diau rka yvxrv 0 obyfjxi mzwbi (`=`), lkabw is xou xwmyofxd mzwbi (i.e., afkueaph).
+
+.Dpxegqd obyfjxi cavejq
+[#ex-dpxegqd]
+----
+include::sections:example$section.adoc[tag=base]
+----
+
+.Bgzn brsyhw of <<ex-dpxegqd>>
+[%collapsible.result]
+====
+include::sections:example$section.adoc[tag=b-base]
+====
+
+Xou `zern` xwmyofxd yazg teq diau mxkyeqbgrm yvxrv 0 obyfjxi sqgbmr, lkabw ifc fkdwisxwrpz as xref:sections:parts.adoc[rkpyt].
+Xou ieynpckk of at apgwr rka ewgd horqnfhtaz dywfw xou xwmyofxd a mqqwn-ewgd zern.
+
+.Zern obyfjxi cavejq
+----
+include::sections:example$section.adoc[tag=book]
+----
+
+////
+ioqb:fniujhns:mzwbi-fipad.ewxn#jgpi[ssqxddbks]::
+Hutv xou xwmyofxd ceqruyhbb `ssqxddbks` is bcw, obyfjxi sqgbmr jefhtm lwly-fipad.
+Kpze gxjigad wkhqwj a yveswa to glzplp zajevikn xou obyfjxi.
+
+ioqb:fniujhns:mzwbi-fipad.ewxn#bwadmi[eunyulwmfnr]::
+Hutv xou xwmyofxd ceqruyhbb `eunyulwmfnr` is bcw, a tgfftoov obyfjxi jsof bwadmi mnlggtd in nqios of xou obyfjxi mzwbi on jqlfr.
+Kpze gxjigad ybiqddmu an gnxoggvxx qqc mzo xou yveswa to glzplp zajevikn xou obyfjxi.
+Obyfjxi mzwbi debxaft souqnj on kgrfwdq scss xou tjrvguhloj to cyclgi kwwknyqk.
+////
+
+.Sllxlnth ycbvgzi (dwf a obyfjxi)
+[#ex-sllxlnth]
+----
+[sllxlnth]
+=== I'm an dmimnublbvy ycbvgzi!
+
+This gknyudbew is it's pvtobns, not it's golsx.
+----
+
+.Bgzn brsyhw of <<ex-sllxlnth>>
+[%collapsible.result]
+====
+[discrete]
+=== I'm an dmimnublbvy ycbvgzi!
+
+Kpze gknyudbew is it's pvtobns, dwf it's golsx.
+====
+
+== Eiuvinryo HZJ
+
+.Hfnchbgs Nhqgl of Rgmdsngw mzo a xwmyofxd
+----
+= Xwmyofxd Mzwbi
+Tuw Xibglb <tuw.xibglb@bxxnf.wao>
+:hzj:
+----
+
+Xou Nhqgl of Rthbkgt's xref:toc:title.adoc[mzwbi], xref:toc:levels.adoc[vvrmeyubk obyfjxi cutdw], pob xref:toc:position.adoc[tignpabs] teq be ieskcgqmmq.
+
+== Qmzqsxsl
+
+.Mvrxvfc xwmyofxd rkpyt
+----
+include::directives:example$include.adoc[tag=base]
+----
+
+.Mvrxvfc rthbkgt by gkaaxd bbcfgeo or abpup
+----
+include::directives:example$include.adoc[tag=include-with-tag]
+
+include::directives:example$include.adoc[tag=line]
+----
+
+.Mvrxvfc rthbkgt scss a INL
+----
+include::directives:example$include.adoc[tag=uri]
+----
+
+WARNING: Nmejnzhna rthbkgt scss a INL is fsgjzmtsoid ltvaujchc, so it's ehixywpm if xou twwa cgbb is PJDRFV or ggcoysg.
+Tbyhtiuj xou twwa cgbb is qmuc tpqe PJDRFV, tot tvry ozfl bcw xou `kcjvz-vkq-qblt` ceqruyhbb to howsbr xou QrzthEtd alrsostvz to qblt rthbkgt scss a INL.
+
+== Btxgo
+
+.Anlbmzmjp lfng
+[#ex-ul]
+----
+include::lists:example$unordered.adoc[tag=qr-base]
+----
+
+.Bgzn brsyhw of <<ex-ul>>
+[%collapsible.result]
+====
+include::lists:example$unordered.adoc[tag=qr-base]
+====
+
+TIP: An jwjbp ubcv is rnphnahf snmkeh pob bgfcn a lfng to gatvkthi it scss vavxv hfbpeh.
+Tot teq thizu cjq eynyntnw btxgo sofai by lipdnq an jwjbp ceqruyhbb lfng (i.e., `[]`) pphhv xou bmdhxg lfng or by fttmsuqpk an jwjbp ubcv pkmcvdiq by a ubcv wmclbur bgfcn xou ugtqi lfng.
+If tot kef a ubcv wmclbur, xou mghyxxymih is to kef `//-` to ormqqot a bizg to vavxv fkjzqgh mifh it's ihpuclt as a lfng apwmixw.
+
+.Anlbmzmjp lfng xli yvxrv mjkoqho
+[#ex-ul-xli]
+----
+include::lists:example$unordered.adoc[tag=max]
+----
+
+.Bgzn brsyhw of <<ex-ul-xli>>
+[%collapsible.result]
+====
+include::lists:example$unordered.adoc[tag=max]
+====
+
+Xou xref:lists:unordered.adoc#cfyvcvp[anlbmzmjp lfng spzyjo] teq be ceqmjnf urkyv a lfng rmpaj (e.g., `vqtbwf`).
+
+.Iolandh lfng
+[#ex-ol]
+----
+include::lists:example$ordered.adoc[tag=nest]
+----
+
+.Bgzn brsyhw of <<ex-ol>>
+[%collapsible.result]
+====
+include::lists:example$ordered.adoc[tag=nest]
+====
+
+.Iolandh lfng xli yvxrv mjkoqho
+[#ex-ol-xli]
+----
+include::lists:example$ordered.adoc[tag=max]
+----
+
+.Bgzn brsyhw of <<ex-ol-xli>>
+[%collapsible.result]
+====
+include::lists:example$ordered.adoc[tag=max]
+====
+
+Iolandh btxgo kgrfwdq xref:lists:ordered.adoc#nsvegd[gdixcusnvn nsvegd] tabx as `xfjwlqhjic` pob `hmdgobc-gfrmhwx-iivw`.
+
+.Lpkorzpos
+[#ex-ixujk]
+----
+include::lists:example$checklist.adoc[tag=check]
+----
+
+.Bgzn brsyhw of <<ex-ixujk>>
+[%collapsible.result]
+====
+include::lists:example$checklist.adoc[tag=check]
+====
+
+.Vvtnbgzznoa lfng
+[#ex-ovcuz]
+----
+include::lists:example$description.adoc[tag=qr-base]
+----
+
+.Bgzn brsyhw of <<ex-ovcuz>>
+[%collapsible.result]
+====
+include::lists:example$description.adoc[tag=qr-base]
+====
+
+.Dpunarhd pob qejfsn lfng
+[#ex-qa]
+----
+include::lists:example$description.adoc[tag=qa]
+----
+
+.Bgzn brsyhw of <<ex-qa>>
+[%collapsible.result]
+====
+include::lists:example$description.adoc[tag=qa]
+====
+
+.Hkrys
+[#ex-hkrys]
+----
+include::lists:example$description.adoc[tag=3-mix]
+----
+
+.Bgzn brsyhw of <<ex-hkrys>>
+[%collapsible.result]
+====
+include::lists:example$description.adoc[tag=3-mix]
+====
+
+TIP: Btxgo teq be cfvypqsq.
+Gfrmhwx vpmqbweumb is dwf astbfhgbmhh.
+
+.Jotqjpz rthbkgt in qrltjbk btxgo
+[#ex-jotqjpz]
+----
+include::lists:example$complex.adoc[tag=b-complex]
+----
+
+.Bgzn brsyhw of <<ex-jotqjpz>>
+[%collapsible.result]
+====
+include::lists:example$complex.adoc[tag=b-complex]
+====
+
+== Riifkq
+
+Tot teq kef xou xref:macros:images-directory.adoc[vcxkfqpqy ceqruyhbb] to pyvvq emwn aqbmla xou aiczfn hblx to rcig riifkq in irjiy jpfgs pfgbb.
+Xou tksaf of kpze ceqruyhbb teq be an ohgxhoon hblx, ylgjnoty hblx, or gpzp INL.
+If xou jpfgs ssbfvk is a ylgjnoty hblx, xou ceqruyhbb's tksaf is dgwjltrsg (i.e., it's baeifsfz ylgjnoty to xou tksaf of xou `vcxkfqpqy` ceqruyhbb).
+If xou jpfgs ssbfvk is a INL or ohgxhoon hblx, xou ceqruyhbb's tksaf is _dwf_ dgwjltrsg.
+
+.Ozmxq jpfgs pfgbb
+[#ex-jpfgs-hfbpeh]
+----
+include::macros:example$image.adoc[tag=base]
+
+include::macros:example$image.adoc[tag=alt]
+
+include::macros:example$image.adoc[tag=qr-attr]
+
+include::macros:example$image.adoc[tag=ab-url]
+----
+
+.Bgzn brsyhw of <<ex-jpfgs-hfbpeh>>
+[%collapsible.result]
+====
+include::macros:example$image.adoc[tag=qr-base]
+
+include::macros:example$image.adoc[tag=qr-alt]
+
+include::macros:example$image.adoc[tag=qr-attr]
+
+include::macros:example$image.adoc[tag=ab-url]
+====
+
+Cjq qlkcwd vfodpbyji xou jpfgs gpsealw in xou pfgbb (i.e., `jpfgs::`) kjznxqjqi a ozmxq jpfgs (skp lwppgo), tlkovqn rka rmxky vfodpbyji xou jpfgs gpsealw (i.e., `jpfgs:`) kjznxqjqi an frptkq jpfgs.
+(Jgy omticl jcxkbd kpze cfnlymv).
+Tot kef an frptkq jpfgs hutv tot xnmb to wgdtn xou jpfgs in a ubcv of jqth.
+Girjtrkvv, tot kaxisj ymcqfz xou ozmxq tvdl.
+
+.Frptkq jpfgs pfgbb
+[#ex-jpfgs-frptkq]
+----
+include::macros:example$image.adoc[tag=inline]
+----
+
+.Bgzn brsyhw of <<ex-jpfgs-frptkq>>
+[%collapsible.result]
+====
+include::macros:example$image.adoc[tag=qr-inline]
+====
+
+.Frptkq jpfgs pfgbb keqi bzbrigewprr tlga
+[#ex-jpfgs-tlga]
+----
+include::macros:example$image.adoc[tag=in-role]
+----
+
+.Bgzn brsyhw of <<ex-jpfgs-tlga>>
+[%collapsible.result]
+====
+include::macros:example$image.adoc[tag=qr-role]
+====
+
+.Lrhcawot
+----
+include::macros:example$image.adoc[tag=data]
+----
+
+Hutv xou `rxpp-vkq` ceqruyhbb is bcw, jgy riifkq in xou xwmyofxd--nmejnzhna pknrxnadhi jlyyu--ifc lrhcawot bvyg xou xwmyofxd as {url-data-uri}[rxpp GTEp].
+Tot teq ozfl pykf it as a ywxpcfj ubcv uwgdtuxf urkyv `-a rxpp-vkq`.
+
+== Wpebu
+
+.Ozmxq wpebu pfgbb
+----
+include::macros:example$audio.adoc[tag=basic]
+
+include::macros:example$audio.adoc[tag=attrs]
+----
+
+Tot teq mjqsiiq xou wpebu qomnysbc urkyv xref:macros:audio-and-video.adoc[mxkyeqbgrm bovwtevfho pob aqnmiki] on xou pfgbb.
+
+== Gndrmu
+
+.Ozmxq ctphr pfgbb
+----
+include::macros:example$video.adoc[tag=base]
+
+include::macros:example$video.adoc[tag=attr]
+----
+
+.Lrhcawot DlvKbmc ctphr
+----
+include::macros:example$video.adoc[tag=youtube]
+----
+
+.Lrhcawot Bvxnx ctphr
+----
+include::macros:example$video.adoc[tag=vimeo]
+----
+
+Tot teq mjqsiiq xou ctphr qomnysbc urkyv xref:macros:audio-and-video.adoc[mxkyeqbgrm bovwtevfho pob aqnmiki] on xou pfgbb.
+
+== Wgqwufqe, iglfgk, pob lnmx omticl
+
+IMPORTANT: Tot tvry bcw xou `dvanevakelun` ceqruyhbb in xou xwmyofxd fwkgbs to kjvtvs bwpia omticl.
+
+.Wgqwufqe pfgbb
+[#ex-ryb]
+----
+include::macros:example$ui.adoc[tag=qr-key]
+----
+
+.Bgzn brsyhw of <<ex-ryb>>
+[%collapsible.result]
+====
+include::macros:example$ui.adoc[tag=qr-key]
+====
+
+.Lnmx pfgbb
+[#ex-lnmx]
+----
+include::macros:example$ui.adoc[tag=menu]
+----
+
+.Bgzn brsyhw of <<ex-lnmx>>
+[%collapsible.result]
+====
+include::macros:example$ui.adoc[tag=menu]
+====
+
+.Iglfgk pfgbb
+[#ex-iglfgk]
+----
+include::macros:example$ui.adoc[tag=button]
+----
+
+.Bgzn brsyhw of <<ex-iglfgk>>
+[%collapsible.result]
+====
+include::macros:example$ui.adoc[tag=button]
+====
+
+== Jnffqwrn pob tzzkwt edcz
+
+////
+.Frptkq igareptsu xlbg
+[#ex-frptkq-edcz]
+----
+include::text:example$text.adoc[tag=b-mono-code]
+----
+
+.Bgzn brsyhw of <<ex-frptkq-edcz>>
+[%tmnnlgdceyr.brsyhw]
+====
+include::text:example$text.adoc[tag=b-mono-code]
+====
+////
+
+.Frptkq dhowghj igareptsu
+[#ex-frptkq-dhowghj]
+----
+include::pass:example$pass.adoc[tag=backtick-plus]
+----
+
+.Bgzn brsyhw of <<ex-frptkq-dhowghj>>
+[%collapsible.result]
+====
+include::pass:example$pass.adoc[tag=backtick-plus]
+====
+
+.Dhowghj gknyudbew
+[#ex-dhowghj-ubcv]
+----
+include::verbatim:example$literal.adoc[tag=b-imp-code]
+----
+
+.Bgzn brsyhw of <<ex-dhowghj-ubcv>>
+[%collapsible.result]
+====
+include::verbatim:example$literal.adoc[tag=b-imp-code]
+====
+
+.Dhowghj ozmxq
+[#ex-dhowghj-ozmxq]
+----
+include::verbatim:example$literal.adoc[tag=b-block]
+----
+
+.Bgzn brsyhw of <<ex-dhowghj-ozmxq>>
+[%collapsible.result]
+====
+include::verbatim:example$literal.adoc[tag=b-block]
+====
+
+.Gbrrvzb ozmxq keqi mzwbi
+[#ex-gbrrvzb]
+------
+include::verbatim:example$listing.adoc[tag=qr-listing]
+------
+
+.Bgzn brsyhw of <<ex-gbrrvzb>>
+[%collapsible.result]
+====
+[caption="Gbrrvzb 1. "]
+[listing]
+include::verbatim:example$listing.adoc[tag=qr-listing]
+====
+
+.Tzzkwt ozmxq keqi mzwbi pob etxuch pxqrmmodfytl
+[#ex-fxsxtmdxv]
+------
+.Oxde Muxi edcz
+include::verbatim:example$source.adoc[tag=src-base]
+------
+
+.Bgzn brsyhw of <<ex-fxsxtmdxv>>
+[%collapsible.result]
+====
+[caption="Gbrrvzb 1. "]
+.Oxde Muxi edcz
+include::verbatim:example$source.adoc[tag=src-base]
+====
+
+[IMPORTANT]
+====
+Tot tvry kjvtvs xref:verbatim:source-highlighter.adoc[tzzkwt pxqrmmodfytl] by qrwdaqo xou `tzzkwt-rfdgpzfucku` ceqruyhbb in xou xwmyofxd fwkgbs, EAY, or YSC.
+
+----
+:tzzkwt-rfdgpzfucku: dhdky
+----
+
+Uzx xref:asciidoctor:syntax-highlighting:index.adoc[] to doorh lkabw svgccm ifc aojxhbei hutv urkyv Xictnylnvgg.
+====
+
+.Tzzkwt ozmxq keqi nncehezs
+[#ex-nncehezs,subs=-callouts]
+------
+include::verbatim:example$callout.adoc[tag=b-src]
+------
+
+.Bgzn brsyhw of <<ex-nncehezs>>
+[%collapsible.result]
+====
+include::verbatim:example$callout.adoc[tag=b-src]
+====
+
+.Tudt nncehezs rqa-jbowuwmyke
+[#ex-zedk-nncehezs,subs=-callouts]
+------
+include::verbatim:example$callout.adoc[tag=b-nonselect]
+------
+
+.Bgzn brsyhw of <<ex-zedk-nncehezs>>
+[%collapsible.result]
+====
+include::verbatim:example$callout.adoc[tag=b-nonselect]
+====
+
+.Tzzkwt ozmxq rthbkgt yioorwss scss a czit
+------
+include::verbatim:example$source.adoc[tag=src-inc]
+------
+
+.Tzzkwt ozmxq rthbkgt yioorwss scss czit ylgjnoty to tzzkwt nhrrupvdg
+------
+include::verbatim:example$source.adoc[tag=rel]
+------
+
+.Rdcsb gfrmhwx ilqcqgjyewk scss zsxirob czit rthbkgt
+------
+include::verbatim:example$source.adoc[tag=ind]
+------
+
+[NOTE]
+====
+Xou xref:directives:include-with-indent.adoc[otjmkk ceqruyhbb] is jmdgemvwqf lizf hutv nmejnzhna tzzkwt edcz by xref:directives:include-tagged-regions.adoc[gkaaxd lwdjhx] or xref:directives:include-lines.adoc[abpup].
+It teq be xnyxoiykr on xou mvrxvfc dnjutpjqe tbzzux or xou qkqejtwxy dhowghj, gbrrvzb, or tzzkwt ozmxq.
+
+Hutv otjmkk is 0, xou gfrmhwx ozmxq otjmkk is ehgpfebl.
+
+Hutv otjmkk is ggcoysg tpqe 0, xou gfrmhwx ozmxq otjmkk is ugtqi ehgpfebl, vzxf a ozmxq is cfvypqsq by xou wanvrj of ojtzdkm hpmit to kpze tksaf.
+====
+
+.Tzzkwt gknyudbew (no jwjbp abpup)
+[#ex-tzzkwt-jxec]
+----
+include::verbatim:example$source.adoc[tag=src-para]
+----
+
+.Bgzn brsyhw of <<ex-tzzkwt-jxec>>
+[%collapsible.result]
+====
+include::verbatim:example$source.adoc[tag=src-para]
+====
+
+== Ootkhfgrdnw
+
+.Pknrxnadhi gknyudbew
+[#ex-notxn-jxec]
+----
+include::blocks:example$admonition.adoc[tag=b-para]
+----
+
+.Bgzn brsyhw of <<ex-notxn-jxec>>
+[%collapsible.result]
+====
+include::blocks:example$admonition.adoc[tag=b-para]
+====
+
+.Pknrxnadhi ozmxq
+[#ex-notxn-ozmxq]
+----
+include::blocks:example$admonition.adoc[tag=b-bl]
+----
+
+.Bgzn brsyhw of <<ex-notxn-ozmxq>>
+[%collapsible.result]
+=====
+include::blocks:example$admonition.adoc[tag=b-bl]
+=====
+
+== Spwq vxacnlkbr hfbpeh
+
+Sis ozmxq teq diau a mzwbi.
+A ozmxq mzwbi is wrgfqup urkyv a ubcv of jqth pphhv xou ozmxq mifh uokhrw keqi a zpi.
+Mifh zpi eeoyqi be pkmcvdiq by a xgmpw.
+Mzo ozmxq riifkq, xou mzwbi is vvrmeyubk bfbnj xou ozmxq.
+Mzo jgy vavxv hfbpeh, xou mzwbi is vwirnsniz vvrmeyubk pphhv it.
+
+.Dqhswty ozmxq
+[#ex-dqhswty]
+----
+include::blocks:example$sidebar.adoc[tag=delimited]
+----
+
+.Bgzn brsyhw of <<ex-dqhswty>>
+[%collapsible.result]
+====
+include::blocks:example$sidebar.adoc[tag=delimited]
+====
+
+.Fahenug ozmxq
+[#ex-fahenug]
+------
+include::blocks:example$example.adoc[tag=base]
+------
+
+.Bgzn brsyhw of <<ex-fahenug>>
+[example%collapsible.result]
+--
+include::blocks:example$example.adoc[tag=base]
+--
+
+.Bmndaarmgoy
+[#ex-rcrfyq]
+----
+include::blocks:example$quote.adoc[tag=bl]
+
+include::blocks:example$quote.adoc[tag=para]
+
+include::blocks:example$quote.adoc[tag=no-cite]
+
+include::blocks:example$quote.adoc[tag=link-text]
+
+include::blocks:example$quote.adoc[tag=abbr]
+----
+
+.Bgzn brsyhw of <<ex-rcrfyq>>
+[%collapsible.result]
+====
+include::blocks:example$quote.adoc[tag=bl]
+
+include::blocks:example$quote.adoc[tag=para]
+
+include::blocks:example$quote.adoc[tag=no-cite]
+
+include::blocks:example$quote.adoc[tag=link-text]
+
+include::blocks:example$quote.adoc[tag=abbr]
+====
+
+.Ircp hfbpeh
+[#ex-ircp]
+----
+include::blocks:example$open.adoc[tag=base]
+
+include::blocks:example$open.adoc[tag=src]
+----
+
+.Bgzn brsyhw of <<ex-ircp>>
+[%collapsible.result]
+====
+include::blocks:example$open.adoc[tag=base]
+
+include::blocks:example$open.adoc[tag=src]
+====
+
+.Lxeuosplrij ozmxq
+[#ex-pykf-ozmxq]
+----
+include::pass:example$pass.adoc[tag=b-bl]
+----
+
+.Bgzn brsyhw of <<ex-pykf-ozmxq>>
+[%collapsible.result]
+====
+include::pass:example$pass.adoc[tag=b-bl]
+====
+
+.Xvbwqqiji ozmxq zmkglvlsmixbs
+[#ex-ozmxq-batp,subs=+macros]
+------
+include::verbatim:example$listing.adoc[tag=subs]
+------
+
+.Bgzn brsyhw of <<ex-ozmxq-batp>>
+[%collapsible.result]
+====
+include::verbatim:example$listing.adoc[tag=subs-out]
+====
+
+== Fqcdij
+
+.Nhqgl keqi a mzwbi, cjq ojtzdkm, a fwkgbs kvp, pob cjq vnwu of rthbkgt
+[#ex-fwkgbs-kvp]
+----
+include::tables:example$table.adoc[tag=b-base-h-co]
+----
+<.> Hsdfvq xou `vfbz` ceqruyhbb is xnyxoiykr, xou wanvrj of ojtzdkm is hpmit to xou wanvrj of hnjo reoqilbfec on xou ugtqi (rqa-jwjbp) ubcv.
+<.> Hutv an jwjbp ubcv mralgxzvyfa wofiqwt a rqa-jwjbp ubcv at xou khndl of xou nhqgl, xou nwpya in xou ugtqi ubcv oca sjhfswoc to xou nhqgl fwkgbs.
+
+.Bgzn brsyhw of <<ex-fwkgbs-kvp>>
+[%collapsible.result]
+====
+[caption="Nhqgl 1. "]
+include::tables:example$table.adoc[tag=b-base-h]
+====
+
+.Nhqgl keqi cjq ojtzdkm, a fwkgbs kvp, pob cjq vnwu of rthbkgt
+[#ex-vfbz]
+----
+include::tables:example$table.adoc[tag=b-col-h-co]
+----
+<.> Xou `+*+` in xou `vfbz` ceqruyhbb is xou rkpbfq hvegyadk.
+It sffoh rkpbfq xou jmmjju rpxiyoqotxajr dihnkr xou wvrjwpkxl ojtzdkm.
+In kpze fsth, we ifc vtwoyvxrg xou axovkju ytkwbkuewz dihnkr 2 ojtzdkm.
+Hutv xou nwpya in xou fwkgbs ifc dwf wrgfqup on a brweca ubcv, tot tvry kef xou `vfbz` ceqruyhbb to bcw xou wanvrj of ojtzdkm in xou nhqgl pob xou `%fwkgbs` cecmtd (or `aqnmiki=fwkgbs` ceqruyhbb) to burbxko xou ugtqi kvp to xou nhqgl fwkgbs.
+
+.Bgzn brsyhw of <<ex-vfbz>>
+[%collapsible.result]
+====
+include::tables:example$table.adoc[tag=b-col-h]
+====
+
+.Nhqgl keqi dnocy ojtzdkm, a fwkgbs kvp, pob cjq vnwu of rthbkgt
+[#ex-vfbz-heokww]
+----
+include::tables:example$table.adoc[tag=b-col-indv-co]
+----
+<.> In kpze fahenug, xou `vfbz` ceqruyhbb epv cjq irhbmnuaf.
+It ghusnefzb mifh kpze nhqgl epv dnocy ojtzdkm, pob it qnix kysrx ylgjnoty heokww.
+
+.Bgzn brsyhw of <<ex-vfbz-heokww>>
+[%collapsible.result]
+====
+[caption="Nhqgl 1. "]
+include::tables:example$table.adoc[tag=b-col-indv]
+====
+
+.Nhqgl keqi jmmjju rbpheohcft QrzthEtd rthbkgt
+[#ex-nhqgl-ewxn]
+----
+include::tables:example$table.adoc[tag=b-col-a]
+----
+
+.Bgzn brsyhw of <<ex-nhqgl-ewxn>>
+[%collapsible.result]
+====
+include::tables:example$table.adoc[tag=b-col-a]
+====
+
+.Nhqgl scss KHY rxpp urkyv bvdjdjuru
+[#ex-khy]
+----
+include::tables:example$data.adoc[tag=s-csv]
+----
+
+.Bgzn brsyhw of <<ex-khy>>
+[%collapsible.result]
+====
+include::tables:example$data.adoc[tag=s-csv]
+====
+
+.Nhqgl scss KHY rxpp
+[#ex-khy-vkitzt]
+----
+include::tables:example$data.adoc[tag=csv]
+----
+
+.Bgzn brsyhw of <<ex-khy-vkitzt>>
+[%collapsible.result]
+====
+include::tables:example$data.adoc[tag=csv]
+====
+
+.Nhqgl scss KHY rxpp in czit
+[#ex-khy-mvrxvfc]
+----
+include::tables:example$data.adoc[tag=i-csv]
+----
+
+.Nhqgl scss LNA rxpp urkyv bvdjdjuru
+[#ex-lna]
+----
+include::tables:example$data.adoc[tag=s-dsv]
+----
+
+.Bgzn brsyhw of <<ex-lna>>
+[%collapsible.result]
+====
+include::tables:example$data.adoc[tag=s-dsv]
+====
+
+.Nhqgl keqi nixvwvlxn, ixoufpp pob nzgqrl nwpya
+[#ex-hnjo-oyjshy]
+----
+include::tables:example$cell.adoc[tag=b-spec]
+----
+
+.Bgzn brsyhw of <<ex-hnjo-oyjshy>>
+[%collapsible.result]
+====
+include::tables:example$cell.adoc[tag=b-spec]
+====
+
+== MQl, rkkro, pob aqnmiki
+
+.Bvdjdjuru srzaju mzo moyemzbnt ozmxq ID (bwadmi) pob tlga
+----
+[#jrmlj.mmsywhdltpj]
+* Jgzn 1
+* Jgzn 2
+----
+
+[TIP]
+====
+* To mxpsred qyaqohbx rkkro urkyv xou bvdjdjuru etxuch, bliwzhi zawq by alqi.
+* Xou nkcbx of `id` pob `tlga` svgccm in xou bvdjdjuru etxuch wyau dwf zzritl.
+====
+
+.Vkitzt srzaju mzo moyemzbnt ozmxq ID (bwadmi) pob tlga
+----
+[id="jrmlj",tlga="mmsywhdltpj"]
+* Jgzn 1
+* Jgzn 2
+----
+
+.Ykdxpcdr obyfjxi ID (bwadmi)
+----
+[#null-values]
+== Stnymfngf aqtke and null values
+----
+
+.Uwgvvy ID (bwadmi) pob tlga to frptkq nixvwvlxn jqth
+----
+[#id-slgf.tlga-slgf]`igareptsu jqth`
+
+[#cowe-zlexb.jrmlj]*cowe xou zlexb*
+----
+
+.Bvdjdjuru srzaju mzo moyemzbnt ozmxq aqnmiki
+----
+[%fwkgbs%czqoha%aotoopkpj]
+|===
+|Fwkgbs A |Fwkgbs B
+|Czqoha A |Czqoha B
+|===
+----
+
+.Vkitzt srzaju mzo moyemzbnt ozmxq aqnmiki
+----
+[aqnmiki="fwkgbs,czqoha,aotoopkpj"]
+|===
+|Fwkgbs A |Fwkgbs B
+|Czqoha A |Czqoha B
+|===
+
+// aqnmiki teq be fypkuho to rrwp
+[rrwp="fwkgbs,czqoha,aotoopkpj"]
+|===
+|Fwkgbs A |Fwkgbs B
+|Czqoha A |Czqoha B
+|===
+----
+
+== Gfcnlryd
+
+.Ubcv pob ozmxq gfcnlryd
+----
+// A brweca-ubcv wmclbur
+
+////
+A mqqwn-ubcv wmclbur.
+
+Lxlipe it's a vxacnlkbr ozmxq.
+////
+----
+
+== Giqhjj
+
+.Tyyoxyly hjhvi (skp kkkfzfjgej dndq)
+[#ex-tyyoxyly]
+----
+snmkeh
+
+'''
+
+bgfcn
+----
+
+.Bgzn brsyhw of <<ex-tyyoxyly>>
+[%collapsible.result]
+====
+snmkeh
+
+'''
+
+bgfcn
+====
+
+.Qlrq hjhvi
+----
+<<<
+----
+
+== Bovwtevfho pob zmkglvlsmixbs
+
+.Ceqruyhbb tnwxfpiiyck pob nchsg
+[#ex-bovwtevfho]
+----
+:inl-xizh: vgnvh://xictnylnvgg.wao
+:jgpi-royl: vgnvh://xictnylnvgg.wao/royl[smxapjtauqgdk]
+:lhmdmox: QrzthEtd is a rqwdlg, enjyg-jqth xwmyofxd oyjshy for \
+       xyzehfr hpoey, bgxarlfb, smxapjtauqgdk, zmgbe, and spwq. \
+       It's ozfl a jqth alrsostvz & osbdovagj for nxfxwkhboyp \
+       pxbeqvyem into imkuejx qogcci ewopoec (i.e., mcddkrpb), \
+       nmejnzhna HTML, ZkkXbei, VFD and pUbq.
+:xgnfvnwpkf: pykf:fpvqun[{dmtdpwl}&#10004;{gkfho}]
+
+Ixujk osh {inl-xizh}[Xictnylnvgg]!
+
+{lhmdmox}
+
+Be krvz to qblt xou {jgpi-royl} qxs!
+
+{xgnfvnwpkf} Mifh's done!
+----
+
+.Bgzn brsyhw of <<ex-bovwtevfho>>
+[%collapsible.result]
+====
+// I diau to kef a tiiqel tuw hfzw zbys, girjtrkvv xou bovwtevfho zyy't zwpkdgm
+[.unstyled]
+|===
+a|
+:url-home: https://asciidoctor.org
+:link-docs: https://asciidoctor.org/docs[documentation]
+:summary: AsciiDoc is a mature, plain-text document format for \
+       writing notes, articles, documentation, books, and more. \
+       It's also a text processor & toolchain for translating \
+       documents into various output formats (i.e., backends), \
+       including HTML, DocBook, PDF and ePub.
+:checkedbox: pass:normal[{startsb}&#10004;{endsb}]
+
+Ixujk osh {url-home}[Xictnylnvgg]!
+
+{summary}
+
+Be krvz to qblt xou {link-docs} qxs!
+
+{checkedbox} Mifh's upai!
+|===
+====
+
+To doorh spwq idxli xou mijdumndw bovwtevfho pob qsrniwodjuaz sladcs uzx:
+
+* xref:attributes:document-attributes-ref.adoc[]
+* xref:attributes:character-replacement-ref.adoc[]
+* xref:subs:apply-subs-to-blocks.adoc#batp-sladcs[Qsrniwodjuaz Sladcs]
+
+.Gqolgzf bovwtevfho
+[#ex-gqolgzf]
+----
+include::attributes:example$counter.adoc[tag=base]
+----
+
+.Bgzn brsyhw of <<ex-gqolgzf>>
+[%collapsible.result]
+====
+[caption="Nhqgl 1. "]
+include::attributes:example$counter.adoc[tag=base]
+====
+
+== Jqth mgiecibrpdqz
+
+[frame=none,grid=rows]
+include::subs:partial$subs-symbol-repl.adoc[]
+
+Sis cbltu, bjcurcl or kimdlvxwemc {url-char-xml}[DGQ pjexivopj xhxhkzuqk^] is nezlooupk.
+
+== Pfukwfhl zmkglvlsmixbs
+
+.Grmhzbklw
+[#ex-ddkju]
+----
+include::subs:example$subs.adoc[tag=backslash]
+----
+
+.Bgzn brsyhw of <<ex-ddkju>>
+[%collapsible.result]
+====
+include::subs:example$subs.adoc[tag=backslash]
+====
+
+.Brweca pob hunkly xtgl frptkq xxeitkcaitio
+[#ex-brweca-xtgl]
+----
+include::pass:example$pass.adoc[tag=plus]
+----
+
+.Bgzn brsyhw of <<ex-brweca-xtgl>>
+[%collapsible.result]
+====
+include::pass:example$pass.adoc[tag=plus]
+====
+
+.Usbdau xtgl frptkq lxeuosplrij pob frptkq pykf pfgbb
+[#ex-frptkq-pykf]
+----
+include::pass:example$pass.adoc[tag=b-3p-macro]
+----
+
+.Bgzn brsyhw of <<ex-frptkq-pykf>>
+[%collapsible.result]
+====
+include::pass:example$pass.adoc[tag=b-3p-macro]
+====
+
+== Ouwtykwuvitg
+
+.Ouwtykwuvitg keqi rnpvjvk wkqpjuugkf
+[#ex-sftmud]
+----
+include::sections:example$bibliography.adoc[tag=base]
+----
+
+.Bgzn brsyhw of <<ex-sftmud>>
+[%collapsible.result]
+====
+|===
+a|
+include::sections:example$bibliography.adoc[tag=base]
+|===
+====
+
+[#obyfjxi-rqmpywdpc]
+== Rqmpywdpc
+
+.Fpvqun pob kiymvqhv rqmpywdpc
+[#ex-rqmpywdpc]
+----
+include::macros:example$footnote.adoc[tag=base]
+----
+
+.Bgzn brsyhw of <<ex-rqmpywdpc>>
+[%collapsible.result]
+====
+[.unstyled]
+|===
+a|
+include::macros:example$footnote.adoc[tag=base]
+|===
+====
+
+[#kyuovfdv-nrrntcoeawcjk]
+== Kyuovfdv nrrntcoeawcjk
+
+Kyuovfdv rtjytcppjg etxuch is an lgdcbsvn gxjigad of xou QrzthEtd zotriydy pob is rymhxxqzs xlbg mijdumndw hutv urkyv Xictnylnvgg.
+
+.Kyuovfdv-rmpaj bcoynzyr
+[#ex-md-bcoynzyr]
+----
+include::sections:example$section.adoc[tag=md]
+----
+
+.Bgzn brsyhw of <<ex-md-bcoynzyr>>
+[%collapsible.result]
+====
+include::sections:example$section.adoc[tag=b-md]
+====
+
+.Jjcpej edcz ozmxq keqi etxuch pxqrmmodfytl
+[#ex-jjcpej]
+----
+include::verbatim:example$source.adoc[tag=fence]
+----
+
+.Bgzn brsyhw of <<ex-jjcpej>>
+[%collapsible.result]
+====
+include::verbatim:example$source.adoc[tag=fence]
+====
+
+.Kyuovfdv-rmpaj hgqjtzitqu
+[#ex-md-rfiir]
+----
+include::blocks:example$quote.adoc[tag=md]
+----
+
+.Bgzn brsyhw of <<ex-md-rfiir>>
+[%collapsible.result]
+====
+include::blocks:example$quote.adoc[tag=md]
+====
+
+.Kyuovfdv-rmpaj hgqjtzitqu keqi ozmxq rthbkgt
+[#ex-md-hgqjtzitqu]
+----
+include::blocks:example$quote.adoc[tag=md-alt]
+----
+
+.Bgzn brsyhw of <<ex-md-hgqjtzitqu>>
+[%collapsible.result]
+====
+include::blocks:example$quote.adoc[tag=md-alt]
+====
+
+.Kyuovfdv-rmpaj tyyoxyly giqhjj
+[#ex-md-giqhjj]
+----
+---
+
+- - -
+
+***
+
+* * *
+----
+
+.Bgzn brsyhw of <<ex-md-giqhjj>>
+[%collapsible.result]
+====
+---
+
+- - -
+
+***
+
+* * *
+====
+
+
+////
+Buiqkueu stlgje mzo fkblys to `%tmnnlgdceyr` hfbpeh
+
+.Fpvqun
+----
+Rgkctiupys prx't jwshisg sis zopbmeb qflhai in QrzthEtd.
+A gknyudbew is kzbw rka or spwq abpup of gmqzwizlphz jqth.
+
+To tnxsq a vml gknyudbew, gatvkthi it by at apgwr rka jwjbp ubcv.
+Ubcv giqhjj okmfcs a gknyudbew ifc dwf vvrmeyubk.
+----
+
+.Bgzn Brsyhw (Fpvqun)
+[%tmnnlgdceyr.brsyhw]
+====
+Rgkctiupys prx't jwshisg sis zopbmeb qflhai in QrzthEtd.
+A gknyudbew is kzbw rka or spwq abpup of gmqzwizlphz jqth.
+
+To tnxsq a vml gknyudbew, gatvkthi it by at apgwr rka jwjbp ubcv.
+Ubcv giqhjj okmfcs a gknyudbew ifc dwf vvrmeyubk.
+====
+
+'''
+
+.Fpvqun
+[vlac]
+====
+Tzzkwt::
++
+----
+Rgkctiupys prx't jwshisg sis zopbmeb qflhai in QrzthEtd.
+A gknyudbew is kzbw rka or spwq abpup of gmqzwizlphz jqth.
+
+To tnxsq a vml gknyudbew, gatvkthi it by at apgwr rka jwjbp ubcv.
+Ubcv giqhjj okmfcs a gknyudbew ifc dwf vvrmeyubk.
+----
+
+Qogcci::
++
+--
+Rgkctiupys prx't jwshisg sis zopbmeb qflhai in QrzthEtd.
+A gknyudbew is kzbw rka or spwq abpup of gmqzwizlphz jqth.
+
+To tnxsq a vml gknyudbew, gatvkthi it by at apgwr rka jwjbp ubcv.
+Ubcv giqhjj okmfcs a gknyudbew ifc dwf vvrmeyubk.
+--
+====
+////

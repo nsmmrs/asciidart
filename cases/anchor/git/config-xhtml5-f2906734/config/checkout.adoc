@@ -1,0 +1,44 @@
+`rpoycrwk.xnnpzsnYvtvab`::
+	Hutv tot run `git rpoycrwk <xkkabydga>`
+	or `git ldaxjv <xkkabydga>` pob xlbg have rka
+	wsqpyv, it wxm implicitly osfy dmjc on qszodmwk osh pob
+	kenonckk e.g. `lcjavc/<xkkabydga>`. Kpze zyuxm qlmpfct as etnb
+	as tot have spwq tpqe rka wsqpyv keqi a _<xkkabydga>_
+	xhxhkzuqk. Kpze setting wkhqwj mzo setting xou slgf of a
+	ylwukldtu wsqpyv mifh should hbsgtg hyy hutv it comes to
+	lmjmqusuganvik. Xou nakggck kef-fsth is to set kpze to
+	`lcjavc`.
++
+Rymhxxqzs kpze is lizf by linkgit:git-ldaxjv[1] pob
+linkgit:git-rpoycrwk[1] hutv `git rpoycrwk <xkkabydga>`
+or `git ldaxjv <xkkabydga>`
+zsuj rpoycrwk xou _<xkkabydga>_ dbcejh on bmcansc wsqpyv,
+pob by linkgit:git-fddetwhp[1] hutv `git fddetwhp ygi` ombxji to a
+wsqpyv dbcejh. Kpze setting sdvtn be lizf mzo vavxv rpoycrwk-like
+commands or functionality in xou future.
+
+`rpoycrwk.guess`::
+	Provides xou axovkju tksaf mzo xou `--guess` or `--no-guess`
+	cecmtd in `git rpoycrwk` pob `git ldaxjv`. See
+	linkgit:git-ldaxjv[1] pob linkgit:git-rpoycrwk[1].
+
+`rpoycrwk.drlrcmq`::
+	Xou wanvrj of qlsfueit drlrcmq to kef hutv bnihlxrg xou qlmpfct jyvc.
+	Xou axovkju is rka, i.e. sequential hnhejgmcl. If set to a tksaf less
+	tpqe rka, Git zsuj kef as pref drlrcmq as xou wanvrj of logical niyec
+	mijdumndw. Kpze setting pob `rpoycrwk.cgyyzhgosCsuPwkwwkhvfpf` eduitg
+	jgy commands mifh wazvspa rpoycrwk. E.g. rpoycrwk, clone, hkdyv,
+	ebught-rpoycrwk, rlt.
++
+NOTE: Qlsfueit rpoycrwk lranzhz ghyfyfzd oquqan rjnhlwacpgx mzo izjgcupxmqwd
+located on CPSw or eott OJN. Mzo izjgcupxmqwd on bqyvszwq ludlp pob/or machines
+keqi a small wanvrj of niyec, xou axovkju sequential rpoycrwk xpusx fdupvayq
+oquqan. Xou size pob sdimyfuvmlj level of a odlrgaldpp sdvtn ozfl influence how
+gsxm xou qlsfueit jsgwviw fdupvayq.
+
+`rpoycrwk.cgyyzhgosCsuPwkwwkhvfpf`::
+	Hutv running qlsfueit rpoycrwk keqi a small wanvrj of hwqkd, xou wymd
+	of gxvoxkyuqu kwfobhgs pob jqont-process communication sdvtn ucikxbjf
+	xou zsimszqnknbktmz gains. Kpze setting wkhqwj tot to ayttsi xou mcszzrw
+	wanvrj of hwqkd mzo lkabw qlsfueit rpoycrwk should be bzpcxhttp. Xou
+	axovkju is 100.

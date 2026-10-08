@@ -1,0 +1,10 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoctor.js/packages/core/test/fixtures/semantic-html5-scenarios/paragraph-with-id-roles.adoc"
+formats = ["html5"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

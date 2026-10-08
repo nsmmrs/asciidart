@@ -1,0 +1,4 @@
+[source,ruby]
+----
+include::http://127.0.0.1:9876/fixtures/tagged-class.rb[tag=init,indent=0]
+----

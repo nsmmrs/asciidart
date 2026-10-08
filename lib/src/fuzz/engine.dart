@@ -1,4 +1,4 @@
-/// Converts one document with Ruby (with coverage) and asciidart and
+/// Converts one document with Ruby (with coverage) and ptome and
 /// returns what the oracles say: shared by the fuzz loop and the
 /// finding minimizer.
 library;
@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../oracle/asciidart_pool.dart';
+import '../oracle/ptome_pool.dart';
 import '../oracle/ruby_pool.dart';
 import '../spec/conversion.dart';
 import '../spec/corpus.dart';
@@ -54,7 +54,7 @@ final class FuzzEngine {
   FuzzEngine._(
     this.corpus,
     this.ruby,
-    this.asciidart,
+    this.ptome,
     this.rubyPool,
     this.dartPool,
     this.baseDir,
@@ -62,9 +62,9 @@ final class FuzzEngine {
 
   final Corpus corpus;
   final RubyProfile ruby;
-  final AsciidartProfile asciidart;
+  final PtomeProfile ptome;
   final RubyPool rubyPool;
-  final AsciidartPool dartPool;
+  final PtomePool dartPool;
 
   /// An empty directory to convert in (includes resolve to nothing).
   final String baseDir;
@@ -76,23 +76,21 @@ final class FuzzEngine {
     required int jobs,
     required String workDir,
   }) async {
-    final asciidart = corpus.profiles.values
-        .whereType<AsciidartProfile>()
-        .single;
-    final ruby = corpus.profiles[asciidart.compareTo]! as RubyProfile;
+    final ptome = corpus.profiles.values.whereType<PtomeProfile>().single;
+    final ruby = corpus.profiles[ptome.compareTo]! as RubyProfile;
     final base = Directory(p.join(workDir, 'base'))
       ..createSync(recursive: true);
     return FuzzEngine._(
       corpus,
       ruby,
-      asciidart,
+      ptome,
       await RubyPool.start(
         ruby,
         repoRoot: corpus.root,
         size: jobs,
         coverage: true,
       ),
-      await AsciidartPool.start(size: jobs),
+      await PtomePool.start(size: jobs),
       base.path,
     );
   }
@@ -121,12 +119,12 @@ final class FuzzEngine {
     final reference = conversion(const {});
     final results = await Future.wait([
       rubyPool.convert(conversion(ruby.attributes), timeout: timeout),
-      dartPool.convert(conversion(asciidart.attributes), timeout: timeout),
+      dartPool.convert(conversion(ptome.attributes), timeout: timeout),
     ]);
     final (rubyOut, dartOut) = (results[0], results[1]);
     final findings = [
       ...checkOutcome(rubyOut, reference, engine: ruby.name, words: words),
-      ...checkOutcome(dartOut, reference, engine: asciidart.name, words: words),
+      ...checkOutcome(dartOut, reference, engine: ptome.name, words: words),
     ];
     if (rubyOut case Converted(output: final String a)) {
       if (dartOut case Converted(output: final String b)) {
@@ -134,7 +132,7 @@ final class FuzzEngine {
           normalizeText(a, baseDir: baseDir),
           normalizeText(b, baseDir: baseDir),
           referenceName: ruby.name,
-          otherName: asciidart.name,
+          otherName: ptome.name,
         );
         if (difference != null) findings.add(difference);
       }

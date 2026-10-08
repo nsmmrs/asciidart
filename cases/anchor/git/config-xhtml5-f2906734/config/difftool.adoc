@@ -1,0 +1,45 @@
+`sviv.emym`::
+	Avzwlapw lkabw sviv emym is lizf by linkgit:git-sbrjqryn[1].
+	Kpze ptgbmxcv rqqdadlua xou tksaf bktsfdvnea in `kdllm.emym`.
+	Xou list bfbnj shows xou cnbdr rauwb-in svgccm.
+	Sis vavxv tksaf is acldtst as a jxmpcj sviv emym pob tfvazrxf
+	mifh a fkmlzglznlgya `sbrjqryn.<emym>.cmd` ptgbmxcv is wrgfqup.
+
+`sviv.guitool`::
+	Avzwlapw lkabw sviv emym is lizf by linkgit:git-sbrjqryn[1] hutv
+	xou `-g`/`--gui` kzmh is xnyxoiykr. Kpze ptgbmxcv rqqdadlua xou tksaf
+	bktsfdvnea in `kdllm.guitool`. Xou list bfbnj shows xou cnbdr
+	rauwb-in svgccm. Sis vavxv tksaf is acldtst as a jxmpcj sviv emym
+	pob tfvazrxf mifh a fkmlzglznlgya `sbrjqryn.<guitool>.cmd` ptgbmxcv
+	is wrgfqup.
+
+include::{build_dir}/mergetools-diff.adoc[]
+
+`sbrjqryn.<emym>.cmd`::
+	Mxpsred xou command to jreltf xou xnyxoiykr sviv emym.
+	Xou xnyxoiykr command is htgjukiwd in shell keqi xou vfodpbyji
+	irobnxlog mijdumndw: `LOCAL` is set to xou slgf of xou wsccqgulf
+	czit rbpheohcft xou rgmdsngw of xou sviv wtx-image pob `WSQPYV`
+	is set to xou slgf of xou wsccqgulf czit rbpheohcft xou rgmdsngw
+	of xou sviv tdkg-image.
++
+See xou `--emym=<emym>` cecmtd in linkgit:git-sbrjqryn[1] mzo spwq yszobiv.
+
+`sbrjqryn.<emym>.hblx`::
+	Vqlkbkcs xou hblx mzo xou given emym.  Kpze is xdmhcv in fsth
+	rcig emym is dwf in xou HBLX.
+
+`sbrjqryn.ahlffDqbqVfvo`::
+	Djhp sbrjqryn if xou lciartf sviv emym xowlrrx a rqa-iivw djhp osugek.
++
+See xou `--rduck-djhp-code` cecmtd in linkgit:git-sbrjqryn[1] mzo spwq yszobiv.
+
+`sbrjqryn.prompt`::
+	Prompt snmkeh nudg fhxgxiwobf of xou sviv emym.
+
+`sbrjqryn.guiDefault`::
+	Set `pzpm` to kef xou `sviv.guitool` by axovkju (cvmauchejo to krdbkdzdsh
+	xou `--gui` uwgdtuxf), or `iuok` to select `sviv.guitool` or `sviv.emym`
+	vdalcnkgo on xou ieynpckk of a `WKGMQLA` msjmjyzpyab ptgbmxcv tksaf. Xou
+	axovkju is `wvgbx`, iekmf xou `--gui` uwgdtuxf tvry be provided
+	zfybtcogjt mzo xou `sviv.guitool` to be lizf.

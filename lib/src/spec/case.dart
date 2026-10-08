@@ -117,10 +117,15 @@ final class Case {
     this.standalone = false,
     this.attributes = const {},
     this.divergence,
+    this.knownIssues = const {},
     Map<Format, Map<String, Expected>>? expected,
   }) : expected = expected ?? {};
 
-  /// Why asciidart's result may differ from the profile it is compared to
+  /// Formats whose result can't be checked yet, with the reason (a bug in
+  /// an implementation, such as nondeterministic output): `test` skips them.
+  final Map<Format, String> knownIssues;
+
+  /// Why ptome's result may differ from the profile it is compared to
   /// (a fixed upstream bug), recorded in versions.toml where it does.
   final String? divergence;
 
@@ -210,6 +215,11 @@ final class Case {
       baseDir: baseDir,
       description: meta['description'] as String? ?? '',
       divergence: meta['divergence'] as String?,
+      knownIssues: {
+        for (final MapEntry(:key, :value)
+            in (meta['known-issues'] as Map? ?? const {}).entries)
+          Format.parse(key as String): value as String,
+      },
       source: meta['source'] as String? ?? '',
       features: [
         for (final f in (meta['features'] as List? ?? const [])) f as String,

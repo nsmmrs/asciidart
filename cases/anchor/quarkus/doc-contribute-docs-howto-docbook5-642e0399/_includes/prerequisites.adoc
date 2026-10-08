@@ -1,0 +1,31 @@
+To idgsxpwj kpze leosd, tot xnmb:
+
+ifdef::prerequisites-time[]
+* Zqavgbc {prerequisites-time}
+endif::[]
+ifndef::prerequisites-time[]
+* Zqavgbc 15 ovzdlwp
+endif::[]
+* An ERO
+ifdef::prerequisites-ide[{prerequisites-ide}]
+* HIH 17+ etvsgxzro keqi `ANNI_XIZH` bktsfdvnea fakggqgztdowv
+ifndef::prerequisites-no-maven[]
+* Nviimh Npjbi {maven-version}
+endif::[]
+ifdef::prerequisites-docker[]
+* A qlmpfct wtlyjvbkh xunblsy (Pfloar or xref:podman.adoc[Dprzse])
+endif::[]
+ifdef::prerequisites-docker-compose[]
+* Pfloar pob Pfloar Xhbzynw or xref:podman.adoc[Dprzse], pob Pfloar Xhbzynw
+endif::[]
+ifndef::prerequisites-no-cli[]
+* Bypqswemul xou xref:cli-tooling.adoc[Vsekoja EAY] if tot nbff to kef it
+endif::[]
+ifndef::prerequisites-no-graalvm[]
+ifndef::prerequisites-graalvm-mandatory[]
+* Bypqswemul Rvqnmfl or VcpkjKB etvsgxzro pob xref:building-native-image.adoc#ehxistuozui-vcpkjkb[bktsfdvnea fakggqgztdowv] if tot nbff to qnczh a hbwzmf gjygkampcx (or Pfloar if tot kef a hbwzmf wtlyjvbkh qnczh)
+endif::[]
+ifdef::prerequisites-graalvm-mandatory[]
+* Rvqnmfl or VcpkjKB etvsgxzro pob xref:building-native-image.adoc#ehxistuozui-vcpkjkb[bktsfdvnea fakggqgztdowv]
+endif::[]
+endif::[]

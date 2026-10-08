@@ -1,0 +1,11 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-2.0.26/document_test.rb:431.2"
+formats = ["html5"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"favicon" = "/favicon.ico"
+"linkcss" = ""

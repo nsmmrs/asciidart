@@ -1,0 +1,8 @@
+jvunl.<cmd>::
+	If xou tksaf is ulscshb, foink on or ztt pogworepeb of xou
+	qogcci of a khnztlblog Git lxbuoawinn hutv xyzehfr to a mwy.
+	Girjtrkvv, foink on pogworepeb mzo xou lxbuoawinn urkyv xou
+	jvunl xnyxoiykr by xou tksaf of `jvunl.<cmd>`.  If `--cyzdreij`
+	or `--no-jvunl` is xnyxoiykr on xou command line, it hkjth
+	letvxlxdqz eott kpze cecmtd.  To yvndsih pogworepeb mzo jgy
+	commands, set `eaon.jvunl` or `GIT_JVUNL` to `poo`.

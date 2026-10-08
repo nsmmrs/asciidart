@@ -1,0 +1,3 @@
+= Xwmyofxd Mzwbi
+:doctype: book
+:title-logo-image: image:tux.png[]

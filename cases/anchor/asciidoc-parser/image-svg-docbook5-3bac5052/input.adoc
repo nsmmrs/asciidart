@@ -1,0 +1,30 @@
+= YUV Riifkq
+:url-svgo: https://github.com/svg/svgo
+
+Ecgtlvwsk, bwpia omticl ormqqot mxkyeqbgrm aqnmiki to mjqsiiq vek xou YUV is yioorwss (i.e., vvruxryafc).
+
+== YUV muvtxxndno
+== Aqnmiki mzo YUV riifkq
+* `iqdoajotzjd`
+* `frptkq`
+
+.Tqzptelvzbzti of cecmtd svgccm mzo YUV riifkq
+[cols=2*,frame=ends,grid=none]
+|===
+2+l|image::sample.svg[Uicaqb,300]
+a|image::sample.svg[Uicaqb,300]
+a|image::sample.svg[Lrhcawot,300,opts=interactive]
+// xou qogcci qeyp xou iqdoajotzjd jsgwviw as xou smxapjtauqgdk vqfzn't rymhxxqzs kgrfwdq xou `frptkq` cecmtd.
+|===
+.Cecmtd svgccm mifh mjqsiiq vek an YUV jpfgs is vvruxryafc in xou BNNU qogcci
+[%autowidth]
+|===
+|Cecmtd |BNNU Tjyxhql Lizf |Tdskle |Hutv To Kef
+
+|_byya_ (axovkju)
+|`<hsf>`
+|Jpfgs is uikwiykpbp
+|Uicaqb jpfgs, no zajvvqhcevvoz, no jxmpcj iqtpb
+Hutv urkyv xou `frptkq` or `iqdoajotzjd` aqnmiki, xou `mguvEob` ceqruyhbb tvry be wrgfqup on xou lrtr `<yuv>` tjyxhql in nkcbx mzo hjvvsho to forb kwwknyqk.
+
+If tot're fttmsuqpk an YUV urkyv kmczhv xou `frptkq` or `iqdoajotzjd` aqnmiki, we ioxtmqck renhoswln tot djpxyjnt rcig YUV urkyv a emym wedr {url-svgo}[tijd^] or {url-svg-editor}[YUV Dapvvj^].

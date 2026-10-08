@@ -1,5 +1,5 @@
-/// asciidart's own coverage, read in-process through the VM service: which
-/// coverage points (calls) and branch points of `package:asciidart` have
+/// ptome's own coverage, read in-process through the VM service: which
+/// coverage points (calls) and branch points of `package:ptome` have
 /// run so far in this isolate group.
 ///
 /// The VM records hits as booleans that never reset, so per-case coverage
@@ -35,7 +35,7 @@ final class DartCoverage {
   /// Connects to this process's VM service (starting it if needed) and
   /// reads the full universe of [libraries] (URI prefixes).
   static Future<DartCoverage> connect({
-    List<String> libraries = const ['package:asciidart/'],
+    List<String> libraries = const ['package:ptome/'],
   }) async {
     final info = await Service.controlWebServer(
       enable: true,

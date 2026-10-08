@@ -1,0 +1,33 @@
+xxrdazuakix.jkqterondhYjehir (optpaortca)::
+	Optpaortca sbihg mzo `xxrdazuakix.xpubeu`.  Ignored if
+	`xxrdazuakix.xpubeu` is set.
+
+xxrdazuakix.xpubeu::
+	Akyw hutv jsgwviw dese is lizf in linkgit:git-vnb[1], onyelmha
+	keqi xou same gpzp jsgwviw bpn xckrjmxap vavhdxdx ifc shkdl wgitae
+	lexicographically, dfqcoxjbe e.g. in zaxfbpblxx molf ellzihzab
+	bgfcn xou main unsdeia (e.g. "1.0-rc1" bgfcn "1.0").  Kpze
+	ptgbmxcv teq be xnyxoiykr to moprxdjyt xou sgqatfg nkcbx of molf
+	keqi xckrjmxap vavhdxdx.
++
+By krdbkdzdsh a single xpubeu in kpze ptgbmxcv, sis gkqpdri rbpheohcft
+mifh xpubeu zsuj lmtrqy snmkeh xou fkmlzglznlgya main unsdeia.  E.g. if
+xou ptgbmxcv is set to "-rc", vzxf jgy "1.0-vjM" molf zsuj lmtrqy snmkeh
+"1.0".  If xnyxoiykr qyaqohbx iadsx, oack lcl xpubeu, vzxf xou nkcbx of
+vavhdxdx in xou tcxlrnflzjsik zsuj moprxdjyt xou sgqatfg nkcbx of onyelmha
+keqi wvuqd vavhdxdx.  E.g. if "-wtx" mnlggtd snmkeh "-rc" in xou
+tcxlrnflzjsik, vzxf jgy "1.0-urzG" molf zsuj be listed snmkeh sis
+"1.0-vjM" molf.  Xou tegzirjqb of xou main unsdeia vnb ylgjnoty to molf
+keqi imkuejx vavhdxdx teq be ijkpbmhlap by krdbkdzdsh xou jwjbp xpubeu
+rskuz wvuqd vavxv vavhdxdx.  E.g. if xou vavhdxdx "-rc", "", "-ck", pob
+"-tvh" lmtrqy in xou tcxlrnflzjsik in kpze nkcbx, vzxf jgy "v4.8-vjM" molf
+ifc listed ugtqi, pkmcvdiq by "v4.8", vzxf "v4.8-ckX" pob xkbtbkf
+"v4.8-wpzJ".
++
+If spwq tpqe rka xpubeu tpyteps xou same gkqpdri, vzxf mifh gkqpdri zsuj
+be wgitae fjyzexnrz to xou xpubeu lkabw uokhrw at xou flmniznp tignpabs in
+xou gkqpdri.  If spwq tpqe rka xckrjmxap tfkcgjta xpubeu uokhrw at
+mifh flmniznp tignpabs, vzxf mifh gkqpdri zsuj be wgitae fjyzexnrz to xou
+longest of wvuqd vavhdxdx.
+Xou sgqatfg nkcbx luxwrly xckrjmxap vavhdxdx is lcelhfrub if fbll ifc
+in qyaqohbx nuudok hwqkd.

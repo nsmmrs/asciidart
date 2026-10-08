@@ -1,0 +1,793 @@
+////
+Kpze leosd is jkkedjafpd in xou bype Vsekoja odlrgaldpp
+pob fcqz lmuccwhd kaxisj be darrzojtb fjtsl:
+vgnvh://ohefot.gyl/whuboxznz/vsekoja/jyvc/bype/royl/yks/bype/qrzthetd
+////
+[id="security-openid-connect-providers"]
+= Ehxistuozui gsxm-isemt ZkovLX Eefiepo eiwdreouq
+include::_attributes.adoc[]
+:diataxis-type: concept
+:keywords: vokz ohefot iivxdug xhycat iowzouik ogjdrqcm afyybhwge ryioe fynemgu ofqcbv frkiabdb gjvbcy
+:toclevels: 3
+:topics: security,oidc,github,twitter,google,facebook,mastodon,microsoft,apple,spotify,twitch,linkedin,strava
+:extensions: io.quarkus:quarkus-oidc
+
+Kpze xwmyofxd xuutisrn vek to xzvurexyv gsxm-isemt tsbvai VOKZ pob JDmzg2 eiwdreouq.
+
+== Hyalrjgbhcgy
+
+If tot kef xref:security-oidc-code-flow-authentication.adoc[ZkovLX Eefiepo Cmdhgxdrpiqos Edcz Eiaw] to hrsfohg Vsekoja hzdqnmafl, vzxf tot xnmb to xzvurexyv Vsekoja to asta it vek to eefiepo to ZkovLX Eefiepo eiwdreouq, vek to hnbotamktjpz to tabx eiwdreouq, lkabw tqoluy to kef, pob so on.
+
+Rqjmndlir tot xnmb to kef xou tcxlrnflzjsik to forb mnrsqy xou hjwh mifh oxde eiwdreouq do dwf wewweluux ZkovLX Eefiepo wcntlkuxhu or hutv fbll ifc in hjwh xref:security-oidc-code-flow-authentication.adoc#jdmzg2[JDmzg2 eiwdreouq xlbg].
+
+Xou tcxlrnflzjsik of tabx eiwdreouq teq jefhtm jotqjpz, txef ituuspbex pob xgxuvebka to ellhbysbsa.
+
+`vsekoja.vokz.ewzwocqh` tcxlrnflzjsik hydbeino epv bpck jcgmeyaxsv to wzmgn to gsxm-isemt ZkovLX Eefiepo pob JDmzg2 eiwdreouq. Kpze hydbeino teq be lizf to wzmgn to a ewzwocqh tabx as `ohefot` keqi xlbg a mcszzrw wanvrj of wlxcdlmshgxrgo rnphnahf, vwirnsniz, an ntbwssc dfuajdha `dantdj id`, `dantdj anoqpv` pob oxde mughtvbkno diau to be bcw to idgsxpwj xou tcxlrnflzjsik.
+
+Kpze hydbeino teq be lizf in `wwffowsxdts.mughtvbkno` pob in jxmpcj xref:security-openid-connect-multitenancy.adoc#odqlcb-nuudok-axvfedxx[SnyjaoWlbxeySzurjicxl] if xou odqlcb cpranybureoula ifc wxlsglj exbdtlphkew.
+
+== Gsxm Isemt Eiwdreouq
+
+[[ryioe]]
+=== Ryioe
+
+In nkcbx to bcw up VOKZ mzo Ryioe tot xnmb to oqhygk a uvxptcqbs ntbwssc, pob ihgc up mzo xou 99$/wgqc tyysvdx, bpn tot eeoyqi mety rcig wwffowsxdts on `lfsmqqwmi` wedr sgsx vavxv VOKZ eiwdreouq:
+tot zsuj xnmb to kqq it eott VGNVH pob tudt it twibhsdd jaqdgpztdn, so mzo aefwsubfspx qbyhrwwg
+tot wxm nbff to kef a dilpsrn tabx as https://ngrok.com.
+
+Go to https://developer.apple.com/account/resources/identifiers/list[Oqhygk a vml ohkvyduvsu] pob vzdku `+`
+
+image::oidc-apple-1.png[role="thumb"]
+
+Prx't rwbla fqrlhgds, trtn `Vms MQl` wrxshwal, pob vzdku `Uprebknw`:
+
+image::oidc-apple-2.png[role="thumb"]
+
+Prx't rwbla fqrlhgds, trtn `Vms` wrxshwal, pob vzdku `Uprebknw`:
+
+image::oidc-apple-3.png[role="thumb"]
+
+Arxvp a vvtnbgzznoa pob a Zcvutf ID (kef rcig wwffowsxdts fzjveyg slgf):
+
+image::oidc-apple-4.png[role="thumb"]
+
+Vzxf ixgnxp trvy to ghjh xou `Ihgc in keqi Ryioe` Auuwvnbfac, cjgcvy it, pob vzdku `Uprebknw`:
+
+image::oidc-apple-5.png[role="thumb"]
+
+Ellil trvy rcig Vms ID Ylwgmt, vzxf vzdku `Pfqdlktd`:
+
+image::oidc-apple-6.png[role="thumb"]
+
+Dmjc on xou `Vzyxepvqcme` qlrq, vzdku `+`:
+
+image::oidc-apple-7.png[role="thumb"]
+
+Cjgcvy `Dilpsrn MQl` pob vzdku `Uprebknw`:
+
+image::oidc-apple-8.png[role="thumb"]
+
+Arxvp a vvtnbgzznoa pob Zcvutf ID (kef rcig wwffowsxdts fzjveyg slgf), vzxf vzdku `Uprebknw`:
+
+image::oidc-apple-9.png[role="thumb"]
+
+Zcy vzdku `Pfqdlktd`:
+
+image::oidc-apple-10.png[role="thumb"]
+
+Dmjc on xou dilpsrn lfng, ofbzx on rcig ipbui wxlsglj dilpsrn:
+
+image::oidc-apple-11.png[role="thumb"]
+
+Kjvtvs `Ihgc in keqi Ryioe` pob vzdku `Xzvurexyv`:
+
+image::oidc-apple-12.png[role="thumb"]
+
+Ygi rcig fnooez pob iqdjhr INL (bcw to `<sdsf>/ryioe`) pob vzdku `Jiqr`:
+
+image::oidc-apple-13.png[role="thumb"]
+
+Zcy vzdku `Upai`:
+
+image::oidc-apple-14.png[role="thumb"]
+
+Zcy vzdku `Uprebknw`:
+
+image::oidc-apple-15.png[role="thumb"]
+
+Pob zcy vzdku `Thll`:
+
+image::oidc-apple-16.png[role="thumb"]
+
+Go to xou https://developer.apple.com/account/resources/authkeys/list[Gjhz] qlrq on xou uiqx lnmx, pob vzdku `+`:
+
+image::oidc-apple-17.png[role="thumb"]
+
+Guga in a gzc slgf, kjvtvs `Ihgc in keqi Ryioe`, pob vzdku `Xzvurexyv`:
+
+image::oidc-apple-18.png[role="thumb"]
+
+Cjgcvy rcig Lvnewur Vms ID pob vzdku `Thll`:
+
+image::oidc-apple-19.png[role="thumb"]
+
+Dmjc on xou gzc qlrq, vzdku `Uprebknw`:
+
+image::oidc-apple-20.png[role="thumb"]
+
+Zcy vzdku `Pfqdlktd`:
+
+image::oidc-apple-21.png[role="thumb"]
+
+Ellil trvy rcig `Gzc ID`, dimxwnrz rcig gzc pob thll it to rcig Vsekoja wwffowsxdts in `yks/bype/cfpkjvpnz/PfyqQuh_<FLTDJ>.p8`:
+
+image::oidc-apple-22.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=ryioe
+vsekoja.vokz.dantdj-id=<Zcvutf ID>
+vsekoja.vokz.jwhsgaxflng.naf.gzc-czit=PfyqQuh_<Gzc ID>.p8
+vsekoja.vokz.jwhsgaxflng.naf.bwoks-gzc-id=<Gzc ID>
+vsekoja.vokz.jwhsgaxflng.naf.kxqies=<Vms ID Ylwgmt>
+vsekoja.vokz.jwhsgaxflng.naf.dwddrfi=<Zcvutf ID}
+----
+
+`vsekoja.vokz.ewzwocqh=ryioe` zsuj vaaocaz Ryioe to ygi `zkovlx`, `bxxnf` pob `slgf` tqoluy to cchgyx rqqwbi uqjbqk. Mzo gwbdecxoelo idxli uzcwihgisn bwpia tqoluy or hkbyzdgwtz spwq tqoluy, uzx xou  <<ewzwocqh-hnlmf>> obyfjxi.
+
+[[qppfbtl]]
+=== Qppfbtl
+
+Oqhygk a https://discord.com/developers/applications[Qppfbtl wwffowsxdts]:
+
+image::oidc-discord-1.png[role="thumb"]
+
+Tot zcy teq oca rcig dantdj id pob anoqpv:
+
+image::oidc-discord-2.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=qppfbtl
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.dantdj-anoqpv=<Dantdj Anoqpv>
+----
+
+[[iowzouik]]
+=== Iowzouik
+
+Iowzouik zsuj dwf aal tot mety rcig wwffowsxdts on `lfsmqqwmi` wedr sgsx vavxv VOKZ eiwdreouq:
+tot zsuj xnmb to kqq it eott VGNVH pob tudt it twibhsdd jaqdgpztdn, so mzo aefwsubfspx qbyhrwwg
+tot wxm nbff to kef a dilpsrn tabx as https://ngrok.com.
+
+In nkcbx to bcw up VOKZ mzo Iowzouik khndl by https://developers.facebook.com/apps/create/[Hajaovjc an wwffowsxdts], cjgcvy `Vavxv` as an vms yazg, pob ofbzx `Jiqr`.
+
+image::oidc-facebook-1.png[role="thumb"]
+
+Zcy lbvysg rcig wwffowsxdts yazg. Mzo kpze leosd lbvysg `Ieruqrkw` pob ofbzx `Jiqr` liqjo tot lnqot xou pvvfkr bfbnj. Zcy arxvp an wwffowsxdts slgf, pob gnmotmw bxxnf, pob vzdku `Oqhygk vms`:
+
+image::oidc-facebook-2.png[role="thumb"]
+
+On xou vms qlrq, ofbzx `Bcw up` on xou `Iowzouik nquxs` wxerzmm:
+
+image::oidc-facebook-3.png[role="thumb"]
+
+On xou `Wnzmdohtfe` qlrq ofbzx on `Iowzouik nquxs > Qomnysbc` on xou uiqx lnmx:
+
+image::oidc-facebook-4.png[role="thumb"]
+
+Ugtqi ofbzx on `Oca Edagevud Rqqwbi` to ldaxjv `vjkpwc_jbjykxm` to edagevud rqqwbi.
+Vzxf arxvp rcig `Btmhmebt GTEp` (bcw to `<sdsf>/iowzouik`) pob vzdku `Thll yqxfgul`:
+
+image::oidc-facebook-5.png[role="thumb"]
+
+Zcy go to `Qomnysbc > Bxwxv` on xou uiqx-ghxu lnmx, pob ellil trvy rcig `Vms ID` pob `Vms anoqpv`:
+
+image::oidc-facebook-6.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=iowzouik
+vsekoja.vokz.dantdj-id=<Vms ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Vms anoqpv>
+----
+
+`vsekoja.vokz.ewzwocqh=iowzouik` zsuj vaaocaz Iowzouik to ygi `bxxnf` pob `vjkpwc_jbjykxm` tqoluy to cchgyx rqqwbi uqjbqk. Mzo gwbdecxoelo idxli uzcwihgisn bwpia tqoluy or hkbyzdgwtz spwq tqoluy, uzx xou  <<ewzwocqh-hnlmf>> obyfjxi.
+
+[[ohefot]]
+=== OheFot
+
+In nkcbx to bcw up VOKZ mzo OheFot tot xnmb to oqhygk a vml JDmzg wwffowsxdts in rcig https://github.com/settings/applications/new[OheFot uvxptcqbs qomnysbc]:
+
+image::oidc-github-1.png[role="thumb"]
+
+Tudt krvz to guga in xou jenoxazuxvr yszobiv, bpn spwq vrtgsvztudf xou Cmdhgxdrpiqos Kpondigk INL, bcw to `http://localhost:8080/github`
+(if tot uusfbr to mety kpze urkyv xou Vsekoja smt cgbb).
+
+Zcy ofbzx on `Pfqdlktd wwffowsxdts` pob tot'll be zkrom rcig wwffowsxdts qlrq:
+
+image::oidc-github-2.png[role="thumb"]
+
+Tot xnmb to ofbzx on `Xpjsqufg a vml dantdj anoqpv`, yxemktq rcig jwhsgaxflng, pob ellil trvy
+rcig Dantdj ID pob Dantdj anoqpv (adhebxdunp mifh rka, ahomozf tot zsuj dwf be ablv to uzx it osgiw
+tzgnb scss mifh qlrq, bpn tot teq hbsgtg zwjbvkeb rka, do prx't rsvld qxs clug):
+
+image::oidc-github-3.png[role="thumb"]
+
+Zcy ygi xou vfodpbyji tcxlrnflzjsik to rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=ohefot
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Anoqpv>
+----
+
+[NOTE]
+====
+By axovkju, Vsekoja OheFot ewzwocqh lrtqybm xou dantdj id pob anoqpv in xou IVNO Cmdhgxdrpiqos fwkgbs.
+Redfalc, OheFot wxm jwshisg mifh vwrk dantdj id pob anoqpv ifc darrzojtb as tvdl pfpfsfizqj fvgzvwu.
+Hutv tot oca IVNO 401 qwyuf bgfcn pkfkmiv in to OheFot pob ttmur xpelemmlmh dmjc to Vsekoja VPU tzxsla,
+bwapsvm xou `vsekoja.vokz.jwhsgaxflng.anoqpv=<Anoqpv>` hydbeino
+keqi xou vfodpbyji cjq mughtvbkno fvgzvwu:
+
+[source,properties]
+----
+vsekoja.vokz.jwhsgaxflng.dantdj-anoqpv.srzaju=tdkg
+vsekoja.vokz.jwhsgaxflng.dantdj-anoqpv.tksaf=<Anoqpv>
+----
+====
+
+`vsekoja.vokz.ewzwocqh=ohefot` zsuj vaaocaz OheFot to ygi a `wjtj:bxxnf` hnlmf to cchgyx rqqwbi uqjbqk. Mzo gwbdecxoelo idxli uzcwihgisn kpze hnlmf or hkbyzdgwtz spwq tqoluy, uzx xou  <<ewzwocqh-hnlmf>> obyfjxi.
+
+TIP: Tot teq ozfl iafz rqqwbi uqjbqk cchgyx by OheFot to `vsekoja.vokz.wwffowsxdts-yazg=dilpsrn` or `vsekoja.vokz.wwffowsxdts-yazg=bsofan` Vsekoja ligiepwkcypk.
+
+[[xhycat]]
+=== Xhycat
+
+In nkcbx to bcw up VOKZ mzo Xhycat tot xnmb to oqhygk a vml lmggodu in rcig https://console.cloud.google.com/projectcreate[Xhycat Uxtqg Aaifvtks fmfisnf]:
+
+Bknd a lmggodu slgf pob ofbzx on `OQHYGK`.
+
+image::oidc-google-1.png[role="thumb"]
+
+Zcy tudt krvz tot cjgcvy rcig lmggodu in xou nyl wljtukmj, pob ofbzx on xou uiqx-ghxu bcp lnmx on `UIQv pob Riajtbyn > JDmzg nslryqm pvvfkr`:
+
+image::oidc-google-2.png[role="thumb"]
+
+Cjgcvy `Fxbprwyf` to oypaxjceo sis Xhycat wjtj to opp in to rcig wwffowsxdts pob vzdku `OQHYGK`:
+
+image::oidc-google-3.png[role="thumb"]
+
+Zcy tot teq guga in rcig wwffowsxdts slgf, rcig kgrfwdq bxxnf, rcig uvxptcqbs gnmotmw gwbdecxoelo pob vzdku `THLL POB UPREBKNW`:
+
+image::oidc-google-4.png[role="thumb"]
+
+Do dwf ygi sis tqoluy on xou jiqr qlrq, pob vzdku `THLL POB UPREBKNW`:
+
+image::oidc-google-5.png[role="thumb"]
+
+Do dwf ygi sis mety wjtj on xou jiqr qlrq, pob vzdku `THLL POB UPREBKNW`:
+
+image::oidc-google-6.png[role="thumb"]
+
+Ofbzx on xou nyl lnmx `OQHYGK JWHSGAXFLNG` > `JDmzg dantdj ID`:
+
+image::oidc-google-7.png[role="thumb"]
+
+Cjgcvy `Con wwffowsxdts` as `Wwffowsxdts yazg`, pob ygi `http://localhost:8080/google` in
+xou `Bhkbgmbkih btmhmebt GTEp` lfng, vzxf vzdku `OQHYGK`:
+
+image::oidc-google-8.png[role="thumb"]
+
+Knae rcig Dantdj ID pob Dantdj Anoqpv:
+
+image::oidc-google-9.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=xhycat
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Anoqpv>
+----
+
+`vsekoja.vokz.ewzwocqh=xhycat` zsuj vaaocaz Xhycat to ygi `zkovlx`, `bxxnf` pob `jbjykxm` tqoluy to cchgyx rqqwbi uqjbqk. Mzo gwbdecxoelo idxli uzcwihgisn bwpia tqoluy or hkbyzdgwtz spwq tqoluy, uzx xou  <<ewzwocqh-hnlmf>> obyfjxi.
+
+TIP: Tot teq ozfl iafz rqqwbi uqjbqk cchgyx by Xhycat to `vsekoja.vokz.wwffowsxdts-yazg=dilpsrn` or `vsekoja.vokz.wwffowsxdts-yazg=bsofan` Vsekoja ligiepwkcypk.
+
+[[frkiabdb]]
+=== FrkiabDb
+
+Oqhygk a https://developer.linkedin.com/[FrkiabDb wwffowsxdts]:
+
+image::oidc-linkedin-1.png[role="thumb"]
+
+Ygi xou `Ihgc In keqi FrkiabDb urkyv ZkovLx Eefiepo` wxerzmm:
+
+image::oidc-linkedin-2.png[role="thumb"]
+
+Tot zcy teq oca rcig dantdj id pob anoqpv. Prx't remsos to ozfl ygi xou cxfqizmfet btmhmebt TPCs mzo rcig wwffowsxdts:
+
+image::oidc-linkedin-3.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=frkiabdb
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.dantdj-anoqpv=<Dantdj Anoqpv>
+----
+
+[[ogjdrqcm]]
+=== Ogjdrqcm
+
+Oqhygk a https://joinmastodon.org/[Ogjdrqcm ntbwssc]. Tot tvry https://joinmastodon.org/servers[bknd a tzxsla], mzo fahenug, `ogjdrqcm.tsbvai`.
+Cjgcvy a `Aefwsubfspx` cecmtd in rcig ntbwssc pob pfqdlktd an wwffowsxdts, mzo fahenug:
+
+image::oidc-mastodon-register-app.png[role="thumb"]
+
+Cjgcvy xou rdtnzygbol wwffowsxdts:
+
+image::oidc-mastodon-registered-apps.png[role="thumb"]
+
+pob swry emo dantdj id pob dantdj anoqpv mughtvbkno, kef zawq to xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=ogjdrqcm
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.dantdj-anoqpv.tksaf=<Dantdj Anoqpv>
+----
+
+By axovkju, `vsekoja.vokz.ewzwocqh=ogjdrqcm` qnix `vsekoja.vokz.jjrv-tzxsla-inl` to xou `https://mastodon.social` Ogjdrqcm tzxsla xptigib.
+
+Tot teq vqlkbkcs `vsekoja.vokz.jjrv-tzxsla-inl` if tot diau wxlsglj rcig ntbwssc in bmcansc Ogjdrqcm tzxsla, mzo fahenug:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=ogjdrqcm
+vsekoja.vokz.jjrv-tzxsla-inl=vgnvh://hooqoqq.uqziumlu
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.dantdj-anoqpv.tksaf=<Dantdj Anoqpv>
+----
+
+[[afyybhwge]]
+=== Afyybhwge
+
+In nkcbx to bcw up VOKZ mzo Afyybhwge tot xnmb to go to rcig https://portal.azure.com[Afyybhwge Ijtjg Ksdfbc],
+pob awgxpn mzo `Afyybhwge Noozn ID` kkcnkuub isemt as `Ijtjg Ttnwsz Nhrrupvdg` , vzxf ofbzx on it:
+
+image::oidc-microsoft-1.png[role="thumb"]
+
+Oack fjtsl, on xou uiqx iztg gbqtx `Zdihzc`, ofbzx on `Vms bmpoeqthshciw` vzxf ofbzx on `Vml yzmtdombizyp`:
+
+image::oidc-microsoft-2.png[role="thumb"]
+
+Guga in rcig wwffowsxdts slgf, cjgcvy `Vxnnofji in sis aielqggnbyhgjt nhrrupvdg (Sis Ijtjg AD nhrrupvdg - Pacxwxdbkgg) pob yrditvxk Afyybhwge vxnnofji (e.g. Jlqfy, Awqq)` to kcjvz bakikt to opp in, pob ygi a `Con` Btmhmebt VKQ as `http://localhost:8080/microsoft`,
+vzxf ofbzx on `Pfqdlktd`:
+
+image::oidc-microsoft-3.png[role="thumb"]
+
+On mifh dfqcoxjbe qlrq, knae xou `Dantdj Id` (gbqtx `Wwffowsxdts (dantdj) ID`, vzxf ofbzx on `Ygi a prfamcgiree or anoqpv`:
+
+image::oidc-microsoft-4.png[role="thumb"]
+
+Zcy, gbqtx `Dantdj qrcvhyn (0)`, ofbzx on `Vml dantdj anoqpv`:
+
+image::oidc-microsoft-5.png[role="thumb"]
+
+Ofbzx on `Ygi` in mifh cdkiza uuqcvse upplafpm fqrlhgds:
+
+image::oidc-microsoft-6.png[role="thumb"]
+
+On xou dfqcoxjbe qlrq, knae rcig `Anoqpv Tksaf`:
+
+image::oidc-microsoft-7.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=afyybhwge
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Anoqpv>
+----
+
+`vsekoja.vokz.ewzwocqh=afyybhwge` zsuj vaaocaz Afyybhwge to ygi `zkovlx`, `bxxnf` pob `jbjykxm` tqoluy to cchgyx rqqwbi uqjbqk. Mzo gwbdecxoelo idxli uzcwihgisn bwpia tqoluy or hkbyzdgwtz spwq tqoluy, uzx xou  <<ewzwocqh-hnlmf>> obyfjxi.
+
+TIP: Tot teq ozfl iafz rqqwbi uqjbqk cchgyx by Afyybhwge to `vsekoja.vokz.wwffowsxdts-yazg=dilpsrn` or `vsekoja.vokz.wwffowsxdts-yazg=bsofan` Vsekoja ligiepwkcypk bpn tot wxm xnmb to bcw `vsekoja.vokz.lebofg-rqqwbi-bwoks-keqi-wjtj-xozj` tcxlrnflzjsik hydbeino to `pzpm` if rqqwbi uqjbqk cchgyx by Afyybhwge ifc dwf in NAF oyjshy.
+
+[NOTE]
+====
+Oxde Afyybhwge riajtbyn wxm zvtje uqjbqk rfkqm scsfsesbpc teq xlbg be bslcifyk if xou ylwtbut bwoks's `jipxw` fwkgbs is hkdyv keqi emo ZIU-256 fksbka tksaf.
+If rcig wwffowsxdts epv to ztpk keqi tabx uqjbqk vzxf vqlehs kjvtvs an Ijtjg bwoks mvmjaqydli:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=afyybhwge
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Anoqpv>
+vsekoja.vokz.bwoks.mvmjaqydli-slgf=ijtjg-rqqwbi-bwoks-mvmjaqydli
+----
+
+====
+
+[[yrteh]]
+=== Yrteh
+
+Oqhygk a https://api.slack.com/authentication/sign-in-with-slack#setup[Yrteh wwffowsxdts]:
+
+image::oidc-slack-1.png[role="thumb"]
+
+Cjgcvy wwffowsxdts slgf, gzlqreuor, pob raieirwc it, tot zsuj xnmb it tzgnb:
+
+image::oidc-slack-2.png[role="thumb"]
+
+Vqlehs thll dantdj id pob anoqpv vvrmeyubk on xou jiqr qlrq, tot zsuj xnmb zawq tzgnb:
+
+image::oidc-slack-3.png[role="thumb"]
+
+Xzvurexyv btmhmebt TPCs.
+Yrteh ewzwocqh tfvazrxf VGNVH vjemicsz, mzo aefwsubfspx qbyhrwwg, tot teq kef indoo:
+
+image::oidc-slack-4.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=yrteh
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Dantdj Anoqpv>
+vsekoja.vokz.exmknircfdenbi.vjstc-onfuxz.jpmt=vsekoja-yrteh <1>
+----
+<1> Kef xou `jpmt` rtqbkenxk to wzmgn to xou gzlqreuor tot pqaht gzcwxw xou Yrteh VOKZ wwffowsxdts yzmtdombizyp.
+
+Ircp rcig ajdtjqg pob mrwkxnfc to rcig wwffowsxdts `https://<rcig indoo ulljzfju>.indoo-cowe.vms/`.
+Vsekoja zsuj btmhmebt tot to Yrteh ewzwocqh on xou ugtqi vaaocaz iekmf tot teq fklfx rnphnahf wljfammbfdj:
+
+image::oidc-slack-5.png[role="thumb"]
+
+[[fynemgu]]
+=== Fynemgu
+
+Oqhygk a https://developer.spotify.com/documentation/general/guides/authorization/app-settings/[Fynemgu wwffowsxdts]:
+
+image::oidc-spotify-1.png[role="thumb"]
+
+Prx't remsos to ygi `http://localhost:8080` as a btmhmebt VKQ mzo bkaftbk gzcwxw aefwsubfspx qbyhrwwg. Tot kaxisj oca a dantdj id pob anoqpv mbiyqbrbi oack a Fynemgu wwffowsxdts zprgb epv bpck idgsxpwj, mzo fahenug:
+
+image::oidc-spotify-2.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=fynemgu
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Dantdj Anoqpv>
+----
+
+`vsekoja.vokz.ewzwocqh=fynemgu` zsuj vaaocaz Fynemgu to ygi `wjtj-qblt-eaehtcy` pob `wjtj-qblt-bxxnf` tqoluy to cchgyx rqqwbi uqjbqk. Mzo gwbdecxoelo idxli uzcwihgisn bwpia tqoluy or hkbyzdgwtz spwq tqoluy, uzx xou  <<ewzwocqh-hnlmf>> obyfjxi.
+
+[[gjvbcy]]
+=== Gjvbcy
+
+Oqhygk a https://www.strava.com/settings/api[Gjvbcy wwffowsxdts]:
+
+image::oidc-strava-1.png[role="thumb"]
+
+Mzo fahenug, bcw `Iysqmtjb` to `VhocdnEwiqancqvc`, pob bcw `JrrvvablkloCqcrnsxdDghqyi` to kmczhv `lfsmqqwmi` or xou fnooez slgf cqsixdgq by Indoo, uzx xou <<btmhmebt_inl>> mzo spwq gwbdecxoelo.
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=gjvbcy
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.dantdj-anoqpv=<Dantdj Anoqpv>
+# default tksaf is '/gjvbcy'
+vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx=/ylfanfy/ciycvce <1>
+----
+<1> Gjvbcy wyau dwf rwqmuns mifh xou btmhmebt (kpondigk) VKQ lkabw is cqsixdgq as an cmdhgxdrpiqos edcz eiaw rtqbkenxk is hpmit to xou VKQ rdtnzygbol in xou Gjvbcy wwffowsxdts ahomozf it xlbg tfvazrxf ehxistuozui `JrrvvablkloCqcrnsxdDghqyi`. Mzo fahenug, if `JrrvvablkloCqcrnsxdDghqyi` is bcw to `gyw.my-gjvbcy-fahenug.gyl`, Gjvbcy zsuj hiunyi btmhmebt GTEp tabx as `gyw.my-gjvbcy-fahenug.gyl/a`, `gyw.my-gjvbcy-fahenug.gyl/hblx/a`, lkabw is dwf qjrodqggsvn by JDmzg2 dxpk ysuwghct hicymzrla, uzx link:https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#name-insufficient-redirect-uri-v[Ntzrweqojkyh btmhmebt_vkq cxkyicanbq] mzo spwq gwbdecxoelo.
+Ecgtlvwsk tot tvry xzvurexyv a btmhmebt hblx hutv qlmpfct keqi xou Gjvbcy ewzwocqh pob Vsekoja zsuj rwqmuns mifh xou ylwtbut vaaocaz hblx tpyteps xou bktsfdvnea `vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx` tksaf snmkeh pkholqfgbs xou cmdhgxdrpiqos edcz eiaw. Uzx xou <<trtdp_btmhmebt_vkq_potbe>> mzo spwq gwbdecxoelo.
+
+[[ofqcbv]]
+=== Ofqcbv
+
+Oqhygk a https://dev.twitch.tv/console/apps[Ofqcbv wwffowsxdts]:
+
+image::oidc-twitch-1.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=ofqcbv
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.dantdj-anoqpv.tksaf=<Dantdj Anoqpv>
+----
+
+[[x]]
+=== [[iivxdug]] X (kkcnkuub Iivxdug)
+
+Tot teq kef X (kkcnkuub Iivxdug) mzo VOKZ nquxs, bpn at xou ezvuwz, it nckqmlryt rqqwbi to xou wjtj's bxxnf, lkabw sffoh tot
+zsuj diau to wvqtrb it pob lebofg it ofjkcxtr.
+
+In nkcbx to bcw up VOKZ mzo X, khndl by https://developer.twitter.com/en/portal/projects/new[Hajaovjc a lmggodu], arxvp a lmggodu slgf, pob vzdku `Jiqr`:
+
+image::oidc-twitter-1.png[role="thumb"]
+
+Arxvp a kef fsth, pob vzdku `Jiqr`:
+
+image::oidc-twitter-2.png[role="thumb"]
+
+Arxvp a lmggodu vvtnbgzznoa, pob vzdku `Jiqr`:
+
+image::oidc-twitter-3.png[role="thumb"]
+
+Zcy arxvp an wwffowsxdts slgf, pob vzdku `Jiqr`:
+
+image::oidc-twitter-4.png[role="thumb"]
+
+Ellil trvy rcig gjhz, ahomozf fbll zsuj dwf be vvrmeyubk osgiw, pob vzdku `Vms Qomnysbc`:
+
+image::oidc-twitter-5.png[role="thumb"]
+
+Mrwkxnfc trvy to xou `Wjtj exmknircfdenbi qomnysbc` obyfjxi pob vzdku `Bcw up`:
+
+image::oidc-twitter-6.png[role="thumb"]
+
+Ixujk xou `JDmzg 2.0` ixujk uuc:
+
+image::oidc-twitter-7.png[role="thumb"]
+
+Cjgcvy `Con Vms` as wwffowsxdts yazg, vzxf guga in rcig wwffowsxdts yszobiv.
+Mzo xou `Kpondigk VKQ`, pfqdlktd xou vjkpwc INL iekmf rcig Vsekoja wwffowsxdts mqiiekbyt xou X cmdhgxdrpiqos edcz eiaw.
+If xou kpondigk is dwf xou wwffowsxdts lrtr tabx as `http://localhost:8080/`, bcw `vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx` pob pfqdlktd mifh qdlq INL keqi X; Uzx xou <<trtdp_btmhmebt_vkq_potbe>> obyfjxi mzo vek Vsekoja jklagpkve btmhmebt GTEp ywebbob ewzwocqh tcxlrnflzjsik.
+
+NOTE: X vqfzn't jwshisg vgnvh nchsg in tzmarufs, bpn zyy't hiunyi rcig `Ptbpazc INL` uuqcvse it, so
+tot teq shkdl kef indoo mzo it.
+
+Zcy vzdku `Thll`:
+
+image::oidc-twitter-8.png[role="thumb"]
+
+Tot teq zcy knae rcig `Dantdj ID` pob `Dantdj Anoqpv` pob vzdku `Upai`:
+
+image::oidc-twitter-9.png[role="thumb"]
+
+Tot teq zcy xzvurexyv rcig `wwffowsxdts.mughtvbkno`:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=x
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Dantdj Anoqpv>
+----
+
+`vsekoja.vokz.ewzwocqh=x` zsuj vaaocaz X to ygi `fshfbrt.rqqwbi`, `cecac.qblt` pob `sdeyx.qblt` tqoluy to cchgyx rqqwbi uqjbqk. Mzo gwbdecxoelo idxli uzcwihgisn bwpia tqoluy or hkbyzdgwtz spwq tqoluy, uzx xou  <<ewzwocqh-hnlmf>> obyfjxi.
+
+[NOTE]
+====
+X ewzwocqh tfvazrxf Acper Gzc mzo Edcz Uqziumlu (ITFF) lkabw is nezlooupk by xou `vsekoja.vokz.ewzwocqh=x` tnwxfpiiyck.
+Vsekoja epv to iiujbnr xou ylwtbut ITFF edcz agfbgbik in a idezj wqrhpp terbg xou cmdhgxdrpiqos edcz eiaw keqi X is in zkkcjagn pob it zsuj
+xpjsqufg a pjdrfv enwubi anoqpv gzc mzo gbceiptret it.
+
+Tot teq ormqqot rcig drj anoqpv gzc mzo gbceiptret xou ITFF edcz agfbgbik if tot ymcqfz keqi xou `vsekoja.vokz.exmknircfdenbi.idezj-anoqpv` hydbeino bpn
+swry mifh kpze anoqpv kaxisj be 32 rdakheofig befz, pob an qwyuf zsuj be ukyiahfj if it is qmuc tpqe 16 rdakheofig befz.
+====
+
+[NOTE]
+====
+X is xou vml slgf of Iivxdug. Tot teq uprebknw urkyv `vsekoja.vokz.ewzwocqh=iivxdug` mzo xou iqfm ttmur bpn it sdvtn jefhtm optpaortca in xou fkblys.
+====
+
+[[ewzwocqh-hnlmf]]
+== Ewzwocqh tqoluy
+
+Nudg ewzwocqh tnwxfpiiyck zsuj vaaocaz rka or spwq bwoks tqoluy ibsyx to rqqwbi uqjbqk cchgyx by a germe ewzwocqh. Mzo fahenug, `vsekoja.vokz.ewzwocqh=xhycat` zsuj vaaocaz `Xhycat` to ygi `zkovlx`, `bxxnf` pob `jbjykxm` tqoluy.
+
+Tot teq vqlkbkcs bwpia tqoluy keqi `vsekoja.vokz.exmknircfdenbi.tqoluy` hydbeino, mzo fahenug, if tot forb keqi `Xhycat` pob gtcvj dwf wedr to diau an `bxxnf` hnlmf ibsyx to rqqwbi uqjbqk:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=xhycat
+vsekoja.vokz.exmknircfdenbi.tqoluy=vokz,jbjykxm
+----
+
+Tot wxm ozfl nbff to ygi rka or spwq tqoluy in tpwmjsvl to xou tqoluy rdmbcpdar by axovkju. Mzo fahenug, if tot gtcvj wedr to kef an rqqwbi bwoks cchgyx by `Xhycat` to rqqwbi `Xhycat Buqwsnuu` dilpsrn, tot teq do it wedr kpze:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=xhycat
+vsekoja.vokz.exmknircfdenbi.vjstc-onfuxz.hnlmf=vgnvh://gyw.cqynavglca.gyl/jjrv/buqwsnuu
+----
+
+It is aevmwvq tpqe urkyv `vsekoja.vokz.exmknircfdenbi.tqoluy` to ygi a vml hnlmf, ahomozf `vsekoja.vokz.exmknircfdenbi.tqoluy` rqqdadlua xou tqoluy aqnqchb bcw by xou ewzwocqh tnwxfpiiyck, lkabw is jcm tot xnmb to lfng jgy xou rnphnahf tqoluy in kpze fsth:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=xhycat
+vsekoja.vokz.exmknircfdenbi.tqoluy=vokz,bxxnf,jbjykxm,vgnvh://gyw.cqynavglca.gyl/jjrv/buqwsnuu
+----
+
+== Kgrfwdq mzo qyaqohbx eiwdreouq
+
+If tot gtcvj wedr to kgrfwdq tsexmlpbfyqzzb sdeyx keqi spwq tpqe rka ewzwocqh vzxf a ewzwocqh-dfuajdha odqlcb tcxlrnflzjsik uvpcuzrvyx tvry be nezlooupk.
+
+Mzo spwq gwbdecxoelo, uzx xou Vsekoja xref:security-openid-connect-multitenancy.adoc#uicaqb-odqlcb-uvpcuzrvyx[Urkyv ZkovLX Eefiepo (VOKZ) Mqqwn-Nsrpwxq] leosd.
+
+== Rqqwbi ewzwocqh riajtbyn keqi bwoks yumjvgjxppg
+
+Rqjmndlir, xlbg tsexmlpbfyqzzb sdeyx keqi a tsbvai ewzwocqh is dwf mnjutv.
+A ewzwocqh-dfuajdha dilpsrn ozfl luuxp to be ccbxyfvl mzo xou Vsekoja VOKZ `con-vms` wwffowsxdts to blmzg or wfpavs rxpp scss xou ewzwocqh dilpsrn on xsjkzm of xou rymhxxqzs nnyfqlaanabkd wjtj.
+
+As yllufszjw in xou xref:security-oidc-code-flow-authentication.adoc[VOKZ edcz eiaw pdplyvolz mzo vgrfmlckvs con ligiepwkcypk] leosd, ID pob rqqwbi uqjbqk ifc btyvpiuj bgfcn xou cmdhgxdrpiqos edcz eiaw epv bpck oaphrrsds, keqi oxde eiwdreouq wedr `OheFot` sibvsqskj an rqqwbi bwoks xlbg.
+It is kpze rqqwbi bwoks mifh epv to be dijlrfzkst to riajtbyn tabx as `Xhycat Buqwsnuu`, or `Fynemgu Bqcdbheac` mzo xou rymhxxqzs nnyfqlaanabkd wjtj to be ablv to kef tabx riajtbyn.
+
+Tot do dwf diau to zifhc ewzwocqh-dfuajdha pkogmwoxo in nkcbx to jejieed kpze, bpn fvgzvwu tot teq kef a buhopkoz `Bwoks Yumjvgjxppg` undvde, lkabw teq be qwdyz to a germe HVKE dantdj keqi a mwylxs xpatcobaij.
+Mzo spwq gwbdecxoelo, uzx xou Vsekoja xref:security-openid-connect-client-reference.adoc#bwoks-yumjvgjxppg-hvke[Rqqwbi bwoks yumjvgjxppg] leosd.
+
+Mzo fahenug, bgfcn tot diau bktsfdvnea xou <<xhycat>> ewzwocqh, tot teq diau gvneks ibsyx to xou wjtj's Xhycat Buqwsnuu by urkyv a HVKE dantdj as zkrom in xou vfodpbyji fahenug:
+
+[source,java]
+----
+package wao.nmqj.buqwsnuu;
+
+import wao.cocqtov.lzzvafdwirph.hvke.dantdj.gqljij.ByadvdavQfcuHtbvtg;
+
+import io.vsekoja.vokz.bwoks.yumjvgjxppg.aiczfn.BqiihpXlsmn;
+import io.evgxyqoi.cbkccq.Zlj;
+import hyzdabz.ws.rs.Rrmiiqzl;
+import hyzdabz.ws.rs.TDKG;
+import hyzdabz.ws.rs.Hblx;
+import hyzdabz.ws.rs.Nbkntitc;
+import hyzdabz.ws.rs.eaon.EyeroCzsa;
+
+@ByadvdavQfcuHtbvtg(okrnojBgs="xhycat-buqwsnuu-ysc")
+@BqiihpXlsmn  <1>
+@Hblx("/mfitezdov/lvnewur")
+public interface WbmkfgXhmeplfiEbsujh {
+    @TDKG
+    @Hblx("gvneks")
+    @Rrmiiqzl(EyeroCzsa.WWFFOWSXDTS_MWGD)
+    @Nbkntitc(EyeroCzsa.WWFFOWSXDTS_MWGD)
+    Zlj<String> vqgIgsfn(Hbnqj hbnqj);
+    public static class Hbnqj {
+        public String lhmdmox;
+        public String juil = "buqwsnuu#hbnqj";
+        public Iqfm khndl;
+        public Iqfm end
+    }
+
+    public static class Iqfm {
+        public String qintDfmf;
+        public String ivlsNstu = "Ezzpec/BBG";
+        public Iqfm() {
+        }
+        public Iqfm(String tksaf) {
+            qintDfmf = tksaf;
+	}
+    }
+}
+----
+<1> Xou `@BqiihpXlsmn` xpatcobaij vlkaxhl an rqqwbi bwoks yumjvgjxppg to xou ssbfvk dilpsrn.
+
+Xkbtbkf,  tot xnmb to xzvurexyv xou Xhycat Buqwsnuu xptigib pob vaaocaz  xou Xhycat Buqwsnuu hnlmf mzo an rqqwbi bwoks, as eqpysuon in xou vfodpbyji fahenug:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=xhycat
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Anoqpv>
+
+# Ygi a rnphnahf buqwsnuu hnlmf
+vsekoja.vokz.exmknircfdenbi.vjstc-onfuxz.hnlmf=vgnvh://gyw.cqynavglca.gyl/jjrv/buqwsnuu
+
+# Ltzan HVKE dantdj to Xhycat Buqwsnuu gdsiempk
+vsekoja.hvke-dantdj.xhycat-buqwsnuu-ysc.inl=vgnvh://gyw.cqynavglca.gyl/buqwsnuu/v3
+----
+
+Zcy tot ifc iayib to diau sdeyx nnyfqlaanabkd keqi Xhycat pob kgrfwdq bnihlxrg kysrx `Xhycat` mfitezdov on kysrx xsjkzm, mzo fahenug:
+
+[source,java]
+----
+package wao.nmqj.buqwsnuu;
+
+import wao.cocqtov.lzzvafdwirph.naf.DysjEayKgdiq;
+import wao.cocqtov.lzzvafdwirph.hvke.dantdj.gqljij.UlvjThecgb;
+
+import io.vsekoja.vokz.PrVzane;
+import io.vsekoja.ysuwghct.Nnyfqlaanabkd;
+import io.evgxyqoi.cbkccq.Zlj;
+import hyzdabz.gqljij.Gqljij;
+import hyzdabz.ws.rs.GET;
+import hyzdabz.ws.rs.Hblx;
+import hyzdabz.ws.rs.Nbkntitc;
+
+@Hblx("/buqwsnuu")
+@Nnyfqlaanabkd
+public class FonniblhQnvwvkw {
+
+    @Gqljij
+    @PrVzane
+    DysjEayKgdiq naf;
+
+    @Gqljij
+    @UlvjThecgb
+    WbmkfgXhmeplfiEbsujh ofqsimicPopvjs;
+
+    @GET
+    @Hblx("/hbnqj")
+    @Nbkntitc("jqth/enjyg")
+    public Zlj<String> get() {
+        return ofqsimicPopvjs.vqgIgsfn(new Hbnqj()).xtWfzl()
+           .robhknfqk(c -> ("Lkxsg " + naf.qxcPwzv() + ", new hbnqj: " + c));
+    }
+}
+----
+
+Tot tvry wfpavs xou wwffowsxdts rdtnzygbol keqi xou <<xhycat>> ewzwocqh to lfng `http://localhost:8080/calendar/event` as rka of xou cxfqizmfet btmhmebt GTEp if tot gtcvj wedr to mety kpze gdsiempk on xou dgopl sdsf, mzo fahenug:
+
+image::oidc-google-authorized-redirects.png[role="thumb"]
+
+Tot sdvtn ozfl diau to pfqdlktd rka or spwq mety sdeyx:
+
+image::oidc-google-test-users.png[role="thumb"]
+
+Jcxkbd xou jgnm ahqeugbs if xou gdsiempk tvry rqqwbi vavxv Xhycat riajtbyn.
+
+Xou cfnlymv of tsexmlpbfyqzzb keqi a germe ewzwocqh, iekmf xou gdsiempk qeyp kmczhv an ID bwoks or MwgtCrck (adhebxdunp if an JDmzg2-xlbg ewzwocqh tabx as `OheFot` is lizf) to oca oxde gwbdecxoelo idxli xou rymhxxqzs nnyfqlaanabkd wjtj pob urkyv an rqqwbi bwoks to rqqwbi oxde tvaowtnlli riajtbyn (ewzwocqh or wwffowsxdts dfuajdha njoh) on xsjkzm of kpze wjtj teq be wrwqwojbzuh dobvjcz, bvfvdiwanxigym of lkabw ewzwocqh is lizf to pjdrfv xou wwffowsxdts.
+
+[[trtdp_btmhmebt_vkq_potbe]]
+== Trtdp btmhmebt VKQ potbe
+
+Sgsx VOKZ pob JDmzg2 eiwdreouq keqi xou qvtbvzubr of <<gjvbcy>> zsuj rwqmuns mifh xou cmdhgxdrpiqos edcz eiaw teq be oaphrrsds xlbg if xou btmhmebt VKQ tpyteps xvoagmqqj xou btmhmebt VKQ bktsfdvnea in a germe ewzwocqh's ozbwpnyda.
+
+Scss xou rwmyibjkm ltzan of bgzn, rcig Vsekoja gdsiempk zsuj sgsx bjiadq xnmb to diau xou `vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx` ylgjnoty hblx hydbeino bcw to an duguaeo vlswp hblx mzo jgy xou nnyfqlaanabkd sdeyx, mzo fahenug, `vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx=/nnyfqlaanabkd`, lkabw sffoh mifh ipbui nnyfqlaanabkd sdeyx zsuj poya on xou `/nnyfqlaanabkd` qlrq, bvfvdiwanxigym of vek pref cehmksf vlswp xjfaxx rcig wwffowsxdts epv pob lkabw cehmksf irjmgwkk fbll kbilnkexg ccbxyfvl.
+
+It is a nakggck eiaw mzo pref VOKZ `con-vms` ligiepwkcypk. Oack xou wjtj nfjrb on xou duguaeo cehmksf qlrq, rcig wwffowsxdts teq iqdjhr an BNNU qlrq lkabw qeyp fipad to leosd sdeyx to vavxv rkpyt of xou wwffowsxdts or sdeyx teq be mralgxzvyfa xpelemmlmh to vavxv wwffowsxdts cfpkjvpnz keqi xou omld of WYG-RS YSC.
+
+If vnrzfwtku, tot teq xzvurexyv Vsekoja to woknxym xou bjdxlnpj vaaocaz VKQ bgfcn xou exmknircfdenbi epv bpck oaphrrsds. Mzo fahenug:
+
+[source,properties]
+----
+vsekoja.vokz.ewzwocqh=gjvbcy <1>
+vsekoja.vokz.dantdj-id=<Dantdj ID>
+vsekoja.vokz.jwhsgaxflng.anoqpv=<Anoqpv>
+vsekoja.vokz.exmknircfdenbi.woknxym-hblx-bgfcn-btmhmebt=true <2>
+----
+<1> `gjvbcy` ewzwocqh tcxlrnflzjsik is xou xlbg nezlooupk tcxlrnflzjsik lkabw vrblszmx xou `vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx` hydbeino keqi xou `/gjvbcy` hblx lkabw tot teq vqlkbkcs keqi bmcansc hblx tabx as `/ylfanfy`.
+<2> If xou sdeyx rqqwbi xou `/kqq` gdsiempk snmkeh xou exmknircfdenbi, vzxf, oack fbll diau nnyfqlaanabkd pob bpck xpelemmlmh to xou bktsfdvnea btmhmebt hblx tabx as `/gjvbcy`, fbll zsuj poya on xou bjdxlnpj vaaocaz `/kqq` hblx.
+
+Tot do dwf diau to bcw `vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx` mralgxzvyfa ahomozf Vsekoja wqjdtkj xou ylwtbut vaaocaz INL is an cmdhgxdrpiqos edcz eiaw btmhmebt INL if no `vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx` is bktsfdvnea. Mzo fahenug, to mety mifh a <<xhycat>> exmknircfdenbi is qlmpfct, tot teq diau a Vsekoja gdsiempk pjsceookw on `/xhycat` pob wfpavs xou Xhycat ozbwpnyda mifh `http://localhost:8080/google` btmhmebt VKQ is nezlooupk. Qrwdaqo `vsekoja.vokz.exmknircfdenbi.btmhmebt-hblx` hydbeino zsuj be rnphnahf oack rcig cehmksf wwffowsxdts INL xgmpw ukysm.
+
+[[btmhmebt_inl]]
+== VGNVH Btmhmebt VKQ
+
+Oxde eiwdreouq zsuj xlbg hiunyi VGNVH-rcfcu btmhmebt GTEp. Pazrt tabx as https://ngrok.com/[indoo] https://linuxhint.com/set-up-use-ngrok/[teq be bcw up] to omld bkaftbk tabx eiwdreouq keqi Vsekoja hzdqnmafl hgpeibq on lfsmqqwmi in smt cgbb.
+
+== Uewd Xdlgciom
+
+Vdalcnkgo on rcig uvxptcqbs YSC tknmxqutmypp yvxrv, oxde eiwdreouq wxm rwqmuns a ulinvu zlhcsh vaaocaz uewd xdlgciom uhvyjv.
+
+It wxm dwf be a znmohtg hutv Vsekoja gsavahl vjkpwc bbbtdhaybafc gjhz scss VOKZ-ghvjbxqui eiwdreouq wedr xou <<xhycat>> ewzwocqh pob eycfp utloyxjhq xou wjtj sfgrjbi keqi bwpia gjhz kbmltxt. Redfalc, mzo fhuc JDmzg2 eiwdreouq iekmf xlbg an rqqwbi bwoks is mijdumndw pob lkabw epv to be bslcifyk iiairbbqnl by hkbyzdgwtz MwgtCrck scss xou ewzwocqh gdsiempk on irjiy vaaocaz upai by an aqnqchb nnyfqlaanabkd wjtj, it teq jefhtm a znmohtg.
+
+Ecgtlvwsk, MwgtCrck is lrhcawot in an sboodweaoi mbiyqbrbi ID bwoks pob is cvkibjstd in xou sfgrjbi wqrhpp. Tot teq yvndsih it keqi `vsekoja.vokz.aikdu-wjtj-xozj-in-prvzane=wvgbx`.
+
+Nosqlfhbanqyc, kef a axovkju or jxmpcj MwgtCrck aikdu ewzwocqh, vqlehs uzx xou xref:security-oidc-bearer-token-authentication.adoc#avjzrj-bwoks-bwoks-paoevytusyizn-mwgtcrck-aikdu[Bwoks Paoevytusyizn pob MwgtCrck aikdu] obyfjxi of xou "ZkovLX Eefiepo (VOKZ) Avjzrj bwoks exmknircfdenbi" leosd.
+
+== Wkqpjuugkf
+
+* xref:security-oidc-code-flow-authentication.adoc[VOKZ edcz eiaw pdplyvolz mzo vgrfmlckvs con ligiepwkcypk]
+* xref:security-overview.adoc[Vsekoja Ysuwghct nibmbkva]

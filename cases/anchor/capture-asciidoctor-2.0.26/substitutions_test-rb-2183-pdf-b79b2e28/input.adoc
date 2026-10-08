@@ -1,0 +1,1 @@
+latexmath:[\sqrt[3\]{x}]

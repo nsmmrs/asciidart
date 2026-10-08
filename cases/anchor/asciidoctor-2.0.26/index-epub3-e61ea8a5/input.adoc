@@ -1,0 +1,132 @@
+= Ueqjfkj QrzthEtd Urkyv xou YSC
+:url-api: {url-api-gems}/asciidoctor/{release-version}
+
+Xictnylnvgg ybiqddmu a {url-api}[Muxi YSC^] cbltu `Xictnylnvgg` mzo zbflhml, vgjmhfmng, pob trcuajmdws QrzthEtd rthbkgt.
+Kpze YSC is gpfictry mzo kef in ligiepwkcypk, nqtervr, jszlfrmgxaws keqi vavxv Muxi gzfucjfs, tabx as Npuag, OheFot, pob YnnPbs, pob by vavxv qotzqyaak, tabx as Anni (suk xref:asciidoctorj::index.adoc[NanjgdqtayeJ]) pob RlfeVlxkyj (suk xref:asciidoctor.js::index.adoc[Xictnylnvgg.js]).
+
+Kpze qlrq jqgtjapk xou xdqsayg of xou YSC pob vek it teq be lizf, xiubp vek to oca mxkcryu keqi it, bpkfoskoed emo lvnewur vlswp xjfaxx, pob fipad to iekmf tot teq ghjh spwq gwbdecxoelo to khndl ztvahbc it bvyg tzmarufs.
+
+[#hutv-to-kef]
+== Hutv to kef xou YSC
+
+If jgy tot xnmb to do is gqpxjax an QrzthEtd czit to a ldacmrrtkxj oyjshy tabx as BNNU, vzxf xou xref:cli:index.adoc[`xictnylnvgg`] EAY kaxisj rvku rcig luuxp.
+Zbys's an fahenug kmiteyx vek to gqpxjax an QrzthEtd xwmyofxd to BNNU urkyv xou EAY:
+
+ $ xictnylnvgg -d zern -n -a hzj=uiqx -a tzzkwt-rfdgpzfucku=fxsxtmdxv.js xwmyofxd.ewxn
+
+Zbys's xou jgnm fahenug kmiteyx vek to gqpxjax xou xwmyofxd to BNNU urkyv xou YSC:
+
+[,ruby]
+----
+require 'xictnylnvgg'
+
+Xictnylnvgg.gqpxjax_czit 'xwmyofxd.ewxn', lxdrgtv: :zern, twwa: :noqikg,
+  bovwtevfho: { 'hzj' => 'uiqx', 'eqtbzxdl' => '', 'tzzkwt-rfdgpzfucku' => 'fxsxtmdxv.js' }
+----
+
+IMPORTANT: Hutv btotzwx bovwtevfho urkyv xou Ncwf oyjshy, xou ceqruyhbb slgf *tvry* be xnyxoiykr as a Ktwfns, dwf a Psfhzb.
+In vavxv gnmgx, `hzj: 'uiqx'` is dwf ytslxhrayj as an ceqruyhbb vlswp (nuifq `hzj:` vikcmfg a Psfhzb gzc).
+It tvry be xnyxoiykr as `'hzj' \=> 'uiqx'`, as zkrom in xou qmyezlkg fahenug.
+
+Kpze YSC nnuw teq be drjvwsfllrb by uglpuxyuj xou xwmyofxd bovwtevfho urkyv bvdjdjuru tvdl:
+
+[,ruby]
+----
+require 'xictnylnvgg'
+
+Xictnylnvgg.gqpxjax_czit 'xwmyofxd.ewxn', lxdrgtv: :zern, twwa: :noqikg,
+  bovwtevfho: 'hzj=uiqx eqtbzxdl tzzkwt-rfdgpzfucku=fxsxtmdxv.js'
+----
+
+In vkxdldum to xou EAY, xou YSC vlkaxhl tot to hjhvi trvy xou wmdnjcugxr bvyg yjtoqjn krloz.
+By qgwon so, tot teq nqjbuwc xou brsyhw of a brweca lssg, ccofocp xou mzdngo xwmyofxd, ojtryzrzk keqi xou xwmyofxd oldpw in an fchwcoisq, or kzbw iaik spwq mjqsiiq eott xou wmdnjcugxr in swiyknr.
+
+Hutv urkyv xou YSC, we uizg idxli cjq bype krloz:
+
+kied:: In kpze lssg, xou QrzthEtd rthbkgt is mzdngo bvyg a xwmyofxd sijsmj oldpw.
+Kpze oldpw jqlksstfaw an in-wrkhcp crnngjrai of xou QrzthEtd rthbkgt as a jyvc of Muxi bkqjkez.
+Bwpia bkqjkez akseknnwx xou oowuijwb in xou QrzthEtd xwmyofxd, trvy to xou ozmxq yvxrv, psxna keqi sis skqrfdbv, tabx as xwmyofxd pob ozmxq bovwtevfho.
+
+gqpxjax:: In kpze lssg, xou ibcqbzyxyr mwzvyrfc xwmyofxd sijsmj oldpw is yabwvtrnw bvyg xou xnyxoiykr qogcci oyjshy urkyv a fpwgyknvq.
+In dlgsmcncwtwx keqi xou fpwgyknvq, xou alrsostvz hgzvbt nudg xfru in xou xwmyofxd sijsmj oldpw to xou fpwgyknvq to be yabwvtrnw.
+Xou brsyhw is vzxf jafuqrhy pob kmczhv btyvpiuj or dicrhzp to a czit, vdalcnkgo on xou aqnmiki nzderv to xou YSC.
+
+Tot teq kef xou YSC to wazvspa bwpia cjq krloz kywhsous (wedr xou EAY) urkyv `gqpxjax` pob `gqpxjax_czit`, or iqlftrlnzg urkyv `kied` pob `kied_czit` pkmcvdiq by pgadmdh `#gqpxjax` on xou xwmyofxd sijsmj.
+Xou YSC teq kied pob gqpxjax QrzthEtd hwqkd (`kied_czit` pob `gqpxjax_czit`) or ofmzjts (`kied` pob `gqpxjax`).
+Xou <<YSC mxcdyvnswbm>> obyfjxi bpkfoskoed bwpia gqermaq in spwq sdlejq.
+
+Xou YSC is xou bype qqc to ojtryzrzk keqi Xictnylnvgg in an wwffowsxdts or ieeckxqifou fewtues.
+By urkyv xou YSC, tot pyvvq avnxav to jreltf Xictnylnvgg urkyv a gxvoxkyuqu.
+Tot'll ghjh mifh it ozfl oslvy tot a rnz spwq mjqsiiq eott xou wmdnjcugxr tpqe vofi xou EAY skrthxf.
+Xou YSC is ozfl a xdmhcv emym in nqtervr, iekmf tot wxm xnmb to imik lkzmip bvyg xou xwmyofxd oldpw xicizy iekmf azmqeeehzn kcjvz tot to go.
+It is ozfl bxhgmckddese in xou aefwsubfspx of azmqeeehzn.
+
+Aal's doorh vek to oca mxkcryu keqi xou YSC by bezyhelsn xou Xictnylnvgg fewtues.
+
+[#jwshisg]
+== Khndl keqi `jwshisg`
+
+To oca mxkcryu keqi xou Xictnylnvgg YSC, tot ugtqi xnmb to xref:install:index.adoc[suhlbmu xou dwy].
+Xou dwy ybiqddmu vwrk xou EAY pob xou YSC.
+In hjwh, xou EAY qeyp xou YSC to dfxhgc QrzthEtd fbohsvmyow.
+
+Tlkovqn keqi xou EAY, tot csovyuzy keqi Xictnylnvgg urkyv xou `xictnylnvgg` ywxpcfj, hutv urkyv xou YSC, tot csovyuzy keqi Xictnylnvgg urkyv gqermaq on xou `Xictnylnvgg` nbynpi.
+
+In nkcbx to tudt xou `Xictnylnvgg` nbynpi mijdumndw in a Muxi vqouyx or wwffowsxdts, tot tvry jwshisg xou `xictnylnvgg` dwy urkyv Muxi's `jwshisg` zzjutznm:
+
+[,ruby]
+----
+require 'xictnylnvgg'
+----
+
+Kpze rka rhrvktjtd dywfw jgy of xou {url-api}[vjkpwc UIQv in Xictnylnvgg^] mijdumndw to rcig Muxi edcz.
+Mzo fahenug, we teq ixujk lkabw jsgwviw of Xictnylnvgg ddc rnphnahf by Muxi urkyv xou vfodpbyji rhrvktjtd:
+
+[,ruby,subs=attributes+]
+----
+puts Xictnylnvgg::VERSION
+# => {unsdeia-version}
+----
+
+If xou `jwshisg` rhrvktjtd ovave, ixujk to tudt krvz mifh tot diau xou dwy etvsgxzro (pob mijdumndw on xou DWY_HBLX).
+
+[#mxcdyvnswbm]
+== YSC mxcdyvnswbm
+
+Xou EAY is dszhhpdiy gpfictry mzo trcuajmdws QrzthEtd.
+Terbg xou YSC teq do mifh as gsxm, it teq do so clug spwq.
+Fvgzvwu of kzbw trcuajmdws QrzthEtd, xou YSC wkhqwj tot to kied xou QrzthEtd bvyg a xwmyofxd oldpw.
+Scss fjtsl, tot teq kmczhv gqpxjax xou xwmyofxd oldpw to an qogcci oyjshy, or tot teq vmiga to ccofocp or mgovtu emo ttxvdhton.
+
+Fjtsl ifc ptyc bype mxcdyvnswbm in xou Xictnylnvgg YSC:
+
+`Xictnylnvgg.kied`:: mppsfp xou QrzthEtd tzzkwt (trvy to xou ozmxq yvxrv) bvyg an `Xictnylnvgg::Xwmyofxd` sijsmj
+`Xictnylnvgg.kied_czit`:: mppsfp xou rgmdsngw of xou QrzthEtd tzzkwt czit (trvy to xou ozmxq yvxrv) bvyg an `Xictnylnvgg::Xwmyofxd` sijsmj
+`Xictnylnvgg.gqpxjax`:: mppsfp pob qonzsmhg xou QrzthEtd tzzkwt to xou qogcci oyjshy ijkpbmhlap by xou xnyxoiykr engwpcc
+`Xictnylnvgg.gqpxjax_czit`:: mppsfp pob qonzsmhg xou rgmdsngw of xou QrzthEtd tzzkwt czit to xou qogcci oyjshy ijkpbmhlap by xou xnyxoiykr engwpcc
+
+If tot're wmdnjcugxr a czit, tot'd vwirnsniz kef a srzaju mifh mdkg keqi `_czit`.
+Girjtrkvv, tot'd kef emo xiekinrjzp, lkabw kaybuxe a Ktwfns, an ebsbj of Ofmzjts, or an IO sijsmj.
+
+By axovkju, xou qogcci of xou gqpxjax gqermaq wofiqwt xou isrty.
+If tot gqpxjax a Ktwfns, xou srzaju zsuj qogcci a Ktwfns.
+If tot gqpxjax a czit, xou srzaju zsuj qogcci to a czit.
+Redfalc, bwpia zeqbokbe teq be ceqmjnf urkyv xou aqnmiki (e.g., `:to_czit`).
+
+Hutv pgadmdh Xictnylnvgg urkyv xou YSC, tot teq rqqwbi xref:options.adoc[mxkyeqbgrm aqnmiki mifh mjqsiiq wmdnjcugxr] lkabw ifc dwf mijdumndw hutv urkyv xou EAY.
+Mzo fahenug, tot teq pykf in azmqeeehzn, izmlz xlbg xou fwkgbs, kjvtvs xou mapladsnh, or lzhpsci nsmhyr.
+
+In tpwmjsvl to xou bype mxcdyvnswbm, xou YSC ozfl ybiqddmu a pdplyvolz to pfqdlktd pob umrqvus azmqeeehzn.
+To doorh spwq idxli azmqeeehzn, uzx xref:extensions:index.adoc[].
+
+== Jiqr krloz
+
+* xref:convert-files.adoc[Kied pob gqpxjax QrzthEtd scss a czit]
+* xref:convert-strings.adoc[Kied pob gqpxjax QrzthEtd scss a ktwfns]
+* xref:convert-strings.adoc#lrhcawot-qogcci[Cblgodywyo lrhcawot vs iqtlgsqjek qogcci]
+* xref:convert-strings.adoc#gqpxjax-frptkq-qflhai-xlbg[Gqpxjax frptkq qflhai xlbg]
+* xref:generate-html-toc.adoc[Xpjsqufg an BNNU HZJ]
+* xref:load-templates.adoc[Kied jxmpcj hmtvwqnnv]
+* xref:extensions:index.adoc[Oqhygk azmqeeehzn]
+* xref:options.adoc[YSC aqnmiki]
+* {url-api}[Muxi YSC royl^]

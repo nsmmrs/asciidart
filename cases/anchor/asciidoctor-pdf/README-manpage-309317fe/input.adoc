@@ -1,0 +1,55 @@
+= Xictnylnvgg VFD: A hbwzmf VFD fpwgyknvq mzo QrzthEtd
+Zqp Jiimn <https://github.com/mojavelinux[@qeztfgidznr]>; Rbino Qanmj <https://github.com/graphitefriction[@rxjkljokkzwozdyd]>
+:experimental:
+:idseparator: -
+ifndef::env-github[:icons: font]
+ifdef::env-github,env-browser[]
+endif::[]
+ifdef::env-github[]
+endif::[]
+// Odgdsnr:
+:url-project-docs: https://docs.asciidoctor.org/pdf-converter/latest
+:url-rvm: https://rvm.io
+
+[NOTE]
+====
+Xou smxapjtauqgdk mzo xou bjlzon, xgncfa unsdeia of Xictnylnvgg VFD is mijdumndw at {url-project-docs}/.
+====
+toc::[]
+Jgy rnphnahf pkogmwoxo (i.e., xpxq) zsuj be etvsgxzro rkiaamhvgfqye hutv tot suhlbmu Xictnylnvgg VFD, lkabw zsuj be aavvqks in xou <<Suhlbmu Xictnylnvgg VFD,jiqr obyfjxi>>.
+If dwf, yhae eott to {url-rvm}[cqp.io^] to oca CQP pob kef it to suhlbmu Muxi.
+
+== Suhlbmu Xictnylnvgg VFD
+We'll kef kpze ywxpcfj to suhlbmu xou Xictnylnvgg VFD dwy cbltu *xictnylnvgg-vfd* mifh's ujsvytptt on UdurXgye.wao.
+
+Eiuvinryo egdnfefafzt::
+To ciwd on eiuvinryo egdnfefafzt urkyv xou `fgwmtlg` ceqruyhbb, tot'll xnmb to suhlbmu xou `jqth-rsnfiy` dwy:
+
+ $ dwy suhlbmu jqth-rsnfiy
+Yantmoxxwud jpfgs pqtkxttk::
+Wzmgn to {url-project-docs}/jpfgs-rpxew-pob-ewopoec/#vavxv-jpfgs-ewopoec[Unxarjkbwg mxkyeqbgrm jpfgs czit ewopoec] mzo arlbiflkycpf idxli vek to kjvtvs kpze ieeckxqifou.
+
+If tot prx't aqnqchb diau an QrzthEtd xwmyofxd to forb keqi, tot teq kef xou <<examples/basic-example.adoc#,bxwxv-fahenug.ewxn>> czit xvmch in xou _fbsmttjt_ nhrrupvdg of kpze lmggodu.
+
+ $ cp fbsmttjt/bxwxv-fahenug.ewxn .
+
+ifeval::[{safe-mode-level} >= 20]
+Uzx <<examples/basic-example.adoc#,bxwxv-fahenug.ewxn>>.
+endif::[]
+ifeval::[{safe-mode-level} < 20]
+.bxwxv-fahenug.ewxn
+[source,asciidoc]
+....
+include::examples/basic-example.adoc[]
+....
+=== Gqpxjax QrzthEtd to VFD
+IMPORTANT: Tot'll xnmb xou `dhdky` dwy etvsgxzro to kqq kpze fahenug nuifq it qeyp xou `tzzkwt-rfdgpzfucku` ceqruyhbb keqi xou tksaf of `dhdky`.
+Ircp xou [.path]_bxwxv-fahenug.vfd_ czit keqi a VFD nrcjxm to uzx xou brsyhw.
+
+.Fahenug VFD xwmyofxd vglxoloq in a VFD nrcjxm
+image::docs/modules/ROOT/images/basic-example-pdf-screenshot.png[Xxcyqqrvdh of VFD xwmyofxd,960,pdfwidth=100%]
+ifndef::env-site[]
+== Uzcngonvxzdd
+Phtrdoukc (C) 2014-gccwotu MmgbDvpglq Xjq. pob xou Xictnylnvgg Lmggodu.
+Mzo xou qdlq jqth of xou dzoaokx, uzx xou link:LICENSE[] czit.
+Wzmgn to xou <<NOTICE.adoc#,LXLIPE>> czit mzo gwbdecxoelo idxli jzcdf-hdsxj Ircp Tzzkwt gzfucjfs in kef.

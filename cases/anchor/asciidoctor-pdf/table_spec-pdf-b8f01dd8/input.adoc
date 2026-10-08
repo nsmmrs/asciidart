@@ -1,0 +1,7 @@
+[stripes=even]
+|===
+|vae
+|fi
+|fo
+|gya
+|===

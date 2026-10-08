@@ -1,5 +1,5 @@
 description = "asciidoctor#3633: unchanged: a trailing anchor is the section id. asciidoctor#3633: inline anchors in section titles were not registered in the catalog, so a duplicate went unreported (and tools reading the catalog couldn't resolve them)."
 source = "bugfix:asciidoctor#3633"
 features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/3633 (asciidart benchmark/PARITY.md)"
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3633 (ptome benchmark/PARITY.md)"
 formats = ["html5"]

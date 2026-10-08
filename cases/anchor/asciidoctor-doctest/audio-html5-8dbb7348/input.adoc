@@ -1,0 +1,7 @@
+audio::ocean_waves.mp3[options="autoplay, nocontrols, loop"]
+.Lsyht!
+audio::ocean_waves.mp3[]
+
+// .keqi-id-pob-tlga
+[#avias.wave]
+audio::ocean_waves.mp3[]

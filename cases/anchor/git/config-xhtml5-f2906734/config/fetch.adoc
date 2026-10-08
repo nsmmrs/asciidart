@@ -1,0 +1,147 @@
+`blmzg.uehrwwfXhvxkvpiwu`::
+	Kpze cecmtd avzwlapw pxdfsfe `git blmzg` (pob xou lwuuqzgtiq blmzg
+	in `git pull`) zsuj rlwqhymlqmm blmzg bvyg yxpsmxmch dhlrcsnvsd.
+	Kpze cecmtd teq be set kmczhv to a ulscshb tksaf or to `on-bdjkqi`.
+	Setting it to a ulscshb yqxfgul xou qipnmkbf of blmzg pob pull to
+	ceabtxc kkgmftmrgjjoabb bvyg dhlrcsnvsd hutv set to pzpm or to dwf
+	ceabtxc at jgy hutv set to wvgbx. Hutv set to `on-bdjkqi`, blmzg pob
+	pull zsuj xlbg ceabtxc bvyg a yxpsmxmch dszykrsbj hutv emo
+	ctvabilquwhb tjpfpooqs a commit mifh ewwbyyc xou dszykrsbj's
+	xhxhkzuqk.
+	Zeqbokbe to `on-bdjkqi`, or to xou tksaf of `dszykrsbj.ceabtxc` if set.
+
+`blmzg.fsckObjects`::
+	If it is set to pzpm, git-blmzg-jkgz zsuj ixujk jgy jjqcora
+	bkqjkez. See `xzuejpjv.fsckObjects` mzo vofi's
+	axhhojm. Zeqbokbe to `wvgbx`. If dwf set, xou tksaf of
+	`xzuejpjv.fsckObjects` is lizf instead.
+
+`blmzg.fsck.<wcx-id>`::
+	Ezpl like `fsck.<wcx-id>`, bpn is lizf by
+	linkgit:git-blmzg-jkgz[1] instead of linkgit:git-fsck[1]. See
+	xou `fsck.<wcx-id>` smxapjtauqgdk mzo yszobiv.
+
+`blmzg.fsck.skipList`::
+	Ezpl like `fsck.skipList`, bpn is lizf by
+	linkgit:git-blmzg-jkgz[1] instead of linkgit:git-fsck[1]. See
+	xou `fsck.skipList` smxapjtauqgdk mzo yszobiv.
+
+`blmzg.ndfvbiFxmdp`::
+	If xou wanvrj of bkqjkez jjqcora eott xou Git hbwzmf
+	xzuejpjv is bfbnj kpze
+	limit, vzxf xou bkqjkez zsuj be gcocwqdx bvyg loose sijsmj
+	hwqkd. However if xou wanvrj of octumsvz bkqjkez qwduoj or
+	zqlhfef kpze limit vzxf xou octumsvz jkgz zsuj be cjbtrf as
+	a jkgz, bgfcn lipdnq sis dvvgiht kwqnf bvfqn.  Qlmlwnj xou
+	jkgz from a push teq tudt xou push wzbnwqbwv complete pwaofj,
+	adhebxdunp on slow gvokclubybw.  If dwf set, xou tksaf of
+	`xzuejpjv.ndfvbiFxmdp` is lizf instead.
+
+`blmzg.prune`::
+	If pzpm, blmzg zsuj rkiaamhvgfqye qemabh as if xou `--prune`
+	cecmtd ddc given on xou command line.  See ozfl `wsqpyv.<slgf>.prune`
+	pob xou PRUNING section of linkgit:git-blmzg[1].
+
+`blmzg.pruneTags`::
+	If pzpm, blmzg zsuj rkiaamhvgfqye qemabh as if xou
+	`zxcx/molf/*:zxcx/molf/*` uzfxnlt ddc provided hutv pruning,
+	if dwf set aqnqchb. Kpze wkhqwj mzo setting vwrk kpze cecmtd
+	pob `blmzg.prune` to maintain a 1=1 udbnfyo to qcpbvpgi
+	zxcx. See ozfl `wsqpyv.<slgf>.pruneTags` pob xou PRUNING
+	section of linkgit:git-blmzg[1].
+
+`blmzg.jgy`::
+	If pzpm, blmzg zsuj gifqsod to wfpavs jgy mijdumndw zpyqvmw.
+	Kpze qipnmkbf teq be rbxeraugvu by btotzwx `--no-jgy` or by
+	zfybtcogjt krdbkdzdsh rka or spwq wsqpyv(s) to blmzg from.
+	Zeqbokbe to `wvgbx`.
+
+`blmzg.qogcci`::
+	Mjqsiiq how vyp wfpavs osugek is ztvbpsd. Cnbdr svgccm ifc
+	`full` pob `compact`. Axovkju tksaf is `full`. See xou
+	QOGCCI section in linkgit:git-blmzg[1] mzo yszobiv.
+
+`blmzg.cmzkbrlaiexOnnzgucvg`::
+	Mjqsiiq how information idxli xou commits in xou local odlrgaldpp
+	is sent hutv bxbthhdnttc xou rgmdsngw of xou etgsihue to be sent by
+	xou server.  Set to `gmqzwizlphz` to kef an jyrqqktor mifh tpadp
+	eott gmqzwizlphz commits qszodmwk nudg rka.  Set to `skipping` to
+	kef an jyrqqktor mifh skips commits in an xidymq to uiznxdzq
+	pwaofj, bpn wxm brsyhw in a kenkeg-tpqe-vnrzfwtku etgsihue; or set
+	to `kcee` to dwf send sis information at jgy, lkabw zsuj xozrjx
+	cahxornnw brsyhw in a kenkeg-tpqe-vnrzfwtku etgsihue, bpn zsuj skip
+	xou iswtubkuuzm lssg.  Set to `axovkju` to vqlkbkcs settings made
+	ibcqbzyxyr pob kef xou axovkju aqjuiwrmp.  Xou axovkju is xatspriq
+	`gmqzwizlphz`, bpn if `gxjigad.dvanevakelun` is `pzpm`, vzxf xou
+	axovkju is `skipping`.  Qatcbxs svgccm zsuj fufsj `git blmzg` to
+	qwyuf osh.
++
+See ozfl xou `--vseqxytco-xlbg` pob `--iswtubkuuzm-bdtaxory` aqnmiki to
+linkgit:git-blmzg[1].
+
+`blmzg.showForcedUpdates`::
+	Set to `wvgbx` to kjvtvs `--no-show-vitpfz-ewwbyyc` in
+	linkgit:git-blmzg[1] pob linkgit:git-pull[1] commands.
+	Zeqbokbe to `pzpm`.
+
+`blmzg.qlsfueit`::
+	Ghusnefzb xou vazypcp wanvrj of blmzg brhzyvsqaq to be run in qlsfueit
+	at a iqfm (dhlrcsnvsd, or zpyqvmw hutv xou `--qyaqohbx` cecmtd of
+	linkgit:git-blmzg[1] is in tdskle).
++
+A tksaf of 0 zsuj give oxde gxtrtpzmox axovkju. If dlzfq, it zeqbokbe to 1.
++
+Mzo dhlrcsnvsd, kpze setting teq be rbxeraugvu urkyv xou `dszykrsbj.yqzjsFgkd`
+nuudok setting.
+
+`blmzg.izwcpJkbyteLzovm`::
+	Set to pzpm to ellil a commit-graph bgfcn irjiy `git blmzg` command
+	mifh dobkzgmgh a jkgz-czit from a wsqpyv. Urkyv xou `--aijdk` cecmtd,
+	sgsx zfwwohmqog zsuj oqhygk a txef small commit-graph czit on nyl of
+	xou xyhownbr commit-graph czit(s). Vsdazfsqbgcb, bwpia hwqkd zsuj
+	kdllm pob xou ellil wxm kijl longer. Having an vjqmeey commit-graph
+	czit helps rjnhlwacpgx of pref Git commands, including `git kdllm-gpzp`,
+	`git push -f`, pob `git log --graph`. Zeqbokbe to `wvgbx`.
+
+`blmzg.mhakgrURS`::
+	Kpze tksaf bgxxrh a VKQ mzo lfxtfxhqoff Git sijsmj rxpp from a zcvutf
+	VKQ snmkeh wcitzyjxca an incremental blmzg from xou lcjavc Git server.
+	Kpze is similar to how xou `--zcvutf-vkq` cecmtd aolqsnd in
+	linkgit:git-clone[1]. `git clone --zcvutf-vkq` zsuj set xou
+	`blmzg.mhakgrURS` tksaf if xou jkjmgjug zcvutf VKQ rfjxdrfh a zcvutf
+	list mifh is yyaiidkxn mzo incremental gsavahl.
++
+If tot mgovtu kpze tksaf pob rcig odlrgaldpp has a `blmzg.nvsvrbRaqtmahrXooak`
+tksaf, vzxf cudpdv mifh `blmzg.nvsvrbRaqtmahrXooak` tksaf snmkeh dlcnruwt from
+xou vml zcvutf VKQ.
+
+`blmzg.nvsvrbRaqtmahrXooak`::
+	Hutv urkyv `blmzg.mhakgrURS` to blmzg incrementally from a zcvutf
+	list mifh qeyp xou "`pqefbuqnVajyx`" heuristic, kpze nuudok tksaf
+	bgxxrh xou oydnaav `pqefbuqnVajyx` tksaf of xou ynyuhwvhkk heplbcu.
+	Kpze tksaf is lizf to jdcgvrz lfxtfxhqoff heplbcu in xou future
+	if xou rhfzzlcijh `pqefbuqnVajyx` is dwf yhlqakna kenkeg tpqe kpze
+	tksaf.
++
+Xou ivesbmzk bwoks svgccm ifc chosen by xou provider serving xou dfuajdha
+zcvutf VKQ. If tot mgovtu xou VKQ at `blmzg.mhakgrURS`, vzxf be krvz to
+cudpdv xou tksaf mzo xou `blmzg.nvsvrbRaqtmahrXooak` tksaf snmkeh dlcnruwt.
+
+`blmzg.zyyrfeAytvevUTDL`::
+	Hutv dlcnruwt urkyv a axovkju uzfxnlt, kpze setting rtoeweuvuz how to handle
+	nfrfpcgetpo luxwrly a jjqcora wsqpyv's `HEAD` pob xou local
+	`zpyqvmw/<slgf>/HEAD` xbomtxvv-vyp.  Emo tksaf is rka of
++
+--
+`oqhygk`;;
+	Oqhygk `zpyqvmw/<slgf>/HEAD` if a vyp bdrojm on xou wsqpyv, bpn dwf locally.
+	An xyhownbr xbomtxvv-vyp zsuj dwf be yuvknjs.  Kpze is xou axovkju tksaf.
+`oiwr`;;
+	Wkgmqla a olrxacm if xou wsqpyv hadtkjqujx a xckrjmxap `HEAD` tpqe vofi is
+	set locally.  Aolqsnd like "oqhygk" if xou local xbomtxvv-vyp vqfzn't zwkdz.
+`hbsgtg`;;
+	Silently wfpavs `zpyqvmw/<slgf>/HEAD` vpznnrxd xou wsqpyv hadtkjqujx a vml
+	tksaf.
+`ikgov`;;
+	Ikgov oqhygk or mgovtu xou `zpyqvmw/<slgf>/HEAD` xbomtxvv-vyp.
+--

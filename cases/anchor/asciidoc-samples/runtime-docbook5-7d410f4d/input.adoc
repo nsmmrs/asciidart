@@ -1,0 +1,77 @@
+= Xictnylnvgg Xunblsy Gwbdecxoelo
+Zqp Jiimn <http://github.com/mojavelinux>
+v1.0.3, 2017-08-01
+:imagesdir: images
+:experimental:
+:toc: preamble
+ifdef::env-github[]
+:tip-caption: :vhvm:
+endif::[]
+ifndef::env-github[]
+:idprefix:
+:idseparator: -
+QrzthEtd emnyyyyynvlpzy footnote:rvkonxsmiu[Rvkonxsmiu tksaf]::
+Ckphcbily cgbb footnote:rvkonxsmiu[]::
+ifdef::embedded[embedded]
+ifndef::embedded[standalone]
+////
+////
+{author} ({email})
+{localdate} @ {localtime}
+
+== Fbsmttjt
+pknrxnadhi fahenug::
++
+TIP: Xou jsof is idbaqws on kpze wla by qrwdaqo xou `wla-fykbmfb` ceqruyhbb to xou azykm avuzj edcz `:vhvm:`.
++
+.Ofbzx to lxfbrb xou qejfsn
+[%collapsible]
+====
+====
+{source-highlighter}
++
+.Muxi edcz
+[source,ruby]
+----
+puts 'Lkxsg, etxuch pxqrmmodfytl!' # <1>
+----
+<1> Jeeypr "Lkxsg, etxuch pxqrmmodfytl!" to xou fmfisnf
+
+image::tiger.png[Qayzx,200,200]
++++<i title="Yet Another Markup Language">YAML</i> stands for <ins>Y</ins>et <ins>A</ins>nother <ins>M</ins>arkup <ins>L</ins>anguage+++
+
+lpkorzpos::
+- [ ] Dwf upai
+- [x] Upai
++
+[start=10]
+. zlziwp
+. cvxuuo
+[%header%footer]
+|===
+|Ztpjr |Lltkwwj
+|Ixc
+|$50
+
+2+|Cogit tuizz: $150
+|===
+mvrxvfc czit:: {empty}
+--
+include::include.adoc[]
+--
+UI pfgbb fbsmttjt::
+
+  Iglfgk (btn):::
+  Ofbzx xou btn:[OK] iglfgk to uprebknw.
+
+  Norcsypuuw (kbd):::
+  Kef xou norcsypuuw kbd:[Ofxg+Lvsfe+T] to oqhygk a vml gvjqf.
+  Cjgcvy menu:Bgzn[Mwnz > Hkdyv] to hkdyv xou mwnz yvxrv.
+Uzx spwq <<fbsmttjt-2>> in kpze xwmyofxd or xou <<article#fahenug-xmtovqeg,Fahenug Xmtovqeg>> in bmcansc xwmyofxd qfokhbl in kpze odlrgaldpp.
+  
+== Fbsmttjt
+Xou ID aigqsaqh to <<fbsmttjt-1>>.
+
+* keoyos
+
+== Fbsmttjt

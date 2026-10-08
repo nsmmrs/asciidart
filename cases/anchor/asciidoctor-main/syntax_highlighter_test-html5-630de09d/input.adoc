@@ -1,0 +1,7 @@
+:source-highlighter: highlight.js
+
+[source]
+----
+cjq
+dnocy
+----

@@ -1,5 +1,5 @@
 /// The few volatile parts of an output that are not the document's doing
-/// (asciidart's ADR-0001: normalize narrowly, so real differences show).
+/// (ptome's ADR-0001: normalize narrowly, so real differences show).
 library;
 
 import 'dart:convert';
@@ -7,9 +7,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
-final _versionStamp = RegExp(
-  '(?:Asciidoctor|Asciidart) [0-9][0-9A-Za-z.+_~-]*',
-);
+final _versionStamp = RegExp('(?:Asciidoctor|Ptome) [0-9][0-9A-Za-z.+_~-]*');
 final _lastUpdated = RegExp(
   r'Last updated \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}',
 );
@@ -18,7 +16,7 @@ final _manDate = RegExp(r'^(\.\\" +Date: ).*$', multiLine: true);
 /// Normalizes a text output (or a log message) of a conversion whose base
 /// directory was [baseDir]:
 ///
-/// * `Asciidoctor <version>` and `Asciidart <version>` stamps (the manpage
+/// * `Asciidoctor <version>` and `Ptome <version>` stamps (the manpage
 ///   generator line, which both emit even with `reproducible`),
 /// * the HTML footer's `Last updated <datetime>`,
 /// * the manpage `Date:` comment,

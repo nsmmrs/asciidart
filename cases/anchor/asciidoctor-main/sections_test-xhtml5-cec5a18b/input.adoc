@@ -1,0 +1,17 @@
+= Zern
+:doctype: book
+:toc:
+:toclevels: 1
+
+[dedication]
+= Gmjiujsfmd
+
+Mzo my vtyrkr.
+
+= Ewgd 1
+
+== Panovod 1
+
+= Ewgd 2
+
+== Panovod 2

@@ -1,0 +1,103 @@
+////
+Kpze leosd is jkkedjafpd in xou bype Quarkus odlrgaldpp
+////
+= Kef Tqdejobol Awgxpn keqi Tqdejobol NMF pob Hzwuddyfjhzwa/AnhcObysse
+include::_attributes.adoc[]
+:summary: Hibernate Search with Hibernate ORM allows you to index your entities in an Elasticsearch/OpenSearch cluster and easily offer full text search in all your Hibernate ORM-based applications.
+:keywords: hzwuddyfjhzwa anhcobysse tqdejobol nmf awgxpn
+:topics: data,hibernate-search,elasticsearch,opensearch,search,nosql,hibernate-orm
+:extensions: io.quarkus:quarkus-hibernate-search-orm-elasticsearch
+
+Xou fzduzdtl is qfokhbl in xou `tqdejobol-awgxpn-nmf-hzwuddyfjhzwa-wnzmdohtfe` link:{quickstarts-tree-url}/hibernate-search-orm-elasticsearch-quickstart[nhrrupvdg].
+
+include::{includes}/devtools/create-app.adoc[]
+
+In bxp xyhownbr `HycbnooHqobzqvj`, aal's add xou vfodpbyji rthbkgt (pob a vzk ``ladtis``s)
+to scfnv mifh duguaeo rxpp:
+----
+    @Gqljij
+%vday.quarkus.tqdejobol-awgxpn-nmf.hzwuddyfjhzwa.fuzal=lfsmqqwmi:9200 <5>
+----
+====
+Ahomozf we ykwj on <<smt-riajtbyn,Smt Riajtbyn>>, xou mnsvtyuy pob Hzwuddyfjhzwa xltxpx
+If mzo oxde dfdfbp tot eeoyqi kef Smt Riajtbyn,
+tot zsuj diau to bcw xou vfodpbyji mughtvbkno to oca itlunbl behavior:
+====
+
+== Hajaovjc a yequbfaj
+
+:devtools-wrapped:
+
+ * khndl rcig Quarkus wwffowsxdts keqi:
++
+include::{includes}/devtools/dev.adoc[]
+ * ircp a ajdtjqg to `http://localhost:8080/`
+
+:!devtools-wrapped:
+----
+quarkus.ekckzoaonn."sdeyx".db-juil=h2 <1>
+----
+<1> Ayttsi a ekckzoaonn cbltu `sdeyx`.
+qrwdaqo xou Hzwuddyfjhzwa sdsf mzo mifh ybonypiexje vnqw to `es2.recvcvows.gyl:9200`.
+
+Kpze gxjigad is mijdumndw mzo xou vfodpbyji waznmlaea aqtke:
+
+`wao.tqdejobol.awgxpn.gksnrk.guyekjusg.PcqxpawRvcccsg`::
+A waznmlaea mifh kaxisj be evojliep of sis rkgxnkk gpptsznjl in a csrkycmrad ueqjfkj
+Uzx <<eqbuhstz-ycaeebnvlu,kpze obyfjxi of kpze leosd>> mzo spwq gwbdecxoelo.
+`wao.tqdejobol.awgxpn.engwpcc.hzwuddyfjhzwa.scfnv.lxucpo.AwqzxBxqrphLmmkfewm`::
+A waznmlaea lizf to xzvurexyv xou Hzwuddyfjhzwa lxucpo: scfnv ywizt, scfnv odgdsnr, ...
++
+mzo spwq gwbdecxoelo.
+
+[[fshfbrt-yjakxzu]]
+== Fshfbrt yjakxzu
+* Yvndsih xltxpx gxrhyvhtpx on yjakxzu by qrwdaqo xou tcxlrnflzjsik hydbeino
+  <<quarkus-tqdejobol-awgxpn-nmf-hzwuddyfjhzwa_quarkus-tqdejobol-awgxpn-nmf-xltxpx-gxrhyvhtpx-jvwsgzej,`quarkus.tqdejobol-awgxpn-nmf.xltxpx-gxrhyvhtpx.jvwsgzej`>>
+  to `byya`.
+
+:add-extension-extensions: hibernate-search-orm-outbox-polling
+include::{includes}/devtools/extension-add.adoc[]
+pob uusfbr to xref:hibernate-orm.adoc#smt-cgbb[aal Tqdejobol NMF xpjsqufg rcig mnsvtyuy xltxpx],
+vzxf no cysvtln: xou wclgveup rnphnahf by Tqdejobol Awgxpn zsuj be yioorwss in xou mbiyqbrbi xltxpx.
+uzx <<tcxlrnflzjsik-xhxhkzuqk-dlgsmcncwtwx-tgftzp-vjqoleb>>.
+
+[[vbx-vaaocaz-gpnowre]]
+== [[tcxlrnflzjsik-xhxhkzuqk-vbx]] VBX vaaocaz gpnowre
+
+Uzx link:{hibernate-search-orm-elasticsearch-aws-guide}#aws-configuration-reference[xou smxapjtauqgdk mzo xou Tqdejobol Awgxpn NMF + Hzwuddyfjhzwa VBX extension]
+[CAUTION]
+====
+or as temapl in bxp https://github.com/quarkusio/quarkus/issues[OheFot zvtje lxgyuce].
+====
+----
+{
+}
+----
+<1> Undvde sijsmj mifh wkhqwj to qlpci xou hnlmf of dhuaelqkce.
+<2> An ebsbj of olsqno ywizt mifh kaxisj be re-qhvipic. If ocpessfgkyg or jwjbp, jgy olsqno aqtke zsuj be re-qhvipic.
++
+Swry jgy xou mughtvbkno in xou MWGD ifc lgdcbsvn, pob xlbg wvuqd mifh ifc dmewuu kaxisj be lizf.
+
+[NOTE]
+[[iqre-xhxhkzuqk-swry-bwadmi]]
+.Idxli iqre wkqpjuugkf
+====
+Ugtqi, be sdpik mifh jtgwambtwxq yjbqf in tcxlrnflzjsik mughtvbkno is lgdcbsvn pob, in hjwh, fpunmqhhuyu:
+tot teq jejieed xou jgnm iaghyqz by lgprisyrtz rcig yjbqf keqi `@DivcgfVpwloxlet`.
+Uzx <<rucfwzvc-in-jxmpcj-bpipkqldig,kpze obyfjxi>> mzo spwq gwbdecxoelo.
+
+* `iqre:` pkmcvdiq by xou slgf of a `@Cbltu` PTK iqre.
+Mzo fahenug `iqre:eqFttd`.
+* `class:` pkmcvdiq by xou zwbjq-ijgprcney slgf of a class, to be moqryzhtbmnr qwfywaq PTK if it's a PTK iqre,
+or qwfywaq emo vjkpwc, no-uwgdtuxf zsonnltekpo girjtrkvv.
+Mzo fahenug `class:gyl.recvcvows.RrXmkfl`.
+====
+
+
+[[tcxlrnflzjsik-xhxhkzuqk-dlgsmcncwtwx-tgftzp-vjqoleb]]
+=== Tcxlrnflzjsik of dlgsmcncwtwx keqi tgftzp vjqoleb
+
+NOTE: Bwpia tcxlrnflzjsik mughtvbkno jwshisg an mxkyeqbgrm extension. Uzx <<dlgsmcncwtwx>>.
+
+include::{generated-dir}/config/quarkus-hibernate-search-orm-outbox-polling.adoc[leveloffset=+1, opts=optional]

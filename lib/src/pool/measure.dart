@@ -12,7 +12,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import '../oracle/asciidart_pool.dart';
+import '../oracle/ptome_pool.dart';
 import '../oracle/ruby_pool.dart';
 import '../spec/conversion.dart';
 import '../spec/normalize.dart';
@@ -151,8 +151,8 @@ Future<int> measure(
       sink.writeln(jsonEncode({'universe': universe.toJson()}));
       await pool.convertAll(conversions).forEach(write);
       await pool.close();
-    case AsciidartProfile():
-      final pool = await AsciidartPool.start(size: jobs);
+    case PtomeProfile():
+      final pool = await PtomePool.start(size: jobs);
       await pool.convertAll(conversions).forEach(write);
       pool.close();
   }

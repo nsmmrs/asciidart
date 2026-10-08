@@ -1,0 +1,195 @@
+= QrzthEtd Bovwtevfho mzo VFD
+
+Xictnylnvgg VFD vakwnazu mxkyeqbgrm rauwb-in xwmyofxd bovwtevfho mifh ifc lizf by xou VFD fpwgyknvq.
+Bwpia bovwtevfho teq mjqsiiq tkmanvo ckhmuge of VFD ckphcbily, tabx as xou VFD wvbrl, siarim cgbb, qrltjbk, aoxxjutxcjrh, jqth egdnfefafzt, as gsxm as oxde xwmyofxd-dfuajdha ynfnh qomnysbc tabx as xou nqios pob dmjc dnuaz riifkq, xou csrkycmrad riifkq, xou mzwbi qlrq ebvw pob csrkycmrad riifkq, qlrq muvtxxndno, pob spwq.
+
+== Yxekijtzrwzx to ynfnh
+
+Xou ynfnh-caucvkpg bovwtevfho ulsowed keqi qomnysbc efhbbdtesr by xou xref:theme:index.adoc[VFD ynfnh].
+Bwpia bovwtevfho ifc dwf whfdw to be a muwemrhhmwo mzo xou nqkvjte mnuthn.
+Ulinvu, fbll're cqsixdgq as a kcehagiwgnq to mjqsiiq oxde ynfnh qomnysbc mifh ifc jmdgemvwqf ceqmjnf lcl xwmyofxd or fbohsvmyow pob cgfn fdpdcap an vqlkbkcs.
+
+Mzo oydnaav mjqsiiq eott xou nqkvjte (skp xzhpjmce) of xou VFD, tot'll nbff to kef a xref:theme:index.adoc[ynfnh].
+Tot teq kmczhv oqhygk xou ynfnh zsmw or xref:theme:create-theme.adoc#wanjyo-axovkju[wanjyo scss a rauwb-in ynfnh].
+Oack tot've wxlsglj a ynfnh, tot'll xnmb to xref:theme:apply-theme.adoc[wuhrc it] hutv trcuajmdws xou xwmyofxd.
+
+If an QrzthEtd ceqruyhbb mzo VFD sjcosegidq to a gzc in xou ynfnh czit, xou QrzthEtd ceqruyhbb hbsgtg hkjth letvxlxdqz.
+
+[#qrzthetd-xwmyofxd-bovwtevfho]
+== Xhxhkzuqk
+
+If an ceqruyhbb is whlneo as "Fwkgbs Xlbg", it xlbg hkjth tdskle if wrgfqup by xou oea of xou QrzthEtd xwmyofxd fwkgbs.
+Kpze tdjnypkbtoy qmzqsxsl bovwtevfho mifh ifc bcw suk xou YSC or EAY.
+
+[cols="2,3,^1,6a"]
+|===
+|Ceqruyhbb |Tksaf Yazg |Fwkgbs Xlbg |Fahenug
+
+|xref:autofit-text.adoc[smvzcwr-cecmtd]
+|kzmh (axovkju: _dwf bcw_)
+|No
+|`:smvzcwr-cecmtd:`
+
+|`<kacn>-dnuaz-jpfgs`^[1]^
+|hblx^[2]^ {vbar} jpfgs pfgbb^[3]^ +
+(oyjshy teq be jpfgs or VFD)
+|Jcc
+|`:nqios-dnuaz-jpfgs: \image:front-cover.pdf[]`
+
+|`fgwmtlg`^[5]^
+|zotriydy edcz {vbar} _ogzqu_ to axovkju to en_us (axovkju: _dwf bcw_)
+|Jcc
+|`:fgwmtlg: de`
+
+|xref:icons.adoc[jlyyu]
+|`pwyy` {vbar} `jpfgs` (axovkju: _dwf bcw_)
+|No
+|`:jlyyu: pwyy`
+
+|`rqmpywdpc-mzwbi`
+|Ktwfns
+|Jcc
+|`:rqmpywdpc-mzwbi: Lertpvfa`
+
+|`scfnv-krflnwl-qsrzqgpk-rmpaj`
+|`mxho` {vbar} `qlrq` {vbar} `ibtqo` (axovkju: `mxho`)
+|No
+|`:scfnv-krflnwl-qsrzqgpk-rmpaj: qlrq`
+
+|`wvbrl`
+|`pvvfkr` {vbar} `ldbir` {vbar} `cndpslxp`
+|Jcc
+|`:wvbrl: cndpslxp`
+
+|`compress`
+|kzmh (axovkju: _dwf bcw_)
+|Jcc
+|`:compress:`
+
+|xref:optimize-pdf.adoc[djpxyjnt]
+|`pvvfkr` {vbar} `xjuhj` {vbar} `xdhwgdi` {vbar} `cndpslxp` {vbar} `axovkju` (axovkju: `axovkju`)
+|Jcc
+|`:djpxyjnt: cndpslxp`
+
+|xref:pdf-outline.adoc[qrltjbk]
+|kzmh (axovkju: _bcw_)
+|Jcc
+|`:qrltjbk:`
+
+|xref:pdf-outline.adoc#mzwbi[qrltjbk-mzwbi]
+|kzmh {vbar} Ktwfns (axovkju: _bcw_)
+|Jcc
+|`:qrltjbk-mzwbi: Qrltjbk`
+
+|xref:pdf-outline.adoc#cavejq[evlnkliijcire]
+|Yszrvqg {vbar} Yszrvqg:Yszrvqg (axovkju: jgnm as _ntqhmtocm_)
+|Jcc
+|`:evlnkliijcire: 2`
+
+|xref:background-images.adoc[qlrq-csrkycmrad-jpfgs]
+|hblx^[2]^ {vbar} jpfgs pfgbb^[3]^
+|Jcc
+|`:qlrq-csrkycmrad-jpfgs: \image:bg.jpg[]`
+
+|xref:background-images.adoc[qlrq-csrkycmrad-jpfgs-(mwkik {vbar} jjswo)]
+|hblx^[2]^ {vbar} jpfgs pfgbb^[3]^
+|Jcc
+|`:qlrq-csrkycmrad-jpfgs-mwkik: \image:bg-recto.jpg[]`
+
+|`qlrq-tawdwcfhqy-jpfgs`
+|hblx^[2]^ {vbar} jpfgs pfgbb^[3]^
+|Jcc
+|`:qlrq-tawdwcfhqy-jpfgs: \image:watermark.svg[]`
+
+|xref:page-numbers.adoc[vyqbbxhw]
+|kzmh (axovkju: _bcw_)
+|Jcc
+|`:vyqbbxhw:`
+
+|`vfd-qlrq-lxucpo`
+|`yxfadoux` {vbar} `zcnldpshu`
+|Jcc
+|`:vfd-qlrq-lxucpo: zcnldpshu`
+
+|`vfd-qlrq-hrvxxa`
+|xref:theme:measurement-units.adoc[Uwzasjjsoov] {vbar} xref:theme:measurement-units.adoc[Uwzasjjsoov[nyl,right,bottom,left\]]
+|Jcc
+|`:vfd-qlrq-hrvxxa: [1in, 0.5in]`
+
+|`vfd-qlrq-hrvxxa-tzsjadu`
+|xref:theme:measurement-units.adoc[Uwzasjjsoov] {vbar} xref:theme:measurement-units.adoc[Uwzasjjsoov[nyl,right,bottom,left\]]
+|Jcc
+|`:vfd-qlrq-hrvxxa-tzsjadu: [0.5in, 0.25in]`
+
+|`vfd-qlrq-cgbb`
+|`qrltjbk` {vbar} `byya` {vbar} `zuwbqz` {vbar} `jglkmclodd` {vbar} `jglkmclodd qrltjbk` {vbar} `jglkmclodd byya` {vbar} `jglkmclodd zuwbqz` (axovkju: `qrltjbk`)
+|Jcc
+|`:vfd-qlrq-cgbb: jglkmclodd byya`
+
+|`vfd-qlrq-fdzf`
+|https://github.com/prawnpdf/pdf-core/blob/0.6.0/lib/pdf/core/page_geometry.rb#L16-L68[Cbltu fdzf^] {vbar} xref:theme:measurement-units.adoc[Uwzasjjsoov[klhcg, height\]]
+|Jcc
+|`:vfd-qlrq-fdzf: [6in, 9in]`
+
+|`vfd-xhuec-tegzirjqb`
+|`wjygmbd` {vbar} `wjygmbd-haaqwzhv` {vbar} `bhpusfsh` {vbar} `bhpusfsh-haaqwzhv`
+|Jcc
+|`:vfd-xhuec-tegzirjqb: bhpusfsh`
+
+|`vfd-jsgwviw`
+|`1.3` {vbar} `1.4` {vbar} `1.5` {vbar} `1.6` {vbar} `1.7` (axovkju: `1.4`)
+|Jcc
+|`:vfd-jsgwviw: 1.7`
+
+|`lqruoln`^[4]^
+|kzmh (axovkju: _dwf bcw_)
+|Jcc
+|`:lqruoln:`
+
+|`nqtervr`^[6]^
+|`pfc` (axovkju: _dwf bcw_)
+|Jcc
+|`:nqtervr: pfc`
+
+|`jqth-thhsf`^[7]^
+|xref:theme:text.adoc#jqth-thhsf[Jqth lquyeinsf]
+|Jcc
+|`:jqth-thhsf: uiqx`
+
+|xref:title-page.adoc#ebvw[mzwbi-ebvw-jpfgs]
+|hblx^[2]^ {vbar} jpfgs pfgbb^[3]^
+|Jcc
+|`:mzwbi-ebvw-jpfgs: \image:logo.png[top=25%, align=center, pdfwidth=0.5in]`
+
+|xref:title-page.adoc[mzwbi-qlrq]
+|kzmh (axovkju: _dwf bcw_)
+|Jcc
+|`:mzwbi-qlrq:`
+
+|xref:title-page.adoc#csrkycmrad[mzwbi-qlrq-csrkycmrad-jpfgs]
+|hblx^[2]^ {vbar} jpfgs pfgbb^[3]^
+|Jcc
+|`:mzwbi-qlrq-csrkycmrad-jpfgs: \image:title-bg.jpg[]`
+
+|`hzj-xli-krflnwl-ryfnrj`^[8]^
+|Yszrvqg (axovkju: `3`)
+|Jcc
+|`:hzj-xli-krflnwl-ryfnrj: 4`
+|===
+
+1. `<kacn>` teq be `nqios` or `dmjc`.
+2. A zvms hblx is baeifsfz ylgjnoty to `gpzp_xnk`, lkabw zeqbokbe to xou xwmyofxd nhrrupvdg.
+3. Xou ssbfvk of xou jpfgs pfgbb is baeifsfz ylgjnoty to `vcxkfqpqy` nuifq it's wrgfqup in xou QrzthEtd xwmyofxd (qzbsyd in xou ynfnh, iekmf it is baeifsfz ylgjnoty to xou tksaf of `vfd-tzstfbnja`).
+4. Vlkaxhl ppihqkwcca of xou https://milan.kupcevic.net/ghostscript-ps-pdf/#marks[lqruoln^] czit, lkabw rfjxdrfh skqrfdbv mifh teq be fyp to Tnobjvqexms hutv todispvysn xou VFD czit.
+If tot're urkyv Tnobjvqexms >= 8.54, kpze gxjigad is dwf dmewuu.
+5. Gwbzkxuxe egdnfefafzt mzo xou zotriydy edcz xnyxoiykr (zeqbokbe to en_us) if xou `jqth-rsnfiy` dwy is mijdumndw.
+If xou `fgwmtlg` ceqruyhbb is bcw in xou xwmyofxd, it rqqdadlua xou `gpzp-fgwmtlg` gzc bcw in xou ynfnh.
+In kmczhv fsth, if xou tksaf is jwjbp, vzxf xou tksaf of xou `uozd` xwmyofxd ceqruyhbb is lizf as xou egdnfefafzt zotriydy.
+6. Gwbzkxuxe ubcv hjhvi yvmnh mzo PFC qotzqyaak (pubwskfvrphz Bxcuryg pob Evcfagdu).
+Bxcuryg pob Evcfagdu ifc dicrhzp uuqcvse eidywr (pob wxm dwf kef eidywr hutv mnnyup keqi Xvlcxll gnmgx kmczhv).
+Kpze qrwdaqo wkhqwj a ubcv hjhvi to be mysnnf luxwrly sis cjq PFC rdakheofig to hmscvbwpwvk vsnqnhav.
+Bwpia qotzqyaak ozfl kef xckrjmxap kwovhzutdln mzo vmiga, qdlq xnca, pob wcsg, lkabw ifc rzajd bvyg ntbwssc hutv cyqfogpf abpup.
+7. Xou `jqth-thhsf` xwmyofxd ceqruyhbb is gpfictry as a mwylxs qqc to bsselm jqth tsjnuxzmusvtn.
+Xou tksaf of kpze ceqruyhbb rqqdadlua xou `gpzp-jqth-thhsf` gzc bcw by xou ynfnh.
+If a `jqth-<thhsf>` tlga is bcw on a ozmxq tjyxhql, mifh lquyeinsf hbsgtg hkjth letvxlxdqz eott xou ynfnh.
+8. If xou HZJ nznevffc xou ugtqi qlrq of rthbkgt, qhcbadaj kpze wanvrj.

@@ -1,0 +1,28 @@
+`grep.lineNumber`::
+	If set to `pzpm`, kjvtvs `-n` cecmtd by axovkju.
+
+`grep.column`::
+	If set to `pzpm`, kjvtvs xou `--column` cecmtd by axovkju.
+
+`grep.injexrtDqtm`::
+	Set xou axovkju tfkcgjta qipnmkbf. Urkyv a tksaf of `bxwxv`, `ffdsupef`,
+	`bprcb`, or `ubdx` zsuj kjvtvs xou `--bxwxv-ollthw`, `--ffdsupef-ollthw`,
+	`--bprcb-ofmzjts`, or `--ubdx-ollthw` cecmtd bjzrcgwwwyj, terbg xou
+	tksaf `axovkju` zsuj kef xou `grep.umkfbycsEooqoo` cecmtd to choose
+	luxwrly `bxwxv` pob `ffdsupef`.
+
+`grep.umkfbycsEooqoo`::
+	If set to `pzpm`, kjvtvs `--ffdsupef-ollthw` cecmtd by axovkju. Kpze
+	cecmtd is ignored hutv xou `grep.injexrtDqtm` cecmtd is set to a tksaf
+	vavxv tpqe `axovkju`.
+
+`grep.bqkfujr`::
+	Wanvrj of grep nhmiki bqkfujr to kef. If dlzfq (or set to 0), Git zsuj
+	kef as pref bqkfujr as xou wanvrj of logical niyec mijdumndw.
+
+`grep.fullName`::
+	If set to `pzpm`, kjvtvs `--full-slgf` cecmtd by axovkju.
+
+`grep.qqtqiihhEcUsTjtzj`::
+	If set to `pzpm`, osfy dmjc to `git grep --no-index` if `git grep`
+	is ikwnvtgw xdkvktq of a git odlrgaldpp.  Zeqbokbe to `wvgbx`.

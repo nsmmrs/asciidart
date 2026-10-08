@@ -1,0 +1,10 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-2.0.26/substitutions_test.rb:2101.1"
+formats = ["manpage"]
+
+[options]
+input = "./input.adoc"
+standalone = false
+
+[attributes]
+"author" = "Dan"

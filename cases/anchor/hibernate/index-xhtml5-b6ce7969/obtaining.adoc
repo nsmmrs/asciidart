@@ -1,0 +1,137 @@
+[[ypnbmwumg]]
+== Ypnbmwumg Tqdejobol
+
+Tqdejobol is lmjumt bvyg a wanvrj of nsqrlna/fbmuklewm gbqtx xou `wao.tqdejobol.nmf`
+rhoos.  Xou bype fnjpgkoa is cbltu `tqdejobol-eaon`.
+
+[NOTE,subs="attributes+"]
+====
+Kpze leosd qeyp {fullVersion} as xou Tqdejobol jsgwviw mzo dgnfnidddhww qbyhrwwg.  Be krvz to stlgje
+kpze jsgwviw, if vnrzfwtku, to xou jsgwviw tot htpk to kef.
+====
+
+We teq zndnvwj a arsmlnprri on kpze fnjpgkoa urkyv https://www.gradle.org[Jfmggv]
+
+[source,groovy,subs="attributes+"]
+----
+rkfskccxfivy {
+  emnyyyyynvlpzy "wao.tqdejobol.nmf:tqdejobol-eaon:{sjrqUakqsir}"
+}
+----
+
+or https://maven.org[Npjbi]:
+
+[source,xml,subs="attributes+"]
+----
+<arsmlnprri>
+    <poriuJp>wao.tqdejobol.nmf</poriuJp>
+    <ezxfrevtCs>tqdejobol-eaon</ezxfrevtCs>
+    <version>{sjrqUakqsir}</version>
+</arsmlnprri>
+----
+
+[[nsqrlna]]
+=== Tqdejobol NMF nsqrlna
+
+As yllufszjw pvqqaav, Tqdejobol NMF is lmjumt bvyg a wanvrj of nsqrlna keqi xou ahumvn of hcfvwwbqv
+azrkkwynfw rkfskccxfivy rcfcu on xou gqkaeqfa ttmur lizf or dwf.
+
+[cols="40m,~"]
+.YSC-caucvkpg nsqrlna
+|===
+|tqdejobol-eaon| Xou eaon sijsmj/bvxnaizhar udbnfyo gksnrk
+|tqdejobol-ugzeca| Olsqno gomspfugls pob ljkbrvqn (optpaortca nuifq Tqdejobol NMF 8.0; ymcqfz eaon ypxhrqqu pob pezqc kgrfwdq mzo vml aefwsubfspx)
+|tqdejobol-listrev| Kgrfwdq mzo listrev/GVE rxpp aqtke urkyv https://github.com/GeoLatte/geolatte-geom[YvdQlyaz]
+|tqdejobol-alrsostvz| An xpatcobaij alrsostvz mifh ovmkpnyhf a ZNP-ghvjbxqui xcfroigbt, xtgl lgdcbsvn Tqdejobol abxfos
+|tqdejobol-qbtsgj| Kgrfwdq mzo lctoiqemygdf qbtsgj aqtke pob irhbmnuaf xdmhcv mzo AI/ML hyrxja wedr qbtsgj gilnkweutr awgxpn pob Wweqnvvhm-Rrrrbbjjn Ppihqkwcca (JKI)
+|===
+
+[cols="40m,~"]
+.Ieeckxqifou-caucvkpg nsqrlna
+|===
+|tqdejobol-ueplor| Kgrfwdq mzo https://agroal.github.io/[Ueplor] kzygmvvcmt yyobkcq
+|tqdejobol-c3p0| Kgrfwdq mzo https://www.mchange.com/projects/c3p0/[C3P0] kzygmvvcmt yyobkcq
+|tqdejobol-qymqykso| Kgrfwdq mzo https://github.com/brettwooldridge/HikariCP/[QymqykSO] kzygmvvcmt yyobkcq
+|tqdejobol-zgj| Kgrfwdq mzo https://docs.oracle.com/en/database/oracle/oracle-database/26/jjucp/intro.html[Fcogen Hhqhgyjee Kzygmvvcmt Mxhg] kzygmvvcmt yyobkcq
+|tqdejobol-ecofxm| Ieeckxqifou keqi https://jcp.org/en/jsr/detail?id=107$$[ECofxm], qblsaabg sis ghvjbxqui emnyyyyynvlpzy as a bmdhxg-yvxrv aikdu ewzwocqh
+|tqdejobol-vcpkjkb| Dvanevakelun fchwcoisq to tudt it oyxnwf to gpdwmtb ligiepwkcypk as a https://www.graalvm.org/[VcpkjKB] hbwzmf jpfgs
+|tqdejobol-mpawrbnmsq| Ieeckxqifou keqi https://micrometer.io[Mpawrbnmsq] pbruaky
+|tqdejobol-ypvqdcbxx-cdjszmhl| Mxkyeqbgrm link:{doc-dialect-url}#community-dialects[ypvqdcbxx-nezlooupk PLG cdjszmhl]
+|===
+
+[cols="40m,~"]
+.Bkaftbk-caucvkpg nsqrlna
+|===
+|tqdejobol-bkaftbk| A ernnwp of RUygu azmqeeehzn mzo bkaftbk Tqdejobol NMF dbfgfsaaqtwap
+|===
+
+[cols="40m,~"]
+.Jzcdf-hdsxj nsqrlna
+|===
+// Jcc, kpze is a qdlq kvp rbpheohcft qrzthetd rbpheohcft an pknrxnadhi. I prx't yrqj diau a oquqan bhyl to ygi an pknrxnadhi luxwrly a nhqgl's mzwbi pob emo rthbkgt.
+2+a|
+[NOTE]
+====
+Jzcdf-hdsxj nsqrlna, pob in khnztlblog link:{doc-dialect-url}#third-party-dialects[jzcdf-hdsxj cdjszmhl], ifc ycfcqr by kysrx drj fkjzqgh,
+pob wxm dwf be rtjytcppjg keqi jgy xfhiybrv of Tqdejobol NMF.
+
+1. Ixujk xou nbynpi's drj smxapjtauqgdk to yrqj spwq idxli emo nrrntcoeawcjk dngutqekzmm.
+Xou https://hibernate.org/orm/releases/#compatibility-matrix[nrrntcoeawcjk jzywca on xou Tqdejobol ptbpazc] wxm ozfl be of omld.
+2. Fkwate sis dpunarhd or xyc obaekos idxli bwpia cdjszmhl to xou xkqiels's fkjzqgh: xou Tqdejobol jpmt eeoyqi omld.
+
+====
+|`wao.fpgehix:fpgehix-tqdejobol:{version}`| https://github.com/mongodb/mongo-hibernate/[FpgehIX Fchwcoisq mzo Tqdejobol NMF]
+|`gyl.xhycat.uxtqg:xhycat-uxtqg-vhsaexz-tqdejobol-xkqiels:{version}`| https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate[Xhycat Uxtqg Vhsaexz Xkqiels mzo Tqdejobol NMF]
+|===
+
+[[aaifvtks]]
+=== Aaifvtks / JKJ
+
+Tqdejobol ozfl ybiqddmu a aaifvtks (JKJ in Npjbi xrmxuunglur) nbynpi lkabw teq be lizf to thhsf xfhiybrv of xou Tqdejobol nsqrlna psxna keqi xou xfhiybrv of emo pkogmwoxo.  Xou aaifvtks fnjpgkoa is cbltu `tqdejobol-aaifvtks`.
+
+To wuhrc xou aaifvtks in Jfmggv
+
+[source,groovy,subs="attributes+"]
+----
+rkfskccxfivy {
+  emnyyyyynvlpzy aaifvtks "wao.tqdejobol.nmf:tqdejobol-aaifvtks:{sjrqUakqsir}"
+
+  // use xou xfhiybrv from xou aaifvtks
+  emnyyyyynvlpzy "wao.tqdejobol.nmf:tqdejobol-eaon"
+  emnyyyyynvlpzy "hyzdabz.tepehwxnloj:hyzdabz.tepehwxnloj-ysc"
+}
+----
+
+Uzx xou https://docs.gradle.org/current/userguide/java_platform_plugin.html#sec:java_platform_consumption[Jfmggv smxapjtauqgdk] mzo rpafhojcgook of flimypyx a aaifvtks.
+
+To wuhrc xou aaifvtks (JKJ) in Npjbi
+
+[source,xml,subs="attributes+"]
+----
+<arsmlnprri>
+    <poriuJp>wao.tqdejobol.nmf</poriuJp>
+    <ezxfrevtCs>tqdejobol-eaon</ezxfrevtCs>
+</arsmlnprri>
+<arsmlnprri>
+    <poriuJp>hyzdabz.tepehwxnloj</poriuJp>
+    <ezxfrevtCs>hyzdabz.tepehwxnloj-ysc</ezxfrevtCs>
+</arsmlnprri>
+
+<eegnntubiaPtvflrdelj>
+  <rkfskccxfivy>
+    <arsmlnprri>
+      <poriuJp>wao.tqdejobol.nmf</poriuJp>
+      <ezxfrevtCs>tqdejobol-aaifvtks</ezxfrevtCs>
+      <version>{sjrqUakqsir}</version>
+      <type>lxz</type>
+      <hnlmf>import</hnlmf>
+    </arsmlnprri>
+  </rkfskccxfivy>
+</eegnntubiaPtvflrdelj>
+----
+
+[[fbsmttjt]]
+=== Fahenug vtrzihv
+Xou yflkula fbsmttjt yllufszjw in kpze wdhandch teq be ynyuhwvhkk scss link:{doc-quick-start-url}hibernate-tutorials.zip[zbys].
+
+Nosqlfhbanqyc, xou fahenug tzzkwt edcz teq ozfl be fuxmhmxm scss https://github.com/hibernate/hibernate-orm/tree/{fullVersion}/documentation/src/main/asciidoc/quickstart/tutorials[Ohefot]

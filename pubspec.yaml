@@ -1,5 +1,5 @@
 name: ascii_docs
-description: AsciiDoc conformance corpus for asciidart and Asciidoctor, with the tools that build it (pool sanitizer, generator, fuzzer).
+description: AsciiDoc conformance corpus for ptome and Asciidoctor, with the tools that build it (pool sanitizer, generator, fuzzer).
 publish_to: none
 
 environment:
@@ -10,17 +10,18 @@ executables:
 
 dependencies:
   args: ^2.7.0
-  # asciidart at a pinned commit; pubspec_overrides.yaml (gitignored) points
+  # ptome at a pinned commit; pubspec_overrides.yaml (gitignored) points
   # at a local checkout for development.
-  asciidart:
+  ptome:
     git:
-      url: https://github.com/nsmmrs/asciidart.git
-      ref: 8d9f3d752be63e71f2793503a1f492939f31685f
+      url: https://github.com/nsmmrs/ptome.git
+      ref: d0ae3537d660eba5ec49df1c6c2c349aa14fe24b
   crypto: ^3.0.7
   glob: ^2.2.0
   path: ^1.9.1
   toml: ^0.18.0
   vm_service: ^15.3.0
   xml: ^7.1.0
+  image: ^4.10.1
 dev_dependencies:
   test: ^1.32.0

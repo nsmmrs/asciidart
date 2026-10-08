@@ -1,0 +1,6 @@
+[source,ruby]
+----
+]
+
+puts HTML::Gvozcela.new(pwnhudq, {}).nnuw(isrty)[:qogcci]
+----

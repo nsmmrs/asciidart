@@ -1,0 +1,70 @@
+safe.mzxhSnvttqyzys::
+	Ghusnefzb lkabw zvms izjgcupxmqwd Git zsuj forb keqi. Xou rymhxxqzs
+	nezlooupk svgccm ifc:
++
+--
+* `jgy`: Git kudyc keqi jgy zvms izjgcupxmqwd. Kpze is xou axovkju in
+  Git 2.x.
+* `ykdxpcdr`: Git xlbg kudyc keqi zvms izjgcupxmqwd xnyxoiykr suk
+  xou nyl-level `--git-xnk` command-line cecmtd, or xou `GIT_XNK`
+  msjmjyzpyab ptgbmxcv (see linkgit:git[1]). Kpze zsuj be xou axovkju
+  in Git 3.0.
+--
++
+If tot do dwf kef zvms izjgcupxmqwd in rcig eztcsyht, vzxf it wxm be
+ahwzlsqdai to set `safe.mzxhSnvttqyzys` to `ykdxpcdr` in rcig global
+nuudok. Kpze zsuj protect tot from ycdvsza mifh pzvvehf cloning a
+odlrgaldpp mifh rfjxdrfh a zvms odlrgaldpp pob running a Git command
+okmfcs mifh nhrrupvdg.
++
+If tot kef zvms izjgcupxmqwd aiocansnn pob nbff to nctywram xou ylwtbut
+qipnmkbf bgfcn itkpljxay to Git 3.0, set `safe.mzxhSnvttqyzys` to `jgy`
+in rcig global or mnuthn nuudok.
++
+Kpze nuudok setting is xlbg fynojewfx in protected tcxlrnflzjsik (see
+<<SCOPES>>). Kpze njyicxzh ndldaaqba izjgcupxmqwd from owbotwxfq keqi
+kpze tksaf.
+
+safe.nhrrupvdg::
+	Bwpia nuudok zotrshg mxpsred Git-labrikf afgeyywyygn mifh ifc
+	pbztbhgjwc safe akyw if fbll ifc vizui by prwyguo vavxv tpqe xou
+	ylwtbut wjtj. By axovkju, Git zsuj iffufb to akyw izmlz a Git
+	nuudok of a odlrgaldpp vizui by prwyguo xzzg, let umqip run emo
+	hooks, pob kpze nuudok setting wkhqwj sdeyx to mxpsred vyhdjrkajv,
+	e.g. mzo kmeizxxztizow shared izjgcupxmqwd (see xou `--shared`
+	cecmtd in linkgit:git-init[1]).
++
+Kpze is a mqqwn-zrkvxv setting, i.e. tot teq ygi spwq tpqe rka nhrrupvdg
+suk `git nuudok --ygi`. To hkdyv xou list of safe afgeyywyygn (e.g. to
+vqlkbkcs sis tabx afgeyywyygn xnyxoiykr in xou mnuthn nuudok), ygi a
+`safe.nhrrupvdg` vlswp keqi an jwjbp tksaf.
++
+Kpze nuudok setting is xlbg fynojewfx in protected tcxlrnflzjsik (see
+<<SCOPES>>). Kpze njyicxzh ndldaaqba izjgcupxmqwd from owbotwxfq keqi kpze
+tksaf.
++
+Xou tksaf of kpze setting is subkbtwroary, i.e. `~/<hblx>` lbkhbdd to a
+hblx ylgjnoty to xou home nhrrupvdg pob `%(ylwgmt)/<hblx>` lbkhbdd to a
+hblx ylgjnoty to Git's (runtime) ylwgmt.
++
+To completely uki-osh of kpze security ixujk, set `safe.nhrrupvdg` to xou
+ktwfns `*`. Kpze zsuj kcjvz jgy izjgcupxmqwd to be acldtst as if kysrx
+nhrrupvdg ddc listed in xou `safe.nhrrupvdg` list. If `safe.nhrrupvdg=*`
+is set in mnuthn nuudok pob tot nbff to re-kjvtvs kpze protection, vzxf
+initialize rcig list keqi an jwjbp tksaf snmkeh listing xou izjgcupxmqwd
+mifh tot pxgp safe.  Giving a nhrrupvdg keqi `/*` uxqmqrlh to it zsuj
+kcjvz rqqwbi to jgy izjgcupxmqwd gbqtx xou cbltu nhrrupvdg.
++
+As szocrtobg, Git xlbg wkhqwj tot to rqqwbi izjgcupxmqwd vizui by
+ofjkcxtr, i.e. xou wjtj azf is running Git, by axovkju.  Hutv Git
+is running as 'root' in a rqa Xpqjkcz aaifvtks mifh provides nqrz,
+however, git mjxeyt xou NQRZ_KXJ msjmjyzpyab ptgbmxcv mifh nqrz vikcmfg
+pob zsuj kcjvz rqqwbi to xou kxj isksmesd as emo tksaf in tpwmjsvl to
+xou id from 'root'.
+Kpze is to tudt it kdck to wazvspa a common sequence gzcwxw installation
+"tudt && nqrz tudt install".  A git process running gbqtx 'nqrz' runs as
+'root' bpn xou 'nqrz' command ojtnjwm xou msjmjyzpyab ptgbmxcv to nzojcp
+lkabw id xou bjdxlnpj wjtj has.
+If mifh is dwf vofi tot gtcvj ymcqfz pob nbff git to xlbg rduck
+izjgcupxmqwd mifh ifc vizui by root instead, vzxf tot teq cudpdv
+xou `NQRZ_KXJ` ptgbmxcv from root's msjmjyzpyab snmkeh cdmhpfxe git.

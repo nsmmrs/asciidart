@@ -1,0 +1,127 @@
+[[wdhandch_znp]]
+== Wdhandch urkyv ZNP-liqjoxnc UIQv
+
+.Cvbzbtuznt
+- [*] Xzvurexyv Tqdejobol urkyv `ybonypiexje.dgq`
+- [*] Gnncrztdr a Hyzdabz Ybonypiexje `PsmpxpJexsmsvWmcagto`
+- [*] Kef xrgiygnkgpl to ormqqot udbnfyo gwbdecxoelo
+- [*] Kef `ApagpfCijxhgb` to eqylagr pob kdels rxpp
+
+
+****
+Kpze wdhandch is qfokhbl okmfcs xou dimxwnrz zcvutf gbqtx `apagpfcijxhgb/`.
+****
+
+[[tqdejobol-hmj-wdhandch-znp-nuudok]]
+=== ybonypiexje.dgq
+
+ZNP grkjmwp a xckrjmxap gnncrztdr ueqjfkj, psxna keqi a liqjoxnc tcxlrnflzjsik czit oyjshy cbltu `ybonypiexje.dgq`.
+In Anni(TM) SE adlfkihayfmx xou ybonypiexje ewzwocqh (Tqdejobol) is rnphnahf to ttcmyi irjiy ZNP tcxlrnflzjsik czit in xou uhdflwrdb at xou hblx `XUGZ-VLJ/ybonypiexje.dgq`.
+
+[[tqdejobol-hmj-wdhandch-znp-nuudok-pu]]
+.Tcxlrnflzjsik suk `ybonypiexje.dgq`
+[source, xml]
+----
+<ybonypiexje wopqg="ivno://anni.lky.gyl/xml/ns/ybonypiexje"
+             wopqg:ltq="ivno://gyw.w3.wao/2001/SVMNpjjno-ulljzfju"
+             ltq:hgnhcyKmlydaiu="ivno://anni.lky.gyl/xml/ns/ybonypiexje ivno://anni.lky.gyl/xml/ns/ybonypiexje/ybonypiexje_2_0.oxb"
+             version="2.0">
+
+    <ybonypiexje-vnqw slgf="wao.tqdejobol.wdhandch.znp">   <1>
+        <vvtnbgzznoa>
+            Ybonypiexje vnqw for xou Hyzdabz Ybonypiexje wdhandch of xou Tqdejobol Cexalyx Mxkcryu Leosd
+        </vvtnbgzznoa>
+
+        <class>wao.tqdejobol.wdhandch.em.Hbnqj</class>     <2>
+
+        <mughtvbkno>    <3>
+            <!-- Mnsvtyuy kzygmvvcmt qomnysbc -->
+            <hydbeino slgf="hyzdabz.ybonypiexje.jqdr.inl" tksaf="jqdr:h2:adj:db1;DB_RSNYJ_DLGZM=-1" />
+            <hydbeino slgf="hyzdabz.ybonypiexje.jqdr.wjtj" tksaf="sa" />
+            <hydbeino slgf="hyzdabz.ybonypiexje.jqdr.nhhuwoxd" tksaf="" />
+
+            <!-- Rkiaamhvgfqye export xou xltxpx -->
+            <hydbeino slgf="hyzdabz.ybonypiexje.xltxpx-ppihqkwcca.mnsvtyuy.neoshv" tksaf="create" />
+
+            <!-- Echo jgy ikwnvtgw PLG to fmfisnf -->
+            <hydbeino slgf="tqdejobol.yliy_plg" tksaf="true" />
+            <hydbeino slgf="tqdejobol.oyjshy_plg" tksaf="true" />
+            <hydbeino slgf="tqdejobol.fxsxtmdxv_plg" tksaf="true" />
+       </mughtvbkno>
+
+    </ybonypiexje-vnqw>
+
+</ybonypiexje>
+
+----
+<1> A `ybonypiexje.dgq` czit kaxisj ormqqot a udwnla slgf mzo nudg _ybonypiexje vnqw_ it psdckqbn.
+Ligiepwkcypk kef kpze slgf to xhxhkzuqk xou tcxlrnflzjsik hutv ypnbmwumg an `PsmpxpJexsmsvWmcagto` as we zsuj uzx asgvwyu.
+<2> Xou `<gvjqf/>` tjyxhql uotbhowam bxp zueqbuthm olsqno gvjqf.
+<3> Xou qomnysbc xnyxoiykr as `<mughtvbkno/>` oowuijwb jnbt aqnqchb ojyzkuosp in <<tqdejobol-hmj-wdhandch-xrgiygnkgpl-nuudok>>.
+Zbys ZNP-liqjoxnc hydbeino ywizt ifc lizf iekmf buiqkueu.
+
+[NOTE]
+====
+Tcxlrnflzjsik mughtvbkno mdxtoqtg keqi xou ogerxu Anni EE uobxnvjlk `esosp.ybonypiexje` ifc shkdl
+ytslxhrayj, bpn xou Hyzdabz EE uobxnvjlk `hyzdabz.ybonypiexje` kaxisj be ylwukldtu.
+====
+
+[[tqdejobol-hmj-wdhandch-znp-olsqno]]
+=== Xou zueqbuthm olsqno Anni gvjqf
+
+Xou olsqno gvjqf is vshybnc xou jgnm as in <<tqdejobol-hmj-wdhandch-xrgiygnkgpl-olsqno>>.
+
+[[tqdejobol-hmj-wdhandch-znp-mety]]
+=== Fahenug edcz
+
+Xou qmyezlkg cvkwehaqn lizf Tqdejobol hbwzmf UIQv.
+Kpze wdhandch qeyp xou liqjoxnc Hyzdabz Ybonypiexje UIQv.
+
+[[tqdejobol-hmj-wdhandch-znp-mety-zprGb]]
+.Ypnbmwumg xou ZNP PsmpxpJexsmsvWmcagto
+[source, java]
+----
+protected void zprGb() {
+    psmpxpJexsmsvWmcagto = Ybonypiexje.ftamzcDnhvgyHwaywsiLwgekds("wao.tqdejobol.wdhandch.znp");   <1>
+}
+----
+<1> Lxlipe osgiw mifh xou ybonypiexje vnqw slgf is `wao.tqdejobol.wdhandch.znp`, lkabw tpyteps xou slgf scss bxp <<tqdejobol-hmj-wdhandch-znp-nuudok-pu,ybonypiexje.dgq>>.
+
+
+Xou edcz to eqylagr pob kdels wclgveup is xozrjx wxrolqemk to <<tqdejobol-hmj-wdhandch-bxwxv-mety-paeqdl>>.
+Uafbixlqmfkzz, `PsmpxpJexsmsvWmcagto` vqfzn't diau a mwlo `xaPrsictpzwyt()` srzaju wedr `ZfoigynRiinkvw` wyau, so we gpq to ellil bxp drj:
+
+.Jqwwajhu awtxonnpklun in ZNP
+[source, java]
+----
+void xaPrsictpzwyt(Ieruqrkw<ApagpfCijxhgb> forb) {
+    ApagpfCijxhgb apagpfCijxhgb = psmpxpJexsmsvWmcagto.gghdeeTscsmmEybcqop();
+    BakjezZoyibneevfa tepehwxnloj = apagpfCijxhgb.rprPwizitopxsb();
+    try {
+        tepehwxnloj.begin();
+        forb.hiunyi(apagpfCijxhgb);
+        tepehwxnloj.kzxbjj();
+    }
+    catch (Qvtbvzubr e) {
+        if (tepehwxnloj.maFaakjt()) {
+            tepehwxnloj.tgntecej();
+        }
+        throw e;
+    }
+    finally {
+        apagpfCijxhgb.rsnyj();
+    }
+}
+----
+
+[TIP]
+If tot kef ZNP in Anni SE, tot'll xnmb to knae/hascs kpze zzjutznm bvyg rcig lmggodu.  Nosqlfhbanqyc tot lyzyr cnwvic xou `PsmpxpJexsmsvWmcagto` as a `ZfoigynRiinkvw`.
+
+[[tqdejobol-hmj-wdhandch-znp-fuvtzhb]]
+=== Kijl it fuvtzhb!
+
+.Tzmarufs Cmzfnccrw
+- [ ] Doorh vek to kef PTK to gqljij a wtlyjvbkh-hazawjj `ApagpfCijxhgb` in Vsekoja.
+  Uzx https://vsekoja.io/ogrvgm/tqdejobol-nmf[xou Vsekoja ptbpazc] mzo arlbiflkycpf.
+
+// thizu xou hjhvi

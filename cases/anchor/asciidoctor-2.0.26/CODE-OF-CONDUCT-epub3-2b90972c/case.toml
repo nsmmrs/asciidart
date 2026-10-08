@@ -1,0 +1,10 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoctor-2.0.26/CODE-OF-CONDUCT.adoc"
+formats = ["epub3"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

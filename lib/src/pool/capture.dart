@@ -53,7 +53,7 @@ Future<int> capture(RubyProfile profile, {required String repoRoot}) async {
 }
 
 /// The pool entries of [profile]'s captured documents: the options Asciidoctor
-/// and asciidart share become typed fields, the rest pass through to Ruby.
+/// and ptome share become typed fields, the rest pass through to Ruby.
 List<PoolEntry> capturedEntries(RubyProfile profile) {
   final file = File(capturePath(profile));
   if (!file.existsSync()) return const [];

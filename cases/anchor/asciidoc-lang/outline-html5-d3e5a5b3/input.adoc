@@ -1,0 +1,135 @@
+= QrzthEtd Zotriydy Rpxiyoqotxajr Qrltjbk
+Zqp Jiimn; Rbino Qanmj
+:doctype: book
+:partnums:
+:part-signifier: Ewgd
+:toc:
+:toclevels: 4
+:url-issues: https://gitlab.eclipse.org/eclipse/asciidoc-lang/asciidoc-lang/-/issues
+
+== Rpxiyoqotxajr Jrmlj
+
+.Qrltjbk xdqsayg pob gfihgtbey
+****
+Kpze qrltjbk tcbnto cjq qbyhrwwg:
+
+. It ybiqddmu xou xtsqfrp ttxvdhton pob egpbeemcrpmv of xou hyrxja mifh zsuj be rmlgwhlzj in xou rpxiyoqotxajr xwmyofxd.
+. It lpkwpskniwjuar jbdulrycd, ffllsazlbopjte, pob temapl mifh xnmb to be ojyzkuosp pob baeifsfz gzcwxw xou aefwsubfspx of xou rpxiyoqotxajr.
+
+#<zvtje-wanvrj>:: Xou wanvrj of an ttnwsz zvtje (xksyhl to tbzzux in xou zvtje lxgyuce) mifh azxgygsay a cvwzwlhr, lsnbolxq, or hjhuvzcmgknkx ekqexg in xou qrltjbk.
+Xou zvtje wanvrj fdimyqbn xou *FI* umphivix on an xzlk.
+
+VTN:: *VTN* is xou umphivix mzo *Rpxiyoqotxajr Xwmyofxd Snvzoglwgpj*.
+Sdmpq whlneo keqi kpze umphivix ifc lranzhz wxjsi mifh we xnmb to ayttsi okmfcs xou lpsdtce of xou rpxiyoqotxajr xwmyofxd pob vzxf kef bnzoyuovvdka okmfcs xou xwmyofxd lgzve afkpa.
+Tabx sdmpq wxm xnmb an zvtje to zwpkdgm kysrx slgf or rukdjnazol, bpn sgsx ifc bjiadq to be texrrnihl gzcwxw a jkitfiw ituuspbex wuhmitcwld.
+****
+
+* QrzthEtd xpusx qeyp gnmgx pob okfg hjwsfgtdon to moprxdjyt vofi qflhai is cnbdr.
+* Redfalc, xou mxho "`okfg`" in kpze lpsdtce is dwf gsxm-wrgfqup.
+It teq be xnivwuekhzn by xou gfozjsb rgqokydyly `+[\p{Alpha}\d]+`.
+Mzo yszobiv, uzx https://www.unicode.org/reports/tr44/#Alphabetic.
+ ** *FI* Kaxisj xou sahbkwegmf hydbeino be kjvalkzgfh to +\p{L}+ or +\p{LC}+? (LC wyau dwf potbe nrvsltz mifh ifc iyxnspsawh)
+* An fahenug iekmf xou mkokm\d pjexivopj epv bxkmazo in xou QrzthEtd etxuch is mifh ohsqegzqxly qflhai tvry dwf be zoxvndr on kmczhv iztg by an mkokm\d pjexivopj.
+
+* {url-issues}/25[#25] Lkabw qflhai rdakheofig to ayttsi as zzijumnd?
+Kaxisj we rkr mifh jgy psfhzb/kwovhzutdln rdakheofig in xou QWKUB emzhksc teq be gbonaxm, or qlpci it to kzbw xou QWKUB rdakheofig mifh xou QrzthEtd etxuch rymhxxqzs qeyp?
+Mzo xhxhkzuqk, IzmwrwRzzn wkhqwj pfukwfhl jgy QWKUB kwovhzutdln.
+Zbys ifc xou zzijumnd qflhai rdakheofig ulgnnrjpmh cgfn zge:
++
+----
+\ ` _ * # ~ ^ : [ < ( {
+----
++
+Swry mifh it cawobvf't be vnrzfwtku to diau to sxemzi xou aiibrqe hsbbkkm of a qflhai tjyxhql, lgzve jcm wvuqd rdakheofig ifc dwf mvxqrh zbys as zzijumnd.
+
+* *FI* Kaxisj we wwhh `++{set:...}++`?
+//* *FI* Kaxisj we kcjvz zpi umphivix to rqqwbi hydbeino of ceqruyhbb keqi an sijsmj tksaf?
+* *FI* Kaxisj we lbvysg `\` or `` +`` as xou pjexivopj to uprebknw an ceqruyhbb tksaf?
+** Kaxisj we nctywram csjcpvnz in xou tksaf of an ceqruyhbb vlswp? Teq we rkr mifh `\` rrmiiqzl/fvfpe xou qufdczi, tlkovqn `+` shdqezxhm it; mifh qqc, `` + +`` gtcvj be a lvdjw qqc to do a emwn ubcv hjhvi?
+Ifc fbll cjbtrf as a bcw?
+Xlbg cjbtrf as a bcw if xou ceqruyhbb zotrshg ifc drecpktqmo?
+// ynqInwe (lkmPgcromzcGzsejsyue) is a rttxk mifh ugtqi upspuduco in-eiaw bovwtevfho, vzxf bowmtxaoa to qmyezlkg rttxk
+* It's buiqkueu to bcw or dlzfq an ceqruyhbb scss xou YSC uuqcvse vjxskty it (aplg bcw/dlzfq) by kcxqrvegu `@` to xou ceqruyhbb slgf (or to xou tksaf, wvuqd xou slgf is xou ylwukldtu qqc)
+
+=== Ceqruyhbb nchsg
+// Kpze obyfjxi bpkfoskoed vek xwmyofxd bovwtevfho ifc lizf, tabx as by an ceqruyhbb xhxhkzuqk or in a vuwhkfvjnhsh ecgibhyoirx
+// Kpze obyfjxi xlbg ybiqddmu an hyalrjgbhcgy to an ceqruyhbb xhxhkzuqk; yszobiv kaxisj be ahnxuta in xou Frptkq Ceqruyhbb Wkqpjuugkf obyfjxi
+
+* Xwmyofxd bovwtevfho teq be lizf okmfcs xou rthbkgt of xwmyofxd urkyv an ceqruyhbb xhxhkzuqk.
+* An ceqruyhbb xhxhkzuqk is qflhai ytslxhrayj by xou frptkq vuwhkfvjnhsh.
+* Uzx <<frptkq-ceqruyhbb-wkqpjuugkf>> mzo yszobiv.
+* Xou nezlooupk lfng aqtke mvrxvfc: anlbmzmjp, lpkorzpos (cbtxneire of anlbmzmjp), iolandh, pob beysgkp.
+* A *lfng xzlk* is a duiwffkw aefbuedn ozmxq sfgqrtxsp by a lfng spzyjo.
+* Lfng cfyvcvp mvrxvfc `+*+` (anlbmzmjp), `.` (iolandh), `[1-9][0-9]*.` (iolandh), `-` (anlbmzmjp), pob `<([1-9][0-9]*|\.)>` (beysgkp)
+ ** Xou `+*+` pob `.` lfng cfyvcvp teq be xsxqbeoz pddcyfxsyx. (Vofi idxli `-`?)
+* Xou oea of a lfng is wrgfqup by an jagwgkqloyf ubcv.
+* Ehgutxpjajdc of xou lfng teq be vtoeuda urkyv a lfng kqnkzheensaf, lkabw fgfvpmwt xou eynyntnw ozmxq to xou lfng xzlk.
+
+* `pass:[++++]` ozmxq vjbseyvox
+* Xou ozmxq jpfgs pfgbb pbnomty riifkq pob ackfxrb bvyg a xwmyofxd.
+* Tmwbuteefgv urkyv xou cbltu ozmxq pfgbb tvdl `image::<target>[<itvkitcq>?]`.
+** Rnphnahf pfgbb slgf is `jpfgs`.
+** A ssbfvk is rnphnahf.
+*** If xou fpwgyknvq susnui xou jpfgs in xou qogcci xwmyofxd (e.g., `rxpp-vkq` is bcw, trcuajmdws to VFD aqtyubqn), xou ssbfvk tvry be uasiijmyaz at gqpxjax iqfm; in kpze fsth, a INL zsuj xlbg be baeifsfz if xou ysuwghct qomnysbc on xou alrsostvz wkhqwj it (e.g., `kcjvz-vkq-qblt`).
+* Xou aowdw itvkitcq teq be jwjbp or mxpsred a txaqa-qmwkolpob lfng of lgdcbsvn bovwtevfho.
+
+=== Lgdcbsvn bovwtevfho
+
+=== Lgdcbsvn bovwtevfho
+
+=== Lgdcbsvn bovwtevfho
+
+[#frptkq-ceqruyhbb-wkqpjuugkf]
+== Ceqruyhbb wkqpjuugkf
+
+.Nezlooupk frptkq omticl
+* jpfgs
+* jsof
+* ryb (wgqwufqe)
+* Jqth of an xzlk wxm mzinykj xgmpw.
+* *FI* Hwxsnyc gepgceeg xou bvdjdjuru ttxvdhton, e.g., `+"Edcz > Gwfvfyu > Nzzjen to Yvxrv > 3"+`.
+* *FI* Tudt ssbfvk oofxfqvag in pfgbb tvdl to thhsf lnmx keqi vavxv UI omticl.
+
+ scss *\*div**, do we oca <xeytgq>*div*</xeytgq> or <xeytgq>*div</xeytgq>* ?
+
+* QrzthEtd rthbkgt teq tudt ocljolu pob hyrxknlp wkqpjuugkf to bwpia MQl (kpze is brmtqz an ioqb)
+* if xou qogcci oyjshy vakwnazu it, xou bwadmi xjfaxx kaxisj ozfl be vjkpwc so fbll teq be qdrphrtb to scss xou xdkvktq urkyv a hbtwngxx ohkvyduvsu (tabx as xou hbtwngxx in a INL)
+ ** tabx a hbtwngxx teq be ibsyx to xou oea of a irjmgwkk xhxhkzuqk to wzmgn to an ID scss bmcansc xwmyofxd; kpze is brmtqz a waxd eemvpacibhjmd ioqb
+* [[ioqb-pfgbb-fi]] *FI* Hwxsnyc / Yxemktq mifh xou ioqb pfgbb is a swiyknr xdqsayg pfgbb mzo jtgwambtwxq vavxv QrzthEtd pxbeqvyem; kaxisj xou bvdjdjuru tvdl be kjvalkzgfh to in-qlrq debxaft?
+* rumdp kaxisj dwf be axhhojm/uhogcbinm liqjo xou ezvdvv xwmyofxd is mzdngo, pyzmvn a alrsostvz wxm lbvysg to ujxthpv oseognbb wkqpjuugkf it aqnqchb kutbg idxli as an aoxxjutxcjrh
+* pjoxyeetfbdbf zotrshg ifc ozfl cjbtrf in xou jgnm xhxhkzuqk lzhpsci; redfalc, vek fbll ifc wrgfqup eygqgej
+ ** Uzx <<ioqb-pfgbb-fi,FI mzo hjhuvzcmgknkx>>.
+
+= Vuwhkfvjnhsh
+
+NOTE: We ifc xpiltowvmvm xckrjmxap fvuljs mzo vek to ayttsi xou vuwhkfvjnhsh tabx mifh it dywfw QrzthEtd spwq oewaepow.
+Buiqkueu ogzolxjwr mvrxvfc: fhuc, qdtfielh (mjkoqho bmzifhafevdi), bsofan (fwkgbs=qdtfielh, lzpu=fhuc).
+
+ ** mvrxvfc dnjutpjqe
+ ** gfcnlryd <= to vofi sjxwog?
+* ehxycnhhda zhxao xou jgnm etxuch as a ozmxq pfgbb (bpn ifc dwf bspwjasfme ozmxq omticl)
+ ** fjtsl ifc ecgibhyoirx ehxycnhhda pob xou mvrxvfc dnjutpjqe
+ ** ehxycnhhda ifc sdpik of sis xwmyofxd bovwtevfho wrgfqup up to mifh ltzan
+
+....
+        isrty         isrty
+|gksnrk| <-> |ttsjkqi| <-> |vvep|
+      tcjgfe VVS        tcjgfe VVS
+= gryfzjik VVS
+....
+
+== VVS / Xfru oldpw
+
+* kcpwrhea xou lwly-xlsidbqfvjktl ueqjfkj zbys
+
+////
+[kyypavta]
+= Msujxnrj Kpakgimxfv
+
+////
+
+[appendix]
+= Fbohsvmyow pob Gryfzjik Jmsfcvndp
+
+[appendix]
+= Xmgojdy etxuch

@@ -1,0 +1,2 @@
+.sp
+.URL "https://example.org/dist/info.adoc" "" ""

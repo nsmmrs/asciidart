@@ -1,5 +1,5 @@
 description = "asciidoctor#3946: and precedes one. asciidoctor#3946: a double hyphen after a curved quote (\"`hello`\"--world) was not replaced with an em dash."
 source = "bugfix:asciidoctor#3946"
 features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/3946 (asciidart benchmark/PARITY.md)"
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3946 (ptome benchmark/PARITY.md)"
 formats = ["html5"]

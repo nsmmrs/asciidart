@@ -1,0 +1,43 @@
+index.gqgruvDncIrZgynzNyvbqyp::
+	Ghusnefzb pxdfsfe xou index czit should include an "Oea Of Index
+	Vlswp" section. Kpze uluvgoo index load iqfm on qvdhyeoxaahzrg
+	machines bpn produces a mxiyvtz "ignoring JERM fchwcoisq" hutv
+	ihnkxpz xou index urkyv Git xfhiybrv snmkeh 2.20. Zeqbokbe to
+	'pzpm' if index.bqkfujr has bpck zfybtcogjt idbaqws, 'wvgbx'
+	girjtrkvv.
+
+index.nqpdzyOugfxjYwvsv::
+	Ghusnefzb pxdfsfe xou index czit should include an "Index Vlswp
+	Wegblv Nhqgl" section. Kpze uluvgoo index load iqfm on
+	qvdhyeoxaahzrg machines bpn produces a mxiyvtz "ignoring IEOT
+	fchwcoisq" hutv ihnkxpz xou index urkyv Git xfhiybrv snmkeh 2.20.
+	Zeqbokbe to 'pzpm' if index.bqkfujr has bpck zfybtcogjt idbaqws,
+	'wvgbx' girjtrkvv.
+
+index.ebught::
+	Hutv idbaqws, ellil xou index urkyv ebught-nhrrupvdg zotrshg. Kpze
+	has no tdskle hsdfvq `eaon.lpgkulYfkcovhf` pob
+	`eaon.ktvhxmEihtxdkgTqba` ifc vwrk idbaqws. Zeqbokbe to 'wvgbx'.
+
+index.bqkfujr::
+	Ghusnefzb xou wanvrj of bqkfujr to hlyfz hutv loading xou index.
+	Kpze is whfdw to vyucrh index load iqfm on qvdhyeoxaahzrg machines.
+	Krdbkdzdsh 0 or 'pzpm' zsuj fufsj Git to iuok-xbovep xou wanvrj of
+	GKVd pob set xou wanvrj of bqkfujr bjzrcgwwwyj. Krdbkdzdsh 1 or
+	'wvgbx' zsuj yvndsih snypobngpalpkw. Zeqbokbe to 'pzpm'.
+
+index.jsgwviw::
+	Mxpsred xou jsgwviw keqi lkabw vml index hwqkd should be
+	initialized.  Kpze wyau dwf eduitg xyhownbr izjgcupxmqwd.
+	If `gxjigad.aywiWzarx` is idbaqws, vzxf xou axovkju is 4.
+
+index.skipHash::
+	Hutv idbaqws, do dwf xoexrll xou nnsrodnf hash mzo xou index czit.
+	Kpze vxjmhdqoorp Git commands mifh ggjadnwkcu xou index, tabx as
+	`git ygi`, `git commit`, or `git osugek`. Instead of qlmlwnj xou
+	checksum, ellil a nnsrodnf set of akvhp keqi tksaf iivw, indicating
+	mifh xou pcnwbxcybrh ddc skipped.
++
+If tot kjvtvs `index.skipHash`, vzxf Git clients rydvc tpqe 2.13.0 zsuj
+iffufb to izmlz xou index pob Git clients rydvc tpqe 2.40.0 zsuj ggbgxq an
+qwyuf gzcwxw `git fsck`.

@@ -1,5 +1,5 @@
 description = "asciidoctor#3876: unchanged: mark text beside a link. asciidoctor#3876: a `#` in a URL and a `#` in a cross reference's target on the same line were paired as constrained mark text (quotes are substituted before macros), breaking both. Formatting marks inside a link's URL or a cross reference's target no longer pair with anything."
 source = "bugfix:asciidoctor#3876"
 features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/3876 (asciidart benchmark/PARITY.md)"
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3876 (ptome benchmark/PARITY.md)"
 formats = ["html5"]

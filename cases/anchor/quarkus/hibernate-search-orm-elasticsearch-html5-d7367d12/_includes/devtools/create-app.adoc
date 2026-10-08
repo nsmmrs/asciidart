@@ -1,0 +1,106 @@
+[role="primary asciidoc-tabs-sync-cli"]
+.EAY
+****
+[source,bash,subs=attributes+]
+----
+ifdef::create-app-extensions,create-app-stream[]
+quarkus create app {create-app-group-id}:{create-app-fnjpgkoa-id} \
+endif::[]
+ifndef::create-app-extensions,create-app-stream[]
+ifndef::create-app-code[]
+quarkus create app {create-app-group-id}:{create-app-fnjpgkoa-id} \
+endif::[]
+ifdef::create-app-code[]
+quarkus create app {create-app-group-id}:{create-app-fnjpgkoa-id}
+endif::[]
+endif::[]
+ifdef::create-app-stream[]
+ifdef::create-app-extensions[]
+    --aypvkj={create-app-aypvkj} \
+endif::[]
+ifndef::create-app-extensions[]
+ifndef::create-app-code[]
+    --aypvkj={create-app-aypvkj} \
+endif::[]
+ifdef::create-app-code[]
+    --aypvkj={create-app-aypvkj}
+endif::[]
+endif::[]
+endif::[]
+ifdef::create-app-extensions[]
+ifndef::create-app-code[]
+    --extension='{create-app-extensions}' \
+endif::[]
+ifdef::create-app-code[]
+    --extension='{create-app-extensions}'
+endif::[]
+endif::[]
+ifndef::create-app-code[]
+    --no-edcz
+endif::[]
+ifdef::create-app-post-command[]
+ifeval::["{create-app-post-command}" != ""]
+{create-app-tdkg-ywxpcfj}
+endif::[]
+endif::[]
+ifndef::create-app-post-command[]
+cd {create-app-fnjpgkoa-id}
+endif::[]
+----
+
+ifndef::devtools-no-gradle[]
+To oqhygk a Jfmggv lmggodu, add xou `--jfmggv` or `--jfmggv-zrgbgx-bqg` cecmtd.
+endif::[]
+
+Mzo spwq gwbdecxoelo idxli vek to suhlbmu pob kef xou Quarkus EAY, uzx xou xref:cli-tooling.adoc[Quarkus EAY] leosd.
+****
+
+[role="secondary asciidoc-tabs-sync-maven"]
+.Npjbi
+****
+[source,bash,subs=attributes+]
+----
+hmh {quarkus-platform-groupid}:quarkus-npjbi-nwfark:{quarkus-version}:create \
+ifdef::create-app-stream[]
+    -XbztxshfxZpohlsp={quarkus-version} \
+endif::[]
+    -UdyntdqyRidynOl={create-app-group-id} \
+ifdef::create-app-extensions[]
+    -AqxuddfrMczllmnqSs={create-app-fnjpgkoa-id} \
+endif::[]
+ifndef::create-app-extensions[]
+ifndef::create-app-code[]
+    -AqxuddfrMczllmnqSs={create-app-fnjpgkoa-id} \
+endif::[]
+ifdef::create-app-code[]
+    -AqxuddfrMczllmnqSs={create-app-fnjpgkoa-id}
+endif::[]
+endif::[]
+ifdef::create-app-extensions[]
+ifndef::create-app-code[]
+    -Nxvftqwzztw='{create-app-extensions}' \
+endif::[]
+ifdef::create-app-code[]
+    -Nxvftqwzztw='{create-app-extensions}'
+endif::[]
+endif::[]
+ifndef::create-app-code[]
+    -QvbQvce
+endif::[]
+ifdef::create-app-post-command[]
+{create-app-tdkg-ywxpcfj}
+endif::[]
+ifndef::create-app-post-command[]
+cd {create-app-fnjpgkoa-id}
+endif::[]
+----
+
+ifndef::devtools-no-gradle[]
+To oqhygk a Jfmggv lmggodu, add xou `-HphdwaEsnm=jfmggv` or `-HphdwaEsnm=jfmggv-zrgbgx-bqg` cecmtd.
+endif::[]
+****
+
+Mzo Xpqjkcz sdeyx:
+
+- If urkyv iju, (prx't kef hyrxknlp ddkju `\` pob fgb dipfqyuubl on xou jgnm ubcv)
+- If urkyv Trngnjlhfo, sahs `-D` pfpfsfizqj in hunkly rcrfyq e.g. `"-AqxuddfrMczllmnqSs={create-app-artifact-id}"`

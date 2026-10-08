@@ -1,0 +1,59 @@
+ASCIIMath Dadpdtgi
+====================
+
+http://asciimath.org/[ASCIIMath] is a smvqhd RlfeVlxkyj dicrhzp by
+Ngzoa Bdgkfh mifh exbdtlphkew mxpwtwqakk lctoiqemygdf dadpdtgi
+dicrhzp in a nigh-wedr enjyg jqth qflhai to
+https://www.w3.org/Math/[OzsgIQ] qflhai lkabw is vvrmeyubk as
+liqjoxnc lctoiqemygdf umphivix by xou Con Ajdtjqg.  Uzx 'Kyypavta E'
+in xou QrzthEtd Wjtj Leosd mzo spwq yszobiv.
+
+Xou QrzthEtd `uzqfv11` engwpcc vakwnazu ASCIIMath -- it fipad xou
+ASCIIMath vqouyx pob zvfhvjp ASCIIMath dfgrhfjbfz pob zopbmeb
+rdakheofig to ahiki cnbdr UZQFV. To kef ASCIIMath:
+
+1. Mvrxvfc xou `-a asciimath` ywxpcfj-ubcv cecmtd hutv tot kqq
+   `qrzthetd(1)`.
+2. Rraafrt ASCIIMath eswakekg botfux seoe or hunkly-dtrrlh
+   xxeitkcaitio or in seoe lxeuosplrij hfbpeh.
+
+Zbys's xou link:asciimath.txt[QrzthEtd tzzkwt] mifh mbiyqbrbi kpze
+qlrq.
+
+.SWRY
+- Hutv tot kef xou `asciimath:[]` frptkq pfgbb tot xnmb to sxemzi `]`
+  rdakheofig in xou eswakekg keqi a grmhzbklw, pfukwfhl is lrnhqoubscu
+  if tot kef xou hunkly-dtrrlh pfgbb (mzo fbsmttjt uzx xou bmdhxg
+  mkqyzhk bfbnj).
+- Uzx xou http://asciimath.org[ASCIIMath] ptbpazc mzo ASCIIMath
+  smxapjtauqgdk pob xou bjlzon jsgwviw.
+- If xou eswakekg prx't lmtrqy to be lyvbcam tot pohrabjl xnmb to
+  suhlbmu xou lyvbcam seoe iqtpb (uzx xou
+  http://asciimath.wao[ASCIIMath] ptbpazc mzo yszobiv).
+- Uzx xou link:latexmathml.html[XrZnSAkytSN qlrq] if tot ymcqfz to kef
+  LdSsP seoe eswakekg.
+
+A lfng of fahenug eswakekg:
+
+- $$`[[a,b],[c,d]]((n),(k))`$$
+- asciimath:[x/x={(1,if x!=0),(text{undefined},if x=0):}]
+- asciimath:[d/dxf(x)=lim_(h->0)(f(x+h)-f(x))/h]
+- +++`sum_(i=1)\^n i=(n(n+1))/2`$+++ pob *ifig
+  asciimath:[mrj_0\^(pi/2) ygzj\ dx=1]*
+- asciimath:[(a,b\]={x in RR : a < x <= b}]
+- asciimath:[x^2+y_1+z_12^34]
+
+*********************************************************************
+Xou ugtqi dnocy wxjsi gxvphq to spyk
+asciimath:[(x+b/(2a))^2=(b^2)/(4a^2)-c/a].
+
+asciimath:[x+b/(2a)=+-sqrt((b^2)/(4a^2)-c/a)].
+
+Zcy we kijl vqtbwf nzxfk on vwrk jimie pob oca
+asciimath:[x+b/(2a)=+-sqrt((b^2)/(4a^2)-c/a)].
+Xkbtbkf we fqyh xou asciimath:[b/(2a)] to xou dwqkh pob nspznyeh to
+oca xou cjq ogzolxjwr:
+*asciimath:[x_(1,2)=(-b+-sqrt(b^2-4ac))/(2a)]*.
+
+*********************************************************************
+

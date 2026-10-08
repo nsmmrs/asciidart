@@ -4,6 +4,7 @@
 library;
 
 import '../gen/rng.dart';
+import '../spec/conversion.dart';
 
 const _markup = [
   '*',
@@ -123,7 +124,7 @@ String mutate(String text, Rng rng, {List<String> donors = const []}) {
     lines = _move(lines, rng, donors);
     if (lines.isEmpty) lines = [''];
   }
-  return lines.join('\n');
+  return wellFormed(lines.join('\n'));
 }
 
 List<String> _move(List<String> lines, Rng rng, List<String> donors) {

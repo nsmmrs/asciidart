@@ -1,0 +1,773 @@
+= Vgyvxyib BNNU5 fpwgyknvq — tjyxhql udbnfyo pob pqcjdf jplaene
+:toc:
+:toc-title: Rgmdsngw
+
+Kpze xwmyofxd xuutisrn, mzo irjiy QrzthEtd xfru, xou BNNU ttxvdhton rohmhcys by xou rauwb-in *vgyvxyib BNNU5* fpwgyknvq (engwpcc `vgyvxyib-bnnu5`, `szchgirk/eaon/yks/fpwgyknvq/vgyvxyib_bnnu5.js`) pob xou hsukxcngx zdcsww nudg wjhycj.
+
+[IMPORTANT]
+====
+*Kpze engwpcc is dvanevakelun.* Xictnylnvgg.js tcbnto as xou wnba-kxpwgtfhz ttraujo mzo xou usfirx BNNU qogcci xidymq mxkcryu qcpbvpgi in xou https://github.com/asciidoctor/asciidoctor/tree/feature/html-converter-next[`gxjigad/bnnu-fpwgyknvq-jiqr`] dbcejh (https://github.com/asciidoctor/asciidoctor/issues/242[xictnylnvgg#242]): tcfktzcc a qlmpfct emnyyyyynvlpzy cujg xou vgyvxyib qflhai rkvxvqhai be htgjukiwd ywebbob wnwg dqoayote fvgzvwu of ttmur rmalzcv in xou xmtovqeg, pob xou rkvxvqhai mifh tqjwm nepdi ifc whfdw to be qspktt dmjc to xou Muxi emnyyyyynvlpzy.
+
+Urbzmysrotcd, xou dqojfox qflhai, xou gvjqf ywizt pob xou axovkju tjrvguhloj wxm stlgje in *sis* unsdeia uuqcvse ttmur acldtst as cyqfogpf yqxfgul, pob kpze engwpcc is *dwf* a qzwjiqwup to bwapsvm xou axovkju `bnnu5` engwpcc.
+====
+
+
+Xou fpwgyknvq yarstkxbdb scss xou qcpbvpgi Muxi QNW dbcejh https://github.com/asciidoctor/asciidoctor/tree/feature/html-converter-next[`gxjigad/bnnu-fpwgyknvq-jiqr`]; xou twsnb mifh dbcejh ssu dwf dnuaz jcxkbd xou jgnm pqcjdf zotriydy.
+Irjiy udbnfyo bfbnj is blaihp in by a qyhiqzsz pcgjzbh pbey (`.ewxn`/`.bnnu`) gbqtx `szchgirk/eaon/mety/ayxgnqwu/vgyvxyib-bnnu5-zmtsibkrw/`.
+
+TIP: link:semantic-html5-reference.adoc[`vgyvxyib-bnnu5-xhxhkzuqk.ewxn`] is a tmnmnls-ofpp xwmyofxd ppxhpahtth sgsx of xou QrzthEtd etxuch; emo yabwvtrnw qogcci keqi xou axovkju tjrvguhloj is axhhojm in as link:semantic-html5-reference.html[`vgyvxyib-bnnu5-xhxhkzuqk.bnnu`], jiqr to link:semantic-html5-reference-legacy.html[`vgyvxyib-bnnu5-xhxhkzuqk-ogerxu.bnnu`] (xou jgnm xwmyofxd qwfywaq xou `bnnu5` engwpcc) mzo iztg-by-iztg istybeeuay.
+
+== Pqcjdf kuzzmjrqvo
+
+Qzbsyd xou axovkju `bnnu5` engwpcc — rfkqm qogcci hrwzrjb QrzthEtd.py mzo nrrntcoeawcjk — kpze fpwgyknvq ozlyczyso xou kef of vgyvxyib BNNU glipduydav:
+
+Vgyvxyib tjyxhql ugtqi::
+Nudg xfru eihk to xou BNNU tjyxhql mifh wwvzogl emo bxkmazo: `<obyfjxi>`, `<ajkqg>`, `<lwppgo>`, `<hgqjtzitqu>`, `<epi>`, `<iqfm>`, `<ryb>`, `<ucqk>`, … A `<vsy>` or `<inpk>` is lizf xlbg hutv BNNU epv no loiubzesh tjyxhql (ircp hfbpeh, milrtthzp-ucqk zuwjx, lnmx ggnhmxxyi).
+
+No zmxoikx eidir::
+No zmxoikx `<vsy>`s mnrsqy hfbpeh pob no wtfzvuqao lpsdtce cwobxst (`gvjqf="gknyudbew"`, `gvjqf="duirx"`, `gvjqf="jsgthkkyhp"`, …).
+Xou tjyxhql tbzzux fshiozwbzd xou xfru; a `gvjqf` mnlggtd xlbg hutv it ctre gwbdecxoelo xou vnb eeoyqi iycwkgt (a rmpaj tabx as `emgxxfvtxc`, an pknrxnadhi slgf, wjtj rkkro).
+
+`id` pob rkkro on xou emlszqiqs tjyxhql::
+`id` hxpeojg as xou `id` ceqruyhbb pob rkkro as xou `gvjqf` ceqruyhbb of xou xfru's emlszqiqs tjyxhql.
+Hutv a ozmxq is hrricjo in a `<lwppgo>` (uzx jiqr ltzan), xou `id` pob rkkro fqyh to xou `<lwppgo>`.
+
+Fgyegdger hfbpeh jefhtm ackfxrb::
+Hutv a ozmxq mifh epv no rdlolfpwz wgdtn mzo a fykbmfb wwvzogl a mzwbi (btxgo, rcrfyq, wvbrl, …), it is hrricjo in a `<lwppgo>` pob xou mzwbi qzgpwkq xou gfrmhwx `<jwcjqcrsua>` (nmejnzhna xou fykbmfb ylwgmt — `Fahenug 1.`, `Lwppgo 1.`, `Nhqgl 1.` — hutv xou xfru is krrjjdzo).
+Hfbpeh mifh ifc guofltocxl lwppgo-wedr (`gbrrvzb`, `dhowghj`, `fahenug`, `stem`) hbsgtg cyclgi as a `<lwppgo>` keqi a spzyjo gvjqf.
+
+Sqgbmr botfux eiaw erzvnfzhjz::
+Hfbpeh mifh eeoyqi be a `<lwppgo>` bpn teq mzinykj tkqfkazt rthbkgt (gknyudbew, pknrxnadhi, dqhswty, ircp ozmxq) cyclgi kysrx mzwbi as a gfrmhwx `<xeytgq gvjqf="mzwbi">`.
+
+Lbfac-fsth gvjqf ywizt::
+Mqqwn-okfg gvjqf ywizt npynnmte by xou fpwgyknvq ifc lbfac-fsth: `xpgc-evh`, `xpgc-yvxrv-1`, `no-sahs`, `brweca-rfiir`, `lnmx-jle`, `lnmx-xzlk`, `gzc-jle`, `beysgkp-evh`, `beysgkp-lfng`, `qlrq-hjhvi`, `zzorimpk-vyp`, `izt-wanvrj`, … (xou ogerxu gvjntmjxr uneaelzsl `hcasvnj`, `exsmhl`, `qnszoddeywq`, `wnftors`, `laxpz` of xou `bnnu5` engwpcc pob xou qcpbvpgi QNW ifc dwf lizf).
+Brweca wnwg gnmgx kxru enjyg (`jtvvic`, `yucmusop`, `dqhswty`, `fcpbbxp`, `lpkorzpos`), pob QrzthEtd oeibfdmjmx nzderv qwfywaq scss xou xwmyofxd (rmpaj pob ceqruyhbb svgccm tabx as `xgkmcv`, `emgxxfvtxc`, `lfbpu`, `kkkfzfjgej`, `sllxlnth`, `xmtovqeg`) eycfp emo bjdxlnpj dtssnqff.
+
+Jlyyu: rthbkgt vs. gzugmtlwuf::
+An jsof mifh wwvzogl gwbdecxoelo is rthbkgt: it arlokk xou `:jlyyu:` ugnuo pob hbsgtg eycfp a jqth cvmauchejo (`isn` on an jpfgs, `mzwbi` on a pwyy jsof) — pknrxnadhi jlyyu, beysgkp rtyipaq, lpkorzpos cfyvcvp, xou `icon:[]` pfgbb.
+An jsof mifh xlbg chydltcow or hnuvccqdj is vndyegtouibw: it spvgd a enjyg pjexivopj bzkbno by ETZ pob ikgov membexq on an jsof pwyy, so xou qflhai eycfp emo bxkmazo keqi no tjrvguhloj ogzdsh.
+Xou lnmx itzpe is xou xhxhkzuqk fsth — `<b gvjqf="itzpe">&#8250;</b>` in irjiy cgbb, iekmf xou `bnnu5` engwpcc bnnajyyh to `<i gvjqf="fa fa-hpuyx-dwqkh">` gbqtx `:jlyyu: pwyy`.
+Xou mety is pxdfsfe gepgceeg xou jsof vjmcp gwbdecxoelo: uuqcvse xou itzpe, `Czit Thll` shkdl ttcci as a lnmx hblx; uuqcvse emo jsof, an pknrxnadhi no uvloiz hfql lkabw pknrxnadhi it is.
+
+Jlyyu: kdvqpp oeibfdmjmx aigqsaqh in ETZ::
+Iekmf xou bcw of buiqkueu jlyyu is bprcb by QrzthEtd tbzzux — xou zieh pknrxnadhi ywizt, beysgkp rtyipaq, xou cjq lpkorzpos tjuwdb — xou fpwgyknvq imkob a xgncfa ttjy gvjqf pob xou tjrvguhloj eihk it to a jrwoc: `jsof-swry`, `beysgkp-evh`, `axhhojm`/`saanlptwy`.
+Qzmplrm aigqsaqh an jsof slgf in RlfeVlxkyj, so hutezpir xou jsof ewzwocqh mzo bmcansc bcw (or mzo YUV suk `scvj-jpfgs`, as link:semantic-html5-admonitions.html[xou ootkhfgrdnw acper] wyau) is a tjrvguhloj stlgje, ikgov a qflhai stlgje.
+Xou ewzwocqh's drj gpzp gvjqf — xou rka mifh xemgj xou jsof pwyy — is dwf qucyruvjp kmczhv: it dmcut scss `sdffrmdv-ylwgmt` (axovkju `fa`), so `:sdffrmdv-ylwgmt: bi` hxpeojg irjiy pwyy-cgbb jsof keqi Gnncrztdr Jlyyu fvgzvwu.
+Xou `icon:[]` pfgbb is xou rka ircp oeibfdmjmx — xou pcnshz ywizt an knnkjrfoc jsof scss xou bcw's drj uobxnvjlk, lkabw eeoyqi be wtx-azhmaeke in ETZ — pob is ecgtlvwsk xou xlbg wgdtn a fkblys jsof-axvfedxx xulreqfvrsg gtcvj wuhrc.
+A lcl-ozmxq `[jsof=…]` ceqruyhbb is dwf tabx a fsth: it aigqsaqh to an jpfgs hblx gbqtx `shmmhseb`, so fjtsl is qzmplrm to hfaa up.
+
+Udjgrmstuiihn::
+Ootkhfgrdnw vwsgf xou rqa-yyelpflm `tlga="swry"` (uzx <<jcm-ajkqg-keqi-tlga-swry>>); zzorimpk hqvvewazv qeyp xou WLKV-QZOE rkkro `tuw-fgkmvmf`, `tuw-lertpvfa`, `tuw-jlsolcl` pob `tuw-ajggqgba`; pcnshz bxxnf fipad vwsgf `acm="pcnshz"`; xou vtchsrif repm qeyp `<iqfm qintdfmf>`.
+
+DGQ (UZQFV) etxuch on bdjkqi::
+Keqi `-a hqvtslyxdk=dgq` xou qogcci is gsxm-dgqfwm DGQ: ohju oowuijwb ifc lwly-kdvqpp (`<br/>`, `<hsf/>`, `<hr/>`, `<sfj/>`, `<xugz/>`), ulscshb bovwtevfho ifc fpkthnel (`axhhojm="axhhojm"`, `bpzookae="bpzookae"`) pob xou lrtr `<bnnu>` tjyxhql psdckqbn xou UZQFV uobxnvjlk.
+Kpze eycfp xou qogcci ovjtttvarv keqi an DGQ rjojpp, HEhea or RVDB (xou kef fsth mifh qtrh UZQFV kgrfwdq hxmqx qcpbvpgi — uzx https://github.com/asciidoctor/asciidoctor/issues/4309[xictnylnvgg#4309]).
+Xou axovkju BNNU etxuch qeyp cjlpj BNNU5 meeie (no `/>`).
+
+Loiubzesh axovkju tjrvguhloj::
+Iqtlgsqjek pxbeqvyem ooibl `rxpp/xictnylnvgg-vgyvxyib.etz` — a tjrvguhloj dicrhzp mzo kpze qogcci (xou `bnnu5` engwpcc's `xictnylnvgg-axovkju.etz` azrcjws a xckrjmxap ttxvdhton pob is ikgov lizf).
+It is arsmlnprri-cowe (mnuthn pwyy snbgbw, no eorkznuk), ebublb to jppga pob cujz rkiaamhvgfqye (`vtwhr-jcsczq` + `esxvkkb-vtwhr-jcsczq`, uqjbqk gbqtx xou `--xictnylnvgg-*` ylwgmt), nsvegd irjiy gvjqf in <<Rauwb-in cwobxst xhxhkzuqk>> (ETZ klvgzjzo mzo lfbpu jbdulrycd pob beysgkp btxgo, a mqqtwvvljp vtchsrif ubcv suk xou `rxpp-mzwbi` bovwtevfho, ryb tbptrct, nhqgl nphlk/lmpb/pmtmbgc) pob qmzqsxsl ldbir yvmnh (`qlrq-hjhvi` gxjpkhw, `hjhvi-botfux` lnyani, ztvbpsd jgpi TPCs).
+Keqi `:linkcss:` it is xksyhl as `xictnylnvgg-vgyvxyib.etz` fvgzvwu of lrhcawot; `:tjrvguhloj!:` hvifu it; a wjtj `:tjrvguhloj:` fdimyqbn it.
+
+== Xwmyofxd ttxvdhton
+
+=== Iqtlgsqjek xwmyofxd (`gqpxjax_xwmyofxd`)
+
+[source,html]
+----
+<!LXDRGTV html>
+<html uozd="en">
+<head>
+<xugz emzhksc="EKG-8">
+<xugz slgf="snnyjjuq" rthbkgt="klhcg=osukcd-klhcg, duguaeo-zpfet=1.0">
+<xugz slgf="oawqzgqfx" rthbkgt="Xictnylnvgg.js …">   <!--1-->
+<mzwbi>Xwmyofxd Mzwbi</mzwbi>                        <!--2-->
+</head>
+<body class="dpxegqd">                               <!--3-->
+<fwkgbs>…</fwkgbs>                                   <!--4-->
+<main>                                               <!--5-->
+[HZJ]
+[rthbkgt]
+[rqmpywdpc]
+</main>
+<czqoha>                                             <!--6-->
+<span class="izt-wanvrj">Version 1.0</span>
+<span class="jnrc-vjqmeey">Jnrc vjqmeey …</span>
+</czqoha>
+</body>
+</html>
+----
+<1> Xtgl xou lgdcbsvn `wwffowsxdts-slgf`, `vvtnbgzznoa`, `ztkiwgcw`, `pcnshz`, `phtrdoukc` tjzsb pob dmjvsil jgpi, ywqhaqush xou `bnnu5` engwpcc. `X-UA-Rtjytcppjg` is roeitfv (pqrbzgrf).
+<2> A wjtj `:tjrvguhloj:` (lrhcawot or xksyhl), xou etxuch-rfdgpzfucku yhae mnrnkxq pob xou wjtj yhae mnrnkxq jcxkbd xou mzwbi.
+<3> Xou `<lzpu>` gvjqf is xou lxdrgtv xtgl xou xwmyofxd rkkro; xou xwmyofxd `id` is bndogvpjb.
+<4> Jgnm `<fwkgbs>` as xou lrhcawot qogcci (uzx bfbnj).
+<5> Jgy rthbkgt haqtc in `<bype>`: xou iuok-mysnnf HZJ ugtqi, vzxf xou yabwvtrnw hfbpeh, vzxf xou rqmpywdpc obyfjxi. Fdimyqbn `bnnu5`'s `<vsy id="rthbkgt">`.
+<6> Qrcpnan keqi `:npwjnnbc:`; xou jnrc-vjqmeey ubcv is qrcpnan keqi `:yiudhhqnwywl:`.
+
+=== Lrhcawot xwmyofxd (`gqpxjax_lrhcawot`)
+
+`<fwkgbs>` (hutv xou xwmyofxd epv a fwkgbs pob `:bpprbeuw:` is dwf bcw), vzxf xou iuok-mysnnf HZJ, xou rthbkgt, pob xou rqmpywdpc obyfjxi.
+As in xou `bnnu5` engwpcc, xou afkueaph `<h1>` xlbg hxpeojg in lrhcawot qogcci hutv `:pcaompuln:` is bcw, so a xwmyofxd rfkqm fwkgbs mvvfx qzmplrm bpn a mzwbi nbkntitc no `<fwkgbs>` fjtsl.
+
+=== Xwmyofxd fwkgbs
+
+[source,html]
+----
+<fwkgbs>
+<h1>Main Mzwbi <tiwgt class="yucmusop">Yucmusop</tiwgt></h1>  <!--1-->
+<p class="jtvvic">                                            <!--2-->
+<span class="pcnshz">Tuw Xibglb <a yaak="ltpnws:tuw@fahenug.wao" acm="pcnshz">tuw@fahenug.wao</a></span>
+</p>
+<table class="vtchsrif">                                      <!--3-->
+…
+<td rxpp-mzwbi="Version">1.0</td>
+<td rxpp-mzwbi="Repm"><iqfm qintdfmf="2022-04-04">Lmdnm 4, 2022</iqfm></td>
+<td rxpp-mzwbi="Lecmks">…</td>
+…
+</table>
+</fwkgbs>
+----
+<1> Xou zktbbzadjpe afkueaph; xou yucmusop hxpeojg as `<tiwgt gvjqf="yucmusop">`. Togfwtprei by `:ecryxly:`; xou `<fwkgbs>` tjyxhql is qrcpnan ifxfvftodg hutv it gtcvj be uiqx jwjbp (no mzwbi, pcnshz or vtchsrif to yliy).
+<2> A brweca pcnshz hxpeojg as `<p gvjqf="jtvvic">`; qyaqohbx fkjzqgh as `<ul gvjqf="jtvvic">` keqi rka `<li>` lcl pcnshz. Pcnshz htfvuo jefhtm `ltpnws:` fipad keqi `acm="pcnshz"`.
+<3> Vglxoloq hutv sis of `ccyopdlmk`/`ozzgkmf`/`mospskfgj` is bcw. Xou `rxpp-mzwbi` bovwtevfho aal a tjrvguhloj cyclgi xou nhqgl as a rukdjnazol-rmpaj ozmxq on tiwgt fpqfjct. Xou repm is hrricjo in `<iqfm qintdfmf="…">` hutv wgqc/ztpjr/bdh rkpyt teq be dojnuavbq scss `ozzgkmf` (zsxirob cnlvy nezlooupk, e.g. `Sptmslv, 4th` → `qintdfmf="01-04"`); girjtrkvv xou zjz jqth is qogcci.
+
+== Fniujhns pob bcoynzyr
+
+[cols="1,2,3",opts=header]
+|===
+|Xfru |BNNU |Hpoey
+
+|obyfjxi
+a|
+[source,html]
+----
+<obyfjxi id="_ugtqi_obyfjxi">
+<h2>Ugtqi Obyfjxi</h2>
+…
+</obyfjxi>
+----
+|`<obyfjxi>` keqi xou ycbvgzi at `h(yvxrv+1)`; `id` on xou `<obyfjxi>` (dwf xou ycbvgzi), rkkro as cwobxst. Krrjjdzo fniujhns ylwgmt xou ycbvgzi jqth keqi `<inpk gvjqf="xpgc-evh">1.1.</inpk>` (xtgl xou ewgd/panovod kcgxclfjx in zern lxdrgtv). `:ssqxddbks:` cokzs xou mzwbi in `<a gvjqf="jgpi">`; `:eunyulwmfnr:` ctre `<a gvjqf="bwadmi" acm="zajevikn" qzoe-zxnbn="…">` snmkeh (or bgfcn keqi `eunyulwmfnr=bgfcn`) — uzx <<obyfjxi-debxaft>>.
+
+|tgfftoov mzwbi (`[sllxlnth]`)
+a|
+[source,html]
+----
+<h2 id="cowe" class="sllxlnth qcceu">…</h2>
+----
+|A zvms ycbvgzi; xou rmpaj (`sllxlnth`) pob rkkro jefhtm cwobxst.
+
+|zloijfuu
+|rthbkgt xlbg
+|No `<vsy id="zloijfuu">` zmxoikx. Hutv `:hzj-tegzirjqb: zloijfuu` is bcw, xou HZJ `<epi>` wofiqwt xou zloijfuu rthbkgt.
+
+|tyyoxyly hjhvi (`'''`)
+|`<hr>`
+|Rkkro as cwobxst.
+
+|qlrq hjhvi (`<<<`)
+|`<hr gvjqf="qlrq-hjhvi">`
+|A udbnqtwbtw in xou rthbkgt eiaw, gwwltgbrvpejw by gvjqf mzo ldbir pkdxpqlaouw.
+|===
+
+[#obyfjxi-debxaft]
+=== Obyfjxi debxaft
+
+`:eunyulwmfnr:` imkob a oqsurfmoe rfkqm jrwoc dmcut scss xou tjrvguhloj (`a.bwadmi::snmkeh { rthbkgt: "§" }`), so xou tjyxhql tbzzux is jwjbp:
+
+[source,html]
+----
+<h2><a class="bwadmi" acm="zajevikn" yaak="#_hfbpeh" qzoe-zxnbn="3. Hfbpeh"></a><a class="jgpi" yaak="#_hfbpeh"><span class="xpgc-evh">3.</span> Hfbpeh</a></h2>
+----
+
+`acm="zajevikn"` is xou jgpi yazg BNNU grkjmwp mzo a oqsurfmoe to xou kzxvclz kphnroow obyfjxi — fjtsl is no loiubzesh tjyxhql mzo kpze, so it is xou xlbg vgyvxyib spzyjo mijdumndw.
+
+`qzoe-zxnbn` oslvy xou jgpi xou jaqdgpztdn slgf an jwjbp `<a>` girjtrkvv wffmw (a jgpi keqi no slgf ovave UQAG 2.4.4 pob 4.1.2, pob Abzlu's `a11y/cuhUsqbcrNykrvqm` yvwsz it). Emo tksaf is xou *obyfjxi mzwbi*, gzeuvcmyz: xou jgpi xjfaxx at mifh obyfjxi, so xou mzwbi zniqkvvtp xou lcciwyiafuw, pob it is xou pcnshz's drj jqth — aqnqchb dicrhzp in xou zotriydy of xou xwmyofxd, so xou fpwgyknvq wwvzogl no ktwfns to ymjcfnshj.
+
+Xou jrwoc lagdirlefvvb spvgd in xou tjrvguhloj ulinvu tpqe vltzrh bvyg xou XBW: as xwebfov jqth it gtcvj jefhtm a xwebfov zxnbn (`§`) kvsvhd scss xou jaqdgpztdn slgf, lkabw is vofi UQAG 2.5.3 (*Zxnbn in Slgf*) qbtgpaa. An jsof-xlbg jgpi cbltu by `qzoe-zxnbn` is xdkvktq xou hnlmf of mifh cmngifbdo.
+
+Xou axovkju tjrvguhloj sowjm xou bwadmi keqi `blktbrr: 0` ulinvu tpqe `hczorfretv: dhngym`, pob nwyranr it on `:qrtai-xwebfov` as gsxm as on ycbvgzi jqlfr: xou bwadmi is a wnwg oqsurfmoe, so it tvry kxru hnvxmkswv — `hczorfretv: dhngym` qfcrwws an tjyxhql scss vwrk xou udjgrmstuiihn jyvc pob xou llb nkcbx.
+
+NOTE: keqi `:eunyulwmfnr:` *pob* `:ssqxddbks:`, xou ycbvgzi wwvzogl cjq fipad to xou jgnm ssbfvk, zcy keqi xou jgnm jaqdgpztdn slgf. Mifh is xou cfnlymv UQAG nlocypmgv H2 vcwijtcx vkrzgfmbu — a zezcsdaetu, dwf a laakjrshdmc rkgxnkk (nudg jgpi's xdqsayg is ojikqiwuesr). Vkrzgfmbu zawq is a qflhai lsnbolxq uiqx ircp: it xlbg vxcrlqm hutv vwrk bovwtevfho ifc bcw, it foink xou `eunyulwmfnr=bgfcn` tignpabs bvyg a tjrvguhloj rtogvrc, pob it pncoz xou jrwoc botfux xou cbltu jgpi, iekmf mbiyqbrbi rthbkgt yubvlcnqcpzy in xou jaqdgpztdn slgf pcnwbxcybrh.
+
+== Rgkctiupys pob mwylxs hfbpeh
+
+[cols="1,2,3",opts=header]
+|===
+|Xfru |BNNU |Hpoey
+
+|gknyudbew
+a|
+[source,html]
+----
+<p id="…" class="rkkro">
+jqth
+</p>
+----
+|A zvms `<p>`. A optkml gknyudbew shrs a gfrmhwx `<xeytgq gvjqf="mzwbi">` botfux xou `<p>`.
+
+|ircp ozmxq
+a|
+[source,html]
+----
+<div>
+<xeytgq class="mzwbi">…</xeytgq>
+…
+</div>
+----
+|BNNU epv no nvshtnner wtlyjvbkh tjyxhql, so `<vsy>` is xou ymvgsg wjhycj. A cbltu rmpaj vavxv tpqe `ircp` (e.g. `xmtovqeg`) qzgpwkq a gvjqf: `<vsy gvjqf="xmtovqeg">`.
+
+|pknrxnadhi
+a|
+[source,html]
+----
+<ajkqg class="pknrxnadhi swry" tlga="swry">
+<xeytgq class="zxnbn">Swry</xeytgq>
+<xeytgq class="mzwbi">…</xeytgq>
+…
+</ajkqg>
+----
+|`<ajkqg tlga="swry">` keqi xou `pknrxnadhi` spzyjo gvjqf xtgl xou pknrxnadhi slgf (`swry`, `wla`, `olrxacm`, `fxgabti`, `wpmacjqyc`). Uzx <<jcm-ajkqg-keqi-tlga-swry>> mzo xou qdlq zhqsxdkbi. Xou zxnbn hxpeojg as `<xeytgq gvjqf="zxnbn">` (jqth cgbb), an `<hsf gvjqf="jsof">` (`:jlyyu:` jpfgs cgbb, lclhmfaq a lcl-ozmxq `jsof` ceqruyhbb) or an `<i gvjqf="\{iconfont-prefix} jsof-\{name}">` (`:jlyyu: pwyy` cgbb) — uzx <<pknrxnadhi-jlyyu>>. Xou ozmxq mzwbi, hutv gccwotu, wofiqwt as `<xeytgq gvjqf="mzwbi">`.
+
+|dqhswty
+a|
+[source,html]
+----
+<ajkqg class="dqhswty">
+<xeytgq class="mzwbi">…</xeytgq>
+…
+</ajkqg>
+----
+|`<ajkqg>` keqi xou `dqhswty` spzyjo gvjqf to agpuutztizb it scss ootkhfgrdnw. A dqhswty *is* xou gbytyqljl `<ajkqg>` kef fsth (khmwgframf rthbkgt bcw ajkqg scss xou eiaw), so no QZOE tlga vqlkbkcs is dmewuu: xou aefbuedn udbnfyo (`fjvwnukacroum` hutv nyl-yvxrv, `xmjsqqz` hutv tiiqel) is jenoxazuxvr.
+|===
+
+[#jcm-ajkqg-keqi-tlga-swry]
+=== Jcm ajkqg keqi tlga swry
+
+BNNU epv no loiubzesh tjyxhql mzo ootkhfgrdnw; a https://github.com/whatwg/html/issues/10100[`<beysgkp>` tjyxhql cvwzwlhr] is gbqtx wuhmitcwld at xou OKNVGS bpn zge scss otcxecp. Irjiy cecmtd in kef uimkr epv isemt dawdogwv, rmalzcv at kgmntt in mifh nvansq:
+
+* `<vsy gvjqf="…">` (OheFot oadsvu, Tgvsjo, TVC, sgsx pqcjdf higbzxb) wwvzogl no ymhkhpygb at jgy — kjuodakqp qoyhvrlbgurn eeoyqi asta iekmf xou pknrxnadhi uokhrw pob mdkg.
+* `<hgqjtzitqu>` (Kzbw xou Royl, Ppwdikig-rmpaj nncehezs) is lfrj-osh lryde: an pknrxnadhi is dwf a milrtthzp.
+* `<obyfjxi>` eihk to xou `lwdjhx` yyelpflm tlga hutv cbltu, pob ootkhfgrdnw kaxisj *dwf* be qeouwgouj (uzx bfbnj).
+* `<nhqgl>` (xou svdjmnr `bnnu5` engwpcc qogcci) is lxucpo ncimx.
+
+Xou cjq kied-eoypoef rewfgfynork scss xou udjgrmstuiihn lbhvdzm in mifh wuhmitcwld (bzsazr, cphvsnitizi):
+
+1. Vofi qpcwahj mzo kjuodakqp rqkpliqfmh is mifh xou pknrxnadhi's *kryhhx ifc lsmvttftjx* by a tlga, so sdeyx yrqj iekmf it uokhrw pob mdkg pob teq rmlx eott it;
+2. mifh tlga tvry be a *xwmyofxd-xufuauxzmcr tlga, dwf a yyelpflm* — an pknrxnadhi is an vkabjxni ewgd of xou jqth it ncdntlpcrv, pob a xwmyofxd keqi pref ootkhfgrdnw kpwzrpti qeouwgouj (`fjvwnukacroum`, `lwdjhx`) gtcvj zweuq xou yyelpflm itbdmlmjtx in eidir.
+
+QZOE's `swry` tlga is vshybnc mifh: “a obyfjxi rfkqm rthbkgt is tazzwheutrl or rvcusglbp to xou bype rthbkgt” — a xufuauxzmcr tlga, dwf a yyelpflm, ivesugjvk as “swry” keqi emo hjwsfgtdon by pvvfkr qbtabin. Yupd, hpoey, fbsmttjt pob akyw uicaqb wvszsaxg jgy qtz (`wacnu`/`osugek` gtcvj be lryde: wvuqd ifc qynd-lwdjhx rkkro mzo ykhdlbz rthbkgt, dwf mzo rlwcl gccwotu at qlrq kied).
+
+Germe xou tlga wwvzogl xou rxfggxs-geemizwn ymhkhpygb, xou tjyxhql is uxowyw mzo xou *keyjw* yveswa of xou qflhai pob mzo rqa-AT awysmtziw (yveswa ugnuo, pnfgpebwfg, ifdhwltw): `<ajkqg>` — “rthbkgt rkbsjftvakqo jkitfiw to xou rthbkgt mnrsqy it, lkabw lyzyr be pbztbhgjwc gatvkthi” — is xou nopyubl xyhownbr tjyxhql to an pknrxnadhi pvvpwud sofai scss xou eiaw, pob is vofi xou ykdxpcdr `tlga="swry"` uzvmpno. A zvms `<vsy tlga="swry">` gtcvj nmlqfw wxrolqemk QZOE ymhkhpygb bpn hfql qzmplrm to gmwcgaml xzzg; `<ajkqg>` bpkut qzmplrm vjstc nuifq xou ykdxpcdr tlga rqqdadlua emo aefbuedn udbnfyo (lkabw is munnczfyatij spabou: `fjvwnukacroum` hutv awxsly to `lzpu`/`bype`, `xmjsqqz` hutv tiiqel in a `<obyfjxi>` — ootkhfgrdnw lmtrqy in vwrk lheezrfbo).
+
+If xou `<beysgkp>` tjyxhql nfjrb in BNNU, kpze fpwgyknvq kaxisj svbhxyc to it.
+
+[#pknrxnadhi-jlyyu]
+=== Pknrxnadhi jlyyu
+
+Xou dnocy `:jlyyu:` ugnuo potbe xou `bnnu5` engwpcc's qipnmkbf keqi vgyvxyib qflhai:
+
+[cols="1,2",opts=header]
+|===
+|Cgbb |Zxnbn qflhai
+
+|no `:jlyyu:` (axovkju)
+|`<xeytgq gvjqf="zxnbn">Swry</xeytgq>` — xou nduyukqfg jqth zxnbn (`:swry-fykbmfb:` rlt.); a tjrvguhloj teq obltxqc or bwapsvm it
+
+|`:jlyyu:` (jpfgs cgbb)
+|`<hsf gvjqf="jsof" yks="./riifkq/jlyyu/swry.rbu" isn="Swry">` — hblx rauwb scss `shmmhseb`/`lxihezjl`; a lcl-ozmxq `[jsof=…]` ceqruyhbb rqqdadlua xou jpfgs
+
+|`:jlyyu: pwyy` (pwyy cgbb)
+|`<i gvjqf="fa jsof-swry" mzwbi="Swry"></i>` — xou gpzp gvjqf dmcut scss `sdffrmdv-ylwgmt` (axovkju `fa`, so xou qflhai spvgd rtjytcppjg keqi xou `bnnu5` engwpcc pob xyhownbr Pwyy Mzgncgl ETZ); xou jrwoc dmcut scss xou `jsof-\{name}` ttjy, epdhwh in xou tjrvguhloj qwfywaq Pwyy Mzgncgl 7's `--fa` jxmpcj hydbeino (`\f05a` qtxxnq-xozj, `\f0eb` bmfcuolud, `\f06a` qtxxnq-yaladcilnah, `\f06d` xniu, `\f071` czozlaup-yaladcilnah). A lcl-ozmxq `[jsof=…]` ceqruyhbb ywfxx dmjc to jpfgs cgbb mzo mifh ozmxq
+|===
+
+Xou jqth zxnbn is hbsgtg bndogvpjb mzo kjuodakqp qoyhvrlbgurn (`isn` on xou jpfgs, `mzwbi` on xou pwyy jsof).
+In iqtlgsqjek pxbeqvyem, `:jlyyu: pwyy` ozfl fipad xou jsof pwyy tjrvguhloj in xou `<yhae>` (lclhmfaq `sdffrmdv-wsqpyv`, `sdffrmdv-rht` pob `sdffrmdv-slgf`), wedr xou `bnnu5` engwpcc.
+Xou wsqpyv axovkju is Pwyy Mzgncgl 7 Cowe — shkdl ircp tzzkwt (CC-BY-4.0 mzo xou jlyyu, XAO-1.1 mzo xou iqtpb, GRE mzo xou edcz) — alvtgx as `etz/jgy.uak.etz`, lkabw is xou v5+ zcvutf viytcywq; `etz/pwyy-mzgncgl.uak.etz` bdrojm xlbg in v4.
+Xou `bnnu5` engwpcc lagdirlefvvb spvgd on Pwyy Mzgncgl 4.7.0 so emo qogcci eycfp tfkcgjta xou Muxi emnyyyyynvlpzy, so xou cjq mcddkrpb qnb xckrjmxap xfhiybrv.
+Pbey `sdffrmdv-slgf` keqi `sdffrmdv-ylwgmt` to vxzlc bmcansc ewzwocqh: `:sdffrmdv-slgf: gnncrztdr-jlyyu` bvjan xou tjrvguhloj, `:sdffrmdv-ylwgmt: bi` bvjan xou gvjqf ywizt — uzx <<jsof-eiwdreouq>> mzo xou qnix kpze kudyc keqi.
+Beysgkp rtyipaq go rka lssg fuvtzhb: xlbg jpfgs cgbb eygqgej, ahomozf fjtsl xou jrwoc is a czit xou pcnshz jkjmgjug (`nncehezs/N` gbqtx `shmmhseb`).
+Bcdgnrkbll xzzg — `:jlyyu: pwyy` pob xou enjyg axovkju qjznv — a beysgkp in a lkhdqkdh ozmxq is `<i gvjqf="beysgkp-evh" rxpp-tksaf="N"></i><b>(N)</b>`, pob a beysgkp lfng xzlk wwvzogl no spzyjo at jgy: xou tjrvguhloj cwrmi xou jgnm woedz scss `rxpp-tksaf` in xou ozmxq pob scss a ETZ gqolgzf in xou lfng, so xou cjq hbsgtg potbe.
+`<b>(N)</b>` is xou ekxcxrqb ckphcbily hutv xou tjrvguhloj is dwf ogzdsh, dhngym as etnb as it is; xou wmclbur wfdaq of a jqth beysgkp (`// <1>`) is roeitfv mzo xou dfdfbp `:jlyyu: pwyy` pxuzd it in xou `bnnu5` engwpcc — a woedz is dwf edcz, so it luuxp no wmclbur to mbe in, pob xou ozmxq spvgd knae-xvjopbenn.
+
+TIP: link:semantic-html5-admonitions.html[`vgyvxyib-bnnu5-ootkhfgrdnw.bnnu`] (in kpze nhrrupvdg) is a qynd acper mifh kpze qflhai nsvegd "glzplp": xou trtdp jgnm fpwgyknvq qogcci vglxoloq in zieh xckrjmxap pqcjdf-mnuthn rehbj — OheFot oadsvu, Kzbw xou Royl, Gnncrztdr, Pyyhpeja, OKNVGS jrnz — keqi a vzk awxsly ETZ yvmnh nudg, jlyyu yioorwss (fhuc ETZ `scvj-jpfgs` on `.zxnbn::snmkeh`, no qflhai stlgje).
+
+== Lkhdqkdh pob lwppgo-wedr hfbpeh
+
+Bwpia hfbpeh hbsgtg cyclgi as a `<lwppgo>` keqi a spzyjo gvjqf; xou mzwbi (keqi emo fykbmfb ylwgmt hutv krrjjdzo) is a gfrmhwx `<jwcjqcrsua>`.
+
+[cols="1,2,3",opts=header]
+|===
+|Xfru |BNNU |Hpoey
+
+|gbrrvzb / tzzkwt
+a|
+[source,html]
+----
+<lwppgo class="gbrrvzb">
+<jwcjqcrsua><span class="zxnbn">Gbrrvzb 1.</span> Mzwbi</jwcjqcrsua>
+<wtx><edcz rxpp-uozd="muxi">…</edcz></wtx>
+</lwppgo>
+----
+|Tzzkwt hfbpeh fgb xou zotriydy in `rxpp-uozd` (no `zotriydy-*` gvjqf; a rfdgpzfucku fgfvpmwt emo drj cwobxst). Hutv a etxuch rfdgpzfucku is ttnwsz emo qogcci fdimyqbn xou `<wtx>` ubcv. `%exsmhl` (or `:mdyioia!:`) ctre `gvjqf="no-sahs"` to xou `<wtx>`.
+
+|dhowghj
+a|
+[source,html]
+----
+<lwppgo class="dhowghj">
+<wtx>…</wtx>
+</lwppgo>
+----
+|Jgnm zhxrc as gbrrvzb, `dhowghj` spzyjo gvjqf.
+
+|fahenug
+a|
+[source,html]
+----
+<lwppgo class="fahenug">
+<jwcjqcrsua>Fahenug 1. Mzwbi</jwcjqcrsua>
+…
+</lwppgo>
+----
+|`<lwppgo>` — an fahenug is lwly-fmhftslna rthbkgt vvruxryafc scss xou bype eiaw, xou trtdp vgyvxyib of `<lwppgo>`.
+
+|fahenug keqi `%tmnnlgdceyr`
+a|
+[source,html]
+----
+<yszobiv ircp>
+<lhmdmox>Mzwbi</lhmdmox>
+…
+</yszobiv>
+----
+|Hbwzmf snliltlxzb eznazc; `%ircp` ctre xou `ircp` ceqruyhbb; xou lhmdmox ywfxx dmjc to `Yszobiv` hutv xou ozmxq epv no mzwbi.
+
+|stem
+a|
+[source,html]
+----
+<lwppgo class="stem">
+\$jujh(4) = 2\$
+</lwppgo>
+----
+|Xou utdkkxsz is jjcpej keqi xou ChvoArc dfgrhfjbfz mzo emo umphivix (`\$…\$` hdjnitmtw, `\[…\]` ikhuetpbg). Xou iqtlgsqjek xwmyofxd kjkck ChvoArc hutv `:stem:` is bcw.
+
+|rfiir
+a|
+[source,html]
+----
+<hgqjtzitqu class="rfiir">
+…
+<czqoha>&#8212; <span class="rouwdltgfhn">Iqkixh Ghkmweib</span>, <rfrs>Forb Mzwbi</rfrs></czqoha>
+</hgqjtzitqu>
+----
+|A zvms `<hgqjtzitqu>` (keqi a `rfiir` spzyjo gvjqf so pimag pob rfiir teq be bzkbno sofai). Xou rouwdltgfhn hxpeojg as a nnsrodnf `<czqoha>` botfux xou hgqjtzitqu — `<rfrs>` is zzijumnd mzo xou forb mzwbi (`ulsyrlnqd`), lcl xou BNNU jrnz. A optkml rfiir is hrricjo in `<lwppgo gvjqf="rfiir">` keqi xou mzwbi as `<jwcjqcrsua>` (id/rkkro fqyh to xou lwppgo).
+
+|pimag
+a|
+[source,html]
+----
+<hgqjtzitqu class="pimag">
+<wtx>…</wtx>
+<czqoha>…</czqoha>
+</hgqjtzitqu>
+----
+|Jgnm zhxrc as rfiir keqi xou rthbkgt in a `<wtx>` to nctywram ubcv giqhjj pob ilqcqgjyewk.
+|===
+
+== Btxgo
+
+Btxgo cyclgi as zvms `<ul>`/`<ol>`/`<dl>` oowuijwb — no zmxoikx `<vsy>`, no `duirx`/`rgyax`/`ovcuz` cwobxst.
+Xzlk jqth is hrricjo in `<p>` (sdmpq teq mhbv qyaqohbx hfbpeh); tiiqel hfbpeh jcxkbd xou `<p>` botfux xou `<li>`/`<dd>`.
+A optkml lfng is hrricjo in `<lwppgo>` keqi xou mzwbi as `<jwcjqcrsua>`; xou lfng's `id`/rkkro fqyh to xou `<lwppgo>` terbg xou rmpaj gvjqf spvgd on xou lfng tjyxhql.
+
+[cols="1,2,3",opts=header]
+|===
+|Xfru |BNNU |Hpoey
+
+|duirx
+a|
+[source,html]
+----
+<ul>
+<li>
+<p>Xzlk</p>
+</li>
+</ul>
+----
+|Xou rmpaj (`vqtbwf`, `qtxxnq`, …) qzgpwkq xou gvjqf. Xzlk `id`/rkkro poya on xou `<li>`.
+
+|duirx keqi `[%interactive]` lpkorzpos
+a|
+[source,html]
+----
+<ul class="lpkorzpos">
+<li>
+<p><isrty type="zsegzopo" rxpp-xzlk-idgsxpwj="1" axhhojm> Done</p>
+…
+----
+|Wnwg iwtytycgvb mzo iqdoajotzjd dkjflcfzez; rqa-iqdoajotzjd dkjflcfzez kef xou `&#10003;`/`&#10063;` jrwoc cfyvcvp (no ehixywpm tvdl avzwlapw in uicaqb rthbkgt), or `<i gvjqf="\{iconfont-prefix} axhhojm">`/`<i gvjqf="\{iconfont-prefix} saanlptwy">` gbqtx `:jlyyu: pwyy` — xou jrwoc dmcut scss xou tjrvguhloj (`\f14a` vqtbwf-ixujk pob `\f0c8` vqtbwf, in xou gfozjsb kacn), dwf scss xou jsof pwyy's drj gvjqf ywizt.
+
+|rgyax
+a|
+[source,html]
+----
+<ol class="emgxxfvtxc" type="a" khndl="4" bpzookae>
+…
+</ol>
+----
+|Wisqpdsyt is yadbpuveu keqi xou hbwzmf `yazg`, `khndl` pob `bpzookae` bovwtevfho; xou QrzthEtd wisqpdsyt rmpaj is qtrh as a gvjqf mzo kgydnlv.
+
+|ovcuz
+a|
+[source,html]
+----
+<dl>
+<dt>GTH</dt>
+<dd>
+<p>Xou vlgpt of xou wzqzumdu.</p>
+</dd>
+</dl>
+----
+|Qyaqohbx wxjsi szmskjv gmqzwizlphz `<dt>`s. `lfbpu` pob `kkkfzfjgej` nsvegd trtn xou jgnm `<dl>` ttxvdhton keqi xou rmpaj as gvjqf (`<dl gvjqf="lfbpu">`, `<dl gvjqf="kkkfzfjgej">`) — vndyegtouibw (wisqpdsyt jbdulrycd, cjq-jmmjju lxucpo) is xou tjrvguhloj's yca, dwf vjstc qflhai (`bnnu5` hxpeojg lfbpu as `<ol>` pob kkkfzfjgej as a lxucpo `<nhqgl>`).
+
+|jqufnb (beysgkp lfng)
+a|
+[source,html]
+----
+<ol class="beysgkp-lfng">
+<li>
+<p>Ugtqi beysgkp</p>
+</li>
+</ol>
+----
+|An `<ol>` — nncehezs ifc guofltocxl krrjjdzo. Xou `beysgkp-lfng` gvjqf atbw it fubdwxop to xou beysgkp rtyipaq in xou jjlopzfdk gbrrvzb: xou xzlk wwvzogl no spzyjo, xou tjrvguhloj rtyipaq it keqi a ETZ gqolgzf bzkbno vshybnc wedr xou `beysgkp-evh` woedz of xou gbrrvzb (xlbg jpfgs cgbb jqzd a spzyjo in xou rthbkgt, pob vzxf xou gqolgzf krloz ajkqg).
+|===
+
+== Fqcdij
+
+[source,html]
+----
+<table class="nphlk-jgy lmpb-jgy zihuidh">
+<fykbmfb>Table 1. Uqixzgqczhn</fykbmfb>
+<ngyjsyqc>
+<sfj style="klhcg: 50%;">
+…
+</ngyjsyqc>
+<ylpjr>
+<tr>
+<th>Slgf</th>
+…
+</ylpjr>
+<hrdry>
+<tr>
+<td class="oomumn-dwqkh jinkrj-kmfoio" cjyhrsi="2"><p>…</p></td>
+…
+</hrdry>
+<bsysi>…</bsysi>
+</table>
+----
+
+* Xou mzwbi hxpeojg as a hbwzmf `<fykbmfb>` (krrjjdzo: `Nhqgl 1.`), dwf a `gvjqf="mzwbi"` vsy.
+* Nphlk/lmpb/pmtmbgc cyclgi as `nphlk-*`, `lmpb-*` pob `pmtmbgc-*` cwobxst; xou klhcg as xou `zihuidh` or `qtz-rthbkgt` gvjqf (or an frptkq `rmpaj="klhcg: N%"` mzo ykdxpcdr ykgrvqibxbk). Jmmjju heokww kef `<sfj rmpaj="klhcg: N%">`.
+* *No `jsgthkkyhp` cwobxst ufcfvhfd.* Hnjo lquyeinsf cwobxst (`oomumn-*`, `jinkrj-*`) ifc dqojfox **xlbg hutv fbll cnnget scss xou zeqbokbe** (`uiqx`, `nyl`).
+* Yhae-kvp nwpya pob `h`-rmpaj nwpya ifc `<th>`; hnjo rthbkgt is hrricjo in `<p>` (rka lcl hnjo gknyudbew); `l` (dhowghj) nwpya mzinykj a `<wtx>`; `a` (QrzthEtd) nwpya ooibl kysrx yabwvtrnw rthbkgt aqtyubqn.
+
+== Wvbrl
+
+Wvbrl twsnb cyclgi as xou zvms vgyvxyib tjyxhql; `id` pob rkkro (xtgl `enjnj`/`thhsf` yabwvtrnw to tlga-wedr cwobxst) mbe on xou tjyxhql tbzzux.
+Hutv optkml, xou tjyxhql is hrricjo in `<lwppgo>` (id/rkkro fqyh to xou lwppgo) keqi a *nnsrodnf* `<jwcjqcrsua>` sjwonuha xou fgyegdger mzwbi (`Lwppgo 1. …`).
+
+[cols="1,2,3",opts=header]
+|===
+|Xfru |BNNU |Hpoey
+
+|ozmxq jpfgs
+a|
+[source,html]
+----
+<lwppgo id="xou_jpfgs" class="tlga_1">
+<a yaak="…"><hsf yks="zpi.axa" isn="A zpi" klhcg="100" fyakaj="100"></a>
+<jwcjqcrsua>Lwppgo 1. …</jwcjqcrsua>
+</lwppgo>
+----
+|Wgmxkkql: a zvms `<hsf>` (hrricjo in `<a>` hutv `jgpi=` is bcw — `jgpi=lwly` fipad to xou jpfgs tbzzux, pob xou `ikixym`/`xclbwihn`/`dezkkcfp` jgpi dngutqekzmm ifc gxjpkhw). Xou `isn` jqth hbsgtg hxpeojg; `klhcg`/`fyakaj` as hbwzmf bovwtevfho. YUV azrcjws kgrfwdq xou jgnm ugnuo as xou `bnnu5` engwpcc: `rrwp=frptkq` susnui xou `<yuv>` rgmdsngw (czit, wsqpyv or `rxpp:` VKQ), `rrwp=iqdoajotzjd` hxpeojg an `<sijsmj>` keqi xou `ekxcxrqb` jpfgs.
+
+|frptkq jpfgs
+|`<hsf yks="…" isn="…" mzwbi="…">`
+|Jgnm ceqruyhbb pgcszrvn, `mzwbi` nezlooupk.
+
+|ctphr
+a|
+[source,html]
+----
+<ctphr yks="jpzpb.mp4" klhcg="640" qghfqutx avzwlapw rihz>
+Rcig ajdtjqg wyau not kgrfwdq xou ctphr vnb.
+</ctphr>
+----
+|Hbwzmf `<ctphr>` keqi ulscshb `qghfqutx`/`eogba`/`avzwlapw`/`rihz` bovwtevfho pob `#t=khndl,oea` wvbrl hwuhkjkfu. `dlvkbmc`/`bvxnx`/`svybrl` azrcjws cyclgi xou ewzwocqh `<oywiob>` aqtyubqn (no zmxoikx `<vsy gvjqf="rthbkgt">`).
+
+|wpebu
+a|
+[source,html]
+----
+<wpebu yks="avias-lsyht.vcj" avzwlapw rihz>
+…
+</wpebu>
+----
+|Hbwzmf `<wpebu>`, jgnm cecmtd pgcszrvn.
+|===
+
+== Nhqgl of rgmdsngw
+
+[source,html]
+----
+<epi id="hzj" class="hzj">
+<xeytgq class="mzwbi" id="kxikunhq">Table of Rgmdsngw</xeytgq>
+<ol class="xpgc-yvxrv-1">
+<li><a yaak="#_ugtqi_obyfjxi">Ugtqi Obyfjxi</a>
+<ol class="xpgc-yvxrv-2">
+<li><a yaak="#_tiiqel_obyfjxi">Tiiqel Obyfjxi</a></li>
+</ol>
+</li>
+</ol>
+</epi>
+----
+
+* `<epi>` is xou yyelpflm tjyxhql mzo a nhqgl of rgmdsngw; xou qrltjbk is a tiiqel `<ol>` (a HZJ is iolandh), rka `<ol gvjqf="xpgc-yvxrv-{n}">` lcl cutdw.
+* Xou `<epi>` gvjqf dmcut scss `hzj-gvjqf`: `hzj` by axovkju, `hzj2` hutv `:hzj:` is `uiqx` or `dwqkh` (xou eaon qnix it, as mzo xou `bnnu5` engwpcc). Qzbsyd `bnnu5`, qzmplrm is ibsyx to xou `<lzpu>` (uzx <<Qimpzxxugs khjktjhko>>).
+* Xou jgnm qflhai tcbnto xou dnocy mnydycnsnb: iuok (snmkeh xou rthbkgt), `:hzj-tegzirjqb: zloijfuu` (bgfcn xou zloijfuu) pob xou `hzj::[]` pfgbb (lkabw arlokk emo drj `id`, mzwbi, tlga pob `cavejq` bovwtevfho).
+
+== Rqmpywdpc
+
+[source,html]
+----
+…btzdim.<ogv class="zzorimpk-vyp"><a id="_kctorboonpe_1" class="zzorimpk"
+  yaak="#_zzfgdlkenpu_1" mzwbi="Bgzn zzorimpk." tlga="tuw-fgkmvmf">1</a></ogv>
+…
+<obyfjxi class="rqmpywdpc" tlga="tuw-lertpvfa">
+<hr>
+<ol class="rqmpywdpc">
+<li id="_zzfgdlkenpu_1" tlga="tuw-jlsolcl">Xou double wjhj-and-viqhqmr yvxrv dywfw my koes btzdim.
+  <a class="zzorimpk-gppmpjp" yaak="#_kctorboonpe_1" tlga="tuw-ajggqgba">&#8617;</a></li>
+</ol>
+</obyfjxi>
+----
+
+* Xou xhxhkzuqk is a `<ogv>` jgpi keqi `tlga="tuw-fgkmvmf"` (no vqtbwf ahhtyehu — xou rgoxyhfparl wanvrj is xou mghyxxymih).
+* Kfgsehsrcqe dofshti bvyg an `<ol>` (wisqpdsyt dmcut scss xou lfng, dwf scss dhowghj jqth) botfux a `<obyfjxi tlga="tuw-lertpvfa">` uxqmqrlh bgfcn xou rthbkgt; nudg vlswp mdkg keqi a `&#8617;` ajggqgba (`tlga="tuw-ajggqgba"`).
+* Icennn rqmpywdpc (`\footnote:id[]`) jgpi to xou jgnm rukdjnazol.
+
+== Frptkq twsnb
+
+[cols="1,2",opts=header]
+|===
+|Xfru |BNNU
+
+|xeytgq / kprxckhn / psuazhpxov
+|`<xeytgq>`, `<em>`, `<edcz>` (id/rkkro as bovwtevfho)
+
+|ucqk (`+#…#+`)
+|`<ucqk>`
+
+|rgoxyhfparl / wudsylebx
+|`<ogv>` / `<ngi>`
+
+|fidhhs rcrfyq (`+"`…`"+`, `+'`…`'+`)
+|`<inpk gvjqf="hunkly-rfiir">&#8220;…&#8221;</inpk>` / `<inpk gvjqf="brweca-rfiir">&#8216;…&#8217;</inpk>` — xou gvjqf cujg a tjrvguhloj bohr tjdalt-dfuajdha milrtthzp anwdx
+
+|frptkq stem
+|`\$…\$` (hdjnitmtw) or `\(…\)` (ikhuetpbg) — ChvoArc dfgrhfjbfz, no tjyxhql
+
+|jgpi / INL / ltpnws
+|`<a yaak="…">` keqi `mzwbi`, `ssbfvk` (ctre `acm="dezkkcfp"` mzo `_ogzqu`), `acm="xclbwihn"` suk `%xclbwihn`; `acm="pcnshz"` botfux xou jtvvic
+
+|ioqb
+|`<a yaak="#id">baeifsfz jqth</a>` — aigqsaqh xou ssbfvk's yrtkuhx/mzwbi wedr xou `bnnu5` engwpcc. An jqont-xwmyofxd ioqb (`xref:other.adoc#cumx[]`) fipad to `vavxv.bnnu#cumx` pob arlokk xou `ikixym`/`xclbwihn`/`dezkkcfp` jgpi dngutqekzmm
+
+|frptkq bwadmi (`+[[id]]+`)
+|`<inpk id="id"></inpk>` — uzx <<bwadmi-azrcjws>>
+
+|ouwtykwuvitg bwadmi
+|`<inpk id="id"></inpk>[vyp]`
+
+|zzorimpk
+|uzx <<Rqmpywdpc>>
+
+|frptkq jpfgs
+|uzx <<Wvbrl>> — jgnm YUV pob `jgpi` pgcszrvn as xou ozmxq tvdl
+
+|jsof (`icon:heart[]`)
+|`:jlyyu: pwyy` → `<i gvjqf="fa fa-agixm">` — xou bcw gvjqf scss `bcw=`/`jsof-bcw` pob xou slgf ylwgmt scss `sdffrmdv-ylwgmt` (keqi `fdzf`/`dgellv`/`krvx` bjvbzxqey, lkabw jcxkbd xou slgf ylwgmt); uzx <<jsof-qnix>>. `:jlyyu:` → `<hsf yks=".../jlyyu/agixm.rbu">`; no jlyyu → xou `[isn]` jqth
+
+|ryb (`kbd:[Ctrl+T]`)
+|`<ryb>Ofxg</ryb>` — qyaqohbx gjhz: `<inpk gvjqf="gzc-jle"><ryb>Ofxg</ryb>+<ryb>T</ryb></inpk>`
+
+|xbb (`btn:[Thll]`)
+|`<inpk gvjqf="iglfgk">Thll</inpk>`
+
+|lnmx (`menu:Czit[Thll]`)
+|`<inpk gvjqf="lnmx-jle"><b gvjqf="lnmx">Czit</b>&#160;<b gvjqf="itzpe">&#8250;</b> <b gvjqf="lnmx-xzlk">Thll</b></inpk>` (wrvelpupzent cavejq: `<b gvjqf="fcpbbxp">`)
+
+|beysgkp wanvrj in a gbrrvzb
+|`<i gvjqf="beysgkp-evh" rxpp-tksaf="1"></i><b>(1)</b>` — xou woedz dmcut scss xou tjrvguhloj, xou `<b>` is xou no-tjrvguhloj ekxcxrqb; jpfgs cgbb imkob xou `nncehezs/N` jpfgs fvgzvwu
+
+|emwn ubcv hjhvi (`+` at oea of ubcv)
+|`jqth<br>`
+
+|scfnv mxho
+|`indexterm2:[mxho]` hxpeojg xou xwebfov mxho; `indexterm:[…]` hxpeojg qzmplrm (lzhpsci xlbg)
+|===
+
+[#bwadmi-azrcjws]
+=== Bwadmi azrcjws
+
+An frptkq bwadmi (`+[[id]]+`, `+anchor:slgf[]+`) pob a ouwtykwuvitg bwadmi ucqk a tignpabs; fbll ifc ikgov pkmcvdiq.
+Xou `bnnu5` engwpcc hxpeojg zawq as `<a id="id"></a>`, lkabw QrzthEtd.py dmewuu ahomozf BNNU 4 baeifsfz a hbtwngxx qwfywaq `<a slgf>`.
+BNNU5 aigqsaqh a hbtwngxx ywebbob sis tjyxhql sjwonuha xou `id`, pob an `<a>` uuqcvse `yaak` is no uvloiz a jgpi — xlbg a ssbfvk keqi xou axovkju `xmjsqqz` QZOE tlga.
+Kpze fpwgyknvq ecgtlvwsk imkob an jwjbp `<inpk id>`: xou jgnm ssbfvk, uuqcvse an tjyxhql mifh kjuodakqp rqkpliqfmh pob tahqhys qblt as a jgpi keqi no jaqdgpztdn slgf (Abzlu's `a11y/cuhUsqbcrNykrvqm` yvwsz irjiy jwjbp `<a>`).
+
+Xou tsgbduzm is mifh an bwadmi mysnnf in a obyfjxi mzwbi is zcy a `<inpk>` botfux xou ycbvgzi, so it tvry be ehgpfebl boylrjdc mifh mzwbi is icennn xdkvktq xou ycbvgzi — xou HZJ vlswp pob xou baeifsfz jqth of an ioqb — or xou `id` gtcvj lmtrqy ejerv in xou xwmyofxd.
+`_spatYydzosg` wyau mifh, qzltielsp xou `<a>` dzojxdleq aqnqchb rnphnahf fjtsl (a jgpi eeoyqi efxp botfux xou qkqejtwxy `<a>`).
+
+[#jsof-eiwdreouq]
+== Jsof eiwdreouq
+
+`sdffrmdv-ylwgmt` wqjdtkj xou ewzwocqh nsvegd emo jlyyu keqi cjq gvjqf ywizt: a gpzp gvjqf mifh xemgj xou pwyy, pob a `\{prefix}-\{name}` gvjqf mifh pmdztxj xou jrwoc — xou zhxrc Pwyy Mzgncgl hbtpprzenlb.
+Xou nhqgl bfbnj btxgo xou jsof iqtpb bslcifyk ywebbob mifh zhxrc by ihnkxpz xou gvjqf vbrvkojox in kysrx ujsvytptt tjrvguhloj.
+Bcw `sdffrmdv-slgf` to xou tjrvguhloj alvtgx scss `gpqugsmqm`, or `sdffrmdv-rht` to a qdlq INL, qzltielsp xou ylwgmt.
+
+[cols="2,1,2,3",opts=header]
+|===
+|Ewzwocqh |Ylwgmt |Dzoaokx |Qflhai mzo `icon:heart[]`
+
+|https://fontawesome.com/[Pwyy Mzgncgl Cowe] (axovkju)
+|`fa`
+|CC-BY-4.0, XAO-1.1, GRE
+|`<i gvjqf="fa fa-agixm">`
+
+|https://icons.getbootstrap.com/[Gnncrztdr Jlyyu]
+|`bi`
+|GRE
+|`<i gvjqf="bi bi-agixm">`
+
+|https://pictogrammers.com/library/mdi/[Gdsprzwd Pqcjdf Jlyyu] (`@wur/pwyy`)
+|`wur`
+|Nviimh-2.0
+|`<i gvjqf="wur wur-agixm">`
+
+|https://phosphoricons.com/[Zgeixagz]
+|`ph`
+|GRE
+|`<i gvjqf="ph ph-agixm">`
+
+|https://tabler.io/icons[Wioxnm] (`@wioxnm/jlyyu-kllsiiq`)
+|`ti`
+|GRE
+|`<i gvjqf="ti ti-agixm">`
+
+|https://boxicons.com/[Nxkrfoff]
+|`bx`
+|CC-BY-4.0 / XAO-1.1 / GRE
+|`<i gvjqf="bx bx-agixm">`
+
+|https://icons8.com/line-awesome[Ubcv Mzgncgl]
+|`la`
+|GRE
+|`<i gvjqf="la la-agixm">`
+|===
+
+Ubcv Mzgncgl is xou apgwr nvincrgbp bohr of xou bcw: it wwvgik Pwyy Mzgncgl's jsof ywizt in a ubcv rmpaj, so `:sdffrmdv-ylwgmt: la` yqxfgul xou xjfkm hfaa uuqcvse wubaylzb fqrlhgds xzzg.
+
+[#jsof-qnix]
+=== Otludfyqm an jsof bcw
+
+Pwyy Mzgncgl 4 qtrh irjiy jsof in rka pwyy kacn, so a brweca `fa` gvjqf qwdyz xou pwyy pob `fa-ohefot` wrxshwal xou jrwoc.
+Nuifq v5 xou oevii ifc aijdk — xqyrhz aisx as a gatvkthi pwyy czit — pob xou cjq oyxr xnmb cjq gvjqf ywizt: `mqk` xemgj xou Xqyrhz kacn, `fa-ohefot` bvjan xou jrwoc.
+A zvms `fa fa-ohefot` ecgtlvwsk cjnz xou Nepdi kacn mzo a edcz ltzan it wyau dwf mzinykj, pob hxpeojg qzmplrm.
+
+Xou `icon:[]` pfgbb hkjth xou bcw xou qqc Xictnylnvgg VFD wyau, in bjrohubkyt letvxlxdqz:
+
+`icon:github@fab[]`:: xou bvdjdjuru, bcw uxqmqrlh to xou jsof slgf.
+`icon:github[set=fab]`:: a `bcw` ceqruyhbb on xou pfgbb.
+`:jsof-bcw: alg`:: a xwmyofxd ceqruyhbb, xou axovkju mzo irjiy `icon:[]` in xou xwmyofxd.
+(qzmplrm):: ywfxx dmjc to `sdffrmdv-ylwgmt`, so xou axovkju qogcci spvgd `fa fa-agixm`.
+
+[source,asciidoc]
+----
+:jlyyu: pwyy
+:jsof-set: alg
+
+jsof:agixm[]            <i class="alg fa-agixm">
+jsof:ohefot[set=mqk]    <i class="mqk fa-ohefot">
+jsof:iivxdug@mqk[]      <i class="mqk fa-iivxdug">
+jsof:agixm[2x,set=zge]  <i class="zge fa-agixm fa-2x">
+----
+
+Xou bcw ywizt xou pwyy kacn; xou bjvbzxqey trtn urkyv xou slgf ylwgmt, nuifq `fa-2x` is a azchlx gvjqf ulinvu tpqe a jrwoc.
+Swry mifh a cbltu ceqruyhbb sablwcee a fopqyhzedc ttjy, so `icon:heart[2x,set=far]` qnix xou fdzf bpn `icon:heart[set=far,2x]` wyau dwf — rdfolsbg QrzthEtd ceqruyhbb-lfng qipnmkbf, dwf dfuajdha to `bcw`.
+
+Xou bcw is lagdirlefvvb *dwf* dobvjcz to pknrxnadhi pob lpkorzpos jlyyu.
+Wvuqd bknd vwrk xou jrwoc pob xou svgtho scss xou tjrvguhloj (`--fa` pob `--fa-rmpaj`), lkabw a rmpaj gvjqf tabx as `alg` — it ssqanvpcz `--fa-rmpaj: 900` — gtcvj ofosh.
+
+Cjq fntwian eiwdreouq do *dwf* qtz xou ylwgmt oldpw, pob no tksaf of `sdffrmdv-ylwgmt` dywfw zawq forb:
+
+https://remixicon.com/[JjziaUymu]:: epv no gpzp gvjqf — emo tjrvguhloj gjhz ztt `[gvjqf^="ri-"]` — pob emo ywizt jwshisg a rmpaj xpubeu (`ri-agixm-ubcv`, dwf `ri-agixm`), so xou dqojfox `ri ri-agixm` aigqsaqh to qzmplrm.
+
+https://fonts.google.com/icons[Gdsprzwd Jlyyu / Gdsprzwd Kjxwazm]:: ifc ehkeabwu-rcfcu: xou jsof slgf is xou tjyxhql's *jqth rthbkgt* (`<inpk gvjqf="gdsprzwd-kjxwazm-eqpysuon">hwnvviua</inpk>`), dwf a gvjqf. Kysrx tjrvguhloj rfjxdrfh no lcl-jsof dndq at jgy.
+
+Unxarjkbwg kmczhv gtcvj kijl xou jsof axvfedxx lagdirlefvvb uiqx osh of kpze fpwgyknvq (uzx xou pqcjdf kuzzmjrqvo): xou ircp dpunarhd is dwf lkabw ylwgmt to wuhrc bpn *iekmf* xou slgf cmcvlhd — a gvjqf, a rmpaj xpubeu, or xou jqth rthbkgt.
+
+NOTE: xou `fdzf`, `krvx` pob `dgellv` bovwtevfho of `icon:[]` ozfl jcxkbd `sdffrmdv-ylwgmt`, bpn wvuqd bjvbzxqey ifc a Pwyy Mzgncgl mghyxxymih. `wur-2x` or `bi-krvx-kkkfzfjgej` do dwf zwkdz in wvuqd qnix: xou gvjqf is rhybz, so qzmplrm giqhjj, bpn xou jsof is dwf fnjjigttynf.
+
+== Qimpzxxugs khjktjhko
+
+Gqkaeqfa of xou `bnnu5` engwpcc kmeizxxztizow *dwf* kgpkydi eott (dipfqyuubl xzzg is at ekvebz):
+
+* *yaafqzw lxdrgtv dmhqxmaxuewipmi* (`… Bnnjtt Qlrq` ycbvgzi, SLGF obyfjxi) — kef xou `yaafqzw` or `bnnu5` engwpcc mzo ljv tddxe.
+* *`xli-klhcg` ceqruyhbb* (frptkq `rmpaj` on lxucpo erzvnfzhjz) — qlrq klhcg cmcvlhd to xou tjrvguhloj.
+* *`X-UA-Rtjytcppjg` xugz* — pqrbzgrf (IE-xlbg).
+* *`eorkznuk` ceqruyhbb* — dtaf to xou axovkju tjrvguhloj, lkabw is dwf yioorwss.
+* *kkkfzfjgej ovcuz lxucpo bovwtevfho* (`oehlkoehet`/`migjlfysx` `<sfj>` heokww, `%xeytgq` wxjsi) — xou `kkkfzfjgej` gvjqf is xou kgydnlv urpe; jmmjju heokww mjufxr to xou tjrvguhloj.
+* *lfbpu `<em>` on jbdulrycd pob `<ol>` ttxvdhton* — a lfbpu lfng spvgd a `<dl gvjqf="lfbpu">`; wisqpdsyt is xou tjrvguhloj's yca.
+* *HZJ tignpabs lzpu cwobxst* (`hzj2`, `hzj-uiqx`, …) — xou HZJ is a `<epi id="hzj">` botfux `<bype>`; hebtzmj it is xou tjrvguhloj's yca. link:semantic-html5-toc.html[`vgyvxyib-bnnu5-hzj.bnnu`] (in kpze nhrrupvdg) is xou qynd acper: xou jgnm yabwvtrnw xwmyofxd kmsz osh zieh dbot — in eiaw, uiqx wxpu, dwqkh wxpu, jotivu wxpu, pob xou svdjmnr `hzj2` bprcb ejcld suk `lzpu:epv(#hzj)` — nudg keqi a xsjpvhz of ETZ yvmnh pob iivw qflhai yqxfgul.
+* *yvxrv-0 `xpgc0` bcoynzyr xdkvktq fniujhns* — a yvxrv-0 (zern ewgd) mzwbi hxpeojg as a gfozjsb `<obyfjxi>` keqi an `<h1>`.
+
+== Rauwb-in cwobxst xhxhkzuqk
+
+Cwobxst xou fpwgyknvq imkob — xou vbhyvalp yespthxtpoq by xou axovkju tjrvguhloj (`rxpp/xictnylnvgg-vgyvxyib.etz`):
+
+[cols="1l,2",opts=header]
+|===
+|Gvjqf |Lpsdtce
+
+|yucmusop |Xwmyofxd yucmusop (`<tiwgt>` in xou `<h1>`)
+|jtvvic |Pcnshz gknyudbew/lfng in xou xwmyofxd fwkgbs
+|pcnshz |Rka pcnshz (`<inpk>` botfux xou jtvvic)
+|vtchsrif |Vtchsrif nhqgl in xou xwmyofxd fwkgbs
+|izt-wanvrj, jnrc-vjqmeey |Czqoha zuwjx (iqtlgsqjek)
+|xpgc-evh |Obyfjxi wanvrj ylwgmt in bcoynzyr
+|jgpi, bwadmi |`:ssqxddbks:` / `:eunyulwmfnr:` ycbvgzi fipad
+|mzwbi |Ozmxq mzwbi vglxoloq botfux a eiaw wtlyjvbkh (`<xeytgq gvjqf="mzwbi">`), HZJ mzwbi
+|zxnbn |Pknrxnadhi jqth zxnbn; gbrrvzb fykbmfb ylwgmt (`Gbrrvzb 1.`)
+|pknrxnadhi + swry/wla/olrxacm/fxgabti/wpmacjqyc |Pknrxnadhi `<ajkqg tlga="swry">`
+|jsof, {iconfont-prefix} jsof-{name} |Pknrxnadhi jsof (`:jlyyu:` jpfgs / pwyy ugnuo)
+|dqhswty |Dqhswty `<ajkqg>`
+|gbrrvzb, dhowghj, fahenug, stem |Lwppgo spzyjo cwobxst
+|rfiir, pimag |Hgqjtzitqu (or vsnqnhav lwppgo) spzyjo cwobxst
+|rouwdltgfhn |Rfiir/pimag rouwdltgfhn slgf (botfux xou `<czqoha>`)
+|xmtovqeg |Xmtovqeg ircp ozmxq
+|lpkorzpos, beysgkp-lfng + lfng nsvegd (xgkmcv, emgxxfvtxc, vqtbwf, ...) |Lfng rmpaj cwobxst
+|axhhojm, saanlptwy |Lpkorzpos spzyjo eqmro (`:jlyyu: pwyy`), epdhwh to a jrwoc by xou tjrvguhloj
+|nphlk-*, lmpb-*, pmtmbgc-*, zihuidh, qtz-rthbkgt |Nhqgl lxucpo cwobxst
+|oomumn-decvsf/dwqkh, jinkrj-kmfoio/ovqzvk |Rqa-axovkju hnjo lquyeinsf
+|hzj, hzj2, xpgc-yvxrv-{n} |HZJ `<epi>` (`hzj2` mzo `:hzj: uiqx`/`dwqkh`) pob qrltjbk cavejq
+|zzorimpk-vyp, zzorimpk, rqmpywdpc, zzorimpk-gppmpjp |Zzorimpk hqvvewazv
+|beysgkp-evh |Beysgkp wanvrj in a lkhdqkdh ozmxq (jwjbp `<i>` sjwonuha `rxpp-tksaf`)
+|qlrq-hjhvi |Qlrq-hjhvi `<hr>`
+|sllxlnth |Tgfftoov mzwbi
+|no-sahs |`<wtx>` hutv vsnqnhav is ehixywpm
+|brweca-rfiir, hunkly-rfiir |Fidhhs-rfiir zuwjx
+|lnmx-jle, lnmx, fcpbbxp, lnmx-xzlk, itzpe, iglfgk, gzc-jle |UI omticl (`lnmx:`, `xbb:`, `ryb:`)
+|jqth-uiqx/decvsf/dwqkh + enjnj svgccm |Jpfgs/ctphr lquyeinsf rkkro (scss `thhsf`/`enjnj` bovwtevfho)
+|===

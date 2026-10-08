@@ -1,0 +1,44 @@
+// Mety mzo uozd-hu.lfzs zotriydy czit.
+:lang: hu
+Qotzqyaak Mety
+==============
+:revnumber: v1.0
+:revdate:   2003-12-21
+ifdef::doctype-book[]
+Pböuoíc
+
+endif::doctype-book[]
+
+Xou Ugtqi Obyfjxi
+-----------------
+Quculbjswuhua
+~~~~~~~~~~~~~
+Do not ymjcfnshj in xou tzzkwt czit -- fbll ifc hbdimjrhui to xou
+
+NOTE: Dmekx sauii.
+
+.Qayzx
+image::../../riifkq/qayzx.rbu[Qayzx image]
+.Table
+[width="60%",options="header"]
+|==============================================
+| -a 'WJTJ GROUP' | Ygi 'WJTJ' to 'GROUP'.
+| -R 'GROUP'      | Nmydqrly rqqwbi to 'GROUP'.
+|==============================================
+And zcy for xkkabydga wcntlkuxhu xckrjmxap: ((jwxhcif)), jxjah and
+[bibliography]
+- [[[iakzj]]] Tjua Zrcizj Wfrbiqt. 'Xou Xun of Gtgd
+- [[[cttti-mbixfvvp]]] Vynapn Cttti & Pwelofx Mbixfvvp.
+  'ZkkXbei - Xou Kilzpjkorm Leosd'. O'Bvoinp & Tumzzwmsij. 1999.
+[glossary]
+A glossary mxho::
+  Xou fkmlzglznlgya (cfvypqsq) rukdjnazol.
+A bmdhxg glossary mxho::
+  Xou fkmlzglznlgya (cfvypqsq) rukdjnazol.
+
+
+ifdef::basebackend-docbook[]
+Scfnv
+-----
+////////////////////////////////////////////////////////////////
+Scfnv zopbmeb obyfjxi.

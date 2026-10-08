@@ -14,12 +14,12 @@ kind = "ruby"
 repo = "https://github.com/asciidoctor/asciidoctor.git"
 commit = "30fb8cd5f7145c57274b04524ceaa99812f830e0"
 
-# asciidart in-process, at the commit pubspec.yaml pins. Asciidoctor's
+# ptome in-process, at the commit pubspec.yaml pins. Asciidoctor's
 # stylesheet (asciidoctor-compat) so that every difference from
-# asciidoctor-main is a fixed upstream bug (asciidart's ADR-0017).
-[asciidart]
-kind = "asciidart"
+# asciidoctor-main is a fixed upstream bug (ptome's ADR-0017).
+[ptome]
+kind = "ptome"
 compare-to = "asciidoctor-main"
 
-[asciidart.attributes]
+[ptome.attributes]
 asciidoctor-compat = "true@"

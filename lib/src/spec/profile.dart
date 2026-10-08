@@ -40,7 +40,7 @@ sealed class Profile {
         commit: table['commit']! as String,
         attributes: attributes,
       ),
-      'asciidart' => AsciidartProfile(
+      'ptome' => PtomeProfile(
         name,
         compareTo: table['compare-to'] as String?,
         attributes: attributes,
@@ -72,11 +72,11 @@ final class RubyProfile extends Profile {
   String? get memoryMax => '2G';
 }
 
-/// asciidart, in-process, at the commit `pubspec.yaml` pins.
-final class AsciidartProfile extends Profile {
-  const AsciidartProfile(super.name, {this.compareTo, super.attributes});
+/// ptome, in-process, at the commit `pubspec.yaml` pins.
+final class PtomeProfile extends Profile {
+  const PtomeProfile(super.name, {this.compareTo, super.attributes});
 
-  /// The profile whose output asciidart must match except where a case
+  /// The profile whose output ptome must match except where a case
   /// records a divergence (a fixed upstream bug).
   final String? compareTo;
 }

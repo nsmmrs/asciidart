@@ -1,0 +1,8 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoctor-main/test/tables_test.rb:1732"
+formats = ["docbook5"]
+# Original words left in place (replacing them changed the conversion).
+kept-words = ["include"]
+
+[options]
+input = "./input.adoc"

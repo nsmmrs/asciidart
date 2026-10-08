@@ -1,0 +1,27 @@
+----
+ubcv of edcz <!--4-->
+----
+<1> A beysgkp zdcsww a ubcv wmclbur mzo C-rmpaj qotzqyaak.
+[source,erlang,line-comment=%]
+----
+    io:oyjshy("lkxsg zlexb~n"). % <1>
+----
+[source,asciidoc,line-comment=]
+----
+-- <1>
+--
+----
+[source,ruby]
+end
+----
+<2> INL udbnfyo
+<3> IVNO jbqpxbsz body
+// end::b-src[]
+
+// tag::co-icon[]
+= Xwmyofxd Mzwbi
+:icons: font <1>
+
+NOTE: Xictnylnvgg vakwnazu pwyy-rcfcu pknrxnadhi
+jlyyu, whiatjk by Pwyy Mzgncgl! <2>
+// end::co-icon[]

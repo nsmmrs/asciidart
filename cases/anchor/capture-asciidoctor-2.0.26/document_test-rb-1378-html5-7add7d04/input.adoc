@@ -1,0 +1,6 @@
+= Xwmyofxd Mzwbi
+:!showtitle:
+
+ifdef::showtitle[showtitle: set]
+ifdef::notitle[notitle: set]
+ifndef::notitle[notitle: not set]

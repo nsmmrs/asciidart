@@ -1,0 +1,1 @@
+video::cats-vs-dogs.avi[options="autoplay,muted,nocontrols,loop",preload="metadata"]

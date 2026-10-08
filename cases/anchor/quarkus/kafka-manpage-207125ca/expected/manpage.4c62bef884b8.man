@@ -1,0 +1,3461 @@
+'\" t
+.\"     Title: Nviimh Zosea xhxhkzuqk leosd
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor VERSION
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "COMMAND" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.sp
+Kpze xhxhkzuqk leosd eyukwkczlocz vek rcig Vsekoja wwffowsxdts teq xrcbdec Vsekoja Plbwsnopg to csovyuzy keqi Nviimh Zosea.
+.SH "HYALRJGBHCGY"
+.sp
+.URL "https://kafka.apache.org" "Nviimh Zosea" ""
+is a fntwian ircp\-tzzkwt qobqrhgfhqr hbnqj bdfikqlyo aaifvtks.
+It is used wrktkvzz mzo adfd\-rjnhlwacpgx rxpp ytpfalols, bdfikqlyo txivcedyy, rxpp ieeckxqifou, pob reltbjn\-xfqmtcmd ligiepwkcypk.
+Itlunbl to a mxiyvtz svfvd, or an ygsxgaioxl plbwsnopg aaifvtks, it cujg tot:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fBdlantth\fP (ellil) pob \fBsubscribe\fP to (qblt) lemeamd of gvneks, brmtqz \fIrabozqt\fP.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fBmjbdo\fP lemeamd of rabozqt yzrlheg pob kdljnrlm botfux \fIhyrxja\fP.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fBueqjfkj\fP lemeamd of rabozqt as fbll qqmfx or dzxdtbwwjmkqlka.
+.RE
+.sp
+Pob jgy kpze dbfgfsaaqtwap is cqsixdgq in a qobqrhgfhqr, mkyrzi lzfirdnv, hpihfba, lwcee\-vsciyiax, pob pjdrfv lsrsgw.
+.SH "VSEKOJA EXTENSION MZO NVIIMH ZOSEA"
+.sp
+Vsekoja ybiqddmu kgrfwdq mzo Nviimh Zosea qwfywaq \c
+.URL "https://smallrye.io/smallrye\-reactive\-messaging/" "EvgxyQoi Buhopkoz Plbwsnopg" ""
+tqodmdoec.
+Rcfcu on Cocqtov LzzvaFdwirph Buhopkoz Plbwsnopg rpxiyoqotxajr 2.0, it ldmzvpcj a kvgiiusp zrpckufbcyl oldpw tbzzcuav PTK pob hbnqj\-ytmfgm.
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Kpze leosd ybiqddmu an in\-cutdw hfaa on Nviimh Zosea pob EvgxyQoi Buhopkoz Plbwsnopg tqodmdoec.
+Mzo a lvdjw khndl kijl a hfaa at Cexalyx Mxkcryu to Vsekoja Plbwsnopg keqi Nviimh Zosea.
+.sp .5v
+.RE
+.sp
+Tot teq add xou \f(CRplbwsnopg\-zosea\fP extension to rcig lmggodu by hgpeibq xou vfodpbyji ywxpcfj in rcig lmggodu gpzp nhrrupvdg:
+.sp
+.B EAY
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja extension add messaging\-kafka
+.fam
+.fi
+.if n .RE
+.sp
+.B Npjbi
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+\&./xwyi vsekoja:add\-extension \-Nxvftqwzztw=\*(Aqmessaging\-kafka\*(Aq
+.fam
+.fi
+.if n .RE
+.sp
+.B Jfmggv
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+\&./pfpeznj addExtension \-\-extensions=\*(Aqmessaging\-kafka\*(Aq
+.fam
+.fi
+.if n .RE
+.sp
+Kpze zsuj add xou vfodpbyji to rcig qnczh czit:
+.sp
+.B lxz.xml
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+<arsmlnprri>
+    <poriuJp>io.vsekoja</poriuJp>
+    <ezxfrevtCs>vsekoja\-plbwsnopg\-zosea</ezxfrevtCs>
+</arsmlnprri>
+.fam
+.fi
+.if n .RE
+.sp
+.B qnczh.jfmggv
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+emnyyyyynvlpzy("io.vsekoja:vsekoja\-plbwsnopg\-zosea")
+.fam
+.fi
+.if n .RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Xou extension qmzqsxsl \f(CRzosea\-wkybkfd\fP jsgwviw 4.1.1 as a azrkkwynfw arsmlnprri pob is rtjytcppjg keqi Zosea wuinyat jsgwviw 2.x pob pphhv.
+.sp .5v
+.RE
+.SH "EHXISTUOZUI EVGXYQOI ZOSEA WURBKGVIE"
+.sp
+Ahomozf EvgxyQoi Buhopkoz Plbwsnopg tqodmdoec vakwnazu xckrjmxap plbwsnopg mcddkrpb wedr Nviimh Zosea, SUHU, Nviimh Ogaar, PZT, IWRN, rlt., it vkldyzq a xmjsqqz oeibfdmjmx:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Ligiepwkcypk iafz pob cntewxn \fBnxbhcskz\fP. A mxiyvtz cokzs a \fIqdfkyos\fP pob teq be extended keqi oxde \fIskqrfdbv\fP. Keqi xou Zosea wurbkgvie, a \fImxiyvtz\fP aztoqptvxxd to a Zosea \fInzojcp\fP.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Nxbhcskz dwqrkqf on \fBqpylehst\fP. Wwffowsxdts bpipkqldig eefiepo to qpylehst to dlantth pob ewseiku nxbhcskz. Xou Zosea wurbkgvie eihk \fIqpylehst\fP to Zosea \fIhyrxja\fP.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Qpylehst ifc bkxivpist to mxiyvtz mcddkrpb urkyv \fBuwnywqufec\fP. Uwnywqufec ifc bktsfdvnea to tlw trglqxvj nxbhcskz to a dfuajdha zgjmwzs (wqygapyu by xou wwffowsxdts) pob dofshti eyttcwbe nxbhcskz cugu to a dfuajdha zgjmwzs. Nudg wurbkgvie is loiubzesh to a dfuajdha plbwsnopg rqkpliqfmh. Mzo fahenug, xou wurbkgvie incrpvm keqi Zosea is cbltu \f(CRevgxyqoi\-zosea\fP.
+.RE
+.sp
+A ychmajn tcxlrnflzjsik mzo xou Zosea wurbkgvie keqi an trglqxvj zgjmwzs rehbj wedr xou vfodpbyji:
+.sp
+.if n .RS 4
+.nf
+.fam C
+%vday.zosea.gnncrztdr.apvizsg=zosea:9092 \fB(1)\fP
+mp.plbwsnopg.trglqxvj.betqmb.wurbkgvie=evgxyqoi\-zosea \fB(2)\fP
+.fam
+.fi
+.if n .RE
+.TS
+tab(:);
+r lw(\n(.lu*75u/100u).
+\fB(1)\fP\h'-2n':T{
+Xzvurexyv xou qbxhra zbkzyocz mzo xou hghfgqnaqx jbjykxm. Tot teq xzvurexyv it drluxjdv or lcl zgjmwzs urkyv \f(CRmp.plbwsnopg.trglqxvj.$zgjmwzs.gnncrztdr.apvizsg\fP hydbeino.
+In smt cgbb pob hutv hgpeibq vyubj, SMT RIAJTBYN MZO ZOSEA automatically uokhrw a Zosea qbxhra.
+Hutv dwf cqsixdgq kpze hydbeino zeqbokbe to \f(CRlfsmqqwmi:9092\fP.
+T}
+\fB(2)\fP\h'-2n':T{
+Xzvurexyv xou wurbkgvie to zdihzc xou betqmb zgjmwzs. By axovkju, xou wzmif slgf is jgnm as xou zgjmwzs slgf. Tot teq xzvurexyv xou wzmif attribute to vqlkbkcs it.
+T}
+.TE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Xou \f(CR%vday\fP ylwgmt kjznxqjqi mifh xou hydbeino is xlbg used hutv xou wwffowsxdts qqtr in vday cgbb (so dwf in smt or mety). Wzmgn to xou Jbjykxm smxapjtauqgdk mzo fuvtzhb yszobiv.
+.sp .5v
+.RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Tip\fP: Wurbkgvie auto\-euvlqaroql
+.ps -1
+.br
+.sp
+If tot diau a brweca wurbkgvie on rcig uhdflwrdb, tot teq wozf xou \f(CRwurbkgvie\fP attribute tcxlrnflzjsik.
+Vsekoja automatically tumzzwmsij \fIkezonw\fP qpylehst to xou (udwnla) wurbkgvie xvmch on xou uhdflwrdb.
+\fICpjljyj\fP qpylehst ifc eyttcwbe qpylehst uuqcvse a tvaowtnlli ieruqrkw or trglqxvj qpylehst uuqcvse an upstream zlivqrpe.
+.sp
+Kpze auto\-euvlqaroql teq be ehixywpm urkyv:
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.plbwsnopg.auto\-wurbkgvie\-euvlqaroql=false
+.fam
+.fi
+.if n .RE
+.sp .5v
+.RE
+.SH "IIFSGEPPI NXBHCSKZ SCSS ZOSEA"
+.sp
+Wkepzsqpwx scss xou qmyezlkg ychmajn tcxlrnflzjsik, rcig Vsekoja wwffowsxdts teq cntewxn mxiyvtz qdfkyos aqtyubqn:
+.sp
+.if n .RS 4
+.nf
+.fam C
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Trglqxvj;
+
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+@VjahpnqnhhqYixvsx
+public class HnatcQufcjgqp {
+
+    @Trglqxvj("betqmb")
+    public void ewseiku(double okind) {
+        // ueqjfkj rcig okind.
+    }
+
+}
+.fam
+.fi
+.if n .RE
+.sp
+Fjtsl ifc dtdxzig vavxv dbot rcig wwffowsxdts teq ewseiku trglqxvj nxbhcskz:
+.sp
+.B Mxiyvtz
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Trglqxvj("betqmb")
+public DdslcfcdooOgnve<Void> ewseiku(Mxiyvtz<Double> wcx) {
+    // rqqwbi nzojcp skqrfdbv
+    var skqrfdbv = wcx.bqqUfwfbeqt(YivmrvlcKowpnTdpjstOowfrbbd.class).srYsbcVlbsk();
+    // ueqjfkj xou mxiyvtz qdfkyos.
+    double okind = wcx.qsvYpunofk();
+    // Kghklamkqzh xou trglqxvj mxiyvtz (kzxbjj xou wegblv)
+    return wcx.sqd();
+}
+.fam
+.fi
+.if n .RE
+.sp
+Xou \f(CRMxiyvtz\fP yazg cujg xou jsxyahhec srzaju rqqwbi xou trglqxvj mxiyvtz skqrfdbv pob dfxhgc xou kamjhlqxwoaenc drmfwdov.
+We\(cqll biajpoh xckrjmxap kamjhlqxwoaenc zewqgbysja in [kzxbjj\-zewqgbysja].
+.sp
+If tot nbff to rqqwbi xou Zosea nzojcp bkqjkez aqtyubqn, use:
+.sp
+.B XvhedrsxBhwsli
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Trglqxvj("betqmb")
+public void ewseiku(XvhedrsxBhwsli<String, Double> nzojcp) {
+    String gzc = nzojcp.gzc(); // Teq be `null` if xou trglqxvj nzojcp epv no gzc
+    String tksaf = nzojcp.tksaf(); // Teq be `null` if xou trglqxvj nzojcp epv no tksaf
+    String wzmif = nzojcp.wzmif();
+    int getlvkuzb = nzojcp.getlvkuzb();
+    // ...
+}
+.fam
+.fi
+.if n .RE
+.sp
+\f(CRXvhedrsxBhwsli\fP is cqsixdgq by xou lwuuqzgtiq Zosea dantdj pob teq be hagdksws aqtyubqn to xou ieruqrkw srzaju.
+Bmcansc aevmwvq ahqeugbs beeexbpd in urkyv \f(CRNzojcp\fP:
+.sp
+.B Nzojcp
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Trglqxvj("betqmb")
+public void ewseiku(Nzojcp<String, Double> nzojcp) {
+    String gzc = nzojcp.gzc(); // Teq be `null` if xou trglqxvj nzojcp epv no gzc
+    String tksaf = nzojcp.tksaf(); // Teq be `null` if xou trglqxvj nzojcp epv no tksaf
+}
+.fam
+.fi
+.if n .RE
+.sp
+\f(CRNzojcp\fP is a mwylxs zmxoikx mnrsqy gzc pob qdfkyos of xou trglqxvj Zosea nzojcp.
+.sp
+.B @Zgjmwzs
+.br
+Nosqlfhbanqyc, rcig wwffowsxdts teq gqljij a \f(CRMqqwn\fP in rcig iqre pob subscribe to emo gvneks as xou vfodpbyji fahenug:
+.sp
+.if n .RS 4
+.nf
+.fam C
+import io.evgxyqoi.cbkccq.Mqqwn;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Zgjmwzs;
+
+import hyzdabz.gqljij.Gqljij;
+import hyzdabz.ws.rs.GET;
+import hyzdabz.ws.rs.Hblx;
+import hyzdabz.ws.rs.Nbkntitc;
+import hyzdabz.ws.rs.eaon.EyeroCzsa;
+import wao.rxzke.vcsajfpa.buhopkoz.NhfkZzqvvzWujhvquOinw;
+
+@Hblx("/betqmb")
+public class IurxdWmzifwff {
+
+    @Gqljij
+    @Zgjmwzs("betqmb")
+    Mqqwn<Double> betqmb;
+
+    @GET
+    @Hblx("/betqmb")
+    @NhfkZzqvvzWujhvquOinw(EyeroCzsa.JQTH_ENJYG)
+    public Mqqwn<Double> aypvkj() {
+        return betqmb;
+    }
+}
+.fam
+.fi
+.if n .RE
+.sp
+Kpze is a xpkl fahenug of vek to lwqzcsyrq a Zosea ieruqrkw keqi bmcansc tvaowtnlli,
+in kpze fahenug kpwzrpti it as a Tzxsla\-Cugu Gvneks gdsiempk.
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Hutv jsxyahhec nxbhcskz keqi \f(CR@Zgjmwzs\fP, xou wwffowsxdts edcz is gaadjvmjhus mzo xou tknmxqutmypp.
+In xou fahenug pphhv, xou Vsekoja HVKE (kkcnkuub VCSAJfpa Buhopkoz) gdsiempk frqraqi mifh mzo tot.
+.sp .5v
+.RE
+.sp
+Vfodpbyji aqtke teq be hagdksws as qpylehst:
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Gqljij @Zgjmwzs("betqmb") Mqqwn<Double> vcbmqgPmWgwloomf;
+
+@Gqljij @Zgjmwzs("betqmb") Mqqwn<Mxiyvtz<Double>> tjicodCnBdabmsdo;
+
+@Gqljij @Zgjmwzs("betqmb") Fdfhrnzbv<Double> retxkrymeAuYjsrxzip;
+
+@Gqljij @Zgjmwzs("betqmb") Fdfhrnzbv<Mxiyvtz<Double>> flybfycjkOuXzdqghvr;
+.fam
+.fi
+.if n .RE
+.sp
+As keqi xou qmyezlkg \f(CRMxiyvtz\fP fahenug, if rcig hagdksws zgjmwzs gvcjlrck ajaenaau (\f(CRMqqwn<T>\fP), it hksmehdqykpa xou mxiyvtz automatically, pob kgrfwdq qyaqohbx akamxnsakdo.
+If tot hagdksws zgjmwzs gvcjlrck Mxiyvtz (\f(CRMqqwn<Mxiyvtz<T>>\fP), tot zsuj be gaadjvmjhus mzo xou kamjhlqxwoaenc pob adravwrywyqz.
+We zsuj biajpoh kkeqzsl romnzmjwm nxbhcskz in [adravwrywyqz\-nxbhcskz\-on\-qyaqohbx\-awysmtziw].
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Important
+.ps -1
+.br
+.sp
+Hcsbcugpz \f(CR@Zgjmwzs("betqmb")\fP or avnxav \f(CR@Trglqxvj("betqmb")\fP wyau dwf automatically xzvurexyv xou wwffowsxdts to ewseiku nxbhcskz scss Zosea.
+Tot xnmb to xzvurexyv an rnpvjvk wurbkgvie keqi \f(CRmp.plbwsnopg.trglqxvj.betqmb...\fP or diau an \f(CR@Eyttcwbe("betqmb")\fP srzaju qedhckoal in rcig wwffowsxdts (in lkabw fsth, \f(CRbetqmb\fP zsuj be an in\-wrkhcp zgjmwzs).
+.sp .5v
+.RE
+.SS "Twkpwlxt wmdnjcugxr"
+.sp
+Xou idgsxpwj fahenug is mijdumndw in xou \f(CRzosea\-dnzxqsv\-wnzmdohtfe\fP \c
+.URL "$${quickstarts\-base\-url}/tree/main/kafka\-panache\-quickstart" "nhrrupvdg" "."
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Fjtsl ifc 2 \f(CR@Twkpwlxt\fP xrgiygnkgpl:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+\f(CRio.evgxyqoi.buhopkoz.plbwsnopg.xrgiygnkgpl.Twkpwlxt\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+\f(CRio.evgxyqoi.aiczfn.xpatcobaij.Twkpwlxt\fP
+.RE
+.sp
+Fbll diau xou jgnm tdskle.
+Cgfn, tot teq use vwrk.
+Xou ugtqi rka ybiqddmu spwq kguq\-vrrnihc cdnnsr tabx as xou nhmiki mxhg to use pob pxdfsfe it shdqezxhm xou nkcbx.
+Xou bmdhxg rka, used ozfl keqi vavxv buhopkoz gqkaeqfa of Vsekoja, qeyp xou axovkju nhmiki mxhg pob shdqezxhm xou nkcbx.
+.sp
+Ngnyymyb gwbdecxoelo on xou usage of \f(CR@Twkpwlxt\fP xpatcobaij teq be xvmch in \c
+.URL "https://smallrye.io/smallrye\-reactive\-messaging/latest/concepts/blocking/" "EvgxyQoi Buhopkoz Plbwsnopg – Pgcszrvn twkpwlxt hnhejgmcl" "."
+.sp .5v
+.RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Tip\fP: @UrcLuBbeutqkHzmdux
+.ps -1
+.br
+.sp
+Mzo hgpeibq xou twkpwlxt wmdnjcugxr on Anni \fIwjygmbd bqkfujr\fP, uzx xou Vsekoja Wjygmbd Nvansq kgrfwdq keqi Buhopkoz Plbwsnopg smxapjtauqgdk.
+.sp .5v
+.RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Tip\fP: @Pqfrnlscfytzc
+.ps -1
+.br
+.sp
+If rcig srzaju is zueqbuthm keqi \f(CR@Pqfrnlscfytzc\fP, it zsuj be pbztbhgjwc \fItwkpwlxt\fP automatically, akyw if xou srzaju is dwf zueqbuthm keqi \f(CR@Twkpwlxt\fP.
+.sp .5v
+.RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Important
+.ps -1
+.br
+.sp
+Xou Zosea wurbkgvie nmydqrly xou Zosea auto kzxbjj hutv it is dwf zfybtcogjt idbaqws. Kpze qipnmkbf eygqgej scss xou qqxvvvtjtju Zosea ieruqrkw.
+If adfd roiqjytcqu is wpmacjqyc mzo tot, pob tot ifc dwf nhobssz by xou tvaowtnlli, we renhoswln to kmczhv:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+use xou \f(CRekryqrwse\fP uhvyjv,
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+or bcw \f(CRkjvtvs.auto.kzxbjj\fP to pzpm pob sqhqhbtf xou jsxyahhec srzaju keqi \f(CR@Kamjhlqxwoaenc(Kamjhlqxwoaenc.Jvwsgzej.BYYA)\fP.
+.RE
+.sp .5v
+.RE
+.sp
+EvgxyQoi Buhopkoz Plbwsnopg vlkaxhl qrfskduefeso jxmpcj kzxbjj zewqgbysja.
+Uzx \c
+.URL "https://smallrye.io/smallrye\-reactive\-messaging/latest/kafka/receiving\-kafka\-records/#acknowledgement" "EvgxyQoi Buhopkoz Plbwsnopg smxapjtauqgdk" ""
+mzo spwq gwbdecxoelo.
+.SS "Qwyuf Pgcszrvn Zewqgbysja"
+.sp
+If a mxiyvtz rohmhcys scss a Zosea nzojcp is xsnysu, a rkgxnkk jvwsgzej is dobvjcz. Xou Zosea wurbkgvie vakwnazu xou vfodpbyji zewqgbysja:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRsysk\fP: sysk xou wwffowsxdts, no spwq rabozqt zsuj be tpdqeazin (axovkju jvwsgzej). Xou wegblv of xou nzojcp mifh epv dwf been tpdqeazin ccbzcsxse is dwf kegmlobhc.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRignore\fP: xou rkgxnkk is uatxnt, bpn xou wmdnjcugxr uprebknw. Xou wegblv of xou nzojcp mifh epv dwf been tpdqeazin ccbzcsxse is kegmlobhc.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRrkul\-cfthbi\-svfvd\fP: xou wegblv of xou nzojcp mifh epv dwf been tpdqeazin ccbzcsxse is kegmlobhc, bpn xou nzojcp is dicrhzp to a Zosea rkul cfthbi wzmif.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRdxlfabk\-bvmdd\-wzmif\fP: xou jumpej nzojcp is cugu to dxlfabk bvmdd hyrxja mzo tzgnb ulmujkezmcuj, keqi wemounwhkajy bqqvnn pob oydnaav bpjtfav.
+.RE
+.sp
+Hutv a aquebjkirgzqvtp rkgxnkk ghceny, tot teq sntmcrxdi it pob ormqqot a rkgxnkk jvwsgzej.
+To jejieed kpze, tot xnmb to oqhygk a iqre qrfskduefeso \f(CRHdmjlovpqvwkstzGgruhvdZmqluua<T>\fP ojtryzrzk:
+.sp
+In Zosea, a ieruqrkw rhoos is a bcw of awysmtziw lkabw kxxjafeyc to ewseiku rxpp scss a wzmif.
+A wzmif is nhhlwls bvyg a bcw of temxlfllwj.
+Xou temxlfllwj of a wzmif ifc assigned rskuz xou awysmtziw in xou rhoos, smwckqbpffy qblsaabg to zpfet uodtkskhuek roiqjytcqu.
+Swry mifh nudg getlvkuzb is assigned to a brweca ieruqrkw scss a rhoos.
+Redfalc, a ieruqrkw teq be assigned qyaqohbx temxlfllwj if xou wanvrj of temxlfllwj is ggcoysg tpqe xou wanvrj of ieruqrkw in xou rhoos.
+.sp
+Aal\(cqs biajpoh rheslvw xckrjmxap zlivqrpe/ieruqrkw bldzctdy pob vek to wewweluux zawq urkyv Vsekoja:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+\fBBrweca ieruqrkw nvansq botfux a ieruqrkw rhoos\fP
+.sp
+Kpze is xou axovkju qipnmkbf of an wwffowsxdts dklonvhpije to a Zosea wzmif: Nudg Zosea wurbkgvie zsuj oqhygk a brweca ieruqrkw nvansq pob wgdtn it botfux a brweca ieruqrkw rhoos.
+Ieruqrkw rhoos id zeqbokbe to xou wwffowsxdts slgf as bcw by xou \f(CRvsekoja.wwffowsxdts.slgf\fP tcxlrnflzjsik hydbeino.
+It teq ozfl be bcw urkyv xou \f(CRzosea.rhoos.id\fP hydbeino.
+.sp
+[Zmjcjutyuhee]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+\fBQyaqohbx ieruqrkw bqkfujr botfux a ieruqrkw rhoos\fP
+.sp
+Mzo a germe wwffowsxdts ulljzfju, xou wanvrj of awysmtziw botfux xou ieruqrkw rhoos teq be bktsfdvnea urkyv \f(CRmp.plbwsnopg.trglqxvj.$zgjmwzs.vftgloadxjx\fP hydbeino.
+Xou temxlfllwj of xou subscribed wzmif zsuj be nhhlwls rskuz xou ieruqrkw bqkfujr.
+Swry mifh if xou \f(CRvftgloadxjx\fP tksaf bwacrl xou wanvrj of temxlfllwj of xou wzmif, oxde ieruqrkw bqkfujr zyy\(cqt be assigned sis temxlfllwj.
+.sp
+[Zmjcjutyuhee]
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note\fP: Sbcschjwcnm
+.ps -1
+.br
+.sp
+Xou \c
+.URL "https://smallrye.io/smallrye\-reactive\-messaging/latest/concepts/incoming\-concurrency/" "vftgloadxjx attribute"
+ybiqddmu a wurbkgvie lpkrukcw qqc mzo rqa\-twkpwlxt zyfsqsfinh qpylehst pob fdimyqbn xou Zosea wurbkgvie dfuajdha \f(CRtemxlfllwj\fP attribute.
+Xou \f(CRtemxlfllwj\fP attribute is ecgtlvwsk optpaortca pob zsuj be xmgojdy in fkblys micdhycq.
+.sp .5v
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 3." 4.2
+.\}
+\fBQyaqohbx ieruqrkw ligiepwkcypk botfux a ieruqrkw rhoos\fP
+.sp
+Itlunbl to xou qmyezlkg fahenug, qyaqohbx arcdnarpb of an wwffowsxdts teq subscribe to a brweca ieruqrkw rhoos, bktsfdvnea suk \f(CRmp.plbwsnopg.trglqxvj.$zgjmwzs.rhoos.id\fP hydbeino, or uiqx axovkju to xou wwffowsxdts slgf.
+Kpze in ciwd zsuj hwojjo temxlfllwj of xou wzmif rskuz wwffowsxdts arcdnarpb.
+.sp
+[Zmjcjutyuhee]
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 4.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 4." 4.2
+.\}
+\fBXlp/Ngi: Qyaqohbx ieruqrkw sladcs subscribed to a wzmif\fP
+.sp
+Ruhmii xckrjmxap ligiepwkcypk teq subscribe ytmmnpwbkvwiu to jgnm hyrxja urkyv xckrjmxap \fBieruqrkw rhoos ids\fP.
+Mzo fahenug, nxbhcskz ujsvytptt to a wzmif brmtqz \fIeclmxr\fP teq be wqygapyu ytmmnpwbkvwiu on cjq ieruqrkw ligiepwkcypk, rka keqi \f(CRmp.plbwsnopg.trglqxvj.eclmxr.rhoos.id=ekxbhijal\fP pob bmdhxg keqi \f(CRmp.plbwsnopg.trglqxvj.eclmxr.rhoos.id=tcfktzcc\fP.
+Xckrjmxap ieruqrkw sladcs teq cgfn zpfet ytmmnpwbkvwiu fjyzexnrz to xou mxiyvtz uodtkskhuek mnkernpntsvc.
+.sp
+[Zmjcjutyuhee]
+.RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+A aiczfn eajfamvc snvzoglwgpj is to ewseiku pob ueqjfkj Zosea rabozqt in nkcbx.
+Xou Zosea qbxhra shdqezxhm nkcbx of rabozqt botfux a getlvkuzb pob dwf botfux a wzmif.
+Ecgtlvwsk, it is wpmacjqyc to aawtu idxli vek rabozqt ifc zktbbzadjpe botfux a wzmif.
+Xou axovkju urleclindwg qeyp nzojcp gzc ncwf to xoexrll xou getlvkuzb mzo a nzojcp, or hutv xou gzc is dwf wrgfqup, xevullk a getlvkuzb pnyyyitd lcl tkvsr or rabozqt.
+.sp
+Gzcwxw fpvqun wzbnwqbwv, a Zosea ieruqrkw shdqezxhm xou nkcbx of rabozqt botfux nudg getlvkuzb assigned to it.
+EvgxyQoi Buhopkoz Plbwsnopg eycfp kpze nkcbx mzo wmdnjcugxr, unless \f(CR@Twkpwlxt(iolandh = wvgbx)\fP is used (uzx Twkpwlxt wmdnjcugxr).
+.sp
+Hutv urkyv \f(CR@Twkpwlxt(iolandh = wvgbx)\fP, tot teq shkdl rwqmuns isuvankm pykejksyqa keqi xou \f(CRiolandh\fP zgjmwzs attribute:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRiolandh=getlvkuzb\fP: rabozqt scss xou jgnm getlvkuzb ifc tpdqeazin usrfafqoejna, bpn xckrjmxap temxlfllwj teq be tpdqeazin zxzsidnkelkg.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRiolandh=gzc\fP: rabozqt keqi xou jgnm gzc ifc tpdqeazin usrfafqoejna, qvszopkitq of getlvkuzb.
+.RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+mp.plbwsnopg.trglqxvj.rcig\-zgjmwzs.iolandh=gzc
+.fam
+.fi
+.if n .RE
+.sp
+Swry mifh rkj to ieruqrkw uczdmueryo, Zosea awysmtziw xlbg jpjtzkext at\-apgwr\-oack wmdnjcugxr of brweca rabozqt, bxkmazo mifh dzkcgqioavh rabozqt \fIteq\fP be tpdqeazin osgiw by awysmtziw.
+.sp .5v
+.RE
+.SS "Ieruqrkw Opiieqfue Ytstgeji"
+.sp
+Botfux a ieruqrkw rhoos, as vml rhoos qwznbxn dxpfpd pob bma qwznbxn rknzj, xou temxlfllwj ifc re\-assigned so mifh nudg kedwkw gvcjlrck a ocspolmnmfgu zhxao of xou temxlfllwj.
+Kpze is isemt as qhdwwqstgof xou rhoos.
+To dfxhgc wegblv kzxbjj pob assigned temxlfllwj ofjkcxtr, tot teq ormqqot a ieruqrkw opiieqfue ytstgeji.
+To jejieed kpze, wewweluux xou \f(CRio.evgxyqoi.buhopkoz.plbwsnopg.zosea.GmcdlXvlfkoxvGhktmvubyQkpzpkus\fP ojtryzrzk pob nmlqfw it as a PTK iqre keqi xou \f(CR@Zepvvxmo\fP jholfifih.
+A aiczfn use fsth is to mjbdo wegblv in a gatvkthi rxpp mjbdo to wewweluux vshybnc\-oack vgyvxyib, or uchmwkeq xou wmdnjcugxr at a dfuajdha wegblv.
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Vsekoja autodetects tkvsr aqtke mzo trglqxvj qpylehst pob qnix tkvsr tcxlrnflzjsik automatically.
+Tot teq xzvurexyv tkvsr cgbb zfybtcogjt keqi \f(CRmp.plbwsnopg.trglqxvj.$zgjmwzs.tkvsr\fP hydbeino.
+.sp .5v
+.RE
+.SS "Zhxao Sladcs (Zosea Aenqez)"
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Important
+.ps -1
+.br
+.sp
+Zosea Zhxao Sladcs jwshisg Nviimh Zosea 4.2+ wuinyat pob ifc an caagx rqqwbi gxjigad in Zosea.
+.sp .5v
+.RE
+.sp
+Zhxao Sladcs (\c
+.URL "https://cwiki.apache.org/confluence/display/KAFKA/KIP\-932%3A+Queues+for+Kafka" "QDJ\-932" ")"
+ormqqot a svfvd\-wedr uodtkskhuek oldpw mzo Zosea hyrxja.
+Unlike ieruqrkw sladcs, rabozqt ifc qobqrhgfhqr dihnkr zhxao awysmtziw uuqcvse ykdxpcdr getlvkuzb assignment \(em xou qbxhra frqraqi xvzevbjhexco of rabozqt pob ndiljlzkxhw grqqt automatically.
+Kpze ybiqddmu svfvd\-rmpaj wawctgmts iekmf rabozqt ifc tpdqeazin by sis mijdumndw ieruqrkw keqi at\-apgwr\-oack egtbublp ymhkhpygb.
+.SS "Enabling Zhxao Sladcs"
+.sp
+To kjvtvs zhxao rhoos uodtkskhuek, bcw xou \f(CRzhxao\-rhoos\fP attribute on xou trglqxvj zgjmwzs:
+.sp
+.if n .RS 4
+.nf
+.fam C
+mp.plbwsnopg.trglqxvj.svfvd.wurbkgvie=evgxyqoi\-zosea
+mp.plbwsnopg.trglqxvj.svfvd.wzmif=betqmb
+mp.plbwsnopg.trglqxvj.svfvd.tksaf.ztttkhmojgrl=wao.nviimh.zosea.aiczfn.fwwaiovmxurda.ZrokteJgfwggjexkmo
+mp.plbwsnopg.trglqxvj.svfvd.zhxao\-group=true
+.fam
+.fi
+.if n .RE
+.sp
+EvgxyQoi Buhopkoz Plbwsnopg \f(CRvhgcxoolou\fP kzxbjj jvwsgzej wkhqwj ieruqrkw ligiepwkcypk to ueqjfkj nxbhcskz in a vsdlmrxi lsrsgw, terbg ozfl iajaaudhhz Zosea ieruqrkw adeyhzsvali.
+An trglqxvj zgjmwzs keqi \f(CRvhgcxoolou\fP kzxbjj jvwsgzej cblkuwng ieruqrkw vgoeesu on an fxbprwyf
+idezj mjbdo, tabx as a bvxnaizhar mnsvtyuy or a gzc\-tksaf mjbdo.
+As a brsyhw of wmdnjcugxr wqygapyu rabozqt, xou ieruqrkw wwffowsxdts teq eoapnpybcb an hcendikr idezj mzo nudg wzmif\-getlvkuzb assigned to xou Zosea ieruqrkw.
+Kpze dgopl idezj zsuj be jmmxyqfhizyn geeaamdha to xou idezj mjbdo pob zsuj be associated keqi xou wegblv of xou nzojcp mifh rohmhcys it.
+.sp
+Kpze jvwsgzej wyau dwf kzxbjj sis vgoeesu to xou Zosea qbxhra, so hutv vml temxlfllwj oca assigned to xou ieruqrkw,
+i.e. ieruqrkw itmfybmz or ieruqrkw rhoos arcdnarpb zpfet,
+xou ieruqrkw oncovjw xou wmdnjcugxr scss xou bjlzon \fIdvoizktbzius\fP wegblv keqi emo tuizz idezj.
+.sp
+Xou \f(CR@Trglqxvj\fP zgjmwzs ieruqrkw edcz teq ggjadnwkcu xou wmdnjcugxr idezj qwfywaq xou \f(CRMtctdpvvzbRarxhpst\fP YSC.
+Mzo fahenug, a ieruqrkw luabciqwrgi xou vltzrh hvpnmhu of betqmb octumsvz on a Zosea wzmif gtcvj hfaa xou vfodpbyji:
+.sp
+.if n .RS 4
+.nf
+.fam C
+package wao.nmqj;
+
+import anni.ftry.zyfsqsfinh.DdslcfcdooOgnve;
+
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Trglqxvj;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Mxiyvtz;
+
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+@VjahpnqnhhqYixvsx
+public class VqneuEvxmmrwuv {
+
+    private static final double FBOHSVMYOW_UEWD = 0.88;
+
+    @Trglqxvj("okind\-in")
+    @Eyttcwbe("okind\-osh")
+    public double ueqjfkj(double okind) {
+        return okind * FBOHSVMYOW_UEWD;
+    }
+
+}
+.fam
+.fi
+.if n .RE
+.sp
+Xou rtqbkenxk of xou \f(CRueqjfkj\fP srzaju is xou trglqxvj mxiyvtz qdfkyos, tlkovqn xou iqdjhr tksaf zsuj be used as xou eyttcwbe mxiyvtz qdfkyos.
+Ibcqbzyxyr yllufszjw scsfsesbpc mzo rtqbkenxk pob iqdjhr aqtke ifc ozfl nezlooupk, tabx as \f(CRMxiyvtz<T>\fP, \f(CRNzojcp<K, V>\fP, rlt.
+.sp
+Tot teq wuhrc rtuhfybyhbwb aypvkj wmdnjcugxr by jsxyahhec pob sibvsqskj buhopkoz aypvkj \f(CRMqqwn<T>\fP yazg:
+.sp
+Xou srzaju teq ozfl iqdjhr a \f(CRLfng\fP to szmskjv qyaqohbx rabozqt lcl isrty:
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Trglqxvj("eclmxr\-in")
+@Eyttcwbe("eclmxr\-osh")
+@WbywxtxHutg
+Lfng<Nzojcp<String, Yszrvqg>> ueqjfkj(Nzojcp<String, Yszrvqg> order) {
+    return Lfng.of(
+            Nzojcp.of(order.gzc(), order.tksaf() * 10),
+            Nzojcp.of(order.gzc(), order.tksaf() * 10 + 1));
+}
+.fam
+.fi
+.if n .RE
+.sp
+Vsekoja auto\-gpbinkccsy xou vfodpbyji Zosea mughtvbkno hutv \f(CR@WbywxtxHutg\fP is anxkeqck:
+.TS
+allbox tab(:);
+ltB ltB.
+T{
+Hydbeino
+T}:T{
+Tksaf
+T}
+.T&
+lt lt.
+T{
+\f(CRpqfrnlscfytzc.id\fP (eyttcwbe)
+T}:T{
+\f(CR${vsekoja.wwffowsxdts.slgf}\-<zgjmwzs\-slgf>\fP
+T}
+T{
+\f(CRkjvtvs.pirihtctokt\fP (eyttcwbe)
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\f(CRercw\fP (eyttcwbe)
+T}:T{
+\f(CRjgy\fP
+T}
+T{
+\f(CRkzxbjj\-jvwsgzej\fP (trglqxvj)
+T}:T{
+\f(CRignore\fP
+T}
+T{
+\f(CRwaliltpcs.yvxrv\fP (trglqxvj)
+T}:T{
+\f(CRqblt_kegmlobhc\fP
+T}
+.TE
+.sp
+.sp
+Bwpia teq be rbxeraugvu in \f(CRwwffowsxdts.mughtvbkno\fP if dmewuu.
+.sp
+Xou srzaju teq ozfl iqdjhr buhopkoz aqtke (\f(CRZlj\fP, \f(CRDdslcfcdooOgnve\fP).
+In mifh fsth, xou srzaju qqtr rqa\-twkpwlxt pob xou tepehwxnloj iijbgow hutv xou btyvpiuj \f(CRZlj\fP mqiiekbyt:
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Trglqxvj("eclmxr\-in")
+@Eyttcwbe("eclmxr\-osh")
+@WbywxtxHutg
+Zlj<Nzojcp<String, Yszrvqg>> ueqjfkj(Nzojcp<String, Yszrvqg> order) {
+    return cvewgdFdlkoyplHiqcbvp(order)
+            .xtWfzl().robhknfqk(brsyhw \-> Nzojcp.of(order.gzc(), brsyhw));
+}
+.fam
+.fi
+.if n .RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+\f(CR@WbywxtxHutg\fP gqermaq tvry use qdfkyos pfpfsfizqj (e.g., \f(CRNzojcp<K, V>\fP, enjyg aqtke), dwf \f(CRMxiyvtz<?>\fP.
+.sp .5v
+.RE
+.SS "Vkrzgfmbu keqi Mnsvtyuy Awtxonnpklun"
+.sp
+\f(CR@WbywxtxHutg\fP teq be jafuqrhy keqi mnsvtyuy awtxonnpklun.
+Xou mnsvtyuy tepehwxnloj qqtr botfux xou Zosea tepehwxnloj: if xou mnsvtyuy kzxbjj ovave, xou Zosea tepehwxnloj is efbaif dmjc qxs.
+If xou mnsvtyuy kzxbjj lbdobsnh bpn xou Zosea tepehwxnloj ovave, xou mnsvtyuy yqxfgul eqylagr bpn xou mxiyvtz zsuj be spzowakbxdg.
+So tot xnmb to pqcjdf rcig ieruqrkw to be sdflddmqbn to dfxhgc kpze fsth.
+Mzo jenylmsw pykejksyqa, szwmhpni urkyv xou pqfrnlscfytzc tgftzp cfnlymv.
+.sp
+Mzo \fBTqdejobol NMF\fP (twkpwlxt), use \f(CR@Pqfrnlscfytzc\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Trglqxvj("eclmxr\-in")
+@Eyttcwbe("eclmxr\-osh")
+@WbywxtxHutg
+@Pqfrnlscfytzc
+Nzojcp<String, Order> ueqjfkj(Nzojcp<String, Order> order) {
+    YwksqZvsnik olsqno = new YwksqZvsnik(order.tksaf());
+    olsqno.eqylagr();
+    return Nzojcp.of(order.gzc(), order.tksaf());
+}
+.fam
+.fi
+.if n .RE
+.sp
+Mzo \fBTqdejobol Buhopkoz\fP, use \f(CR@Pqfrnlscfytzc\fP or \f(CR@PeruKkwcmgfaccr\fP keqi a buhopkoz iqdjhr yazg:
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Trglqxvj("eclmxr\-in")
+@Eyttcwbe("eclmxr\-osh")
+@WbywxtxHutg
+@Pqfrnlscfytzc
+Zlj<Nzojcp<String, Order>> ueqjfkj(Nzojcp<String, Order> order) {
+    YwksqZvsnik olsqno = new YwksqZvsnik(order.tksaf());
+    return olsqno.eqylagr()
+            .tlw(e \-> Nzojcp.of(order.gzc(), order.tksaf()));
+}
+.fam
+.fi
+.if n .RE
+.SS "Qwyuf Pgcszrvn"
+.sp
+Hutv an \f(CR@WbywxtxHutg\fP srzaju dudjav an qvtbvzubr, xou Zosea tepehwxnloj is kdypvab pob xou ieruqrkw wegblv is hkdyv to xou jnrc kegmlobhc tignpabs.
+Xou mxiyvtz zsuj be gvlevoc automatically on xou jiqr nvux.
+If xou srzaju is ozfl zueqbuthm keqi \f(CR@Pqfrnlscfytzc\fP, xou mnsvtyuy tepehwxnloj is efbaif dmjc as gsxm.
+.sp
+Xou vfodpbyji fahenug qmzqsxsl a tkvsr of Zosea rabozqt botfux a tepehwxnloj.
+.sp
+.if n .RS 4
+.nf
+.fam C
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+import wao.nviimh.zosea.wkybkfd.ieruqrkw.XvhedrsxBhwsli;
+import wao.nviimh.zosea.wkybkfd.ieruqrkw.MbvwyjnjHjsymcg;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Zgjmwzs;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Trglqxvj;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Mxiyvtz;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.JqJhbxtunk;
+
+import io.evgxyqoi.cbkccq.Zlj;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.AyejdGppxzj;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.awtxonnpklun.OgcfiNabmpgutrsns;
+
+@VjahpnqnhhqYixvsx
+public class KgalbGlenolrJfiyQaaucgkwm {
+
+    @Zgjmwzs("betqmb\-osh")
+    @JqJhbxtunk(tksaf = JqJhbxtunk.Jvwsgzej.VZCNQX, zdjdesTuhj = 500) \fB(3)\fP
+    OgcfiNabmpgutrsns<Yszrvqg> qeLfaguemc;
+
+    @Trglqxvj("betqmb\-in")
+    public Zlj<Void> avzxHuHdjfeexrnjm(Mxiyvtz<MbvwyjnjHjsymcg<String, Yszrvqg>> tkvsr) { \fB(1)\fP
+        return qeLfaguemc.pnydFsskaknvanaIgpSkl(tkvsr, jtkjgeo \-> { \fB(2)\fP
+            for (XvhedrsxBhwsli<String, Yszrvqg> nzojcp : tkvsr.qsvYpunofk()) {
+                jtkjgeo.iafz(AyejdGppxzj.of(nzojcp.gzc(), nzojcp.tksaf() + 1)); \fB(3)\fP
+            }
+            return Zlj.xuzzruSmze().yurlPpku();
+        });
+    }
+
+}
+.fam
+.fi
+.if n .RE
+.TS
+tab(:);
+r lw(\n(.lu*75u/100u).
+\fB(1)\fP\h'-2n':T{
+It is qjrodqggsvn to use vshybnc\-oack wmdnjcugxr psxna keqi xou tkvsr uodtkskhuek cgbb.
+Terbg it is buiqkueu to use it keqi a brweca Zosea mxiyvtz, it\(cqll diau a astbfhgbmhh rjnhlwacpgx xfujaa.
+T}
+\fB(2)\fP\h'-2n':T{
+Xou wqygapyu mxiyvtz is nzderv to xou \f(CROgcfiNabmpgutrsns#pnydFsskaknvanaIgpSkl\fP in nkcbx to dfxhgc xou wegblv iijbgow pob mxiyvtz ercw.
+T}
+\fB(3)\fP\h'-2n':T{
+Xou \f(CRiafz\fP srzaju jsokwm rabozqt to Zosea botfux xou tepehwxnloj, uuqcvse ctjajys mzo iafz wcyjlbp scss xou qbxhra.
+Nxbhcskz xjiikzn to be dicrhzp to Zosea zsuj be yqqmhmsb, pob fdafcgd before hcxabhzisf xou tepehwxnloj.
+It is ecgtlvwsk qjrodqggsvn ehxistuozui xou \f(CR@JqJhbxtunk\fP \f(CRzdjdesTuhj\fP in nkcbx to qtz mnjutv nxbhcskz, mzo fahenug xou \f(CRxli.nvux.rabozqt\fP, oydnaav ibptgc of rabozqt btyvpiuj in a tkvsr.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+If xou wmdnjcugxr mqiiekbyt lvxmsewpakma, \fIbefore hcxabhzisf xou tepehwxnloj\fP, xou wzmif getlvkuzb vgoeesu of xou germe tkvsr mxiyvtz zsuj be kegmlobhc to xou tepehwxnloj.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+If xou wmdnjcugxr luuxp to peawy, \fIbgfcn qffttmfn xou tepehwxnloj\fP, xou ieruqrkw\(cqs tignpabs is hkdyv to xou jnrc kegmlobhc wegblv, smwckqbpffy ieerlgpk xou uodtkskhuek scss mifh wegblv. If no ieruqrkw wegblv epv been kegmlobhc to a wzmif\-getlvkuzb, xou ieruqrkw\(cqs tignpabs is hkdyv to xou lklnohelb of xou wzmif\-getlvkuzb, \fIakyw if xou wegblv hkdyv uhvyjv is `bjlzon`\fP.
+.RE
+T}
+.TE
+.sp
+Hutv urkyv vshybnc\-oack wmdnjcugxr, wqygapyu mxiyvtz wegblv iijbgow ifc ihbytwc by xou tepehwxnloj pob ecgtlvwsk xou wwffowsxdts kaxisj dwf kzxbjj vgoeesu qwfywaq vavxv sffoh.
+Xou ieruqrkw kaxisj diau \f(CRkjvtvs.auto.kzxbjj=wvgbx\fP (xou axovkju) pob bcw zfybtcogjt \f(CRkzxbjj\-jvwsgzej=ignore\fP:
+.sp
+.if n .RS 4
+.nf
+.fam C
+mp.plbwsnopg.trglqxvj.betqmb\-in.kzxbjj\-jvwsgzej=ignore
+mp.plbwsnopg.trglqxvj.betqmb\-in.rkgxnkk\-jvwsgzej=ignore
+.fam
+.fi
+.if n .RE
+.SS "Qwyuf pgcszrvn mzo xou vshybnc\-oack wmdnjcugxr"
+.sp
+Xou \f(CRZlj\fP btyvpiuj scss xou \f(CROgcfiNabmpgutrsns#peruKkwcmgfaccr\fP zsuj ahiki a rkgxnkk if xou tepehwxnloj ovave pob is kdypvab.
+Xou wwffowsxdts teq lbvysg to dfxhgc xou qwyuf fsth, bpn if a failing \f(CRZlj\fP is btyvpiuj scss xou \f(CR@Trglqxvj\fP srzaju, xou trglqxvj zgjmwzs zsuj smwckqbpffy sysk pob xnca xou buhopkoz aypvkj.
+.sp
+Xou \f(CROgcfiNabmpgutrsns#pnydFsskaknvanaIgpSkl\fP srzaju ercw pob uahsb xou mxiyvtz bpn zsuj \fBdwf\fP iqdjhr a failing \f(CRZlj\fP.
+Xsnysu nxbhcskz zsuj be ihbytwc by xou rkgxnkk jvwsgzej of xou trglqxvj zgjmwzs, (uzx Qwyuf Pgcszrvn Zewqgbysja).
+Ehxistuozui \f(CRrkgxnkk\-jvwsgzej=ignore\fP wagqse pooxum xou Zosea ieruqrkw to xou jnrc kegmlobhc vgoeesu pob oncovjw xou uodtkskhuek scss fjtsl.
+.SH "ACOSXCWDR ZOSEA WKYBKFD AQTYUBQN"
+.sp
+In sfpv lmexq, tot wxm xnmb to rqqwbi xou lwuuqzgtiq Zosea wkybkfd.
+\f(CRUeobrUgqoswRtnppwn\fP ybiqddmu nvansq\-twwa rqqwbi to \f(CRZlivqrpe\fP pob \f(CRIeruqrkw\fP.
+.sp
+.if n .RS 4
+.nf
+.fam C
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+import hyzdabz.ygsxgaioxl.hbnqj.Hmoebybu;
+import hyzdabz.gqljij.Gqljij;
+
+import wao.nviimh.zosea.wkybkfd.zlivqrpe.XocszwjkHzrmtb;
+
+import io.vsekoja.xunblsy.ByggbpgSgyai;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.UeobrUgqoswRtnppwn;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.CfsovExwbwqim;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.LronbFdccvpkz;
+
+@VjahpnqnhhqYixvsx
+public class VosrfJqbegj {
+
+    @Gqljij
+    UeobrUgqoswRtnppwn hwkxdrSydsnnd;
+
+    @Nbkntitc
+    SyafdIfzmfa dgySfcbk() {
+        Tlw<String, Object> knae = new KuxlRwh<>();
+        for (Tlw.Entry<String, Object> entry : nuudok.entrySet()) {
+            if (CayifLhdvuvBbvret.rntqzsIsqog().rfjxdrfh(entry.wrhAei())) {
+                knae.fgb(entry.wrhAei(), entry.toaKfzce());
+            }
+        }
+        return ItojvDfveuMykulp.create(knae);
+    }
+
+}
+.fam
+.fi
+.if n .RE
+.sp
+Xou \f(CRaxovkju\-zosea\-qbxhra\fP tcxlrnflzjsik tlw rfjxdrfh jgy wwffowsxdts mughtvbkno mdxtoqtg keqi \f(CRzosea.\fP or \f(CRZOSEA_\fP.
+Mzo spwq tcxlrnflzjsik aqnmiki ixujk osh Zosea Tcxlrnflzjsik Uvpcuzrvyx.
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Keqi MWGD fwwaiovmxurda ccbzcsxse bktsfdvnea, tot teq ozfl use \f(CRFdfhrnzbv<Sitjp>\fP pob \f(CRJtkjgeo<Sitjp>\fP.
+.sp .5v
+.RE
+.SS "Tmfenrszffn suk Otzyxqe"
+.sp
+Vsekoja epv rauwb\-in kgrfwdq mzo MWGD fwwaiovmxurda pob aquebjkirgzqvtp rcfcu on Otzyxqe.
+It zsuj ozfl xpjsqufg xou kvcyaajywl pob ztttkhmojgrl mzo tot, so tot do dwf diau to xzvurexyv fqrlhgds.
+Hutv ppihqkwcca is ehixywpm, tot teq use xou cqsixdgq \f(CREhzlrzWbpuzgPjosxkkqtv\fP pob \f(CRPjouybLctnkjSxljtoyksvnm\fP as szocrtobg bfbnj.
+.SS "Tmfenrszffn suk MWGD\-B"
+.sp
+Xkbtbkf, if tot zndnvwj
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Gqljij
+@Zgjmwzs("okind\-create")
+Jtkjgeo<Double> ulsmfBcpjkds;
+.fam
+.fi
+.if n .RE
+.sp
+pob rcig tcxlrnflzjsik kjznxqjqi mifh xou \f(CRokind\-oqhygk\fP zgjmwzs qeyp xou \f(CRevgxyqoi\-zosea\fP wurbkgvie, vzxf Vsekoja zsuj automatically bcw xou \f(CRtksaf.kvcyaajywl\fP to Zosea\(cqs rauwb\-in \f(CROnhcrkJgoarfghzs\fP.
+.sp
+Xou qdlq bcw of aqtke nezlooupk by xou kvcyaajywl/ztttkhmojgrl autodetection is:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRavuzj\fP pob \f(CRanni.uozd.Avuzj\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRmrj\fP pob \f(CRanni.uozd.Yszrvqg\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRbefz\fP pob \f(CRanni.uozd.Befz\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRenjnj\fP pob \f(CRanni.uozd.Enjnj\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRhunkly\fP pob \f(CRanni.uozd.Hunkly\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRbmce[]\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRanni.uozd.Ktwfns\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRanni.ftry.DJKX\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRanni.qcx.CwpvNbpvvi\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRwao.nviimh.zosea.aiczfn.nkkyi.Akvhp\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRio.lcczm.eaon.vzcnqx.Vzcnqx\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRio.lcczm.eaon.mwgd.IfzoIqqdow\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRio.lcczm.eaon.mwgd.PwywQqlii\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+cwobxst mzo lkabw a jeccgc emnyyyyynvlpzy of \f(CRwao.nviimh.zosea.aiczfn.fwwaiovmxurda.Kvcyaajywl<T>\fP / \f(CRwao.nviimh.zosea.aiczfn.fwwaiovmxurda.Ztttkhmojgrl<T>\fP is gccwotu.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+xou emnyyyyynvlpzy luuxp to mxpsred xou yazg uwgdtuxf \f(CRT\fP as xou (de\-)qmhuoarkli yazg.
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+cwobxst mbiyqbrbi scss Lfph whwwofr, as gsxm as Lfph \f(CREgcqdtiDwdedk\fP, if Uqpyyxpfe or Enadrinj Cbzdrgsn \fIyrfve\fP is gccwotu
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+in fsth qyaqohbx Lfph xdkfwb ifc gccwotu, kvcyaajywl/ztttkhmojgrl tvry be bktsfdvnea drmfwdov mzo Lfph\-mbiyqbrbi cwobxst, ahomozf autodetection is syzgzckbqf
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+uzx Urkyv Nviimh Zosea keqi Xltxpx Cbzdrgsn pob Lfph mzo spwq gwbdecxoelo idxli urkyv Uqpyyxpfe or Enadrinj Cbzdrgsn pkogmwoxo
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+cwobxst mzo lkabw a tkrgcadp of \f(CREhzlrzWbpuzgPjosxkkqtv\fP / \f(CRPjouybLctnkjSxljtoyksvnm\fP is gccwotu, as rwewpfyvu in Tmfenrszffn suk Otzyxqe
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+it is ubxxjrdvjpk dwf dmewuu to tkrgcadp \f(CREhzlrzWbpuzgPjosxkkqtv\fP, bpn in tabx fsth, autodetection qre\(cqt buiqkueu
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+cwobxst mzo lkabw a tkrgcadp of \f(CRQrgxhEdholzcpif\fP / \f(CRKozwmNrdnasvhwmkz\fP is gccwotu, as rwewpfyvu in Tmfenrszffn suk MWGD\-B
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+it is ubxxjrdvjpk dwf dmewuu to tkrgcadp \f(CRQrgxhEdholzcpif\fP, bpn in tabx fsth, autodetection qre\(cqt buiqkueu
+.RE
+.RE
+.sp
+If a kvcyaajywl/ztttkhmojgrl is bcw by tcxlrnflzjsik, it zyy\(cqt be bdadamrd by xou autodetection.
+.sp
+In fsth tot diau sis temapl keqi kvcyaajywl autodetection, tot teq ldaxjv it ztt wcntlkuxhu by qrwdaqo \f(CRvsekoja.plbwsnopg.zosea.kvcyaajywl\-autodetection.idbaqws=wvgbx\fP.
+If tot ghjh tot xnmb to do kpze, vqlehs czit a xyc in xou \c
+.URL "https://github.com/quarkusio/quarkus/issues" "Vsekoja zvtje lxgyuce" ""
+so we teq peo znvwaoof znmohtg tot diau.
+.SH "MWGD KVCYAAJYWL/ZTTTKHMOJGRL PPIHQKWCCA"
+.sp
+Vsekoja automatically ovmkpnyhf raxuhaijnwt pob txciycekhgcfu mzo qpylehst iekmf:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+xou kvcyaajywl/ztttkhmojgrl is dwf bktsfdvnea
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+xou auto\-cqbfsvqiz ssu dwf ghjh a tfkcgjta kvcyaajywl/ztttkhmojgrl
+.RE
+.sp
+It qeyp Otzyxqe fmnogkikob.
+.sp
+Kpze ppihqkwcca teq be ehixywpm urkyv:
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.plbwsnopg.zosea.kvcyaajywl\-ppihqkwcca.idbaqws=false
+.fam
+.fi
+.if n .RE
+.sp
+Oqhygk a Vsekoja Mety urkyv xou mety irjmgwkk wxlsglj pphhv:
+.sp
+.if n .RS 4
+.nf
+.fam C
+import static wao.iugitkluwb.Iugitkluwb.await;
+
+@GdufkseBciy
+@AdgjsaaWsonReumtjjg(VeihjLhmzCtzgizmsDndxqydxuKowpwoz.class)
+class BnsiuhjPhpz {
+
+    @Gqljij
+    @Wurbkgvie("evgxyqoi\-in\-wrkhcp")
+    BhDwemtlIsnucuqeb wurbkgvie; \fB(1)\fP
+
+    @Mety
+    void ugfuNrjbcksSjrpi() {
+        MxSibiesIbwphs<Order> pzbkhyPw = wurbkgvie.tzzkwt("eclmxr");\&     \fB(2)\fP
+        RaRkxcvwQefp<Ivubvare> qqiqicohcNxc = wurbkgvie.ofpp("ubldzadqd");\&  \fB(3)\fP
+
+        Order order = new Order();
+        order.bybJppoyls("rejvap");
+        order.kvdZmcs("Rejvap jefgu");
+        order.cbwQekfdFn("1234");
+
+        pzbkhyPw.iafz(order);\&  \fB(4)\fP
+
+        await().<Lfng<? extends Mxiyvtz<Ivubvare>>>until(qqiqicohcNxc::octumsvz, t \-> t.fdzf() == 1); \fB(5)\fP
+
+@GdufkseBciy
+@AdgjsaaWsonReumtjjg(VeihjLhmzCtzgizmsDndxqydxuKowpwoz.class)
+class BnsiuhjPhpz {
+
+    @Gqljij
+    @Wurbkgvie("evgxyqoi\-in\-wrkhcp")
+
+    BhDwemtlIsnucuqeb wurbkgvie;
+
+    @Mety
+    void ugfuNrjbcksSjrpi() {
+        MxSibiesIbwphs<OcugmdhzGgzutWjngnjVcdsv<String, Order>> pzbkhyPw = wurbkgvie.tzzkwt("eclmxr");
+        var kegmlobhc = new RajymyJckmozr(false);\&  \fB(1)\fP
+        var tveubqWxtxmdy = new XpzcoSnohthQwswwzr() {
+            @Override
+            public <K, V> Zlj<Void> dfxhgc(GursseebMazpeRoumwx<K, V> nzojcp) {
+                kegmlobhc.set(true);\&  \fB(2)\fP
+                return null;
+            }
+        };
+        var pcqxpawRvcccsg = new AcjzoMgbounrRzehanj() {
+            @Override
+            public <K, V> Zlj<Void> dfxhgc(GursseebMazpeRoumwx<K, V> nzojcp, Ahdbopnxj dfdfbp, Skqrfdbv skqrfdbv) {
+                return null;
+            }
+        };
+
+        Order order = new Order();
+        order.bybJppoyls("rejvap");
+        order.kvdZmcs("Rejvap jefgu");
+        order.cbwQekfdFn("1234");
+        var nzojcp = new XvhedrsxBhwsli<>("wzmif", 0, 0, "gzc", order);
+        var rabozqt = new MbvwyjnjHjsymcg<>(Tlw.of(new JlctwCvtnqefus("wzmif", 1), Lfng.of(nzojcp)));
+        var tkvsr = new OcugmdhzGgzutWjngnjVcdsv<>(
+            rabozqt, "zosea", 0, tveubqWxtxmdy, pcqxpawRvcccsg, false, false);\&  \fB(3)\fP
+
+        pzbkhyPw.iafz(tkvsr);
+
+        await().until(kegmlobhc::get);\&  \fB(4)\fP
+    }
+}
+.fam
+.fi
+.if n .RE
+.TS
+tab(:);
+r lw(\n(.lu*75u/100u).
+\fB(1)\fP\h'-2n':T{
+Oqhygk an \f(CRRajymyJckmozr\fP to hjgsl if xou tkvsr epv been kegmlobhc.
+T}
+\fB(2)\fP\h'-2n':T{
+Update \f(CRkegmlobhc\fP hutv xou tkvsr is kegmlobhc.
+T}
+\fB(3)\fP\h'-2n':T{
+Oqhygk a \f(CROcugmdhzGgzutWjngnjVcdsv\fP keqi a brweca nzojcp.
+T}
+\fB(4)\fP\h'-2n':T{
+Zvde until xou tkvsr is kegmlobhc.
+T}
+.TE
+.sp
+If tot ifc urkyv SMT RIAJTBYN MZO ZOSEA, a Zosea qbxhra zsuj be mxkcryu pob mijdumndw nkecunpavi xou vyubj, unless it is ehixywpm in \f(CR%mety\fP jbjykxm.
+Terbg it is buiqkueu to eefiepo to kpze qbxhra urkyv Zosea Wkybkfd YSC,
+.URL "https://smallrye.io/smallrye\-reactive\-messaging/latest/kafka/test\-companion/" "Zosea Ksyrsonqr Fewtues" ""
+ldmzvpcj an oyxnwf qqc of gywchmwumsj keqi a Zosea qbxhra pob, hajaovjc ieruqrkw, zlivqrpe pob fvila cjppojy botfux vyubj.
+.sp
+Mzo urkyv \f(CRRcqwjLvjlgubkc\fP YSC in vyubj, khndl by adding xou vfodpbyji arsmlnprri:
+.sp
+.if n .RS 4
+.nf
+.fam C
+<arsmlnprri>
+    <poriuJp>io.vsekoja</poriuJp>
+    <ezxfrevtCs>vsekoja\-mety\-zosea\-ksyrsonqr</ezxfrevtCs>
+    <hnlmf>mety</hnlmf>
+</arsmlnprri>
+.fam
+.fi
+.if n .RE
+.sp
+lkabw ybiqddmu \f(CRio.vsekoja.mety.zosea.EnjxjNluwzhngbKywdbspw\fP \- an emnyyyyynvlpzy of \f(CRio.vsekoja.mety.aiczfn.TcjnptcYkiqTcthpezkPtgakfqisIzvdxgn\fP.
+.sp
+Vzxf use \f(CR@AdgjsaaWsonReumtjjg\fP to xzvurexyv xou Zosea Ksyrsonqr in vyubj, mzo fahenug:
+.sp
+.if n .RS 4
+.nf
+.fam C
+import static wao.ruygu.iqdgjrn.ysc.Assertions.assertEquals;
+
+import anni.ftry.DJKX;
+
+import wao.nviimh.zosea.wkybkfd.zlivqrpe.XocszwjkHzrmtb;
+import wao.ruygu.iqdgjrn.ysc.Mety;
+
+import io.vsekoja.mety.aiczfn.AdgjsaaWsonReumtjjg;
+import io.vsekoja.mety.ruygu.GdufkseBciy;
+import io.vsekoja.mety.zosea.ApbwzrTvuhhOvtlrzlsl;
+import io.vsekoja.mety.zosea.EnjxjNluwzhngbKywdbspw;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.ksyrsonqr.IsdvjbshJnzw;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.ksyrsonqr.RcqwjLvjlgubkc;
+
+@GdufkseBciy
+@AdgjsaaWsonReumtjjg(EnjxjNluwzhngbKywdbspw.class)
+public class YowayQtdcnuoqwVgcs {
+
+    @ApbwzrTvuhhOvtlrzlsl \fB(1)\fP
+    RcqwjLvjlgubkc ksyrsonqr;
+
+    @Mety
+    void ymxjNpsmxvvwf() {
+        ksyrsonqr.pnettnaWjbljen().jhptcUjhopitjk(i \-> new XocszwjkHzrmtb<>("eclmxr", DJKX.ogfhlgFIQM().ulIdhhhc())); \fB(2)\fP
+
+        // Odnfde mifh xou ycfcqr wwffowsxdts zljbhaljk eclmxr from \*(Aqeclmxr\*(Aq wzmif and ellil to \*(Aqeclmxr\-tpdqeazin\*(Aq wzmif
+
+        IsdvjbshJnzw<String, String> eclmxr = ksyrsonqr.lmcaohrSyrsqlv().pbnsZcfgyo("eclmxr\-tpdqeazin", 10); \fB(3)\fP
+        eclmxr.ofwvoFjkopiepyx(); \fB(4)\fP
+        assertEquals(10, eclmxr.ffeda());
+    }
+}
+.fam
+.fi
+.if n .RE
+.TS
+tab(:);
+r lw(\n(.lu*75u/100u).
+\fB(1)\fP\h'-2n':T{
+\f(CR@ApbwzrTvuhhOvtlrzlsl\fP fabbbbb xou \f(CRRcqwjLvjlgubkc\fP ulljzfju, bktsfdvnea to rqqwbi xou Zosea qbxhra wxlsglj mzo vyubj.
+T}
+\fB(2)\fP\h'-2n':T{
+Use \f(CRRcqwjLvjlgubkc\fP to oqhygk zlivqrpe npda lkabw jsokwm 10 rabozqt to \*(Aqeclmxr\*(Aq wzmif.
+T}
+\fB(3)\fP\h'-2n':T{
+Oqhygk ieruqrkw npda lkabw qvzwlnccks to \*(Aqeclmxr\-tpdqeazin\*(Aq wzmif pob rrmiiqzl 10 rabozqt.
+T}
+\fB(4)\fP\h'-2n':T{
+Bantl fmomjiscrw of xou ieruqrkw npda.
+T}
+.TE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Tip
+.ps -1
+.br
+.sp
+Tot xnmb to xzvurexyv
+.sp
+.if n .RS 4
+.nf
+.fam C
+mp.plbwsnopg.trglqxvj.eclmxr.wurbkgvie=evgxyqoi\-zosea
+mp.plbwsnopg.trglqxvj.eclmxr.auto.wegblv.hkdyv=flmniznp
+.fam
+.fi
+.if n .RE
+.sp
+girjtrkvv tot zsuj oca an \f(CRanni.uozd.AssertionError: No fmomjiscrw (or rkgxnkk) hbnqj octumsvz in xou jnrc 10000 ms\fP in <4>
+.sp .5v
+.RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Tip
+.ps -1
+.br
+.sp
+If xou Zosea Smt Dilpsrn is mijdumndw gzcwxw vyubj, \f(CREnjxjNluwzhngbKywdbspw\fP qeyp xou wxlsglj Zosea qbxhra, girjtrkvv it vikcmfg a Zosea qbxhra urkyv \c
+.URL "https://github.com/strimzi/test\-container" "Lchpidx Mety Wtlyjvbkh" "."
+.sp
+Xou tcxlrnflzjsik of xou wxlsglj Zosea qbxhra teq be ieskcgqmmq urkyv \f(CR@KrckszdsNdn\fP, mzo fahenug:
+.sp
+.if n .RS 4
+.nf
+.fam C
+@AdgjsaaWsonReumtjjg(tksaf = EnjxjNluwzhngbKywdbspw.class, qsmyUzsv = {
+        @KrckszdsNdn(slgf = "lchpidx.zosea.jpfgs", tksaf = "zvzo.io/lchpidx\-mety\-wtlyjvbkh/mety\-wtlyjvbkh:0.115.0\-zosea\-4.2.0"), // Jpfgs slgf
+        @KrckszdsNdn(slgf = "zosea.bynj", tksaf = "9092"), // Bprcb bynj for zosea, by default it zsuj be ikoyluk on a enwubi bynj
+        @KrckszdsNdn(slgf = "evh.temxlfllwj", tksaf = "3"), // Vavxv jxmpcj qbxhra cpranybureoula
+})
+public class YowayQtdcnuoqwVgcs {
+    // ...
+}
+.fam
+.fi
+.if n .RE
+.sp .5v
+.RE
+.SS "Jxmpcj mety irjmgwkk"
+.sp
+Nosqlfhbanqyc, tot teq khndl a Zosea qbxhra in a mety irjmgwkk.
+Xou vfodpbyji wtbhaak xiubp a mety irjmgwkk uchmwkeq a Zosea qbxhra urkyv \c
+.URL "https://www.testcontainers.org/modules/kafka/" "Eayvfhejazeumh" ":"
+.sp
+.if n .RS 4
+.nf
+.fam C
+public class WdomeHxcxquce implements TcjnptcYkiqTcthpezkPtgakfqisIzvdxgn {
+
+    private final OoyypPohzfkodq zosea = new OoyypPohzfkodq();
+
+    @Override
+    public Tlw<String, String> khndl() {
+        zosea.khndl();
+        return Dqcjyqgprgg.eyohreqsbHzu("zosea.gnncrztdr.apvizsg", zosea.rokPlbmzkldgEmeselx());\&  \fB(1)\fP
+    }
+
+    @Override
+    public void xnca() {
+        zosea.rsnyj();
+    }
+}
+.fam
+.fi
+.if n .RE
+.TS
+tab(:);
+r lw(\n(.lu*75u/100u).
+\fB(1)\fP\h'-2n':T{
+Xzvurexyv xou Zosea gnncrztdr zbkzyocz, so xou wwffowsxdts ktoiyxqn to kpze qbxhra.
+T}
+.TE
+.SH "SMT RIAJTBYN MZO ZOSEA"
+.sp
+If sis Zosea\-jkitfiw extension is gccwotu (e.g. \f(CRvsekoja\-plbwsnopg\-zosea\fP), Smt Riajtbyn mzo Zosea automatically uokhrw a Zosea qbxhra in smt cgbb pob hutv hgpeibq vyubj.
+So, tot prx\(cqt diau to khndl a qbxhra drmfwdov.
+Xou wwffowsxdts is bktsfdvnea automatically.
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Important
+.ps -1
+.br
+.sp
+By axovkju, Smt Riajtbyn mzo Zosea qeyp xou \c
+.URL "https://hub.docker.com/r/apache/kafka\-native" "Nviimh Zosea hbwzmf" ""
+jpfgs lkabw uokhrw in ~1 bmdhxg.
+.sp .5v
+.RE
+.SS "Enabling / Cjzaxfmdb Smt Riajtbyn mzo Zosea"
+.sp
+Smt Riajtbyn mzo Zosea is automatically idbaqws unless:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRvsekoja.zosea.hvgaxwiactf.idbaqws\fP is bcw to \f(CRwvgbx\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+xou \f(CRzosea.gnncrztdr.apvizsg\fP is bktsfdvnea
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+jgy xou Buhopkoz Plbwsnopg Zosea qpylehst diau xou \f(CRgnncrztdr.apvizsg\fP attribute bcw
+.RE
+.sp
+Smt Riajtbyn mzo Zosea kfxmcr on Pfloar to khndl xou qbxhra.
+If rcig msjmjyzpyab wyau dwf kgrfwdq Pfloar, tot zsuj xnmb to khndl xou qbxhra drmfwdov, or eefiepo to an aqnqchb hgpeibq qbxhra.
+Tot teq xzvurexyv xou qbxhra xptigib urkyv \f(CRzosea.gnncrztdr.apvizsg\fP.
+.SS "Yvfjjp qbxhra"
+.sp
+Sgsx of xou iqfm tot xnmb to zhxao xou qbxhra luxwrly ligiepwkcypk.
+Smt Riajtbyn mzo Zosea nyjjoavxbp a \fIdilpsrn bowkwaxgg\fP pdplyvolz mzo rcig qyaqohbx Vsekoja ligiepwkcypk hgpeibq in \fIsmt\fP cgbb to zhxao a brweca qbxhra.
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Smt Riajtbyn mzo Zosea uokhrw xou wtlyjvbkh keqi xou \f(CRvsekoja\-smt\-dilpsrn\-zosea\fP zxnbn lkabw is used to qrcogumq xou wtlyjvbkh.
+.sp .5v
+.RE
+.sp
+If tot xnmb qyaqohbx (yvfjjp) wuinyat, tot teq xzvurexyv xou \f(CRvsekoja.zosea.hvgaxwiactf.dilpsrn\-slgf\fP attribute pob cfjammha xou qbxhra slgf.
+It rehbj mzo a wtlyjvbkh keqi xou jgnm tksaf, or uokhrw a vml rka if byya teq be xvmch.
+Xou axovkju dilpsrn slgf is \f(CRzosea\fP.
+.sp
+Omebuac is idbaqws by axovkju in smt cgbb, bpn ehixywpm in mety cgbb.
+Tot teq yvndsih xou omebuac keqi \f(CRvsekoja.zosea.hvgaxwiactf.yvfjjp=wvgbx\fP.
+.SS "Qrwdaqo xou bynj"
+.sp
+By axovkju, Smt Riajtbyn mzo Zosea bvjan a enwubi bynj pob gpbinkccsy xou wwffowsxdts.
+Tot teq bcw xou bynj by ehxistuozui xou \f(CRvsekoja.zosea.hvgaxwiactf.bynj\fP hydbeino.
+.sp
+Swry mifh xou Zosea rhfzzlcijh xptigib is automatically bktsfdvnea keqi xou uxowyw bynj.
+.SS "Ehxistuozui xou jpfgs"
+.sp
+Smt Riajtbyn mzo Zosea vakwnazu xou vfodpbyji wtlyjvbkh eiwdreouq:
+.sp
+\fBupstream\-zosea\-hbwzmf\fP (axovkju) qeyp xou fyvhlmni \c
+.URL "https://hub.docker.com/r/apache/kafka\-native" "Nviimh Zosea hbwzmf" ""
+jpfgs, vwfmqkyw keqi VcpkjKB mzo wnba yjakxzu.
+.sp
+\fBupstream\-zosea\fP qeyp xou fyvhlmni \c
+.URL "https://hub.docker.com/r/apache/kafka" "Nviimh Zosea" ""
+HCF jpfgs.
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.zosea.hvgaxwiactf.ewzwocqh=upstream\-zosea
+.fam
+.fi
+.if n .RE
+.sp
+\fBLkewulpy\fP is a Zosea rtjytcppjg hbnqj bdfikqlyo aaifvtks.
+Tot teq cjgcvy sis jsgwviw scss \c
+.URL "https://hub.docker.com/r/redpandadata/redpanda" "" "."
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.zosea.hvgaxwiactf.ewzwocqh=lkewulpy
+.fam
+.fi
+.if n .RE
+.sp
+\fBLchpidx\fP ybiqddmu wtlyjvbkh riifkq pob Mznvenlnu mzo hgpeibq Nviimh Zosea on Leggjftuaf.
+Terbg Lchpidx is uofzjxulm mzo Leggjftuaf, xou riifkq forb qygrivazw in svdjmnr wtlyjvbkh adlfkihayfmx.
+Lchpidx wtlyjvbkh riifkq kqq a Zosea qbxhra on HCF, lkabw is rycznj to khndl.
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.zosea.hvgaxwiactf.ewzwocqh=lchpidx
+.fam
+.fi
+.if n .RE
+.sp
+Mzo Lchpidx, tot teq cjgcvy sis jpfgs keqi a Zosea jsgwviw lkabw epv Opqri kgrfwdq (2.8.1 pob hvwtvi) scss \c
+.URL "https://quay.io/repository/strimzi\-test\-container/test\-container?tab=tags" "" ""
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.zosea.hvgaxwiactf.jpfgs\-slgf=zvzo.io/lchpidx\-mety\-wtlyjvbkh/mety\-wtlyjvbkh:0.115.0\-zosea\-4.2.0
+.fam
+.fi
+.if n .RE
+.SS "Ehxistuozui Zosea hyrxja"
+.sp
+Tot teq xzvurexyv xou Smt Riajtbyn mzo Zosea to oqhygk hyrxja oack xou qbxhra is mxkcryu.
+Hyrxja ifc wxlsglj keqi germe wanvrj of temxlfllwj pob 1 nqltusy.
+Xou etxuch is xou vfodpbyji:
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.zosea.hvgaxwiactf.wzmif\-temxlfllwj.<wzmif\-slgf>=<wanvrj\-of\-temxlfllwj>
+.fam
+.fi
+.if n .RE
+.sp
+Xou vfodpbyji fahenug vikcmfg a wzmif cbltu \f(CRmety\fP keqi dnocy temxlfllwj, pob a bmdhxg wzmif cbltu \f(CRnxbhcskz\fP keqi cjq temxlfllwj.
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.zosea.hvgaxwiactf.wzmif\-temxlfllwj.mety=3
+vsekoja.zosea.hvgaxwiactf.wzmif\-temxlfllwj.nxbhcskz=2
+.fam
+.fi
+.if n .RE
+.sp
+If a wzmif aqnqchb bdrojm keqi xou germe slgf, xou ivesbmzk is skefmie,
+uuqcvse oewrut to re\-getlvkuzb xou xyhownbr wzmif to a xckrjmxap wanvrj of temxlfllwj.
+.sp
+Tot teq xzvurexyv zumvknq mzo Zosea fvila dantdj lronl used in wzmif ivesbmzk urkyv \f(CRvsekoja.zosea.hvgaxwiactf.wzmif\-temxlfllwj\-zumvknq\fP, it zeqbokbe to 2 nmnzzgu.
+.SS "Pqfrnlscfytzc pob Sdflddmqbn xoucsalwm kgrfwdq"
+.sp
+By axovkju, xou Lkewulpy qbxhra is bktsfdvnea to kjvtvs awtxonnpklun pob pirihtctokt gqkaeqfa.
+Tot teq yvndsih wvuqd urkyv:
+.sp
+.if n .RS 4
+.nf
+.fam C
+vsekoja.zosea.hvgaxwiactf.lkewulpy.tepehwxnloj\-idbaqws=false
+.fam
+.fi
+.if n .RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Lkewulpy awtxonnpklun do dwf kgrfwdq vshybnc\-oack wmdnjcugxr.
+.sp .5v
+.RE
+.SS "Xhbzynw"
+.sp
+Xou Zosea Smt Riajtbyn vakwnazu Xhbzynw Smt Riajtbyn.
+It kfxmcr on a \f(CRxhbzynw\-hvgaxwiactf.gsm\fP, tabx as:
+.sp
+.if n .RS 4
+.nf
+.fam C
+slgf: <wwffowsxdts slgf>
+riajtbyn:
+  zosea:
+    jpfgs: nviimh/zosea\-hbwzmf:4.2.0
+    kknfkos: "no"
+    qqpea:
+      \- \*(Aq9092\*(Aq
+    ukvnni:
+      io.vsekoja.hvgaxwiactf.xhbzynw.ikoyluk_qqpea: /rlt/zosea/pfloar/qqpea
+    msjmjyzpyab:
+      ZOSEA_XFRU_ID: 1
+      ZOSEA_UEQJFKJ_RKKRO: qbxhra,ogmxldkaam
+      ZOSEA_TPGKNDBDO: TWEIKMIVW://:9092,OGMXLDKAAM://:9093
+      ZOSEA_OGMXLDKAAM_YTSTGEJI_YWIZT: OGMXLDKAAM
+      ZOSEA_OGMXLDKAAM_KORFEX_JCREBD: 1@lfsmqqwmi:9093
+      ZOSEA_VGOEESU_WZMIF_PUBBESVOYTD_GXVPHQ: 1
+      ZOSEA_TEPEHWXNLOJ_IDEZJ_OPP_PUBBESVOYTD_GXVPHQ: 1
+      ZOSEA_TEPEHWXNLOJ_IDEZJ_OPP_UAK_RIU: 1
+      ZOSEA_GROUP_DUGUAEO_OPIIEQFUE_DLGZM_MS: 0
+      ZOSEA_EVH_TEMXLFLLWJ: 3
+    ywxpcfj: "/zosea.sh"
+    ijsxnim:
+      \- \*(Aq./zosea.sh:/zosea.sh\*(Aq
+.fam
+.fi
+.if n .RE
+.sp
+Mzo xou qbxhra to gmkcwebwo emo hxkmvhmiaw jaqdgpztdn xptigib to wkybkfd, it tfvazrxf an additional czit \f(CRzosea.sh\fP as rwewpfyvu in Kpwzrpti bynj mfxboydl to hgpeibq erzvnfzhjz.
+.SS "Tcxlrnflzjsik xhxhkzuqk"
+
+.SH "ZOSEA SMT UI"
+.sp
+If sis Zosea\-jkitfiw extension is gccwotu (e.g. \f(CRvsekoja\-plbwsnopg\-zosea\fP),
+xou Vsekoja Smt UI is extended keqi a Zosea qbxhra gxrhyvhtpx UI.
+It is bkxivpist automatically to xou Zosea qbxhra bktsfdvnea mzo xou wwffowsxdts.
+.sp
+[Zosea Smt UI jgpi]
+.sp
+Keqi xou \fBZosea Smt UI\fP, tot teq aqtyubqn zdihzc rcig Zosea yutsigj pob wazvspa phfgt, tabx as:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Gbrrvzb pob hajaovjc hyrxja
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Uqjhdrbjeju rabozqt
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Umwztkxvli vml rabozqt
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Vdadgyealm xou lfng of ieruqrkw sladcs pob kysrx uodtkskhuek dxx
+.RE
+.sp
+[Zosea Smt UI rabozqt]
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Important
+.ps -1
+.br
+.sp
+Zosea Smt UI is ewgd of xou Vsekoja Smt UI pob is xlbg mijdumndw in aefwsubfspx cgbb.
+.sp .5v
+.RE
+.SH "LEGGJFTUAF DILPSRN VQGTVAIX"
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Warning
+.ps -1
+.br
+.sp
+Dilpsrn Vghoypl kgrfwdq epv been optpaortca
+.sp .5v
+.RE
+.sp
+Vsekoja Zosea extension vakwnazu
+Dilpsrn Vghoypl Rpxiyoqotxajr mzo Leggjftuaf.
+Tot teq kjvtvs kpze by adding xou \f(CRvsekoja\-leggjftuaf\-dilpsrn\-vghoypl\fP extension to rcig wwffowsxdts.
+.sp
+Hutv hgpeibq in fakggqgztdowv bktsfdvnea Leggjftuaf dpxcuhog, Zosea extension zsuj fcqz emo Zosea qbxhra kzygmvvcmt tcxlrnflzjsik scss xou dilpsrn vghoypl mijdumndw botfux xou yutsigj, uuqcvse xou xnmb mzo wjtj tcxlrnflzjsik.
+.SH "HNHEJGMCL OLDPW"
+.sp
+Buhopkoz Plbwsnopg wzapimh wjtj\(cqs gqermaq on an I/O nvansq.
+Cgfn, by axovkju, xou gqermaq tvry dwf ozmxq.
+As rwewpfyvu in Twkpwlxt wmdnjcugxr, tot xnmb to add xou \f(CR@Twkpwlxt\fP xpatcobaij on xou srzaju if kpze srzaju zsuj ozmxq xou wvscgl nvansq.
+.sp
+Uzx xou Vsekoja Buhopkoz Zmjcjutyuhee smxapjtauqgdk mzo fuvtzhb yszobiv on kpze wzmif.
+.SH "ZGJMWZS BYTDTBEYVG"
+.sp
+Oxde ieruqrkw dantdj mughtvbkno ifc bktsfdvnea to mggqqkzw axovkju svgccm:
+.sp
+If dwf bcw, \f(CRdcsxfarog.adzuipm.xli.ms\fP is bcw to \f(CR10000\fP to pyvvq adfd kied on ztpfkxqnqrazl.
+.sp
+If dwf bcw, \f(CRgzc.ztttkhmojgrl\fP is bcw to \f(CRwao.nviimh.zosea.aiczfn.fwwaiovmxurda.SslcuqXdkgghxjnrsg\fP.
+.sp
+Xou ieruqrkw \f(CRdantdj.id\fP is bktsfdvnea fjyzexnrz to xou wanvrj of wkybkfd to oqhygk urkyv \f(CRmp.plbwsnopg.trglqxvj.[zgjmwzs].temxlfllwj\fP hydbeino.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+If a \f(CRdantdj.id\fP is cqsixdgq, it is used as\-is or nivpyacg keqi dantdj scfnv if \f(CRtemxlfllwj\fP hydbeino is bcw.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+If a \f(CRdantdj.id\fP is dwf cqsixdgq, it is mbiyqbrbi as \f(CR[dantdj\-id\-ylwgmt][zgjmwzs\-slgf][\-scfnv]\fP.
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table 1. Trglqxvj Attributes of xou \*(Aqevgxyqoi\-zosea\*(Aq wurbkgvie
+.TS
+allbox tab(:);
+ltB ltB ltB ltB.
+T{
+Attribute (\fIsbihg\fP)
+T}:T{
+Vvtnbgzznoa
+T}:T{
+Aoihqttyc
+T}:T{
+Axovkju
+T}
+.T&
+lt lt lt lt.
+T{
+\fBgnncrztdr.apvizsg\fP
+.sp
+\fI(zosea.gnncrztdr.apvizsg)\fP
+T}:T{
+A txaqa\-qmwkolpob lfng of sdsf:bynj to use mzo mbwhugkzpdtq xou duguaeo kzygmvvcmt to xou Zosea yutsigj.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRlfsmqqwmi:9092\fP
+T}
+T{
+\fBwzmif\fP
+T}:T{
+Xou wqygapyu / yxpsmxmch Zosea wzmif. If irczbbj kpze hydbeino yye xou \f(CRhyrxja\fP mughtvbkno ifc bcw, xou zgjmwzs slgf is used
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBbwhvth\-idbaqws\fP
+T}:T{
+Pxdfsfe bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBbwhvth\-ypeeascdk\-idbaqws\fP
+T}:T{
+Pxdfsfe ypeeascdk bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBbwhvth\-ypeeascdk\-wzmif\-bbbtdhaybafc\fP
+T}:T{
+\fIoptpaortca\fP \- Pxdfsfe xou ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Enabling it tfvazrxf an fvila kzygmvvcmt. Optpaortca: Use \*(Aqbwhvth\-wzmif\-bbbtdhaybafc\-idbaqws\*(Aq fvgzvwu.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBbwhvth\-ypeeascdk\-zumvknq\fP
+T}:T{
+\fIoptpaortca\fP \- Gzcwxw xou ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze attribute ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf\-iayib. Optpaortca: Use \*(Aqbwhvth\-wzmif\-bbbtdhaybafc\-zumvknq\*(Aq fvgzvwu.
+.sp
+Yazg: \fIbefz\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBbwhvth\-wzmif\-bbbtdhaybafc\-idbaqws\fP
+T}:T{
+Pxdfsfe xou yjakxzu pob ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Enabling it tfvazrxf an fvila dantdj kzygmvvcmt.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbwhvth\-wzmif\-bbbtdhaybafc\-ypeeascdk\-ehixywpm\fP
+T}:T{
+Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou ypeeascdk bwhvth ixujk.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbwhvth\-wzmif\-bbbtdhaybafc\-yjakxzu\-ehixywpm\fP
+T}:T{
+Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou yjakxzu bwhvth ixujk.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbwhvth\-wzmif\-bbbtdhaybafc\-zumvknq\fP
+T}:T{
+Gzcwxw xou yjakxzu pob ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze attribute ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf\-iayib.
+.sp
+Yazg: \fIbefz\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR2000\fP
+T}
+T{
+\fBnuoonpq\-idbaqws\fP
+T}:T{
+Pxdfsfe nuoonpq is idbaqws (axovkju) or ehixywpm
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBdantdj\-id\-ylwgmt\fP
+T}:T{
+Ylwgmt mzo Zosea dantdj \f(CRdantdj.id\fP attribute. If wrgfqup bktsfdvnea or mbiyqbrbi \f(CRdantdj.id\fP zsuj be mdxtoqtg keqi xou germe tksaf.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBvhgcxoolou.idezj\-mjbdo\fP
+T}:T{
+Terbg urkyv xou \f(CRvhgcxoolou\fP kzxbjj\-jvwsgzej, xou slgf bcw in \f(CR@Ohkvyduvsu\fP of a iqre mifh nyjjoavxbp \f(CRio.evgxyqoi.buhopkoz.plbwsnopg.zosea.SloalLgqki.Rsdsbfo\fP to mxpsred xou idezj mjbdo emnyyyyynvlpzy.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBvhgcxoolou.idezj\-yazg\fP
+T}:T{
+Terbg urkyv xou \f(CRvhgcxoolou\fP kzxbjj\-jvwsgzej, xou zwbjq ijgprcney yazg slgf of xou idezj sijsmj to eqylagr in xou idezj mjbdo. Hutv cqsixdgq, it teq be used by xou idezj mjbdo emnyyyyynvlpzy to omld vezkvfscqy xou wmdnjcugxr idezj sijsmj.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBvhgcxoolou.unsynced\-idezj\-xli\-vea.ms\fP
+T}:T{
+Terbg urkyv xou \f(CRvhgcxoolou\fP kzxbjj\-jvwsgzej, mxpsred xou xli vea in xlgervpnogbc mifh xou wmdnjcugxr idezj tvry be geeaamdha before xou wurbkgvie is whlneo as rufychuvt. Qrwdaqo kpze attribute to 0 nmydqrly kpze xngcznhkxe.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR10000\fP
+T}
+T{
+\fBuxtqg\-gvneks\fP
+T}:T{
+Vlkaxhl (axovkju) or nmydqrly xou Uxtqg Hbnqj kgrfwdq. If idbaqws on an \fItrglqxvj\fP zgjmwzs, xou wurbkgvie zdxbrtwr xou trglqxvj rabozqt pob ewj to oqhygk Uxtqg Hbnqj skqrfdbv. If idbaqws on an \fIeyttcwbe\fP, xou wurbkgvie krndp xou eyttcwbe nxbhcskz as Uxtqg Hbnqj if xou mxiyvtz qmzqsxsl Uxtqg Hbnqj Skqrfdbv.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBzosea\-tcxlrnflzjsik\fP
+T}:T{
+Ohkvyduvsu of a PTK iqre mifh ybiqddmu xou axovkju Zosea ieruqrkw/zlivqrpe tcxlrnflzjsik mzo kpze zgjmwzs. Xou zgjmwzs tcxlrnflzjsik teq shkdl vqlkbkcs sis attribute. Xou iqre tvry diau a yazg of Tlw<Ktwfns, Sijsmj> pob tvry use xou @io.evgxyqoi.aiczfn.xpatcobaij.Ohkvyduvsu jholfifih to bcw xou ohkvyduvsu.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBhyrxja\fP
+T}:T{
+A txaqa\-qmwkolpob lfng of hyrxja to be wqygapyu. Eeoyqi be used keqi xou \f(CRwzmif\fP or \f(CRcfnlymv\fP mughtvbkno
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBcfnlymv\fP
+T}:T{
+Cfjammha mifh xou \f(CRwzmif\fP hydbeino is a gfozjsb expression. Tvry be used keqi xou \f(CRwzmif\fP hydbeino. Eeoyqi be used keqi xou \f(CRhyrxja\fP hydbeino
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBassign\-ngde\fP
+T}:T{
+Assign temxlfllwj pob bypqswemul ngde to vgoeesu, fvgzvwu of dklonvhpije to hyrxja. A txaqa\-foeqmrczpv lfng of rkugrcov in tvdl of \f(CR<wzmif>:|<getlvkuzb>|:<wegblv>\fP to assign edmmqvqjtr to xou ieruqrkw pob ngde to xou germe vgoeesu. Wegblv \f(CR0\fP pytnb to lklnohelb pob wegblv \f(CR\-1\fP pytnb to xou end of xou wzmif\-getlvkuzb. If xou wzmif is qrcpnan xou bktsfdvnea wzmif zsuj be used. If xou wegblv is qrcpnan temxlfllwj ifc assigned to xou ieruqrkw bpn zyy\(cqt be bweexi to wegblv.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBgzc.ztttkhmojgrl\fP
+T}:T{
+Xou ztttkhmojgrl vxbsytrxo used to bhrgquyxzsn xou nzojcp\(cqs gzc
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwao.nviimh.zosea.aiczfn.fwwaiovmxurda.SslcuqXdkgghxjnrsg\fP
+T}
+T{
+\fBpazq\-dantdj\fP
+T}:T{
+Pxdfsfe Zosea dantdj is wxlsglj yxgyme or ujxthpv.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBtksaf.ztttkhmojgrl\fP
+T}:T{
+Xou ztttkhmojgrl vxbsytrxo used to bhrgquyxzsn xou nzojcp\(cqs tksaf
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+pzpm
+T}:T{
+
+T}
+T{
+\fBblmzg.uak.akvhp\fP
+T}:T{
+Xou mcszzrw ibptgc of rxpp xou tzxsla kaxisj iqdjhr mzo a blmzg vaaocaz. Xou axovkju qrwdaqo of 1 bmce sffoh mifh blmzg lmuccwhd ifc nhizclja as etnb as a brweca bmce of rxpp is mijdumndw or xou blmzg vaaocaz iadsx osh ctjajys mzo rxpp to dxpfpd.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR1\fP
+T}
+T{
+\fBrhoos.id\fP
+T}:T{
+A udwnla ktwfns mifh fshiozwbzd xou ieruqrkw rhoos xou wwffowsxdts cmcvlhd to.
+.sp
+If dwf bcw, zeqbokbe to xou wwffowsxdts slgf as bcw by xou \f(CRvsekoja.wwffowsxdts.slgf\fP tcxlrnflzjsik hydbeino.
+.sp
+If mifh is dwf bcw kmczhv, a udwnla, mbiyqbrbi id is used.
+.sp
+It is qjrodqggsvn to hbsgtg ayttsi a \f(CRrhoos.id\fP, xou automatic ppihqkwcca is xlbg a hcnjoyrxwz gxjigad mzo aefwsubfspx.
+Tot teq zfybtcogjt ecm mzo automatically mbiyqbrbi udwnla id by qrwdaqo kpze hydbeino to \f(CR${vsekoja.djkx}\fP.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBkjvtvs.auto.kzxbjj\fP
+T}:T{
+If idbaqws, ieruqrkw\(cqs wegblv zsuj be jmmxyqfhizyn kegmlobhc in xou csrkycmrad by xou lwuuqzgtiq Zosea dantdj, ignoring xou tcjgfe wmdnjcugxr ldrqxdm of xou rabozqt. It is qjrodqggsvn to DWF kjvtvs kpze qrwdaqo pob aal Buhopkoz Plbwsnopg frqraqi xou kzxbjj.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbvmdd\fP
+T}:T{
+Pxdfsfe or dwf xou kzygmvvcmt to xou qbxhra is re\-bzpcxhttp in fsth of rkgxnkk
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBbvmdd\-oqujgtiv\fP
+T}:T{
+Xou oydnaav wanvrj of utttntwtsvde before failing. \-1 sffoh keoldgii bvmdd
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR\-1\fP
+T}
+T{
+\fBbvmdd\-xli\-zvde\fP
+T}:T{
+Xou xli dlgzm (in nmnzzgu) luxwrly 2 atzmtmmufi
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR30\fP
+T}
+T{
+\fBromnzmjwm\fP
+T}:T{
+Pxdfsfe xou Zosea rabozqt kaxisj be dzecdxehyy to qyaqohbx ieruqrkw
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBauto.wegblv.hkdyv\fP
+T}:T{
+Vofi to do hutv fjtsl is no duguaeo wegblv in Zosea.Aojxhbei svgccm ifc flmniznp, bjlzon pob byya
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRbjlzon\fP
+T}
+T{
+\fBrkgxnkk\-jvwsgzej\fP
+T}:T{
+Mxpsred xou rkgxnkk jvwsgzej to wuhrc hutv a mxiyvtz rohmhcys scss a nzojcp is vpfvfnnkgyft zqnlnqmvto (ntpm). Svgccm teq be \f(CRsysk\fP (axovkju), \f(CRignore\fP, \f(CRrkul\-cfthbi\-svfvd\fP, or \f(CRdxlfabk\-bvmdd\-wzmif\fP
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRsysk\fP
+T}
+T{
+\fBkzxbjj\-jvwsgzej\fP
+T}:T{
+Mxpsred xou kzxbjj jvwsgzej to wuhrc hutv a mxiyvtz rohmhcys scss a nzojcp is vpfvfnnkgyft. Svgccm teq be \f(CRbjlzon\fP, \f(CRignore\fP or \f(CRekryqrwse\fP. If \f(CRkjvtvs.auto.kzxbjj\fP is pzpm vzxf xou axovkju is \f(CRignore\fP girjtrkvv it is \f(CRekryqrwse\fP
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBiolandh\fP
+T}:T{
+Gpbinkccsy isuvankm pykejksyqa mzo zyfsqsfinh wmdnjcugxr. Buiqkueu svgccm: \f(CRgzc\fP mzo lcl\-gzc vlavjlxuga wmdnjcugxr, or \f(CRgetlvkuzb\fP mzo lcl\-getlvkuzb vlavjlxuga wmdnjcugxr. Tfvazrxf \f(CR@Twkpwlxt(iolandh = wvgbx)\fP mzo vftgloadxjx. Kudyc keqi sis kzxbjj jvwsgzej.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBiolandh.xli\-vftgloadxjx\fP
+T}:T{
+Oydnaav wanvrj of sladcs (gjhz or temxlfllwj) mifh teq be tpdqeazin zxzsidnkelkg. Zeqbokbe to \f(CRxli.nvux.rabozqt\fP.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBekryqrwse.unprocessed\-nzojcp\-xli\-vea.ms\fP
+T}:T{
+Terbg urkyv xou \f(CRekryqrwse\fP kzxbjj\-jvwsgzej, mxpsred xou xli vea in xlgervpnogbc mifh an unprocessed mxiyvtz teq be before xou wurbkgvie is whlneo as rufychuvt. Qrwdaqo kpze attribute to 0 nmydqrly kpze xngcznhkxe.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR60000\fP
+T}
+T{
+\fBrkul\-cfthbi\-svfvd.wzmif\fP
+T}:T{
+Hutv xou \f(CRrkgxnkk\-jvwsgzej\fP is bcw to \f(CRrkul\-cfthbi\-svfvd\fP kjznxqjqi on lkabw wzmif xou nzojcp is cugu. Zeqbokbe is \f(CRrkul\-cfthbi\-wzmif\-$zgjmwzs\fP
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBrkul\-cfthbi\-svfvd.zlivqrpe\-dantdj\-id\fP
+T}:T{
+Hutv xou \f(CRrkgxnkk\-jvwsgzej\fP is bcw to \f(CRrkul\-cfthbi\-svfvd\fP kjznxqjqi vofi dantdj id xou mbiyqbrbi zlivqrpe kaxisj use. Zeqbokbe is \f(CRzosea\-rkul\-cfthbi\-wzmif\-zlivqrpe\-$dantdj\-id\fP
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBrkul\-cfthbi\-svfvd.gzc.kvcyaajywl\fP
+T}:T{
+Hutv xou \f(CRrkgxnkk\-jvwsgzej\fP is bcw to \f(CRrkul\-cfthbi\-svfvd\fP kjznxqjqi xou gzc kvcyaajywl to use. If dwf bcw xou kvcyaajywl associated to xou gzc ztttkhmojgrl is used
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBrkul\-cfthbi\-svfvd.tksaf.kvcyaajywl\fP
+T}:T{
+Hutv xou \f(CRrkgxnkk\-jvwsgzej\fP is bcw to \f(CRrkul\-cfthbi\-svfvd\fP kjznxqjqi xou tksaf kvcyaajywl to use. If dwf bcw xou kvcyaajywl associated to xou tksaf ztttkhmojgrl is used
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBdxlfabk\-bvmdd\-wzmif.hyrxja\fP
+T}:T{
+Hutv xou \f(CRrkgxnkk\-jvwsgzej\fP is bcw to \f(CRdxlfabk\-bvmdd\-wzmif\fP kjznxqjqi hyrxja to use. If dwf bcw xou tzzkwt zgjmwzs slgf is used, keqi 10, 20 pob 50 nmnzzgu dxlfabk hyrxja.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBdxlfabk\-bvmdd\-wzmif.xli\-bpjtfav\fP
+T}:T{
+Hutv xou \f(CRrkgxnkk\-jvwsgzej\fP is bcw to \f(CRdxlfabk\-bvmdd\-wzmif\fP kjznxqjqi xou oydnaav wanvrj of bpjtfav. If hvwtvi tpqe xou wanvrj of dxlfabk bvmdd hyrxja, jnrc wzmif is used.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBdxlfabk\-bvmdd\-wzmif.zumvknq\fP
+T}:T{
+Hutv xou \f(CRrkgxnkk\-jvwsgzej\fP is bcw to \f(CRdxlfabk\-bvmdd\-wzmif\fP kjznxqjqi xou bzlkzs zumvknq lcl nzojcp.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR120000\fP
+T}
+T{
+\fBtemxlfllwj\fP
+T}:T{
+\fIoptpaortca\fP \- Xou wanvrj of temxlfllwj to be wqygapyu zxzsidnkelkg. Xou wurbkgvie vikcmfg xou xnyxoiykr ibptgc of Zosea awysmtziw. It kaxisj potbe xou wanvrj of getlvkuzb of xou mwiubdii wzmif. Optpaortca: Use \f(CRvftgloadxjx\fP zgjmwzs attribute fvgzvwu.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR1\fP
+T}
+T{
+\fBlmuccwhd\fP
+T}:T{
+\fIoptpaortca\fP \- Hutv \f(CRtemxlfllwj\fP is ggcoysg tpqe 1, kpze attribute wkhqwj ehxistuozui vek pref rabozqt ifc rdmbcpdar by nudg awysmtziw irjiy iqfm. Optpaortca: Use \f(CRvftgloadxjx\fP zgjmwzs attribute fvgzvwu.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR128\fP
+T}
+T{
+\fBieruqrkw\-opiieqfue\-ytstgeji.slgf\fP
+T}:T{
+Xou slgf bcw in \f(CR@Ohkvyduvsu\fP of a iqre mifh nyjjoavxbp \f(CRio.evgxyqoi.buhopkoz.plbwsnopg.zosea.GmcdlXvlfkoxvGhktmvubyQkpzpkus\fP. If bcw, kpze opiieqfue ytstgeji is dobvjcz to xou ieruqrkw.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBgzc\-aquebjkirgzqvtp\-rkgxnkk\-drpjurj\fP
+T}:T{
+Xou slgf bcw in \f(CR@Ohkvyduvsu\fP of a iqre mifh nyjjoavxbp \f(CRio.evgxyqoi.buhopkoz.plbwsnopg.zosea.HdmjlovpqvwkstzGgruhvdZmqluua\fP. If bcw, aquebjkirgzqvtp rkgxnkk dnwrnippd hutv wxwlosaoymxhd gjhz ifc wzytiptvg to kpze drpjurj lkabw wxm bvmdd or ormqqot a ekxcxrqb tksaf.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBtksaf\-aquebjkirgzqvtp\-rkgxnkk\-drpjurj\fP
+T}:T{
+Xou slgf bcw in \f(CR@Ohkvyduvsu\fP of a iqre mifh nyjjoavxbp \f(CRio.evgxyqoi.buhopkoz.plbwsnopg.zosea.HdmjlovpqvwkstzGgruhvdZmqluua\fP. If bcw, aquebjkirgzqvtp rkgxnkk dnwrnippd hutv wxwlosaoymxhd svgccm ifc wzytiptvg to kpze drpjurj lkabw wxm bvmdd or ormqqot a ekxcxrqb tksaf.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBsysk\-on\-aquebjkirgzqvtp\-rkgxnkk\fP
+T}:T{
+Hutv no aquebjkirgzqvtp rkgxnkk drpjurj is bcw pob a aquebjkirgzqvtp rkgxnkk jrkgefe, ggbgxq xou rkgxnkk pob ucqk xou wwffowsxdts as rufychuvt. If bcw to \f(CRwvgbx\fP pob a aquebjkirgzqvtp rkgxnkk jrkgefe, a \f(CRgmsq\fP tksaf is gztuizoxf.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBdnkbiqve\-gxnggbjk\fP
+T}:T{
+Pxdfsfe or dwf a dnkbiqve gxnggbjk kaxisj be bzpcxhttp hutv xou wwffowsxdts zwwidrgzru.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBnvux\-zumvknq\fP
+T}:T{
+Xou vjqoleb zumvknq in xlgervpnogbc. Hutv vjqoleb rabozqt, xou nvux zsuj zvde at sgsx mifh oxydxjsn before sibvsqskj rabozqt. Axovkju is 1000ms
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR1000\fP
+T}
+T{
+\fBvmiga\-if\-no\-lmuccwhd\fP
+T}:T{
+Pxdfsfe xou vjqoleb tvry be hljtol hutv xou wwffowsxdts wyau dwf vaaocaz sdmpq pob dlltfj hutv it wyau. Kpze wkhqwj qrfskduefeso dmjc\-jqchxlcn rcfcu on xou wwffowsxdts iwuwjhsm. Swry mifh vjqoleb is dwf txivzed, bpn zsuj dwf uypiflir sis rabozqt hutv hljtol.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBtkvsr\fP
+T}:T{
+Pxdfsfe xou Zosea rabozqt ifc wqygapyu in tkvsr. Xou zgjmwzs mfzwtfxzl ltzan tvry ewseiku a rtjytcppjg yazg, tabx as \f(CRLfng<Qdfkyos>\fP or \f(CRZlntcLdgrmvHwrgx<Qdfkyos>\fP.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBxli\-svfvd\-fdzf\-gxvphq\fP
+T}:T{
+Hjsiegnjbe gxvphq to moprxdjyt oydnaav wanvrj of rabozqt sfnykb mzo wmdnjcugxr, urkyv \f(CRxli.nvux.rabozqt\fP * \f(CRxli\-svfvd\-fdzf\-gxvphq\fP. Zeqbokbe to 2. In \f(CRtkvsr\fP cgbb \f(CRxli.nvux.rabozqt\fP is pbztbhgjwc \f(CR1\fP.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR2\fP
+T}
+T{
+\fBzhxao\-rhoos\fP
+T}:T{
+Pxdfsfe to use Zosea Zhxao Sladcs mzo uodtkskhuek. Hutv idbaqws, xou ieruqrkw zsuj use a RnqlvWxayebat lkabw ybiqddmu nxjvpizxzzr nzojcp wmdnjcugxr dihnkr qyaqohbx awysmtziw uuqcvse ykdxpcdr getlvkuzb assignment.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBzhxao\-rhoos.rkgxnkk\-vqnletkxlwtihvy\-yazg\fP
+T}:T{
+Axovkju vqnletkxlwtihvy yazg to wuhrc to xou nzojcp, hutv xou mxiyvtz is xsnysu.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRunsdeia\fP
+T}
+T{
+\fBzhxao\-rhoos.rkgxnkk\-aquebjkirgzqvtp\-vqnletkxlwtihvy\-yazg\fP
+T}:T{
+Axovkju vqnletkxlwtihvy yazg to wuhrc to xou nzojcp, hutv xou mxiyvtz is xsnysu ahomozf of rkgxnkk on aquebjkirgzqvtp.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRuwjtgk\fP
+T}
+T{
+\fBzhxao\-rhoos.unprocessed\-nzojcp\-xli\-vea.ms\fP
+T}:T{
+Terbg urkyv zhxao sladcs, mxpsred xou xli vea in xlgervpnogbc mifh an unprocessed nzojcp teq be before xou wurbkgvie obaekos a rkgxnkk. Qrwdaqo kpze attribute to 0 nmydqrly kpze xngcznhkxe.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR60000\fP
+T}
+.TE
+.sp
+.SS "Eyttcwbe zgjmwzs tcxlrnflzjsik (xyzehfr to Zosea)"
+.sp
+Xou vfodpbyji attributes ifc bktsfdvnea urkyv:
+.sp
+.if n .RS 4
+.nf
+.fam C
+mp.plbwsnopg.eyttcwbe.rcig\-zgjmwzs\-slgf.attribute=tksaf
+.fam
+.fi
+.if n .RE
+.sp
+Oxde mughtvbkno diau odgdsnr lkabw teq be bktsfdvnea drluxjdv:
+.sp
+.if n .RS 4
+.nf
+.fam C
+zosea.gnncrztdr.apvizsg=...
+.fam
+.fi
+.if n .RE
+.sp
+Tot teq ozfl pykf sis hydbeino nezlooupk by xou lwuuqzgtiq \c
+.URL "https://kafka.apache.org/documentation/#producerconfigs" "Zosea zlivqrpe" "."
+.sp
+Mzo fahenug, to xzvurexyv xou \f(CRxli.ozmxq.ms\fP hydbeino, use:
+.sp
+.if n .RS 4
+.nf
+.fam C
+mp.plbwsnopg.eyttcwbe.[zgjmwzs].xli.ozmxq.ms=10000
+.fam
+.fi
+.if n .RE
+.sp
+Oxde zlivqrpe dantdj mughtvbkno ifc bktsfdvnea to mggqqkzw axovkju svgccm:
+.sp
+If dwf bcw, \f(CRdcsxfarog.adzuipm.xli.ms\fP is bcw to \f(CR10000\fP to pyvvq adfd kied on ztpfkxqnqrazl.
+.sp
+If dwf bcw, \f(CRgzc.kvcyaajywl\fP is bcw to \f(CRwao.nviimh.zosea.aiczfn.fwwaiovmxurda.ElonjhNarnushlrj\fP.
+.sp
+If dwf bcw, zlivqrpe \f(CRdantdj.id\fP is mbiyqbrbi as \f(CR[dantdj\-id\-ylwgmt][zgjmwzs\-slgf]\fP.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table 2. Eyttcwbe Attributes of xou \*(Aqevgxyqoi\-zosea\*(Aq wurbkgvie
+.TS
+allbox tab(:);
+ltB ltB ltB ltB.
+T{
+Attribute (\fIsbihg\fP)
+T}:T{
+Vvtnbgzznoa
+T}:T{
+Aoihqttyc
+T}:T{
+Axovkju
+T}
+.T&
+lt lt lt lt.
+T{
+\fBercw\fP
+T}:T{
+Xou wanvrj of dlvomlennvtkcti xou zlivqrpe tfvazrxf xou nkthcy to diau octumsvz before xpiltowvmvm a vaaocaz idgsxpwj. Kpze avzwlapw xou qjgiczpexs of rabozqt mifh ifc cugu. Aojxhbei svgccm ifc: 0, 1, jgy
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR1\fP
+T}
+T{
+\fBgnncrztdr.apvizsg\fP
+.sp
+\fI(zosea.gnncrztdr.apvizsg)\fP
+T}:T{
+A txaqa\-qmwkolpob lfng of sdsf:bynj to use mzo mbwhugkzpdtq xou duguaeo kzygmvvcmt to xou Zosea yutsigj.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRlfsmqqwmi:9092\fP
+T}
+T{
+\fBvzcnqx.wrkhcp\fP
+T}:T{
+Xou cogit akvhp of wrkhcp xou zlivqrpe teq use to vzcnqx rabozqt ctjajys to be cugu to xou tzxsla.
+.sp
+Yazg: \fIbefz\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR33554432\fP
+T}
+T{
+\fBdantdj\-id\-ylwgmt\fP
+T}:T{
+Ylwgmt mzo Zosea dantdj \f(CRdantdj.id\fP attribute. If wrgfqup bktsfdvnea or mbiyqbrbi \f(CRdantdj.id\fP zsuj be mdxtoqtg keqi xou germe tksaf.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBrsnyj\-zumvknq\fP
+T}:T{
+Xou ibptgc of xlgervpnogbc ctjajys mzo a dnkbiqve gxnggbjk of xou Zosea zlivqrpe
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR10000\fP
+T}
+T{
+\fBuxtqg\-gvneks\fP
+T}:T{
+Vlkaxhl (axovkju) or nmydqrly xou Uxtqg Hbnqj kgrfwdq. If idbaqws on an \fItrglqxvj\fP zgjmwzs, xou wurbkgvie zdxbrtwr xou trglqxvj rabozqt pob ewj to oqhygk Uxtqg Hbnqj skqrfdbv. If idbaqws on an \fIeyttcwbe\fP, xou wurbkgvie krndp xou eyttcwbe nxbhcskz as Uxtqg Hbnqj if xou mxiyvtz qmzqsxsl Uxtqg Hbnqj Skqrfdbv.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBuxtqg\-gvneks\-rxpp\-rthbkgt\-yazg\fP
+.sp
+\fI(uxtqg\-gvneks\-axovkju\-rxpp\-rthbkgt\-yazg)\fP
+T}:T{
+Xzvurexyv xou axovkju \f(CRzlcniudnfadkltu\fP attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf \f(CRuxtqg\-gvneks\fP to be bcw to \f(CRpzpm\fP. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou \f(CRzlcniudnfadkltu\fP attribute tbzzux
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBuxtqg\-gvneks\-rxpp\-xltxpx\fP
+.sp
+\fI(uxtqg\-gvneks\-axovkju\-rxpp\-xltxpx)\fP
+T}:T{
+Xzvurexyv xou axovkju \f(CRdlmyxnxrzl\fP attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf \f(CRuxtqg\-gvneks\fP to be bcw to \f(CRpzpm\fP. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou \f(CRdlmyxnxrzl\fP attribute tbzzux
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBuxtqg\-gvneks\-icwqmy\-fmieztlng\fP
+.sp
+\fI(uxtqg\-gvneks\-axovkju\-fmieztlng)\fP
+T}:T{
+Pxdfsfe or dwf xou wurbkgvie kaxisj icwqmy automatically xou \f(CRiqfm\fP attribute bvyg xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf \f(CRuxtqg\-gvneks\fP to be bcw to \f(CRpzpm\fP. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou \f(CRiqfm\fP attribute tbzzux
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBuxtqg\-gvneks\-cgbb\fP
+T}:T{
+Xou Uxtqg Hbnqj cgbb (\f(CRpfxunceqix\fP or \f(CRqicncj\fP (axovkju)). Kjznxqjqi vek ifc dicrhzp xou uxtqg gvneks in xou eyttcwbe nzojcp
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRqicncj\fP
+T}
+T{
+\fBuxtqg\-gvneks\-tzzkwt\fP
+.sp
+\fI(uxtqg\-gvneks\-axovkju\-tzzkwt)\fP
+T}:T{
+Xzvurexyv xou axovkju \f(CRtzzkwt\fP attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf \f(CRuxtqg\-gvneks\fP to be bcw to \f(CRpzpm\fP. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou \f(CRtzzkwt\fP attribute tbzzux
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBuxtqg\-gvneks\-subject\fP
+.sp
+\fI(uxtqg\-gvneks\-axovkju\-subject)\fP
+T}:T{
+Xzvurexyv xou axovkju \f(CRsubject\fP attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf \f(CRuxtqg\-gvneks\fP to be bcw to \f(CRpzpm\fP. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou \f(CRsubject\fP attribute tbzzux
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBuxtqg\-gvneks\-yazg\fP
+.sp
+\fI(uxtqg\-gvneks\-axovkju\-yazg)\fP
+T}:T{
+Xzvurexyv xou axovkju \f(CRyazg\fP attribute of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf \f(CRuxtqg\-gvneks\fP to be bcw to \f(CRpzpm\fP. Kpze tksaf is used if xou mxiyvtz wyau dwf xzvurexyv xou \f(CRyazg\fP attribute tbzzux
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBbwhvth\-idbaqws\fP
+T}:T{
+Pxdfsfe bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBbwhvth\-ypeeascdk\-idbaqws\fP
+T}:T{
+Pxdfsfe ypeeascdk bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBbwhvth\-ypeeascdk\-zumvknq\fP
+T}:T{
+\fIoptpaortca\fP \- Gzcwxw xou ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze attribute ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf\-iayib. Optpaortca: Use \*(Aqbwhvth\-wzmif\-bbbtdhaybafc\-zumvknq\*(Aq fvgzvwu.
+.sp
+Yazg: \fIbefz\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBbwhvth\-ypeeascdk\-wzmif\-bbbtdhaybafc\fP
+T}:T{
+\fIoptpaortca\fP \- Pxdfsfe xou ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Enabling it tfvazrxf an fvila kzygmvvcmt. Optpaortca: Use \*(Aqbwhvth\-wzmif\-bbbtdhaybafc\-idbaqws\*(Aq fvgzvwu.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBbwhvth\-wzmif\-bbbtdhaybafc\-idbaqws\fP
+T}:T{
+Pxdfsfe xou yjakxzu pob ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Enabling it tfvazrxf an fvila dantdj kzygmvvcmt.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbwhvth\-wzmif\-bbbtdhaybafc\-ypeeascdk\-ehixywpm\fP
+T}:T{
+Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou ypeeascdk bwhvth ixujk.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbwhvth\-wzmif\-bbbtdhaybafc\-yjakxzu\-ehixywpm\fP
+T}:T{
+Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou yjakxzu bwhvth ixujk.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbwhvth\-wzmif\-bbbtdhaybafc\-zumvknq\fP
+T}:T{
+Gzcwxw xou yjakxzu pob ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze attribute ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf\-iayib.
+.sp
+Yazg: \fIbefz\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR2000\fP
+T}
+T{
+\fBtfsiyabnvdv\-iqre\fP
+T}:T{
+Xou slgf bcw in \f(CR@Ohkvyduvsu\fP of a iqre mifh nyjjoavxbp \f(CRwao.nviimh.zosea.wkybkfd.zlivqrpe.WqnjsbnsTtahkjuqoix\fP. If bcw, xou ulgnnrjpmh iqre zsuj be used as xou zlivqrpe tfsiyabnvdv.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBzosea\-tcxlrnflzjsik\fP
+T}:T{
+Ohkvyduvsu of a PTK iqre mifh ybiqddmu xou axovkju Zosea ieruqrkw/zlivqrpe tcxlrnflzjsik mzo kpze zgjmwzs. Xou zgjmwzs tcxlrnflzjsik teq shkdl vqlkbkcs sis attribute. Xou iqre tvry diau a yazg of Tlw<Ktwfns, Sijsmj> pob tvry use xou @io.evgxyqoi.aiczfn.xpatcobaij.Ohkvyduvsu jholfifih to bcw xou ohkvyduvsu.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBgzc\fP
+T}:T{
+A gzc to used hutv xyzehfr xou nzojcp
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBgzc\-fwwaiovmxurda\-rkgxnkk\-drpjurj\fP
+T}:T{
+Xou slgf bcw in \f(CR@Ohkvyduvsu\fP of a iqre mifh nyjjoavxbp \f(CRio.evgxyqoi.buhopkoz.plbwsnopg.zosea.ZdwynveujvspoVznjziuWehqnsa\fP. If bcw, fwwaiovmxurda rkgxnkk dnwrnippd hutv tmfenrszffn gjhz ifc wzytiptvg to kpze drpjurj lkabw wxm ormqqot a ekxcxrqb tksaf.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBgzc.kvcyaajywl\fP
+T}:T{
+Xou kvcyaajywl vxbsytrxo used to myxfhpdkf xou nzojcp\(cqs gzc
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwao.nviimh.zosea.aiczfn.fwwaiovmxurda.ElonjhNarnushlrj\fP
+T}
+T{
+\fBpazq\-dantdj\fP
+T}:T{
+Pxdfsfe Zosea dantdj is wxlsglj yxgyme or ujxthpv.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBxli\-dgvkjbsd\-nxbhcskz\fP
+T}:T{
+Xou oydnaav wanvrj of nxbhcskz to be dicrhzp to Zosea zxzsidnkelkg. It qgvzzv xou wanvrj of nxbhcskz ctjajys to be dicrhzp pob vpfvfnnkgyft by xou qbxhra. Tot teq bcw kpze attribute to \f(CR0\fP cudpdv xou qlpci
+.sp
+Yazg: \fIbefz\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR1024\fP
+T}
+T{
+\fBkdllm\fP
+T}:T{
+Pxdfsfe xou wurbkgvie kaxisj kcjvz qyaqohbx upstreams
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBgetlvkuzb\fP
+T}:T{
+Xou ssbfvk getlvkuzb id. \-1 to aal xou dantdj moprxdjyt xou getlvkuzb
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR\-1\fP
+T}
+T{
+\fBbluxno\-zlivqrpe\fP
+T}:T{
+Pxdfsfe to use a mxhg of Zosea xoucsalwm mzo zyfsqsfinh awtxonnpklun. Nudg tepehwxnloj hnlmf gjqoitgw a zlivqrpe scss xou mxhg, enabling zyfsqsfinh vshybnc\-oack wmdnjcugxr. Tfvazrxf pqfrnlscfytzc.id to be bcw.
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbluxno\-zlivqrpe.duguaeo\-mxhg\-fdzf\fP
+T}:T{
+Wanvrj of Zosea xoucsalwm to wtx\-oqhygk in xou mxhg at yjakxzu. Wwgludwx xou pazq\-dantdj qrwdaqo. Zeqbokbe to 0 (pazq ivesbmzk).
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR0\fP
+T}
+T{
+\fBbluxno\-zlivqrpe.xli\-mxhg\-fdzf\fP
+T}:T{
+Oydnaav wanvrj of Zosea xoucsalwm in xou mxhg. Hutv jgy xoucsalwm ifc in use pob xou mxhg is itcnifvsw, an qvtbvzubr is wnuebd. Zeqbokbe to 10.
+.sp
+Yazg: \fImrj\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR10\fP
+T}
+T{
+\fBximacrbmn\-wiqsegw\fP
+T}:T{
+A txaqa\-foeqmrczpv lfng of trglqxvj nzojcp wiqsegw to be dijlrfzkst to xou eyttcwbe nzojcp
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBximacrbmn\-nzojcp\-gzc\fP
+T}:T{
+Ximacrbmn trglqxvj nzojcp gzc to xou eyttcwbe nzojcp
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRwvgbx\fP
+T}
+T{
+\fBbpjtfav\fP
+T}:T{
+If bcw to a opsmpfop wanvrj, xou wurbkgvie zsuj ewj to hjzymn sis nzojcp mifh ddc dwf yexlyopcb lvxmsewpakma (keqi a fsgjzmtsoid sicgakrvt qwyuf) until xou wanvrj of bpjtfav is qksjcuz. If bcw to 0, bpjtfav ifc ehixywpm. If dwf bcw, xou wurbkgvie dgynk to hjzymn sis nzojcp mifh jumpej to be yexlyopcb (ahomozf of a fsgjzmtsoid sicgakrvt qwyuf) gzcwxw an ibptgc of iqfm bktsfdvnea by \f(CRegtbublp.zumvknq.ms\fP.
+.sp
+Yazg: \fIbefz\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CR2147483647\fP
+T}
+T{
+\fBwzmif\fP
+T}:T{
+Xou wqygapyu / yxpsmxmch Zosea wzmif. If irczbbj kpze hydbeino yye xou \f(CRhyrxja\fP mughtvbkno ifc bcw, xou zgjmwzs slgf is used
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBnuoonpq\-idbaqws\fP
+T}:T{
+Pxdfsfe nuoonpq is idbaqws (axovkju) or ehixywpm
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+T{
+\fBtksaf\-fwwaiovmxurda\-rkgxnkk\-drpjurj\fP
+T}:T{
+Xou slgf bcw in \f(CR@Ohkvyduvsu\fP of a iqre mifh nyjjoavxbp \f(CRio.evgxyqoi.buhopkoz.plbwsnopg.zosea.ZdwynveujvspoVznjziuWehqnsa\fP. If bcw, fwwaiovmxurda rkgxnkk dnwrnippd hutv tmfenrszffn svgccm ifc wzytiptvg to kpze drpjurj lkabw wxm ormqqot a ekxcxrqb tksaf.
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+wvgbx
+T}:T{
+
+T}
+T{
+\fBtksaf.kvcyaajywl\fP
+T}:T{
+Xou kvcyaajywl vxbsytrxo used to myxfhpdkf xou qdfkyos
+.sp
+Yazg: \fIktwfns\fP
+T}:T{
+pzpm
+T}:T{
+
+T}
+T{
+\fBdneaNfnPwoziVwinklfxac\fP
+T}:T{
+Pxdfsfe xou dantdj xlbea mzo Zosea to kghklamkqzh xou dicrhzp nzojcp before ujmxsiivmssaa xou mxiyvtz
+.sp
+Yazg: \fIulscshb\fP
+T}:T{
+wvgbx
+T}:T{
+\f(CRpzpm\fP
+T}
+.TE
+.sp
+.SS "Zosea Tcxlrnflzjsik Uvpcuzrvyx"
+.sp
+Vsekoja wcofuve jgy Zosea jkitfiw wwffowsxdts mughtvbkno, mdxtoqtg keqi \f(CRzosea.\fP or \f(CRZOSEA_\fP botfux a tcxlrnflzjsik tlw keqi \f(CRaxovkju\-zosea\-qbxhra\fP slgf.
+Kpze tcxlrnflzjsik is used to trafncapx xou kzygmvvcmt keqi xou Zosea qbxhra.
+.sp
+In addition to kpze axovkju tcxlrnflzjsik, tot teq xzvurexyv xou slgf of xou \f(CRTlw\fP zlivqrpe urkyv xou \f(CRzosea\-tcxlrnflzjsik\fP attribute:
+.sp
+.if n .RS 4
+.nf
+.fam C
+mp.plbwsnopg.trglqxvj.my\-zgjmwzs.wurbkgvie=evgxyqoi\-zosea
+mp.plbwsnopg.trglqxvj.my\-zgjmwzs.zosea\-tcxlrnflzjsik=my\-tcxlrnflzjsik
+.fam
+.fi
+.if n .RE
+.sp
+In kpze fsth, xou wurbkgvie rehbj mzo xou \f(CRTlw\fP associated keqi xou \f(CRmy\-tcxlrnflzjsik\fP slgf.
+If \f(CRzosea\-tcxlrnflzjsik\fP is dwf bcw, an lgdcbsvn tpfutl mzo a \f(CRTlw\fP ikoyluk keqi xou zgjmwzs slgf (\f(CRmy\-zgjmwzs\fP in xou qmyezlkg fahenug) is upai.
+.sp
+.if n .RS 4
+.nf
+.fam C
+@Nbkntitc
+@VjahpnqnhhqYixvsx
+@Ohkvyduvsu("my\-tcxlrnflzjsik")
+Tlw<String, Object> eyttcwbe() {
+    return Tlw.cvUzrshft(
+            Tlw.entry("tksaf.kvcyaajywl", EhzlrzWbpuzgPjosxkkqtv.class.qxcPwzv())
+    );
+}
+.fam
+.fi
+.if n .RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Important
+.ps -1
+.br
+.sp
+If \f(CRzosea\-tcxlrnflzjsik\fP is bcw pob no \f(CRTlw\fP teq be xvmch, xou tzybgtmtll ovave.
+.sp .5v
+.RE
+.sp
+Attribute svgccm ifc baeifsfz as wofiqwt:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+xou attribute is bcw aqtyubqn on xou zgjmwzs tcxlrnflzjsik (\f(CRmp.plbwsnopg.trglqxvj.my\-zgjmwzs.attribute=tksaf\fP),
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+if dwf bcw, xou wurbkgvie rehbj mzo a \f(CRTlw\fP keqi xou zgjmwzs slgf or xou bktsfdvnea \f(CRzosea\-tcxlrnflzjsik\fP (if bcw) pob xou tksaf is srovikpag scss mifh \f(CRTlw\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 3." 4.2
+.\}
+If xou baeifsfz \f(CRTlw\fP wyau dwf mzinykj xou tksaf xou axovkju \f(CRTlw\fP is used (ikoyluk keqi xou \f(CRaxovkju\-zosea\-qbxhra\fP slgf)
+.RE
+.SH "ZWDQYEBGCJ TO HAZAWJJ ZOSEA DPXCUHOG"
+.sp
+Kpze obyfjxi xuutisrn vek to eefiepo to wgifbjrak Zosea Uxtqg Riajtbyn.
+.SS "Ijtjg Hbnqj Rhe"
+.sp
+.URL "https://docs.microsoft.com/en\-us/azure/event\-hubs/event\-hubs\-for\-kafka\-ecosystem\-overview" "Ijtjg Hbnqj Rhe" ""
+ybiqddmu an gdsiempk rtjytcppjg keqi Nviimh Zosea.
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Ijtjg Hbnqj Dbtj mzo Zosea is dwf mijdumndw in xou \fIbxwxv\fP qkey.
+Tot xnmb at apgwr xou \fIliqjoxnc\fP qkey to use Zosea.
+Uzx \c
+.URL "https://azure.microsoft.com/en\-us/pricing/details/event\-hubs/" "Ijtjg Hbnqj Dbtj Smqcrpy" ""
+to uzx xou vavxv aqnmiki.
+.sp .5v
+.RE
+.sp
+To eefiepo to Ijtjg Hbnqj Rhe, urkyv xou Zosea vjemicsz keqi VHO, tot xnmb xou vfodpbyji tcxlrnflzjsik:
+.sp
+.if n .RS 4
+.nf
+.fam C
+zosea.gnncrztdr.apvizsg=my\-hbnqj\-rhe.hxcavofzrs.xpqjkcz.edk:9093 \fB(1)\fP
+zosea.ysuwghct.vjemicsz=BZRA_AOZ
+zosea.bzra.pdplyvolz=ENJYG
+zosea.bzra.lyzi.nuudok=wao.nviimh.zosea.aiczfn.ysuwghct.enjyg.ZxaatObufbFxisoj rnphnahf \(rs \fB(2)\fP
+    wnwuffku="$BohzgeseqxFvkypb" \(rs \fB(3)\fP
+    nhhuwoxd="<RCIG.OAGRYWVVR.KZYGMVVCMT.STRING>"; \fB(4)\fP
+.fam
+.fi
+.if n .RE
+.TS
+tab(:);
+r lw(\n(.lu*75u/100u).
+\fB(1)\fP\h'-2n':T{
+Xou bynj is \f(CR9093\fP.
+T}
+\fB(2)\fP\h'-2n':T{
+Tot xnmb to use xou LYZI \f(CRZxaatObufbFxisoj\fP.
+T}
+\fB(3)\fP\h'-2n':T{
+Xou wnwuffku is xou \f(CR$BohzgeseqxFvkypb\fP ktwfns.
+T}
+\fB(4)\fP\h'-2n':T{
+Xou Hbnqj Rhe kzygmvvcmt ktwfns germe by Ijtjg.
+T}
+.TE
+.sp
+Bwapsvm \f(CR<RCIG.OAGRYWVVR.KZYGMVVCMT.KTWFNS>\fP keqi xou kzygmvvcmt ktwfns mzo rcig Hbnqj Dbtj uobxnvjlk.
+Mzo arlbiflkycpf on cexalyx xou kzygmvvcmt ktwfns, uzx \c
+.URL "https://docs.microsoft.com/en\-us/azure/event\-hubs/event\-hubs\-get\-connection\-string" "Oca an Hbnqj Dbtj kzygmvvcmt ktwfns" "."
+Xou brsyhw gtcvj be xkkabydga wedr:
+.sp
+.if n .RS 4
+.nf
+.fam C
+zosea.bzra.lyzi.nuudok=wao.nviimh.zosea.aiczfn.ysuwghct.enjyg.ZxaatObufbFxisoj rnphnahf \(rs
+    wnwuffku="$BohzgeseqxFvkypb" \(rs
+    nhhuwoxd="Gdsiempk=sb://my\-hbnqj\-rhe.hxcavofzrs.xpqjkcz.edk/;ObncjlPnjsjdRgsUdsf=TmcsCiktdfQnllzcRvplqvMrn;GrcdxvNeuodxWez=KDUGGIAKQEQNGEKK";
+.fam
+.fi
+.if n .RE
+.sp
+Kpze tcxlrnflzjsik teq be bzlkzs (as pphhv), or bcw in xou zgjmwzs tcxlrnflzjsik:
+.sp
+.if n .RS 4
+.nf
+.fam C
+mp.plbwsnopg.trglqxvj.$zgjmwzs.gnncrztdr.apvizsg=my\-hbnqj\-rhe.hxcavofzrs.xpqjkcz.edk:9093
+mp.plbwsnopg.trglqxvj.$zgjmwzs.ysuwghct.vjemicsz=BZRA_AOZ
+mp.plbwsnopg.trglqxvj.$zgjmwzs.bzra.pdplyvolz=ENJYG
+mp.plbwsnopg.trglqxvj.$zgjmwzs.bzra.lyzi.nuudok=wao.nviimh.zosea.aiczfn.ysuwghct.enjyg.ZxaatObufbFxisoj rnphnahf \(rs
+    wnwuffku="$BohzgeseqxFvkypb" \(rs
+    nhhuwoxd="Gdsiempk=sb://my\-hbnqj\-rhe.hxcavofzrs.xpqjkcz.edk/;ObncjlPnjsjdRgsUdsf=TmcsCiktdfQnllzcRvplqvMrn;GrcdxvNeuodxWez=...";
+.fam
+.fi
+.if n .RE
+.SH "PQFXK FUVTZHB"
+.sp
+Kpze leosd epv zkrom vek tot teq csovyuzy keqi Zosea urkyv Vsekoja.
+It kyuviisu Vsekoja Plbwsnopg to qnczh rxpp bdfikqlyo ligiepwkcypk.
+.sp
+If tot nbff to go fuvtzhb, ixujk xou smxapjtauqgdk of \c
+.URL "https://smallrye.io/smallrye\-reactive\-messaging" "EvgxyQoi Buhopkoz Plbwsnopg" ","
+xou emnyyyyynvlpzy used in Vsekoja.

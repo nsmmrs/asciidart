@@ -1,0 +1,19 @@
+.TS
+allbox tab(:);
+lt lt.
+T{
+.sp
+a
+T}:T{
+.sp
+b
+T}
+T{
+.sp
+c
+T}:T{
+.sp
+
+T}
+.TE
+.sp

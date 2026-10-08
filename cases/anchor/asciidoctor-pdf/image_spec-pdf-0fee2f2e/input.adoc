@@ -1,0 +1,7 @@
+[#a]
+== Obyfjxi A
+
+Znht to image:sample-logo.jpg[B,link=#b]
+
+[#b]
+== Obyfjxi B

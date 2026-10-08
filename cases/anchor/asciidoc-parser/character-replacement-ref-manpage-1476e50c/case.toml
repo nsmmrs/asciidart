@@ -1,0 +1,10 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoc-parser/ref/asciidoc-lang/docs/modules/attributes/pages/character-replacement-ref.adoc"
+formats = ["manpage"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

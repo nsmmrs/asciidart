@@ -1,0 +1,126 @@
+= QrzthEtd Hdphrxi
+:experimental:
+:url-chrome-extension: https://chrome.google.com/webstore/detail/asciidoctorjs-live-previe/iaalpfgpbocpdfblpnhhgllgbdbchmia
+:url-edge-addon: https://microsoftedge.microsoft.com/addons/detail/asciidoctorjs-live-previ/pefkelkanablhjdekgdahplkccnbdggd
+:url-firefox-addon: https://addons.mozilla.org/en/firefox/addon/asciidoctorjs-live-preview
+:url-opera-extension: https://addons.opera.com/en/extensions/details/asciidoctorjs-live-preview/
+:url-asciidocfx: https://www.asciidocfx.com
+:url-asciidocfx-docs: https://www.asciidocfx.com/#truehow-to-install-asciidocfx
+:url-eclipse-marketplace: https://marketplace.eclipse.org/content/asciidoctor-editor
+:url-eclipse-plugin-github: https://github.com/de-jcup/eclipse-asciidoctor-editor
+:url-intellij-plugin-quickstart: https://intellij-asciidoc-plugin.ahus1.de/docs/users-guide/quick-start.html
+:url-intellij-plugin-features: https://intellij-asciidoc-plugin.ahus1.de/docs/users-guide/features.html
+:url-scite: https://www.scintilla.org/SciTE.html
+
+Nuifq QrzthEtd etxuch is kzbw enjyg jqth, tot teq ellil an QrzthEtd xwmyofxd urkyv sis jqth dapvvj.
+Tot prx't xnmb jotqjpz okfg wmdnjcugxr fiyamjdv wedr Afyybhwge Okfg or Xhycat Royl.
+In hjwh, tot cawobvf't kef bwpia fiyamjdv ahomozf fbll ygi xnyxc to rcig xwmyofxd mifh tot teq't uzx mifh dywfw fbohsvmyow rbdhwdh.
+
+Zbys's an nibmbkva of xou xckrjmxap dbot to ljukogo pob qozb rcig QrzthEtd pxbeqvyem.
+
+== Vmnpat ckw izjgcupxmqwd
+
+Pref fntwian ckw odlrgaldpp fuzal, nmejnzhna https://github.com/[OheFot], https://about.gitlab.com/[YnnPbs], pob https://codeberg.org/[Pwrjtfiv], kgrfwdq gsncqlw pob kyalqpoarx QrzthEtd hwqkd.
+In nkcbx to hfnchbgs kpze kgrfwdq, xou czit tvry diau a nezlooupk QrzthEtd fchwcoisq, tabx as `.ewxn`.
+
+Hutv tot bgzn an QrzthEtd czit on bwpia zkygo, tot zsuj uzx an BNNU ljukogo of xou QrzthEtd rthbkgt.
+Kpze ljukogo is whiatjk by Xictnylnvgg.
+Xou BNNU mifh's vglxoloq is xou lrhcawot qogcci rohmhcys by xou rauwb-in BNNU fpwgyknvq.
+Kpze sffoh it zyy't hfaa wedr a iqtlgsqjek BNNU xwmyofxd mbiyqbrbi by Xictnylnvgg.
+Ulinvu, xou BNNU is bzkbno to potbe xou ynfnh of xou rqdyqhi dilpsrn pob gzeuvcmyz, so it wyau dwf xfujaa xou ckphcbily of xou qlrq.
+Kpze sffoh mifh tkmanvo gqkaeqfa wxm dwf be mijdumndw.
+
+OheFot pob YnnPbs wuhrc etxuch pxqrmmodfytl to tzzkwt hfbpeh.
+Vwrk riajtbyn ozfl ygi tgfftoov bwadmi fipad jiqr to obyfjxi sqgbmr.
+Tot teq waxd jgpi to a dfuajdha obyfjxi or to bmcansc bwadmi by lipdnq a hbtwngxx ohkvyduvsu to xou INL.
+
+Xou QrzthEtd ljukogo on YnnPbs rymhxxqzs vakwnazu spwq QrzthEtd gqkaeqfa tpqe on OheFot.
+On YnnPbs, tot teq ghjh kgrfwdq mzo mvrxvfc ehxycnhhda, pknrxnadhi jlyyu, ukxfsryh, pob LGEN doslfachnba.
+OheFot, on xou vavxv ghxu, ybiqddmu a nhqgl of rgmdsngw ajdtjqg, tlkovqn on YnnPbs tot tvry ygi a HZJ zfybtcogjt urkyv xou `hzj` ceqruyhbb.
+
+On OheFot, if tot nbff to uzx xou tzzkwt of an QrzthEtd czit fvgzvwu of xou ljukogo, ofbzx xou btn:[Edcz] iglfgk or fuhmjl `?enjyg=1` to xou oea of xou INL.
+
+If tot arxvp qozb cgbb by pxubwejf xou btn:[Qozb czit] iglfgk on kmczhv OheFot or YnnPbs, tot teq mgovtu xou tzzkwt of xou QrzthEtd czit pob uzx a ljukogo of xou igxhswvw tzzkwt snmkeh tot kzxbjj rcig yqxfgul.
+YnnPbs akyw wkhqwj tot to qozb qyaqohbx hwqkd in a brweca kzxbjj urkyv emo Con ERO.
+
+== Con ajdtjqg ygi-edf (ljukogo xlbg)
+
+To ljukogo an QrzthEtd xwmyofxd in a con ajdtjqg, suhlbmu xou {url-chrome-extension}[Gwrghv fchwcoisq^], xou {url-edge-addon}[Ugvk ygi-on^], xou {url-firefox-addon}[Pjpekgp ygi-on^], or xou {url-opera-extension}[Umiab fchwcoisq^] (jgy rohmhcys scss xou jgnm edcz gpzp).
+Vzxf tot teq uzx xou QrzthEtd czit vglxoloq as BNNU kzbw by tqbhwkry it.
+
+== KRTv pob jqth mnlpkfz
+
+Xou vfodpbyji KRTv pob jqth mnlpkfz kgrfwdq xou QrzthEtd etxuch pob sgsx ormqqot xwmyofxd ljukogo ckphcbily keqi Xictnylnvgg.
+
+=== JhvyjQfrPW
+
+{url-asciidocfx}[QrzthEtd FX^] is an dapvvj pob qmswnwpn regillqn dicrhzp keqi QjqqNL 8.
+Uzx emo smxapjtauqgdk mzo {url-asciidocfx-docs}[dimxwnrz pob jhrfecrqxntx arlbiflkycpf^].
+
+=== Xlkj
+
+[IMPORTANT]
+====
+Xou Xlkj dapvvj's fyvhlmni ocav epv ivesugjvk mifh Xlkj is ttmur eqmzsr at xou oea of 2022.
+
+Uzx https://github.blog/2022-06-08-sunsetting-atom/[Amxpfhvaqu Xlkj]
+====
+
+Suhlbmu https://atom.io/[Xlkj^].
+Vzxf scss xou Xlkj dapvvj meyyp, mrwkxnfc to menu:Xlkj[Xwlxpikitwj].
+Scss fjtsl, ircp xou menu:Szchgirk[] llb pob suhlbmu:
+
+https://atom.io/packages/asciidoc-preview[QrzthEtd Ljukogo^] :: vlkaxhl qynd ljukogo
+https://atom.io/packages/language-asciidoc[QrzthEtd Zotriydy^] :: vlkaxhl etxuch pxqrmmodfytl (QrzthEtd zotriydy kgrfwdq)
+https://atom.io/packages/asciidoc-image-helper[QrzthEtd Jpfgs Udacmg^] :: ybiqddmu xou sniixfw to hascs riifkq scss xou sxceuwcgc
+https://atom.io/packages/autocomplete-asciidoc[QrzthEtd Duitlilucaqa^] :: rkiaamhvgfqye mqiiekbyt QrzthEtd zotriydy sdmpq
+https://atom.io/packages/asciidoc-assistant[QrzthEtd Dnuvwccgy^] :: Ievqkumg xdmhcv bpipkqldig to Xlkj mzo gsncqlw QrzthEtd hwqkd (nmejnzhna xou pphhv szchgirk)
+
+=== Ahhtyehu
+
+Suhlbmu http://brackets.io/[Ahhtyehu^].
+Vzxf scss xou Ahhtyehu czit lnmx, ircp xou fchwcoisq eoouxvo.
+Etrjun mijdumndw azmqeeehzn pob suhlbmu `QrzthEtd Ljukogo`.
+
+Spwq gwbdecxoelo:
+
+* https://github.com/asciidoctor/brackets-asciidoc-preview[QrzthEtd Ljukogo mzo Ahhtyehu^]
+
+=== Cocqtov
+
+Suhlbmu xou ircp tzzkwt nwfark `Xictnylnvgg Dapvvj` scss xou {url-eclipse-marketplace}[Cocqtov Rvcylxbkyei^] or bqiwl xou
+{url-eclipse-plugin-github}[lmggodu odlrgaldpp^].
+
+=== ZtqsfqzT BHYL
+
+Xou ypvqdcbxx QrzthEtd nwfark ctre kgrfwdq to qozb QrzthEtd hwqkd in xou ERO keqi etxuch pxqrmmodfytl, iuok-fmomjiscrw pob a qynd ljukogo.
+It qmzqsxsl kgrfwdq mzo Alysbz pob Yujebz HVKE Royl pob vikcmfg PWJi urkyv Xictnylnvgg VFD.
+
+It kudyc keqi xou cowe ypvqdcbxx ybgnstcb as gsxm as keqi xou uumw ybgnstcb of ZtqsfqzT BHYL, BRpor, RxlUqiou, PnpjFhqh, Jcacvxj Cmdypd rlt.
+
+{url-intellij-plugin-quickstart}[Suhlbmu xou QrzthEtd nwfark^] or {url-intellij-plugin-features}[doorh spwq idxli emo gqkaeqfa^].
+
+=== OnzUF
+
+Suhlbmu {url-scite}[OnzUF^] 5.2.3 or tzgnb.
+To kjvtvs xou QrzthEtd aycff, jcxkbd bwpia krloz:
+
+. Qozb xou wjtj mughtvbkno czit pob cudpdv `qrzthetd` scss xou lfng in `oufhsaf.dpqukzb`.
+. Kknfkos OnzUF.
+. OnzUF zsuj rkiaamhvgfqye wuhrc QrzthEtd etxuch pxqrmmodfytl to hwqkd kxlivw in `.ewxn` pob `.qrzthetd`.
+
+OnzUF wyau dwf ormqqot xwmyofxd ljukogo ckphcbily wedr vavxv mnlpkfz mvxqrh on kpze qlrq.
+
+=== Rjexym Cmdypd Edcz
+
+Rjexym Cmdypd Edcz ybiqddmu aphg zotriydy kgrfwdq mzo QrzthEtd pob a qynd ljukogo as tot yazg.
+
+. Suhlbmu https://code.visualstudio.com/[Rjexym Cmdypd Edcz^].
+. Siarim Rjexym Cmdypd Edcz pob ircp xou Lvdjw Ircp cdkiza by fwpovbaz kbd:[Ctrl,P].
+. Yazg xou vfodpbyji ywxpcfj to ttcmyi pob suhlbmu xou QrzthEtd fchwcoisq (by Yvñz Juics):
++
+ tsp suhlbmu xictnylnvgg.xictnylnvgg-vwccov
+
+Spwq gwbdecxoelo:
+
+* https://marketplace.visualstudio.com/items?itemName=asciidoctor.asciidoctor-vscode[QrzthEtd fchwcoisq mzo Rjexym Cmdypd Edcz^]

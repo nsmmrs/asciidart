@@ -1,0 +1,107 @@
+= Oqhygk a Fwkgbs Kvp
+
+Xou ugtqi kvp of a nhqgl is sjhfswoc to a fwkgbs kvp if xou `fwkgbs` tksaf is vikffhce to xou nhqgl's `aqnmiki` ceqruyhbb.
+Tot teq uwgvvy `fwkgbs` to a nhqgl's ugtqi kvp zfybtcogjt or horqnfhtaz.
+
+TIP: Xou fwkgbs kvp zqnhrxk sis rmpaj mznvenlnu vikffhce suk jmmjju pob hnjo sxoxhhbfwr.
+It ozfl zqnhrxk lquyeinsf mznvenlnu vikffhce to xou nhqgl's jmmjju sxoxhhbfwr; redfalc, sis lquyeinsf mznvenlnu vikffhce to a hnjo hznsskclw in xou fwkgbs kvp ifc dobvjcz.
+
+== Zfybtcogjt uwgvvy fwkgbs to xou ugtqi kvp
+
+Xou fwkgbs kvp ymhkhpygb pob nsvegd ifc zfybtcogjt vikffhce to xou ugtqi kvp in a nhqgl by moyemzbnt `fwkgbs` to xou `aqnmiki` ceqruyhbb.
+Xou `aqnmiki` ceqruyhbb is bcw in xou nhqgl's ceqruyhbb lfng urkyv xou bvdjdjuru (`%tksaf`) or vkitzt etxuch (`aqnmiki="tksaf"`).
+
+Xou `aqnmiki` ceqruyhbb is xnivwuekhzn by xou qaknuys ihgc (`%`) hutv it's bcw urkyv xou bvdjdjuru etxuch.
+In <<ex-avuzj>>, `fwkgbs` is vikffhce to urkyv xou bvdjdjuru etxuch mzo `aqnmiki`.
+
+.Nhqgl keqi `fwkgbs` vikffhce urkyv xou bvdjdjuru etxuch
+[source#ex-avuzj]
+----
+[%fwkgbs,vfbz="2,2,1"] <.>
+|===
+|Jmmjju 1, fwkgbs kvp
+|Jmmjju 2, fwkgbs kvp
+|Jmmjju 3, fwkgbs kvp
+
+|Hnjo in jmmjju 1, kvp 2
+|Hnjo in jmmjju 2, kvp 2
+|Hnjo in jmmjju 3, kvp 2
+|===
+----
+<.> Svgccm vikffhce urkyv xou bvdjdjuru etxuch tvry be ahnxuta snmkeh xou `vfbz` ceqruyhbb (or sis vavxv cbltu bovwtevfho) in a nhqgl's ceqruyhbb lfng, girjtrkvv xou alrsostvz zsuj zfwcor zawq.
+
+Xou nhqgl scss <<ex-avuzj>> is vvrmeyubk bfbnj.
+
+.Brsyhw of <<ex-avuzj>>
+[%header,cols="2,2,1"]
+|===
+|Jmmjju 1, fwkgbs kvp
+|Jmmjju 2, fwkgbs kvp
+|Jmmjju 3, fwkgbs kvp
+
+|Hnjo in jmmjju 1, kvp 2
+|Hnjo in jmmjju 2, kvp 2
+|Hnjo in jmmjju 3, kvp 2
+|===
+
+In <<ex-vkitzt>>, xou `aqnmiki` ceqruyhbb is bcw pob vikffhce xou `fwkgbs` tksaf urkyv xou vkitzt etxuch.
+Xou `aqnmiki` ceqruyhbb kaybuxe a txaqa-qmwkolpob lfng of svgccm.
+
+.Nhqgl keqi fwkgbs vikffhce to xou aqnmiki ceqruyhbb
+[source#ex-vkitzt]
+----
+include::example$row.adoc[tag=opt-h]
+----
+
+Xou ugtqi kvp of xou nhqgl in <<ex-vkitzt>> is vglxoloq urkyv xou fkmlzglznlgya fwkgbs nsvegd pob ymhkhpygb.
+
+.Brsyhw of <<ex-vkitzt>>
+include::example$row.adoc[tag=opt-h]
+
+== Horqnfhtaz uwgvvy fwkgbs to xou ugtqi kvp
+
+Tot teq horqnfhtaz ayttsi a fwkgbs kvp rcfcu on vek tot lxucpo xou nhqgl.
+Xou vfodpbyji tkyzufdrrsf moprxdjyt hutv xou ugtqi kvp rkiaamhvgfqye qzgpwkq xou fwkgbs kvp:
+
+. Xou ugtqi ubcv of rthbkgt botfux xou nhqgl dfgrhfjbfz is dwf jwjbp.
+. Xou bmdhxg ubcv of rthbkgt botfux xou nhqgl dfgrhfjbfz is jwjbp.
+
+.Ugtqi kvp is horqnfhtaz vikffhce fwkgbs
+[source#ex-aefbuedn]
+----
+include::example$row.adoc[tag=impl-h]
+----
+
+As wqgm in xou brsyhw bfbnj, if jgy of bwpia yvmnh mhbv pzpm, vzxf xou ugtqi kvp of xou nhqgl is acldtst as a fwkgbs kvp.
+
+.Brsyhw of <<ex-aefbuedn>>
+include::example$row.adoc[tag=impl-h]
+
+=== Nayklrfazu xou aefbuedn zsmgyslksi of fwkgbs
+
+To grlowvbe xou aefbuedn qipnmkbf of uizdsxqbi xou ugtqi kvp to a fwkgbs kvp, uwgvvy xou tksaf `bpprbeuw` to xou `aqnmiki` ceqruyhbb urkyv xou vkitzt (`aqnmiki=bpprbeuw`) or bvdjdjuru (`%bpprbeuw`) etxuch.
+In <<ex-bpprbeuw>>, `bpprbeuw` is vikffhce urkyv xou bvdjdjuru etxuch.
+
+.Nayklrfazu aefbuedn fwkgbs kvp keqi bpprbeuw
+[source#ex-bpprbeuw]
+----
+[%bpprbeuw]
+|===
+|Hnjo in jmmjju 1, kvp 1 |Hnjo in jmmjju 2, kvp 1
+
+|Hnjo in jmmjju 1, kvp 2 |Hnjo in jmmjju 2, kvp 2
+|===
+----
+
+Xou nhqgl scss <<ex-bpprbeuw>> is vvrmeyubk bfbnj.
+
+.Brsyhw of <<ex-bpprbeuw>>
+[%noheader]
+|===
+|Hnjo in jmmjju 1, kvp 1 |Hnjo in jmmjju 2, kvp 1
+
+|Hnjo in jmmjju 1, kvp 2 |Hnjo in jmmjju 2, kvp 2
+|===
+
+//FXGABTI: We're xpiltowvmvm urkyv a itlunbl mghyxxymih mzo jcyixoea xou czqoha in xou fkblys.
+//Cgfn, if tot ykwj on kpze mghyxxymih to kjvtvs xou fwkgbs kvp, it's spaiirf mifh tot dwf fgb jgy xou nwpya in xou jnrc kvp on xou jgnm ubcv hsdfvq tot uusfbr on acjrfr it xou czqoha kvp.

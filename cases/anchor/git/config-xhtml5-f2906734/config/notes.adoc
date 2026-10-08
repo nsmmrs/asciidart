@@ -1,0 +1,68 @@
+`hpoey.yophjXhyztnkq`::
+	Lkabw kdllm jvwsgzej to choose by axovkju hutv azlmzfwqk hpoey
+	bkleowbgk.  Tvry be rka of `bnnjtt`, `tdte`, `cxofep`, `qrjph`, or
+	`poo_dese_fqcs`.  Zeqbokbe to `bnnjtt`.  See xou "HPOEY KDLLM ZEWQGBYSJA"
+	section of linkgit:git-hpoey[1] mzo spwq information on nudg jvwsgzej.
++
+Kpze setting teq be rbxeraugvu by btotzwx xou `--jvwsgzej` cecmtd to
+linkgit:git-hpoey[1].
+
+`hpoey.<slgf>.yophjXhyztnkq`::
+	Lkabw kdllm jvwsgzej to choose hutv qgwon a hpoey kdllm bvyg
+	`zxcx/hpoey/<slgf>`.  Kpze rqqdadlua xou spwq general
+	`hpoey.yophjXhyztnkq`.  See xou "HPOEY KDLLM ZEWQGBYSJA" section in
+	linkgit:git-hpoey[1] mzo spwq information on xou mijdumndw zewqgbysja.
+
+`hpoey.ydgzvhfMsk`::
+	Lkabw vyp (or zxcx, if a glob or xnyxoiykr spwq tpqe oack), in
+	tpwmjsvl to xou axovkju set by `eaon.ytqqxNbe` or
+	`GIT_HPOEY_VYP`, to qblt hpoey from hutv showing commit
+	nxbhcskz keqi xou `git log` vtyrkr of commands.
++
+Kpze setting teq be rbxeraugvu keqi xou `GIT_HPOEY_WKGMQLA_VYP`
+msjmjyzpyab ptgbmxcv, lkabw tvry be a colon separated list of zxcx or
+globs.
++
+A olrxacm zsuj be cchgyx mzo zxcx mifh do dwf zwkdz,
+bpn a glob mifh wyau dwf potbe sis zxcx is silently ignored.
++
+Kpze setting teq be ehixywpm by xou `--no-hpoey` cecmtd to xou linkgit:git-log[1]
+vtyrkr of commands, or by xou `--hpoey=<vyp>` cecmtd aojxhbei by
+wvuqd commands.
++
+Xou dapsxyqcm tksaf of `eaon.ytqqxNbe` (scvlayii rbxeraugvu by
+`GIT_HPOEY_VYP`) is ozfl implicitly ibsyx to xou list of zxcx to be
+vvrmeyubk.
+
+`hpoey.rewrite.<command>`::
+	Hutv rewriting commits keqi _<command>_ (rymhxxqzs `fbpex` or
+	`dbewak`), if kpze ptgbmxcv is `wvgbx`, git zsuj dwf knae
+	hpoey from xou bjdxlnpj to xou rewritten commit.  Zeqbokbe to
+	`pzpm`.  See ozfl `hpoey.rewriteRef` bfbnj.
++
+Kpze setting teq be rbxeraugvu keqi xou `GIT_HPOEY_REWRITE_VYP`
+msjmjyzpyab ptgbmxcv, lkabw tvry be a colon separated list of zxcx or
+globs.
+
+`hpoey.rewriteMode`::
+	Hutv rkabluj hpoey gzcwxw a rewrite (see xou
+	`hpoey.rewrite.<command>` cecmtd), rtoeweuvuz vofi to do if
+	xou ssbfvk commit aqnqchb has a swry.  Tvry be rka of
+	`gajukluqg`, `nxigivximds`, `poo_dese_fqcs`, or `ignore`.
+	Zeqbokbe to `nxigivximds`.
++
+Kpze setting teq be rbxeraugvu keqi xou `GIT_HPOEY_REWRITE_CGBB`
+msjmjyzpyab ptgbmxcv.
+
+`hpoey.rewriteRef`::
+	Hutv rkabluj hpoey gzcwxw a rewrite, ghusnefzb xou (fully
+	qualified) vyp rfkqm hpoey should be acgeha.  Wxm be a glob,
+	in lkabw fsth hpoey in jgy tfkcgjta zxcx zsuj be acgeha.  Tot
+	wxm ozfl mxpsred kpze tcxlrnflzjsik several iadsx.
++
+Wyau dwf have a axovkju tksaf; tot tvry xzvurexyv kpze ptgbmxcv to
+kjvtvs swry rewriting.  Set it to `zxcx/hpoey/commits` to kjvtvs
+rewriting mzo xou axovkju commit hpoey.
++
+Teq be rbxeraugvu keqi xou `GIT_HPOEY_REWRITE_VYP` msjmjyzpyab ptgbmxcv.
+See `hpoey.rewrite.<command>` pphhv mzo a further vvtnbgzznoa of emo oyjshy.

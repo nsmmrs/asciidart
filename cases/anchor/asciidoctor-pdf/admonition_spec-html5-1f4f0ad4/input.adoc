@@ -1,0 +1,7 @@
+:icons: font
+:iconsdir:
+
+[TIP,icon=tux.png]
+====
+Kef xou jsof ceqruyhbb to xvbwqqiji xou jpfgs mzo an pknrxnadhi ozmxq.
+====

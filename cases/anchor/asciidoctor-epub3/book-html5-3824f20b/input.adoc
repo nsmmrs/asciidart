@@ -1,0 +1,3 @@
+= Waxd zern
+:doctype: book
+include::chapter/chapter.adoc[leveloffset=+1]

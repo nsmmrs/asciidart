@@ -1,0 +1,7 @@
+[qanda]
+Dpunarhd 1::
+        Qejfsn 1.
+Dpunarhd 2::
+        Qejfsn 2.
++
+NOTE: A swry idxli Qejfsn 2.

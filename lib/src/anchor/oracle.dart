@@ -1,8 +1,8 @@
 /// One probe of a document: the Ruby profiles' coverage and outputs, and
-/// asciidart's output, for one format.
+/// ptome's output, for one format.
 library;
 
-import '../oracle/asciidart_pool.dart';
+import '../oracle/ptome_pool.dart';
 import '../oracle/ruby_pool.dart';
 import '../spec/conversion.dart';
 import '../spec/normalize.dart';
@@ -13,7 +13,7 @@ final class Probe {
   const Probe({
     required this.coverage,
     required this.outputs,
-    required this.asciidart,
+    required this.ptome,
     this.includes = const {},
   });
 
@@ -27,14 +27,14 @@ final class Probe {
   /// Ruby profile → normalized output, or null if the conversion failed.
   final Map<String, String?> outputs;
 
-  /// asciidart's normalized output, or null if it failed.
-  final String? asciidart;
+  /// ptome's normalized output, or null if it failed.
+  final String? ptome;
 
-  /// Whether asciidart matched [reference]'s output.
+  /// Whether ptome matched [reference]'s output.
   bool agrees(String reference) =>
-      asciidart != null &&
+      ptome != null &&
       outputs[reference] != null &&
-      outputs[reference] == asciidart;
+      outputs[reference] == ptome;
 
   /// Whether this reached every element [target] did, in every profile.
   bool covers(Probe target) => target.coverage.entries.every(
@@ -42,28 +42,28 @@ final class Probe {
   );
 }
 
-/// A coverage worker for each Ruby profile, plus asciidart in-process.
+/// A coverage worker for each Ruby profile, plus ptome in-process.
 final class AnchorOracle {
   AnchorOracle._(
     this._workers,
     this._profiles,
     this._repoRoot,
-    this.asciidart,
+    this.ptome,
     this._isolate,
   );
 
   final Map<String, RubyWorker> _workers;
   final Map<String, RubyProfile> _profiles;
   final String _repoRoot;
-  final AsciidartProfile asciidart;
+  final PtomeProfile ptome;
 
-  /// asciidart runs in its own isolate, beside the Ruby workers.
-  final AsciidartPool _isolate;
+  /// ptome runs in its own isolate, beside the Ruby workers.
+  final PtomePool _isolate;
   int probes = 0;
 
   static Future<AnchorOracle> start(
     List<RubyProfile> profiles,
-    AsciidartProfile asciidart, {
+    PtomeProfile ptome, {
     required String repoRoot,
   }) async {
     final workers = <String, RubyWorker>{
@@ -78,16 +78,16 @@ final class AnchorOracle {
       workers,
       {for (final p in profiles) p.name: p},
       repoRoot,
-      asciidart,
-      await AsciidartPool.start(),
+      ptome,
+      await PtomePool.start(),
     );
   }
 
   /// Converts [conversion] with every Ruby profile (with coverage) and,
-  /// unless [asciidart] is false, with asciidart.
-  Future<Probe> probe(Conversion conversion, {bool asciidart = true}) async {
+  /// unless [ptome] is false, with ptome.
+  Future<Probe> probe(Conversion conversion, {bool ptome = true}) async {
     probes++;
-    // The Ruby workers convert while asciidart does, in this isolate.
+    // The Ruby workers convert while ptome does, in this isolate.
     final pending = <String, Future<Outcome>>{};
     for (final name in _workers.keys.toList()) {
       if (_workers[name]!.dead) {
@@ -102,9 +102,9 @@ final class AnchorOracle {
         timeout: const Duration(seconds: 20),
       );
     }
-    final mine = asciidart
+    final mine = ptome
         ? await _isolate.convert(
-            _withProfile(conversion, this.asciidart.attributes),
+            _withProfile(conversion, this.ptome.attributes),
             timeout: const Duration(seconds: 20),
           )
         : null;
@@ -135,7 +135,7 @@ final class AnchorOracle {
       coverage: coverage,
       outputs: outputs,
       includes: includes,
-      asciidart: switch (mine) {
+      ptome: switch (mine) {
         Converted(:final output) when output is String => normalizeText(
           output,
           baseDir: conversion.baseDir,

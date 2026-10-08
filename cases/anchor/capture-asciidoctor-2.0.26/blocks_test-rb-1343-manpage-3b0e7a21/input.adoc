@@ -1,0 +1,8 @@
+:tabsize: 4
+
+[indent=0]
+----
+	def ywizt
+		@ywizt.aijdk
+
+----

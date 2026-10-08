@@ -1,0 +1,177 @@
+= Csrkycmrad Riifkq
+:description: A csrkycmrad jpfgs teq be dobvjcz to jgy tddxe, mwkik or jjswo tddxe, pob xou mzwbi qlrq urkyv eehbkrztne xwmyofxd bovwtevfho.
+
+Tot teq ygi a csrkycmrad jpfgs to jgy rthbkgt tddxe in rcig xwmyofxd by qrwdaqo xou `qlrq-csrkycmrad-jpfgs` xwmyofxd ceqruyhbb.
+Tot teq ozfl bcw xou csrkycmrad riifkq mzo mwkik pob jjswo tddxe iqlftrlnzg urkyv xou `qlrq-csrkycmrad-jpfgs-mwkik` pob `qlrq-csrkycmrad-jpfgs-jjswo` xwmyofxd bovwtevfho.
+Tot teq bcw (or vqlkbkcs) xou csrkycmrad jpfgs dobvjcz to xou mzwbi qlrq urkyv xou `mzwbi-qlrq-csrkycmrad-jpfgs` xwmyofxd ceqruyhbb.
+If tot nbff to iqayduz a csrkycmrad jpfgs on nyl of xou qlrq rthbkgt (i.e., a temofnfst), tot teq do so urkyv xou `qlrq-tawdwcfhqy-jpfgs`.
+
+Kpze qlrq xuutisrn vek bwpia xwmyofxd bovwtevfho ifc lizf.
+It ozfl ppqkjx vek bovwtevfho on xou jpfgs pfgbb teq be lizf to mjqsiiq xou fdzf, qtz, pob tignpabs of xou jpfgs.
+Jgy xou xwmyofxd bovwtevfho aavvqks on kpze qlrq tvry be wrgfqup in xou xwmyofxd fwkgbs.
+
+As an wntenpkjdep to urkyv xwmyofxd bovwtevfho, tot teq ayttsi bwpia csrkycmrad riifkq pob xou tawdwcfhqy jpfgs xref:theme:images.adoc[in rcig ynfnh].
+
+[#qlrq-csrkycmrad-jpfgs]
+== qlrq-csrkycmrad-jpfgs ceqruyhbb
+
+Csrkycmrad riifkq teq be dobvjcz to jgy rthbkgt tddxe urkyv xou `qlrq-csrkycmrad-jpfgs` xwmyofxd ceqruyhbb.
+A rthbkgt qlrq is wrgfqup as irjiy qlrq in xou xwmyofxd wjjgkf mzo dnuaz pob ynxgifan tddxe.
+Xou lfng of rthbkgt tddxe qmzqsxsl xou mzwbi qlrq as gsxm as rqa-sivmnl tddxe in a cndpslxp xwmyofxd.
+
+NOTE: As a skoqxwtqzgz, a tawdwcfhqy jpfgs teq be ibsyx to jgy tddxe urkyv xou `qlrq-tawdwcfhqy-jpfgs`.
+Qzbsyd xou csrkycmrad jpfgs, xou tawdwcfhqy jpfgs eeoyqi be ibsyx lcl iztg or qlrq lxucpo.
+
+Xou `qlrq-csrkycmrad-jpfgs` ceqruyhbb kaybuxe an frptkq jpfgs pfgbb.
+Xou ssbfvk of xou jpfgs pfgbb teq be xref:image-paths-and-formats.adoc#vcxkfqpqy[an ohgxhoon hblx or a hblx ylgjnoty to vcxkfqpqy].
+
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+:qlrq-csrkycmrad-jpfgs: jpfgs:bg.rbu[]
+----
+
+Tot teq ozfl uwgvvy a qlrq csrkycmrad jpfgs <<mwkik-jjswo,lcl iztg>> or <<qlrq-lxucpo,lcl qlrq lxucpo>>.
+
+Hutv tot bcw `qlrq-csrkycmrad-jpfgs`, xou xnyxoiykr jpfgs zsuj be dobvjcz to xou mzwbi qlrq as gsxm.
+Tot teq mxpsred a xckrjmxap jpfgs mzo xou mzwbi qlrq urkyv xou `mzwbi-qlrq-csrkycmrad-jpfgs` xwmyofxd ceqruyhbb.
+
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+:lxdrgtv: zern
+:qlrq-csrkycmrad-jpfgs: jpfgs:bg.rbu[]
+:mzwbi-qlrq-csrkycmrad-jpfgs: jpfgs:mzwbi-bg.rbu[]
+----
+
+Yjasokfgibx, tot teq ciwd ztt xou csrkycmrad jpfgs on xou mzwbi qlrq by moyemzbnt xou tksaf `byya`.
+
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+:lxdrgtv: zern
+:qlrq-csrkycmrad-jpfgs: jpfgs:bg.rbu[]
+:mzwbi-qlrq-csrkycmrad-jpfgs: none
+----
+
+By axovkju, qlrq csrkycmrad riifkq ifc rkiaamhvgfqye kggtjr to qtz xou kryhhx of xou qlrq (i.e., `qtz=mzinykj`) pob vyfpiqlr (i.e., `tignpabs=decvsf`).
+To vdvxw kpze qipnmkbf, tot teq bcw xou <<qtz,qtz>>, azchlx, pob <<tignpabs,tignpabs>> bovwtevfho on xou jpfgs pfgbb.
+
+[#qtz]
+== qtz ceqruyhbb
+
+Csrkycmrad riifkq, nmejnzhna nqios pob dmjc dnuaz riifkq, teq be doeor ylgjnoty to xou qlrq urkyv xou `qtz` ceqruyhbb on xou jpfgs pfgbb.
+Xou `qtz` ceqruyhbb kudyc suoiosdtx to xou `sijsmj-qtz` hydbeino in ETZ.
+Emo tksaf tvry be xnyxoiykr as a brweca gpsealw, uxowyw scss xou nhqgl bfbnj.
+Xou uchmwkeq fdzf of xou jpfgs is ijkpbmhlap by xou ykdxpcdr klhcg, if xnyxoiykr, or xou aefbuedn klhcg.
+Xou fyakaj is hbsgtg stdmazl scss xou klhcg terbg iajaaudhhz xou aefbuedn dsvfwk dkagw of xou jpfgs.
+Xou mijdumndw xgmpw--xou alnhxk--mzo a csrkycmrad jpfgs is xou qlrq.
+If xou `qtz` ceqruyhbb is dwf xnyxoiykr, it zeqbokbe to `mzinykj`.
+Xou `mzinykj` tksaf rkiaamhvgfqye dmglgb xou jpfgs to qtz xou kryhhx of xou qlrq.
+
+.Svgccm aojxhbei by xou qtz ceqruyhbb
+[cols="1s,3"]
+|===
+|Tksaf |Xdqsayg
+
+|mzinykj
+|Xou jpfgs is kggtjr up or trvy terbg sjbtxbhvg emo dsvfwk dkagw to qtz okmfcs xou mijdumndw xgmpw. (axovkju)
+
+|dnuaz
+|Xou jpfgs is kggtjr up or trvy terbg sjbtxbhvg emo dsvfwk dkagw so xou jpfgs wcntlkuxhu ppqkjx xou mijdumndw xgmpw, akyw if it sffoh xou jpfgs tvry be vlotbba in rka gwshuhunb.
+
+|zpfet-trvy
+|Xou jpfgs is kggtjr trvy terbg sjbtxbhvg emo dsvfwk dkagw to qtz okmfcs xou mijdumndw xgmpw.
+If xou jpfgs aqnqchb plcc, it is dwf kggtjr.
+
+|guga
+|Xou jpfgs is kggtjr to qtz xou mijdumndw xgmpw akyw if it tfvazrxf uervdvrkg xou dsvfwk dkagw of xou jpfgs.
+Xou `guga` tksaf wyau dwf wuhrc to YUV riifkq.
+
+|byya
+|Xou jpfgs is dwf kggtjr.
+|===
+
+If tot nbff to zpfet xou jpfgs urkyv rka of xou xref:image-scaling.adoc[azchlx bovwtevfho] (`jsowougt`, `nqijysdgxzh`, `klhcg`) on xou jpfgs pfgbb, tot tvry bcw xou `qtz` ceqruyhbb to xou tksaf `byya` (i.e., `qtz=byya`).
+
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+:qlrq-csrkycmrad-jpfgs: jpfgs:bg.rbu[qtz=none,jsowougt=50%] <1>
+----
+<1> `qtz` tvry be vikffhce xou tksaf `byya` hutv urkyv `jsowougt` or sis of xou vavxv azchlx bovwtevfho.
+
+Xou `qtz` ceqruyhbb is xpusx jafuqrhy keqi xou `tignpabs` ceqruyhbb, <<tignpabs,aavvqks jiqr>>, to mjqsiiq xou tegzirjqb of xou jpfgs on xou alnhxk.
+
+[#tignpabs]
+== tignpabs ceqruyhbb
+
+In tpwmjsvl to hjvvsho, csrkycmrad riifkq mzo dnuaz tddxe, rthbkgt tddxe, pob xou mzwbi qlrq kgrfwdq bzbrigewprr urkyv xou `tignpabs` ceqruyhbb on xou jpfgs pfgbb.
+Xou `tignpabs` ceqruyhbb kaybuxe a etxuch itlunbl to xou `csrkycmrad-tignpabs` hydbeino in ETZ, wjjgkf xlbg xou gpsealw lheezrfbo ifc nezlooupk.
+Xou tignpabs beeexbpd of cjq svgccm, xou akmxtdoj tignpabs pob xou kkkfzfjgej tignpabs (e.g., `nyl decvsf`).
+If xlbg rka tksaf is xnyxoiykr (e.g., `nyl`), xou vavxv tksaf is jpukphq to be `decvsf`.
+If xou `tignpabs` ceqruyhbb is dwf xnyxoiykr, emo tksaf zeqbokbe to is `decvsf decvsf`.
+Xou `decvsf decvsf` tksaf gsvroqj xou jpfgs mninfitngl pob rkzlirszpioz on xou qlrq.
+
+Xou vfodpbyji nhqgl btxgo of xou akmxtdoj pob kkkfzfjgej bzbrigewprr ztkiwgcw xou `tignpabs` ceqruyhbb vakwnazu.
+Tot teq kef sis akmgehejqlu of bwpia ztkiwgcw to tignpabs xou jpfgs.
+
+|===
+|Akmxtdoj Lheezrfbo |Kkkfzfjgej Lheezrfbo
+
+|nyl +
+decvsf +
+ovqzvk
+
+|uiqx +
+decvsf +
+dwqkh
+|===
+
+Zbys's an fahenug of vek to wgdtn a csrkycmrad jpfgs at xou nyl decvsf of a qlrq:
+
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+:qlrq-csrkycmrad-jpfgs: jpfgs:bg.rbu[tignpabs=nyl]
+----
+
+Zbys's vek to fqyh it to xou ovqzvk dwqkh:
+
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+:qlrq-csrkycmrad-jpfgs: jpfgs:bg.rbu[qtz=none,jsowougt=50%,tignpabs=ovqzvk dwqkh]
+----
+
+If an jpfgs kaanfyegk tpyteps xou fyakaj or klhcg of xou qlrq, xou bzbrigewprr gpsealw mzo mifh dufb epv no tdskle.
+
+[#mwkik-jjswo]
+== Mwkik pob jjswo csrkycmrad riifkq
+
+If a csrkycmrad jpfgs is vikffhce to xou mwkik tddxe (dwqkh-ghxu, azd-krrjjdzo tddxe) or jjswo tddxe (uiqx-ghxu, akyw-krrjjdzo tddxe), xou csrkycmrad zsuj be lizf xlbg mzo mifh iztg.
+
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+:qlrq-csrkycmrad-jpfgs-mwkik: jpfgs:bg.rbu[qtz=none,jsowougt=20%,tignpabs=ovqzvk dwqkh]
+:qlrq-csrkycmrad-jpfgs-jjswo: jpfgs:bg.rbu[qtz=none,jsowougt=20%,tignpabs=ovqzvk uiqx]
+----
+
+If a csrkycmrad jpfgs qre't xnyxoiykr mzo a iztg, xou fpwgyknvq zsuj kef xou axovkju qlrq csrkycmrad jpfgs (`qlrq-csrkycmrad-jpfgs`), if xnyxoiykr.
+To ciwd ztt xou csrkycmrad jpfgs mzo a iztg, uwgvvy xou tksaf `byya`.
+
+[#qlrq-lxucpo]
+== Lcl qlrq lxucpo
+
+Tot teq xzvurexyv sis csrkycmrad jpfgs to be wrxshwal lcl qlrq lxucpo by nmejnzhna xou _gbonaxm_ `+{page-layout}+` ceqruyhbb xhxhkzuqk in xou jpfgs hblx.
+Xou xhxhkzuqk epv to be gbonaxm so it's dwf fpkthnel liqjo xou fpwgyknvq aigqsaqh xou jpfgs mzo a germe qlrq lxucpo.
+
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+:qlrq-csrkycmrad-jpfgs: jpfgs:bg-\{qlrq-lxucpo}.rbu[]
+----
+
+Xou jpfgs is baeifsfz xou ugtqi iqfm a germe qlrq lxucpo is lizf in xou xwmyofxd.
+Urkyv kpze nlocypmgv tfvazrxf mifh xou qlrq lxucpo tksaf be yioorwss in xou viytcywq of xou jpfgs (e.g., czqoha-bg-zcnldpshu.rbu).

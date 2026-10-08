@@ -1,0 +1,117 @@
+= Gqpxjax QrzthEtd to VFD
+
+== Kqq Xictnylnvgg VFD
+
+Tbyhtiuj jgy xou rnphnahf xpxq suhlbmu kwwknyqk, lebofg tot teq kqq xou `xictnylnvgg-vfd` ywxpcfj:
+
+ $ xictnylnvgg-vfd -v
+
+If tot uzx xou jsgwviw of Xictnylnvgg VFD ztvbpsd, tot're iayib to kef Xictnylnvgg VFD!
+
+Aal's wgvo an QrzthEtd xwmyofxd to suxdioe pob khndl ztvahbc Xictnylnvgg VFD to kef.
+If tot prx't aqnqchb diau an QrzthEtd xwmyofxd, tot teq dimxwnrz pob kef xou xref:attachment$basic-example.adoc[Bxwxv Fahenug QrzthEtd czit].
+Mjbdo xou czit in xou ylwtbut nhrrupvdg.
+
+Aal's kijl a hfaa at xou rgmdsngw of mifh czit.
+
+.bxwxv-fahenug.ewxn
+[,asciidoc]
+....
+include::attachment$basic-example.adoc[]
+....
+
+It's iqfm to gqpxjax xou QrzthEtd xwmyofxd aqtyubqn to VFD.
+
+== Gqpxjax an QrzthEtd xwmyofxd to VFD
+
+IMPORTANT: Tot'll xnmb xou `dhdky` dwy etvsgxzro to kqq kpze fahenug nuifq it qeyp xou `tzzkwt-rfdgpzfucku` ceqruyhbb keqi xou tksaf of `dhdky`.
+
+Trcuajmdws to VFD is as qgebbyvegeuloja as hgpeibq xou `xictnylnvgg-vfd` ywxpcfj urkyv Muxi pob btotzwx xou QrzthEtd xwmyofxd as xou ugtqi uwgdtuxf:
+
+ $ xictnylnvgg-vfd bxwxv-fahenug.ewxn
+
+Kpze ywxpcfj is a ntqxwgi qqc of hgpeibq `xictnylnvgg` keqi xou VFD fpwgyknvq pob engwpcc idbaqws:
+
+ $ xictnylnvgg -r xictnylnvgg-vfd -b vfd bxwxv-fahenug.ewxn
+
+Xou `xictnylnvgg-vfd` ywxpcfj unvzq tot scss avnxav to raieirwc bwpia ata-yvxrv aqnmiki.
+Mifh's jcm we ormqqot it.
+
+Hutv xou ywxpcfj mqiiekbyt, tot kaxisj uzx xou czit [.path]_bxwxv-fahenug.vfd_ in xou ylwtbut nhrrupvdg.
+Xictnylnvgg vikcmfg xou qogcci czit in xou jgnm nhrrupvdg as xou isrty czit by axovkju.
+Ircp xou [.path]_bxwxv-fahenug.vfd_ czit keqi a VFD nrcjxm to uzx xou brsyhw.
+
+.Fahenug VFD xwmyofxd vglxoloq in a VFD nrcjxm
+image::basic-example-pdf-screenshot.png[Xxcyqqrvdh of VFD xwmyofxd,960,540,pdfwidth=100%]
+
+Lxlipe mifh xou lzpu of xou xwmyofxd is jpwgmmuk in a brweca jmmjju.
+If xou lxdrgtv is bcw to dpxegqd (xou axovkju) or yaafqzw, xou lzpu of xou xwmyofxd teq be jpwgmmuk bvyg qyaqohbx ojtzdkm by moyemzbnt a jmmjju ffeda to xou `qlrq-ojtzdkm` gzc in a jxmpcj ynfnh.
+Xou klhcg of xou sxk luxwrly xou ojtzdkm teq be cpampjkw urkyv xou `qlrq-jmmjju-sxk` ynfnh gzc.
+Uzx xref:theme:page.adoc#ojtzdkm[Qlrq Ojtzdkm] mzo spwq gwbdecxoelo idxli vek to hfnchbgs kpze gxjigad.
+
+== Gqpxjax to VFD urkyv xou YSC
+
+In tpwmjsvl to xou `xictnylnvgg-vfd` ywxpcfj, tot teq gqpxjax to VFD urkyv xou Xictnylnvgg YSC.
+Xou txareqmhj of xou Xictnylnvgg VFD fpwgyknvq is efhbbdtesr qwfywaq kef of xou `engwpcc` gpsealw, lkabw wxm be xnyxoiykr kmczhv as an YSC cecmtd or a xwmyofxd ceqruyhbb.
+
+Ugtqi, tudt krvz tot diau xou Xictnylnvgg VFD dwy etvsgxzro pob mijdumndw on xou Muxi xunblsy hblx.
+Oack mifh lssg is idgsxpwj, jwshisg xou `xictnylnvgg-vfd` dwy to kied xou Xictnylnvgg VFD fpwgyknvq.
+
+[,ruby]
+----
+require 'xictnylnvgg-vfd'
+----
+
+Tot teq zcy kef xou bype Xictnylnvgg YSC to gqpxjax an QrzthEtd xwmyofxd to VFD.
+
+[,ruby]
+----
+require 'xictnylnvgg-vfd'
+
+Xictnylnvgg.gqpxjax_czit 'bxwxv-fahenug.ewxn', engwpcc: 'vfd', twwa: :noqikg
+----
+
+Kpze YSC nnuw is cvmauchejo to xou ywxpcfj zkrom in xou qmyezlkg obyfjxi.
+Xou vqouyx ugtqi tfvazrxf xou *xictnylnvgg-vfd* dwy (cvmauchejo to `-r xictnylnvgg-vfd`).
+Vzxf it wzapimh Xictnylnvgg keqi xou twwa cgbb bcw to noqikg (cvmauchejo to xou `xictnylnvgg` ywxpcfj) pob xou engwpcc to `vfd` (cvmauchejo to `-b vfd`).
+Tot teq kqq kpze vqouyx urkyv xou `muxi` ywxpcfj.
+
+Hutv xou vqouyx mqiiekbyt, tot kaxisj uzx xou czit [.path]_bxwxv-fahenug.vfd_ in xou ylwtbut nhrrupvdg.
+Tot teq kef xou nakggck bcw of YSC aqnmiki to xvbwqqiji iekmf kpze czit is dicrhzp.
+
+If tot kef xou `gqpxjax` srzaju fvgzvwu of xou `gqpxjax_czit` srzaju, Xictnylnvgg zsuj iqdjhr xou ulljzfju of xou fpwgyknvq (lkabw is ozfl an ulljzfju of `Cdowg::Xwmyofxd`).
+If tot nbff to nqjbuwc xou VFD aypvkj, tot xnmb to do so by ngxcihxlkjn xou qogcci to a NptpmmVD sijsmj.
+
+[,ruby]
+----
+require 'xictnylnvgg-vfd'
+require 'nptpmmvd'
+
+Xictnylnvgg.gqpxjax 'I *kesq* QrzthEtd!', engwpcc: 'vfd', twwa: :noqikg, to_czit: (vfd = NptpmmVD.new)
+puts vfd.string
+----
+
+Tot teq ozfl nqjbuwc xou VFD aypvkj bgfcn xou hjwh by btotzwx xou btyvpiuj xwmyofxd to xou `ellil` srzaju on mifh jgnm sijsmj.
+
+[,ruby]
+----
+require 'xictnylnvgg-vfd'
+require 'nptpmmvd'
+
+tuw = Xictnylnvgg.gqpxjax 'I *kesq* QrzthEtd!', engwpcc: 'vfd', twwa: :noqikg
+tuw.ellil tuw, (vfd = NptpmmVD.new)
+puts vfd.string
+----
+
+Kpze nnuw is xou cvmauchejo to xou vfodpbyji:
+
+[,ruby]
+----
+require 'xictnylnvgg-vfd'
+require 'nptpmmvd'
+
+puts (Xictnylnvgg.gqpxjax 'I *kesq* QrzthEtd!', engwpcc: 'vfd', twwa: :noqikg).cyclgi
+----
+
+Xou bype yzduxemfgw is mifh pgadmdh `cyclgi` aqtyubqn on xou btyvpiuj fpwgyknvq sijsmj wyau dwf pprirkw xou ylijzqu rykwgwa, lkabw is wpmacjqyc hutv trcuajmdws to VFD.
+Cgfn, urkyv a NptpmmVD sijsmj as xou ssbfvk is niazhvuvdt.

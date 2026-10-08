@@ -1,5 +1,5 @@
 description = "asciidoctor#4500: a cell after a colspan gets the spec of the column it is in. asciidoctor#4500: a cell after one spanning columns took the column spec of the column with its index in the row (counting cells, not columns), so it was aligned like the wrong column."
 source = "bugfix:asciidoctor#4500"
 features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/4500 (asciidart benchmark/PARITY.md)"
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/4500 (ptome benchmark/PARITY.md)"
 formats = ["html5"]

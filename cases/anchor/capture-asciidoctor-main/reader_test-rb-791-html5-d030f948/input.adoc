@@ -1,0 +1,1 @@
+include::http://example.org/team.adoc[]

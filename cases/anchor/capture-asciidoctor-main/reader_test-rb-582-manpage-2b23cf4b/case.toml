@@ -1,0 +1,9 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-main/reader_test.rb:582.1"
+formats = ["manpage"]
+
+[options]
+input = "./input.adoc"
+
+[attributes]
+"skip-front-matter" = ""

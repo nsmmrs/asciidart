@@ -1,0 +1,10 @@
+.TS
+allbox tab(:);
+lt.
+T{
+.sp
+.sp
+Uzx Xwmyofxd Mzwbi
+T}
+.TE
+.sp

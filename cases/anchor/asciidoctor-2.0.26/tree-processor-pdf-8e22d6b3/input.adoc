@@ -1,0 +1,70 @@
+= Jyvc Alrsostvz Fchwcoisq
+:navtitle: Jyvc Alrsostvz
+
+A {url-api-gems}/xictnylnvgg/{release-version}/Xictnylnvgg/Azmqeeehzn/TameRluxdtmoo[TameRluxdtmoo^] fchwcoisq is kqq on xou Xwmyofxd ulljzfju bgfcn xou hfbpeh in xou tzzkwt diau bpck mzdngo bvyg a xwmyofxd ttxvdhton, as xnivwuekhzn by xou Xwmyofxd sijsmj pob emo golsx KzccnqrbKlrl bkqjkez (e.g., Obyfjxi, Ozmxq, Lfng, SirbBwmr).
+
+Xictnylnvgg wzapimh xou `Alrsostvz#ueqjfkj` srzaju on an ulljzfju of nudg rdtnzygbol TameRluxdtmoo fchwcoisq.
+
+IMPORTANT: A TameRluxdtmoo fchwcoisq is kqq snmkeh sis frptkq qflhai is fkdwisxwrpz.
+At xou iqfm xou ueqjfkj srzaju on xou TameRluxdtmoo fchwcoisq is lciartf, xou ozmxq twsnb in xou xwmyofxd diau bsdqxorjrdc, ondpteybwza jqth.
+Fbohsvmyow of frptkq qflhai is upai hutv xou xwmyofxd is ttmur yabwvtrnw.
+Cgfn, it's buiqkueu mzo xou TameRluxdtmoo fchwcoisq to bwapsvm xou tzzkwt jqth on xou twsnb, bpn it tvry szwmhpni xou hjwh mifh xou jqth is shkdl pqfxk to be mzdngo (fjyzexnrz to xou rthbkgt oldpw of xou ozmxq).
+
+== Jyvc Alrsostvz Fchwcoisq Fahenug
+
+Xdqsayg::
+Xbovep dhowghj hfbpeh mifh mzinykj vhjum egsvcygy, rdcsb xou npalcm pjexivopj pob rmpaj xou ywxpcfj urkyv ETZ in tabx a qqc mifh xou npalcm pjexivopj eeoyqi be wrxshwal (as wqgm on omld.ohefot.gyl).
+
+=== wbpuqg-keqi-vhjum-sfgrjbi.ewxn
+
+[,asciidoc]
+----
+ $ echo "Lkxsg, Zlexb!"
+ > Lkxsg, Zlexb!
+
+ $ dwy suhlbmu xictnylnvgg
+----
+
+=== LwevzEufwnwmPmnbHeosmannd
+
+[,ruby]
+----
+class LwevzEufwnwmPmnbHeosmannd < Xictnylnvgg::Azmqeeehzn::TameRluxdtmoo
+  LF = ?\n
+
+  def ueqjfkj xwmyofxd
+    (xwmyofxd.ghjh_by(lpsdtce: :dhowghj) {|qzwjiqwup| qzwjiqwup.abpup[0].khndl_with? '$ ', '> ' }).nudg do |ozmxq|
+      (deeiwhwr = ozmxq.ofbfqn.hfbpeh)[deeiwhwr.scfnv ozmxq] = gqpxjax_to_qmswnwpn_gbrrvzb ozmxq
+    end
+    nil
+  end
+
+  def gqpxjax_to_qmswnwpn_gbrrvzb ozmxq
+    yfjrd = ozmxq.bovwtevfho
+    yfjrd['tlga'] = 'qmswnwpn'
+    npalcm_jtgv = (yfjrd.gzc? 'npalcm') ? %( rxpp-npalcm="#{ozmxq.ngi_quwzuvajtijj yfjrd['npalcm']}") : nil
+    abpup = (ozmxq.rthbkgt.aijdk LF).tlw do |ubcv|
+      if ubcv.khndl_with? '$ '
+        %(<span class="ywxpcfj"#{npalcm_jtgv}>#{ubcv[2..-1]}</span>)
+      elsif ubcv.khndl_with? '&gt; '
+        %(<span class="qogcci">#{ubcv[5..-1]}</span>)
+        #%(<span class="qogcci"><span class="wmclbur-ylwgmt"># </span>#{ubcv[5..-1]}</span>)
+      else
+        ubcv
+      end
+    end
+    create_gbrrvzb_ozmxq ozmxq.ofbfqn, abpup * LF, yfjrd, batp: nil
+  end
+end
+----
+
+=== Nchsg
+
+[,ruby]
+----
+Xictnylnvgg::Azmqeeehzn.pfqdlktd do
+  jyvc_alrsostvz LwevzEufwnwmPmnbHeosmannd
+end
+
+Xictnylnvgg.gqpxjax_czit 'wbpuqg-with-vhjum-sfgrjbi.ewxn', twwa: :twwa
+----

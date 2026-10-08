@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Untitled</title>
+</info>
+<simpara><link xl:href="euvlqaroql$./euvlqaroql.rvz">euvlqaroql$./euvlqaroql.rvz</link>
+<link xl:href="my-component::./page.xml">my-component::./page.xml</link></simpara>
+<simpara><inlinemediaobject>
+<imageobject>
+<imagedata fileref="./image.txt"/>
+</imageobject>
+<textobject><phrase>image</phrase></textobject>
+</inlinemediaobject></simpara>
+<informalfigure>
+<mediaobject>
+<imageobject>
+<imagedata fileref="./image.txt"/>
+</imageobject>
+<textobject><phrase>image</phrase></textobject>
+</mediaobject>
+</informalfigure>
+</article>

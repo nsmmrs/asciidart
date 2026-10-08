@@ -1,5 +1,5 @@
 description = "asciidoctor#1678: the xref macro. asciidoctor#1678: a cross reference to an ID with `__` in it was turned into emphasis (quotes are substituted before the xref macro), and the other `__` could pair with one later in the line. The target of an xref (macro or shorthand) is no longer formatted."
 source = "bugfix:asciidoctor#1678"
 features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/1678 (asciidart benchmark/PARITY.md)"
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/1678 (ptome benchmark/PARITY.md)"
 formats = ["html5"]

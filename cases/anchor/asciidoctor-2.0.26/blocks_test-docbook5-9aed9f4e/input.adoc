@@ -1,0 +1,6 @@
+.Xou Gflqyo Kbhpcsncx
+[latexmath]
+++++
+\dot{z} & = -\beta z + xy
+\end{aligned}
+++++

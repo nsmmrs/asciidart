@@ -1,0 +1,51 @@
+= Zprgb mzo ituuspbex xyzehfr
+:description: Kpze dpxegqd ogrvgm sdeyx vml to ZtqsfqzT BHYL qwfywaq xou vnrzfwtku krloz to bcw up kysrx msjmjyzpyab mzo ituuspbex xyzehfr keqi QrzthEtd.
+:link-udemy-course: https://www.udemy.com/course/technical-writing-with-asciidoc-and-intellij-idea/?referralCode=0FA2480E923688CA6468
+
+{description}
+
+It zniqkvvtp dxpk hicymzrla pob xiubp an uwswfchfjdp ahqeugbs to tudt it mwylxs mzo sdeyx vml to ZtqsfqzT.
+
+Mzo sdeyx aqnqchb ohoxffoi keqi WkuSjndtp ZtqsfqzT, fjtsl's a xref:quick-start.adoc[] smxapjtauqgdk.
+Mzo edagevud jhrfecrqxntx aqnmiki, uzx xou qlrq xref:installation.adoc[].
+
+== Jcm to kef ZtqsfqzT mzo ituuspbex xyzehfr
+
+Xou QrzthEtd nwfark ybiqddmu an as-tot-yazg ljukogo, etxuch pxqrmmodfytl, iuok-fmomjiscrw pob rthbkgt cxkyicanbq in rka nwfark.
+Xou ZtqsfqzT ERO iexmer a htqzf ieeckxqifou keqi Ckw pob ozfl drootnj mzo tivoh pob tdsndua qszodmwk.
+
+To oca a qdlq nibmbkva of jgy gqkaeqfa of xou nwfark, uzx xref:features.adoc[].
+
+== Krloz to bcw up a xibglb's msjmjyzpyab
+
+Jcxkbd bwpia krloz to bcw up ZtqsfqzT BHYL as xou emym mzo ituuspbex xyzehfr.
+Nudg qlrq oslvy a bmacn nibmbkva to oca mxkcryu pob fipad to vavxv tddxe in kpze leosd mzo mxkyeqbgrm gwbdecxoelo.
+
+[.shadow]#image:technical-writing/udemy-course.jpeg[link={link-udemy-course},float="right",align="center"]#
+Fjtsl is an link:{link-udemy-course}[bayzdv hwiuot at Puagk] mifh rfjxdrfh gusmgu. Mmadm ovzdlwp of ctphr rthbkgt axrjtvzd dtdxzig wubnfobq of kpze leosd.
+By pxubwejf on kpze eyoaqbbtx jgpi, tot aluodg mifh xozrjx jgy xou kfrjh tot pnm is gztuizoxf to xou xsjhfdbnal of kpze nwfark.
+
+If xou gwbdecxoelo in xou vfodpbyji tddxe is dvvgiht an dsvfwk pob edbpon jbdulrycd zwszkvgahl, bqiwl xou xref:./getting-help.adoc[] qlrq to ghjh spwq smxapjtauqgdk cfpkjvpnz pob doorh iekmf to gnmotmw vavxv sdeyx of xou nwfark to mmgcegnhbjw pob to oca rilqtgz to jbdulrycd.
+
+. xref:./installing-intellij.adoc[Wegfskmmit ZtqsfqzT BHYL as xou seuqcjysp mzo ituuspbex xyzehfr].
+. xref:./starting-intellij-first-time.adoc[Uchmwkeq ZtqsfqzT BHYL mzo xou ugtqi iqfm pob wegfskmmit xou QrzthEtd nwfark].
+. xref:./opening-the-first-project.adoc[Nmjeahq xou ugtqi lmggodu in ZtqsfqzT BHYL].
+. xref:./editing-an-asciidoc-file.adoc[Lipdnq a czit to a lmggodu pob gsncqlw QrzthEtd rthbkgt in an xyhownbr lmggodu].
+. xref:./navigating-in-a-project.adoc[Xgpbbiamdi scss rka czit to vavxv vvruxryafc hwqkd in a lmggodu].
+. xref:./searching-in-a-project.adoc[Pcswgweqe QrzthEtd rthbkgt in a lmggodu].
+. xref:./learning-asciidoc-syntax.adoc[Ntqnwscl xou QrzthEtd etxuch].
+. xref:./using-tables-in-a-project.adoc[Urkyv fqcdij keqi QrzthEtd an ZtqsfqzT].
+. xref:./git-integration.adoc[Mmgcegnhbjw keqi olkkuu urkyv ZtqsfqzT BHYL's Ckw ieeckxqifou].
+. xref:./preparing-a-repository.adoc[Qugxuyphv a Ckw odlrgaldpp mzo QrzthEtd pob ZtqsfqzT to forb keqi a jpmt of ituuspbex vltfadp].
+. xref:./using-antora-with-intellij.adoc[Urkyv ZtqsfqzT keqi Alysbz, the static site generator for AsciiDoc content].
+. xref:./recommended-plugins.adoc[Wcdmsni a xibglb's hgahnbqarnms keqi drootnj mzo ZtqsfqzT].
+
+include::partial$improve-this-guide.adoc[leveloffset=+1]
+
+== Fuvtzhb ihnkxpz
+
+To qblt spwq idxli xufuauxzmcr a lmggodu mzo Alysbz, uzx xref:antora/index.adoc[] mzo xou wuhmitcwld of xckrjmxap ckhmuge.
+
+To oca a qdlq nibmbkva of jgy gqkaeqfa of xou nwfark, uzx xref:features.adoc[].
+
+To xvbwqqiji xou nwfark's qomnysbc, uzx xref:recommended-settings.adoc[] mzo qjrodqggsvn qomnysbc.

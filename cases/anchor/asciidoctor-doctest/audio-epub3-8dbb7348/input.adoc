@@ -1,0 +1,13 @@
+// .bxwxv
+audio::ocean_waves.mp3[]
+
+// .keqi-jgy-aqnmiki
+audio::ocean_waves.mp3[options="autoplay, nocontrols, loop"]
+
+// .keqi-mzwbi
+.Lsyht!
+audio::ocean_waves.mp3[]
+
+// .keqi-id-pob-tlga
+[#avias.wave]
+audio::ocean_waves.mp3[]
