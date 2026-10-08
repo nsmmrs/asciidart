@@ -258,6 +258,45 @@ void main() {
       expect(drop.$4 - drop.$3, greaterThan(20));
     });
 
+    test('phrases with a side role set beside their line', () {
+      final pdf = _pdf(
+        '= Doc\n\n[[v1]]Verse one. [.xref]##*1:1* see <<v2,Two>>## '
+        'Alpha beta.\n\n${List.filled(3, _paragraph).join('\n\n')}\n\n'
+        '[[v2]]Verse two. [.xref]##*1:2* see <<v1,One>>## Gamma.\n',
+        theme:
+            'page:\n  columns: 2\n  column-gap: 72\n'
+            'role:\n  xref:\n    display: side\n',
+      );
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      final words = [
+        for (final m in RegExp(
+          r'xMin="([\d.]+)" yMin="([\d.]+)"[^>]*>([^<]+)<',
+        ).allMatches(bbox))
+          (m[3]!, double.parse(m[1]!), double.parse(m[2]!)),
+      ];
+      (double, double) at(String word) {
+        final w = words.firstWhere((w) => w.$1 == word);
+        return (w.$2, w.$3);
+      }
+
+      // Each note in the gap between the columns (A4's middle at
+      // 297.64), level with its verse's line, out of the text, its
+      // reference a link.
+      for (final (note, verse) in [('1:1', 'Verse'), ('1:2', 'Gamma.')]) {
+        final (x, y) = at(note);
+        expect(x, greaterThan(297.64 - 36));
+        expect(x, lessThan(297.64));
+        expect(y, closeTo(at(verse).$2, 2));
+      }
+      expect(at('Alpha').$2, at('Verse').$2);
+      final links = {
+        for (final m in RegExp(r'/Dest \(([^)]*)\)').allMatches(_content(pdf)))
+          m[1]!,
+      };
+      expect(links, containsAll(['v1', 'v2']));
+    });
+
     test('a figure that spans the columns floats across the page', () {
       final dir = Directory.current.path;
       final pdf = _pdf(

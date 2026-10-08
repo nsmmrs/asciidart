@@ -343,6 +343,10 @@ final class _Image {
   final double? mathDepth;
 }
 
+/// The prefix of the anchors that side notes are set level with (the top
+/// of the text they are in rather than its baseline).
+const sideNoteAnchorPrefix = '_side_';
+
 /// A fragment as printed on a line.
 final class _Printed {
   new(this.text, this.format, this.width, this.wordSpacing, this.spaces);
@@ -1101,8 +1105,13 @@ final class TextBox implements CustomContent {
     for (final line in lines) {
       for (final f in line.fragments) {
         final fragment = f.format.fragment;
-        if (fragment.isMarker && fragment.name != null) {
-          anchors.add((fragment.name!, f.left, gap + f.baseline - f.ascender));
+        if (fragment.name case final name? when fragment.isMarker) {
+          // (A side note's anchor at the top of its text, where the note
+          // goes; others at the baseline, as the gem's.)
+          final top = name.startsWith(sideNoteAnchorPrefix)
+              ? f.format.font.ascenderAt(f.format.size)
+              : f.ascender;
+          anchors.add((name, f.left, gap + f.baseline - top));
         }
       }
     }

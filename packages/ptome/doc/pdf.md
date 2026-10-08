@@ -209,6 +209,21 @@ document); one that doesn't fit goes on at the bottom of the next page.
 | `footnotes_item_spacing` (theme) | none | The space above each note (at least half the notes' size between the rule and the first). Under `base_leading` the rule takes no room. |
 | `:show-link-uri: footnote` | | A link's URI in a footnote (print books), not after the link text in brackets (`show-link-uri` set, or print media). A bare link shows its URI already. |
 
+Side notes: a phrase whose role the theme sets beside the text
+(`role_<role>_display: side`) leaves its line and is set level with it in
+a side column, in the role's style, each under the one before it where they
+crowd, above the page's footnotes; what doesn't fit goes on at the top of
+the next page's column. A reference Bible's cross-references,
+`[.xref]##*34:6* ^a^{nbsp}<<v-psa-86-15,Ps 86:15>>##` after a verse
+number, fill its center column this way.
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `role_<role>_display` | | `side`: phrases with the role are side notes. Their text is aligned by `role_<role>_text_align` (`left`). |
+| `side_notes_column` | `center` in columns, else `outside` | `center`: the gap between the middle columns (make `page_column_gap` wide enough); `outside`: the outer margin (the right one, or on a verso page of a `prepress` book the left one). |
+| `side_notes_padding` | `0.5em` | The space kept on each side of the column. |
+| `side_notes_item_spacing` | `0.25em` | The space between two notes. |
+
 ### Listings
 
 | Key | Default | What it does |

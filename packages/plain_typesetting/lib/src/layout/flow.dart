@@ -994,6 +994,9 @@ final class FlowLayout {
     this.templateForPage,
     this.notes = const {},
     this.noteSeparator,
+    this.sideNotes = const {},
+    this.sideColumn,
+    this.sideNoteGap = 2,
   }) : templates = {null: ?template, ...?templates},
        pageLabel = pageLabel ?? _decimal {
     if (this.templates[null] == null) {
@@ -1039,6 +1042,22 @@ final class FlowLayout {
 
   /// What is set above the notes of a region (a short rule, say).
   final LayoutBox? noteSeparator;
+
+  /// Notes set beside the text by the anchor that refers to them (a
+  /// reference Bible's cross-references in its center column): each in
+  /// the page's [sideColumn], in the order their anchors are read, each
+  /// level with its anchor (or under the note before it, [sideNoteGap]
+  /// apart), above the page's [notes]; what doesn't fit goes on at the top
+  /// of the next page's (and is left out after the last page). They take
+  /// no room from the text.
+  final Map<String, LayoutBox> sideNotes;
+
+  /// The column [sideNotes] are set in on a page, from its number
+  /// (1-based) and its template, or null for none there.
+  final Rect? Function(int number, PageTemplate template)? sideColumn;
+
+  /// The space between two side notes.
+  final double sideNoteGap;
 
   static String _decimal(int number) => '$number';
 
@@ -1329,6 +1348,10 @@ final class _Pass {
               Rect(area.left, area.bottom, area.width, notes.height),
               notes.placed,
             ));
+            if (notes.height > 0) {
+              final top = area.bottom + notes.height;
+              page.notesTop = math.max(page.notesTop ?? top, top);
+            }
           }
         } else {
           page.placed.add((area, fit.placed));
@@ -1444,6 +1467,76 @@ final class _Pass {
             tagPages[tag] = (first: first, last: i + 1);
           },
         );
+      }
+    }
+    _placeSideNotes();
+  }
+
+  /// Sets the side notes beside their anchors on every page (see
+  /// [FlowLayout.sideNotes]), the pages' text as it is.
+  void _placeSideNotes() {
+    final notes = layout.sideNotes;
+    final column = layout.sideColumn;
+    if (notes.isEmpty || column == null) return;
+    // Each page's notes, in reading order (the left column's, then the
+    // right's, as a reference Bible's center column has them).
+    final byPage = <int, List<(String, double)>>{};
+    for (final MapEntry(:key, :value) in anchors.entries) {
+      if (notes.containsKey(key)) {
+        (byPage[value.page] ??= []).add((key, value.y));
+      }
+    }
+    var carried = <LayoutBox>[];
+    for (final (i, page) in pages.indexed) {
+      page.side.clear();
+      final full = column(i + 1, page.template);
+      if (full == null) continue;
+      // (Above the page's notes.)
+      final area = switch (page.notesTop) {
+        final top? when top + layout.sideNoteGap > full.bottom =>
+          Rect.fromEdges(
+            full.left,
+            top + layout.sideNoteGap,
+            full.right,
+            full.top,
+          ),
+        _ => full,
+      };
+      final here = byPage[i] ?? const <(String, double)>[];
+      final entries = [
+        for (final box in carried) (box, area.top),
+        for (final (name, y) in here) (notes[name]!, y),
+      ];
+      carried = [];
+      var cursor = area.top;
+      for (final (box, y) in entries) {
+        // After one that didn't fit, the rest wait too, in order.
+        if (carried.isNotEmpty) {
+          carried.add(box);
+          continue;
+        }
+        final top = math.min(y, cursor);
+        final room = top - area.bottom;
+        // A note goes on whole to the next page (but one taller than the
+        // whole column, which is split).
+        final whole = _measure(box, area.width);
+        if (room <= 0 ||
+            (whole > room + 1e-6 && whole <= area.height + 1e-6) ||
+            _minHeight(box, area.width) > room + 1e-6) {
+          carried.add(box);
+          continue;
+        }
+        final fit = _place(box, area.width, room, atTop: true);
+        if (fit.placed == null) {
+          carried.add(box);
+          continue;
+        }
+        page.side.add((
+          Rect(area.left, top - fit.height, area.width, fit.height),
+          fit.placed,
+        ));
+        cursor = top - fit.height - layout.sideNoteGap;
+        if (fit.rest case final rest?) carried.add(rest);
       }
     }
   }
@@ -2908,6 +3001,13 @@ final class _Page {
   final PageTemplate template;
   final List<(Rect, _Placed?)> placed = [];
 
+  /// The side notes set on the page (see [FlowLayout.sideNotes]).
+  final List<(Rect, _Placed?)> side = [];
+
+  /// The top of the highest notes set at the bottom of a region of the
+  /// page, which side notes stay above.
+  double? notesTop;
+
   /// The marks set on the page, in order.
   final List<(String, String)> marks = [];
 }
@@ -3605,7 +3705,7 @@ final class LayoutResult {
       final painter = _Painter(target.canvas, target);
       template.background?.call(target.canvas, info);
       _running(template.header?.call(info), template, painter, header: true);
-      for (final (region, placed) in page.placed) {
+      for (final (region, placed) in [...page.placed, ...page.side]) {
         placed?.paint(painter, region.left, region.top);
       }
       _running(template.footer?.call(info), template, painter, header: false);

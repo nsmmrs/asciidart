@@ -150,6 +150,74 @@ void main() {
     expect(at['l4']!.$2, closeTo(at['l1']!.$2, 1e-6));
   });
 
+  test('side notes beside their lines, pushed down, carried over', () {
+    final document = RecordingDocument();
+    FlowLayout(
+          template: _rows(8),
+          sideNotes: {
+            'a1': _para('n1'),
+            'a2': _para('n2a\nn2b\nn2c'),
+            'a3': _para('n3'),
+            'a8': _para('n8a\nn8b'),
+          },
+          sideColumn: (number, template) {
+            final size = template.size;
+            return Rect(200, 20, 80, size.height - 40);
+          },
+          sideNoteGap: 0,
+        )
+        .layout([
+          for (var i = 1; i <= 12; i++)
+            BlockBox([_para('l$i')], style: BoxStyle(anchor: 'a$i')),
+        ])
+        .render(document);
+    Map<String, double> texts(int page) => {
+      for (final call in document.pages[page].canvas.calls)
+        if (RegExp(r'^glyphs "\s*(\S+)\s*" at \S+ (\S+)').firstMatch(call)
+            case final m?)
+          m[1]!: double.parse(m[2]!),
+    };
+    final first = texts(0);
+    final second = texts(1);
+    // n1 and n2 level with their lines; n3 under n2 (pushed down from its
+    // line); n8, too long for the room left under its line, at the top
+    // of the next page.
+    expect(first['n1'], first['l1']);
+    expect(first['n2a'], first['l2']);
+    expect(first['n3'], first['l5']);
+    expect(first.containsKey('n8a'), isFalse);
+    expect(second['n8a'], second['l9']);
+    expect(second['n8b'], second['l10']);
+  });
+
+  test('side notes stay above the notes at the bottom of the page', () {
+    final document = RecordingDocument();
+    FlowLayout(
+          template: _rows(8),
+          notes: {'a1': _para('foot')},
+          sideNotes: {'a5': _para('m5a\nm5b\nm5c'), 'a6': _para('m6')},
+          sideColumn: (number, template) =>
+              Rect(200, 20, 80, template.size.height - 40),
+          sideNoteGap: 0,
+        )
+        .layout([
+          for (var i = 1; i <= 6; i++)
+            BlockBox([_para('l$i')], style: BoxStyle(anchor: 'a$i')),
+        ])
+        .render(document);
+    final at = {
+      for (final call in document.pages.single.canvas.calls)
+        if (RegExp(r'^glyphs "\s*(\S+)\s*" at \S+ (\S+)').firstMatch(call)
+            case final m?)
+          m[1]!: double.parse(m[2]!),
+    };
+    // The footnote on the last row; m5 on the three rows above it, m6
+    // (with no room left beside the text) not on the page.
+    expect(at['m5a'], at['l5']);
+    expect(at['m5c'], greaterThan(at['foot']!));
+    expect(at.containsKey('m6'), isFalse);
+  });
+
   test('links are made on the page the text is on', () {
     final document = RecordingDocument();
     FlowLayout(template: _rows(4))

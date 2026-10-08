@@ -149,6 +149,14 @@ Asciidoctor project.
   (`index_pagenum_text_align`, `index_category_headings`, `index_font_*`),
   and source code highlighted by plain_highlighting in a highlight.js theme
   (`source-highlighter=highlight.js`, `highlightjs-theme`).
+- What a reference Bible needs, from theme keys any book can use: a book
+  in columns with its chapter headings across them and each chapter's
+  columns balanced (`page_columns`), running content from the first and
+  last marks on the page (`running_content_marks`, `{page-first-mark}`),
+  headings set as drops beside the first lines (`heading_h<n>_drop_lines`),
+  figures that span the columns (`image_scope`), and phrases with a role
+  set beside their line in the center column or the outer margin
+  (`role_<role>_display: side`, `side_notes_column`).
 - Generated text from templates (ADR-0010): caption numbers
   (`<kind>-caption-template`, `appendix-caption-template`) in every
   format, footnote markers (`footnote-reference-template`,

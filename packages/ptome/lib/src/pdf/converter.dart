@@ -454,6 +454,8 @@ final class PdfConverter extends BuiltInConverter
     _tocDone = false;
     _tocNoHeader = _tocNoFooter = false;
     _notes.clear();
+    _sideNotes.clear();
+    _sideCount = 0;
     _layoutLabels.clear();
     // The table of contents and the body, indented by the theme's
     // section indent (the gem's `indent_section`).
@@ -568,6 +570,14 @@ final class PdfConverter extends BuiltInConverter
       pageLabel: _pageLabel,
       notes: _notes,
       noteSeparator: _notes.isEmpty ? null : _footnoteSeparator(),
+      sideNotes: _sideNotes,
+      sideColumn: _sideNotes.isEmpty
+          ? null
+          : (number, template) =>
+                _sideColumn(number, template, sided: media == 'prepress'),
+      sideNoteGap:
+          _length('side_notes_item_spacing', _rootFontSize) ??
+          _rootFontSize / 4,
       templateForPage: media == 'prepress'
           ? (template, number) => _sidedTemplate(
               template,
@@ -7602,7 +7612,10 @@ final class PdfConverter extends BuiltInConverter
     int dropLines = 0,
     double dropIndent = 0,
   }) {
-    var text = hyphenate ? _hyphenated(markup, align) : markup;
+    final taken = markup.contains('<side ')
+        ? _takeSideNotes(markup, font)
+        : markup;
+    var text = hyphenate ? _hyphenated(taken, align) : taken;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
     // `footnotes_reference_space: collapse`: no space before a footnote's
     // reference (Typst's weak space before its marker).
@@ -9667,6 +9680,71 @@ final class PdfConverter extends BuiltInConverter
   /// by the reference's anchor (modern engine).
   final Map<String, LayoutBox> _notes = {};
 
+  /// The notes set beside the line their anchor is on, by the anchor (a
+  /// role with `role_<role>_display: side`; modern engine).
+  final Map<String, LayoutBox> _sideNotes = {};
+
+  /// The side notes marked so far, for their anchors' names.
+  int _sideCount = 0;
+
+  static final _sideRx = RegExp(
+    '<side id="([^"]+)" role="([^"]+)">(.*?)</side>',
+    dotAll: true,
+  );
+
+  /// [markup] with each side note it marks taken out to [_sideNotes] (set
+  /// in [font] and its role), an anchor for it in its place.
+  String _takeSideNotes(String markup, _FontState font) =>
+      markup.replaceAllMapped(_sideRx, (m) {
+        final name = m[1]!;
+        _sideNotes[name] = CustomBox(
+          _textBox(
+            m[3]!,
+            font,
+            align: _s('role_${m[2]}_text_align') ?? 'left',
+            hyphenate: true,
+          ),
+        );
+        return '<a id="$name">$_dummyText</a>';
+      });
+
+  /// The column side notes are set in on page [number] of [template]
+  /// (`side_notes_column`): `center`, the gap between the middle columns
+  /// (the default in columns), or `outside`, the outer margin (the right
+  /// one, or the left one of a verso page of a [sided] book); each inset
+  /// by `side_notes_padding`.
+  Rect? _sideColumn(int number, PageTemplate template, {required bool sided}) {
+    final columns = (_n('page_columns') ?? 1).toInt();
+    final m = template.margins;
+    final size = template.size;
+    final column =
+        _choice('side_notes_column', const ['center', 'outside']) ??
+        (columns >= 2 ? 'center' : 'outside');
+    final double left;
+    final double width;
+    if (column == 'center' && columns >= 2) {
+      final gap = (_n('page_column_gap') ?? _rootFontSize).toDouble();
+      final columnWidth =
+          (size.width - m.horizontal - gap * (columns - 1)) / columns;
+      final before = columns ~/ 2;
+      left = size.left + m.left + before * columnWidth + (before - 1) * gap;
+      width = gap;
+    } else if (!sided || number.isOdd) {
+      (left, width) = (size.right - m.right, m.right);
+    } else {
+      (left, width) = (size.left, m.left);
+    }
+    final padding =
+        _length('side_notes_padding', _rootFontSize) ?? _rootFontSize / 2;
+    if (width - 2 * padding <= 0) return null;
+    return Rect(
+      left + padding,
+      size.bottom + m.bottom,
+      width - 2 * padding,
+      size.height - m.vertical,
+    );
+  }
+
   /// Whether footnotes go at the bottom of the page their reference is on
   /// (the modern engine's default, `footnotes_placement: page`), rather
   /// than at the end of the chapter or document (`end`, the gem's).
@@ -9928,9 +10006,29 @@ final class PdfConverter extends BuiltInConverter
     } else {
       quoted = '$open$inner$close';
     }
-    return node.id != null
-        ? '<a id="${node.id}">$_dummyText</a>$quoted'
-        : quoted;
+    final anchor = node.id != null ? '<a id="${node.id}">$_dummyText</a>' : '';
+    // A side note: marked here, its text substituted with the rest (the
+    // macros in it are still to come), then taken out of its line.
+    if (_sideRole(node) case final role?) {
+      return '$anchor<side id="$sideNoteAnchorPrefix${++_sideCount}" '
+          'role="$role">'
+          '$quoted</side>';
+    }
+    return '$anchor$quoted';
+  }
+
+  /// The first role of [node] the theme sets beside the text
+  /// (`role_<role>_display: side`), as a theme key part; not in
+  /// asciidoctor-pdf compatibility.
+  String? _sideRole(Inline node) {
+    if (node.role == null || asciidoctorCompat(_document, CompatFormat.pdf)) {
+      return null;
+    }
+    for (final role in node.roles) {
+      final key = role.replaceAll('-', '_');
+      if (_s('role_${key}_display') == 'side') return key;
+    }
+    return null;
   }
 }
 
