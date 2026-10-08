@@ -5,9 +5,9 @@ import 'package:plain_math/src/asciimath.dart';
 import 'package:plain_math/src/latex.dart';
 import 'package:plain_math/src/mathml.dart';
 
-/// [asciimath] as a MathML tree: the tree of [asciimathToMathml]'s MathML.
-MathNode asciimathToMath(String asciimath) =>
-    parseMathML(asciimathToMathml(asciimath));
+/// [asciimath] as a MathML tree: the tree of [asciimathToMathml]'s MathML
+/// (built directly).
+MathNode asciimathToMath(String asciimath) => asciimathToMathTree(asciimath);
 
 /// [tex] as a MathML tree: the tree of [latexToMathml]'s MathML (with
 /// [display] and [unknown] as there).

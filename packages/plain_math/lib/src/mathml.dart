@@ -225,6 +225,46 @@ final class MathMLException implements Exception {
 /// with or without a namespace prefix).
 MathNode parseMathML(String text) => _node(_XmlReader(text).document());
 
+/// Builds the tree of MathML elements given in document order (start,
+/// text, end), as [parseMathML] would read their MathML: for the
+/// converters, which so skip writing and reading it back. The names are
+/// local names (no prefix), the texts and attribute values as they are
+/// (not escaped).
+final class MathTreeBuilder {
+  final List<_Element> _open = [];
+  late _Element _root;
+
+  /// An element [name] with [attributes] starts (in the one open, or as
+  /// the root).
+  void start(String name, Map<String, String> attributes) {
+    final element = _Element(name, attributes);
+    if (_open.isEmpty) {
+      _root = element;
+    } else {
+      _open.last.children.add(element);
+    }
+    _open.add(element);
+  }
+
+  /// [text] in the open element (joined to a text just before it, as the
+  /// reader reads it; nothing when empty).
+  void text(String text) {
+    if (text.isEmpty) return;
+    final children = _open.last.children;
+    if (children.isNotEmpty && children.last is String) {
+      children.last = '${children.last}$text';
+    } else {
+      children.add(text);
+    }
+  }
+
+  /// The open element ends.
+  void end() => _open.removeLast();
+
+  /// The formula of the root element.
+  MathNode get node => _node(_root);
+}
+
 List<_Element> _children(_Element element) => element.elements;
 
 MathNode _row(List<_Element> elements) => elements.length == 1

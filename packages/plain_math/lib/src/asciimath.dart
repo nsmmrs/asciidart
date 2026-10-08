@@ -6,6 +6,8 @@
 /// its old one, with every node equal to it).
 library;
 
+import 'package:plain_math/src/mathml.dart';
+
 /// [asciimath] as MathML: `<{prefix}math{attrs}>...</{prefix}math>`
 /// (`toMathml(text, prefix: 'mml:')` as the gem's
 /// `AsciiMath.parse(text).to_mathml('mml:')`).
@@ -14,8 +16,19 @@ String asciimathToMathml(
   String prefix = '',
   Map<String, String> attributes = const {},
 }) {
-  final ast = const _Parser().parse(asciimath);
-  return (_MathmlBuilder(prefix)..appendExpression(ast, attributes)).toString();
+  final sink = _XmlSink(prefix);
+  _MathmlBuilder(sink)
+      .appendExpression(const _Parser().parse(asciimath), attributes);
+  return sink.toString();
+}
+
+/// [asciimath] as a MathML tree: the tree of [asciimathToMathml]'s MathML,
+/// built without writing it and reading it back.
+MathNode asciimathToMathTree(String asciimath) {
+  final sink = _TreeSink();
+  _MathmlBuilder(sink)
+      .appendExpression(const _Parser().parse(asciimath), const {});
+  return sink.tree.node;
 }
 
 // The symbol tables.
@@ -1307,14 +1320,10 @@ final class _Parser {
 // The MathML.
 
 final class _MathmlBuilder {
-  new(this._prefix);
+  new(this._sink);
 
-  final String _prefix;
-  final StringBuffer _out = StringBuffer();
+  final _Sink _sink;
   static const _Row _rowMode = _Row.avoid;
-
-  @override
-  String toString() => _out.toString();
 
   void appendExpression(_Node? expression, Map<String, String> attrs) =>
       _tag('math', attrs: attrs, body: () => _append(expression, _Row.omit));
@@ -1590,6 +1599,36 @@ final class _MathmlBuilder {
     String? text,
     void Function()? body,
   }) {
+    // (Always an end tag: the gem's text defaults to '', which Ruby takes
+    // as true.)
+    _sink.start(name, attrs, text ?? '');
+    body?.call();
+    _sink.end(name);
+  }
+}
+
+/// Where the builder's elements go, in document order: the MathML text,
+/// or the tree.
+sealed class _Sink {
+  /// An element [name] starts, with [attrs] and [text] first in it.
+  void start(String name, Map<String, String> attrs, String text);
+
+  /// The element [name] ends.
+  void end(String name);
+}
+
+/// The MathML, as the gem writes it.
+final class _XmlSink implements _Sink {
+  new(this._prefix);
+
+  final String _prefix;
+  final StringBuffer _out = StringBuffer();
+
+  @override
+  String toString() => _out.toString();
+
+  @override
+  void start(String name, Map<String, String> attrs, String text) {
     _out
       ..write('<')
       ..write(_prefix)
@@ -1599,11 +1638,12 @@ final class _MathmlBuilder {
       _escaped(value);
       _out.write('"');
     }
-    // (Always an end tag: the gem's text defaults to '', which Ruby takes
-    // as true.)
     _out.write('>');
-    _escaped(text ?? '');
-    body?.call();
+    _escaped(text);
+  }
+
+  @override
+  void end(String name) {
     _out
       ..write('</')
       ..write(_prefix)
@@ -1626,6 +1666,23 @@ final class _MathmlBuilder {
       }
     }
   }
+}
+
+/// The tree of the MathML, as [parseMathML] reads it (the texts and
+/// attribute values unescaped: the reader's decoding is the exact inverse
+/// of [_XmlSink]'s escaping, and no attribute value has a quote in it).
+final class _TreeSink implements _Sink {
+  final MathTreeBuilder tree = MathTreeBuilder();
+
+  @override
+  void start(String name, Map<String, String> attrs, String text) {
+    tree
+      ..start(name, attrs)
+      ..text(text);
+  }
+
+  @override
+  void end(String name) => tree.end();
 }
 
 enum _Row { avoid, omit }
