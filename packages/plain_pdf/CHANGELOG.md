@@ -59,6 +59,8 @@
   otherwise: interlaced images, alpha split into a soft mask, palette
   transparency, color-key transparency, embedded ICC profiles; damaged
   files rejected. Checked against PngSuite by rendering with poppler.
+  Decoded images are filtered again for their stream with each filter
+  scored in its own loop, stopping once it can't win.
 - Drawing: `PdfDocument` with pages (media, crop, bleed, trim and art
   boxes; rotation) drawn on a `PdfCanvas`: paths (lines, Bézier curves,
   rectangles, rounded rectangles, ellipses), fill and stroke with the

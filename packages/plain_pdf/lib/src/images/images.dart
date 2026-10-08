@@ -563,15 +563,30 @@ final class PngImage extends PdfImage {
   /// [pixels] split into color samples and alpha samples.
   (Uint8List, Uint8List) _splitAlpha(Uint8List pixels, int colorChannels) {
     final sample = bitDepth >> 3;
-    final pixel = (colorChannels + 1) * sample;
     final count = width * height;
-    final color = Uint8List(count * colorChannels * sample);
+    final colorBytes = colorChannels * sample;
+    final color = Uint8List(count * colorBytes);
     final alpha = Uint8List(count * sample);
+    var from = 0;
+    var c = 0;
+    if (sample == 1 && colorChannels == 3) {
+      // (8-bit RGBA, the usual.)
+      for (var p = 0; p < count; p++, from += 4, c += 3) {
+        color[c] = pixels[from];
+        color[c + 1] = pixels[from + 1];
+        color[c + 2] = pixels[from + 2];
+        alpha[p] = pixels[from + 3];
+      }
+      return (color, alpha);
+    }
+    var a = 0;
     for (var p = 0; p < count; p++) {
-      final from = p * pixel;
-      final colorBytes = colorChannels * sample;
-      color.setRange(p * colorBytes, (p + 1) * colorBytes, pixels, from);
-      alpha.setRange(p * sample, (p + 1) * sample, pixels, from + colorBytes);
+      for (var k = 0; k < colorBytes; k++) {
+        color[c++] = pixels[from++];
+      }
+      for (var k = 0; k < sample; k++) {
+        alpha[a++] = pixels[from++];
+      }
     }
     return (color, alpha);
   }

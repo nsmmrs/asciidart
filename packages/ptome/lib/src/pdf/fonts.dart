@@ -179,11 +179,16 @@ final class TrueTypeFont extends FontFace {
     Set<String> features = const {},
   }) {
     // Shaped once per text (line breaking measures the same words again
-    // and again), in 1000ths of the em.
-    final key = features.isEmpty
-        ? (kerning ? text : '\u0000$text')
-        : '${kerning ? '' : '\u0000'}${features.join(',')}\u0001$text';
-    final units = _unitWidths[key] ??= () {
+    // and again), in 1000ths of the em; by the text alone for the usual
+    // kerning without features.
+    final Map<String, double> widths;
+    if (features.isEmpty && kerning) {
+      widths = _unitWidths;
+    } else {
+      final names = _featureKeys[features] ??= features.join(',');
+      widths = (kerning ? _featureWidths : _unkernedWidths)[names] ??= {};
+    }
+    final units = widths[text] ??= () {
       var width = 0.0;
       final glyphs = pdf.shape(
         text,
@@ -201,6 +206,13 @@ final class TrueTypeFont extends FontFace {
   }
 
   final Map<String, double> _unitWidths = {};
+
+  /// The widths with features, by their names, kerned and not.
+  final Map<String, Map<String, double>> _featureWidths = {};
+  final Map<String, Map<String, double>> _unkernedWidths = {};
+
+  /// The names of a set of features, joined once for each set.
+  static final Expando<String> _featureKeys = Expando();
 
   @override
   bool hasGlyph(int codePoint) => pdf.font.glyphFor(codePoint) > 0;

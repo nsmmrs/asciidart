@@ -1570,7 +1570,7 @@ base class _Wrap {
   double _widthOf(String given, _Format? format) {
     // The modern engine: an anchor's placeholder takes no room (some fonts
     // give their .notdef glyph a width).
-    final text = given.replaceAll(_nul, '');
+    final text = given.contains(_nul) ? given.replaceAll(_nul, '') : given;
     if (text.isEmpty && given.isNotEmpty) return 0;
     final font = format?.font ?? _baseFont;
     final size = format?.size ?? _state.size;
@@ -1581,8 +1581,10 @@ base class _Wrap {
       features: format?.features ?? _state.features,
     );
     // Prawn 2.4 adds the character spacing between characters.
+    final spacing = _state.characterSpacing;
+    if (spacing == 0 || text.length < 2) return width;
     final count = text.runes.length;
-    return count > 1 ? width + _state.characterSpacing * (count - 1) : width;
+    return count > 1 ? width + spacing * (count - 1) : width;
   }
 
   late final FontFace _baseFont = TextBox._font(
