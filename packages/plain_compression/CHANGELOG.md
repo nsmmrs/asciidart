@@ -2,6 +2,8 @@
 
 ## 0.1.0-dev (unreleased)
 
+- Faster checksums, same values: CRC-32 slices by 8 and Adler-32 reads
+  typed bytes eight at a time.
 - CRC-32, gzip (RFC 1952) and ZIP archives: a reproducible writer and a
   bounds-checked reader, both with ZIP64. They come from ptome's EPUB
   writer; plain_pdf's PNG reader and ptome's EPUB use them.

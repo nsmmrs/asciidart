@@ -1,3 +1,5 @@
+// Frozen at 17001e86: the oracle the equivalence tests compare the
+// library with. Do not edit.
 /// DEFLATE (RFC 1951) and its zlib wrapper (RFC 1950) in pure Dart, so
 /// the library compresses the same way, byte for byte, on every platform
 /// (including the web).
@@ -63,49 +65,11 @@ Uint8List zlibDecode(List<int> data) {
 
 /// The Adler-32 checksum of [data].
 int adler32(List<int> data) {
-  if (data is Uint8List) return _adler32(data);
   var a = 1;
   var b = 0;
   var i = 0;
   while (i < data.length) {
     final end = i + 5552 < data.length ? i + 5552 : data.length;
-    for (; i < end; i++) {
-      a += data[i];
-      b += a;
-    }
-    a %= 65521;
-    b %= 65521;
-  }
-  return (b << 16) | a;
-}
-
-/// [adler32] over typed bytes, eight at a time; the sums are reduced every
-/// 5552 bytes, as zlib does, before `b` could pass 2^32.
-int _adler32(Uint8List data) {
-  final n = data.length;
-  var a = 1;
-  var b = 0;
-  var i = 0;
-  while (i < n) {
-    final end = i + 5552 < n ? i + 5552 : n;
-    for (; i + 8 <= end; i += 8) {
-      a += data[i];
-      b += a;
-      a += data[i + 1];
-      b += a;
-      a += data[i + 2];
-      b += a;
-      a += data[i + 3];
-      b += a;
-      a += data[i + 4];
-      b += a;
-      a += data[i + 5];
-      b += a;
-      a += data[i + 6];
-      b += a;
-      a += data[i + 7];
-      b += a;
-    }
     for (; i < end; i++) {
       a += data[i];
       b += a;
