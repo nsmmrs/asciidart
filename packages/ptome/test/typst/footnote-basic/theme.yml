@@ -1,0 +1,21 @@
+extends: ./../base-theme.yml
+footnotes:
+  numbering: document
+  font-size: 0.85em
+  leading: 0.5em
+  indent: 1em
+  label-gap: 0.05em
+  item-spacing: 0.5em
+  margin-top: 1em
+  separator-length: 30%
+  separator-width: 0.5
+  # The number raised, without brackets, right after its word.
+  reference-content: '{{number}}'
+  reference-space: collapse
+  label-content: '<sup>{{number}}</sup>'
+# (A fixed height: Typst's grows to its content, which ptome's can't.)
+page:
+  size: [120pt, 100pt]
+# (Typst sets its superscripts in the font's own glyphs.)
+base:
+  typographic-scripts: true

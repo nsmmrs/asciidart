@@ -7449,6 +7449,11 @@ final class PdfConverter extends BuiltInConverter
   }) {
     var text = hyphenate ? _hyphenated(markup, align) : markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
+    // `footnotes_reference_space: collapse`: no space before a footnote's
+    // reference (Typst's weak space before its marker).
+    if (_footnoteSpaceCollapses && text.contains('<sup class="wj"><a ')) {
+      text = text.replaceAll(_spaceBeforeFootnoteRx, '');
+    }
     // The modern engine: variation selectors take no room (they choose a
     // glyph's form, which the fonts here don't vary).
     text = text.replaceAll(RegExp('[\ufe00-\ufe0f]'), '');
@@ -9329,6 +9334,16 @@ final class PdfConverter extends BuiltInConverter
     return '';
   }
 
+  /// Whether the space before a footnote's reference goes
+  /// (`footnotes_reference_space`: `keep`, the default, or `collapse`).
+  bool get _footnoteSpaceCollapses =>
+      _choice('footnotes_reference_space', const ['keep', 'collapse']) ==
+      'collapse';
+
+  static final RegExp _spaceBeforeFootnoteRx = RegExp(
+    '[ \t]+(?=<sup class="wj"><a (?:id="_footnoteref_|anchor="_footnotedef_))',
+  );
+
   /// The reference to footnote [index]: its number in brackets, raised,
   /// linked to the footnote ([anchored]: the footnote links back to it).
   String _footnoteReference(
@@ -9452,6 +9467,11 @@ final class PdfConverter extends BuiltInConverter
       (_choice('footnotes_placement', const ['page', 'end']) ?? 'page') ==
       'page';
 
+  /// The space between footnotes (`footnotes_item_spacing`, an em of the
+  /// body's size, as Typst's `footnote.entry(gap)`).
+  double get _footnoteItemSpacing =>
+      _length('footnotes_item_spacing', _rootFontSize) ?? 0;
+
   /// The rule above the footnotes at the bottom of a page: a third of the
   /// column long (`footnotes_separator_length`), `footnotes_separator_width`
   /// thick, `footnotes_margin_top` below the text.
@@ -9461,7 +9481,7 @@ final class PdfConverter extends BuiltInConverter
       _c('footnotes_separator_color') ?? _c('base_border_color'),
     );
     final length = _s('footnotes_separator_length') ?? '33.33%';
-    final spacing = (_n('footnotes_item_spacing') ?? 0).toDouble();
+    final spacing = _footnoteItemSpacing;
     // Under Typst's model (base_leading) the rule takes no room: drawn
     // on its line, the space above and below it from there.
     final flat = _typstLeading(_font) != null;
@@ -9485,10 +9505,7 @@ final class PdfConverter extends BuiltInConverter
       },
       style: BoxStyle(
         margin: EdgeInsets(
-          top: switch (_n('footnotes_margin_top')) {
-            final num margin => margin.toDouble(),
-            null => _font.size,
-          },
+          top: _length('footnotes_margin_top', _rootFontSize) ?? _font.size,
           // (Each note has the item spacing above it.)
           bottom: math.max(spacing, _font.size / 2) - spacing,
         ),
@@ -9508,7 +9525,7 @@ final class PdfConverter extends BuiltInConverter
     if (footnotes.isEmpty) return;
     if (_pageFootnotes) {
       _withFont('footnotes', () {
-        final spacing = (_n('footnotes_item_spacing') ?? 0).toDouble();
+        final spacing = _footnoteItemSpacing;
         // How far each note's first line is set in (footnotes_indent, an
         // em of the notes' size), and the space after its label
         // (footnotes_label_gap): a no-break space that wide.
@@ -9554,7 +9571,7 @@ final class PdfConverter extends BuiltInConverter
     }
     final bottom = _s('footnotes_margin_top') == 'auto';
     if (!bottom) {
-      final margin = (_n('footnotes_margin_top') ?? 0).toDouble();
+      final margin = _length('footnotes_margin_top', _rootFontSize) ?? 0;
       if (margin > 0) _out.add(SpacerBox(margin));
     }
     final items = <CustomBox>[];
@@ -9587,7 +9604,7 @@ final class PdfConverter extends BuiltInConverter
         );
       }
       _out = saved;
-      final spacing = (_n('footnotes_item_spacing') ?? 0).toDouble();
+      final spacing = _footnoteItemSpacing;
       final offset = _renderedFootnotes.length;
       final sectionText = node is Section
           ? node.xreftext(doc.attr('xrefstyle'))

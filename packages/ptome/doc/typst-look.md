@@ -94,6 +94,7 @@ the fonts Ptome bundles.
 | `footnotes_font_size`, `footnotes_leading` | `footnote.entry`'s text and `par(leading)` | `0.85em`, `0.5em` | any |
 | `footnotes_indent` | `footnote.entry(indent)` | `1em` | `0`–`2em` |
 | `footnotes_label_gap` | the space after the number | `0.05em` | `0`–`1em` |
+| `footnotes_reference_space` | the weak space before `footnote`'s marker | `collapse` | `keep` (default), `collapse` |
 | `footnotes_item_spacing` | `footnote.entry(gap)` | `0.5em` | `0`–`1em` |
 | `footnotes_margin_top` | `footnote.entry(clearance)` | `1em` | `0`–`2em` |
 | `footnotes_separator_length`, `_width`, `_color` | `footnote.entry(separator)` | `30%`, `0.5`, black | any |

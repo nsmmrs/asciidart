@@ -1,0 +1,5 @@
+extends: ./../base-theme.yml
+page:
+  size: [60pt, 140pt]
+base:
+  font-style: bold

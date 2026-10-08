@@ -21,12 +21,15 @@ and of the first line's top (Ptome's minus Typst's).
 
 ## Findings
 
+65 cases: they break and fall as Typst's do but for the differences
+listed last, each deliberate or out of reach.
+
 The paragraph cases (lane TASK-p51s1b): the tests of `justify.typ`,
 `linebreak.typ`, `hyphenate.typ` and `model/par.typ` that AsciiDoc and
 theme keys can say.
 
-- Lines break where Typst's do, with the same edges, in 37 of the 41
-  cases: one line at a time (simple breaking, hard breaks) and optimal
+- Lines break where Typst's do, with the same edges, in all of them but
+  the differences below: one line at a time (simple breaking, hard breaks) and optimal
   breaking (Typst's costs: cubic badness, hyphenation and runt costs, two
   dashes in a row; `base_line_breaking`), hanging punctuation
   (`overhang`), the vertical model (`base_leading`: lines and paragraphs
@@ -61,6 +64,21 @@ defaults are, all break and fall as Typst's do. What they took:
   paragraph in AsciiDoc), a wide list (blank lines between items in
   Typst; AsciiDoc doesn't tell them apart).
 
+The cases of footnotes, widows and orphans, page and column breaks
+(lane TASK-rvpgh0) fall as Typst's do. What they took:
+
+- A page holds as much of its content as fits with that content's
+  footnotes under it: a list of seven items with a footnote each put all
+  seven on the first page and every note on the next.
+- `footnotes_reference_space: collapse`, Typst's weak space before a
+  footnote's marker (`A1`, not `A 1`); footnote spacing in `em`
+  (`footnotes_item_spacing`, `footnotes_margin_top`).
+- Typst's `pagebreak()` and `colbreak()` are `[%always]` page and column
+  breaks in AsciiDoc (a plain `<<<` is Typst's weak break).
+- The footnote cases set a fixed page height (noted in their typst.typ):
+  Typst's page grows to its content there, which ptome's can't, so their
+  notes would be at the bottom of a tall page.
+
 The differences left, each deliberate or out of reach:
 
 - `justify-avoid-runts`: both layouts cost the same (77.777: one line of
@@ -72,6 +90,11 @@ The differences left, each deliberate or out of reach:
   modern engine breaks it where it fits, so that no text is cropped.
 - `linebreak-link-justify`: one line breaks after `www.url.` where Typst
   breaks after `www.`, the lines close in cost.
+- A footnote's label and text extract as `1 a` where Typst's give
+  `1a`: the gap after the number is a no-break space (the same width as
+  Typst's spacing), which text extraction reads as one.
+- `pagebreak`: a document that is only a page break makes one page, as
+  asciidoctor-pdf's (a trailing break adds no empty page); Typst's two.
 - Not in AsciiDoc: hanging indents (`par-hanging-indent`), justified
   breaks (`#linebreak(justify: true)`), blocks of a given width and grids
   (`hyphenate`, `hyphenate-shy`, `hyphenate-outside-of-words`), costs
@@ -81,9 +104,17 @@ The differences left, each deliberate or out of reach:
 
 | Case | Lines (Typst, ptome) | Broken alike | Edges | Line tops | First line | Pages |
 | --- | --- | --- | --- | --- | --- | --- |
+| columns-set-page-colbreak-pagebreak | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 3, 3 |
 | emph-syntax | 4, 4 | 4 of 4 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | enum-built-in-loop | 5, 5 | 5 of 5 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | enum-numbering-reversed | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| flow-heading-no-orphan | 6, 6 | 6 of 6 | 0.00 | 0.00 | +0.00 | 2, 2 |
+| flow-par-no-orphan-and-widow-lines | 25, 25 | 25 of 25 | 0.00 | 0.00 | +0.00 | 4, 4 |
+| flow-widow-forced | 3, 3 | 3 of 3 | 0.00 | 0.00 | +0.00 | 2, 2 |
+| footnote-basic | 2, 2 | 1 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| footnote-in-list | 14, 14 | 7 of 14 | 0.00 | 0.00 | +0.00 | 2, 2 |
+| footnote-ref | 3, 3 | 2 of 3 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| footnote-space-collapsing | 4, 4 | 2 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | heading-basic | 3, 3 | 3 of 3 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | hs-justify-indent | 6, 6 | 6 of 6 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | hyphenate-between-shape-runs | 2, 2 | 2 of 2 | 0.17 | 0.00 | +0.00 | 1, 1 |
@@ -126,6 +157,7 @@ The differences left, each deliberate or out of reach:
 | list-basic | 4, 4 | 4 of 4 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | list-marker-dash | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | list-nested | 9, 9 | 9 of 9 | 0.00 | 0.00 | +0.00 | 1, 1 |
+| pagebreak | 0, 0 | 0 of 0 | 0.00 | 0.00 | +0.00 | 2, 1 |
 | par-basic | 19, 19 | 19 of 19 | 0.00 | 0.00 | +0.00 | 3, 3 |
 | par-explicit-trim-space | 2, 2 | 2 of 2 | 0.00 | 0.00 | +0.00 | 1, 1 |
 | par-leading-and-spacing | 5, 5 | 5 of 5 | 0.00 | 0.00 | +0.00 | 1, 1 |

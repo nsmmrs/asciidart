@@ -1,0 +1,6 @@
+extends: ./../base-theme.yml
+page:
+  size: [7.05cm, 1cm]
+  columns: 2
+  # (4% of the width the columns share.)
+  column-gap: 7.19

@@ -1467,21 +1467,39 @@ final class _Pass {
       ...notes,
     ];
     var notes = pending(fit);
-    // Each try leaves the content less room, so it places no more (and
-    // so no more notes) than the try before: it ends.
-    for (var attempt = 0; notes.isNotEmpty || bottom.isNotEmpty; attempt++) {
-      final box = BlockBox(area(notes));
-      final height = _measure(box, width);
-      if (fit.height + height <= region.height + 1e-6 || attempt == 4) {
-        break;
+    double total(_Fit fit, List<LayoutBox> notes) =>
+        fit.height + _measure(BlockBox(area(notes)), width);
+    if ((notes.isNotEmpty || bottom.isNotEmpty) &&
+        total(fit, notes) > region.height + 1e-6) {
+      // The most content whose notes fit under it: more room places more
+      // content, which refers to more notes, so the room is found by
+      // halving.
+      var low = 0.0;
+      var high = fit.height;
+      (_Fit, List<LayoutBox>)? best;
+      for (var step = 0; step < 12; step++) {
+        final room = (low + high) / 2;
+        _floatsWaiting = 0;
+        final tried = _place(content, width, room, atTop: true);
+        final tryNotes = pending(tried);
+        if (total(tried, tryNotes) <= region.height + 1e-6) {
+          best = (tried, tryNotes);
+          low = room;
+        } else {
+          high = room;
+        }
       }
-      final room = region.height - height;
       // Notes taller than most of the region: as many as fit under what
-      // is placed, the rest on the next region.
-      if (room < region.height / 4) break;
-      _floatsWaiting = 0;
-      fit = _place(content, width, room, atTop: true);
-      notes = pending(fit);
+      // is placed first, the rest on the next region.
+      if (best case (final tried, final tryNotes)
+          when tried.placed != null && tried.height >= region.height / 4) {
+        fit = tried;
+        notes = tryNotes;
+      } else {
+        _floatsWaiting = 0;
+        fit = _place(content, width, region.height, atTop: true);
+        notes = pending(fit);
+      }
     }
     for (final name in _anchorsOf(fit.placed)) {
       if (layout.notes.containsKey(name)) _notesSet.add(name);

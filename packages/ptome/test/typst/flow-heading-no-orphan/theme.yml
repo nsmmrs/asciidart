@@ -1,0 +1,10 @@
+extends: ./../base-theme.yml
+page:
+  size: [120pt, 100pt]
+heading:
+  font-family: Libertinus Serif
+  font-style: bold
+  font-color: #000000
+  h2-font-size: 14
+  h2-margin-top: 18
+  h2-margin-bottom: 7.5

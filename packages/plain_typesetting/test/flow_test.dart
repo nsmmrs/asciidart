@@ -65,6 +65,30 @@ void main() {
     expect(top, closeTo(document.pages[1].box.top - 20, 1e-6));
   });
 
+  test('as much content as fits with its notes under it', () {
+    // Eight rows a page; seven one-line items, each with a one-line note:
+    // four items and their notes fill the first page (not seven items with
+    // their notes all on the next).
+    final document = RecordingDocument();
+    final pages =
+        FlowLayout(
+              template: _rows(8),
+              notes: {for (var i = 1; i <= 7; i++) 'n$i': _para('note$i')},
+            )
+            .layout([
+              for (var i = 1; i <= 7; i++)
+                BlockBox([_para('item$i')], style: BoxStyle(anchor: 'n$i')),
+            ])
+            .render(document);
+    expect(
+      [for (final page in pages) page.texts.map((t) => t.trim()).join(' ')],
+      [
+        'item1 item2 item3 item4 note1 note2 note3 note4',
+        'item5 item6 item7 note5 note6 note7',
+      ],
+    );
+  });
+
   test('links are made on the page the text is on', () {
     final document = RecordingDocument();
     FlowLayout(template: _rows(4))

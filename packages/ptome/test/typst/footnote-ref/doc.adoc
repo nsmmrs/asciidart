@@ -1,0 +1,2 @@
+A footnote footnote:fn[Hi] +
+A reference to it footnote:fn[]

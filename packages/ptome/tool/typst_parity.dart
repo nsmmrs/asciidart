@@ -31,10 +31,14 @@ const _typstRelease =
 
 final String _cache = '${Platform.environment['HOME']}/.cache/asciidart-work';
 
-/// The test runner's defaults (tests/src/world.rs).
+/// The test runner's defaults (tests/src/world.rs), and its `lines`
+/// helper: a count of lines numbered in a pattern (`A` by default).
 const _preamble =
     '#set page(width: 120pt, height: auto, margin: 10pt)\n'
-    '#set text(size: 10pt)\n';
+    '#set text(size: 10pt)\n'
+    '#let lines(count, ..pattern) = range(1, count + 1)'
+    '.map(n => numbering(pattern.pos().at(0, default: "A"), n))'
+    '.join("\\n")\n';
 
 /// A line of text in a PDF: its page, words and box.
 typedef _Line = ({
