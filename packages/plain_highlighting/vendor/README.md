@@ -10,3 +10,10 @@ its BSD 3-Clause license (`highlight.js/LICENSE`):
   against itself (`test/markup_test.dart`, `test/detect_test.dart`).
 
 `tool/vendor.sh` recreates the folder; `tool/vendor.sh --check` verifies it.
+
+`highlight.js-styles/` holds the themes of highlight.js 11.12.0, BSD-3-Clause
+(`highlight.js-styles/LICENSE`): the minified stylesheets of its `styles/`
+directory (not `base16/`), from the npm package. `highlightJsStyles` gives
+each one by name, for a page's CSS or the colors of highlighted code
+elsewhere (ptome's PDF and EPUB backends). `tool/vendor_styles.sh`
+recreates the folder and regenerates `lib/src/styles.g.dart`.

@@ -2,18 +2,27 @@
 //
 // Each upstream language definition is run against the real highlight.js
 // (the version pinned in package.json), and the raw mode graph it returns is
-// written out as Dart that builds the same graph: every object becomes one
-// `Mode` (shared objects stay shared, frozen ones stay frozen), and the
+// written out as a grammar (data that lib/src/grammar.dart reads back into
+// the same graph): every object becomes one `Mode` (shared objects stay
+// shared, frozen ones stay frozen), its keys in their order, and the
 // handful of JavaScript callbacks map to their Dart ports in
 // lib/src/callbacks.dart by source text. Anything the generator does not
 // know (a key, a value shape, a callback) fails the run, naming the
 // language and the path.
+//
+// A grammar is bytes: a table of the strings it uses, the language's
+// metadata, then each mode's keys and values (unsigned LEB128 numbers,
+// strings by their index in the table; see grammar.dart for the layout).
+// The grammars of all languages are one Brotli stream (they share much),
+// in base64 in all.g.dart, decoded the first time a language is used; each
+// language is read from where its grammar starts.
 //
 // Usage: node tool/generate/generate.mjs   (from the repository root)
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { brotliCompressSync, brotliDecompressSync, constants as zlib } from 'node:zlib';
 
 const require = createRequire(import.meta.url);
 const here = dirname(fileURLToPath(import.meta.url));
@@ -27,16 +36,30 @@ const order = [...readFileSync(join(hljsDir, 'lib/index.js'), 'utf8')
   .matchAll(/registerLanguage\('([^']+)', require\('\.\/languages\/([^']+)'\)\)/g)]
   .map((m) => ({ name: m[1], file: m[2] }));
 
-// Callbacks by normalized source text -> Dart expression.
+// The callbacks of lib/src/callbacks.dart, in the order grammar.dart lists
+// them (a grammar names one by its index).
+const callbackNames = [
+  'shebangOnBegin', 'endSameAsBeginOnBegin', 'endSameAsBeginOnEnd',
+  'phpHeredocOnBegin', 'phpHeredocOnEnd', 'mathematicaSystemSymbol',
+  'gcodeLetterBoundary', 'javascriptIsTrulyOpeningTag',
+];
+
+// Callbacks by normalized source text -> their index.
 const callbacks = new Map();
-function addCallback(fn, dart) { callbacks.set(normalize(fn.toString()), dart); }
+function addCallback(fn, name) {
+  const index = callbackNames.indexOf(name);
+  if (index < 0) throw new Error(`unknown callback ${name}`);
+  callbacks.set(normalize(fn.toString()), index);
+}
 function normalize(source) { return source.replace(/\s+/g, ' ').trim(); }
 
-addCallback(hljs.SHEBANG()['on:begin'], 'callbacks.shebangOnBegin');
+addCallback(hljs.SHEBANG()['on:begin'], 'shebangOnBegin');
 const sameAsBegin = hljs.END_SAME_AS_BEGIN({ begin: /a/, end: /a/ });
-addCallback(sameAsBegin['on:begin'], 'callbacks.endSameAsBeginOnBegin');
-addCallback(sameAsBegin['on:end'], 'callbacks.endSameAsBeginOnEnd');
+addCallback(sameAsBegin['on:begin'], 'endSameAsBeginOnBegin');
+addCallback(sameAsBegin['on:end'], 'endSameAsBeginOnEnd');
 
+// The keys of a mode, in the order of grammar.dart's (ModeKey's), and the
+// kind of their values.
 const modeKeys = new Map([
   ['begin', 'regex'], ['end', 'regex'], ['match', 'regex'],
   ['beforeMatch', 'regex'], ['illegal', 'regex'],
@@ -49,14 +72,19 @@ const modeKeys = new Map([
   ['subLanguage', 'subLanguage'], ['on:begin', 'callback'],
   ['on:end', 'callback'], ['label', 'string'],
 ]);
+const keyIndex = new Map([...modeKeys.keys()].map((key, i) => [key, i]));
 // Keys the engine never reads: `binary` (shebang metadata) and `exports`
 // (modes a language shares with others while they are being defined).
 const ignoredKeys = new Set(['binary', 'exports']);
-const dartKey = (key) => ({ 'on:begin': 'onBegin', 'on:end': 'onEnd' })[key] ?? key;
 const languageKeys = new Set([
   'name', 'aliases', 'case_insensitive', 'unicodeRegex', 'classNameAliases',
   'disableAutodetect', 'supersetOf',
 ]);
+
+// A key's flags in a grammar: set to JavaScript's null, or to undefined
+// (both without a value).
+const JS_NULL = 0x80;
+const UNDEFINED = 0x40;
 
 function dartString(s) {
   let out = "'";
@@ -83,13 +111,60 @@ function regexSource(value, path) {
   throw new Error(`${path}: not a regex: ${typeof value}`);
 }
 
+// Bytes being written: unsigned LEB128 numbers, strings by their index in
+// the grammar's table.
+class Bytes {
+  constructor(strings) {
+    this.strings = strings;
+    this.out = [];
+  }
+
+  byte(b) { this.out.push(b); }
+
+  uint(n) {
+    if (!Number.isInteger(n) || n < 0) throw new Error(`not an unsigned integer: ${n}`);
+    do {
+      let b = n & 0x7f;
+      n = Math.floor(n / 128);
+      if (n) b |= 0x80;
+      this.out.push(b);
+    } while (n);
+  }
+
+  str(s) {
+    if (typeof s !== 'string') throw new Error(`not a string: ${s}`);
+    let index = this.strings.get(s);
+    if (index === undefined) {
+      index = this.strings.size;
+      this.strings.set(s, index);
+    }
+    this.uint(index);
+  }
+
+  // A string or none (0), the string's index plus one.
+  optStr(s) {
+    if (s === null || s === undefined) {
+      this.uint(0);
+      return;
+    }
+    let index = this.strings.get(s);
+    if (index === undefined) {
+      index = this.strings.size;
+      this.strings.set(s, index);
+    }
+    this.uint(index + 1);
+  }
+
+  append(other) { for (const b of other.out) this.out.push(b); }
+}
+
 class Writer {
   constructor(language) {
     this.language = language;
+    this.strings = new Map();
     this.ids = new Map();
     this.queue = [];
-    this.lines = [];
-    this.usesCallbacks = false;
+    this.modes = [];
   }
 
   modeRef(obj, path) {
@@ -97,165 +172,197 @@ class Writer {
       throw new Error(`${path}: expected a mode`);
     }
     if (!this.ids.has(obj)) {
-      this.ids.set(obj, `m${this.ids.size}`);
+      this.ids.set(obj, this.ids.size);
       this.queue.push([obj, path]);
     }
     return this.ids.get(obj);
   }
 
-  value(kind, value, path) {
-    if (value === undefined || value === null) return 'null';
+  value(out, kind, value, path) {
     switch (kind) {
       case 'regex':
         if (Array.isArray(value)) {
-          return `RegexList([${value.map((v, i) => dartString(regexSource(v, `${path}[${i}]`))).join(', ')}])`;
+          out.byte(1);
+          out.uint(value.length);
+          value.forEach((v, i) => out.str(regexSource(v, `${path}[${i}]`)));
+        } else {
+          out.byte(0);
+          out.str(regexSource(value, path));
         }
-        return `RegexSource(${dartString(regexSource(value, path))})`;
+        return;
       case 'string':
         if (typeof value !== 'string') throw new Error(`${path}: expected a string`);
-        return dartString(value);
+        out.str(value);
+        return;
       case 'number':
         if (typeof value !== 'number') throw new Error(`${path}: expected a number`);
-        return Number.isInteger(value) ? `${value}` : `${value}`;
+        out.str(`${value}`);
+        return;
       case 'bool':
-        return value ? 'true' : 'false';
+        out.byte(value ? 1 : 0);
+        return;
       case 'scope':
-        if (typeof value === 'string') return `ScopeName(${dartString(value)})`;
+        if (typeof value === 'string') {
+          out.byte(0);
+          out.str(value);
+          return;
+        }
         if (typeof value === 'object') {
-          const entries = Object.entries(value).map(([k, v]) => {
+          const entries = Object.entries(value);
+          out.byte(1);
+          out.uint(entries.length);
+          for (const [k, v] of entries) {
             if (!/^[0-9]+$/.test(k)) throw new Error(`${path}: scope key ${k}`);
-            return `${k}: ${dartString(v)}`;
-          });
-          return `ScopeGroups({${entries.join(', ')}})`;
+            out.uint(Number(k));
+            out.str(v);
+          }
+          return;
         }
         throw new Error(`${path}: bad scope`);
       case 'keywords':
-        return this.keywords(value, path);
+        this.keywords(out, value, path);
+        return;
       case 'contains':
-        return `[${this.containsEntries(value, path).join(', ')}]`;
+        this.containsEntries(out, value, path);
+        return;
       case 'modes':
         if (!Array.isArray(value)) throw new Error(`${path}: expected a list`);
-        return `[${value.map((m, i) => this.modeRef(m, `${path}[${i}]`)).join(', ')}]`;
+        out.uint(value.length);
+        value.forEach((m, i) => out.uint(this.modeRef(m, `${path}[${i}]`)));
+        return;
       case 'mode':
-        return this.modeRef(value, path);
+        out.uint(this.modeRef(value, path));
+        return;
       case 'subLanguage':
-        if (typeof value === 'string') return `SubLanguageName(${dartString(value)})`;
-        if (Array.isArray(value)) return `SubLanguageList([${value.map(dartString).join(', ')}])`;
+        if (typeof value === 'string') {
+          out.byte(0);
+          out.str(value);
+          return;
+        }
+        if (Array.isArray(value)) {
+          out.byte(1);
+          out.uint(value.length);
+          value.forEach((v) => out.str(v));
+          return;
+        }
         throw new Error(`${path}: bad subLanguage`);
       case 'callback': {
-        const dart = callbacks.get(normalize(value.toString()));
-        if (!dart) throw new Error(`${path}: unknown callback:\n${value.toString()}`);
-        this.usesCallbacks = true;
-        return dart;
+        const index = callbacks.get(normalize(value.toString()));
+        if (index === undefined) throw new Error(`${path}: unknown callback:\n${value.toString()}`);
+        out.byte(index);
+        return;
       }
     }
     throw new Error(`${path}: unknown kind ${kind}`);
   }
 
-  containsEntries(value, path) {
+  containsEntries(out, value, path) {
     if (!Array.isArray(value)) throw new Error(`${path}: contains is not a list`);
-    return value.map((entry, i) => {
-      if (entry === 'self') return 'self';
-      if (Array.isArray(entry)) {
-        return `ModeGroup([${this.containsEntries(entry, `${path}[${i}]`).join(', ')}])`;
+    out.uint(value.length);
+    value.forEach((entry, i) => {
+      if (entry === 'self') {
+        out.byte(1);
+      } else if (Array.isArray(entry)) {
+        out.byte(2);
+        this.containsEntries(out, entry, `${path}[${i}]`);
+      } else {
+        out.byte(0);
+        out.uint(this.modeRef(entry, `${path}[${i}]`));
       }
-      return this.modeRef(entry, `${path}[${i}]`);
     });
   }
 
-  keywords(value, path) {
-    const group = (scope, words, fromList) =>
-      `(scope: ${scope === null ? 'null' : dartString(scope)}, words: [${words.map(dartString).join(', ')}], fromList: ${fromList})`;
+  keywords(out, value, path) {
+    const groups = [];
+    let pattern = null;
     if (typeof value === 'string') {
-      return `RawKeywords([${group(null, value.split(' '), false)}])`;
-    }
-    if (Array.isArray(value)) {
-      return `RawKeywords([${group(null, value, true)}])`;
-    }
-    if (typeof value === 'object') {
-      const groups = [];
-      let pattern = null;
+      groups.push([null, value.split(' '), false]);
+    } else if (Array.isArray(value)) {
+      groups.push([null, value, true]);
+    } else if (typeof value === 'object') {
       for (const [scope, words] of Object.entries(value)) {
         if (scope === '$pattern') {
           pattern = regexSource(words, `${path}.$pattern`);
           continue;
         }
-        if (typeof words === 'string') groups.push(group(scope, words.split(' '), false));
-        else if (Array.isArray(words)) groups.push(group(scope, words, true));
+        if (typeof words === 'string') groups.push([scope, words.split(' '), false]);
+        else if (Array.isArray(words)) groups.push([scope, words, true]);
         else throw new Error(`${path}.${scope}: bad keyword list`);
       }
-      return `RawKeywords([${groups.join(', ')}]${pattern === null ? '' : `, pattern: ${dartString(pattern)}`})`;
+    } else {
+      throw new Error(`${path}: bad keywords`);
     }
-    throw new Error(`${path}: bad keywords`);
+    out.uint(groups.length);
+    for (const [scope, words, fromList] of groups) {
+      out.optStr(scope);
+      out.uint(words.length);
+      words.forEach((w) => out.str(w));
+      out.byte(fromList ? 1 : 0);
+    }
+    out.optStr(pattern);
   }
 
-  // Writes the assignments of every queued mode.
+  // Writes the keys of every queued mode.
   drain() {
     while (this.queue.length) {
       const [obj, path] = this.queue.shift();
       const id = this.ids.get(obj);
-      const parts = [];
-      const isRoot = id === 'm0';
-      for (const key of Object.keys(obj)) {
-        if (isRoot && languageKeys.has(key)) continue;
-        if (ignoredKeys.has(key)) continue;
+      const out = new Bytes(this.strings);
+      const keys = Object.keys(obj).filter((key) =>
+        !(id === 0 && languageKeys.has(key)) && !ignoredKeys.has(key));
+      out.uint(keys.length);
+      for (const key of keys) {
         const kind = modeKeys.get(key);
         if (!kind) throw new Error(`${path}: unknown key ${key}`);
+        const index = keyIndex.get(key);
         if (obj[key] === null) {
           // JavaScript's null, as opposed to undefined (see Mode.isJsNull).
-          parts.push(`..setJsNull(ModeKey.${dartKey(key)})`);
-          continue;
+          out.byte(index | JS_NULL);
+        } else if (obj[key] === undefined) {
+          out.byte(index | UNDEFINED);
+        } else {
+          out.byte(index);
+          this.value(out, kind, obj[key], `${path}.${key}`);
         }
-        parts.push(`..${dartKey(key)} = ${this.value(kind, obj[key], `${path}.${key}`)}`);
       }
-      if (Object.isFrozen(obj)) parts.push('..frozen = true');
-      if (parts.length) this.lines.push(`  ${id}\n    ${parts.join('\n    ')};`);
+      out.byte(Object.isFrozen(obj) ? 1 : 0);
+      this.modes[id] = out;
     }
   }
 }
 
-function camel(name) {
-  const parts = name.split(/[^A-Za-z0-9]+/).filter(Boolean);
-  const id = parts.map((p, i) => (i === 0 ? p : p[0].toUpperCase() + p.slice(1))).join('');
-  return /^[0-9]/.test(id) ? `l${id}` : id;
-}
-
-function generate(name, file) {
+function grammar(name, file) {
   const definition = require(join(hljsDir, 'lib/languages', file));
-  // Language-specific callbacks: match them by source with the functions
-  // the definition holds, using the Dart ports in callbacks.dart.
   const lang = definition(hljs);
   const w = new Writer(name);
+  const header = new Bytes(w.strings);
+  header.str(lang.name ?? name);
+  const aliases = lang.aliases ? (Array.isArray(lang.aliases) ? lang.aliases : [lang.aliases]) : [];
+  header.uint(aliases.length);
+  aliases.forEach((a) => header.str(a));
+  header.byte((lang.case_insensitive ? 1 : 0) | (lang.unicodeRegex ? 2 : 0) | (lang.disableAutodetect ? 4 : 0));
+  const classNameAliases = Object.entries(lang.classNameAliases ?? {});
+  header.uint(classNameAliases.length);
+  for (const [k, v] of classNameAliases) {
+    header.str(k);
+    header.str(v);
+  }
+  header.optStr(lang.supersetOf ?? null);
   w.modeRef(lang, name);
   w.drain();
-  const ids = [...w.ids.values()];
-  const language = [
-    `name: ${dartString(lang.name ?? name)}`,
-    lang.aliases ? `aliases: [${(Array.isArray(lang.aliases) ? lang.aliases : [lang.aliases]).map(dartString).join(', ')}]` : null,
-    lang.case_insensitive ? 'caseInsensitive: true' : null,
-    lang.unicodeRegex ? 'unicodeRegex: true' : null,
-    lang.classNameAliases ? `classNameAliases: {${Object.entries(lang.classNameAliases).map(([k, v]) => `${dartString(k)}: ${dartString(v)}`).join(', ')}}` : null,
-    lang.disableAutodetect ? 'disableAutodetect: true' : null,
-    lang.supersetOf ? `supersetOf: ${dartString(lang.supersetOf)}` : null,
-  ].filter(Boolean);
-  const fn = `build${camel(name)[0].toUpperCase()}${camel(name).slice(1)}`;
-  const body = [
-    '// GENERATED by tool/generate/generate.mjs from highlight.js ' + version + '. Do not edit.',
-    '// ignore_for_file: type=lint',
-    '',
-    "import 'package:plain_highlighting/src/mode.dart';",
-    w.usesCallbacks ? "import 'package:plain_highlighting/src/callbacks.dart' as callbacks;" : null,
-    '',
-    `/// The \`${name}\` language (${(lang.name ?? name).replace(/[\n\r]/g, ' ')}).`,
-    `Language ${fn}() {`,
-    `  final m0 = Language(${language.join(', ')});`,
-    ids.length > 1 ? `  final ${ids.slice(1).map((id) => `${id} = Mode()`).join(', ')};` : null,
-    ...w.lines,
-    '  return m0;',
-    '}',
-    '',
-  ].filter((l) => l !== null);
-  return { fn, source: body.join('\n') };
+  // The strings (each as its UTF-8 length and bytes), the header, the
+  // modes.
+  const table = new Bytes(new Map());
+  table.uint(w.strings.size);
+  for (const s of w.strings.keys()) {
+    const utf8 = Buffer.from(s, 'utf8');
+    table.uint(utf8.length);
+    for (const b of utf8) table.byte(b);
+  }
+  table.append(header);
+  table.uint(w.modes.length);
+  for (const mode of w.modes) table.append(mode);
+  return { aliases, bytes: Buffer.from(table.out) };
 }
 
 // Language-specific callbacks.
@@ -268,16 +375,16 @@ function generate(name, file) {
     for (const v of Object.values(obj)) found.push(...find(v, seen));
     return found;
   };
-  for (const fn of find(mathematica)) addCallback(fn, 'callbacks.mathematicaSystemSymbol');
+  for (const fn of find(mathematica)) addCallback(fn, 'mathematicaSystemSymbol');
   for (const fn of find(require(join(hljsDir, 'lib/languages/gcode'))(hljs))) {
-    addCallback(fn, 'callbacks.gcodeLetterBoundary');
+    addCallback(fn, 'gcodeLetterBoundary');
   }
   for (const fn of find(require(join(hljsDir, 'lib/languages/javascript'))(hljs))) {
-    if (!callbacks.has(normalize(fn.toString()))) addCallback(fn, 'callbacks.javascriptIsTrulyOpeningTag');
+    if (!callbacks.has(normalize(fn.toString()))) addCallback(fn, 'javascriptIsTrulyOpeningTag');
   }
   const php = require(join(hljsDir, 'lib/languages/php'))(hljs);
   const phpFns = find(php).filter((fn) => !callbacks.has(normalize(fn.toString())));
-  for (const fn of phpFns) addCallback(fn, 'callbacks.phpHeredocOnBegin');
+  for (const fn of phpFns) addCallback(fn, 'phpHeredocOnBegin');
   const findEnd = (obj, seen = new Set()) => {
     if (!obj || typeof obj !== 'object' || seen.has(obj)) return [];
     seen.add(obj);
@@ -286,50 +393,83 @@ function generate(name, file) {
     return found;
   };
   for (const fn of findEnd(php)) {
-    if (!callbacks.has(normalize(fn.toString()))) addCallback(fn, 'callbacks.phpHeredocOnEnd');
+    if (!callbacks.has(normalize(fn.toString()))) addCallback(fn, 'phpHeredocOnEnd');
   }
 }
 
+// [bytes] Brotli-compressed, in base64: as the constant [name] of the
+// generated [file] has them when its content is the same (Brotli's output
+// differs between versions, the content doesn't), else compressed anew.
+function packed(file, name, bytes) {
+  let existing;
+  try {
+    existing = readFileSync(file, 'utf8');
+  } catch {
+    existing = '';
+  }
+  const old = new RegExp(`const String ${name} =\\s*'([A-Za-z0-9+/=]*)';`).exec(existing)?.[1];
+  if (old !== undefined) {
+    try {
+      if (brotliDecompressSync(Buffer.from(old, 'base64')).equals(bytes)) return old;
+    } catch {
+      // Damaged: compressed anew.
+    }
+  }
+  return brotliCompressSync(bytes, {
+    params: {
+      [zlib.BROTLI_PARAM_QUALITY]: zlib.BROTLI_MAX_QUALITY,
+      [zlib.BROTLI_PARAM_LGWIN]: zlib.BROTLI_MAX_WINDOW_BITS,
+      [zlib.BROTLI_PARAM_SIZE_HINT]: bytes.length,
+    },
+  }).toString('base64');
+}
+
 const outDir = join(root, 'lib/src/languages');
+const allFile = join(outDir, 'all.g.dart');
+const symbolsFile = join(outDir, 'mathematica_symbols.g.dart');
+const registry = [];
+let raw = 0;
+for (const { name, file } of order) {
+  const { aliases, bytes } = grammar(name, file);
+  registry.push({ name, aliases, at: raw, bytes });
+  raw += bytes.length;
+}
+const grammars = packed(allFile, 'grammars', Buffer.concat(registry.map((r) => r.bytes)));
+const symbols = (() => {
+  const text = readFileSync(join(root, 'vendor/highlight.js/src/languages/lib/mathematica.js'), 'utf8');
+  const body = text.slice(text.indexOf('['), text.lastIndexOf(']') + 1);
+  return [...body.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => JSON.parse(`"${m[1]}"`));
+})();
+if (symbols.some((s) => s.includes('\n'))) throw new Error('a Mathematica symbol with a line break');
+const symbolsData = packed(symbolsFile, 'mathematicaSystemSymbolsData', Buffer.from(symbols.join('\n'), 'utf8'));
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
-const registry = [];
-for (const { name, file } of order) {
-  const { fn, source } = generate(name, file);
-  writeFileSync(join(outDir, `${file.replace(/[^a-z0-9_]/gi, '_')}.g.dart`), source);
-  const lang = require(join(hljsDir, 'lib/languages', file))(hljs);
-  const aliases = lang.aliases ? (Array.isArray(lang.aliases) ? lang.aliases : [lang.aliases]) : [];
-  registry.push({ name, fn, aliases, file: `${file.replace(/[^a-z0-9_]/gi, '_')}.g.dart` });
-}
-writeFileSync(join(outDir, 'all.g.dart'), [
+writeFileSync(allFile, [
   `// GENERATED by tool/generate/generate.mjs from highlight.js ${version}. Do not edit.`,
   '// ignore_for_file: type=lint',
   '',
-  "import 'package:plain_highlighting/src/mode.dart';",
-  ...registry.map((r) => `import '${r.file}';`),
-  '',
   '/// Every language, in the order highlight.js registers them (which',
-  '/// decides auto-detection ties): name, aliases and builder.',
-  'const List<(String, List<String>, Language Function())> allLanguages = [',
-  ...registry.map((r) => `  (${dartString(r.name)}, [${r.aliases.map(dartString).join(', ')}], ${r.fn}),`),
+  '/// decides auto-detection ties): name, aliases and where its grammar',
+  '/// starts in [grammars] (see `readGrammar`).',
+  'const List<(String, List<String>, int)> allLanguages = [',
+  ...registry.map((r) => `  (${dartString(r.name)}, [${r.aliases.map(dartString).join(', ')}], ${r.at}),`),
   '];',
   '',
+  '/// The grammars of [allLanguages], one after another, Brotli-compressed,',
+  '/// in base64.',
+  `const String grammars = '${grammars}';`,
+  '',
 ].join('\n'));
-// The symbols the Mathematica callback accepts (a closure upstream).
-{
-  const text = readFileSync(join(root, 'vendor/highlight.js/src/languages/lib/mathematica.js'), 'utf8');
-  const body = text.slice(text.indexOf('['), text.lastIndexOf(']') + 1);
-  const symbols = [...body.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => JSON.parse(`"${m[1]}"`));
-  writeFileSync(join(outDir, 'mathematica_symbols.g.dart'), [
-    `// GENERATED by tool/generate/generate.mjs from highlight.js ${version}. Do not edit.`,
-    '// ignore_for_file: type=lint',
-    '',
-    '/// The system symbols of Mathematica (`SYSTEM_SYMBOLS` upstream).',
-    'const Set<String> mathematicaSystemSymbols = {',
-    ...symbols.map((s) => `  ${dartString(s)},`),
-    '};',
-    '',
-  ].join('\n'));
-  console.log(`mathematica: ${symbols.length} system symbols`);
-}
-console.log(`generated ${registry.length} languages from highlight.js ${version}`);
+// The symbols the Mathematica callback accepts (a closure upstream), one
+// per line.
+writeFileSync(symbolsFile, [
+  `// GENERATED by tool/generate/generate.mjs from highlight.js ${version}. Do not edit.`,
+  '// ignore_for_file: type=lint',
+  '',
+  '/// The system symbols of Mathematica (`SYSTEM_SYMBOLS` upstream), one',
+  '/// per line, Brotli-compressed, in base64.',
+  `const String mathematicaSystemSymbolsData = '${symbolsData}';`,
+  '',
+].join('\n'));
+console.log(`mathematica: ${symbols.length} system symbols`);
+console.log(`generated ${registry.length} languages from highlight.js ${version}: ${raw} bytes of grammar, ${grammars.length} in base64 Brotli`);

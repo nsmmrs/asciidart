@@ -5,6 +5,9 @@
 /// generation instead of being silently dropped.
 library;
 
+import 'dart:convert';
+
+import 'package:plain_compression/plain_compression.dart';
 import 'package:plain_highlighting/src/languages/mathematica_symbols.g.dart';
 import 'package:plain_highlighting/src/mode.dart';
 
@@ -37,8 +40,14 @@ void phpHeredocOnEnd(ModeMatch match, CallbackResponse response) =>
 
 /// Mathematica: only the system symbols are built-ins.
 void mathematicaSystemSymbol(ModeMatch match, CallbackResponse response) {
-  if (!mathematicaSystemSymbols.contains(match[0])) response.ignoreMatch();
+  if (!_mathematicaSystemSymbols.contains(match[0])) response.ignoreMatch();
 }
+
+/// The system symbols of Mathematica, decoded when first needed.
+final Set<String> _mathematicaSystemSymbols = utf8
+    .decode(brotliDecode(base64Decode(mathematicaSystemSymbolsData)))
+    .split('\n')
+    .toSet();
 
 /// G-code: a command letter must not follow another letter.
 void gcodeLetterBoundary(ModeMatch match, CallbackResponse response) {

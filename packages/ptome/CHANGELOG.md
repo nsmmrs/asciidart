@@ -212,8 +212,9 @@ Asciidoctor project.
   fonts with a warning when one is missing, and `ptome doctor`
   checks the built-in themes' fonts and downloads the missing ones from
   Google Fonts and their projects into the user's font folder. An EPUB
-  embeds fonts only with `-a epub-embed-fonts`. The executable is 18.9 MB
-  instead of 31.5.
+  embeds fonts only with `-a epub-embed-fonts`. The executable is 14.9 MB
+  instead of 31.5 (the highlighting languages are compressed data, not
+  code; the npm bundle is 1.57 MB).
 - PDFs and EPUBs through the API and on JavaScript: `convertToBytes`,
   `convertToBytesAsync` and `convertFile` with `Backend.pdf` or
   `Backend.epub3`. Fonts can be given as bytes (`fonts`). The npm package

@@ -11,6 +11,7 @@ import 'dart:io';
 
 import 'package:plain_highlighting/src/compiler_extensions.dart' as ext;
 import 'package:plain_highlighting/src/first_chars.dart';
+import 'package:plain_highlighting/src/grammar.dart';
 import 'package:plain_highlighting/src/highlighter.dart';
 import 'package:plain_highlighting/src/languages/all.g.dart';
 import 'package:plain_highlighting/src/mode.dart';
@@ -79,8 +80,8 @@ void main() {
 
   test('every rule of every language, on the samples', () {
     final engine = Engine();
-    for (final (name, aliases, build) in allLanguages) {
-      engine.registerLanguage(name, build, aliases: aliases);
+    for (final (name, aliases, at) in allLanguages) {
+      engine.registerLanguage(name, () => readGrammar(at), aliases: aliases);
     }
     var checked = 0;
     for (final name in engine.languageNames) {

@@ -5,7 +5,8 @@
 /// them.
 library;
 
-import 'package:ptome/src/highlight/hljs_styles.g.dart';
+import 'package:plain_highlighting/plain_highlighting.dart'
+    show highlightJsStyles;
 
 /// A selector of a theme rule: compound class selectors (`.hljs-title
 /// .class_`), each a descendant of the one before.

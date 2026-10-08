@@ -12,6 +12,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:plain_highlighting/plain_highlighting.dart'
+    show highlightJsStyles;
 import 'package:plain_math/plain_math.dart' show asciimathToMathml;
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
@@ -29,7 +31,6 @@ import 'package:ptome/src/font_index.dart';
 import 'package:ptome/src/helpers.dart';
 import 'package:ptome/src/highlight/highlight.dart' show CssMode;
 import 'package:ptome/src/highlight/highlightjs.dart';
-import 'package:ptome/src/highlight/hljs_styles.g.dart';
 import 'package:ptome/src/highlight/syntax_highlighter.dart';
 import 'package:ptome/src/index_catalog.dart';
 import 'package:ptome/src/inline.dart';

@@ -1,6 +1,7 @@
 /// The public API of plain_highlighting.
 library;
 
+import 'package:plain_highlighting/src/grammar.dart';
 import 'package:plain_highlighting/src/highlighter.dart';
 import 'package:plain_highlighting/src/languages/all.g.dart';
 
@@ -50,8 +51,8 @@ final class Highlighting {
   /// A highlighter whose CSS classes start with [classPrefix].
   new({this.classPrefix = 'hljs-'})
     : _engine = Engine(classPrefix: classPrefix) {
-    for (final (name, aliases, build) in allLanguages) {
-      _engine.registerLanguage(name, build, aliases: aliases);
+    for (final (name, aliases, at) in allLanguages) {
+      _engine.registerLanguage(name, () => readGrammar(at), aliases: aliases);
     }
   }
 

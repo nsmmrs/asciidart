@@ -32,15 +32,16 @@ test('npm pack lists the expected files', () => {
     'types/index.d.cts',
     'types/index.d.ts',
   ])
-  // The bundle stays under 2.75 MB: 2.74 MB on 2026-10-07, of which the
-  // 193 highlight.js languages plain_highlighting compiles in are 1.5 MB and ptome
-  // (math, formats) the rest. See the board card on the bundle size.
+  // The bundle stays under 1.65 MB: 1.57 MB on 2026-10-08 (688 KB
+  // gzipped), of which the 193 highlight.js languages are 322 KB of data
+  // (plain_highlighting's grammars, Brotli-compressed; they were 1.5 MB of
+  // code, the bundle 2.74 MB) and ptome (math, formats) the rest.
   const bundle = report.files.find((file) => file.path === 'ptome.js')
-  assert.ok(bundle.size < 2_750_000, `bundle is ${bundle.size} bytes`)
-  // The parts under 3 MB together: 2.78 MB on 2026-10-07 (the PDF backend
-  // with plain_pdf, hyphenation and themes; the EPUB backend).
+  assert.ok(bundle.size < 1_650_000, `bundle is ${bundle.size} bytes`)
+  // The parts under 2.4 MB together: 2.24 MB on 2026-10-08 (the PDF
+  // backend with plain_pdf, hyphenation and themes; the EPUB backend).
   const partsSize = report.files
     .filter((file) => parts.includes(file.path))
     .reduce((sum, file) => sum + file.size, 0)
-  assert.ok(partsSize < 3_000_000, `parts are ${partsSize} bytes`)
+  assert.ok(partsSize < 2_400_000, `parts are ${partsSize} bytes`)
 })

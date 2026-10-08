@@ -28,6 +28,8 @@ void main() {
 - `HighlightResult` has the `html`, the `language`, its `relevance`, and for
   auto-detection the runner-up (`secondBest`).
 - `Highlighting(classPrefix: ...)` changes the `hljs-` prefix of the CSS classes.
+- `highlightJsStyles` holds highlight.js's themes, each stylesheet by its
+  name (`github`, `atom-one-dark`).
 
 ## Compatibility
 
@@ -40,8 +42,9 @@ against it:
   runner-up, as highlight.js for 766 samples (`test/detect_test.dart`);
 - the language definitions are generated from highlight.js itself
   (`tool/generate/generate.mjs`): each upstream definition runs against the
-  real highlight.js and the resulting mode graph is written out as Dart, so
-  the regular expressions, keywords and relevance are upstream's exactly.
+  real highlight.js and the resulting mode graph is written out as data
+  (compressed, read the first time a language is used), so the regular
+  expressions, keywords and relevance are upstream's exactly.
 
 Left out: the browser API (`highlightAll`, `highlightElement`), plugins, and
 custom language definitions (all of highlight.js's built-in languages are
@@ -52,6 +55,7 @@ included).
 ```sh
 dart test                          # markup, detection and unit tests
 tool/vendor.sh --check             # vendor/ matches the pinned release
+tool/vendor_styles.sh              # re-vendor and embed the themes
 cd tool/generate && npm ci && cd ../..
 node tool/generate/generate.mjs    # regenerate lib/src/languages
 node tool/generate/reference.mjs   # regenerate test/reference/detect.json

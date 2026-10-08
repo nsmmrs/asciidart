@@ -15,3 +15,4 @@
 library;
 
 export 'src/api.dart' show HighlightResult, Highlighting, highlighting;
+export 'src/styles.g.dart' show highlightJsStyles;

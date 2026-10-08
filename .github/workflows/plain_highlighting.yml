@@ -4,11 +4,13 @@ on:
     branches: ['**']
     paths:
     - 'packages/plain_highlighting/**'
+    - 'packages/plain_compression/**'
     - 'packages/plain_unicode/**'
     - '.github/workflows/plain_highlighting.yml'
   pull_request:
     paths:
     - 'packages/plain_highlighting/**'
+    - 'packages/plain_compression/**'
     - 'packages/plain_unicode/**'
     - '.github/workflows/plain_highlighting.yml'
   workflow_dispatch:

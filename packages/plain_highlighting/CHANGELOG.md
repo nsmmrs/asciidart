@@ -16,3 +16,14 @@
   only where they can start (read from their sources), each alone,
   instead of searching for one alternation of them (see
   `benchmark/BASELINE.md`). JavaScript keeps the platform's engine.
+- The languages are data, not code: the generator writes each mode graph
+  as a compact grammar (a string table and the modes' keys), all of them
+  one Brotli stream decoded the first time a language is used (15 ms),
+  each language read from it then. The generated sources go from 3.1 MB to
+  0.36 MB, ptome's executable from 18.6 MB to 14.9 MB, and its JavaScript
+  bundle from 2.74 MB to 1.57 MB (gzipped 731 KB to 688 KB); highlighting
+  is unchanged (the graphs were compared with the generated code's,
+  language by language). Regenerating keeps the committed stream when its
+  content is the same (Brotli's bytes differ between versions).
+- highlight.js's 82 themes (`highlightJsStyles`, each stylesheet by name),
+  moved from ptome.
