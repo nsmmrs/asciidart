@@ -1,8 +1,8 @@
-/// `asciidart doctor`: checks that the fonts the built-in PDF themes use
+/// `ptome doctor`: checks that the fonts the built-in PDF themes use
 /// are installed, and offers to download the missing ones from their
 /// official sources into this user's font folder.
 ///
-/// asciidart compiles no fonts in: the backends use the fonts installed
+/// Ptome compiles no fonts in: the backends use the fonts installed
 /// on the machine (see `font_index.dart`), and a theme can name any of
 /// them. The built-in themes name Noto, M+ (M PLUS) and the icon fonts of
 /// prawn-icon; `doctor` finds them as the PDF backend does (by the gem's
@@ -15,20 +15,20 @@ library;
 
 import 'dart:convert';
 
-import 'package:asciidart/src/font_index.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/remote.dart';
-import 'package:asciidart/src/sha256.dart';
+import 'package:ptome/src/font_index.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/remote.dart';
+import 'package:ptome/src/sha256.dart';
 
 /// Usage text for `doctor` (printed by `--help` and on misuse).
 const String doctorUsage = '''
-Usage: asciidart doctor [options]
+Usage: ptome doctor [options]
 
-Checks that the fonts of asciidart's built-in PDF themes are installed
+Checks that the fonts of ptome's built-in PDF themes are installed
 (Noto Serif, Noto Sans, M+ 1mn for code, the fallback fonts, Noto Sans
 Math and the icon fonts), and offers to download the missing ones from
 their official sources (Google Fonts, the projects' repositories) into
-this user's font folder, in a folder of its own named asciidart.
+this user's font folder, in a folder of its own named ptome.
 
 Options:
   -y, --yes      install the missing fonts without asking
@@ -217,7 +217,7 @@ final List<NeededFont> neededFonts = [
   ),
   NeededFont(
     name: 'Noto Sans',
-    usedBy: "asciidart's theme, default-sans",
+    usedBy: "ptome's theme, default-sans",
     families: const ['Noto Sans'],
     styles: _all,
     fileNames: _gemSubsets('notosans'),
@@ -404,11 +404,11 @@ String? installedPath(FontIndex index, NeededFont font, FontStyle style) {
   return null;
 }
 
-/// Runs `asciidart doctor` with [args]; its exit status (0 when every font
+/// Runs `ptome doctor` with [args]; its exit status (0 when every font
 /// is installed, 1 when some are missing or couldn't be installed, 64 on
 /// misuse). The fonts are looked up in [index] (the installed fonts) and
 /// installed into [installDirectory] (this user's font folder's
-/// `asciidart`), fetched with [fetch]; a question is asked when
+/// `ptome`), fetched with [fetch]; a question is asked when
 /// [interactive] (standard input is a terminal) and answered by
 /// [readLine].
 Future<int> runDoctor(
@@ -436,14 +436,14 @@ Future<int> runDoctor(
         return 0;
       default:
         errors
-          ..writeln('asciidart doctor: unknown option $arg')
+          ..writeln('ptome doctor: unknown option $arg')
           ..write(doctorUsage);
         return 64;
     }
   }
   final fonts = (index ?? Fonts.machine)();
   final missing = <(NeededFont, List<FontStyle>)>[];
-  output.writeln("The fonts of asciidart's built-in PDF themes:");
+  output.writeln("The fonts of ptome's built-in PDF themes:");
   for (final font in neededFonts) {
     final absent = <FontStyle>[];
     final found = <String>{};
@@ -480,9 +480,9 @@ Future<int> runDoctor(
   if (check) return 1;
   final String target;
   try {
-    target = installDirectory ?? _join(io.userFontDirectory, 'asciidart');
+    target = installDirectory ?? _join(io.userFontDirectory, 'ptome');
   } on Exception {
-    errors.writeln('asciidart doctor: no font folder on this platform');
+    errors.writeln('ptome doctor: no font folder on this platform');
     return 1;
   }
   output
@@ -497,7 +497,7 @@ Future<int> runDoctor(
   output.writeln();
   if (!yes) {
     if (!(interactive ?? io.hasTerminal)) {
-      output.writeln('Run `asciidart doctor --yes` to install them.');
+      output.writeln('Run `ptome doctor --yes` to install them.');
       return 1;
     }
     output.write('Download and install them? [y/N] ');
@@ -525,7 +525,7 @@ Future<int> runDoctor(
       output.writeln('  installed ${font.name}');
     } on Exception catch (error) {
       failed++;
-      errors.writeln('asciidart doctor: ${font.name}: $error');
+      errors.writeln('ptome doctor: ${font.name}: $error');
     }
   }
   if (installed.isNotEmpty) _register(installed);

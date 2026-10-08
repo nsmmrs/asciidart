@@ -18,7 +18,7 @@ library;
 import 'dart:async' show unawaited;
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'support/paths.dart';

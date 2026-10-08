@@ -1,6 +1,6 @@
 part of 'api.dart';
 
-/// The result of converting one file with [AsciidartFiles.convertTree].
+/// The result of converting one file with [PtomeFiles.convertTree].
 final class FileConversion {
   const new _(this.inputPath, this.outputPath, this.document);
 
@@ -14,19 +14,19 @@ final class FileConversion {
   final Document document;
 }
 
-/// Reading and writing files (`package:asciidart/io.dart`).
+/// Reading and writing files (`package:ptome/io.dart`).
 ///
-/// These follow the [Asciidart.safe] mode like everything else: to let a
+/// These follow the [Ptome.safe] mode like everything else: to let a
 /// document include files from below its own directory, use
 /// `SafeMode.safe`; to write output outside the base directory (the
-/// document's directory, unless [Asciidart.baseDir] says otherwise), or to
+/// document's directory, unless [Ptome.baseDir] says otherwise), or to
 /// include files from anywhere, use `SafeMode.unsafe`.
-extension AsciidartFiles on Asciidart {
+extension PtomeFiles on Ptome {
   /// Parses the AsciiDoc file at [path].
   ///
   /// Waits for [IncludeResolver]s that return a `Future`, and fetches
   /// remote content when the `allow-uri-read` attribute is set, like
-  /// [Asciidart.parseAsync].
+  /// [Ptome.parseAsync].
   Future<Document> parseFile(
     String path, {
     Backend backend = Backend.html5,

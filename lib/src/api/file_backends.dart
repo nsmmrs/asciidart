@@ -3,8 +3,8 @@
 /// loads them on demand).
 library;
 
-import 'package:asciidart/src/epub3/epub3.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
+import 'package:ptome/src/epub3/epub3.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 
 /// Makes [backend]'s code ready (here, registers it).
 Future<void> loadFileBackend(String backend) async =>

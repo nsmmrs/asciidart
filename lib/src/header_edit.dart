@@ -9,10 +9,10 @@
 /// conditional) the edit is refused rather than guessed.
 library;
 
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/parser.dart';
-import 'package:asciidart/src/rx.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/parser.dart';
+import 'package:ptome/src/rx.dart';
 
 /// [source] (the source of [document]) with the header attribute [name]
 /// set to [value]: the entry that sets it last is rewritten (an unset

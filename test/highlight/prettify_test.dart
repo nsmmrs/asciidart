@@ -1,7 +1,7 @@
 /// Tests for the prettify adapter.
 library;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 void main() {

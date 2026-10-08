@@ -4,7 +4,7 @@
 # executable file). It defaults to the Ruby CLI shim so the same suite can
 # later run against the Dart executable via:
 #
-#   ASCIIDOCTOR_EXE=/path/to/asciidart bats test/e2e/
+#   ASCIIDOCTOR_EXE=/path/to/ptome bats test/e2e/
 
 _e2e_dir="${BATS_TEST_DIRNAME:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 case "$_e2e_dir" in

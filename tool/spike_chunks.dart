@@ -18,15 +18,15 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:asciidart/src/font_index.dart';
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
 import 'package:libpdf/libpdf.dart';
+import 'package:ptome/src/font_index.dart';
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 
 import 'vendored_fonts.dart';
 
 final String _home = Platform.environment['HOME'] ?? '';
-final String _port = '$_home/Work/ports/hypermedia-systems-asciidart';
+final String _port = '$_home/Work/ports/hypermedia-systems-ptome';
 final String _fonts = '$_home/.cache/asciidart-work/hs-golden/fonts';
 
 /// The vendored fonts' folders, separated as `PATH` is.
@@ -39,7 +39,7 @@ typedef Report = ({int walk, int total, int pages, int rss});
 Future<void> main(List<String> args) async {
   // (The vendored fonts, found from the repository, before moving to the
   // book's folder.)
-  _fontPath = withVendoredFonts()['ASCIIDART_FONT_PATH']!;
+  _fontPath = withVendoredFonts()['PTOME_FONT_PATH']!;
   Directory.current = _port;
   if (args case ['worker', final index, final count]) {
     final report = work(int.parse(index), int.parse(count));
@@ -111,7 +111,7 @@ Future<(int, int, int)> _processes(int count) async {
       Process.run(
         Platform.resolvedExecutable,
         ['worker', '$i', '$count'],
-        environment: {'ASCIIDART_FONT_PATH': _fontPath},
+        environment: {'PTOME_FONT_PATH': _fontPath},
       ),
   ]);
   final reports = [

@@ -1,19 +1,19 @@
 /// The entry point of the npm package's compiled core.
 ///
 /// Running the bundle installs the projection of the public API
-/// (`api.g.dart`) as `globalThis.asciidartCore`, which `npm/src/core.js`
+/// (`api.g.dart`) as `globalThis.ptomeCore`, which `npm/src/core.js`
 /// initializes and the generated `npm/src/api.g.js` calls into.
 library;
 
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:asciidart/src/api/file_backends_js.dart';
-import 'package:asciidart/src/cli/run.dart' show runCliCode;
-import 'package:asciidart/src/js/api.g.dart';
-import 'package:asciidart/src/js/page_fonts.dart';
-import 'package:asciidart/src/js/runtime.dart';
 import 'package:fonts/fonts.dart' show FontIndex;
+import 'package:ptome/src/api/file_backends_js.dart';
+import 'package:ptome/src/cli/run.dart' show runCliCode;
+import 'package:ptome/src/js/api.g.dart';
+import 'package:ptome/src/js/page_fonts.dart';
+import 'package:ptome/src/js/runtime.dart';
 
 /// The real global object (the bundle's own `self` shadows it; see
 /// `npm/preamble.js`).
@@ -35,7 +35,7 @@ void main() {
       'setFontSource'.toJS,
       ((JSFunction source) => fontSource = source).toJS,
     );
-  _global.setProperty('asciidartCore'.toJS, core);
+  _global.setProperty('ptomeCore'.toJS, core);
 }
 
 /// Runs the command line with [args], loading the part of the bundle of a

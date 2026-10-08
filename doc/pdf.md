@@ -1,13 +1,13 @@
 # PDF output
 
-`asciidart -b pdf` writes a PDF with asciidart's own PDF library, libpdf,
+`ptome -b pdf` writes a PDF with Ptome's own PDF library, libpdf,
 and reads asciidoctor-pdf's YAML themes unchanged (`pdf-theme`,
 `pdf-themesdir`, `pdf-fontsdir`). It needs an output file, and sets text
-in the fonts installed on the machine (`asciidart doctor` installs the
+in the fonts installed on the machine (`ptome doctor` installs the
 built-in themes'; see [Fonts](#fonts)). The API makes PDFs too, on the Dart
 VM, on Node.js and in a browser (see `doc/api.md`).
 
-It lays documents out with asciidart's own typesetting, described below.
+It lays documents out with Ptome's own typesetting, described below.
 With `asciidoctor-compat` (or `-a pdf-compat`), its settings default to
 asciidoctor-pdf's look instead (next section; ADR-0015).
 
@@ -31,11 +31,11 @@ same (`benchmark/PARITY.md`).
 
 ## The modern engine
 
-Its default theme is asciidart's house theme (`asciidart`, `doc/style.md`):
+Its default theme is Ptome's house theme (`ptome`, `doc/style.md`):
 asciidoctor-pdf's default with a shorter measure, more open lines,
 headings in the sans, code in a tint and tables with rows only.
 `-a pdf-theme=default` is asciidoctor-pdf's theme; a theme of your own
-`extends: asciidart` or `extends: default`.
+`extends: ptome` or `extends: default`.
 
 Every setting has a default. Each one is a key of the theme (as written
 in the YAML, `prose_orphans` is `prose: { orphans: 2 }`) or an attribute
@@ -150,10 +150,10 @@ US English), with the hyph-utf8 patterns for 72 languages
 
 ### Fonts
 
-asciidart compiles no fonts in: a theme names the fonts it wants, and they
+Ptome compiles no fonts in: a theme names the fonts it wants, and they
 come from the machine. A `font_catalog` file is looked up in
 `pdf-fontsdir` (by default the theme's folder), then among the installed
-fonts, those of the folders in `ASCIIDART_FONT_PATH` (separated as `PATH`
+fonts, those of the folders in `PTOME_FONT_PATH` (separated as `PATH`
 is) and then this user's and the system's font folders: by the file's
 name, then by the family and style its catalog entry gives. `GEM_FONTS_DIR`
 names the built-in themes' fonts wherever they are installed, M PLUS 1
@@ -171,7 +171,7 @@ for a monospace family, Times for a serif one, else Helvetica), with one
 warning; an icon set whose font is missing shows its icons as text, and
 math with no math font installed is shown as its source.
 
-`asciidart doctor` lists the fonts of the built-in themes (Noto Serif,
+`ptome doctor` lists the fonts of the built-in themes (Noto Serif,
 Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math and
 the Font Awesome, Foundation and Payment icon fonts), where they are
 found, and offers to download the missing ones from their official
@@ -246,7 +246,7 @@ baseline at the text's size, in its color; a block is in display style.
 Copied, a formula gives its source.
 
 LaTeX math (`latexmath:[]`, `:stem: latexmath`) is typeset the same way,
-converted to MathML by asciidart: math mode as documents use it (KaTeX's
+converted to MathML by ptome: math mode as documents use it (KaTeX's
 and MathJax's common commands: `\frac`, `\sqrt[n]`, `\left`...`\right`,
 scripts and limits, Greek and symbols, function names and
 `\operatorname`, accents and braces, `\text` and the `\math...`
@@ -374,7 +374,7 @@ edge, with a warning), where the gem leaves the table out.
 Preflight messages report what keeps a PDF/X-4 from conforming: a font
 that isn't embedded (a built-in PDF font in the theme), a profile that
 isn't an output profile, and content in RGB with a CMYK printing
-condition (asciidart's colors are RGB: use an RGB output profile, or
+condition (Ptome's colors are RGB: use an RGB output profile, or
 convert the PDF to the printer's CMYK).
 
 ### Cores

@@ -1,5 +1,5 @@
-import 'package:asciidart/asciidart.dart';
-import 'package:asciidart/src/output_template.dart';
+import 'package:ptome/ptome.dart';
+import 'package:ptome/src/output_template.dart';
 import 'package:test/test.dart';
 
 void main() {

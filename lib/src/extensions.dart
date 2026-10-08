@@ -27,23 +27,23 @@
 /// [TreeProcessor.onProcess]).
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/attribute_list.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/context.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/list.dart';
-import 'package:asciidart/src/parser.dart';
-import 'package:asciidart/src/reader.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/substitutors.dart' as substitutors;
-import 'package:asciidart/src/text_case.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/attribute_list.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/context.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/list.dart';
+import 'package:ptome/src/parser.dart';
+import 'package:ptome/src/reader.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/substitutors.dart' as substitutors;
+import 'package:ptome/src/text_case.dart';
 
 /// How a macro processor receives the attribute list of its macro.
 enum MacroAttributes {

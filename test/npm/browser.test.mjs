@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { after, before, test } from 'node:test'
 import { build } from 'esbuild'
 import { chromium } from 'playwright-core'
-import { Asciidart, FontFile, SafeMode } from 'asciidart'
+import { Ptome, FontFile, SafeMode } from 'ptome'
 
 const fixtures = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor', 'test', 'fixtures')
 const webFonts = join(import.meta.dirname, '..', 'fixtures', 'fonts')
@@ -23,7 +23,7 @@ before(async () => {
   const bundle = await build({
     stdin: {
       contents:
-        "import * as asciidart from 'asciidart'\nglobalThis.asciidart = asciidart\n",
+        "import * as ptome from 'ptome'\nglobalThis.ptome = ptome\n",
       resolveDir: import.meta.dirname,
     },
     bundle: true,
@@ -87,7 +87,7 @@ before(async () => {
   const errors = []
   page.on('pageerror', (error) => errors.push(error))
   await page.goto(`http://127.0.0.1:${server.address().port}/`)
-  await page.waitForFunction(() => globalThis.asciidart !== undefined)
+  await page.waitForFunction(() => globalThis.ptome !== undefined)
   assert.deepEqual(errors, [])
 })
 
@@ -99,8 +99,8 @@ after(async () => {
 
 test('reports the versions', async () => {
   const versions = await page.evaluate(() => [
-    globalThis.asciidart.asciidartVersion,
-    globalThis.asciidart.asciidoctorVersion,
+    globalThis.ptome.ptomeVersion,
+    globalThis.ptome.asciidoctorVersion,
   ])
   assert.deepEqual(versions, ['0.1.0', '2.1.0.alpha.0'])
 })
@@ -108,7 +108,7 @@ test('reports the versions', async () => {
 // doctime-localtime.adoc prints the current time, which can tick between the
 // two conversions.
 const clockDependent = new Set(['doctime-localtime.adoc'])
-const secure = new Asciidart({ safe: SafeMode.secure })
+const secure = new Ptome({ safe: SafeMode.secure })
 
 for (const name of readdirSync(fixtures)
   .filter((file) => file.endsWith('.adoc') && !clockDependent.has(file))
@@ -117,7 +117,7 @@ for (const name of readdirSync(fixtures)
     const source = readFileSync(join(fixtures, name), 'utf8')
     const expected = secure.convert(source)
     const actual = await page.evaluate(
-      (input) => new globalThis.asciidart.Asciidart({ safe: 'secure' }).convert(input),
+      (input) => new globalThis.ptome.Ptome({ safe: 'secure' }).convert(input),
       source
     )
     assert.equal(actual, expected)
@@ -126,7 +126,7 @@ for (const name of readdirSync(fixtures)
 
 test('includes behave as missing files without a file system', async () => {
   const output = await page.evaluate(() =>
-    new globalThis.asciidart.Asciidart({ safe: 'safe' }).convert('include::other.adoc[]')
+    new globalThis.ptome.Ptome({ safe: 'safe' }).convert('include::other.adoc[]')
   )
   assert.match(output, /Unresolved directive in &lt;stdin&gt; - include::other\.adoc\[\]/)
 })
@@ -135,13 +135,13 @@ test('makes a PDF in the browser like Node.js, its part loaded on demand', async
   const fonts = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor-pdf', 'data', 'fonts')
   const regular = readFileSync(join(fonts, 'notoserif-regular-subset.ttf'))
   const attributes = { localdatetime: '2020-01-01 00:00:00 +0000' }
-  const expected = await new Asciidart({
+  const expected = await new Ptome({
     fonts: [new FontFile('notoserif-regular-subset.ttf', regular)],
   }).convertToBytesAsync('Hello, browser.', { backend: 'pdf', attributes })
   const actual = await page.evaluate(
     async ({ font, attributes }) => {
-      const { Asciidart, FontFile } = globalThis.asciidart
-      const ad = new Asciidart({ fonts: [new FontFile('notoserif-regular-subset.ttf', new Uint8Array(font))] })
+      const { Ptome, FontFile } = globalThis.ptome
+      const ad = new Ptome({ fonts: [new FontFile('notoserif-regular-subset.ttf', new Uint8Array(font))] })
       return Array.from(await ad.convertToBytesAsync('Hello, browser.', { backend: 'pdf', attributes }))
     },
     { font: Array.from(regular), attributes }
@@ -152,15 +152,15 @@ test('makes a PDF in the browser like Node.js, its part loaded on demand', async
 test("makes a PDF in the page's web fonts (WOFF2 and WOFF), like Node.js given them", async () => {
   const fontsPage = await browser.newPage()
   await fontsPage.goto(`http://127.0.0.1:${server.address().port}/fonts.html`)
-  await fontsPage.waitForFunction(() => globalThis.asciidart !== undefined)
+  await fontsPage.waitForFunction(() => globalThis.ptome !== undefined)
   const source = 'Hello, *page* fonts.'
   const attributes = { localdatetime: '2020-01-01 00:00:00 +0000' }
   const convert = (pageFonts) =>
     fontsPage.evaluate(
       async ({ source, attributes, pageFonts }) => {
-        const { Asciidart } = globalThis.asciidart
+        const { Ptome } = globalThis.ptome
         const messages = []
-        const ad = new Asciidart({ pageFonts, onDiagnostic: (d) => messages.push(d.message) })
+        const ad = new Ptome({ pageFonts, onDiagnostic: (d) => messages.push(d.message) })
         const pdf = await ad.convertToBytesAsync(source, { backend: 'pdf', attributes })
         return { pdf: Array.from(pdf), messages }
       },
@@ -171,7 +171,7 @@ test("makes a PDF in the page's web fonts (WOFF2 and WOFF), like Node.js given t
     withPageFonts.messages.filter((m) => m.includes('not installed')),
     []
   )
-  const expected = await new Asciidart({
+  const expected = await new Ptome({
     fonts: ['notoserif-regular-ascii.woff2', 'notoserif-bold-ascii.woff'].map(
       (name) => new FontFile(name, readFileSync(join(webFonts, name)))
     ),

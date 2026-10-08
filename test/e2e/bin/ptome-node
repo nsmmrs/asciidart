@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 # Runs the npm package's CLI (build it first with tool/build-npm.sh).
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-exec node "$root/build/npm/bin/asciidart.js" "$@"
+exec node "$root/build/npm/bin/ptome.js" "$@"

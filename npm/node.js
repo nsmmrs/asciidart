@@ -1,4 +1,4 @@
 // The Node.js entry point (import).
-import './asciidart.js'
+import './ptome.js'
 
 export * from './src/index.js'

@@ -32,7 +32,7 @@ out="$tmp/out"
 mkdir -p "$out/styles" "$out/images" "$out/test"
 
 # The spec fixtures of the release (tool/epub_parity.dart converts them
-# with the gem and with asciidart).
+# with the gem and with ptome).
 git init -q "$tmp/repo"
 git -C "$tmp/repo" remote add origin https://github.com/asciidoctor/asciidoctor-epub3.git
 git -C "$tmp/repo" fetch -q --depth 1 origin "refs/tags/v$version"

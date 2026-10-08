@@ -5,8 +5,8 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/pdf/theme.dart';
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/pdf/theme.dart';
 import 'package:test/test.dart';
 
 const String fixtures = 'vendor/asciidoctor-pdf/test/spec/fixtures';

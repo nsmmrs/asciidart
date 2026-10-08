@@ -15,24 +15,24 @@ library;
 import 'dart:collection' show MapBase;
 import 'dart:math' as math;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/callouts.dart';
-import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/extensions.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/list.dart';
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/reader.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/substitutors.dart';
-import 'package:asciidart/src/table.dart';
-import 'package:asciidart/src/text_case.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/callouts.dart';
+import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/extensions.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/list.dart';
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/reader.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/substitutors.dart';
+import 'package:ptome/src/table.dart';
+import 'package:ptome/src/text_case.dart';
 
 /// Match data for a delimited block boundary line.
 ///
@@ -2890,7 +2890,7 @@ abstract final class Parser {
       nextIndex += 1;
     }
 
-    // asciidart's lint (with callout-links): a callout no item explains.
+    // Ptome's lint (with callout-links): a callout no item explains.
     if (parent.document!.hasAttr('callout-links')) {
       for (final callout in callouts.currentList) {
         if (callout.ordinal > listBlock.items.length) {

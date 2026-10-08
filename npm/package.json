@@ -1,5 +1,5 @@
 {
-  "name": "asciidart",
+  "name": "ptome",
   "version": "0.1.0",
   "description": "AsciiDoc processor written in Dart, compiled to JavaScript: converts AsciiDoc to HTML 5, DocBook 5, man pages, PDF and EPUB compatibly with Asciidoctor (its development version, 2.1.0.alpha.0), fixing bugs it still has.",
   "keywords": [
@@ -15,9 +15,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nsmmrs/asciidart.git"
+    "url": "git+https://github.com/nsmmrs/ptome.git"
   },
-  "bugs": "https://github.com/nsmmrs/asciidart/issues",
+  "bugs": "https://github.com/nsmmrs/ptome/issues",
   "type": "module",
   "exports": {
     ".": {
@@ -39,10 +39,10 @@
   "main": "./node.cjs",
   "types": "./types/index.d.cts",
   "bin": {
-    "asciidart": "bin/asciidart.js"
+    "ptome": "bin/ptome.js"
   },
   "files": [
-    "asciidart.js",
+    "ptome.js",
     "browser.js",
     "node.cjs",
     "node.js",

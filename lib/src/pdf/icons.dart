@@ -3,7 +3,7 @@
 /// the deprecated `fa` set's Font Awesome 4 names.
 library;
 
-import 'package:asciidart/src/pdf/assets.g.dart';
+import 'package:ptome/src/pdf/assets.g.dart';
 
 /// The icon sets, by the prefix that names them.
 const Set<String> iconSets = {'fab', 'far', 'fas', 'fi', 'pf'};

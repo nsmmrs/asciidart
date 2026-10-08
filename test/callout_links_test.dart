@@ -1,6 +1,6 @@
 // Callouts linked both ways (and linted) with the callout-links
-// attribute: asciidart's, off by default (Asciidoctor has neither).
-import 'package:asciidart/src/internal.dart';
+// attribute: Ptome's, off by default (Asciidoctor has neither).
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 const _source = '''

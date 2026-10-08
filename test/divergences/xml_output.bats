@@ -3,7 +3,7 @@
 # underscore (`_hyperscript`) before constrained emphasis lets the emphasis
 # open inside the term and close in the text after it: Asciidoctor 2.0.26
 # writes `<primary><emphasis>hyperscript</primary>` and a stray
-# `</emphasis>`. Found by the Hypermedia Systems acceptance run; asciidart
+# `</emphasis>`. Found by the Hypermedia Systems acceptance run; ptome
 # balances the tags (benchmark/PARITY.md). Fails on the gem.
 
 load ../e2e/helpers
@@ -31,7 +31,7 @@ EOF2
 }
 
 # A section style DocBook has no element for ([introduction]) became that
-# element (<introduction>), which no DocBook schema allows: asciidart
+# element (<introduction>), which no DocBook schema allows: ptome
 # writes the chapter or section it is. Fails on the gem.
 @test "a section style DocBook has no element for gives a chapter" {
   printf '= Book\n:doctype: book\n\n[introduction]\n== Introduction\n\nText.\n' > input.adoc
@@ -43,7 +43,7 @@ EOF2
 }
 
 # [partintro] on a section that isn't in a part gave <partintro> there,
-# where DocBook doesn't allow it: asciidart writes a section. Fails on the
+# where DocBook doesn't allow it: ptome writes a section. Fails on the
 # gem.
 @test "a part introduction outside a part gives a section" {
   printf '= Book\n:doctype: book\n\n== Chapter\n\n[partintro]\n=== Intro\n\nText.\n' > input.adoc
@@ -55,7 +55,7 @@ EOF2
 }
 
 # Emphasis inside monospace gave <emphasis> inside <literal>, which
-# DocBook doesn't allow: asciidart writes a phrase. Fails on the gem.
+# DocBook doesn't allow: ptome writes a phrase. Fails on the gem.
 @test "emphasis inside monospace gives a phrase in the literal" {
   printf 'Some `a _b_ c` here.\n' > input.adoc
   run -- "$EXE" -s -b docbook5 -o - input.adoc
@@ -67,7 +67,7 @@ EOF2
 # The copyright (`:copyright: Holder 2023`) gave <copyright> with the
 # holder before the year, and with no year when the attribute has none:
 # DocBook 5.0 wants one or more years first, so neither validates.
-# asciidart writes the year first, and a copyright without a year as a
+# ptome writes the year first, and a copyright without a year as a
 # legal notice. Found by the Hypermedia Systems acceptance run. Fails on
 # the gem.
 @test "a copyright gives its year before its holder" {

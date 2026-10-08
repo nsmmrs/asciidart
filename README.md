@@ -1,6 +1,6 @@
-# asciidart
+# Ptome
 
-[![CI](https://github.com/nsmmrs/asciidart/actions/workflows/ci.yml/badge.svg)](https://github.com/nsmmrs/asciidart/actions/workflows/ci.yml)
+[![CI](https://github.com/nsmmrs/ptome/actions/workflows/ci.yml/badge.svg)](https://github.com/nsmmrs/ptome/actions/workflows/ci.yml)
 
 An AsciiDoc processor written in Dart. It converts AsciiDoc to HTML 5,
 DocBook 5, man pages and (with the native executable) EPUB 3 and PDF, and
@@ -10,15 +10,15 @@ as a drop-in replacement for
 attributes, command-line options and output. It is a library, a command
 line tool, and (compiled to JavaScript) an npm package.
 
-> asciidart follows Asciidoctor's development version (upstream `main` at
+> Ptome follows Asciidoctor's development version (upstream `main` at
 > `30fb8cd5`, which reports 2.1.0.alpha.0) and fixes bugs Asciidoctor still
 > has ([PARITY.md](benchmark/PARITY.md#upstream-bugs-fixed)). The tag
 > `asciidoctor-2.0.26-parity` marks the last commit that matched the
 > 2.0.26 release byte for byte ([ADR-0017](adr/0017-follow-main-fix-bugs.md)).
 
-> asciidart is an independent re-implementation, not affiliated with or
+> Ptome is an independent re-implementation, not affiliated with or
 > endorsed by the Asciidoctor project. Report problems
-> [here](https://github.com/nsmmrs/asciidart/issues), not upstream.
+> [here](https://github.com/nsmmrs/ptome/issues), not upstream.
 
 ## Why
 
@@ -26,7 +26,7 @@ line tool, and (compiled to JavaScript) an npm package.
   the Asciidoctor gem built from upstream `main` on all three backends (`tool/parity.sh`, run
   in CI) and over a corpus of about 4,500 real-world documents
   (`tool/corpus_parity.dart`); the command line passes the same end-to-end
-  suite as the gem. Where asciidart differs on purpose, the difference is
+  suite as the gem. Where Ptome differs on purpose, the difference is
   listed in [`benchmark/PARITY.md`](benchmark/PARITY.md). EPUB 3 output
   matches the asciidoctor-epub3 2.3.0 gem file by file
   (`tool/epub_parity.dart`).
@@ -35,11 +35,11 @@ line tool, and (compiled to JavaScript) an npm package.
   fonts and compression come from the
   [fonts](https://github.com/nsmmrs/fonts) and
   [compression](https://github.com/nsmmrs/compression) packages), and reads
-  asciidoctor-pdf's YAML themes. Fonts are yours: a theme names any installed font, and `asciidart doctor`
+  asciidoctor-pdf's YAML themes. Fonts are yours: a theme names any installed font, and `ptome doctor`
   installs the built-in themes' (Noto, M PLUS and the icon fonts). With
   `asciidoctor-compat`, the pages look as asciidoctor-pdf 2.3.27 sets them:
   792 of the 797 documents of that gem's spec suite look the same
-  (`tool/pdf_look.dart`). By default, asciidart lays books out with its
+  (`tool/pdf_look.dart`). By default, Ptome lays books out with its
   own typesetting: optimal line breaking, hyphenation, widows and orphans,
   ligatures, listings that never lose a line, and table styles by role
   ([`doc/pdf.md`](doc/pdf.md)).
@@ -57,16 +57,16 @@ line tool, and (compiled to JavaScript) an npm package.
 
 ## Library
 
-asciidart is not on pub.dev yet; depend on it from git:
+Ptome is not on pub.dev yet; depend on it from git:
 
 ```yaml
 dependencies:
-  asciidart:
-    git: https://github.com/nsmmrs/asciidart.git
+  ptome:
+    git: https://github.com/nsmmrs/ptome.git
 ```
 
 ```dart
-import 'package:asciidart/asciidart.dart';
+import 'package:ptome/ptome.dart';
 
 void main() {
   print(asciidoc.convert('Hello, *World*!')); // <div class="paragraph">...
@@ -79,7 +79,7 @@ void main() {
 }
 ```
 
-An `Asciidart` object holds a configuration (safe mode, attributes,
+A `Ptome` object holds a configuration (safe mode, attributes,
 extensions, an HTML override, highlighters) and `asciidoc` is the default
 one. A parsed `Document` is a sealed tree of typed nodes, and its
 `diagnostics` list what was reported while parsing and converting it.
@@ -89,9 +89,9 @@ extensions, diagnostics and files.
 
 | Import | Contents |
 | --- | --- |
-| `package:asciidart/asciidart.dart` | parsing, converting, the document tree, extensions, overrides, diagnostics (no file system access: runs on the web and in Flutter) |
-| `package:asciidart/io.dart` | `parseFile`, `convertFile` and `convertTree` |
-| `package:asciidart/cli.dart` | `runCli`, for building your own command |
+| `package:ptome/ptome.dart` | parsing, converting, the document tree, extensions, overrides, diagnostics (no file system access: runs on the web and in Flutter) |
+| `package:ptome/io.dart` | `parseFile`, `convertFile` and `convertTree` |
+| `package:ptome/cli.dart` | `runCli`, for building your own command |
 
 Everything else is private. `tool/api_surface.txt` records the public API,
 and CI fails when it changes unnoticed.
@@ -99,19 +99,19 @@ and CI fails when it changes unnoticed.
 ## Command line
 
 ```sh
-dart pub global activate --source git https://github.com/nsmmrs/asciidart.git
-asciidart document.adoc
+dart pub global activate --source git https://github.com/nsmmrs/ptome.git
+ptome document.adoc
 ```
 
-`asciidart` takes the options of the `asciidoctor` command
-(`asciidart --help`, `man ./man/asciidart.1`). Differences: the
+`ptome` takes the options of the `asciidoctor` command
+(`ptome --help`, `man ./man/ptome.1`). Differences: the
 Ruby-specific options (`-r`, `-I`, `--eruby`, `-w`) are not available,
-messages start with `asciidart:` and read like a Dart tool's, and
-`--version` names asciidart and the Asciidoctor release it is compatible
+messages start with `ptome:` and read like a Dart tool's, and
+`--version` names Ptome and the Asciidoctor release it is compatible
 with.
 
 Native executables can be built with `tool/build-exes.sh` or
-`dart compile exe bin/asciidart.dart`.
+`dart compile exe bin/ptome.dart`.
 
 ### Custom converters
 
@@ -121,8 +121,8 @@ Ruby's Tilt templates cannot run on Dart. Instead
 
 - `-T DIR` loads Mustache templates (`paragraph.mustache`, ...) on top of
   the built-in converter.
-- An HTML override (`Asciidart(html: ...)`) replaces the HTML of any node
-  in Dart code. `asciidart init-config DIR` generates a project for a
+- An HTML override (`Ptome(html: ...)`) replaces the HTML of any node
+  in Dart code. `ptome init-config DIR` generates a project for a
   custom command with such code (and extensions) compiled in.
 
 ## Syntax highlighting
@@ -136,20 +136,20 @@ behavior instead: the browser loads highlight.js and highlights the page.
 
 Rouge, Pygments and CodeRay are not available; with them, source blocks are
 left unhighlighted, as Asciidoctor does when their gem is missing. Custom
-highlighters can be registered through the API (`Asciidart(highlighters:
+highlighters can be registered through the API (`Ptome(highlighters:
 ...)`).
 
 ## JavaScript and npm
 
 The same core compiles to JavaScript as the npm package
-[`asciidart`](npm/README.md), with TypeScript types and an `asciidart`
+[`ptome`](npm/README.md), with TypeScript types and a `ptome`
 command. It runs on Node.js 20.19+ and in browsers
 ([ADR-0005](adr/0005-js-build.md)). Its API is generated from the Dart
 API, with the same names and shapes
 ([ADR-0007](adr/0007-js-projection.md)):
 
 ```js
-import { asciidoc, Section } from 'asciidart'
+import { asciidoc, Section } from 'ptome'
 
 const doc = asciidoc.parse('= Title\n\n== Section\n\ntext')
 doc.descendants(Section).map((s) => s.title) // ['Section']
@@ -158,10 +158,10 @@ asciidoc.convert('Hello, *AsciiDoc*!')
 
 ## Versions
 
-asciidart is compatible with Asciidoctor's development version: upstream
+Ptome is compatible with Asciidoctor's development version: upstream
 `main` at `30fb8cd5` (`tool/vendor.sh`), which reports **2.1.0.alpha.0**.
 Documents see `{asciidoctor-version}` as 2.1.0.alpha.0 and
-`{asciidart-version}` as the version of asciidart. Documents that hit one
+`{ptome-version}` as the version of Ptome. Documents that hit one
 of the upstream bugs fixed here convert differently (the fixes are listed
 in [PARITY.md](benchmark/PARITY.md#upstream-bugs-fixed)). For output
 identical to the 2.0.26 release, use the tag `asciidoctor-2.0.26-parity`
@@ -170,18 +170,18 @@ identical to the 2.0.26 release, use the tag `asciidoctor-2.0.26-parity`
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Bug reports are welcome at the
-[issue tracker](https://github.com/nsmmrs/asciidart/issues); include an
+[issue tracker](https://github.com/nsmmrs/ptome/issues); include an
 `.adoc` reproducer and, when the output differs from the gem, the gem's
 output.
 
 ## Origins and license
 
-asciidart began as a file-by-file port of
+Ptome began as a file-by-file port of
 [Asciidoctor](https://github.com/asciidoctor/asciidoctor), the Ruby
 implementation by Dan Allen, Sarah White, Ryan Waldron and the Asciidoctor
 contributors, with byte-identical output as the bar. MIT licensed (see
 [LICENSE](LICENSE)). The stylesheets, locale data and test fixtures taken
 from Asciidoctor live under [`vendor/`](vendor/README.md), with their
-license. asciidart ships no fonts: `asciidart doctor` downloads the
+license. Ptome ships no fonts: `ptome doctor` downloads the
 built-in themes' fonts (SIL Open Font License 1.1 and MIT) from their
 projects, with their licenses.

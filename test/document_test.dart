@@ -7,8 +7,8 @@ library;
 
 import 'dart:io' show Directory, File;
 
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/load.dart' as api;
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/load.dart' as api;
 import 'package:test/test.dart';
 
 import 'support/doc_helpers.dart';
@@ -2987,7 +2987,7 @@ void main() {
           input,
           const AsciidoctorOptions(backend: 'docbook5'),
         );
-        // asciidart: a legal notice, since DocBook 5.0 wants a year in a
+        // ptome: a legal notice, since DocBook 5.0 wants a year in a
         // copyright (benchmark/PARITY.md).
         assertXpath('/article/info/copyright', output, 0);
         assertXpath(

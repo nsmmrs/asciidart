@@ -4,7 +4,7 @@
 /// as a typed tree of maps, lists and scalars.
 library;
 
-import 'package:asciidart/src/pdf/theme.dart';
+import 'package:ptome/src/pdf/theme.dart';
 import 'package:yaml/yaml.dart';
 
 /// A YAML node.

@@ -2,7 +2,7 @@
 /// `withoutAttribute`): only the lines of the edited entry change.
 library;
 
-import 'package:asciidart/asciidart.dart';
+import 'package:ptome/ptome.dart';
 import 'package:test/test.dart';
 
 const card = '''
@@ -124,7 +124,7 @@ void main() {
     ]) {
       expect(
         () => asciidoc.parse(source).withAttribute('status', 'b'),
-        throwsA(isA<AsciidartException>()),
+        throwsA(isA<PtomeException>()),
         reason: source,
       );
     }

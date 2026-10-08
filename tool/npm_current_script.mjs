@@ -17,7 +17,7 @@ if (!pattern.test(source)) {
   console.error('npm_current_script: unexpected dart2js output (no currentScript)')
   process.exit(1)
 }
-const stand = '{src:"asciidart.js",nonce:"",crossOrigin:null,getAttribute:function(){return null}}'
+const stand = '{src:"ptome.js",nonce:"",crossOrigin:null,getAttribute:function(){return null}}'
 writeFileSync(
   file,
   source.replace(pattern, (_, arg, init) => `(function(${arg}){${init}.currentScript=${arg}||${stand}`),

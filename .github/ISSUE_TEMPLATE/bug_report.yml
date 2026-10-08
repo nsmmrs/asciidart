@@ -1,13 +1,13 @@
 name: Report a bug
 description: >-
-  Report a problem with asciidart (the Dart library, the asciidart
-  command or the asciidart npm package).
+  Report a problem with ptome (the Dart library, the ptome
+  command or the ptome npm package).
 labels: [bug]
 body:
 - type: markdown
   attributes:
     value: >-
-      asciidart aims to convert documents as Asciidoctor 2.0.26 (the Ruby
+      ptome aims to convert documents as Asciidoctor 2.0.26 (the Ruby
       gem) does. Output that differs from the gem is a bug unless
       benchmark/PARITY.md lists the difference as intentional. For a
       security problem, open a minimal issue asking for a private channel
@@ -17,17 +17,17 @@ body:
   attributes:
     label: Package
     options:
-    - Dart library (asciidart)
-    - asciidart command
-    - npm package (asciidart)
+    - Dart library (ptome)
+    - ptome command
+    - npm package (ptome)
   validations:
     required: true
 - type: input
   id: version
   attributes:
     label: Version
-    description: Run `asciidart --version` and paste the output.
-    placeholder: "Asciidart 0.1.0 (compatible with Asciidoctor 2.0.26) [https://github.com/nsmmrs/asciidart] Runtime Environment (Dart ...)"
+    description: Run `ptome --version` and paste the output.
+    placeholder: "Ptome 0.1.0 (compatible with Asciidoctor 2.0.26) [https://github.com/nsmmrs/ptome] Runtime Environment (Dart ...)"
   validations:
     required: true
 - type: textarea

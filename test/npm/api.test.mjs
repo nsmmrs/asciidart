@@ -12,9 +12,9 @@ import { inspect } from 'node:util'
 import {
   Admonition,
   AdmonitionKind,
-  Asciidart,
-  AsciidartException,
-  asciidartVersion,
+  Ptome,
+  PtomeException,
+  ptomeVersion,
   asciidoc,
   asciidoctorVersion,
   Backend,
@@ -44,7 +44,7 @@ import {
   Section,
   TreeProcessor,
   UnorderedList,
-} from 'asciidart'
+} from 'ptome'
 
 const guide = `= Guide
 
@@ -103,7 +103,7 @@ describe('2. read metadata, then render', () => {
     assert.equal(edited.withoutAttribute('priority').source, '= T\n:status: done\n// note\n\nbody\n')
     assert.throws(
       () => asciidoc.parse('= T\nifdef::x[]\n:status: a\nendif::[]\n\nb').withAttribute('status', 'b'),
-      AsciidartException,
+      PtomeException,
     )
   })
 })
@@ -189,7 +189,7 @@ describe('4b. inline content as a tree', () => {
 
 describe('5. customize the HTML', () => {
   test('override some nodes, keep the rest', () => {
-    const ad = new Asciidart({
+    const ad = new Ptome({
       html: (node, defaults) =>
         node instanceof Admonition
           ? `<aside class="${node.kind}">${defaults.content(node)}</aside>`
@@ -205,7 +205,7 @@ describe('5. customize the HTML', () => {
 
 describe('6. extensions', () => {
   test('every kind', () => {
-    const ad = new Asciidart({
+    const ad = new Ptome({
       extensions: [
         new InlineMacro('issue', (m) => m.link(`https://example.org/${m.target}`, { text: `#${m.target}` })),
         new BlockMacro('hello', (m) => m.html(`<p>hello ${m.target}</p>`)),
@@ -231,19 +231,19 @@ describe('6. extensions', () => {
   })
 
   test('an asynchronous include resolver', async () => {
-    const ad = new Asciidart({
+    const ad = new Ptome({
       extensions: [new IncludeResolver(async (r) => (r.target === 'remote' ? 'From *far*.' : null))],
     })
     const doc = await ad.parseAsync('include::remote[]')
     assert.match(doc.toHtml(), /From <strong>far<\/strong>\./)
-    assert.throws(() => ad.parse('include::remote[]'), AsciidartException)
+    assert.throws(() => ad.parse('include::remote[]'), PtomeException)
   })
 })
 
 describe('7. fail on warnings', () => {
   test('diagnostics have severities and locations, and onDiagnostic sees them', () => {
     const reported = []
-    const ad = new Asciidart({ onDiagnostic: (d) => reported.push(d) })
+    const ad = new Ptome({ onDiagnostic: (d) => reported.push(d) })
     const doc = ad.parse('== A\n\n==== B\n', { path: 'docs/index.adoc' })
     const warnings = doc.diagnostics.filter((d) => d.severity === 'warning')
     assert.equal(warnings[0].code, DiagnosticCode.sectionOutOfSequence)
@@ -254,13 +254,13 @@ describe('7. fail on warnings', () => {
 
 describe('8. files', () => {
   test('convertFile, convertTree and parseFile', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'asciidart-npm-'))
+    const dir = mkdtempSync(join(tmpdir(), 'ptome-npm-'))
     try {
       mkdirSync(join(dir, 'docs', 'guide'), { recursive: true })
       writeFileSync(join(dir, 'docs', 'index.adoc'), '= Home\n\nhi')
       writeFileSync(join(dir, 'docs', 'guide', 'start.adoc'), '= Start\n\ngo')
       writeFileSync(join(dir, 'docs', '_partial.adoc'), 'skip')
-      const ad = new Asciidart({ safe: SafeMode.unsafe })
+      const ad = new Ptome({ safe: SafeMode.unsafe })
       const doc = await ad.convertFile(join(dir, 'docs', 'index.adoc'))
       assert.equal(doc.title, 'Home')
       assert.match(readFileSync(join(dir, 'docs', 'index.html'), 'utf8'), /hi/)
@@ -287,7 +287,7 @@ describe('also supported', () => {
         return '<style>.upper{}</style>'
       }
     }
-    const ad = new Asciidart({ highlighters: { upper: new Upper() }, attributes: { 'source-highlighter': 'upper' } })
+    const ad = new Ptome({ highlighters: { upper: new Upper() }, attributes: { 'source-highlighter': 'upper' } })
     const html = ad.convert('[source,txt]\n----\nabc\n----', { standalone: true })
     assert.match(html, /ABC/)
     assert.match(html, /<style>\.upper\{\}<\/style>/)
@@ -295,13 +295,13 @@ describe('also supported', () => {
 
   test('errors from JavaScript callbacks reach the caller unchanged', () => {
     const mine = new RangeError('mine')
-    const ad = new Asciidart({ extensions: [new InlineMacro('boom', () => { throw mine })] })
+    const ad = new Ptome({ extensions: [new InlineMacro('boom', () => { throw mine })] })
     assert.throws(() => ad.convert('boom:x[]'), (error) => error === mine)
   })
 
   test('wrong argument types fail with a TypeError', () => {
     assert.throws(() => asciidoc.convert(42), TypeError)
-    assert.throws(() => new Asciidart({ safe: 'nope' }), Error)
+    assert.throws(() => new Ptome({ safe: 'nope' }), Error)
   })
 
   test('nodes are not constructible', () => {
@@ -310,6 +310,6 @@ describe('also supported', () => {
 
   test('versions', () => {
     assert.equal(asciidoctorVersion, '2.1.0.alpha.0')
-    assert.match(asciidartVersion, /^\d+\.\d+\.\d+/)
+    assert.match(ptomeVersion, /^\d+\.\d+\.\d+/)
   })
 })

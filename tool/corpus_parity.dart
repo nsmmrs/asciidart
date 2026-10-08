@@ -4,7 +4,7 @@
 ///
 /// ```sh
 /// dart run tool/corpus_parity.dart --exe-a asciidoctor \
-///   --exe-b dist/asciidart-linux-x64 --out /tmp/parity DIR...
+///   --exe-b dist/ptome-linux-x64 --out /tmp/parity DIR...
 /// ```
 ///
 /// Each conversion runs in the directory of its input, so relative includes
@@ -23,7 +23,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:asciidart/src/docbook5.dart' show repairDocbook;
+import 'package:ptome/src/docbook5.dart' show repairDocbook;
 
 /// The modes run by default: name and extra arguments.
 const Map<String, List<String>> defaultModes = {
@@ -295,7 +295,7 @@ Future<_Result> _run(
 }
 
 /// The comparison of the two runs: `same`, or the parts that differ. The
-/// gem's [docbook] output is compared with asciidart's repairs made
+/// gem's [docbook] output is compared with Ptome's repairs made
 /// (`repairDocbook`: benchmark/PARITY.md).
 String _compare(_Result a, _Result b, {bool docbook = false}) {
   final stdoutA = docbook ? repairDocbook(a.stdout) : a.stdout;
@@ -311,15 +311,15 @@ String _compare(_Result a, _Result b, {bool docbook = false}) {
   return parts.isEmpty ? 'same' : parts.join('+');
 }
 
-/// The generator stamp asciidart writes as `Asciidart <version>` where the
+/// The generator stamp Ptome writes as `Ptome <version>` where the
 /// gem writes `Asciidoctor <version>` (HTML meta tag, man page header).
 final RegExp _generatorStamp = RegExp(
   r'(<meta name="generator" content="|\.\\" Generator: )'
-  '(?:Asciidoctor|Asciidart) [^"\n]*',
+  '(?:Asciidoctor|Ptome) [^"\n]*',
 );
 
 /// [stdout] with the generator stamp made canonical, and without what
-/// asciidart adds to a block with the `unbreakable` option (the class in
+/// Ptome adds to a block with the `unbreakable` option (the class in
 /// HTML, `<?dbfo keep-together?>` in DocBook: ADR-0012), on both sides
 /// alike.
 String _normalizeStdout(String stdout) => stdout
@@ -331,9 +331,9 @@ String _normalizeStdout(String stdout) => stdout
       (m) => '${m[1]}"',
     );
 
-/// A log line, from the gem (`asciidoctor:`) or asciidart (`asciidart:`).
+/// A log line, from the gem (`asciidoctor:`) or Ptome (`ptome:`).
 final RegExp _logLine = RegExp(
-  '^(?:asciidoctor|asciidart): (DEBUG|INFO|WARNING|ERROR|FATAL): ',
+  '^(?:asciidoctor|ptome): (DEBUG|INFO|WARNING|ERROR|FATAL): ',
 );
 
 /// Messages the port words differently on purpose (benchmark/PARITY.md):
@@ -387,7 +387,7 @@ String _normalizeStderr(String stderr) {
       if (line.isNotEmpty) failed = true;
       continue;
     }
-    var text = line.replaceFirst(RegExp('^asciidart: '), 'asciidoctor: ');
+    var text = line.replaceFirst(RegExp('^ptome: '), 'asciidoctor: ');
     for (final (pattern, replacement) in rewordings) {
       text = text.replaceAllMapped(
         pattern,

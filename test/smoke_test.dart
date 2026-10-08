@@ -3,7 +3,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// `dart test` runs with the package root as the working directory, while
@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 /// entry point against the current directory.
 String get _cliScript =>
     '${Directory.current.path}${Platform.pathSeparator}bin'
-    '${Platform.pathSeparator}asciidart.dart';
+    '${Platform.pathSeparator}ptome.dart';
 
 void main() {
   test('version reports the matched Asciidoctor release', () {
@@ -30,7 +30,7 @@ void main() {
   test('documents expose both versions as attributes', () {
     final doc = load('text');
     expect(doc.attr('asciidoctor-version'), equals('2.1.0.alpha.0'));
-    expect(doc.attr('asciidart-version'), equals(Asciidoctor.packageVersion));
+    expect(doc.attr('ptome-version'), equals(Asciidoctor.packageVersion));
   });
 
   test('CLI --version exits 0 and prints version', () async {
@@ -42,7 +42,7 @@ void main() {
     expect(
       result.stdout as String,
       startsWith(
-        'Asciidart ${Asciidoctor.packageVersion} '
+        'Ptome ${Asciidoctor.packageVersion} '
         '(compatible with Asciidoctor ${Asciidoctor.version})',
       ),
     );

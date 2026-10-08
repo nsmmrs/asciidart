@@ -7,13 +7,13 @@ fixes, named after the issue number (`4877.bats` is
 Each test is a black-box CLI check, like the e2e suite: it runs the
 executable named by `ASCIIDOCTOR_EXE` and asserts on its output. Before a
 fix lands, its test must fail on both the Ruby CLI (the gem built from
-upstream `main`) and the asciidart CLI; after the fix it passes on
-asciidart and still fails on Ruby. Tests named `unchanged: ...` are
+upstream `main`) and the Ptome CLI; after the fix it passes on
+Ptome and still fails on Ruby. Tests named `unchanged: ...` are
 guards for the behavior around a fix, which stays as Asciidoctor has it;
 they pass on both. `tool/bugfix_check.sh` checks both:
 
 ```sh
-tool/bugfix_check.sh path/to/asciidart path/to/asciidoctor
+tool/bugfix_check.sh path/to/ptome path/to/asciidoctor
 ```
 
 The triage that chose these issues is in

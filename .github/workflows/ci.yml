@@ -55,7 +55,7 @@ jobs:
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart)
       env:
-        ASCIIDOCTOR_EXE: test/e2e/bin/asciidart
+        ASCIIDOCTOR_EXE: test/e2e/bin/ptome
       run: bats test/e2e/
     - name: Run e2e CLI tests (Ruby oracle)
       env:
@@ -77,8 +77,8 @@ jobs:
       with:
         ruby-version: '3.4'
     - name: Install the asciidoctor gem from upstream main (parity oracle)
-      # With asciimath, whose conversion asciidart ports (AsciiMath becomes
-      # MathML in DocBook, ADR-0014). No other optional gems: asciidart
+      # With asciimath, whose conversion ptome ports (AsciiMath becomes
+      # MathML in DocBook, ADR-0014). No other optional gems: ptome
       # highlights with highlight.js only, and Rouge, Pygments and CodeRay
       # behave as when their gems are missing.
       run: |
@@ -91,17 +91,17 @@ jobs:
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
       run: |
-        EXE="$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')"
+        EXE="$(pwd)/dist/$(ls dist | grep '^ptome-linux-')"
         echo "ASCIIDOCTOR_EXE=$EXE"
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
     - name: Check the upstream bug reproductions (fixed here, still in Asciidoctor)
-      run: ./tool/bugfix_check.sh "$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')" "$(command -v asciidoctor)"
-    - name: Run divergence tests (asciidart differs from the gem on purpose)
+      run: ./tool/bugfix_check.sh "$(pwd)/dist/$(ls dist | grep '^ptome-linux-')" "$(command -v asciidoctor)"
+    - name: Run divergence tests (ptome differs from the gem on purpose)
       run: |
-        EXE="$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')"
+        EXE="$(pwd)/dist/$(ls dist | grep '^ptome-linux-')"
         ASCIIDOCTOR_EXE="$EXE" bats test/divergences/
     - name: Check byte-identical parity with Asciidoctor 2.1.0.alpha.0
-      run: ./tool/parity.sh "dist/$(ls dist | grep '^asciidart-linux-')"
+      run: ./tool/parity.sh "dist/$(ls dist | grep '^ptome-linux-')"
     - name: Install asciidoctor-epub3 gem on the main gem (EPUB oracle)
       # Without its asciidoctor dependency, which would bring in the 2.0
       # release; the version line shows the Asciidoctor it runs on.
@@ -118,7 +118,7 @@ jobs:
       run: >-
         dart run tool/epub_parity.dart
         --exe-a "$(command -v asciidoctor-epub3)"
-        --exe-b "$(pwd)/dist/$(ls dist | grep '^asciidart-linux-')"
+        --exe-b "$(pwd)/dist/$(ls dist | grep '^ptome-linux-')"
         --epubcheck "$RUNNER_TEMP/epubcheck-5.4.0/epubcheck.jar"
         $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc' | sort)
   npm:
@@ -173,7 +173,7 @@ jobs:
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)
       env:
-        ASCIIDOCTOR_EXE: test/e2e/bin/asciidart-node
+        ASCIIDOCTOR_EXE: test/e2e/bin/ptome-node
       run: bats test/e2e/
     - name: Check byte-identical parity with Asciidoctor 2.1.0.alpha.0 (Node CLI)
-      run: ./tool/parity.sh test/e2e/bin/asciidart-node
+      run: ./tool/parity.sh test/e2e/bin/ptome-node

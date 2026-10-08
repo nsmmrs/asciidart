@@ -1,8 +1,8 @@
 # Upstream issue triage
 
-The 610 open issues of [asciidoctor/asciidoctor](https://github.com/asciidoctor/asciidoctor/issues) on 2026-10-05, triaged for fixing (step 9 of the roadmap; the fixes were made on a `bugfix` branch, merged into `master` on 2026-10-07). Every issue that reports a bug (labeled `bug` or `regression`, or reading as one) was tried on both the Ruby CLI (the gem built from upstream `main` at `30fb8cd5`, 2.1.0.alpha.0) and the asciidart CLI of the time, which matched it. The rest were sorted by their labels, or, for the 252 unlabeled issues, by reading them.
+The 610 open issues of [asciidoctor/asciidoctor](https://github.com/asciidoctor/asciidoctor/issues) on 2026-10-05, triaged for fixing (step 9 of the roadmap; the fixes were made on a `bugfix` branch, merged into `master` on 2026-10-07). Every issue that reports a bug (labeled `bug` or `regression`, or reading as one) was tried on both the Ruby CLI (the gem built from upstream `main` at `30fb8cd5`, 2.1.0.alpha.0) and the Ptome CLI of the time, which matched it. The rest were sorted by their labels, or, for the 252 unlabeled issues, by reading them.
 
-A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named after the issue, that fails on both CLIs before the fix; `tool/bugfix_check.sh` checks that it passes on asciidart and still fails on the gem. The fixes are listed in [`benchmark/PARITY.md`](../benchmark/PARITY.md#upstream-bugs-fixed).
+A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named after the issue, that fails on both CLIs before the fix; `tool/bugfix_check.sh` checks that it passes on Ptome and still fails on the gem. The fixes are listed in [`benchmark/PARITY.md`](../benchmark/PARITY.md#upstream-bugs-fixed).
 
 | Category | Issues |
 |---|---|
@@ -116,7 +116,7 @@ A bug fixed here has a test in [`test/bugfix/`](../test/bugfix/README.md), named
 
 ## Feature requests and improvements (418)
 
-Requests for new behavior: candidates for asciidart features later, not bugs.
+Requests for new behavior: candidates for Ptome features later, not bugs.
 
 - [#4870](https://github.com/asciidoctor/asciidoctor/issues/4870) Images with link attributes do not generate links in DocBook
 - [#4868](https://github.com/asciidoctor/asciidoctor/issues/4868) Add a stable "include unresolved" role to the unresolved include directive placeholder
@@ -613,7 +613,7 @@ Requests for new behavior: candidates for asciidart features later, not bugs.
 
 ## Out of scope (49)
 
-Issues about the stylesheet, distribution, Ruby runtime or third-party tooling, which asciidart does not share.
+Issues about the stylesheet, distribution, Ruby runtime or third-party tooling, which Ptome does not share.
 
 - [#4825](https://github.com/asciidoctor/asciidoctor/issues/4825) Add shadow to image based admonition icons
 - [#4824](https://github.com/asciidoctor/asciidoctor/issues/4824) Make admonition icon images non selectable

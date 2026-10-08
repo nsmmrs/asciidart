@@ -1,7 +1,7 @@
 // Compiled with tsc --noEmit: the scenarios of doc/api.md must type-check.
 import {
   Admonition,
-  Asciidart,
+  Ptome,
   asciidoc,
   Backend,
   BlockKind,
@@ -21,7 +21,7 @@ import {
   type Diagnostic,
   type Document,
   type SourceCode,
-} from 'asciidart'
+} from 'ptome'
 
 const body: string = asciidoc.convert('Hello, *World*!')
 const page: string = asciidoc.convert('= T', { standalone: true, backend: Backend.html5, attributes: { icons: 'font' } })
@@ -55,7 +55,7 @@ class Upper extends Highlighter {
 }
 
 const reported: Diagnostic[] = []
-const ad = new Asciidart({
+const ad = new Ptome({
   safe: SafeMode.server,
   html: (node, defaults) =>
     node instanceof Admonition ? `<aside>${defaults.content(node)}</aside>` : defaults.render(node),

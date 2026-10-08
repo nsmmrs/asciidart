@@ -1,13 +1,13 @@
 '\" t
-.\"     Title: asciidart
+.\"     Title: ptome
 .\"    Author: Noah Summers
-.\" Generator: Asciidart 0.1.0
-.\"      Date: 2026-10-07
-.\"    Manual: asciidart Manual
-.\"    Source: asciidart 0.1.0
+.\" Generator: Ptome 0.1.0
+.\"      Date: 2026-10-08
+.\"    Manual: Ptome Manual
+.\"    Source: Ptome 0.1.0
 .\"  Language: English
 .\"
-.TH "ASCIIDART" "1" "2026-10-07" "asciidart 0.1.0" "asciidart Manual"
+.TH "PTOME" "1" "2026-10-08" "Ptome 0.1.0" "Ptome Manual"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -28,21 +28,21 @@
 .  LINKSTYLE blue R < >
 .\}
 .SH "NAME"
-asciidart \- convert AsciiDoc documents to HTML, DocBook and man pages
+Ptome \- convert AsciiDoc documents to HTML, DocBook and man pages
 .SH "SYNOPSIS"
 .sp
-\fBasciidart\fP [\fIOPTION\fP].\|.\|. \fIFILE\fP.\|.\|.
+\fBptome\fP [\fIOPTION\fP].\|.\|. \fIFILE\fP.\|.\|.
 .sp
-\fBasciidart init\-config\fP [\fIDIR\fP] [\fB\-f\fP]
+\fBptome init\-config\fP [\fIDIR\fP] [\fB\-f\fP]
 .sp
-\fBasciidart doctor\fP [\fB\-y\fP] [\fB\-c\fP]
+\fBptome doctor\fP [\fB\-y\fP] [\fB\-c\fP]
 .SH "DESCRIPTION"
 .sp
-\fBasciidart\fP reads each AsciiDoc \fIFILE\fP and writes the converted document next to it, under the same name with the extension of the output format (for example, \fIguide.adoc\fP becomes \fIguide.html\fP).
+\fBptome\fP reads each AsciiDoc \fIFILE\fP and writes the converted document next to it, under the same name with the extension of the output format (for example, \fIguide.adoc\fP becomes \fIguide.html\fP).
 A \fIFILE\fP of \fB\-\fP reads the document from standard input and writes the result to standard output.
-Arguments may be glob patterns (\f(CR*\fP, \f(CR?\fP, \f(CR[...]\fP and \f(CR**\fP), which \fBasciidart\fP expands itself.
+Arguments may be glob patterns (\f(CR*\fP, \f(CR?\fP, \f(CR[...]\fP and \f(CR**\fP), which \fBptome\fP expands itself.
 .sp
-\fBasciidart\fP is a re\-implementation of Asciidoctor in Dart.
+\fBptome\fP is a re\-implementation of Asciidoctor in Dart.
 It accepts the same documents, attributes and options as the \fBasciidoctor\fP command of Asciidoctor 2.1.0.alpha.0 and produces the same output, except for the deliberate differences listed in the project\(cqs documentation.
 .sp
 Messages about the document (warnings, errors) go to standard error.
@@ -53,7 +53,7 @@ Messages about the document (warnings, errors) go to standard error.
 .RS 4
 The output format: \fBhtml5\fP (the default), \fBxhtml5\fP, \fBdocbook5\fP, \fBmanpage\fP, \fBepub3\fP, \fBpdf\fP or \fBmultipage_html5\fP.
 \fBepub3\fP writes an EPUB 3 file (as asciidoctor\-epub3 does), so it needs an output file rather than standard output; it is available in the native executable, not in the npm package.
-\fBpdf\fP writes a PDF file with asciidart\(cqs own layout, reading asciidoctor\-pdf\(cqs YAML themes (\fBpdf\-theme\fP, \fBpdf\-themesdir\fP, \fBpdf\-fontsdir\fP); justified text is hyphenated in the document\(cqs language (\fB\-a hyphens!\fP turns it off). Set the \fBpdf\-compat\fP attribute (\fB\-a pdf\-compat\fP) to lay the document out as asciidoctor\-pdf 2.3.27 does. Like \fBepub3\fP, it needs an output file and the native executable.
+\fBpdf\fP writes a PDF file with Ptome\(cqs own layout, reading asciidoctor\-pdf\(cqs YAML themes (\fBpdf\-theme\fP, \fBpdf\-themesdir\fP, \fBpdf\-fontsdir\fP); justified text is hyphenated in the document\(cqs language (\fB\-a hyphens!\fP turns it off). Set the \fBpdf\-compat\fP attribute (\fB\-a pdf\-compat\fP) to lay the document out as asciidoctor\-pdf 2.3.27 does. Like \fBepub3\fP, it needs an output file and the native executable.
 \fBmultipage_html5\fP writes a website: the output file is the home page (the header, the preamble and a list of the pages), and each part and chapter (each section up to \fBmultipage\-level\fP) is a page of its own beside it, named after its id (or its \fBpage\-path\fP attribute: \fBpage\-path=part/one/\fP writes \fBpart/one/index.html\fP), with links to the previous, enclosing and next pages; links reach across pages. \fBmultipage\-toclevels\fP lists each page\(cqs sections on the home page down to that level. Like \fBepub3\fP, it needs an output file and the native executable.
 .RE
 .sp
@@ -191,24 +191,24 @@ Within one document, the PDF and EPUB backends use the machine\(cqs physical cor
 \fB\-h, \-\-help\fP [\fITOPIC\fP]
 .RS 4
 Print the option summary.
-With \fITOPIC\fP \fBsyntax\fP, print an overview of the AsciiDoc syntax; with \fBmanpage\fP, print this manual page as troff source (view it with \fBasciidart \-h manpage | man \-l \-\fP).
+With \fITOPIC\fP \fBsyntax\fP, print an overview of the AsciiDoc syntax; with \fBmanpage\fP, print this manual page as troff source (view it with \fBptome \-h manpage | man \-l \-\fP).
 .RE
 .sp
 \fB\-V, \-\-version\fP
 .RS 4
-Print the version of \fBasciidart\fP, the Asciidoctor release it is compatible with, and the runtime.
+Print the version of \fBptome\fP, the Asciidoctor release it is compatible with, and the runtime.
 \fB\-v\fP does the same when it is the only argument.
 .RE
 .SH "FONTS"
 .sp
-asciidart compiles no fonts in: PDFs are set in the fonts installed on the machine that their theme names, and an EPUB embeds installed fonts only with \fB\-a epub\-embed\-fonts\fP.
-\fBasciidart doctor\fP lists the fonts of the built\-in PDF themes (Noto Serif, Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math, and the Font Awesome, Foundation and Payment icon fonts) and where they are found, and offers to download the missing ones from their official sources (Google Fonts, the projects\*(Aq repositories) into this user\(cqs font folder.
+Ptome compiles no fonts in: PDFs are set in the fonts installed on the machine that their theme names, and an EPUB embeds installed fonts only with \fB\-a epub\-embed\-fonts\fP.
+\fBptome doctor\fP lists the fonts of the built\-in PDF themes (Noto Serif, Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math, and the Font Awesome, Foundation and Payment icon fonts) and where they are found, and offers to download the missing ones from their official sources (Google Fonts, the projects\*(Aq repositories) into this user\(cqs font folder.
 \fB\-y\fP (\fB\-\-yes\fP) installs them without asking; \fB\-c\fP (\fB\-\-check\fP) only checks, and exits with status 1 when fonts are missing.
 A font a theme names that isn\(cqt installed is replaced by a built\-in PDF font (Times, Helvetica or Courier), with a warning.
 .SH "CUSTOM BINARIES"
 .sp
-\fBasciidart init\-config\fP [\fIDIR\fP] creates a small Dart project in \fIDIR\fP (the working directory by default) whose program registers Dart functions as converters and then runs this command line.
-Compile it with \fBdart compile exe\fP to get a custom \fBasciidart\fP with those conversions built in.
+\fBptome init\-config\fP [\fIDIR\fP] creates a small Dart project in \fIDIR\fP (the working directory by default) whose program registers Dart functions as converters and then runs this command line.
+Compile it with \fBdart compile exe\fP to get a custom \fBptome\fP with those conversions built in.
 \fB\-f\fP overwrites existing files.
 .SH "ENVIRONMENT"
 .sp
@@ -217,24 +217,24 @@ Compile it with \fBdart compile exe\fP to get a custom \fBasciidart\fP with thos
 When set to an integer number of seconds since the Unix epoch, it replaces the current time and the input files\*(Aq modification times in the document\(cqs date attributes, for reproducible output.
 .RE
 .sp
-\fBASCIIDART_COMPAT\fP
+\fBPTOME_COMPAT\fP
 .RS 4
 The default of the \fBasciidoctor\-compat\fP attribute: \fBtrue\fP, \fBfalse\fP, or a comma\-separated list of formats (\fBhtml\fP, \fBepub\fP, \fBdocbook\fP, \fBmanpage\fP, \fBpdf\fP) whose output keeps Asciidoctor\(cqs look.
-Without it, \fBcompat:\fP in the nearest \fBasciidart.yml\fP in the input\(cqs directory or one above it, then in \fB$XDG_CONFIG_HOME/asciidart/config.yml\fP (\fB~/.config/asciidart/config.yml\fP), gives the default.
+Without it, \fBcompat:\fP in the nearest \fBptome.yml\fP in the input\(cqs directory or one above it, then in \fB$XDG_CONFIG_HOME/ptome/config.yml\fP (\fB~/.config/ptome/config.yml\fP), gives the default.
 An \fB\-a asciidoctor\-compat\fP option or the document\(cqs own attribute entry wins.
 .RE
 .sp
-\fBASCIIDART_FONT_PATH\fP
+\fBPTOME_FONT_PATH\fP
 .RS 4
 Folders searched for fonts before this user\(cqs and the system\(cqs font folders, separated as in \fBPATH\fP.
 .RE
 .sp
-\fBASCIIDART_JOBS_SHUFFLE\fP
+\fBPTOME_JOBS_SHUFFLE\fP
 .RS 4
 When \fB1\fP, work done on other cores is handed back in a random order (for checking that the output doesn\(cqt depend on it).
 .RE
 .sp
-\fBASCIIDART_MANPAGE_PATH\fP
+\fBPTOME_MANPAGE_PATH\fP
 .RS 4
 The file \fB\-h manpage\fP prints instead of the built\-in manual page (plain or gzip\-compressed).
 .RE
@@ -252,12 +252,12 @@ Something failed: an invalid option, a missing or unreadable input file, a docum
 .SH "BUGS"
 .sp
 Report problems at \c
-.URL "https://github.com/nsmmrs/asciidart/issues" "" "."
+.URL "https://github.com/nsmmrs/ptome/issues" "" "."
 .SH "SEE ALSO"
 .sp
-\fBasciidoctor\fP(1), the Ruby implementation whose behavior \fBasciidart\fP follows: \c
+\fBasciidoctor\fP(1), the Ruby implementation whose behavior \fBptome\fP follows: \c
 .URL "https://asciidoctor.org" "" ""
 .SH "COPYING"
 .sp
 Copyright (C) 2026 Noah Summers.
-\fBasciidart\fP is free software under the MIT License; it includes data files from Asciidoctor, Copyright (C) 2012\-present Dan Allen, Sarah White, Ryan Waldron, and the individual contributors to Asciidoctor, also under the MIT License.
+\fBptome\fP is free software under the MIT License; it includes data files from Asciidoctor, Copyright (C) 2012\-present Dan Allen, Sarah White, Ryan Waldron, and the individual contributors to Asciidoctor, also under the MIT License.

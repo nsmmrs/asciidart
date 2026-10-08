@@ -6,8 +6,8 @@ library;
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
 import '../vendored_fonts.dart';
@@ -58,7 +58,7 @@ void main() {
   setUpAll(registerPdf);
 
   test('images encoded on workers make the serial bytes', () async {
-    final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
+    final dir = Directory.systemTemp.createTempSync('ptome-pdf.');
     addTearDown(() => dir.deleteSync(recursive: true));
     for (var i = 0; i < 6; i++) {
       File('${dir.path}/a$i.png').writeAsBytesSync(_png(120, 80, seed: i));

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the npm package (asciidart) into build/npm.
+# Build the npm package (ptome) into build/npm.
 #
 # Compiles the Dart core to one JavaScript bundle with dart2js and assembles
 # it with the checked-in package sources (npm/) and the license. Release
@@ -67,18 +67,18 @@ loader="$tmp/loader.js"
   done
   echo '  }'
   echo '  var part = parts[name]'
-  echo "  if (!part) return onError(new Error('asciidart: no part ' + name))"
+  echo "  if (!part) return onError(new Error('ptome: no part ' + name))"
   echo '  part().then(function (module) {'
   echo '    module.default(self, $__dart_deferred_initializers__)'
   echo '    onLoad()'
   echo '  }, onError)'
   echo '};'
 } > "$loader"
-cat "$root/npm/preamble.js" "$loader" "$tmp/core.js" > "$out/asciidart.js"
+cat "$root/npm/preamble.js" "$loader" "$tmp/core.js" > "$out/ptome.js"
 cp "$root/LICENSE" "$out/LICENSE"
 # CommonJS copies of the type declarations, for require().
 for decl in "$out"/types/*.d.ts; do
   sed "s#'\./\([a-z]*\)\.js'#'./\1.cjs'#g" "$decl" > "${decl%.d.ts}.d.cts"
 done
-chmod +x "$out/bin/asciidart.js"
-echo "build-npm: built asciidart $version in $out"
+chmod +x "$out/bin/ptome.js"
+echo "build-npm: built ptome $version in $out"

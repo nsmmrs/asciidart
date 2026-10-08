@@ -1,14 +1,14 @@
-/// Checks that asciidart's output doesn't depend on its worker count
+/// Checks that Ptome's output doesn't depend on its worker count
 /// (ADR-0016), and times it.
 ///
 /// ```sh
-/// dart run tool/jobs_check.dart --exe build/asciidart [--jobs 1,2,6,12]
+/// dart run tool/jobs_check.dart --exe build/ptome [--jobs 1,2,6,12]
 ///     [--shuffle] [--backend pdf,html5,epub3] [--runs N] [--only NAME]
 /// ```
 ///
 /// Each document is converted with `-a jobs=1` (the serial reference) and
 /// with every other count of `--jobs`, `SOURCE_DATE_EPOCH=0`; with
-/// `--shuffle`, also with `ASCIIDART_JOBS_SHUFFLE=1`, which makes the pool
+/// `--shuffle`, also with `PTOME_JOBS_SHUFFLE=1`, which makes the pool
 /// hand results back in a random order. Every output must be the same, byte
 /// for byte, as the reference; the tool prints each document's times by
 /// worker count (the median of `--runs`) and exits 1 on any difference.
@@ -28,7 +28,7 @@ import 'vendored_fonts.dart';
 typedef Doc = ({String name, String dir, List<String> args});
 
 Future<void> main(List<String> args) async {
-  var exe = 'build/asciidart';
+  var exe = 'build/ptome';
   var jobs = [1, 2, 6, 12];
   var shuffle = false;
   var backends = ['pdf'];
@@ -100,7 +100,7 @@ Future<void> main(List<String> args) async {
             workingDirectory: doc.dir,
             environment: withVendoredFonts({
               'SOURCE_DATE_EPOCH': '0',
-              if (shuffled) 'ASCIIDART_JOBS_SHUFFLE': '1',
+              if (shuffled) 'PTOME_JOBS_SHUFFLE': '1',
             }),
           );
           times.add(watch.elapsedMicroseconds / 1e6);
@@ -153,7 +153,7 @@ Future<void> main(List<String> args) async {
 /// The Hypermedia Systems book's golden build, when it's here.
 List<Doc> _book() {
   final home = Platform.environment['HOME'] ?? '';
-  final port = '$home/Work/ports/hypermedia-systems-asciidart';
+  final port = '$home/Work/ports/hypermedia-systems-ptome';
   final golden = '$home/.cache/asciidart-work/hs-golden/fonts';
   if (!File('$port/HypermediaSystems.adoc').existsSync()) return const [];
   final goldenBuild = Directory(golden).existsSync();

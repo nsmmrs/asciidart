@@ -1,7 +1,7 @@
 // The index in HTML: an `[index]` section lists the document's index terms,
 // linked to their uses (Asciidoctor renders the section empty).
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 const _book = '''

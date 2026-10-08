@@ -1,5 +1,5 @@
 {
-  "name": "asciidart-npm-tests",
+  "name": "ptome-npm-tests",
   "private": true,
   "type": "module",
   "description": "Tests of the npm package built by tool/build-npm.sh (build/npm).",
@@ -9,7 +9,7 @@
     "lint": "publint ../../build/npm && attw --pack ../../build/npm"
   },
   "dependencies": {
-    "asciidart": "file:../../build/npm"
+    "ptome": "file:../../build/npm"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

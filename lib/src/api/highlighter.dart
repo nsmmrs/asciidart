@@ -14,7 +14,7 @@ final class SourceCode {
   final List<int> highlightLines;
 }
 
-/// A syntax highlighter, registered with [Asciidart.new] under the name the
+/// A syntax highlighter, registered with [Ptome.new] under the name the
 /// `source-highlighter` attribute selects.
 abstract class Highlighter {
   /// Creates a highlighter.

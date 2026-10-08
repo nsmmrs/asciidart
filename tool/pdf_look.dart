@@ -1,17 +1,17 @@
-/// Compares how the PDF files of asciidart look with those of the
+/// Compares how the PDF files of Ptome look with those of the
 /// asciidoctor-pdf gem, page image against page image (ADR-0015).
 ///
 /// Usage:
 ///
 /// ```sh
-/// dart run tool/pdf_look.dart --gem GEM --exe ASCIIDART --cache DIR \
+/// dart run tool/pdf_look.dart --gem GEM --exe PTOME --cache DIR \
 ///   --out DIR [-j N] [--dpi N] [--pairs] DOC.adoc...
 /// ```
 ///
 /// The gem's PDF of each document and its pages (gray PGM images at
 /// `--dpi`, 50 by default) are made once and kept in `--cache` (a PDF
 /// already there is only rendered); a later run converts only with
-/// asciidart (`-o FILE DOC`, `SOURCE_DATE_EPOCH=0`, `TZ=UTC`; the wrapper
+/// Ptome (`-o FILE DOC`, `SOURCE_DATE_EPOCH=0`, `TZ=UTC`; the wrapper
 /// passes `-b pdf`), renders its pages and compares. Both page images are
 /// blurred (a 5-pixel box, so a line set a point to the side isn't a
 /// difference) and a pixel differs when the blurred grays differ by more
@@ -21,7 +21,7 @@
 /// One line per document: its largest page difference, its mean, and the
 /// page counts. In `--out`: `look.tsv` (sorted, largest first), and with
 /// `--pairs`, for each document that differs, `NAME-pN.png` for its most
-/// different page (the gem's, asciidart's, and the difference in red).
+/// different page (the gem's, Ptome's, and the difference in red).
 library;
 
 import 'dart:async';
@@ -242,13 +242,13 @@ Future<Look> _look(
   final pdf = '$out/pdf/$name.pdf';
   final error = await _run(exe, ['-o', pdf, doc]);
   if (error != null || !File(pdf).existsSync()) {
-    return failed('asciidart: ${error ?? 'no PDF'}');
+    return failed('ptome: ${error ?? 'no PDF'}');
   }
   final List<File> pages;
   try {
     pages = await _render(pdf, '$out/png/$name', dpi);
   } on ProcessException catch (error) {
-    return failed('asciidart: ${error.message}');
+    return failed('ptome: ${error.message}');
   }
   final count = math.max(gemPages.length, pages.length);
   final differences = <double>[
@@ -270,7 +270,7 @@ Future<Look> _look(
   );
 }
 
-/// Writes `NAME-pN.png` in [out]: the gem's page, asciidart's, and the
+/// Writes `NAME-pN.png` in [out]: the gem's page, Ptome's, and the
 /// difference.
 Future<void> _pair(Look look, String cache, String out) async {
   final page = look.worstPage;
@@ -329,7 +329,7 @@ Future<void> main(List<String> args) async {
   }
   if (gem == null || exe == null || cache == null || out == null) {
     stderr.writeln(
-      'usage: pdf_look.dart --gem GEM --exe ASCIIDART --cache DIR --out DIR '
+      'usage: pdf_look.dart --gem GEM --exe PTOME --cache DIR --out DIR '
       '[-j N] [--dpi N] [--pairs] DOC.adoc...',
     );
     exitCode = 64;

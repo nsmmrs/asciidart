@@ -18,7 +18,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Records log messages for assertions.
@@ -2850,7 +2850,7 @@ void main() {
     });
   });
 
-  group('literals (asciidart: DocBook allows no emphasis in them)', () {
+  group('literals (ptome: DocBook allows no emphasis in them)', () {
     test('an emphasis or a quote in a literal becomes a phrase or marks', () {
       expect(
         repairDocbook(

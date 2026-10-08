@@ -27,12 +27,12 @@
 /// CPU cost to the conversion while the wall clock shows the `-j` win.
 library;
 
-import 'package:asciidart/src/cli/diagnostics.dart';
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/load.dart';
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/options.dart';
-import 'package:asciidart/src/timings.dart';
+import 'package:ptome/src/cli/diagnostics.dart';
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/load.dart';
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/options.dart';
+import 'package:ptome/src/timings.dart';
 
 /// A conversion job: one input file and its processor options.
 final class ConversionRequest {

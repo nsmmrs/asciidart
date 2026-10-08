@@ -3,12 +3,11 @@
 /// Port of `lib/asciidoctor/section.rb` (complete).
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart'
-    show BlockContext, NodeDocument;
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart' show invalidSectionIdCharsRx;
-import 'package:asciidart/src/text_case.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart' show BlockContext, NodeDocument;
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart' show invalidSectionIdCharsRx;
+import 'package:ptome/src/text_case.dart';
 
 /// First index used when generating a unique ID suffix.
 ///

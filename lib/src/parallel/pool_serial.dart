@@ -2,7 +2,7 @@
 /// serially (see `parallel.dart`).
 library;
 
-import 'package:asciidart/src/parallel.dart';
+import 'package:ptome/src/parallel.dart';
 
 /// The serial pool, whatever the size.
 Parallel pool(int size) => Parallel.serial;

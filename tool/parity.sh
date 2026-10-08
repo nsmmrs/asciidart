@@ -4,11 +4,11 @@
 # Runs tool/differential.dart over the fixture corpus (plus
 # vendor/asciidoctor/data/reference/syntax.adoc) and the parity corpus in test/parity, on the
 # html5, docbook5 and manpage backends. Exits nonzero on any difference.
-# asciidart runs with asciidoctor-compat (ADR-0015: Asciidoctor's
+# ptome runs with asciidoctor-compat (ADR-0015: Asciidoctor's
 # stylesheet, not the house style), as a default a document may override.
 #
 # Usage: tool/parity.sh DART_EXE [RUBY_EXE]
-#   DART_EXE  the Dart CLI to check (e.g. build/asciidart)
+#   DART_EXE  the Dart CLI to check (e.g. build/ptome)
 #   RUBY_EXE  the reference CLI (default: asciidoctor, the gem on PATH)
 set -euo pipefail
 

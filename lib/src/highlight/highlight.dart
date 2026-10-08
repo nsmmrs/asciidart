@@ -6,7 +6,7 @@
 /// `syntax_highlighter.dart`.
 library;
 
-import 'package:asciidart/src/path_resolver.dart';
+import 'package:ptome/src/path_resolver.dart';
 
 /// Selects whether highlighted HTML references stylesheet classes or carries
 /// inline styles.

@@ -1,7 +1,7 @@
 /// Generates `lib/src/pdf/assets.g.dart` from `vendor/asciidoctor-pdf`:
 /// the bundled themes and the icon sets' name maps, embedded so the PDF
 /// backend never reads files of its own at conversion time. Fonts are not
-/// embedded: the backend uses the installed ones (`asciidart doctor`
+/// embedded: the backend uses the installed ones (`ptome doctor`
 /// installs the default themes'). Run from the repository root (`tool/vendor_asciidoctor_pdf.sh`
 /// runs it):
 ///
@@ -29,7 +29,7 @@ void main() {
           // The themes and the icons' name maps, not the fonts.
           .where((file) => RegExp(r'\.(yml|tsv)$').hasMatch(file.path)),
   ]..sort((a, b) => a.path.compareTo(b.path));
-  // asciidart's own themes (`data/pdf-themes`, the house style,
+  // Ptome's own themes (`data/pdf-themes`, the house style,
   // ADR-0011), embedded as bundled themes beside asciidoctor-pdf's.
   final own = Directory('${root.path}/data/pdf-themes');
   final ownFiles = own.existsSync()

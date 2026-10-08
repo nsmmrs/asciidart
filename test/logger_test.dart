@@ -6,7 +6,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'support/doc_helpers.dart';
@@ -76,7 +76,7 @@ void main() {
         await logger.close();
         expect(
           File(path).readAsStringSync(),
-          equals('existing\nasciidart: WARNING: appended\n'),
+          equals('existing\nptome: WARNING: appended\n'),
         );
       } finally {
         dir.deleteSync(recursive: true);
@@ -87,9 +87,9 @@ void main() {
       expect(Logger(level: Severity.debug).level, equals(Severity.debug));
     });
 
-    test('defaults to the asciidart progname and the WARN level', () {
+    test('defaults to the ptome progname and the WARN level', () {
       final logger = Logger();
-      expect(logger.progname, equals('asciidart'));
+      expect(logger.progname, equals('ptome'));
       expect(logger.level, equals(Severity.warn));
       expect(logger.formatter, isA<BasicFormatter>());
     });
@@ -104,9 +104,9 @@ void main() {
       expect(
         output,
         equals(
-          'asciidart: WARNING: this is a call\n'
-          'asciidart: ERROR: an error\n'
-          'asciidart: FAILED: fatal\n',
+          'ptome: WARNING: this is a call\n'
+          'ptome: ERROR: an error\n'
+          'ptome: FAILED: fatal\n',
         ),
       );
     });
@@ -120,7 +120,7 @@ void main() {
       });
       expect(
         output,
-        equals('asciidart: WARNING: file.adoc: line 5: Asciidoctor was here\n'),
+        equals('ptome: WARNING: file.adoc: line 5: Asciidoctor was here\n'),
       );
     });
 
@@ -151,7 +151,7 @@ void main() {
       final output = logTo(
         (logger) => logger.add(Severity.unknown, const LogMessage('any')),
       );
-      expect(output, equals('asciidart: ANY: any\n'));
+      expect(output, equals('ptome: ANY: any\n'));
     });
 
     test(
@@ -356,7 +356,7 @@ void main() {
         );
         expect(
           sink.toString(),
-          contains('asciidart: WARNING: <stdin>: line 2: list item index'),
+          contains('ptome: WARNING: <stdin>: line 2: list item index'),
         );
       });
     });

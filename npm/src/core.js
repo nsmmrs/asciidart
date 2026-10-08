@@ -1,17 +1,17 @@
 // The compiled Dart core (`lib/src/js/entry.dart`), installed as
-// `globalThis.asciidartCore` when the bundle loads, with the helpers it
+// `globalThis.ptomeCore` when the bundle loads, with the helpers it
 // needs from JavaScript.
 
-const core = globalThis.asciidartCore
+const core = globalThis.ptomeCore
 if (!core) {
   throw new Error(
-    'asciidart: the compiled core is not loaded; import the package entry ' +
-      'point (asciidart) rather than its src/ modules'
+    'ptome: the compiled core is not loaded; import the package entry ' +
+      'point (ptome) rather than its src/ modules'
   )
 }
 
 /** The error an error thrown by JavaScript code is carried in through Dart. */
-const CARRIED = Symbol('asciidart.carried')
+const CARRIED = Symbol('ptome.carried')
 
 /** The error classes the core's exceptions become (set by api.g.js). */
 export const errorClasses = Object.create(null)

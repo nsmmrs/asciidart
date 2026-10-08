@@ -1,6 +1,6 @@
 /// Checks the public API.
 ///
-/// 1. It is closed: every `package:asciidart` type that appears in an
+/// 1. It is closed: every `package:ptome` type that appears in an
 ///    exported signature (supertypes, constructor and method parameters,
 ///    return types, fields, typedefs) is itself exported by one of the
 ///    public libraries.
@@ -24,7 +24,7 @@ import 'package:analyzer/dart/element/type.dart';
 
 // Resolved relative to this file: tool/ -> repository root.
 final String repo = File.fromUri(Platform.script).parent.parent.path;
-const publicLibs = ['asciidart.dart', 'io.dart', 'cli.dart'];
+const publicLibs = ['ptome.dart', 'io.dart', 'cli.dart'];
 
 /// The absolute, normalized path of the public library [name], which the
 /// analyzer requires (native separators on Windows).
@@ -49,7 +49,7 @@ Future<void> main(List<String> args) async {
   final missing = <String, Set<String>>{};
   void checkElement(Element e, String where) {
     final uri = e.library?.uri.toString() ?? '';
-    if (!uri.startsWith('package:asciidart/')) return;
+    if (!uri.startsWith('package:ptome/')) return;
     if (e.name == null || e.name!.startsWith('_')) return;
     if (exported.contains(e)) return;
     missing

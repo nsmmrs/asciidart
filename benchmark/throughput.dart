@@ -12,7 +12,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:asciidart/src/internal.dart' as asciidoctor;
+import 'package:ptome/src/internal.dart' as asciidoctor;
 
 const _sources = [
   'vendor/asciidoctor/benchmark/sample-data/mdbasics.adoc',

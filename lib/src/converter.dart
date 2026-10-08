@@ -37,17 +37,17 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/document.dart' show Document;
-import 'package:asciidart/src/inline.dart' show Inline;
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/template.dart'
-    show TemplateRegistry, buildTemplateChain;
-import 'package:asciidart/src/template_loader.dart'
-    show FileTemplateLoader, TemplateCache, validateTemplateEngine;
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/document.dart' show Document;
+import 'package:ptome/src/inline.dart' show Inline;
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/template.dart'
+    show TemplateRegistry, buildTemplateChain;
+import 'package:ptome/src/template_loader.dart'
+    show FileTemplateLoader, TemplateCache, validateTemplateEngine;
 
 /// Trailing digits stripped from a backend name to derive its base backend.
 final RegExp _trailingDigits = RegExp(r'\d+$');

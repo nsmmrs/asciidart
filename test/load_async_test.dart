@@ -7,7 +7,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// A loopback HTTP server serving [files] by path, counting requests.

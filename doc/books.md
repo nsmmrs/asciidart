@@ -1,4 +1,4 @@
-# Books with asciidart
+# Books with Ptome
 
 One AsciiDoc source gives a print PDF, a website, an EPUB and DocBook,
 each from one command and with no post-processing. This guide shows how,
@@ -10,13 +10,13 @@ it.
 ## One source, every format
 
 ```sh
-asciidart -b pdf -a pdf-theme=book-theme.yml -o book.pdf book.adoc
-asciidart -b multipage_html5 -a callout-links -o site/index.html book.adoc
-asciidart -b epub3 -a callout-links -o book.epub book.adoc
-asciidart -b docbook5 -o book.xml book.adoc
+ptome -b pdf -a pdf-theme=book-theme.yml -o book.pdf book.adoc
+ptome -b multipage_html5 -a callout-links -o site/index.html book.adoc
+ptome -b epub3 -a callout-links -o book.epub book.adoc
+ptome -b docbook5 -o book.xml book.adoc
 ```
 
-- **PDF**: asciidart's own typesetting (`doc/pdf.md`): optimal line
+- **PDF**: Ptome's own typesetting (`doc/pdf.md`): optimal line
   breaking, hyphenation, widows and orphans, first-line indents,
   listings that never lose a line, highlighted code, footnotes at the
   bottom of the page, floating figures, chapter openers, a generated
@@ -85,8 +85,8 @@ accessibility tools) can go to "page 42" as in the paper book: build the
 PDF with a page map, then the EPUB with it.
 
 ```sh
-asciidart -b pdf -a pdf-page-map=book.pages.json book.adoc
-asciidart -b epub3 -a epub-page-map=book.pages.json book.adoc
+ptome -b pdf -a pdf-page-map=book.pages.json book.adoc
+ptome -b epub3 -a epub-page-map=book.pages.json book.adoc
 ```
 
 The EPUB marks each page where its first block starts (a page that starts
@@ -176,17 +176,17 @@ The PDF's `basebackend` is `html`, as asciidoctor-pdf's is: use
 
 ## From asciidoctor-pdf
 
-asciidart reads asciidoctor-pdf themes unchanged. Two ways to switch:
+Ptome reads asciidoctor-pdf themes unchanged. Two ways to switch:
 
 - **Pages that look as before**: `asciidoctor-compat` (`compat: [pdf]`
-  in `asciidart.yml`, or `-a pdf-compat`; "From Asciidoctor" below) sets
+  in `ptome.yml`, or `-a pdf-compat`; "From Asciidoctor" below) sets
   pages as asciidoctor-pdf 2.3.27 does: its default theme, margins that
   add, one line at a time, no hyphenation unless asked, footnotes at the
   end (792 of the 797 documents of its own test suite look the same;
   `benchmark/PARITY.md`). Hyphenation (`hyphens`) works without the
   text-hyphen gem.
-- **Better pages**: without it, asciidart keeps your theme and improves
-  the typesetting (without a theme, it uses asciidart's house theme:
+- **Better pages**: without it, Ptome keeps your theme and improves
+  the typesetting (without a theme, it uses Ptome's house theme:
   `-a pdf-theme=default` for asciidoctor-pdf's). Expect different line
   and page breaks: justified text is broken by Knuth and Plass and
   hyphenated, paragraphs and listings keep two lines on each side of a
@@ -202,7 +202,7 @@ in.
 ## From Asciidoctor
 
 The HTML is Asciidoctor's, element for element. Its look by default is
-asciidart's house style (`doc/style.md`, ADR-0011): Asciidoctor's
+Ptome's house style (`doc/style.md`, ADR-0011): Asciidoctor's
 stylesheet followed by a few rules (a measure of about 80 characters,
 near-black headings, tables with rows only), the same style as the PDF,
 the website and the EPUB.
@@ -211,7 +211,7 @@ To keep Asciidoctor's look while migrating, turn on
 `asciidoctor-compat` (ADR-0015), for every format or a list of them:
 
 ```yaml
-# asciidart.yml, in the project (the nearest one above the document)
+# ptome.yml, in the project (the nearest one above the document)
 compat: true            # or: compat: [html, pdf]
 ```
 
@@ -220,9 +220,9 @@ The same setting, from the first place that gives it:
 | Where | Example |
 | --- | --- |
 | The command line or the document | `-a asciidoctor-compat=html,pdf`, `:asciidoctor-compat:` |
-| The environment | `ASCIIDART_COMPAT=true` |
-| The project | `compat:` in `asciidart.yml`, in the document's directory or one above it |
-| The user | `compat:` in `~/.config/asciidart/config.yml` (`$XDG_CONFIG_HOME`) |
+| The environment | `PTOME_COMPAT=true` |
+| The project | `compat:` in `ptome.yml`, in the document's directory or one above it |
+| The user | `compat:` in `~/.config/ptome/config.yml` (`$XDG_CONFIG_HOME`) |
 
 The value is `true` (every format), `false`, or formats: `html` (HTML
 pages and the website), `epub`, `docbook`, `manpage`, `pdf`; backend
@@ -244,10 +244,10 @@ epub3-stylesheet=asciidoctor-epub3`, `-a pdf-theme=default`.
 
 ## From HTML and a browser (Paged.js)
 
-What the HTML-to-print pipeline needed by hand, asciidart does from the
+What the HTML-to-print pipeline needed by hand, Ptome does from the
 source:
 
-| By hand in HTML and CSS | In asciidart |
+| By hand in HTML and CSS | In Ptome |
 | --- | --- |
 | Paged.js, print CSS, print-to-PDF in a browser | `-b pdf` with a theme |
 | Scrolling to the end so every page renders | Nothing: the whole book is laid out, the same bytes every time (`SOURCE_DATE_EPOCH`) |
@@ -258,7 +258,7 @@ source:
 | A hand-made index | `[index]` in every format |
 | Callouts re-implemented | Callouts in every format |
 | A site generator plugin for chapters | `-b multipage_html5` |
-| Fonts subset and embedded by the browser | Fonts subset and embedded by asciidart (PDF/X-4 for the printer) |
+| Fonts subset and embedded by the browser | Fonts subset and embedded by Ptome (PDF/X-4 for the printer) |
 
 Move the print CSS's choices into a theme (`extends: default`, then page
 size and margins, fonts, `prose`, `code`, running content); `doc/pdf.md`

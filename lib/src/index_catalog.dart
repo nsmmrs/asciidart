@@ -4,11 +4,11 @@
 /// an `[index]` section.
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/section.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/section.dart';
 
 /// A use of a term: its anchor in the text, the node it is in, and the
 /// section it is in (null before the first section).

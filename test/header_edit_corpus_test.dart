@@ -6,7 +6,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/asciidart.dart';
+import 'package:ptome/ptome.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -24,9 +24,8 @@ void main() {
       final source = file.readAsStringSync();
       final Document doc;
       try {
-        doc = const Asciidart(safe: SafeMode.safe)
-            .parse(source, path: file.path);
-      } on AsciidartException {
+        doc = const Ptome(safe: SafeMode.safe).parse(source, path: file.path);
+      } on PtomeException {
         continue;
       }
       for (final MapEntry(key: name, :value) in doc.headerAttributes.entries) {
@@ -34,7 +33,7 @@ void main() {
         final Document same;
         try {
           same = doc.withAttribute(name, value);
-        } on AsciidartException {
+        } on PtomeException {
           continue; // under a conditional or in an include
         }
         expect(same.source.length, source.length, reason: '${file.path} $name');

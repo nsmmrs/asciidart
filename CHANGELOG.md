@@ -2,7 +2,7 @@
 
 ## 0.1.0 (unreleased)
 
-First release of asciidart, an AsciiDoc processor for Dart compatible with
+First release of Ptome, an AsciiDoc processor for Dart compatible with
 Asciidoctor's development version (upstream `main` at `30fb8cd5`, which
 reports **2.1.0.alpha.0**), fixing bugs Asciidoctor still has. The tag
 `asciidoctor-2.0.26-parity` marks the last commit that matched the 2.0.26
@@ -41,9 +41,9 @@ Asciidoctor project.
   byte-identical to the Asciidoctor gem (built from upstream `main` at
   `30fb8cd5`) on every backend, apart from the bugs fixed, checked in
   CI by `tool/parity.sh` over the fixture and parity corpora; the end-to-end
-  CLI suite (134 tests) passes against both asciidart and the gem.
+  CLI suite (134 tests) passes against both Ptome and the gem.
 - A small, typed public API designed from usage scenarios
-  (`doc/api.md`): an `Asciidart` configuration (safe mode, attributes,
+  (`doc/api.md`): a `Ptome` configuration (safe mode, attributes,
   extensions, an HTML override, highlighters, Mustache templates) with
   `parse`, `parseHeader`, `convert` and asynchronous variants; the default
   configuration `asciidoc`; a sealed tree of typed nodes (`Section`,
@@ -58,14 +58,14 @@ Asciidoctor project.
   collected per document; callback-based extensions (`InlineMacro`,
   `BlockMacro`, `CustomBlock`, `IncludeResolver` (may be asynchronous),
   `TreeProcessor`, `Preprocessor`, `Postprocessor`, `Docinfo`).
-  `package:asciidart/asciidart.dart` has no file system access and runs on
-  the web; `package:asciidart/io.dart` adds `parseFile`, `convertFile` and
-  `convertTree`; `package:asciidart/cli.dart` runs the command line with a
+  `package:ptome/ptome.dart` has no file system access and runs on
+  the web; `package:ptome/io.dart` adds `parseFile`, `convertFile` and
+  `convertTree`; `package:ptome/cli.dart` runs the command line with a
   configuration compiled in. Everything else is private;
   `tool/api_surface.txt` records the public API and CI checks it.
 - A PDF backend (`-b pdf`, native executable) that converts as the
   asciidoctor-pdf 2.3.27 gem does and reads its YAML themes unchanged, drawn
-  with libpdf (asciidart's own pure-Dart PDF library; no Prawn code). It
+  with libpdf (Ptome's own pure-Dart PDF library; no Prawn code). It
   covers:
   - title pages, covers and backgrounds (PDF pages included);
   - running content;
@@ -74,7 +74,7 @@ Asciidoctor project.
   - `media=prepress` books (recto starts and inner and outer margins) and
     man pages.
 
-  By default the layout is asciidart's own: justified paragraphs are
+  By default the layout is Ptome's own: justified paragraphs are
   broken as Typst's optimizer breaks them (its costs: even spacing, few
   hyphens, no lone word on the last line), other text one line at a
   time, never inside a word at a style change, and
@@ -120,9 +120,9 @@ Asciidoctor project.
   the DocBook 5.0 schema and passes EPUBCheck.
 - `asciidoctor-compat` (ADR-0015) keeps Asciidoctor's look while
   migrating, for every format or a list (`html`, `epub`, `docbook`,
-  `manpage`, `pdf`): an attribute, the `ASCIIDART_COMPAT` environment
-  variable, `compat:` in a project's `asciidart.yml` or in
-  `~/.config/asciidart/config.yml`.
+  `manpage`, `pdf`): an attribute, the `PTOME_COMPAT` environment
+  variable, `compat:` in a project's `ptome.yml` or in
+  `~/.config/ptome/config.yml`.
 - Math in the PDF: AsciiMath and LaTeX math are typeset (ADR-0014), inline at the
   text's size and in display style in STEM blocks, by libpdf's math layout
   (the OpenType MATH table's rules) in the bundled Noto Sans Math or the
@@ -170,11 +170,11 @@ Asciidoctor project.
   list item explains.
 - Remote content (`allow-uri-read`): `parseAsync` and `convertAsync` fetch
   includes and data-URI images, honoring `cache-uri`.
-- The `asciidart` command takes the options of the gem's `asciidoctor`
+- The `ptome` command takes the options of the gem's `asciidoctor`
   command, except the Ruby-specific `-r`, `-I`, `--eruby` and `-w`.
-  Messages start with `asciidart:` and read like a Dart tool's
-  (`benchmark/PARITY.md`); `--version` names asciidart and the Asciidoctor
-  release it is compatible with; `man/asciidart.1` documents it.
+  Messages start with `ptome:` and read like a Dart tool's
+  (`benchmark/PARITY.md`); `--version` names Ptome and the Asciidoctor
+  release it is compatible with; `man/ptome.1` documents it.
   `init-config` generates a project for a custom command with Dart converter
   functions compiled in.
 - Syntax highlighting with highlight.js at conversion (hilite, a Dart port
@@ -185,15 +185,15 @@ Asciidoctor project.
   overrides in Dart, in place of Ruby's Tilt templates (ADR-0002).
 - `{asciidoctor-version}` (and `asciidoctorVersion` in the API) report
   2.1.0.alpha.0, so documents written for Asciidoctor keep working;
-  `{asciidart-version}` (`asciidartVersion`) reports asciidart's version,
+  `{ptome-version}` (`ptomeVersion`) reports Ptome's version,
   which also appears in the HTML generator meta tag and the man page
   header.
 - The compiled command converts 5–10x faster than the gem end to end, and
   about 2x faster in process (`benchmark/BASELINE.md`).
 - Fonts are the machine's, not compiled in: the PDF backend finds a
   theme's fonts among the installed ones (by file name, then by family;
-  `ASCIIDART_FONT_PATH` adds folders), falls back to the built-in PDF
-  fonts with a warning when one is missing, and `asciidart doctor`
+  `PTOME_FONT_PATH` adds folders), falls back to the built-in PDF
+  fonts with a warning when one is missing, and `ptome doctor`
   checks the built-in themes' fonts and downloads the missing ones from
   Google Fonts and their projects into the user's font folder. An EPUB
   embeds fonts only with `-a epub-embed-fonts`. The executable is 18.9 MB
@@ -217,7 +217,7 @@ Asciidoctor project.
   pages they change; line breaks are kept per paragraph. The Hypermedia
   Systems PDF takes 2.1 s, from 3.8 s (Typst 0.15.1: 3.7 s); `-j` batches
   give each worker the next file as it finishes one.
-- The same core builds as the npm package `asciidart` for Node.js and
+- The same core builds as the npm package `ptome` for Node.js and
   browsers (ADR-0005). Its API is generated from the Dart API, with the
   same names and shapes, plus TypeScript declarations
   (`tool/generate_js.dart`, ADR-0007).

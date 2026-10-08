@@ -1,16 +1,16 @@
 /// Options for loading and converting AsciiDoc documents.
 library;
 
-import 'package:asciidart/src/abstract_node.dart' show SafeMode;
-import 'package:asciidart/src/converter.dart' show Converter, ConverterFactory;
-import 'package:asciidart/src/extensions.dart' show Registry;
-import 'package:asciidart/src/highlight/syntax_highlighter.dart'
-    show SyntaxHighlighterFactory, SyntaxHighlighterFactoryFn;
-import 'package:asciidart/src/logging.dart' show LoggerBase, NullLogger;
-import 'package:asciidart/src/remote.dart' show UriReader;
-import 'package:asciidart/src/template_loader.dart' show TemplateCache;
-import 'package:asciidart/src/timings.dart' show Timings;
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_node.dart' show SafeMode;
+import 'package:ptome/src/converter.dart' show Converter, ConverterFactory;
+import 'package:ptome/src/extensions.dart' show Registry;
+import 'package:ptome/src/highlight/syntax_highlighter.dart'
+    show SyntaxHighlighterFactory, SyntaxHighlighterFactoryFn;
+import 'package:ptome/src/logging.dart' show LoggerBase, NullLogger;
+import 'package:ptome/src/remote.dart' show UriReader;
+import 'package:ptome/src/template_loader.dart' show TemplateCache;
+import 'package:ptome/src/timings.dart' show Timings;
 
 /// How a document is loaded and converted.
 ///

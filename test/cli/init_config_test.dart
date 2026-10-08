@@ -12,8 +12,8 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/cli/init_config.dart';
-import 'package:asciidart/src/cli/run.dart';
+import 'package:ptome/src/cli/init_config.dart';
+import 'package:ptome/src/cli/run.dart';
 import 'package:test/test.dart';
 
 /// Finds this package's root (the directory holding its pubspec).
@@ -22,13 +22,13 @@ String findPackageRoot() {
   while (true) {
     final pubspec = File('${dir.path}/pubspec.yaml');
     if (pubspec.existsSync() &&
-        pubspec.readAsStringSync().contains('name: asciidart')) {
+        pubspec.readAsStringSync().contains('name: ptome')) {
       return dir.path;
     }
     final parent = dir.parent;
     if (parent.path == dir.path) {
       throw StateError(
-        'asciidart package root not found above ${Directory.current.path}',
+        'ptome package root not found above ${Directory.current.path}',
       );
     }
     dir = parent;
@@ -64,16 +64,16 @@ void main() {
           .replaceAll('-', '_');
       final pubspec = File('${dir.path}/pubspec.yaml').readAsStringSync();
       expect(pubspec, contains('name: $name'));
-      expect(pubspec, contains('asciidart: $scaffoldAsciidartConstraint'));
+      expect(pubspec, contains('ptome: $scaffoldPtomeConstraint'));
       expect(pubspec, contains('sdk: $scaffoldSdkConstraint'));
 
       final config = File('${dir.path}/lib/config.dart').readAsStringSync();
-      expect(config, contains('final asciidart = Asciidart('));
+      expect(config, contains('final ptome = Ptome('));
 
       final main = File('${dir.path}/bin/main.dart').readAsStringSync();
-      expect(main, contains("import 'package:asciidart/cli.dart';"));
+      expect(main, contains("import 'package:ptome/cli.dart';"));
       expect(main, contains("import 'package:$name/config.dart';"));
-      expect(main, contains('runCli(args, asciidart: asciidart)'));
+      expect(main, contains('runCli(args, ptome: ptome)'));
 
       final readme = File('${dir.path}/README.md').readAsStringSync();
       expect(readme, contains('dart compile exe bin/main.dart'));
@@ -131,7 +131,7 @@ void main() {
         runInitConfig(['--help'], out: out, err: StringBuffer()),
         equals(0),
       );
-      expect(out.toString(), contains('Usage: asciidart init-config'));
+      expect(out.toString(), contains('Usage: ptome init-config'));
     });
 
     test('scaffold constraints match this package', () {
@@ -144,7 +144,7 @@ void main() {
         r'^version: (\S+)$',
         multiLine: true,
       ).firstMatch(pubspec)![1]!;
-      expect(scaffoldAsciidartConstraint, equals('^$version'));
+      expect(scaffoldPtomeConstraint, equals('^$version'));
       final sdk = RegExp(
         r'^\s+sdk: (\S+)$',
         multiLine: true,
@@ -190,7 +190,7 @@ void main() {
       for (final phase in ['parse', 'convert', 'write']) {
         expect(
           err.toString(),
-          matches(RegExp('asciidart: .*doc.adoc: $phase done in \\d+ ms')),
+          matches(RegExp('ptome: .*doc.adoc: $phase done in \\d+ ms')),
         );
       }
       expect(err.toString(), isNot(contains('Total time')));
@@ -220,7 +220,7 @@ void main() {
         final dir = makeTempDir('init-config-test');
         final result = await Process.run('dart', [
           'run',
-          '${findPackageRoot()}/bin/asciidart.dart',
+          '${findPackageRoot()}/bin/ptome.dart',
           'init-config',
         ], workingDirectory: dir.path);
         expect(
@@ -243,7 +243,7 @@ void main() {
         pubspec.writeAsStringSync(
           '${pubspec.readAsStringSync()}\n'
           'dependency_overrides:\n'
-          '  asciidart:\n'
+          '  ptome:\n'
           '    path: ${findPackageRoot()}\n',
         );
         final pubGet = await Process.run('dart', [

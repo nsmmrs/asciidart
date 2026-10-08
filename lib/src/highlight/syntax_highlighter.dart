@@ -26,13 +26,13 @@
 ///
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/highlight/highlight.dart';
-import 'package:asciidart/src/highlight/highlightjs.dart';
-import 'package:asciidart/src/highlight/html_pipeline.dart';
-import 'package:asciidart/src/highlight/prettify.dart';
-import 'package:asciidart/src/highlight/unavailable.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/highlight/highlight.dart';
+import 'package:ptome/src/highlight/highlightjs.dart';
+import 'package:ptome/src/highlight/html_pipeline.dart';
+import 'package:ptome/src/highlight/prettify.dart';
+import 'package:ptome/src/highlight/unavailable.dart';
 
 /// The context a highlighter is created in.
 final class HighlighterOptions {
@@ -265,7 +265,7 @@ abstract final class SyntaxHighlighter {
       }
     }
 
-    // highlight.js is asciidart's highlighter (hilite); html-pipeline and
+    // highlight.js is Ptome's highlighter (hilite); html-pipeline and
     // prettify only emit markup for tools that highlight later. Rouge,
     // Pygments and CodeRay behave as without their gems.
     add(

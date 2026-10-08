@@ -1,13 +1,13 @@
 // Font metrics and widths, against Prawn 2.4's (measured with Prawn
 // itself, through asciidoctor-pdf 2.3.27's bundled fonts and Prawn's AFM
 // files, at 10.5 points): the metrics the same, the widths within a
-// little of them (asciidart shapes with OpenType: GPOS kerning, widths
+// little of them (Ptome shapes with OpenType: GPOS kerning, widths
 // not truncated to the unit).
 @TestOn('vm')
 library;
 
-import 'package:asciidart/src/pdf/fonts.dart';
-import 'package:asciidart/src/pdf/theme.dart';
+import 'package:ptome/src/pdf/fonts.dart';
+import 'package:ptome/src/pdf/theme.dart';
 import 'package:test/test.dart';
 
 import '../vendored_fonts.dart';
@@ -115,7 +115,7 @@ void main() {
     expect(
       warnings.single,
       'font family Nope is not installed: using Helvetica for Nope (normal); '
-      "`asciidart doctor` installs the default themes' fonts",
+      "`ptome doctor` installs the default themes' fonts",
     );
     expect(catalog.font('Some Serif', 'bold'), isA<AfmFont>());
     expect(warnings.last, contains('using Times-Bold'));

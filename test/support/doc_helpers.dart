@@ -3,7 +3,7 @@
 /// `convert_string_to_embedded`).
 library;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 
 /// Creates an empty, unparsed document (port of `empty_document`).
 Document emptyDocument([

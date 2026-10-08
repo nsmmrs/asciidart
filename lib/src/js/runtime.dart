@@ -12,8 +12,8 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
-import 'package:asciidart/asciidart.dart' show AsciidartException;
-import 'package:asciidart/src/cli/diagnostics.dart' show describe;
+import 'package:ptome/ptome.dart' show PtomeException;
+import 'package:ptome/src/cli/diagnostics.dart' show describe;
 
 /// The helpers `npm/src/core.js` provides.
 extension type Helpers._(JSObject _) implements JSObject {
@@ -56,7 +56,7 @@ late Helpers _helpers;
 /// Installs the [helpers] from `npm/src/core.js`.
 void initRuntime(JSObject helpers) => _helpers = helpers as Helpers;
 
-final Expando<JSObject> _handles = Expando('asciidart JavaScript objects');
+final Expando<JSObject> _handles = Expando('ptome JavaScript objects');
 
 /// The JavaScript object for [o], an instance of the projected class
 /// [kind]: the same object every time.
@@ -259,8 +259,8 @@ JSAny _jsErrorFor(Object error, StackTrace stack) {
     final carried = error.getProperty<JSAny?>(_helpers.carried);
     return carried.isUndefined ? error : carried!;
   }
-  if (error is AsciidartException) {
-    return _helpers.error('AsciidartException'.toJS, error.message.toJS);
+  if (error is PtomeException) {
+    return _helpers.error('PtomeException'.toJS, error.message.toJS);
   }
   return _helpers.error(
     (error is TypeError ? 'TypeError' : 'Error').toJS,

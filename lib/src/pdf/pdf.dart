@@ -4,11 +4,11 @@
 /// fonts), not by the web-safe library.
 library;
 
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/extensions.dart';
-import 'package:asciidart/src/pdf/converter.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/extensions.dart';
+import 'package:ptome/src/pdf/converter.dart';
 
-export 'package:asciidart/src/pdf/converter.dart' show PdfConverter;
+export 'package:ptome/src/pdf/converter.dart' show PdfConverter;
 
 bool _registered = false;
 
@@ -20,7 +20,7 @@ void registerPdf() {
   // Blocks keep where they start in the source, so that layout problems
   // name it.
   Extensions.register(
-    name: 'asciidart-pdf',
+    name: 'ptome-pdf',
     build: (registry) {
       final document = registry.document;
       if (document != null && document.backend == 'pdf') {

@@ -17,7 +17,7 @@
 ///   [hardLineBreakRx] follows the default pattern (R5).
 library;
 
-import 'package:asciidart/src/context.dart';
+import 'package:ptome/src/context.dart';
 
 // Character class fragments (mirror the CC_*/CG_* constants).
 

@@ -7,7 +7,7 @@
 /// JavaScript applies the final sigma rule.
 library;
 
-import 'package:asciidart/src/case_mapping.g.dart';
+import 'package:ptome/src/case_mapping.g.dart';
 
 /// [text] in upper case, as Ruby's `String#upcase` gives it.
 String upcase(String text) => _isAscii(text)

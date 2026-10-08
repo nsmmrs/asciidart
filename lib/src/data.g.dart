@@ -1369,8 +1369,8 @@ abstract final class EmbeddedData {
         '.CodeRay .delete .delete{color:#800}\n'
         '.CodeRay .change .change{color:#66f}\n'
         '.CodeRay .head .head{color:#f4f}\n',
-    'stylesheets/asciidart-epub3-house.css':
-        '/*! asciidart house style (doc/style.md, ADR-0011): rules after asciidoctor-epub3\'s */\n'
+    'stylesheets/ptome-epub3-house.css':
+        '/*! ptome house style (doc/style.md, ADR-0011): rules after asciidoctor-epub3\'s */\n'
         'body a:link{color:#2156A5}\n'
         'h1,h2,h3,h4,h5,h6{color:#191919}\n'
         '.small-caps{font-variant:small-caps;font-feature-settings:"smcp"}\n'
@@ -1381,8 +1381,8 @@ abstract final class EmbeddedData {
         'div.index ul.index-terms ul.index-terms{margin-left:1.25em !important}\n'
         'div.index ul.index-terms>li::before{content:none}\n'
         'nav.toc ol{list-style-type:none}\n',
-    'stylesheets/asciidart-house.css':
-        '/*! asciidart house style (doc/style.md, ADR-0011): rules after Asciidoctor\'s stylesheet */\n'
+    'stylesheets/ptome-house.css':
+        '/*! ptome house style (doc/style.md, ADR-0011): rules after Asciidoctor\'s stylesheet */\n'
         '@media screen{#header,#content,#footnotes,#footer{max-width:42em}}\n'
         'h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{color:#191919;font-weight:600}\n'
         '#header>h1:first-child{color:#191919}\n'

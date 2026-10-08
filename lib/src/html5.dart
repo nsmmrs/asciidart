@@ -14,27 +14,27 @@
 /// Syntax highlighting goes through the document's [SyntaxHighlighterBase].
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/callout_links.dart';
-import 'package:asciidart/src/compat.dart';
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
-import 'package:asciidart/src/highlight/syntax_highlighter.dart';
-import 'package:asciidart/src/index_catalog.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/list.dart';
-import 'package:asciidart/src/output_template.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/stylesheets.dart';
-import 'package:asciidart/src/table.dart';
-import 'package:asciidart/src/text_case.dart';
-import 'package:asciidart/src/unbreakable.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/callout_links.dart';
+import 'package:ptome/src/compat.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/highlight/highlight.dart' show CssMode;
+import 'package:ptome/src/highlight/syntax_highlighter.dart';
+import 'package:ptome/src/index_catalog.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/list.dart';
+import 'package:ptome/src/output_template.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/stylesheets.dart';
+import 'package:ptome/src/table.dart';
+import 'package:ptome/src/text_case.dart';
+import 'package:ptome/src/unbreakable.dart';
 
 /// Renders [value] for interpolation into output: `null` renders as the
 /// empty string.
@@ -304,8 +304,8 @@ class Html5Converter extends BuiltInConverter {
     final reproducible = node.hasAttr('reproducible');
     if (!reproducible) {
       result.add(
-        '<meta name="generator" content="Asciidart '
-        '${_s(node.attr('asciidart-version'))}"$slash>',
+        '<meta name="generator" content="Ptome '
+        '${_s(node.attr('ptome-version'))}"$slash>',
       );
     }
     if (node.hasAttr('app-name')) {
@@ -428,7 +428,7 @@ class Html5Converter extends BuiltInConverter {
       result.add('');
     }
 
-    // `:hyphens:` (asciidart's, as the PDF and EPUB read it): the text
+    // `:hyphens:` (Ptome's, as the PDF and EPUB read it): the text
     // hyphenated by the browser, in the document's language.
     if (node.hasAttr('hyphens')) {
       result.add(
@@ -734,7 +734,7 @@ class Html5Converter extends BuiltInConverter {
     final result = <String>['<ul class="sectlevel$sectlevel">'];
     for (final child in sections) {
       final section = child as Section;
-      // asciidart's `notoc` option: a section left out of the contents.
+      // Ptome's `notoc` option: a section left out of the contents.
       if (section.hasOption('notoc')) continue;
       final slevel = section.level!;
       final stoclevels = section.hasAttr('toclevels')
@@ -1187,7 +1187,7 @@ class Html5Converter extends BuiltInConverter {
         '<img src="${_q(src)}" alt="${_encodeAttributeValue(node.alt)}"'
         '$widthAttr$heightAttr$_voidElementSlash>';
     // A text file (ASCII art) shown as its text: what the PDF sets, and
-    // what a browser can't show as an image (asciidart's own output;
+    // what a browser can't show as an image (Ptome's own output;
     // Asciidoctor writes an <img>).
     final text = _textImage(node, target);
     final String img;

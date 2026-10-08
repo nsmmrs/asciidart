@@ -4,11 +4,11 @@ library;
 import 'dart:convert';
 import 'dart:io' as io;
 
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/io/types.dart';
-import 'package:asciidart/src/remote.dart';
 import 'package:fonts/fonts.dart'
     show FontPlatform, cacheDirectoryFor, fontDirectoriesFor;
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/io/types.dart';
+import 'package:ptome/src/remote.dart';
 
 /// Runs [body], turning a `dart:io` file system failure into an
 /// [IoException].

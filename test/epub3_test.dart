@@ -7,13 +7,13 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/epub3/assets.g.dart';
-import 'package:asciidart/src/epub3/book.dart';
-import 'package:asciidart/src/epub3/dates.dart';
-import 'package:asciidart/src/epub3/epub3.dart';
-import 'package:asciidart/src/epub3/zip.dart';
-import 'package:asciidart/src/font_index.dart';
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/epub3/assets.g.dart';
+import 'package:ptome/src/epub3/book.dart';
+import 'package:ptome/src/epub3/dates.dart';
+import 'package:ptome/src/epub3/epub3.dart';
+import 'package:ptome/src/epub3/zip.dart';
+import 'package:ptome/src/font_index.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'vendored_fonts.dart';

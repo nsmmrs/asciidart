@@ -3,7 +3,7 @@ library;
 
 import 'dart:isolate';
 
-import 'package:asciidart/src/parallel.dart';
+import 'package:ptome/src/parallel.dart';
 import 'package:test/test.dart';
 
 /// The sum of the squares below [n].

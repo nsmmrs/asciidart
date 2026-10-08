@@ -25,7 +25,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'document_test.dart' show assertXpath;

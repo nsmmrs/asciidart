@@ -16,25 +16,25 @@
 /// * Role checks use [AbstractNode.includesRole] (membership);
 ///   [AbstractNode.hasRole] tests equality.
 /// * AsciiMath: stem and quoted `asciimath` nodes are MathML, from
-///   asciidart's port of the `asciimath` gem (ADR-0014), as Asciidoctor
+///   Ptome's port of the `asciimath` gem (ADR-0014), as Asciidoctor
 ///   writes them with the gem installed.
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/attribute_list.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/list.dart';
-import 'package:asciidart/src/math/asciimath.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/table.dart';
-import 'package:asciidart/src/unbreakable.dart';
-import 'package:asciidart/src/xml_balance.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/attribute_list.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/list.dart';
+import 'package:ptome/src/math/asciimath.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/table.dart';
+import 'package:ptome/src/unbreakable.dart';
+import 'package:ptome/src/xml_balance.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
 /// `null` renders as the empty string instead of `'null'`.
@@ -115,7 +115,7 @@ const Map<String, (String, String, bool)> _quoteTags =
       'subscript': ('<subscript>', '</subscript>', false),
     };
 
-/// [xml] (DocBook) as asciidart repairs what Asciidoctor writes invalid
+/// [xml] (DocBook) as Ptome repairs what Asciidoctor writes invalid
 /// there: tags balanced, literals' content as DocBook allows it, and the
 /// copyright's year first (the section elements are chosen as they are
 /// written).
@@ -141,7 +141,7 @@ String _copyright(String xml) {
 }
 
 /// [xml] with each `<literal>`'s content as DocBook allows it
-/// (asciidart's; Asciidoctor nests emphasis and quotes there): an emphasis
+/// (Ptome's; Asciidoctor nests emphasis and quotes there): an emphasis
 /// opened in a literal becomes a phrase with its role, a quote its
 /// quotation marks. Literals may nest.
 String _literals(String xml) {
@@ -446,7 +446,7 @@ class Docbook5Converter extends BuiltInConverter {
         '</$tagName>';
   }
 
-  /// The DocBook elements a section may be (asciidart's: a section style
+  /// The DocBook elements a section may be (Ptome's: a section style
   /// with no element of its own, such as `introduction`, gives an element
   /// no DocBook schema allows in Asciidoctor).
   static const Set<String> _sectionTags = {
@@ -595,7 +595,7 @@ class Docbook5Converter extends BuiltInConverter {
         ? ' align="${_s(node.attr('align'))}"'
         : '';
     // A text file (ASCII art): its text, in the media object's text
-    // object (asciidart's own output).
+    // object (Ptome's own output).
     final text = _textImage(node);
     final mediaobject = text != null
         ? '<mediaobject>\n'
@@ -608,7 +608,7 @@ class Docbook5Converter extends BuiltInConverter {
               '</imageobject>\n'
               '<textobject><phrase>${_s(node.alt)}</phrase></textobject>\n'
               '</mediaobject>';
-    // An image's placement (asciidart's `placement` attribute) as DocBook
+    // An image's placement (Ptome's `placement` attribute) as DocBook
     // XSL's floatstyle: at the top of a page, or never floated.
     final floatstyle = switch (node.attr('placement')) {
       'top' || 'auto' => ' floatstyle="before"',
@@ -711,7 +711,7 @@ class Docbook5Converter extends BuiltInConverter {
     final String equationData;
     if (node.style == 'asciimath') {
       // NOTE fop requires jeuclid to process mathml markup. MathML from
-      // asciidart's port of the asciimath gem (ADR-0014), as Asciidoctor
+      // Ptome's port of the asciimath gem (ADR-0014), as Asciidoctor
       // writes it with the gem installed.
       equationData = _mathml(equation);
     } else {
@@ -1293,7 +1293,7 @@ class Docbook5Converter extends BuiltInConverter {
     if (date != null) {
       result.add('<date>${_s(date)}</date>');
     }
-    // The book's ISBN and editors (asciidart's `isbn` and `editor`, as the
+    // The book's ISBN and editors (Ptome's `isbn` and `editor`, as the
     // EPUB's metadata has them).
     if (doc.attr('isbn') case final isbn? when isbn.isNotEmpty) {
       result.add('<biblioid class="isbn">${_s(isbn)}</biblioid>');

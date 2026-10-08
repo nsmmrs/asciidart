@@ -13,23 +13,23 @@ library;
 
 import 'dart:convert' show utf8;
 
-import 'package:asciidart/src/abstract_node.dart' show SafeMode;
-import 'package:asciidart/src/compat.dart';
-import 'package:asciidart/src/constants.dart' show defaultStylesheetKeys;
-import 'package:asciidart/src/docbook5.dart' show Docbook5Converter;
-import 'package:asciidart/src/document.dart' show Document;
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/helpers.dart' show Helpers;
-import 'package:asciidart/src/html5.dart' show Html5Converter;
-import 'package:asciidart/src/http_fetch.dart' show fetchHttp;
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/logging.dart' show LoggerManager, NullLogger;
-import 'package:asciidart/src/options.dart';
-import 'package:asciidart/src/parallel.dart';
-import 'package:asciidart/src/path_resolver.dart' show PathResolver;
-import 'package:asciidart/src/remote.dart';
-import 'package:asciidart/src/stylesheets.dart' show Stylesheets;
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_node.dart' show SafeMode;
+import 'package:ptome/src/compat.dart';
+import 'package:ptome/src/constants.dart' show defaultStylesheetKeys;
+import 'package:ptome/src/docbook5.dart' show Docbook5Converter;
+import 'package:ptome/src/document.dart' show Document;
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/helpers.dart' show Helpers;
+import 'package:ptome/src/html5.dart' show Html5Converter;
+import 'package:ptome/src/http_fetch.dart' show fetchHttp;
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/logging.dart' show LoggerManager, NullLogger;
+import 'package:ptome/src/options.dart';
+import 'package:ptome/src/parallel.dart';
+import 'package:ptome/src/path_resolver.dart' show PathResolver;
+import 'package:ptome/src/remote.dart';
+import 'package:ptome/src/stylesheets.dart' show Stylesheets;
 
 /// Parses the AsciiDoc [source] (an empty document when `null`) into a
 /// [Document].

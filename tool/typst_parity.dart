@@ -5,7 +5,7 @@
 // test/typst/base-theme.yml). The tool compiles the Typst with the Typst
 // CLI under the test runner's defaults (a page 120pt wide, 10pt margins,
 // unbounded height, 10pt text; the bundled fonts and the dev assets' only),
-// converts the AsciiDoc with asciidart (the same font files), and compares
+// converts the AsciiDoc with Ptome (the same font files), and compares
 // the two PDFs line by line: each line's words, its left and right edges,
 // the distance from the first line's top to each line's, and the first
 // line's top.
@@ -13,7 +13,7 @@
 // Usage: dart run tool/typst_parity.dart [--exe PATH] [--out DIR]
 //            [--report FILE] [-v] [CASE...]
 //
-// -v prints each case's lines, Typst's (T) above asciidart's (A): top,
+// -v prints each case's lines, Typst's (T) above Ptome's (A): top,
 // left-right, words.
 //
 // With --report, the results table replaces the one in FILE (such as
@@ -49,18 +49,18 @@ typedef _Line = ({
 typedef _Result = ({
   String name,
   int typstLines,
-  int asciidartLines,
+  int ptomeLines,
   int sameLines,
   double edges,
   double pitch,
   double top,
   int typstPages,
-  int asciidartPages,
+  int ptomePages,
   String? error,
 });
 
 void main(List<String> args) {
-  var exe = 'build/asciidart';
+  var exe = 'build/ptome';
   var out = '$_cache/typst-parity';
   String? report;
   var verbose = false;
@@ -116,13 +116,13 @@ _Result _run(
   _Result failed(String error) => (
     name: name,
     typstLines: 0,
-    asciidartLines: 0,
+    ptomeLines: 0,
     sameLines: 0,
     edges: 0,
     pitch: 0,
     top: 0,
     typstPages: 0,
-    asciidartPages: 0,
+    ptomePages: 0,
     error: error,
   );
   final source = File('$out/$name.typ')
@@ -139,7 +139,7 @@ _Result _run(
     typstPdf,
   ]);
   if (compiled.exitCode != 0) return failed('typst: ${compiled.stderr}');
-  final asciidartPdf = '$out/$name-asciidart.pdf';
+  final ptomePdf = '$out/$name-ptome.pdf';
   final converted = Process.runSync(exe, [
     '-b',
     'pdf',
@@ -150,15 +150,15 @@ _Result _run(
     '-a',
     'reproducible',
     '-o',
-    asciidartPdf,
+    ptomePdf,
     '${dir.path}/doc.adoc',
   ]);
   if (converted.exitCode != 0 ||
       (converted.stderr as String).contains('ERROR')) {
-    return failed('asciidart: ${converted.stderr}');
+    return failed('ptome: ${converted.stderr}');
   }
   final a = _lines(typstPdf);
-  final b = _lines(asciidartPdf);
+  final b = _lines(ptomePdf);
   if (verbose) {
     String show(_Line? l) => l == null
         ? '-'
@@ -189,13 +189,13 @@ _Result _run(
   return (
     name: name,
     typstLines: a.length,
-    asciidartLines: b.length,
+    ptomeLines: b.length,
     sameLines: same,
     edges: edges,
     pitch: pitch,
     top: a.isEmpty || b.isEmpty ? 0 : b[0].top - a[0].top,
     typstPages: _pages(typstPdf),
-    asciidartPages: _pages(asciidartPdf),
+    ptomePages: _pages(ptomePdf),
     error: null,
   );
 }
@@ -239,13 +239,13 @@ String _table(List<_Result> results) {
   String row(_Result r) => switch (r.error) {
     final error? => '| ${r.name} | ${error.trim().split('\n').first} |||||| ',
     null =>
-      '| ${r.name} | ${r.typstLines}, ${r.asciidartLines} | '
+      '| ${r.name} | ${r.typstLines}, ${r.ptomeLines} | '
           '${r.sameLines} of ${r.typstLines} | ${n(r.edges)} | '
           '${n(r.pitch)} | ${r.top >= 0 ? '+' : ''}${n(r.top)} | '
-          '${r.typstPages}, ${r.asciidartPages} |',
+          '${r.typstPages}, ${r.ptomePages} |',
   };
   const header =
-      '| Case | Lines (Typst, asciidart) | Broken alike | Edges | '
+      '| Case | Lines (Typst, ptome) | Broken alike | Edges | '
       'Line tops | First line | Pages |';
   return [
     header,

@@ -7,7 +7,7 @@
 /// hooks plus the head and footer loader tags).
 library;
 
-import 'package:asciidart/src/highlight/highlight.dart';
+import 'package:ptome/src/highlight/highlight.dart';
 
 /// Syntax-highlighter adapter for Google Code Prettify.
 ///

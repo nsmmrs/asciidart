@@ -1,17 +1,17 @@
 # A Typst-like PDF
 
 The modern engine can set a book the way Typst sets it: the Hypermedia
-Systems edition built with asciidart matched its Typst build page by
+Systems edition built with Ptome matched its Typst build page by
 page, within a tenth of a percent of each page's pixels
 (`benchmark/HS.md`). There is no "Typst mode". Each thing Typst does is a
 key of the theme with a range of values of its own, and Typst's way is one
 value in that range. This page lists them: what Typst does, the value that
 does the same, and the values that make sense besides.
 
-asciidart's defaults are not Typst's (ADR-0011). Lengths are points
+Ptome's defaults are not Typst's (ADR-0011). Lengths are points
 unless they say `em` (of the element's font size) or `%`.
 `example/themes/book-typst-like-theme.yml` uses these keys together, with
-the fonts asciidart bundles.
+the fonts Ptome bundles.
 
 ## Lines and paragraphs
 
@@ -130,7 +130,7 @@ any book:
   Typst breaks a link (after `://`, where a run of letters or of digits
   starts, between two other characters; Typst itself doesn't break a URL
   whose host starts with a digit, an accident of its implementation that
-  asciidart doesn't copy).
+  Ptome doesn't copy).
 - Only words of letters are hyphenated; a hyphen's cost counts letters.
 - A last line justified only because it is too wide only shrinks.
 - An anchor takes no width; a paragraph of index terms alone takes no

@@ -8,39 +8,39 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/attribute_list.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/compat.dart';
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/cursor.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/index_catalog.dart' show indexHasCategoryHeadings;
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/list.dart';
-import 'package:asciidart/src/math/asciimath.dart';
-import 'package:asciidart/src/math/latex.dart';
-import 'package:asciidart/src/output_template.dart';
-import 'package:asciidart/src/page_map.dart';
-import 'package:asciidart/src/parallel.dart';
-import 'package:asciidart/src/pdf/fonts.dart';
-import 'package:asciidart/src/pdf/highlight_style.dart';
-import 'package:asciidart/src/pdf/hyphenate.dart';
-import 'package:asciidart/src/pdf/icons.dart';
-import 'package:asciidart/src/pdf/index.dart';
-import 'package:asciidart/src/pdf/markup.dart';
-import 'package:asciidart/src/pdf/math.dart';
-import 'package:asciidart/src/pdf/svg_size.dart';
-import 'package:asciidart/src/pdf/text_box.dart';
-import 'package:asciidart/src/pdf/theme.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/table.dart';
-import 'package:asciidart/src/timings.dart';
 import 'package:libpdf/libpdf.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/attribute_list.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/compat.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/cursor.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/index_catalog.dart' show indexHasCategoryHeadings;
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/list.dart';
+import 'package:ptome/src/math/asciimath.dart';
+import 'package:ptome/src/math/latex.dart';
+import 'package:ptome/src/output_template.dart';
+import 'package:ptome/src/page_map.dart';
+import 'package:ptome/src/parallel.dart';
+import 'package:ptome/src/pdf/fonts.dart';
+import 'package:ptome/src/pdf/highlight_style.dart';
+import 'package:ptome/src/pdf/hyphenate.dart';
+import 'package:ptome/src/pdf/icons.dart';
+import 'package:ptome/src/pdf/index.dart';
+import 'package:ptome/src/pdf/markup.dart';
+import 'package:ptome/src/pdf/math.dart';
+import 'package:ptome/src/pdf/svg_size.dart';
+import 'package:ptome/src/pdf/text_box.dart';
+import 'package:ptome/src/pdf/theme.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/table.dart';
+import 'package:ptome/src/timings.dart';
 
 /// The NUL character the gem puts in empty anchors (zero width).
 const String _dummyText = '\u0000';
@@ -1130,8 +1130,8 @@ final class PdfConverter extends BuiltInConverter
   _FloatGroup? _floatGroup;
   AbstractBlock? _floatNext;
 
-  static const _tocStartAnchor = '__asciidart-toc-start';
-  static const _tocEndAnchor = '__asciidart-toc-end';
+  static const _tocStartAnchor = '__ptome-toc-start';
+  static const _tocEndAnchor = '__ptome-toc-end';
 
   /// Whether the table of contents is at the top (after the title).
   bool _tocAtTop = false;
@@ -1305,7 +1305,7 @@ final class PdfConverter extends BuiltInConverter
     var first = true;
     void level(List<Section> entries, int levels, double left) {
       for (final entry in entries) {
-        // asciidart's `notoc` option: a section left out of the contents.
+        // Ptome's `notoc` option: a section left out of the contents.
         if (entry.hasOption('notoc')) continue;
         final entryLevel = (entry.level ?? 0) + 1;
         final entryLevels =
@@ -1439,7 +1439,7 @@ final class PdfConverter extends BuiltInConverter
       doc.hasHeader ? doc.doctitle() : doc.attr('untitled-label');
 
   /// The information of the PDF (the gem's `build_pdf_info`; the producer
-  /// is asciidart unless the document names one).
+  /// is Ptome unless the document names one).
   PdfInfo _info(Document doc) {
     String? plain(String? text) => text == null ? null : _plain(text);
     final String? author;
@@ -1454,7 +1454,7 @@ final class PdfConverter extends BuiltInConverter
       subject: plain(doc.attr('subject')),
       keywords: plain(doc.attr('keywords')),
       creator: plain(doc.attr('publisher') ?? author) ?? '',
-      producer: plain(doc.attr('producer')) ?? 'asciidart',
+      producer: plain(doc.attr('producer')) ?? 'ptome',
       // The book's ISBN, editors and copyright in the XMP metadata, as
       // the EPUB's OPF has them (modern engine).
       identifier: switch (doc.attr('isbn')) {
@@ -1817,7 +1817,7 @@ final class PdfConverter extends BuiltInConverter
   /// margins of a recto page.
   bool _noCover = false;
 
-  static const _beforeBodyAnchor = '__asciidart-before-body';
+  static const _beforeBodyAnchor = '__ptome-before-body';
 
   /// Whether a blank page was put before the body to start it on a recto
   /// page (a running content or page numbering start can then be on it).
@@ -2080,7 +2080,7 @@ final class PdfConverter extends BuiltInConverter
     return bleed ?? (_document.hasAttr('pdf-standard') ? 0 : null);
   }
 
-  static const _bodyAnchor = '__asciidart-body';
+  static const _bodyAnchor = '__ptome-body';
 
   /// Marks where the body starts (after the title page and the table of
   /// contents of a book).
@@ -2177,10 +2177,10 @@ final class PdfConverter extends BuiltInConverter
     final dir = document
         .attr('pdf-themesdir')
         ?.replaceAll('{docdir}', document.attr('docdir') ?? '');
-    // The default is asciidart's house theme (ADR-0011); with
+    // The default is Ptome's house theme (ADR-0011); with
     // asciidoctor-compat (ADR-0015), asciidoctor-pdf's.
     if (name == null && !asciidoctorCompat(document, CompatFormat.pdf)) {
-      name = 'asciidart';
+      name = 'ptome';
     } else if (name == null &&
         (document.attr('media') ?? 'screen') != 'screen') {
       name = 'default-for-print';
@@ -4161,7 +4161,7 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// The pages of the PDF file at [path] (referred to as [target]), or
-  /// null (with a warning) when it isn't a PDF file asciidart can read.
+  /// null (with a warning) when it isn't a PDF file Ptome can read.
   List<ImportedPage>? _pdfPages(String path, String target) {
     try {
       return PdfFile.parse(Uint8List.fromList(io.readBytes(path))).pages;
@@ -5820,7 +5820,7 @@ final class PdfConverter extends BuiltInConverter
     if (_missingIcons.add(set)) {
       logger.warn(
         'the $set icon font is not installed: its icons are shown as text '
-        '(`asciidart doctor` installs it)',
+        '(`ptome doctor` installs it)',
       );
     }
     return false;
@@ -6096,7 +6096,7 @@ final class PdfConverter extends BuiltInConverter
         _warnedMath = true;
         logger.warn(
           'math is shown as its source in the PDF: no math font is '
-          'installed (`asciidart doctor` installs Noto Sans Math)',
+          'installed (`ptome doctor` installs Noto Sans Math)',
         );
       }
       return null;

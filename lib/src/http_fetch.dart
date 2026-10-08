@@ -1,8 +1,8 @@
 /// The default [UriFetcher] of the asynchronous entry points.
 library;
 
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/remote.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/remote.dart';
 
 /// Fetches [uri] with an HTTP GET, following redirects: through `dart:io`
 /// on the Dart VM and the global `fetch` on JavaScript.

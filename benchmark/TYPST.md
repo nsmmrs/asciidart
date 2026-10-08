@@ -5,7 +5,7 @@ The modern PDF engine measured against Typst's own test suite
 `tool/typst_parity.dart` compiles each case's Typst test with the Typst
 0.14.2 CLI under the test runner's defaults (a page 120pt wide with 10pt
 margins, unbounded height, 10pt text, the bundled fonts and the dev
-assets' only) and converts its AsciiDoc twin with asciidart, the theme
+assets' only) and converts its AsciiDoc twin with Ptome, the theme
 saying what the test's `#set` rules say, with the same font files. The
 cases are in `test/typst/<name>/` (`typst.typ`, `doc.adoc`, `theme.yml`;
 the tests are Typst's, Apache-2.0: `test/typst/NOTICE`).
@@ -17,7 +17,7 @@ dart run tool/typst_parity.dart --report benchmark/TYPST.md   # -v: each line
 The columns: the lines of each PDF; how many break at the same words;
 the largest difference (points) of a line's left or right edge; of the
 distance from the first line's top to a line's top (the line spacing);
-and of the first line's top (asciidart's minus Typst's).
+and of the first line's top (Ptome's minus Typst's).
 
 ## Findings
 
@@ -46,7 +46,7 @@ Each has a card under EPIC-n7s6v0.
 
 ## Latest run (2026-10-07)
 
-| Case | Lines (Typst, asciidart) | Broken alike | Edges | Line tops | First line | Pages |
+| Case | Lines (Typst, Ptome) | Broken alike | Edges | Line tops | First line | Pages |
 | --- | --- | --- | --- | --- | --- | --- |
 | hs-justify-indent | 6, 6 | 6 of 6 | 0.00 | 0.00 | -0.00 | 1, 1 |
 | hyphenate-between-shape-runs | 2, 2 | 0 of 2 | 22.65 | 0.00 | +0.00 | 1, 1 |

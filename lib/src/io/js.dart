@@ -3,7 +3,7 @@
 /// On Node.js, the built-in modules this file uses (`fs`, `zlib`) come from
 /// `process.getBuiltinModule`, so the compiled bundle never imports
 /// `node:*` modules and stays safe for bundlers; an embedder can also
-/// supply them as `globalThis.asciidartHost` (`{fs, process, zlib}`).
+/// supply them as `globalThis.ptomeHost` (`{fs, process, zlib}`).
 /// Without them (in a browser), there is no file system: files read as
 /// missing, the working directory is `/`, the environment is empty, and
 /// output goes to the console.
@@ -15,13 +15,13 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/io/types.dart';
-import 'package:asciidart/src/remote.dart';
 import 'package:fonts/fonts.dart'
     show FontPlatform, cacheDirectoryFor, fontDirectoriesFor;
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/io/types.dart';
+import 'package:ptome/src/remote.dart';
 
-@JS('globalThis.asciidartHost')
+@JS('globalThis.ptomeHost')
 external _Host? get _injectedHost;
 
 @JS('globalThis.process')
@@ -57,7 +57,7 @@ extension type _NodeProcess(JSObject _) implements JSObject {
   external JSObject? getBuiltinModule(String id);
 }
 
-/// The Node.js built-ins: injected as `globalThis.asciidartHost`, or
+/// The Node.js built-ins: injected as `globalThis.ptomeHost`, or
 /// found through `process.getBuiltinModule`.
 extension type _Host(JSObject _) implements JSObject {
   external _Fs get fs;

@@ -5,7 +5,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/version.dart';
+import 'package:ptome/src/version.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -25,7 +25,7 @@ void main() {
 
   test('every packaged file exists in the sources or the build', () {
     final files = (package['files']! as List<Object?>).cast<String>();
-    const built = {'asciidart.js', 'parts/', 'types/'};
+    const built = {'ptome.js', 'parts/', 'types/'};
     for (final file in files) {
       if (built.contains(file)) continue;
       final path = 'npm/$file';

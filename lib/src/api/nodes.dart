@@ -1,7 +1,7 @@
 part of 'api.dart';
 
 /// The public node for each implementation node, created on first use.
-final Expando<Node> _views = Expando('asciidart node views');
+final Expando<Node> _views = Expando('ptome node views');
 
 /// The public view of [node].
 Node _view(impl.AbstractNode node) => _views[node] ??= _create(node);
@@ -60,7 +60,7 @@ Node _create(impl.AbstractNode node) {
   throw StateError('no public view for ${node.runtimeType}');
 }
 
-/// Strips HTML tags and decodes the character references asciidart emits.
+/// Strips HTML tags and decodes the character references Ptome emits.
 String _plain(String html) => _decode(html).trim();
 
 /// [html] without tags, with character references decoded.
@@ -281,7 +281,7 @@ final class Document extends Block {
   /// with the same settings as this document. An unset entry (`:name!:`)
   /// becomes a set one.
   ///
-  /// Throws an [AsciidartException], and edits nothing, when the source
+  /// Throws an [PtomeException], and edits nothing, when the source
   /// alone can't make the edit: the header sets [name] in an include or
   /// under a preprocessor conditional, or ends inside an include. Throws an
   /// [ArgumentError] for a [value] of more than one line.
@@ -702,7 +702,7 @@ final class DiscreteHeading extends Block {
   String get plainText => _plain(title);
 }
 
-/// A block of a kind asciidart does not define, created by an extension.
+/// A block of a kind Ptome does not define, created by an extension.
 final class OtherBlock extends Block {
   new _(super._node) : super._();
 

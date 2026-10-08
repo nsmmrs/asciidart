@@ -7,7 +7,7 @@
 /// no options, no docinfo.
 library;
 
-import 'package:asciidart/src/highlight/highlight.dart';
+import 'package:ptome/src/highlight/highlight.dart';
 
 /// Syntax-highlighter adapter for html-pipeline.
 ///

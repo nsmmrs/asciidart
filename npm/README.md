@@ -1,20 +1,20 @@
-# asciidart
+# Ptome
 
-asciidart is an AsciiDoc processor written in Dart and compiled to
+Ptome is an AsciiDoc processor written in Dart and compiled to
 JavaScript. It converts AsciiDoc to HTML 5, DocBook 5 and man pages
 compatibly with [Asciidoctor](https://asciidoctor.org) (its development
 version, 2.1.0.alpha.0, with fixes for bugs it still has), and is not
 affiliated with or endorsed by the Asciidoctor project.
 
 It runs on Node.js (20.19 or later) and in browsers, ships TypeScript
-types, and provides the `asciidart` command. Its API is the Dart API's, with
+types, and provides the `ptome` command. Its API is the Dart API's, with
 the same names and shapes: see
-[the usage scenarios](https://github.com/nsmmrs/asciidart/blob/master/doc/api.md).
+[the usage scenarios](https://github.com/nsmmrs/ptome/blob/master/doc/api.md).
 
 ## Render and read
 
 ```js
-import { asciidoc, Section } from 'asciidart'
+import { asciidoc, Section } from 'ptome'
 
 asciidoc.convert('Hello, *World*!') // '<div class="paragraph">...'
 
@@ -25,7 +25,7 @@ doc.descendants(Section).map((s) => s.title) // ['Section']
 doc.toHtml()
 ```
 
-`require('asciidart')` works too. A parsed document is a tree of classes
+`require('ptome')` works too. A parsed document is a tree of classes
 (`Section`, `Paragraph`, `Listing`, `Admonition`, lists, tables, inline
 elements), so `instanceof` tells nodes apart, and the same node is always
 the same object.
@@ -33,9 +33,9 @@ the same object.
 ## Configure
 
 ```js
-import { Admonition, Asciidart, InlineMacro, SafeMode } from 'asciidart'
+import { Admonition, Ptome, InlineMacro, SafeMode } from 'ptome'
 
-const ad = new Asciidart({
+const ad = new Ptome({
   safe: SafeMode.server,
   attributes: { icons: 'font' },
   extensions: [
@@ -65,7 +65,7 @@ returns a promise. On Node.js, `parseFile`, `convertFile` and `convertTree`
 read and write files:
 
 ```js
-const ad = new Asciidart({ safe: SafeMode.unsafe })
+const ad = new Ptome({ safe: SafeMode.unsafe })
 await ad.convertFile('docs/index.adoc')
 for await (const result of ad.convertTree('docs', { toDir: 'build' })) {
   console.log(result.outputPath)
@@ -80,7 +80,7 @@ that only make HTML don't download it. (`loadBackend` loads it ahead, and
 `convertToBytes` is the synchronous version once it is loaded.)
 
 ```js
-const pdf = await new Asciidart().convertToBytesAsync(source, { backend: 'pdf' })
+const pdf = await new Ptome().convertToBytesAsync(source, { backend: 'pdf' })
 ```
 
 Text is set in the fonts the theme names, found by family:
@@ -96,7 +96,7 @@ Text is set in the fonts the theme names, found by family:
   The browser only asks when the conversion starts from a click or a key
   press.
 - On Node.js, the installed fonts are found in the system's and the
-  user's font folders. `npx asciidart doctor` installs the default
+  user's font folders. `npx ptome doctor` installs the default
   themes' fonts.
 
 A font that can't be found is replaced by a built-in PDF font, with a
@@ -105,7 +105,7 @@ warning.
 ## Command line
 
 ```console
-$ npx asciidart -o - document.adoc
+$ npx ptome -o - document.adoc
 ```
 
 The command takes the options of the `asciidoctor` command.
@@ -119,7 +119,7 @@ synchronous, except an `IncludeResolver`. Errors thrown by your callbacks
 reach the caller unchanged.
 
 The same library is available for Dart
-([repository](https://github.com/nsmmrs/asciidart)).
+([repository](https://github.com/nsmmrs/ptome)).
 
 ## License
 

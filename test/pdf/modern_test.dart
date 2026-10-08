@@ -8,8 +8,8 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
 import '../vendored_fonts.dart';
@@ -113,7 +113,7 @@ void main() {
   setUpAll(useVendoredFonts);
   setUpAll(() {
     registerPdf();
-    _dir = Directory.systemTemp.createTempSync('asciidart-modern.');
+    _dir = Directory.systemTemp.createTempSync('ptome-modern.');
   });
   tearDownAll(() => _dir.deleteSync(recursive: true));
 

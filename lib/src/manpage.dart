@@ -15,21 +15,21 @@
 /// `title`, `text`, `alt`, `captioned_title`, `xreftext`).
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/list.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/table.dart';
-import 'package:asciidart/src/text_case.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/list.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/table.dart';
+import 'package:ptome/src/text_case.dart';
 
 /// Renders [value] for interpolation into output: `toString`, except
 /// `null` renders as the empty string instead of `'null'`.
@@ -323,7 +323,7 @@ class ManpageConverter extends BuiltInConverter {
     // NOTE the first line enables the table (tbl) preprocessor, necessary
     // for non-Linux systems
     final result = <String>[
-      '\'\\" t\n.\\"     Title: $mantitle\n.\\"    Author: ${node.hasAttr('authors') ? _s(node.attr('authors')) : '[see the "AUTHOR(S)" section]'}\n.\\" Generator: Asciidart ${_s(node.attr('asciidart-version'))}',
+      '\'\\" t\n.\\"     Title: $mantitle\n.\\"    Author: ${node.hasAttr('authors') ? _s(node.attr('authors')) : '[see the "AUTHOR(S)" section]'}\n.\\" Generator: Ptome ${_s(node.attr('ptome-version'))}',
     ];
     if (docdate != null) {
       result.add('.\\"      Date: ${_s(docdate)}');

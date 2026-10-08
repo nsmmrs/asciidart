@@ -2,10 +2,10 @@
 /// keeps Asciidoctor's look, for projects migrating from Asciidoctor.
 library;
 
-import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/stylesheets.dart';
+import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/stylesheets.dart';
 
 /// The output formats `asciidoctor-compat` can name.
 enum CompatFormat {

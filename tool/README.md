@@ -29,7 +29,7 @@ Later this same harness compares the gem exe against the Dart exe:
 ```sh
 dart run tool/differential.dart \
   --exe-a "asciidoctor" \
-  --exe-b "build/asciidart"
+  --exe-b "build/ptome"
 ```
 
 ## Options
@@ -109,7 +109,7 @@ bats test/differential/selfcheck.bats
 # PDF parity (`tool/pdf_parity.dart`)
 
 Compares the PDF files of the asciidoctor-pdf gem (2.3.27) and of
-`asciidart -b pdf`, document by document, through poppler and qpdf: page
+`ptome -b pdf`, document by document, through poppler and qpdf: page
 count, text (every word, aligned with a diff), geometry (common words on
 the same page within a tolerance, 1 point by default), outline, links,
 page labels, and rendered pixels (gray, 36 dpi). Conversions run with
@@ -120,7 +120,7 @@ page labels, and rendered pixels (gray, 36 dpi). Conversions run with
 gem install --no-document --install-dir "$GEMS" asciidoctor:2.0.26 asciidoctor-pdf:2.3.27
 # (Ruby 4 also needs: logger base64 bigdecimal ostruct.)
 dart run tool/pdf_parity.dart --exe-a "$GEMS/bin/asciidoctor-pdf" \
-  --exe-b dist/asciidart-linux-x64 --out /tmp/pdf-parity \
+  --exe-b dist/ptome-linux-x64 --out /tmp/pdf-parity \
   vendor/asciidoctor-pdf/test/examples/*.adoc
 # Or two PDF files:
 dart run tool/pdf_parity.dart a.pdf b.pdf

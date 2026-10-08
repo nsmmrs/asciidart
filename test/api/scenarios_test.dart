@@ -1,12 +1,12 @@
 /// The scenarios of `doc/api.md`, written only against the public
-/// libraries: if one of these needs `package:asciidart/src/...`, the public
+/// libraries: if one of these needs `package:ptome/src/...`, the public
 /// API has a gap. These run on the VM and on Node.js (the library has no
 /// file system access); the file scenarios are in `files_test.dart`.
 library;
 
 import 'dart:async';
 
-import 'package:asciidart/asciidart.dart';
+import 'package:ptome/ptome.dart';
 import 'package:test/test.dart';
 
 const card = '''
@@ -62,7 +62,7 @@ void main() {
       );
       expect(page, startsWith('<!DOCTYPE html>'));
       expect(page, contains('<i class="fa icon-note"'));
-      expect(page, contains('<meta name="generator" content="Asciidart '));
+      expect(page, contains('<meta name="generator" content="Ptome '));
     });
 
     test('other backends', () {
@@ -212,7 +212,7 @@ puts 1
 
   group('5. customize the HTML', () {
     test('override some nodes, keep the rest', () {
-      final ad = Asciidart(
+      final ad = Ptome(
         html: (node, defaults) => switch (node) {
           final Admonition a =>
             '<aside class="${a.kind.name}">${defaults.content(a)}</aside>',
@@ -227,7 +227,7 @@ puts 1
     });
 
     test('the override sees the document', () {
-      final ad = Asciidart(
+      final ad = Ptome(
         html: (node, defaults) =>
             node is Document ? 'DOC' : defaults.render(node),
       );
@@ -237,7 +237,7 @@ puts 1
 
   group('6. extensions', () {
     test('every kind', () {
-      final ad = Asciidart(
+      final ad = Ptome(
         extensions: [
           InlineMacro(
             'issue',
@@ -295,7 +295,7 @@ TODO
     });
 
     test('an asynchronous include resolver', () async {
-      final ad = Asciidart(
+      final ad = Ptome(
         extensions: [
           IncludeResolver((r) async {
             await Future<void>.delayed(Duration.zero);
@@ -307,7 +307,7 @@ TODO
       expect(doc.toHtml(), contains('From <strong>far</strong>.'));
       expect(
         () => ad.parse('include::remote[]'),
-        throwsA(isA<AsciidartException>()),
+        throwsA(isA<PtomeException>()),
       );
     });
   });
@@ -315,7 +315,7 @@ TODO
   group('7. fail on warnings', () {
     test('diagnostics have severities and locations', () {
       final reported = <Diagnostic>[];
-      final ad = Asciidart(onDiagnostic: reported.add);
+      final ad = Ptome(onDiagnostic: reported.add);
       final doc = ad.parse('== A\n\n==== B\n', path: 'docs/index.adoc');
       final warnings = doc.diagnostics.where(
         (d) => d.severity >= Severity.warning,
@@ -330,7 +330,7 @@ TODO
 
   group('also supported', () {
     test('a custom highlighter', () {
-      final ad = Asciidart(
+      final ad = Ptome(
         highlighters: {'upper': _Upper()},
         attributes: {'source-highlighter': 'upper'},
       );
@@ -344,7 +344,7 @@ TODO
 
     test('versions', () {
       expect(asciidoctorVersion, '2.1.0.alpha.0');
-      expect(asciidartVersion, isNotEmpty);
+      expect(ptomeVersion, isNotEmpty);
     });
 
     test('the index', () {

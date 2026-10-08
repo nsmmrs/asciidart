@@ -1,6 +1,6 @@
 # What each format does with a book
 
-asciidart writes a book as a PDF, a single HTML page, a website
+Ptome writes a book as a PDF, a single HTML page, a website
 (`multipage_html5`), an EPUB 3 and DocBook 5 (and man pages, for the
 `manpage` doctype). ADR-0012 sets the goal: every feature of a book
 works in every format, in the form that format's readers expect, unless
@@ -38,9 +38,9 @@ feature the format has no use for.
 
 ## Fonts
 
-No format's fonts are compiled into asciidart. The PDF uses the fonts its
+No format's fonts are compiled into Ptome. The PDF uses the fonts its
 theme names from those installed on the machine (`doc/pdf.md`, Fonts);
-`asciidart doctor` installs the built-in themes'. An EPUB embeds no fonts
+`ptome doctor` installs the built-in themes'. An EPUB embeds no fonts
 unless `-a epub-embed-fonts` is set: its stylesheet names Noto Serif, M+
 1p and M+ 1mn and the reading system's fonts apply (its font icons are
 shown as text); with the attribute, the fonts it names are embedded from

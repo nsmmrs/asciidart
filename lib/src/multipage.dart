@@ -5,18 +5,18 @@ library;
 
 import 'dart:typed_data';
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/context.dart';
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/html5.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/output_template.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/template_loader.dart';
 import 'package:mustache_template/mustache_template.dart' show Template;
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/context.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/html5.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/output_template.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/template_loader.dart';
 
 /// A link to a page: its path, its title (numbered, as the list of pages
 /// has it), its title alone and its number (when numbered).
@@ -313,7 +313,7 @@ class MultipageHtml5Converter extends Html5Converter
 
     String items(List<_Page> pages) => [
       '<ul>',
-      // asciidart's `notoc` option: a page left out of the list.
+      // Ptome's `notoc` option: a page left out of the list.
       for (final page in pages.where((p) => !p.section.hasOption('notoc')))
         [
           // The section's kind and roles, for a stylesheet (chapters

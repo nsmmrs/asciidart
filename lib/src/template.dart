@@ -31,11 +31,11 @@ library;
 
 import 'dart:async' show FutureOr;
 
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/composite.dart';
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/template_context.dart';
 import 'package:mustache_template/mustache_template.dart' show Template;
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/composite.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/template_context.dart';
 
 /// Loads template sources as a node-name to Mustache-source map.
 ///

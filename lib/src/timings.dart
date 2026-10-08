@@ -5,7 +5,7 @@
 /// `convert`, `write`).
 library;
 
-import 'package:asciidart/src/io.dart' as io;
+import 'package:ptome/src/io.dart' as io;
 
 /// Measures the wall-clock time spent in each document processing phase.
 ///
@@ -16,7 +16,7 @@ import 'package:asciidart/src/io.dart' as io;
 /// `Process.clock_gettime(Process::CLOCK_MONOTONIC)`).
 class Timings {
   /// Creates timings with no recorded phases; [onRecord] hears of each
-  /// phase as it finishes (asciidart's `--progress`).
+  /// phase as it finishes (Ptome's `--progress`).
   new({this.onRecord}) {
     _stopwatch.start();
   }

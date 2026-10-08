@@ -7,8 +7,8 @@
 /// strings are identical: file contents with trailing whitespace stripped.
 library;
 
-import 'package:asciidart/src/data.g.dart';
-import 'package:asciidart/src/io.dart' as io;
+import 'package:ptome/src/data.g.dart';
+import 'package:ptome/src/io.dart' as io;
 
 /// A utility class for working with the built-in stylesheets.
 ///
@@ -24,7 +24,7 @@ class Stylesheets {
   static final Stylesheets instance = Stylesheets();
 
   /// The value of the `stylesheet` attribute that names Asciidoctor's
-  /// stylesheet as it is, without asciidart's house rules (ADR-0011).
+  /// stylesheet as it is, without Ptome's house rules (ADR-0011).
   static const String classicStylesheetKey = 'asciidoctor';
 
   String? _primaryStylesheetData;
@@ -33,11 +33,11 @@ class Stylesheets {
   /// The file name of the primary stylesheet.
   String get primaryStylesheetName => defaultStylesheetName;
 
-  /// The default stylesheet: Asciidoctor's, then asciidart's house rules
+  /// The default stylesheet: Asciidoctor's, then Ptome's house rules
   /// (doc/style.md).
   String get primaryStylesheetData => _primaryStylesheetData ??=
       '$classicStylesheetData\n'
-      '${_rstrip(EmbeddedData.file('stylesheets/asciidart-house.css'))}';
+      '${_rstrip(EmbeddedData.file('stylesheets/ptome-house.css'))}';
 
   /// Asciidoctor's default stylesheet, as it is (`stylesheet=asciidoctor`).
   String get classicStylesheetData => _classicStylesheetData ??= _rstrip(

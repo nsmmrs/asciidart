@@ -38,7 +38,7 @@ setup() {
 @test "help manpage topic dumps the man page" {
   run --separate-stderr -- "$EXE" -h manpage
   [ "$status" -eq 0 ]
-  # The page is asciidoctor(1) or asciidart(1), depending on the CLI.
+  # The page is asciidoctor(1) or ptome(1), depending on the CLI.
   assert_output_contains '.TH "ASCIID'
   assert_output_contains ' Manual'
 }

@@ -3,16 +3,16 @@
 /// Port of `lib/asciidoctor/table.rb` (complete).
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/parser.dart';
-import 'package:asciidart/src/reader.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/substitutors.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/parser.dart';
+import 'package:ptome/src/reader.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/substitutors.dart';
 
 /// Scans for a leading, non-escaped anchor (id + optional reference text).
 ///

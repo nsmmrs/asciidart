@@ -33,21 +33,21 @@
 ///   ([_logPossibleInvalidReference]); the default logger drops them.
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/attribute_list.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/extensions.dart' show MacroAttributes;
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/highlight/highlight.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/inline_tree.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/text_case.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/attribute_list.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/extensions.dart' show MacroAttributes;
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/highlight/highlight.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/inline_tree.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/text_case.dart';
 
 /// Matches XML special characters. Port of `SpecialCharsRx`.
 final RegExp specialCharsRx = RegExp('[<&>]');
@@ -124,7 +124,7 @@ const String can = '\u0018';
 const String del = '\u007f';
 
 /// [text] with its quoted text substituted, each index term on its own
-/// (asciidart's: Asciidoctor lets a mark inside a term, as in
+/// (Ptome's: Asciidoctor lets a mark inside a term, as in
 /// `_hyperscript`, pair with one after it): a term's marks pair only
 /// within it, and quoted text may still enclose a whole term.
 String _subQuotesKeepingIndexterms(
@@ -464,7 +464,7 @@ String subSpecialchars(String text) {
 /// Substitutes quoted text (emphasis, strong, monospaced, etc.) in [text].
 /// With [protectTargets] (the text's macros are substituted after), marks
 /// inside a URL or a cross reference's target pair with nothing
-/// (asciidart's; asciidoctor#3876, #1678).
+/// (Ptome's; asciidoctor#3876, #1678).
 ///
 /// Port of `Substitutors#sub_quotes`.
 String subQuotes(
@@ -489,7 +489,7 @@ String subQuotes(
 }
 
 /// The targets in [text] that formatting marks don't reach into
-/// (asciidart's; asciidoctor#3876, #1678): the URLs and the link, e-mail
+/// (Ptome's; asciidoctor#3876, #1678): the URLs and the link, e-mail
 /// and cross reference targets the macros substitution will find there
 /// (not escaped ones).
 List<(int, int)> _targetSpans(String text) {

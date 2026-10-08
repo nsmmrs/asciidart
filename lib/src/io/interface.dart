@@ -6,8 +6,8 @@
 /// operation is unsupported.
 library;
 
-import 'package:asciidart/src/io/types.dart';
-import 'package:asciidart/src/remote.dart';
+import 'package:ptome/src/io/types.dart';
+import 'package:ptome/src/remote.dart';
 
 Never _unsupported() =>
     throw UnsupportedError('file and process access is unavailable here');

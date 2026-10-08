@@ -1,17 +1,17 @@
-/// Compares PDF files the asciidart CLI writes with those of the
+/// Compares PDF files the Ptome CLI writes with those of the
 /// asciidoctor-pdf gem: their text and its geometry, their structure, and
 /// their rendered pixels.
 ///
 /// Usage:
 ///
 /// ```sh
-/// dart run tool/pdf_parity.dart --exe-a GEM --exe-b ASCIIDART \
+/// dart run tool/pdf_parity.dart --exe-a GEM --exe-b PTOME \
 ///   [--out DIR] [--strict] [--tolerance POINTS] DOC.adoc...
 /// dart run tool/pdf_parity.dart A.pdf B.pdf
 /// ```
 ///
 /// Each document is converted by both executables (`-b pdf` for
-/// asciidart; `SOURCE_DATE_EPOCH=0`, `TZ=UTC`). Then, through poppler and
+/// Ptome; `SOURCE_DATE_EPOCH=0`, `TZ=UTC`). Then, through poppler and
 /// qpdf:
 ///
 /// - pages: the page count;
@@ -532,7 +532,7 @@ void main(List<String> args) {
     if (exeA == null || exeB == null) {
       if (inputs.length != 2) {
         stderr.writeln(
-          'usage: pdf_parity.dart --exe-a GEM --exe-b ASCIIDART DOC.adoc... '
+          'usage: pdf_parity.dart --exe-a GEM --exe-b PTOME DOC.adoc... '
           '| A.pdf B.pdf',
         );
         exit(2);

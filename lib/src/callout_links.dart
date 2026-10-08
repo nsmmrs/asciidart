@@ -1,12 +1,12 @@
 /// Callouts linked both ways in the HTML-based converters, with the
-/// `callout-links` attribute set (asciidart's; Asciidoctor has none): each
+/// `callout-links` attribute set (Ptome's; Asciidoctor has none): each
 /// marker links to its callout list item and is left out when the code is
 /// copied, and each item links back to its first marker.
 library;
 
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/list.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/list.dart';
 
 /// [marker], with `callout-links` set, as a link to its callout list item
 /// (when one explains it) that copying leaves out.

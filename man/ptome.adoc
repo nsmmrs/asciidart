@@ -1,30 +1,30 @@
-= asciidart(1)
+= ptome(1)
 Noah Summers
 :doctype: manpage
 :release-version: 0.1.0
-:man manual: asciidart Manual
-:man source: asciidart {release-version}
+:man manual: Ptome Manual
+:man source: Ptome {release-version}
 ifdef::backend-manpage[:!author:]
 
 == Name
 
-asciidart - convert AsciiDoc documents to HTML, DocBook and man pages
+Ptome - convert AsciiDoc documents to HTML, DocBook and man pages
 
 == Synopsis
 
-*asciidart* [_OPTION_]... _FILE_...
+*ptome* [_OPTION_]... _FILE_...
 
-*asciidart init-config* [_DIR_] [*-f*]
+*ptome init-config* [_DIR_] [*-f*]
 
-*asciidart doctor* [*-y*] [*-c*]
+*ptome doctor* [*-y*] [*-c*]
 
 == Description
 
-*asciidart* reads each AsciiDoc _FILE_ and writes the converted document next to it, under the same name with the extension of the output format (for example, _guide.adoc_ becomes _guide.html_).
+*ptome* reads each AsciiDoc _FILE_ and writes the converted document next to it, under the same name with the extension of the output format (for example, _guide.adoc_ becomes _guide.html_).
 A _FILE_ of *-* reads the document from standard input and writes the result to standard output.
-Arguments may be glob patterns (`+*+`, `+?+`, `+[...]+` and `+**+`), which *asciidart* expands itself.
+Arguments may be glob patterns (`+*+`, `+?+`, `+[...]+` and `+**+`), which *ptome* expands itself.
 
-*asciidart* is a re-implementation of Asciidoctor in Dart.
+*ptome* is a re-implementation of Asciidoctor in Dart.
 It accepts the same documents, attributes and options as the *asciidoctor* command of Asciidoctor {asciidoctor-version} and produces the same output, except for the deliberate differences listed in the project's documentation.
 
 Messages about the document (warnings, errors) go to standard error.
@@ -36,7 +36,7 @@ Messages about the document (warnings, errors) go to standard error.
 *-b, --backend*=_BACKEND_::
   The output format: *html5* (the default), *xhtml5*, *docbook5*, *manpage*, *epub3*, *pdf* or *multipage_html5*.
   *epub3* writes an EPUB 3 file (as asciidoctor-epub3 does), so it needs an output file rather than standard output; it is available in the native executable, not in the npm package.
-  *pdf* writes a PDF file with asciidart's own layout, reading asciidoctor-pdf's YAML themes (*pdf-theme*, *pdf-themesdir*, *pdf-fontsdir*); justified text is hyphenated in the document's language (*-a hyphens!* turns it off). Set the *pdf-compat* attribute (*-a pdf-compat*) to lay the document out as asciidoctor-pdf 2.3.27 does. Like *epub3*, it needs an output file and the native executable.
+  *pdf* writes a PDF file with Ptome's own layout, reading asciidoctor-pdf's YAML themes (*pdf-theme*, *pdf-themesdir*, *pdf-fontsdir*); justified text is hyphenated in the document's language (*-a hyphens!* turns it off). Set the *pdf-compat* attribute (*-a pdf-compat*) to lay the document out as asciidoctor-pdf 2.3.27 does. Like *epub3*, it needs an output file and the native executable.
   *multipage_html5* writes a website: the output file is the home page (the header, the preamble and a list of the pages), and each part and chapter (each section up to *multipage-level*) is a page of its own beside it, named after its id (or its *page-path* attribute: *page-path=part/one/* writes *part/one/index.html*), with links to the previous, enclosing and next pages; links reach across pages. *multipage-toclevels* lists each page's sections on the home page down to that level. Like *epub3*, it needs an output file and the native executable.
 
 *-d, --doctype*=_DOCTYPE_::
@@ -134,23 +134,23 @@ Messages about the document (warnings, errors) go to standard error.
 
 *-h, --help* [_TOPIC_]::
   Print the option summary.
-  With _TOPIC_ *syntax*, print an overview of the AsciiDoc syntax; with *manpage*, print this manual page as troff source (view it with *asciidart -h manpage | man -l -*).
+  With _TOPIC_ *syntax*, print an overview of the AsciiDoc syntax; with *manpage*, print this manual page as troff source (view it with *ptome -h manpage | man -l -*).
 
 *-V, --version*::
-  Print the version of *asciidart*, the Asciidoctor release it is compatible with, and the runtime.
+  Print the version of *ptome*, the Asciidoctor release it is compatible with, and the runtime.
   *-v* does the same when it is the only argument.
 
 == Fonts
 
-asciidart compiles no fonts in: PDFs are set in the fonts installed on the machine that their theme names, and an EPUB embeds installed fonts only with *-a epub-embed-fonts*.
-*asciidart doctor* lists the fonts of the built-in PDF themes (Noto Serif, Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math, and the Font Awesome, Foundation and Payment icon fonts) and where they are found, and offers to download the missing ones from their official sources (Google Fonts, the projects' repositories) into this user's font folder.
+Ptome compiles no fonts in: PDFs are set in the fonts installed on the machine that their theme names, and an EPUB embeds installed fonts only with *-a epub-embed-fonts*.
+*ptome doctor* lists the fonts of the built-in PDF themes (Noto Serif, Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math, and the Font Awesome, Foundation and Payment icon fonts) and where they are found, and offers to download the missing ones from their official sources (Google Fonts, the projects' repositories) into this user's font folder.
 *-y* (*--yes*) installs them without asking; *-c* (*--check*) only checks, and exits with status 1 when fonts are missing.
 A font a theme names that isn't installed is replaced by a built-in PDF font (Times, Helvetica or Courier), with a warning.
 
 == Custom binaries
 
-*asciidart init-config* [_DIR_] creates a small Dart project in _DIR_ (the working directory by default) whose program registers Dart functions as converters and then runs this command line.
-Compile it with *dart compile exe* to get a custom *asciidart* with those conversions built in.
+*ptome init-config* [_DIR_] creates a small Dart project in _DIR_ (the working directory by default) whose program registers Dart functions as converters and then runs this command line.
+Compile it with *dart compile exe* to get a custom *ptome* with those conversions built in.
 *-f* overwrites existing files.
 
 == Environment
@@ -158,18 +158,18 @@ Compile it with *dart compile exe* to get a custom *asciidart* with those conver
 *SOURCE_DATE_EPOCH*::
   When set to an integer number of seconds since the Unix epoch, it replaces the current time and the input files' modification times in the document's date attributes, for reproducible output.
 
-*ASCIIDART_COMPAT*::
+*PTOME_COMPAT*::
   The default of the *asciidoctor-compat* attribute: *true*, *false*, or a comma-separated list of formats (*html*, *epub*, *docbook*, *manpage*, *pdf*) whose output keeps Asciidoctor's look.
-  Without it, *compat:* in the nearest *asciidart.yml* in the input's directory or one above it, then in *$XDG_CONFIG_HOME/asciidart/config.yml* (*~/.config/asciidart/config.yml*), gives the default.
+  Without it, *compat:* in the nearest *ptome.yml* in the input's directory or one above it, then in *$XDG_CONFIG_HOME/ptome/config.yml* (*~/.config/ptome/config.yml*), gives the default.
   An *-a asciidoctor-compat* option or the document's own attribute entry wins.
 
-*ASCIIDART_FONT_PATH*::
+*PTOME_FONT_PATH*::
   Folders searched for fonts before this user's and the system's font folders, separated as in *PATH*.
 
-*ASCIIDART_JOBS_SHUFFLE*::
+*PTOME_JOBS_SHUFFLE*::
   When *1*, work done on other cores is handed back in a random order (for checking that the output doesn't depend on it).
 
-*ASCIIDART_MANPAGE_PATH*::
+*PTOME_MANPAGE_PATH*::
   The file *-h manpage* prints instead of the built-in manual page (plain or gzip-compressed).
 
 == Exit Status
@@ -182,13 +182,13 @@ Compile it with *dart compile exe* to get a custom *asciidart* with those conver
 
 == Bugs
 
-Report problems at https://github.com/nsmmrs/asciidart/issues.
+Report problems at https://github.com/nsmmrs/ptome/issues.
 
 == See Also
 
-*asciidoctor*(1), the Ruby implementation whose behavior *asciidart* follows: https://asciidoctor.org
+*asciidoctor*(1), the Ruby implementation whose behavior *ptome* follows: https://asciidoctor.org
 
 == Copying
 
 Copyright \(C) 2026 Noah Summers.
-*asciidart* is free software under the MIT License; it includes data files from Asciidoctor, Copyright \(C) 2012-present Dan Allen, Sarah White, Ryan Waldron, and the individual contributors to Asciidoctor, also under the MIT License.
+*ptome* is free software under the MIT License; it includes data files from Asciidoctor, Copyright \(C) 2012-present Dan Allen, Sarah White, Ryan Waldron, and the individual contributors to Asciidoctor, also under the MIT License.

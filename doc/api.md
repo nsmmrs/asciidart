@@ -1,6 +1,6 @@
-# The asciidart API
+# The Ptome API
 
-This is the supported API of asciidart, designed from how people use
+This is the supported API of Ptome, designed from how people use
 Asciidoctor as a library. Everything not listed here is private: it may
 change in any release. Each scenario below is also a test
 (`test/api/scenarios_test.dart`), written only against the public libraries.
@@ -9,16 +9,16 @@ There are three libraries:
 
 | Import | For |
 | --- | --- |
-| `package:asciidart/asciidart.dart` | parsing, converting, the document tree, extensions, output overrides, diagnostics; no file system access, so it runs on the web and in Flutter |
-| `package:asciidart/io.dart` | reading and writing files |
-| `package:asciidart/cli.dart` | the `asciidart` command line, for building a custom command |
+| `package:ptome/ptome.dart` | parsing, converting, the document tree, extensions, output overrides, diagnostics; no file system access, so it runs on the web and in Flutter |
+| `package:ptome/io.dart` | reading and writing files |
+| `package:ptome/cli.dart` | the `ptome` command line, for building a custom command |
 
 `tool/api_surface.txt` records every public member; CI fails when the
 public API changes without updating it.
 
 ## Principles
 
-- **One entry point.** An `Asciidart` object holds a configuration
+- **One entry point.** A `Ptome` object holds a configuration
   (safe mode, attributes, extensions, output overrides, highlighters) and
   converts any number of documents. `asciidoc` is the default instance.
   There are no global registries: two instances never affect each other.
@@ -33,7 +33,7 @@ public API changes without updating it.
 ## 1. Render AsciiDoc to HTML
 
 ```dart
-import 'package:asciidart/asciidart.dart';
+import 'package:ptome/ptome.dart';
 
 final html = asciidoc.convert('Hello, *World*!'); // the body only
 final page = asciidoc.convert(
@@ -75,7 +75,7 @@ file.writeAsStringSync(done.source); // `:status: done`, the rest untouched
 
 A missing attribute gets an entry at the end of the header. An edit the
 source alone can't make (the entry is in an include or under a
-preprocessor conditional) throws an `AsciidartException` and changes
+preprocessor conditional) throws a `PtomeException` and changes
 nothing.
 
 ## 3. Walk and query the tree
@@ -128,7 +128,7 @@ substitutions run, and the tree records where each one ended up.
 ## 5. Customize the HTML for some elements
 
 ```dart
-final ad = Asciidart(
+final ad = Ptome(
   html: (node, defaults) => switch (node) {
     final Admonition a => '<aside class="callout ${a.kind.name}">${defaults.content(a)}</aside>',
     final InlineImage i => defaults.render(i).replaceFirst('<img', '<img loading="lazy"'),
@@ -138,15 +138,15 @@ final ad = Asciidart(
 ```
 
 The override sees every node, blocks and inline elements alike;
-`defaults.render(node)` is asciidart's own HTML for it and
+`defaults.render(node)` is Ptome's own HTML for it and
 `defaults.content(block)` the HTML of its children.
 
-Mustache templates (`templateDirs`) work as with `asciidart -T`.
+Mustache templates (`templateDirs`) work as with `ptome -T`.
 
 ## 6. Extensions
 
 ```dart
-final ad = Asciidart(
+final ad = Ptome(
   extensions: [
     InlineMacro('issue', (m) => m.link('https://github.com/o/r/issues/${m.target}', text: '#${m.target}')),
     BlockMacro('youtube', (m) => m.html('<iframe src="https://youtube.com/embed/${m.target}"></iframe>')),
@@ -182,16 +182,16 @@ if (doc.diagnostics.any((d) => d.severity >= Severity.warning)) {
 
 Diagnostics collect while parsing and converting. `Diagnostic` has
 `severity`, `message`, `location` and a `code` (a `DiagnosticCode`, `other`
-for messages without a specific code). `Asciidart(onDiagnostic: ...)` sees
+for messages without a specific code). `Ptome(onDiagnostic: ...)` sees
 each one as it is reported, including those of `convert`, which returns
 only the output.
 
 ## 8. Files
 
 ```dart
-import 'package:asciidart/io.dart';
+import 'package:ptome/io.dart';
 
-const ad = Asciidart(safe: SafeMode.unsafe);
+const ad = Ptome(safe: SafeMode.unsafe);
 final doc = await ad.convertFile('docs/index.adoc', toDir: 'build');
 await for (final result in ad.convertTree('docs', toDir: 'build')) {
   print(result.outputPath);
@@ -208,7 +208,7 @@ with `_` or `.` (partials meant to be included).
 ## 9. PDFs and EPUBs
 
 ```dart
-final pdf = await Asciidart(
+final pdf = await Ptome(
   fonts: [FontFile('Inter-Regular.ttf', interBytes)],
 ).convertToBytesAsync(source, backend: Backend.pdf);
 ```
@@ -229,17 +229,17 @@ methods load it, and `loadBackend` loads it ahead for `convertToBytes`.
 
 - **Remote content.** `parseAsync` and `convertAsync` fetch what a document
   includes from a URI once `allow-uri-read` is set.
-- **Syntax highlighting.** `Asciidart(highlighters: {'name': MyHighlighter()})`
+- **Syntax highlighting.** `Ptome(highlighters: {'name': MyHighlighter()})`
   registers a custom `Highlighter` under a `source-highlighter` name.
-- **Templates.** `Asciidart(templateDirs: [...])` loads Mustache templates
-  that replace the HTML of the nodes they name, as `asciidart -T` does.
-- **Custom commands.** `runCli(args, asciidart: Asciidart(...))` runs the
-  `asciidart` command line with extensions and overrides compiled in;
-  `asciidart init-config` generates such a project.
+- **Templates.** `Ptome(templateDirs: [...])` loads Mustache templates
+  that replace the HTML of the nodes they name, as `ptome -T` does.
+- **Custom commands.** `runCli(args, ptome: Ptome(...))` runs the
+  `ptome` command line with extensions and overrides compiled in;
+  `ptome init-config` generates such a project.
 - **The index.** `doc.index` lists the terms a document's index terms
   (`(((...)))`, `((...))`, `indexterm:[]`, `indexterm2:[]`) name, by
   letter: each `IndexEntry` has its `term`, the blocks it is `uses`d in,
   `see` and `seeAlso`, and its `subentries`. In HTML and EPUB, an
   `[index]` section renders it, linked to each use (`index-html!` turns
   that off; Asciidoctor renders the section empty).
-- **Errors.** Problems that stop a conversion throw `AsciidartException`.
+- **Errors.** Problems that stop a conversion throw `PtomeException`.

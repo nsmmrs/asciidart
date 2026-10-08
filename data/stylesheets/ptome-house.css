@@ -1,4 +1,4 @@
-/*! asciidart house style (doc/style.md, ADR-0011): rules after Asciidoctor's stylesheet */
+/*! ptome house style (doc/style.md, ADR-0011): rules after Asciidoctor's stylesheet */
 @media screen{#header,#content,#footnotes,#footer{max-width:42em}}
 h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{color:#191919;font-weight:600}
 #header>h1:first-child{color:#191919}

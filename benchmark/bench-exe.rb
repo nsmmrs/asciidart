@@ -10,8 +10,8 @@
 #
 # Usage (from repo root):
 #   ruby benchmark/bench-exe.rb --exe 'asciidoctor' [--iterations N] [--warmup N]
-#   ruby benchmark/bench-exe.rb --exe 'dart run bin/asciidart.dart' [--iterations N] [--warmup N]
-#   ruby benchmark/bench-exe.rb --exe /tmp/dist/asciidart-linux-x64 [--iterations N] [--warmup N]
+#   ruby benchmark/bench-exe.rb --exe 'dart run bin/ptome.dart' [--iterations N] [--warmup N]
+#   ruby benchmark/bench-exe.rb --exe /tmp/dist/ptome-linux-x64 [--iterations N] [--warmup N]
 #
 # Each cell runs `<exe> -b <backend> -o <tmp> <doc>` N times (after W
 # warmup runs) and prints every sample plus the median.

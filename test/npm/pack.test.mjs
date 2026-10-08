@@ -19,8 +19,8 @@ test('npm pack lists the expected files', () => {
   assert.deepEqual(files.filter((file) => !parts.includes(file)), [
     'LICENSE',
     'README.md',
-    'asciidart.js',
-    'bin/asciidart.js',
+    'ptome.js',
+    'bin/ptome.js',
     'browser.js',
     'node.cjs',
     'node.js',
@@ -33,9 +33,9 @@ test('npm pack lists the expected files', () => {
     'types/index.d.ts',
   ])
   // The bundle stays under 2.75 MB: 2.74 MB on 2026-10-07, of which the
-  // 193 highlight.js languages hilite compiles in are 1.5 MB and asciidart
+  // 193 highlight.js languages hilite compiles in are 1.5 MB and ptome
   // (math, formats) the rest. See the board card on the bundle size.
-  const bundle = report.files.find((file) => file.path === 'asciidart.js')
+  const bundle = report.files.find((file) => file.path === 'ptome.js')
   assert.ok(bundle.size < 2_750_000, `bundle is ${bundle.size} bytes`)
   // The parts under 3 MB together: 2.78 MB on 2026-10-07 (the PDF backend
   // with libpdf, hyphenation and themes; the EPUB backend).

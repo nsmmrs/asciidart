@@ -3,8 +3,8 @@
 @TestOn('vm')
 library;
 
-import 'package:asciidart/src/pdf/markup.dart';
-import 'package:asciidart/src/pdf/theme.dart';
+import 'package:ptome/src/pdf/markup.dart';
+import 'package:ptome/src/pdf/theme.dart';
 import 'package:test/test.dart';
 
 List<Fragment> format(String text, [Theme? theme]) =>

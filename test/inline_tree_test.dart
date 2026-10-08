@@ -2,7 +2,7 @@
 /// text between them, while the converted text stays as it was.
 library;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// The first block of [source], parsed.

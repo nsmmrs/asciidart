@@ -1,6 +1,6 @@
 # The house style
 
-asciidart's PDF, HTML page, website and EPUB share one look by default
+Ptome's PDF, HTML page, website and EPUB share one look by default
 (ADR-0011). It starts from Asciidoctor's and asciidoctor-pdf's and
 changes what the rules of typesetting ask for: Matthew Butterick's
 *Practical Typography* (and *Typography for Lawyers*), Robert
@@ -9,7 +9,7 @@ figures, the conventions of technical publishers' books. The markup is
 Asciidoctor's; only the PDF theme and the stylesheets change.
 
 The classic looks are one setting away: `asciidoctor-compat` (an
-attribute, `ASCIIDART_COMPAT`, or `compat:` in `asciidart.yml`; ADR-0015
+attribute, `PTOME_COMPAT`, or `compat:` in `ptome.yml`; ADR-0015
 and `doc/books.md`), for every format or a list. Each format also has its
 own: `-a stylesheet=asciidoctor` (HTML, website), `-a
 epub3-stylesheet=asciidoctor-epub3` (EPUB), `-a pdf-theme=default` (PDF;
@@ -17,7 +17,7 @@ epub3-stylesheet=asciidoctor-epub3` (EPUB), `-a pdf-theme=default` (PDF;
 
 ## Values
 
-| Element | Rule | PDF (theme `asciidart`) | HTML and website | EPUB |
+| Element | Rule | PDF (theme `ptome`) | HTML and website | EPUB |
 | --- | --- | --- | --- | --- |
 | Text face | a serif with real italics and small capitals | Noto Serif | Noto Serif | Noto Serif |
 | Heading and label face | a sans, bold | Noto Sans | Open Sans, 600 | M+ 1p |

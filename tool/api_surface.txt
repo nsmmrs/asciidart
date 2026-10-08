@@ -1,7 +1,7 @@
-Asciidart get asciidoc
-Future<void> runCli(List<String> args, {Asciidart? asciidart})
-String get asciidartVersion
+Future<void> runCli(List<String> args, {Ptome? ptome})
+Ptome get asciidoc
 String get asciidoctorVersion
+String get ptomeVersion
 abstract class Highlighter
   Highlighter()
   String highlight(SourceCode code)
@@ -88,7 +88,7 @@ enum StemNotation
   static List<StemNotation> values
   static StemNotation asciimath
   static StemNotation latexmath
-extension AsciidartFiles on Asciidart
+extension PtomeFiles on Ptome
   Future<Document> convertFile(String path, {String? toFile, String? toDir, bool mkdirs = false, Backend backend = Backend.html5, Doctype? doctype, bool standalone = true, Map<String, String> attributes = const {}})
   Future<Document> parseFile(String path, {Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
   Stream<FileConversion> convertTree(String directory, {required String toDir, Backend backend = Backend.html5, Doctype? doctype, Map<String, String> attributes = const {}})
@@ -97,30 +97,6 @@ final class Admonition extends Block
   List<InlineContent> inlines
   String content
   String plainText
-final class Asciidart
-  Asciidart({SafeMode safe = SafeMode.secure, Map<String, String> attributes = const {}, List<Extension> extensions = const [], String Function(Node, HtmlDefaults)? html, List<String> templateDirs = const [], Map<String, Highlighter> highlighters = const {}, String? baseDir, void Function(Diagnostic)? onDiagnostic, List<FontFile> fonts = const [], bool pageFonts = true, List<String> localFonts = const []})
-  Document parse(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
-  Document parseHeader(String source, {String? path, Map<String, String> attributes = const {}})
-  Future<Document> parseAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
-  Future<String> convertAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
-  Future<Uint8List> convertToBytesAsync(String source, {required Backend backend, String? path, Doctype? doctype, Map<String, String> attributes = const {}})
-  Future<void> loadBackend(Backend backend)
-  List<Extension> extensions
-  List<FontFile> fonts
-  List<String> localFonts
-  List<String> templateDirs
-  Map<String, Highlighter> highlighters
-  Map<String, String> attributes
-  SafeMode safe
-  String Function(Node, HtmlDefaults)? html
-  String convert(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
-  String? baseDir
-  Uint8List convertToBytes(String source, {required Backend backend, String? path, Doctype? doctype, Map<String, String> attributes = const {}})
-  bool pageFonts
-  void Function(Diagnostic)? onDiagnostic
-final class AsciidartException implements Exception
-  String message
-  String toString()
 final class Attributes
   Iterable<String> names
   List<String> listValue(String name)
@@ -340,6 +316,30 @@ final class Preamble extends Block
 final class Preprocessor extends Extension
   List<String> Function(List<String>, Document) process
   Preprocessor(List<String> Function(List<String>, Document) process)
+final class Ptome
+  Document parse(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  Document parseHeader(String source, {String? path, Map<String, String> attributes = const {}})
+  Future<Document> parseAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  Future<String> convertAsync(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  Future<Uint8List> convertToBytesAsync(String source, {required Backend backend, String? path, Doctype? doctype, Map<String, String> attributes = const {}})
+  Future<void> loadBackend(Backend backend)
+  List<Extension> extensions
+  List<FontFile> fonts
+  List<String> localFonts
+  List<String> templateDirs
+  Map<String, Highlighter> highlighters
+  Map<String, String> attributes
+  Ptome({SafeMode safe = SafeMode.secure, Map<String, String> attributes = const {}, List<Extension> extensions = const [], String Function(Node, HtmlDefaults)? html, List<String> templateDirs = const [], Map<String, Highlighter> highlighters = const {}, String? baseDir, void Function(Diagnostic)? onDiagnostic, List<FontFile> fonts = const [], bool pageFonts = true, List<String> localFonts = const []})
+  SafeMode safe
+  String Function(Node, HtmlDefaults)? html
+  String convert(String source, {String? path, Backend backend = Backend.html5, Doctype? doctype, bool standalone = false, Map<String, String> attributes = const {}})
+  String? baseDir
+  Uint8List convertToBytes(String source, {required Backend backend, String? path, Doctype? doctype, Map<String, String> attributes = const {}})
+  bool pageFonts
+  void Function(Diagnostic)? onDiagnostic
+final class PtomeException implements Exception
+  String message
+  String toString()
 final class Quote extends Block
   String plainText
   String? attribution

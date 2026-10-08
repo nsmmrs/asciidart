@@ -1,7 +1,7 @@
 part of 'api.dart';
 
 /// An extension: code that adds syntax to AsciiDoc or changes how documents
-/// are processed. Pass extensions to [Asciidart.new].
+/// are processed. Pass extensions to [Ptome.new].
 sealed class Extension {
   const new _();
 
@@ -116,9 +116,9 @@ final class IncludeRequest {
 
 /// Supplies the content of `include::` directives.
 ///
-/// [resolve] returns the content to include, or `null` to let asciidart
+/// [resolve] returns the content to include, or `null` to let Ptome
 /// read the target as usual. It may return a `Future`; then use the
-/// asynchronous methods ([Asciidart.parseAsync], [Asciidart.convertAsync]),
+/// asynchronous methods ([Ptome.parseAsync], [Ptome.convertAsync]),
 /// which wait for it.
 final class IncludeResolver extends Extension {
   /// An include resolver running [resolve].
@@ -174,7 +174,7 @@ final class _Includes {
     final result = resolver.resolve(request());
     if (result is Future<String?>) {
       if (!async) {
-        throw AsciidartException._(
+        throw PtomeException._(
           'the include resolver returned a Future for $target; '
           'use parseAsync or convertAsync',
         );

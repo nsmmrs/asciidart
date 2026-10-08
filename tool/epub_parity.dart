@@ -1,10 +1,10 @@
-/// Compares EPUB files the asciidart CLI writes with those of the
+/// Compares EPUB files the Ptome CLI writes with those of the
 /// asciidoctor-epub3 gem, file by file.
 ///
 /// Usage:
 ///
 /// ```sh
-/// dart run tool/epub_parity.dart --exe-a GEM --exe-b ASCIIDART DOC.adoc...
+/// dart run tool/epub_parity.dart --exe-a GEM --exe-b PTOME DOC.adoc...
 /// dart run tool/epub_parity.dart A.epub B.epub
 /// ```
 ///
@@ -17,11 +17,11 @@
 /// must match too, the program name and intentional rewordings aside.
 ///
 /// With `--epubcheck EPUBCHECK.jar`, both EPUBs are also validated, and
-/// EPUBCheck must report nothing for asciidart's that it doesn't for the
-/// gem's (asciidart adds no error of its own; the fixtures have some on
-/// purpose, and asciidart repairs some: below).
+/// EPUBCheck must report nothing for Ptome's that it doesn't for the
+/// gem's (Ptome adds no error of its own; the fixtures have some on
+/// purpose, and Ptome repairs some: below).
 ///
-/// asciidart repairs XHTML the gem writes invalid (benchmark/PARITY.md):
+/// Ptome repairs XHTML the gem writes invalid (benchmark/PARITY.md):
 /// the gem's chapters are compared with those repairs made (tags
 /// balanced, an image width that isn't a number of pixels left out).
 ///
@@ -31,8 +31,8 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/epub3/zip.dart';
-import 'package:asciidart/src/xml_balance.dart';
+import 'package:ptome/src/epub3/zip.dart';
+import 'package:ptome/src/xml_balance.dart';
 
 import 'corpus_parity.dart' show rewordings;
 
@@ -140,7 +140,7 @@ String _epubcheck(String jar, String epub) {
   if (file.existsSync()) file.deleteSync();
   final result = Process.runSync(
     exe,
-    // (asciidoctor-epub3's stylesheet alone in asciidart's EPUB, ADR-0011;
+    // (asciidoctor-epub3's stylesheet alone in Ptome's EPUB, ADR-0011;
     // the gem ignores the attribute.)
     [
       '-b',
@@ -149,7 +149,7 @@ String _epubcheck(String jar, String epub) {
       'reproducible',
       '-a',
       'epub3-stylesheet=asciidoctor-epub3',
-      // (The gem's fonts, as the gem embeds them: asciidart embeds the
+      // (The gem's fonts, as the gem embeds them: Ptome embeds the
       // installed fonts only when asked, here the vendored ones.)
       '-a',
       'epub-embed-fonts',
@@ -215,7 +215,7 @@ bool _compare(String pathA, String pathB, {String? label}) {
     if (textA != null && entry.name.endsWith('.xhtml')) {
       textA = _repaired(textA);
     }
-    // asciidart's landmarks (the front and back matter, the index, the
+    // Ptome's landmarks (the front and back matter, the index, the
     // body after the front matter: ADR-0012) differ on purpose.
     if (entry.name.endsWith('nav.xhtml')) {
       textA = textA?.replaceAll(_landmarks, '');
@@ -235,7 +235,7 @@ bool _compare(String pathA, String pathB, {String? label}) {
 /// The navigation document's landmarks.
 final RegExp _landmarks = RegExp(r'<nav epub:type="landmarks"[\s\S]*?</nav>');
 
-/// [xhtml] (a chapter of the gem's) with asciidart's repairs.
+/// [xhtml] (a chapter of the gem's) with Ptome's repairs.
 String _repaired(String xhtml) => balanceXml(
   xhtml.replaceAllMapped(
     RegExp('(<img [^>]*?) width="([^"]*)"'),

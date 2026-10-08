@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { test } from 'node:test'
 
-import * as api from 'asciidart'
+import * as api from 'ptome'
 
 const require = createRequire(import.meta.url)
 
@@ -25,7 +25,7 @@ function declaredValues(file) {
 }
 
 test('every runtime export is declared, and every declared value exported', () => {
-  const types = require.resolve('asciidart/package.json').replace('package.json', 'types/index.d.ts')
+  const types = require.resolve('ptome/package.json').replace('package.json', 'types/index.d.ts')
   const declared = declaredValues(types)
   const runtime = new Set(Object.keys(api))
   assert.deepEqual([...runtime].filter((name) => !declared.has(name)).sort(), [])

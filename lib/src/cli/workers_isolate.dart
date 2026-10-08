@@ -3,9 +3,9 @@ library;
 
 import 'dart:isolate';
 
-import 'package:asciidart/src/cli/parallel.dart';
-import 'package:asciidart/src/job_pool.dart';
-import 'package:asciidart/src/parallel.dart';
+import 'package:ptome/src/cli/parallel.dart';
+import 'package:ptome/src/job_pool.dart';
+import 'package:ptome/src/parallel.dart';
 
 /// Worker isolate entry point for conversion jobs (each converted
 /// serially: the files are the parallel work).

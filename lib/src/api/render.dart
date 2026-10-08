@@ -1,14 +1,14 @@
 part of 'api.dart';
 
 /// Overrides the HTML of some nodes: returns the HTML for [node], using
-/// [defaults] for asciidart's own HTML.
+/// [defaults] for Ptome's own HTML.
 ///
 /// The override is called for every node converted to HTML (the document,
 /// blocks, list items, table cells, inline elements); return
 /// `defaults.render(node)` for the nodes it leaves alone.
 typedef HtmlOverride = String Function(Node node, HtmlDefaults defaults);
 
-/// asciidart's own HTML, for an [HtmlOverride].
+/// Ptome's own HTML, for an [HtmlOverride].
 final class HtmlDefaults {
   new _(this._base, this._node, this._transform, this._opts);
 
@@ -17,7 +17,7 @@ final class HtmlDefaults {
   final String? _transform;
   final impl.ConvertOptions? _opts;
 
-  /// asciidart's HTML for [node].
+  /// Ptome's HTML for [node].
   String render(Node node) => identical(node._node, _node)
       ? _base.convert(_node, _transform, _opts) ?? ''
       : _base.convert(node._node) ?? '';
@@ -60,7 +60,7 @@ impl.ConverterFactory _overrideFactory(HtmlOverride override) {
     impl.Html5Converter.registerFor();
     final base = impl.Converter.create(backend, opts);
     if (base == null) {
-      throw AsciidartException._('missing converter for backend $backend');
+      throw PtomeException._('missing converter for backend $backend');
     }
     return _OverrideConverter(base, override);
   }

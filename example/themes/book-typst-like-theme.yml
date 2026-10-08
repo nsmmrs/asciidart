@@ -1,9 +1,9 @@
 # A book set the way Typst sets one (doc/typst-look.md), with the fonts
-# asciidart bundles: Typst's line model and spacing, floating figures,
+# ptome bundles: Typst's line model and spacing, floating figures,
 # sticky headings, footnotes per page, numbered lists as enums, and the
 # index as one list. Convert with:
 #
-#   asciidart -b pdf -a pdf-theme=example/themes/book-typst-like-theme.yml book.adoc
+#   ptome -b pdf -a pdf-theme=example/themes/book-typst-like-theme.yml book.adoc
 #
 # Every value is a choice among others; doc/typst-look.md gives each
 # key's range.

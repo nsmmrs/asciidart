@@ -48,11 +48,11 @@ async function time(label, convert, backend) {
   console.log(`${label} ${backend}: ${median(samples).toFixed(1)} ms`)
 }
 
-// asciidart collects diagnostics on the document rather than printing them.
-const asciidart = await import('../build/npm/node.js')
-const ad = new asciidart.Asciidart({ safe: asciidart.SafeMode.safe })
+// ptome collects diagnostics on the document rather than printing them.
+const ptome = await import('../build/npm/node.js')
+const ad = new ptome.Ptome({ safe: ptome.SafeMode.safe })
 const implementations = [
-  ['asciidart', (source, backend) => ad.convert(source, { backend, doctype: 'book', standalone: true })],
+  ['ptome', (source, backend) => ad.convert(source, { backend, doctype: 'book', standalone: true })],
 ]
 if (values.ajs) {
   // The corpus repeats ids; silence the warnings so that only conversion is

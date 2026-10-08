@@ -5,7 +5,7 @@
 /// settings. Constants used by one file live in that file.
 library;
 
-import 'package:asciidart/src/rx.dart';
+import 'package:ptome/src/rx.dart';
 
 /// String for matching the tab character (`TAB`).
 const String tab = '\t';

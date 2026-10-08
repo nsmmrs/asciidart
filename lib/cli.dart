@@ -1,4 +1,4 @@
-/// The `asciidart` command line, for building a custom command with
+/// The `ptome` command line, for building a custom command with
 /// extensions and overrides compiled in (see `runCli`).
 library;
 

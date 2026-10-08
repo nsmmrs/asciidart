@@ -1,9 +1,9 @@
-/// highlight.js in asciidart: highlighting at conversion with hilite (the
+/// highlight.js in ptome: highlighting at conversion with hilite (the
 /// default), and the browser markup of Asciidoctor with
 /// `highlightjs-mode=client`.
 library;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 String convertWith(

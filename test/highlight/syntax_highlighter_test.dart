@@ -7,7 +7,7 @@
 /// `_assertCss` matcher below.
 library;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// A document asking for highlight.js in the browser.

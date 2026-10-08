@@ -9,9 +9,9 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:asciidart/asciidart.dart' as api;
-import 'package:asciidart/io.dart' as api;
-import 'package:asciidart/src/js/runtime.dart' as rt;
+import 'package:ptome/ptome.dart' as api;
+import 'package:ptome/io.dart' as api;
+import 'package:ptome/src/js/runtime.dart' as rt;
 
 /// The JavaScript object for the public Dart object [o].
 JSObject wrap(Object o) => switch (o) {
@@ -70,6 +70,7 @@ JSObject wrap(Object o) => switch (o) {
   api.TableColumn() => rt.handle(o, 'TableColumn'),
   api.SourceLocation() => rt.handle(o, 'SourceLocation'),
   api.SourceCode() => rt.handle(o, 'SourceCode'),
+  api.Ptome() => rt.handle(o, 'Ptome'),
   api.InlineText() => rt.handle(o, 'InlineText'),
   api.InlineMacroContext() => rt.handle(o, 'InlineMacroContext'),
   api.IndexLetter() => rt.handle(o, 'IndexLetter'),
@@ -84,7 +85,6 @@ JSObject wrap(Object o) => switch (o) {
   api.BlockMacroContext() => rt.handle(o, 'BlockMacroContext'),
   api.Author() => rt.handle(o, 'Author'),
   api.Attributes() => rt.handle(o, 'Attributes'),
-  api.Asciidart() => rt.handle(o, 'Asciidart'),
   _HighlighterFromJs(:final js) => js,
   _ => throw ArgumentError(
     'no JavaScript projection for '
@@ -121,545 +121,6 @@ final class Core {
   JSAny? describe(JSAny? self) {
     try {
       return rt.unwrap<Object>(self).toString().toJS;
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$safe(JSAny? self) {
-    try {
-      return rt.unwrap<api.Asciidart>(self).safe.name.toJS;
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$attributes(JSAny? self) {
-    try {
-      return rt.jsObject({
-        for (final e in rt.unwrap<api.Asciidart>(self).attributes.entries)
-          e.key: e.value.toJS,
-      });
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$extensions(JSAny? self) {
-    try {
-      return rt.jsArray([
-        for (final x in rt.unwrap<api.Asciidart>(self).extensions) wrap(x),
-      ]);
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$html(JSAny? self) {
-    try {
-      return ((rt.unwrap<api.Asciidart>(self).html) == null
-          ? null
-          : ((String Function(api.Node, api.HtmlDefaults) _f) =>
-                ((JSAny? a0, JSAny? a1) => _f(
-                  rt.unwrap<api.Node>(a0),
-                  rt.unwrap<api.HtmlDefaults>(a1),
-                ).toJS).toJS)((rt.unwrap<api.Asciidart>(self).html)!));
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$templateDirs(JSAny? self) {
-    try {
-      return rt.jsArray([
-        for (final x in rt.unwrap<api.Asciidart>(self).templateDirs) x.toJS,
-      ]);
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$highlighters(JSAny? self) {
-    try {
-      return rt.jsObject({
-        for (final e in rt.unwrap<api.Asciidart>(self).highlighters.entries)
-          e.key: wrap(e.value),
-      });
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$baseDir(JSAny? self) {
-    try {
-      return ((rt.unwrap<api.Asciidart>(self).baseDir) == null
-          ? null
-          : (rt.unwrap<api.Asciidart>(self).baseDir)!.toJS);
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$onDiagnostic(JSAny? self) {
-    try {
-      return ((rt.unwrap<api.Asciidart>(self).onDiagnostic) == null
-          ? null
-          : ((void Function(api.Diagnostic) _f) => ((JSAny? a0) => (() {
-              _f(rt.unwrap<api.Diagnostic>(a0));
-              return null;
-            })()).toJS)((rt.unwrap<api.Asciidart>(self).onDiagnostic)!));
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$fonts(JSAny? self) {
-    try {
-      return rt.jsArray([
-        for (final x in rt.unwrap<api.Asciidart>(self).fonts) wrap(x),
-      ]);
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$pageFonts(JSAny? self) {
-    try {
-      return rt.unwrap<api.Asciidart>(self).pageFonts.toJS;
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$get$localFonts(JSAny? self) {
-    try {
-      return rt.jsArray([
-        for (final x in rt.unwrap<api.Asciidart>(self).localFonts) x.toJS,
-      ]);
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$loadBackend(JSAny? self, JSAny? backend) {
-    try {
-      return rt.promise(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .loadBackend(api.Backend.values.byName(rt.str(backend))),
-        (x) => (() {
-          x;
-          return null;
-        })(),
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$convertToBytes(
-    JSAny? self,
-    JSAny? source, [
-    JSAny? options,
-  ]) {
-    try {
-      return rt.jsBytes(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .convertToBytes(
-              rt.str(source),
-              backend: api.Backend.values.byName(
-                rt.str(rt.option(options, 'backend')),
-              ),
-              path: rt.hasOption(options, 'path')
-                  ? (rt.isMissing(rt.option(options, 'path'))
-                        ? null
-                        : rt.str(rt.option(options, 'path')))
-                  : null,
-              doctype: rt.hasOption(options, 'doctype')
-                  ? (rt.isMissing(rt.option(options, 'doctype'))
-                        ? null
-                        : api.Doctype.values.byName(
-                            rt.str(rt.option(options, 'doctype')),
-                          ))
-                  : null,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$convertToBytesAsync(
-    JSAny? self,
-    JSAny? source, [
-    JSAny? options,
-  ]) {
-    try {
-      return rt.promise(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .convertToBytesAsync(
-              rt.str(source),
-              backend: api.Backend.values.byName(
-                rt.str(rt.option(options, 'backend')),
-              ),
-              path: rt.hasOption(options, 'path')
-                  ? (rt.isMissing(rt.option(options, 'path'))
-                        ? null
-                        : rt.str(rt.option(options, 'path')))
-                  : null,
-              doctype: rt.hasOption(options, 'doctype')
-                  ? (rt.isMissing(rt.option(options, 'doctype'))
-                        ? null
-                        : api.Doctype.values.byName(
-                            rt.str(rt.option(options, 'doctype')),
-                          ))
-                  : null,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-        (x) => rt.jsBytes(x),
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$parse(JSAny? self, JSAny? source, [JSAny? options]) {
-    try {
-      return wrap(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .parse(
-              rt.str(source),
-              path: rt.hasOption(options, 'path')
-                  ? (rt.isMissing(rt.option(options, 'path'))
-                        ? null
-                        : rt.str(rt.option(options, 'path')))
-                  : null,
-              backend: rt.hasOption(options, 'backend')
-                  ? api.Backend.values.byName(
-                      rt.str(rt.option(options, 'backend')),
-                    )
-                  : api.Backend.html5,
-              doctype: rt.hasOption(options, 'doctype')
-                  ? (rt.isMissing(rt.option(options, 'doctype'))
-                        ? null
-                        : api.Doctype.values.byName(
-                            rt.str(rt.option(options, 'doctype')),
-                          ))
-                  : null,
-              standalone: rt.hasOption(options, 'standalone')
-                  ? rt.boolean(rt.option(options, 'standalone'))
-                  : false,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$parseHeader(JSAny? self, JSAny? source, [JSAny? options]) {
-    try {
-      return wrap(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .parseHeader(
-              rt.str(source),
-              path: rt.hasOption(options, 'path')
-                  ? (rt.isMissing(rt.option(options, 'path'))
-                        ? null
-                        : rt.str(rt.option(options, 'path')))
-                  : null,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$convert(JSAny? self, JSAny? source, [JSAny? options]) {
-    try {
-      return rt
-          .unwrap<api.Asciidart>(self)
-          .convert(
-            rt.str(source),
-            path: rt.hasOption(options, 'path')
-                ? (rt.isMissing(rt.option(options, 'path'))
-                      ? null
-                      : rt.str(rt.option(options, 'path')))
-                : null,
-            backend: rt.hasOption(options, 'backend')
-                ? api.Backend.values.byName(
-                    rt.str(rt.option(options, 'backend')),
-                  )
-                : api.Backend.html5,
-            doctype: rt.hasOption(options, 'doctype')
-                ? (rt.isMissing(rt.option(options, 'doctype'))
-                      ? null
-                      : api.Doctype.values.byName(
-                          rt.str(rt.option(options, 'doctype')),
-                        ))
-                : null,
-            standalone: rt.hasOption(options, 'standalone')
-                ? rt.boolean(rt.option(options, 'standalone'))
-                : false,
-            attributes: rt.hasOption(options, 'attributes')
-                ? {
-                    for (final e in rt.entries(
-                      rt.option(options, 'attributes'),
-                    ))
-                      e.key: rt.str(e.value),
-                  }
-                : const {},
-          )
-          .toJS;
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$parseAsync(JSAny? self, JSAny? source, [JSAny? options]) {
-    try {
-      return rt.promise(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .parseAsync(
-              rt.str(source),
-              path: rt.hasOption(options, 'path')
-                  ? (rt.isMissing(rt.option(options, 'path'))
-                        ? null
-                        : rt.str(rt.option(options, 'path')))
-                  : null,
-              backend: rt.hasOption(options, 'backend')
-                  ? api.Backend.values.byName(
-                      rt.str(rt.option(options, 'backend')),
-                    )
-                  : api.Backend.html5,
-              doctype: rt.hasOption(options, 'doctype')
-                  ? (rt.isMissing(rt.option(options, 'doctype'))
-                        ? null
-                        : api.Doctype.values.byName(
-                            rt.str(rt.option(options, 'doctype')),
-                          ))
-                  : null,
-              standalone: rt.hasOption(options, 'standalone')
-                  ? rt.boolean(rt.option(options, 'standalone'))
-                  : false,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-        (x) => wrap(x),
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$convertAsync(JSAny? self, JSAny? source, [JSAny? options]) {
-    try {
-      return rt.promise(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .convertAsync(
-              rt.str(source),
-              path: rt.hasOption(options, 'path')
-                  ? (rt.isMissing(rt.option(options, 'path'))
-                        ? null
-                        : rt.str(rt.option(options, 'path')))
-                  : null,
-              backend: rt.hasOption(options, 'backend')
-                  ? api.Backend.values.byName(
-                      rt.str(rt.option(options, 'backend')),
-                    )
-                  : api.Backend.html5,
-              doctype: rt.hasOption(options, 'doctype')
-                  ? (rt.isMissing(rt.option(options, 'doctype'))
-                        ? null
-                        : api.Doctype.values.byName(
-                            rt.str(rt.option(options, 'doctype')),
-                          ))
-                  : null,
-              standalone: rt.hasOption(options, 'standalone')
-                  ? rt.boolean(rt.option(options, 'standalone'))
-                  : false,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-        (x) => x.toJS,
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$parseFile(JSAny? self, JSAny? path, [JSAny? options]) {
-    try {
-      return rt.promise(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .parseFile(
-              rt.str(path),
-              backend: rt.hasOption(options, 'backend')
-                  ? api.Backend.values.byName(
-                      rt.str(rt.option(options, 'backend')),
-                    )
-                  : api.Backend.html5,
-              doctype: rt.hasOption(options, 'doctype')
-                  ? (rt.isMissing(rt.option(options, 'doctype'))
-                        ? null
-                        : api.Doctype.values.byName(
-                            rt.str(rt.option(options, 'doctype')),
-                          ))
-                  : null,
-              standalone: rt.hasOption(options, 'standalone')
-                  ? rt.boolean(rt.option(options, 'standalone'))
-                  : false,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-        (x) => wrap(x),
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$convertFile(JSAny? self, JSAny? path, [JSAny? options]) {
-    try {
-      return rt.promise(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .convertFile(
-              rt.str(path),
-              toFile: rt.hasOption(options, 'toFile')
-                  ? (rt.isMissing(rt.option(options, 'toFile'))
-                        ? null
-                        : rt.str(rt.option(options, 'toFile')))
-                  : null,
-              toDir: rt.hasOption(options, 'toDir')
-                  ? (rt.isMissing(rt.option(options, 'toDir'))
-                        ? null
-                        : rt.str(rt.option(options, 'toDir')))
-                  : null,
-              mkdirs: rt.hasOption(options, 'mkdirs')
-                  ? rt.boolean(rt.option(options, 'mkdirs'))
-                  : false,
-              backend: rt.hasOption(options, 'backend')
-                  ? api.Backend.values.byName(
-                      rt.str(rt.option(options, 'backend')),
-                    )
-                  : api.Backend.html5,
-              doctype: rt.hasOption(options, 'doctype')
-                  ? (rt.isMissing(rt.option(options, 'doctype'))
-                        ? null
-                        : api.Doctype.values.byName(
-                            rt.str(rt.option(options, 'doctype')),
-                          ))
-                  : null,
-              standalone: rt.hasOption(options, 'standalone')
-                  ? rt.boolean(rt.option(options, 'standalone'))
-                  : true,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-        (x) => wrap(x),
-      );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  JSAny? Asciidart$convertTree(
-    JSAny? self,
-    JSAny? directory, [
-    JSAny? options,
-  ]) {
-    try {
-      return rt.asyncIterable(
-        rt
-            .unwrap<api.Asciidart>(self)
-            .convertTree(
-              rt.str(directory),
-              toDir: rt.str(rt.option(options, 'toDir')),
-              backend: rt.hasOption(options, 'backend')
-                  ? api.Backend.values.byName(
-                      rt.str(rt.option(options, 'backend')),
-                    )
-                  : api.Backend.html5,
-              doctype: rt.hasOption(options, 'doctype')
-                  ? (rt.isMissing(rt.option(options, 'doctype'))
-                        ? null
-                        : api.Doctype.values.byName(
-                            rt.str(rt.option(options, 'doctype')),
-                          ))
-                  : null,
-              attributes: rt.hasOption(options, 'attributes')
-                  ? {
-                      for (final e in rt.entries(
-                        rt.option(options, 'attributes'),
-                      ))
-                        e.key: rt.str(e.value),
-                    }
-                  : const {},
-            ),
-        (x) => wrap(x),
-      );
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -1422,6 +883,537 @@ final class Core {
   JSAny? Node$hasOption(JSAny? self, JSAny? name) {
     try {
       return rt.unwrap<api.Node>(self).hasOption(rt.str(name)).toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$safe(JSAny? self) {
+    try {
+      return rt.unwrap<api.Ptome>(self).safe.name.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$attributes(JSAny? self) {
+    try {
+      return rt.jsObject({
+        for (final e in rt.unwrap<api.Ptome>(self).attributes.entries)
+          e.key: e.value.toJS,
+      });
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$extensions(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Ptome>(self).extensions) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$html(JSAny? self) {
+    try {
+      return ((rt.unwrap<api.Ptome>(self).html) == null
+          ? null
+          : ((String Function(api.Node, api.HtmlDefaults) _f) =>
+                ((JSAny? a0, JSAny? a1) => _f(
+                  rt.unwrap<api.Node>(a0),
+                  rt.unwrap<api.HtmlDefaults>(a1),
+                ).toJS).toJS)((rt.unwrap<api.Ptome>(self).html)!));
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$templateDirs(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Ptome>(self).templateDirs) x.toJS,
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$highlighters(JSAny? self) {
+    try {
+      return rt.jsObject({
+        for (final e in rt.unwrap<api.Ptome>(self).highlighters.entries)
+          e.key: wrap(e.value),
+      });
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$baseDir(JSAny? self) {
+    try {
+      return ((rt.unwrap<api.Ptome>(self).baseDir) == null
+          ? null
+          : (rt.unwrap<api.Ptome>(self).baseDir)!.toJS);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$onDiagnostic(JSAny? self) {
+    try {
+      return ((rt.unwrap<api.Ptome>(self).onDiagnostic) == null
+          ? null
+          : ((void Function(api.Diagnostic) _f) => ((JSAny? a0) => (() {
+              _f(rt.unwrap<api.Diagnostic>(a0));
+              return null;
+            })()).toJS)((rt.unwrap<api.Ptome>(self).onDiagnostic)!));
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$fonts(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Ptome>(self).fonts) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$pageFonts(JSAny? self) {
+    try {
+      return rt.unwrap<api.Ptome>(self).pageFonts.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$get$localFonts(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Ptome>(self).localFonts) x.toJS,
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$loadBackend(JSAny? self, JSAny? backend) {
+    try {
+      return rt.promise(
+        rt
+            .unwrap<api.Ptome>(self)
+            .loadBackend(api.Backend.values.byName(rt.str(backend))),
+        (x) => (() {
+          x;
+          return null;
+        })(),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$convertToBytes(JSAny? self, JSAny? source, [JSAny? options]) {
+    try {
+      return rt.jsBytes(
+        rt
+            .unwrap<api.Ptome>(self)
+            .convertToBytes(
+              rt.str(source),
+              backend: api.Backend.values.byName(
+                rt.str(rt.option(options, 'backend')),
+              ),
+              path: rt.hasOption(options, 'path')
+                  ? (rt.isMissing(rt.option(options, 'path'))
+                        ? null
+                        : rt.str(rt.option(options, 'path')))
+                  : null,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$convertToBytesAsync(
+    JSAny? self,
+    JSAny? source, [
+    JSAny? options,
+  ]) {
+    try {
+      return rt.promise(
+        rt
+            .unwrap<api.Ptome>(self)
+            .convertToBytesAsync(
+              rt.str(source),
+              backend: api.Backend.values.byName(
+                rt.str(rt.option(options, 'backend')),
+              ),
+              path: rt.hasOption(options, 'path')
+                  ? (rt.isMissing(rt.option(options, 'path'))
+                        ? null
+                        : rt.str(rt.option(options, 'path')))
+                  : null,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+        (x) => rt.jsBytes(x),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$parse(JSAny? self, JSAny? source, [JSAny? options]) {
+    try {
+      return wrap(
+        rt
+            .unwrap<api.Ptome>(self)
+            .parse(
+              rt.str(source),
+              path: rt.hasOption(options, 'path')
+                  ? (rt.isMissing(rt.option(options, 'path'))
+                        ? null
+                        : rt.str(rt.option(options, 'path')))
+                  : null,
+              backend: rt.hasOption(options, 'backend')
+                  ? api.Backend.values.byName(
+                      rt.str(rt.option(options, 'backend')),
+                    )
+                  : api.Backend.html5,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              standalone: rt.hasOption(options, 'standalone')
+                  ? rt.boolean(rt.option(options, 'standalone'))
+                  : false,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$parseHeader(JSAny? self, JSAny? source, [JSAny? options]) {
+    try {
+      return wrap(
+        rt
+            .unwrap<api.Ptome>(self)
+            .parseHeader(
+              rt.str(source),
+              path: rt.hasOption(options, 'path')
+                  ? (rt.isMissing(rt.option(options, 'path'))
+                        ? null
+                        : rt.str(rt.option(options, 'path')))
+                  : null,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$convert(JSAny? self, JSAny? source, [JSAny? options]) {
+    try {
+      return rt
+          .unwrap<api.Ptome>(self)
+          .convert(
+            rt.str(source),
+            path: rt.hasOption(options, 'path')
+                ? (rt.isMissing(rt.option(options, 'path'))
+                      ? null
+                      : rt.str(rt.option(options, 'path')))
+                : null,
+            backend: rt.hasOption(options, 'backend')
+                ? api.Backend.values.byName(
+                    rt.str(rt.option(options, 'backend')),
+                  )
+                : api.Backend.html5,
+            doctype: rt.hasOption(options, 'doctype')
+                ? (rt.isMissing(rt.option(options, 'doctype'))
+                      ? null
+                      : api.Doctype.values.byName(
+                          rt.str(rt.option(options, 'doctype')),
+                        ))
+                : null,
+            standalone: rt.hasOption(options, 'standalone')
+                ? rt.boolean(rt.option(options, 'standalone'))
+                : false,
+            attributes: rt.hasOption(options, 'attributes')
+                ? {
+                    for (final e in rt.entries(
+                      rt.option(options, 'attributes'),
+                    ))
+                      e.key: rt.str(e.value),
+                  }
+                : const {},
+          )
+          .toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$parseAsync(JSAny? self, JSAny? source, [JSAny? options]) {
+    try {
+      return rt.promise(
+        rt
+            .unwrap<api.Ptome>(self)
+            .parseAsync(
+              rt.str(source),
+              path: rt.hasOption(options, 'path')
+                  ? (rt.isMissing(rt.option(options, 'path'))
+                        ? null
+                        : rt.str(rt.option(options, 'path')))
+                  : null,
+              backend: rt.hasOption(options, 'backend')
+                  ? api.Backend.values.byName(
+                      rt.str(rt.option(options, 'backend')),
+                    )
+                  : api.Backend.html5,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              standalone: rt.hasOption(options, 'standalone')
+                  ? rt.boolean(rt.option(options, 'standalone'))
+                  : false,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+        (x) => wrap(x),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$convertAsync(JSAny? self, JSAny? source, [JSAny? options]) {
+    try {
+      return rt.promise(
+        rt
+            .unwrap<api.Ptome>(self)
+            .convertAsync(
+              rt.str(source),
+              path: rt.hasOption(options, 'path')
+                  ? (rt.isMissing(rt.option(options, 'path'))
+                        ? null
+                        : rt.str(rt.option(options, 'path')))
+                  : null,
+              backend: rt.hasOption(options, 'backend')
+                  ? api.Backend.values.byName(
+                      rt.str(rt.option(options, 'backend')),
+                    )
+                  : api.Backend.html5,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              standalone: rt.hasOption(options, 'standalone')
+                  ? rt.boolean(rt.option(options, 'standalone'))
+                  : false,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+        (x) => x.toJS,
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$parseFile(JSAny? self, JSAny? path, [JSAny? options]) {
+    try {
+      return rt.promise(
+        rt
+            .unwrap<api.Ptome>(self)
+            .parseFile(
+              rt.str(path),
+              backend: rt.hasOption(options, 'backend')
+                  ? api.Backend.values.byName(
+                      rt.str(rt.option(options, 'backend')),
+                    )
+                  : api.Backend.html5,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              standalone: rt.hasOption(options, 'standalone')
+                  ? rt.boolean(rt.option(options, 'standalone'))
+                  : false,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+        (x) => wrap(x),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$convertFile(JSAny? self, JSAny? path, [JSAny? options]) {
+    try {
+      return rt.promise(
+        rt
+            .unwrap<api.Ptome>(self)
+            .convertFile(
+              rt.str(path),
+              toFile: rt.hasOption(options, 'toFile')
+                  ? (rt.isMissing(rt.option(options, 'toFile'))
+                        ? null
+                        : rt.str(rt.option(options, 'toFile')))
+                  : null,
+              toDir: rt.hasOption(options, 'toDir')
+                  ? (rt.isMissing(rt.option(options, 'toDir'))
+                        ? null
+                        : rt.str(rt.option(options, 'toDir')))
+                  : null,
+              mkdirs: rt.hasOption(options, 'mkdirs')
+                  ? rt.boolean(rt.option(options, 'mkdirs'))
+                  : false,
+              backend: rt.hasOption(options, 'backend')
+                  ? api.Backend.values.byName(
+                      rt.str(rt.option(options, 'backend')),
+                    )
+                  : api.Backend.html5,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              standalone: rt.hasOption(options, 'standalone')
+                  ? rt.boolean(rt.option(options, 'standalone'))
+                  : true,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+        (x) => wrap(x),
+      );
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Ptome$convertTree(JSAny? self, JSAny? directory, [JSAny? options]) {
+    try {
+      return rt.asyncIterable(
+        rt
+            .unwrap<api.Ptome>(self)
+            .convertTree(
+              rt.str(directory),
+              toDir: rt.str(rt.option(options, 'toDir')),
+              backend: rt.hasOption(options, 'backend')
+                  ? api.Backend.values.byName(
+                      rt.str(rt.option(options, 'backend')),
+                    )
+                  : api.Backend.html5,
+              doctype: rt.hasOption(options, 'doctype')
+                  ? (rt.isMissing(rt.option(options, 'doctype'))
+                        ? null
+                        : api.Doctype.values.byName(
+                            rt.str(rt.option(options, 'doctype')),
+                          ))
+                  : null,
+              attributes: rt.hasOption(options, 'attributes')
+                  ? {
+                      for (final e in rt.entries(
+                        rt.option(options, 'attributes'),
+                      ))
+                        e.key: rt.str(e.value),
+                    }
+                  : const {},
+            ),
+        (x) => wrap(x),
+      );
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -2879,14 +2871,6 @@ final class Core {
     }
   }
 
-  JSAny? get asciidartVersion {
-    try {
-      return api.asciidartVersion.toJS;
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
   JSAny? get asciidoc {
     try {
       return wrap(api.asciidoc);
@@ -2903,11 +2887,28 @@ final class Core {
     }
   }
 
-  @JSExport('Asciidart')
-  JSAny? new$Asciidart([JSAny? options]) {
+  JSAny? get ptomeVersion {
+    try {
+      return api.ptomeVersion.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  @JSExport('FontFile')
+  JSAny? new$FontFile(JSAny? name, JSAny? bytes) {
+    try {
+      return wrap(api.FontFile(rt.str(name), rt.bytes(bytes)));
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  @JSExport('Ptome')
+  JSAny? new$Ptome([JSAny? options]) {
     try {
       return wrap(
-        api.Asciidart(
+        api.Ptome(
           safe: rt.hasOption(options, 'safe')
               ? api.SafeMode.values.byName(rt.str(rt.option(options, 'safe')))
               : api.SafeMode.secure,
@@ -2974,15 +2975,6 @@ final class Core {
               : const [],
         ),
       );
-    } catch (e, s) {
-      rt.fail(e, s);
-    }
-  }
-
-  @JSExport('FontFile')
-  JSAny? new$FontFile(JSAny? name, JSAny? bytes) {
-    try {
-      return wrap(api.FontFile(rt.str(name), rt.bytes(bytes)));
     } catch (e, s) {
       rt.fail(e, s);
     }

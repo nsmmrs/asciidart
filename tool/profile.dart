@@ -1,4 +1,4 @@
-/// Profiles the asciidart CLI: runs `bin/asciidart.dart` on the Dart VM
+/// Profiles the Ptome CLI: runs `bin/ptome.dart` on the Dart VM
 /// with its service on, collects the CPU samples when the program ends,
 /// and prints the functions where the time goes.
 ///
@@ -49,7 +49,7 @@ Future<void> main(List<String> args) async {
   }
   final script =
       scriptPath ??
-      File.fromUri(Platform.script.resolve('../bin/asciidart.dart')).path;
+      File.fromUri(Platform.script.resolve('../bin/ptome.dart')).path;
   final process = await Process.start(Platform.resolvedExecutable, [
     '--observe=0',
     '--disable-service-auth-codes',

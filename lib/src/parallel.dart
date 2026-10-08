@@ -6,7 +6,7 @@
 /// result goes before submitting, and await the results in their own
 /// order. The serial pool runs a job when it is submitted (the reference,
 /// and the only pool on JavaScript); the isolate pool keeps its isolates
-/// for the life of the process. With `ASCIIDART_JOBS_SHUFFLE=1` in the
+/// for the life of the process. With `PTOME_JOBS_SHUFFLE=1` in the
 /// environment, every pool hands its results back after a random delay,
 /// so a caller depending on the order they finish in shows it.
 library;
@@ -14,9 +14,9 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/parallel/pool_serial.dart'
-    if (dart.library.io) 'package:asciidart/src/parallel/pool_isolate.dart'
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/parallel/pool_serial.dart'
+    if (dart.library.io) 'package:ptome/src/parallel/pool_isolate.dart'
     as backend;
 
 /// A job for a worker: plain data (numbers, strings, bytes, records and
@@ -86,8 +86,8 @@ final class JobFailure implements Exception {
 }
 
 /// Whether results are handed back in a random order
-/// (`ASCIIDART_JOBS_SHUFFLE=1`).
-final bool _shuffle = io.environment['ASCIIDART_JOBS_SHUFFLE'] == '1';
+/// (`PTOME_JOBS_SHUFFLE=1`).
+final bool _shuffle = io.environment['PTOME_JOBS_SHUFFLE'] == '1';
 final math.Random _random = math.Random();
 
 /// Completes [completer] with what [result] returns (or throws), after a

@@ -17,20 +17,20 @@ library;
 
 import 'dart:convert' show base64Encode, utf8;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/callouts.dart';
-import 'package:asciidart/src/document.dart' show Catalog;
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/path_resolver.dart';
-import 'package:asciidart/src/remote.dart';
-import 'package:asciidart/src/sub.dart';
-import 'package:asciidart/src/substitutors.dart' as substitutors;
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/callouts.dart';
+import 'package:ptome/src/document.dart' show Catalog;
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/path_resolver.dart';
+import 'package:ptome/src/remote.dart';
+import 'package:ptome/src/sub.dart';
+import 'package:ptome/src/substitutors.dart' as substitutors;
 
-export 'package:asciidart/src/context.dart';
-export 'package:asciidart/src/sub.dart';
+export 'package:ptome/src/context.dart';
+export 'package:ptome/src/sub.dart';
 
 /// Line feed. Port of the `LF` constant in `lib/asciidoctor.rb`.
 const String lf = '\n';

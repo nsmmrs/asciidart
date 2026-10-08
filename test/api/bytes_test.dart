@@ -6,9 +6,9 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/asciidart.dart';
-import 'package:asciidart/io.dart';
-import 'package:asciidart/src/font_index.dart';
+import 'package:ptome/io.dart';
+import 'package:ptome/ptome.dart';
+import 'package:ptome/src/font_index.dart';
 import 'package:test/test.dart';
 
 /// The fonts vendored with asciidoctor-pdf, given as bytes.
@@ -30,7 +30,7 @@ const _date = {'localdatetime': '2020-01-01 00:00:00 +0000', 'jobs': '1'};
 void main() {
   late Directory tmp;
   setUp(() {
-    tmp = Directory.systemTemp.createTempSync('asciidart-bytes.');
+    tmp = Directory.systemTemp.createTempSync('ptome-bytes.');
     // A machine without fonts: what the conversions find, they were given.
     Fonts.installed = FontIndex([
       '${tmp.path}/no-fonts',
@@ -43,7 +43,7 @@ void main() {
 
   test('a PDF, in the fonts given', () {
     final diagnostics = <Diagnostic>[];
-    final pdf = Asciidart(
+    final pdf = Ptome(
       fonts: _vendoredFonts(),
       onDiagnostic: diagnostics.add,
     ).convertToBytes(_source, backend: Backend.pdf, attributes: _date);
@@ -56,7 +56,7 @@ void main() {
 
   test('without the fonts, built-in ones stand in, with warnings', () {
     final diagnostics = <Diagnostic>[];
-    final pdf = Asciidart(onDiagnostic: diagnostics.add)
+    final pdf = Ptome(onDiagnostic: diagnostics.add)
         .convertToBytes(_source, backend: Backend.pdf, attributes: _date);
     expect(latin1.decode(pdf.sublist(0, 5)), '%PDF-');
     expect(
@@ -67,7 +67,7 @@ void main() {
 
   test('fonts given as WOFF and WOFF2', () {
     final diagnostics = <Diagnostic>[];
-    final pdf = Asciidart(
+    final pdf = Ptome(
       fonts: [
         for (final name in [
           'notoserif-regular-ascii.woff2',
@@ -83,7 +83,7 @@ void main() {
   });
 
   test('the asynchronous conversion makes the same bytes', () async {
-    final ad = Asciidart(fonts: _vendoredFonts());
+    final ad = Ptome(fonts: _vendoredFonts());
     final sync = ad.convertToBytes(
       _source,
       backend: Backend.pdf,
@@ -108,7 +108,7 @@ void main() {
 
   test('convertFile writes a PDF', () async {
     final input = File('${tmp.path}/doc.adoc')..writeAsStringSync(_source);
-    await Asciidart(
+    await Ptome(
       safe: SafeMode.unsafe,
       fonts: _vendoredFonts(),
     ).convertFile(input.path, backend: Backend.pdf);

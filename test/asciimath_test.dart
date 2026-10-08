@@ -9,7 +9,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/math/asciimath.dart';
+import 'package:ptome/src/math/asciimath.dart';
 import 'package:test/test.dart';
 
 void main() {

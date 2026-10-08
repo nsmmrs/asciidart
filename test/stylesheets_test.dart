@@ -9,13 +9,13 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Reads the repository `data/` file at [relativePath].
 ///
 /// Tests run with the package root (`dart/`) as the working directory.
-/// asciidart's own files (`data/`, the house stylesheet) before
+/// Ptome's own files (`data/`, the house stylesheet) before
 /// Asciidoctor's (`vendor/asciidoctor/data/`).
 List<int> readDataFile(String relativePath) {
   final own = File('${Directory.current.path}/data/$relativePath');
@@ -40,8 +40,8 @@ void main() {
       expect(
         keys.where((key) => key.startsWith('stylesheets/')),
         orderedEquals([
-          'stylesheets/asciidart-epub3-house.css',
-          'stylesheets/asciidart-house.css',
+          'stylesheets/ptome-epub3-house.css',
+          'stylesheets/ptome-house.css',
           'stylesheets/asciidoctor-default.css',
           'stylesheets/coderay-asciidoctor.css',
         ]),
@@ -100,9 +100,7 @@ void main() {
     });
 
     test('the default stylesheet is the classic one, then the house rules', () {
-      final house = utf8.decode(
-        readDataFile('stylesheets/asciidart-house.css'),
-      );
+      final house = utf8.decode(readDataFile('stylesheets/ptome-house.css'));
       expect(
         stylesheets.primaryStylesheetData,
         equals('${stylesheets.classicStylesheetData}\n${rstrip(house)}'),

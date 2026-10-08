@@ -4,7 +4,7 @@
 /// into the PDF backend's text markup with them.
 library;
 
-import 'package:asciidart/src/highlight/hljs_styles.g.dart';
+import 'package:ptome/src/highlight/hljs_styles.g.dart';
 
 /// A selector of a theme rule: compound class selectors (`.hljs-title
 /// .class_`), each a descendant of the one before.

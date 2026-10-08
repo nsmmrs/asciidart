@@ -6,8 +6,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:isolate';
 
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/parallel.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/parallel.dart';
 
 final Map<int, _IsolatePool> _pools = {};
 

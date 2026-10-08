@@ -2,7 +2,7 @@
 # An EPUB must be complete in itself. With source-highlighter=highlight.js,
 # asciidoctor-epub3 2.3.0 links highlight.js's stylesheet and scripts at
 # /highlight.js/9.18.3/ (outside the container, where no reader finds
-# them; EPUBCheck reports it). asciidart highlights the code at conversion
+# them; EPUBCheck reports it). ptome highlights the code at conversion
 # and packs the theme's stylesheet. Found building the Hypermedia Systems
 # book with its code highlighted. Fails on the gem.
 #

@@ -2,17 +2,17 @@
 /// registry and the document setup the asciidoctor-epub3 gem does through
 /// an extension group.
 ///
-/// The backend is registered by the CLI and by `package:asciidart/io.dart`
+/// The backend is registered by the CLI and by `package:ptome/io.dart`
 /// (it writes files and embeds fonts), not by the web-safe library.
 library;
 
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/epub3/converter.dart';
-import 'package:asciidart/src/extensions.dart';
-import 'package:asciidart/src/section.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/epub3/converter.dart';
+import 'package:ptome/src/extensions.dart';
+import 'package:ptome/src/section.dart';
 
-export 'package:asciidart/src/epub3/converter.dart' show Epub3Converter;
+export 'package:ptome/src/epub3/converter.dart' show Epub3Converter;
 
 bool _registered = false;
 
@@ -21,7 +21,7 @@ void registerEpub3() {
   if (_registered) return;
   _registered = true;
   Converter.register(Epub3Converter.new, ['epub3'], provided: true);
-  Extensions.register(name: 'asciidart-epub3', build: _setUp);
+  Extensions.register(name: 'ptome-epub3', build: _setUp);
 }
 
 /// For a document converted to `epub3`: the attributes the gem sets before

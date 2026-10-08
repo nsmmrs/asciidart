@@ -21,35 +21,35 @@ library;
 import 'dart:convert' show utf8;
 import 'dart:typed_data';
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/callouts.dart';
-import 'package:asciidart/src/composite.dart';
-import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/docbook5.dart';
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/extensions.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/highlight/syntax_highlighter.dart';
-import 'package:asciidart/src/html5.dart';
-import 'package:asciidart/src/index_catalog.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/manpage.dart';
-import 'package:asciidart/src/options.dart';
-import 'package:asciidart/src/parser.dart';
-import 'package:asciidart/src/path_resolver.dart';
-import 'package:asciidart/src/reader.dart';
-import 'package:asciidart/src/remote.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/substitutors.dart' as substitutors;
-import 'package:asciidart/src/text_case.dart';
-import 'package:asciidart/src/timings.dart';
-import 'package:asciidart/src/version.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/callouts.dart';
+import 'package:ptome/src/composite.dart';
+import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/docbook5.dart';
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/extensions.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/highlight/syntax_highlighter.dart';
+import 'package:ptome/src/html5.dart';
+import 'package:ptome/src/index_catalog.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/manpage.dart';
+import 'package:ptome/src/options.dart';
+import 'package:ptome/src/parser.dart';
+import 'package:ptome/src/path_resolver.dart';
+import 'package:ptome/src/reader.dart';
+import 'package:ptome/src/remote.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/substitutors.dart' as substitutors;
+import 'package:ptome/src/text_case.dart';
+import 'package:ptome/src/timings.dart';
+import 'package:ptome/src/version.dart';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.
 ///
@@ -537,7 +537,7 @@ class Document extends AbstractBlock implements NodeDocument {
 
     attrOverrides['asciidoctor'] = const _SetValue('');
     attrOverrides['asciidoctor-version'] = const _SetValue(Asciidoctor.version);
-    attrOverrides['asciidart-version'] = const _SetValue(
+    attrOverrides['ptome-version'] = const _SetValue(
       Asciidoctor.packageVersion,
     );
 
@@ -1221,7 +1221,7 @@ class Document extends AbstractBlock implements NodeDocument {
   /// Restores the attributes to the previously saved state (the header).
   void restoreAttributes() {
     if (parentDocument == null) {
-      // asciidart's lint (with callout-links): callouts after the last
+      // Ptome's lint (with callout-links): callouts after the last
       // callout list, which no list explains.
       if (hasAttr('callout-links')) {
         for (final callout in callouts.currentList) {

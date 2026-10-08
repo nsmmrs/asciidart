@@ -14,10 +14,10 @@ enum Backend {
   /// A man page (troff).
   manpage,
 
-  /// A PDF file (see [Asciidart.convertToBytes]).
+  /// A PDF file (see [Ptome.convertToBytes]).
   pdf,
 
-  /// An EPUB 3 file (see [Asciidart.convertToBytes]).
+  /// An EPUB 3 file (see [Ptome.convertToBytes]).
   epub3;
 
   /// Whether the output is a file of its own format (bytes, not text).
@@ -68,10 +68,10 @@ enum SafeMode {
 /// them, and two instances never affect each other.
 ///
 /// ```dart
-/// final ad = Asciidart(attributes: {'icons': 'font'});
+/// final ad = Ptome(attributes: {'icons': 'font'});
 /// final html = ad.convert('NOTE: Hello');
 /// ```
-final class Asciidart {
+final class Ptome {
   /// Creates a configuration.
   ///
   /// [attributes] apply to every document (and win over the document's own
@@ -503,27 +503,27 @@ String _directoryOf(String path) {
 
 /// The default configuration: `secure` safe mode, no attributes, no
 /// extensions.
-const Asciidart asciidoc = Asciidart();
+const Ptome asciidoc = Ptome();
 
-/// The version of asciidart.
-const String asciidartVersion = impl.Asciidoctor.packageVersion;
+/// The version of Ptome.
+const String ptomeVersion = impl.Asciidoctor.packageVersion;
 
-/// The Asciidoctor release asciidart is compatible with.
+/// The Asciidoctor release Ptome is compatible with.
 const String asciidoctorVersion = impl.Asciidoctor.version;
 
-/// The command line's processor [options] with [asciidart]'s configuration
+/// The command line's processor [options] with [Ptome]'s configuration
 /// added: its extensions, output override and highlighters, its attributes
 /// and template directories under those of the command line.
 ///
-/// Used by `runCli` in `package:asciidart/cli.dart`; not exported.
+/// Used by `runCli` in `package:ptome/cli.dart`; not exported.
 impl.AsciidoctorOptions configureCli(
-  Asciidart asciidart,
+  Ptome ptome,
   impl.AsciidoctorOptions options,
 ) {
-  final mine = asciidart._options(_Includes(async: false));
+  final mine = ptome._options(_Includes(async: false));
   return options.copyWith(
-    attributes: {...asciidart.attributes, ...options.attributes},
-    templateDirs: [...asciidart.templateDirs, ...options.templateDirs],
+    attributes: {...ptome.attributes, ...options.attributes},
+    templateDirs: [...ptome.templateDirs, ...options.templateDirs],
     converterFactory: mine.converterFactory,
     extensions: mine.extensions,
     syntaxHighlighters: mine.syntaxHighlighters,

@@ -12,23 +12,23 @@ library;
 import 'dart:convert' show Encoding, ascii, latin1, utf8;
 import 'dart:math' as math;
 
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/constants.dart';
-import 'package:asciidart/src/cursor.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/extensions.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/parser.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/substitutors.dart' as substitutors;
-import 'package:asciidart/src/text_case.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/cursor.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/extensions.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/parser.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/substitutors.dart' as substitutors;
+import 'package:ptome/src/text_case.dart';
 
-export 'package:asciidart/src/cursor.dart' show Cursor;
+export 'package:ptome/src/cursor.dart' show Cursor;
 
 /// How source lines are normalized during preparation.
 enum _LineNormalization {

@@ -1,6 +1,6 @@
-/// Reusable command-line entrypoint of asciidart.
+/// Reusable command-line entrypoint of Ptome.
 ///
-/// The `bin/asciidart.dart` main delegates here, and XMonad-style custom
+/// The `bin/ptome.dart` main delegates here, and XMonad-style custom
 /// binaries (ADR-0002 T6, see `init_config.dart`) call [runCli] after
 /// registering their own transforms. Behavior — argument parsing,
 /// conversion, diagnostics, exit codes — is identical in both cases.
@@ -8,14 +8,14 @@ library;
 
 import 'dart:async';
 
-import 'package:asciidart/src/cli/diagnostics.dart';
-import 'package:asciidart/src/cli/doctor.dart';
-import 'package:asciidart/src/cli/init_config.dart';
-import 'package:asciidart/src/cli/invoker.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/options.dart';
+import 'package:ptome/src/cli/diagnostics.dart';
+import 'package:ptome/src/cli/doctor.dart';
+import 'package:ptome/src/cli/init_config.dart';
+import 'package:ptome/src/cli/invoker.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/options.dart';
 
-/// Runs the asciidart CLI, reporting through the process exit code.
+/// Runs the Ptome CLI, reporting through the process exit code.
 ///
 /// [configure] adjusts the processor options of every conversion (a custom
 /// command's extensions and overrides).
@@ -29,7 +29,7 @@ Future<void> runCli(
   AsciidoctorOptions Function(AsciidoctorOptions options)? configure,
 }) async {
   // A failed stdout also completes its done future with the error. A
-  // reader that went away (`asciidart ... | head`) ends the run quietly;
+  // reader that went away (`ptome ... | head`) ends the run quietly;
   // any other write failure is reported.
   unawaited(
     io.standardOutputDone.then<void>(
@@ -71,7 +71,7 @@ Future<int> runCliCode(
     return invoker.code;
     // Last-resort CLI boundary for anything that escapes, Errors included.
   } on Object catch (e, stackTrace) {
-    // The reader of the output went away (`asciidart ... | head`).
+    // The reader of the output went away (`ptome ... | head`).
     if (io.isBrokenPipe(e)) return 0;
     (err ?? io.standardError)
       ..writeln(failureLine(e))

@@ -1,13 +1,13 @@
-/// The highlighters asciidart does not provide: Rouge, Pygments and
-/// CodeRay. asciidart highlights with highlight.js (hilite) only; these
+/// The highlighters Ptome does not provide: Rouge, Pygments and
+/// CodeRay. Ptome highlights with highlight.js (hilite) only; these
 /// names behave as they do in Asciidoctor when their gem is not installed.
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/highlight/highlight.dart';
-import 'package:asciidart/src/highlight/syntax_highlighter.dart';
-import 'package:asciidart/src/logging.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/highlight/highlight.dart';
+import 'package:ptome/src/highlight/syntax_highlighter.dart';
+import 'package:ptome/src/logging.dart';
 
 /// A highlighter whose library is not available.
 ///

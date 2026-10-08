@@ -5,11 +5,11 @@
 /// standard families and the icon fonts.
 library;
 
-import 'package:asciidart/src/font_index.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/path_resolver.dart';
-import 'package:asciidart/src/pdf/theme.dart';
 import 'package:libpdf/libpdf.dart';
+import 'package:ptome/src/font_index.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/path_resolver.dart';
+import 'package:ptome/src/pdf/theme.dart';
 
 /// A font face with Prawn's line metrics; [pdf] draws it.
 sealed class FontFace {
@@ -542,7 +542,7 @@ final class FontCatalog {
     final name = styles[style] ?? styles['normal']!;
     if (_warned.add('$family/$style')) {
       _warn(
-        '$why: using $name for $family ($style); `asciidart doctor` installs '
+        '$why: using $name for $family ($style); `ptome doctor` installs '
         "the default themes' fonts",
       );
     }

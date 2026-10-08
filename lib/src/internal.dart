@@ -1,7 +1,7 @@
 /// Every internal library in one import, for the package's own tests,
 /// tools and benchmarks.
 ///
-/// Not part of the public API: depend on `package:asciidart/asciidart.dart`
+/// Not part of the public API: depend on `package:ptome/ptome.dart`
 /// and its sibling libraries instead.
 library;
 

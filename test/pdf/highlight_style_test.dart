@@ -1,4 +1,4 @@
-import 'package:asciidart/src/pdf/highlight_style.dart';
+import 'package:ptome/src/pdf/highlight_style.dart';
 import 'package:test/test.dart';
 
 void main() {

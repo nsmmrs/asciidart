@@ -1,7 +1,7 @@
 // Examples print their results to the console.
 // ignore_for_file: avoid_print
 
-import 'package:asciidart/asciidart.dart';
+import 'package:ptome/ptome.dart';
 
 Future<void> main() async {
   // Convert a string to HTML (the body only).
@@ -30,13 +30,13 @@ Nothing yet.
   }
 
   // A configuration with an extension and an HTML override.
-  final ad = Asciidart(
+  final ad = Ptome(
     extensions: [
       // issue:42[] links to the issue tracker.
       InlineMacro(
         'issue',
         (m) => m.link(
-          'https://github.com/nsmmrs/asciidart/issues/${m.target}',
+          'https://github.com/nsmmrs/ptome/issues/${m.target}',
           text: '#${m.target}',
         ),
       ),

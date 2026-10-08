@@ -1,4 +1,4 @@
-# asciidart's house style for the modern PDF engine (doc/style.md,
+# ptome's house style for the modern PDF engine (doc/style.md,
 # ADR-0011): asciidoctor-pdf's default theme, with a measure of about 75
 # characters, more open lines, headings in the sans, code in a tint, tables
 # with rows only. The modern engine uses it unless pdf-theme names another;

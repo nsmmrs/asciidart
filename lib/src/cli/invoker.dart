@@ -24,18 +24,18 @@ library;
 
 import 'dart:math' show min;
 
-import 'package:asciidart/src/cli/diagnostics.dart';
-import 'package:asciidart/src/cli/options.dart';
-import 'package:asciidart/src/cli/parallel.dart';
-import 'package:asciidart/src/cli/workers.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/load.dart';
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/options.dart';
-import 'package:asciidart/src/path_resolver.dart';
-import 'package:asciidart/src/remote.dart';
-import 'package:asciidart/src/timings.dart';
+import 'package:ptome/src/cli/diagnostics.dart';
+import 'package:ptome/src/cli/options.dart';
+import 'package:ptome/src/cli/parallel.dart';
+import 'package:ptome/src/cli/workers.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/load.dart';
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/options.dart';
+import 'package:ptome/src/path_resolver.dart';
+import 'package:ptome/src/remote.dart';
+import 'package:ptome/src/timings.dart';
 
 /// Runs the Asciidoctor processor from parsed command-line options.
 ///
@@ -424,7 +424,7 @@ final class Invoker {
     return Timings(
       onRecord: options.progress
           ? (phase, seconds) => err.writeln(
-              'asciidart: $subject: $phase done in '
+              'ptome: $subject: $phase done in '
               '${(seconds * 1000).round()} ms',
             )
           : null,

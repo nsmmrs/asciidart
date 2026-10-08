@@ -5,9 +5,9 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/font_index.dart';
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
+import 'package:ptome/src/font_index.dart';
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -61,7 +61,7 @@ void main() {
       messages.where((m) => m.contains('Courier for M+ 1mn')),
       hasLength(1),
     );
-    expect(messages, everyElement(contains('asciidart doctor')));
+    expect(messages, everyElement(contains('ptome doctor')));
   });
 
   test(

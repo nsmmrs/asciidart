@@ -11,7 +11,7 @@ conformance contract the Dart port must satisfy.
 bats test/e2e/
 
 # against a future Dart executable
-ASCIIDOCTOR_EXE=/path/to/asciidart bats test/e2e/
+ASCIIDOCTOR_EXE=/path/to/ptome bats test/e2e/
 ```
 
 `ASCIIDOCTOR_EXE` must point at an executable file; every test file fails fast

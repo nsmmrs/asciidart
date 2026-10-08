@@ -1,19 +1,19 @@
 /// The fonts the backends that set text in fonts of their own (PDF, EPUB)
-/// and `asciidart doctor` find: the fonts package's index, with
-/// asciidart's policy.
+/// and `ptome doctor` find: the fonts package's index, with
+/// Ptome's policy.
 ///
-/// The folders searched are those of `ASCIIDART_FONT_PATH` (separated as
+/// The folders searched are those of `PTOME_FONT_PATH` (separated as
 /// `PATH` is), then [Fonts.extraDirectories], then the user's and the
-/// system's font folders, read through asciidart's I/O seam and cached in
-/// asciidart's cache folder. A conversion's own fonts ([Fonts.withFonts])
+/// system's font folders, read through Ptome's I/O seam and cached in
+/// Ptome's cache folder. A conversion's own fonts ([Fonts.withFonts])
 /// come first.
 library;
 
 import 'dart:async';
 
-import 'package:asciidart/src/io.dart' as io;
 import 'package:fonts/fonts.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/io.dart' as io;
 
 export 'package:fonts/fonts.dart' show FontIndex, InstalledFont;
 
@@ -54,7 +54,7 @@ abstract final class Fonts {
   @visibleForTesting
   static set installed(FontIndex? index) => _installed = index;
 
-  /// The machine's fonts: `ASCIIDART_FONT_PATH`'s folders, then
+  /// The machine's fonts: `PTOME_FONT_PATH`'s folders, then
   /// [extraDirectories], then the user's and the system's font folders.
   static FontIndex machine() => FontIndex.system(
     before: [...fontPath, ...extraDirectories],
@@ -72,9 +72,9 @@ abstract final class Fonts {
 
   static List<String> _extraDirectories = const [];
 
-  /// The folders of `ASCIIDART_FONT_PATH`.
+  /// The folders of `PTOME_FONT_PATH`.
   static List<String> get fontPath => [
-    for (final dir in (io.environment['ASCIIDART_FONT_PATH'] ?? '').split(
+    for (final dir in (io.environment['PTOME_FONT_PATH'] ?? '').split(
       io.isWindows ? ';' : ':',
     ))
       if (dir.isNotEmpty) dir,
@@ -82,7 +82,7 @@ abstract final class Fonts {
 
   static String? _cacheFile() {
     try {
-      return '${io.cacheDirectory}/asciidart/font-index.tsv';
+      return '${io.cacheDirectory}/ptome/font-index.tsv';
       // No cache folder (a browser): no cache.
       // ignore: avoid_catches_without_on_clauses
     } catch (_) {
@@ -90,12 +90,12 @@ abstract final class Fonts {
     }
   }
 
-  static final FontFiles _files = _AsciidartFontFiles();
+  static final FontFiles _files = _PtomeFontFiles();
 }
 
-/// The font files as asciidart's I/O seam reads them (so that an embedder's
-/// `asciidartHost` applies to fonts too).
-final class _AsciidartFontFiles implements FontFiles {
+/// The font files as Ptome's I/O seam reads them (so that an embedder's
+/// `ptomeHost` applies to fonts too).
+final class _PtomeFontFiles implements FontFiles {
   @override
   List<String> get fontDirectories => io.fontDirectories;
 

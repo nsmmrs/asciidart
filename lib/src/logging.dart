@@ -11,8 +11,8 @@ library;
 
 import 'dart:async' show Zone, runZoned;
 
-import 'package:asciidart/src/cursor.dart';
-import 'package:asciidart/src/io.dart' as io;
+import 'package:ptome/src/cursor.dart';
+import 'package:ptome/src/io.dart' as io;
 
 /// Severity levels for log messages.
 ///
@@ -252,7 +252,7 @@ class Logger extends LoggerBase {
   final bool _ownsSink;
 
   /// The program name stamped on every record.
-  String progname = 'asciidart';
+  String progname = 'ptome';
 
   /// The record formatter.
   LoggerFormatter formatter;

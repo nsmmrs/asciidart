@@ -3,11 +3,11 @@
 /// HTML alone stays small.
 library;
 
-import 'package:asciidart/src/epub3/epub3.dart' deferred as epub3;
-import 'package:asciidart/src/pdf/pdf.dart' deferred as pdf;
 import 'package:fonts/fonts.dart' show FontIndex;
+import 'package:ptome/src/epub3/epub3.dart' deferred as epub3;
+import 'package:ptome/src/pdf/pdf.dart' deferred as pdf;
 
-export 'package:asciidart/src/js/page_fonts.dart' show platformFonts;
+export 'package:ptome/src/js/page_fonts.dart' show platformFonts;
 
 final Set<String> _loaded = {};
 
@@ -31,7 +31,7 @@ void registerFileBackend(String backend) {
   if (!_loaded.contains(backend)) {
     throw StateError(
       'the $backend backend is loaded on demand in JavaScript: use the '
-      'asynchronous conversion, or call Asciidart.loadBackend first',
+      'asynchronous conversion, or call Ptome.loadBackend first',
     );
   }
 }

@@ -12,9 +12,9 @@
 // font) count as read when the converter reads the same key for any name.
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
-import 'package:asciidart/src/pdf/theme.dart';
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/pdf/pdf.dart';
+import 'package:ptome/src/pdf/theme.dart';
 
 import 'vendored_fonts.dart';
 

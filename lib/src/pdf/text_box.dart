@@ -10,15 +10,15 @@ library;
 import 'dart:convert';
 import 'dart:math' as math;
 
-import 'package:asciidart/src/cursor.dart';
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/pdf/fonts.dart';
-import 'package:asciidart/src/pdf/markup.dart';
-import 'package:asciidart/src/pdf/math.dart';
-import 'package:asciidart/src/pdf/svg_size.dart';
-import 'package:asciidart/src/pdf/theme.dart';
 import 'package:libpdf/libpdf.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/cursor.dart';
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/pdf/fonts.dart';
+import 'package:ptome/src/pdf/markup.dart';
+import 'package:ptome/src/pdf/math.dart';
+import 'package:ptome/src/pdf/svg_size.dart';
+import 'package:ptome/src/pdf/theme.dart';
 
 const String _zwsp = '​';
 const String _shy = '­';

@@ -1,4 +1,4 @@
-/*! asciidart house style (doc/style.md, ADR-0011): rules after asciidoctor-epub3's */
+/*! ptome house style (doc/style.md, ADR-0011): rules after asciidoctor-epub3's */
 body a:link{color:#2156A5}
 h1,h2,h3,h4,h5,h6{color:#191919}
 .small-caps{font-variant:small-caps;font-feature-settings:"smcp"}

@@ -3,7 +3,7 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/font_index.dart';
+import 'package:ptome/src/font_index.dart';
 import 'package:test/test.dart';
 
 /// The fonts vendored with asciidoctor-pdf (subsets of Noto and M+, and

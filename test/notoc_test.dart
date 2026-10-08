@@ -1,5 +1,5 @@
-// The notoc option: a section left out of the contents (asciidart's).
-import 'package:asciidart/asciidart.dart';
+// The notoc option: a section left out of the contents (Ptome's).
+import 'package:ptome/ptome.dart';
 import 'package:test/test.dart';
 
 const _book =

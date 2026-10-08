@@ -5,11 +5,11 @@ toolchain gave them a print-quality PDF, an index outside PDF, a book
 website, valid DocBook or an EPUB without hand work (lane EPIC-xj1gxj).
 `tool/hs_acceptance.dart` builds their AsciiDoc sources
 (bigskysoftware/hypermedia-systems-old at
-`2e8c4be47f64de281d0e325599bcbe69e7ed05ce`) with the asciidart executable
+`2e8c4be47f64de281d0e325599bcbe69e7ed05ce`) with the Ptome executable
 and checks what they had to fix by hand.
 
 ```sh
-dart run tool/hs_acceptance.dart --exe dist/asciidart-linux-x64 \
+dart run tool/hs_acceptance.dart --exe dist/ptome-linux-x64 \
   --report benchmark/HS.md
 ```
 
@@ -65,7 +65,7 @@ too: nested sections in an introduction. (Emphasis marks around
 Timings in both tables are from a busy machine (a load average of 25);
 on an idle one the whole PDF takes about 3 seconds.
 
-Where Asciidoctor's output for these sources is invalid, asciidart's
+Where Asciidoctor's output for these sources is invalid, Ptome's
 isn't: emphasis cut open by index terms is balanced, `[introduction]`
 and a misplaced `[partintro]` become DocBook chapters and sections,
 emphasis and quotes inside literals become phrases and quotation marks,
@@ -74,9 +74,9 @@ book's old website (`link:/client-side-scripting/#_hyperscript[]`) goes
 to its chapter. `benchmark/PARITY.md` lists these differences, and
 `test/divergences` reproduces each on both CLIs.
 
-## What the authors had to do by hand, and what asciidart does
+## What the authors had to do by hand, and what Ptome does
 
-| Issue (`EPIC-xj1gxj`) | asciidart |
+| Issue (`EPIC-xj1gxj`) | Ptome |
 | --- | --- |
 | Paged.js and print-to-PDF in a browser, a different PDF each run | `-b pdf`, byte-stable |
 | Lines of code lost or repeated at page breaks (#122) | Listings split between lines, two lines kept on each side |
@@ -95,13 +95,13 @@ The authors' current edition is Typst (bigskysoftware/hypermedia-systems:
 `lib/style.typ`, `definitions.typ`, `indexing.typ`, `code-callouts.typ`;
 pandoc for the EPUB, muteferrika for the website). Lane EPIC-0yhk8f
 brings the AsciiDoc edition to the same features with changes to its
-AsciiDoc only: valid AsciiDoc as asciidart reads it, no post-processing.
+AsciiDoc only: valid AsciiDoc as Ptome reads it, no post-processing.
 The edited sources are a local branch of hypermedia-systems-old (never
 vendored here), built with
 
 ```sh
-dart run tool/hs_acceptance.dart --exe build/asciidart \
-  --source ~/Work/ports/hypermedia-systems-asciidart --report benchmark/HS.md
+dart run tool/hs_acceptance.dart --exe build/ptome \
+  --source ~/Work/ports/hypermedia-systems-ptome --report benchmark/HS.md
 ```
 
 The edits: a master file at the root that sets its PDF theme
@@ -121,7 +121,7 @@ that keeps this edition's markup and index terms), its chapter titles and
 figure references by number; and its look: caption, footnote and website
 navigation templates (ADR-0010), the website's and the EPUB's stylesheets
 after the Typst edition's, its anchors as section ids, the title page and
-the dedication as its. Every feature is the AsciiDoc's own or asciidart's
+the dedication as its. Every feature is the AsciiDoc's own or Ptome's
 (each in `doc/pdf.md` or `doc/books.md`); none is a workaround.
 
 | Typst edition | AsciiDoc | Status |
@@ -229,7 +229,7 @@ The golden PDF and the fonts taken from it are licensed for this
 comparison only: neither is committed anywhere.
 
 The page-for-page match copied a few defects of the Typst build on
-purpose (tags `hs-golden-parity-2026-10-06` in asciidart and libpdf,
+purpose (tags `hs-golden-parity-2026-10-06` in Ptome and libpdf,
 `golden-parity-2026-10-06` in the port): index terms that lost the space
 before a parenthesis, a heading that lost its `<progress>`, a callout
 turned into a bullet, lists and code blocks set differently because of
@@ -239,7 +239,7 @@ port's source has the intended content since (2026-10-07, ADR-0013), so
 places and the pages after them in their chapters, the index's.
 
 Not in scope: the Markdown export and the Kindle file, which the Typst
-edition makes with pandoc and calibre; the same tools read asciidart's
+edition makes with pandoc and calibre; the same tools read Ptome's
 DocBook and EPUB.
 
 ### Build time against Typst (2026-10-07)
@@ -250,11 +250,11 @@ edition compiled by Typst 0.15.1 from its sources, on the same machine
 
 | | Before | After |
 | --- | --- | --- |
-| asciidart (native executable) | 10.1 s | 3.8 s |
+| Ptome (native executable) | 10.1 s | 3.8 s |
 | Typst 0.15.1 | 3.9 s | 3.9 s |
 
 Typst spreads its work over the cores (8 s of user time and 4 s of
-system time for the 3.9 s); asciidart works on one. What `tool/profile.dart`
+system time for the 3.9 s); Ptome works on one. What `tool/profile.dart`
 (CPU samples from the VM) found and what changed, each change keeping the
 PDF the same, byte for byte until the last, page image for page image
 after it:
@@ -279,10 +279,10 @@ same, byte for byte, at 1, 2, 6 and 12 workers (`tool/jobs_check.dart`):
 
 | | Wall time | CPU time |
 | --- | --- | --- |
-| asciidart before the branch | 3.82 s | 4.26 s |
-| asciidart, one core (`-a jobs=1`) | 2.83 s | |
-| asciidart, physical cores (default, 6) | 2.08 s | 3.75 s |
-| asciidart, 12 workers | 2.07 s | |
+| Ptome before the branch | 3.82 s | 4.26 s |
+| Ptome, one core (`-a jobs=1`) | 2.83 s | |
+| Ptome, physical cores (default, 6) | 2.08 s | 3.75 s |
+| Ptome, 12 workers | 2.07 s | |
 | Typst 0.15.1 | 3.72 s | 11.77 s |
 
 What changed:

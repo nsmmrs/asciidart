@@ -17,7 +17,7 @@ library;
 import 'dart:convert' show utf8;
 import 'dart:io' show Directory, File;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'support/paths.dart';

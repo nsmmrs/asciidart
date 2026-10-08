@@ -17,8 +17,8 @@
 /// it). Those ranges nest into the tree; the text is unchanged.
 library;
 
-import 'package:asciidart/src/converter.dart' show BuiltInConverter;
-import 'package:asciidart/src/inline.dart';
+import 'package:ptome/src/converter.dart' show BuiltInConverter;
+import 'package:ptome/src/inline.dart';
 
 /// A piece of inline content: text, or an element.
 sealed class InlineContent {

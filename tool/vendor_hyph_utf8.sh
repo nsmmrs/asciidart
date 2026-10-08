@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Vendors the hyphenation patterns of hyph-utf8 (github.com/hyphenation/
-# tex-hyphen, pinned) for the languages whose licences let asciidart
+# tex-hyphen, pinned) for the languages whose licences let ptome
 # distribute them: MIT, BSD, LPPL, public domain, Unlicense and the
 # all-permissive notices (not the GPL, LGPL or MPL ones, nor those with
 # none). Writes vendor/hyph-utf8/patterns/<lang>.pat.txt (and .hyp.txt,

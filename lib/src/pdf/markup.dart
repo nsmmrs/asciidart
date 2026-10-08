@@ -5,7 +5,7 @@
 /// `FormattedText::Transform` does.
 library;
 
-import 'package:asciidart/src/pdf/theme.dart';
+import 'package:ptome/src/pdf/theme.dart';
 
 /// A parsed markup node.
 sealed class MarkupNode {

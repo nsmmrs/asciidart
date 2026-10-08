@@ -11,7 +11,7 @@
 /// so content/title/attr values exercise the real parser and substitutors.
 library;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Parses [src] into an embedded HTML5 document.

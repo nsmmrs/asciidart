@@ -1,6 +1,6 @@
 # Parity with Asciidoctor
 
-asciidart is compatible with Asciidoctor's development version (upstream
+Ptome is compatible with Asciidoctor's development version (upstream
 `main` at `30fb8cd5`, reporting 2.1.0.alpha.0), and fixes bugs Asciidoctor
 still has; every output difference the fixes make is listed under
 [Upstream bugs fixed](#upstream-bugs-fixed). This file is the ledger of
@@ -8,7 +8,7 @@ that claim: the gates below compare it with the gem, and every
 difference that remains is deliberate and listed under
 [Known intentional differences](#known-intentional-differences).
 
-Byte-identical gate (ADR-0001 D4): the asciidart CLI against the
+Byte-identical gate (ADR-0001 D4): the Ptome CLI against the
 Asciidoctor gem built from upstream `main` at `30fb8cd5`, via
 `tool/differential.dart` (normalization: version stamps and timestamps
 only). Until 2026-10-07 `master` targeted 2.0.26
@@ -37,14 +37,14 @@ From the repository root, with the gem on `PATH`
 
 ```sh
 tool/build-exes.sh
-tool/parity.sh dist/asciidart-linux-x64
+tool/parity.sh dist/ptome-linux-x64
 ```
 
 `tool/parity.sh` runs both corpora on html5, docbook5 and manpage. Each file
 is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
 `SOURCE_DATE_EPOCH=0`. CI runs the same script on every push, against the
 native executable (`dart-exe-e2e` job) and against the npm package's CLI on
-Node.js (`npm` job, `tool/parity.sh test/e2e/bin/asciidart-node`).
+Node.js (`npm` job, `tool/parity.sh test/e2e/bin/ptome-node`).
 
 ## Verdict (2026-10-05): PASS — 126/126 identical
 
@@ -71,20 +71,20 @@ converted as html5, embedded html5, docbook5 and manpage.
 ```sh
 tool/corpus/fetch.sh /tmp/corpus           # pinned in tool/corpus/sources.txt
 dart run tool/corpus_parity.dart --exe-a asciidoctor \
-  --exe-b "dist/asciidart-linux-x64 -a highlightjs-mode=client -a index-html! -a asciidoctor-compat=true@" \
+  --exe-b "dist/ptome-linux-x64 -a highlightjs-mode=client -a index-html! -a asciidoctor-compat=true@" \
   --out /tmp/corpus-results /tmp/corpus
 ```
 
-The reference is the 2.0.26 gem with the `asciimath` gem (asciidart has
-its own port, ADR-0014) and no other optional gems (asciidart provides
+The reference is the 2.0.26 gem with the `asciimath` gem (Ptome has
+its own port, ADR-0014) and no other optional gems (Ptome provides
 none of Rouge, Pygments or CodeRay, and behaves as the gem does without
-them), and asciidart runs with `highlightjs-mode=client` so that
+them), and Ptome runs with `highlightjs-mode=client` so that
 documents using highlight.js compare with the gem's browser markup, and
 with `index-html!` so that documents with an index section compare with
 the gem's empty one, and with `asciidoctor-compat` (ADR-0015; a default
 the document may override, as `@` makes it) so that a page embeds
 Asciidoctor's stylesheet alone and no cover (see the intentional
-differences). What asciidart adds to a block with the `unbreakable`
+differences). What Ptome adds to a block with the `unbreakable`
 option (the class in HTML, `<?dbfo keep-together="always"?>` in DocBook)
 is removed from both outputs before they are compared. The check found and drove fixes
 for: `cols=""`, `%autowidth` with a width, nested description list items
@@ -96,22 +96,22 @@ reproducers of each.
 
 ## Known intentional differences
 
-- asciidart names itself: the HTML generator meta tag and the man page
-  header say `Asciidart <version>` (`{asciidart-version}`) instead of
-  `Asciidoctor 2.0.26`; `--version` prints `Asciidart <version> (compatible
-  with Asciidoctor 2.0.26) [https://github.com/nsmmrs/asciidart]` and a
-  runtime line naming the Dart runtime; `--help` shows `asciidart` in its
-  usage lines; `-h manpage` prints asciidart(1); and messages start with
-  `asciidart:` (`asciidart: WARNING: ...`) instead of `asciidoctor:`. The
+- Ptome names itself: the HTML generator meta tag and the man page
+  header say `Ptome <version>` (`{ptome-version}`) instead of
+  `Asciidoctor 2.0.26`; `--version` prints `Ptome <version> (compatible
+  with Asciidoctor 2.0.26) [https://github.com/nsmmrs/ptome]` and a
+  runtime line naming the Dart runtime; `--help` shows `ptome` in its
+  usage lines; `-h manpage` prints ptome(1); and messages start with
+  `ptome:` (`ptome: WARNING: ...`) instead of `asciidoctor:`. The
   `asciidoctor` and `asciidoctor-version` attributes keep their values, so
   documents see the same thing as under the gem. The parity tools treat
   either name as the same stamp or prefix.
-- Fatal errors are reported as one `asciidart: FAILED: <message>` line in
+- Fatal errors are reported as one `ptome: FAILED: <message>` line in
   plain wording, without Ruby exception classes, gem names or `Processing
-  aborted.` (for example `asciidart: FAILED: failed to load <stdin>:
+  aborted.` (for example `ptome: FAILED: failed to load <stdin>:
   missing converter for backend 'pdf'`). Log messages (warnings, errors)
   keep Asciidoctor's wording. Library callers catch `AsciidoctorException`.
-- A reader that closes stdout early (`asciidart -o - doc.adoc | head`)
+- A reader that closes stdout early (`ptome -o - doc.adoc | head`)
   ends the run quietly with exit code 0; the gem reports a broken pipe.
 - Remote content (`allow-uri-read`) is read by the CLI and by the
   asynchronous API (`convertAsync`, `loadAsync`, ...), which fetch it over
@@ -167,9 +167,9 @@ reproducers of each.
 - The Ruby-only options `-r/--require`, `-I/--load-path`, `--eruby` and
   `-w/--warnings` do not exist here and are rejected as unknown options;
   extensions are compiled into a custom binary instead (see
-  `asciidart init-config`). `-q` silences log messages only, since there
+  `ptome init-config`). `-q` silences log messages only, since there
   are no script warnings.
-- highlight.js is asciidart's syntax highlighter, and highlights at
+- highlight.js is Ptome's syntax highlighter, and highlights at
   conversion: with `source-highlighter=highlight.js`, source blocks come out
   highlighted (by hilite, a Dart port of highlight.js 11.12.0, byte for byte
   what highlight.js produces in the browser), and the page links only the
@@ -178,24 +178,24 @@ reproducers of each.
   scripts, is `highlightjs-mode=client`. Blocks with callouts have their
   spans closed at each line end, so the callout numbers sit outside them.
 - The default HTML stylesheet (embedded, or written as `asciidoctor.css`
-  with `linkcss`) is Asciidoctor's followed by asciidart's house rules
+  with `linkcss`) is Asciidoctor's followed by Ptome's house rules
   (ADR-0011, `doc/style.md`): a narrower measure, near-black headings,
-  tables with rows only, and the classes asciidart's own features use
+  tables with rows only, and the classes Ptome's own features use
   (`small-caps`, `unbreakable`, text images, the index's columns, the
   cover). The markup is Asciidoctor's. `-a stylesheet=asciidoctor`
   embeds (or writes) Asciidoctor's stylesheet alone. Likewise an EPUB's
   `styles/epub3.css` is asciidoctor-epub3's followed by the house rules
   (`-a epub3-stylesheet=asciidoctor-epub3` for its alone; EPUB parity
-  passes it), and the modern PDF engine's default theme is asciidart's
+  passes it), and the modern PDF engine's default theme is Ptome's
   (`-a pdf-theme=default` for asciidoctor-pdf's).
 - An EPUB embeds no fonts unless asked (`-a epub-embed-fonts`):
   asciidoctor-epub3 embeds its Noto Serif, M+ and icon font subsets in
-  every EPUB, where asciidart lets the reading system's fonts apply and
+  every EPUB, where Ptome lets the reading system's fonts apply and
   shows the stylesheet's font icons as text (no admonition or
   end-of-chapter icon, a quotation mark and a caret in the text's font,
   `[name]` for an inline icon). With the attribute, the fonts the
   stylesheet names are embedded from the installed ones (by the gem's file
-  names, then by family; `asciidart doctor` installs them); EPUB parity
+  names, then by family; `ptome doctor` installs them); EPUB parity
   passes it, with the gem's fonts on the font path.
 - An `[index]` section lists the document's index terms in HTML and EPUB
   (Asciidoctor and asciidoctor-epub3 render it empty, Asciidoctor issue
@@ -211,7 +211,7 @@ reproducers of each.
   first chapter after the front matter, where asciidoctor-epub3's is the
   first chapter (`test/divergences/epub_output.bats`); EPUB parity
   compares navigation documents without their landmarks.
-- Where Asciidoctor has no output for a book feature, asciidart writes
+- Where Asciidoctor has no output for a book feature, Ptome writes
   its own (ADR-0012, `doc/formats.md`): a text file shown as an image
   (`image::art.txt[]`) is its text in every backend (Asciidoctor writes an
   `<img>` no browser shows); `toc::[]` lists the contents in an EPUB; a
@@ -219,16 +219,16 @@ reproducers of each.
   is DocBook's `floatstyle`; a block with `%unbreakable` has the class
   `unbreakable` in HTML and EPUB and DocBook XSL's keep-together
   instruction; `:hyphens:` adds a `hyphens: auto` style to HTML and EPUB.
-  `--help` lists the backends asciidart has built in. `index-sort:
+  `--help` lists the backends Ptome has built in. `index-sort:
   code-point` and `index-category-headings!` set the HTML and EPUB
   index's order and letter headings; `front-cover-image` is shown before
   the header of an HTML page (the website's home page); DocBook's `<info>`
   has the `isbn` (`biblioid`) and `editor` attributes.
 - Rouge, Pygments and CodeRay are not available: they behave as the gem does
   without their gems (no highlighting, the highlighter's `<pre>` class kept),
-  and warn in asciidart's words, once: `Rouge syntax highlighting is not
+  and warn in Ptome's words, once: `Rouge syntax highlighting is not
   available. Functionality disabled.` (likewise Pygments and CodeRay).
-  AsciiMath is converted to MathML in DocBook and EPUB by asciidart's port
+  AsciiMath is converted to MathML in DocBook and EPUB by Ptome's port
   of the `asciimath` gem 2.0.6 (ADR-0014), as Asciidoctor and
   asciidoctor-epub3 do with that gem installed; the parity references
   install it too. An EPUB content document with MathML declares the
@@ -246,7 +246,7 @@ gem does on the asciidoctor gem built from upstream `main`
 first, stored), and the bytes of every file once the dates that change
 with each run (`dcterms:modified`, `dc:date`) are set aside; the messages
 too. ZIP compression is not compared (zlib versions differ). With
-`--epubcheck`, EPUBCheck must report the same for both EPUBs. asciidart
+`--epubcheck`, EPUBCheck must report the same for both EPUBs. Ptome
 runs with `-a epub-embed-fonts` and asciidoctor-epub3's fonts on its font
 path, so that it embeds the fonts the gem embeds.
 
@@ -256,7 +256,7 @@ path, so that it embeds the fonts the gem embeds.
 gem install gepub -v 1.0.17 && gem install mime-types sass
 gem install asciidoctor-epub3 -v 2.3.0 --ignore-dependencies
 dart run tool/epub_parity.dart --exe-a "$(command -v asciidoctor-epub3)" \
-  --exe-b dist/asciidart-linux-x64 --epubcheck epubcheck.jar \
+  --exe-b dist/ptome-linux-x64 --epubcheck epubcheck.jar \
   $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc')
 ```
 
@@ -271,11 +271,11 @@ Intentional differences:
 - A preamble whose only block is a list becomes the abstract, as in the
   gem, but its list is written as a list: the gem writes a dump of Ruby
   objects there (Asciidoctor's `List#content` is the array of items).
-- AsciiMath is MathML, as in the gem with the asciimath gem (asciidart's
+- AsciiMath is MathML, as in the gem with the asciimath gem (Ptome's
   port, ADR-0014), and its content document declares `mathml`; the
-  highlighters asciidart lacks warn in its own words.
+  highlighters Ptome lacks warn in its own words.
 - A custom theme (`epub3-stylesdir`) is read as compiled CSS (`epub3.css`,
-  `epub3-css3-only.css`): the gem compiles SCSS, for which asciidart has no
+  `epub3-css3-only.css`): the gem compiles SCSS, for which Ptome has no
   compiler.
 - `revdate` is read in the forms Asciidoctor and documents use (ISO 8601,
   `2026-01-31`, `31 January 2026`, `January 31, 2026`...); Ruby's
@@ -369,15 +369,15 @@ Documents that don't hit these cases convert as with the gem.
 ## PDF (`-b pdf`)
 
 The PDF backend reads asciidoctor-pdf 2.3.27's YAML themes unchanged and
-draws with libpdf, asciidart's own PDF library. It has one layout engine,
-asciidart's own (`doc/pdf.md`). With `asciidoctor-compat` (or
+draws with libpdf, Ptome's own PDF library. It has one layout engine,
+Ptome's own (`doc/pdf.md`). With `asciidoctor-compat` (or
 `-a pdf-compat`; ADR-0015), its settings default to asciidoctor-pdf's
 look: the goal is pages that look as the gem's do (on Asciidoctor 2.0.26,
 with its default dependencies: Prawn 2.4.0, prawn-svg 0.34.2,
 prawn-table, prawn-icon; no optional gems), not the same bytes. No Prawn
 code is ported.
 
-Two tools compare the PDF files of the gem and asciidart:
+Two tools compare the PDF files of the gem and ptome:
 
 - `tool/pdf_look.dart`: page images, blurred, the share of pixels that
   differ (the look check below; `test/pdf/converter_test.dart` holds 32
@@ -394,7 +394,7 @@ Two tools compare the PDF files of the gem and asciidart:
 ADR-0015 asks of the default engine with `asciidoctor-compat` (pdf) that
 its pages look like asciidoctor-pdf's, not that they be the same bytes.
 `tool/pdf_look.dart` renders the gem's pages of the same 797 documents
-once (gray, 50 dpi, cached), then converts each with asciidart, renders
+once (gray, 50 dpi, cached), then converts each with Ptome, renders
 its pages and compares them blurred (a 5-pixel box; a pixel differs when
 the grays differ by more than 10%). A document looks the same when no
 page differs on more than 0.5% of its pixels (a line of body text one
@@ -402,7 +402,7 @@ point off is about 1%).
 
 ```sh
 dart run tool/pdf_look.dart --gem <gem wrapper> \
-  --exe "<asciidart wrapper with -a asciidoctor-compat=pdf>" \
+  --exe "<ptome wrapper with -a asciidoctor-compat=pdf>" \
   --cache <gem pages> --out <dir> [--pairs] ~/.cache/asciidart-work/pdfcorpus/*.adoc
 ```
 
@@ -433,11 +433,11 @@ The record of that check:
 suite: every `to_pdf` heredoc, with the options the spec converts it with
 (doctype, attributes, footer, inline theme). That gives 797 documents
 covering every feature the gem tests. Each is converted by the gem and by
-asciidart and compared as above:
+Ptome and compared as above:
 
 ```sh
 dart run tool/pdf_spec_corpus.dart ~/.cache/asciidart-work/pdfcorpus
-dart run tool/pdf_parity.dart --exe-a <gem wrapper> --exe-b <asciidart wrapper> \
+dart run tool/pdf_parity.dart --exe-a <gem wrapper> --exe-b <ptome wrapper> \
   --out <dir> ~/.cache/asciidart-work/pdfcorpus/*.adoc
 ```
 
@@ -448,13 +448,13 @@ count. Of the other 34:
   catalog) and `page-040`, `page-042`, `page-043`.
 - *Gem bugs, not copied* (3):
   - A front cover that is a missing PDF page turns every later page into
-    US Letter (`cover_page-021`, `cover_page-024`); asciidart keeps the
+    US Letter (`cover_page-021`, `cover_page-024`); ptome keeps the
     theme's page size.
   - A broken SVG page background moves the body text to x = 0
     (`page-041`).
 - *Text extraction only, the pages identical* (6):
   - A character the font has no glyph for is drawn as `.notdef`. The gem's
-    PDF maps it to the character, asciidart's doesn't (libpdf writes CID
+    PDF maps it to the character, ptome's doesn't (libpdf writes CID
     fonts with Identity-H, where `.notdef` can't stand for several
     characters): `table-118`, `font-004`, `font-005`, `admonition-009`.
   - `footnote-027` and `source-069` differ in reading order only.
@@ -480,11 +480,11 @@ count. Of the other 34:
 
 `tool/pdf_theme_keys.dart` lists the keys of the theming guide (2.3.27)
 that the converter never reads over the corpus. Most come from the corpus,
-not from asciidart: it never sets a header, for instance, and the header
+not from ptome: it never sets a header, for instance, and the header
 keys are read whenever a theme gives the header a height. Not supported:
 
 - `code_highlight_background_color`, `code_line_gap`: options of the gem's
-  Rouge formatter. asciidart highlights with hilite (colors from a
+  Rouge formatter. Ptome highlights with hilite (colors from a
   highlight.js theme).
 - `block_anchor_top`: only moves where a block's destination points.
 - `abstract_text_decoration`, `abstract_title_text_decoration`,
@@ -500,7 +500,7 @@ keys are read whenever a theme gives the header a height. Not supported:
   and CFF outlines; Prawn embeds simple fonts. Text extracts the same,
   except for `.notdef` (above).
 - Source highlighting uses hilite rather than Rouge; with
-  `source-highlighter` set, asciidart highlights where the gem without
+  `source-highlighter` set, Ptome highlights where the gem without
   Rouge (as in the corpus) doesn't.
 - With `asciidoctor-compat`, what the gem gets wrong or lacks stays
   fixed: a family without an italic or bold face has one made from its

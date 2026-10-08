@@ -79,14 +79,14 @@ Same corpus × backend matrix, same method (3 warmup + 21 timed CLI
 end-to-end iterations per cell, median reported), timed back-to-back via
 `benchmark/bench-exe.rb --exe ...` so Ruby, Dart VM, and AOT share one
 harness. Ruby re-run fresh in the same session (matches the baseline
-band above); Dart VM = `dart run bin/asciidart.dart` (JIT,
+band above); Dart VM = `dart run bin/ptome.dart` (JIT,
 per-spawn startup); AOT = `tool/build-exes.sh` output
-(`asciidart-linux-x64`, Dart SDK 3.13.5).
+(`ptome-linux-x64`, Dart SDK 3.13.5).
 
 ```sh
 ruby benchmark/bench-exe.rb --exe 'asciidoctor'
-ruby benchmark/bench-exe.rb --exe 'dart run bin/asciidart.dart'
-ruby benchmark/bench-exe.rb --exe /tmp/dist/asciidart-linux-x64
+ruby benchmark/bench-exe.rb --exe 'dart run bin/ptome.dart'
+ruby benchmark/bench-exe.rb --exe /tmp/dist/ptome-linux-x64
 ```
 
 | Doc \\ backend | Ruby html5 | Dart VM html5 | AOT html5 | Ruby docbook5 | Dart VM docbook5 | AOT docbook5 |
@@ -125,7 +125,7 @@ tool/build-npm.sh && node benchmark/throughput.mjs --ajs PATH/TO/core/src/index.
 
 | Impl | html5 | docbook5 | manpage |
 | --- | --: | --: | --: |
-| asciidart (dart2js, Node.js) | 43.4 ms | 40.2 ms | 44.8 ms |
+| Ptome (dart2js, Node.js) | 43.4 ms | 40.2 ms | 44.8 ms |
 | Asciidoctor.js 4.1.0 (Node.js) | 49.5 ms | 46.9 ms | 55.5 ms |
 | Dart AOT (for reference, below) | 40.0 ms | 40.2 ms | 52.2 ms |
 
@@ -208,7 +208,7 @@ same machine and corpus: the asciidoctor-epub3 2.3.0 gem (on Asciidoctor
 2.0.26) against the native executable. The gem compiles its stylesheets
 and packs the fonts on every run.
 
-| Doc | asciidoctor-epub3 | asciidart | Speedup |
+| Doc | asciidoctor-epub3 | Ptome | Speedup |
 | --- | --: | --: | --: |
 | small | 399.0 ms | 39.3 ms | 10.2x |
 | medium | 403.5 ms | 40.8 ms | 9.9x |
@@ -222,7 +222,7 @@ against the native executable. The corpus is the three documents above
 and the gem's chronicles example (9 pages with images, tables, an index,
 running content).
 
-| Doc | asciidoctor-pdf | asciidart | Speedup |
+| Doc | asciidoctor-pdf | Ptome | Speedup |
 | --- | --: | --: | --: |
 | small | 336.0 ms | 22.6 ms | 14.9x |
 | medium | 396.7 ms | 33.6 ms | 11.8x |

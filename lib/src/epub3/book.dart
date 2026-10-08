@@ -6,7 +6,7 @@ library;
 
 import 'dart:convert';
 
-import 'package:asciidart/src/epub3/zip.dart';
+import 'package:ptome/src/epub3/zip.dart';
 
 /// The media type gepub guesses for a path by its extension.
 String? guessMediaType(String href) {

@@ -1,4 +1,4 @@
-// `asciidart doctor`, offline: the fonts looked up in folders of the test's
+// `ptome doctor`, offline: the fonts looked up in folders of the test's
 // choosing, downloads answered by a fake that serves the fonts vendored
 // with asciidoctor-pdf.
 @TestOn('vm')
@@ -7,9 +7,9 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/cli/doctor.dart';
-import 'package:asciidart/src/font_index.dart';
-import 'package:asciidart/src/remote.dart';
+import 'package:ptome/src/cli/doctor.dart';
+import 'package:ptome/src/font_index.dart';
+import 'package:ptome/src/remote.dart';
 import 'package:test/test.dart';
 
 import '../vendored_fonts.dart';
@@ -70,7 +70,7 @@ void main() {
     expect(code, 1);
     expect(out, contains('Noto Serif from Google Fonts'));
     expect(out, contains('Font Awesome Free 5.15.1'));
-    expect(out, contains('Run `asciidart doctor --yes` to install them.'));
+    expect(out, contains('Run `ptome doctor --yes` to install them.'));
     expect(Directory('${tmp.path}/installed').existsSync(), isFalse);
   });
 
@@ -165,7 +165,7 @@ void main() {
   });
 
   test('--help, and unknown options', () async {
-    expect((await doctor(['--help'])).$2, contains('Usage: asciidart doctor'));
+    expect((await doctor(['--help'])).$2, contains('Usage: ptome doctor'));
     final (code, _, err) = await doctor(['--bogus']);
     expect(code, 64);
     expect(err, contains('unknown option --bogus'));

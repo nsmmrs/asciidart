@@ -23,7 +23,7 @@ mkdir -p templates
 cat > templates/paragraph.mustache <<'EOF'
 <p>{{content}}</p>
 EOF
-asciidart -T templates doc.adoc
+ptome -T templates doc.adoc
 ```
 
 Resolution rules (deliberately simpler than Ruby):
@@ -120,8 +120,8 @@ Register one function per transform name; the handler receives the node
 (the full node API — no flattening) and the optional per-call options:
 
 ```dart
-import 'package:asciidart/asciidart.dart';
-import 'package:asciidart/converter.dart';
+import 'package:ptome/ptome.dart';
+import 'package:ptome/converter.dart';
 
 final registry = TemplateRegistry();
 registry.registerFunction('paragraph', (node, [opts]) {
@@ -166,7 +166,7 @@ The CLI entrypoint is a reusable library function, `runCli(args)`, so a
 project can compile its path-(a) overrides into its own binary:
 
 ```sh
-asciidart init-config my-config
+ptome init-config my-config
 cd my-config
 dart pub get
 ```
@@ -178,8 +178,8 @@ compile:
 
 ```sh
 dart run bin/main.dart doc.adoc        # JIT, for development
-dart compile exe bin/main.dart -o my-asciidart
-./my-asciidart doc.adoc                # AOT, for distribution
+dart compile exe bin/main.dart -o my-ptome
+./my-ptome doc.adoc                # AOT, for distribution
 ```
 
 Notes:

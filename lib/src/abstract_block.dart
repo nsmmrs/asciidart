@@ -8,16 +8,16 @@
 /// below declares the slice of `Section` this file consumes.
 library;
 
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/cursor.dart';
-import 'package:asciidart/src/document.dart' show DocumentAttributeEntry;
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/inline_tree.dart';
-import 'package:asciidart/src/output_template.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/rx.dart';
-import 'package:asciidart/src/substitutors.dart' show applySubsTree;
 import 'package:meta/meta.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/cursor.dart';
+import 'package:ptome/src/document.dart' show DocumentAttributeEntry;
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/inline_tree.dart';
+import 'package:ptome/src/output_template.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/rx.dart';
+import 'package:ptome/src/substitutors.dart' show applySubsTree;
 
 /// Maps ordered-list styles to their HTML marker keywords.
 ///
@@ -516,7 +516,7 @@ abstract class AbstractBlock extends AbstractNode {
     if (attrName != null && prefix != null) {
       final kind = figure ? 'figure' : context.asciidoc;
       numeral = document!.incrementAndStoreCounter('$kind-number', this);
-      // asciidart's `<kind>-caption-template` (ADR-0010): the caption from
+      // Ptome's `<kind>-caption-template` (ADR-0010): the caption from
       // a template of `{{caption}}` and `{{number}}`.
       switch (document!.attributes['$attrName-template']) {
         case final String template:
@@ -533,7 +533,7 @@ abstract class AbstractBlock extends AbstractNode {
     }
   }
 
-  /// asciidart's `<kind>-numbering: all` (`listing-numbering`,
+  /// Ptome's `<kind>-numbering: all` (`listing-numbering`,
   /// `figure-numbering`...): a block without a title takes a number too,
   /// without a caption, so the numbers of those with one count it (as
   /// Typst numbers every figure, captioned or not), unless it has the

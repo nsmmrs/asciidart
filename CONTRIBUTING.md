@@ -1,6 +1,6 @@
 # Contributing
 
-The bar for every change is unchanged output: asciidart must convert
+The bar for every change is unchanged output: Ptome must convert
 documents exactly as the Asciidoctor gem built from the vendored upstream
 commit (`main` at `30fb8cd5`, `tool/vendor.sh`) does (ADR-0001, ADR-0017),
 unless the difference is deliberate and listed in `benchmark/PARITY.md`
@@ -34,8 +34,8 @@ Parity with the gem, on a built executable:
 
 ```sh
 ./tool/build-exes.sh
-ASCIIDOCTOR_EXE="$PWD/dist/asciidart-linux-x64" bats test/e2e/
-./tool/parity.sh dist/asciidart-linux-x64
+ASCIIDOCTOR_EXE="$PWD/dist/ptome-linux-x64" bats test/e2e/
+./tool/parity.sh dist/ptome-linux-x64
 ```
 
 `ASCIIDOCTOR_EXE=test/e2e/bin/asciidoctor-ruby bats test/e2e/` runs the
@@ -44,10 +44,10 @@ same suite against the gem; both must pass.
 The tests and tools set PDFs and EPUBs in the fonts vendored with
 asciidoctor-pdf and asciidoctor-epub3 (`tool/vendored_fonts.dart`), so
 their output doesn't depend on the fonts installed. To run the executable
-on the same fonts by hand, put their folders in `ASCIIDART_FONT_PATH`:
+on the same fonts by hand, put their folders in `PTOME_FONT_PATH`:
 
 ```sh
-export ASCIIDART_FONT_PATH=$PWD/vendor/asciidoctor-pdf/data/fonts:$PWD/vendor/asciidoctor-pdf/icons:$PWD/data/pdf-fonts:$PWD/vendor/asciidoctor-epub3/fonts
+export PTOME_FONT_PATH=$PWD/vendor/asciidoctor-pdf/data/fonts:$PWD/vendor/asciidoctor-pdf/icons:$PWD/data/pdf-fonts:$PWD/vendor/asciidoctor-epub3/fonts
 ```
 
 ## Corpus check
@@ -58,10 +58,10 @@ warnings and exit codes, four modes each); see `benchmark/PARITY.md`:
 ```sh
 tool/corpus/fetch.sh /tmp/corpus
 dart run tool/corpus_parity.dart --exe-a asciidoctor \
-  --exe-b dist/asciidart-linux-x64 --out /tmp/corpus-results /tmp/corpus
+  --exe-b dist/ptome-linux-x64 --out /tmp/corpus-results /tmp/corpus
 ```
 
-Use a gem install without optional gems as `--exe-a`, and run asciidart
+Use a gem install without optional gems as `--exe-a`, and run Ptome
 with `-a highlightjs-mode=client` (see `benchmark/PARITY.md`). Every
 difference it finds deserves a reproducer in `test/parity/`.
 
@@ -74,8 +74,8 @@ node --test                  # API, exports, contents, bundler, browser
 npm run types                # tsc over typical usage
 npm run lint                 # publint and are-the-types-wrong
 cd ../.. && dart test -p node
-ASCIIDOCTOR_EXE=test/e2e/bin/asciidart-node bats test/e2e/
-./tool/parity.sh test/e2e/bin/asciidart-node
+ASCIIDOCTOR_EXE=test/e2e/bin/ptome-node bats test/e2e/
+./tool/parity.sh test/e2e/bin/ptome-node
 ```
 
 The browser test looks for Chromium at `/usr/bin/chromium`; set
@@ -83,7 +83,7 @@ The browser test looks for Chromium at `/usr/bin/chromium`; set
 
 ## Layout
 
-- `lib/asciidart.dart`, `io.dart`, `cli.dart`: the public libraries
+- `lib/ptome.dart`, `io.dart`, `cli.dart`: the public libraries
   (`export ... show` lists only), backed by `lib/src/api/`, a typed layer
   over the implementation. The supported API is described in
   `doc/api.md`; a change to it updates `tool/api_surface.txt`
@@ -112,8 +112,8 @@ upstream revision; see `vendor/README.md`. `tool/vendor.sh` recreates them
 package never reads them at run time, and `lib/src/cli/help_topics.g.dart`
 embeds the man page and syntax reference for `-h`. Both are generated;
 `tool/vendor.sh` regenerates them. The man page is written in
-`man/asciidart.adoc`; after changing it, rebuild `man/asciidart.1` (with
-asciidart itself) and the embedded copy:
+`man/ptome.adoc`; after changing it, rebuild `man/ptome.1` (with
+Ptome itself) and the embedded copy:
 
 ```sh
 tool/build-man.sh

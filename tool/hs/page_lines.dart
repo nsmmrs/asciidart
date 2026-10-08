@@ -64,7 +64,7 @@ List<_Word> _words(String pdf, int page) {
             '-',
           ]).stdout
           as String;
-  // Callout markers left out: asciidart marks them as artifacts (not in
+  // Callout markers left out: Ptome marks them as artifacts (not in
   // the text), Typst doesn't.
   return [
     for (final m in RegExp(

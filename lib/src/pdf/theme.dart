@@ -7,12 +7,12 @@ library;
 import 'dart:convert';
 import 'dart:math' as math;
 
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/logging.dart';
-import 'package:asciidart/src/path_resolver.dart';
-import 'package:asciidart/src/pdf/assets.g.dart';
-import 'package:asciidart/src/pdf/yaml11.dart';
 import 'package:meta/meta.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/path_resolver.dart';
+import 'package:ptome/src/pdf/assets.g.dart';
+import 'package:ptome/src/pdf/yaml11.dart';
 import 'package:yaml/yaml.dart' show YamlException;
 
 /// A theme value.

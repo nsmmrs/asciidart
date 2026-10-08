@@ -183,23 +183,23 @@ final class _Collector extends impl.LoggerBase {
 }
 
 /// A problem that stops a document from being parsed or converted.
-final class AsciidartException implements Exception {
+final class PtomeException implements Exception {
   new _(this.message);
 
   /// What went wrong.
   final String message;
 
   @override
-  String toString() => 'AsciidartException: $message';
+  String toString() => 'PtomeException: $message';
 }
 
 /// Runs [body], turning the implementation's exceptions into
-/// [AsciidartException]s.
+/// [PtomeException]s.
 R _guard<R>(R Function() body) {
   try {
     return body();
   } on impl.AsciidoctorException catch (e, st) {
-    Error.throwWithStackTrace(AsciidartException._(e.message), st);
+    Error.throwWithStackTrace(PtomeException._(e.message), st);
   }
 }
 
@@ -208,6 +208,6 @@ Future<R> _guardAsync<R>(Future<R> Function() body) async {
   try {
     return await body();
   } on impl.AsciidoctorException catch (e, st) {
-    Error.throwWithStackTrace(AsciidartException._(e.message), st);
+    Error.throwWithStackTrace(PtomeException._(e.message), st);
   }
 }

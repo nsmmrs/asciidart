@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Checks the upstream bug reproductions in test/bugfix: every test must pass
-# on the asciidart CLI and fail on the Ruby CLI (the bug is still upstream).
+# on the ptome CLI and fail on the Ruby CLI (the bug is still upstream).
 #
-#   tool/bugfix_check.sh ASCIIDART_EXE RUBY_EXE [TEST.bats...]
+#   tool/bugfix_check.sh PTOME_EXE RUBY_EXE [TEST.bats...]
 set -u
 # A file that hangs (an endless loop in a fix) fails instead of stalling.
 bats_path=$(type -P bats)
@@ -15,7 +15,7 @@ tests=("$@")
 status=0
 for t in "${tests[@]}"; do
   if ! ASCIIDOCTOR_EXE=$dart_exe bats "$t" > /dev/null 2>&1; then
-    echo "FAIL $t: does not pass on asciidart"
+    echo "FAIL $t: does not pass on ptome"
     ASCIIDOCTOR_EXE=$dart_exe bats "$t" | sed 's/^/    /'
     status=1
   fi

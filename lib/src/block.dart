@@ -3,12 +3,12 @@
 /// Port of `lib/asciidoctor/block.rb`.
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/inline_tree.dart';
-import 'package:asciidart/src/ruby_semantics.dart';
-import 'package:asciidart/src/substitutors.dart' show applySubsTree;
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/inline_tree.dart';
+import 'package:ptome/src/ruby_semantics.dart';
+import 'package:ptome/src/substitutors.dart' show applySubsTree;
 
 /// The content model of a block of [context] unless it says otherwise.
 ContentModel defaultContentModel(BlockContext context) => switch (context) {

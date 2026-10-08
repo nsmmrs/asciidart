@@ -6,10 +6,10 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/epub3/epub3.dart';
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/multipage.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
+import 'package:ptome/src/epub3/epub3.dart';
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/multipage.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
 import 'epub3_test.dart' show unzipText;
@@ -224,7 +224,7 @@ void main() {
   });
 
   test("HTML: the house stylesheet by default, Asciidoctor's by name", () {
-    const house = 'asciidart house style';
+    const house = 'ptome house style';
     expect(
       File(convertWith('html5', '= Doc\n\nText.\n')).readAsStringSync(),
       contains(house),
@@ -240,15 +240,15 @@ void main() {
     String css(String source) => unzipText(
       File(convertWith('epub3', source)).readAsBytesSync(),
     )['EPUB/styles/epub3.css']!;
-    expect(css('= Doc\n\nText.\n'), contains('asciidart house style'));
+    expect(css('= Doc\n\nText.\n'), contains('ptome house style'));
     expect(
       css('= Doc\n:epub3-stylesheet: asciidoctor-epub3\n\nText.\n'),
-      isNot(contains('asciidart house style')),
+      isNot(contains('ptome house style')),
     );
   });
 
   test('asciidoctor-compat: the classic stylesheets of the formats named', () {
-    const house = 'asciidart house style';
+    const house = 'ptome house style';
     String html(String compat) => File(
       convertWith('html5', '= Doc\n:asciidoctor-compat: $compat\n\nText.\n'),
     ).readAsStringSync();

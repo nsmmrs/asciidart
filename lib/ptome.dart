@@ -1,11 +1,11 @@
-/// asciidart: an AsciiDoc processor compatible with Asciidoctor 2.1.0.alpha.0.
+/// ptome: an AsciiDoc processor compatible with Asciidoctor 2.1.0.alpha.0.
 ///
-/// Start with `asciidoc` (the default configuration) or an `Asciidart`
+/// Start with `asciidoc` (the default configuration) or a `Ptome`
 /// configured with a safe mode, attributes, `Extension`s, an
 /// `HtmlOverride` or `Highlighter`s:
 ///
 /// ```dart
-/// import 'package:asciidart/asciidart.dart';
+/// import 'package:ptome/ptome.dart';
 ///
 /// void main() {
 ///   print(asciidoc.convert('Hello, *World*!'));
@@ -19,8 +19,8 @@
 ///
 /// A parsed `Document` is a sealed tree of `Node`s, and its
 /// `Document.diagnostics` list what was reported while parsing and
-/// converting it. `package:asciidart/io.dart` reads and writes files;
-/// `package:asciidart/cli.dart` runs the command line. `doc/api.md` in the
+/// converting it. `package:ptome/io.dart` reads and writes files;
+/// `package:ptome/cli.dart` runs the command line. `doc/api.md` in the
 /// repository walks through the common uses.
 library;
 
@@ -28,8 +28,6 @@ export 'src/api/api.dart'
     show
         Admonition,
         AdmonitionKind,
-        Asciidart,
-        AsciidartException,
         Attributes,
         Audio,
         Author,
@@ -95,6 +93,8 @@ export 'src/api/api.dart'
         Postprocessor,
         Preamble,
         Preprocessor,
+        Ptome,
+        PtomeException,
         Quote,
         SafeMode,
         Section,
@@ -113,6 +113,6 @@ export 'src/api/api.dart'
         UnorderedList,
         Verse,
         Video,
-        asciidartVersion,
         asciidoc,
-        asciidoctorVersion;
+        asciidoctorVersion,
+        ptomeVersion;

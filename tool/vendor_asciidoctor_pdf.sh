@@ -17,7 +17,7 @@
 # vendored); and from the v2.3.27 tag the spec suite (spec/*.rb,
 # spec/spec_helper, spec/fixtures; not the reference PNGs) and the
 # examples, which tool/pdf_parity.dart converts with the gem and with
-# asciidart. Needs python3 with fontTools.
+# ptome. Needs python3 with fontTools.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

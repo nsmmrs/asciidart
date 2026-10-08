@@ -3,9 +3,9 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/cli/compat_config.dart';
-import 'package:asciidart/src/cli/options.dart';
-import 'package:asciidart/src/compat.dart';
+import 'package:ptome/src/cli/compat_config.dart';
+import 'package:ptome/src/cli/options.dart';
+import 'package:ptome/src/compat.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -54,7 +54,7 @@ void main() {
       project = Directory('${root.path}/project')..createSync();
       nested = Directory('${project.path}/doc/chapters')
         ..createSync(recursive: true);
-      config = Directory('${root.path}/config/asciidart')
+      config = Directory('${root.path}/config/ptome')
         ..createSync(recursive: true);
     });
     String? resolve([Map<String, String> env = const {}]) => resolveCompat(
@@ -65,41 +65,40 @@ void main() {
 
     test('nothing set: null', () => expect(resolve(), isNull));
 
-    test('the nearest asciidart.yml above the input', () {
-      File('${project.path}/asciidart.yml').writeAsStringSync('compat: pdf\n');
+    test('the nearest ptome.yml above the input', () {
+      File('${project.path}/ptome.yml').writeAsStringSync('compat: pdf\n');
       expect(resolve(), 'pdf');
-      File('${project.path}/doc/asciidart.yml')
+      File('${project.path}/doc/ptome.yml')
           .writeAsStringSync('compat: [html, epub]\n');
       expect(resolve(), 'html,epub');
     });
 
     test('true and false as YAML booleans', () {
-      File('${project.path}/asciidart.yml').writeAsStringSync('compat: true\n');
+      File('${project.path}/ptome.yml').writeAsStringSync('compat: true\n');
       expect(resolve(), 'true');
-      File('${project.path}/asciidart.yml')
-          .writeAsStringSync('compat: false\n');
+      File('${project.path}/ptome.yml').writeAsStringSync('compat: false\n');
       expect(resolve(), 'false');
     });
 
     test('the user configuration when the project sets none', () {
       File('${config.path}/config.yml').writeAsStringSync('compat: html\n');
       expect(resolve(), 'html');
-      File('${project.path}/asciidart.yml').writeAsStringSync('# no compat\n');
+      File('${project.path}/ptome.yml').writeAsStringSync('# no compat\n');
       expect(resolve(), 'html');
-      File('${project.path}/asciidart.yml').writeAsStringSync('compat: pdf\n');
+      File('${project.path}/ptome.yml').writeAsStringSync('compat: pdf\n');
       expect(resolve(), 'pdf');
     });
 
-    test('ASCIIDART_COMPAT first', () {
-      File('${project.path}/asciidart.yml').writeAsStringSync('compat: pdf\n');
-      expect(resolve({'ASCIIDART_COMPAT': 'epub'}), 'epub');
+    test('PTOME_COMPAT first', () {
+      File('${project.path}/ptome.yml').writeAsStringSync('compat: pdf\n');
+      expect(resolve({'PTOME_COMPAT': 'epub'}), 'epub');
     });
 
     test('a file that is not a configuration is reported', () {
-      File('${project.path}/asciidart.yml').writeAsStringSync('- one\n');
+      File('${project.path}/ptome.yml').writeAsStringSync('- one\n');
       expect(resolve(), isNull);
       expect(warnings.single, contains('not a configuration file'));
-      File('${project.path}/asciidart.yml')
+      File('${project.path}/ptome.yml')
           .writeAsStringSync('compat: {pdf: yes}\n');
       expect(resolve(), isNull);
       expect(warnings.last, contains('compat: expected true, false'));
@@ -126,15 +125,15 @@ void main() {
     }
 
     test('sets the configured value as a default the document overrides', () {
-      expect(attributes(const [], {'ASCIIDART_COMPAT': 'pdf'}), {
+      expect(attributes(const [], {'PTOME_COMPAT': 'pdf'}), {
         'asciidoctor-compat': 'pdf@',
       });
-      File('${root.path}/asciidart.yml').writeAsStringSync('compat: true\n');
+      File('${root.path}/ptome.yml').writeAsStringSync('compat: true\n');
       expect(attributes(const []), {'asciidoctor-compat': 'true@'});
     });
 
     test('-a asciidoctor-compat wins, set or unset', () {
-      const env = {'ASCIIDART_COMPAT': 'pdf'};
+      const env = {'PTOME_COMPAT': 'pdf'};
       expect(attributes(['-a', 'asciidoctor-compat=html'], env), {
         'asciidoctor-compat': 'html',
       });

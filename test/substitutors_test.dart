@@ -16,7 +16,7 @@ library;
 
 import 'dart:io' show Directory, File;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// A single backslash, mirroring the `BACKSLASH` constant in the Ruby suite.
@@ -4647,7 +4647,7 @@ void main() {
         ]);
       });
 
-      // PORT: CodeRay upstream; highlight.js is asciidart's server-side
+      // PORT: CodeRay upstream; highlight.js is Ptome's server-side
       // highlighter.
       test('should resolve specialcharacters sub as highlight for '
           'source block when source highlighter is highlight.js', () {

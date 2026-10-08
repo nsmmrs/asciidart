@@ -6,11 +6,11 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/epub3/epub3.dart';
-import 'package:asciidart/src/epub3/zip.dart';
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/multipage.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
+import 'package:ptome/src/epub3/epub3.dart';
+import 'package:ptome/src/epub3/zip.dart';
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/multipage.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
 import 'vendored_fonts.dart';

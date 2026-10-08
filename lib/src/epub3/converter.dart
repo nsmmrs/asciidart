@@ -12,36 +12,36 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/abstract_node.dart';
-import 'package:asciidart/src/attribute_list.dart';
-import 'package:asciidart/src/block.dart';
-import 'package:asciidart/src/callout_links.dart';
-import 'package:asciidart/src/compat.dart';
-import 'package:asciidart/src/converter.dart';
-import 'package:asciidart/src/data.g.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/epub3/assets.g.dart';
-import 'package:asciidart/src/epub3/book.dart';
-import 'package:asciidart/src/epub3/dates.dart';
-import 'package:asciidart/src/font_index.dart';
-import 'package:asciidart/src/helpers.dart';
-import 'package:asciidart/src/highlight/highlight.dart' show CssMode;
-import 'package:asciidart/src/highlight/highlightjs.dart';
-import 'package:asciidart/src/highlight/hljs_styles.g.dart';
-import 'package:asciidart/src/highlight/syntax_highlighter.dart';
-import 'package:asciidart/src/index_catalog.dart';
-import 'package:asciidart/src/inline.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/list.dart';
-import 'package:asciidart/src/math/asciimath.dart';
-import 'package:asciidart/src/output_template.dart';
-import 'package:asciidart/src/page_map.dart';
-import 'package:asciidart/src/parallel.dart';
-import 'package:asciidart/src/section.dart';
-import 'package:asciidart/src/table.dart';
-import 'package:asciidart/src/unbreakable.dart';
-import 'package:asciidart/src/xml_balance.dart';
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/attribute_list.dart';
+import 'package:ptome/src/block.dart';
+import 'package:ptome/src/callout_links.dart';
+import 'package:ptome/src/compat.dart';
+import 'package:ptome/src/converter.dart';
+import 'package:ptome/src/data.g.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/epub3/assets.g.dart';
+import 'package:ptome/src/epub3/book.dart';
+import 'package:ptome/src/epub3/dates.dart';
+import 'package:ptome/src/font_index.dart';
+import 'package:ptome/src/helpers.dart';
+import 'package:ptome/src/highlight/highlight.dart' show CssMode;
+import 'package:ptome/src/highlight/highlightjs.dart';
+import 'package:ptome/src/highlight/hljs_styles.g.dart';
+import 'package:ptome/src/highlight/syntax_highlighter.dart';
+import 'package:ptome/src/index_catalog.dart';
+import 'package:ptome/src/inline.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/list.dart';
+import 'package:ptome/src/math/asciimath.dart';
+import 'package:ptome/src/output_template.dart';
+import 'package:ptome/src/page_map.dart';
+import 'package:ptome/src/parallel.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/table.dart';
+import 'package:ptome/src/unbreakable.dart';
+import 'package:ptome/src/xml_balance.dart';
 
 String _s(String? value) => value ?? '';
 
@@ -357,7 +357,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
 
     final uuid = _s(node.hasAttr('uuid') ? node.attr('uuid') : node.id);
     final isbn = node.attr('isbn')?.replaceAll(RegExp(r'[\s-]'), '');
-    // asciidart's `epub-unique-identifier`: which of the book's identifiers
+    // Ptome's `epub-unique-identifier`: which of the book's identifiers
     // is the unique one (`uuid`, the gem's; `isbn`).
     final isbnUnique =
         node.attr('epub-unique-identifier') == 'isbn' &&
@@ -383,7 +383,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
       final author = node.attr(idx == 1 ? 'author' : 'author_$idx');
       if (author != null && author.isNotEmpty) book.addCreator(author);
     }
-    // asciidart's: an ISBN (`isbn`) besides the uuid, and editors
+    // Ptome's: an ISBN (`isbn`) besides the uuid, and editors
     // (`editor`, names separated by semicolons).
     if (isbnUnique) {
       book.addIdentifier(uuid, 'pub-uuid', 'uuid');
@@ -703,7 +703,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
     final syntaxHl = document.syntaxHighlighter;
     if (syntaxHl is HighlightJsHighlighter) {
       // highlight.js: the code highlighted already, its theme's stylesheet
-      // in the EPUB (asciidart's; the gem links them outside it).
+      // in the EPUB (Ptome's; the gem links them outside it).
       if (syntaxHl.canHighlight) {
         lines.add(
           '<link rel="stylesheet" type="text/css" '
@@ -773,7 +773,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
 
     lines.add('</body>\n</html>');
 
-    // Well-formed, where AsciiDoc markup leaves it broken (asciidart's).
+    // Well-formed, where AsciiDoc markup leaves it broken (Ptome's).
     final text = balanceXml(lines.join(_lf));
     chapterItem.setText(text);
     // MathML in a content document is declared (EPUB 3; the gem doesn't,
@@ -982,7 +982,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         '</figure>';
   }
 
-  /// A STEM block: AsciiMath as MathML (asciidart's port of the
+  /// A STEM block: AsciiMath as MathML (Ptome's port of the
   /// asciimath gem, ADR-0014, as the gem writes it with asciimath
   /// installed), other math as a listing.
   String convertStem(Block node) {
@@ -1422,7 +1422,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
     if (node.attr('scaledwidth') case final scaledwidth?) {
       attrs.add('style="width: $scaledwidth"');
     } else if (node.attr('width') case final width?) {
-      // XHTML takes a number of pixels (asciidart leaves out any other
+      // XHTML takes a number of pixels (Ptome leaves out any other
       // value, which the gem writes and EPUBCheck rejects).
       if (RegExp(r'^\d+%$').hasMatch(width)) {
         attrs.add('style="width: $width"');
@@ -1501,7 +1501,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         ? '\n<figcaption>${node.captionedTitle()}</figcaption>'
         : '';
     // A text file (ASCII art) as its text, not an image a reader can't
-    // show (asciidart's own output; the file isn't packed).
+    // show (Ptome's own output; the file isn't packed).
     if (_textImage(node) case final text?) {
       return '<figure$idAttr class="image text${_prependSpace(node.role)}'
           '${_prependSpace(node.attr('float'))}">\n'
@@ -1521,7 +1521,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         '</figure>';
   }
 
-  /// A `toc::[]` macro (asciidart's): the book's contents where it is, as
+  /// A `toc::[]` macro (Ptome's): the book's contents where it is, as
   /// the navigation document lists them (to `toclevels`, or the macro's
   /// `levels`), linked to the chapters.
   String convertToc(Block node) {
@@ -1564,7 +1564,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
             '</style>\n'
       : '';
 
-  /// With `ebook-code-overflow=scroll` (asciidart's), code lines keep
+  /// With `ebook-code-overflow=scroll` (Ptome's), code lines keep
   /// their length and scroll sideways rather than wrap (the stylesheet's
   /// default).
   static String _codeOverflowCss(Document document) =>
@@ -1690,7 +1690,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         final target = _s(node.target);
         // A path from a website's root (`/chapter/#id`) means nothing in
         // the book: it goes to the id when the book has it, else it is
-        // text (asciidart's; the gem's link leaves the container).
+        // text (Ptome's; the gem's link leaves the container).
         if (target.startsWith('/') && !target.startsWith('//')) {
           final hash = target.indexOf('#');
           final id = hash < 0 ? null : target.substring(hash + 1);
@@ -1884,7 +1884,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         }
       }
     } else {
-      // asciidoctor-epub3's stylesheet, then asciidart's house rules
+      // asciidoctor-epub3's stylesheet, then Ptome's house rules
       // (ADR-0011), unless the document asks for asciidoctor-epub3's alone
       // (`epub3-stylesheet=asciidoctor-epub3`).
       final classic =
@@ -2020,7 +2020,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         if (_missingFonts.add(family)) {
           logger.warn(
             'font $family is not installed: not embedded in the EPUB '
-            "(`asciidart doctor` installs the default themes' fonts)",
+            "(`ptome doctor` installs the default themes' fonts)",
           );
         }
         continue;
@@ -2036,9 +2036,9 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
 
   static String _asset(String path) => Epub3Assets.text(path) ?? '';
 
-  /// asciidart's house rules for the EPUB (doc/style.md).
+  /// Ptome's house rules for the EPUB (doc/style.md).
   static String get _houseRules =>
-      EmbeddedData.file('stylesheets/asciidart-epub3-house.css');
+      EmbeddedData.file('stylesheets/ptome-epub3-house.css');
 
   /// Adds the cover page [name] (`front-cover`, `back-cover`) for the
   /// `<name>-image` attribute.
@@ -2278,7 +2278,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
     var lines = <String>[];
     for (final item in items) {
       if ((item.level ?? 0) > levels) continue;
-      // asciidart's `notoc` option: a section left out of the contents.
+      // Ptome's `notoc` option: a section left out of the contents.
       if (item.hasOption('notoc')) continue;
       final chapterFile = chapterFilename(item);
       final String itemLabel;

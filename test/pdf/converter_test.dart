@@ -1,7 +1,7 @@
 // The PDF converter with asciidoctor-compat (asciidoctor-pdf's look,
 // ADR-0015) against asciidoctor-pdf 2.3.27: each document in fixtures/
 // was converted by the gem (SOURCE_DATE_EPOCH=0) into
-// fixtures/<name>-gem.pdf; asciidart's conversion must have the same
+// fixtures/<name>-gem.pdf; Ptome's conversion must have the same
 // pages, outline and page labels, and look the same: no page more than
 // 0.5% different (tool/pdf_look.dart).
 @TestOn('vm')
@@ -11,8 +11,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/pdf/pdf.dart';
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/pdf/pdf.dart';
 import 'package:test/test.dart';
 
 import '../../tool/pdf_look.dart' show pageDifferences;
@@ -42,7 +42,7 @@ void main() {
     'media': 0.02,
   };
 
-  /// [pdf] (asciidart's) against [gem]'s: pages, outline, labels and look.
+  /// [pdf] (Ptome's) against [gem]'s: pages, outline, labels and look.
   void expectLooksLike(String gem, String pdf, Directory dir, String name) {
     final comparison = Comparison(facts(gem, dir), facts(pdf, dir));
     expect(comparison.a.pages, comparison.b.pages);
@@ -94,7 +94,7 @@ void main() {
     'toc-preamble',
   ]) {
     test('$name.adoc looks as the gem sets it', () {
-      final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
+      final dir = Directory.systemTemp.createTempSync('ptome-pdf.');
       addTearDown(() => dir.deleteSync(recursive: true));
       final out = '${dir.path}/$name.pdf';
       convertFile(
@@ -111,7 +111,7 @@ void main() {
   }
 
   test('the page mode and the initial zoom come from the theme', () {
-    final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
+    final dir = Directory.systemTemp.createTempSync('ptome-pdf.');
     addTearDown(() => dir.deleteSync(recursive: true));
     final out = '${dir.path}/theme-keys2.pdf';
     convertFile(
@@ -141,7 +141,7 @@ void main() {
   // The gem's own examples (vendored), converted from where they are.
   for (final name in ['chronicles-example', 'edge-cases']) {
     test("the gem's $name.adoc looks as the gem sets it", () {
-      final dir = Directory.systemTemp.createTempSync('asciidart-pdf.');
+      final dir = Directory.systemTemp.createTempSync('ptome-pdf.');
       addTearDown(() => dir.deleteSync(recursive: true));
       final out = '${dir.path}/$name.pdf';
       convertFile(

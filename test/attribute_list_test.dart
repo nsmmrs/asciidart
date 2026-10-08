@@ -1,7 +1,7 @@
 /// Port of `test/attribute_list_test.rb`.
 library;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Block double whose [applySubs] must never be invoked.

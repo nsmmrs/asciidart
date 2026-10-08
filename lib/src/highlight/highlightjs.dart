@@ -1,6 +1,6 @@
-/// highlight.js: the syntax highlighter of asciidart.
+/// highlight.js: the syntax highlighter of Ptome.
 ///
-/// By default asciidart highlights source blocks itself, at conversion, with
+/// By default Ptome highlights source blocks itself, at conversion, with
 /// hilite (highlight.js 11.12.0 in Dart): the output is what highlight.js
 /// would produce in the browser, and the page only links the theme's
 /// stylesheet. With the `highlightjs-mode` attribute set to `client`, it
@@ -9,11 +9,11 @@
 /// (port of `lib/asciidoctor/syntax_highlighter/highlightjs.rb`).
 library;
 
-import 'package:asciidart/src/abstract_block.dart';
-import 'package:asciidart/src/document.dart';
-import 'package:asciidart/src/highlight/highlight.dart';
-import 'package:asciidart/src/highlight/syntax_highlighter.dart';
 import 'package:hilite/hilite.dart' show hilite;
+import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/document.dart';
+import 'package:ptome/src/highlight/highlight.dart';
+import 'package:ptome/src/highlight/syntax_highlighter.dart';
 
 /// The highlight.js release whose themes match hilite's output (its CSS
 /// classes): the version hilite ports.

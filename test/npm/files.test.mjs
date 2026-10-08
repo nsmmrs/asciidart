@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
-import { Asciidart, FontFile, asciidoc } from 'asciidart'
+import { Ptome, FontFile, asciidoc } from 'ptome'
 
 const fonts = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor-pdf', 'data', 'fonts')
 const notoSerif = (style) =>
@@ -17,7 +17,7 @@ const text = (bytes, length) => new TextDecoder('latin1').decode(bytes.slice(0, 
 
 test('a PDF, its backend loaded on demand, in the fonts given', async () => {
   const messages = []
-  const ad = new Asciidart({
+  const ad = new Ptome({
     fonts: ['regular', 'bold', 'italic', 'bold_italic'].map(notoSerif),
     onDiagnostic: (d) => messages.push(d.message),
   })
@@ -31,11 +31,11 @@ test('a PDF, its backend loaded on demand, in the fonts given', async () => {
 })
 
 test('a font that is not installed: a built-in one stands in, with a warning', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'asciidart-files-'))
+  const dir = mkdtempSync(join(tmpdir(), 'ptome-files-'))
   try {
     writeFileSync(join(dir, 'theme.yml'), 'extends: default\nbase:\n  font_family: No Such Family\n')
     const messages = []
-    const ad = new Asciidart({ safe: 'unsafe', onDiagnostic: (d) => messages.push(d.message) })
+    const ad = new Ptome({ safe: 'unsafe', onDiagnostic: (d) => messages.push(d.message) })
     const pdf = await ad.convertToBytesAsync('Hello.', {
       backend: 'pdf',
       attributes: { 'pdf-theme': join(dir, 'theme.yml') },
@@ -61,8 +61,8 @@ test('text formats and file formats each have their method', () => {
   assert.throws(() => asciidoc.convert('Hello.', { backend: 'pdf' }), /convertToBytes/)
 })
 
-test('asciidart doctor runs on Node.js', () => {
-  const bin = join(import.meta.dirname, '..', '..', 'build', 'npm', 'bin', 'asciidart.js')
+test('ptome doctor runs on Node.js', () => {
+  const bin = join(import.meta.dirname, '..', '..', 'build', 'npm', 'bin', 'ptome.js')
   const usage = execFileSync(process.execPath, [bin, 'doctor', '--help'], { encoding: 'utf8' })
-  assert.match(usage, /Usage: asciidart doctor/)
+  assert.match(usage, /Usage: ptome doctor/)
 })

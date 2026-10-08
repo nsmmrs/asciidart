@@ -1,6 +1,6 @@
 // The Hypermedia Systems acceptance run (lane TASK-stcstl): builds the
 // book's AsciiDoc sources as PDF, HTML, EPUB 3 and DocBook 5 with the
-// asciidart executable, each in one command, and checks what the book's
+// Ptome executable, each in one command, and checks what the book's
 // authors had to fix by hand.
 //
 // Usage: dart run tool/hs_acceptance.dart [--exe PATH] [--out DIR]
@@ -25,7 +25,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 
 const _repository =
     'https://github.com/bigskysoftware/hypermedia-systems-old.git';
@@ -37,7 +37,7 @@ const _docbookSchema = 'https://cdn.docbook.org/schema/5.0/rng/docbook.rng';
 final String _cache = '${Platform.environment['HOME']}/.cache/asciidart-work';
 
 Future<void> main(List<String> args) async {
-  var exe = 'dist/asciidart-linux-x64';
+  var exe = 'dist/ptome-linux-x64';
   var out = '$_cache/hs-out';
   String? report;
   String? source;
@@ -615,7 +615,7 @@ String _roman(int n) {
 
 List<String> _messages(String stderr) => [
   for (final line in stderr.split('\n'))
-    if (line.startsWith('asciidart:')) line,
+    if (line.startsWith('ptome:')) line,
 ];
 
 bool _same(String a, String b) {

@@ -1,7 +1,7 @@
 /// Port of `test/helpers_test.rb`.
 library;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 /// Stand-in for a namespaced application class (cf. `Asciidoctor::Document`).

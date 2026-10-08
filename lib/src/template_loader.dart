@@ -47,7 +47,7 @@
 /// name untouched (so `-E haml` parses, as in Asciidoctor); the name is
 /// validated when templates engage (see [validateTemplateEngine], called from
 /// the converter factory while `template_dirs` is set). An unknown engine fails
-/// like Asciidoctor's missing-engine error, e.g. ``asciidart: FAILED:
+/// like Asciidoctor's missing-engine error, e.g. ``ptome: FAILED:
 /// required template engine 'haml' is not available. Processing aborted.`` —
 /// reported by the invoker with the `Use --trace to show backtrace` hint (exit
 /// 1) and rethrown under `--trace`.
@@ -55,10 +55,10 @@ library;
 
 import 'dart:convert' show utf8;
 
-import 'package:asciidart/src/errors.dart';
-import 'package:asciidart/src/io.dart' as io;
-import 'package:asciidart/src/path_resolver.dart';
-import 'package:asciidart/src/template.dart';
+import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/io.dart' as io;
+import 'package:ptome/src/path_resolver.dart';
+import 'package:ptome/src/template.dart';
 
 /// The only file extension the VM scanner loads (ADR-0002 T1(b)).
 const String _mustacheExtension = '.mustache';

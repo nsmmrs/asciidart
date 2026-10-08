@@ -15,7 +15,7 @@ import 'dart:convert' show utf8;
 import 'dart:io'
     show Directory, File, FileSystemEntity, HttpException, Platform, Process;
 
-import 'package:asciidart/src/internal.dart';
+import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
 import 'support/paths.dart';

@@ -3,8 +3,8 @@ library;
 
 import 'dart:io';
 
-import 'package:asciidart/src/internal.dart';
-import 'package:asciidart/src/io.dart' as io;
+import 'package:ptome/src/internal.dart';
+import 'package:ptome/src/io.dart' as io;
 import 'package:test/test.dart';
 
 void main() {
@@ -12,26 +12,26 @@ void main() {
     test('prints the message of an AsciidoctorException as is', () {
       expect(
         failureLine(const AsciidoctorException("missing converter for 'x'")),
-        equals("asciidart: FAILED: missing converter for 'x'"),
+        equals("ptome: FAILED: missing converter for 'x'"),
       );
     });
 
     test('drops the type name Dart puts in front of an error', () {
       expect(
         failureLine(StateError('broken')),
-        equals('asciidart: FAILED: broken'),
+        equals('ptome: FAILED: broken'),
       );
       expect(
         failureLine(ArgumentError('bad value')),
-        equals('asciidart: FAILED: bad value'),
+        equals('ptome: FAILED: bad value'),
       );
       expect(
         failureLine(UnimplementedError('not yet')),
-        equals('asciidart: FAILED: not yet'),
+        equals('ptome: FAILED: not yet'),
       );
       expect(
         failureLine(const FormatException('not a number')),
-        equals('asciidart: FAILED: not a number'),
+        equals('ptome: FAILED: not a number'),
       );
     });
 
@@ -46,7 +46,7 @@ void main() {
           ),
         ),
         equals(
-          'asciidart: FAILED: Cannot open file: /tmp/x.adoc '
+          'ptome: FAILED: Cannot open file: /tmp/x.adoc '
           '(No such file or directory)',
         ),
       );
@@ -54,7 +54,7 @@ void main() {
         failureLine(
           const io.IoException('failed to load /a: gone', path: '/a'),
         ),
-        equals('asciidart: FAILED: failed to load /a: gone'),
+        equals('ptome: FAILED: failed to load /a: gone'),
       );
     });
   });

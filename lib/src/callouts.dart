@@ -3,7 +3,7 @@
 /// Port of `lib/asciidoctor/callouts.rb`.
 library;
 
-import 'package:asciidart/src/cursor.dart';
+import 'package:ptome/src/cursor.dart';
 
 /// A single registered callout: the 1-based [ordinal] of its list item and
 /// its unique [id] (e.g. `CO1-1`).

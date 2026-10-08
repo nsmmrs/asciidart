@@ -9,7 +9,7 @@
 //
 // The documents use the spec's defaults: images from the spec fixtures,
 // no footer (unless the spec enables it), the safe mode. Convert them with
-// the gem and asciidart (reading the .opts) and compare with
+// the gem and Ptome (reading the .opts) and compare with
 // tool/pdf_parity.dart.
 import 'dart:io';
 
