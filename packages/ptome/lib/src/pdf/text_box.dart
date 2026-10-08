@@ -89,7 +89,17 @@ final class TextLayout {
     this.capLines = false,
     this.justifyWidest = false,
     this.alignLast,
+    this.dropLines = 0,
+    this.dropIndent = 0,
   });
+
+  /// How many lines at the start of the text are set [dropIndent] in, to
+  /// make room for a drop (a large chapter number or initial beside
+  /// them).
+  final int dropLines;
+
+  /// How far the first [dropLines] lines are set in.
+  final double dropIndent;
 
   /// Where a justified paragraph's lines that aren't justified (its last
   /// line) go: `center` or `right`, as CSS's `text-align-last` (Typst's
@@ -2331,7 +2341,11 @@ final class _OptimalWrap extends _Wrap {
     }
     _splitLongRuns(pieces, charBreaks);
     final indent = firstPiece ? _layout.indentFirstLine : 0.0;
-    double widthOf(int line) => line == 0 ? _width - indent : _width;
+    // (A drop beside the first lines, where the text starts.)
+    final drop = firstPiece ? _layout.dropLines : 0;
+    double widthOf(int line) =>
+        (line == 0 ? _width - indent : _width) -
+        (line < drop ? _layout.dropIndent : 0);
     // The breaker's items, and the piece each comes from.
     final items = <LineItem>[];
     final from = <int>[];
@@ -2433,7 +2447,13 @@ final class _OptimalWrap extends _Wrap {
     };
     // The same paragraph is broken at the same width again and again (as
     // pages are tried and the book laid out again): its breaks are kept.
-    final key = _BreakKey(breaker, widthOf(0), widthOf(1), items);
+    final key = _BreakKey(
+      breaker,
+      widthOf(0),
+      widthOf(math.max(drop, 1)),
+      items,
+      drop: drop > 1 ? (drop, widthOf(1)) : null,
+    );
     final breaks = _breaks[key] ??= breaker.breakItems(items, widthOf);
 
     // The pieces of each line: up to the piece its break is in (a space
@@ -2512,7 +2532,10 @@ final class _OptimalWrap extends _Wrap {
       _finalizeLine();
       if (!_enoughHeight()) break;
       _moveBaselineDown();
-      _printLine(lineNumber == 0 ? indent : 0);
+      _printLine(
+        (lineNumber == 0 ? indent : 0) +
+            (lineNumber < drop ? _layout.dropIndent : 0),
+      );
       lineNumber++;
       if (_layout.singleLine) break;
     }
@@ -2575,51 +2598,57 @@ typedef _ItemKey = (
 /// and measures).
 @immutable
 final class _BreakKey {
-  new(ItemLineBreaker breaker, double first, double rest, List<LineItem> items)
-    : this._(
-        switch (breaker) {
-          TypstLineBreaker(
-            :final justify,
-            :final fontSize,
-            :final hyphenationCost,
-            :final runtCost,
-          ) =>
-            'typst $justify $fontSize $hyphenationCost $runtCost',
-          _ => breaker.runtimeType.toString(),
-        },
-        first,
-        rest,
-        [
-          for (final item in items)
-            switch (item) {
-              BoxItem(:final text, :final width) => (
-                0,
-                text,
-                width,
-                0,
-                0,
-                false,
-              ),
-              GlueItem(
-                :final text,
-                :final width,
-                :final stretch,
-                :final shrink,
-              ) =>
-                (1, text, width, stretch, shrink, false),
-              PenaltyItem(
-                :final width,
-                :final penalty,
-                :final flagged,
-                :final carry,
-              ) =>
-                (2, '', width, penalty, carry, flagged),
-            },
-        ],
-      );
+  new(
+    ItemLineBreaker breaker,
+    double first,
+    double rest,
+    List<LineItem> items, {
+    (int, double)? drop,
+  }) : this._(_describe(breaker, drop), first, rest, [
+         for (final item in items)
+           switch (item) {
+             BoxItem(:final text, :final width) => (
+               0,
+               text,
+               width,
+               0,
+               0,
+               false,
+             ),
+             GlueItem(
+               :final text,
+               :final width,
+               :final stretch,
+               :final shrink,
+             ) =>
+               (1, text, width, stretch, shrink, false),
+             PenaltyItem(
+               :final width,
+               :final penalty,
+               :final flagged,
+               :final carry,
+             ) =>
+               (2, '', width, penalty, carry, flagged),
+           },
+       ]);
 
   new _(this._breaker, this._first, this._rest, this._items)
     : _hash = Object.hash(_breaker, _first, _rest, Object.hashAll(_items));
+
+  /// [breaker] and its costs, and a drop's lines and their width.
+  static String _describe(ItemLineBreaker breaker, (int, double)? drop) {
+    final costs = switch (breaker) {
+      TypstLineBreaker(
+        :final justify,
+        :final fontSize,
+        :final hyphenationCost,
+        :final runtCost,
+      ) =>
+        'typst $justify $fontSize $hyphenationCost $runtCost',
+      _ => breaker.runtimeType.toString(),
+    };
+    return drop == null ? costs : '$costs drop ${drop.$1} ${drop.$2}';
+  }
 
   final String _breaker;
   final double _first;

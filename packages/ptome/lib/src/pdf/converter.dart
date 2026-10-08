@@ -2628,7 +2628,26 @@ final class PdfConverter extends BuiltInConverter
         _s('heading_text_align') ??
         _baseTextAlign;
     final anchor = section.id ?? _madeUpAnchor(section);
-    final hidden = section.hasOption('notitle');
+    // `heading_h<n>_drop_lines` (modern engine): the heading set as a drop
+    // beside the first lines of the section's first paragraph (a Bible's
+    // chapter number), its text from `heading_h<n>_drop_content` (the
+    // section's numeral by default; its attributes as `attr-<name>`).
+    _pendingDrop = null;
+    final dropLines = (_n('heading_h${hlevel}_drop_lines') ?? 0).toInt();
+    String? dropText;
+    if (dropLines >= 2 && !asciidoctorCompat(_document, CompatFormat.pdf)) {
+      dropText = _render(
+        _s('heading_h${hlevel}_drop_content') ?? '{{numeral}}',
+        {
+          'title': section.title,
+          'numeral': section.numeral,
+          for (final MapEntry(:key, :value) in section.attributes.entries)
+            'attr-$key': value,
+        },
+      ).trim();
+      if (dropText.isEmpty) dropText = null;
+    }
+    final hidden = section.hasOption('notitle') || dropText != null;
     final part = sectname == 'part';
     final chapterlike =
         !part &&
@@ -2703,6 +2722,9 @@ final class PdfConverter extends BuiltInConverter
           outdent: true,
           collapse: collapse,
         );
+      }
+      if (dropText case final text?) {
+        _pendingDrop = (text: text, level: hlevel, lines: dropLines);
       }
       _sections.add((section, anchor));
       if (indexSection) {
@@ -3183,6 +3205,79 @@ final class PdfConverter extends BuiltInConverter
   /// Converts the paragraph [node].
   void convertParagraph(Block node) => _paragraph(node);
 
+  /// The drop waiting for [node], when it takes it: a paragraph with none
+  /// of the roles `heading_h<n>_drop_skip_roles` names (a psalm's title,
+  /// a heading's parallel passages, which go before the drop).
+  ({String text, int level, int lines})? _takeDrop(Block node) {
+    final drop = _pendingDrop;
+    if (drop == null) return null;
+    final skip = switch (_theme.value(
+      'heading_h${drop.level}_drop_skip_roles',
+    )) {
+      ThemeList(:final values) => {for (final v in values) v.rubyString},
+      ThemeString(:final value) => value.split(RegExp(r'[\s,]+')).toSet(),
+      _ => const <String>{},
+    };
+    if (node.roles.any(skip.contains)) return null;
+    _pendingDrop = null;
+    return drop;
+  }
+
+  /// [content] (in [font], set by [align]) with [drop] beside its first
+  /// lines: set in `heading_h<n>_drop_font_*`, sized so that its capitals
+  /// run from the first line's to the last of its lines' baseline,
+  /// `heading_h<n>_drop_gap` (0.3em) from the text.
+  CustomContent _dropped(
+    ({String text, int level, int lines}) drop,
+    String content,
+    _FontState font, {
+    required String align,
+  }) {
+    final face = _fonts.font(font.family, font.style);
+    final typst = _typstLeading(font) != null;
+    final metrics = _lineMetrics(font);
+    final cap = face.capHeightAt(font.size);
+    // The first line's baseline and the distance between baselines.
+    final baseline = typst
+        ? cap
+        : metrics.paddingTop + face.ascenderAt(font.size);
+    final pitch = (typst ? cap : face.heightAt(font.size)) + metrics.leading;
+    final category = 'heading_h${drop.level}_drop';
+    final unsized = _themeFont(category, font);
+    final dropFace = _fonts.font(unsized.family, unsized.style);
+    final size = ((drop.lines - 1) * pitch + cap) / dropFace.capHeightAt(1);
+    final dropFont = unsized.copyWith(size: size);
+    final text = drop.text.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
+    final gap = _length('${category}_gap', font.size) ?? font.size * 0.3;
+    final width = dropFace.widthOf(drop.text, size) + gap;
+    final dropBox = _textBox(
+      text,
+      dropFont,
+      align: 'left',
+      normalize: false,
+      gaps: false,
+      singleLine: true,
+      overhang: false,
+    );
+    final dropBaseline = _typstLeading(dropFont) != null
+        ? dropFace.capHeightAt(size)
+        : dropFace.ascenderAt(size);
+    return _Dropped(
+      _textBox(
+        content,
+        font,
+        align: align,
+        orphans: (_n('prose_orphans') ?? 2).toInt(),
+        widows: (_n('prose_widows') ?? 2).toInt(),
+        dropLines: drop.lines,
+        dropIndent: width,
+      ),
+      dropBox,
+      width,
+      baseline + (drop.lines - 1) * pitch - dropBaseline,
+    );
+  }
+
   /// Adds the paragraph [node], aligned to [textAlign] unless a role
   /// aligns it, its first line in [firstLine]'s font if given.
   void _paragraph(
@@ -3305,6 +3400,9 @@ final class PdfConverter extends BuiltInConverter
       return;
     }
     CustomContent text = box;
+    if (_takeDrop(node) case final drop? when firstLine == null) {
+      text = _dropped(drop, content, font, align: align);
+    }
     if (firstLine != null) {
       text = FirstLineTextBox(
         _textBox(
@@ -4243,6 +4341,10 @@ final class PdfConverter extends BuiltInConverter
 
   /// Whether the body is set in the theme's page columns.
   bool _inColumns = false;
+
+  /// A drop waiting for the paragraph it starts (`heading_h<n>_drop_lines`):
+  /// its text, the heading's level and the lines it spans.
+  ({String text, int level, int lines})? _pendingDrop;
 
   /// The columns each chapter of a book is set in (`page_columns`, modern
   /// engine), its heading across them and the columns balanced where it
@@ -7477,6 +7579,8 @@ final class PdfConverter extends BuiltInConverter
     Set<String> features = const {},
     double? skew,
     bool overhang = true,
+    int dropLines = 0,
+    double dropIndent = 0,
   }) {
     var text = hyphenate ? _hyphenated(markup, align) : markup;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
@@ -7550,6 +7654,8 @@ final class PdfConverter extends BuiltInConverter
         skew: skew,
         overhang: overhang ? _overhangAmount() : 0,
         capLines: _typstLeading(font) != null,
+        dropLines: dropLines,
+        dropIndent: dropIndent,
         justifyWidest:
             _choice('base_justify_width', const ['room', 'widest']) == 'widest',
         alignLast: _choice('base_text_align_last', const [
@@ -9997,6 +10103,43 @@ final class _Marked implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => content.intrinsicWidths();
+}
+
+/// Text with a drop beside its first lines: [drop] drawn [width] wide at
+/// the text's left, [dy] points down from its top.
+final class _Dropped implements CustomContent {
+  const new(this.text, this.drop, this.width, this.dy);
+
+  final CustomContent text;
+  final CustomContent drop;
+  final double width;
+  final double dy;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    final placed = text.place(width, available, atTop: atTop);
+    if (placed == null) return null;
+    final mark = drop.place(this.width, double.infinity, atTop: true);
+    return CustomPlacement(
+      height: placed.height,
+      rest: placed.rest,
+      anchors: placed.anchors,
+      paint: (page, x, top) {
+        mark?.paint(page, x, top - dy);
+        placed.paint(page, x, top);
+      },
+    );
+  }
+
+  @override
+  double minHeight(double width) => text.minHeight(width);
+
+  @override
+  (double, double) intrinsicWidths() => text.intrinsicWidths();
 }
 
 /// Nothing: no room taken, nothing drawn.

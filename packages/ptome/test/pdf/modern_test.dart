@@ -218,6 +218,46 @@ void main() {
       expect(pages.last.first, 'Mark 60 to Mark 60');
     });
 
+    test('a heading set as a drop beside the first lines', () {
+      final pdf = _pdf(
+        '= Doc\n\n[number=34]\n== Chapter\n\n[.note]\nSkipped.\n\n'
+        '$_paragraph\n',
+        theme:
+            'heading:\n  h2-drop-lines: 2\n'
+            "  h2-drop-content: '{{attr-number}}'\n"
+            '  h2-drop-skip-roles: [note]\n',
+      );
+      final bbox =
+          Process.runSync('pdftotext', ['-bbox', pdf, '-']).stdout as String;
+      final words = [
+        for (final m in RegExp(
+          r'xMin="([\d.]+)" yMin="([\d.]+)" xMax="[\d.]+" yMax="([\d.]+)">([^<]+)<',
+        ).allMatches(bbox))
+          (
+            m[4]!,
+            double.parse(m[1]!),
+            double.parse(m[2]!),
+            double.parse(m[3]!),
+          ),
+      ];
+      // No heading; the number at the margin, two lines tall; the
+      // paragraph's first two lines beside it, the third at the margin.
+      expect(words.any((w) => w.$1 == 'Chapter'), isFalse);
+      final drop = words.firstWhere((w) => w.$1 == '34');
+      final skipped = words.firstWhere((w) => w.$1 == 'Skipped.');
+      expect(drop.$2, skipped.$2);
+      expect(drop.$3, greaterThan(skipped.$3));
+      final lineStarts = <double, double>{};
+      for (final w in words.skipWhile((w) => w.$1 != 'Hypermedia')) {
+        lineStarts.putIfAbsent(w.$3, () => w.$2);
+      }
+      final starts = lineStarts.values.toList();
+      expect(starts[0], greaterThan(drop.$2 + 10));
+      expect(starts[1], starts[0]);
+      expect(starts[2], drop.$2);
+      expect(drop.$4 - drop.$3, greaterThan(20));
+    });
+
     test('lines stay within the column', () {
       final pdf = _pdf('$_paragraph\n\n$_paragraph $_paragraph');
       final bbox =
