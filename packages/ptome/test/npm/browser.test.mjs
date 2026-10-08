@@ -1,7 +1,8 @@
 // The browser build converts like the Node.js build (proven identical to
 // Asciidoctor by the parity gates), in headless Chromium.
 import assert from 'node:assert/strict'
-import { readdirSync, readFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { createServer } from 'node:http'
 import { join } from 'node:path'
 import { after, before, test } from 'node:test'
@@ -11,6 +12,7 @@ import { Ptome, FontFile, SafeMode } from 'ptome'
 
 const fixtures = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor', 'test', 'fixtures')
 const webFonts = join(import.meta.dirname, '..', 'fixtures', 'fonts')
+const pdfImages = join(import.meta.dirname, '..', 'pdf', 'fixtures', 'images')
 const executablePath = process.env.CHROMIUM_PATH ?? '/usr/bin/chromium'
 
 let server
@@ -18,6 +20,8 @@ let browser
 let page
 // Another origin, for a cross-origin style sheet and its fonts (CORS).
 let otherServer
+// The paths the browser asked the server for.
+const requests = []
 
 before(async () => {
   const bundle = await build({
@@ -33,6 +37,7 @@ before(async () => {
   })
   const script = bundle.outputFiles[0].text
   server = createServer((request, response) => {
+    requests.push(request.url)
     if (request.url === '/bundle.js') {
       response.writeHead(200, { 'content-type': 'text/javascript' })
       response.end(script)
@@ -56,12 +61,21 @@ before(async () => {
     } else if (request.url.startsWith('/fonts/')) {
       response.writeHead(200, { 'content-type': 'font/woff2' })
       response.end(readFileSync(join(webFonts, request.url.slice(7))))
+    } else if (request.url === '/docs/images/red.png') {
+      response.writeHead(200, { 'content-type': 'image/png' })
+      response.end(readFileSync(join(pdfImages, 'red.png')))
+    } else if (request.url === '/docs/other.adoc') {
+      response.writeHead(200, { 'content-type': 'text/plain' })
+      response.end('Included.')
     } else if (request.url.startsWith('/missing')) {
       response.writeHead(404)
       response.end()
-    } else {
+    } else if (request.url === '/' || request.url === '/docs/') {
       response.writeHead(200, { 'content-type': 'text/html' })
       response.end('<!doctype html><script type="module" src="/bundle.js"></script>')
+    } else {
+      response.writeHead(404)
+      response.end()
     }
   })
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
@@ -123,6 +137,18 @@ for (const name of readdirSync(fixtures)
     assert.equal(actual, expected)
   })
 }
+
+test('fetches remote includes with allow-uri-read', async () => {
+  const url = `http://127.0.0.1:${server.address().port}/docs/other.adoc`
+  const output = await page.evaluate(
+    (url) =>
+      new globalThis.ptome.Ptome({ safe: 'safe', attributes: { 'allow-uri-read': '' } }).convertAsync(
+        `include::${url}[]`
+      ),
+    url
+  )
+  assert.match(output, /<p>Included\.<\/p>/)
+})
 
 test('includes behave as missing files without a file system', async () => {
   const output = await page.evaluate(() =>
@@ -218,4 +244,62 @@ test('makes an EPUB in the browser, without a host zlib, with the files Node.js 
   )
   assert.equal(new TextDecoder().decode(actual.subarray(30, 58)), 'mimetypeapplication/epub+zip')
   assert.deepEqual(zipNames(actual), zipNames(expected))
+})
+
+test("reads a PDF's and an EPUB's images relative to the page, but not its includes", async () => {
+  const docsPage = await browser.newPage()
+  await docsPage.goto(`http://127.0.0.1:${server.address().port}/docs/`)
+  await docsPage.waitForFunction(() => globalThis.ptome !== undefined)
+  const fonts = join(import.meta.dirname, '..', '..', 'vendor', 'asciidoctor-pdf', 'data', 'fonts')
+  const font = readFileSync(join(fonts, 'notoserif-regular-subset.ttf'))
+  const source = '= Pictures\n\nimage::images/red.png[Red]\n\nimage::images/gone.png[Gone]\n\ninclude::other.adoc[]\n'
+  const attributes = { localdatetime: '2020-01-01 00:00:00 +0000', reproducible: '' }
+  requests.length = 0
+  const convert = (backend) =>
+    docsPage.evaluate(
+      async ({ source, attributes, font, backend }) => {
+        const { Ptome, FontFile } = globalThis.ptome
+        const messages = []
+        const ad = new Ptome({
+          safe: 'safe',
+          fonts: [new FontFile('notoserif-regular-subset.ttf', new Uint8Array(font))],
+          onDiagnostic: (d) => messages.push(d.message),
+        })
+        const bytes = await ad.convertToBytesAsync(source, { backend, attributes })
+        return { bytes: Array.from(bytes), messages }
+      },
+      { source, attributes, font: Array.from(font), backend }
+    )
+  const pdf = await convert('pdf')
+  const dir = mkdtempSync(join(tmpdir(), 'ptome-page-'))
+  try {
+    mkdirSync(join(dir, 'images'))
+    copyFileSync(join(pdfImages, 'red.png'), join(dir, 'images', 'red.png'))
+    const node = new Ptome({
+      safe: SafeMode.safe,
+      baseDir: dir,
+      fonts: [new FontFile('notoserif-regular-subset.ttf', font)],
+    })
+    const expected = await node.convertToBytesAsync(source.replace('include::other.adoc[]\n', ''), {
+      backend: 'pdf',
+      attributes,
+    })
+    // The same images; the include is unresolved in the browser.
+    const images = (bytes) => new TextDecoder('latin1').decode(bytes).match(/\/Subtype \/Image/g)?.length ?? 0
+    assert.equal(images(Uint8Array.from(pdf.bytes)), images(expected))
+    assert.equal(images(expected), 1)
+  } finally {
+    rmSync(dir, { recursive: true })
+  }
+  assert.deepEqual(
+    pdf.messages.filter((m) => m.includes('image')),
+    ['image to embed not found or not readable: /images/gone.png']
+  )
+  assert.ok(pdf.messages.some((m) => m.includes('include file not found')))
+  const epub = await convert('epub3')
+  assert.ok(zipNames(Uint8Array.from(epub.bytes)).some((name) => name.endsWith('images/red.png')))
+  assert.ok(requests.includes('/docs/images/red.png'))
+  assert.ok(requests.includes('/docs/images/gone.png'))
+  assert.ok(!requests.includes('/docs/other.adoc'))
+  await docsPage.close()
 })

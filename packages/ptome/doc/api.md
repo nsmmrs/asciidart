@@ -225,6 +225,10 @@ by file name, then by family. They are searched in this order:
 On JavaScript, the PDF and EPUB code loads on demand: the asynchronous
 methods load it, and `loadBackend` loads it ahead for `convertToBytes`.
 
+In a browser, `convertToBytesAsync` fetches the files the conversion
+reads (images, a theme) relative to the page, whose directory stands for
+the root of the file system; includes are not read this way.
+
 ## Also supported
 
 - **Remote content.** `parseAsync` and `convertAsync` fetch what a document

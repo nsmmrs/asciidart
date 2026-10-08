@@ -138,3 +138,10 @@ String? commandOutput(String executable, List<String> arguments) =>
 /// Fetches [uri] with an HTTP GET, following redirects; throws when the
 /// response is not 2xx.
 Future<RemoteResource> fetchUri(Uri uri) => _unsupported();
+
+/// Whether there is a file system (not in a browser).
+bool get hasFileSystem => false;
+
+/// The URL of the page file at [path] (see `page_files.dart`), or `null`
+/// where there is a file system.
+Uri? pageFileUri(String path) => null;

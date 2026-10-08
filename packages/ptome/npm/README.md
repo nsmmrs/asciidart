@@ -104,6 +104,14 @@ Text is set in the fonts the theme names, found by family:
 A font that can't be found is replaced by a built-in PDF font, with a
 warning.
 
+In a browser there is no file system, so `convertToBytesAsync` fetches the
+files the conversion reads (images, a theme) relative to the page instead:
+`image::images/logo.png[]` in a document converted on
+`https://example.org/docs/` comes from
+`https://example.org/docs/images/logo.png`. The page's directory stands for
+the root of the file system, so a path can't reach above it. Includes are
+not read this way; with `allow-uri-read` set, a URL can be included.
+
 ## Command line
 
 ```console

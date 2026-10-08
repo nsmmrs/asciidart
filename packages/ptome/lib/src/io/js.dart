@@ -19,6 +19,7 @@ import 'package:plain_compression/plain_compression.dart' show deflate;
 import 'package:plain_fonts/plain_fonts.dart'
     show FontPlatform, cacheDirectoryFor, fontDirectoriesFor;
 import 'package:ptome/src/errors.dart';
+import 'package:ptome/src/io/page_files.dart';
 import 'package:ptome/src/io/types.dart';
 import 'package:ptome/src/remote.dart';
 
@@ -140,7 +141,9 @@ external _Console get _console;
 @JS('Object.keys')
 external JSArray<JSString> _keys(JSObject object);
 
-@JS('fetch')
+// Called on globalThis: inside the npm bundle `self` is an object built on
+// it (npm/preamble.js), on which a window's fetch throws.
+@JS('globalThis.fetch')
 external JSPromise<_Response> _fetch(String url);
 
 extension type _Response(JSObject _) implements JSObject {
@@ -215,8 +218,13 @@ _Stats? _stat(String path) {
   }
 }
 
+/// The page file at [path] (see `page_files.dart`): in a browser, during
+/// a conversion that reads them; `null` when it is missing.
+List<int>? _pageFile(String path) =>
+    _host == null ? currentPageFiles?.read(path) : null;
+
 /// Whether [path] names a regular file.
-bool isFile(String path) => _stat(path)?.isFile() ?? false;
+bool isFile(String path) => _stat(path)?.isFile() ?? _pageFile(path) != null;
 
 /// Whether [path] names a directory.
 bool isDirectory(String path) => _stat(path)?.isDirectory() ?? false;
@@ -227,7 +235,7 @@ bool isPipe(String path) => _stat(path)?.isFIFO() ?? false;
 /// Whether the file at [path] grants read permission.
 bool isReadable(String path) {
   final host = _host;
-  if (host == null) return false;
+  if (host == null) return _pageFile(path) != null;
   try {
     host.fs.accessSync(path, 4); // fs.constants.R_OK
     return true;
@@ -241,7 +249,7 @@ bool isReadable(String path) {
 /// The contents of the file at [path]; throws [IoException].
 List<int> readBytes(String path) {
   final host = _host;
-  if (host == null) throw _noFileSystem(path);
+  if (host == null) return _pageFile(path) ?? (throw _noFileSystem(path));
   return _guard(
     'Cannot open file',
     path,
@@ -288,6 +296,7 @@ List<int> deflateRaw(List<int> bytes) {
 
 /// The size of the file at [path], in bytes.
 int fileSize(String path) {
+  if (_host == null) return readBytes(path).length;
   final stats = _stat(path);
   if (stats == null) throw _noFileSystem(path);
   return stats.size.round();
@@ -296,7 +305,11 @@ int fileSize(String path) {
 /// [length] bytes of the file at [path] from [offset] (fewer at its end).
 List<int> readFileRange(String path, int offset, int length) {
   final host = _host;
-  if (host == null) throw _noFileSystem(path);
+  if (host == null) {
+    final bytes = readBytes(path);
+    final start = offset.clamp(0, bytes.length);
+    return bytes.sublist(start, (start + length).clamp(start, bytes.length));
+  }
   return _guard('Cannot open file', path, () {
     final fd = host.fs.openSync(path, 'r');
     try {
@@ -402,7 +415,7 @@ void createDirectories(String path) {
 }
 
 /// Whether anything exists at [path].
-bool exists(String path) => _stat(path) != null;
+bool exists(String path) => _stat(path) != null || _pageFile(path) != null;
 
 /// The entries directly inside [directory], following links; throws
 /// [IoException].
@@ -431,7 +444,10 @@ List<DirectoryEntry> listDirectory(String directory) {
 /// anything else happens.
 void probeReadable(String path) {
   final host = _host;
-  if (host == null) throw _noFileSystem(path);
+  if (host == null) {
+    readBytes(path);
+    return;
+  }
   _guard('Cannot open file', path, () {
     if (isDirectory(path)) {
       throw IoException(
@@ -620,4 +636,32 @@ Future<RemoteResource> fetchUri(Uri uri) async {
     body: buffer.toDart.asUint8List(),
     contentType: contentType?.split(';').first.trim(),
   );
+}
+
+/// Whether there is a file system (Node.js, not a browser).
+bool get hasFileSystem => _host != null;
+
+@JS('globalThis.document')
+external _Document? get _document;
+
+extension type _Document(JSObject _) implements JSObject {
+  external String get baseURI;
+}
+
+@JS('globalThis.location')
+external _Location? get _location;
+
+extension type _Location(JSObject _) implements JSObject {
+  external String get href;
+}
+
+/// The URL of the page file at [path] (see `page_files.dart`): [path]
+/// below `/` resolved against the page's base URL (a worker's own URL);
+/// `null` where there is a file system, or no page.
+Uri? pageFileUri(String path) {
+  if (_host != null) return null;
+  final base = _document?.baseURI ?? _location?.href;
+  if (base == null) return null;
+  final relative = path.replaceFirst(RegExp('^/+'), '');
+  return Uri.parse(base).resolveUri(Uri(path: relative));
 }

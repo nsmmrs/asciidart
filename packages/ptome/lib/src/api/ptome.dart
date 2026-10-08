@@ -215,6 +215,10 @@ final class Ptome {
   /// [IncludeResolver]s that return a `Future`, fetching remote content
   /// when the `allow-uri-read` attribute is set, and doing the work that
   /// doesn't depend on order (images, compression) on other cores.
+  ///
+  /// In a browser, which has no file system, the files the conversion
+  /// reads (images, a theme) are fetched relative to the page instead: its
+  /// directory stands for the root of the file system. Includes are not.
   Future<Uint8List> convertToBytesAsync(
     String source, {
     required Backend backend,
@@ -233,11 +237,71 @@ final class Ptome {
         standalone: true,
         attributes: attributes,
       );
+      if (!impl.hasFileSystem) return await _withPageFiles(document, source);
       final doc = document._doc;
       document._run(() => impl.awaitingWorkers(doc.convert));
       await doc.finish();
       return document._run<Uint8List>(() => doc.outputBytes ?? Uint8List(0));
     });
+  }
+
+  /// The most conversions [_withPageFiles] runs for one document; each
+  /// one after the first fetches at least one new file.
+  static const int _maxPageFilePasses = 8;
+
+  /// Converts [document] (parsed from [source]) where there is no file
+  /// system (a browser): the files the conversion reads (images, themes)
+  /// are fetched relative to the page, and the conversion runs again on a
+  /// fresh parse with them until it asks for no new file. Only the last
+  /// run's diagnostics are reported.
+  Future<Uint8List> _withPageFiles(Document document, String source) async {
+    final fetched = <String, List<int>?>{};
+    var doc = document._doc;
+    for (var pass = 1; ; pass++) {
+      final files = impl.PageFiles(fetched, requested: {});
+      final collector = _Collector();
+      final current = doc;
+      final bytes = await impl.withPageFiles(files, () async {
+        _guard(
+          () => collector.run(() => impl.awaitingWorkers(current.convert)),
+        );
+        await current.finish();
+        return _guard(
+          () => collector.run(() => current.outputBytes ?? Uint8List(0)),
+        );
+      });
+      final missing = files.missing.toList();
+      if (missing.isEmpty || pass == _maxPageFilePasses) {
+        document._collector?.absorb(collector);
+        return bytes;
+      }
+      await Future.wait([
+        for (final path in missing) _fetchPageFile(fetched, path),
+      ]);
+      doc = impl.LoggerManager.scoped(
+        impl.NullLogger(),
+        () => impl.load(source, options: current.options),
+      );
+    }
+  }
+
+  /// Fetches the page file at [path] into [fetched] (`null` when it can't
+  /// be: the conversion then reports it missing).
+  static Future<void> _fetchPageFile(
+    Map<String, List<int>?> fetched,
+    String path,
+  ) async {
+    List<int>? bytes;
+    if (impl.pageFileUri(path) case final uri?) {
+      try {
+        bytes = (await impl.fetchUri(uri)).body;
+        // A failed fetch is reported as a missing file by the conversion.
+        // ignore: avoid_catches_without_on_clauses
+      } catch (_) {
+        bytes = null;
+      }
+    }
+    fetched[path] = bytes;
   }
 
   /// Parses [source] into a [Document].

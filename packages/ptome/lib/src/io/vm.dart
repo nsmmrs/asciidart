@@ -292,3 +292,10 @@ Future<RemoteResource> fetchUri(Uri uri) async {
     client.close(force: true);
   }
 }
+
+/// Whether there is a file system (not in a browser).
+bool get hasFileSystem => true;
+
+/// The URL of the page file at [path] (see `page_files.dart`), or `null`
+/// where there is a file system.
+Uri? pageFileUri(String path) => null;

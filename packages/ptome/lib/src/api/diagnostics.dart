@@ -178,6 +178,19 @@ final class _Collector extends impl.LoggerBase {
     onDiagnostic?.call(diagnostic);
   }
 
+  /// Takes the messages [other] collected, as though reported here.
+  void absorb(_Collector other) {
+    final max = _max;
+    final theirs = other._max;
+    if (theirs != null && (max == null || theirs.value > max.value)) {
+      _max = theirs;
+    }
+    for (final diagnostic in other.diagnostics) {
+      diagnostics.add(diagnostic);
+      onDiagnostic?.call(diagnostic);
+    }
+  }
+
   /// Runs [body] with this collector receiving the messages.
   R run<R>(R Function() body) => impl.LoggerManager.scoped(this, body);
 }

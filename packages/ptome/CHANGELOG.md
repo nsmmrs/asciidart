@@ -210,8 +210,9 @@ Asciidoctor project.
   one does. On Node.js, installed fonts come from the font folders. In a
   browser, the page's web fonts are used (`pageFonts`), and so are the
   visitor's installed fonts of the families asked for (`localFonts`,
-  through Local Font Access). WOFF and WOFF2 fonts work everywhere fonts
-  do. EPUBs also work in a browser without a host zlib: they are
+  through Local Font Access). In a browser, the images and the theme a
+  conversion reads are fetched relative to the page (includes are not).
+  WOFF and WOFF2 fonts work everywhere fonts do. EPUBs also work in a browser without a host zlib: they are
   compressed with plain_compression's deflate there (the Dart VM and
   Node.js keep their zlib), and ZIP reading and `.gz` man pages use
   plain_compression on every platform. Font reading and the installed-font

@@ -9,4 +9,5 @@ library;
 export 'io/interface.dart'
     if (dart.library.io) 'io/vm.dart'
     if (dart.library.js_interop) 'io/js.dart';
+export 'io/page_files.dart';
 export 'io/types.dart';

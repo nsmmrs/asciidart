@@ -727,6 +727,10 @@ export declare class Ptome {
    * {@link IncludeResolver}s that return a `Future`, fetching remote content
    * when the `allow-uri-read` attribute is set, and doing the work that
    * doesn't depend on order (images, compression) on other cores.
+   *
+   * In a browser, which has no file system, the files the conversion
+   * reads (images, a theme) are fetched relative to the page instead: its
+   * directory stands for the root of the file system. Includes are not.
    */
   convertToBytesAsync(source: string, options: { backend: Backend; path?: string | null; doctype?: Doctype | null; attributes?: Record<string, string> }): Promise<Uint8Array>;
   /**
