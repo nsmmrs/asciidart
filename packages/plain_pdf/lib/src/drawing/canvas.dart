@@ -387,13 +387,10 @@ final class PdfCanvas implements Canvas {
   /// [phase]; empty for solid lines.
   @override
   void dash(List<double> pattern, [double phase = 0]) {
-    final out = _content..byte(0x5b); // [
-    for (var i = 0; i < pattern.length; i++) {
-      if (i > 0) out.byte(0x20);
-      out.numeric(pattern[i]);
-    }
-    out
-      ..byte(0x5d) // ]
+    // The array as PdfArray writes it (on the web, its whole numbers are
+    // PdfInts, and -0.0 is written as 0).
+    _content
+      ..bytes(PdfArray.numbers(pattern).toBytes())
       ..commit()
       ..byte(0x20)
       ..number(phase, 5)
