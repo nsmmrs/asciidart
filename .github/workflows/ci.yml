@@ -95,9 +95,9 @@ jobs:
       uses: dart-lang/setup-dart@v1
     - name: Install Dart dependencies
       run: dart pub get
-    - name: Install poppler (the corpus compares a changed PDF's pages)
+    - name: Install poppler and qpdf (PDF pages and structure in tests)
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils
+      run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils qpdf
     - name: Analyze Dart code
       run: dart analyze --fatal-infos .
     - name: Check Dart formatting
@@ -108,37 +108,6 @@ jobs:
       run: dart run tool/api_check.dart
     - name: Check that the JavaScript projection is up to date
       run: dart run tool/generate_js.dart --check
-  e2e:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Set up Dart
-      uses: dart-lang/setup-dart@v1
-    - name: Install Dart dependencies
-      run: dart pub get
-    - name: Set up Ruby (oracle only)
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.4'
-    - name: Install the asciidoctor gem from upstream main (e2e oracle)
-      run: |
-        # Upstream main at the pin in tool/vendor.sh (2.1.0.alpha.0).
-        git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
-        git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
-        (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
-    - name: Install bats
-      run: sudo npm i -g bats
-    - name: Run e2e CLI tests (Dart)
-      env:
-        ASCIIDOCTOR_EXE: test/e2e/bin/ptome
-      run: bats test/e2e/
-    - name: Run e2e CLI tests (Ruby oracle)
-      env:
-        ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-ruby
-      run: bats test/e2e/
-    - name: Run differential selfcheck
-      run: bats test/differential/
   dart-exe-e2e:
     runs-on: ubuntu-latest
     steps:
@@ -152,7 +121,7 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.4'
-    - name: Install the asciidoctor gem from upstream main (parity oracle)
+    - name: Install the asciidoctor gem from upstream main (e2e oracle)
       # With asciimath, whose conversion ptome ports (AsciiMath becomes
       # MathML in DocBook, ADR-0014). No other optional gems: ptome
       # highlights with highlight.js only, and Rouge, Pygments and CodeRay
@@ -170,6 +139,14 @@ jobs:
         EXE="$(pwd)/dist/$(ls dist | grep '^ptome-linux-')"
         echo "ASCIIDOCTOR_EXE=$EXE"
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
+    - name: Run e2e CLI tests (Ruby oracle)
+      # The same suite against the gem, so every test states the gem's
+      # behavior.
+      env:
+        ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-ruby
+      run: bats test/e2e/
+    - name: Run differential selfcheck
+      run: bats test/differential/
     - name: Install asciidoctor-epub3 gem on the main gem (EPUB oracle)
       # Without its asciidoctor dependency, which would bring in the 2.0
       # release; the version line shows the Asciidoctor it runs on.

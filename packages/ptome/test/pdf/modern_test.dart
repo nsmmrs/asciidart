@@ -432,7 +432,7 @@ void main() {
         expect(double.parse(m[1]!), lessThanOrEqualTo(right + 0.5));
       }
     });
-  }, skip: _tools ? false : 'needs poppler');
+  }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 
   test('a paragraph leaves neither a widow nor an orphan', () {
     // A filler paragraph of hard-broken lines pushes an eight-line

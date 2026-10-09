@@ -115,14 +115,32 @@ void _writePipe(List<Object> args) {
   (args[1] as SendPort).send(null);
 }
 
+/// The CLI compiled to a kernel snapshot once per run of these tests, so
+/// that each subprocess starts in a fraction of a second rather than
+/// compiling the sources again.
+final Future<String> _cli = () async {
+  final dir = Directory('$repoRoot/.dart_tool/invoker_test')
+    ..createSync(recursive: true);
+  final kernel = '${dir.path}/ptome-$pid.dill';
+  final result = await Process.run(Platform.resolvedExecutable, [
+    'compile',
+    'kernel',
+    'bin/ptome.dart',
+    '-o',
+    kernel,
+  ], workingDirectory: repoRoot);
+  if (result.exitCode != 0) throw StateError('${result.stderr}');
+  return kernel;
+}();
+
 /// Runs the real CLI binary in a subprocess, like Ruby's `run_command`.
 Future<ProcessResult> runCli(
   List<String> args, {
   Map<String, String>? environment,
-}) {
-  return Process.run(
+}) async {
+  return await Process.run(
     Platform.resolvedExecutable,
-    ['bin/ptome.dart', ...args],
+    [await _cli, ...args],
     workingDirectory: repoRoot,
     environment: environment,
   );
@@ -136,6 +154,11 @@ String copyFixtureTo(String name, Directory dir) {
 }
 
 void main() {
+  tearDownAll(() async {
+    final kernel = File(await _cli);
+    if (kernel.existsSync()) kernel.deleteSync();
+  });
+
   group('Invoker constructor', () {
     test('allows CliOptions to be passed as first argument of constructor', () {
       final opts = CliOptions(attributes: {'toc': ''}, doctype: 'book');
@@ -317,13 +340,14 @@ void main() {
       final input = File('${dir.path}/big.adoc')
         ..writeAsStringSync('paragraph text\n\n' * 20000);
       const pipeline =
-          r'set -o pipefail; "$0" bin/ptome.dart -o - "$1" '
+          r'set -o pipefail; "$0" "$2" -o - "$1" '
           '| head -c 1 >/dev/null';
       final result = await Process.run('bash', [
         '-c',
         pipeline,
         Platform.resolvedExecutable,
         input.path,
+        await _cli,
       ], workingDirectory: repoRoot);
       expect(result.exitCode, equals(0), reason: '${result.stderr}');
       expect(result.stderr as String, isEmpty);
