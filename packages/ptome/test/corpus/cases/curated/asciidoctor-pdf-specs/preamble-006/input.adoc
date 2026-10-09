@@ -1,0 +1,6 @@
+= Document Title
+:doctype: book
+
+first paragraph
+
+second paragraph

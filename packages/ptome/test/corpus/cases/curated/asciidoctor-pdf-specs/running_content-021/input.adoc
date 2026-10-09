@@ -1,0 +1,14 @@
+= Document Title
+:doctype: book
+:toc: macro
+:media: prepress
+
+[abstract]
+.Abstract
+Documentation is a distillation of many long adventures.
+
+toc::[]
+
+== First Chapter
+
+== Second Chapter

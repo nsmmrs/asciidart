@@ -1,0 +1,10 @@
+= Document Title
+:doctype: book
+:front-cover-image: image:tux.png[]
+:toc:
+
+== First Chapter
+
+== Second Chapter
+
+== Third Chapter

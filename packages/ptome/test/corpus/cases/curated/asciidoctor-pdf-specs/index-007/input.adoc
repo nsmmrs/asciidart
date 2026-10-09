@@ -1,0 +1,13 @@
+= Document Title
+:doctype: book
+:toc:
+
+== Chapter
+
+content
+
+[index]
+== Index
+
+[glossary]
+== Glossary

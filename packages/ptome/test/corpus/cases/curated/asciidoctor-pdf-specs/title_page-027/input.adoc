@@ -1,0 +1,5 @@
+= Document Title
+:title-page:
+:title-logo-image: image:red-blue-squares.svg[pdfwidth=50%,top=70%]
+
+content

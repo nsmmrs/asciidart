@@ -1,0 +1,4 @@
+= Document Title
+:pdf-theme: default-sans
+
+We don't like those _pesky_ serifs in these here parts.

@@ -1,0 +1,10 @@
+.Table description
+|===
+| Col A | Col B
+
+| A1
+| B1
+
+| A2
+| B2
+|===

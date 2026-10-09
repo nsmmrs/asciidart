@@ -1,0 +1,6 @@
+:source-highlighter: pygments
+
+[source,xml]
+----
+<payload>&amp;</payload>
+----

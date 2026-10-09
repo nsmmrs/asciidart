@@ -1,0 +1,8 @@
+before
+
+[no-bullet]
+* a
+* b
+* c
+
+after

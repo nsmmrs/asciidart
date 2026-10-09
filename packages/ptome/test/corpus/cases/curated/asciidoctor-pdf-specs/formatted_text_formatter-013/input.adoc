@@ -1,0 +1,3 @@
+:brandname: acme
+
+[.upper]#{brandname}#

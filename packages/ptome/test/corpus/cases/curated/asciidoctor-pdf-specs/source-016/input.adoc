@@ -1,0 +1,7 @@
+:source-highlighter: rouge
+:rouge-style: colorful
+
+[source,ruby]
+----
+class Type; end
+----

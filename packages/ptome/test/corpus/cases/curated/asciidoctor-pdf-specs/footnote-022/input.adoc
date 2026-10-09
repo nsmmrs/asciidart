@@ -1,0 +1,3 @@
+:footnotes-title: Footnotes
+
+main content.footnote:[This is a footnote, just so you know.]

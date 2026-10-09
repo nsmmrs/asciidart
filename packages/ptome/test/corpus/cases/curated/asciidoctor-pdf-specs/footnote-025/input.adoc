@@ -1,0 +1,4 @@
+|===
+|``German``footnote:[Other non-English languages may be supported in the future depending on demand.]
+| 80footnote:[Width and Length is overridden by the actual terminal or window size, if available.]
+|===

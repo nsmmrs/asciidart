@@ -1,0 +1,17 @@
+[cols=2*a]
+|===
+|
+* list item
++
+[horizontal]
+term:: desc
+
+* second list item
+
+|
+list item
+
+*term* desc
+
+second list item
+|===

@@ -1,0 +1,7 @@
+:toc-placement: macro
+
+== Before
+
+toc::[]
+
+== After

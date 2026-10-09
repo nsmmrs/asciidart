@@ -1,0 +1,5 @@
+:fn-disclaimer: pass:q[footnote:disclaimer[Only available if you have an _active_ subscription.]]
+
+You will receive notifications of all product updates.{fn-disclaimer}
+
+You can download patches from the product page.{fn-disclaimer}

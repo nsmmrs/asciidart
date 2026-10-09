@@ -1,0 +1,16 @@
+= Document Title
+:doctype: book
+:partnums:
+:xrefstyle: basic
+
+= Beginner
+
+== Basic Lesson
+
+Now you are ready for <<_advanced>>!
+
+= Advanced
+
+== Advanced Lesson
+
+If you are so advanced, why do you even need a lesson?

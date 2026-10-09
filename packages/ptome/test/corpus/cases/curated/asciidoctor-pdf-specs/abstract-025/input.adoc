@@ -1,0 +1,6 @@
+= Article Title
+
+[abstract]
+This is the abstract.
+
+This is the opening paragraph.

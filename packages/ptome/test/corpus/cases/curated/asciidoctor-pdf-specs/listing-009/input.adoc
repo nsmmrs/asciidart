@@ -1,0 +1,4 @@
+[%autofit]
+----
+puts 'Hello, World!'
+----

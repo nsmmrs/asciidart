@@ -1,0 +1,12 @@
+first column
+
+[.column]
+<<<
+
+second column
+
+[.column]
+<<<
+
+[.text-right]
+first column again

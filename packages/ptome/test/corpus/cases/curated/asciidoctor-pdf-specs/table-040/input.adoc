@@ -1,0 +1,7 @@
+[%autowidth,cols=3*]
+|===
+| 100
+| Label1
+| Lorem ipsum dolor sit amet, elit fusce duis, voluptatem ut,
+mauris tempor orci odio sapien viverra ut, deserunt luctus.
+|===

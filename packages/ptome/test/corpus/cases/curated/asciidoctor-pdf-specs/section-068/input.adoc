@@ -1,0 +1,7 @@
+= Document Title
+:doctype: book
+:toc:
+
+== Chapter
+
+== Another Chapter

@@ -1,0 +1,4 @@
+((index term))
+
+[index]
+== Index

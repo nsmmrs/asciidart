@@ -1,0 +1,6 @@
+= Document Title
+:toc:
+
+== This Here is an Absurdly Long Section Title That Exceeds the Length of a Single Line and Therefore Wraps
+
+content

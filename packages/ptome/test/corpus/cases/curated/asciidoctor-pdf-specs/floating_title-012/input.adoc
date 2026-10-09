@@ -1,0 +1,19 @@
+= Document Title
+
+== Section
+
+paragraph
+
+[discrete]
+=== Discrete Heading
+
+paragraph
+
+=== Nested Section
+
+paragraph
+
+[discrete]
+==== Another Discrete Heading
+
+paragraph

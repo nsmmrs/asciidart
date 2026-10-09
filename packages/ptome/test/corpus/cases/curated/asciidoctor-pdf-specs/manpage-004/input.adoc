@@ -1,0 +1,7 @@
+= cmd(1)
+Author Name
+v1.0.0
+:manmanual: CMD
+:mansource: CMD
+:manname: cmd
+:manpurpose: does stuff

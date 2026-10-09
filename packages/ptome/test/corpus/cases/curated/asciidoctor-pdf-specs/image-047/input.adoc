@@ -1,0 +1,5 @@
+go to <<red>>
+
+.Red Page
+[#red]
+image::red-green-blue.pdf[page=1]

@@ -1,0 +1,8 @@
+[%autowidth,cols="10,>~"]
+|===
+|0x00
+|UNSPECIFIED
+
+|0x01
+|OK
+|===

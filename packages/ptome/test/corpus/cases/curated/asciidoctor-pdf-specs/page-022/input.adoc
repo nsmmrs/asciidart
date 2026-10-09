@@ -1,0 +1,8 @@
+= Article Title Goes Here
+
+first column
+
+[.column]
+<<<
+
+second column

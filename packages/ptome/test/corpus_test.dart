@@ -4,6 +4,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:ptome/ptome.dart';
 import 'package:ptome/src/io.dart' as io;
@@ -34,6 +35,35 @@ void main() {
           () {
             final (:result, :output) = c.convert(format);
             if (result.matches(expected!)) return;
+            // A PDF with a golden one: its pages are what counts.
+            if (c.goldenPdf != null &&
+                output is Uint8List &&
+                result.logLines.join('\n') == expected.logLines.join('\n')) {
+              final pixels = c.comparePages(output, result.hash!);
+              if (pixels == null) {
+                markTestSkipped(
+                  'no pdftoppm: the PDF changed, its pages '
+                  "can't be compared with asciidoctor-pdf's",
+                );
+                return;
+              }
+              if (pixels == 'identical') {
+                // Promoted: the new PDF is the one to match from now on.
+                c.promotePdf(expected.hash!, result.hash!, output);
+                // (Said, so the change is committed.)
+                // ignore: avoid_print
+                print(
+                  '${c.id}: the PDF changed and its pages still equal '
+                  "asciidoctor-pdf's; recorded ${result.hash} (commit it)",
+                );
+                return;
+              }
+              fail(
+                "the PDF changed, and its pages differ from asciidoctor-pdf's: "
+                '$pixels (recorded: ${expected.pixels}); if the change is '
+                'meant, record it (`corpus regen -p ptome`)',
+              );
+            }
             fail(_explain(c, format, expected, result, output));
           },
         );

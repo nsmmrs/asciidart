@@ -1,0 +1,6 @@
+The recommended reading includes <<bar>>.
+
+[bibliography]
+== Bibliography
+
+* [[[bar,1]]] Bar, Foo. All The Things. 2010.

@@ -1,0 +1,16 @@
+image::blue-letter.pdf[]
+
+see <<Section>>
+
+<<<
+
+== Section
+
+go to <<__anchor-top,top>>
+
+go to <<last>>
+
+<<<
+
+[#last]
+last

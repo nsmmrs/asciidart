@@ -1,0 +1,3 @@
+extends: default
+base_text_align: 'right'
+caption_align: 'inherit'

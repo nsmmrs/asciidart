@@ -1,0 +1,22 @@
+= Book Title
+:doctype: book
+:media: prepress
+:toc: macro
+
+[dedication]
+= Dedication
+
+Credit where credit is due.
+
+toc::[]
+
+== First Chapter
+
+((apples))
+
+== Second Chapter
+
+((bananas))
+
+[index]
+== Index

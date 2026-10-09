@@ -1,0 +1,9 @@
+before
+
+.title
+[%breakable]
+|===
+| will not be separated from title
+|===
+
+after

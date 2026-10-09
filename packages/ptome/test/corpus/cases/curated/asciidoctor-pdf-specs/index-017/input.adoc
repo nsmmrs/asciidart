@@ -1,0 +1,6 @@
+= Document Title
+
+((This)) is not the same as ((this)) or ((that)).
+
+[index]
+== Index

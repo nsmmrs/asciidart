@@ -1,0 +1,5 @@
+see <<link,link>>
+
+<<<
+
+https://asciidoctor.org[Asciidoctor,id=link]

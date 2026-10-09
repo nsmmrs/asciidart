@@ -1,0 +1,4 @@
+before image
+
+.Image caption
+image::tall-diagram.png[Tall diagram]

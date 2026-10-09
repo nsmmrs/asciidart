@@ -60,6 +60,9 @@ $LOAD_PATH.unshift LIB
 require 'asciidoctor'
 require 'asciidoctor/extensions'
 require 'asciidoctor/cli'
+# Libraries a profile adds (WORKER_REQUIRES, comma-separated), such as
+# asciidoctor-pdf.
+ENV.fetch('WORKER_REQUIRES', '').split(',').each {|library| require library }
 # Lazily required parts load now, so their load-time lines are baseline
 # instead of being charged to the first case that needs them.
 %w(converter/html5 converter/docbook5 converter/manpage converter/template
@@ -205,7 +208,11 @@ $stdin.each_line do |line|
   begin
     output, log = convert request
     response[:ok] = true
-    response[:output] = output.to_s
+    if output.respond_to? :render # a PDF (asciidoctor-pdf's converter)
+      response[:output_base64] = [output.render].pack 'm0'
+    else
+      response[:output] = output.to_s
+    end
     response[:log] = log
     response[:includes] = INCLUDED.uniq unless INCLUDED.empty?
   rescue Exception => e # rubocop:disable Lint/RescueException

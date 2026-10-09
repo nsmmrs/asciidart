@@ -1,0 +1,16 @@
+= Book Title
+:doctype: book
+:sectnums:
+
+== Chapter
+
+content
+
+[appendix]
+= Appendix
+
+content
+
+=== Appendix Subsection
+
+content

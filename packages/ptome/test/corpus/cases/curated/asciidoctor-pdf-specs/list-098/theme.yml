@@ -1,0 +1,3 @@
+extends: default
+conum_font_size: 8
+conum_line_height: 1.8

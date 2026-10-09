@@ -1,0 +1,3 @@
+:icons: font
+
+If the icon:wrench[] doesn't do it, try a icon:wrench[lg] one.

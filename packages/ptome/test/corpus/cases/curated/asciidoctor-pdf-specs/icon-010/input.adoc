@@ -1,0 +1,4 @@
+:icons: font
+:icon-set: fas
+
+*|* icon:arrows-alt-h[fw] *|* icon:arrows-alt-v[fw] *|*

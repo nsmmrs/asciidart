@@ -1,0 +1,16 @@
+[%autowidth]
+|===
+|Operation |Operator
+
+|add
+|+
+
+|subtract
+|-
+
+|multiply
+|*
+
+|divide
+|/
+|===

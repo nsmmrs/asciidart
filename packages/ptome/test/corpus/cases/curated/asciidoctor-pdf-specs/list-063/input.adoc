@@ -1,0 +1,2 @@
+[horizontal]
+__f__oo:: bar

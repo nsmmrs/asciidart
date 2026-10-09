@@ -1,0 +1,1 @@
+You can add a ((visible index entry)) to your document by enclosing it in double round brackets.

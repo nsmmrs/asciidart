@@ -345,6 +345,7 @@ final class PdfConverter extends BuiltInConverter
           ?.replaceAll('{docdir}', document.attr('docdir') ?? ''),
       shaping: _shaping,
       synthesizeFaces: true,
+      thousandthWidths: _thousandthWidths,
       warn: logger.warn,
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
@@ -2257,6 +2258,7 @@ final class PdfConverter extends BuiltInConverter
     'running_content_on_openers': ThemeBool(true),
     'running_content_on_blank_pages': ThemeBool(true),
     'base_emphasis_inversion': ThemeBool(false),
+    'base_glyph_widths': ThemeString('thousandths'),
   };
 
   /// The page size of the initial layout (the gem's page size: a named
@@ -9116,7 +9118,12 @@ final class PdfConverter extends BuiltInConverter
       if (node.document case final Document doc) {
         _document = doc;
         _theme = _prepareTheme(_loadTheme(doc));
-        _fonts = FontCatalog(_theme, shaping: _shaping, warn: logger.warn);
+        _fonts = FontCatalog(
+          _theme,
+          shaping: _shaping,
+          thousandthWidths: _thousandthWidths,
+          warn: logger.warn,
+        );
         _markup = MarkupTransform(
           theme: _theme,
           invertEmphasis: _invertEmphasis,
@@ -9155,6 +9162,12 @@ final class PdfConverter extends BuiltInConverter
   Shaping get _shaping => _s('base_font_ligatures') == 'none'
       ? Shaping.opentype
       : Shaping.ligatures;
+
+  /// Whether glyphs are as wide as their advances in whole 1000ths of the
+  /// em (`base_glyph_widths: thousandths`) rather than exactly.
+  bool get _thousandthWidths =>
+      _choice('base_glyph_widths', const ['exact', 'thousandths']) ==
+      'thousandths';
 
   /// Whether the document is being converted (rather than parsed: inline
   /// content converted for a title's id, which the gem converts before

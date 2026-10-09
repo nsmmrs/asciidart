@@ -1,0 +1,4 @@
+[%autowidth]
+|===
+|image:tux.png[pdfwidth=1.5in]
+|===

@@ -1,0 +1,5 @@
+[cols=2*,width=50%]
+|===
+m|site.url
+|The URL of the site.
+|===

@@ -1,0 +1,6 @@
+[horizontal]
+yin::
++
+yang
+
+foo:: bar

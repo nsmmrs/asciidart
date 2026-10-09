@@ -196,8 +196,9 @@ final class TrueTypeFont extends FontFace {
         ligatures: ligates,
         features: features,
       );
+      final whole = pdf.truncateWidths;
       for (final (i, glyph) in glyphs.indexed) {
-        width += glyph.advance;
+        width += whole ? glyph.advance.truncateToDouble() : glyph.advance;
         if (i < glyphs.length - 1) width += glyph.kerning;
       }
       return width;
@@ -385,6 +386,7 @@ final class FontCatalog {
     String? fontsDir,
     this.shaping = Shaping.opentype,
     this.synthesizeFaces = false,
+    this.thousandthWidths = false,
     FontIndex? installed,
     void Function(String message)? warn,
   }) : _installed = installed ?? Fonts.current,
@@ -406,6 +408,11 @@ final class FontCatalog {
   /// Whether a style the catalog lacks for a family is made from one it
   /// has (an italic slanted, a bold stroked), rather than an error.
   final bool synthesizeFaces;
+
+  /// Whether each glyph is as wide as its advance in whole 1000ths of the
+  /// em (truncated), in the layout and in the widths the PDF gives, rather
+  /// than exactly as wide (theme key `base_glyph_widths`).
+  final bool thousandthWidths;
 
   final Map<String, Map<String, String>> _catalog;
   final List<String> _dirs;
@@ -585,8 +592,11 @@ final class FontCatalog {
   }
 
   /// The font in the file at [path] ([index] in a collection).
-  EmbeddedFont _parse(String path, {int index = 0}) =>
-      EmbeddedFont.parse(_bytes(path), index: index);
+  EmbeddedFont _parse(String path, {int index = 0}) => EmbeddedFont.parse(
+    _bytes(path),
+    index: index,
+    truncateWidths: thousandthWidths,
+  );
 
   /// (Files are read once per process; fonts given as bytes belong to
   /// their conversion.)

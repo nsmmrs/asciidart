@@ -1,0 +1,10 @@
+:source-highlighter: rouge
+
+[source,java]
+----
+public interface Person {
+  String getName(); // <.>
+  String getDob(); // <.>
+  int getAge(); // <.> <.>
+}
+----

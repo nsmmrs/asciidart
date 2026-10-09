@@ -1,0 +1,17 @@
+= cmd(1)
+Author Name
+v1.0.0
+:manmanual: CMD
+:mansource: CMD
+
+== Name
+
+cmd - does stuff
+
+== Synopsis
+
+*cmd* [_OPTION_]... _FILE_...
+
+== Options
+
+*-v*:: Prints the version.

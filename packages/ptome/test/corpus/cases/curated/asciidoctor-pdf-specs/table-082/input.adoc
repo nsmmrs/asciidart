@@ -1,0 +1,7 @@
+[cols=1a]
+|===
+|first{empty}footnote:[First footnote inside table]
+|second{empty}footnote:[Second footnote inside table]
+|===
+
+third{empty}footnote:[Footnote outside of table]

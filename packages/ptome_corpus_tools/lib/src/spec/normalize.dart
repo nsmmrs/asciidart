@@ -8,6 +8,8 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
+import 'profile.dart';
+
 final _versionStamp = RegExp('(?:Asciidoctor|Ptome) [0-9][0-9A-Za-z.+_~-]*');
 final _lastUpdated = RegExp(
   r'Last updated \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}',
@@ -22,13 +24,15 @@ final _manDate = RegExp(r'^(\.\\" +Date: ).*$', multiLine: true);
 /// * the HTML footer's `Last updated <datetime>`,
 /// * the manpage `Date:` comment,
 /// * the absolute base directory, which becomes `{base}`, and the working
-///   directory (paths a document names relative to it), `{cwd}`.
+///   directory (paths a document names relative to it), `{cwd}`, and
+///   the tools' cache (the Ruby profiles' gems), `{cache}`.
 String normalizeText(String text, {required String baseDir}) => text
     .replaceAll(_versionStamp, 'Asciidoctor VERSION')
     .replaceAll(_lastUpdated, 'Last updated DATETIME')
     .replaceAllMapped(_manDate, (m) => '${m[1]}DATE')
     .replaceAll(baseDir, '{base}')
-    .replaceAll(Directory.current.path, '{cwd}');
+    .replaceAll(Directory.current.path, '{cwd}')
+    .replaceAll(cacheDir, '{cache}');
 
 /// The bytes of a normalized output, text or binary.
 Uint8List outputBytes(Object output, {required String baseDir}) =>

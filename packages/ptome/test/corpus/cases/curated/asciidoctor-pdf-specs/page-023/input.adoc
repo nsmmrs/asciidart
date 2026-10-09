@@ -1,0 +1,9 @@
+= Article Title Goes Here
+:toc:
+
+== First Column
+
+[.column]
+<<<
+
+== Second Column

@@ -1,0 +1,14 @@
+= Cats & Dogs
+:sectnums:
+
+== Cats
+
+We know that ((cats)) control the internet.
+
+== Dogs
+
+Cats may rule, well, everything.
+But ((dogs)) are a human's best friend.
+
+[index]
+== Index

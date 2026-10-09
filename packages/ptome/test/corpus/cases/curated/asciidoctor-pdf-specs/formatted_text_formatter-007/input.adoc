@@ -1,0 +1,6 @@
+:icons: font
+
+[#reference]
+== icon:cogs[] Heading
+
+See <<reference>>.

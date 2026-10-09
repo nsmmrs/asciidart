@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source,php?start_inline=1]
+----
+echo "<?php";
+----

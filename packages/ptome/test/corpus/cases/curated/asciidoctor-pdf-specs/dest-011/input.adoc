@@ -1,0 +1,6 @@
+[#props]
+|===
+| Name | Value
+
+| Foo | Bar
+|===

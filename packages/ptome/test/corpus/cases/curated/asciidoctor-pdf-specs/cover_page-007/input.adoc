@@ -1,0 +1,10 @@
+= Document Title
+:doctype: book
+:media: prepress
+:front-cover-image: ~
+
+first page
+
+<<<
+
+second page

@@ -1,0 +1,6 @@
+:source-highlighter: pygments
+
+[source%mixed,php]
+----
+echo "<?php";
+----

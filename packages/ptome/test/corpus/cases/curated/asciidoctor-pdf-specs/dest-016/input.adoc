@@ -1,0 +1,8 @@
+----
+require 'asciidoctor-pdf' // <1>
+
+Asciidoctor.convert_file 'doc.adoc', backend: 'pdf', safe: :safe // <2>
+----
+[#details]
+<1> requires the library
+<2> converts the document to PDF

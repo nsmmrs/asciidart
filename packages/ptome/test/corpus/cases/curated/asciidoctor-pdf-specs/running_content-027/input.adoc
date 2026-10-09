@@ -1,0 +1,10 @@
+= Document Title
+:doctype: book
+:notitle:
+:toc:
+
+== First Chapter
+
+== Second Chapter
+
+== Third Chapter

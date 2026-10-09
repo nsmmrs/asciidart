@@ -1,0 +1,8 @@
+= Document Title
+:doctype: book
+
+= Part 1
+
+== Chapter
+
+content

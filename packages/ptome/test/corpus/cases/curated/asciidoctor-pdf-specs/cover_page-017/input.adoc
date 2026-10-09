@@ -1,0 +1,5 @@
+= Document Title
+:pdf-page-size: Letter
+:front-cover-image: image:cover.jpg[fit=cover]
+
+content page

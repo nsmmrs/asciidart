@@ -1,0 +1,3 @@
+:pdf-page-size: [600, 800]
+
+content

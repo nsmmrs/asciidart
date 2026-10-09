@@ -1,0 +1,12 @@
+= Document Title
+:doctype: book
+
+[#a]
+== Chapter A
+
+You can find details in <<b>>.
+
+[#b]
+== Chapter B
+
+Here are the details you're looking for.

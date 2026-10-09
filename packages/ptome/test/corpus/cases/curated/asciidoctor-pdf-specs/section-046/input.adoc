@@ -1,0 +1,10 @@
+= Document Title
+:doctype: book
+:toc:
+
+== Chapter
+
+Musings.
+
+[colophon%notitle]
+== Hidden

@@ -1,0 +1,6 @@
+foo +
+{empty} +
+{empty} +
+{empty} +
+
+bar

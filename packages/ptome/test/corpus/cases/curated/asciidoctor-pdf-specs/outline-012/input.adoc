@@ -1,0 +1,14 @@
+= Document Title
+:doctype: book
+:toclevels: 1
+:outlinelevels: 2
+
+== First Chapter
+
+=== Chapter Section
+
+==== Nested Section
+
+== Middle Chapter
+
+== Last Chapter

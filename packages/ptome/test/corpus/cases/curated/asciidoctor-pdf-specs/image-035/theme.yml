@@ -1,0 +1,2 @@
+extends: default
+footer_recto_right_content: 'pg {page-number}'

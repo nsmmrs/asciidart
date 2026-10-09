@@ -1,0 +1,10 @@
+= Document Title
+
+== Symbols
+
+Use the ((@Transactional)) annotation to mark a bean as transactional.
+
+Use the ((&#169;)) symbol to indicate the copyright.
+
+[index]
+== Index

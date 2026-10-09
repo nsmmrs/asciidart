@@ -1,0 +1,8 @@
+:source-highlighter: coderay
+
+[source,yaml]
+----
+category:
+  hash:
+    key: "value"
+----

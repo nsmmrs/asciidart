@@ -1,0 +1,6 @@
+:!example-caption:
+
+.Title
+====
+content
+====

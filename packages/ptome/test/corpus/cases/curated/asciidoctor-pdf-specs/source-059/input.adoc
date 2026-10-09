@@ -1,0 +1,8 @@
+:source-highlighter: pygments
+
+[source,text]
+----
+  lead space
+flush
+  lead space
+----

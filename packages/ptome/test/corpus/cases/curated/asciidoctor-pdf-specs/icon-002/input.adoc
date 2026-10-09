@@ -1,0 +1,4 @@
+:icons: font
+:icon-set: fas
+
+A icon:wrench[] ought to fix it.

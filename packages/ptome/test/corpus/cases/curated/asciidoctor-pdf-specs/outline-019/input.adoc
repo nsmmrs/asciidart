@@ -1,0 +1,11 @@
+= Document Title
+:doctype: book
+:outlinelevels: :1
+
+= Part
+
+== Chapter
+
+=== Section
+
+==== Subsection

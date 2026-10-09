@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source,foobar]
+----
+puts "Hello, World!"
+----

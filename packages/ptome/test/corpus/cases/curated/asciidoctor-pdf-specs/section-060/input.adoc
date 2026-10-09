@@ -1,0 +1,14 @@
+== Section A
+
+image::tall.svg[pdfwidth=70mm]
+
+== Section B
+
+[%unbreakable]
+--
+keep
+
+this
+
+together
+--

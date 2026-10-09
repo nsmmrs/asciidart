@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source%mixed,php?foo=bar]
+----
+echo "<?php";
+----

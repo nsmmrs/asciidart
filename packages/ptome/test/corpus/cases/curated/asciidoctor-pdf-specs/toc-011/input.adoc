@@ -1,0 +1,12 @@
+= Document Title
+:toc: preamble
+
+This is the preamble.
+
+== Introduction
+
+content
+
+== Conclusion
+
+content

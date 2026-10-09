@@ -1,0 +1,6 @@
+:source-highlighter: pygments
+
+[source,ruby]
+----
+puts "Hello, Pygments!"
+----

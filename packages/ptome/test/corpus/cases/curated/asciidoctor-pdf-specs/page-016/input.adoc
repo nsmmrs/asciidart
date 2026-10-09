@@ -1,0 +1,13 @@
+:pdf-page-margin: [18, 36, 36, 36]
+
+first page
+
+[page-layout=landscape]
+<<<
+
+rotated page
+
+[page-layout=portrait]
+<<<
+
+last page

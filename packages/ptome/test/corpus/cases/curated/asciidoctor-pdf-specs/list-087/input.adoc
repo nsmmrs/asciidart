@@ -1,0 +1,7 @@
+[ordered.stack]
+item a:: about item a
++
+more about item a
+
+item b::
+about item b

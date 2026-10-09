@@ -1,0 +1,2 @@
+extends: default
+page_size: ['8.5in', '11in']

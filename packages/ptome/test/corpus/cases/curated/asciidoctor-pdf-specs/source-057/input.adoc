@@ -1,0 +1,9 @@
+:source-highlighter: pygments
+
+[source%linenums]
+----
+fee
+fi
+fo
+fum
+----

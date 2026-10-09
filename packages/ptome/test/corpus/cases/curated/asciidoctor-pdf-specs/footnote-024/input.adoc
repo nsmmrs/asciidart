@@ -1,0 +1,5 @@
+= Document Title
+
+== Chapter A
+
+About this thing.footnote:[More about that thing.] And so on.

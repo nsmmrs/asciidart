@@ -1,0 +1,5 @@
+= Document Title
+
+== Section
+
+paragraph{blank}footnote:[About this paragraph]

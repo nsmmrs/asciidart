@@ -1,0 +1,16 @@
+portrait
+
+[.landscape]
+<<<
+
+landscape
+
+[.portrait]
+<<<
+
+portrait
+
+[.landscape]
+<<<
+
+landscape

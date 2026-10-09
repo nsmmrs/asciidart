@@ -1,0 +1,10 @@
+= Guide
+:doctype: book
+
+== Working with ((Custom Pipelines))
+
+(((custom behavior)))
+Custom pipelines allow you to add custom behavior to the application.
+
+[index]
+== Index

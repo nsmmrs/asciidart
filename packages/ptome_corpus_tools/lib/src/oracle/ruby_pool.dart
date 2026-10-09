@@ -85,6 +85,7 @@ final class RubyWorker {
     final env = {
       ...Platform.environment,
       'ADOC_ROOT': profile.adocRoot,
+      'WORKER_REQUIRES': profile.requires.join(','),
       'TZ': 'UTC',
       'LANG': 'C.UTF-8',
       if (profile.gemHome != null) 'GEM_HOME': profile.gemHome!,

@@ -40,6 +40,10 @@ dart run bin/corpus.dart regen --check    # verify instead of writing
 ```
 
 `regen` takes `-p <profile>` and case-id prefixes to limit what it runs.
+It records each ptome PDF's comparison with the gem's (`pixels`), with
+poppler's `pdftoppm`, and fails when a ptome PDF or EPUB changes with the
+directory it is converted from. It runs from ptome's package directory,
+as ptome's tests do.
 Run it from anywhere in the workspace; it finds the corpus.
 
 ## Building the corpus

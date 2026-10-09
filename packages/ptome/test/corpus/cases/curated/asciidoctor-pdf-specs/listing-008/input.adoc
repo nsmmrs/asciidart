@@ -1,0 +1,4 @@
+[%autofit]
+----
+@themesdir = ::File.expand_path theme.__dir__ || (doc.attr 'pdf-themesdir') || ::Dir.pwd
+----

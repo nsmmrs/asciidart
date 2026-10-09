@@ -1,0 +1,4 @@
+.Balance
+[horizontal]
+foo:: bar
+yin:: yang

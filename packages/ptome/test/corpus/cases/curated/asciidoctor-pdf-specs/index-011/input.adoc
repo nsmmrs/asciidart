@@ -1,0 +1,4 @@
+The ((`proc`)) keyword in Ruby defines a ((proc)), which is a block of code.
+
+[index]
+= Index

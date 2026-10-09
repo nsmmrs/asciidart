@@ -1,0 +1,3 @@
+:icons: font
+
+Use a icon:circle[] to indicate which candidate you are voting for.

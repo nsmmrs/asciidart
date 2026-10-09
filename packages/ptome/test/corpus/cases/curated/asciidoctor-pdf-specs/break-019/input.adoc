@@ -1,0 +1,7 @@
+= Article Title
+
+column 1, page 1
+
+<<<
+
+column 1, page 2

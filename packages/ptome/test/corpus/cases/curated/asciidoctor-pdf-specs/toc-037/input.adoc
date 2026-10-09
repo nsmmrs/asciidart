@@ -1,0 +1,9 @@
+= Book Title
+:doctype: book
+:toc:
+
+== Foo
+
+== Bar
+
+== Baz

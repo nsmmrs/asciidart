@@ -1,0 +1,11 @@
+= Document Title
+:toc:
+
+[abstract]
+== Abstract
+
+A presage of what is to come.
+
+== Body
+
+What came to pass.

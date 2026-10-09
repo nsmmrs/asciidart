@@ -1,0 +1,7 @@
+[horizontal]
+foo::
+bar::
+baz::
+desc
+
+fizz:: buzz

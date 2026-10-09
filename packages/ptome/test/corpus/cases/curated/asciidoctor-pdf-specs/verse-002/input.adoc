@@ -1,0 +1,7 @@
+[verse]
+____
+here
+\twe
+\t\tgo
+again
+____

@@ -1,0 +1,18 @@
+= Document Title
+:doctype: book
+
+== Chapter A
+
+((AsciiDoc)) is a lightweight markup language.
+It is used for content ((authoring)).
+
+== Chapter B
+
+((Asciidoctor)) is an AsciiDoc processor.
+
+== Chapter C
+
+If an element has an ((anchor)), you can link to it.
+
+[index]
+== Index

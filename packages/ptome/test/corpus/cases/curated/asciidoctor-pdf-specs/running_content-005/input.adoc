@@ -1,0 +1,16 @@
+= Document Title
+:doctype: book
+
+first page
+
+<<<
+
+second page
+
+<<<
+
+third page
+
+<<<
+
+fourth page

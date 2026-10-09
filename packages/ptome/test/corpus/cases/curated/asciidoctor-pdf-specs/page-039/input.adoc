@@ -1,0 +1,4 @@
+= Document Title
+:page-background-image: image:does-not-exist.png[fit=cover]
+
+content

@@ -1,0 +1,17 @@
+= Document Title
+:doctype: book
+:toc:
+:toclevels: 3
+
+== Chapter
+
+=== Chapter Section
+
+==== Chapter Subsection
+
+[appendix,toclevels=0]
+== Lorem Ipsum
+
+=== Appendix Section
+
+==== Appendix Subsection

@@ -1,0 +1,9 @@
+:source-highlighter: rouge
+
+[source%linenums]
+----
+fee
+fi
+fo
+fum
+----

@@ -1,0 +1,5 @@
+= Document Title
+:title-page:
+:notitle:
+
+what's it gonna do?

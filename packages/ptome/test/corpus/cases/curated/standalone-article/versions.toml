@@ -17,9 +17,13 @@ output = '5ea5f5e3eff6'
 [docbook5.ptome]
 output = '5ea5f5e3eff6'
 
+[pdf.asciidoctor-pdf]
+output = 'c72e5f3d02bb'
+
 [pdf.ptome]
-output = 'f0d3fbe5be5c'
+output = '11d651bdf0f5'
 log = ['info:: laid out 1 page']
+pixels = 'identical'
 
 [epub3.ptome]
 output = 'ee6a29cccde9'

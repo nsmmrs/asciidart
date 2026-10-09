@@ -1,0 +1,10 @@
+= Document Title
+
+[.nolead]
+preamble content
+
+more preamble content
+
+== First Section
+
+section content

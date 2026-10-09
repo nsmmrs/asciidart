@@ -1,0 +1,8 @@
+= Document Title
+:front-cover-image: image:tux.png[]
+
+== First Section
+
+== Second Section
+
+== Third Section

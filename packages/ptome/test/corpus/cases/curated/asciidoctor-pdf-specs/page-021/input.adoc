@@ -1,0 +1,6 @@
+first columnfootnote:[This page has two columns.]
+
+[.column]
+<<<
+
+second column

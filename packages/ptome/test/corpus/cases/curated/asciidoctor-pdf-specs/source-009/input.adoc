@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source,php?start_inline=0]
+----
+cal_days_in_month(CAL_GREGORIAN, 6, 2019)
+----

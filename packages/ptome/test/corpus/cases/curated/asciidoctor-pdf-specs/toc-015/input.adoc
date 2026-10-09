@@ -1,0 +1,9 @@
+:toc: macro
+
+No sections here.
+
+toc::[]
+
+No sections here either.
+
+Fin.

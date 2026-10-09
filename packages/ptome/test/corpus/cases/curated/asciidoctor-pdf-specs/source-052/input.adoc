@@ -1,0 +1,8 @@
+:source-highlighter: pygments
+
+[source,yaml]
+----
+foo: 'bar'
+key: 'value' #<1>
+----
+<1> key-value pair

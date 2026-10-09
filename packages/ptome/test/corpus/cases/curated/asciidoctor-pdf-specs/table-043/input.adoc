@@ -1,0 +1,5 @@
+[%autowidth,grid=none,frame=sides]
+|===
+|Everywhere that Mary went, +
+the lamb was sure to go.
+|===

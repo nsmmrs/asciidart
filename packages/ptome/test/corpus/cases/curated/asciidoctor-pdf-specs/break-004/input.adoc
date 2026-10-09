@@ -1,0 +1,4 @@
+[%hardbreaks]
+foo
+bar
+baz

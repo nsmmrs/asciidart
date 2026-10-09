@@ -1,0 +1,17 @@
+= Document Title
+:doctype: book
+:toc:
+:toclevels: 1
+
+== Chapter
+
+=== Chapter Section
+
+==== Chapter Subsection
+
+[toclevels=3]
+== Lorem Ipsum
+
+=== Lorem Ipsum Section
+
+==== Lorem Ipsum Subsection

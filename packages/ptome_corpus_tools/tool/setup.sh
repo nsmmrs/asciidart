@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
-# Clones the Ruby profiles' Asciidoctor checkouts (profiles.toml) into
-# $ASCII_DOCS_CACHE/refs and installs the gems the worker loads into an
-# isolated GEM_HOME ($ASCII_DOCS_CACHE/gems).
+# Clones the Ruby profiles' Asciidoctor checkouts (the corpus's profiles.toml)
+# into $ASCII_DOCS_CACHE/refs and installs the gems the worker loads into an
+# isolated GEM_HOME ($ASCII_DOCS_CACHE/gems); a profile with gems of its own
+# gets them alone in $ASCII_DOCS_CACHE/gems-<profile>.
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cache="${ASCII_DOCS_CACHE:-$HOME/.cache/ascii-docs}"
 mkdir -p "$cache/refs" "$cache/gems"
-# name repo commit, one per Ruby profile
+profiles="$root/../ptome/test/corpus/profiles.toml"
+# name repo commit gems, one per Ruby profile
 awk '
-  /^\[/ { name = $0; gsub(/[\[\]"]/, "", name); kind = repo = commit = "" }
+  function flush() { if (kind == "ruby") print name, repo, commit, (gems == "" ? "-" : gems) }
+  /^\[/ && !/^\[[a-z0-9.-]+\.attributes\]/ { flush(); name = $0; gsub(/[\[\]"]/, "", name); kind = repo = commit = gems = "" }
   /^kind *=/ { kind = $3; gsub(/"/, "", kind) }
   /^repo *=/ { repo = $3; gsub(/"/, "", repo) }
-  /^commit *=/ { commit = $3; gsub(/"/, "", commit); if (kind == "ruby") print name, repo, commit }
-' "$root/profiles.toml" | while read -r name repo commit; do
+  /^commit *=/ { commit = $3; gsub(/"/, "", commit) }
+  /^gems *=/ { gems = $0; sub(/^gems *= *\[/, "", gems); sub(/\].*/, "", gems); gsub(/[" ]/, "", gems) }
+  END { flush() }
+' "$profiles" | while read -r name repo commit gems; do
   target="$cache/refs/$name"
   if [ ! -d "$target/.git" ]; then
     git init -q "$target"
@@ -23,6 +28,15 @@ awk '
     git -C "$target" checkout -q --detach FETCH_HEAD
   fi
   echo "$name: $(git -C "$target" rev-parse --short HEAD)"
+  if [ "$gems" != - ]; then
+    home="$cache/gems-$name"
+    for gem in ${gems//,/ }; do
+      gname="${gem%%:*}" version="${gem##*:}"
+      GEM_HOME="$home" GEM_PATH="$home" gem list -i "^$gname$" -v "$version" >/dev/null ||
+        GEM_HOME="$home" GEM_PATH="$home" gem install -q --no-document "$gname" -v "$version"
+    done
+    echo "$name gems: $home"
+  fi
 done
 export GEM_HOME="$cache/gems" GEM_PATH="$cache/gems"
 # The worker's optional gems, then what Asciidoctor's own test suite needs

@@ -1,0 +1,6 @@
+portrait
+
+[page-layout=landscape]
+<<<
+
+landscape

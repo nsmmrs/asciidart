@@ -1,0 +1,2 @@
+[IMPORTANT]
+Make sure the device is powered off before servicing it.

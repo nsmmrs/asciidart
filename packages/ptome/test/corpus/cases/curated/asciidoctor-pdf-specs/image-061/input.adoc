@@ -1,0 +1,1 @@
+see image:tux.png[pdfwidth=204] run

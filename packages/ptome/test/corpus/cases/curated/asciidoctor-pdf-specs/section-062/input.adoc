@@ -1,0 +1,10 @@
+= Document Title
+:doctype: book
+
+= Part I
+
+== Chapter in Part I
+
+= Part II
+
+== Chapter in Part II

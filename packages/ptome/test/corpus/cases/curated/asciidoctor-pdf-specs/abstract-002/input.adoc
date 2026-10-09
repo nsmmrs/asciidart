@@ -1,0 +1,10 @@
+= Document Title
+:doctype: book
+
+.Abstract
+[abstract]
+A presage of what is to come.
+
+== Chapter
+
+What came to pass.

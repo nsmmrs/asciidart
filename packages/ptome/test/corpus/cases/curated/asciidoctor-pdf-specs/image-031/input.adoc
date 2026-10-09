@@ -1,0 +1,1 @@
+image::square.svg[pdfwidth=200pt,opts=inline]

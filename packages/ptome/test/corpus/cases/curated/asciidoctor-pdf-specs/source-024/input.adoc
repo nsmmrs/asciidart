@@ -1,0 +1,9 @@
+:source-highlighter: rouge
+:rouge-style: monokai
+
+[source,text]
+----
+foo
+bar
+baz
+----

@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source,ruby,subs=-specialchars]
+----
+puts "Hello, World!"
+----

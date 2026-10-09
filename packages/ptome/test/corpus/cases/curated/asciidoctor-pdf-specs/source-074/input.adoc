@@ -1,0 +1,7 @@
+:source-highlighter: rouge
+
+[,ruby,subs=+quotes]
+----
+puts "*Hello, World!*" <1>
+----
+<1> Welcome the world to the show.

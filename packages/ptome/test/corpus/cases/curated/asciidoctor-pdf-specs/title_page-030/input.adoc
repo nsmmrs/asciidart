@@ -1,0 +1,16 @@
+= The Amazing
+Author Name
+:doctype: book
+:front-cover-image: image:blue-letter.pdf[]
+:title-page-background-image: image:tux.png[]
+:page-background-image: image:bg.png[]
+
+beginning
+
+<<<
+
+middle
+
+<<<
+
+end

@@ -1,0 +1,10 @@
+[qanda]
+Ultimate Question::
++
+--
+How much time do you have?
+
+You must embark on a journey.
+
+Only at the end will you come to understand that the answer is 42.
+--

@@ -1,0 +1,11 @@
+= Document Title
+:toc:
+:title-page:
+
+== First Section
+
+== {empty}
+
+=== Child Section
+
+content

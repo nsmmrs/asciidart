@@ -1,0 +1,24 @@
+== Initial value
+
+Current number is {counter:my-count:0}.
+
+== One is expected
+
+Current number is {counter:my-count}.
+
+== Two is expected
+
+Current number is {counter:my-count}.
+
+== Three is expected
+
+NOTE: Current number is {counter:my-count}.
+
+== Four is expected
+
+[%unbreakable]
+CAUTION: Current number is {counter:my-count}.
+
+== Five is expected
+
+Current number is {counter:my-count}.

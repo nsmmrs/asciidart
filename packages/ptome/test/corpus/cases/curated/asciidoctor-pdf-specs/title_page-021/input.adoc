@@ -1,0 +1,3 @@
+= Document Title
+:doctype: book
+:title-logo-image: image:tux.png[align=left,top=1ft]

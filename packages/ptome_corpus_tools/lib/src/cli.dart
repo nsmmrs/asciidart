@@ -60,7 +60,7 @@ final class RegenCommand extends Command<int> {
   @override
   Future<int> run() async {
     final args = argResults!;
-    final corpus = Corpus.open();
+    final corpus = Corpus.open()..enterPackage();
     final names = args.multiOption('profile');
     final profiles = [
       for (final MapEntry(:key, :value) in corpus.profiles.entries)
@@ -794,7 +794,7 @@ final class PromoteCommand extends Command<int> {
   @override
   Future<int> run() async {
     final report = await promote(
-      Corpus.open(),
+      Corpus.open()..enterPackage(),
       jobs: int.parse(argResults!.option('jobs')!),
       log: stdout.writeln,
     );

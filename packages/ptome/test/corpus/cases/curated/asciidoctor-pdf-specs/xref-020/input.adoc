@@ -1,0 +1,5 @@
+See <<img>>.
+
+.Title of Image
+[#img]
+image::tux.png[]

@@ -1,0 +1,12 @@
+= Document Title
+:notitle:
+:xrefstyle: short
+:sectnums:
+
+== A
+
+About this thing.footnote:fn1[More about that thing.] And so on.
+
+== B
+
+Yada yada yada.footnote:fn1[]

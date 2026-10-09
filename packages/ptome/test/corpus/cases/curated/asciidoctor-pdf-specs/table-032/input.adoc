@@ -1,0 +1,4 @@
+[width=10%]
+|===
+|image:tux.png[]
+|===

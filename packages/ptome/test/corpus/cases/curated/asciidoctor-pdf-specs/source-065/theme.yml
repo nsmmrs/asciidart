@@ -1,0 +1,3 @@
+extends: default
+code_font_color: '111111'
+conum_font_color: ~

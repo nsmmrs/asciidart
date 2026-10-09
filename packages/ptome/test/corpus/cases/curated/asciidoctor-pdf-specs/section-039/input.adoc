@@ -1,0 +1,12 @@
+= Document Title
+:sectnums:
+
+== Beginning
+
+== Middle
+
+=== Detail
+
+=== More Detail
+
+== End

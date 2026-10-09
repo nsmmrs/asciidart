@@ -1,0 +1,13 @@
+= Document Title
+:doctype: book
+
+= Part
+
+== Chapter
+
+content
+
+[appendix]
+= Details
+
+We let you know.

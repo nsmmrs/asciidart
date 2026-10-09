@@ -1,0 +1,10 @@
+= Document Title
+:notitle:
+:doctype: book
+
+go to <<blue>>
+
+[#blue%notitle]
+== Blue Page
+
+image::blue-letter.pdf[]

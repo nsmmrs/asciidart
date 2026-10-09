@@ -44,8 +44,13 @@ final class Defaults {
 /// What a case records about one profile's output for one format: an
 /// output blob, or the error the conversion stopped with.
 final class Expected {
-  const Expected({this.hash, this.error, this.log = const [], this.divergence})
-    : assert((hash == null) != (error == null), 'output or error');
+  const Expected({
+    this.hash,
+    this.error,
+    this.log = const [],
+    this.divergence,
+    this.pixels,
+  }) : assert((hash == null) != (error == null), 'output or error');
 
   /// The content address of the output blob.
   final String? hash;
@@ -58,10 +63,15 @@ final class Expected {
   /// the fixed upstream bug), if it does.
   final String? divergence;
 
+  /// How this PDF's pages compare with the golden PDF's, pixel for pixel
+  /// (`identical`, or where they first differ), when there is one.
+  final String? pixels;
+
   /// Whether this records the same result as [other] (ignoring the note).
   bool sameResult(Expected other) =>
       hash == other.hash &&
       error == other.error &&
+      pixels == other.pixels &&
       log.length == other.log.length &&
       [for (var i = 0; i < log.length; i++) log[i] == other.log[i]]
           .every((x) => x);
@@ -81,14 +91,28 @@ final class Expected {
               log[i].line == other.log[i].line,
       ].every((x) => x);
 
-  Expected withDivergence(String? divergence) =>
-      Expected(hash: hash, error: error, log: log, divergence: divergence);
+  Expected withDivergence(String? divergence) => Expected(
+    hash: hash,
+    error: error,
+    log: log,
+    divergence: divergence,
+    pixels: pixels,
+  );
+
+  Expected withPixels(String? pixels) => Expected(
+    hash: hash,
+    error: error,
+    log: log,
+    divergence: divergence,
+    pixels: pixels,
+  );
 
   Map<String, Object> toToml() => {
     'output': ?hash,
     'error': ?error,
     if (log.isNotEmpty) 'log': [for (final entry in log) '$entry'],
     'divergence': ?divergence,
+    'pixels': ?pixels,
   };
 
   static Expected fromToml(Map<String, Object?> table) => Expected(
@@ -99,6 +123,7 @@ final class Expected {
         LogEntry.parse(entry as String),
     ],
     divergence: table['divergence'] as String?,
+    pixels: table['pixels'] as String?,
   );
 }
 
@@ -166,7 +191,8 @@ final class Case {
     baseDir: baseDir,
     doctype: doctype,
     safe: safe,
-    standalone: standalone,
+    // A PDF or an EPUB is always a whole document (as ptome makes it).
+    standalone: standalone || format.binary,
     // Profile attributes are defaults: a case may set or unset them.
     attributes: mergeAttributes(profile.attributes, attributes),
   );

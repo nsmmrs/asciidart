@@ -1,0 +1,11 @@
+= Document Title
+:doctype: book
+:toc: macro
+
+== Chapter
+
+=== Section
+
+toc::[]
+
+=== Another Section

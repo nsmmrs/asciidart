@@ -1,0 +1,3 @@
+= Document Title image:tux.jpg[]
+
+content

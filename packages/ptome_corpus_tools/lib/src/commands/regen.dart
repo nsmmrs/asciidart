@@ -13,6 +13,7 @@ import '../spec/case.dart';
 import '../spec/conversion.dart';
 import '../spec/corpus.dart';
 import '../spec/normalize.dart';
+import '../spec/pixels.dart';
 import '../spec/profile.dart';
 
 final class RegenReport {
@@ -51,16 +52,28 @@ Future<RegenReport> regen(
           size: jobs,
         );
         try {
-          results.addAll(
-            await Future.wait([
-              for (final c in cases)
-                for (final format in c.formats)
-                  if (!format.binary)
-                    pool
-                        .convert(c.conversion(format, profile))
-                        .then((outcome) => (c, format, outcome)),
-            ]),
+          // One conversion at a time per worker, so each time limit
+          // covers only its own conversion.
+          final jobs = {
+            for (final c in cases)
+              for (final format in c.formats)
+                if (profile.converts(format))
+                  '${c.id}#${format.name}': (
+                    c,
+                    format,
+                    c.conversion(format, profile),
+                  ),
+          };
+          // (A whole book takes asciidoctor-pdf longer.)
+          final timeout = Duration(
+            seconds: profile.converts(Format.pdf) ? 60 : 10,
           );
+          await for (final outcome in pool.convertAll([
+            for (final (_, _, conversion) in jobs.values) conversion,
+          ], timeout: timeout)) {
+            final (c, format, _) = jobs[outcome.id]!;
+            results.add((c, format, outcome));
+          }
         } finally {
           await pool.close();
         }
@@ -70,7 +83,8 @@ Future<RegenReport> regen(
             final conversion = c.conversion(format, profile);
             final outcome = convertWithPtome(conversion);
             results.add((c, format, outcome));
-            if (format.binary && !_sameElsewhere(c, conversion, outcome)) {
+            if (format.binary &&
+                !_sameElsewhere(corpus, c, conversion, outcome)) {
               report.located.add('${c.id}#${format.name}');
             }
           }
@@ -78,13 +92,16 @@ Future<RegenReport> regen(
     }
     for (final (c, format, outcome) in results) {
       report.converted++;
-      final now = record(
+      var now = record(
         outcome,
         baseDir: c.baseDir,
         blobPath: (hash) => c.blobPath(format, hash),
         write: !check,
       );
       final before = c.expected[format]?[profile.name];
+      if (profile is PtomeProfile && format == Format.pdf) {
+        now = now.withPixels(_pixels(c, profile, now));
+      }
       if (before == null || !before.sameResult(now)) {
         report.changed.add('${c.id}#${format.name} [${profile.name}]');
       }
@@ -105,15 +122,51 @@ Future<RegenReport> regen(
   return report;
 }
 
-/// Whether [c] converts to the same bytes as [outcome] from a copy in
-/// another directory.
-bool _sameElsewhere(Case c, Conversion conversion, Outcome outcome) {
+/// How ptome's PDF [now] compares with the golden PDF of
+/// [PtomeProfile.pdfCompareTo], pixel for pixel (null when there is none;
+/// page images are kept by hash, so only new PDFs are rendered).
+String? _pixels(Case c, PtomeProfile profile, Expected now) {
+  final golden = c.expected[Format.pdf]?[profile.pdfCompareTo]?.hash;
+  final hash = now.hash;
+  if (golden == null || hash == null) return null;
+  // (Not written when only checking.)
+  if (!File(c.blobPath(Format.pdf, hash)).existsSync()) return null;
+  // (The gem gives text, not a PDF, for an inline document.)
+  if (!_isPdf(c.blobPath(Format.pdf, golden)) ||
+      !_isPdf(c.blobPath(Format.pdf, hash))) {
+    return null;
+  }
+  String pages(String hash) => p.join(cacheDir, 'pages', hash);
+  return comparePages(
+    pageImages(c.blobPath(Format.pdf, golden), pages(golden)),
+    pageImages(c.blobPath(Format.pdf, hash), pages(hash)),
+  );
+}
+
+bool _isPdf(String path) {
+  final file = File(path).openSync();
+  try {
+    return String.fromCharCodes(file.readSync(5)) == '%PDF-';
+  } finally {
+    file.closeSync();
+  }
+}
+
+/// Whether [c] converts to the same bytes as [outcome] from another
+/// directory: through a link to ptome's package elsewhere, so that the
+/// paths a case names relative to it (shared fixtures) still resolve.
+bool _sameElsewhere(
+  Corpus corpus,
+  Case c,
+  Conversion conversion,
+  Outcome outcome,
+) {
+  final package = corpus.package;
   final temp = Directory.systemTemp.createTempSync('corpus-moved-');
   try {
-    final copy = p.join(temp.path, p.basename(c.dir));
-    _copyTree(Directory(c.dir), copy);
+    final link = Link(p.join(temp.path, 'ptome'))..createSync(package);
     final moved = convertWithPtome(
-      conversion.at(p.join(copy, p.relative(c.baseDir, from: c.dir))),
+      conversion.at(p.join(link.path, p.relative(c.baseDir, from: package))),
     );
     return switch ((outcome, moved)) {
       (
@@ -125,20 +178,6 @@ bool _sameElsewhere(Case c, Conversion conversion, Outcome outcome) {
     };
   } finally {
     temp.deleteSync(recursive: true);
-  }
-}
-
-void _copyTree(Directory from, String to) {
-  Directory(to).createSync(recursive: true);
-  for (final entity in from.listSync()) {
-    final target = p.join(to, p.basename(entity.path));
-    switch (entity) {
-      case File():
-        entity.copySync(target);
-      case Directory():
-        _copyTree(entity, target);
-      default:
-    }
   }
 }
 

@@ -1,0 +1,3 @@
+extends: default
+heading_font_style: ~
+heading_h2_font_style: 'bold'

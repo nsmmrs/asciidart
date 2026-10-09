@@ -1,0 +1,3 @@
+extends: default
+running_content_start_at: 'after-toc'
+page_numbering_start_at: 'after-toc'

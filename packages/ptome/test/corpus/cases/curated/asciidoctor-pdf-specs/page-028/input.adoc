@@ -1,0 +1,17 @@
+= Document Title
+
+left column
+
+[.column]
+<<<
+
+right column
+
+image::blue-letter.pdf[page=10]
+
+left column
+
+[.column]
+<<<
+
+right column

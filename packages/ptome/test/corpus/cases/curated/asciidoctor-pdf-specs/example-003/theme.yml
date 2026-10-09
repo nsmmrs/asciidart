@@ -1,0 +1,3 @@
+extends: default
+example_background_color: 'transparent'
+example_border_width: 0

@@ -1,0 +1,2 @@
+extends: default
+role_upper_text_transform: 'uppercase'

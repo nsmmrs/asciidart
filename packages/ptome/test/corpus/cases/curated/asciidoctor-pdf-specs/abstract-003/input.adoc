@@ -1,0 +1,7 @@
+= Document Title
+
+[abstract]
+This document is configured to have indented paragraphs.
+This option is controlled by the prose_text_indent key in the theme.
+
+And on it goes.

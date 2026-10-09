@@ -1,0 +1,10 @@
+:source-highlighter: rouge
+:converter-library: asciidoctor-pdf
+:backend-value: :pdf
+
+[,ruby,subs=attributes+]
+----
+require '{converter-library}'
+
+Asciidoctor.convert_file 'README.adoc', safe: :safe, backend: {backend-value}
+----

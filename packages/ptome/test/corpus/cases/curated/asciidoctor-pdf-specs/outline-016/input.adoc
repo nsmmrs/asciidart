@@ -1,0 +1,11 @@
+= Document Title
+:doctype: book
+:outlinelevels: 0
+
+== Chapter A
+
+=== Topic A
+
+== Chapter B
+
+=== Topic B

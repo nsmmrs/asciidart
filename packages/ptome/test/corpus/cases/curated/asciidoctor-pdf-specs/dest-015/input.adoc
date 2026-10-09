@@ -1,0 +1,3 @@
+[#takeaways]
+reuse:: try to avoid binning it in the first place
+recycle:: if you do bin it, make sure the material gets reused

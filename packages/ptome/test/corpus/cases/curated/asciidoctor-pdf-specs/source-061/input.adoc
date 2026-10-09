@@ -1,0 +1,8 @@
+:source-highlighter: highlight.js
+
+[source,xml]
+----
+<root>
+  <child>content</child>
+</root>
+----

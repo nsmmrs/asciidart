@@ -1,0 +1,3 @@
+:icons: font
+
+Time to upgrade your icon set icon:smile-wink[]

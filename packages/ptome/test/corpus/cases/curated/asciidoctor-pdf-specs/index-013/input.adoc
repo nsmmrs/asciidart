@@ -1,0 +1,28 @@
+= Document Title
+:doctype: book
+:notitle:
+
+== Install
+
+.((node.install))
+[[node-install]]
+ $ nvm install node
+
+== Version
+
+.((node.version))
+[[node-version]]
+ $ node -v
+
+<<node-install>>
+
+== Uninstall
+
+.((node.uninstall))
+[[node-uninstall]]
+ $ nvm uninstall node
+
+<<node-install>>
+
+[index]
+== Index

@@ -1,0 +1,14 @@
+[cols=1a]
+|===
+|left
+|===
+
+[cols=^1a]
+|===
+|center
+|===
+
+[cols=>1a]
+|===
+|right
+|===

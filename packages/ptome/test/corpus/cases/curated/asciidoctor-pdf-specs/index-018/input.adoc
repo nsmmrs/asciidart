@@ -1,0 +1,6 @@
+= Document Title
+
+((O.A.R.)) is a band, whereas ((oar)) is something you use to propel a boat.
+
+[index]
+== Index

@@ -1,0 +1,5 @@
+image::tall.svg[pdfwidth=80mm]
+
+== A long heading with some inline #markup#
+
+content

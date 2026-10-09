@@ -1,0 +1,8 @@
+= Document Title
+
+:source-highlighter: rouge
+
+[source,ruby]
+----
+puts 'yo, world!'
+----

@@ -1,0 +1,6 @@
+= Article Title
+:title-page:
+
+== Foo
+
+== Bar

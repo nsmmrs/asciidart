@@ -1,0 +1,3 @@
+extends: default
+heading_part_break_before: 'auto'
+heading_chapter_break_before: 'auto'

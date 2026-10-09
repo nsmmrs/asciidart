@@ -1,0 +1,4 @@
+:icons:
+:iconsdir: {imagesdir}
+
+Look for files with the icon:logo[] icon.

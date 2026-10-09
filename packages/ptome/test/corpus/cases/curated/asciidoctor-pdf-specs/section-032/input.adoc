@@ -1,0 +1,12 @@
+= Book Title
+:doctype: book
+:sectnums:
+:partnums:
+
+= A
+
+== Foo
+
+= B
+
+== Bar

@@ -1,0 +1,7 @@
+= Book Title
+:doctype: book
+:sectnums:
+
+== The Beginning
+
+== The End

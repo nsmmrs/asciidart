@@ -1,0 +1,11 @@
+portrait
+
+[.landscape]
+<<<
+
+landscape
+
+[page-layout=unknown]
+<<<
+
+landscape

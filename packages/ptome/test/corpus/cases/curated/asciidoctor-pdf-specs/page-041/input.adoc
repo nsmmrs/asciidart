@@ -1,0 +1,4 @@
+= Document Title
+:page-background-image: image:broken.svg[fit=cover]
+
+content

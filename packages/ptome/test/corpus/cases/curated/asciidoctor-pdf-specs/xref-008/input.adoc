@@ -1,0 +1,19 @@
+= Document Title
+:doctype: book
+
+== Summary
+
+You can find the observed values in the <<observed-values,table>>.
+
+== Data
+
+[#observed-values]
+|===
+| Subject | Count
+
+| foo
+| 2
+
+| bar
+| 1
+|===

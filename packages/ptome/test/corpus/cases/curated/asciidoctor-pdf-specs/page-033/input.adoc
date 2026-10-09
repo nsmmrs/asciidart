@@ -1,0 +1,4 @@
+= Document Title
+:page-background-image: image:https://example.org/bg.svg[]
+
+content

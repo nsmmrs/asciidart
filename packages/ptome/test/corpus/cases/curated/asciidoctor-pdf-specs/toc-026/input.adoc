@@ -1,0 +1,10 @@
+= Document Title
+:doctype: book
+:toc:
+:!toc-title:
+
+== Beginning
+
+== Middle
+
+== End

@@ -1,0 +1,8 @@
+= Document Title
+:doctype: book
+:sectnums:
+:xrefstyle: full
+
+Start with <<_a>>.
+
+== A

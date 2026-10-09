@@ -1,0 +1,7 @@
+:table-frame: ends
+:table-grid: cols
+
+|===
+|1 |2
+|3 |4
+|===

@@ -1,0 +1,7 @@
+:front-cover-image: image:no-pages.pdf[]
+
+one
+
+<<<
+
+two

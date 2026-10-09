@@ -1,0 +1,3 @@
+:show-link-uri:
+
+https://asciidoctor.org[Asciidoctor] is a text processor.

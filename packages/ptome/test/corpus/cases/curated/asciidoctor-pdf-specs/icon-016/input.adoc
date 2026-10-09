@@ -1,0 +1,5 @@
+:experimental:
+:icons: font
+:icon-set: fas
+
+Press kbd:[Alt,icon:arrow-up[\]] to move the line up.

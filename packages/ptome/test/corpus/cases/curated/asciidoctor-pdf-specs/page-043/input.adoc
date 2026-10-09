@@ -1,0 +1,13 @@
+= Document Title
+:page-background-image: image:corrupt.png[fit=cover]
+:page-background-image-verso: image:bg.png[]
+
+content
+
+<<<
+
+more content
+
+<<<
+
+even more content

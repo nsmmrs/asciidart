@@ -1,0 +1,3 @@
+extends: default
+section_indent: 36
+abstract_title_text_align: left

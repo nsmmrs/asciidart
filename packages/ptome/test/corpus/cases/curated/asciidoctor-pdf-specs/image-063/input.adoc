@@ -1,0 +1,1 @@
+image::tux.png[pdfwidth=1in,link=https://www.linuxfoundation.org/projects/linux/]

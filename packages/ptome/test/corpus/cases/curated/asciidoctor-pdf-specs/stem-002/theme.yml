@@ -1,0 +1,3 @@
+extends: default
+page_margin: 36
+code_padding: 10

@@ -1,0 +1,15 @@
+= Document Title
+:notitle:
+:doctype: book
+
+= Part A
+
+== First Chapter
+
+content
+
+= Part B
+
+== Last Chapter
+
+content

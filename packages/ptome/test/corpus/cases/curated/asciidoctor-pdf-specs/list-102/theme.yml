@@ -1,0 +1,2 @@
+extends: default
+conum_glyphs: '\u2776-\u277a, \u2465-\u2468'

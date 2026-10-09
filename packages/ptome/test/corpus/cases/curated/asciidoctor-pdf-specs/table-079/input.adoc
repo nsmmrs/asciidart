@@ -1,0 +1,7 @@
+[cols=2*]
+|===
+a|{counter:req}
+|First requirement.
+a|{counter:req}
+|Second requirement.
+|===

@@ -1,0 +1,11 @@
+[cols=2*a]
+|===
+|
+term::
+
+[]
+after
+
+|
+term:: desc
+|===

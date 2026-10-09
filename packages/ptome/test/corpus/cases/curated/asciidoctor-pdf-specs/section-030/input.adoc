@@ -1,0 +1,5 @@
+:experimental:
+
+== The magic of kbd:[Ctrl,p]
+
+Describe the magic of paste.

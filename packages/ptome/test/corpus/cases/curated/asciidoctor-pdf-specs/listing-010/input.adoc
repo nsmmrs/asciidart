@@ -1,0 +1,4 @@
+[%autofit]
+----
+play_symbol = (node.document.attr? 'icons', 'font') ? %(<font name="fas">#{(icon_font_data 'fas').unicode 'play'}</font>) : RightPointer
+----

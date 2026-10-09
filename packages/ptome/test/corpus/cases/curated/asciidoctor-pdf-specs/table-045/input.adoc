@@ -1,0 +1,4 @@
+[%autowidth.stretch,grid=none,frame=sides]
+|===
+|A |B
+|===

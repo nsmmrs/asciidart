@@ -1,0 +1,8 @@
+:source-highlighter: rouge
+
+[source,ruby,subs=-callouts]
+----
+source = %(before
+not a conum <1>
+after)
+----

@@ -1,0 +1,10 @@
+= Document Title
+
+preamble content
+
+[.lead]
+more preamble content
+
+== First Section
+
+section content

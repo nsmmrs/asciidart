@@ -1,0 +1,8 @@
+= Document Title
+:toc:
+
+No sections here.
+
+No sections here either.
+
+Fin.

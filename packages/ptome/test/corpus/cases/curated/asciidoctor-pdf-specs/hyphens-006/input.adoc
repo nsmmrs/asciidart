@@ -1,0 +1,7 @@
+:hyphens:
+:pdf-page-size: A7
+
+[%header]
+|===
+|This story chronicles the inexplicable hazards and tremendously vicious beasts the team must conquer and vanquish.
+|===

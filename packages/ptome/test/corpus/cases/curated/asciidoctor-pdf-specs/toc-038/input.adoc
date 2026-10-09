@@ -1,0 +1,15 @@
+= Book Title
+:doctype: book
+:toc:
+
+== Foo
+
+=== Foo Subsection
+
+== Bar
+
+=== Bar Subsection
+
+== Baz
+
+=== Baz Subsection

@@ -1,0 +1,6 @@
+.Right-aligned caption
+[width=25%,align=right]
+|===
+|1 |2
+|3 |4
+|===

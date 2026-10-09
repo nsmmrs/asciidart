@@ -1,0 +1,1 @@
+See the logo in image:svg-with-non-url-image.svg[pdfwidth=16]

@@ -74,6 +74,11 @@ Asciidoctor project.
   formatted text and curved quotes; URLs ending in `>`; paragraphs that look
   like attribute lines; ancestor list continuations; headings beyond `<h6>`;
   quotes in image attributes.
+- PDFs with `asciidoctor-compat` have asciidoctor-pdf's pages, pixel for
+  pixel, on 730 of its 790 spec documents (ADR-0022): the test corpus
+  holds the gem's PDFs and compares the pages. `base_glyph_widths:
+  thousandths` (a glyph as wide as its advance in whole thousandths of the
+  em) is one of the settings compatibility sets.
 - Converts AsciiDoc to HTML 5, DocBook 5 and man pages. Output is
   byte-identical to the Asciidoctor gem (built from upstream `main` at
   `30fb8cd5`) on every backend, apart from the bugs fixed, checked in

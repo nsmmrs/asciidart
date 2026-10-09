@@ -1,0 +1,9 @@
+= Document Title
+:doctype: book
+:toc:
+
+[#ch1]
+== https://example.org[Once] Upon a https://example.com[Time]
+
+[#ch2]
+== Continuing What <<ch1>> Started

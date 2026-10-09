@@ -1,0 +1,2 @@
+[.upper]#_please_ transform *bob &amp; carl* +
+to `uppercase`#

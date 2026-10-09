@@ -1,0 +1,5 @@
+extends: default
+menu_font_color: 'AA0000'
+menu_font_size: 10
+menu_font_style: 'bold_italic'
+menu_caret_content: ' > '

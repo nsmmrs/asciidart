@@ -1,0 +1,6 @@
+= Article Title
+:outline-title: Outline
+
+== Foo
+
+== Bar

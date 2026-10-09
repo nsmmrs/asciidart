@@ -1,0 +1,22 @@
+= Book Title
+:doctype: book
+:toc:
+:toclevels: 3
+
+== Foo Top
+
+=== Foo Subsection
+
+==== Foo Deep
+
+== Bar Top
+
+=== Bar Subsection
+
+==== Bar Deep
+
+== Baz Top
+
+=== Baz Subsection
+
+==== Baz Deep

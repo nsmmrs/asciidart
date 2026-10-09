@@ -1,0 +1,14 @@
+= Book Title
+:doctype: book
+
+== Dedication
+
+To the only person who gets me.
+
+== Acknowledgements
+
+Thanks all to all who made this possible!
+
+== Chapter One
+
+content

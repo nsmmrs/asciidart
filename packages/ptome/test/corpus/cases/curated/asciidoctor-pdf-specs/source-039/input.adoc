@@ -1,0 +1,8 @@
+= Document Title
+
+:source-highlighter: coderay
+
+[source,ruby]
+----
+puts 'yo, world!'
+----

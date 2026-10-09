@@ -1,0 +1,6 @@
+= Document Title
+:doctype: book
+
+== Chapter
+
+paragraph{blank}footnote:[About this paragraph]

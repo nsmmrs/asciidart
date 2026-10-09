@@ -1,0 +1,8 @@
+= Document Title
+:doctype: book
+:notitle:
+
+text(((flags,SHORT_FLAG)))(((flags,SUPER_LONG_FLAG_THAT_IS_FORCED_TO_BREAK)))
+
+[index]
+== Index

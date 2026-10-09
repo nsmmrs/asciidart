@@ -1,0 +1,4 @@
+= Document Title
+Author Name
+v1.0, 2019-01-01: Draft
+:doctype: book

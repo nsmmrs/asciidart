@@ -1,0 +1,3 @@
+see tux run +
+see tux run +
+see image:tux.png[tux,24] run

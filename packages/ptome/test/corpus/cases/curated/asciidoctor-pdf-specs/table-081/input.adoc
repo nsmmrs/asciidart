@@ -1,0 +1,7 @@
+before{empty}footnote:[Footnote before table]
+
+|===
+a|inside{empty}footnote:[Footnote inside table]
+|===
+
+after{empty}footnote:[Footnote after table]

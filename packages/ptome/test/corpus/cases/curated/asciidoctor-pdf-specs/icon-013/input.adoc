@@ -1,0 +1,3 @@
+:icons: font
+
+Click the icon:hdd-o[] icon to see your files.

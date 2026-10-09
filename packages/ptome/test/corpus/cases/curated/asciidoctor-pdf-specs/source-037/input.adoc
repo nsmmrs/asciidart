@@ -1,0 +1,6 @@
+:source-highlighter: coderay
+
+[source,html+js]
+----
+document.addEventListener('load', function () { console.log('page is loaded!') })
+----

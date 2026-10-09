@@ -1,0 +1,8 @@
+= Document Title
+
+== Section Title
+
+paragraph
+
+[.text-right]
+paragraph

@@ -1,0 +1,4 @@
+= Document Title
+:page-background-image: image:tux.png[fit=none,pdfwidth=4in,position=center]
+
+content

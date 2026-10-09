@@ -1,0 +1,2 @@
+image::red-green-blue.pdf[page=1]
+image::red-green-blue.pdf[page=2]

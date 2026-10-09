@@ -1,0 +1,13 @@
+= Book Title
+:doctype: book
+:sectnums:
+:partnums:
+:toc:
+
+= P1
+
+== C1
+
+= P2
+
+== C2

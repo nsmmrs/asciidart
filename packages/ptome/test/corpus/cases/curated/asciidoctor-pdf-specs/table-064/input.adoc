@@ -1,0 +1,14 @@
+[%autowidth,cols="1h,3"]
+|===
+| Vendor
+| Samsung
+
+| Model
+| Galaxy s10
+
+| OS
+| Android 9.0 Pie
+
+| Resolution
+| 3040x1440
+|===

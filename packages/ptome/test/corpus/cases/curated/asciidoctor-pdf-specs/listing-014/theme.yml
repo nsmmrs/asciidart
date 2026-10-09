@@ -1,0 +1,4 @@
+extends: default
+base_font_size: 15
+code_font_size: 12
+base_font_size_min: '0.5em'

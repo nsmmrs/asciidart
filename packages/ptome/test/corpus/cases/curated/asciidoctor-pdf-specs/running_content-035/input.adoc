@@ -1,0 +1,17 @@
+= Book Title
+:doctype: book
+:toc: macro
+
+== Dedication
+
+To the only person who gets me.
+
+toc::[]
+
+== Acknowledgements
+
+Thanks all to all who made this possible!
+
+== Chapter One
+
+content

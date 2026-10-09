@@ -1,0 +1,6 @@
+== About
+
+This document has no index entries.
+
+[index]
+== Index

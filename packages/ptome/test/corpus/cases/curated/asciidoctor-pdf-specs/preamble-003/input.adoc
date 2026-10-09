@@ -1,0 +1,9 @@
+= Document Title
+
+preamble content
+
+more preamble content
+
+== First Section
+
+section content

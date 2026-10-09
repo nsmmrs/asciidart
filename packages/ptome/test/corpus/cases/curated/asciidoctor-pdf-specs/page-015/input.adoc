@@ -1,0 +1,16 @@
+:pdf-page-layout: landscape
+:pdf-page-margin: [18, 18, 36, 18]
+// NOTE: verify margin is expanded
+:pdf-page-margin-rotated: [36, 36]
+
+first page
+
+[page-layout=portrait]
+<<<
+
+rotated page
+
+[page-layout=landscape]
+<<<
+
+last page

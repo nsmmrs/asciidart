@@ -1,0 +1,5 @@
+= Document Title
+:doctype: book
+:front-cover-image: image:no-such-file.jpg[]
+
+content page

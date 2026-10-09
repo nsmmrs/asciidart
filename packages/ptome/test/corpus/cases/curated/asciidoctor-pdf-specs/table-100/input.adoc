@@ -1,0 +1,8 @@
+|===
+a|
+paragraph
+
+image::tux.png[pdfwidth=208mm]
+
+paragraph
+|===

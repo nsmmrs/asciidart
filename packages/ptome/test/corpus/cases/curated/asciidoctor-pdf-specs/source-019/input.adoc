@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source,xml,linenums,start=5]
+----
+puts 'Hello, World!'
+----

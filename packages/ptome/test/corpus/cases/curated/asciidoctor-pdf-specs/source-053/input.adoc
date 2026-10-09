@@ -1,0 +1,9 @@
+:source-highlighter: pygments
+:pygments-style: monokai
+
+[source,text]
+----
+foo
+bar
+baz
+----

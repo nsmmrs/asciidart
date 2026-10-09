@@ -1,0 +1,24 @@
+left column
+
+[.column]
+<<<
+
+right column
+
+[page-layout=landscape]
+<<<
+
+landscape
+
+<<<
+
+landscape
+
+[page-layout=portrait]
+<<<
+
+portrait
+
+<<<
+
+portrait

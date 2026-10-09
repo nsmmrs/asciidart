@@ -1,0 +1,5 @@
+About this thing.footnote:[More about this thing.]
+
+image::tall.svg[pdfwidth=80mm]
+
+Some other content.

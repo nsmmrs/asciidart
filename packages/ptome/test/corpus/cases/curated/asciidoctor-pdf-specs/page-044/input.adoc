@@ -1,0 +1,12 @@
+= Document Title
+:page-background-image: image:no-such-file.pdf[]
+
+content
+
+<<<
+
+more content
+
+<<<
+
+even more content

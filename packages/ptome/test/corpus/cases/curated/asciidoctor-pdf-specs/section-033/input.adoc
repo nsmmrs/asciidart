@@ -1,0 +1,13 @@
+= Book Title
+:doctype: book
+:sectnums:
+:partnums:
+:part-signifier: P
+
+= A
+
+== Foo
+
+= B
+
+== Bar

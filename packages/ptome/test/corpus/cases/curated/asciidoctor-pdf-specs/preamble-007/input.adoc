@@ -1,0 +1,10 @@
+= Document Title
+:doctype: book
+
+preamble content
+
+more preamble content
+
+== First Chapter
+
+chapter content

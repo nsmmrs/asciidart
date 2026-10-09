@@ -1,0 +1,5 @@
+= Document Title
+:doctype: book
+:toc:
+
+== Chapter image:tux.png[,16]

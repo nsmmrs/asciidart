@@ -1,0 +1,3 @@
+extends: default
+base_font_color: 'AA0000'
+code_font_color: ~

@@ -1,0 +1,4 @@
+= ACME(TM) Catalog <&#8470;&nbsp;1>
+:doctype: book
+
+== Paper Clips &#x20Ac;&nbsp;4

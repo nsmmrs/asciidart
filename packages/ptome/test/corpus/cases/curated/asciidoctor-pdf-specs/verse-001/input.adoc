@@ -1,0 +1,5 @@
+[verse,Robert Frost,'Fire & Ice']
+____
+Some say the world will end in fire,
+Some say in ice.
+____

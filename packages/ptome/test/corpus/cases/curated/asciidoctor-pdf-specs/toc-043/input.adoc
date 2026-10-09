@@ -1,0 +1,7 @@
+= Document Title
+:toc:
+
+[abstract]
+== Abstract
+
+About this article.

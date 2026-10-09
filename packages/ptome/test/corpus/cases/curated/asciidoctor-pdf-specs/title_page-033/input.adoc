@@ -1,0 +1,5 @@
+= Document Title
+Doc Writer <doc@example.org>; Junior Writer <https://github.com/ghost>
+:doctype: book
+
+body

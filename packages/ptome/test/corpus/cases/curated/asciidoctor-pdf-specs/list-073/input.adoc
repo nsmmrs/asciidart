@@ -1,0 +1,15 @@
+[cols=2*a]
+|===
+|
+term::
+
+[]
+after regular
+
+|
+[horizontal]
+term::
+
+[]
+after horizontal
+|===

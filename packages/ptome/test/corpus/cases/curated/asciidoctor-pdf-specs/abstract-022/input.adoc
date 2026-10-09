@@ -1,0 +1,13 @@
+= Document Title
+
+[abstract]
+--
+[.text-right]
+Enter stage right.
+
+Mirror, stage left.
+--
+
+== Section
+
+content

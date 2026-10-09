@@ -1,0 +1,6 @@
+:pdf-page-size: A5
+
+....
+aàbècìdòeùf gáhéiíjókúlým nâoêpîqôrûs tñuõvãw xäyëzïaöbücÿd
+aabbccddeef gghhiijjkkllm nnooppqqrrs ttuuvvw xxyyzzaabbccd
+....

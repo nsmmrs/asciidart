@@ -1,0 +1,10 @@
+[ordered,subject-stop=.]
+item a.:: about item a
++
+more about item a
+
+_item b:_::
+about item b
+
+well?::
+yes

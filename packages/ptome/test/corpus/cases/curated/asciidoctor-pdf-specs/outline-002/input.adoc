@@ -1,0 +1,6 @@
+= Document Title
+:pdf-page-mode: fullscreen
+
+== First
+
+== Last

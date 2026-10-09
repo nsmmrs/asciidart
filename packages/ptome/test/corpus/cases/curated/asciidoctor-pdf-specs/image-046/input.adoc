@@ -1,0 +1,12 @@
+:pdf-page-margin-rotated: 0
+
+portrait
+
+[page-layout=landscape]
+<<<
+
+landscape
+
+image::blue-letter.pdf[]
+
+landscape again

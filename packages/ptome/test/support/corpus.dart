@@ -24,6 +24,7 @@ import 'package:ptome/src/io.dart' as io;
 import 'package:toml/toml.dart';
 
 import '../../tool/vendored_font_directories.dart';
+import 'delete.dart';
 
 /// The corpus directory (tests run from the package root). Files are read
 /// through ptome's I/O seam, so the corpus runs on Node.js too.
@@ -65,11 +66,15 @@ String formatLog(LogEntry entry) =>
 
 /// What a conversion gave, normalized: an output blob's hash or an error.
 final class Result {
-  const new({this.hash, this.error, this.log = const []});
+  const new({this.hash, this.error, this.log = const [], this.pixels});
 
   final String? hash;
   final String? error;
   final List<LogEntry> log;
+
+  /// How a PDF's pages compare with the golden PDF's, pixel for pixel, as
+  /// recorded (`identical`, or where they first differ).
+  final String? pixels;
 
   List<String> get logLines => [for (final entry in log) formatLog(entry)];
 
@@ -96,7 +101,12 @@ final class Case {
     required this.attributes,
     required this.knownIssues,
     required this.expected,
+    required this.goldenPdf,
+    required this.caseDir,
   });
+
+  /// The case directory (where `case.toml` is; [dir] is the input's).
+  final String caseDir;
 
   /// The case directory relative to `cases/`.
   final String id;
@@ -113,6 +123,62 @@ final class Case {
 
   /// ptome's recorded result per format.
   final Map<Format, Result> expected;
+
+  /// The hash of the golden PDF (asciidoctor-pdf's, the ptome profile's
+  /// `pdf-compare-to`), whose pages ptome's must equal pixel for pixel.
+  final String? goldenPdf;
+
+  /// Records [pdf] (whose hash is [hash], its pages just found identical
+  /// to the golden PDF's) as ptome's PDF in place of [old]: its blob is
+  /// written, `versions.toml` names it (and its pixels identical), and the
+  /// old blob is deleted. The hash then passes on later runs.
+  void promotePdf(String old, String hash, Uint8List pdf) {
+    io.writeBytes(blobPath(Format.pdf, hash), pdf);
+    final path = p.posix.join(caseDir, 'versions.toml');
+    final text = utf8.decode(io.readBytes(path));
+    final start = text.indexOf('[pdf.$ptomeProfile]');
+    final end = switch (text.indexOf('\n[', start + 1)) {
+      -1 => text.length,
+      final at => at,
+    };
+    final section = text
+        .substring(start, end)
+        .replaceFirst("output = '$old'", "output = '$hash'")
+        .replaceFirst(RegExp("pixels = '[^']*'"), "pixels = 'identical'");
+    io.writeString(
+      path,
+      text.substring(0, start) + section + text.substring(end),
+    );
+    deleteFile(blobPath(Format.pdf, old));
+  }
+
+  /// How the pages of [pdf] (whose hash is [hash]) compare with the golden
+  /// PDF's: `identical`, or where they first differ; null when they can't
+  /// be rendered (no `pdftoppm`).
+  String? comparePages(Uint8List pdf, String hash) {
+    final golden = _pages(
+      io.readBytes(blobPath(Format.pdf, goldenPdf!)),
+      goldenPdf!,
+    );
+    final pages = _pages(pdf, hash);
+    if (golden == null || pages == null) return null;
+    if (golden.length != pages.length) {
+      return 'pages: ${pages.length}, not ${golden.length}';
+    }
+    for (var i = 0; i < golden.length; i++) {
+      final (a, b) = (golden[i], pages[i]);
+      if (a.length != b.length) return 'page ${i + 1}: another size';
+      var differ = 0;
+      for (var j = 0; j < a.length; j++) {
+        if (a[j] != b[j]) differ++;
+      }
+      if (differ > 0) {
+        final share = (differ / a.length * 100).toStringAsFixed(3);
+        return 'page ${i + 1}: $share%';
+      }
+    }
+    return 'identical';
+  }
 
   String blobPath(Format format, String hash) =>
       p.posix.join(dir, 'expected', '${format.name}.$hash.${format.extension}');
@@ -165,6 +231,43 @@ final class Case {
     }
   }
 }
+
+/// Where page images are kept, by the hash of their PDF.
+final String _pagesRoot = p.posix.join(
+  io.currentDirectory,
+  '.dart_tool',
+  'corpus-pages',
+);
+
+/// The gray page images of [pdf] (whose hash is [hash]) at 50 dpi, as the
+/// corpus tools render them (`pdftoppm -gray`), rendered once; null
+/// without `pdftoppm`.
+List<List<int>>? _pages(List<int> pdf, String hash) {
+  final dir = p.posix.join(_pagesRoot, hash);
+  final done = p.posix.join(dir, 'done');
+  if (!io.isFile(done)) {
+    io.createDirectories(dir);
+    final file = p.posix.join(dir, 'document.pdf');
+    io.writeBytes(file, pdf);
+    final rendered = io.commandOutput('pdftoppm', [
+      '-r',
+      '50',
+      '-gray',
+      file,
+      p.posix.join(dir, 'p'),
+    ]);
+    if (rendered == null) return null;
+    io.writeString(done, '');
+  }
+  final pages = [
+    for (final entry in io.listDirectory(dir))
+      if (entry.name.endsWith('.pgm')) entry.name,
+  ]..sort((a, b) => _pageNumber(a).compareTo(_pageNumber(b)));
+  return [for (final page in pages) io.readBytes(p.posix.join(dir, page))];
+}
+
+int _pageNumber(String name) =>
+    int.parse(RegExp(r'(\d+)\.pgm$').firstMatch(name)![1]!);
 
 /// Every case under `test/corpus/cases`, in id order. PDFs and EPUBs are
 /// set in the vendored fonts only, never the machine's, so results are the
@@ -242,12 +345,19 @@ Case _load(
         if (_table(value)[ptomeProfile] case final Map<Object?, Object?> t)
           Format.values.byName(key): _result(t.cast<String, Object?>()),
     },
+    caseDir: dir,
+    goldenPdf: switch (profile['pdf-compare-to']) {
+      final String golden =>
+        _table(_table(versions['pdf'])[golden])['output'] as String?,
+      _ => null,
+    },
   );
 }
 
 Result _result(Map<String, Object?> table) => Result(
   hash: table['output'] as String?,
   error: table['error'] as String?,
+  pixels: table['pixels'] as String?,
   log: [
     for (final line in table['log'] as List? ?? const []) _log(line as String),
   ],

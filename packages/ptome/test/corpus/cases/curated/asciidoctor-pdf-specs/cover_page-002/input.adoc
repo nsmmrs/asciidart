@@ -1,0 +1,4 @@
+= Document Title
+:front-cover-image: image:cover.jpg[]
+
+content page

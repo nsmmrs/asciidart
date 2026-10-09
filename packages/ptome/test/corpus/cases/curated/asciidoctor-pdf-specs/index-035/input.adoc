@@ -1,0 +1,8 @@
+= Document Title
+:doctype: book
+:pdf-page-size: A6
+
+((foo))((bar))((baz))((boom))((bang))((fee))((fi))((fo))((fum))((fan))((fool))((ying))((yang))((zed))
+
+[index]
+== Index

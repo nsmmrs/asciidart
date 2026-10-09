@@ -1,0 +1,6 @@
+:pdf-page-size: A6
+:pdf-page-layout: landscape
+
+before
+
+image:square.png[pdfwidth=7cm]

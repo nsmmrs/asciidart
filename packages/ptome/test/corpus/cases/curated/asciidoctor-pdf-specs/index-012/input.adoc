@@ -1,0 +1,17 @@
+= Document Title
+
+== Chapter about Cats
+
+We know that ((cats)) control the internet.
+But they sort of run nature too.
+(((cats,big cats,lion)))
+After all, the ((king of the jungle)) is the lion, which is a big cat.
+
+.Dogs
+****
+Cats may rule, well, everything.
+But ((dogs)) are a (((humans)))human's best friend.
+****
+
+[index]
+== Index

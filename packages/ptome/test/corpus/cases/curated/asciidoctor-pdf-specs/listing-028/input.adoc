@@ -1,0 +1,5 @@
+[subs=+quotes]
+----
+_1_ skipped
+*99* passing
+----

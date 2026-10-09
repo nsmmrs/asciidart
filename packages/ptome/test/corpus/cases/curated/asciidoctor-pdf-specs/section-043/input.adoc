@@ -1,0 +1,16 @@
+= Document Title
+:doctype: book
+:toc:
+
+== Intro
+
+Let's get started.
+
+[%notitle]
+== Middle
+
+The bulk of the content.
+
+== Conclusion
+
+Wrapping it up.

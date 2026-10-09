@@ -1,0 +1,5 @@
+= Document Title
+:title-page:
+:title-logo-image: image:cover.jpg[pdfwidth=100%,top=70%]
+
+content

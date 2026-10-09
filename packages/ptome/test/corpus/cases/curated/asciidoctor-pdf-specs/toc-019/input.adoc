@@ -1,0 +1,8 @@
+:doctype: book
+:toc:
+
+== Chapter
+
+toc::[]
+
+text

@@ -1,0 +1,5 @@
+[horizontal]
+foo::
+bar::
+baz::
+desc

@@ -1,0 +1,1 @@
+Select menu:File[New,Class] to create a new Java class.

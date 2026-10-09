@@ -1,0 +1,7 @@
+= Book Title
+:doctype: book
+:toc:
+
+== Chapter 1
+
+== Chapter 2

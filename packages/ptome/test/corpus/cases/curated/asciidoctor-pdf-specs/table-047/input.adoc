@@ -1,0 +1,4 @@
+[%autowidth,frame=sides,grid=cols]
+|===
+|a | bbbbb | a
+|===

@@ -1,0 +1,8 @@
+[%autowidth,grid=none,frame=sides]
+|===
+|fee +
+fi +
+{empty} +
+fo +
+fum
+|===

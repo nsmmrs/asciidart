@@ -1,0 +1,7 @@
+= Document Title
+:doctype: book
+
+text(((searching,for fun and profit)))(((searching,when you have absolutely no clue where to begin)))
+
+[index]
+== Index

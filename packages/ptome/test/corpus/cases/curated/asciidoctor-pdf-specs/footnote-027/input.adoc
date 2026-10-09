@@ -1,0 +1,11 @@
+Here we go.
+
+[%unbreakable]
+****
+[%unbreakable]
+____
+Make it rain.footnote:[money]
+____
+****
+
+Make it snow.footnote:[dollar bills]

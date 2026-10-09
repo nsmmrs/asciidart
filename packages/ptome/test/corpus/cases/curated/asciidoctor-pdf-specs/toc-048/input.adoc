@@ -1,0 +1,10 @@
+= Document Title
+:toc: macro
+
+toc::[]
+
+== Section
+
+=== Subsection
+
+=== Another Subsection

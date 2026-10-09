@@ -1,0 +1,6 @@
+= Document Title
+:pdf-theme: default-for-print
+
+black `text`
+
+> loud quote

@@ -1,0 +1,4 @@
+= Document Title
+:front-cover-image: https://example.org/cover.svg
+
+content

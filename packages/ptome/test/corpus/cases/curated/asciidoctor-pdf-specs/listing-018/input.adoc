@@ -1,0 +1,9 @@
+----
+flush
+  lead space
+\tlead tab
+\tlead tab\tcolumn tab
+  lead space\tcolumn tab
+
+flush\t\t\tcolumn tab
+----

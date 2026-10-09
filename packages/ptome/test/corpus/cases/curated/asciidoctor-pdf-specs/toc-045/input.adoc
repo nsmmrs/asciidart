@@ -1,0 +1,9 @@
+= Document Title
+:toc:
+:title-page:
+
+== Introduction
+
+== Main
+
+== Conclusion

@@ -1,0 +1,7 @@
+before
+(((zen)))
+(((yin)))
+(((yang)))
+after
+
+foo (((bar))) baz

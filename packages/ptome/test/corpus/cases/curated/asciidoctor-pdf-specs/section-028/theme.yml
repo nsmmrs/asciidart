@@ -1,0 +1,3 @@
+extends: default
+heading_text_transform: 'uppercase'
+heading_h3_text_transform: 'none'

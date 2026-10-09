@@ -1,0 +1,16 @@
+= cmd(1)
+
+== Name
+
+cmd - does stuff
+
+== Synopsis
+
+*cmd* [_OPTION_]... _FILE_...
+
+[.column]
+<<<
+
+== Options
+
+*-v*:: Prints the version.

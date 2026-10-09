@@ -1,0 +1,6 @@
+[horizontal]
+foo::
+desc +
+_more desc_
++
+even more desc

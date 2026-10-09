@@ -1,0 +1,6 @@
+[horizontal]
+ctrl-r::
+Make it rain.footnote:[money]
+
+ctrl-d::
+Make it snow.footnote:[dollar bills]

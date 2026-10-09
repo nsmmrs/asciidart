@@ -1,0 +1,7 @@
+:!table-caption:
+
+.A rather long description for this table
+[width=30%]
+|===
+| Col A | Col B | Col C | Col D
+|===

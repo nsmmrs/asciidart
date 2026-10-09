@@ -1,0 +1,6 @@
+= Article Title
+
+[.column]
+<<<
+
+column 1

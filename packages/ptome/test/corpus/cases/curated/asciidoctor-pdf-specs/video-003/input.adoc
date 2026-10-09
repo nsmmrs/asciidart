@@ -1,0 +1,4 @@
+:icons: font
+
+.Asciidoctor training
+video::asciidoctor.mp4[]

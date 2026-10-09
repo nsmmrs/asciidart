@@ -1,0 +1,14 @@
+= The Amazing
+Author Name
+:doctype: book
+:title-page-background-image: image:bg.png[]
+
+beginning
+
+<<<
+
+middle
+
+<<<
+
+end

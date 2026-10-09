@@ -1,0 +1,3 @@
+extends: default
+abstract_font_color: ~
+base_font_color: '0000EE'

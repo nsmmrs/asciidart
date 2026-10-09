@@ -1,0 +1,3 @@
+:back-cover-image: image:red-green-blue.pdf[page=10]
+
+content

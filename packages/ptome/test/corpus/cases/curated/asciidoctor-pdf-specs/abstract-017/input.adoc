@@ -1,0 +1,11 @@
+= Document Title
+:doctype: book
+
+.Abstract
+[abstract]
+This is the abstract.
+
+== Chapter
+
+[.text-left]
+This is the main content.

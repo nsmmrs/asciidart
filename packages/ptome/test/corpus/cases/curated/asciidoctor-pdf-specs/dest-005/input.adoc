@@ -1,0 +1,11 @@
+= Document Title
+:toc: macro
+
+content before the toc
+
+[#macro-toc]
+toc::[]
+
+== Chapter
+
+== Another Chapter

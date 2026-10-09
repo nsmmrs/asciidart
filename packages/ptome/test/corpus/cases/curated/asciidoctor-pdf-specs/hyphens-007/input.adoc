@@ -1,0 +1,5 @@
+:hyphens:
+
+|===
+|This story chronicles the inexplicable hazards and vicious beasts a team must conquer and vanquish.
+|===

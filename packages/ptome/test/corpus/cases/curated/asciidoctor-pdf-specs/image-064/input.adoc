@@ -1,0 +1,1 @@
+image::square.svg[pdfwidth=1in,link=https://example.org]

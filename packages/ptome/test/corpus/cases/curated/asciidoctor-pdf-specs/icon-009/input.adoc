@@ -1,0 +1,3 @@
+:icons: font
+
+I icon:fas-heart[1x] AsciiDoc

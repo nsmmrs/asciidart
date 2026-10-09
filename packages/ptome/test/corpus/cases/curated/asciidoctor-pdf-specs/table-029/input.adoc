@@ -1,0 +1,8 @@
+before table
+
+[cols=",50%,50%"]
+|===
+| Column A | Column B | Column C
+|===
+
+after table

@@ -1,0 +1,11 @@
+:page-background-image: image:bg.png[]
+
+before
+
+<<<
+
+image::blue-letter.pdf[]
+
+<<<
+
+after

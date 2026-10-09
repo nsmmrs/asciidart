@@ -1,0 +1,9 @@
+:source-highlighter: rouge
+:rouge-style: bw
+
+[source,ruby]
+----
+class Beer
+  attr_reader :style
+end
+----

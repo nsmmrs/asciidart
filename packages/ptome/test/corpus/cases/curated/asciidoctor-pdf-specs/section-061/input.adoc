@@ -1,0 +1,6 @@
+= Document Title
+:doctype: book
+
+== Chapter A
+
+== Chapter B

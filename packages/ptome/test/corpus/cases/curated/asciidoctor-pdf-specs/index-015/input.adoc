@@ -1,0 +1,10 @@
+= Document Title
+
+== Big Cats
+
+(((cats,big cats)))
+(((cats,big cats,lion)))
+The king of the jungle is the lion, which is a big cat.
+
+[index]
+== Index

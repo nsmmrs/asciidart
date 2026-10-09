@@ -1,0 +1,4 @@
+[loweralpha,start=-1]
+. negative one
+. zero
+. positive one

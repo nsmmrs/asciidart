@@ -1,0 +1,8 @@
+:source-highlighter: rouge
+
+[,ruby,subs="+quotes,+macros"]
+----
+require %(https://asciidoctor.org[asciidoctor])
+
+Asciidoctor._convert_file_ 'README.adoc', *safe: :safe*
+----

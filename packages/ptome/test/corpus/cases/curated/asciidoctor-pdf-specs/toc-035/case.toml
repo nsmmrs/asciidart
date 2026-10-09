@@ -1,0 +1,13 @@
+description = "asciidoctor-pdf's spec toc_spec.rb, document 35: the gem's PDF is the golden one."
+source = "vendor:vendor/asciidoctor-pdf/test/spec/toc_spec.rb"
+features = ["pdf"]
+formats = ["pdf"]
+
+[options]
+safe = "unsafe"
+
+[attributes]
+"imagesdir" = "../../../../../../vendor/asciidoctor-pdf/test/spec/fixtures"
+"nofooter" = ""
+"pdf-theme" = "theme.yml"
+"pdf-themesdir" = "{docdir}"

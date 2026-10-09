@@ -1,0 +1,11 @@
+The recommended reading includes <<bar>>.
+
+Did you read <<bar>>?
+
+<<<
+
+[bibliography]
+== Bibliography
+
+* [[[bar]]] Bar, Foo. All The Things. 2010.
+* [[[baz]]] Baz. The Rest of the Story. 2020.

@@ -1,0 +1,5 @@
+:fn-disclaimer: footnote:disclaimer[Opinions are my own.]
+
+A bold statement.{fn-disclaimer}
+
+Another audacious statement.{fn-disclaimer}

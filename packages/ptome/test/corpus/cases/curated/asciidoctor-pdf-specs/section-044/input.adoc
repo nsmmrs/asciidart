@@ -1,0 +1,18 @@
+= Document Title
+:doctype: book
+
+[colophon%notitle]
+= Hidden
+
+Colophon with no title.
+
+= Part
+
+== Chapter
+
+content
+
+[appendix]
+= Details
+
+We let you know.

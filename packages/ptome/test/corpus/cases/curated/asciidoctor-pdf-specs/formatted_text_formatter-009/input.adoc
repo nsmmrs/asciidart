@@ -1,0 +1,4 @@
+[%unbreakable]
+--
+before +++<foo>bar</foo>+++ after
+--

@@ -1,0 +1,6 @@
+[stem]
+++++
+sig = enc(H(D), s)
+++++
+
+after

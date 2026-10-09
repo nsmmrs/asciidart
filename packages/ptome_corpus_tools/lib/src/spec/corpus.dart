@@ -20,6 +20,15 @@ final class Corpus {
 
   String get casesRoot => p.join(root, 'cases');
 
+  /// ptome's package, which the corpus is in.
+  String get package => p.normalize(p.join(root, '..', '..'));
+
+  /// Makes ptome's package the working directory, as it is for ptome's
+  /// tests, so that what results say about paths outside a case (the
+  /// working directory's, `{cwd}`) is recorded as the tests see it. Ruby
+  /// workers started afterwards inherit it.
+  void enterPackage() => Directory.current = package;
+
   /// This package (drivers, pool sources, triage notes, exclusions), beside
   /// ptome in `packages/`.
   String get toolsRoot =>

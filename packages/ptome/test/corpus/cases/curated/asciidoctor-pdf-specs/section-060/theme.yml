@@ -1,0 +1,2 @@
+extends: default
+heading_min_height_after: 'auto'

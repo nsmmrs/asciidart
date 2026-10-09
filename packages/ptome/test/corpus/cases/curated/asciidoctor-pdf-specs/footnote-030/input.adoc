@@ -1,0 +1,1 @@
+When in doubt, search.footnote:[Use a search engine like https://google.com[Google]]

@@ -1,0 +1,8 @@
+:source-highlighter: rouge
+:rouge-style: monokai
+
+[source,d]
+----
+int #line 6 "pkg/mod.d"
+x; // this is now line 6 of file pkg/mod.d
+----

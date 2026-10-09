@@ -1,0 +1,9 @@
+:source-highlighter: rouge
+
+[source,yaml]
+----
+foo: 'bar'
+key: 'value'
+<1>
+----
+<1> End the file with a trailing newline

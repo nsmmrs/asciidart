@@ -1,0 +1,13 @@
+= Document Title
+:doctype: book
+:outlinelevels: 3:1
+
+== Chapter
+
+=== Section
+
+==== Subsection
+
+== Another Chapter
+
+=== Another Section

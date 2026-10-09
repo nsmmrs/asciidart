@@ -1,0 +1,11 @@
+((foo
+{empty}
+bar))(((yin
+{empty}
+{empty}
+yang)))
+
+<<<
+
+[index]
+== Index

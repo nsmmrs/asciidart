@@ -1,0 +1,9 @@
+= cmd(1)
+
+== Name
+
+cmd - does *lots* of stuff
+
+== Synopsis
+
+*cmd* [_OPTION_]... _FILE_...

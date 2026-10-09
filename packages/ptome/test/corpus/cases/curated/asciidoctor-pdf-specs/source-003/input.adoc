@@ -1,0 +1,11 @@
+:source-highlighter: rouge
+
+[source,sql]
+----
+SELECT
+\tname,\t firstname,\t\tlastname
+FROM
+\tusers
+WHERE
+\tusername\t=\t'foobar'
+----

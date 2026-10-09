@@ -1,0 +1,9 @@
+before
+
+----
+key: val # <1>
+----
+
+'''
+
+<1> key-value pair

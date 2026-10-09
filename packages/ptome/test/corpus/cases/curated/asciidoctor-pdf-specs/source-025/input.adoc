@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source,ruby,linenums,highlight=]
+----
+puts "Hello, World!"
+----

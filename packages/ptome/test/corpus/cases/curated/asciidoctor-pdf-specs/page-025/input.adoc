@@ -1,0 +1,6 @@
+image::square.png[pdfwidth=100%]
+
+[.column]
+<<<
+
+image::square.png[pdfwidth=100%]

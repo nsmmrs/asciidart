@@ -1,0 +1,14 @@
+= Document Title
+:doctype: book
+:media: prepress
+:toc: preamble
+
+In a land far away...
+
+== First Chapter
+
+There was a hero...
+
+== Last Chapter
+
+Fin.

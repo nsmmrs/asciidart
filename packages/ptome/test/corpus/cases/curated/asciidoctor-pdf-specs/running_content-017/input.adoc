@@ -1,0 +1,11 @@
+= Document Title
+:doctype: book
+:toc: macro
+
+== First Chapter
+
+toc::[]
+
+== Second Chapter
+
+== Third Chapter

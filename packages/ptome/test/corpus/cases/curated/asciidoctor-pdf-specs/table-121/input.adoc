@@ -1,0 +1,7 @@
+[cols=2*^.^]
+|===
+.2+|one big cell
+|cell
+
+|cell
+|===

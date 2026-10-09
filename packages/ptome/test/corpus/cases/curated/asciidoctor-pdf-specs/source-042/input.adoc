@@ -1,0 +1,9 @@
+:source-highlighter: coderay
+
+[source,xml]
+----
+<tag <1>
+  attr="value">
+  content
+</tag>
+----

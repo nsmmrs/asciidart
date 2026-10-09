@@ -1,0 +1,8 @@
+before
+
+[%unbreakable]
+|===
+| will not be broken
+|===
+
+after

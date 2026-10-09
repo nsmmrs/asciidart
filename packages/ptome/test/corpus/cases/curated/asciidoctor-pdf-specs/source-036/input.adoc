@@ -1,0 +1,10 @@
+:source-highlighter: coderay
+
+[source,sass]
+----
+$icon-font-path: "node_modules/package-name/icon-fonts/";
+
+body {
+  background: #fafafa;
+}
+----

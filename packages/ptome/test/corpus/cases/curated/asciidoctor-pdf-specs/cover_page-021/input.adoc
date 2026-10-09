@@ -1,0 +1,7 @@
+:front-cover-image: image:red-green-blue.pdf[page=10]
+
+one
+
+<<<
+
+two

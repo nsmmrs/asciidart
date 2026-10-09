@@ -1,0 +1,10 @@
+= Document Title
+
+== Unicode Party
+
+((étudier)) means to study.
+
+Use a ((λ)) to define a lambda function.
+
+[index]
+== Index

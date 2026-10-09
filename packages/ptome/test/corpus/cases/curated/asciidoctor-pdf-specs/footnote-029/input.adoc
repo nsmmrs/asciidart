@@ -1,0 +1,6 @@
+There are lots of things to know.footnote:[Be sure to read <<wells>> to learn about it.]
+
+[bibliography]
+== Bibliography
+
+* [[[wells]]] Ashley Wells. 'Stuff About Stuff'. Publishistas. 2010.

@@ -1,0 +1,7 @@
+:source-highlighter: pygments
+:pygments-style: tango
+
+[source,ruby,linenums,highlight=]
+----
+puts "Hello, World!"
+----

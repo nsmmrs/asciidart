@@ -1,0 +1,6 @@
+= Article Title
+:notitle:
+
+== Foo
+
+== Bar

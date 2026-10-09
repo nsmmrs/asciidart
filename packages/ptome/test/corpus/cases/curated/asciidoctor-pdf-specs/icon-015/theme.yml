@@ -1,0 +1,2 @@
+extends: default
+role_red_font_color: 'FF0000'
