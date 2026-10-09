@@ -587,6 +587,7 @@ final class TypstLineBreaker extends ItemLineBreaker
   List<int> breakItems(List<LineItem> items, double Function(int) widths)
   TypstLineBreaker({bool justify = true, double fontSize = 10, double hyphenationCost = 135, double runtCost = 100})
   bool justify
+  double costOf(List<LineItem> items, double Function(int) widths, List<int> breaks)
   double fontSize
   double hyphenationCost
   double runtCost

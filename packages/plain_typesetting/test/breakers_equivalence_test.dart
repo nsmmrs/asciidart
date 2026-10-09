@@ -1,7 +1,9 @@
 // The Typst and Knuth-Plass line breakers against frozen copies of them
 // (test/support/frozen/breakers.dart): typed arrays, cached line widths
 // and multiplications for math.pow may not move a single break, on real
-// paragraphs and on random item lists.
+// paragraphs and on random item lists. Where line widths vary, the Typst
+// breaker now keeps the best way to a break for each number of lines
+// (BUG-1cks79), so its breaks there cost no more than the frozen copy's.
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -99,20 +101,32 @@ void main() {
   );
   final run = TextRun('', TextStyle(font, 10));
 
-  void same(List<LineItem> items, LineWidths widths, String label) {
+  void same(
+    List<LineItem> items,
+    LineWidths widths,
+    String label, {
+    bool varying = false,
+  }) {
     for (final justify in [true, false]) {
       for (final size in [9.0, 10.5]) {
-        expect(
-          TypstLineBreaker(
-            justify: justify,
-            fontSize: size,
-          ).breakItems(items, widths),
-          FrozenTypst(
-            justify: justify,
-            fontSize: size,
-          ).breakItems(items, widths),
-          reason: 'Typst, $label',
-        );
+        final breaker = TypstLineBreaker(justify: justify, fontSize: size);
+        final ours = breaker.breakItems(items, widths);
+        final frozen = FrozenTypst(
+          justify: justify,
+          fontSize: size,
+        ).breakItems(items, widths);
+        if (varying) {
+          // (Where a line can't help being overfull, the breaker gives up
+          // on the ways through it, as Typst does: no promise there.)
+          if (breaker.costOf(items, widths, frozen) >= 1e12) continue;
+          expect(
+            breaker.costOf(items, widths, ours),
+            lessThanOrEqualTo(breaker.costOf(items, widths, frozen) * 1.000001),
+            reason: 'Typst, $label',
+          );
+        } else {
+          expect(ours, frozen, reason: 'Typst, $label');
+        }
       }
     }
     for (final tolerance in [1.0, 2.0, 5.0]) {
@@ -139,6 +153,7 @@ void main() {
             items,
             (line) => line.isEven ? width : width * 0.7,
             'text $k at $width, alternating',
+            varying: true,
           );
         }
       }
@@ -156,6 +171,7 @@ void main() {
         items,
         seed.isEven ? (_) => width : (line) => width + 7 * (line % 3),
         'seed $seed',
+        varying: seed.isOdd,
       );
     }
   });

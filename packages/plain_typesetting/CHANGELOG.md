@@ -13,6 +13,11 @@
 - Renamed from plain_pdf's names: `PdfRect` to `Rect`, `PdfMatrix` to
   `Matrix`, `PdfColor` to `Color`, `PdfTextStyle` to `TextStyle`.
 - `OpenTypeShaper` is a `Font` on its own, compared with HarfBuzz.
+- `TypstLineBreaker` breaks paragraphs whose line widths vary (an indent,
+  a drop's lines, a runaround) as well as they can be: it keeps the best
+  way to a break for each number of lines until the widths settle, where
+  it kept one (exact only for one width after the first line).
+  `TypstLineBreaker.costOf` gives the cost of any breaks, for checking.
 - Side notes still waiting when the text ends go on pages of their own
   (margin only) instead of being dropped; `LayoutResult.unsetSideNotes`
   names any no page's side column has room for.
