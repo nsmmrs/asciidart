@@ -120,35 +120,57 @@ const List<int> _codeLengthValue = [
   0, 4, 3, 2, 0, 4, 3, 1, 0, 4, 3, 2, 0, 4, 3, 5, //
 ];
 
-/// The bits of a Brotli stream, least significant first.
+/// The bits of a Brotli stream, least significant first, through a bit
+/// buffer refilled a byte at a time up to 24 to 31 bits (below 2^31, so
+/// the same with dart2js); past the end of the data it fills with zeros.
 final class _Bits {
   new(this._data) : _end = _data.length * 8;
 
   final Uint8List _data;
   final int _end;
+
+  /// The position, in bits, of the next bit.
   int _at = 0;
 
+  /// The bits from [_at] on, [_count] of them, and the byte they end at.
+  int _buffer = 0;
+  int _count = 0;
+  int _next = 0;
+
+  void _refill() {
+    final data = _data;
+    while (_count < 24) {
+      if (_next < data.length) _buffer |= data[_next] << _count;
+      _next++;
+      _count += 8;
+    }
+  }
+
   /// The next [n] bits (at most 24), consumed.
+  @pragma('vm:prefer-inline')
   int read(int n) {
     if (_at + n > _end) throw const FormatException('Brotli data too short');
-    final v = peek(n);
+    if (_count < n) _refill();
+    final v = _buffer & ((1 << n) - 1);
+    _buffer >>>= n;
+    _count -= n;
     _at += n;
     return v;
   }
 
   /// The next [n] bits (at most 24), zeros past the end.
+  @pragma('vm:prefer-inline')
   int peek(int n) {
-    final byte = _at >> 3;
-    final shift = _at & 7;
-    var v = 0;
-    for (var i = 0; i * 8 < n + shift; i++) {
-      if (byte + i < _data.length) v |= _data[byte + i] << (8 * i);
-    }
-    return (v >> shift) & ((1 << n) - 1);
+    if (_count < n) _refill();
+    return _buffer & ((1 << n) - 1);
   }
 
+  /// Skips [n] bits, no more than the last [peek] looked at.
+  @pragma('vm:prefer-inline')
   void skip(int n) {
     if (_at + n > _end) throw const FormatException('Brotli data too short');
+    _buffer >>>= n;
+    _count -= n;
     _at += n;
   }
 
@@ -160,11 +182,21 @@ final class _Bits {
 
   /// The byte offset (at a byte boundary).
   int get byteOffset => _at >> 3;
-  set byteOffset(int value) => _at = value * 8;
+  set byteOffset(int value) {
+    _at = value * 8;
+    _next = value;
+    _buffer = 0;
+    _count = 0;
+  }
 }
 
 /// A prefix code: canonical codes from code lengths, decoded through a
-/// table of the codes up to [_tableBits] long, bit by bit past that.
+/// table of 8 bits and subtables for the longer codes (Google's layout).
+///
+/// An entry is `symbol << 8 | length`, or for a subtable `offset << 8 |
+/// 0x80 | bits`, indexed by the `bits` bits after the first 8. The codes
+/// this decoder reads are complete (or of one symbol), so every entry is
+/// filled.
 final class _Code {
   factory(List<int> lengths) {
     final count = Int32List(16);
@@ -180,69 +212,111 @@ final class _Code {
     for (var symbol = 0; symbol < lengths.length; symbol++) {
       if (lengths[symbol] != 0) symbols[offsets[lengths[symbol]]++] = symbol;
     }
-    final used = offsets[15] + count[15];
+    // The filling moved each offset to the end of its length's symbols.
+    final used = offsets[15];
     if (used == 1) return _Code._single(symbols[0]);
     var maxLength = 15;
     while (maxLength > 0 && count[maxLength] == 0) {
       maxLength--;
     }
-    final bits = maxLength < 8 ? maxLength : 8;
-    final table = Int32List(1 << bits);
+    final root = maxLength < 8 ? maxLength : 8;
+    final rootSize = 1 << root;
+    // The codes, by length then symbol; the subtables' sizes by the root
+    // bits their codes start with (the last code of a prefix is its
+    // longest).
+    final codes = Int32List(used);
+    final subBits = Int32List(rootSize);
     var code = 0;
-    var index = 0;
-    for (var length = 1; length <= bits; length++) {
-      for (var n = 0; n < count[length]; n++) {
-        final entry = symbols[index++] << 4 | length;
-        var reversed = 0;
-        for (var b = 0; b < length; b++) {
-          reversed |= ((code >> b) & 1) << (length - 1 - b);
-        }
-        for (var at = reversed; at < table.length; at += 1 << length) {
-          table[at] = entry;
-        }
-        code++;
+    var k = 0;
+    for (var length = 1; length <= maxLength; length++) {
+      for (var n = count[length]; n > 0; n--) {
+        if (length > root) subBits[code >> (length - root)] = length - root;
+        codes[k++] = code++;
       }
       code <<= 1;
     }
-    return _Code._(count, symbols, table, bits, -1);
+    var size = rootSize;
+    final subOffsets = Int32List(rootSize);
+    for (var prefix = 0; prefix < rootSize; prefix++) {
+      if (subBits[prefix] == 0) continue;
+      subOffsets[prefix] = size;
+      size += 1 << subBits[prefix];
+    }
+    final table = Int32List(size);
+    for (var prefix = 0; prefix < rootSize; prefix++) {
+      if (subBits[prefix] == 0) continue;
+      table[_reverse(prefix, root)] =
+          subOffsets[prefix] << 8 | 0x80 | subBits[prefix];
+    }
+    for (k = 0; k < used; k++) {
+      final symbol = symbols[k];
+      final length = lengths[symbol];
+      final entry = symbol << 8 | length;
+      if (length <= root) {
+        for (
+          var i = _reverse(codes[k], length);
+          i < rootSize;
+          i += 1 << length
+        ) {
+          table[i] = entry;
+        }
+      } else {
+        final rest = length - root;
+        final prefix = codes[k] >> rest;
+        final offset = subOffsets[prefix];
+        final end = 1 << subBits[prefix];
+        final first = _reverse(codes[k] & ((1 << rest) - 1), rest);
+        for (var i = first; i < end; i += 1 << rest) {
+          table[offset + i] = entry;
+        }
+      }
+    }
+    return _Code._(table, root, -1);
   }
 
-  new _single(int symbol)
-    : this._(Int32List(16), Int32List(0), Int32List(0), 0, symbol);
+  new _single(int symbol) : this._(Int32List(0), 0, symbol);
 
-  new _(this._count, this._symbols, this._table, this._tableBits, this._only);
+  new _(this._table, this._rootBits, this._only);
 
-  final Int32List _count;
-  final Int32List _symbols;
   final Int32List _table;
-  final int _tableBits;
+  final int _rootBits;
 
   /// The symbol of a code of one symbol (which takes no bits), else -1.
   final int _only;
 
+  @pragma('vm:prefer-inline')
   int decode(_Bits bits) {
     if (_only >= 0) return _only;
-    final entry = _table[bits.peek(_tableBits)];
-    if (entry != 0) {
-      bits.skip(entry & 15);
-      return entry >> 4;
+    final peek = bits.peek(15);
+    var entry = _table[peek & ((1 << _rootBits) - 1)];
+    if (entry & 0x80 != 0) {
+      entry =
+          _table[(entry >> 8) +
+              ((peek >> _rootBits) & ((1 << (entry & 15)) - 1))];
     }
-    // Longer than the table: canonical decoding bit by bit (as zlib's
-    // puff does).
-    var code = 0;
-    var first = 0;
-    var index = 0;
-    for (var length = 1; length < 16; length++) {
-      code |= bits.read(1);
-      final count = _count[length];
-      if (code - count < first) return _symbols[index + code - first];
-      index += count;
-      first = (first + count) << 1;
-      code <<= 1;
-    }
-    throw const FormatException('Brotli prefix code incomplete');
+    // Past the end of the data, the zeros peeked may make a code longer
+    // than what is left: skipping it fails then.
+    bits.skip(entry & 15);
+    return entry >> 8;
   }
 }
+
+/// The low [length] bits of [code] (at most 15) in reverse order.
+int _reverse(int code, int length) =>
+    ((_reversedBytes[code & 0xff] << 8) | _reversedBytes[code >> 8]) >>
+    (16 - length);
+
+final Uint8List _reversedBytes = () {
+  final table = Uint8List(256);
+  for (var b = 0; b < 256; b++) {
+    var r = 0;
+    for (var k = 0; k < 8; k++) {
+      r |= ((b >> k) & 1) << (7 - k);
+    }
+    table[b] = r;
+  }
+  return table;
+}();
 
 /// The state of a category of blocks (literals, insert-and-copy commands
 /// or distances) in a meta-block.
@@ -549,16 +623,32 @@ final class _Decoder {
       if (insert > left) {
         throw const FormatException('Brotli insert past the meta-block');
       }
-      for (var i = 0; i < insert; i++) {
-        if (literals.left == 0) _switchBlock(literals);
-        literals.left--;
-        final p1 = _length > 0 ? out[_length - 1] : 0;
-        final p2 = _length > 1 ? out[_length - 2] : 0;
-        final lut = modes[literals.type] * 512;
-        final context =
-            brotliContextLookup[lut + p1] | brotliContextLookup[lut + 256 + p2];
-        out[_length++] = literalCodes[literalMap[literals.type * 64 + context]]
-            .decode(_bits);
+      if (insert > 0) {
+        // The context is that of the last two bytes, by the mode of the
+        // block type, which changes only at a block switch.
+        var at = _length;
+        var p1 = at > 0 ? out[at - 1] : 0;
+        var p2 = at > 1 ? out[at - 2] : 0;
+        var lut = modes[literals.type] * 512;
+        var mapAt = literals.type * 64;
+        for (final end = at + insert; at < end; at++) {
+          if (literals.left == 0) {
+            _switchBlock(literals);
+            lut = modes[literals.type] * 512;
+            mapAt = literals.type * 64;
+          }
+          literals.left--;
+          final context =
+              brotliContextLookup[lut + p1] |
+              brotliContextLookup[lut + 256 + p2];
+          final literal = literalCodes[literalMap[mapAt + context]].decode(
+            _bits,
+          );
+          out[at] = literal;
+          p2 = p1;
+          p1 = literal;
+        }
+        _length = at;
       }
       left -= insert;
       if (left == 0) break;
@@ -588,10 +678,15 @@ final class _Decoder {
       if (copy > left) {
         throw const FormatException('Brotli copy past the meta-block');
       }
-      for (var i = 0; i < copy; i++) {
-        out[_length] = out[_length - distance];
-        _length++;
+      final end = _length + copy;
+      if (distance >= copy && copy > 16) {
+        out.setRange(_length, end, out, _length - distance);
+      } else {
+        for (var at = _length; at < end; at++) {
+          out[at] = out[at - distance];
+        }
       }
+      _length = end;
       left -= copy;
     }
   }

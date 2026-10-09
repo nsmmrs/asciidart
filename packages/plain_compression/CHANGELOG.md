@@ -13,6 +13,8 @@
 - A faster encoder writing the same bytes: rolling hash, zlib's quick
   match rejection and distance-code table, word compares, typed block
   tables and one bit buffer: 1.4x on text, 2x on images, 6x stored.
+- A faster Brotli decoder: a bit buffer, two-level prefix-code tables and
+  a literal loop that keeps its context: 1.35-1.5x.
 - CRC-32, gzip (RFC 1952) and ZIP archives: a reproducible writer and a
   bounds-checked reader, both with ZIP64. They come from ptome's EPUB
   writer; plain_pdf's PNG reader and ptome's EPUB use them.
