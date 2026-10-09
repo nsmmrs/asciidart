@@ -2,6 +2,16 @@
 
 ## 0.1.0-dev (unreleased)
 
+- Faster, with the same output byte for byte: CFF subsets in one pass
+  (a CJK font's 100-glyph subset 60 to 7 ms), TrueType subsets assembled
+  once, WOFF2 glyf rebuilt into one buffer, GPOS kerning through
+  typed-array accelerators (about 20 times faster per uncached pair),
+  `glyphFor` without building the `characterMap` Map, `FontIndex.find`
+  and `hasFamily` by family key (microseconds instead of a millisecond
+  with 780 fonts), and a cold font index scan opening each file twice.
+- A read past the end of a font's data is still a `FontFormatException`,
+  now with the message "read past the end of the font" (without the
+  offset).
 - The OpenType MATH table (`OpenTypeMathTable`, `MathConstant`,
   `MathVariant`, `GlyphConstruction`, `GlyphPart`) from plain_pdf, with
   its history.
