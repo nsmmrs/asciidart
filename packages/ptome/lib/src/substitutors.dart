@@ -49,6 +49,10 @@ import 'package:ptome/src/presence.dart';
 import 'package:ptome/src/ruby_semantics.dart';
 import 'package:ptome/src/rx.dart';
 import 'package:ptome/src/text_case.dart';
+import 'package:ptome/src/units/engine.dart' show RefLink, RefText;
+import 'package:ptome/src/units/presentation.dart';
+import 'package:ptome/src/units/render.dart';
+import 'package:ptome/src/units/session.dart';
 
 /// Matches XML special characters. Port of `SpecialCharsRx`.
 final RegExp specialCharsRx = RegExp('[<&>]');
@@ -336,7 +340,8 @@ List<InlineContent> applySubsTree(
 }
 
 String _applySubsInRun(AbstractNode node, String text, List<Sub> subs) {
-  var subject = text;
+  final units = _unitsOf(node);
+  var subject = units == null ? text : units.prepare(node, text);
 
   List<Passthrough>? passthrus;
   var clearPassthrus = false;
@@ -397,6 +402,7 @@ String _applySubsInRun(AbstractNode node, String text, List<Sub> subs) {
     }
   }
 
+  if (units != null) subject = _restoreUnits(node, units, subject);
   return subject;
 }
 
@@ -2079,6 +2085,36 @@ String _convertFootnoteMacro(
     content = match.group(3);
   }
 
+  return _footnote(
+        node,
+        block,
+        doc,
+        id,
+        content,
+        (content) => restorePassthroughs(
+          node,
+          normalizeText(
+            content,
+            normalizeWhitespace: true,
+            unescapeClosingSquareBrackets: true,
+          ),
+        ),
+      ) ??
+      match.group(0)!;
+}
+
+/// A footnote with [id] and [content] ([prepare] makes its text of
+/// [content]): a new one is numbered and registered, a reference to one
+/// with [id] already registered refers to it. `null` without [content] or
+/// [id] (a footnote macro then stays as written).
+String? _footnote(
+  AbstractNode node,
+  AbstractBlock block,
+  Document doc,
+  String? id,
+  String? content,
+  String Function(String content) prepare,
+) {
   String? index;
   String? type;
   String? target;
@@ -2099,14 +2135,7 @@ String _convertFootnoteMacro(
       target = id;
       finalId = null;
     } else if (content != null) {
-      finalContent = restorePassthroughs(
-        node,
-        normalizeText(
-          content,
-          normalizeWhitespace: true,
-          unescapeClosingSquareBrackets: true,
-        ),
-      );
+      finalContent = prepare(content);
       index = doc.counter('footnote-number');
       doc.registerFootnote(Footnote(index, id, finalContent));
       type = 'ref';
@@ -2119,20 +2148,13 @@ String _convertFootnoteMacro(
       finalId = null;
     }
   } else if (content != null) {
-    finalContent = restorePassthroughs(
-      node,
-      normalizeText(
-        content,
-        normalizeWhitespace: true,
-        unescapeClosingSquareBrackets: true,
-      ),
-    );
+    finalContent = prepare(content);
     index = doc.counter('footnote-number');
     doc.registerFootnote(Footnote(index, id, finalContent));
     type = null;
     target = null;
   } else {
-    return match.group(0)!;
+    return null;
   }
   return InlineRun.emit(
     Inline(
@@ -3137,3 +3159,194 @@ final RegExp _namedGroupRx = RegExp(r'\(\?<[A-Za-z_]');
 /// The characters of an image's file name that become spaces in its
 /// default alt text.
 final RegExp _altSeparatorRx = RegExp('[_-]');
+
+// Units ------------------------------------------------------------------
+
+/// The units session of [node]'s document (or of the document a nested
+/// one is in), once it has prepared what units print.
+UnitsSession? _unitsOf(AbstractNode node) {
+  final start = node is Document ? node : node.document;
+  for (
+    var doc = start is Document ? start : null;
+    doc != null;
+    doc = doc.parentDocument
+  ) {
+    final session = doc.unitsSession;
+    if (session != null) return session.rendering == null ? null : session;
+  }
+  return null;
+}
+
+/// [text] (substituted) with its range marks as role spans and its atoms
+/// converted.
+String _restoreUnits(AbstractNode node, UnitsSession units, String text) {
+  final rendering = units.rendering!;
+  var result = text;
+  if (result.contains(rangeOpenMark)) {
+    result = InlineRun.replace(
+      result,
+      rangeRx,
+      (match) =>
+          _rangeSpans(node, rendering.roles[int.parse(match[1]!)], match[2]!),
+    );
+  }
+  if (result.contains(atomMark)) {
+    result = InlineRun.replace(
+      result,
+      atomRx,
+      (match) => _atomOutput(node, rendering.atoms[int.parse(match[1]!)]),
+    );
+  }
+  return result;
+}
+
+/// The tags of converted output (HTML, DocBook, the PDF's inline markup).
+final RegExp _tagRx = RegExp('<[^>]*>');
+
+/// [text] (converted) in a span with [role]; text whose tags are not
+/// balanced (markup the range crosses), its text between tags in spans of
+/// their own, so the spans nest in the markup around them.
+String _rangeSpans(AbstractNode node, String role, String text) {
+  String span(String t) => t.isEmpty
+      ? t
+      : InlineRun.emit(
+          Inline(
+            _blockOf(node),
+            InlineContext.quoted,
+            text: t,
+            type: 'unquoted',
+            attributes: {'role': role},
+          ),
+        );
+  if (!text.contains('<') || _balancedTags(text)) return span(text);
+  final out = StringBuffer();
+  var at = 0;
+  for (final tag in _tagRx.allMatches(text)) {
+    out
+      ..write(span(text.substring(at, tag.start)))
+      ..write(tag[0]);
+    at = tag.end;
+  }
+  out.write(span(text.substring(at)));
+  return out.toString();
+}
+
+/// Elements without content (HTML's void elements).
+const Set<String> _voidTags = {'br', 'hr', 'img', 'input', 'wbr', 'col'};
+
+/// Whether the tags in [text] are balanced: every element it opens, it
+/// closes, and it closes none it does not open.
+bool _balancedTags(String text) {
+  final open = <String>[];
+  for (final tag in _tagRx.allMatches(text)) {
+    final t = tag[0]!;
+    if (t.endsWith('/>') || t.startsWith('<!') || t.startsWith('<?')) {
+      continue;
+    }
+    final closing = t.startsWith('</');
+    final name = RegExp(r'^</?([^\s/>]+)').firstMatch(t)?[1] ?? '';
+    if (closing) {
+      if (open.isEmpty || open.removeLast() != name) return false;
+    } else if (!_voidTags.contains(name)) {
+      open.add(name);
+    }
+  }
+  return open.isEmpty;
+}
+
+/// The output of [atom], in [node].
+String _atomOutput(AbstractNode node, UnitAtom atom) {
+  final block = _blockOf(node);
+  switch (atom) {
+    case AnchorAtom(:final id, :final reftext):
+      return InlineRun.emit(
+        Inline(block, InlineContext.anchor, text: reftext, type: 'ref', id: id),
+      );
+    case PartAtom(:final text, :final style, :final role, :final markup):
+      // Text a template printed may refer to attributes (`{response}`),
+      // whose values are those where the unit is.
+      final converted = applySubs(
+        node,
+        text,
+        markup
+            ? const [
+                Sub.specialcharacters,
+                Sub.quotes,
+                Sub.attributes,
+                Sub.replacements,
+              ]
+            : const [Sub.specialcharacters, Sub.attributes],
+      );
+      final type = switch (style) {
+        PartStyle.plain => role == null ? null : 'unquoted',
+        PartStyle.superscript => 'superscript',
+        PartStyle.strong => 'strong',
+        PartStyle.emphasis => 'emphasis',
+      };
+      if (type == null) return converted;
+      return InlineRun.emit(
+        Inline(
+          block,
+          InlineContext.quoted,
+          text: converted,
+          type: type,
+          attributes: role == null ? null : {'role': role},
+        ),
+      );
+    case GroupAtom(:final atoms, :final role):
+      final inner = atoms.map((a) => _atomOutput(node, a)).join();
+      if (role == null) return inner;
+      return InlineRun.emit(
+        Inline(
+          block,
+          InlineContext.quoted,
+          text: inner,
+          type: 'unquoted',
+          attributes: {'role': role},
+        ),
+      );
+    case TextAtom(:final text):
+      return applySubs(node, text);
+    case BreakAtom():
+      return InlineRun.emit(
+        Inline(block, InlineContext.lineBreak, text: '', type: 'line'),
+      );
+    case FootnoteAtom(:final content, :final id):
+      final doc = _documentOf(node);
+      if (doc.deferFootnotes) return '';
+      return _footnote(
+            node,
+            block,
+            doc,
+            id,
+            content,
+            (content) => applySubs(node, content),
+          ) ??
+          '';
+    case ReferenceAtom(:final parts):
+      final out = StringBuffer();
+      for (final part in parts) {
+        switch (part) {
+          case RefText(:final text):
+            out.write(subSpecialchars(text));
+          case RefLink(:final text, :final id, :final file):
+            final escaped = text.replaceAll(rSb, escRSb);
+            out.write(
+              applySubs(
+                node,
+                file == null
+                    ? 'xref:#$id[$escaped]'
+                    : 'xref:$file#$id[$escaped]',
+                const [
+                  Sub.specialcharacters,
+                  Sub.quotes,
+                  Sub.replacements,
+                  Sub.macros,
+                ],
+              ),
+            );
+        }
+      }
+      return out.toString();
+  }
+}

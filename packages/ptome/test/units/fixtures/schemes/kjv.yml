@@ -9,6 +9,9 @@ stream:
     reset: "verse"
     origin: "{{chapter}}:{{verse}}"
     lower: "*{{origin}}* {{#lemma}}__{{lemma}}__: {{/lemma}}{{body}}"
+    origin-style: "strong"
+    lemma-style: "emphasis"
+    lemma-after: ": "
   # Cross-references: lettered in the verse before the phrase they belong
   # to, gathered into the verse's entry for the center column.
   x:
@@ -18,6 +21,12 @@ stream:
     origin: "{{chapter}}:{{verse}}"
     mark: "[.xref-mark]^{{caller}}^"
     entry: "[.xref]##*{{origin}}* {{#notes}}{{^first}} {{/first}}^{{caller}}^{nbsp}{{body}}{{/notes}}## "
+    caller-style: "superscript"
+    caller-role: "xref-mark"
+    origin-style: "strong"
+    caller-after: "\u00a0"
+    entry-role: "xref"
+    entry-after: " "
 range:
   wj:
     role: "wj"
@@ -41,3 +50,19 @@ templates:
         {{=}} {{book.chapter-label}} {{chapter}}
     verse:
       lower: "[[{{id}},{{reftext}}]]{{^first}}{{^zero}}^{{label}}^{nbsp}{{/zero}}{{/first}}"
+level-presentation:
+  bible:
+    book:
+      title: "{{book.name}}"
+      role: "book"
+      attributes:
+        short-name: "{{book.abbr}}"
+    chapter:
+      title: "{{book.chapter-label}} {{chapter}}"
+      role: "chapter"
+      attributes:
+        number: "{{chapter}}"
+    verse:
+      label: "{{^first}}{{^zero}}{{label}}{{/zero}}{{/first}}"
+      label-style: "superscript"
+      label-after: "\u00a0"

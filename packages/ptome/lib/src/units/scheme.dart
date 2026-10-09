@@ -7,6 +7,7 @@
 library;
 
 import 'package:ptome/src/units/files.dart' as p;
+import 'package:ptome/src/units/presentation.dart';
 import 'package:ptome/src/units/scheme_yaml.dart';
 import 'package:ptome/src/units/template.dart';
 
@@ -495,7 +496,11 @@ final class Level {
     this.isDefault = false,
     this.gaps = false,
     this.templates = const {},
-  });
+    LevelLook? look,
+  }) : look = look ?? LevelLook(const SchemeMap({}));
+
+  /// How the level's units look (scheme format v2).
+  LevelLook look;
 
   /// Labels may skip ahead without a warning (a statute's repealed
   /// provisions leave gaps).
@@ -800,7 +805,11 @@ final class NoteStream {
     this.reset,
     this.placement = Placement.footnote,
     this.templates = const {},
-  });
+    StreamLook? look,
+  }) : look = look ?? StreamLook(const SchemeMap({}));
+
+  /// How the stream's notes look (scheme format v2).
+  final StreamLook look;
 
   /// The stream's name, as `note:NAME[…]` writes it.
   final String name;
@@ -947,6 +956,7 @@ final class Config {
             m.string('placement') ?? 'footnote',
           ),
           templates: m.templates,
+          look: StreamLook(m),
         );
       }
       for (final (name, m)
@@ -988,6 +998,24 @@ final class Config {
                 'templates for unknown level $sname.$lname',
               ));
           level.templates.addAll(m.templates);
+        }
+      }
+      // And how they look (v2): `level-presentation: {bible: {verse: …}}`.
+      for (final (sname, levels)
+          in t.map('level-presentation')?.maps ??
+              const <(String, SchemeMap)>[]) {
+        final scheme =
+            schemes[sname] ??
+            (throw FormatException('presentation for unknown scheme $sname'));
+        for (final (lname, m) in levels.maps) {
+          final level =
+              scheme.level(lname) ??
+              (throw FormatException(
+                'presentation for unknown level $sname.$lname',
+              ));
+          level
+            ..look = level.look.merged(m)
+            ..templates.addAll(m.templates);
         }
       }
     }
@@ -1133,6 +1161,7 @@ Scheme _scheme(
         isDefault: l.flag('default') ?? false,
         gaps: l.flag('gaps') ?? false,
         templates: {...l.templates},
+        look: LevelLook(l),
       ),
     );
   }

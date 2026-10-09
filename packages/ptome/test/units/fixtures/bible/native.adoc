@@ -1,0 +1,10 @@
+= Native
+:units: bible, kjv
+
+== @GEN
+
+=== @1
+
+@ In the beginning ##God##note:tn[the word [Elohim] is plural] created the heaven and the earth.
+@ And the earth was [wj}without *form{wj] and* void.
+@ And God said, Let there be light: and there was light.

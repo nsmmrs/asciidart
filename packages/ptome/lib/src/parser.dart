@@ -1180,6 +1180,7 @@ abstract final class Parser {
       }
     } else if (document.attributes.containsKey('sectids')) {
       section.id = id = Section.generateId(_idSource(section), document);
+      section.idGenerated = true;
     }
     final titleCursor = reader.cursorAtLine(reader.lineno - (atx ? 1 : 2));
     if (id != null) {
@@ -1890,6 +1891,7 @@ abstract final class Parser {
               (docAttrs.containsKey('sectids')
                   ? Section.generateId(block.title ?? '', document)
                   : null);
+          block.idGenerated = floatTitle.id == null && block.id != null;
           block.level = floatTitle.level;
           if (titleOrigin != null) {
             final column = floatTitle.atx

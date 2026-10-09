@@ -22,6 +22,7 @@ import 'package:ptome/src/units/document.dart';
 import 'package:ptome/src/units/engine.dart';
 import 'package:ptome/src/units/files.dart' as p;
 import 'package:ptome/src/units/process.dart' show schemesDir;
+import 'package:ptome/src/units/render.dart';
 import 'package:ptome/src/units/scheme.dart';
 
 /// A document's units, as its parse finds them.
@@ -85,6 +86,16 @@ final class UnitsSession {
 
   /// The analysis, once [finish] has run.
   Analysis? analysis;
+
+  /// What the units print, once [finish] has run.
+  Rendering? rendering;
+
+  /// What the substitutions of [node]'s [text] start from: its prepared
+  /// text, if the renderer prepared one for that text, or [text].
+  String prepare(AbstractNode node, String text) {
+    final prepared = rendering?.prepared[node];
+    return prepared != null && prepared.source == text ? prepared.text : text;
+  }
 
   /// Records where the lines of [node]'s text were read.
   void recordOrigins(AbstractNode node, List<LineOrigin> origins) {
@@ -160,7 +171,9 @@ final class UnitsSession {
         LoggerManager.logger.warn('$where${d.message}');
       }
     }
-    return analysis = a;
+    analysis = a;
+    rendering = renderUnits(_document, a, textOf);
+    return a;
   }
 
   void _walk(AbstractBlock node) {

@@ -413,6 +413,10 @@ abstract class AbstractBlock extends AbstractNode {
     return source == null ? [] : applySubsTree(this, source);
   }
 
+  /// Whether [id] was generated from the title (a section's, a discrete
+  /// heading's), not written by the document: a unit's ID takes its place.
+  bool idGenerated = false;
+
   /// Whether this block has a title.
   bool get hasTitle => _title != null;
 

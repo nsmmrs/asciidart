@@ -19,6 +19,7 @@ scheme:
         heading: |-
           [[{{id}},{{reftext}}]]
           {{=}} Article {{article}}: {{title}}
+        title: "Article {{article}}: {{title}}"
       - name: "paragraph"
         wrap: "%."
         cite-wrap: "(%)"
@@ -30,12 +31,16 @@ scheme:
         reftext: "Article {{article}}({{paragraph}})"
         lower: "[[{{id}},{{reftext}}]]{{label}} "
         lower-block: "[.paragraph]"
+        label: "{{label}}"
+        label-after: " "
+        block-role: "paragraph"
       - name: "subparagraph"
         hidden: true
         auto: "paragraph"
         id: "art-{{article}}{{#paragraph}}-{{paragraph}}{{/paragraph}}-s{{subparagraph}}"
         reftext: "Article {{article}}{{#paragraph}}({{paragraph}}){{/paragraph}}, subparagraph {{subparagraph}}"
         lower: "[[{{id}}]]"
+        anchor: true
       - name: "point"
         type: "alpha|int"
         wrap: "(%)"
@@ -46,6 +51,9 @@ scheme:
         reftext: "Article {{article}}{{#paragraph}}({{paragraph}}){{/paragraph}}({{point}})"
         lower: "[[{{id}},{{reftext}}]]{{label}} "
         lower-block: "[.point]"
+        label: "{{label}}"
+        label-after: " "
+        block-role: "point"
       - name: "subpoint"
         type: "alpha|roman"
         wrap: "(%)"
@@ -56,6 +64,9 @@ scheme:
         reftext: "Article {{article}}{{#paragraph}}({{paragraph}}){{/paragraph}}({{point}})({{subpoint}})"
         lower: "[[{{id}},{{reftext}}]]{{label}} "
         lower-block: "[.subpoint]"
+        label: "{{label}}"
+        label-after: " "
+        block-role: "subpoint"
       # An indent (— …), cited by ordinal ("the second indent"): a list item.
       - name: "indent"
         hidden: true
@@ -63,6 +74,7 @@ scheme:
         id: "art-{{article}}{{#paragraph}}-{{paragraph}}{{/paragraph}}{{#point}}-{{point}}{{/point}}-i{{indent}}"
         reftext: "Article {{article}}{{#paragraph}}({{paragraph}}){{/paragraph}}{{#point}}({{point}}){{/point}}, indent {{indent}}"
         lower: "[[{{id}}]]"
+        anchor: true
   recital:
     level:
       - name: "recital"
@@ -73,6 +85,8 @@ scheme:
         id: "rct-{{recital}}"
         reftext: "Recital {{recital}}"
         lower: "[[{{id}},{{reftext}}]]{{label}} "
+        label: "{{label}}"
+        label-after: " "
 stream:
   # The Official Journal's footnotes, numbered through the act.
   oj:
