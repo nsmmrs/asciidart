@@ -11,6 +11,7 @@ final class LayoutResult {
     this.tagPages,
     this._boundaries,
     this._repeatedAnchors,
+    this.unsetSideNotes,
   );
 
   final FlowLayout _layout;
@@ -44,6 +45,11 @@ final class LayoutResult {
 
   /// Where each anchor is.
   final Map<String, AnchorPosition> anchors;
+
+  /// The side notes (see [FlowLayout.sideNotes]) that could not be set
+  /// anywhere, by name: the side column was too small for them. Notes
+  /// still waiting when the text ends go on pages of their own.
+  final List<String> unsetSideNotes;
 
   /// The first and last page (1-based) of each box with a tag
   /// ([BoxStyle.tag]): a box that breaks across pages has two.

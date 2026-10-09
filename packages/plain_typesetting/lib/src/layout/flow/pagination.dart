@@ -349,6 +349,7 @@ final class FlowLayout {
       pass.tagPages,
       pass.boundaries,
       pass.repeatedAnchors,
+      pass.unsetSideNotes,
     );
   }
 }

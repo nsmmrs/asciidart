@@ -388,6 +388,10 @@ final class _Pass {
     _placeSideNotes();
   }
 
+  /// The side notes that could not be set: the column of a page was too
+  /// small for them, or no page has one.
+  final List<String> unsetSideNotes = [];
+
   /// The notes whose anchors were placed (each set once).
   final Set<String> _notesSet = {};
 

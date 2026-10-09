@@ -360,6 +360,7 @@ final class KnuthPlassLineBreaker extends ItemLineBreaker
   double tolerance
 final class LayoutResult
   List<P> render<P extends LayoutPage>(LayoutDocument<P> document, {String Function(String)? destinationName})
+  List<String> unsetSideNotes
   List<int> anchorPages(String anchor)
   List<int> boundaries
   Map<String, ({int first, int last})> tagPages

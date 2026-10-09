@@ -17,11 +17,21 @@ extension _Notes on _Pass {
         (byPage[value.page] ??= []).add((key, value.y));
       }
     }
-    var carried = <LayoutBox>[];
-    for (final (i, page) in pages.indexed) {
+    // The notes waiting for room, with their names.
+    var carried = <(String, LayoutBox)>[];
+    unsetSideNotes.clear();
+    for (var i = 0; i < pages.length || carried.isNotEmpty; i++) {
+      // Notes still waiting when the text has ended go on pages of their
+      // own, with only their margin (as long as a page takes one).
+      final added = i == pages.length;
+      if (added) pages.add(_newPage(null));
+      final page = pages[i];
       page.side.clear();
       final full = column(i + 1, page.template);
-      if (full == null) continue;
+      if (full == null) {
+        if (added) break;
+        continue;
+      }
       // (Above the page's notes.)
       final area = switch (page.notesTop) {
         final top? when top + layout.sideNoteGap > full.bottom =>
@@ -35,15 +45,15 @@ extension _Notes on _Pass {
       };
       final here = byPage[i] ?? const <(String, double)>[];
       final entries = [
-        for (final box in carried) (box, area.top),
-        for (final (name, y) in here) (notes[name]!, y),
+        for (final (name, box) in carried) (name, box, area.top),
+        for (final (name, y) in here) (name, notes[name]!, y),
       ];
       carried = [];
       var cursor = area.top;
-      for (final (box, y) in entries) {
+      for (final (name, box, y) in entries) {
         // After one that didn't fit, the rest wait too, in order.
         if (carried.isNotEmpty) {
-          carried.add(box);
+          carried.add((name, box));
           continue;
         }
         final top = math.min(y, cursor);
@@ -54,12 +64,12 @@ extension _Notes on _Pass {
         if (room <= 0 ||
             (whole > room + 1e-6 && whole <= area.height + 1e-6) ||
             _minHeight(box, area.width) > room + 1e-6) {
-          carried.add(box);
+          carried.add((name, box));
           continue;
         }
         final fit = _place(box, area.width, room, atTop: true);
         if (fit.placed == null) {
-          carried.add(box);
+          carried.add((name, box));
           continue;
         }
         page.side.add((
@@ -67,9 +77,15 @@ extension _Notes on _Pass {
           fit.placed,
         ));
         cursor = top - fit.height - layout.sideNoteGap;
-        if (fit.rest case final rest?) carried.add(rest);
+        if (fit.rest case final rest?) carried.add((name, rest));
+      }
+      // A page of its own that takes none of them: they never will.
+      if (added && page.side.isEmpty) {
+        pages.removeLast();
+        break;
       }
     }
+    unsetSideNotes.addAll([for (final (name, _) in carried) name]);
   }
 
   /// [first] (the placing of [content] in [region]) with room made for the

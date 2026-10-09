@@ -205,17 +205,65 @@ void main() {
             BlockBox([_para('l$i')], style: BoxStyle(anchor: 'a$i')),
         ])
         .render(document);
-    final at = {
-      for (final call in document.pages.single.canvas.calls)
+    Map<String, double> at(int page) => {
+      for (final call in document.pages[page].canvas.calls)
         if (RegExp(r'^glyphs "\s*(\S+)\s*" at \S+ (\S+)').firstMatch(call)
             case final m?)
           m[1]!: double.parse(m[2]!),
     };
+    final first = at(0);
     // The footnote on the last row; m5 on the three rows above it, m6
-    // (with no room left beside the text) not on the page.
-    expect(at['m5a'], at['l5']);
-    expect(at['m5c'], greaterThan(at['foot']!));
-    expect(at.containsKey('m6'), isFalse);
+    // (with no room left beside the text) on a page of its own after the
+    // text's last.
+    expect(first['m5a'], first['l5']);
+    expect(first['m5c'], greaterThan(first['foot']!));
+    expect(first.containsKey('m6'), isFalse);
+    expect(document.pages, hasLength(2));
+    expect(at(1).keys, ['m6']);
+  });
+
+  test('side notes still waiting when the text ends: pages of their own', () {
+    final document = RecordingDocument();
+    final result =
+        FlowLayout(
+            template: _rows(8),
+            sideNotes: {
+              'a1': _para([for (var i = 1; i <= 12; i++) 'long$i'].join('\n')),
+              'a2': _para('after'),
+            },
+            sideColumn: (number, template) =>
+                Rect(200, 20, 80, template.size.height - 40),
+            sideNoteGap: 0,
+          ).layout([
+            for (var i = 1; i <= 2; i++)
+              BlockBox([_para('l$i')], style: BoxStyle(anchor: 'a$i')),
+          ])
+          ..render(document);
+    final texts = [
+      for (final page in document.pages)
+        for (final call in page.canvas.calls)
+          if (RegExp(r'^glyphs "\s*(\S+)\s*"').firstMatch(call) case final m?)
+            m[1]!,
+    ];
+    // Every line of the long note, then the one after it: none dropped.
+    expect(texts.where((t) => t.startsWith('long')), hasLength(12));
+    expect(texts, contains('after'));
+    expect(document.pages.length, greaterThan(1));
+    expect(result.unsetSideNotes, isEmpty);
+  });
+
+  test('a side note no column can take is reported, not dropped silently', () {
+    final result =
+        FlowLayout(
+          template: _rows(8),
+          sideNotes: {'a1': _para('wide')},
+          // A column with no height.
+          sideColumn: (number, template) => const Rect(200, 20, 80, 0),
+        ).layout([
+          BlockBox([_para('l1')], style: const BoxStyle(anchor: 'a1')),
+        ]);
+    expect(result.unsetSideNotes, ['a1']);
+    expect(result.pageCount, 1);
   });
 
   test('a side float: blocks beside it, the rest on the next page', () {

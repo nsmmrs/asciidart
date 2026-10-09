@@ -459,6 +459,7 @@ final class PdfConverter extends BuiltInConverter
     _tocNoHeader = _tocNoFooter = false;
     _notes.clear();
     _sideNotes.clear();
+    _sideNoteTexts.clear();
     _sideCount = 0;
     _layoutLabels.clear();
     // The table of contents and the body, indented by the theme's
@@ -703,6 +704,14 @@ final class PdfConverter extends BuiltInConverter
     );
     if (standard != null) pdf.outputIntents.add(standard);
     _phase('pdf render');
+    // A side note no page's side column has room for is left out: say so.
+    for (final name in result.unsetSideNotes) {
+      final (role, text) = _sideNoteTexts[name] ?? ('', name);
+      logger.warn(
+        'side note left out: no room for it in the side column'
+        '${role.isEmpty ? '' : ' (role $role)'}: $text',
+      );
+    }
     final pages = result.render(pdf, destinationName: destinationName);
     _compressingElsewhere(pages);
     if (standard != null) _preflight(standard);
@@ -10045,6 +10054,10 @@ final class PdfConverter extends BuiltInConverter
   /// role with `role_<role>_display: side`; modern engine).
   final Map<String, LayoutBox> _sideNotes = {};
 
+  /// Each side note's role and the start of its text, by its anchor, for
+  /// messages.
+  final Map<String, (String, String)> _sideNoteTexts = {};
+
   /// The side notes marked so far, for their anchors' names.
   int _sideCount = 0;
 
@@ -10058,6 +10071,14 @@ final class PdfConverter extends BuiltInConverter
   String _takeSideNotes(String markup, _FontState font) =>
       markup.replaceAllMapped(_sideRx, (m) {
         final name = m[1]!;
+        final plain = m[3]!
+            .replaceAll(RegExp('<[^>]*>'), '')
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim();
+        _sideNoteTexts[name] = (
+          m[2]!,
+          plain.length > 40 ? '${plain.substring(0, 40)}…' : plain,
+        );
         _sideNotes[name] = CustomBox(
           _textBox(
             m[3]!,

@@ -13,6 +13,9 @@
 - Renamed from plain_pdf's names: `PdfRect` to `Rect`, `PdfMatrix` to
   `Matrix`, `PdfColor` to `Color`, `PdfTextStyle` to `TextStyle`.
 - `OpenTypeShaper` is a `Font` on its own, compared with HarfBuzz.
+- Side notes still waiting when the text ends go on pages of their own
+  (margin only) instead of being dropped; `LayoutResult.unsetSideNotes`
+  names any no page's side column has room for.
 - A compound's hyphen repeated at the next line's start where the
   language's typography has it so (`Paragraph.hyphenRepetition`,
   `HyphenRepetition.forLanguage`, as Typst does): a `PenaltyItem`'s
