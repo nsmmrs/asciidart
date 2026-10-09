@@ -33,60 +33,85 @@ MathNode asciimathToMathTree(String asciimath) {
 
 // The symbol tables.
 
-/// An entry of a symbol table: the symbol's name (or display value), its
-/// type, and the gem's extra keys.
-final class _Entry {
+/// What a token is (the gem's token types; a parser symbol's type).
+enum _TokenType {
+  symbol,
+  lparen,
+  rparen,
+  lrparen,
+  unary,
+  binary,
+  infix,
+  number,
+  text,
+  identifier,
+  eof,
+}
+
+/// An entry of the parser's table: the symbol's name, its token type, and
+/// whether its first argument is read as a color (`color`).
+final class _ParserSymbol {
+  const new(this.value, this.type, {this.convertsToColor = false});
+
+  final String? value;
+  final _TokenType type;
+  final bool convertsToColor;
+}
+
+/// How the builder writes a symbol (the gem's display table's types).
+enum _Display {
+  operator,
+  identifier,
+  text,
+  lparen,
+  rparen,
+  lrparen,
+  accent,
+  wrap,
+  font,
+  sqrt,
+  cancel,
+  root,
+  frac,
+  over,
+  under,
+  color,
+}
+
+/// An entry of the builder's display table: the symbol's display value,
+/// its type, and the gem's extra keys (an accent goes [over] or under;
+/// a wrap's parentheses).
+final class _DisplaySymbol {
   const new(
     this.value,
     this.type, {
     this.underover = false,
-    this.position,
+    this.over = false,
     this.lparen,
     this.rparen,
-    this.convertsToColor = false,
   });
 
   final String? value;
-  final String type;
+  final _Display type;
   final bool underover;
-  final String? position;
+  final bool over;
   final String? lparen;
   final String? rparen;
-  final bool convertsToColor;
 }
 
-final class _TableBuilder {
-  final Map<String, _Entry> table = {};
-
-  void add(
+final Map<String, _ParserSymbol> _parserSymbols = () {
+  final table = <String, _ParserSymbol>{};
+  void s(
     List<String> names,
-    String? value,
-    String type, {
-    bool underover = false,
-    String? position,
-    String? lparen,
-    String? rparen,
-    bool convertsToColor = false,
-  }) {
-    final entry = _Entry(
-      value,
-      type,
-      underover: underover,
-      position: position,
-      lparen: lparen,
-      rparen: rparen,
-      convertsToColor: convertsToColor,
-    );
+    String? value, [
+    _TokenType type = _TokenType.symbol,
+  ]) {
+    final entry = _ParserSymbol(value, type);
     for (final name in names) {
       table[name] = entry;
     }
   }
-}
 
-final Map<String, _Entry> _parserSymbols = () {
-  final b = _TableBuilder();
-  void s(List<String> names, String? value, [String type = 'symbol']) =>
-      b.add(names, value, type);
   // Operation symbols
   s(['+'], 'plus');
   s(['-'], 'minus');
@@ -154,20 +179,20 @@ final Map<String, _Entry> _parserSymbols = () {
   s(['|--', 'vdash'], 'vdash');
   s(['|==', 'models'], 'models');
   // Grouping brackets
-  s(['(', 'left('], 'lparen', 'lparen');
-  s([')', 'right)'], 'rparen', 'rparen');
-  s(['[', 'left['], 'lbracket', 'lparen');
-  s([']', 'right]'], 'rbracket', 'rparen');
-  s(['{'], 'lbrace', 'lparen');
-  s(['}'], 'rbrace', 'rparen');
-  s(['|'], 'vbar', 'lrparen');
+  s(['(', 'left('], 'lparen', _TokenType.lparen);
+  s([')', 'right)'], 'rparen', _TokenType.rparen);
+  s(['[', 'left['], 'lbracket', _TokenType.lparen);
+  s([']', 'right]'], 'rbracket', _TokenType.rparen);
+  s(['{'], 'lbrace', _TokenType.lparen);
+  s(['}'], 'rbrace', _TokenType.rparen);
+  s(['|'], 'vbar', _TokenType.lrparen);
   s([':|:'], 'vbar');
-  s(['|:'], 'vbar', 'lparen');
-  s([':|'], 'vbar', 'rparen');
-  s(['(:', '<<', 'langle'], 'langle', 'lparen');
-  s([':)', '>>', 'rangle'], 'rangle', 'rparen');
-  s(['{:'], null, 'lparen');
-  s([':}'], null, 'rparen');
+  s(['|:'], 'vbar', _TokenType.lparen);
+  s([':|'], 'vbar', _TokenType.rparen);
+  s(['(:', '<<', 'langle'], 'langle', _TokenType.lparen);
+  s([':)', '>>', 'rangle'], 'rangle', _TokenType.rparen);
+  s(['{:'], null, _TokenType.lparen);
+  s([':}'], null, _TokenType.rparen);
   // Miscellaneous symbols
   s(['int'], 'integral');
   s(['dx'], 'dx');
@@ -188,7 +213,7 @@ final Map<String, _Entry> _parserSymbols = () {
   s(['/_', 'angle'], 'angle');
   s([r'/_\', 'triangle'], 'triangle');
   s(["'", 'prime'], 'prime');
-  s(['tilde'], 'tilde', 'unary');
+  s(['tilde'], 'tilde', _TokenType.unary);
   s([r'\ '], 'nbsp');
   s(['frown'], 'frown');
   s(['quad'], 'quad');
@@ -218,11 +243,11 @@ final Map<String, _Entry> _parserSymbols = () {
   ]) {
     s([name], name);
   }
-  s(['abs'], 'abs', 'unary');
-  s(['Abs'], 'abs', 'unary');
-  s(['norm'], 'norm', 'unary');
-  s(['floor'], 'floor', 'unary');
-  s(['ceil'], 'ceil', 'unary');
+  s(['abs'], 'abs', _TokenType.unary);
+  s(['Abs'], 'abs', _TokenType.unary);
+  s(['norm'], 'norm', _TokenType.unary);
+  s(['floor'], 'floor', _TokenType.unary);
+  s(['ceil'], 'ceil', _TokenType.unary);
   for (final name in [
     'log', 'Log', 'ln', 'Ln', 'det', 'dim', 'ker', 'mod', 'gcd', 'lcm', //
     'lub', 'glb',
@@ -244,40 +269,44 @@ final Map<String, _Entry> _parserSymbols = () {
   s(['lArr', 'Leftarrow'], 'Leftarrow');
   s(['hArr', 'Leftrightarrow'], 'Leftrightarrow');
   // Other
-  s(['sqrt'], 'sqrt', 'unary');
-  s(['root'], 'root', 'binary');
-  s(['frac'], 'frac', 'binary');
-  s(['/'], 'frac', 'infix');
-  s(['stackrel'], 'stackrel', 'binary');
-  s(['overset'], 'overset', 'binary');
-  s(['underset'], 'underset', 'binary');
-  b.add(['color'], 'color', 'binary', convertsToColor: true);
-  s(['_'], 'sub', 'infix');
-  s(['^'], 'sup', 'infix');
-  s(['hat'], 'hat', 'unary');
-  s(['bar'], 'overline', 'unary');
-  s(['vec'], 'vec', 'unary');
-  s(['dot'], 'dot', 'unary');
-  s(['ddot'], 'ddot', 'unary');
-  s(['overarc', 'overparen'], 'overarc', 'unary');
-  s(['ul', 'underline'], 'underline', 'unary');
-  s(['ubrace', 'underbrace'], 'underbrace', 'unary');
-  s(['obrace', 'overbrace'], 'overbrace', 'unary');
-  s(['cancel'], 'cancel', 'unary');
-  s(['bb', 'mathbf'], 'bold', 'unary');
-  s(['bbb', 'mathbb'], 'double_struck', 'unary');
-  s(['ii'], 'italic', 'unary');
-  s(['bii'], 'bold_italic', 'unary');
-  s(['cc', 'mathcal'], 'script', 'unary');
-  s(['bcc'], 'bold_script', 'unary');
-  s(['tt', 'mathtt'], 'monospace', 'unary');
-  s(['fr', 'mathfrak'], 'fraktur', 'unary');
-  s(['bfr'], 'bold_fraktur', 'unary');
-  s(['sf', 'mathsf'], 'sans_serif', 'unary');
-  s(['bsf'], 'bold_sans_serif', 'unary');
-  s(['sfi'], 'sans_serif_italic', 'unary');
-  s(['sfbi'], 'sans_serif_bold_italic', 'unary');
-  s(['rm'], 'roman', 'unary');
+  s(['sqrt'], 'sqrt', _TokenType.unary);
+  s(['root'], 'root', _TokenType.binary);
+  s(['frac'], 'frac', _TokenType.binary);
+  s(['/'], 'frac', _TokenType.infix);
+  s(['stackrel'], 'stackrel', _TokenType.binary);
+  s(['overset'], 'overset', _TokenType.binary);
+  s(['underset'], 'underset', _TokenType.binary);
+  table['color'] = const _ParserSymbol(
+    'color',
+    _TokenType.binary,
+    convertsToColor: true,
+  );
+  s(['_'], 'sub', _TokenType.infix);
+  s(['^'], 'sup', _TokenType.infix);
+  s(['hat'], 'hat', _TokenType.unary);
+  s(['bar'], 'overline', _TokenType.unary);
+  s(['vec'], 'vec', _TokenType.unary);
+  s(['dot'], 'dot', _TokenType.unary);
+  s(['ddot'], 'ddot', _TokenType.unary);
+  s(['overarc', 'overparen'], 'overarc', _TokenType.unary);
+  s(['ul', 'underline'], 'underline', _TokenType.unary);
+  s(['ubrace', 'underbrace'], 'underbrace', _TokenType.unary);
+  s(['obrace', 'overbrace'], 'overbrace', _TokenType.unary);
+  s(['cancel'], 'cancel', _TokenType.unary);
+  s(['bb', 'mathbf'], 'bold', _TokenType.unary);
+  s(['bbb', 'mathbb'], 'double_struck', _TokenType.unary);
+  s(['ii'], 'italic', _TokenType.unary);
+  s(['bii'], 'bold_italic', _TokenType.unary);
+  s(['cc', 'mathcal'], 'script', _TokenType.unary);
+  s(['bcc'], 'bold_script', _TokenType.unary);
+  s(['tt', 'mathtt'], 'monospace', _TokenType.unary);
+  s(['fr', 'mathfrak'], 'fraktur', _TokenType.unary);
+  s(['bfr'], 'bold_fraktur', _TokenType.unary);
+  s(['sf', 'mathsf'], 'sans_serif', _TokenType.unary);
+  s(['bsf'], 'bold_sans_serif', _TokenType.unary);
+  s(['sfi'], 'sans_serif_italic', _TokenType.unary);
+  s(['sfbi'], 'sans_serif_bold_italic', _TokenType.unary);
+  s(['rm'], 'roman', _TokenType.unary);
   // Greek letters
   for (final name in [
     'alpha', 'Alpha', 'beta', 'Beta', 'gamma', 'Gamma', 'delta', 'Delta', //
@@ -294,7 +323,7 @@ final Map<String, _Entry> _parserSymbols = () {
   ]) {
     s([name], name);
   }
-  return b.table;
+  return table;
 }();
 
 const Map<String, (int, int, int)> _colors = {
@@ -318,28 +347,27 @@ const Map<String, (int, int, int)> _colors = {
 
 /// The display table of the MathML builder (`fix_phi: true`, the gem's
 /// default).
-final Map<String, _Entry> _displaySymbols = () {
-  final b = _TableBuilder();
+final Map<String, _DisplaySymbol> _displaySymbols = () {
+  final table = <String, _DisplaySymbol>{};
   void d(
     String name,
     String? value,
-    String type, {
+    _Display type, {
     bool underover = false,
-    String? position,
+    bool over = false,
     String? lparen,
     String? rparen,
-  }) => b.add(
-    [name],
+  }) => table[name] = _DisplaySymbol(
     value,
     type,
     underover: underover,
-    position: position,
+    over: over,
     lparen: lparen,
     rparen: rparen,
   );
   void op(String name, String value, {bool underover = false}) =>
-      d(name, value, 'operator', underover: underover);
-  void id(String name, String value) => d(name, value, 'identifier');
+      d(name, value, _Display.operator, underover: underover);
+  void id(String name, String value) => d(name, value, _Display.identifier);
   // Operation symbols
   op('plus', '+');
   op('minus', '−');
@@ -394,8 +422,8 @@ final Map<String, _Entry> _displaySymbols = () {
   op('approx', '≈');
   op('propto', '∝');
   // Logical symbols
-  d('and', 'and', 'text');
-  d('or', 'or', 'text');
+  d('and', 'and', _Display.text);
+  d('or', 'or', _Display.text);
   op('not', '¬');
   op('implies', '⇒');
   op('if', 'if');
@@ -407,16 +435,16 @@ final Map<String, _Entry> _displaySymbols = () {
   op('vdash', '⊢');
   op('models', '⊨');
   // Grouping brackets
-  d('lparen', '(', 'lparen');
-  d('rparen', ')', 'rparen');
-  d('lbracket', '[', 'lparen');
-  d('rbracket', ']', 'rparen');
-  d('lbrace', '{', 'lparen');
-  d('rbrace', '}', 'rparen');
-  d('vbar', '|', 'lrparen');
-  d('langle', '〈', 'lparen');
-  d('rangle', '〉', 'rparen');
-  d('parallel', '∥', 'lrparen');
+  d('lparen', '(', _Display.lparen);
+  d('rparen', ')', _Display.rparen);
+  d('lbracket', '[', _Display.lparen);
+  d('rbracket', ']', _Display.rparen);
+  d('lbrace', '{', _Display.lparen);
+  d('rbrace', '}', _Display.rparen);
+  d('vbar', '|', _Display.lrparen);
+  d('langle', '〈', _Display.lparen);
+  d('rangle', '〉', _Display.rparen);
+  d('parallel', '∥', _Display.lrparen);
   // Miscellaneous symbols
   op('integral', '∫');
   id('dx', 'dx');
@@ -437,7 +465,7 @@ final Map<String, _Entry> _displaySymbols = () {
   op('angle', '∠');
   op('triangle', '△');
   op('prime', '′');
-  d('tilde', '~', 'accent', position: 'over');
+  d('tilde', '~', _Display.accent, over: true);
   op('nbsp', ' ');
   op('frown', '⌢');
   op('quad', '  ');
@@ -470,10 +498,10 @@ final Map<String, _Entry> _displaySymbols = () {
   ]) {
     id(name, name);
   }
-  d('abs', 'abs', 'wrap', lparen: '|', rparen: '|');
-  d('norm', 'norm', 'wrap', lparen: '∥', rparen: '∥');
-  d('floor', 'floor', 'wrap', lparen: '⌊', rparen: '⌋');
-  d('ceil', 'ceil', 'wrap', lparen: '⌈', rparen: '⌉');
+  d('abs', 'abs', _Display.wrap, lparen: '|', rparen: '|');
+  d('norm', 'norm', _Display.wrap, lparen: '∥', rparen: '∥');
+  d('floor', 'floor', _Display.wrap, lparen: '⌊', rparen: '⌋');
+  d('ceil', 'ceil', _Display.wrap, lparen: '⌈', rparen: '⌉');
   for (final name in [
     'log', 'Log', 'ln', 'Ln', 'det', 'dim', 'ker', 'mod', 'gcd', 'lcm', //
     'lub', 'glb',
@@ -495,34 +523,34 @@ final Map<String, _Entry> _displaySymbols = () {
   op('Leftarrow', '⇐');
   op('Leftrightarrow', '⇔');
   // Unary tags
-  d('sqrt', 'sqrt', 'sqrt');
-  d('cancel', 'cancel', 'cancel');
+  d('sqrt', 'sqrt', _Display.sqrt);
+  d('cancel', 'cancel', _Display.cancel);
   // Binary tags
-  d('root', 'root', 'root');
-  d('frac', 'frac', 'frac');
-  d('stackrel', 'stackrel', 'over');
-  d('overset', 'overset', 'over');
-  d('underset', 'underset', 'under');
-  d('color', 'color', 'color');
+  d('root', 'root', _Display.root);
+  d('frac', 'frac', _Display.frac);
+  d('stackrel', 'stackrel', _Display.over);
+  d('overset', 'overset', _Display.over);
+  d('underset', 'underset', _Display.under);
+  d('color', 'color', _Display.color);
   op('sub', '_');
   op('sup', '^');
-  d('hat', '^', 'accent', position: 'over');
-  d('overline', '¯', 'accent', position: 'over');
-  d('vec', '→', 'accent', position: 'over');
-  d('dot', '.', 'accent', position: 'over');
-  d('ddot', '..', 'accent', position: 'over');
-  d('overarc', '⏜', 'accent', position: 'over');
-  d('underline', '_', 'accent', position: 'under');
-  d('underbrace', '⏟', 'accent', position: 'under', underover: true);
-  d('overbrace', '⏞', 'accent', position: 'over', underover: true);
+  d('hat', '^', _Display.accent, over: true);
+  d('overline', '¯', _Display.accent, over: true);
+  d('vec', '→', _Display.accent, over: true);
+  d('dot', '.', _Display.accent, over: true);
+  d('ddot', '..', _Display.accent, over: true);
+  d('overarc', '⏜', _Display.accent, over: true);
+  d('underline', '_', _Display.accent);
+  d('underbrace', '⏟', _Display.accent, underover: true);
+  d('overbrace', '⏞', _Display.accent, over: true, underover: true);
   for (final name in [
     'bold', 'double_struck', 'italic', 'bold_italic', 'script', //
     'bold_script', 'monospace', 'fraktur', 'bold_fraktur', 'sans_serif',
     'bold_sans_serif', 'sans_serif_italic', 'sans_serif_bold_italic',
   ]) {
-    d(name, name, 'font');
+    d(name, name, _Display.font);
   }
-  d('roman', 'normal', 'font');
+  d('roman', 'normal', _Display.font);
   // Greek letters
   id('alpha', 'α');
   id('Alpha', 'Α');
@@ -575,7 +603,7 @@ final Map<String, _Entry> _displaySymbols = () {
   id('Psi', 'Ψ');
   id('omega', 'ω');
   op('Omega', 'Ω');
-  return b.table;
+  return table;
 }();
 
 // The tokenizer.
@@ -586,12 +614,12 @@ final class _Token {
   const new(this.value, this.type, {this.text, this.entry});
 
   final String? value;
-  final String type;
+  final _TokenType type;
   final String? text;
-  final _Entry? entry;
+  final _ParserSymbol? entry;
 }
 
-const _eof = _Token(null, 'eof');
+const _eof = _Token(null, _TokenType.eof);
 
 /// The length in characters of the longest of [keys].
 int _longest(Iterable<String> keys) =>
@@ -633,7 +661,7 @@ final class _Tokenizer {
   }
 
   void pushBack(_Token token) {
-    if (token.type != 'eof') _pushedBack = token;
+    if (token.type != _TokenType.eof) _pushedBack = token;
   }
 
   /// `"..."`.
@@ -642,7 +670,7 @@ final class _Tokenizer {
     if (end < 0) return null;
     final text = _input.substring(_pos + 1, end);
     _pos = end + 1;
-    return _Token(text, 'text');
+    return _Token(text, _TokenType.text);
   }
 
   /// `text(...)`.
@@ -651,7 +679,7 @@ final class _Tokenizer {
     if (end < 0) return null;
     final text = _input.substring(_pos + 5, end);
     _pos = end + 1;
-    return _Token(text, 'text');
+    return _Token(text, _TokenType.text);
   }
 
   /// Digits, and a fraction: `[0-9]+(?:\.[0-9]+)?`.
@@ -672,7 +700,7 @@ final class _Tokenizer {
       }
     }
     _pos = end;
-    return _Token(input.substring(start, end), 'number');
+    return _Token(input.substring(start, end), _TokenType.number);
   }
 
   /// The longest symbol at the position, else its first character as an
@@ -725,7 +753,7 @@ final class _Tokenizer {
         ? 2
         : 1;
     _pos = start + one;
-    return _Token(input.substring(start, start + one), 'identifier');
+    return _Token(input.substring(start, start + one), _TokenType.identifier);
   }
 }
 
@@ -736,7 +764,7 @@ final class _TrieNode {
   final List<int> _chars = [];
   final List<_TrieNode> _children = [];
   String? key;
-  _Entry? entry;
+  _ParserSymbol? entry;
 
   _TrieNode? child(int c) {
     final chars = _chars;
@@ -788,7 +816,7 @@ sealed class _Node {
 
 /// A node with children, which leave their old parent when added (with
 /// every node equal to them: Ruby's `Array#delete`).
-abstract class _Inner extends _Node {
+sealed class _Inner extends _Node {
   final List<_Node> children = [];
 
   void add(_Node node) {
@@ -954,7 +982,7 @@ final class _Symbol extends _Node {
 
   final String? value;
   final String text;
-  final String type;
+  final _TokenType type;
 
   @override
   bool eq(_Node? other) =>
@@ -1039,13 +1067,13 @@ final class _Parser {
 
   _Node? parse(String input) => _expressionOf(_Tokenizer(input), null);
 
-  _Node? _expressionOf(_Tokenizer tok, String? closeParenType) {
+  _Node? _expressionOf(_Tokenizer tok, _TokenType? closeParenType) {
     _Node? e;
     while (true) {
       final i1 = _intermediate(tok, closeParenType);
       if (i1 == null) break;
       final t1 = tok.next();
-      if (t1.type == 'infix' && t1.value == 'frac') {
+      if (t1.type == _TokenType.infix && t1.value == 'frac') {
         final i2 = _intermediate(tok, closeParenType);
         if (i2 != null) {
           e = _append(
@@ -1055,7 +1083,7 @@ final class _Parser {
         } else {
           e = _append(e, i1);
         }
-      } else if (t1.type == 'eof') {
+      } else if (t1.type == _TokenType.eof) {
         e = _append(e, i1);
         break;
       } else {
@@ -1067,22 +1095,22 @@ final class _Parser {
     return e;
   }
 
-  _Node? _intermediate(_Tokenizer tok, String? closeParenType) {
+  _Node? _intermediate(_Tokenizer tok, _TokenType? closeParenType) {
     final s = _simple(tok, closeParenType);
     _Node? sub;
     _Node? sup;
     final t1 = tok.next();
-    if (t1.type == 'infix' && t1.value == 'sub') {
+    if (t1.type == _TokenType.infix && t1.value == 'sub') {
       sub = _simple(tok, closeParenType);
       if (sub != null) {
         final t2 = tok.next();
-        if (t2.type == 'infix' && t2.value == 'sup') {
+        if (t2.type == _TokenType.infix && t2.value == 'sup') {
           sup = _simple(tok, closeParenType);
         } else {
           tok.pushBack(t2);
         }
       }
-    } else if (t1.type == 'infix' && t1.value == 'sup') {
+    } else if (t1.type == _TokenType.infix && t1.value == 'sup') {
       sup = _simple(tok, closeParenType);
     } else {
       tok.pushBack(t1);
@@ -1100,11 +1128,13 @@ final class _Parser {
     return s;
   }
 
-  _Node? _simple(_Tokenizer tok, String? closeParenType) {
+  _Node? _simple(_Tokenizer tok, _TokenType? closeParenType) {
     final t1 = tok.next();
     switch (t1.type) {
-      case 'lparen' || 'lrparen':
-        final closeWith = t1.type == 'lparen' ? 'rparen' : 'lrparen';
+      case _TokenType.lparen || _TokenType.lrparen:
+        final closeWith = t1.type == _TokenType.lparen
+            ? _TokenType.rparen
+            : _TokenType.lrparen;
         var t2 = tok.next();
         if (t2.type == closeWith) {
           return _Paren(_symbolOf(t1), null, _symbolOf(t2));
@@ -1116,32 +1146,32 @@ final class _Parser {
           return _toMatrix(_Paren(_symbolOf(t1), e, _symbolOf(t2)));
         }
         tok.pushBack(t2);
-        if (t1.type == 'lrparen') return _concat(_symbolOf(t1), e);
+        if (t1.type == _TokenType.lrparen) return _concat(_symbolOf(t1), e);
         return _Paren(_symbolOf(t1), e, null);
-      case 'rparen':
+      case _TokenType.rparen:
         if (closeParenType == null) return _symbolOf(t1);
         tok.pushBack(t1);
         return null;
-      case 'unary':
+      case _TokenType.unary:
         var s = _unwrapParen(_simple(tok, closeParenType));
         s ??= _Identifier('');
         return _Unary(_symbolOf(t1), s);
-      case 'binary':
+      case _TokenType.binary:
         var s1 = _unwrapParen(_simple(tok, closeParenType));
         s1 ??= _Identifier('');
         var s2 = _unwrapParen(_simple(tok, closeParenType));
         s2 ??= _Identifier('');
         if (t1.entry?.convertsToColor ?? false) s1 = _toColor(s1);
         return _Binary(_symbolOf(t1), s1, s2);
-      case 'eof':
+      case _TokenType.eof:
         return null;
-      case 'number':
+      case _TokenType.number:
         return _Number(t1.value!);
-      case 'text':
+      case _TokenType.text:
         return _Text(t1.value!);
-      case 'identifier':
+      case _TokenType.identifier:
         return _Identifier(t1.value!);
-      default:
+      case _TokenType.symbol || _TokenType.infix:
         return _symbolOf(t1);
     }
   }
@@ -1178,8 +1208,8 @@ final class _Parser {
 
   _Node? _unwrapParen(_Node? node) {
     if (node is _Paren &&
-        (node.lparen == null || node.lparen!.type == 'lparen') &&
-        (node.rparen == null || node.rparen!.type == 'rparen')) {
+        (node.lparen == null || node.lparen!.type == _TokenType.lparen) &&
+        (node.rparen == null || node.rparen!.type == _TokenType.rparen)) {
       return _Group(node.lparen, node.expression, node.rparen);
     }
     return node;
@@ -1208,8 +1238,8 @@ final class _Parser {
     }
     bool paren(_Node row, String l, String lt, String r, String rt) =>
         row is _Paren &&
-        _eqNullable(row.lparen, _Symbol(l, lt, 'lparen')) &&
-        _eqNullable(row.rparen, _Symbol(r, rt, 'rparen'));
+        _eqNullable(row.lparen, _Symbol(l, lt, _TokenType.lparen)) &&
+        _eqNullable(row.rparen, _Symbol(r, rt, _TokenType.rparen));
     if (!(rows.isNotEmpty &&
         rows.length > separators.length &&
         separators.every(_isSeparator) &&
@@ -1347,12 +1377,25 @@ final class _MathmlBuilder {
         _identifierOrOperator(value);
       case final _Symbol symbol:
         if (_resolve(symbol) case final entry?) {
-          switch (entry.type) {
-            case 'operator' || 'accent' || 'lparen' || 'rparen' || 'lrparen':
-              _tag('mo', text: entry.value);
-            default:
-              _tag('mi', text: entry.value);
-          }
+          final tag = switch (entry.type) {
+            _Display.operator ||
+            _Display.accent ||
+            _Display.lparen ||
+            _Display.rparen ||
+            _Display.lrparen => 'mo',
+            _Display.identifier ||
+            _Display.text ||
+            _Display.wrap ||
+            _Display.font ||
+            _Display.sqrt ||
+            _Display.cancel ||
+            _Display.root ||
+            _Display.frac ||
+            _Display.over ||
+            _Display.under ||
+            _Display.color => 'mi',
+          };
+          _tag(tag, text: entry.value);
         } else {
           _identifierOrOperator(symbol.value ?? '');
         }
@@ -1368,7 +1411,7 @@ final class _MathmlBuilder {
         final entry = _resolve(unary.operator);
         if (entry == null) break;
         switch (entry.type) {
-          case 'identifier':
+          case _Display.identifier:
             _tag(
               'mrow',
               body: () {
@@ -1376,7 +1419,7 @@ final class _MathmlBuilder {
                 _append(unary.operand);
               },
             );
-          case 'operator':
+          case _Display.operator:
             _tag(
               'mrow',
               body: () {
@@ -1384,42 +1427,53 @@ final class _MathmlBuilder {
                 _append(unary.operand);
               },
             );
-          case 'wrap':
+          case _Display.wrap:
             _paren(
               _resolveParenText(entry.lparen),
               unary.operand,
               _resolveParenText(entry.rparen),
             );
-          case 'accent':
-            if (entry.position == 'over') {
+          case _Display.accent:
+            if (entry.over) {
               _underover(unary.operand, null, unary.operator);
             } else {
               _underover(unary.operand, unary.operator, null);
             }
-          case 'font':
+          case _Display.font:
             _tag(
               'mstyle',
               attrs: {'mathvariant': entry.value!.replaceAll('_', '-')},
               body: () => _append(unary.operand),
             );
-          case 'cancel':
+          case _Display.cancel:
             _tag(
               'menclose',
               attrs: {'notation': 'updiagonalstrike'},
               body: () => _append(unary.operand, _Row.omit),
             );
-          case 'sqrt':
+          case _Display.sqrt:
             _tag('msqrt', body: () => _append(unary.operand));
+          case _Display.text ||
+              _Display.lparen ||
+              _Display.rparen ||
+              _Display.lrparen ||
+              _Display.root ||
+              _Display.frac ||
+              _Display.over ||
+              _Display.under ||
+              _Display.color:
+            // (Not unary: nothing, as the gem.)
+            break;
         }
       case final _Binary binary:
         final entry = _resolve(binary.operator);
         if (entry == null) break;
         switch (entry.type) {
-          case 'over':
+          case _Display.over:
             _underover(binary.operand2, null, binary.operand1);
-          case 'under':
+          case _Display.under:
             _underover(binary.operand2, binary.operand1, null);
-          case 'root':
+          case _Display.root:
             _tag(
               'mroot',
               body: () {
@@ -1427,18 +1481,31 @@ final class _MathmlBuilder {
                 _append(binary.operand1);
               },
             );
-          case 'color':
+          case _Display.color:
             final color = binary.operand1;
             _tag(
               'mstyle',
               attrs: {'mathcolor': color is _Color ? color.hexRgb : ''},
               body: () => _append(binary.operand2),
             );
-          case 'frac':
+          case _Display.frac:
             _fraction(binary.operand1, binary.operand2);
+          case _Display.operator ||
+              _Display.identifier ||
+              _Display.text ||
+              _Display.lparen ||
+              _Display.rparen ||
+              _Display.lrparen ||
+              _Display.accent ||
+              _Display.wrap ||
+              _Display.font ||
+              _Display.sqrt ||
+              _Display.cancel:
+            // (Not binary: nothing, as the gem.)
+            break;
         }
       case final _Infix infix:
-        if (_resolve(infix.operator)?.type == 'frac') {
+        if (_resolve(infix.operator)?.type == _Display.frac) {
           _fraction(infix.operand1, infix.operand2);
         }
       case final _Matrix matrix:
@@ -1576,7 +1643,7 @@ final class _MathmlBuilder {
     }
   }
 
-  _Entry? _resolve(_Node? node) =>
+  _DisplaySymbol? _resolve(_Node? node) =>
       node is _Symbol ? _displaySymbols[node.value] : null;
 
   String? _resolveParen(_Symbol? paren) {
@@ -1588,7 +1655,7 @@ final class _MathmlBuilder {
   /// entry for a String, so it is the string itself).
   String? _resolveParenText(String? paren) => paren;
 
-  bool _isAccent(_Node? node) => _resolve(node)?.type == 'accent';
+  bool _isAccent(_Node? node) => _resolve(node)?.type == _Display.accent;
 
   bool _isUnderover(_Node node) =>
       _resolve(node is _Unary ? node.operator : node)?.underover ?? false;
