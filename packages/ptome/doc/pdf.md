@@ -331,6 +331,7 @@ each use, which is asciidoctor-pdf's default). With `media` other than
 | `section_role_<role>_running_content_on_openers` | | `true` keeps the running content on the first page of a part or chapter with that role (a foreword set as an ordinary heading). |
 | `header_title_style`, `footer_title_style` | `document` | As in asciidoctor-pdf (`document`, `toc`, `basic`). |
 | `running_content_marks` | | A prefix of anchor ids (`v-`): those anchors are the pages' marks, and running content may refer to `{page-first-mark}` and `{page-last-mark}`, the reference text of the first and last on the page (a page without one has the last one before it): a Bible's running head, `EXODUS 33:14`, from `[[v-exo-33-14,Exodus 33:14]]`. |
+| `running_content_units` | | A level of a document in units (`verse`, or `bible.verse`; see `doc/units.md`): running content may refer to `{page-first-unit}` and `{page-last-unit}`, the first and last unit of that level on the page as its scheme cites them, and `{page-units}`, the range they make, what its ends share said once (`Gen 2:20–3:7`; `{page-units-long}`: `Genesis 2:20–3:7`). A page without one has the last one before it. |
 
 Running content may be a template: `'{{#chapter-numeral}}{{chapter-numeral}}. {{/chapter-numeral}}{{chapter-title}} · {page-number}'`
 writes `3. A Web 1.0 Application · 71`, and on an unnumbered chapter's

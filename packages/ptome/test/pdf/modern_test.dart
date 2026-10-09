@@ -218,6 +218,46 @@ void main() {
       expect(pages.last.first, 'Mark 60 to Mark 60');
     });
 
+    test("running content cites a page's units (ADR-0020)", () {
+      // A document in units: its schemes in the nearest `schemes/`.
+      final schemes = Directory('${_dir.path}/schemes')..createSync();
+      for (final f in Directory('test/units/fixtures/schemes').listSync()) {
+        if (f is File) {
+          f.copySync('${schemes.path}/${f.uri.pathSegments.last}');
+        }
+      }
+      String chapter(int c) => [
+        '=== @$c',
+        for (var v = 1; v <= 40; v++) '@ Text of verse $c.$v.',
+      ].join('\n\n');
+      final pdf = _pdf(
+        '= Units\n:units: bible, kjv\n\n== @GEN\n\n'
+        '${chapter(1)}\n\n${chapter(2)}\n',
+        theme:
+            'running-content:\n  units: verse\nheader:\n  height: 0.5in\n'
+            "  recto:\n    center:\n      content: '{page-units-long}'\n"
+            "  verso:\n    center:\n      content: '{page-units-long}'\n",
+      );
+      final pages = _pages(pdf).where((p) => p.isNotEmpty).toList();
+      expect(pages.length, greaterThan(2));
+      for (final page in pages) {
+        final verses = [
+          for (final m in RegExp(
+            r'Text of verse (\d+)\.(\d+)',
+          ).allMatches(page.join('\n')))
+            (m[1]!, m[2]!),
+        ];
+        if (verses.isEmpty) continue;
+        final (c1, v1) = verses.first;
+        final (c2, v2) = verses.last;
+        // What the ends share is said once.
+        final range = c1 == c2
+            ? (v1 == v2 ? '$c1:$v1' : '$c1:$v1–$v2')
+            : '$c1:$v1–$c2:$v2';
+        expect(page.first, 'Genesis $range');
+      }
+    }, skip: _tools ? false : 'needs pdftotext');
+
     test('a heading set as a drop beside the first lines', () {
       final pdf = _pdf(
         '= Doc\n\n[number=34]\n== Chapter\n\n[.note]\nSkipped.\n\n'

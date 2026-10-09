@@ -41,6 +41,8 @@ import 'package:ptome/src/pdf/theme.dart';
 import 'package:ptome/src/section.dart';
 import 'package:ptome/src/table.dart';
 import 'package:ptome/src/timings.dart';
+import 'package:ptome/src/units/citation.dart' show Passage, passageText;
+import 'package:ptome/src/units/engine.dart' show Unit;
 
 /// The NUL character the gem puts in empty anchors (zero width).
 const String _dummyText = '\u0000';
@@ -618,6 +620,7 @@ final class PdfConverter extends BuiltInConverter
           if (_opensPages(section)) ?_anchorPages[anchor],
       };
       _pageMarks = _marksByPage(result, pageCount: result.pageCount);
+      _pageUnits = _unitsByPage(result, pageCount: result.pageCount);
     }
 
     measure();
@@ -8191,6 +8194,53 @@ final class PdfConverter extends BuiltInConverter
     return marks;
   }
 
+  /// The first and last unit of the level `running_content_units` names
+  /// (`verse`, or `bible.verse`) on each page (by 0-based page), from the
+  /// document's units (ADR-0020); a page without one has the last one
+  /// before it for both.
+  List<(Unit, Unit)?> _pageUnits = const [];
+
+  /// [result]'s units (see [_pageUnits]).
+  List<(Unit, Unit)?> _unitsByPage(
+    LayoutResult result, {
+    required int pageCount,
+  }) {
+    final name = _s('running_content_units');
+    final analysis = _document.unitsSession?.analysis;
+    if (name == null || name.isEmpty || analysis == null) return const [];
+    final dot = name.indexOf('.');
+    final (scheme, level) = dot < 0
+        ? (null, name)
+        : (name.substring(0, dot), name.substring(dot + 1));
+    final first = <int, Unit>{};
+    final last = <int, Unit>{};
+    for (final u in analysis.units) {
+      if (u.level.name != level ||
+          (scheme != null && u.level.scheme.name != scheme)) {
+        continue;
+      }
+      final at = result.anchors[u.id];
+      if (at == null) continue;
+      final page = at.page;
+      final f = first[page];
+      if (f == null || u.start.compareTo(f.start) < 0) first[page] = u;
+      final l = last[page];
+      if (l == null || u.start.compareTo(l.start) > 0) last[page] = u;
+    }
+    final units = <(Unit, Unit)?>[];
+    Unit? before;
+    for (var page = 0; page < pageCount; page++) {
+      if ((first[page], last[page]) case (final a?, final b?)) {
+        units.add((a, b));
+        before = b;
+      } else {
+        final carried = before;
+        units.add(carried == null ? null : (carried, carried));
+      }
+    }
+    return units;
+  }
+
   /// The text a mark anchor stands for: its reference text, else its id.
   String _markText(String id) => switch (_document.catalog.refs[id]) {
     final Inline inline => inline.reftext ?? id,
@@ -8699,6 +8749,24 @@ final class PdfConverter extends BuiltInConverter
     )) {
       attributes['page-first-mark'] = _markText(first);
       attributes['page-last-mark'] = _markText(last);
+    }
+    // The page's units (`running_content_units`): `{page-units}` is the
+    // range they make as their scheme cites it, what its ends share said
+    // once (`Gen 2:20–3:7`; `{page-units-long}`: `Genesis 2:20–3:7`).
+    if (_pageUnits.elementAtOrNull(page.number - 1) case (
+      final first,
+      final last,
+    )) {
+      final config = _document.unitsSession!.config;
+      attributes
+        ..['page-first-unit'] = passageText(Passage(first, first), config)
+        ..['page-last-unit'] = passageText(Passage(last, last), config)
+        ..['page-units'] = passageText(Passage(first, last), config)
+        ..['page-units-long'] = passageText(
+          Passage(first, last),
+          config,
+          long: true,
+        );
     }
     final sectlevels = (_n('${periphery}_sectlevels') ?? 2).toInt();
     final partMark = page.mark('part');

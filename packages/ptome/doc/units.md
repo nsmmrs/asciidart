@@ -181,8 +181,8 @@ theme keys alone (see `doc/pdf.md`):
 - The entries of a note stream (the cross-references, spans with the
   stream's `entry-role`, `xref`) go in the center column beside their
   verse (`role_xref_display: side`).
-- The running head gives the page's first and last verse, from the verses'
-  anchors (`running_content_marks: v-`).
+- The running head gives the range of verses on the page, from the
+  document's units (`running_content_units: verse`, `{page-units-long}`).
 
 ```yaml
 # kjv-reference-theme.yml
@@ -197,20 +197,20 @@ role:
 side-notes:
   column: center
 running-content:
-  marks: v-
+  units: verse
 header:
   recto:
     center:
-      content: '{page-first-mark}–{page-last-mark}'
+      content: '{page-units-long}'
   verso:
     center:
-      content: '{page-first-mark}–{page-last-mark}'
+      content: '{page-units-long}'
 ```
 
 `ptome -b pdf -d article -a pdf-theme=kjv-reference-theme.yml kjv.adoc`
 then gives two columns of verses with their cross-references between
 them, the 1611 notes at the foot of the page, the divine name in small
-capitals, and `Genesis 2:20–Genesis 3:7` at the head of the page.
+capitals, and `Genesis 2:20–3:7` at the head of the page.
 
 ## Schemes
 
