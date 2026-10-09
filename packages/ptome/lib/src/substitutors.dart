@@ -1266,7 +1266,7 @@ String subMacros(AbstractNode node, String text) {
         id = attrs['id'];
         doc.registerImage(target);
         if (docAttrs['imagesdir'] case final imagesdir?) {
-          if (Behavior.inlineImagesdir.of(doc) == 'kept') {
+          if (Behavior.imageImagesdir.of(doc) == 'kept') {
             attrs.putIfAbsent('imagesdir', () => imagesdir);
           } else {
             attrs['imagesdir'] = imagesdir;

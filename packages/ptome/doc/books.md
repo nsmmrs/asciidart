@@ -256,6 +256,8 @@ release's:
 | `html-wistia` | `embed`: Wistia's player | `video`: a video element |
 | `html-nohighlight` | `honored`: the `nohighlight` option leaves a block plain | `ignored` |
 | `docbook-quote-roles` | `written`: `<quote role="double">` | `none`: `<quote>` |
+| `manpage-cells` | `none`: a table cell starts with its text | `spaced`: with `.sp` |
+| `manpage-empty-items` | `compact`: a list item without text starts with its block | `spaced`: an empty line, then `.sp` |
 | `empty-ids` | `none`: `[[]]` gives a section no ID | `empty`: an empty ID |
 | `tilde-blocks` | `open`: `~~~~` delimits an open block | `text` |
 | `cxx-attribute` | `defined`: `{cxx}` is C++ | `undefined` |
@@ -265,7 +267,8 @@ release's:
 | `inline-image-ids` | `kept` | `dropped` |
 | `include-front-matter` | `honored`: an include's `skip-front-matter` option | `ignored` |
 | `doctitle-style` | `section`: a style above the document title makes it a section of that style | `title`: the style is dropped |
-| `inline-imagesdir` | `kept`: an inline image's own `imagesdir` wins | `replaced`: the document's |
+| `image-imagesdir` | `kept`: an image's own `imagesdir` wins | `replaced`: the document's |
+| `toml-front-matter` | `skipped`: `skip-front-matter` skips TOML front matter (`+++`) as YAML | `kept` |
 
 Bug fixes and repairs (valid XHTML in the EPUB, its landmarks, the
 index in every format) stay in every case. Each format's own setting

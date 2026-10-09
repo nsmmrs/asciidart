@@ -1755,7 +1755,11 @@ abstract final class Parser {
           if (blkCtx == 'image') {
             document.registerImage(target);
             if (docAttrs['imagesdir'] case final imagesdir?) {
-              attrs.putIfAbsent('imagesdir', () => imagesdir);
+              if (Behavior.imageImagesdir.of(document) == 'kept') {
+                attrs.putIfAbsent('imagesdir', () => imagesdir);
+              } else {
+                attrs['imagesdir'] = imagesdir;
+              }
             }
             // NOTE style is the value of the first positional
             // attribute in the block attribute line.

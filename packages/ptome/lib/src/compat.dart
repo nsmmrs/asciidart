@@ -162,6 +162,20 @@ enum Behavior {
     'none',
   ),
 
+  /// Whether a man page table cell starts with a paragraph space (`.sp`
+  /// after `T{`): `none` or `spaced`.
+  manpageCells('manpage-cells', CompatFormat.manpage, 'none', 'spaced'),
+
+  /// How a man page list item without text of its own (a block attached to
+  /// it) starts: `compact` (with the block) or `spaced` (an empty line, then
+  /// a paragraph space).
+  manpageEmptyItems(
+    'manpage-empty-items',
+    CompatFormat.manpage,
+    'compact',
+    'spaced',
+  ),
+
   // The language, in every format (the format converted to decides).
 
   /// What an empty ID (`[[]]`, `[#]`) gives a section: `none` (no ID) or
@@ -201,9 +215,14 @@ enum Behavior {
   /// or `title` (the document title; the style is dropped).
   doctitleStyle('doctitle-style', null, 'section', 'title'),
 
-  /// Whether an inline image's own `imagesdir` (`image:a.png[imagesdir=x]`)
-  /// wins over the document's: `kept` or `replaced`.
-  inlineImagesdir('inline-imagesdir', null, 'kept', 'replaced');
+  /// Whether an image's own `imagesdir` (`image::a.png[imagesdir=x]`,
+  /// inline too) wins over the document's: `kept` or `replaced`.
+  imageImagesdir('image-imagesdir', null, 'kept', 'replaced'),
+
+  /// Whether TOML front matter (between `+++` lines) is skipped with
+  /// `skip-front-matter`, as YAML front matter (`---`) is: `skipped` or
+  /// `kept`.
+  tomlFrontMatter('toml-front-matter', null, 'skipped', 'kept');
 
   new(this.attribute, this.format, this.ptome, this.stable);
 

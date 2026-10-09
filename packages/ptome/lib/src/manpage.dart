@@ -18,6 +18,7 @@ library;
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/block.dart';
+import 'package:ptome/src/compat.dart';
 import 'package:ptome/src/constants.dart';
 import 'package:ptome/src/converter.dart';
 import 'package:ptome/src/document.dart';
@@ -508,7 +509,9 @@ class ManpageConverter extends BuiltInConverter {
         }
         if (dd.hasBlocks) {
           var ddContent = dd.content() ?? '';
-          if (!hasText && ddContent.startsWith('.sp\n')) {
+          if (!hasText &&
+              _compactItems(node) &&
+              ddContent.startsWith('.sp\n')) {
             ddContent = ddContent.substring(4);
           }
           result.add(ddContent);
@@ -584,8 +587,14 @@ class ManpageConverter extends BuiltInConverter {
     return result.join('\n');
   }
 
+  /// Whether [node]'s items without text of their own start with their
+  /// block (`manpage-empty-items: compact`).
+  static bool _compactItems(AbstractNode node) =>
+      Behavior.manpageEmptyItems.of(node.document! as Document) == 'compact';
+
   /// Converts the [node] ordered list.
   String convertOlist(ListBlock node) {
+    final compact = _compactItems(node);
     final result = <String>[];
     if (node.hasTitle) {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
@@ -603,11 +612,11 @@ class ManpageConverter extends BuiltInConverter {
       );
       result.add(
         '.sp\n.RS 4\n.ie n \\{\\\n\\h\'-04\' $numeral.\\h\'+01\'\\c\n.\\}\n.el \\{\\\n.  sp -1\n.  IP " $numeral." 4.2\n.\\}'
-        '${listText.isEmpty ? '' : '\n$listText'}',
+        '${listText.isEmpty && compact ? '' : '\n$listText'}',
       );
       if (listItem.hasBlocks) {
         var itemContent = listItem.content() ?? '';
-        if (listText.isEmpty && itemContent.startsWith('.sp\n')) {
+        if (compact && listText.isEmpty && itemContent.startsWith('.sp\n')) {
           itemContent = itemContent.substring(4);
         }
         result.add(itemContent);
@@ -689,6 +698,8 @@ class ManpageConverter extends BuiltInConverter {
   /// information must be computed up front and consulted when rendering the
   /// cell as this information is not available on the cell itself.
   String convertTable(Table node) {
+    final spacedCells =
+        Behavior.manpageCells.of(node.document! as Document) == 'spaced';
     final result = <String>[];
     if (node.hasTitle) {
       result.add(
@@ -713,10 +724,11 @@ class ManpageConverter extends BuiltInConverter {
           remainingCells -= 1;
           final headerCell = _headerCellAt(headerRow, cellIndex);
           // add an empty cell as a placeholder if this is a rowspan cell
+          final cellStart = spacedCells ? 'T{\n.sp\n' : 'T{\n';
           if (headerCell.length == 1 && headerCell[0] == '^t') {
-            textRow.add('T{\nT}:');
+            textRow.add('${cellStart}T}:');
           }
-          textRow.add('T{\n');
+          textRow.add(cellStart);
           final halignValue = cell.attr('halign', 'left')!;
           final cellHalign = halignValue.isEmpty ? '' : halignValue[0];
           if (tsec == 'body') {
@@ -818,6 +830,7 @@ class ManpageConverter extends BuiltInConverter {
 
   /// Converts the [node] unordered list.
   String convertUlist(ListBlock node) {
+    final compact = _compactItems(node);
     final result = <String>[];
     if (node.hasTitle) {
       result.add('.sp\n.B ${_manify(node.title!)}\n.br');
@@ -830,11 +843,11 @@ class ManpageConverter extends BuiltInConverter {
       );
       result.add(
         ".sp\n.RS 4\n.ie n \\{\\\n\\h'-04'\\(bu\\h'+03'\\c\n.\\}\n.el \\{\\\n.  sp -1\n.  IP \\(bu 2.3\n.\\}"
-        '${listText.isEmpty ? '' : '\n$listText'}',
+        '${listText.isEmpty && compact ? '' : '\n$listText'}',
       );
       if (listItem.hasBlocks) {
         var itemContent = listItem.content() ?? '';
-        if (listText.isEmpty && itemContent.startsWith('.sp\n')) {
+        if (compact && listText.isEmpty && itemContent.startsWith('.sp\n')) {
           itemContent = itemContent.substring(4);
         }
         result.add(itemContent);

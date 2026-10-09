@@ -2066,7 +2066,11 @@ class PreprocessorReader extends Reader {
     bool incrementLinenos = true,
   ]) {
     final delim = data.isEmpty ? null : data[0];
-    if (delim != '---' && delim != '+++') return null;
+    if (delim != '---' &&
+        (delim != '+++' ||
+            Behavior.tomlFrontMatter.of(_document) != 'skipped')) {
+      return null;
+    }
     final originalData = List<String>.of(data);
     data.removeAt(0);
     final frontMatter = <String>[];
