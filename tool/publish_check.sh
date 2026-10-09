@@ -13,6 +13,11 @@ packages=("$@")
 [ ${#packages[@]} -gt 0 ] || packages=($(ls packages))
 status=0
 for pkg in "${packages[@]}"; do
+  # Tools that are never published (ptome_corpus_tools).
+  if grep -q '^publish_to: none' "packages/$pkg/pubspec.yaml"; then
+    echo "skip $pkg: not published"
+    continue
+  fi
   out="$(cd "packages/$pkg" && dart pub publish --dry-run 2>&1)"
   code=$?
   # The warnings, one a line, but the expected ones.

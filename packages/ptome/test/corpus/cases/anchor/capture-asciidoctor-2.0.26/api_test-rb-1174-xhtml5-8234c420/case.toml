@@ -1,0 +1,13 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-2.0.26/api_test.rb:1174.1"
+formats = ["xhtml5"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"docfile" = "/asciidoctor/test/fixtures/sample.adoc"
+"docdir" = "/asciidoctor/test/fixtures"
+"docfilesuffix" = ".adoc"
+"docname" = "sample"

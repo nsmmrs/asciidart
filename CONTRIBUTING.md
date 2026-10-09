@@ -11,7 +11,8 @@ read like a Dart tool's).
 
 The repository is a pub workspace ([ADR-0018](adr/0018-ptome-and-the-plain-workspace.md)):
 ptome is `packages/ptome`, and the libraries it is built on are
-`packages/plain_*`, each published on its own. `dart pub get` anywhere
+`packages/plain_*`, each published on its own; `packages/ptome_corpus_tools`
+builds ptome's test corpus and is not published. `dart pub get` anywhere
 resolves the whole workspace. Paths and commands below are relative to a
 package's folder, `packages/ptome` unless they say otherwise.
 [RELEASING.md](RELEASING.md) says how each package is released.
@@ -35,9 +36,16 @@ dart pub get
 ```sh
 dart analyze --fatal-infos .
 dart format --output=none --set-exit-if-changed .
-dart test                   # the library and CLI tests
+dart test                   # the library and CLI tests, and the corpus
 dart run tool/api_check.dart  # the public API is closed and matches tool/api_surface.txt
 ```
+
+The corpus (`test/corpus`, `test/corpus_test.dart`) is the black-box
+suite: about a thousand documents with the result Asciidoctor and ptome
+give each, checked in seconds. `packages/ptome_corpus_tools` builds it;
+after a deliberate change of output, record ptome's new results with
+`dart run bin/corpus.dart regen -p ptome` there and review the diff
+(`test/corpus/README.md`).
 
 Parity with the gem, on a built executable:
 
