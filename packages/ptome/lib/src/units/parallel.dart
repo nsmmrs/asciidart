@@ -56,32 +56,3 @@ Map<String, String> unitTexts(Analysis a) {
   flush();
   return out;
 }
-
-/// [left] and [right] side by side: a table under each heading of
-/// [left], a row per unit at the default level, matched by ID.
-String parallel(Analysis left, Analysis right, {required String title}) {
-  final l = unitTexts(left);
-  final r = unitTexts(right);
-  final out = <String>['= $title', ':sectids!:', ''];
-  var open = false;
-  void close() {
-    if (open) out.addAll(['|===', '']);
-    open = false;
-  }
-
-  String cell(String? s) => (s ?? '').replaceAll('|', r'\|');
-  for (final u in left.units) {
-    if (u.heading case final h?) {
-      close();
-      out.addAll(['${'=' * (h.depth + 1)} ${h.title}', '']);
-    }
-    if (!u.level.isDefault) continue;
-    if (!open) {
-      out.addAll(['[cols="1,1",grid=rows,frame=none]', '|===']);
-      open = true;
-    }
-    out.add('|[[${u.id}]]${cell(l[u.id])} |${cell(r[u.id])}');
-  }
-  close();
-  return '${out.join('\n').trimRight()}\n';
-}

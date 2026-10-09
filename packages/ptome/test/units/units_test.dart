@@ -42,6 +42,20 @@ void main() {
     expect(html, isNot(contains('@ ')));
   });
 
+  test('parallel texts: two documents side by side, by address', () {
+    final html = _convert('$_fixtures/bible/psalm23-parallel.adoc', 'html5');
+    // A heading that is only a marker shows its unit's name.
+    expect(html, contains('<h4 id="_psalms_23">Psalms 23</h4>'));
+    // Each verse a row: the translation beside it, matched by address.
+    final row = RegExp(
+      r'<tr>\s*<td[^>]*><p[^>]*><a id="v-psa-23-1"></a><sup>1</sup>&#160;'
+      r'The LORD <em>is</em> my shepherd; I shall not want.</p></td>\s*'
+      '<td[^>]*><p[^>]*><sup>1</sup>&#160;Dominus regit me, et nihil '
+      'mihi deerit:</p></td>',
+    );
+    expect(html, matches(row));
+  });
+
   test('a document without :units: is read as before', () {
     final dir = Directory.systemTemp.createTempSync('units');
     addTearDown(() => dir.deleteSync(recursive: true));

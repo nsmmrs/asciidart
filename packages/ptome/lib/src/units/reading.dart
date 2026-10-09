@@ -9,7 +9,58 @@ import 'package:ptome/src/logging.dart';
 import 'package:ptome/src/units/engine.dart';
 import 'package:ptome/src/units/files.dart' as p;
 import 'package:ptome/src/units/lower.dart';
+import 'package:ptome/src/units/parallel.dart';
 import 'package:ptome/src/units/process.dart';
+
+/// The document in units at [left] and the one at [right] (in the same
+/// scheme: a text and its translation) side by side, unit by unit, matched
+/// by address alone: each heading of [left], then a table with a row per
+/// unit of the default level. `null` when either is not written in units
+/// or they share no unit.
+String? parallelText(String left, String right) {
+  final Analysis a;
+  final Analysis b;
+  try {
+    a = analyze(left);
+    b = analyze(right);
+  } on Exception catch (e) {
+    LoggerManager.logger.error('units: $e');
+    return null;
+  }
+  if (a.units.isEmpty || !a.units.any((u) => b.byId.containsKey(u.id))) {
+    return null;
+  }
+  final leftTexts = unitTexts(a);
+  final rightTexts = unitTexts(b);
+  final out = <String>[];
+  var open = false;
+  void close() {
+    if (open) out.addAll(['|===', '']);
+    open = false;
+  }
+
+  String cell(String? s) => (s ?? '').replaceAll('|', r'\|');
+  for (final u in a.units) {
+    if (u.heading case final h?) {
+      close();
+      // A heading that is only a marker (`== @PSA`) shows its unit's name.
+      final title = h.title.trim().isEmpty ? u.reftext : h.title;
+      out.addAll(['${'=' * (h.depth + 1)} $title', '']);
+    }
+    if (!u.level.isDefault) continue;
+    final l = leftTexts[u.id] ?? '';
+    final r = rightTexts[u.id] ?? '';
+    if (l.isEmpty && r.isEmpty) continue;
+    if (!open) {
+      out.addAll(['[cols="1,1",grid=rows,frame=none]', '|===']);
+      open = true;
+    }
+    final label = '^${u.level.bare(u.label)}^{nbsp}';
+    out.add('|[[${u.id}]]$label${cell(l)} |$label${cell(r)}');
+  }
+  close();
+  return '${out.join('\n').trimRight()}\n';
+}
 
 /// A units document's rendered source files.
 final class UnitsReading {

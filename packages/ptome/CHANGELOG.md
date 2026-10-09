@@ -27,6 +27,8 @@ Asciidoctor project.
   - `-a units-as-of=DATE` gives a statute as in force on that date, and
     `-a units!` reads a units document as plain AsciiDoc.
   - `ptome check FILE...` analyzes documents without converting them.
+  - `include::text.adoc[parallel=translation.adoc]` sets two documents in
+    one scheme side by side, unit by unit, matched by address.
   - `Document.units` and `Document.unit(idOrAddress)` give the units in the
     Dart and JavaScript APIs: each `Unit` has its scheme, level, labels,
     ID, reftext, citation and source line.

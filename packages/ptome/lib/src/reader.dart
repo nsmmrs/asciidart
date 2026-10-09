@@ -27,6 +27,7 @@ import 'package:ptome/src/ruby_semantics.dart';
 import 'package:ptome/src/rx.dart';
 import 'package:ptome/src/substitutors.dart' as substitutors;
 import 'package:ptome/src/text_case.dart';
+import 'package:ptome/src/units/reading.dart';
 
 export 'package:ptome/src/cursor.dart' show Cursor;
 
@@ -1519,6 +1520,37 @@ class PreprocessorReader extends Reader {
             parsedAttrs,
             encoding,
             incTags,
+          );
+        } else if (parsedAttrs['parallel'] case final other?
+            when resolution.type == _IncludeTargetType.file &&
+                doc.safe < SafeMode.secure) {
+          // Parallel texts (ADR-0019): the included document beside another
+          // in the same scheme, unit by unit.
+          final otherPath = doc.normalizeSystemPath(
+            other,
+            start: _dir,
+            targetName: 'include file',
+          );
+          final text = io.isFile(otherPath)
+              ? parallelText(resolution.path, otherPath)
+              : null;
+          if (text == null) {
+            LoggerManager.logger.error(
+              'no units to set side by side: $expandedTarget and $other',
+              at: cursor(),
+            );
+            return replaceNextLine(
+              'Unresolved directive in $_path - '
+              'include::$expandedTarget[${attrlist ?? ''}]',
+            );
+          }
+          shift();
+          _pushInclude(
+            source: text,
+            file: resolution.path,
+            path: resolution.relpath,
+            attrs: parsedAttrs,
+            remote: resolution.remote,
           );
         } else {
           final _IncludeContent raw;

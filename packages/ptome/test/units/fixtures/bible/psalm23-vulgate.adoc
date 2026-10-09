@@ -1,0 +1,12 @@
+= Psalmus 22 (Vulgata)
+:units: bible
+
+== @PSA
+
+=== @23
+
+Psalmus David.
+
+@ Dominus regit me, et nihil mihi deerit:
+@ in loco pascuae ibi me collocavit. Super aquam refectionis educavit me,
+@ animam meam convertit. Deduxit me super semitas justitiae, propter nomen suum.

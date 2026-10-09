@@ -117,6 +117,19 @@ later are kept.
 - **Roles.** `[.dfn]#term#` defines a term. The roles a scheme names as
   apparatus put their blocks in no unit.
 
+## Parallel texts
+
+`include::mn1-pli.adoc[parallel=mn1-en.adoc]` sets two documents in the
+same scheme side by side, unit by unit: a text and its translation, the
+Arabic and Pickthall.
+- Units are matched by address alone; nothing in either document points
+  at the other.
+- Each heading of the first document comes through. A heading that is
+  only a marker shows its unit's name (`Psalms 23`).
+- Under each heading, a table has a row per unit of the default level,
+  with the unit's label on both sides.
+- The include's other attributes apply as usual (`leveloffset=+1`).
+
 ## Schemes
 
 `:units: bible, kjv` names YAML files in the `schemes/` directory nearest

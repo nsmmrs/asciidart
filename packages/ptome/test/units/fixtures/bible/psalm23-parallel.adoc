@@ -1,0 +1,3 @@
+= Psalm 23 in Parallel
+
+include::psalm23-kjv.adoc[parallel=psalm23-vulgate.adoc,leveloffset=+1]
