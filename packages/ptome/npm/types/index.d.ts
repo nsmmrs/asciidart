@@ -838,6 +838,23 @@ export declare class TableColumn {
 }
 
 /**
+ * A numbered unit of a document written in units (`:units:` in its
+ * header; see `doc/units.md`): a verse, a chapter, a section, a line.
+ */
+export declare class Unit {
+  protected constructor();
+  readonly scheme: string;
+  readonly level: string;
+  readonly depth: number;
+  readonly labels: Record<string, string>;
+  readonly id: string;
+  readonly reftext: string;
+  readonly citation: string;
+  readonly path: string;
+  readonly line: number;
+}
+
+/**
  * A block: a section, paragraph, list, table, delimited block, and so on.
  *
  * Blocks nest: {@link blocks} are the blocks directly inside this one.
@@ -1181,6 +1198,13 @@ export declare class Document extends Block {
    */
   readonly doctype: Doctype;
   /**
+   * The document's numbered units (`:units:` in its header; see
+   * `doc/units.md`), in document order: books, chapters and verses;
+   * sections and their subdivisions. Empty for a document not written in
+   * units.
+   */
+  readonly units: Unit[];
+  /**
    * The messages reported while parsing and converting this document.
    */
   readonly diagnostics: Diagnostic[];
@@ -1215,6 +1239,13 @@ export declare class Document extends Block {
    * {@link source} drops only their lines. See {@link withAttribute}.
    */
   withoutAttribute(name: string): Document;
+  /**
+   * The unit with the ID {@link idOrAddress} (`v-exo-34-6`), or the first unit
+   * of the passage at that address, as the document's schemes cite it
+   * (`Exod 34:6`, `Exodus 34:6-8`). `null` when there is no such unit or
+   * the document is not written in units.
+   */
+  unit(idOrAddress: string): Unit | null;
   /**
    * The document converted to its output format: the body only, or a
    * complete page when {@link standalone} is `true` (default: as parsed).

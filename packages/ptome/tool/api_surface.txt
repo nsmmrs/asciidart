@@ -188,12 +188,14 @@ final class Document extends Block
   List<Diagnostic> diagnostics
   List<IndexLetter> index
   List<InlineContent> titleInlines
+  List<Unit> units
   Map<String, String?> headerAttributes
   String convert({bool? standalone})
   String source
   String toHtml({bool? standalone})
   String? sourceTitle
   String? title
+  Unit? unit(String idOrAddress)
 final class Example extends Block
 final class FileConversion
   Document document
@@ -389,6 +391,17 @@ final class ThematicBreak extends Block
 final class TreeProcessor extends Extension
   TreeProcessor(void Function(Document) process)
   void Function(Document) process
+final class Unit
+  Map<String, String> labels
+  String citation
+  String id
+  String level
+  String path
+  String reftext
+  String scheme
+  String toString()
+  int depth
+  int line
 final class UnorderedList extends Block
   List<ListItem> items
   String plainText

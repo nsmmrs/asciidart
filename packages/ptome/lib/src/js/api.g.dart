@@ -67,6 +67,7 @@ JSObject wrap(Object o) => switch (o) {
   api.Docinfo() => rt.handle(o, 'Docinfo'),
   api.CustomBlock() => rt.handle(o, 'CustomBlock'),
   api.BlockMacro() => rt.handle(o, 'BlockMacro'),
+  api.Unit() => rt.handle(o, 'Unit'),
   api.TableColumn() => rt.handle(o, 'TableColumn'),
   api.SourceLocation() => rt.handle(o, 'SourceLocation'),
   api.SourceCode() => rt.handle(o, 'SourceCode'),
@@ -1491,6 +1492,81 @@ final class Core {
     }
   }
 
+  JSAny? Unit$get$scheme(JSAny? self) {
+    try {
+      return rt.unwrap<api.Unit>(self).scheme.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Unit$get$level(JSAny? self) {
+    try {
+      return rt.unwrap<api.Unit>(self).level.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Unit$get$depth(JSAny? self) {
+    try {
+      return rt.unwrap<api.Unit>(self).depth.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Unit$get$labels(JSAny? self) {
+    try {
+      return rt.jsObject({
+        for (final e in rt.unwrap<api.Unit>(self).labels.entries)
+          e.key: e.value.toJS,
+      });
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Unit$get$id(JSAny? self) {
+    try {
+      return rt.unwrap<api.Unit>(self).id.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Unit$get$reftext(JSAny? self) {
+    try {
+      return rt.unwrap<api.Unit>(self).reftext.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Unit$get$citation(JSAny? self) {
+    try {
+      return rt.unwrap<api.Unit>(self).citation.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Unit$get$path(JSAny? self) {
+    try {
+      return rt.unwrap<api.Unit>(self).path.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Unit$get$line(JSAny? self) {
+    try {
+      return rt.unwrap<api.Unit>(self).line.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Block$get$title(JSAny? self) {
     try {
       return ((rt.unwrap<api.Block>(self).title) == null
@@ -2022,6 +2098,16 @@ final class Core {
     }
   }
 
+  JSAny? Document$get$units(JSAny? self) {
+    try {
+      return rt.jsArray([
+        for (final x in rt.unwrap<api.Document>(self).units) wrap(x),
+      ]);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Document$get$diagnostics(JSAny? self) {
     try {
       return rt.jsArray([
@@ -2065,6 +2151,16 @@ final class Core {
   JSAny? Document$withoutAttribute(JSAny? self, JSAny? name) {
     try {
       return wrap(rt.unwrap<api.Document>(self).withoutAttribute(rt.str(name)));
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Document$unit(JSAny? self, JSAny? idOrAddress) {
+    try {
+      return ((rt.unwrap<api.Document>(self).unit(rt.str(idOrAddress))) == null
+          ? null
+          : wrap((rt.unwrap<api.Document>(self).unit(rt.str(idOrAddress)))!));
     } catch (e, s) {
       rt.fail(e, s);
     }

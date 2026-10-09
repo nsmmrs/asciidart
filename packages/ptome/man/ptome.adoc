@@ -18,6 +18,8 @@ ptome - convert AsciiDoc documents to HTML, DocBook, man pages, EPUB and PDF
 
 *ptome doctor* [*-y*] [*-c*]
 
+*ptome check* [*-q*] _FILE_...
+
 == Description
 
 *ptome* reads each AsciiDoc _FILE_ and writes the converted document next to it, under the same name with the extension of the output format (for example, _guide.adoc_ becomes _guide.html_).
@@ -146,6 +148,15 @@ Ptome compiles no fonts in: PDFs are set in the fonts installed on the machine t
 *ptome doctor* lists the fonts of the built-in PDF themes (Noto Serif, Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math, and the Font Awesome, Foundation and Payment icon fonts) and where they are found, and offers to download the missing ones from their official sources (Google Fonts, the projects' repositories) into this user's font folder.
 *-y* (*--yes*) installs them without asking; *-c* (*--check*) only checks, and exits with status 1 when fonts are missing.
 A font a theme names that isn't installed is replaced by a built-in PDF font (Times, Helvetica or Courier), with a warning.
+
+== Texts cited by numbered units
+
+A document whose header names schemes (*:units:*) or works it quotes by address (*:works:*) is written in numbered units: verses, sections, lines, paragraphs, marked with *@* and found by address (see _doc/units.md_).
+*ptome* works out each unit's anchor, label and reftext from the schemes and warns about labels out of sequence.
+*-a units!* reads such a document as plain AsciiDoc; *-a units-as-of=*_DATE_ keeps the text in force on that date.
+
+*ptome check* _FILE_... analyzes such documents without converting them: it prints each document's problems (labels out of sequence, repeated or going backwards; references, notes or quotations not found), then a line counting its units by level, its notes and references.
+It exits with status 1 when any document has a problem; *-q* (*--quiet*) prints only the summary lines.
 
 == Custom binaries
 

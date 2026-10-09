@@ -500,6 +500,42 @@ export class TableColumn {
   }
 }
 
+export class Unit {
+  constructor() {
+    throw new TypeError('Unit objects come from ptome; they cannot be created with new')
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get scheme() {
+    return core.Unit$get$scheme(this)
+  }
+  get level() {
+    return core.Unit$get$level(this)
+  }
+  get depth() {
+    return core.Unit$get$depth(this)
+  }
+  get labels() {
+    return core.Unit$get$labels(this)
+  }
+  get id() {
+    return core.Unit$get$id(this)
+  }
+  get reftext() {
+    return core.Unit$get$reftext(this)
+  }
+  get citation() {
+    return core.Unit$get$citation(this)
+  }
+  get path() {
+    return core.Unit$get$path(this)
+  }
+  get line() {
+    return core.Unit$get$line(this)
+  }
+}
+
 export class Block extends Node {
   constructor() {
     throw new TypeError('Block objects come from ptome; they cannot be created with new')
@@ -786,6 +822,9 @@ export class Document extends Block {
   get doctype() {
     return core.Document$get$doctype(this)
   }
+  get units() {
+    return core.Document$get$units(this)
+  }
   get diagnostics() {
     return core.Document$get$diagnostics(this)
   }
@@ -800,6 +839,9 @@ export class Document extends Block {
   }
   withoutAttribute(...args) {
     return core.Document$withoutAttribute(this, ...args)
+  }
+  unit(...args) {
+    return core.Document$unit(this, ...args)
   }
   convert(...args) {
     return core.Document$convert(this, ...args)
@@ -1277,7 +1319,7 @@ export class Video extends Block {
   }
 }
 
-registerClasses({ Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, FontFile, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, Ptome, SourceCode, SourceLocation, TableColumn, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
+registerClasses({ Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, FontFile, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, Ptome, SourceCode, SourceLocation, TableColumn, Unit, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
 
 export const AdmonitionKind = Object.freeze({
   note: 'note',

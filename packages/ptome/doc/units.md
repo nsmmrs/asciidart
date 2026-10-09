@@ -216,6 +216,38 @@ Templates are Mustache, and they write ptome markup.
 **Filters:** `lower`, `titlecase`, `roman`, `hebrew`, `arabic-indic`,
 `pad:4`, `every:5`.
 
+## Checking a document
+
+`ptome check FILE...` analyzes documents without converting them. It
+prints each document's problems, then a summary line, and exits with
+status 1 when any document has a problem. `-q` prints only the summaries.
+
+```console
+$ ptome check exodus.adoc
+ptome: WARNING: exodus.adoc:15:1: verse 6 after 2 (expected 3)
+exodus.adoc: 1 bible.book, 1 bible.chapter, 4 bible.verse; 2 notes, 2 references; 0 errors, 1 warnings (12 ms)
+```
+
+## The API
+
+A parsed document lists its units, in document order (`Document.units`).
+Each `Unit` has:
+- its scheme and level, and the level's depth;
+- its labels by level name (`{book: EXO, chapter: 34, verse: 6}`);
+- its ID, reftext and citation (`Exod 34:6`);
+- the file and line it starts on.
+
+`Document.unit` finds a unit by ID, or by an address its schemes cite
+(`Exodus 34:6`, `Ps 3`). The npm package has the same members.
+
+```dart
+final doc = await const Ptome(safe: SafeMode.unsafe).parseFile('exodus.adoc');
+for (final verse in doc.units.where((u) => u.level == 'verse')) {
+  print('${verse.citation} -> #${verse.id}');
+}
+print(doc.unit('Exod 34:6')?.reftext); // Exodus 34:6
+```
+
 ## How it works
 
 When a document names schemes, ptome's units engine analyzes the document

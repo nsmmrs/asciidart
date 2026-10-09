@@ -13,9 +13,12 @@ import 'package:ptome/src/units/process.dart';
 
 /// A units document's rendered source files.
 final class UnitsReading {
-  new _(this._files);
+  new _(this._files, this.analysis);
 
   final Map<String, List<String>> _files;
+
+  /// The document's units, notes and references, as the engine found them.
+  final Analysis analysis;
 
   /// The rendered lines of the source file at [path], or `null` for a file
   /// that is not part of the document (one ptome includes on its own).
@@ -55,6 +58,6 @@ final class UnitsReading {
         p.normalize(p.absolute(key)): [
           for (final line in value) ...line.split('\n'),
         ],
-    });
+    }, analysis);
   }
 }

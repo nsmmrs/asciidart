@@ -33,6 +33,15 @@ test('a document in units converts as its rendering does', async () => {
     const html = readFileSync(join(dir, 'bible-sample.html'), 'utf8')
     assert.match(html, /id="v-exo-34-6"/)
     assert.match(html, /<span class="nd">Lord<\/span>/)
+
+    // The units through the API, as in Dart.
+    const doc = await ad.parseFile(join(fixtures, 'bible', 'sample.adoc'))
+    assert.equal(doc.units[0].level, 'book')
+    const verse = doc.unit('Exodus 34:6')
+    assert.equal(verse.id, 'v-exo-34-6')
+    assert.equal(verse.citation, 'Exod 34:6')
+    assert.deepEqual(verse.labels, { book: 'EXO', chapter: '34', verse: '6' })
+    assert.equal(doc.unit('Rev 22:21'), null)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

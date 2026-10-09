@@ -110,6 +110,7 @@ export 'src/api/api.dart'
         TableOfContents,
         ThematicBreak,
         TreeProcessor,
+        Unit,
         UnorderedList,
         Verse,
         Video,

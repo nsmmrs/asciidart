@@ -2,12 +2,12 @@
 .\"     Title: ptome
 .\"    Author: Noah Summers
 .\" Generator: Ptome 0.1.0
-.\"      Date: 2026-10-08
+.\"      Date: 2026-10-09
 .\"    Manual: Ptome Manual
 .\"    Source: Ptome 0.1.0
 .\"  Language: English
 .\"
-.TH "PTOME" "1" "2026-10-08" "Ptome 0.1.0" "Ptome Manual"
+.TH "PTOME" "1" "2026-10-09" "Ptome 0.1.0" "Ptome Manual"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -36,6 +36,8 @@ ptome \- convert AsciiDoc documents to HTML, DocBook, man pages, EPUB and PDF
 \fBptome init\-config\fP [\fIDIR\fP] [\fB\-f\fP]
 .sp
 \fBptome doctor\fP [\fB\-y\fP] [\fB\-c\fP]
+.sp
+\fBptome check\fP [\fB\-q\fP] \fIFILE\fP.\|.\|.
 .SH "DESCRIPTION"
 .sp
 \fBptome\fP reads each AsciiDoc \fIFILE\fP and writes the converted document next to it, under the same name with the extension of the output format (for example, \fIguide.adoc\fP becomes \fIguide.html\fP).
@@ -205,6 +207,14 @@ Ptome compiles no fonts in: PDFs are set in the fonts installed on the machine t
 \fBptome doctor\fP lists the fonts of the built\-in PDF themes (Noto Serif, Noto Sans, M+ 1mn, the M+ 1p and Noto Emoji fallbacks, Noto Sans Math, and the Font Awesome, Foundation and Payment icon fonts) and where they are found, and offers to download the missing ones from their official sources (Google Fonts, the projects\*(Aq repositories) into this user\(cqs font folder.
 \fB\-y\fP (\fB\-\-yes\fP) installs them without asking; \fB\-c\fP (\fB\-\-check\fP) only checks, and exits with status 1 when fonts are missing.
 A font a theme names that isn\(cqt installed is replaced by a built\-in PDF font (Times, Helvetica or Courier), with a warning.
+.SH "TEXTS CITED BY NUMBERED UNITS"
+.sp
+A document whose header names schemes (\fB:units:\fP) or works it quotes by address (\fB:works:\fP) is written in numbered units: verses, sections, lines, paragraphs, marked with \fB@\fP and found by address (see \fIdoc/units.md\fP).
+\fBptome\fP works out each unit\(cqs anchor, label and reftext from the schemes and warns about labels out of sequence.
+\fB\-a units!\fP reads such a document as plain AsciiDoc; *\-a units\-as\-of=*\fIDATE\fP keeps the text in force on that date.
+.sp
+\fBptome check\fP \fIFILE\fP.\|.\|. analyzes such documents without converting them: it prints each document\(cqs problems (labels out of sequence, repeated or going backwards; references, notes or quotations not found), then a line counting its units by level, its notes and references.
+It exits with status 1 when any document has a problem; \fB\-q\fP (\fB\-\-quiet\fP) prints only the summary lines.
 .SH "CUSTOM BINARIES"
 .sp
 \fBptome init\-config\fP [\fIDIR\fP] creates a small Dart project in \fIDIR\fP (the working directory by default) whose program registers Dart functions as converters and then runs this command line.

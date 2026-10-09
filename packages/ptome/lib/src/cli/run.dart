@@ -8,6 +8,7 @@ library;
 
 import 'dart:async';
 
+import 'package:ptome/src/cli/check.dart';
 import 'package:ptome/src/cli/diagnostics.dart';
 import 'package:ptome/src/cli/doctor.dart';
 import 'package:ptome/src/cli/init_config.dart';
@@ -66,6 +67,9 @@ Future<int> runCliCode(
   }
   if (args.isNotEmpty && args.first == 'doctor') {
     return await runDoctor(args.sublist(1), out: out, err: err);
+  }
+  if (args.isNotEmpty && args.first == 'check') {
+    return runCheck(args.sublist(1), out: out, err: err);
   }
   try {
     final invoker = Invoker.fromArgs(args, out: out, err: err)

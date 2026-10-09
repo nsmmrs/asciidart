@@ -26,6 +26,10 @@ Asciidoctor project.
     sequence are warnings.
   - `-a units-as-of=DATE` gives a statute as in force on that date, and
     `-a units!` reads a units document as plain AsciiDoc.
+  - `ptome check FILE...` analyzes documents without converting them.
+  - `Document.units` and `Document.unit(idOrAddress)` give the units in the
+    Dart and JavaScript APIs: each `Unit` has its scheme, level, labels,
+    ID, reftext, citation and source line.
   - Checked against the loci experiment's 26 documents (scripture, law,
     classics, drama, liturgy, a hymnal, a catechism, a specification) and
     a commonplace book quoting them all. Each renders byte-identical to

@@ -311,6 +311,30 @@ final class Document extends Block {
   Doctype get doctype =>
       Doctype.values.asNameMap()[_doc.doctype] ?? Doctype.article;
 
+  /// The document's numbered units (`:units:` in its header; see
+  /// `doc/units.md`), in document order: books, chapters and verses;
+  /// sections and their subdivisions. Empty for a document not written in
+  /// units.
+  List<Unit> get units {
+    final reading = _doc.unitsReading;
+    if (reading == null) return const [];
+    return [for (final u in reading.analysis.units) _unit(reading, u)];
+  }
+
+  /// The unit with the ID [idOrAddress] (`v-exo-34-6`), or the first unit
+  /// of the passage at that address, as the document's schemes cite it
+  /// (`Exod 34:6`, `Exodus 34:6-8`). `null` when there is no such unit or
+  /// the document is not written in units.
+  Unit? unit(String idOrAddress) {
+    final reading = _doc.unitsReading;
+    if (reading == null) return null;
+    final analysis = reading.analysis;
+    final found =
+        analysis.byId[idOrAddress] ??
+        impl.resolvePassage(analysis, idOrAddress)?.start;
+    return found == null ? null : _unit(reading, found);
+  }
+
   /// The messages reported while parsing and converting this document.
   List<Diagnostic> get diagnostics =>
       List.unmodifiable(_collector?.diagnostics ?? const <Diagnostic>[]);

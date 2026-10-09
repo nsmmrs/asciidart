@@ -39,6 +39,9 @@ import 'package:ptome/src/parallel.dart' as impl;
 import 'package:ptome/src/reader.dart' as impl;
 import 'package:ptome/src/section.dart' as impl;
 import 'package:ptome/src/table.dart' as impl;
+import 'package:ptome/src/units/citation.dart' as impl;
+import 'package:ptome/src/units/engine.dart' as impl;
+import 'package:ptome/src/units/reading.dart' as impl;
 import 'package:ptome/src/version.dart' as impl;
 
 part 'attributes.dart';
@@ -50,3 +53,4 @@ part 'inlines.dart';
 part 'nodes.dart';
 part 'ptome.dart';
 part 'render.dart';
+part 'units.dart';
