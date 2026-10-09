@@ -1,0 +1,3 @@
+= Plain
+
+@ stays text, note:x[not a note].

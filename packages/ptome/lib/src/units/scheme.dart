@@ -7,8 +7,8 @@
 library;
 
 import 'package:ptome/src/units/files.dart' as p;
+import 'package:ptome/src/units/scheme_yaml.dart';
 import 'package:ptome/src/units/template.dart';
-import 'package:yaml/yaml.dart';
 
 /// One level's label: what a marker or citation writes (`34`, `(a)`, `2b`,
 /// `1094a5`, `EXO`), and a key that orders labels of its type.
@@ -890,41 +890,41 @@ final class Config {
   /// The config the [names] files in [dir] declare (later files add to
   /// and override earlier ones).
   factory load(List<String> names, String dir) {
-    final tables = <Map<String, Object?>>[];
+    final tables = <SchemeMap>[];
     for (final name in names) {
       final file = p.join(dir, _yamlName(name));
       if (!p.isFile(file)) {
         throw UnitsException('scheme file not found: $file');
       }
-      tables.add(readYamlMap(file));
+      tables.add(readSchemeFile(file));
     }
     Canon? canon;
     Versification? versification;
     final settings = <String, String>{};
     for (final t in tables) {
-      if (t['canon'] case final String name) {
+      if (t.string('canon') case final name?) {
         canon = _loadCanon(p.join(dir, _yamlName(name)));
       }
-      if (t['versification'] case final String name) {
+      if (t.string('versification') case final name?) {
         versification = Versification.load(p.join(dir, name));
       }
-      if (t['settings'] case final Map<String, Object?> s) {
-        for (final MapEntry(:key, :value) in s.entries) {
-          settings[key] = '$value';
-        }
+      for (final MapEntry(:key, :value)
+          in t.map('settings')?.entries.entries ??
+              const <MapEntry<String, SchemeNode>>[]) {
+        if (value.text case final text?) settings[key] = text;
       }
     }
-    // Level settings later files change: [level.bekker.line] every = 20.
-    final overrides = <String, Map<String, Object?>>{};
+    // Level settings later files change:
+    // `level: {bekker: {line: {every: 20}}}`.
+    final overrides = <String, SchemeMap>{};
     for (final t in tables) {
-      if (t['level'] case final Map<String, Object?> ls) {
-        for (final MapEntry(key: sname, value: levels) in ls.entries) {
-          for (final MapEntry(key: lname, value: raw)
-              in (levels! as Map<String, Object?>).entries) {
-            (overrides['$sname.$lname'] ??= {}).addAll(
-              raw! as Map<String, Object?>,
-            );
-          }
+      for (final (scheme, levels)
+          in t.map('level')?.maps ?? const <(String, SchemeMap)>[]) {
+        for (final (level, settings) in levels.maps) {
+          final key = '$scheme.$level';
+          overrides[key] = (overrides[key] ?? const SchemeMap({})).merged(
+            settings,
+          );
         }
       }
     }
@@ -933,83 +933,69 @@ final class Config {
     final ranges = <String, RangeKind>{};
     final rules = <TermRule>[];
     for (final t in tables) {
-      if (t['scheme'] case final Map<String, Object?> ss) {
-        for (final MapEntry(key: name, value: raw) in ss.entries) {
-          schemes[name] = _scheme(
+      for (final (name, m)
+          in t.map('scheme')?.maps ?? const <(String, SchemeMap)>[]) {
+        schemes[name] = _scheme(name, m, canon, overrides);
+      }
+      for (final (name, m)
+          in t.map('stream')?.maps ?? const <(String, SchemeMap)>[]) {
+        streams[name] = NoteStream(
+          name: name,
+          caller: m.string('caller') ?? '',
+          reset: m.string('reset'),
+          placement: Placement.values.byName(
+            m.string('placement') ?? 'footnote',
+          ),
+          templates: m.templates,
+        );
+      }
+      for (final (name, m)
+          in t.map('range')?.maps ?? const <(String, SchemeMap)>[]) {
+        ranges[name] = RangeKind(
+          name,
+          role: m.string('role'),
+          templates: m.templates,
+        );
+      }
+      for (final (name, m)
+          in t.map('term')?.maps ?? const <(String, SchemeMap)>[]) {
+        rules.add(
+          TermRule(
             name,
-            raw! as Map<String, Object?>,
-            canon,
-            overrides,
-          );
-        }
-      }
-      if (t['stream'] case final Map<String, Object?> ss) {
-        for (final MapEntry(key: name, value: raw) in ss.entries) {
-          final m = raw! as Map<String, Object?>;
-          streams[name] = NoteStream(
-            name: name,
-            caller: m['caller'] as String? ?? '',
-            reset: m['reset'] as String?,
-            placement: Placement.values.byName(
-              m['placement'] as String? ?? 'footnote',
+            RegExp(
+              m.string('pattern') ??
+                  (throw FormatException('term $name: no pattern')),
             ),
-            templates: _templates(m),
-          );
-        }
-      }
-      if (t['range'] case final Map<String, Object?> rs) {
-        for (final MapEntry(key: name, value: raw) in rs.entries) {
-          final m = raw! as Map<String, Object?>;
-          ranges[name] = RangeKind(
-            name,
-            role: m['role'] as String?,
-            templates: _templates(m),
-          );
-        }
-      }
-      if (t['term'] case final Map<String, Object?> rs) {
-        for (final MapEntry(key: name, value: raw) in rs.entries) {
-          final m = raw! as Map<String, Object?>;
-          rules.add(
-            TermRule(
-              name,
-              RegExp(m['pattern']! as String),
-              m['role']! as String,
-              transform: m['transform'] as String?,
-            ),
-          );
-        }
+            m.string('role') ?? (throw FormatException('term $name: no role')),
+            transform: m.string('transform'),
+          ),
+        );
       }
     }
     // Templates later files add to a scheme's levels:
-    // [templates.bible.verse] lower = "…".
+    // `templates: {bible: {verse: {lower: "…"}}}`.
     for (final t in tables) {
-      if (t['templates'] case final Map<String, Object?> ts) {
-        for (final MapEntry(key: sname, value: levels) in ts.entries) {
-          final scheme = schemes[sname];
-          if (scheme == null) {
-            throw FormatException('templates for unknown scheme $sname');
-          }
-          for (final MapEntry(key: lname, value: raw)
-              in (levels! as Map<String, Object?>).entries) {
-            final level =
-                scheme.level(lname) ??
-                (throw FormatException(
-                  'templates for unknown level $sname.$lname',
-                ));
-            level.templates.addAll(_templates(raw! as Map<String, Object?>));
-          }
+      for (final (sname, levels)
+          in t.map('templates')?.maps ?? const <(String, SchemeMap)>[]) {
+        final scheme = schemes[sname];
+        if (scheme == null) {
+          throw FormatException('templates for unknown scheme $sname');
+        }
+        for (final (lname, m) in levels.maps) {
+          final level =
+              scheme.level(lname) ??
+              (throw FormatException(
+                'templates for unknown level $sname.$lname',
+              ));
+          level.templates.addAll(m.templates);
         }
       }
     }
     final citations = <String, Map<String, String>>{};
     for (final t in tables) {
-      if (t['citation'] case final Map<String, Object?> cs) {
-        for (final MapEntry(key: name, value: raw) in cs.entries) {
-          (citations[name] ??= {}).addAll(
-            _templates(raw! as Map<String, Object?>),
-          );
-        }
+      for (final (name, m)
+          in t.map('citation')?.maps ?? const <(String, SchemeMap)>[]) {
+        (citations[name] ??= {}).addAll(m.templates);
       }
     }
     return Config(
@@ -1077,41 +1063,23 @@ final class UnitsException implements Exception {
   String toString() => message;
 }
 
-/// The YAML file at [path] as plain maps, lists and scalars.
-Map<String, Object?> readYamlMap(String path) {
-  final doc = loadYaml(p.readText(path), sourceUrl: Uri.file(path));
-  if (doc is! YamlMap) throw UnitsException('$path: not a mapping');
-  return _plain(doc)! as Map<String, Object?>;
-}
-
-Object? _plain(Object? v) => switch (v) {
-  YamlMap() => <String, Object?>{
-    for (final MapEntry(:key, :value) in v.entries) '$key': _plain(value),
-  },
-  YamlList() => <Object?>[for (final x in v) _plain(x)],
-  _ => v,
-};
-
-Map<String, String> _templates(Map<String, Object?> m) => {
-  for (final MapEntry(:key, :value) in m.entries)
-    if (value is String) key: value,
-};
-
 Scheme _scheme(
   String name,
-  Map<String, Object?> m,
+  SchemeMap m,
   Canon? canon,
-  Map<String, Map<String, Object?>> overrides,
+  Map<String, SchemeMap> overrides,
 ) {
   final levels = <Level>[];
-  for (final raw in (m['level'] as List<Object?>? ?? const [])) {
-    final base = raw! as Map<String, Object?>;
-    final l = {...base, ...?overrides['$name.${base['name']}']};
-    final typeName = l['type'] as String? ?? 'int';
+  for (final raw in m.list('level')) {
+    if (raw is! SchemeMap) {
+      throw FormatException('scheme $name: a level is a mapping');
+    }
+    final l = raw.merged(overrides['$name.${raw.string('name')}']);
+    final typeName = l.string('type') ?? 'int';
     LabelType typeOf(String typeName) => switch (typeName) {
       'int' => IntType(
-        insert: l['insert'] as String?,
-        every: (l['every'] as num?)?.toInt() ?? 1,
+        insert: l.string('insert'),
+        every: l.integer('every') ?? 1,
       ),
       'alpha' => const AlphaType(),
       'alpha2' => const AlphaType(doubled: true),
@@ -1123,9 +1091,7 @@ Scheme _scheme(
       'stephanus' => const StephanusType(),
       'folio' => const FolioType(),
       'bekker' => const BekkerType(),
-      'enum' => EnumType([
-        for (final v in l['values']! as List<Object?>) v! as String,
-      ]),
+      'enum' => EnumType(l.strings('values')),
       'code' => CodeType(
         canon ?? (throw StateError('scheme $name: type code needs a canon')),
       ),
@@ -1136,67 +1102,70 @@ Scheme _scheme(
       _ => throw FormatException('scheme $name: unknown label type $typeName'),
     };
     final type = typeOf(typeName);
-    (String, String) wrapOf(Object? w) {
-      if (w is! String || w.isEmpty) return ('', '');
+    (String, String) wrapOf(String? w) {
+      if (w == null || w.isEmpty) return ('', '');
       final i = w.indexOf('%');
       return (w.substring(0, i), w.substring(i + 1));
     }
 
     levels.add(
       Level(
-        name: l['name']! as String,
+        name:
+            l.string('name') ??
+            (throw FormatException('scheme $name: a level has no name')),
         type: type,
-        breakMode: Break.values.byName(l['break'] as String? ?? 'none'),
-        heading: (l['depth'] as num?)?.toInt(),
-        sep: l['sep'] as String? ?? '',
-        wrap: wrapOf(l['wrap']),
-        citeWrap: l['cite-wrap'] == null ? null : wrapOf(l['cite-wrap']),
-        citeRangeWrap: l['cite-range-wrap'] == null
+        breakMode: Break.values.byName(l.string('break') ?? 'none'),
+        heading: l.integer('depth'),
+        sep: l.string('sep') ?? '',
+        wrap: wrapOf(l.string('wrap')),
+        citeWrap: l.string('cite-wrap') == null
             ? null
-            : wrapOf(l['cite-range-wrap']),
-        stepping: l['stepping'] as bool? ?? true,
-        auto: Auto.values.byName(l['auto'] as String? ?? 'never'),
-        hidden: l['hidden'] as bool? ?? false,
-        zero: l['zero'] as bool? ?? false,
-        parts: l['parts'] as bool? ?? false,
-        bridges: l['bridges'] as bool? ?? false,
-        isDefault: l['default'] as bool? ?? false,
-        gaps: l['gaps'] as bool? ?? false,
-        templates: {..._templates(l)},
+            : wrapOf(l.string('cite-wrap')),
+        citeRangeWrap: l.string('cite-range-wrap') == null
+            ? null
+            : wrapOf(l.string('cite-range-wrap')),
+        stepping: l.flag('stepping') ?? true,
+        auto: Auto.values.byName(l.string('auto') ?? 'never'),
+        hidden: l.flag('hidden') ?? false,
+        zero: l.flag('zero') ?? false,
+        parts: l.flag('parts') ?? false,
+        bridges: l.flag('bridges') ?? false,
+        isDefault: l.flag('default') ?? false,
+        gaps: l.flag('gaps') ?? false,
+        templates: {...l.templates},
       ),
     );
   }
   return Scheme(
     name,
     levels,
-    citeTemplate: m['cite'] as String?,
-    absolute: m['absolute'] as bool? ?? false,
-    works: [
-      for (final w in (m['works'] as List<Object?>? ?? const [])) w! as String,
-    ],
+    citeTemplate: m.string('cite'),
+    absolute: m.flag('absolute') ?? false,
+    works: m.strings('works'),
   );
 }
 
 Canon _loadCanon(String path) {
-  final m = readYamlMap(path);
+  final m = readSchemeFile(path);
   final books = <CanonBook>[];
-  for (final (i, raw) in (m['book']! as List<Object?>).indexed) {
-    final b = raw! as Map<String, Object?>;
+  for (final (i, raw) in m.list('book').indexed) {
+    if (raw is! SchemeMap) throw FormatException('$path: a book is a mapping');
+    final name =
+        raw.string('name') ??
+        (throw FormatException('$path: book $i has no name'));
     books.add(
       CanonBook(
         index: i,
-        code: b['code']! as String,
-        name: b['name']! as String,
-        abbr: b['abbr'] as String? ?? b['name']! as String,
-        names: [
-          for (final n in (b['names'] as List<Object?>? ?? const []))
-            n! as String,
-        ],
-        chapterLabel: b['chapter-label'] as String? ?? 'Chapter',
+        code:
+            raw.string('code') ??
+            (throw FormatException('$path: book $i has no code')),
+        name: name,
+        abbr: raw.string('abbr') ?? name,
+        names: raw.strings('names'),
+        chapterLabel: raw.string('chapter-label') ?? 'Chapter',
         fields: {
-          for (final MapEntry(:key, :value) in b.entries)
-            if (value is String &&
-                !const {'code', 'name', 'abbr', 'chapter-label'}.contains(key))
+          for (final MapEntry(:key, :value) in raw.templates.entries)
+            if (!const {'code', 'name', 'abbr', 'chapter-label'}.contains(key))
               key: value,
         },
       ),
