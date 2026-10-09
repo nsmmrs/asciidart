@@ -11,6 +11,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:plain_compression/plain_compression.dart';
 import 'package:plain_fonts/plain_fonts.dart';
 import 'package:test/test.dart';
 
@@ -218,6 +219,102 @@ void _expectSameSubsets(OpenTypeFont font, frozen.OpenTypeFont old, Random r) {
   }
 }
 
+/// [data] as a Brotli stream of uncompressed meta-blocks (RFC 7932,
+/// 9.2), which any decoder reads back as it is.
+Uint8List _brotliStored(Uint8List data) {
+  final out = <int>[];
+  var bits = 0;
+  var count = 0;
+  void write(int value, int width) {
+    bits |= value << count;
+    count += width;
+    while (count >= 8) {
+      out.add(bits & 0xff);
+      bits >>= 8;
+      count -= 8;
+    }
+  }
+
+  void align() {
+    if (count > 0) write(0, 8 - count);
+  }
+
+  write(0, 1); // WBITS 16
+  for (var at = 0; at < data.length; at += 0x10000) {
+    final length = min(0x10000, data.length - at);
+    write(0, 1); // ISLAST
+    write(0, 2); // MNIBBLES 4
+    write(length - 1, 16);
+    write(1, 1); // ISUNCOMPRESSED
+    align();
+    out.addAll(Uint8List.sublistView(data, at, at + length));
+  }
+  write(1, 1); // ISLAST
+  write(1, 1); // ISLASTEMPTY
+  align();
+  return Uint8List.fromList(out);
+}
+
+/// The WOFF2 font [woff2] split into its header and table directory, and
+/// its decompressed table data, with where each table's data starts.
+(Uint8List, Uint8List, List<(String, int, int)>) _woff2Parts(Uint8List woff2) {
+  const known = [
+    'cmap', 'head', 'hhea', 'hmtx', 'maxp', 'name', 'OS/2', 'post', //
+    'cvt ', 'fpgm', 'glyf', 'loca', 'prep', 'CFF ',
+  ];
+  final view = ByteData.sublistView(woff2);
+  final count = view.getUint16(12);
+  final compressed = view.getUint32(20);
+  var at = 48;
+  int base128() {
+    var value = 0;
+    while (true) {
+      final byte = woff2[at++];
+      value = value << 7 | (byte & 0x7f);
+      if (byte & 0x80 == 0) return value;
+    }
+  }
+
+  final tables = <(String, int, int)>[];
+  var offset = 0;
+  for (var i = 0; i < count; i++) {
+    final flags = woff2[at++];
+    final index = flags & 0x3f;
+    final String tag;
+    if (index == 63) {
+      tag = String.fromCharCodes(woff2, at, at + 4);
+      at += 4;
+    } else {
+      tag = index < known.length ? known[index] : '#$index';
+    }
+    final length = base128();
+    final version = flags >> 6;
+    final transformed = tag == 'glyf' || tag == 'loca'
+        ? version == 0
+        : version != 0;
+    final stored = transformed ? base128() : length;
+    tables.add((tag, offset, stored));
+    offset += stored;
+  }
+  final stream = brotliDecode(
+    Uint8List.sublistView(woff2, at, at + compressed),
+  );
+  return (Uint8List.sublistView(woff2, 0, at), stream, tables);
+}
+
+/// A WOFF2 font of [directory] (its header and table directory) and the
+/// table data [stream], stored uncompressed.
+Uint8List _woff2Of(Uint8List directory, Uint8List stream) {
+  final compressed = _brotliStored(stream);
+  final font = Uint8List(directory.length + compressed.length)
+    ..setAll(0, directory)
+    ..setAll(directory.length, compressed);
+  ByteData.sublistView(font)
+    ..setUint32(8, font.length)
+    ..setUint32(20, compressed.length);
+  return font;
+}
+
 void main() {
   final files = _fontFiles();
   for (final path in files) {
@@ -338,6 +435,55 @@ void main() {
             }
           }
         }
+      }
+    }
+  });
+
+  test('damaged WOFF2 table data: the same fonts, or the same rejection', () {
+    final random = Random(77);
+    for (final name in [
+      'notoserif-features.woff2',
+      'notoserif-features-hmtx.woff2',
+      'libertinus-smcp.woff2',
+    ]) {
+      final (directory, stream, tables) = _woff2Parts(
+        File('test/fonts/$name').readAsBytesSync(),
+      );
+      // Stored uncompressed, the font is the same font.
+      final whole = _woff2Of(directory, stream);
+      _expectSame(decodeWebFont(whole), frozen.decodeWebFont(whole));
+      final targets = [
+        for (final (tag, offset, length) in tables)
+          if (tag == 'glyf' || tag == 'hmtx' || tag == 'loca') (offset, length),
+      ];
+      for (var i = 0; i < 400; i++) {
+        final copy = Uint8List.fromList(stream);
+        for (var k = 0; k < 1 + random.nextInt(3); k++) {
+          final (offset, length) = targets.isEmpty || random.nextInt(5) == 0
+              ? (0, copy.length)
+              : targets[random.nextInt(targets.length)];
+          if (length == 0) continue;
+          // Mostly the stream headers and the first glyphs.
+          final at =
+              offset +
+              (random.nextBool()
+                  ? random.nextInt(min(length, 200))
+                  : random.nextInt(length));
+          copy[at] = random.nextBool()
+              ? random.nextInt(256)
+              : copy[at] ^ (1 << random.nextInt(8));
+        }
+        final font = _woff2Of(
+          directory,
+          i % 7 == 6
+              ? Uint8List.sublistView(copy, 0, random.nextInt(copy.length))
+              : copy,
+        );
+        _expectSame(
+          _outcome(() => decodeWebFont(font)),
+          _outcome(() => frozen.decodeWebFont(font)),
+          reason: '$name #$i',
+        );
       }
     }
   });

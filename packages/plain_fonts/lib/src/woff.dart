@@ -242,7 +242,9 @@ final class _Woff2 {
   }
 
   /// The glyf and loca tables from the transformed glyf table, and each
-  /// glyph's xMin.
+  /// glyph's xMin: every glyph written into one buffer, its points
+  /// decoded into scratch arrays reused from glyph to glyph (as the
+  /// reference decoder, woff2_dec.cc, does).
   (Uint8List, Uint8List, List<int>) _glyfAndLoca(Uint8List data) {
     final header = _Reader(data)..u16(); // reserved
     final options = header.u16();
@@ -267,13 +269,13 @@ final class _Woff2 {
     final boxBitmap = boxes.bytes(((numGlyphs + 31) >> 5) * 4);
 
     final out = ByteSink(data.length * 2);
-    final offsets = List.filled(numGlyphs + 1, 0);
+    final offsets = Int32List(numGlyphs + 1);
     final xMins = List.filled(numGlyphs, 0);
+    final scratch = _Points();
     for (var g = 0; g < numGlyphs; g++) {
       offsets[g] = out.length;
       final hasBox = boxBitmap[g >> 3] & (0x80 >> (g & 7)) != 0;
       final n = contours.i16();
-      final glyph = _Writer();
       if (n == 0) {
         if (hasBox) throw const FormatException('a bounding box for no glyph');
         continue;
@@ -301,76 +303,59 @@ final class _Woff2 {
           if (componentFlags & 0x0100 != 0) hasInstructions = true;
           more = componentFlags & 0x0020 != 0;
         }
-        glyph
-          ..i16(-1)
-          ..bytes(box)
-          ..bytes(Uint8List.sublistView(data, start, composites._at));
+        out
+          ..u16(-1)
+          ..add(box)
+          ..addRange(data, start, composites._at);
         if (hasInstructions) {
           final length = glyphs.u255();
-          glyph
+          out
             ..u16(length)
-            ..bytes(instructions.bytes(length));
+            ..add(instructions.bytes(length));
         }
-        xMins[g] = ByteData.sublistView(box).getInt16(0);
+        xMins[g] = _signed16(box[0] << 8 | box[1]);
       } else if (n > 0) {
-        final ends = <int>[];
+        final ends = scratch.ends(n);
         var total = 0;
         for (var c = 0; c < n; c++) {
           total += points.u255();
-          ends.add(total - 1);
+          ends[c] = total - 1;
         }
         final pointFlags = flags.bytes(total);
-        final xs = Int32List(total);
-        final ys = Int32List(total);
-        final onCurve = List.filled(total, false);
-        var x = 0;
-        var y = 0;
-        for (var p = 0; p < total; p++) {
-          final flag = pointFlags[p];
-          onCurve[p] = flag >> 7 == 0;
-          final (dx, dy) = _triplet(flag & 0x7f, glyphs);
-          xs[p] = x += dx;
-          ys[p] = y += dy;
-        }
+        scratch.decode(pointFlags, glyphs);
         final instructionLength = glyphs.u255();
         final code = instructions.bytes(instructionLength);
-        Uint8List box;
+        out.u16(n);
         if (hasBox) {
-          box = boxes.bytes(8);
+          final box = boxes.bytes(8);
+          out.add(box);
+          xMins[g] = _signed16(box[0] << 8 | box[1]);
         } else {
-          box =
-              (_Writer()
-                    ..i16(total == 0 ? 0 : xs.reduce((a, b) => a < b ? a : b))
-                    ..i16(total == 0 ? 0 : ys.reduce((a, b) => a < b ? a : b))
-                    ..i16(total == 0 ? 0 : xs.reduce((a, b) => a > b ? a : b))
-                    ..i16(total == 0 ? 0 : ys.reduce((a, b) => a > b ? a : b)))
-                  .take();
+          out
+            ..u16(scratch.xMin)
+            ..u16(scratch.yMin)
+            ..u16(scratch.xMax)
+            ..u16(scratch.yMax);
+          xMins[g] = _signed16(scratch.xMin & 0xffff);
         }
-        xMins[g] = ByteData.sublistView(box).getInt16(0);
-        glyph
-          ..i16(n)
-          ..bytes(box);
-        ends.forEach(glyph.u16);
-        glyph
+        for (var c = 0; c < n; c++) {
+          out.u16(ends[c]);
+        }
+        out
           ..u16(instructionLength)
-          ..bytes(code);
-        _points(
-          glyph,
-          xs,
-          ys,
-          onCurve,
+          ..add(code);
+        scratch.writeTo(
+          out,
           overlap:
               overlaps != null && overlaps[g >> 3] & (0x80 >> (g & 7)) != 0,
         );
       } else {
         throw const FormatException('a glyph of a negative contour count');
       }
-      out
-        ..add(glyph.take())
-        ..zeros((4 - out.length % 4) % 4);
+      out.zeros((4 - out.length % 4) % 4);
     }
     offsets[numGlyphs] = out.length;
-    final loca = _Writer();
+    final loca = ByteSink((indexFormat == 0 ? 2 : 4) * (numGlyphs + 1));
     for (final offset in offsets) {
       if (indexFormat == 0) {
         loca.u16(offset >> 1);
@@ -378,107 +363,10 @@ final class _Woff2 {
         loca.u32(offset);
       }
     }
-    return (out.takeBytes(), loca.take(), xMins);
+    return (out.takeBytes(), loca.takeBytes(), xMins);
   }
 
-  /// A point's coordinate deltas, from its triplet flag and the bytes
-  /// that follow in [glyphs].
-  static (int, int) _triplet(int flag, _Reader glyphs) {
-    int signed(int flag, int value) => flag & 1 != 0 ? value : -value;
-    if (flag < 10) {
-      return (0, signed(flag, ((flag & 14) << 7) + glyphs.u8()));
-    }
-    if (flag < 20) {
-      return (signed(flag, (((flag - 10) & 14) << 7) + glyphs.u8()), 0);
-    }
-    if (flag < 84) {
-      final b0 = flag - 20;
-      final b1 = glyphs.u8();
-      return (
-        signed(flag, 1 + (b0 & 0x30) + (b1 >> 4)),
-        signed(flag >> 1, 1 + ((b0 & 0x0c) << 2) + (b1 & 0x0f)),
-      );
-    }
-    if (flag < 120) {
-      final b0 = flag - 84;
-      final b1 = glyphs.u8();
-      final b2 = glyphs.u8();
-      return (
-        signed(flag, 1 + ((b0 ~/ 12) << 8) + b1),
-        signed(flag >> 1, 1 + (((b0 % 12) >> 2) << 8) + b2),
-      );
-    }
-    if (flag < 124) {
-      final b1 = glyphs.u8();
-      final b2 = glyphs.u8();
-      final b3 = glyphs.u8();
-      return (
-        signed(flag, (b1 << 4) + (b2 >> 4)),
-        signed(flag >> 1, ((b2 & 0x0f) << 8) + b3),
-      );
-    }
-    final b1 = glyphs.u8();
-    final b2 = glyphs.u8();
-    final b3 = glyphs.u8();
-    final b4 = glyphs.u8();
-    return (signed(flag, (b1 << 8) + b2), signed(flag >> 1, (b3 << 8) + b4));
-  }
-
-  /// A simple glyph's flags and coordinates, as the reference decoder
-  /// writes them.
-  static void _points(
-    _Writer glyph,
-    Int32List xs,
-    Int32List ys,
-    List<bool> onCurve, {
-    required bool overlap,
-  }) {
-    final flagBytes = <int>[];
-    final xBytes = _Writer();
-    final yBytes = _Writer();
-    var lastX = 0;
-    var lastY = 0;
-    var lastFlag = -1;
-    var repeat = 0;
-    for (var p = 0; p < xs.length; p++) {
-      var flag = onCurve[p] ? 0x01 : 0;
-      if (overlap && p == 0) flag |= 0x40;
-      final dx = xs[p] - lastX;
-      final dy = ys[p] - lastY;
-      if (dx == 0) {
-        flag |= 0x10;
-      } else if (dx > -256 && dx < 256) {
-        flag |= 0x02 | (dx > 0 ? 0x10 : 0);
-        xBytes.u8(dx.abs());
-      } else {
-        xBytes.i16(dx);
-      }
-      if (dy == 0) {
-        flag |= 0x20;
-      } else if (dy > -256 && dy < 256) {
-        flag |= 0x04 | (dy > 0 ? 0x20 : 0);
-        yBytes.u8(dy.abs());
-      } else {
-        yBytes.i16(dy);
-      }
-      if (flag == lastFlag && repeat != 255) {
-        flagBytes[flagBytes.length - 1] |= 0x08;
-        repeat++;
-      } else {
-        if (repeat != 0) flagBytes.add(repeat);
-        flagBytes.add(flag);
-        repeat = 0;
-      }
-      lastX = xs[p];
-      lastY = ys[p];
-      lastFlag = flag;
-    }
-    if (repeat != 0) flagBytes.add(repeat);
-    glyph
-      ..bytes(flagBytes)
-      ..bytes(xBytes.take())
-      ..bytes(yBytes.take());
-  }
+  static int _signed16(int value) => value >= 0x8000 ? value - 0x10000 : value;
 
   /// The hmtx table from the transformed one: left side bearings left out
   /// are the glyphs' xMin.
@@ -495,19 +383,189 @@ final class _Woff2 {
         numGlyphs > xMins.length) {
       throw const FormatException('a bad hmtx transform');
     }
-    final advances = [for (var i = 0; i < numberOfHMetrics; i++) reader.u16()];
-    int bearing(int glyph, int flag) =>
-        flags & flag != 0 ? xMins[glyph] : reader.i16();
-    final bearings = [
-      for (var i = 0; i < numberOfHMetrics; i++) bearing(i, 1),
-      for (var i = numberOfHMetrics; i < numGlyphs; i++) bearing(i, 2),
-    ];
-    final out = _Writer();
-    for (var i = 0; i < numGlyphs; i++) {
-      if (i < numberOfHMetrics) out.u16(advances[i]);
-      out.i16(bearings[i]);
+    final advances = Uint16List(numberOfHMetrics);
+    for (var i = 0; i < numberOfHMetrics; i++) {
+      advances[i] = reader.u16();
     }
-    return out.take();
+    final out = ByteSink(2 * numberOfHMetrics + 2 * numGlyphs);
+    for (var i = 0; i < numGlyphs; i++) {
+      final flag = i < numberOfHMetrics ? 1 : 2;
+      if (i < numberOfHMetrics) out.u16(advances[i]);
+      out.u16(flags & flag != 0 ? xMins[i] : reader.i16());
+    }
+    return out.takeBytes();
+  }
+}
+
+/// The points of a simple glyph being decoded: arrays kept from glyph to
+/// glyph, grown as needed.
+final class _Points {
+  Int32List _ends = Int32List(64);
+  Int32List _xs = Int32List(256);
+  Int32List _ys = Int32List(256);
+  Uint8List _onCurve = Uint8List(256);
+  int _count = 0;
+
+  /// The bounds of the points (zeros for none).
+  int xMin = 0;
+  int yMin = 0;
+  int xMax = 0;
+  int yMax = 0;
+
+  /// An array for [n] contour ends.
+  Int32List ends(int n) {
+    if (n > _ends.length) _ends = Int32List(n);
+    return _ends;
+  }
+
+  /// Decodes the points of [pointFlags], their coordinates from the
+  /// triplets in [glyphs].
+  void decode(Uint8List pointFlags, _Reader glyphs) {
+    final total = pointFlags.length;
+    if (total > _xs.length) {
+      _xs = Int32List(total);
+      _ys = Int32List(total);
+      _onCurve = Uint8List(total);
+    }
+    final xs = _xs;
+    final ys = _ys;
+    final onCurve = _onCurve;
+    _count = total;
+    var x = 0;
+    var y = 0;
+    var x0 = 0;
+    var y0 = 0;
+    var x1 = 0;
+    var y1 = 0;
+    for (var p = 0; p < total; p++) {
+      final flag = pointFlags[p];
+      onCurve[p] = flag >> 7 == 0 ? 1 : 0;
+      final triplet = flag & 0x7f;
+      int dx;
+      int dy;
+      if (triplet < 10) {
+        dx = 0;
+        dy = _signed(triplet, ((triplet & 14) << 7) + glyphs.u8());
+      } else if (triplet < 20) {
+        dx = _signed(triplet, (((triplet - 10) & 14) << 7) + glyphs.u8());
+        dy = 0;
+      } else if (triplet < 84) {
+        final b0 = triplet - 20;
+        final b1 = glyphs.u8();
+        dx = _signed(triplet, 1 + (b0 & 0x30) + (b1 >> 4));
+        dy = _signed(triplet >> 1, 1 + ((b0 & 0x0c) << 2) + (b1 & 0x0f));
+      } else if (triplet < 120) {
+        final b0 = triplet - 84;
+        final b1 = glyphs.u8();
+        final b2 = glyphs.u8();
+        dx = _signed(triplet, 1 + ((b0 ~/ 12) << 8) + b1);
+        dy = _signed(triplet >> 1, 1 + (((b0 % 12) >> 2) << 8) + b2);
+      } else if (triplet < 124) {
+        final b1 = glyphs.u8();
+        final b2 = glyphs.u8();
+        final b3 = glyphs.u8();
+        dx = _signed(triplet, (b1 << 4) + (b2 >> 4));
+        dy = _signed(triplet >> 1, ((b2 & 0x0f) << 8) + b3);
+      } else {
+        final b1 = glyphs.u8();
+        final b2 = glyphs.u8();
+        final b3 = glyphs.u8();
+        final b4 = glyphs.u8();
+        dx = _signed(triplet, (b1 << 8) + b2);
+        dy = _signed(triplet >> 1, (b3 << 8) + b4);
+      }
+      xs[p] = x += dx;
+      ys[p] = y += dy;
+      // The bounds of the coordinates as stored (32 bits).
+      final px = xs[p];
+      final py = ys[p];
+      if (p == 0) {
+        x0 = x1 = px;
+        y0 = y1 = py;
+      } else {
+        if (px < x0) x0 = px;
+        if (px > x1) x1 = px;
+        if (py < y0) y0 = py;
+        if (py > y1) y1 = py;
+      }
+    }
+    xMin = x0;
+    yMin = y0;
+    xMax = x1;
+    yMax = y1;
+  }
+
+  static int _signed(int flag, int value) => flag & 1 != 0 ? value : -value;
+
+  /// The flags and coordinates of the points, as the reference decoder
+  /// writes them.
+  void writeTo(ByteSink out, {required bool overlap}) {
+    final xs = _xs;
+    final ys = _ys;
+    final onCurve = _onCurve;
+    final total = _count;
+    // The flags, a run of the same flag as the flag with its repeat bit
+    // and a count.
+    var lastX = 0;
+    var lastY = 0;
+    var lastFlag = -1;
+    var pending = -1;
+    var repeat = 0;
+    for (var p = 0; p < total; p++) {
+      var flag = onCurve[p];
+      if (overlap && p == 0) flag |= 0x40;
+      final dx = xs[p] - lastX;
+      final dy = ys[p] - lastY;
+      if (dx == 0) {
+        flag |= 0x10;
+      } else if (dx > -256 && dx < 256) {
+        flag |= 0x02 | (dx > 0 ? 0x10 : 0);
+      }
+      if (dy == 0) {
+        flag |= 0x20;
+      } else if (dy > -256 && dy < 256) {
+        flag |= 0x04 | (dy > 0 ? 0x20 : 0);
+      }
+      if (flag == lastFlag && repeat != 255) {
+        pending |= 0x08;
+        repeat++;
+      } else {
+        if (pending >= 0) out.addByte(pending);
+        if (repeat != 0) out.addByte(repeat);
+        pending = flag;
+        repeat = 0;
+      }
+      lastX = xs[p];
+      lastY = ys[p];
+      lastFlag = flag;
+    }
+    if (pending >= 0) out.addByte(pending);
+    if (repeat != 0) out.addByte(repeat);
+    // The x coordinates, then the y ones.
+    var last = 0;
+    for (var p = 0; p < total; p++) {
+      final d = xs[p] - last;
+      if (d != 0) {
+        if (d > -256 && d < 256) {
+          out.addByte(d.abs());
+        } else {
+          out.u16(d);
+        }
+      }
+      last = xs[p];
+    }
+    last = 0;
+    for (var p = 0; p < total; p++) {
+      final d = ys[p] - last;
+      if (d != 0) {
+        if (d > -256 && d < 256) {
+          out.addByte(d.abs());
+        } else {
+          out.u16(d);
+        }
+      }
+      last = ys[p];
+    }
   }
 }
 
