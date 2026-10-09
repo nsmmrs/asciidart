@@ -80,8 +80,11 @@ schemes declare are recognized. A range renders as role spans, split at
 blocks and markers: the words of Jesus, a statute's insertions.
 
 `-a units-as-of=2000-01-01` keeps the text in force on that date:
-insertions (`ins`, `sub`) made later are left out, deletions (`del`) made
-later are kept.
+insertions (`ins`, `sub`) made later are left out, with their notes, the
+blocks they leave empty and the sections whose headings they hold;
+deletions (`del`) made later are kept. A line that opens a range is text,
+however it ends (`[ins from=2020-01-01}@(b) …{ins]` is no attribute
+line).
 
 ## Existing syntax with a new meaning
 

@@ -207,5 +207,24 @@ void main() {
         ),
       );
     });
+
+    test('as of a date: what was not in force goes, headings with it', () {
+      String asOf(String date) => loadFile(
+        '$_fixtures/law/as-of.adoc',
+        options: AsciidoctorOptions(
+          safe: SafeMode.unsafe,
+          attributes: {'units-as-of': date},
+        ),
+      ).convert();
+      final before = asOf('2019-06-01');
+      expect(before, isNot(contains('(b)')));
+      expect(before, isNot(contains('Inserted article')));
+      expect(before, isNot(contains('id="art-6a"')));
+      expect(before, contains('<span class="deleted">the old</span>'));
+      final after = asOf('2021-06-01');
+      expect(after, contains('<span class="inserted">processing is necessary'));
+      expect(after, contains('<h2 id="art-6a">Article 6a: '));
+      expect(after, isNot(contains('the old')));
+    });
   });
 }

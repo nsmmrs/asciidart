@@ -133,6 +133,16 @@ final class UnitsSession {
     return false;
   }
 
+  /// Whether [line] starts with a range's opener (`[ins from=…}`), so
+  /// it is text rather than a block's attribute line.
+  bool opensRange(String line) {
+    if (!active || !line.startsWith('[')) return false;
+    final tokens = _scanner.scan(line, _nowhere, 0);
+    return tokens.isNotEmpty &&
+        tokens.first is RangeOpen &&
+        tokens.first.loc.column == 0;
+  }
+
   static final SourceFile _scratch = SourceFile('', const ['']);
   static Loc _nowhere(int column) => Loc(_scratch, 0, column, 0);
 

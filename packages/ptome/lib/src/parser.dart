@@ -2423,9 +2423,11 @@ abstract final class Parser {
       breakCondition = (line) {
         final before = previous;
         previous = line;
-        if (before == null) return base?.call(line) ?? false;
+        // A line that opens a range is text, not a block's attribute line.
+        final starts = !units.opensRange(line) && (base?.call(line) ?? false);
+        if (before == null) return starts;
         // An include's placeholder is a block of its own.
-        return (base?.call(line) ?? false) ||
+        return starts ||
             units.breaksParagraph(line) ||
             units.isInclude(line) ||
             units.isInclude(before);
@@ -4150,7 +4152,11 @@ abstract final class Parser {
         }
       } else if (nextLine.endsWith(']')) {
         final attrMatch = blockAttributeListRx.firstMatch(nextLine);
-        if (attrMatch != null && _closesBrackets(attrMatch.group(1)!)) {
+        // In units, a line that opens a range is text, however it ends
+        // (`[ins from=2020-01-01}(b) …{ins]`).
+        if (attrMatch != null &&
+            _closesBrackets(attrMatch.group(1)!) &&
+            !(document.unitsSession?.opensRange(nextLine) ?? false)) {
           final currentStyle = attributes['1'];
           // Extract id, role, and options from first positional attribute
           // and remove, if present.

@@ -370,6 +370,15 @@ final class _Renderer {
   /// Terms whose definition has its anchor.
   final Set<String> _dfnSeen = {};
 
+  /// Whether the text being prepared had text the as-of date hid.
+  var _hid = false;
+
+  /// The texts the as-of date hid some of.
+  final Set<SourceFile> _partlyHidden = {};
+
+  /// The headings the as-of date hides.
+  final Set<AbstractBlock> _hiddenNodes = Set.identity();
+
   /// Ranges the as-of date hid, so their notes go too.
   final Set<RangeClose> _hiddenCloses = {};
 
@@ -461,6 +470,7 @@ final class _Renderer {
       ].join('\n');
       if (text != source) prepared[node] = Prepared(source, text);
     }
+    _dropHidden(prepared);
     _moveAnchorsOnly(prepared);
     _insertBlocks(prepared);
     _buildUnitBlocks();
@@ -471,6 +481,9 @@ final class _Renderer {
 
   void _heading(HeadingEvent e, List<Token> tokens) {
     final node = _node = nodeOf[e.loc.file];
+    // A heading the as-of date hides (an inserted section's) goes, with
+    // its section.
+    if (_hidden && node is AbstractBlock) _hiddenNodes.add(node);
     final u =
         a.unitOfHeading[e] ??
         (e.marker == null ? null : a.unitOfMarker[e.marker]);
@@ -818,7 +831,9 @@ final class _Renderer {
       break;
     }
     _node = node;
+    _hid = false;
     final rendered = _text(_pieces(text, 0, tokens));
+    if (_hid) _partlyHidden.add(f);
     final prefix = _prefixes.remove((f, line));
     return prefix == null ? rendered : prefix.map(_place).join() + rendered;
   }
@@ -1004,7 +1019,10 @@ final class _Renderer {
             if (at >= 0) _open.removeAt(at);
           }
         case _Text(:final text):
-          if (roles && _hidden) break;
+          if (roles && _hidden) {
+            if (text.trim().isNotEmpty) _hid = true;
+            break;
+          }
           out.write(_styled(text.replaceAll(r'\@', '@'), roles: roles));
       }
     }
@@ -1070,6 +1088,38 @@ final class _Renderer {
         ..write('${m[2]}$rangeCloseMark$k$markEnd${m[3]}');
     }
     return out.toString();
+  }
+
+  /// What the as-of date hides goes: a block whose text it hid all of,
+  /// and a section whose heading it hid, with its blocks (those it did not
+  /// hide stay, in the section around it).
+  void _dropHidden(Expando<Prepared> prepared) {
+    if (asOf == null) return;
+    final blank = RegExp(
+      '^(?:\\s|$atomMark\\d+$markEnd|'
+      '[$rangeOpenMark$rangeCloseMark]\\d+$markEnd)*\$',
+    );
+    for (final MapEntry(key: node, value: file) in textOf.entries) {
+      if (!_partlyHidden.contains(file) || node is! Block) continue;
+      final text = prepared[node]?.text;
+      if (text == null || !blank.hasMatch(text)) continue;
+      node.parent?.blocks.remove(node);
+    }
+    for (final heading in _hiddenNodes) {
+      final parent = heading.parent;
+      if (parent == null) continue;
+      final at = parent.blocks.indexOf(heading);
+      if (at < 0) continue;
+      final kept = heading is Section ? [...heading.blocks] : <AbstractBlock>[];
+      for (final block in kept) {
+        block.parent = parent;
+      }
+      parent.blocks.replaceRange(at, at + 1, kept);
+      if (heading.id case final id?
+          when identical(document.catalog.refs[id], heading)) {
+        document.catalog.refs.remove(id);
+      }
+    }
   }
 
   /// Paragraphs of empty units (markers alone) print only anchors: the

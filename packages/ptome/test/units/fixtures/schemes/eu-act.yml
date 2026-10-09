@@ -79,6 +79,15 @@ stream:
   # The Official Journal's footnotes, numbered through the act.
   oj:
     placement: "footnote"
+range:
+  # Amendments: what an act inserted or substituted from a date, and what
+  # it deleted (`-a units-as-of=DATE` gives the act in force that day).
+  ins:
+    role: "inserted"
+  sub:
+    role: "substituted"
+  del:
+    role: "deleted"
 citation:
   # Quoted elsewhere, in the form of the Official Journal: `— Article
   # 6(1)(a) of Regulation (EU) 2016/679`.

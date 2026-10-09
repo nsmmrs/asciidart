@@ -1,0 +1,22 @@
+= As amended
+:units: eu-act
+:work: Sample regulation
+
+== @6 Lawfulness
+
+@1. Processing shall be lawful only if one of the following applies:
+
+@(a) the data subject has given consent;
+
+[ins from=2020-01-01}@(b) processing is necessary for a contract;{ins]
+
+[ins from=2020-01-01}
+
+== @6a Inserted article
+
+@1. Member States may maintain more specific provisions.
+{ins]
+
+== @7 Conditions
+
+@1. Text of [del from=2020-01-01}the old{del] Article 7.
