@@ -16,6 +16,9 @@ Inline _createInline(impl.Inline node) => switch ((node.context, node.type)) {
   (.lineBreak, _) => LineBreak._(node),
   (.callout, _) => Callout._(node),
   (.indexterm, _) => IndexTerm._(node),
+  (.unit, _) => UnitMark._(node),
+  (.note, 'entry') => NoteEntry._(node),
+  (.note, _) => NoteCall._(node),
 };
 
 /// A piece of inline content: text, or an inline element.
@@ -188,6 +191,58 @@ final class Footnote extends Inline {
 
   /// Whether this refers to a footnote defined elsewhere.
   bool get isReference => _inline.type == 'xref';
+
+  /// The note stream of a note in units (`tn`), if it is one
+  /// (`note:tn[…]`).
+  String? get stream => _node.attributes['stream'];
+
+  /// The note's caller in its stream, if the stream has callers.
+  String? get caller => _node.attributes['caller'];
+}
+
+/// Where a unit starts in a text (its anchor and label), or what it prints
+/// at its end (see `doc/units.md`).
+final class UnitMark extends Inline {
+  new _(super._node) : super._();
+
+  /// Whether this is the unit's start (else what it prints at its end).
+  bool get isStart => _inline.type != 'end';
+
+  /// The name of the unit's scheme (`bible`).
+  String get scheme => _node.attributes['scheme'] ?? '';
+
+  /// The name of the unit's level (`verse`).
+  String get level => _node.attributes['level'] ?? '';
+
+  /// The unit as its scheme cites it (`Exod 34:6`).
+  String get citation => _node.attributes['unit'] ?? '';
+
+  /// The unit's reftext (`Exodus 34:6`).
+  String get reftext => _node.attributes['reftext'] ?? '';
+
+  /// The unit's own label (`6`).
+  String get label => _node.attributes['label'] ?? '';
+}
+
+/// A note's caller in the text, for a stream whose notes are gathered in
+/// an entry (a reference Bible's lettered cross-references).
+final class NoteCall extends Inline {
+  new _(super._node) : super._();
+
+  /// The note's stream (`x`).
+  String get stream => _node.attributes['stream'] ?? '';
+
+  /// The caller (`a`).
+  String get caller => _node.attributes['caller'] ?? '';
+}
+
+/// The entry a unit's notes of a stream are gathered in (a verse's
+/// cross-references).
+final class NoteEntry extends Inline {
+  new _(super._node) : super._();
+
+  /// The stream (`x`).
+  String get stream => _node.attributes['stream'] ?? '';
 }
 
 /// An inline image (`image:target[]`).

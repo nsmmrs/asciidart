@@ -45,6 +45,7 @@ Node _create(impl.AbstractNode node) {
       .toc => TableOfContents._(node),
       .preamble => Preamble._(node),
       .floatingTitle => DiscreteHeading._(node),
+      .unit => UnitBlock._(node),
       // Kinds with their own classes, matched above.
       .document ||
       .section ||
@@ -626,6 +627,21 @@ final class Verse extends Block with _Text {
 /// An open block (`--`).
 final class Open extends Block {
   new _(super._node) : super._();
+}
+
+/// A unit that is blocks (see `doc/units.md`): a statute's provision, a
+/// catechism's question, a stanza, with its blocks as children.
+final class UnitBlock extends Block {
+  new _(super._node) : super._();
+
+  /// The name of the unit's scheme (`eu`).
+  String get scheme => _node.attributes['scheme'] ?? '';
+
+  /// The name of the unit's level (`point`).
+  String get level => _node.attributes['level'] ?? '';
+
+  /// The unit as its scheme cites it (`Article 6(1)(a)`).
+  String get citation => _node.attributes['unit'] ?? '';
 }
 
 /// A passthrough block (`++++`): output as written.

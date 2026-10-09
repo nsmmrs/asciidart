@@ -137,6 +137,43 @@ Arabic and Pickthall.
   of the default level, with the unit's number on both sides.
 - `leveloffset` moves the headings down as it does for any include.
 
+## In the output
+
+Units are nodes of their own in the document tree, and each backend
+renders them in its own way:
+
+- **A unit's mark** (inline `unit`): where a unit starts, with its ID and
+  label, or what it prints at its end. In HTML and EPUB:
+
+  ```html
+  <span id="v-exo-34-6" class="unit" data-scheme="bible" data-level="verse"
+    data-unit="Exod 34:6"><sup>6</sup></span>
+  ```
+
+  In DocBook, an `<anchor>` before the label; in PDF, a destination.
+- **Notes** (inline `note`): a caller in the text
+  (`<span class="note-call" data-stream="x">…</span>`) and the entry its
+  unit's notes are gathered in (`<span class="note-entry xref"
+  data-stream="x">…</span>`). Footnotes of a stream say which
+  (`stream`, `caller`).
+- **Units of blocks** (block `unit`): a provision, a question or a stanza
+  holds its blocks, nested as the units are; text after `@^` goes back to
+  the unit around the ones it closes.
+
+  ```html
+  <div id="art-6-1-a" class="unit point" data-scheme="eu" data-level="point"
+    data-unit="Article 6(1)(a)">
+  <div class="paragraph">…</div>
+  </div>
+  ```
+
+  DocBook has no element for one; its first block takes the unit's ID and
+  role.
+
+The API has them as `UnitMark`, `NoteCall`, `NoteEntry` and `UnitBlock`
+(with their scheme, level, citation and stream), in a paragraph's
+`inlines` and among a block's `blocks`.
+
 ## A reference Bible in PDF
 
 The PDF engine sets a unit's apparatus where a print edition does, with
@@ -347,11 +384,11 @@ The engine finds every unit, its address, ID and reftext, and resolves
 notes and references. Because the parser read the text, conditionals,
 `leveloffset`, tables and includes all apply as they do anywhere else.
 
-Then the session renders what units print. Headings and blocks that are
-units get their IDs, roles and options; markers, notes, references and
-defined terms become placeholders in the text the inline substitutions
-start from, converted afterwards as anchors, styled parts, footnotes and
-links; ranges and term rules become role spans around the markup inside
-them. The source is never rewritten: a block's source still holds what
+Then the session renders what units print. Headings that are units get
+their IDs, titles and roles, and the blocks of each unit of blocks go in a
+unit node; markers, notes, references and defined terms become
+placeholders in the text the inline substitutions start from, converted
+afterwards as unit marks, notes, footnotes and links; ranges and term
+rules become role spans around the markup inside them. The source is never rewritten: a block's source still holds what
 was written. HTML, DocBook, EPUB and PDF all render units, and so does
 the npm package. The units engine lives in `lib/src/units/` (ADR-0020).

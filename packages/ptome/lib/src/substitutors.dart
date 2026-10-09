@@ -402,7 +402,10 @@ String _applySubsInRun(AbstractNode node, String text, List<Sub> subs) {
     }
   }
 
-  if (units != null) subject = _restoreUnits(node, units, subject);
+  if (units != null) {
+    InlineRun.advance(subject);
+    subject = _restoreUnits(node, units, subject);
+  }
   return subject;
 }
 
@@ -2113,8 +2116,9 @@ String? _footnote(
   Document doc,
   String? id,
   String? content,
-  String Function(String content) prepare,
-) {
+  String Function(String content) prepare, {
+  Map<String, String> attributes = const {},
+}) {
   String? index;
   String? type;
   String? target;
@@ -2161,7 +2165,7 @@ String? _footnote(
       block,
       InlineContext.footnote,
       text: finalContent,
-      attributes: {'index': ?index},
+      attributes: {'index': ?index, ...attributes},
       id: finalId,
       target: target,
       type: type,
@@ -3254,6 +3258,14 @@ bool _balancedTags(String text) {
   return open.isEmpty;
 }
 
+/// [text] with [subs] applied in [node], as a run of its own within the
+/// substitutions around it (see [InlineRun.nested]).
+String _nestedSubs(
+  AbstractNode node,
+  String text, [
+  List<Sub>? subs = normalSubs,
+]) => InlineRun.nested(text, () => applySubs(node, text, subs));
+
 /// The output of [atom], in [node].
 String _atomOutput(AbstractNode node, UnitAtom atom) {
   final block = _blockOf(node);
@@ -3267,7 +3279,7 @@ String _atomOutput(AbstractNode node, UnitAtom atom) {
     case PartAtom(:final text, :final style, :final role, :final markup):
       // Text a template printed may refer to attributes (`{response}`),
       // whose values are those where the unit is.
-      final converted = applySubs(
+      final converted = _nestedSubs(
         node,
         text,
         markup
@@ -3295,25 +3307,50 @@ String _atomOutput(AbstractNode node, UnitAtom atom) {
           attributes: role == null ? null : {'role': role},
         ),
       );
-    case GroupAtom(:final atoms, :final role):
-      final inner = atoms.map((a) => _atomOutput(node, a)).join();
-      if (role == null) return inner;
+    case UnitMarkAtom(
+      :final unit,
+      :final start,
+      :final anchored,
+      :final parts,
+      :final attributes,
+    ):
       return InlineRun.emit(
         Inline(
           block,
-          InlineContext.quoted,
-          text: inner,
-          type: 'unquoted',
-          attributes: {'role': role},
+          InlineContext.unit,
+          text: parts.map((a) => _atomOutput(node, a)).join(),
+          type: start ? 'start' : 'end',
+          id: start && anchored ? unit.id : null,
+          attributes: {...attributes},
+        ),
+      );
+    case NoteCallAtom(:final stream, :final caller, :final part):
+      return InlineRun.emit(
+        Inline(
+          block,
+          InlineContext.note,
+          text: _atomOutput(node, part),
+          type: 'call',
+          attributes: {'stream': stream, 'caller': caller},
+        ),
+      );
+    case NoteEntryAtom(:final stream, :final atoms, :final role):
+      return InlineRun.emit(
+        Inline(
+          block,
+          InlineContext.note,
+          text: atoms.map((a) => _atomOutput(node, a)).join(),
+          type: 'entry',
+          attributes: {'stream': stream, 'role': ?role},
         ),
       );
     case TextAtom(:final text):
-      return applySubs(node, text);
+      return _nestedSubs(node, text);
     case BreakAtom():
       return InlineRun.emit(
         Inline(block, InlineContext.lineBreak, text: '', type: 'line'),
       );
-    case FootnoteAtom(:final content, :final id):
+    case FootnoteAtom(:final content, :final id, :final stream, :final caller):
       final doc = _documentOf(node);
       if (doc.deferFootnotes) return '';
       return _footnote(
@@ -3322,7 +3359,8 @@ String _atomOutput(AbstractNode node, UnitAtom atom) {
             doc,
             id,
             content,
-            (content) => applySubs(node, content),
+            (content) => _nestedSubs(node, content),
+            attributes: {'stream': ?stream, 'caller': ?caller},
           ) ??
           '';
     case ReferenceAtom(:final parts):
@@ -3334,7 +3372,7 @@ String _atomOutput(AbstractNode node, UnitAtom atom) {
           case RefLink(:final text, :final id, :final file):
             final escaped = text.replaceAll(rSb, escRSb);
             out.write(
-              applySubs(
+              _nestedSubs(
                 node,
                 file == null
                     ? 'xref:#$id[$escaped]'

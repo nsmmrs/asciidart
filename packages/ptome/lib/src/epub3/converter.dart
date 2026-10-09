@@ -42,6 +42,7 @@ import 'package:ptome/src/parallel.dart';
 import 'package:ptome/src/section.dart';
 import 'package:ptome/src/table.dart';
 import 'package:ptome/src/unbreakable.dart';
+import 'package:ptome/src/units/html.dart';
 import 'package:ptome/src/xml_balance.dart';
 
 String _s(String? value) => value ?? '';
@@ -257,6 +258,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         .table => convertTable(node as Table),
         .thematicBreak => '<hr class="thematicbreak"/>',
         .ulist => convertUlist(node as ListBlock),
+        .unit => htmlUnitBlock(node, node.content() ?? ''),
         .verse => convertVerse(node as Block),
         .video => convertVideo(node as Block),
         .toc => convertToc(node as Block),
@@ -281,6 +283,8 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
     .kbd => convertInlineKbd(node),
     .menu => convertInlineMenu(node),
     .quoted => convertInlineQuoted(node),
+    .unit => htmlUnitMark(node),
+    .note => htmlNote(node),
   };
 
   @override

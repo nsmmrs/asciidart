@@ -206,6 +206,8 @@ final class FontFile
   List<int> bytes
   String name
 final class Footnote extends Inline
+  String? caller
+  String? stream
   bool isReference
   int? number
 final class Formatted extends Inline
@@ -293,6 +295,11 @@ final class Menu extends Inline
   String menu
   String plainText
   String? item
+final class NoteCall extends Inline
+  String caller
+  String stream
+final class NoteEntry extends Inline
+  String stream
 final class Open extends Block
 final class OrderedList extends Block
   List<ListItem> items
@@ -402,6 +409,17 @@ final class Unit
   String toString()
   int depth
   int line
+final class UnitBlock extends Block
+  String citation
+  String level
+  String scheme
+final class UnitMark extends Inline
+  String citation
+  String label
+  String level
+  String reftext
+  String scheme
+  bool isStart
 final class UnorderedList extends Block
   List<ListItem> items
   String plainText

@@ -105,22 +105,24 @@ final class Includer {
     (String, String, String, QuoteLabels)? quote,
     Set<String> unquoted = const {},
   }) {
+    // Which of a unit's labels a quotation keeps.
+    bool keepsLabel(Unit? unit) => switch (quote?.$4) {
+      null || QuoteLabels.all => true,
+      QuoteLabels.none => false,
+      QuoteLabels.inner => !(passage.single && identical(unit, passage.start)),
+    };
     UnitAtom? keep(UnitAtom atom) => quote == null
         ? atom
         : switch (atom) {
             AnchorAtom() || FootnoteAtom() || UnitStartAtom() => null,
-            GroupAtom() => null, // an entry
-            PartAtom(
-              kind: PartKind.caller || PartKind.overlay || PartKind.entry,
-            ) =>
-              null,
-            PartAtom(kind: PartKind.label, :final unit) => switch (quote.$4) {
-              QuoteLabels.none => null,
-              QuoteLabels.inner
-                  when passage.single && identical(unit, passage.start) =>
-                null,
-              _ => atom,
-            },
+            NoteCallAtom() || NoteEntryAtom() => null,
+            UnitMarkAtom(:final unit, :final start) =>
+              start && !keepsLabel(unit)
+                  ? null
+                  : atom.copyWith(anchored: false),
+            PartAtom(kind: PartKind.overlay || PartKind.entry) => null,
+            PartAtom(kind: PartKind.label, :final unit) =>
+              keepsLabel(unit) ? atom : null,
             _ => atom,
           };
     // A quotation's blocks go in its block (a verse's lines in its own).
@@ -280,13 +282,14 @@ final class Includer {
   /// level, its text on each side. Empty when they share no unit.
   List<AbstractBlock> parallel(RenderedWork left, RenderedWork right) {
     UnitAtom? leftKeeps(UnitAtom atom) => switch (atom) {
-      FootnoteAtom() || GroupAtom() => null,
-      PartAtom(kind: PartKind.caller || PartKind.overlay || PartKind.entry) =>
-        null,
+      FootnoteAtom() || NoteCallAtom() || NoteEntryAtom() => null,
+      PartAtom(kind: PartKind.overlay || PartKind.entry) => null,
       _ => atom,
     };
     UnitAtom? rightKeeps(UnitAtom atom) => switch (atom) {
       AnchorAtom() || UnitStartAtom() => null,
+      UnitMarkAtom(:final parts) when parts.isEmpty => null,
+      UnitMarkAtom() => atom.copyWith(anchored: false),
       _ => leftKeeps(atom),
     };
     // Each side's text starts with the unit's number, whatever its scheme
@@ -294,6 +297,8 @@ final class Includer {
     String text(RenderedWork work, Unit u, UnitAtom? Function(UnitAtom) keep) {
       UnitAtom? withoutLabels(UnitAtom atom) => switch (atom) {
         PartAtom(kind: PartKind.label) => null,
+        UnitMarkAtom(start: true, anchored: false) => null,
+        UnitMarkAtom(start: true) => keep(atom.copyWith(parts: const [])),
         _ => keep(atom),
       };
       final body = [
@@ -378,6 +383,7 @@ final class Includer {
   AbstractBlock? repeat(AbstractBlock block, Rendering rendering) {
     UnitAtom? keep(UnitAtom atom) => switch (atom) {
       AnchorAtom() || UnitStartAtom() => null,
+      UnitMarkAtom() => atom.copyWith(anchored: false),
       _ => atom,
     };
     AbstractBlock? copy(AbstractBlock node, AbstractBlock parent) {
@@ -418,13 +424,18 @@ final class Includer {
     UnitAtom? atom(UnitAtom a) => switch (keep(a)) {
       null => null,
       TextAtom(:final text) => TextAtom(_import(text, from, keep)),
-      FootnoteAtom(:final content, :final id) => FootnoteAtom(
-        content == null ? null : _import(content, from, keep),
-        id: id,
+      FootnoteAtom(:final content, :final id, :final stream, :final caller) =>
+        FootnoteAtom(
+          content == null ? null : _import(content, from, keep),
+          id: id,
+          stream: stream,
+          caller: caller,
+        ),
+      NoteEntryAtom(:final stream, :final atoms, :final role) => NoteEntryAtom(
+        stream,
+        [for (final a in atoms) ?atom(a)],
+        role: role,
       ),
-      GroupAtom(:final atoms, :final role) => GroupAtom([
-        for (final a in atoms) ?atom(a),
-      ], role: role),
       final kept => kept,
     };
     return text

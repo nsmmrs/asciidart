@@ -258,6 +258,8 @@ final class PdfConverter extends BuiltInConverter
           convertPreamble(block);
         } else if (context == BlockContext.open) {
           convertOpen(block);
+        } else if (context == BlockContext.unit) {
+          convertUnit(block);
         } else if (context == BlockContext.example) {
           convertExample(block);
         } else if (context == BlockContext.sidebar) {
@@ -4074,6 +4076,13 @@ final class PdfConverter extends BuiltInConverter
         ),
       ),
     );
+  }
+
+  /// Converts a unit that is blocks (ADR-0020): its blocks, kept together
+  /// as an open block keeps them, with the unit's ID.
+  void convertUnit(Block node) {
+    final children = _collect(() => _traverse(node));
+    _out.add(BlockBox(children, style: BoxStyle(anchor: node.id)));
   }
 
   /// Converts the open block [node].
@@ -9081,6 +9090,13 @@ final class PdfConverter extends BuiltInConverter
     InlineContext.kbd => _inlineKbd(node),
     InlineContext.menu => _inlineMenu(node),
     InlineContext.quoted => _inlineQuoted(node),
+    // A unit's mark: its anchor, then its label (ADR-0020).
+    InlineContext.unit =>
+      '${node.id != null ? '<a id="${node.id}">$_dummyText</a>' : ''}'
+          '${node.text ?? ''}',
+    // A note's caller, or its unit's entry: text in the entry's role (a
+    // reference Bible's cross-references, set beside their verse).
+    InlineContext.note => _inlineQuoted(node),
   };
 
   String _inlineAnchor(Inline node) {

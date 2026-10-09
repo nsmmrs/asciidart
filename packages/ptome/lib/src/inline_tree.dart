@@ -128,6 +128,29 @@ final class InlineRun {
     }
   }
 
+  /// Runs [body] (substitutions applied to [text], within a replacement
+  /// being computed: the label of a unit, the text of a note) as a run of
+  /// its own, so the run around it is not disturbed, and records the
+  /// elements it found as elements of the replacement.
+  static String nested(String text, String Function() body) {
+    final outer = _current;
+    if (outer == null) return body();
+    final (result, tree) = track(text, body);
+    if (outer._emissions case final emissions?) {
+      for (final content in tree) {
+        if (content case InlineElement(:final node, :final output)) {
+          emissions.add((
+            node: node,
+            output: output,
+            text: node.text,
+            textAt: _textAt(node, output),
+          ));
+        }
+      }
+    }
+    return result;
+  }
+
   /// The output of [node], recorded as an element of the replacement being
   /// computed (in a tracking run).
   static String emit(Inline node) {
@@ -152,7 +175,7 @@ final class InlineRun {
     final text = node.text;
     if (text == null || node.converter is! BuiltInConverter) return null;
     final wraps = switch (node.context) {
-      .quoted || .lineBreak || .button => true,
+      .quoted || .lineBreak || .button || .unit || .note => true,
       .anchor => node.type == 'link' || node.type == 'xref',
       .indexterm => node.type == 'visible',
       _ => false,
@@ -277,9 +300,15 @@ final class InlineRun {
     for (final edit in edits) {
       var from = 0;
       for (final emission in edit.emissions) {
-        final at = edit.replacement.indexOf(emission.output, from);
-        if (at == -1) continue;
-        from = at + emission.output.length;
+        var at = edit.replacement.indexOf(emission.output, from);
+        if (at == -1) {
+          // An element found inside one found after it (a label inside
+          // its unit's mark): its output is before the outer one's end.
+          at = edit.replacement.indexOf(emission.output);
+          if (at == -1) continue;
+        } else {
+          from = at + emission.output.length;
+        }
         final start = edit.newStart + at;
         final end = start + emission.output.length;
         final textAt = emission.textAt;

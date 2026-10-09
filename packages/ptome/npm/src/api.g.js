@@ -867,6 +867,12 @@ export class Footnote extends Inline {
   get isReference() {
     return core.Footnote$get$isReference(this)
   }
+  get stream() {
+    return core.Footnote$get$stream(this)
+  }
+  get caller() {
+    return core.Footnote$get$caller(this)
+  }
 }
 
 export class Formatted extends Inline {
@@ -1061,6 +1067,27 @@ export class Menu extends Inline {
   }
   get plainText() {
     return core.Menu$get$plainText(this)
+  }
+}
+
+export class NoteCall extends Inline {
+  constructor() {
+    throw new TypeError('NoteCall objects come from ptome; they cannot be created with new')
+  }
+  get stream() {
+    return core.NoteCall$get$stream(this)
+  }
+  get caller() {
+    return core.NoteCall$get$caller(this)
+  }
+}
+
+export class NoteEntry extends Inline {
+  constructor() {
+    throw new TypeError('NoteEntry objects come from ptome; they cannot be created with new')
+  }
+  get stream() {
+    return core.NoteEntry$get$stream(this)
   }
 }
 
@@ -1265,6 +1292,45 @@ export class ThematicBreak extends Block {
   }
 }
 
+export class UnitBlock extends Block {
+  constructor() {
+    throw new TypeError('UnitBlock objects come from ptome; they cannot be created with new')
+  }
+  get scheme() {
+    return core.UnitBlock$get$scheme(this)
+  }
+  get level() {
+    return core.UnitBlock$get$level(this)
+  }
+  get citation() {
+    return core.UnitBlock$get$citation(this)
+  }
+}
+
+export class UnitMark extends Inline {
+  constructor() {
+    throw new TypeError('UnitMark objects come from ptome; they cannot be created with new')
+  }
+  get isStart() {
+    return core.UnitMark$get$isStart(this)
+  }
+  get scheme() {
+    return core.UnitMark$get$scheme(this)
+  }
+  get level() {
+    return core.UnitMark$get$level(this)
+  }
+  get citation() {
+    return core.UnitMark$get$citation(this)
+  }
+  get reftext() {
+    return core.UnitMark$get$reftext(this)
+  }
+  get label() {
+    return core.UnitMark$get$label(this)
+  }
+}
+
 export class UnorderedList extends Block {
   constructor() {
     throw new TypeError('UnorderedList objects come from ptome; they cannot be created with new')
@@ -1319,7 +1385,7 @@ export class Video extends Block {
   }
 }
 
-registerClasses({ Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, FontFile, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, Ptome, SourceCode, SourceLocation, TableColumn, Unit, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnorderedList, Verse, Video })
+registerClasses({ Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, FontFile, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, Ptome, SourceCode, SourceLocation, TableColumn, Unit, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, NoteCall, NoteEntry, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnitBlock, UnitMark, UnorderedList, Verse, Video })
 
 export const AdmonitionKind = Object.freeze({
   note: 'note',

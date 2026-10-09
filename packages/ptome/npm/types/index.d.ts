@@ -1281,6 +1281,15 @@ export declare class Footnote extends Inline {
    * Whether this refers to a footnote defined elsewhere.
    */
   readonly isReference: boolean;
+  /**
+   * The note stream of a note in units (`tn`), if it is one
+   * (`note:tn[…]`).
+   */
+  readonly stream: string | null;
+  /**
+   * The note's caller in its stream, if the stream has callers.
+   */
+  readonly caller: string | null;
 }
 
 /**
@@ -1507,6 +1516,34 @@ export declare class Menu extends Inline {
    */
   readonly item: string | null;
   readonly plainText: string;
+}
+
+/**
+ * A note's caller in the text, for a stream whose notes are gathered in
+ * an entry (a reference Bible's lettered cross-references).
+ */
+export declare class NoteCall extends Inline {
+  protected constructor();
+  /**
+   * The note's stream (`x`).
+   */
+  readonly stream: string;
+  /**
+   * The caller (`a`).
+   */
+  readonly caller: string;
+}
+
+/**
+ * The entry a unit's notes of a stream are gathered in (a verse's
+ * cross-references).
+ */
+export declare class NoteEntry extends Inline {
+  protected constructor();
+  /**
+   * The stream (`x`).
+   */
+  readonly stream: string;
 }
 
 /**
@@ -1740,6 +1777,58 @@ export declare class TableOfContents extends Block {
  */
 export declare class ThematicBreak extends Block {
   protected constructor();
+}
+
+/**
+ * A unit that is blocks (see `doc/units.md`): a statute's provision, a
+ * catechism's question, a stanza, with its blocks as children.
+ */
+export declare class UnitBlock extends Block {
+  protected constructor();
+  /**
+   * The name of the unit's scheme (`eu`).
+   */
+  readonly scheme: string;
+  /**
+   * The name of the unit's level (`point`).
+   */
+  readonly level: string;
+  /**
+   * The unit as its scheme cites it (`Article 6(1)(a)`).
+   */
+  readonly citation: string;
+}
+
+/**
+ * Where a unit starts in a text (its anchor and label), or what it prints
+ * at its end (see `doc/units.md`).
+ */
+export declare class UnitMark extends Inline {
+  protected constructor();
+  /**
+   * Whether this is the unit's start (else what it prints at its end).
+   */
+  readonly isStart: boolean;
+  /**
+   * The name of the unit's scheme (`bible`).
+   */
+  readonly scheme: string;
+  /**
+   * The name of the unit's level (`verse`).
+   */
+  readonly level: string;
+  /**
+   * The unit as its scheme cites it (`Exod 34:6`).
+   */
+  readonly citation: string;
+  /**
+   * The unit's reftext (`Exodus 34:6`).
+   */
+  readonly reftext: string;
+  /**
+   * The unit's own label (`6`).
+   */
+  readonly label: string;
 }
 
 /**

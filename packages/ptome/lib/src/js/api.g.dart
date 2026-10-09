@@ -18,6 +18,8 @@ JSObject wrap(Object o) => switch (o) {
   api.Video() => rt.handle(o, 'Video'),
   api.Verse() => rt.handle(o, 'Verse'),
   api.UnorderedList() => rt.handle(o, 'UnorderedList'),
+  api.UnitMark() => rt.handle(o, 'UnitMark'),
+  api.UnitBlock() => rt.handle(o, 'UnitBlock'),
   api.ThematicBreak() => rt.handle(o, 'ThematicBreak'),
   api.TableOfContents() => rt.handle(o, 'TableOfContents'),
   api.TableCell() => rt.handle(o, 'TableCell'),
@@ -33,6 +35,8 @@ JSObject wrap(Object o) => switch (o) {
   api.OtherBlock() => rt.handle(o, 'OtherBlock'),
   api.OrderedList() => rt.handle(o, 'OrderedList'),
   api.Open() => rt.handle(o, 'Open'),
+  api.NoteEntry() => rt.handle(o, 'NoteEntry'),
+  api.NoteCall() => rt.handle(o, 'NoteCall'),
   api.Menu() => rt.handle(o, 'Menu'),
   api.Literal() => rt.handle(o, 'Literal'),
   api.Listing() => rt.handle(o, 'Listing'),
@@ -2218,6 +2222,26 @@ final class Core {
     }
   }
 
+  JSAny? Footnote$get$stream(JSAny? self) {
+    try {
+      return ((rt.unwrap<api.Footnote>(self).stream) == null
+          ? null
+          : (rt.unwrap<api.Footnote>(self).stream)!.toJS);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? Footnote$get$caller(JSAny? self) {
+    try {
+      return ((rt.unwrap<api.Footnote>(self).caller) == null
+          ? null
+          : (rt.unwrap<api.Footnote>(self).caller)!.toJS);
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
   JSAny? Formatted$get$kind(JSAny? self) {
     try {
       return rt.unwrap<api.Formatted>(self).kind.name.toJS;
@@ -2533,6 +2557,30 @@ final class Core {
   JSAny? Menu$get$plainText(JSAny? self) {
     try {
       return rt.unwrap<api.Menu>(self).plainText.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? NoteCall$get$stream(JSAny? self) {
+    try {
+      return rt.unwrap<api.NoteCall>(self).stream.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? NoteCall$get$caller(JSAny? self) {
+    try {
+      return rt.unwrap<api.NoteCall>(self).caller.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? NoteEntry$get$stream(JSAny? self) {
+    try {
+      return rt.unwrap<api.NoteEntry>(self).stream.toJS;
     } catch (e, s) {
       rt.fail(e, s);
     }
@@ -2856,6 +2904,78 @@ final class Core {
   JSAny? TableCell$get$plainText(JSAny? self) {
     try {
       return rt.unwrap<api.TableCell>(self).plainText.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitBlock$get$scheme(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitBlock>(self).scheme.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitBlock$get$level(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitBlock>(self).level.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitBlock$get$citation(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitBlock>(self).citation.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitMark$get$isStart(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitMark>(self).isStart.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitMark$get$scheme(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitMark>(self).scheme.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitMark$get$level(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitMark>(self).level.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitMark$get$citation(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitMark>(self).citation.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitMark$get$reftext(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitMark>(self).reftext.toJS;
+    } catch (e, s) {
+      rt.fail(e, s);
+    }
+  }
+
+  JSAny? UnitMark$get$label(JSAny? self) {
+    try {
+      return rt.unwrap<api.UnitMark>(self).label.toJS;
     } catch (e, s) {
       rt.fail(e, s);
     }

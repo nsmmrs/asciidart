@@ -84,6 +84,10 @@ enum BlockContext {
   /// An unordered list.
   ulist,
 
+  /// A unit that is blocks (ADR-0020): a statute's provision, a
+  /// catechism's question, a stanza; its blocks are its children.
+  unit,
+
   /// A verse block.
   verse,
 
@@ -143,6 +147,14 @@ enum InlineContext {
 
   /// A menu path (`menu:[]`).
   menu,
+
+  /// Where a unit starts (`type` `start`) or what it prints at its end
+  /// (`end`), in a text (ADR-0020): its anchor and label.
+  unit,
+
+  /// A note of a note stream (ADR-0020): its caller in the text (`type`
+  /// `call`) or the entry its unit's notes are gathered in (`entry`).
+  note,
 
   /// Formatted text (strong, emphasis, ...) or inline math.
   quoted;

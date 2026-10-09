@@ -61,9 +61,23 @@ void main() {
 
     test('markers print anchors and labels, never the syntax', () {
       final out = html('bible/sample');
-      expect(out, contains('<a id="v-exo-34-6"></a><sup>6</sup>\u00a0'));
+      // A unit's mark: its ID, what it is, and its label.
+      expect(
+        out,
+        contains(
+          '<span id="v-exo-34-6" class="unit" data-scheme="bible" '
+          'data-level="verse" data-unit="Exod 34:6"><sup>6</sup></span>'
+          '\u00a0',
+        ),
+      );
       // The first verse of a chapter has its anchor but no number.
-      expect(out, contains('<p><a id="v-exo-34-1"></a>And the'));
+      expect(
+        out,
+        contains(
+          '<p><span id="v-exo-34-1" class="unit" data-scheme="bible" '
+          'data-level="verse" data-unit="Exod 34:1"></span>And the',
+        ),
+      );
       final body = out.substring(out.indexOf('<body'));
       expect(body, isNot(contains('@')));
       expect(body, isNot(contains('note:')));
@@ -73,9 +87,18 @@ void main() {
       final out = html('bible/sample');
       expect(
         out,
-        contains('<span class="xref"><strong>34:6</strong> <sup>a</sup>\u00a0'),
+        contains(
+          '<span class="note-entry xref" data-stream="x">'
+          '<strong>34:6</strong> <sup>a</sup>\u00a0',
+        ),
       );
-      expect(out, contains('<sup class="xref-mark">a</sup>merciful'));
+      expect(
+        out,
+        contains(
+          '<span class="note-call" data-stream="x">'
+          '<sup class="xref-mark">a</sup></span>merciful',
+        ),
+      );
       expect(
         out,
         contains('<strong>34:7</strong> <em>forgiving</em>: Heb. bearing'),
@@ -106,11 +129,29 @@ void main() {
       );
     });
 
-    test('block units: the block is the unit; `@^` resumes', () {
+    test('units of blocks: unit nodes, nested; `@^` goes back up', () {
       final out = html('law/eu-sample');
-      expect(out, contains('<div id="art-6-1-a" class="paragraph point">'));
-      expect(out, contains('<p>(a) the data subject'));
-      expect(out, contains('<div class="paragraph paragraph resumed">'));
+      // Each provision a unit node of its blocks, nested as the units are.
+      expect(
+        out,
+        contains(
+          '<div id="art-6-1-a" class="unit point" data-scheme="eu" '
+          'data-level="point" data-unit="Article 6(1)(a)">\n'
+          '<div class="paragraph">\n<p><span class="unit"',
+        ),
+      );
+      // After `@^`, the paragraph's text again: in its unit, after its
+      // points.
+      expect(
+        out,
+        matches(
+          RegExp(
+            r'Article 6\(1\)\(f\)">[\s\S]*?</div>\n</div>\n'
+            r'<div class="paragraph">\n<p><span id="art-6-1-s2"[\s\S]*?'
+            r'</div>\n</div>\n<div id="art-6-2" class="unit paragraph"',
+          ),
+        ),
+      );
       expect(out, contains('Point <a href="#art-6-1-f">(f)</a> of'));
     });
 
@@ -144,7 +185,11 @@ void main() {
       // Spliced: as the work prints it.
       expect(
         out,
-        contains('<a id="v-mat-5-4"></a><sup>4</sup>\u00a0<span class="wj">'),
+        contains(
+          '<span id="v-mat-5-4" class="unit" data-scheme="bible" '
+          'data-level="verse" data-unit="Matt 5:4"><sup>4</sup></span>'
+          '\u00a0<span class="wj">',
+        ),
       );
     });
 
@@ -155,7 +200,8 @@ void main() {
         out,
         matches(
           RegExp(
-            r'<td[^>]*><p[^>]*><a id="v-psa-23-1"></a><sup>1</sup>\u00a0'
+            '<td[^>]*><p[^>]*><span id="v-psa-23-1" class="unit"[^>]*></span>'
+            r'<sup>1</sup>\u00a0'
             'The <span class="nd">Lord</span> <em>is</em> my shepherd',
           ),
         ),

@@ -16,6 +16,8 @@ import 'package:ptome/src/block.dart';
 import 'package:ptome/src/document.dart' as ptome;
 import 'package:ptome/src/inline.dart';
 import 'package:ptome/src/list.dart';
+import 'package:ptome/src/section.dart';
+import 'package:ptome/src/units/citation.dart';
 import 'package:ptome/src/units/document.dart';
 import 'package:ptome/src/units/engine.dart';
 import 'package:ptome/src/units/presentation.dart';
@@ -121,15 +123,76 @@ final class PartAtom extends UnitAtom {
   final Unit? unit;
 }
 
-/// Atoms in a span with a role (an entry), or none.
-final class GroupAtom extends UnitAtom {
-  /// [atoms], in a span with [role] if it has one.
-  const new(this.atoms, {this.role});
+/// A unit's mark in a text: where it starts (its anchor and label) or
+/// what it prints at its end; converted as a unit node
+/// (`InlineContext.unit`).
+final class UnitMarkAtom extends UnitAtom {
+  /// The start ([start]) or end of [unit], printing [parts]; [anchored]:
+  /// the start is the unit's anchor (its ID). [attributes] describe the
+  /// unit (scheme, level, address, reftext, label).
+  const new(
+    this.unit, {
+    required this.attributes,
+    this.start = true,
+    this.anchored = false,
+    this.parts = const [],
+  });
 
-  /// What the group prints.
+  /// The unit.
+  final Unit unit;
+
+  /// Whether it is the unit's start (else its end).
+  final bool start;
+
+  /// Whether the start is the unit's anchor.
+  final bool anchored;
+
+  /// What it prints: the label (or the end text).
+  final List<UnitAtom> parts;
+
+  /// The unit's scheme, level, address (`unit`), reftext and label.
+  final Map<String, String> attributes;
+
+  /// This mark with [parts] and [anchored] instead.
+  UnitMarkAtom copyWith({List<UnitAtom>? parts, bool? anchored}) =>
+      UnitMarkAtom(
+        unit,
+        attributes: attributes,
+        start: start,
+        anchored: anchored ?? this.anchored,
+        parts: parts ?? this.parts,
+      );
+}
+
+/// A note's caller in the text, converted as a note node
+/// (`InlineContext.note`, type `call`).
+final class NoteCallAtom extends UnitAtom {
+  /// The caller [caller] of a note of [stream], printing [part].
+  const new(this.stream, this.caller, this.part);
+
+  /// The note's stream.
+  final String stream;
+
+  /// Its caller (`a`).
+  final String caller;
+
+  /// The caller as printed.
+  final UnitAtom part;
+}
+
+/// The entry a unit's notes of a stream are gathered in, converted as a
+/// note node (`InlineContext.note`, type `entry`).
+final class NoteEntryAtom extends UnitAtom {
+  /// The entry of [stream] printing [atoms], with [role] if it has one.
+  const new(this.stream, this.atoms, {this.role});
+
+  /// The stream.
+  final String stream;
+
+  /// What the entry prints.
   final List<UnitAtom> atoms;
 
-  /// The role of its span, if any.
+  /// The entry's role, if any (`xref`).
   final String? role;
 }
 
@@ -152,8 +215,15 @@ final class BreakAtom extends UnitAtom {
 /// A note shown as a footnote: [content] (prepared text), or, for a note
 /// with an [id] written before, a reference to it.
 final class FootnoteAtom extends UnitAtom {
-  /// A footnote of [content], or a reference to the note [id].
-  const new(this.content, {this.id});
+  /// A footnote of [content], or a reference to the note [id], of
+  /// [stream] with [caller].
+  const new(this.content, {this.id, this.stream, this.caller});
+
+  /// The note's stream.
+  final String? stream;
+
+  /// The note's caller in its stream, if the stream has callers.
+  final String? caller;
 
   /// The note's prepared content, if it is shown here.
   final String? content;
@@ -279,6 +349,12 @@ final class _Renderer {
   /// proofs).
   final Map<AbstractNode, List<UnitAtom>> _blocksAfter = Map.identity();
 
+  /// The unit each block that starts a unit of blocks starts.
+  final Map<AbstractBlock, Unit> _blockUnits = Map.identity();
+
+  /// The units each block closes (`@^` at its start).
+  final Map<AbstractBlock, List<Unit>> _closes = Map.identity();
+
   /// Open ranges, outermost first.
   final List<RangeOpen> _open = [];
 
@@ -387,6 +463,7 @@ final class _Renderer {
     }
     _moveAnchorsOnly(prepared);
     _insertBlocks(prepared);
+    _buildUnitBlocks();
     return Rendering(prepared, atoms, roles)..starts.addAll(_starts);
   }
 
@@ -485,26 +562,24 @@ final class _Renderer {
       }
       node.addRole(look.blockRole ?? u.level.name);
       look.blockOptions.forEach(node.setOption);
+      if (node is AbstractBlock) _blockUnits[node] = u;
     }
     final ctx = _unitCtx(u);
     final hidden =
         u.level.hidden && look.label == null && look.map.flag('anchor') == null;
-    if (!hidden && !anchored && look.anchor) {
-      out.add(AnchorAtom(u.id, u.reftext));
-      _register(node, u.id, u.reftext);
-    }
     for (final extra in look.anchors) {
       final id = render(extra, ctx);
       out.add(AnchorAtom(id));
       _register(node, id, null);
     }
+    final parts = <UnitAtom>[];
     if (look.label case final label?) {
       final text = render(label, ctx);
       if (text.isNotEmpty) {
         if (look.labelBefore.isNotEmpty) {
-          out.add(PartAtom(look.labelBefore, kind: PartKind.label, unit: u));
+          parts.add(PartAtom(look.labelBefore, kind: PartKind.label, unit: u));
         }
-        out.add(
+        parts.add(
           PartAtom(
             text,
             style: look.labelStyle,
@@ -513,10 +588,22 @@ final class _Renderer {
             unit: u,
           ),
         );
-        if (keepAfter && look.labelAfter.isNotEmpty) {
-          out.add(PartAtom(look.labelAfter, kind: PartKind.label, unit: u));
-        }
       }
+    }
+    final anchor = !hidden && !anchored && look.anchor;
+    if (anchor) _register(node, u.id, u.reftext);
+    if (anchor || parts.isNotEmpty) {
+      out.add(
+        UnitMarkAtom(
+          u,
+          attributes: _markAttributes(u),
+          anchored: anchor,
+          parts: parts,
+        ),
+      );
+    }
+    if (parts.isNotEmpty && keepAfter && look.labelAfter.isNotEmpty) {
+      out.add(PartAtom(look.labelAfter, kind: PartKind.label, unit: u));
     }
     if (look.indent case final indent?) {
       final text = render(indent, ctx);
@@ -527,6 +614,16 @@ final class _Renderer {
     out.addAll(_entries(u));
     return out;
   }
+
+  /// What a unit's node says of it: its scheme, level, address as cited,
+  /// reftext and label.
+  Map<String, String> _markAttributes(Unit u) => {
+    'scheme': u.level.scheme.name,
+    'level': u.level.name,
+    'unit': passageText(Passage(u, u), config),
+    'reftext': u.reftext,
+    'label': u.level.bare(u.label),
+  };
 
   void _register(AbstractNode? node, String id, String? reftext) {
     if (node is! AbstractBlock) return;
@@ -573,14 +670,19 @@ final class _Renderer {
         } else if (look.endBefore.isNotEmpty) {
           out.add(PartAtom(look.endBefore));
         }
-        out.add(PartAtom(text, role: look.endRole));
+        out.add(
+          UnitMarkAtom(
+            u,
+            attributes: _markAttributes(u),
+            start: false,
+            parts: [PartAtom(text, role: look.endRole)],
+          ),
+        );
       }
     }
     for (final entry in _entries(u, placement: Placement.end)) {
-      if (entry case GroupAtom(:final role?)
-          when config.streams.values.any(
-            (s) => s.look.entryBlock && s.look.entryRole == role,
-          )) {
+      if (entry case NoteEntryAtom(:final stream)
+          when config.streams[stream]?.look.entryBlock ?? false) {
         if (node != null) (_blocksAfter[node] ??= []).add(entry);
       } else {
         out.add(entry);
@@ -613,7 +715,7 @@ final class _Renderer {
         if (look.callerAfter.isNotEmpty) parts.add(PartAtom(look.callerAfter));
         parts.add(TextAtom(_body(use)));
       }
-      out.add(GroupAtom(parts, role: look.entryRole ?? name));
+      out.add(NoteEntryAtom(name, parts, role: look.entryRole ?? name));
       if (look.entryAfter.isNotEmpty && !look.entryBlock) {
         out.add(PartAtom(look.entryAfter, kind: PartKind.entry));
       }
@@ -775,11 +877,18 @@ final class _Renderer {
     return out;
   }
 
-  UnitAtom _caller(NoteUse use) => PartAtom(
+  static String? _callerOf(NoteUse use) =>
+      use.caller.isEmpty ? null : use.caller;
+
+  UnitAtom _caller(NoteUse use) => NoteCallAtom(
+    use.stream.name,
     use.caller,
-    style: use.stream.look.callerStyle,
-    role: use.stream.look.callerRole,
-    kind: PartKind.caller,
+    PartAtom(
+      use.caller,
+      style: use.stream.look.callerStyle,
+      role: use.stream.look.callerRole,
+      kind: PartKind.caller,
+    ),
   );
 
   List<_Piece> _token(Token t) {
@@ -797,21 +906,10 @@ final class _Renderer {
           }
         }
         if (t.op == MarkerOp.close) {
+          // The block goes back to the unit around the ones it closes.
           final closed = a.closedBy[t] ?? const [];
-          if (closed.isNotEmpty && _node != null) {
-            final scheme = closed.last.level.scheme;
-            // The block is the nearest level above that is printed.
-            var parent = closed.last.level.depth - 1;
-            while (parent > 0 && scheme.levels[parent].hidden) {
-              parent--;
-            }
-            if (parent >= 0 &&
-                scheme.levels.any((l) => l.breakMode == Break.block)) {
-              final level = scheme.levels[parent];
-              _node!
-                ..addRole(level.look.blockRole ?? level.name)
-                ..addRole('resumed');
-            }
+          if (_node case final AbstractBlock node when closed.isNotEmpty) {
+            (_closes[node] ??= []).addAll(closed);
           }
           return out;
         }
@@ -849,10 +947,27 @@ final class _Renderer {
           final content = t.body.isEmpty
               ? _noteTexts[id]
               : (_noteTexts[id] = _footnoteContent(use));
-          return [_Atom(FootnoteAtom(content, id: id), after: t.lemmaRange)];
+          return [
+            _Atom(
+              FootnoteAtom(
+                content,
+                id: id,
+                stream: use.stream.name,
+                caller: _callerOf(use),
+              ),
+              after: t.lemmaRange,
+            ),
+          ];
         }
         return [
-          _Atom(FootnoteAtom(_footnoteContent(use)), after: t.lemmaRange),
+          _Atom(
+            FootnoteAtom(
+              _footnoteContent(use),
+              stream: use.stream.name,
+              caller: _callerOf(use),
+            ),
+            after: t.lemmaRange,
+          ),
         ];
       case Xref():
         final ref = a.refs[t];
@@ -984,7 +1099,9 @@ final class _Renderer {
               .allMatches(text)
               .any(
                 (m) => switch (atoms[int.parse(m[1]!)]) {
-                  AnchorAtom() || UnitStartAtom() => false,
+                  AnchorAtom() ||
+                  UnitStartAtom() ||
+                  UnitMarkAtom(parts: []) => false,
                   _ => true,
                 },
               )) {
@@ -1025,6 +1142,86 @@ final class _Renderer {
     return null;
   }
 
+  // Units of blocks -----------------------------------------------------------
+
+  /// The roles the schemes name as apparatus.
+  late final Set<String> _apparatus = {
+    ...?config.settings['apparatus']?.split(RegExp(r'[\s,]+')),
+  }..remove('');
+
+  /// Puts the blocks of each unit of blocks (a provision, a question, a
+  /// stanza) in a unit node of its own (`BlockContext.unit`), nested as
+  /// the units are: a block that starts one starts its node, which takes
+  /// the block's ID and the level's role; the blocks after it are its
+  /// own until a unit of its level or above starts, a heading, or `@^`
+  /// closing it. Units of blocks in lists stay their items'.
+  void _buildUnitBlocks() {
+    final parents = <AbstractBlock>{
+      for (final node in _blockUnits.keys)
+        if (node.parent case final AbstractBlock parent
+            when parent is! ListBlock && node is! ListItem)
+          parent,
+    };
+    for (final parent in parents) {
+      final out = <AbstractBlock>[];
+      final open = <(Unit, Block)>[];
+      void add(AbstractBlock block) {
+        if (open.isEmpty) {
+          out.add(block);
+        } else {
+          final container = open.last.$2;
+          block.parent = container;
+          container.blocks.add(block);
+        }
+      }
+
+      for (final block in [...parent.blocks]) {
+        // A heading, or apparatus (a hymn's tune and author), is in no
+        // unit of blocks.
+        if (block is Section || block.roles.any(_apparatus.contains)) {
+          open.clear();
+          out.add(block);
+          continue;
+        }
+        if (_closes[block] case final closed?) {
+          final at = open.indexWhere((e) => closed.contains(e.$1));
+          if (at >= 0) open.removeRange(at, open.length);
+        }
+        if (_blockUnits[block] case final u?) {
+          final at = open.indexWhere(
+            (e) =>
+                e.$1.level.scheme == u.level.scheme &&
+                e.$1.level.depth >= u.level.depth,
+          );
+          if (at >= 0) open.removeRange(at, open.length);
+          final container = Block(
+            open.isEmpty ? parent : open.last.$2,
+            BlockContext.unit,
+            contentModel: ContentModel.compound,
+          );
+          if (block.id == u.id) {
+            container
+              ..id = u.id
+              ..attributes['reftext'] = u.reftext;
+            block
+              ..id = null
+              ..attributes.remove('reftext');
+            document.catalog.refs[u.id] = container;
+          }
+          final role = u.level.look.blockRole ?? u.level.name;
+          if (block.removeRole(role)) container.addRole(role);
+          container.attributes.addAll(_markAttributes(u));
+          add(container);
+          open.add((u, container));
+        }
+        add(block);
+      }
+      parent.blocks
+        ..clear()
+        ..addAll(out);
+    }
+  }
+
   // Blocks of their own -----------------------------------------------------
 
   /// Adds the entries that are blocks of their own after their nodes.
@@ -1045,11 +1242,14 @@ final class _Renderer {
       for (final entry in entries) {
         final text = _place(entry);
         final block = Block(parent, BlockContext.paragraph, source: text);
-        if (entry case GroupAtom(:final role?)) block.addRole(role);
+        if (entry case NoteEntryAtom(:final role?)) block.addRole(role);
         block.commitSubs();
         // The entry's own span would repeat the block's role.
         atoms[atoms.length - 1] = switch (entry) {
-          GroupAtom(:final atoms) => GroupAtom(atoms),
+          NoteEntryAtom(:final stream, :final atoms) => NoteEntryAtom(
+            stream,
+            atoms,
+          ),
           _ => entry,
         };
         parent.blocks.insert(at++, block);

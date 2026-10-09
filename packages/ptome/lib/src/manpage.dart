@@ -243,6 +243,7 @@ class ManpageConverter extends BuiltInConverter {
         .thematicBreak => convertThematicBreak(node as Block),
         .toc => null,
         .ulist => convertUlist(node as ListBlock),
+        .unit => contentOnly(node),
         .verse => convertVerse(node as Block),
         .video => convertVideo(node as Block),
         .audio || .listItem || .tableCell => missing(node.nodeName),
@@ -266,6 +267,7 @@ class ManpageConverter extends BuiltInConverter {
     .kbd => convertInlineKbd(node),
     .menu => convertInlineMenu(node),
     .quoted => convertInlineQuoted(node),
+    .unit || .note => node.text ?? '',
   };
 
   @override

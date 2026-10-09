@@ -35,6 +35,7 @@ import 'package:ptome/src/stylesheets.dart';
 import 'package:ptome/src/table.dart';
 import 'package:ptome/src/text_case.dart';
 import 'package:ptome/src/unbreakable.dart';
+import 'package:ptome/src/units/html.dart';
 
 /// Renders [value] for interpolation into output: `null` renders as the
 /// empty string.
@@ -189,6 +190,7 @@ class Html5Converter extends BuiltInConverter {
         .thematicBreak => convertThematicBreak(node as Block),
         .toc => convertToc(node as Block),
         .ulist => convertUlist(node as ListBlock),
+        .unit => htmlUnitBlock(node, node.content() ?? ''),
         .verse => convertVerse(node as Block),
         .video => convertVideo(node as Block),
         .listItem || .tableCell => missing(node.nodeName),
@@ -212,6 +214,8 @@ class Html5Converter extends BuiltInConverter {
     .kbd => convertInlineKbd(node),
     .menu => convertInlineMenu(node),
     .quoted => convertInlineQuoted(node),
+    .unit => htmlUnitMark(node),
+    .note => htmlNote(node),
   };
 
   @override

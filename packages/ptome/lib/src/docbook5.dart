@@ -274,6 +274,7 @@ class Docbook5Converter extends BuiltInConverter {
         .thematicBreak => convertThematicBreak(node as Block),
         .toc => null,
         .ulist => convertUlist(node as ListBlock),
+        .unit => convertUnit(node),
         .verse => convertVerse(node as Block),
         .video => null,
         .listItem || .tableCell => missing(node.nodeName),
@@ -297,6 +298,8 @@ class Docbook5Converter extends BuiltInConverter {
     .kbd => convertInlineKbd(node),
     .menu => convertInlineMenu(node),
     .quoted => convertInlineQuoted(node),
+    .unit => convertInlineUnit(node),
+    .note => convertInlineNote(node),
   };
 
   @override
@@ -854,6 +857,42 @@ class Docbook5Converter extends BuiltInConverter {
   /// Converts the [node] page break.
   String convertPageBreak(Block node) =>
       '<simpara><?asciidoc-pagebreak?></simpara>';
+
+  /// Converts a unit that is blocks (ADR-0020): its blocks, the first one
+  /// with the unit's ID and role (DocBook has no element for it).
+  String? convertUnit(AbstractBlock node) {
+    final first = node.blocks.firstOrNull;
+    if (first == null) return node.content();
+    final id = first.id == null ? node.id : null;
+    final added = [
+      for (final role in node.roles)
+        if (first.addRole(role)) role,
+    ];
+    if (id != null) first.id = id;
+    try {
+      return node.content();
+    } finally {
+      if (id != null) first.id = null;
+      added.forEach(first.removeRole);
+    }
+  }
+
+  /// Converts a unit's mark (ADR-0020): its anchor, then its label.
+  String convertInlineUnit(Inline node) {
+    final text = node.text ?? '';
+    final id = node.id;
+    if (id == null) return text;
+    return '<anchor${_commonAttributes(id, null, node.attributes['reftext'])}/>'
+        '$text';
+  }
+
+  /// Converts a note's caller or its unit's entry (ADR-0020); an entry in
+  /// a phrase with its role.
+  String convertInlineNote(Inline node) {
+    final text = node.text ?? '';
+    final role = node.role;
+    return role == null ? text : '<phrase role="${_s(role)}">$text</phrase>';
+  }
 
   /// Converts the [node] paragraph.
   String convertParagraph(Block node) {
