@@ -1881,6 +1881,10 @@ class PreprocessorReader extends Reader {
     Encoding encoding,
   ) {
     if (resolution.type == _IncludeTargetType.file) {
+      // A file of a document in units, as the units engine renders it.
+      if (_document.unitsReading?.linesOf(resolution.path) case final lines?) {
+        return _IncludeContent.text('${lines.join('\n')}\n');
+      }
       try {
         return _IncludeContent.bytes(io.readBytes(resolution.path));
       } on Exception catch (_) {

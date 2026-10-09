@@ -1,0 +1,43 @@
+stream:
+  # The King James Bible's notes, ranges and terms, and how it lowers to the
+  # standard AsciiDoc of a print reference Bible (book/ in this repository).
+
+  # The 1611 translators' marginal notes, with their verse and the words
+  # they are on.
+  tn:
+    placement: "footnote"
+    reset: "verse"
+    origin: "{{chapter}}:{{verse}}"
+    lower: "*{{origin}}* {{#lemma}}__{{lemma}}__: {{/lemma}}{{body}}"
+  # Cross-references: lettered in the verse before the phrase they belong
+  # to, gathered into the verse's entry for the center column.
+  x:
+    placement: "entry"
+    caller: "a"
+    reset: "verse"
+    origin: "{{chapter}}:{{verse}}"
+    mark: "[.xref-mark]^{{caller}}^"
+    entry: "[.xref]##*{{origin}}* {{#notes}}{{^first}} {{/first}}^{{caller}}^{nbsp}{{body}}{{/notes}}## "
+range:
+  wj:
+    role: "wj"
+term:
+  # LORD, GOD, JEHOVAH in capitals: the divine name, in small capitals.
+  divine-name:
+    pattern: "(?<![A-Za-z])(?:LORD|GOD|JEHOVAH|JAH)(?![A-Za-z])"
+    role: "nd"
+    transform: "titlecase"
+templates:
+  bible:
+    book:
+      heading: |-
+        [[{{id}},{{reftext}}]]
+        [.book,short-name="{{book.abbr}}"]
+        {{=}} {{book.name}}
+    chapter:
+      heading: |-
+        [[{{id}},{{reftext}}]]
+        [.chapter,number={{chapter}}]
+        {{=}} {{book.chapter-label}} {{chapter}}
+    verse:
+      lower: "[[{{id}},{{reftext}}]]{{^first}}{{^zero}}^{{label}}^{nbsp}{{/zero}}{{/first}}"

@@ -1,0 +1,12 @@
+= Sample regulation
+:units: eu-act
+
+=== @6 Lawfulness of processing
+
+@1. Processing shall be lawful only if and to the extent that at least one of the following applies:
+@(a) the data subject has given consent;
+@(f) processing is necessary for the purposes of the legitimate interests.
+
+@^ Point <<(f)>> of the first subparagraph shall not apply to processing carried out by public authorities.
+
+@2. Member States may maintain more specific provisions.

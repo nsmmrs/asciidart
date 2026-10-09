@@ -10,6 +10,28 @@ reports **2.1.0.alpha.0**), fixing bugs Asciidoctor still has. The tag
 release byte for byte (ADR-0017). Not affiliated with or endorsed by the
 Asciidoctor project.
 
+- The ptome language: texts cited by numbered units (ADR-0019,
+  `doc/units.md`).
+  - A document that names schemes (`:units: bible, kjv`, YAML files in the
+    nearest `schemes/` directory) can write:
+    - unit markers: `@`, `@@`, `@6`, `@(a)(1)`, bridges, `@^`, attributes;
+    - ranges `[name}` … `{name]`;
+    - note streams `note:x[…]`, placed as footnotes, entries or after the
+      unit;
+    - references by address (`<<Ps 86:15; 103:8–13>>`);
+    - includes by ID and by address, with citations made from the work;
+    - `[annotations]`, `[overlays]` and speeches;
+    - defined terms, apparatus roles and term rules.
+  - Ptome works out every unit's anchor, label and reftext. Labels out of
+    sequence are warnings.
+  - `-a units-as-of=DATE` gives a statute as in force on that date, and
+    `-a units!` reads a units document as plain AsciiDoc.
+  - Checked against the loci experiment's 26 documents (scripture, law,
+    classics, drama, liturgy, a hymnal, a catechism, a specification) and
+    a commonplace book quoting them all. Each renders byte-identical to
+    loci's own rendering, in HTML5, DocBook 5 and PDF
+    (`tool/units_acceptance.dart`).
+  - Documents without `:units:` or `:works:` are unaffected.
 - Follows Asciidoctor's development version (upstream `main` at
   `30fb8cd5`, 2.1.0.alpha.0) rather than the 2.0.26 release: the CLI's
   `--log-level` and `--sourcemap`; highlight.js `nohighlight`; `linenums` as

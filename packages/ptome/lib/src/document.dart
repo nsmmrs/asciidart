@@ -49,6 +49,7 @@ import 'package:ptome/src/section.dart';
 import 'package:ptome/src/substitutors.dart' as substitutors;
 import 'package:ptome/src/text_case.dart';
 import 'package:ptome/src/timings.dart';
+import 'package:ptome/src/units/reading.dart';
 import 'package:ptome/src/version.dart';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.
@@ -720,7 +721,25 @@ class Document extends AbstractBlock implements NodeDocument {
         extensions = Registry()..activate(this);
       }
 
-      reader = lines != null
+      // A document in units (`:units:` in its header): its source files as
+      // the units engine renders them (ADR-0019). `-a units!` reads it as
+      // plain AsciiDoc.
+      final docfile = attrs['docfile'];
+      if (parentDoc == null &&
+          docfile != null &&
+          safe < SafeMode.secure &&
+          attrOverrides['units'] is! _Unset) {
+        unitsReading = UnitsReading.read(docfile, asOf: attrs['units-as-of']);
+      }
+      final unitLines = unitsReading?.linesOf(docfile!);
+      reader = unitLines != null
+          ? PreprocessorReader(
+              this,
+              unitLines,
+              cursor: Cursor(attrs['docfile'], baseDir),
+              normalize: true,
+            )
+          : lines != null
           ? PreprocessorReader(
               this,
               lines,
@@ -736,6 +755,12 @@ class Document extends AbstractBlock implements NodeDocument {
       if (sourcemap) sourceLocation = reader.cursor();
     }
   }
+
+  /// The rendered source files of a document in units (`:units:` in its
+  /// header), which the reader reads in place of the files' own lines;
+  /// `null` for any other document.
+  @internal
+  UnitsReading? unitsReading;
 
   /// A read-only integer value indicating the level of security enforced
   /// while processing this document (see [SafeMode]).

@@ -50,6 +50,14 @@ JavaScript) an npm package. It was called asciidart until 2026-10-08
   [`doc/books.md`](doc/books.md) shows one source becoming a print PDF, a
   website, an EPUB and DocBook, and how to move from asciidoctor-pdf or a
   browser-based print pipeline.
+- **Texts cited by numbered units.** The ptome language adds a small
+  syntax to AsciiDoc for scripture, law, classics, drama, liturgy and
+  specifications. It provides unit markers (`@`, `@6`, `@(a)`), ranges,
+  note streams, references and quotations by address. Ptome works out
+  every verse's or provision's anchor, label, reftext and link from the
+  schemes a document names (`:units:`). Documents without `:units:` are
+  unaffected ([`doc/units.md`](doc/units.md),
+  [ADR-0019](../../adr/0019-units.md)).
 - **Fast.** The compiled command converts a document 5–10x faster than the
   `asciidoctor` gem end to end, and about 2x faster in process
   ([`benchmark/BASELINE.md`](benchmark/BASELINE.md)).

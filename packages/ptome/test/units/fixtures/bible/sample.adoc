@@ -1,0 +1,43 @@
+= Sample
+:units: bible, kjv
+:excerpt:
+
+== @EXO
+
+=== @34
+
+[discrete.pericope]
+==== The Second Tablets
+
+@ And the LORD said unto Moses, Hew thee two tables of stone like unto the first: and I will write upon _these_ tables the words that were in the first tables, which thou brakest.
+@ And be ready in the morning, and come up in the morning unto mount Sinai, and present thyself there to me in the top of the mount.
+
+@6 And the LORD passed by before him, and proclaimed, The LORD, The LORD God, ##merciful##note:x[<<Ps 86:15; 103:8–13>>; <<Joel 2:13>>] and gracious, longsuffering, and abundant in goodness and truth,
+@ Keeping mercy for thousands, ##forgiving##note:tn[Heb. bearing] iniquity and transgression and sin, …
+
+== @PSA
+
+=== @3
+
+[.psalm-title]
+A Psalm of David, when he fled from Absalom his son.
+
+[.poetry%hardbreaks]
+@ LORD, how are they increased that trouble me! many _are_ they that rise up against me.
+@ Many _there be_ which say of my soul, _There is_ no help for him in God. Selah.
+
+== @MAT
+
+=== @5
+
+@ And seeing the multitudes, he went up into a mountain:
+@ And he opened his mouth, and taught them, saying,
+@ [wj}Blessed _are_ the poor in spirit: for theirs is the kingdom of heaven.
+@ Blessed _are_ they that mourn: for they shall be comforted.
+
+=== @6
+
+@ Take heed that ye do not your alms before men, to be seen of them.{wj]
+@38 This verse skips.
+
+See <<Exod 34:6>>, <<5:3>> and <<Psalm 3>>.
