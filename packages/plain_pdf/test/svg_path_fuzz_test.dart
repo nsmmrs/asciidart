@@ -62,13 +62,16 @@ String pathData(math.Random r, int commands, {required bool clean}) {
 }
 
 String describe(SvgPath path) {
+  // Six decimals: arcs become curves through sin and cos, whose last bit
+  // may differ between platforms' math libraries.
+  String n(double v) => v.toStringAsFixed(6);
   final b = StringBuffer();
   for (final s in path.segments) {
     switch (s) {
       case MoveSegment(:final x, :final y):
-        b.write('M$x,$y;');
+        b.write('M${n(x)},${n(y)};');
       case LineSegment(:final x, :final y):
-        b.write('L$x,$y;');
+        b.write('L${n(x)},${n(y)};');
       case CubicSegment(
         :final x1,
         :final y1,
@@ -77,7 +80,7 @@ String describe(SvgPath path) {
         :final x,
         :final y,
       ):
-        b.write('C$x1,$y1,$x2,$y2,$x,$y;');
+        b.write('C${n(x1)},${n(y1)},${n(x2)},${n(y2)},${n(x)},${n(y)};');
       case CloseSegment():
         b.write('Z;');
     }
@@ -97,7 +100,7 @@ void main() {
     }
     expect(
       md5.convert(utf8.encode(out.toString())).toString(),
-      'f72ca06e23a41aa3e72f799d129e1c55',
+      '733bfaef499d4e6c4cf38b45ae87d313',
     );
   });
 

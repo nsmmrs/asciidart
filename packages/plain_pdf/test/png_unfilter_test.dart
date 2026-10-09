@@ -97,7 +97,11 @@ void main() {
         Directory('test/images/pngsuite')
             .listSync()
             .whereType<File>()
-            .where((f) => f.path.endsWith('.png') && !f.path.contains('/x'))
+            .where((f) {
+              // The suite's x*.png files are corrupt on purpose.
+              final name = f.uri.pathSegments.last;
+              return name.endsWith('.png') && !name.startsWith('x');
+            })
             .toList()
           ..sort((a, b) => a.path.compareTo(b.path));
     for (final file in files) {
