@@ -22,3 +22,12 @@
 - `\text` reads TeX's text mode: groups, `~`, `\ `, escaped characters,
   accents (`\"o`), the text style commands, the quote and dash ligatures,
   collapsed spaces and `$...$` math in it.
+- Faster, with the same output byte for byte (AOT, against the code
+  before): `asciimathToMathml` 6-13x (the tokenizer and its regexps
+  built once, symbols read through a trie, long sequences linear instead
+  of cubic), `asciimathToMath` 8x and `latexToMath` 2x (the tree built
+  directly, without writing MathML and reading it back, except where a
+  `\color` has a quote in it), `latexToMathml` 1.5x on the Temml corpus
+  (one-token lookahead). `test/equivalence_test.dart` holds the
+  converters to a frozen copy of the earlier code over the fixtures and
+  40,000 fuzzed inputs.
