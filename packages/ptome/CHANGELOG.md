@@ -214,6 +214,13 @@ Asciidoctor project.
   header.
 - The compiled command converts 5–10x faster than the gem end to end, and
   about 2x faster in process (`benchmark/BASELINE.md`).
+- Text outside Latin-1 no longer falls off a cliff: each inline pass is
+  tried only where it can match, and its guards are answered from the
+  characters a paragraph holds. The KJV converts to HTML in 0.9 s instead
+  of 10.5 s (Ruby: 2.2 s), Greek *Ethics* in 42 ms instead of 688 ms. Text
+  boxes in the PDF keep their placements and line breaks across the
+  layout's probes and passes: the whole KJV as a PDF takes 11.8 s instead
+  of 27.4 s, in half the memory.
 - Fonts are the machine's, not compiled in: the PDF backend finds a
   theme's fonts among the installed ones (by file name, then by family;
   `PTOME_FONT_PATH` adds folders), falls back to the built-in PDF
