@@ -6,6 +6,8 @@
 library;
 
 import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:plain_fonts/plain_fonts.dart';
 import 'package:test/test.dart';
@@ -121,6 +123,32 @@ void main() {
       _expectSameIndex(FontIndex([root]), frozen.FontIndex([root]));
     }, timeout: const Timeout.factor(10));
   }
+
+  test('cut and damaged font files: the same index', () {
+    final temp = Directory.systemTemp.createTempSync('font-index-');
+    addTearDown(() => temp.deleteSync(recursive: true));
+    final random = Random(5);
+    final sources = [
+      for (final file in Directory('test/fonts').listSync().whereType<File>())
+        if (!file.path.endsWith('.md')) file,
+    ];
+    for (var i = 0; i < 120; i++) {
+      final source = sources[i % sources.length];
+      final bytes = source.readAsBytesSync();
+      final copy = Uint8List.fromList(bytes);
+      for (var k = 0; k < random.nextInt(4); k++) {
+        copy[random.nextInt(min(copy.length, 600))] = random.nextInt(256);
+      }
+      final cut = switch (i % 4) {
+        0 => copy.length,
+        1 => random.nextInt(min(copy.length, 5000)),
+        _ => random.nextInt(copy.length),
+      };
+      File('${temp.path}/$i-${source.uri.pathSegments.last}')
+          .writeAsBytesSync(Uint8List.sublistView(copy, 0, cut));
+    }
+    _expectSameIndex(FontIndex([temp.path]), frozen.FontIndex([temp.path]));
+  });
 
   test('familyOf', () {
     for (final file in Directory('test/fonts').listSync().whereType<File>()) {

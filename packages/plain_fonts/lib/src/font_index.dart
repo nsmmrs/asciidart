@@ -11,6 +11,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
@@ -418,13 +419,29 @@ final class FontIndex {
     }
     final count = _u16(head, 4);
     final records = read(offset + 12, 16 * count);
-    Uint8List? table(String tag) {
+    int? recordOf(String tag) {
       for (var i = 0; i + 16 <= records.length; i += 16) {
-        if (_tag(records, i) == tag) {
-          return read(_u32(records, i + 8), _u32(records, i + 12));
-        }
+        if (_tag(records, i) == tag) return i;
       }
       return null;
+    }
+
+    Uint8List? table(String tag) => switch (recordOf(tag)) {
+      final i? => read(_u32(records, i + 8), _u32(records, i + 12)),
+      null => null,
+    };
+
+    // The name and OS/2 tables, in one read when they are near each
+    // other.
+    if ((recordOf('name'), recordOf('OS/2')) case (final n?, final o?)) {
+      final nameStart = _u32(records, n + 8);
+      final os2Start = _u32(records, o + 8);
+      final start = min(nameStart, os2Start);
+      final end = max(
+        nameStart + _u32(records, n + 12),
+        os2Start + _u32(records, o + 12),
+      );
+      read.prefetch(start, end - start);
     }
 
     final names = table('name');
@@ -488,20 +505,10 @@ final class FontIndex {
   }
 
   /// Reads ranges of the file at [path].
-  _Ranges _rangesIn(String path) =>
-      (offset, length) => length <= 0
-      ? Uint8List(0)
-      : Uint8List.fromList(fileSystem.readRange(path, offset, length));
+  _Ranges _rangesIn(String path) => _FileRanges(fileSystem, path);
 
   /// Reads ranges of [data].
-  static _Ranges _rangesOf(Uint8List data) => (offset, length) {
-    final start = offset.clamp(0, data.length);
-    return Uint8List.sublistView(
-      data,
-      start,
-      (offset + length).clamp(start, data.length),
-    );
-  };
+  static _Ranges _rangesOf(Uint8List data) => _BytesRanges(data);
 
   static int _u16(Uint8List b, int at) =>
       at + 2 > b.length ? 0 : (b[at] << 8) | b[at + 1];
@@ -514,8 +521,81 @@ final class FontIndex {
       at + 4 > b.length ? '' : String.fromCharCodes(b.sublist(at, at + 4));
 }
 
-/// Reads [length] bytes from [offset] (fewer at the end).
-typedef _Ranges = Uint8List Function(int offset, int length);
+/// Reads ranges of a font file.
+sealed class _Ranges {
+  /// [length] bytes from [offset] (fewer at the end).
+  Uint8List call(int offset, int length);
+
+  /// Reads the range from [offset] for [length] bytes ahead, to give the
+  /// ranges inside it without reading again.
+  void prefetch(int offset, int length) {}
+}
+
+/// The ranges of a file: its first 4 KB (the header and table directory)
+/// read once, a range prefetched, the others read as asked.
+final class _FileRanges extends _Ranges {
+  new(this._files, this._path);
+
+  final FontFiles _files;
+  final String _path;
+  Uint8List? _head;
+  int _windowStart = 0;
+  Uint8List? _window;
+
+  static const int _headSize = 4096;
+
+  /// The largest range [prefetch] reads.
+  static const int _windowSize = 1 << 16;
+
+  Uint8List _read(int offset, int length) =>
+      Uint8List.fromList(_files.readRange(_path, offset, length));
+
+  @override
+  Uint8List call(int offset, int length) {
+    if (length <= 0) return Uint8List(0);
+    final head = _head ??= _read(0, _headSize);
+    if (offset >= 0 && offset + length <= head.length) {
+      return Uint8List.sublistView(head, offset, offset + length);
+    }
+    if (_window case final window?) {
+      final start = offset - _windowStart;
+      if (start >= 0 && start + length <= window.length) {
+        return Uint8List.sublistView(window, start, start + length);
+      }
+    }
+    return _read(offset, length);
+  }
+
+  @override
+  void prefetch(int offset, int length) {
+    final head = _head;
+    if (length <= 0 || length > _windowSize || offset < 0) return;
+    if (head != null && offset + length <= head.length) return;
+    try {
+      _window = _read(offset, length);
+      _windowStart = offset;
+    } on Exception {
+      // Each range is read as asked, then.
+    }
+  }
+}
+
+/// The ranges of a font given as bytes.
+final class _BytesRanges extends _Ranges {
+  new(this._data);
+
+  final Uint8List _data;
+
+  @override
+  Uint8List call(int offset, int length) {
+    final start = offset.clamp(0, _data.length);
+    return Uint8List.sublistView(
+      _data,
+      start,
+      (offset + length).clamp(start, _data.length),
+    );
+  }
+}
 
 final RegExp _slash = RegExp(r'[/\\]');
 
