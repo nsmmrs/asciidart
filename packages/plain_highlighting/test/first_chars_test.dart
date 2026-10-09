@@ -200,6 +200,25 @@ void main() {
     expect(firstChars('<!--', ignoreCase: true, unicode: true)!.prefix, '<!--');
   });
 
+  test('what ends a span', () {
+    Stop? stop(String source) => firstChars(source, ignoreCase: false)!.stop;
+    final method = stop(r'([a-z]\w*)((?:\s*<[a-z]+>)?\s+)([a-z]+)(\s*(?=\())')!;
+    expect(method.admits('void main(', 0), isTrue);
+    expect(method.admits('List<T> f (', 0), isTrue);
+    expect(method.admits('return x;', 0), isFalse);
+    expect(method.admits('int x = 1', 0), isFalse);
+    expect(method.admits('a b', 0), isFalse, reason: 'the end');
+    final variable = stop(r'([a-z]+)(\s+)([a-z]+)(\s*)(=(?!=))')!;
+    expect(variable.admits('int x = 1', 0), isTrue);
+    expect(variable.admits('return x;', 0), isFalse);
+    expect(stop('[a-z]+[a-z0-9]'), isNull, reason: 'not disjoint');
+    expect(stop(r'[a-z]+\s*'), isNull, reason: 'the rest can be empty');
+    expect(stop('[a-z]|x'), isNull, reason: 'alternatives');
+    expect(stop(r'\w+(?:\s*,)*;')!.admits('a , b.', 0), isFalse);
+    expect(stop(r'\w+(?:\s*,)*;')!.admits('ab ,,;', 0), isTrue);
+    expect(stop('[^"]+"')!.admits('aé"', 0), isTrue, reason: 'unseen');
+  });
+
   test('literals a few characters in', () {
     Anchor? anchor(String source, {bool ignoreCase = false}) =>
         firstChars(source, ignoreCase: ignoreCase)!.anchor;
@@ -274,6 +293,7 @@ void main() {
     var prefixed = 0;
     var literals = 0;
     var anchored = 0;
+    var stopped = 0;
     for (final name in engine.languageNames) {
       final language = engine.getLanguage(name)!;
       final samples = _samples(name);
@@ -365,6 +385,10 @@ void main() {
               );
               anchored++;
             }
+            if (first.stop case final stop?) {
+              expect(stop.admits(text, at), isTrue, reason: '$where, stop');
+              stopped++;
+            }
             if (first.follow case final follow?) {
               expect(follow.admits(text, at), isTrue, reason: '$where, follow');
               followed++;
@@ -380,6 +404,7 @@ void main() {
     expect(prefixed, greaterThan(1000));
     expect(literals, greaterThan(1000));
     expect(anchored, greaterThan(0));
+    expect(stopped, greaterThan(1000));
   });
 
   test('group counts', () {

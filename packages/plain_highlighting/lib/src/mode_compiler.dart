@@ -249,6 +249,7 @@ final class MultiRegex {
           if (_run[i] case final run?) _missed(i, run, s, at);
           continue;
         }
+        if (first.stop case final stop? when !stop.admits(s, at)) continue;
         final alone = _alone[i] ??= _compile(_regexes[i].$2);
         if (alone.matchAsPrefix(s, at) case final RegExpMatch match) {
           final data = _regexes[i].$1;

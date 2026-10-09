@@ -21,6 +21,7 @@ final class FirstChars {
     this.prefix,
     this.literal = false,
     this.anchor,
+    this.stop,
   });
 
   /// 1 for each ASCII character a match can start with.
@@ -65,6 +66,9 @@ final class FirstChars {
   /// characters in, after a head of a bounded length (`.?html\``): see
   /// [Anchor].
   final Anchor? anchor;
+
+  /// What ends the span every match starts with: see [Stop].
+  final Stop? stop;
 
   /// Whether a match can start with the ASCII character [c].
   bool has(int c) => _ascii[c] != 0;
@@ -159,6 +163,50 @@ final class RunFollow {
   }
 }
 
+/// A match that starts with a span of characters of one set (all those
+/// its first terms can take), followed by a term that must take a
+/// character, or look at one, of another set disjoint from it: then the
+/// first character after the match's start that isn't of the span's set
+/// is where that term is, and must be of its set (Java's declarations:
+/// the identifiers, generics and whitespace before a `(` or `=`).
+final class Stop {
+  new _(
+    this._span, {
+    required this.spanNonAscii,
+    required this._stop,
+    required this.stopNonAscii,
+    required this.stopAtEnd,
+  });
+
+  /// 1 for each ASCII character of the span's set.
+  final Uint8List _span;
+
+  /// Whether the span's set may have characters beyond ASCII (which
+  /// [admits] then can't see past).
+  final bool spanNonAscii;
+
+  /// 1 for each ASCII character the term after the span can have first.
+  final Uint8List _stop;
+
+  /// Whether that term can have first a character beyond ASCII.
+  final bool stopNonAscii;
+
+  /// Whether that term can match at the text's end.
+  final bool stopAtEnd;
+
+  /// Whether a match starting at [at] in [s] may have its span end where
+  /// the first character not of the span's set is.
+  bool admits(String s, int at) {
+    final n = s.length;
+    for (var e = at; e < n; e++) {
+      final c = s.codeUnitAt(e);
+      if (c >= 128) return spanNonAscii || stopNonAscii;
+      if (_span[c] == 0) return _stop[c] != 0;
+    }
+    return stopAtEnd;
+  }
+}
+
 /// Whether [c] is a word character (`\w`, as `\b` reads it outside
 /// Unicode mode).
 bool isWordChar(int c) =>
@@ -207,6 +255,7 @@ FirstChars? firstChars(
       lineStart: chars.lineStart,
       prefix: prefix != null && (prefix.length > 1 || literal) ? prefix : null,
       literal: literal,
+      stop: parser.backreferences ? null : _stop(chars.terms),
       anchor: switch (chars.anchor) {
         // (Searched for by code unit: none ignoring the case of letters.)
         final anchor? when !(ignoreCase && anchor.literal.contains(_letter)) =>
@@ -237,6 +286,47 @@ RunFollow? _runFollow(_Chars chars) {
     followNonAscii: follow.nonAscii,
     followAtEnd: follow.atEnd,
   );
+}
+
+/// The [Stop] of an expression whose single alternative is the sequence
+/// [terms], if it has one: the last term that ends a span.
+Stop? _stop(List<(_Chars, bool)>? terms) {
+  if (terms == null) return null;
+  // The terms, with those of groups (but quantified ones) in their place.
+  final flat = <(_Chars, bool)>[];
+  void flatten(List<(_Chars, bool)> terms) {
+    for (final term in terms) {
+      final (chars, _) = term;
+      if (chars.terms case final inner? when !chars.quantified) {
+        flatten(inner);
+      } else {
+        flat.add(term);
+      }
+    }
+  }
+
+  flatten(terms);
+  final span = _Chars();
+  Stop? stop;
+  for (final (k, (term, empty)) in flat.indexed) {
+    if (k > 0 && !empty) {
+      var disjoint = !(span.nonAscii && term.nonAscii);
+      for (var c = 0; c < 128 && disjoint; c++) {
+        if (span.ascii[c] != 0 && term.ascii[c] != 0) disjoint = false;
+      }
+      if (disjoint) {
+        stop = Stop._(
+          Uint8List.fromList(span.ascii),
+          spanNonAscii: span.nonAscii,
+          stop: Uint8List.fromList(term.ascii),
+          stopNonAscii: term.nonAscii,
+          stopAtEnd: term.atEnd,
+        );
+      }
+    }
+    if (term.takes case final takes?) span.addAll(takes);
+  }
+  return stop;
 }
 
 /// What [firstChars] doesn't read.
@@ -291,6 +381,12 @@ final class _Chars {
 
   /// Whether the expression read is quantified with `?` (zero or one).
   bool optional = false;
+
+  /// Every character a match of the expression read can take (null for
+  /// none), and, for a group of one alternative, that sequence's terms:
+  /// see [Stop].
+  _Chars? takes;
+  List<(_Chars, bool)>? terms;
 
   /// See [FirstChars.anchor].
   Anchor? anchor;
@@ -400,6 +496,9 @@ final class _Parser {
     while (true) {
       final (first, empty) = _sequence();
       chars.addAll(first);
+      if (first.takes case final takes?) {
+        (chars.takes ??= _Chars()).addAll(takes);
+      }
       nullable = nullable || empty;
       boundary = boundary && first.boundary;
       lineStart = lineStart && first.lineStart;
@@ -416,7 +515,8 @@ final class _Parser {
           ..exactRun = first.exactRun
           ..prefix = first.prefix
           ..literal = first.literal
-          ..anchor = first.anchor;
+          ..anchor = first.anchor
+          ..terms = first.terms;
       }
       return (
         chars
@@ -469,6 +569,12 @@ final class _Parser {
       _readRunFollow(chars, terms);
       _readPrefix(chars, terms);
       _readAnchor(chars, terms);
+    }
+    chars.terms = terms;
+    for (final (term, _) in terms) {
+      if (term.takes case final takes?) {
+        (chars.takes ??= _Chars()).addAll(takes);
+      }
     }
     return (chars, open);
   }
@@ -574,6 +680,8 @@ final class _Parser {
   /// An atom and its quantifier.
   (_Chars, bool) _term() {
     var (chars, empty) = _atom();
+    // (One character takes what it is.)
+    if (chars.single) chars.takes = chars;
     if (_done) return (chars, empty);
     switch (_c) {
       case 0x2a: // *
@@ -723,7 +831,9 @@ final class _Parser {
         ..exactRun = false
         ..prefix = null
         ..literal = false
-        ..anchor = null;
+        ..anchor = null
+        ..takes = null
+        ..terms = null;
       return empty
           ? (_Chars()..assertion = true, true)
           : (chars..run = null, false);
