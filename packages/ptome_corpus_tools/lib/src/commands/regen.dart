@@ -96,11 +96,19 @@ Future<RegenReport> regen(
         outcome,
         baseDir: c.baseDir,
         blobPath: (hash) => c.blobPath(format, hash),
-        write: !check,
+        // ptome's PDF or EPUB is checked by its hash alone (and a PDF by
+        // its pages against the golden one): only what can't be made
+        // again, another profile's result, or text to show a change in,
+        // is kept.
+        write: !check && !(profile is PtomeProfile && format.binary),
       );
       final before = c.expected[format]?[profile.name];
-      if (profile is PtomeProfile && format == Format.pdf) {
-        now = now.withPixels(_pixels(c, profile, now));
+      if ((profile, format, outcome) case (
+        final PtomeProfile ptome,
+        Format.pdf,
+        Converted(output: final Uint8List pdf),
+      )) {
+        now = now.withPixels(_pixels(c, ptome, now, pdf));
       }
       if (before == null || !before.sameResult(now)) {
         report.changed.add('${c.id}#${format.name} [${profile.name}]');
@@ -121,7 +129,7 @@ Future<RegenReport> regen(
     _checkDivergences(c, corpus, report);
     if (!check) {
       c.writeVersions();
-      _collectGarbage(c);
+      _collectGarbage(c, corpus);
     }
   }
   return report;
@@ -130,32 +138,22 @@ Future<RegenReport> regen(
 /// How ptome's PDF [now] compares with the golden PDF of
 /// [PtomeProfile.pdfCompareTo], pixel for pixel (null when there is none;
 /// page images are kept by hash, so only new PDFs are rendered).
-String? _pixels(Case c, PtomeProfile profile, Expected now) {
+String? _pixels(Case c, PtomeProfile profile, Expected now, Uint8List pdf) {
   final golden = c.expected[Format.pdf]?[profile.pdfCompareTo]?.hash;
   final hash = now.hash;
   if (golden == null || hash == null) return null;
-  // (Not written when only checking.)
-  if (!File(c.blobPath(Format.pdf, hash)).existsSync()) return null;
+  final goldenPdf = File(c.blobPath(Format.pdf, golden)).readAsBytesSync();
   // (The gem gives text, not a PDF, for an inline document.)
-  if (!_isPdf(c.blobPath(Format.pdf, golden)) ||
-      !_isPdf(c.blobPath(Format.pdf, hash))) {
-    return null;
-  }
+  if (!_isPdf(goldenPdf) || !_isPdf(pdf)) return null;
   String pages(String hash) => p.join(cacheDir, 'pages', hash);
   return comparePages(
-    pageImages(c.blobPath(Format.pdf, golden), pages(golden)),
-    pageImages(c.blobPath(Format.pdf, hash), pages(hash)),
+    pageImages(goldenPdf, pages(golden)),
+    pageImages(pdf, pages(hash)),
   );
 }
 
-bool _isPdf(String path) {
-  final file = File(path).openSync();
-  try {
-    return String.fromCharCodes(file.readSync(5)) == '%PDF-';
-  } finally {
-    file.closeSync();
-  }
-}
+bool _isPdf(List<int> bytes) =>
+    bytes.length > 5 && String.fromCharCodes(bytes.take(5)) == '%PDF-';
 
 /// Whether [c] converts to the same bytes as [outcome] from another
 /// directory: through a link to ptome's package elsewhere, so that the
@@ -209,14 +207,17 @@ void _checkDivergences(Case c, Corpus corpus, RegenReport report) {
   }
 }
 
-/// Deletes the blobs no profile refers to any more.
-void _collectGarbage(Case c) {
+/// Deletes the blobs no profile keeps any more (ptome's PDFs and EPUBs
+/// are recorded by their hashes alone).
+void _collectGarbage(Case c, Corpus corpus) {
   final dir = Directory(c.expectedDir);
   if (!dir.existsSync()) return;
   final live = {
     for (final MapEntry(key: format, value: profiles) in c.expected.entries)
-      for (final expected in profiles.values)
-        if (expected.hash case final hash?) c.blobPath(format, hash),
+      for (final MapEntry(key: name, value: expected) in profiles.entries)
+        if (expected.hash case final hash?
+            when !(format.binary && corpus.profiles[name] is PtomeProfile))
+          c.blobPath(format, hash),
   };
   for (final file in dir.listSync().whereType<File>()) {
     if (!live.contains(file.path)) file.deleteSync();

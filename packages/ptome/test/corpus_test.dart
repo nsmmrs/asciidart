@@ -49,7 +49,7 @@ void main() {
               }
               if (pixels == 'identical') {
                 // Promoted: the new PDF is the one to match from now on.
-                c.promotePdf(expected.hash!, result.hash!, output);
+                c.promotePdf(expected.hash!, result.hash!);
                 // (Said, so the change is committed.)
                 // ignore: avoid_print
                 print(

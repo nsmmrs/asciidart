@@ -41,7 +41,8 @@ must have the same pages, pixel for pixel (ADR-0022): `pixels` in
 differ). The test passes at once when ptome's PDF is the one recorded;
 when it changed, it renders both PDFs (`pdftoppm`, page images kept in
 `.dart_tool/corpus-pages`) and, when the pages are still identical,
-records the new PDF in the case (commit it). Without `pdftoppm` a changed
+records the new hash in the case (commit it). ptome's PDFs and EPUBs
+aren't kept, only their hashes. Without `pdftoppm` a changed
 PDF is skipped.
 
 A recorded result is normalized narrowly, so that real differences show:

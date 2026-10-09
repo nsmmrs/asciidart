@@ -11,21 +11,22 @@ import 'package:path/path.dart' as p;
 /// The resolution pages are compared at, in dots per inch.
 const pixelsDpi = 50;
 
-/// The gray page images of the PDF in [pdf] (`pdftoppm -gray`), rendered
-/// once into [dir].
-List<Uint8List> pageImages(String pdf, String dir) {
+/// The gray page images of the PDF [pdf] (`pdftoppm -gray`), rendered
+/// once into [dir] (the PDF's own, by its hash).
+List<Uint8List> pageImages(List<int> pdf, String dir) {
   final done = File(p.join(dir, 'done'));
   if (!done.existsSync()) {
     Directory(dir).createSync(recursive: true);
+    final file = File(p.join(dir, 'document.pdf'))..writeAsBytesSync(pdf);
     final result = Process.runSync('pdftoppm', [
       '-r',
       '$pixelsDpi',
       '-gray',
-      pdf,
+      file.path,
       p.join(dir, 'p'),
     ]);
     if (result.exitCode != 0) {
-      throw StateError('pdftoppm $pdf: ${result.stderr}');
+      throw StateError('pdftoppm ${file.path}: ${result.stderr}');
     }
     done.writeAsStringSync('');
   }

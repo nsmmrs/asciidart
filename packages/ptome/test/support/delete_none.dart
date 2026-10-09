@@ -1,2 +1,0 @@
-/// Deletes nothing (no file system to delete from).
-void deleteFile(String path) {}

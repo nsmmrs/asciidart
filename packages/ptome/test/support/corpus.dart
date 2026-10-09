@@ -24,7 +24,6 @@ import 'package:ptome/src/io.dart' as io;
 import 'package:toml/toml.dart';
 
 import '../../tool/vendored_font_directories.dart';
-import 'delete.dart';
 
 /// The corpus directory (tests run from the package root). Files are read
 /// through ptome's I/O seam, so the corpus runs on Node.js too.
@@ -128,12 +127,11 @@ final class Case {
   /// `pdf-compare-to`), whose pages ptome's must equal pixel for pixel.
   final String? goldenPdf;
 
-  /// Records [pdf] (whose hash is [hash], its pages just found identical
-  /// to the golden PDF's) as ptome's PDF in place of [old]: its blob is
-  /// written, `versions.toml` names it (and its pixels identical), and the
-  /// old blob is deleted. The hash then passes on later runs.
-  void promotePdf(String old, String hash, Uint8List pdf) {
-    io.writeBytes(blobPath(Format.pdf, hash), pdf);
+  /// Records [hash] (a PDF whose pages were just found identical to the
+  /// golden PDF's) as ptome's in place of [old] in `versions.toml` (its
+  /// pixels identical), so that the hash passes on later runs. ptome's
+  /// PDFs aren't kept, only their hashes.
+  void promotePdf(String old, String hash) {
     final path = p.posix.join(caseDir, 'versions.toml');
     final text = utf8.decode(io.readBytes(path));
     final start = text.indexOf('[pdf.$ptomeProfile]');
@@ -149,7 +147,6 @@ final class Case {
       path,
       text.substring(0, start) + section + text.substring(end),
     );
-    deleteFile(blobPath(Format.pdf, old));
   }
 
   /// How the pages of [pdf] (whose hash is [hash]) compare with the golden

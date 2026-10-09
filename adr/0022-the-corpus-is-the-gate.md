@@ -64,8 +64,10 @@ Added on 2026-10-09.
 8. **The hash is the fast path, the pixels the contract.** The test passes
    at once when ptome's PDF is the one recorded (its pixels were checked
    when it was). When the bytes change, it renders both PDFs and compares
-   the pages; identical pages pass, and the new PDF is promoted: its blob
-   and hash are recorded in the case, to be committed. Pages that differ
+   the pages; identical pages pass, and the new PDF is promoted: its hash
+   is recorded in the case, to be committed. ptome's PDFs (and EPUBs) are
+   recorded by their hashes alone; the gem's, which can't be made again
+   without it, are kept. Pages that differ
    fail. A change that only reorders bytes costs one rendering, once.
 9. **Compatibility is settings of the engine, not a second engine.** What
    makes the pages match asciidoctor-pdf's is a value of a setting of the

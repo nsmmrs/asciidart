@@ -188,7 +188,11 @@ def convert request
   TRACKING[0] = true
   output = Asciidoctor.convert request['input'], opts
   INCLUDED.reject! {|path| path.start_with? DATA_DIR }
-  [output, logger.messages.map {|m| log_entry m }]
+  # A missing optional gem is said once per process, so the case that says
+  # it depends on how cases are spread over the workers: left out.
+  messages = logger.messages.map {|m| log_entry m }
+  messages.reject! {|m| m[:message].match?(/\Aoptional gem '[^']+' is not available\b/) }
+  [output, messages]
 ensure
   TRACKING[0] = false
   Asciidoctor::LoggerManager.logger = nil
