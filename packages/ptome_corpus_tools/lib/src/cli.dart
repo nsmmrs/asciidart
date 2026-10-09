@@ -87,6 +87,9 @@ final class RegenCommand extends Command<int> {
         '  differs from its reference without a divergence note: $id',
       );
     }
+    for (final id in report.located) {
+      stdout.writeln('  depends on the directory it is converted in: $id');
+    }
     if (report.logOnly.isNotEmpty) {
       stdout.writeln(
         '  ${report.logOnly.length} with the same output but a different log (triage/log-differences.txt)',
@@ -96,7 +99,8 @@ final class RegenCommand extends Command<int> {
         ..writeAsStringSync('${report.logOnly.join('\n')}\n');
     }
     return (check && report.changed.isNotEmpty) ||
-            report.undocumented.isNotEmpty
+            report.undocumented.isNotEmpty ||
+            report.located.isNotEmpty
         ? 1
         : 0;
   }

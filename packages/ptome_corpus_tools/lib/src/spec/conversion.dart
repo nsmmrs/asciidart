@@ -70,6 +70,19 @@ final class Conversion {
   /// are (captured test inputs); ptome ignores them.
   final Map<String, Object?> extra;
 
+  /// This conversion with [baseDir] as its base directory.
+  Conversion at(String baseDir) => Conversion(
+    id: id,
+    input: input,
+    format: format,
+    baseDir: baseDir,
+    doctype: doctype,
+    safe: safe,
+    standalone: standalone,
+    attributes: attributes,
+    extra: extra,
+  );
+
   Map<String, Object?> toJson() => {
     'id': id,
     'input': wellFormed(input),

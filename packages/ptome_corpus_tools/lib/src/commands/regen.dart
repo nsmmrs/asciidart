@@ -3,12 +3,16 @@
 library;
 
 import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:path/path.dart' as p;
 
 import '../oracle/ptome_runner.dart';
 import '../oracle/ruby_pool.dart';
 import '../spec/case.dart';
 import '../spec/conversion.dart';
 import '../spec/corpus.dart';
+import '../spec/normalize.dart';
 import '../spec/profile.dart';
 
 final class RegenReport {
@@ -16,11 +20,15 @@ final class RegenReport {
   final List<String> changed = [];
   final List<String> undocumented = [];
 
+  /// Binary results that change when the case is converted from another
+  /// directory (a path in a PDF or an EPUB, which can't be normalized).
+  final List<String> located = [];
+
   /// Results whose output matches the reference but whose log doesn't
   /// (diagnostic parity, to triage; not a failure).
   final List<String> logOnly = [];
 
-  bool get clean => changed.isEmpty && undocumented.isEmpty;
+  bool get clean => changed.isEmpty && undocumented.isEmpty && located.isEmpty;
 }
 
 /// Regenerates [cases] for [profiles]; with [check], writes nothing and
@@ -59,11 +67,12 @@ Future<RegenReport> regen(
       case PtomeProfile():
         for (final c in cases) {
           for (final format in c.formats) {
-            results.add((
-              c,
-              format,
-              convertWithPtome(c.conversion(format, profile)),
-            ));
+            final conversion = c.conversion(format, profile);
+            final outcome = convertWithPtome(conversion);
+            results.add((c, format, outcome));
+            if (format.binary && !_sameElsewhere(c, conversion, outcome)) {
+              report.located.add('${c.id}#${format.name}');
+            }
           }
         }
     }
@@ -94,6 +103,43 @@ Future<RegenReport> regen(
     }
   }
   return report;
+}
+
+/// Whether [c] converts to the same bytes as [outcome] from a copy in
+/// another directory.
+bool _sameElsewhere(Case c, Conversion conversion, Outcome outcome) {
+  final temp = Directory.systemTemp.createTempSync('corpus-moved-');
+  try {
+    final copy = p.join(temp.path, p.basename(c.dir));
+    _copyTree(Directory(c.dir), copy);
+    final moved = convertWithPtome(
+      conversion.at(p.join(copy, p.relative(c.baseDir, from: c.dir))),
+    );
+    return switch ((outcome, moved)) {
+      (
+        Converted(output: final Uint8List a),
+        Converted(output: final Uint8List b),
+      ) =>
+        contentHash(a) == contentHash(b),
+      _ => outcome.runtimeType == moved.runtimeType,
+    };
+  } finally {
+    temp.deleteSync(recursive: true);
+  }
+}
+
+void _copyTree(Directory from, String to) {
+  Directory(to).createSync(recursive: true);
+  for (final entity in from.listSync()) {
+    final target = p.join(to, p.basename(entity.path));
+    switch (entity) {
+      case File():
+        entity.copySync(target);
+      case Directory():
+        _copyTree(entity, target);
+      default:
+    }
+  }
 }
 
 /// An ptome result that differs from the one it is compared to must

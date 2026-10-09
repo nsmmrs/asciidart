@@ -13,3 +13,5 @@ localdate = "2026-01-01"
 localtime = "00:00:00 +0000"
 localyear = "2026"
 localdatetime = "2026-01-01 00:00:00 +0000"
+# The home directory, which documents see below the server safe mode.
+user-home = "/home/user"
